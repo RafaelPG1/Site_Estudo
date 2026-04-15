@@ -1,7 +1,7 @@
 /* =============================================
-   NEXUS STUDY — quiz/quiz.css
-   Tela: Seleção de Disciplinas
-   Estilo: Dark Tech Academy (grid 2x2)
+   NEXUS STUDY — disciplinas/poo.css
+   Disciplina: POO — Programação Orientada a Objetos
+   Accent: Blue (#7aa8e8)
    ============================================= */
 
 /* ── RESET & BASE ── */
@@ -18,18 +18,16 @@
   --border:      rgba(255,255,255,0.07);
   --border-glow: rgba(255,255,255,0.14);
 
-  --gold:        #e8c97a;
-  --gold-dim:    rgba(232, 201, 122, 0.15);
+  --blue:        #7aa8e8;
+  --blue-dim:    rgba(122, 168, 232, 0.12);
   --teal:        #4dd9b4;
   --teal-dim:    rgba(77, 217, 180, 0.12);
   --rose:        #e87a9a;
-  --rose-dim:    rgba(232, 122, 154, 0.12);
-  --blue:        #7aa8e8;
-  --blue-dim:    rgba(122, 168, 232, 0.12);
+  --gold:        #e8c97a;
 
-  --text-1:  #f0ede6;
-  --text-2:  #a8a49c;
-  --text-3:  #a09a8e;
+  --text-1: #f0ede6;
+  --text-2: #a8a49c;
+  --text-3: #6e6a62;
 
   --font-display: 'Cormorant Garamond', Georgia, serif;
   --font-body:    'DM Sans', system-ui, sans-serif;
@@ -62,29 +60,29 @@ a { text-decoration: none; color: inherit; }
 }
 
 .bg-orb--1 {
-  width: 450px; height: 450px;
-  background: radial-gradient(circle, rgba(232,122,154,0.15), transparent 70%);
-  top: -80px; right: -80px;
-  animation: orb-drift 20s ease-in-out infinite alternate;
+  width: 480px; height: 480px;
+  background: radial-gradient(circle, rgba(122,168,232,0.18), transparent 70%);
+  top: -100px; right: -100px;
+  animation: orb-drift 22s ease-in-out infinite alternate;
 }
 
 .bg-orb--2 {
-  width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(77,217,180,0.12), transparent 70%);
-  bottom: -120px; left: -80px;
-  animation: orb-drift 16s ease-in-out infinite alternate-reverse;
+  width: 520px; height: 520px;
+  background: radial-gradient(circle, rgba(77,217,180,0.09), transparent 70%);
+  bottom: -120px; left: -100px;
+  animation: orb-drift 18s ease-in-out infinite alternate-reverse;
 }
 
 .bg-orb--3 {
-  width: 320px; height: 320px;
-  background: radial-gradient(circle, rgba(122,168,232,0.1), transparent 70%);
-  top: 50%; left: 60%;
-  animation: orb-drift 24s ease-in-out infinite alternate;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(122,168,232,0.08), transparent 70%);
+  top: 55%; left: 55%;
+  animation: orb-drift 26s ease-in-out infinite alternate;
 }
 
 @keyframes orb-drift {
   0%   { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(35px, 25px) scale(1.06); }
+  100% { transform: translate(40px, 28px) scale(1.07); }
 }
 
 /* ── GRID OVERLAY ── */
@@ -97,7 +95,7 @@ a { text-decoration: none; color: inherit; }
     linear-gradient(var(--border) 1px, transparent 1px),
     linear-gradient(90deg, var(--border) 1px, transparent 1px);
   background-size: 60px 60px;
-  mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 30%, transparent 80%);
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 20%, transparent 80%);
 }
 
 /* ── HEADER ── */
@@ -128,17 +126,18 @@ a { text-decoration: none; color: inherit; }
   font-size: 0.8rem;
   font-weight: 500;
   color: var(--text-2);
-  padding: 0.35rem 0.75rem;
-  border-radius: 8px;
+  padding: 0.38rem 0.85rem;
+  border-radius: 10px;
   border: 1px solid var(--border-glow);
   background: rgba(255,255,255,0.03);
   transition: color 0.2s, background 0.2s, border-color 0.2s;
+  white-space: nowrap;
 }
 
 .back-btn:hover {
-  color: var(--text-1);
-  background: rgba(77,217,180,0.07);
-  border-color: rgba(77,217,180,0.3);
+  color: var(--blue);
+  background: rgba(122,168,232,0.07);
+  border-color: rgba(122,168,232,0.3);
 }
 
 /* Logo */
@@ -149,10 +148,9 @@ a { text-decoration: none; color: inherit; }
 }
 
 .logo-mark {
-  width: 34px;
-  height: 34px;
+  width: 34px; height: 34px;
   border-radius: 9px;
-  background: linear-gradient(135deg, var(--teal), var(--blue));
+  background: linear-gradient(135deg, var(--blue), #5580c4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -163,11 +161,7 @@ a { text-decoration: none; color: inherit; }
   flex-shrink: 0;
 }
 
-.logo-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.1;
-}
+.logo-text { display: flex; flex-direction: column; line-height: 1.1; }
 
 .logo-title {
   font-family: var(--font-display);
@@ -181,7 +175,7 @@ a { text-decoration: none; color: inherit; }
   font-weight: 500;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--teal);
+  color: var(--blue);
 }
 
 /* Breadcrumb */
@@ -196,7 +190,7 @@ a { text-decoration: none; color: inherit; }
 .breadcrumb svg { opacity: 0.4; }
 
 .breadcrumb__item--active {
-  color: var(--rose);
+  color: var(--blue);
   font-weight: 500;
 }
 
@@ -213,25 +207,22 @@ a { text-decoration: none; color: inherit; }
 .page-header {
   margin-bottom: 2.5rem;
   animation: fade-up 0.55s ease both;
-  
-  /* Adicione isso: */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center; /* Garante que o texto interno também quebre centralizado */
+  text-align: center;
 }
 
 .page-header__eyebrow {
   display: inline-flex;
+  margin-left: auto;
+  margin-right: auto;
   align-items: center;
   gap: 0.5rem;
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--rose);
-  background: rgba(232,122,154,0.08);
-  border: 1px solid rgba(232,122,154,0.2);
+  color: var(--blue);
+  background: rgba(122,168,232,0.08);
+  border: 1px solid rgba(122,168,232,0.2);
   padding: 0.35rem 0.9rem;
   border-radius: 99px;
   margin-bottom: 1.25rem;
@@ -250,7 +241,7 @@ a { text-decoration: none; color: inherit; }
 .page-header__title em {
   font-style: italic;
   color: transparent;
-background: linear-gradient(90deg, var(--teal), var(--blue));
+  background: linear-gradient(90deg, var(--blue), var(--teal));
   -webkit-background-clip: text;
   background-clip: text;
 }
@@ -261,12 +252,10 @@ background: linear-gradient(90deg, var(--teal), var(--blue));
   font-weight: 300;
   max-width: 440px;
   line-height: 1.65;
-  
-  /* Remova qualquer margem lateral fixa e use auto */
-  margin: 0 auto; 
+  margin: 0 auto;
 }
 
-/* ── DISCIPLINES GRID 2x2 ── */
+/* ── DISCIPLINES GRID ── */
 .disciplines {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -274,8 +263,7 @@ background: linear-gradient(90deg, var(--teal), var(--blue));
   animation: fade-up 0.6s 0.2s ease both;
 }
 
-/* ── DISCIPLINE CARD ── */
-/* Mesma estrutura visual dos .card do index */
+/* ── DISC CARD — base (idêntico ao quiz.css) ── */
 .disc-card {
   position: relative;
   display: flex;
@@ -299,19 +287,9 @@ background: linear-gradient(90deg, var(--teal), var(--blue));
   transform: translateY(-6px) scale(1.01);
 }
 
-/* Stripe oculta — mantida no HTML mas sem uso visual */
-.disc-card__stripe {
-  display: none;
-}
-
-/* Glow (sem uso visível, mas preservado no HTML) */
 .disc-card__glow { display: none; }
 
 /* Icon */
-.disc-card__icon-col {
-  padding: 0;
-}
-
 .disc-card__icon-wrap {
   width: 52px;
   height: 52px;
@@ -331,9 +309,9 @@ background: linear-gradient(90deg, var(--teal), var(--blue));
 /* Body */
 .disc-card__body {
   flex: 1;
-  padding: 0;
   display: flex;
   flex-direction: column;
+  padding-right: 3rem;
 }
 
 .disc-card__title {
@@ -352,7 +330,7 @@ background: linear-gradient(90deg, var(--teal), var(--blue));
   line-height: 1.6;
 }
 
-/* CTA — círculo com seta (canto inferior direito) */
+/* CTA — canto inferior direito */
 .disc-card__cta {
   position: absolute;
   bottom: 1.2rem;
@@ -400,39 +378,23 @@ background: linear-gradient(90deg, var(--teal), var(--blue));
   transform: translateY(0);
 }
 
-/* ── CARD THEMES (idênticos ao style.css) ── */
+/* ── CARD THEMES ── */
 
-/* Blue — POO */
-.disc-card--blue { background: linear-gradient(145deg, #0e1420, #0d1422); }
-.disc-card--blue:hover { border-color: rgba(122,168,232,0.3); box-shadow: 0 12px 40px rgba(122,168,232,0.1); }
-.disc-card--blue .disc-card__icon-wrap { background: var(--blue-dim); }
-.disc-card--blue .disc-card__title { color: var(--blue); }
-.disc-card--blue:hover .disc-card__arrow { border-color: var(--blue); color: var(--blue); background: rgba(122,168,232,0.1); box-shadow: 0 0 14px rgba(122,168,232,0.2); }
-.disc-card--blue:hover .disc-card__cta-label { color: var(--blue); }
+/* AVA — azul claro */
+.disc-card--ava { background: linear-gradient(145deg, #0e1420, #0d1422); }
+.disc-card--ava:hover { border-color: rgba(122,168,232,0.3); box-shadow: 0 12px 40px rgba(122,168,232,0.1); }
+.disc-card--ava .disc-card__icon-wrap { background: var(--blue-dim); }
+.disc-card--ava .disc-card__title { color: var(--blue); }
+.disc-card--ava:hover .disc-card__arrow { border-color: var(--blue); color: var(--blue); background: rgba(122,168,232,0.1); box-shadow: 0 0 14px rgba(122,168,232,0.2); }
+.disc-card--ava:hover .disc-card__cta-label { color: var(--blue); }
 
-/* Teal — Redes */
-.disc-card--teal { background: linear-gradient(145deg, #0e1420, #0d1c20); }
-.disc-card--teal:hover { border-color: rgba(77,217,180,0.3); box-shadow: 0 12px 40px rgba(77,217,180,0.1); }
-.disc-card--teal .disc-card__icon-wrap { background: var(--teal-dim); }
-.disc-card--teal .disc-card__title { color: var(--teal); }
-.disc-card--teal:hover .disc-card__arrow { border-color: var(--teal); color: var(--teal); background: rgba(77,217,180,0.1); box-shadow: 0 0 14px rgba(77,217,180,0.2); }
-.disc-card--teal:hover .disc-card__cta-label { color: var(--teal); }
-
-/* Gold — Design */
-.disc-card--gold { background: linear-gradient(145deg, #0e1420, #12172a); }
-.disc-card--gold:hover { border-color: rgba(232,201,122,0.3); box-shadow: 0 12px 40px rgba(232,201,122,0.1); }
-.disc-card--gold .disc-card__icon-wrap { background: var(--gold-dim); }
-.disc-card--gold .disc-card__title { color: var(--gold); }
-.disc-card--gold:hover .disc-card__arrow { border-color: var(--gold); color: var(--gold); background: rgba(232,201,122,0.1); box-shadow: 0 0 14px rgba(232,201,122,0.2); }
-.disc-card--gold:hover .disc-card__cta-label { color: var(--gold); }
-
-/* Rose — Banco de Dados */
-.disc-card--rose { background: linear-gradient(145deg, #0e1420, #1c0d16); }
-.disc-card--rose:hover { border-color: rgba(232,122,154,0.3); box-shadow: 0 12px 40px rgba(232,122,154,0.1); }
-.disc-card--rose .disc-card__icon-wrap { background: var(--rose-dim); }
-.disc-card--rose .disc-card__title { color: var(--rose); }
-.disc-card--rose:hover .disc-card__arrow { border-color: var(--rose); color: var(--rose); background: rgba(232,122,154,0.1); box-shadow: 0 0 14px rgba(232,122,154,0.2); }
-.disc-card--rose:hover .disc-card__cta-label { color: var(--rose); }
+/* Quiz — teal */
+.disc-card--quiz { background: linear-gradient(145deg, #0e1420, #0d1c20); }
+.disc-card--quiz:hover { border-color: rgba(77,217,180,0.3); box-shadow: 0 12px 40px rgba(77,217,180,0.1); }
+.disc-card--quiz .disc-card__icon-wrap { background: var(--teal-dim); }
+.disc-card--quiz .disc-card__title { color: var(--teal); }
+.disc-card--quiz:hover .disc-card__arrow { border-color: var(--teal); color: var(--teal); background: rgba(77,217,180,0.1); box-shadow: 0 0 14px rgba(77,217,180,0.2); }
+.disc-card--quiz:hover .disc-card__cta-label { color: var(--teal); }
 
 /* ── FOOTER ── */
 .footer {
@@ -455,8 +417,6 @@ background: linear-gradient(90deg, var(--teal), var(--blue));
 
 .disciplines .disc-card:nth-child(1) { animation: fade-up 0.5s 0.25s ease both; }
 .disciplines .disc-card:nth-child(2) { animation: fade-up 0.5s 0.33s ease both; }
-.disciplines .disc-card:nth-child(3) { animation: fade-up 0.5s 0.41s ease both; }
-.disciplines .disc-card:nth-child(4) { animation: fade-up 0.5s 0.49s ease both; }
 
 /* ── RESPONSIVIDADE ── */
 @media (max-width: 680px) {
