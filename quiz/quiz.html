@@ -1,0 +1,162 @@
+<!-- quiz/quiz.html -->
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nexus Study — Quiz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="quiz.css" />
+</head>
+<body>
+
+  <!-- Background -->
+  <div class="bg-orb bg-orb--1"></div>
+  <div class="bg-orb bg-orb--2"></div>
+  <div class="bg-orb bg-orb--3"></div>
+  <div class="bg-grid"></div>
+
+  <!-- ===== HEADER ===== -->
+  <header class="header">
+    <div class="header__inner">
+      <div class="header__left">
+        <a href="../index.html" class="back-btn" aria-label="Voltar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          <span>Início</span>
+        </a>
+      </div>
+
+      <div class="header__logo">
+        <span class="logo-mark">N</span>
+        <div class="logo-text">
+          <span class="logo-title">Nexus</span>
+          <span class="logo-sub">Study</span>
+        </div>
+      </div>
+
+      <div class="header__right">
+        <div class="breadcrumb">
+          <span class="breadcrumb__item">Quiz</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          <span class="breadcrumb__item breadcrumb__item--active">Disciplinas</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-header__eyebrow">
+        <span class="eyebrow-icon">❓</span>
+        <span>Modo Quiz</span>
+      </div>
+      <h1 class="page-header__title">Escolha a <em>disciplina</em></h1>
+      <p class="page-header__desc">Selecione a matéria para iniciar</p>
+    </div>
+
+    <!-- Discipline cards — grid 2x2 -->
+    <div class="disciplines">
+
+      <!-- POO -->
+      <a href="#" class="disc-card disc-card--blue">
+        <div class="disc-card__stripe"></div>
+        <div class="disc-card__icon-col">
+          <div class="disc-card__icon-wrap">
+            <span>💻</span>
+          </div>
+        </div>
+        <div class="disc-card__body">
+          <h2 class="disc-card__title">POO</h2>
+          <p class="disc-card__desc">Programação Orientada a Objetos</p>
+        </div>
+        <div class="disc-card__cta">
+          <div class="disc-card__arrow">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+          </div>
+          <span class="disc-card__cta-label">Iniciar</span>
+        </div>
+        <div class="disc-card__glow"></div>
+      </a>
+
+      <!-- Redes -->
+      <a href="#" class="disc-card disc-card--teal">
+        <div class="disc-card__stripe"></div>
+        <div class="disc-card__icon-col">
+          <div class="disc-card__icon-wrap">
+            <span>🌐</span>
+          </div>
+        </div>
+        <div class="disc-card__body">
+          <h2 class="disc-card__title">Redes</h2>
+          <p class="disc-card__desc">Redes de Computadores</p>
+        </div>
+        <div class="disc-card__cta">
+          <div class="disc-card__arrow">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+          </div>
+          <span class="disc-card__cta-label">Iniciar</span>
+        </div>
+        <div class="disc-card__glow"></div>
+      </a>
+
+      <!-- Design -->
+      <a href="#" class="disc-card disc-card--gold">
+        <div class="disc-card__stripe"></div>
+        <div class="disc-card__icon-col">
+          <div class="disc-card__icon-wrap">
+            <span>🎨</span>
+          </div>
+        </div>
+        <div class="disc-card__body">
+          <h2 class="disc-card__title">Design</h2>
+          <p class="disc-card__desc">Design de Sistemas de Informação</p>
+        </div>
+        <div class="disc-card__cta">
+          <div class="disc-card__arrow">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+          </div>
+          <span class="disc-card__cta-label">Iniciar</span>
+        </div>
+        <div class="disc-card__glow"></div>
+      </a>
+
+      <!-- Banco de Dados -->
+      <a href="#" class="disc-card disc-card--rose">
+        <div class="disc-card__stripe"></div>
+        <div class="disc-card__icon-col">
+          <div class="disc-card__icon-wrap">
+            <span>🗄️</span>
+          </div>
+        </div>
+        <div class="disc-card__body">
+          <h2 class="disc-card__title">Banco de Dados</h2>
+          <p class="disc-card__desc">Fundamentos de Banco de Dados</p>
+        </div>
+        <div class="disc-card__cta">
+          <div class="disc-card__arrow">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+          </div>
+          <span class="disc-card__cta-label">Iniciar</span>
+        </div>
+        <div class="disc-card__glow"></div>
+      </a>
+
+    </div><!-- /disciplines -->
+
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <p>© 2025 Nexus Study · Desenvolvido para facilitar seus estudos</p>
+  </footer>
+
+</body>
+</html>
