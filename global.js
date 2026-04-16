@@ -11,38 +11,45 @@ import Storage from './storage.js';
    section → qual área do sistema
 ───────────────────────────────────────────── */
 export const PAGINAS = {
-  HOME:              { id: 'HOME',              label: 'Início',              path: '/index.html',                    section: 'root' },
+  HOME:              { id: 'HOME',              label: 'Início',              path: '/index.html',                    section: 'root'    },
 
   // Área Pessoal
   PESSOAL:           { id: 'PESSOAL',           label: 'Área Pessoal',        path: '/area_pessoal/pessoal.html',     section: 'pessoal' },
   ANOTACOES:         { id: 'ANOTACOES',         label: 'Anotações',           path: '/area_pessoal/anotacoes/anotacoes.html', section: 'pessoal' },
 
   // Resumos
-  RESUMO:            { id: 'RESUMO',            label: 'Resumos',             path: '/resumo/resumo.html',            section: 'resumo' },
+  RESUMO:            { id: 'RESUMO',            label: 'Resumos',             path: '/resumo/resumo.html',            section: 'resumo'  },
 
   // Quiz
-  QUIZ:              { id: 'QUIZ',              label: 'Quiz',                path: '/quiz/quiz.html',                section: 'quiz' },
+  QUIZ:              { id: 'QUIZ',              label: 'Quiz',                path: '/quiz/quiz.html',                section: 'quiz'    },
 
   // Jogos
-  JOGOS:             { id: 'JOGOS',             label: 'Jogos',               path: '/jogos/jogo.html',               section: 'jogos' },
-  JOGO_1:            { id: 'JOGO_1',            label: 'Jogo 1',              path: '/jogos/jogo_1/jogo1.html',       section: 'jogos' },
-  JOGO_2:            { id: 'JOGO_2',            label: 'Jogo 2',              path: '/jogos/jogo_2/jogo2.html',       section: 'jogos' },
+  JOGOS:             { id: 'JOGOS',             label: 'Jogos',               path: '/jogos/jogo.html',               section: 'jogos'   },
+  JOGO_1:            { id: 'JOGO_1',            label: 'Jogo 1',              path: '/jogos/jogo_1/jogo1.html',       section: 'jogos'   },
+  JOGO_2:            { id: 'JOGO_2',            label: 'Jogo 2',              path: '/jogos/jogo_2/jogo2.html',       section: 'jogos'   },
 };
 
 /* ─────────────────────────────────────────────
    MAPA DE DISCIPLINAS
-   Organizado por semestre
+   Organizado por semestre.
+   id      → deve bater com o param ?disc= da URL
+   nome    → nome completo para exibição no DOM
+   arquivo → nome do arquivo JS de conteúdo em quiz/conteudo/
+   emoji   → ícone exibido nos templates
 ───────────────────────────────────────────── */
 export const DISCIPLINAS = {
   '2026.2': [
-    { id: 'DISC_1', label: 'Disciplina 1', arquivo: 'disciplina_1' },
-    { id: 'DISC_2', label: 'Disciplina 2', arquivo: 'disciplina_2' },
-    { id: 'DISC_3', label: 'Disciplina 3', arquivo: 'disciplina_3' },
-    { id: 'DISC_4', label: 'Disciplina 4', arquivo: 'disciplina_4' },
+    { id: 'poo',         nome: 'Programação Orientada a Objetos', arquivo: 'poo',         emoji: '💻' },
+    { id: 'redes',       nome: 'Redes de Computadores',           arquivo: 'redes',       emoji: '🌐' },
+    { id: 'design',      nome: 'Design de Sistemas',              arquivo: 'design',      emoji: '🎨' },
+    { id: 'banco_dados', nome: 'Fundamentos de Banco de Dados',   arquivo: 'banco_dados', emoji: '🗄️' },
   ],
-  // Futuro — adicione aqui conforme necessário:
-  // '2027.1': [...],
-  // '2027.2': [...],
+
+  // Adicione futuros semestres aqui — nada mais precisa mudar no sistema:
+  // '2027.1': [
+  //   { id: 'calc',       nome: 'Cálculo I',           arquivo: 'calc',       emoji: '📐' },
+  //   { id: 'estruturas', nome: 'Estrutura de Dados',  arquivo: 'estruturas', emoji: '🌲' },
+  // ],
 };
 
 /* ─────────────────────────────────────────────
@@ -54,22 +61,22 @@ export const SEMESTRES = Object.keys(DISCIPLINAS);
    CONFIG PADRÃO
 ───────────────────────────────────────────── */
 const CONFIG_PADRAO = {
-  tema: 'dark',
-  idioma: 'pt-BR',
-  notificacoes: true,
-  animacoes: true,
+  tema:          'dark',
+  idioma:        'pt-BR',
+  notificacoes:  true,
+  animacoes:     true,
 };
 
 /* ─────────────────────────────────────────────
    ESTADO INTERNO
 ───────────────────────────────────────────── */
 let _estado = {
-  usuario:         Storage.get('usuario', null),
+  usuario:         Storage.get('usuario',         null),
   disciplinaAtual: Storage.get('disciplinaAtual', null),
-  semestreAtual:   Storage.get('semestreAtual', '2026.2'),
-  paginaAtual:     Storage.get('paginaAtual', 'HOME'),
-  modoVisitante:   Storage.get('modoVisitante', true),
-  configs:         Storage.get('configs', { ...CONFIG_PADRAO }),
+  semestreAtual:   Storage.get('semestreAtual',   '2026.2'),
+  paginaAtual:     Storage.get('paginaAtual',     'HOME'),
+  modoVisitante:   Storage.get('modoVisitante',   true),
+  configs:         Storage.get('configs',         { ...CONFIG_PADRAO }),
 };
 
 /* ─────────────────────────────────────────────
@@ -92,7 +99,7 @@ export function getEstado() {
 export function setUsuario(usuario) {
   _estado.usuario       = usuario;
   _estado.modoVisitante = usuario === null;
-  Storage.set('usuario', usuario);
+  Storage.set('usuario',       usuario);
   Storage.set('modoVisitante', _estado.modoVisitante);
 }
 
@@ -139,7 +146,8 @@ export function getPaginaInfo() {
 
 /**
  * Define a disciplina atual pelo ID.
- * @param {string|null} disciplinaId - ex: 'DISC_1' ou null
+ * O id deve existir em DISCIPLINAS[semestreAtual].
+ * @param {string|null} disciplinaId - ex: 'poo', 'redes' ou null
  */
 export function setDisciplina(disciplinaId) {
   if (disciplinaId !== null) {
@@ -160,7 +168,7 @@ export function getDisciplinaAtual() {
   return _estado.disciplinaAtual;
 }
 
-/** Retorna o objeto da disciplina atual */
+/** Retorna o objeto completo da disciplina atual */
 export function getDisciplinaInfo() {
   const lista = DISCIPLINAS[_estado.semestreAtual] ?? [];
   return lista.find(d => d.id === _estado.disciplinaAtual) ?? null;
@@ -168,7 +176,8 @@ export function getDisciplinaInfo() {
 
 /**
  * Define o semestre ativo.
- * @param {string} semestre - ex: '2026.2'
+ * Reseta a disciplina atual ao trocar de semestre.
+ * @param {string} semestre - ex: '2026.2', '2027.1'
  */
 export function setSemestre(semestre) {
   if (!DISCIPLINAS[semestre]) {
@@ -176,8 +185,8 @@ export function setSemestre(semestre) {
     return;
   }
   _estado.semestreAtual   = semestre;
-  _estado.disciplinaAtual = null; // reset disciplina ao trocar semestre
-  Storage.set('semestreAtual', semestre);
+  _estado.disciplinaAtual = null;
+  Storage.set('semestreAtual',   semestre);
   Storage.set('disciplinaAtual', null);
 }
 
@@ -186,7 +195,7 @@ export function getSemestreAtual() {
   return _estado.semestreAtual;
 }
 
-/** Retorna lista de disciplinas do semestre atual */
+/** Retorna lista de disciplinas do semestre informado (ou do atual) */
 export function getDisciplinasDeSemestre(semestre = null) {
   const s = semestre ?? _estado.semestreAtual;
   return DISCIPLINAS[s] ?? [];

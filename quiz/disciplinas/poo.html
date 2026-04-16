@@ -52,7 +52,6 @@
   <!-- ===== MAIN ===== -->
   <main class="main">
 
-    <!-- Page Header -->
     <div class="page-header">
       <div class="page-header__eyebrow">
         <span>💻</span>
@@ -62,12 +61,18 @@
       <p class="page-header__desc">Acesse o material oficial ou teste seu conhecimento com questões geradas por IA.</p>
     </div>
 
-    <!-- Cards -->
     <div class="disciplines">
 
+      <!--
+        Contexto completo na URL:
+          disc  → qual disciplina
+          modo  → ava ou questoes
+          sem   → semestre atual
+        Nenhum script necessário — o template_init.js lê tudo daqui.
+      -->
+
       <!-- AVA Card -->
-      <a href="../template/ava_template.html"
-         data-disc="poo"
+      <a href="../template/ava_template.html?disc=poo&modo=ava&sem=2026.2"
          class="disc-card disc-card--ava">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap">
@@ -90,8 +95,7 @@
       </a>
 
       <!-- Questões Card -->
-      <a href="../template/quiz_template.html"
-         data-disc="poo"
+      <a href="../template/quiz_template.html?disc=poo&modo=questoes&sem=2026.2"
          class="disc-card disc-card--quiz">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap">
@@ -122,15 +126,10 @@
     <p>© 2025 Nexus Study · Desenvolvido para facilitar seus estudos</p>
   </footer>
 
-  <!-- Salva disciplina com prefixo correto via Storage.js -->
-  <script type="module">
-    import Storage from '../../storage.js';
-    document.querySelectorAll('[data-disc]').forEach(link => {
-      link.addEventListener('click', () => {
-        Storage.set('disciplina', link.dataset.disc);
-      });
-    });
-  </script>
+  <!--
+    Nenhum script necessário aqui.
+    O contexto (disc, modo, sem) viaja pela URL até o template_init.js.
+  -->
 
 </body>
 </html>

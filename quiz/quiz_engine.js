@@ -1,28 +1,22 @@
 /* ============================================================
    NEXUS STUDY — quiz/quiz_engine.js
-   Motor principal do quiz. Renderiza questões e gerencia
-   interações.
 
-   Depende de:
-     window.questoes      → objeto { tipo: [...] } ou array (legado)
-     window.TIPO_QUIZ     → string 'questoes' | 'ava' | etc.
-     window.NexusStorage  → exposto pelo template_init.js
+   CORREÇÕES APLICADAS:
+     [FIX 3] Adicionado console.warn quando o modo for diferente de
+             'questoes' (ex: 'ava') e window.questoes for um array
+             plano. Nesse caso o modo é ignorado silenciosamente,
+             o que pode causar confusão durante o desenvolvimento.
+     [FIX 5] Removido o bloco que sobrescrevia o href do .back-btn.
+             O template_init.js já define o href correto durante a
+             inicialização — o engine não precisa tocá-lo.
    ============================================================ */
 
 (function () {
 
-  /* ── HELPER: lê o Storage sem importar o módulo ──────────
-     O template_init.js (módulo ES6) expõe window.NexusStorage.
-     Se por qualquer razão não estiver disponível, cai no
-     localStorage com a chave crua como último recurso.
-     Assim, se o PREFIX 'nexus_' mudar no storage.js, só lá
-     precisa ser alterado — este arquivo não precisa mudar.
-  ─────────────────────────────────────────────────────────── */
   function storageGet(key, fallback) {
     if (window.NexusStorage && typeof window.NexusStorage.get === 'function') {
       return window.NexusStorage.get(key, fallback);
     }
-    // fallback de emergência (nunca deveria chegar aqui)
     try {
       var raw = localStorage.getItem('nexus_' + key);
       return raw !== null ? JSON.parse(raw) : fallback;
@@ -34,10 +28,20 @@
   function initQuiz() {
 
     /* ── RESOLVE LISTA DE QUESTÕES ──────────────────────── */
-    var tipo = window.TIPO_QUIZ || 'questoes';
+    var tipo = window.TIPO_QUIZ || new URLSearchParams(location.search).get('modo') || 'questoes';
     var listaQuestoes;
 
     if (Array.isArray(window.questoes)) {
+      // [FIX 3] Avisa quando o modo não é 'questoes' mas o conteúdo
+      // é array plano — o tipo da URL está sendo ignorado.
+      if (tipo !== 'questoes') {
+        console.warn(
+          '[quiz_engine] window.questoes é um array plano.' +
+          ' O modo "' + tipo + '" está sendo ignorado.' +
+          ' Para suportar múltiplos modos, defina window.questoes' +
+          ' como objeto: { questoes: [...], ava: [...] }.'
+        );
+      }
       listaQuestoes = window.questoes;
     } else if (window.questoes && typeof window.questoes === 'object') {
       listaQuestoes = window.questoes[tipo];
@@ -58,7 +62,7 @@
     }
 
     var questoes  = listaQuestoes;
-    var respostas = {};   // { index: indexAlternativaSelecionada }
+    var respostas = {};
     var revelado  = false;
 
     /* ── MODO STEP ──────────────────────────────────────── */
@@ -80,13 +84,11 @@
         card.className = 'question-container';
         card.id = 'q-' + qi;
 
-        /* Número */
         var num = document.createElement('div');
         num.className = 'question-number';
         num.textContent = 'Questão ' + (qi + 1);
         card.appendChild(num);
 
-        /* Pergunta — suporta \n e blocos de código */
         var enunciado = document.createElement('div');
         enunciado.className = 'question-enunciado';
 
@@ -107,7 +109,6 @@
 
         card.appendChild(enunciado);
 
-        /* Alternativas */
         var opts = document.createElement('div');
         opts.className = 'options';
 
@@ -129,7 +130,6 @@
             atualizarOpcoes(qi);
             atualizarResultados();
 
-            /* Auto-avança no modo step após 800 ms */
             if (modoStep && stepAtual < questoes.length - 1) {
               setTimeout(function () {
                 stepAtual++;
@@ -146,7 +146,6 @@
         container.appendChild(card);
       });
 
-      /* Aplica step se já estava ativo (ex: após reiniciar) */
       if (modoStep) aplicarModoStep();
     }
 
@@ -211,7 +210,7 @@
       var errorsBtn = document.getElementById('errors');
       if (errorsBtn) errorsBtn.classList.remove('visible', 'active');
 
-      renderizar(); // também chama aplicarModoStep() se modoStep === true
+      renderizar();
     }
 
     /* ── BOTÃO REVELAR ──────────────────────────────────── */
@@ -223,7 +222,6 @@
       });
       atualizarResultados();
 
-      /* Mostra todas as questões ao revelar (sai do step visualmente) */
       if (modoStep) {
         container.querySelectorAll('.question-container').forEach(function (c) {
           c.style.display = '';
@@ -244,7 +242,6 @@
 
       if (erros.length === 0) return;
 
-      /* Sai do step mode antes de filtrar erros — evita conflito de display */
       if (modoStep) {
         modoStep = false;
         var toggle = document.getElementById('btn-toggle-modo');
@@ -275,11 +272,6 @@
     }
 
     /* ── MODO STEP: helpers ─────────────────────────────── */
-
-    /**
-     * Exibe apenas a questão em `stepAtual` e atualiza
-     * o estado disabled dos botões prev/next.
-     */
     function aplicarModoStep() {
       container.querySelectorAll('.question-container').forEach(function (c, i) {
         c.style.display = i === stepAtual ? '' : 'none';
@@ -287,7 +279,6 @@
       atualizarBotoesStep();
     }
 
-    /** Habilita/desabilita prev e next conforme posição atual */
     function atualizarBotoesStep() {
       var prev = document.getElementById('btn-step-prev');
       var next = document.getElementById('btn-step-next');
@@ -295,7 +286,6 @@
       if (next) next.disabled = stepAtual === questoes.length - 1;
     }
 
-    /** Mostra ou oculta os botões de navegação step */
     function setStepNavVisivel(visivel) {
       var prev = document.getElementById('btn-step-prev');
       var next = document.getElementById('btn-step-next');
@@ -304,13 +294,15 @@
       if (next) next.style.display = display;
     }
 
-    /* ── NAV FLUTUANTE: topo / fim / voltar ─────────────── */
+    /* ── NAV FLUTUANTE: topo / fim ──────────────────────── */
     var btnUp   = document.getElementById('btn-up');
     var btnDown = document.getElementById('btn-down');
     if (btnUp)   btnUp.addEventListener('click',   function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
     if (btnDown) btnDown.addEventListener('click', function () { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); });
 
     /* ── BIND BOTÕES DE QUIZ ────────────────────────────── */
+    // Cobre tanto o botão do main (#restart, #reveal)
+    // quanto os do nav-float (#restartButton, #revealButton)
     ['restart', 'restartButton'].forEach(function (id) {
       var el = document.getElementById(id);
       if (el) el.addEventListener('click', reiniciar);
@@ -331,13 +323,11 @@
         modoStep = !modoStep;
         btnToggle.classList.toggle('modo-step-active', modoStep);
         stepAtual = 0;
-
         setStepNavVisivel(modoStep);
 
         if (modoStep) {
           aplicarModoStep();
         } else {
-          /* Volta ao modo normal: mostra tudo */
           container.querySelectorAll('.question-container').forEach(function (c) {
             c.style.display = '';
           });
@@ -367,15 +357,16 @@
       });
     }
 
-    /* ── NAVEGAÇÃO VOLTAR (dinâmica por Storage) ────────── */
-    /* USA window.NexusStorage em vez de localStorage direto.
-       Se o prefixo 'nexus_' mudar no storage.js, só lá precisa
-       ser atualizado — esta linha continua funcionando. */
-    var disc    = storageGet('disciplina', 'poo');
-    var urlBack = '../disciplinas/' + disc + '.html';
-
-    var backBtn = document.querySelector('.back-btn');
-    if (backBtn) backBtn.setAttribute('href', urlBack);
+    /* ── NAVEGAÇÃO VOLTAR (btn-left do nav-float) ───────── */
+    //
+    // [FIX 5] O href do .back-btn é definido exclusivamente pelo
+    // template_init.js. O engine só precisa tratar o btn-left,
+    // que é um <button> sem href e precisa de navegação via JS.
+    //
+    var _params = new URLSearchParams(location.search);
+    var _disc   = _params.get('disc') || storageGet('disciplinaAtual', 'poo');
+    var _sem    = _params.get('sem')  || '2026.2';
+    var urlBack = '../disciplinas/' + _disc + '.html?sem=' + _sem;
 
     var btnLeft = document.getElementById('btn-left');
     if (btnLeft) {
@@ -389,7 +380,6 @@
 
   } // initQuiz
 
-  /* ── EXECUTA: DOM já pronto ou aguarda ──────────────────── */
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initQuiz);
   } else {
