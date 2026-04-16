@@ -1,159 +1,167 @@
-<!-- quiz/quiz.html -->
-
 <!DOCTYPE html>
 <html lang="pt-BR">
+
+<!--
+  ════════════════════════════════════════════════════════════
+  NEXUS STUDY — quiz/quiz.html
+  Página de seleção de disciplinas.
+  CSS: quiz.css  (não usa template_global.css)
+  ════════════════════════════════════════════════════════════
+-->
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nexus Study — Quiz</title>
+  <title>Quiz · Nexus Study</title>
+
+  <!-- Fontes -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- CSS desta página (sem template_global — ela tem design próprio) -->
   <link rel="stylesheet" href="quiz.css" />
 </head>
+
 <body>
 
-  <!-- Background -->
-  <div class="bg-orb bg-orb--1"></div>
-  <div class="bg-orb bg-orb--2"></div>
-  <div class="bg-orb bg-orb--3"></div>
-  <div class="bg-grid"></div>
+  <!-- ── Efeitos de fundo ─────────────────────────────────── -->
+  <div class="bg-orb bg-orb--1" aria-hidden="true"></div>
+  <div class="bg-orb bg-orb--2" aria-hidden="true"></div>
+  <div class="bg-orb bg-orb--3" aria-hidden="true"></div>
+  <div class="bg-grid"          aria-hidden="true"></div>
 
-  <!-- ===== HEADER ===== -->
+  <!-- ════════════════════════════════════════════════════════
+       HEADER
+       ════════════════════════════════════════════════════════ -->
   <header class="header">
     <div class="header__inner">
-      <div class="header__left">
-        <a href="../index.html" class="back-btn" aria-label="Voltar">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
-          <span>Início</span>
-        </a>
-      </div>
 
-      <div class="header__logo">
-        <span class="logo-mark">N</span>
+      <a href="../index.html" class="back-btn" aria-label="Voltar ao início">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        <span>Início</span>
+      </a>
+
+      <div class="header__logo" aria-label="Nexus Study">
+        <div class="logo-mark" aria-hidden="true">N</div>
         <div class="logo-text">
           <span class="logo-title">Nexus</span>
           <span class="logo-sub">Study</span>
         </div>
       </div>
 
-      <div class="header__right">
-        <div class="breadcrumb">
-          <span class="breadcrumb__item">Quiz</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-          <span class="breadcrumb__item breadcrumb__item--active">Disciplinas</span>
-        </div>
-      </div>
+      <nav class="breadcrumb" aria-label="Localização">
+        <span class="breadcrumb__item">Quiz</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        <span class="breadcrumb__item breadcrumb__item--active">Disciplinas</span>
+      </nav>
+
     </div>
   </header>
 
-  <!-- ===== MAIN ===== -->
+  <!-- ════════════════════════════════════════════════════════
+       MAIN
+       ════════════════════════════════════════════════════════ -->
   <main class="main">
 
     <!-- Page Header -->
     <div class="page-header">
       <div class="page-header__eyebrow">
-        <span class="eyebrow-icon">❓</span>
+        <span aria-hidden="true">❓</span>
         <span>Modo Quiz</span>
       </div>
       <h1 class="page-header__title">Escolha a <em>disciplina</em></h1>
-      <p class="page-header__desc">Selecione a matéria para iniciar</p>
+      <p class="page-header__desc">Selecione a matéria para iniciar sua sessão de estudos</p>
     </div>
 
-    <!-- Discipline cards — grid 2x2 -->
-    <div class="disciplines">
+    <!-- Grid de disciplinas -->
+    <div class="disciplines" role="list">
 
-      <!-- POO -->
-      <a href="disciplinas/poo.html" class="disc-card disc-card--blue">
-        <div class="disc-card__stripe"></div>
+      <!-- ── POO ─────────────────────────────────────────── -->
+      <a href="disciplinas/poo.html" class="disc-card disc-card--blue" role="listitem"
+         aria-label="Programação Orientada a Objetos">
         <div class="disc-card__icon-col">
-          <div class="disc-card__icon-wrap">
-            <span>💻</span>
-          </div>
+          <div class="disc-card__icon-wrap" aria-hidden="true"><span>💻</span></div>
         </div>
         <div class="disc-card__body">
           <h2 class="disc-card__title">POO</h2>
           <p class="disc-card__desc">Programação Orientada a Objetos</p>
         </div>
-        <div class="disc-card__cta">
+        <div class="disc-card__cta" aria-hidden="true">
           <div class="disc-card__arrow">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
           </div>
           <span class="disc-card__cta-label">Iniciar</span>
         </div>
-        <div class="disc-card__glow"></div>
+        <div class="disc-card__glow" aria-hidden="true"></div>
       </a>
 
-      <!-- Redes -->
-      <a href="disciplinas/redes.html" class="disc-card disc-card--teal">
-        <div class="disc-card__stripe"></div>
+      <!-- ── Redes ───────────────────────────────────────── -->
+      <a href="disciplinas/redes.html" class="disc-card disc-card--teal" role="listitem"
+         aria-label="Redes de Computadores">
         <div class="disc-card__icon-col">
-          <div class="disc-card__icon-wrap">
-            <span>🌐</span>
-          </div>
+          <div class="disc-card__icon-wrap" aria-hidden="true"><span>🌐</span></div>
         </div>
         <div class="disc-card__body">
           <h2 class="disc-card__title">Redes</h2>
           <p class="disc-card__desc">Redes de Computadores</p>
         </div>
-        <div class="disc-card__cta">
+        <div class="disc-card__cta" aria-hidden="true">
           <div class="disc-card__arrow">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
           </div>
           <span class="disc-card__cta-label">Iniciar</span>
         </div>
-        <div class="disc-card__glow"></div>
+        <div class="disc-card__glow" aria-hidden="true"></div>
       </a>
 
-      <!-- Design -->
-      <a href="disciplinas/design.html" class="disc-card disc-card--gold">
-        <div class="disc-card__stripe"></div>
+      <!-- ── Design ─────────────────────────────────────── -->
+      <a href="disciplinas/design.html" class="disc-card disc-card--gold" role="listitem"
+         aria-label="Design de Sistemas de Informação">
         <div class="disc-card__icon-col">
-          <div class="disc-card__icon-wrap">
-            <span>🎨</span>
-          </div>
+          <div class="disc-card__icon-wrap" aria-hidden="true"><span>🎨</span></div>
         </div>
         <div class="disc-card__body">
           <h2 class="disc-card__title">Design</h2>
           <p class="disc-card__desc">Design de Sistemas de Informação</p>
         </div>
-        <div class="disc-card__cta">
+        <div class="disc-card__cta" aria-hidden="true">
           <div class="disc-card__arrow">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
           </div>
           <span class="disc-card__cta-label">Iniciar</span>
         </div>
-        <div class="disc-card__glow"></div>
+        <div class="disc-card__glow" aria-hidden="true"></div>
       </a>
 
-      <!-- Banco de Dados -->
-      <a href="disciplinas/banco_dados.html" class="disc-card disc-card--rose">
-        <div class="disc-card__stripe"></div>
+      <!-- ── Banco de Dados ─────────────────────────────── -->
+      <a href="disciplinas/banco_dados.html" class="disc-card disc-card--rose" role="listitem"
+         aria-label="Fundamentos de Banco de Dados">
         <div class="disc-card__icon-col">
-          <div class="disc-card__icon-wrap">
-            <span>🗄️</span>
-          </div>
+          <div class="disc-card__icon-wrap" aria-hidden="true"><span>🗄️</span></div>
         </div>
         <div class="disc-card__body">
           <h2 class="disc-card__title">Banco de Dados</h2>
           <p class="disc-card__desc">Fundamentos de Banco de Dados</p>
         </div>
-        <div class="disc-card__cta">
+        <div class="disc-card__cta" aria-hidden="true">
           <div class="disc-card__arrow">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
           </div>
           <span class="disc-card__cta-label">Iniciar</span>
         </div>
-        <div class="disc-card__glow"></div>
+        <div class="disc-card__glow" aria-hidden="true"></div>
       </a>
 
     </div><!-- /disciplines -->
 
   </main>
 
-  <!-- ===== FOOTER ===== -->
+  <!-- ════════════════════════════════════════════════════════
+       FOOTER
+       ════════════════════════════════════════════════════════ -->
   <footer class="footer">
     <p>© 2025 Nexus Study · Desenvolvido para facilitar seus estudos</p>
   </footer>
