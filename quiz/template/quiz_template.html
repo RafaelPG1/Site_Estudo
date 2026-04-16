@@ -1,107 +1,62 @@
+<!--
+  NEXUS STUDY — quiz_template.html
+  Localização: quiz/template/quiz_template.html
+-->
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 
-<!--
-  ════════════════════════════════════════════════════════════
-  NEXUS STUDY — quiz_template.html
-  Template para páginas de QUESTÕES PRÁTICAS.
-
-  COMO USAR:
-  1. Copie este arquivo para: quiz/disciplinas/<disc>/questoes.html
-  2. Personalize as seções marcadas com ⚙️ CUSTOMIZE
-  3. Crie o arquivo de conteúdo em: quiz/conteudo/<disc>.js
-  4. Altere o data-disciplina no <body>
-
-  DEPENDÊNCIAS:
-  - ../../template_global.css
-  - ../../quiz_template.css
-  - ../../conteudo/quiz_engine.js   (lógica do quiz)
-  - ../../conteudo/<disciplina>.js  (dados das questões)
-  ════════════════════════════════════════════════════════════
--->
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Questões — Nexus Study</title>
 
-  <!-- ⚙️ CUSTOMIZE: título da página -->
-  <title>Questões · POO — Nexus Study</title>
-
-  <!-- Fontes -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
-
-  <!-- Ícones -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
 
-  <!-- ⚙️ CUSTOMIZE: cores da disciplina -->
   <style>
     :root {
-      /* POO */
       --cor-tema:       #7aa8e8;
       --cor-tema-rgb:   122, 168, 232;
       --cor-tema-2:     #4dd9b4;
       --cor-tema-2-rgb: 77, 217, 180;
-
-      /* Redes:
-      --cor-tema:       #4dd9b4;  --cor-tema-rgb: 77, 217, 180;
-      --cor-tema-2:     #7aa8e8;  --cor-tema-2-rgb: 122, 168, 232; */
-
-      /* Design:
-      --cor-tema:       #e8c97a;  --cor-tema-rgb: 232, 201, 122;
-      --cor-tema-2:     #4dd9b4;  --cor-tema-2-rgb: 77, 217, 180; */
-
-      /* Banco de Dados:
-      --cor-tema:       #e87a9a;  --cor-tema-rgb: 232, 122, 154;
-      --cor-tema-2:     #e8c97a;  --cor-tema-2-rgb: 232, 201, 122; */
     }
   </style>
 
-  <!-- CSS base + template -->
-  <link rel="stylesheet" href="../../template_global.css" />
-  <link rel="stylesheet" href="../../quiz_template.css" />
+  <link rel="stylesheet" href="template_global.css" />
+  <link rel="stylesheet" href="quiz_template.css" />
 </head>
 
-<!-- ⚙️ CUSTOMIZE: data-disciplina (identificador único para localStorage) -->
-<body data-disciplina="poo-questoes">
+<body data-disciplina="questoes">
 
-  <!-- ── Efeitos de fundo ─────────────────────────────────── -->
   <div class="bg-orb bg-orb--1" aria-hidden="true"></div>
   <div class="bg-orb bg-orb--2" aria-hidden="true"></div>
   <div class="bg-orb bg-orb--3" aria-hidden="true"></div>
   <div class="bg-grid"          aria-hidden="true"></div>
 
-  <!-- ════════════════════════════════════════════════════════
-       HEADER
-       ════════════════════════════════════════════════════════ -->
   <header class="header">
     <div class="header__inner">
 
-      <!-- Voltar -->
-      <a href="../poo.html" class="back-btn" aria-label="Voltar para POO">
-        <!-- ⚙️ CUSTOMIZE: href aponta para a página da disciplina -->
+      <a href="#" class="back-btn" aria-label="Voltar para a disciplina">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <polyline points="15 18 9 12 15 6"/>
         </svg>
         <span>Voltar</span>
       </a>
 
-      <!-- Logo — sempre igual -->
-      <div class="header__logo">
-        <a href="../../quiz.html" class="header__logo" aria-label="Nexus Study">
-          <div class="logo-mark" aria-hidden="true">N</div>
-          <div class="logo-text">
-            <span class="logo-title">Nexus</span>
-            <span class="logo-sub">Study</span>
-          </div>
-        </a>
-      </div>
+      <a href="../quiz.html" class="header__logo" aria-label="Nexus Study">
+        <div class="logo-mark" aria-hidden="true">N</div>
+        <div class="logo-text">
+          <span class="logo-title">Nexus</span>
+          <span class="logo-sub">Study</span>
+        </div>
+      </a>
 
-      <!-- Breadcrumb -->
       <nav class="breadcrumb" aria-label="Localização">
-        <!-- ⚙️ CUSTOMIZE: nome da disciplina no breadcrumb -->
-        <span class="breadcrumb__item">POO</span>
+        <span class="breadcrumb__item" id="breadcrumb-disc">Disciplina</span>
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
         <span class="breadcrumb__item breadcrumb__item--active">Questões</span>
       </nav>
@@ -109,25 +64,16 @@
     </div>
   </header>
 
-  <!-- ════════════════════════════════════════════════════════
-       MAIN
-       ════════════════════════════════════════════════════════ -->
   <main class="main" id="main-content">
 
-    <!-- Page Header -->
     <div class="page-header">
       <div class="page-header__eyebrow">
-        <!-- ⚙️ CUSTOMIZE: emoji + rótulo -->
-        <span aria-hidden="true">💻</span>
-        <span>Programação Orientada a Objetos</span>
+        <span aria-hidden="true" id="disc-emoji">💻</span>
+        <span id="disc-nome">Disciplina</span>
       </div>
-
-      <!-- ⚙️ CUSTOMIZE: título da página -->
       <h1 class="page-header__title">
         Questões <em>Práticas</em>
       </h1>
-
-      <!-- Metadados (preenchidos pelo JS) -->
       <div class="page-header__meta" id="quiz-meta" aria-live="polite">
         <span class="meta-badge" id="meta-total">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
@@ -136,10 +82,8 @@
       </div>
     </div>
 
-    <!-- Contêiner do quiz (preenchido pelo JS) -->
     <div id="quiz-container" aria-label="Questões" role="main"></div>
 
-    <!-- Botões de ação -->
     <div class="submit-container" id="submit-container">
       <div class="buttons-container">
         <button id="restart" class="action-button restart-button" type="button">
@@ -157,72 +101,62 @@
       </div>
     </div>
 
-    <!-- Resultado global (preenchido pelo JS) -->
     <div id="results" class="results" role="status" aria-live="polite"></div>
 
   </main>
 
-  <!-- ════════════════════════════════════════════════════════
-       FOOTER
-       ════════════════════════════════════════════════════════ -->
-  <footer class="page-footer">
-    <!-- ⚙️ CUSTOMIZE -->
-    Nexus Study · POO · Questões Práticas
+  <footer class="page-footer" id="page-footer">
+    Nexus Study · Questões Práticas
   </footer>
 
-  <!-- ════════════════════════════════════════════════════════
-       NAV FLUTUANTE
-       ════════════════════════════════════════════════════════ -->
   <nav class="nav-float" aria-label="Navegação rápida">
-    <button id="btn-up"   class="nav-btn" title="Ir ao topo"   type="button"><i class="fas fa-arrow-up"    aria-hidden="true"></i></button>
-    <button id="btn-left" class="nav-btn" title="Voltar"       type="button"><i class="fas fa-rotate-left" aria-hidden="true"></i></button>
-    <button id="btn-down" class="nav-btn" title="Ir ao final"  type="button"><i class="fas fa-arrow-down"  aria-hidden="true"></i></button>
-
+    <button id="btn-up"   class="nav-btn" title="Ir ao topo"  type="button"><i class="fas fa-arrow-up"    aria-hidden="true"></i></button>
+    <button id="btn-left" class="nav-btn" title="Voltar"      type="button"><i class="fas fa-rotate-left" aria-hidden="true"></i></button>
+    <button id="btn-down" class="nav-btn" title="Ir ao final" type="button"><i class="fas fa-arrow-down"  aria-hidden="true"></i></button>
     <div class="nav-divider" aria-hidden="true"></div>
-
-    <button id="restartButton" class="nav-btn" title="Reiniciar quiz"      type="button"><i class="fas fa-rotate-right" aria-hidden="true"></i></button>
-    <button id="revealButton"  class="nav-btn" title="Revelar respostas"   type="button"><i class="fas fa-eye"          aria-hidden="true"></i></button>
-
+    <button id="restartButton" class="nav-btn" title="Reiniciar"         type="button"><i class="fas fa-rotate-right" aria-hidden="true"></i></button>
+    <button id="revealButton"  class="nav-btn" title="Revelar respostas" type="button"><i class="fas fa-eye"          aria-hidden="true"></i></button>
     <div class="nav-divider" aria-hidden="true"></div>
-
-    <!-- Toggle modo step (estilizado pelo quiz_engine.js) -->
-    <button id="btn-toggle-modo" class="nav-btn btn-toggle-modo"
-            title="Modo Step — uma questão por vez"
-            type="button">
+    <button id="btn-toggle-modo" class="nav-btn btn-toggle-modo" title="Modo Step" type="button">
       <i class="fas fa-layer-group" aria-hidden="true"></i>
     </button>
   </nav>
 
-  <!-- ════════════════════════════════════════════════════════
-       SCRIPTS
-       Ordem: conteúdo → engine → storage
-       ════════════════════════════════════════════════════════ -->
-
-  <!-- ⚙️ CUSTOMIZE: arquivo de dados da disciplina -->
-  <script src="../../conteudo/poo.js"></script>
-
-  <!-- Engine do quiz (lógica compartilhada) -->
-  <script src="../../conteudo/quiz_engine.js"></script>
-
-  <!-- Persistência localStorage (opcional) -->
   <script>
-    // Injeta script de storage sem bloquear se ausente
-    (function () {
-      var s = document.createElement('script');
-      s.src = '../../storage.js';
-      s.onerror = function () { console.info('[Nexus] storage.js não encontrado — auto-save desativado.'); };
-      document.body.appendChild(s);
-    })();
-  </script>
+    // ── Define o TIPO antes de tudo ──────────────────────────
+    window.TIPO_QUIZ = 'questoes';
 
-  <!-- Inicialização da nav esquerda -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      // ⚙️ CUSTOMIZE: href do btn-left aponta para a página da disciplina
-      document.getElementById('btn-left').addEventListener('click', function () {
-        window.location.href = '../poo.html';
-      });
-    });
+    // ── Mapa de disciplinas ──────────────────────────────────
+    var DISC_MAP = {
+      'poo':         { arquivo: 'poo',         nome: 'Programação Orientada a Objetos', emoji: '💻' },
+      'redes':       { arquivo: 'redes',       nome: 'Redes de Computadores',           emoji: '🌐' },
+      'design':      { arquivo: 'design',      nome: 'Design de Sistemas',              emoji: '🎨' },
+      'banco_dados': { arquivo: 'banco_dados', nome: 'Fundamentos de Banco de Dados',   emoji: '🗄️' }
+    };
+
+    var disc = localStorage.getItem('disciplina') || 'poo';
+    var info = DISC_MAP[disc] || DISC_MAP['poo'];
+
+    // ── Atualiza textos dinâmicos ────────────────────────────
+    var el;
+    el = document.getElementById('disc-emoji');      if (el) el.textContent = info.emoji;
+    el = document.getElementById('disc-nome');       if (el) el.textContent = info.nome;
+    el = document.getElementById('breadcrumb-disc'); if (el) el.textContent = disc.toUpperCase().replace('_', ' ');
+    el = document.getElementById('page-footer');     if (el) el.textContent = 'Nexus Study · ' + info.nome + ' · Questões Práticas';
+
+    // ── Carrega conteúdo → depois engine ────────────────────
+    var s = document.createElement('script');
+    s.src = '../conteudo/' + info.arquivo + '.js';
+    s.onerror = function () {
+      var c = document.getElementById('quiz-container');
+      if (c) c.innerHTML = '<div style="padding:2rem;text-align:center;color:#f87171;">⚠️ Arquivo não encontrado: ' + info.arquivo + '.js</div>';
+    };
+    s.onload = function () {
+      var engine = document.createElement('script');
+      engine.src = '../quiz_engine.js';
+      document.body.appendChild(engine);
+    };
+    document.head.appendChild(s);
   </script>
 
 </body>
