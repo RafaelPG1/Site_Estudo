@@ -46,8 +46,13 @@ const Storage = (() => {
     }
   }
 
+  /* ── CORRIGIDO: has() agora tem try/catch igual às demais ── */
   function has(key) {
-    return localStorage.getItem(_key(key)) !== null;
+    try {
+      return localStorage.getItem(_key(key)) !== null;
+    } catch (e) {
+      return false;
+    }
   }
 
   return { set, get, remove, clear, has };

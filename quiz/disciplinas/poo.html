@@ -67,7 +67,7 @@
 
       <!-- AVA Card -->
       <a href="../template/ava_template.html"
-         onclick="localStorage.setItem('disciplina','poo')"
+         data-disc="poo"
          class="disc-card disc-card--ava">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap">
@@ -91,7 +91,7 @@
 
       <!-- Questões Card -->
       <a href="../template/quiz_template.html"
-         onclick="localStorage.setItem('disciplina','poo')"
+         data-disc="poo"
          class="disc-card disc-card--quiz">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap">
@@ -121,6 +121,16 @@
   <footer class="footer">
     <p>© 2025 Nexus Study · Desenvolvido para facilitar seus estudos</p>
   </footer>
+
+  <!-- Salva disciplina com prefixo correto via Storage.js -->
+  <script type="module">
+    import Storage from '../../storage.js';
+    document.querySelectorAll('[data-disc]').forEach(link => {
+      link.addEventListener('click', () => {
+        Storage.set('disciplina', link.dataset.disc);
+      });
+    });
+  </script>
 
 </body>
 </html>

@@ -4,11 +4,32 @@
    interações.
 
    Depende de:
-     window.questoes  → objeto { tipo: [...] } ou array (legado)
-     window.TIPO_QUIZ → string 'questoes' | 'ava' | etc.
+     window.questoes      → objeto { tipo: [...] } ou array (legado)
+     window.TIPO_QUIZ     → string 'questoes' | 'ava' | etc.
+     window.NexusStorage  → exposto pelo template_init.js
    ============================================================ */
 
 (function () {
+
+  /* ── HELPER: lê o Storage sem importar o módulo ──────────
+     O template_init.js (módulo ES6) expõe window.NexusStorage.
+     Se por qualquer razão não estiver disponível, cai no
+     localStorage com a chave crua como último recurso.
+     Assim, se o PREFIX 'nexus_' mudar no storage.js, só lá
+     precisa ser alterado — este arquivo não precisa mudar.
+  ─────────────────────────────────────────────────────────── */
+  function storageGet(key, fallback) {
+    if (window.NexusStorage && typeof window.NexusStorage.get === 'function') {
+      return window.NexusStorage.get(key, fallback);
+    }
+    // fallback de emergência (nunca deveria chegar aqui)
+    try {
+      var raw = localStorage.getItem('nexus_' + key);
+      return raw !== null ? JSON.parse(raw) : fallback;
+    } catch (e) {
+      return fallback;
+    }
+  }
 
   function initQuiz() {
 
@@ -17,10 +38,8 @@
     var listaQuestoes;
 
     if (Array.isArray(window.questoes)) {
-      // Compatibilidade com formato antigo (array direto)
       listaQuestoes = window.questoes;
     } else if (window.questoes && typeof window.questoes === 'object') {
-      // Novo formato: { questoes: [...], ava: [...], ... }
       listaQuestoes = window.questoes[tipo];
     }
 
@@ -39,8 +58,12 @@
     }
 
     var questoes  = listaQuestoes;
-    var respostas = {}; // { index: indexAlternativaSelecionada }
+    var respostas = {};   // { index: indexAlternativaSelecionada }
     var revelado  = false;
+
+    /* ── MODO STEP ──────────────────────────────────────── */
+    var modoStep  = false;
+    var stepAtual = 0;
 
     /* ── ATUALIZA CONTADOR ──────────────────────────────── */
     var metaTotal = document.getElementById('meta-total');
@@ -63,7 +86,7 @@
         num.textContent = 'Questão ' + (qi + 1);
         card.appendChild(num);
 
-        /* Pergunta — suporta \n como quebra de linha e blocos de código */
+        /* Pergunta — suporta \n e blocos de código */
         var enunciado = document.createElement('div');
         enunciado.className = 'question-enunciado';
 
@@ -105,6 +128,15 @@
             respostas[qi] = ai;
             atualizarOpcoes(qi);
             atualizarResultados();
+
+            /* Auto-avança no modo step após 800 ms */
+            if (modoStep && stepAtual < questoes.length - 1) {
+              setTimeout(function () {
+                stepAtual++;
+                aplicarModoStep();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }, 800);
+            }
           });
 
           opts.appendChild(btn);
@@ -113,6 +145,9 @@
         card.appendChild(opts);
         container.appendChild(card);
       });
+
+      /* Aplica step se já estava ativo (ex: após reiniciar) */
+      if (modoStep) aplicarModoStep();
     }
 
     /* ── APLICA ESTADO VISUAL DE UMA OPÇÃO ─────────────── */
@@ -168,11 +203,15 @@
     function reiniciar() {
       respostas = {};
       revelado  = false;
+      stepAtual = 0;
+
       var resultsEl = document.getElementById('results');
       if (resultsEl) { resultsEl.style.display = 'none'; resultsEl.innerHTML = ''; }
+
       var errorsBtn = document.getElementById('errors');
       if (errorsBtn) errorsBtn.classList.remove('visible', 'active');
-      renderizar();
+
+      renderizar(); // também chama aplicarModoStep() se modoStep === true
     }
 
     /* ── BOTÃO REVELAR ──────────────────────────────────── */
@@ -183,6 +222,17 @@
         atualizarOpcoes(qi);
       });
       atualizarResultados();
+
+      /* Mostra todas as questões ao revelar (sai do step visualmente) */
+      if (modoStep) {
+        container.querySelectorAll('.question-container').forEach(function (c) {
+          c.style.display = '';
+        });
+        setStepNavVisivel(false);
+        var toggle = document.getElementById('btn-toggle-modo');
+        if (toggle) toggle.classList.remove('modo-step-active');
+        modoStep = false;
+      }
     }
 
     /* ── BOTÃO VER ERROS ────────────────────────────────── */
@@ -193,6 +243,17 @@
       });
 
       if (erros.length === 0) return;
+
+      /* Sai do step mode antes de filtrar erros — evita conflito de display */
+      if (modoStep) {
+        modoStep = false;
+        var toggle = document.getElementById('btn-toggle-modo');
+        if (toggle) toggle.classList.remove('modo-step-active');
+        setStepNavVisivel(false);
+        container.querySelectorAll('.question-container').forEach(function (c) {
+          c.style.display = '';
+        });
+      }
 
       var errorsBtn = document.getElementById('errors');
       if (!errorsBtn) return;
@@ -213,13 +274,43 @@
       }
     }
 
-    /* ── NAV FLUTUANTE: topo / fim ──────────────────────── */
+    /* ── MODO STEP: helpers ─────────────────────────────── */
+
+    /**
+     * Exibe apenas a questão em `stepAtual` e atualiza
+     * o estado disabled dos botões prev/next.
+     */
+    function aplicarModoStep() {
+      container.querySelectorAll('.question-container').forEach(function (c, i) {
+        c.style.display = i === stepAtual ? '' : 'none';
+      });
+      atualizarBotoesStep();
+    }
+
+    /** Habilita/desabilita prev e next conforme posição atual */
+    function atualizarBotoesStep() {
+      var prev = document.getElementById('btn-step-prev');
+      var next = document.getElementById('btn-step-next');
+      if (prev) prev.disabled = stepAtual === 0;
+      if (next) next.disabled = stepAtual === questoes.length - 1;
+    }
+
+    /** Mostra ou oculta os botões de navegação step */
+    function setStepNavVisivel(visivel) {
+      var prev = document.getElementById('btn-step-prev');
+      var next = document.getElementById('btn-step-next');
+      var display = visivel ? '' : 'none';
+      if (prev) prev.style.display = display;
+      if (next) next.style.display = display;
+    }
+
+    /* ── NAV FLUTUANTE: topo / fim / voltar ─────────────── */
     var btnUp   = document.getElementById('btn-up');
     var btnDown = document.getElementById('btn-down');
     if (btnUp)   btnUp.addEventListener('click',   function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
     if (btnDown) btnDown.addEventListener('click', function () { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); });
 
-    /* ── BIND BOTÕES ────────────────────────────────────── */
+    /* ── BIND BOTÕES DE QUIZ ────────────────────────────── */
     ['restart', 'restartButton'].forEach(function (id) {
       var el = document.getElementById(id);
       if (el) el.addEventListener('click', reiniciar);
@@ -233,31 +324,54 @@
     var errorsBtn = document.getElementById('errors');
     if (errorsBtn) errorsBtn.addEventListener('click', verErros);
 
-    /* ── MODO STEP (uma questão por vez) ────────────────── */
-    var modoStep  = false;
-    var stepAtual = 0;
-
+    /* ── BOTÃO TOGGLE STEP MODE ─────────────────────────── */
     var btnToggle = document.getElementById('btn-toggle-modo');
     if (btnToggle) {
       btnToggle.addEventListener('click', function () {
         modoStep = !modoStep;
         btnToggle.classList.toggle('modo-step-active', modoStep);
-        renderizar();
-        if (modoStep) ativarModoStep();
+        stepAtual = 0;
+
+        setStepNavVisivel(modoStep);
+
+        if (modoStep) {
+          aplicarModoStep();
+        } else {
+          /* Volta ao modo normal: mostra tudo */
+          container.querySelectorAll('.question-container').forEach(function (c) {
+            c.style.display = '';
+          });
+        }
       });
     }
 
-    function ativarModoStep() {
-      container.querySelectorAll('.question-container').forEach(function (c, i) {
-        if (i !== stepAtual) c.style.display = 'none';
+    /* ── BOTÕES PREV / NEXT STEP ────────────────────────── */
+    var btnStepPrev = document.getElementById('btn-step-prev');
+    var btnStepNext = document.getElementById('btn-step-next');
+
+    if (btnStepPrev) {
+      btnStepPrev.addEventListener('click', function () {
+        if (!modoStep || stepAtual === 0) return;
+        stepAtual--;
+        aplicarModoStep();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       });
     }
 
-    /* ── RENDER INICIAL ─────────────────────────────────── */
-    renderizar();
+    if (btnStepNext) {
+      btnStepNext.addEventListener('click', function () {
+        if (!modoStep || stepAtual >= questoes.length - 1) return;
+        stepAtual++;
+        aplicarModoStep();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
 
-    /* ── NAVEGAÇÃO VOLTAR (dinâmica por localStorage) ────── */
-    var disc    = localStorage.getItem('disciplina') || 'poo';
+    /* ── NAVEGAÇÃO VOLTAR (dinâmica por Storage) ────────── */
+    /* USA window.NexusStorage em vez de localStorage direto.
+       Se o prefixo 'nexus_' mudar no storage.js, só lá precisa
+       ser atualizado — esta linha continua funcionando. */
+    var disc    = storageGet('disciplina', 'poo');
     var urlBack = '../disciplinas/' + disc + '.html';
 
     var backBtn = document.querySelector('.back-btn');
@@ -270,9 +384,12 @@
       });
     }
 
+    /* ── RENDER INICIAL ─────────────────────────────────── */
+    renderizar();
+
   } // initQuiz
 
-  /* ── EXECUTA: DOM já pronto (injeção dinâmica) ou aguarda ── */
+  /* ── EXECUTA: DOM já pronto ou aguarda ──────────────────── */
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initQuiz);
   } else {

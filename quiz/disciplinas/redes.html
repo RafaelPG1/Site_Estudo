@@ -55,7 +55,7 @@
     <div class="disciplines">
 
       <a href="../template/ava_template.html"
-         onclick="localStorage.setItem('disciplina','redes')"
+         data-disc="redes"
          class="disc-card disc-card--ava">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap"><span>📚</span></div>
@@ -74,7 +74,7 @@
       </a>
 
       <a href="../template/quiz_template.html"
-         onclick="localStorage.setItem('disciplina','redes')"
+         data-disc="redes"
          class="disc-card disc-card--quiz">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap"><span>❓</span></div>
@@ -98,6 +98,15 @@
   <footer class="footer">
     <p>© 2025 Nexus Study · Desenvolvido para facilitar seus estudos</p>
   </footer>
+
+  <script type="module">
+    import Storage from '../../storage.js';
+    document.querySelectorAll('[data-disc]').forEach(link => {
+      link.addEventListener('click', () => {
+        Storage.set('disciplina', link.dataset.disc);
+      });
+    });
+  </script>
 
 </body>
 </html>

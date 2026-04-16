@@ -1,5 +1,5 @@
 // ============================================================
-// NEXUS STUDY — conteudo/poo.js
+// NEXUS STUDY — quiz/conteudo/poo.js
 // Questões de Programação Orientada a Objetos (POO)
 // Estrutura: window.questoes[tipo] → array de questões
 // Tipos disponíveis: 'questoes', 'ava'

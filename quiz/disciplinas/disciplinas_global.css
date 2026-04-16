@@ -188,7 +188,8 @@ a { text-decoration: none; color: inherit; }
   width: 34px;
   height: 34px;
   border-radius: 9px;
-  background: linear-gradient(135deg, var(--cor-logo), var(--cor-logo-dark));
+  /* ✅ Fixo — não usa variável de tema */
+  background: linear-gradient(135deg, #4dd9b4, #7aa8e8);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -198,6 +199,7 @@ a { text-decoration: none; color: inherit; }
   color: var(--bg);
   flex-shrink: 0;
 }
+
 
 .logo-text {
   display: flex;
@@ -217,7 +219,8 @@ a { text-decoration: none; color: inherit; }
   font-weight: 500;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--cor-logo);
+  /* ✅ Fixo — não usa --cor-logo nem --cor-tema */
+  color: #4dd9b4;
 }
 
 /* ── BREADCRUMB ── */
@@ -274,18 +277,19 @@ a { text-decoration: none; color: inherit; }
   font-family: var(--font-display);
   font-size: clamp(2.4rem, 6vw, 3.8rem);
   font-weight: 600;
-  line-height: 1.1;
+  line-height: 1.05;
   letter-spacing: -0.02em;
   color: var(--text-1);
-  margin-bottom: 0.65rem;
+  margin-bottom: 0.6rem;
+  animation: fade-up 0.6s 0.1s ease both;
 }
 
 .page-header__title em {
   font-style: italic;
-  color: transparent;
-  background: linear-gradient(90deg, var(--cor-tema), var(--cor-tema-2));
-  -webkit-background-clip: text;
-  background-clip: text;
+  color: var(--text-1);
+  background: none;
+  -webkit-background-clip: unset;
+  background-clip: unset;
 }
 
 .page-header__desc {
@@ -422,29 +426,59 @@ a { text-decoration: none; color: inherit; }
 
 /* ── TEMAS DOS CARDS (via --cor-tema e --cor-tema-2) ── */
 
-/* AVA — usa cor primária da disciplina */
+/* ── TEMAS DOS CARDS ── */
+
+/* AVA — cor fixa, igual em todas as disciplinas */
 .disc-card--ava {
-  background: linear-gradient(145deg, #0e1420, #111827);
+  background: linear-gradient(
+    145deg,
+    #0e1420,
+    rgba(122, 168, 232, 0.07)
+  );
+  border-color: rgba(122, 168, 232, 0.18);
+  box-shadow: 0 0 30px rgba(122, 168, 232, 0.05);
 }
 .disc-card--ava:hover {
-  border-color: rgba(var(--cor-tema-rgb), 0.3);
-  box-shadow: 0 12px 40px rgba(var(--cor-tema-rgb), 0.1);
+  border-color: rgba(122, 168, 232, 0.4);
+  box-shadow: 0 12px 40px rgba(122, 168, 232, 0.15);
 }
 .disc-card--ava .disc-card__icon-wrap {
-  background: rgba(var(--cor-tema-rgb), 0.12);
+  background: rgba(122, 168, 232, 0.12);
 }
-.disc-card--ava .disc-card__title {
-  color: var(--cor-tema);
-}
+.disc-card--ava .disc-card__title { color: white; }
 .disc-card--ava:hover .disc-card__arrow {
-  border-color: var(--cor-tema);
-  color: var(--cor-tema);
-  background: rgba(var(--cor-tema-rgb), 0.1);
-  box-shadow: 0 0 14px rgba(var(--cor-tema-rgb), 0.2);
+  border-color: #7aa8e8;
+  color: #7aa8e8;
+  background: rgba(122, 168, 232, 0.1);
+  box-shadow: 0 0 14px rgba(122, 168, 232, 0.25);
 }
-.disc-card--ava:hover .disc-card__cta-label {
-  color: var(--cor-tema);
+.disc-card--ava:hover .disc-card__cta-label { color: #7aa8e8; }
+
+/* Quiz — cor secundária */
+.disc-card--quiz {
+  background: linear-gradient(
+    145deg,
+    #0e1420,
+    rgba(var(--cor-tema-2-rgb), 0.07)
+  );
+  border-color: rgba(var(--cor-tema-2-rgb), 0.18);
+  box-shadow: 0 0 30px rgba(var(--cor-tema-2-rgb), 0.05);
 }
+.disc-card--quiz:hover {
+  border-color: rgba(var(--cor-tema-2-rgb), 0.4);
+  box-shadow: 0 12px 40px rgba(var(--cor-tema-2-rgb), 0.15);
+}
+.disc-card--quiz .disc-card__icon-wrap {
+  background: rgba(var(--cor-tema-2-rgb), 0.12);
+}
+.disc-card--quiz .disc-card__title { color: white; }
+.disc-card--quiz:hover .disc-card__arrow {
+  border-color: var(--cor-tema-2);
+  color: var(--cor-tema-2);
+  background: rgba(var(--cor-tema-2-rgb), 0.1);
+  box-shadow: 0 0 14px rgba(var(--cor-tema-2-rgb), 0.25);
+}
+.disc-card--quiz:hover .disc-card__cta-label { color: var(--cor-tema-2); }
 
 /* Questões — usa cor secundária da disciplina */
 .disc-card--quiz {
@@ -458,7 +492,7 @@ a { text-decoration: none; color: inherit; }
   background: rgba(var(--cor-tema-2-rgb), 0.12);
 }
 .disc-card--quiz .disc-card__title {
-  color: var(--cor-tema-2);
+  color: white;
 }
 .disc-card--quiz:hover .disc-card__arrow {
   border-color: var(--cor-tema-2);
