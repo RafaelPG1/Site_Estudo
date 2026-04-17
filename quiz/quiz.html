@@ -3,6 +3,10 @@
   NEXUS STUDY — quiz/quiz.html
   Página de seleção de disciplinas.
   CSS: quiz.css  (não usa template_global.css)
+
+  CORREÇÃO: Script ao final do body lê ?sem= da URL (ou usa
+  '2026.2' como default) e atualiza todos os links de disciplina
+  para propagar o semestre correto.
   ════════════════════════════════════════════════════════════
 -->
   
@@ -165,6 +169,23 @@
   <footer class="footer">
     <p>© 2025 Nexus Study · Desenvolvido para facilitar seus estudos</p>
   </footer>
+
+  <!--
+    Propaga o semestre para todos os links de disciplina.
+    Lê ?sem= da URL (ex: quiz.html?sem=2027.1).
+    Se não vier nenhum, usa '2026.2' como padrão.
+    Resultado: disciplinas/poo.html?sem=2026.2 (ou o sem atual)
+  -->
+  <script>
+    (function () {
+      var sem = new URLSearchParams(location.search).get('sem') || '2026.2';
+      document.querySelectorAll('a[href*="disciplinas/"]').forEach(function (a) {
+        var url = new URL(a.href, location.href);
+        url.searchParams.set('sem', sem);
+        a.href = url.toString();
+      });
+    })();
+  </script>
 
 </body>
 </html>

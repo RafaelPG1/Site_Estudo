@@ -20,10 +20,14 @@
 
   <header class="header">
     <div class="header__inner">
-      <a href="../quiz.html" class="back-btn" aria-label="Voltar para Disciplinas">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+
+      <a href="../quiz.html" class="back-btn" id="back-btn" aria-label="Voltar para Disciplinas">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
         <span>Disciplinas</span>
       </a>
+
       <div class="header__logo">
         <span class="logo-mark">N</span>
         <div class="logo-text">
@@ -31,6 +35,7 @@
           <span class="logo-sub">Study</span>
         </div>
       </div>
+
       <div class="breadcrumb">
         <span class="breadcrumb__item">Quiz</span>
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
@@ -38,6 +43,7 @@
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
         <span class="breadcrumb__item breadcrumb__item--active">Banco de Dados</span>
       </div>
+
     </div>
   </header>
 
@@ -54,9 +60,16 @@
 
     <div class="disciplines">
 
-      <a href="../template/ava_template.html"
-         data-disc="banco_dados"
-         class="disc-card disc-card--ava">
+      <!--
+        disc e modo são fixos neste arquivo (correto).
+        O sem é injetado dinamicamente pelo script no final do body,
+        lendo ?sem= da URL recebida de quiz.html.
+        Default: '2026.2' caso o param não exista.
+      -->
+
+      <!-- AVA Card -->
+      <a href="../template/ava_template.html?disc=banco_dados&modo=ava&sem=2026.2"
+         class="disc-card disc-card--ava" id="link-ava">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap"><span>📚</span></div>
         </div>
@@ -66,16 +79,18 @@
         </div>
         <div class="disc-card__cta">
           <div class="disc-card__arrow">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
+            </svg>
           </div>
           <span class="disc-card__cta-label">Acessar</span>
         </div>
         <div class="disc-card__glow"></div>
       </a>
 
-      <a href="../template/quiz_template.html"
-         data-disc="banco_dados"
-         class="disc-card disc-card--quiz">
+      <!-- Questões Card -->
+      <a href="../template/quiz_template.html?disc=banco_dados&modo=questoes&sem=2026.2"
+         class="disc-card disc-card--quiz" id="link-quiz">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap"><span>❓</span></div>
         </div>
@@ -85,7 +100,9 @@
         </div>
         <div class="disc-card__cta">
           <div class="disc-card__arrow">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
+            </svg>
           </div>
           <span class="disc-card__cta-label">Iniciar</span>
         </div>
@@ -99,14 +116,30 @@
     <p>© 2025 Nexus Study · Desenvolvido para facilitar seus estudos</p>
   </footer>
 
-  <script type="module">
-    import Storage from '../../storage.js';
-    document.querySelectorAll('[data-disc]').forEach(link => {
-      link.addEventListener('click', () => {
-        Storage.set('disciplina', link.dataset.disc);
+  <!--
+    Lê ?sem= da URL e atualiza dinamicamente:
+      - os links de AVA e Questões (saída para templates)
+      - o back-btn (volta para quiz.html com o sem correto)
+    Default: '2026.2' caso o param não venha na URL.
+  -->
+  <script>
+    (function () {
+      var sem = new URLSearchParams(location.search).get('sem') || '2026.2';
+
+      document.querySelectorAll('a[href*="ava_template"], a[href*="quiz_template"]').forEach(function (a) {
+        var url = new URL(a.href, location.href);
+        url.searchParams.set('sem', sem);
+        a.href = url.toString();
       });
-    });
+
+      var backBtn = document.getElementById('back-btn');
+      if (backBtn) {
+        var url = new URL(backBtn.href, location.href);
+        url.searchParams.set('sem', sem);
+        backBtn.href = url.toString();
+      }
+    })();
   </script>
 
 </body>
-</html>
+</html> 

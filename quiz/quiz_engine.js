@@ -9,21 +9,14 @@
      [FIX 5] Removido o bloco que sobrescrevia o href do .back-btn.
              O template_init.js já define o href correto durante a
              inicialização — o engine não precisa tocá-lo.
+     [FIX 6] storageGet removido do fallback do #btn-left.
+             A disciplina vem exclusivamente de ?disc= na URL.
+             Se o param estiver ausente, o botão é desativado e
+             um aviso é emitido no console — sem fallback silencioso
+             para uma disciplina hardcoded errada.
    ============================================================ */
 
 (function () {
-
-  function storageGet(key, fallback) {
-    if (window.NexusStorage && typeof window.NexusStorage.get === 'function') {
-      return window.NexusStorage.get(key, fallback);
-    }
-    try {
-      var raw = localStorage.getItem('nexus_' + key);
-      return raw !== null ? JSON.parse(raw) : fallback;
-    } catch (e) {
-      return fallback;
-    }
-  }
 
   function initQuiz() {
 
@@ -363,16 +356,32 @@
     // template_init.js. O engine só precisa tratar o btn-left,
     // que é um <button> sem href e precisa de navegação via JS.
     //
+    // [FIX 6] storageGet removido por completo. A disciplina vem
+    // exclusivamente de ?disc= na URL — se o param não estiver
+    // presente, algo deu errado antes desta página e o botão é
+    // desativado em vez de navegar para uma disciplina errada.
+    //
     var _params = new URLSearchParams(location.search);
-    var _disc   = _params.get('disc') || storageGet('disciplinaAtual', 'poo');
-    var _sem    = _params.get('sem')  || '2026.2';
-    var urlBack = '../disciplinas/' + _disc + '.html?sem=' + _sem;
+    var _disc   = _params.get('disc');
+    var _sem    = _params.get('sem') || '2026.2';
+
+    if (!_disc) {
+      console.warn('[quiz_engine] ?disc= ausente na URL. #btn-left desativado.');
+    }
+
+    var urlBack = _disc
+      ? '../disciplinas/' + _disc + '.html?sem=' + _sem
+      : null;
 
     var btnLeft = document.getElementById('btn-left');
     if (btnLeft) {
-      btnLeft.addEventListener('click', function () {
-        window.location.href = urlBack;
-      });
+      if (urlBack) {
+        btnLeft.addEventListener('click', function () {
+          window.location.href = urlBack;
+        });
+      } else {
+        btnLeft.disabled = true;
+      }
     }
 
     /* ── RENDER INICIAL ─────────────────────────────────── */
