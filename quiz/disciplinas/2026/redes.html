@@ -1,27 +1,29 @@
-<!-- quiz/disciplinas/design.html -->
+<!-- quiz/disciplinas/2026/redes.html -->
 
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nexus Study — Design</title>
+  <title>Nexus Study — Redes</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="design.css" />
+  <link rel="stylesheet" href="redes.css" />
 </head>
 <body>
 
+  <!-- Background -->
   <div class="bg-orb bg-orb--1"></div>
   <div class="bg-orb bg-orb--2"></div>
   <div class="bg-orb bg-orb--3"></div>
   <div class="bg-grid"></div>
 
+  <!-- ===== HEADER ===== -->
   <header class="header">
     <div class="header__inner">
 
-      <a href="../quiz.html" class="back-btn" id="back-btn" aria-label="Voltar para Disciplinas">
+      <a href="../../quiz.html" class="back-btn" id="back-btn" aria-label="Voltar para Disciplinas">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="15 18 9 12 15 6"/>
         </svg>
@@ -41,18 +43,19 @@
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
         <span class="breadcrumb__item">Disciplinas</span>
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-        <span class="breadcrumb__item breadcrumb__item--active">Design</span>
+        <span class="breadcrumb__item breadcrumb__item--active">Redes</span>
       </div>
 
     </div>
   </header>
 
+  <!-- ===== MAIN ===== -->
   <main class="main">
 
     <div class="page-header">
       <div class="page-header__eyebrow">
-        <span>🎨</span>
-        <span>Design de Sistemas de Informação</span>
+        <span>🌐</span>
+        <span>Redes de Computadores</span>
       </div>
       <h1 class="page-header__title">Escolha o <em>modo</em></h1>
       <p class="page-header__desc">Acesse o material oficial ou teste seu conhecimento com questões geradas por IA.</p>
@@ -60,18 +63,13 @@
 
     <div class="disciplines">
 
-      <!--
-        disc e modo são fixos neste arquivo (correto).
-        O sem é injetado dinamicamente pelo script no final do body,
-        lendo ?sem= da URL recebida de quiz.html.
-        Default: '2026.2' caso o param não exista.
-      -->
-
       <!-- AVA Card -->
-      <a href="../template/ava_template.html?disc=design&modo=ava&sem=2026.2"
+      <a href="../../template/ava_template.html?disc=redes&modo=ava&sem=2026.2"
          class="disc-card disc-card--ava" id="link-ava">
         <div class="disc-card__icon-col">
-          <div class="disc-card__icon-wrap"><span>📚</span></div>
+          <div class="disc-card__icon-wrap">
+            <span>📚</span>
+          </div>
         </div>
         <div class="disc-card__body">
           <h2 class="disc-card__title">AVA</h2>
@@ -89,10 +87,12 @@
       </a>
 
       <!-- Questões Card -->
-      <a href="../template/quiz_template.html?disc=design&modo=questoes&sem=2026.2"
+      <a href="../../template/quiz_template.html?disc=redes&modo=questoes&sem=2026.2"
          class="disc-card disc-card--quiz" id="link-quiz">
         <div class="disc-card__icon-col">
-          <div class="disc-card__icon-wrap"><span>❓</span></div>
+          <div class="disc-card__icon-wrap">
+            <span>❓</span>
+          </div>
         </div>
         <div class="disc-card__body">
           <h2 class="disc-card__title">Questões</h2>
@@ -110,18 +110,14 @@
       </a>
 
     </div>
+
   </main>
 
+  <!-- ===== FOOTER ===== -->
   <footer class="footer">
     <p>© 2025 Nexus Study · Desenvolvido para facilitar seus estudos</p>
   </footer>
 
-  <!--
-    Lê ?sem= da URL e atualiza dinamicamente:
-      - os links de AVA e Questões (saída para templates)
-      - o back-btn (volta para quiz.html com o sem correto)
-    Default: '2026.2' caso o param não venha na URL.
-  -->
   <script>
     (function () {
       var sem = new URLSearchParams(location.search).get('sem') || '2026.2';

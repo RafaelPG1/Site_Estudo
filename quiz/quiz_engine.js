@@ -9,11 +9,11 @@
      [FIX 5] Removido o bloco que sobrescrevia o href do .back-btn.
              O template_init.js já define o href correto durante a
              inicialização — o engine não precisa tocá-lo.
-     [FIX 6] storageGet removido do fallback do #btn-left.
-             A disciplina vem exclusivamente de ?disc= na URL.
-             Se o param estiver ausente, o botão é desativado e
-             um aviso é emitido no console — sem fallback silencioso
-             para uma disciplina hardcoded errada.
+     [FIX 7] Bloco _params / _disc / _sem / urlBack removido do
+             #btn-left. A URL de volta é calculada uma única vez
+             no template_init.js e exposta via window.NEXUS_URL_BACK.
+             O engine apenas consome — sem recalcular, sem ler a URL
+             de novo. Um ponto de verdade, dois botões sincronizados.
    ============================================================ */
 
 (function () {
@@ -352,35 +352,23 @@
 
     /* ── NAVEGAÇÃO VOLTAR (btn-left do nav-float) ───────── */
     //
-    // [FIX 5] O href do .back-btn é definido exclusivamente pelo
-    // template_init.js. O engine só precisa tratar o btn-left,
-    // que é um <button> sem href e precisa de navegação via JS.
+    // [FIX 7] A URL de volta é calculada uma única vez no
+    // template_init.js e exposta via window.NEXUS_URL_BACK.
+    // O engine apenas consome — sem recalcular, sem ler ?disc=
+    // ou ?sem= de novo. Se a variável não existir (carregamento
+    // fora do fluxo normal), o botão é desativado com aviso.
     //
-    // [FIX 6] storageGet removido por completo. A disciplina vem
-    // exclusivamente de ?disc= na URL — se o param não estiver
-    // presente, algo deu errado antes desta página e o botão é
-    // desativado em vez de navegar para uma disciplina errada.
-    //
-    var _params = new URLSearchParams(location.search);
-    var _disc   = _params.get('disc');
-    var _sem    = _params.get('sem') || '2026.2';
-
-    if (!_disc) {
-      console.warn('[quiz_engine] ?disc= ausente na URL. #btn-left desativado.');
-    }
-
-    var urlBack = _disc
-      ? '../disciplinas/' + _disc + '.html?sem=' + _sem
-      : null;
-
     var btnLeft = document.getElementById('btn-left');
     if (btnLeft) {
+      var urlBack = window.NEXUS_URL_BACK || null;
+
       if (urlBack) {
         btnLeft.addEventListener('click', function () {
           window.location.href = urlBack;
         });
       } else {
         btnLeft.disabled = true;
+        console.warn('[quiz_engine] window.NEXUS_URL_BACK não definido. #btn-left desativado.');
       }
     }
 

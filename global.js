@@ -149,16 +149,27 @@ export function getPaginaInfo() {
  * O id deve existir em DISCIPLINAS[semestreAtual].
  * @param {string|null} disciplinaId - ex: 'poo', 'redes' ou null
  */
+
 export function setDisciplina(disciplinaId) {
   if (disciplinaId !== null) {
     const semestre = _estado.semestreAtual;
     const lista    = DISCIPLINAS[semestre] ?? [];
     const existe   = lista.some(d => d.id === disciplinaId);
+
     if (!existe) {
       console.warn(`[Global] Disciplina "${disciplinaId}" não existe em ${semestre}`);
-      return;
+      
+      // ✅ Em vez de abandonar, usa a primeira disponível
+      const fallback = lista[0]?.id ?? null;
+      if (fallback) {
+        console.warn(`[Global] Usando fallback: "${fallback}"`);
+        disciplinaId = fallback;           // continua com o fallback
+      } else {
+        return;                            // lista vazia — não há o que fazer
+      }
     }
   }
+
   _estado.disciplinaAtual = disciplinaId;
   Storage.set('disciplinaAtual', disciplinaId);
 }

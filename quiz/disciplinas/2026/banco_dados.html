@@ -1,15 +1,15 @@
-<!-- quiz/disciplinas/poo.html -->
+<!-- quiz/disciplinas/2026/banco_dados.html -->
 
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nexus Study — POO</title>
+  <title>Nexus Study — Banco de Dados</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="poo.css" />
+  <link rel="stylesheet" href="banco_dados.css" />
 </head>
 <body>
 
@@ -23,7 +23,7 @@
   <header class="header">
     <div class="header__inner">
 
-      <a href="../quiz.html" class="back-btn" id="back-btn" aria-label="Voltar para Disciplinas">
+      <a href="../../quiz.html" class="back-btn" id="back-btn" aria-label="Voltar para Disciplinas">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="15 18 9 12 15 6"/>
         </svg>
@@ -43,7 +43,7 @@
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
         <span class="breadcrumb__item">Disciplinas</span>
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-        <span class="breadcrumb__item breadcrumb__item--active">POO</span>
+        <span class="breadcrumb__item breadcrumb__item--active">Banco de Dados</span>
       </div>
 
     </div>
@@ -54,8 +54,8 @@
 
     <div class="page-header">
       <div class="page-header__eyebrow">
-        <span>💻</span>
-        <span>Programação Orientada a Objetos</span>
+        <span>🗄️</span>
+        <span>Fundamentos de Banco de Dados</span>
       </div>
       <h1 class="page-header__title">Escolha o <em>modo</em></h1>
       <p class="page-header__desc">Acesse o material oficial ou teste seu conhecimento com questões geradas por IA.</p>
@@ -63,15 +63,8 @@
 
     <div class="disciplines">
 
-      <!--
-        Os hrefs abaixo têm disc e modo fixos (correto).
-        O sem é injetado dinamicamente pelo script no final do body,
-        lendo ?sem= da URL recebida de quiz.html.
-        Sem default: '2026.2' caso o param não exista.
-      -->
-
       <!-- AVA Card -->
-      <a href="../template/ava_template.html?disc=poo&modo=ava&sem=2026.2"
+      <a href="../../template/ava_template.html?disc=banco_dados&modo=ava&sem=2026.2"
          class="disc-card disc-card--ava" id="link-ava">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap">
@@ -94,7 +87,7 @@
       </a>
 
       <!-- Questões Card -->
-      <a href="../template/quiz_template.html?disc=poo&modo=questoes&sem=2026.2"
+      <a href="../../template/quiz_template.html?disc=banco_dados&modo=questoes&sem=2026.2"
          class="disc-card disc-card--quiz" id="link-quiz">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap">
@@ -125,24 +118,16 @@
     <p>© 2025 Nexus Study · Desenvolvido para facilitar seus estudos</p>
   </footer>
 
-  <!--
-    Lê ?sem= da URL e atualiza dinamicamente:
-      - os links de AVA e Questões (saída para templates)
-      - o back-btn (volta para quiz.html com o sem correto)
-    Sem default: '2026.2' caso o param não venha na URL.
-  -->
   <script>
     (function () {
       var sem = new URLSearchParams(location.search).get('sem') || '2026.2';
 
-      // Atualiza links de saída para os templates
       document.querySelectorAll('a[href*="ava_template"], a[href*="quiz_template"]').forEach(function (a) {
         var url = new URL(a.href, location.href);
         url.searchParams.set('sem', sem);
         a.href = url.toString();
       });
 
-      // Atualiza o back-btn para voltar com o sem correto
       var backBtn = document.getElementById('back-btn');
       if (backBtn) {
         var url = new URL(backBtn.href, location.href);

@@ -6,8 +6,9 @@
      2. Atualiza o global.js (setSemestre, setDisciplina, setPagina)
      3. Atualiza os textos do DOM
      4. Corrige o back-btn
-     5. Injeta o nav-float (os binds dos botões ficam todos no quiz_engine.js)
-     6. Carrega o arquivo de conteúdo e depois o quiz_engine.js
+     5. Expõe window.NEXUS_URL_BACK para o quiz_engine.js
+     6. Injeta o nav-float (os binds dos botões ficam todos no quiz_engine.js)
+     7. Carrega o arquivo de conteúdo e depois o quiz_engine.js
 
    CORREÇÕES APLICADAS:
      [FIX 1] Removidos os addEventListener de delegação do nav-float
@@ -24,6 +25,16 @@
      [FIX 5] back-btn escrito apenas aqui.
              O bloco equivalente foi removido do quiz_engine.js para
              eliminar a escrita dupla do mesmo href.
+     [FIX 7] window.NEXUS_URL_BACK exposto após calcular o href.
+             O quiz_engine.js consome esta variável para o #btn-left,
+             eliminando o recálculo independente de ?disc= e ?sem=
+             que existia antes nele. Um ponto de verdade, dois botões
+             sincronizados. Também adicionado console.warn quando
+             ?disc= não é encontrado no semestre (fallback defensivo
+             antes era silencioso).
+     [ESTRUTURA] Paths de conteúdo e disciplinas agora incluem
+             ano e semestre: conteudo/ANO/SEMESTRE/arquivo.js
+             e disciplinas/ANO/arquivo.html
    ============================================================ */
 
 import {
@@ -43,6 +54,12 @@ const disc     = params.get('disc') || 'poo';
 const modo     = params.get('modo') || 'questoes';
 const semestre = params.get('sem')  || '2026.2';
 
+window.TIPO_QUIZ = modo;
+
+/* ── EXTRAI O ANO DO SEMESTRE ─────────────────────────────── */
+// Regra: "2026.2" → "2026" | "2027.1" → "2027"
+const ano = semestre.split('.')[0];
+
 /* ── ATUALIZA O GLOBAL ────────────────────────────────────── */
 setSemestre(semestre);
 setDisciplina(disc);
@@ -53,14 +70,23 @@ setPagina('QUIZ');
 // [FIX 4] Fonte única de verdade: global.js → DISCIPLINAS.
 // Nenhum DISC_MAP local. Nome, arquivo e emoji vêm todos daqui.
 //
-const lista      = getDisciplinasDeSemestre(semestre);
-const discInfo   = lista.find(d => d.id === disc);
+const lista    = getDisciplinasDeSemestre(semestre);
+const discInfo = lista.find(d => d.id === disc);
 
-// Fallback defensivo: se o disc da URL não existir no semestre,
-// usa a primeira disciplina disponível (evita tela em branco).
-const info       = discInfo ?? lista[0] ?? { id: disc, nome: disc, arquivo: disc, emoji: '📚' };
+// [FIX 7] Avisa quando o disc da URL não existir no semestre
+// (antes o fallback era silencioso — o usuário via a disciplina
+// errada sem nenhuma indicação no console).
+if (!discInfo) {
+  console.warn(
+    `[template_init] Disciplina "${disc}" não encontrada em ${semestre}.` +
+    ` Usando fallback: "${lista[0]?.id ?? 'nenhuma'}".`
+  );
+}
 
-const tipoLabel  = modo === 'ava' ? 'Avaliação AVA' : 'Questões Práticas';
+// Fallback defensivo: usa a primeira disponível ou um objeto mínimo.
+const info      = discInfo ?? lista[0] ?? { id: disc, nome: disc, arquivo: disc, emoji: '📚' };
+
+const tipoLabel = modo === 'ava' ? 'Avaliação AVA' : 'Questões Práticas';
 
 /* ── ATUALIZA TEXTOS NO DOM ───────────────────────────────── */
 function setText(id, text) {
@@ -73,18 +99,23 @@ setText('disc-nome',       info.nome);
 
 // [FIX 2] Usa regex global /_/g para substituir TODOS os underscores,
 // não apenas o primeiro. Ex: "banco_dados" → "BANCO DADOS"
-setText('breadcrumb-disc', disc.toUpperCase().replace(/_/g, ' '));
+setText('breadcrumb-disc', info.id.toUpperCase().replace(/_/g, ' '));
 
 setText('page-footer',     `Nexus Study · ${info.nome} · ${tipoLabel}`);
 
-/* ── CORRIGE BACK-BTN ─────────────────────────────────────── */
+/* ── CORRIGE BACK-BTN E EXPÕE URL DE VOLTA ───────────────── */
 //
 // [FIX 5] Único ponto de escrita do href do back-btn.
-// O bloco equivalente foi removido do quiz_engine.js.
+// [FIX 7] Após calcular a URL, expõe via window.NEXUS_URL_BACK
+//         para que o quiz_engine.js reutilize sem recalcular.
+// [ESTRUTURA] Path inclui o ano: disciplinas/ANO/arquivo.html
 //
+const urlBack = `../disciplinas/${ano}/${info.arquivo}.html?sem=${semestre}`;
+window.NEXUS_URL_BACK = urlBack;
+
 const backBtn = document.querySelector('.back-btn');
 if (backBtn) {
-  backBtn.href = `../disciplinas/${disc}.html?sem=${semestre}`;
+  backBtn.href = urlBack;
 }
 
 /* ── INJETA NAV-FLOAT ─────────────────────────────────────── */
@@ -129,11 +160,14 @@ document.body.appendChild(nav);
 */
 
 /* ── CARREGA CONTEÚDO → ENGINE ────────────────────────────── */
+//
+// [ESTRUTURA] Path inclui ano e semestre: conteudo/ANO/SEMESTRE/arquivo.js
+//
 const s = document.createElement('script');
-s.src   = `../conteudo/${info.arquivo}.js`;
+s.src   = `../conteudo/${ano}/${semestre}/${info.arquivo}.js`;
 s.onerror = () => {
   const c = document.getElementById('quiz-container');
-  if (c) c.innerHTML = `<div style="padding:2rem;text-align:center;color:#f87171;">⚠️ Arquivo não encontrado: ${info.arquivo}.js</div>`;
+  if (c) c.innerHTML = `<div style="padding:2rem;text-align:center;color:#f87171;">⚠️ Arquivo não encontrado: ${ano}/${semestre}/${info.arquivo}.js</div>`;
 };
 s.onload = () => {
   const engine = document.createElement('script');

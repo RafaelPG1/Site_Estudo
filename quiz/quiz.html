@@ -6,7 +6,7 @@
 
   CORREÇÃO: Script ao final do body lê ?sem= da URL (ou usa
   '2026.2' como default) e atualiza todos os links de disciplina
-  para propagar o semestre correto.
+  para propagar o semestre correto E substituir o ano no path.
   ════════════════════════════════════════════════════════════
 -->
   
@@ -84,7 +84,7 @@
     <div class="disciplines" role="list">
 
       <!-- ── POO ─────────────────────────────────────────── -->
-      <a href="disciplinas/poo.html" class="disc-card disc-card--blue" role="listitem"
+      <a href="disciplinas/2026/poo.html" class="disc-card disc-card--blue" role="listitem"
          aria-label="Programação Orientada a Objetos">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap" aria-hidden="true"><span>💻</span></div>
@@ -103,7 +103,7 @@
       </a>
 
       <!-- ── Redes ───────────────────────────────────────── -->
-      <a href="disciplinas/redes.html" class="disc-card disc-card--teal" role="listitem"
+      <a href="disciplinas/2026/redes.html" class="disc-card disc-card--teal" role="listitem"
          aria-label="Redes de Computadores">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap" aria-hidden="true"><span>🌐</span></div>
@@ -122,7 +122,7 @@
       </a>
 
       <!-- ── Design ─────────────────────────────────────── -->
-      <a href="disciplinas/design.html" class="disc-card disc-card--gold" role="listitem"
+      <a href="disciplinas/2026/design.html" class="disc-card disc-card--gold" role="listitem"
          aria-label="Design de Sistemas de Informação">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap" aria-hidden="true"><span>🎨</span></div>
@@ -141,7 +141,7 @@
       </a>
 
       <!-- ── Banco de Dados ─────────────────────────────── -->
-      <a href="disciplinas/banco_dados.html" class="disc-card disc-card--rose" role="listitem"
+      <a href="disciplinas/2026/banco_dados.html" class="disc-card disc-card--rose" role="listitem"
          aria-label="Fundamentos de Banco de Dados">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap" aria-hidden="true"><span>🗄️</span></div>
@@ -174,14 +174,22 @@
     Propaga o semestre para todos os links de disciplina.
     Lê ?sem= da URL (ex: quiz.html?sem=2027.1).
     Se não vier nenhum, usa '2026.2' como padrão.
-    Resultado: disciplinas/poo.html?sem=2026.2 (ou o sem atual)
+
+    Faz duas coisas em cada link:
+      1. Adiciona/atualiza o ?sem= no query string
+      2. Substitui o segmento de ano no path (ex: /2026/ → /2027/)
+         para que links como disciplinas/2026/poo.html virem
+         disciplinas/2027/poo.html automaticamente ao trocar de ano.
   -->
   <script>
     (function () {
       var sem = new URLSearchParams(location.search).get('sem') || '2026.2';
+      var ano = sem.split('.')[0];
+
       document.querySelectorAll('a[href*="disciplinas/"]').forEach(function (a) {
         var url = new URL(a.href, location.href);
         url.searchParams.set('sem', sem);
+        url.pathname = url.pathname.replace(/disciplinas\/\d{4}\//, 'disciplinas/' + ano + '/');
         a.href = url.toString();
       });
     })();
