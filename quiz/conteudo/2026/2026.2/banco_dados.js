@@ -1,115 +1,123 @@
 // ============================================================
 // NEXUS STUDY — quiz/conteudo/banco_dados.js
-// Questões de Fundamentos de Banco de Dados
 // ============================================================
 
 window.questoes = {
 
-  /* ── QUESTÕES PRÁTICAS ──────────────────────────────── */
   questoes: [
     {
-      pergunta: "O que é uma chave primária (Primary Key) em um banco de dados relacional?",
-      alternativas: [
-        "A) Um atributo que pode conter valores nulos",
-        "B) Um identificador único que distingue cada registro de uma tabela",
-        "C) Uma coluna que referencia outra tabela",
-        "D) Um índice criado automaticamente em todas as colunas"
+      question: "O que é uma chave primária (Primary Key) em um banco de dados relacional?",
+      options: [
+        "Um atributo que pode conter valores nulos",
+        "Um identificador único que distingue cada registro de uma tabela",
+        "Uma coluna que referencia outra tabela",
+        "Um índice criado automaticamente em todas as colunas"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "A chave primária identifica unicamente cada registro."
     },
     {
-      pergunta: "Qual comando SQL é usado para buscar dados em uma tabela?",
-      alternativas: [
-        "A) INSERT",
-        "B) UPDATE",
-        "C) SELECT",
-        "D) DELETE"
+      question: "Qual comando SQL é usado para buscar dados em uma tabela?",
+      options: [
+        "INSERT",
+        "UPDATE",
+        "SELECT",
+        "DELETE"
       ],
-      correta: 2
+      answer: 2,
+      feedback: "SELECT é usado para consultar dados."
     },
     {
-      pergunta: "O que é normalização em banco de dados?",
-      alternativas: [
-        "A) Aumentar velocidade com índices",
-        "B) Criptografar dados",
-        "C) Organizar tabelas para reduzir redundância",
-        "D) Criar backups automáticos"
+      question: "O que é normalização em banco de dados?",
+      options: [
+        "Aumentar velocidade com índices",
+        "Criptografar dados",
+        "Organizar tabelas para reduzir redundância",
+        "Criar backups automáticos"
       ],
-      correta: 2
+      answer: 2,
+      feedback: "Normalização evita redundância e inconsistência."
     },
     {
-      pergunta: "Qual é a função do WHERE em SQL?",
-      alternativas: [
-        "A) Ordenar resultados",
-        "B) Filtrar registros",
-        "C) Criar tabelas",
-        "D) Atualizar dados"
+      question: "Qual é a função do WHERE em SQL?",
+      options: [
+        "Ordenar resultados",
+        "Filtrar registros",
+        "Criar tabelas",
+        "Atualizar dados"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "WHERE filtra os dados retornados."
     },
     {
-      pergunta: "O que faz o INNER JOIN?",
-      alternativas: [
-        "A) Junta todas as linhas de ambas tabelas",
-        "B) Retorna apenas registros com correspondência",
-        "C) Remove dados duplicados",
-        "D) Cria uma nova tabela"
+      question: "O que faz o INNER JOIN?",
+      options: [
+        "Junta todas as linhas de ambas tabelas",
+        "Retorna apenas registros com correspondência",
+        "Remove dados duplicados",
+        "Cria uma nova tabela"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "INNER JOIN retorna apenas correspondências entre tabelas."
     }
   ],
 
-  /* ── QUESTÕES AVA ───────────────────────────────────── */
   ava: [
     {
-      pergunta: "Qual comando SQL é usado para inserir dados?",
-      alternativas: [
-        "A) ADD",
-        "B) INSERT",
-        "C) CREATE",
-        "D) PUT"
+      question: "Qual comando SQL é usado para inserir dados?",
+      options: [
+        "ADD",
+        "INSERT",
+        "CREATE",
+        "PUT"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "INSERT adiciona novos registros."
     },
     {
-      pergunta: "Qual restrição impede valores duplicados?",
-      alternativas: [
-        "A) NOT NULL",
-        "B) UNIQUE",
-        "C) DEFAULT",
-        "D) INDEX"
+      question: "Qual restrição impede valores duplicados?",
+      options: [
+        "NOT NULL",
+        "UNIQUE",
+        "DEFAULT",
+        "INDEX"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "UNIQUE impede valores repetidos."
     },
     {
-      pergunta: "O que é uma chave estrangeira (Foreign Key)?",
-      alternativas: [
-        "A) Identificador único da tabela",
-        "B) Campo que referencia outra tabela",
-        "C) Campo opcional",
-        "D) Índice automático"
+      question: "O que é uma chave estrangeira (Foreign Key)?",
+      options: [
+        "Identificador único da tabela",
+        "Campo que referencia outra tabela",
+        "Campo opcional",
+        "Índice automático"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "Foreign Key cria relacionamento entre tabelas."
     },
     {
-      pergunta: "Qual comando remove dados de uma tabela?",
-      alternativas: [
-        "A) DELETE",
-        "B) REMOVE",
-        "C) DROP",
-        "D) CLEAR"
+      question: "Qual comando remove dados de uma tabela?",
+      options: [
+        "DELETE",
+        "REMOVE",
+        "DROP",
+        "CLEAR"
       ],
-      correta: 0
+      answer: 0,
+      feedback: "DELETE remove registros da tabela."
     },
     {
-      pergunta: "ORDER BY é usado para:",
-      alternativas: [
-        "A) Filtrar dados",
-        "B) Ordenar resultados",
-        "C) Agrupar tabelas",
-        "D) Inserir dados"
+      question: "ORDER BY é usado para:",
+      options: [
+        "Filtrar dados",
+        "Ordenar resultados",
+        "Agrupar tabelas",
+        "Inserir dados"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "ORDER BY organiza os resultados."
     }
   ]
+
 };

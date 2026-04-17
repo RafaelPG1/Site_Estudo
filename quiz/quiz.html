@@ -185,12 +185,19 @@
     (function () {
       var sem = new URLSearchParams(location.search).get('sem') || '2026.2';
       var ano = sem.split('.')[0];
-
+ 
+      /* Salva no sessionStorage — útil se a index quiser redirecionar
+         de volta com o semestre certo (ex: botão "Continuar estudando") */
+      try { sessionStorage.setItem('nexus_sem', sem); } catch (e) {}
+ 
+      /* Atualiza links de disciplina: injeta ?sem= e substitui o ano no path */
       document.querySelectorAll('a[href*="disciplinas/"]').forEach(function (a) {
-        var url = new URL(a.href, location.href);
-        url.searchParams.set('sem', sem);
-        url.pathname = url.pathname.replace(/disciplinas\/\d{4}\//, 'disciplinas/' + ano + '/');
-        a.href = url.toString();
+        try {
+          var url = new URL(a.href, location.href);
+          url.searchParams.set('sem', sem);
+          url.pathname = url.pathname.replace(/disciplinas\/\d{4}\//, 'disciplinas/' + ano + '/');
+          a.href = url.toString();
+        } catch (e) {}
       });
     })();
   </script>

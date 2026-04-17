@@ -1,113 +1,123 @@
 // ============================================================
 // NEXUS STUDY — quiz/conteudo/design.js
-// Questões de Design de Sistemas de Informação
 // ============================================================
 
 window.questoes = {
 
   questoes: [
     {
-      pergunta: "O que significa UX Design?",
-      alternativas: [
-        "A) User Examination",
-        "B) User Experience",
-        "C) Universal Export",
-        "D) User Extension"
+      question: "O que significa UX Design?",
+      options: [
+        "User Examination",
+        "User Experience",
+        "Universal Export",
+        "User Extension"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "UX significa User Experience (Experiência do Usuário)."
     },
     {
-      pergunta: "O que é um wireframe?",
-      alternativas: [
-        "A) Produto final",
-        "B) Estrutura básica da interface",
-        "C) Código fonte",
-        "D) Banco de dados"
+      question: "O que é um wireframe?",
+      options: [
+        "Produto final",
+        "Estrutura básica da interface",
+        "Código fonte",
+        "Banco de dados"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "Wireframe é um esqueleto da interface, sem design final."
     },
     {
-      pergunta: "Qual princípio agrupa elementos próximos?",
-      alternativas: [
-        "A) Contraste",
-        "B) Proximidade",
-        "C) Alinhamento",
-        "D) Repetição"
+      question: "Qual princípio agrupa elementos próximos?",
+      options: [
+        "Contraste",
+        "Proximidade",
+        "Alinhamento",
+        "Repetição"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "Proximidade agrupa elementos relacionados visualmente."
     },
     {
-      pergunta: "Um grid de 12 colunas, usar 6 equivale a:",
-      alternativas: [
-        "A) 25%",
-        "B) 50%",
-        "C) 75%",
-        "D) 100%"
+      question: "Um grid de 12 colunas, usar 6 equivale a:",
+      options: [
+        "25%",
+        "50%",
+        "75%",
+        "100%"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "6 de 12 colunas = 50% da largura."
     },
     {
-      pergunta: "Boa prática de acessibilidade:",
-      alternativas: [
-        "A) Usar só cor",
-        "B) Baixo contraste",
-        "C) Alto contraste",
-        "D) Texto pequeno"
+      question: "Boa prática de acessibilidade:",
+      options: [
+        "Usar só cor",
+        "Baixo contraste",
+        "Alto contraste",
+        "Texto pequeno"
       ],
-      correta: 2
+      answer: 2,
+      feedback: "Alto contraste melhora a leitura e acessibilidade."
     }
   ],
 
   ava: [
     {
-      pergunta: "UI refere-se a:",
-      alternativas: [
-        "A) Banco de dados",
-        "B) Interface do usuário",
-        "C) Código backend",
-        "D) Rede"
+      question: "UI refere-se a:",
+      options: [
+        "Banco de dados",
+        "Interface do usuário",
+        "Código backend",
+        "Rede"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "UI = User Interface (Interface do Usuário)."
     },
     {
-      pergunta: "Consistência no design significa:",
-      alternativas: [
-        "A) Mudar tudo sempre",
-        "B) Manter padrões visuais",
-        "C) Usar cores aleatórias",
-        "D) Ignorar usuários"
+      question: "Consistência no design significa:",
+      options: [
+        "Mudar tudo sempre",
+        "Manter padrões visuais",
+        "Usar cores aleatórias",
+        "Ignorar usuários"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "Consistência ajuda na previsibilidade e usabilidade."
     },
     {
-      pergunta: "Heurísticas de usabilidade servem para:",
-      alternativas: [
-        "A) Testar hardware",
-        "B) Avaliar interface",
-        "C) Criar banco",
-        "D) Programar API"
+      question: "Heurísticas de usabilidade servem para:",
+      options: [
+        "Testar hardware",
+        "Avaliar interface",
+        "Criar banco",
+        "Programar API"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "São regras para avaliar a qualidade da interface."
     },
     {
-      pergunta: "Feedback no sistema é:",
-      alternativas: [
-        "A) Ignorar ações",
-        "B) Resposta ao usuário",
-        "C) Erro",
-        "D) Delay"
+      question: "Feedback no sistema é:",
+      options: [
+        "Ignorar ações",
+        "Resposta ao usuário",
+        "Erro",
+        "Delay"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "Feedback informa ao usuário o resultado das ações."
     },
     {
-      pergunta: "Affordance significa:",
-      alternativas: [
-        "A) Cor bonita",
-        "B) Indicação de uso",
-        "C) Código limpo",
-        "D) Banco rápido"
+      question: "Affordance significa:",
+      options: [
+        "Cor bonita",
+        "Indicação de uso",
+        "Código limpo",
+        "Banco rápido"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "Affordance indica como algo deve ser usado."
     }
   ]
+
 };

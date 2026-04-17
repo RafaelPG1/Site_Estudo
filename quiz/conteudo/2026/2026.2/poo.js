@@ -1,8 +1,7 @@
 // ============================================================
-// NEXUS STUDY — quiz/conteudo/poo.js
+// NEXUS STUDY — quiz/conteudo/2026/2026.2/poo.js
 // Questões de Programação Orientada a Objetos (POO)
-// Estrutura: window.questoes[tipo] → array de questões
-// Tipos disponíveis: 'questoes', 'ava'
+// Formato v1: question, options, answer, feedback, code, etc.
 // ============================================================
 
 window.questoes = {
@@ -10,142 +9,160 @@ window.questoes = {
   /* ── QUESTÕES PRÁTICAS ──────────────────────────────── */
   questoes: [
     {
-      pergunta: "O que é uma classe em Programação Orientada a Objetos?",
-      alternativas: [
-        "A) Um objeto já instanciado no sistema",
-        "B) Um modelo que define atributos e comportamentos de objetos",
-        "C) Um método responsável por executar ações",
-        "D) Um tipo de variável global"
+      question: "O que será exibido em `p.nome`?",
+      code:
+`class Pessoa {
+  constructor(nome) {
+    this.nome = nome;
+  }
+}
+
+const p = new Pessoa("Ana");`,
+      options: [
+        "undefined",
+        "Ana",
+        "Pessoa",
+        "Erro"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "O construtor define o atributo nome como 'Ana'."
     },
     {
-      pergunta: "O que é um objeto em POO?",
-      alternativas: [
-        "A) Uma função que executa ações específicas",
-        "B) Um molde para criar classes",
-        "C) Uma instância de uma classe",
-        "D) Um tipo de banco de dados"
+      question: "O que é um objeto em POO?",
+      options: [
+        "Uma função que executa ações específicas",
+        "Um molde para criar classes",
+        "Uma instância de uma classe",
+        "Um tipo de banco de dados"
       ],
-      correta: 2
+      answer: 2,
+      feedback: "Objeto é uma instância de uma classe, ou seja, algo criado a partir dela."
     },
     {
-      pergunta: "Qual conceito da POO permite reutilizar código de outra classe?",
-      alternativas: [
-        "A) Encapsulamento",
-        "B) Polimorfismo",
-        "C) Herança",
-        "D) Abstração"
+      question: "Qual conceito da POO permite reutilizar código de outra classe?",
+      options: [
+        "Encapsulamento",
+        "Polimorfismo",
+        "Herança",
+        "Abstração"
       ],
-      correta: 2
+      answer: 2,
+      feedback: "Herança permite que uma classe reutilize características de outra."
     },
     {
-      pergunta: "O que é encapsulamento?",
-      alternativas: [
-        "A) Tornar todos os atributos públicos",
-        "B) Ocultar detalhes internos e expor apenas o necessário",
-        "C) Criar várias classes iguais",
-        "D) Executar múltiplos métodos ao mesmo tempo"
+      question: "O que é encapsulamento?",
+      options: [
+        "Tornar todos os atributos públicos",
+        "Ocultar detalhes internos e expor apenas o necessário",
+        "Criar várias classes iguais",
+        "Executar múltiplos métodos ao mesmo tempo"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "Encapsulamento protege os dados e controla o acesso."
     },
     {
-      pergunta: "O que é polimorfismo?",
-      alternativas: [
-        "A) Capacidade de um método ter diferentes comportamentos",
-        "B) Capacidade de criar múltiplas classes iguais",
-        "C) Processo de esconder atributos",
-        "D) Uso de variáveis globais em classes"
+      question: "O que é polimorfismo?",
+      options: [
+        "Capacidade de um método ter diferentes comportamentos",
+        "Capacidade de criar múltiplas classes iguais",
+        "Processo de esconder atributos",
+        "Uso de variáveis globais em classes"
       ],
-      correta: 0
+      answer: 0,
+      feedback: "Polimorfismo permite que o mesmo método tenha comportamentos diferentes."
     },
     {
-      pergunta: "O que é um construtor em uma classe?",
-      alternativas: [
-        "A) Um método que destrói objetos",
-        "B) Um método chamado automaticamente ao criar um objeto",
-        "C) Um atributo fixo da classe",
-        "D) Um tipo de variável especial"
+      question: "O que é um construtor em uma classe?",
+      options: [
+        "Um método que destrói objetos",
+        "Um método chamado automaticamente ao criar um objeto",
+        "Um atributo fixo da classe",
+        "Um tipo de variável especial"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "Construtor é executado automaticamente na criação do objeto."
     },
     {
-      pergunta: "Qual das opções representa corretamente um exemplo de herança?",
-      alternativas: [
-        "A) Uma classe Carro copiando código manualmente de outra",
-        "B) Uma classe Animal sendo usada como variável",
-        "C) Uma classe Cachorro que herda de Animal",
-        "D) Um objeto sendo criado dentro de outro"
+      question: "Qual das opções representa corretamente um exemplo de herança?",
+      options: [
+        "Uma classe Carro copiando código manualmente de outra",
+        "Uma classe Animal sendo usada como variável",
+        "Uma classe Cachorro que herda de Animal",
+        "Um objeto sendo criado dentro de outro"
       ],
-      correta: 2
+      answer: 2,
+      feedback: "Herança ocorre quando uma classe filha deriva de uma classe pai."
     },
     {
-      pergunta: "O que é abstração em POO?",
-      alternativas: [
-        "A) Expor todos os detalhes do sistema",
-        "B) Representar apenas os aspectos essenciais de um objeto",
-        "C) Criar objetos automaticamente",
-        "D) Executar código sem classe"
+      question: "O que é abstração em POO?",
+      options: [
+        "Expor todos os detalhes do sistema",
+        "Representar apenas os aspectos essenciais de um objeto",
+        "Criar objetos automaticamente",
+        "Executar código sem classe"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "Abstração foca apenas no que é relevante, escondendo complexidade."
     }
   ],
 
   /* ── QUESTÕES AVA ───────────────────────────────────── */
   ava: [
     {
-      pergunta: "Em POO, qual modificador de acesso torna um atributo acessível apenas dentro da própria classe?",
-      alternativas: [
-        "A) public",
-        "B) protected",
-        "C) private",
-        "D) static"
+      question: "Em POO, qual modificador de acesso torna um atributo acessível apenas dentro da própria classe?",
+      options: [
+        "public",
+        "protected",
+        "private",
+        "static"
       ],
-      correta: 2
+      answer: 2,
+      feedback: "O modificador `private` restringe o acesso à própria classe."
     },
     {
-      pergunta: "Qual palavra-chave é usada em Java para indicar herança?",
-      alternativas: [
-        "A) implements",
-        "B) extends",
-        "C) inherits",
-        "D) super"
+      question: "Qual palavra-chave é usada em Java para indicar herança?",
+      options: [
+        "implements",
+        "extends",
+        "inherits",
+        "super"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "A palavra-chave `extends` indica herança em Java."
     },
     {
-      pergunta: "O que é uma interface em POO?",
-      alternativas: [
-        "A) Uma classe que já possui implementação completa",
-        "B) Um contrato que define métodos que uma classe deve implementar",
-        "C) Um tipo especial de atributo",
-        "D) Um objeto sem classe definida"
+      question: "O que é uma interface em POO?",
+      options: [
+        "Uma classe que já possui implementação completa",
+        "Um contrato que define métodos que uma classe deve implementar",
+        "Um tipo especial de atributo",
+        "Um objeto sem classe definida"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "Interface define regras que as classes devem seguir."
     },
     {
-      pergunta: "Qual princípio da POO está sendo aplicado quando ocultamos a complexidade interna de um objeto?",
-      alternativas: [
-        "A) Herança",
-        "B) Polimorfismo",
-        "C) Encapsulamento",
-        "D) Instanciação"
+      question: "Qual princípio da POO está sendo aplicado quando ocultamos a complexidade interna de um objeto?",
+      options: [
+        "Herança",
+        "Polimorfismo",
+        "Encapsulamento",
+        "Instanciação"
       ],
-      correta: 2
+      answer: 2,
+      feedback: "Encapsulamento esconde detalhes internos e protege os dados."
     },
     {
-      pergunta: "O que é sobrescrita (override) de método?",
-      alternativas: [
-        "A) Criar um método com o mesmo nome mas parâmetros diferentes na mesma classe",
-        "B) Redefinir na subclasse um método herdado da superclasse",
-        "C) Chamar o construtor da classe pai",
-        "D) Tornar um método privado na subclasse"
+      question: "O que é sobrescrita (`override`) de método?",
+      options: [
+        "Criar um método com o mesmo nome mas parâmetros diferentes na mesma classe",
+        "Redefinir na subclasse um método herdado da superclasse",
+        "Chamar o construtor da classe pai",
+        "Tornar um método privado na subclasse"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "Override permite alterar o comportamento de um método herdado."
     }
   ]
 
-  // ← Para adicionar novo tipo no futuro, basta acrescentar aqui:
-  // simulado: [ ... ]
-  // revisao:  [ ... ]
 };

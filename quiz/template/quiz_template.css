@@ -218,10 +218,11 @@
 .jk-comment    { color: rgba(255, 255, 255, 0.28); font-style: italic; }
 .jk-type       { color: var(--quiz-accent); }
 
-/* Inline code */
+/* Inline code dentro de textos */
 .assertion code,
 .question-texto code,
-.question-enunciado code {
+.question-enunciado code,
+.question-text code {
   font-family: var(--font-mono);
   font-size: 0.82em;
   color: var(--quiz-accent);
@@ -254,15 +255,6 @@
   overflow: hidden;
 }
 
-.option::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(var(--quiz-accent-rgb), 0);
-  transition: background 0.22s ease;
-  border-radius: inherit;
-}
-
 .option:hover {
   background: rgba(var(--quiz-accent-rgb), 0.07);
   border-color: rgba(var(--quiz-accent-rgb), 0.3);
@@ -270,28 +262,24 @@
   transform: translateX(4px);
 }
 
-/* Selecionada */
 .option.selected {
   background: rgba(var(--quiz-accent-rgb), 0.12);
   border-color: rgba(var(--quiz-accent-rgb), 0.45);
   color: var(--text-1);
 }
 
-/* Correta */
 .option.correct {
   background: rgba(var(--cor-correct-rgb), 0.1);
   border-color: rgba(var(--cor-correct-rgb), 0.4);
   color: var(--cor-correct);
 }
 
-/* Incorreta */
 .option.incorrect {
   background: rgba(var(--cor-wrong-rgb), 0.1);
   border-color: rgba(var(--cor-wrong-rgb), 0.38);
   color: var(--cor-wrong);
 }
 
-/* Bloqueada após resposta */
 .option.locked {
   cursor: not-allowed;
   pointer-events: none;
@@ -330,10 +318,8 @@
   align-items: center;
   gap: 1rem;
   animation: fade-up 0.4s ease both;
-  transition: all 0.35s ease;
 }
 
-/* Progresso parcial */
 .subject-result--progress {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--border);
@@ -343,11 +329,7 @@
   padding: 0.8rem 1.1rem;
 }
 
-.sr-progress-label {
-  font-size: 0.72rem;
-  color: var(--text-3);
-  letter-spacing: 0.03em;
-}
+.sr-progress-label { font-size: 0.72rem; color: var(--text-3); }
 
 .sr-progress-bar {
   width: 100%;
@@ -364,7 +346,6 @@
   transition: width 0.4s ease;
 }
 
-/* Resultado completo */
 .subject-result--good {
   background: rgba(var(--cor-correct-rgb), 0.07);
   border: 1px solid rgba(var(--cor-correct-rgb), 0.22);
@@ -381,26 +362,9 @@
 }
 
 .sr-icon { font-size: 1.6rem; line-height: 1; flex-shrink: 0; }
-
-.sr-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  flex: 1;
-}
-
-.sr-title {
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--text-3);
-}
-
-.sr-score {
-  font-size: 0.84rem;
-  color: var(--text-2);
-}
+.sr-content { display: flex; flex-direction: column; gap: 0.1rem; flex: 1; }
+.sr-title { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-3); }
+.sr-score { font-size: 0.84rem; color: var(--text-2); }
 
 .sr-pct {
   font-family: var(--font-display);
@@ -436,7 +400,6 @@
 }
 
 .score {
-  font-family: var(--font-body);
   font-size: 0.9rem;
   color: var(--text-2);
   margin-bottom: 0.4rem;
@@ -452,10 +415,7 @@
   letter-spacing: -0.02em;
 }
 
-.results p {
-  font-size: 0.84rem;
-  color: var(--text-3);
-}
+.results p { font-size: 0.84rem; color: var(--text-3); }
 
 /* ── BOTÕES DE AÇÃO ──────────────────────────────────────── */
 .submit-container {
@@ -481,7 +441,6 @@
   font-family: var(--font-body);
   font-size: 0.8rem;
   font-weight: 500;
-  letter-spacing: 0.02em;
   cursor: pointer;
   transition: all 0.22s ease;
   text-decoration: none;
@@ -489,7 +448,6 @@
 
 .action-button:hover {
   background: rgba(255, 255, 255, 0.08);
-  border-color: var(--border-mid);
   color: var(--text-1);
   transform: translateY(-1px);
 }
@@ -500,27 +458,15 @@
   pointer-events: none;
 }
 
-.submit-button, .restart-button {
+.restart-button {
   background: rgba(var(--cor-correct-rgb), 0.08);
   border-color: rgba(var(--cor-correct-rgb), 0.28);
   color: var(--cor-correct);
 }
 
-.submit-button:hover, .restart-button:hover {
+.restart-button:hover {
   background: rgba(var(--cor-correct-rgb), 0.15);
   border-color: rgba(var(--cor-correct-rgb), 0.5);
-  color: #fff;
-}
-
-.clear-button {
-  background: rgba(var(--cor-wrong-rgb), 0.07);
-  border-color: rgba(var(--cor-wrong-rgb), 0.25);
-  color: var(--cor-wrong);
-}
-
-.clear-button:hover {
-  background: rgba(var(--cor-wrong-rgb), 0.15);
-  border-color: rgba(var(--cor-wrong-rgb), 0.45);
   color: #fff;
 }
 
@@ -536,7 +482,6 @@
   color: #fff;
 }
 
-/* Botão ver erros */
 .errors-button {
   background: rgba(var(--cor-wrong-rgb), 0.07);
   border-color: rgba(var(--cor-wrong-rgb), 0.25);
@@ -597,6 +542,25 @@
   transform: scale(1.08);
 }
 
+/* [FIX 12] btn-toggle-modo: sem position fixed, fica dentro do nav-float */
+.btn-toggle-modo {
+  background: rgba(var(--quiz-accent-rgb), 0.1);
+  border: 1px solid rgba(var(--quiz-accent-rgb), 0.28);
+  color: var(--quiz-accent);
+}
+
+.btn-toggle-modo:hover {
+  background: rgba(var(--quiz-accent-rgb), 0.2);
+  border-color: rgba(var(--quiz-accent-rgb), 0.5);
+  color: #fff;
+  transform: scale(1.08);
+}
+
+.btn-toggle-modo.modo-step-active {
+  background: rgba(var(--quiz-accent-rgb), 0.18);
+  border-color: rgba(var(--quiz-accent-rgb), 0.5);
+}
+
 /* ── MODO STEP ───────────────────────────────────────────── */
 .step-hidden            { display: none !important; }
 .step-structural-hidden { display: none !important; }
@@ -625,24 +589,11 @@
   z-index: 2;
 }
 
-/* Step header */
 .step-header {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   padding-bottom: 0.6rem;
-}
-
-.step-subject-label {
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: var(--quiz-accent);
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  opacity: 0.8;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .step-progress-wrapper {
@@ -655,9 +606,8 @@
   font-size: 0.72rem;
   font-weight: 600;
   color: var(--text-3);
-  letter-spacing: 0.06em;
-  white-space: nowrap;
   min-width: 40px;
+  white-space: nowrap;
 }
 
 .step-progress-bar {
@@ -675,12 +625,7 @@
   transition: width 0.38s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Badges */
-.step-score-badges {
-  display: flex;
-  gap: 0.35rem;
-  flex-shrink: 0;
-}
+.step-score-badges { display: flex; gap: 0.35rem; flex-shrink: 0; }
 
 .step-badge {
   display: inline-flex;
@@ -704,7 +649,6 @@
   color: var(--cor-wrong);
 }
 
-/* Step footer */
 .step-footer {
   display: flex;
   align-items: center;
@@ -714,7 +658,6 @@
   border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Dots */
 .step-dots {
   display: flex;
   align-items: center;
@@ -738,7 +681,6 @@
 .step-dot-correct { background: rgba(var(--cor-correct-rgb), 0.5); }
 .step-dot-wrong   { background: rgba(var(--cor-wrong-rgb), 0.45); }
 
-/* Step buttons */
 .step-btn {
   display: inline-flex;
   align-items: center;
@@ -779,46 +721,13 @@
 
 .step-btn:disabled { opacity: 0.2; cursor: not-allowed; pointer-events: none; }
 
-/* Toggle modo flutuante */
-.btn-toggle-modo {
-  position: fixed;
-  bottom: 24px;
-  right: 16px;
-  width: 42px; height: 42px;
-  border-radius: 10px;
-  background: rgba(var(--quiz-accent-rgb), 0.1);
-  border: 1px solid rgba(var(--quiz-accent-rgb), 0.28);
-  color: var(--quiz-accent);
-  font-size: 0.9rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 200;
-  transition: all 0.25s ease;
-  box-shadow: 0 4px 18px rgba(var(--quiz-accent-rgb), 0.07);
-}
-
-.btn-toggle-modo:hover {
-  background: rgba(var(--quiz-accent-rgb), 0.2);
-  border-color: rgba(var(--quiz-accent-rgb), 0.5);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(var(--quiz-accent-rgb), 0.15);
-}
-
-.btn-toggle-modo.modo-step-active {
-  background: rgba(var(--quiz-accent-rgb), 0.18);
-  border-color: rgba(var(--quiz-accent-rgb), 0.5);
-}
-
-/* ── RESPONSIVO QUIZ ─────────────────────────────────────── */
+/* ── RESPONSIVO ──────────────────────────────────────────── */
 @media (max-width: 680px) {
   .question-container { padding: 1.1rem; }
   .buttons-container { flex-direction: column; align-items: center; }
   .action-button { width: 100%; max-width: 260px; justify-content: center; }
   .nav-float { right: 8px; }
   .nav-btn { width: 32px; height: 32px; font-size: 0.75rem; }
-  .btn-toggle-modo { bottom: 16px; right: 8px; width: 38px; height: 38px; }
   .step-btn { padding: 0.48rem 0.85rem; font-size: 0.76rem; }
   .code-block { font-size: 0.72rem; padding: 0.7rem 0.85rem; }
 }

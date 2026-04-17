@@ -7,107 +7,118 @@ window.questoes = {
 
   questoes: [
     {
-      pergunta: "Qual camada do modelo OSI usa IP?",
-      alternativas: [
-        "A) Enlace",
-        "B) Transporte",
-        "C) Rede",
-        "D) Sessão"
+      question: "Qual camada do modelo OSI usa IP?",
+      options: [
+        "Enlace",
+        "Transporte",
+        "Rede",
+        "Sessão"
       ],
-      correta: 2
+      answer: 2,
+      feedback: "O protocolo IP atua na camada de Rede do modelo OSI."
     },
     {
-      pergunta: "TCP garante:",
-      alternativas: [
-        "A) Velocidade sem controle",
-        "B) Entrega confiável",
-        "C) Sem conexão",
-        "D) Broadcast"
+      question: "TCP garante:",
+      options: [
+        "Velocidade sem controle",
+        "Entrega confiável",
+        "Sem conexão",
+        "Broadcast"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "O TCP garante entrega confiável, com controle de erros e ordem."
     },
     {
-      pergunta: "O que é subnet?",
-      alternativas: [
-        "A) Cabo",
-        "B) Divisão de rede",
-        "C) Protocolo",
-        "D) IP fixo"
+      question: "O que é subnet?",
+      options: [
+        "Cabo",
+        "Divisão de rede",
+        "Protocolo",
+        "IP fixo"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "Subnet é a divisão de uma rede maior em redes menores."
     },
     {
-      pergunta: "DNS serve para:",
-      alternativas: [
-        "A) Enviar email",
-        "B) Traduzir domínio para IP",
-        "C) Transferir arquivos",
-        "D) Roteamento"
+      question: "DNS serve para:",
+      options: [
+        "Enviar email",
+        "Traduzir domínio para IP",
+        "Transferir arquivos",
+        "Roteamento"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "O DNS converte nomes de domínio em endereços IP."
     },
     {
-      pergunta: "MAC atua na camada:",
-      alternativas: [
-        "A) Física",
-        "B) Enlace",
-        "C) Rede",
-        "D) Transporte"
+      question: "MAC atua na camada:",
+      options: [
+        "Física",
+        "Enlace",
+        "Rede",
+        "Transporte"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "O endereço MAC atua na camada de Enlace."
     }
   ],
 
   ava: [
     {
-      pergunta: "HTTP usa porta padrão:",
-      alternativas: [
-        "A) 21",
-        "B) 80",
-        "C) 443",
-        "D) 25"
+      question: "HTTP usa porta padrão:",
+      options: [
+        "21",
+        "80",
+        "443",
+        "25"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "A porta padrão do HTTP é a 80."
     },
     {
-      pergunta: "HTTPS adiciona:",
-      alternativas: [
-        "A) Compressão",
-        "B) Segurança",
-        "C) Velocidade",
-        "D) DNS"
+      question: "HTTPS adiciona:",
+      options: [
+        "Compressão",
+        "Segurança",
+        "Velocidade",
+        "DNS"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "HTTPS adiciona segurança através de criptografia (SSL/TLS)."
     },
     {
-      pergunta: "Roteador faz:",
-      alternativas: [
-        "A) Processar CPU",
-        "B) Direcionar pacotes",
-        "C) Armazenar dados",
-        "D) Criar código"
+      question: "Roteador faz:",
+      options: [
+        "Processar CPU",
+        "Direcionar pacotes",
+        "Armazenar dados",
+        "Criar código"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "O roteador é responsável por direcionar pacotes entre redes."
     },
     {
-      pergunta: "IP identifica:",
-      alternativas: [
-        "A) Usuário",
-        "B) Dispositivo na rede",
-        "C) Programa",
-        "D) Arquivo"
+      question: "IP identifica:",
+      options: [
+        "Usuário",
+        "Dispositivo na rede",
+        "Programa",
+        "Arquivo"
       ],
-      correta: 1
+      answer: 1,
+      feedback: "O endereço IP identifica dispositivos dentro de uma rede."
     },
     {
-      pergunta: "UDP é:",
-      alternativas: [
-        "A) Confiável",
-        "B) Lento",
-        "C) Sem conexão",
-        "D) Criptografado"
+      question: "UDP é:",
+      options: [
+        "Confiável",
+        "Lento",
+        "Sem conexão",
+        "Criptografado"
       ],
-      correta: 2
+      answer: 2,
+      feedback: "UDP é um protocolo sem conexão e sem garantia de entrega."
     }
   ]
+
 };

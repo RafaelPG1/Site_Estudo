@@ -2,7 +2,7 @@
    NEXUS STUDY — ava_template.css
    Estilos para páginas de avaliação (AVA).
    Depende de: template_global.css
-   Acento principal: --cor-tema (cor primária da disciplina)
+   Acento principal: --cor-tema
    ============================================================ */
 
 /* ── ALIAS: usa cor-tema como acento do AVA ──────────────── */
@@ -61,7 +61,7 @@
   opacity: 0.8;
 }
 
-/* Texto de contexto — barra lateral */
+/* Texto de contexto */
 .question-texto {
   font-family: var(--font-body);
   font-size: 0.875rem;
@@ -210,7 +210,8 @@
 
 .assertion code,
 .question-texto code,
-.question-enunciado code {
+.question-enunciado code,
+.question-text code {
   font-family: var(--font-mono);
   font-size: 0.82em;
   color: var(--ava-accent);
@@ -440,27 +441,15 @@
   pointer-events: none;
 }
 
-.submit-button, .restart-button {
+.restart-button {
   background: rgba(var(--cor-correct-rgb), 0.08);
   border-color: rgba(var(--cor-correct-rgb), 0.28);
   color: var(--cor-correct);
 }
 
-.submit-button:hover, .restart-button:hover {
+.restart-button:hover {
   background: rgba(var(--cor-correct-rgb), 0.15);
   border-color: rgba(var(--cor-correct-rgb), 0.5);
-  color: #fff;
-}
-
-.clear-button {
-  background: rgba(var(--cor-wrong-rgb), 0.07);
-  border-color: rgba(var(--cor-wrong-rgb), 0.25);
-  color: var(--cor-wrong);
-}
-
-.clear-button:hover {
-  background: rgba(var(--cor-wrong-rgb), 0.15);
-  border-color: rgba(var(--cor-wrong-rgb), 0.45);
   color: #fff;
 }
 
@@ -536,6 +525,25 @@
   transform: scale(1.08);
 }
 
+/* [FIX 12] btn-toggle-modo: sem position fixed, fica dentro do nav-float */
+.btn-toggle-modo {
+  background: rgba(var(--ava-accent-rgb), 0.1);
+  border: 1px solid rgba(var(--ava-accent-rgb), 0.28);
+  color: var(--ava-accent);
+}
+
+.btn-toggle-modo:hover {
+  background: rgba(var(--ava-accent-rgb), 0.2);
+  border-color: rgba(var(--ava-accent-rgb), 0.5);
+  color: #fff;
+  transform: scale(1.08);
+}
+
+.btn-toggle-modo.modo-step-active {
+  background: rgba(var(--ava-accent-rgb), 0.18);
+  border-color: rgba(var(--ava-accent-rgb), 0.5);
+}
+
 /* ── MODO STEP ───────────────────────────────────────────── */
 .step-hidden            { display: none !important; }
 .step-structural-hidden { display: none !important; }
@@ -571,18 +579,6 @@
   padding-bottom: 0.6rem;
 }
 
-.step-subject-label {
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: var(--ava-accent);
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  opacity: 0.8;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .step-progress-wrapper {
   display: flex;
   align-items: center;
@@ -594,6 +590,7 @@
   font-weight: 600;
   color: var(--text-3);
   min-width: 40px;
+  white-space: nowrap;
 }
 
 .step-progress-bar {
@@ -707,45 +704,13 @@
 
 .step-btn:disabled { opacity: 0.2; cursor: not-allowed; pointer-events: none; }
 
-.btn-toggle-modo {
-  position: fixed;
-  bottom: 24px;
-  right: 16px;
-  width: 42px; height: 42px;
-  border-radius: 10px;
-  background: rgba(var(--ava-accent-rgb), 0.1);
-  border: 1px solid rgba(var(--ava-accent-rgb), 0.28);
-  color: var(--ava-accent);
-  font-size: 0.9rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 200;
-  transition: all 0.25s ease;
-  box-shadow: 0 4px 18px rgba(var(--ava-accent-rgb), 0.07);
-}
-
-.btn-toggle-modo:hover {
-  background: rgba(var(--ava-accent-rgb), 0.2);
-  border-color: rgba(var(--ava-accent-rgb), 0.5);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(var(--ava-accent-rgb), 0.15);
-}
-
-.btn-toggle-modo.modo-step-active {
-  background: rgba(var(--ava-accent-rgb), 0.18);
-  border-color: rgba(var(--ava-accent-rgb), 0.5);
-}
-
-/* ── RESPONSIVO AVA ──────────────────────────────────────── */
+/* ── RESPONSIVO ──────────────────────────────────────────── */
 @media (max-width: 680px) {
   .question-container { padding: 1.1rem; }
   .buttons-container { flex-direction: column; align-items: center; }
   .action-button { width: 100%; max-width: 260px; justify-content: center; }
   .nav-float { right: 8px; }
   .nav-btn { width: 32px; height: 32px; font-size: 0.75rem; }
-  .btn-toggle-modo { bottom: 16px; right: 8px; width: 38px; height: 38px; }
   .step-btn { padding: 0.48rem 0.85rem; font-size: 0.76rem; }
   .code-block { font-size: 0.72rem; padding: 0.7rem 0.85rem; }
 }

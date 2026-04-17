@@ -13,17 +13,20 @@
 </head>
 <body>
 
-  <!-- Background -->
   <div class="bg-orb bg-orb--1"></div>
   <div class="bg-orb bg-orb--2"></div>
   <div class="bg-orb bg-orb--3"></div>
   <div class="bg-grid"></div>
 
-  <!-- ===== HEADER ===== -->
   <header class="header">
     <div class="header__inner">
 
-      <a href="../../quiz.html" class="back-btn" id="back-btn" aria-label="Voltar para Disciplinas">
+      <!--
+        FIX: href padrão inclui ?sem=2026.2 como fallback seguro.
+        O disciplinas_init.js vai sobrescrever com o ?sem= real da URL.
+        Sem JS, o usuário volta ao semestre padrão em vez de perder o param.
+      -->
+      <a href="../../quiz.html?sem=2026.2" class="back-btn" id="back-btn" aria-label="Voltar para Disciplinas">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="15 18 9 12 15 6"/>
         </svg>
@@ -49,7 +52,6 @@
     </div>
   </header>
 
-  <!-- ===== MAIN ===== -->
   <main class="main">
 
     <div class="page-header">
@@ -63,13 +65,15 @@
 
     <div class="disciplines">
 
-      <!-- AVA Card -->
+      <!--
+        FIX: ?sem=2026.2 hardcoded como fallback seguro em ambos os cards.
+        O disciplinas_init.js sobrescreve com o valor real da URL antes do clique.
+        Sem JS → semestre padrão. Com JS → semestre correto da URL.
+      -->
       <a href="../../template/ava_template.html?disc=poo&modo=ava&sem=2026.2"
          class="disc-card disc-card--ava" id="link-ava">
         <div class="disc-card__icon-col">
-          <div class="disc-card__icon-wrap">
-            <span>📚</span>
-          </div>
+          <div class="disc-card__icon-wrap"><span>📚</span></div>
         </div>
         <div class="disc-card__body">
           <h2 class="disc-card__title">AVA</h2>
@@ -86,13 +90,10 @@
         <div class="disc-card__glow"></div>
       </a>
 
-      <!-- Questões Card -->
       <a href="../../template/quiz_template.html?disc=poo&modo=questoes&sem=2026.2"
          class="disc-card disc-card--quiz" id="link-quiz">
         <div class="disc-card__icon-col">
-          <div class="disc-card__icon-wrap">
-            <span>❓</span>
-          </div>
+          <div class="disc-card__icon-wrap"><span>❓</span></div>
         </div>
         <div class="disc-card__body">
           <h2 class="disc-card__title">Questões</h2>
@@ -113,37 +114,11 @@
 
   </main>
 
-  <!-- ===== FOOTER ===== -->
   <footer class="footer">
     <p>© 2025 Nexus Study · Desenvolvido para facilitar seus estudos</p>
   </footer>
 
-  <!--
-    Lê ?sem= da URL e atualiza dinamicamente:
-      - os links de AVA e Questões (saída para templates)
-      - o back-btn (volta para quiz.html com o sem correto)
-    Sem default: '2026.2' caso o param não venha na URL.
-  -->
-  <script>
-    (function () {
-      var sem = new URLSearchParams(location.search).get('sem') || '2026.2';
-
-      // Atualiza links de saída para os templates
-      document.querySelectorAll('a[href*="ava_template"], a[href*="quiz_template"]').forEach(function (a) {
-        var url = new URL(a.href, location.href);
-        url.searchParams.set('sem', sem);
-        a.href = url.toString();
-      });
-
-      // Atualiza o back-btn para voltar com o sem correto
-      var backBtn = document.getElementById('back-btn');
-      if (backBtn) {
-        var url = new URL(backBtn.href, location.href);
-        url.searchParams.set('sem', sem);
-        backBtn.href = url.toString();
-      }
-    })();
-  </script>
+  <script src="disciplinas_init.js"></script>
 
 </body>
 </html>

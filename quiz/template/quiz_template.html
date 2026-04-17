@@ -1,7 +1,5 @@
 <!--
-  NEXUS STUDY — quiz_template.html
-  Localização: quiz/template/quiz_template.html
-
+  NEXUS STUDY — quiz/template/quiz_template.html
   Estrutura exclusiva: Questões Práticas
   Lógica compartilhada → template_init.js
 -->
@@ -29,6 +27,28 @@
 
   <link rel="stylesheet" href="template_global.css" />
   <link rel="stylesheet" href="quiz_template.css" />
+
+  <!--
+    [INLINE SCRIPT] Roda ANTES do módulo template_init.js.
+    Lê ?disc= e ?sem= da URL e já corrige o href do back-btn
+    de forma síncrona — sem esperar o módulo carregar.
+  -->
+  <script>
+    (function () {
+      var params = new URLSearchParams(location.search);
+      var disc   = params.get('disc') || 'poo';
+      var sem    = params.get('sem')  || '2026.2';
+      var ano    = sem.split('.')[0];
+      var href   = '../disciplinas/' + ano + '/' + disc + '.html?sem=' + sem;
+
+      document.addEventListener('DOMContentLoaded', function () {
+        var btn = document.querySelector('.back-btn');
+        if (btn) btn.href = href;
+      });
+
+      window.__NEXUS_BACK_HREF_EARLY__ = href;
+    })();
+  </script>
 </head>
 
 <body data-disciplina="questoes">
@@ -41,7 +61,9 @@
   <header class="header">
     <div class="header__inner">
 
-      <a href="#" class="back-btn" aria-label="Voltar para a disciplina">
+      <a href="../disciplinas/2026/poo.html?sem=2026.2"
+         class="back-btn"
+         aria-label="Voltar para a disciplina">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <polyline points="15 18 9 12 15 6"/>
         </svg>
@@ -109,7 +131,6 @@
   <footer class="page-footer" id="page-footer">
     Nexus Study · Questões Práticas
   </footer>
-
 
   <script type="module" src="template_init.js"></script>
 

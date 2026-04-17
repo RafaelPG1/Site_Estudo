@@ -13,13 +13,11 @@
 </head>
 <body>
 
-  <!-- Background -->
   <div class="bg-orb bg-orb--1"></div>
   <div class="bg-orb bg-orb--2"></div>
   <div class="bg-orb bg-orb--3"></div>
   <div class="bg-grid"></div>
 
-  <!-- ===== HEADER ===== -->
   <header class="header">
     <div class="header__inner">
 
@@ -49,7 +47,6 @@
     </div>
   </header>
 
-  <!-- ===== MAIN ===== -->
   <main class="main">
 
     <div class="page-header">
@@ -63,13 +60,10 @@
 
     <div class="disciplines">
 
-      <!-- AVA Card -->
-      <a href="../../template/ava_template.html?disc=banco_dados&modo=ava&sem=2026.2"
+      <a href="../../template/ava_template.html?disc=banco_dados&modo=ava"
          class="disc-card disc-card--ava" id="link-ava">
         <div class="disc-card__icon-col">
-          <div class="disc-card__icon-wrap">
-            <span>📚</span>
-          </div>
+          <div class="disc-card__icon-wrap"><span>📚</span></div>
         </div>
         <div class="disc-card__body">
           <h2 class="disc-card__title">AVA</h2>
@@ -86,13 +80,10 @@
         <div class="disc-card__glow"></div>
       </a>
 
-      <!-- Questões Card -->
-      <a href="../../template/quiz_template.html?disc=banco_dados&modo=questoes&sem=2026.2"
+      <a href="../../template/quiz_template.html?disc=banco_dados&modo=questoes"
          class="disc-card disc-card--quiz" id="link-quiz">
         <div class="disc-card__icon-col">
-          <div class="disc-card__icon-wrap">
-            <span>❓</span>
-          </div>
+          <div class="disc-card__icon-wrap"><span>❓</span></div>
         </div>
         <div class="disc-card__body">
           <h2 class="disc-card__title">Questões</h2>
@@ -113,29 +104,11 @@
 
   </main>
 
-  <!-- ===== FOOTER ===== -->
   <footer class="footer">
     <p>© 2025 Nexus Study · Desenvolvido para facilitar seus estudos</p>
   </footer>
 
-  <script>
-    (function () {
-      var sem = new URLSearchParams(location.search).get('sem') || '2026.2';
-
-      document.querySelectorAll('a[href*="ava_template"], a[href*="quiz_template"]').forEach(function (a) {
-        var url = new URL(a.href, location.href);
-        url.searchParams.set('sem', sem);
-        a.href = url.toString();
-      });
-
-      var backBtn = document.getElementById('back-btn');
-      if (backBtn) {
-        var url = new URL(backBtn.href, location.href);
-        url.searchParams.set('sem', sem);
-        backBtn.href = url.toString();
-      }
-    })();
-  </script>
+  <script src="disciplinas_init.js"></script>
 
 </body>
 </html>
