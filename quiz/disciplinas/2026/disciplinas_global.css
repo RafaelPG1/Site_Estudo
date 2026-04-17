@@ -36,9 +36,9 @@
        --cor-tema-2
        --cor-tema-2-rgb
   */
-  --cor-tema:      #7aa8e8;
-  --cor-tema-rgb:  122, 168, 232;
-  --cor-tema-2:    #4dd9b4;
+  --cor-tema:       #7aa8e8;
+  --cor-tema-rgb:   122, 168, 232;
+  --cor-tema-2:     #4dd9b4;
   --cor-tema-2-rgb: 77, 217, 180;
 }
 
@@ -188,7 +188,7 @@ a { text-decoration: none; color: inherit; }
   width: 34px;
   height: 34px;
   border-radius: 9px;
-  /* ✅ Fixo — não usa variável de tema */
+  /* Fixo — não usa variável de tema */
   background: linear-gradient(135deg, #4dd9b4, #7aa8e8);
   display: flex;
   align-items: center;
@@ -199,7 +199,6 @@ a { text-decoration: none; color: inherit; }
   color: var(--bg);
   flex-shrink: 0;
 }
-
 
 .logo-text {
   display: flex;
@@ -219,7 +218,7 @@ a { text-decoration: none; color: inherit; }
   font-weight: 500;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  /* ✅ Fixo — não usa --cor-logo nem --cor-tema */
+  /* Fixo — não usa --cor-logo nem --cor-tema */
   color: #4dd9b4;
 }
 
@@ -424,17 +423,11 @@ a { text-decoration: none; color: inherit; }
   transform: translateY(0);
 }
 
-/* ── TEMAS DOS CARDS (via --cor-tema e --cor-tema-2) ── */
-
 /* ── TEMAS DOS CARDS ── */
 
-/* AVA — cor fixa, igual em todas as disciplinas */
+/* AVA — cor fixa azul, igual em todas as disciplinas */
 .disc-card--ava {
-  background: linear-gradient(
-    145deg,
-    #0e1420,
-    rgba(122, 168, 232, 0.07)
-  );
+  background: linear-gradient(145deg, #0e1420, rgba(122, 168, 232, 0.07));
   border-color: rgba(122, 168, 232, 0.18);
   box-shadow: 0 0 30px rgba(122, 168, 232, 0.05);
 }
@@ -454,55 +447,27 @@ a { text-decoration: none; color: inherit; }
 }
 .disc-card--ava:hover .disc-card__cta-label { color: #7aa8e8; }
 
-/* Quiz — cor secundária */
+/* Quiz — cor fixa teal, igual em todas as disciplinas */
 .disc-card--quiz {
-  background: linear-gradient(
-    145deg,
-    #0e1420,
-    rgba(var(--cor-tema-2-rgb), 0.07)
-  );
-  border-color: rgba(var(--cor-tema-2-rgb), 0.18);
-  box-shadow: 0 0 30px rgba(var(--cor-tema-2-rgb), 0.05);
+  background: linear-gradient(145deg, #0e1420, rgba(77, 217, 180, 0.07));
+  border-color: rgba(77, 217, 180, 0.18);
+  box-shadow: 0 0 30px rgba(77, 217, 180, 0.05);
 }
 .disc-card--quiz:hover {
-  border-color: rgba(var(--cor-tema-2-rgb), 0.4);
-  box-shadow: 0 12px 40px rgba(var(--cor-tema-2-rgb), 0.15);
+  border-color: rgba(77, 217, 180, 0.4);
+  box-shadow: 0 12px 40px rgba(77, 217, 180, 0.15);
 }
 .disc-card--quiz .disc-card__icon-wrap {
-  background: rgba(var(--cor-tema-2-rgb), 0.12);
+  background: rgba(77, 217, 180, 0.12);
 }
 .disc-card--quiz .disc-card__title { color: white; }
 .disc-card--quiz:hover .disc-card__arrow {
-  border-color: var(--cor-tema-2);
-  color: var(--cor-tema-2);
-  background: rgba(var(--cor-tema-2-rgb), 0.1);
-  box-shadow: 0 0 14px rgba(var(--cor-tema-2-rgb), 0.25);
+  border-color: #4dd9b4;
+  color: #4dd9b4;
+  background: rgba(77, 217, 180, 0.1);
+  box-shadow: 0 0 14px rgba(77, 217, 180, 0.25);
 }
-.disc-card--quiz:hover .disc-card__cta-label { color: var(--cor-tema-2); }
-
-/* Questões — usa cor secundária da disciplina */
-.disc-card--quiz {
-  background: linear-gradient(145deg, #0e1420, #0d1c20);
-}
-.disc-card--quiz:hover {
-  border-color: rgba(var(--cor-tema-2-rgb), 0.3);
-  box-shadow: 0 12px 40px rgba(var(--cor-tema-2-rgb), 0.1);
-}
-.disc-card--quiz .disc-card__icon-wrap {
-  background: rgba(var(--cor-tema-2-rgb), 0.12);
-}
-.disc-card--quiz .disc-card__title {
-  color: white;
-}
-.disc-card--quiz:hover .disc-card__arrow {
-  border-color: var(--cor-tema-2);
-  color: var(--cor-tema-2);
-  background: rgba(var(--cor-tema-2-rgb), 0.1);
-  box-shadow: 0 0 14px rgba(var(--cor-tema-2-rgb), 0.2);
-}
-.disc-card--quiz:hover .disc-card__cta-label {
-  color: var(--cor-tema-2);
-}
+.disc-card--quiz:hover .disc-card__cta-label { color: #4dd9b4; }
 
 /* ── FOOTER ── */
 .footer {
@@ -541,5 +506,5 @@ a { text-decoration: none; color: inherit; }
 
 @media (max-width: 380px) {
   .page-header__title { font-size: 1.75rem; }
-  .logo-title { font-size: 1rem; }
 }
+  .logo-title { font-size: 1rem; }

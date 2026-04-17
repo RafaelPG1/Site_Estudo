@@ -542,7 +542,6 @@
   transform: scale(1.08);
 }
 
-/* [FIX 12] btn-toggle-modo: sem position fixed, fica dentro do nav-float */
 .btn-toggle-modo {
   background: rgba(var(--quiz-accent-rgb), 0.1);
   border: 1px solid rgba(var(--quiz-accent-rgb), 0.28);
@@ -565,20 +564,48 @@
 .step-hidden            { display: none !important; }
 .step-structural-hidden { display: none !important; }
 
-#quiz-container.modo-step { overflow: hidden; }
+#quiz-container.modo-step { overflow-x: hidden; overflow-y: visible; }
 
 .step-quiz-wrapper {
-  display: flex;
-  flex-direction: row;
-  will-change: transform;
-  transition: transform 0.36s cubic-bezier(0.4, 0, 0.2, 1);
+  display: block;
+  width: 100%;
 }
 
+/* Cards inativos ficam ocultos, sem animação */
 .step-quiz-wrapper > .question-container {
+  display: none;
   min-width: 100%;
   max-width: 100%;
-  flex-shrink: 0;
   margin-bottom: 0;
+  animation: none;
+}
+
+/*
+ * FIX PISCAR: .step-active sozinho NÃO define animação.
+ * Só as classes direcionais animam — assim o browser nunca
+ * aplica dois @keyframes conflitantes no mesmo frame.
+ */
+.step-quiz-wrapper > .question-container.step-active {
+  display: block;
+  will-change: transform, opacity;
+}
+
+.step-quiz-wrapper > .question-container.step-active.step-slide-right {
+  animation: step-slide-from-right 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.step-quiz-wrapper > .question-container.step-active.step-slide-left {
+  animation: step-slide-from-left 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes step-slide-from-right {
+  from { opacity: 0; transform: translateX(32px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes step-slide-from-left {
+  from { opacity: 0; transform: translateX(-32px); }
+  to   { opacity: 1; transform: translateX(0); }
 }
 
 #step-shell-header,
@@ -667,7 +694,7 @@
 }
 
 .step-dot {
-  width: 6px; height: 6px;
+  width: 10px; height: 10px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.1);
   border: none;
@@ -675,11 +702,15 @@
   padding: 0;
   transition: all 0.2s ease;
 }
+/* Depois */
+.step-dot:hover                        { background: rgba(255,255,255,0.25); transform: scale(1.4); }
 
-.step-dot:hover { background: rgba(255,255,255,0.25); transform: scale(1.4); }
-.step-dot-active { width: 18px; border-radius: 3px; background: var(--quiz-accent); }
-.step-dot-correct { background: rgba(var(--cor-correct-rgb), 0.5); }
-.step-dot-wrong   { background: rgba(var(--cor-wrong-rgb), 0.45); }
+.step-dot-active       { width: 20px; border-radius: 5px; background: var(--quiz-accent); }
+.step-dot-correct                      { background: rgba(var(--cor-correct-rgb), 0.5); }
+.step-dot-correct:hover                { background: var(--cor-correct); transform: scale(1.4); }
+.step-dot-wrong                        { background: rgba(var(--cor-wrong-rgb), 0.45); }
+.step-dot-wrong:hover                  { background: var(--cor-wrong); transform: scale(1.4); }
+.step-dot-active:hover { background: var(--quiz-accent); transform: scale(1.4); }
 
 .step-btn {
   display: inline-flex;

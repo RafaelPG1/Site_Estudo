@@ -96,12 +96,7 @@ nav.innerHTML = `
   <button id="btn-toggle-modo" class="nav-btn btn-toggle-modo" title="Modo Step (uma questão por vez)" type="button">
     <i class="fas fa-layer-group" aria-hidden="true"></i>
   </button>
-  <button id="btn-step-prev" class="nav-btn" title="Questão anterior" type="button" style="display:none">
-    <i class="fas fa-chevron-left" aria-hidden="true"></i>
-  </button>
-  <button id="btn-step-next" class="nav-btn" title="Próxima questão"  type="button" style="display:none">
-    <i class="fas fa-chevron-right" aria-hidden="true"></i>
-  </button>
+
 `;
 document.body.appendChild(nav);
 

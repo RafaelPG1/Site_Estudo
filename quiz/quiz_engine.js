@@ -405,13 +405,7 @@
 
       atualizarResultados();
 
-      /* Modo step: avança automaticamente após resposta */
-      if (modoStep && stepAtual < questoes.length - 1) {
-        setTimeout(function () {
-          stepAtual++;
-          _aplicarModoStep();
-        }, 800);
-      }
+
     }
 
     function revelar() {
@@ -583,17 +577,21 @@
        ══════════════════════════════════════════════════════ */
 
     /* [FIX 10] Força reflow antes de medir altura */
-    function _sincronizarAlturaStep() {
-      if (!modoStep || !stepWrapper) return;
-      var cards = stepWrapper.querySelectorAll('.question-container');
-      var atual = cards[stepAtual];
-      if (!atual) return;
-      atual.style.height = 'auto';
-      var h = atual.scrollHeight;
-      stepWrapper.style.height = h + 'px';
-      container.style.height   = h + 'px';
-    }
+function _sincronizarAlturaStep() {
+  if (!modoStep || !stepWrapper) return;
+  var cards = stepWrapper.querySelectorAll('.question-container');
+  var atual = cards[stepAtual];
+  if (!atual) return;
 
+  stepWrapper.style.height = 'auto';
+  container.style.height   = 'auto';
+
+  void atual.offsetHeight; // força reflow
+
+  var h = atual.getBoundingClientRect().height;
+  stepWrapper.style.height = h + 'px';
+  container.style.height   = h + 'px';
+}
     function _getDotsRange(current, total, maxVisible) {
       if (total <= maxVisible) {
         var r = [];
@@ -671,12 +669,29 @@
       }
     }
 
-    function _aplicarModoStep() {
-      if (!stepWrapper) return;
-      stepWrapper.style.transform = 'translateX(-' + (stepAtual * 100) + '%)';
-      _atualizarControlesStep();
-      _sincronizarAlturaStep();
+function _aplicarModoStep(direcao) {
+  if (!stepWrapper) return;
+
+  var cards = stepWrapper.querySelectorAll('.question-container');
+  cards.forEach(function (c) {
+    c.classList.remove('step-active', 'step-slide-left', 'step-slide-right');
+  });
+
+  var card = cards[stepAtual];
+  if (card) {
+    card.classList.add('step-active');
+    if (direcao === 'back') {
+      card.classList.add('step-slide-left');
+    } else if (direcao !== 'none') {
+      card.classList.add('step-slide-right');
     }
+  }
+
+  _atualizarControlesStep();
+
+  /* ── CORREÇÃO: ressincroniza altura ao navegar ── */
+  setTimeout(_sincronizarAlturaStep, 50);
+}
 
     function _montarShellHTML() {
       var existeHeader = document.getElementById('step-shell-header');
@@ -760,7 +775,7 @@
       _montarShellHTML();
 
       stepWrapper.style.transition = 'none';
-      _aplicarModoStep();
+      _aplicarModoStep('none');
       requestAnimationFrame(function () {
         requestAnimationFrame(function () {
           if (stepWrapper) {
@@ -769,36 +784,37 @@
         });
       });
 
-      /* [FIX 12] Oculta toggle e mostra prev/next */
-      var toggle = document.getElementById('btn-toggle-modo');
-      if (toggle) {
-        toggle.classList.add('modo-step-active');
-        toggle.style.display = 'none';
-      }
+/* [FIX 12] Muda ícone do toggle para "lista" (não oculta mais) */
+var toggle = document.getElementById('btn-toggle-modo');
+if (toggle) {
+  toggle.classList.add('modo-step-active');
+  toggle.style.display = '';           // ← REMOVA o display:none
+  toggle.title = 'Ver lista completa';
+  var iToggle = toggle.querySelector('i');
+  if (iToggle) iToggle.className = 'fas fa-list';
+}
 
-      var navPrev = document.getElementById('btn-step-prev');
-      var navNext = document.getElementById('btn-step-next');
-      if (navPrev) navPrev.style.display = '';
-      if (navNext) navNext.style.display = '';
 
       smoothScrollToTop();
     }
 
-    function _sairModoStep() {
-      modoStep = false;
+function _sairModoStep() {
+  modoStep = false;
 
-      if (stepWrapper && stepWrapper.parentNode === container) {
-        stepWrapper.style.transition = 'none';
-        stepWrapper.style.transform  = 'translateX(0)';
-        Array.from(stepWrapper.children).forEach(function (filho) {
-          container.appendChild(filho);
-        });
-        stepWrapper.remove();
-      }
-      stepWrapper = null;
+  if (stepWrapper && stepWrapper.parentNode === container) {
+    stepWrapper.style.transition = 'none';
+    stepWrapper.style.transform  = 'translateX(0)';
+    stepWrapper.style.height     = '';
+    Array.from(stepWrapper.children).forEach(function (filho) {
+      container.appendChild(filho);
+    });
+    stepWrapper.remove();
+  }
+  stepWrapper = null;
 
-      container.classList.remove('modo-step');
-      container.style.height = '';
+  container.classList.remove('modo-step');
+  container.style.height = '';
+
 
       container.querySelectorAll('.step-structural-hidden').forEach(function (el) {
         el.classList.remove('step-structural-hidden');
@@ -815,17 +831,17 @@
           if (el) el.classList.remove('step-hidden');
         });
 
-      /* [FIX 12] Mostra toggle e oculta prev/next */
-      var toggle = document.getElementById('btn-toggle-modo');
-      if (toggle) {
-        toggle.classList.remove('modo-step-active');
-        toggle.style.display = '';
-      }
+/* [FIX 12] Restaura ícone e título do toggle */
+var toggle = document.getElementById('btn-toggle-modo');
+if (toggle) {
+  toggle.classList.remove('modo-step-active');
+  toggle.style.display = '';
+  toggle.title = 'Modo Step (uma questão por vez)';
+  var iToggle = toggle.querySelector('i');
+  if (iToggle) iToggle.className = 'fas fa-layer-group';
+}
 
-      var navPrev = document.getElementById('btn-step-prev');
-      var navNext = document.getElementById('btn-step-next');
-      if (navPrev) navPrev.style.display = 'none';
-      if (navNext) navNext.style.display = 'none';
+
     }
 
     function toggleModo() {
@@ -839,12 +855,13 @@
       }
     }
 
-    function irParaQuestao(index) {
-      if (index < 0 || index >= questoes.length) return;
-      stepAtual = index;
-      _aplicarModoStep();
-      smoothScrollToTop();
-    }
+function irParaQuestao(index) {
+  if (index < 0 || index >= questoes.length) return;
+  var direcao = index > stepAtual ? 'forward' : 'back';
+  stepAtual = index;
+  _aplicarModoStep(direcao);
+  smoothScrollToTop();
+}
 
     function proximaQuestao()  { irParaQuestao(stepAtual + 1); }
     function questaoAnterior() { irParaQuestao(stepAtual - 1); }
@@ -876,30 +893,23 @@
     var btnToggle = document.getElementById('btn-toggle-modo');
     if (btnToggle) btnToggle.addEventListener('click', toggleModo);
 
-    var btnStepPrev = document.getElementById('btn-step-prev');
-    var btnStepNext = document.getElementById('btn-step-next');
-    if (btnStepPrev) {
-      btnStepPrev.style.display = 'none';
-      btnStepPrev.addEventListener('click', questaoAnterior);
-    }
-    if (btnStepNext) {
-      btnStepNext.style.display = 'none';
-      btnStepNext.addEventListener('click', proximaQuestao);
-    }
 
     /* [FIX 7] Voltar */
-    var btnLeft = document.getElementById('btn-left');
-    if (btnLeft) {
-      var urlBack = window.NEXUS_URL_BACK || null;
-      if (urlBack) {
-        btnLeft.addEventListener('click', function () {
-          window.location.href = urlBack;
-        });
-      } else {
-        btnLeft.disabled = true;
-        console.warn('[quiz_engine] window.NEXUS_URL_BACK não definido. #btn-left desativado.');
-      }
-    }
+/* [FIX 7] Voltar / Questão anterior (contexto-aware) */
+var btnLeft = document.getElementById('btn-left');
+if (btnLeft) {
+  var urlBack = window.NEXUS_URL_BACK || null;
+
+btnLeft.addEventListener('click', function () {
+  if (urlBack) {
+    window.location.href = urlBack;
+  }
+});
+  if (!urlBack) {
+    btnLeft.disabled = true;
+    console.warn('[quiz_engine] window.NEXUS_URL_BACK não definido. #btn-left desativado.');
+  }
+}
 
     /* ── RENDER INICIAL ─────────────────────────────── */
     renderizar();

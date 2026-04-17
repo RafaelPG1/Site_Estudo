@@ -1,122 +1,83 @@
 // ============================================================
-// NEXUS STUDY — quiz/conteudo/design.js
+// NEXUS STUDY — quiz/conteudo/2026/2026.2/design.js
 // ============================================================
-
 window.questoes = {
 
   questoes: [
     {
-      question: "O que significa UX Design?",
+      question: "O que esse layout representa?",
+      code:
+`[ Botão: Comprar ]
+[ Botão: Cancelar ]
+(Cores iguais e sem destaque)`,
       options: [
-        "User Examination",
-        "User Experience",
-        "Universal Export",
-        "User Extension"
+        "Boa hierarquia visual",
+        "Problema de contraste e prioridade",
+        "Design responsivo",
+        "Acessibilidade correta"
       ],
       answer: 1,
-      feedback: "UX significa User Experience (Experiência do Usuário)."
+      feedback: "Sem contraste ou destaque, o usuário não sabe qual ação é principal."
     },
     {
-      question: "O que é um wireframe?",
+      question: "O que é UX Design?",
       options: [
-        "Produto final",
-        "Estrutura básica da interface",
-        "Código fonte",
+        "A aparência visual apenas",
+        "Experiência completa do usuário",
+        "Código da interface",
         "Banco de dados"
       ],
       answer: 1,
-      feedback: "Wireframe é um esqueleto da interface, sem design final."
+      feedback: "UX envolve toda a experiência do usuário com o sistema."
     },
     {
-      question: "Qual princípio agrupa elementos próximos?",
+      question: "Qual problema está presente?",
+      code:
+`Texto cinza claro em fundo branco`,
       options: [
-        "Contraste",
-        "Proximidade",
-        "Alinhamento",
-        "Repetição"
-      ],
-      answer: 1,
-      feedback: "Proximidade agrupa elementos relacionados visualmente."
-    },
-    {
-      question: "Um grid de 12 colunas, usar 6 equivale a:",
-      options: [
-        "25%",
-        "50%",
-        "75%",
-        "100%"
-      ],
-      answer: 1,
-      feedback: "6 de 12 colunas = 50% da largura."
-    },
-    {
-      question: "Boa prática de acessibilidade:",
-      options: [
-        "Usar só cor",
-        "Baixo contraste",
+        "Boa legibilidade",
         "Alto contraste",
-        "Texto pequeno"
+        "Problema de acessibilidade",
+        "Uso correto de cores"
       ],
       answer: 2,
-      feedback: "Alto contraste melhora a leitura e acessibilidade."
+      feedback: "Baixo contraste dificulta leitura e prejudica acessibilidade."
+    },
+    {
+      question: "Um wireframe serve para:",
+      options: [
+        "Finalizar o design",
+        "Criar banco de dados",
+        "Definir estrutura da interface",
+        "Executar código"
+      ],
+      answer: 2,
+      feedback: "Wireframe é um esqueleto da interface."
     }
   ],
 
   ava: [
     {
-      question: "UI refere-se a:",
+      question: "O que significa consistência no design?",
       options: [
-        "Banco de dados",
-        "Interface do usuário",
-        "Código backend",
-        "Rede"
-      ],
-      answer: 1,
-      feedback: "UI = User Interface (Interface do Usuário)."
-    },
-    {
-      question: "Consistência no design significa:",
-      options: [
-        "Mudar tudo sempre",
-        "Manter padrões visuais",
+        "Mudar layout frequentemente",
+        "Manter padrões visuais e comportamentais",
         "Usar cores aleatórias",
-        "Ignorar usuários"
+        "Ignorar o usuário"
       ],
       answer: 1,
-      feedback: "Consistência ajuda na previsibilidade e usabilidade."
-    },
-    {
-      question: "Heurísticas de usabilidade servem para:",
-      options: [
-        "Testar hardware",
-        "Avaliar interface",
-        "Criar banco",
-        "Programar API"
-      ],
-      answer: 1,
-      feedback: "São regras para avaliar a qualidade da interface."
+      feedback: "Consistência melhora usabilidade e previsibilidade."
     },
     {
       question: "Feedback no sistema é:",
       options: [
-        "Ignorar ações",
-        "Resposta ao usuário",
-        "Erro",
-        "Delay"
+        "Erro no sistema",
+        "Resposta às ações do usuário",
+        "Delay",
+        "Código invisível"
       ],
       answer: 1,
-      feedback: "Feedback informa ao usuário o resultado das ações."
-    },
-    {
-      question: "Affordance significa:",
-      options: [
-        "Cor bonita",
-        "Indicação de uso",
-        "Código limpo",
-        "Banco rápido"
-      ],
-      answer: 1,
-      feedback: "Affordance indica como algo deve ser usado."
+      feedback: "Feedback informa o resultado das ações do usuário."
     }
   ]
 

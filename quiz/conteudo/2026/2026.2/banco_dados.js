@@ -1,122 +1,85 @@
 // ============================================================
-// NEXUS STUDY — quiz/conteudo/banco_dados.js
+// NEXUS STUDY — quiz/conteudo/2026/2026.2/banco_dados.js
 // ============================================================
 
 window.questoes = {
 
   questoes: [
     {
-      question: "O que é uma chave primária (Primary Key) em um banco de dados relacional?",
+      question: "O que será retornado pela consulta?",
+      code:
+`SELECT nome FROM alunos WHERE idade > 18;`,
       options: [
-        "Um atributo que pode conter valores nulos",
-        "Um identificador único que distingue cada registro de uma tabela",
-        "Uma coluna que referencia outra tabela",
-        "Um índice criado automaticamente em todas as colunas"
+        "Todos os alunos",
+        "Alunos maiores de 18 anos",
+        "Apenas um aluno",
+        "Erro de sintaxe"
+      ],
+      answer: 1,
+      feedback: "WHERE filtra os registros conforme a condição."
+    },
+    {
+      question: "O que representa uma chave primária?",
+      options: [
+        "Campo opcional",
+        "Identificador único do registro",
+        "Campo duplicado",
+        "Relacionamento externo"
       ],
       answer: 1,
       feedback: "A chave primária identifica unicamente cada registro."
     },
     {
-      question: "Qual comando SQL é usado para buscar dados em uma tabela?",
+      question: "O que acontece neste JOIN?",
+      code:
+`SELECT * 
+FROM alunos A
+INNER JOIN cursos C
+ON A.curso_id = C.id;`,
       options: [
-        "INSERT",
-        "UPDATE",
-        "SELECT",
-        "DELETE"
-      ],
-      answer: 2,
-      feedback: "SELECT é usado para consultar dados."
-    },
-    {
-      question: "O que é normalização em banco de dados?",
-      options: [
-        "Aumentar velocidade com índices",
-        "Criptografar dados",
-        "Organizar tabelas para reduzir redundância",
-        "Criar backups automáticos"
-      ],
-      answer: 2,
-      feedback: "Normalização evita redundância e inconsistência."
-    },
-    {
-      question: "Qual é a função do WHERE em SQL?",
-      options: [
-        "Ordenar resultados",
-        "Filtrar registros",
-        "Criar tabelas",
-        "Atualizar dados"
+        "Retorna todos os dados",
+        "Retorna apenas registros relacionados",
+        "Remove duplicados",
+        "Cria tabela nova"
       ],
       answer: 1,
-      feedback: "WHERE filtra os dados retornados."
+      feedback: "INNER JOIN retorna apenas registros com correspondência."
     },
     {
-      question: "O que faz o INNER JOIN?",
+      question: "Qual é o objetivo da normalização?",
       options: [
-        "Junta todas as linhas de ambas tabelas",
-        "Retorna apenas registros com correspondência",
-        "Remove dados duplicados",
-        "Cria uma nova tabela"
+        "Aumentar tamanho do banco",
+        "Reduzir redundância de dados",
+        "Apagar tabelas",
+        "Criar índices"
       ],
       answer: 1,
-      feedback: "INNER JOIN retorna apenas correspondências entre tabelas."
+      feedback: "Normalização organiza os dados e evita duplicidade."
     }
   ],
 
   ava: [
     {
-      question: "Qual comando SQL é usado para inserir dados?",
+      question: "Qual comando insere dados?",
       options: [
-        "ADD",
-        "INSERT",
         "CREATE",
-        "PUT"
+        "INSERT",
+        "UPDATE",
+        "SELECT"
       ],
       answer: 1,
       feedback: "INSERT adiciona novos registros."
     },
     {
-      question: "Qual restrição impede valores duplicados?",
+      question: "O que faz o ORDER BY?",
       options: [
-        "NOT NULL",
-        "UNIQUE",
-        "DEFAULT",
-        "INDEX"
+        "Filtra dados",
+        "Ordena resultados",
+        "Remove registros",
+        "Cria tabela"
       ],
       answer: 1,
-      feedback: "UNIQUE impede valores repetidos."
-    },
-    {
-      question: "O que é uma chave estrangeira (Foreign Key)?",
-      options: [
-        "Identificador único da tabela",
-        "Campo que referencia outra tabela",
-        "Campo opcional",
-        "Índice automático"
-      ],
-      answer: 1,
-      feedback: "Foreign Key cria relacionamento entre tabelas."
-    },
-    {
-      question: "Qual comando remove dados de uma tabela?",
-      options: [
-        "DELETE",
-        "REMOVE",
-        "DROP",
-        "CLEAR"
-      ],
-      answer: 0,
-      feedback: "DELETE remove registros da tabela."
-    },
-    {
-      question: "ORDER BY é usado para:",
-      options: [
-        "Filtrar dados",
-        "Ordenar resultados",
-        "Agrupar tabelas",
-        "Inserir dados"
-      ],
-      answer: 1,
-      feedback: "ORDER BY organiza os resultados."
+      feedback: "ORDER BY organiza os dados retornados."
     }
   ]
 

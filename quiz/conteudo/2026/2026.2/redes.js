@@ -1,5 +1,5 @@
 // ============================================================
-// NEXUS STUDY — quiz/conteudo/redes.js
+// NEXUS STUDY — quiz/conteudo/2026/2026.2/redes.js
 // Questões de Redes de Computadores
 // ============================================================
 
@@ -7,117 +7,79 @@ window.questoes = {
 
   questoes: [
     {
-      question: "Qual camada do modelo OSI usa IP?",
+      question: "O que será exibido ao acessar o site?",
+      code:
+`// Cliente acessa: http://meusite.com
+// DNS resolve para: 192.168.1.10
+// Servidor responde corretamente
+
+console.log("Conexão estabelecida");`,
+      options: [
+        "Erro de DNS",
+        "Conexão estabelecida",
+        "Timeout",
+        "IP inválido"
+      ],
+      answer: 1,
+      feedback: "O DNS resolve o domínio corretamente e a conexão é realizada com sucesso."
+    },
+    {
+      question: "Qual camada do modelo OSI é responsável por endereçamento lógico (IP)?",
       options: [
         "Enlace",
         "Transporte",
         "Rede",
-        "Sessão"
+        "Aplicação"
       ],
       answer: 2,
-      feedback: "O protocolo IP atua na camada de Rede do modelo OSI."
+      feedback: "A camada de Rede é responsável pelo endereçamento lógico, como IP."
     },
     {
-      question: "TCP garante:",
+      question: "Qual comportamento descreve melhor o TCP?",
       options: [
-        "Velocidade sem controle",
-        "Entrega confiável",
-        "Sem conexão",
-        "Broadcast"
+        "Envia dados sem verificação",
+        "Garante entrega e ordem dos pacotes",
+        "Funciona apenas com DNS",
+        "É mais rápido que UDP sempre"
       ],
       answer: 1,
-      feedback: "O TCP garante entrega confiável, com controle de erros e ordem."
+      feedback: "TCP garante entrega confiável e ordenada."
     },
     {
-      question: "O que é subnet?",
+      question: "Um roteador tem como principal função:",
       options: [
-        "Cabo",
-        "Divisão de rede",
-        "Protocolo",
-        "IP fixo"
+        "Armazenar arquivos",
+        "Converter nomes em IP",
+        "Encaminhar pacotes entre redes",
+        "Executar programas"
       ],
-      answer: 1,
-      feedback: "Subnet é a divisão de uma rede maior em redes menores."
-    },
-    {
-      question: "DNS serve para:",
-      options: [
-        "Enviar email",
-        "Traduzir domínio para IP",
-        "Transferir arquivos",
-        "Roteamento"
-      ],
-      answer: 1,
-      feedback: "O DNS converte nomes de domínio em endereços IP."
-    },
-    {
-      question: "MAC atua na camada:",
-      options: [
-        "Física",
-        "Enlace",
-        "Rede",
-        "Transporte"
-      ],
-      answer: 1,
-      feedback: "O endereço MAC atua na camada de Enlace."
+      answer: 2,
+      feedback: "Roteadores direcionam pacotes entre redes diferentes."
     }
   ],
 
   ava: [
     {
-      question: "HTTP usa porta padrão:",
+      question: "O que acontece ao usar HTTPS em vez de HTTP?",
       options: [
-        "21",
-        "80",
-        "443",
-        "25"
+        "Aumenta apenas a velocidade",
+        "Adiciona criptografia na comunicação",
+        "Remove necessidade de DNS",
+        "Evita uso de IP"
       ],
       answer: 1,
-      feedback: "A porta padrão do HTTP é a 80."
+      feedback: "HTTPS utiliza SSL/TLS para garantir segurança."
     },
     {
-      question: "HTTPS adiciona:",
+      question: "Qual situação representa melhor o uso de UDP?",
       options: [
-        "Compressão",
-        "Segurança",
-        "Velocidade",
-        "DNS"
+        "Transferência bancária",
+        "Streaming de vídeo",
+        "Login em sistema",
+        "Envio de email"
       ],
       answer: 1,
-      feedback: "HTTPS adiciona segurança através de criptografia (SSL/TLS)."
-    },
-    {
-      question: "Roteador faz:",
-      options: [
-        "Processar CPU",
-        "Direcionar pacotes",
-        "Armazenar dados",
-        "Criar código"
-      ],
-      answer: 1,
-      feedback: "O roteador é responsável por direcionar pacotes entre redes."
-    },
-    {
-      question: "IP identifica:",
-      options: [
-        "Usuário",
-        "Dispositivo na rede",
-        "Programa",
-        "Arquivo"
-      ],
-      answer: 1,
-      feedback: "O endereço IP identifica dispositivos dentro de uma rede."
-    },
-    {
-      question: "UDP é:",
-      options: [
-        "Confiável",
-        "Lento",
-        "Sem conexão",
-        "Criptografado"
-      ],
-      answer: 2,
-      feedback: "UDP é um protocolo sem conexão e sem garantia de entrega."
+      feedback: "UDP é usado quando velocidade é mais importante que confiabilidade, como streaming."
     }
   ]
 
