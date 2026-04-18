@@ -3,57 +3,164 @@
 // ============================================================
 window.questoes = {
 
-  questoes: [
-    {
-      question: "O que esse layout representa?",
-      code:
-`[ Botão: Comprar ]
-[ Botão: Cancelar ]
-(Cores iguais e sem destaque)`,
-      options: [
-        "Boa hierarquia visual",
-        "Problema de contraste e prioridade",
-        "Design responsivo",
-        "Acessibilidade correta"
-      ],
-      answer: 1,
-      feedback: "Sem contraste ou destaque, o usuário não sabe qual ação é principal."
-    },
-    {
-      question: "O que é UX Design?",
-      options: [
-        "A aparência visual apenas",
-        "Experiência completa do usuário",
-        "Código da interface",
-        "Banco de dados"
-      ],
-      answer: 1,
-      feedback: "UX envolve toda a experiência do usuário com o sistema."
-    },
-    {
-      question: "Qual problema está presente?",
-      code:
-`Texto cinza claro em fundo branco`,
-      options: [
-        "Boa legibilidade",
-        "Alto contraste",
-        "Problema de acessibilidade",
-        "Uso correto de cores"
-      ],
-      answer: 2,
-      feedback: "Baixo contraste dificulta leitura e prejudica acessibilidade."
-    },
-    {
-      question: "Um wireframe serve para:",
-      options: [
-        "Finalizar o design",
-        "Criar banco de dados",
-        "Definir estrutura da interface",
-        "Executar código"
-      ],
-      answer: 2,
-      feedback: "Wireframe é um esqueleto da interface."
-    }
+  // Questões de Design
+  questoes: [  
+ {
+    tipo: "Curta",
+    texto: "Sobre os modelos de ciclo de vida de software.",
+    question: "Qual modelo de ciclo de vida executa suas etapas de forma sequencial e linear, sem retorno formal às fases anteriores?",
+    options: [
+      "==def==Modelo Espiral==",
+      "==proc==Modelo Iterativo==",
+      "==def==Modelo Cascata==",
+      "==def==Modelo Estrela=="
+    ],
+    answer: 2,
+    feedback: "O ==def==Modelo Cascata== é caracterizado pelo fluxo sequencial: cada fase só começa após a conclusão da anterior, sem mecanismo formal de revisão."
+  },
+  {
+    tipo: "Direta",
+    texto: "Considere os modelos centrados no usuário estudados na disciplina.",
+    question: "O que diferencia o ==def==Modelo Estrela== dos demais modelos de ciclo de vida?",
+    options: [
+      "Ele elimina a fase de prototipagem para acelerar a entrega",
+      "Ele posiciona a avaliação como atividade central e permite início por qualquer etapa",
+      "Ele exige que os requisitos sejam completamente definidos antes do desenvolvimento",
+      "Ele é baseado exclusivamente em análise de riscos a cada ciclo"
+    ],
+    answer: 1,
+    feedback: "O ==def==Modelo Estrela== tem a avaliação no centro e pode ser iniciado a partir de qualquer etapa, conferindo alta flexibilidade e forte participação do usuário."
+  },
+  {
+    tipo: "Contexto",
+    texto: "Uma equipe de desenvolvimento percebeu, após quatro meses de projeto, que os requisitos iniciais estavam desatualizados por conta de uma mudança na legislação. O modelo adotado não permitia retorno às fases anteriores sem comprometer cronograma e orçamento.",
+    question: "Qual modelo estava sendo utilizado e por que ele gerou esse problema?",
+    options: [
+      "==proc==Modelo Iterativo==, pois não prevê documentação de requisitos",
+      "==def==Modelo Espiral==, pois sua análise de riscos ignora mudanças legislativas",
+      "==def==Modelo Cascata==, pois sua estrutura sequencial não prevê revisão formal após cada etapa",
+      "==def==Modelo Estrela==, pois centraliza a avaliação e impede mudanças de requisitos"
+    ],
+    answer: 2,
+    feedback: "O ==def==Modelo Cascata== é rígido e sequencial. Mudanças de requisitos após o início do desenvolvimento geram alto custo e risco de retrabalho."
+  },
+  {
+    tipo: "Direta",
+    texto: "Sobre ferramentas e artefatos utilizados no design de interfaces.",
+    question: "Qual é a principal função de um ==term==wireframe== no processo de design?",
+    options: [
+      "Definir as cores e tipografia da interface final",
+      "Executar o código da aplicação em ambiente de testes",
+      "Definir a estrutura e organização da interface, sem detalhes visuais",
+      "Armazenar os dados do banco de dados relacional"
+    ],
+    answer: 2,
+    feedback: "O ==term==wireframe== é um esqueleto da interface — define layout, hierarquia e posicionamento dos elementos, sem se preocupar com aspectos estéticos."
+  },
+  {
+    tipo: "Contexto",
+    texto: "Em um portal de serviços públicos, todos os usuários conseguiam concluir seus agendamentos, mas relatavam desgaste e cansaço ao final do processo, devido ao grande número de etapas desnecessárias.",
+    question: "Qual dimensão de usabilidade da ==mark==ISO 9241== está comprometida nesse cenário?",
+    options: [
+      "==rule==Eficácia==, pois os usuários não conseguem atingir seus objetivos",
+      "Satisfação, pois o sistema não informa o estado das operações",
+      "==rule==Eficiência==, pois o esforço empregado é desproporcional ao resultado obtido",
+      "Autodescrição, pois a interface não explica suas funcionalidades"
+    ],
+    answer: 2,
+    feedback: "==rule==Eficiência== mede a relação entre o resultado e os recursos consumidos (tempo, esforço). Usuários que concluem tarefas com esforço excessivo têm problema de ==rule==eficiência==, não de ==rule==eficácia==."
+  },
+  {
+    tipo: "Curta",
+    texto: "Sobre os princípios de diálogo definidos pela Norma ==mark==ISO 9241-110==.",
+    question: "Qual princípio determina que o sistema deve informar ao usuário, em cada etapa, qual é o estado atual do processo e quais ações estão disponíveis?",
+    options: [
+      "==rule==Tolerância a erros==",
+      "==rule==Adequação à tarefa==",
+      "Individualização",
+      "==rule==Autodescrição=="
+    ],
+    answer: 3,
+    feedback: "O princípio de ==rule==autodescrição== exige que a interface seja transparente: o sistema deve sempre comunicar seu estado e orientar o usuário sobre as ações disponíveis."
+  },
+  {
+    tipo: "Aplicação",
+    texto: "Ao realizar um agendamento médico online, o usuário clicou por engano no botão 'Cancelar'. O sistema executou o cancelamento imediatamente, sem pedir confirmação nem oferecer forma de desfazer a ação.",
+    question: "Qual princípio da ==mark==ISO 9241-110== foi violado nessa situação?",
+    options: [
+      "Conformidade com as expectativas do usuário",
+      "==rule==Tolerância a erros==",
+      "==rule==Adequação à tarefa==",
+      "Aprendizado"
+    ],
+    answer: 1,
+    feedback: "==rule==Tolerância a erros== determina que o sistema deve minimizar erros e, quando ocorrem, permitir recuperação com o menor esforço possível. Ações irreversíveis sem confirmação violam diretamente esse princípio."
+  },
+  {
+    tipo: "Direta",
+    texto: "Sobre os valores estabelecidos pelo ==def==Manifesto Ágil==.",
+    question: "Qual das opções representa corretamente uma das prioridades do ==def==Manifesto Ágil==?",
+    options: [
+      "Documentação abrangente em detrimento de software funcional",
+      "Processos e ferramentas acima de pessoas e interações",
+      "Contratos fechados como guia principal das decisões do projeto",
+      "Colaboração do cliente e resposta a mudanças acima de planos fixos"
+    ],
+    answer: 3,
+    feedback: "O ==def==Manifesto Ágil== prioriza: pessoas sobre processos, software funcional sobre documentação, colaboração do cliente sobre negociação contratual e adaptação sobre seguir um plano rígido."
+  },
+  {
+    tipo: "Contexto",
+    texto: "Uma startup de saúde realizou entrevistas com pacientes e médicos, observou rotinas clínicas e mapeou dores reais antes de esboçar qualquer solução. A equipe era composta por profissionais de áreas distintas trabalhando de forma colaborativa.",
+    question: "Qual abordagem de design está sendo aplicada nesse cenário?",
+    options: [
+      "==def==Modelo Cascata== com fase de levantamento de requisitos",
+      "==def==Modelo Espiral== com análise de riscos inicial",
+      "==def==Design Thinking==, com ênfase na empatia e ==mark==cocriação==",
+      "Modelo de Shneiderman, com foco em testes de usabilidade"
+    ],
+    answer: 2,
+    feedback: "O ==def==Design Thinking== é caracterizado por ser centrado no usuário, interdisciplinar e baseado em empatia — compreender necessidades reais antes de propor soluções."
+  },
+  {
+    tipo: "Curta",
+    texto: "Sobre os modelos de desenvolvimento de software e suas características.",
+    question: "Qual modelo de ciclo de vida inclui explicitamente análise de riscos em cada ciclo e utiliza protótipos como ferramenta de validação progressiva?",
+    options: [
+      "==def==Modelo Cascata==",
+      "==def==Modelo Espiral==",
+      "==def==Modelo Estrela==",
+      "==proc==Modelo Iterativo=="
+    ],
+    answer: 1,
+    feedback: "O ==def==Modelo Espiral== se diferencia dos demais por incorporar análise de riscos em cada ciclo e pelo uso sistemático de protótipos para validar o produto progressivamente."
+  },
+  {
+    tipo: "Aplicação",
+    texto: "Uma plataforma de e-commerce exibe um botão 'Comprar' e um botão 'Cancelar' com as mesmas cores, tamanho e destaque visual, sem qualquer diferenciação entre a ação principal e a secundária.",
+    question: "Qual problema de design está presente nesse layout?",
+    options: [
+      "Violação do princípio de individualização",
+      "Ausência de responsividade para dispositivos móveis",
+      "Falta de ==term==hierarquia visual== e contraste entre ações primária e secundária",
+      "Excesso de informações desnecessárias na interface"
+    ],
+    answer: 2,
+    feedback: "Sem contraste ou destaque, o usuário não identifica qual ação é prioritária. A ==term==hierarquia visual== é fundamental para guiar decisões e evitar cliques equivocados."
+  },
+  {
+    tipo: "Direta",
+    texto: "Sobre os princípios do ==def==Design Thinking== e sua aplicação em projetos.",
+    question: "O que significa dizer que o ==def==Design Thinking== é uma abordagem 'holística'?",
+    options: [
+      "Que cada fase deve ser concluída isoladamente antes de avançar para a próxima",
+      "Que a solução deve contemplar todas as dimensões da experiência: tecnológica, de negócio, emocional e social",
+      "Que apenas especialistas técnicos participam do processo de desenvolvimento",
+      "Que o foco está exclusivamente na aparência visual do produto final"
+    ],
+    answer: 1,
+    feedback: "O princípio ==mark==holístico== do ==def==Design Thinking== considera que uma boa solução deve integrar todas as dimensões da experiência — não apenas o aspecto técnico, mas também o humano, emocional e de negócio."
+  }
   ],
 
   ava: [
@@ -82,7 +189,7 @@ window.questoes = {
   ],
 
   /* ══════════════════════════════════════════════════════════
-     QUESTÕES ENADE
+     QUESTÕES ENADE Desing
      ══════════════════════════════════════════════════════════ */
   enade: [
 

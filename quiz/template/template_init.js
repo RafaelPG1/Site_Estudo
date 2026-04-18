@@ -179,6 +179,10 @@ nav.innerHTML = `
   <button id="btn-toggle-modo" class="nav-btn btn-toggle-modo" title="Modo Step (uma questão por vez)" type="button">
     <i class="fas fa-layer-group" aria-hidden="true"></i>
   </button>
+  <div class="nav-divider" aria-hidden="true"></div>
+<button id="btn-legenda" class="nav-btn btn-legenda" title="Guia de marcações" type="button">
+  <i class="fas fa-circle-info" aria-hidden="true"></i>
+</button>
 `;
 document.body.appendChild(nav);
 
