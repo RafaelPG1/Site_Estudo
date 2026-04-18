@@ -60,16 +60,16 @@ const Storage = (() => {
     return 'quiz_progress_' + disc + '_' + modo + '_' + semestre;
   }
 
-  function saveProgress(disc, modo, semestre, respostas, revelado, finalizado) {
-    const key = _progressKey(disc, modo, semestre);
-    set(key, {
-      respostas,
-      revelado,
-      finalizado,
-      savedAt: Date.now(),
-    });
-  }
-
+function saveProgress(disc, modo, semestre, respostas, revelado, finalizado) {
+  const key = _progressKey(disc, modo, semestre);
+  set(key, {
+    respostas,
+    revelado,
+    finalizado,
+    savedAt:     Date.now(),
+    completedAt: finalizado ? Date.now() : null, // ← novo
+  });
+}
   function loadProgress(disc, modo, semestre) {
     const key = _progressKey(disc, modo, semestre);
     return get(key, null);
@@ -91,7 +91,7 @@ const Storage = (() => {
         .filter(k => k.startsWith(prefix))
         .map(k => {
           try {
-            const data = JSON.parse(localStorage.getItem(k));
+            const data  = JSON.parse(localStorage.getItem(k));
             const parts = k.replace(prefix, '').split('_');
             const semestre = parts[parts.length - 1];
             const modo     = parts[parts.length - 2];
@@ -107,8 +107,8 @@ const Storage = (() => {
 
   /**
    * Remove APENAS as chaves de quiz do localStorage.
-   * Tudo que começa com nexus_quiz_ (progress, smap, leftat).
-   * Configs, usuário e outras chaves do sistema são preservadas.
+   * Abrange progress, smap e leftat (prefixo nexus_quiz_).
+   * Configs, usuário e demais chaves do sistema são preservadas.
    */
   function clearAllQuizData() {
     try {

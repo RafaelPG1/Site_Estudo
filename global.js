@@ -1,186 +1,168 @@
 /* =============================================
    NEXUS STUDY — global.js
-   Estado global + funções de controle
+   Estado global e utilitários compartilhados
    ============================================= */
 
 import Storage from './storage.js';
 
-/* ─────────────────────────────────────────────
-   MAPA DE PÁGINAS
-───────────────────────────────────────────── */
+/* ── Expõe Storage para o quiz_engine (IIFE sem módulo) ── */
+window.NexusStorage = Storage;
+
+/* ══════════════════════════════════════════════════════════
+   CONSTANTES
+   ══════════════════════════════════════════════════════════ */
+
+export const SEMESTRES = [
+  '2026.2', '2026.1',
+  '2025.2', '2025.1',
+  '2024.2', '2024.1',
+];
+
 export const PAGINAS = {
-  HOME:              { id: 'HOME',              label: 'Início',              path: '/index.html',                    section: 'root'    },
-  PESSOAL:           { id: 'PESSOAL',           label: 'Área Pessoal',        path: '/area_pessoal/pessoal.html',     section: 'pessoal' },
-  ANOTACOES:         { id: 'ANOTACOES',         label: 'Anotações',           path: '/area_pessoal/anotacoes/anotacoes.html', section: 'pessoal' },
-  RESUMO:            { id: 'RESUMO',            label: 'Resumos',             path: '/resumo/resumo.html',            section: 'resumo'  },
-  QUIZ:              { id: 'QUIZ',              label: 'Quiz',                path: '/quiz/quiz.html',                section: 'quiz'    },
-  JOGOS:             { id: 'JOGOS',             label: 'Jogos',               path: '/jogos/jogo.html',               section: 'jogos'   },
-  JOGO_1:            { id: 'JOGO_1',            label: 'Jogo 1',              path: '/jogos/jogo_1/jogo1.html',       section: 'jogos'   },
-  JOGO_2:            { id: 'JOGO_2',            label: 'Jogo 2',              path: '/jogos/jogo_2/jogo2.html',       section: 'jogos'   },
+  HOME:    { path: '/index.html' },
+  PESSOAL: { path: '/area_pessoal/pessoal.html' },
+  RESUMO:  { path: '/resumos/resumos.html' },
+  QUIZ:    { path: '/quiz/quiz.html' },
+  JOGOS:   { path: '/jogos/jogos.html' },
 };
 
-/* ─────────────────────────────────────────────
-   MAPA DE DISCIPLINAS
-───────────────────────────────────────────── */
-export const DISCIPLINAS = {
-  '2026.2': [
-    { id: 'poo',         nome: 'Programação Orientada a Objetos', arquivo: 'poo',         emoji: '💻' },
-    { id: 'redes',       nome: 'Redes de Computadores',           arquivo: 'redes',       emoji: '🌐' },
-    { id: 'design',      nome: 'Design de Sistemas',              arquivo: 'design',      emoji: '🎨' },
-    { id: 'banco_dados', nome: 'Fundamentos de Banco de Dados',   arquivo: 'banco_dados', emoji: '🗄️' },
-  ],
+/* ══════════════════════════════════════════════════════════
+   DISCIPLINAS POR SEMESTRE
+
+   Cada disciplina tem:
+     id       → chave usada na URL (?disc=poo)
+     nome     → nome de exibição completo
+     arquivo  → nome do arquivo JS de conteúdo (sem .js)
+     emoji    → ícone exibido no header do quiz
+
+   Para adicionar um novo semestre ou disciplina,
+   basta incluir uma entrada aqui — nenhum outro arquivo muda.
+   ══════════════════════════════════════════════════════════ */
+
+const _DISCIPLINAS = {
+// global.js — dentro de _DISCIPLINAS
+
+'2026.2': [
+  { id: 'poo',         nome: 'Programação Orientada a Objetos', arquivo: 'poo',         emoji: '☕' },
+  { id: 'banco_dados', nome: 'Banco de Dados',                  arquivo: 'banco_dados', emoji: '🗄️' },
+  { id: 'redes',       nome: 'Redes de Computadores',           arquivo: 'redes',       emoji: '🌐' },
+  { id: 'design',      nome: 'Design de Sistemas',              arquivo: 'design',      emoji: '🎨' }, // ← ADICIONAR
+],
+
 };
 
-/* ─────────────────────────────────────────────
-   SEMESTRES DISPONÍVEIS
-───────────────────────────────────────────── */
-export const SEMESTRES = Object.keys(DISCIPLINAS);
-
-/* ─────────────────────────────────────────────
-   CONFIG PADRÃO
-───────────────────────────────────────────── */
-const CONFIG_PADRAO = {
-  tema:             'dark',
-  idioma:           'pt-BR',
-  notificacoes:     true,
-  animacoes:        true,
-  salvarProgresso:  true,
-};
-
-/* ─────────────────────────────────────────────
+/* ══════════════════════════════════════════════════════════
    ESTADO INTERNO
-───────────────────────────────────────────── */
+   ══════════════════════════════════════════════════════════ */
+
 let _estado = {
-  usuario:         Storage.get('usuario',         null),
-  disciplinaAtual: Storage.get('disciplinaAtual', null),
-  semestreAtual:   Storage.get('semestreAtual',   '2026.2'),
-  paginaAtual:     Storage.get('paginaAtual',     'HOME'),
-  modoVisitante:   Storage.get('modoVisitante',   true),
-  configs:         Storage.get('configs',         { ...CONFIG_PADRAO }),
+  pagina:     'HOME',
+  semestre:   Storage.get('semestre_atual', SEMESTRES[0]),
+  disciplina: null,
+  usuario:    Storage.get('usuario', null),
+  configs:    Storage.get('configs', _defaultConfigs()),
 };
 
-/* ─────────────────────────────────────────────
-   FUNÇÕES — ESTADO GERAL
-───────────────────────────────────────────── */
-export function getEstado() {
-  return { ..._estado };
+function _defaultConfigs() {
+  return {
+    tema:            'dark',
+    animacoes:       true,
+    notificacoes:    false,
+    salvarProgresso: true,   /* toggle "salvar quiz finalizado" */
+  };
 }
 
-/* ─────────────────────────────────────────────
-   FUNÇÕES — USUÁRIO
-───────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════
+   GETTERS / SETTERS — página
+   ══════════════════════════════════════════════════════════ */
+
+export function getEstado()        { return { ..._estado }; }
+export function setPagina(pagina)  { _estado.pagina = pagina; }
+
+/* ══════════════════════════════════════════════════════════
+   GETTERS / SETTERS — semestre
+   ══════════════════════════════════════════════════════════ */
+
+export function getSemestreAtual() { return _estado.semestre; }
+
+export function setSemestre(s) {
+  _estado.semestre = s;
+  Storage.set('semestre_atual', s);
+}
+
+/* ══════════════════════════════════════════════════════════
+   GETTERS / SETTERS — disciplina
+   ══════════════════════════════════════════════════════════ */
+
+export function getDisciplinaAtual() { return _estado.disciplina; }
+
+export function setDisciplina(id) {
+  _estado.disciplina = id ?? null;
+}
+
+/**
+ * Retorna a lista de disciplinas de um semestre.
+ * Se o semestre não tiver uma lista própria, retorna o do
+ * semestre mais recente (primeiro de SEMESTRES) como fallback.
+ */
+export function getDisciplinasDeSemestre(semestre) {
+  return (
+    _DISCIPLINAS[semestre] ??
+    _DISCIPLINAS[SEMESTRES[0]] ??
+    []
+  );
+}
+
+/* ══════════════════════════════════════════════════════════
+   GETTERS / SETTERS — usuário
+   ══════════════════════════════════════════════════════════ */
+
+export function getUsuario()  { return _estado.usuario; }
+export function estaLogado()  { return _estado.usuario !== null; }
+
 export function setUsuario(usuario) {
-  _estado.usuario       = usuario;
-  _estado.modoVisitante = usuario === null;
-  Storage.set('usuario',       usuario);
-  Storage.set('modoVisitante', _estado.modoVisitante);
+  _estado.usuario = usuario;
+  if (usuario) Storage.set('usuario', usuario);
+  else         Storage.remove('usuario');
 }
 
-export function getUsuario() {
-  return _estado.usuario;
-}
+/* ══════════════════════════════════════════════════════════
+   GETTERS / SETTERS — configs
+   ══════════════════════════════════════════════════════════ */
 
-export function estaLogado() {
-  return _estado.usuario !== null;
-}
+export function getConfigs() { return { ..._estado.configs }; }
 
-/* ─────────────────────────────────────────────
-   FUNÇÕES — NAVEGAÇÃO
-───────────────────────────────────────────── */
-export function setPagina(paginaId) {
-  if (!PAGINAS[paginaId]) {
-    console.warn(`[Global] Página desconhecida: "${paginaId}"`);
-    return;
-  }
-  _estado.paginaAtual = paginaId;
-  Storage.set('paginaAtual', paginaId);
-}
-
-export function getPaginaAtual() {
-  return _estado.paginaAtual;
-}
-
-export function getPaginaInfo() {
-  return PAGINAS[_estado.paginaAtual] ?? null;
-}
-
-/* ─────────────────────────────────────────────
-   FUNÇÕES — DISCIPLINA / ESTUDO
-───────────────────────────────────────────── */
-export function setDisciplina(disciplinaId) {
-  if (disciplinaId !== null) {
-    const semestre = _estado.semestreAtual;
-    const lista    = DISCIPLINAS[semestre] ?? [];
-    const existe   = lista.some(d => d.id === disciplinaId);
-
-    if (!existe) {
-      console.warn(`[Global] Disciplina "${disciplinaId}" não existe em ${semestre}`);
-      const fallback = lista[0]?.id ?? null;
-      if (fallback) {
-        console.warn(`[Global] Usando fallback: "${fallback}"`);
-        disciplinaId = fallback;
-      } else {
-        return;
-      }
-    }
-  }
-  _estado.disciplinaAtual = disciplinaId;
-  Storage.set('disciplinaAtual', disciplinaId);
-}
-
-export function getDisciplinaAtual() {
-  return _estado.disciplinaAtual;
-}
-
-export function getDisciplinaInfo() {
-  const lista = DISCIPLINAS[_estado.semestreAtual] ?? [];
-  return lista.find(d => d.id === _estado.disciplinaAtual) ?? null;
-}
-
-export function setSemestre(semestre) {
-  if (!DISCIPLINAS[semestre]) {
-    console.warn(`[Global] Semestre "${semestre}" não cadastrado`);
-    return;
-  }
-  _estado.semestreAtual   = semestre;
-  _estado.disciplinaAtual = null;
-  Storage.set('semestreAtual',   semestre);
-  Storage.set('disciplinaAtual', null);
-}
-
-export function getSemestreAtual() {
-  return _estado.semestreAtual;
-}
-
-export function getDisciplinasDeSemestre(semestre = null) {
-  const s = semestre ?? _estado.semestreAtual;
-  return DISCIPLINAS[s] ?? [];
-}
-
-/* ─────────────────────────────────────────────
-   FUNÇÕES — CONFIGURAÇÕES
-───────────────────────────────────────────── */
-export function setConfigs(novasConfigs) {
-  _estado.configs = { ..._estado.configs, ...novasConfigs };
+export function setConfigs(novas) {
+  _estado.configs = { ..._estado.configs, ...novas };
   Storage.set('configs', _estado.configs);
-}
-
-export function getConfigs() {
-  return { ..._estado.configs };
+  _aplicarConfigs(_estado.configs);
 }
 
 export function resetConfigs() {
-  _estado.configs = { ...CONFIG_PADRAO };
+  _estado.configs = _defaultConfigs();
   Storage.set('configs', _estado.configs);
+  _aplicarConfigs(_estado.configs);
 }
 
-/* ─────────────────────────────────────────────
-   FUNÇÕES — QUIZ
-───────────────────────────────────────────── */
+function _aplicarConfigs(cfg) {
+  document.documentElement.dataset.tema = cfg.tema ?? 'dark';
+  if (!cfg.animacoes) {
+    document.documentElement.classList.add('sem-animacoes');
+  } else {
+    document.documentElement.classList.remove('sem-animacoes');
+  }
+}
+
+/* ── Aplica configs salvas na inicialização ── */
+_aplicarConfigs(_estado.configs);
+
+/* ══════════════════════════════════════════════════════════
+   QUIZ — limpar dados
+   ══════════════════════════════════════════════════════════ */
 
 /**
- * Remove todas as chaves nexus_quiz_* do localStorage.
- * Configs, usuário e o resto do sistema são preservados.
+ * Remove todos os dados de quiz (progress, smap, leftat).
+ * Configs e demais dados do sistema não são afetados.
  */
 export function limparDadosQuiz() {
   Storage.clearAllQuizData();

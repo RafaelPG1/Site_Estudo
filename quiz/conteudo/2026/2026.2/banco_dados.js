@@ -7,6 +7,7 @@ window.questoes = {
   questoes: [
       // ── Questão 1 ── Explicativa
   {
+    aula: "Aula 9 — Definindo um Banco de Dados",
     tipo: "Explicativa",
  
     texto: "A linguagem SQL é dividida em subconjuntos, cada um com uma finalidade específica. Um desses subconjuntos é a DDL — Data Definition Language, ou Linguagem de Definição de Dados. Ela é responsável exclusivamente por criar, modificar e remover a estrutura do banco de dados, como tabelas, índices e views. Ou seja, a DDL cuida do 'esqueleto' do banco — não dos dados em si.",
@@ -27,6 +28,7 @@ window.questoes = {
  
   // ── Questão 2 ── Explicativa
   {
+    aula: "Aula 9 — Definindo um Banco de Dados",
     tipo: "Explicativa",
  
     texto: "Quando se cria um banco de dados relacional, é preciso definir como as informações serão organizadas. O conceito de esquema representa a estrutura lógica do banco: quais tabelas existem, quais colunas cada uma tem, quais restrições se aplicam. Já o catálogo é um nível acima — ele agrupa múltiplos esquemas e armazena metadados sobre toda essa estrutura, incluindo o famoso INFORMATION_SCHEMA.",
@@ -47,6 +49,7 @@ window.questoes = {
  
   // ── Questão 3 ── Explicativa
   {
+    aula: "Aula 9 — Definindo um Banco de Dados",
     tipo: "Explicativa",
  
     texto: "O comando CREATE TABLE é usado para criar uma nova tabela no banco de dados. Na sua definição, são especificados o nome de cada campo, o tipo de dado que ele aceita e as restrições que devem ser respeitadas. Toda essa definição fica registrada na estrutura do banco, pronta para receber dados.",
@@ -81,6 +84,7 @@ NEW TABLE alunos SET (matricula INTEGER, nome VARCHAR(100));`,
  
   // ── Questão 4 ── Contextualizada
   {
+    aula: "Aula 9 — Definindo um Banco de Dados",
     tipo: "Contextualizada",
  
     texto: "Em SQL, cada coluna de uma tabela precisa ter um tipo de dado definido. Esse tipo determina que tipo de informação aquele campo pode armazenar. Por exemplo, textos de tamanho variável são guardados com VARCHAR(n), enquanto números inteiros usam INTEGER. Para valores monetários ou que exigem casas decimais, usa-se DECIMAL. Já arquivos binários como imagens e áudios são armazenados no tipo BLOB.",
@@ -101,6 +105,7 @@ NEW TABLE alunos SET (matricula INTEGER, nome VARCHAR(100));`,
  
   // ── Questão 5 ── Contextualizada
   {
+    aula: "Aula 9 — Definindo um Banco de Dados",
     tipo: "Contextualizada",
  
     texto: "A chave primária é uma restrição fundamental em qualquer tabela de banco de dados relacional. Ela garante que cada linha da tabela possa ser identificada de forma única. Para isso, o campo definido como PRIMARY KEY não pode conter valores nulos nem valores repetidos — cada registro precisa ter um identificador exclusivo.",
@@ -121,6 +126,7 @@ NEW TABLE alunos SET (matricula INTEGER, nome VARCHAR(100));`,
  
   // ── Questão 6 ── Contextualizada
   {
+    aula: "Aula 9 — Definindo um Banco de Dados",
     tipo: "Contextualizada",
  
     texto: "Quando uma tabela precisa ser modificada depois de criada — seja para adicionar uma nova coluna, alterar um tipo de dado ou incluir uma restrição — o comando ALTER TABLE é utilizado. Uma situação comum é quando um novo requisito surge após o sistema já estar em produção, e é preciso adicionar campos sem apagar os dados existentes.",
@@ -141,6 +147,7 @@ NEW TABLE alunos SET (matricula INTEGER, nome VARCHAR(100));`,
  
   // ── Questão 7 ── Aplicação
   {
+    aula: "Aula 9 — Definindo um Banco de Dados",
     tipo: "Aplicação",
  
     texto: "Uma desenvolvedora está criando um sistema de cursos online. Ela precisa criar duas tabelas: cursos e alunos. A tabela alunos deve ter um campo cod_curso que referencia a tabela cursos — garantindo que nenhum aluno seja vinculado a um curso inexistente. Para isso, ela usará o conceito de chave estrangeira.",
@@ -204,6 +211,7 @@ CREATE TABLE alunos (
  
   // ── Questão 8 ── Aplicação
   {
+    aula: "Aula 9 — Definindo um Banco de Dados",
     tipo: "Aplicação",
  
     texto: "Imagine que um analista precisa remover do banco uma tabela chamada turmas_antigas. Essa tabela não tem nenhuma dependência com outras tabelas. Ele tem duas opções: usar DROP TABLE ou usar DELETE FROM. Embora ambas pareçam remover dados, elas funcionam de maneiras muito diferentes.",
@@ -224,6 +232,7 @@ CREATE TABLE alunos (
  
   // ── Questão 9 ── Aplicação
   {
+    aula: "Aula 9 — Definindo um Banco de Dados",
     tipo: "Aplicação",
  
     texto: "Durante a modelagem de um sistema de vendas, um desenvolvedor precisa definir a ordem correta para criar as tabelas. A tabela pedidos possui uma FOREIGN KEY que referencia a tabela clientes. Se ele tentar criar pedidos antes de clientes, o banco retornará um erro — pois não é possível referenciar uma tabela que ainda não existe.",
@@ -244,6 +253,7 @@ CREATE TABLE alunos (
  
   // ── Questão 10 ── Explicativa
   {
+    aula: "Aula 9 — Definindo um Banco de Dados",
     tipo: "Explicativa",
  
     texto: "Quando se tenta remover uma tabela que possui outras tabelas dependentes dela via chave estrangeira, o banco pode se comportar de duas formas distintas, dependendo da opção informada. Com RESTRICT, o banco bloqueia a operação enquanto existirem dependências. Já com CASCADE, a exclusão é propagada automaticamente para os objetos dependentes.",
@@ -264,6 +274,7 @@ CREATE TABLE alunos (
  
   // ── Questão 11 ── Contextualizada
   {
+    aula: "Aula 9 — Definindo um Banco de Dados",
     tipo: "Contextualizada",
  
     texto: "O tipo de dado CHAR(n) armazena strings de tamanho fixo — sempre ocupa n caracteres, preenchendo com espaços quando necessário. Já o VARCHAR(n) armazena strings de tamanho variável — ocupa apenas o espaço necessário até o limite n. Essa diferença impacta tanto no armazenamento quanto na performance do banco em diferentes situações.",
@@ -284,6 +295,7 @@ CREATE TABLE alunos (
  
   // ── Questão 12 ── Aplicação
   {
+    aula: "Aula 9 — Definindo um Banco de Dados",
     tipo: "Aplicação",
  
     texto: "Um desenvolvedor júnior recebeu a tarefa de modelar fisicamente um banco de dados acadêmico. Ele precisava criar as tabelas seguindo a sequência lógica de um projeto: primeiro definir as entidades, depois seus atributos, tipos de dados, chaves e relacionamentos. Esse processo é chamado de definição do modelo físico e é implementado por meio de comandos DDL.",

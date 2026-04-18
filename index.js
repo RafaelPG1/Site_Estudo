@@ -268,9 +268,17 @@ function abrirModalConfig() {
     setTimeout(abrirModalConfig, 300);
   });
 
-  /* ── Limpar dados do quiz ── */
+  /* ── Limpar dados do quiz (só nexus_quiz_*) ── */
   document.getElementById('btn-limpar-quiz').addEventListener('click', () => {
     limparDadosQuiz();
+
+    /* FIX 2: notifica o quiz_engine (se estiver ativo na mesma aba)
+       para que cancele o timer pendente e não tente reapagar dados
+       já removidos, evitando o log enganoso. */
+    if (typeof window.__nexusQuizNotifyCleared === 'function') {
+      window.__nexusQuizNotifyCleared();
+    }
+
     mostrarToast('Dados do quiz apagados.');
   });
 

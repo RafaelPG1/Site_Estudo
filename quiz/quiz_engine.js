@@ -1,632 +1,38 @@
 /* ============================================================
-   NEXUS STUDY — quiz/quiz_engine.js  (v5)
+   NEXUS STUDY — quiz/quiz_engine.js  (v7)
+   Lógica de estado do quiz — depende de quiz_ui.js
+
+   ÍNDICE:
+     1. Contexto e configuração .... L.25
+     2. Expiração (20s) ............ L.55
+     3. Embaralhamento ............. L.100
+     4. Estado e restauração ....... L.140
+     5. Feedback e corpo ........... L.190
+     6. Resultado por aula ......... L.240
+     7. Renderização ............... L.295
+     8. Interação do usuário ....... L.385
+     9. Resultado global ........... L.455
+    10. Ver erros .................. L.490
+    11. Modo Step .................. L.560
+    12. Binds e boot ............... L.760
    ============================================================ */
 
 (function () {
   'use strict';
 
-  /* ── UTILITÁRIOS DE SCROLL ──────────────────────────────── */
-
-  var _scrollCancelled = false;
-
-  function cancelScroll() { _scrollCancelled = true; }
-
-  function smoothScrollTo(targetPosition, duration) {
-    duration = duration || 800;
-    _scrollCancelled = false;
-    var start     = window.scrollY;
-    var change    = targetPosition - start;
-    var startTime = performance.now();
-
-    function animateScroll(currentTime) {
-      if (_scrollCancelled) return;
-      var elapsed  = currentTime - startTime;
-      var progress = Math.min(elapsed / duration, 1);
-      window.scrollTo(0, start + change * progress);
-      if (progress < 1) requestAnimationFrame(animateScroll);
-    }
-    requestAnimationFrame(animateScroll);
-  }
-
-  function smoothScrollToTop() { smoothScrollTo(0, 800); }
-
-  window.addEventListener('wheel',     cancelScroll, { passive: true });
-  window.addEventListener('touchmove', cancelScroll, { passive: true });
-  window.addEventListener('keydown',   cancelScroll, { passive: true });
+  /* ── Aliases de quiz_ui.js ─────────────────────────────── */
+  var smoothScrollTo    = window.QuizUI.smoothScrollTo;
+  var smoothScrollToTop = window.QuizUI.smoothScrollToTop;
+  var renderMarkup      = window.QuizUI.renderMarkup;
+  var renderCodeBlock   = window.QuizUI.renderCodeBlock;
 
   /* ══════════════════════════════════════════════════════════
-     SISTEMA DE MARCAÇÕES INLINE
-     ══════════════════════════════════════════════════════════ */
-
-  function renderMarkup(text) {
-    if (!text) return '';
-
-    var s = text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-
-    s = s.replace(/==([a-z]+)==([^=]+)==/g, function (_, cat, content) {
-      var classMap = {
-        def:    'chip chip-ddl',
-        proc:   'chip chip-dml',
-        rule:   'chip chip-key',
-        term:   'chip chip-type',
-        warn:   'chip chip-danger',
-        mark:   'chip chip-mark',
-        ddl:    'chip chip-ddl',
-        dml:    'chip chip-dml',
-        key:    'chip chip-key',
-        type:   'chip chip-type',
-        danger: 'chip chip-danger',
-      };
-      var cls = classMap[cat] || 'chip chip-mark';
-      return '<span class="' + cls + '">' + content + '</span>';
-    });
-
-    s = s.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
-    s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-    s = s.replace(/\/\/([^/]+)\/\//g, '<em>$1</em>');
-
-    return s;
-  }
-
-  /* ══════════════════════════════════════════════════════════
-     HIGHLIGHT DE CÓDIGO (SQL + Java + Python)
-     ══════════════════════════════════════════════════════════ */
-
-  function detectLang(raw) {
-    if (/\b(SELECT|INSERT|UPDATE|DELETE|CREATE\s+TABLE|ALTER\s+TABLE|DROP\s+TABLE|FOREIGN\s+KEY|PRIMARY\s+KEY|REFERENCES|VARCHAR|INTEGER|NOT\s+NULL)\b/i.test(raw)) return 'sql';
-    if (/\b(def |class |import |from |print\(|elif |lambda )\b/.test(raw)) return 'python';
-    return 'java';
-  }
-
-  function highlightSQL(raw) {
-    var code = raw
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-
-    var strings = [];
-    code = code.replace(/'([^']*)'/g, function (m) {
-      strings.push(m);
-      return '\x00STR' + (strings.length - 1) + '\x00';
-    });
-
-    code = code.replace(/(--[^\n]*)/g, '<span class="jk-comment">$1</span>');
-
-    code = code.replace(
-      /\b(SELECT|INSERT\s+INTO|INSERT|UPDATE|DELETE|CREATE\s+TABLE|CREATE|ALTER\s+TABLE|ALTER|DROP\s+TABLE|DROP|TRUNCATE|FROM|WHERE|JOIN|LEFT\s+JOIN|RIGHT\s+JOIN|INNER\s+JOIN|OUTER\s+JOIN|ON|GROUP\s+BY|ORDER\s+BY|HAVING|LIMIT|OFFSET|UNION|ALL|DISTINCT|AS|SET|VALUES|INTO|AND|OR|NOT|IN|EXISTS|LIKE|BETWEEN|IS\s+NULL|IS\s+NOT\s+NULL|IS|NULL|PRIMARY\s+KEY|FOREIGN\s+KEY|REFERENCES|UNIQUE|CHECK|DEFAULT|NOT\s+NULL|CONSTRAINT|INDEX|CASCADE|RESTRICT|NO\s+ACTION|ON\s+DELETE|ON\s+UPDATE|AUTO_INCREMENT|SERIAL)\b/gi,
-      '<span class="jk-keyword">$1</span>'
-    );
-
-    code = code.replace(
-      /\b(INTEGER|INT|BIGINT|SMALLINT|TINYINT|FLOAT|DOUBLE|DECIMAL|NUMERIC|REAL|CHAR|VARCHAR|TEXT|NVARCHAR|BLOB|CLOB|DATE|TIME|DATETIME|TIMESTAMP|BOOLEAN|BOOL|SERIAL|BYTEA|UUID|JSON|JSONB|ARRAY)\b/gi,
-      '<span class="jk-type">$1</span>'
-    );
-
-    code = code.replace(/\b(TRUE|FALSE|NULL)\b/gi, '<span class="jk-literal">$1</span>');
-    code = code.replace(/\b(\d+(\.\d+)?)\b/g, '<span class="jk-number">$1</span>');
-
-    code = code.replace(/\x00STR(\d+)\x00/g, function (_, i) {
-      return '<span class="jk-string">' + strings[+i] + '</span>';
-    });
-
-    return code;
-  }
-
-  function highlightJava(raw) {
-    var code = raw
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-
-    var strings = [];
-    code = code.replace(/"([^"]*)"/g, function (m) {
-      strings.push(m);
-      return '\x00STR' + (strings.length - 1) + '\x00';
-    });
-
-    code = code.replace(/(@\w+)/g, '<span class="jk-annotation">$1</span>');
-
-    code = code.replace(
-      /\b(public|private|protected|class|interface|extends|implements|return|void|double|int|long|float|boolean|char|byte|short|String|new|this|super|static|final|abstract|null|true|false|if|else|for|while|do|switch|case|break|continue|try|catch|finally|throw|throws|import|package)\b/g,
-      '<span class="jk-keyword">$1</span>'
-    );
-
-    code = code.replace(/(\/\/[^\n]*)/g, '<span class="jk-comment">$1</span>');
-
-    code = code.replace(/\x00STR(\d+)\x00/g, function (_, i) {
-      return '<span class="jk-string">' + strings[+i] + '</span>';
-    });
-
-    return code;
-  }
-
-  function highlightPython(raw) {
-    var code = raw
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-
-    var strings = [];
-    code = code.replace(/"""([\s\S]*?)"""|'''([\s\S]*?)'''|"([^"\\]*(\\.[^"\\]*)*)"|'([^'\\]*(\\.[^'\\]*)*)'/g, function (m) {
-      strings.push(m);
-      return '\x00STR' + (strings.length - 1) + '\x00';
-    });
-
-    code = code.replace(/(#[^\n]*)/g, '<span class="jk-comment">$1</span>');
-    code = code.replace(/@(\w+)/g, '<span class="jk-decorator">@$1</span>');
-
-    code = code.replace(
-      /\b(def|class|return|import|from|as|if|elif|else|for|while|in|not|and|or|is|lambda|pass|break|continue|try|except|finally|raise|with|yield|global|nonlocal|del|assert|True|False|None|print|len|range|type|str|int|float|list|dict|tuple|set|bool)\b/g,
-      '<span class="jk-keyword">$1</span>'
-    );
-
-    code = code.replace(/\b(\d+(\.\d+)?)\b/g, '<span class="jk-number">$1</span>');
-
-    code = code.replace(/\x00STR(\d+)\x00/g, function (_, i) {
-      return '<span class="jk-string">' + strings[+i] + '</span>';
-    });
-
-    return code;
-  }
-
-  function highlightCode(raw) {
-    var lang = detectLang(raw);
-    if (lang === 'sql')    return highlightSQL(raw);
-    if (lang === 'python') return highlightPython(raw);
-    return highlightJava(raw);
-  }
-
-  function renderCodeBlock(code) {
-    if (!code) return '';
-    return '<div class="code-block"><pre>' + highlightCode(code) + '</pre></div>';
-  }
-
-  /* ══════════════════════════════════════════════════════════
-     MODAL DE LEGENDA
-     ══════════════════════════════════════════════════════════ */
-
-  function initLegendaModal() {
-
-    var style = document.createElement('style');
-    style.id  = 'nexus-legenda-styles';
-    style.textContent =
-
-      '#nexus-legenda-overlay{' +
-        'position:fixed;inset:0;' +
-        'background:transparent;' +
-        'z-index:998;opacity:0;pointer-events:none;' +
-        'transition:opacity 0.2s ease;' +
-      '}' +
-      '#nexus-legenda-overlay.nlg-show{opacity:1;pointer-events:all;}' +
-
-      '#nexus-legenda-modal{' +
-        'position:fixed;right:60px;top:50%;' +
-        'transform:translateY(-50%) translateX(10px) scale(0.97);' +
-        'width:300px;' +
-        'background:rgba(10,15,26,0.97);' +
-        'border:1px solid rgba(255,255,255,0.10);' +
-        'border-top:1px solid rgba(255,255,255,0.16);' +
-        'border-radius:16px;' +
-        'box-shadow:' +
-          '0 0 0 1px rgba(var(--accent-rgb),0.08),' +
-          '0 24px 48px rgba(0,0,0,0.55),' +
-          '0 4px 16px rgba(0,0,0,0.4),' +
-          'inset 0 1px 0 rgba(255,255,255,0.06);' +
-        'z-index:999;opacity:0;pointer-events:none;' +
-        'transition:opacity 0.2s ease,transform 0.25s cubic-bezier(0.34,1.15,0.64,1);' +
-        'overflow:hidden;' +
-        'font-family:var(--font-body,"DM Sans",system-ui,sans-serif);' +
-        'backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);' +
-      '}' +
-      '#nexus-legenda-modal.nlg-show{' +
-        'opacity:1;pointer-events:all;' +
-        'transform:translateY(-50%) translateX(0) scale(1);' +
-      '}' +
-
-      '.btn-legenda{' +
-        'background:rgba(var(--accent-rgb),0.06)!important;' +
-        'border-color:rgba(var(--accent-rgb),0.18)!important;' +
-        'color:rgba(var(--accent-rgb),0.5)!important;' +
-      '}' +
-      '.btn-legenda:hover{' +
-        'background:rgba(var(--accent-rgb),0.14)!important;' +
-        'border-color:rgba(var(--accent-rgb),0.4)!important;' +
-        'color:var(--accent)!important;' +
-      '}' +
-      '#btn-legenda.nlg-active{' +
-        'background:rgba(var(--accent-rgb),0.18)!important;' +
-        'border-color:rgba(var(--accent-rgb),0.55)!important;' +
-        'color:var(--accent)!important;' +
-        'box-shadow:0 0 0 2px rgba(var(--accent-rgb),0.12);' +
-      '}' +
-
-      '.nlg-header{' +
-        'padding:0.9rem 1rem 0.75rem;' +
-        'display:flex;align-items:center;justify-content:space-between;' +
-        'border-bottom:1px solid rgba(255,255,255,0.06);' +
-        'background:linear-gradient(180deg,rgba(var(--accent-rgb),0.05) 0%,transparent 100%);' +
-      '}' +
-      '.nlg-header-left{display:flex;flex-direction:column;gap:0.1rem;}' +
-      '.nlg-eyebrow{' +
-        'font-size:0.52rem;font-weight:700;letter-spacing:0.22em;' +
-        'text-transform:uppercase;color:var(--accent);opacity:0.55;' +
-      '}' +
-      '.nlg-title{' +
-        'font-size:0.88rem;font-weight:600;color:#f0ede6;letter-spacing:-0.015em;' +
-      '}' +
-      '.nlg-close{' +
-        'width:24px;height:24px;' +
-        'background:rgba(255,255,255,0.04);' +
-        'border:1px solid rgba(255,255,255,0.07);' +
-        'border-radius:6px;color:#6e6a62;cursor:pointer;' +
-        'display:flex;align-items:center;justify-content:center;' +
-        'font-size:0.65rem;flex-shrink:0;' +
-        'transition:all 0.18s;line-height:1;' +
-      '}' +
-      '.nlg-close:hover{' +
-        'background:rgba(248,113,113,0.1);' +
-        'border-color:rgba(248,113,113,0.28);color:#fca5a5;' +
-      '}' +
-
-      '.nlg-body{' +
-        'padding:0.65rem 0.85rem;' +
-        'display:flex;flex-direction:column;gap:0.5rem;' +
-        'max-height:68vh;overflow-y:auto;' +
-      '}' +
-      '.nlg-body::-webkit-scrollbar{width:2px;}' +
-      '.nlg-body::-webkit-scrollbar-thumb{' +
-        'background:rgba(var(--accent-rgb),0.2);border-radius:2px;' +
-      '}' +
-
-      '.nlg-section-label{' +
-        'display:flex;align-items:center;gap:0.5rem;' +
-        'font-size:0.5rem;font-weight:700;letter-spacing:0.22em;' +
-        'text-transform:uppercase;color:rgba(255,255,255,0.60);' +
-        'margin-bottom:0.2rem;' +
-      '}' +
-      '.nlg-section-label::after{' +
-        'content:"";flex:1;height:1px;' +
-        'background:rgba(255,255,255,0.05);' +
-      '}' +
-
-      '.nlg-divider{height:1px;background:rgba(255,255,255,0.05);margin:0.1rem 0;}' +
-
-      '.nlg-tipo-row{' +
-        'display:flex;align-items:center;gap:0.6rem;' +
-        'padding:0.45rem 0.6rem;' +
-        'background:rgba(255,255,255,0.02);' +
-        'border:1px solid rgba(255,255,255,0.05);' +
-        'border-radius:10px;' +
-        'transition:all 0.15s;cursor:default;' +
-      '}' +
-      '.nlg-tipo-row:hover{' +
-        'background:rgba(255,255,255,0.04);' +
-        'border-color:rgba(255,255,255,0.09);' +
-      '}' +
-
-      '.nlg-tipo-icon{' +
-        'width:30px;height:30px;border-radius:8px;' +
-        'display:flex;align-items:center;justify-content:center;' +
-        'font-size:0.55rem;font-weight:800;letter-spacing:-0.03em;' +
-        'flex-shrink:0;' +
-        'font-family:var(--font-mono,"JetBrains Mono",monospace);' +
-      '}' +
-      '.nlg-icon-aj {' +
-        'background:linear-gradient(135deg,rgba(122,168,232,0.18),rgba(122,168,232,0.08));' +
-        'color:#93c5fd;border:1px solid rgba(122,168,232,0.22);' +
-      '}' +
-      '.nlg-icon-ma {' +
-        'background:linear-gradient(135deg,rgba(77,217,180,0.15),rgba(77,217,180,0.07));' +
-        'color:#5eead4;border:1px solid rgba(77,217,180,0.2);' +
-      '}' +
-      '.nlg-icon-con{' +
-        'background:linear-gradient(135deg,rgba(251,191,36,0.15),rgba(251,191,36,0.07));' +
-        'color:#fbbf24;border:1px solid rgba(251,191,36,0.2);' +
-      '}' +
-      '.nlg-icon-cod{' +
-        'background:linear-gradient(135deg,rgba(167,139,250,0.18),rgba(167,139,250,0.08));' +
-        'color:#c4b5fd;border:1px solid rgba(167,139,250,0.22);' +
-        'font-size:0.6rem;letter-spacing:-0.05em;' +
-      '}' +
-      '.nlg-icon-ap {' +
-        'background:linear-gradient(135deg,rgba(248,113,113,0.15),rgba(248,113,113,0.07));' +
-        'color:#fca5a5;border:1px solid rgba(248,113,113,0.2);' +
-      '}' +
-
-      '.nlg-tipo-info{display:flex;flex-direction:column;gap:1px;min-width:0;}' +
-      '.nlg-tipo-nome{' +
-        'font-size:0.74rem;font-weight:500;color:#e8e4dc;' +
-        'line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;' +
-      '}' +
-      '.nlg-tipo-desc{font-size:0.62rem;color:#a09b94;line-height:1.35;}' +
-
-      '.nlg-chip-row{' +
-        'display:flex;align-items:center;gap:0.55rem;' +
-        'padding:0.38rem 0.6rem;' +
-        'background:rgba(255,255,255,0.015);' +
-        'border:1px solid rgba(255,255,255,0.045);' +
-        'border-radius:8px;transition:all 0.15s;cursor:default;' +
-      '}' +
-      '.nlg-chip-row:hover{' +
-        'background:rgba(255,255,255,0.035);' +
-        'border-color:rgba(255,255,255,0.08);' +
-      '}' +
-
-      '.nlg-chip{' +
-        'font-family:var(--font-mono,"JetBrains Mono",monospace);' +
-        'font-size:0.58rem;font-weight:700;letter-spacing:0.02em;' +
-        'padding:2px 6px;border-radius:4px;' +
-        'white-space:nowrap;flex-shrink:0;' +
-        'min-width:72px;text-align:center;' +
-      '}' +
-      '.nlg-ddl   {background:rgba(122,168,232,0.12);color:#93c5fd;border:1px solid rgba(122,168,232,0.25);}' +
-      '.nlg-dml   {background:rgba(77,217,180,0.10);color:#5eead4;border:1px solid rgba(77,217,180,0.22);}' +
-      '.nlg-key   {background:rgba(251,191,36,0.10);color:#fbbf24;border:1px solid rgba(251,191,36,0.22);}' +
-      '.nlg-type  {background:rgba(167,139,250,0.10);color:#c4b5fd;border:1px solid rgba(167,139,250,0.22);}' +
-      '.nlg-danger{background:rgba(248,113,113,0.10);color:#fca5a5;border:1px solid rgba(248,113,113,0.22);}' +
-      '.nlg-mark  {background:rgba(var(--accent-rgb),0.10);color:var(--accent);border:1px solid rgba(var(--accent-rgb),0.22);}' +
-
-      '.nlg-desc{display:flex;flex-direction:column;gap:0;min-width:0;}' +
-      '.nlg-desc-main{font-size:0.72rem;font-weight:500;color:#ccc9c0;line-height:1.3;}' +
-      '.nlg-desc-sub{font-size:0.6rem;color:#a09b94;line-height:1.3;}' +
-
-      '.nlg-enade-block{' +
-        'padding:0.55rem 0.7rem;' +
-        'background:linear-gradient(135deg,rgba(var(--accent-rgb),0.07),rgba(var(--accent-rgb),0.03));' +
-        'border:1px solid rgba(var(--accent-rgb),0.14);' +
-        'border-radius:10px;' +
-        'display:flex;gap:0.55rem;align-items:flex-start;' +
-      '}' +
-      '.nlg-enade-icon{' +
-        'font-size:0.85rem;line-height:1;flex-shrink:0;margin-top:1px;' +
-      '}' +
-      '.nlg-enade-text{display:flex;flex-direction:column;gap:0.15rem;}' +
-      '.nlg-enade-label{' +
-        'font-size:0.52rem;font-weight:700;letter-spacing:0.18em;' +
-        'text-transform:uppercase;color:var(--accent);opacity:0.7;' +
-      '}' +
-      '.nlg-enade-desc{' +
-        'font-size:0.68rem;color:#8a8680;line-height:1.5;' +
-      '}' +
-
-      '.nlg-footer{' +
-        'padding:0.5rem 0.85rem;' +
-        'border-top:1px solid rgba(255,255,255,0.05);' +
-        'display:flex;align-items:center;gap:0.35rem;' +
-        'background:rgba(0,0,0,0.15);' +
-      '}' +
-      '.nlg-footer-dot{' +
-        'width:4px;height:4px;border-radius:50%;' +
-        'background:var(--accent);opacity:0.35;flex-shrink:0;' +
-      '}' +
-      '.nlg-footer-text{' +
-        'font-size:0.58rem;color:#b5b0a8;letter-spacing:0.02em;line-height:1.4;' +
-      '}';
-
-    document.head.appendChild(style);
-
-    function _el(tag, cls, txt) {
-      var e = document.createElement(tag);
-      if (cls) e.className = cls;
-      if (txt !== undefined) e.textContent = txt;
-      return e;
-    }
-
-    function _tipoRow(iconCls, iconTxt, nome, desc) {
-      var row  = _el('div', 'nlg-tipo-row');
-      var icon = _el('div', 'nlg-tipo-icon ' + iconCls, iconTxt);
-      var info = _el('div', 'nlg-tipo-info');
-      info.appendChild(_el('span', 'nlg-tipo-nome', nome));
-      info.appendChild(_el('span', 'nlg-tipo-desc', desc));
-      row.appendChild(icon);
-      row.appendChild(info);
-      return row;
-    }
-
-    function _chipRow(chipCls, label, main, sub) {
-      var row  = _el('div', 'nlg-chip-row');
-      var chip = _el('span', 'nlg-chip ' + chipCls, label);
-      var desc = _el('div', 'nlg-desc');
-      desc.appendChild(_el('span', 'nlg-desc-main', main));
-      desc.appendChild(_el('span', 'nlg-desc-sub', sub));
-      row.appendChild(chip);
-      row.appendChild(desc);
-      return row;
-    }
-
-    function _secao(labelTxt) {
-      var wrap = _el('div');
-      var lbl  = _el('div', 'nlg-section-label', labelTxt);
-      wrap.appendChild(lbl);
-      var list = _el('div');
-      list.style.cssText = 'display:flex;flex-direction:column;gap:0.22rem;';
-      wrap.appendChild(list);
-      return { wrap: wrap, list: list };
-    }
-
-    var overlay = _el('div');
-    overlay.id = 'nexus-legenda-overlay';
-    document.body.appendChild(overlay);
-
-    var modal = _el('div');
-    modal.id = 'nexus-legenda-modal';
-    modal.setAttribute('role', 'dialog');
-    modal.setAttribute('aria-modal', 'true');
-    modal.setAttribute('aria-label', 'Informações e tipos de questão');
-
-    var header   = _el('div', 'nlg-header');
-    var hLeft    = _el('div', 'nlg-header-left');
-    hLeft.appendChild(_el('span', 'nlg-eyebrow', 'Nexus Study'));
-    hLeft.appendChild(_el('span', 'nlg-title',   'Informações'));
-    var closeBtn = _el('button', 'nlg-close', '\u00d7');
-    closeBtn.id = 'nlg-close-btn';
-    closeBtn.setAttribute('aria-label', 'Fechar Informações');
-    header.appendChild(hLeft);
-    header.appendChild(closeBtn);
-    modal.appendChild(header);
-
-    var _disc  = document.body.dataset.disciplina || '';
-    var _modo  = document.body.dataset.modo       || '';
-
-    var _CODE_DISC = ['poo', 'banco_dados', 'redes'];
-    var _hasCode   = _CODE_DISC.indexOf(_disc) !== -1;
-
-    var body = _el('div', 'nlg-body');
-
-    var _modoCfg = null;
-    if      (_modo === 'enade')    _modoCfg = {
-      icon:  '🎓',
-      label: 'Estilo ENADE',
-      desc:  'Questões elaboradas no formato ENADE: enunciados contextualizados, ' +
-             'afirmativas para análise crítica e alternativas plausíveis.'
-    };
-    else if (_modo === 'ava')      _modoCfg = {
-      icon:  '📋',
-      label: 'Questões AVA',
-      desc:  'Questões extraídas ou adaptadas das atividades acadêmicas, ' +
-             'elaboradas e aplicadas pelos professores no AVA.'
-    };
-    else if (_modo === 'questoes') _modoCfg = {
-      icon:  '🤖',
-      label: 'Geradas por IA',
-      desc:  'Questões didáticas que explicam o conceito antes de perguntar — ' +
-             'ideais para revisar e consolidar o conteúdo estudado.'
-    };
-    else if (_modo === 'fixacao')  _modoCfg = {
-      icon:  '📌',
-      label: 'Questões de Fixação',
-      desc:  'Questões objetivas para consolidar o conteúdo estudado — ' +
-             'diretas, sem contextos extensos, ideais para revisão rápida.'
-    };
-
-    if (_modoCfg) {
-      var modoBlock = _el('div', 'nlg-enade-block');
-      var modoIcon  = _el('div', 'nlg-enade-icon', _modoCfg.icon);
-      var modoTxt   = _el('div', 'nlg-enade-text');
-      modoTxt.appendChild(_el('span', 'nlg-enade-label', _modoCfg.label));
-      modoTxt.appendChild(_el('span', 'nlg-enade-desc',  _modoCfg.desc));
-      modoBlock.appendChild(modoIcon);
-      modoBlock.appendChild(modoTxt);
-      body.appendChild(modoBlock);
-      body.appendChild(_el('div', 'nlg-divider'));
-    }
-
-    var sTipos = _secao('Tipos de questão');
-
-    if (_modo === 'enade') {
-      sTipos.list.appendChild(_tipoRow('nlg-icon-aj',  'A+J',  'Asserção + Justificativa', 'Duas afirmativas com PORQUE'));
-      sTipos.list.appendChild(_tipoRow('nlg-icon-ma',  'I–IV', 'Múltiplas afirmativas',    'Identifique as corretas'));
-      sTipos.list.appendChild(_tipoRow('nlg-icon-con', 'CON',  'Conceitual',               'Contexto + pergunta direta'));
-      if (_hasCode) {
-        sTipos.list.appendChild(_tipoRow('nlg-icon-cod', '</>', 'Análise de código', 'Script ou trecho — avalie afirmativas'));
-      }
-      sTipos.list.appendChild(_tipoRow('nlg-icon-ap', 'APL', 'Análise aplicada', 'Situação-problema real'));
-
-    } else if (_modo === 'fixacao') {
-      sTipos.list.appendChild(_tipoRow('nlg-icon-con', 'CUR', 'Curta',     'Pergunta direta, sem contexto ou contexto mínimo'));
-      sTipos.list.appendChild(_tipoRow('nlg-icon-ma',  'DIR', 'Direta',    'Pergunta objetiva com foco no conceito'));
-      sTipos.list.appendChild(_tipoRow('nlg-icon-ap',  'CTX', 'Contexto',  'Situação simples ou pequeno cenário aplicado'));
-      sTipos.list.appendChild(_tipoRow('nlg-icon-aj',  'APL', 'Aplicação', 'Cenário real para interpretação e transferência'));
-      if (_hasCode) {
-        sTipos.list.appendChild(_tipoRow('nlg-icon-cod', '</>', 'Código', 'Trecho de código — avalie comportamento ou saída'));
-      }
-
-    } else if (_modo === 'ava') {
-      var avaNota = _el('div', 'nlg-enade-block');
-      avaNota.style.cssText += 'flex-direction:column;gap:0.4rem;';
-      var avaTopo = _el('div');
-      avaTopo.style.cssText = 'display:flex;align-items:center;gap:0.5rem;';
-      var avaIco  = _el('div', 'nlg-enade-icon', '📋');
-      var avaTxt  = _el('div', 'nlg-enade-text');
-      avaTxt.appendChild(_el('span', 'nlg-enade-label', 'Tipagem dependente da extração'));
-      avaTxt.appendChild(_el('span', 'nlg-enade-desc',
-        'Os tipos e a estrutura das questões refletem diretamente o conteúdo ' +
-        'disponibilizado pelo professor no AVA — enunciados, atividades e ' +
-        'avaliações são extraídos e adaptados sem padronização prévia de formato.'
-      ));
-      avaTopo.appendChild(avaIco);
-      avaTopo.appendChild(avaTxt);
-      avaNota.appendChild(avaTopo);
-      sTipos.list.appendChild(avaNota);
-
-    } else {
-      sTipos.list.appendChild(_tipoRow('nlg-icon-con', 'EXP', 'Explicativa',     'Conceito explicado antes da pergunta'));
-      sTipos.list.appendChild(_tipoRow('nlg-icon-ma',  'CTX', 'Contextualizada', 'Explicação densa com múltiplos conceitos'));
-      sTipos.list.appendChild(_tipoRow('nlg-icon-ap',  'APL', 'Aplicação',       'Cenário real para verificar a compreensão'));
-      if (_hasCode) {
-        sTipos.list.appendChild(_tipoRow('nlg-icon-cod', '</>', 'Código', 'Trecho de código — avalie comportamento'));
-      }
-    }
-
-    body.appendChild(sTipos.wrap);
-    body.appendChild(_el('div', 'nlg-divider'));
-
-    var sChips = _secao('Cores dos chips');
-
-    if (_hasCode) {
-      sChips.list.appendChild(_chipRow('nlg-ddl',    'DDL / def',     'Azul — Estrutura',      'CREATE, ALTER, DROP'));
-      sChips.list.appendChild(_chipRow('nlg-dml',    'DML / proc',    'Verde — Processo',      'SELECT, INSERT, UPDATE'));
-      sChips.list.appendChild(_chipRow('nlg-key',    'KEY / rule',    'Âmbar — Regra',         'PRIMARY KEY, FOREIGN KEY'));
-      sChips.list.appendChild(_chipRow('nlg-type',   'TYPE / term',   'Lilás — Tipo',          'VARCHAR, INTEGER, DATE'));
-      sChips.list.appendChild(_chipRow('nlg-danger', 'DANGER / warn', 'Vermelho — Perigo',     'DROP TABLE, erros comuns'));
-      sChips.list.appendChild(_chipRow('nlg-mark',   'MARK',          'Acento — Destaque',     'Termos sem categoria fixa'));
-    } else {
-      sChips.list.appendChild(_chipRow('nlg-ddl',    'def',  'Azul — Definição',      'Conceitos e estruturas formais'));
-      sChips.list.appendChild(_chipRow('nlg-dml',    'proc', 'Verde — Processo',      'Ações, etapas e fluxos'));
-      sChips.list.appendChild(_chipRow('nlg-key',    'rule', 'Âmbar — Regra',         'Princípios, leis e restrições'));
-      sChips.list.appendChild(_chipRow('nlg-type',   'term', 'Lilás — Termo técnico', 'Classificações e tipologias'));
-      sChips.list.appendChild(_chipRow('nlg-danger', 'warn', 'Vermelho — Atenção',    'Erros comuns e armadilhas'));
-      sChips.list.appendChild(_chipRow('nlg-mark',   'mark', 'Acento — Destaque',     'Termos sem categoria fixa'));
-    }
-
-    body.appendChild(sChips.wrap);
-    modal.appendChild(body);
-
-    var footer = _el('div', 'nlg-footer');
-    footer.appendChild(_el('div', 'nlg-footer-dot'));
-    footer.appendChild(_el('span', 'nlg-footer-text',
-      'Chips aparecem em questões, afirmativas e feedbacks'
-    ));
-    modal.appendChild(footer);
-    document.body.appendChild(modal);
-
-    function _open() {
-      modal.classList.add('nlg-show');
-      overlay.classList.add('nlg-show');
-      var b = document.getElementById('btn-legenda');
-      if (b) b.classList.add('nlg-active');
-    }
-
-    function _close() {
-      modal.classList.remove('nlg-show');
-      overlay.classList.remove('nlg-show');
-      var b = document.getElementById('btn-legenda');
-      if (b) b.classList.remove('nlg-active');
-    }
-
-    function _toggle() {
-      modal.classList.contains('nlg-show') ? _close() : _open();
-    }
-
-    var btnLegenda = document.getElementById('btn-legenda');
-    if (btnLegenda) btnLegenda.addEventListener('click', _toggle);
-
-    closeBtn.addEventListener('click', _close);
-    overlay.addEventListener('click', _close);
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') _close();
-    });
-
-  } /* fim initLegendaModal */
-
-  /* ══════════════════════════════════════════════════════════
-     INÍCIO DO ENGINE
+     INIT QUIZ
      ══════════════════════════════════════════════════════════ */
 
   function initQuiz() {
+
+    /* ── 1. CONTEXTO E CONFIGURAÇÃO ───────────────────────── */
 
     var tipo = window.TIPO_QUIZ
       || new URLSearchParams(location.search).get('modo')
@@ -641,17 +47,6 @@
       return 'quiz_smap_' + _disc + '_' + _modo + '_' + _semestre;
     }
 
-    function _leftAtKey() {
-      return 'quiz_leftat_' + _disc + '_' + _modo + '_' + _semestre;
-    }
-
-    /*
-     * Janela de tolerância para distinguir F5 de saída real.
-     * F5 leva tipicamente 1-3 s; 20 s é uma margem confortável.
-     */
-    var EXPIRY_MS = 20000;
-
-    /* ── Verifica se "salvar quiz finalizado" está ativo ── */
     function _salvarFinalizadoAtivo() {
       if (!_Storage) return false;
       try {
@@ -660,8 +55,94 @@
       } catch (e) { return false; }
     }
 
-    var listaQuestoes;
+    /* ══════════════════════════════════════════════════════════
+   2. EXPIRAÇÃO (20s)
+   
+   Regra: o timer conta apenas o tempo FORA da página.
+   
+   Fluxo:
+     SAÍDA  → salva timestamp no localStorage
+     VOLTA  → calcula tempoFora, remove timestamp SEMPRE
+              se >= 20s → limpa progresso e reinicia
+              se <  20s → não faz nada
+   
+   Isso garante:
+     - Sem acúmulo entre saídas
+     - F5 é tratado via pagehide + verificação no boot
+     - Sem setTimeout/setInterval
+   ══════════════════════════════════════════════════════════ */
 
+  var EXPIRY_MS = 20000;
+
+  function _leftAtKey() {
+    return 'quiz_leftat_' + _disc + '_' + _modo + '_' + _semestre;
+  }
+
+  /* Chamada toda vez que o usuário SAI da página.
+     Sobrescreve qualquer timestamp anterior — cada saída
+     começa uma contagem nova do zero. */
+  function _registrarSaida() {
+    if (!_disc || !_Storage) return;
+
+    /* Só registra se o quiz estiver finalizado
+       e salvarProgresso estiver desativado */
+    var salvo = _Storage.loadProgress(_disc, _modo, _semestre);
+    if (!salvo || !salvo.finalizado) return;
+    if (_salvarFinalizadoAtivo()) return;
+
+    _Storage.set(_leftAtKey(), Date.now());
+  }
+
+  /* Chamada toda vez que o usuário VOLTA para a página
+     (visibilitychange → visible  OU  carregamento via F5).
+     
+     REGRA CRÍTICA: o timestamp é removido SEMPRE,
+     independente de ter expirado ou não.
+     Isso impede acúmulo entre múltiplas saídas. */
+  function _verificarRetorno(aoExpirar) {
+    if (!_disc || !_Storage) return;
+
+    var leftAt = _Storage.get(_leftAtKey(), null);
+
+    /* Sem timestamp = não houve saída registrada. Nada a fazer. */
+    if (leftAt === null) return;
+
+    /* Remove SEMPRE — nova saída criará novo timestamp */
+    _Storage.remove(_leftAtKey());
+
+    var tempoFora = Date.now() - leftAt;
+
+    if (tempoFora >= EXPIRY_MS) {
+      _Storage.clearProgress(_disc, _modo, _semestre);
+      _Storage.remove(_smapKey());
+      console.info(
+        '[quiz_engine] Progresso expirado (' + Math.round(tempoFora / 1000) + 's fora). Reiniciando.'
+      );
+      if (typeof aoExpirar === 'function') aoExpirar();
+    }
+    /* tempoFora < EXPIRY_MS → não faz nada, progresso continua intacto */
+  }
+
+  /* ── Listeners ─────────────────────────────────────────── */
+
+  /* pagehide: cobre F5, fechar aba e navegação para outra página */
+  window.addEventListener('pagehide', _registrarSaida);
+
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) {
+      /* Usuário saiu (troca de aba, minimizou, etc.) */
+      _registrarSaida();
+    } else {
+      /* Usuário voltou — passa reiniciar() como callback de expiração.
+         reiniciar() só existe após o boot, mas visibilitychange
+         só dispara depois que a página já carregou, então é seguro. */
+      _verificarRetorno(reiniciar);
+    }
+  });
+
+    /* ── Questões ─────────────────────────────────────────── */
+
+    var listaQuestoes;
     if (Array.isArray(window.questoes)) {
       listaQuestoes = window.questoes;
     } else if (window.questoes && typeof window.questoes === 'object') {
@@ -683,9 +164,7 @@
 
     var questoesBase = listaQuestoes;
 
-    /* ══════════════════════════════════════════════════════
-       EMBARALHAMENTO
-       ══════════════════════════════════════════════════════ */
+    /* ── 3. EMBARALHAMENTO ────────────────────────────────── */
 
     function shuffleArray(arr) {
       var a = arr.slice();
@@ -702,13 +181,9 @@
       var novoMapa = {};
 
       var result = base.map(function (q, qi) {
-        var indices;
-
-        if (mapaFixo && mapaFixo[qi]) {
-          indices = mapaFixo[qi];
-        } else {
-          indices = shuffleArray(q.options.map(function (_, i) { return i; }));
-        }
+        var indices = (mapaFixo && mapaFixo[qi])
+          ? mapaFixo[qi]
+          : shuffleArray(q.options.map(function (_, i) { return i; }));
 
         novoMapa[qi] = indices;
 
@@ -716,16 +191,15 @@
         var newAnswer     = indices.indexOf(q.answer);
         var correctLetter = String.fromCharCode(65 + newAnswer);
         var originalOpt   = q.options[q.answer];
-
-        var feedbackBase = _extrairPorQueEstaCerta(q.feedback || '');
-        var newFeedback  =
+        var feedbackBase  = _extrairPorQueEstaCerta(q.feedback || '');
+        var newFeedback   =
           '✓ Resposta correta: ' + correctLetter + ') ' + originalOpt +
           (feedbackBase ? '\n\nPor que está certa: ' + feedbackBase : '');
 
         return Object.assign({}, q, {
           options:  newOptions,
           answer:   newAnswer,
-          feedback: newFeedback
+          feedback: newFeedback,
         });
       });
 
@@ -739,85 +213,44 @@
       return feedback.trim();
     }
 
-    /* ── Declarações antes de _restaurar ── */
-    var respostas = {};
-    var revelado  = false;
+    /* ── 4. ESTADO E RESTAURAÇÃO ──────────────────────────── */
 
-    var modoStep    = false;
-    var stepAtual   = 0;
-    var stepWrapper = null;
-
+    var respostas        = {};
+    var revelado         = false;
+    var modoStep         = false;
+    var stepAtual        = 0;
+    var stepWrapper      = null;
     var mostrandoSoErros = false;
-    var aulaGrupos = [];
+    var aulaGrupos       = [];
 
-    /* ══════════════════════════════════════════════════════
-       RESTAURA PROGRESSO SALVO
-
-       Regras de restauração:
-       ─ Parcial (finalizado=false): sempre restaura, sem expiração,
-         o toggle "salvarProgresso" não afeta progresso parcial.
-       ─ Finalizado (finalizado=true): só restaura se o toggle estiver
-         ON e o tempo desde o pagehide for < EXPIRY_MS (F5).
-       ══════════════════════════════════════════════════════ */
     function _restaurar() {
       if (!_disc || !_Storage) return null;
 
       var salvo = _Storage.loadProgress(_disc, _modo, _semestre);
       if (!salvo || !salvo.respostas) return null;
 
-      /* ── PARCIAL: sempre restaura, sem expiração ── */
-      if (!salvo.finalizado) {
-        Object.keys(salvo.respostas).forEach(function (qi) {
-          respostas[parseInt(qi)] = salvo.respostas[qi];
-        });
-        if (salvo.revelado) revelado = true;
-        console.info('[quiz_engine] Progresso parcial restaurado:', Object.keys(respostas).length, 'respostas');
-        return _Storage.get(_smapKey(), null);
-      }
 
-      /* ── FINALIZADO: respeita o toggle ── */
-      if (!_salvarFinalizadoAtivo()) {
-        _Storage.clearProgress(_disc, _modo, _semestre);
-        _Storage.set(_smapKey(), null);
-        console.info('[quiz_engine] Quiz finalizado não restaurado (salvarProgresso desativado).');
-        return null;
-      }
-
-      /* ── FINALIZADO + toggle ON: verifica expiração ── */
-      var leftAt = _Storage.get(_leftAtKey(), null);
-      if (leftAt !== null) {
-        var elapsed = Date.now() - leftAt;
-        _Storage.set(_leftAtKey(), null); /* limpa independente do resultado */
-
-        if (elapsed > EXPIRY_MS) {
-          _Storage.clearProgress(_disc, _modo, _semestre);
-          _Storage.set(_smapKey(), null);
-          console.info('[quiz_engine] Quiz finalizado expirado (' + Math.round(elapsed / 1000) + 's). Iniciando limpo.');
-          return null;
-        }
-
-        console.info('[quiz_engine] Reload rápido (' + elapsed + 'ms). Resultado preservado.');
-      }
 
       Object.keys(salvo.respostas).forEach(function (qi) {
         respostas[parseInt(qi)] = salvo.respostas[qi];
       });
       if (salvo.revelado) revelado = true;
-      console.info('[quiz_engine] Quiz finalizado restaurado.');
+
+      console.info('[quiz_engine] Progresso restaurado:', Object.keys(respostas).length, 'respostas');
       return _Storage.get(_smapKey(), null);
     }
 
     function _salvarShuffleMap() {
-      if (_disc && _Storage) {
-        _Storage.set(_smapKey(), shuffleMap);
-      }
+      if (_disc && _Storage) _Storage.set(_smapKey(), shuffleMap);
     }
 
-    /* ── Inicialização ── */
-    var savedShuffleMap = _restaurar();
-    var questoes = criarCopiaEmbaralhada(questoesBase, savedShuffleMap);
 
-    if (savedShuffleMap === null && Object.keys(respostas).length > 0) {
+/* ── Inicialização ── */
+_verificarRetorno(null);
+var savedShuffleMap = _restaurar();
+var questoes = criarCopiaEmbaralhada(questoesBase, savedShuffleMap);
+
+    if (savedShuffleMap === null && _disc && _Storage) {
       _salvarShuffleMap();
     }
 
@@ -827,31 +260,21 @@
       if (span) span.textContent = questoes.length + ' questões';
     }
 
-    /* ══════════════════════════════════════════════════════
-       FORMATAÇÃO DE FEEDBACK
-       ══════════════════════════════════════════════════════ */
+    /* ── 5. FEEDBACK E CORPO DA QUESTÃO ───────────────────── */
 
     function formatFeedback(feedback) {
       if (!feedback) return '';
-
       var lines = feedback.split('\n');
-      var out   = lines.map(function (line) {
+      return lines.map(function (line) {
         if (line.indexOf('✓ Resposta correta:') === 0) {
           return '<strong>' + renderMarkup(line) + '</strong>';
         }
         if (line.indexOf('Por que está certa:') === 0) {
-          var rest = line.replace('Por que está certa:', '').trim();
-          return '<strong>Por que está certa:</strong> ' + renderMarkup(rest);
+          return '<strong>Por que está certa:</strong> ' + renderMarkup(line.replace('Por que está certa:', '').trim());
         }
         return renderMarkup(line);
-      });
-
-      return out.join('<br>');
+      }).join('<br>');
     }
-
-    /* ══════════════════════════════════════════════════════
-       CONSTRUÇÃO DO CORPO DA QUESTÃO
-       ══════════════════════════════════════════════════════ */
 
     function renderAssertions(assertions) {
       if (!assertions || assertions.length === 0) return '';
@@ -865,22 +288,11 @@
 
         if (isPorque) {
           return (
-            '<div class="assertion-connector">' +
-              '<span class="connector-label">PORQUE</span>' +
-            '</div>' +
-            '<div class="assertion">' +
-              '<span class="assertion-num">' + num + '.</span>' +
-              '<span>' + rendered + '</span>' +
-            '</div>'
+            '<div class="assertion-connector"><span class="connector-label">PORQUE</span></div>' +
+            '<div class="assertion"><span class="assertion-num">' + num + '.</span><span>' + rendered + '</span></div>'
           );
         }
-
-        return (
-          '<div class="assertion">' +
-            '<span class="assertion-num">' + num + '.</span>' +
-            '<span>' + rendered + '</span>' +
-          '</div>'
-        );
+        return '<div class="assertion"><span class="assertion-num">' + num + '.</span><span>' + rendered + '</span></div>';
       }).join('');
 
       return '<div class="assertions">' + items + '</div>';
@@ -888,54 +300,25 @@
 
     function buildQuestionBody(q) {
       var html = '';
-
       if (q.tipo) {
         html += '<div class="question-type-eyebrow">' +
           q.tipo.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') +
         '</div>';
       }
-
-      if (q.texto) {
-        html += '<div class="question-texto">' + renderMarkup(q.texto.replace(/\n/g, '\n')) + '</div>';
-      }
-
-      if (q.miniEnunciado) {
-        html += '<div class="question-mini-enunciado">' + renderMarkup(q.miniEnunciado) + '</div>';
-      }
-
-      if (q.code) {
-        html += renderCodeBlock(q.code);
-      }
-
-      if (q.assertions && q.assertions.length > 0) {
-        html += renderAssertions(q.assertions);
-      }
-
-      if (q.image) {
-        html += '<div class="question-image">' +
-          '<img src="' + q.image + '" alt="Imagem da questão">' +
-        '</div>';
-      }
-
-      if (q.questionContinuation) {
-        html += '<div class="question-text">' + renderMarkup(q.questionContinuation) + '</div>';
-      }
-
-      if (q.question) {
-        html += '<div class="question-enunciado">' + renderMarkup(q.question) + '</div>';
-      }
-
+      if (q.texto)                html += '<div class="question-texto">'        + renderMarkup(q.texto)               + '</div>';
+      if (q.miniEnunciado)        html += '<div class="question-mini-enunciado">'+ renderMarkup(q.miniEnunciado)       + '</div>';
+      if (q.code)                 html += renderCodeBlock(q.code);
+      if (q.assertions && q.assertions.length > 0) html += renderAssertions(q.assertions);
+      if (q.image)                html += '<div class="question-image"><img src="' + q.image + '" alt="Imagem da questão"></div>';
+      if (q.questionContinuation) html += '<div class="question-text">'          + renderMarkup(q.questionContinuation)+ '</div>';
+      if (q.question)             html += '<div class="question-enunciado">'     + renderMarkup(q.question)            + '</div>';
       return html;
     }
 
-    /* ══════════════════════════════════════════════════════
-       RESULTADO POR AULA
-       ══════════════════════════════════════════════════════ */
+    /* ── 6. RESULTADO POR AULA ────────────────────────────── */
 
     function _calcularResultadoAula(indices) {
-      var total       = indices.length;
-      var respondidas = 0;
-      var acertos     = 0;
+      var total = indices.length, respondidas = 0, acertos = 0;
       indices.forEach(function (qi) {
         if (respostas[qi] !== undefined) {
           respondidas++;
@@ -957,16 +340,12 @@
       if (r.respondidas < r.total) {
         el.className = 'subject-result subject-result--progress';
         el.innerHTML =
-          '<div class="sr-progress-label">' +
-            r.respondidas + ' de ' + r.total + ' questões respondidas' +
-          '</div>' +
-          '<div class="sr-progress-bar">' +
-            '<div class="sr-progress-fill" style="width:' + pct + '%"></div>' +
-          '</div>';
+          '<div class="sr-progress-label">' + r.respondidas + ' de ' + r.total + ' questões respondidas</div>' +
+          '<div class="sr-progress-bar"><div class="sr-progress-fill" style="width:' + pct + '%"></div></div>';
       } else {
-        var pctAcertos = r.total > 0 ? Math.round((r.acertos / r.total) * 100) : 0;
-        var tier = pctAcertos >= 70 ? '--good' : pctAcertos >= 50 ? '--mid' : '--bad';
-        var icon = pctAcertos >= 70 ? '🎯' : pctAcertos >= 50 ? '📚' : '💪';
+        var pctA = r.total > 0 ? Math.round((r.acertos / r.total) * 100) : 0;
+        var tier = pctA >= 70 ? '--good' : pctA >= 50 ? '--mid' : '--bad';
+        var icon = pctA >= 70 ? '🎯'    : pctA >= 50 ? '📚'   : '💪';
         el.className = 'subject-result subject-result' + tier;
         el.innerHTML =
           '<div class="sr-icon">' + icon + '</div>' +
@@ -974,7 +353,7 @@
             '<div class="sr-title">Resultado da Aula</div>' +
             '<div class="sr-score">' + r.acertos + ' de ' + r.total + ' questões corretas</div>' +
           '</div>' +
-          '<div class="sr-pct">' + pctAcertos + '%</div>';
+          '<div class="sr-pct">' + pctA + '%</div>';
       }
     }
 
@@ -989,9 +368,7 @@
       return -1;
     }
 
-    /* ══════════════════════════════════════════════════════
-       RENDERIZAÇÃO
-       ══════════════════════════════════════════════════════ */
+    /* ── 7. RENDERIZAÇÃO ──────────────────────────────────── */
 
     function renderizar() {
       if (modoStep) _sairModoStep();
@@ -1006,7 +383,6 @@
         if (q.aula !== undefined && q.aula !== ultimaAula) {
           ultimaAula = q.aula;
           aulaGrupos.push({ aula: q.aula, indices: [] });
-
           var titleEl = document.createElement('div');
           titleEl.className = 'subject-title';
           titleEl.textContent = q.aula.toUpperCase();
@@ -1040,24 +416,13 @@
           btn.innerHTML = String.fromCharCode(65 + ai) + ') ' + renderMarkup(alt);
           btn.dataset.qi = qi;
           btn.dataset.ai = ai;
-
-          if (respostas[qi] !== undefined) {
-            _aplicarEstadoOpcao(btn, qi, ai);
-          }
-
-          btn.addEventListener('click', function () {
-            selectOption(qi, ai);
-          });
-
+          if (respostas[qi] !== undefined) _aplicarEstadoOpcao(btn, qi, ai);
+          btn.addEventListener('click', function () { selectOption(qi, ai); });
           opts.appendChild(btn);
         });
 
         card.appendChild(opts);
-
-        if (respostas[qi] !== undefined) {
-          card.appendChild(_criarFeedbackEl(qi));
-        }
-
+        if (respostas[qi] !== undefined) card.appendChild(_criarFeedbackEl(qi));
         container.appendChild(card);
 
         var proxQ           = questoes[qi + 1];
@@ -1072,6 +437,16 @@
           _atualizarResultadoAula(gi);
         }
       });
+
+      /* Fallback: sem campo "aula" → grupo global único */
+      if (aulaGrupos.length === 0 && questoes.length > 0) {
+        aulaGrupos.push({ aula: null, indices: questoes.map(function (_, i) { return i; }) });
+        var resultEl = document.createElement('div');
+        resultEl.id        = 'aula-result-0';
+        resultEl.className = 'subject-result subject-result--progress';
+        container.appendChild(resultEl);
+        _atualizarResultadoAula(0);
+      }
     }
 
     function _aplicarEstadoOpcao(btn, qi, ai) {
@@ -1097,9 +472,7 @@
       return fb;
     }
 
-    /* ══════════════════════════════════════════════════════
-       INTERAÇÃO DO USUÁRIO
-       ══════════════════════════════════════════════════════ */
+    /* ── 8. INTERAÇÃO DO USUÁRIO ──────────────────────────── */
 
     function selectOption(qi, oi) {
       if (revelado || respostas[qi] !== undefined) return;
@@ -1118,30 +491,12 @@
 
       atualizarResultados();
 
-      /* ── Lógica de salvamento ──────────────────────────────
-         Parcial: sempre salva, independe do toggle.
-         Finalizado: só salva se "salvarProgresso" estiver ON.
-         Finalizado + toggle OFF: limpa qualquer dado parcial
-         que existia (usuário escolheu não salvar ao terminar).
-         ──────────────────────────────────────────────────── */
       if (_disc && _Storage) {
-        var total       = questoes.length;
+        var total      = questoes.length;
         var respondidas = Object.keys(respostas).length;
         var finalizado  = respondidas === total;
-
-        if (!finalizado) {
-          /* Parcial — sempre persiste */
-          _Storage.saveProgress(_disc, _modo, _semestre, respostas, revelado, false);
-          _salvarShuffleMap();
-        } else if (_salvarFinalizadoAtivo()) {
-          /* Finalizado + toggle ON — persiste */
-          _Storage.saveProgress(_disc, _modo, _semestre, respostas, revelado, true);
-          _salvarShuffleMap();
-        } else {
-          /* Finalizado + toggle OFF — descarta */
-          _Storage.clearProgress(_disc, _modo, _semestre);
-          _Storage.set(_smapKey(), null);
-        }
+        _Storage.saveProgress(_disc, _modo, _semestre, respostas, revelado, finalizado);
+        _salvarShuffleMap();
       }
     }
 
@@ -1152,25 +507,14 @@
         if (respostas[qi] === undefined) respostas[qi] = q.answer;
         _atualizarOpcoes(qi);
         var card = document.getElementById('q-' + qi);
-        if (card && !card.querySelector('.feedback')) {
-          card.appendChild(_criarFeedbackEl(qi));
-        }
+        if (card && !card.querySelector('.feedback')) card.appendChild(_criarFeedbackEl(qi));
       });
 
-      if (modoStep) {
-        _sairModoStep();
-        renderizar();
-      }
+      if (modoStep) { _sairModoStep(); renderizar(); }
 
-      /* ── Finalizado via revelar: mesma regra do selectOption ── */
       if (_disc && _Storage) {
-        if (_salvarFinalizadoAtivo()) {
-          _Storage.saveProgress(_disc, _modo, _semestre, respostas, true, true);
-          _salvarShuffleMap();
-        } else {
-          _Storage.clearProgress(_disc, _modo, _semestre);
-          _Storage.set(_smapKey(), null);
-        }
+        _Storage.saveProgress(_disc, _modo, _semestre, respostas, true, true);
+        _salvarShuffleMap();
       }
 
       _atualizarTodosResultadosAula();
@@ -1186,11 +530,11 @@
 
       if (_disc && _Storage) {
         _Storage.clearProgress(_disc, _modo, _semestre);
-        _Storage.set(_smapKey(),   null);
-        _Storage.set(_leftAtKey(), null);
+        _Storage.remove(_smapKey());
       }
 
       questoes = criarCopiaEmbaralhada(questoesBase);
+      if (_disc && _Storage) _salvarShuffleMap();
 
       var resultsEl = document.getElementById('results');
       if (resultsEl) { resultsEl.style.display = 'none'; resultsEl.innerHTML = ''; }
@@ -1200,9 +544,7 @@
       smoothScrollToTop();
     }
 
-    /* ══════════════════════════════════════════════════════
-       RESULTADO GLOBAL
-       ══════════════════════════════════════════════════════ */
+    /* ── 9. RESULTADO GLOBAL ──────────────────────────────── */
 
     function atualizarResultados() {
       var total       = questoes.length;
@@ -1218,25 +560,24 @@
 
       if (respondidas === total) {
         var pct = Math.round((acertos / total) * 100);
+        var msg = pct >= 90 ? 'Parabéns! Excelente desempenho.'
+                : pct >= 70 ? 'Bom trabalho! Continue assim.'
+                : pct >= 50 ? 'Continue estudando, você está no caminho.'
+                :             'Revise o conteúdo e tente novamente.';
+
         resultsEl.style.display = 'block';
         resultsEl.innerHTML =
           '<h2>Resultado Final</h2>' +
-          '<p class="score">' + acertos + ' de ' + total + ' corretas</p>' +
+          '<p class="score">Você acertou ' + acertos + ' de ' + total + ' questões</p>' +
           '<div class="percentage">' + pct + '%</div>' +
-          '<p>' + (
-            pct >= 70 ? '🎉 Bom trabalho!' :
-            pct >= 50 ? '📚 Continue estudando!' :
-            '💪 Revise o conteúdo e tente novamente.'
-          ) + '</p>';
+          '<p>' + msg + '</p>';
       }
 
       _atualizarBotaoErros();
       _atualizarTodosResultadosAula();
     }
 
-    /* ══════════════════════════════════════════════════════
-       VER ERROS
-       ══════════════════════════════════════════════════════ */
+    /* ── 10. VER ERROS ────────────────────────────────────── */
 
     function _contarErros() {
       var count = 0;
@@ -1250,10 +591,8 @@
       var errorsBtn = document.getElementById('errors');
       if (!errorsBtn) return;
 
-      var total       = questoes.length;
       var respondidas = Object.keys(respostas).length;
-
-      if (respondidas < total) {
+      if (respondidas < questoes.length) {
         errorsBtn.classList.remove('visible', 'active');
         return;
       }
@@ -1296,10 +635,7 @@
           var orig = s ? s.textContent : 'Ver erros';
           if (s) s.textContent = 'Sem erros! ✓';
           errorsBtn.disabled = true;
-          setTimeout(function () {
-            if (s) s.textContent = orig;
-            errorsBtn.disabled = false;
-          }, 1500);
+          setTimeout(function () { if (s) s.textContent = orig; errorsBtn.disabled = false; }, 1500);
         }
         return;
       }
@@ -1311,12 +647,8 @@
         errorsBtn.classList.remove('active');
         var s2 = errorsBtn.querySelector('span');
         if (s2) s2.textContent = 'Ver erros (' + erros.length + ')';
-        document.querySelectorAll('.question-container').forEach(function (c) {
-          c.style.display = '';
-        });
-        document.querySelectorAll('[id^="aula-result-"]').forEach(function (el) {
-          el.style.display = '';
-        });
+        document.querySelectorAll('.question-container').forEach(function (c) { c.style.display = ''; });
+        document.querySelectorAll('[id^="aula-result-"]').forEach(function (el) { el.style.display = ''; });
       } else {
         mostrandoSoErros = true;
         errorsBtn.classList.add('active');
@@ -1326,24 +658,19 @@
           var card = document.getElementById('q-' + qi);
           if (card) card.style.display = erros.indexOf(qi) !== -1 ? '' : 'none';
         });
-        document.querySelectorAll('[id^="aula-result-"]').forEach(function (el) {
-          el.style.display = 'none';
-        });
+        document.querySelectorAll('[id^="aula-result-"]').forEach(function (el) { el.style.display = 'none'; });
         var primeiro = document.getElementById('q-' + erros[0]);
         if (primeiro) primeiro.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }
 
-    /* ══════════════════════════════════════════════════════
-       MODO STEP
-       ══════════════════════════════════════════════════════ */
+    /* ── 11. MODO STEP ────────────────────────────────────── */
 
     function _sincronizarAlturaStep() {
       if (!modoStep || !stepWrapper) return;
       var cards = stepWrapper.querySelectorAll('.question-container');
       var atual = cards[stepAtual];
       if (!atual) return;
-
       stepWrapper.style.height = 'auto';
       container.style.height   = 'auto';
       void atual.offsetHeight;
@@ -1381,8 +708,7 @@
       if (badges) {
         var acertos = 0, erros = 0;
         Object.keys(respostas).forEach(function (idx) {
-          if (parseInt(respostas[idx]) === questoes[idx].answer) acertos++;
-          else erros++;
+          if (parseInt(respostas[idx]) === questoes[idx].answer) acertos++; else erros++;
         });
         badges.innerHTML =
           '<span class="step-badge step-badge-correct"><i class="fas fa-check"></i> ' + acertos + '</span>' +
@@ -1397,18 +723,13 @@
           if (idx === gi) {
             cls += ' step-dot-active';
           } else if (respostas[idx] !== undefined) {
-            cls += parseInt(respostas[idx]) === questoes[idx].answer
-              ? ' step-dot-correct'
-              : ' step-dot-wrong';
+            cls += parseInt(respostas[idx]) === questoes[idx].answer ? ' step-dot-correct' : ' step-dot-wrong';
           }
-          return '<button class="' + cls + '" data-goto="' + idx +
-            '" title="Questão ' + (idx + 1) + '"></button>';
+          return '<button class="' + cls + '" data-goto="' + idx + '" title="Questão ' + (idx + 1) + '"></button>';
         }).join('');
 
         dotsEl.querySelectorAll('.step-dot').forEach(function (dot) {
-          dot.addEventListener('click', function () {
-            irParaQuestao(parseInt(dot.dataset.goto));
-          });
+          dot.addEventListener('click', function () { irParaQuestao(parseInt(dot.dataset.goto)); });
         });
       }
 
@@ -1418,33 +739,24 @@
       var nextBtn = document.getElementById('step-next');
       if (nextBtn) {
         var isLast = gi === total - 1;
-        if (isLast) {
-          nextBtn.innerHTML = '<i class="fas fa-flag-checkered"></i> Finalizar';
-          nextBtn.dataset.finalize = '1';
-        } else {
-          nextBtn.innerHTML = 'Avançar <i class="fas fa-arrow-right"></i>';
-          nextBtn.dataset.finalize = '0';
-        }
+        nextBtn.innerHTML = isLast
+          ? '<i class="fas fa-flag-checkered"></i> Finalizar'
+          : 'Avançar <i class="fas fa-arrow-right"></i>';
+        nextBtn.dataset.finalize = isLast ? '1' : '0';
         nextBtn.disabled = false;
       }
     }
 
     function _aplicarModoStep(direcao) {
       if (!stepWrapper) return;
-
       var cards = stepWrapper.querySelectorAll('.question-container');
-      cards.forEach(function (c) {
-        c.classList.remove('step-active', 'step-slide-left', 'step-slide-right');
-      });
+      cards.forEach(function (c) { c.classList.remove('step-active', 'step-slide-left', 'step-slide-right'); });
 
       var card = cards[stepAtual];
       if (card) {
         card.classList.add('step-active');
-        if (direcao === 'back') {
-          card.classList.add('step-slide-left');
-        } else if (direcao !== 'none') {
-          card.classList.add('step-slide-right');
-        }
+        if (direcao === 'back')        card.classList.add('step-slide-left');
+        else if (direcao !== 'none')   card.classList.add('step-slide-right');
       }
 
       _atualizarControlesStep();
@@ -1463,9 +775,7 @@
         '<div class="step-header">' +
           '<div class="step-progress-wrapper">' +
             '<div class="step-counter" id="step-counter"></div>' +
-            '<div class="step-progress-bar">' +
-              '<div class="step-progress-fill" id="step-progress-fill"></div>' +
-            '</div>' +
+            '<div class="step-progress-bar"><div class="step-progress-fill" id="step-progress-fill"></div></div>' +
             '<div class="step-score-badges" id="step-score-badges"></div>' +
           '</div>' +
         '</div>';
@@ -1475,13 +785,9 @@
       footer.id = 'step-shell-footer';
       footer.innerHTML =
         '<div class="step-footer">' +
-          '<button class="step-btn step-btn-secondary" id="step-prev">' +
-            '<i class="fas fa-arrow-left"></i> Voltar' +
-          '</button>' +
+          '<button class="step-btn step-btn-secondary" id="step-prev"><i class="fas fa-arrow-left"></i> Voltar</button>' +
           '<div class="step-dots" id="step-dots"></div>' +
-          '<button class="step-btn step-btn-primary" id="step-next">' +
-            'Avançar <i class="fas fa-arrow-right"></i>' +
-          '</button>' +
+          '<button class="step-btn step-btn-primary" id="step-next">Avançar <i class="fas fa-arrow-right"></i></button>' +
         '</div>';
       container.parentNode.insertBefore(footer, container.nextSibling);
 
@@ -1504,10 +810,7 @@
 
       var primeiraSemResposta = 0;
       for (var i = 0; i < questoes.length; i++) {
-        if (respostas[i] === undefined) {
-          primeiraSemResposta = i;
-          break;
-        }
+        if (respostas[i] === undefined) { primeiraSemResposta = i; break; }
         primeiraSemResposta = questoes.length - 1;
       }
       stepAtual = primeiraSemResposta;
@@ -1545,16 +848,13 @@
       _aplicarModoStep('none');
       requestAnimationFrame(function () {
         requestAnimationFrame(function () {
-          if (stepWrapper) {
-            stepWrapper.style.transition = 'transform 0.38s cubic-bezier(0.4,0,0.2,1)';
-          }
+          if (stepWrapper) stepWrapper.style.transition = 'transform 0.38s cubic-bezier(0.4,0,0.2,1)';
         });
       });
 
       var toggle = document.getElementById('btn-toggle-modo');
       if (toggle) {
         toggle.classList.add('modo-step-active');
-        toggle.style.display = '';
         toggle.title = 'Ver lista completa';
         var iToggle = toggle.querySelector('i');
         if (iToggle) iToggle.className = 'fas fa-list';
@@ -1570,9 +870,7 @@
         stepWrapper.style.transition = 'none';
         stepWrapper.style.transform  = 'translateX(0)';
         stepWrapper.style.height     = '';
-        Array.from(stepWrapper.children).forEach(function (filho) {
-          container.appendChild(filho);
-        });
+        Array.from(stepWrapper.children).forEach(function (filho) { container.appendChild(filho); });
         stepWrapper.remove();
       }
       stepWrapper = null;
@@ -1598,7 +896,6 @@
       var toggle = document.getElementById('btn-toggle-modo');
       if (toggle) {
         toggle.classList.remove('modo-step-active');
-        toggle.style.display = '';
         toggle.title = 'Modo Step (uma questão por vez)';
         var iToggle = toggle.querySelector('i');
         if (iToggle) iToggle.className = 'fas fa-layer-group';
@@ -1606,14 +903,8 @@
     }
 
     function toggleModo() {
-      if (modoStep) {
-        _sairModoStep();
-        renderizar();
-        atualizarResultados();
-        smoothScrollToTop();
-      } else {
-        _entrarModoStep();
-      }
+      if (modoStep) { _sairModoStep(); renderizar(); atualizarResultados(); smoothScrollToTop(); }
+      else          { _entrarModoStep(); }
     }
 
     function irParaQuestao(index) {
@@ -1627,16 +918,12 @@
     function proximaQuestao()  { irParaQuestao(stepAtual + 1); }
     function questaoAnterior() { irParaQuestao(stepAtual - 1); }
 
-    /* ══════════════════════════════════════════════════════
-       NAV-FLOAT E BINDS
-       ══════════════════════════════════════════════════════ */
+    /* ── 12. BINDS E INICIALIZAÇÃO ────────────────────────── */
 
     var btnUp   = document.getElementById('btn-up');
     var btnDown = document.getElementById('btn-down');
     if (btnUp)   btnUp.addEventListener('click', function () { smoothScrollToTop(); });
-    if (btnDown) btnDown.addEventListener('click', function () {
-      smoothScrollTo(document.body.scrollHeight, 1000);
-    });
+    if (btnDown) btnDown.addEventListener('click', function () { smoothScrollTo(document.body.scrollHeight, 1000); });
 
     ['restart', 'restartButton'].forEach(function (id) {
       var el = document.getElementById(id);
@@ -1657,9 +944,7 @@
     var btnLeft = document.getElementById('btn-left');
     var urlBack = window.NEXUS_URL_BACK || null;
     if (btnLeft) {
-      btnLeft.addEventListener('click', function () {
-        if (urlBack) window.location.href = urlBack;
-      });
+      btnLeft.addEventListener('click', function () { if (urlBack) window.location.href = urlBack; });
       if (!urlBack) {
         btnLeft.disabled = true;
         console.warn('[quiz_engine] window.NEXUS_URL_BACK não definido. #btn-left desativado.');
@@ -1668,28 +953,18 @@
 
     renderizar();
 
-    /* ── Grava timestamp ao sair da página ───────────────────
-       pagehide é o evento mais confiável em desktop e mobile.
-
-       Só grava leftAt para quiz FINALIZADO + toggle ON.
-       Progresso parcial não expira — não precisa de timestamp.
-       ──────────────────────────────────────────────────────── */
-    window.addEventListener('pagehide', function () {
-      if (!_disc || !_Storage || !_salvarFinalizadoAtivo()) return;
-      var salvo = _Storage.loadProgress(_disc, _modo, _semestre);
-      if (salvo && salvo.finalizado) {
-        _Storage.set(_leftAtKey(), Date.now());
-      }
-    });
+    if (Object.keys(respostas).length === questoes.length) {
+      atualizarResultados();
+    }
 
   } /* fim initQuiz */
 
   /* ══════════════════════════════════════════════════════════
-     INICIALIZAÇÃO
+     BOOT
      ══════════════════════════════════════════════════════════ */
 
   function boot() {
-    initLegendaModal();
+    window.QuizUI.initLegendaModal();
     initQuiz();
   }
 

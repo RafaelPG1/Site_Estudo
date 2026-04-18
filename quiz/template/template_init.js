@@ -192,6 +192,13 @@ nav.innerHTML = `
 document.body.appendChild(nav);
 
 /* ── CARREGA CONTEÚDO → ENGINE ────────────────────────────── */
+/* ── CARREGA CONTEÚDO → UI → ENGINE ──────────────────────── */
+/*
+   Ordem obrigatória:
+     1. arquivo de conteúdo (define window.questoes)
+     2. quiz_ui.js          (define window.QuizUI)
+     3. quiz_engine.js      (usa window.QuizUI)
+*/
 const s = document.createElement('script');
 s.src   = `../conteudo/${ano}/${semestre}/${info.arquivo}.js`;
 s.onerror = () => {
@@ -199,9 +206,14 @@ s.onerror = () => {
   if (c) c.innerHTML = `<div style="padding:2rem;text-align:center;color:#f87171;">⚠️ Arquivo não encontrado: ${ano}/${semestre}/${info.arquivo}.js</div>`;
 };
 s.onload = () => {
-  const engine = document.createElement('script');
-  engine.src   = '../quiz_engine.js';
-  document.body.appendChild(engine);
+  const ui = document.createElement('script');
+  ui.src = '../quiz_ui.js';
+  ui.onload = () => {
+    const engine = document.createElement('script');
+    engine.src = '../quiz_engine.js';
+    document.body.appendChild(engine);
+  };
+  document.head.appendChild(ui);
 };
 document.head.appendChild(s);
 
