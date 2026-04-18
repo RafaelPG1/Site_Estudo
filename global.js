@@ -65,6 +65,7 @@ const CONFIG_PADRAO = {
   idioma:        'pt-BR',
   notificacoes:  true,
   animacoes:     true,
+  salvarProgresso:  true, 
 };
 
 /* ─────────────────────────────────────────────

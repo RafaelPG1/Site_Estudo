@@ -37,6 +37,11 @@ const disc     = params.get('disc') || 'poo';
 const modo     = params.get('modo') || 'questoes';
 const semestre = params.get('sem')  || '2026.2';
 
+/* ── EXPÕE CONTEXTO DO QUIZ PARA O ENGINE ─────────────────── */
+window.__NEXUS_QUIZ_DISC__     = disc;
+window.__NEXUS_QUIZ_MODO__     = modo;
+window.__NEXUS_QUIZ_SEMESTRE__ = semestre;
+// window.NexusStorage já é exposto logo no início do arquivo ✓
 window.TIPO_QUIZ = modo;
 
 /* ── EXTRAI O ANO DO SEMESTRE ─────────────────────────────── */

@@ -628,6 +628,38 @@ if (_modo === 'enade') {
      ══════════════════════════════════════════════════════════ */
 
   function initQuiz() {
+/* ── CONTEXTO DE STORAGE (injetado pelo template_init.js) ── */
+var _disc     = window.__NEXUS_QUIZ_DISC__     || null;
+var _modo     = window.__NEXUS_QUIZ_MODO__     || tipo;
+var _semestre = window.__NEXUS_QUIZ_SEMESTRE__ || '2026.2';
+var _Storage  = window.NexusStorage            || null;
+
+/* ── HELPER: verifica se salvamento está ativo nas configs ── */
+function _salvarAtivo() {
+  if (!_Storage) return false;
+  try {
+    var configs = _Storage.get('configs', {});
+    return configs.salvarProgresso !== false; // default true
+  } catch(e) { return false; }
+}
+
+/* ── RESTAURA PROGRESSO SALVO ───────────────────────────── */
+(function _restaurar() {
+  if (!_disc || !_Storage || !_salvarAtivo()) return;
+  var salvo = _Storage.loadProgress(_disc, _modo, _semestre);
+  if (!salvo || !salvo.respostas) return;
+
+  // Restaura respostas
+  Object.keys(salvo.respostas).forEach(function(qi) {
+    respostas[parseInt(qi)] = salvo.respostas[qi];
+  });
+
+  // Restaura revelado
+  if (salvo.revelado) revelado = true;
+
+  console.info('[quiz_engine] Progresso restaurado:', Object.keys(respostas).length, 'respostas');
+})();
+
 
     var tipo = window.TIPO_QUIZ
       || new URLSearchParams(location.search).get('modo')
@@ -997,24 +1029,31 @@ if (_modo === 'enade') {
        INTERAÇÃO DO USUÁRIO
        ══════════════════════════════════════════════════════ */
 
-    function selectOption(qi, oi) {
-      if (revelado || respostas[qi] !== undefined) return;
-      respostas[qi] = oi;
+function selectOption(qi, oi) {
+  if (revelado || respostas[qi] !== undefined) return;
+  respostas[qi] = oi;
 
-      _atualizarOpcoes(qi);
+  _atualizarOpcoes(qi);
 
-      var card = document.getElementById('q-' + qi);
-      if (card && !card.querySelector('.feedback')) {
-        card.appendChild(_criarFeedbackEl(qi));
-        if (modoStep) setTimeout(_sincronizarAlturaStep, 50);
-      }
+  var card = document.getElementById('q-' + qi);
+  if (card && !card.querySelector('.feedback')) {
+    card.appendChild(_criarFeedbackEl(qi));
+    if (modoStep) setTimeout(_sincronizarAlturaStep, 50);
+  }
 
-      /* Atualiza o bloco da aula que contém esta questão */
-      var gi = _grupoDeQuestao(qi);
-      if (gi !== -1) _atualizarResultadoAula(gi);
+  var gi = _grupoDeQuestao(qi);
+  if (gi !== -1) _atualizarResultadoAula(gi);
 
-      atualizarResultados();
-    }
+  atualizarResultados();
+
+  /* ── Salva progresso ── */
+  if (_disc && _Storage && _salvarAtivo()) {
+    var total       = questoes.length;
+    var respondidas = Object.keys(respostas).length;
+    var finalizado  = respondidas === total;
+      _Storage.saveProgress(_disc, _modo, _semestre, respostas, true, true);
+  }
+}
 
     function revelar() {
       revelado = true;
@@ -1038,20 +1077,25 @@ if (_modo === 'enade') {
       smoothScrollToTop();
     }
 
-    function reiniciar() {
-      respostas        = {};
-      revelado         = false;
-      mostrandoSoErros = false;
-      stepAtual        = 0;
-      questoes         = criarCopiaEmbaralhada(questoesBase);
+function reiniciar() {
+  respostas        = {};
+  revelado         = false;
+  mostrandoSoErros = false;
+  stepAtual        = 0;
+  questoes         = criarCopiaEmbaralhada(questoesBase);
 
-      var resultsEl = document.getElementById('results');
-      if (resultsEl) { resultsEl.style.display = 'none'; resultsEl.innerHTML = ''; }
+  /* ── Limpa progresso salvo ── */
+  if (_disc && _Storage) {
+    _Storage.clearProgress(_disc, _modo, _semestre);
+  }
 
-      _resetarBotaoErros();
-      renderizar();
-      smoothScrollToTop();
-    }
+  var resultsEl = document.getElementById('results');
+  if (resultsEl) { resultsEl.style.display = 'none'; resultsEl.innerHTML = ''; }
+
+  _resetarBotaoErros();
+  renderizar();
+  smoothScrollToTop();
+}
 
     /* ══════════════════════════════════════════════════════
        RESULTADO GLOBAL

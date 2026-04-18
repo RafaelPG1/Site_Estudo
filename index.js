@@ -102,7 +102,6 @@ function renderSemestreSelector() {
 
   select.addEventListener('change', e => {
     setSemestre(e.target.value);
-    // notifica cards se necessário
     document.dispatchEvent(new CustomEvent('nexus:semestreChanged', { detail: e.target.value }));
   });
 
@@ -180,10 +179,11 @@ function abrirModalConfig() {
         <div class="config-row">
           <label for="cfg-tema">Tema</label>
           <select id="cfg-tema" class="config-select">
-            <option value="dark" ${cfg.tema === 'dark' ? 'selected' : ''}>Escuro</option>
+            <option value="dark"  ${cfg.tema === 'dark'  ? 'selected' : ''}>Escuro</option>
             <option value="light" ${cfg.tema === 'light' ? 'selected' : ''}>Claro</option>
           </select>
         </div>
+
         <div class="config-row">
           <label for="cfg-anim">Animações</label>
           <label class="toggle">
@@ -202,6 +202,19 @@ function abrirModalConfig() {
             <span class="toggle__track"></span>
           </label>
         </div>
+
+        <div class="config-row">
+          <label for="cfg-salvar-progresso">
+            Salvar Progresso
+            <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
+              Retoma de onde parou ao reabrir o quiz
+            </small>
+          </label>
+          <label class="toggle">
+            <input type="checkbox" id="cfg-salvar-progresso" ${cfg.salvarProgresso !== false ? 'checked' : ''} />
+            <span class="toggle__track"></span>
+          </label>
+        </div>
       </div>
 
       <div class="modal__footer">
@@ -215,13 +228,14 @@ function abrirModalConfig() {
 
   // Binds
   document.getElementById('modal-overlay-config').addEventListener('click', () => fecharModal(modal));
-  document.getElementById('modal-close-config').addEventListener('click', () => fecharModal(modal));
+  document.getElementById('modal-close-config').addEventListener('click',   () => fecharModal(modal));
 
   document.getElementById('btn-salvar-configs').addEventListener('click', () => {
     setConfigs({
-      tema:          document.getElementById('cfg-tema').value,
-      animacoes:     document.getElementById('cfg-anim').checked,
-      notificacoes:  document.getElementById('cfg-notif').checked,
+      tema:             document.getElementById('cfg-tema').value,
+      animacoes:        document.getElementById('cfg-anim').checked,
+      notificacoes:     document.getElementById('cfg-notif').checked,
+      salvarProgresso:  document.getElementById('cfg-salvar-progresso').checked, // ← NOVO
     });
     fecharModal(modal);
     mostrarToast('Configurações salvas!');
@@ -294,7 +308,7 @@ function abrirModalLogin() {
   requestAnimationFrame(() => modal.classList.add('modal--open'));
 
   document.getElementById('modal-overlay-login').addEventListener('click', () => fecharModal(modal));
-  document.getElementById('modal-close-login').addEventListener('click', () => fecharModal(modal));
+  document.getElementById('modal-close-login').addEventListener('click',   () => fecharModal(modal));
 
   // Stub de login — substitua pela integração Firebase real
   document.getElementById('btn-login-email').addEventListener('click', () => {
@@ -309,7 +323,6 @@ function abrirModalLogin() {
     }
 
     // TODO: conectar ao firebase.js
-    // Simulação:
     setUsuario({ uid: 'temp_001', nome: email.split('@')[0], email, foto: null });
     fecharModal(modal);
     renderHeader();
@@ -330,8 +343,8 @@ function abrirPerfilDropdown() {
   const existente = document.getElementById('perfil-dropdown');
   if (existente) { existente.remove(); return; }
 
-  const u   = getUsuario();
-  const btn = document.getElementById('btn-perfil');
+  const u    = getUsuario();
+  const btn  = document.getElementById('btn-perfil');
   const rect = btn.getBoundingClientRect();
 
   const dd = document.createElement('div');
