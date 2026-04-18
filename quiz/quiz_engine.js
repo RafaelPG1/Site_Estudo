@@ -1,51 +1,64 @@
 /* ============================================================
-   NEXUS STUDY — quiz/quiz_engine.js  (v2)
+   NEXUS STUDY — quiz/quiz_engine.js  (v3)
 
-   Funcionalidades:
-     • Suporte ao formato de questão v1 (texto, assertions, code,
-       question, options, answer, feedback) — usado em todas as
-       questões estilo ENADE com contexto, código e afirmativas.
-     • Highlight de sintaxe Java inline (com placeholder seguro).
-     • Renderização de afirmativas romanas com suporte a [PORQUE].
-     • Inline code via backticks no campo question.
-     • Formatação de feedback (negrito + quebras).
-     • selectOption com feedback imediato por questão.
-     • revelar / reiniciar (embaralha alternativas a cada restart).
-     • Ver erros: filtra questões incorretas, mostra contador,
-       alterna entre "só erros" e "tudo".
-     • Modo Step: uma questão por vez, barra de progresso, dots
-       de navegação, botões Voltar / Avançar.
-     • Scroll suave com cancelamento por input do usuário.
-     • Nav-float: topo, fim, voltar, reiniciar, revelar, step.
+   NOVIDADES v3:
+     • Sistema de marcações inline via sintaxe especial nos campos
+       question, texto, assertions, feedback e questionContinuation.
+       Ver GUIA DE MARCAÇÕES abaixo.
+     • Chips semânticos coloridos (DDL, DML, KEY, TYPE, DANGER, MARK)
+     • Inline-code com backtick funciona em TODOS os campos de texto
+     • Eyebrow de tipo de questão — campo `tipo` na questão
+     • Borda lateral do card herda o acento do modo automaticamente
+     • Highlight SQL expandido: tipos de dados, literais, operadores
+     • Highlight Python básico (def, class, decorators)
+     • Feedback com todas as marcações aplicadas
 
-   Formato dos dados (window.questoes):
-     Array plano  → modo 'questoes'
-     Objeto       → { questoes: [...], ava: [...] }
+   ════════════════════════════════════════════════════════════
+   GUIA DE MARCAÇÕES  (use em qualquer campo de texto)
+   ════════════════════════════════════════════════════════════
 
-   Cada questão aceita os seguintes campos (todos opcionais
-   exceto options/answer):
-     texto          string   — parágrafo de contexto (barra lateral)
-     miniEnunciado  string   — texto itálico antes do enunciado
-     code           string   — bloco de código Java
-     assertions     string[] — afirmativas I, II, III... (prefixo
-                               [PORQUE] para inserir conector)
-     question       string   — enunciado principal (suporta `backtick`)
-     options        string[] — alternativas (embaralhadas no restart)
-     answer         number   — índice da alternativa correta
-     feedback       string   — explicação (suporta "Por que está certa:")
-     image          string   — URL de imagem opcional
-     questionContinuation string — texto extra após afirmativas
+   INLINE CODE — backtick simples
+     `CREATE TABLE`   →  monospace azul (cor do acento)
+     `SELECT * FROM`  →  funciona em question, texto, assertions,
+                         feedback, questionContinuation
 
-   CORREÇÕES:
-     [BUG 1] verErros() sem erros → exibe "Sem erros! ✓" no botão.
-     [FIX 3] warn quando array plano + modo != 'questoes'.
-     [FIX 5] engine não toca mais no .back-btn.
-     [FIX 7] consome window.NEXUS_URL_BACK sem recalcular.
-     [FIX 8] highlightJava usa placeholders — sem vazamento de HTML.
-     [FIX 9] _extrairPorQueEstaCerta: usa feedback inteiro como fallback.
-     [FIX 10] _sincronizarAlturaStep com reflow forçado.
-     [FIX 11] selectOption chama _sincronizarAlturaStep após feedback.
-     [FIX 12] btn-toggle-modo: oculta/mostra ao entrar/sair do step.
+   CHIPS SEMÂNTICOS — ==categoria==texto==
+     ==ddl==CREATE TABLE==    →  chip azul     (DDL: CREATE, ALTER, DROP, TRUNCATE)
+     ==dml==SELECT==          →  chip verde-água (DML: SELECT, INSERT, UPDATE, DELETE)
+     ==key==PRIMARY KEY==     →  chip âmbar    (chaves e constraints)
+     ==type==VARCHAR(100)==   →  chip lilás    (tipos de dados SQL)
+     ==danger==DROP TABLE==   →  chip vermelho (comandos destrutivos / erros)
+     ==mark==qualquer texto== →  chip na cor do acento da disciplina
+
+   NEGRITO — **texto**
+     **integridade referencial**  →  <strong> sem cor fixa, herda o contexto
+
+   ITÁLICO — //texto//
+     //ou seja//   →  <em> itálico
+
+   CAMPO `tipo` NA QUESTÃO (opcional)
+     tipo: "Asserção + Justificativa"    →  eyebrow acima do número
+     tipo: "Múltiplas afirmativas"
+     tipo: "Com código SQL"
+     tipo: "Conceitual"
+     (qualquer string aparece como eyebrow)
+
+   EXEMPLOS COMPLETOS:
+
+     question: "O comando ==ddl==CREATE TABLE== aceita `PRIMARY KEY`?"
+     feedback: "==key==FOREIGN KEY== garante **integridade referencial**."
+     texto: "Use ==type==VARCHAR(100)== para textos variáveis."
+     assertions: [
+       "==ddl==DROP TABLE== remove estrutura e dados.",
+       "[PORQUE] ==danger==DELETE== age diferente de DROP."
+     ]
+
+   ════════════════════════════════════════════════════════════
+   COMPATIBILIDADE
+   ════════════════════════════════════════════════════════════
+     Funciona em todas as disciplinas sem alterar nenhum outro
+     arquivo — a detecção de marcações é feita apenas no engine.
+     Questões sem marcações continuam funcionando normalmente.
    ============================================================ */
 
 (function () {
@@ -79,6 +92,196 @@
   window.addEventListener('wheel',     cancelScroll, { passive: true });
   window.addEventListener('touchmove', cancelScroll, { passive: true });
   window.addEventListener('keydown',   cancelScroll, { passive: true });
+
+  /* ══════════════════════════════════════════════════════════
+     SISTEMA DE MARCAÇÕES INLINE
+     ══════════════════════════════════════════════════════════ */
+/*
+   * renderMarkup(text)
+   * Processa todas as marcações inline em um texto plano.
+   * Ordem de aplicação: chips → inline-code → negrito → itálico.
+   * Seguro contra XSS: o texto é escapado ANTES das substituições.
+   *
+   * ── CATEGORIAS DISPONÍVEIS ──────────────────────────────────
+   *
+   * ALIASES GENÉRICOS (qualquer disciplina):
+   *   ==def==termo==    → azul    — definições, conceitos estruturais
+   *   ==proc==termo==   → verde   — processos, ações, procedimentos
+   *   ==rule==termo==   → âmbar   — regras, princípios, leis, restrições
+   *   ==term==termo==   → lilás   — termos técnicos classificatórios
+   *   ==warn==termo==   → vermelho — erros comuns, armadilhas, contraindicações
+   *   ==mark==termo==   → acento  — destaque genérico
+   *
+   * ALIASES SQL/CÓDIGO (retrocompatíveis):
+   *   ==ddl==termo==    → azul    — CREATE TABLE, ALTER TABLE, DROP TABLE
+   *   ==dml==termo==    → verde   — SELECT, INSERT, UPDATE, DELETE
+   *   ==key==termo==    → âmbar   — PRIMARY KEY, FOREIGN KEY, NOT NULL
+   *   ==type==termo==   → lilás   — VARCHAR, INTEGER, DATE, BOOLEAN
+   *   ==danger==termo== → vermelho — comandos destrutivos
+   */
+  function renderMarkup(text) {
+    if (!text) return '';
+
+    /* 1. Escapa HTML (previne XSS) */
+    var s = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    /* 2. Chips semânticos  ==categoria==conteúdo==
+       Mapeamento: aliases genéricos + aliases SQL (retrocompatíveis) */
+    s = s.replace(/==([a-z]+)==([^=]+)==/g, function (_, cat, content) {
+      var classMap = {
+        /* ── Genéricos ── */
+        def:    'chip chip-ddl',     /* azul    — definições, conceitos estruturais  */
+        proc:   'chip chip-dml',     /* verde   — processos, ações, procedimentos    */
+        rule:   'chip chip-key',     /* âmbar   — regras, princípios, restrições     */
+        term:   'chip chip-type',    /* lilás   — termos técnicos classificatórios   */
+        warn:   'chip chip-danger',  /* vermelho — erros, armadilhas, contraindicações */
+        mark:   'chip chip-mark',    /* acento  — destaque genérico                 */
+        /* ── SQL / Código (retrocompatíveis) ── */
+        ddl:    'chip chip-ddl',
+        dml:    'chip chip-dml',
+        key:    'chip chip-key',
+        type:   'chip chip-type',
+        danger: 'chip chip-danger',
+      };
+      var cls = classMap[cat] || 'chip chip-mark';
+      return '<span class="' + cls + '">' + content + '</span>';
+    });
+
+    /* 3. Inline code  `código`  */
+    s = s.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
+
+    /* 4. Negrito  **texto**  */
+    s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+    /* 5. Itálico  //texto//  */
+    s = s.replace(/\/\/([^/]+)\/\//g, '<em>$1</em>');
+
+    return s;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     HIGHLIGHT DE CÓDIGO (SQL + Java + Python)
+     ══════════════════════════════════════════════════════════ */
+
+  /* detecta a linguagem pelo conteúdo do bloco */
+  function detectLang(raw) {
+    if (/\b(SELECT|INSERT|UPDATE|DELETE|CREATE\s+TABLE|ALTER\s+TABLE|DROP\s+TABLE|FOREIGN\s+KEY|PRIMARY\s+KEY|REFERENCES|VARCHAR|INTEGER|NOT\s+NULL)\b/i.test(raw)) return 'sql';
+    if (/\b(def |class |import |from |print\(|elif |lambda )\b/.test(raw)) return 'python';
+    return 'java';
+  }
+
+  function highlightSQL(raw) {
+    var code = raw
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    var strings = [];
+    code = code.replace(/'([^']*)'/g, function (m) {
+      strings.push(m);
+      return '\x00STR' + (strings.length - 1) + '\x00';
+    });
+
+    /* comentários -- */
+    code = code.replace(/(--[^\n]*)/g, '<span class="jk-comment">$1</span>');
+
+    /* palavras-chave SQL */
+    code = code.replace(
+      /\b(SELECT|INSERT\s+INTO|INSERT|UPDATE|DELETE|CREATE\s+TABLE|CREATE|ALTER\s+TABLE|ALTER|DROP\s+TABLE|DROP|TRUNCATE|FROM|WHERE|JOIN|LEFT\s+JOIN|RIGHT\s+JOIN|INNER\s+JOIN|OUTER\s+JOIN|ON|GROUP\s+BY|ORDER\s+BY|HAVING|LIMIT|OFFSET|UNION|ALL|DISTINCT|AS|SET|VALUES|INTO|AND|OR|NOT|IN|EXISTS|LIKE|BETWEEN|IS\s+NULL|IS\s+NOT\s+NULL|IS|NULL|PRIMARY\s+KEY|FOREIGN\s+KEY|REFERENCES|UNIQUE|CHECK|DEFAULT|NOT\s+NULL|CONSTRAINT|INDEX|CASCADE|RESTRICT|NO\s+ACTION|ON\s+DELETE|ON\s+UPDATE|AUTO_INCREMENT|SERIAL)\b/gi,
+      '<span class="jk-keyword">$1</span>'
+    );
+
+    /* tipos de dados */
+    code = code.replace(
+      /\b(INTEGER|INT|BIGINT|SMALLINT|TINYINT|FLOAT|DOUBLE|DECIMAL|NUMERIC|REAL|CHAR|VARCHAR|TEXT|NVARCHAR|BLOB|CLOB|DATE|TIME|DATETIME|TIMESTAMP|BOOLEAN|BOOL|SERIAL|BYTEA|UUID|JSON|JSONB|ARRAY)\b/gi,
+      '<span class="jk-type">$1</span>'
+    );
+
+    /* literais */
+    code = code.replace(/\b(TRUE|FALSE|NULL)\b/gi, '<span class="jk-literal">$1</span>');
+
+    /* números */
+    code = code.replace(/\b(\d+(\.\d+)?)\b/g, '<span class="jk-number">$1</span>');
+
+    /* restaura strings */
+    code = code.replace(/\x00STR(\d+)\x00/g, function (_, i) {
+      return '<span class="jk-string">' + strings[+i] + '</span>';
+    });
+
+    return code;
+  }
+
+  function highlightJava(raw) {
+    var code = raw
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    var strings = [];
+    code = code.replace(/"([^"]*)"/g, function (m) {
+      strings.push(m);
+      return '\x00STR' + (strings.length - 1) + '\x00';
+    });
+
+    code = code.replace(/(@\w+)/g, '<span class="jk-annotation">$1</span>');
+
+    code = code.replace(
+      /\b(public|private|protected|class|interface|extends|implements|return|void|double|int|long|float|boolean|char|byte|short|String|new|this|super|static|final|abstract|null|true|false|if|else|for|while|do|switch|case|break|continue|try|catch|finally|throw|throws|import|package)\b/g,
+      '<span class="jk-keyword">$1</span>'
+    );
+
+    code = code.replace(/(\/\/[^\n]*)/g, '<span class="jk-comment">$1</span>');
+
+    code = code.replace(/\x00STR(\d+)\x00/g, function (_, i) {
+      return '<span class="jk-string">' + strings[+i] + '</span>';
+    });
+
+    return code;
+  }
+
+  function highlightPython(raw) {
+    var code = raw
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    var strings = [];
+    code = code.replace(/"""([\s\S]*?)"""|'''([\s\S]*?)'''|"([^"\\]*(\\.[^"\\]*)*)"|'([^'\\]*(\\.[^'\\]*)*)'/g, function (m) {
+      strings.push(m);
+      return '\x00STR' + (strings.length - 1) + '\x00';
+    });
+
+    code = code.replace(/(#[^\n]*)/g, '<span class="jk-comment">$1</span>');
+    code = code.replace(/@(\w+)/g, '<span class="jk-decorator">@$1</span>');
+
+    code = code.replace(
+      /\b(def|class|return|import|from|as|if|elif|else|for|while|in|not|and|or|is|lambda|pass|break|continue|try|except|finally|raise|with|yield|global|nonlocal|del|assert|True|False|None|print|len|range|type|str|int|float|list|dict|tuple|set|bool)\b/g,
+      '<span class="jk-keyword">$1</span>'
+    );
+
+    code = code.replace(/\b(\d+(\.\d+)?)\b/g, '<span class="jk-number">$1</span>');
+
+    code = code.replace(/\x00STR(\d+)\x00/g, function (_, i) {
+      return '<span class="jk-string">' + strings[+i] + '</span>';
+    });
+
+    return code;
+  }
+
+  function highlightCode(raw) {
+    var lang = detectLang(raw);
+    if (lang === 'sql')    return highlightSQL(raw);
+    if (lang === 'python') return highlightPython(raw);
+    return highlightJava(raw);
+  }
+
+  function renderCodeBlock(code) {
+    if (!code) return '';
+    return '<div class="code-block"><pre>' + highlightCode(code) + '</pre></div>';
+  }
 
   /* ══════════════════════════════════════════════════════════
      INÍCIO DO ENGINE
@@ -176,7 +379,6 @@
       });
     }
 
-    /* [FIX 9] Usa o feedback inteiro se não tiver o prefixo */
     function _extrairPorQueEstaCerta(feedback) {
       var match = feedback.match(/Por que está certa:([\s\S]*)/);
       if (match) return match[1].trim();
@@ -184,58 +386,40 @@
     }
 
     /* ══════════════════════════════════════════════════════
-       FORMATAÇÃO E EXIBIÇÃO
+       FORMATAÇÃO DE FEEDBACK
        ══════════════════════════════════════════════════════ */
 
+    /*
+     * formatFeedback(feedback)
+     * Aplica todas as marcações inline + formatação especial
+     * do bloco de feedback (negrito ✓, seção "Por que está certa").
+     * O texto JÁ está pré-processado pelo criarCopiaEmbaralhada,
+     * então aqui só precisamos renderizar as marcações e quebras.
+     */
     function formatFeedback(feedback) {
       if (!feedback) return '';
-      return feedback
-        .replace(/\n/g, '<br>')
-        .replace(/(✓ Resposta correta:)/g, '<strong>$1</strong>')
-        .replace(/(<br>)*(Por que está certa:)(<br>)*/g,
-          '<br><br><strong>Por que está certa:</strong> ');
-    }
 
-    /* [FIX 8] Placeholder seguro para strings antes dos outros regexes */
-    function highlightJava(raw) {
-      var code = raw
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-
-      var strings = [];
-      code = code.replace(/"([^"]*)"/g, function (match) {
-        strings.push(match);
-        return '\x00STR' + (strings.length - 1) + '\x00';
+      /* Divide em linhas para preservar \n → <br> depois do markup */
+      var lines = feedback.split('\n');
+      var out   = lines.map(function (line) {
+        /* Linha da resposta correta: não escapa o ✓, só renderMarkup */
+        if (line.indexOf('✓ Resposta correta:') === 0) {
+          /* destaca a linha toda em negrito */
+          return '<strong>' + renderMarkup(line) + '</strong>';
+        }
+        if (line.indexOf('Por que está certa:') === 0) {
+          var rest = line.replace('Por que está certa:', '').trim();
+          return '<strong>Por que está certa:</strong> ' + renderMarkup(rest);
+        }
+        return renderMarkup(line);
       });
 
-      code = code.replace(/(@\w+)/g,
-        '<span class="jk-annotation">$1</span>');
-
-      code = code.replace(
-        /\b(public|private|protected|class|interface|extends|implements|return|void|double|int|long|float|boolean|char|byte|short|String|new|this|super|static|final|abstract|null|true|false|if|else|for|while|do|switch|case|break|continue|try|catch|finally|throw|throws|import|package)\b/g,
-        '<span class="jk-keyword">$1</span>'
-      );
-
-      code = code.replace(/(\/\/.*)$/gm,
-        '<span class="jk-comment">$1</span>');
-
-      code = code.replace(/\x00STR(\d+)\x00/g, function (_, i) {
-        return '<span class="jk-string">' + strings[+i] + '</span>';
-      });
-
-      return code;
+      return out.join('<br>');
     }
 
-    function renderCodeBlock(code) {
-      if (!code) return '';
-      return '<div class="code-block"><pre>' + highlightJava(code) + '</pre></div>';
-    }
-
-    /* Inline code via backticks */
-    function renderInlineCode(text) {
-      return text.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
-    }
+    /* ══════════════════════════════════════════════════════
+       CONSTRUÇÃO DO CORPO DA QUESTÃO
+       ══════════════════════════════════════════════════════ */
 
     function renderAssertions(assertions) {
       if (!assertions || assertions.length === 0) return '';
@@ -245,6 +429,7 @@
         var isPorque  = text.indexOf('[PORQUE]') === 0;
         var cleanText = text.replace('[PORQUE]', '').trim();
         var num       = romanos[idx] || String(idx + 1);
+        var rendered  = renderMarkup(cleanText);
 
         if (isPorque) {
           return (
@@ -253,7 +438,7 @@
             '</div>' +
             '<div class="assertion">' +
               '<span class="assertion-num">' + num + '.</span>' +
-              '<span>' + cleanText + '</span>' +
+              '<span>' + rendered + '</span>' +
             '</div>'
           );
         }
@@ -261,7 +446,7 @@
         return (
           '<div class="assertion">' +
             '<span class="assertion-num">' + num + '.</span>' +
-            '<span>' + cleanText + '</span>' +
+            '<span>' + rendered + '</span>' +
           '</div>'
         );
       }).join('');
@@ -272,36 +457,50 @@
     function buildQuestionBody(q) {
       var html = '';
 
-      if (q.texto) {
-        html += '<div class="question-texto">' +
-          q.texto.replace(/\n/g, '<br>') +
+      /* Eyebrow de tipo (campo `tipo` opcional) */
+      if (q.tipo) {
+        html += '<div class="question-type-eyebrow">' +
+          q.tipo.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') +
         '</div>';
       }
 
-      if (q.miniEnunciado) {
-        html += '<div class="question-mini-enunciado">' + q.miniEnunciado + '</div>';
+      /* Contexto */
+      if (q.texto) {
+        html += '<div class="question-texto">' +
+          renderMarkup(q.texto.replace(/\n/g, '\n')) /* renderMarkup cuida das quebras */ +
+        '</div>';
       }
 
+      /* Mini-enunciado */
+      if (q.miniEnunciado) {
+        html += '<div class="question-mini-enunciado">' + renderMarkup(q.miniEnunciado) + '</div>';
+      }
+
+      /* Bloco de código */
       if (q.code) {
         html += renderCodeBlock(q.code);
       }
 
+      /* Afirmativas */
       if (q.assertions && q.assertions.length > 0) {
         html += renderAssertions(q.assertions);
       }
 
+      /* Imagem */
       if (q.image) {
         html += '<div class="question-image">' +
           '<img src="' + q.image + '" alt="Imagem da questão">' +
         '</div>';
       }
 
+      /* Continuação do enunciado (após afirmativas) */
       if (q.questionContinuation) {
-        html += '<div class="question-text">' + renderInlineCode(q.questionContinuation) + '</div>';
+        html += '<div class="question-text">' + renderMarkup(q.questionContinuation) + '</div>';
       }
 
+      /* Enunciado principal */
       if (q.question) {
-        html += '<div class="question-enunciado">' + renderInlineCode(q.question) + '</div>';
+        html += '<div class="question-enunciado">' + renderMarkup(q.question) + '</div>';
       }
 
       return html;
@@ -337,7 +536,8 @@
           var btn = document.createElement('button');
           btn.className = 'option';
           btn.type = 'button';
-          btn.textContent = String.fromCharCode(65 + ai) + ') ' + alt;
+          /* aplica marcações inline nas alternativas também */
+          btn.innerHTML = String.fromCharCode(65 + ai) + ') ' + renderMarkup(alt);
           btn.dataset.qi = qi;
           btn.dataset.ai = ai;
 
@@ -399,13 +599,10 @@
       var card = document.getElementById('q-' + qi);
       if (card && !card.querySelector('.feedback')) {
         card.appendChild(_criarFeedbackEl(qi));
-        /* [FIX 11] Ressincroniza altura após feedback aparecer */
         if (modoStep) setTimeout(_sincronizarAlturaStep, 50);
       }
 
       atualizarResultados();
-
-
     }
 
     function revelar() {
@@ -525,7 +722,6 @@
       if (s) s.textContent = 'Ver erros';
     }
 
-    /* [BUG 1] feedback quando não há erros */
     function verErros() {
       var erros = [];
       Object.keys(respostas).forEach(function (qi) {
@@ -576,22 +772,20 @@
        MODO STEP
        ══════════════════════════════════════════════════════ */
 
-    /* [FIX 10] Força reflow antes de medir altura */
-function _sincronizarAlturaStep() {
-  if (!modoStep || !stepWrapper) return;
-  var cards = stepWrapper.querySelectorAll('.question-container');
-  var atual = cards[stepAtual];
-  if (!atual) return;
+    function _sincronizarAlturaStep() {
+      if (!modoStep || !stepWrapper) return;
+      var cards = stepWrapper.querySelectorAll('.question-container');
+      var atual = cards[stepAtual];
+      if (!atual) return;
 
-  stepWrapper.style.height = 'auto';
-  container.style.height   = 'auto';
+      stepWrapper.style.height = 'auto';
+      container.style.height   = 'auto';
+      void atual.offsetHeight;
+      var h = atual.getBoundingClientRect().height;
+      stepWrapper.style.height = h + 'px';
+      container.style.height   = h + 'px';
+    }
 
-  void atual.offsetHeight; // força reflow
-
-  var h = atual.getBoundingClientRect().height;
-  stepWrapper.style.height = h + 'px';
-  container.style.height   = h + 'px';
-}
     function _getDotsRange(current, total, maxVisible) {
       if (total <= maxVisible) {
         var r = [];
@@ -669,29 +863,27 @@ function _sincronizarAlturaStep() {
       }
     }
 
-function _aplicarModoStep(direcao) {
-  if (!stepWrapper) return;
+    function _aplicarModoStep(direcao) {
+      if (!stepWrapper) return;
 
-  var cards = stepWrapper.querySelectorAll('.question-container');
-  cards.forEach(function (c) {
-    c.classList.remove('step-active', 'step-slide-left', 'step-slide-right');
-  });
+      var cards = stepWrapper.querySelectorAll('.question-container');
+      cards.forEach(function (c) {
+        c.classList.remove('step-active', 'step-slide-left', 'step-slide-right');
+      });
 
-  var card = cards[stepAtual];
-  if (card) {
-    card.classList.add('step-active');
-    if (direcao === 'back') {
-      card.classList.add('step-slide-left');
-    } else if (direcao !== 'none') {
-      card.classList.add('step-slide-right');
+      var card = cards[stepAtual];
+      if (card) {
+        card.classList.add('step-active');
+        if (direcao === 'back') {
+          card.classList.add('step-slide-left');
+        } else if (direcao !== 'none') {
+          card.classList.add('step-slide-right');
+        }
+      }
+
+      _atualizarControlesStep();
+      setTimeout(_sincronizarAlturaStep, 50);
     }
-  }
-
-  _atualizarControlesStep();
-
-  /* ── CORREÇÃO: ressincroniza altura ao navegar ── */
-  setTimeout(_sincronizarAlturaStep, 50);
-}
 
     function _montarShellHTML() {
       var existeHeader = document.getElementById('step-shell-header');
@@ -728,7 +920,6 @@ function _aplicarModoStep(direcao) {
       container.parentNode.insertBefore(footer, container.nextSibling);
 
       document.getElementById('step-prev').addEventListener('click', questaoAnterior);
-
       document.getElementById('step-next').addEventListener('click', function () {
         var btn = document.getElementById('step-next');
         if (btn && btn.dataset.finalize === '1') {
@@ -784,37 +975,34 @@ function _aplicarModoStep(direcao) {
         });
       });
 
-/* [FIX 12] Muda ícone do toggle para "lista" (não oculta mais) */
-var toggle = document.getElementById('btn-toggle-modo');
-if (toggle) {
-  toggle.classList.add('modo-step-active');
-  toggle.style.display = '';           // ← REMOVA o display:none
-  toggle.title = 'Ver lista completa';
-  var iToggle = toggle.querySelector('i');
-  if (iToggle) iToggle.className = 'fas fa-list';
-}
-
+      var toggle = document.getElementById('btn-toggle-modo');
+      if (toggle) {
+        toggle.classList.add('modo-step-active');
+        toggle.style.display = '';
+        toggle.title = 'Ver lista completa';
+        var iToggle = toggle.querySelector('i');
+        if (iToggle) iToggle.className = 'fas fa-list';
+      }
 
       smoothScrollToTop();
     }
 
-function _sairModoStep() {
-  modoStep = false;
+    function _sairModoStep() {
+      modoStep = false;
 
-  if (stepWrapper && stepWrapper.parentNode === container) {
-    stepWrapper.style.transition = 'none';
-    stepWrapper.style.transform  = 'translateX(0)';
-    stepWrapper.style.height     = '';
-    Array.from(stepWrapper.children).forEach(function (filho) {
-      container.appendChild(filho);
-    });
-    stepWrapper.remove();
-  }
-  stepWrapper = null;
+      if (stepWrapper && stepWrapper.parentNode === container) {
+        stepWrapper.style.transition = 'none';
+        stepWrapper.style.transform  = 'translateX(0)';
+        stepWrapper.style.height     = '';
+        Array.from(stepWrapper.children).forEach(function (filho) {
+          container.appendChild(filho);
+        });
+        stepWrapper.remove();
+      }
+      stepWrapper = null;
 
-  container.classList.remove('modo-step');
-  container.style.height = '';
-
+      container.classList.remove('modo-step');
+      container.style.height = '';
 
       container.querySelectorAll('.step-structural-hidden').forEach(function (el) {
         el.classList.remove('step-structural-hidden');
@@ -831,17 +1019,14 @@ function _sairModoStep() {
           if (el) el.classList.remove('step-hidden');
         });
 
-/* [FIX 12] Restaura ícone e título do toggle */
-var toggle = document.getElementById('btn-toggle-modo');
-if (toggle) {
-  toggle.classList.remove('modo-step-active');
-  toggle.style.display = '';
-  toggle.title = 'Modo Step (uma questão por vez)';
-  var iToggle = toggle.querySelector('i');
-  if (iToggle) iToggle.className = 'fas fa-layer-group';
-}
-
-
+      var toggle = document.getElementById('btn-toggle-modo');
+      if (toggle) {
+        toggle.classList.remove('modo-step-active');
+        toggle.style.display = '';
+        toggle.title = 'Modo Step (uma questão por vez)';
+        var iToggle = toggle.querySelector('i');
+        if (iToggle) iToggle.className = 'fas fa-layer-group';
+      }
     }
 
     function toggleModo() {
@@ -855,13 +1040,13 @@ if (toggle) {
       }
     }
 
-function irParaQuestao(index) {
-  if (index < 0 || index >= questoes.length) return;
-  var direcao = index > stepAtual ? 'forward' : 'back';
-  stepAtual = index;
-  _aplicarModoStep(direcao);
-  smoothScrollToTop();
-}
+    function irParaQuestao(index) {
+      if (index < 0 || index >= questoes.length) return;
+      var direcao = index > stepAtual ? 'forward' : 'back';
+      stepAtual = index;
+      _aplicarModoStep(direcao);
+      smoothScrollToTop();
+    }
 
     function proximaQuestao()  { irParaQuestao(stepAtual + 1); }
     function questaoAnterior() { irParaQuestao(stepAtual - 1); }
@@ -893,23 +1078,17 @@ function irParaQuestao(index) {
     var btnToggle = document.getElementById('btn-toggle-modo');
     if (btnToggle) btnToggle.addEventListener('click', toggleModo);
 
-
-    /* [FIX 7] Voltar */
-/* [FIX 7] Voltar / Questão anterior (contexto-aware) */
-var btnLeft = document.getElementById('btn-left');
-if (btnLeft) {
-  var urlBack = window.NEXUS_URL_BACK || null;
-
-btnLeft.addEventListener('click', function () {
-  if (urlBack) {
-    window.location.href = urlBack;
-  }
-});
-  if (!urlBack) {
-    btnLeft.disabled = true;
-    console.warn('[quiz_engine] window.NEXUS_URL_BACK não definido. #btn-left desativado.');
-  }
-}
+    var btnLeft  = document.getElementById('btn-left');
+    var urlBack  = window.NEXUS_URL_BACK || null;
+    if (btnLeft) {
+      btnLeft.addEventListener('click', function () {
+        if (urlBack) window.location.href = urlBack;
+      });
+      if (!urlBack) {
+        btnLeft.disabled = true;
+        console.warn('[quiz_engine] window.NEXUS_URL_BACK não definido. #btn-left desativado.');
+      }
+    }
 
     /* ── RENDER INICIAL ─────────────────────────────── */
     renderizar();
