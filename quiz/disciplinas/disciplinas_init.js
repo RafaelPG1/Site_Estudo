@@ -72,6 +72,7 @@ import { DISC_CORES } from './disciplinas_cores.js';
     'a[href*="ava_template"]',
     'a[href*="quiz_template"]',
     'a[href*="quiz.html"]',
+    'a[href*="template.html"]',
   ];
 
   document.querySelectorAll(seletores.join(', ')).forEach(function (a) {

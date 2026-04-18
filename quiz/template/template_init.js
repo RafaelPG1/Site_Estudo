@@ -93,6 +93,13 @@ const MODOS_CONFIG = {
     label:      'Questões ENADE',
     getAccent:  (cores) => ({ accent: cores.corTema, accentRgb: cores.corTemaRgb }),
   },
+    fixacao: {
+    breadcrumb: 'Fixação',
+    h1:         'Questões de <em>Fixação</em>',
+    label:      'Fixação',
+    getAccent:  (cores) => ({ accent: cores.corTema2, accentRgb: cores.corTema2Rgb }),
+  },
+ 
   // Exemplo de modo com cor fixa independente da disciplina:
   // simulado: {
   //   breadcrumb: 'Simulado',

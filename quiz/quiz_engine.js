@@ -404,8 +404,8 @@
         'background:var(--accent);opacity:0.35;flex-shrink:0;' +
       '}' +
       '.nlg-footer-text{' +
-  'font-size:0.58rem;color:#b5b0a8;letter-spacing:0.02em;line-height:1.4;' +  // ← era #7a7670
-'}';
+        'font-size:0.58rem;color:#b5b0a8;letter-spacing:0.02em;line-height:1.4;' +
+      '}';
 
     document.head.appendChild(style);
 
@@ -496,8 +496,14 @@
     else if (_modo === 'questoes') _modoCfg = {
       icon:  '🤖',
       label: 'Geradas por IA',
-      desc:  'Questões geradas por Inteligência Artificial com base no conteúdo ' +
-             'da disciplina — diretas, variadas e progressivas em dificuldade.'
+      desc:  'Questões didáticas que explicam o conceito antes de perguntar — ' +
+             'ideais para revisar e consolidar o conteúdo estudado.'
+    };
+    else if (_modo === 'fixacao') _modoCfg = {
+      icon:  '📌',
+      label: 'Questões de Fixação',
+      desc:  'Questões objetivas para consolidar o conteúdo estudado — ' +
+             'diretas, sem contextos extensos, ideais para revisão rápida.'
     };
 
     if (_modoCfg) {
@@ -523,10 +529,10 @@
       }
       sTipos.list.appendChild(_tipoRow('nlg-icon-ap', 'APL', 'Análise aplicada', 'Situação-problema real'));
     } else {
-      sTipos.list.appendChild(_tipoRow('nlg-icon-con', 'CUR', 'Curta',     'Pergunta objetiva, sem contexto extenso'));
-      sTipos.list.appendChild(_tipoRow('nlg-icon-aj',  'DIR', 'Direta',    'Pergunta com contexto mínimo'));
-      sTipos.list.appendChild(_tipoRow('nlg-icon-ma',  'CTX', 'Contexto',  'Cenário simples com interpretação'));
-      sTipos.list.appendChild(_tipoRow('nlg-icon-ap',  'APL', 'Aplicação', 'Situação-problema com maior análise'));
+      /* ── TIPOS: modo questoes / fixacao / demais ── */
+      sTipos.list.appendChild(_tipoRow('nlg-icon-con', 'EXP', 'Explicativa',     'Conceito explicado antes da pergunta'));
+      sTipos.list.appendChild(_tipoRow('nlg-icon-ma',  'CTX', 'Contextualizada', 'Explicação densa com múltiplos conceitos'));
+      sTipos.list.appendChild(_tipoRow('nlg-icon-ap',  'APL', 'Aplicação',       'Cenário real para verificar a compreensão'));
       if (_hasCode) {
         sTipos.list.appendChild(_tipoRow('nlg-icon-cod', '</>', 'Código', 'Trecho de código — avalie comportamento'));
       }

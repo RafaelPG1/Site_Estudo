@@ -463,6 +463,29 @@ a { text-decoration: none; color: inherit; }
 
 }
 
+/* ── FIXAÇÃO — roxo/violeta ── */
+.disc-card--fixacao {
+  background: linear-gradient(145deg, #0e1420, rgba(168, 85, 247, 0.07));
+  border-color: rgba(168, 85, 247, 0.18);
+  box-shadow: 0 0 30px rgba(168, 85, 247, 0.05);
+}
+.disc-card--fixacao:hover {
+  border-color: rgba(168, 85, 247, 0.4);
+  box-shadow: 0 12px 40px rgba(168, 85, 247, 0.15);
+}
+.disc-card--fixacao .disc-card__icon-wrap {
+  background: rgba(168, 85, 247, 0.15);
+  border-radius: 14px;
+}
+.disc-card--fixacao .disc-card__title { color: white; }
+.disc-card--fixacao:hover .disc-card__arrow {
+  border-color: #a855f7;
+  color: #a855f7;
+  background: rgba(168, 85, 247, 0.1);
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.3);
+}
+.disc-card--fixacao:hover .disc-card__cta-label { color: #a855f7; }
+
 /* ── ANIMAÇÕES ── */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(18px); }
@@ -472,6 +495,7 @@ a { text-decoration: none; color: inherit; }
 .disciplines .disc-card:nth-child(1) { animation: fade-up 0.5s 0.25s ease both; }
 .disciplines .disc-card:nth-child(2) { animation: fade-up 0.5s 0.33s ease both; }
 .disciplines .disc-card:nth-child(3) { animation: fade-up 0.5s 0.41s ease both; }
+.disciplines .disc-card:nth-child(4) { animation: fade-up 0.5s 0.49s ease both; }
 
 /* ── RESPONSIVIDADE ── */
 @media (max-width: 680px) {
