@@ -426,28 +426,28 @@ a { text-decoration: none; color: inherit; }
 }
 .disc-card--quiz:hover .disc-card__cta-label { color: #4dd9b4; }
 
-/* ── ENADE — dourado âmbar ── */
+/* ── ENADE — laranja ── */
 .disc-card--enade {
-  background: linear-gradient(145deg, #0e1420, rgba(251, 191, 36, 0.07));
-  border-color: rgba(251, 191, 36, 0.18);
-  box-shadow: 0 0 30px rgba(251, 191, 36, 0.05);
+  background: linear-gradient(145deg, #0e1420, rgba(249, 115, 22, 0.07));
+  border-color: rgba(249, 115, 22, 0.18);
+  box-shadow: 0 0 30px rgba(249, 115, 22, 0.05);
 }
 .disc-card--enade:hover {
-  border-color: rgba(251, 191, 36, 0.4);
-  box-shadow: 0 12px 40px rgba(251, 191, 36, 0.15);
+  border-color: rgba(249, 115, 22, 0.4);
+  box-shadow: 0 12px 40px rgba(249, 115, 22, 0.15);
 }
 .disc-card--enade .disc-card__icon-wrap {
-  background: rgba(251, 191, 36, 0.12);
+  background: rgba(249, 115, 22, 0.25);
   border-radius: 14px;
 }
 .disc-card--enade .disc-card__title { color: white; }
 .disc-card--enade:hover .disc-card__arrow {
-  border-color: #fbbf24;
-  color: #fbbf24;
-  background: rgba(251, 191, 36, 0.1);
-  box-shadow: 0 0 14px rgba(251, 191, 36, 0.3);
+  border-color: #f97316;
+  color: #f97316;
+  background: rgba(249, 115, 22, 0.1);
+  box-shadow: 0 0 14px rgba(249, 115, 22, 0.3);
 }
-.disc-card--enade:hover .disc-card__cta-label { color: #fbbf24; }
+.disc-card--enade:hover .disc-card__cta-label { color: #f97316; }
 
 /* ── FOOTER ── */
 .footer {
