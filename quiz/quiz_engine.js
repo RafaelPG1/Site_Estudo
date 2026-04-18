@@ -285,7 +285,7 @@
       '.nlg-section-label{' +
         'display:flex;align-items:center;gap:0.5rem;' +
         'font-size:0.5rem;font-weight:700;letter-spacing:0.22em;' +
-        'text-transform:uppercase;color:rgba(255,255,255,0.2);' +
+        'text-transform:uppercase;color:rgba(255,255,255,0.60);' +
         'margin-bottom:0.2rem;' +
       '}' +
       '.nlg-section-label::after{' +
@@ -342,7 +342,7 @@
         'font-size:0.74rem;font-weight:500;color:#e8e4dc;' +
         'line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;' +
       '}' +
-      '.nlg-tipo-desc{font-size:0.62rem;color:#4e4a43;line-height:1.35;}' +
+      '.nlg-tipo-desc{font-size:0.62rem;color:#a09b94;line-height:1.35;}' +
 
       '.nlg-chip-row{' +
         'display:flex;align-items:center;gap:0.55rem;' +
@@ -372,7 +372,7 @@
 
       '.nlg-desc{display:flex;flex-direction:column;gap:0;min-width:0;}' +
       '.nlg-desc-main{font-size:0.72rem;font-weight:500;color:#ccc9c0;line-height:1.3;}' +
-      '.nlg-desc-sub{font-size:0.6rem;color:#4e4a43;line-height:1.3;}' +
+      '.nlg-desc-sub{font-size:0.6rem;color:#a09b94;line-height:1.3;}' +
 
       '.nlg-enade-block{' +
         'padding:0.55rem 0.7rem;' +
@@ -404,8 +404,8 @@
         'background:var(--accent);opacity:0.35;flex-shrink:0;' +
       '}' +
       '.nlg-footer-text{' +
-        'font-size:0.58rem;color:#3a3730;letter-spacing:0.02em;line-height:1.4;' +
-      '}';
+  'font-size:0.58rem;color:#b5b0a8;letter-spacing:0.02em;line-height:1.4;' +  // ← era #7a7670
+'}';
 
     document.head.appendChild(style);
 
@@ -459,15 +459,15 @@
     modal.id = 'nexus-legenda-modal';
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-modal', 'true');
-    modal.setAttribute('aria-label', 'Guia de marcações e tipos de questão');
+    modal.setAttribute('aria-label', 'Informações e tipos de questão');
 
     var header   = _el('div', 'nlg-header');
     var hLeft    = _el('div', 'nlg-header-left');
     hLeft.appendChild(_el('span', 'nlg-eyebrow', 'Nexus Study'));
-    hLeft.appendChild(_el('span', 'nlg-title',   'Guia de Marcações'));
+    hLeft.appendChild(_el('span', 'nlg-title',   'Informações'));
     var closeBtn = _el('button', 'nlg-close', '\u00d7');
     closeBtn.id = 'nlg-close-btn';
-    closeBtn.setAttribute('aria-label', 'Fechar guia');
+    closeBtn.setAttribute('aria-label', 'Fechar Informações');
     header.appendChild(hLeft);
     header.appendChild(closeBtn);
     modal.appendChild(header);

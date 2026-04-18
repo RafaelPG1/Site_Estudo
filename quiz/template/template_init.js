@@ -180,7 +180,7 @@ nav.innerHTML = `
     <i class="fas fa-layer-group" aria-hidden="true"></i>
   </button>
   <div class="nav-divider" aria-hidden="true"></div>
-<button id="btn-legenda" class="nav-btn btn-legenda" title="Guia de marcações" type="button">
+<button id="btn-legenda" class="nav-btn btn-legenda" title="Informações" type="button">
   <i class="fas fa-circle-info" aria-hidden="true"></i>
 </button>
 `;
