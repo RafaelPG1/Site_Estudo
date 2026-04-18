@@ -190,7 +190,6 @@
 
   function initLegendaModal() {
 
-    /* ── 1. CSS ────────────────────────────────────────────── */
     var style = document.createElement('style');
     style.id  = 'nexus-legenda-styles';
     style.textContent =
@@ -409,8 +408,6 @@
 
     document.head.appendChild(style);
 
-    /* ── 2. HELPERS DOM ───────────────────────────────────── */
-
     function _el(tag, cls, txt) {
       var e = document.createElement(tag);
       if (cls) e.className = cls;
@@ -450,7 +447,6 @@
       return { wrap: wrap, list: list };
     }
 
-    /* ── 3. OVERLAY + MODAL ───────────────────────────────── */
     var overlay = _el('div');
     overlay.id = 'nexus-legenda-overlay';
     document.body.appendChild(overlay);
@@ -481,13 +477,13 @@
     var body = _el('div', 'nlg-body');
 
     var _modoCfg = null;
-    if      (_modo === 'enade')    _modoCfg = {
+    if      (_modo === 'enade')   _modoCfg = {
       icon:  '🎓',
       label: 'Estilo ENADE',
       desc:  'Questões elaboradas no formato ENADE: enunciados contextualizados, ' +
              'afirmativas para análise crítica e alternativas plausíveis.'
     };
-    else if (_modo === 'ava')      _modoCfg = {
+    else if (_modo === 'ava')     _modoCfg = {
       icon:  '📋',
       label: 'Questões AVA',
       desc:  'Questões extraídas ou adaptadas das atividades acadêmicas, ' +
@@ -520,7 +516,7 @@
 
     var sTipos = _secao('Tipos de questão');
 
-    if (_modo === 'enade') {
+if (_modo === 'enade') {
       sTipos.list.appendChild(_tipoRow('nlg-icon-aj',  'A+J',  'Asserção + Justificativa', 'Duas afirmativas com PORQUE'));
       sTipos.list.appendChild(_tipoRow('nlg-icon-ma',  'I–IV', 'Múltiplas afirmativas',    'Identifique as corretas'));
       sTipos.list.appendChild(_tipoRow('nlg-icon-con', 'CON',  'Conceitual',               'Contexto + pergunta direta'));
@@ -528,8 +524,36 @@
         sTipos.list.appendChild(_tipoRow('nlg-icon-cod', '</>', 'Análise de código', 'Script ou trecho — avalie afirmativas'));
       }
       sTipos.list.appendChild(_tipoRow('nlg-icon-ap', 'APL', 'Análise aplicada', 'Situação-problema real'));
+
+    } else if (_modo === 'fixacao') {
+      sTipos.list.appendChild(_tipoRow('nlg-icon-con', 'CUR', 'Curta',     'Pergunta direta, sem contexto ou contexto mínimo'));
+      sTipos.list.appendChild(_tipoRow('nlg-icon-ma',  'DIR', 'Direta',    'Pergunta objetiva com foco no conceito'));
+      sTipos.list.appendChild(_tipoRow('nlg-icon-ap',  'CTX', 'Contexto',  'Situação simples ou pequeno cenário aplicado'));
+      sTipos.list.appendChild(_tipoRow('nlg-icon-aj',  'APL', 'Aplicação', 'Cenário real para interpretação e transferência'));
+      if (_hasCode) {
+        sTipos.list.appendChild(_tipoRow('nlg-icon-cod', '</>', 'Código', 'Trecho de código — avalie comportamento ou saída'));
+      }
+
+    } else if (_modo === 'ava') {
+      var avaNota = _el('div', 'nlg-enade-block');
+      avaNota.style.cssText += 'flex-direction:column;gap:0.4rem;';
+      var avaTopo = _el('div');
+      avaTopo.style.cssText = 'display:flex;align-items:center;gap:0.5rem;';
+      var avaIco  = _el('div', 'nlg-enade-icon', '📋');
+      var avaTxt  = _el('div', 'nlg-enade-text');
+      avaTxt.appendChild(_el('span', 'nlg-enade-label', 'Tipagem dependente da extração'));
+      avaTxt.appendChild(_el('span', 'nlg-enade-desc',
+        'Os tipos e a estrutura das questões refletem diretamente o conteúdo ' +
+        'disponibilizado pelo professor no AVA — enunciados, atividades e ' +
+        'avaliações são extraídos e adaptados sem padronização prévia de formato.'
+      ));
+      avaTopo.appendChild(avaIco);
+      avaTopo.appendChild(avaTxt);
+      avaNota.appendChild(avaTopo);
+      sTipos.list.appendChild(avaNota);
+
     } else {
-      /* ── TIPOS: modo questoes / fixacao / demais ── */
+      /* modo 'questoes' e fallback */
       sTipos.list.appendChild(_tipoRow('nlg-icon-con', 'EXP', 'Explicativa',     'Conceito explicado antes da pergunta'));
       sTipos.list.appendChild(_tipoRow('nlg-icon-ma',  'CTX', 'Contextualizada', 'Explicação densa com múltiplos conceitos'));
       sTipos.list.appendChild(_tipoRow('nlg-icon-ap',  'APL', 'Aplicação',       'Cenário real para verificar a compreensão'));
@@ -570,7 +594,6 @@
     modal.appendChild(footer);
     document.body.appendChild(modal);
 
-    /* ── 4. OPEN / CLOSE ──────────────────────────────────── */
     function _open() {
       modal.classList.add('nlg-show');
       overlay.classList.add('nlg-show');
@@ -589,7 +612,6 @@
       modal.classList.contains('nlg-show') ? _close() : _open();
     }
 
-    /* ── 5. BINDS ─────────────────────────────────────────── */
     var btnLegenda = document.getElementById('btn-legenda');
     if (btnLegenda) btnLegenda.addEventListener('click', _toggle);
 
@@ -629,7 +651,7 @@
           'Verifique se o arquivo de conteúdo está correto.</p>' +
           '</div>';
       }
-      return; /* sai sem quebrar o modal — ele já foi iniciado antes */
+      return;
     }
 
     var questoesBase = listaQuestoes;
@@ -642,6 +664,9 @@
     var stepWrapper = null;
 
     var mostrandoSoErros = false;
+
+    /* ── Grupos de aula para resultado por aula ── */
+    var aulaGrupos = []; /* [{aula: string, indices: number[]}] */
 
     var metaTotal = document.getElementById('meta-total');
     if (metaTotal) {
@@ -792,6 +817,70 @@
     }
 
     /* ══════════════════════════════════════════════════════
+       RESULTADO POR AULA
+       ══════════════════════════════════════════════════════ */
+
+    function _calcularResultadoAula(indices) {
+      var total       = indices.length;
+      var respondidas = 0;
+      var acertos     = 0;
+      indices.forEach(function (qi) {
+        if (respostas[qi] !== undefined) {
+          respondidas++;
+          if (parseInt(respostas[qi]) === questoes[qi].answer) acertos++;
+        }
+      });
+      return { total: total, respondidas: respondidas, acertos: acertos };
+    }
+
+    function _atualizarResultadoAula(gi) {
+      var grupo = aulaGrupos[gi];
+      if (!grupo) return;
+      var el = document.getElementById('aula-result-' + gi);
+      if (!el) return;
+
+      var r   = _calcularResultadoAula(grupo.indices);
+      var pct = r.total > 0 ? Math.round((r.respondidas / r.total) * 100) : 0;
+
+      if (r.respondidas < r.total) {
+        /* ── Estado parcial: barra de progresso ── */
+        el.className = 'subject-result subject-result--progress';
+        el.innerHTML =
+          '<div class="sr-progress-label">' +
+            r.respondidas + ' de ' + r.total + ' questões respondidas' +
+          '</div>' +
+          '<div class="sr-progress-bar">' +
+            '<div class="sr-progress-fill" style="width:' + pct + '%"></div>' +
+          '</div>';
+      } else {
+        /* ── Estado final: resultado completo ── */
+        var pctAcertos = r.total > 0 ? Math.round((r.acertos / r.total) * 100) : 0;
+        var tier = pctAcertos >= 70 ? '--good' : pctAcertos >= 50 ? '--mid' : '--bad';
+        var icon = pctAcertos >= 70 ? '🎯' : pctAcertos >= 50 ? '📚' : '💪';
+        el.className = 'subject-result subject-result' + tier;
+        el.innerHTML =
+          '<div class="sr-icon">' + icon + '</div>' +
+          '<div class="sr-content">' +
+            '<div class="sr-title">Resultado da Aula</div>' +
+            '<div class="sr-score">' + r.acertos + ' de ' + r.total + ' questões corretas</div>' +
+          '</div>' +
+          '<div class="sr-pct">' + pctAcertos + '%</div>';
+      }
+    }
+
+    function _atualizarTodosResultadosAula() {
+      aulaGrupos.forEach(function (_, gi) { _atualizarResultadoAula(gi); });
+    }
+
+    /* Retorna o índice do grupo (gi) ao qual pertence a questão qi */
+    function _grupoDeQuestao(qi) {
+      for (var gi = 0; gi < aulaGrupos.length; gi++) {
+        if (aulaGrupos[gi].indices.indexOf(qi) !== -1) return gi;
+      }
+      return -1;
+    }
+
+    /* ══════════════════════════════════════════════════════
        RENDERIZAÇÃO
        ══════════════════════════════════════════════════════ */
 
@@ -799,8 +888,29 @@
       if (modoStep) _sairModoStep();
       container.innerHTML = '';
       mostrandoSoErros = false;
+      aulaGrupos = []; /* ← reset dos grupos */
+
+      var ultimaAula = null;
 
       questoes.forEach(function (q, qi) {
+
+        /* ── Cabeçalho de aula + novo grupo ── */
+        if (q.aula !== undefined && q.aula !== ultimaAula) {
+          ultimaAula = q.aula;
+          aulaGrupos.push({ aula: q.aula, indices: [] });
+
+          var titleEl = document.createElement('div');
+          titleEl.className = 'subject-title';
+          titleEl.textContent = q.aula.toUpperCase();
+          container.appendChild(titleEl);
+        }
+
+        /* Registra a questão no grupo atual */
+        if (aulaGrupos.length > 0) {
+          aulaGrupos[aulaGrupos.length - 1].indices.push(qi);
+        }
+
+        /* ── Card da questão ── */
         var card = document.createElement('div');
         card.className = 'question-container';
         card.id = 'q-' + qi;
@@ -843,6 +953,20 @@
         }
 
         container.appendChild(card);
+
+        /* ── Bloco de resultado ao fim de cada aula ── */
+        var proxQ          = questoes[qi + 1];
+        var isUltimoDoGrupo = !proxQ || proxQ.aula !== q.aula;
+
+        if (isUltimoDoGrupo && aulaGrupos.length > 0) {
+          var gi = aulaGrupos.length - 1;
+          var resultEl = document.createElement('div');
+          resultEl.id        = 'aula-result-' + gi;
+          resultEl.className = 'subject-result subject-result--progress';
+          container.appendChild(resultEl);
+          _atualizarResultadoAula(gi);
+        }
+        /* ─────────────────────────────────────────────── */
       });
     }
 
@@ -885,6 +1009,10 @@
         if (modoStep) setTimeout(_sincronizarAlturaStep, 50);
       }
 
+      /* Atualiza o bloco da aula que contém esta questão */
+      var gi = _grupoDeQuestao(qi);
+      if (gi !== -1) _atualizarResultadoAula(gi);
+
       atualizarResultados();
     }
 
@@ -905,6 +1033,7 @@
         renderizar();
       }
 
+      _atualizarTodosResultadosAula();
       atualizarResultados();
       smoothScrollToTop();
     }
@@ -955,6 +1084,7 @@
       }
 
       _atualizarBotaoErros();
+      _atualizarTodosResultadosAula();
     }
 
     /* ══════════════════════════════════════════════════════
@@ -1037,6 +1167,10 @@
         document.querySelectorAll('.question-container').forEach(function (c) {
           c.style.display = '';
         });
+        /* Restaura blocos de resultado */
+        document.querySelectorAll('[id^="aula-result-"]').forEach(function (el) {
+          el.style.display = '';
+        });
       } else {
         mostrandoSoErros = true;
         errorsBtn.classList.add('active');
@@ -1045,6 +1179,10 @@
         questoes.forEach(function (q, qi) {
           var card = document.getElementById('q-' + qi);
           if (card) card.style.display = erros.indexOf(qi) !== -1 ? '' : 'none';
+        });
+        /* Oculta blocos de resultado no modo "ver erros" */
+        document.querySelectorAll('[id^="aula-result-"]').forEach(function (el) {
+          el.style.display = 'none';
         });
         var primeiro = document.getElementById('q-' + erros[0]);
         if (primeiro) primeiro.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1219,6 +1357,18 @@
     function _entrarModoStep() {
       modoStep = true;
 
+      /* ── Vai para a primeira questão não respondida ── */
+      var primeiraSemResposta = 0;
+      for (var i = 0; i < questoes.length; i++) {
+        if (respostas[i] === undefined) {
+          primeiraSemResposta = i;
+          break;
+        }
+        primeiraSemResposta = questoes.length - 1;
+      }
+      stepAtual = primeiraSemResposta;
+      /* ─────────────────────────────────────────────── */
+
       if (!container.querySelector('.question-container')) renderizar();
 
       ['.quiz-header', '.page-header', '.submit-container', '#results', '.page-footer']
@@ -1231,7 +1381,8 @@
         var wrapper = document.createElement('div');
         wrapper.className = 'step-quiz-wrapper';
 
-        container.querySelectorAll('.subject-title, .subject-result').forEach(function (el) {
+        /* Oculta títulos de aula E blocos de resultado no modo step */
+        container.querySelectorAll('.subject-title, .subject-result, [id^="aula-result-"]').forEach(function (el) {
           el.classList.add('step-structural-hidden');
         });
 
@@ -1378,12 +1529,12 @@
   } /* fim initQuiz */
 
   /* ══════════════════════════════════════════════════════════
-     INICIALIZAÇÃO — modal sempre roda, quiz só se tiver questões
+     INICIALIZAÇÃO
      ══════════════════════════════════════════════════════════ */
 
   function boot() {
-    initLegendaModal(); /* ← sempre, independente de ter questões */
-    initQuiz();         /* ← retorna cedo se não houver questões  */
+    initLegendaModal();
+    initQuiz();
   }
 
   if (document.readyState === 'loading') {

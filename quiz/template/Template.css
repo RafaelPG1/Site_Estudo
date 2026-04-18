@@ -505,7 +505,7 @@ a { text-decoration: none; color: inherit; }
 /* ── TÍTULO DE ASSUNTO ───────────────────────────────────── */
 .subject-title {
   font-family: var(--font-body);
-  font-size: 0.68rem;
+  font-size: 0.90rem;
   font-weight: 700;
   color: var(--accent);
   letter-spacing: 0.2em;
@@ -538,7 +538,7 @@ a { text-decoration: none; color: inherit; }
 /* Número da questão */
 .question-number {
   font-family: var(--font-body);
-  font-size: 0.65rem;
+  font-size: 0.80rem;
   font-weight: 700;
   color: var(--accent);
   letter-spacing: 0.18em;
@@ -862,7 +862,7 @@ a { text-decoration: none; color: inherit; }
 .sr-score   { font-size: 0.84rem; color: var(--text-2); }
 
 .sr-pct {
-  font-family: var(--font-display);
+  font-family: var(--font-body);   /* ← era var(--font-display) */
   font-size: 1.8rem;
   font-weight: 700;
   line-height: 1.1;
@@ -901,8 +901,8 @@ a { text-decoration: none; color: inherit; }
 }
 
 .percentage {
-  font-family: var(--font-display);
-  font-size: 4rem;
+  font-family: var(--font-body); /* era var(--font-display) */
+  font-size: 3.8rem;
   font-weight: 700;
   color: var(--accent);
   line-height: 1;

@@ -74,6 +74,7 @@ const info = discInfo ?? lista[0] ?? { id: disc, nome: disc, arquivo: disc, emoj
 
    Para adicionar um novo modo, basta adicionar uma entrada aqui.
 */
+
 const MODOS_CONFIG = {
   ava: {
     breadcrumb: 'AVA',
@@ -85,7 +86,7 @@ const MODOS_CONFIG = {
     breadcrumb: 'Questões',
     h1:         'Questões <em>Práticas</em>',
     label:      'Questões Práticas',
-    getAccent:  (cores) => ({ accent: cores.corTema2, accentRgb: cores.corTema2Rgb }),
+    getAccent:  (cores) => ({ accent: cores.corTema, accentRgb: cores.corTemaRgb }),
   },
   enade: {
     breadcrumb: 'ENADE',
@@ -93,20 +94,12 @@ const MODOS_CONFIG = {
     label:      'Questões ENADE',
     getAccent:  (cores) => ({ accent: cores.corTema, accentRgb: cores.corTemaRgb }),
   },
-    fixacao: {
+  fixacao: {
     breadcrumb: 'Fixação',
     h1:         'Questões de <em>Fixação</em>',
     label:      'Fixação',
-    getAccent:  (cores) => ({ accent: cores.corTema2, accentRgb: cores.corTema2Rgb }),
+    getAccent:  (cores) => ({ accent: cores.corTema, accentRgb: cores.corTemaRgb }),
   },
- 
-  // Exemplo de modo com cor fixa independente da disciplina:
-  // simulado: {
-  //   breadcrumb: 'Simulado',
-  //   h1:         '<em>Simulado</em> Completo',
-  //   label:      'Simulado',
-  //   getAccent:  () => ({ accent: '#a78bfa', accentRgb: '167, 139, 250' }),
-  // },
 };
 
 const modoConfig = MODOS_CONFIG[modo] ?? MODOS_CONFIG.questoes;
