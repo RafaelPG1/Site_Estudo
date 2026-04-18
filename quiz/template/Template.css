@@ -1,7 +1,6 @@
 /* ============================================================
    NEXUS STUDY — quiz/template/template.css
    CSS unificado: base global + estilos do quiz/ava/enade.
-   Substitui template_global.css + template.css (separados).
 
    O acento é controlado pela variável --accent, definida
    dinamicamente pelo template_init.js de acordo com ?modo=:
@@ -10,7 +9,7 @@
    ============================================================ */
 
 /* ══════════════════════════════════════════════════════════
-   PARTE 1 — BASE GLOBAL (era template_global.css)
+   PARTE 1 — BASE GLOBAL
    ══════════════════════════════════════════════════════════ */
 
 /* ── TOKENS BASE ─────────────────────────────────────────── */
@@ -58,6 +57,40 @@
   /* Acento do modo (sobrescrito pelo template_init.js) */
   --accent:     var(--cor-tema);
   --accent-rgb: var(--cor-tema-rgb);
+
+  /* ── CHIPS DE MARCAÇÃO SQL/CÓDIGO ──────────────────────── */
+  /* Cada categoria tem sua própria cor semântica.            */
+  /* Adicione novos grupos aqui para novas disciplinas.       */
+
+  /* DDL — comandos de estrutura (azul) */
+  --chip-ddl-bg:      rgba(122, 168, 232, 0.12);
+  --chip-ddl-color:   #93c5fd;
+  --chip-ddl-border:  rgba(122, 168, 232, 0.28);
+
+  /* DML — comandos de dados (verde-água) */
+  --chip-dml-bg:      rgba(77, 217, 180, 0.10);
+  --chip-dml-color:   #5eead4;
+  --chip-dml-border:  rgba(77, 217, 180, 0.26);
+
+  /* Chaves / Constraints (âmbar) */
+  --chip-key-bg:      rgba(251, 191, 36, 0.10);
+  --chip-key-color:   #fbbf24;
+  --chip-key-border:  rgba(251, 191, 36, 0.26);
+
+  /* Tipos de dados (lilás) */
+  --chip-type-bg:     rgba(167, 139, 250, 0.10);
+  --chip-type-color:  #c4b5fd;
+  --chip-type-border: rgba(167, 139, 250, 0.26);
+
+  /* Erro / perigo (vermelho) */
+  --chip-danger-bg:      rgba(248, 113, 113, 0.10);
+  --chip-danger-color:   #fca5a5;
+  --chip-danger-border:  rgba(248, 113, 113, 0.26);
+
+  /* Genérico / destaque (acento) */
+  --chip-accent-bg:      rgba(var(--accent-rgb), 0.10);
+  --chip-accent-color:   var(--accent);
+  --chip-accent-border:  rgba(var(--accent-rgb), 0.28);
 }
 
 /* ── RESET ───────────────────────────────────────────────── */
@@ -350,15 +383,72 @@ a { text-decoration: none; color: inherit; }
   border-top: 1px solid var(--border);
 }
 
-/* ── INLINE CODE ─────────────────────────────────────────── */
+/* ── INLINE CODE (backtick simples) ──────────────────────── */
+/* Estilo base — a cor herda do acento atual */
 .inline-code {
-  font-family: 'JetBrains Mono', monospace;
-  background: rgba(122, 168, 232, 0.12);
-  color: var(--cor-tema);
+  font-family: var(--font-mono);
+  background: rgba(var(--accent-rgb), 0.10);
+  color: var(--accent);
   padding: 1px 6px;
   border-radius: 4px;
-  font-size: 0.88em;
-  border: 1px solid rgba(122, 168, 232, 0.2);
+  font-size: 0.85em;
+  border: 1px solid rgba(var(--accent-rgb), 0.22);
+  white-space: nowrap;
+}
+
+/* ── CHIPS SEMÂNTICOS ────────────────────────────────────── */
+/*
+   Uso no conteúdo JS:
+     ==ddl==CREATE TABLE==  → chip azul  (DDL)
+     ==dml==SELECT==        → chip teal  (DML)
+     ==key==PRIMARY KEY==   → chip âmbar (Chaves)
+     ==type==VARCHAR==      → chip lilás (Tipos)
+     ==danger==DROP==       → chip vermelho (Perigo)
+     ==mark==qualquer==     → chip no acento da disciplina
+*/
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.80em;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 5px;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+  vertical-align: baseline;
+  position: relative;
+  top: -0.5px;
+}
+
+.chip-ddl    { background: var(--chip-ddl-bg);    color: var(--chip-ddl-color);    border: 1px solid var(--chip-ddl-border);    }
+.chip-dml    { background: var(--chip-dml-bg);    color: var(--chip-dml-color);    border: 1px solid var(--chip-dml-border);    }
+.chip-key    { background: var(--chip-key-bg);    color: var(--chip-key-color);    border: 1px solid var(--chip-key-border);    }
+.chip-type   { background: var(--chip-type-bg);   color: var(--chip-type-color);   border: 1px solid var(--chip-type-border);   }
+.chip-danger { background: var(--chip-danger-bg); color: var(--chip-danger-color); border: 1px solid var(--chip-danger-border); }
+.chip-mark   { background: var(--chip-accent-bg); color: var(--chip-accent-color); border: 1px solid var(--chip-accent-border); }
+
+/* ── EYEBROW DE TIPO DE QUESTÃO ──────────────────────────── */
+/*
+   Aparece acima do número da questão para indicar o subtipo:
+   "Asserção + Justificativa", "Múltiplas afirmativas", etc.
+   Definido pelo campo `tipo` na questão JS.
+*/
+.question-type-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(var(--accent-rgb), 0.7);
+  background: rgba(var(--accent-rgb), 0.06);
+  border: 1px solid rgba(var(--accent-rgb), 0.14);
+  padding: 0.18rem 0.65rem;
+  border-radius: 99px;
+  margin-bottom: 0.5rem;
 }
 
 /* ── UTILITÁRIOS ─────────────────────────────────────────── */
@@ -402,7 +492,7 @@ a { text-decoration: none; color: inherit; }
 
 
 /* ══════════════════════════════════════════════════════════
-   PARTE 2 — QUIZ / AVA / ENADE (era template.css separado)
+   PARTE 2 — QUIZ / AVA / ENADE
    ══════════════════════════════════════════════════════════ */
 
 /* ── CONTAINER PRINCIPAL ─────────────────────────────────── */
@@ -431,6 +521,7 @@ a { text-decoration: none; color: inherit; }
 .question-container {
   background: var(--surface);
   border: 1px solid var(--border);
+  border-left: 3px solid rgba(var(--accent-rgb), 0.35);  /* borda lateral do modo */
   border-radius: var(--radius-card);
   padding: 1.5rem;
   margin-bottom: 0.9rem;
@@ -439,8 +530,9 @@ a { text-decoration: none; color: inherit; }
 }
 
 .question-container:hover {
-  border-color: rgba(var(--accent-rgb), 0.2);
-  box-shadow: 0 4px 24px rgba(var(--accent-rgb), 0.06);
+  border-color: rgba(var(--accent-rgb), 0.28);
+  border-left-color: rgba(var(--accent-rgb), 0.65);
+  box-shadow: 0 4px 24px rgba(var(--accent-rgb), 0.07);
 }
 
 /* Número da questão */
@@ -604,19 +696,28 @@ a { text-decoration: none; color: inherit; }
   border-radius: 2px;
 }
 
-/* Syntax highlight */
+/* ── SYNTAX HIGHLIGHT ────────────────────────────────────── */
+/* SQL */
 .jk-keyword    { color: #79b8ff; font-weight: 600; }
-.jk-annotation { color: #79b8ff; font-weight: 600; }
+.jk-type       { color: var(--accent); }
 .jk-string     { color: #9ecbff; }
 .jk-number     { color: #f8c555; }
 .jk-comment    { color: rgba(255, 255, 255, 0.28); font-style: italic; }
-.jk-type       { color: var(--accent); }
+/* Java / linguagens OO */
+.jk-annotation { color: #79b8ff; font-weight: 600; }
+/* Python */
+.jk-decorator  { color: #e879f9; font-weight: 600; }
+/* Operadores / pontuação */
+.jk-operator   { color: #a5b4fc; }
+/* Booleanos / null / literais */
+.jk-literal    { color: #f8c555; font-weight: 600; }
 
-/* Inline code dentro de textos */
+/* Inline code dentro de textos (backtick) */
 .assertion code,
 .question-texto code,
 .question-enunciado code,
-.question-text code {
+.question-text code,
+.feedback code {
   font-family: var(--font-mono);
   font-size: 0.82em;
   color: var(--accent);
@@ -973,11 +1074,6 @@ a { text-decoration: none; color: inherit; }
   animation: none;
 }
 
-/*
- * FIX PISCAR: .step-active sozinho NÃO define animação.
- * Só as classes direcionais animam — assim o browser nunca
- * aplica dois @keyframes conflitantes no mesmo frame.
- */
 .step-quiz-wrapper > .question-container.step-active {
   display: block;
   will-change: transform, opacity;
