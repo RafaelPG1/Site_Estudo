@@ -107,62 +107,13 @@ const p = new Pessoa("Ana");`,
   ],
 
   /* ── QUESTÕES AVA ───────────────────────────────────── */
-  ava: [
-    {
-      question: "Em POO, qual modificador de acesso torna um atributo acessível apenas dentro da própria classe?",
-      options: [
-        "public",
-        "protected",
-        "private",
-        "static"
-      ],
-      answer: 2,
-      feedback: "O modificador `private` restringe o acesso à própria classe."
-    },
-    {
-      question: "Qual palavra-chave é usada em Java para indicar herança?",
-      options: [
-        "implements",
-        "extends",
-        "inherits",
-        "super"
-      ],
-      answer: 1,
-      feedback: "A palavra-chave `extends` indica herança em Java."
-    },
-    {
-      question: "O que é uma interface em POO?",
-      options: [
-        "Uma classe que já possui implementação completa",
-        "Um contrato que define métodos que uma classe deve implementar",
-        "Um tipo especial de atributo",
-        "Um objeto sem classe definida"
-      ],
-      answer: 1,
-      feedback: "Interface define regras que as classes devem seguir."
-    },
-    {
-      question: "Qual princípio da POO está sendo aplicado quando ocultamos a complexidade interna de um objeto?",
-      options: [
-        "Herança",
-        "Polimorfismo",
-        "Encapsulamento",
-        "Instanciação"
-      ],
-      answer: 2,
-      feedback: "Encapsulamento esconde detalhes internos e protege os dados."
-    },
-    {
-      question: "O que é sobrescrita (`override`) de método?",
-      options: [
-        "Criar um método com o mesmo nome mas parâmetros diferentes na mesma classe",
-        "Redefinir na subclasse um método herdado da superclasse",
-        "Chamar o construtor da classe pai",
-        "Tornar um método privado na subclasse"
-      ],
-      answer: 1,
-      feedback: "Override permite alterar o comportamento de um método herdado."
-    }
-  ]
+ava: [
+  {
+    question: "Indisponível",
+    options: ["Indisponível", "Indisponível", "Indisponível", "Indisponível"],
+    answer: 0,
+    feedback: "Questão temporariamente indisponível."
+  }
+],
 
 };

@@ -186,36 +186,14 @@ DROP TABLE temporarios CASCADE;`,
   }
   ],
 
-  ava: [
-    {
-      question: "Qual tipo de dado SQL armazena texto de tamanho variável?",
-      options: ["CHAR", "INTEGER", "VARCHAR", "BLOB"],
-      answer: 2,
-      feedback: "==type==VARCHAR== armazena texto de comprimento variável, enquanto CHAR tem tamanho fixo."
-    },
-    {
-      question: "O que o comando ==ddl==ALTER TABLE== permite fazer?",
-      options: [
-        "Apenas remover colunas",
-        "Adicionar, alterar ou remover colunas e restrições",
-        "Criar uma nova tabela com base em outra",
-        "Somente renomear a tabela"
-      ],
-      answer: 1,
-      feedback: "==ddl==ALTER TABLE== permite modificar a estrutura de uma tabela existente de diversas formas."
-    },
-    {
-      question: "O que é o INFORMATION_SCHEMA em um banco de dados?",
-      options: [
-        "Uma tabela de dados do usuário",
-        "Um conjunto de metadados sobre a estrutura do banco",
-        "Um tipo de índice especial",
-        "Um comando para verificar erros"
-      ],
-      answer: 1,
-      feedback: "O ==mark==INFORMATION_SCHEMA== armazena metadados — informações sobre a estrutura do próprio banco."
-    }
-  ],
+ava: [
+  {
+    question: "Indisponível",
+    options: ["Indisponível", "Indisponível", "Indisponível", "Indisponível"],
+    answer: 0,
+    feedback: "Questão temporariamente indisponível."
+  }
+],
 
 
   enade: [

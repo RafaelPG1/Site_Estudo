@@ -163,30 +163,14 @@ window.questoes = {
   }
   ],
 
-  ava: [
-    {
-      question: "O que significa consistência no design?",
-      options: [
-        "Mudar layout frequentemente",
-        "Manter padrões visuais e comportamentais",
-        "Usar cores aleatórias",
-        "Ignorar o usuário"
-      ],
-      answer: 1,
-      feedback: "Consistência melhora usabilidade e previsibilidade."
-    },
-    {
-      question: "Feedback no sistema é:",
-      options: [
-        "Erro no sistema",
-        "Resposta às ações do usuário",
-        "Delay",
-        "Código invisível"
-      ],
-      answer: 1,
-      feedback: "Feedback informa o resultado das ações do usuário."
-    }
-  ],
+ava: [
+  {
+    question: "Indisponível",
+    options: ["Indisponível", "Indisponível", "Indisponível", "Indisponível"],
+    answer: 0,
+    feedback: "Questão temporariamente indisponível."
+  }
+],
 
   /* ══════════════════════════════════════════════════════════
      QUESTÕES ENADE Desing

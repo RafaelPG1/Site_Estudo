@@ -58,29 +58,12 @@ console.log("Conexão estabelecida");`,
     }
   ],
 
-  ava: [
-    {
-      question: "O que acontece ao usar HTTPS em vez de HTTP?",
-      options: [
-        "Aumenta apenas a velocidade",
-        "Adiciona criptografia na comunicação",
-        "Remove necessidade de DNS",
-        "Evita uso de IP"
-      ],
-      answer: 1,
-      feedback: "HTTPS utiliza SSL/TLS para garantir segurança."
-    },
-    {
-      question: "Qual situação representa melhor o uso de UDP?",
-      options: [
-        "Transferência bancária",
-        "Streaming de vídeo",
-        "Login em sistema",
-        "Envio de email"
-      ],
-      answer: 1,
-      feedback: "UDP é usado quando velocidade é mais importante que confiabilidade, como streaming."
-    }
-  ]
-
+ava: [
+  {
+    question: "Indisponível",
+    options: ["Indisponível", "Indisponível", "Indisponível", "Indisponível"],
+    answer: 0,
+    feedback: "Questão temporariamente indisponível."
+  }
+],
 };
