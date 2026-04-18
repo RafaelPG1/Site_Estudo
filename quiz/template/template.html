@@ -1,6 +1,6 @@
 <!--
-  NEXUS STUDY — quiz/template/ava_template.html
-  Estrutura exclusiva: Avaliação AVA
+  NEXUS STUDY — quiz/template/template.html
+  Template unificado para todos os modos (ava, questoes, enade, etc.)
   Lógica compartilhada → template_init.js
 -->
 <!DOCTYPE html>
@@ -9,24 +9,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AVA — Nexus Study</title>
+  <title>Nexus Study</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
 
-  <style>
-    :root {
-      --cor-tema:       #7aa8e8;
-      --cor-tema-rgb:   122, 168, 232;
-      --cor-tema-2:     #4dd9b4;
-      --cor-tema-2-rgb: 77, 217, 180;
-    }
-  </style>
-
-  <link rel="stylesheet" href="template_global.css" />
-  <link rel="stylesheet" href="ava_template.css" />
+  <!-- CSS unificado: base global + estilos do quiz -->
+  <link rel="stylesheet" href="template.css" />
 
   <!--
     [INLINE SCRIPT] Roda ANTES do módulo template_init.js.
@@ -51,7 +42,7 @@
   </script>
 </head>
 
-<body data-disciplina="ava">
+<body data-disciplina="" data-modo="">
 
   <div class="bg-orb bg-orb--1" aria-hidden="true"></div>
   <div class="bg-orb bg-orb--2" aria-hidden="true"></div>
@@ -81,7 +72,7 @@
       <nav class="breadcrumb" aria-label="Localização">
         <span class="breadcrumb__item" id="breadcrumb-disc">Disciplina</span>
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
-        <span class="breadcrumb__item breadcrumb__item--active">AVA</span>
+        <span class="breadcrumb__item breadcrumb__item--active" id="breadcrumb-modo">...</span>
       </nav>
 
     </div>
@@ -94,13 +85,12 @@
         <span aria-hidden="true" id="disc-emoji">💻</span>
         <span id="disc-nome">Disciplina</span>
       </div>
-      <h1 class="page-header__title">
-        Avaliação <em>AVA</em>
+      <h1 class="page-header__title" id="page-title-h1">
+        Carregando...
       </h1>
-
     </div>
 
-    <div id="quiz-container" aria-label="Questões da AVA" role="main"></div>
+    <div id="quiz-container" aria-label="Questões" role="main"></div>
 
     <div class="submit-container" id="submit-container">
       <div class="buttons-container">
@@ -124,7 +114,7 @@
   </main>
 
   <footer class="page-footer" id="page-footer">
-    Nexus Study · Avaliação AVA
+    Nexus Study
   </footer>
 
   <script type="module" src="template_init.js"></script>

@@ -4,12 +4,19 @@
    Responsabilidades:
      1. Lê o contexto completo da URL (?disc=&modo=&sem=)
      2. Atualiza o global.js (setSemestre, setDisciplina, setPagina)
-     3. Atualiza os textos do DOM
-     4. Confirma o back-btn
-     5. Expõe window.NEXUS_URL_BACK para o quiz_engine.js
-     6. Injeta o nav-float (binds dos botões ficam no quiz_engine.js)
-     7. Injeta o CSS da disciplina (sobrescreve tokens hardcoded no template)
+     3. Aplica as cores da disciplina + acento do modo via CSS vars
+     4. Atualiza os textos do DOM (título, breadcrumb, footer…)
+     5. Confirma o back-btn
+     6. Expõe window.NEXUS_URL_BACK para o quiz_engine.js
+     7. Injeta o nav-float (binds dos botões ficam no quiz_engine.js)
      8. Carrega o arquivo de conteúdo e depois o quiz_engine.js
+
+   ADICIONAR UM NOVO MODO:
+     1. Adicione uma entrada em MODOS_CONFIG abaixo.
+     2. Se o acento deve ser diferente das duas cores da disciplina,
+        defina accent/accentRgb fixos — caso contrário, use
+        corTema ou corTema2 que já vêm do DISC_CORES.
+     Só isso. Nenhum outro arquivo precisa mudar.
    ============================================================ */
 
 import {
@@ -51,33 +58,70 @@ if (!discInfo) {
   );
 }
 
-const info      = discInfo ?? lista[0] ?? { id: disc, nome: disc, arquivo: disc, emoji: '📚' };
-const tipoLabel = modo === 'ava' ? 'Avaliação AVA' : 'Questões Práticas';
+const info = discInfo ?? lista[0] ?? { id: disc, nome: disc, arquivo: disc, emoji: '📚' };
 
-/* ── APLICA CORES DA DISCIPLINA (via JS, sem FOUC) ────────── */
+/* ── CONFIGURAÇÃO DE MODOS ────────────────────────────────── */
 /*
-   Agora as cores não vêm mais de arquivos CSS individuais.
-   Elas são centralizadas em disciplinas_cores.js e aplicadas
-   diretamente via CSS variables no :root.
+   Cada modo define:
+     breadcrumb  → texto no breadcrumb do header
+     h1          → HTML do <h1> (pode conter <em>)
+     label       → texto para o footer e <title>
+     getAccent   → função que recebe as cores da disciplina
+                   e retorna { accent, accentRgb }
+                   Use corTema para acento primário (ex: ava)
+                   Use corTema2 para acento secundário (ex: questoes)
+                   Ou defina uma cor fixa para modos especiais.
 
-   Vantagens:
-   - Sem carregamento extra de CSS
-   - Sem FOUC (flash de cor errada)
-   - Mais fácil manutenção
+   Para adicionar um novo modo, basta adicionar uma entrada aqui.
 */
+const MODOS_CONFIG = {
+  ava: {
+    breadcrumb: 'AVA',
+    h1:         'Avaliação <em>AVA</em>',
+    label:      'Avaliação AVA',
+    getAccent:  (cores) => ({ accent: cores.corTema, accentRgb: cores.corTemaRgb }),
+  },
+  questoes: {
+    breadcrumb: 'Questões',
+    h1:         'Questões <em>Práticas</em>',
+    label:      'Questões Práticas',
+    getAccent:  (cores) => ({ accent: cores.corTema2, accentRgb: cores.corTema2Rgb }),
+  },
+  enade: {
+    breadcrumb: 'ENADE',
+    h1:         'Questões <em>ENADE</em>',
+    label:      'Questões ENADE',
+    getAccent:  (cores) => ({ accent: cores.corTema, accentRgb: cores.corTemaRgb }),
+  },
+  // Exemplo de modo com cor fixa independente da disciplina:
+  // simulado: {
+  //   breadcrumb: 'Simulado',
+  //   h1:         '<em>Simulado</em> Completo',
+  //   label:      'Simulado',
+  //   getAccent:  () => ({ accent: '#a78bfa', accentRgb: '167, 139, 250' }),
+  // },
+};
+
+const modoConfig = MODOS_CONFIG[modo] ?? MODOS_CONFIG.questoes;
+
+/* ── APLICA CORES DA DISCIPLINA + ACENTO DO MODO ─────────── */
 const cores = DISC_CORES[info.arquivo];
 
 if (cores) {
-  const root = document.documentElement;
+  const root   = document.documentElement;
+  const accent = modoConfig.getAccent(cores);
 
   root.style.setProperty('--cor-tema',       cores.corTema);
   root.style.setProperty('--cor-tema-rgb',   cores.corTemaRgb);
   root.style.setProperty('--cor-tema-2',     cores.corTema2);
   root.style.setProperty('--cor-tema-2-rgb', cores.corTema2Rgb);
+
+  /* Acento unificado — consumido pelo template.css */
+  root.style.setProperty('--accent',     accent.accent);
+  root.style.setProperty('--accent-rgb', accent.accentRgb);
 } else {
   console.warn(`[template_init] Sem cores definidas para "${info.arquivo}"`);
 }
-
 
 /* ── ATUALIZA TEXTOS NO DOM ───────────────────────────────── */
 function setText(id, text) {
@@ -85,10 +129,24 @@ function setText(id, text) {
   if (el) el.textContent = text;
 }
 
+function setHTML(id, html) {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = html;
+}
+
 setText('disc-emoji',      info.emoji);
 setText('disc-nome',       info.nome);
 setText('breadcrumb-disc', info.id.toUpperCase().replace(/_/g, ' '));
-setText('page-footer',     `Nexus Study · ${info.nome} · ${tipoLabel}`);
+setText('breadcrumb-modo', modoConfig.breadcrumb);
+setHTML('page-title-h1',   modoConfig.h1);
+setText('page-footer',     `Nexus Study · ${info.nome} · ${modoConfig.label}`);
+
+/* Atualiza o <title> da aba */
+document.title = `${modoConfig.breadcrumb} — Nexus Study`;
+
+/* Marca o modo no body para eventual uso via CSS ([data-modo="ava"]) */
+document.body.dataset.disciplina = info.arquivo;
+document.body.dataset.modo       = modo;
 
 /* ── CONFIRMA BACK-BTN E EXPÕE URL DE VOLTA ──────────────── */
 const urlBack = `../disciplinas/${ano}/${info.arquivo}.html?sem=${semestre}`;
@@ -104,9 +162,7 @@ if (earlyHref && earlyHref !== urlBack) {
 }
 
 const backBtn = document.querySelector('.back-btn');
-if (backBtn) {
-  backBtn.href = urlBack;
-}
+if (backBtn) backBtn.href = urlBack;
 
 /* ── INJETA NAV-FLOAT ─────────────────────────────────────── */
 const nav = document.createElement('nav');
@@ -123,7 +179,6 @@ nav.innerHTML = `
   <button id="btn-toggle-modo" class="nav-btn btn-toggle-modo" title="Modo Step (uma questão por vez)" type="button">
     <i class="fas fa-layer-group" aria-hidden="true"></i>
   </button>
-
 `;
 document.body.appendChild(nav);
 
