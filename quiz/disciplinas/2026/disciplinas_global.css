@@ -382,27 +382,27 @@ a { text-decoration: none; color: inherit; }
 
 /* ── TEMAS DOS CARDS ── */
 
-/* AVA — usa a cor da disciplina (--cor-tema) */
+/* ── CARD AVA — cor fixa azul, igual em todas as disciplinas ── */
 .disc-card--ava {
-  background: linear-gradient(145deg, #0e1420, rgba(var(--cor-tema-rgb), 0.07));
-  border-color: rgba(var(--cor-tema-rgb), 0.18);
-  box-shadow: 0 0 30px rgba(var(--cor-tema-rgb), 0.05);
+  background: linear-gradient(145deg, #0e1420, rgba(122, 168, 232, 0.07));
+  border-color: rgba(122, 168, 232, 0.18);
+  box-shadow: 0 0 30px rgba(122, 168, 232, 0.05);
 }
 .disc-card--ava:hover {
-  border-color: rgba(var(--cor-tema-rgb), 0.4);
-  box-shadow: 0 12px 40px rgba(var(--cor-tema-rgb), 0.15);
+  border-color: rgba(122, 168, 232, 0.4);
+  box-shadow: 0 12px 40px rgba(122, 168, 232, 0.15);
 }
 .disc-card--ava .disc-card__icon-wrap {
-  background: rgba(var(--cor-tema-rgb), 0.12);
+  background: rgba(122, 168, 232, 0.12);
 }
 .disc-card--ava .disc-card__title { color: white; }
 .disc-card--ava:hover .disc-card__arrow {
-  border-color: var(--cor-tema);
-  color: var(--cor-tema);
-  background: rgba(var(--cor-tema-rgb), 0.1);
-  box-shadow: 0 0 14px rgba(var(--cor-tema-rgb), 0.25);
+  border-color: #7aa8e8;
+  color: #7aa8e8;
+  background: rgba(122, 168, 232, 0.1);
+  box-shadow: 0 0 14px rgba(122, 168, 232, 0.25);
 }
-.disc-card--ava:hover .disc-card__cta-label { color: var(--cor-tema); }
+.disc-card--ava:hover .disc-card__cta-label { color: #7aa8e8; }
 
 /* Quiz — cor fixa teal, igual em todas as disciplinas */
 .disc-card--quiz {
