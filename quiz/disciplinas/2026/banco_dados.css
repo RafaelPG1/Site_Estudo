@@ -1,13 +1,11 @@
 /* =============================================
-   NEXUS STUDY — disciplinas/banco_dados.css
+   NEXUS STUDY — disciplinas/2026/banco_dados.css
    Disciplina: Fundamentos de Banco de Dados
    ============================================= */
 
-@import url('disciplinas_global.css');
-
 :root {
-  --cor-tema:      #e87a9a;
-  --cor-tema-rgb:  232, 122, 154;
-  --cor-tema-2:    #e8c97a;
+  --cor-tema:       #e87a9a;
+  --cor-tema-rgb:   232, 122, 154;
+  --cor-tema-2:     #e8c97a;
   --cor-tema-2-rgb: 232, 201, 122;
 }

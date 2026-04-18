@@ -1,13 +1,11 @@
 /* =============================================
-   NEXUS STUDY — disciplinas/redes.css
+   NEXUS STUDY — disciplinas/2026/redes.css
    Disciplina: Redes de Computadores
    ============================================= */
 
-@import url('disciplinas_global.css');
-
 :root {
-  --cor-tema:      #4dd9b4;
-  --cor-tema-rgb:  77, 217, 180;
-  --cor-tema-2:    #7aa8e8;
+  --cor-tema:       #4dd9b4;
+  --cor-tema-rgb:   77, 217, 180;
+  --cor-tema-2:     #7aa8e8;
   --cor-tema-2-rgb: 122, 168, 232;
 }

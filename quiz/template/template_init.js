@@ -8,7 +8,8 @@
      4. Confirma o back-btn
      5. Expõe window.NEXUS_URL_BACK para o quiz_engine.js
      6. Injeta o nav-float (binds dos botões ficam no quiz_engine.js)
-     7. Carrega o arquivo de conteúdo e depois o quiz_engine.js
+     7. Injeta o CSS da disciplina (sobrescreve tokens hardcoded no template)
+     8. Carrega o arquivo de conteúdo e depois o quiz_engine.js
    ============================================================ */
 
 import {
@@ -18,6 +19,7 @@ import {
   getDisciplinasDeSemestre,
 } from '../../global.js';
 import Storage from '../../storage.js';
+import { DISC_CORES } from '../disciplinas/disciplinas_cores.js';
 
 /* ── EXPÕE NO WINDOW PARA SCRIPTS CLÁSSICOS (quiz_engine.js) ── */
 window.NexusStorage = Storage;
@@ -51,6 +53,31 @@ if (!discInfo) {
 
 const info      = discInfo ?? lista[0] ?? { id: disc, nome: disc, arquivo: disc, emoji: '📚' };
 const tipoLabel = modo === 'ava' ? 'Avaliação AVA' : 'Questões Práticas';
+
+/* ── APLICA CORES DA DISCIPLINA (via JS, sem FOUC) ────────── */
+/*
+   Agora as cores não vêm mais de arquivos CSS individuais.
+   Elas são centralizadas em disciplinas_cores.js e aplicadas
+   diretamente via CSS variables no :root.
+
+   Vantagens:
+   - Sem carregamento extra de CSS
+   - Sem FOUC (flash de cor errada)
+   - Mais fácil manutenção
+*/
+const cores = DISC_CORES[info.arquivo];
+
+if (cores) {
+  const root = document.documentElement;
+
+  root.style.setProperty('--cor-tema',       cores.corTema);
+  root.style.setProperty('--cor-tema-rgb',   cores.corTemaRgb);
+  root.style.setProperty('--cor-tema-2',     cores.corTema2);
+  root.style.setProperty('--cor-tema-2-rgb', cores.corTema2Rgb);
+} else {
+  console.warn(`[template_init] Sem cores definidas para "${info.arquivo}"`);
+}
+
 
 /* ── ATUALIZA TEXTOS NO DOM ───────────────────────────────── */
 function setText(id, text) {

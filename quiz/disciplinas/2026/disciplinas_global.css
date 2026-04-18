@@ -7,35 +7,23 @@
 
 /* ── TOKENS PADRÃO (sobrescritos por disciplina) ── */
 :root {
-  /* Superfícies */
   --bg:          #070b14;
   --surface:     #0e1420;
   --border:      rgba(255, 255, 255, 0.07);
   --border-glow: rgba(255, 255, 255, 0.14);
 
-  /* Tipografia */
   --text-1: #f0ede6;
   --text-2: #a8a49c;
   --text-3: #6e6a62;
 
-  /* Fontes */
   --font-display: 'Cormorant Garamond', Georgia, serif;
   --font-body:    'DM Sans', system-ui, sans-serif;
 
-  /* Layout */
   --max-w: 860px;
 
-  /* ── LOGO — cor fixa, não muda por disciplina ── */
   --cor-logo:      #22c55e;
   --cor-logo-dark: #16a34a;
 
-  /* ── TEMA — sobrescrito por cada disciplina ──
-     Defina apenas estas 4 variáveis no CSS da disciplina:
-       --cor-tema
-       --cor-tema-rgb      (canais R,G,B separados por vírgula)
-       --cor-tema-2
-       --cor-tema-2-rgb
-  */
   --cor-tema:       #7aa8e8;
   --cor-tema-rgb:   122, 168, 232;
   --cor-tema-2:     #4dd9b4;
@@ -49,7 +37,6 @@
   padding: 0;
 }
 
-/* ── BASE ── */
 html { scroll-behavior: smooth; }
 
 body {
@@ -75,41 +62,23 @@ a { text-decoration: none; color: inherit; }
 }
 
 .bg-orb--1 {
-  width: 480px;
-  height: 480px;
-  background: radial-gradient(
-    circle,
-    rgba(var(--cor-tema-rgb), 0.18),
-    transparent 70%
-  );
-  top: -100px;
-  right: -100px;
+  width: 480px; height: 480px;
+  background: radial-gradient(circle, rgba(var(--cor-tema-rgb), 0.18), transparent 70%);
+  top: -100px; right: -100px;
   animation: orb-drift 22s ease-in-out infinite alternate;
 }
 
 .bg-orb--2 {
-  width: 520px;
-  height: 520px;
-  background: radial-gradient(
-    circle,
-    rgba(var(--cor-tema-2-rgb), 0.09),
-    transparent 70%
-  );
-  bottom: -120px;
-  left: -100px;
+  width: 520px; height: 520px;
+  background: radial-gradient(circle, rgba(var(--cor-tema-2-rgb), 0.09), transparent 70%);
+  bottom: -120px; left: -100px;
   animation: orb-drift 18s ease-in-out infinite alternate-reverse;
 }
 
 .bg-orb--3 {
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(
-    circle,
-    rgba(var(--cor-tema-rgb), 0.08),
-    transparent 70%
-  );
-  top: 55%;
-  left: 55%;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(var(--cor-tema-rgb), 0.08), transparent 70%);
+  top: 55%; left: 55%;
   animation: orb-drift 26s ease-in-out infinite alternate;
 }
 
@@ -128,11 +97,7 @@ a { text-decoration: none; color: inherit; }
     linear-gradient(var(--border) 1px, transparent 1px),
     linear-gradient(90deg, var(--border) 1px, transparent 1px);
   background-size: 60px 60px;
-  mask-image: radial-gradient(
-    ellipse 80% 60% at 50% 40%,
-    black 20%,
-    transparent 80%
-  );
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 20%, transparent 80%);
 }
 
 /* ── HEADER ── */
@@ -185,10 +150,8 @@ a { text-decoration: none; color: inherit; }
 }
 
 .logo-mark {
-  width: 34px;
-  height: 34px;
+  width: 34px; height: 34px;
   border-radius: 9px;
-  /* Fixo — não usa variável de tema */
   background: linear-gradient(135deg, #4dd9b4, #7aa8e8);
   display: flex;
   align-items: center;
@@ -218,7 +181,6 @@ a { text-decoration: none; color: inherit; }
   font-weight: 500;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  /* Fixo — não usa --cor-logo nem --cor-tema */
   color: #4dd9b4;
 }
 
@@ -334,10 +296,8 @@ a { text-decoration: none; color: inherit; }
 
 .disc-card__glow { display: none; }
 
-/* Ícone */
 .disc-card__icon-wrap {
-  width: 52px;
-  height: 52px;
+  width: 52px; height: 52px;
   border-radius: 14px;
   display: flex;
   align-items: center;
@@ -351,7 +311,6 @@ a { text-decoration: none; color: inherit; }
   transform: scale(1.1) rotate(-4deg);
 }
 
-/* Corpo */
 .disc-card__body {
   flex: 1;
   display: flex;
@@ -375,7 +334,6 @@ a { text-decoration: none; color: inherit; }
   line-height: 1.6;
 }
 
-/* CTA — canto inferior direito */
 .disc-card__cta {
   position: absolute;
   bottom: 1.2rem;
@@ -387,8 +345,7 @@ a { text-decoration: none; color: inherit; }
 }
 
 .disc-card__arrow {
-  width: 36px;
-  height: 36px;
+  width: 36px; height: 36px;
   border-radius: 50%;
   border: 1px solid var(--border-glow);
   display: flex;
@@ -425,27 +382,27 @@ a { text-decoration: none; color: inherit; }
 
 /* ── TEMAS DOS CARDS ── */
 
-/* AVA — cor fixa azul, igual em todas as disciplinas */
+/* AVA — usa a cor da disciplina (--cor-tema) */
 .disc-card--ava {
-  background: linear-gradient(145deg, #0e1420, rgba(122, 168, 232, 0.07));
-  border-color: rgba(122, 168, 232, 0.18);
-  box-shadow: 0 0 30px rgba(122, 168, 232, 0.05);
+  background: linear-gradient(145deg, #0e1420, rgba(var(--cor-tema-rgb), 0.07));
+  border-color: rgba(var(--cor-tema-rgb), 0.18);
+  box-shadow: 0 0 30px rgba(var(--cor-tema-rgb), 0.05);
 }
 .disc-card--ava:hover {
-  border-color: rgba(122, 168, 232, 0.4);
-  box-shadow: 0 12px 40px rgba(122, 168, 232, 0.15);
+  border-color: rgba(var(--cor-tema-rgb), 0.4);
+  box-shadow: 0 12px 40px rgba(var(--cor-tema-rgb), 0.15);
 }
 .disc-card--ava .disc-card__icon-wrap {
-  background: rgba(122, 168, 232, 0.12);
+  background: rgba(var(--cor-tema-rgb), 0.12);
 }
 .disc-card--ava .disc-card__title { color: white; }
 .disc-card--ava:hover .disc-card__arrow {
-  border-color: #7aa8e8;
-  color: #7aa8e8;
-  background: rgba(122, 168, 232, 0.1);
-  box-shadow: 0 0 14px rgba(122, 168, 232, 0.25);
+  border-color: var(--cor-tema);
+  color: var(--cor-tema);
+  background: rgba(var(--cor-tema-rgb), 0.1);
+  box-shadow: 0 0 14px rgba(var(--cor-tema-rgb), 0.25);
 }
-.disc-card--ava:hover .disc-card__cta-label { color: #7aa8e8; }
+.disc-card--ava:hover .disc-card__cta-label { color: var(--cor-tema); }
 
 /* Quiz — cor fixa teal, igual em todas as disciplinas */
 .disc-card--quiz {
@@ -506,5 +463,5 @@ a { text-decoration: none; color: inherit; }
 
 @media (max-width: 380px) {
   .page-header__title { font-size: 1.75rem; }
-}
   .logo-title { font-size: 1rem; }
+}
