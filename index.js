@@ -7,6 +7,7 @@ import {
   getEstado, setUsuario, getUsuario, estaLogado,
   setPagina, setSemestre, getSemestreAtual,
   setConfigs, getConfigs, resetConfigs,
+  limparDadosQuiz,
   SEMESTRES, PAGINAS,
 } from './global.js';
 
@@ -28,7 +29,6 @@ function renderHeader() {
   const nav = document.getElementById('header-nav');
   nav.innerHTML = '';
 
-  // Seletor de semestre (injetado via renderSemestreSelector depois)
   const semestreWrap = document.createElement('div');
   semestreWrap.id = 'semestre-wrap';
   nav.appendChild(semestreWrap);
@@ -36,7 +36,6 @@ function renderHeader() {
   if (estaLogado()) {
     const u = getUsuario();
 
-    // Botão Perfil (avatar)
     const btnPerfil = document.createElement('button');
     btnPerfil.className = 'nav-btn nav-btn--avatar';
     btnPerfil.id = 'btn-perfil';
@@ -47,7 +46,6 @@ function renderHeader() {
     btnPerfil.addEventListener('click', abrirPerfilDropdown);
     nav.appendChild(btnPerfil);
   } else {
-    // Botão Entrar
     const btnEntrar = document.createElement('button');
     btnEntrar.className = 'nav-btn';
     btnEntrar.id = 'btn-entrar';
@@ -56,7 +54,6 @@ function renderHeader() {
     nav.appendChild(btnEntrar);
   }
 
-  // Botão Config (sempre visível)
   const btnConfig = document.createElement('button');
   btnConfig.className = 'nav-btn nav-btn--icon';
   btnConfig.id = 'btn-config';
@@ -130,7 +127,7 @@ function bindCardLinks() {
 function abrirModalConfig() {
   fecharTodosModais();
 
-  const cfg = getConfigs();
+  const cfg   = getConfigs();
   const modal = criarModal('config');
 
   modal.innerHTML = `
@@ -183,7 +180,6 @@ function abrirModalConfig() {
             <option value="light" ${cfg.tema === 'light' ? 'selected' : ''}>Claro</option>
           </select>
         </div>
-
         <div class="config-row">
           <label for="cfg-anim">Animações</label>
           <label class="toggle">
@@ -202,18 +198,40 @@ function abrirModalConfig() {
             <span class="toggle__track"></span>
           </label>
         </div>
+      </div>
 
+      <div class="modal__section">
+        <div class="modal__section-title">Quiz</div>
+
+        <!-- Toggle: salvar resultado ao terminar -->
         <div class="config-row">
           <label for="cfg-salvar-progresso">
-            Salvar Progresso
+            Salvar ao concluir
             <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
-              Retoma de onde parou ao reabrir o quiz
+              Quando ativado, ao terminar o quiz o resultado fica salvo por até
+              20&nbsp;s após sair — F5 sempre restaura, fechar a aba limpa.
+              Progresso parcial é sempre salvo independente desta opção.
             </small>
           </label>
           <label class="toggle">
-            <input type="checkbox" id="cfg-salvar-progresso" ${cfg.salvarProgresso !== false ? 'checked' : ''} />
+            <input type="checkbox" id="cfg-salvar-progresso"
+              ${cfg.salvarProgresso !== false ? 'checked' : ''} />
             <span class="toggle__track"></span>
           </label>
+        </div>
+
+        <!-- Botão: limpar todos os dados do quiz -->
+        <div class="config-row">
+          <label>
+            Limpar dados do quiz
+            <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
+              Remove todo progresso salvo de todos os quizzes. Configs e
+              demais dados do sistema não são afetados.
+            </small>
+          </label>
+          <button class="modal-btn modal-btn--danger" id="btn-limpar-quiz">
+            Limpar
+          </button>
         </div>
       </div>
 
@@ -226,21 +244,23 @@ function abrirModalConfig() {
   document.body.appendChild(modal);
   requestAnimationFrame(() => modal.classList.add('modal--open'));
 
-  // Binds
+  /* ── Fechar ── */
   document.getElementById('modal-overlay-config').addEventListener('click', () => fecharModal(modal));
   document.getElementById('modal-close-config').addEventListener('click',   () => fecharModal(modal));
 
+  /* ── Salvar configs ── */
   document.getElementById('btn-salvar-configs').addEventListener('click', () => {
     setConfigs({
-      tema:             document.getElementById('cfg-tema').value,
-      animacoes:        document.getElementById('cfg-anim').checked,
-      notificacoes:     document.getElementById('cfg-notif').checked,
-      salvarProgresso:  document.getElementById('cfg-salvar-progresso').checked, // ← NOVO
+      tema:            document.getElementById('cfg-tema').value,
+      animacoes:       document.getElementById('cfg-anim').checked,
+      notificacoes:    document.getElementById('cfg-notif').checked,
+      salvarProgresso: document.getElementById('cfg-salvar-progresso').checked,
     });
     fecharModal(modal);
     mostrarToast('Configurações salvas!');
   });
 
+  /* ── Resetar configs ── */
   document.getElementById('btn-reset-configs').addEventListener('click', () => {
     resetConfigs();
     fecharModal(modal);
@@ -248,6 +268,13 @@ function abrirModalConfig() {
     setTimeout(abrirModalConfig, 300);
   });
 
+  /* ── Limpar dados do quiz ── */
+  document.getElementById('btn-limpar-quiz').addEventListener('click', () => {
+    limparDadosQuiz();
+    mostrarToast('Dados do quiz apagados.');
+  });
+
+  /* ── Logout ── */
   if (estaLogado()) {
     document.getElementById('btn-logout')?.addEventListener('click', () => {
       setUsuario(null);
@@ -260,7 +287,7 @@ function abrirModalConfig() {
 }
 
 /* ─────────────────────────────────────────────
-   MODAL LOGIN  (stub — conecte ao Firebase)
+   MODAL LOGIN
 ───────────────────────────────────────────── */
 function abrirModalLogin() {
   fecharTodosModais();
@@ -310,7 +337,6 @@ function abrirModalLogin() {
   document.getElementById('modal-overlay-login').addEventListener('click', () => fecharModal(modal));
   document.getElementById('modal-close-login').addEventListener('click',   () => fecharModal(modal));
 
-  // Stub de login — substitua pela integração Firebase real
   document.getElementById('btn-login-email').addEventListener('click', () => {
     const email = document.getElementById('login-email').value.trim();
     const senha = document.getElementById('login-senha').value;
@@ -337,7 +363,7 @@ function abrirModalLogin() {
 }
 
 /* ─────────────────────────────────────────────
-   DROPDOWN PERFIL (quando logado, clica avatar)
+   DROPDOWN PERFIL
 ───────────────────────────────────────────── */
 function abrirPerfilDropdown() {
   const existente = document.getElementById('perfil-dropdown');

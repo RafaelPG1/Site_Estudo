@@ -1,5 +1,5 @@
 /* ============================================================
-   NEXUS STUDY — quiz/quiz_engine.js  (v3)
+   NEXUS STUDY — quiz/quiz_engine.js  (v5)
    ============================================================ */
 
 (function () {
@@ -185,7 +185,7 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     MODAL DE LEGENDA — fora do initQuiz para sempre funcionar
+     MODAL DE LEGENDA
      ══════════════════════════════════════════════════════════ */
 
   function initLegendaModal() {
@@ -477,13 +477,13 @@
     var body = _el('div', 'nlg-body');
 
     var _modoCfg = null;
-    if      (_modo === 'enade')   _modoCfg = {
+    if      (_modo === 'enade')    _modoCfg = {
       icon:  '🎓',
       label: 'Estilo ENADE',
       desc:  'Questões elaboradas no formato ENADE: enunciados contextualizados, ' +
              'afirmativas para análise crítica e alternativas plausíveis.'
     };
-    else if (_modo === 'ava')     _modoCfg = {
+    else if (_modo === 'ava')      _modoCfg = {
       icon:  '📋',
       label: 'Questões AVA',
       desc:  'Questões extraídas ou adaptadas das atividades acadêmicas, ' +
@@ -495,7 +495,7 @@
       desc:  'Questões didáticas que explicam o conceito antes de perguntar — ' +
              'ideais para revisar e consolidar o conteúdo estudado.'
     };
-    else if (_modo === 'fixacao') _modoCfg = {
+    else if (_modo === 'fixacao')  _modoCfg = {
       icon:  '📌',
       label: 'Questões de Fixação',
       desc:  'Questões objetivas para consolidar o conteúdo estudado — ' +
@@ -516,7 +516,7 @@
 
     var sTipos = _secao('Tipos de questão');
 
-if (_modo === 'enade') {
+    if (_modo === 'enade') {
       sTipos.list.appendChild(_tipoRow('nlg-icon-aj',  'A+J',  'Asserção + Justificativa', 'Duas afirmativas com PORQUE'));
       sTipos.list.appendChild(_tipoRow('nlg-icon-ma',  'I–IV', 'Múltiplas afirmativas',    'Identifique as corretas'));
       sTipos.list.appendChild(_tipoRow('nlg-icon-con', 'CON',  'Conceitual',               'Contexto + pergunta direta'));
@@ -553,7 +553,6 @@ if (_modo === 'enade') {
       sTipos.list.appendChild(avaNota);
 
     } else {
-      /* modo 'questoes' e fallback */
       sTipos.list.appendChild(_tipoRow('nlg-icon-con', 'EXP', 'Explicativa',     'Conceito explicado antes da pergunta'));
       sTipos.list.appendChild(_tipoRow('nlg-icon-ma',  'CTX', 'Contextualizada', 'Explicação densa com múltiplos conceitos'));
       sTipos.list.appendChild(_tipoRow('nlg-icon-ap',  'APL', 'Aplicação',       'Cenário real para verificar a compreensão'));
@@ -628,42 +627,38 @@ if (_modo === 'enade') {
      ══════════════════════════════════════════════════════════ */
 
   function initQuiz() {
-/* ── CONTEXTO DE STORAGE (injetado pelo template_init.js) ── */
-var _disc     = window.__NEXUS_QUIZ_DISC__     || null;
-var _modo     = window.__NEXUS_QUIZ_MODO__     || tipo;
-var _semestre = window.__NEXUS_QUIZ_SEMESTRE__ || '2026.2';
-var _Storage  = window.NexusStorage            || null;
-
-/* ── HELPER: verifica se salvamento está ativo nas configs ── */
-function _salvarAtivo() {
-  if (!_Storage) return false;
-  try {
-    var configs = _Storage.get('configs', {});
-    return configs.salvarProgresso !== false; // default true
-  } catch(e) { return false; }
-}
-
-/* ── RESTAURA PROGRESSO SALVO ───────────────────────────── */
-(function _restaurar() {
-  if (!_disc || !_Storage || !_salvarAtivo()) return;
-  var salvo = _Storage.loadProgress(_disc, _modo, _semestre);
-  if (!salvo || !salvo.respostas) return;
-
-  // Restaura respostas
-  Object.keys(salvo.respostas).forEach(function(qi) {
-    respostas[parseInt(qi)] = salvo.respostas[qi];
-  });
-
-  // Restaura revelado
-  if (salvo.revelado) revelado = true;
-
-  console.info('[quiz_engine] Progresso restaurado:', Object.keys(respostas).length, 'respostas');
-})();
-
 
     var tipo = window.TIPO_QUIZ
       || new URLSearchParams(location.search).get('modo')
       || 'questoes';
+
+    var _disc     = window.__NEXUS_QUIZ_DISC__     || null;
+    var _modo     = window.__NEXUS_QUIZ_MODO__     || tipo;
+    var _semestre = window.__NEXUS_QUIZ_SEMESTRE__ || '2026.2';
+    var _Storage  = window.NexusStorage            || null;
+
+    function _smapKey() {
+      return 'quiz_smap_' + _disc + '_' + _modo + '_' + _semestre;
+    }
+
+    function _leftAtKey() {
+      return 'quiz_leftat_' + _disc + '_' + _modo + '_' + _semestre;
+    }
+
+    /*
+     * Janela de tolerância para distinguir F5 de saída real.
+     * F5 leva tipicamente 1-3 s; 20 s é uma margem confortável.
+     */
+    var EXPIRY_MS = 20000;
+
+    /* ── Verifica se "salvar quiz finalizado" está ativo ── */
+    function _salvarFinalizadoAtivo() {
+      if (!_Storage) return false;
+      try {
+        var configs = _Storage.get('configs', {});
+        return configs.salvarProgresso !== false;
+      } catch (e) { return false; }
+    }
 
     var listaQuestoes;
 
@@ -687,24 +682,6 @@ function _salvarAtivo() {
     }
 
     var questoesBase = listaQuestoes;
-    var questoes     = criarCopiaEmbaralhada(questoesBase);
-    var respostas    = {};
-    var revelado     = false;
-
-    var modoStep    = false;
-    var stepAtual   = 0;
-    var stepWrapper = null;
-
-    var mostrandoSoErros = false;
-
-    /* ── Grupos de aula para resultado por aula ── */
-    var aulaGrupos = []; /* [{aula: string, indices: number[]}] */
-
-    var metaTotal = document.getElementById('meta-total');
-    if (metaTotal) {
-      var span = metaTotal.querySelector('span');
-      if (span) span.textContent = questoes.length + ' questões';
-    }
 
     /* ══════════════════════════════════════════════════════
        EMBARALHAMENTO
@@ -719,12 +696,24 @@ function _salvarAtivo() {
       return a;
     }
 
-    function criarCopiaEmbaralhada(base) {
-      return base.map(function (q) {
-        var indices       = q.options.map(function (_, i) { return i; });
-        var shuffled      = shuffleArray(indices);
-        var newOptions    = shuffled.map(function (i) { return q.options[i]; });
-        var newAnswer     = shuffled.indexOf(q.answer);
+    var shuffleMap = {};
+
+    function criarCopiaEmbaralhada(base, mapaFixo) {
+      var novoMapa = {};
+
+      var result = base.map(function (q, qi) {
+        var indices;
+
+        if (mapaFixo && mapaFixo[qi]) {
+          indices = mapaFixo[qi];
+        } else {
+          indices = shuffleArray(q.options.map(function (_, i) { return i; }));
+        }
+
+        novoMapa[qi] = indices;
+
+        var newOptions    = indices.map(function (i) { return q.options[i]; });
+        var newAnswer     = indices.indexOf(q.answer);
         var correctLetter = String.fromCharCode(65 + newAnswer);
         var originalOpt   = q.options[q.answer];
 
@@ -739,12 +728,103 @@ function _salvarAtivo() {
           feedback: newFeedback
         });
       });
+
+      shuffleMap = novoMapa;
+      return result;
     }
 
     function _extrairPorQueEstaCerta(feedback) {
       var match = feedback.match(/Por que está certa:([\s\S]*)/);
       if (match) return match[1].trim();
       return feedback.trim();
+    }
+
+    /* ── Declarações antes de _restaurar ── */
+    var respostas = {};
+    var revelado  = false;
+
+    var modoStep    = false;
+    var stepAtual   = 0;
+    var stepWrapper = null;
+
+    var mostrandoSoErros = false;
+    var aulaGrupos = [];
+
+    /* ══════════════════════════════════════════════════════
+       RESTAURA PROGRESSO SALVO
+
+       Regras de restauração:
+       ─ Parcial (finalizado=false): sempre restaura, sem expiração,
+         o toggle "salvarProgresso" não afeta progresso parcial.
+       ─ Finalizado (finalizado=true): só restaura se o toggle estiver
+         ON e o tempo desde o pagehide for < EXPIRY_MS (F5).
+       ══════════════════════════════════════════════════════ */
+    function _restaurar() {
+      if (!_disc || !_Storage) return null;
+
+      var salvo = _Storage.loadProgress(_disc, _modo, _semestre);
+      if (!salvo || !salvo.respostas) return null;
+
+      /* ── PARCIAL: sempre restaura, sem expiração ── */
+      if (!salvo.finalizado) {
+        Object.keys(salvo.respostas).forEach(function (qi) {
+          respostas[parseInt(qi)] = salvo.respostas[qi];
+        });
+        if (salvo.revelado) revelado = true;
+        console.info('[quiz_engine] Progresso parcial restaurado:', Object.keys(respostas).length, 'respostas');
+        return _Storage.get(_smapKey(), null);
+      }
+
+      /* ── FINALIZADO: respeita o toggle ── */
+      if (!_salvarFinalizadoAtivo()) {
+        _Storage.clearProgress(_disc, _modo, _semestre);
+        _Storage.set(_smapKey(), null);
+        console.info('[quiz_engine] Quiz finalizado não restaurado (salvarProgresso desativado).');
+        return null;
+      }
+
+      /* ── FINALIZADO + toggle ON: verifica expiração ── */
+      var leftAt = _Storage.get(_leftAtKey(), null);
+      if (leftAt !== null) {
+        var elapsed = Date.now() - leftAt;
+        _Storage.set(_leftAtKey(), null); /* limpa independente do resultado */
+
+        if (elapsed > EXPIRY_MS) {
+          _Storage.clearProgress(_disc, _modo, _semestre);
+          _Storage.set(_smapKey(), null);
+          console.info('[quiz_engine] Quiz finalizado expirado (' + Math.round(elapsed / 1000) + 's). Iniciando limpo.');
+          return null;
+        }
+
+        console.info('[quiz_engine] Reload rápido (' + elapsed + 'ms). Resultado preservado.');
+      }
+
+      Object.keys(salvo.respostas).forEach(function (qi) {
+        respostas[parseInt(qi)] = salvo.respostas[qi];
+      });
+      if (salvo.revelado) revelado = true;
+      console.info('[quiz_engine] Quiz finalizado restaurado.');
+      return _Storage.get(_smapKey(), null);
+    }
+
+    function _salvarShuffleMap() {
+      if (_disc && _Storage) {
+        _Storage.set(_smapKey(), shuffleMap);
+      }
+    }
+
+    /* ── Inicialização ── */
+    var savedShuffleMap = _restaurar();
+    var questoes = criarCopiaEmbaralhada(questoesBase, savedShuffleMap);
+
+    if (savedShuffleMap === null && Object.keys(respostas).length > 0) {
+      _salvarShuffleMap();
+    }
+
+    var metaTotal = document.getElementById('meta-total');
+    if (metaTotal) {
+      var span = metaTotal.querySelector('span');
+      if (span) span.textContent = questoes.length + ' questões';
     }
 
     /* ══════════════════════════════════════════════════════
@@ -875,7 +955,6 @@ function _salvarAtivo() {
       var pct = r.total > 0 ? Math.round((r.respondidas / r.total) * 100) : 0;
 
       if (r.respondidas < r.total) {
-        /* ── Estado parcial: barra de progresso ── */
         el.className = 'subject-result subject-result--progress';
         el.innerHTML =
           '<div class="sr-progress-label">' +
@@ -885,7 +964,6 @@ function _salvarAtivo() {
             '<div class="sr-progress-fill" style="width:' + pct + '%"></div>' +
           '</div>';
       } else {
-        /* ── Estado final: resultado completo ── */
         var pctAcertos = r.total > 0 ? Math.round((r.acertos / r.total) * 100) : 0;
         var tier = pctAcertos >= 70 ? '--good' : pctAcertos >= 50 ? '--mid' : '--bad';
         var icon = pctAcertos >= 70 ? '🎯' : pctAcertos >= 50 ? '📚' : '💪';
@@ -904,7 +982,6 @@ function _salvarAtivo() {
       aulaGrupos.forEach(function (_, gi) { _atualizarResultadoAula(gi); });
     }
 
-    /* Retorna o índice do grupo (gi) ao qual pertence a questão qi */
     function _grupoDeQuestao(qi) {
       for (var gi = 0; gi < aulaGrupos.length; gi++) {
         if (aulaGrupos[gi].indices.indexOf(qi) !== -1) return gi;
@@ -920,13 +997,12 @@ function _salvarAtivo() {
       if (modoStep) _sairModoStep();
       container.innerHTML = '';
       mostrandoSoErros = false;
-      aulaGrupos = []; /* ← reset dos grupos */
+      aulaGrupos = [];
 
       var ultimaAula = null;
 
       questoes.forEach(function (q, qi) {
 
-        /* ── Cabeçalho de aula + novo grupo ── */
         if (q.aula !== undefined && q.aula !== ultimaAula) {
           ultimaAula = q.aula;
           aulaGrupos.push({ aula: q.aula, indices: [] });
@@ -937,12 +1013,10 @@ function _salvarAtivo() {
           container.appendChild(titleEl);
         }
 
-        /* Registra a questão no grupo atual */
         if (aulaGrupos.length > 0) {
           aulaGrupos[aulaGrupos.length - 1].indices.push(qi);
         }
 
-        /* ── Card da questão ── */
         var card = document.createElement('div');
         card.className = 'question-container';
         card.id = 'q-' + qi;
@@ -986,8 +1060,7 @@ function _salvarAtivo() {
 
         container.appendChild(card);
 
-        /* ── Bloco de resultado ao fim de cada aula ── */
-        var proxQ          = questoes[qi + 1];
+        var proxQ           = questoes[qi + 1];
         var isUltimoDoGrupo = !proxQ || proxQ.aula !== q.aula;
 
         if (isUltimoDoGrupo && aulaGrupos.length > 0) {
@@ -998,7 +1071,6 @@ function _salvarAtivo() {
           container.appendChild(resultEl);
           _atualizarResultadoAula(gi);
         }
-        /* ─────────────────────────────────────────────── */
       });
     }
 
@@ -1029,31 +1101,49 @@ function _salvarAtivo() {
        INTERAÇÃO DO USUÁRIO
        ══════════════════════════════════════════════════════ */
 
-function selectOption(qi, oi) {
-  if (revelado || respostas[qi] !== undefined) return;
-  respostas[qi] = oi;
+    function selectOption(qi, oi) {
+      if (revelado || respostas[qi] !== undefined) return;
+      respostas[qi] = oi;
 
-  _atualizarOpcoes(qi);
+      _atualizarOpcoes(qi);
 
-  var card = document.getElementById('q-' + qi);
-  if (card && !card.querySelector('.feedback')) {
-    card.appendChild(_criarFeedbackEl(qi));
-    if (modoStep) setTimeout(_sincronizarAlturaStep, 50);
-  }
+      var card = document.getElementById('q-' + qi);
+      if (card && !card.querySelector('.feedback')) {
+        card.appendChild(_criarFeedbackEl(qi));
+        if (modoStep) setTimeout(_sincronizarAlturaStep, 50);
+      }
 
-  var gi = _grupoDeQuestao(qi);
-  if (gi !== -1) _atualizarResultadoAula(gi);
+      var gi = _grupoDeQuestao(qi);
+      if (gi !== -1) _atualizarResultadoAula(gi);
 
-  atualizarResultados();
+      atualizarResultados();
 
-  /* ── Salva progresso ── */
-  if (_disc && _Storage && _salvarAtivo()) {
-    var total       = questoes.length;
-    var respondidas = Object.keys(respostas).length;
-    var finalizado  = respondidas === total;
-      _Storage.saveProgress(_disc, _modo, _semestre, respostas, true, true);
-  }
-}
+      /* ── Lógica de salvamento ──────────────────────────────
+         Parcial: sempre salva, independe do toggle.
+         Finalizado: só salva se "salvarProgresso" estiver ON.
+         Finalizado + toggle OFF: limpa qualquer dado parcial
+         que existia (usuário escolheu não salvar ao terminar).
+         ──────────────────────────────────────────────────── */
+      if (_disc && _Storage) {
+        var total       = questoes.length;
+        var respondidas = Object.keys(respostas).length;
+        var finalizado  = respondidas === total;
+
+        if (!finalizado) {
+          /* Parcial — sempre persiste */
+          _Storage.saveProgress(_disc, _modo, _semestre, respostas, revelado, false);
+          _salvarShuffleMap();
+        } else if (_salvarFinalizadoAtivo()) {
+          /* Finalizado + toggle ON — persiste */
+          _Storage.saveProgress(_disc, _modo, _semestre, respostas, revelado, true);
+          _salvarShuffleMap();
+        } else {
+          /* Finalizado + toggle OFF — descarta */
+          _Storage.clearProgress(_disc, _modo, _semestre);
+          _Storage.set(_smapKey(), null);
+        }
+      }
+    }
 
     function revelar() {
       revelado = true;
@@ -1072,30 +1162,43 @@ function selectOption(qi, oi) {
         renderizar();
       }
 
+      /* ── Finalizado via revelar: mesma regra do selectOption ── */
+      if (_disc && _Storage) {
+        if (_salvarFinalizadoAtivo()) {
+          _Storage.saveProgress(_disc, _modo, _semestre, respostas, true, true);
+          _salvarShuffleMap();
+        } else {
+          _Storage.clearProgress(_disc, _modo, _semestre);
+          _Storage.set(_smapKey(), null);
+        }
+      }
+
       _atualizarTodosResultadosAula();
       atualizarResultados();
       smoothScrollToTop();
     }
 
-function reiniciar() {
-  respostas        = {};
-  revelado         = false;
-  mostrandoSoErros = false;
-  stepAtual        = 0;
-  questoes         = criarCopiaEmbaralhada(questoesBase);
+    function reiniciar() {
+      respostas        = {};
+      revelado         = false;
+      mostrandoSoErros = false;
+      stepAtual        = 0;
 
-  /* ── Limpa progresso salvo ── */
-  if (_disc && _Storage) {
-    _Storage.clearProgress(_disc, _modo, _semestre);
-  }
+      if (_disc && _Storage) {
+        _Storage.clearProgress(_disc, _modo, _semestre);
+        _Storage.set(_smapKey(),   null);
+        _Storage.set(_leftAtKey(), null);
+      }
 
-  var resultsEl = document.getElementById('results');
-  if (resultsEl) { resultsEl.style.display = 'none'; resultsEl.innerHTML = ''; }
+      questoes = criarCopiaEmbaralhada(questoesBase);
 
-  _resetarBotaoErros();
-  renderizar();
-  smoothScrollToTop();
-}
+      var resultsEl = document.getElementById('results');
+      if (resultsEl) { resultsEl.style.display = 'none'; resultsEl.innerHTML = ''; }
+
+      _resetarBotaoErros();
+      renderizar();
+      smoothScrollToTop();
+    }
 
     /* ══════════════════════════════════════════════════════
        RESULTADO GLOBAL
@@ -1211,7 +1314,6 @@ function reiniciar() {
         document.querySelectorAll('.question-container').forEach(function (c) {
           c.style.display = '';
         });
-        /* Restaura blocos de resultado */
         document.querySelectorAll('[id^="aula-result-"]').forEach(function (el) {
           el.style.display = '';
         });
@@ -1224,7 +1326,6 @@ function reiniciar() {
           var card = document.getElementById('q-' + qi);
           if (card) card.style.display = erros.indexOf(qi) !== -1 ? '' : 'none';
         });
-        /* Oculta blocos de resultado no modo "ver erros" */
         document.querySelectorAll('[id^="aula-result-"]').forEach(function (el) {
           el.style.display = 'none';
         });
@@ -1401,7 +1502,6 @@ function reiniciar() {
     function _entrarModoStep() {
       modoStep = true;
 
-      /* ── Vai para a primeira questão não respondida ── */
       var primeiraSemResposta = 0;
       for (var i = 0; i < questoes.length; i++) {
         if (respostas[i] === undefined) {
@@ -1411,7 +1511,6 @@ function reiniciar() {
         primeiraSemResposta = questoes.length - 1;
       }
       stepAtual = primeiraSemResposta;
-      /* ─────────────────────────────────────────────── */
 
       if (!container.querySelector('.question-container')) renderizar();
 
@@ -1425,7 +1524,6 @@ function reiniciar() {
         var wrapper = document.createElement('div');
         wrapper.className = 'step-quiz-wrapper';
 
-        /* Oculta títulos de aula E blocos de resultado no modo step */
         container.querySelectorAll('.subject-title, .subject-result, [id^="aula-result-"]').forEach(function (el) {
           el.classList.add('step-structural-hidden');
         });
@@ -1556,8 +1654,8 @@ function reiniciar() {
     var btnToggle = document.getElementById('btn-toggle-modo');
     if (btnToggle) btnToggle.addEventListener('click', toggleModo);
 
-    var btnLeft  = document.getElementById('btn-left');
-    var urlBack  = window.NEXUS_URL_BACK || null;
+    var btnLeft = document.getElementById('btn-left');
+    var urlBack = window.NEXUS_URL_BACK || null;
     if (btnLeft) {
       btnLeft.addEventListener('click', function () {
         if (urlBack) window.location.href = urlBack;
@@ -1569,6 +1667,20 @@ function reiniciar() {
     }
 
     renderizar();
+
+    /* ── Grava timestamp ao sair da página ───────────────────
+       pagehide é o evento mais confiável em desktop e mobile.
+
+       Só grava leftAt para quiz FINALIZADO + toggle ON.
+       Progresso parcial não expira — não precisa de timestamp.
+       ──────────────────────────────────────────────────────── */
+    window.addEventListener('pagehide', function () {
+      if (!_disc || !_Storage || !_salvarFinalizadoAtivo()) return;
+      var salvo = _Storage.loadProgress(_disc, _modo, _semestre);
+      if (salvo && salvo.finalizado) {
+        _Storage.set(_leftAtKey(), Date.now());
+      }
+    });
 
   } /* fim initQuiz */
 
