@@ -207,10 +207,10 @@ s.onerror = () => {
 };
 s.onload = () => {
   const ui = document.createElement('script');
-  ui.src = '../quiz_ui.js';
+  ui.src = '../js/quiz_ui.js';
   ui.onload = () => {
     const engine = document.createElement('script');
-    engine.src = '../quiz_engine.js';
+    engine.src = '../js/quiz_engine.js';
     document.body.appendChild(engine);
   };
   document.head.appendChild(ui);
