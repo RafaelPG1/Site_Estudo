@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resumos — Nexus Study</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="resumo.css" />
+</head>
+<body>
+
+  <div class="bg-orb bg-orb--1"></div>
+  <div class="bg-orb bg-orb--2"></div>
+  <div class="bg-orb bg-orb--3"></div>
+  <div class="bg-grid"></div>
+
+  <!-- ===== HEADER ===== -->
+  <header class="header" id="app-header">
+    <div class="header__inner">
+
+      <div class="header__left">
+        <a href="/index.html" class="btn-back" id="btn-back" title="Voltar ao início">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+          </svg>
+          <span class="btn-back__label">Início</span>
+        </a>
+
+        <div class="header__divider"></div>
+
+        <div class="header__logo">
+          <span class="logo-mark">N</span>
+          <div class="logo-text">
+            <span class="logo-title">Nexus</span>
+            <span class="logo-sub">Study</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header__center" id="header-breadcrumb"></div>
+
+      <div class="header__right">
+        <div class="disc-badge" id="disc-badge"></div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ===== LAYOUT COM SIDEBAR ===== -->
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar__header">
+        <span class="sidebar__title">Disciplinas</span>
+        <span class="sidebar__semestre" id="sidebar-semestre">—</span>
+      </div>
+      <nav class="disc-list" id="disc-list" aria-label="Disciplinas disponíveis">
+        <!-- JS injeta -->
+      </nav>
+      <div class="sidebar__footer">
+        <span>Nexus Study · 2026</span>
+      </div>
+    </aside>
+
+    <!-- CONTEÚDO -->
+    <div class="content-area">
+
+      <!-- HERO -->
+      <div class="page-hero" id="page-hero">
+        <div class="page-hero__inner">
+          <div class="page-hero__eyebrow">
+            <span class="eyebrow-dot"></span>
+            <span id="hero-eyebrow-text">Carregando…</span>
+          </div>
+          <h1 class="page-hero__title">Resumos</h1>
+          <p class="page-hero__sub" id="hero-sub">Selecione uma disciplina.</p>
+          <div class="page-hero__stats" id="hero-stats"></div>
+        </div>
+      </div>
+
+      <!-- TOOLBAR -->
+      <div class="toolbar" id="toolbar">
+        <div class="toolbar__inner">
+
+          <!-- Seletor mobile (só aparece em telas pequenas) -->
+          <button class="mobile-disc-btn" id="mobile-disc-btn">
+            <span id="mobile-disc-label">Disciplina</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+
+          <div class="filter-group" id="filter-group">
+            <button class="filter-btn filter-btn--active" data-filter="todos">Todos</button>
+          </div>
+
+          <div class="search-wrap">
+            <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            <input type="text" class="search-input" id="search-input" placeholder="Buscar aulas…" />
+            <button class="search-clear" id="search-clear" style="display:none">✕</button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- MAIN -->
+      <main class="main" id="main-content">
+
+        <div class="state-empty" id="state-loading">
+          <div class="spinner"></div>
+          <p>Carregando…</p>
+        </div>
+
+        <div class="state-empty" id="state-no-content" style="display:none">
+          <span class="state-empty__icon" id="state-disc-emoji">📚</span>
+          <strong id="state-disc-name">—</strong>
+          <p>Nenhum resumo disponível ainda.</p>
+          <small>O conteúdo desta disciplina será adicionado em breve.</small>
+          <div class="coming-soon-pill">
+            <span class="coming-soon-dot"></span>
+            Em desenvolvimento
+          </div>
+        </div>
+
+        <div class="state-empty" id="state-empty" style="display:none">
+          <span class="state-empty__icon">🔍</span>
+          <p>Nenhum resumo encontrado.</p>
+          <small>Tente outro filtro ou termo de busca.</small>
+        </div>
+
+        <div class="resumos-grid" id="resumos-grid" style="display:none"></div>
+
+      </main>
+
+    </div><!-- /content-area -->
+  </div><!-- /layout -->
+
+  <!-- MODAL LATERAL -->
+  <div class="read-modal" id="read-modal" role="dialog" aria-modal="true">
+    <div class="read-modal__overlay" id="read-modal-overlay"></div>
+    <div class="read-modal__panel" id="read-modal-panel" tabindex="-1">
+      <div class="read-modal__header">
+        <div class="read-modal__header-info">
+          <span class="read-modal__aula" id="rm-aula-label"></span>
+          <span class="read-modal__badge" id="rm-tipo-badge"></span>
+        </div>
+        <button class="read-modal__close" id="read-modal-close" aria-label="Fechar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="read-modal__body" id="rm-body"></div>
+    </div>
+  </div>
+
+  <!-- DROPDOWN MOBILE DE DISCIPLINAS -->
+  <div class="mobile-dropdown" id="mobile-dropdown">
+    <div class="mobile-dropdown__backdrop" id="mobile-dropdown-backdrop"></div>
+    <div class="mobile-dropdown__sheet" id="mobile-dropdown-sheet">
+      <div class="mobile-dropdown__handle"></div>
+      <div class="mobile-dropdown__title">Selecionar disciplina</div>
+      <div class="mobile-dropdown__list" id="mobile-dropdown-list"></div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>© <span id="footer-year"></span> Nexus Study · Ambiente de estudos</p>
+  </footer>
+
+  <script src="conteudo.js"></script>
+  <script type="module" src="resumo.js"></script>
+
+</body>
+</html>

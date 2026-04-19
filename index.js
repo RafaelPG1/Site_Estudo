@@ -111,7 +111,7 @@ function renderSemestreSelector() {
 function bindCardLinks() {
   const map = {
     'card-pessoal':  () => { if (!estaLogado()) { abrirModalLogin(); return; } window.location.href = PAGINAS.PESSOAL.path; },
-    'card-resumos':  () => window.location.href = PAGINAS.RESUMO.path,
+    'card-resumo':  () => window.location.href = PAGINAS.RESUMO.path,
     'card-quiz':     () => window.location.href = PAGINAS.QUIZ.path,
     'card-jogos':    () => window.location.href = PAGINAS.JOGOS.path,
   };
