@@ -12,9 +12,7 @@ window.NexusStorage = Storage;
    CONSTANTES
    ══════════════════════════════════════════════════════════ */
 
-export const SEMESTRES = [
-  '2026.2', '2026.1', 
-];
+export const SEMESTRES = ['2026.2', '2026.1', '2027.1'];
 
 export const PAGINAS = {
   HOME:    { path: '/index.html' },
@@ -38,15 +36,21 @@ export const PAGINAS = {
    ══════════════════════════════════════════════════════════ */
 
 const _DISCIPLINAS = {
-// global.js — dentro de _DISCIPLINAS
 
-'2026.2': [
-{ id: 'poo',        nome: 'Programação Orientada a Objetos', apelido: 'P.O.O.',            emoji: '☕', arquivo: 'poo' },
-{ id: 'redes',      nome: 'Redes de Computadores I',         apelido: 'Redes I',           emoji: '🌐', arquivo: 'redes' },
-{ id: 'design',     nome: 'Design de Sistemas de Informação',apelido: 'Design de Sistemas',emoji: '🎨', arquivo: 'design' },
-{ id: 'banco_dados',nome: 'Fundamentos de Banco de Dados',   apelido: 'Banco de dados',    emoji: '🗄️', arquivo: 'banco_dados' },
+  '2026.2': [
+    { id: 'poo',        nome: 'Programação Orientada a Objetos',  apelido: 'P.O.O.',           emoji: '☕',  arquivo: 'poo' },
+    { id: 'redes',      nome: 'Redes de Computadores I',          apelido: 'Redes I',           emoji: '🌐', arquivo: 'redes' },
+    { id: 'design',     nome: 'Design de Sistemas de Informação', apelido: 'Design de Sistemas',emoji: '🎨', arquivo: 'design' },
+    { id: 'banco_dados',nome: 'Fundamentos de Banco de Dados',    apelido: 'Banco de dados',    emoji: '🗄️', arquivo: 'banco_dados' },
+  ],
 
-],
+  '2026.1': [
+    { id: 'poo',        nome: 'Programação Orientada a Objetos',  apelido: 'P.O.O.',           emoji: '☕',  arquivo: 'poo' },
+    { id: 'redes',      nome: 'Redes de Computadores I',          apelido: 'Redes I',           emoji: '🌐', arquivo: 'redes' },
+    { id: 'design',     nome: 'Design de Sistemas de Informação', apelido: 'Design de Sistemas',emoji: '🎨', arquivo: 'design' },
+    { id: 'banco_dados',nome: 'Fundamentos de Banco de Dados',    apelido: 'Banco de dados',    emoji: '🗄️', arquivo: 'banco_dados' },
+  ],
+
 
 };
 

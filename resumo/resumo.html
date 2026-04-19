@@ -44,7 +44,7 @@
 
       <div class="header__right">
         <div id="semestre-wrap-resumo"></div>
-        <div class="disc-badge" id="disc-badge"></div>
+        <div class="disc-badge" id="disc-badge" style="display:none"></div>
         <span class="status-badge" id="header-status-badge" style="display:none"></span>
       </div>
 
@@ -64,7 +64,7 @@
         <!-- JS injeta -->
       </nav>
       <div class="sidebar__footer">
-        <span>Nexus Study · 2026</span>
+        <span>Nexus Study · <span id="sidebar-year"></span></span>
       </div>
     </aside>
 
@@ -84,7 +84,7 @@
         </div>
       </div>
 
-      <!-- MOBILE DISC BTN (só aparece em telas pequenas, fora da toolbar) -->
+      <!-- MOBILE DISC BTN -->
       <div class="mobile-toolbar" id="mobile-toolbar">
         <button class="mobile-disc-btn" id="mobile-disc-btn">
           <span id="mobile-disc-label">Disciplina</span>

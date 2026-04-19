@@ -82,16 +82,20 @@
 
     <!--
       data-semestres: lista separada por vírgula dos semestres ativos.
-      Ex: data-semestres="2026.2" ou data-semestres="2026.2,2027.1"
+      Ex: data-semestres="2026.2" ou data-semestres="2026.1,2026.2"
+
+      As 4 disciplinas existem em 2026.1 e 2026.2.
+      O 2027.1 não tem cards — ao selecioná-lo o grid fica vazio
+      e a mensagem #disciplines-empty é exibida pelo quiz.js.
     -->
     <div class="disciplines" id="disciplines-grid" role="list">
 
       <!-- POO -->
       <a href="disciplinas/2026/poo.html"
          class="disc-card disc-card--blue" role="listitem"
-         data-semestres="2026.2" aria-label="Programação Orientada a Objetos">
+         data-semestres="2026.1,2026.2" aria-label="Programação Orientada a Objetos">
         <div class="disc-card__icon-col">
-          <div class="disc-card__icon-wrap" aria-hidden="true"><span>💻</span></div>
+          <div class="disc-card__icon-wrap" aria-hidden="true"><span>☕</span></div>
         </div>
         <div class="disc-card__body">
           <h2 class="disc-card__title">POO</h2>
@@ -112,7 +116,7 @@
       <!-- Redes -->
       <a href="disciplinas/2026/redes.html"
          class="disc-card disc-card--teal" role="listitem"
-         data-semestres="2026.2" aria-label="Redes de Computadores">
+         data-semestres="2026.1,2026.2" aria-label="Redes de Computadores">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap" aria-hidden="true"><span>🌐</span></div>
         </div>
@@ -135,7 +139,7 @@
       <!-- Design -->
       <a href="disciplinas/2026/design.html"
          class="disc-card disc-card--gold" role="listitem"
-         data-semestres="2026.2" aria-label="Design de Sistemas de Informação">
+         data-semestres="2026.1,2026.2" aria-label="Design de Sistemas de Informação">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap" aria-hidden="true"><span>🎨</span></div>
         </div>
@@ -158,7 +162,7 @@
       <!-- Banco de Dados -->
       <a href="disciplinas/2026/banco_dados.html"
          class="disc-card disc-card--rose" role="listitem"
-         data-semestres="2026.2" aria-label="Fundamentos de Banco de Dados">
+         data-semestres="2026.1,2026.2" aria-label="Fundamentos de Banco de Dados">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap" aria-hidden="true"><span>🗄️</span></div>
         </div>
@@ -189,7 +193,6 @@
     <p>© <span id="footer-year"></span> Nexus Study · Desenvolvido para facilitar seus estudos</p>
   </footer>
 
-  <!-- Substituído o <script> inline pelo módulo quiz.js -->
   <script type="module" src="quiz.js"></script>
 
 </body>

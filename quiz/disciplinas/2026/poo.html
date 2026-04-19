@@ -50,7 +50,7 @@
   <main class="main">
     <div class="page-header">
       <div class="page-header__eyebrow">
-        <span>💻</span>
+        <span>☕</span>
         <span>Programação Orientada a Objetos</span>
       </div>
       <h1 class="page-header__title">Escolha o <em>modo</em></h1>
@@ -58,14 +58,18 @@
     </div>
 
     <!--
-      Links de modo: NÃO hardcode &sem= aqui.
-      disciplinas_init.js propaga o semestre correto via URL()
-      para todos os links que contenham 'template.html'.
+      data-semestres: controla em quais semestres o card de modo é exibido.
+      disciplinas_init.js lê o ?sem= ativo e oculta cards fora do semestre.
+
+      AVA e Questões → existem em 2026.1 e 2026.2
+      ENADE e Fixação → apenas 2026.2
     -->
     <div class="disciplines">
 
-      <!-- AVA -->
-      <a href="../../template/template.html?disc=poo&modo=ava" class="disc-card disc-card--ava" id="link-ava">
+      <!-- AVA — 2026.1 e 2026.2 -->
+      <a href="../../template/template.html?disc=poo&modo=ava"
+         class="disc-card disc-card--ava" id="link-ava"
+         data-semestres="2026.1,2026.2">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap"><span>📚</span></div>
         </div>
@@ -82,8 +86,10 @@
         <div class="disc-card__glow"></div>
       </a>
 
-      <!-- QUESTÕES -->
-      <a href="../../template/template.html?disc=poo&modo=questoes" class="disc-card disc-card--quiz" id="link-quiz">
+      <!-- QUESTÕES — 2026.1 e 2026.2 -->
+      <a href="../../template/template.html?disc=poo&modo=questoes"
+         class="disc-card disc-card--quiz" id="link-quiz"
+         data-semestres="2026.1,2026.2">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap"><span>❓</span></div>
         </div>
@@ -100,8 +106,10 @@
         <div class="disc-card__glow"></div>
       </a>
 
-      <!-- ENADE -->
-      <a href="../../template/template.html?disc=poo&modo=enade" class="disc-card disc-card--enade" id="link-enade">
+      <!-- ENADE — apenas 2026.2 -->
+      <a href="../../template/template.html?disc=poo&modo=enade"
+         class="disc-card disc-card--enade" id="link-enade"
+         data-semestres="2026.2">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap"><span>🏛️</span></div>
         </div>
@@ -118,8 +126,10 @@
         <div class="disc-card__glow"></div>
       </a>
 
-      <!-- FIXAÇÃO -->
-      <a href="../../template/template.html?disc=poo&modo=fixacao" class="disc-card disc-card--fixacao" id="link-fixacao">
+      <!-- FIXAÇÃO — apenas 2026.2 -->
+      <a href="../../template/template.html?disc=poo&modo=fixacao"
+         class="disc-card disc-card--fixacao" id="link-fixacao"
+         data-semestres="2026.2">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap"><span>📌</span></div>
         </div>

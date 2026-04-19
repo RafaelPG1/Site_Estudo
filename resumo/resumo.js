@@ -32,7 +32,8 @@ const State = {
 ══════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
   setPagina('RESUMO');
-  document.getElementById('footer-year').textContent = new Date().getFullYear();
+  document.getElementById('footer-year').textContent  = new Date().getFullYear();
+document.getElementById('sidebar-year').textContent = new Date().getFullYear();
 
   _resolverContexto();
   _renderSidebar();
@@ -109,18 +110,26 @@ function _resolverContexto() {
 }
 
 /* ══════════════════════════════════════════════
-   STATUS BADGE — só aparece quando vazio
+   STATUS BADGE
+   — mostra o badge de disciplina OU o badge
+     "Vazio" com o mesmo tamanho/posição
 ══════════════════════════════════════════════ */
 function _atualizarStatusBadge() {
-  const badge = document.getElementById('header-status-badge');
-  if (!badge) return;
+  const discBadge   = document.getElementById('disc-badge');
+  const statusBadge = document.getElementById('header-status-badge');
+  if (!discBadge || !statusBadge) return;
 
-  if (State.temConteudo === false) {
-    badge.style.display = '';
-    badge.textContent   = 'Vazio';
-    badge.className     = 'status-badge status-badge--empty';
+  if (State.disciplinas.length === 0) {
+    // Semestre sem disciplinas → mostra "Vazio" no lugar do disc-badge
+    discBadge.style.display   = 'none';
+    discBadge.innerHTML       = '';
+    statusBadge.style.display = '';
+    statusBadge.innerHTML     = `<span style="flex-shrink:0">📭</span><span style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;min-width:0">Vazio</span>`;
+    statusBadge.className     = 'status-badge status-badge--empty';
   } else {
-    badge.style.display = 'none';
+    // Tem disciplinas → o disc-badge já é gerenciado por _renderHeader()
+    statusBadge.style.display = 'none';
+    statusBadge.innerHTML     = '';
   }
 }
 
@@ -151,7 +160,6 @@ function _carregarConteudo() {
   script.id    = 'nexus-conteudo-script';
 
   script.onload = () => {
-    // Guard: ignora se o usuário já trocou de disciplina
     if (State.disciplina?.id !== disc.id) return;
 
     const aulas = _lerDados();
@@ -167,7 +175,6 @@ function _carregarConteudo() {
   };
 
   script.onerror = () => {
-    // Guard: ignora se o usuário já trocou de disciplina
     if (State.disciplina?.id !== disc.id) return;
 
     State.discVerificadas.add(disc.id);
@@ -503,13 +510,12 @@ function _marcarStatusConteudo(discId, tem) {
     el.textContent = tem ? 'Disponível' : 'Sem conteúdo';
     el.className   = `disc-item__status disc-item__status--${tem ? 'ok' : 'empty'}`;
   }
-  _atualizarStatusBadge();
 }
 
 function _trocarDisciplina(disc) {
   if (disc.id === State.disciplina?.id) return;
   State.disciplina  = disc;
-  State.temConteudo = null;   // limpa imediatamente ao trocar
+  State.temConteudo = null;
   setDisciplina(disc.id);
 
   const url = new URL(window.location.href);
@@ -534,7 +540,7 @@ function _renderHeader() {
 
   const badge = document.getElementById('disc-badge');
   if (badge) {
-    if (disc) {
+    if (disc && State.disciplinas.length > 0) {
       const label = disc.apelido ?? disc.nome;
       badge.style.display = '';
       badge.innerHTML = `

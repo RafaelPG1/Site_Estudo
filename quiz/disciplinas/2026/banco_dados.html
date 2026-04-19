@@ -52,10 +52,19 @@
       <p class="page-header__desc">Acesse o material oficial ou teste seu conhecimento com questões geradas por IA.</p>
     </div>
 
+    <!--
+      data-semestres: controla em quais semestres o card de modo é exibido.
+      disciplinas_init.js lê o ?sem= ativo e oculta cards fora do semestre.
+
+      Banco de Dados 2026.1: apenas Questões (sem AVA, ENADE, Fixação)
+      Banco de Dados 2026.2: AVA, Questões, ENADE e Fixação
+    -->
     <div class="disciplines">
 
-      <!-- AVA -->
-      <a href="../../template/template.html?disc=banco_dados&modo=ava" class="disc-card disc-card--ava" id="link-ava">
+      <!-- AVA — apenas 2026.2 (banco_dados não tem AVA no 2026.1) -->
+      <a href="../../template/template.html?disc=banco_dados&modo=ava"
+         class="disc-card disc-card--ava" id="link-ava"
+         data-semestres="2026.2">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap"><span>📚</span></div>
         </div>
@@ -72,8 +81,10 @@
         <div class="disc-card__glow"></div>
       </a>
 
-      <!-- QUESTÕES -->
-      <a href="../../template/template.html?disc=banco_dados&modo=questoes" class="disc-card disc-card--quiz" id="link-quiz">
+      <!-- QUESTÕES — 2026.1 e 2026.2 -->
+      <a href="../../template/template.html?disc=banco_dados&modo=questoes"
+         class="disc-card disc-card--quiz" id="link-quiz"
+         data-semestres="2026.1,2026.2">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap"><span>❓</span></div>
         </div>
@@ -90,8 +101,10 @@
         <div class="disc-card__glow"></div>
       </a>
 
-      <!-- ENADE -->
-      <a href="../../template/template.html?disc=banco_dados&modo=enade" class="disc-card disc-card--enade" id="link-enade">
+      <!-- ENADE — apenas 2026.2 -->
+      <a href="../../template/template.html?disc=banco_dados&modo=enade"
+         class="disc-card disc-card--enade" id="link-enade"
+         data-semestres="2026.2">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap"><span>🏛️</span></div>
         </div>
@@ -108,8 +121,10 @@
         <div class="disc-card__glow"></div>
       </a>
 
-      <!-- FIXAÇÃO -->
-      <a href="../../template/template.html?disc=banco_dados&modo=fixacao" class="disc-card disc-card--fixacao" id="link-fixacao">
+      <!-- FIXAÇÃO — apenas 2026.2 -->
+      <a href="../../template/template.html?disc=banco_dados&modo=fixacao"
+         class="disc-card disc-card--fixacao" id="link-fixacao"
+         data-semestres="2026.2">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap"><span>📌</span></div>
         </div>
