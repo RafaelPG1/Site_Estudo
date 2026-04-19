@@ -1,5 +1,5 @@
 /* =============================================
-   NEXUS STUDY — resumo.js  (v4)
+   NEXUS STUDY — resumo.js  (v5)
    Renderizador de notas de aula por seções
    ============================================= */
 import { DISC_CORES } from '../quiz/disciplinas/disciplinas_cores.js';
@@ -17,13 +17,14 @@ import {
    ESTADO
 ══════════════════════════════════════════════ */
 const State = {
-  disciplina:   null,
-  semestre:     null,
-  disciplinas:  [],
-  aulas:        [],       // array de aulas carregadas
-  aulaAberta:   null,     // índice da aula expandida
-  secaoAtiva:   'todas',  // filtro de seção
-  termoBusca:   '',
+  disciplina:      null,
+  semestre:        null,
+  disciplinas:     [],
+  aulas:           [],
+  aulaAberta:      null,
+  secaoAtiva:      'todas',
+  termoBusca:      '',
+  discVerificadas: new Set(), // disciplinas já verificadas de verdade (via script load/error)
 };
 
 /* ══════════════════════════════════════════════
@@ -32,6 +33,10 @@ const State = {
 document.addEventListener('DOMContentLoaded', () => {
   setPagina('RESUMO');
   document.getElementById('footer-year').textContent = new Date().getFullYear();
+
+  const todoBtn = document.querySelector('[data-filter="todos"]');
+  if (todoBtn) { todoBtn.textContent = 'Todas'; todoBtn.dataset.filter = 'todas'; }
+
   _resolverContexto();
   _renderSidebar();
   _renderHeader();
@@ -72,12 +77,13 @@ function _carregarConteudo() {
   const [ano] = (State.semestre ?? '2026.2').split('.');
   const src   = `/resumo/conteudo/${ano}/${State.semestre}/res_${disc.arquivo}.js`;
 
-  const script  = document.createElement('script');
-  script.src    = src;
-  script.id     = 'nexus-conteudo-script';
+  const script = document.createElement('script');
+  script.src   = src;
+  script.id    = 'nexus-conteudo-script';
 
   script.onload = () => {
     const aulas = _lerDados();
+    State.discVerificadas.add(disc.id); // marca como verificada de verdade
     _marcarStatusConteudo(disc.id, aulas.length > 0);
     if (!aulas.length) { _renderHeroStats(0); _mostrarEstadoSemConteudo(); return; }
     State.aulas = aulas;
@@ -89,6 +95,7 @@ function _carregarConteudo() {
   };
 
   script.onerror = () => {
+    State.discVerificadas.add(disc.id); // marca como verificada de verdade
     _marcarStatusConteudo(disc.id, false);
     _renderHeroStats(0);
     _mostrarEstadoSemConteudo();
@@ -104,13 +111,11 @@ function _removerScriptAnterior() {
 function _lerDados() {
   const raw = window.__nexusConteudo ?? null;
   if (!raw) return [];
-  // suporta { aulas: [] } (novo) e { questoes: [] } (legado)
   if (Array.isArray(raw.aulas))    return raw.aulas;
   if (Array.isArray(raw.questoes)) return raw.questoes.map(_questaoParaAula);
   return [];
 }
 
-/* Converte formato legado quiz → aula */
 function _questaoParaAula(q) {
   return {
     aula: q.aula ?? 'Sem título',
@@ -121,16 +126,39 @@ function _questaoParaAula(q) {
   };
 }
 
-
-
 function _aplicarCorDisciplina(discId) {
   const cores = DISC_CORES[discId];
   if (!cores) return;
   const r = document.documentElement.style;
-  r.setProperty('--disc-tema',      cores.corTema);
-  r.setProperty('--disc-tema-rgb',  cores.corTemaRgb);
-  r.setProperty('--disc-tema2',     cores.corTema2);
-  r.setProperty('--disc-tema2Rgb',  cores.corTema2Rgb);
+  r.setProperty('--disc-tema',     cores.corTema);
+  r.setProperty('--disc-tema-rgb', cores.corTemaRgb);
+  r.setProperty('--disc-tema2',    cores.corTema2);
+  r.setProperty('--disc-tema2Rgb', cores.corTema2Rgb);
+}
+
+/* ══════════════════════════════════════════════
+   VERIFICAÇÃO DE STATUS — HEAD request
+   Só atualiza disciplinas que ainda não foram
+   verificadas de verdade (via script load/error)
+══════════════════════════════════════════════ */
+function _verificarStatusTodos() {
+  const [ano] = (State.semestre ?? '2026.2').split('.');
+
+  State.disciplinas.forEach(disc => {
+    const src = `/resumo/conteudo/${ano}/${State.semestre}/res_${disc.arquivo}.js`;
+
+    fetch(src, { method: 'HEAD' })
+      .then(r => {
+        if (!State.discVerificadas.has(disc.id)) {
+          _marcarStatusConteudo(disc.id, r.ok);
+        }
+      })
+      .catch(() => {
+        if (!State.discVerificadas.has(disc.id)) {
+          _marcarStatusConteudo(disc.id, false);
+        }
+      });
+  });
 }
 
 /* ══════════════════════════════════════════════
@@ -173,10 +201,9 @@ function _renderHeroStats(total) {
 }
 
 /* ══════════════════════════════════════════════
-   FILTROS — por seção (Visão Geral, Conceitos…)
+   FILTROS — por seção
 ══════════════════════════════════════════════ */
 function _renderFiltrosSecao(aulas) {
-  // Pega IDs únicos de seções de todas as aulas
   const ids   = new Set();
   const nomes = {};
   aulas.forEach(a => (a.secoes ?? []).forEach(s => { ids.add(s.id); nomes[s.id] = s.titulo; }));
@@ -189,7 +216,6 @@ function _renderFiltrosSecao(aulas) {
     const btn = document.createElement('button');
     btn.className      = 'filter-btn';
     btn.dataset.filter = id;
-    // Extrai texto sem emoji
     btn.textContent    = nomes[id].replace(/^[^\w\s]+\s*/, '');
     group.appendChild(btn);
   });
@@ -248,9 +274,13 @@ function _renderCards(aulas) {
 }
 
 function _criarCard(aula, idx) {
-  // Monta preview: primeiros itens da primeira seção
-  const preview = _gerarPreview(aula);
-  const secoes  = aula.secoes ?? [];
+  const secoes = aula.secoes ?? [];
+
+  // Extrai só o número/label da aula (ex: "Aula 9") e o título separado
+  const aulaStr   = _esc(aula.aula ?? '');
+  const aulaMatch = aulaStr.match(/^(Aula\s*\d+)\s*[—–-]\s*(.+)$/i);
+  const aulaNum   = aulaMatch ? aulaMatch[1] : aulaStr;
+  const aulaTitulo = aulaMatch ? aulaMatch[2] : '';
 
   const card = document.createElement('article');
   card.className = 'resumo-card resumo-card--nota';
@@ -260,33 +290,28 @@ function _criarCard(aula, idx) {
   card.setAttribute('aria-label', `Abrir: ${aula.aula}`);
 
   card.innerHTML = `
-    <div class="card-head">
-      <span class="card-aula">${_esc(aula.aula)}</span>
-    </div>
-
-    ${aula.ideia_central ? `
-    <div class="card-ideia">
-      <span class="card-ideia__icon">💡</span>
-      <span class="card-ideia__text">${_parseInline(aula.ideia_central)}</span>
-    </div>` : ''}
-
-    <div class="card-body">
-      <p class="card-preview">${preview}</p>
-    </div>
-
-    <div class="card-secoes-pills">
-      ${secoes.map(s => `<span class="secao-pill">${s.titulo}</span>`).join('')}
-    </div>
-
-    <div class="card-foot">
-      <span class="card-options-count">${secoes.length} seção${secoes.length !== 1 ? 'ões' : ''}</span>
-      <span class="card-cta">
-        Ver resumo
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
-        </svg>
-      </span>
+    <div class="card-inner">
+      <div class="card-num">${aulaNum}</div>
+      <div class="card-title">${aulaTitulo || aulaStr}</div>
+      <div class="card-divider"></div>
+      ${aula.ideia_central
+        ? `<p class="card-desc">${_parseInline(aula.ideia_central)}</p>`
+        : ''}
+      <div class="card-bottom">
+        <div class="card-progress__track">
+          <div class="card-progress__fill"></div>
+        </div>
+        <div class="card-meta">
+          <span class="card-meta__count">${secoes.length} seção${secoes.length !== 1 ? 'ões' : ''}</span>
+          <span class="card-meta__cta">
+            Ver resumo
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
+            </svg>
+          </span>
+        </div>
+      </div>
     </div>
   `;
 
@@ -330,7 +355,6 @@ function _abrirModal(aula) {
   document.body.style.overflow = 'hidden';
   document.getElementById('read-modal-panel')?.focus();
 
-  // Tabs de seção no modal
   _bindModalTabs();
 }
 
@@ -343,7 +367,6 @@ function _buildModalBody(aula) {
   const secoes = aula.secoes ?? [];
   let html = '';
 
-  // Ideia central
   if (aula.ideia_central) {
     html += `<div class="rm-ideia-central">
       <span class="rm-ideia-icon">💡</span>
@@ -351,7 +374,6 @@ function _buildModalBody(aula) {
     </div>`;
   }
 
-  // Tabs de navegação entre seções
   if (secoes.length > 1) {
     html += `<div class="rm-tabs" id="rm-tabs">
       ${secoes.map((s, i) =>
@@ -360,7 +382,6 @@ function _buildModalBody(aula) {
     </div>`;
   }
 
-  // Seções
   secoes.forEach((sec, i) => {
     html += `<div class="rm-secao${i === 0 ? ' rm-secao--active' : ''}" data-sec="${i}">
       <h3 class="rm-secao-titulo">${_esc(sec.titulo)}</h3>
@@ -393,8 +414,8 @@ function _renderBloco(b) {
     case 'topico': {
       let html = `<div class="rm-topico">`;
       html += `<div class="rm-topico__titulo">${_parseInline(b.titulo ?? '')}</div>`;
-      if (b.texto) html += `<p class="rm-topico__texto">${_parseInline(b.texto)}</p>`;
-      if (b.lista) html += `<ul class="rm-lista">${b.lista.map(i => `<li>${_parseInline(i)}</li>`).join('')}</ul>`;
+      if (b.texto)  html += `<p class="rm-topico__texto">${_parseInline(b.texto)}</p>`;
+      if (b.lista)  html += `<ul class="rm-lista">${b.lista.map(i => `<li>${_parseInline(i)}</li>`).join('')}</ul>`;
       if (b.codigo) html += `<pre class="rm-codigo"><code>${_esc(b.codigo)}</code></pre>`;
       html += `</div>`;
       return html;
@@ -467,7 +488,7 @@ function _renderSidebar() {
       <span class="disc-item__emoji">${disc.emoji}</span>
       <span class="disc-item__info">
         <span class="disc-item__nome">${disc.nome}</span>
-        <span class="disc-item__status disc-item__status--empty" id="disc-status-${disc.id}">Sem conteúdo</span>
+        <span class="disc-item__status disc-item__status--hint" id="disc-status-${disc.id}">Clique</span>
       </span>
       <svg class="disc-item__chevron" viewBox="0 0 24 24" fill="none"
            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -514,8 +535,8 @@ function _trocarDisciplina(disc) {
   _atualizarSidebarAtivo(disc.id);
   _renderHeader();
   _fecharMobileDropdown();
-  _carregarConteudo();
   _aplicarCorDisciplina(disc.id);
+  _carregarConteudo();
 }
 
 /* ══════════════════════════════════════════════
@@ -528,7 +549,7 @@ function _renderHeader() {
 
   const badge = document.getElementById('disc-badge');
   if (badge && disc) {
-    const label = disc.apelido ?? disc.nome;  // usa apelido se existir
+    const label = disc.apelido ?? disc.nome;
     badge.innerHTML = `
       <span style="flex-shrink:0">${disc.emoji}</span>
       <span style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;min-width:0">${label}</span>
@@ -544,7 +565,6 @@ function _renderHeader() {
   document.title = disc ? `Resumos — ${disc.nome} · Nexus Study` : 'Resumos · Nexus Study';
 }
 
-// troca o limite de 28 para 18
 function _nomeCurto(nome, max = 18) {
   return nome.length > max ? nome.slice(0, max - 2) + '…' : nome;
 }
@@ -582,15 +602,6 @@ function _fecharMobileDropdown() {
 }
 
 /* ══════════════════════════════════════════════
-   TOOLBAR — filtro "Todos" → "Todas"
-══════════════════════════════════════════════ */
-// Ajusta o texto do botão padrão no HTML
-document.addEventListener('DOMContentLoaded', () => {
-  const todoBtn = document.querySelector('[data-filter="todos"]');
-  if (todoBtn) { todoBtn.textContent = 'Todas'; todoBtn.dataset.filter = 'todas'; }
-});
-
-/* ══════════════════════════════════════════════
    UTILITÁRIOS
 ══════════════════════════════════════════════ */
 function _esc(str) {
@@ -599,7 +610,6 @@ function _esc(str) {
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
 }
 
-/** Converte **bold**, `code` inline */
 function _parseInline(str) {
   if (!str) return '';
   return _esc(str)
