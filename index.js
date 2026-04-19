@@ -133,6 +133,7 @@ function abrirModalConfig() {
   modal.innerHTML = `
     <div class="modal__overlay" id="modal-overlay-config"></div>
     <div class="modal__box" role="dialog" aria-modal="true" aria-label="Configurações">
+
       <div class="modal__header">
         <h2 class="modal__title">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -153,109 +154,126 @@ function abrirModalConfig() {
         <button class="modal__close" id="modal-close-config" aria-label="Fechar">✕</button>
       </div>
 
-      ${estaLogado() ? `
-      <div class="modal__section">
-        <div class="modal__section-title">Perfil</div>
-        <div class="config-perfil">
-          <div class="config-perfil__avatar">
-            ${getUsuario().foto
-              ? `<img src="${getUsuario().foto}" alt="avatar" />`
-              : `<span>${getUsuario().nome.charAt(0).toUpperCase()}</span>`}
+      <div class="modal__body-scroll">
+
+        ${estaLogado() ? `
+        <div class="modal__section">
+          <div class="modal__section-title">Perfil</div>
+          <div class="config-perfil">
+            <div class="config-perfil__avatar">
+              ${getUsuario().foto
+                ? `<img src="${getUsuario().foto}" alt="avatar" />`
+                : `<span>${getUsuario().nome.charAt(0).toUpperCase()}</span>`}
+            </div>
+            <div class="config-perfil__info">
+              <strong>${getUsuario().nome}</strong>
+              <span>${getUsuario().email}</span>
+            </div>
+            <button class="config-perfil__logout" id="btn-logout">Sair</button>
           </div>
-          <div class="config-perfil__info">
-            <strong>${getUsuario().nome}</strong>
-            <span>${getUsuario().email}</span>
+        </div>
+        ` : ''}
+
+        <div class="modal__section">
+          <div class="modal__section-title">Aparência</div>
+          <div class="config-row">
+            <label for="cfg-tema">Tema</label>
+            <select id="cfg-tema" class="config-select">
+              <option value="dark"  ${cfg.tema === 'dark'  ? 'selected' : ''}>Escuro</option>
+              <option value="light" ${cfg.tema === 'light' ? 'selected' : ''}>Claro</option>
+            </select>
           </div>
-          <button class="config-perfil__logout" id="btn-logout">Sair</button>
-        </div>
-      </div>
-      ` : ''}
-
-      <div class="modal__section">
-        <div class="modal__section-title">Aparência</div>
-        <div class="config-row">
-          <label for="cfg-tema">Tema</label>
-          <select id="cfg-tema" class="config-select">
-            <option value="dark"  ${cfg.tema === 'dark'  ? 'selected' : ''}>Escuro</option>
-            <option value="light" ${cfg.tema === 'light' ? 'selected' : ''}>Claro</option>
-          </select>
-        </div>
-        <div class="config-row">
-          <label for="cfg-anim">Animações</label>
-          <label class="toggle">
-            <input type="checkbox" id="cfg-anim" ${cfg.animacoes ? 'checked' : ''} />
-            <span class="toggle__track"></span>
-          </label>
-        </div>
-      </div>
-
-      <div class="modal__section">
-        <div class="modal__section-title">Sistema</div>
-        <div class="config-row">
-          <label for="cfg-notif">Notificações</label>
-          <label class="toggle">
-            <input type="checkbox" id="cfg-notif" ${cfg.notificacoes ? 'checked' : ''} />
-            <span class="toggle__track"></span>
-          </label>
-        </div>
-      </div>
-
-      <div class="modal__section">
-        <div class="modal__section-title">Quiz</div>
-
-        <!-- Toggle: salvar resultado ao terminar -->
-        <div class="config-row">
-          <label for="cfg-salvar-progresso">
-            Salvar ao concluir
-            <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
-              Quando ativado, ao terminar o quiz o resultado fica salvo por até
-              20&nbsp;s após sair — F5 sempre restaura, fechar a aba limpa.
-              Progresso parcial é sempre salvo independente desta opção.
-            </small>
-          </label>
-          <label class="toggle">
-            <input type="checkbox" id="cfg-salvar-progresso"
-              ${cfg.salvarProgresso !== false ? 'checked' : ''} />
-            <span class="toggle__track"></span>
-          </label>
+          <div class="config-row">
+            <label for="cfg-anim">Animações</label>
+            <label class="toggle">
+              <input type="checkbox" id="cfg-anim" ${cfg.animacoes ? 'checked' : ''} />
+              <span class="toggle__track"></span>
+            </label>
+          </div>
         </div>
 
-        <!-- Botão: limpar todos os dados do quiz -->
-        <div class="config-row">
-          <label>
-            Limpar dados do quiz
-            <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
-              Remove todo progresso salvo de todos os quizzes. Configs e
-              demais dados do sistema não são afetados.
-            </small>
-          </label>
-          <button class="modal-btn modal-btn--danger" id="btn-limpar-quiz">
-            Limpar
-          </button>
+        <div class="modal__section">
+          <div class="modal__section-title">Sistema</div>
+          <div class="config-row">
+            <label for="cfg-notif">Notificações</label>
+            <label class="toggle">
+              <input type="checkbox" id="cfg-notif" ${cfg.notificacoes ? 'checked' : ''} />
+              <span class="toggle__track"></span>
+            </label>
+          </div>
         </div>
-      </div>
+
+        <div class="modal__section">
+          <div class="modal__section-title">Quiz</div>
+
+          <div class="config-row">
+            <label for="cfg-salvar-progresso">
+              Salvar ao concluir
+              <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
+                Quando ativado, o resultado fica salvo permanentemente.
+                Desativado, apaga 20&nbsp;s após sair da aba.
+                Progresso parcial é sempre salvo.
+              </small>
+            </label>
+            <label class="toggle">
+              <input type="checkbox" id="cfg-salvar-progresso"
+                ${cfg.salvarProgresso !== false ? 'checked' : ''} />
+              <span class="toggle__track"></span>
+            </label>
+          </div>
+
+          <div class="config-row">
+            <label>
+              Limpar dados do quiz
+              <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
+                Remove todo progresso salvo de todos os quizzes. Configs e
+                demais dados do sistema não são afetados.
+              </small>
+            </label>
+            <button class="modal-btn modal-btn--danger" id="btn-limpar-quiz">
+              Limpar
+            </button>
+          </div>
+        </div>
+
+      </div><!-- /.modal__body-scroll -->
 
       <div class="modal__footer">
         <button class="modal-btn modal-btn--ghost" id="btn-reset-configs">Resetar padrão</button>
         <button class="modal-btn modal-btn--primary" id="btn-salvar-configs">Salvar</button>
       </div>
+
     </div>`;
 
   document.body.appendChild(modal);
   requestAnimationFrame(() => modal.classList.add('modal--open'));
 
-  /* ── Fechar ── */
-  document.getElementById('modal-overlay-config').addEventListener('click', () => fecharModal(modal));
-  document.getElementById('modal-close-config').addEventListener('click',   () => fecharModal(modal));
-
-  /* ── Salvar configs ── */
-  document.getElementById('btn-salvar-configs').addEventListener('click', () => {
-    setConfigs({
+  /* ── Auto-save ao mudar qualquer controle ── */
+  function _lerConfigs() {
+    return {
       tema:            document.getElementById('cfg-tema').value,
       animacoes:       document.getElementById('cfg-anim').checked,
       notificacoes:    document.getElementById('cfg-notif').checked,
       salvarProgresso: document.getElementById('cfg-salvar-progresso').checked,
-    });
+    };
+  }
+
+  function _autoSave() {
+    setConfigs(_lerConfigs());
+  }
+
+  document.getElementById('cfg-tema').addEventListener('change', _autoSave);
+  document.getElementById('cfg-anim').addEventListener('change', _autoSave);
+  document.getElementById('cfg-notif').addEventListener('change', _autoSave);
+  document.getElementById('cfg-salvar-progresso').addEventListener('change', _autoSave);
+
+  /* ── Fechar ── */
+  document.getElementById('modal-overlay-config').addEventListener('click', () => fecharModal(modal));
+  document.getElementById('modal-close-config').addEventListener('click',   () => fecharModal(modal));
+
+  /* ── Salvar (botão explícito — confirma e fecha) ── */
+  document.getElementById('btn-salvar-configs').addEventListener('click', () => {
+    setConfigs(_lerConfigs());
     fecharModal(modal);
     mostrarToast('Configurações salvas!');
   });
@@ -268,17 +286,12 @@ function abrirModalConfig() {
     setTimeout(abrirModalConfig, 300);
   });
 
-  /* ── Limpar dados do quiz (só nexus_quiz_*) ── */
+  /* ── Limpar dados do quiz ── */
   document.getElementById('btn-limpar-quiz').addEventListener('click', () => {
     limparDadosQuiz();
-
-    /* FIX 2: notifica o quiz_engine (se estiver ativo na mesma aba)
-       para que cancele o timer pendente e não tente reapagar dados
-       já removidos, evitando o log enganoso. */
     if (typeof window.__nexusQuizNotifyCleared === 'function') {
       window.__nexusQuizNotifyCleared();
     }
-
     mostrarToast('Dados do quiz apagados.');
   });
 

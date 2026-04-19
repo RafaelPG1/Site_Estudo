@@ -1124,3 +1124,22 @@ a { text-decoration: none; color: inherit; }
     padding: 0.35rem 1.8rem 0.35rem 0.6rem;
   }
 }
+
+.modal__box {
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal__body-scroll {
+  overflow-y: auto;
+  flex: 1;
+  overscroll-behavior: contain;
+}
+
+.modal__body-scroll::-webkit-scrollbar { width: 3px; }
+.modal__body-scroll::-webkit-scrollbar-thumb {
+  background: rgba(77, 217, 180, 0.25);
+  border-radius: 3px;
+}
+.modal__body-scroll::-webkit-scrollbar-track { background: transparent; }
