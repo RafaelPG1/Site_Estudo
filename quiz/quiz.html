@@ -1,15 +1,7 @@
 <!--
-  ════════════════════════════════════════════════════════════
   NEXUS STUDY — quiz/quiz.html
   Página de seleção de disciplinas.
-  CSS: quiz.css  (não usa template_global.css)
-
-  CORREÇÃO: Script ao final do body lê ?sem= da URL (ou usa
-  '2026.2' como default) e atualiza todos os links de disciplina
-  para propagar o semestre correto E substituir o ano no path.
-  ════════════════════════════════════════════════════════════
 -->
-  
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -18,18 +10,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Quiz · Nexus Study</title>
 
-  <!-- Fontes -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
-  <!-- CSS desta página (sem template_global — ela tem design próprio) -->
   <link rel="stylesheet" href="quiz.css" />
 </head>
 
 <body>
 
-  <!-- ── Efeitos de fundo ─────────────────────────────────── -->
   <div class="bg-orb bg-orb--1" aria-hidden="true"></div>
   <div class="bg-orb bg-orb--2" aria-hidden="true"></div>
   <div class="bg-orb bg-orb--3" aria-hidden="true"></div>
@@ -42,7 +31,8 @@
     <div class="header__inner">
 
       <a href="../index.html" class="back-btn" aria-label="Voltar ao início">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <polyline points="15 18 9 12 15 6"/>
         </svg>
         <span>Início</span>
@@ -56,11 +46,22 @@
         </div>
       </div>
 
-      <nav class="breadcrumb" aria-label="Localização">
-        <span class="breadcrumb__item">Quiz</span>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
-        <span class="breadcrumb__item breadcrumb__item--active">Disciplinas</span>
-      </nav>
+      <!-- Lado direito: select + breadcrumb lado a lado -->
+      <div class="header__right">
+
+        <!-- Options são populadas dinamicamente pelo quiz.js via SEMESTRES do global.js -->
+        <select id="quiz-semestre-select" class="semestre-select"
+                title="Selecionar semestre" aria-label="Semestre">
+        </select>
+
+        <nav class="breadcrumb" aria-label="Localização">
+          <span class="breadcrumb__item">Quiz</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+          <span class="breadcrumb__item breadcrumb__item--active">Disciplinas</span>
+        </nav>
+
+      </div><!-- /.header__right -->
 
     </div>
   </header>
@@ -70,7 +71,6 @@
        ════════════════════════════════════════════════════════ -->
   <main class="main">
 
-    <!-- Page Header -->
     <div class="page-header">
       <div class="page-header__eyebrow">
         <span aria-hidden="true">❓</span>
@@ -80,12 +80,16 @@
       <p class="page-header__desc">Selecione a matéria para iniciar sua sessão de estudos</p>
     </div>
 
-    <!-- Grid de disciplinas -->
-    <div class="disciplines" role="list">
+    <!--
+      data-semestres: lista separada por vírgula dos semestres ativos.
+      Ex: data-semestres="2026.2" ou data-semestres="2026.2,2027.1"
+    -->
+    <div class="disciplines" id="disciplines-grid" role="list">
 
-      <!-- ── POO ─────────────────────────────────────────── -->
-      <a href="disciplinas/2026/poo.html" class="disc-card disc-card--blue" role="listitem"
-         aria-label="Programação Orientada a Objetos">
+      <!-- POO -->
+      <a href="disciplinas/2026/poo.html"
+         class="disc-card disc-card--blue" role="listitem"
+         data-semestres="2026.2" aria-label="Programação Orientada a Objetos">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap" aria-hidden="true"><span>💻</span></div>
         </div>
@@ -95,16 +99,20 @@
         </div>
         <div class="disc-card__cta" aria-hidden="true">
           <div class="disc-card__arrow">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
+            </svg>
           </div>
           <span class="disc-card__cta-label">Iniciar</span>
         </div>
         <div class="disc-card__glow" aria-hidden="true"></div>
       </a>
 
-      <!-- ── Redes ───────────────────────────────────────── -->
-      <a href="disciplinas/2026/redes.html" class="disc-card disc-card--teal" role="listitem"
-         aria-label="Redes de Computadores">
+      <!-- Redes -->
+      <a href="disciplinas/2026/redes.html"
+         class="disc-card disc-card--teal" role="listitem"
+         data-semestres="2026.2" aria-label="Redes de Computadores">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap" aria-hidden="true"><span>🌐</span></div>
         </div>
@@ -114,16 +122,20 @@
         </div>
         <div class="disc-card__cta" aria-hidden="true">
           <div class="disc-card__arrow">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
+            </svg>
           </div>
           <span class="disc-card__cta-label">Iniciar</span>
         </div>
         <div class="disc-card__glow" aria-hidden="true"></div>
       </a>
 
-      <!-- ── Design ─────────────────────────────────────── -->
-      <a href="disciplinas/2026/design.html" class="disc-card disc-card--gold" role="listitem"
-         aria-label="Design de Sistemas de Informação">
+      <!-- Design -->
+      <a href="disciplinas/2026/design.html"
+         class="disc-card disc-card--gold" role="listitem"
+         data-semestres="2026.2" aria-label="Design de Sistemas de Informação">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap" aria-hidden="true"><span>🎨</span></div>
         </div>
@@ -133,16 +145,20 @@
         </div>
         <div class="disc-card__cta" aria-hidden="true">
           <div class="disc-card__arrow">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
+            </svg>
           </div>
           <span class="disc-card__cta-label">Iniciar</span>
         </div>
         <div class="disc-card__glow" aria-hidden="true"></div>
       </a>
 
-      <!-- ── Banco de Dados ─────────────────────────────── -->
-      <a href="disciplinas/2026/banco_dados.html" class="disc-card disc-card--rose" role="listitem"
-         aria-label="Fundamentos de Banco de Dados">
+      <!-- Banco de Dados -->
+      <a href="disciplinas/2026/banco_dados.html"
+         class="disc-card disc-card--rose" role="listitem"
+         data-semestres="2026.2" aria-label="Fundamentos de Banco de Dados">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap" aria-hidden="true"><span>🗄️</span></div>
         </div>
@@ -152,55 +168,29 @@
         </div>
         <div class="disc-card__cta" aria-hidden="true">
           <div class="disc-card__arrow">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
+            </svg>
           </div>
           <span class="disc-card__cta-label">Iniciar</span>
         </div>
         <div class="disc-card__glow" aria-hidden="true"></div>
       </a>
 
+      <!-- Mensagem quando o semestre não tem disciplinas -->
+      <p class="disciplines-empty" id="disciplines-empty" aria-live="polite"></p>
+
     </div><!-- /disciplines -->
 
   </main>
 
-  <!-- ════════════════════════════════════════════════════════
-       FOOTER
-       ════════════════════════════════════════════════════════ -->
   <footer class="footer">
     <p>© <span id="footer-year"></span> Nexus Study · Desenvolvido para facilitar seus estudos</p>
   </footer>
 
-  <!--
-    Propaga o semestre para todos os links de disciplina.
-    Lê ?sem= da URL (ex: quiz.html?sem=2027.1).
-    Se não vier nenhum, usa '2026.2' como padrão.
-
-    Faz duas coisas em cada link:
-      1. Adiciona/atualiza o ?sem= no query string
-      2. Substitui o segmento de ano no path (ex: /2026/ → /2027/)
-         para que links como disciplinas/2026/poo.html virem
-         disciplinas/2027/poo.html automaticamente ao trocar de ano.
-  -->
-  <script>
-    (function () {
-      var sem = new URLSearchParams(location.search).get('sem') || '2026.2';
-      var ano = sem.split('.')[0];
- 
-      /* Salva no sessionStorage — útil se a index quiser redirecionar
-         de volta com o semestre certo (ex: botão "Continuar estudando") */
-      try { sessionStorage.setItem('nexus_sem', sem); } catch (e) {}
- 
-      /* Atualiza links de disciplina: injeta ?sem= e substitui o ano no path */
-      document.querySelectorAll('a[href*="disciplinas/"]').forEach(function (a) {
-        try {
-          var url = new URL(a.href, location.href);
-          url.searchParams.set('sem', sem);
-          url.pathname = url.pathname.replace(/disciplinas\/\d{4}\//, 'disciplinas/' + ano + '/');
-          a.href = url.toString();
-        } catch (e) {}
-      });
-    })();
-  </script>
+  <!-- Substituído o <script> inline pelo módulo quiz.js -->
+  <script type="module" src="quiz.js"></script>
 
 </body>
 </html>

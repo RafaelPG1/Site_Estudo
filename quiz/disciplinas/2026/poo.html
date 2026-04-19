@@ -19,7 +19,12 @@
 
   <header class="header">
     <div class="header__inner">
-      <a href="../../quiz.html?sem=2026.2" class="back-btn" id="back-btn" aria-label="Voltar para Disciplinas">
+      <!--
+        back-btn: NÃO hardcode ?sem= aqui.
+        disciplinas_init.js propaga o semestre correto via URL()
+        para todos os links que contenham 'quiz.html'.
+      -->
+      <a href="../../quiz.html" class="back-btn" id="back-btn" aria-label="Voltar para Disciplinas">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="15 18 9 12 15 6"/>
         </svg>
@@ -52,8 +57,15 @@
       <p class="page-header__desc">Acesse o material oficial ou teste seu conhecimento com questões geradas por IA.</p>
     </div>
 
+    <!--
+      Links de modo: NÃO hardcode &sem= aqui.
+      disciplinas_init.js propaga o semestre correto via URL()
+      para todos os links que contenham 'template.html'.
+    -->
     <div class="disciplines">
-      <a href="../../template/template.html?disc=poo&modo=ava&sem=2026.2" class="disc-card disc-card--ava" id="link-ava">
+
+      <!-- AVA -->
+      <a href="../../template/template.html?disc=poo&modo=ava" class="disc-card disc-card--ava" id="link-ava">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap"><span>📚</span></div>
         </div>
@@ -70,7 +82,8 @@
         <div class="disc-card__glow"></div>
       </a>
 
-      <a href="../../template/template.html?disc=poo&modo=questoes&sem=2026.2" class="disc-card disc-card--quiz" id="link-quiz">
+      <!-- QUESTÕES -->
+      <a href="../../template/template.html?disc=poo&modo=questoes" class="disc-card disc-card--quiz" id="link-quiz">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap"><span>❓</span></div>
         </div>
@@ -87,8 +100,7 @@
         <div class="disc-card__glow"></div>
       </a>
 
-      
-      <!-- QUESTÕES ENADE -->
+      <!-- ENADE -->
       <a href="../../template/template.html?disc=poo&modo=enade" class="disc-card disc-card--enade" id="link-enade">
         <div class="disc-card__icon-col">
           <div class="disc-card__icon-wrap"><span>🏛️</span></div>
@@ -106,23 +118,23 @@
         <div class="disc-card__glow"></div>
       </a>
 
-      <!-- QUESTÕES DE FIXAÇÃO -->
-
-<a href="../../template/template.html?disc=poo&modo=fixacao" class="disc-card disc-card--fixacao" id="link-fixacao">  <div class="disc-card__icon-col">
-    <div class="disc-card__icon-wrap"><span>📌</span></div>
-  </div>
-  <div class="disc-card__body">
-    <h2 class="disc-card__title">Fixação</h2>
-    <p class="disc-card__desc">Questões de revisão para consolidar o conteúdo estudado.</p>
-  </div>
-  <div class="disc-card__cta">
-    <div class="disc-card__arrow">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
-    </div>
-    <span class="disc-card__cta-label">Iniciar</span>
-  </div>
-  <div class="disc-card__glow"></div>
-</a>
+      <!-- FIXAÇÃO -->
+      <a href="../../template/template.html?disc=poo&modo=fixacao" class="disc-card disc-card--fixacao" id="link-fixacao">
+        <div class="disc-card__icon-col">
+          <div class="disc-card__icon-wrap"><span>📌</span></div>
+        </div>
+        <div class="disc-card__body">
+          <h2 class="disc-card__title">Fixação</h2>
+          <p class="disc-card__desc">Questões de revisão para consolidar o conteúdo estudado.</p>
+        </div>
+        <div class="disc-card__cta">
+          <div class="disc-card__arrow">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+          </div>
+          <span class="disc-card__cta-label">Iniciar</span>
+        </div>
+        <div class="disc-card__glow"></div>
+      </a>
 
     </div>
   </main>

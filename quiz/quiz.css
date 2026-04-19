@@ -184,7 +184,58 @@ a { text-decoration: none; color: inherit; }
   color: var(--teal);
 }
 
-/* Breadcrumb */
+/* ── LADO DIREITO DO HEADER: select + breadcrumb ── */
+/*
+  Agrupa o seletor de semestre e o breadcrumb lado a lado.
+  Fica no lugar do breadcrumb anterior, à direita do logo.
+*/
+.header__right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* ── SELETOR DE SEMESTRE ── */
+/*
+  Estilos espelhados do style.css para manter consistência visual
+  com o seletor da home page.
+*/
+.semestre-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-glow);
+  border-radius: 8px;
+  color: var(--text-2);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  padding: 0.4rem 2rem 0.4rem 0.75rem;
+  outline: none;
+
+  /* Seta customizada */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a8a49c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.6rem center;
+
+  transition: border-color 0.2s, color 0.2s, background-color 0.2s;
+}
+
+.semestre-select:hover,
+.semestre-select:focus {
+  border-color: rgba(77,217,180,0.35);
+  color: var(--text-1);
+  background-color: rgba(255,255,255,0.07);
+}
+
+.semestre-select option {
+  background: #0e1420;
+  color: var(--text-1);
+}
+
+/* ── BREADCRUMB ── */
 .breadcrumb {
   display: flex;
   align-items: center;
@@ -213,12 +264,10 @@ a { text-decoration: none; color: inherit; }
 .page-header {
   margin-bottom: 2.5rem;
   animation: fade-up 0.55s ease both;
-  
-  /* Adicione isso: */
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center; /* Garante que o texto interno também quebre centralizado */
+  text-align: center;
 }
 
 .page-header__eyebrow {
@@ -251,9 +300,6 @@ a { text-decoration: none; color: inherit; }
 .page-header__title em {
   font-style: italic;
   color: var(--text-1);
-  background: none;
-  -webkit-background-clip: unset;
-  background-clip: unset;
 }
 
 .page-header__desc {
@@ -261,10 +307,8 @@ a { text-decoration: none; color: inherit; }
   color: var(--text-2);
   font-weight: 300;
   max-width: 440px;
+  margin: 0 auto;
   line-height: 1.65;
-  
-  /* Remova qualquer margem lateral fixa e use auto */
-  margin: 0 auto; 
 }
 
 /* ── DISCIPLINES GRID 2x2 ── */
@@ -275,8 +319,17 @@ a { text-decoration: none; color: inherit; }
   animation: fade-up 0.6s 0.2s ease both;
 }
 
+/* ── MENSAGEM DE SEMESTRE VAZIO ── */
+.disciplines-empty {
+  display: none;
+  grid-column: 1 / -1;
+  color: var(--text-3);
+  text-align: center;
+  padding: 3rem 1rem;
+  font-size: 0.95rem;
+}
+
 /* ── DISCIPLINE CARD ── */
-/* Mesma estrutura visual dos .card do index */
 .disc-card {
   position: relative;
   display: flex;
@@ -300,18 +353,11 @@ a { text-decoration: none; color: inherit; }
   transform: translateY(-6px) scale(1.01);
 }
 
-/* Stripe oculta — mantida no HTML mas sem uso visual */
-.disc-card__stripe {
-  display: none;
-}
-
-/* Glow (sem uso visível, mas preservado no HTML) */
-.disc-card__glow { display: none; }
+.disc-card__stripe { display: none; }
+.disc-card__glow   { display: none; }
 
 /* Icon */
-.disc-card__icon-col {
-  padding: 0;
-}
+.disc-card__icon-col { padding: 0; }
 
 .disc-card__icon-wrap {
   width: 52px;
@@ -353,7 +399,7 @@ a { text-decoration: none; color: inherit; }
   line-height: 1.6;
 }
 
-/* CTA — círculo com seta (canto inferior direito) */
+/* CTA */
 .disc-card__cta {
   position: absolute;
   bottom: 1.2rem;
@@ -381,9 +427,7 @@ a { text-decoration: none; color: inherit; }
     box-shadow 0.3s ease;
 }
 
-.disc-card:hover .disc-card__arrow {
-  transform: translateY(-3px);
-}
+.disc-card:hover .disc-card__arrow { transform: translateY(-3px); }
 
 .disc-card__cta-label {
   font-size: 0.6rem;
@@ -396,12 +440,9 @@ a { text-decoration: none; color: inherit; }
   transition: opacity 0.25s ease, transform 0.25s ease, color 0.25s ease;
 }
 
-.disc-card:hover .disc-card__cta-label {
-  opacity: 1;
-  transform: translateY(0);
-}
+.disc-card:hover .disc-card__cta-label { opacity: 1; transform: translateY(0); }
 
-/* ── CARD THEMES (idênticos ao style.css) ── */
+/* ── CARD THEMES ── */
 
 /* Blue — POO */
 .disc-card--blue { background: linear-gradient(145deg, #0e1420, #0d1422); }
@@ -462,7 +503,10 @@ a { text-decoration: none; color: inherit; }
 /* ── RESPONSIVIDADE ── */
 @media (max-width: 680px) {
   .header { padding: 0.9rem 1.25rem; }
+
+  /* No mobile, oculta o breadcrumb e mantém só o select */
   .breadcrumb { display: none; }
+
   .main { padding: 2rem 1.25rem 2rem; }
   .page-header__title { font-size: 2rem; }
   .disciplines { grid-template-columns: 1fr; gap: 1rem; }
@@ -475,4 +519,5 @@ a { text-decoration: none; color: inherit; }
 @media (max-width: 380px) {
   .page-header__title { font-size: 1.75rem; }
   .logo-title { font-size: 1rem; }
+  .semestre-select { font-size: 0.72rem; padding: 0.35rem 1.8rem 0.35rem 0.6rem; }
 }
