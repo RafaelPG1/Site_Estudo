@@ -267,15 +267,19 @@ function abrirModalConfig() {
   document.getElementById('cfg-notif').addEventListener('change', _autoSave);
   document.getElementById('cfg-salvar-progresso').addEventListener('change', _autoSave);
 
-  /* ── Fechar ── */
-  document.getElementById('modal-overlay-config').addEventListener('click', () => fecharModal(modal));
-  document.getElementById('modal-close-config').addEventListener('click',   () => fecharModal(modal));
-
-  /* ── Salvar (botão explícito — confirma e fecha) ── */
-  document.getElementById('btn-salvar-configs').addEventListener('click', () => {
-    setConfigs(_lerConfigs());
+  /* ── Fechar — salva e mostra toast ── */
+  function _fecharComToast() {
     fecharModal(modal);
     mostrarToast('Configurações salvas!');
+  }
+
+  document.getElementById('modal-overlay-config').addEventListener('click', _fecharComToast);
+  document.getElementById('modal-close-config').addEventListener('click', _fecharComToast);
+
+  /* ── Salvar (botão explícito — mesma ação) ── */
+  document.getElementById('btn-salvar-configs').addEventListener('click', () => {
+    setConfigs(_lerConfigs());
+    _fecharComToast();
   });
 
   /* ── Resetar configs ── */
