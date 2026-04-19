@@ -41,10 +41,10 @@ const _DISCIPLINAS = {
 // global.js — dentro de _DISCIPLINAS
 
 '2026.2': [
-  { id: 'poo',         nome: 'Programação Orientada a Objetos', arquivo: 'poo',         emoji: '☕' },
-  { id: 'banco_dados', nome: 'Banco de Dados',                  arquivo: 'banco_dados', emoji: '🗄️' },
-  { id: 'redes',       nome: 'Redes de Computadores',           arquivo: 'redes',       emoji: '🌐' },
-  { id: 'design',      nome: 'Design de Sistemas',              arquivo: 'design',      emoji: '🎨' }, // ← ADICIONAR
+{ id: 'poo',        nome: 'Programação Orientada a Objetos', apelido: 'P.O.O.',            emoji: '☕', arquivo: 'poo' },
+{ id: 'redes',      nome: 'Redes de Computadores I',         apelido: 'Redes I',           emoji: '🌐', arquivo: 'redes' },
+{ id: 'banco_dados',nome: 'Fundamentos de Banco de Dados',   apelido: 'Banco de dados',    emoji: '🗄️', arquivo: 'banco_dados' },
+{ id: 'design',     nome: 'Design de Sistemas de Informação',apelido: 'Design de Sistemas',emoji: '🎨', arquivo: 'design' },
 ],
 
 };
