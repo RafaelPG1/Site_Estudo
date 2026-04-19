@@ -22,9 +22,7 @@ const State = {
   disciplinas:     [],
   aulas:           [],
   aulaAberta:      null,
-  secaoAtiva:      'todas',
-  termoBusca:      '',
-  discVerificadas: new Set(), // disciplinas já verificadas de verdade (via script load/error)
+  discVerificadas: new Set(),
 };
 
 /* ══════════════════════════════════════════════
@@ -34,13 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
   setPagina('RESUMO');
   document.getElementById('footer-year').textContent = new Date().getFullYear();
 
-  const todoBtn = document.querySelector('[data-filter="todos"]');
-  if (todoBtn) { todoBtn.textContent = 'Todas'; todoBtn.dataset.filter = 'todas'; }
-
   _resolverContexto();
   _renderSidebar();
   _renderHeader();
-  _bindToolbar();
   _bindModal();
   _bindMobileDropdown();
   _carregarConteudo();
@@ -83,19 +77,17 @@ function _carregarConteudo() {
 
   script.onload = () => {
     const aulas = _lerDados();
-    State.discVerificadas.add(disc.id); // marca como verificada de verdade
+    State.discVerificadas.add(disc.id);
     _marcarStatusConteudo(disc.id, aulas.length > 0);
     if (!aulas.length) { _renderHeroStats(0); _mostrarEstadoSemConteudo(); return; }
     State.aulas = aulas;
-    State.secaoAtiva = 'todas';
-    _renderFiltrosSecao(aulas);
     _renderHeroStats(aulas.length);
     _renderCards(aulas);
     _mostrarEstado('grid');
   };
 
   script.onerror = () => {
-    State.discVerificadas.add(disc.id); // marca como verificada de verdade
+    State.discVerificadas.add(disc.id);
     _marcarStatusConteudo(disc.id, false);
     _renderHeroStats(0);
     _mostrarEstadoSemConteudo();
@@ -134,31 +126,6 @@ function _aplicarCorDisciplina(discId) {
   r.setProperty('--disc-tema-rgb', cores.corTemaRgb);
   r.setProperty('--disc-tema2',    cores.corTema2);
   r.setProperty('--disc-tema2Rgb', cores.corTema2Rgb);
-}
-
-/* ══════════════════════════════════════════════
-   VERIFICAÇÃO DE STATUS — HEAD request
-   Só atualiza disciplinas que ainda não foram
-   verificadas de verdade (via script load/error)
-══════════════════════════════════════════════ */
-function _verificarStatusTodos() {
-  const [ano] = (State.semestre ?? '2026.2').split('.');
-
-  State.disciplinas.forEach(disc => {
-    const src = `/resumo/conteudo/${ano}/${State.semestre}/res_${disc.arquivo}.js`;
-
-    fetch(src, { method: 'HEAD' })
-      .then(r => {
-        if (!State.discVerificadas.has(disc.id)) {
-          _marcarStatusConteudo(disc.id, r.ok);
-        }
-      })
-      .catch(() => {
-        if (!State.discVerificadas.has(disc.id)) {
-          _marcarStatusConteudo(disc.id, false);
-        }
-      });
-  });
 }
 
 /* ══════════════════════════════════════════════
@@ -201,69 +168,6 @@ function _renderHeroStats(total) {
 }
 
 /* ══════════════════════════════════════════════
-   FILTROS — por seção
-══════════════════════════════════════════════ */
-function _renderFiltrosSecao(aulas) {
-  const ids   = new Set();
-  const nomes = {};
-  aulas.forEach(a => (a.secoes ?? []).forEach(s => { ids.add(s.id); nomes[s.id] = s.titulo; }));
-
-  const group = document.getElementById('filter-group');
-  if (!group) return;
-  group.querySelectorAll('[data-filter]:not([data-filter="todas"])').forEach(b => b.remove());
-
-  ids.forEach(id => {
-    const btn = document.createElement('button');
-    btn.className      = 'filter-btn';
-    btn.dataset.filter = id;
-    btn.textContent    = nomes[id].replace(/^[^\w\s]+\s*/, '');
-    group.appendChild(btn);
-  });
-}
-
-function _bindToolbar() {
-  document.getElementById('filter-group')?.addEventListener('click', e => {
-    const btn = e.target.closest('.filter-btn');
-    if (!btn) return;
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('filter-btn--active'));
-    btn.classList.add('filter-btn--active');
-    State.secaoAtiva = btn.dataset.filter;
-    _aplicarFiltros();
-  });
-
-  const si = document.getElementById('search-input');
-  const sc = document.getElementById('search-clear');
-  si?.addEventListener('input', e => {
-    State.termoBusca = e.target.value.trim().toLowerCase();
-    if (sc) sc.style.display = State.termoBusca ? 'block' : 'none';
-    _aplicarFiltros();
-  });
-  sc?.addEventListener('click', () => {
-    if (si) si.value = '';
-    State.termoBusca = '';
-    if (sc) sc.style.display = 'none';
-    _aplicarFiltros();
-  });
-}
-
-function _aplicarFiltros() {
-  let aulas = [...State.aulas];
-
-  if (State.termoBusca) {
-    const t = State.termoBusca;
-    aulas = aulas.filter(a =>
-      (a.aula ?? '').toLowerCase().includes(t) ||
-      (a.ideia_central ?? '').toLowerCase().includes(t) ||
-      JSON.stringify(a.secoes ?? '').toLowerCase().includes(t)
-    );
-  }
-
-  if (aulas.length === 0) { _mostrarEstado('empty'); return; }
-  _renderCards(aulas);
-  _mostrarEstado('grid');
-}
-
-/* ══════════════════════════════════════════════
    CARDS
 ══════════════════════════════════════════════ */
 function _renderCards(aulas) {
@@ -276,10 +180,9 @@ function _renderCards(aulas) {
 function _criarCard(aula, idx) {
   const secoes = aula.secoes ?? [];
 
-  // Extrai só o número/label da aula (ex: "Aula 9") e o título separado
-  const aulaStr   = _esc(aula.aula ?? '');
-  const aulaMatch = aulaStr.match(/^(Aula\s*\d+)\s*[—–-]\s*(.+)$/i);
-  const aulaNum   = aulaMatch ? aulaMatch[1] : aulaStr;
+  const aulaStr    = _esc(aula.aula ?? '');
+  const aulaMatch  = aulaStr.match(/^(Aula\s*\d+)\s*[—–-]\s*(.+)$/i);
+  const aulaNum    = aulaMatch ? aulaMatch[1] : aulaStr;
   const aulaTitulo = aulaMatch ? aulaMatch[2] : '';
 
   const card = document.createElement('article');
@@ -320,18 +223,6 @@ function _criarCard(aula, idx) {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _abrirModal(aula); }
   });
   return card;
-}
-
-function _gerarPreview(aula) {
-  const primeira = (aula.secoes ?? [])[0];
-  if (!primeira) return '';
-  const bloco = (primeira.blocos ?? [])[0];
-  if (!bloco) return '';
-  if (bloco.tipo === 'lista' && bloco.itens) {
-    return bloco.itens.slice(0, 3).map(i => `• ${_parseInline(i)}`).join('<br>');
-  }
-  if (bloco.tipo === 'topico' && bloco.texto) return _parseInline(bloco.texto);
-  return '';
 }
 
 /* ══════════════════════════════════════════════
@@ -522,15 +413,6 @@ function _trocarDisciplina(disc) {
   const url = new URL(window.location.href);
   url.searchParams.set('disc', disc.id);
   window.history.pushState({}, '', url);
-
-  State.secaoAtiva = 'todas';
-  State.termoBusca = '';
-  const si = document.getElementById('search-input');
-  if (si) si.value = '';
-  document.getElementById('search-clear').style.display = 'none';
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('filter-btn--active'));
-  document.querySelector('[data-filter="todas"]')?.classList.add('filter-btn--active');
-  document.querySelectorAll('.filter-btn:not([data-filter="todas"])').forEach(b => b.remove());
 
   _atualizarSidebarAtivo(disc.id);
   _renderHeader();

@@ -82,33 +82,15 @@
         </div>
       </div>
 
-      <!-- TOOLBAR -->
-      <div class="toolbar" id="toolbar">
-        <div class="toolbar__inner">
-
-          <!-- Seletor mobile (só aparece em telas pequenas) -->
-          <button class="mobile-disc-btn" id="mobile-disc-btn">
-            <span id="mobile-disc-label">Disciplina</span>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
-          </button>
-
-          <div class="filter-group" id="filter-group">
-            <button class="filter-btn filter-btn--active" data-filter="todos">Todos</button>
-          </div>
-
-          <div class="search-wrap">
-            <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-            </svg>
-            <input type="text" class="search-input" id="search-input" placeholder="Buscar aulas…" />
-            <button class="search-clear" id="search-clear" style="display:none">✕</button>
-          </div>
-
-        </div>
+      <!-- MOBILE DISC BTN (só aparece em telas pequenas, fora da toolbar) -->
+      <div class="mobile-toolbar" id="mobile-toolbar">
+        <button class="mobile-disc-btn" id="mobile-disc-btn">
+          <span id="mobile-disc-label">Disciplina</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
       </div>
 
       <!-- MAIN -->
