@@ -105,11 +105,7 @@ export function setDisciplina(id) {
  * semestre mais recente (primeiro de SEMESTRES) como fallback.
  */
 export function getDisciplinasDeSemestre(semestre) {
-  return (
-    _DISCIPLINAS[semestre] ??
-    _DISCIPLINAS[SEMESTRES[0]] ??
-    []
-  );
+  return _DISCIPLINAS[semestre] ?? [];
 }
 
 /* ══════════════════════════════════════════════════════════

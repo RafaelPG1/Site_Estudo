@@ -10,8 +10,9 @@ import {
   setDisciplina,
   getDisciplinasDeSemestre,
   setPagina,
+  setSemestre,
+  SEMESTRES,
 } from '../global.js';
-
 
 /* ══════════════════════════════════════════════
    ESTADO
@@ -23,6 +24,7 @@ const State = {
   aulas:           [],
   aulaAberta:      null,
   discVerificadas: new Set(),
+  temConteudo:     null,   // null = carregando | true = tem | false = vazio
 };
 
 /* ══════════════════════════════════════════════
@@ -35,10 +37,53 @@ document.addEventListener('DOMContentLoaded', () => {
   _resolverContexto();
   _renderSidebar();
   _renderHeader();
+  _renderSemestreSelector();
   _bindModal();
   _bindMobileDropdown();
   _carregarConteudo();
 });
+
+/* ══════════════════════════════════════════════
+   SELETOR DE SEMESTRE
+══════════════════════════════════════════════ */
+function _renderSemestreSelector() {
+  const wrap = document.getElementById('semestre-wrap-resumo');
+  if (!wrap) return;
+
+  const atual = State.semestre;
+  const select = document.createElement('select');
+  select.className = 'semestre-select';
+  select.title = 'Selecionar semestre';
+
+  SEMESTRES.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s;
+    opt.textContent = s;
+    if (s === atual) opt.selected = true;
+    select.appendChild(opt);
+  });
+
+  select.addEventListener('change', e => {
+    setSemestre(e.target.value);
+    State.semestre    = e.target.value;
+    State.disciplinas = getDisciplinasDeSemestre(e.target.value);
+    State.temConteudo = null;
+
+    State.disciplina = State.disciplinas[0] ?? null;
+    if (State.disciplina) {
+      setDisciplina(State.disciplina.id);
+      _aplicarCorDisciplina(State.disciplina.id);
+    } else {
+      setDisciplina(null);
+    }
+
+    _renderSidebar();
+    _renderHeader();
+    _carregarConteudo();
+  });
+
+  wrap.appendChild(select);
+}
 
 /* ══════════════════════════════════════════════
    CONTEXTO
@@ -49,6 +94,12 @@ function _resolverContexto() {
   State.semestre    = semestre;
   State.disciplinas = lista;
 
+  if (!lista.length) {
+    State.disciplina = null;
+    setDisciplina(null);
+    return;
+  }
+
   const params = new URLSearchParams(window.location.search);
   const discId = params.get('disc') ?? getDisciplinaAtual();
   const disc   = (discId ? lista.find(d => d.id === discId) : null) ?? lista[0] ?? null;
@@ -58,15 +109,39 @@ function _resolverContexto() {
 }
 
 /* ══════════════════════════════════════════════
+   STATUS BADGE — só aparece quando vazio
+══════════════════════════════════════════════ */
+function _atualizarStatusBadge() {
+  const badge = document.getElementById('header-status-badge');
+  if (!badge) return;
+
+  if (State.temConteudo === false) {
+    badge.style.display = '';
+    badge.textContent   = 'Vazio';
+    badge.className     = 'status-badge status-badge--empty';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+/* ══════════════════════════════════════════════
    CARREGAR CONTEÚDO DINÂMICO
 ══════════════════════════════════════════════ */
 function _carregarConteudo() {
   _mostrarEstado('loading');
+  State.temConteudo = null;
+  _atualizarStatusBadge();
   _removerScriptAnterior();
   window.__nexusConteudo = null;
 
   const disc = State.disciplina;
-  if (!disc) { _mostrarEstadoSemConteudo(); return; }
+  if (!disc) {
+    State.temConteudo = false;
+    _atualizarStatusBadge();
+    _renderHeroStats(0);
+    _mostrarEstadoSemConteudo();
+    return;
+  }
 
   const [ano] = (State.semestre ?? '2026.2').split('.');
   const src   = `/resumo/conteudo/${ano}/${State.semestre}/res_${disc.arquivo}.js`;
@@ -76,9 +151,14 @@ function _carregarConteudo() {
   script.id    = 'nexus-conteudo-script';
 
   script.onload = () => {
+    // Guard: ignora se o usuário já trocou de disciplina
+    if (State.disciplina?.id !== disc.id) return;
+
     const aulas = _lerDados();
     State.discVerificadas.add(disc.id);
-    _marcarStatusConteudo(disc.id, aulas.length > 0);
+    State.temConteudo = aulas.length > 0;
+    _marcarStatusConteudo(disc.id, State.temConteudo);
+
     if (!aulas.length) { _renderHeroStats(0); _mostrarEstadoSemConteudo(); return; }
     State.aulas = aulas;
     _renderHeroStats(aulas.length);
@@ -87,7 +167,11 @@ function _carregarConteudo() {
   };
 
   script.onerror = () => {
+    // Guard: ignora se o usuário já trocou de disciplina
+    if (State.disciplina?.id !== disc.id) return;
+
     State.discVerificadas.add(disc.id);
+    State.temConteudo = false;
     _marcarStatusConteudo(disc.id, false);
     _renderHeroStats(0);
     _mostrarEstadoSemConteudo();
@@ -142,8 +226,8 @@ function _mostrarEstadoSemConteudo() {
   const disc = State.disciplina;
   const eEl  = document.getElementById('state-disc-emoji');
   const nEl  = document.getElementById('state-disc-name');
-  if (eEl) eEl.textContent = disc?.emoji ?? '📚';
-  if (nEl) nEl.textContent  = disc?.nome  ?? '—';
+  if (eEl) eEl.textContent = disc?.emoji ?? '';
+  if (nEl) nEl.textContent  = disc?.nome  ?? '';
   _mostrarEstado('no-content');
 }
 
@@ -156,11 +240,9 @@ function _renderHeroStats(total) {
   const disc = State.disciplina;
   if (!c) return;
 
-  c.innerHTML = total === 0
-    ? `<div class="stat-pill">${disc?.emoji ?? ''} ${disc?.nome ?? '—'}</div>
-       <div class="stat-pill"><strong>0</strong> aulas</div>`
-    : `<div class="stat-pill"><strong>${total}</strong> aula${total !== 1 ? 's' : ''}</div>
-       ${disc ? `<div class="stat-pill">${disc.emoji} ${disc.nome}</div>` : ''}`;
+  c.innerHTML = disc
+    ? `<div class="stat-pill">${disc.emoji} ${disc.nome}</div>`
+    : '';
 
   if (sub) sub.textContent = total === 0
     ? `Nenhum resumo disponível para ${disc?.nome ?? 'esta disciplina'} ainda.`
@@ -205,7 +287,7 @@ function _criarCard(aula, idx) {
           <div class="card-progress__fill"></div>
         </div>
         <div class="card-meta">
-          <span class="card-meta__count">${secoes.length} seção${secoes.length !== 1 ? 'ões' : ''}</span>
+          <span class="card-meta__count">${secoes.length} seç${secoes.length !== 1 ? 'ões' : 'ão'}</span>
           <span class="card-meta__cta">
             Ver resumo
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -306,7 +388,7 @@ function _renderBloco(b) {
       let html = `<div class="rm-topico">`;
       html += `<div class="rm-topico__titulo">${_parseInline(b.titulo ?? '')}</div>`;
       if (b.texto)  html += `<p class="rm-topico__texto">${_parseInline(b.texto)}</p>`;
-      if (b.lista)  html += `<ul class="rm-lista">${b.lista.map(i => `<li>${_parseInline(i)}</li>`).join('')}</ul>`;
+      if (b.lista)  html += `<ul class="rm-lista">${b.lista.map(i => `<li><span>${_parseInline(i)}</span></li>`).join('')}</ul>`;
       if (b.codigo) html += `<pre class="rm-codigo"><code>${_esc(b.codigo)}</code></pre>`;
       html += `</div>`;
       return html;
@@ -315,7 +397,7 @@ function _renderBloco(b) {
     case 'lista': {
       let html = '';
       if (b.titulo) html += `<p class="rm-lista-titulo">${_parseInline(b.titulo)}</p>`;
-      html += `<ul class="rm-lista">${(b.itens ?? []).map(i => `<li>${_parseInline(i)}</li>`).join('')}</ul>`;
+      html += `<ul class="rm-lista">${(b.itens ?? []).map(i => `<li><span>${_parseInline(i)}</span></li>`).join('')}</ul>`;
       return html;
     }
 
@@ -368,6 +450,23 @@ function _renderSidebar() {
   if (!list) return;
   list.innerHTML = '';
 
+  if (!State.disciplinas.length) {
+    list.innerHTML = `
+      <div style="
+        padding: 1.5rem 0.75rem;
+        text-align: center;
+        color: var(--text-3);
+        font-size: 0.72rem;
+        letter-spacing: 0.06em;
+        line-height: 1.7;
+      ">
+        <div style="font-size: 1.4rem; margin-bottom: 0.5rem;">📭</div>
+        Nenhuma disciplina<br>neste semestre
+      </div>`;
+    _mostrarEstado('no-content');
+    return;
+  }
+
   State.disciplinas.forEach(disc => {
     const isAtivo = disc.id === State.disciplina?.id;
     const item    = document.createElement('button');
@@ -400,14 +499,17 @@ function _atualizarSidebarAtivo(discId) {
 
 function _marcarStatusConteudo(discId, tem) {
   const el = document.getElementById(`disc-status-${discId}`);
-  if (!el) return;
-  el.textContent = tem ? 'Disponível' : 'Sem conteúdo';
-  el.className   = `disc-item__status disc-item__status--${tem ? 'ok' : 'empty'}`;
+  if (el) {
+    el.textContent = tem ? 'Disponível' : 'Sem conteúdo';
+    el.className   = `disc-item__status disc-item__status--${tem ? 'ok' : 'empty'}`;
+  }
+  _atualizarStatusBadge();
 }
 
 function _trocarDisciplina(disc) {
   if (disc.id === State.disciplina?.id) return;
-  State.disciplina = disc;
+  State.disciplina  = disc;
+  State.temConteudo = null;   // limpa imediatamente ao trocar
   setDisciplina(disc.id);
 
   const url = new URL(window.location.href);
@@ -426,16 +528,23 @@ function _trocarDisciplina(disc) {
 ══════════════════════════════════════════════ */
 function _renderHeader() {
   const disc = State.disciplina;
-  const bc   = document.getElementById('header-breadcrumb');
+
+  const bc = document.getElementById('header-breadcrumb');
   if (bc) bc.innerHTML = disc ? `Resumos <span>· ${disc.nome}</span>` : 'Resumos';
 
   const badge = document.getElementById('disc-badge');
-  if (badge && disc) {
-    const label = disc.apelido ?? disc.nome;
-    badge.innerHTML = `
-      <span style="flex-shrink:0">${disc.emoji}</span>
-      <span style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;min-width:0">${label}</span>
-    `;
+  if (badge) {
+    if (disc) {
+      const label = disc.apelido ?? disc.nome;
+      badge.style.display = '';
+      badge.innerHTML = `
+        <span style="flex-shrink:0">${disc.emoji}</span>
+        <span style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;min-width:0">${label}</span>
+      `;
+    } else {
+      badge.style.display = 'none';
+      badge.innerHTML = '';
+    }
   }
 
   const ey = document.getElementById('hero-eyebrow-text');
@@ -445,6 +554,8 @@ function _renderHeader() {
   if (ml) ml.textContent = disc ? `${disc.emoji} ${disc.apelido ?? _nomeCurto(disc.nome, 20)}` : 'Disciplina';
 
   document.title = disc ? `Resumos — ${disc.nome} · Nexus Study` : 'Resumos · Nexus Study';
+
+  _atualizarStatusBadge();
 }
 
 function _nomeCurto(nome, max = 18) {
