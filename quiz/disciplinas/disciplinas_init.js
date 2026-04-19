@@ -1,32 +1,37 @@
 /* ============================================================
-   NEXUS STUDY — quiz/disciplinas/disciplinas_init.js
+  NEXUS STUDY — quiz/disciplinas/disciplinas_init.js
 
-   Responsabilidades (roda em todos os *.html de disciplina):
-     1. Aplica as cores da disciplina via CSS variables (sem FOUC)
-     2. Lê ?sem= da URL com fallback correto:
-          1º) ?sem= na URL
-          2º) localStorage (nexus_semestre_atual — salvo por global.js)
-          3º) '2026.2' como último fallback
-     3. Injeta ?sem= na URL visível via replaceState
-     4. Propaga ?sem= nos links de saída (template.html / quiz.html)
-     5. Propaga ?sem= no back-btn (id="back-btn")
+  Responsabilidades (roda em todos os *.html de disciplina):
+    1. Aplica as cores da disciplina via CSS variables (sem FOUC)
+    2. Lê ?sem= da URL com fallback correto:
+        1º) ?sem= na URL
+        2º) global.js (getSemestreAtual)
+        3º) fallback padrão do global.js
+    3. Injeta ?sem= na URL visível via replaceState
+    4. Propaga ?sem= nos links de saída (template.html / quiz.html)
+    5. Propaga ?sem= no back-btn (id="back-btn")
 
-   CORREÇÃO APLICADA:
-     - Antes: var sem = ...get('sem') || '2026.2'
-       O fallback hardcodado ignorava o localStorage, fazendo o
-       semestre voltar para 2026.2 ao navegar para dentro do quiz.
+  Lógica do semestre:
+    - O valor do semestre é resolvido respeitando a prioridade:
+        a) parâmetro ?sem= presente na URL
+        b) função getSemestreAtual (definida no global.js)
+        c) valor padrão definido no global.js
 
-     - Depois: lê nexus_semestre_atual do localStorage entre o
-       parâmetro da URL e o default final, respeitando a escolha
-       feita pelo usuário na home.
+  Padrões e robustez:
+    - Uso de URL() para manipulação segura de links
+    - Preserva outros parâmetros (disc=, modo=, etc.)
+    - replaceState executa apenas se ?sem= não existir na URL
+    - Compatível com acesso direto via link (deep link)
 
-   ROBUSTEZ:
-     - Usa URL() para manipular hrefs — preserva disc=, modo=, etc.
-     - Fallback explícito garante funcionamento no acesso direto.
-     - replaceState só é chamado quando ?sem= não está na URL.
-   ============================================================ */
+  Organização:
+    - Toda lógica de estado global fica centralizada no global.js
+    - Evita acesso direto ao localStorage neste arquivo
+    - Mantém consistência de navegação entre páginas
 
+  ============================================================ */
+  
 import { DISC_CORES } from './disciplinas_cores.js';
+import { getSemestreAtual } from '../../global.js'; 
 
 /* ── APLICA CORES DA DISCIPLINA (síncrono, sem FOUC) ─────── */
 (function aplicarCores() {
@@ -53,14 +58,8 @@ import { DISC_CORES } from './disciplinas_cores.js';
        b) localStorage  (nexus_semestre_atual, salvo por global.js)
        c) '2026.2'      (último fallback — acesso direto ao arquivo)
   ─────────────────────────────────────────────────────────── */
-var storedSem = null;
-try {
-  var _raw = localStorage.getItem('nexus_semestre_atual');
-  storedSem = _raw !== null ? JSON.parse(_raw) : null;
-} catch (e) {}
-  var sem = new URLSearchParams(location.search).get('sem')
-         || storedSem
-         || '2026.2';
+var sem = new URLSearchParams(location.search).get('sem')
+       || getSemestreAtual();
 
   /* ── 2. Garante que ?sem= apareça na barra de endereço ──── */
   if (!location.search.includes('sem=')) {

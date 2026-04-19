@@ -1,64 +1,83 @@
-/* =============================================
-   NEXUS STUDY — quiz/quiz.js
-   Lógica da página de seleção de disciplinas
-   Usa global.js como fonte de verdade
-   ============================================= */
-
 import {
   SEMESTRES,
   getSemestreAtual,
   setSemestre,
+  getDisciplinasDeSemestre,
 } from '../global.js';
 
 (function () {
 
-  /* 1. Semestre inicial — vem do global.js (já lê o localStorage) */
   const semParam = new URLSearchParams(location.search).get('sem');
   if (semParam && SEMESTRES.includes(semParam)) setSemestre(semParam);
 
   let semAtual = getSemestreAtual();
 
-  /* 2. Popula o <select> dinamicamente com SEMESTRES do global.js */
+  // Popula o <select>
   const select = document.getElementById('quiz-semestre-select');
-
   SEMESTRES.forEach(s => {
-    const opt       = document.createElement('option');
-    opt.value       = s;
-    opt.textContent = s;
+    const opt = document.createElement('option');
+    opt.value = s; opt.textContent = s;
     if (s === semAtual) opt.selected = true;
     select.appendChild(opt);
   });
 
-  /* 3. Filtra cards e atualiza hrefs */
-  function aplicarSemestre(sem) {
-    const ano = sem.split('.')[0];
-    let visivel = 0;
+  // Mapa de cores por disciplina (classe CSS)
+  const DISC_CLASS = {
+    poo: 'disc-card--blue', redes: 'disc-card--teal',
+    design: 'disc-card--gold', banco_dados: 'disc-card--rose',
+  };
 
-    document.querySelectorAll('.disc-card[data-semestres]').forEach(card => {
-      const lista = card.dataset.semestres.split(',').map(s => s.trim());
-
-      if (lista.includes(sem)) {
-        card.style.display = '';
-        try {
-          const url = new URL(card.href, location.href);
-          url.searchParams.set('sem', sem);
-          url.pathname = url.pathname.replace(/disciplinas\/\d{4}\//, `disciplinas/${ano}/`);
-          card.href = url.toString();
-        } catch (e) {}
-        visivel++;
-      } else {
-        card.style.display = 'none';
-      }
-    });
-
+  // Gera os cards a partir do global.js
+  function gerarCards(sem) {
+    const ano   = sem.split('.')[0];
+    const grid  = document.getElementById('disciplines-grid');
     const msgEl = document.getElementById('disciplines-empty');
-    if (msgEl) {
-      msgEl.textContent = visivel === 0 ? `Nenhuma disciplina cadastrada para o semestre ${sem}.` : '';
-      msgEl.style.display = visivel === 0 ? 'block' : 'none';
+    const discs = getDisciplinasDeSemestre(sem);
+
+    // Remove cards antigos (mantém a mensagem de vazio)
+    grid.querySelectorAll('.disc-card').forEach(c => c.remove());
+
+    if (!discs.length) {
+      msgEl.textContent = `Nenhuma disciplina cadastrada para ${sem}.`;
+      msgEl.style.display = 'block';
+      return;
     }
+
+    msgEl.style.display = 'none';
+
+    discs.forEach(disc => {
+      const href  = `disciplinas/${ano}/${disc.arquivo}.html?sem=${sem}`;
+      const cls   = DISC_CLASS[disc.id] ?? 'disc-card--blue';
+      const label = disc.apelido ?? disc.nome;
+
+      const a = document.createElement('a');
+      a.href      = href;
+      a.className = `disc-card ${cls}`;
+      a.setAttribute('role', 'listitem');
+      a.setAttribute('aria-label', disc.nome);
+      a.innerHTML = `
+        <div class="disc-card__icon-col">
+          <div class="disc-card__icon-wrap"><span>${disc.emoji}</span></div>
+        </div>
+        <div class="disc-card__body">
+          <h2 class="disc-card__title">${label}</h2>
+          <p class="disc-card__desc">${disc.nome}</p>
+        </div>
+        <div class="disc-card__cta">
+          <div class="disc-card__arrow">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
+            </svg>
+          </div>
+          <span class="disc-card__cta-label">Iniciar</span>
+        </div>
+        <div class="disc-card__glow"></div>
+      `;
+      grid.insertBefore(a, msgEl);
+    });
   }
 
-  /* 4. Sincroniza URL sem recarregar */
   function sincronizarURL(sem) {
     try {
       const url = new URL(location.href);
@@ -67,19 +86,16 @@ import {
     } catch (e) {}
   }
 
-  /* 5. Boot */
-  aplicarSemestre(semAtual);
+  gerarCards(semAtual);
   sincronizarURL(semAtual);
 
-  /* 6. Evento de troca */
   select.addEventListener('change', () => {
     semAtual = select.value;
     setSemestre(semAtual);
-    aplicarSemestre(semAtual);
+    gerarCards(semAtual);
     sincronizarURL(semAtual);
   });
 
-  /* 7. Footer year */
   const fy = document.getElementById('footer-year');
   if (fy) fy.textContent = new Date().getFullYear();
 
