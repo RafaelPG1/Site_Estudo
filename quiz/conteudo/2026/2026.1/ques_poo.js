@@ -735,7 +735,7 @@ if (usuario != null && usuario.isAtivo()) { salvar(); }   // Linha 2`,
 
   // ── Questões de AVA ───────────────────────────────────────
 
-  ava: [
+ava: [
 
     {
       aula: "Programação Orientada a Objetos",
@@ -753,7 +753,7 @@ if (usuario != null && usuario.isAtivo()) { salvar(); }   // Linha 2`,
         "As asserções I e II são verdadeiras, e a II é uma justificativa da I."
       ],
       answer: 3,
-      feedback: "A asserção I está correta: ==key==classe é um molde abstrato== e o ==key==objeto é uma instância concreta em memória==. A asserção II ==mark==justifica a I== porque explica o mecanismo que permite isso — a classe define estrutura compartilhada, mas cada objeto mantém seus próprios estados internos."
+      feedback: "✓ Resposta correta: D) As asserções I e II são verdadeiras, e a II é uma justificativa da I.\n\nPor que está certa:\nA asserção I está correta pois a classe é de fato um molde abstrato e o objeto é uma instância concreta em memória. A asserção II justifica a I porque explica o mecanismo que permite isso: a classe define estrutura compartilhada, mas cada objeto mantém seus próprios estados internos — o que explica como múltiplos carros podem coexistir com características independentes."
     },
 
     {
@@ -774,7 +774,7 @@ if (usuario != null && usuario.isAtivo()) { salvar(); }   // Linha 2`,
         "I, II e III, apenas."
       ],
       answer: 2,
-      feedback: "I está correta — a POO agrupa ==key==atributos e comportamentos em objetos==. III está correta — os objetos colaboram por meio de ==key==troca de mensagens/invocação de métodos==. II está errada pois a POO incentiva o ==mark==reuso (herança, composição)==. IV descreve o paradigma procedural/funcional."
+      feedback: "✓ Resposta correta: C) I e III, apenas.\n\nPor que está certa:\nI está correta — a POO agrupa atributos e comportamentos em objetos que modelam o mundo real. III está correta — os objetos colaboram por meio de troca de mensagens/invocação de métodos. II está errada pois a POO incentiva o reuso (herança, composição). IV está errada pois descreve o paradigma procedural/funcional, não a POO."
     },
 
     {
@@ -789,7 +789,7 @@ if (usuario != null && usuario.isAtivo()) { salvar(); }   // Linha 2`,
         "O atributo saldo deve ser private e modificado unicamente por métodos controlados."
       ],
       answer: 3,
-      feedback: "O ==key==encapsulamento== correto exige que atributos sensíveis sejam declarados como ==key==private==, impedindo acesso direto externo. O acesso deve ocorrer apenas por ==mark==getters/setters com validação==. <code>protected</code> ainda permite acesso por subclasses; classes não podem ser <code>private</code> (exceto internas)."
+      feedback: "✓ Resposta correta: D) O atributo saldo deve ser private e modificado unicamente por métodos controlados.\n\nPor que está certa:\nO encapsulamento correto exige que atributos sensíveis sejam declarados como private, impedindo acesso direto externo. O acesso deve ocorrer apenas por meio de métodos (getters/setters) que podem conter validações — como impedir saldo negativo. As outras alternativas estão erradas: protected ainda permite acesso por subclasses e classes do mesmo pacote; classes não podem ser private (exceto internas); construtores estáticos não resolvem o problema de validação de acesso."
     },
 
     {
@@ -832,7 +832,7 @@ public class Gerente extends Funcionario {
         "I, II e III."
       ],
       answer: 2,
-      feedback: "I está correta — ==key==extends== estabelece herança e Gerente reutiliza os atributos de Funcionario. II está correta — ==key==super.calcularPagamento()== é reuso de comportamento da superclasse. III está ==mark==errada== — a ==mark==composição de objetos== é uma alternativa igualmente válida e muitas vezes preferida (\"prefira composição à herança\")."
+      feedback: "✓ Resposta correta: C) I e II, apenas.\n\nPor que está certa:\nI está correta — extends estabelece herança e Gerente reutiliza os atributos de Funcionario. II está correta — super.calcularPagamento() reutiliza a lógica da superclasse. III está errada — a herança não é a única forma de reuso; a composição de objetos é uma alternativa igualmente válida e muitas vezes preferida (princípio \"Prefira composição à herança\")."
     },
 
     {
@@ -862,7 +862,7 @@ public class Carro extends Veiculo {
         "I, II e III."
       ],
       answer: 2,
-      feedback: "I está correta — Carro herda atributos e métodos de Veiculo via ==key==extends==. II está correta — ==key==extends== é a palavra-chave Java para herança. III está ==mark==errada== — Veiculo é uma classe concreta comum e ==mark==pode ser instanciada diretamente==. Para impedir instanciação, precisaria ser declarada como ==mark==abstract==."
+      feedback: "✓ Resposta correta: C) I e II apenas.\n\nPor que está certa:\nI está correta — Carro herda atributos e métodos de Veiculo via extends. II está correta — extends é a palavra-chave Java para herança. III está errada — Veiculo é uma classe concreta comum, não uma interface. Ela PODE ser instanciada diretamente com new Veiculo(\"Toyota\"). Para não poder ser instanciada, precisaria ser declarada como abstract ou interface."
     },
 
     {
@@ -881,7 +881,7 @@ public class Carro extends Veiculo {
         "As asserções I e II são proposições falsas."
       ],
       answer: 2,
-      feedback: "A asserção I é verdadeira — ==key==classe é um molde abstrato== e o ==key==objeto é uma instância concreta em memória==. A asserção II também é verdadeira e ==mark==justifica a I==: é porque a classe define atributos e métodos estruturais que múltiplos objetos independentes podem ser criados com estados próprios."
+      feedback: "✓ Resposta correta: C) As asserções I e II são proposições verdadeiras, e a II é uma justificativa correta da I.\n\nPor que está certa:\nA primeira asserção é verdadeira — classe é um molde abstrato e objeto é uma instância concreta em memória. A segunda asserção também é verdadeira e justifica a primeira: é exatamente porque a classe define atributos e métodos compartilhados estruturalmente que múltiplos objetos independentes (cada um com seu estado próprio) podem ser criados a partir do mesmo modelo."
     },
 
     {
@@ -924,7 +924,7 @@ public class Gerente extends Funcionario {
         "As afirmações I, II e III estão corretas."
       ],
       answer: 2,
-      feedback: "I está correta — ==key==extends== cria herança e Gerente reutiliza os atributos de Funcionario. II está correta — ==key==super.calcularPagamento()== é reuso de comportamento. III está ==mark==errada== — a ==mark==composição de objetos== é outra abordagem igualmente válida e amplamente utilizada."
+      feedback: "✓ Resposta correta: C) Apenas as afirmações I e II estão corretas.\n\nPor que está certa:\nI está correta — extends cria herança e Gerente reutiliza os atributos de Funcionario. II está correta — super.calcularPagamento() é reuso de comportamento da superclasse. III está errada — a herança não é a única forma de reuso em Java; composição de objetos é outra abordagem igualmente válida e amplamente utilizada."
     },
 
     {
@@ -945,7 +945,7 @@ public class Gerente extends Funcionario {
         "I, III e IV, apenas."
       ],
       answer: 1,
-      feedback: "I correta — ==key==public== é o mais permissivo, acessível de qualquer lugar. II correta — ==key==private== restringe ao escopo da própria classe. III correta — ==key==protected== permite acesso no mesmo pacote e em subclasses de outros pacotes. IV ==mark==errada== — o acesso ==mark==default== NÃO se estende para subclasses em pacotes diferentes."
+      feedback: "✓ Resposta correta: B) I, II e III, apenas.\n\nPor que está certa:\nI está correta — public é o modificador mais permissivo, acessível de qualquer lugar. II está correta — private restringe o acesso apenas à própria classe. III está correta — protected permite acesso no mesmo pacote e em subclasses de outros pacotes. IV está errada — o acesso default (sem modificador) NÃO é igual ao protected; ele permite acesso apenas dentro do mesmo pacote, mas NÃO estende para subclasses em pacotes diferentes."
     },
 
     {
@@ -960,7 +960,7 @@ public class Gerente extends Funcionario {
         "Estabelecer assinaturas de métodos que as classes concretas implementarão."
       ],
       answer: 3,
-      feedback: "Uma ==key==interface em Java== define um ==mark==contrato== — ela declara as assinaturas dos métodos (sem implementação) que as classes concretas devem implementar. Interfaces não podem ter construtores, não instanciam objetos e não substituem totalmente classes abstratas."
+      feedback: "✓ Resposta correta: D) Estabelecer assinaturas de métodos que as classes concretas implementarão.\n\nPor que está certa:\nUma interface em Java define um contrato — ela declara as assinaturas dos métodos (sem implementação) que as classes concretas devem implementar. Isso garante padronização e desacoplamento: o núcleo do gateway se comunica com a interface, sem precisar conhecer a implementação específica de cada operadora. As outras alternativas estão erradas: interfaces não podem ter construtores, não instanciam objetos e não substituem totalmente classes abstratas."
     },
 
     {
@@ -998,7 +998,7 @@ public class Gerente extends Funcionario {
         "As asserções I e II são proposições verdadeiras, e a II é uma justificativa correta da I."
       ],
       answer: 3,
-      feedback: "A asserção I é verdadeira — o código inicia com saldo 100.0, deposita 50.0 e imprime ==key==150.0==. A asserção II é verdadeira e ==mark==justifica a I==: o ==key==new== instancia o objeto com atributos encapsulados em memória, e é exatamente isso que permite que <code>depositar()</code> opere sobre aquela instância específica."
+      feedback: "✓ Resposta correta: D) As asserções I e II são proposições verdadeiras, e a II é uma justificativa correta da I.\n\nPor que está certa:\nA primeira asserção é verdadeira — o código inicia com saldo 100.0, deposita 50.0 e imprime 150.0. A segunda também é verdadeira e justifica a primeira: o new instancia o objeto com seus atributos encapsulados em memória, e é exatamente por isso que depositar() opera sobre o saldo daquela instância específica, resultando na saída correta."
     },
 
     {
@@ -1018,7 +1018,7 @@ public class Gerente extends Funcionario {
         "I, II e III."
       ],
       answer: 1,
-      feedback: "I correta — a ==key==herança== é base para o ==key==polimorfismo==, pois subclasses podem sobrescrever métodos e ser referenciadas pelo tipo da superclasse. II correta — herança permite reuso de código. III ==mark==errada== — a subclasse ==mark==NÃO é obrigada a sobrescrever== métodos herdados; pode utilizá-los diretamente."
+      feedback: "✓ Resposta correta: B) I e II, apenas.\n\nPor que está certa:\nI está correta — a herança é base para o polimorfismo, pois uma subclasse pode sobrescrever métodos da superclasse e objetos podem ser referenciados pelo tipo da superclasse. II está correta — herança permite que subclasses reutilizem código da superclasse. III está errada — a subclasse NÃO é obrigada a sobrescrever métodos herdados; ela pode utilizá-los diretamente sem nenhuma alteração."
     },
 
     {
@@ -1040,7 +1040,7 @@ public class Gerente extends Funcionario {
         "Encapsulamento"
       ],
       answer: 3,
-      feedback: "O código declara o atributo <code>nome</code> como ==key==private== (ocultando o estado interno) e fornece ==key==getNome()== e ==key==setNome()== públicos para controlar o acesso — isso é ==key==encapsulamento==. Polimorfismo envolve múltiplas formas de um método; herança envolve extends; abstração envolve classes abstratas/interfaces."
+      feedback: "✓ Resposta correta: D) Encapsulamento.\n\nPor que está certa:\nO código declara o atributo nome como private (ocultando o estado interno) e fornece métodos públicos getNome() e setNome() para controlar o acesso — isso é encapsulamento. Polimorfismo envolve múltiplas formas de um método; herança envolve extends/relação entre classes; abstração envolve ocultar complexidade por meio de classes abstratas/interfaces."
     },
 
     {
@@ -1070,7 +1070,7 @@ public class Carro extends Veiculo {
         "I, II e III"
       ],
       answer: 2,
-      feedback: "I correta — Carro herda de Veiculo via ==key==extends==, obtendo seus atributos e métodos. II correta — ==key==extends== é a palavra-chave Java para declarar herança. III ==mark==errada== — Veiculo é uma classe concreta e ==mark==pode ser instanciada diretamente==. Para bloquear a instanciação, precisaria ser declarada como ==mark==abstract==."
+      feedback: "✓ Resposta correta: C) I e II apenas.\n\nPor que está certa:\nI está correta — Carro herda de Veiculo via extends, obtendo seus atributos e métodos. II está correta — extends é a palavra-chave Java para declarar herança. III está errada — Veiculo é uma classe concreta comum e PODE ser instanciada diretamente (ex: new Veiculo(\"Ford\")). Para não poder ser instanciada, precisaria ser declarada como abstract."
     },
 
     {
@@ -1092,7 +1092,7 @@ a.emitirSom();`,
         "Polimorfismo."
       ],
       answer: 3,
-      feedback: "O ==key==polimorfismo== permite que uma referência do tipo ==mark==Animal== aponte para objetos de tipos diferentes (Cachorro, Gato) e que ==key==emitirSom()== se comporte de forma distinta para cada tipo em ==mark==tempo de execução== (Dynamic Method Dispatch)."
+      feedback: "✓ Resposta correta: D) Polimorfismo.\n\nPor que está certa:\nO polimorfismo permite que uma referência do tipo Animal aponte para objetos de tipos diferentes (Cachorro, Gato) e que o método emitirSom() se comporte de forma diferente para cada tipo em tempo de execução. É o polimorfismo de subtipo (ou polimorfismo de inclusão), onde a mesma chamada de método produz resultados distintos dependendo do objeto real referenciado."
     },
 
     {
@@ -1107,7 +1107,7 @@ a.emitirSom();`,
         "definir métodos que devem ser implementados por outras classes"
       ],
       answer: 3,
-      feedback: "Uma ==key==interface em Java== define ==mark==assinaturas de métodos (contrato)== que as classes implementadoras são obrigadas a fornecer. Interfaces não podem criar objetos, não definem atributos privados de instância e não substituem completamente classes abstratas — ambos coexistem com propósitos complementares."
+      feedback: "✓ Resposta correta: D) definir métodos que devem ser implementados por outras classes.\n\nPor que está certa:\nUma interface em Java define assinaturas de métodos (contrato) que as classes que a implementam são obrigadas a fornecer implementação concreta. Interfaces não podem criar objetos diretamente (não têm construtores), não definem atributos privados de instância, e não substituem completamente classes abstratas — ambos coexistem com propósitos complementares."
     },
 
   ],

@@ -1302,7 +1302,7 @@ window.questoes = {
 
   // ── Questões de AVA ───────────────────────────────────────
 
-  ava: [
+ava: [
 
     {
       aula: "Redes de Computadores I",
@@ -1455,7 +1455,7 @@ window.questoes = {
     {
       aula: "Redes de Computadores I",
       tipo: "Afirmativas",
-      texto: "A comunicação de dados consiste na troca de informações entre dois ou mais dispositivos por meio de um canal de transmissão. A eficácia de um sistema de comunicações de dados depende de quatro características fundamentais: entrega, precisão, sincronização e jitter.",
+      texto: "A comunicação de dados consiste na troca de informações entre dois ou mais dispositivos por meio de um canal de transmissão, que pode ser, por exemplo, um cabo condutor. Para que essa comunicação ocorra de forma eficiente, é necessário que os dispositivos estejam inseridos em um sistema de comunicação, composto por uma combinação de hardware (equipamentos físicos) e software (programas), responsáveis por viabilizar o envio, a recepção e o processamento dos dados.\n\nA eficácia de um sistema de comunicações de dados depende de quatro características fundamentais: entrega, precisão, sincronização e jitter.",
       source: "FOROUZAN, Behrouz A. Comunicação de dados e redes de computadores. AMGH Editora, 2010. (adaptado)",
       miniEnunciado: "Sobre o sistema de comunicação de dados, avalie as assertivas a seguir.",
       assertions: [
@@ -1478,9 +1478,9 @@ window.questoes = {
     {
       aula: "Redes de Computadores I",
       tipo: "Contextualizada",
-      texto: "A comunicação de dados também influencia a forma como essa troca de dados ocorre, determinando características como velocidade, alcance e direção do fluxo de comunicação. Existem três modos distintos de transmissão do fluxo de dados:\n\n• Simplex: fluxo unidirecional — transmissão em apenas um sentido.\n• Half-duplex: fluxo bidirecional alternado — não simultâneo.\n• Full-duplex: fluxo bidirecional simultâneo.",
-      source: "FOROUZAN, Behrouz A. Comunicação de dados e redes de computadores. AMGH Editora, 2010.",
-      question: "Com base na análise dos modos de transmissão e nos conceitos de comunicação de dados, assinale a alternativa correta.",
+      texto: "A comunicação de dados consiste na troca de informações entre dois ou mais dispositivos por meio de um canal de transmissão, que pode ser, por exemplo, um cabo condutor ou o próprio ar. Além de possibilitar a transmissão, o meio de transmissão utilizado também influencia a forma como essa troca de dados ocorre, determinando características como velocidade, alcance e direção do fluxo de comunicação. A figura a seguir ilustra três modos distintos de transmissão do fluxo de dados:\n\n[Simplex: fluxo unidirecional — Mainframe → Monitor]\n[Half-duplex: fluxo bidirecional alternado — Estação ↔ Estação (não simultâneo)]\n[Full-duplex: fluxo bidirecional simultâneo — Estação ↔ Estação (simultâneo)]",
+      source: "FOROUZAN, Behrouz A. Comunicação de dados e redes de computadores. AMGH Editora, 2010. p. 6.",
+      question: "Com base na análise da figura e nos conceitos de comunicação de dados, assinale a alternativa correta.",
       options: [
         "No modo simplex, a comunicação ocorre em um único sentido.",
         "No modo half-duplex, a comunicação ocorre em ambos os sentidos simultaneamente.",
@@ -1542,7 +1542,7 @@ window.questoes = {
       aula: "Redes de Computadores I",
       tipo: "Contextualizada",
       texto: "Entre os meios de transmissão guiados, que são aqueles que requerem um condutor físico para interligar um dispositivo a outro, temos: cabo de par trançado, cabo coaxial e cabo de fibra óptica. Um sinal trafegando por qualquer um desses meios é direcionado e contido por limites físicos do meio. Cabos de par trançado e coaxiais usam condutores metálicos (cobre) que aceitam e transportam sinais na forma de corrente elétrica. A fibra óptica é um cabo que aceita e transporta sinais na forma de luz.",
-      source: "FOROUZAN, Behrouz A. Comunicação de dados e redes de computadores. AMGH Editora, 2010.",
+      source: "FOROUZAN, Behrouz A. Comunicação de dados e redes de computadores. AMGH Editora, 2010. p. 192.",
       question: "Com base no texto e nos conhecimentos sobre desempenho dos meios de transmissão guiados, assinale a alternativa correta.",
       options: [
         "O cabo de par trançado é formado por pares de fios de cobre entrelaçados, o que reduz interferências eletromagnéticas e é amplamente utilizado em redes locais devido ao seu baixo custo e facilidade de instalação.",
@@ -1587,7 +1587,7 @@ window.questoes = {
     {
       aula: "Redes de Computadores I",
       tipo: "Contextualizada",
-      texto: "Suponha que um gestor de TI de uma empresa esteja avaliando o desempenho do subsistema de armazenamento. Durante a análise, ele identificou que o servidor realiza, em média, 6 operações de I/O por transação, sendo que cada operação de I/O no disco consome aproximadamente 15 ms. Em um intervalo de 30 minutos, foram registradas 5.400 transações.",
+      texto: "Suponha que um gestor de TI de uma empresa esteja avaliando o desempenho do subsistema de armazenamento, com o objetivo de evitar investimentos desnecessários em expansão de capacidade. Durante a análise, ele identificou que o servidor responsável por um sistema crítico realiza, em média, 6 operações de I/O por transação, sendo que cada operação de I/O no disco consome aproximadamente 15 ms. Em um intervalo de 30 minutos, foram registradas 5.400 transações.",
       question: "Com base nas informações apresentadas, o gestor concluiu que o throughput médio do disco (em transações por segundo) e a utilização média do disco (em valor percentual) são, respectivamente:",
       options: [
         "3 e 45.",
@@ -1645,5 +1645,4 @@ window.questoes = {
     },
 
   ],
-
 };
