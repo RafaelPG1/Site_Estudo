@@ -1498,238 +1498,579 @@ window.__nexusConteudo = {
         }
 
       ]
-    },
+    }
 
+  ],
+
+
+  /* =============================================
+     ESTRUTURA SIMPLIFICADA — simplificado[]
+  ============================================= */
+/* =============================================
+     SIMPLIFICADO — mesma estrutura de aulas[]
+     Conteúdo condensado das notas de aula
+  ============================================= */
+  simplificado: [
+ 
+    /* índice 0 → Aula 1 */
     {
-      aula: "Aula 9 — Prototipagem e Norma ISO 9241",
-      ideia_central: "Evolução do foco no desenvolvimento → de produto para usuário, priorizando experiência, usabilidade e satisfação.",
+      aula: "Aula 1 — O Design com Foco no Usuário",
+      ideia_central: "Design não é só deixar algo bonito — é criar algo com um propósito que funcione de verdade.",
       secoes: [
-
         {
-          id: "visao",
-          titulo: "📖 Visão Geral",
+          id: "design",
+          titulo: "🎨 O que é Design?",
           blocos: [
             {
-              tipo: "lista",
-              titulo: "A aula aborda:",
-              itens: [
-                "**Ciclos de vida de software**, divididos em: **Centrados no produto** (tradicionais) e **Centrados no usuário** (modernos)",
-                "**Modelos de desenvolvimento** (cascata, espiral, iterativo, estrela, Shneiderman)",
-                "**Design Thinking** como abordagem inovadora",
-                "**Norma ISO 9241**, voltada à **usabilidade e ergonomia de interfaces**"
+              tipo: "topico",
+              titulo: "🔹 Design e Design de Sistemas",
+              texto: "Design é criar com **propósito**: precisa ser bonito E funcional, cumprir um objetivo. O designer combina palavras, imagens e sons para criar experiências que fazem sentido.",
+              lista: [
+                "O erro mais comum é o desenvolvedor focar só na tecnologia e **esquecer o usuário**",
+                "Design de Sistemas cria produtos que facilitam a interação entre pessoas e computadores"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 IHC · Usabilidade · UX",
+              lista: [
+                "**IHC** → surgiu nos anos 70, estuda a relação completa entre usuário e sistema. A IU é só a parte visível.",
+                "**Usabilidade** → eficácia + eficiência + satisfação. Considera memória, atenção e percepção. Hoje é o **mínimo esperado**.",
+                "**UX** → vai além: prazer, emoção, encantamento, desejabilidade. Pergunta: *o usuário quer continuar usando?*"
               ]
             }
           ]
         },
-
         {
-          id: "conceitos",
-          titulo: "🧠 Conceitos Principais",
+          id: "disciplinas",
+          titulo: "🧩 Disciplinas com Foco no Usuário",
           blocos: [
-
             {
               tipo: "topico",
-              titulo: "🔹 Ciclo de vida de software",
-              texto: "É o **modelo que define as etapas de desenvolvimento** de um sistema, desde planejamento até uso."
-            },
-
-            {
-              tipo: "topico",
-              titulo: "🔹 Engenharia de Software",
+              titulo: "📌 Design de Interação",
               lista: [
-                "Conjunto de: **Técnicas**, **Ferramentas** e **Procedimentos**",
-                "Objetivo: construir software com **qualidade, custo e prazo controlados**"
+                "Estuda como a interação ocorre entre usuário e sistema",
+                "Considera: consistência, padronização, controle do usuário"
               ]
             },
-
-            {
-              tipo: "subtitulo",
-              texto: "Modelos centrados no produto"
-            },
-
             {
               tipo: "topico",
-              titulo: "📌 Modelo Cascata",
+              titulo: "📌 Design de Interface",
               lista: [
-                "Fluxo **sequencial**",
-                "Etapas: 1. Requisitos → 2. Projeto → 3. Implementação → 4. Testes → 5. Manutenção",
-                "✔ Vantagem: Organização e controle",
-                "❌ Desvantagens: Pouca flexibilidade · Usuário pouco envolvido · Erros detectados tarde"
+                "Foco no ambiente visual — ícones, botões, feedbacks",
+                "**4 princípios**: Visibilidade · Consistência · Familiaridade · Affordance"
               ]
             },
-
             {
               tipo: "topico",
-              titulo: "📌 Modelo Espiral",
+              titulo: "📌 Arquitetura da Informação",
               lista: [
-                "Desenvolvimento em ciclos (loops)",
-                "Envolve: Planejamento · Análise de riscos · Engenharia · Avaliação do cliente",
-                "✔ Destaque: Uso de **protótipos** · Redução de riscos"
-              ]
-            },
-
-            {
-              tipo: "topico",
-              titulo: "📌 Modelo Iterativo",
-              lista: [
-                "Baseado em **repetições (iterações)**",
-                "✔ Características: Correção contínua de erros · Adaptação a mudanças · Participação do usuário"
-              ]
-            },
-
-            {
-              tipo: "subtitulo",
-              texto: "Modelos centrados no usuário"
-            },
-
-            {
-              tipo: "topico",
-              titulo: "📌 Conceito principal",
-              lista: [
-                "Foco em: **Usabilidade** · **Experiência do usuário** · **Aspectos cognitivos e emocionais**"
-              ]
-            },
-
-            {
-              tipo: "topico",
-              titulo: "📌 Modelo Estrela",
-              lista: [
-                "Avaliação é o centro",
-                "Pode começar em qualquer etapa",
-                "✔ Destaque: Forte interação com usuário"
-              ]
-            },
-
-            {
-              tipo: "topico",
-              titulo: "📌 Modelo de Shneiderman",
-              lista: [
-                "Baseado em 3 pilares: **1. Especificação** · **2. Prototipagem** · **3. Testes de usabilidade**",
-                "✔ Analisa: Interface · Funcionalidade · Facilidade de uso"
-              ]
-            },
-
-            {
-              tipo: "topico",
-              titulo: "🔹 Manifesto Ágil",
-              lista: [
-                "Pessoas > processos",
-                "Software funcional > documentação",
-                "Colaboração do cliente",
-                "Adaptação a mudanças"
-              ]
-            },
-
-            {
-              tipo: "topico",
-              titulo: "🔹 Design Thinking",
-              lista: [
-                "Abordagem **centrada no ser humano**, baseada em: Empatia · Criatividade · Experimentação",
-                "Características: Interdisciplinar · Foco nas necessidades reais do usuário",
-                "Integra: Negócio · Tecnologia · Experiência humana",
-                "Princípios: 1. Centrado no usuário · 2. Cocriativo · 3. Sequencial · 4. Evidente · 5. Holístico"
-              ]
-            },
-
-            {
-              tipo: "topico",
-              titulo: "🔹 Norma ISO 9241",
-              lista: [
-                "Norma internacional de **usabilidade e ergonomia** em sistemas interativos",
-                "**Usuário** → quem interage com o sistema",
-                "**Contexto de uso** → ambiente, tarefas, ferramentas",
-                "**Eficácia** → atingir objetivos",
-                "**Eficiência** → com menor esforço",
-                "**Satisfação** → experiência do usuário"
+                "Organiza o conteúdo — menus, categorias, estrutura de navegação",
+                "Uma boa arquitetura melhora toda a experiência"
               ]
             }
           ]
         },
-
         {
-          id: "metodos",
-          titulo: "📊 Métodos e Princípios",
-          blocos: [
-            {
-              tipo: "topico",
-              titulo: "🔹 Métricas de Usabilidade (ISO 9241)",
-              lista: [
-                "**Eficácia** → resultado alcançado",
-                "**Eficiência** → esforço utilizado",
-                "**Satisfação** → percepção do usuário"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "🔹 Princípios de Diálogo (ISO 9241 — Parte 10)",
-              lista: [
-                "1. **Adequação à tarefa** → sistema ajuda na tarefa",
-                "2. **Autodescrição** → interface clara e compreensível",
-                "3. **Controle** → usuário controla ações",
-                "4. **Conformidade** → consistente com expectativas",
-                "5. **Tolerância a erros** → previne e trata erros",
-                "6. **Individualização** → adaptação ao usuário",
-                "7. **Aprendizado** → fácil de aprender"
-              ]
-            }
-          ]
-        },
-
-        {
-          id: "exemplos",
-          titulo: "💡 Exemplos Explicativos",
-          blocos: [
-            {
-              tipo: "exemplo",
-              titulo: "Exemplo 1 — Tolerância a erros",
-              texto: "Sistema impede erro de digitação ou corrige automaticamente.",
-              detalhe: "👉 Ex: alerta de senha inválida"
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Exemplo 2 — Controle do usuário",
-              texto: "Possibilidade de desfazer ações.",
-              detalhe: "👉 Ex: botão 'Desfazer' (Ctrl+Z)"
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Exemplo 3 — Individualização",
-              texto: "Personalização da interface.",
-              detalhe: "👉 Ex: alterar idioma ou tema"
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Exemplo 4 — Design Thinking",
-              texto: "Desenvolver app baseado em entrevistas com usuários.",
-              detalhe: "👉 Solução baseada em necessidade real, não suposição"
-            }
-          ]
-        },
-
-        {
-          id: "resumo",
-          titulo: "🧾 Resumo Final para Revisão Rápida",
+          id: "ergonomia",
+          titulo: "⚙️ Ergonomia — 8 Critérios de Bastien e Scapin",
           blocos: [
             {
               tipo: "lista",
               itens: [
-                "**Ciclo de vida** define como o software é desenvolvido",
-                "Modelos tradicionais: Cascata (linear) · Espiral (com protótipos) · Iterativo (repetições)",
-                "Evolução → foco no **usuário**: Modelo estrela · Shneiderman · Design Thinking",
-                "**Design Thinking**: Empatia + criatividade + colaboração",
-                "**ISO 9241**: Norma de usabilidade — baseada em eficácia · eficiência · satisfação",
-                "**7 princípios**: tarefa · autodescrição · controle · consistência · erros · personalização · aprendizado"
+                "**1. Compatibilidade** → considera memória, idade e habilidades do usuário",
+                "**2. Condução** → orienta com feedback imediato e agrupamento claro",
+                "**3. Carga de Trabalho** → evita excesso de informação",
+                "**4. Homogeneidade** → mantém padrões visuais e de comportamento",
+                "**5. Significado dos Códigos** → ícones representam corretamente sua função",
+                "**6. Controle Explícito** → usuário pode interromper, suspender ou confirmar ações",
+                "**7. Adaptabilidade** → ajuda para iniciantes, atalhos para avançados",
+                "**8. Gestão de Erros** → prevê erros, avisa claramente e permite correção"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+ 
+    /* índice 1 → Aula 2 */
+    {
+      aula: "Aula 2 — Comunicação e Semiótica",
+      ideia_central: "O sistema comunica as decisões do designer ao usuário — se essa comunicação falha, o usuário se perde.",
+      secoes: [
+        {
+          id: "comunicabilidade",
+          titulo: "📡 Comunicabilidade",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "🔹 O que é Comunicabilidade?",
+              texto: "É a capacidade de um sistema **se fazer entender** pelo usuário — garantir que ele entenda como o sistema funciona e o que pode fazer com ele.",
+              lista: [
+                "**Designer** → manda a mensagem",
+                "**Interface** → é a mensagem em si",
+                "**Usuário** → quem recebe"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Evolução da Web",
+              lista: [
+                "**Web 1.0** → sites estáticos, usuário só lê",
+                "**Web 2.0** → redes sociais, usuário cria conteúdo",
+                "**Web 3.0** → interpreta e organiza informações de forma inteligente",
+                "**Web 4.0** → Inteligência Artificial, sistemas que se adaptam sozinhos"
+              ]
+            }
+          ]
+        },
+        {
+          id: "semiotica",
+          titulo: "🔣 Semiótica e Engenharia Semiótica",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "🔹 Semiótica e Fenomenologia",
+              lista: [
+                "**Semiótica** → estuda os signos: como um símbolo representa algo e como é interpretado",
+                "**Fenomenologia** → estuda como o usuário percebe e sente a interface (estética, ética, lógica)"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Engenharia Semiótica",
+              texto: "O sistema comunica as decisões do designer ao usuário por meio de **ícones, navegação, feedback e padrões visuais**. Se essa comunicação falha, o usuário se perde."
+            }
+          ]
+        },
+        {
+          id: "avaliacao",
+          titulo: "📊 Como Avaliar a Comunicação",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "🔹 Método MAC",
+              lista: [
+                "**Etapa 1**: Preparação do teste",
+                "**Etapa 2**: Coleta de dados",
+                "**Etapa 3**: Análise — encontrar onde a comunicação está quebrando"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Inspeção Semiótica — 3 tipos de signos",
+              lista: [
+                "**Metalinguísticos** → textos de ajuda, tutoriais, instruções",
+                "**Estáticos** → ícones, layout, cores, elementos fixos",
+                "**Dinâmicos** → animações, feedbacks, mudanças de tela"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+ 
+    /* índice 2 → Aula 3 */
+    {
+      aula: "Aula 3 — Alfabeto Visual",
+      ideia_central: "Assim como aprendemos letras para ler um texto, existe um alfabeto para ler imagens — dominar seus elementos é essencial para criar interfaces eficientes.",
+      secoes: [
+        {
+          id: "alfabetismo",
+          titulo: "👁️ Alfabetismo Visual",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "🔹 O que é Alfabetismo Visual?",
+              texto: "Quem domina o alfabeto visual consegue **entender o que uma imagem comunica**, criar composições com intenção e saber combinar elementos. É menos rígido que o verbal e depende mais de contexto e cultura.",
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 3 Tipos de Mensagem Visual",
+              lista: [
+                "**Representacional** → próxima da realidade, fácil de reconhecer. Ex: fotografia",
+                "**Abstrato** → simplificação com foco em formas e cores, mais subjetivo",
+                "**Simbólico** → redução ao mínimo. Ex: ícones de interface"
+              ]
+            }
+          ]
+        },
+        {
+          id: "elementos",
+          titulo: "🧱 Os 10 Elementos Básicos",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "🔹 Elementos estruturais",
+              lista: [
+                "**Ponto** → menor unidade, direciona o olhar",
+                "**Linha** → transmite energia; diagonal passa tensão e instabilidade",
+                "**Forma** → Círculo (proteção) · Quadrado (estabilidade) · Triângulo (tensão)",
+                "**Direção** → Horizontal/vertical (equilíbrio) · Diagonal (instabilidade) · Curva (suavidade)"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Elementos expressivos",
+              lista: [
+                "**Tom** → variação entre luz e sombra, cria profundidade",
+                "**Cor** → grande impacto emocional, depende de cultura e contexto",
+                "**Textura** → enriquece superfícies e cria contraste",
+                "**Escala** → define peso visual e hierarquia entre elementos",
+                "**Dimensão** → cria ilusão de profundidade em plano 2D",
+                "**Movimento** → ilusão de dinamismo por repetição, desfoque ou animação"
               ]
             },
             {
               tipo: "destaque",
-              texto: "📌 Ideia-chave para prova: Hoje o desenvolvimento não é mais sobre o sistema — é sobre o usuário."
+              texto: "📌 Interfaces bem feitas usam esses elementos de forma **intencional e coerente** — estética e usabilidade precisam andar juntas."
             }
           ]
         }
-
+      ]
+    },
+ 
+    /* índice 3 → Aula 4 */
+    {
+      aula: "Aula 4 — Psicologia Cognitiva e Gestalt da Forma",
+      ideia_central: "Para criar uma boa interface, é preciso entender como o ser humano percebe, memoriza e toma decisões.",
+      secoes: [
+        {
+          id: "psicologia",
+          titulo: "🧠 Psicologia Cognitiva",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "🔹 Atenção — 4 tipos",
+              lista: [
+                "**Seletiva** → foca em um estímulo e ignora o resto",
+                "**Vigilância** → mantém atenção por longos períodos",
+                "**Sondagem** → busca ativa por informações",
+                "**Dividida** → realiza mais de uma tarefa ao mesmo tempo",
+                "📌 Excesso de informação na tela **reduz o foco** do usuário"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Memória e Processo de Ação",
+              lista: [
+                "**Curta duração** → temporária e limitada · **Longa duração** → permanente",
+                "A interface deve evitar exigir que o usuário memorize muita coisa",
+                "**3 etapas da ação**: Análise da situação → Planejamento → Controle"
+              ]
+            }
+          ]
+        },
+        {
+          id: "gestalt",
+          titulo: "🔷 Gestalt da Forma",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "🔹 Premissa",
+              texto: "**O todo é maior que a soma das partes.** O cérebro organiza automaticamente o que vê, buscando formas simples e estáveis."
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Princípios fundamentais",
+              lista: [
+                "**Pregnância** → o cérebro prefere formas simples e organizadas",
+                "**Figura-Fundo** → separa automaticamente o elemento principal do plano de fundo",
+                "**Constância Perceptiva** → reconhece objetos mesmo com mudanças visuais"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Os 8 Pilares aplicados em interfaces",
+              lista: [
+                "**Unidades** → elementos percebidos como partes organizadas",
+                "**Unificação** → agrupamento que gera sensação de conjunto",
+                "**Continuidade** → o olhar segue linhas e direções naturalmente",
+                "**Proximidade** → elementos próximos parecem relacionados",
+                "**Semelhança** → elementos parecidos são agrupados mentalmente",
+                "**Segregação** → diferenciação clara entre figura e fundo",
+                "**Fechamento** → tendência a completar formas incompletas",
+                "**Pregnância da Forma** → preferência por formas simples e limpas"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+ 
+    /* índice 4 → Aula 5 */
+    {
+      aula: "Aula 5 — O Elemento Cor",
+      ideia_central: "A cor comunica antes mesmo do usuário ler qualquer texto — mas precisa ser escolhida com critério.",
+      secoes: [
+        {
+          id: "psicologia-cor",
+          titulo: "🎨 Psicologia das Cores",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "🔹 Fatores para escolha de cor",
+              lista: [
+                "**Fisiológicos** → como o olho percebe a cor",
+                "**Psicológicos** → impacto emocional que causa",
+                "**Culturais** → o mesmo vermelho pode ter significados opostos em culturas diferentes",
+                "**Público-alvo** e **objetivo do projeto**"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Cores quentes vs. frias",
+              lista: [
+                "**Cores quentes** (vermelho, amarelo) → estimulam, agitam, chamam atenção",
+                "**Cores frias** (azul, verde, violeta) → acalmam e relaxam"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Significados principais",
+              lista: [
+                "**Azul** → paz, confiança, serenidade",
+                "**Amarelo** → alerta, energia, esperança",
+                "**Vermelho** → paixão, perigo, ação",
+                "**Verde** → saúde, equilíbrio, natureza",
+                "**Laranja** → alegria, criatividade, entusiasmo",
+                "**Violeta** → calma, dignidade, espiritualidade"
+              ]
+            }
+          ]
+        },
+        {
+          id: "esquema",
+          titulo: "🖌️ Como Montar um Esquema de Cores",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "📌 Regra 60-30-10",
+              lista: [
+                "**60%** → cor dominante (fundo/base)",
+                "**30%** → cor secundária (textos/elementos)",
+                "**10%** → cor de destaque (detalhes)",
+                "✔ Garante equilíbrio visual e organização"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "📌 Esquemas pelo círculo cromático",
+              lista: [
+                "**Análogas** → harmonia · **Complementares** → contraste",
+                "**Tríade** → equilíbrio vibrante · **Monocromático** → variações de uma cor"
+              ]
+            },
+            {
+              tipo: "destaque",
+              texto: "📌 **RGB** para telas digitais · **CMYK** para impressão"
+            }
+          ]
+        }
+      ]
+    },
+ 
+    /* índice 5 → Aula 6 */
+    {
+      aula: "Aula 6 — Tipografia",
+      ideia_central: "A tipografia impacta diretamente a experiência do usuário — uma boa escolha facilita a leitura, uma escolha errada cansa e confunde.",
+      secoes: [
+        {
+          id: "tipos",
+          titulo: "🔤 Tipos e Alinhamento",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "🔹 Serifadas vs. Sem Serifa",
+              lista: [
+                "**Serifadas** → traços nas extremidades · melhores para textos longos impressos · transmitem tradição",
+                "**Sans Serif** → sem traços · melhores para telas digitais · transmitem modernidade"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Alinhamento",
+              lista: [
+                "**À esquerda** → mais natural para leitura, **mais recomendado**",
+                "**Justificado** → pode criar espaços irregulares e dificultar leitura na web",
+                "**Centralizado** → ótimo para títulos e frases curtas, evitar em textos longos"
+              ]
+            }
+          ]
+        },
+        {
+          id: "tamanho",
+          titulo: "📐 Tamanho, Linha e Peso",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "🔹 Tamanho da fonte",
+              lista: [
+                "**Desktop** → padrão 16px · **Mobile** → pode começar em 12px",
+                "O tamanho ideal varia conforme a **faixa etária** do público",
+                "Usar **EM** para responsividade · **px** é mais preciso mas menos flexível"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Caracteres por linha",
+              lista: [
+                "**Desktop** → 50 a 80 caracteres · **Mobile** → 30 a 35 caracteres",
+                "Linhas muito longas cansam · Linhas muito curtas quebram o ritmo de leitura"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Peso da fonte",
+              lista: [
+                "**Light** → fino · **Regular** → normal · **Bold** → negrito · **Black** → muito pesado",
+                "Cada variação transmite uma sensação diferente e cria hierarquia visual"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+ 
+    /* índice 6 → Aula 7 */
+    {
+      aula: "Aula 7 — A Imagem",
+      ideia_central: "A imagem não é decoração — é um signo visual com poder simbólico e emocional que, junto ao texto, reforça o significado da mensagem.",
+      secoes: [
+        {
+          id: "signos",
+          titulo: "🔣 Tipos de Signos (Semiótica)",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "🔹 Os 3 tipos",
+              lista: [
+                "**Ícone** → representa por semelhança. Ex: ícone da Torre Eiffel = Paris",
+                "**Índice** → representa por causa ou evidência. Ex: fumaça → fogo",
+                "**Símbolo** → representa por convenção cultural. Ex: pomba branca = paz"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Composição e significado",
+              lista: [
+                "**Central** → sensação neutra · **Deslocada** → sensação dinâmica",
+                "**Pequena** → isolamento · **Cortada** → impacto e força"
+              ]
+            }
+          ]
+        },
+        {
+          id: "formatos",
+          titulo: "🖼️ Tipos e Formatos",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "🔹 Bitmap vs. Vetor",
+              lista: [
+                "**Bitmap** → baseado em pixels · usado em fotografias",
+                "**Vetor** → fórmulas matemáticas · ilustrações · redimensiona sem perda de qualidade"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Formatos principais",
+              lista: [
+                "**PNG** → alta qualidade, suporta transparência",
+                "**JPEG** → boa compressão, perde qualidade",
+                "**GIF** → compacto, para gráficos simples",
+                "**TIFF** → alta qualidade, usado em impressão"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Relação imagem + texto",
+              lista: [
+                "**Redundância** → texto principal, imagem complementa",
+                "**Informatividade** → imagem principal (ex: infográficos)",
+                "**Complexidade** → texto e imagem com mesmo peso",
+                "**Ancoragem** → texto direciona a interpretação da imagem",
+                "**Relais** → texto e imagem se completam mutuamente"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+ 
+    /* índice 7 → Aula 8 */
+    {
+      aula: "Aula 8 — O Layout",
+      ideia_central: "Layout é a organização hierárquica dos elementos visuais — integra cores, tipografia e imagens para garantir legibilidade, usabilidade e comunicação eficiente.",
+      secoes: [
+        {
+          id: "contraste",
+          titulo: "⚖️ Contraste e Harmonia",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "🔹 Os três estados",
+              lista: [
+                "**Harmonia** → gera equilíbrio e estabilidade",
+                "**Contraste** → gera destaque e dinamismo",
+                "**Ambiguidade** → nem um nem outro → ⚠️ **deve ser evitada**"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Tipos de contraste",
+              lista: [
+                "**Tom** → claro vs. escuro · **Cor** → diferença de cores",
+                "**Forma** → regular vs. irregular · **Escala** → grande vs. pequeno"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Técnicas visuais — pares opostos",
+              lista: [
+                "Equilíbrio × Instabilidade · Simetria × Assimetria",
+                "Regularidade × Irregularidade · Simplicidade × Complexidade",
+                "Unidade × Fragmentação · Economia × Profusão · Minimalismo × Exagero"
+              ]
+            }
+          ]
+        },
+        {
+          id: "pilares",
+          titulo: "🏛️ Pilares e Grid",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "🔹 Os 3 pilares do layout em interfaces",
+              lista: [
+                "**Navegação** → regra dos 3 cliques: máximo para encontrar qualquer informação",
+                "**Lógica visual** → organização intuitiva com princípios visuais",
+                "**Templates** → estrutura padrão que mantém consistência"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Grid — a grade que organiza tudo",
+              lista: [
+                "Grid mais comum: **12 colunas** (permite várias divisões)",
+                "Para responsividade usar medidas em **porcentagem (%)**",
+                "**Fórmula**: objeto ÷ largura total = % · Ex: 300px ÷ 960px = 31,25%"
+              ]
+            },
+            {
+              tipo: "destaque",
+              texto: "📌 No padrão ocidental o olhar segue **esquerda → direita · cima → baixo** — elementos importantes devem estar no topo ou à esquerda."
+            }
+          ]
+        }
       ]
     }
-
+ 
   ]
+ 
 };
+
+
+  
+
+  

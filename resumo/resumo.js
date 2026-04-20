@@ -1,6 +1,7 @@
 /* =============================================
-   NEXUS STUDY — resumo.js  (v5)
+   NEXUS STUDY — resumo.js  (v6)
    Renderizador de notas de aula por seções
+   + Toggle de modo: Resumo Completo × Síntese Rápida
    ============================================= */
 import { DISC_CORES } from '../quiz/disciplinas/disciplinas_cores.js';
 
@@ -22,9 +23,11 @@ const State = {
   semestre:        null,
   disciplinas:     [],
   aulas:           [],
+  simplificado:    [],           // ← array paralelo a aulas[], match por índice
   aulaAberta:      null,
   discVerificadas: new Set(),
   temConteudo:     null,   // null = carregando | true = tem | false = vazio
+  modo:            'completo', // 'completo' | 'sintese'
 };
 
 /* ══════════════════════════════════════════════
@@ -33,7 +36,7 @@ const State = {
 document.addEventListener('DOMContentLoaded', () => {
   setPagina('RESUMO');
   document.getElementById('footer-year').textContent  = new Date().getFullYear();
-document.getElementById('sidebar-year').textContent = new Date().getFullYear();
+  document.getElementById('sidebar-year').textContent = new Date().getFullYear();
 
   _resolverContexto();
   _renderSidebar();
@@ -66,9 +69,12 @@ function _renderSemestreSelector() {
 
   select.addEventListener('change', e => {
     setSemestre(e.target.value);
-    State.semestre    = e.target.value;
-    State.disciplinas = getDisciplinasDeSemestre(e.target.value);
-    State.temConteudo = null;
+    State.semestre     = e.target.value;
+    State.disciplinas  = getDisciplinasDeSemestre(e.target.value);
+    State.temConteudo  = null;
+    State.aulas        = [];
+    State.simplificado = [];
+    State.modo         = 'completo';
 
     State.disciplina = State.disciplinas[0] ?? null;
     if (State.disciplina) {
@@ -111,8 +117,6 @@ function _resolverContexto() {
 
 /* ══════════════════════════════════════════════
    STATUS BADGE
-   — mostra o badge de disciplina OU o badge
-     "Vazio" com o mesmo tamanho/posição
 ══════════════════════════════════════════════ */
 function _atualizarStatusBadge() {
   const discBadge   = document.getElementById('disc-badge');
@@ -120,14 +124,12 @@ function _atualizarStatusBadge() {
   if (!discBadge || !statusBadge) return;
 
   if (State.disciplinas.length === 0) {
-    // Semestre sem disciplinas → mostra "Vazio" no lugar do disc-badge
     discBadge.style.display   = 'none';
     discBadge.innerHTML       = '';
     statusBadge.style.display = '';
     statusBadge.innerHTML     = `<span style="flex-shrink:0">📭</span><span style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;min-width:0">Vazio</span>`;
     statusBadge.className     = 'status-badge status-badge--empty';
   } else {
-    // Tem disciplinas → o disc-badge já é gerenciado por _renderHeader()
     statusBadge.style.display = 'none';
     statusBadge.innerHTML     = '';
   }
@@ -138,7 +140,9 @@ function _atualizarStatusBadge() {
 ══════════════════════════════════════════════ */
 function _carregarConteudo() {
   _mostrarEstado('loading');
-  State.temConteudo = null;
+  State.temConteudo  = null;
+  State.aulas        = [];
+  State.simplificado = [];
   _atualizarStatusBadge();
   _removerScriptAnterior();
   window.__nexusConteudo = null;
@@ -156,21 +160,22 @@ function _carregarConteudo() {
   const src = `./conteudo/${ano}/${State.semestre}/res_${disc.arquivo}.js`;
 
   const script = document.createElement('script');
-  script.src   = src;
-  script.id    = 'nexus-conteudo-script';
+  script.src = src;
+  script.id  = 'nexus-conteudo-script';
 
   script.onload = () => {
     if (State.disciplina?.id !== disc.id) return;
 
-    const aulas = _lerDados();
+    const dados = _lerDados();
     State.discVerificadas.add(disc.id);
-    State.temConteudo = aulas.length > 0;
+    State.temConteudo  = dados.aulas.length > 0;
+    State.aulas        = dados.aulas;
+    State.simplificado = dados.simplificado;
     _marcarStatusConteudo(disc.id, State.temConteudo);
 
-    if (!aulas.length) { _renderHeroStats(0); _mostrarEstadoSemConteudo(); return; }
-    State.aulas = aulas;
-    _renderHeroStats(aulas.length);
-    _renderCards(aulas);
+    if (!dados.aulas.length) { _renderHeroStats(0); _mostrarEstadoSemConteudo(); return; }
+    _renderHeroStats(dados.aulas.length);
+    _renderCards(dados.aulas);
     _mostrarEstado('grid');
   };
 
@@ -191,12 +196,20 @@ function _removerScriptAnterior() {
   document.getElementById('nexus-conteudo-script')?.remove();
 }
 
+/* Retorna { aulas, simplificado } */
 function _lerDados() {
   const raw = window.__nexusConteudo ?? null;
-  if (!raw) return [];
-  if (Array.isArray(raw.aulas))    return raw.aulas;
-  if (Array.isArray(raw.questoes)) return raw.questoes.map(_questaoParaAula);
-  return [];
+  if (!raw) return { aulas: [], simplificado: [] };
+
+  const aulas = Array.isArray(raw.aulas)
+    ? raw.aulas
+    : Array.isArray(raw.questoes)
+      ? raw.questoes.map(_questaoParaAula)
+      : [];
+
+  const simplificado = Array.isArray(raw.simplificado) ? raw.simplificado : [];
+
+  return { aulas, simplificado };
 }
 
 function _questaoParaAula(q) {
@@ -217,6 +230,23 @@ function _aplicarCorDisciplina(discId) {
   r.setProperty('--disc-tema-rgb', cores.corTemaRgb);
   r.setProperty('--disc-tema2',    cores.corTema2);
   r.setProperty('--disc-tema2Rgb', cores.corTema2Rgb);
+}
+
+/* ══════════════════════════════════════════════
+   TOGGLE DE MODO
+══════════════════════════════════════════════ */
+function _setModo(modo) {
+  if (State.modo === modo) return;
+  State.modo = modo;
+
+  document.querySelectorAll('[data-modo]').forEach(btn => {
+    btn.classList.toggle('mode-btn--active', btn.dataset.modo === modo);
+  });
+
+  if (State.aulas.length > 0) {
+    _renderCards(State.aulas);
+    _mostrarEstado('grid');
+  }
 }
 
 /* ══════════════════════════════════════════════
@@ -247,9 +277,28 @@ function _renderHeroStats(total) {
   const disc = State.disciplina;
   if (!c) return;
 
+  const toggleHtml = total > 0 ? `
+    <div class="mode-toggle" id="mode-toggle">
+      <button class="mode-btn${State.modo === 'completo' ? ' mode-btn--active' : ''}" data-modo="completo">
+        Resumo completo
+      </button>
+      <button class="mode-btn${State.modo === 'sintese' ? ' mode-btn--active' : ''}" data-modo="sintese">
+        Síntese rápida
+      </button>
+    </div>
+  ` : '';
+
   c.innerHTML = disc
-    ? `<div class="stat-pill">${disc.emoji} ${disc.nome}</div>`
+    ? `<div class="stat-pill">${disc.emoji} ${disc.nome}</div>${toggleHtml}`
     : '';
+
+  if (total > 0) {
+    document.getElementById('mode-toggle')?.addEventListener('click', e => {
+      const btn = e.target.closest('[data-modo]');
+      if (!btn) return;
+      _setModo(btn.dataset.modo);
+    });
+  }
 
   if (sub) sub.textContent = total === 0
     ? `Nenhum resumo disponível para ${disc?.nome ?? 'esta disciplina'} ainda.`
@@ -263,9 +312,15 @@ function _renderCards(aulas) {
   const grid = document.getElementById('resumos-grid');
   if (!grid) return;
   grid.innerHTML = '';
-  aulas.forEach((aula, idx) => grid.appendChild(_criarCard(aula, idx)));
+  aulas.forEach((aula, idx) => {
+    const card = State.modo === 'sintese'
+      ? _criarCardSintese(aula, idx)
+      : _criarCard(aula, idx);
+    grid.appendChild(card);
+  });
 }
 
+/* ── Card original (modo completo) ── */
 function _criarCard(aula, idx) {
   const secoes = aula.secoes ?? [];
 
@@ -307,10 +362,103 @@ function _criarCard(aula, idx) {
     </div>
   `;
 
+  // Modo completo: sempre abre o conteúdo completo da aula
   card.addEventListener('click', () => _abrirModal(aula));
   card.addEventListener('keydown', e => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _abrirModal(aula); }
   });
+
+  return card;
+}
+
+/* ── Card de síntese (modo síntese) ── */
+function _criarCardSintese(aula, idx) {
+  const aulaStr    = _esc(aula.aula ?? '');
+  const aulaMatch  = aulaStr.match(/^(Aula\s*\d+)\s*[—–-]\s*(.+)$/i);
+  const aulaNum    = aulaMatch ? aulaMatch[1] : aulaStr;
+  const aulaTitulo = aulaMatch ? aulaMatch[2] : '';
+
+  // Lê do array paralelo simplificado[] pelo mesmo índice
+  const sint = State.simplificado[idx] ?? null;
+
+  // Suporta dois formatos:
+  //   Formato A (legado): { pontos: string[] }
+  //   Formato B (atual):  { aula, secoes: [{ blocos: [{ tipo:'lista', itens:[] }] }] }
+  let pontos = [];
+  if (sint) {
+    if (Array.isArray(sint.pontos) && sint.pontos.length > 0) {
+      pontos = sint.pontos;
+    } else if (Array.isArray(sint.secoes)) {
+      for (const sec of sint.secoes) {
+        for (const bloco of (sec.blocos ?? [])) {
+          if (bloco.tipo === 'lista' && Array.isArray(bloco.itens)) {
+            pontos = pontos.concat(bloco.itens);
+          }
+        }
+      }
+    }
+  }
+
+  const temSintese = pontos.length > 0;
+
+  const card = document.createElement('article');
+  card.className = 'resumo-card resumo-card--nota resumo-card--sintese';
+  card.style.animationDelay = `${idx * 0.06}s`;
+  card.setAttribute('tabindex', '0');
+  card.setAttribute('role', 'button');
+  card.setAttribute('aria-label', `Síntese: ${aula.aula}`);
+
+  const listaHtml = temSintese
+    ? `<ul class="sint-list">
+        ${pontos.map(p => `<li><span>${_parseInline(p)}</span></li>`).join('')}
+      </ul>`
+    : `<div class="sint-vazio">
+        <span class="sint-vazio__icon">📋</span>
+        <p class="sint-vazio__msg">Síntese não disponível ainda.</p>
+        <div class="coming-soon-pill">
+          <span class="coming-soon-dot"></span>
+          Em desenvolvimento
+        </div>
+      </div>`;
+
+  card.innerHTML = `
+    <div class="card-inner">
+      <div class="card-num-row">
+        <div class="card-num">${aulaNum}</div>
+        <span class="sint-badge">${temSintese ? 'Síntese' : 'Sem síntese'}</span>
+      </div>
+      <div class="card-title">${aulaTitulo || aulaStr}</div>
+      <div class="card-divider"></div>
+      ${listaHtml}
+      <div class="card-bottom">
+        <div class="card-meta">
+          <span class="card-meta__count">${temSintese ? `${pontos.length} ponto${pontos.length !== 1 ? 's' : ''}` : '—'}</span>
+          ${temSintese ? `
+          <span class="card-meta__cta">
+            Ver síntese
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
+            </svg>
+          </span>` : ''}
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Modo síntese: só abre modal se tiver síntese disponível
+  card.addEventListener('click', () => {
+    if (!temSintese) return;
+    _abrirModal(sint);
+  });
+  card.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (!temSintese) return;
+      _abrirModal(sint);
+    }
+  });
+
   return card;
 }
 
@@ -514,8 +662,11 @@ function _marcarStatusConteudo(discId, tem) {
 
 function _trocarDisciplina(disc) {
   if (disc.id === State.disciplina?.id) return;
-  State.disciplina  = disc;
-  State.temConteudo = null;
+  State.disciplina   = disc;
+  State.temConteudo  = null;
+  State.aulas        = [];
+  State.simplificado = [];
+  State.modo         = 'completo';
   setDisciplina(disc.id);
 
   const url = new URL(window.location.href);

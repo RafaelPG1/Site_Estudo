@@ -1077,3 +1077,146 @@ pre {
   background: #0e1420;
   color: var(--text-1);
 }
+
+/* =============================================
+   NEXUS STUDY — resumo_adicoes.css
+   Adicionar ao FINAL de resumo.css
+   Implementa o Toggle de Modo (Completo × Síntese)
+   ============================================= */
+
+/* ══════════════════════════════════════════
+   TOGGLE DE MODO
+   Aparece na área .page-hero__stats
+══════════════════════════════════════════ */
+.mode-toggle {
+  display: inline-flex;
+  background: var(--surface);
+  border: 1px solid var(--border-glow);
+  border-radius: 99px;
+  padding: 3px;
+  gap: 0;
+}
+
+.mode-btn {
+  padding: 0.28rem 0.95rem;
+  border-radius: 99px;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  background: transparent;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s, box-shadow 0.2s;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.mode-btn:hover {
+  color: var(--text-2);
+}
+
+.mode-btn--active {
+  background: rgba(var(--disc-tema-rgb), 0.15);
+  color: var(--disc-tema);
+  box-shadow: 0 0 0 1px rgba(var(--disc-tema-rgb), 0.3);
+  transition: color 0.4s, background 0.4s, box-shadow 0.4s;
+}
+
+/* ══════════════════════════════════════════
+   CARD NO MODO SÍNTESE
+   Mesma base do .resumo-card normal,
+   só troca o conteúdo interno
+══════════════════════════════════════════ */
+
+/* Row que junta o número da aula e o badge "Síntese" */
+.card-num-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.65rem;
+}
+
+/* Quando está dentro do row o card-num não precisa de margin-bottom própria */
+.card-num-row .card-num {
+  margin-bottom: 0;
+}
+
+/* Badge dourado no canto superior direito do card */
+.sint-badge {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.18rem 0.6rem;
+  border-radius: 99px;
+  border: 1px solid rgba(232, 201, 122, 0.35);
+  color: var(--gold);
+  background: rgba(232, 201, 122, 0.09);
+  flex-shrink: 0;
+}
+
+/* Lista de bullet points da síntese */
+.sint-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.32rem;
+  flex: 1;
+  margin-bottom: 1.2rem;
+}
+
+.sint-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--text-2);
+  line-height: 1.58;
+}
+
+.sint-list li::before {
+  content: '·';
+  color: var(--disc-tema);
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 0.05em;
+  transition: color 0.4s;
+}
+
+.sint-list li strong {
+  color: var(--text-1);
+}
+
+.sint-list li code {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 0.08em 0.38em;
+  color: #c9d1d9;
+}
+
+/* Estado quando a aula não tem sintese escrita ainda */
+.sint-empty {
+  font-size: 0.78rem;
+  color: var(--text-3);
+  font-style: italic;
+  flex: 1;
+  margin-bottom: 1.2rem;
+  line-height: 1.6;
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVIDADE DO TOGGLE
+══════════════════════════════════════════ */
+@media (max-width: 440px) {
+  .mode-btn {
+    font-size: 0.63rem;
+    padding: 0.25rem 0.7rem;
+  }
+}
