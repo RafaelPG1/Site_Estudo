@@ -1,5 +1,5 @@
 /* ============================================================
-   NEXUS STUDY — quiz/quiz_ui.js  (v1)
+   NEXUS STUDY — quiz/quiz_ui.js  (v2 — suporte semestre 2026.1)
    Utilitários de interface — sem estado do quiz
 
    ÍNDICE:
@@ -13,6 +13,13 @@
      renderMarkup, renderCodeBlock,
      initLegendaModal
    }
+
+   SEMESTRES ESPECIAIS:
+     2026.1 → lê os tipos reais de window.questoes (dinâmico)
+              e exibe no modal em vez dos tipos padrão por modo.
+              Para adicionar outro semestre especial, siga o mesmo
+              padrão: adicione a chave em _TIPOS_SEMESTRE_ESPECIAL
+              e o semestre em _isSemestreEspecial().
    ============================================================ */
 
 (function () {
@@ -193,6 +200,106 @@
      4. MODAL DE LEGENDA
      ══════════════════════════════════════════════════════════ */
 
+  /* ──────────────────────────────────────────────────────────
+     SEMESTRES ESPECIAIS — tipos lidos dinamicamente do conteúdo
+     ──────────────────────────────────────────────────────────
+     Para cada semestre especial, defina um mapa de tipos com
+     a configuração visual de cada um. A chave do mapa deve ser
+     exatamente o valor do campo "tipo" nas questões do conteúdo.
+
+     Para adicionar um novo semestre especial:
+       1. Adicione a chave (semestre) em _TIPOS_SEMESTRE_ESPECIAL
+       2. Defina o mapa de tipos com { iconCls, iconTxt, nome, desc }
+       3. Pronto — nenhum outro arquivo precisa mudar.
+     ────────────────────────────────────────────────────────── */
+  var _TIPOS_SEMESTRE_ESPECIAL = {
+
+    '2026.1': {
+      'Contextualizada': {
+        iconCls: 'nlg-icon-con',
+        iconTxt: 'CTX',
+        nome:    'Contextualizada',
+        desc:    'Situação-contexto antes da pergunta — interprete e responda',
+      },
+      'Asserção': {
+        iconCls: 'nlg-icon-aj',
+        iconTxt: 'A+J',
+        nome:    'Asserção + Justificativa',
+        desc:    'Duas afirmativas ligadas por PORQUE — avalie cada uma separadamente',
+      },
+      'Afirmativas': {
+        iconCls: 'nlg-icon-ma',
+        iconTxt: 'I–IV',
+        nome:    'Múltiplas afirmativas',
+        desc:    'Avalie quais afirmativas estão corretas e marque a combinação certa',
+      },
+      /* ── Adicione outros tipos de 2026.1 aqui se surgirem ── */
+    },
+
+  };
+
+  /* Retorna true se o semestre usa leitura dinâmica de tipos */
+  function _isSemestreEspecial(sem) {
+    return Object.prototype.hasOwnProperty.call(_TIPOS_SEMESTRE_ESPECIAL, sem);
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     _buildTiposEspecial
+     Lê window.questoes (já carregado antes deste script),
+     extrai os tipos únicos na ordem de aparição e monta as
+     linhas de tipo para o modal.
+     ────────────────────────────────────────────────────────── */
+  function _buildTiposEspecial(listEl, sem, modo, _tipoRow) {
+    var tipoMap   = _TIPOS_SEMESTRE_ESPECIAL[sem];
+    var conteudo  = window.questoes || {};
+
+    /* Escolhe a lista certa conforme o modo ativo */
+    var lista = modo === 'ava'
+      ? (conteudo.ava      || [])
+      : (conteudo.questoes || []);
+
+    /* Extrai tipos únicos preservando a ordem de aparição */
+    var vistos  = {};
+    var tiposOrdem = [];
+    for (var i = 0; i < lista.length; i++) {
+      var t = lista[i].tipo;
+      if (t && !vistos[t]) {
+        vistos[t] = true;
+        tiposOrdem.push(t);
+      }
+    }
+
+    /* Sem questões carregadas → mensagem de fallback */
+    if (tiposOrdem.length === 0) {
+      var aviso = document.createElement('div');
+      aviso.className = 'nlg-enade-block';
+      aviso.style.cssText = 'opacity:0.6;';
+      aviso.textContent   = 'Tipos não identificados — conteúdo não carregado.';
+      listEl.appendChild(aviso);
+      return;
+    }
+
+    /* Renderiza cada tipo encontrado */
+    for (var j = 0; j < tiposOrdem.length; j++) {
+      var cfg = tipoMap[tiposOrdem[j]];
+      if (cfg) {
+        /* Tipo conhecido — usa configuração visual completa */
+        listEl.appendChild(_tipoRow(cfg.iconCls, cfg.iconTxt, cfg.nome, cfg.desc));
+      } else {
+        /* Tipo desconhecido no mapa — renderiza genérico */
+        listEl.appendChild(_tipoRow(
+          'nlg-icon-con',
+          tiposOrdem[j].substring(0, 3).toUpperCase(),
+          tiposOrdem[j],
+          'Tipo identificado automaticamente do conteúdo'
+        ));
+      }
+    }
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     initLegendaModal — função principal exportada
+     ────────────────────────────────────────────────────────── */
   function initLegendaModal() {
 
     var style = document.createElement('style');
@@ -312,11 +419,14 @@
 
     var _disc = document.body.dataset.disciplina || '';
     var _modo = document.body.dataset.modo       || '';
+    var _sem  = window.__NEXUS_QUIZ_SEMESTRE__   || '';
+
     var _CODE_DISC = ['poo', 'banco_dados', 'redes'];
     var _hasCode   = _CODE_DISC.indexOf(_disc) !== -1;
 
     var body = _el('div', 'nlg-body');
 
+    /* ── Bloco de modo (igual ao original) ─────────────────── */
     var _modoCfg = null;
     if      (_modo === 'enade')    _modoCfg = { icon: '🎓', label: 'Estilo ENADE',        desc: 'Questões elaboradas no formato ENADE: enunciados contextualizados, afirmativas para análise crítica e alternativas plausíveis.' };
     else if (_modo === 'ava')      _modoCfg = { icon: '📋', label: 'Questões AVA',         desc: 'Questões extraídas ou adaptadas das atividades acadêmicas, elaboradas e aplicadas pelos professores no AVA.' };
@@ -335,9 +445,19 @@
       body.appendChild(_el('div', 'nlg-divider'));
     }
 
+    /* ── Seção "Tipos de questão" ───────────────────────────── */
     var sTipos = _secao('Tipos de questão');
 
-    if (_modo === 'enade') {
+    if (_isSemestreEspecial(_sem)) {
+      /* ════════════════════════════════════════════════════════
+         SEMESTRE ESPECIAL (ex: 2026.1)
+         Lê os tipos reais do window.questoes já carregado e
+         renderiza com a configuração visual definida acima.
+         ════════════════════════════════════════════════════════ */
+      _buildTiposEspecial(sTipos.list, _sem, _modo, _tipoRow);
+
+    } else if (_modo === 'enade') {
+      /* ── Tipos padrão ENADE (2026.2 em diante) ───────────── */
       sTipos.list.appendChild(_tipoRow('nlg-icon-aj',  'A+J',  'Asserção + Justificativa', 'Duas afirmativas com PORQUE'));
       sTipos.list.appendChild(_tipoRow('nlg-icon-ma',  'I–IV', 'Múltiplas afirmativas',    'Identifique as corretas'));
       sTipos.list.appendChild(_tipoRow('nlg-icon-con', 'CON',  'Conceitual',               'Contexto + pergunta direta'));
@@ -345,6 +465,7 @@
       sTipos.list.appendChild(_tipoRow('nlg-icon-ap',  'APL',  'Análise aplicada',         'Situação-problema real'));
 
     } else if (_modo === 'fixacao') {
+      /* ── Tipos padrão Fixação (2026.2 em diante) ─────────── */
       sTipos.list.appendChild(_tipoRow('nlg-icon-con', 'CUR', 'Curta',     'Pergunta direta, sem contexto ou contexto mínimo'));
       sTipos.list.appendChild(_tipoRow('nlg-icon-ma',  'DIR', 'Direta',    'Pergunta objetiva com foco no conceito'));
       sTipos.list.appendChild(_tipoRow('nlg-icon-ap',  'CTX', 'Contexto',  'Situação simples ou pequeno cenário aplicado'));
@@ -352,6 +473,7 @@
       if (_hasCode) sTipos.list.appendChild(_tipoRow('nlg-icon-cod', '</>', 'Código', 'Trecho de código — avalie comportamento ou saída'));
 
     } else if (_modo === 'ava') {
+      /* ── Tipos padrão AVA (2026.2 em diante) ─────────────── */
       var avaNota = _el('div', 'nlg-enade-block');
       avaNota.style.cssText += 'flex-direction:column;gap:0.4rem;';
       var avaTopo = _el('div');
@@ -370,6 +492,7 @@
       sTipos.list.appendChild(avaNota);
 
     } else {
+      /* ── Tipos padrão Questões (2026.2 em diante) ────────── */
       sTipos.list.appendChild(_tipoRow('nlg-icon-con', 'EXP', 'Explicativa',     'Conceito explicado antes da pergunta'));
       sTipos.list.appendChild(_tipoRow('nlg-icon-ma',  'CTX', 'Contextualizada', 'Explicação densa com múltiplos conceitos'));
       sTipos.list.appendChild(_tipoRow('nlg-icon-ap',  'APL', 'Aplicação',       'Cenário real para verificar a compreensão'));
@@ -379,6 +502,7 @@
     body.appendChild(sTipos.wrap);
     body.appendChild(_el('div', 'nlg-divider'));
 
+    /* ── Seção "Cores dos chips" (igual ao original) ────────── */
     var sChips = _secao('Cores dos chips');
 
     if (_hasCode) {
