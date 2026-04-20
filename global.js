@@ -12,45 +12,28 @@ window.NexusStorage = Storage;
    CONSTANTES
    ══════════════════════════════════════════════════════════ */
 
-export const SEMESTRES = ['2026.2', '2026.1', '2027.1'];
+export const SEMESTRES = ['2027.1','2026.2', '2026.1' ];
 
-export const PAGINAS = {
-  HOME:    { path: '/index.html' },
-  PESSOAL: { path: '/area_pessoal/pessoal.html' },
-  RESUMO:  { path: '/resumos/resumos.html' },
-  QUIZ:    { path: '/quiz/quiz.html' },
-  JOGOS:   { path: '/jogos/jogos.html' },
-};
 
 /* ══════════════════════════════════════════════════════════
    DISCIPLINAS POR SEMESTRE
-
-   Cada disciplina tem:
-     id       → chave usada na URL (?disc=poo)
-     nome     → nome de exibição completo
-     arquivo  → nome do arquivo JS de conteúdo (sem .js)
-     emoji    → ícone exibido no header do quiz
-
-   Para adicionar um novo semestre ou disciplina,
-   basta incluir uma entrada aqui — nenhum outro arquivo muda.
    ══════════════════════════════════════════════════════════ */
 
 const _DISCIPLINAS = {
 
   '2026.2': [
-    { id: 'poo',        nome: 'Programação Orientada a Objetos',  apelido: 'P.O.O.',           emoji: '☕',  arquivo: 'poo' },
-    { id: 'redes',      nome: 'Redes de Computadores I',          apelido: 'Redes I',           emoji: '🌐', arquivo: 'redes' },
-    { id: 'design',     nome: 'Design de Sistemas de Informação', apelido: 'Design de Sistemas',emoji: '🎨', arquivo: 'design' },
-    { id: 'banco_dados',nome: 'Fundamentos de Banco de Dados',    apelido: 'Banco de dados',    emoji: '🗄️', arquivo: 'banco_dados' },
+    { id: 'poo',        nome: 'Programação Orientada a Objetos',  apelido: 'P.O.O.',            emoji: '☕',  arquivo: 'poo' },
+    { id: 'redes',      nome: 'Redes de Computadores I',          apelido: 'Redes I',            emoji: '🌐', arquivo: 'redes' },
+    { id: 'design',     nome: 'Design de Sistemas de Informação', apelido: 'Design de Sistemas', emoji: '🎨', arquivo: 'design' },
+    { id: 'banco_dados',nome: 'Fundamentos de Banco de Dados',    apelido: 'Banco de dados',     emoji: '🗄️', arquivo: 'banco_dados' },
   ],
 
   '2026.1': [
-    { id: 'poo',        nome: 'Programação Orientada a Objetos',  apelido: 'P.O.O.',           emoji: '☕',  arquivo: 'poo' },
-    { id: 'redes',      nome: 'Redes de Computadores I',          apelido: 'Redes I',           emoji: '🌐', arquivo: 'redes' },
-    { id: 'design',     nome: 'Design de Sistemas de Informação', apelido: 'Design de Sistemas',emoji: '🎨', arquivo: 'design' },
-    { id: 'banco_dados',nome: 'Fundamentos de Banco de Dados',    apelido: 'Banco de dados',    emoji: '🗄️', arquivo: 'banco_dados' },
+    { id: 'poo',        nome: 'Programação Orientada a Objetos',  apelido: 'P.O.O.',            emoji: '☕',  arquivo: 'poo' },
+    { id: 'redes',      nome: 'Redes de Computadores I',          apelido: 'Redes I',            emoji: '🌐', arquivo: 'redes' },
+    { id: 'design',     nome: 'Design de Sistemas de Informação', apelido: 'Design de Sistemas', emoji: '🎨', arquivo: 'design' },
+    { id: 'banco_dados',nome: 'Fundamentos de Banco de Dados',    apelido: 'Banco de dados',     emoji: '🗄️', arquivo: 'banco_dados' },
   ],
-
 
 };
 
@@ -71,7 +54,7 @@ function _defaultConfigs() {
     tema:            'dark',
     animacoes:       true,
     notificacoes:    false,
-    salvarProgresso: true,   /* toggle "salvar quiz finalizado" */
+    salvarProgresso: true,
   };
 }
 
@@ -103,11 +86,6 @@ export function setDisciplina(id) {
   _estado.disciplina = id ?? null;
 }
 
-/**
- * Retorna a lista de disciplinas de um semestre.
- * Se o semestre não tiver uma lista própria, retorna o do
- * semestre mais recente (primeiro de SEMESTRES) como fallback.
- */
 export function getDisciplinasDeSemestre(semestre) {
   return _DISCIPLINAS[semestre] ?? [];
 }
@@ -159,10 +137,6 @@ _aplicarConfigs(_estado.configs);
    QUIZ — limpar dados
    ══════════════════════════════════════════════════════════ */
 
-/**
- * Remove todos os dados de quiz (progress, smap, leftat).
- * Configs e demais dados do sistema não são afetados.
- */
 export function limparDadosQuiz() {
   Storage.clearAllQuizData();
 }
