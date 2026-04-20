@@ -8,7 +8,7 @@ import {
   setPagina, setSemestre, getSemestreAtual,
   setConfigs, getConfigs, resetConfigs,
   limparDadosQuiz,
-  SEMESTRES, PAGINAS,
+  SEMESTRES,
 } from './global.js';
 
 /* ─────────────────────────────────────────────
@@ -207,6 +207,20 @@ function abrirModalConfig() {
           <div class="modal__section-title">Quiz</div>
 
           <div class="config-row">
+  <label for="cfg-salvar-parcial">
+    Salvar progresso
+    <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
+      Quando ativado, o progresso parcial é salvo enquanto você responde.
+      Desativado, apaga 10&nbsp;min após sair da aba.
+    </small>
+  </label>
+  <label class="toggle">
+    <input type="checkbox" id="cfg-salvar-parcial"
+      ${cfg.salvarProgressoParcial !== false ? 'checked' : ''} />
+    <span class="toggle__track"></span>
+  </label>
+</div>
+          <div class="config-row">
             <label for="cfg-salvar-progresso">
               Salvar ao concluir
               <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
@@ -249,14 +263,15 @@ function abrirModalConfig() {
   requestAnimationFrame(() => modal.classList.add('modal--open'));
 
   /* ── Auto-save ao mudar qualquer controle ── */
-  function _lerConfigs() {
-    return {
-      tema:            document.getElementById('cfg-tema').value,
-      animacoes:       document.getElementById('cfg-anim').checked,
-      notificacoes:    document.getElementById('cfg-notif').checked,
-      salvarProgresso: document.getElementById('cfg-salvar-progresso').checked,
-    };
-  }
+function _lerConfigs() {
+  return {
+    tema:                   document.getElementById('cfg-tema').value,
+    animacoes:              document.getElementById('cfg-anim').checked,
+    notificacoes:           document.getElementById('cfg-notif').checked,
+    salvarProgressoParcial: document.getElementById('cfg-salvar-parcial').checked, // ← novo
+    salvarProgresso:        document.getElementById('cfg-salvar-progresso').checked,
+  };
+}
 
   function _autoSave() {
     setConfigs(_lerConfigs());
@@ -266,6 +281,7 @@ function abrirModalConfig() {
   document.getElementById('cfg-anim').addEventListener('change', _autoSave);
   document.getElementById('cfg-notif').addEventListener('change', _autoSave);
   document.getElementById('cfg-salvar-progresso').addEventListener('change', _autoSave);
+  document.getElementById('cfg-salvar-parcial').addEventListener('change', _autoSave); // ← novo
 
   /* ── Fechar — salva e mostra toast ── */
   function _fecharComToast() {
@@ -309,6 +325,26 @@ function abrirModalConfig() {
       mostrarToast('Sessão encerrada.');
     });
   }
+
+  document.getElementById('cfg-salvar-parcial').addEventListener('change', function () {
+  var concluir = document.getElementById('cfg-salvar-progresso');
+  if (!this.checked) {
+    concluir.checked  = false;
+    concluir.disabled = true;
+  } else {
+    concluir.disabled = false;
+  }
+  _autoSave();
+});
+
+// logo após o modal ser criado, antes dos listeners
+if (cfg.salvarProgressoParcial === false) {
+  var concluir = document.getElementById('cfg-salvar-progresso');
+  if (concluir) {
+    concluir.checked  = false;
+    concluir.disabled = true;
+  }
+}
 }
 
 /* ─────────────────────────────────────────────

@@ -72,56 +72,86 @@
      - Sem setTimeout/setInterval
    ══════════════════════════════════════════════════════════ */
 
-  var EXPIRY_MS = 20000;
+ var EXPIRY_FINALIZADO_MS = 20000;       // 20s  — salvarProgresso OFF
+var EXPIRY_PARCIAL_MS = 120000; // 2min — salvarProgressoParcial OFF
 
-  function _leftAtKey() {
-    return 'quiz_leftat_' + _disc + '_' + _modo + '_' + _semestre;
+function _leftAtKey() {
+  return 'quiz_leftat_' + _disc + '_' + _modo + '_' + _semestre;
+}
+
+function _registrarSaida() {
+  if (!_disc || !_Storage) {
+    console.log('[quiz_engine] _registrarSaida: abortou — _disc:', _disc, '_Storage:', !!_Storage);
+    return;
   }
 
-  /* Chamada toda vez que o usuário SAI da página.
-     Sobrescreve qualquer timestamp anterior — cada saída
-     começa uma contagem nova do zero. */
-  function _registrarSaida() {
-    if (!_disc || !_Storage) return;
-
-    /* Só registra se o quiz estiver finalizado
-       e salvarProgresso estiver desativado */
-    var salvo = _Storage.loadProgress(_disc, _modo, _semestre);
-    if (!salvo || !salvo.finalizado) return;
-    if (_salvarFinalizadoAtivo()) return;
-
-    _Storage.set(_leftAtKey(), Date.now());
+  var salvo = _Storage.loadProgress(_disc, _modo, _semestre);
+  if (!salvo) {
+    console.log('[quiz_engine] _registrarSaida: sem progresso salvo, nada a fazer');
+    return;
   }
 
-  /* Chamada toda vez que o usuário VOLTA para a página
-     (visibilitychange → visible  OU  carregamento via F5).
-     
-     REGRA CRÍTICA: o timestamp é removido SEMPRE,
-     independente de ter expirado ou não.
-     Isso impede acúmulo entre múltiplas saídas. */
-  function _verificarRetorno(aoExpirar) {
-    if (!_disc || !_Storage) return;
+  var configs = _Storage.get('configs', {});
+  console.log('[quiz_engine] _registrarSaida: finalizado?', salvo.finalizado,
+              '| salvarProgresso:', configs.salvarProgresso,
+              '| salvarProgressoParcial:', configs.salvarProgressoParcial);
 
-    var leftAt = _Storage.get(_leftAtKey(), null);
-
-    /* Sem timestamp = não houve saída registrada. Nada a fazer. */
-    if (leftAt === null) return;
-
-    /* Remove SEMPRE — nova saída criará novo timestamp */
-    _Storage.remove(_leftAtKey());
-
-    var tempoFora = Date.now() - leftAt;
-
-    if (tempoFora >= EXPIRY_MS) {
-      _Storage.clearProgress(_disc, _modo, _semestre);
-      _Storage.remove(_smapKey());
-      console.info(
-        '[quiz_engine] Progresso expirado (' + Math.round(tempoFora / 1000) + 's fora). Reiniciando.'
-      );
-      if (typeof aoExpirar === 'function') aoExpirar();
-    }
-    /* tempoFora < EXPIRY_MS → não faz nada, progresso continua intacto */
+  if (salvo.finalizado && configs.salvarProgresso === false) {
+    _Storage.set(_leftAtKey(), JSON.stringify({ ts: Date.now(), tipo: 'finalizado' }));
+    console.log('[quiz_engine] _registrarSaida: gravou timestamp FINALIZADO');
+    return;
   }
+
+  if (!salvo.finalizado && configs.salvarProgressoParcial === false) {
+    _Storage.set(_leftAtKey(), JSON.stringify({ ts: Date.now(), tipo: 'parcial' }));
+    console.log('[quiz_engine] _registrarSaida: gravou timestamp PARCIAL');
+    return;
+  }
+
+  console.log('[quiz_engine] _registrarSaida: nenhuma regra de expiração ativa, timestamp não gravado');
+}
+
+function _verificarRetorno(aoExpirar) {
+  if (!_disc || !_Storage) {
+    console.log('[quiz_engine] _verificarRetorno: abortou — _disc:', _disc, '_Storage:', !!_Storage);
+    return;
+  }
+
+  var raw = _Storage.get(_leftAtKey(), null);
+  console.log('[quiz_engine] _verificarRetorno: raw:', raw, '| typeof:', typeof raw);
+
+  if (raw === null) {
+    console.log('[quiz_engine] _verificarRetorno: nenhum timestamp encontrado');
+    return;
+  }
+
+  _Storage.remove(_leftAtKey());
+
+  // Storage pode retornar string ou objeto — normaliza os dois casos
+  var payload;
+  try {
+    payload = typeof raw === 'string' ? JSON.parse(raw) : raw;
+  } catch (e) {
+    console.warn('[quiz_engine] _verificarRetorno: falha ao parsear payload:', raw);
+    return;
+  }
+
+  var tempoFora = Date.now() - payload.ts;
+  var limite    = payload.tipo === 'parcial' ? EXPIRY_PARCIAL_MS : EXPIRY_FINALIZADO_MS;
+
+  console.log('[quiz_engine] _verificarRetorno: tipo:', payload.tipo,
+              '| ts:', payload.ts,
+              '| tempoFora:', Math.round(tempoFora / 1000) + 's',
+              '| limite:', Math.round(limite / 1000) + 's',
+              '| expirou?', tempoFora >= limite);
+
+  if (tempoFora >= limite) {
+    _Storage.clearProgress(_disc, _modo, _semestre);
+    _Storage.remove(_smapKey());
+    console.info('[quiz_engine] Progresso APAGADO. Tipo:', payload.tipo, '| tempo fora:', Math.round(tempoFora / 1000) + 's');
+    if (typeof aoExpirar === 'function') aoExpirar();
+  }
+}
 
   /* ── Listeners ─────────────────────────────────────────── */
 

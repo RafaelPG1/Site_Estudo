@@ -51,10 +51,11 @@ let _estado = {
 
 function _defaultConfigs() {
   return {
-    tema:            'dark',
-    animacoes:       true,
-    notificacoes:    false,
-    salvarProgresso: true,
+    tema:                 'dark',
+    animacoes:            true,
+    notificacoes:         false,
+    salvarProgressoParcial: true,   // ← novo
+    salvarProgresso:      true,
   };
 }
 
