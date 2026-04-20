@@ -109,15 +109,15 @@ function renderSemestreSelector() {
    CARDS — links
 ───────────────────────────────────────────── */
 function bindCardLinks() {
-  const map = {
-    'card-pessoal':  () => { if (!estaLogado()) { abrirModalLogin(); return; } window.location.href = PAGINAS.PESSOAL.path; },
-    'card-resumo':  () => window.location.href = PAGINAS.RESUMO.path,
-    'card-quiz':     () => window.location.href = PAGINAS.QUIZ.path,
-    'card-jogos':    () => window.location.href = PAGINAS.JOGOS.path,
+  const rotas = {
+    'card-resumo': './resumo/resumo.html',
+    'card-quiz':   './quiz/quiz.html',
+    'card-jogos':  './jogos/jogo.html',
   };
-  Object.entries(map).forEach(([id, fn]) => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('click', e => { e.preventDefault(); fn(); });
+  Object.entries(rotas).forEach(([id, path]) => {
+    document.getElementById(id)?.addEventListener('click', () => {
+      window.location.href = path;
+    });
   });
 }
 

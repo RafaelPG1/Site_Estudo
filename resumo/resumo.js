@@ -153,7 +153,7 @@ function _carregarConteudo() {
   }
 
   const [ano] = (State.semestre ?? '2026.2').split('.');
-  const src   = `/resumo/conteudo/${ano}/${State.semestre}/res_${disc.arquivo}.js`;
+  const src = `./conteudo/${ano}/${State.semestre}/res_${disc.arquivo}.js`;
 
   const script = document.createElement('script');
   script.src   = src;
