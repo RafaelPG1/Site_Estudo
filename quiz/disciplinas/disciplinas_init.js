@@ -33,7 +33,8 @@
   ============================================================ */
 
 import { DISC_CORES } from '../../shared/cores.js';
-import { getSemestreAtual } from '../../global.js';
+import { resolverSemestreDeURL, sincronizarSemNaURL, propagarSemNosLinks } from '../../shared/url.js';
+
 
 /* ── APLICA CORES DA DISCIPLINA (síncrono, sem FOUC) ─────── */
 (function aplicarCores() {
@@ -54,21 +55,6 @@ import { getSemestreAtual } from '../../global.js';
 /* ── SEMESTRE, LINKS E FILTRO DE MODOS ───────────────────── */
 (function () {
 
-  /* ── 1. Determinar semestre ────────────────────────────────
-     Prioridade:
-       a) ?sem= na URL  (propagado pelo quiz.html ao clicar no card)
-       b) localStorage  (nexus_semestre_atual, salvo por global.js)
-       c) '2026.2'      (último fallback — acesso direto ao arquivo)
-  ─────────────────────────────────────────────────────────── */
-  var sem = new URLSearchParams(location.search).get('sem')
-         || getSemestreAtual();
-
-  /* ── 2. Garante que ?sem= apareça na barra de endereço ──── */
-  if (!location.search.includes('sem=')) {
-    var current = new URL(location.href);
-    current.searchParams.set('sem', sem);
-    history.replaceState(null, '', current.toString());
-  }
 
   /* ── 3. Propaga ?sem= em todos os links de saída ─────────── */
   /*
@@ -76,20 +62,15 @@ import { getSemestreAtual } from '../../global.js';
      URL() preserva os parâmetros existentes (disc=, modo=);
      só sem= é adicionado ou sobrescrito.
   */
-  var seletores = [
-    'a[href*="ava_template"]',
-    'a[href*="quiz_template"]',
-    'a[href*="quiz.html"]',
-    'a[href*="template.html"]',
-  ];
+const sem = resolverSemestreDeURL();
+sincronizarSemNaURL(sem);
+propagarSemNosLinks(sem, [
+  'a[href*="ava_template"]',
+  'a[href*="quiz_template"]',
+  'a[href*="quiz.html"]',
+  'a[href*="template.html"]',
+]);
 
-  document.querySelectorAll(seletores.join(', ')).forEach(function (a) {
-    try {
-      var url = new URL(a.href, location.href);
-      url.searchParams.set('sem', sem);
-      a.href = url.toString();
-    } catch (e) { /* href inválido — ignora */ }
-  });
 
   /* ── 4. Filtra cards de modo pelo semestre ativo ─────────── */
   /*

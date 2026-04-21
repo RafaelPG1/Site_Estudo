@@ -27,6 +27,7 @@ import {
 } from '../../global.js';
 import Storage from '../../storage.js';
 import { DISC_CORES } from '../disciplinas/disciplinas_cores.js';
+import { sincronizarSemNaURL, propagarSemNosLinks } from '../../shared/url.js';
 
 /* ── EXPÕE NO WINDOW PARA SCRIPTS CLÁSSICOS (quiz_engine.js) ── */
 window.NexusStorage = Storage;
@@ -217,10 +218,4 @@ s.onload = () => {
 };
 document.head.appendChild(s);
 
-/* ── PROPAGA ?sem= NO LOGO ────────────────────────────────── */
-const logoLink = document.querySelector('.header__logo[href*="quiz.html"]');
-if (logoLink) {
-  const u = new URL(logoLink.href, location.href);
-  u.searchParams.set('sem', semestre);
-  logoLink.href = u.toString();
-}
+propagarSemNosLinks(semestre, ['.header__logo[href*="quiz.html"]']);

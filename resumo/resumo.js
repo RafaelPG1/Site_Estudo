@@ -15,6 +15,7 @@ import {
   SEMESTRES,
 } from '../global.js';
 
+import { resolverSemestreDeURL, sincronizarSemNaURL } from '../shared/url.js';
 /* ══════════════════════════════════════════════
    ESTADO
 ══════════════════════════════════════════════ */
@@ -111,7 +112,7 @@ function _renderSemestreSelector() {
    CONTEXTO
 ══════════════════════════════════════════════ */
 function _resolverContexto() {
-  const semestre    = getSemestreAtual();
+  const semestre = resolverSemestreDeURL();
   const lista       = getDisciplinasDeSemestre(semestre);
   State.semestre    = semestre;
   State.disciplinas = lista;
@@ -758,9 +759,10 @@ function _trocarDisciplina(disc) {
   State.modo         = 'completo';
   setDisciplina(disc.id);
 
-  const url = new URL(window.location.href);
-  url.searchParams.set('disc', disc.id);
-  window.history.pushState({}, '', url);
+  sincronizarSemNaURL(State.semestre, 'push'); // push = cria entrada no histórico
+const url = new URL(window.location.href);
+url.searchParams.set('disc', disc.id);
+window.history.pushState({}, '', url);
 
   _atualizarSidebarAtivo(disc.id);
   _renderHeader();

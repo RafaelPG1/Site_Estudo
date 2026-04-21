@@ -5,6 +5,8 @@ import {
   getDisciplinasDeSemestre,
 } from '../global.js';
 
+import { sincronizarSemNaURL } from '../shared/url.js';
+
 (function () {
 
   const semParam = new URLSearchParams(location.search).get('sem');
@@ -78,22 +80,16 @@ import {
     });
   }
 
-  function sincronizarURL(sem) {
-    try {
-      const url = new URL(location.href);
-      url.searchParams.set('sem', sem);
-      history.replaceState(null, '', url.toString());
-    } catch (e) {}
-  }
+
 
   gerarCards(semAtual);
-  sincronizarURL(semAtual);
+  sincronizarSemNaURL(semAtual);
 
   select.addEventListener('change', () => {
     semAtual = select.value;
     setSemestre(semAtual);
     gerarCards(semAtual);
-    sincronizarURL(semAtual);
+    sincronizarSemNaURL(semAtual);
   });
 
   const fy = document.getElementById('footer-year');
