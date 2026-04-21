@@ -499,13 +499,39 @@ function fecharTodosModais() {
    TOAST
 ───────────────────────────────────────────── */
 function mostrarToast(msg) {
+  const OFFSET   = 12;   // espaço entre toasts (px)
+  const DURATION = 2800; // ms visível
+
+  // Calcula o bottom do próximo toast com base nos que já existem
+  const existentes = document.querySelectorAll('.nexus-toast');
+  let nextBottom = 32; // 2rem base
+  existentes.forEach(t => {
+    nextBottom += t.offsetHeight + OFFSET;
+  });
+
   const t = document.createElement('div');
   t.className = 'nexus-toast';
   t.textContent = msg;
+  t.style.bottom = `${nextBottom}px`;
   document.body.appendChild(t);
+
   requestAnimationFrame(() => t.classList.add('nexus-toast--show'));
+
   setTimeout(() => {
     t.classList.remove('nexus-toast--show');
-    t.addEventListener('transitionend', () => t.remove(), { once: true });
-  }, 2800);
+    t.addEventListener('transitionend', () => {
+      t.remove();
+      // Reposiciona os toasts restantes
+      _reposicionarToasts();
+    }, { once: true });
+  }, DURATION);
+}
+
+function _reposicionarToasts() {
+  const OFFSET = 12;
+  let bottom = 32;
+  document.querySelectorAll('.nexus-toast').forEach(t => {
+    t.style.bottom = `${bottom}px`;
+    bottom += t.offsetHeight + OFFSET;
+  });
 }
