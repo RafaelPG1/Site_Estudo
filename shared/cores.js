@@ -1,13 +1,5 @@
 /* ============================================================
-   NEXUS STUDY — quiz/disciplinas/disciplinas_cores.js
-
-   Fonte da verdade de cores por disciplina.
-   Importado por:
-     - disciplinas_init.js  (páginas das disciplinas)
-     - template_init.js     (páginas de quiz / ava)
-
-   Ao adicionar uma nova disciplina, basta adicionar uma entrada
-   aqui — não é necessário criar arquivos CSS individuais.
+   NEXUS STUDY — shared/cores.js
    ============================================================ */
 
 export const DISC_CORES = {

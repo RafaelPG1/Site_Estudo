@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Imports opcionais — se falharem, o resto da página continua funcionando
   try {
-    const mod = await import('../quiz/disciplinas/disciplinas_cores.js');
+    const mod = await import('../shared/cores.js');
     State.DISC_CORES = mod.DISC_CORES ?? {};
   } catch (_) { /* sem cores dinâmicas */ }
 

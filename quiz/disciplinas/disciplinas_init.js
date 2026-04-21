@@ -32,7 +32,7 @@
 
   ============================================================ */
 
-import { DISC_CORES } from './disciplinas_cores.js';
+import { DISC_CORES } from '../../shared/cores.js';
 import { getSemestreAtual } from '../../global.js';
 
 /* ── APLICA CORES DA DISCIPLINA (síncrono, sem FOUC) ─────── */
