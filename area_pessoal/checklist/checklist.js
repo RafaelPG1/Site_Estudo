@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════
-   NEXUS STUDY — checklist.js
+   NEXUS STUDY — checklist/checklist.js
    Sistema completo de checklist
    Persistência: localStorage
    Pronto para migrar ao Firebase (exporta API pura)

@@ -1,8 +1,8 @@
 /* =============================================
-   NEXUS STUDY — pessoal.js  (v2)
+   NEXUS STUDY — pessoal.js  (v3)
    Área Pessoal: Checklist + Tarefa + Anotações
    ✦ 3 abas: Checklist (pré-definido) | Tarefa | Anotações
-   ✦ Checklist carregado de checklist_data.js por disciplina
+   ✦ Checklist carregado de checklist_data.js por SEMESTRE e disciplina
    ✦ Tarefas por disciplina com localStorage
    ✦ Anotações por disciplina com autosave
    ✦ Integração com global.js e DISC_CORES
@@ -27,12 +27,11 @@ const State = {
   DISC_CORES:      {},
 
   /* Checklist pré-definido */
-  checklistData:   {},        // { discId: { categorias: [...] } }
+  checklistData:   {},        // { semestre: { discId: { categorias: [...] } } }
   checklistDiscId: null,      // disciplina ativa no painel checklist
 
   /* Tarefa */
   tarefas:         [],        // { id, discId, texto, prioridade, concluida, criadaEm }
-  filtroDisc:      'todas',
 
   /* Anotações */
   notaDiscId:      null,
@@ -45,9 +44,16 @@ const State = {
 /* ══════════════════════════════════════════════
    STORAGE KEYS
 ══════════════════════════════════════════════ */
-const STORAGE_TASKS    = ()       => `nexus_tasks_${State.semestre}`;
-const STORAGE_NOTE     = (discId) => `nexus_note_${State.semestre}_${discId}`;
-const STORAGE_CHECKLIST= (discId) => `nexus_cl_${State.semestre}_${discId}`;
+const STORAGE_TASKS     = ()       => `nexus_tasks_${State.semestre}`;
+const STORAGE_NOTE      = (discId) => `nexus_note_${State.semestre}_${discId}`;
+const STORAGE_CHECKLIST = (discId) => `nexus_cl_${State.semestre}_${discId}`;
+
+/* ══════════════════════════════════════════════
+   HELPER — dados do checklist do semestre ativo
+══════════════════════════════════════════════ */
+function _getClDisc(discId) {
+  return State.checklistData[State.semestre]?.[discId] ?? null;
+}
 
 /* ══════════════════════════════════════════════
    BOOT
@@ -65,7 +71,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   /* Import do checklist pré-definido */
   try {
-    const mod = await import('./checklist_data.js');
+    const mod = await import('./checklist/checklist_data.js');
     State.checklistData = mod.CHECKLIST_ITENS ?? {};
   } catch (_) { /* arquivo não encontrado */ }
 
@@ -202,12 +208,11 @@ function _updateHeroStat() {
   if (!pill || !text) return;
 
   if (State.abaAtiva === 'checklist') {
-    /* Mostra progresso do checklist pré-definido */
     const discId = State.checklistDiscId;
-    const disc   = State.checklistData[discId];
+    const disc   = _getClDisc(discId);
     if (!disc) { pill.style.display = 'none'; return; }
-    const todos = disc.categorias.flatMap(c => c.itens);
-    const total = todos.length;
+    const todos   = disc.categorias.flatMap(c => c.itens);
+    const total   = todos.length;
     if (total === 0) { pill.style.display = 'none'; return; }
     const checked = _getCheckedIds(discId);
     const done    = todos.filter(i => checked.has(i.id)).length;
@@ -308,37 +313,6 @@ function _trocarDisciplina(disc) {
 }
 
 /* ══════════════════════════════════════════════
-   CHECKLIST PRÉ-DEFINIDO — TOOLBAR
-══════════════════════════════════════════════ */
-function _renderClToolbar() {
-  const toolbar = document.getElementById('cl-toolbar');
-  if (!toolbar) return;
-
-  /* Remove botões anteriores de disciplina */
-  toolbar.querySelectorAll('.cl-disc-btn').forEach(b => b.remove());
-
-  const resetBtn = document.getElementById('cl-reset-btn');
-
-  State.disciplinas.forEach(disc => {
-    const hasData = !!State.checklistData[disc.id];
-    const btn = document.createElement('button');
-    btn.className = `cl-disc-btn${disc.id === State.checklistDiscId ? ' cl-disc-btn--active' : ''}${!hasData ? ' cl-disc-btn--empty' : ''}`;
-    btn.dataset.clDisc = disc.id;
-    btn.innerHTML = `${disc.emoji} ${disc.apelido ?? _nomeCurto(disc.nome, 12)}`;
-    btn.title = hasData ? disc.nome : `${disc.nome} — sem conteúdo no checklist_data.js`;
-    btn.addEventListener('click', () => {
-      State.checklistDiscId = disc.id;
-      toolbar.querySelectorAll('.cl-disc-btn').forEach(b =>
-        b.classList.toggle('cl-disc-btn--active', b.dataset.clDisc === disc.id)
-      );
-      _renderClPanel();
-      _updateHeroStat();
-    });
-    toolbar.insertBefore(btn, resetBtn);
-  });
-}
-
-/* ══════════════════════════════════════════════
    CHECKLIST PRÉ-DEFINIDO — PAINEL
 ══════════════════════════════════════════════ */
 function _renderClPanel() {
@@ -347,14 +321,17 @@ function _renderClPanel() {
   container.innerHTML = '';
 
   const discId = State.checklistDiscId;
-  const disc   = State.checklistData[discId];
+  const disc   = _getClDisc(discId);  // ← usa semestre ativo
 
   if (!disc) {
     container.innerHTML = `
       <div class="cl-empty">
         <span class="cl-empty__icon">📄</span>
         <p>Sem conteúdo para esta disciplina</p>
-        <small>Adicione os itens em <code>checklist_data.js</code> usando o id <strong>${discId ?? '—'}</strong>.</small>
+        <small>
+          Adicione os itens em <code>checklist_data.js</code> dentro do semestre
+          <strong>${State.semestre ?? '—'}</strong> com o id <strong>${discId ?? '—'}</strong>.
+        </small>
       </div>`;
     _updateClProgress(0, 0);
     return;
@@ -407,7 +384,7 @@ function _renderClPanel() {
 }
 
 function _updateClProgress(done, total) {
-  const pct    = total > 0 ? Math.round((done / total) * 100) : 0;
+  const pct     = total > 0 ? Math.round((done / total) * 100) : 0;
   const countEl = document.getElementById('cl-progress-count');
   const fillEl  = document.getElementById('cl-progress-fill');
   if (countEl) countEl.textContent = `${done} / ${total}`;
@@ -423,9 +400,9 @@ function _bindChecklist() {
     const input = e.target.closest('.cl-item__input');
     if (!input) return;
 
-    const itemId = input.dataset.itemId;
-    const discId = input.dataset.discId;
-    const label  = input.closest('.cl-item');
+    const itemId  = input.dataset.itemId;
+    const discId  = input.dataset.discId;
+    const label   = input.closest('.cl-item');
     const checked = _getCheckedIds(discId);
 
     if (input.checked) {
@@ -448,10 +425,10 @@ function _bindChecklist() {
     }
 
     /* Recalcula progresso geral */
-    const disc    = State.checklistData[discId];
-    const todos   = disc ? disc.categorias.flatMap(c => c.itens) : [];
+    const disc       = _getClDisc(discId);  // ← usa semestre ativo
+    const todos      = disc ? disc.categorias.flatMap(c => c.itens) : [];
     const newChecked = _getCheckedIds(discId);
-    const done    = todos.filter(i => newChecked.has(i.id)).length;
+    const done       = todos.filter(i => newChecked.has(i.id)).length;
     _updateClProgress(done, todos.length);
     _updateHeroStat();
   });
@@ -460,7 +437,7 @@ function _bindChecklist() {
   document.getElementById('cl-reset-btn')?.addEventListener('click', () => {
     const discId = State.checklistDiscId;
     if (!discId) return;
-    const disc = State.checklistData[discId];
+    const disc = _getClDisc(discId);  // ← usa semestre ativo
     if (!disc) return;
     const total = disc.categorias.flatMap(c => c.itens).length;
     if (total === 0) return;
@@ -501,36 +478,6 @@ function _updateProgress() {
 }
 
 /* ══════════════════════════════════════════════
-   TAREFA — FILTROS
-══════════════════════════════════════════════ */
-function _renderFiltrosChecklist() {
-  const wrap = document.getElementById('disc-filter');
-  if (!wrap) return;
-
-  const todasBtn = wrap.querySelector('[data-disc-filter="todas"]');
-  if (todasBtn) {
-    todasBtn.addEventListener('click', () => _setFiltroDisc('todas'));
-  }
-
-  State.disciplinas.forEach(disc => {
-    const btn = document.createElement('button');
-    btn.className = 'disc-filter-btn';
-    btn.dataset.discFilter = disc.id;
-    btn.innerHTML = `<span class="disc-filter-btn__emoji">${disc.emoji}</span>${disc.apelido ?? _nomeCurto(disc.nome, 14)}`;
-    btn.addEventListener('click', () => _setFiltroDisc(disc.id));
-    wrap.appendChild(btn);
-  });
-}
-
-function _setFiltroDisc(discId) {
-  State.filtroDisc = discId;
-  document.querySelectorAll('[data-disc-filter]').forEach(btn => {
-    btn.classList.toggle('disc-filter-btn--active', btn.dataset.discFilter === discId);
-  });
-  _renderTaskContainer();
-}
-
-/* ══════════════════════════════════════════════
    TAREFA — CONTAINER
 ══════════════════════════════════════════════ */
 function _renderTaskContainer() {
@@ -538,39 +485,25 @@ function _renderTaskContainer() {
   if (!container) return;
   container.innerHTML = '';
 
-  const filtro = State.filtroDisc;
+  const discComTarefas = State.disciplinas.filter(d =>
+    State.tarefas.some(t => t.discId === d.id)
+  );
+  const semDisc = State.tarefas.filter(t =>
+    !State.disciplinas.find(d => d.id === t.discId)
+  );
 
-  if (filtro === 'todas') {
-    const discComTarefas = State.disciplinas.filter(d =>
-      State.tarefas.some(t => t.discId === d.id)
-    );
-    const semDisc = State.tarefas.filter(t =>
-      !State.disciplinas.find(d => d.id === t.discId)
-    );
+  if (discComTarefas.length === 0 && semDisc.length === 0) {
+    container.appendChild(_buildEmptyState());
+    return;
+  }
 
-    if (discComTarefas.length === 0 && semDisc.length === 0) {
-      container.appendChild(_buildEmptyState());
-      return;
-    }
+  discComTarefas.forEach(disc => {
+    const tarefasDaDisc = State.tarefas.filter(t => t.discId === disc.id);
+    container.appendChild(_buildSection(disc, tarefasDaDisc));
+  });
 
-    discComTarefas.forEach(disc => {
-      const tarefasDaDisc = State.tarefas.filter(t => t.discId === disc.id);
-      container.appendChild(_buildSection(disc, tarefasDaDisc));
-    });
-
-    if (semDisc.length > 0) {
-      container.appendChild(_buildSection({ emoji: '📌', nome: 'Geral', id: '_geral' }, semDisc));
-    }
-  } else {
-    const disc    = State.disciplinas.find(d => d.id === filtro);
-    const tarefas = State.tarefas.filter(t => t.discId === filtro);
-
-    if (tarefas.length === 0) {
-      container.appendChild(_buildEmptyState(disc));
-      return;
-    }
-
-    container.appendChild(_buildSection(disc, tarefas));
+  if (semDisc.length > 0) {
+    container.appendChild(_buildSection({ emoji: '📌', nome: 'Geral', id: '_geral' }, semDisc));
   }
 }
 
@@ -601,10 +534,7 @@ function _buildSection(disc, tarefas) {
     <div class="tasks-list" id="tasks-list-${disc?.id ?? '_geral'}"></div>`;
 
   const list = section.querySelector('.tasks-list');
-  tarefas.forEach((t, i) => {
-    const item = _buildTaskItem(t, i);
-    list.appendChild(item);
-  });
+  tarefas.forEach((t, i) => list.appendChild(_buildTaskItem(t, i)));
 
   return section;
 }
@@ -666,11 +596,9 @@ function _bindAddTask() {
     const texto = input?.value.trim();
     if (!texto) return;
 
-    const discId = State.discAtiva?.id ?? '_geral';
-
     const tarefa = {
-      id:        _uid(),
-      discId,
+      id:         _uid(),
+      discId:     State.discAtiva?.id ?? '_geral',
       texto,
       prioridade: selPrio?.value ?? 'media',
       concluida:  false,
@@ -739,31 +667,6 @@ function _renderSidebarCounts() {
 /* ══════════════════════════════════════════════
    ANOTAÇÕES
 ══════════════════════════════════════════════ */
-function _renderNotesToolbar() {
-  const toolbar = document.getElementById('notes-toolbar');
-  if (!toolbar) return;
-
-  toolbar.querySelectorAll('.notes-disc-btn').forEach(b => b.remove());
-
-  const indicator = document.getElementById('autosave-indicator');
-
-  State.disciplinas.forEach(disc => {
-    const btn = document.createElement('button');
-    btn.className = `notes-disc-btn${disc.id === State.notaDiscId ? ' notes-disc-btn--active' : ''}`;
-    btn.dataset.noteDisc = disc.id;
-    btn.textContent = `${disc.emoji} ${disc.apelido ?? _nomeCurto(disc.nome, 12)}`;
-    btn.addEventListener('click', () => {
-      _salvarNotaAtual();
-      State.notaDiscId = disc.id;
-      toolbar.querySelectorAll('.notes-disc-btn').forEach(b =>
-        b.classList.toggle('notes-disc-btn--active', b.dataset.noteDisc === disc.id)
-      );
-      _renderNotaAtual();
-    });
-    toolbar.insertBefore(btn, indicator);
-  });
-}
-
 function _renderNotaAtual() {
   const textarea = document.getElementById('note-textarea');
   const titleEl  = document.getElementById('note-box-title');
@@ -788,15 +691,13 @@ function _bindNotes() {
     _updateNoteStats();
     _setAutosave('saving', 'Salvando…');
     clearTimeout(State.autosaveTimer);
-    State.autosaveTimer = setTimeout(() => {
-      _salvarNotaAtual();
-    }, 800);
+    State.autosaveTimer = setTimeout(_salvarNotaAtual, 800);
   });
 
   textarea.addEventListener('keydown', e => {
     if ((e.ctrlKey || e.metaKey) && e.key === 's') {
       e.preventDefault();
-      _salvarNotaAtual(true);
+      _salvarNotaAtual();
     }
   });
 
@@ -806,7 +707,11 @@ function _bindNotes() {
     try {
       await navigator.clipboard.writeText(val);
       const btn = document.getElementById('note-copy-btn');
-      if (btn) { const t = btn.textContent; btn.textContent = 'Copiado!'; setTimeout(() => { btn.textContent = t; }, 1500); }
+      if (btn) {
+        const t = btn.textContent;
+        btn.textContent = 'Copiado!';
+        setTimeout(() => { btn.textContent = t; }, 1500);
+      }
     } catch (_) { /* fallback */ }
   });
 
@@ -814,7 +719,7 @@ function _bindNotes() {
     if (!textarea.value.trim()) return;
     if (!confirm('Limpar todas as anotações desta disciplina?')) return;
     textarea.value = '';
-    _salvarNotaAtual(true);
+    _salvarNotaAtual();
     _updateNoteStats();
   });
 }
