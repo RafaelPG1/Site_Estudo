@@ -6,7 +6,7 @@
   <title>Área Pessoal — Nexus Study</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="pessoal.css" />
 </head>
 <body>
@@ -20,116 +20,283 @@
   <!-- ===== HEADER ===== -->
   <header class="header">
     <div class="header__inner">
-      <div class="header__logo">
-        <a href="../index.html" class="logo-back" title="Voltar ao início">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+      <div class="header__left">
+        <a href="../index.html" class="btn-back" title="Voltar ao início">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
           </svg>
+          <span class="btn-back__label">Início</span>
         </a>
-        <span class="logo-mark">N</span>
-        <div class="logo-text">
-          <span class="logo-title">Nexus</span>
-          <span class="logo-sub">Study</span>
+
+        <div class="header__divider"></div>
+
+        <div class="header__logo">
+          <span class="logo-mark">N</span>
+          <div class="logo-text">
+            <span class="logo-title">Nexus</span>
+            <span class="logo-sub">Study</span>
+          </div>
         </div>
       </div>
-      <div class="header__breadcrumb">
-        <span class="breadcrumb-sep">/</span>
-        <span class="breadcrumb-current">Área Pessoal</span>
+
+      <div class="header__center" id="header-breadcrumb">
+        Área Pessoal <span id="header-breadcrumb-sub"></span>
       </div>
+
+      <div class="header__right">
+        <div class="progress-pill" id="header-progress-pill" style="display:none">
+          <span class="progress-pill__dot"></span>
+          <span id="header-progress-text">0 / 0</span>
+        </div>
+      </div>
+
     </div>
   </header>
 
-  <!-- ===== MAIN ===== -->
-  <main class="main">
+  <!-- ===== LAYOUT COM SIDEBAR ===== -->
+  <div class="layout">
 
-    <!-- Page Title -->
-    <section class="page-hero">
-      <div class="page-hero__icon">📚</div>
-      <div class="page-hero__text">
-        <h1 class="page-hero__title">Área Pessoal</h1>
-        <p class="page-hero__sub">Seu espaço de organização e progresso</p>
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar__header">
+        <span class="sidebar__title">Disciplinas</span>
+        <span class="sidebar__semestre" id="sidebar-semestre">—</span>
       </div>
-    </section>
+      <nav class="disc-list" id="disc-list" aria-label="Disciplinas disponíveis">
+        <!-- JS injeta -->
+      </nav>
+      <div class="sidebar__footer">
+        <span>Nexus Study · <span id="sidebar-year"></span></span>
+      </div>
+    </aside>
 
-    <!-- ===== ENTRY CARDS ===== -->
-    <div class="entry-grid">
+    <!-- CONTEÚDO -->
+    <div class="content-area">
 
-      <!-- Card: Checklist -->
-      <div class="entry-card entry-card--gold" id="card-checklist-toggle">
-        <div class="entry-card__header">
-          <div class="entry-card__icon-wrap">
-            <span class="entry-card__icon">✔️</span>
+      <!-- HERO -->
+      <div class="page-hero" id="page-hero">
+        <div class="page-hero__inner">
+          <div class="page-hero__eyebrow">
+            <span class="eyebrow-dot"></span>
+            <span id="hero-eyebrow-text">Área Pessoal</span>
           </div>
-          <div class="entry-card__info">
-            <h2 class="entry-card__title">Checklist</h2>
-            <p class="entry-card__desc">Tarefas, metas e progresso diário</p>
+          <h1 class="page-hero__title" id="hero-title">Área Pessoal</h1>
+          <p class="page-hero__sub" id="hero-sub">Organize suas tarefas e anotações por disciplina.</p>
+          <div class="page-hero__row" id="hero-row">
+
+            <!-- Toggle principal: Checklist | Tarefa | Anotações -->
+            <div class="main-tabs" id="main-tabs" role="tablist">
+              <button class="main-tab-btn main-tab-btn--active"
+                      id="tab-btn-checklist"
+                      role="tab"
+                      aria-selected="true"
+                      aria-controls="panel-checklist"
+                      data-tab="checklist">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="5" width="6" height="6" rx="1"/>
+                  <rect x="3" y="13" width="6" height="6" rx="1"/>
+                  <path d="M13 6h8M13 14h8M13 18h5"/>
+                </svg>
+                Checklist
+              </button>
+              <button class="main-tab-btn"
+                      id="tab-btn-tarefa"
+                      role="tab"
+                      aria-selected="false"
+                      aria-controls="panel-tarefa"
+                      data-tab="tarefa">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Tarefa
+              </button>
+              <button class="main-tab-btn"
+                      id="tab-btn-notas"
+                      role="tab"
+                      aria-selected="false"
+                      aria-controls="panel-notas"
+                      data-tab="notas">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                </svg>
+                Anotações
+              </button>
+            </div>
+
+            <!-- Stat pill dinâmico -->
+            <div class="stat-pill" id="hero-stat-pill" style="display:none">
+              <span id="hero-stat-text">—</span>
+            </div>
+
           </div>
-          <button class="entry-card__toggle" id="btn-toggle-checklist" aria-expanded="false" aria-label="Expandir checklist">
-            <svg class="toggle-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M6 9l6 6 6-6"/>
-            </svg>
-          </button>
         </div>
+      </div>
 
-        <!-- Checklist inline panel -->
-        <div class="checklist-panel" id="checklist-panel" hidden>
-          <div class="checklist-add">
-            <input type="text" class="checklist-input" id="checklist-new-input" placeholder="Nova tarefa..." maxlength="120" />
-            <button class="checklist-add-btn" id="btn-add-task" title="Adicionar">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <!-- MOBILE: botão de troca de disciplina -->
+      <div class="mobile-toolbar" id="mobile-toolbar">
+        <button class="mobile-disc-btn" id="mobile-disc-btn">
+          <span id="mobile-disc-label">Disciplina</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- ========== MAIN ========== -->
+      <main class="main" id="main-content">
+
+        <!-- ═══ ABA: CHECKLIST (pré-definido) ═══ -->
+        <div class="tab-panel tab-panel--active" id="panel-checklist" role="tabpanel">
+
+          <!-- Toolbar de disciplina + reset -->
+
+
+          <!-- Progresso do checklist -->
+          <div class="cl-progress" id="cl-progress">
+            <div class="cl-progress__top">
+              <span class="cl-progress__label">Progresso</span>
+              <span class="cl-progress__count" id="cl-progress-count">0 / 0</span>
+            </div>
+            <div class="cl-progress__track">
+              <div class="cl-progress__fill" id="cl-progress-fill" style="width:0%"></div>
+            </div>
+          </div>
+
+          <!-- Categorias + itens -->
+          <div id="cl-container">
+            <!-- JS injeta -->
+          </div>
+
+        </div>
+        <!-- /panel-checklist -->
+
+        <!-- ═══ ABA: TAREFA (sistema de tarefas) ═══ -->
+        <div class="tab-panel" id="panel-tarefa" role="tabpanel">
+
+          <!-- Barra de progresso geral -->
+          <div class="checklist-progress-bar" id="checklist-progress-bar">
+            <div class="checklist-progress-bar__top">
+              <span class="checklist-progress-bar__label">Progresso geral</span>
+              <span class="checklist-progress-bar__count" id="progress-count">
+                0 <span>/ 0 tarefas</span>
+              </span>
+            </div>
+            <div class="checklist-progress-bar__track">
+              <div class="checklist-progress-bar__fill" id="progress-fill" style="width:0%"></div>
+            </div>
+          </div>
+
+          <!-- Formulário de adicionar tarefa -->
+          <div class="add-task-form" id="add-task-form">
+            <input
+              type="text"
+              class="add-task-input"
+              id="add-task-input"
+              placeholder="Nova tarefa… (pressione Enter para adicionar)"
+              maxlength="200"
+            />
+            <select class="priority-select" id="task-priority-select" title="Prioridade">
+              <option value="media">⚡ Média</option>
+              <option value="alta">🔴 Alta</option>
+              <option value="baixa">🟢 Baixa</option>
+            </select>
+            <button class="add-task-btn" id="add-task-btn">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
+              Adicionar
             </button>
           </div>
 
-          <ul class="checklist-list" id="checklist-list">
-            <!-- Items rendered by checklist.js -->
-          </ul>
 
-          <div class="checklist-footer">
-            <span class="checklist-progress" id="checklist-progress">0 / 0 concluídas</span>
-            <button class="checklist-clear-btn" id="btn-clear-done" title="Remover concluídas">
-              Limpar concluídas
-            </button>
+
+          <!-- Listas de tarefas por disciplina -->
+          <div id="tasks-container">
+            <!-- JS injeta as seções por disciplina -->
           </div>
+
         </div>
-      </div>
+        <!-- /panel-tarefa -->
 
-      <!-- Card: Anotações -->
-      <a href="./anotacoes/anotacoes.html" class="entry-card entry-card--teal entry-card--link">
-        <div class="entry-card__header">
-          <div class="entry-card__icon-wrap">
-            <span class="entry-card__icon">📝</span>
+        <!-- ═══ ABA: ANOTAÇÕES ═══ -->
+        <div class="tab-panel" id="panel-notas" role="tabpanel">
+
+          <div class="notes-layout" id="notes-layout">
+
+            <!-- Toolbar: seleção de disciplina + autosave -->
+            <div class="notes-toolbar" id="notes-toolbar">
+              <span class="notes-toolbar__disc-label">Notas de</span>
+              <!-- JS injeta botões de disciplina -->
+              <div class="autosave-indicator" id="autosave-indicator">
+                <span class="autosave-dot" id="autosave-dot"></span>
+                <span id="autosave-text">Sincronizado</span>
+              </div>
+            </div>
+
+            <!-- Caixa da nota -->
+            <div class="note-box" id="note-box">
+              <div class="note-box__header">
+                <span class="note-box__title" id="note-box-title">Anotações</span>
+                <span class="note-box__hint">Ctrl + S para salvar</span>
+              </div>
+              <textarea
+                class="note-textarea"
+                id="note-textarea"
+                placeholder="Escreva suas anotações aqui… Use **negrito**, `código`, ideias livres, perguntas, etc."
+                spellcheck="true"
+              ></textarea>
+              <div class="note-stats">
+                <span class="note-stat">Palavras: <strong id="note-words">0</strong></span>
+                <span class="note-stat">Chars: <strong id="note-chars">0</strong></span>
+                <span class="note-stat">Salvo: <strong id="note-saved-at">—</strong></span>
+                <div class="note-actions">
+                  <button class="note-btn" id="note-copy-btn">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                    </svg>
+                    Copiar
+                  </button>
+                  <button class="note-btn note-btn--danger" id="note-clear-btn">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                    </svg>
+                    Limpar
+                  </button>
+                </div>
+              </div>
+            </div>
+
           </div>
-          <div class="entry-card__info">
-            <h2 class="entry-card__title">Anotações</h2>
-            <p class="entry-card__desc">Bloco de notas pessoal com salvamento automático</p>
-          </div>
-          <div class="entry-card__cta">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
-            </svg>
-          </div>
+
         </div>
-        <div class="entry-card__preview" id="notes-preview">
-          <!-- preview loaded by pessoal.js -->
-          <span class="preview-empty">Nenhuma anotação ainda…</span>
-        </div>
-      </a>
+        <!-- /panel-notas -->
 
-    </div><!-- /entry-grid -->
+      </main>
+    </div><!-- /content-area -->
+  </div><!-- /layout -->
 
-  </main>
+  <!-- ===== DROPDOWN MOBILE DE DISCIPLINAS ===== -->
+  <div class="mobile-dropdown" id="mobile-dropdown">
+    <div class="mobile-dropdown__backdrop" id="mobile-dropdown-backdrop"></div>
+    <div class="mobile-dropdown__sheet">
+      <div class="mobile-dropdown__handle"></div>
+      <div class="mobile-dropdown__title">Selecionar disciplina</div>
+      <div class="mobile-dropdown__list" id="mobile-dropdown-list"></div>
+    </div>
+  </div>
 
-  <!-- ===== FOOTER ===== -->
   <footer class="footer">
-    <p>© <span id="footer-year"></span> Nexus Study · Área Pessoal</p>
+    <p>© <span id="footer-year"></span> Nexus Study · Ambiente de estudos</p>
   </footer>
 
-  <!-- Toast -->
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
-
-  <script type="module" src="checklist.js"></script>
   <script type="module" src="pessoal.js"></script>
+
 </body>
 </html>

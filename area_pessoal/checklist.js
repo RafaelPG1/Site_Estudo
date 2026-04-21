@@ -1,261 +1,326 @@
-/* =============================================
+/* ═══════════════════════════════════════════════════
    NEXUS STUDY — checklist.js
-   Lógica do checklist com localStorage
-   ============================================= */
+   Sistema completo de checklist
+   Persistência: localStorage
+   Pronto para migrar ao Firebase (exporta API pura)
+   ═══════════════════════════════════════════════════ */
 
-const STORAGE_KEY = 'nexus_checklist_v1';
+/* ── Storage key ── */
+const KEY = 'nexus_checklist_v1';
 
-/* ── PADRÃO — itens iniciais ── */
+/* ── Circunferência do ring (r=19) ── */
+const RING_CIRC = 2 * Math.PI * 19; // ≈ 119.38
+
+/* ─────────────────────────────────────────────────────
+   ESTADO
+───────────────────────────────────────────────────── */
+let tasks        = [];
+let activeFilter = 'all'; // 'all' | 'active' | 'done'
+
+/* ─────────────────────────────────────────────────────
+   UTILITÁRIOS
+───────────────────────────────────────────────────── */
+function uid() {
+  return `t_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+}
+
+function escHtml(s) {
+  return s
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ─────────────────────────────────────────────────────
+   PERSISTÊNCIA
+───────────────────────────────────────────────────── */
 const DEFAULT_TASKS = [
-  { id: uid(), text: 'Estudar aula do dia',        done: false },
-  { id: uid(), text: 'Fazer exercícios práticos',  done: false },
-  { id: uid(), text: 'Revisar conteúdo anterior',  done: false },
+  { id: uid(), text: 'Estudar aula do dia',       done: false, createdAt: Date.now() },
+  { id: uid(), text: 'Fazer exercícios práticos', done: false, createdAt: Date.now() },
+  { id: uid(), text: 'Revisar conteúdo anterior', done: false, createdAt: Date.now() },
 ];
 
-/* ─────────────────────────────────────────────
-   ESTADO
-───────────────────────────────────────────── */
-let tasks = [];
-
-/* ─────────────────────────────────────────────
-   PERSISTÊNCIA
-───────────────────────────────────────────── */
-function loadTasks() {
+export function loadTasks() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : structuredClone(DEFAULT_TASKS);
-  } catch {
-    return structuredClone(DEFAULT_TASKS);
-  }
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return structuredClone(DEFAULT_TASKS);
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) && parsed.length ? parsed : structuredClone(DEFAULT_TASKS);
+  } catch { return structuredClone(DEFAULT_TASKS); }
 }
 
-function saveTasks() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-  } catch (e) {
-    console.warn('[Nexus/checklist] Não foi possível salvar:', e);
-  }
+export function saveTasks(list) {
+  try { localStorage.setItem(KEY, JSON.stringify(list)); }
+  catch (e) { console.warn('[Nexus/checklist] saveTasks:', e); }
 }
 
-/* ─────────────────────────────────────────────
-   UTILITÁRIOS
-───────────────────────────────────────────── */
-function uid() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+/* ─────────────────────────────────────────────────────
+   API PURA  (fácil de trocar pelo Firebase depois)
+───────────────────────────────────────────────────── */
+export function addTask(text) {
+  const trimmed = text.trim();
+  if (!trimmed) return null;
+  const task = { id: uid(), text: trimmed, done: false, createdAt: Date.now() };
+  tasks.push(task);
+  saveTasks(tasks);
+  return task;
 }
 
-function getProgress() {
-  const done  = tasks.filter(t => t.done).length;
+export function toggleTask(id) {
+  const t = tasks.find(x => x.id === id);
+  if (!t) return false;
+  t.done = !t.done;
+  saveTasks(tasks);
+  return t.done;
+}
+
+export function deleteTask(id) {
+  const idx = tasks.findIndex(x => x.id === id);
+  if (idx === -1) return false;
+  tasks.splice(idx, 1);
+  saveTasks(tasks);
+  return true;
+}
+
+export function clearDone() {
+  const removed = tasks.filter(x => x.done).length;
+  tasks = tasks.filter(x => !x.done);
+  saveTasks(tasks);
+  return removed;
+}
+
+export function getStats() {
   const total = tasks.length;
-  return { done, total };
+  const done  = tasks.filter(x => x.done).length;
+  const pct   = total === 0 ? 0 : Math.round((done / total) * 100);
+  return { total, done, pending: total - done, pct };
 }
 
-/* ─────────────────────────────────────────────
-   DOM — render
-───────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────
+   FILTRO
+───────────────────────────────────────────────────── */
+function getVisible() {
+  if (activeFilter === 'active') return tasks.filter(x => !x.done);
+  if (activeFilter === 'done')   return tasks.filter(x =>  x.done);
+  return tasks;
+}
+
+/* ─────────────────────────────────────────────────────
+   DOM — PROGRESS
+───────────────────────────────────────────────────── */
+function updateProgress() {
+  const { total, done, pending, pct } = getStats();
+
+  /* Ring */
+  const fill = document.getElementById('ring-fill');
+  if (fill) {
+    const offset = RING_CIRC - (pct / 100) * RING_CIRC;
+    fill.style.strokeDashoffset = offset;
+  }
+
+  /* Percentage text */
+  const pctEl = document.getElementById('ring-pct');
+  if (pctEl) pctEl.textContent = `${pct}%`;
+
+  /* Fraction */
+  document.getElementById('done-count')?.setAttribute('data-val', done);
+  const doneEl  = document.getElementById('done-count');
+  const totalEl = document.getElementById('total-count');
+  if (doneEl)  doneEl.textContent  = done;
+  if (totalEl) totalEl.textContent = total;
+
+  /* Linear bar */
+  const barFill = document.getElementById('cl-bar-fill');
+  if (barFill) barFill.style.width = `${pct}%`;
+
+  /* ARIA */
+  const bar = document.getElementById('cl-progressbar');
+  if (bar) bar.setAttribute('aria-valuenow', pct);
+
+  /* Foot info */
+  const footInfo = document.getElementById('cl-foot-info');
+  if (footInfo) {
+    footInfo.textContent = pending === 0 && total > 0
+      ? '✓ Tudo concluído!'
+      : `${pending} pendente${pending !== 1 ? 's' : ''}`;
+  }
+}
+
+/* ─────────────────────────────────────────────────────
+   DOM — LIST
+───────────────────────────────────────────────────── */
 function renderList() {
-  const list = document.getElementById('checklist-list');
+  const list = document.getElementById('cl-list');
   if (!list) return;
 
+  const visible = getVisible();
   list.innerHTML = '';
 
-  if (tasks.length === 0) {
-    list.innerHTML = '<li class="checklist-empty">Nenhuma tarefa ainda. Adicione uma! 🎯</li>';
-    updateProgress();
+  if (visible.length === 0) {
+    const li = document.createElement('li');
+    li.className = 'cl-empty';
+    li.textContent = activeFilter === 'done'
+      ? 'Nenhuma tarefa concluída ainda.'
+      : activeFilter === 'active'
+      ? 'Todas as tarefas foram concluídas! 🎉'
+      : 'Adicione sua primeira tarefa acima 🎯';
+    list.appendChild(li);
     return;
   }
 
-  tasks.forEach(task => {
+  visible.forEach((task, idx) => {
     const li = document.createElement('li');
-    li.className = `checklist-item${task.done ? ' checklist-item--done' : ''}`;
+    li.className = `cl-item${task.done ? ' cl-item--done' : ''}`;
     li.dataset.id = task.id;
+    li.style.animationDelay = `${idx * 0.04}s`;
+
     li.innerHTML = `
       <input
         type="checkbox"
-        class="item-checkbox"
+        class="cl-checkbox"
         id="chk-${task.id}"
         ${task.done ? 'checked' : ''}
-        aria-label="${escapeHtml(task.text)}"
+        aria-label="${escHtml(task.text)}"
       />
-      <label class="item-label" for="chk-${task.id}">${escapeHtml(task.text)}</label>
-      <button class="item-delete" data-id="${task.id}" aria-label="Remover tarefa" title="Remover">✕</button>
-    `;
+      <label class="cl-item__text" for="chk-${task.id}">${escHtml(task.text)}</label>
+      <button
+        class="cl-item__del"
+        data-id="${task.id}"
+        aria-label="Remover tarefa"
+        title="Remover"
+      >
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6"  y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>`;
+
     list.appendChild(li);
   });
 
   updateProgress();
 }
 
-function updateProgress() {
-  const el = document.getElementById('checklist-progress');
+/* ─────────────────────────────────────────────────────
+   DOM — FILTER BUTTONS
+───────────────────────────────────────────────────── */
+function setFilter(filter) {
+  activeFilter = filter;
+  document.querySelectorAll('.cl-filter').forEach(btn => {
+    btn.classList.toggle('cl-filter--active', btn.dataset.filter === filter);
+  });
+  renderList();
+}
+
+/* ─────────────────────────────────────────────────────
+   TOAST  (usa window.nexusToast se disponível)
+───────────────────────────────────────────────────── */
+function toast(msg) {
+  if (typeof window.nexusToast === 'function') { window.nexusToast(msg); return; }
+  const el = document.getElementById('nexus-toast');
   if (!el) return;
-  const { done, total } = getProgress();
-  el.textContent = `${done} / ${total} concluída${done !== 1 ? 's' : ''}`;
+  el.textContent = msg;
+  el.classList.add('nexus-toast--show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('nexus-toast--show'), 2500);
 }
 
-/* ─────────────────────────────────────────────
-   AÇÕES
-───────────────────────────────────────────── */
-function addTask(text) {
-  const trimmed = text.trim();
-  if (!trimmed) return false;
-  tasks.push({ id: uid(), text: trimmed, done: false });
-  saveTasks();
-  renderList();
-  return true;
-}
-
-function toggleTask(id) {
-  const task = tasks.find(t => t.id === id);
-  if (!task) return;
-  task.done = !task.done;
-  saveTasks();
-
-  /* Animação suave sem re-render completo */
-  const li = document.querySelector(`.checklist-item[data-id="${id}"]`);
-  if (li) {
-    li.classList.toggle('checklist-item--done', task.done);
-  }
-  updateProgress();
-}
-
-function deleteTask(id) {
-  tasks = tasks.filter(t => t.id !== id);
-  saveTasks();
-
-  const li = document.querySelector(`.checklist-item[data-id="${id}"]`);
-  if (li) {
-    li.style.transition = 'opacity 0.2s, transform 0.2s';
-    li.style.opacity    = '0';
-    li.style.transform  = 'translateX(12px)';
-    li.addEventListener('transitionend', () => {
-      renderList(); // re-render after animation
-    }, { once: true });
-  }
-}
-
-function clearDone() {
-  const doneBefore = tasks.filter(t => t.done).length;
-  if (doneBefore === 0) return 0;
-  tasks = tasks.filter(t => !t.done);
-  saveTasks();
-  renderList();
-  return doneBefore;
-}
-
-/* ─────────────────────────────────────────────
-   PAINEL TOGGLE
-───────────────────────────────────────────── */
-function togglePanel() {
-  const panel = document.getElementById('checklist-panel');
-  const btn   = document.getElementById('btn-toggle-checklist');
-  if (!panel || !btn) return;
-
-  const isOpen = !panel.hidden;
-
-  if (isOpen) {
-    panel.style.animation = 'none';
-    panel.style.opacity   = '0';
-    panel.style.transform = 'translateY(-8px)';
-    panel.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
-    setTimeout(() => {
-      panel.hidden = true;
-      panel.style.cssText = '';
-    }, 200);
-    btn.setAttribute('aria-expanded', 'false');
+/* ─────────────────────────────────────────────────────
+   ADD TASK (helper com feedback)
+───────────────────────────────────────────────────── */
+function handleAdd() {
+  const input = document.getElementById('cl-new-input');
+  if (!input) return;
+  const task = addTask(input.value);
+  if (task) {
+    input.value = '';
+    if (activeFilter === 'done') setFilter('all');
+    else renderList();
+    toast('Tarefa adicionada!');
   } else {
-    panel.hidden = false;
-    btn.setAttribute('aria-expanded', 'true');
+    input.focus();
+    input.style.borderColor = 'rgba(232,122,154,.5)';
+    setTimeout(() => (input.style.borderColor = ''), 900);
+  }
+}
+
+/* ─────────────────────────────────────────────────────
+   DELETE  (com animação de saída)
+───────────────────────────────────────────────────── */
+function handleDelete(id) {
+  const li = document.querySelector(`.cl-item[data-id="${id}"]`);
+  if (li) {
+    li.classList.add('cl-item--removing');
+    li.addEventListener('transitionend', () => {
+      deleteTask(id);
+      renderList();
+    }, { once: true });
+  } else {
+    deleteTask(id);
     renderList();
   }
+  toast('Tarefa removida.');
 }
 
-/* ─────────────────────────────────────────────
-   ESCAPE HTML
-───────────────────────────────────────────── */
-function escapeHtml(str) {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-/* ─────────────────────────────────────────────
-   TOAST (re-usa o do pessoal.js se disponível)
-───────────────────────────────────────────── */
-function showToast(msg) {
-  if (typeof window.nexusToast === 'function') {
-    window.nexusToast(msg);
-    return;
-  }
-  const t = document.getElementById('toast');
-  if (!t) return;
-  t.textContent = msg;
-  t.classList.add('toast--show');
-  clearTimeout(t._timer);
-  t._timer = setTimeout(() => t.classList.remove('toast--show'), 2500);
-}
-
-/* ─────────────────────────────────────────────
+/* ─────────────────────────────────────────────────────
    INIT
-───────────────────────────────────────────── */
-function initChecklist() {
+───────────────────────────────────────────────────── */
+export function initChecklist() {
   tasks = loadTasks();
+  renderList();
 
-  /* Toggle painel */
-  document.getElementById('btn-toggle-checklist')
-    ?.addEventListener('click', togglePanel);
+  /* ── Botão adicionar ── */
+  document.getElementById('cl-add-btn')
+    ?.addEventListener('click', handleAdd);
 
-  /* Enter no input */
-  document.getElementById('checklist-new-input')
-    ?.addEventListener('keydown', e => {
-      if (e.key === 'Enter') {
-        const input = e.currentTarget;
-        const ok = addTask(input.value);
-        if (ok) { input.value = ''; showToast('Tarefa adicionada!'); }
+  /* ── Enter no input ── */
+  document.getElementById('cl-new-input')
+    ?.addEventListener('keydown', e => { if (e.key === 'Enter') handleAdd(); });
+
+  /* ── Delegação na lista (toggle + delete) ── */
+  document.getElementById('cl-list')?.addEventListener('click', e => {
+    /* Delete */
+    const delBtn = e.target.closest('.cl-item__del');
+    if (delBtn) { handleDelete(delBtn.dataset.id); return; }
+
+    /* Toggle ao clicar no item (exceto no del) */
+    const item = e.target.closest('.cl-item');
+    if (item && !e.target.classList.contains('cl-item__del')) {
+      const id = item.dataset.id;
+      toggleTask(id);
+      /* Atualiza visualmente sem re-render completo */
+      const chk = item.querySelector('.cl-checkbox');
+      const task = tasks.find(x => x.id === id);
+      if (chk && task) {
+        chk.checked = task.done;
+        item.classList.toggle('cl-item--done', task.done);
       }
-    });
-
-  /* Botão adicionar */
-  document.getElementById('btn-add-task')
-    ?.addEventListener('click', () => {
-      const input = document.getElementById('checklist-new-input');
-      if (!input) return;
-      const ok = addTask(input.value);
-      if (ok) { input.value = ''; showToast('Tarefa adicionada!'); }
-    });
-
-  /* Delegação de eventos na lista */
-  document.getElementById('checklist-list')
-    ?.addEventListener('change', e => {
-      if (e.target.classList.contains('item-checkbox')) {
-        const id = e.target.closest('.checklist-item')?.dataset.id;
-        if (id) toggleTask(id);
+      updateProgress();
+      /* Se filtro ativo não mostra este item, re-render após delay */
+      if (activeFilter !== 'all') {
+        setTimeout(renderList, 350);
       }
-    });
+    }
+  });
 
-  document.getElementById('checklist-list')
-    ?.addEventListener('click', e => {
-      const delBtn = e.target.closest('.item-delete');
-      if (delBtn) {
-        deleteTask(delBtn.dataset.id);
-        showToast('Tarefa removida.');
-      }
-    });
+  /* ── Filtros ── */
+  document.getElementById('cl-filters')?.addEventListener('click', e => {
+    const btn = e.target.closest('.cl-filter');
+    if (btn) setFilter(btn.dataset.filter);
+  });
 
-  /* Limpar concluídas */
-  document.getElementById('btn-clear-done')
-    ?.addEventListener('click', () => {
-      const removed = clearDone();
-      showToast(removed > 0 ? `${removed} tarefa${removed !== 1 ? 's' : ''} removida${removed !== 1 ? 's' : ''}.` : 'Nenhuma concluída para remover.');
-    });
+  /* ── Limpar concluídas ── */
+  document.getElementById('cl-clear-done')?.addEventListener('click', () => {
+    const removed = clearDone();
+    renderList();
+    toast(removed > 0
+      ? `${removed} tarefa${removed !== 1 ? 's' : ''} removida${removed !== 1 ? 's' : ''}.`
+      : 'Nenhuma concluída para remover.'
+    );
+  });
 }
 
-/* Exportar para uso externo (futuro Firebase) */
-export { initChecklist, addTask, toggleTask, deleteTask, clearDone, loadTasks, saveTasks, tasks };
-
-/* Auto-init quando DOM pronto */
+/* Auto-init */
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initChecklist);
 } else {
