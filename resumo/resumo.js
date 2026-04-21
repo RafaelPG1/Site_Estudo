@@ -16,6 +16,10 @@ import {
 } from '../global.js';
 
 import { resolverSemestreDeURL, sincronizarSemNaURL } from '../shared/url.js';
+import { criarSemestreSelect, preencherAnos } from '../shared/dom.js';
+import { aplicarCoresDisciplina } from '../shared/theme.js';
+
+
 /* ══════════════════════════════════════════════
    ESTADO
 ══════════════════════════════════════════════ */
@@ -39,8 +43,7 @@ const State = {
 ══════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', async () => {
   setPagina('RESUMO');
-  document.getElementById('footer-year').textContent  = new Date().getFullYear();
-  document.getElementById('sidebar-year').textContent = new Date().getFullYear();
+  preencherAnos();
 
   // Imports opcionais — se falharem, o resto da página continua funcionando
   try {
@@ -54,59 +57,39 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (_) { /* sem seção de vídeos */ }
 
   _resolverContexto();
-  _renderSidebar();
-  _renderHeader();
-  _renderSemestreSelector();
-  _bindModal();
-  _bindMobileDropdown();
-  _carregarConteudo();
-});
 
-/* ══════════════════════════════════════════════
-   SELETOR DE SEMESTRE
-══════════════════════════════════════════════ */
-function _renderSemestreSelector() {
-  const wrap = document.getElementById('semestre-wrap-resumo');
-  if (!wrap) return;
-
-  const atual  = State.semestre;
-  const select = document.createElement('select');
-  select.className = 'semestre-select';
-  select.title = 'Selecionar semestre';
-
-  SEMESTRES.forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = s;
-    opt.textContent = s;
-    if (s === atual) opt.selected = true;
-    select.appendChild(opt);
-  });
-
-  select.addEventListener('change', e => {
-    setSemestre(e.target.value);
-    State.semestre     = e.target.value;
-    State.disciplinas  = getDisciplinasDeSemestre(e.target.value);
+  /* ── SELETOR DE SEMESTRE ─────────────────────────────────
+     Colocado aqui, após _resolverContexto() (que já definiu
+     State.semestre), dentro do DOMContentLoaded para garantir
+     que o DOM e State.semestre estejam prontos.             */
+  criarSemestreSelect('semestre-wrap-resumo', sem => {
+    State.semestre     = sem;
+    State.disciplinas  = getDisciplinasDeSemestre(sem);
     State.temConteudo  = null;
     State.aulas        = [];
     State.simplificado = [];
     State.professor    = [];
     State.modo         = 'completo';
-
-    State.disciplina = State.disciplinas[0] ?? null;
+    State.disciplina   = State.disciplinas[0] ?? null;
     if (State.disciplina) {
       setDisciplina(State.disciplina.id);
-      _aplicarCorDisciplina(State.disciplina.id);
+      aplicarCoresDisciplina(State.disciplina.arquivo, State.DISC_CORES);
     } else {
       setDisciplina(null);
     }
-
     _renderSidebar();
     _renderHeader();
     _carregarConteudo();
-  });
+  }, State.semestre);
 
-  wrap.appendChild(select);
-}
+  _renderSidebar();
+  _renderHeader();
+
+  _bindModal();
+  _bindMobileDropdown();
+  _carregarConteudo();
+});
+
 
 /* ══════════════════════════════════════════════
    CONTEXTO
@@ -128,7 +111,7 @@ function _resolverContexto() {
   const disc   = (discId ? lista.find(d => d.id === discId) : null) ?? lista[0] ?? null;
   State.disciplina = disc;
   if (disc) setDisciplina(disc.id);
-  if (disc) _aplicarCorDisciplina(disc.id);
+  if (disc) aplicarCoresDisciplina(disc.arquivo, State.DISC_CORES);
 }
 
 /* ══════════════════════════════════════════════
@@ -346,15 +329,7 @@ function _lerDados() {
   };
 }
 
-function _aplicarCorDisciplina(discId) {
-  const cores = State.DISC_CORES[discId];
-  if (!cores) return;
-  const r = document.documentElement.style;
-  r.setProperty('--disc-tema',     cores.corTema);
-  r.setProperty('--disc-tema-rgb', cores.corTemaRgb);
-  r.setProperty('--disc-tema2',    cores.corTema2);
-  r.setProperty('--disc-tema2Rgb', cores.corTema2Rgb);
-}
+
 
 /* ══════════════════════════════════════════════
    TOGGLE DE MODO
@@ -767,7 +742,7 @@ window.history.pushState({}, '', url);
   _atualizarSidebarAtivo(disc.id);
   _renderHeader();
   _fecharMobileDropdown();
-  _aplicarCorDisciplina(disc.id);
+  aplicarCoresDisciplina(disc.arquivo, State.DISC_CORES);
   _carregarConteudo();
 }
 

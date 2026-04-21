@@ -5,11 +5,12 @@
 
 import {
   getEstado, setUsuario, getUsuario, estaLogado,
-  setPagina, setSemestre, getSemestreAtual,
+  setPagina,
   setConfigs, getConfigs, resetConfigs,
   limparDadosQuiz,
-  SEMESTRES,
 } from './global.js';
+
+import { criarSemestreSelect, preencherAnos } from './shared/dom.js';
 
 /* ─────────────────────────────────────────────
    INICIALIZAÇÃO
@@ -17,10 +18,21 @@ import {
 document.addEventListener('DOMContentLoaded', () => {
   setPagina('HOME');
   renderHeader();
-  renderSemestreSelector();
+  _montarSelect();
   bindCardLinks();
-  document.getElementById('footer-year').textContent = new Date().getFullYear();
+  preencherAnos(['footer-year']);
 });
+
+/* ─────────────────────────────────────────────
+   SELETOR DE SEMESTRE
+   Extraído em função para reusar após login/logout,
+   já que renderHeader() recria o #semestre-wrap.
+───────────────────────────────────────────── */
+function _montarSelect() {
+  criarSemestreSelect('semestre-wrap', sem => {
+    document.dispatchEvent(new CustomEvent('nexus:semestreChanged', { detail: sem }));
+  });
+}
 
 /* ─────────────────────────────────────────────
    HEADER — render dinâmico
@@ -74,35 +86,6 @@ function renderHeader() {
     </svg>`;
   btnConfig.addEventListener('click', abrirModalConfig);
   nav.appendChild(btnConfig);
-}
-
-/* ─────────────────────────────────────────────
-   SELETOR DE SEMESTRE
-───────────────────────────────────────────── */
-function renderSemestreSelector() {
-  const wrap = document.getElementById('semestre-wrap');
-  if (!wrap) return;
-
-  const atual = getSemestreAtual();
-
-  const select = document.createElement('select');
-  select.className = 'semestre-select';
-  select.title     = 'Selecionar semestre';
-
-  SEMESTRES.forEach(s => {
-    const opt       = document.createElement('option');
-    opt.value       = s;
-    opt.textContent = s;
-    if (s === atual) opt.selected = true;
-    select.appendChild(opt);
-  });
-
-  select.addEventListener('change', e => {
-    setSemestre(e.target.value);
-    document.dispatchEvent(new CustomEvent('nexus:semestreChanged', { detail: e.target.value }));
-  });
-
-  wrap.appendChild(select);
 }
 
 /* ─────────────────────────────────────────────
@@ -207,19 +190,20 @@ function abrirModalConfig() {
           <div class="modal__section-title">Quiz</div>
 
           <div class="config-row">
-  <label for="cfg-salvar-parcial">
-    Salvar progresso
-    <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
-      Quando ativado, o progresso parcial é salvo enquanto você responde.
-      Desativado, apaga 10&nbsp;min após sair da aba.
-    </small>
-  </label>
-  <label class="toggle">
-    <input type="checkbox" id="cfg-salvar-parcial"
-      ${cfg.salvarProgressoParcial !== false ? 'checked' : ''} />
-    <span class="toggle__track"></span>
-  </label>
-</div>
+            <label for="cfg-salvar-parcial">
+              Salvar progresso
+              <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
+                Quando ativado, o progresso parcial é salvo enquanto você responde.
+                Desativado, apaga 10&nbsp;min após sair da aba.
+              </small>
+            </label>
+            <label class="toggle">
+              <input type="checkbox" id="cfg-salvar-parcial"
+                ${cfg.salvarProgressoParcial !== false ? 'checked' : ''} />
+              <span class="toggle__track"></span>
+            </label>
+          </div>
+
           <div class="config-row">
             <label for="cfg-salvar-progresso">
               Salvar ao concluir
@@ -263,15 +247,15 @@ function abrirModalConfig() {
   requestAnimationFrame(() => modal.classList.add('modal--open'));
 
   /* ── Auto-save ao mudar qualquer controle ── */
-function _lerConfigs() {
-  return {
-    tema:                   document.getElementById('cfg-tema').value,
-    animacoes:              document.getElementById('cfg-anim').checked,
-    notificacoes:           document.getElementById('cfg-notif').checked,
-    salvarProgressoParcial: document.getElementById('cfg-salvar-parcial').checked, // ← novo
-    salvarProgresso:        document.getElementById('cfg-salvar-progresso').checked,
-  };
-}
+  function _lerConfigs() {
+    return {
+      tema:                   document.getElementById('cfg-tema').value,
+      animacoes:              document.getElementById('cfg-anim').checked,
+      notificacoes:           document.getElementById('cfg-notif').checked,
+      salvarProgressoParcial: document.getElementById('cfg-salvar-parcial').checked,
+      salvarProgresso:        document.getElementById('cfg-salvar-progresso').checked,
+    };
+  }
 
   function _autoSave() {
     setConfigs(_lerConfigs());
@@ -281,7 +265,26 @@ function _lerConfigs() {
   document.getElementById('cfg-anim').addEventListener('change', _autoSave);
   document.getElementById('cfg-notif').addEventListener('change', _autoSave);
   document.getElementById('cfg-salvar-progresso').addEventListener('change', _autoSave);
-  document.getElementById('cfg-salvar-parcial').addEventListener('change', _autoSave); // ← novo
+
+  document.getElementById('cfg-salvar-parcial').addEventListener('change', function () {
+    const concluir = document.getElementById('cfg-salvar-progresso');
+    if (!this.checked) {
+      concluir.checked  = false;
+      concluir.disabled = true;
+    } else {
+      concluir.disabled = false;
+    }
+    _autoSave();
+  });
+
+  /* Desabilita "salvar ao concluir" se "salvar progresso" já estiver off */
+  if (cfg.salvarProgressoParcial === false) {
+    const concluir = document.getElementById('cfg-salvar-progresso');
+    if (concluir) {
+      concluir.checked  = false;
+      concluir.disabled = true;
+    }
+  }
 
   /* ── Fechar — salva e mostra toast ── */
   function _fecharComToast() {
@@ -321,30 +324,10 @@ function _lerConfigs() {
       setUsuario(null);
       fecharModal(modal);
       renderHeader();
-      renderSemestreSelector();
+      _montarSelect();
       mostrarToast('Sessão encerrada.');
     });
   }
-
-  document.getElementById('cfg-salvar-parcial').addEventListener('change', function () {
-  var concluir = document.getElementById('cfg-salvar-progresso');
-  if (!this.checked) {
-    concluir.checked  = false;
-    concluir.disabled = true;
-  } else {
-    concluir.disabled = false;
-  }
-  _autoSave();
-});
-
-// logo após o modal ser criado, antes dos listeners
-if (cfg.salvarProgressoParcial === false) {
-  var concluir = document.getElementById('cfg-salvar-progresso');
-  if (concluir) {
-    concluir.checked  = false;
-    concluir.disabled = true;
-  }
-}
 }
 
 /* ─────────────────────────────────────────────
@@ -413,7 +396,7 @@ function abrirModalLogin() {
     setUsuario({ uid: 'temp_001', nome: email.split('@')[0], email, foto: null });
     fecharModal(modal);
     renderHeader();
-    renderSemestreSelector();
+    _montarSelect();
     mostrarToast(`Bem-vindo, ${getUsuario().nome}!`);
   });
 
@@ -471,7 +454,7 @@ function abrirPerfilDropdown() {
     setUsuario(null);
     dd.remove();
     renderHeader();
-    renderSemestreSelector();
+    _montarSelect();
     mostrarToast('Sessão encerrada.');
   });
 }
@@ -499,12 +482,11 @@ function fecharTodosModais() {
    TOAST
 ───────────────────────────────────────────── */
 function mostrarToast(msg) {
-  const OFFSET   = 12;   // espaço entre toasts (px)
-  const DURATION = 2800; // ms visível
+  const OFFSET   = 12;
+  const DURATION = 2800;
 
-  // Calcula o bottom do próximo toast com base nos que já existem
   const existentes = document.querySelectorAll('.nexus-toast');
-  let nextBottom = 32; // 2rem base
+  let nextBottom = 32;
   existentes.forEach(t => {
     nextBottom += t.offsetHeight + OFFSET;
   });
@@ -521,7 +503,6 @@ function mostrarToast(msg) {
     t.classList.remove('nexus-toast--show');
     t.addEventListener('transitionend', () => {
       t.remove();
-      // Reposiciona os toasts restantes
       _reposicionarToasts();
     }, { once: true });
   }, DURATION);

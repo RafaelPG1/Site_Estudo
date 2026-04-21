@@ -6,6 +6,7 @@ import {
 } from '../global.js';
 
 import { sincronizarSemNaURL } from '../shared/url.js';
+import { preencherAnos } from '../shared/dom.js';
 
 (function () {
 
@@ -14,7 +15,7 @@ import { sincronizarSemNaURL } from '../shared/url.js';
 
   let semAtual = getSemestreAtual();
 
-  // Popula o <select>
+  /* ── Popula o <select> já existente no HTML ── */
   const select = document.getElementById('quiz-semestre-select');
   SEMESTRES.forEach(s => {
     const opt = document.createElement('option');
@@ -23,20 +24,19 @@ import { sincronizarSemNaURL } from '../shared/url.js';
     select.appendChild(opt);
   });
 
-  // Mapa de cores por disciplina (classe CSS)
+  /* ── Mapa de cores por disciplina (classe CSS) ── */
   const DISC_CLASS = {
     poo: 'disc-card--blue', redes: 'disc-card--teal',
     design: 'disc-card--gold', banco_dados: 'disc-card--rose',
   };
 
-  // Gera os cards a partir do global.js
+  /* ── Gera os cards a partir do global.js ── */
   function gerarCards(sem) {
     const ano   = sem.split('.')[0];
     const grid  = document.getElementById('disciplines-grid');
     const msgEl = document.getElementById('disciplines-empty');
     const discs = getDisciplinasDeSemestre(sem);
 
-    // Remove cards antigos (mantém a mensagem de vazio)
     grid.querySelectorAll('.disc-card').forEach(c => c.remove());
 
     if (!discs.length) {
@@ -80,8 +80,6 @@ import { sincronizarSemNaURL } from '../shared/url.js';
     });
   }
 
-
-
   gerarCards(semAtual);
   sincronizarSemNaURL(semAtual);
 
@@ -92,7 +90,6 @@ import { sincronizarSemNaURL } from '../shared/url.js';
     sincronizarSemNaURL(semAtual);
   });
 
-  const fy = document.getElementById('footer-year');
-  if (fy) fy.textContent = new Date().getFullYear();
+  preencherAnos(['footer-year']);
 
 })();

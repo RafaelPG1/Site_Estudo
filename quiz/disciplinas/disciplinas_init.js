@@ -34,23 +34,14 @@
 
 import { DISC_CORES } from '../../shared/cores.js';
 import { resolverSemestreDeURL, sincronizarSemNaURL, propagarSemNosLinks } from '../../shared/url.js';
+import { aplicarCoresDisciplina } from '../../shared/theme.js';
 
 
 /* ── APLICA CORES DA DISCIPLINA (síncrono, sem FOUC) ─────── */
-(function aplicarCores() {
-  var discId = location.pathname.split('/').pop().replace('.html', '');
-  var cores  = DISC_CORES[discId];
-
-  if (cores) {
-    var root = document.documentElement;
-    root.style.setProperty('--cor-tema',       cores.corTema);
-    root.style.setProperty('--cor-tema-rgb',   cores.corTemaRgb);
-    root.style.setProperty('--cor-tema-2',     cores.corTema2);
-    root.style.setProperty('--cor-tema-2-rgb', cores.corTema2Rgb);
-  } else {
-    console.warn('[disciplinas_init] Sem cores definidas para: ' + discId);
-  }
-})();
+aplicarCoresDisciplina(
+  location.pathname.split('/').pop().replace('.html', ''),
+  DISC_CORES
+);
 
 /* ── SEMESTRE, LINKS E FILTRO DE MODOS ───────────────────── */
 (function () {

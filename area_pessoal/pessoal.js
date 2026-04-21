@@ -13,6 +13,9 @@ import {
   SEMESTRES,
 } from '../global.js';
 
+import { resolverSemestreDeURL } from '../shared/url.js';
+import { aplicarCoresDisciplina } from '../shared/theme.js';
+
 /* ══════════════════════════════════════════════
    ESTADO
 ══════════════════════════════════════════════ */
@@ -165,7 +168,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('sidebar-year').textContent = new Date().getFullYear();
 
   try {
-    const mod = await import('../quiz/disciplinas/disciplinas_cores.js');
+    const mod = await import('../shared/cores.js');
     State.DISC_CORES = mod.DISC_CORES ?? {};
   } catch (_) {}
 
@@ -195,7 +198,7 @@ document.addEventListener('DOMContentLoaded', async () => {
    CONTEXTO
 ══════════════════════════════════════════════ */
 function _resolverContexto() {
-  const semestre    = getSemestreAtual();
+  const semestre    = resolverSemestreDeURL();
   const lista       = getDisciplinasDeSemestre(semestre);
   State.semestre    = semestre;
   State.disciplinas = lista;
@@ -207,16 +210,7 @@ function _resolverContexto() {
   State.notaDiscId      = disc?.id ?? null;
   State.checklistDiscId = disc?.id ?? null;
 
-  if (disc) { setDisciplina(disc.id); _aplicarCor(disc.id); }
-}
-
-function _aplicarCor(discId) {
-  const cores = State.DISC_CORES[discId];
-  if (!cores) return;
-  const r = document.documentElement.style;
-  r.setProperty('--disc-tema',     cores.corTema);
-  r.setProperty('--disc-tema-rgb', cores.corTemaRgb);
-  r.setProperty('--disc-tema2',    cores.corTema2 ?? cores.corTema);
+  if (disc) { setDisciplina(disc.id); aplicarCoresDisciplina(disc.arquivo, State.DISC_CORES); }
 }
 
 /* ══════════════════════════════════════════════
@@ -256,7 +250,7 @@ function _trocarSemestre(novoSemestre) {
 
   if (primeiraDisc) {
     setDisciplina(primeiraDisc.id);
-    _aplicarCor(primeiraDisc.id);
+    aplicarCoresDisciplina(primeiraDisc.arquivo, State.DISC_CORES);
   }
 
   _renderSidebar();
@@ -433,7 +427,7 @@ function _trocarDisciplina(disc) {
   State.notaDiscId      = disc.id;
   State.checklistDiscId = disc.id;
   setDisciplina(disc.id);
-  _aplicarCor(disc.id);
+  aplicarCoresDisciplina(disc.arquivo, State.DISC_CORES);
 
   document.querySelectorAll('.disc-item').forEach(el => {
     const a = el.dataset.discId === disc.id;

@@ -26,8 +26,11 @@ import {
   getDisciplinasDeSemestre,
 } from '../../global.js';
 import Storage from '../../storage.js';
-import { DISC_CORES } from '../disciplinas/disciplinas_cores.js';
+import { DISC_CORES } from '../../shared/cores.js';
 import { sincronizarSemNaURL, propagarSemNosLinks } from '../../shared/url.js';
+import { setText, setHTML } from '../../shared/dom.js';
+import { aplicarCoresDisciplina } from '../../shared/theme.js';
+
 
 /* ── EXPÕE NO WINDOW PARA SCRIPTS CLÁSSICOS (quiz_engine.js) ── */
 window.NexusStorage = Storage;
@@ -111,16 +114,12 @@ const MODOS_CONFIG = {
 const modoConfig = MODOS_CONFIG[modo] ?? MODOS_CONFIG.questoes;
 
 /* ── APLICA CORES DA DISCIPLINA + ACENTO DO MODO ─────────── */
-const cores = DISC_CORES[info.arquivo];
+aplicarCoresDisciplina(info.arquivo, DISC_CORES);
 
+const cores = DISC_CORES[info.arquivo];
 if (cores) {
   const root   = document.documentElement;
   const accent = modoConfig.getAccent(cores);
-
-  root.style.setProperty('--cor-tema',       cores.corTema);
-  root.style.setProperty('--cor-tema-rgb',   cores.corTemaRgb);
-  root.style.setProperty('--cor-tema-2',     cores.corTema2);
-  root.style.setProperty('--cor-tema-2-rgb', cores.corTema2Rgb);
 
   /* Acento unificado — consumido pelo template.css */
   root.style.setProperty('--accent',     accent.accent);
@@ -129,16 +128,7 @@ if (cores) {
   console.warn(`[template_init] Sem cores definidas para "${info.arquivo}"`);
 }
 
-/* ── ATUALIZA TEXTOS NO DOM ───────────────────────────────── */
-function setText(id, text) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = text;
-}
 
-function setHTML(id, html) {
-  const el = document.getElementById(id);
-  if (el) el.innerHTML = html;
-}
 
 setText('disc-emoji',      info.emoji);
 setText('disc-nome',       info.nome);
