@@ -46,9 +46,7 @@
       </div>
 
       <div class="header__right">
-        <div id="semestre-selector-wrap">
-          <!-- JS injeta o <select> aqui -->
-        </div>
+        <div id="semestre-selector-wrap"></div>
         <div class="disc-badge" id="disc-badge" style="display:none"></div>
       </div>
 
@@ -64,9 +62,7 @@
         <span class="sidebar__title">Disciplinas</span>
         <span class="sidebar__semestre" id="sidebar-semestre">—</span>
       </div>
-      <nav class="disc-list" id="disc-list" aria-label="Disciplinas disponíveis">
-        <!-- JS injeta -->
-      </nav>
+      <nav class="disc-list" id="disc-list" aria-label="Disciplinas disponíveis"></nav>
       <div class="sidebar__footer">
         <span>Nexus Study · <span id="sidebar-year"></span></span>
       </div>
@@ -86,13 +82,10 @@
           <p class="page-hero__sub" id="hero-sub">Organize suas tarefas e anotações por disciplina.</p>
           <div class="page-hero__row" id="hero-row">
 
-            <!-- Toggle principal: Checklist | Tarefa | Anotações -->
             <div class="main-tabs" id="main-tabs" role="tablist">
               <button class="main-tab-btn main-tab-btn--active"
-                      id="tab-btn-checklist"
-                      role="tab"
-                      aria-selected="true"
-                      aria-controls="panel-checklist"
+                      id="tab-btn-checklist" role="tab"
+                      aria-selected="true" aria-controls="panel-checklist"
                       data-tab="checklist">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
                      stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -103,10 +96,8 @@
                 Checklist
               </button>
               <button class="main-tab-btn"
-                      id="tab-btn-tarefa"
-                      role="tab"
-                      aria-selected="false"
-                      aria-controls="panel-tarefa"
+                      id="tab-btn-tarefa" role="tab"
+                      aria-selected="false" aria-controls="panel-tarefa"
                       data-tab="tarefa">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
                      stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -115,10 +106,8 @@
                 Tarefa
               </button>
               <button class="main-tab-btn"
-                      id="tab-btn-notas"
-                      role="tab"
-                      aria-selected="false"
-                      aria-controls="panel-notas"
+                      id="tab-btn-notas" role="tab"
+                      aria-selected="false" aria-controls="panel-notas"
                       data-tab="notas">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
                      stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -128,7 +117,6 @@
               </button>
             </div>
 
-            <!-- Stat pill dinâmico -->
             <div class="stat-pill" id="hero-stat-pill" style="display:none">
               <span id="hero-stat-text">—</span>
             </div>
@@ -151,37 +139,31 @@
       <!-- ========== MAIN ========== -->
       <main class="main" id="main-content">
 
-        <!-- ═══ ABA: CHECKLIST (pré-definido) ═══ -->
+        <!-- ═══ ABA: CHECKLIST ═══ -->
         <div class="tab-panel tab-panel--active" id="panel-checklist" role="tabpanel">
 
-          <!-- Progresso do checklist -->
           <div class="cl-progress" id="cl-progress">
             <div class="cl-progress__top">
               <span class="cl-progress__label">Progresso</span>
-              <span class="cl-progress__count" id="cl-progress-count">0 / 0</span>
+              <span class="cl-progress__count" id="cl-progress-count">0/0 itens</span>
             </div>
             <div class="cl-progress__track">
               <div class="cl-progress__fill" id="cl-progress-fill" style="width:0%"></div>
             </div>
           </div>
 
-          <!-- Categorias + itens -->
-          <div id="cl-container">
-            <!-- JS injeta -->
-          </div>
+          <div id="cl-container"></div>
 
         </div>
-        <!-- /panel-checklist -->
 
-        <!-- ═══ ABA: TAREFA (sistema de tarefas) ═══ -->
+        <!-- ═══ ABA: TAREFA ═══ -->
         <div class="tab-panel" id="panel-tarefa" role="tabpanel">
 
-          <!-- Barra de progresso geral -->
           <div class="checklist-progress-bar" id="checklist-progress-bar">
             <div class="checklist-progress-bar__top">
               <span class="checklist-progress-bar__label">Progresso geral</span>
               <span class="checklist-progress-bar__count" id="progress-count">
-                0 <span>/ 0 tarefas</span>
+                0 <span>/ 0 itens</span>
               </span>
             </div>
             <div class="checklist-progress-bar__track">
@@ -189,43 +171,32 @@
             </div>
           </div>
 
-          <!-- Formulário de adicionar tarefa -->
-          <div class="add-task-form" id="add-task-form">
+          <div class="add-cat-form" id="add-cat-form">
             <input
               type="text"
               class="add-task-input"
-              id="add-task-input"
-              placeholder="Nova tarefa… (pressione Enter para adicionar)"
-              maxlength="200"
+              id="add-cat-input"
+              placeholder="Nome da categoria… (ex: Prova 1, Projeto Final)"
+              maxlength="60"
             />
-            <select class="priority-select" id="task-priority-select" title="Prioridade">
-              <option value="media">⚡ Média</option>
-              <option value="alta">🔴 Alta</option>
-              <option value="baixa">🟢 Baixa</option>
-            </select>
-            <button class="add-task-btn" id="add-task-btn">
+            <button class="add-task-btn" id="add-cat-btn">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
-              Adicionar
+              Categoria
             </button>
           </div>
 
-          <!-- Listas de tarefas por disciplina -->
-          <div id="tasks-container">
-            <!-- JS injeta -->
-          </div>
+          <div id="tasks-container"></div>
 
         </div>
-        <!-- /panel-tarefa -->
 
         <!-- ═══ ABA: ANOTAÇÕES ═══ -->
         <div class="tab-panel" id="panel-notas" role="tabpanel">
 
           <div class="notes-layout" id="notes-layout">
 
-            <!-- Toolbar: autosave -->
             <div class="notes-toolbar" id="notes-toolbar">
               <span class="notes-toolbar__disc-label">Notas de</span>
               <div class="autosave-indicator" id="autosave-indicator">
@@ -234,7 +205,6 @@
               </div>
             </div>
 
-            <!-- Caixa da nota -->
             <div class="note-box" id="note-box">
               <div class="note-box__header">
                 <span class="note-box__title" id="note-box-title">Anotações</span>
@@ -270,13 +240,24 @@
           </div>
 
         </div>
-        <!-- /panel-notas -->
 
       </main>
-    </div><!-- /content-area -->
-  </div><!-- /layout -->
+    </div>
+  </div>
 
-  <!-- ===== DROPDOWN MOBILE DE DISCIPLINAS ===== -->
+  <!-- ===== MODAL DE CONFIRMAÇÃO ===== -->
+  <div class="confirm-modal" id="confirm-modal">
+    <div class="confirm-modal__backdrop" id="confirm-modal-backdrop"></div>
+    <div class="confirm-modal__box">
+      <p class="confirm-modal__msg" id="confirm-modal-msg">Tem certeza?</p>
+      <div class="confirm-modal__actions">
+        <button class="confirm-modal__btn confirm-modal__btn--cancel" id="confirm-modal-cancel">Cancelar</button>
+        <button class="confirm-modal__btn confirm-modal__btn--ok" id="confirm-modal-ok">Excluir</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== DROPDOWN MOBILE ===== -->
   <div class="mobile-dropdown" id="mobile-dropdown">
     <div class="mobile-dropdown__backdrop" id="mobile-dropdown-backdrop"></div>
     <div class="mobile-dropdown__sheet">

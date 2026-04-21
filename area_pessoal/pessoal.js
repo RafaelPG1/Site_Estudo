@@ -1,8 +1,6 @@
 /* =============================================
-   NEXUS STUDY — pessoal.js  (v4)
-   Área Pessoal: Checklist + Tarefa + Anotações
-   ✦ Sistema de tarefas isolado por semestre e disciplina
-   ✦ Estrutura: { semestre: { discId: [ ...tarefas ] } }
+   NEXUS STUDY — pessoal.js  (v6)
+   Área Pessoal: Checklist + Tarefa (Categorias) + Anotações
    ============================================= */
 
 import {
@@ -32,48 +30,85 @@ const State = {
 };
 
 /* ══════════════════════════════════════════════
-   STORAGE KEY
+   CATEGORIAS — STORAGE
+   Estrutura: { [semestre]: { [discId]: Category[] } }
+   Category: { id, nome, itens: Item[] }
+   Item: { id, texto, concluida, dataCriacao }
 ══════════════════════════════════════════════ */
-const STORAGE_TAREFAS   = 'nexus_tarefas_v4';
+const STORAGE_CATS      = 'nexus_cats_v1';
 const STORAGE_NOTE      = (sem, discId) => `nexus_note_${sem}_${discId}`;
 const STORAGE_CHECKLIST = (sem, discId) => `nexus_cl_${sem}_${discId}`;
 
-/* ══════════════════════════════════════════════
-   TAREFAS — STORAGE
-   Estrutura: { [semestre]: { [discId]: Tarefa[] } }
-══════════════════════════════════════════════ */
-function _loadAllTarefas() {
+function _loadAllCats() {
   try {
-    const raw = localStorage.getItem(STORAGE_TAREFAS);
+    const raw = localStorage.getItem(STORAGE_CATS);
     const data = raw ? JSON.parse(raw) : {};
     return typeof data === 'object' && data !== null ? data : {};
   } catch (_) { return {}; }
 }
-
-function _saveAllTarefas(data) {
-  try { localStorage.setItem(STORAGE_TAREFAS, JSON.stringify(data)); }
-  catch (_) { /* quota */ }
+function _saveAllCats(data) {
+  try { localStorage.setItem(STORAGE_CATS, JSON.stringify(data)); } catch (_) {}
+}
+function _ensureCatStructure(data, sem, discId) {
+  if (!data[sem])         data[sem] = {};
+  if (!data[sem][discId]) data[sem][discId] = [];
+}
+function _getCategorias(sem, discId) {
+  const data = _loadAllCats();
+  _ensureCatStructure(data, sem, discId);
+  return data[sem][discId];
+}
+function _setCategorias(sem, discId, cats) {
+  const data = _loadAllCats();
+  _ensureCatStructure(data, sem, discId);
+  data[sem][discId] = cats;
+  _saveAllCats(data);
+}
+function _getCategoriasAtivas() {
+  const { semestre, discAtiva } = State;
+  if (!semestre || !discAtiva) return [];
+  return _getCategorias(semestre, discAtiva.id);
+}
+function _salvarCategoriasAtivas(cats) {
+  const { semestre, discAtiva } = State;
+  if (!semestre || !discAtiva) return;
+  _setCategorias(semestre, discAtiva.id, cats);
+}
+function _getStatsAtivos() {
+  const cats  = _getCategoriasAtivas();
+  const total = cats.reduce((s, c) => s + c.itens.length, 0);
+  const done  = cats.reduce((s, c) => s + c.itens.filter(i => i.concluida).length, 0);
+  return { total, done };
 }
 
-/* Garante que a estrutura semestre > discId existe */
-function _ensureStructure(data, semestre, discId) {
-  if (!data[semestre])         data[semestre] = {};
-  if (!data[semestre][discId]) data[semestre][discId] = [];
-}
+/* ══════════════════════════════════════════════
+   MODAL DE CONFIRMAÇÃO
+══════════════════════════════════════════════ */
+function _confirmar(msg) {
+  return new Promise(resolve => {
+    const modal    = document.getElementById('confirm-modal');
+    const msgEl    = document.getElementById('confirm-modal-msg');
+    const btnOk    = document.getElementById('confirm-modal-ok');
+    const btnCan   = document.getElementById('confirm-modal-cancel');
+    const backdrop = document.getElementById('confirm-modal-backdrop');
+    if (!modal) { resolve(window.confirm(msg)); return; }
 
-/* Retorna lista de tarefas da disciplina ativa */
-function _getTarefas(semestre, discId) {
-  const data = _loadAllTarefas();
-  _ensureStructure(data, semestre, discId);
-  return data[semestre][discId];
-}
+    msgEl.textContent = msg;
+    modal.classList.add('confirm-modal--open');
 
-/* Salva lista de tarefas de uma disciplina específica */
-function _setTarefas(semestre, discId, tarefas) {
-  const data = _loadAllTarefas();
-  _ensureStructure(data, semestre, discId);
-  data[semestre][discId] = tarefas;
-  _saveAllTarefas(data);
+    const close = (result) => {
+      modal.classList.remove('confirm-modal--open');
+      btnOk.removeEventListener('click', onOk);
+      btnCan.removeEventListener('click', onCancel);
+      backdrop.removeEventListener('click', onCancel);
+      resolve(result);
+    };
+    const onOk     = () => close(true);
+    const onCancel = () => close(false);
+    btnOk.addEventListener('click', onOk);
+    btnCan.addEventListener('click', onCancel);
+    backdrop.addEventListener('click', onCancel);
+  });
 }
 
 /* ══════════════════════════════════════════════
@@ -160,10 +195,7 @@ function _renderSemestreSelector() {
     select.appendChild(opt);
   });
 
-  select.addEventListener('change', e => {
-    _trocarSemestre(e.target.value);
-  });
-
+  select.addEventListener('change', e => _trocarSemestre(e.target.value));
   wrap.appendChild(select);
 }
 
@@ -172,7 +204,6 @@ function _trocarSemestre(novoSemestre) {
   State.semestre    = novoSemestre;
   State.disciplinas = getDisciplinasDeSemestre(novoSemestre);
 
-  /* Reseta disciplina ativa para a primeira do novo semestre */
   const primeiraDisc = State.disciplinas[0] ?? null;
   State.discAtiva       = primeiraDisc;
   State.notaDiscId      = primeiraDisc?.id ?? null;
@@ -183,7 +214,6 @@ function _trocarSemestre(novoSemestre) {
     _aplicarCor(primeiraDisc.id);
   }
 
-  /* Re-renderiza tudo com o novo semestre */
   _renderSidebar();
   _renderHeader();
   _renderClPanel();
@@ -191,7 +221,6 @@ function _trocarSemestre(novoSemestre) {
   _updateProgress();
   _renderNotaAtual();
 }
-
 
 function _bindTabs() {
   document.getElementById('main-tabs')?.addEventListener('click', e => {
@@ -213,6 +242,8 @@ function _setAba(aba) {
     p.classList.toggle('tab-panel--active', p.id === `panel-${aba}`);
   });
 
+  /* Atualiza sidebar com contagens da aba atual */
+  _renderSidebar();
   _updateHeroStat();
 }
 
@@ -222,11 +253,9 @@ function _setAba(aba) {
 function _renderHeader() {
   const disc = State.discAtiva;
 
-  /* Breadcrumb central */
   const sub = document.getElementById('header-breadcrumb-sub');
   if (sub) sub.textContent = disc ? `· ${disc.nome}` : '';
 
-  /* disc-badge no header__right (igual ao resumo) */
   const badge = document.getElementById('disc-badge');
   if (badge) {
     if (disc) {
@@ -241,13 +270,11 @@ function _renderHeader() {
     }
   }
 
-  /* Mobile label */
   const ml = document.getElementById('mobile-disc-label');
   if (ml) ml.textContent = disc
     ? `${disc.emoji} ${disc.apelido ?? _nomeCurto(disc.nome, 20)}`
     : 'Disciplina';
 
-  /* Eyebrow hero */
   const ey = document.getElementById('hero-eyebrow-text');
   if (ey) ey.textContent = disc ? disc.nome : 'Área Pessoal';
 
@@ -261,8 +288,8 @@ function _updateHeroStat() {
   if (!pill || !text) return;
 
   if (State.abaAtiva === 'checklist') {
-    const discId = State.checklistDiscId;
-    const disc   = _getClDisc(discId);
+    const discId  = State.checklistDiscId;
+    const disc    = _getClDisc(discId);
     if (!disc) { pill.style.display = 'none'; return; }
     const todos   = disc.categorias.flatMap(c => c.itens);
     const total   = todos.length;
@@ -273,12 +300,10 @@ function _updateHeroStat() {
     text.textContent = `${done} / ${total} itens`;
 
   } else if (State.abaAtiva === 'tarefa') {
-    const tarefas   = _getTarefasAtivas();
-    const total     = tarefas.length;
-    const concluida = tarefas.filter(t => t.concluida).length;
+    const { total, done } = _getStatsAtivos();
     if (total === 0) { pill.style.display = 'none'; return; }
     pill.style.display = '';
-    text.textContent = `${concluida} / ${total} tarefas`;
+    text.textContent = `${done} / ${total} itens`;
 
   } else {
     const discId = State.notaDiscId;
@@ -294,6 +319,10 @@ function _updateHeroStat() {
 
 /* ══════════════════════════════════════════════
    SIDEBAR
+   Contagens mudam conforme aba ativa:
+   checklist → checklist_data
+   tarefa    → categorias
+   notas     → só indica se tem nota
 ══════════════════════════════════════════════ */
 function _renderSidebar() {
   const semLabel = document.getElementById('sidebar-semestre');
@@ -314,11 +343,25 @@ function _renderSidebar() {
 
   State.disciplinas.forEach(disc => {
     const isAtivo = disc.id === State.discAtiva?.id;
-    const tarefas = _getTarefas(State.semestre, disc.id);
-    const total   = tarefas.length;
-    const done    = tarefas.filter(t => t.concluida).length;
-    const pct     = total > 0 ? Math.round((done / total) * 100) : 0;
     const hasNota = !!(localStorage.getItem(STORAGE_NOTE(State.semestre, disc.id)) ?? '').trim();
+
+    let total = 0, done = 0;
+
+    if (State.abaAtiva === 'checklist') {
+      const clDisc = State.checklistData[State.semestre]?.[disc.id];
+      if (clDisc) {
+        const todos   = clDisc.categorias.flatMap(c => c.itens);
+        total = todos.length;
+        const checked = _getCheckedIds(disc.id);
+        done  = todos.filter(i => checked.has(i.id)).length;
+      }
+    } else if (State.abaAtiva === 'tarefa') {
+      const cats = _getCategorias(State.semestre, disc.id);
+      total = cats.reduce((s, c) => s + c.itens.length, 0);
+      done  = cats.reduce((s, c) => s + c.itens.filter(i => i.concluida).length, 0);
+    }
+
+    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
 
     const item = document.createElement('button');
     item.className      = `disc-item${isAtivo ? ' disc-item--active' : ''}`;
@@ -372,41 +415,17 @@ function _trocarDisciplina(disc) {
 }
 
 /* ══════════════════════════════════════════════
-   TAREFAS — HELPER (disciplina ativa)
-══════════════════════════════════════════════ */
-function _getTarefasAtivas() {
-  const { semestre, discAtiva } = State;
-  if (!semestre || !discAtiva) return [];
-  return _getTarefas(semestre, discAtiva.id);
-}
-
-function _salvarTarefasAtivas(tarefas) {
-  const { semestre, discAtiva } = State;
-  if (!semestre || !discAtiva) return;
-  _setTarefas(semestre, discAtiva.id, tarefas);
-}
-
-/* ══════════════════════════════════════════════
    TAREFAS — PROGRESSO
 ══════════════════════════════════════════════ */
 function _updateProgress() {
-  const tarefas    = _getTarefasAtivas();
-  const total      = tarefas.length;
-  const concluidas = tarefas.filter(t => t.concluida).length;
-  const pct        = total > 0 ? Math.round((concluidas / total) * 100) : 0;
+  const { total, done } = _getStatsAtivos();
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
 
   const countEl = document.getElementById('progress-count');
   const fillEl  = document.getElementById('progress-fill');
-  const hdrEl   = document.getElementById('header-progress-pill');
-  const hdrText = document.getElementById('header-progress-text');
 
-  if (countEl) countEl.innerHTML = `${concluidas} <span>/ ${total} tarefa${total !== 1 ? 's' : ''}</span>`;
+  if (countEl) countEl.innerHTML = `${done}&thinsp;/&thinsp;${total} itens`;
   if (fillEl)  fillEl.style.width = `${pct}%`;
-
-  if (hdrEl && hdrText) {
-    hdrEl.style.display = total > 0 ? '' : 'none';
-    if (total > 0) hdrText.textContent = `${concluidas} / ${total}`;
-  }
 
   _updateHeroStat();
   _renderSidebar();
@@ -420,136 +439,218 @@ function _renderTaskContainer() {
   if (!container) return;
   container.innerHTML = '';
 
-  const tarefas = _getTarefasAtivas();
-
-  if (tarefas.length === 0) {
-    container.appendChild(_buildEmptyState());
-    return;
-  }
-
-  tarefas.forEach((t, i) => container.appendChild(_buildTaskItem(t, i)));
+  const cats = _getCategoriasAtivas();
+  if (cats.length === 0) { container.appendChild(_buildEmptyState()); return; }
+  cats.forEach((cat, ci) => container.appendChild(_buildCatSection(cat, ci)));
 }
 
 function _buildEmptyState() {
   const div = document.createElement('div');
   div.className = 'tasks-empty';
   div.innerHTML = `
-    <span class="tasks-empty__icon">✅</span>
-    <p>Nenhuma tarefa ainda</p>
-    <small>Use o campo acima para adicionar sua primeira tarefa.</small>`;
+    <span class="tasks-empty__icon">📂</span>
+    <p>Nenhuma categoria ainda</p>
+    <small>Crie uma categoria acima para começar a organizar suas tarefas.</small>`;
   return div;
 }
 
-function _buildTaskItem(tarefa, idx) {
-  const item = document.createElement('div');
-  item.className = `task-item task-item--priority-${tarefa.prioridade}${tarefa.concluida ? ' task-item--done' : ''}`;
-  item.dataset.taskId = tarefa.id;
-  item.style.animationDelay = `${idx * 0.05}s`;
+function _buildCatSection(cat, ci) {
+  const done  = cat.itens.filter(i => i.concluida).length;
+  const total = cat.itens.length;
 
-  const dataFormatada = new Date(tarefa.dataCriacao).toLocaleDateString('pt-BR', {
-    day: '2-digit', month: 'short'
-  });
-  const labelPrioridade = { alta: 'Alta', media: 'Média', baixa: 'Baixa' }[tarefa.prioridade] ?? '';
+  const section = document.createElement('div');
+  section.className = 'cat-section';
+  section.dataset.catId = cat.id;
+  section.style.animationDelay = `${ci * 0.06}s`;
 
-  item.innerHTML = `
-    <div class="task-check" title="${tarefa.concluida ? 'Desmarcar' : 'Marcar como feita'}">
-      <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
-           stroke="var(--teal)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="20 6 9 17 4 12"/>
-      </svg>
-    </div>
-    <div class="task-body">
-      <span class="task-text">${_esc(tarefa.texto)}</span>
-      <div class="task-meta">
-        <span class="task-priority">${labelPrioridade}</span>
-        <span class="task-date">${dataFormatada}</span>
+  section.innerHTML = `
+    <div class="cat-header">
+      <div class="cat-header__left">
+        <span class="cat-header__nome">${_esc(cat.nome)}</span>
+        <span class="cat-header__badge">${done}/${total}</span>
       </div>
+      <button class="cat-delete" title="Excluir categoria">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14H6L5 6"/>
+          <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+        </svg>
+        Excluir
+      </button>
     </div>
-    <button class="task-delete" title="Excluir tarefa" aria-label="Excluir">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
-      </svg>
-    </button>`;
+    <div class="cat-items" id="cat-items-${cat.id}">
+      ${cat.itens.map((item, ii) => _buildItemHTML(item, ii)).join('')}
+    </div>
+    <div class="cat-add-item">
+      <input type="text" class="cat-item-input" placeholder="Novo item…" maxlength="200" />
+      <button class="cat-item-add-btn">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Adicionar
+      </button>
+    </div>`;
 
-  item.querySelector('.task-check').addEventListener('click', e => {
-    e.stopPropagation();
-    _toggleTarefa(tarefa.id);
-  });
-  item.querySelector('.task-delete').addEventListener('click', e => {
-    e.stopPropagation();
-    _deletarTarefa(tarefa.id, item);
-  });
-  item.addEventListener('click', () => _toggleTarefa(tarefa.id));
+  section.querySelector('.cat-delete').addEventListener('click', () => _deletarCategoria(cat.id, section));
 
-  return item;
+  section.querySelector('.cat-items').addEventListener('click', e => {
+    const delBtn = e.target.closest('.item-delete');
+    if (delBtn) {
+      const row = delBtn.closest('.item-row');
+      _deletarItem(cat.id, delBtn.dataset.itemId, row);
+      return;
+    }
+    const row = e.target.closest('.item-row');
+    if (!row) return;
+    _toggleItem(cat.id, row.dataset.itemId, row);
+  });
+
+  const input  = section.querySelector('.cat-item-input');
+  const addBtn = section.querySelector('.cat-item-add-btn');
+
+  const addItem = () => {
+    const texto = input?.value.trim();
+    if (!texto) {
+      input?.classList.add('input-error');
+      const prev = input?.getAttribute('placeholder');
+      input?.setAttribute('placeholder', '⚠ Digite algo antes de adicionar…');
+      setTimeout(() => {
+        input?.classList.remove('input-error');
+        input?.setAttribute('placeholder', prev ?? 'Novo item…');
+      }, 2000);
+      input?.focus();
+      return;
+    }
+    const cats = _getCategoriasAtivas();
+    const c = cats.find(c => c.id === cat.id);
+    if (!c) return;
+    c.itens.push({ id: _uid(), texto, concluida: false, dataCriacao: Date.now() });
+    _salvarCategoriasAtivas(cats);
+    if (input) input.value = '';
+    _renderTaskContainer();
+    _updateProgress();
+  };
+  addBtn.addEventListener('click', addItem);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') addItem(); });
+
+  return section;
+}
+
+function _buildItemHTML(item, ii) {
+  const done = item.concluida;
+  return `
+    <div class="item-row${done ? ' item-row--done' : ''}" data-item-id="${item.id}" style="animation-delay:${ii * 0.04}s">
+      <span class="item-check${done ? ' item-check--done' : ''}">
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none"
+             stroke="var(--teal)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </span>
+      <span class="item-text${done ? ' item-text--done' : ''}">${_esc(item.texto)}</span>
+      <button class="item-delete" data-item-id="${item.id}" title="Excluir item">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+        </svg>
+      </button>
+    </div>`;
 }
 
 /* ══════════════════════════════════════════════
    TAREFAS — CRUD
 ══════════════════════════════════════════════ */
 function _bindAddTask() {
-  const input   = document.getElementById('add-task-input');
-  const btn     = document.getElementById('add-task-btn');
-  const selPrio = document.getElementById('task-priority-select');
+  const input = document.getElementById('add-cat-input');
+  const btn   = document.getElementById('add-cat-btn');
+
+  let errMsg = document.getElementById('add-cat-error');
+  if (!errMsg && input) {
+    errMsg = document.createElement('span');
+    errMsg.id = 'add-cat-error';
+    input.parentElement?.insertAdjacentElement('afterend', errMsg);
+  }
+
+  const showErr = () => {
+  const prev = input?.getAttribute('placeholder');           // ← salva o placeholder atual
+  input?.classList.add('input-error');
+  input?.setAttribute('placeholder', '⚠ Digite algo antes de adicionar…');
+  errMsg?.classList.add('input-error-msg--show');
+  setTimeout(() => {
+    input?.classList.remove('input-error');
+    input?.setAttribute('placeholder', prev ?? 'Nome da categoria… (ex: Prova 1, Projeto Final)');
+    errMsg?.classList.remove('input-error-msg--show');
+  }, 2500);
+};
 
   const add = () => {
-    const texto = input?.value.trim();
-    if (!texto) return;
-
-    const tarefas = _getTarefasAtivas();
-    const nova = {
-      id:          _uid(),
-      texto,
-      prioridade:  selPrio?.value ?? 'media',
-      concluida:   false,
-      dataCriacao: Date.now(),
-    };
-
-    tarefas.unshift(nova);
-    _salvarTarefasAtivas(tarefas);
-
+    const nome = input?.value.trim();
+    if (!nome) { showErr(); input?.focus(); return; }
+    const cats = _getCategoriasAtivas();
+    cats.push({ id: _uid(), nome, itens: [] });
+    _salvarCategoriasAtivas(cats);
     if (input) input.value = '';
     _renderTaskContainer();
     _updateProgress();
   };
-
   btn?.addEventListener('click', add);
   input?.addEventListener('keydown', e => { if (e.key === 'Enter') add(); });
 }
 
-function _toggleTarefa(id) {
-  const tarefas = _getTarefasAtivas();
-  const t = tarefas.find(t => t.id === id);
-  if (!t) return;
-
-  t.concluida = !t.concluida;
-  _salvarTarefasAtivas(tarefas);
-
-  const item = document.querySelector(`[data-task-id="${id}"]`);
-  if (item) {
-    item.classList.toggle('task-item--done', t.concluida);
+function _toggleItem(catId, itemId, rowEl) {
+  const cats = _getCategoriasAtivas();
+  const cat  = cats.find(c => c.id === catId);
+  if (!cat) return;
+  const item = cat.itens.find(i => i.id === itemId);
+  if (!item) return;
+  item.concluida = !item.concluida;
+  _salvarCategoriasAtivas(cats);
+  if (rowEl) {
+    rowEl.classList.toggle('item-row--done', item.concluida);
+    rowEl.querySelector('.item-check')?.classList.toggle('item-check--done', item.concluida);
+    rowEl.querySelector('.item-text')?.classList.toggle('item-text--done', item.concluida);
+    const sectionEl = rowEl.closest('.cat-section');
+    _atualizarBadge(sectionEl, cats.find(c => c.id === catId));
   }
-
   _updateProgress();
 }
 
-function _deletarTarefa(id, itemEl) {
-  if (itemEl) {
-    itemEl.style.transition = 'opacity 0.25s, transform 0.25s';
-    itemEl.style.opacity    = '0';
-    itemEl.style.transform  = 'translateX(16px)';
-    setTimeout(() => _removerEAtualizar(id), 240);
-  } else {
-    _removerEAtualizar(id);
+function _deletarItem(catId, itemId, rowEl) {
+  if (rowEl) {
+    rowEl.style.transition = 'opacity 0.2s, transform 0.2s';
+    rowEl.style.opacity = '0';
+    rowEl.style.transform = 'translateX(12px)';
+    setTimeout(() => {
+      const cats = _getCategoriasAtivas();
+      const cat  = cats.find(c => c.id === catId);
+      if (cat) cat.itens = cat.itens.filter(i => i.id !== itemId);
+      _salvarCategoriasAtivas(cats);
+      _renderTaskContainer();
+      _updateProgress();
+    }, 200);
   }
 }
 
-function _removerEAtualizar(id) {
-  const tarefas = _getTarefasAtivas().filter(t => t.id !== id);
-  _salvarTarefasAtivas(tarefas);
-  _renderTaskContainer();
-  _updateProgress();
+async function _deletarCategoria(catId, sectionEl) {
+  const ok = await _confirmar('Excluir esta categoria e todos os seus itens?');
+  if (!ok) return;
+  if (sectionEl) {
+    sectionEl.style.transition = 'opacity 0.25s, transform 0.25s';
+    sectionEl.style.opacity = '0';
+    sectionEl.style.transform = 'translateX(16px)';
+    setTimeout(() => {
+      const cats = _getCategoriasAtivas().filter(c => c.id !== catId);
+      _salvarCategoriasAtivas(cats);
+      _renderTaskContainer();
+      _updateProgress();
+    }, 240);
+  }
+}
+
+function _atualizarBadge(sectionEl, cat) {
+  if (!sectionEl || !cat) return;
+  const badge = sectionEl.querySelector('.cat-header__badge');
+  if (!badge) return;
+  const done = cat.itens.filter(i => i.concluida).length;
+  badge.textContent = `${done}/${cat.itens.length}`;
 }
 
 /* ══════════════════════════════════════════════
@@ -647,7 +748,7 @@ function _updateClProgress(done, total) {
   const pct     = total > 0 ? Math.round((done / total) * 100) : 0;
   const countEl = document.getElementById('cl-progress-count');
   const fillEl  = document.getElementById('cl-progress-fill');
-  if (countEl) countEl.textContent = `${done} / ${total}`;
+  if (countEl) countEl.textContent = `${done} / ${total} itens`;
   if (fillEl)  fillEl.style.width  = `${pct}%`;
 }
 
@@ -685,19 +786,22 @@ function _bindChecklist() {
     const done       = todos.filter(i => newChecked.has(i.id)).length;
     _updateClProgress(done, todos.length);
     _updateHeroStat();
+    _renderSidebar();
   });
 
-  document.getElementById('cl-reset-btn')?.addEventListener('click', () => {
+  document.getElementById('cl-reset-btn')?.addEventListener('click', async () => {
     const discId = State.checklistDiscId;
     if (!discId) return;
     const disc = _getClDisc(discId);
     if (!disc) return;
     const total = disc.categorias.flatMap(c => c.itens).length;
     if (total === 0) return;
-    if (!confirm('Desmarcar todos os itens desta disciplina?')) return;
+    const ok = await _confirmar('Desmarcar todos os itens desta disciplina?');
+    if (!ok) return;
     _saveCheckedIds(discId, new Set());
     _renderClPanel();
     _updateHeroStat();
+    _renderSidebar();
   });
 }
 
@@ -754,9 +858,10 @@ function _bindNotes() {
     } catch (_) {}
   });
 
-  document.getElementById('note-clear-btn')?.addEventListener('click', () => {
+  document.getElementById('note-clear-btn')?.addEventListener('click', async () => {
     if (!textarea.value.trim()) return;
-    if (!confirm('Limpar todas as anotações desta disciplina?')) return;
+    const ok = await _confirmar('Limpar todas as anotações desta disciplina?');
+    if (!ok) return;
     textarea.value = '';
     _salvarNotaAtual();
     _updateNoteStats();

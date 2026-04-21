@@ -524,14 +524,24 @@ a { text-decoration: none; color: inherit; }
   text-transform: uppercase;
   color: var(--text-3);
 }
+
+
 .checklist-progress-bar__count {
   font-family: var(--font-body);
-  font-size:  0.8rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: var(--disc-tema);
+
   transition: color 0.4s;
 }
-.checklist-progress-bar__count span { color: var(--text-3); font-size: 0.8rem; font-family: var(--font-body); font-weight: 400; }
+.checklist-progress-bar__count span {
+  color: var(--disc-tema);
+  font-size: 0.9rem;
+  font-family: var(--font-body);
+  font-weight: 400;
+
+}
+
 .checklist-progress-bar__track {
   height: 4px;
   background: rgba(255,255,255,0.06);
@@ -1210,11 +1220,12 @@ a { text-decoration: none; color: inherit; }
 }
 .cl-progress__count {
   font-family: var(--font-body);
-  font-size: 0.7rem;
+  font-size: 0.9rem;           /* igualando */
   font-weight: 700;
   color: var(--disc-tema);
   transition: color 0.4s;
 }
+
 .cl-progress__track {
   height: 4px;
   background: rgba(255,255,255,0.06);
@@ -1490,4 +1501,306 @@ a { text-decoration: none; color: inherit; }
 .semestre-select option {
   background: #0e1420;
   color: var(--text-1);
+}
+
+/* ══════════════════════════════════════════
+   TAREFA — FORMULÁRIO CATEGORIA
+══════════════════════════════════════════ */
+.add-cat-form {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+}
+
+/* ══════════════════════════════════════════
+   TAREFA — SEÇÃO DE CATEGORIA
+══════════════════════════════════════════ */
+.cat-section {
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  overflow: hidden;
+  animation: fade-up 0.3s ease both;
+}
+.cat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0,0,0,0.18);
+}
+.cat-header__left {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.cat-header__nome {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.cat-header__badge {
+  font-size: 0.61rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  padding: 0.14rem 0.5rem;
+  border-radius: 99px;
+  color: var(--disc-tema);
+  background: rgba(var(--disc-tema-rgb), 0.1);
+  border: 1px solid rgba(var(--disc-tema-rgb), 0.22);
+  transition: color 0.4s, background 0.4s, border-color 0.4s;
+}
+.cat-delete {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.28rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-3);
+  font-family: var(--font-body);
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.cat-delete:hover {
+  color: var(--rose);
+  background: rgba(232,122,154,0.1);
+  border-color: rgba(232,122,154,0.25);
+}
+
+/* ── Itens ── */
+.cat-items {
+  padding: 0.45rem 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-height: 10px;
+}
+.cat-items:empty::after {
+  content: 'Nenhum item ainda';
+  display: block;
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--text-3);
+  opacity: 0.45;
+  padding: 0.65rem 0;
+}
+.item-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s;
+  animation: task-appear 0.25s ease both;
+}
+.item-row:hover {
+  background: rgba(122,168,232,0.05);
+  border-color: var(--border);
+}
+.item-row--done { opacity: 0.6; }
+.item-check {
+  width: 17px; height: 17px;
+  flex-shrink: 0;
+  border-radius: 5px;
+  border: 1.5px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.03);
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.item-row:hover .item-check { border-color: rgba(var(--disc-tema-rgb), 0.45); }
+.item-check--done {
+  background: rgba(77,217,180,0.18);
+  border-color: rgba(77,217,180,0.55);
+  box-shadow: 0 0 8px rgba(77,217,180,0.15);
+}
+.item-check svg {
+  opacity: 0; transform: scale(0.4);
+  transition: opacity 0.18s, transform 0.2s cubic-bezier(.34,1.56,.64,1);
+}
+.item-check--done svg { opacity: 1; transform: scale(1); }
+.item-text {
+  flex: 1;
+  font-size: 0.85rem;
+  color: var(--text-1);
+  line-height: 1.5;
+  transition: color 0.18s;
+  word-break: break-word;
+}
+.item-text--done {
+  color: var(--text-3);
+  text-decoration: line-through;
+  text-decoration-color: rgba(77,217,180,0.35);
+}
+.item-delete {
+  display: flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: rgba(255,255,255,0.12);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.18s;
+}
+.item-row:hover .item-delete { color: var(--text-3); }
+.item-delete:hover {
+  color: var(--rose) !important;
+  background: rgba(232,122,154,0.12);
+  border-color: rgba(232,122,154,0.28);
+}
+
+/* ── Adicionar item dentro da categoria ── */
+.cat-add-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  border-top: 1px solid var(--border);
+  background: rgba(0,0,0,0.1);
+}
+.cat-item-input {
+  flex: 1;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-glow);
+  border-radius: 9px;
+  color: var(--text-1);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  padding: 0.42rem 0.85rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.cat-item-input::placeholder { color: var(--text-3); opacity: 0.55; }
+.cat-item-input:focus {
+  border-color: rgba(var(--disc-tema-rgb), 0.4);
+  box-shadow: 0 0 0 2px rgba(var(--disc-tema-rgb), 0.07);
+}
+.cat-item-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.42rem 0.85rem;
+  border-radius: 9px;
+  border: 1px solid rgba(var(--disc-tema-rgb), 0.35);
+  background: rgba(var(--disc-tema-rgb), 0.1);
+  color: var(--disc-tema);
+  font-family: var(--font-body);
+  font-size: 0.71rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s;
+}
+.cat-item-add-btn:hover {
+  border-color: rgba(var(--disc-tema-rgb), 0.6);
+  background: rgba(var(--disc-tema-rgb), 0.18);
+}
+
+/* ══════════════════════════════════════════
+   MODAL DE CONFIRMAÇÃO CUSTOMIZADO
+══════════════════════════════════════════ */
+.confirm-modal {
+  position: fixed; inset: 0; z-index: 500;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none; opacity: 0;
+  transition: opacity 0.2s;
+}
+.confirm-modal--open {
+  pointer-events: all;
+  opacity: 1;
+}
+.confirm-modal__backdrop {
+  position: absolute; inset: 0;
+  background: rgba(7,11,20,0.8);
+  backdrop-filter: blur(6px);
+}
+.confirm-modal__box {
+  position: relative; z-index: 1;
+  background: var(--surface-2);
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius-lg);
+  padding: 1.6rem 1.75rem 1.35rem;
+  min-width: 300px; max-width: 360px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+  transform: translateY(10px) scale(0.97);
+  transition: transform 0.22s cubic-bezier(.34,1.4,.64,1);
+}
+.confirm-modal--open .confirm-modal__box {
+  transform: translateY(0) scale(1);
+}
+.confirm-modal__msg {
+  font-size: 0.9rem;
+  color: var(--text-1);
+  line-height: 1.55;
+  margin-bottom: 1.25rem;
+}
+.confirm-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+.confirm-modal__btn {
+  padding: 0.45rem 1.1rem;
+  border-radius: 10px;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.confirm-modal__btn--cancel {
+  border: 1px solid var(--border-glow);
+  background: transparent;
+  color: var(--text-2);
+}
+.confirm-modal__btn--cancel:hover {
+  background: rgba(255,255,255,0.06);
+  color: var(--text-1);
+}
+.confirm-modal__btn--ok {
+  border: 1px solid rgba(232,122,154,0.4);
+  background: rgba(232,122,154,0.12);
+  color: var(--rose);
+}
+.confirm-modal__btn--ok:hover {
+  background: rgba(232,122,154,0.22);
+  border-color: rgba(232,122,154,0.6);
+}
+
+/* ══════════════════════════════════════════
+   VALIDAÇÃO DE INPUT
+══════════════════════════════════════════ */
+.input-error {
+  border-color: rgba(232,122,154,0.6) !important;
+  box-shadow: 0 0 0 3px rgba(232,122,154,0.1) !important;
+}
+.input-error-msg {
+  font-size: 0.7rem;
+  color: var(--rose);
+  margin-top: 0.35rem;
+  margin-left: 0.1rem;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.2s, transform 0.2s;
+  display: block;
+}
+.input-error-msg--show {
+  opacity: 1;
+  transform: translateY(0);
 }
