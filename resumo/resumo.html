@@ -84,7 +84,11 @@
         </div>
       </div>
 
-      <!-- MOBILE DISC BTN -->
+      <!-- ===== VÍDEOS DAS AULAS ===== -->
+      <!-- Injetado pelo JS (_renderVideosSection). Aparece só se houver vídeos em videos.js -->
+      <div id="videos-section" style="display:none"></div>
+
+      <!-- MOBILE: botão de troca de disciplina -->
       <div class="mobile-toolbar" id="mobile-toolbar">
         <button class="mobile-disc-btn" id="mobile-disc-btn">
           <span id="mobile-disc-label">Disciplina</span>
@@ -98,11 +102,13 @@
       <!-- MAIN -->
       <main class="main" id="main-content">
 
+        <!-- Estado: carregando -->
         <div class="state-empty" id="state-loading">
           <div class="spinner"></div>
           <p>Carregando…</p>
         </div>
 
+        <!-- Estado: sem conteúdo -->
         <div class="state-empty" id="state-no-content" style="display:none">
           <span class="state-empty__icon" id="state-disc-emoji">📚</span>
           <strong id="state-disc-name">—</strong>
@@ -114,12 +120,14 @@
           </div>
         </div>
 
+        <!-- Estado: filtro sem resultado -->
         <div class="state-empty" id="state-empty" style="display:none">
           <span class="state-empty__icon">🔍</span>
           <p>Nenhum resumo encontrado.</p>
           <small>Tente outro filtro ou termo de busca.</small>
         </div>
 
+        <!-- Grid de cards -->
         <div class="resumos-grid" id="resumos-grid" style="display:none"></div>
 
       </main>
@@ -127,7 +135,7 @@
     </div><!-- /content-area -->
   </div><!-- /layout -->
 
-  <!-- MODAL LATERAL -->
+  <!-- ===== MODAL LATERAL ===== -->
   <div class="read-modal" id="read-modal" role="dialog" aria-modal="true">
     <div class="read-modal__overlay" id="read-modal-overlay"></div>
     <div class="read-modal__panel" id="read-modal-panel" tabindex="-1">
@@ -147,7 +155,7 @@
     </div>
   </div>
 
-  <!-- DROPDOWN MOBILE DE DISCIPLINAS -->
+  <!-- ===== DROPDOWN MOBILE DE DISCIPLINAS ===== -->
   <div class="mobile-dropdown" id="mobile-dropdown">
     <div class="mobile-dropdown__backdrop" id="mobile-dropdown-backdrop"></div>
     <div class="mobile-dropdown__sheet" id="mobile-dropdown-sheet">

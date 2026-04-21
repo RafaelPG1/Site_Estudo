@@ -1,9 +1,9 @@
 /* =============================================
-   NEXUS STUDY — resumo.js  (v7)
-   Renderizador de notas de aula por seções
-   Toggle inteligente: aparece só se houver simplificado[] ou professor[]
+   NEXUS STUDY — resumo.js  (v9 — robust)
+   ✦ imports dinâmicos para dependências opcionais
+     (DISC_CORES e videos.js) — página nunca trava
+   ✦ global.js continua como import estático
    ============================================= */
-import { DISC_CORES } from '../quiz/disciplinas/disciplinas_cores.js';
 
 import {
   getSemestreAtual,
@@ -23,21 +23,34 @@ const State = {
   semestre:        null,
   disciplinas:     [],
   aulas:           [],
-  simplificado:    [],   // síntese rápida por aula (mesmo índice que aulas[])
-  professor:       [],   // resumo único do professor
+  simplificado:    [],
+  professor:       [],
   aulaAberta:      null,
   discVerificadas: new Set(),
   temConteudo:     null,
   modo:            'completo', // 'completo' | 'sintese' | 'professor'
+  DISC_CORES:      {},         // preenchido via import dinâmico
+  getVideos:       null,       // preenchido via import dinâmico
 };
 
 /* ══════════════════════════════════════════════
    BOOT
 ══════════════════════════════════════════════ */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   setPagina('RESUMO');
   document.getElementById('footer-year').textContent  = new Date().getFullYear();
   document.getElementById('sidebar-year').textContent = new Date().getFullYear();
+
+  // Imports opcionais — se falharem, o resto da página continua funcionando
+  try {
+    const mod = await import('../quiz/disciplinas/disciplinas_cores.js');
+    State.DISC_CORES = mod.DISC_CORES ?? {};
+  } catch (_) { /* sem cores dinâmicas */ }
+
+  try {
+    const mod = await import('./conteudo/videos.js');
+    State.getVideos = mod.getVideos ?? null;
+  } catch (_) { /* sem seção de vídeos */ }
 
   _resolverContexto();
   _renderSidebar();
@@ -55,7 +68,7 @@ function _renderSemestreSelector() {
   const wrap = document.getElementById('semestre-wrap-resumo');
   if (!wrap) return;
 
-  const atual = State.semestre;
+  const atual  = State.semestre;
   const select = document.createElement('select');
   select.className = 'semestre-select';
   select.title = 'Selecionar semestre';
@@ -138,10 +151,125 @@ function _atualizarStatusBadge() {
 }
 
 /* ══════════════════════════════════════════════
+   SEÇÃO DE VÍDEOS
+══════════════════════════════════════════════ */
+function _renderVideosSection() {
+  // Cria o container se não existir no HTML
+  let el = document.getElementById('videos-section');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'videos-section';
+    el.style.display = 'none';
+    // Insere antes do mobile-toolbar ou antes do main
+    const anchor = document.getElementById('mobile-toolbar') ?? document.getElementById('main-content');
+    if (anchor) anchor.insertAdjacentElement('beforebegin', el);
+    else return;
+  }
+
+  const disc = State.disciplina;
+  if (!disc || !State.getVideos) { el.style.display = 'none'; return; }
+
+  const videos = State.getVideos(State.semestre, disc.id);
+  if (!videos.length) { el.style.display = 'none'; return; }
+
+  const drive = videos.filter(v => v.tipo !== 'youtube');
+  const yt    = videos.filter(v => v.tipo === 'youtube');
+  const total = videos.length;
+
+  /* ── Cole esta função dentro de _renderVideosSection(), substituindo o buildChip antigo ── */
+
+const buildChip = (v) => {
+  const isGeral = v.label.toLowerCase().includes('geral');
+  const isYT    = v.tipo === 'youtube';
+  const isPlaylist = v.label.toLowerCase().includes('playlist') || v.label.toLowerCase().includes('curso');
+
+  const cls = ['vchip', isGeral ? 'vchip--geral' : '', isYT ? 'vchip--yt' : '']
+                .filter(Boolean).join(' ');
+
+  const playIcon = isYT
+    ? `<svg width="12" height="9" viewBox="0 0 20 14" fill="none">
+         <rect width="20" height="14" rx="3" fill="rgba(255,60,60,0.65)"/>
+         <path d="M8 4l6 3-6 3V4z" fill="white"/>
+       </svg>`
+    : `<svg width="9" height="10" viewBox="0 0 9 12" fill="currentColor">
+         <path d="M0.5 1.5L8 6L0.5 10.5V1.5Z"/>
+       </svg>`;
+
+  const badgeClass = isYT ? 'vchip__badge--yt' : 'vchip__badge--drive';
+  const badgeText  = isYT ? (isPlaylist ? 'Playlist' : 'YouTube') : 'Drive';
+
+  return `
+    <a href="${_esc(v.url)}" target="_blank" rel="noopener noreferrer" class="${cls}">
+      <div class="vchip__top">
+        <span class="vchip__play">${playIcon}</span>
+        <span class="vchip__badge ${badgeClass}">${badgeText}</span>
+      </div>
+      <span class="vchip__label">${_esc(v.label)}</span>
+    </a>`;
+};
+
+/* ── Substitua também o ytSep por este ── */
+
+const ytSep = yt.length ? `
+  <div class="vstrip-yt-sep">
+    <div class="vstrip-yt-sep__line"></div>
+    <span class="vstrip-yt-sep__text">YT</span>
+    <div class="vstrip-yt-sep__line"></div>
+  </div>` : '';
+
+
+
+el.innerHTML = `
+  <div class="videos-strip" id="videos-strip-wrap">
+    <div class="videos-strip__head" id="videos-strip-toggle">
+      <span class="videos-strip__head-icon">
+        <svg width="9" height="10" viewBox="0 0 9 12" fill="currentColor"><path d="M0.5 1.5L8 6L0.5 10.5V1.5Z"/></svg>
+      </span>
+      <span class="videos-strip__head-label">Vídeos das Aulas</span>
+      <span class="videos-strip__head-count">${total} vídeo${total !== 1 ? 's' : ''}</span>
+      <div class="videos-strip__toggle-btn">
+        <span class="videos-strip__toggle-label"></span>
+        <svg class="videos-strip__chevron" width="11" height="11" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+    </div>
+    <div class="videos-strip__body">
+      <div class="videos-strip__body-inner">
+        <div class="videos-strip__row">
+          ${drive.map(v => buildChip(v)).join('')}
+        </div>
+        ${yt.length ? `
+          <div class="videos-strip__yt-label">
+            <svg width="11" height="8" viewBox="0 0 20 14" fill="none">
+              <rect width="20" height="14" rx="3" fill="rgba(255,60,60,0.55)"/>
+              <path d="M8 4l6 3-6 3V4z" fill="white"/>
+            </svg>
+            YouTube
+          </div>
+          <div class="videos-strip__row">
+            ${yt.map(v => buildChip(v)).join('')}
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  </div>`;
+
+document.getElementById('videos-strip-toggle')?.addEventListener('click', () => {
+  document.getElementById('videos-strip-wrap')?.classList.toggle('videos-strip--open');
+});
+
+  el.style.display = '';
+}
+
+/* ══════════════════════════════════════════════
    CARREGAR CONTEÚDO DINÂMICO
 ══════════════════════════════════════════════ */
 function _carregarConteudo() {
   _mostrarEstado('loading');
+  _renderVideosSection();
   State.temConteudo  = null;
   State.aulas        = [];
   State.simplificado = [];
@@ -159,7 +287,7 @@ function _carregarConteudo() {
     return;
   }
 
-  const [ano] = (State.semestre ?? '2026.2').split('.');
+  const [ano] = (State.semestre ?? '2026.1').split('.');
   const src = `./conteudo/${ano}/${State.semestre}/res_${disc.arquivo}.js`;
 
   const script = document.createElement('script');
@@ -192,7 +320,6 @@ function _carregarConteudo() {
 
   script.onerror = () => {
     if (State.disciplina?.id !== disc.id) return;
-
     State.discVerificadas.add(disc.id);
     State.temConteudo = false;
     _marcarStatusConteudo(disc.id, false);
@@ -207,20 +334,19 @@ function _removerScriptAnterior() {
   document.getElementById('nexus-conteudo-script')?.remove();
 }
 
-/* Lê os 3 arrays do conteúdo carregado */
 function _lerDados() {
   const raw = window.__nexusConteudo ?? null;
   if (!raw) return { aulas: [], simplificado: [], professor: [] };
 
-  const aulas       = Array.isArray(raw.aulas)        ? raw.aulas        : [];
-  const simplificado = Array.isArray(raw.simplificado) ? raw.simplificado : [];
-  const professor   = Array.isArray(raw.professor)     ? raw.professor    : [];
-
-  return { aulas, simplificado, professor };
+  return {
+    aulas:        Array.isArray(raw.aulas)        ? raw.aulas        : [],
+    simplificado: Array.isArray(raw.simplificado) ? raw.simplificado : [],
+    professor:    Array.isArray(raw.professor)    ? raw.professor    : [],
+  };
 }
 
 function _aplicarCorDisciplina(discId) {
-  const cores = DISC_CORES[discId];
+  const cores = State.DISC_CORES[discId];
   if (!cores) return;
   const r = document.documentElement.style;
   r.setProperty('--disc-tema',     cores.corTema);
@@ -231,32 +357,19 @@ function _aplicarCorDisciplina(discId) {
 
 /* ══════════════════════════════════════════════
    TOGGLE DE MODO
-   Só aparece se houver simplificado[] ou professor[]
 ══════════════════════════════════════════════ */
-function _temSimplificado() {
-  return State.simplificado.length > 0;
-}
-
-function _temProfessor() {
-  return State.professor.length > 0;
-}
+function _temSimplificado() { return State.simplificado.length > 0; }
+function _temProfessor()    { return State.professor.length > 0; }
 
 function _buildToggleHtml() {
   const temSint = _temSimplificado();
   const temProf = _temProfessor();
-
-  // Nenhum extra → sem toggle
   if (!temSint && !temProf) return '';
 
   const btnCompleto = `<button class="mode-btn${State.modo === 'completo' ? ' mode-btn--active' : ''}" data-modo="completo">Resumo completo</button>`;
-
   let btnExtra = '';
-  if (temSint) {
-    btnExtra += `<button class="mode-btn${State.modo === 'sintese' ? ' mode-btn--active' : ''}" data-modo="sintese">Síntese rápida</button>`;
-  }
-  if (temProf) {
-    btnExtra += `<button class="mode-btn${State.modo === 'professor' ? ' mode-btn--active' : ''}" data-modo="professor">Professor</button>`;
-  }
+  if (temSint) btnExtra += `<button class="mode-btn${State.modo === 'sintese'   ? ' mode-btn--active' : ''}" data-modo="sintese">Síntese rápida</button>`;
+  if (temProf) btnExtra += `<button class="mode-btn${State.modo === 'professor' ? ' mode-btn--active' : ''}" data-modo="professor">Professor</button>`;
 
   return `<div class="mode-toggle" id="mode-toggle">${btnCompleto}${btnExtra}</div>`;
 }
@@ -264,11 +377,9 @@ function _buildToggleHtml() {
 function _setModo(modo) {
   if (State.modo === modo) return;
   State.modo = modo;
-
   document.querySelectorAll('[data-modo]').forEach(btn => {
     btn.classList.toggle('mode-btn--active', btn.dataset.modo === modo);
   });
-
   _renderGrid();
   _mostrarEstado('grid');
 }
@@ -302,7 +413,6 @@ function _renderHeroStats(total) {
   if (!c) return;
 
   const toggleHtml = total > 0 ? _buildToggleHtml() : '';
-
   c.innerHTML = disc
     ? `<div class="stat-pill">${disc.emoji} ${disc.nome}</div>${toggleHtml}`
     : '';
@@ -321,7 +431,7 @@ function _renderHeroStats(total) {
 }
 
 /* ══════════════════════════════════════════════
-   GRID — renderiza conforme o modo atual
+   GRID
 ══════════════════════════════════════════════ */
 function _renderGrid() {
   const grid = document.getElementById('resumos-grid');
@@ -329,14 +439,10 @@ function _renderGrid() {
   grid.innerHTML = '';
 
   if (State.modo === 'professor') {
-    // Modo professor: 1 card único
-    if (State.professor.length) {
-      grid.appendChild(_criarCardProfessor(State.professor[0]));
-    }
+    if (State.professor.length) grid.appendChild(_criarCardProfessor(State.professor[0]));
     return;
   }
 
-  // Modos completo e sintese: cards por aula
   State.aulas.forEach((aula, idx) => {
     const card = State.modo === 'sintese'
       ? _criarCardSintese(aula, idx)
@@ -348,15 +454,12 @@ function _renderGrid() {
 /* ══════════════════════════════════════════════
    CARDS
 ══════════════════════════════════════════════ */
-
-/* ── Card modo completo ── */
 function _criarCard(aula, idx) {
-  const secoes = aula.secoes ?? [];
-
-  const aulaStr    = _esc(aula.aula ?? '');
-  const aulaMatch  = aulaStr.match(/^(Aula\s*[\d\/]+)\s*[—–-]\s*(.+)$/i);
-  const aulaNum    = aulaMatch ? aulaMatch[1] : aulaStr;
-  const aulaTitulo = aulaMatch ? aulaMatch[2] : '';
+  const secoes  = aula.secoes ?? [];
+  const aulaStr = _esc(aula.aula ?? '');
+  const m       = aulaStr.match(/^(Aula\s*[\d\/]+)\s*[—–-]\s*(.+)$/i);
+  const aulaNum = m ? m[1] : aulaStr;
+  const aulaTit = m ? m[2] : '';
 
   const card = document.createElement('article');
   card.className = 'resumo-card resumo-card--nota';
@@ -364,19 +467,14 @@ function _criarCard(aula, idx) {
   card.setAttribute('tabindex', '0');
   card.setAttribute('role', 'button');
   card.setAttribute('aria-label', `Abrir: ${aula.aula}`);
-
   card.innerHTML = `
     <div class="card-inner">
       <div class="card-num">${aulaNum}</div>
-      <div class="card-title">${aulaTitulo || aulaStr}</div>
+      <div class="card-title">${aulaTit || aulaStr}</div>
       <div class="card-divider"></div>
-      ${aula.ideia_central
-        ? `<p class="card-desc">${_parseInline(aula.ideia_central)}</p>`
-        : ''}
+      ${aula.ideia_central ? `<p class="card-desc">${_parseInline(aula.ideia_central)}</p>` : ''}
       <div class="card-bottom">
-        <div class="card-progress__track">
-          <div class="card-progress__fill"></div>
-        </div>
+        <div class="card-progress__track"><div class="card-progress__fill"></div></div>
         <div class="card-meta">
           <span class="card-meta__count">${secoes.length} seç${secoes.length !== 1 ? 'ões' : 'ão'}</span>
           <span class="card-meta__cta">
@@ -388,29 +486,21 @@ function _criarCard(aula, idx) {
           </span>
         </div>
       </div>
-    </div>
-  `;
-
+    </div>`;
   card.addEventListener('click', () => _abrirModal(aula));
-  card.addEventListener('keydown', e => {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _abrirModal(aula); }
-  });
-
+  card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _abrirModal(aula); } });
   return card;
 }
 
-/* ── Card modo síntese ── */
 function _criarCardSintese(aula, idx) {
-  const aulaStr    = _esc(aula.aula ?? '');
-  const aulaMatch  = aulaStr.match(/^(Aula\s*[\d\/]+)\s*[—–-]\s*(.+)$/i);
-  const aulaNum    = aulaMatch ? aulaMatch[1] : aulaStr;
-  const aulaTitulo = aulaMatch ? aulaMatch[2] : '';
-
-  // ← pega o simplificado pelo mesmo índice
-  const sint = State.simplificado[idx] ?? null;
-  const temSintese = !!(sint && (sint.ideia_central || (sint.secoes ?? []).length > 0));
-  const preview    = sint?.ideia_central ?? null;
-  const numSecoes  = (sint?.secoes ?? []).length;
+  const aulaStr = _esc(aula.aula ?? '');
+  const m       = aulaStr.match(/^(Aula\s*[\d\/]+)\s*[—–-]\s*(.+)$/i);
+  const aulaNum = m ? m[1] : aulaStr;
+  const aulaTit = m ? m[2] : '';
+  const sint    = State.simplificado[idx] ?? null;
+  const temSint = !!(sint && (sint.ideia_central || (sint.secoes ?? []).length > 0));
+  const preview = sint?.ideia_central ?? null;
+  const numSec  = (sint?.secoes ?? []).length;
 
   const card = document.createElement('article');
   card.className = 'resumo-card resumo-card--nota resumo-card--sintese';
@@ -418,28 +508,22 @@ function _criarCardSintese(aula, idx) {
   card.setAttribute('tabindex', '0');
   card.setAttribute('role', 'button');
   card.setAttribute('aria-label', `Síntese: ${aula.aula}`);
-
   card.innerHTML = `
     <div class="card-inner">
       <div class="card-num-row">
         <div class="card-num">${aulaNum}</div>
-        <span class="sint-badge">${temSintese ? 'Síntese' : 'Sem síntese'}</span>
+        <span class="sint-badge">${temSint ? 'Síntese' : 'Sem síntese'}</span>
       </div>
-      <div class="card-title">${aulaTitulo || aulaStr}</div>
+      <div class="card-title">${aulaTit || aulaStr}</div>
       <div class="card-divider"></div>
       ${preview
         ? `<p class="card-desc">${_parseInline(preview)}</p>`
-        : `<p class="card-desc" style="font-style:italic;opacity:0.55">Síntese não disponível ainda.</p>`
-      }
+        : `<p class="card-desc" style="font-style:italic;opacity:0.55">Síntese não disponível ainda.</p>`}
       <div class="card-bottom">
-        <div class="card-progress__track">
-          <div class="card-progress__fill"></div>
-        </div>
+        <div class="card-progress__track"><div class="card-progress__fill"></div></div>
         <div class="card-meta">
-          <span class="card-meta__count">
-            ${temSintese ? `${numSecoes} seç${numSecoes !== 1 ? 'ões' : 'ão'}` : '—'}
-          </span>
-          ${temSintese ? `
+          <span class="card-meta__count">${temSint ? `${numSec} seç${numSec !== 1 ? 'ões' : 'ão'}` : '—'}</span>
+          ${temSint ? `
           <span class="card-meta__cta">
             Ver síntese
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -449,41 +533,28 @@ function _criarCardSintese(aula, idx) {
           </span>` : ''}
         </div>
       </div>
-    </div>
-  `;
-
-  // ← abre o modal com sint (simplificado[idx]), não com aula
-  card.addEventListener('click', () => { if (temSintese) _abrirModal(sint); });
-  card.addEventListener('keydown', e => {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (temSintese) _abrirModal(sint); }
-  });
-
+    </div>`;
+  card.addEventListener('click', () => { if (temSint) _abrirModal(sint); });
+  card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (temSint) _abrirModal(sint); } });
   return card;
 }
 
-/* ── Card único do professor ── */
 function _criarCardProfessor(prof) {
   const secoes = prof.secoes ?? [];
-
   const card = document.createElement('article');
   card.className = 'resumo-card resumo-card--nota';
   card.style.animationDelay = '0s';
   card.setAttribute('tabindex', '0');
   card.setAttribute('role', 'button');
   card.setAttribute('aria-label', 'Abrir: Resumo do Professor');
-
   card.innerHTML = `
     <div class="card-inner">
       <div class="card-num">📋 Professor</div>
       <div class="card-title">${_esc(prof.aula ?? 'Resumo do Professor')}</div>
       <div class="card-divider"></div>
-      ${prof.ideia_central
-        ? `<p class="card-desc">${_parseInline(prof.ideia_central)}</p>`
-        : ''}
+      ${prof.ideia_central ? `<p class="card-desc">${_parseInline(prof.ideia_central)}</p>` : ''}
       <div class="card-bottom">
-        <div class="card-progress__track">
-          <div class="card-progress__fill"></div>
-        </div>
+        <div class="card-progress__track"><div class="card-progress__fill"></div></div>
         <div class="card-meta">
           <span class="card-meta__count">${secoes.length} seç${secoes.length !== 1 ? 'ões' : 'ão'}</span>
           <span class="card-meta__cta">
@@ -495,19 +566,14 @@ function _criarCardProfessor(prof) {
           </span>
         </div>
       </div>
-    </div>
-  `;
-
+    </div>`;
   card.addEventListener('click', () => _abrirModal(prof));
-  card.addEventListener('keydown', e => {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _abrirModal(prof); }
-  });
-
+  card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _abrirModal(prof); } });
   return card;
 }
 
 /* ══════════════════════════════════════════════
-   MODAL — LEITURA COMPLETA
+   MODAL
 ══════════════════════════════════════════════ */
 function _bindModal() {
   document.getElementById('read-modal-overlay')?.addEventListener('click', _fecharModal);
@@ -520,13 +586,10 @@ function _abrirModal(aula) {
   const badge = document.getElementById('rm-tipo-badge');
   badge.textContent = 'Resumo';
   badge.className   = 'read-modal__badge badge--conceito';
-
   document.getElementById('rm-body').innerHTML = _buildModalBody(aula);
-
   document.getElementById('read-modal').classList.add('read-modal--open');
   document.body.style.overflow = 'hidden';
   document.getElementById('read-modal-panel')?.focus();
-
   _bindModalTabs();
 }
 
@@ -538,29 +601,23 @@ function _fecharModal() {
 function _buildModalBody(aula) {
   const secoes = aula.secoes ?? [];
   let html = '';
-
   if (aula.ideia_central) {
     html += `<div class="rm-ideia-central">
       <span class="rm-ideia-icon">💡</span>
       <span>${_parseInline(aula.ideia_central)}</span>
     </div>`;
   }
-
   if (secoes.length > 1) {
     html += `<div class="rm-tabs" id="rm-tabs">
-      ${secoes.map((s, i) =>
-        `<button class="rm-tab${i === 0 ? ' rm-tab--active' : ''}" data-sec="${i}">${s.titulo}</button>`
-      ).join('')}
+      ${secoes.map((s, i) => `<button class="rm-tab${i === 0 ? ' rm-tab--active' : ''}" data-sec="${i}">${s.titulo}</button>`).join('')}
     </div>`;
   }
-
   secoes.forEach((sec, i) => {
     html += `<div class="rm-secao${i === 0 ? ' rm-secao--active' : ''}" data-sec="${i}">
       <h3 class="rm-secao-titulo">${_esc(sec.titulo)}</h3>
       ${(sec.blocos ?? []).map(b => _renderBloco(b)).join('')}
     </div>`;
   });
-
   return html;
 }
 
@@ -569,7 +626,6 @@ function _bindModalTabs() {
     const btn = e.target.closest('.rm-tab');
     if (!btn) return;
     const idx = parseInt(btn.dataset.sec);
-
     document.querySelectorAll('.rm-tab').forEach(b => b.classList.remove('rm-tab--active'));
     document.querySelectorAll('.rm-secao').forEach(s => s.classList.remove('rm-secao--active'));
     btn.classList.add('rm-tab--active');
@@ -582,42 +638,36 @@ function _bindModalTabs() {
 ══════════════════════════════════════════════ */
 function _renderBloco(b) {
   switch (b.tipo) {
-
-case 'topico': {
-  const [ano] = (State.semestre ?? '2026.1').split('.');
-  const imgBase = `conteudo/${ano}/${State.semestre}/`;
-
-  let html = `<div class="rm-topico">`;
-  html += `<div class="rm-topico__titulo">${_parseInline(b.titulo ?? '')}</div>`;
-  if (b.texto)  html += `<p class="rm-topico__texto">${_parseInline(b.texto)}</p>`;
-  if (b.imagem) html += `
-  <figure class="rm-topico__fig">
-    <img class="rm-topico__img" src="${_esc(imgBase + b.imagem.src)}" alt="${_esc(b.imagem.alt)}" loading="lazy" />
-    <figcaption class="rm-topico__fig-caption">${_esc(b.imagem.alt)}</figcaption>
-  </figure>`;
-  if (b.lista)  html += `<ul class="rm-lista">${b.lista.map(i => `<li><span>${_parseInline(i)}</span></li>`).join('')}</ul>`;
-  if (b.codigo) html += `<pre class="rm-codigo"><code>${_esc(b.codigo)}</code></pre>`;
-  html += `</div>`;
-  return html;
-}
-
+    case 'topico': {
+      const [ano] = (State.semestre ?? '2026.1').split('.');
+      const imgBase = `conteudo/${ano}/${State.semestre}/`;
+      let html = `<div class="rm-topico">`;
+      html += `<div class="rm-topico__titulo">${_parseInline(b.titulo ?? '')}</div>`;
+      if (b.texto)  html += `<p class="rm-topico__texto">${_parseInline(b.texto)}</p>`;
+      if (b.imagem) html += `
+        <figure class="rm-topico__fig">
+          <img class="rm-topico__img" src="${_esc(imgBase + b.imagem.src)}" alt="${_esc(b.imagem.alt)}" loading="lazy" />
+          <figcaption class="rm-topico__fig-caption">${_esc(b.imagem.alt)}</figcaption>
+        </figure>`;
+      if (b.lista)  html += `<ul class="rm-lista">${b.lista.map(i => `<li><span>${_parseInline(i)}</span></li>`).join('')}</ul>`;
+      if (b.codigo) html += `<pre class="rm-codigo"><code>${_esc(b.codigo)}</code></pre>`;
+      html += `</div>`;
+      return html;
+    }
     case 'lista': {
       let html = '';
       if (b.titulo) html += `<p class="rm-lista-titulo">${_parseInline(b.titulo)}</p>`;
       html += `<ul class="rm-lista">${(b.itens ?? []).map(i => `<li><span>${_parseInline(i)}</span></li>`).join('')}</ul>`;
       return html;
     }
-
     case 'subtitulo':
       return `<div class="rm-subtitulo">${_parseInline(b.texto ?? '')}</div>`;
-
     case 'exemplo':
       return `<div class="rm-exemplo">
         <div class="rm-exemplo__titulo">${_esc(b.titulo ?? '')}</div>
         <p class="rm-exemplo__texto">${_parseInline(b.texto ?? '')}</p>
         ${b.detalhe ? `<span class="rm-exemplo__detalhe">${_parseInline(b.detalhe)}</span>` : ''}
       </div>`;
-
     case 'tabela': {
       const cols = b.colunas ?? [];
       const rows = b.linhas  ?? [];
@@ -625,22 +675,15 @@ case 'topico': {
         ${b.titulo ? `<div class="rm-topico__titulo">${_parseInline(b.titulo)}</div>` : ''}
         <div class="rm-tabela-wrap">
           <table class="rm-tabela">
-            <thead>
-              <tr>${cols.map(c => `<th>${_esc(c)}</th>`).join('')}</tr>
-            </thead>
-            <tbody>
-              ${rows.map(r => `<tr>${r.map(c => `<td><code>${_esc(c)}</code></td>`).join('')}</tr>`).join('')}
-            </tbody>
+            <thead><tr>${cols.map(c => `<th>${_esc(c)}</th>`).join('')}</tr></thead>
+            <tbody>${rows.map(r => `<tr>${r.map(c => `<td><code>${_esc(c)}</code></td>`).join('')}</tr>`).join('')}</tbody>
           </table>
         </div>`;
     }
-
     case 'codigo':
       return `<pre class="rm-codigo"><code>${_esc(b.codigo ?? '')}</code></pre>`;
-
     case 'destaque':
       return `<div class="rm-destaque">${_parseInline(b.texto ?? '')}</div>`;
-
     default:
       return '';
   }
@@ -659,15 +702,8 @@ function _renderSidebar() {
 
   if (!State.disciplinas.length) {
     list.innerHTML = `
-      <div style="
-        padding: 1.5rem 0.75rem;
-        text-align: center;
-        color: var(--text-3);
-        font-size: 0.72rem;
-        letter-spacing: 0.06em;
-        line-height: 1.7;
-      ">
-        <div style="font-size: 1.4rem; margin-bottom: 0.5rem;">📭</div>
+      <div style="padding:1.5rem 0.75rem;text-align:center;color:var(--text-3);font-size:0.72rem;letter-spacing:0.06em;line-height:1.7;">
+        <div style="font-size:1.4rem;margin-bottom:0.5rem;">📭</div>
         Nenhuma disciplina<br>neste semestre
       </div>`;
     _mostrarEstado('no-content');
@@ -677,8 +713,8 @@ function _renderSidebar() {
   State.disciplinas.forEach(disc => {
     const isAtivo = disc.id === State.disciplina?.id;
     const item    = document.createElement('button');
-    item.className       = `disc-item${isAtivo ? ' disc-item--active' : ''}`;
-    item.dataset.discId  = disc.id;
+    item.className      = `disc-item${isAtivo ? ' disc-item--active' : ''}`;
+    item.dataset.discId = disc.id;
     item.setAttribute('aria-current', isAtivo ? 'page' : 'false');
     item.title = disc.nome;
     item.innerHTML = `
@@ -749,8 +785,7 @@ function _renderHeader() {
       badge.style.display = '';
       badge.innerHTML = `
         <span style="flex-shrink:0">${disc.emoji}</span>
-        <span style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;min-width:0">${label}</span>
-      `;
+        <span style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;min-width:0">${label}</span>`;
     } else {
       badge.style.display = 'none';
       badge.innerHTML = '';
@@ -764,7 +799,6 @@ function _renderHeader() {
   if (ml) ml.textContent = disc ? `${disc.emoji} ${disc.apelido ?? _nomeCurto(disc.nome, 20)}` : 'Disciplina';
 
   document.title = disc ? `Resumos — ${disc.nome} · Nexus Study` : 'Resumos · Nexus Study';
-
   _atualizarStatusBadge();
 }
 

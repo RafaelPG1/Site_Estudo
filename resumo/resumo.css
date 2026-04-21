@@ -1243,3 +1243,299 @@ pre {
   letter-spacing: 0.03em;
   line-height: 1.5;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   NEXUS STUDY — videos_strip.css  (v3 — card redesign)
+   Substitui todo o bloco de vídeos no final de resumo.css
+════════════════════════════════════════════════════════════════════ */
+
+#videos-section {
+  border-bottom: 1px solid var(--border);
+}
+
+.videos-strip {
+  padding: 0 2rem;
+}
+
+/* ── Header / Toggle ── */
+.videos-strip__head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 0;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 10px;
+  transition: opacity 0.2s;
+}
+.videos-strip__head:hover { opacity: 0.8; }
+
+.videos-strip__head-icon {
+  width: 24px; height: 24px;
+  border-radius: 6px;
+  background: rgba(var(--disc-tema-rgb), 0.12);
+  border: 1px solid rgba(var(--disc-tema-rgb), 0.22);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--disc-tema);
+  flex-shrink: 0;
+  transition: background 0.4s, border-color 0.4s;
+}
+
+.videos-strip__head-label {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.videos-strip__head-count {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.65rem;
+  border-radius: 99px;
+  background: rgba(var(--disc-tema-rgb), 0.15);
+  border: 1px solid rgba(var(--disc-tema-rgb), 0.35);
+  color: var(--disc-tema);   /* ← cor cheia, sem opacity */
+}
+
+/* Botão de toggle no canto direito */
+.videos-strip__toggle-btn {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.7rem 0.25rem 0.55rem;
+  border-radius: 99px;
+  border: 1px solid var(--border-glow);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-3);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+.videos-strip__head:hover .videos-strip__toggle-btn {
+  border-color: rgba(var(--disc-tema-rgb), 0.3);
+  background: rgba(var(--disc-tema-rgb), 0.07);
+  color: var(--disc-tema);
+}
+
+.videos-strip__chevron {
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+}
+.videos-strip--open .videos-strip__chevron {
+  transform: rotate(180deg);
+}
+
+/* Label do botão: "Ver" quando fechado, "Ocultar" quando aberto */
+.videos-strip__toggle-label::after { content: 'Ver'; }
+.videos-strip--open .videos-strip__toggle-label::after { content: 'Ocultar'; }
+
+/* ── Corpo colapsável ── */
+.videos-strip__body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.38s cubic-bezier(.25,.8,.25,1);
+}
+.videos-strip--open .videos-strip__body {
+  grid-template-rows: 1fr;
+}
+.videos-strip__body-inner {
+  overflow: hidden;
+  transition: padding-bottom 0.38s ease;
+  padding-bottom: 0;
+}
+.videos-strip--open .videos-strip__body-inner {
+  padding-bottom: 1.1rem;
+}
+
+/* ── Grid de cards ── */
+.videos-strip__row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.5rem;
+}
+
+.videos-strip__yt-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 80, 80, 0.55);
+  margin: 0.75rem 0 0.5rem;
+}
+
+/* ═══════════════════════════
+   VCARD — card de vídeo
+═══════════════════════════ */
+.vchip {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.42rem;
+  padding: 0.65rem 0.85rem 0.6rem;
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  text-decoration: none;
+  cursor: pointer;
+  min-width: 126px;
+  max-width: 148px;
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform     0.2s cubic-bezier(.25,.8,.25,1),
+    border-color  0.2s,
+    background    0.2s;
+}
+
+/* Barra de cor no topo */
+.vchip::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--disc-tema);
+  opacity: 0.35;
+  transition: opacity 0.2s, background 0.4s;
+}
+
+.vchip:hover {
+  transform: translateY(-3px);
+  border-color: rgba(var(--disc-tema-rgb), 0.3);
+  background: rgba(var(--disc-tema-rgb), 0.06);
+}
+.vchip:hover::before { opacity: 1; }
+.vchip:active { transform: translateY(0); }
+
+/* ── Linha superior: play + badge ── */
+.vchip__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+}
+
+/* Ícone play */
+.vchip__play {
+  width: 26px; height: 26px;
+  border-radius: 7px;
+  background: rgba(var(--disc-tema-rgb), 0.12);
+  border: 1px solid rgba(var(--disc-tema-rgb), 0.2);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--disc-tema);
+  flex-shrink: 0;
+  transition: background 0.2s, color 0.4s, border-color 0.4s;
+}
+.vchip:hover .vchip__play {
+  background: rgba(var(--disc-tema-rgb), 0.22);
+}
+
+/* Badge tipo (Drive / YouTube / Playlist) */
+.vchip__badge {
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.42rem;
+  border-radius: 99px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.vchip__badge--drive {
+  color: rgba(var(--disc-tema-rgb), 0.85);
+  background: rgba(var(--disc-tema-rgb), 0.1);
+  border: 1px solid rgba(var(--disc-tema-rgb), 0.2);
+  transition: color 0.4s, background 0.4s, border-color 0.4s;
+}
+.vchip__badge--yt {
+  color: rgba(255, 100, 100, 0.9);
+  background: rgba(255, 60, 60, 0.1);
+  border: 1px solid rgba(255, 60, 60, 0.2);
+}
+
+/* Label do vídeo */
+.vchip__label {
+  font-size: 0.73rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: rgba(240, 237, 230, 0.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s;
+}
+.vchip:hover .vchip__label { color: var(--text-1); }
+
+/* ── Variante: Vídeo Geral (destaque) ── */
+.vchip--geral {
+  border-color: rgba(var(--disc-tema-rgb), 0.22);
+  background: rgba(var(--disc-tema-rgb), 0.05);
+}
+.vchip--geral::before { opacity: 0.75; }
+.vchip--geral .vchip__label {
+  color: var(--disc-tema);
+  font-weight: 700;
+}
+.vchip--geral:hover {
+  background: rgba(var(--disc-tema-rgb), 0.12);
+  border-color: rgba(var(--disc-tema-rgb), 0.38);
+}
+
+/* ── Variante: YouTube ── */
+.vchip--yt::before { background: #ff4545; opacity: 0.6; }
+.vchip--yt .vchip__play {
+  background: rgba(255, 60, 60, 0.12);
+  border-color: rgba(255, 60, 60, 0.2);
+  color: rgba(255, 80, 80, 0.8);
+}
+.vchip--yt:hover {
+  border-color: rgba(255, 69, 69, 0.35);
+  background: rgba(255, 60, 60, 0.05);
+}
+.vchip--yt:hover::before { opacity: 1; }
+.vchip--yt:hover .vchip__play {
+  background: rgba(255, 60, 60, 0.22);
+}
+
+/* ── Separador YouTube ── */
+.vstrip-yt-sep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  gap: 3px;
+  padding: 0 0.2rem;
+  align-self: stretch;
+}
+.vstrip-yt-sep__line {
+  flex: 1;
+  width: 1px;
+  background: rgba(255, 60, 60, 0.2);
+  border-radius: 99px;
+  min-height: 12px;
+}
+.vstrip-yt-sep__text {
+  font-size: 0.44rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 60, 60, 0.45);
+  writing-mode: vertical-rl;
+  white-space: nowrap;
+}
+
+/* ── Responsividade ── */
+@media (max-width: 680px) {
+  .videos-strip { padding: 0.85rem 1.25rem 1rem; }
+}
