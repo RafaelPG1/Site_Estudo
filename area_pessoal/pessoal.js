@@ -1,5 +1,5 @@
 /* =============================================
-   NEXUS STUDY — pessoal.js  (v6)
+   NEXUS STUDY — pessoal.js
    Área Pessoal: Checklist + Tarefa (Categorias) + Anotações
    ============================================= */
 
@@ -31,9 +31,6 @@ const State = {
 
 /* ══════════════════════════════════════════════
    CATEGORIAS — STORAGE
-   Estrutura: { [semestre]: { [discId]: Category[] } }
-   Category: { id, nome, itens: Item[] }
-   Item: { id, texto, concluida, dataCriacao }
 ══════════════════════════════════════════════ */
 const STORAGE_CATS      = 'nexus_cats_v1';
 const STORAGE_NOTE      = (sem, discId) => `nexus_note_${sem}_${discId}`;
@@ -82,7 +79,7 @@ function _getStatsAtivos() {
 }
 
 /* ══════════════════════════════════════════════
-   MODAL DE CONFIRMAÇÃO
+   MODAL DE CONFIRMAÇÃO (para notas/checklist)
 ══════════════════════════════════════════════ */
 function _confirmar(msg) {
   return new Promise(resolve => {
@@ -108,6 +105,54 @@ function _confirmar(msg) {
     btnOk.addEventListener('click', onOk);
     btnCan.addEventListener('click', onCancel);
     backdrop.addEventListener('click', onCancel);
+  });
+}
+
+/* ══════════════════════════════════════════════
+   MINI CONFIRM POPOVER (excluir categoria / item)
+══════════════════════════════════════════════ */
+function _miniConfirmar(anchorEl) {
+  return new Promise(resolve => {
+    document.getElementById('mini-confirm-pop')?.remove();
+
+    const pop = document.createElement('div');
+    pop.id        = 'mini-confirm-pop';
+    pop.className = 'mini-confirm';
+    pop.innerHTML = `
+      <p class="mini-confirm__msg">Excluir este item?</p>
+      <div class="mini-confirm__actions">
+        <button class="mini-confirm__btn mini-confirm__btn--cancel">Não</button>
+        <button class="mini-confirm__btn mini-confirm__btn--ok">Excluir</button>
+      </div>
+      <div class="mini-confirm__arrow"></div>`;
+    document.body.appendChild(pop);
+
+    const rect = anchorEl.getBoundingClientRect();
+    const popW = pop.offsetWidth || 185;
+    const popH = pop.offsetHeight || 90;
+    const left = Math.max(8, rect.right - popW);
+    const top  = rect.top - popH - 10;
+
+    pop.style.left = left + 'px';
+    pop.style.top  = top  + 'px';
+
+    requestAnimationFrame(() => pop.classList.add('mini-confirm--open'));
+
+    const close = (result) => {
+      pop.classList.remove('mini-confirm--open');
+      pop.classList.add('mini-confirm--closing');
+      setTimeout(() => pop.remove(), 160);
+      document.removeEventListener('mousedown', onOutside);
+      resolve(result);
+    };
+
+    const onOutside = (e) => {
+      if (!pop.contains(e.target)) close(false);
+    };
+    setTimeout(() => document.addEventListener('mousedown', onOutside), 10);
+
+    pop.querySelector('.mini-confirm__btn--ok').addEventListener('click',     () => close(true));
+    pop.querySelector('.mini-confirm__btn--cancel').addEventListener('click', () => close(false));
   });
 }
 
@@ -242,7 +287,6 @@ function _setAba(aba) {
     p.classList.toggle('tab-panel--active', p.id === `panel-${aba}`);
   });
 
-  /* Atualiza sidebar com contagens da aba atual */
   _renderSidebar();
   _updateHeroStat();
 }
@@ -319,10 +363,6 @@ function _updateHeroStat() {
 
 /* ══════════════════════════════════════════════
    SIDEBAR
-   Contagens mudam conforme aba ativa:
-   checklist → checklist_data
-   tarefa    → categorias
-   notas     → só indica se tem nota
 ══════════════════════════════════════════════ */
 function _renderSidebar() {
   const semLabel = document.getElementById('sidebar-semestre');
@@ -469,14 +509,22 @@ function _buildCatSection(cat, ci) {
         <span class="cat-header__nome">${_esc(cat.nome)}</span>
         <span class="cat-header__badge">${done}/${total}</span>
       </div>
-      <button class="cat-delete" title="Excluir categoria">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="3 6 5 6 21 6"/>
-          <path d="M19 6l-1 14H6L5 6"/>
-          <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
-        </svg>
-        Excluir
-      </button>
+      <div class="cat-header__actions">
+        <button class="cat-edit" title="Renomear categoria">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+          </svg>
+          Renomear
+        </button>
+        <button class="cat-delete" title="Excluir categoria">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14H6L5 6"/>
+            <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+          </svg>
+          Excluir
+        </button>
+      </div>
     </div>
     <div class="cat-items" id="cat-items-${cat.id}">
       ${cat.itens.map((item, ii) => _buildItemHTML(item, ii)).join('')}
@@ -491,17 +539,31 @@ function _buildCatSection(cat, ci) {
       </button>
     </div>`;
 
+  // ── Listeners dos botões de cabeçalho ──
+  section.querySelector('.cat-edit').addEventListener('click',   () => _editarCategoria(cat.id, section));
   section.querySelector('.cat-delete').addEventListener('click', () => _deletarCategoria(cat.id, section));
 
+  // ── Delegação de eventos nos itens ──
   section.querySelector('.cat-items').addEventListener('click', e => {
+    // Excluir item
     const delBtn = e.target.closest('.item-delete');
     if (delBtn) {
       const row = delBtn.closest('.item-row');
       _deletarItem(cat.id, delBtn.dataset.itemId, row);
       return;
     }
+    // Editar item
+    const editBtn = e.target.closest('.item-edit');
+    if (editBtn) {
+      const row = editBtn.closest('.item-row');
+      _editarItem(cat.id, editBtn.dataset.itemId, row);
+      return;
+    }
+    // Toggle (não dispara se estiver em modo de edição)
     const row = e.target.closest('.item-row');
-    if (!row) return;
+    if (!row || row.classList.contains('item-editing')) return;
+    // Ignora cliques dentro do input de edição
+    if (e.target.closest('.item-edit-input')) return;
     _toggleItem(cat.id, row.dataset.itemId, row);
   });
 
@@ -511,8 +573,8 @@ function _buildCatSection(cat, ci) {
   const addItem = () => {
     const texto = input?.value.trim();
     if (!texto) {
-      input?.classList.add('input-error');
       const prev = input?.getAttribute('placeholder');
+      input?.classList.add('input-error');
       input?.setAttribute('placeholder', '⚠ Digite algo antes de adicionar…');
       setTimeout(() => {
         input?.classList.remove('input-error');
@@ -521,15 +583,29 @@ function _buildCatSection(cat, ci) {
       input?.focus();
       return;
     }
+
     const cats = _getCategoriasAtivas();
     const c = cats.find(c => c.id === cat.id);
     if (!c) return;
-    c.itens.push({ id: _uid(), texto, concluida: false, dataCriacao: Date.now() });
+
+    const newItem = { id: _uid(), texto, concluida: false, dataCriacao: Date.now() };
+    c.itens.push(newItem);
     _salvarCategoriasAtivas(cats);
     if (input) input.value = '';
-    _renderTaskContainer();
+
+    const itemsEl = section.querySelector(`#cat-items-${cat.id}`);
+    if (itemsEl) {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = _buildItemHTML(newItem, c.itens.length - 1);
+      const rowEl = tmp.firstElementChild;
+      rowEl.style.animationDelay = '0s';
+      itemsEl.appendChild(rowEl);
+    }
+
+    _atualizarBadge(section, c);
     _updateProgress();
   };
+
   addBtn.addEventListener('click', addItem);
   input.addEventListener('keydown', e => { if (e.key === 'Enter') addItem(); });
 
@@ -547,12 +623,207 @@ function _buildItemHTML(item, ii) {
         </svg>
       </span>
       <span class="item-text${done ? ' item-text--done' : ''}">${_esc(item.texto)}</span>
+      <button class="item-edit" data-item-id="${item.id}" title="Editar item">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+        </svg>
+      </button>
       <button class="item-delete" data-item-id="${item.id}" title="Excluir item">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
         </svg>
       </button>
     </div>`;
+}
+
+/* ══════════════════════════════════════════════
+   EDIÇÃO INLINE — ITEM
+   FIX: clique fora = salva | tamanho dinâmico
+══════════════════════════════════════════════ */
+function _editarItem(catId, itemId, rowEl) {
+  if (!rowEl || rowEl.classList.contains('item-editing')) return;
+  rowEl.classList.add('item-editing');
+
+  const textEl  = rowEl.querySelector('.item-text');
+  const editBtn = rowEl.querySelector(`.item-edit[data-item-id="${itemId}"]`);
+  const delBtn  = rowEl.querySelector(`.item-delete[data-item-id="${itemId}"]`);
+  if (!textEl) { rowEl.classList.remove('item-editing'); return; }
+
+  const original = textEl.textContent;
+  const isDone   = rowEl.classList.contains('item-row--done');
+
+  // Substitui texto por input
+  const input = document.createElement('input');
+  input.type      = 'text';
+  input.className = 'item-edit-input';
+  input.value     = original;
+  input.maxLength = 200;
+
+  // FIX 1: tamanho dinâmico
+  const resizeItem = () => { input.style.width = Math.max(60, input.value.length + 3) + 'ch'; };
+  resizeItem();
+  input.addEventListener('input', resizeItem);
+
+  textEl.replaceWith(input);
+
+  // Esconde botões de ação originais
+  if (editBtn) editBtn.style.display = 'none';
+  if (delBtn)  delBtn.style.display  = 'none';
+
+  // Botão salvar
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'item-action-btn item-action-btn--save';
+  saveBtn.title     = 'Salvar (Enter)';
+  saveBtn.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+  // Botão cancelar
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className = 'item-action-btn item-action-btn--cancel';
+  cancelBtn.title     = 'Cancelar (Esc)';
+  cancelBtn.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`;
+
+  rowEl.appendChild(saveBtn);
+  rowEl.appendChild(cancelBtn);
+
+  input.focus();
+  input.select();
+
+  const _restore = (texto) => {
+    // FIX 2: remove listener de clique fora
+    document.removeEventListener('mousedown', onOutside);
+    const span = document.createElement('span');
+    span.className = `item-text${isDone ? ' item-text--done' : ''}`;
+    span.textContent = texto;
+    input.replaceWith(span);
+    saveBtn.remove();
+    cancelBtn.remove();
+    if (editBtn) editBtn.style.display = '';
+    if (delBtn)  delBtn.style.display  = '';
+    rowEl.classList.remove('item-editing');
+  };
+
+  const save = () => {
+    const newText = input.value.trim();
+    if (!newText) { input.classList.add('input-error'); input.focus(); return; }
+
+    const cats = _getCategoriasAtivas();
+    const cat  = cats.find(c => c.id === catId);
+    if (cat) {
+      const item = cat.itens.find(i => i.id === itemId);
+      if (item) { item.texto = newText; _salvarCategoriasAtivas(cats); }
+    }
+    _restore(newText);
+  };
+
+  const cancel = () => _restore(original);
+
+  // FIX 2: clique fora = salva
+  const onOutside = (e) => {
+    if (!rowEl.contains(e.target)) save();
+  };
+  setTimeout(() => document.addEventListener('mousedown', onOutside), 10);
+
+  saveBtn.addEventListener('click',   save);
+  cancelBtn.addEventListener('click', cancel);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter')  { e.preventDefault(); save(); }
+    if (e.key === 'Escape') { e.preventDefault(); cancel(); }
+  });
+}
+
+/* ══════════════════════════════════════════════
+   EDIÇÃO INLINE — CATEGORIA
+   FIX: clique fora = salva | tamanho dinâmico
+══════════════════════════════════════════════ */
+function _editarCategoria(catId, sectionEl) {
+  if (!sectionEl || sectionEl.classList.contains('cat-editing')) return;
+  sectionEl.classList.add('cat-editing');
+
+  const nomeEl  = sectionEl.querySelector('.cat-header__nome');
+  const editBtn = sectionEl.querySelector('.cat-edit');
+  const delBtn  = sectionEl.querySelector('.cat-delete');
+  if (!nomeEl) { sectionEl.classList.remove('cat-editing'); return; }
+
+  const original = nomeEl.textContent;
+
+  // Substitui nome por input
+  const input = document.createElement('input');
+  input.type      = 'text';
+  input.className = 'cat-name-input';
+  input.value     = original;
+  input.maxLength = 60;
+
+  // FIX 1: tamanho dinâmico
+  const resizeCat = () => { input.style.width = Math.max(60, input.value.length + 3) + 'ch'; };
+  resizeCat();
+  input.addEventListener('input', resizeCat);
+
+  nomeEl.replaceWith(input);
+
+  // Esconde botões de ação originais
+  if (editBtn) editBtn.style.display = 'none';
+  if (delBtn)  delBtn.style.display  = 'none';
+
+  // Botão salvar
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'cat-action-btn cat-action-btn--save';
+  saveBtn.title     = 'Salvar (Enter)';
+  saveBtn.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+  // Botão cancelar
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className = 'cat-action-btn cat-action-btn--cancel';
+  cancelBtn.title     = 'Cancelar (Esc)';
+  cancelBtn.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`;
+
+  const actionsEl = sectionEl.querySelector('.cat-header__actions');
+  if (actionsEl) {
+    actionsEl.prepend(cancelBtn);
+    actionsEl.prepend(saveBtn);
+  }
+
+  input.focus();
+  input.select();
+
+  const _restore = (nome) => {
+    // FIX 2: remove listener de clique fora
+    document.removeEventListener('mousedown', onOutside);
+    const span = document.createElement('span');
+    span.className   = 'cat-header__nome';
+    span.textContent = nome;
+    input.replaceWith(span);
+    saveBtn.remove();
+    cancelBtn.remove();
+    if (editBtn) editBtn.style.display = '';
+    if (delBtn)  delBtn.style.display  = '';
+    sectionEl.classList.remove('cat-editing');
+  };
+
+  const save = () => {
+    const newNome = input.value.trim();
+    if (!newNome) { input.classList.add('input-error'); input.focus(); return; }
+
+    const cats = _getCategoriasAtivas();
+    const cat  = cats.find(c => c.id === catId);
+    if (cat) { cat.nome = newNome; _salvarCategoriasAtivas(cats); }
+    _restore(newNome);
+  };
+
+  const cancel = () => _restore(original);
+
+  // FIX 2: clique fora = salva
+  const onOutside = (e) => {
+  if (!sectionEl.contains(e.target)) cancel(); // era save()
+};
+
+  setTimeout(() => document.addEventListener('mousedown', onOutside), 10);
+
+  saveBtn.addEventListener('click',   save);
+  cancelBtn.addEventListener('click', cancel);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter')  { e.preventDefault(); save(); }
+    if (e.key === 'Escape') { e.preventDefault(); cancel(); }
+  });
 }
 
 /* ══════════════════════════════════════════════
@@ -570,16 +841,16 @@ function _bindAddTask() {
   }
 
   const showErr = () => {
-  const prev = input?.getAttribute('placeholder');           // ← salva o placeholder atual
-  input?.classList.add('input-error');
-  input?.setAttribute('placeholder', '⚠ Digite algo antes de adicionar…');
-  errMsg?.classList.add('input-error-msg--show');
-  setTimeout(() => {
-    input?.classList.remove('input-error');
-    input?.setAttribute('placeholder', prev ?? 'Nome da categoria… (ex: Prova 1, Projeto Final)');
-    errMsg?.classList.remove('input-error-msg--show');
-  }, 2500);
-};
+    const prev = input?.getAttribute('placeholder');
+    input?.classList.add('input-error');
+    input?.setAttribute('placeholder', '⚠ Digite algo antes de adicionar…');
+    errMsg?.classList.add('input-error-msg--show');
+    setTimeout(() => {
+      input?.classList.remove('input-error');
+      input?.setAttribute('placeholder', prev ?? 'Nome da categoria… (ex: Prova 1, Projeto Final)');
+      errMsg?.classList.remove('input-error-msg--show');
+    }, 2500);
+  };
 
   const add = () => {
     const nome = input?.value.trim();
@@ -613,29 +884,58 @@ function _toggleItem(catId, itemId, rowEl) {
   _updateProgress();
 }
 
-function _deletarItem(catId, itemId, rowEl) {
-  if (rowEl) {
-    rowEl.style.transition = 'opacity 0.2s, transform 0.2s';
-    rowEl.style.opacity = '0';
-    rowEl.style.transform = 'translateX(12px)';
+async function _deletarItem(catId, itemId, rowEl) {
+  if (!rowEl) return;
+
+  // Mini confirm ancorado no botão de excluir
+  const btn = rowEl.querySelector(`.item-delete[data-item-id="${itemId}"]`);
+  const ok  = await _miniConfirmar(btn ?? rowEl);
+  if (!ok) return;
+
+  // 1️⃣ Slide + fade para fora
+  const height = rowEl.offsetHeight;
+  rowEl.style.transition = 'opacity 0.16s ease, transform 0.16s ease';
+  rowEl.style.opacity    = '0';
+  rowEl.style.transform  = 'translateX(16px)';
+
+  setTimeout(() => {
+    // 2️⃣ Colapsa a altura suavemente
+    rowEl.style.transition = 'height 0.18s ease, margin 0.18s ease, padding 0.18s ease, gap 0.18s ease';
+    rowEl.style.overflow   = 'hidden';
+    rowEl.style.height     = height + 'px';
+
+    void rowEl.offsetHeight;
+
+    rowEl.style.height        = '0';
+    rowEl.style.marginTop     = '0';
+    rowEl.style.marginBottom  = '0';
+    rowEl.style.paddingTop    = '0';
+    rowEl.style.paddingBottom = '0';
+
     setTimeout(() => {
+      rowEl.remove();
+
       const cats = _getCategoriasAtivas();
       const cat  = cats.find(c => c.id === catId);
       if (cat) cat.itens = cat.itens.filter(i => i.id !== itemId);
       _salvarCategoriasAtivas(cats);
-      _renderTaskContainer();
+
+      const sectionEl = document.querySelector(`[data-cat-id="${catId}"]`);
+      _atualizarBadge(sectionEl, cats.find(c => c.id === catId));
       _updateProgress();
-    }, 200);
-  }
+    }, 190);
+  }, 160);
 }
 
 async function _deletarCategoria(catId, sectionEl) {
-  const ok = await _confirmar('Excluir esta categoria e todos os seus itens?');
+  const btn = sectionEl?.querySelector('.cat-delete');
+  const ok  = await _miniConfirmar(btn ?? sectionEl);
   if (!ok) return;
+
   if (sectionEl) {
     sectionEl.style.transition = 'opacity 0.25s, transform 0.25s';
-    sectionEl.style.opacity = '0';
-    sectionEl.style.transform = 'translateX(16px)';
+    sectionEl.style.opacity    = '0';
+    sectionEl.style.transform  = 'translateX(16px)';
     setTimeout(() => {
       const cats = _getCategoriasAtivas().filter(c => c.id !== catId);
       _salvarCategoriasAtivas(cats);
