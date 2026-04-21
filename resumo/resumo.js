@@ -1,7 +1,7 @@
 /* =============================================
-   NEXUS STUDY — resumo.js  (v6)
+   NEXUS STUDY — resumo.js  (v7)
    Renderizador de notas de aula por seções
-   + Toggle de modo: Resumo Completo × Síntese Rápida
+   Toggle inteligente: aparece só se houver simplificado[] ou professor[]
    ============================================= */
 import { DISC_CORES } from '../quiz/disciplinas/disciplinas_cores.js';
 
@@ -23,11 +23,12 @@ const State = {
   semestre:        null,
   disciplinas:     [],
   aulas:           [],
-  simplificado:    [],           // ← array paralelo a aulas[], match por índice
+  simplificado:    [],   // síntese rápida por aula (mesmo índice que aulas[])
+  professor:       [],   // resumo único do professor
   aulaAberta:      null,
   discVerificadas: new Set(),
-  temConteudo:     null,   // null = carregando | true = tem | false = vazio
-  modo:            'completo', // 'completo' | 'sintese'
+  temConteudo:     null,
+  modo:            'completo', // 'completo' | 'sintese' | 'professor'
 };
 
 /* ══════════════════════════════════════════════
@@ -74,6 +75,7 @@ function _renderSemestreSelector() {
     State.temConteudo  = null;
     State.aulas        = [];
     State.simplificado = [];
+    State.professor    = [];
     State.modo         = 'completo';
 
     State.disciplina = State.disciplinas[0] ?? null;
@@ -143,6 +145,7 @@ function _carregarConteudo() {
   State.temConteudo  = null;
   State.aulas        = [];
   State.simplificado = [];
+  State.professor    = [];
   _atualizarStatusBadge();
   _removerScriptAnterior();
   window.__nexusConteudo = null;
@@ -168,14 +171,22 @@ function _carregarConteudo() {
 
     const dados = _lerDados();
     State.discVerificadas.add(disc.id);
-    State.temConteudo  = dados.aulas.length > 0;
     State.aulas        = dados.aulas;
     State.simplificado = dados.simplificado;
+    State.professor    = dados.professor;
+    State.temConteudo  = dados.aulas.length > 0;
+    State.modo         = 'completo';
+
     _marcarStatusConteudo(disc.id, State.temConteudo);
 
-    if (!dados.aulas.length) { _renderHeroStats(0); _mostrarEstadoSemConteudo(); return; }
+    if (!State.temConteudo) {
+      _renderHeroStats(0);
+      _mostrarEstadoSemConteudo();
+      return;
+    }
+
     _renderHeroStats(dados.aulas.length);
-    _renderCards(dados.aulas);
+    _renderGrid();
     _mostrarEstado('grid');
   };
 
@@ -196,30 +207,16 @@ function _removerScriptAnterior() {
   document.getElementById('nexus-conteudo-script')?.remove();
 }
 
-/* Retorna { aulas, simplificado } */
+/* Lê os 3 arrays do conteúdo carregado */
 function _lerDados() {
   const raw = window.__nexusConteudo ?? null;
-  if (!raw) return { aulas: [], simplificado: [] };
+  if (!raw) return { aulas: [], simplificado: [], professor: [] };
 
-  const aulas = Array.isArray(raw.aulas)
-    ? raw.aulas
-    : Array.isArray(raw.questoes)
-      ? raw.questoes.map(_questaoParaAula)
-      : [];
-
+  const aulas       = Array.isArray(raw.aulas)        ? raw.aulas        : [];
   const simplificado = Array.isArray(raw.simplificado) ? raw.simplificado : [];
+  const professor   = Array.isArray(raw.professor)     ? raw.professor    : [];
 
-  return { aulas, simplificado };
-}
-
-function _questaoParaAula(q) {
-  return {
-    aula: q.aula ?? 'Sem título',
-    ideia_central: q.question ?? '',
-    secoes: [
-      { id: 'texto', titulo: '📖 Conteúdo', blocos: [{ tipo: 'lista', itens: [q.texto ?? ''] }] },
-    ],
-  };
+  return { aulas, simplificado, professor };
 }
 
 function _aplicarCorDisciplina(discId) {
@@ -234,7 +231,36 @@ function _aplicarCorDisciplina(discId) {
 
 /* ══════════════════════════════════════════════
    TOGGLE DE MODO
+   Só aparece se houver simplificado[] ou professor[]
 ══════════════════════════════════════════════ */
+function _temSimplificado() {
+  return State.simplificado.length > 0;
+}
+
+function _temProfessor() {
+  return State.professor.length > 0;
+}
+
+function _buildToggleHtml() {
+  const temSint = _temSimplificado();
+  const temProf = _temProfessor();
+
+  // Nenhum extra → sem toggle
+  if (!temSint && !temProf) return '';
+
+  const btnCompleto = `<button class="mode-btn${State.modo === 'completo' ? ' mode-btn--active' : ''}" data-modo="completo">Resumo completo</button>`;
+
+  let btnExtra = '';
+  if (temSint) {
+    btnExtra += `<button class="mode-btn${State.modo === 'sintese' ? ' mode-btn--active' : ''}" data-modo="sintese">Síntese rápida</button>`;
+  }
+  if (temProf) {
+    btnExtra += `<button class="mode-btn${State.modo === 'professor' ? ' mode-btn--active' : ''}" data-modo="professor">Professor</button>`;
+  }
+
+  return `<div class="mode-toggle" id="mode-toggle">${btnCompleto}${btnExtra}</div>`;
+}
+
 function _setModo(modo) {
   if (State.modo === modo) return;
   State.modo = modo;
@@ -243,10 +269,8 @@ function _setModo(modo) {
     btn.classList.toggle('mode-btn--active', btn.dataset.modo === modo);
   });
 
-  if (State.aulas.length > 0) {
-    _renderCards(State.aulas);
-    _mostrarEstado('grid');
-  }
+  _renderGrid();
+  _mostrarEstado('grid');
 }
 
 /* ══════════════════════════════════════════════
@@ -277,22 +301,13 @@ function _renderHeroStats(total) {
   const disc = State.disciplina;
   if (!c) return;
 
-  const toggleHtml = total > 0 ? `
-    <div class="mode-toggle" id="mode-toggle">
-      <button class="mode-btn${State.modo === 'completo' ? ' mode-btn--active' : ''}" data-modo="completo">
-        Resumo completo
-      </button>
-      <button class="mode-btn${State.modo === 'sintese' ? ' mode-btn--active' : ''}" data-modo="sintese">
-        Síntese rápida
-      </button>
-    </div>
-  ` : '';
+  const toggleHtml = total > 0 ? _buildToggleHtml() : '';
 
   c.innerHTML = disc
     ? `<div class="stat-pill">${disc.emoji} ${disc.nome}</div>${toggleHtml}`
     : '';
 
-  if (total > 0) {
+  if (total > 0 && toggleHtml) {
     document.getElementById('mode-toggle')?.addEventListener('click', e => {
       const btn = e.target.closest('[data-modo]');
       if (!btn) return;
@@ -306,13 +321,23 @@ function _renderHeroStats(total) {
 }
 
 /* ══════════════════════════════════════════════
-   CARDS
+   GRID — renderiza conforme o modo atual
 ══════════════════════════════════════════════ */
-function _renderCards(aulas) {
+function _renderGrid() {
   const grid = document.getElementById('resumos-grid');
   if (!grid) return;
   grid.innerHTML = '';
-  aulas.forEach((aula, idx) => {
+
+  if (State.modo === 'professor') {
+    // Modo professor: 1 card único
+    if (State.professor.length) {
+      grid.appendChild(_criarCardProfessor(State.professor[0]));
+    }
+    return;
+  }
+
+  // Modos completo e sintese: cards por aula
+  State.aulas.forEach((aula, idx) => {
     const card = State.modo === 'sintese'
       ? _criarCardSintese(aula, idx)
       : _criarCard(aula, idx);
@@ -320,12 +345,16 @@ function _renderCards(aulas) {
   });
 }
 
-/* ── Card original (modo completo) ── */
+/* ══════════════════════════════════════════════
+   CARDS
+══════════════════════════════════════════════ */
+
+/* ── Card modo completo ── */
 function _criarCard(aula, idx) {
   const secoes = aula.secoes ?? [];
 
   const aulaStr    = _esc(aula.aula ?? '');
-  const aulaMatch  = aulaStr.match(/^(Aula\s*\d+)\s*[—–-]\s*(.+)$/i);
+  const aulaMatch  = aulaStr.match(/^(Aula\s*[\d\/]+)\s*[—–-]\s*(.+)$/i);
   const aulaNum    = aulaMatch ? aulaMatch[1] : aulaStr;
   const aulaTitulo = aulaMatch ? aulaMatch[2] : '';
 
@@ -362,7 +391,6 @@ function _criarCard(aula, idx) {
     </div>
   `;
 
-  // Modo completo: sempre abre o conteúdo completo da aula
   card.addEventListener('click', () => _abrirModal(aula));
   card.addEventListener('keydown', e => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _abrirModal(aula); }
@@ -371,35 +399,18 @@ function _criarCard(aula, idx) {
   return card;
 }
 
-/* ── Card de síntese (modo síntese) ── */
+/* ── Card modo síntese ── */
 function _criarCardSintese(aula, idx) {
   const aulaStr    = _esc(aula.aula ?? '');
-  const aulaMatch  = aulaStr.match(/^(Aula\s*\d+)\s*[—–-]\s*(.+)$/i);
+  const aulaMatch  = aulaStr.match(/^(Aula\s*[\d\/]+)\s*[—–-]\s*(.+)$/i);
   const aulaNum    = aulaMatch ? aulaMatch[1] : aulaStr;
   const aulaTitulo = aulaMatch ? aulaMatch[2] : '';
 
-  // Lê do array paralelo simplificado[] pelo mesmo índice
+  // ← pega o simplificado pelo mesmo índice
   const sint = State.simplificado[idx] ?? null;
-
-  // Suporta dois formatos:
-  //   Formato A (legado): { pontos: string[] }
-  //   Formato B (atual):  { aula, secoes: [{ blocos: [{ tipo:'lista', itens:[] }] }] }
-  let pontos = [];
-  if (sint) {
-    if (Array.isArray(sint.pontos) && sint.pontos.length > 0) {
-      pontos = sint.pontos;
-    } else if (Array.isArray(sint.secoes)) {
-      for (const sec of sint.secoes) {
-        for (const bloco of (sec.blocos ?? [])) {
-          if (bloco.tipo === 'lista' && Array.isArray(bloco.itens)) {
-            pontos = pontos.concat(bloco.itens);
-          }
-        }
-      }
-    }
-  }
-
-  const temSintese = pontos.length > 0;
+  const temSintese = !!(sint && (sint.ideia_central || (sint.secoes ?? []).length > 0));
+  const preview    = sint?.ideia_central ?? null;
+  const numSecoes  = (sint?.secoes ?? []).length;
 
   const card = document.createElement('article');
   card.className = 'resumo-card resumo-card--nota resumo-card--sintese';
@@ -407,19 +418,6 @@ function _criarCardSintese(aula, idx) {
   card.setAttribute('tabindex', '0');
   card.setAttribute('role', 'button');
   card.setAttribute('aria-label', `Síntese: ${aula.aula}`);
-
-  const listaHtml = temSintese
-    ? `<ul class="sint-list">
-        ${pontos.map(p => `<li><span>${_parseInline(p)}</span></li>`).join('')}
-      </ul>`
-    : `<div class="sint-vazio">
-        <span class="sint-vazio__icon">📋</span>
-        <p class="sint-vazio__msg">Síntese não disponível ainda.</p>
-        <div class="coming-soon-pill">
-          <span class="coming-soon-dot"></span>
-          Em desenvolvimento
-        </div>
-      </div>`;
 
   card.innerHTML = `
     <div class="card-inner">
@@ -429,10 +427,18 @@ function _criarCardSintese(aula, idx) {
       </div>
       <div class="card-title">${aulaTitulo || aulaStr}</div>
       <div class="card-divider"></div>
-      ${listaHtml}
+      ${preview
+        ? `<p class="card-desc">${_parseInline(preview)}</p>`
+        : `<p class="card-desc" style="font-style:italic;opacity:0.55">Síntese não disponível ainda.</p>`
+      }
       <div class="card-bottom">
+        <div class="card-progress__track">
+          <div class="card-progress__fill"></div>
+        </div>
         <div class="card-meta">
-          <span class="card-meta__count">${temSintese ? `${pontos.length} ponto${pontos.length !== 1 ? 's' : ''}` : '—'}</span>
+          <span class="card-meta__count">
+            ${temSintese ? `${numSecoes} seç${numSecoes !== 1 ? 'ões' : 'ão'}` : '—'}
+          </span>
           ${temSintese ? `
           <span class="card-meta__cta">
             Ver síntese
@@ -446,17 +452,55 @@ function _criarCardSintese(aula, idx) {
     </div>
   `;
 
-  // Modo síntese: só abre modal se tiver síntese disponível
-  card.addEventListener('click', () => {
-    if (!temSintese) return;
-    _abrirModal(sint);
-  });
+  // ← abre o modal com sint (simplificado[idx]), não com aula
+  card.addEventListener('click', () => { if (temSintese) _abrirModal(sint); });
   card.addEventListener('keydown', e => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      if (!temSintese) return;
-      _abrirModal(sint);
-    }
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (temSintese) _abrirModal(sint); }
+  });
+
+  return card;
+}
+
+/* ── Card único do professor ── */
+function _criarCardProfessor(prof) {
+  const secoes = prof.secoes ?? [];
+
+  const card = document.createElement('article');
+  card.className = 'resumo-card resumo-card--nota';
+  card.style.animationDelay = '0s';
+  card.setAttribute('tabindex', '0');
+  card.setAttribute('role', 'button');
+  card.setAttribute('aria-label', 'Abrir: Resumo do Professor');
+
+  card.innerHTML = `
+    <div class="card-inner">
+      <div class="card-num">📋 Professor</div>
+      <div class="card-title">${_esc(prof.aula ?? 'Resumo do Professor')}</div>
+      <div class="card-divider"></div>
+      ${prof.ideia_central
+        ? `<p class="card-desc">${_parseInline(prof.ideia_central)}</p>`
+        : ''}
+      <div class="card-bottom">
+        <div class="card-progress__track">
+          <div class="card-progress__fill"></div>
+        </div>
+        <div class="card-meta">
+          <span class="card-meta__count">${secoes.length} seç${secoes.length !== 1 ? 'ões' : 'ão'}</span>
+          <span class="card-meta__cta">
+            Ver resumo
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
+            </svg>
+          </span>
+        </div>
+      </div>
+    </div>
+  `;
+
+  card.addEventListener('click', () => _abrirModal(prof));
+  card.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _abrirModal(prof); }
   });
 
   return card;
@@ -666,6 +710,7 @@ function _trocarDisciplina(disc) {
   State.temConteudo  = null;
   State.aulas        = [];
   State.simplificado = [];
+  State.professor    = [];
   State.modo         = 'completo';
   setDisciplina(disc.id);
 

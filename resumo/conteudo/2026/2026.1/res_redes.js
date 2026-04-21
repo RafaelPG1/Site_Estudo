@@ -951,5 +951,265 @@ window.__nexusConteudo = {
       ]
     }
 
+  ],
+
+professor: [
+    {
+      aula: "Resumo do Professor",
+      ideia_central: "Conexões essenciais entre os conceitos de redes — nível prova.",
+      secoes: [
+
+        {
+          id: "modelos-conceitos",
+          titulo: "1️⃣ Modelos e Conceitos Gerais",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "🔹 Protocolos (visão aprofundada)",
+              lista: [
+                "Protocolos definem 3 pilares: **Sintaxe** → formato dos dados · **Semântica** → significado dos campos · **Temporização** → ordem e controle de envio",
+                "No `TCP`: numeração de sequência · confirmação (`ACK`) · controle de fluxo",
+                "**Insight prova**: dois dispositivos podem estar conectados fisicamente e ainda assim não se comunicar se não compartilharem o mesmo protocolo"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Encapsulamento (nível detalhado)",
+              lista: [
+                "Cada camada adiciona **Header** (cabeçalho) → controle · e às vezes **Trailer** → verificação de erro",
+                "**Aplicação** → Dados · **Transporte** → [TCP/UDP + porta] · **Rede** → [IP origem/destino] · **Enlace** → [MAC origem/destino + FCS] · **Física** → Bits",
+                "**Detalhe prova**: o endereço **IP muda a cada rede** · o **MAC muda a cada salto** (hop)"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 PDU por camada",
+              lista: [
+                "**Física** → Bits → Sinal elétrico/luz",
+                "**Enlace** → Frame → Comunicação local",
+                "**Rede** → Pacote → Roteamento",
+                "**Transporte** → Segmento → Controle fim a fim",
+                "**Pegadinha**: UDP também usa 'datagrama' · `TCP` ≠ `UDP` (confiabilidade vs velocidade)"
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "endereçamento",
+          titulo: "2️⃣ Endereçamento",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "🔹 IPv4 vs IPv6",
+              lista: [
+                "**IPv4**: escassez de IPs · usa **NAT** → vários dispositivos compartilham 1 IP público (muito usado em roteadores domésticos)",
+                "**IPv6**: elimina NAT · melhor desempenho em roteamento · suporte nativo a segurança (`IPsec`)",
+                "**IPv4** → Decimal · Broadcast · NAT necessário",
+                "**IPv6** → Hexadecimal · Multicast · NAT desnecessário"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 IP vs MAC",
+              lista: [
+                "**IP** → Lógico, mutável → **localização** (onde está)",
+                "**MAC** → Físico, fixo → **identidade** (quem é)"
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "arquiteturas",
+          titulo: "3️⃣ Arquiteturas de Rede",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "🔹 Cliente-Servidor",
+              lista: [
+                "**Centralização** → controle maior · escalabilidade limitada",
+                "Problema: **ponto único de falha**"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 P2P (nível avançado)",
+              lista: [
+                "Cada nó **contribui com recursos** — quanto mais usuários → mais rápido (ex: torrent)",
+                "Problemas: **segurança** e **controle de dados**"
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "comutacao",
+          titulo: "4️⃣ Comutação",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "🔹 Pacotes (Internet)",
+              lista: [
+                "Não há caminho fixo — roteadores **decidem dinamicamente**",
+                "Pode ter: **atraso · perda · desordem**",
+                "Solução: `TCP` reorganiza os dados"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Circuito",
+              lista: [
+                "3 fases: **Estabelecimento → Transmissão → Encerramento**",
+                "**Latência inicial alta** → depois fluxo contínuo"
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "metricas",
+          titulo: "5️⃣ Métricas (ESSENCIAL PRA PROVA)",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "🔹 Latência (Delay)",
+              lista: [
+                "Tempo total composto por: **processamento · fila · transmissão · propagação**"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Jitter",
+              lista: [
+                "**Jitter** = variação da latência",
+                "Afeta: chamadas e vídeos"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Bandwidth vs Throughput",
+              lista: [
+                "**Throughput = Bandwidth – perdas**",
+                "Perdas causadas por: congestionamento · erro · retransmissão"
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "dispositivos",
+          titulo: "6️⃣ Dispositivos de Rede",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "🔹 Switch",
+              lista: [
+                "Tabela **MAC (CAM Table)** — aprende automaticamente",
+                "Inteligente: envia **só para o destino correto**"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Roteador",
+              lista: [
+                "Usa **tabela de roteamento** — escolhe melhor caminho",
+                "Pode usar: `RIP` · `OSPF` · `BGP` (Internet)"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Extras importantes",
+              lista: [
+                "**Hub** → obsoleto, gera colisão",
+                "**AP (Wi-Fi)** → conecta rede sem fio",
+                "**Firewall** → segurança",
+                "**Gateway** → traduz redes diferentes"
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "transmissao-topologias",
+          titulo: "7️⃣ Modos de Transmissão e Topologias",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "🔹 Modos de Transmissão",
+              lista: [
+                "**Simplex** → TV",
+                "**Half-Duplex** → Rádio",
+                "**Full-Duplex** → Internet moderna"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Topologias",
+              lista: [
+                "**Estrela** (mais usada) → fácil manutenção · depende do switch",
+                "**Malha (Mesh)** → alta confiabilidade · usada em backbone e redes críticas"
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "meios-transmissao",
+          titulo: "8️⃣ Meios de Transmissão",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "🔹 Guiados",
+              lista: [
+                "**Par trançado** → barato",
+                "**Coaxial** → TV",
+                "**Fibra** → alta performance"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Fibra Óptica",
+              lista: [
+                "**Monomodo** → longa distância · **Multimodo** → curta distância",
+                "Não sofre interferência · altíssima velocidade"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Não Guiados",
+              lista: [
+                "Exemplos: **Wi-Fi · Bluetooth · Satélite**",
+                "Problemas: interferência · segurança"
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "conexoes-macete",
+          titulo: "🔗 Conexões Importantes + Macete Final",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "🔹 Conexões para prova",
+              lista: [
+                "**Encapsulamento** → permite comunicação entre camadas",
+                "`TCP` → resolve problemas da comutação de pacotes",
+                "**IPv6** → resolve limitação do IPv4",
+                "**Switch (MAC) + Roteador (IP)** → funcionamento da internet",
+                "**Jitter + Latência** → qualidade de rede"
+              ]
+            },
+            {
+              tipo: "destaque",
+              texto: "📌 **MAC** → local (LAN) · **IP** → global (Internet) · **`TCP`** → confiável · **`UDP`** → rápido · **Fibra** → melhor meio · **Pacotes** → Internet"
+            }
+          ]
+        }
+
+      ]
+    }
   ]
+
 };
