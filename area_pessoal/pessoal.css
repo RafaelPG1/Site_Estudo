@@ -525,8 +525,8 @@ a { text-decoration: none; color: inherit; }
   color: var(--text-3);
 }
 .checklist-progress-bar__count {
-  font-family: var(--font-display);
-  font-size: 1.1rem;
+  font-family: var(--font-body);
+  font-size:  0.8rem;
   font-weight: 700;
   color: var(--disc-tema);
   transition: color 0.4s;
@@ -1209,8 +1209,8 @@ a { text-decoration: none; color: inherit; }
   color: var(--text-3);
 }
 .cl-progress__count {
-  font-family: var(--font-display);
-  font-size: 1.1rem;
+  font-family: var(--font-body);
+  font-size: 0.7rem;
   font-weight: 700;
   color: var(--disc-tema);
   transition: color 0.4s;
@@ -1325,4 +1325,91 @@ a { text-decoration: none; color: inherit; }
 }
 .cl-empty strong {
   color: var(--disc-tema);
+}
+
+
+/* =============================================
+   Adicione este bloco ao final do pessoal.css
+   disc-badge no header + semestre na sidebar
+   ============================================= */
+
+/* ══════════════════════════════════════════
+   HEADER__RIGHT — disc-badge (igual resumo)
+══════════════════════════════════════════ */
+.header__right {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 320px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.disc-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.5rem 0.9rem;
+  border-radius: 99px;
+  white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1;
+  border: 1px solid rgba(var(--disc-tema-rgb), 0.25);
+  color: var(--disc-tema);
+  background: rgba(var(--disc-tema-rgb), 0.11);
+  transition: color 0.4s, background 0.4s, border-color 0.4s;
+}
+
+/* ══════════════════════════════════════════
+   SIDEBAR — semestre badge (igual resumo)
+══════════════════════════════════════════ */
+.sidebar__semestre {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #a8a49c;
+  background: rgba(255, 255, 255, 0.04);
+  transition: border-color 0.2s, color 0.2s;
+}
+
+/* ══════════════════════════════════════════
+   SEMESTRE SELECT — mesmo tamanho do resumo
+══════════════════════════════════════════ */
+.semestre-select {
+  appearance: none;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-glow);
+  border-radius: 8px;
+  color: var(--text-2);
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  padding: 0.55rem 2rem 0.55rem 0.85rem;
+  cursor: pointer;
+  outline: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a8a49c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.6rem center;
+  transition: border-color 0.2s, color 0.2s;
+}
+.semestre-select:hover,
+.semestre-select:focus {
+  border-color: rgba(var(--disc-tema-rgb), 0.35);
+  color: var(--text-1);
+}
+.semestre-select option {
+  background: #0e1420;
+  color: var(--text-1);
 }

@@ -46,10 +46,10 @@
       </div>
 
       <div class="header__right">
-        <div class="progress-pill" id="header-progress-pill" style="display:none">
-          <span class="progress-pill__dot"></span>
-          <span id="header-progress-text">0 / 0</span>
+        <div id="semestre-selector-wrap">
+          <!-- JS injeta o <select> aqui -->
         </div>
+        <div class="disc-badge" id="disc-badge" style="display:none"></div>
       </div>
 
     </div>
@@ -154,9 +154,6 @@
         <!-- ═══ ABA: CHECKLIST (pré-definido) ═══ -->
         <div class="tab-panel tab-panel--active" id="panel-checklist" role="tabpanel">
 
-          <!-- Toolbar de disciplina + reset -->
-
-
           <!-- Progresso do checklist -->
           <div class="cl-progress" id="cl-progress">
             <div class="cl-progress__top">
@@ -215,11 +212,9 @@
             </button>
           </div>
 
-
-
           <!-- Listas de tarefas por disciplina -->
           <div id="tasks-container">
-            <!-- JS injeta as seções por disciplina -->
+            <!-- JS injeta -->
           </div>
 
         </div>
@@ -230,10 +225,9 @@
 
           <div class="notes-layout" id="notes-layout">
 
-            <!-- Toolbar: seleção de disciplina + autosave -->
+            <!-- Toolbar: autosave -->
             <div class="notes-toolbar" id="notes-toolbar">
               <span class="notes-toolbar__disc-label">Notas de</span>
-              <!-- JS injeta botões de disciplina -->
               <div class="autosave-indicator" id="autosave-indicator">
                 <span class="autosave-dot" id="autosave-dot"></span>
                 <span id="autosave-text">Sincronizado</span>
