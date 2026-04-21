@@ -1803,6 +1803,529 @@ window.__nexusConteudo = {
       ]
     }
 
-  ]
+  ],
+
+simplificado: [
+{
+aula: "Aula 1 — Introdução a Banco de Dados",
+ideia_central: "Bancos de dados nasceram para substituir o caos do papel por sistemas organizados, seguros e eficientes — e o modelo relacional mudou tudo.",
+secoes: [
+{
+id: "aula1-fundamentos",
+titulo: "📌 Fundamentos e Contexto",
+blocos: [
+{
+tipo: "topico",
+titulo: "🔹 Contexto Histórico e Evolução",
+imagem: { src: "image/imagens_banco_dados/Evolução dos SGBD.png", alt: "Linha do tempo da Evolução dos SGBDs" },
+lista: [
+"Antes dos SGBDs → informações em papel: lenta busca, zero segurança",
+"Marco histórico → artigo de Edgar Frank Codd introduziu o Modelo Relacional",
+"Anos 70 → surgimento do Modelo Relacional e criação da linguagem SQL"
+]
+},
+{
+tipo: "topico",
+titulo: "🔹 O que é um Banco de Dados?",
+imagem: { src: "image/imagens_banco_dados/Escada da Abstração (Hierarquia).png", alt: "Escada da Abstração — Hierarquia do SGBD" },
+lista: [
+"Banco de Dados → coleção de dados relacionados que representa um aspecto do mundo real",
+"SGBD → ponte entre usuários/aplicações e o banco, garantindo acesso seguro e organizado",
+"Relação com o usuário → nunca falamos direto com o banco, sempre pelo SGBD"
+]
+}
+]
+},
+{
+id: "aula1-operacoes-niveis",
+titulo: "📌 Operações e Níveis de Abstração",
+blocos: [
+{
+tipo: "topico",
+titulo: "🔹 As 4 Operações CRUD",
+lista: [
+"CREATE → INSERT: adicionar dados",
+"READ → SELECT: consultar/buscar informações",
+"UPDATE → UPDATE: atualizar dados",
+"DELETE → DELETE: apagar dados"
+]
+},
+{
+tipo: "topico",
+titulo: "🔹 Os 3 Níveis de Abstração",
+imagem: { src: "image/imagens_banco_dados/3 Níveis de Abstração.png", alt: "Diagrama dos 3 Níveis de Abstração" },
+lista: [
+"Nível Físico → Sistema Operacional gerenciando algoritmos e armazenamento",
+"Nível Lógico → Programador definindo tabelas, produtos e conexões",
+"Nível de Visão → Cliente usando o app, vendo apenas produtos e valores"
+]
+}
+]
+}
+]
+},
+{
+aula: "Aula 2 — SGBD e Arquitetura de 3 Níveis",
+ideia_central: "O SGBD é o guardião dos dados: ele isola, protege e distribui informações para múltiplos usuários através de três níveis bem definidos.",
+secoes: [
+{
+id: "aula2-sgbd",
+titulo: "📌 O SGBD e suas Características",
+blocos: [
+{
+tipo: "topico",
+titulo: "🔹 Definição e Papel do SGBD",
+lista: [
+"SGBD → software guardião dos dados; interface entre banco, aplicações e usuários",
+"Função central → gerencia o que entra, o que sai e o que pode ser acessado"
+]
+},
+{
+tipo: "topico",
+titulo: "🔹 4 Características Fundamentais",
+lista: [
+"Natureza Auto-descritiva → guarda dados e suas descrições (catálogo interno)",
+"Isolamento programa-dados → não é preciso saber onde/como os dados estão no disco",
+"Múltiplas visões → cada usuário vê apenas o que lhe interessa",
+"Compartilhamento Multiusuário → permite milhões de acessos simultâneos"
+]
+},
+{
+tipo: "topico",
+titulo: "🔹 As 4 Peças-chave do SGBD",
+imagem: { src: "image/imagens_banco_dados/O SGBD 4 peças chaves.png", alt: "As 4 peças-chave do SGBD" },
+lista: [
+"Software → o sistema que executa e gerencia tudo",
+"Hardware → infraestrutura física onde os dados são armazenados",
+"Dados → o conteúdo gerenciado pelo sistema",
+"Usuários → quem interage com o sistema (devs, DBAs, usuários finais)",
+"Interdependência → o Software usa o Hardware para gerenciar os Dados para os Usuários — nenhuma peça funciona sem a outra"
+]
+},
+{
+tipo: "topico",
+titulo: "🔹 Tipos de Usuários",
+lista: [
+"Desenvolvedores → escrevem programas que acessam os dados",
+"Usuários Finais → interagem pelo sistema através de aplicações",
+"DBAs → garantem segurança e bom funcionamento do banco"
+]
+}
+]
+},
+{
+id: "aula2-arquitetura",
+titulo: "📌 Arquitetura de 3 Níveis",
+blocos: [
+{
+tipo: "topico",
+titulo: "🔹 Por que 3 Níveis?",
+imagem: { src: "image/imagens_banco_dados/Arquitetura de 3 Níveis.png", alt: "Diagrama da Arquitetura de 3 Níveis" },
+lista: [
+"Objetivo → partes separadas para que o sistema fique flexível e mais fácil de manter"
+]
+},
+{
+tipo: "topico",
+titulo: "🔹 Nível Interno (Físico)",
+imagem: { src: "image/imagens_banco_dados/nivel fisico.png", alt: "Exemplo do Nível Físico" },
+lista: [
+"Foco → máxima eficiência no armazenamento",
+"Detalhe → descreve como os dados estão fisicamente no disco (byte a byte)"
+]
+},
+{
+tipo: "topico",
+titulo: "🔹 Nível Conceitual",
+imagem: { src: "image/imagens_banco_dados/Nível Conceitual.png", alt: "Exemplo do Nível Conceitual" },
+lista: [
+"Analogia → mapa do tesouro: mostra o que existe, não onde cada detalhe está",
+"Público → visão principal de DBAs e Devs"
+]
+},
+{
+tipo: "topico",
+titulo: "🔹 Nível Externo (Visão)",
+imagem: { src: "image/imagens_banco_dados/Nível Externo.png", alt: "Exemplo do Nível Externo" },
+lista: [
+"Definição → janela personalizada que mostra apenas o necessário para cada usuário",
+"Foco → o mais próximo do dia a dia de quem usa o sistema"
+]
+}
+]
+}
+]
+},
+{
+aula: "Aula 3 — Esquema, Estado e Propriedades ACID",
+ideia_central: "As propriedades ACID são a garantia de que cada transação leva o banco de um estado válido a outro, sem perdas, erros ou interferências.",
+secoes: [
+{
+id: "aula3-esquema-transacao",
+titulo: "📌 Esquema, Estado e Transação",
+blocos: [
+{
+tipo: "topico",
+titulo: "🔹 Conceitos Base",
+imagem: { src: "image/imagens_banco_dados/Transação.png", alt: "Diagrama de Transação entre estados" },
+lista: [
+"Esquema (Projeto) → define que tipos de informação podem ser guardados",
+"Estado (Realidade) → são os dados reais, que mudam a cada instante",
+"Transação → pacote de ações que leva o banco de um estado válido a outro estado válido",
+"Papel da transação → é a ponte segura entre um estado e outro"
+]
+}
+]
+},
+{
+id: "aula3-acid",
+titulo: "📌 Propriedades ACID",
+blocos: [
+{
+tipo: "topico",
+titulo: "🔹 A — Atomicidade",
+imagem: { src: "image/imagens_banco_dados/Atomicidade.png", alt: "Ilustração da Atomicidade" },
+lista: [
+"Regra → a transação é tudo ou nada: ou executa por completo ou não executa",
+"Exemplo → servidor cai durante Pix → dinheiro retorna à conta de origem"
+]
+},
+{
+tipo: "topico",
+titulo: "🔹 C — Consistência",
+imagem: { src: "image/imagens_banco_dados/Consistência.png", alt: "Ilustração da Consistência" },
+lista: [
+"Regra → transações só movem o banco entre estados que obedecem todas as regras definidas",
+"Exemplo → saldo negativo é impossível: qualquer transação que quebre a regra é rejeitada automaticamente"
+]
+},
+{
+tipo: "topico",
+titulo: "🔹 I — Isolamento",
+lista: [
+"Regra → cada transação age como se tivesse o banco de dados só para ela, sem interferência",
+"Exemplo → relatório gerado durante uma transferência só enxerga o estado antes ou depois, nunca o meio"
+]
+},
+{
+tipo: "topico",
+titulo: "🔹 D — Durabilidade",
+lista: [
+"Regra → após confirmada, a transação é permanente mesmo com falhas do sistema",
+"Exemplo → comprovante do Pix é a durabilidade visível: pode confiar que a ação foi concluída"
+]
+}
+]
+}
+]
+},
+{
+aula: "Aula 4 — Arquiteturas de Banco de Dados",
+ideia_central: "A arquitetura dos bancos evoluiu do mainframe centralizado até a nuvem, sempre guiada pela necessidade de escala, segurança e resiliência.",
+secoes: [
+{
+id: "aula4-arquiteturas",
+titulo: "📌 Evolução das Arquiteturas",
+blocos: [
+{
+tipo: "topico",
+titulo: "🔹 Arquitetura Centralizada",
+lista: [
+"Mainframe → única máquina central que executava tudo: dados, programas e interfaces",
+"Terminais Burros → apenas tela e teclado, zero processamento próprio",
+"Ponto fraco → se o mainframe parava, tudo parava junto"
+]
+},
+{
+tipo: "topico",
+titulo: "🔹 Arquitetura Cliente-Servidor",
+imagem: { src: "image/imagens_banco_dados/Arquitetura Cliente-Servidor.png", alt: "Diagrama da Arquitetura Cliente-Servidor" },
+lista: [
+"Evolução → cliente deixa de ser terminal passivo e passa a ter papel ativo (interface + lógica local)",
+"Gargalo → internet trouxe milhões de acessos simultâneos, criando risco de segurança e escalabilidade",
+"Solução → Servidor de Aplicação como porteiro entre cliente e banco, aplicando regras de negócio",
+"Resultado → separação de interface, lógica e dados: seguro, organizado e escalável"
+]
+},
+{
+tipo: "topico",
+titulo: "🔹 Arquitetura Distribuída",
+lista: [
+"Conceito → banco quebrado e espalhado por vários servidores/nós",
+"Fragmentação → fatiamento dos dados para distribuir",
+"Replicação → cópias para segurança e acesso rápido",
+"Transparência → o sistema esconde a complexidade; parece um banco único para o usuário",
+"Origem da Cloud → manter infraestrutura própria era caro e inflexível, levando ao modelo de aluguel de poder computacional"
+]
+},
+{
+tipo: "topico",
+titulo: "🔹 DBaaS (Database as a Service)",
+lista: [
+"Conceito → banco de dados como serviço assinado na nuvem",
+"Benefício → provedor cuida de backup, atualizações e infraestrutura",
+"Impacto → qualquer empresa escala operações com custo baixo"
+]
+}
+]
+}
+]
+},
+{
+aula: "Aula 5 — Modelagem de Dados e Diagramas",
+ideia_central: "Modelagem de dados é o planejamento que acontece antes do código: definir entidades, atributos, relacionamentos e cardinalidade evita o caos nos sistemas.",
+secoes: [
+{
+id: "aula5-modelagem",
+titulo: "📌 Conceitos de Modelagem ER",
+blocos: [
+{
+tipo: "topico",
+titulo: "🔹 Modelagem de Dados",
+lista: [
+"Definição → fase de planejamento que ocorre antes de qualquer linha de código",
+"Analogia → planta baixa de uma obra: sem ela, o sistema vira caos"
+]
+},
+{
+tipo: "topico",
+titulo: "🔹 Entidade",
+imagem: { src: "image/imagens_banco_dados/Entidade.png", alt: "Exemplo de Entidade no Diagrama ER" },
+lista: [
+"Definição → substantivo principal do sistema; qualquer coisa do mundo real sobre a qual guardamos informações",
+"Pode ser → algo concreto (Aluno, Produto) ou abstrato (Matrícula, Pedido)"
+]
+},
+{
+tipo: "topico",
+titulo: "🔹 Atributos",
+lista: [
+"Definição → adjetivos que descrevem a entidade (ex: Aluno → Nome, Matrícula, Idade)",
+"Simples → valor único e indivisível (ex: nome de uma pessoa)",
+"Composto → pode ser quebrado em partes menores (ex: endereço → cidade, número)",
+"Multivalorado → vários valores para o mesmo atributo (ex: telefones de contato)"
+]
+},
+{
+tipo: "topico",
+titulo: "🔹 Relacionamentos",
+imagem: { src: "image/imagens_banco_dados/Relacionamentos.png", alt: "Exemplo de Relacionamentos no Diagrama ER" },
+lista: [
+"Relacionamentos → verbos que conectam entidades, mostrando como se associam no mundo real"
+]
+},
+{
+tipo: "topico",
+titulo: "🔹 Cardinalidade",
+imagem: { src: "image/imagens_banco_dados/Cardinalidade.png", alt: "Exemplos de Cardinalidade" },
+lista: [
+"Cardinalidade → define o mínimo e máximo de ocorrências que uma entidade pode ter com outra"
+]
+}
+]
+}
+]
+},
+{
+aula: "Aula 6 — Modelo Relacional",
+ideia_central: "O Modelo Relacional organiza dados em tabelas interligadas por chaves, garantindo identidade única e integridade referencial em todo o sistema.",
+secoes: [
+{
+id: "aula6-estrutura",
+titulo: "📌 Estrutura do Modelo Relacional",
+blocos: [
+{
+tipo: "topico",
+titulo: "🔹 O que é o Modelo Relacional?",
+lista: [
+"Definição → conjunto de regras que funciona como a espinha dorsal da maioria das tecnologias atuais",
+"Analogia → planta baixa de uma casa: tudo planejado, detalhado e estruturado antes de construir",
+"Visão → banco de dados visto como uma coleção de relações"
+]
+},
+{
+tipo: "topico",
+titulo: "🔹 3 Componentes Fundamentais",
+imagem: { src: "image/imagens_banco_dados/Teoria.png", alt: "Teoria do Modelo Relacional — Tabela, Atributos e Tuplas" },
+lista: [
+"Relação (Tabela) → estrutura principal que organiza dados em linhas e colunas",
+"Atributos (Colunas) → cabeçalhos que descrevem cada característica do dado (Nome, CPF, Idade)",
+"Tupla (Linha/Registro) → conjunto completo de informações de uma ocorrência (ex: um cliente inteiro)"
+]
+},
+{
+tipo: "topico",
+titulo: "🔹 Chave Primária (Primary Key)",
+lista: [
+"Definição → identificador único de cada linha, como um RG do registro",
+"Regra → nunca pode ser nula/vazia: sem identidade, não há confiabilidade",
+"Integridade de Identidade → garante que cada registro seja inconfundível"
+]
+},
+{
+tipo: "topico",
+titulo: "🔹 Chave Estrangeira (Foreign Key)",
+imagem: { src: "image/imagens_banco_dados/Conectando Tabelas.png", alt: "Exemplo de Chave Estrangeira conectando tabelas" },
+lista: [
+"Definição → campo que aponta para a chave primária de outra tabela, criando uma ponte lógica segura",
+"Integridade Referencial → impede links quebrados: não existe matrícula de aluno inexistente",
+"Dados Órfãos → a FK previne registros que referenciam algo que não existe mais no sistema"
+]
+}
+]
+},
+{
+id: "aula6-codd",
+titulo: "📌 As 12 Regras de Edgar Codd",
+blocos: [
+{
+tipo: "topico",
+titulo: "🔹 Visão Geral",
+lista: [
+"Propósito → constituição que define o que um banco precisa cumprir para ser verdadeiramente Relacional",
+"Regra 1 → toda informação deve estar em tabela",
+"Regra 2 → cada dado deve ser encontrado de forma única e sem ambiguidade",
+"Regra 3 → deve existir um padrão para tratar informações ausentes (nulos)",
+"Regra 10 → regras de integridade são garantidas pelo BD, não pelo app que o acessa",
+"Essência → não é só tabela: é estrutura lógica + conjunto rigoroso de regras transformando dados em uma fortaleza segura"
+]
+}
+]
+}
+]
+},
+{
+aula: "Aula 7 — Diagrama EER",
+ideia_central: "O EER expande o ER com herança, agregação e entidades associativas para modelar a complexidade do mundo real com muito mais fidelidade.",
+secoes: [
+{
+id: "aula7-eer",
+titulo: "📌 Conceitos do EER",
+blocos: [
+{
+tipo: "topico",
+titulo: "🔹 EER — Definição",
+lista: [
+"EER (Enhanced ER) → evolução do ER para modelos mais ricos e fiéis à realidade do negócio"
+]
+},
+{
+tipo: "topico",
+titulo: "🔹 Generalização e Especialização (Herança)",
+imagem: { src: "image/imagens_banco_dados/Especialização.png", alt: "Diagrama de Especialização e Generalização no EER" },
+lista: [
+"Generalização → subir na hierarquia: agrupar entidades com atributos comuns em uma superclasse",
+"Especialização → descer na hierarquia: criar subclasses que herdam da superclasse e adicionam próprios atributos",
+"Relação com POO → conceitos similares à herança em Programação Orientada a Objetos",
+"Analogia → Carro, Caminhão e Moto são todos Veículo (herdam chassi e ano); cada um tem atributos únicos (portas, carga)"
+]
+},
+{
+tipo: "topico",
+titulo: "🔹 Agregação",
+imagem: { src: "image/imagens_banco_dados/Agregação.png", alt: "Diagrama de Agregação no EER" },
+lista: [
+"Definição → trata um relacionamento inteiro como se fosse uma entidade, permitindo que ele se relacione com outra entidade",
+"Quando usar → quando uma relação inteira (não só suas partes) precisa participar de outra relação",
+"Exemplo → Supervisor supervisiona a alocação 'Funcionário trabalha em Projeto', não cada parte isolada"
+]
+},
+{
+tipo: "topico",
+titulo: "🔹 Entidades Associativas",
+imagem: { src: "image/imagens_banco_dados/Associação.png", alt: "Exemplo de Entidade Associativa no EER" },
+lista: [
+"Definição → entidade criada para guardar atributos que pertencem a um relacionamento, não a uma entidade isolada",
+"Quando usar → quando a relação em si possui informações próprias",
+"Exemplo → Inscrição (Aluno ↔ Disciplina) guarda 'data de inscrição' e 'nota final'"
+]
+}
+]
+},
+{
+id: "aula7-objetivo",
+titulo: "📌 Objetivo do EER",
+blocos: [
+{
+tipo: "topico",
+titulo: "🔹 Por que usar o EER?",
+imagem: { src: "image/imagens_banco_dados/Sobre o Diagrama Completo.png", alt: "Diagrama EER Completo" },
+lista: [
+"Propósito → gerenciar a complexidade do mundo real com ferramentas mais expressivas",
+"Resultado → espelho muito mais fiel da realidade, gerando sistemas mais robustos, precisos e fáceis de manter"
+]
+}
+]
+}
+]
+},
+{
+aula: "Aula 8 — Introdução ao SQL",
+ideia_central: "SQL é a linguagem declarativa universal dos bancos relacionais, dividida em 5 sublinguagens que cobrem desde a estrutura até o controle de acesso.",
+secoes: [
+{
+id: "aula8-sql-sublinguagens",
+titulo: "📌 SQL e suas Sublinguagens",
+blocos: [
+{
+tipo: "topico",
+titulo: "🔹 O que é SQL?",
+lista: [
+"SQL → linguagem universal dos bancos relacionais: damos ordens e fazemos perguntas ao banco",
+"Declarativa → declaramos o que queremos, não como chegar lá; o banco resolve o caminho"
+]
+},
+{
+tipo: "topico",
+titulo: "🔹 As 5 Sublinguagens",
+imagem: { src: "image/imagens_banco_dados/As Cinco Sublinguagens.png", alt: "As 5 Sublinguagens do SQL" },
+lista: [
+"DDL (Data Definition Language) → mexe na estrutura: CREATE, DROP, ALTER — mudanças permanentes",
+"DML (Data Manipulation Language) → mexe no conteúdo: INSERT, UPDATE, DELETE, SELECT — pode ser desfeito",
+"DCL (Data Control Language) → controla permissões de acesso",
+"TCL (Transaction Control Language) → gerencia transações (commit, rollback)",
+"DQL (Data Query Language) → consulta e busca dados"
+]
+}
+]
+},
+{
+id: "aula8-pratica",
+titulo: "📌 DDL, DML e Estrutura Prática",
+blocos: [
+{
+tipo: "topico",
+titulo: "🔹 DDL — Estrutura",
+imagem: { src: "image/imagens_banco_dados/DDL (Data Definition Language).png", alt: "Exemplos de comandos DDL" },
+lista: [
+"DDL → arquiteto: mexe nas paredes e cômodos (estrutura) — mudanças permanentes e irreversíveis",
+"Comandos → CREATE, DROP, ALTER"
+]
+},
+{
+tipo: "topico",
+titulo: "🔹 DML — Conteúdo",
+imagem: { src: "image/imagens_banco_dados/DML (Data Manipulation Language).png", alt: "Exemplos de comandos DML" },
+lista: [
+"DML → decorador: move móveis e troca quadros (conteúdo) — mudanças podem ser desfeitas",
+"Comandos → INSERT, UPDATE, DELETE, SELECT"
+]
+},
+{
+tipo: "topico",
+titulo: "🔹 Tipos de Dados e Estrutura de BD",
+imagem: { src: "image/imagens_banco_dados/Tipos de Dados.png", alt: "Tipos de Dados no SQL" },
+lista: [
+"Tipos de Dados → cada coluna tem um tipo específico, evitando que uma data apareça no lugar de um nome",
+"Tabela → como uma aba de planilha: cada linha é um registro completo, cada coluna é um pedaço da informação",
+"Chave Primária → CPF de cada linha: código único que identifica cada registro sem ambiguidade",
+"Importância → permite encontrar um cliente específico entre milhões com total precisão"
+]
+}
+]
+}
+]
+}
+]
   
 };

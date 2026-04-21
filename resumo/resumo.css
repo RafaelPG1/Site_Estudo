@@ -1220,3 +1220,26 @@ pre {
     padding: 0.25rem 0.7rem;
   }
 }
+
+.rm-topico__img {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  margin: 0.6rem 0 0.75rem;
+  display: block;
+  object-fit: contain;
+}
+
+.rm-topico__fig {
+  margin: 0.6rem 0 0.75rem;
+}
+
+.rm-topico__fig-caption {
+  font-size: 0.71rem;
+  color: var(--text-3);
+  text-align: center;
+  margin-top: 0.4rem;
+  font-style: italic;
+  letter-spacing: 0.03em;
+  line-height: 1.5;
+}

@@ -583,15 +583,23 @@ function _bindModalTabs() {
 function _renderBloco(b) {
   switch (b.tipo) {
 
-    case 'topico': {
-      let html = `<div class="rm-topico">`;
-      html += `<div class="rm-topico__titulo">${_parseInline(b.titulo ?? '')}</div>`;
-      if (b.texto)  html += `<p class="rm-topico__texto">${_parseInline(b.texto)}</p>`;
-      if (b.lista)  html += `<ul class="rm-lista">${b.lista.map(i => `<li><span>${_parseInline(i)}</span></li>`).join('')}</ul>`;
-      if (b.codigo) html += `<pre class="rm-codigo"><code>${_esc(b.codigo)}</code></pre>`;
-      html += `</div>`;
-      return html;
-    }
+case 'topico': {
+  const [ano] = (State.semestre ?? '2026.1').split('.');
+  const imgBase = `conteudo/${ano}/${State.semestre}/`;
+
+  let html = `<div class="rm-topico">`;
+  html += `<div class="rm-topico__titulo">${_parseInline(b.titulo ?? '')}</div>`;
+  if (b.texto)  html += `<p class="rm-topico__texto">${_parseInline(b.texto)}</p>`;
+  if (b.imagem) html += `
+  <figure class="rm-topico__fig">
+    <img class="rm-topico__img" src="${_esc(imgBase + b.imagem.src)}" alt="${_esc(b.imagem.alt)}" loading="lazy" />
+    <figcaption class="rm-topico__fig-caption">${_esc(b.imagem.alt)}</figcaption>
+  </figure>`;
+  if (b.lista)  html += `<ul class="rm-lista">${b.lista.map(i => `<li><span>${_parseInline(i)}</span></li>`).join('')}</ul>`;
+  if (b.codigo) html += `<pre class="rm-codigo"><code>${_esc(b.codigo)}</code></pre>`;
+  html += `</div>`;
+  return html;
+}
 
     case 'lista': {
       let html = '';

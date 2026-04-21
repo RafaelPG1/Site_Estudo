@@ -5,7 +5,7 @@
 
 window.__nexusConteudo = {
   aulas: [
-
+ 
     /* ─────────────────────────────────────────
        AULA 01/02
     ───────────────────────────────────────── */
@@ -13,7 +13,7 @@ window.__nexusConteudo = {
       aula: "Aula 01/02 — Introdução a Redes de Computadores",
       ideia_central: "Redes permitem compartilhar dados e recursos entre computadores autônomos interconectados, impactando empresas, pessoas e a sociedade.",
       secoes: [
-
+ 
         {
           id: "visao",
           titulo: "📖 Visão Geral",
@@ -32,12 +32,12 @@ window.__nexusConteudo = {
             }
           ]
         },
-
+ 
         {
           id: "conceitos",
           titulo: "🧠 Conceitos Principais",
           blocos: [
-
+ 
             {
               tipo: "topico",
               titulo: "🔹 Era da Informação",
@@ -47,18 +47,18 @@ window.__nexusConteudo = {
                 "Resultado: surgimento de redes globais e crescimento da indústria da informática"
               ]
             },
-
+ 
             {
               tipo: "topico",
               titulo: "🔹 O que é uma Rede de Computadores?",
               texto: "Conjunto de computadores **autônomos** interconectados por uma tecnologia, capazes de trocar informações. A comunicação pode ocorrer via cabos (cobre), fibra óptica ou ondas eletromagnéticas (Wi-Fi, satélite)."
             },
-
+ 
             {
               tipo: "subtitulo",
               texto: "Redes vs Sistemas Distribuídos"
             },
-
+ 
             {
               tipo: "topico",
               titulo: "📌 Diferença Principal",
@@ -68,12 +68,12 @@ window.__nexusConteudo = {
                 "**Middleware**: software que cria a ilusão de sistema único (obrigatório em sist. distribuídos)"
               ]
             },
-
+ 
             {
               tipo: "subtitulo",
               texto: "Aplicações e Modelos"
             },
-
+ 
             {
               tipo: "topico",
               titulo: "📌 Modelo Cliente-Servidor",
@@ -83,7 +83,7 @@ window.__nexusConteudo = {
                 "Comunicação baseada em requisições · Alta **escalabilidade**"
               ]
             },
-
+ 
             {
               tipo: "topico",
               titulo: "📌 Comunicação Peer-to-Peer (P2P)",
@@ -93,7 +93,7 @@ window.__nexusConteudo = {
                 "Exemplos: BitTorrent, redes sociais"
               ]
             },
-
+ 
             {
               tipo: "topico",
               titulo: "📌 Computação Ubíqua (IoT)",
@@ -104,12 +104,12 @@ window.__nexusConteudo = {
                 "Aplicações: segurança, saúde, monitoramento remoto"
               ]
             },
-
+ 
             {
               tipo: "subtitulo",
               texto: "Classificação por Escala"
             },
-
+ 
             {
               tipo: "topico",
               titulo: "📌 PAN → WAN",
@@ -120,13 +120,13 @@ window.__nexusConteudo = {
                 "**WAN** (países/continentes): roteadores, backbone, sub-redes"
               ]
             },
-
+ 
             {
               tipo: "topico",
               titulo: "🔹 Lei de Metcalfe",
               texto: "O **valor de uma rede** cresce proporcionalmente ao **quadrado do número de usuários** — quanto mais pessoas conectadas, mais valiosa a rede se torna."
             },
-
+ 
             {
               tipo: "topico",
               titulo: "🔹 Questões Sociais e Éticas",
@@ -137,10 +137,10 @@ window.__nexusConteudo = {
                 "**Anonimato vs Responsabilidade** → liberdade vs controle"
               ]
             }
-
+ 
           ]
         },
-
+ 
         {
           id: "metodos",
           titulo: "📊 Métodos e Princípios",
@@ -167,7 +167,7 @@ window.__nexusConteudo = {
             }
           ]
         },
-
+ 
         {
           id: "exemplos",
           titulo: "💡 Exemplos Explicativos",
@@ -198,7 +198,7 @@ window.__nexusConteudo = {
             }
           ]
         },
-
+ 
         {
           id: "resumo",
           titulo: "🧾 Resumo Final para Revisão Rápida",
@@ -221,10 +221,10 @@ window.__nexusConteudo = {
             }
           ]
         }
-
+ 
       ]
     },
-
+ 
     /* ─────────────────────────────────────────
        AULA 03/04
     ───────────────────────────────────────── */
@@ -232,7 +232,7 @@ window.__nexusConteudo = {
       aula: "Aula 03/04 — Meios de Transmissão e Dispositivos de Rede",
       ideia_central: "A camada física é responsável por transmitir bits através de meios guiados (cabos) ou não guiados (sem fio), com diferentes dispositivos para encaminhar e conectar redes.",
       secoes: [
-
+ 
         {
           id: "visao",
           titulo: "📖 Visão Geral",
@@ -251,12 +251,12 @@ window.__nexusConteudo = {
             }
           ]
         },
-
+ 
         {
           id: "conceitos",
           titulo: "🧠 Conceitos Principais",
           blocos: [
-
+ 
             {
               tipo: "topico",
               titulo: "🔹 Camada Física",
@@ -266,12 +266,12 @@ window.__nexusConteudo = {
                 "Elementos: representação digital (níveis de tensão) · interfaces mecânicas · transmissão bruta"
               ]
             },
-
+ 
             {
               tipo: "subtitulo",
               texto: "Meios Guiados (Com Fio)"
             },
-
+ 
             {
               tipo: "topico",
               titulo: "📌 Fio de Cobre",
@@ -282,7 +282,7 @@ window.__nexusConteudo = {
                 "**DSL**: usa linha telefônica para dados de internet"
               ]
             },
-
+ 
             {
               tipo: "topico",
               titulo: "📌 Fibra Óptica",
@@ -293,12 +293,12 @@ window.__nexusConteudo = {
                 "✔ Imune a interferências eletromagnéticas · Baixíssima latência · Alta largura de banda (Mbps → Gbps)"
               ]
             },
-
+ 
             {
               tipo: "subtitulo",
               texto: "Meios Não Guiados (Sem Fio)"
             },
-
+ 
             {
               tipo: "topico",
               titulo: "📌 Rádio e Wi-Fi",
@@ -308,7 +308,7 @@ window.__nexusConteudo = {
                 "✔ Mobilidade e flexibilidade"
               ]
             },
-
+ 
             {
               tipo: "topico",
               titulo: "📌 Satélites de Comunicação",
@@ -318,12 +318,12 @@ window.__nexusConteudo = {
                 "Uso: regiões remotas e redes globais"
               ]
             },
-
+ 
             {
               tipo: "subtitulo",
               texto: "Dispositivos de Rede"
             },
-
+ 
             {
               tipo: "topico",
               titulo: "📌 Modem",
@@ -332,7 +332,7 @@ window.__nexusConteudo = {
                 "**DSL**: usa linha telefônica · **Cabo**: usa rede de TV · **Dial-up**: conexão antiga (até 56 kbps)"
               ]
             },
-
+ 
             {
               tipo: "topico",
               titulo: "📌 Access Point (AP)",
@@ -342,7 +342,7 @@ window.__nexusConteudo = {
                 "Modo **Ad hoc**: P2P direto, sem AP"
               ]
             },
-
+ 
             {
               tipo: "topico",
               titulo: "📌 Switch (Camada 2)",
@@ -351,7 +351,7 @@ window.__nexusConteudo = {
                 "Conexões ponto a ponto · Escalável"
               ]
             },
-
+ 
             {
               tipo: "topico",
               titulo: "📌 Roteador (Camada 3)",
@@ -361,7 +361,7 @@ window.__nexusConteudo = {
                 "Interliga LANs e WANs"
               ]
             },
-
+ 
             {
               tipo: "topico",
               titulo: "📌 Gateway",
@@ -370,12 +370,12 @@ window.__nexusConteudo = {
                 "Realiza tradução de protocolos e conversão de hardware/software"
               ]
             },
-
+ 
             {
               tipo: "subtitulo",
               texto: "Modos de Transmissão"
             },
-
+ 
             {
               tipo: "topico",
               titulo: "🔹 Simplex (Unidirecional)",
@@ -384,7 +384,7 @@ window.__nexusConteudo = {
                 "Exemplos: teclado/mouse → PC · rádio/TV aberta · sensores de alarme"
               ]
             },
-
+ 
             {
               tipo: "topico",
               titulo: "🔹 Half-Duplex (Bidirecional Alternada)",
@@ -393,7 +393,7 @@ window.__nexusConteudo = {
                 "Exemplos: walkie-talkie · Wi-Fi 802.11 · hubs de rede"
               ]
             },
-
+ 
             {
               tipo: "topico",
               titulo: "🔹 Full-Duplex (Bidirecional Simultânea)",
@@ -402,10 +402,10 @@ window.__nexusConteudo = {
                 "Exemplos: telefonia celular · Ethernet (cabo) · videochamadas (Zoom/Meet)"
               ]
             }
-
+ 
           ]
         },
-
+ 
         {
           id: "metodos",
           titulo: "📊 Comparativo dos Modos de Transmissão",
@@ -429,7 +429,7 @@ window.__nexusConteudo = {
             }
           ]
         },
-
+ 
         {
           id: "exemplos",
           titulo: "💡 Exemplos Explicativos",
@@ -460,7 +460,7 @@ window.__nexusConteudo = {
             }
           ]
         },
-
+ 
         {
           id: "resumo",
           titulo: "🧾 Resumo Final para Revisão Rápida",
@@ -481,10 +481,10 @@ window.__nexusConteudo = {
             }
           ]
         }
-
+ 
       ]
     },
-
+ 
     /* ─────────────────────────────────────────
        AULA 05
     ───────────────────────────────────────── */
@@ -492,7 +492,7 @@ window.__nexusConteudo = {
       aula: "Aula 05 — Topologias de Rede e Métricas de Desempenho",
       ideia_central: "A topologia define como os dispositivos estão organizados; as métricas de desempenho (vazão, latência, QoS) determinam a qualidade da comunicação; padrões garantem interoperabilidade global.",
       secoes: [
-
+ 
         {
           id: "visao",
           titulo: "📖 Visão Geral",
@@ -510,26 +510,31 @@ window.__nexusConteudo = {
             }
           ]
         },
-
+ 
         {
           id: "conceitos",
           titulo: "🧠 Conceitos Principais",
           blocos: [
-
+ 
             {
               tipo: "topico",
               titulo: "🔹 O que é Topologia de Rede?",
               texto: "Define como os dispositivos (computadores, switches, roteadores) estão organizados **física e logicamente**. Impacta diretamente: escalabilidade, custo e tolerância a falhas."
             },
-
+ 
             {
               tipo: "subtitulo",
               texto: "Topologias"
             },
-
+ 
+            /* ── BARRAMENTO ── */
             {
               tipo: "topico",
               titulo: "📌 Barramento",
+              imagem: {
+                src: "image/imagens_redes/Topologia em Barramento.png", // ← extensão
+                alt: "Topologia em Barramento"
+              },
               lista: [
                 "Todos compartilham **um único cabo central (backbone)**",
                 "Comunicação em broadcast — só o destino processa",
@@ -537,30 +542,45 @@ window.__nexusConteudo = {
                 "Uso histórico: Ethernet antiga"
               ]
             },
-
+ 
+            /* ── PONTO A PONTO ── */
             {
               tipo: "topico",
               titulo: "📌 Ponto a Ponto",
+              imagem: {
+                src: "image/imagens_redes/Topologia Ponto a Ponto.png", // ← extensão
+                alt: "Topologia Ponto a Ponto"
+              },
               lista: [
                 "Conexão direta entre **dois dispositivos apenas**",
                 "Comunicação exclusiva (unicast) · Sem colisões",
                 "Base das redes WAN (ex: redes SONET entre cidades)"
               ]
             },
-
+ 
+            /* ── ESTRELA ── */
             {
               tipo: "topico",
               titulo: "📌 Estrela",
+              imagem: {
+                src: "image/imagens_redes/Topologia em Estrela.png", // ← extensão
+                alt: "Topologia em Estrela"
+              },
               lista: [
                 "Todos conectados a um **nó central (switch)**",
                 "✔ Isolamento de falhas · Fácil expansão",
                 "Topologia mais usada em LANs modernas"
               ]
             },
-
+ 
+            /* ── ANEL ── */
             {
               tipo: "topico",
               titulo: "📌 Anel",
+              imagem: {
+                src: "image/imagens_redes/Topologia em Anel.png", // ← extensão
+                alt: "Topologia em Anel"
+              },
               lista: [
                 "Dispositivos formando um **circuito fechado**",
                 "Dados circulam em um único sentido · Cada nó é um repetidor",
@@ -568,10 +588,15 @@ window.__nexusConteudo = {
                 "Ideal para sistemas de **tempo real**"
               ]
             },
-
+ 
+            /* ── ÁRVORE ── */
             {
               tipo: "topico",
               titulo: "📌 Árvore",
+              imagem: {
+                src: "image/imagens_redes/Topologia em Árvore.png", // ← extensão
+                alt: "Topologia em Árvore"
+              },
               lista: [
                 "Estrutura **hierárquica** baseada na estrela",
                 "Switches conectados em níveis (cascata)",
@@ -579,10 +604,15 @@ window.__nexusConteudo = {
                 "⚠️ Muitos níveis → aumento da latência"
               ]
             },
-
+ 
+            /* ── MALHA ── */
             {
               tipo: "topico",
               titulo: "📌 Malha (Mesh)",
+              imagem: {
+                src: "image/imagens_redes/Topologia em Malha (Mesh).png", // ← extensão
+                alt: "Topologia em Malha (Mesh)"
+              },
               lista: [
                 "Dispositivos com **múltiplas conexões redundantes**",
                 "Dados podem seguir vários caminhos · Roteamento dinâmico",
@@ -590,12 +620,12 @@ window.__nexusConteudo = {
                 "❌ Alto custo e complexidade"
               ]
             },
-
+ 
             {
               tipo: "subtitulo",
               texto: "Métricas de Desempenho"
             },
-
+ 
             {
               tipo: "topico",
               titulo: "🔹 Vazão (Throughput)",
@@ -605,7 +635,7 @@ window.__nexusConteudo = {
                 "Redes cabeadas > redes sem fio (em desempenho geral)"
               ]
             },
-
+ 
             {
               tipo: "topico",
               titulo: "🔹 Atraso (Delay / Latência)",
@@ -616,7 +646,7 @@ window.__nexusConteudo = {
                 "Crítico para: jogos online · streaming · chamadas de vídeo"
               ]
             },
-
+ 
             {
               tipo: "topico",
               titulo: "🔹 Congestionamento e Perda de Dados",
@@ -626,7 +656,7 @@ window.__nexusConteudo = {
                 "Solução: sistemas reduzem envio automaticamente"
               ]
             },
-
+ 
             {
               tipo: "topico",
               titulo: "🔹 QoS — Qualidade de Serviço",
@@ -636,7 +666,7 @@ window.__nexusConteudo = {
                 "Voz e vídeo precisam de **baixa latência** · Downloads precisam de **alta vazão**"
               ]
             },
-
+ 
             {
               tipo: "topico",
               titulo: "🔹 Multiplexação Estatística",
@@ -646,10 +676,10 @@ window.__nexusConteudo = {
                 "Evita desperdício de banda"
               ]
             }
-
+ 
           ]
         },
-
+ 
         {
           id: "metodos",
           titulo: "📊 Padronização de Redes",
@@ -684,7 +714,7 @@ window.__nexusConteudo = {
             }
           ]
         },
-
+ 
         {
           id: "exemplos",
           titulo: "💡 Exemplos Explicativos",
@@ -715,7 +745,7 @@ window.__nexusConteudo = {
             }
           ]
         },
-
+ 
         {
           id: "resumo",
           titulo: "🧾 Resumo Final para Revisão Rápida",
@@ -737,10 +767,10 @@ window.__nexusConteudo = {
             }
           ]
         }
-
+ 
       ]
     },
-
+ 
     /* ─────────────────────────────────────────
        AULA 06
     ───────────────────────────────────────── */
@@ -748,7 +778,7 @@ window.__nexusConteudo = {
       aula: "Aula 06 — Representação de Dados e Deficiências na Transmissão",
       ideia_central: "Todo tipo de informação (texto, imagem, áudio, vídeo) é convertido em bits (0 e 1) para ser transmitido, mas sinais podem sofrer atenuação, distorção e ruído durante o percurso.",
       secoes: [
-
+ 
         {
           id: "visao",
           titulo: "📖 Visão Geral",
@@ -767,23 +797,23 @@ window.__nexusConteudo = {
             }
           ]
         },
-
+ 
         {
           id: "conceitos",
           titulo: "🧠 Conceitos Principais",
           blocos: [
-
+ 
             {
               tipo: "topico",
               titulo: "🔹 Representação Digital",
               texto: "Toda informação é convertida em **bits (0 e 1)**. Computadores trabalham apenas com dois estados: **ligado (1)** e **desligado (0)**. Isso permite transmitir texto, imagem, áudio e vídeo no mesmo sistema."
             },
-
+ 
             {
               tipo: "subtitulo",
               texto: "Codificação de Dados"
             },
-
+ 
             {
               tipo: "topico",
               titulo: "📌 Texto",
@@ -793,7 +823,7 @@ window.__nexusConteudo = {
                 "Números são convertidos diretamente para binário · Ex: 6 → **110**"
               ]
             },
-
+ 
             {
               tipo: "topico",
               titulo: "📌 Imagens",
@@ -805,7 +835,7 @@ window.__nexusConteudo = {
                 "**Profundidade de cor**: número de bits por pixel — define a quantidade de cores possíveis"
               ]
             },
-
+ 
             {
               tipo: "topico",
               titulo: "📌 Áudio",
@@ -815,7 +845,7 @@ window.__nexusConteudo = {
                 "Cada amostra representa o valor do som em um instante de tempo"
               ]
             },
-
+ 
             {
               tipo: "topico",
               titulo: "📌 Vídeo",
@@ -824,12 +854,12 @@ window.__nexusConteudo = {
                 "**24 FPS** → Cinema · **30 FPS** → TV · **60 FPS** → Alta fluidez"
               ]
             },
-
+ 
             {
               tipo: "subtitulo",
               texto: "Deficiências na Transmissão"
             },
-
+ 
             {
               tipo: "topico",
               titulo: "🔹 Atenuação",
@@ -838,7 +868,7 @@ window.__nexusConteudo = {
                 "Solução: uso de **amplificadores** no percurso"
               ]
             },
-
+ 
             {
               tipo: "topico",
               titulo: "🔹 Distorção",
@@ -847,7 +877,7 @@ window.__nexusConteudo = {
                 "Ocorre quando diferentes frequências chegam em tempos diferentes"
               ]
             },
-
+ 
             {
               tipo: "topico",
               titulo: "🔹 Ruído",
@@ -856,7 +886,7 @@ window.__nexusConteudo = {
                 "Tipos: **Térmico** · **Induzido** · **Crosstalk** · **Impulso**"
               ]
             },
-
+ 
             {
               tipo: "topico",
               titulo: "🔹 SNR — Relação Sinal-Ruído",
@@ -866,10 +896,10 @@ window.__nexusConteudo = {
                 "**SNR Baixa** → sinal distorcido, má qualidade"
               ]
             }
-
+ 
           ]
         },
-
+ 
         {
           id: "metodos",
           titulo: "📊 Métodos e Princípios",
@@ -894,7 +924,7 @@ window.__nexusConteudo = {
             }
           ]
         },
-
+ 
         {
           id: "exemplos",
           titulo: "💡 Exemplos Explicativos",
@@ -925,7 +955,7 @@ window.__nexusConteudo = {
             }
           ]
         },
-
+ 
         {
           id: "resumo",
           titulo: "🧾 Resumo Final para Revisão Rápida",
@@ -947,10 +977,10 @@ window.__nexusConteudo = {
             }
           ]
         }
-
+ 
       ]
     }
-
+ 
   ],
 
 professor: [
