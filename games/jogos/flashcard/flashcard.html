@@ -1,170 +1,136 @@
-<!-- games/jogos/flashcard/flashcard.css -->
+<!--
+  NEXUS STUDY — Card/card.html
+  Página de flashcards com Spaced Repetition.
+  Estrutura espelhada de quiz/quiz.html.
+  Todo conteúdo dinâmico é injetado por card.js em #card-root.
+-->
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Flashcards — Nexus Study</title>
+  <title>Flashcards · Nexus Study</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../../template/game-shell.css" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap"
+    rel="stylesheet"
+  />
+  <!-- Font Awesome (ícones usados pelo card.js) -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    crossorigin="anonymous"
+  />
+
   <link rel="stylesheet" href="flashcard.css" />
 </head>
+
 <body>
 
-  <!-- BACKGROUND -->
-  <div class="bg-grid"    aria-hidden="true"></div>
+  <!-- ── BACKGROUND ─────────────────────────────── -->
   <div class="bg-orb bg-orb--1" aria-hidden="true"></div>
   <div class="bg-orb bg-orb--2" aria-hidden="true"></div>
+  <div class="bg-orb bg-orb--3" aria-hidden="true"></div>
+  <div class="bg-grid"          aria-hidden="true"></div>
 
-  <div class="game-shell">
+  <!-- ════════════════════════════════════════════
+       HEADER
+       ════════════════════════════════════════════ -->
+  <header class="header">
+    <div class="header__inner">
 
-    <!-- HEADER -->
-    <header class="game-header">
-      <a id="shell-back-btn" class="game-header__back" href="#">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <a href="../../jogo.html" class="back-btn" aria-label="Voltar aos jogos">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <polyline points="15 18 9 12 15 6"/>
         </svg>
-        <span>Voltar</span>
+        <span>Início</span>
       </a>
 
-      <div class="game-header__identity">
-        <div class="game-header__icon">
-          <span id="shell-icon">🃏</span>
-        </div>
-        <div class="game-header__info">
-          <div class="game-header__name" id="shell-game-name">Flashcards</div>
-          <div class="game-header__meta">
-            <span id="shell-disc-name"></span>
-            <span class="game-header__meta-sep">·</span>
-            <span id="shell-sem"></span>
-          </div>
+      <div class="header__logo" aria-label="Nexus Study">
+        <div class="logo-mark" aria-hidden="true">N</div>
+        <div class="logo-text">
+          <span class="logo-title">Nexus</span>
+          <span class="logo-sub">Study</span>
         </div>
       </div>
 
-      <!-- Placar no header: X de N -->
-      <div class="game-header__score-slot">
-        <div class="fc-header-counter">
-          <span id="hd-atual">0</span>
-          <span class="fc-header-counter__sep">/</span>
-          <span id="hd-total">0</span>
-        </div>
-      </div>
-    </header>
+      <nav class="breadcrumb" aria-label="Localização">
+        <span class="breadcrumb__item">Flashcards</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+        <!--
+          Preenchido por card.js com o nome da disciplina atual.
+          Ex: "POO", "Redes", "Design"…
+        -->
+        <span class="breadcrumb__item breadcrumb__item--active"
+              id="breadcrumb-disc" aria-live="polite">—</span>
+      </nav>
 
-    <!-- Barra de progresso (sem timer — gerenciada manualmente) -->
-    <div class="game-timer-bar" role="progressbar" aria-label="Progresso do deck">
-      <div class="game-timer-bar__fill" id="fc-progress-bar"></div>
     </div>
+  </header>
 
-    <!-- CONTEÚDO PRINCIPAL -->
-    <main class="game-content" id="game-content">
-
-      <!-- TELA DE LOADING -->
-      <div id="fc-loading" class="fc-loading">
-        <div class="fc-loading__spinner" aria-hidden="true"></div>
-        <p>Carregando deck…</p>
+  <!-- ════════════════════════════════════════════
+       MAIN
+       Contém apenas o ponto de montagem do componente.
+       card.js injeta todo o HTML dinâmico aqui.
+       ════════════════════════════════════════════ -->
+  <main class="main" id="card-root" role="main" aria-label="Sessão de flashcards">
+    <!--
+      Esqueleto de carregamento exibido enquanto card.js
+      aguarda dados do Firebase. Removido assim que o
+      deck for montado (card.js apaga o conteúdo de #card-root).
+    -->
+    <div class="card-skeleton" id="card-skeleton" aria-busy="true" aria-label="Carregando flashcards">
+      <div class="skeleton-bar skeleton-bar--short"></div>
+      <div class="skeleton-scene">
+        <div class="skeleton-pulse"></div>
       </div>
-
-      <!-- TELA DE ERRO (deck não encontrado) -->
-      <div id="fc-error" class="fc-error hidden">
-        <div class="fc-error__icon">📭</div>
-        <h2>Deck não encontrado</h2>
-        <p>A disciplina selecionada ainda não tem flashcards.<br>
-           Adicione cards em <code>conteudo/flashcards/flashcards.js</code>.</p>
-        <a id="fc-error-back" href="#" class="game-btn" style="margin-top:8px">Voltar</a>
-      </div>
-
-      <!-- TELA DO JOGO -->
-      <div id="fc-game" class="hidden">
-
-        <!-- Labels de status (Sei / Rever) -->
-        <div class="fc-status-row">
-          <div class="fc-status fc-status--sei">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            Sei
-            <span id="fc-count-sei">0</span>
-          </div>
-          <div class="fc-round-badge" id="fc-round-badge">Rodada 1</div>
-          <div class="fc-status fc-status--rever">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>
-            Rever
-            <span id="fc-count-rever">0</span>
-          </div>
-        </div>
-
-        <!-- CARD 3D -->
-        <div class="fc-scene" id="fc-scene" role="button" tabindex="0"
-             aria-label="Card — clique para revelar a resposta">
-          <div class="fc-card" id="fc-card">
-
-            <!-- FRENTE -->
-            <div class="fc-card__face fc-card__face--front">
-              <div class="fc-face-label">pergunta</div>
-              <p class="fc-card__text" id="fc-frente"></p>
-              <div class="fc-card__dica" id="fc-dica-wrap">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-                </svg>
-                <span id="fc-dica"></span>
-              </div>
-              <div class="fc-flip-hint" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>
-                </svg>
-                clique para revelar
-              </div>
-            </div>
-
-            <!-- VERSO -->
-            <div class="fc-card__face fc-card__face--back">
-              <div class="fc-face-label fc-face-label--back">resposta</div>
-              <p class="fc-card__text" id="fc-verso"></p>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- AÇÕES (ativas só após virar) -->
-        <div class="fc-actions" id="fc-actions">
-          <button class="fc-btn fc-btn--rever" id="btn-rever" disabled aria-label="Marcar para rever depois">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="1 4 1 10 7 10"/>
-              <path d="M3.51 15a9 9 0 1 0 .49-3.51"/>
-            </svg>
-            Rever depois
-          </button>
-          <button class="fc-btn fc-btn--sei" id="btn-sei" disabled aria-label="Marcar como que já sei">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-            Já sei!
-          </button>
-        </div>
-
-        <!-- Mini-instrução -->
-        <p class="fc-hint-text" id="fc-hint-text">Clique no card para revelar a resposta</p>
-
-      </div><!-- /#fc-game -->
-
-    </main>
-  </div><!-- /.game-shell -->
-
-  <!-- TELA DE RESULTADO (game-shell.css) -->
-  <div class="game-result hidden" id="game-result">
-    <div class="game-result__card">
-      <div class="game-result__emoji"    id="result-emoji"></div>
-      <h2 class="game-result__title"     id="result-title"></h2>
-      <p  class="game-result__subtitle"  id="result-subtitle"></p>
-      <div class="game-result__stats"    id="result-stats"></div>
-      <div class="game-result__actions">
-        <button class="game-btn"                   id="result-btn-rejogo">Jogar de novo</button>
-        <a      class="game-btn game-btn--outline" id="result-btn-sair" href="#">Sair</a>
+      <div class="skeleton-btns">
+        <div class="skeleton-bar skeleton-bar--btn"></div>
+        <div class="skeleton-bar skeleton-bar--btn"></div>
       </div>
     </div>
+  </main>
+
+  <!-- ════════════════════════════════════════════
+       FOOTER
+       ════════════════════════════════════════════ -->
+  <footer class="footer">
+    <p>© <span id="footer-year"></span> Nexus Study · Desenvolvido para facilitar seus estudos</p>
+  </footer>
+
+  <!-- ── TOAST GLOBAL ───────────────────────────────
+       Usado por card.js para feedback de ação.
+       card.js escreve em #card-toast-msg e
+       adiciona / remove a classe .toast--visible.
+       ─────────────────────────────────────────────── -->
+  <div class="card-toast" id="card-toast" role="status" aria-live="polite">
+    <i class="fas fa-rotate-left" aria-hidden="true"></i>
+    <span id="card-toast-msg"></span>
   </div>
 
+  <!--
+    card.js é um módulo ES6.
+    Ele importa CARDS_DATA e as funções do Firebase, depois
+    chama initCards(discId, document.getElementById('card-root'), usuario).
+
+    Para uso standalone, substitua discId e usuario conforme
+    necessário ou passe via URL params:
+      ?disc=poo&user=Rafael
+  -->
   <script type="module" src="flashcard.js"></script>
+
+  <!-- Fallback: ano no footer -->
+  <script>
+    document.getElementById('footer-year').textContent = new Date().getFullYear();
+  </script>
+
 </body>
 </html>

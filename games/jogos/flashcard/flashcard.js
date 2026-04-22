@@ -1,347 +1,1012 @@
-/* ============================================================
-   NEXUS STUDY — games/flashcard/flashcard.js
+/* ═══════════════════════════════════════════════════════════════════
+   NEXUS STUDY — games/jogos/flashcard/flashcard.js  (v3)
+   
+   Seções:
+     1. IMPORTS & CONSTANTES
+     2. ENGINE DE SPACED REPETITION (SRS)
+     3. ESTADO DA SESSÃO
+     4. ATALHOS DE TECLADO
+     5. DESFAZER (UNDO)
+     6. TEMPLATES HTML
+     7. RENDER
+     8. ATUALIZAÇÕES DE UI
+     9. AÇÕES DO USUÁRIO
+    10. API PÚBLICA  →  initCards / destroyCards / renderCard
+═══════════════════════════════════════════════════════════════════ */
 
-   Mecânica do jogo de Flashcards com revisão adaptativa.
+/* ── 1. IMPORTS & CONSTANTES ──────────────────────────────────── */
 
-   Fluxo:
-     1. Carrega deck da disciplina (via ?disc= na URL)
-     2. Embaralha e exibe card por card
-     3. Usuário vira o card → vê a resposta
-     4. Marca "Já sei" → card removido do deck (vai para done[])
-     5. Marca "Rever depois" → card re-inserido no deck embaralhado
-     6. Quando todos os cards são "Já sei" → tela de resultado
+import { CARDS_DATA }                        from './cards_data.js';
+import { carregarPerfisSRS, salvarPerfilSRS } from './storage.js';
+import { Shell, lerParams }                  from '../../template/game-shell.js';
 
-   Rodadas:
-     - Cada vez que o deck se esgota e ainda há cards "Rever",
-       uma nova rodada começa com esses cards.
-     - O badge "Rodada X" no topo reflete isso.
-
-   Atalhos de teclado:
-     Espaço / Enter → virar card
-     ← (ArrowLeft)  → Rever depois (após virar)
-     → (ArrowRight) → Já sei (após virar)
-   ============================================================ */
-
-import { Shell, Result, shuffle } from '../../template/game-shell.js';
-import { DECKS }                  from '../../conteudo/flashcards/flashcards.js';
-
-/* ══════════════════════════════════════════════════════════
-   INIT — lê URL e configura Shell
-   ══════════════════════════════════════════════════════════ */
-
-const { disc, sem } = Shell.init({ icon: '🃏', nome: 'Flashcards' });
-
-/* ══════════════════════════════════════════════════════════
-   DOM
-   ══════════════════════════════════════════════════════════ */
-
-const $ = (id) => document.getElementById(id);
-
-const DOM = {
-  loading:     $('fc-loading'),
-  error:       $('fc-error'),
-  errorBack:   $('fc-error-back'),
-  game:        $('fc-game'),
-  scene:       $('fc-scene'),
-  card:        $('fc-card'),
-  frente:      $('fc-frente'),
-  verso:       $('fc-verso'),
-  dicaWrap:    $('fc-dica-wrap'),
-  dica:        $('fc-dica'),
-  progressBar: $('fc-progress-bar'),
-  hdAtual:     $('hd-atual'),
-  hdTotal:     $('hd-total'),
-  countSei:    $('fc-count-sei'),
-  countRever:  $('fc-count-rever'),
-  roundBadge:  $('fc-round-badge'),
-  hintText:    $('fc-hint-text'),
-  btnSei:      $('btn-sei'),
-  btnRever:    $('btn-rever'),
+// Mapeamento disciplina → classe da tag
+const DISC_TAG_CLASS = {
+  design:      'tag-design',
+  banco_dados: 'tag-banco',
+  redes:       'tag-redes',
+  poo:         'tag-poo',
 };
 
-/* ══════════════════════════════════════════════════════════
-   ESTADO
-   ══════════════════════════════════════════════════════════ */
-
-const state = {
-  deck:       [],   // cartas restantes nesta rodada
-  done:       [],   // cartas "já sei" (removidas permanentemente)
-  rever:      [],   // cartas "rever depois" (volta na próxima rodada)
-  atual:      null, // carta exibida no momento
-  virado:     false,
-  rodada:     1,
-  totalCards: 0,    // total original do deck (não muda)
-  processando: false, // evita double-click
+// Rótulos legíveis por disciplina (para breadcrumb e tags)
+const DISC_LABEL = {
+  design:      'Design',
+  banco_dados: 'Banco de Dados',
+  redes:       'Redes',
+  poo:         'POO',
 };
 
-/* ══════════════════════════════════════════════════════════
-   INICIAR / REINICIAR
-   ══════════════════════════════════════════════════════════ */
+const DECK_SIZE                 = 10;
+const ACERTOS_PARA_DOMINAR      = 5;
+const MIN_TENTATIVAS_PENALIDADE = 4;
 
-function iniciar() {
-  const deckData = DECKS[disc];
+/* ═════════════════════════════════════════════════════════════════
+   2. ENGINE DE SPACED REPETITION (SRS)
+   ═════════════════════════════════════════════════════════════════ */
 
-  // Se não tiver deck, usa cards de demonstração
-  const cardsDemo = [
-    {
-      id: 1,
-      frente: 'Card de exemplo — frente',
-      verso: 'Card de exemplo — verso',
-      dica: 'Esta disciplina ainda não tem flashcards. Adicione em conteudo/flashcards/flashcards.js',
-    },
-    {
-      id: 2,
-      frente: 'Como adicionar meu conteúdo?',
-      verso: 'Abra conteudo/flashcards/flashcards.js e adicione uma chave com o id desta disciplina.',
-    },
-  ];
+let _srCache = {};
 
-  const cards = deckData?.cards?.length ? deckData.cards : cardsDemo;
-
-  // Reseta estado
-  state.deck        = shuffle([...cards]);
-  state.done        = [];
-  state.rever       = [];
-  state.atual       = null;
-  state.virado      = false;
-  state.rodada      = 1;
-  state.totalCards  = cards.length;
-  state.processando = false;
-
-  // UI
-  DOM.loading.classList.add('hidden');
-  DOM.game.classList.remove('hidden');
-  DOM.hdTotal.textContent    = state.totalCards;
-  DOM.countSei.textContent   = '0';
-  DOM.countRever.textContent = '0';
-  atualizarRoundBadge();
-  atualizarProgressBar();
-  proximoCard();
+function _srPerfil(cardId) {
+  return _srCache[cardId] ?? {
+    intervalo:           1,
+    proximaVez:          0,
+    acertos:             0,
+    erros:               0,
+    diffMarcada:         null,
+    tentativas:          0,
+    acertosConsecutivos: 0,
+    dominado:            false,
+  };
 }
 
-/* ══════════════════════════════════════════════════════════
-   NAVEGAR CARDS
-   ══════════════════════════════════════════════════════════ */
+async function _srAtualizar(cardId, acertou, diffMarcada) {
+  const p = { ..._srPerfil(cardId) };
 
-function proximoCard(animDelay = 0) {
-  /* Deck atual vazio — verifica se há cards para rever */
-  if (state.deck.length === 0) {
-    if (state.rever.length === 0) {
-      /* Fim do jogo — todos os cards dominados! */
-      encerrar();
-      return;
+  p.tentativas++;
+
+  if (acertou) {
+    const multBase = { easy: 2.5, medium: 2.0, hard: 1.5 }[diffMarcada] ?? 2.0;
+
+    let fatorConfianca = 1.0;
+    const tentativasAnteriores = p.tentativas - 1;
+    if (tentativasAnteriores >= MIN_TENTATIVAS_PENALIDADE) {
+      const taxaAcerto = tentativasAnteriores > 0 ? p.acertos / tentativasAnteriores : 1.0;
+      if (taxaAcerto < 0.40) fatorConfianca = 0.75;
+      else if (taxaAcerto < 0.60) fatorConfianca = 0.85;
     }
 
-    /* Nova rodada com os cards "rever" */
-    state.rodada++;
-    state.deck  = shuffle([...state.rever]);
-    state.rever = [];
-    atualizarRoundBadge();
-  }
+    p.intervalo           = Math.min(Math.round(p.intervalo * multBase * fatorConfianca), 60);
+    p.acertos            += 1;
+    p.acertosConsecutivos += 1;
 
-  state.atual  = state.deck.shift();
-  state.virado = false;
-  state.processando = false;
+    if (p.acertosConsecutivos >= ACERTOS_PARA_DOMINAR) p.dominado = true;
 
-  renderizarCard(animDelay);
-}
-
-/* ══════════════════════════════════════════════════════════
-   RENDERIZAR CARD
-   ══════════════════════════════════════════════════════════ */
-
-function renderizarCard(animDelay = 0) {
-  const c = state.atual;
-
-  /* Textos */
-  DOM.frente.textContent = c.frente;
-  DOM.verso.textContent  = c.verso;
-
-  /* Dica (opcional) */
-  if (c.dica) {
-    DOM.dica.textContent = c.dica;
-    DOM.dicaWrap.classList.remove('hidden');
   } else {
-    DOM.dicaWrap.classList.add('hidden');
+    p.intervalo           = 1;
+    p.erros              += 1;
+    p.acertosConsecutivos = 0;
+    p.dominado            = false;
   }
 
-  /* Garante frente visível */
-  DOM.card.classList.remove('fc-card--flipped');
+  p.proximaVez  = Date.now() + p.intervalo * 24 * 60 * 60 * 1000;
+  p.diffMarcada = diffMarcada || p.diffMarcada;
 
-  /* Desativa botões */
-  DOM.btnSei.disabled   = true;
-  DOM.btnRever.disabled = true;
-  DOM.hintText.textContent = 'Clique no card para revelar a resposta';
+  _srCache[cardId] = p;
 
-  /* Animação de entrada */
-  DOM.card.classList.remove('fc-card--entering');
-  void DOM.card.offsetWidth; // reflow para reiniciar animação
-  setTimeout(() => DOM.card.classList.add('fc-card--entering'), animDelay);
-
-  /* Acessibilidade */
-  DOM.scene.setAttribute('aria-label', `Pergunta: ${c.frente}. Clique para revelar.`);
-
-  atualizarContador();
-  atualizarProgressBar();
+  try {
+    await salvarPerfilSRS(
+      _estado.nomeUsuario,
+      cardId,
+      p,
+      _estado.discId,
+      _estado.semestre,   // ← novo: semestre na chave
+    );
+  } catch (err) {
+    console.error('[flashcard.js] Erro ao salvar SRS:', err);
+  }
 }
 
-/* ══════════════════════════════════════════════════════════
-   VIRAR CARD
-   ══════════════════════════════════════════════════════════ */
+function _srMontarDeck(discId) {
+  const todos = CARDS_DATA[discId] || [];
+  const agora = Date.now();
 
-function virar() {
-  if (state.virado || state.processando) return;
+  const vencidos  = [];
+  const novos     = [];
+  const cedo      = [];
+  const dominados = [];
 
-  state.virado = true;
-  DOM.card.classList.add('fc-card--flipped');
-  DOM.btnSei.disabled   = false;
-  DOM.btnRever.disabled = false;
-  DOM.hintText.textContent = '← Rever depois      Já sei! →';
+  todos.forEach(card => {
+    const p     = _srPerfil(card.id);
+    const visto = p.tentativas > 0;
 
-  DOM.scene.setAttribute('aria-label',
-    `Resposta: ${state.atual.verso}. Pressione ← para rever depois ou → para marcar como que já sabe.`
+    if (p.dominado)             dominados.push({ card, p });
+    else if (!visto)            novos.push({ card, p });
+    else if (p.proximaVez <= agora) vencidos.push({ card, p });
+    else                        cedo.push({ card, p });
+  });
+
+  vencidos.sort((a, b) =>
+    b.p.erros !== a.p.erros             ? b.p.erros - a.p.erros :
+    b.p.tentativas !== a.p.tentativas   ? b.p.tentativas - a.p.tentativas :
+    a.p.proximaVez - b.p.proximaVez
   );
+
+  cedo.sort((a, b) => a.p.proximaVez - b.p.proximaVez);
+  dominados.sort((a, b) => a.p.proximaVez - b.p.proximaVez);
+
+  const selecionados = [];
+  const add = lista => {
+    for (const item of lista) {
+      if (selecionados.length >= DECK_SIZE) break;
+      selecionados.push(item.card);
+    }
+  };
+
+  add(vencidos);
+  add(novos);
+  add(cedo);
+  add(dominados);
+
+  return _shuffle(selecionados);
 }
 
-/* ══════════════════════════════════════════════════════════
-   AÇÕES DO USUÁRIO
-   ══════════════════════════════════════════════════════════ */
+function _srEstatisticas(discId) {
+  const todos = CARDS_DATA[discId] || [];
+  const agora = Date.now();
+  let dominados = 0, vencidos = 0, novos = 0;
 
-function marcarSei() {
-  if (!state.virado || state.processando) return;
-  state.processando = true;
+  todos.forEach(card => {
+    const p     = _srPerfil(card.id);
+    const visto = p.tentativas > 0;
 
-  state.done.push(state.atual);
+    if (!visto)                              novos++;
+    else if (p.dominado || p.proximaVez > agora) dominados++;
+    else                                     vencidos++;
+  });
 
-  DOM.countSei.textContent  = state.done.length;
-
-  /* Feedback visual rápido */
-  flashCard('sei');
-  setTimeout(() => proximoCard(), 320);
+  return { total: todos.length, dominados, vencidos, novos };
 }
 
-function marcarRever() {
-  if (!state.virado || state.processando) return;
-  state.processando = true;
+/* ═════════════════════════════════════════════════════════════════
+   3. ESTADO DA SESSÃO
+   ═════════════════════════════════════════════════════════════════ */
 
-  /* Re-insere em posição aleatória no deck */
-  const pos = Math.floor(Math.random() * (state.deck.length + 1));
-  state.rever.push(state.atual);   // conta para o badge
-  state.deck.splice(pos, 0, state.atual);
+const ESTADO_INICIAL = () => ({
+  discId:      null,
+  semestre:    null,   // ← novo
+  nomeUsuario: null,
+  cards:       [],
+  current:     0,
+  flipped:     false,
+  marcando:    false,
+  stats:       { correct: 0, wrong: 0 },
+  difficulty:  {},
+  resultado:   {},
+  historico:   [],
+  panelEl:     null,
+});
 
-  DOM.countRever.textContent = state.rever.length;
+let _estado = ESTADO_INICIAL();
 
-  /* Sem animação especial — só avança */
-  flashCard('rever');
-  setTimeout(() => proximoCard(), 320);
+function _shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
 
-/* Flash de cor no card antes de avançar */
-function flashCard(tipo) {
-  const cor = tipo === 'sei'
-    ? 'rgba(52,211,153,.18)'
-    : 'rgba(251,146,60,.18)';
+function _salvarSessao() { window.flashcardSessao?.salvar(_estado); }
+function _limparSessao() { window.flashcardSessao?.limpar(); }
 
-  DOM.card.style.transition = 'background .15s';
-  DOM.card.style.background = cor;
-  setTimeout(() => {
-    DOM.card.style.background = '';
-    DOM.card.style.transition = '';
-  }, 300);
+/* ═════════════════════════════════════════════════════════════════
+   4. ATALHOS DE TECLADO
+   ═════════════════════════════════════════════════════════════════ */
+
+let _keyHandlerFn = null;
+
+function _registrarAtalhos() {
+  _removerAtalhos();
+
+  _keyHandlerFn = e => {
+    const tag = document.activeElement?.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+    const { cards, current, flipped, marcando } = _estado;
+    if (!cards[current]) return;
+
+    switch (e.key) {
+      case ' ': case 'Spacebar':
+        e.preventDefault(); _flipCard(); break;
+      case 'ArrowRight': case 'ArrowDown':
+        e.preventDefault(); _proximo(); break;
+      case 'ArrowLeft': case 'ArrowUp':
+        e.preventDefault(); _anterior(); break;
+      case 'a': case 'A':
+        if (!marcando) _marcar(true); break;
+      case 'e': case 'E':
+        if (!marcando) _marcar(false); break;
+      case 'z': case 'Z':
+        _desfazer(); break;
+      case '1': if (flipped) _marcarDificuldade('easy');   break;
+      case '2': if (flipped) _marcarDificuldade('medium'); break;
+      case '3': if (flipped) _marcarDificuldade('hard');   break;
+    }
+  };
+
+  document.addEventListener('keydown', _keyHandlerFn);
 }
 
-/* ══════════════════════════════════════════════════════════
-   ATUALIZAR UI
-   ══════════════════════════════════════════════════════════ */
-
-function atualizarContador() {
-  /* "atual" = quantos já passaram + 1 */
-  const passados = state.done.length + 1;
-  DOM.hdAtual.textContent = passados;
-  DOM.hdTotal.textContent = state.totalCards;
+function _removerAtalhos() {
+  if (_keyHandlerFn) {
+    document.removeEventListener('keydown', _keyHandlerFn);
+    _keyHandlerFn = null;
+  }
 }
 
-function atualizarProgressBar() {
-  const pct = state.totalCards > 0
-    ? (state.done.length / state.totalCards) * 100
-    : 0;
-  DOM.progressBar.style.width = pct + '%';
+/* ═════════════════════════════════════════════════════════════════
+   5. DESFAZER (UNDO)
+   ═════════════════════════════════════════════════════════════════ */
+
+function _desfazer() {
+  if (_estado.historico.length === 0) return;
+
+  const snapshot = _estado.historico.pop();
+
+  _estado.current    = snapshot.current;
+  _estado.stats      = { ...snapshot.stats };
+  _estado.resultado  = { ...snapshot.resultado };
+  _estado.difficulty = { ...snapshot.difficulty };
+  _estado.flipped    = false;
+  _estado.marcando   = false;
+
+  if (snapshot.srPerfilAnterior) {
+    _srCache[snapshot.srPerfilAnterior.cardId] = snapshot.srPerfilAnterior.perfil;
+  }
+
+  _salvarSessao();
+  _renderCard();
+  _mostrarToastUndo();
 }
 
-function atualizarRoundBadge() {
-  DOM.roundBadge.textContent = `Rodada ${state.rodada}`;
+function _mostrarToastUndo() {
+  const panelEl = _estado.panelEl;
+  if (!panelEl) return;
+
+  let toast = panelEl.querySelector('.cards-undo-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.className = 'cards-undo-toast';
+    toast.innerHTML = '<i class="fas fa-rotate-left" aria-hidden="true"></i> Resposta desfeita';
+    panelEl.appendChild(toast);
+  }
+
+  toast.classList.remove('undo-toast-visible');
+  void toast.offsetWidth;
+  toast.classList.add('undo-toast-visible');
 }
 
-/* ══════════════════════════════════════════════════════════
-   ENCERRAR JOGO
-   ══════════════════════════════════════════════════════════ */
+/* ═════════════════════════════════════════════════════════════════
+   6. TEMPLATES HTML
+   ═════════════════════════════════════════════════════════════════ */
 
-function encerrar() {
-  const pct = Math.round((state.done.length / state.totalCards) * 100);
+function _esc(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
 
-  Result.mostrar({
-    emoji:     pct === 100 ? '🏆' : pct >= 70 ? '🎯' : '📖',
-    titulo:    pct === 100 ? 'Deck dominado!'  : 'Bom progresso!',
-    subtitulo: pct === 100
-      ? 'Você acertou todos os cards. Ótimo trabalho!'
-      : `Você dominou ${pct}% do deck. Continue revisando!`,
-    stats: [
-      { label: 'Sei',      valor: state.done.length },
-      { label: 'Rodadas',  valor: state.rodada },
-      { label: 'Acerto',   valor: pct + '%' },
-    ],
-    onRejogo: iniciar,
+function _tplCena(card, tagCls) {
+  const perfil     = _srPerfil(card.id);
+  const tentativas = perfil.tentativas;
+  const dominado   = perfil.dominado;
+
+  const perguntaTxt  = card.frente ?? card.pergunta ?? '';
+  const respostaTxt  = card.verso  ?? card.resposta ?? '';
+  const categoriaTxt = card.categoria ?? DISC_LABEL[_estado.discId] ?? _estado.discId ?? '';
+
+  const badgeViz = tentativas > 0
+    ? `<div class="cards-viz-badge ${dominado ? 'viz-dominado' : ''}" aria-label="${tentativas} visualizações">
+         <i class="fas fa-eye" aria-hidden="true"></i>
+         <span>${tentativas}</span>
+       </div>`
+    : '';
+
+  const badgeDom = dominado
+    ? `<div class="cards-dominado-badge" title="Card dominado" aria-label="Card dominado">
+         <i class="fas fa-star" aria-hidden="true"></i>
+       </div>`
+    : '';
+
+  let badgePenalidade = '';
+  if (tentativas >= MIN_TENTATIVAS_PENALIDADE) {
+    const taxaAcerto = tentativas > 0 ? perfil.acertos / tentativas : 1.0;
+    const pct        = Math.round(taxaAcerto * 100);
+
+    if (taxaAcerto < 0.40) {
+      badgePenalidade = `
+        <div class="cards-penalidade-badge" role="img" aria-label="Card difícil: ${pct}% de acerto">
+          <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+          <div class="cards-tooltip" role="tooltip">
+            <div class="cards-tooltip-title" style="color:#f87171;">
+              <i class="fas fa-triangle-exclamation" aria-hidden="true"></i> Card difícil pra você
+            </div>
+            <div class="cards-tooltip-body">
+              Você acertou este card só <strong style="color:#f87171">${pct}%</strong> das vezes.<br>
+              Por isso ele aparece <strong>com mais frequência</strong>.
+            </div>
+          </div>
+        </div>`;
+    } else if (taxaAcerto < 0.60) {
+      badgePenalidade = `
+        <div class="cards-penalidade-badge penalidade-leve" role="img" aria-label="Reforço automático: ${pct}% de acerto">
+          <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+          <div class="cards-tooltip" role="tooltip">
+            <div class="cards-tooltip-title" style="color:#fbbf24;">
+              <i class="fas fa-circle-exclamation" aria-hidden="true"></i> Reforço automático
+            </div>
+            <div class="cards-tooltip-body">
+              Acertado em <strong style="color:#fbbf24">${pct}%</strong> das tentativas.<br>
+              Aparece <strong>um pouco mais cedo</strong> pra reforçar.
+            </div>
+          </div>
+        </div>`;
+    }
+  }
+
+  const dicaHtml = card.dica
+    ? `<div class="cards-dica" aria-label="Dica">
+         <i class="fas fa-lightbulb" aria-hidden="true"></i>
+         ${_esc(card.dica)}
+       </div>`
+    : '';
+
+  return `
+    <div class="cards-scene" id="cards-scene" role="button"
+         tabindex="0" aria-label="Card: clique para virar">
+      <div class="cards-flipper" id="cards-flipper">
+
+        <!-- FRENTE -->
+        <div class="cards-face cards-front" aria-hidden="false">
+          ${badgeViz}
+          ${badgeDom}
+          <span class="cards-tag ${tagCls}" id="cards-tag-front">${_esc(categoriaTxt)}</span>
+          <p class="cards-question" id="cards-question">${_esc(perguntaTxt)}</p>
+          ${dicaHtml}
+          <span class="cards-hint" id="cards-hint" aria-hidden="true">
+            <i class="fas fa-hand-pointer" aria-hidden="true"></i> Clique para ver a resposta
+          </span>
+          <div class="cards-result-badge" id="cards-result-badge-front" aria-live="polite"></div>
+        </div>
+
+        <!-- VERSO -->
+        <div class="cards-face cards-back" aria-hidden="true">
+          <div class="cards-back-inner">
+            <span class="cards-tag ${tagCls}" id="cards-tag-back">${_esc(categoriaTxt)}</span>
+            <div class="cards-answer" id="cards-answer">${respostaTxt}</div>
+
+            <div class="cards-diff-badge-wrap" id="cards-diff-badge-wrap">
+              <span class="cards-diff-badge" id="cards-diff-badge"></span>
+            </div>
+
+            <div class="cards-difficulty">
+              <span class="cards-diff-label">Como foi pra você?</span>
+              <button class="cards-diff-btn easy"   data-diff="easy"   type="button">Fácil <span class="cards-diff-kbd-hint">[1]</span></button>
+              <button class="cards-diff-btn medium" data-diff="medium" type="button">Médio <span class="cards-diff-kbd-hint">[2]</span></button>
+              <button class="cards-diff-btn hard"   data-diff="hard"   type="button">Difícil <span class="cards-diff-kbd-hint">[3]</span></button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      ${badgePenalidade}
+    </div>
+  `;
+}
+
+function _tplFinal() {
+  const { discId, cards, stats, difficulty } = _estado;
+  const total   = cards.length;
+  const acertos = stats.correct;
+  const erros   = stats.wrong;
+  const pct     = total > 0 ? Math.round((acertos / total) * 100) : 0;
+
+  const diffCount  = { easy: 0, medium: 0, hard: 0 };
+  Object.values(difficulty).forEach(d => { if (d in diffCount) diffCount[d]++; });
+  const diffLabels = { easy: 'Fácil', medium: 'Médio', hard: 'Difícil' };
+  const diffHTML   = Object.entries(diffCount)
+    .filter(([, v]) => v > 0)
+    .map(([k, v]) => `<span class="finish-diff-item ${k}">${diffLabels[k]} ×${v}</span>`)
+    .join('');
+
+  const sr         = _srEstatisticas(discId);
+  const proximoTxt = sr.vencidos > 0
+    ? `${sr.vencidos} card${sr.vencidos > 1 ? 's' : ''} para revisar`
+    : sr.novos > 0
+      ? `${sr.novos} card${sr.novos > 1 ? 's' : ''} novo${sr.novos > 1 ? 's' : ''} aguardando`
+      : 'Em dia! Volte amanhã.';
+
+  const dominadosNaSessao = cards.filter(c => _srPerfil(c.id).dominado).length;
+  const cardsPenalizados  = cards.filter(c => {
+    const p = _srPerfil(c.id);
+    return p.tentativas >= MIN_TENTATIVAS_PENALIDADE && (p.acertos / p.tentativas) < 0.60;
+  }).length;
+
+  const msgDominados  = dominadosNaSessao > 0
+    ? `<div class="finish-chip dominado"><i class="fas fa-star" aria-hidden="true"></i> ${dominadosNaSessao} dominado${dominadosNaSessao > 1 ? 's' : ''}</div>`
+    : '';
+  const msgPenalidade = cardsPenalizados > 0
+    ? `<div class="finish-chip penalidade"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i> ${cardsPenalizados} com revisão antecipada</div>`
+    : '';
+
+  const icon = pct >= 70 ? '🎯' : pct >= 50 ? '📊' : '📚';
+  const msg  = pct >= 70 ? 'Ótimo desempenho!' : pct >= 50 ? 'Bom trabalho!' : 'Continue praticando!';
+
+  return `
+    <div class="cards-finish-scene">
+      <div class="cards-finish-card">
+        <div>
+          <span class="finish-icon" aria-hidden="true">${icon}</span>
+          <div class="finish-title">Deck concluído!</div>
+          <div class="finish-subtitle">${msg}</div>
+        </div>
+
+        <div class="finish-stats">
+          <div class="finish-chip correct"><i class="fas fa-check" aria-hidden="true"></i> ${acertos} acerto${acertos !== 1 ? 's' : ''}</div>
+          <div class="finish-chip wrong"><i class="fas fa-xmark" aria-hidden="true"></i> ${erros} erro${erros !== 1 ? 's' : ''}</div>
+          <div class="finish-chip total">${pct}% de aproveitamento</div>
+          ${msgDominados}
+          ${msgPenalidade}
+        </div>
+
+        ${diffHTML ? `
+        <div class="finish-diff-section">
+          <span class="finish-diff-label">Dificuldade por card</span>
+          <div class="finish-diff-row">${diffHTML}</div>
+        </div>` : ''}
+
+        <div class="finish-sr-status">
+          <i class="fas fa-brain" aria-hidden="true"></i>
+          <span>${sr.dominados} de ${sr.total} cards dominados</span>
+          <span class="finish-sr-next">${proximoTxt}</span>
+        </div>
+
+        <button class="finish-restart-btn" id="cards-finish-restart" type="button">
+          <i class="fas fa-rotate-left" aria-hidden="true"></i> Novo deck
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function _tplWrapper(discId, cards) {
+  return `
+    <div class="cards-controls">
+      <div class="cards-stats">
+        <div class="cards-stat-chip correct" aria-label="Acertos">
+          <div class="cards-stat-dot" aria-hidden="true"></div>
+          <span id="cards-stat-correct">0 acertos</span>
+        </div>
+        <div class="cards-stat-chip wrong" aria-label="Erros">
+          <div class="cards-stat-dot" aria-hidden="true"></div>
+          <span id="cards-stat-wrong">0 erros</span>
+        </div>
+      </div>
+      <div class="cards-actions">
+        <button class="cards-ctrl-btn" id="cards-btn-undo" title="Desfazer (Z)" type="button" aria-label="Desfazer">
+          <i class="fas fa-rotate-left" aria-hidden="true"></i>
+        </button>
+        <button class="cards-ctrl-btn" id="cards-btn-shuffle" title="Embaralhar" type="button" aria-label="Embaralhar">
+          <i class="fas fa-shuffle" aria-hidden="true"></i>
+        </button>
+        <button class="cards-ctrl-btn cards-ctrl-btn--kbd" id="cards-btn-kbd" title="Atalhos" type="button" aria-label="Atalhos de teclado" aria-expanded="false">
+          <i class="fas fa-keyboard" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="cards-progress-wrap">
+      <div class="cards-progress-top">
+        <span class="cards-progress-label" id="cards-progress-label">0 de ${cards.length} respondidos</span>
+        <span class="cards-progress-counter" id="cards-nav-counter">1 / ${cards.length}</span>
+      </div>
+      <div class="cards-progress-bar-bg" role="progressbar"
+           aria-valuemin="0" aria-valuemax="${cards.length}" aria-valuenow="0">
+        <div class="cards-progress-bar-fill" id="cards-progress-fill" style="width:0%"></div>
+      </div>
+      <div class="cards-dots-row" id="cards-dots-row" role="tablist" aria-label="Navegação por card"></div>
+    </div>
+
+    <div id="cards-scene-wrap"></div>
+
+    <div class="cards-bottom" id="cards-bottom">
+      <div class="cards-result-btns">
+        <button class="cards-result-btn cards-btn-wrong" id="cards-btn-wrong" type="button">
+          <i class="fas fa-xmark" aria-hidden="true"></i> Errei
+          <small style="font-size:.6rem;opacity:.5;margin-left:4px;">[E]</small>
+        </button>
+        <button class="cards-result-btn cards-btn-right" id="cards-btn-right" type="button">
+          <i class="fas fa-check" aria-hidden="true"></i> Acertei
+          <small style="font-size:.6rem;opacity:.5;margin-left:4px;">[A]</small>
+        </button>
+      </div>
+      <div class="cards-nav">
+        <button class="cards-nav-btn" id="cards-btn-prev" type="button">
+          <i class="fas fa-chevron-left" aria-hidden="true"></i> Anterior
+        </button>
+        <div class="cards-nav-counter" id="cards-nav-pos" aria-live="polite">1 / ${cards.length}</div>
+        <button class="cards-nav-btn" id="cards-btn-next" type="button">
+          Próximo <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="cards-kbd-panel" id="cards-kbd-panel" hidden aria-label="Atalhos de teclado">
+      <div class="kbd-panel-inner">
+        <div class="kbd-panel-title"><i class="fas fa-keyboard" aria-hidden="true"></i> Atalhos de teclado</div>
+        <div class="kbd-grid">
+          <div class="kbd-row"><kbd>Espaço</kbd><span>Virar card</span></div>
+          <div class="kbd-row"><kbd>A</kbd><span>Acertei</span></div>
+          <div class="kbd-row"><kbd>E</kbd><span>Errei</span></div>
+          <div class="kbd-row"><kbd>Z</kbd><span>Desfazer</span></div>
+          <div class="kbd-row"><kbd>→</kbd><span>Próximo</span></div>
+          <div class="kbd-row"><kbd>←</kbd><span>Anterior</span></div>
+          <div class="kbd-row"><kbd>1</kbd><span>Fácil</span></div>
+          <div class="kbd-row"><kbd>2</kbd><span>Médio</span></div>
+          <div class="kbd-row"><kbd>3</kbd><span>Difícil</span></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/* ═════════════════════════════════════════════════════════════════
+   7. RENDER
+   ═════════════════════════════════════════════════════════════════ */
+
+function _animarEntradaCard(sceneWrap, direcao = 'next') {
+  const cena = sceneWrap.querySelector('#cards-scene');
+  if (!cena) return;
+  const cls = direcao === 'next' ? 'card-enter-next' : 'card-enter-prev';
+  cena.classList.add(cls);
+  cena.addEventListener('animationend', () => cena.classList.remove(cls), { once: true });
+}
+
+function _renderCard(direcaoAnimacao = 'next') {
+  const { cards, current, discId, panelEl, resultado } = _estado;
+
+  const todosRespondidos = cards.length > 0 && cards.every(c => resultado[c.id]);
+  const isUltimo        = current >= cards.length || (current === cards.length && todosRespondidos);
+
+  const wrap   = panelEl.querySelector('#cards-scene-wrap');
+  const bottom = panelEl.querySelector('#cards-bottom');
+  const tagCls = DISC_TAG_CLASS[discId] || 'tag-default';
+
+  if (isUltimo && todosRespondidos) {
+    wrap.innerHTML       = _tplFinal();
+    bottom.style.display = 'none';
+    _limparSessao();
+    panelEl.querySelector('#cards-finish-restart')?.addEventListener('click', _reiniciar);
+    _atualizarUI();
+    return;
+  }
+
+  if (current >= cards.length) {
+    const primeiro = cards.findIndex(c => !resultado[c.id]);
+    _estado.current = primeiro >= 0 ? primeiro : cards.length - 1;
+  }
+
+  bottom.style.display = '';
+  const card = cards[_estado.current];
+  wrap.innerHTML = _tplCena(card, tagCls);
+
+  _animarEntradaCard(wrap, direcaoAnimacao);
+
+  wrap.querySelector('#cards-scene').addEventListener('click', _flipCard);
+  wrap.querySelector('#cards-scene').addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _flipCard(); }
+  });
+
+  wrap.querySelectorAll('.cards-diff-btn').forEach(btn => {
+    btn.addEventListener('click', e => { e.stopPropagation(); _marcarDificuldade(btn.dataset.diff); });
+  });
+
+  wrap.querySelectorAll('.cards-penalidade-badge').forEach(badge => {
+    const tip = badge.querySelector('.cards-tooltip');
+    badge.addEventListener('mouseenter', () => tip?.classList.add('tooltip-visible'));
+    badge.addEventListener('mouseleave', () => tip?.classList.remove('tooltip-visible'));
+    badge.addEventListener('click', e => e.stopPropagation());
+  });
+
+  _estado.flipped = false;
+  _atualizarBotoesDiff(card.id);
+  _atualizarBadgeDiff(card.id);
+  _atualizarResultadoVisual(card.id);
+  _atualizarUI();
+}
+
+/* ═════════════════════════════════════════════════════════════════
+   8. ATUALIZAÇÕES DE UI
+   ═════════════════════════════════════════════════════════════════ */
+
+function _atualizarResultadoVisual(cardId) {
+  const { panelEl, resultado } = _estado;
+  const res        = resultado[cardId];
+  const badgeFront = panelEl.querySelector('#cards-result-badge-front');
+  const scene      = panelEl.querySelector('#cards-scene');
+  const btnWrong   = panelEl.querySelector('#cards-btn-wrong');
+  const btnRight   = panelEl.querySelector('#cards-btn-right');
+  const hint       = panelEl.querySelector('#cards-hint');
+
+  scene?.classList.remove('card-answered-correct', 'card-answered-wrong');
+
+  if (res === 'correct') {
+    if (badgeFront) { badgeFront.innerHTML = '<i class="fas fa-check" aria-hidden="true"></i> Acertei'; badgeFront.className = 'cards-result-badge result-correct'; badgeFront.style.display = 'flex'; }
+    scene?.classList.add('card-answered-correct');
+    if (hint) hint.style.opacity = '0.35';
+    btnWrong?.classList.remove('btn-selected-wrong');
+    btnRight?.classList.add('btn-selected-right');
+
+  } else if (res === 'wrong') {
+    if (badgeFront) { badgeFront.innerHTML = '<i class="fas fa-xmark" aria-hidden="true"></i> Errei'; badgeFront.className = 'cards-result-badge result-wrong'; badgeFront.style.display = 'flex'; }
+    scene?.classList.add('card-answered-wrong');
+    if (hint) hint.style.opacity = '0.35';
+    btnRight?.classList.remove('btn-selected-right');
+    btnWrong?.classList.add('btn-selected-wrong');
+
+  } else {
+    if (badgeFront) badgeFront.style.display = 'none';
+    if (hint) hint.style.opacity = '';
+    btnWrong?.classList.remove('btn-selected-wrong');
+    btnRight?.classList.remove('btn-selected-right');
+  }
+}
+
+function _atualizarBotoesDiff(cardId) {
+  const saved = _estado.difficulty[cardId];
+  _estado.panelEl.querySelectorAll('.cards-diff-btn').forEach(btn => {
+    btn.classList.toggle('selected', btn.dataset.diff === saved);
   });
 }
 
-/* ══════════════════════════════════════════════════════════
-   ERRO (deck não encontrado)
-   ══════════════════════════════════════════════════════════ */
+function _atualizarBadgeDiff(cardId) {
+  const saved = _estado.difficulty[cardId];
+  const badge = _estado.panelEl.querySelector('#cards-diff-badge');
+  const wrap  = _estado.panelEl.querySelector('#cards-diff-badge-wrap');
+  if (!badge || !wrap) return;
 
-function mostrarErro() {
-  DOM.loading.classList.add('hidden');
-  DOM.error.classList.remove('hidden');
-
-  const { sem: s } = { sem };
-  DOM.errorBack.href = `../../jogo.html${s ? `?sem=${s}` : ''}`;
+  if (saved) {
+    const cfg = { easy: { label: 'Fácil', cls: 'badge-easy' }, medium: { label: 'Médio', cls: 'badge-medium' }, hard: { label: 'Difícil', cls: 'badge-hard' } };
+    badge.textContent  = cfg[saved].label;
+    badge.className    = `cards-diff-badge ${cfg[saved].cls}`;
+    wrap.style.display = 'flex';
+  } else {
+    wrap.style.display = 'none';
+  }
 }
 
-/* ══════════════════════════════════════════════════════════
-   EVENTOS
-   ══════════════════════════════════════════════════════════ */
+function _atualizarUI() {
+  const { cards, current, resultado, stats, panelEl, historico } = _estado;
+  const total       = cards.length;
+  const respondidos = Object.keys(resultado).length;
+  const pct         = total ? Math.round((respondidos / total) * 100) : 0;
 
-/* Virar ao clicar no card */
-DOM.scene.addEventListener('click', () => {
-  if (!state.virado) virar();
-});
+  const q = id => panelEl.querySelector(id);
 
-/* Botões de ação */
-DOM.btnSei.addEventListener('click',   marcarSei);
-DOM.btnRever.addEventListener('click', marcarRever);
+  const fill = q('#cards-progress-fill');
+  if (fill) { fill.style.width = `${pct}%`; fill.closest('[role=progressbar]')?.setAttribute('aria-valuenow', respondidos); }
 
-/* Teclado */
-document.addEventListener('keydown', (e) => {
-  if (e.target.tagName === 'BUTTON' && e.key === ' ') return; // evita duplo disparo
+  const lbl = q('#cards-progress-label');
+  if (lbl) lbl.textContent = `${respondidos} de ${total} respondidos`;
 
-  switch (e.key) {
-    case ' ':
-    case 'Enter':
-      e.preventDefault();
-      if (!state.virado) virar();
-      break;
-    case 'ArrowRight':
-      e.preventDefault();
-      marcarSei();
-      break;
-    case 'ArrowLeft':
-      e.preventDefault();
-      marcarRever();
-      break;
+  const ctrTop = q('#cards-nav-counter');
+  if (ctrTop) ctrTop.textContent = current >= total ? `Fim · ${total} cards` : `${current + 1} / ${total}`;
+
+  const ctrNav = q('#cards-nav-pos');
+  if (ctrNav) ctrNav.textContent = current >= total ? 'Fim' : `${current + 1} / ${total}`;
+
+  const sc = q('#cards-stat-correct');
+  if (sc) sc.textContent = `${stats.correct} acerto${stats.correct !== 1 ? 's' : ''}`;
+  const sw = q('#cards-stat-wrong');
+  if (sw) sw.textContent = `${stats.wrong} erro${stats.wrong !== 1 ? 's' : ''}`;
+
+  const prev = q('#cards-btn-prev');
+  if (prev) prev.disabled = current === 0;
+
+  const cardAtual  = cards[current];
+  const respondido = cardAtual ? !!resultado[cardAtual.id] : true;
+  const next = q('#cards-btn-next');
+  if (next) next.disabled = current >= total || !respondido;
+
+  const undo = q('#cards-btn-undo');
+  if (undo) undo.disabled = historico.length === 0;
+
+  _atualizarDots();
+}
+
+function _atualizarDots() {
+  const { cards, current, resultado, panelEl } = _estado;
+  const total   = cards.length;
+  const dotsRow = panelEl.querySelector('#cards-dots-row');
+  if (!dotsRow) return;
+
+  const MAX_VISIBLE = 12;
+  let start = 0, end = total;
+  if (total > MAX_VISIBLE) {
+    const half = Math.floor(MAX_VISIBLE / 2);
+    start = Math.max(0, current - half);
+    end   = start + MAX_VISIBLE;
+    if (end > total) { end = total; start = end - MAX_VISIBLE; }
   }
-});
 
-/* ══════════════════════════════════════════════════════════
-   BOOT
-   ══════════════════════════════════════════════════════════ */
+  dotsRow.innerHTML = '';
+  for (let i = start; i < end; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'cards-dot';
+    btn.type = 'button';
+    btn.setAttribute('role', 'tab');
 
-iniciar();
+    const res = resultado[cards[i]?.id];
+    if (i === current)          btn.classList.add('dot-active');
+    else if (res === 'correct') btn.classList.add('dot-correct');
+    else if (res === 'wrong')   btn.classList.add('dot-wrong');
+
+    btn.title = `Card ${i + 1}`;
+    btn.setAttribute('aria-label', `Card ${i + 1}${res ? ` — ${res === 'correct' ? 'acertado' : 'errado'}` : ''}`);
+    btn.setAttribute('aria-selected', i === current ? 'true' : 'false');
+
+    btn.addEventListener('click', () => {
+      const cardAlvo = cards[i];
+      if (i > _estado.current && cardAlvo && !_estado.resultado[cardAlvo.id]) return;
+      const dir = i > _estado.current ? 'next' : 'prev';
+      _estado.current = i;
+      _renderCard(dir);
+    });
+
+    dotsRow.appendChild(btn);
+  }
+}
+
+/* ═════════════════════════════════════════════════════════════════
+   9. AÇÕES DO USUÁRIO
+   ═════════════════════════════════════════════════════════════════ */
+
+function _flipCard() {
+  _estado.flipped = !_estado.flipped;
+  const flipper = _estado.panelEl.querySelector('#cards-flipper');
+  const back    = _estado.panelEl.querySelector('.cards-back');
+  const front   = _estado.panelEl.querySelector('.cards-front');
+  flipper?.classList.toggle('flipped', _estado.flipped);
+  if (front) front.setAttribute('aria-hidden', _estado.flipped ? 'true' : 'false');
+  if (back)  back.setAttribute('aria-hidden',  _estado.flipped ? 'false' : 'true');
+}
+
+function _marcarDificuldade(diff) {
+  const card = _estado.cards[_estado.current];
+  if (!card) return;
+  _estado.difficulty[card.id] = diff;
+  _atualizarBotoesDiff(card.id);
+  _atualizarBadgeDiff(card.id);
+}
+
+function _marcar(acertou) {
+  const { cards, current, panelEl } = _estado;
+  if (current >= cards.length || _estado.marcando) return;
+  _estado.marcando = true;
+
+  const card     = cards[current];
+  const anterior = _estado.resultado[card.id];
+
+  _estado.historico.push({
+    current,
+    stats:      { ..._estado.stats },
+    resultado:  { ..._estado.resultado },
+    difficulty: { ..._estado.difficulty },
+    srPerfilAnterior: { cardId: card.id, perfil: { ..._srPerfil(card.id) } },
+  });
+
+  _estado.resultado[card.id] = acertou ? 'correct' : 'wrong';
+
+  if (anterior === 'correct') _estado.stats.correct = Math.max(0, _estado.stats.correct - 1);
+  if (anterior === 'wrong')   _estado.stats.wrong   = Math.max(0, _estado.stats.wrong   - 1);
+  acertou ? _estado.stats.correct++ : _estado.stats.wrong++;
+
+  _srAtualizar(card.id, acertou, _estado.difficulty[card.id] || null);
+
+  _atualizarResultadoVisual(card.id);
+
+  const btnWrong = panelEl.querySelector('#cards-btn-wrong');
+  const btnRight = panelEl.querySelector('#cards-btn-right');
+  if (btnWrong) btnWrong.disabled = true;
+  if (btnRight) btnRight.disabled = true;
+
+  _atualizarUI();
+
+  if (current === cards.length - 1) {
+    const bottom = panelEl.querySelector('#cards-bottom');
+    if (bottom) bottom.style.display = 'none';
+  }
+
+  setTimeout(() => {
+    _estado.current++;
+    _estado.marcando = false;
+    if (btnWrong) btnWrong.disabled = false;
+    if (btnRight) btnRight.disabled = false;
+    _salvarSessao();
+    _renderCard('next');
+  }, 700);
+}
+
+function _proximo() {
+  const { cards, current, resultado } = _estado;
+  const cardAtual = cards[current];
+  if (cardAtual && !resultado[cardAtual.id]) return;
+  if (current < cards.length) { _estado.current++; _salvarSessao(); _renderCard('next'); }
+}
+
+function _anterior() {
+  if (_estado.current > 0) { _estado.current--; _salvarSessao(); _renderCard('prev'); }
+}
+
+function _embaralhar() {
+  const { cards, resultado } = _estado;
+  const idxNaoRespondidos = cards.reduce((acc, c, i) => { if (!resultado[c.id]) acc.push(i); return acc; }, []);
+  const embaralhados = _shuffle(idxNaoRespondidos.map(i => cards[i]));
+  const novoCards    = [...cards];
+  idxNaoRespondidos.forEach((pos, i) => { novoCards[pos] = embaralhados[i]; });
+  _estado.cards = novoCards;
+  const primeiroPendente = novoCards.findIndex(c => !resultado[c.id]);
+  _estado.current = primeiroPendente >= 0 ? primeiroPendente : _estado.current;
+  _salvarSessao();
+  _renderCard('next');
+}
+
+function _reiniciar() {
+  _limparSessao();
+  _estado.cards      = _srMontarDeck(_estado.discId);
+  _estado.current    = 0;
+  _estado.stats      = { correct: 0, wrong: 0 };
+  _estado.difficulty = {};
+  _estado.resultado  = {};
+  _estado.marcando   = false;
+  _estado.historico  = [];
+
+  const panelEl = _estado.panelEl;
+  panelEl.querySelector('.panel-cards')?.remove();
+  const wrap = _criarWrapperEl(_estado.discId, _estado.cards);
+  panelEl.appendChild(wrap);
+  _renderCard('next');
+}
+
+function _criarWrapperEl(discId, cards) {
+  const wrap = document.createElement('div');
+  wrap.className    = 'panel-cards';
+  wrap.dataset.disc = discId;
+  wrap.innerHTML    = _tplWrapper(discId, cards);
+
+  wrap.querySelector('#cards-btn-wrong')  ?.addEventListener('click', () => _marcar(false));
+  wrap.querySelector('#cards-btn-right')  ?.addEventListener('click', () => _marcar(true));
+  wrap.querySelector('#cards-btn-prev')   ?.addEventListener('click', _anterior);
+  wrap.querySelector('#cards-btn-next')   ?.addEventListener('click', _proximo);
+  wrap.querySelector('#cards-btn-shuffle')?.addEventListener('click', _embaralhar);
+  wrap.querySelector('#cards-btn-undo')   ?.addEventListener('click', _desfazer);
+
+  wrap.querySelector('#cards-btn-kbd')?.addEventListener('click', () => {
+    const kbdPanel = wrap.querySelector('#cards-kbd-panel');
+    const kbdBtn   = wrap.querySelector('#cards-btn-kbd');
+    const aberto   = !kbdPanel.hidden;
+    kbdPanel.hidden = aberto;
+    kbdBtn.classList.toggle('active', !aberto);
+    kbdBtn.setAttribute('aria-expanded', String(!aberto));
+  });
+
+  return wrap;
+}
+
+/* ═════════════════════════════════════════════════════════════════
+   10. API PÚBLICA
+   ═════════════════════════════════════════════════════════════════ */
+
+export async function initCards(discId, panelEl, nomeUsuario) {
+  destroyCards(panelEl);
+
+  const { sem } = lerParams();
+  Shell.init({ icon: '🃏', nome: 'Flashcards' });
+
+  // ← Adicione isso logo após Shell.init():
+  const backBtn = document.querySelector('.back-btn');
+  if (backBtn) {
+    backBtn.href = sem
+      ? `../../jogo.html?sem=${sem}`
+      : '../../jogo.html';
+  }
+
+  // Atualiza breadcrumb
+  const breadcrumb = document.getElementById('breadcrumb-disc');
+  if (breadcrumb) breadcrumb.textContent = DISC_LABEL[discId] ?? discId;
+
+  document.getElementById('card-skeleton')?.remove();
+
+  if (!CARDS_DATA[discId]?.length) {
+    const vazio = document.createElement('div');
+    vazio.className   = 'panel-cards';
+    vazio.dataset.disc = discId;
+    vazio.innerHTML   = `
+      <div class="cards-empty">
+        <i class="fas fa-layer-group" aria-hidden="true"></i>
+        <p>Nenhum card disponível para esta disciplina ainda.</p>
+      </div>`;
+    panelEl.appendChild(vazio);
+    return;
+  }
+
+  // Carrega SRS com semestre na chave
+  _srCache = await carregarPerfisSRS(nomeUsuario, discId, sem);
+
+  const sessaoSalva = window.flashcardSessao?.carregar(discId);
+  let cards, estado;
+
+  if (sessaoSalva) {
+    cards = sessaoSalva.cards
+      .map(id => CARDS_DATA[discId].find(c => c.id === id))
+      .filter(Boolean);
+
+    estado = {
+      ...ESTADO_INICIAL(),
+      discId,
+      semestre:   sem,
+      nomeUsuario,
+      cards,
+      current:    sessaoSalva.current,
+      stats:      sessaoSalva.stats,
+      difficulty: sessaoSalva.difficulty,
+      resultado:  sessaoSalva.resultado,
+      panelEl,
+    };
+  } else {
+    cards = _srMontarDeck(discId);
+    estado = {
+      ...ESTADO_INICIAL(),
+      discId,
+      semestre: sem,
+      nomeUsuario,
+      cards,
+      panelEl,
+    };
+  }
+
+  _estado = estado;
+
+  const wrap = _criarWrapperEl(discId, cards);
+  panelEl.appendChild(wrap);
+  _renderCard();
+  _registrarAtalhos();
+}
+
+export function destroyCards(panelEl) {
+  panelEl?.querySelector('.panel-cards')?.remove();
+  _removerAtalhos();
+}
+
+export const exibirCards  = initCards;
+export const removerCards = destroyCards;
+
+/* ── Auto-init standalone ── */
+(function _autoInit() {
+  const root = document.getElementById('card-root');
+  if (!root) return;
+
+  const { disc, sem } = lerParams();
+  const usuario = new URLSearchParams(location.search).get('user')
+               ?? localStorage.getItem('sessao_usuario')
+               ?? 'visitante';
+
+  if (disc) {
+    document.addEventListener('DOMContentLoaded', () => {
+      initCards(disc, root, usuario);
+    });
+  }
+})();
