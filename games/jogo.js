@@ -20,120 +20,16 @@ import { preencherAnos }       from '../shared/dom.js';
 ═══════════════════════════════════════════ */
 
 const JOGOS = [
-  // ── PERGUNTA ──────────────────────────
-  {
-    id: 'quiz-digitado',
-    nome: 'Quiz Aberto',
-    tipo: 'Pergunta',
-    status: 'disponível',
-    icon: '🧠',
-    descricao: 'Responda às perguntas digitando a resposta correta. Teste seu conhecimento real sobre o conteúdo da disciplina.',
-    duracao: '5–10 min',
-    dificuldade: '★★☆',
-  },
-  {
-    id: 'verdadeiro-falso',
-    nome: 'Verdadeiro ou Falso',
-    tipo: 'Pergunta',
-    status: 'disponível',
-    icon: '⚖️',
-    descricao: 'Avalie afirmações sobre a disciplina escolhida e decida se são verdadeiras ou falsas.',
-    duracao: '3–5 min',
-    dificuldade: '★☆☆',
-  },
-  {
-    id: 'completar-frase',
-    nome: 'Completar Frase',
-    tipo: 'Pergunta',
-    status: 'disponível',
-    icon: '✏️',
-    descricao: 'Preencha lacunas em frases para fixar conceitos essenciais da disciplina selecionada.',
-    duracao: '4–7 min',
-    dificuldade: '★★☆',
-  },
   // ── MEMORIZAÇÃO ───────────────────────
   {
-    id: 'flashcards',
-    nome: 'Flashcards',
+    id: 'flashcard',
+    nome: 'Flashcard',
     tipo: 'Memorização',
     status: 'disponível',
     icon: '🃏',
     descricao: 'Revise conceitos com cartões frente e verso. Método Spaced Repetition.',
     duracao: '5–15 min',
     dificuldade: '★☆☆',
-  },
-  {
-    id: 'jogo-memoria',
-    nome: 'Jogo da Memória',
-    tipo: 'Memorização',
-    status: 'disponível',
-    icon: '🔲',
-    descricao: 'Encontre pares de conceitos e definições da disciplina escolhida.',
-    duracao: '6–10 min',
-    dificuldade: '★★☆',
-  },
-  // ── DINÂMICA ──────────────────────────
-  {
-    id: 'show-milhao',
-    nome: 'Show do Milhão',
-    tipo: 'Dinâmica',
-    status: 'disponível',
-    icon: '🏆',
-    descricao: 'Responda 15 perguntas com ajudas disponíveis. Chegue ao topo!',
-    duracao: '10–20 min',
-    dificuldade: '★★★',
-  },
-  {
-    id: 'tabuleiro',
-    nome: 'Tabuleiro',
-    tipo: 'Dinâmica',
-    status: 'em breve',
-    icon: '🎲',
-    descricao: 'Avance casas respondendo questões da disciplina. Chegue ao fim primeiro!',
-    duracao: '15–25 min',
-    dificuldade: '★★★',
-  },
-  {
-    id: 'quiz-tempo',
-    nome: 'Quiz Contra o Tempo',
-    tipo: 'Dinâmica',
-    status: 'disponível',
-    icon: '⏱️',
-    descricao: 'Responda o máximo de questões antes que o tempo acabe. Velocidade é tudo!',
-    duracao: '2–5 min',
-    dificuldade: '★★★',
-  },
-  // ── PALAVRA ───────────────────────────
-  {
-    id: 'forca',
-    nome: 'Forca',
-    tipo: 'Palavra',
-    status: 'disponível',
-    icon: '🔤',
-    descricao: 'Descubra termos da disciplina letra por letra antes de errar demais. Clássico reimaginado.',
-    duracao: '3–6 min',
-    dificuldade: '★★☆',
-  },
-  {
-    id: 'caca-palavras',
-    nome: 'Caça-Palavras',
-    tipo: 'Palavra',
-    status: 'em breve',
-    icon: '🔍',
-    descricao: 'Encontre termos escondidos em um grid de letras. Desafie seus olhos!',
-    duracao: '5–12 min',
-    dificuldade: '★☆☆',
-  },
-  // ── ASSOCIAÇÃO ────────────────────────
-  {
-    id: 'associacao',
-    nome: 'Associação',
-    tipo: 'Associação',
-    status: 'disponível',
-    icon: '🔗',
-    descricao: 'Conecte conceitos com suas definições arrastando e soltando os pares corretos.',
-    duracao: '4–8 min',
-    dificuldade: '★★☆',
   },
 ];
 
@@ -399,9 +295,8 @@ function closeModal() {
 }
 
 function handlePlay(game, disciplinaArquivo, semestre) {
-  console.log(`[NexusStudy] Iniciando: ${game.id} | disc: ${disciplinaArquivo} | sem: ${semestre}`);
-  // Exemplo de navegação: window.location.href = `${game.id}/index.html?disc=${disciplinaArquivo}&sem=${semestre}`;
-  alert(`🎮 Iniciando: ${game.nome}\nDisciplina: ${disciplinaArquivo}\nSemestre: ${semestre}\n\n(Integração com o motor de jogo aqui)`);
+  window.location.href = 
+    `jogos/${game.id}/${game.id}.html?disc=${disciplinaArquivo}&sem=${semestre}`;
 }
 
 /* ═══════════════════════════════════════════
