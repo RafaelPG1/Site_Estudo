@@ -99,13 +99,10 @@ async function _srAtualizar(cardId, acertou, diffMarcada) {
   _srCache[cardId] = p;
 
   try {
-    await salvarPerfilSRS(
-      _estado.nomeUsuario,
-      cardId,
-      p,
-      _estado.discId,
-      _estado.semestre,
-    );
+    const uid = typeof _estado.nomeUsuario === 'object'
+  ? _estado.nomeUsuario.uid
+  : _estado.nomeUsuario;
+await salvarPerfilSRS(uid, cardId, p, _estado.discId, _estado.semestre);
   } catch (err) {
     console.error('[flashcard.js] Erro ao salvar SRS:', err);
   }
@@ -935,15 +932,13 @@ export async function initCards(discId, panelEl, nomeUsuario) {
   const { sem } = lerParams();
   Shell.init({ icon: '🃏', nome: 'Flashcards' });
 
-  // Resolve os cards do semestre correto e guarda no estado
   const cardsData = getCardsData(sem);
 
   const breadcrumb = document.getElementById('breadcrumb-disc');
   if (breadcrumb) breadcrumb.textContent = DISC_LABEL[discId] ?? discId;
-aplicarCoresDisciplina(discId, DISC_CORES);
+  aplicarCoresDisciplina(discId, DISC_CORES);
   document.getElementById('card-skeleton')?.remove();
 
-  // Sem cards para este semestre/disciplina
   if (!cardsData[discId]?.length) {
     const vazio = document.createElement('div');
     vazio.className    = 'panel-cards';
@@ -957,20 +952,21 @@ aplicarCoresDisciplina(discId, DISC_CORES);
     return;
   }
 
-  _srCache = await carregarPerfisSRS(nomeUsuario, discId, sem);
+  const uid = typeof nomeUsuario === 'object' ? nomeUsuario.uid : nomeUsuario;
+_srCache = await carregarPerfisSRS(uid, discId, sem);
 
   const sessaoSalva = window.flashcardSessao?.carregar(discId);
   let cards, estado;
 
-  if (sessaoSalva?.cards?.length) {
-    // Restaura os objetos completos a partir dos IDs salvos
+  const mesmoDia = sessaoSalva?.ts &&
+    new Date(sessaoSalva.ts).toDateString() === new Date().toDateString();
+
+  if (sessaoSalva?.cards?.length && mesmoDia) {
     cards = sessaoSalva.cards
       .map(id => cardsData[discId].find(c => c.id === id))
       .filter(Boolean);
 
-    // Se algum ID não foi encontrado, descarta e monta deck novo
     if (cards.length !== sessaoSalva.cards.length) {
-      // estado inicial será construído abaixo no else
       cards  = null;
       estado = null;
     } else {
@@ -1011,10 +1007,6 @@ aplicarCoresDisciplina(discId, DISC_CORES);
   _registrarAtalhos();
 }
 
-/**
- * Versão de _srMontarDeck que recebe cardsData explicitamente,
- * usada antes de _estado estar definido.
- */
 function _srMontarDeck_com(cardsData, discId) {
   const todos = cardsData[discId] || [];
   const agora = Date.now();
@@ -1056,6 +1048,16 @@ export function destroyCards(panelEl) {
 
 export const exibirCards  = initCards;
 export const removerCards = destroyCards;
+
+/* ── Invalida o cache em memória (chamado após reset externo) ── */
+export function invalidarCacheSRS(discId) {
+  if (!discId) {
+    _srCache = {};
+  } else {
+    const ids = (_estado.cardsData?.[discId] ?? []).map(c => c.id);
+    ids.forEach(id => { delete _srCache[id]; });
+  }
+}
 
 /* ── Auto-init standalone ── */
 (function _autoInit() {

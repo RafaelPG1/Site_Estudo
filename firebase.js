@@ -3,8 +3,7 @@
    Autenticação com Firestore + PIN com hash SHA-256
    ============================================= */
 
-import { initializeApp }              from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-
+import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getFirestore, doc, getDoc, setDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 import { setUsuario }                 from './global.js';
 
@@ -18,10 +17,15 @@ const firebaseConfig = {
   appId:             '1:529138252727:web:d866279f0c795b013e4632',
 };
 
-const app = initializeApp(firebaseConfig);
-const db  = getFirestore(app);
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-/* ── HASH SHA-256 (Web Crypto API — sem dependências) ── */
+let _db = null;
+export function getDb() {
+  if (!_db) _db = getFirestore(app);
+  return _db;
+}
+
+/* ── HASH SHA-256 ── */
 async function hashPin(pin) {
   const encoded = new TextEncoder().encode(String(pin));
   const buffer  = await crypto.subtle.digest('SHA-256', encoded);
@@ -30,30 +34,22 @@ async function hashPin(pin) {
     .join('');
 }
 
-/* ── LOGIN ──────────────────────────────────────
-   Retorna: { ok: true, usuario } | { ok: false, erro: string }
-─────────────────────────────────────────────── */
+/* ── LOGIN ── */
 export async function login(nome, pin) {
-  if (!nome || !pin) {
-    return { ok: false, erro: 'Preencha nome e PIN.' };
-  }
+  if (!nome || !pin) return { ok: false, erro: 'Preencha nome e PIN.' };
 
   const id = nome.trim().toLowerCase();
 
   try {
-    const ref  = doc(db, 'usuarios', id);
+    const ref  = doc(getDb(), 'usuarios', id);
     const snap = await getDoc(ref);
 
-    if (!snap.exists()) {
-      return { ok: false, erro: 'Usuário não encontrado.' };
-    }
+    if (!snap.exists()) return { ok: false, erro: 'Usuário não encontrado.' };
 
-    const dados    = snap.data();
-    const hashDig  = await hashPin(pin);
+    const dados   = snap.data();
+    const hashDig = await hashPin(pin);
 
-    if (hashDig !== dados.pin) {
-      return { ok: false, erro: 'PIN incorreto.' };
-    }
+    if (hashDig !== dados.pin) return { ok: false, erro: 'PIN incorreto.' };
 
     const usuario = {
       uid:    id,
@@ -71,18 +67,15 @@ export async function login(nome, pin) {
   }
 }
 
-/* ── LOGOUT ─────────────────────────────────── */
+/* ── LOGOUT ── */
 export function logout() {
   setUsuario(null);
 }
 
-/* ── CONFIGS DO USUÁRIO ─────────────────────────────────────
-   salvarConfigs(uid, configs) → Promise<{ ok: bool }>
-   carregarConfigs(uid)        → Promise<configs | null>
-─────────────────────────────────────────────────────────── */
+/* ── CONFIGS DO USUÁRIO ── */
 export async function salvarConfigs(uid, configs) {
   try {
-    const ref = doc(db, 'usuarios', uid);
+    const ref = doc(getDb(), 'usuarios', uid);
     await setDoc(ref, { configs }, { merge: true });
     console.log('[firebase] salvarConfigs: salvo com sucesso para', uid, '→', configs);
     return { ok: true };
@@ -94,14 +87,13 @@ export async function salvarConfigs(uid, configs) {
 
 export async function carregarConfigs(uid) {
   try {
-    const ref  = doc(db, 'usuarios', uid);
+    const ref  = doc(getDb(), 'usuarios', uid);
     const snap = await getDoc(ref);
     if (!snap.exists()) {
       console.warn('[firebase] carregarConfigs: documento não encontrado para', uid);
       return null;
     }
     const configs = snap.data().configs ?? null;
-    console.log('[firebase] carregarConfigs: resultado bruto do Firestore →', snap.data());
     console.log('[firebase] carregarConfigs: campo configs →', configs);
     return configs;
   } catch (err) {
@@ -110,15 +102,9 @@ export async function carregarConfigs(uid) {
   }
 }
 
-/* ── RESPOSTAS DO QUIZ ──────────────────────────────────────
-   Estrutura: usuarios/{uid}/quiz_respostas/{semestre}_{modo}_{disc}
-   respostasStr → string compacta ex: "2,0,null,1,null,3"
-     cada posição = índice da questão
-     valor = opção escolhida (0-3) ou "null" se não respondida
-─────────────────────────────────────────────────────────── */
-
+/* ── RESPOSTAS DO QUIZ ── */
 function _quizRef(uid, semestre, modo, disc) {
-  return doc(db, 'usuarios', uid, 'quiz_respostas', `${semestre}_${modo}_${disc}`);
+  return doc(getDb(), 'usuarios', uid, 'quiz_respostas', `${semestre}_${modo}_${disc}`);
 }
 
 export async function salvarRespostasQuiz(uid, semestre, modo, disc, respostasStr, revelado, finalizado) {
@@ -146,7 +132,7 @@ export async function carregarRespostasQuiz(uid, semestre, modo, disc) {
     }
     const data = snap.data();
     console.log('[firebase] carregarRespostasQuiz:', `${semestre}_${modo}_${disc}`, '→', data);
-    return data; // { respostas: string, revelado, finalizado, savedAt }
+    return data;
   } catch (err) {
     console.error('[firebase] carregarRespostasQuiz erro:', err);
     return null;
@@ -164,10 +150,7 @@ export async function limparRespostasQuiz(uid, semestre, modo, disc) {
   }
 }
 
-/* ── GERAR HASH (utilitário — use no console para gerar os hashes dos PINs) ──
-   Abra o console do navegador e rode:
-     import('/firebase.js').then(m => m.gerarHash('288').then(console.log))
-─────────────────────────────────────────────── */
+/* ── GERAR HASH (utilitário de console) ── */
 export async function gerarHash(pin) {
   const h = await hashPin(pin);
   console.log(`PIN: ${pin}  →  hash: ${h}`);

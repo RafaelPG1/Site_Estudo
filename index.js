@@ -8,11 +8,13 @@ import {
   setPagina,
   setConfigs, getConfigs, resetConfigs,
   limparDadosQuiz,
+  getSemestreAtual, getDisciplinasDeSemestre,
 } from './global.js';
 
 import { login, logout, carregarConfigs } from './firebase.js';
 import { criarSemestreSelect, preencherAnos } from './shared/dom.js';
-
+// index.js — no topo, junto com os outros imports
+import { limparPerfisSRS } from './games/jogos/flashcard/storage.js';
 /* ─────────────────────────────────────────────
    INICIALIZAÇÃO
 ───────────────────────────────────────────── */
@@ -366,7 +368,31 @@ function abrirModalConfig() {
             </button>
           </div>
         </div>
+<div class="modal__section">
+  <div class="modal__section-title">Flashcard</div>
 
+  <div class="config-row">
+    <label>
+      Limpar disciplina
+      <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
+        Zera o progresso de repetição espaçada de uma disciplina específica.
+      </small>
+    </label>
+    <div class="flashcard-disc-btns" id="flashcard-disc-btns"></div>
+  </div>
+
+  <div class="config-row">
+    <label>
+      Limpar tudo
+      <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
+        Zera o SRS de todas as disciplinas do semestre atual.
+      </small>
+    </label>
+    <button class="modal-btn modal-btn--danger" id="btn-limpar-srs-tudo">
+      Limpar tudo
+    </button>
+  </div>
+</div>
       </div><!-- /.modal__body-scroll -->
 
       <div class="modal__footer">
@@ -434,13 +460,16 @@ function abrirModalConfig() {
     setTimeout(abrirModalConfig, 300);
   });
 
-  document.getElementById('btn-limpar-quiz').addEventListener('click', () => {
+document.getElementById('btn-limpar-quiz').addEventListener('click', function () {
+  _confirmar(this, () => {
     limparDadosQuiz();
+    console.log('[Quiz] dados do quiz apagados via configurações');
     if (typeof window.__nexusQuizNotifyCleared === 'function') {
       window.__nexusQuizNotifyCleared();
     }
     mostrarToast('Dados do quiz apagados.');
   });
+});
 
   /* ── Logout ── */
   if (estaLogado()) {
@@ -453,8 +482,77 @@ function abrirModalConfig() {
       mostrarToast('Sessão encerrada.');
     });
   }
+/* ── SRS Flashcard ── */
+const sem         = getSemestreAtual();
+const disciplinas = getDisciplinasDeSemestre(sem);
+const uid         = getUsuario()?.uid ?? 'visitante';
+
+// Importa invalidarCacheSRS dinamicamente para não criar dependência circular
+async function _resetarSRS(discId) {
+  const mod = await import('./games/jogos/flashcard/flashcard.js');
+  if (discId) {
+    await limparPerfisSRS(uid, discId, sem);
+    mod.invalidarCacheSRS(discId);
+    console.log(`[SRS] limpo: uid="${uid}" disc="${discId}" sem="${sem}"`);
+  } else {
+    for (const disc of disciplinas) {
+      await limparPerfisSRS(uid, disc.id, sem);
+      console.log(`[SRS] limpo: uid="${uid}" disc="${disc.id}" sem="${sem}"`);
+    }
+    mod.invalidarCacheSRS(null); // limpa cache inteiro
+  }
 }
 
+const discBtns = document.getElementById('flashcard-disc-btns');
+if (discBtns) {
+  disciplinas.forEach(disc => {
+    const btn = document.createElement('button');
+    btn.className   = 'modal-btn modal-btn--ghost';
+    btn.textContent = disc.apelido;
+    btn.title       = `Limpar SRS de ${disc.nome}`;
+    btn.addEventListener('click', () => {
+      _confirmar(btn, async () => {
+        await _resetarSRS(disc.id);
+        mostrarToast(`SRS de ${disc.apelido} apagado.`);
+      });
+    });
+    discBtns.appendChild(btn);
+  });
+}
+
+document.getElementById('btn-limpar-srs-tudo')?.addEventListener('click', function () {
+  _confirmar(this, async () => {
+    await _resetarSRS(null);
+    mostrarToast('SRS de todas as disciplinas apagado.');
+  });
+});
+}
+
+function _confirmar(btn, callback) {
+  if (btn.dataset.confirmando === 'true') {
+    // Segunda vez — executa
+    btn.dataset.confirmando = 'false';
+    btn.textContent = btn.dataset.textoOriginal;
+    btn.classList.remove('modal-btn--danger');
+    callback();
+    return;
+  }
+
+  // Primeira vez — pede confirmação
+  btn.dataset.textoOriginal = btn.textContent;
+  btn.dataset.confirmando   = 'true';
+  btn.textContent = 'Tem certeza?';
+  btn.classList.add('modal-btn--danger');
+
+  // Cancela automaticamente após 3s se não confirmar
+  setTimeout(() => {
+    if (btn.dataset.confirmando === 'true') {
+      btn.dataset.confirmando = 'false';
+      btn.textContent = btn.dataset.textoOriginal;
+      btn.classList.remove('modal-btn--danger');
+    }
+  }, 3000);
+}
 /* ─────────────────────────────────────────────
    DROPDOWN PERFIL
 ───────────────────────────────────────────── */
