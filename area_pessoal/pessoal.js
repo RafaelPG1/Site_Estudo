@@ -11,7 +11,7 @@ import {
   getDisciplinasDeSemestre,
   setPagina,
   SEMESTRES,
-} from '../global.js';
+} from '../src/global.js';
 
 import { resolverSemestreDeURL } from '../shared/url.js';
 import { aplicarCoresDisciplina } from '../shared/theme.js';
