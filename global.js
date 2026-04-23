@@ -4,7 +4,7 @@
    ============================================= */
 
 import Storage from './storage.js';
-
+import { salvarConfigs } from './firebase.js';
 /* ── Expõe Storage para o quiz_engine (IIFE sem módulo) ── */
 window.NexusStorage = Storage;
 
@@ -54,7 +54,7 @@ function _defaultConfigs() {
     tema:                 'dark',
     animacoes:            true,
     notificacoes:         false,
-    salvarProgressoParcial: true,   // ← novo
+    salvarProgressoParcial: false,   // ← novo
     salvarProgresso:      true,
   };
 }
@@ -114,6 +114,14 @@ export function setConfigs(novas) {
   _estado.configs = { ..._estado.configs, ...novas };
   Storage.set('configs', _estado.configs);
   _aplicarConfigs(_estado.configs);
+
+  const u = _estado.usuario;
+  if (u?.uid) {
+    console.log('[global] setConfigs: enviando para Firebase →', _estado.configs);
+    salvarConfigs(u.uid, _estado.configs).catch(() => {});
+  } else {
+    console.log('[global] setConfigs: usuário não logado, só localStorage');
+  }
 }
 
 export function resetConfigs() {

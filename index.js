@@ -10,6 +10,7 @@ import {
   limparDadosQuiz,
 } from './global.js';
 
+import { login, logout, carregarConfigs } from './firebase.js';
 import { criarSemestreSelect, preencherAnos } from './shared/dom.js';
 
 /* ─────────────────────────────────────────────
@@ -25,8 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* ─────────────────────────────────────────────
    SELETOR DE SEMESTRE
-   Extraído em função para reusar após login/logout,
-   já que renderHeader() recria o #semestre-wrap.
 ───────────────────────────────────────────── */
 function _montarSelect() {
   criarSemestreSelect('semestre-wrap', sem => {
@@ -54,7 +53,7 @@ function renderHeader() {
     btnPerfil.title = u.nome;
     btnPerfil.innerHTML = u.foto
       ? `<img src="${u.foto}" alt="${u.nome}" class="avatar-img" />`
-      : `<span class="avatar-initial">${u.nome.charAt(0).toUpperCase()}</span>`;
+      : `<span class="avatar-initial">${u.avatar ?? u.nome.charAt(0).toUpperCase()}</span>`;
     btnPerfil.addEventListener('click', abrirPerfilDropdown);
     nav.appendChild(btnPerfil);
   } else {
@@ -105,6 +104,137 @@ function bindCardLinks() {
 }
 
 /* ─────────────────────────────────────────────
+   MODAL LOGIN — Nome + PIN
+───────────────────────────────────────────── */
+function abrirModalLogin() {
+  fecharTodosModais();
+
+  const modal = criarModal('login');
+  modal.innerHTML = `
+    <div class="modal__overlay" id="modal-overlay-login"></div>
+    <div class="modal__box modal__box--sm" role="dialog" aria-modal="true" aria-label="Entrar">
+
+      <div class="modal__header">
+        <h2 class="modal__title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          Entrar no Nexus
+        </h2>
+        <button class="modal__close" id="modal-close-login" aria-label="Fechar">✕</button>
+      </div>
+
+      <div class="modal__section">
+
+        <!-- Nome -->
+<div class="config-row config-row--col">
+  <label for="login-nome">Nome</label>
+  <input
+    type="text"
+    id="login-nome"
+    class="config-input"
+    placeholder="seu nome"
+    autocomplete="off"
+    autocapitalize="off"
+  />
+</div>
+
+        <!-- PIN -->
+        <div class="config-row config-row--col">
+          <label for="login-pin">PIN</label>
+          <input
+            type="password"
+            id="login-pin"
+            class="config-input"
+            placeholder="• • •"
+            maxlength="6"
+            inputmode="numeric"
+            autocomplete="off"
+          />
+        </div>
+
+        <p id="login-erro" class="login-erro" style="display:none"></p>
+
+      </div>
+
+      <div class="modal__footer">
+        <button class="modal-btn modal-btn--primary" id="btn-login-entrar">
+          Entrar
+        </button>
+      </div>
+
+    </div>`;
+
+  document.body.appendChild(modal);
+  requestAnimationFrame(() => modal.classList.add('modal--open'));
+
+  // Foca o PIN quando selecionar o nome
+  // ADICIONE:
+document.getElementById('login-nome').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('login-pin').focus();
+});
+
+  // Enter no PIN dispara login
+  document.getElementById('login-pin').addEventListener('keydown', e => {
+    if (e.key === 'Enter') _tentarLogin();
+  });
+
+  document.getElementById('modal-overlay-login').addEventListener('click', () => fecharModal(modal));
+  document.getElementById('modal-close-login').addEventListener('click',   () => fecharModal(modal));
+  document.getElementById('btn-login-entrar').addEventListener('click', _tentarLogin);
+
+  async function _tentarLogin() {
+    const nome  = document.getElementById('login-nome').value.trim();
+    const pin   = document.getElementById('login-pin').value.trim();
+    const erro  = document.getElementById('login-erro');
+    const btn   = document.getElementById('btn-login-entrar');
+
+    erro.style.display = 'none';
+
+    if (!nome || !pin) {
+      erro.textContent   = 'Selecione seu nome e digite o PIN.';
+      erro.style.display = 'block';
+      return;
+    }
+
+    // Estado de carregamento
+    btn.textContent = 'Entrando…';
+    btn.disabled    = true;
+
+    const resultado = await login(nome, pin);
+
+    btn.textContent = 'Entrar';
+    btn.disabled    = false;
+
+if (resultado.ok) {
+  const configsRemota = await carregarConfigs(resultado.usuario.uid);
+  console.log('[login] configsRemota recebida →', configsRemota);
+
+  if (configsRemota) {
+    setConfigs(configsRemota);
+    console.log('[login] configs aplicadas do Firebase ✓');
+  } else {
+    console.log('[login] nenhuma config remota — mantendo localStorage');
+  }
+
+  fecharModal(modal);
+  renderHeader();
+  _montarSelect();
+  mostrarToast(`Bem-vindo, ${resultado.usuario.nome}! ${resultado.usuario.avatar}`);
+  
+
+    } else {
+      erro.textContent   = resultado.erro;
+      erro.style.display = 'block';
+      document.getElementById('login-pin').value = '';
+      document.getElementById('login-pin').focus();
+    }
+  }
+}
+
+/* ─────────────────────────────────────────────
    MODAL CONFIG
 ───────────────────────────────────────────── */
 function abrirModalConfig() {
@@ -146,11 +276,13 @@ function abrirModalConfig() {
             <div class="config-perfil__avatar">
               ${getUsuario().foto
                 ? `<img src="${getUsuario().foto}" alt="avatar" />`
-                : `<span>${getUsuario().nome.charAt(0).toUpperCase()}</span>`}
+                : `<span>${getUsuario().avatar ?? getUsuario().nome.charAt(0).toUpperCase()}</span>`}
             </div>
             <div class="config-perfil__info">
               <strong>${getUsuario().nome}</strong>
-              <span>${getUsuario().email}</span>
+              <span style="color:var(--text-2,#a8a49c); font-size:.8rem">
+                ${getUsuario().uid}
+              </span>
             </div>
             <button class="config-perfil__logout" id="btn-logout">Sair</button>
           </div>
@@ -246,7 +378,7 @@ function abrirModalConfig() {
   document.body.appendChild(modal);
   requestAnimationFrame(() => modal.classList.add('modal--open'));
 
-  /* ── Auto-save ao mudar qualquer controle ── */
+  /* ── Auto-save ── */
   function _lerConfigs() {
     return {
       tema:                   document.getElementById('cfg-tema').value,
@@ -257,9 +389,7 @@ function abrirModalConfig() {
     };
   }
 
-  function _autoSave() {
-    setConfigs(_lerConfigs());
-  }
+  function _autoSave() { setConfigs(_lerConfigs()); }
 
   document.getElementById('cfg-tema').addEventListener('change', _autoSave);
   document.getElementById('cfg-anim').addEventListener('change', _autoSave);
@@ -277,31 +407,25 @@ function abrirModalConfig() {
     _autoSave();
   });
 
-  /* Desabilita "salvar ao concluir" se "salvar progresso" já estiver off */
   if (cfg.salvarProgressoParcial === false) {
     const concluir = document.getElementById('cfg-salvar-progresso');
-    if (concluir) {
-      concluir.checked  = false;
-      concluir.disabled = true;
-    }
+    if (concluir) { concluir.checked = false; concluir.disabled = true; }
   }
 
-  /* ── Fechar — salva e mostra toast ── */
+  /* ── Fechar ── */
   function _fecharComToast() {
     fecharModal(modal);
     mostrarToast('Configurações salvas!');
   }
 
   document.getElementById('modal-overlay-config').addEventListener('click', _fecharComToast);
-  document.getElementById('modal-close-config').addEventListener('click', _fecharComToast);
+  document.getElementById('modal-close-config').addEventListener('click',   _fecharComToast);
 
-  /* ── Salvar (botão explícito — mesma ação) ── */
   document.getElementById('btn-salvar-configs').addEventListener('click', () => {
     setConfigs(_lerConfigs());
     _fecharComToast();
   });
 
-  /* ── Resetar configs ── */
   document.getElementById('btn-reset-configs').addEventListener('click', () => {
     resetConfigs();
     fecharModal(modal);
@@ -309,7 +433,6 @@ function abrirModalConfig() {
     setTimeout(abrirModalConfig, 300);
   });
 
-  /* ── Limpar dados do quiz ── */
   document.getElementById('btn-limpar-quiz').addEventListener('click', () => {
     limparDadosQuiz();
     if (typeof window.__nexusQuizNotifyCleared === 'function') {
@@ -321,89 +444,13 @@ function abrirModalConfig() {
   /* ── Logout ── */
   if (estaLogado()) {
     document.getElementById('btn-logout')?.addEventListener('click', () => {
-      setUsuario(null);
+      logout();
       fecharModal(modal);
       renderHeader();
       _montarSelect();
       mostrarToast('Sessão encerrada.');
     });
   }
-}
-
-/* ─────────────────────────────────────────────
-   MODAL LOGIN
-───────────────────────────────────────────── */
-function abrirModalLogin() {
-  fecharTodosModais();
-
-  const modal = criarModal('login');
-  modal.innerHTML = `
-    <div class="modal__overlay" id="modal-overlay-login"></div>
-    <div class="modal__box modal__box--sm" role="dialog" aria-modal="true" aria-label="Entrar">
-      <div class="modal__header">
-        <h2 class="modal__title">Entrar no Nexus</h2>
-        <button class="modal__close" id="modal-close-login" aria-label="Fechar">✕</button>
-      </div>
-
-      <div class="modal__section">
-        <div class="config-row config-row--col">
-          <label for="login-email">E-mail</label>
-          <input type="email" id="login-email" class="config-input" placeholder="seu@email.com" />
-        </div>
-        <div class="config-row config-row--col">
-          <label for="login-senha">Senha</label>
-          <input type="password" id="login-senha" class="config-input" placeholder="••••••••" />
-        </div>
-        <p id="login-erro" class="login-erro" style="display:none"></p>
-      </div>
-
-      <div class="modal__footer">
-        <button class="modal-btn modal-btn--ghost" id="btn-login-google">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21
-            3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71
-            1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43
-            8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12
-            1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-          </svg>
-          Continuar com Google
-        </button>
-        <button class="modal-btn modal-btn--primary" id="btn-login-email">Entrar</button>
-      </div>
-    </div>`;
-
-  document.body.appendChild(modal);
-  requestAnimationFrame(() => modal.classList.add('modal--open'));
-
-  document.getElementById('modal-overlay-login').addEventListener('click', () => fecharModal(modal));
-  document.getElementById('modal-close-login').addEventListener('click',   () => fecharModal(modal));
-
-  document.getElementById('btn-login-email').addEventListener('click', () => {
-    const email = document.getElementById('login-email').value.trim();
-    const senha = document.getElementById('login-senha').value;
-    const erro  = document.getElementById('login-erro');
-
-    if (!email || !senha) {
-      erro.textContent = 'Preencha e-mail e senha.';
-      erro.style.display = 'block';
-      return;
-    }
-
-    // TODO: conectar ao firebase.js
-    setUsuario({ uid: 'temp_001', nome: email.split('@')[0], email, foto: null });
-    fecharModal(modal);
-    renderHeader();
-    _montarSelect();
-    mostrarToast(`Bem-vindo, ${getUsuario().nome}!`);
-  });
-
-  document.getElementById('btn-login-google').addEventListener('click', () => {
-    // TODO: conectar ao firebase.js — signInWithPopup(googleProvider)
-    mostrarToast('Google Login: conecte ao firebase.js');
-  });
 }
 
 /* ─────────────────────────────────────────────
@@ -425,11 +472,13 @@ function abrirPerfilDropdown() {
   dd.innerHTML = `
     <div class="pd-header">
       <div class="pd-avatar">
-        ${u.foto ? `<img src="${u.foto}" alt="avatar" />` : `<span>${u.nome.charAt(0).toUpperCase()}</span>`}
+        ${u.foto
+          ? `<img src="${u.foto}" alt="avatar" />`
+          : `<span>${u.avatar ?? u.nome.charAt(0).toUpperCase()}</span>`}
       </div>
       <div class="pd-info">
         <strong>${u.nome}</strong>
-        <span>${u.email}</span>
+        <span style="font-size:.75rem; opacity:.5">${u.uid}</span>
       </div>
     </div>
     <div class="pd-divider"></div>
@@ -451,7 +500,7 @@ function abrirPerfilDropdown() {
   }, 100);
 
   document.getElementById('pd-logout').addEventListener('click', () => {
-    setUsuario(null);
+    logout();
     dd.remove();
     renderHeader();
     _montarSelect();
@@ -487,9 +536,7 @@ function mostrarToast(msg) {
 
   const existentes = document.querySelectorAll('.nexus-toast');
   let nextBottom = 32;
-  existentes.forEach(t => {
-    nextBottom += t.offsetHeight + OFFSET;
-  });
+  existentes.forEach(t => { nextBottom += t.offsetHeight + OFFSET; });
 
   const t = document.createElement('div');
   t.className = 'nexus-toast';
