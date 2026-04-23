@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
-   NEXUS STUDY — games/jogos/flashcard/flashcard.js  (v3.1)
+   NEXUS STUDY — games/jogos/flashcard/flashcard.js  (v3.2)
 
    Seções:
      1. IMPORTS & CONSTANTES
@@ -16,11 +16,13 @@
 
 /* ── 1. IMPORTS & CONSTANTES ──────────────────────────────────── */
 
-import { CARDS_DATA }                        from '../../conteudo/flashcards/cards_data.js';
+import { getCardsData }                      from '../../conteudo/flashcards/cards_data.js';
 import { carregarPerfisSRS, salvarPerfilSRS } from './storage.js';
 import { Shell, lerParams }                  from '../../template/game-shell.js';
-import { getUsuario } from '../../../global.js';
+import { getUsuario }                        from '../../../global.js';
 
+import { DISC_CORES }               from '../../../shared/cores.js';
+import { aplicarCoresDisciplina }   from '../../../shared/theme.js';
 // Mapeamento disciplina → classe da tag
 const DISC_TAG_CLASS = {
   design:      'tag-design',
@@ -43,6 +45,8 @@ const MIN_TENTATIVAS_PENALIDADE = 4;
 
 /* ═════════════════════════════════════════════════════════════════
    2. ENGINE DE SPACED REPETITION (SRS)
+   Todas as funções SRS usam _estado.cardsData — nunca uma variável
+   global — para garantir isolamento por semestre.
    ═════════════════════════════════════════════════════════════════ */
 
 let _srCache = {};
@@ -108,7 +112,8 @@ async function _srAtualizar(cardId, acertou, diffMarcada) {
 }
 
 function _srMontarDeck(discId) {
-  const todos = CARDS_DATA[discId] || [];
+  // Usa _estado.cardsData — isolado por semestre
+  const todos = _estado.cardsData[discId] || [];
   const agora = Date.now();
 
   const vencidos  = [];
@@ -152,7 +157,8 @@ function _srMontarDeck(discId) {
 }
 
 function _srEstatisticas(discId) {
-  const todos = CARDS_DATA[discId] || [];
+  // Usa _estado.cardsData — isolado por semestre
+  const todos = _estado.cardsData[discId] || [];
   const agora = Date.now();
   let dominados = 0, vencidos = 0, novos = 0;
 
@@ -160,9 +166,9 @@ function _srEstatisticas(discId) {
     const p     = _srPerfil(card.id);
     const visto = p.tentativas > 0;
 
-    if (!visto)                              novos++;
+    if (!visto)                                  novos++;
     else if (p.dominado || p.proximaVez > agora) dominados++;
-    else                                     vencidos++;
+    else                                         vencidos++;
   });
 
   return { total: todos.length, dominados, vencidos, novos };
@@ -176,6 +182,7 @@ const ESTADO_INICIAL = () => ({
   discId:      null,
   semestre:    null,
   nomeUsuario: null,
+  cardsData:   {},   // mapa { discId: cards[] } do semestre atual
   cards:       [],
   current:     0,
   flipped:     false,
@@ -203,7 +210,10 @@ function _shuffle(arr) {
 function _salvarSessao() {
   window.flashcardSessao?.salvar({
     ..._estado,
-    cards: _estado.cards.map(c => c.id),
+    cards:     _estado.cards.map(c => c.id),
+    cardsData: undefined, // não serializa o mapa completo — é grande e desnecessário
+    panelEl:   undefined, // não serializa o DOM
+    historico: undefined, // historico tem objetos SRS — descarta ao salvar
   });
 }
 
@@ -564,7 +574,7 @@ function _tplWrapper(discId, cards) {
           <div class="kbd-row"><kbd>→</kbd><span>Próximo</span></div>
           <div class="kbd-row"><kbd>←</kbd><span>Anterior</span></div>
           <div class="kbd-row"><kbd>1</kbd><span>Fácil</span></div>
-          <div class="kbd-row"><kbd>2</kbd><span>Médio</kbd></div>
+          <div class="kbd-row"><kbd>2</kbd><span>Médio</span></div>
           <div class="kbd-row"><kbd>3</kbd><span>Difícil</span></div>
         </div>
       </div>
@@ -923,15 +933,18 @@ export async function initCards(discId, panelEl, nomeUsuario) {
   destroyCards(panelEl);
 
   const { sem } = lerParams();
-
   Shell.init({ icon: '🃏', nome: 'Flashcards' });
+
+  // Resolve os cards do semestre correto e guarda no estado
+  const cardsData = getCardsData(sem);
 
   const breadcrumb = document.getElementById('breadcrumb-disc');
   if (breadcrumb) breadcrumb.textContent = DISC_LABEL[discId] ?? discId;
-
+aplicarCoresDisciplina(discId, DISC_CORES);
   document.getElementById('card-skeleton')?.remove();
 
-  if (!CARDS_DATA[discId]?.length) {
+  // Sem cards para este semestre/disciplina
+  if (!cardsData[discId]?.length) {
     const vazio = document.createElement('div');
     vazio.className    = 'panel-cards';
     vazio.dataset.disc = discId;
@@ -952,19 +965,21 @@ export async function initCards(discId, panelEl, nomeUsuario) {
   if (sessaoSalva?.cards?.length) {
     // Restaura os objetos completos a partir dos IDs salvos
     cards = sessaoSalva.cards
-      .map(id => CARDS_DATA[discId].find(c => c.id === id))
+      .map(id => cardsData[discId].find(c => c.id === id))
       .filter(Boolean);
 
-    // Se algum ID não foi encontrado, descarta a sessão e monta deck novo
+    // Se algum ID não foi encontrado, descarta e monta deck novo
     if (cards.length !== sessaoSalva.cards.length) {
-      cards = _srMontarDeck(discId);
-      estado = { ...ESTADO_INICIAL(), discId, semestre: sem, nomeUsuario, cards, panelEl };
+      // estado inicial será construído abaixo no else
+      cards  = null;
+      estado = null;
     } else {
       estado = {
         ...ESTADO_INICIAL(),
         discId,
         semestre:   sem,
         nomeUsuario,
+        cardsData,
         cards,
         current:    sessaoSalva.current    ?? 0,
         stats:      sessaoSalva.stats      ?? { correct: 0, wrong: 0 },
@@ -973,9 +988,19 @@ export async function initCards(discId, panelEl, nomeUsuario) {
         panelEl,
       };
     }
-  } else {
-    cards = _srMontarDeck(discId);
-    estado = { ...ESTADO_INICIAL(), discId, semestre: sem, nomeUsuario, cards, panelEl };
+  }
+
+  if (!estado) {
+    cards  = _srMontarDeck_com(cardsData, discId);
+    estado = {
+      ...ESTADO_INICIAL(),
+      discId,
+      semestre: sem,
+      nomeUsuario,
+      cardsData,
+      cards,
+      panelEl,
+    };
   }
 
   _estado = estado;
@@ -984,6 +1009,44 @@ export async function initCards(discId, panelEl, nomeUsuario) {
   panelEl.appendChild(wrap);
   _renderCard();
   _registrarAtalhos();
+}
+
+/**
+ * Versão de _srMontarDeck que recebe cardsData explicitamente,
+ * usada antes de _estado estar definido.
+ */
+function _srMontarDeck_com(cardsData, discId) {
+  const todos = cardsData[discId] || [];
+  const agora = Date.now();
+
+  const vencidos = [], novos = [], cedo = [], dominados = [];
+
+  todos.forEach(card => {
+    const p     = _srPerfil(card.id);
+    const visto = p.tentativas > 0;
+    if (p.dominado)                 dominados.push({ card, p });
+    else if (!visto)                novos.push({ card, p });
+    else if (p.proximaVez <= agora) vencidos.push({ card, p });
+    else                            cedo.push({ card, p });
+  });
+
+  vencidos.sort((a, b) =>
+    b.p.erros !== a.p.erros           ? b.p.erros - a.p.erros :
+    b.p.tentativas !== a.p.tentativas ? b.p.tentativas - a.p.tentativas :
+    a.p.proximaVez - b.p.proximaVez
+  );
+  cedo.sort((a, b) => a.p.proximaVez - b.p.proximaVez);
+  dominados.sort((a, b) => a.p.proximaVez - b.p.proximaVez);
+
+  const selecionados = [];
+  const add = lista => {
+    for (const item of lista) {
+      if (selecionados.length >= DECK_SIZE) break;
+      selecionados.push(item.card);
+    }
+  };
+  add(vencidos); add(novos); add(cedo); add(dominados);
+  return _shuffle(selecionados);
 }
 
 export function destroyCards(panelEl) {

@@ -134,7 +134,8 @@ a { text-decoration: none; color: inherit; }
 
 .breadcrumb { display: flex; align-items: center; gap: .35rem; font-size: .75rem; color: rgba(255,255,255,.35); }
 .breadcrumb svg { opacity: .4; }
-.breadcrumb__item--active { color: var(--accent-light); font-weight: 500; }
+
+.breadcrumb__item--active { color: var(--cor-tema, var(--accent-light)); font-weight: 500; }
 
 /* ── MAIN ───────────────────────────────────────────────────── */
 .main {
