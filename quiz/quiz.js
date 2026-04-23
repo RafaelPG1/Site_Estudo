@@ -3,7 +3,7 @@ import {
   getSemestreAtual,
   setSemestre,
   getDisciplinasDeSemestre,
-} from '../global.js';
+} from '../src/global.js';
 
 import { sincronizarSemNaURL } from '../shared/url.js';
 import { preencherAnos } from '../shared/dom.js';

@@ -1,6 +1,7 @@
 /* =============================================
    NEXUS STUDY — firebase.js
    Autenticação com Firestore + PIN com hash SHA-256
+   src/firebase.js
    ============================================= */
 
 import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';

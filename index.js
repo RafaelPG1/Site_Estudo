@@ -19,6 +19,12 @@ import { limparPerfisSRS } from './games/jogos/flashcard/storage.js';
    INICIALIZAÇÃO
 ───────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
+  /* ── Guard: se já está logado como admin, redireciona imediatamente ── */
+  if (estaLogado() && getUsuario()?.admin) {
+    window.location.replace('/admin/admin.html');
+    return;
+  }
+
   setPagina('HOME');
   renderHeader();
   _montarSelect();
@@ -270,6 +276,15 @@ function abrirModalLogin() {
     btn.disabled    = false;
 
     if (resultado.ok) {
+
+      /* ── REDIRECT ADMIN — deve vir ANTES de qualquer outra coisa ── */
+      if (resultado.usuario.admin) {
+        cards?.classList.remove('cards-hidden');
+        fecharModal(modal);
+        window.location.replace('/admin/admin.html');
+        return;
+      }
+
       limparDadosQuiz();
       const configsRemota = await carregarConfigs(resultado.usuario.uid);
 

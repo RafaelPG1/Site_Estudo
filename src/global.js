@@ -1,6 +1,7 @@
 /* =============================================
    NEXUS STUDY — global.js
    Estado global e utilitários compartilhados
+   src/global.js
    ============================================= */
 
 import Storage from './storage.js';
