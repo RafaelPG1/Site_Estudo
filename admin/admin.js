@@ -5,7 +5,7 @@
    ============================================= */
 
 import {
-  getUsuario, estaLogado, setUsuario,
+  getUsuario, estaLogado,
 } from '../src/global.js';
 
 import {
@@ -20,7 +20,7 @@ import {
 } from '../src/firebase.js';
 
 import {
-  collection, getDocs, deleteDoc, doc,
+  collection, getDocs, deleteDoc, doc, setDoc,
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 /* ══════════════════════════════════════════════════════════
@@ -28,10 +28,10 @@ import {
    ══════════════════════════════════════════════════════════ */
 
 const SECTIONS = [
-  { id: 'dashboard',  label: 'Dashboard',       icon: iconDashboard() },
-  { id: 'users',      label: 'Usuários',         icon: iconUsers() },
-  { id: 'progress',   label: 'Progresso',        icon: iconProgress() },
-  { id: 'ranking',    label: 'Ranking',          icon: iconRanking() },
+  { id: 'dashboard', label: 'Dashboard',  icon: iconDashboard() },
+  { id: 'users',     label: 'Usuários',   icon: iconUsers()     },
+  { id: 'progress',  label: 'Progresso',  icon: iconProgress()  },
+  { id: 'ranking',   label: 'Ranking',    icon: iconRanking()   },
 ];
 
 const AVATARS = ['🎓','🧑‍💻','👾','🦊','🐉','🌙','⚡','🔥','🎯','🧠','🚀','🦁'];
@@ -41,14 +41,13 @@ const AVATARS = ['🎓','🧑‍💻','👾','🦊','🐉','🌙','⚡','🔥','
    ══════════════════════════════════════════════════════════ */
 
 let _secaoAtual = 'dashboard';
-let _usuarios   = [];        // cache da lista de usuários
+let _usuarios   = [];
 
 /* ══════════════════════════════════════════════════════════
    BOOT
    ══════════════════════════════════════════════════════════ */
 
 document.addEventListener('DOMContentLoaded', async () => {
-  /* Verificação de acesso */
   const u = getUsuario();
   if (!u || !u.admin) {
     document.getElementById('content').innerHTML = `
@@ -66,43 +65,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 /* ══════════════════════════════════════════════════════════
-   INDEX.JS PATCH — redirecionar admin ao fazer login
-   ══════════════════════════════════════════════════════════
-   Cole este bloco no _tentarLogin() de index.js, logo após
-   "if (resultado.ok) {":
-
-   if (resultado.usuario.admin) {
-     fecharModal(modal);
-     window.location.href = '/admin/admin.html';
-     return;
-   }
-   ══════════════════════════════════════════════════════════ */
-
-/* ══════════════════════════════════════════════════════════
    SIDEBAR
    ══════════════════════════════════════════════════════════ */
 
 function _montarSidebar(u) {
-  /* Nav items */
   const nav = document.getElementById('sidebar-nav');
   nav.innerHTML = SECTIONS.map(s => `
-    <button class="nav-item ${s.id === _secaoAtual ? 'active' : ''}"
-            data-section="${s.id}">
-      ${s.icon}
-      ${s.label}
+    <button class="nav-item ${s.id === _secaoAtual ? 'active' : ''}" data-section="${s.id}">
+      ${s.icon} ${s.label}
     </button>
   `).join('');
 
-  /* User info */
-  const userEl = document.getElementById('sidebar-user');
-  userEl.innerHTML = `
+  document.getElementById('sidebar-user').innerHTML = `
     <div class="su-avatar">${u.foto ? `<img src="${u.foto}" alt="">` : u.avatar ?? '🛡️'}</div>
     <div class="su-info">
       <strong>${u.nome}</strong>
       <span>Admin</span>
     </div>`;
 
-  /* Logout */
   document.getElementById('btn-logout').addEventListener('click', () => {
     logout();
     window.location.href = '../index.html';
@@ -118,12 +98,10 @@ function _bindSidebar() {
 }
 
 function _bindTopbar() {
-  /* Hamburger */
-  const sidebar  = document.getElementById('sidebar');
-  const overlay  = document.getElementById('sidebar-overlay');
-  const hamburger = document.getElementById('btn-hamburger');
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
 
-  hamburger.addEventListener('click', () => {
+  document.getElementById('btn-hamburger').addEventListener('click', () => {
     sidebar.classList.toggle('sidebar--open');
     overlay.classList.toggle('overlay--show');
   });
@@ -132,7 +110,6 @@ function _bindTopbar() {
     overlay.classList.remove('overlay--show');
   });
 
-  /* Refresh */
   document.getElementById('btn-refresh').addEventListener('click', async () => {
     _usuarios = [];
     await _navegarPara(_secaoAtual);
@@ -146,20 +123,16 @@ function _bindTopbar() {
 async function _navegarPara(secao) {
   _secaoAtual = secao;
 
-  /* Atualizar nav ativo */
   document.querySelectorAll('.nav-item').forEach(b => {
     b.classList.toggle('active', b.dataset.section === secao);
   });
 
-  /* Título */
   const s = SECTIONS.find(x => x.id === secao);
   document.getElementById('topbar-title').textContent = s?.label ?? secao;
 
-  /* Fechar sidebar mobile */
   document.getElementById('sidebar').classList.remove('sidebar--open');
   document.getElementById('sidebar-overlay').classList.remove('overlay--show');
 
-  /* Renderizar conteúdo */
   const content = document.getElementById('content');
   content.innerHTML = `<div class="init-loading"><div class="spinner"></div><p>Carregando…</p></div>`;
 
@@ -174,7 +147,7 @@ async function _navegarPara(secao) {
 }
 
 /* ══════════════════════════════════════════════════════════
-   HELPERS — buscar usuários (com cache)
+   HELPERS
    ══════════════════════════════════════════════════════════ */
 
 async function _getUsuarios(force = false) {
@@ -184,18 +157,47 @@ async function _getUsuarios(force = false) {
 }
 
 /* ══════════════════════════════════════════════════════════
+   REMOVER USUÁRIO — apaga doc principal + subcoleções
+   ══════════════════════════════════════════════════════════ */
+
+async function _removerUsuarioCompleto(uid) {
+  try {
+    const db = getDb();
+
+    // Lista de TODAS as subcoleções conhecidas do usuário
+    const SUBCOLLECTIONS = ['quiz_respostas', 'srs_perfis'];
+
+    // Apaga cada subcoleção conhecida
+    for (const subCol of SUBCOLLECTIONS) {
+      const colRef = collection(db, 'usuarios', uid, subCol);
+      const snap   = await getDocs(colRef);
+      if (!snap.empty) {
+        await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
+        console.log(`[admin] Subcoleção "${subCol}" apagada (${snap.size} docs) → ${uid}`);
+      }
+    }
+
+    // Apaga o documento principal POR ÚLTIMO
+    await deleteDoc(doc(db, 'usuarios', uid));
+
+    console.log('[admin] _removerUsuarioCompleto ok →', uid);
+    return { ok: true };
+  } catch (err) {
+    console.error('[admin] _removerUsuarioCompleto erro:', err);
+    return { ok: false, erro: err.message };
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
    SEÇÃO — DASHBOARD
    ══════════════════════════════════════════════════════════ */
 
 async function _renderDashboard() {
-  const users = await _getUsuarios();
+  const users  = await _getUsuarios();
   const admins = users.filter(u => u.admin);
 
-  const content = document.getElementById('content');
-  content.innerHTML = `
+  document.getElementById('content').innerHTML = `
     <div class="section-content">
-
-      <!-- Stats -->
       <div class="stat-grid">
         <div class="stat-card stat-card--teal">
           <div class="stat-card__icon">👥</div>
@@ -223,7 +225,6 @@ async function _renderDashboard() {
         </div>
       </div>
 
-      <!-- Usuários recentes -->
       <div class="section-panel">
         <div class="panel-header">
           <span class="panel-title">Usuários cadastrados</span>
@@ -246,18 +247,16 @@ async function _renderDashboard() {
           `).join('')}
           ${users.length > 8 ? `
             <div class="activity-item" style="justify-content:center">
-              <button class="action-btn action-btn--ghost" onclick="window.nexusAdmin.goUsers()">
+              <button class="action-btn action-btn--ghost" id="dash-ver-todos">
                 Ver todos (${users.length}) →
               </button>
             </div>
           ` : ''}
         </div>
       </div>
-
     </div>`;
 
-  /* Expor helper global para o botão inline */
-  window.nexusAdmin = { goUsers: () => _navegarPara('users') };
+  document.getElementById('dash-ver-todos')?.addEventListener('click', () => _navegarPara('users'));
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -266,12 +265,9 @@ async function _renderDashboard() {
 
 async function _renderUsers() {
   const users = await _getUsuarios();
-  const content = document.getElementById('content');
 
-  content.innerHTML = `
+  document.getElementById('content').innerHTML = `
     <div class="section-content">
-
-      <!-- Toolbar -->
       <div class="section-toolbar">
         <input type="text" class="search-input" id="user-search"
                placeholder="Buscar por nome ou ID…">
@@ -284,7 +280,6 @@ async function _renderUsers() {
         </button>
       </div>
 
-      <!-- Grid de usuários -->
       <div class="section-panel">
         <div class="panel-header">
           <span class="panel-title">Todos os usuários</span>
@@ -294,10 +289,8 @@ async function _renderUsers() {
           ${_renderUserCards(users)}
         </div>
       </div>
-
     </div>`;
 
-  /* Search */
   document.getElementById('user-search').addEventListener('input', e => {
     const q = e.target.value.toLowerCase();
     const filtered = _usuarios.filter(u =>
@@ -309,7 +302,6 @@ async function _renderUsers() {
   });
 
   document.getElementById('btn-criar-usuario').addEventListener('click', _modalCriarUsuario);
-
   _bindUserCardActions();
 }
 
@@ -328,17 +320,22 @@ function _renderUserCards(users) {
         ${u.admin ? `<span class="admin-chip">Admin</span>` : ''}
       </div>
       <div class="user-card__actions">
-        <button class="icon-btn icon-btn--blue btn-reset-pin" data-uid="${u.uid}" data-nome="${u.nome ?? u.uid}">
+        <button class="icon-btn icon-btn--blue btn-reset-pin"
+                data-uid="${u.uid}"
+                data-nome="${u.nome ?? u.uid}"
+                data-admin="${u.admin ? '1' : '0'}">
           🔑 PIN
         </button>
-        <button class="icon-btn icon-btn--gold btn-edit-user" data-uid="${u.uid}" data-nome="${u.nome ?? u.uid}" data-avatar="${u.avatar ?? '🎓'}">
+        <button class="icon-btn icon-btn--gold btn-edit-user"
+                data-uid="${u.uid}"
+                data-nome="${u.nome ?? u.uid}"
+                data-avatar="${u.avatar ?? '🎓'}">
           ✏️ Editar
         </button>
-        <button class="icon-btn icon-btn--teal btn-limpar-quiz" data-uid="${u.uid}" data-nome="${u.nome ?? u.uid}">
-          🧹 Quiz
-        </button>
         ${!u.admin ? `
-        <button class="icon-btn icon-btn--rose btn-remover-user" data-uid="${u.uid}" data-nome="${u.nome ?? u.uid}">
+        <button class="icon-btn icon-btn--rose btn-remover-user"
+                data-uid="${u.uid}"
+                data-nome="${u.nome ?? u.uid}">
           🗑️ Remover
         </button>` : ''}
       </div>
@@ -347,24 +344,37 @@ function _renderUserCards(users) {
 }
 
 function _bindUserCardActions() {
-  /* Reset PIN */
   document.querySelectorAll('.btn-reset-pin').forEach(btn => {
-    btn.addEventListener('click', () => _modalResetPin(btn.dataset.uid, btn.dataset.nome));
+    btn.addEventListener('click', () =>
+      _modalResetPin(btn.dataset.uid, btn.dataset.nome, btn.dataset.admin === '1')
+    );
   });
 
-  /* Limpar quiz */
-  document.querySelectorAll('.btn-limpar-quiz').forEach(btn => {
-    btn.addEventListener('click', () => _confirmarLimparQuiz(btn, btn.dataset.uid, btn.dataset.nome));
-  });
-
-  /* Remover usuário */
-  document.querySelectorAll('.btn-remover-user').forEach(btn => {
-    btn.addEventListener('click', () => _confirmarRemoverUser(btn, btn.dataset.uid, btn.dataset.nome));
-  });
-
-  /* Editar usuário */
   document.querySelectorAll('.btn-edit-user').forEach(btn => {
-    btn.addEventListener('click', () => _modalEditarUsuario(btn.dataset.uid, btn.dataset.nome, btn.dataset.avatar));
+    btn.addEventListener('click', () =>
+      _modalEditarUsuario(btn.dataset.uid, btn.dataset.nome, btn.dataset.avatar)
+    );
+  });
+
+  document.querySelectorAll('.btn-remover-user').forEach(btn => {
+    btn.addEventListener('click', () =>
+      _modalConfirmar(
+        `Remover <strong>${btn.dataset.nome}</strong>?`,
+        'Apaga o usuário e todo o progresso permanentemente.',
+        'Remover',
+        async () => {
+          const res = await _removerUsuarioCompleto(btn.dataset.uid);
+          if (res.ok) {
+            _usuarios = [];
+            _toast(`${btn.dataset.nome} removido.`);
+            await _renderUsers();
+          } else {
+            _toast('Erro ao remover usuário.', true);
+          }
+        },
+        btn
+      )
+    );
   });
 }
 
@@ -374,13 +384,11 @@ function _bindUserCardActions() {
 
 async function _renderProgress() {
   const users = await _getUsuarios();
-  const content = document.getElementById('content');
 
-  content.innerHTML = `
+  document.getElementById('content').innerHTML = `
     <div class="section-content">
       <div class="section-toolbar">
-        <input type="text" class="search-input" id="prog-search"
-               placeholder="Filtrar por usuário…">
+        <input type="text" class="search-input" id="prog-search" placeholder="Filtrar por usuário…">
       </div>
       <div class="section-panel">
         <div class="panel-header">
@@ -388,49 +396,36 @@ async function _renderProgress() {
           <span class="panel-count">${users.filter(u => !u.admin).length} estudantes</span>
         </div>
         <div id="progress-table-wrap" class="data-table-wrap">
-          <div class="init-loading"><div class="spinner"></div><p>Carregando progresso…</p></div>
+          <div class="init-loading"><div class="spinner"></div><p>Carregando…</p></div>
         </div>
       </div>
     </div>`;
 
-  /* Carregar dados de quiz de todos os alunos */
   const estudantes = users.filter(u => !u.admin);
   const dados = await Promise.all(estudantes.map(async u => {
     try {
-      const col  = collection(getDb(), 'usuarios', u.uid, 'quiz_respostas');
-      const snap = await getDocs(col);
+      const snap = await getDocs(collection(getDb(), 'usuarios', u.uid, 'quiz_respostas'));
       let total = 0, finalizados = 0;
-      snap.forEach(d => {
-        total++;
-        if (d.data().finalizado) finalizados++;
-      });
+      snap.forEach(d => { total++; if (d.data().finalizado) finalizados++; });
       return { uid: u.uid, nome: u.nome ?? u.uid, avatar: u.avatar ?? '🎓', total, finalizados };
-    } catch { return { uid: u.uid, nome: u.nome ?? u.uid, avatar: u.avatar ?? '🎓', total: 0, finalizados: 0 }; }
+    } catch {
+      return { uid: u.uid, nome: u.nome ?? u.uid, avatar: u.avatar ?? '🎓', total: 0, finalizados: 0 };
+    }
   }));
 
   function _renderTable(rows) {
     if (!rows.length) return `<div class="empty-state">Nenhum dado encontrado.</div>`;
     return `<table class="data-table">
-      <thead>
-        <tr>
-          <th>Usuário</th>
-          <th>ID</th>
-          <th>Quizzes salvos</th>
-          <th>Finalizados</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
+      <thead><tr>
+        <th>Usuário</th><th>ID</th><th>Quizzes salvos</th><th>Finalizados</th><th>Ações</th>
+      </tr></thead>
       <tbody>
         ${rows.map(r => `
           <tr>
             <td><span style="font-size:1.1rem;margin-right:6px">${r.avatar}</span>${r.nome}</td>
             <td><code class="quiz-id">${r.uid}</code></td>
             <td>${r.total}</td>
-            <td>
-              <span class="badge ${r.finalizados > 0 ? 'badge--green' : 'badge--grey'}">
-                ${r.finalizados}
-              </span>
-            </td>
+            <td><span class="badge ${r.finalizados > 0 ? 'badge--green' : 'badge--grey'}">${r.finalizados}</span></td>
             <td>
               <button class="icon-btn icon-btn--rose btn-limpar-quiz-prog"
                       data-uid="${r.uid}" data-nome="${r.nome}">
@@ -446,21 +441,31 @@ async function _renderProgress() {
   const wrap = document.getElementById('progress-table-wrap');
   wrap.innerHTML = _renderTable(dados);
 
-  /* Search */
   document.getElementById('prog-search').addEventListener('input', e => {
     const q = e.target.value.toLowerCase();
     wrap.innerHTML = _renderTable(dados.filter(r =>
       r.uid.includes(q) || r.nome.toLowerCase().includes(q)
     ));
-    _bindProgressActions(dados);
+    _bindProgressActions();
   });
 
-  _bindProgressActions(dados);
+  _bindProgressActions();
 }
 
-function _bindProgressActions(dados) {
+function _bindProgressActions() {
   document.querySelectorAll('.btn-limpar-quiz-prog').forEach(btn => {
-    btn.addEventListener('click', () => _confirmarLimparQuiz(btn, btn.dataset.uid, btn.dataset.nome));
+    btn.addEventListener('click', () =>
+      _modalConfirmar(
+        `Limpar quiz de <strong>${btn.dataset.nome}</strong>?`,
+        'Remove todo o progresso de quiz salvo no Firestore.',
+        'Limpar',
+        async () => {
+          const res = await limparTodoQuizUsuario(btn.dataset.uid);
+          _toast(res.ok ? `Quiz de ${btn.dataset.nome} limpo! 🧹` : 'Erro ao limpar.', !res.ok);
+        },
+        btn
+      )
+    );
   });
 }
 
@@ -470,16 +475,15 @@ function _bindProgressActions(dados) {
 
 async function _renderRanking() {
   const users = await _getUsuarios();
-  const content = document.getElementById('content');
 
-  content.innerHTML = `
+  document.getElementById('content').innerHTML = `
     <div class="section-content">
       <div class="section-panel">
         <div class="panel-header">
           <span class="panel-title">Ranking — Quizzes Finalizados</span>
         </div>
         <div id="ranking-wrap">
-          <div class="init-loading"><div class="spinner"></div><p>Calculando ranking…</p></div>
+          <div class="init-loading"><div class="spinner"></div><p>Calculando…</p></div>
         </div>
       </div>
     </div>`;
@@ -487,22 +491,23 @@ async function _renderRanking() {
   const estudantes = users.filter(u => !u.admin);
   const scores = await Promise.all(estudantes.map(async u => {
     try {
-      const col  = collection(getDb(), 'usuarios', u.uid, 'quiz_respostas');
-      const snap = await getDocs(col);
+      const snap = await getDocs(collection(getDb(), 'usuarios', u.uid, 'quiz_respostas'));
       let finalizados = 0;
       snap.forEach(d => { if (d.data().finalizado) finalizados++; });
       return { uid: u.uid, nome: u.nome ?? u.uid, avatar: u.avatar ?? '🎓', pontos: finalizados };
-    } catch { return { uid: u.uid, nome: u.nome ?? u.uid, avatar: u.avatar ?? '🎓', pontos: 0 }; }
+    } catch {
+      return { uid: u.uid, nome: u.nome ?? u.uid, avatar: u.avatar ?? '🎓', pontos: 0 };
+    }
   }));
 
   scores.sort((a, b) => b.pontos - a.pontos);
 
-  const MEDALS = ['🥇','🥈','🥉'];
+  const MEDALS  = ['🥇','🥈','🥉'];
   const CLASSES = ['lb-item--top1','lb-item--top2','lb-item--top3'];
+  const wrap    = document.getElementById('ranking-wrap');
 
-  const wrap = document.getElementById('ranking-wrap');
   if (!scores.length) {
-    wrap.innerHTML = `<div class="empty-state">Sem dados de ranking ainda.</div>`;
+    wrap.innerHTML = `<div class="empty-state">Sem dados ainda.</div>`;
     return;
   }
 
@@ -525,10 +530,92 @@ async function _renderRanking() {
 }
 
 /* ══════════════════════════════════════════════════════════
-   MODAIS
+   MODAL — CONFIRMAR (popover flutuante)
    ══════════════════════════════════════════════════════════ */
 
-/* ── Criar usuário ── */
+function _modalConfirmar(titulo, subtitulo, labelConfirmar, onConfirm, anchorEl = null) {
+  // Remove qualquer popover anterior
+  document.getElementById('confirm-modal')?.remove();
+
+  const el = document.createElement('div');
+  el.id = 'confirm-modal';
+  el.className = 'mini-confirm';
+
+  el.innerHTML = `
+    <div class="mini-confirm__arrow"></div>
+    <div class="mini-confirm__msg">
+      <strong style="display:block;margin-bottom:0.25rem;font-size:0.8rem;color:var(--text-1)">${titulo}</strong>
+      ${subtitulo ? `<span style="font-size:0.72rem;color:var(--text-3)">${subtitulo}</span>` : ''}
+    </div>
+    <div class="mini-confirm__actions">
+      <button class="mini-confirm__btn mini-confirm__btn--cancel" id="cfm-nao">Não</button>
+      <button class="mini-confirm__btn mini-confirm__btn--ok"     id="cfm-sim">${labelConfirmar}</button>
+    </div>`;
+
+  document.body.appendChild(el);
+
+  /* ── Posicionamento ancorado ao botão ── */
+  if (anchorEl) {
+    const popW = 210;
+
+    requestAnimationFrame(() => {
+      const rect = anchorEl.getBoundingClientRect();
+      const popH = el.offsetHeight;
+
+      let left = rect.right - popW;
+      let top  = rect.top - popH - 10; // acima do botão por padrão
+
+      // Se não couber acima, posiciona abaixo
+      if (top < 8) {
+        top = rect.bottom + 8;
+        el.querySelector('.mini-confirm__arrow').style.cssText =
+          'bottom:auto;top:-5px;transform:rotate(225deg)';
+      }
+
+      // Garante que não sai da tela pela esquerda
+      if (left < 8) left = 8;
+
+      el.style.left  = left + 'px';
+      el.style.top   = top  + 'px';
+      el.style.width = popW + 'px';
+      el.classList.add('mini-confirm--open');
+    });
+  } else {
+    /* Fallback: centro da tela */
+    el.style.left            = '50%';
+    el.style.top             = '50%';
+    el.style.transform       = 'translate(-50%,-50%) scale(1)';
+    el.style.transformOrigin = 'center';
+    requestAnimationFrame(() => el.classList.add('mini-confirm--open'));
+  }
+
+  /* ── Fechar com animação ── */
+  function _fechar() {
+    el.classList.add('mini-confirm--closing');
+    el.addEventListener('transitionend', () => el.remove(), { once: true });
+  }
+
+  document.getElementById('cfm-nao').addEventListener('click', _fechar);
+  document.getElementById('cfm-sim').addEventListener('click', async () => {
+    _fechar();
+    await onConfirm();
+  });
+
+  /* Clique fora fecha */
+  setTimeout(() => {
+    document.addEventListener('click', function handler(e) {
+      if (!el.contains(e.target)) {
+        _fechar();
+        document.removeEventListener('click', handler);
+      }
+    });
+  }, 50);
+}
+
+/* ══════════════════════════════════════════════════════════
+   MODAL — CRIAR USUÁRIO
+   ══════════════════════════════════════════════════════════ */
+
 function _modalCriarUsuario() {
   const overlay = _criarOverlay();
   let avatarSel = '🎓';
@@ -541,17 +628,19 @@ function _modalCriarUsuario() {
     <div class="modal-body">
       <div class="form-group">
         <label>Nome de exibição</label>
-        <input class="form-input" id="mc-nome" placeholder="Ex: João Silva" maxlength="40" autocomplete="off">
+        <input class="form-input" id="mc-nome" placeholder="Ex: João Silva"
+               maxlength="30" autocomplete="off">
       </div>
       <div class="form-group">
-        <label>ID (login — minúsculas, sem espaços)</label>
-        <input class="form-input" id="mc-id" placeholder="Ex: joao" maxlength="20"
-               autocomplete="off" style="font-family:monospace">
+        <label>ID (login)</label>
+        <input class="form-input" id="mc-id" placeholder="Ex: joao"
+               maxlength="20" autocomplete="off" style="font-family:monospace">
+        <small>Minúsculas, sem espaços ou acentos.</small>
       </div>
       <div class="form-group">
         <label>PIN (3 dígitos)</label>
-        <input class="form-input" id="mc-pin" placeholder="• • •" maxlength="3"
-               inputmode="numeric" type="password" autocomplete="off">
+        <input class="form-input" id="mc-pin" placeholder="• • •"
+               maxlength="3" inputmode="numeric" type="password" autocomplete="off">
       </div>
       <div class="form-group">
         <label>Avatar</label>
@@ -565,15 +654,24 @@ function _modalCriarUsuario() {
       <p class="form-error" id="mc-erro" style="display:none"></p>
     </div>
     <div class="modal-footer">
-      <button class="action-btn action-btn--ghost" id="mc-cancel">Cancelar</button>
+      <button class="action-btn action-btn--ghost"   id="mc-cancel">Cancelar</button>
       <button class="action-btn action-btn--primary" id="mc-save">Criar</button>
     </div>`;
 
   document.getElementById('mc-close').addEventListener('click',  () => overlay.remove());
   document.getElementById('mc-cancel').addEventListener('click', () => overlay.remove());
 
-  /* Auto-preencher ID a partir do nome */
   document.getElementById('mc-nome').addEventListener('input', e => {
+    /* ── Navegação entre campos com Enter ── */
+document.getElementById('mc-nome').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('mc-id').focus();
+});
+document.getElementById('mc-id').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('mc-pin').focus();
+});
+document.getElementById('mc-pin').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('mc-save').click();
+});
     const idEl = document.getElementById('mc-id');
     if (!idEl.dataset.editado) {
       idEl.value = e.target.value.toLowerCase()
@@ -586,25 +684,22 @@ function _modalCriarUsuario() {
     e.target.value = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
   });
 
-  /* Avatar picker */
   document.getElementById('mc-avatar-picker').addEventListener('click', e => {
     const btn = e.target.closest('.avatar-opt');
     if (!btn) return;
-    document.querySelectorAll('.avatar-opt').forEach(b => b.classList.remove('selected'));
+    document.querySelectorAll('#mc-avatar-picker .avatar-opt').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
     avatarSel = btn.dataset.avatar;
   });
 
-  /* Salvar */
   document.getElementById('mc-save').addEventListener('click', async () => {
-    const nome   = document.getElementById('mc-nome').value.trim();
-    const id     = document.getElementById('mc-id').value.trim();
-    const pin    = document.getElementById('mc-pin').value.trim();
-    const erro   = document.getElementById('mc-erro');
+    const nome    = document.getElementById('mc-nome').value.trim();
+    const id      = document.getElementById('mc-id').value.trim();
+    const pin     = document.getElementById('mc-pin').value.trim();
+    const erro    = document.getElementById('mc-erro');
     const saveBtn = document.getElementById('mc-save');
 
     erro.style.display = 'none';
-
     if (!nome || !id || !pin) {
       erro.textContent = 'Preencha todos os campos.'; erro.style.display = 'block'; return;
     }
@@ -613,16 +708,14 @@ function _modalCriarUsuario() {
     }
 
     saveBtn.disabled = true; saveBtn.textContent = 'Criando…';
-
     const pinHash = await hashPin(pin);
     const res = await criarUsuario(id, nome, pinHash, avatarSel);
-
     saveBtn.disabled = false; saveBtn.textContent = 'Criar';
 
     if (res.ok) {
-      _usuarios = [];                      // limpar cache
+      _usuarios = [];
       overlay.remove();
-      _toast('Usuário criado com sucesso! 🎉');
+      _toast('Usuário criado! 🎉');
       await _renderUsers();
     } else {
       erro.textContent = res.erro ?? 'Erro ao criar usuário.';
@@ -631,7 +724,10 @@ function _modalCriarUsuario() {
   });
 }
 
-/* ── Editar usuário (nome + avatar) ── */
+/* ══════════════════════════════════════════════════════════
+   MODAL — EDITAR USUÁRIO
+   ══════════════════════════════════════════════════════════ */
+
 function _modalEditarUsuario(uid, nome, avatarAtual) {
   const overlay = _criarOverlay();
   let avatarSel = avatarAtual || '🎓';
@@ -644,7 +740,8 @@ function _modalEditarUsuario(uid, nome, avatarAtual) {
     <div class="modal-body">
       <div class="form-group">
         <label>Nome de exibição</label>
-        <input class="form-input" id="me-nome" value="${nome}" maxlength="40" autocomplete="off">
+        <input class="form-input" id="me-nome" value="${nome}"
+               maxlength="30" autocomplete="off">
       </div>
       <div class="form-group">
         <label>Avatar</label>
@@ -658,7 +755,7 @@ function _modalEditarUsuario(uid, nome, avatarAtual) {
       <p class="form-error" id="me-erro" style="display:none"></p>
     </div>
     <div class="modal-footer">
-      <button class="action-btn action-btn--ghost" id="me-cancel">Cancelar</button>
+      <button class="action-btn action-btn--ghost"   id="me-cancel">Cancelar</button>
       <button class="action-btn action-btn--primary" id="me-save">Salvar</button>
     </div>`;
 
@@ -675,31 +772,35 @@ function _modalEditarUsuario(uid, nome, avatarAtual) {
 
   document.getElementById('me-save').addEventListener('click', async () => {
     const novoNome = document.getElementById('me-nome').value.trim();
-    const erro = document.getElementById('me-erro');
-    const saveBtn = document.getElementById('me-save');
+    const erro     = document.getElementById('me-erro');
+    const saveBtn  = document.getElementById('me-save');
 
-    if (!novoNome) { erro.textContent = 'Nome não pode ser vazio.'; erro.style.display = 'block'; return; }
+    if (!novoNome) {
+      erro.textContent = 'Nome não pode ser vazio.'; erro.style.display = 'block'; return;
+    }
 
     saveBtn.disabled = true; saveBtn.textContent = 'Salvando…';
-
     try {
-      const { setDoc, doc: firestoreDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      await setDoc(firestoreDoc(getDb(), 'usuarios', uid), { nome: novoNome, avatar: avatarSel }, { merge: true });
+      await setDoc(doc(getDb(), 'usuarios', uid), { nome: novoNome, avatar: avatarSel }, { merge: true });
       _usuarios = [];
       overlay.remove();
       _toast('Usuário atualizado! ✅');
       await _renderUsers();
     } catch (err) {
-      erro.textContent = 'Erro ao salvar: ' + err.message;
+      erro.textContent = 'Erro: ' + err.message;
       erro.style.display = 'block';
       saveBtn.disabled = false; saveBtn.textContent = 'Salvar';
     }
   });
 }
 
-/* ── Reset PIN ── */
-function _modalResetPin(uid, nome) {
+/* ══════════════════════════════════════════════════════════
+   MODAL — RESET PIN
+   ══════════════════════════════════════════════════════════ */
+
+function _modalResetPin(uid, nome, isAdmin) {
   const overlay = _criarOverlay();
+  const maxPin = isAdmin ? 9 : 3;
 
   overlay.querySelector('.modal-box').innerHTML = `
     <div class="modal-header">
@@ -708,15 +809,15 @@ function _modalResetPin(uid, nome) {
     </div>
     <div class="modal-body">
       <div class="form-group">
-        <label>Novo PIN (3 dígitos)</label>
-        <input class="form-input" id="rp-pin" placeholder="• • •" maxlength="3"
-               inputmode="numeric" type="password" autocomplete="off">
+        <label>Novo PIN (${isAdmin ? 'até 9' : '3'} dígitos)</label>
+        <input class="form-input" id="rp-pin" placeholder="• • •"
+               maxlength="${maxPin}" inputmode="numeric" type="password" autocomplete="off">
         <small>O PIN antigo será substituído imediatamente.</small>
       </div>
       <p class="form-error" id="rp-erro" style="display:none"></p>
     </div>
     <div class="modal-footer">
-      <button class="action-btn action-btn--ghost" id="rp-cancel">Cancelar</button>
+      <button class="action-btn action-btn--ghost"   id="rp-cancel">Cancelar</button>
       <button class="action-btn action-btn--primary" id="rp-save">Resetar</button>
     </div>`;
 
@@ -728,8 +829,11 @@ function _modalResetPin(uid, nome) {
     const erro = document.getElementById('rp-erro');
     const btn  = document.getElementById('rp-save');
 
-    if (!/^\d{3}$/.test(pin)) {
-      erro.textContent = 'PIN deve ter exatamente 3 dígitos.'; erro.style.display = 'block'; return;
+    const pattern = isAdmin ? /^\d{4,9}$/ : /^\d{3}$/;
+    const hint    = isAdmin ? 'PIN admin: 4 a 9 dígitos.' : 'PIN deve ter exatamente 3 dígitos.';
+
+    if (!pattern.test(pin)) {
+      erro.textContent = hint; erro.style.display = 'block'; return;
     }
 
     btn.disabled = true; btn.textContent = 'Resetando…';
@@ -746,58 +850,13 @@ function _modalResetPin(uid, nome) {
 }
 
 /* ══════════════════════════════════════════════════════════
-   AÇÕES INLINE (confirmação dupla)
-   ══════════════════════════════════════════════════════════ */
-
-function _confirmarLimparQuiz(btn, uid, nome) {
-  _confirmar(btn, '🧹 Quiz', async () => {
-    const res = await limparTodoQuizUsuario(uid);
-    if (res.ok) _toast(`Quiz de ${nome} limpo! 🧹`);
-    else        _toast('Erro ao limpar quiz.', true);
-  });
-}
-
-function _confirmarRemoverUser(btn, uid, nome) {
-  _confirmar(btn, '🗑️ Remover', async () => {
-    const res = await removerUsuario(uid);
-    if (res.ok) {
-      _usuarios = [];
-      _toast(`${nome} removido.`);
-      await _renderUsers();
-    } else {
-      _toast('Erro ao remover usuário.', true);
-    }
-  });
-}
-
-function _confirmar(btn, textoOriginal, callback) {
-  if (btn.dataset.confirmando === 'true') {
-    btn.dataset.confirmando = 'false';
-    btn.textContent = textoOriginal;
-    btn.classList.remove('icon-btn--rose');
-    callback();
-    return;
-  }
-  btn.dataset.confirmando = 'true';
-  btn.textContent = 'Tem certeza?';
-  btn.classList.add('icon-btn--rose');
-  setTimeout(() => {
-    if (btn.dataset.confirmando === 'true') {
-      btn.dataset.confirmando = 'false';
-      btn.textContent = textoOriginal;
-    }
-  }, 3000);
-}
-
-/* ══════════════════════════════════════════════════════════
-   UTILITÁRIOS — Modal overlay
+   OVERLAY REUTILIZÁVEL (modais grandes)
    ══════════════════════════════════════════════════════════ */
 
 function _criarOverlay() {
-  /* Remove overlay anterior se houver */
   document.querySelector('.modal-overlay')?.remove();
 
-  const root = document.getElementById('modal-root');
+  const root    = document.getElementById('modal-root');
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
 
@@ -811,10 +870,7 @@ function _criarOverlay() {
     box.classList.add('modal-box--open');
   });
 
-  overlay.addEventListener('click', e => {
-    if (e.target === overlay) overlay.remove();
-  });
-
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
   return overlay;
 }
 
@@ -836,7 +892,7 @@ function _toast(msg, erro = false) {
 }
 
 /* ══════════════════════════════════════════════════════════
-   ÍCONES SVG
+   ÍCONES
    ══════════════════════════════════════════════════════════ */
 
 function iconDashboard() {

@@ -671,7 +671,7 @@ button { cursor: pointer; font-family: var(--font-body); }
 .disc-srs-info strong { display: block; font-size: 0.82rem; color: var(--text-1); }
 .disc-srs-info span { font-size: 0.72rem; color: var(--text-3); }
 
-/* ── MODAL ── */
+/* ── MODAL (grandes — criar/editar/reset pin) ── */
 #modal-root {
   position: fixed; inset: 0; z-index: 200;
   pointer-events: none;
@@ -773,7 +773,7 @@ button { cursor: pointer; font-family: var(--font-body); }
 }
 .checkbox-row input[type=checkbox] { accent-color: var(--teal); width: 15px; height: 15px; }
 
-/* Check list (for limpar dados) */
+/* Check list */
 .check-list { display: flex; flex-direction: column; gap: 0.5rem; }
 
 .check-item {
@@ -862,4 +862,84 @@ button { cursor: pointer; font-family: var(--font-body); }
   .data-table-wrap { font-size: 0.78rem; }
   .modal-box { margin: 1rem; max-width: calc(100% - 2rem); }
   .modal-header, .modal-body, .modal-footer { padding-left: 1.1rem; padding-right: 1.1rem; }
+}
+
+/* ══════════════════════════════════════════
+   MINI CONFIRM POPOVER
+══════════════════════════════════════════ */
+.mini-confirm {
+  position: fixed;
+  z-index: 600;
+  background: var(--surface-2);
+  border: 1px solid var(--border-glow);
+  border-radius: 12px;
+  padding: 0.85rem 1rem 0.8rem;
+  min-width: 185px;
+  box-shadow: 0 10px 36px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);
+  opacity: 0;
+  transform: scale(0.88) translateY(6px);
+  transform-origin: bottom right;
+  transition: opacity 0.16s ease, transform 0.2s cubic-bezier(.34,1.4,.64,1);
+  pointer-events: none;
+}
+.mini-confirm--open {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  pointer-events: all;
+}
+.mini-confirm--closing {
+  opacity: 0 !important;
+  transform: scale(0.88) translateY(6px) !important;
+  pointer-events: none !important;
+  transition: opacity 0.14s ease, transform 0.14s ease !important;
+}
+.mini-confirm__arrow {
+  position: absolute;
+  bottom: -5px;
+  right: 20px;
+  width: 9px; height: 9px;
+  background: var(--surface-2);
+  border-right: 1px solid var(--border-glow);
+  border-bottom: 1px solid var(--border-glow);
+  transform: rotate(45deg);
+}
+.mini-confirm__msg {
+  font-size: 0.78rem;
+  color: var(--text-2);
+  line-height: 1.45;
+  margin-bottom: 0.7rem;
+}
+.mini-confirm__actions {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: flex-end;
+}
+.mini-confirm__btn {
+  padding: 0.28rem 0.7rem;
+  border-radius: 7px;
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.mini-confirm__btn--cancel {
+  border: 1px solid var(--border-glow);
+  background: transparent;
+  color: var(--text-3);
+}
+.mini-confirm__btn--cancel:hover {
+  color: var(--text-1);
+  background: rgba(255,255,255,0.06);
+}
+.mini-confirm__btn--ok {
+  border: 1px solid rgba(232,122,154,0.4);
+  background: rgba(232,122,154,0.12);
+  color: var(--rose);
+}
+.mini-confirm__btn--ok:hover {
+  background: rgba(232,122,154,0.22);
+  border-color: rgba(232,122,154,0.6);
 }
