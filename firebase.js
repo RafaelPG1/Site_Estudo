@@ -5,7 +5,7 @@
 
 import { initializeApp }              from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 
-import { getFirestore, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getFirestore, doc, getDoc, setDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 import { setUsuario }                 from './global.js';
 
 /* ── CONFIG ─────────────────────────────────── */
@@ -107,6 +107,60 @@ export async function carregarConfigs(uid) {
   } catch (err) {
     console.error('[firebase.js] Erro ao carregar configs:', err);
     return null;
+  }
+}
+
+/* ── RESPOSTAS DO QUIZ ──────────────────────────────────────
+   Estrutura: usuarios/{uid}/quiz_respostas/{semestre}_{modo}_{disc}
+   respostasStr → string compacta ex: "2,0,null,1,null,3"
+     cada posição = índice da questão
+     valor = opção escolhida (0-3) ou "null" se não respondida
+─────────────────────────────────────────────────────────── */
+
+function _quizRef(uid, semestre, modo, disc) {
+  return doc(db, 'usuarios', uid, 'quiz_respostas', `${semestre}_${modo}_${disc}`);
+}
+
+export async function salvarRespostasQuiz(uid, semestre, modo, disc, respostasStr, revelado, finalizado) {
+  try {
+    await setDoc(_quizRef(uid, semestre, modo, disc), {
+      respostas:  respostasStr,
+      revelado:   revelado,
+      finalizado: finalizado,
+      savedAt:    Date.now(),
+    });
+    console.log('[firebase] salvarRespostasQuiz ok →', `${semestre}_${modo}_${disc}`);
+    return { ok: true };
+  } catch (err) {
+    console.error('[firebase] salvarRespostasQuiz erro:', err);
+    return { ok: false };
+  }
+}
+
+export async function carregarRespostasQuiz(uid, semestre, modo, disc) {
+  try {
+    const snap = await getDoc(_quizRef(uid, semestre, modo, disc));
+    if (!snap.exists()) {
+      console.log('[firebase] carregarRespostasQuiz: sem dados para', `${semestre}_${modo}_${disc}`);
+      return null;
+    }
+    const data = snap.data();
+    console.log('[firebase] carregarRespostasQuiz:', `${semestre}_${modo}_${disc}`, '→', data);
+    return data; // { respostas: string, revelado, finalizado, savedAt }
+  } catch (err) {
+    console.error('[firebase] carregarRespostasQuiz erro:', err);
+    return null;
+  }
+}
+
+export async function limparRespostasQuiz(uid, semestre, modo, disc) {
+  try {
+    await deleteDoc(_quizRef(uid, semestre, modo, disc));
+    console.log('[firebase] limparRespostasQuiz deletado →', `${semestre}_${modo}_${disc}`);
+    return { ok: true };
+  } catch (err) {
+    console.error('[firebase] limparRespostasQuiz erro:', err);
+    return { ok: false };
   }
 }
 

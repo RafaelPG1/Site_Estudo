@@ -43,8 +43,19 @@
     var _semestre = window.__NEXUS_QUIZ_SEMESTRE__ || '2026.2';
     var _Storage  = window.NexusStorage            || null;
 
+    /* ── UID do usuário logado (isola dados por pessoa) ── */
+    function _uid() {
+      var u = _Storage ? _Storage.get('usuario', null) : null;
+      return (u && u.uid) ? u.uid : 'guest';
+    }
+
+    /* ── Prefixo de disco isolado por usuário ── */
+    function _discUid() {
+      return _uid() + '_' + _disc;
+    }
+
     function _smapKey() {
-      return 'quiz_smap_' + _disc + '_' + _modo + '_' + _semestre;
+      return 'quiz_smap_' + _uid() + '_' + _disc + '_' + _modo + '_' + _semestre;
     }
 
     function _salvarFinalizadoAtivo() {
@@ -55,120 +66,150 @@
       } catch (e) { return false; }
     }
 
-    /* ══════════════════════════════════════════════════════════
-   2. EXPIRAÇÃO (20s)
-   
-   Regra: o timer conta apenas o tempo FORA da página.
-   
-   Fluxo:
-     SAÍDA  → salva timestamp no localStorage
-     VOLTA  → calcula tempoFora, remove timestamp SEMPRE
-              se >= 20s → limpa progresso e reinicia
-              se <  20s → não faz nada
-   
-   Isso garante:
-     - Sem acúmulo entre saídas
-     - F5 é tratado via pagehide + verificação no boot
-     - Sem setTimeout/setInterval
-   ══════════════════════════════════════════════════════════ */
-
- var EXPIRY_FINALIZADO_MS = 20000;       // 20s  — salvarProgresso OFF
-var EXPIRY_PARCIAL_MS = 120000; // 2min — salvarProgressoParcial OFF
-
-function _leftAtKey() {
-  return 'quiz_leftat_' + _disc + '_' + _modo + '_' + _semestre;
-}
-
-function _registrarSaida() {
-  if (!_disc || !_Storage) {
-    console.log('[quiz_engine] _registrarSaida: abortou — _disc:', _disc, '_Storage:', !!_Storage);
-    return;
-  }
-
-  var salvo = _Storage.loadProgress(_disc, _modo, _semestre);
-  if (!salvo) {
-    console.log('[quiz_engine] _registrarSaida: sem progresso salvo, nada a fazer');
-    return;
-  }
-
-  var configs = _Storage.get('configs', {});
-  console.log('[quiz_engine] _registrarSaida: finalizado?', salvo.finalizado,
-              '| salvarProgresso:', configs.salvarProgresso,
-              '| salvarProgressoParcial:', configs.salvarProgressoParcial);
-
-  if (salvo.finalizado && configs.salvarProgresso === false) {
-    _Storage.set(_leftAtKey(), JSON.stringify({ ts: Date.now(), tipo: 'finalizado' }));
-    console.log('[quiz_engine] _registrarSaida: gravou timestamp FINALIZADO');
-    return;
-  }
-
-  if (!salvo.finalizado && configs.salvarProgressoParcial === false) {
-    _Storage.set(_leftAtKey(), JSON.stringify({ ts: Date.now(), tipo: 'parcial' }));
-    console.log('[quiz_engine] _registrarSaida: gravou timestamp PARCIAL');
-    return;
-  }
-
-  console.log('[quiz_engine] _registrarSaida: nenhuma regra de expiração ativa, timestamp não gravado');
-}
-
-function _verificarRetorno(aoExpirar) {
-  if (!_disc || !_Storage) {
-    console.log('[quiz_engine] _verificarRetorno: abortou — _disc:', _disc, '_Storage:', !!_Storage);
-    return;
-  }
-
-  var raw = _Storage.get(_leftAtKey(), null);
-  console.log('[quiz_engine] _verificarRetorno: raw:', raw, '| typeof:', typeof raw);
-
-  if (raw === null) {
-    console.log('[quiz_engine] _verificarRetorno: nenhum timestamp encontrado');
-    return;
-  }
-
-  _Storage.remove(_leftAtKey());
-
-  // Storage pode retornar string ou objeto — normaliza os dois casos
-  var payload;
-  try {
-    payload = typeof raw === 'string' ? JSON.parse(raw) : raw;
-  } catch (e) {
-    console.warn('[quiz_engine] _verificarRetorno: falha ao parsear payload:', raw);
-    return;
-  }
-
-  var tempoFora = Date.now() - payload.ts;
-  var limite    = payload.tipo === 'parcial' ? EXPIRY_PARCIAL_MS : EXPIRY_FINALIZADO_MS;
-
-  console.log('[quiz_engine] _verificarRetorno: tipo:', payload.tipo,
-              '| ts:', payload.ts,
-              '| tempoFora:', Math.round(tempoFora / 1000) + 's',
-              '| limite:', Math.round(limite / 1000) + 's',
-              '| expirou?', tempoFora >= limite);
-
-  if (tempoFora >= limite) {
-    _Storage.clearProgress(_disc, _modo, _semestre);
-    _Storage.remove(_smapKey());
-    console.info('[quiz_engine] Progresso APAGADO. Tipo:', payload.tipo, '| tempo fora:', Math.round(tempoFora / 1000) + 's');
-    if (typeof aoExpirar === 'function') aoExpirar();
-  }
-}
-
-  /* ── Listeners ─────────────────────────────────────────── */
-
-  /* pagehide: cobre F5, fechar aba e navegação para outra página */
-  window.addEventListener('pagehide', _registrarSaida);
-
-  document.addEventListener('visibilitychange', function () {
-    if (document.hidden) {
-      /* Usuário saiu (troca de aba, minimizou, etc.) */
-      _registrarSaida();
-    } else {
-      /* Usuário voltou — passa reiniciar() como callback de expiração.
-         reiniciar() só existe após o boot, mas visibilitychange
-         só dispara depois que a página já carregou, então é seguro. */
-      _verificarRetorno(reiniciar);
+    /* ── Converte respostas {qi: ai} → string compacta ── */
+    function _respostasParaStr(resps, total) {
+      var arr = [];
+      for (var i = 0; i < total; i++) {
+        arr.push(resps[i] !== undefined ? String(resps[i]) : 'null');
+      }
+      return arr.join(',');
     }
-  });
+
+    /* ── Converte string compacta → respostas {qi: ai} ── */
+    function _strParaRespostas(str) {
+      var resps = {};
+      str.split(',').forEach(function (v, i) {
+        if (v !== 'null') resps[i] = parseInt(v);
+      });
+      return resps;
+    }
+
+    /* ── Salva no Firebase (fire-and-forget) ── */
+    function _salvarFirebase(finalizado) {
+      if (!window.NexusFirebase || !_disc) return;
+      var usuario = _Storage ? _Storage.get('usuario', null) : null;
+      if (!usuario || !usuario.uid) return;
+
+      var str = _respostasParaStr(respostas, questoesBase.length);
+      window.NexusFirebase.salvarRespostasQuiz(
+        usuario.uid, _semestre, _modo, _disc, str, revelado, finalizado
+      ).catch(function () {});
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       2. EXPIRAÇÃO (20s)
+
+       Regra: o timer conta apenas o tempo FORA da página.
+
+       Fluxo:
+         SAÍDA  → salva timestamp no localStorage
+         VOLTA  → calcula tempoFora, remove timestamp SEMPRE
+                  se >= 20s → limpa progresso e reinicia
+                  se <  20s → não faz nada
+
+       Isso garante:
+         - Sem acúmulo entre saídas
+         - F5 é tratado via pagehide + verificação no boot
+         - Sem setTimeout/setInterval
+       ══════════════════════════════════════════════════════════ */
+
+    var EXPIRY_FINALIZADO_MS = 20000;    // 20s  — salvarProgresso OFF
+    var EXPIRY_PARCIAL_MS    = 120000;   // 2min — salvarProgressoParcial OFF
+
+    function _leftAtKey() {
+      return 'quiz_leftat_' + _uid() + '_' + _disc + '_' + _modo + '_' + _semestre;
+    }
+
+    function _registrarSaida() {
+      if (!_disc || !_Storage) {
+        console.log('[quiz_engine] _registrarSaida: abortou — _disc:', _disc, '_Storage:', !!_Storage);
+        return;
+      }
+
+      var salvo = _Storage.loadProgress(_discUid(), _modo, _semestre);
+      if (!salvo) {
+        console.log('[quiz_engine] _registrarSaida: sem progresso salvo, nada a fazer');
+        return;
+      }
+
+      var configs = _Storage.get('configs', {});
+      console.log('[quiz_engine] _registrarSaida: finalizado?', salvo.finalizado,
+                  '| salvarProgresso:', configs.salvarProgresso,
+                  '| salvarProgressoParcial:', configs.salvarProgressoParcial);
+
+      if (salvo.finalizado && configs.salvarProgresso === false) {
+        _Storage.set(_leftAtKey(), JSON.stringify({ ts: Date.now(), tipo: 'finalizado' }));
+        console.log('[quiz_engine] _registrarSaida: gravou timestamp FINALIZADO');
+        return;
+      }
+
+      if (!salvo.finalizado && configs.salvarProgressoParcial === false) {
+        _Storage.set(_leftAtKey(), JSON.stringify({ ts: Date.now(), tipo: 'parcial' }));
+        console.log('[quiz_engine] _registrarSaida: gravou timestamp PARCIAL');
+        return;
+      }
+
+      console.log('[quiz_engine] _registrarSaida: nenhuma regra de expiração ativa, timestamp não gravado');
+    }
+
+    function _verificarRetorno(aoExpirar) {
+      if (!_disc || !_Storage) {
+        console.log('[quiz_engine] _verificarRetorno: abortou — _disc:', _disc, '_Storage:', !!_Storage);
+        return;
+      }
+
+      var raw = _Storage.get(_leftAtKey(), null);
+      console.log('[quiz_engine] _verificarRetorno: raw:', raw, '| typeof:', typeof raw);
+
+      if (raw === null) {
+        console.log('[quiz_engine] _verificarRetorno: nenhum timestamp encontrado');
+        return;
+      }
+
+      _Storage.remove(_leftAtKey());
+
+      // Storage pode retornar string ou objeto — normaliza os dois casos
+      var payload;
+      try {
+        payload = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      } catch (e) {
+        console.warn('[quiz_engine] _verificarRetorno: falha ao parsear payload:', raw);
+        return;
+      }
+
+      var tempoFora = Date.now() - payload.ts;
+      var limite    = payload.tipo === 'parcial' ? EXPIRY_PARCIAL_MS : EXPIRY_FINALIZADO_MS;
+
+      console.log('[quiz_engine] _verificarRetorno: tipo:', payload.tipo,
+                  '| ts:', payload.ts,
+                  '| tempoFora:', Math.round(tempoFora / 1000) + 's',
+                  '| limite:', Math.round(limite / 1000) + 's',
+                  '| expirou?', tempoFora >= limite);
+
+      if (tempoFora >= limite) {
+        _Storage.clearProgress(_discUid(), _modo, _semestre);
+        _Storage.remove(_smapKey());
+        console.info('[quiz_engine] Progresso APAGADO. Tipo:', payload.tipo, '| tempo fora:', Math.round(tempoFora / 1000) + 's');
+        if (typeof aoExpirar === 'function') aoExpirar();
+      }
+    }
+
+    /* ── Listeners ─────────────────────────────────────────── */
+
+    /* pagehide: cobre F5, fechar aba e navegação para outra página */
+    window.addEventListener('pagehide', _registrarSaida);
+
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) {
+        /* Usuário saiu (troca de aba, minimizou, etc.) */
+        _registrarSaida();
+      } else {
+        /* Usuário voltou — passa reiniciar() como callback de expiração.
+           reiniciar() só existe após o boot, mas visibilitychange
+           só dispara depois que a página já carregou, então é seguro. */
+        _verificarRetorno(reiniciar);
+      }
+    });
 
     /* ── Questões ─────────────────────────────────────────── */
 
@@ -256,10 +297,35 @@ function _verificarRetorno(aoExpirar) {
     function _restaurar() {
       if (!_disc || !_Storage) return null;
 
-      var salvo = _Storage.loadProgress(_disc, _modo, _semestre);
+      var salvoLocal = _Storage.loadProgress(_discUid(), _modo, _semestre);
+      var fbDados    = window.__NEXUS_FIREBASE_RESPOSTAS__ || null;
+
+      // Determina qual fonte usar: Firebase ganha se savedAt for maior
+      var salvo = salvoLocal;
+
+      if (fbDados) {
+        var tsLocal = salvoLocal ? (salvoLocal.savedAt || 0) : 0;
+        var tsFB    = fbDados.savedAt || 0;
+
+        console.log('[quiz_engine] _restaurar — local savedAt:', tsLocal, '| firebase savedAt:', tsFB);
+
+        if (tsFB > tsLocal) {
+          console.log('[quiz_engine] _restaurar — usando Firebase (mais recente)');
+          var fbRespostas = _strParaRespostas(fbDados.respostas || '');
+          salvo = {
+            respostas:  fbRespostas,
+            revelado:   fbDados.revelado   || false,
+            finalizado: fbDados.finalizado || false,
+            savedAt:    tsFB,
+          };
+          // Sincroniza de volta pro localStorage
+          _Storage.saveProgress(_discUid(), _modo, _semestre, fbRespostas, salvo.revelado, salvo.finalizado);
+        } else {
+          console.log('[quiz_engine] _restaurar — usando localStorage (mais recente ou igual)');
+        }
+      }
+
       if (!salvo || !salvo.respostas) return null;
-
-
 
       Object.keys(salvo.respostas).forEach(function (qi) {
         respostas[parseInt(qi)] = salvo.respostas[qi];
@@ -274,11 +340,10 @@ function _verificarRetorno(aoExpirar) {
       if (_disc && _Storage) _Storage.set(_smapKey(), shuffleMap);
     }
 
-
-/* ── Inicialização ── */
-_verificarRetorno(null);
-var savedShuffleMap = _restaurar();
-var questoes = criarCopiaEmbaralhada(questoesBase, savedShuffleMap);
+    /* ── Inicialização ── */
+    _verificarRetorno(null);
+    var savedShuffleMap = _restaurar();
+    var questoes = criarCopiaEmbaralhada(questoesBase, savedShuffleMap);
 
     if (savedShuffleMap === null && _disc && _Storage) {
       _salvarShuffleMap();
@@ -335,13 +400,13 @@ var questoes = criarCopiaEmbaralhada(questoesBase, savedShuffleMap);
           q.tipo.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') +
         '</div>';
       }
-      if (q.texto)                html += '<div class="question-texto">'        + renderMarkup(q.texto)               + '</div>';
-      if (q.miniEnunciado)        html += '<div class="question-mini-enunciado">'+ renderMarkup(q.miniEnunciado)       + '</div>';
+      if (q.texto)                html += '<div class="question-texto">'         + renderMarkup(q.texto)                + '</div>';
+      if (q.miniEnunciado)        html += '<div class="question-mini-enunciado">' + renderMarkup(q.miniEnunciado)        + '</div>';
       if (q.code)                 html += renderCodeBlock(q.code);
       if (q.assertions && q.assertions.length > 0) html += renderAssertions(q.assertions);
       if (q.image)                html += '<div class="question-image"><img src="' + q.image + '" alt="Imagem da questão"></div>';
-      if (q.questionContinuation) html += '<div class="question-text">'          + renderMarkup(q.questionContinuation)+ '</div>';
-      if (q.question)             html += '<div class="question-enunciado">'     + renderMarkup(q.question)            + '</div>';
+      if (q.questionContinuation) html += '<div class="question-text">'           + renderMarkup(q.questionContinuation) + '</div>';
+      if (q.question)             html += '<div class="question-enunciado">'      + renderMarkup(q.question)             + '</div>';
       return html;
     }
 
@@ -522,11 +587,12 @@ var questoes = criarCopiaEmbaralhada(questoesBase, savedShuffleMap);
       atualizarResultados();
 
       if (_disc && _Storage) {
-        var total      = questoes.length;
+        var total       = questoes.length;
         var respondidas = Object.keys(respostas).length;
         var finalizado  = respondidas === total;
-        _Storage.saveProgress(_disc, _modo, _semestre, respostas, revelado, finalizado);
+        _Storage.saveProgress(_discUid(), _modo, _semestre, respostas, revelado, finalizado);
         _salvarShuffleMap();
+        _salvarFirebase(finalizado);
       }
     }
 
@@ -543,8 +609,9 @@ var questoes = criarCopiaEmbaralhada(questoesBase, savedShuffleMap);
       if (modoStep) { _sairModoStep(); renderizar(); }
 
       if (_disc && _Storage) {
-        _Storage.saveProgress(_disc, _modo, _semestre, respostas, true, true);
+        _Storage.saveProgress(_discUid(), _modo, _semestre, respostas, true, true);
         _salvarShuffleMap();
+        _salvarFirebase(true);
       }
 
       _atualizarTodosResultadosAula();
@@ -559,8 +626,16 @@ var questoes = criarCopiaEmbaralhada(questoesBase, savedShuffleMap);
       stepAtual        = 0;
 
       if (_disc && _Storage) {
-        _Storage.clearProgress(_disc, _modo, _semestre);
+        _Storage.clearProgress(_discUid(), _modo, _semestre);
         _Storage.remove(_smapKey());
+      }
+
+      // Limpa no Firebase também
+      if (window.NexusFirebase && _disc) {
+        var usuario = _Storage ? _Storage.get('usuario', null) : null;
+        if (usuario && usuario.uid) {
+          window.NexusFirebase.limparRespostasQuiz(usuario.uid, _semestre, _modo, _disc).catch(function () {});
+        }
       }
 
       questoes = criarCopiaEmbaralhada(questoesBase);

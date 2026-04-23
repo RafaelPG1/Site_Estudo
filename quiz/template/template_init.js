@@ -31,10 +31,12 @@ import { sincronizarSemNaURL, propagarSemNosLinks } from '../../shared/url.js';
 import { setText, setHTML } from '../../shared/dom.js';
 import { aplicarCoresDisciplina } from '../../shared/theme.js';
 
+import { carregarRespostasQuiz, salvarRespostasQuiz, limparRespostasQuiz } from '../../firebase.js';
 
 /* ── EXPÕE NO WINDOW PARA SCRIPTS CLÁSSICOS (quiz_engine.js) ── */
 window.NexusStorage = Storage;
-
+/* ── EXPÕE FIREBASE PARA O QUIZ_ENGINE (IIFE sem módulo) ── */
+window.NexusFirebase = { salvarRespostasQuiz, carregarRespostasQuiz, limparRespostasQuiz };
 /* ── LÊ CONTEXTO DA URL ───────────────────────────────────── */
 const params   = new URLSearchParams(location.search);
 const disc     = params.get('disc') || 'poo';
@@ -114,6 +116,7 @@ const MODOS_CONFIG = {
 const modoConfig = MODOS_CONFIG[modo] ?? MODOS_CONFIG.questoes;
 
 /* ── APLICA CORES DA DISCIPLINA + ACENTO DO MODO ─────────── */
+
 aplicarCoresDisciplina(info.arquivo, DISC_CORES);
 
 const cores = DISC_CORES[info.arquivo];
@@ -199,11 +202,29 @@ s.onerror = () => {
 s.onload = () => {
   const ui = document.createElement('script');
   ui.src = '../js/quiz_ui.js';
-  ui.onload = () => {
+
+  ui.onload = async () => {
+    // Pré-carrega respostas do Firebase ANTES do engine bootar
+    const usuario = Storage.get('usuario', null);
+    if (usuario?.uid) {
+      try {
+        const fbDados = await carregarRespostasQuiz(usuario.uid, semestre, modo, disc);
+        window.__NEXUS_FIREBASE_RESPOSTAS__ = fbDados ?? null;
+        console.log('[template_init] Firebase pré-carga:', fbDados ? 'dados encontrados' : 'sem dados');
+      } catch (e) {
+        window.__NEXUS_FIREBASE_RESPOSTAS__ = null;
+        console.warn('[template_init] Falha na pré-carga Firebase:', e);
+      }
+    } else {
+      window.__NEXUS_FIREBASE_RESPOSTAS__ = null;
+      console.log('[template_init] Usuário não logado — Firebase pulado');
+    }
+
     const engine = document.createElement('script');
     engine.src = '../js/quiz_engine.js';
     document.body.appendChild(engine);
   };
+
   document.head.appendChild(ui);
 };
 document.head.appendChild(s);
