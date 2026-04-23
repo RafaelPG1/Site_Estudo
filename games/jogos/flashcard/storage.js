@@ -7,7 +7,7 @@
 
 import { doc, getDoc, setDoc, deleteDoc }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-import { getDb } from '../../../firebase.js';
+import { getDb } from '../../../src/firebase.js';
 
 const _chaveLocal = (usuario, discId, sem) =>
   `nexus_srs_${usuario}_${discId}_${sem}`;

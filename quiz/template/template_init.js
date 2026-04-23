@@ -24,14 +24,14 @@ import {
   setDisciplina,
   setSemestre,
   getDisciplinasDeSemestre,
-} from '../../global.js';
-import Storage from '../../storage.js';
+} from '../../src/global.js';
+import Storage from '../../src/storage.js';
 import { DISC_CORES } from '../../shared/cores.js';
 import { sincronizarSemNaURL, propagarSemNosLinks } from '../../shared/url.js';
 import { setText, setHTML } from '../../shared/dom.js';
 import { aplicarCoresDisciplina } from '../../shared/theme.js';
 
-import { carregarRespostasQuiz, salvarRespostasQuiz, limparRespostasQuiz } from '../../firebase.js';
+import { carregarRespostasQuiz, salvarRespostasQuiz, limparRespostasQuiz } from '../../src/firebase.js';
 
 /* ── EXPÕE NO WINDOW PARA SCRIPTS CLÁSSICOS (quiz_engine.js) ── */
 window.NexusStorage = Storage;

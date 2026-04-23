@@ -26,7 +26,7 @@ timer.start();
 
 import { aplicarCoresDisciplina }   from '../../shared/theme.js';
 import { DISC_CORES }               from '../../shared/cores.js';
-import { getDisciplinasDeSemestre } from '../../global.js';
+import { getDisciplinasDeSemestre } from '../../src/global.js';
 
 /* ══════════════════════════════════════════════════════════
    UTILS — helpers genéricos

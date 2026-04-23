@@ -9,12 +9,12 @@ import {
   setConfigs, getConfigs, resetConfigs,
   limparDadosQuiz,
   getSemestreAtual, getDisciplinasDeSemestre,
-} from './global.js';
+} from './src/global.js';
 
-import { login, logout, carregarConfigs } from './firebase.js';
+import { login, logout, carregarConfigs } from './src/firebase.js';
 import { criarSemestreSelect, preencherAnos } from './shared/dom.js';
-// index.js — no topo, junto com os outros imports
 import { limparPerfisSRS } from './games/jogos/flashcard/storage.js';
+
 /* ─────────────────────────────────────────────
    INICIALIZAÇÃO
 ───────────────────────────────────────────── */
@@ -117,7 +117,7 @@ function abrirModalLogin() {
     <div class="modal__box modal__box--sm" role="dialog" aria-modal="true" aria-label="Entrar">
 
       <div class="modal__header">
-        <h2 class="modal__title">
+        <h2 class="modal__title" id="login-title">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
@@ -131,17 +131,17 @@ function abrirModalLogin() {
       <div class="modal__section">
 
         <!-- Nome -->
-<div class="config-row config-row--col">
-  <label for="login-nome">Nome</label>
-  <input
-    type="text"
-    id="login-nome"
-    class="config-input"
-    placeholder="seu nome"
-    autocomplete="off"
-    autocapitalize="off"
-  />
-</div>
+        <div class="config-row config-row--col">
+          <label for="login-nome">Nome</label>
+          <input
+            type="text"
+            id="login-nome"
+            class="config-input"
+            placeholder="seu nome"
+            autocomplete="off"
+            autocapitalize="off"
+          />
+        </div>
 
         <!-- PIN -->
         <div class="config-row config-row--col">
@@ -151,7 +151,7 @@ function abrirModalLogin() {
             id="login-pin"
             class="config-input"
             placeholder="• • •"
-            maxlength="6"
+            maxlength="20"
             inputmode="numeric"
             autocomplete="off"
           />
@@ -172,26 +172,55 @@ function abrirModalLogin() {
   document.body.appendChild(modal);
   requestAnimationFrame(() => modal.classList.add('modal--open'));
 
-  // Foca o PIN quando selecionar o nome
-  // ADICIONE:
-document.getElementById('login-nome').addEventListener('keydown', e => {
-  if (e.key === 'Enter') document.getElementById('login-pin').focus();
-});
+  /* ── Efeito admin ao digitar "admin" no nome ── */
+  const inputNome = document.getElementById('login-nome');
+  const box       = modal.querySelector('.modal__box');
+  const title     = document.getElementById('login-title');
+  const cards     = document.querySelector('.cards-grid');
 
-  // Enter no PIN dispara login
+  inputNome.addEventListener('input', function () {
+    const isAdmin = this.value.trim().toLowerCase() === 'admin';
+
+    box.classList.toggle('modal__box--admin', isAdmin);
+
+    if (isAdmin) {
+      title.innerHTML = `🛡️ Acesso Restrito`;
+      cards?.classList.add('cards-hidden');
+    } else {
+      title.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        Entrar no Nexus`;
+      cards?.classList.remove('cards-hidden');
+    }
+  });
+
+  document.getElementById('login-nome').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('login-pin').focus();
+  });
+
   document.getElementById('login-pin').addEventListener('keydown', e => {
     if (e.key === 'Enter') _tentarLogin();
   });
 
-  document.getElementById('modal-overlay-login').addEventListener('click', () => fecharModal(modal));
-  document.getElementById('modal-close-login').addEventListener('click',   () => fecharModal(modal));
+  document.getElementById('modal-overlay-login').addEventListener('click', () => {
+    cards?.classList.remove('cards-hidden');
+    fecharModal(modal);
+  });
+  document.getElementById('modal-close-login').addEventListener('click', () => {
+    cards?.classList.remove('cards-hidden');
+    fecharModal(modal);
+  });
   document.getElementById('btn-login-entrar').addEventListener('click', _tentarLogin);
 
   async function _tentarLogin() {
-    const nome  = document.getElementById('login-nome').value.trim();
-    const pin   = document.getElementById('login-pin').value.trim();
-    const erro  = document.getElementById('login-erro');
-    const btn   = document.getElementById('btn-login-entrar');
+    const nome = document.getElementById('login-nome').value.trim();
+    const pin  = document.getElementById('login-pin').value.trim();
+    const erro = document.getElementById('login-erro');
+    const btn  = document.getElementById('btn-login-entrar');
 
     erro.style.display = 'none';
 
@@ -201,7 +230,6 @@ document.getElementById('login-nome').addEventListener('keydown', e => {
       return;
     }
 
-    // Estado de carregamento
     btn.textContent = 'Entrando…';
     btn.disabled    = true;
 
@@ -210,23 +238,22 @@ document.getElementById('login-nome').addEventListener('keydown', e => {
     btn.textContent = 'Entrar';
     btn.disabled    = false;
 
-if (resultado.ok) {
-    limparDadosQuiz();
-  const configsRemota = await carregarConfigs(resultado.usuario.uid);
-  console.log('[login] configsRemota recebida →', configsRemota);
+    if (resultado.ok) {
+      limparDadosQuiz();
+      const configsRemota = await carregarConfigs(resultado.usuario.uid);
 
-  if (configsRemota) {
-    setConfigs(configsRemota);
-    console.log('[login] configs aplicadas do Firebase ✓');
-  } else {
-    console.log('[login] nenhuma config remota — mantendo localStorage');
-  }
+      if (configsRemota) {
+        setConfigs(configsRemota);
+        console.log('[login] configs aplicadas do Firebase ✓');
+      } else {
+        console.log('[login] nenhuma config remota — mantendo localStorage');
+      }
 
-  fecharModal(modal);
-  renderHeader();
-  _montarSelect();
-  mostrarToast(`Bem-vindo, ${resultado.usuario.nome}! ${resultado.usuario.avatar}`);
-
+      cards?.classList.remove('cards-hidden');
+      fecharModal(modal);
+      renderHeader();
+      _montarSelect();
+      mostrarToast(`Bem-vindo, ${resultado.usuario.nome}! ${resultado.usuario.avatar}`);
 
     } else {
       erro.textContent   = resultado.erro;
@@ -368,31 +395,32 @@ function abrirModalConfig() {
             </button>
           </div>
         </div>
-<div class="modal__section">
-  <div class="modal__section-title">Flashcard</div>
 
-  <div class="config-row">
-    <label>
-      Limpar disciplina
-      <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
-        Zera o progresso de repetição espaçada de uma disciplina específica.
-      </small>
-    </label>
-    <div class="flashcard-disc-btns" id="flashcard-disc-btns"></div>
-  </div>
+        <div class="modal__section">
+          <div class="modal__section-title">Flashcard</div>
 
-  <div class="config-row">
-    <label>
-      Limpar tudo
-      <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
-        Zera o SRS de todas as disciplinas do semestre atual.
-      </small>
-    </label>
-    <button class="modal-btn modal-btn--danger" id="btn-limpar-srs-tudo">
-      Limpar tudo
-    </button>
-  </div>
-</div>
+          <div class="config-row">
+            <label>
+              Limpar disciplina
+              <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
+                Zera o progresso de repetição espaçada de uma disciplina específica.
+              </small>
+            </label>
+            <div class="flashcard-disc-btns" id="flashcard-disc-btns"></div>
+          </div>
+
+          <div class="config-row">
+            <label>
+              Limpar tudo
+              <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
+                Zera o SRS de todas as disciplinas do semestre atual.
+              </small>
+            </label>
+            <button class="modal-btn modal-btn--danger" id="btn-limpar-srs-tudo">
+              Limpar tudo
+            </button>
+          </div>
+        </div>
       </div><!-- /.modal__body-scroll -->
 
       <div class="modal__footer">
@@ -460,16 +488,16 @@ function abrirModalConfig() {
     setTimeout(abrirModalConfig, 300);
   });
 
-document.getElementById('btn-limpar-quiz').addEventListener('click', function () {
-  _confirmar(this, () => {
-    limparDadosQuiz();
-    console.log('[Quiz] dados do quiz apagados via configurações');
-    if (typeof window.__nexusQuizNotifyCleared === 'function') {
-      window.__nexusQuizNotifyCleared();
-    }
-    mostrarToast('Dados do quiz apagados.');
+  document.getElementById('btn-limpar-quiz').addEventListener('click', function () {
+    _confirmar(this, () => {
+      limparDadosQuiz();
+      console.log('[Quiz] dados do quiz apagados via configurações');
+      if (typeof window.__nexusQuizNotifyCleared === 'function') {
+        window.__nexusQuizNotifyCleared();
+      }
+      mostrarToast('Dados do quiz apagados.');
+    });
   });
-});
 
   /* ── Logout ── */
   if (estaLogado()) {
@@ -482,55 +510,54 @@ document.getElementById('btn-limpar-quiz').addEventListener('click', function ()
       mostrarToast('Sessão encerrada.');
     });
   }
-/* ── SRS Flashcard ── */
-const sem         = getSemestreAtual();
-const disciplinas = getDisciplinasDeSemestre(sem);
-const uid         = getUsuario()?.uid ?? 'visitante';
 
-// Importa invalidarCacheSRS dinamicamente para não criar dependência circular
-async function _resetarSRS(discId) {
-  const mod = await import('./games/jogos/flashcard/flashcard.js');
-  if (discId) {
-    await limparPerfisSRS(uid, discId, sem);
-    mod.invalidarCacheSRS(discId);
-    console.log(`[SRS] limpo: uid="${uid}" disc="${discId}" sem="${sem}"`);
-  } else {
-    for (const disc of disciplinas) {
-      await limparPerfisSRS(uid, disc.id, sem);
-      console.log(`[SRS] limpo: uid="${uid}" disc="${disc.id}" sem="${sem}"`);
+  /* ── SRS Flashcard ── */
+  const sem         = getSemestreAtual();
+  const disciplinas = getDisciplinasDeSemestre(sem);
+  const uid         = getUsuario()?.uid ?? 'visitante';
+
+  async function _resetarSRS(discId) {
+    const mod = await import('./games/jogos/flashcard/flashcard.js');
+    if (discId) {
+      await limparPerfisSRS(uid, discId, sem);
+      mod.invalidarCacheSRS(discId);
+      console.log(`[SRS] limpo: uid="${uid}" disc="${discId}" sem="${sem}"`);
+    } else {
+      for (const disc of disciplinas) {
+        await limparPerfisSRS(uid, disc.id, sem);
+        console.log(`[SRS] limpo: uid="${uid}" disc="${disc.id}" sem="${sem}"`);
+      }
+      mod.invalidarCacheSRS(null);
     }
-    mod.invalidarCacheSRS(null); // limpa cache inteiro
   }
-}
 
-const discBtns = document.getElementById('flashcard-disc-btns');
-if (discBtns) {
-  disciplinas.forEach(disc => {
-    const btn = document.createElement('button');
-    btn.className   = 'modal-btn modal-btn--ghost';
-    btn.textContent = disc.apelido;
-    btn.title       = `Limpar SRS de ${disc.nome}`;
-    btn.addEventListener('click', () => {
-      _confirmar(btn, async () => {
-        await _resetarSRS(disc.id);
-        mostrarToast(`SRS de ${disc.apelido} apagado.`);
+  const discBtns = document.getElementById('flashcard-disc-btns');
+  if (discBtns) {
+    disciplinas.forEach(disc => {
+      const btn = document.createElement('button');
+      btn.className   = 'modal-btn modal-btn--ghost';
+      btn.textContent = disc.apelido;
+      btn.title       = `Limpar SRS de ${disc.nome}`;
+      btn.addEventListener('click', () => {
+        _confirmar(btn, async () => {
+          await _resetarSRS(disc.id);
+          mostrarToast(`SRS de ${disc.apelido} apagado.`);
+        });
       });
+      discBtns.appendChild(btn);
     });
-    discBtns.appendChild(btn);
-  });
-}
+  }
 
-document.getElementById('btn-limpar-srs-tudo')?.addEventListener('click', function () {
-  _confirmar(this, async () => {
-    await _resetarSRS(null);
-    mostrarToast('SRS de todas as disciplinas apagado.');
+  document.getElementById('btn-limpar-srs-tudo')?.addEventListener('click', function () {
+    _confirmar(this, async () => {
+      await _resetarSRS(null);
+      mostrarToast('SRS de todas as disciplinas apagado.');
+    });
   });
-});
 }
 
 function _confirmar(btn, callback) {
   if (btn.dataset.confirmando === 'true') {
-    // Segunda vez — executa
     btn.dataset.confirmando = 'false';
     btn.textContent = btn.dataset.textoOriginal;
     btn.classList.remove('modal-btn--danger');
@@ -538,13 +565,11 @@ function _confirmar(btn, callback) {
     return;
   }
 
-  // Primeira vez — pede confirmação
   btn.dataset.textoOriginal = btn.textContent;
   btn.dataset.confirmando   = 'true';
   btn.textContent = 'Tem certeza?';
   btn.classList.add('modal-btn--danger');
 
-  // Cancela automaticamente após 3s se não confirmar
   setTimeout(() => {
     if (btn.dataset.confirmando === 'true') {
       btn.dataset.confirmando = 'false';
@@ -553,6 +578,7 @@ function _confirmar(btn, callback) {
     }
   }, 3000);
 }
+
 /* ─────────────────────────────────────────────
    DROPDOWN PERFIL
 ───────────────────────────────────────────── */
@@ -584,6 +610,10 @@ function abrirPerfilDropdown() {
     <div class="pd-divider"></div>
     <a href="/area_pessoal/pessoal.html" class="pd-item">📚 Área Pessoal</a>
     <a href="/area_pessoal/anotacoes/anotacoes.html" class="pd-item">📝 Anotações</a>
+    ${u.admin ? `
+    <div class="pd-divider"></div>
+    <a href="/admin/admin.html" class="pd-item" style="color:var(--gold)">🛡️ Painel Admin</a>
+    ` : ''}
     <div class="pd-divider"></div>
     <button class="pd-item pd-item--danger" id="pd-logout">Sair da conta</button>`;
 

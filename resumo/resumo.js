@@ -13,7 +13,7 @@ import {
   setPagina,
   setSemestre,
   SEMESTRES,
-} from '../global.js';
+} from '../src/global.js';
 
 import { resolverSemestreDeURL, sincronizarSemNaURL } from '../shared/url.js';
 import { criarSemestreSelect, preencherAnos } from '../shared/dom.js';

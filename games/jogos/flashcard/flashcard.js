@@ -19,7 +19,7 @@
 import { getCardsData }                      from '../../conteudo/flashcards/cards_data.js';
 import { carregarPerfisSRS, salvarPerfilSRS } from './storage.js';
 import { Shell, lerParams }                  from '../../template/game-shell.js';
-import { getUsuario }                        from '../../../global.js';
+import { getUsuario }                        from '../../../src/global.js';
 
 import { DISC_CORES }               from '../../../shared/cores.js';
 import { aplicarCoresDisciplina }   from '../../../shared/theme.js';

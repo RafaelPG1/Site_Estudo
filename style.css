@@ -1149,3 +1149,56 @@ a { text-decoration: none; color: inherit; }
   border-radius: 3px;
 }
 .modal__body-scroll::-webkit-scrollbar-track { background: transparent; }
+
+/* ── MODAL ADMIN — tema dourado ── */
+.modal__box--admin {
+  border-color: rgba(232, 201, 122, 0.4) !important;
+  background: linear-gradient(145deg, var(--surface-2), rgba(232, 201, 122, 0.05));
+  box-shadow:
+    0 32px 80px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(232, 201, 122, 0.1) inset,
+    0 0 40px rgba(232, 201, 122, 0.08);
+}
+
+.modal__box--admin .modal__title { color: var(--gold); }
+.modal__box--admin .modal__close { color: var(--gold); }
+
+.modal__box--admin .config-input:focus {
+  border-color: rgba(232, 201, 122, 0.5);
+  box-shadow: 0 0 0 3px rgba(232, 201, 122, 0.12);
+}
+
+.modal__box--admin #btn-login-entrar {
+  background: var(--gold);
+  color: var(--bg);
+  border-color: var(--gold);
+}
+
+.modal__box--admin #btn-login-entrar:hover {
+  background: #f0d88a;
+  box-shadow: 0 0 24px rgba(232, 201, 122, 0.4);
+}
+
+/* ── CARDS — sumir ao entrar como admin ── */
+.cards-grid {
+  transition: opacity 0.4s ease, filter 0.4s ease;
+}
+
+.cards-grid.cards-hidden {
+  opacity: 0;
+  filter: blur(6px);
+  pointer-events: none;
+}
+
+.modal__box--admin-full {
+  background: var(--surface-2);
+  border-color: rgba(232, 201, 122, 0.2);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.5),
+              0 0 0 1px rgba(232,201,122,0.06) inset;
+  padding: 2.5rem 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+}
