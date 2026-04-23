@@ -20,6 +20,7 @@ import { CARDS_DATA }                        from '../../conteudo/flashcards/car
 import { carregarPerfisSRS, salvarPerfilSRS } from './storage.js';
 import { Shell, lerParams }                  from '../../template/game-shell.js';
 import { getUsuario } from '../../../global.js';
+
 // Mapeamento disciplina → classe da tag
 const DISC_TAG_CLASS = {
   design:      'tag-design',
@@ -197,8 +198,16 @@ function _shuffle(arr) {
   return a;
 }
 
-function _salvarSessao() { window.flashcardSessao?.salvar(_estado); }
-function _limparSessao() { window.flashcardSessao?.limpar(); }
+// Salva apenas IDs dos cards (não os objetos completos) para evitar
+// mismatch ao restaurar a sessão após F5
+function _salvarSessao() {
+  window.flashcardSessao?.salvar({
+    ..._estado,
+    cards: _estado.cards.map(c => c.id),
+  });
+}
+
+function _limparSessao() { window.flashcardSessao?.limpar(_estado.discId); }
 
 /* ═════════════════════════════════════════════════════════════════
    4. ATALHOS DE TECLADO
@@ -555,7 +564,7 @@ function _tplWrapper(discId, cards) {
           <div class="kbd-row"><kbd>→</kbd><span>Próximo</span></div>
           <div class="kbd-row"><kbd>←</kbd><span>Anterior</span></div>
           <div class="kbd-row"><kbd>1</kbd><span>Fácil</span></div>
-          <div class="kbd-row"><kbd>2</kbd><span>Médio</span></div>
+          <div class="kbd-row"><kbd>2</kbd><span>Médio</kbd></div>
           <div class="kbd-row"><kbd>3</kbd><span>Difícil</span></div>
         </div>
       </div>
@@ -915,10 +924,8 @@ export async function initCards(discId, panelEl, nomeUsuario) {
 
   const { sem } = lerParams();
 
-  /* Shell.init() aplica cores e preenche #shell-back-btn */
   Shell.init({ icon: '🃏', nome: 'Flashcards' });
 
-  /* Garante breadcrumb */
   const breadcrumb = document.getElementById('breadcrumb-disc');
   if (breadcrumb) breadcrumb.textContent = DISC_LABEL[discId] ?? discId;
 
@@ -937,39 +944,38 @@ export async function initCards(discId, panelEl, nomeUsuario) {
     return;
   }
 
-  /* Carrega SRS com chave por semestre */
   _srCache = await carregarPerfisSRS(nomeUsuario, discId, sem);
 
   const sessaoSalva = window.flashcardSessao?.carregar(discId);
   let cards, estado;
 
-  if (sessaoSalva) {
+  if (sessaoSalva?.cards?.length) {
+    // Restaura os objetos completos a partir dos IDs salvos
     cards = sessaoSalva.cards
       .map(id => CARDS_DATA[discId].find(c => c.id === id))
       .filter(Boolean);
 
-    estado = {
-      ...ESTADO_INICIAL(),
-      discId,
-      semestre:   sem,
-      nomeUsuario,
-      cards,
-      current:    sessaoSalva.current,
-      stats:      sessaoSalva.stats,
-      difficulty: sessaoSalva.difficulty,
-      resultado:  sessaoSalva.resultado,
-      panelEl,
-    };
+    // Se algum ID não foi encontrado, descarta a sessão e monta deck novo
+    if (cards.length !== sessaoSalva.cards.length) {
+      cards = _srMontarDeck(discId);
+      estado = { ...ESTADO_INICIAL(), discId, semestre: sem, nomeUsuario, cards, panelEl };
+    } else {
+      estado = {
+        ...ESTADO_INICIAL(),
+        discId,
+        semestre:   sem,
+        nomeUsuario,
+        cards,
+        current:    sessaoSalva.current    ?? 0,
+        stats:      sessaoSalva.stats      ?? { correct: 0, wrong: 0 },
+        difficulty: sessaoSalva.difficulty ?? {},
+        resultado:  sessaoSalva.resultado  ?? {},
+        panelEl,
+      };
+    }
   } else {
     cards = _srMontarDeck(discId);
-    estado = {
-      ...ESTADO_INICIAL(),
-      discId,
-      semestre: sem,
-      nomeUsuario,
-      cards,
-      panelEl,
-    };
+    estado = { ...ESTADO_INICIAL(), discId, semestre: sem, nomeUsuario, cards, panelEl };
   }
 
   _estado = estado;

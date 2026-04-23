@@ -96,11 +96,11 @@
       _chave: (discId) => `nexus_fc_sessao_${discId}`,
       salvar(estado) {
         try {
-          const { discId, current, resultado, historico } = estado;
+          const { discId, current, resultado, historico, cards, stats, difficulty } = estado;
           if (!discId) return;
           sessionStorage.setItem(
             this._chave(discId),
-            JSON.stringify({ current, resultado, historico, ts: Date.now() })
+            JSON.stringify({ current, resultado, historico, cards, stats, difficulty, ts: Date.now() })
           );
         } catch (_) {}
       },
