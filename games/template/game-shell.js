@@ -24,7 +24,8 @@ const timer = Timer.criar({ total: 60, onEnd: () => encerrarJogo() });
 timer.start();
    ============================================================ */
 
-import { DISC_CORES }            from '../../shared/cores.js';
+import { aplicarCoresDisciplina }   from '../../shared/theme.js';
+import { DISC_CORES }               from '../../shared/cores.js';
 import { getDisciplinasDeSemestre } from '../../global.js';
 
 /* ══════════════════════════════════════════════════════════
@@ -45,8 +46,6 @@ export function lerParams() {
 
 /**
  * Embaralha um array (Fisher-Yates) sem modificar o original.
- * @param {Array} arr
- * @returns {Array}
  */
 export function shuffle(arr) {
   const a = [...arr];
@@ -59,8 +58,6 @@ export function shuffle(arr) {
 
 /**
  * Converte segundos em string "MM:SS".
- * @param {number} seg
- * @returns {string}
  */
 export function formatTime(seg) {
   const m = Math.floor(seg / 60).toString().padStart(2, '0');
@@ -70,8 +67,6 @@ export function formatTime(seg) {
 
 /**
  * Promise que resolve após `ms` milissegundos.
- * Útil para pausas entre estados de jogo.
- * @param {number} ms
  */
 export function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
@@ -79,9 +74,6 @@ export function sleep(ms) {
 
 /**
  * Seleciona N itens aleatórios de um array.
- * @param {Array}  arr
- * @param {number} n
- * @returns {Array}
  */
 export function sample(arr, n) {
   return shuffle(arr).slice(0, n);
@@ -106,18 +98,15 @@ export const Shell = {
    *   #shell-sem        → semestre
    *   #shell-back-btn   → botão voltar   → href para jogo.html?sem=...
    *
-   * @param {{ icon: string, nome: string }} config  — dados do jogo
+   * @param {{ icon: string, nome: string }} config
    * @returns {{ disc: string, sem: string, cores: object, disciplina: object|null }}
-   *
-   * Exemplo (forca.js):
-   *   const { disc, sem } = Shell.init({ icon: '🔤', nome: 'Forca' });
    */
   init(config = {}) {
     const { disc, sem } = lerParams();
 
-    /* ── Cores da disciplina ── */
+    /* ── Cores da disciplina — definidas aqui para uso no return ── */
     const cores = DISC_CORES[disc] ?? DISC_CORES['design'];
-    _aplicarCores(cores);
+    aplicarCoresDisciplina(disc, DISC_CORES);
 
     /* ── Info da disciplina via global.js ── */
     const disciplina = _resolverDisciplina(disc, sem);
@@ -128,7 +117,7 @@ export const Shell = {
     _set('shell-disc-name', disciplina?.apelido ?? disc);
     _set('shell-sem',       sem || '—');
 
-    /* ── Botão voltar ── */
+    /* ── Botão voltar (por ID — padrão dos jogos) ── */
     const backBtn = document.getElementById('shell-back-btn');
     if (backBtn) {
       backBtn.href = `../../jogo.html${sem ? `?sem=${sem}` : ''}`;
@@ -140,14 +129,6 @@ export const Shell = {
 };
 
 /* ── Helpers privados do Shell ── */
-
-function _aplicarCores(cores) {
-  const r = document.documentElement.style;
-  r.setProperty('--disc-tema',      cores.corTema);
-  r.setProperty('--disc-tema-rgb',  cores.corTemaRgb);
-  r.setProperty('--disc-tema2',     cores.corTema2);
-  r.setProperty('--disc-tema2-rgb', cores.corTema2Rgb);
-}
 
 function _resolverDisciplina(disc, sem) {
   try {
@@ -180,15 +161,7 @@ function _set(id, texto) {
  * @param {Function} [opts.onTick]    — callback(restante, pct) a cada segundo
  * @param {Function} [opts.onEnd]     — callback() quando chega a 0
  *
- * @returns {{ start, pause, resume, stop, getRestante }}
- *
- * Exemplo (quiz-tempo.js):
- *   const timer = Timer.criar({
- *     total: 60,
- *     onTick: (rest, pct) => console.log(rest),
- *     onEnd:  () => encerrarJogo(),
- *   });
- *   timer.start();
+ * @returns {{ start, pause, resume, stop, reset, getRestante }}
  */
 export const Timer = {
 
@@ -203,13 +176,10 @@ export const Timer = {
     function _atualizar() {
       const pct = Math.max(0, (restante / total) * 100);
 
-      /* CSS var para a barra */
       document.documentElement.style.setProperty('--timer-pct', pct + '%');
 
-      /* Display numérico */
       if (timerDisplay) timerDisplay.textContent = formatTime(restante);
 
-      /* Danger quando < 25% */
       if (timerBar) {
         timerBar.classList.toggle('game-timer-bar--danger', pct < 25);
         if (timerDisplay) timerDisplay.classList.toggle('game-timer-display--danger', pct < 25);
@@ -271,19 +241,11 @@ export const Timer = {
  * definida em game-shell.css (.game-result__card, etc.).
  *
  * @param {object} opts
- * @param {string}   opts.emoji      — ex: '🏆' ou '😅'
- * @param {string}   opts.titulo     — ex: 'Parabéns!'
- * @param {string}   opts.subtitulo  — mensagem de apoio
+ * @param {string}   opts.emoji
+ * @param {string}   opts.titulo
+ * @param {string}   opts.subtitulo
  * @param {Array<{ label: string, valor: string|number }>} opts.stats
- * @param {Function} [opts.onRejogo] — callback do botão "Jogar de novo"
- *
- * Exemplo (forca.js):
- *   Result.mostrar({
- *     emoji: '🏆', titulo: 'Você venceu!',
- *     subtitulo: 'Acertou todas as letras.',
- *     stats: [{ label: 'Erros', valor: 2 }, { label: 'Palavra', valor: 'Herança' }],
- *     onRejogo: () => iniciarJogo(),
- *   });
+ * @param {Function} [opts.onRejogo]
  */
 export const Result = {
 
@@ -291,11 +253,10 @@ export const Result = {
     const overlay = document.getElementById('game-result');
     if (!overlay) return;
 
-    _set('result-emoji',    emoji    ?? '🎮');
-    _set('result-title',    titulo   ?? 'Fim de jogo!');
+    _set('result-emoji',    emoji     ?? '🎮');
+    _set('result-title',    titulo    ?? 'Fim de jogo!');
     _set('result-subtitle', subtitulo ?? '');
 
-    /* Stats dinâmicas */
     const statsEl = document.getElementById('result-stats');
     if (statsEl) {
       statsEl.innerHTML = stats.map(s => `
@@ -306,7 +267,6 @@ export const Result = {
       `).join('');
     }
 
-    /* Botão rejogo */
     const btnRejogo = document.getElementById('result-btn-rejogo');
     if (btnRejogo && onRejogo) {
       btnRejogo.onclick = () => {
@@ -315,7 +275,6 @@ export const Result = {
       };
     }
 
-    /* Botão sair */
     const { disc, sem } = lerParams();
     const btnSair = document.getElementById('result-btn-sair');
     if (btnSair) {

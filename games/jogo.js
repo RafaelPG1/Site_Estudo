@@ -245,7 +245,15 @@ function openModal(game) {
   const wrap = DOM.modalDiscWrap();
   const sem  = getSemestreAtual();
   const discs = getDisciplinasDeSemestre(sem);
+const disciplinas = getDisciplinasDeSemestre(sem);
 
+if (!disciplinas.length) {
+  wrap.innerHTML = `
+    <p class="modal-empty">
+      Nenhuma disciplina cadastrada para <strong>${sem}</strong> ainda.
+    </p>`;
+  return;
+}
   sel.innerHTML = '<option value="">— selecione —</option>';
   discs.forEach(d => {
     const opt       = document.createElement('option');

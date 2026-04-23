@@ -43,5 +43,5 @@ export function aplicarCoresDisciplina(discArquivo, DISC_CORES) {
   r.setProperty('--disc-tema',      cores.corTema);
   r.setProperty('--disc-tema-rgb',  cores.corTemaRgb);
   r.setProperty('--disc-tema2',     cores.corTema2);
-  r.setProperty('--disc-tema2Rgb',  cores.corTema2Rgb);
+  r.setProperty('--disc-tema2-rgb', cores.corTema2Rgb);
 }

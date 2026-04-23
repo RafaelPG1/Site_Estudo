@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════
    cards_data.js — Conteúdo dos flashcards
-   IDs de disciplina espelham o global.js:
-     banco_dados | design | poo | redes
+   IDs de disciplina espelham o global.js
+   games/conteudo/flashcard/cards_data.js
 ═══════════════════════════════════════════════════ */
 
 export const CARDS_DATA = {

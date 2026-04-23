@@ -1,5 +1,6 @@
 /* ═══════════════════════════════════════════════════
-   flashcard/storage.js — SRS persistido no localStorage
+   NEXUS STUDY — games/jogos/flashcard/storage.js
+   SRS persistido no localStorage.
    Chave: nexus_srs_{usuario}_{discId}_{sem}
 ═══════════════════════════════════════════════════ */
 

@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════════
-   NEXUS STUDY — games/jogos/flashcard/flashcard.js  (v3)
-   
+   NEXUS STUDY — games/jogos/flashcard/flashcard.js  (v3.1)
+
    Seções:
      1. IMPORTS & CONSTANTES
      2. ENGINE DE SPACED REPETITION (SRS)
@@ -11,15 +11,15 @@
      7. RENDER
      8. ATUALIZAÇÕES DE UI
      9. AÇÕES DO USUÁRIO
-    10. API PÚBLICA  →  initCards / destroyCards / renderCard
+    10. API PÚBLICA  →  initCards / destroyCards
 ═══════════════════════════════════════════════════════════════════ */
 
 /* ── 1. IMPORTS & CONSTANTES ──────────────────────────────────── */
 
-import { CARDS_DATA }                        from './cards_data.js';
+import { CARDS_DATA }                        from '../../conteudo/flashcards/cards_data.js';
 import { carregarPerfisSRS, salvarPerfilSRS } from './storage.js';
 import { Shell, lerParams }                  from '../../template/game-shell.js';
-
+import { getUsuario } from '../../../global.js';
 // Mapeamento disciplina → classe da tag
 const DISC_TAG_CLASS = {
   design:      'tag-design',
@@ -28,7 +28,7 @@ const DISC_TAG_CLASS = {
   poo:         'tag-poo',
 };
 
-// Rótulos legíveis por disciplina (para breadcrumb e tags)
+// Rótulos legíveis por disciplina
 const DISC_LABEL = {
   design:      'Design',
   banco_dados: 'Banco de Dados',
@@ -99,7 +99,7 @@ async function _srAtualizar(cardId, acertou, diffMarcada) {
       cardId,
       p,
       _estado.discId,
-      _estado.semestre,   // ← novo: semestre na chave
+      _estado.semestre,
     );
   } catch (err) {
     console.error('[flashcard.js] Erro ao salvar SRS:', err);
@@ -119,15 +119,15 @@ function _srMontarDeck(discId) {
     const p     = _srPerfil(card.id);
     const visto = p.tentativas > 0;
 
-    if (p.dominado)             dominados.push({ card, p });
-    else if (!visto)            novos.push({ card, p });
+    if (p.dominado)                 dominados.push({ card, p });
+    else if (!visto)                novos.push({ card, p });
     else if (p.proximaVez <= agora) vencidos.push({ card, p });
-    else                        cedo.push({ card, p });
+    else                            cedo.push({ card, p });
   });
 
   vencidos.sort((a, b) =>
-    b.p.erros !== a.p.erros             ? b.p.erros - a.p.erros :
-    b.p.tentativas !== a.p.tentativas   ? b.p.tentativas - a.p.tentativas :
+    b.p.erros !== a.p.erros           ? b.p.erros - a.p.erros :
+    b.p.tentativas !== a.p.tentativas ? b.p.tentativas - a.p.tentativas :
     a.p.proximaVez - b.p.proximaVez
   );
 
@@ -173,7 +173,7 @@ function _srEstatisticas(discId) {
 
 const ESTADO_INICIAL = () => ({
   discId:      null,
-  semestre:    null,   // ← novo
+  semestre:    null,
   nomeUsuario: null,
   cards:       [],
   current:     0,
@@ -914,17 +914,11 @@ export async function initCards(discId, panelEl, nomeUsuario) {
   destroyCards(panelEl);
 
   const { sem } = lerParams();
+
+  /* Shell.init() aplica cores e preenche #shell-back-btn */
   Shell.init({ icon: '🃏', nome: 'Flashcards' });
 
-  // ← Adicione isso logo após Shell.init():
-  const backBtn = document.querySelector('.back-btn');
-  if (backBtn) {
-    backBtn.href = sem
-      ? `../../jogo.html?sem=${sem}`
-      : '../../jogo.html';
-  }
-
-  // Atualiza breadcrumb
+  /* Garante breadcrumb */
   const breadcrumb = document.getElementById('breadcrumb-disc');
   if (breadcrumb) breadcrumb.textContent = DISC_LABEL[discId] ?? discId;
 
@@ -932,9 +926,9 @@ export async function initCards(discId, panelEl, nomeUsuario) {
 
   if (!CARDS_DATA[discId]?.length) {
     const vazio = document.createElement('div');
-    vazio.className   = 'panel-cards';
+    vazio.className    = 'panel-cards';
     vazio.dataset.disc = discId;
-    vazio.innerHTML   = `
+    vazio.innerHTML    = `
       <div class="cards-empty">
         <i class="fas fa-layer-group" aria-hidden="true"></i>
         <p>Nenhum card disponível para esta disciplina ainda.</p>
@@ -943,7 +937,7 @@ export async function initCards(discId, panelEl, nomeUsuario) {
     return;
   }
 
-  // Carrega SRS com semestre na chave
+  /* Carrega SRS com chave por semestre */
   _srCache = await carregarPerfisSRS(nomeUsuario, discId, sem);
 
   const sessaoSalva = window.flashcardSessao?.carregar(discId);
@@ -1001,8 +995,8 @@ export const removerCards = destroyCards;
 
   const { disc, sem } = lerParams();
   const usuario = new URLSearchParams(location.search).get('user')
-               ?? localStorage.getItem('sessao_usuario')
-               ?? 'visitante';
+             ?? getUsuario()
+             ?? 'visitante';
 
   if (disc) {
     document.addEventListener('DOMContentLoaded', () => {
