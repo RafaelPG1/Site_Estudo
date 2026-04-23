@@ -116,7 +116,8 @@ function abrirModalLogin() {
     <div class="modal__overlay" id="modal-overlay-login"></div>
     <div class="modal__box modal__box--sm" role="dialog" aria-modal="true" aria-label="Entrar">
 
-      <div class="modal__header">
+      <!-- Header normal (some no admin) -->
+      <div class="modal__header modal__header--normal">
         <h2 class="modal__title" id="login-title">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -128,6 +129,21 @@ function abrirModalLogin() {
         <button class="modal__close" id="modal-close-login" aria-label="Fechar">✕</button>
       </div>
 
+      <!-- Header admin (some no normal) -->
+      <div class="modal__header modal__header--admin-view">
+        <div class="admin-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          Acesso Restrito
+        </div>
+        <h2 class="admin-title">Nexus Admin</h2>
+        <p class="admin-subtitle">Painel de Controle</p>
+      </div>
+
+      <div class="modal__body-scroll">
       <div class="modal__section">
 
         <!-- Nome -->
@@ -138,6 +154,7 @@ function abrirModalLogin() {
             id="login-nome"
             class="config-input"
             placeholder="seu nome"
+            maxlength="30"
             autocomplete="off"
             autocapitalize="off"
           />
@@ -146,20 +163,30 @@ function abrirModalLogin() {
         <!-- PIN -->
         <div class="config-row config-row--col">
           <label for="login-pin">PIN</label>
-          <input
-            type="password"
-            id="login-pin"
-            class="config-input"
-            placeholder="• • •"
-            maxlength="20"
-            inputmode="numeric"
-            autocomplete="off"
-          />
+          <div class="pin-wrap">
+            <input
+              type="password"
+              id="login-pin"
+              class="config-input"
+              placeholder="• • •"
+              maxlength="3"
+              inputmode="numeric"
+              autocomplete="off"
+            />
+            <button type="button" class="pin-eye" id="btn-pin-eye" aria-label="Mostrar PIN" tabindex="-1">
+              <svg id="pin-eye-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
         </div>
 
         <p id="login-erro" class="login-erro" style="display:none"></p>
 
       </div>
+      </div><!-- /.modal__body-scroll -->
 
       <div class="modal__footer">
         <button class="modal-btn modal-btn--primary" id="btn-login-entrar">
@@ -175,27 +202,31 @@ function abrirModalLogin() {
   /* ── Efeito admin ao digitar "admin" no nome ── */
   const inputNome = document.getElementById('login-nome');
   const box       = modal.querySelector('.modal__box');
-  const title     = document.getElementById('login-title');
   const cards     = document.querySelector('.cards-grid');
 
   inputNome.addEventListener('input', function () {
     const isAdmin = this.value.trim().toLowerCase() === 'admin';
+    const pin = document.getElementById('login-pin');
+
+    // PIN: 3 dígitos normal, 9 dígitos admin
+    pin.setAttribute('maxlength', isAdmin ? '9' : '3');
+    if (!isAdmin && pin.value.length > 3) pin.value = pin.value.slice(0, 3);
 
     box.classList.toggle('modal__box--admin', isAdmin);
+    cards?.classList.toggle('cards-hidden', isAdmin);
+  });
 
-    if (isAdmin) {
-      title.innerHTML = `🛡️ Acesso Restrito`;
-      cards?.classList.add('cards-hidden');
-    } else {
-      title.innerHTML = `
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-          <circle cx="12" cy="7" r="4"/>
-        </svg>
-        Entrar no Nexus`;
-      cards?.classList.remove('cards-hidden');
-    }
+  document.getElementById('btn-pin-eye').addEventListener('click', function () {
+    const pin  = document.getElementById('login-pin');
+    const icon = document.getElementById('pin-eye-icon');
+    const show = pin.type === 'password';
+    pin.type = show ? 'text' : 'password';
+    icon.innerHTML = show
+      ? `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+         <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+         <line x1="1" y1="1" x2="23" y2="23"/>`
+      : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+         <circle cx="12" cy="12" r="3"/>`;
   });
 
   document.getElementById('login-nome').addEventListener('keydown', e => {

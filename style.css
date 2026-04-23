@@ -191,6 +191,7 @@ a { text-decoration: none; color: inherit; }
   color: var(--text-1);
   background: rgba(255,255,255,0.05);
   backdrop-filter: blur(6px);
+  cursor: pointer;
   transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 
@@ -281,6 +282,13 @@ a { text-decoration: none; color: inherit; }
   grid-template-columns: repeat(2, 1fr);
   gap: var(--gap);
   animation: fade-up 0.7s 0.3s ease both;
+  transition: opacity 0.4s ease, filter 0.4s ease;
+}
+
+.cards-grid.cards-hidden {
+  opacity: 0;
+  filter: blur(6px);
+  pointer-events: none;
 }
 
 /* ── CARD BASE ── */
@@ -309,7 +317,6 @@ a { text-decoration: none; color: inherit; }
 
 .card__glow { display: none; }
 
-/* Icon */
 .card__icon-wrap {
   width: 52px;
   height: 52px;
@@ -326,9 +333,7 @@ a { text-decoration: none; color: inherit; }
   transform: scale(1.1) rotate(-4deg);
 }
 
-.card__body {
-  flex: 1;
-}
+.card__body { flex: 1; }
 
 .card__title {
   font-family: var(--font-display);
@@ -346,7 +351,6 @@ a { text-decoration: none; color: inherit; }
   line-height: 1.6;
 }
 
-/* ── TAG (canto superior direito) ── */
 .card__tag {
   position: absolute;
   top: 1.25rem;
@@ -363,7 +367,6 @@ a { text-decoration: none; color: inherit; }
   transition: color 0.3s, border-color 0.3s;
 }
 
-/* ── CTA — círculo com seta (canto inferior direito) ── */
 .card__cta {
   position: absolute;
   bottom: 1.2rem;
@@ -391,9 +394,7 @@ a { text-decoration: none; color: inherit; }
     box-shadow 0.3s ease;
 }
 
-.card:hover .card__arrow {
-  transform: translateY(-3px);
-}
+.card:hover .card__arrow { transform: translateY(-3px); }
 
 .card__cta-label {
   font-size: 0.6rem;
@@ -413,16 +414,14 @@ a { text-decoration: none; color: inherit; }
 
 /* ── CARD THEMES ── */
 
-/* Pessoal — Gold */
 .card--personal { background: linear-gradient(145deg, #0e1420, #12172a); }
 .card--personal:hover { border-color: rgba(232,201,122,0.3); box-shadow: 0 12px 40px rgba(232,201,122,0.1); }
 .card--personal .card__icon-wrap { background: var(--gold-dim); }
-.card--personal .card__title  { color: var(--gold); }
+.card--personal .card__title { color: var(--gold); }
 .card--personal:hover .card__tag { color: var(--gold); border-color: rgba(232,201,122,0.3); }
 .card--personal:hover .card__arrow { border-color: var(--gold); color: var(--gold); background: rgba(232,201,122,0.1); box-shadow: 0 0 14px rgba(232,201,122,0.2); }
 .card--personal:hover .card__cta-label { color: var(--gold); }
 
-/* Resumos — Teal */
 .card--summaries { background: linear-gradient(145deg, #0e1420, #0d1c20); }
 .card--summaries:hover { border-color: rgba(77,217,180,0.3); box-shadow: 0 12px 40px rgba(77,217,180,0.1); }
 .card--summaries .card__icon-wrap { background: var(--teal-dim); }
@@ -431,16 +430,14 @@ a { text-decoration: none; color: inherit; }
 .card--summaries:hover .card__arrow { border-color: var(--teal); color: var(--teal); background: rgba(77,217,180,0.1); box-shadow: 0 0 14px rgba(77,217,180,0.2); }
 .card--summaries:hover .card__cta-label { color: var(--teal); }
 
-/* Quiz — Rose */
 .card--quiz { background: linear-gradient(145deg, #0e1420, #1c0d16); }
 .card--quiz:hover { border-color: rgba(232,122,154,0.3); box-shadow: 0 12px 40px rgba(232,122,154,0.1); }
 .card--quiz .card__icon-wrap { background: var(--rose-dim); }
-.card--quiz .card__title  { color: var(--rose); }
+.card--quiz .card__title { color: var(--rose); }
 .card--quiz:hover .card__tag { color: var(--rose); border-color: rgba(232,122,154,0.3); }
 .card--quiz:hover .card__arrow { border-color: var(--rose); color: var(--rose); background: rgba(232,122,154,0.1); box-shadow: 0 0 14px rgba(232,122,154,0.2); }
 .card--quiz:hover .card__cta-label { color: var(--rose); }
 
-/* Jogos — Blue */
 .card--games { background: linear-gradient(145deg, #0e1420, #0d1422); }
 .card--games:hover { border-color: rgba(122,168,232,0.3); box-shadow: 0 12px 40px rgba(122,168,232,0.1); }
 .card--games .card__icon-wrap { background: var(--blue-dim); }
@@ -529,9 +526,7 @@ a { text-decoration: none; color: inherit; }
   .logo-title { font-size: 1.05rem; }
 }
 
-
 /* =============================================
-   NEXUS STUDY — 
    Componentes de UI: modais, config, toast,
    seletor de semestre, avatar, dropdown
    ============================================= */
@@ -581,7 +576,6 @@ a { text-decoration: none; color: inherit; }
   padding: 0;
   margin: 0;
   text-align: center;
-  /* ── correção óptica ── */
   transform: translateY(-1px) translateX(-0.5px);
 }
 
@@ -633,9 +627,7 @@ a { text-decoration: none; color: inherit; }
   pointer-events: none;
 }
 
-.modal--open {
-  pointer-events: all;
-}
+.modal--open { pointer-events: all; }
 
 .modal__overlay {
   position: absolute;
@@ -646,15 +638,16 @@ a { text-decoration: none; color: inherit; }
   transition: opacity 0.25s ease;
 }
 
-.modal--open .modal__overlay {
-  opacity: 1;
-}
+.modal--open .modal__overlay { opacity: 1; }
 
 .modal__box {
   position: relative;
   z-index: 1;
   width: 100%;
   max-width: 480px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
   background: var(--surface-2);
   border: 1px solid var(--border-glow);
   border-radius: 20px;
@@ -666,9 +659,7 @@ a { text-decoration: none; color: inherit; }
   transition: transform 0.3s cubic-bezier(.25,.8,.25,1), opacity 0.25s ease;
 }
 
-.modal__box--sm {
-  max-width: 380px;
-}
+.modal__box--sm { max-width: 380px; }
 
 .modal--open .modal__box {
   transform: translateY(0) scale(1);
@@ -681,6 +672,7 @@ a { text-decoration: none; color: inherit; }
   justify-content: space-between;
   padding: 1.4rem 1.75rem 1rem;
   border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .modal__title {
@@ -715,14 +707,25 @@ a { text-decoration: none; color: inherit; }
   background: rgba(255,255,255,0.06);
 }
 
+.modal__body-scroll {
+  overflow-y: auto;
+  flex: 1;
+  overscroll-behavior: contain;
+}
+
+.modal__body-scroll::-webkit-scrollbar { width: 3px; }
+.modal__body-scroll::-webkit-scrollbar-thumb {
+  background: rgba(77, 217, 180, 0.25);
+  border-radius: 3px;
+}
+.modal__body-scroll::-webkit-scrollbar-track { background: transparent; }
+
 .modal__section {
   padding: 1.25rem 1.75rem;
   border-bottom: 1px solid var(--border);
 }
 
-.modal__section:last-of-type {
-  border-bottom: none;
-}
+.modal__section:last-of-type { border-bottom: none; }
 
 .modal__section-title {
   font-size: 0.68rem;
@@ -741,6 +744,7 @@ a { text-decoration: none; color: inherit; }
   padding: 1.1rem 1.75rem;
   background: rgba(0,0,0,0.15);
   border-top: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 /* ── CONFIG ROWS ── */
@@ -782,13 +786,9 @@ a { text-decoration: none; color: inherit; }
 }
 
 .config-select:hover,
-.config-select:focus {
-  border-color: rgba(77,217,180,0.4);
-}
+.config-select:focus { border-color: rgba(77,217,180,0.4); }
 
-.config-select option {
-  background: #0e1420;
-}
+.config-select option { background: #0e1420; }
 
 .config-input {
   width: 100%;
@@ -809,9 +809,7 @@ a { text-decoration: none; color: inherit; }
   box-shadow: 0 0 0 3px rgba(77,217,180,0.1);
 }
 
-.config-input::placeholder {
-  color: var(--text-3);
-}
+.config-input::placeholder { color: var(--text-3); }
 
 /* ── TOGGLE SWITCH ── */
 .toggle {
@@ -895,12 +893,22 @@ a { text-decoration: none; color: inherit; }
 }
 
 .modal-btn--ghost:hover {
-  border-color: var(--border-glow);
   background: rgba(255,255,255,0.05);
   color: var(--text-1);
 }
 
-/* ── CONFIG PERFIL (dentro do modal config) ── */
+.modal-btn--danger {
+  background: rgba(232,122,154,0.1);
+  border-color: rgba(232,122,154,0.3);
+  color: var(--rose);
+}
+
+.modal-btn--danger:hover {
+  background: rgba(232,122,154,0.2);
+  border-color: var(--rose);
+}
+
+/* ── CONFIG PERFIL ── */
 .config-perfil {
   display: flex;
   align-items: center;
@@ -975,6 +983,122 @@ a { text-decoration: none; color: inherit; }
   background: rgba(232,122,154,0.08);
   border: 1px solid rgba(232,122,154,0.2);
   border-radius: 8px;
+}
+
+/* ── PIN — wrapper com olho ── */
+.pin-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.pin-wrap .config-input {
+  padding-right: 2.5rem;
+}
+
+.pin-eye {
+  position: absolute;
+  right: 0.65rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: color 0.2s;
+  line-height: 0;
+}
+
+.pin-eye:hover { color: var(--text-1); }
+
+.modal__box--admin .pin-eye:hover { color: var(--gold); }
+
+/* ── MODAL ADMIN — tema dourado ── */
+.modal__box--admin {
+  border-color: rgba(232, 201, 122, 0.4) !important;
+  background: linear-gradient(145deg, var(--surface-2), rgba(232, 201, 122, 0.05));
+  box-shadow:
+    0 32px 80px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(232, 201, 122, 0.1) inset,
+    0 0 40px rgba(232, 201, 122, 0.08);
+}
+
+.modal__box--admin .config-input:focus {
+  border-color: rgba(232, 201, 122, 0.5);
+  box-shadow: 0 0 0 3px rgba(232, 201, 122, 0.12);
+}
+
+.modal__box--admin #btn-login-entrar {
+  width: 100%;
+  justify-content: center;
+  padding: 0.7rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  background: var(--gold);
+  color: var(--bg);
+  border-color: var(--gold);
+}
+
+.modal__box--admin #btn-login-entrar:hover {
+  background: #f0d88a;
+  box-shadow: 0 0 24px rgba(232, 201, 122, 0.4);
+}
+
+.modal__box--admin .modal__footer {
+  padding: 1.25rem 1.75rem;
+}
+
+/* ── Header normal: some quando admin ── */
+.modal__box--admin .modal__header--normal    { display: none; }
+.modal__box--admin .modal__header--admin-view { display: flex; }
+
+/* ── Header admin: some por padrão ── */
+.modal__header--admin-view {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 2rem 1.75rem 1.5rem;
+  gap: 0.4rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: rgba(232,201,122,0.1);
+  border: 1px solid rgba(232,201,122,0.25);
+  padding: 0.3rem 0.9rem;
+  border-radius: 99px;
+  margin-bottom: 0.5rem;
+}
+
+.admin-title {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+.admin-subtitle {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--teal);
 }
 
 /* ── PERFIL DROPDOWN ── */
@@ -1076,9 +1200,7 @@ a { text-decoration: none; color: inherit; }
   color: var(--text-1);
 }
 
-.pd-item--danger {
-  color: var(--rose);
-}
+.pd-item--danger { color: var(--rose); }
 
 .pd-item--danger:hover {
   background: rgba(232,122,154,0.08);
@@ -1100,7 +1222,7 @@ a { text-decoration: none; color: inherit; }
   color: var(--text-1);
   box-shadow: 0 8px 32px rgba(0,0,0,0.4);
   opacity: 0;
-  transition: opacity 0.25s ease, transform 0.25s ease, bottom 0.25s ease; /* ← adicione bottom */
+  transition: opacity 0.25s ease, transform 0.25s ease, bottom 0.25s ease;
   white-space: nowrap;
   pointer-events: none;
 }
@@ -1129,76 +1251,4 @@ a { text-decoration: none; color: inherit; }
     font-size: 0.72rem;
     padding: 0.35rem 1.8rem 0.35rem 0.6rem;
   }
-}
-
-.modal__box {
-  max-height: 80vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.modal__body-scroll {
-  overflow-y: auto;
-  flex: 1;
-  overscroll-behavior: contain;
-}
-
-.modal__body-scroll::-webkit-scrollbar { width: 3px; }
-.modal__body-scroll::-webkit-scrollbar-thumb {
-  background: rgba(77, 217, 180, 0.25);
-  border-radius: 3px;
-}
-.modal__body-scroll::-webkit-scrollbar-track { background: transparent; }
-
-/* ── MODAL ADMIN — tema dourado ── */
-.modal__box--admin {
-  border-color: rgba(232, 201, 122, 0.4) !important;
-  background: linear-gradient(145deg, var(--surface-2), rgba(232, 201, 122, 0.05));
-  box-shadow:
-    0 32px 80px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(232, 201, 122, 0.1) inset,
-    0 0 40px rgba(232, 201, 122, 0.08);
-}
-
-.modal__box--admin .modal__title { color: var(--gold); }
-.modal__box--admin .modal__close { color: var(--gold); }
-
-.modal__box--admin .config-input:focus {
-  border-color: rgba(232, 201, 122, 0.5);
-  box-shadow: 0 0 0 3px rgba(232, 201, 122, 0.12);
-}
-
-.modal__box--admin #btn-login-entrar {
-  background: var(--gold);
-  color: var(--bg);
-  border-color: var(--gold);
-}
-
-.modal__box--admin #btn-login-entrar:hover {
-  background: #f0d88a;
-  box-shadow: 0 0 24px rgba(232, 201, 122, 0.4);
-}
-
-/* ── CARDS — sumir ao entrar como admin ── */
-.cards-grid {
-  transition: opacity 0.4s ease, filter 0.4s ease;
-}
-
-.cards-grid.cards-hidden {
-  opacity: 0;
-  filter: blur(6px);
-  pointer-events: none;
-}
-
-.modal__box--admin-full {
-  background: var(--surface-2);
-  border-color: rgba(232, 201, 122, 0.2);
-  box-shadow: 0 32px 80px rgba(0,0,0,0.5),
-              0 0 0 1px rgba(232,201,122,0.06) inset;
-  padding: 2.5rem 0 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  position: relative;
 }
