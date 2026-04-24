@@ -39,15 +39,7 @@
 }
 
 html { scroll-behavior: smooth; }
-body {
-  background: var(--bg);
-  color: var(--text-1);
-  font-family: var(--font-body);
-  font-size: 15px;
-  line-height: 1.6;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
+
 a { text-decoration: none; color: inherit; }
 
 ::-webkit-scrollbar { width: 4px; }
@@ -55,43 +47,6 @@ a { text-decoration: none; color: inherit; }
 ::-webkit-scrollbar-thumb { background: rgba(var(--disc-tema-rgb), 0.2); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(var(--disc-tema-rgb), 0.38); }
 
-/* ══════════════════════════════════════════
-   BACKGROUND
-══════════════════════════════════════════ */
-.bg-orb {
-  position: fixed; border-radius: 50%;
-  filter: blur(90px); pointer-events: none; z-index: 0; opacity: 0.4;
-}
-.bg-orb--1 {
-  width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(77,217,180,0.14), transparent 70%);
-  top: -80px; left: 0;
-  animation: orb 20s ease-in-out infinite alternate;
-}
-.bg-orb--2 {
-  width: 550px; height: 550px;
-  background: radial-gradient(circle, rgba(122,168,232,0.11), transparent 70%);
-  bottom: -120px; right: -60px;
-  animation: orb 26s ease-in-out infinite alternate-reverse;
-}
-.bg-orb--3 {
-  width: 280px; height: 280px;
-  background: radial-gradient(circle, rgba(232,201,122,0.09), transparent 70%);
-  top: 50%; left: 55%;
-  animation: orb 16s ease-in-out infinite alternate;
-}
-@keyframes orb {
-  from { transform: translate(0,0) scale(1); }
-  to   { transform: translate(30px,20px) scale(1.07); }
-}
-.bg-grid {
-  position: fixed; inset: 0; z-index: 0; pointer-events: none;
-  background-image:
-    linear-gradient(var(--border) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border) 1px, transparent 1px);
-  background-size: 60px 60px;
-  mask-image: radial-gradient(ellipse 90% 70% at 50% 30%, black 20%, transparent 75%);
-}
 
 /* ══════════════════════════════════════════
    HEADER

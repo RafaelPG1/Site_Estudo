@@ -103,66 +103,8 @@
 /* ── BASE ────────────────────────────────────────────────── */
 html { scroll-behavior: smooth; }
 
-body {
-  background-color: var(--bg);
-  color: var(--text-1);
-  font-family: var(--font-body);
-  font-size: 16px;
-  line-height: 1.6;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
 a { text-decoration: none; color: inherit; }
 
-/* ── BACKGROUND ORBS ─────────────────────────────────────── */
-.bg-orb {
-  position: fixed;
-  border-radius: 50%;
-  filter: blur(100px);
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.4;
-}
-
-.bg-orb--1 {
-  width: 520px; height: 520px;
-  background: radial-gradient(circle, rgba(var(--cor-tema-rgb), 0.16), transparent 70%);
-  top: -120px; right: -100px;
-  animation: orb-drift 22s ease-in-out infinite alternate;
-}
-
-.bg-orb--2 {
-  width: 480px; height: 480px;
-  background: radial-gradient(circle, rgba(var(--cor-tema-2-rgb), 0.1), transparent 70%);
-  bottom: -140px; left: -100px;
-  animation: orb-drift 18s ease-in-out infinite alternate-reverse;
-}
-
-.bg-orb--3 {
-  width: 320px; height: 320px;
-  background: radial-gradient(circle, rgba(var(--cor-tema-rgb), 0.07), transparent 70%);
-  top: 45%; left: 55%;
-  animation: orb-drift 28s ease-in-out infinite alternate;
-}
-
-@keyframes orb-drift {
-  0%   { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(40px, 28px) scale(1.07); }
-}
-
-/* ── GRID OVERLAY ────────────────────────────────────────── */
-.bg-grid {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(var(--border) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border) 1px, transparent 1px);
-  background-size: 60px 60px;
-  mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 20%, transparent 80%);
-}
 
 /* ── HEADER ──────────────────────────────────────────────── */
 .header {

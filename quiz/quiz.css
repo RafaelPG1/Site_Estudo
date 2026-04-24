@@ -2,6 +2,7 @@
    NEXUS STUDY — quiz/quiz.css
    Tela: Seleção de Disciplinas
    Estilo: Dark Tech Academy (grid 2x2)
+    fundo no shared/css (caminho irei fazer)
    ============================================= */
 
 /* ── RESET & BASE ── */
@@ -39,58 +40,7 @@
 
 html { scroll-behavior: smooth; }
 
-
-
 a { text-decoration: none; color: inherit; }
-
-/* ── BACKGROUND ORBS ── */
-.bg-orb {
-  position: fixed;
-  border-radius: 50%;
-  filter: blur(90px);
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.45;
-}
-
-.bg-orb--1 {
-  width: 450px; height: 450px;
-  background: radial-gradient(circle, rgba(232,122,154,0.15), transparent 70%);
-  top: -80px; right: -80px;
-  animation: orb-drift 20s ease-in-out infinite alternate;
-}
-
-.bg-orb--2 {
-  width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(77,217,180,0.12), transparent 70%);
-  bottom: -120px; left: -80px;
-  animation: orb-drift 16s ease-in-out infinite alternate-reverse;
-}
-
-.bg-orb--3 {
-  width: 320px; height: 320px;
-  background: radial-gradient(circle, rgba(122,168,232,0.1), transparent 70%);
-  top: 50%; left: 60%;
-  animation: orb-drift 24s ease-in-out infinite alternate;
-}
-
-@keyframes orb-drift {
-  0%   { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(35px, 25px) scale(1.06); }
-}
-
-/* ── GRID OVERLAY ── */
-.bg-grid {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(var(--border) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border) 1px, transparent 1px);
-  background-size: 60px 60px;
-  mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 30%, transparent 80%);
-}
 
 /* ── HEADER ── */
 .header {
