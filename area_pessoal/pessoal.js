@@ -381,14 +381,15 @@ function _renderSidebar() {
 
     let total = 0, done = 0;
 
-    if (State.abaAtiva === 'checklist') {
-      const clDisc = State.checklistData[State.semestre]?.[disc.id];
-      if (clDisc) {
-        const todos   = clDisc.categorias.flatMap(c => c.itens);
-        total = todos.length;
-        const checked = _getCheckedIds(disc.id);
-        done  = todos.filter(i => checked.has(i.id)).length;
-      }
+if (State.abaAtiva === 'checklist') {
+  const clDisc = _getClDisc(disc.id);  // ← usa o helper que já normaliza aulas→categorias
+  if (clDisc) {
+    const todos   = clDisc.categorias.flatMap(c => c.itens);
+    total = todos.length;
+    const checked = _getCheckedIds(disc.id);
+    done  = todos.filter(i => checked.has(i.id)).length;
+  }
+
     } else if (State.abaAtiva === 'tarefa') {
       const cats = _getCategorias(State.semestre, disc.id);
       total = cats.reduce((s, c) => s + c.itens.length, 0);
@@ -951,7 +952,22 @@ function _atualizarBadge(sectionEl, cat) {
    CHECKLIST PRÉ-DEFINIDO
 ══════════════════════════════════════════════ */
 function _getClDisc(discId) {
-  return State.checklistData[State.semestre]?.[discId] ?? null;
+  const raw = State.checklistData[State.semestre]?.[discId];
+  if (!raw) return null;
+
+  // Formato novo: { aulas: [...] }
+  if (raw.aulas) {
+    const categorias = raw.aulas.flatMap(aula =>
+      aula.categorias.map(cat => ({
+        ...cat,
+        _grupo: aula.nome,   // guarda o nome da aula para o agrupador
+      }))
+    );
+    return { categorias };
+  }
+
+  // Formato legado: { categorias: [...] } — continua funcionando
+  return raw;
 }
 
 function _getCheckedIds(discId) {
@@ -998,43 +1014,108 @@ function _renderClPanel() {
   const done     = allItems.filter(i => checked.has(i.id)).length;
   _updateClProgress(done, total);
 
-  disc.categorias.forEach((cat, ci) => {
-    const catDone  = cat.itens.filter(i => checked.has(i.id)).length;
-    const catTotal = cat.itens.length;
+  /* ── Agrupa categorias por prefixo de aula ──
+     Espera nomes no formato "Aula 9 · Conceito"
+     Se não tiver " · ", cai no grupo "Geral"       */
+  const grupos = new Map();
+  // Substitua este trecho dentro de _renderClPanel:
+disc.categorias.forEach(cat => {
+  const sep   = cat.nome.indexOf(' · ');
+  const grupo = sep !== -1 ? cat.nome.slice(0, sep).trim()  : (cat._grupo ?? 'Geral');
+  const label = sep !== -1 ? cat.nome.slice(sep + 3).trim() : cat.nome;
+  if (!grupos.has(grupo)) grupos.set(grupo, []);
+  grupos.get(grupo).push({ ...cat, _label: label });
+});
 
-    const section = document.createElement('div');
-    section.className = 'cl-section';
-    section.style.animationDelay = `${ci * 0.07}s`;
-    section.innerHTML = `
-      <div class="cl-section__header">
-        <div class="cl-section__title">
-          <span class="cl-section__icon">${cat.icone}</span>
-          ${_esc(cat.nome)}
-        </div>
-        <span class="cl-section__badge">${catDone}/${catTotal}</span>
-      </div>
-      <div class="cl-items" id="cl-items-${ci}"></div>`;
+  let groupIdx = 0;
+  grupos.forEach((cats, grupoNome) => {
 
-    const itemsEl = section.querySelector('.cl-items');
-    cat.itens.forEach((item, ii) => {
-      const isChecked = checked.has(item.id);
-      const el = document.createElement('label');
-      el.className = `cl-item${isChecked ? ' cl-item--checked' : ''}`;
-      el.style.animationDelay = `${(ci * 0.07) + (ii * 0.04)}s`;
-      el.innerHTML = `
-        <span class="cl-item__box">
-          <svg class="cl-item__check" width="9" height="9" viewBox="0 0 24 24" fill="none"
-               stroke="var(--teal)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
-        </span>
-        <input type="checkbox" class="cl-item__input" ${isChecked ? 'checked' : ''}
-               data-item-id="${_esc(item.id)}" data-disc-id="${_esc(discId)}"/>
-        <span class="cl-item__text">${_esc(item.texto)}</span>`;
-      itemsEl.appendChild(el);
+    /* ── Cabeçalho do grupo (ex: "Aula 9") ── */
+    const groupEl = document.createElement('div');
+    groupEl.className = 'cl-group cl-group--collapsed';
+    groupEl.style.animationDelay = `${groupIdx * 0.1}s`;
+
+    /* Conta progresso do grupo inteiro */
+    const groupItems   = cats.flatMap(c => c.itens);
+    const groupTotal   = groupItems.length;
+    const groupDone    = groupItems.filter(i => checked.has(i.id)).length;
+    const groupPct     = groupTotal > 0 ? Math.round((groupDone / groupTotal) * 100) : 0;
+
+    groupEl.innerHTML = `
+  <div class="cl-group__header" data-toggle="cl-group-body-${groupIdx}">
+    <span class="cl-group__title">${_esc(grupoNome)}</span>
+    <div class="cl-group__meta">
+      <span class="cl-group__badge">${groupDone}/${groupTotal}</span>
+
+      <svg class="cl-group__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+    </div>
+  </div>
+  <div class="cl-group__body" id="cl-group-body-${groupIdx}"></div>`;
+
+    const bodyEl = groupEl.querySelector(`#cl-group-body-${groupIdx}`);
+
+    /* ── Categorias dentro do grupo ── */
+    cats.forEach((cat, ci) => {
+      const catDone  = cat.itens.filter(i => checked.has(i.id)).length;
+      const catTotal = cat.itens.length;
+
+      const section = document.createElement('div');
+      section.className = 'cl-section cl-section--collapsed';
+      section.style.animationDelay = `${(groupIdx * 0.1) + (ci * 0.06)}s`;
+      section.innerHTML = `
+  <div class="cl-section__header cl-section__header--toggle">
+    <div class="cl-section__title">
+      <span class="cl-section__icon">${cat.icone}</span>
+      ${_esc(cat._label)}
+    </div>
+    <div style="display:flex;align-items:center;gap:0.5rem;">
+      <span class="cl-section__badge">${catDone}/${catTotal}</span>
+      <svg class="cl-section__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+    </div>
+  </div>
+  <div class="cl-items cl-section__body" id="cl-items-${groupIdx}-${ci}"></div>`;
+
+      const itemsEl = section.querySelector('.cl-items');
+      cat.itens.forEach((item, ii) => {
+        const isChecked = checked.has(item.id);
+        const el = document.createElement('label');
+        el.className = `cl-item${isChecked ? ' cl-item--checked' : ''}`;
+        el.style.animationDelay = `${(groupIdx * 0.1) + (ci * 0.06) + (ii * 0.03)}s`;
+        el.innerHTML = `
+          <span class="cl-item__box">
+            <svg class="cl-item__check" width="9" height="9" viewBox="0 0 24 24" fill="none"
+                 stroke="var(--teal)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </span>
+          <input type="checkbox" class="cl-item__input" ${isChecked ? 'checked' : ''}
+                 data-item-id="${_esc(item.id)}" data-disc-id="${_esc(discId)}"/>
+          <span class="cl-item__text">${_esc(item.texto)}</span>`;
+        itemsEl.appendChild(el);
+      });
+
+      bodyEl.appendChild(section);
+
+// ── Toggle collapse da categoria ──
+section.querySelector('.cl-section__header--toggle').addEventListener('click', () => {
+  section.classList.toggle('cl-section--collapsed');
+});
     });
 
-    container.appendChild(section);
+    container.appendChild(groupEl);
+
+// ── Toggle collapse ──
+groupEl.querySelector('.cl-group__header').addEventListener('click', () => {
+  groupEl.classList.toggle('cl-group--collapsed');
+});
+
+groupIdx++;
   });
 }
 
