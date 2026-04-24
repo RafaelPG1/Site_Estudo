@@ -192,6 +192,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   _bindNotes();
   _bindChecklist();
   _bindMobileDropdown();
+  _bindFab();
 });
 
 /* ══════════════════════════════════════════════
@@ -1333,4 +1334,42 @@ function _esc(str) {
 
 function _nomeCurto(nome, max = 18) {
   return nome.length > max ? nome.slice(0, max - 2) + '…' : nome;
+}
+
+
+/* ══════════════════════════════════════════════
+   FAB — botão flutuante
+══════════════════════════════════════════════ */
+function _smoothScrollTo(targetY, duration = 1400) {
+  const startY   = window.scrollY;
+  const distance = targetY - startY;
+  let startTime  = null;
+
+  const ease = (t) =>
+    t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; // easeInOutCubic
+
+  const step = (timestamp) => {
+    if (!startTime) startTime = timestamp;
+    const elapsed  = timestamp - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    window.scrollTo(0, startY + distance * ease(progress));
+    if (progress < 1) requestAnimationFrame(step);
+  };
+
+  requestAnimationFrame(step);
+}
+
+function _bindFab() {
+  document.getElementById('fab-top')?.addEventListener('click', () => {
+    _smoothScrollTo(0);
+  });
+
+  document.getElementById('fab-bottom')?.addEventListener('click', () => {
+    _smoothScrollTo(document.body.scrollHeight);
+  });
+
+  document.getElementById('fab-collapse')?.addEventListener('click', () => {
+    document.querySelectorAll('.cl-group').forEach(g => g.classList.add('cl-group--collapsed'));
+    document.querySelectorAll('.cl-section').forEach(s => s.classList.add('cl-section--collapsed'));
+  });
 }
