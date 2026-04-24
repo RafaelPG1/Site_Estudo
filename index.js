@@ -19,31 +19,33 @@ import { limparPerfisSRS } from './games/jogos/flashcard/storage.js';
    INICIALIZAÇÃO
 ───────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
-  /* ── Guard: se já está logado como admin, redireciona imediatamente ── */
   if (estaLogado() && getUsuario()?.admin) {
     window.location.replace('/admin/admin.html');
     return;
   }
 
   setPagina('HOME');
-  renderHeader();
-  _montarSelect();
+  _refreshHeader();
   bindCardLinks();
   preencherAnos(['footer-year']);
 });
 
 /* ─────────────────────────────────────────────
-   SELETOR DE SEMESTRE
+   HEADER — ponto único de reconstrução
 ───────────────────────────────────────────── */
+
+/** Sempre use _refreshHeader() — nunca chame renderHeader/_montarSelect separados */
+function _refreshHeader() {
+  renderHeader();
+  _montarSelect();
+}
+
 function _montarSelect() {
   criarSemestreSelect('semestre-wrap', sem => {
     document.dispatchEvent(new CustomEvent('nexus:semestreChanged', { detail: sem }));
   });
 }
 
-/* ─────────────────────────────────────────────
-   HEADER — render dinâmico
-───────────────────────────────────────────── */
 function renderHeader() {
   const nav = document.getElementById('header-nav');
   nav.innerHTML = '';
@@ -54,20 +56,26 @@ function renderHeader() {
 
   if (estaLogado()) {
     const u = getUsuario();
+    const avatarVal = u.avatar ?? u.nome.charAt(0).toUpperCase();
 
     const btnPerfil = document.createElement('button');
-    btnPerfil.className = 'nav-btn nav-btn--avatar';
-    btnPerfil.id = 'btn-perfil';
+    btnPerfil.className = 'nav-btn--avatar';
+    btnPerfil.id    = 'btn-perfil';
     btnPerfil.title = u.nome;
-    btnPerfil.innerHTML = u.foto
-      ? `<img src="${u.foto}" alt="${u.nome}" class="avatar-img" />`
-      : `<span class="avatar-initial">${u.avatar ?? u.nome.charAt(0).toUpperCase()}</span>`;
+
+    if (u.foto) {
+      btnPerfil.innerHTML = `<img src="${u.foto}" alt="${u.nome}" class="avatar-img" />`;
+    } else {
+      btnPerfil.textContent = avatarVal;
+    }
+
     btnPerfil.addEventListener('click', abrirPerfilModal);
     nav.appendChild(btnPerfil);
+
   } else {
     const btnEntrar = document.createElement('button');
-    btnEntrar.className = 'nav-btn';
-    btnEntrar.id = 'btn-entrar';
+    btnEntrar.className   = 'nav-btn';
+    btnEntrar.id          = 'btn-entrar';
     btnEntrar.textContent = 'Entrar';
     btnEntrar.addEventListener('click', abrirModalLogin);
     nav.appendChild(btnEntrar);
@@ -75,7 +83,7 @@ function renderHeader() {
 
   const btnConfig = document.createElement('button');
   btnConfig.className = 'nav-btn nav-btn--icon';
-  btnConfig.id = 'btn-config';
+  btnConfig.id    = 'btn-config';
   btnConfig.title = 'Configurações';
   btnConfig.innerHTML = `
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
@@ -122,7 +130,6 @@ function abrirModalLogin() {
     <div class="modal__overlay" id="modal-overlay-login"></div>
     <div class="modal__box modal__box--sm" role="dialog" aria-modal="true" aria-label="Entrar">
 
-      <!-- Header normal (some no admin) -->
       <div class="modal__header modal__header--normal">
         <h2 class="modal__title" id="login-title">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -135,7 +142,6 @@ function abrirModalLogin() {
         <button class="modal__close" id="modal-close-login" aria-label="Fechar">✕</button>
       </div>
 
-      <!-- Header admin (some no normal) -->
       <div class="modal__header modal__header--admin-view">
         <div class="admin-badge">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -152,7 +158,6 @@ function abrirModalLogin() {
       <div class="modal__body-scroll">
       <div class="modal__section">
 
-        <!-- Nome -->
         <div class="config-row config-row--col">
           <label for="login-nome">Nome</label>
           <input
@@ -166,7 +171,6 @@ function abrirModalLogin() {
           />
         </div>
 
-        <!-- PIN -->
         <div class="config-row config-row--col">
           <label for="login-pin">PIN</label>
           <div class="pin-wrap">
@@ -192,7 +196,7 @@ function abrirModalLogin() {
         <p id="login-erro" class="login-erro" style="display:none"></p>
 
       </div>
-      </div><!-- /.modal__body-scroll -->
+      </div>
 
       <div class="modal__footer">
         <button class="modal-btn modal-btn--primary" id="btn-login-entrar">
@@ -205,7 +209,6 @@ function abrirModalLogin() {
   document.body.appendChild(modal);
   requestAnimationFrame(() => modal.classList.add('modal--open'));
 
-  /* ── Efeito admin ao digitar "admin" no nome ── */
   const inputNome = document.getElementById('login-nome');
   const box       = modal.querySelector('.modal__box');
   const cards     = document.querySelector('.cards-grid');
@@ -213,11 +216,8 @@ function abrirModalLogin() {
   inputNome.addEventListener('input', function () {
     const isAdmin = this.value.trim().toLowerCase() === 'admin';
     const pin = document.getElementById('login-pin');
-
-    // PIN: 3 dígitos normal, 9 dígitos admin
     pin.setAttribute('maxlength', isAdmin ? '9' : '3');
     if (!isAdmin && pin.value.length > 3) pin.value = pin.value.slice(0, 3);
-
     box.classList.toggle('modal__box--admin', isAdmin);
     cards?.classList.toggle('cards-hidden', isAdmin);
   });
@@ -277,7 +277,6 @@ function abrirModalLogin() {
 
     if (resultado.ok) {
 
-      /* ── REDIRECT ADMIN — deve vir ANTES de qualquer outra coisa ── */
       if (resultado.usuario.admin) {
         cards?.classList.remove('cards-hidden');
         fecharModal(modal);
@@ -297,8 +296,7 @@ function abrirModalLogin() {
 
       cards?.classList.remove('cards-hidden');
       fecharModal(modal);
-      renderHeader();
-      _montarSelect();
+      _refreshHeader();
       mostrarToast(`Bem-vindo, ${resultado.usuario.nome}! ${resultado.usuario.avatar}`);
 
     } else {
@@ -467,7 +465,7 @@ function abrirModalConfig() {
             </button>
           </div>
         </div>
-      </div><!-- /.modal__body-scroll -->
+      </div>
 
       <div class="modal__footer">
         <button class="modal-btn modal-btn--ghost" id="btn-reset-configs">Resetar padrão</button>
@@ -479,7 +477,6 @@ function abrirModalConfig() {
   document.body.appendChild(modal);
   requestAnimationFrame(() => modal.classList.add('modal--open'));
 
-  /* ── Auto-save ── */
   function _lerConfigs() {
     return {
       tema:                   document.getElementById('cfg-tema').value,
@@ -513,7 +510,6 @@ function abrirModalConfig() {
     if (concluir) { concluir.checked = false; concluir.disabled = true; }
   }
 
-  /* ── Fechar ── */
   function _fecharComToast() {
     fecharModal(modal);
     mostrarToast('Configurações salvas!');
@@ -545,19 +541,16 @@ function abrirModalConfig() {
     });
   });
 
-  /* ── Logout ── */
   if (estaLogado()) {
     document.getElementById('btn-logout')?.addEventListener('click', () => {
       limparDadosQuiz();
       logout();
       fecharModal(modal);
-      renderHeader();
-      _montarSelect();
+      _refreshHeader();
       mostrarToast('Sessão encerrada.');
     });
   }
 
-  /* ── SRS Flashcard ── */
   const sem         = getSemestreAtual();
   const disciplinas = getDisciplinasDeSemestre(sem);
   const uid         = getUsuario()?.uid ?? 'visitante';
@@ -626,12 +619,8 @@ function _confirmar(btn, callback) {
 }
 
 /* ─────────────────────────────────────────────
-   DROPDOWN PERFIL
+   MODAL PERFIL
 ───────────────────────────────────────────── */
-/* ═══════════════════════════════════════════════
-   MODAL PERFIL — versão redesenhada
-   Substitui abrirPerfilModal() inteiro no index.js
-   ═══════════════════════════════════════════════ */
 
 const EMOJIS_PERFIL = [
   '🎓','🧑‍💻','👾','🦊','🐉','🌙',
@@ -641,119 +630,157 @@ const EMOJIS_PERFIL = [
 ];
 
 function abrirPerfilModal() {
-  document.getElementById('perfil-dropdown')?.remove();
   fecharTodosModais();
 
-  const u     = getUsuario();
-  const modal = criarModal('perfil');
+  const u = getUsuario();
+  if (!u) return;
+
+  const avatarAtual = u.foto
+    ? null
+    : (u.avatar ?? u.nome.charAt(0).toUpperCase());
 
   const avatarHTML = u.foto
     ? `<img src="${u.foto}" alt="${u.nome}" class="pm-avatar__img" />`
-    : `<span class="pm-avatar__emoji">${u.avatar ?? u.nome.charAt(0).toUpperCase()}</span>`;
+    : `<span class="pm-avatar__emoji" id="pm-avatar-emoji">${avatarAtual}</span>`;
 
-  const emojiGrid = EMOJIS_PERFIL.map(e => `
-    <button class="pm-emoji-btn ${e === (u.avatar ?? '') ? 'pm-emoji-btn--active' : ''}"
-            data-emoji="${e}" type="button" title="${e}">${e}</button>
+  const badgeHTML = u.admin
+    ? `<div class="pm-data-badge pm-data-badge--admin">admin</div>`
+    : `<div class="pm-data-badge pm-data-badge--locked">verificado</div>`;
+
+  const changeBtnHTML = u.foto ? '' : `
+    <button class="pm-change-btn" id="pm-toggle-picker" type="button">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.2" stroke-linecap="round">
+        <path d="M12 20h9"/>
+        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+      </svg>
+      Alterar avatar
+    </button>`;
+
+  const emojiGridHTML = EMOJIS_PERFIL.map(e => `
+    <button type="button" class="ej${e === avatarAtual ? ' on' : ''}"
+            data-emoji="${e}">${e}</button>
   `).join('');
 
+  const modal = criarModal('perfil');
   modal.innerHTML = `
     <div class="modal__overlay" id="modal-overlay-perfil"></div>
-    <div class="modal__box modal__box--perfil" role="dialog" aria-modal="true" aria-label="Perfil">
+    <div class="pm-duo">
 
-      <!-- ── BANNER ── -->
-      <div class="pm-banner">
-        <div class="pm-banner__grid"></div>
-        <div class="pm-banner__orb pm-banner__orb--1"></div>
-        <div class="pm-banner__orb pm-banner__orb--2"></div>
-        <button class="pm-close-btn" id="modal-close-perfil" aria-label="Fechar">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="2.5" stroke-linecap="round">
-            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
-      </div>
+      <div class="modal__box--perfil" role="dialog" aria-modal="true" aria-label="Perfil">
 
-      <!-- ── AVATAR ── -->
-      <div class="pm-avatar-wrap">
-        <div class="pm-avatar-ring">
-          <div class="pm-avatar" id="pm-avatar-display">${avatarHTML}</div>
-        </div>
-        <div class="pm-user-info">
+        <div class="pm-top">
+          <button class="pm-close-btn" id="pm-close-btn" aria-label="Fechar">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.5" stroke-linecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6"  y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+
+          <div class="pm-avatar-ring">
+            <div class="pm-avatar-inner" id="pm-avatar-display">
+              ${avatarHTML}
+            </div>
+          </div>
+
           <h3 class="pm-username">${u.nome}</h3>
-          <span class="pm-uid">${u.uid}</span>
+          ${changeBtnHTML}
         </div>
-        <button class="pm-change-btn" id="pm-toggle-picker" type="button">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-          </svg>
-          Alterar avatar
-        </button>
+
+        <div class="modal__body-scroll">
+          <div class="pm-data">
+
+            <div class="pm-data-row">
+              <div class="pm-data-icon">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              </div>
+              <div class="pm-data-content">
+                <span class="pm-data-label">Nome</span>
+                <span class="pm-data-value">${u.nome}</span>
+              </div>
+              ${badgeHTML}
+            </div>
+
+            <div class="pm-data-row">
+              <div class="pm-data-icon">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+              </div>
+              <div class="pm-data-content">
+                <span class="pm-data-label">PIN</span>
+                <span class="pm-data-value pm-data-value--pin">• • •</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="pm-footer">
+          <button class="pm-btn-logout" id="pm-btn-logout">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Sair da conta
+          </button>
+          <button class="pm-btn-save" id="pm-btn-salvar">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.2" stroke-linecap="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Salvar
+          </button>
+        </div>
       </div>
 
-      <div class="modal__body-scroll">
+      <div class="pm-picker-panel" id="pm-picker-panel">
+        <div class="pm-picker-inner">
 
-        <!-- ── EMOJI PICKER ── -->
-        <div class="pm-picker" id="pm-picker">
-          <div class="pm-picker__inner">
-            <div class="pm-picker__grid">${emojiGrid}</div>
-          </div>
-        </div>
-
-        <!-- ── DADOS ── -->
-        <div class="pm-data">
-
-          <div class="pm-data-row">
-            <div class="pm-data-icon">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
+          <div class="pm-picker-head">
+            <span class="pm-picker-title">Avatar</span>
+            <button class="pm-picker-close" id="pm-picker-close" aria-label="Fechar picker">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.5" stroke-linecap="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6"  y1="6" x2="18" y2="18"/>
               </svg>
-            </div>
-            <div class="pm-data-content">
-              <span class="pm-data-label">Nome</span>
-              <span class="pm-data-value">${u.nome}</span>
-            </div>
-            <div class="pm-data-badge pm-data-badge--locked">verificado</div>
+            </button>
           </div>
 
-          <div class="pm-data-row">
-            <div class="pm-data-icon">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-              </svg>
+          <div class="pm-picker-preview">
+            <div class="pm-mini-ring">
+              <div class="pm-avatar-inner">
+                <span id="pm-picker-preview-emoji">${avatarAtual}</span>
+              </div>
             </div>
-            <div class="pm-data-content">
-              <span class="pm-data-label">PIN</span>
-              <span class="pm-data-value pm-data-value--pin">• • •</span>
+            <div class="pm-picker-preview-info">
+              <span class="pm-picker-preview-lbl">Preview</span>
+              <span class="pm-picker-preview-val" id="pm-picker-preview-val">${avatarAtual}</span>
             </div>
-            <div class="pm-data-badge pm-data-badge--admin">admin</div>
+          </div>
+
+          <div class="pm-picker-grid-wrap">
+            <div class="pm-picker-grid" id="pm-picker-grid">
+              ${emojiGridHTML}
+            </div>
+          </div>
+
+          <div class="pm-picker-foot">
+            <button class="modal-btn modal-btn--ghost"   id="pm-picker-cancel">Cancelar</button>
+            <button class="modal-btn modal-btn--primary" id="pm-picker-ok">Aplicar</button>
           </div>
 
         </div>
-
-      </div><!-- /modal__body-scroll -->
-
-      <div class="pm-footer">
-        <button class="pm-btn-logout" id="pm-btn-logout">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-            <polyline points="16 17 21 12 16 7"/>
-            <line x1="21" y1="12" x2="9" y2="12"/>
-          </svg>
-          Sair da conta
-        </button>
-        <button class="pm-btn-save" id="pm-btn-salvar">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
-          Salvar
-        </button>
       </div>
 
     </div>`;
@@ -761,55 +788,84 @@ function abrirPerfilModal() {
   document.body.appendChild(modal);
   requestAnimationFrame(() => modal.classList.add('modal--open'));
 
-  let avatarSelecionado = u.avatar ?? u.nome.charAt(0).toUpperCase();
-  let pickerAberto = false;
+  let avatarSelecionado = avatarAtual;
+  let pickerAberto      = false;
 
-  /* ── Toggle picker ── */
-  const picker    = document.getElementById('pm-picker');
-  const toggleBtn = document.getElementById('pm-toggle-picker');
+  function _setPreview(e) {
+    const previewEmoji = document.getElementById('pm-picker-preview-emoji');
+    const previewVal   = document.getElementById('pm-picker-preview-val');
+    if (previewEmoji) previewEmoji.textContent = e;
+    if (previewVal)   previewVal.textContent   = e;
+  }
 
-  toggleBtn.addEventListener('click', () => {
-    pickerAberto = !pickerAberto;
-    picker.classList.toggle('pm-picker--open', pickerAberto);
-    toggleBtn.classList.toggle('pm-change-btn--active', pickerAberto);
-  });
+  function _abrirPicker() {
+    pickerAberto = true;
+    document.getElementById('pm-picker-panel')?.classList.add('pm-picker-panel--open');
+    document.getElementById('pm-toggle-picker')?.classList.add('pm-change-btn--active');
+  }
 
-  /* ── Selecionar emoji ── */
-  picker.addEventListener('click', e => {
-    const btn = e.target.closest('.pm-emoji-btn');
+  function _fecharPicker() {
+    pickerAberto = false;
+    document.getElementById('pm-picker-panel')?.classList.remove('pm-picker-panel--open');
+    document.getElementById('pm-toggle-picker')?.classList.remove('pm-change-btn--active');
+  }
+
+  function _aplicarAvatar(emoji) {
+    const display = document.getElementById('pm-avatar-emoji');
+    if (display) display.textContent = emoji;
+    avatarSelecionado = emoji;
+  }
+
+  document.getElementById('pm-picker-grid')?.addEventListener('click', e => {
+    const btn = e.target.closest('.ej');
     if (!btn) return;
     avatarSelecionado = btn.dataset.emoji;
-
-    document.getElementById('pm-avatar-display').innerHTML =
-      `<span class="pm-avatar__emoji">${avatarSelecionado}</span>`;
-
-    document.querySelectorAll('.pm-emoji-btn').forEach(b =>
-      b.classList.toggle('pm-emoji-btn--active', b.dataset.emoji === avatarSelecionado)
+    _setPreview(avatarSelecionado);
+    document.querySelectorAll('#pm-picker-grid .ej').forEach(b =>
+      b.classList.toggle('on', b.dataset.emoji === avatarSelecionado)
     );
   });
 
-  /* ── Salvar ── */
-  document.getElementById('pm-btn-salvar').addEventListener('click', () => {
-    setUsuario({ ...u, avatar: avatarSelecionado });
-    const btnPerfil = document.getElementById('btn-perfil');
-    if (btnPerfil) btnPerfil.innerHTML = `<span class="avatar-initial">${avatarSelecionado}</span>`;
+  document.getElementById('pm-toggle-picker')?.addEventListener('click',
+    () => pickerAberto ? _fecharPicker() : _abrirPicker()
+  );
+
+  document.getElementById('pm-picker-close')?.addEventListener('click',  _fecharPicker);
+  document.getElementById('pm-picker-cancel')?.addEventListener('click', _fecharPicker);
+
+  document.getElementById('pm-picker-ok')?.addEventListener('click', () => {
+    _aplicarAvatar(avatarSelecionado);
+    _fecharPicker();
+  });
+
+  document.getElementById('pm-btn-salvar')?.addEventListener('click', async () => {
+    _aplicarAvatar(avatarSelecionado);
+
+    const usuarioAtualizado = { ...getUsuario(), avatar: avatarSelecionado };
+    setUsuario(usuarioAtualizado);
+
+    try {
+      const { salvarAvatar } = await import('./src/firebase.js');
+      if (typeof salvarAvatar === 'function') {
+        await salvarAvatar(usuarioAtualizado.uid, avatarSelecionado);
+      }
+    } catch (_) { /* função pode não existir ainda */ }
+
     fecharModal(modal);
+    _refreshHeader();
     mostrarToast('Perfil atualizado!');
   });
 
-  /* ── Logout ── */
-  document.getElementById('pm-btn-logout').addEventListener('click', () => {
+  document.getElementById('pm-btn-logout')?.addEventListener('click', () => {
     limparDadosQuiz();
     logout();
     fecharModal(modal);
-    renderHeader();
-    _montarSelect();
+    _refreshHeader();
     mostrarToast('Sessão encerrada.');
   });
 
-  /* ── Fechar ── */
-  document.getElementById('modal-overlay-perfil').addEventListener('click', () => fecharModal(modal));
-  document.getElementById('modal-close-perfil').addEventListener('click',   () => fecharModal(modal));
+  document.getElementById('pm-close-btn')?.addEventListener('click',        () => fecharModal(modal));
+  document.getElementById('modal-overlay-perfil')?.addEventListener('click', () => fecharModal(modal));
 }
 
 /* ─────────────────────────────────────────────
