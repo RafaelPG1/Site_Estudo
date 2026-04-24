@@ -35,51 +35,9 @@
 
 html, body { height: 100%; }
 
-body {
-  background: var(--bg);
-  color: var(--text-1);
-  font-family: var(--font-body);
-  font-size: 15px;
-  line-height: 1.6;
-  overflow: hidden;
-}
 
 a { text-decoration: none; color: inherit; }
 button { cursor: pointer; font-family: var(--font-body); }
-
-/* ── BG FX ── */
-.bg-orb {
-  position: fixed;
-  border-radius: 50%;
-  filter: blur(80px);
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.4;
-}
-.bg-orb--1 {
-  width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(77,217,180,0.16), transparent 70%);
-  top: -120px; left: -80px;
-  animation: orb-drift 18s ease-in-out infinite alternate;
-}
-.bg-orb--2 {
-  width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(232,201,122,0.12), transparent 70%);
-  bottom: -120px; right: -80px;
-  animation: orb-drift 22s ease-in-out infinite alternate-reverse;
-}
-.bg-grid {
-  position: fixed; inset: 0; z-index: 0; pointer-events: none;
-  background-image:
-    linear-gradient(var(--border) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border) 1px, transparent 1px);
-  background-size: 60px 60px;
-  mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 20%, transparent 80%);
-}
-@keyframes orb-drift {
-  0%   { transform: translate(0,0) scale(1); }
-  100% { transform: translate(40px,30px) scale(1.08); }
-}
 
 /* ── LAYOUT ── */
 .layout {
