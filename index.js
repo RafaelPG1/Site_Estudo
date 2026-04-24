@@ -62,7 +62,7 @@ function renderHeader() {
     btnPerfil.innerHTML = u.foto
       ? `<img src="${u.foto}" alt="${u.nome}" class="avatar-img" />`
       : `<span class="avatar-initial">${u.avatar ?? u.nome.charAt(0).toUpperCase()}</span>`;
-    btnPerfil.addEventListener('click', abrirPerfilDropdown);
+    btnPerfil.addEventListener('click', abrirPerfilModal);
     nav.appendChild(btnPerfil);
   } else {
     const btnEntrar = document.createElement('button');
@@ -628,61 +628,188 @@ function _confirmar(btn, callback) {
 /* ─────────────────────────────────────────────
    DROPDOWN PERFIL
 ───────────────────────────────────────────── */
-function abrirPerfilDropdown() {
-  const existente = document.getElementById('perfil-dropdown');
-  if (existente) { existente.remove(); return; }
+/* ═══════════════════════════════════════════════
+   MODAL PERFIL — versão redesenhada
+   Substitui abrirPerfilModal() inteiro no index.js
+   ═══════════════════════════════════════════════ */
 
-  const u    = getUsuario();
-  const btn  = document.getElementById('btn-perfil');
-  const rect = btn.getBoundingClientRect();
+const EMOJIS_PERFIL = [
+  '🎓','🧑‍💻','👾','🦊','🐉','🌙',
+  '⚡','🔥','🎯','🧠','🚀','🦁',
+  '📚','💡','☕','🌟','🎸','🐺',
+  '🤖','🧙','🎭','🏆','🎲','🛡️',
+];
 
-  const dd = document.createElement('div');
-  dd.id = 'perfil-dropdown';
-  dd.className = 'perfil-dropdown';
-  dd.style.cssText = `top:${rect.bottom + 10}px; right:${window.innerWidth - rect.right}px`;
+function abrirPerfilModal() {
+  document.getElementById('perfil-dropdown')?.remove();
+  fecharTodosModais();
 
-  dd.innerHTML = `
-    <div class="pd-header">
-      <div class="pd-avatar">
-        ${u.foto
-          ? `<img src="${u.foto}" alt="avatar" />`
-          : `<span>${u.avatar ?? u.nome.charAt(0).toUpperCase()}</span>`}
+  const u     = getUsuario();
+  const modal = criarModal('perfil');
+
+  const avatarHTML = u.foto
+    ? `<img src="${u.foto}" alt="${u.nome}" class="pm-avatar__img" />`
+    : `<span class="pm-avatar__emoji">${u.avatar ?? u.nome.charAt(0).toUpperCase()}</span>`;
+
+  const emojiGrid = EMOJIS_PERFIL.map(e => `
+    <button class="pm-emoji-btn ${e === (u.avatar ?? '') ? 'pm-emoji-btn--active' : ''}"
+            data-emoji="${e}" type="button" title="${e}">${e}</button>
+  `).join('');
+
+  modal.innerHTML = `
+    <div class="modal__overlay" id="modal-overlay-perfil"></div>
+    <div class="modal__box modal__box--perfil" role="dialog" aria-modal="true" aria-label="Perfil">
+
+      <!-- ── BANNER ── -->
+      <div class="pm-banner">
+        <div class="pm-banner__grid"></div>
+        <div class="pm-banner__orb pm-banner__orb--1"></div>
+        <div class="pm-banner__orb pm-banner__orb--2"></div>
+        <button class="pm-close-btn" id="modal-close-perfil" aria-label="Fechar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.5" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
       </div>
-      <div class="pd-info">
-        <strong>${u.nome}</strong>
-        <span style="font-size:.75rem; opacity:.5">${u.uid}</span>
+
+      <!-- ── AVATAR ── -->
+      <div class="pm-avatar-wrap">
+        <div class="pm-avatar-ring">
+          <div class="pm-avatar" id="pm-avatar-display">${avatarHTML}</div>
+        </div>
+        <div class="pm-user-info">
+          <h3 class="pm-username">${u.nome}</h3>
+          <span class="pm-uid">${u.uid}</span>
+        </div>
+        <button class="pm-change-btn" id="pm-toggle-picker" type="button">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+          </svg>
+          Alterar avatar
+        </button>
       </div>
-    </div>
-    <div class="pd-divider"></div>
-    <a href="/area_pessoal/pessoal.html" class="pd-item">📚 Área Pessoal</a>
-    <a href="/area_pessoal/anotacoes/anotacoes.html" class="pd-item">📝 Anotações</a>
-    ${u.admin ? `
-    <div class="pd-divider"></div>
-    <a href="/admin/admin.html" class="pd-item" style="color:var(--gold)">🛡️ Painel Admin</a>
-    ` : ''}
-    <div class="pd-divider"></div>
-    <button class="pd-item pd-item--danger" id="pd-logout">Sair da conta</button>`;
 
-  document.body.appendChild(dd);
-  requestAnimationFrame(() => dd.classList.add('perfil-dropdown--open'));
+      <div class="modal__body-scroll">
 
-  setTimeout(() => {
-    document.addEventListener('click', function handler(e) {
-      if (!dd.contains(e.target) && e.target !== btn) {
-        dd.remove();
-        document.removeEventListener('click', handler);
-      }
-    });
-  }, 100);
+        <!-- ── EMOJI PICKER ── -->
+        <div class="pm-picker" id="pm-picker">
+          <div class="pm-picker__inner">
+            <div class="pm-picker__grid">${emojiGrid}</div>
+          </div>
+        </div>
 
-  document.getElementById('pd-logout').addEventListener('click', () => {
+        <!-- ── DADOS ── -->
+        <div class="pm-data">
+
+          <div class="pm-data-row">
+            <div class="pm-data-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
+            <div class="pm-data-content">
+              <span class="pm-data-label">Nome</span>
+              <span class="pm-data-value">${u.nome}</span>
+            </div>
+            <div class="pm-data-badge pm-data-badge--locked">verificado</div>
+          </div>
+
+          <div class="pm-data-row">
+            <div class="pm-data-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </div>
+            <div class="pm-data-content">
+              <span class="pm-data-label">PIN</span>
+              <span class="pm-data-value pm-data-value--pin">• • •</span>
+            </div>
+            <div class="pm-data-badge pm-data-badge--admin">admin</div>
+          </div>
+
+        </div>
+
+      </div><!-- /modal__body-scroll -->
+
+      <div class="pm-footer">
+        <button class="pm-btn-logout" id="pm-btn-logout">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Sair da conta
+        </button>
+        <button class="pm-btn-save" id="pm-btn-salvar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          Salvar
+        </button>
+      </div>
+
+    </div>`;
+
+  document.body.appendChild(modal);
+  requestAnimationFrame(() => modal.classList.add('modal--open'));
+
+  let avatarSelecionado = u.avatar ?? u.nome.charAt(0).toUpperCase();
+  let pickerAberto = false;
+
+  /* ── Toggle picker ── */
+  const picker    = document.getElementById('pm-picker');
+  const toggleBtn = document.getElementById('pm-toggle-picker');
+
+  toggleBtn.addEventListener('click', () => {
+    pickerAberto = !pickerAberto;
+    picker.classList.toggle('pm-picker--open', pickerAberto);
+    toggleBtn.classList.toggle('pm-change-btn--active', pickerAberto);
+  });
+
+  /* ── Selecionar emoji ── */
+  picker.addEventListener('click', e => {
+    const btn = e.target.closest('.pm-emoji-btn');
+    if (!btn) return;
+    avatarSelecionado = btn.dataset.emoji;
+
+    document.getElementById('pm-avatar-display').innerHTML =
+      `<span class="pm-avatar__emoji">${avatarSelecionado}</span>`;
+
+    document.querySelectorAll('.pm-emoji-btn').forEach(b =>
+      b.classList.toggle('pm-emoji-btn--active', b.dataset.emoji === avatarSelecionado)
+    );
+  });
+
+  /* ── Salvar ── */
+  document.getElementById('pm-btn-salvar').addEventListener('click', () => {
+    setUsuario({ ...u, avatar: avatarSelecionado });
+    const btnPerfil = document.getElementById('btn-perfil');
+    if (btnPerfil) btnPerfil.innerHTML = `<span class="avatar-initial">${avatarSelecionado}</span>`;
+    fecharModal(modal);
+    mostrarToast('Perfil atualizado!');
+  });
+
+  /* ── Logout ── */
+  document.getElementById('pm-btn-logout').addEventListener('click', () => {
     limparDadosQuiz();
     logout();
-    dd.remove();
+    fecharModal(modal);
     renderHeader();
     _montarSelect();
     mostrarToast('Sessão encerrada.');
   });
+
+  /* ── Fechar ── */
+  document.getElementById('modal-overlay-perfil').addEventListener('click', () => fecharModal(modal));
+  document.getElementById('modal-close-perfil').addEventListener('click',   () => fecharModal(modal));
 }
 
 /* ─────────────────────────────────────────────

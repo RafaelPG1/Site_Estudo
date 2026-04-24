@@ -1252,3 +1252,382 @@ a { text-decoration: none; color: inherit; }
     padding: 0.35rem 1.8rem 0.35rem 0.6rem;
   }
 }
+
+/* ═══════════════════════════════════════════════
+   MODAL PERFIL — redesenhado
+   Substitui TODO o bloco /* ═══ MODAL PERFIL ═══ */
+
+/* ── Tamanho do box ── */
+.modal__box--perfil {
+  width: 100%;
+  max-width: 380px;
+  overflow: visible; /* permite avatar vazar acima */
+}
+
+/* ── BANNER ── */
+.pm-banner {
+  position: relative;
+  height: 100px;
+  background: linear-gradient(135deg, #0a1628 0%, #0d1e35 40%, #091320 100%);
+  overflow: hidden;
+  border-radius: 20px 20px 0 0;
+  flex-shrink: 0;
+}
+
+/* grade fina decorativa */
+.pm-banner__grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(77,217,180,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(77,217,180,0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse 100% 100% at 50% 50%, black 30%, transparent 90%);
+}
+
+/* orbs do banner */
+.pm-banner__orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(32px);
+  pointer-events: none;
+}
+
+.pm-banner__orb--1 {
+  width: 140px; height: 140px;
+  background: radial-gradient(circle, rgba(77,217,180,0.28), transparent 70%);
+  top: -40px; left: -20px;
+}
+
+.pm-banner__orb--2 {
+  width: 120px; height: 120px;
+  background: radial-gradient(circle, rgba(122,168,232,0.22), transparent 70%);
+  top: -30px; right: -10px;
+}
+
+/* botão X flutuante */
+.pm-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  backdrop-filter: blur(4px);
+}
+
+.pm-close-btn:hover {
+  background: rgba(232,122,154,0.18);
+  border-color: rgba(232,122,154,0.4);
+  color: var(--rose);
+}
+
+/* ── AVATAR SOBREPOSTO ── */
+.pm-avatar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: -50px; /* sobe sobre o banner */
+  padding-bottom: 0.75rem;
+  flex-shrink: 0;
+}
+
+/* anel duplo ao redor do avatar */
+.pm-avatar-ring {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  padding: 3px;
+  background: conic-gradient(
+    var(--teal) 0deg,
+    rgba(77,217,180,0.3) 120deg,
+    var(--blue) 200deg,
+    var(--teal) 360deg
+  );
+  box-shadow:
+    0 0 0 4px var(--surface-2),
+    0 0 24px rgba(77,217,180,0.3),
+    0 8px 32px rgba(0,0,0,0.5);
+  animation: pm-ring-spin 8s linear infinite;
+}
+
+@keyframes pm-ring-spin {
+  to { transform: rotate(360deg); }
+}
+
+.pm-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  animation: pm-ring-spin-reverse 8s linear infinite; /* contra-rotação */
+}
+
+@keyframes pm-ring-spin-reverse {
+  to { transform: rotate(-360deg); }
+}
+
+.pm-avatar__emoji {
+  font-size: 2.6rem;
+  line-height: 1;
+  user-select: none;
+}
+
+.pm-avatar__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── INFO USUARIO ── */
+.pm-user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.pm-username {
+  font-family: var(--font-display);
+  font-size: 1.65rem;
+  font-weight: 600;
+  color: var(--text-1);
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+.pm-uid {
+  font-size: 0.72rem;
+  color: var(--text-3);
+  letter-spacing: 0.05em;
+}
+
+/* ── BOTÃO ALTERAR AVATAR ── */
+.pm-change-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-3);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 0.28rem 0.85rem;
+  cursor: pointer;
+  margin-top: 0.15rem;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.pm-change-btn:hover,
+.pm-change-btn--active {
+  color: var(--teal);
+  border-color: rgba(77,217,180,0.4);
+  background: var(--teal-dim);
+}
+
+/* ── EMOJI PICKER ── */
+.pm-picker {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1);
+}
+
+.pm-picker--open {
+  max-height: 200px;
+}
+
+.pm-picker__inner {
+  padding: 0.5rem 1.25rem 0.75rem;
+}
+
+.pm-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 5px;
+  background: var(--surface);
+  border: 1px solid var(--border-glow);
+  border-radius: 14px;
+  padding: 0.7rem;
+}
+
+.pm-emoji-btn {
+  font-size: 1.45rem;
+  line-height: 1;
+  background: none;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s, border-color 0.1s, transform 0.12s;
+  aspect-ratio: 1;
+}
+
+.pm-emoji-btn:hover {
+  background: rgba(255,255,255,0.08);
+  transform: scale(1.2);
+}
+
+.pm-emoji-btn--active {
+  border-color: var(--teal);
+  background: var(--teal-dim);
+  box-shadow: 0 0 10px rgba(77,217,180,0.2);
+}
+
+/* ── DADOS (substitui inputs) ── */
+.pm-data {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0 1.25rem 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border-glow);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.pm-data-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+
+.pm-data-row:last-child { border-bottom: none; }
+
+.pm-data-row:hover { background: rgba(255,255,255,0.02); }
+
+.pm-data-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+
+.pm-data-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.pm-data-label {
+  font-size: 0.67rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.pm-data-value {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pm-data-value--pin {
+  font-size: 1rem;
+  letter-spacing: 0.25em;
+  color: var(--text-2);
+}
+
+.pm-data-badge {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.55rem;
+  border-radius: 99px;
+  flex-shrink: 0;
+}
+
+.pm-data-badge--locked {
+  background: rgba(77,217,180,0.1);
+  border: 1px solid rgba(77,217,180,0.3);
+  color: var(--teal);
+}
+
+.pm-data-badge--admin {
+  background: rgba(232,201,122,0.1);
+  border: 1px solid rgba(232,201,122,0.3);
+  color: var(--gold);
+}
+
+/* ── FOOTER ── */
+.pm-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.9rem 1.25rem;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.pm-btn-logout,
+.pm-btn-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.5rem 1.1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+  border: 1px solid transparent;
+  letter-spacing: 0.02em;
+}
+
+.pm-btn-logout {
+  background: transparent;
+  border-color: rgba(232,122,154,0.3);
+  color: var(--rose);
+}
+
+.pm-btn-logout:hover {
+  background: var(--rose-dim);
+  border-color: var(--rose);
+}
+
+.pm-btn-save {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: var(--bg);
+}
+
+.pm-btn-save:hover {
+  background: #5fe8c0;
+  box-shadow: 0 0 18px rgba(77,217,180,0.35);
+}
