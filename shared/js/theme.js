@@ -1,5 +1,5 @@
 /* ============================================================
-   NEXUS STUDY — shared/theme.js
+   NEXUS STUDY — shared/js/theme.js
    Aplica as cores de uma disciplina via CSS custom properties.
 
    Função exportada:

@@ -10,8 +10,8 @@ import {
   getDisciplinasDeSemestre,
 } from '../src/global.js';
 
-import { sincronizarSemNaURL } from '../shared/url.js';
-import { preencherAnos }       from '../shared/dom.js';
+import { sincronizarSemNaURL } from '../shared/js/url.js';
+import { preencherAnos }       from '../shared/js/dom.js';
 
 'use strict';
 

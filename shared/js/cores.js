@@ -1,5 +1,5 @@
 /* ============================================================
-   NEXUS STUDY — shared/cores.js
+   NEXUS STUDY — shared/js/cores.js
    ============================================================ */
 
 export const DISC_CORES = {

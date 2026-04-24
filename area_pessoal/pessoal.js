@@ -13,8 +13,8 @@ import {
   SEMESTRES,
 } from '../src/global.js';
 
-import { resolverSemestreDeURL } from '../shared/url.js';
-import { aplicarCoresDisciplina } from '../shared/theme.js';
+import { resolverSemestreDeURL } from '../shared/js/url.js';
+import { aplicarCoresDisciplina } from '../shared/js/theme.js';
 
 /* ══════════════════════════════════════════════
    ESTADO

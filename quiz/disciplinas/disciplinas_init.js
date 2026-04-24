@@ -32,9 +32,9 @@
 
   ============================================================ */
 
-import { DISC_CORES } from '../../shared/cores.js';
-import { resolverSemestreDeURL, sincronizarSemNaURL, propagarSemNosLinks } from '../../shared/url.js';
-import { aplicarCoresDisciplina } from '../../shared/theme.js';
+import { DISC_CORES } from '../../shared/js/cores.js';
+import { resolverSemestreDeURL, sincronizarSemNaURL, propagarSemNosLinks } from '../../shared/js/url.js';
+import { aplicarCoresDisciplina } from '../../shared/js/theme.js';
 
 
 /* ── APLICA CORES DA DISCIPLINA (síncrono, sem FOUC) ─────── */

@@ -21,8 +21,8 @@ import { carregarPerfisSRS, salvarPerfilSRS } from './storage.js';
 import { Shell, lerParams }                  from '../../template/game-shell.js';
 import { getUsuario }                        from '../../../src/global.js';
 
-import { DISC_CORES }               from '../../../shared/cores.js';
-import { aplicarCoresDisciplina }   from '../../../shared/theme.js';
+import { DISC_CORES }               from '../../../shared/js/cores.js';
+import { aplicarCoresDisciplina }   from '../../../shared/js/theme.js';
 // Mapeamento disciplina → classe da tag
 const DISC_TAG_CLASS = {
   design:      'tag-design',

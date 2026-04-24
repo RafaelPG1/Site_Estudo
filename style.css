@@ -4,7 +4,7 @@
    Fonts: Cormorant Garamond + DM Sans
 
    NOTA: body base, orbs e grid estão em
-   shared/css/fundo.css — carregado via JS.
+    <link rel="stylesheet" href="../shared/css/fundo.css">
    ============================================= */
 
 /* ── RESET & BASE ── */

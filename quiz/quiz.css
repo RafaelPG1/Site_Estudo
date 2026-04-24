@@ -39,15 +39,7 @@
 
 html { scroll-behavior: smooth; }
 
-body {
-  background-color: var(--bg);
-  color: var(--text-1);
-  font-family: var(--font-body);
-  font-size: 16px;
-  line-height: 1.6;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
+
 
 a { text-decoration: none; color: inherit; }
 

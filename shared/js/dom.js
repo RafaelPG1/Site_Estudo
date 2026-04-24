@@ -1,5 +1,5 @@
 /* ============================================================
-   NEXUS STUDY — shared/dom.js
+   NEXUS STUDY — shared/js/dom.js
    Utilitários de DOM compartilhados entre páginas.
 
    Funções:

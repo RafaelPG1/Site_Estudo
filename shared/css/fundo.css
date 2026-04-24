@@ -3,6 +3,7 @@
    Fundo visual global: body base, orbs, grid.
    Inclua este arquivo em qualquer página que
    use o fundo animado padrão do projeto.
+    <link rel="stylesheet" href="../shared/css/fundo.css">
    ============================================= */
 
 /* ── BODY BASE ── */

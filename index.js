@@ -12,7 +12,7 @@ import {
 } from './src/global.js';
 
 import { login, logout, carregarConfigs } from './src/firebase.js';
-import { criarSemestreSelect, preencherAnos } from './shared/dom.js';
+import { criarSemestreSelect, preencherAnos } from './shared/js/dom.js';
 import { limparPerfisSRS } from './games/jogos/flashcard/storage.js';
 
 /* ─────────────────────────────────────────────

@@ -15,9 +15,9 @@ import {
   SEMESTRES,
 } from '../src/global.js';
 
-import { resolverSemestreDeURL, sincronizarSemNaURL } from '../shared/url.js';
-import { criarSemestreSelect, preencherAnos } from '../shared/dom.js';
-import { aplicarCoresDisciplina } from '../shared/theme.js';
+import { resolverSemestreDeURL, sincronizarSemNaURL } from '../shared/js/url.js';
+import { criarSemestreSelect, preencherAnos } from '../shared/js/dom.js';
+import { aplicarCoresDisciplina } from '../shared/js/theme.js';
 
 
 /* ══════════════════════════════════════════════
