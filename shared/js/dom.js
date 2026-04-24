@@ -9,7 +9,7 @@
      setHTML(id, html)                                    → atalho para innerHTML
    ============================================================ */
 
-import { SEMESTRES, getSemestreAtual, setSemestre } from '../src/global.js';
+import { SEMESTRES, getSemestreAtual, setSemestre } from '../../src/global.js';
 
 /* ─────────────────────────────────────────────────────────────
    criarSemestreSelect

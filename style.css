@@ -2,6 +2,9 @@
    NEXUS STUDY — style.css
    Aesthetic: Dark Tech Academy
    Fonts: Cormorant Garamond + DM Sans
+
+   NOTA: body base, orbs e grid estão em
+   shared/css/fundo.css — carregado via JS.
    ============================================= */
 
 /* ── RESET & BASE ── */
@@ -40,67 +43,7 @@
 
 html { scroll-behavior: smooth; }
 
-body {
-  background-color: var(--bg);
-  color: var(--text-1);
-  font-family: var(--font-body);
-  font-size: 16px;
-  line-height: 1.6;
-  min-height: 100vh;
-  overflow-x: hidden;
-  position: relative;
-}
-
 a { text-decoration: none; color: inherit; }
-
-/* ── BACKGROUND ORBS ── */
-.bg-orb {
-  position: fixed;
-  border-radius: 50%;
-  filter: blur(80px);
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.55;
-}
-
-.bg-orb--1 {
-  width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(77,217,180,0.18), transparent 70%);
-  top: -120px; left: -120px;
-  animation: orb-drift 18s ease-in-out infinite alternate;
-}
-
-.bg-orb--2 {
-  width: 600px; height: 600px;
-  background: radial-gradient(circle, rgba(232,201,122,0.14), transparent 70%);
-  bottom: -150px; right: -100px;
-  animation: orb-drift 22s ease-in-out infinite alternate-reverse;
-}
-
-.bg-orb--3 {
-  width: 350px; height: 350px;
-  background: radial-gradient(circle, rgba(122,168,232,0.12), transparent 70%);
-  top: 40%; left: 55%;
-  animation: orb-drift 14s ease-in-out infinite alternate;
-}
-
-@keyframes orb-drift {
-  0%   { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(40px, 30px) scale(1.08); }
-}
-
-/* ── GRID OVERLAY ── */
-.bg-grid {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(var(--border) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border) 1px, transparent 1px);
-  background-size: 60px 60px;
-  mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 30%, transparent 80%);
-}
 
 /* ── HEADER ── */
 .header {
@@ -413,7 +356,6 @@ a { text-decoration: none; color: inherit; }
 }
 
 /* ── CARD THEMES ── */
-
 .card--personal { background: linear-gradient(145deg, #0e1420, #12172a); }
 .card--personal:hover { border-color: rgba(232,201,122,0.3); box-shadow: 0 12px 40px rgba(232,201,122,0.1); }
 .card--personal .card__icon-wrap { background: var(--gold-dim); }
@@ -550,11 +492,7 @@ a { text-decoration: none; color: inherit; }
   border-color: var(--border-glow);
 }
 
-/* ── No style.css: substitua os blocos .nav-btn--avatar,
-   .avatar-ring-inner, .avatar-initial, .avatar-emoji, .avatar-img ── */
-
 .nav-btn--avatar {
-  /* reset completo — sem herdar .nav-btn */
   appearance: none;
   width: 36px;
   height: 36px;
@@ -587,7 +525,6 @@ a { text-decoration: none; color: inherit; }
   object-fit: cover;
   display: block;
 }
-
 
 /* ── SELETOR DE SEMESTRE ── */
 .semestre-select {
@@ -1256,17 +1193,14 @@ a { text-decoration: none; color: inherit; }
     padding: 0.35rem 1.8rem 0.35rem 0.6rem;
   }
 }
+
 /* =============================================
-   MODAL PERFIL — adicionar ao final de style.css
+   MODAL PERFIL
    ============================================= */
 
-/* ── KEYFRAMES ── */
 @keyframes pm-spin   { to { transform: rotate(360deg);  } }
 @keyframes pm-spin-r { to { transform: rotate(-360deg); } }
 
-/* ══════════════════════════════════════════
-   ESTRUTURA DUO (perfil + picker lado-a-lado)
-══════════════════════════════════════════ */
 .pm-duo {
   position: relative;
   z-index: 1;
@@ -1275,9 +1209,6 @@ a { text-decoration: none; color: inherit; }
   gap: 10px;
 }
 
-/* ══════════════════════════════════════════
-   PAINEL PERFIL
-══════════════════════════════════════════ */
 .modal__box--perfil {
   width: 340px;
   border-radius: 20px;
@@ -1297,7 +1228,6 @@ a { text-decoration: none; color: inherit; }
   opacity: 1;
 }
 
-/* ─── TOPO ─── */
 .pm-top {
   position: relative;
   flex-shrink: 0;
@@ -1332,7 +1262,6 @@ a { text-decoration: none; color: inherit; }
   pointer-events: none;
 }
 
-/* ─── Botão fechar ─── */
 .pm-close-btn {
   position: absolute;
   top: 10px;
@@ -1357,7 +1286,6 @@ a { text-decoration: none; color: inherit; }
   color: var(--rose);
 }
 
-/* ─── Anel giratório ─── */
 .pm-avatar-ring {
   position: relative;
   z-index: 1;
@@ -1390,7 +1318,6 @@ a { text-decoration: none; color: inherit; }
 .pm-avatar__emoji { font-size: 2.5rem; line-height: 1; user-select: none; }
 .pm-avatar__img   { width: 100%; height: 100%; object-fit: cover; }
 
-/* ─── Nome / uid ─── */
 .pm-username {
   position: relative;
   z-index: 1;
@@ -1411,7 +1338,6 @@ a { text-decoration: none; color: inherit; }
   margin-top: -0.3rem;
 }
 
-/* ─── Botão alterar avatar ─── */
 .pm-change-btn {
   position: relative;
   z-index: 1;
@@ -1438,7 +1364,6 @@ a { text-decoration: none; color: inherit; }
   background: rgba(77, 217, 180, 0.08);
 }
 
-/* ─── Bloco de dados ─── */
 .pm-data {
   margin: 0.75rem 1.1rem 1rem;
   background: rgba(255, 255, 255, 0.025);
@@ -1522,7 +1447,6 @@ a { text-decoration: none; color: inherit; }
   color: var(--gold);
 }
 
-/* ─── Footer perfil ─── */
 .pm-footer {
   display: flex;
   align-items: center;
@@ -1572,9 +1496,7 @@ a { text-decoration: none; color: inherit; }
   box-shadow: 0 0 16px rgba(77, 217, 180, 0.35);
 }
 
-/* ══════════════════════════════════════════
-   PICKER PANEL
-══════════════════════════════════════════ */
+/* ── PICKER PANEL ── */
 .pm-picker-panel {
   width: 0;
   overflow: hidden;
@@ -1640,7 +1562,6 @@ a { text-decoration: none; color: inherit; }
   color: var(--rose);
 }
 
-/* ─── Preview ─── */
 .pm-picker-preview {
   display: flex;
   align-items: center;
@@ -1669,7 +1590,6 @@ a { text-decoration: none; color: inherit; }
   line-height: 1;
 }
 
-/* ─── Mini ring no preview ─── */
 .pm-mini-ring {
   width: 38px;
   height: 38px;
@@ -1697,7 +1617,6 @@ a { text-decoration: none; color: inherit; }
   animation: pm-spin-r 8s linear infinite;
 }
 
-/* ─── Grade de emojis ─── */
 .pm-picker-grid-wrap {
   padding: 0.55rem 0.7rem 0.45rem;
   flex: 1;
@@ -1736,7 +1655,6 @@ a { text-decoration: none; color: inherit; }
   box-shadow: 0 0 6px rgba(77, 217, 180, 0.2);
 }
 
-/* ─── Footer do picker ─── */
 .pm-picker-foot {
   display: flex;
   gap: 0.45rem;
@@ -1751,7 +1669,6 @@ a { text-decoration: none; color: inherit; }
   font-size: 0.72rem;
 }
 
-/* ── Responsivo ── */
 @media (max-width: 680px) {
   .pm-duo { flex-direction: column; align-items: center; }
 

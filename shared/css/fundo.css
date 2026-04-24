@@ -1,0 +1,67 @@
+/* =============================================
+   NEXUS STUDY — shared/css/fundo.css
+   Fundo visual global: body base, orbs, grid.
+   Inclua este arquivo em qualquer página que
+   use o fundo animado padrão do projeto.
+   ============================================= */
+
+/* ── BODY BASE ── */
+body {
+  background-color: var(--bg);
+  color: var(--text-1);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* ── BACKGROUND ORBS ── */
+.bg-orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.55;
+}
+
+.bg-orb--1 {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(77,217,180,0.18), transparent 70%);
+  top: -120px; left: -120px;
+  animation: orb-drift 18s ease-in-out infinite alternate;
+}
+
+.bg-orb--2 {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(232,201,122,0.14), transparent 70%);
+  bottom: -150px; right: -100px;
+  animation: orb-drift 22s ease-in-out infinite alternate-reverse;
+}
+
+.bg-orb--3 {
+  width: 350px; height: 350px;
+  background: radial-gradient(circle, rgba(122,168,232,0.12), transparent 70%);
+  top: 40%; left: 55%;
+  animation: orb-drift 14s ease-in-out infinite alternate;
+}
+
+@keyframes orb-drift {
+  0%   { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(40px, 30px) scale(1.08); }
+}
+
+/* ── GRID OVERLAY ── */
+.bg-grid {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 30%, transparent 80%);
+}

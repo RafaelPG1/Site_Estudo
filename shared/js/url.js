@@ -8,7 +8,7 @@
      propagarSemNosLinks(sem, sels)   → propaga ?sem= em links
    ============================================================ */
 
-import { getSemestreAtual } from '../src/global.js';
+import { getSemestreAtual } from '../../src/global.js';
 
 /* ─────────────────────────────────────────────────────────────
    resolverSemestreDeURL
