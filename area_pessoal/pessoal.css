@@ -1614,39 +1614,72 @@ a { text-decoration: none; color: inherit; }
    CHECKLIST — GRUPO DE AULA
 ══════════════════════════════════════════ */
 .cl-group {
-  margin-bottom: 2.25rem;
+  margin-bottom: 0.75rem;
   animation: fade-up 0.35s ease both;
+  background: var(--surface);
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+.cl-group:hover {
+  border-color: rgba(var(--disc-tema-rgb), 0.35);
+  box-shadow: 0 4px 24px rgba(var(--disc-tema-rgb), 0.07);
 }
 
-/* FIX: .cl-group__header unificado (era definido 2x no original) */
 .cl-group__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0 0.25rem 0.7rem;
-  margin-bottom: 0.85rem;
-  border-bottom: 1px solid rgba(var(--disc-tema-rgb), 0.2);
+  padding: 0.85rem 1.1rem;
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.2);
   cursor: pointer;
   user-select: none;
+  transition: background 0.2s;
 }
-.cl-group__header:hover .cl-group__title { opacity: 0.8; }
+.cl-group__header:hover {
+  background: rgba(var(--disc-tema-rgb), 0.06);
+}
+.cl-group--collapsed .cl-group__header {
+  border-bottom-color: transparent;
+}
 
 .cl-group__title {
   font-family: var(--font-bb);
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 600;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.02em;
   color: var(--disc-tema);
   transition: color 0.4s;
 }
-
-.cl-group__meta {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  flex-shrink: 0;
+.cl-group__header:hover .cl-group__title {
+  color: var(--disc-tema);
 }
+
+.cl-group__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.85rem 1rem;
+  border-left: none;
+  overflow: hidden;
+  max-height: 9999px;
+  opacity: 1;
+  transition: max-height 0.35s cubic-bezier(.25,.8,.25,1),
+              opacity 0.25s ease,
+              padding 0.25s ease;
+}
+
+.cl-group--collapsed .cl-group__body {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.cl-group--collapsed .cl-group__chevron { transform: rotate(-90deg); }
 
 .cl-group__badge {
   font-size: 0.65rem;
@@ -1661,36 +1694,11 @@ a { text-decoration: none; color: inherit; }
   white-space: nowrap;
 }
 
-
 .cl-group__chevron {
   color: var(--disc-tema);
   flex-shrink: 0;
-  transition: transform 0.28s cubic-bezier(.25,.8,.25,1);
+  transition: transform 0.28s cubic-bezier(.25,.8,.25,1), color 0.4s;
 }
-
-/* FIX: .cl-group__body unificado (era definido 2x no original) */
-.cl-group__body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding-left: 0.85rem;
-  border-left: 2px solid rgba(var(--disc-tema-rgb), 0.12);
-  overflow: hidden;
-  max-height: 9999px;
-  opacity: 1;
-  transition: max-height 0.35s cubic-bezier(.25,.8,.25,1),
-              opacity 0.25s ease,
-              padding 0.25s ease;
-}
-.cl-group__body .cl-section { margin-bottom: 0; }
-
-.cl-group--collapsed .cl-group__body {
-  max-height: 0;
-  opacity: 0;
-  padding-top: 0;
-  padding-bottom: 0;
-}
-.cl-group--collapsed .cl-group__chevron { transform: rotate(-90deg); }
 
 .cl-group__left { display: flex; align-items: center; gap: 0.65rem; }
 .cl-group__right { display: flex; align-items: center; gap: 0.75rem; }
