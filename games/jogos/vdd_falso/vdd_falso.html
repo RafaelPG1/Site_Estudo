@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verdadeiro ou Falso — Nexus Study</title>
+
+  <!-- Google Fonts (herdado do projeto) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Fundo compartilhado do projeto -->
+  <link rel="stylesheet" href="../../../shared/css/fundo.css" />
+
+  <!-- Shell base dos jogos -->
+  <link rel="stylesheet" href="../../template/game-shell.css" />
+
+  <!-- CSS específico deste jogo -->
+  <link rel="stylesheet" href="vdd_falso.css" />
+</head>
+<body>
+
+<!-- Background -->
+<div class="bg-grid"></div>
+<div class="bg-orb bg-orb--1"></div>
+<div class="bg-orb bg-orb--2"></div>
+
+<div class="game-shell">
+
+  <!-- ── HEADER ── -->
+  <header class="game-header">
+    <a id="shell-back-btn" class="game-header__back" href="#">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M13 16l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Voltar</span>
+    </a>
+
+    <div class="game-header__identity">
+      <div class="game-header__icon" id="shell-icon">⚡</div>
+      <div class="game-header__info">
+        <div class="game-header__name" id="shell-game-name">Verdadeiro ou Falso</div>
+        <div class="game-header__meta">
+          <span id="shell-disc-name">—</span>
+          <span class="game-header__meta-sep">·</span>
+          <span id="shell-sem">—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="game-header__score-slot">
+      <!-- Placar -->
+      <div class="vf-score-pill">
+        <span class="vf-score__correct" id="score-correct">0</span>
+        <span class="vf-score__sep">/</span>
+        <span class="vf-score__total" id="score-total">0</span>
+      </div>
+      <!-- Timer -->
+      <span class="game-timer-display" id="shell-timer-display">00:30</span>
+    </div>
+  </header>
+
+  <!-- Timer bar -->
+  <div class="game-timer-bar">
+    <div class="game-timer-bar__fill"></div>
+  </div>
+
+  <!-- ── CONTEÚDO DO JOGO ── -->
+  <main class="game-content">
+
+    <!-- Tela: Introdução -->
+    <section id="screen-intro" class="vf-screen">
+      <div class="vf-intro">
+        <div class="game-eyebrow">⚡ Modo rápido</div>
+        <h1 class="game-section-title">Verdadeiro <em>ou Falso?</em></h1>
+        <p class="game-section-desc">
+          Responda o máximo de questões corretas antes do tempo acabar.<br>
+          Cada acerto vale pontos — cada erro desconta!
+        </p>
+
+        <div class="vf-rules">
+          <div class="vf-rule">
+            <span class="vf-rule__icon">✅</span>
+            <span>Acerto: <strong>+10 pts</strong></span>
+          </div>
+          <div class="vf-rule">
+            <span class="vf-rule__icon">❌</span>
+            <span>Erro: <strong>-5 pts</strong></span>
+          </div>
+          <div class="vf-rule">
+            <span class="vf-rule__icon">⏱</span>
+            <span><strong>30 segundos</strong> por questão</span>
+          </div>
+        </div>
+
+        <button class="game-btn" id="btn-start">
+          Começar
+          <svg viewBox="0 0 16 16" fill="currentColor">
+            <path d="M5 3l8 5-8 5V3z"/>
+          </svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- Tela: Questão -->
+    <section id="screen-question" class="vf-screen hidden">
+
+      <!-- Progresso -->
+      <div class="vf-progress-row">
+        <span class="game-round">Questão <strong id="q-current">1</strong> de <strong id="q-total">8</strong></span>
+        <div class="game-progress-bar" style="width:200px">
+          <div class="game-progress-bar__fill" id="progress-fill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <!-- Card da pergunta -->
+      <div class="vf-question-card game-card-base" id="question-card">
+        <div class="vf-question-number game-badge" id="q-badge">Q1</div>
+        <p class="vf-question-text" id="question-text">
+          Carregando pergunta…
+        </p>
+      </div>
+
+      <!-- Botões V / F -->
+      <div class="vf-buttons">
+        <button class="vf-btn vf-btn--true" id="btn-true">
+          <span class="vf-btn__icon">✓</span>
+          <span class="vf-btn__label">Verdadeiro</span>
+        </button>
+        <button class="vf-btn vf-btn--false" id="btn-false">
+          <span class="vf-btn__icon">✗</span>
+          <span class="vf-btn__label">Falso</span>
+        </button>
+      </div>
+
+      <!-- Feedback -->
+      <div id="feedback-area" class="hidden">
+        <div class="game-feedback" id="feedback-msg"></div>
+        <p class="vf-explicacao" id="feedback-explicacao"></p>
+      </div>
+
+    </section>
+
+    <!-- Tela: Sem conteúdo -->
+    <section id="screen-empty" class="vf-screen hidden">
+      <div class="vf-intro">
+        <div class="game-eyebrow">⚠️ Ops</div>
+        <h1 class="game-section-title">Sem perguntas</h1>
+        <p class="game-section-desc">
+          Não encontramos questões para esta disciplina ainda.<br>
+          Tente outra ou aguarde novas adições!
+        </p>
+        <a class="game-btn" id="btn-empty-back" href="#">Voltar</a>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ── TELA DE RESULTADO FINAL ── -->
+<div class="game-result hidden" id="game-result">
+  <div class="game-result__card">
+    <div class="game-result__emoji" id="result-emoji">🏆</div>
+    <h2 class="game-result__title" id="result-title">Fim de jogo!</h2>
+    <p class="game-result__subtitle" id="result-subtitle"></p>
+
+    <div class="game-result__stats" id="result-stats"></div>
+
+    <div class="game-result__actions">
+      <button class="game-btn game-btn--outline" id="result-btn-rejogo">
+        Jogar novamente
+      </button>
+      <a class="game-btn" id="result-btn-sair" href="#">
+        Sair
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M5 3l8 5-8 5V3z"/></svg>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- JS do jogo -->
+<script type="module" src="vdd_falso.js"></script>
+</body>
+</html>

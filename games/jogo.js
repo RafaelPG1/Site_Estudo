@@ -31,7 +31,22 @@ const JOGOS = [
     duracao: '5–15 min',
     dificuldade: '★☆☆',
   },
+
+  // ── PERGUNTA ──────────────────────────
+  {
+    id: 'verdadeiro-falso',
+    nome: 'Verdadeiro ou Falso',
+    tipo: 'Pergunta',
+    status: 'disponível',
+    icon: '⚖️',
+    descricao: 'Avalie afirmações sobre a disciplina escolhida e decida se são verdadeiras ou falsas.',
+    duracao: '3–5 min',
+    dificuldade: '★☆☆',
+    // Mapeamento customizado: pasta e arquivo diferem do id
+    rota: 'vdd_falso/vdd_falso.html',
+  },
 ];
+
 
 /* ═══════════════════════════════════════════
    2. CORES POR TIPO
@@ -245,15 +260,16 @@ function openModal(game) {
   const wrap = DOM.modalDiscWrap();
   const sem  = getSemestreAtual();
   const discs = getDisciplinasDeSemestre(sem);
-const disciplinas = getDisciplinasDeSemestre(sem);
+  const disciplinas = getDisciplinasDeSemestre(sem);
 
-if (!disciplinas.length) {
-  wrap.innerHTML = `
-    <p class="modal-empty">
-      Nenhuma disciplina cadastrada para <strong>${sem}</strong> ainda.
-    </p>`;
-  return;
-}
+  if (!disciplinas.length) {
+    wrap.innerHTML = `
+      <p class="modal-empty">
+        Nenhuma disciplina cadastrada para <strong>${sem}</strong> ainda.
+      </p>`;
+    return;
+  }
+
   sel.innerHTML = '<option value="">— selecione —</option>';
   discs.forEach(d => {
     const opt       = document.createElement('option');
@@ -302,9 +318,18 @@ function closeModal() {
   document.body.style.overflow = '';
 }
 
+/**
+ * Resolve a rota de navegação para cada jogo.
+ * Se o jogo tiver `rota` customizada, usa ela.
+ * Caso contrário, usa o padrão: jogos/{id}/{id}.html
+ */
+function resolverRota(game) {
+  return game.rota ?? `${game.id}/${game.id}.html`;
+}
+
 function handlePlay(game, disciplinaArquivo, semestre) {
-  window.location.href = 
-    `jogos/${game.id}/${game.id}.html?disc=${disciplinaArquivo}&sem=${semestre}`;
+  const rota = resolverRota(game);
+  window.location.href = `jogos/${rota}?disc=${disciplinaArquivo}&sem=${semestre}`;
 }
 
 /* ═══════════════════════════════════════════

@@ -1,0 +1,271 @@
+/* ============================================================
+   NEXUS STUDY — games/jogos/vdd_falso/vdd_falso.css
+
+   Estilos exclusivos da mecânica Verdadeiro ou Falso.
+   Depende de game-shell.css para tokens e utilitários base.
+   ============================================================ */
+
+/* ── Screens (troca de tela) ── */
+.vf-screen {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+/* ── Intro / tela inicial ── */
+.vf-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  text-align: center;
+  max-width: 520px;
+  padding-top: 16px;
+}
+
+.vf-rules {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 4px 0 8px;
+}
+
+.vf-rule {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .82rem;
+  color: var(--text-2);
+  background: var(--surface);
+  border: 1px solid var(--border-hi);
+  padding: 8px 16px;
+  border-radius: var(--pill);
+}
+.vf-rule strong { color: var(--text-1); }
+.vf-rule__icon { font-size: 1rem; }
+
+/* ── Placar no header ── */
+.vf-score-pill {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(var(--disc-tema-rgb),.08);
+  border: 1px solid rgba(var(--disc-tema-rgb),.2);
+  border-radius: var(--pill);
+  padding: 4px 14px;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+.vf-score__correct { color: var(--disc-tema); }
+.vf-score__sep     { color: var(--text-3); margin: 0 2px; }
+.vf-score__total   { color: var(--text-2); font-size: .95rem; }
+
+/* ── Linha de progresso ── */
+.vf-progress-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 16px;
+}
+
+/* ── Card da questão ── */
+.vf-question-card {
+  width: 100%;
+  max-width: 640px;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  transition: border-color .3s, box-shadow .3s, transform .2s;
+}
+
+/* Estado: acertou */
+.vf-question-card--correct {
+  border-color: rgba(52,211,153,.4) !important;
+  box-shadow: 0 0 32px rgba(52,211,153,.12) !important;
+}
+
+/* Estado: errou */
+.vf-question-card--wrong {
+  border-color: rgba(248,113,113,.4) !important;
+  box-shadow: 0 0 32px rgba(248,113,113,.12) !important;
+}
+
+/* Shake ao errar */
+.vf-question-card--shake {
+  animation: vf-shake .35s ease;
+}
+@keyframes vf-shake {
+  0%,100% { transform: translateX(0); }
+  20%      { transform: translateX(-8px); }
+  40%      { transform: translateX(8px); }
+  60%      { transform: translateX(-5px); }
+  80%      { transform: translateX(5px); }
+}
+
+/* Fade de entrada da questão */
+.vf-question-card--enter {
+  animation: vf-enter .3s ease both;
+}
+@keyframes vf-enter {
+  from { opacity: 0; transform: translateY(12px) scale(.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.vf-question-number {
+  align-self: flex-start;
+}
+
+.vf-question-text {
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 2.8vw, 1.5rem);
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--text-1);
+  flex: 1;
+}
+
+/* ── Botões V / F ── */
+.vf-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  width: 100%;
+  max-width: 640px;
+}
+
+.vf-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 22px 16px;
+  border-radius: var(--radius);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition:
+    background var(--t) var(--ease),
+    border-color var(--t) var(--ease),
+    transform .15s var(--ease),
+    box-shadow var(--t) var(--ease);
+  font-family: inherit;
+}
+
+.vf-btn__icon {
+  font-size: 2rem;
+  line-height: 1;
+  transition: transform .2s var(--ease);
+}
+.vf-btn__label {
+  font-family: var(--font-display);
+  font-size: .95rem;
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+
+/* Verdadeiro — verde */
+.vf-btn--true {
+  background: rgba(52,211,153,.08);
+  border-color: rgba(52,211,153,.22);
+  color: #34d399;
+}
+.vf-btn--true:hover:not(:disabled) {
+  background: rgba(52,211,153,.16);
+  border-color: rgba(52,211,153,.5);
+  box-shadow: 0 0 24px rgba(52,211,153,.2);
+  transform: translateY(-3px);
+}
+.vf-btn--true:hover:not(:disabled) .vf-btn__icon {
+  transform: scale(1.2);
+}
+
+/* Falso — vermelho */
+.vf-btn--false {
+  background: rgba(248,113,113,.08);
+  border-color: rgba(248,113,113,.22);
+  color: #f87171;
+}
+.vf-btn--false:hover:not(:disabled) {
+  background: rgba(248,113,113,.16);
+  border-color: rgba(248,113,113,.5);
+  box-shadow: 0 0 24px rgba(248,113,113,.2);
+  transform: translateY(-3px);
+}
+.vf-btn--false:hover:not(:disabled) .vf-btn__icon {
+  transform: scale(1.2);
+}
+
+/* Selecionado — correto */
+.vf-btn--selected-correct {
+  background: rgba(52,211,153,.2) !important;
+  border-color: #34d399 !important;
+  box-shadow: 0 0 28px rgba(52,211,153,.3) !important;
+  transform: scale(1.03);
+}
+
+/* Selecionado — errado */
+.vf-btn--selected-wrong {
+  background: rgba(248,113,113,.2) !important;
+  border-color: #f87171 !important;
+  box-shadow: 0 0 28px rgba(248,113,113,.3) !important;
+}
+
+/* Resposta correta revelada */
+.vf-btn--reveal-correct {
+  background: rgba(52,211,153,.12) !important;
+  border-color: rgba(52,211,153,.4) !important;
+  opacity: .7;
+}
+
+.vf-btn:disabled {
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ── Feedback + explicação ── */
+#feedback-area {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: feedback-in .25s ease both;
+}
+#feedback-area.hidden { display: none !important; }
+
+.vf-explicacao {
+  font-size: .8rem;
+  color: var(--text-2);
+  line-height: 1.65;
+  text-align: center;
+  padding: 0 8px;
+}
+
+/* ── Responsividade ── */
+@media (max-width: 480px) {
+  .vf-buttons {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .vf-btn {
+    padding: 18px 10px;
+  }
+  .vf-btn__icon {
+    font-size: 1.6rem;
+  }
+  .vf-btn__label {
+    font-size: .8rem;
+  }
+  .vf-progress-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
