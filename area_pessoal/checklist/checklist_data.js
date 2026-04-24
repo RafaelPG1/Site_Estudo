@@ -393,44 +393,33 @@ export const CHECKLIST_ITENS = {
           {
             nome: 'Conceito', icone: '🧠',
             itens: [
-              { id: '2026_2_des_c1', texto: 'O que é ciclo de vida de software e sua finalidade' },
-              { id: '2026_2_des_c2', texto: 'O que é Design Thinking e seus 3 pilares (empatia, criatividade, experimentação)' },
-              { id: '2026_2_des_c3', texto: 'O que é a Norma ISO 9241 e o que ela regula' },
-              { id: '2026_2_des_c4', texto: 'O que são eficácia, eficiência e satisfação na ISO 9241' },
-              { id: '2026_2_des_c5', texto: 'O que é o Modelo Estrela e por que a avaliação é o centro' },
-              { id: '2026_2_des_c6', texto: 'O que é o Modelo de Shneiderman e seus 3 pilares' },
+              { id: '2026_2_des_c1', texto: 'Ciclo de vida de software define as etapas de desenvolvimento de um sistema' },
+              { id: '2026_2_des_c2', texto: 'ISO 9241 é a norma que regula usabilidade e ergonomia em interfaces interativas' },
             ]
           },
           {
             nome: 'Diferença', icone: '⚖️',
             itens: [
-              { id: '2026_2_des_d1', texto: 'Modelos centrados no produto vs centrados no usuário' },
-              { id: '2026_2_des_d2', texto: 'Cascata (linear) vs Espiral (ciclos com protótipos) vs Iterativo (repetições)' },
-              { id: '2026_2_des_d3', texto: 'Modelo Estrela vs Modelo de Shneiderman' },
-              { id: '2026_2_des_d4', texto: 'Eficácia (atingir o objetivo) vs Eficiência (atingir com menos esforço)' },
+              { id: '2026_2_des_d1', texto: 'Cascata (sequencial sem retorno) vs Espiral (ciclos com protótipos) vs Iterativo (repetições com feedback)' },
+              { id: '2026_2_des_d2', texto: 'Modelo Estrela (avaliação no centro, qualquer entrada) vs Shneiderman (especificação → prototipagem → testes)' },
             ]
           },
           {
             nome: 'Aplicação', icone: '🛠️',
             itens: [
-              { id: '2026_2_des_a1', texto: 'Identificar qual modelo de ciclo de vida se aplica a um cenário dado' },
-              { id: '2026_2_des_a2', texto: 'Reconhecer exemplos dos 7 princípios de diálogo da ISO 9241' },
-              { id: '2026_2_des_a3', texto: 'Classificar uma situação como falha de eficácia, eficiência ou satisfação' },
-              { id: '2026_2_des_a4', texto: 'Identificar etapas do Design Thinking em um cenário de projeto' },
+              { id: '2026_2_des_a1', texto: 'Identificar qual modelo de ciclo de vida se aplica dado um cenário de projeto' },
+              { id: '2026_2_des_a2', texto: 'Classificar uma falha de sistema como eficácia, eficiência ou satisfação conforme ISO 9241' },
             ]
           },
           {
             nome: 'Memorização', icone: '📌',
             itens: [
               { id: '2026_2_des_m1', texto: '7 princípios ISO 9241: adequação à tarefa, autodescrição, controle, conformidade, tolerância a erros, individualização, aprendizado' },
-              { id: '2026_2_des_m2', texto: '5 princípios do Design Thinking: centrado no usuário, cocriativo, sequencial, evidente, holístico' },
-              { id: '2026_2_des_m3', texto: 'Etapas do Modelo Cascata: Requisitos → Projeto → Implementação → Testes → Manutenção' },
-              { id: '2026_2_des_m4', texto: 'Manifesto Ágil: pessoas > processos, software funcional > documentação' },
+              { id: '2026_2_des_m2', texto: '3 pilares do Design Thinking: empatia, criatividade, experimentação' },
             ]
           },
         ]
       },
-      // Aula 10 entra aqui embaixo, sem tocar no resto
     ]
   },
 
@@ -442,41 +431,29 @@ export const CHECKLIST_ITENS = {
           {
             nome: 'Conceito', icone: '🧠',
             itens: [
-              { id: '2026_2_bd_c1', texto: 'O que é DDL e qual seu papel dentro do SQL' },
-              { id: '2026_2_bd_c2', texto: 'O que é esquema (schema) e o que ele contém' },
-              { id: '2026_2_bd_c3', texto: 'O que é catálogo e o que é INFORMATION_SCHEMA' },
-              { id: '2026_2_bd_c4', texto: 'O que é integridade referencial e por que ela importa' },
-              { id: '2026_2_bd_c5', texto: 'O que é chave primária: único + não nulo' },
-              { id: '2026_2_bd_c6', texto: 'O que é chave estrangeira e qual tabela ela referencia' },
+              { id: '2026_2_bd_c1', texto: 'DDL é o subconjunto do SQL responsável por criar, alterar e remover estruturas do banco' },
+              { id: '2026_2_bd_c2', texto: 'Integridade referencial garante que toda referência entre tabelas aponte para um registro existente' },
             ]
           },
           {
             nome: 'Diferença', icone: '⚖️',
             itens: [
-              { id: '2026_2_bd_d1', texto: 'DROP TABLE (remove estrutura + dados) vs DELETE (remove só dados)' },
-              { id: '2026_2_bd_d2', texto: 'CASCADE (remove dependências automaticamente) vs RESTRICT (bloqueia se houver dependência)' },
-              { id: '2026_2_bd_d3', texto: 'PRIMARY KEY vs FOREIGN KEY — função e regras de cada' },
-              { id: '2026_2_bd_d4', texto: 'CHAR(n) (tamanho fixo) vs VARCHAR(n) (tamanho variável)' },
-              { id: '2026_2_bd_d5', texto: 'Esquema (estrutura lógica) vs Catálogo (conjunto de esquemas)' },
+              { id: '2026_2_bd_d1', texto: 'DROP TABLE (remove estrutura + dados permanentemente) vs DELETE (remove apenas os dados)' },
+              { id: '2026_2_bd_d2', texto: 'CASCADE (apaga dependências automaticamente) vs RESTRICT (bloqueia exclusão se houver dependência)' },
             ]
           },
           {
             nome: 'Aplicação', icone: '🛠️',
             itens: [
-              { id: '2026_2_bd_a1', texto: 'Escrever CREATE TABLE com colunas, tipos de dados e restrições' },
-              { id: '2026_2_bd_a2', texto: 'Usar ALTER TABLE para adicionar coluna com tipo correto' },
-              { id: '2026_2_bd_a3', texto: 'Definir PRIMARY KEY e FOREIGN KEY dentro do CREATE TABLE' },
-              { id: '2026_2_bd_a4', texto: 'Escolher o tipo de dado correto para cada campo (INTEGER, VARCHAR, DATE, BLOB…)' },
-              { id: '2026_2_bd_a5', texto: 'Identificar quando usar CASCADE ou RESTRICT num DROP' },
+              { id: '2026_2_bd_a1', texto: 'Escrever CREATE TABLE com colunas, tipos de dados, PRIMARY KEY e FOREIGN KEY corretamente' },
+              { id: '2026_2_bd_a2', texto: 'Escolher o tipo de dado adequado para cada campo: CHAR, VARCHAR, INTEGER, DATE, BLOB' },
             ]
           },
           {
             nome: 'Memorização', icone: '📌',
             itens: [
-              { id: '2026_2_bd_m1', texto: '3 comandos DDL: CREATE, ALTER, DROP — e o que cada um faz' },
-              { id: '2026_2_bd_m2', texto: 'Tipos de dados: CHAR, VARCHAR, INTEGER, SMALLINT, DECIMAL, FLOAT, DATE, TIME, BLOB' },
-              { id: '2026_2_bd_m3', texto: 'Sintaxe: PRIMARY KEY (campo) e FOREIGN KEY (campo) REFERENCES tabela(campo)' },
-              { id: '2026_2_bd_m4', texto: 'Ordem de definição de banco: CREATE DATABASE → CREATE TABLE → ALTER → DROP' },
+              { id: '2026_2_bd_m1', texto: '3 comandos DDL: CREATE (cria), ALTER (modifica), DROP (exclui)' },
+              { id: '2026_2_bd_m2', texto: 'PRIMARY KEY: único + não nulo | FOREIGN KEY: referencia campo de outra tabela' },
             ]
           },
         ]
