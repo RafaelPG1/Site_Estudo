@@ -1360,14 +1360,8 @@ function _smoothScrollTo(targetY, duration = 1400) {
 }
 
 function _bindFab() {
-  document.getElementById('fab-top')?.addEventListener('click', () => {
-    _smoothScrollTo(0);
-  });
-
-  document.getElementById('fab-bottom')?.addEventListener('click', () => {
-    _smoothScrollTo(document.body.scrollHeight);
-  });
-
+  document.getElementById('fab-top')?.addEventListener('click', () => _smoothScrollTo(0));
+  document.getElementById('fab-bottom')?.addEventListener('click', () => _smoothScrollTo(document.body.scrollHeight));
   document.getElementById('fab-collapse')?.addEventListener('click', () => {
     document.querySelectorAll('.cl-group').forEach(g => g.classList.add('cl-group--collapsed'));
     document.querySelectorAll('.cl-section').forEach(s => s.classList.add('cl-section--collapsed'));

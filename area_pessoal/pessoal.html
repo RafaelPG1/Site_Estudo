@@ -256,33 +256,34 @@
       </div>
     </div>
   </div>
-<div class="fab" id="fab">
-  <button class="fab__btn" id="fab-top" title="Ir ao topo">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-         stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <line x1="12" y1="19" x2="12" y2="5"/>
-      <polyline points="5 12 12 5 19 12"/>
-    </svg>
-  </button>
-  <div class="fab__divider"></div>
-<button class="fab__btn" id="fab-collapse" title="Recolher tudo">
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" 
-       stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M4 8h4V4" />
-    <path d="M16 4v4h4" />
-    <path d="M4 16h4v4" />
-    <path d="M16 20v-4h4" />
-  </svg>
-</button>
-  <div class="fab__divider"></div>
-  <button class="fab__btn" id="fab-bottom" title="Ir ao fim">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-         stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <line x1="12" y1="5" x2="12" y2="19"/>
-      <polyline points="19 12 12 19 5 12"/>
-    </svg>
-  </button>
+
+<div class="fab-group" id="fab-group">
+  <div class="fab-ear"></div>
+  <div class="fab-group-inner">
+    <button class="fab-btn" id="fab-top" title="Ir ao topo">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
+      </svg>
+    </button>
+    <div class="fab-divider"></div>
+    <button class="fab-btn fab-collapse" id="fab-collapse" title="Recolher tudo">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 7h3V4"/><path d="M17 4v3h3"/><path d="M4 17h3v3"/><path d="M17 20v-3h3"/>
+      </svg>
+    </button>
+    <div class="fab-divider"></div>
+    <button class="fab-btn" id="fab-bottom" title="Ir ao fim">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
+      </svg>
+    </button>
+  </div>
 </div>
+
+
   <!-- ===== DROPDOWN MOBILE ===== -->
   <div class="mobile-dropdown" id="mobile-dropdown">
     <div class="mobile-dropdown__backdrop" id="mobile-dropdown-backdrop"></div>
