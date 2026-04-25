@@ -895,7 +895,299 @@ DELETE FROM cargos;`,
       ],
       answer: 0,
       feedback: "Correto: A. A ==ddl==DDL== (Data Definition Language) inclui os comandos que **definem e modificam estruturas**: ==ddl==CREATE TABLE==, ==ddl==ALTER TABLE==, ==danger==DROP TABLE==. A ==dml==DML== (Data Manipulation Language) inclui os comandos que **manipulam dados**: ==dml==INSERT INTO==, ==dml==SELECT==, ==dml==DELETE==, UPDATE. A alternativa B confunde ==dml==INSERT== (DML) com DDL, e ==danger==DROP== (DDL) com DML."
-    }
+    },
+
+    {
+  tipo: "Asserção + Justificativa",
+  aula: "Aula 10 — Manipulando um Banco de Dados",
+  conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
+  texto: "Uma equipe de desenvolvimento de um sistema de RH percebeu que vários registros de funcionários estavam sendo inseridos sem o campo de departamento preenchido. Ao investigar, o analista constatou que o comando INSERT utilizado não especificava as colunas de destino, o que gerava inconsistências nos dados armazenados.",
+  question: "Analise as asserções a seguir e a relação proposta entre elas:",
+  assertions: [
+    "Ao utilizar ==dml==INSERT INTO tabela VALUES (...)== sem especificar os nomes das colunas, os valores informados devem corresponder exatamente à ordem e ao tipo de todas as colunas definidas na tabela.",
+    "[PORQUE] A sintaxe do ==dml==INSERT== sem lista de colunas exige que o banco de dados associe cada valor posicionalmente à estrutura completa da tabela, não permitindo omissões sem causar erro ou inconsistência."
+  ],
+  options: [
+    "As asserções I e II são verdadeiras, e II justifica I",
+    "As asserções I e II são verdadeiras, mas II não justifica I",
+    "A asserção I é verdadeira e a II é falsa",
+    "A asserção I é falsa e a II é verdadeira"
+  ],
+  answer: 0,
+  feedback: "Correto: A. Quando o ==dml==INSERT== não lista as colunas, o banco espera valores para **todas** as colunas na ordem exata de criação da tabela (I). A asserção II justifica diretamente esse comportamento, explicando o mecanismo posicional que fundamenta a restrição."
+},
+
+{
+  tipo: "Múltiplas afirmativas",
+  aula: "Aula 10 — Manipulando um Banco de Dados",
+  conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
+  texto: "Um professor de banco de dados pediu que os alunos avaliassem afirmativas sobre o comando DELETE em SQL. O objetivo era verificar se eles compreendiam a diferença entre excluir registros com e sem cláusula WHERE, além das características do comando em relação à estrutura da tabela.",
+  question: "Avalie as afirmativas a seguir sobre o comando ==dml==DELETE== em SQL:",
+  assertions: [
+    "O comando ==dml==DELETE FROM tabela== sem a cláusula ==rule==WHERE== remove todos os registros da tabela, mas preserva a estrutura (colunas, restrições e índices).",
+    "O comando ==dml==DELETE== pode remover uma coluna específica de um registro, desde que o nome da coluna seja informado após a palavra-chave DELETE.",
+    "A cláusula ==rule==WHERE== no ==dml==DELETE== permite filtrar quais registros serão removidos, garantindo precisão na exclusão dos dados.",
+    "O ==dml==DELETE== pertence à DML e, portanto, opera sobre os dados da tabela, não sobre sua estrutura."
+  ],
+  questionContinuation: "São corretas apenas as afirmativas:",
+  options: [
+    "I, III e IV, apenas",
+    "I e III, apenas",
+    "II e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 0,
+  feedback: "Correto: A (I, III e IV). A afirmativa II está **errada**: o ==dml==DELETE== remove **linhas inteiras** — nunca colunas isoladas. Para remover uma coluna, utiliza-se o ==ddl==ALTER TABLE==. As demais afirmativas descrevem corretamente o comportamento do DELETE sem WHERE, o papel do WHERE e a categorização do comando na **DML**."
+},
+
+{
+  tipo: "Análise de código SQL",
+  aula: "Aula 10 — Manipulando um Banco de Dados",
+  conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
+  texto: "Durante o desenvolvimento de um sistema de cursos online, um analista executou os seguintes comandos SQL para manipular os dados das tabelas `alunos` e `cursos`:",
+  question: "Avalie as afirmativas sobre o script a seguir:",
+  code:
+`UPDATE cursos
+SET nome = 'SI - Sistemas de Informação'
+WHERE codigo = 11;
+
+UPDATE empregados
+SET salario = salario * 1.10;
+
+DELETE FROM alunos
+WHERE matricula = 911113;
+
+SELECT nome, salario, 12 * (salario + 500)
+FROM empregados;`,
+  assertions: [
+    "O primeiro ==dml==UPDATE== altera apenas o registro cujo `codigo` é igual a 11, pois a cláusula ==rule==WHERE== restringe o escopo da atualização.",
+    "O segundo ==dml==UPDATE== aplica um reajuste de 10% no salário de **todos** os empregados, pois não possui cláusula ==warn==WHERE==.",
+    "O ==dml==DELETE== remove apenas a coluna `matricula` do aluno com matrícula 911113, mantendo os demais dados do registro.",
+    "A expressão `12 * (salario + 500)` no ==dml==SELECT== calcula o salário anual considerando um bônus mensal de 500, com os parênteses garantindo a precedência correta da operação."
+  ],
+  questionContinuation: "São corretas as afirmativas:",
+  options: [
+    "I, II e IV, apenas",
+    "I e IV, apenas",
+    "II e III, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 0,
+  feedback: "Correto: A (I, II e IV). A afirmativa III está **errada**: o ==dml==DELETE== remove a **linha inteira** do aluno — não apenas uma coluna. Para remover a coluna, seria necessário ==ddl==ALTER TABLE==. As afirmativas I (WHERE restritivo), II (UPDATE sem WHERE afeta todos) e IV (precedência dos parênteses) estão corretas."
+},
+
+{
+  tipo: "Conceitual",
+  aula: "Aula 10 — Manipulando um Banco de Dados",
+  conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
+  texto: "Em uma entrevista técnica para desenvolvedor back-end, o candidato foi questionado sobre a diferença entre DML procedural e DML não procedural. O avaliador queria entender se o candidato compreendia não apenas os comandos SQL, mas também o modelo de interação com o banco de dados que cada abordagem representa.",
+  question: "Assinale a alternativa que descreve corretamente a diferença entre ==term==DML Procedural== e ==term==DML Não Procedural==:",
+  options: [
+    "Na ==term==DML Procedural==, o usuário informa apenas **o que** quer obter; na Não Procedural, o usuário define também **como** os dados serão recuperados.",
+    "Na ==term==DML Não Procedural==, o usuário informa apenas **o que** deseja; na Procedural, o usuário especifica também **como** os dados devem ser obtidos.",
+    "Ambas as abordagens são equivalentes em SQL padrão, diferindo apenas na sintaxe utilizada para os comandos SELECT e INSERT.",
+    "A ==term==DML Procedural== é utilizada exclusivamente para comandos de escrita (INSERT, UPDATE, DELETE), enquanto a Não Procedural é reservada para consultas (SELECT)."
+  ],
+  answer: 1,
+  feedback: "Correto: B. Na ==term==DML Não Procedural== (modelo adotado pelo SQL), o usuário informa **apenas o que quer** — o banco decide como obter. Na ==term==DML Procedural==, o usuário especifica também **o caminho de acesso**, tendo mais controle, porém maior complexidade. As demais alternativas invertem ou confundem os conceitos."
+},
+
+{
+  tipo: "Asserção + Justificativa",
+  aula: "Aula 10 — Manipulando um Banco de Dados",
+  conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
+  texto: "Um analista de sistemas precisava gerar um relatório de salários anuais dos empregados, considerando um bônus fixo mensal de R$ 500,00. Ele escreveu a seguinte expressão na cláusula SELECT: `12 * salario + 500`. O gerente revisou e apontou que o resultado estava incorreto para a maioria dos registros.",
+  question: "Analise as asserções a seguir e a relação proposta entre elas:",
+  assertions: [
+    "A expressão `12 * salario + 500` **não** calcula corretamente o salário anual com bônus mensal, pois a multiplicação tem precedência sobre a soma, resultando em `(12 * salario) + 500` em vez de `12 * (salario + 500)`.",
+    "[PORQUE] Em SQL, assim como na matemática, os operadores aritméticos seguem uma ==rule==ordem de precedência== em que multiplicação e divisão são avaliadas antes de adição e subtração, podendo o uso de parênteses alterar essa ordem."
+  ],
+  options: [
+    "As asserções I e II são verdadeiras, e II justifica I",
+    "As asserções I e II são verdadeiras, mas II não justifica I",
+    "A asserção I é verdadeira e a II é falsa",
+    "A asserção I é falsa e a II é verdadeira"
+  ],
+  answer: 0,
+  feedback: "Correto: A. A expressão sem parênteses aplica o bônus de 500 apenas uma vez ao total anual, não mensalmente (I). A asserção II justifica exatamente isso: a ==rule==precedência de operadores== em SQL faz com que `*` seja avaliado antes de `+`, e parênteses são a solução para forçar a ordem desejada."
+},
+
+{
+  tipo: "Múltiplas afirmativas",
+  aula: "Aula 10 — Manipulando um Banco de Dados",
+  conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
+  texto: "Em uma aula prática de banco de dados, os alunos precisavam montar consultas SQL usando operadores lógicos para filtrar registros de uma tabela de disciplinas. O professor avaliou as respostas verificando a compreensão dos operadores AND, OR e NOT.",
+  question: "Avalie as afirmativas a seguir sobre os ==proc==operadores lógicos== em SQL:",
+  assertions: [
+    "O operador ==rule==AND== retorna apenas os registros em que **todas** as condições combinadas são verdadeiras, tornando o filtro mais restritivo.",
+    "O operador ==rule==OR== retorna registros em que **pelo menos uma** das condições é verdadeira, tornando o filtro mais amplo que o AND.",
+    "O operador ==rule==NOT== é equivalente ao operador ==rule==AND== com condição negada, produzindo sempre o mesmo resultado em qualquer contexto.",
+    "A consulta `WHERE credito = 4 AND disciplina = 'BD'` retorna apenas registros em que **ambas** as condições são satisfeitas simultaneamente."
+  ],
+  questionContinuation: "São corretas apenas as afirmativas:",
+  options: [
+    "I, II e IV, apenas",
+    "I e II, apenas",
+    "II, III e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 0,
+  feedback: "Correto: A (I, II e IV). A afirmativa III está **errada**: ==rule==NOT== **inverte** uma condição individualmente (ex: `NOT disciplina = 'BD'`), enquanto ==rule==AND== combina duas condições exigindo que ambas sejam verdadeiras — são operadores com funções e semânticas distintas, não equivalentes. As afirmativas I, II e IV descrevem corretamente o comportamento dos operadores lógicos."
+},
+
+{
+  tipo: "Conceitual",
+  aula: "Aula 10 — Manipulando um Banco de Dados",
+  conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
+  texto: "Em um sistema de gestão acadêmica, o administrador precisava gerar uma lista de alunos sem repetição de nomes, já que vários alunos homônimos geravam duplicatas nos relatórios. Ele questionou a equipe sobre qual recurso SQL deveria ser usado para eliminar os valores repetidos no resultado da consulta.",
+  question: "Assinale a alternativa que descreve corretamente o uso do ==proc==SELECT DISTINCT== em SQL:",
+  options: [
+    "==proc==SELECT DISTINCT== remove fisicamente os registros duplicados da tabela, garantindo que apenas uma ocorrência de cada valor permaneça armazenada.",
+    "==proc==SELECT DISTINCT== elimina linhas duplicadas **apenas no resultado da consulta**, sem alterar os dados armazenados na tabela.",
+    "==proc==SELECT DISTINCT== é equivalente ao uso de ==rule==WHERE== com operador de igualdade, pois ambos filtram registros com base em valores específicos.",
+    "==proc==SELECT DISTINCT== só pode ser aplicado a colunas do tipo texto (VARCHAR ou CHAR), não sendo compatível com colunas numéricas."
+  ],
+  answer: 1,
+  feedback: "Correto: B. O ==proc==SELECT DISTINCT== age **apenas no resultado da consulta**, suprimindo linhas duplicadas na exibição sem modificar os dados físicos do banco. Ele não remove dados, não é equivalente ao WHERE e funciona com qualquer tipo de dado — numérico, texto ou data."
+},
+
+{
+  tipo: "Análise de código SQL",
+  aula: "Aula 10 — Manipulando um Banco de Dados",
+  conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
+  texto: "Uma analista de dados de uma empresa de varejo recebeu a tarefa de corrigir e analisar uma série de comandos SQL escritos por um estagiário. Ela identificou inconsistências no uso do UPDATE e precisava apontar quais comandos produziriam os resultados esperados.",
+  question: "Analise o script SQL e avalie as afirmativas:",
+  code:
+`-- Comando A
+UPDATE produtos
+SET preco = preco * 1.05
+WHERE categoria = 'Eletronicos';
+
+-- Comando B
+UPDATE produtos
+SET preco = 0;
+
+-- Comando C
+UPDATE produtos
+SET preco = 150.00, estoque = 0
+WHERE cod_produto = 37;
+
+-- Comando D
+UPDATE produtos
+SET WHERE preco > 100;`,
+  assertions: [
+    "O Comando A aplica um reajuste de 5% apenas nos produtos da categoria 'Eletrônicos', graças à cláusula ==rule==WHERE== que restringe o escopo.",
+    "O Comando B zerará o preço de **todos** os produtos da tabela, pois não possui cláusula ==warn==WHERE==.",
+    "O Comando C atualiza corretamente duas colunas ao mesmo tempo para o produto de código 37, usando ==proc==SET== com separação por vírgula.",
+    "O Comando D possui sintaxe válida em SQL padrão e filtrará corretamente os produtos com preço acima de 100."
+  ],
+  questionContinuation: "São corretas as afirmativas:",
+  options: [
+    "I, II e III, apenas",
+    "I e III, apenas",
+    "II e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 0,
+  feedback: "Correto: A (I, II e III). O Comando D possui **sintaxe inválida**: não é possível usar ==rule==WHERE== sem a cláusula ==proc==SET== devidamente preenchida — a instrução `UPDATE ... SET WHERE` não especifica o que alterar. Os comandos A, B e C estão sintaticamente corretos, embora B seja perigoso por alterar todos os registros."
+},
+
+{
+  tipo: "Asserção + Justificativa",
+  aula: "Aula 10 — Manipulando um Banco de Dados",
+  conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
+  texto: "Em um sistema de folha de pagamento, um desenvolvedor júnior executou o comando `DELETE FROM funcionarios` sem adicionar nenhuma condição. Imediatamente após a execução, percebeu o erro e tentou desfazer a operação acessando o banco diretamente — mas os dados não estavam mais acessíveis. O incidente foi registrado como falha crítica.",
+  question: "Analise as asserções a seguir e a relação proposta entre elas:",
+  assertions: [
+    "O comando ==warn==DELETE FROM funcionarios== sem cláusula ==rule==WHERE== remove **todos os registros** da tabela `funcionarios`, esvaziando completamente seu conteúdo.",
+    "[PORQUE] Na linguagem ==proc==DML==, o ==warn==DELETE== sem filtro opera sobre o conjunto completo de linhas da tabela, pois a ausência do ==rule==WHERE== é interpretada como uma condição sempre verdadeira para todos os registros."
+  ],
+  options: [
+    "As asserções I e II são verdadeiras, e II justifica I",
+    "As asserções I e II são verdadeiras, mas II não justifica I",
+    "A asserção I é verdadeira e a II é falsa",
+    "A asserção I é falsa e a II é verdadeira"
+  ],
+  answer: 0,
+  feedback: "Correto: A. O ==warn==DELETE== sem WHERE apaga todos os registros (I), e a asserção II explica o mecanismo por trás disso: a ausência de ==rule==WHERE== equivale a uma condição universalmente verdadeira, fazendo o comando agir sobre **todas as linhas** da tabela. A II justifica I de forma direta e precisa."
+},
+
+{
+  tipo: "Múltiplas afirmativas",
+  aula: "Aula 10 — Manipulando um Banco de Dados",
+  conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
+  texto: "Em uma prova prática de banco de dados, os alunos precisavam identificar as características da estrutura básica de uma consulta SQL com SELECT, FROM e WHERE. O professor avaliava tanto o conhecimento sintático quanto o entendimento semântico de cada cláusula.",
+  question: "Avalie as afirmativas a seguir sobre a estrutura de uma consulta ==proc==SELECT==:",
+  assertions: [
+    "A cláusula ==proc==FROM== indica a tabela (ou tabelas) de onde os dados serão recuperados, sendo obrigatória em toda consulta SQL que acesse dados de tabelas.",
+    "A cláusula ==rule==WHERE== é obrigatória em toda consulta ==proc==SELECT==; sem ela, o banco de dados retorna um erro de sintaxe.",
+    "A cláusula ==proc==SELECT== define **quais colunas** serão exibidas no resultado da consulta, podendo incluir expressões aritméticas e aliases.",
+    "É possível escrever `SELECT * FROM tabela` para retornar **todas as colunas** da tabela sem precisar listá-las individualmente."
+  ],
+  questionContinuation: "São corretas apenas as afirmativas:",
+  options: [
+    "I, III e IV, apenas",
+    "I e III, apenas",
+    "II e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 0,
+  feedback: "Correto: A (I, III e IV). A afirmativa II está **errada**: a cláusula ==rule==WHERE== é **opcional** — sua ausência não gera erro; apenas significa que nenhum filtro será aplicado e todos os registros serão retornados. As afirmativas I (FROM obrigatório), III (SELECT define colunas e aceita expressões) e IV (SELECT * retorna todas as colunas) estão corretas."
+},
+
+{
+  tipo: "Análise de código SQL",
+  aula: "Aula 10 — Manipulando um Banco de Dados",
+  conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
+  texto: "Uma empresa de e-commerce precisava inserir novos produtos no banco de dados. O analista responsável escreveu quatro variações do comando INSERT para testes, e a equipe precisava identificar quais estavam sintaticamente corretas e quais poderiam causar erros.",
+  question: "Analise os comandos INSERT a seguir e avalie as afirmativas:",
+  code:
+`-- Inserção 1
+INSERT INTO produtos VALUES (101, 'Notebook', 3500.00);
+
+-- Inserção 2
+INSERT INTO produtos (cod_produto, descricao)
+VALUES (102, 'Mouse');
+
+-- Inserção 3
+INSERT INTO produtos (descricao, cod_produto)
+VALUES (103, 'Teclado');
+
+-- Inserção 4
+INSERT INTO produtos (cod_produto, descricao, preco)
+VALUES (104, 'Monitor');`,
+  assertions: [
+    "A Inserção 1 só será executada corretamente se a tabela `produtos` possuir exatamente 3 colunas na mesma ordem: `cod_produto`, `descricao` e `preco`.",
+    "A Inserção 2 é válida desde que as colunas não listadas aceitem valores `NULL` ou possuam valor `DEFAULT` definido.",
+    "A Inserção 3 causará erro pois os valores estão na ordem errada: o número 103 será inserido na coluna `descricao` (texto) e 'Teclado' em `cod_produto` (inteiro).",
+    "A Inserção 4 é válida pois lista 3 colunas e fornece 3 valores, satisfazendo a correspondência entre colunas e valores."
+  ],
+  questionContinuation: "São corretas as afirmativas:",
+  options: [
+    "I, II e III, apenas",
+    "I e II, apenas",
+    "II e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 0,
+  feedback: "Correto: A (I, II e III). A afirmativa IV está **errada**: a Inserção 4 lista 3 colunas (`cod_produto`, `descricao`, `preco`) mas fornece apenas **2 valores** — há uma incompatibilidade entre a quantidade de colunas e valores, o que causará erro de sintaxe. As afirmativas I (posicionamento obrigatório), II (colunas omitidas aceitam NULL/DEFAULT) e III (tipos incompatíveis causam erro) estão corretas."
+},
+
+{
+  tipo: "Conceitual",
+  aula: "Aula 10 — Manipulando um Banco de Dados",
+  conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
+  texto: "Durante uma reunião de revisão de código, o líder técnico de uma startup questionou os desenvolvedores sobre a correta categorização dos comandos SQL. O objetivo era garantir que a equipe compreendesse quais comandos pertencem à DML e quais à DDL, evitando confusões em contextos de controle de transações e auditoria de banco de dados.",
+  question: "Assinale a alternativa que classifica corretamente os comandos SQL apresentados:",
+  options: [
+    "==proc==SELECT==, ==proc==INSERT==, ==proc==UPDATE== e ==proc==DELETE== pertencem à DML; ==ddl==CREATE TABLE==, ==ddl==ALTER TABLE== e ==ddl==DROP TABLE== pertencem à DDL.",
+    "==proc==INSERT== e ==ddl==CREATE TABLE== pertencem à DDL, pois ambos **criam** algo no banco; ==proc==DELETE== e ==ddl==DROP TABLE== pertencem à DML, pois ambos **removem** algo.",
+    "Todos os comandos citados pertencem à DML, pois a DML abrange toda instrução SQL executada pelo usuário final no banco de dados.",
+    "==proc==SELECT== pertence à DDL por ser somente leitura; ==proc==INSERT==, ==proc==UPDATE== e ==proc==DELETE== pertencem à DML por modificarem dados."
+  ],
+  answer: 0,
+  feedback: "Correto: A. A ==proc==DML== (Data Manipulation Language) abrange os comandos que **manipulam dados**: SELECT, INSERT, UPDATE e DELETE. A ==ddl==DDL== (Data Definition Language) abrange os comandos que **definem estruturas**: CREATE TABLE, ALTER TABLE e DROP TABLE. A alternativa B comete o erro clássico de classificar pelo efeito superficial ('cria' ou 'remove') em vez da camada de atuação (dados vs. estrutura)."
+}
  
   ],
 
@@ -1091,6 +1383,181 @@ DROP TABLE temporarios CASCADE;`,
     ],
     answer: 1,
     feedback: "==type==DECIMAL(10, 2)== define um número com até 10 dígitos no total, sendo 2 deles após a vírgula. É o tipo ideal para valores monetários — diferente do ==type==BLOB==, que armazena dados binários como imagens e arquivos."
-  }
+  },
+  {
+    tipo: "Curta",
+    aula: "Aula 10 — Manipulando um Banco de Dados",
+    texto: "Sobre os comandos da linguagem DML em SQL.",
+    question: "Qual comando SQL é utilizado para inserir novos registros em uma tabela?",
+    options: [
+      "UPDATE",
+      "SELECT",
+      "INSERT INTO",
+      "ALTER TABLE"
+    ],
+    answer: 2,
+    feedback: "O comando INSERT INTO é responsável por adicionar novos registros a uma tabela existente. UPDATE modifica dados já existentes, e SELECT apenas consulta."
+  },
+  {
+    tipo: "Direta",
+    aula: "Aula 10 — Manipulando um Banco de Dados",
+    texto: "Sobre a estrutura básica de uma consulta SQL.",
+    question: "Qual cláusula define a condição de filtragem em uma consulta SELECT?",
+    options: [
+      "FROM",
+      "ORDER BY",
+      "GROUP BY",
+      "WHERE"
+    ],
+    answer: 3,
+    feedback: "A cláusula WHERE é responsável por filtrar os registros retornados pela consulta, aplicando condições que os dados devem satisfazer para serem incluídos no resultado."
+  },
+  {
+    tipo: "Contexto",
+    aula: "Aula 10 — Manipulando um Banco de Dados",
+    texto: "Um analista executou um comando DELETE sem especificar a cláusula WHERE em uma tabela com 10.000 registros.",
+    question: "Qual será o resultado dessa operação?",
+    options: [
+      "Apenas o primeiro registro será removido",
+      "O comando retornará erro por falta da cláusula WHERE",
+      "Todos os registros da tabela serão excluídos",
+      "A estrutura da tabela será removida junto com os dados"
+    ],
+    answer: 2,
+    feedback: "DELETE sem WHERE remove todos os registros da tabela, mas preserva sua estrutura. Para remover a estrutura, seria necessário usar DROP TABLE."
+  },
+  {
+    tipo: "Código",
+    aula: "Aula 10 — Manipulando um Banco de Dados",
+    texto: "Analise o comando SQL abaixo e identifique seu comportamento:",
+    question: "O que será retornado pela consulta a seguir?",
+    code: `SELECT DISTINCT departamento
+FROM funcionarios;`,
+    options: [
+      "Todos os registros da tabela, incluindo duplicatas",
+      "Apenas o primeiro registro de cada departamento em ordem alfabética",
+      "Os nomes de departamento sem repetição",
+      "Um erro, pois DISTINCT não é compatível com SELECT"
+    ],
+    answer: 2,
+    feedback: "DISTINCT elimina os valores duplicados do resultado. A consulta retorna cada valor de departamento uma única vez, sem repetições."
+  },
+  {
+    tipo: "Direta",
+    aula: "Aula 10 — Manipulando um Banco de Dados",
+    texto: "Sobre os tipos de DML e sua forma de operação.",
+    question: "Qual é a característica da DML não procedural, como o SQL?",
+    options: [
+      "O usuário especifica o que quer e como o banco deve obtê-lo",
+      "Requer definição explícita dos índices antes de cada consulta",
+      "O usuário especifica apenas o que quer, sem indicar como obter",
+      "É utilizada exclusivamente para operações de exclusão e atualização"
+    ],
+    answer: 2,
+    feedback: "Na DML não procedural, o usuário informa apenas o resultado desejado. O banco de dados decide internamente a melhor forma de obtê-lo, tornando a linguagem mais simples de usar."
+  },
+  {
+    tipo: "Código",
+    aula: "Aula 10 — Manipulando um Banco de Dados",
+    texto: "Um desenvolvedor escreveu o seguinte comando para reajustar salários:",
+    question: "Qual será o efeito do comando abaixo na tabela?",
+    code: `UPDATE empregados
+SET salario = salario * 1.10
+WHERE departamento = 'TI';`,
+    options: [
+      "Todos os salários da empresa serão aumentados em 10%",
+      "Apenas os salários do departamento TI serão aumentados em 10%",
+      "O comando criará uma nova coluna chamada salario na tabela",
+      "O comando excluirá os registros do departamento TI"
+    ],
+    answer: 1,
+    feedback: "O WHERE restringe a operação ao departamento TI. Sem o WHERE, todos os registros seriam atualizados. O SET define o novo valor multiplicando o salário atual por 1.10."
+  },
+  {
+    tipo: "Aplicação",
+    aula: "Aula 10 — Manipulando um Banco de Dados",
+    texto: "Um sistema de RH precisa exibir o salário anual de cada funcionário, somando um bônus fixo de R$ 600 ao salário mensal antes de multiplicar por 12.",
+    question: "Qual expressão SQL calcula corretamente esse valor?",
+    options: [
+      "SELECT salario * 12 + 600 FROM empregados",
+      "SELECT 12 * salario + 600 FROM empregados",
+      "SELECT 12 * (salario + 600) FROM empregados",
+      "SELECT salario + 600 * 12 FROM empregados"
+    ],
+    answer: 2,
+    feedback: "Os parênteses garantem que o bônus seja somado ao salário mensal antes da multiplicação. Sem parênteses, a precedência dos operadores faria a multiplicação ocorrer primeiro, alterando o resultado."
+  },
+  {
+    tipo: "Curta",
+    aula: "Aula 10 — Manipulando um Banco de Dados",
+    texto: "Sobre os operadores lógicos disponíveis em SQL.",
+    question: "Qual operador lógico retorna resultados apenas quando TODAS as condições especificadas são verdadeiras simultaneamente?",
+    options: [
+      "OR",
+      "NOT",
+      "AND",
+      "BETWEEN"
+    ],
+    answer: 2,
+    feedback: "AND é o operador mais restritivo: exige que todas as condições sejam verdadeiras para que o registro seja incluído no resultado. OR basta que uma seja verdadeira."
+  },
+  {
+    tipo: "Contexto",
+    aula: "Aula 10 — Manipulando um Banco de Dados",
+    texto: "Uma equipe precisava inserir um novo curso no banco, mas só conhecia parte das colunas da tabela. Eles optaram por especificar as colunas no comando INSERT.",
+    question: "Qual sintaxe representa corretamente essa abordagem?",
+    options: [
+      "INSERT VALUES ('SI', 180) INTO cursos",
+      "INSERT INTO cursos VALUES ('SI', 180)",
+      "INSERT INTO cursos (nome, carga) VALUES ('SI', 180)",
+      "INSERT cursos SET nome = 'SI', carga = 180"
+    ],
+    answer: 2,
+    feedback: "Ao especificar as colunas no INSERT INTO, é possível inserir dados em apenas parte das colunas da tabela. As colunas omitidas receberão NULL ou seu valor DEFAULT."
+  },
+  {
+    tipo: "Aplicação",
+    aula: "Aula 10 — Manipulando um Banco de Dados",
+    texto: "Um analista precisa buscar todos os produtos com preço maior que R$ 100 e que pertençam à categoria 'Eletrônicos'.",
+    question: "Qual comando SQL atende corretamente essa necessidade?",
+    options: [
+      "SELECT * FROM produtos WHERE preco > 100 OR categoria = 'Eletrônicos'",
+      "SELECT * FROM produtos WHERE preco > 100 AND categoria = 'Eletrônicos'",
+      "SELECT * FROM produtos WHERE preco > 100 NOT categoria = 'Eletrônicos'",
+      "SELECT * FROM produtos WHERE preco > 100, categoria = 'Eletrônicos'"
+    ],
+    answer: 1,
+    feedback: "AND combina as duas condições exigindo que ambas sejam verdadeiras. OR retornaria produtos que satisfaçam qualquer uma das condições, ampliando o resultado indesejavelmente."
+  },
+  {
+    tipo: "Direta",
+    aula: "Aula 10 — Manipulando um Banco de Dados",
+    texto: "Sobre o operador de comparação para valores diferentes em SQL.",
+    question: "Qual operador é utilizado em SQL para verificar se dois valores são diferentes?",
+    options: [
+      "!=",
+      "NOT =",
+      "<>",
+      "≠"
+    ],
+    answer: 2,
+    feedback: "O operador <> é o padrão SQL para 'diferente de'. Embora != seja aceito em alguns SGBDs, o <> é o operador definido pelo padrão SQL ANSI para comparação de desigualdade."
+  },
+  {
+    tipo: "Contexto",
+    aula: "Aula 10 — Manipulando um Banco de Dados",
+    texto: "Uma desenvolvedora precisava atualizar o e-mail de um cliente específico sem alterar os demais registros da tabela.",
+    question: "Qual estrutura de comando garante que apenas o registro desejado seja modificado?",
+    options: [
+      "UPDATE clientes SET email = 'novo@email.com'",
+      "UPDATE clientes SET email = 'novo@email.com' WHERE id_cliente = 42",
+      "INSERT INTO clientes SET email = 'novo@email.com' WHERE id_cliente = 42",
+      "DELETE FROM clientes WHERE id_cliente = 42 AND SET email = 'novo@email.com'"
+    ],
+    answer: 1,
+    feedback: "O UPDATE com WHERE restringe a atualização ao registro que satisfaz a condição. Sem WHERE, todos os registros da tabela teriam o e-mail alterado para o mesmo valor."
+  },
+
+  
   ],
 };

@@ -880,7 +880,9 @@ window.questoes = {
     ],
     answer: 0,
     feedback: "Correto: A (I, II e IV). Os diagramas UML pertencem ao ==def==modelo conceitual== (I). Os esboços de aparência e fluxo de navegação compõem o modelo físico representacional e de interação, respectivamente (II). A sequência modelagem → prototipação é o fluxo correto no DCU (IV). A afirmativa III está **errada**: o storyboard é um protótipo de **baixa fidelidade** — é uma representação visual narrativa e simplificada, não uma simulação do produto final, que corresponderia ao mockup de alta fidelidade."
-  }
+  },
+
+  
 
   ],
 
@@ -1054,7 +1056,164 @@ window.questoes = {
     ],
     answer: 1,
     feedback: "O princípio ==mark==holístico== do ==def==Design Thinking== considera que uma boa solução deve integrar todas as dimensões da experiência — não apenas o aspecto técnico, mas também o humano, emocional e de negócio."
-  }
+  },
+  {
+    tipo: "Curta",
+    texto: "Sobre os objetivos da prototipação no processo de design.",
+    question: "Qual é o principal propósito de criar um protótipo antes de implementar o sistema final?",
+    options: [
+      "Substituir a documentação técnica do projeto",
+      "Testar ideias e identificar problemas antes do desenvolvimento",
+      "Definir o banco de dados relacional da aplicação",
+      "Gerar o código-fonte da interface automaticamente"
+    ],
+    answer: 1,
+    feedback: "A prototipação permite testar ideias, identificar problemas e economizar tempo e custo antes da implementação final, melhorando a experiência do usuário."
+  },
+  {
+    tipo: "Direta",
+    texto: "Sobre as classificações de protótipos por fidelidade.",
+    question: "Qual afirmação descreve corretamente a diferença entre protótipos de baixa e alta fidelidade?",
+    options: [
+      "Baixa fidelidade é mais detalhado; alta fidelidade é mais simples",
+      "Ambos possuem o mesmo nível de detalhe visual",
+      "Baixa fidelidade gera mais ideias; alta fidelidade foca em detalhes próximos do produto final",
+      "Alta fidelidade é usada apenas na fase de análise de requisitos"
+    ],
+    answer: 2,
+    feedback: "Protótipos de baixa fidelidade são rascunhos simples que estimulam a geração de ideias, enquanto os de alta fidelidade são detalhados e próximos do produto final."
+  },
+  {
+    tipo: "Contexto",
+    texto: "Uma equipe de design criou um esboço em papel com a disposição dos botões, menus e campos de formulário de um aplicativo, sem qualquer cor ou imagem.",
+    question: "Que tipo de artefato de prototipação está sendo descrito?",
+    options: [
+      "Mockup",
+      "Storyboard",
+      "Wireframe",
+      "Cenário"
+    ],
+    answer: 2,
+    feedback: "O wireframe é o 'esqueleto' da interface: representa estrutura, layout e posicionamento dos elementos sem detalhes visuais como cores ou imagens."
+  },
+  {
+    tipo: "Direta",
+    texto: "Sobre os tipos de protótipos estudados na disciplina.",
+    question: "Qual tipo de protótipo utiliza narrativa textual para descrever, passo a passo, como o usuário interage com o sistema?",
+    options: [
+      "Wireframe",
+      "Cenário",
+      "Mockup",
+      "Modelo conceitual"
+    ],
+    answer: 1,
+    feedback: "Cenários são narrativas de uso que descrevem o passo a passo da interação entre o usuário e o sistema, como o exemplo do caixa eletrônico."
+  },
+  {
+    tipo: "Aplicação",
+    texto: "Um designer precisa apresentar ao cliente uma versão da interface com cores reais, tipografia definida e imagens no lugar, simulando o produto final antes do desenvolvimento.",
+    question: "Qual tipo de artefato o designer deve entregar nesse caso?",
+    options: [
+      "Wireframe horizontal",
+      "Cenário de uso",
+      "Storyboard",
+      "Mockup"
+    ],
+    answer: 3,
+    feedback: "O mockup é a representação visual detalhada da interface, com cores, imagens e tipografia, sendo classificado como protótipo de alta fidelidade."
+  },
+  {
+    tipo: "Contexto",
+    texto: "Em um sistema bancário, foram prototipadas todas as funcionalidades principais (sacar, transferir, pagar), porém nenhuma delas foi detalhada em profundidade.",
+    question: "Qual classificação de protótipo por estrutura descreve essa abordagem?",
+    options: [
+      "Protótipo vertical, pois cobre muitas funções",
+      "Protótipo horizontal, pois cobre muitas funções com pouco detalhamento",
+      "Protótipo de baixa fidelidade, pois não tem cores",
+      "Protótipo vertical, pois não detalha nenhuma função"
+    ],
+    answer: 1,
+    feedback: "O protótipo horizontal cobre muitas funcionalidades com pouco nível de detalhe, oferecendo uma visão ampla do sistema sem aprofundamento."
+  },
+  {
+    tipo: "Curta",
+    texto: "Sobre os tipos de interação definidos pelos modelos conceituais.",
+    question: "Qual tipo de interação é caracterizado pelo uso de comandos como cliques, teclado ou voz para operar o sistema?",
+    options: [
+      "Exploração",
+      "Conversação",
+      "Instrução",
+      "Manipulação"
+    ],
+    answer: 2,
+    feedback: "O tipo instrução envolve o usuário emitindo comandos diretos ao sistema, como cliques em botões, atalhos de teclado ou comandos de voz."
+  },
+  {
+    tipo: "Direta",
+    texto: "Sobre os problemas de usabilidade e sua classificação.",
+    question: "Qual tipo de problema de usabilidade impede completamente o usuário de concluir sua tarefa?",
+    options: [
+      "Ruído",
+      "Obstáculo",
+      "Barreira",
+      "Problema secundário"
+    ],
+    answer: 2,
+    feedback: "Barreiras são problemas que impedem totalmente a realização da tarefa. Obstáculos dificultam mas permitem conclusão, enquanto ruídos causam dúvida ou confusão."
+  },
+  {
+    tipo: "Aplicação",
+    texto: "Um usuário experiente relata que determinado recurso do sistema é confuso apenas para quem está usando pela primeira vez, mas não causa problema para usuários habituados.",
+    question: "Como esse problema de usabilidade seria classificado quanto ao perfil de usuário afetado?",
+    options: [
+      "Problema geral, pois afeta qualquer usuário",
+      "Problema de acessibilidade, pois envolve limitações físicas",
+      "Problema para usuário iniciante, pois afeta apenas quem não tem experiência",
+      "Problema para especialista, pois exige conhecimento avançado para percebê-lo"
+    ],
+    answer: 2,
+    feedback: "Os problemas de usabilidade podem ser classificados por perfil de usuário. Um problema que afeta apenas iniciantes é categorizado como problema para usuário iniciante."
+  },
+  {
+    tipo: "Contexto",
+    texto: "Uma equipe utilizou diagramas UML e metáforas do mundo real para representar como o sistema de agendamento funcionaria antes de qualquer linha de código ser escrita.",
+    question: "Que tipo de modelo está sendo produzido nessa atividade?",
+    options: [
+      "Modelo físico representacional",
+      "Modelo conceitual",
+      "Wireframe de alta fidelidade",
+      "Modelo físico operacional"
+    ],
+    answer: 1,
+    feedback: "O modelo conceitual representa como o sistema funciona na teoria, utilizando diagramas, UML e metáforas do mundo real para facilitar o entendimento antes da implementação."
+  },
+  {
+    tipo: "Curta",
+    texto: "Sobre os princípios do Design Centrado no Usuário (DCU).",
+    question: "Qual princípio do DCU está relacionado à capacidade do usuário de operar o sistema sem consultar um manual?",
+    options: [
+      "Ergonomia",
+      "Comunicabilidade",
+      "Intuitividade",
+      "Usabilidade"
+    ],
+    answer: 2,
+    feedback: "Intuitividade refere-se à capacidade do sistema de ser utilizado sem necessidade de instrução prévia, ou seja, o usuário consegue operar o sistema de forma natural."
+  },
+  {
+    tipo: "Aplicação",
+    texto: "Um designer optou por detalhar apenas o módulo de pagamento de um e-commerce, mapeando cada tela, validação e mensagem de erro com alta precisão, deixando as demais áreas sem protótipo.",
+    question: "Qual classificação de protótipo por estrutura descreve essa escolha?",
+    options: [
+      "Protótipo horizontal, pois cobre poucas funções",
+      "Protótipo vertical, pois foca em poucas funções com alto nível de detalhe",
+      "Protótipo de baixa fidelidade, pois não cobre todo o sistema",
+      "Protótipo horizontal de alta fidelidade"
+    ],
+    answer: 1,
+    feedback: "O protótipo vertical aprofunda poucas funcionalidades com alto nível de detalhamento, sendo útil para validar fluxos críticos do sistema antes da implementação."
+  },
+
   ]
 
 };
