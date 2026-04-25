@@ -465,6 +465,43 @@ function abrirModalConfig() {
             </button>
           </div>
         </div>
+
+        <div class="modal__section">
+          <div class="modal__section-title">Área Pessoal</div>
+
+          <div class="config-row">
+            <label>
+              Limpar checklist
+              <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
+                Desmarca todos os itens do checklist de uma disciplina específica.
+              </small>
+            </label>
+            <div class="flashcard-disc-btns" id="pessoal-cl-btns"></div>
+          </div>
+
+          <div class="config-row">
+            <label>
+              Limpar tarefas
+              <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
+                Remove todas as categorias e tarefas de uma disciplina específica.
+              </small>
+            </label>
+            <div class="flashcard-disc-btns" id="pessoal-task-btns"></div>
+          </div>
+
+          <div class="config-row">
+            <label>
+              Limpar tudo
+              <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
+                Limpa checklist e tarefas de todas as disciplinas do semestre atual.
+              </small>
+            </label>
+            <button class="modal-btn modal-btn--danger" id="btn-limpar-pessoal-tudo">
+              Limpar tudo
+            </button>
+          </div>
+        </div>
+
       </div>
 
       <div class="modal__footer">
@@ -555,6 +592,7 @@ function abrirModalConfig() {
   const disciplinas = getDisciplinasDeSemestre(sem);
   const uid         = getUsuario()?.uid ?? 'visitante';
 
+  /* ── Flashcard SRS ── */
   async function _resetarSRS(discId) {
     const mod = await import('./games/jogos/flashcard/flashcard.js');
     if (discId) {
@@ -591,6 +629,51 @@ function abrirModalConfig() {
     _confirmar(this, async () => {
       await _resetarSRS(null);
       mostrarToast('SRS de todas as disciplinas apagado.');
+    });
+  });
+
+  /* ── Área Pessoal ── */
+  const clBtns   = document.getElementById('pessoal-cl-btns');
+  const taskBtns = document.getElementById('pessoal-task-btns');
+
+  if (clBtns && taskBtns) {
+    disciplinas.forEach(disc => {
+      const btnCl = document.createElement('button');
+      btnCl.className   = 'modal-btn modal-btn--ghost';
+      btnCl.textContent = disc.apelido;
+      btnCl.title       = `Limpar checklist de ${disc.nome}`;
+      btnCl.addEventListener('click', () => {
+        _confirmar(btnCl, async () => {
+          const { saveCheckedIds } = await import('./area_pessoal/pessoal_sync.js');
+          saveCheckedIds(sem, disc.id, new Set());
+          mostrarToast(`Checklist de ${disc.apelido} limpo.`);
+        });
+      });
+      clBtns.appendChild(btnCl);
+
+      const btnTask = document.createElement('button');
+      btnTask.className   = 'modal-btn modal-btn--ghost';
+      btnTask.textContent = disc.apelido;
+      btnTask.title       = `Limpar tarefas de ${disc.nome}`;
+      btnTask.addEventListener('click', () => {
+        _confirmar(btnTask, async () => {
+          const { setCategorias } = await import('./area_pessoal/pessoal_sync.js');
+          setCategorias(sem, disc.id, []);
+          mostrarToast(`Tarefas de ${disc.apelido} apagadas.`);
+        });
+      });
+      taskBtns.appendChild(btnTask);
+    });
+  }
+
+  document.getElementById('btn-limpar-pessoal-tudo')?.addEventListener('click', function () {
+    _confirmar(this, async () => {
+      const { saveCheckedIds, setCategorias } = await import('./area_pessoal/pessoal_sync.js');
+      for (const disc of disciplinas) {
+        saveCheckedIds(sem, disc.id, new Set());
+        setCategorias(sem, disc.id, []);
+      }
+      mostrarToast('Checklist e tarefas de todas as disciplinas apagados.');
     });
   });
 }
