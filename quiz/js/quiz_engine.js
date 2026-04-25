@@ -459,6 +459,17 @@
 
     /* ── 6. RESULTADO POR AULA ────────────────────────────── */
 
+    /* Paleta azul fixa — independente da disciplina ou modo */
+    var _AZUL_BG       = '#183a5c';
+    var _AZUL_BORDER   = '#2a5a8a';
+    var _AZUL_ICON_BG  = '#1e4f80';
+    var _AZUL_ICON_BD  = '#3370aa';
+    var _AZUL_EYEBROW  = '#7ab8f0';
+    var _AZUL_SCORE    = '#a8cef0';
+    var _AZUL_PCT      = '#7ab8f0';
+    var _AZUL_BAR_FROM = '#4a90d9';
+    var _AZUL_BAR_TO   = '#7ab8f0';
+
     function _calcularResultadoAula(indices) {
       var total = indices.length, respondidas = 0, acertos = 0;
       indices.forEach(function (qi) {
@@ -479,25 +490,60 @@
       var r   = _calcularResultadoAula(grupo.indices);
       var pct = r.total > 0 ? Math.round((r.respondidas / r.total) * 100) : 0;
 
-      if (r.respondidas < r.total) {
-        el.className = 'subject-result subject-result--progress';
-        el.innerHTML =
-          '<div class="sr-progress-label">' + r.respondidas + ' de ' + r.total + ' questões respondidas</div>' +
-          '<div class="sr-progress-bar"><div class="sr-progress-fill" style="width:' + pct + '%"></div></div>';
-      } else {
-        var pctA = r.total > 0 ? Math.round((r.acertos / r.total) * 100) : 0;
-        var tier = pctA >= 70 ? '--good' : pctA >= 50 ? '--mid' : '--bad';
-        var icon = pctA >= 70 ? '🎯'    : pctA >= 50 ? '📚'   : '💪';
-        el.className = 'subject-result subject-result' + tier;
-        el.innerHTML =
-          '<div class="sr-icon">' + icon + '</div>' +
-          '<div class="sr-content">' +
-            '<div class="sr-title">Resultado da Aula</div>' +
-            '<div class="sr-score">' + r.acertos + ' de ' + r.total + ' questões corretas</div>' +
-          '</div>' +
-          '<div class="sr-pct">' + pctA + '%</div>';
-      }
-    }
+if (r.respondidas < r.total) {
+  /* ── Card de PROGRESSO ── */
+  el.className = 'subject-result subject-result--progress';
+  el.innerHTML = `
+    <div style="width:42px; height:42px; border-radius:12px; flex-shrink:0; 
+                background: ${ _AZUL_BG }; border: 1px solid ${ _AZUL_ICON_BD }; 
+                display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow: inset 0 0 10px rgba(0,0,0,0.1);">
+      📋
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:0.5rem;">
+      <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color: ${ _AZUL_EYEBROW }; opacity: 0.8;">
+        Progresso da aula
+      </div>
+      <div class="sr-progress-bar">
+        <div class="sr-progress-fill" style="width:${pct}%; background: linear-gradient(90deg, ${ _AZUL_BAR_FROM }, ${ _AZUL_BAR_TO }); height:100%;"></div>
+      </div>
+      <div style="font-size:0.75rem; color: #fff; opacity: 0.7;">
+        <strong>${r.respondidas}</strong> de ${r.total} questões respondidas
+      </div>
+    </div>
+    <div style="text-align: right; min-width: 60px;">
+      <div style="font-size:1.5rem; font-weight:800; color: ${ _AZUL_PCT }; font-variant-numeric: tabular-nums;">
+        ${pct}<span style="font-size: 0.9rem; margin-left: 2px;">%</span>
+      </div>
+    </div>`;
+
+} else {
+  /* ── Card de RESULTADO (Concluído) ── */
+  var pctA = r.total > 0 ? Math.round((r.acertos / r.total) * 100) : 0;
+  // Cor verde para sucesso (exemplo de lógica visual)
+  const successColor = pctA >= 70 ? '#4ADE80' : '#FACC15'; 
+  
+  el.className = 'subject-result subject-result--progress';
+  el.innerHTML = `
+    <div style="width:42px; height:42px; border-radius:12px; flex-shrink:0; 
+                background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.2); 
+                display:flex; align-items:center; justify-content:center; font-size:18px;">
+      🎯
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:0.2rem;">
+      <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color: #4ADE80;">
+        Concluído
+      </div>
+      <div style="font-size:0.85rem; color: #fff;">
+        Você acertou <strong>${r.acertos}</strong> de ${r.total}
+      </div>
+    </div>
+    <div style="text-align: right;">
+      <div style="font-size:1.75rem; font-weight:800; color: ${successColor};">
+        ${pctA}%
+      </div>
+    </div>`;
+}
+}
 
     function _atualizarTodosResultadosAula() {
       aulaGrupos.forEach(function (_, gi) { _atualizarResultadoAula(gi); });
