@@ -9,12 +9,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+
 
   <!-- Fundo compartilhado do projeto -->
   <link rel="stylesheet" href="../../../shared/css/fundo.css" />
 
-  <!-- Shell base dos jogos -->
-  <link rel="stylesheet" href="../../template/game-shell.css" />
 
   <!-- CSS específico deste jogo -->
   <link rel="stylesheet" href="vdd_falso.css" />
@@ -38,7 +39,7 @@
     </a>
 
     <div class="game-header__identity">
-      <div class="game-header__icon" id="shell-icon">⚡</div>
+      <div class="game-header__icon" id="shell-icon">⚖️</div>
       <div class="game-header__info">
         <div class="game-header__name" id="shell-game-name">Verdadeiro ou Falso</div>
         <div class="game-header__meta">
@@ -72,7 +73,6 @@
     <!-- Tela: Introdução -->
     <section id="screen-intro" class="vf-screen">
       <div class="vf-intro">
-        <div class="game-eyebrow">⚡ Modo rápido</div>
         <h1 class="game-section-title">Verdadeiro <em>ou Falso?</em></h1>
         <p class="game-section-desc">
           Responda o máximo de questões corretas antes do tempo acabar.<br>
@@ -93,7 +93,11 @@
             <span><strong>30 segundos</strong> por questão</span>
           </div>
         </div>
-
+<!-- Contador de questões centralizado -->
+<div class="vf-questoes-badge">
+  <span class="vf-questoes-badge__num" id="intro-total-questoes">8</span>
+  <span class="vf-questoes-badge__label">questões</span>
+</div>  
         <button class="game-btn" id="btn-start">
           Começar
           <svg viewBox="0 0 16 16" fill="currentColor">
@@ -113,7 +117,22 @@
           <div class="game-progress-bar__fill" id="progress-fill" style="width:0%"></div>
         </div>
       </div>
-
+<!-- Controles da questão -->
+<div class="vf-controls">
+  <button class="vf-ctrl-btn" id="btn-pause" title="Pausar (Espaço)">
+    <svg id="pause-icon" viewBox="0 0 16 16" fill="currentColor">
+      <rect x="3" y="2" width="3.5" height="12" rx="1"/>
+      <rect x="9.5" y="2" width="3.5" height="12" rx="1"/>
+    </svg>
+    <span id="pause-label">Pausar</span>
+  </button>
+  <button class="vf-ctrl-btn vf-ctrl-btn--ghost" id="btn-voltar-intro" title="Voltar ao início">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M10 12L5 8l5-4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span>Início</span>
+  </button>
+</div>
       <!-- Card da pergunta -->
       <div class="vf-question-card game-card-base" id="question-card">
         <div class="vf-question-number game-badge" id="q-badge">Q1</div>

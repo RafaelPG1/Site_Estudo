@@ -1,154 +1,581 @@
 /* ============================================================
    NEXUS STUDY — games/jogos/vdd_falso/vdd_falso.css
 
-   Estilos exclusivos da mecânica Verdadeiro ou Falso.
-   Depende de game-shell.css para tokens e utilitários base.
+   Autossuficiente — não depende de game-shell.css.
+   Inclui: tokens, background, shell, header, timer, resultado,
+   utilitários e toda a mecânica do Verdadeiro ou Falso.
    ============================================================ */
 
-/* ── Screens (troca de tela) ── */
-.vf-screen {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 24px;
+/* ══════════════════════════════════════════════════════════
+   1. TOKENS & RESET
+   ══════════════════════════════════════════════════════════ */
+
+:root {
+  /* Cores base — sobrescritas por JS via --disc-tema */
+  --disc-tema:      #e8c97a;
+  --disc-tema-rgb:  232, 201, 122;
+  --disc-tema2:     #4dd9b4;
+  --disc-tema2-rgb: 77, 217, 180;
+
+  /* Superfícies */
+  --bg:        #070b14;
+  --surface:   #0e1420;
+  --surface-2: #141c2e;
+  --border:    rgba(255,255,255,0.07);
+  --border-hi: rgba(255,255,255,0.14);
+
+  /* Texto */
+  --text-1: #f0ede6;
+  --text-2: #a8a49c;
+  --text-3: #5a5650;
+
+  /* Tipografia */
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body:    'DM Sans', system-ui, sans-serif;
+  --font-mono:    'DM Mono', monospace;
+
+  /* Dimensões */
+  --header-h:  64px;
+  --radius:    18px;
+  --radius-sm: 10px;
+  --pill:      999px;
+
+  /* Animação */
+  --ease: cubic-bezier(.25,.8,.25,1);
+  --t:    0.25s;
+
+  /* Timer */
+  --timer-pct: 100%;
 }
 
-/* ── Intro / tela inicial ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; }
+body { font-family: var(--font-body); background: var(--bg); color: var(--text-1); }
+a      { text-decoration: none; color: inherit; }
+button { border: none; background: none; cursor: pointer; font-family: inherit; color: inherit; }
+.hidden { display: none !important; }
+
+/* ══════════════════════════════════════════════════════════
+   2. BACKGROUND — grid + orbs
+   ══════════════════════════════════════════════════════════ */
+
+.bg-grid {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 30%, transparent 80%);
+}
+
+.bg-orb {
+  position: fixed; border-radius: 50%;
+  filter: blur(90px); pointer-events: none; z-index: 0; opacity: .4;
+}
+.bg-orb--1 {
+  width: 520px; height: 520px; top: -140px; left: -100px;
+  background: radial-gradient(circle, rgba(var(--disc-tema-rgb),.14), transparent 70%);
+  animation: orb-drift 20s ease-in-out infinite alternate;
+}
+.bg-orb--2 {
+  width: 480px; height: 480px; bottom: -120px; right: -80px;
+  background: radial-gradient(circle, rgba(var(--disc-tema2-rgb),.10), transparent 70%);
+  animation: orb-drift 16s ease-in-out infinite alternate-reverse;
+}
+@keyframes orb-drift {
+  0%   { transform: translate(0,0) scale(1); }
+  100% { transform: translate(30px,20px) scale(1.06); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   3. SHELL LAYOUT
+   ══════════════════════════════════════════════════════════ */
+
+.game-shell {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column;
+  min-height: 100vh;
+}
+
+.game-content {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center;
+  padding: 32px 24px 64px;
+  width: 100%; max-width: 860px;
+  margin: 0 auto;
+  animation: fade-up .45s ease both;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   4. HEADER
+   ══════════════════════════════════════════════════════════ */
+
+.game-header {
+  position: sticky; top: 0; z-index: 50;
+  height: var(--header-h);
+  background: rgba(7,11,20,.82);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 24px; gap: 16px;
+}
+
+.game-header__back {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: .78rem; font-weight: 500; color: var(--text-2);
+  padding: 6px 12px; border-radius: 8px;
+  border: 1px solid var(--border-hi);
+  background: rgba(255,255,255,.03);
+  transition: color var(--t), background var(--t), border-color var(--t);
+  white-space: nowrap; flex-shrink: 0;
+}
+.game-header__back svg { width: 15px; height: 15px; }
+.game-header__back:hover {
+  color: var(--text-1);
+  background: rgba(var(--disc-tema-rgb),.08);
+  border-color: rgba(var(--disc-tema-rgb),.3);
+}
+
+.game-header__identity {
+  display: flex; align-items: center; gap: 10px;
+  flex: 1; min-width: 0;
+}
+
+.game-header__icon {
+  width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem;
+  background: rgba(var(--disc-tema-rgb),.12);
+  border: 1px solid rgba(var(--disc-tema-rgb),.22);
+}
+
+.game-header__info { min-width: 0; }
+
+.game-header__name {
+  font-family: var(--font-display);
+  font-size: 1.1rem; font-weight: 600; line-height: 1.1;
+  color: #a78bfa;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.game-header__meta {
+  font-size: .7rem;
+  color: rgba(var(--disc-tema-rgb), .6);
+  display: flex; align-items: center; gap: 6px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.game-header__meta-sep { opacity: .4; }
+
+.game-header__score-slot {
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════════════════════
+   5. BARRA DE TIMER
+   ══════════════════════════════════════════════════════════ */
+
+.game-timer-bar {
+  height: 3px;
+  background: rgba(var(--disc-tema-rgb),.12);
+  position: relative; overflow: hidden; flex-shrink: 0;
+}
+
+.game-timer-bar__fill {
+  position: absolute; top: 0; left: 0; bottom: 0;
+  width: var(--timer-pct);
+  background: #34d399;
+  transition: width .25s linear, background .5s ease;
+  box-shadow: 0 0 8px rgba(52,211,153,.4);
+}
+
+/* Metade — amarelo */
+.game-timer-bar--mid .game-timer-bar__fill {
+  background: #facc15;
+  box-shadow: 0 0 8px rgba(250,204,21,.4);
+}
+
+/* Final — vermelho */
+.game-timer-bar--danger .game-timer-bar__fill {
+  background: #ef4444;
+  box-shadow: 0 0 10px rgba(239,68,68,.5);
+  animation: timer-pulse .6s ease-in-out infinite alternate;
+}
+
+/* Verde — padrão explícito */
+.game-timer-bar--green .game-timer-bar__fill {
+  background: #34d399;
+  box-shadow: 0 0 8px rgba(52,211,153,.4);
+}
+
+@keyframes timer-pulse {
+  from { opacity: .8; }
+  to   { opacity: 1; }
+}
+
+/* Timer display — fonte mono */
+.game-timer-display {
+  font-family: var(--font-mono);
+  font-size: 1.25rem; font-weight: 500;
+  color: var(--disc-tema);
+  min-width: 2.8rem; text-align: center;
+  letter-spacing: .04em;
+  transition: color .3s;
+}
+.game-timer-display--danger { color: #f87171; }
+
+/* ══════════════════════════════════════════════════════════
+   6. UTILITÁRIOS COMPARTILHADOS
+   ══════════════════════════════════════════════════════════ */
+
+.game-section-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+  font-weight: 600; line-height: 1.1;
+  text-align: center; margin-bottom: 8px; color: var(--text-1);
+}
+.game-section-title em { font-style: italic; color: var(--disc-tema); }
+
+.game-section-desc {
+  font-size: .875rem; color: var(--text-2);
+  text-align: center; margin-bottom: 12px;  /* era 32px */
+  line-height: 1.65; max-width: 480px;
+}
+
+.game-card-base {
+  background: var(--surface);
+  border: 1px solid var(--border-hi);
+  border-radius: var(--radius);
+  padding: 24px; width: 100%;
+  transition: border-color var(--t) var(--ease), box-shadow var(--t) var(--ease);
+}
+.game-card-base--accent {
+  border-color: rgba(var(--disc-tema-rgb),.25);
+  box-shadow: 0 0 24px rgba(var(--disc-tema-rgb),.06);
+}
+
+/* ── Botão base ── */
+.game-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: var(--font-body); font-size: 1rem; font-weight: 600;
+  padding: 12px 28px; border-radius: var(--pill);
+  background: var(--disc-tema); color: var(--bg);
+  box-shadow: 0 0 18px rgba(var(--disc-tema-rgb),.28);
+  transition: filter var(--t), box-shadow var(--t), transform var(--t);
+  /* NÃO tem width: 100% — o botão é inline */
+}
+.game-btn svg {
+  width: 14px; height: 14px;
+  display: block; /* ← ADICIONAR */
+  flex-shrink: 0; /* ← ADICIONAR */
+  transition: transform var(--t) var(--ease);
+}
+.game-btn:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 0 30px rgba(var(--disc-tema-rgb),.45);
+  transform: translateY(-2px);
+}
+.game-btn:hover svg { transform: translateX(2px); }
+.game-btn:disabled {
+  background: rgba(255,255,255,.06); color: var(--text-3);
+  box-shadow: none; cursor: not-allowed; transform: none; filter: none;
+}
+
+.game-btn--outline {
+  background: transparent;
+  border: 1px solid rgba(var(--disc-tema-rgb),.35);
+  color: var(--disc-tema); box-shadow: none;
+}
+.game-btn--outline:hover {
+  background: rgba(var(--disc-tema-rgb),.08);
+  box-shadow: 0 0 16px rgba(var(--disc-tema-rgb),.18);
+}
+
+.game-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10.5px; font-weight: 600; letter-spacing: .04em;
+  padding: 3px 10px; border-radius: var(--pill);
+  background: rgba(var(--disc-tema-rgb),.12);
+  color: var(--disc-tema);
+  border: 1px solid rgba(var(--disc-tema-rgb),.22);
+}
+
+.game-eyebrow {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: .7rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--disc-tema);
+  background: rgba(var(--disc-tema-rgb),.08);
+  border: 1px solid rgba(var(--disc-tema-rgb),.2);
+  padding: .3rem .85rem; border-radius: var(--pill);
+}
+
+.game-progress-bar {
+  width: 100%; height: 6px;
+  background: rgba(255,255,255,.06);
+  border-radius: var(--pill); overflow: hidden;
+}
+.game-progress-bar__fill {
+  height: 100%;
+  background: var(--disc-tema);
+  border-radius: var(--pill);
+  transition: width .4s var(--ease);
+  box-shadow: 0 0 8px rgba(var(--disc-tema-rgb),.35);
+}
+
+.game-round {
+  font-size: .78rem; color: var(--text-3);
+  display: flex; align-items: center; gap: 6px;
+}
+.game-round strong { color: var(--text-1); font-weight: 600; }
+
+.game-feedback {
+  font-size: .875rem; font-weight: 600;
+  padding: 10px 20px; border-radius: var(--radius-sm);
+  text-align: center; width: 100%;
+  animation: feedback-in .25s ease both;
+}
+@keyframes feedback-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.game-feedback--correct {
+  background: rgba(52,211,153,.12); color: #34d399;
+  border: 1px solid rgba(52,211,153,.25);
+}
+.game-feedback--wrong {
+  background: rgba(248,113,113,.12); color: #f87171;
+  border: 1px solid rgba(248,113,113,.25);
+}
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 99px; }
+
+/* ══════════════════════════════════════════════════════════
+   7. TELA DE RESULTADO FINAL
+   ══════════════════════════════════════════════════════════ */
+
+.game-result {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(0,0,0,.80); backdrop-filter: blur(10px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  animation: overlay-in .25s ease both;
+}
+.game-result.hidden { display: none !important; }
+
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.game-result__card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border-hi);
+  border-radius: 24px;
+  padding: 48px 36px 36px;
+  width: 100%; max-width: 440px;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 16px; text-align: center;
+  box-shadow: 0 32px 80px rgba(0,0,0,.6);
+  animation: result-in .4s cubic-bezier(.34,1.56,.64,1) both;
+  overflow: hidden;
+}
+.game-result__card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--disc-tema2), var(--disc-tema));
+  box-shadow: 0 0 20px rgba(var(--disc-tema-rgb),.5);
+}
+
+@keyframes result-in {
+  from { opacity: 0; transform: scale(.88) translateY(24px); }
+  to   { opacity: 1; transform: scale(1)   translateY(0); }
+}
+
+.game-result__emoji {
+  font-size: 3.5rem;
+  animation: result-pop .5s .15s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes result-pop {
+  from { transform: scale(0); }
+  to   { transform: scale(1); }
+}
+
+.game-result__title {
+  font-family: var(--font-display);
+  font-size: 2rem; font-weight: 700; line-height: 1.1;
+  color: var(--disc-tema);
+}
+
+.game-result__subtitle {
+  font-size: .88rem; color: var(--text-2); line-height: 1.6; max-width: 320px;
+}
+
+.game-result__stats {
+  display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+  width: 100%; padding: 16px 20px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+}
+.game-result__stat {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  min-width: 72px;
+}
+.game-result__stat-value {
+  font-family: var(--font-display);
+  font-size: 1.6rem; font-weight: 700; line-height: 1;
+  color: var(--disc-tema);
+}
+.game-result__stat-label {
+  font-size: 9.5px; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--text-3);
+}
+
+.game-result__actions {
+  display: flex; gap: 10px; width: 100%; margin-top: 4px;
+}
+.game-result__actions .game-btn { flex: 1; }
+
+/* ══════════════════════════════════════════════════════════
+   8. MECÂNICA — Verdadeiro ou Falso
+   ══════════════════════════════════════════════════════════ */
+
+.vf-screen {
+  width: 100%;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 24px;
+}
+
+/* ── Intro ── */
 .vf-intro {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  text-align: center;
-  max-width: 520px;
-  padding-top: 16px;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 20px;
+  text-align: center; max-width: 520px; padding-top: 16px;
 }
 
 .vf-rules {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin: 4px 0 8px;
+  display: flex; gap: 12px; flex-wrap: wrap;
+  justify-content: center; margin: 4px 0 8px;
 }
 
 .vf-rule {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: .82rem;
-  color: var(--text-2);
-  background: var(--surface);
-  border: 1px solid var(--border-hi);
-  padding: 8px 16px;
-  border-radius: var(--pill);
+  display: flex; align-items: center; gap: 8px;
+  font-size: .82rem; color: var(--text-2);
+  background: var(--surface); border: 1px solid var(--border-hi);
+  padding: 8px 16px; border-radius: var(--pill);
 }
-.vf-rule strong { color: var(--text-1); }
-.vf-rule__icon { font-size: 1rem; }
+.vf-rule strong   { color: var(--text-1); }
+.vf-rule__icon    { font-size: 1rem; }
 
-/* ── Placar no header ── */
+/* ── Badge de questões na intro — visual sutil, NÃO é botão ── */
+.vf-questoes-badge {
+  display: inline-flex; align-items: center;  /* era baseline */
+  gap: 8px;
+  background: transparent;
+  border: 1px solid var(--border-hi);
+  border-radius: var(--radius-sm);
+  padding: 8px 20px;
+  pointer-events: none;
+}
+
+.vf-questoes-badge__num {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;   /* era 1.4rem — proporcional ao label */
+  font-weight: 500;
+  color: var(--disc-tema);
+  line-height: 1;
+}
+
+.vf-questoes-badge__label {
+  font-size: .72rem; font-weight: 500;
+  text-transform: uppercase; letter-spacing: .12em;
+  color: var(--text-3);
+  line-height: 1; /* ← ADICIONAR */
+}
+
+/* ── Botão Começar — fonte Syne, tamanho natural ── */
+
+
+/* ── Placar no header — fonte mono ── */
 .vf-score-pill {
-  display: flex;
-  align-items: center;
-  gap: 2px;
+  display: flex; align-items: center; gap: 2px;
   background: rgba(var(--disc-tema-rgb),.08);
   border: 1px solid rgba(var(--disc-tema-rgb),.2);
-  border-radius: var(--pill);
-  padding: 4px 14px;
-  font-family: var(--font-display);
-  font-size: 1.15rem;
-  font-weight: 700;
+  border-radius: var(--pill); padding: 4px 14px;
+  font-family: var(--font-mono);
+  font-size: 1rem; font-weight: 500;
+  letter-spacing: .02em;
 }
 .vf-score__correct { color: var(--disc-tema); }
 .vf-score__sep     { color: var(--text-3); margin: 0 2px; }
 .vf-score__total   { color: var(--text-2); font-size: .95rem; }
 
-/* ── Linha de progresso ── */
+/* ── Progresso ── */
 .vf-progress-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  gap: 16px;
+  display: flex; align-items: center;
+  justify-content: space-between; width: 100%; gap: 16px;
 }
 
 /* ── Card da questão ── */
 .vf-question-card {
-  width: 100%;
-  max-width: 640px;
-  min-height: 160px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  width: 100%; max-width: 640px; min-height: 160px;
+  display: flex; flex-direction: column; gap: 16px;
   position: relative;
   transition: border-color .3s, box-shadow .3s, transform .2s;
 }
 
-/* Estado: acertou */
 .vf-question-card--correct {
   border-color: rgba(52,211,153,.4) !important;
   box-shadow: 0 0 32px rgba(52,211,153,.12) !important;
 }
-
-/* Estado: errou */
 .vf-question-card--wrong {
   border-color: rgba(248,113,113,.4) !important;
   box-shadow: 0 0 32px rgba(248,113,113,.12) !important;
 }
 
-/* Shake ao errar */
-.vf-question-card--shake {
-  animation: vf-shake .35s ease;
-}
+.vf-question-card--shake { animation: vf-shake .35s ease; }
 @keyframes vf-shake {
   0%,100% { transform: translateX(0); }
-  20%      { transform: translateX(-8px); }
-  40%      { transform: translateX(8px); }
-  60%      { transform: translateX(-5px); }
-  80%      { transform: translateX(5px); }
+  20%     { transform: translateX(-8px); }
+  40%     { transform: translateX(8px); }
+  60%     { transform: translateX(-5px); }
+  80%     { transform: translateX(5px); }
 }
 
-/* Fade de entrada da questão */
-.vf-question-card--enter {
-  animation: vf-enter .3s ease both;
-}
+.vf-question-card--enter { animation: vf-enter .3s ease both; }
 @keyframes vf-enter {
   from { opacity: 0; transform: translateY(12px) scale(.98); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-.vf-question-number {
-  align-self: flex-start;
-}
+.vf-question-number { align-self: flex-start; }
 
 .vf-question-text {
   font-family: var(--font-display);
   font-size: clamp(1.1rem, 2.8vw, 1.5rem);
-  font-weight: 400;
-  line-height: 1.5;
-  color: var(--text-1);
-  flex: 1;
+  font-weight: 400; line-height: 1.5;
+  color: var(--text-1); flex: 1;
 }
 
 /* ── Botões V / F ── */
 .vf-buttons {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  width: 100%;
-  max-width: 640px;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 14px; width: 100%; max-width: 640px;
 }
 
 .vf-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 22px 16px;
-  border-radius: var(--radius);
-  border: 2px solid transparent;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 8px; padding: 22px 16px;
+  border-radius: var(--radius); border: 2px solid transparent;
   cursor: pointer;
   transition:
     background var(--t) var(--ease),
@@ -158,114 +585,145 @@
   font-family: inherit;
 }
 
-.vf-btn__icon {
-  font-size: 2rem;
-  line-height: 1;
-  transition: transform .2s var(--ease);
-}
-.vf-btn__label {
-  font-family: var(--font-display);
-  font-size: .95rem;
-  font-weight: 600;
-  letter-spacing: .02em;
-}
+.vf-btn__icon  { font-size: 2rem; line-height: 1; transition: transform .2s var(--ease); }
+.vf-btn__label { font-family: var(--font-display); font-size: .95rem; font-weight: 600; letter-spacing: .02em; }
 
-/* Verdadeiro — verde */
+/* Verdadeiro */
 .vf-btn--true {
   background: rgba(52,211,153,.08);
-  border-color: rgba(52,211,153,.22);
-  color: #34d399;
+  border-color: rgba(52,211,153,.22); color: #34d399;
 }
 .vf-btn--true:hover:not(:disabled) {
-  background: rgba(52,211,153,.16);
-  border-color: rgba(52,211,153,.5);
-  box-shadow: 0 0 24px rgba(52,211,153,.2);
-  transform: translateY(-3px);
+  background: rgba(52,211,153,.16); border-color: rgba(52,211,153,.5);
+  box-shadow: 0 0 24px rgba(52,211,153,.2); transform: translateY(-3px);
 }
-.vf-btn--true:hover:not(:disabled) .vf-btn__icon {
-  transform: scale(1.2);
-}
+.vf-btn--true:hover:not(:disabled) .vf-btn__icon { transform: scale(1.2); }
 
-/* Falso — vermelho */
+/* Falso */
 .vf-btn--false {
   background: rgba(248,113,113,.08);
-  border-color: rgba(248,113,113,.22);
-  color: #f87171;
+  border-color: rgba(248,113,113,.22); color: #f87171;
 }
 .vf-btn--false:hover:not(:disabled) {
-  background: rgba(248,113,113,.16);
-  border-color: rgba(248,113,113,.5);
-  box-shadow: 0 0 24px rgba(248,113,113,.2);
-  transform: translateY(-3px);
+  background: rgba(248,113,113,.16); border-color: rgba(248,113,113,.5);
+  box-shadow: 0 0 24px rgba(248,113,113,.2); transform: translateY(-3px);
 }
-.vf-btn--false:hover:not(:disabled) .vf-btn__icon {
-  transform: scale(1.2);
-}
+.vf-btn--false:hover:not(:disabled) .vf-btn__icon { transform: scale(1.2); }
 
-/* Selecionado — correto */
+/* Estados pós-resposta */
 .vf-btn--selected-correct {
   background: rgba(52,211,153,.2) !important;
   border-color: #34d399 !important;
   box-shadow: 0 0 28px rgba(52,211,153,.3) !important;
   transform: scale(1.03);
 }
-
-/* Selecionado — errado */
 .vf-btn--selected-wrong {
   background: rgba(248,113,113,.2) !important;
   border-color: #f87171 !important;
   box-shadow: 0 0 28px rgba(248,113,113,.3) !important;
 }
-
-/* Resposta correta revelada */
 .vf-btn--reveal-correct {
   background: rgba(52,211,153,.12) !important;
   border-color: rgba(52,211,153,.4) !important;
   opacity: .7;
 }
-
-.vf-btn:disabled {
-  cursor: not-allowed;
-  transform: none !important;
-}
+.vf-btn:disabled { cursor: not-allowed; transform: none !important; }
 
 /* ── Feedback + explicação ── */
 #feedback-area {
-  width: 100%;
-  max-width: 640px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  width: 100%; max-width: 640px;
+  display: flex; flex-direction: column; gap: 10px;
   animation: feedback-in .25s ease both;
 }
 #feedback-area.hidden { display: none !important; }
 
 .vf-explicacao {
-  font-size: .8rem;
-  color: var(--text-2);
-  line-height: 1.65;
-  text-align: center;
-  padding: 0 8px;
+  font-size: .8rem; color: var(--text-2);
+  line-height: 1.65; text-align: center; padding: 0 8px;
 }
 
-/* ── Responsividade ── */
+/* ══════════════════════════════════════════════════════════
+   9. RESPONSIVIDADE
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 680px) {
+  .game-header        { padding: 0 16px; gap: 10px; }
+  .game-header__back span { display: none; }
+  .game-content       { padding: 24px 16px 48px; }
+  .game-result__card  { padding: 36px 20px 28px; }
+  .game-result__actions { flex-direction: column; }
+}
+
 @media (max-width: 480px) {
-  .vf-buttons {
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-  .vf-btn {
-    padding: 18px 10px;
-  }
-  .vf-btn__icon {
-    font-size: 1.6rem;
-  }
-  .vf-btn__label {
-    font-size: .8rem;
-  }
-  .vf-progress-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
+  .vf-buttons { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .vf-btn     { padding: 18px 10px; }
+  .vf-btn__icon  { font-size: 1.6rem; }
+  .vf-btn__label { font-size: .8rem; }
+  .vf-progress-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+}
+
+@media (max-width: 400px) {
+  .game-header__meta  { display: none; }
+  .game-section-title { font-size: 1.4rem; }
+}
+
+/* ── Controles (Pausa + Início) ── */
+.vf-controls {
+  display: flex; gap: 10px;
+  width: 100%; max-width: 640px;
+  justify-content: flex-end;
+  margin-top: -8px;
+}
+
+.vf-ctrl-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: .75rem; font-weight: 500; color: var(--text-2);
+  padding: 6px 14px; border-radius: 8px;
+  border: 1px solid var(--border-hi);
+  background: rgba(255,255,255,.03);
+  transition: color var(--t), background var(--t), border-color var(--t);
+  cursor: pointer;
+}
+.vf-ctrl-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+.vf-ctrl-btn:hover {
+  color: var(--text-1);
+  background: rgba(var(--disc-tema-rgb),.08);
+  border-color: rgba(var(--disc-tema-rgb),.3);
+}
+
+/* Estado pausado */
+.vf-ctrl-btn--paused {
+  color: var(--disc-tema) !important;
+  border-color: rgba(var(--disc-tema-rgb),.35) !important;
+  background: rgba(var(--disc-tema-rgb),.08) !important;
+}
+
+.vf-ctrl-btn--ghost { color: var(--text-3); }
+
+/* ── Overlay de pausa ── */
+.vf-pause-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,.75); backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  animation: overlay-in .2s ease both;
+}
+.vf-pause-overlay.hidden { display: none !important; }
+
+.vf-pause-card {
+  background: var(--surface);
+  border: 1px solid var(--border-hi);
+  border-radius: 20px;
+  padding: 40px 48px;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 14px;
+  text-align: center;
+  animation: result-in .3s cubic-bezier(.34,1.56,.64,1) both;
+}
+
+.vf-pause-icon {
+  color: var(--disc-tema);
+  opacity: .9;
+}
+.vf-pause-icon svg {
+  display: block;
 }
