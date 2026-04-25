@@ -1,6 +1,20 @@
 /* =============================================
-   NEXUS STUDY — pessoal.js
+   NEXUS STUDY — pessoal.js  (versão com sync)
    Área Pessoal: Checklist + Tarefa (Categorias) + Anotações
+   =============================================
+
+   MUDANÇAS em relação ao original:
+   ─────────────────────────────────────────────
+   1. Importa pessoal_sync.js no lugar das chamadas
+      diretas ao localStorage.
+   2. Removidas as funções _loadAllCats / _saveAllCats /
+      _getCategorias / _setCategorias / _getCheckedIds /
+      _saveCheckedIds (agora estão no sync module).
+   3. STORAGE_NOTE / STORAGE_CHECKLIST removidas.
+   4. Boot agora chama syncDiscFromFirebase() e, ao terminar,
+      re-renderiza com os dados atualizados do Firebase.
+   5. _trocarDisciplina() também dispara sync.
+   6. Adicionado badge #pessoal-sync-status no header.
    ============================================= */
 
 import {
@@ -15,6 +29,20 @@ import {
 
 import { resolverSemestreDeURL } from '../shared/js/url.js';
 import { aplicarCoresDisciplina } from '../shared/js/theme.js';
+
+/* ── Módulo de sync (localStorage + Firebase) ── */
+import {
+  getCheckedIds,
+  saveCheckedIds,
+  getCategorias,
+  setCategorias,
+  getNota,
+  setNota,
+  syncDiscFromFirebase,
+  atualizarBadgeLogin,
+  setSyncStatus,
+    verificarTrocaDeUsuario,
+} from './pessoal_sync.js';
 
 /* ══════════════════════════════════════════════
    ESTADO
@@ -33,47 +61,20 @@ const State = {
 };
 
 /* ══════════════════════════════════════════════
-   CATEGORIAS — STORAGE
+   CATEGORIAS — helpers locais (usam o sync module)
 ══════════════════════════════════════════════ */
-const STORAGE_CATS      = 'nexus_cats_v1';
-const STORAGE_NOTE      = (sem, discId) => `nexus_note_${sem}_${discId}`;
-const STORAGE_CHECKLIST = (sem, discId) => `nexus_cl_${sem}_${discId}`;
-
-function _loadAllCats() {
-  try {
-    const raw = localStorage.getItem(STORAGE_CATS);
-    const data = raw ? JSON.parse(raw) : {};
-    return typeof data === 'object' && data !== null ? data : {};
-  } catch (_) { return {}; }
-}
-function _saveAllCats(data) {
-  try { localStorage.setItem(STORAGE_CATS, JSON.stringify(data)); } catch (_) {}
-}
-function _ensureCatStructure(data, sem, discId) {
-  if (!data[sem])         data[sem] = {};
-  if (!data[sem][discId]) data[sem][discId] = [];
-}
-function _getCategorias(sem, discId) {
-  const data = _loadAllCats();
-  _ensureCatStructure(data, sem, discId);
-  return data[sem][discId];
-}
-function _setCategorias(sem, discId, cats) {
-  const data = _loadAllCats();
-  _ensureCatStructure(data, sem, discId);
-  data[sem][discId] = cats;
-  _saveAllCats(data);
-}
 function _getCategoriasAtivas() {
   const { semestre, discAtiva } = State;
   if (!semestre || !discAtiva) return [];
-  return _getCategorias(semestre, discAtiva.id);
+  return getCategorias(semestre, discAtiva.id);
 }
+
 function _salvarCategoriasAtivas(cats) {
   const { semestre, discAtiva } = State;
   if (!semestre || !discAtiva) return;
-  _setCategorias(semestre, discAtiva.id, cats);
+  setCategorias(semestre, discAtiva.id, cats);
 }
+
 function _getStatsAtivos() {
   const cats  = _getCategoriasAtivas();
   const total = cats.reduce((s, c) => s + c.itens.length, 0);
@@ -82,7 +83,7 @@ function _getStatsAtivos() {
 }
 
 /* ══════════════════════════════════════════════
-   MODAL DE CONFIRMAÇÃO (para notas/checklist)
+   MODAL DE CONFIRMAÇÃO
 ══════════════════════════════════════════════ */
 function _confirmar(msg) {
   return new Promise(resolve => {
@@ -112,7 +113,7 @@ function _confirmar(msg) {
 }
 
 /* ══════════════════════════════════════════════
-   MINI CONFIRM POPOVER (excluir categoria / item)
+   MINI CONFIRM POPOVER
 ══════════════════════════════════════════════ */
 function _miniConfirmar(anchorEl) {
   return new Promise(resolve => {
@@ -168,20 +169,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('sidebar-year').textContent = new Date().getFullYear();
 
   try {
-    const mod = await import('../shared/cores.js');
+    const mod = await import('../shared/js/cores.js');
     State.DISC_CORES = mod.DISC_CORES ?? {};
   } catch (_) {}
 
   try {
-    const mod = await import('./checklist/checklist_data.js');
+    const mod = await import('../conteudo_geral/area_pessoal/checklist_data.js');
     State.checklistData = mod.CHECKLIST_ITENS ?? {};
   } catch (_) {}
 
   _resolverContexto();
 
+  verificarTrocaDeUsuario(); // ← antes de tudo
+
+  _resolverContexto();       // ← só uma vez
   _renderSemestreSelector();
   _renderSidebar();
   _renderHeader();
+
+  /* ── Renderiza com dados do localStorage primeiro (rápido) ── */
   _renderClPanel();
   _renderTaskContainer();
   _updateProgress();
@@ -193,7 +199,34 @@ document.addEventListener('DOMContentLoaded', async () => {
   _bindChecklist();
   _bindMobileDropdown();
   _bindFab();
+
+  /* ── Badge de sync ── */
+  atualizarBadgeLogin();
+
+  /* ── Sync do Firebase em background (atualiza se tiver dado mais recente) ── */
+  if (State.discAtiva) {
+    _syncAndRefresh(State.semestre, State.discAtiva.id);
+  }
 });
+
+/* ── Sync + re-render após retorno do Firebase ── */
+async function _syncAndRefresh(sem, discId) {
+  try {
+    await syncDiscFromFirebase(sem, discId);
+
+    /* Só re-renderiza se a disciplina ainda for a mesma */
+    if (State.discAtiva?.id !== discId || State.semestre !== sem) return;
+
+    _renderClPanel();
+    _renderTaskContainer();
+    _updateProgress();
+    _renderNotaAtual();
+    _renderSidebar();
+  } catch (err) {
+    console.warn('[pessoal] _syncAndRefresh falhou:', err);
+    setSyncStatus('offline');
+  }
+}
 
 /* ══════════════════════════════════════════════
    CONTEXTO
@@ -260,6 +293,10 @@ function _trocarSemestre(novoSemestre) {
   _renderTaskContainer();
   _updateProgress();
   _renderNotaAtual();
+
+  if (primeiraDisc) {
+    _syncAndRefresh(novoSemestre, primeiraDisc.id);
+  }
 }
 
 function _bindTabs() {
@@ -333,7 +370,7 @@ function _updateHeroStat() {
     const todos   = disc.categorias.flatMap(c => c.itens);
     const total   = todos.length;
     if (total === 0) { pill.style.display = 'none'; return; }
-    const checked = _getCheckedIds(discId);
+    const checked = getCheckedIds(State.semestre, discId);
     const done    = todos.filter(i => checked.has(i.id)).length;
     pill.style.display = '';
     text.textContent = `${done} / ${total} itens`;
@@ -346,10 +383,8 @@ function _updateHeroStat() {
 
   } else {
     const discId = State.notaDiscId;
-    const nota   = discId
-      ? (localStorage.getItem(STORAGE_NOTE(State.semestre, discId)) ?? '')
-      : '';
-    const words = nota.trim() ? nota.trim().split(/\s+/).length : 0;
+    const nota   = discId ? getNota(State.semestre, discId) : '';
+    const words  = nota.trim() ? nota.trim().split(/\s+/).length : 0;
     if (words === 0) { pill.style.display = 'none'; return; }
     pill.style.display = '';
     text.textContent = `${words} palavra${words !== 1 ? 's' : ''}`;
@@ -378,21 +413,20 @@ function _renderSidebar() {
 
   State.disciplinas.forEach(disc => {
     const isAtivo = disc.id === State.discAtiva?.id;
-    const hasNota = !!(localStorage.getItem(STORAGE_NOTE(State.semestre, disc.id)) ?? '').trim();
+    const hasNota = !!getNota(State.semestre, disc.id).trim();
 
     let total = 0, done = 0;
 
-if (State.abaAtiva === 'checklist') {
-  const clDisc = _getClDisc(disc.id);  // ← usa o helper que já normaliza aulas→categorias
-  if (clDisc) {
-    const todos   = clDisc.categorias.flatMap(c => c.itens);
-    total = todos.length;
-    const checked = _getCheckedIds(disc.id);
-    done  = todos.filter(i => checked.has(i.id)).length;
-  }
-
+    if (State.abaAtiva === 'checklist') {
+      const clDisc = _getClDisc(disc.id);
+      if (clDisc) {
+        const todos   = clDisc.categorias.flatMap(c => c.itens);
+        total = todos.length;
+        const checked = getCheckedIds(State.semestre, disc.id);
+        done  = todos.filter(i => checked.has(i.id)).length;
+      }
     } else if (State.abaAtiva === 'tarefa') {
-      const cats = _getCategorias(State.semestre, disc.id);
+      const cats = getCategorias(State.semestre, disc.id);
       total = cats.reduce((s, c) => s + c.itens.length, 0);
       done  = cats.reduce((s, c) => s + c.itens.filter(i => i.concluida).length, 0);
     }
@@ -440,6 +474,7 @@ function _trocarDisciplina(disc) {
   _renderHeader();
   _fecharMobileDropdown();
 
+  /* Renderiza com localStorage (imediato) */
   if (State.abaAtiva === 'checklist') {
     _renderClPanel();
   } else if (State.abaAtiva === 'tarefa') {
@@ -448,6 +483,9 @@ function _trocarDisciplina(disc) {
   } else if (State.abaAtiva === 'notas') {
     _renderNotaAtual();
   }
+
+  /* Sync Firebase em background */
+  _syncAndRefresh(State.semestre, disc.id);
 }
 
 /* ══════════════════════════════════════════════
@@ -535,30 +573,24 @@ function _buildCatSection(cat, ci) {
       </button>
     </div>`;
 
-  // ── Listeners dos botões de cabeçalho ──
   section.querySelector('.cat-edit').addEventListener('click',   () => _editarCategoria(cat.id, section));
   section.querySelector('.cat-delete').addEventListener('click', () => _deletarCategoria(cat.id, section));
 
-  // ── Delegação de eventos nos itens ──
   section.querySelector('.cat-items').addEventListener('click', e => {
-    // Excluir item
     const delBtn = e.target.closest('.item-delete');
     if (delBtn) {
       const row = delBtn.closest('.item-row');
       _deletarItem(cat.id, delBtn.dataset.itemId, row);
       return;
     }
-    // Editar item
     const editBtn = e.target.closest('.item-edit');
     if (editBtn) {
       const row = editBtn.closest('.item-row');
       _editarItem(cat.id, editBtn.dataset.itemId, row);
       return;
     }
-    // Toggle (não dispara se estiver em modo de edição)
     const row = e.target.closest('.item-row');
     if (!row || row.classList.contains('item-editing')) return;
-    // Ignora cliques dentro do input de edição
     if (e.target.closest('.item-edit-input')) return;
     _toggleItem(cat.id, row.dataset.itemId, row);
   });
@@ -634,7 +666,6 @@ function _buildItemHTML(item, ii) {
 
 /* ══════════════════════════════════════════════
    EDIÇÃO INLINE — ITEM
-   FIX: clique fora = salva | tamanho dinâmico
 ══════════════════════════════════════════════ */
 function _editarItem(catId, itemId, rowEl) {
   if (!rowEl || rowEl.classList.contains('item-editing')) return;
@@ -648,31 +679,25 @@ function _editarItem(catId, itemId, rowEl) {
   const original = textEl.textContent;
   const isDone   = rowEl.classList.contains('item-row--done');
 
-  // Substitui texto por input
   const input = document.createElement('input');
   input.type      = 'text';
   input.className = 'item-edit-input';
   input.value     = original;
   input.maxLength = 200;
 
-  // FIX 1: tamanho dinâmico
   const resizeItem = () => { input.style.width = Math.max(60, input.value.length + 3) + 'ch'; };
   resizeItem();
   input.addEventListener('input', resizeItem);
 
   textEl.replaceWith(input);
-
-  // Esconde botões de ação originais
   if (editBtn) editBtn.style.display = 'none';
   if (delBtn)  delBtn.style.display  = 'none';
 
-  // Botão salvar
   const saveBtn = document.createElement('button');
   saveBtn.className = 'item-action-btn item-action-btn--save';
   saveBtn.title     = 'Salvar (Enter)';
   saveBtn.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
 
-  // Botão cancelar
   const cancelBtn = document.createElement('button');
   cancelBtn.className = 'item-action-btn item-action-btn--cancel';
   cancelBtn.title     = 'Cancelar (Esc)';
@@ -680,12 +705,10 @@ function _editarItem(catId, itemId, rowEl) {
 
   rowEl.appendChild(saveBtn);
   rowEl.appendChild(cancelBtn);
-
   input.focus();
   input.select();
 
   const _restore = (texto) => {
-    // FIX 2: remove listener de clique fora
     document.removeEventListener('mousedown', onOutside);
     const span = document.createElement('span');
     span.className = `item-text${isDone ? ' item-text--done' : ''}`;
@@ -701,7 +724,6 @@ function _editarItem(catId, itemId, rowEl) {
   const save = () => {
     const newText = input.value.trim();
     if (!newText) { input.classList.add('input-error'); input.focus(); return; }
-
     const cats = _getCategoriasAtivas();
     const cat  = cats.find(c => c.id === catId);
     if (cat) {
@@ -712,11 +734,7 @@ function _editarItem(catId, itemId, rowEl) {
   };
 
   const cancel = () => _restore(original);
-
-  // FIX 2: clique fora = salva
-  const onOutside = (e) => {
-    if (!rowEl.contains(e.target)) save();
-  };
+  const onOutside = (e) => { if (!rowEl.contains(e.target)) save(); };
   setTimeout(() => document.addEventListener('mousedown', onOutside), 10);
 
   saveBtn.addEventListener('click',   save);
@@ -729,7 +747,6 @@ function _editarItem(catId, itemId, rowEl) {
 
 /* ══════════════════════════════════════════════
    EDIÇÃO INLINE — CATEGORIA
-   FIX: clique fora = salva | tamanho dinâmico
 ══════════════════════════════════════════════ */
 function _editarCategoria(catId, sectionEl) {
   if (!sectionEl || sectionEl.classList.contains('cat-editing')) return;
@@ -742,31 +759,25 @@ function _editarCategoria(catId, sectionEl) {
 
   const original = nomeEl.textContent;
 
-  // Substitui nome por input
   const input = document.createElement('input');
   input.type      = 'text';
   input.className = 'cat-name-input';
   input.value     = original;
   input.maxLength = 60;
 
-  // FIX 1: tamanho dinâmico
   const resizeCat = () => { input.style.width = Math.max(60, input.value.length + 3) + 'ch'; };
   resizeCat();
   input.addEventListener('input', resizeCat);
 
   nomeEl.replaceWith(input);
-
-  // Esconde botões de ação originais
   if (editBtn) editBtn.style.display = 'none';
   if (delBtn)  delBtn.style.display  = 'none';
 
-  // Botão salvar
   const saveBtn = document.createElement('button');
   saveBtn.className = 'cat-action-btn cat-action-btn--save';
   saveBtn.title     = 'Salvar (Enter)';
   saveBtn.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
 
-  // Botão cancelar
   const cancelBtn = document.createElement('button');
   cancelBtn.className = 'cat-action-btn cat-action-btn--cancel';
   cancelBtn.title     = 'Cancelar (Esc)';
@@ -782,7 +793,6 @@ function _editarCategoria(catId, sectionEl) {
   input.select();
 
   const _restore = (nome) => {
-    // FIX 2: remove listener de clique fora
     document.removeEventListener('mousedown', onOutside);
     const span = document.createElement('span');
     span.className   = 'cat-header__nome';
@@ -798,7 +808,6 @@ function _editarCategoria(catId, sectionEl) {
   const save = () => {
     const newNome = input.value.trim();
     if (!newNome) { input.classList.add('input-error'); input.focus(); return; }
-
     const cats = _getCategoriasAtivas();
     const cat  = cats.find(c => c.id === catId);
     if (cat) { cat.nome = newNome; _salvarCategoriasAtivas(cats); }
@@ -806,12 +815,7 @@ function _editarCategoria(catId, sectionEl) {
   };
 
   const cancel = () => _restore(original);
-
-  // FIX 2: clique fora = salva
-  const onOutside = (e) => {
-  if (!sectionEl.contains(e.target)) cancel(); // era save()
-};
-
+  const onOutside = (e) => { if (!sectionEl.contains(e.target)) cancel(); };
   setTimeout(() => document.addEventListener('mousedown', onOutside), 10);
 
   saveBtn.addEventListener('click',   save);
@@ -883,25 +887,20 @@ function _toggleItem(catId, itemId, rowEl) {
 async function _deletarItem(catId, itemId, rowEl) {
   if (!rowEl) return;
 
-  // Mini confirm ancorado no botão de excluir
   const btn = rowEl.querySelector(`.item-delete[data-item-id="${itemId}"]`);
   const ok  = await _miniConfirmar(btn ?? rowEl);
   if (!ok) return;
 
-  // 1️⃣ Slide + fade para fora
-  const height = rowEl.offsetHeight;
   rowEl.style.transition = 'opacity 0.16s ease, transform 0.16s ease';
   rowEl.style.opacity    = '0';
   rowEl.style.transform  = 'translateX(16px)';
 
   setTimeout(() => {
-    // 2️⃣ Colapsa a altura suavemente
+    const height = rowEl.offsetHeight;
     rowEl.style.transition = 'height 0.18s ease, margin 0.18s ease, padding 0.18s ease, gap 0.18s ease';
     rowEl.style.overflow   = 'hidden';
     rowEl.style.height     = height + 'px';
-
     void rowEl.offsetHeight;
-
     rowEl.style.height        = '0';
     rowEl.style.marginTop     = '0';
     rowEl.style.marginBottom  = '0';
@@ -910,12 +909,10 @@ async function _deletarItem(catId, itemId, rowEl) {
 
     setTimeout(() => {
       rowEl.remove();
-
       const cats = _getCategoriasAtivas();
       const cat  = cats.find(c => c.id === catId);
       if (cat) cat.itens = cat.itens.filter(i => i.id !== itemId);
       _salvarCategoriasAtivas(cats);
-
       const sectionEl = document.querySelector(`[data-cat-id="${catId}"]`);
       _atualizarBadge(sectionEl, cats.find(c => c.id === catId));
       _updateProgress();
@@ -956,35 +953,25 @@ function _getClDisc(discId) {
   const raw = State.checklistData[State.semestre]?.[discId];
   if (!raw) return null;
 
-  // Formato novo: { aulas: [...] }
   if (raw.aulas) {
     const categorias = raw.aulas.flatMap(aula =>
       aula.categorias.map(cat => ({
         ...cat,
-        _grupo: aula.nome,   // guarda o nome da aula para o agrupador
+        _grupo: aula.nome,
       }))
     );
     return { categorias };
   }
-
-  // Formato legado: { categorias: [...] } — continua funcionando
   return raw;
 }
 
+/* ── usa pessoal_sync ── */
 function _getCheckedIds(discId) {
-  try {
-    const raw = localStorage.getItem(STORAGE_CHECKLIST(State.semestre, discId));
-    return raw ? new Set(JSON.parse(raw)) : new Set();
-  } catch (_) { return new Set(); }
+  return getCheckedIds(State.semestre, discId);
 }
 
 function _saveCheckedIds(discId, set) {
-  try {
-    localStorage.setItem(
-      STORAGE_CHECKLIST(State.semestre, discId),
-      JSON.stringify([...set])
-    );
-  } catch (_) {}
+  saveCheckedIds(State.semestre, discId, set);
 }
 
 function _renderClPanel() {
@@ -1015,50 +1002,40 @@ function _renderClPanel() {
   const done     = allItems.filter(i => checked.has(i.id)).length;
   _updateClProgress(done, total);
 
-  /* ── Agrupa categorias por prefixo de aula ──
-     Espera nomes no formato "Aula 9 · Conceito"
-     Se não tiver " · ", cai no grupo "Geral"       */
   const grupos = new Map();
-  // Substitua este trecho dentro de _renderClPanel:
-disc.categorias.forEach(cat => {
-  const sep   = cat.nome.indexOf(' · ');
-  const grupo = sep !== -1 ? cat.nome.slice(0, sep).trim()  : (cat._grupo ?? 'Geral');
-  const label = sep !== -1 ? cat.nome.slice(sep + 3).trim() : cat.nome;
-  if (!grupos.has(grupo)) grupos.set(grupo, []);
-  grupos.get(grupo).push({ ...cat, _label: label });
-});
+  disc.categorias.forEach(cat => {
+    const sep   = cat.nome.indexOf(' · ');
+    const grupo = sep !== -1 ? cat.nome.slice(0, sep).trim()  : (cat._grupo ?? 'Geral');
+    const label = sep !== -1 ? cat.nome.slice(sep + 3).trim() : cat.nome;
+    if (!grupos.has(grupo)) grupos.set(grupo, []);
+    grupos.get(grupo).push({ ...cat, _label: label });
+  });
 
   let groupIdx = 0;
   grupos.forEach((cats, grupoNome) => {
-
-    /* ── Cabeçalho do grupo (ex: "Aula 9") ── */
     const groupEl = document.createElement('div');
     groupEl.className = 'cl-group cl-group--collapsed';
     groupEl.style.animationDelay = `${groupIdx * 0.1}s`;
 
-    /* Conta progresso do grupo inteiro */
     const groupItems   = cats.flatMap(c => c.itens);
     const groupTotal   = groupItems.length;
     const groupDone    = groupItems.filter(i => checked.has(i.id)).length;
-    const groupPct     = groupTotal > 0 ? Math.round((groupDone / groupTotal) * 100) : 0;
 
     groupEl.innerHTML = `
-  <div class="cl-group__header" data-toggle="cl-group-body-${groupIdx}">
-    <span class="cl-group__title">${_esc(grupoNome)}</span>
-    <div class="cl-group__meta">
-      <span class="cl-group__badge">${groupDone}/${groupTotal}</span>
-
-      <svg class="cl-group__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"
-           stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="6 9 12 15 18 9"/>
-      </svg>
-    </div>
-  </div>
-  <div class="cl-group__body" id="cl-group-body-${groupIdx}"></div>`;
+      <div class="cl-group__header" data-toggle="cl-group-body-${groupIdx}">
+        <span class="cl-group__title">${_esc(grupoNome)}</span>
+        <div class="cl-group__meta">
+          <span class="cl-group__badge">${groupDone}/${groupTotal}</span>
+          <svg class="cl-group__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </div>
+      </div>
+      <div class="cl-group__body" id="cl-group-body-${groupIdx}"></div>`;
 
     const bodyEl = groupEl.querySelector(`#cl-group-body-${groupIdx}`);
 
-    /* ── Categorias dentro do grupo ── */
     cats.forEach((cat, ci) => {
       const catDone  = cat.itens.filter(i => checked.has(i.id)).length;
       const catTotal = cat.itens.length;
@@ -1067,20 +1044,20 @@ disc.categorias.forEach(cat => {
       section.className = 'cl-section cl-section--collapsed';
       section.style.animationDelay = `${(groupIdx * 0.1) + (ci * 0.06)}s`;
       section.innerHTML = `
-  <div class="cl-section__header cl-section__header--toggle">
-    <div class="cl-section__title">
-      <span class="cl-section__icon">${cat.icone}</span>
-      ${_esc(cat._label)}
-    </div>
-    <div style="display:flex;align-items:center;gap:0.5rem;">
-      <span class="cl-section__badge">${catDone}/${catTotal}</span>
-      <svg class="cl-section__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none"
-           stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="6 9 12 15 18 9"/>
-      </svg>
-    </div>
-  </div>
-  <div class="cl-items cl-section__body" id="cl-items-${groupIdx}-${ci}"></div>`;
+        <div class="cl-section__header cl-section__header--toggle">
+          <div class="cl-section__title">
+            <span class="cl-section__icon">${cat.icone}</span>
+            ${_esc(cat._label)}
+          </div>
+          <div style="display:flex;align-items:center;gap:0.5rem;">
+            <span class="cl-section__badge">${catDone}/${catTotal}</span>
+            <svg class="cl-section__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+        </div>
+        <div class="cl-items cl-section__body" id="cl-items-${groupIdx}-${ci}"></div>`;
 
       const itemsEl = section.querySelector('.cl-items');
       cat.itens.forEach((item, ii) => {
@@ -1103,20 +1080,18 @@ disc.categorias.forEach(cat => {
 
       bodyEl.appendChild(section);
 
-// ── Toggle collapse da categoria ──
-section.querySelector('.cl-section__header--toggle').addEventListener('click', () => {
-  section.classList.toggle('cl-section--collapsed');
-});
+      section.querySelector('.cl-section__header--toggle').addEventListener('click', () => {
+        section.classList.toggle('cl-section--collapsed');
+      });
     });
 
     container.appendChild(groupEl);
 
-// ── Toggle collapse ──
-groupEl.querySelector('.cl-group__header').addEventListener('click', () => {
-  groupEl.classList.toggle('cl-group--collapsed');
-});
+    groupEl.querySelector('.cl-group__header').addEventListener('click', () => {
+      groupEl.classList.toggle('cl-group--collapsed');
+    });
 
-groupIdx++;
+    groupIdx++;
   });
 }
 
@@ -1146,6 +1121,7 @@ function _bindChecklist() {
       label?.classList.remove('cl-item--checked');
     }
 
+    /* Grava no localStorage + Firebase (via sync module) */
     _saveCheckedIds(discId, checked);
 
     const section = input.closest('.cl-section');
@@ -1182,7 +1158,7 @@ function _bindChecklist() {
 }
 
 /* ══════════════════════════════════════════════
-   ANOTAÇÕES
+   ANOTAÇÕES  — usa pessoal_sync
 ══════════════════════════════════════════════ */
 function _renderNotaAtual() {
   const textarea = document.getElementById('note-textarea');
@@ -1191,9 +1167,7 @@ function _renderNotaAtual() {
 
   const discId = State.notaDiscId;
   const disc   = State.disciplinas.find(d => d.id === discId);
-  const nota   = discId
-    ? (localStorage.getItem(STORAGE_NOTE(State.semestre, discId)) ?? '')
-    : '';
+  const nota   = discId ? getNota(State.semestre, discId) : '';
 
   textarea.value = nota;
   if (titleEl) titleEl.textContent = disc ? `Anotações — ${disc.nome}` : 'Anotações';
@@ -1249,9 +1223,8 @@ function _salvarNotaAtual() {
   const discId   = State.notaDiscId;
   if (!textarea || !discId) return;
 
-  try {
-    localStorage.setItem(STORAGE_NOTE(State.semestre, discId), textarea.value);
-  } catch (_) {}
+  /* Grava no localStorage + Firebase (via sync module) */
+  setNota(State.semestre, discId, textarea.value);
 
   _setAutosave('saved', _savedLabel(discId));
   _updateHeroStat();
@@ -1336,9 +1309,8 @@ function _nomeCurto(nome, max = 18) {
   return nome.length > max ? nome.slice(0, max - 2) + '…' : nome;
 }
 
-
 /* ══════════════════════════════════════════════
-   FAB — botão flutuante
+   FAB
 ══════════════════════════════════════════════ */
 function _smoothScrollTo(targetY, duration = 1400) {
   const startY   = window.scrollY;
@@ -1346,7 +1318,7 @@ function _smoothScrollTo(targetY, duration = 1400) {
   let startTime  = null;
 
   const ease = (t) =>
-    t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; // easeInOutCubic
+    t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
   const step = (timestamp) => {
     if (!startTime) startTime = timestamp;

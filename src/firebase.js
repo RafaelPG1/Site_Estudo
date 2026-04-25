@@ -282,3 +282,118 @@ export async function gerarHash(pin) {
   console.log(`PIN: ${pin}  →  hash: ${h}`);
   return h;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   NEXUS STUDY — firebase.js  ·  ADIÇÕES para Área Pessoal
+   Cole estas funções no final do seu firebase.js existente
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Referência base (/usuarios/{uid}/pessoal/{sem}_{discId}) ── */
+function _pessoalRef(uid, semestre, discId) {
+  return doc(getDb(), 'usuarios', uid, 'pessoal', `${semestre}_${discId}`);
+}
+
+/* ══════════════════════════════════════════════════════
+   CHECKLIST — IDs marcados
+══════════════════════════════════════════════════════ */
+export async function salvarChecklistPessoal(uid, semestre, discId, checkedSet) {
+  try {
+    await setDoc(_pessoalRef(uid, semestre, discId), {
+      checklist:  [...checkedSet],
+      clUpdatedAt: Date.now(),
+    }, { merge: true });
+    return { ok: true };
+  } catch (err) {
+    console.error('[firebase] salvarChecklistPessoal:', err);
+    return { ok: false };
+  }
+}
+
+export async function carregarChecklistPessoal(uid, semestre, discId) {
+  try {
+    const snap = await getDoc(_pessoalRef(uid, semestre, discId));
+    if (!snap.exists()) return null;
+    const raw = snap.data().checklist;
+    return Array.isArray(raw) ? raw : null;
+  } catch (err) {
+    console.error('[firebase] carregarChecklistPessoal:', err);
+    return null;
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   CATEGORIAS (Tarefas personalizadas)
+══════════════════════════════════════════════════════ */
+export async function salvarCategoriasPessoal(uid, semestre, discId, cats) {
+  try {
+    // Firestore não aceita undefined — limpa antes de salvar
+    const clean = JSON.parse(JSON.stringify(cats));
+    await setDoc(_pessoalRef(uid, semestre, discId), {
+      categorias:   clean,
+      catsUpdatedAt: Date.now(),
+    }, { merge: true });
+    return { ok: true };
+  } catch (err) {
+    console.error('[firebase] salvarCategoriasPessoal:', err);
+    return { ok: false };
+  }
+}
+
+export async function carregarCategoriasPessoal(uid, semestre, discId) {
+  try {
+    const snap = await getDoc(_pessoalRef(uid, semestre, discId));
+    if (!snap.exists()) return null;
+    const raw = snap.data().categorias;
+    return Array.isArray(raw) ? raw : null;
+  } catch (err) {
+    console.error('[firebase] carregarCategoriasPessoal:', err);
+    return null;
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   NOTAS
+══════════════════════════════════════════════════════ */
+export async function salvarNotaPessoal(uid, semestre, discId, nota) {
+  try {
+    await setDoc(_pessoalRef(uid, semestre, discId), {
+      nota,
+      notaUpdatedAt: Date.now(),
+    }, { merge: true });
+    return { ok: true };
+  } catch (err) {
+    console.error('[firebase] salvarNotaPessoal:', err);
+    return { ok: false };
+  }
+}
+
+export async function carregarNotaPessoal(uid, semestre, discId) {
+  try {
+    const snap = await getDoc(_pessoalRef(uid, semestre, discId));
+    if (!snap.exists()) return null;
+    const raw = snap.data().nota;
+    return typeof raw === 'string' ? raw : null;
+  } catch (err) {
+    console.error('[firebase] carregarNotaPessoal:', err);
+    return null;
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   HELPER — carrega tudo de uma disciplina de uma vez
+══════════════════════════════════════════════════════ */
+export async function carregarTudoPessoal(uid, semestre, discId) {
+  try {
+    const snap = await getDoc(_pessoalRef(uid, semestre, discId));
+    if (!snap.exists()) return null;
+    const d = snap.data();
+    return {
+      checklist:  Array.isArray(d.checklist)  ? d.checklist  : null,
+      categorias: Array.isArray(d.categorias) ? d.categorias : null,
+      nota:       typeof d.nota === 'string'   ? d.nota       : null,
+    };
+  } catch (err) {
+    console.error('[firebase] carregarTudoPessoal:', err);
+    return null;
+  }
+}

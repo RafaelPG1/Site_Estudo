@@ -420,6 +420,39 @@ export const CHECKLIST_ITENS = {
           },
         ]
       },
+      {
+        nome: 'Aula 10 - Design de Interfaces e Prototipação',
+        categorias: [
+          {
+            nome: 'Conceito', icone: '🧠',
+            itens: [
+              { id: '2026_2_des10_c1', texto: 'DCU coloca o usuário como foco principal, priorizando usabilidade, ergonomia, comunicabilidade e intuitividade' },
+              { id: '2026_2_des10_c2', texto: 'Modelo conceitual representa como o sistema funciona na teoria; modelo físico transforma isso em algo concreto e visual' },
+            ]
+          },
+          {
+            nome: 'Diferença', icone: '⚖️',
+            itens: [
+              { id: '2026_2_des10_d1', texto: 'Baixa fidelidade (gera mais ideias, rascunho) vs Alta fidelidade (foca em detalhes, próximo do produto final)' },
+              { id: '2026_2_des10_d2', texto: 'Horizontal (muitas funções, pouco detalhe) vs Vertical (poucas funções, muito detalhamento)' },
+            ]
+          },
+          {
+            nome: 'Aplicação', icone: '🛠️',
+            itens: [
+              { id: '2026_2_des10_a1', texto: 'Aplicar a sequência correta do processo: modelar → prototipar → implementar' },
+              { id: '2026_2_des10_a2', texto: 'Distinguir Wireframe (esqueleto sem design visual) de Mockup (interface visual completa com cores e tipografia)' },
+            ]
+          },
+          {
+            nome: 'Memorização', icone: '📌',
+            itens: [
+              { id: '2026_2_des10_m1', texto: '3 tipos de problemas de usabilidade: barreiras (impedem), obstáculos (dificultam), ruídos (confundem)' },
+              { id: '2026_2_des10_m2', texto: '4 tipos de protótipos em ordem crescente: Cenário → Storyboard → Wireframe → Mockup' },
+            ]
+          },
+        ]
+      },
     ]
   },
 
@@ -454,6 +487,39 @@ export const CHECKLIST_ITENS = {
             itens: [
               { id: '2026_2_bd_m1', texto: '3 comandos DDL: CREATE (cria), ALTER (modifica), DROP (exclui)' },
               { id: '2026_2_bd_m2', texto: 'PRIMARY KEY: único + não nulo | FOREIGN KEY: referencia campo de outra tabela' },
+            ]
+          },
+        ]
+      },
+      {
+        nome: 'Aula 10 - Manipulando um Banco de Dados',
+        categorias: [
+          {
+            nome: 'Conceito', icone: '🧠',
+            itens: [
+              { id: '2026_2_bd10_c1', texto: 'DML é o subconjunto do SQL responsável por manipular os dados armazenados (CRUD)' },
+              { id: '2026_2_bd10_c2', texto: 'DML não procedural (SQL) exige apenas o que se quer; procedural exige o que e como obter' },
+            ]
+          },
+          {
+            nome: 'Diferença', icone: '⚖️',
+            itens: [
+              { id: '2026_2_bd10_d1', texto: 'AND (todas as condições devem ser verdadeiras) vs OR (basta uma condição ser verdadeira)' },
+              { id: '2026_2_bd10_d2', texto: 'DELETE sem WHERE (apaga todos os registros) vs DELETE com WHERE (apaga apenas os filtrados)' },
+            ]
+          },
+          {
+            nome: 'Aplicação', icone: '🛠️',
+            itens: [
+              { id: '2026_2_bd10_a1', texto: 'Usar SELECT DISTINCT para eliminar valores duplicados em consultas' },
+              { id: '2026_2_bd10_a2', texto: 'Sempre usar WHERE em UPDATE e DELETE para evitar alteração/exclusão de todos os registros' },
+            ]
+          },
+          {
+            nome: 'Memorização', icone: '📌',
+            itens: [
+              { id: '2026_2_bd10_m1', texto: '4 comandos DML: SELECT (consultar), INSERT (inserir), UPDATE (atualizar), DELETE (excluir)' },
+              { id: '2026_2_bd10_m2', texto: 'Estrutura base: SELECT → FROM → WHERE' },
             ]
           },
         ]
