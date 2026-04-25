@@ -185,48 +185,56 @@ nav.innerHTML = `
 `;
 document.body.appendChild(nav);
 
-/* ── CARREGA CONTEÚDO → ENGINE ────────────────────────────── */
-/* ── CARREGA CONTEÚDO → UI → ENGINE ──────────────────────── */
-/*
-   Ordem obrigatória:
-     1. arquivo de conteúdo (define window.questoes)
-     2. quiz_ui.js          (define window.QuizUI)
-     3. quiz_engine.js      (usa window.QuizUI)
-*/
-const s = document.createElement('script');
-s.src   = `../../content/quiz/${ano}/${semestre}/ques_${info.arquivo}.js`;
-s.onerror = () => {
-  const c = document.getElementById('quiz-container');
-  if (c) c.innerHTML = `<div style="padding:2rem;text-align:center;color:#f87171;">⚠️ Arquivo não encontrado: ${ano}/${semestre}/${info.arquivo}.js</div>`;
-};
-s.onload = () => {
-  const ui = document.createElement('script');
-  ui.src = '../js/quiz_ui.js';
+// Substitui o bloco "CARREGA CONTEÚDO → ENGINE" no final do template_init.js
 
-  ui.onload = async () => {
-    // Pré-carrega respostas do Firebase ANTES do engine bootar
-    const usuario = Storage.get('usuario', null);
-    if (usuario?.uid) {
-      try {
-        const fbDados = await carregarRespostasQuiz(usuario.uid, semestre, modo, disc);
-        window.__NEXUS_FIREBASE_RESPOSTAS__ = fbDados ?? null;
-        console.log('[template_init] Firebase pré-carga:', fbDados ? 'dados encontrados' : 'sem dados');
-      } catch (e) {
-        window.__NEXUS_FIREBASE_RESPOSTAS__ = null;
-        console.warn('[template_init] Falha na pré-carga Firebase:', e);
-      }
-    } else {
-      window.__NEXUS_FIREBASE_RESPOSTAS__ = null;
-      console.log('[template_init] Usuário não logado — Firebase pulado');
-    }
+/* ── CARREGA CONTEÚDO + UI + FIREBASE EM PARALELO → ENGINE ── */
 
-    const engine = document.createElement('script');
-    engine.src = '../js/quiz_engine.js';
-    document.body.appendChild(engine);
-  };
+function _loadScript(src) {
+  return new Promise(function (resolve, reject) {
+    var s = document.createElement('script');
+    s.src     = src;
+    s.onload  = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
 
-  document.head.appendChild(ui);
-};
-document.head.appendChild(s);
+const contentSrc = `../../content/quiz/${ano}/${semestre}/ques_${info.arquivo}.js`;
+const uiSrc      = '../js/quiz_ui.js';
+
+/* Firebase roda em paralelo — nunca bloqueia o render */
+/* Firebase dispara em paralelo com timeout — nunca bloqueia o quiz */
+const usuario = Storage.get('usuario', null);
+
+if (usuario?.uid) {
+  Promise.race([
+    carregarRespostasQuiz(usuario.uid, semestre, modo, disc)
+      .then(data => { window.__NEXUS_FIREBASE_RESPOSTAS__ = data ?? null; })
+      .catch(()  => { window.__NEXUS_FIREBASE_RESPOSTAS__ = null; }),
+    new Promise(resolve => setTimeout(resolve, 3000)),
+  ]);
+} else {
+  window.__NEXUS_FIREBASE_RESPOSTAS__ = null;
+}
+
+/* Só conteúdo + UI precisam estar prontos para subir o engine */
+Promise.all([
+  _loadScript(contentSrc).catch(() => {
+    const c = document.getElementById('quiz-container');
+    if (c) c.innerHTML =
+      `<div style="padding:2rem;text-align:center;color:#f87171;">` +
+      `⚠️ Arquivo não encontrado: ${ano}/${semestre}/${info.arquivo}.js</div>`;
+    return Promise.reject('content-not-found');
+  }),
+  _loadScript(uiSrc),
+])
+.then(() => {
+  const engine = document.createElement('script');
+  engine.src = '../js/quiz_engine.js';
+  document.body.appendChild(engine);
+})
+.catch(err => {
+  if (err !== 'content-not-found') console.error('[template_init] Falha:', err);
+});
 
 propagarSemNosLinks(semestre, ['.header__logo[href*="quiz.html"]']);
