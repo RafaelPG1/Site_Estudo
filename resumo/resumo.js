@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (_) { /* sem cores dinâmicas */ }
 
   try {
-    const mod = await import('../conteudo_geral/resumo/videos.js');
+    const mod = await import('../content/resumo/videos.js');
     State.getVideos = mod.getVideos ?? null;
   } catch (_) { /* sem seção de vídeos */ }
 
@@ -272,7 +272,7 @@ function _carregarConteudo() {
   }
 
   const [ano] = (State.semestre ?? '2026.1').split('.');
-  const src = `../conteudo_geral/resumo/${ano}/${State.semestre}/res_${disc.arquivo}.js`;
+  const src = `../content/resumo/${ano}/${State.semestre}/res_${disc.arquivo}.js`;
 
   const script = document.createElement('script');
   script.src = src;

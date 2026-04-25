@@ -3,7 +3,7 @@
    ============================================================ */
 
 import { Shell, Timer, Result, shuffle, lerParams } from '../../template/game-shell.js';
-import { VDD_FALSO_DATA }                           from '../../conteudo/vdd_falso/vdd_falso_data.js';
+import { VDD_FALSO_DATA }                           from '../../../content/game/vdd_falso/vdd_falso_data.js';
 import { DISC_CORES }             from '../../../shared/js/cores.js';
 import { aplicarCoresDisciplina } from '../../../shared/js/theme.js';
 

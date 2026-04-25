@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (_) {}
 
   try {
-    const mod = await import('../conteudo_geral/area_pessoal/checklist_data.js');
+    const mod = await import('../content/area_pessoal/checklist_data.js');
     State.checklistData = mod.CHECKLIST_ITENS ?? {};
   } catch (_) {}
 

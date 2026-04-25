@@ -16,7 +16,7 @@
 
 /* ── 1. IMPORTS & CONSTANTES ──────────────────────────────────── */
 
-import { getCardsData }                      from '../../../conteudo_geral/game/flashcards/cards_data.js';
+import { getCardsData }                      from '../../../content/game/flashcards/cards_data.js';
 import { carregarPerfisSRS, salvarPerfilSRS } from './storage.js';
 import { Shell, lerParams }                  from '../../template/game-shell.js';
 import { getUsuario }                        from '../../../src/global.js';
