@@ -1,5 +1,5 @@
 /* ============================================================
-   NEXUS STUDY — quiz/quiz_engine.js  (v7)
+   NEXUS STUDY — quiz/quiz_engine.js  (v8)
    Lógica de estado do quiz — depende de quiz_ui.js
 
    ÍNDICE:
@@ -15,6 +15,12 @@
     10. Ver erros .................. L.490
     11. Modo Step .................. L.560
     12. Binds e boot ............... L.760
+
+   v8 — embaralhamento por grupo de aula:
+     Questões são embaralhadas DENTRO de cada aula, preservando
+     a ordem das aulas. Isso garante que subject-title e
+     subject-result apareçam corretamente para todas as aulas,
+     independente de quantas aulas a disciplina tiver.
    ============================================================ */
 
 (function () {
@@ -235,7 +241,13 @@
 
     var questoesBase = listaQuestoes;
 
-    /* ── 3. EMBARALHAMENTO ────────────────────────────────── */
+    /* ══════════════════════════════════════════════════════════
+       3. EMBARALHAMENTO
+
+       v8: embaralha DENTRO de cada grupo de aula, preservando
+       a ordem das aulas. Assim subject-title e subject-result
+       aparecem corretamente para todas as aulas da disciplina.
+       ══════════════════════════════════════════════════════════ */
 
     function shuffleArray(arr) {
       var a = arr.slice();
@@ -251,7 +263,41 @@
     function criarCopiaEmbaralhada(base, mapaFixo) {
       var novoMapa = {};
 
-      var result = base.map(function (q, qi) {
+      /* ── Agrupa índices por aula, preservando ordem de aparição ── */
+      var gruposAula   = [];   // [{ aula, indices[] }, ...]
+      var aulaParaGrupo = {};  // aula → índice em gruposAula
+
+      base.forEach(function (q, qi) {
+        var aula = q.aula !== undefined ? q.aula : '__sem_aula__';
+        if (aulaParaGrupo[aula] === undefined) {
+          aulaParaGrupo[aula] = gruposAula.length;
+          gruposAula.push({ aula: aula, indices: [] });
+        }
+        gruposAula[aulaParaGrupo[aula]].indices.push(qi);
+      });
+
+      /* ── Embaralha os índices DENTRO de cada aula ── */
+      var ordemFinal = [];
+      gruposAula.forEach(function (grupo) {
+        var indicesOriginais = grupo.indices;
+
+        /* Se há mapa fixo salvo, usa os índices de embaralhamento já definidos */
+        var indicesEmbaralhados;
+        if (mapaFixo && mapaFixo['__grupo__' + grupo.aula]) {
+          indicesEmbaralhados = mapaFixo['__grupo__' + grupo.aula];
+        } else {
+          indicesEmbaralhados = shuffleArray(indicesOriginais);
+        }
+
+        novoMapa['__grupo__' + grupo.aula] = indicesEmbaralhados;
+        indicesEmbaralhados.forEach(function (qi) { ordemFinal.push(qi); });
+      });
+
+      /* ── Monta cópia embaralhada respeitando a nova ordem ── */
+      var result = ordemFinal.map(function (qi) {
+        var q = base[qi];
+
+        /* Embaralha opções da questão */
         var indices = (mapaFixo && mapaFixo[qi])
           ? mapaFixo[qi]
           : shuffleArray(q.options.map(function (_, i) { return i; }));
@@ -271,6 +317,7 @@
           options:  newOptions,
           answer:   newAnswer,
           feedback: newFeedback,
+          __qiOriginal__: qi,   // guarda índice original para saveProgress
         });
       });
 
@@ -471,17 +518,26 @@
       mostrandoSoErros = false;
       aulaGrupos = [];
 
-      var ultimaAula = null;
+      /* ── CORREÇÃO: usa null para questões sem aula,
+         permitindo detecção correta de mudança de grupo ── */
+      var ultimaAula = undefined; // undefined ≠ null, garante que o primeiro grupo sempre é criado
 
       questoes.forEach(function (q, qi) {
 
-        if (q.aula !== undefined && q.aula !== ultimaAula) {
-          ultimaAula = q.aula;
-          aulaGrupos.push({ aula: q.aula, indices: [] });
-          var titleEl = document.createElement('div');
-          titleEl.className = 'subject-title';
-          titleEl.textContent = q.aula.toUpperCase();
-          container.appendChild(titleEl);
+        /* Normaliza: undefined → null para questões sem campo aula */
+        var aulaAtual = q.aula !== undefined ? q.aula : null;
+
+        if (aulaAtual !== ultimaAula) {
+          ultimaAula = aulaAtual;
+          aulaGrupos.push({ aula: aulaAtual, indices: [] });
+
+          /* Só renderiza o título se a aula tem nome */
+          if (aulaAtual !== null) {
+            var titleEl = document.createElement('div');
+            titleEl.className = 'subject-title';
+            titleEl.textContent = aulaAtual.toUpperCase();
+            container.appendChild(titleEl);
+          }
         }
 
         if (aulaGrupos.length > 0) {
@@ -520,8 +576,10 @@
         if (respostas[qi] !== undefined) card.appendChild(_criarFeedbackEl(qi));
         container.appendChild(card);
 
-        var proxQ           = questoes[qi + 1];
-        var isUltimoDoGrupo = !proxQ || proxQ.aula !== q.aula;
+        /* ── CORREÇÃO: normaliza aula da próxima questão também ── */
+        var proxQ    = questoes[qi + 1];
+        var aulaProx = proxQ ? (proxQ.aula !== undefined ? proxQ.aula : null) : null;
+        var isUltimoDoGrupo = !proxQ || aulaProx !== aulaAtual;
 
         if (isUltimoDoGrupo && aulaGrupos.length > 0) {
           var gi = aulaGrupos.length - 1;
@@ -533,7 +591,7 @@
         }
       });
 
-      /* Fallback: sem campo "aula" → grupo global único */
+      /* Fallback: lista vazia ou nenhum grupo criado */
       if (aulaGrupos.length === 0 && questoes.length > 0) {
         aulaGrupos.push({ aula: null, indices: questoes.map(function (_, i) { return i; }) });
         var resultEl = document.createElement('div');
