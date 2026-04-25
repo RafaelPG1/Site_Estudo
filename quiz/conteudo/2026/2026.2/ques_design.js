@@ -173,7 +173,260 @@ window.questoes = {
     ],
     answer: 3,
     feedback: "A ==rule==individualização== permite que o usuário adapte a interface às suas preferências, tornando a experiência mais acessível e personalizada."
+  },
+
+  // ── Questão 13 ── Explicativa
+  {
+    aula: "Aula 10 — Design de Interfaces e Prototipação",
+    tipo: "Explicativa",
+
+    texto: "O Design Centrado no Usuário (DCU) é uma abordagem que coloca o usuário como ponto de partida de todas as decisões do projeto. Em vez de criar um sistema e depois ajustá-lo para as pessoas, o DCU parte das necessidades, comportamentos e limitações dos usuários para guiar o desenvolvimento. Quatro princípios sustentam essa abordagem: usabilidade, ergonomia, comunicabilidade e intuitividade.",
+
+    question: "O que diferencia o Design Centrado no Usuário de abordagens tradicionais de desenvolvimento?",
+
+    options: [
+      "Ele prioriza a linguagem de programação antes de definir os requisitos.",
+      "Ele parte das necessidades e comportamentos do usuário para guiar todo o projeto.",
+      "Ele elimina a etapa de testes para acelerar a entrega do produto.",
+      "Ele foca exclusivamente na aparência visual do sistema, ignorando a funcionalidade."
+    ],
+
+    answer: 1,
+
+    feedback: "No ==def==DCU==, o usuário é o centro de cada decisão — desde o planejamento até a entrega. Usabilidade, ergonomia, comunicabilidade e intuitividade são seus pilares fundamentais."
+  },
+
+  // ── Questão 14 ── Explicativa
+  {
+    aula: "Aula 10 — Design de Interfaces e Prototipação",
+    tipo: "Explicativa",
+
+    texto: "O modelo conceitual representa como o sistema funciona na teoria — é a ideia abstrata por trás da interface. Para tornar essa ideia compreensível, designers usam metáforas do mundo real: uma lixeira para representar exclusão, uma pasta para agrupar arquivos, um envelope para mensagens. Essas associações ajudam o usuário a entender o sistema sem precisar aprender conceitos completamente novos.",
+
+    question: "Por que os modelos conceituais utilizam metáforas do mundo real?",
+
+    options: [
+      "Para reduzir o tempo de programação durante o desenvolvimento.",
+      "Para garantir que o sistema funcione em diferentes sistemas operacionais.",
+      "Para facilitar a compreensão do sistema com base em referências já conhecidas pelo usuário.",
+      "Para substituir a necessidade de documentação técnica do projeto."
+    ],
+
+    answer: 2,
+
+    feedback: "As ==def==metáforas do mundo real== tornam o modelo conceitual intuitivo, aproveitando associações que o usuário já conhece para explicar como o sistema funciona."
+  },
+
+  // ── Questão 15 ── Explicativa
+  {
+    aula: "Aula 10 — Design de Interfaces e Prototipação",
+    tipo: "Explicativa",
+
+    texto: "Os problemas de usabilidade são classificados em três categorias conforme o impacto que causam na experiência do usuário. As barreiras impedem completamente a conclusão de uma tarefa. Os obstáculos dificultam, mas ainda permitem que o usuário conclua o que precisa fazer. Já os ruídos não impedem nem dificultam diretamente, mas geram dúvida ou confusão desnecessária durante a interação.",
+
+    question: "Um botão de confirmação que some da tela antes do usuário conseguir clicar impede a conclusão da tarefa. Que tipo de problema de usabilidade é esse?",
+
+    options: [
+      "Ruído, pois gera apenas uma leve confusão visual.",
+      "Obstáculo, pois dificulta mas ainda permite concluir a tarefa.",
+      "Barreira, pois impede completamente a conclusão da tarefa.",
+      "Problema secundário, pois afeta apenas parte dos usuários."
+    ],
+
+    answer: 2,
+
+    feedback: "==def==Barreiras== são problemas que impedem totalmente a execução de uma tarefa. Quando o usuário não consegue nem avançar, trata-se de uma barreira — a categoria mais crítica de problema de usabilidade."
+  },
+
+  // ── Questão 16 ── Contextualizada
+  {
+    aula: "Aula 10 — Design de Interfaces e Prototipação",
+    tipo: "Contextualizada",
+
+    texto: "A prototipação é o processo de criar representações do sistema antes de desenvolvê-lo de verdade. Protótipos servem para testar ideias, identificar problemas cedo e economizar tempo e recursos. Quanto antes um problema é encontrado, mais barato e simples é corrigi-lo. Por isso, a prototipação é considerada um investimento: evita retrabalho e melhora a experiência final do usuário.",
+
+    question: "Por que a prototipação é considerada uma etapa essencial antes da implementação do sistema?",
+
+    options: [
+      "Porque substitui completamente a fase de testes após o desenvolvimento.",
+      "Porque permite identificar e corrigir problemas antes de investir no desenvolvimento completo.",
+      "Porque garante que o sistema final será idêntico ao protótipo aprovado.",
+      "Porque elimina a necessidade de envolvimento do usuário nas fases seguintes."
+    ],
+
+    answer: 1,
+
+    feedback: "==proc==Prototipar== antecipa problemas e valida ideias com custo muito menor do que corrigi-los após a implementação. É uma prática central no design centrado no usuário."
+  },
+
+  // ── Questão 17 ── Contextualizada
+  {
+    aula: "Aula 10 — Design de Interfaces e Prototipação",
+    tipo: "Contextualizada",
+
+    texto: "Os protótipos podem ser classificados quanto à fidelidade — o quanto se aproximam do produto final. Um protótipo de baixa fidelidade é simples, rápido de criar e estimula a geração de muitas ideias sem preocupação com detalhes. Já um protótipo de alta fidelidade é detalhado, visual e próximo do sistema real — ideal para validar a experiência antes da entrega. A escolha entre os dois depende da fase e do objetivo do projeto.",
+
+    question: "Uma equipe está na fase inicial do projeto e quer explorar o máximo de ideias possível sem se preocupar com detalhes visuais. Qual tipo de protótipo é mais indicado?",
+
+    options: [
+      "Alta fidelidade, pois apresenta mais detalhes para análise.",
+      "Baixa fidelidade, pois é mais simples e estimula a geração de ideias.",
+      "Mockup, pois representa visualmente todas as telas do sistema.",
+      "Vertical, pois detalha profundamente cada funcionalidade."
+    ],
+
+    answer: 1,
+
+    feedback: "Protótipos de ==def==baixa fidelidade== são rápidos, simples e ideais para explorar ideias nas fases iniciais. A alta fidelidade entra quando o foco é validar detalhes antes da implementação."
+  },
+
+  // ── Questão 18 ── Contextualizada
+  {
+    aula: "Aula 10 — Design de Interfaces e Prototipação",
+    tipo: "Contextualizada",
+
+    texto: "Quanto à estrutura, os protótipos podem ser horizontais ou verticais. O protótipo horizontal cobre muitas funcionalidades do sistema, mas com pouco aprofundamento em cada uma — dá uma visão ampla do produto. O protótipo vertical faz o oposto: escolhe poucas funcionalidades e as detalha profundamente. Cada abordagem tem sua utilidade dependendo do que precisa ser validado.",
+
+    question: "Uma equipe precisa testar em detalhe apenas o fluxo de login e recuperação de senha de um sistema. Qual estrutura de protótipo é mais adequada?",
+
+    options: [
+      "Horizontal, pois cobre todas as funcionalidades do sistema de forma ampla.",
+      "Vertical, pois foca em poucas funcionalidades com alto nível de detalhamento.",
+      "Baixa fidelidade, pois elimina a necessidade de detalhar fluxos específicos.",
+      "Storyboard, pois representa visualmente todas as telas do sistema."
+    ],
+
+    answer: 1,
+
+    feedback: "O protótipo ==def==vertical== é indicado quando o objetivo é aprofundar poucas funcionalidades. Para validar o fluxo de login em detalhe, essa é a estrutura mais adequada."
+  },
+
+  // ── Questão 19 ── Aplicação
+  {
+    aula: "Aula 10 — Design de Interfaces e Prototipação",
+    tipo: "Aplicação",
+
+    texto: "O wireframe é um tipo de protótipo que representa a estrutura básica de uma interface: onde ficam os botões, menus, campos de texto e blocos de conteúdo. Ele não inclui cores, imagens ou tipografia elaborada — o foco é exclusivamente na organização dos elementos na tela. Por ser simples e rápido de criar, o wireframe é muito usado nas fases iniciais do design para alinhar a estrutura antes de avançar para o visual.",
+
+    question: "Um designer apresentou ao cliente um esboço em preto e branco mostrando onde ficam o menu, os botões e os campos do sistema — sem cores ou imagens. Que tipo de protótipo foi entregue?",
+
+    options: [
+      "Mockup, pois representa visualmente o produto final.",
+      "Storyboard, pois mostra a sequência de interações do usuário.",
+      "Wireframe, pois apresenta a estrutura da interface sem elementos visuais detalhados.",
+      "Cenário, pois descreve narrativamente o fluxo de uso do sistema."
+    ],
+
+    answer: 2,
+
+    feedback: "O ==def==wireframe== é o 'esqueleto' da interface — mostra organização e estrutura sem design visual. É o ponto de partida antes de evoluir para o mockup."
+  },
+
+  // ── Questão 20 ── Aplicação
+  {
+    aula: "Aula 10 — Design de Interfaces e Prototipação",
+    tipo: "Aplicação",
+
+    texto: "O mockup é um protótipo de alta fidelidade que representa visualmente o sistema de forma muito próxima do produto final. Ele inclui cores, tipografia, imagens e todos os elementos visuais que estarão presentes na interface real. Diferente do wireframe, o mockup não foca na estrutura — ele foca na aparência. É usado para aprovação visual antes do desenvolvimento.",
+
+    question: "Após aprovar a estrutura do sistema com o wireframe, a equipe precisa apresentar ao cliente como o produto vai parecer visualmente, com cores e imagens reais. Qual tipo de protótipo deve ser criado agora?",
+
+    options: [
+      "Wireframe, pois é mais detalhado que o mockup.",
+      "Storyboard, pois representa o fluxo visual das telas.",
+      "Cenário, pois descreve a aparência em formato de narrativa.",
+      "Mockup, pois simula a aparência final do sistema com todos os elementos visuais."
+    ],
+
+    answer: 3,
+
+    feedback: "O ==def==mockup== é a etapa visual do protótipo — apresenta cores, imagens e tipografia, simulando fielmente como o produto final vai se parecer."
+  },
+
+  // ── Questão 21 ── Aplicação
+  {
+    aula: "Aula 10 — Design de Interfaces e Prototipação",
+    tipo: "Aplicação",
+
+    texto: "O storyboard é um tipo de protótipo que representa visualmente a sequência de interações entre o usuário e o sistema. Funciona como um roteiro em quadros: cada imagem mostra uma etapa da interação, permitindo visualizar o fluxo completo antes de qualquer linha de código ser escrita. É muito usado para comunicar ideias de forma clara entre equipes e clientes.",
+
+    question: "Uma equipe quer mostrar ao cliente, passo a passo e de forma visual, como o usuário vai interagir com o aplicativo — desde a abertura até a conclusão de uma compra. Qual ferramenta de prototipação é mais adequada?",
+
+    options: [
+      "Wireframe, pois representa a estrutura de cada tela individualmente.",
+      "Mockup, pois apresenta as cores e o visual de cada tela.",
+      "Storyboard, pois mostra a sequência visual das interações passo a passo.",
+      "Modelo conceitual, pois descreve as funções do sistema teoricamente."
+    ],
+
+    answer: 2,
+
+    feedback: "O ==def==storyboard== é ideal para representar fluxos de interação em sequência. Ele comunica a jornada do usuário de forma visual e narrativa, antes do desenvolvimento."
+  },
+
+  // ── Questão 22 ── Aplicação
+  {
+    aula: "Aula 10 — Design de Interfaces e Prototipação",
+    tipo: "Aplicação",
+
+    texto: "Os modelos físicos transformam o modelo conceitual em algo concreto e visível. Eles se dividem em três tipos: o operacional, que representa como o sistema funciona; o representacional, que descreve a aparência visual; e o de interação, que define o fluxo de uso — como o usuário navega pelo sistema. Juntos, eles garantem que o sistema seja bem planejado antes de ser desenvolvido.",
+
+    question: "Um designer criou um diagrama mostrando exatamente como o usuário vai navegar entre as telas do sistema — do login até o fechamento de um pedido. Que tipo de modelo físico foi criado?",
+
+    options: [
+      "Operacional, pois representa o funcionamento interno do sistema.",
+      "Representacional, pois descreve a aparência visual das telas.",
+      "Interação, pois define o fluxo de navegação do usuário pelo sistema.",
+      "Conceitual, pois representa a ideia teórica por trás do sistema."
+    ],
+
+    answer: 2,
+
+    feedback: "O modelo físico de ==def==interação== define o fluxo de uso — como o usuário navega e transita entre as partes do sistema. É diferente do operacional (funcionamento) e do representacional (visual)."
+  },
+
+  // ── Questão 23 ── Contextualizada
+  {
+    aula: "Aula 10 — Design de Interfaces e Prototipação",
+    tipo: "Contextualizada",
+
+    texto: "Os tipos de interação definidos nos modelos conceituais descrevem as diferentes formas como o usuário pode se comunicar com o sistema. Na interação por instrução, o usuário emite comandos diretos — como cliques e atalhos de teclado. Na conversação, o sistema responde de forma mais natural, como em chats com IA. Na manipulação e navegação, o usuário age diretamente sobre os elementos da tela. Na exploração, o sistema guia o usuário pelo caminho.",
+
+    question: "Um usuário interage com um assistente virtual digitando perguntas e recebendo respostas em linguagem natural. Que tipo de interação está sendo utilizado?",
+
+    options: [
+      "Instrução, pois o usuário emite comandos diretos ao sistema.",
+      "Exploração, pois o sistema guia o usuário pelo conteúdo.",
+      "Conversação, pois a interação ocorre em formato de diálogo natural.",
+      "Manipulação, pois o usuário age diretamente sobre os elementos da tela."
+    ],
+
+    answer: 2,
+
+    feedback: "A interação por ==def==conversação== envolve diálogo natural entre usuário e sistema — típico de assistentes virtuais e chatbots com IA."
+  },
+
+  // ── Questão 24 ── Contextualizada
+  {
+    aula: "Aula 10 — Design de Interfaces e Prototipação",
+    tipo: "Contextualizada",
+
+    texto: "No Design Centrado no Usuário, o papel do designer vai muito além de criar telas bonitas. Ele precisa analisar o comportamento e o contexto de uso dos usuários, definir requisitos funcionais e não funcionais, considerar limitações técnicas e financeiras do projeto e planejar como a interação vai ocorrer. Sem esse entendimento amplo, corre-se o risco de criar um sistema visualmente atraente mas inutilizável na prática.",
+
+    question: "Por que o designer, no DCU, precisa considerar as limitações técnicas e financeiras do projeto?",
+
+    options: [
+      "Para garantir que o sistema tenha a melhor aparência possível dentro do orçamento.",
+      "Para que as decisões de design sejam viáveis de implementar na realidade do projeto.",
+      "Para substituir o papel do gerente de projetos na definição de prazos.",
+      "Para escolher a linguagem de programação mais adequada ao sistema."
+    ],
+
+    answer: 1,
+
+    feedback: "No ==def==DCU==, o designer deve equilibrar as necessidades do usuário com as restrições reais do projeto. Ignorar limitações técnicas e financeiras gera soluções ideais no papel, mas inviáveis na prática."
   }
+
   ],
 
   /* ══════════════════════════════════════════════════════════
@@ -406,7 +659,228 @@ window.questoes = {
       ],
       answer: 0,
       feedback: "Correto: A (I, II e IV). A abordagem (1) apresenta alto risco pela rigidez do Cascata (I). A abordagem (2) é mais adequada pela validação contínua (II). A combinação de ==def==Design Thinking== com Iterativo é a mais robusta para o cenário (IV). A afirmativa III está **errada**: o Design Thinking é uma abordagem de imersão e ideação, não substitui o ciclo de desenvolvimento — ele **precede e alimenta** o processo, que ainda exige modelagem, prototipagem e testes."
-    }
+    },
+  {
+    tipo: "Asserção + Justificativa",
+    texto: "Uma equipe de design foi contratada para reformular o aplicativo de agendamento de consultas de uma rede de clínicas. Antes de iniciar qualquer desenvolvimento, os designers decidiram elaborar representações simples e sem cor, focando apenas na organização dos elementos de tela — botões, menus e campos — para discutir a estrutura com os stakeholders e validar o fluxo de navegação antes de comprometer recursos com o visual final.",
+    question: "Analise as asserções a seguir e a relação proposta entre elas:",
+    assertions: [
+      "A representação descrita corresponde a um ==def==wireframe==, artefato de prototipação de baixa fidelidade que estrutura a interface sem se preocupar com elementos visuais como cores, imagens ou tipografia.",
+      "[PORQUE] Protótipos de baixa fidelidade são utilizados nas fases iniciais do projeto por serem mais ágeis para construir e modificar, permitindo explorar um maior número de ideias antes que qualquer decisão de design visual seja tomada."
+    ],
+    options: [
+      "As asserções I e II são verdadeiras, e II justifica I",
+      "As asserções I e II são verdadeiras, mas II não justifica I",
+      "A asserção I é verdadeira e a II é falsa",
+      "A asserção I é falsa e a II é verdadeira"
+    ],
+    answer: 0,
+    feedback: "Correto: A. O ==def==wireframe== é um protótipo de baixa fidelidade focado exclusivamente na estrutura — botões, menus e layout — sem elementos visuais (I). A asserção II justifica diretamente essa escolha: **protótipos de baixa fidelidade** permitem iteração rápida e exploração de mais ideias antes do refinamento visual, o que explica por que a equipe os usou nessa fase do projeto."
+  },
+
+  {
+    tipo: "Asserção + Justificativa",
+    texto: "Após validar a estrutura de navegação com wireframes, a equipe de design de um e-commerce avançou para a criação de um protótipo com cores, tipografia definida, imagens reais dos produtos e comportamentos de hover nos botões. O artefato era visualmente indistinguível do produto final e foi utilizado em testes com usuários reais para avaliar a experiência completa de compra.",
+    question: "Analise as asserções a seguir e a relação proposta entre elas:",
+    assertions: [
+      "O artefato descrito é classificado como ==def==mockup== de alta fidelidade, pois reproduz com precisão a aparência visual do produto final, incluindo elementos estéticos e comportamentos de interface.",
+      "[PORQUE] Protótipos de alta fidelidade são mais adequados para testes de usabilidade com usuários reais porque minimizam a abstração e permitem avaliar a experiência de interação em condições próximas ao uso real do sistema."
+    ],
+    options: [
+      "As asserções I e II são verdadeiras, e II justifica I",
+      "As asserções I e II são verdadeiras, mas II não justifica I",
+      "A asserção I é verdadeira e a II é falsa",
+      "A asserção I é falsa e a II é verdadeira"
+    ],
+    answer: 0,
+    feedback: "Correto: A. O artefato descrito — com cores, tipografia, imagens e interações — é um ==def==mockup== de alta fidelidade (I). A asserção II justifica o uso desse tipo de protótipo em testes com usuários: quanto mais próximo do produto real, mais válidas são as reações e avaliações dos participantes — o que fundamenta diretamente a escolha descrita em I."
+  },
+
+  {
+    tipo: "Asserção + Justificativa",
+    texto: "Em um projeto de redesign de um portal universitário, a equipe optou por um protótipo horizontal para a primeira rodada de validação com usuários. O protótipo contemplava todas as seções do sistema — matrícula, biblioteca, financeiro, acadêmico e suporte — mas cada seção possuía apenas as telas iniciais, sem aprofundamento nos fluxos internos de cada funcionalidade.",
+    question: "Analise as asserções a seguir e a relação proposta entre elas:",
+    assertions: [
+      "A escolha de um ==def==protótipo horizontal== é adequada para validar a abrangência do sistema com usuários, pois permite cobrir todas as áreas funcionais sem exigir o desenvolvimento detalhado de cada fluxo interno.",
+      "[PORQUE] O protótipo horizontal sacrifica profundidade em favor da amplitude, sendo mais eficiente quando o objetivo é verificar se o sistema cobre as necessidades gerais dos usuários, antes de detalhar funcionalidades específicas."
+    ],
+    options: [
+      "As asserções I e II são verdadeiras, e II justifica I",
+      "As asserções I e II são verdadeiras, mas II não justifica I",
+      "A asserção I é verdadeira e a II é falsa",
+      "A asserção I é falsa e a II é verdadeira"
+    ],
+    answer: 0,
+    feedback: "Correto: A. O ==def==protótipo horizontal== cobre muitas funções com pouco detalhamento, sendo ideal para validar a abrangência do sistema (I). A asserção II explica o princípio subjacente: **amplitude em detrimento da profundidade** — exatamente o trade-off que justifica essa escolha para uma validação inicial de escopo. As duas asserções são verdadeiras e II justifica I."
+  },
+
+  {
+    tipo: "Múltiplas afirmativas",
+    texto: "Uma equipe multidisciplinar responsável pelo redesign do aplicativo de mobilidade urbana de uma capital brasileira discutiu os fundamentos do Design Centrado no Usuário (DCU) antes de iniciar qualquer atividade de prototipação. O debate envolveu o papel do designer, os princípios norteadores da abordagem e a relação entre usabilidade, ergonomia e comunicabilidade no contexto do projeto.",
+    question: "Avalie as afirmativas a seguir sobre os princípios e fundamentos do Design Centrado no Usuário:",
+    assertions: [
+      "O ==def==Design Centrado no Usuário== estabelece que o comportamento e o contexto do usuário devem ser analisados antes da definição de requisitos, garantindo que as decisões de design partam de necessidades reais e não de suposições da equipe.",
+      "O princípio de intuitividade no DCU implica que o sistema deve poder ser utilizado sem necessidade de consulta a manuais ou treinamentos, reduzindo a curva de aprendizado para novos usuários.",
+      "O papel do designer no DCU se limita à definição da aparência visual do sistema, cabendo às equipes de engenharia todas as decisões sobre funcionalidade, fluxo de interação e estrutura de navegação.",
+      "A comunicabilidade, como princípio do DCU, refere-se à clareza com que o sistema transmite informações ao usuário, garantindo que mensagens, rótulos e feedbacks sejam compreendidos sem ambiguidade."
+    ],
+    questionContinuation: "São corretas apenas as afirmativas:",
+    options: [
+      "I, II e IV, apenas",
+      "I e II, apenas",
+      "II e IV, apenas",
+      "I, II, III e IV"
+    ],
+    answer: 0,
+    feedback: "Correto: A (I, II e IV). O DCU parte da análise do usuário (I), preza pela intuitividade sem manuais (II) e inclui comunicabilidade como clareza informacional (IV) — todas corretas. A afirmativa III está **errada**: o papel do designer no DCU é amplo, incluindo análise de comportamento, definição de requisitos, planejamento da interação e estrutura do sistema — não se restringe à aparência visual."
+  },
+
+  {
+    tipo: "Múltiplas afirmativas",
+    texto: "Durante a avaliação de usabilidade de um sistema de gestão escolar, a equipe classificou os problemas encontrados em três categorias distintas, conforme os conceitos estudados na disciplina. Os problemas identificados foram: (1) um botão de exclusão de registros posicionado próximo ao botão de salvar, causando exclusões acidentais frequentes; (2) um campo de busca que demorava 8 segundos para retornar resultados, tornando o processo lento; (3) uma mensagem de confirmação com linguagem técnica ambígua que gerava dúvidas nos usuários, mas não impedia a conclusão da tarefa.",
+    question: "Avalie as afirmativas a seguir sobre a classificação dos problemas de usabilidade identificados:",
+    assertions: [
+      "O problema (1) — botão de exclusão próximo ao de salvar — deve ser classificado como ==warn==barreira==, pois a proximidade entre os botões provoca erros irreversíveis que frequentemente impedem o usuário de atingir seu objetivo.",
+      "O problema (2) — lentidão de 8 segundos — deve ser classificado como obstáculo, pois dificulta a conclusão da tarefa sem impedi-la completamente, comprometendo a eficiência da interação.",
+      "O problema (3) — mensagem ambígua — deve ser classificado como ruído, pois causa dúvida e confusão no usuário mas não impede nem dificulta gravemente a conclusão da tarefa.",
+      "Os problemas (1), (2) e (3) são todos barreiras, pois qualquer problema de usabilidade que impacte negativamente a experiência do usuário deve ser classificado na categoria mais grave para garantir priorização na correção."
+    ],
+    questionContinuation: "São corretas apenas as afirmativas:",
+    options: [
+      "I, II e III, apenas",
+      "I e II, apenas",
+      "II e III, apenas",
+      "I, II, III e IV"
+    ],
+    answer: 0,
+    feedback: "Correto: A (I, II e III). As classificações estão corretas: ==warn==barreira== quando impede o objetivo (I), obstáculo quando dificulta sem impedir (II), e ruído quando causa dúvida sem bloquear a tarefa (III). A afirmativa IV está **errada**: os três tipos formam uma taxonomia graduada — classificar todos como barreiras ignora as distinções conceituais e prejudica a priorização adequada das correções."
+  },
+
+  {
+    tipo: "Múltiplas afirmativas",
+    texto: "Uma equipe de produto utilizou diferentes tipos de protótipos ao longo do desenvolvimento de um sistema de reservas hoteleiras. Na fase inicial, criaram narrativas textuais descrevendo o fluxo completo de reserva de um hóspede fictício. Em seguida, produziram representações visuais sequenciais mostrando cada passo da interação. Depois, partiram para estruturas básicas das telas sem elementos visuais. Por fim, desenvolveram interfaces completas com cores, fontes e imagens.",
+    question: "Avalie as afirmativas a seguir sobre os tipos de protótipos utilizados pela equipe:",
+    assertions: [
+      "As narrativas textuais descrevendo o fluxo do usuário correspondem ao tipo ==def==cenário==, que relata passo a passo a interação entre usuário e sistema de forma descritiva.",
+      "As representações visuais sequenciais correspondem ao storyboard, que transforma o cenário em uma sequência de imagens ou esboços representando cada momento da interação.",
+      "As estruturas básicas das telas sem elementos visuais correspondem ao mockup, que é o artefato de mais alta fidelidade utilizado no processo de prototipação.",
+      "As interfaces completas com cores, fontes e imagens correspondem ao mockup de alta fidelidade, que simula o produto final e é utilizado em fases avançadas de validação com usuários."
+    ],
+    questionContinuation: "São corretas apenas as afirmativas:",
+    options: [
+      "I, II e IV, apenas",
+      "I e II, apenas",
+      "III e IV, apenas",
+      "I, II, III e IV"
+    ],
+    answer: 0,
+    feedback: "Correto: A (I, II e IV). O ==def==cenário== é a narrativa textual (I), o storyboard é a versão visual sequencial (II), e o mockup de alta fidelidade representa o produto final com todos os elementos visuais (IV). A afirmativa III está **errada**: a estrutura básica sem elementos visuais corresponde ao **wireframe**, não ao mockup — o wireframe é um artefato de baixa fidelidade, enquanto o mockup é o de alta fidelidade."
+  },
+
+  {
+    tipo: "Conceitual",
+    texto: "Em uma sprint de design de um aplicativo de saúde mental, a equipe precisou decidir entre dois modelos de protótipo: um cobrindo todas as funcionalidades do sistema — cadastro, diário de humor, meditações guiadas, agenda de consultas e relatórios — com apenas as telas iniciais de cada módulo; e outro focando exclusivamente no módulo de diário de humor, com todos os fluxos detalhados, incluindo edição, histórico, análise gráfica e exportação de dados.",
+    question: "Sobre as classificações por estrutura dos dois protótipos descritos, assinale a alternativa correta:",
+    options: [
+      "Ambos os protótipos são horizontais, pois os dois cobrem funcionalidades reais do sistema e foram desenvolvidos para validação com usuários.",
+      "O primeiro protótipo é horizontal — abrange muitas funções com pouco detalhamento — e o segundo é vertical — cobre menos funções com alto nível de detalhamento interno.",
+      "O primeiro protótipo é vertical por cobrir o sistema completo e o segundo é horizontal por se aprofundar em uma única funcionalidade.",
+      "A classificação horizontal e vertical refere-se apenas à fidelidade visual dos protótipos, sendo irrelevante para a análise da abrangência funcional."
+    ],
+    answer: 1,
+    feedback: "Correto: B. O protótipo que cobre todas as funcionalidades com pouco detalhamento é chamado de **horizontal** — amplo em abrangência, raso em profundidade. O que se aprofunda em uma única funcionalidade com todos os seus fluxos é chamado de ==def==vertical== — estreito em escopo, profundo em detalhamento. A alternativa A erra ao classificar ambos como horizontais. A C inverte as definições. A D confunde classificação por estrutura com fidelidade visual."
+  },
+
+  {
+    tipo: "Conceitual",
+    texto: "A diretora de produto de uma startup de educação financeira apresentou ao conselho três modelos conceituais de interação possíveis para o novo aplicativo: no primeiro, os usuários emitiriam comandos por voz ou texto para executar ações; no segundo, interagiriam em tempo real com um assistente de inteligência artificial que responderia perguntas e ofereceria orientações personalizadas; no terceiro, navegariam por menus e visualizariam seus dados financeiros diretamente manipulando gráficos e categorias.",
+    question: "Com base nos tipos de interação definidos nos modelos conceituais, assinale a alternativa que classifica corretamente as três abordagens descritas:",
+    options: [
+      "O primeiro é conversação; o segundo é instrução; o terceiro é exploração/pesquisa.",
+      "O primeiro é instrução; o segundo é conversação; o terceiro é manipulação/navegação.",
+      "O primeiro é manipulação/navegação; o segundo é instrução; o terceiro é conversação.",
+      "Os três modelos são variações do tipo exploração/pesquisa, pois todos permitem que o usuário interaja com informações financeiras do sistema."
+    ],
+    answer: 1,
+    feedback: "Correto: B. O primeiro modelo — comandos de voz ou texto para executar ações — é o tipo **instrução**. O segundo — interação com IA respondendo perguntas em tempo real — é o tipo ==def==conversação==. O terceiro — navegação por menus e manipulação direta de gráficos — é o tipo **manipulação/navegação**. A alternativa A inverte instrução e conversação. A C classifica incorretamente os três tipos. A D generaliza indevidamente todos como exploração."
+  },
+
+  {
+    tipo: "Conceitual",
+    texto: "Em uma reunião de planejamento, o gerente de produto de uma plataforma de RH afirmou que os modelos físicos são desnecessários, já que os modelos conceituais descrevem com precisão como o sistema deve funcionar. Um desenvolvedor sênior discordou, argumentando que modelo conceitual e modelo físico têm propósitos complementares e nenhum substitui o outro. A discussão revelou uma confusão sobre as definições e papéis de cada tipo de modelo.",
+    question: "Sobre a distinção entre modelos conceituais e modelos físicos no contexto do design de interfaces, assinale a alternativa correta:",
+    options: [
+      "Modelos conceituais e físicos são equivalentes e intercambiáveis — ambos descrevem como o sistema deve ser implementado tecnicamente, diferindo apenas no nível de abstração utilizado.",
+      "O modelo conceitual representa como o sistema funciona na teoria, utilizando diagramas e metáforas do mundo real, enquanto o modelo físico transforma essa visão em elementos concretos como aparência, fluxo e operação.",
+      "O modelo físico é sempre desenvolvido antes do conceitual, pois as decisões de implementação técnica devem preceder as escolhas de design e interação para garantir viabilidade.",
+      "O modelo conceitual é utilizado exclusivamente por desenvolvedores para definir arquitetura de software, enquanto o modelo físico é o único instrumento de trabalho dos designers de interface."
+    ],
+    answer: 1,
+    feedback: "Correto: B. O ==def==modelo conceitual== representa o sistema na teoria — como ele funciona, suas funções e conexões, usando diagramas e metáforas. O modelo físico transforma essa abstração em algo concreto: aparência visual (representacional), funcionamento (operacional) e fluxo de uso (interação). As alternativas A e D distorcem os papéis. A alternativa C inverte a sequência natural — o conceitual precede o físico no processo de design."
+  },
+
+  {
+    tipo: "Análise aplicada",
+    texto: "Uma equipe de UX foi contratada para redesenhar o sistema de prontuário eletrônico de um hospital público. No levantamento inicial, identificaram que médicos experientes completavam todas as tarefas com sucesso, mas precisavam de 30% mais tempo que em sistemas similares. Já os médicos recém-formados frequentemente iniciavam preenchimentos e os abandonavam no meio por não entenderem o fluxo. Por fim, médicos com deficiência visual relatavam impossibilidade de uso por ausência de suporte a leitores de tela.",
+    question: "Com base na classificação de problemas de usabilidade por tipo de usuário e na categorização dos problemas encontrados, avalie as afirmativas a seguir:",
+    assertions: [
+      "O problema dos médicos experientes — conclusão com 30% mais tempo — configura um ==warn==obstáculo== para usuários especialistas, pois dificulta a eficiência sem impedir a conclusão das tarefas.",
+      "O problema dos médicos recém-formados — abandono do preenchimento — configura uma barreira para usuários iniciantes, pois impede efetivamente a conclusão da tarefa.",
+      "O problema dos médicos com deficiência visual — impossibilidade de uso — é classificado como ruído de acessibilidade, pois causa confusão mas não bloqueia completamente o uso do sistema.",
+      "Os três problemas identificados requerem estratégias de correção distintas: obstáculos demandam otimização de fluxo; barreiras exigem reestruturação funcional; e problemas de acessibilidade requerem implementação de suporte a tecnologias assistivas."
+    ],
+    questionContinuation: "São corretas apenas as afirmativas:",
+    options: [
+      "I, II e IV, apenas",
+      "I e IV, apenas",
+      "II e III, apenas",
+      "I, II, III e IV"
+    ],
+    answer: 0,
+    feedback: "Correto: A (I, II e IV). O excesso de tempo para especialistas é um ==warn==obstáculo== — dificulta sem impedir (I). O abandono por iniciantes é uma barreira — impede a conclusão (II). Estratégias distintas para cada tipo são adequadas (IV). A afirmativa III está **errada**: a impossibilidade de uso por deficiência visual é uma **barreira**, não um ruído — o sistema é completamente inutilizável para esse perfil, o que corresponde à categoria mais grave de problema."
+  },
+
+  {
+    tipo: "Análise aplicada",
+    texto: "Uma consultoria foi contratada para desenvolver um aplicativo de gestão de resíduos para um município. O projeto tinha prazo de 18 meses e envolvia três grupos de usuários com perfis muito distintos: agentes de coleta (baixa familiaridade com tecnologia), fiscais ambientais (usuários técnicos) e gestores municipais (foco em relatórios e indicadores). A equipe debateu a sequência metodológica mais adequada: iniciar com prototipação de baixa fidelidade, validar com usuários, refinar e então avançar para alta fidelidade.",
+    question: "Com base nos conceitos de prototipação e design centrado no usuário, avalie as afirmativas a seguir sobre a abordagem adotada:",
+    assertions: [
+      "Iniciar com protótipos de ==def==baixa fidelidade== é tecnicamente adequado para esse contexto porque permite explorar um maior volume de ideias e alternativas de design antes de comprometer recursos com elementos visuais detalhados.",
+      "A presença de três perfis distintos de usuários reforça a necessidade de validar os protótipos com representantes de cada grupo, pois barreiras e obstáculos de usabilidade tendem a variar significativamente conforme o nível de familiaridade com tecnologia.",
+      "A validação com usuários só deve ocorrer após a conclusão do mockup de alta fidelidade, pois protótipos simples não fornecem informações úteis para decisões de design em projetos complexos.",
+      "A progressão de baixa para alta fidelidade seguida de validação iterativa corresponde a uma abordagem centrada no usuário que reduz retrabalho e aumenta a aderência do produto final às necessidades reais dos diferentes perfis."
+    ],
+    questionContinuation: "São corretas apenas as afirmativas:",
+    options: [
+      "I, II e IV, apenas",
+      "I e II, apenas",
+      "III e IV, apenas",
+      "I, II, III e IV"
+    ],
+    answer: 0,
+    feedback: "Correto: A (I, II e IV). Iniciar com ==def==baixa fidelidade== permite explorar mais ideias com menos custo (I). Validar com múltiplos perfis é essencial dado o gap de familiaridade tecnológica entre os grupos (II). A progressão iterativa é a abordagem DCU adequada para o contexto (IV). A afirmativa III está **errada**: protótipos de baixa fidelidade são ferramentas valiosas exatamente em fases iniciais de projetos complexos — postegar a validação até o mockup final aumenta o custo de correção de erros estruturais."
+  },
+
+  {
+    tipo: "Análise aplicada",
+    texto: "Uma equipe de design recebeu o briefing para criar um novo sistema de gestão de frotas para uma empresa de logística. Antes de qualquer prototipação, o líder de design propôs construir modelos conceituais e físicos do sistema. Foram elaborados: (1) diagramas de caso de uso e de sequência descrevendo as funções do sistema; (2) esboços da aparência das telas principais; (3) representações do fluxo de navegação entre módulos. Em seguida, a equipe produziu um storyboard mostrando um motorista recebendo uma rota, registrando paradas e encerrando o turno.",
+    question: "Com base nos conceitos de modelagem e prototipação, avalie as afirmativas a seguir sobre as atividades descritas:",
+    assertions: [
+      "Os diagramas de caso de uso e sequência (1) são instrumentos do ==def==modelo conceitual==, pois representam as funções e conexões do sistema de forma abstrata, antes de qualquer decisão de aparência ou interação.",
+      "Os esboços de aparência (2) e as representações de fluxo (3) compõem o modelo físico do sistema, sendo respectivamente os subtipos representacional e de interação.",
+      "O storyboard produzido é um protótipo de alta fidelidade porque apresenta sequência visual detalhada e representa com precisão o produto final que será entregue aos motoristas.",
+      "A sequência adotada pela equipe — modelo conceitual, modelo físico e então storyboard — é coerente com o princípio de que a modelagem deve preceder a prototipação, garantindo que as representações visuais estejam fundamentadas em uma visão funcional clara do sistema."
+    ],
+    questionContinuation: "São corretas apenas as afirmativas:",
+    options: [
+      "I, II e IV, apenas",
+      "I e IV, apenas",
+      "II e III, apenas",
+      "I, II, III e IV"
+    ],
+    answer: 0,
+    feedback: "Correto: A (I, II e IV). Os diagramas UML pertencem ao ==def==modelo conceitual== (I). Os esboços de aparência e fluxo de navegação compõem o modelo físico representacional e de interação, respectivamente (II). A sequência modelagem → prototipação é o fluxo correto no DCU (IV). A afirmativa III está **errada**: o storyboard é um protótipo de **baixa fidelidade** — é uma representação visual narrativa e simplificada, não uma simulação do produto final, que corresponderia ao mockup de alta fidelidade."
+  }
 
   ],
 

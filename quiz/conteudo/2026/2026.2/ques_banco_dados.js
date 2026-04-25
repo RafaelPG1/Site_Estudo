@@ -312,7 +312,284 @@ CREATE TABLE alunos (
     answer: 2,
  
     feedback: "A ordem correta é: ==ddl==CREATE DATABASE== → ==ddl==CREATE TABLE== (com colunas, tipos e chaves) → ALTER para ajustes → DROP apenas quando necessário. Dados não fazem parte da DDL."
+  },
+  
+  // ── Questão 13 ── Explicativa
+  {
+    aula: "Aula 10 — Manipulando um Banco de Dados",
+    tipo: "Explicativa",
+
+    texto: "A DML — Data Manipulation Language — é o subconjunto da SQL responsável por trabalhar com os dados armazenados nas tabelas. Diferente da DDL, que cuida da estrutura, a DML cuida do conteúdo: ela permite buscar, inserir, atualizar e excluir registros. Os quatro comandos principais da DML são SELECT, INSERT, UPDATE e DELETE.",
+
+    question: "Qual é a principal diferença entre DDL e DML em SQL?",
+
+    options: [
+      "DDL manipula dados armazenados; DML define a estrutura das tabelas.",
+      "DDL define a estrutura do banco; DML manipula os dados armazenados.",
+      "Ambas servem para consultar dados, diferindo apenas na sintaxe.",
+      "DDL é usada apenas em bancos NoSQL; DML é exclusiva de bancos relacionais."
+    ],
+
+    answer: 1,
+
+    feedback: "==ddl==DDL== cuida do esqueleto do banco (tabelas, índices). ==dml==DML== cuida dos dados dentro dessas estruturas — inserindo, consultando, atualizando e excluindo registros."
+  },
+
+  // ── Questão 14 ── Explicativa
+  {
+    aula: "Aula 10 — Manipulando um Banco de Dados",
+    tipo: "Explicativa",
+
+    texto: "Em SQL, existem duas abordagens de DML: a procedural e a não procedural. Na abordagem procedural, o usuário define não só o que quer, mas também como o banco deve buscar os dados — exige mais conhecimento técnico. Já na abordagem não procedural, que é a mais comum no SQL padrão, o usuário informa apenas o que quer, e o banco decide como executar internamente.",
+
+    question: "Qual é a característica da DML não procedural, abordagem padrão do SQL?",
+
+    options: [
+      "O usuário define o que quer e também o caminho exato para obter os dados.",
+      "O usuário programa manualmente os algoritmos de busca dentro do banco.",
+      "O usuário informa apenas o que quer, e o banco decide como executar a operação.",
+      "O banco exige que o usuário declare a ordem de acesso às tabelas antes de cada consulta."
+    ],
+
+    answer: 2,
+
+    feedback: "Na DML ==mark==não procedural==, o usuário descreve apenas o resultado desejado. O banco gerencia internamente como recuperar os dados, tornando o SQL mais simples e acessível."
+  },
+
+  // ── Questão 15 ── Explicativa
+  {
+    aula: "Aula 10 — Manipulando um Banco de Dados",
+    tipo: "Explicativa",
+
+    texto: "A estrutura básica de uma consulta SQL é composta por três cláusulas principais: SELECT, FROM e WHERE. O SELECT define quais colunas serão retornadas. O FROM indica de qual tabela os dados serão buscados. O WHERE aplica um filtro, retornando apenas os registros que atendem à condição especificada.",
+
+    question: "Em uma consulta SQL com SELECT, FROM e WHERE, qual é a função da cláusula WHERE?",
+
+    options: [
+      "Definir quais colunas serão exibidas no resultado da consulta.",
+      "Indicar de qual tabela os dados serão recuperados.",
+      "Filtrar os registros, retornando apenas os que atendem à condição definida.",
+      "Ordenar os resultados em ordem crescente ou decrescente."
+    ],
+
+    answer: 2,
+
+    feedback: "==dml==WHERE== é a cláusula de filtragem da consulta. Sem ela, todos os registros da tabela são retornados. Com ela, apenas os que satisfazem a condição aparecem no resultado."
+  },
+
+  // ── Questão 16 ── Contextualizada
+  {
+    aula: "Aula 10 — Manipulando um Banco de Dados",
+    tipo: "Contextualizada",
+
+    texto: "O comando INSERT é usado para adicionar novos registros em uma tabela. Ele pode ser usado de duas formas: inserindo valores para todas as colunas na ordem em que foram definidas, ou especificando explicitamente quais colunas receberão valores. A segunda forma é mais segura, pois não depende da ordem das colunas na tabela.",
+
+    question: "Um desenvolvedor precisa inserir um novo curso na tabela cursos, informando apenas o código e o nome. Qual comando está correto?",
+
+    code: `-- A)
+VALUES (11, 'Sistemas de Informação') INTO cursos;
+
+-- B)
+INSERT cursos SET (11, 'Sistemas de Informação');
+
+-- C)
+INSERT INTO cursos (codigo, nome) VALUES (11, 'Sistemas de Informação');
+
+-- D)
+ADD INTO cursos (codigo, nome) VALUES (11, 'Sistemas de Informação');`,
+
+    options: [
+      "Opção A — usando VALUES antes de INTO",
+      "Opção B — usando INSERT com SET",
+      "Opção C — usando INSERT INTO com colunas especificadas",
+      "Opção D — usando ADD INTO"
+    ],
+
+    answer: 2,
+
+    feedback: "A sintaxe correta é ==dml==INSERT INTO== tabela (colunas) VALUES (valores). Especificar as colunas é uma boa prática pois torna o comando independente da ordem definida na criação da tabela."
+  },
+
+  // ── Questão 17 ── Contextualizada
+  {
+    aula: "Aula 10 — Manipulando um Banco de Dados",
+    tipo: "Contextualizada",
+
+    texto: "O comando DELETE remove registros de uma tabela. Ele é controlado pela cláusula WHERE: quando presente, apaga apenas os registros que atendem à condição. Quando ausente, o DELETE age sobre todos os registros da tabela — mantendo a estrutura, mas esvaziando completamente o conteúdo.",
+
+    question: "Um analista executou o comando DELETE FROM alunos sem nenhuma cláusula WHERE. O que acontece com a tabela alunos?",
+
+    options: [
+      "Apenas o primeiro registro é removido, como comportamento padrão de segurança.",
+      "O banco solicita confirmação antes de apagar todos os registros.",
+      "Todos os registros são removidos, mas a estrutura da tabela permanece intacta.",
+      "A tabela inteira é removida, incluindo sua estrutura e definições."
+    ],
+
+    answer: 2,
+
+    feedback: "==danger==DELETE sem WHERE== apaga todos os dados da tabela, mas preserva sua estrutura. Para remover a tabela inteira (dados e estrutura), seria necessário usar DROP TABLE."
+  },
+
+  // ── Questão 18 ── Contextualizada
+  {
+    aula: "Aula 10 — Manipulando um Banco de Dados",
+    tipo: "Contextualizada",
+
+    texto: "O SELECT DISTINCT é usado quando se deseja eliminar valores repetidos no resultado de uma consulta. Por padrão, o SQL retorna todas as linhas, incluindo duplicatas. Ao adicionar DISTINCT logo após o SELECT, o banco garante que cada valor apareça apenas uma vez no resultado final.",
+
+    question: "Uma consulta retornou os valores: 'SP', 'RJ', 'SP', 'MG', 'RJ'. Qual comando foi provavelmente usado para obter esse resultado com duplicatas?",
+
+    options: [
+      "SELECT DISTINCT estado FROM enderecos;",
+      "SELECT estado FROM enderecos;",
+      "SELECT UNIQUE estado FROM enderecos;",
+      "SELECT estado WITHOUT REPEAT FROM enderecos;"
+    ],
+
+    answer: 1,
+
+    feedback: "O ==dml==SELECT== simples retorna todas as linhas, incluindo repetições. Para eliminar duplicatas, é necessário usar SELECT ==mark==DISTINCT==, que filtra valores únicos no resultado."
+  },
+
+  // ── Questão 19 ── Aplicação
+  {
+    aula: "Aula 10 — Manipulando um Banco de Dados",
+    tipo: "Aplicação",
+
+    texto: "O comando UPDATE permite modificar valores em registros já existentes. Ele utiliza a cláusula SET para definir quais colunas serão alteradas e os novos valores. A cláusula WHERE limita quais registros serão afetados. Sem o WHERE, todos os registros da tabela recebem a atualização — o que raramente é o comportamento desejado.",
+
+    question: "Um gestor precisa atualizar apenas o nome do curso de código 11 na tabela cursos. Qual comando executa essa ação corretamente?",
+
+    code: `-- A)
+UPDATE cursos SET nome = 'SI' WHERE codigo = 11;
+
+-- B)
+UPDATE cursos SET nome = 'SI';
+
+-- C)
+MODIFY cursos SET nome = 'SI' WHERE codigo = 11;
+
+-- D)
+UPDATE cursos WHERE codigo = 11 VALUES nome = 'SI';`,
+
+    options: [
+      "Opção A — UPDATE com SET e WHERE corretos",
+      "Opção B — UPDATE sem WHERE",
+      "Opção C — usando MODIFY",
+      "Opção D — usando VALUES no lugar de SET"
+    ],
+
+    answer: 0,
+
+    feedback: "A opção A usa ==dml==UPDATE== com SET e WHERE corretamente. A opção B atualizaria todos os registros. MODIFY e VALUES na posição da opção D não são sintaxes válidas em SQL padrão."
+  },
+
+  // ── Questão 20 ── Aplicação
+  {
+    aula: "Aula 10 — Manipulando um Banco de Dados",
+    tipo: "Aplicação",
+
+    texto: "Os operadores aritméticos em SQL podem ser usados diretamente nas colunas do SELECT para calcular novos valores sem modificar os dados originais. É comum usar o alias AS para dar um nome ao resultado calculado. A precedência segue a matemática padrão: parênteses têm prioridade sobre multiplicação e divisão, que têm prioridade sobre soma e subtração.",
+
+    question: "Uma empresa quer calcular o salário anual de cada empregado, somando um bônus fixo de R$ 500 ao salário mensal antes de multiplicar por 12. Qual expressão SQL está correta?",
+
+    options: [
+      "SELECT salario * 12 + 500 AS salario_anual FROM empregados;",
+      "SELECT 12 * (salario + 500) AS salario_anual FROM empregados;",
+      "SELECT (salario * 12) + 500 AS salario_anual FROM empregados;",
+      "SELECT salario + 500 AS salario_anual * 12 FROM empregados;"
+    ],
+
+    answer: 1,
+
+    feedback: "Os ==mark==parênteses== garantem que o bônus seja somado antes da multiplicação. Sem eles, a precedência matemática faria a multiplicação primeiro — alterando o resultado final."
+  },
+
+  // ── Questão 21 ── Aplicação
+  {
+    aula: "Aula 10 — Manipulando um Banco de Dados",
+    tipo: "Aplicação",
+
+    texto: "Os operadores lógicos AND, OR e NOT permitem combinar múltiplas condições em uma cláusula WHERE. O AND exige que todas as condições sejam verdadeiras — é mais restritivo. O OR aceita registros que satisfaçam ao menos uma condição — é mais amplo. O NOT inverte o resultado de uma condição.",
+
+    question: "Um professor quer listar alunos que estejam matriculados na disciplina 'BD' E que tenham 4 créditos. Qual operador lógico deve ser usado e por quê?",
+
+    options: [
+      "OR, pois basta uma das condições ser verdadeira para o aluno aparecer.",
+      "NOT, pois o professor quer excluir alunos de outras disciplinas.",
+      "AND, pois ambas as condições precisam ser verdadeiras ao mesmo tempo.",
+      "OR, pois o AND tornaria a consulta muito lenta em tabelas grandes."
+    ],
+
+    answer: 2,
+
+    feedback: "O operador ==dml==AND== exige que todas as condições sejam verdadeiras simultaneamente. Como o professor quer alunos que atendam aos dois critérios ao mesmo tempo, AND é o operador correto."
+  },
+
+  // ── Questão 22 ── Explicativa
+  {
+    aula: "Aula 10 — Manipulando um Banco de Dados",
+    tipo: "Explicativa",
+
+    texto: "Os operadores de comparação em SQL são usados na cláusula WHERE para filtrar registros com base em condições. Entre eles, o operador <> significa 'diferente de' — equivalente ao != em outras linguagens. Outros operadores comuns são = (igual), > (maior), < (menor), >= (maior ou igual) e <= (menor ou igual).",
+
+    question: "Um desenvolvedor quer buscar todos os produtos cujo estoque seja diferente de zero. Qual operador de comparação deve ser usado na condição WHERE?",
+
+    options: [
+      "WHERE estoque = 0",
+      "WHERE estoque NOT 0",
+      "WHERE estoque <> 0",
+      "WHERE estoque != NULL"
+    ],
+
+    answer: 2,
+
+    feedback: "O operador ==mark==<>== significa 'diferente de' em SQL padrão. Para buscar registros onde o estoque não seja zero, a condição correta é WHERE estoque <> 0."
+  },
+
+  // ── Questão 23 ── Contextualizada
+  {
+    aula: "Aula 10 — Manipulando um Banco de Dados",
+    tipo: "Contextualizada",
+
+    texto: "Em SQL, o SELECT pode retornar uma ou mais colunas de uma tabela. Quando se deseja retornar todas as colunas disponíveis, usa-se o asterisco (*) no lugar dos nomes das colunas. Quando se quer apenas algumas colunas específicas, elas são listadas separadas por vírgula. Essa seleção precisa de dados não altera os dados originais — apenas os exibe.",
+
+    question: "Um analista executou SELECT * FROM clientes. O que esse comando retorna?",
+
+    options: [
+      "Apenas a primeira coluna da tabela clientes.",
+      "Apenas os registros duplicados da tabela.",
+      "Todas as colunas e todos os registros da tabela clientes.",
+      "A estrutura da tabela clientes, sem os dados armazenados."
+    ],
+
+    answer: 2,
+
+    feedback: "O ==dml==SELECT *== retorna todas as colunas de todos os registros da tabela indicada no FROM. É útil para explorar os dados, mas em produção é recomendável especificar apenas as colunas necessárias."
+  },
+
+  // ── Questão 24 ── Aplicação
+  {
+    aula: "Aula 10 — Manipulando um Banco de Dados",
+    tipo: "Aplicação",
+
+    texto: "No dia a dia do desenvolvimento com SQL, os quatro comandos DML — SELECT, INSERT, UPDATE e DELETE — formam o chamado CRUD (Create, Read, Update, Delete). Cada operação tem seu papel bem definido: SELECT lê, INSERT cria, UPDATE modifica e DELETE remove. Saber qual usar em cada situação é fundamental para manipular dados corretamente.",
+
+    question: "Um sistema de biblioteca precisa registrar um novo livro, depois corrigir o título cadastrado errado e, por fim, remover um livro descartado do acervo. Qual sequência de comandos DML representa essas três ações, respectivamente?",
+
+    options: [
+      "SELECT → UPDATE → DELETE",
+      "INSERT → UPDATE → DELETE",
+      "INSERT → DELETE → UPDATE",
+      "UPDATE → INSERT → DELETE"
+    ],
+
+    answer: 1,
+
+    feedback: "==dml==INSERT== registra o novo livro, ==dml==UPDATE== corrige o título e ==dml==DELETE== remove o livro descartado. Essa sequência representa o fluxo clássico de manipulação de dados com DML."
   }
+
 ],
 
 
