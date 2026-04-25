@@ -47,12 +47,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Imports opcionais — se falharem, o resto da página continua funcionando
   try {
-    const mod = await import('../shared/cores.js');
+    const mod = await import('../shared/js/cores.js');
     State.DISC_CORES = mod.DISC_CORES ?? {};
   } catch (_) { /* sem cores dinâmicas */ }
 
   try {
-    const mod = await import('./conteudo/videos.js');
+    const mod = await import('../conteudo_geral/resumo/videos.js');
     State.getVideos = mod.getVideos ?? null;
   } catch (_) { /* sem seção de vídeos */ }
 
@@ -272,7 +272,7 @@ function _carregarConteudo() {
   }
 
   const [ano] = (State.semestre ?? '2026.1').split('.');
-  const src = `./conteudo/${ano}/${State.semestre}/res_${disc.arquivo}.js`;
+  const src = `../conteudo_geral/resumo/${ano}/${State.semestre}/res_${disc.arquivo}.js`;
 
   const script = document.createElement('script');
   script.src = src;
