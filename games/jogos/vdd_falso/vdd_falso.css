@@ -165,7 +165,7 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 
 /* Slot do timer — lado direito */
 .game-header__score-slot {
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center; gap: 12px;
   flex-shrink: 0;
 }
 
@@ -180,18 +180,36 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 }
 .game-timer-ring__arc { display: none; }
 
-/* Ícone ⏱ antes do bloco */
-.game-header__score-slot::before {
-  content: '⏱';
-  font-size: 1.05rem;
+/* Ícone SVG do timer — injetado via HTML */
+.game-timer-icon {
+  display: flex; align-items: center; justify-content: center;
+  width: 52px; height: 52px; flex-shrink: 0;
+  background: rgba(var(--disc-tema-rgb), .10);
+  border: 1.5px solid rgba(var(--disc-tema-rgb), .30);
+  border-radius: 50%;
   color: var(--disc-tema);
-  flex-shrink: 0;
+  transition: background var(--t), border-color var(--t), box-shadow var(--t);
+}
+.game-timer-icon svg { display: block; }
+
+/* Pulsa suavemente quando em danger */
+.game-timer-icon--danger {
+  background: rgba(239,68,68,.12);
+  border-color: rgba(239,68,68,.40);
+  color: var(--false-color);
+  animation: icon-danger-pulse .7s ease-in-out infinite alternate;
+}
+@keyframes icon-danger-pulse {
+  from { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+  to   { box-shadow: 0 0 0 7px rgba(239,68,68,.18); }
 }
 
-/* Bloco: TEMPO RESTANTE acima, número abaixo — ambos alinhados à esquerda */
+/* Bloco: TEMPO RESTANTE acima, número abaixo — centralizados */
 .game-timer-block {
   display: flex; flex-direction: column;
-  align-items: flex-start; gap: 1px;
+  align-items: center; justify-content: center;
+  gap: 3px;
+  text-align: center;
 }
 
 .game-timer-label {
@@ -217,7 +235,10 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 .game-timer-bar {
   height: 3px;
   background: rgba(255,255,255,.06);
-  position: relative; overflow: hidden; flex-shrink: 0;
+  position: sticky;
+  top: var(--header-h);
+  z-index: 49;
+  overflow: hidden; flex-shrink: 0;
 }
 .game-timer-bar__fill {
   position: absolute; top: 0; left: 0; bottom: 0;
@@ -457,6 +478,7 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   align-items: flex-start;
   background: none; border: none; border-radius: 0;
   width: auto;
+  z-index: 50;
 }
 
 .vf-info-btn-wrapper {
@@ -485,13 +507,13 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 .vf-info-popover {
   position: absolute;
   top: calc(100% + 10px); left: 0;
-  z-index: 100;
+  z-index: 200;
   width: 270px;
   background: var(--surface-2);
   border: 1px solid var(--border-hi);
   border-radius: var(--radius);
   overflow: hidden;
-  box-shadow: 0 16px 48px rgba(0,0,0,.5);
+  box-shadow: 0 16px 48px rgba(0,0,0,.65);
   animation: popover-in .18s ease both;
 }
 @keyframes popover-in {
@@ -591,25 +613,28 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   display: flex; gap: 7px; flex-wrap: nowrap; align-items: center;
 }
 .vf-dot {
-  width: 20px; height: 20px; border-radius: 50%;
+  width: 14px; height: 14px; border-radius: 50%;
   transition: transform .25s var(--ease), background .3s, box-shadow .3s;
   flex-shrink: 0; cursor: pointer;
   border: none; padding: 0;
   display: flex; align-items: center; justify-content: center;
 }
 .vf-dot--pending {
-  background: transparent;
-  border: 2px solid rgba(255,255,255,.2);
+  background: #4b5563;
+  border: 2px solid #4b5563;
 }
+
 .vf-dot--current {
-  background: var(--disc-tema);
-  border: 2px solid var(--disc-tema);
-  box-shadow: 0 0 8px rgba(var(--disc-tema-rgb),.55);
+  background: #a855f7;
+  border: 2px solid #a855f7;
+  box-shadow: 0 0 8px rgba(168, 85, 247, .55);
+  transform: scale(1);
   animation: dot-pulse 1.2s ease-in-out infinite alternate;
 }
+
 @keyframes dot-pulse {
-  from { box-shadow: 0 0 4px rgba(var(--disc-tema-rgb),.4); }
-  to   { box-shadow: 0 0 14px rgba(var(--disc-tema-rgb),.8); }
+  from { box-shadow: 0 0 4px rgba(168, 85, 247, .35); }
+  to   { box-shadow: 0 0 12px rgba(168, 85, 247, .75); }
 }
 .vf-dot--correct {
   background: var(--true-color);
@@ -618,7 +643,7 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 }
 /* Ícone check dentro do dot correto */
 .vf-dot--correct::after {
-  content: '✓'; font-size: 10px; color: #fff; font-weight: 700;
+  content: '✓'; font-size: 7px; color: #fff; font-weight: 700;
 }
 .vf-dot--wrong {
   background: var(--false-color);
@@ -722,6 +747,7 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   padding: 5px 14px; border-radius: var(--pill);
 }
 .vf-disc-tag-pill svg { width: 13px; height: 13px; flex-shrink: 0; }
+#vf-disc-label { font-size: .8rem; letter-spacing: .01em; }
 
 /* ── Botões V / F — layout horizontal grande como na imagem ── */
 .vf-buttons {
@@ -858,14 +884,41 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 
 /* ── Faixa informativa ── */
 .vf-info-strip {
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: flex-start; gap: 10px;
   padding: 13px 20px;
   background: var(--surface-2);
   border: 1px solid var(--border-hi);
   border-radius: var(--radius);
-  font-size: .78rem; color: var(--text-2);
+  font-size: .92rem; color: var(--text-2);
+  transition: color .2s, border-color .2s;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
-.vf-info-strip svg { flex-shrink: 0; opacity: .6; color: var(--text-3); }
+.vf-info-strip svg { flex-shrink: 0; opacity: .9; color: var(--text-2); margin-top: 2px; }
+.vf-info-strip #vf-info-strip-text,
+.vf-info-strip span {
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Quando mostra a explicação — texto mais visível, sem ícone */
+.vf-info-strip--explicacao {
+  color: var(--text-1);
+  border-color: rgba(255,255,255,.15);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+.vf-info-strip--explicacao #vf-info-strip-text {
+  color: var(--text-2);
+}
+.vf-resposta-label {
+  color: var(--true-color);
+  font-weight: 600;
+}
 
 /* ── Navegação ← / → — exatamente como na imagem ── */
 .vf-nav-row {
@@ -876,7 +929,7 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 
 .vf-nav-center {
   display: flex; align-items: center; gap: 8px;
-  color: var(--text-3); font-size: .78rem;
+  color: var(--text-2); font-size: .78rem;
   flex: 1; justify-content: center;
 }
 .vf-nav-center__icon { font-size: .95rem; }
@@ -901,15 +954,17 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 }
 .vf-nav-btn:disabled { opacity: .3; cursor: not-allowed; transform: none; }
 
-/* "Próxima" com fundo rosa/magenta como na imagem */
+/* "Próxima" ghost suave */
 .vf-nav-btn--next {
-  background: var(--disc-tema);
-  border-color: var(--disc-tema);
-  color: #fff;
+  background: rgba(var(--disc-tema-rgb), .12);
+  border-color: rgba(var(--disc-tema-rgb), .35);
+  color: var(--disc-tema);
 }
 .vf-nav-btn--next:hover:not(:disabled) {
-  filter: brightness(1.08);
-  transform: translateY(-2px);
+  background: rgba(var(--disc-tema-rgb), .2);
+  border-color: rgba(var(--disc-tema-rgb), .6);
+  filter: none;
+  transform: translateY(-1px);
 }
 .vf-nav-btn--next:disabled {
   background: rgba(var(--disc-tema-rgb),.2);
@@ -954,7 +1009,8 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 .vf-pause-card::before {
   content: '';
   position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, var(--disc-tema2), var(--disc-tema));
+  background: var(--disc-tema);
+  opacity: .6;
 }
 .vf-pause-header { display:flex; align-items:center; gap:14px; text-align:left; width:100%; }
 .vf-pause-icon-ring {
@@ -977,7 +1033,38 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 .vf-pause-tip__icon { font-size:1rem; flex-shrink:0; margin-top:1px; }
 .vf-pause-tip span:last-child { font-size:.78rem; color:var(--text-2); line-height:1.5; }
 .vf-pause-resume-btn { width:100%; }
-.vf-pause-shortcut { font-size:.68rem; color:var(--text-3); }
+
+/* Botão Começar: ghost suave igual ao Retomar */
+#btn-start.game-btn {
+  background: rgba(var(--disc-tema-rgb), .12);
+  border: 1.5px solid rgba(var(--disc-tema-rgb), .35);
+  color: var(--disc-tema);
+  box-shadow: none;
+  font-weight: 600;
+  letter-spacing: .03em;
+}
+#btn-start.game-btn:hover {
+  background: rgba(var(--disc-tema-rgb), .2);
+  border-color: rgba(var(--disc-tema-rgb), .6);
+  filter: none;
+  transform: translateY(-1px);
+}
+
+.vf-pause-resume-btn.game-btn {
+  background: rgba(var(--disc-tema-rgb), .12);
+  border: 1.5px solid rgba(var(--disc-tema-rgb), .35);
+  color: var(--disc-tema);
+  box-shadow: none;
+  font-weight: 600;
+  letter-spacing: .03em;
+}
+.vf-pause-resume-btn.game-btn:hover {
+  background: rgba(var(--disc-tema-rgb), .2);
+  border-color: rgba(var(--disc-tema-rgb), .6);
+  filter: none;
+  transform: translateY(-1px);
+}
+.vf-pause-shortcut { font-size:.75rem; color:var(--text-2); }
 .vf-pause-shortcut kbd {
   display:inline-block; padding:1px 6px; border-radius:4px;
   background:rgba(255,255,255,.06); border:1px solid var(--border-hi);

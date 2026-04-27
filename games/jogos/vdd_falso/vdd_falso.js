@@ -8,6 +8,17 @@
    - Última questão + todas respondidas: botão "Finalizar"
    - Timer corre por questão; para ao responder
    - Bolinhas de progresso clicáveis por status
+
+   Correções v6.1:
+   - [BUG 1] Tempo esgotado (null) não conta mais como erro no
+     contador de erros nem desconta pontos — tratado como neutro.
+   - [BUG 2] irProxima() não travava mais na última questão quando
+     nem todas estavam respondidas — agora avança para a próxima
+     questão pendente, ou para a última se não houver pendente.
+   - [BUG 3] Race condition em finalizarJogo(): salvarResultadoVF
+     agora é aguardado com await antes de carregar o histórico para
+     as estatísticas, garantindo que os dados da rodada atual
+     estejam salvos antes de exibir.
    ============================================================ */
 
 import { Shell, Timer, Result, shuffle, lerParams } from '../../template/game-shell.js';
@@ -41,7 +52,7 @@ const estado = {
   pontos:     0,
   acertos:    0,
   erros:      0,
-  // respostas[i] = true | false | null (null = tempo esgotado)
+  // respostas[i] = true | false | null (null = tempo esgotado — neutro)
   // undefined = questão ainda não respondida
   respostas:  [],
   timer:      null,
@@ -57,6 +68,28 @@ const estado = {
 
 const $ = id => document.getElementById(id);
 const el = {};
+
+/* Texto padrão da info-strip */
+const INFO_STRIP_DEFAULT = 'Após sua escolha, a resposta aparecerá automaticamente.';
+
+/* Helper: atualiza a info-strip com explicação ou texto padrão */
+function setInfoStrip(texto) {
+  const strip     = $('vf-info-strip');
+  const stripText = $('vf-info-strip-text');
+  const stripIcon = strip ? strip.querySelector('svg') : null;
+
+  if (!stripText) return;
+
+  if (texto) {
+    stripText.innerHTML = '<span class="vf-resposta-label">Resposta:</span> ' + texto;
+    if (stripIcon) stripIcon.style.display = 'none';
+    strip?.classList.add('vf-info-strip--explicacao');
+  } else {
+    stripText.textContent = INFO_STRIP_DEFAULT;
+    if (stripIcon) stripIcon.style.display = '';
+    strip?.classList.remove('vf-info-strip--explicacao');
+  }
+}
 
 /* ══════════════════════════════════════════════════════════
    SELEÇÃO PONDERADA
@@ -218,35 +251,44 @@ function renderizarQuestao() {
   if (el.btnFalse) { el.btnFalse.className = 'vf-btn vf-btn--false'; el.btnFalse.disabled = jaRespondeu; }
 
   if (jaRespondeu) {
-    // Mostra qual foi marcada
+    // Mostra qual foi marcada (se não foi tempo esgotado)
     if (resp !== null) {
       const btnSel = resp ? el.btnTrue : el.btnFalse;
       btnSel?.classList.add(correto ? 'vf-btn--selected-correct' : 'vf-btn--selected-wrong');
     }
-    // Se errou, mostra qual seria a correta
+    // Se errou ou tempo esgotado, mostra qual seria a correta
     if (!correto) {
       const btnCerto = pergunta.resposta ? el.btnTrue : el.btnFalse;
       btnCerto?.classList.add('vf-btn--reveal-correct');
     }
 
-    // Feedback + explicação
-    const sufTempo = resp === null ? ' (tempo esgotado)' : '';
+    // Feedback
+    // BUG 1 CORRIGIDO: tempo esgotado (null) exibe mensagem neutra, sem mencionar desconto de pontos
     if (el.feedbackMsg) {
-      el.feedbackMsg.className    = `game-feedback ${correto ? 'game-feedback--correct' : 'game-feedback--wrong'}`;
-      el.feedbackMsg.textContent  = correto
-        ? `✓ Correto! +${CONFIG.PONTOS_ACERTO} pontos`
-        : `✗ Incorreto${sufTempo}! -${CONFIG.PONTOS_ERRO} pontos`;
+      if (resp === null) {
+        el.feedbackMsg.className   = 'game-feedback game-feedback--wrong';
+        el.feedbackMsg.textContent = '⏱ Tempo esgotado! Sem pontos.';
+      } else {
+        el.feedbackMsg.className   = `game-feedback ${correto ? 'game-feedback--correct' : 'game-feedback--wrong'}`;
+        el.feedbackMsg.textContent = correto
+          ? `✓ Correto! +${CONFIG.PONTOS_ACERTO} pontos`
+          : `✗ Incorreto! -${CONFIG.PONTOS_ERRO} pontos`;
+      }
     }
-    if (el.feedbackExp) el.feedbackExp.textContent = pergunta.explicacao ?? '';
     el.feedbackArea?.classList.remove('hidden');
 
-    // Shake se errou (só uma vez — ao responder)
+    // ── EXPLICAÇÃO → info-strip ──
+    setInfoStrip(pergunta.explicacao ?? '');
+
+    // Shake se errou ou tempo esgotado
     if (!correto && el.questionCard) {
       void el.questionCard.offsetWidth;
       el.questionCard.classList.add('vf-question-card--shake');
     }
   } else {
     el.feedbackArea?.classList.add('hidden');
+    // Reset da info-strip para texto padrão
+    setInfoStrip(null);
   }
 
   // Navegação
@@ -260,8 +302,7 @@ function renderizarQuestao() {
     estado.timer.start();
     aplicarCorBarra(100);
   } else {
-    document.documentElement.style.setProperty('--timer-pct', '0%');
-    aplicarCorBarra(0);
+    // Mantém a barra congelada onde estava — não zera
   }
 }
 
@@ -302,13 +343,18 @@ function registrarResposta(resp) {
 
   estado.respostas[estado.indice] = resp;
 
-  if (correto) {
-    estado.pontos  += CONFIG.PONTOS_ACERTO;
-    estado.acertos += 1;
-  } else {
-    estado.pontos   = Math.max(0, estado.pontos - CONFIG.PONTOS_ERRO);
-    estado.erros   += 1;
+  // BUG 1 CORRIGIDO: resp === null (tempo esgotado) é neutro —
+  // não conta como acerto nem como erro, não altera pontuação.
+  if (resp !== null) {
+    if (correto) {
+      estado.pontos  += CONFIG.PONTOS_ACERTO;
+      estado.acertos += 1;
+    } else {
+      estado.pontos   = Math.max(0, estado.pontos - CONFIG.PONTOS_ERRO);
+      estado.erros   += 1;
+    }
   }
+
   if (el.scoreCorrect) el.scoreCorrect.textContent = estado.acertos;
 
   renderizarQuestao();
@@ -328,11 +374,29 @@ function irAnterior() {
   if (estado.indice > 0) navegarPara(estado.indice - 1);
 }
 
+// BUG 2 CORRIGIDO: quando está na última questão mas nem todas foram
+// respondidas, avança para a primeira questão ainda pendente em vez
+// de travar silenciosamente.
 function irProxima() {
-  const ultimo     = estado.indice === estado.perguntas.length - 1;
-  const todasResp  = estado.respostas.every(r => r !== undefined);
-  if (ultimo && todasResp) { finalizarJogo(); return; }
-  if (estado.indice < estado.perguntas.length - 1) navegarPara(estado.indice + 1);
+  const ultimo    = estado.indice === estado.perguntas.length - 1;
+  const todasResp = estado.respostas.every(r => r !== undefined);
+
+  if (ultimo && todasResp) {
+    finalizarJogo();
+    return;
+  }
+
+  if (estado.indice < estado.perguntas.length - 1) {
+    navegarPara(estado.indice + 1);
+    return;
+  }
+
+  // Está na última questão mas existem pendentes anteriores:
+  // vai para a primeira questão sem resposta.
+  const primeiraPendente = estado.respostas.findIndex(r => r === undefined);
+  if (primeiraPendente !== -1) {
+    navegarPara(primeiraPendente);
+  }
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -347,8 +411,13 @@ async function finalizarJogo() {
     acertou: estado.respostas[i] === p.resposta,
   }));
 
-  salvarResultadoVF(estado.usuario, estado.discId, estado.sem, resultados)
-    .catch(err => console.warn('[vdd_falso] Erro ao salvar:', err));
+  // BUG 3 CORRIGIDO: aguarda o save antes de carregar o histórico,
+  // evitando que as estatísticas sejam exibidas com dados desatualizados.
+  try {
+    await salvarResultadoVF(estado.usuario, estado.discId, estado.sem, resultados);
+  } catch (err) {
+    console.warn('[vdd_falso] Erro ao salvar:', err);
+  }
 
   const total = estado.perguntas.length;
   const pct   = Math.round((estado.acertos / total) * 100);
@@ -560,15 +629,26 @@ async function init() {
     progressFill:   $('progress-fill'),
     feedbackArea:   $('feedback-area'),
     feedbackMsg:    $('feedback-msg'),
-    feedbackExp:    $('feedback-explicacao'),
+    feedbackExp:    null, // não usado — explicação vai direto na info-strip
     scoreCorrect:   $('score-correct'),
     scoreTotal:     $('score-total'),
     timerBar:       document.querySelector('.game-timer-bar'),
   });
 
-  Shell.init({ icon: '⚖️', nome: 'Verdadeiro ou Falso' });
+  const { disc, sem, disciplina } = Shell.init({ icon: '⚖️', nome: 'Verdadeiro ou Falso' });
 
-  const { disc, sem } = lerParams();
+  // Preenche o pill de disciplina no footer do card com emoji + nome
+  const discLblPill = document.getElementById('vf-disc-label');
+  if (discLblPill && disciplina) {
+    discLblPill.textContent = `${disciplina.emoji ?? ''} ${disciplina.apelido ?? disciplina.nome ?? disc}`.trim();
+  }
+
+  // Remove o SVG genérico do pill (substituído pelo emoji da disciplina)
+  const discPill = document.getElementById('vf-disc-tag-pill');
+  if (discPill) {
+    const svg = discPill.querySelector('svg');
+    if (svg) svg.remove();
+  }
   const banco = VDD_FALSO_DATA[disc] ?? [];
 
   if (banco.length === 0) {

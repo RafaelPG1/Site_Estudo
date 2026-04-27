@@ -46,8 +46,21 @@
       </div>
     </div>
 
-    <!-- Timer: TEMPO RESTANTE + relógio + número grande -->
+    <!-- Timer: ícone SVG + TEMPO RESTANTE + número grande -->
     <div class="game-header__score-slot">
+      <!-- Ícone SVG do timer -->
+      <div class="game-timer-icon" id="shell-timer-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="1.6"/>
+          <line x1="12" y1="13" x2="12" y2="8.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          <line x1="12" y1="13" x2="15.2" y2="11.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" opacity=".8"/>
+          <circle cx="12" cy="13" r="1.1" fill="currentColor"/>
+          <path d="M10.5 5.5h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M12 3.5v2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M18.5 8.5L19.8 7.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+      </div>
+
       <div class="game-timer-block">
         <span class="game-timer-label">TEMPO RESTANTE</span>
         <span class="game-timer-display" id="shell-timer-display">00:30</span>
@@ -163,36 +176,33 @@
           <!-- Barra de progresso superior (questão X de Y + dots + % + controles) -->
           <div class="vf-top-bar">
             <div class="vf-top-bar__left">
-              <!-- "Questão 2 de 8" -->
-              <span class="vf-top-bar__questao game-round">
-                Questão&nbsp;<strong id="q-current">1</strong>&nbsp;de&nbsp;<strong id="q-total">8</strong>
+              <span class="vf-top-bar__questao">
+                Questão <strong id="q-current">1</strong>/<span id="q-total">8</span>
               </span>
-              <!-- Bolinhas -->
               <div class="vf-dots" id="vf-dots"></div>
-              <!-- Barra + % -->
-              <div class="vf-top-bar__progress">
-                <div class="game-progress-bar">
-                  <div class="game-progress-bar__fill" id="progress-fill" style="width:0%"></div>
-                </div>
-                <span class="vf-top-bar__pct" id="vf-pct-label">0% concluído</span>
-              </div>
             </div>
 
-            <!-- Botões Pausar / Início -->
+            <div class="vf-top-bar__progress">
+              <div class="game-progress-bar">
+                <div class="game-progress-bar__fill" id="progress-fill" style="width:0%"></div>
+              </div>
+              <span class="vf-top-bar__pct" id="vf-pct-label">0% concluído</span>
+            </div>
+
+            <!-- Controles: Pausar + Início -->
             <div class="vf-top-bar__controls">
-              <button class="vf-ctrl-btn" id="btn-pause" title="Pausar (Espaço)">
-                <svg id="pause-icon" viewBox="0 0 16 16" fill="currentColor">
+              <button class="vf-ctrl-btn" id="btn-pause">
+                <svg id="pause-icon" viewBox="0 0 16 16" fill="currentColor" width="14" height="14">
                   <rect x="3" y="2" width="3.5" height="12" rx="1"/>
                   <rect x="9.5" y="2" width="3.5" height="12" rx="1"/>
                 </svg>
                 <span id="pause-label">Pausar</span>
               </button>
-              <button class="vf-ctrl-btn vf-ctrl-btn--ghost" id="btn-voltar-intro" title="Voltar ao início">
-                <svg viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M10 3H4a1 1 0 00-1 1v12a1 1 0 001 1h6v-2H5V5h5V3z"/>
-                  <path d="M13 7l4 3-4 3V7z"/>
+              <button class="vf-ctrl-btn vf-ctrl-btn--ghost" id="btn-voltar-intro">
+                <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14">
+                  <path d="M10 3L4 8l6 5V3z"/>
                 </svg>
-                <span>Início</span>
+                Início
               </button>
             </div>
           </div>
@@ -200,24 +210,15 @@
           <!-- Card da questão -->
           <div class="vf-question-card game-card-base" id="question-card">
             <div class="vf-question-card__top">
-              <div class="vf-question-number game-badge" id="q-badge">Q1</div>
-              <!-- disc-tag legada (hidden) -->
-              <div class="vf-question-card__disc-tag" id="vf-disc-tag">—</div>
+              <span class="game-badge vf-question-number" id="q-badge">Q1</span>
             </div>
-
-            <p class="vf-question-text" id="question-text">
-              Carregando pergunta…
-            </p>
-
-            <!-- Rodapé do card: linha + tag da disciplina (como na imagem) -->
+            <p class="vf-question-text" id="question-text"></p>
             <div class="vf-question-card__footer">
               <div class="vf-disc-tag-pill" id="vf-disc-tag-pill">
-                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <ellipse cx="10" cy="10" rx="8" ry="5"/>
-                  <ellipse cx="10" cy="10" rx="8" ry="5" transform="rotate(60 10 10)"/>
-                  <ellipse cx="10" cy="10" rx="8" ry="5" transform="rotate(120 10 10)"/>
+                <svg viewBox="0 0 16 16" fill="currentColor" width="13" height="13">
+                  <path d="M2 3h12v2H2zm0 4h12v2H2zm0 4h8v2H2z"/>
                 </svg>
-                <span id="vf-disc-label">—</span>
+                <span id="vf-disc-tag"><span id="vf-disc-label">—</span></span>
               </div>
             </div>
           </div>
@@ -230,7 +231,7 @@
               </div>
               <div class="vf-btn__text">
                 <span class="vf-btn__label">VERDADEIRO</span>
-                <span class="vf-btn__sub">A afirmação é verdadeira</span>
+                <span class="vf-btn__sub">pressione V ou 1</span>
               </div>
             </button>
             <button class="vf-btn vf-btn--false" id="btn-false">
@@ -239,33 +240,23 @@
               </div>
               <div class="vf-btn__text">
                 <span class="vf-btn__label">FALSO</span>
-                <span class="vf-btn__sub">A afirmação é falsa</span>
+                <span class="vf-btn__sub">pressione F ou 2</span>
               </div>
             </button>
           </div>
 
-          <!-- Botão Ver Resposta -->
-          <button class="vf-reveal-btn hidden" id="btn-ver-resposta">
-            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-              <circle cx="10" cy="10" r="8"/>
-              <path d="M10 6v5l3 2" stroke-linecap="round"/>
-            </svg>
-            Ver resposta
-          </button>
-
-          <!-- Feedback -->
+          <!-- Área de feedback -->
           <div id="feedback-area" class="hidden">
-            <div class="game-feedback" id="feedback-msg"></div>
-            <p class="vf-explicacao" id="feedback-explicacao"></p>
+            <div id="feedback-msg" class="game-feedback"></div>
           </div>
 
-          <!-- Faixa informativa -->
-          <div class="vf-info-strip">
+          <!-- Faixa informativa / Explicação -->
+          <div class="vf-info-strip" id="vf-info-strip">
             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16">
-              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-              <path d="M2.458 12C3.732 7.943 6.523 5 10 5c3.478 0 6.268 2.943 7.542 7-1.274 4.057-4.064 7-7.542 7-3.477 0-6.268-2.943-7.542-7z"/>
+              <circle cx="10" cy="10" r="8"/>
+              <text x="10" y="15" text-anchor="middle" font-size="11" font-weight="bold" fill="currentColor" stroke="none" font-family="sans-serif">?</text>
             </svg>
-            <span>Após sua escolha, a resposta aparecerá automaticamente.</span>
+            <span id="vf-info-strip-text">Após sua escolha, a resposta aparecerá automaticamente.</span>
           </div>
 
           <!-- Navegação ← / → -->
@@ -332,50 +323,108 @@
   </div>
 </div>
 
-<!-- Patch mínimo para adaptar o JS ao novo layout + info popover -->
 <script>
-  // Sincronizar label de % concluído
-  (function() {
-    const obs = new MutationObserver(() => {
-      const fill = document.getElementById('progress-fill');
-      const lbl  = document.getElementById('vf-pct-label');
-      if (fill && lbl) {
-        const pct = parseFloat(fill.style.width) || 0;
-        lbl.textContent = Math.round(pct) + '% concluído';
-      }
-    });
-    document.addEventListener('DOMContentLoaded', () => {
-      const fill = document.getElementById('progress-fill');
-      if (fill) obs.observe(fill, { attributes: true, attributeFilter: ['style'] });
+  // ─────────────────────────────────────────────────────────
+  // PATCH: adaptações de layout — tudo dentro de UM único
+  // DOMContentLoaded (bug corrigido: não havia mais listener aninhado)
+  // ─────────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
 
-      // Sincronizar tag da disciplina no footer do card
+    // 1. Sincronizar classe danger no ícone do timer
+    (function() {
+      const display = document.getElementById('shell-timer-display');
+      const icon    = document.getElementById('shell-timer-icon');
+      if (!display || !icon) return;
+      const obs = new MutationObserver(() => {
+        const isDanger = display.classList.contains('game-timer-display--danger');
+        icon.classList.toggle('game-timer-icon--danger', isDanger);
+      });
+      obs.observe(display, { attributes: true, attributeFilter: ['class'] });
+    })();
+
+    // 2. Atualizar label de % ao mudar a barra de progresso
+    (function() {
+      const fill = document.getElementById('progress-fill');
+      if (!fill) return;
+      const obs = new MutationObserver(() => {
+        const lbl = document.getElementById('vf-pct-label');
+        if (lbl) {
+          const pct = parseFloat(fill.style.width) || 0;
+          lbl.textContent = Math.round(pct) + '% concluído';
+        }
+      });
+      obs.observe(fill, { attributes: true, attributeFilter: ['style'] });
+    })();
+
+    // 3. Sincronizar tag da disciplina no footer do card
+    (function() {
       const discTag = document.getElementById('vf-disc-tag');
       const discLbl = document.getElementById('vf-disc-label');
-      if (discTag && discLbl) {
-        new MutationObserver(() => {
-          discLbl.textContent = discTag.textContent || '—';
-        }).observe(discTag, { childList: true, characterData: true, subtree: true });
+      if (!discTag || !discLbl) return;
+      new MutationObserver(() => {
         discLbl.textContent = discTag.textContent || '—';
-      }
+      }).observe(discTag, { childList: true, characterData: true, subtree: true });
+      discLbl.textContent = discTag.textContent || '—';
+    })();
 
-      // Botão ℹ️ — abre/fecha popover
+    // 4. Criar elemento #feedback-explicacao oculto para
+    //    compatibilidade com versões antigas do JS, e observar
+    //    mudanças para espelhar na info-strip.
+    (function() {
+      const strip     = document.getElementById('vf-info-strip');
+      const stripText = document.getElementById('vf-info-strip-text');
+      const stripIcon = strip ? strip.querySelector('svg') : null;
+      const DEFAULT_TEXT = 'Após sua escolha, a resposta aparecerá automaticamente.';
+
+      const explicacao = document.createElement('p');
+      explicacao.id        = 'feedback-explicacao';
+      explicacao.className = 'vf-explicacao';
+      explicacao.style.display = 'none';
+      document.body.appendChild(explicacao);
+
+      const explObs = new MutationObserver(() => {
+        const txt = explicacao.textContent.trim();
+        if (txt && stripText) {
+          stripText.textContent = txt;
+          if (stripIcon) stripIcon.style.display = 'none';
+          strip.classList.add('vf-info-strip--explicacao');
+        } else if (!txt && stripText) {
+          stripText.textContent = DEFAULT_TEXT;
+          if (stripIcon) stripIcon.style.display = '';
+          strip.classList.remove('vf-info-strip--explicacao');
+        }
+      });
+      explObs.observe(explicacao, { childList: true, characterData: true, subtree: true });
+
+      // Reset ao trocar de questão via botões de navegação
+      ['btn-anterior', 'btn-proxima'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.addEventListener('click', () => {
+          explicacao.textContent = '';
+        });
+      });
+    })();
+
+    // 5. Popover de info (ℹ)
+    (function() {
       const btnInfo = document.getElementById('btn-info-toggle');
       const popover = document.getElementById('vf-info-popover');
-      if (btnInfo && popover) {
-        btnInfo.addEventListener('click', (e) => {
-          e.stopPropagation();
-          popover.classList.toggle('hidden');
-          btnInfo.classList.toggle('vf-info-toggle--active', !popover.classList.contains('hidden'));
-        });
-        document.addEventListener('click', (e) => {
-          if (!popover.contains(e.target) && e.target !== btnInfo) {
-            popover.classList.add('hidden');
-            btnInfo.classList.remove('vf-info-toggle--active');
-          }
-        });
-      }
-    });
-  })();
+      if (!btnInfo || !popover) return;
+
+      btnInfo.addEventListener('click', (e) => {
+        e.stopPropagation();
+        popover.classList.toggle('hidden');
+        btnInfo.classList.toggle('vf-info-toggle--active', !popover.classList.contains('hidden'));
+      });
+      document.addEventListener('click', (e) => {
+        if (!popover.contains(e.target) && e.target !== btnInfo) {
+          popover.classList.add('hidden');
+          btnInfo.classList.remove('vf-info-toggle--active');
+        }
+      });
+    })();
+
+  });
 </script>
 
 <script type="module" src="vdd_falso.js"></script>
