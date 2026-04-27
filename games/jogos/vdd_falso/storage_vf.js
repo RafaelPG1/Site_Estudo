@@ -15,6 +15,16 @@
          ultimaVez:  timestamp (ms),
        }
      }
+
+   Correção v6.2:
+   - salvarResultadoVF() filtra resultados com resp === null
+     (tempo esgotado) antes de processar — esses casos são
+     neutros no jogo e não devem contaminar o histórico nem
+     o algoritmo de peso ponderado nas sessões futuras.
+     O filtro já é aplicado em vdd_falso.js antes de chamar
+     esta função, mas a defesa em profundidade aqui garante
+     que nenhum acertou: false indevido seja persistido caso
+     o caller mude no futuro.
 ═══════════════════════════════════════════════════ */
 
 import { doc, getDoc, setDoc, deleteDoc }
@@ -59,12 +69,30 @@ export async function carregarHistoricoVF(usuario, discId, sem) {
 /* ══════════════════════════════════════════════════
    SALVAR resultado de uma rodada
    Recebe um array de resultados: [{ id, acertou }]
+
+   [POTENCIAL CORRIGIDO] Questões com tempo esgotado
+   (resp === null, que resultariam em acertou: false
+   indevido) são excluídas aqui como defesa em
+   profundidade, além do filtro já aplicado no caller.
+   Isso evita incrementar erros e tentativas para
+   questões que o usuário simplesmente não respondeu,
+   o que distorceria o peso ponderado nas sessões
+   futuras.
 ══════════════════════════════════════════════════ */
 export async function salvarResultadoVF(usuario, discId, sem, resultados) {
+  // Defesa em profundidade: garante que nenhum resultado
+  // com resp === null (tempo esgotado) chegue ao histórico,
+  // mesmo que o caller não tenha filtrado.
+  const resultadosValidos = resultados.filter(
+    r => r.resp !== null && r.resp !== undefined
+  );
+
+  if (resultadosValidos.length === 0) return;
+
   // 1. Atualiza localStorage primeiro (rápido, nunca falha)
   const atual = _lerLocal(usuario, discId, sem);
 
-  for (const { id, acertou } of resultados) {
+  for (const { id, acertou } of resultadosValidos) {
     const entrada = atual[id] ?? { tentativas: 0, acertos: 0, erros: 0, ultimaVez: 0 };
     entrada.tentativas++;
     acertou ? entrada.acertos++ : entrada.erros++;
@@ -86,7 +114,7 @@ export async function salvarResultadoVF(usuario, discId, sem, resultados) {
 
   try {
     const patch = {};
-    for (const { id } of resultados) {
+    for (const { id } of resultadosValidos) {
       patch[id] = atual[id];
     }
     await setDoc(_docRef(usuario, discId, sem), patch, { merge: true });

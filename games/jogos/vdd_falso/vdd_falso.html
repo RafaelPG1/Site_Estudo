@@ -325,8 +325,8 @@
 
 <script>
   // ─────────────────────────────────────────────────────────
-  // PATCH: adaptações de layout — tudo dentro de UM único
-  // DOMContentLoaded (bug corrigido: não havia mais listener aninhado)
+  // PATCH: adaptações de layout — consolidado em um único
+  // DOMContentLoaded para evitar conflito com o módulo JS.
   // ─────────────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', () => {
 
@@ -356,15 +356,37 @@
       obs.observe(fill, { attributes: true, attributeFilter: ['style'] });
     })();
 
-    // 3. Sincronizar tag da disciplina no footer do card
+    // 3. Sincronizar tag da disciplina no footer do card.
+    //
+    // [BUG CORRIGIDO] Observer anterior escutava childList + characterData
+    // + subtree: true no pai (#vf-disc-tag) e escrevia em discLbl
+    // (#vf-disc-label), que é filho do pai observado — criando um loop
+    // de notificações (escreve no filho → observer dispara de novo).
+    //
+    // Correção: observer sem subtree, lendo apenas nós filhos que
+    // NÃO são o próprio discLbl, eliminando o loop.
     (function() {
       const discTag = document.getElementById('vf-disc-tag');
       const discLbl = document.getElementById('vf-disc-label');
       if (!discTag || !discLbl) return;
-      new MutationObserver(() => {
-        discLbl.textContent = discTag.textContent || '—';
-      }).observe(discTag, { childList: true, characterData: true, subtree: true });
-      discLbl.textContent = discTag.textContent || '—';
+
+      function syncDiscLabel() {
+        // Lê apenas nós filhos diretos que não são o discLbl
+        const txt = [...discTag.childNodes]
+          .filter(n => n !== discLbl)
+          .map(n => n.textContent)
+          .join('')
+          .trim();
+        // Se não há texto externo (caso normal: só o discLbl existe),
+        // mantém o conteúdo atual do discLbl (preenchido pelo JS principal).
+        if (txt) discLbl.textContent = txt;
+      }
+
+      new MutationObserver(syncDiscLabel)
+        .observe(discTag, { childList: true });
+
+      // Leitura inicial (discLbl pode já ter sido preenchido pelo módulo)
+      syncDiscLabel();
     })();
 
     // 4. Criar elemento #feedback-explicacao oculto para

@@ -1,24 +1,28 @@
 /* ============================================================
-   NEXUS STUDY — games/jogos/vdd_falso/vdd_falso.js  (v6)
+   NEXUS STUDY — games/jogos/vdd_falso/vdd_falso.js  (v6.2)
 
-   Fluxo v6:
-   - Marcar V ou F → gabarito aparece imediatamente
-   - Navegação ← Anterior / Próxima → entre questões
-   - Pode revisar questões já respondidas (somente leitura)
-   - Última questão + todas respondidas: botão "Finalizar"
-   - Timer corre por questão; para ao responder
-   - Bolinhas de progresso clicáveis por status
-
-   Correções v6.1:
-   - [BUG 1] Tempo esgotado (null) não conta mais como erro no
-     contador de erros nem desconta pontos — tratado como neutro.
-   - [BUG 2] irProxima() não travava mais na última questão quando
-     nem todas estavam respondidas — agora avança para a próxima
-     questão pendente, ou para a última se não houver pendente.
-   - [BUG 3] Race condition em finalizarJogo(): salvarResultadoVF
-     agora é aguardado com await antes de carregar o histórico para
-     as estatísticas, garantindo que os dados da rodada atual
-     estejam salvos antes de exibir.
+   Correções v6.2 (baseadas na análise de bugs):
+   - [BUG CRÍTICO] sorteiarPonderado(): adicionado fallback para
+     o último elemento quando rand expira por arredondamento de
+     ponto flutuante, eliminando o risco de loop infinito.
+   - [BUG] finalizarJogo(): precisão agora é calculada apenas
+     sobre questões respondidas (excluindo tempo esgotado).
+   - [BUG] MutationObserver em #vf-disc-tag: observer reescrito
+     para observar apenas childList sem subtree, lendo apenas
+     nós que não são o próprio discLbl — eliminando loop de
+     notificações.
+   - [POTENCIAL] DOMContentLoaded no módulo: trocado por
+     verificação de readyState para evitar miss em navegação
+     via history.back() ou cache.
+   - [POTENCIAL] montarDeck(): adicionada validação de deck
+     vazio após montagem.
+   - [POTENCIAL] ArrowLeft: timer parado explicitamente antes
+     de chamar irAnterior().
+   - [POTENCIAL] salvarResultadoVF(): questões com tempo
+     esgotado (null) excluídas dos resultados salvos no
+     histórico — evita contaminar o algoritmo ponderado.
+   - [POTENCIAL] togglePausa(): guard contra Space duplo quando
+     #btn-retomar está focado (no HTML, via keydown listener).
    ============================================================ */
 
 import { Shell, Timer, Result, shuffle, lerParams } from '../../template/game-shell.js';
@@ -102,16 +106,36 @@ function calcularPeso(id, historico) {
   return Math.round(CONFIG.PESO_MIN + taxaErro * (CONFIG.PESO_MAX - CONFIG.PESO_MIN));
 }
 
+// [BUG CRÍTICO CORRIGIDO] Adicionado fallback: se rand expirar sem
+// dar break (arredondamento de ponto flutuante), seleciona o último
+// elemento do pool em vez de deixar o while rodar infinitamente.
 function sorteiarPonderado(candidatos, n) {
   const pool = [...candidatos];
   const sel  = [];
   while (sel.length < n && pool.length > 0) {
     const total = pool.reduce((a, c) => a + c.peso, 0);
-    if (total <= 0) { const i = Math.floor(Math.random() * pool.length); sel.push(pool[i].item); pool.splice(i, 1); continue; }
+    if (total <= 0) {
+      const i = Math.floor(Math.random() * pool.length);
+      sel.push(pool[i].item);
+      pool.splice(i, 1);
+      continue;
+    }
     let rand = Math.random() * total;
+    let hit  = false;
     for (let i = 0; i < pool.length; i++) {
       rand -= pool[i].peso;
-      if (rand <= 0) { sel.push(pool[i].item); pool.splice(i, 1); break; }
+      if (rand <= 0) {
+        sel.push(pool[i].item);
+        pool.splice(i, 1);
+        hit = true;
+        break;
+      }
+    }
+    // Fallback: rand chegou a exatamente zero após subtrair todos os
+    // pesos (arredondamento FP) — seleciona o último elemento restante.
+    if (!hit && pool.length > 0) {
+      sel.push(pool[pool.length - 1].item);
+      pool.splice(pool.length - 1, 1);
     }
   }
   return sel;
@@ -263,7 +287,6 @@ function renderizarQuestao() {
     }
 
     // Feedback
-    // BUG 1 CORRIGIDO: tempo esgotado (null) exibe mensagem neutra, sem mencionar desconto de pontos
     if (el.feedbackMsg) {
       if (resp === null) {
         el.feedbackMsg.className   = 'game-feedback game-feedback--wrong';
@@ -301,9 +324,9 @@ function renderizarQuestao() {
     estado.timer = criarTimer();
     estado.timer.start();
     aplicarCorBarra(100);
-  } else {
-    // Mantém a barra congelada onde estava — não zera
   }
+  // Nota: ao revisar questões já respondidas, a barra mantém o valor
+  // do CSS --timer-pct do último timer — comportamento intencional.
 }
 
 function atualizarBotoesNav() {
@@ -320,6 +343,9 @@ function atualizarBotoesNav() {
     const isFinish = ultimo && todasResp;
     el.btnProxima.disabled = !jaRespondeu;
     el.btnProxima.classList.toggle('vf-nav-btn--finish', isFinish);
+    // [CORREÇÃO] Atualiza apenas o conteúdo textual/SVG sem destruir
+    // listeners externos — comportamento idêntico ao original, mas
+    // documentado como padrão frágil.
     el.btnProxima.innerHTML = isFinish
       ? 'Finalizar <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12"><path d="M2 8l4 4 8-8" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'
       : 'Próxima <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12"><path d="M6 3l6 5-6 5V3z"/></svg>';
@@ -343,7 +369,7 @@ function registrarResposta(resp) {
 
   estado.respostas[estado.indice] = resp;
 
-  // BUG 1 CORRIGIDO: resp === null (tempo esgotado) é neutro —
+  // resp === null (tempo esgotado) é neutro —
   // não conta como acerto nem como erro, não altera pontuação.
   if (resp !== null) {
     if (correto) {
@@ -371,10 +397,16 @@ function navegarPara(i) {
 }
 
 function irAnterior() {
-  if (estado.indice > 0) navegarPara(estado.indice - 1);
+  if (estado.indice > 0) {
+    // [POTENCIAL CORRIGIDO] Para o timer explicitamente antes de
+    // navegar para evitar race condition de 1 frame onde onEnd
+    // da questão abandonada ainda poderia disparar.
+    estado.timer?.stop();
+    navegarPara(estado.indice - 1);
+  }
 }
 
-// BUG 2 CORRIGIDO: quando está na última questão mas nem todas foram
+// [BUG 2 CORRIGIDO] Quando está na última questão mas nem todas foram
 // respondidas, avança para a primeira questão ainda pendente em vez
 // de travar silenciosamente.
 function irProxima() {
@@ -406,12 +438,18 @@ function irProxima() {
 async function finalizarJogo() {
   estado.timer?.stop();
 
-  const resultados = estado.perguntas.map((p, i) => ({
-    id: p.id,
-    acertou: estado.respostas[i] === p.resposta,
-  }));
+  // [POTENCIAL CORRIGIDO] Questões com tempo esgotado (resp === null)
+  // são excluídas dos resultados salvos no histórico, evitando
+  // contaminar o algoritmo ponderado de seleção nas sessões futuras.
+  const resultados = estado.perguntas
+    .map((p, i) => ({
+      id:     p.id,
+      resp:   estado.respostas[i],
+      acertou: estado.respostas[i] === p.resposta,
+    }))
+    .filter(r => r.resp !== null && r.resp !== undefined);
 
-  // BUG 3 CORRIGIDO: aguarda o save antes de carregar o histórico,
+  // [BUG 3 CORRIGIDO] Aguarda o save antes de carregar o histórico,
   // evitando que as estatísticas sejam exibidas com dados desatualizados.
   try {
     await salvarResultadoVF(estado.usuario, estado.discId, estado.sem, resultados);
@@ -419,8 +457,14 @@ async function finalizarJogo() {
     console.warn('[vdd_falso] Erro ao salvar:', err);
   }
 
-  const total = estado.perguntas.length;
-  const pct   = Math.round((estado.acertos / total) * 100);
+  const total       = estado.perguntas.length;
+  // [BUG CORRIGIDO] Precisão calculada apenas sobre questões
+  // respondidas (excluindo tempo esgotado), evitando deflacionar
+  // injustamente a porcentagem.
+  const respondidas = estado.respostas.filter(r => r !== null && r !== undefined).length;
+  const pct         = respondidas > 0
+    ? Math.round((estado.acertos / respondidas) * 100)
+    : 0;
 
   let emoji, titulo, subtitulo;
   if      (pct >= 80) { emoji = '🏆'; titulo = 'Excelente!';     subtitulo = 'Você domina este conteúdo. Continue assim!'; }
@@ -439,6 +483,11 @@ async function finalizarJogo() {
       const banco     = VDD_FALSO_DATA[estado.discId] ?? [];
       const historico = await carregarHistoricoVF(estado.usuario, estado.discId, estado.sem).catch(() => ({}));
       estado.perguntas = montarDeck(banco, historico);
+      // [POTENCIAL CORRIGIDO] Valida deck não vazio antes de iniciar
+      if (estado.perguntas.length === 0) {
+        mostrarTela('empty');
+        return;
+      }
       atualizarContadores();
       iniciarJogo();
     },
@@ -562,14 +611,25 @@ function setupPausa() {
     const banco     = VDD_FALSO_DATA[estado.discId] ?? [];
     const historico = await carregarHistoricoVF(estado.usuario, estado.discId, estado.sem).catch(() => ({}));
     estado.perguntas = montarDeck(banco, historico);
+    // [POTENCIAL CORRIGIDO] Valida deck não vazio antes de voltar para intro
+    if (estado.perguntas.length === 0) {
+      mostrarTela('empty');
+      return;
+    }
     atualizarContadores();
     mostrarTela('intro');
   });
 
+  // [POTENCIAL CORRIGIDO] Guard contra Space duplo quando #btn-retomar
+  // está focado, evitando toggle imediato pausa → despausa.
   document.addEventListener('keydown', e => {
     if (e.code === 'Space' && !el.screenQuestion?.classList.contains('hidden') &&
         estado.respostas[estado.indice] === undefined) {
-      e.preventDefault(); togglePausa();
+      // Se o foco está no btn-retomar, o Space naturalmente ativaria o
+      // clique no botão, que já chama togglePausa — não chamar de novo.
+      if (document.activeElement?.id === 'btn-retomar') return;
+      e.preventDefault();
+      togglePausa();
     }
   });
 }
@@ -590,7 +650,13 @@ function registrarAtalhos() {
       case 'v': case 'V': case '1': if (!jaResp) { e.preventDefault(); responder(true);  } break;
       case 'f': case 'F': case '2': if (!jaResp) { e.preventDefault(); responder(false); } break;
       case 'ArrowRight': case 'Enter': if (jaResp) { e.preventDefault(); irProxima(); } break;
-      case 'ArrowLeft': e.preventDefault(); irAnterior(); break;
+      case 'ArrowLeft':
+        // [POTENCIAL CORRIGIDO] Para o timer explicitamente antes de
+        // navegar para evitar race condition de 1 frame.
+        e.preventDefault();
+        estado.timer?.stop();
+        irAnterior();
+        break;
     }
   });
 }
@@ -629,7 +695,7 @@ async function init() {
     progressFill:   $('progress-fill'),
     feedbackArea:   $('feedback-area'),
     feedbackMsg:    $('feedback-msg'),
-    feedbackExp:    null, // não usado — explicação vai direto na info-strip
+    feedbackExp:    null,
     scoreCorrect:   $('score-correct'),
     scoreTotal:     $('score-total'),
     timerBar:       document.querySelector('.game-timer-bar'),
@@ -649,6 +715,7 @@ async function init() {
     const svg = discPill.querySelector('svg');
     if (svg) svg.remove();
   }
+
   const banco = VDD_FALSO_DATA[disc] ?? [];
 
   if (banco.length === 0) {
@@ -666,6 +733,14 @@ async function init() {
   const historico  = await carregarHistoricoVF(estado.usuario, disc, sem).catch(() => ({}));
   estado.perguntas = montarDeck(banco, historico);
 
+  // [POTENCIAL CORRIGIDO] Valida deck não vazio após montagem
+  if (estado.perguntas.length === 0) {
+    mostrarTela('empty');
+    const btnBack = $('btn-empty-back');
+    if (btnBack) btnBack.href = `../../jogo.html${sem ? `?sem=${sem}` : ''}`;
+    return;
+  }
+
   atualizarContadores();
   aplicarCorBarra(100);
 
@@ -680,4 +755,12 @@ async function init() {
   mostrarTela('intro');
 }
 
-document.addEventListener('DOMContentLoaded', init);
+// [POTENCIAL CORRIGIDO] type="module" é sempre defer — quando o módulo
+// executa, DOMContentLoaded pode já ter disparado em cenários de
+// history.back() ou navegação rápida com cache. A verificação de
+// readyState garante que init() seja chamado em qualquer caso.
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
