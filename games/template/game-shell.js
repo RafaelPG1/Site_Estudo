@@ -134,7 +134,8 @@ function _resolverDisciplina(disc, sem) {
   try {
     const lista = getDisciplinasDeSemestre(sem);
     return lista.find(d => d.id === disc || d.arquivo === disc) ?? null;
-  } catch (_) {
+  } catch (err) {
+    console.warn('[game-shell] Erro ao resolver disciplina:', err.message);
     return null;
   }
 }
@@ -219,7 +220,6 @@ export const Timer = {
     function reset(novoTotal) {
       stop();
       restante = novoTotal ?? total;
-      total    = restante;
       _atualizar();
     }
 

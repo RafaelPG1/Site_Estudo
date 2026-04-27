@@ -3,12 +3,17 @@ Crie afirmações de Verdadeiro ou Falso com base no conteúdo abaixo.
 Formato obrigatório (JSON):
 
 
-{
-"enunciado": "Frase afirmativa clara",
-"resposta": true,
-"explicacao": "Explicação curta e direta"
-}
-
+     {
+       [discId]: [
+         {
+           id:        string,          — identificador único (discId_aula_N)
+           aula:      number,          — número da aula de origem
+           enunciado: string,
+           resposta:  true|false,
+           explicacao: string
+         }
+       ]
+     }
 
 Regras:
 

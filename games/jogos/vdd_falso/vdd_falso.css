@@ -1,9 +1,10 @@
 /* ============================================================
-   NEXUS STUDY — games/jogos/vdd_falso/vdd_falso.css
+   NEXUS STUDY — games/jogos/vdd_falso/vdd_falso.css  (v5)
 
    Autossuficiente — não depende de game-shell.css.
    Inclui: tokens, background, shell, header, timer, resultado,
    utilitários e toda a mecânica do Verdadeiro ou Falso.
+   v5: adicionado painel .vf-stats-questoes
    ============================================================ */
 
 /* ══════════════════════════════════════════════════════════
@@ -11,40 +12,33 @@
    ══════════════════════════════════════════════════════════ */
 
 :root {
-  /* Cores base — sobrescritas por JS via --disc-tema */
   --disc-tema:      #e8c97a;
   --disc-tema-rgb:  232, 201, 122;
   --disc-tema2:     #4dd9b4;
   --disc-tema2-rgb: 77, 217, 180;
 
-  /* Superfícies */
   --bg:        #070b14;
   --surface:   #0e1420;
   --surface-2: #141c2e;
   --border:    rgba(255,255,255,0.07);
   --border-hi: rgba(255,255,255,0.14);
 
-  /* Texto */
   --text-1: #f0ede6;
   --text-2: #a8a49c;
   --text-3: #5a5650;
 
-  /* Tipografia */
   --font-display: 'Cormorant Garamond', Georgia, serif;
   --font-body:    'DM Sans', system-ui, sans-serif;
   --font-mono:    'DM Mono', monospace;
 
-  /* Dimensões */
   --header-h:  64px;
   --radius:    18px;
   --radius-sm: 10px;
   --pill:      999px;
 
-  /* Animação */
   --ease: cubic-bezier(.25,.8,.25,1);
   --t:    0.25s;
 
-  /* Timer */
   --timer-pct: 100%;
 }
 
@@ -195,6 +189,12 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   box-shadow: 0 0 8px rgba(52,211,153,.4);
 }
 
+/* Verde — padrão explícito */
+.game-timer-bar--green .game-timer-bar__fill {
+  background: #34d399;
+  box-shadow: 0 0 8px rgba(52,211,153,.4);
+}
+
 /* Metade — amarelo */
 .game-timer-bar--mid .game-timer-bar__fill {
   background: #facc15;
@@ -206,12 +206,6 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   background: #ef4444;
   box-shadow: 0 0 10px rgba(239,68,68,.5);
   animation: timer-pulse .6s ease-in-out infinite alternate;
-}
-
-/* Verde — padrão explícito */
-.game-timer-bar--green .game-timer-bar__fill {
-  background: #34d399;
-  box-shadow: 0 0 8px rgba(52,211,153,.4);
 }
 
 @keyframes timer-pulse {
@@ -244,7 +238,7 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 
 .game-section-desc {
   font-size: .875rem; color: var(--text-2);
-  text-align: center; margin-bottom: 12px;  /* era 32px */
+  text-align: center; margin-bottom: 12px;
   line-height: 1.65; max-width: 480px;
 }
 
@@ -268,12 +262,11 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   background: var(--disc-tema); color: var(--bg);
   box-shadow: 0 0 18px rgba(var(--disc-tema-rgb),.28);
   transition: filter var(--t), box-shadow var(--t), transform var(--t);
-  /* NÃO tem width: 100% — o botão é inline */
 }
 .game-btn svg {
   width: 14px; height: 14px;
-  display: block; /* ← ADICIONAR */
-  flex-shrink: 0; /* ← ADICIONAR */
+  display: block;
+  flex-shrink: 0;
   transition: transform var(--t) var(--ease);
 }
 .game-btn:hover {
@@ -367,6 +360,7 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   display: flex; align-items: center; justify-content: center;
   padding: 20px;
   animation: overlay-in .25s ease both;
+  overflow-y: auto;
 }
 .game-result.hidden { display: none !important; }
 
@@ -381,7 +375,7 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   border: 1px solid var(--border-hi);
   border-radius: 24px;
   padding: 48px 36px 36px;
-  width: 100%; max-width: 440px;
+  width: 100%; max-width: 480px;
   display: flex; flex-direction: column; align-items: center;
   gap: 16px; text-align: center;
   box-shadow: 0 32px 80px rgba(0,0,0,.6);
@@ -475,9 +469,9 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 .vf-rule strong   { color: var(--text-1); }
 .vf-rule__icon    { font-size: 1rem; }
 
-/* ── Badge de questões na intro — visual sutil, NÃO é botão ── */
+/* ── Badge de questões na intro ── */
 .vf-questoes-badge {
-  display: inline-flex; align-items: center;  /* era baseline */
+  display: inline-flex; align-items: center;
   gap: 8px;
   background: transparent;
   border: 1px solid var(--border-hi);
@@ -488,7 +482,7 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 
 .vf-questoes-badge__num {
   font-family: var(--font-mono);
-  font-size: 1.1rem;   /* era 1.4rem — proporcional ao label */
+  font-size: 1.1rem;
   font-weight: 500;
   color: var(--disc-tema);
   line-height: 1;
@@ -498,13 +492,10 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   font-size: .72rem; font-weight: 500;
   text-transform: uppercase; letter-spacing: .12em;
   color: var(--text-3);
-  line-height: 1; /* ← ADICIONAR */
+  line-height: 1;
 }
 
-/* ── Botão Começar — fonte Syne, tamanho natural ── */
-
-
-/* ── Placar no header — fonte mono ── */
+/* ── Placar no header ── */
 .vf-score-pill {
   display: flex; align-items: center; gap: 2px;
   background: rgba(var(--disc-tema-rgb),.08);
@@ -642,31 +633,6 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   line-height: 1.65; text-align: center; padding: 0 8px;
 }
 
-/* ══════════════════════════════════════════════════════════
-   9. RESPONSIVIDADE
-   ══════════════════════════════════════════════════════════ */
-
-@media (max-width: 680px) {
-  .game-header        { padding: 0 16px; gap: 10px; }
-  .game-header__back span { display: none; }
-  .game-content       { padding: 24px 16px 48px; }
-  .game-result__card  { padding: 36px 20px 28px; }
-  .game-result__actions { flex-direction: column; }
-}
-
-@media (max-width: 480px) {
-  .vf-buttons { grid-template-columns: 1fr 1fr; gap: 10px; }
-  .vf-btn     { padding: 18px 10px; }
-  .vf-btn__icon  { font-size: 1.6rem; }
-  .vf-btn__label { font-size: .8rem; }
-  .vf-progress-row { flex-direction: column; align-items: flex-start; gap: 8px; }
-}
-
-@media (max-width: 400px) {
-  .game-header__meta  { display: none; }
-  .game-section-title { font-size: 1.4rem; }
-}
-
 /* ── Controles (Pausa + Início) ── */
 .vf-controls {
   display: flex; gap: 10px;
@@ -703,27 +669,280 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 /* ── Overlay de pausa ── */
 .vf-pause-overlay {
   position: fixed; inset: 0; z-index: 200;
-  background: rgba(0,0,0,.75); backdrop-filter: blur(8px);
+  /* Semi-transparente mas não escuro — fundo continua visível */
+  background: rgba(7,11,20,.55);
+  backdrop-filter: blur(4px) saturate(.7);
   display: flex; align-items: center; justify-content: center;
   animation: overlay-in .2s ease both;
 }
 .vf-pause-overlay.hidden { display: none !important; }
 
 .vf-pause-card {
-  background: var(--surface);
+  background: var(--surface-2);
   border: 1px solid var(--border-hi);
-  border-radius: 20px;
-  padding: 40px 48px;
+  border-radius: 22px;
+  padding: 32px 36px 28px;
+  min-width: 300px; max-width: 360px;
   display: flex; flex-direction: column;
-  align-items: center; gap: 14px;
+  align-items: center; gap: 16px;
   text-align: center;
+  box-shadow: 0 24px 64px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.04) inset;
   animation: result-in .3s cubic-bezier(.34,1.56,.64,1) both;
+  position: relative; overflow: hidden;
+}
+.vf-pause-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--disc-tema2), var(--disc-tema));
 }
 
-.vf-pause-icon {
-  color: var(--disc-tema);
-  opacity: .9;
+.vf-pause-header {
+  display: flex; align-items: center; gap: 14px;
+  text-align: left; width: 100%;
 }
-.vf-pause-icon svg {
-  display: block;
+
+.vf-pause-icon-ring {
+  width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(var(--disc-tema-rgb),.1);
+  border: 1px solid rgba(var(--disc-tema-rgb),.22);
+  color: var(--disc-tema);
+}
+
+.vf-pause-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem; font-weight: 600;
+  color: var(--text-1); line-height: 1.2;
+}
+.vf-pause-hint {
+  font-size: .72rem; color: var(--text-3); margin-top: 2px;
+}
+
+.vf-pause-divider {
+  width: 100%; height: 1px;
+  background: var(--border);
+}
+
+.vf-pause-tip {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 14px;
+  background: rgba(var(--disc-tema-rgb),.05);
+  border: 1px solid rgba(var(--disc-tema-rgb),.12);
+  border-radius: var(--radius-sm);
+  text-align: left; width: 100%;
+}
+.vf-pause-tip__icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+.vf-pause-tip span:last-child {
+  font-size: .78rem; color: var(--text-2); line-height: 1.5;
+}
+
+.vf-pause-resume-btn { width: 100%; }
+
+.vf-pause-shortcut {
+  font-size: .68rem; color: var(--text-3);
+}
+.vf-pause-shortcut kbd {
+  display: inline-block;
+  padding: 1px 6px; border-radius: 4px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid var(--border-hi);
+  font-family: var(--font-mono);
+  font-size: .66rem; color: var(--text-2);
+}
+
+/* ══════════════════════════════════════════════════════════
+   9. ESTATÍSTICAS POR QUESTÃO (painel expansível no resultado)
+   ══════════════════════════════════════════════════════════ */
+
+.vf-stats-questoes {
+  width: 100%;
+  margin-top: 4px;
+  border: 1px solid var(--border-hi);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: rgba(255,255,255,.02);
+}
+
+.vf-stats-questoes summary {
+  display: flex; align-items: center; gap: 8px;
+  padding: 11px 16px; cursor: pointer;
+  font-size: .78rem; font-weight: 500;
+  color: var(--text-2);
+  list-style: none;
+  user-select: none;
+  transition: color var(--t), background var(--t);
+}
+.vf-stats-questoes summary::-webkit-details-marker { display: none; }
+.vf-stats-questoes summary:hover { color: var(--text-1); background: rgba(255,255,255,.03); }
+
+.vf-stats-questoes[open] summary { border-bottom: 1px solid var(--border); }
+
+.vf-sq-summary-icon { font-size: .9rem; }
+
+.vf-sq-chevron {
+  margin-left: auto;
+  font-size: .7rem; color: var(--text-3);
+  transition: transform var(--t);
+}
+.vf-stats-questoes[open] .vf-sq-chevron { transform: rotate(180deg); }
+
+.vf-sq-lista {
+  padding: 4px 0 8px;
+  display: flex; flex-direction: column;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.vf-sq-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  font-size: .76rem;
+  transition: background var(--t);
+}
+.vf-sq-row:last-child { border-bottom: none; }
+.vf-sq-row:hover { background: rgba(255,255,255,.03); }
+
+.vf-sq-icone {
+  font-size: .8rem; font-weight: 700;
+  flex-shrink: 0; width: 14px; text-align: center;
+}
+
+.vf-sq-enun {
+  color: var(--text-2); flex: 1;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.vf-sq-stat {
+  font-family: var(--font-mono);
+  font-size: .74rem; font-weight: 500;
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════════════════════
+   11. BOLINHAS DE PROGRESSO
+   ══════════════════════════════════════════════════════════ */
+
+.vf-dots-row {
+  display: flex; justify-content: center;
+  width: 100%; max-width: 640px;
+  margin: -8px 0 -4px;
+}
+
+.vf-dots {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  justify-content: center;
+}
+
+.vf-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  transition: transform .25s var(--ease), background .3s, box-shadow .3s;
+  flex-shrink: 0;
+}
+
+.vf-dot--pending {
+  background: rgba(255,255,255,.12);
+  border: 1.5px solid rgba(255,255,255,.18);
+}
+
+.vf-dot--current {
+  background: var(--disc-tema);
+  border: none;
+  transform: scale(1.35);
+  box-shadow: 0 0 8px rgba(var(--disc-tema-rgb),.5);
+  animation: dot-pulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes dot-pulse {
+  from { box-shadow: 0 0 6px rgba(var(--disc-tema-rgb),.4); }
+  to   { box-shadow: 0 0 14px rgba(var(--disc-tema-rgb),.8); }
+}
+
+.vf-dot--correct {
+  background: #34d399;
+  border: none;
+  box-shadow: 0 0 6px rgba(52,211,153,.35);
+}
+
+.vf-dot--wrong {
+  background: #f87171;
+  border: none;
+  box-shadow: 0 0 6px rgba(248,113,113,.35);
+}
+
+/* ══════════════════════════════════════════════════════════
+   13. BOTÃO VER RESPOSTA
+   ══════════════════════════════════════════════════════════ */
+
+.vf-reveal-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--font-body); font-size: .92rem; font-weight: 600;
+  padding: 11px 28px; border-radius: var(--pill);
+  background: rgba(var(--disc-tema-rgb),.12);
+  border: 1.5px solid rgba(var(--disc-tema-rgb),.35);
+  color: var(--disc-tema);
+  cursor: pointer;
+  transition: background var(--t), box-shadow var(--t), transform var(--t), border-color var(--t);
+  animation: reveal-btn-in .25s cubic-bezier(.34,1.56,.64,1) both;
+}
+
+@keyframes reveal-btn-in {
+  from { opacity: 0; transform: scale(.85) translateY(6px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.vf-reveal-btn:hover {
+  background: rgba(var(--disc-tema-rgb),.2);
+  border-color: rgba(var(--disc-tema-rgb),.6);
+  box-shadow: 0 0 20px rgba(var(--disc-tema-rgb),.25);
+  transform: translateY(-2px);
+}
+
+.vf-reveal-btn.hidden { display: none !important; }
+
+/* Estado selecionado (antes da revelação) */
+.vf-btn--selected {
+  transform: scale(1.04);
+  border-width: 2px;
+}
+.vf-btn--true.vf-btn--selected {
+  background: rgba(52,211,153,.18);
+  border-color: rgba(52,211,153,.6);
+  box-shadow: 0 0 20px rgba(52,211,153,.2);
+}
+.vf-btn--false.vf-btn--selected {
+  background: rgba(248,113,113,.18);
+  border-color: rgba(248,113,113,.6);
+  box-shadow: 0 0 20px rgba(248,113,113,.2);
+}
+
+/* ══════════════════════════════════════════════════════════
+   14. RESPONSIVIDADE EXTRA
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+  .vf-how-to { max-width: 100%; }
+  .vf-dot { width: 10px; height: 10px; }
+  .vf-pause-card { padding: 24px 20px 22px; min-width: unset; width: calc(100vw - 48px); }
+}
+
+@media (max-width: 680px) {
+  .game-header        { padding: 0 16px; gap: 10px; }
+  .game-header__back span { display: none; }
+  .game-content       { padding: 24px 16px 48px; }
+  .game-result__card  { padding: 36px 20px 28px; }
+  .game-result__actions { flex-direction: column; }
+}
+
+@media (max-width: 480px) {
+  .vf-buttons { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .vf-btn     { padding: 18px 10px; }
+  .vf-btn__icon  { font-size: 1.6rem; }
+  .vf-btn__label { font-size: .8rem; }
+  .vf-progress-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+}
+
+@media (max-width: 400px) {
+  .game-header__meta  { display: none; }
+  .game-section-title { font-size: 1.4rem; }
 }

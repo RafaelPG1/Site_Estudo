@@ -1447,6 +1447,21 @@ a { text-decoration: none; color: inherit; }
   color: var(--gold);
 }
 
+/* Badge "só admin" na linha do PIN */
+.pm-pin-admin-badge {
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 0.18rem 0.5rem;
+  border-radius: 99px;
+  flex-shrink: 0;
+  background: rgba(232, 201, 122, 0.08);
+  border: 1px solid rgba(232, 201, 122, 0.28);
+  color: var(--gold);
+
+}
+
 .pm-footer {
   display: flex;
   align-items: center;

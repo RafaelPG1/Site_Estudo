@@ -31,7 +31,7 @@
 
   <!-- ── HEADER ── -->
   <header class="game-header">
-    <a id="shell-back-btn" class="game-header__back" href="#">
+    <a id="shell-back-btn" class="game-header__back" href="../../jogo.html">
       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M13 16l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
@@ -75,9 +75,23 @@
       <div class="vf-intro">
         <h1 class="game-section-title">Verdadeiro <em>ou Falso?</em></h1>
         <p class="game-section-desc">
-          Responda o máximo de questões corretas antes do tempo acabar.<br>
-          Cada acerto vale pontos — cada erro desconta!
+          Analise cada afirmação com atenção e decida:<br>
+          ela é <strong>verdadeira</strong> ou <strong>falsa</strong>?
         </p>
+
+        <!-- Como funciona -->
+        <div class="vf-how-to">
+          <div class="vf-how-to__header">
+            <span class="vf-how-to__icon">📖</span>
+            <span class="vf-how-to__title">Como funciona</span>
+          </div>
+          <ol class="vf-how-to__steps">
+            <li><strong>Leia</strong> a afirmação com calma</li>
+            <li><strong>Marque</strong> Verdadeiro ou Falso</li>
+            <li>Clique em <strong>"Ver resposta"</strong> quando tiver certeza</li>
+            <li>Veja o gabarito e a explicação antes de avançar</li>
+          </ol>
+        </div>
 
         <div class="vf-rules">
           <div class="vf-rule">
@@ -93,11 +107,13 @@
             <span><strong>30 segundos</strong> por questão</span>
           </div>
         </div>
-<!-- Contador de questões centralizado -->
-<div class="vf-questoes-badge">
-  <span class="vf-questoes-badge__num" id="intro-total-questoes">8</span>
-  <span class="vf-questoes-badge__label">questões</span>
-</div>  
+
+        <!-- Contador de questões centralizado -->
+        <div class="vf-questoes-badge">
+          <span class="vf-questoes-badge__num" id="intro-total-questoes">8</span>
+          <span class="vf-questoes-badge__label">questões</span>
+        </div>
+
         <button class="game-btn" id="btn-start">
           Começar
           <svg viewBox="0 0 16 16" fill="currentColor">
@@ -117,6 +133,12 @@
           <div class="game-progress-bar__fill" id="progress-fill" style="width:0%"></div>
         </div>
       </div>
+
+      <!-- Bolinhas de progresso -->
+      <div class="vf-dots-row">
+        <div class="vf-dots" id="vf-dots"></div>
+      </div>
+
 <!-- Controles da questão -->
 <div class="vf-controls">
   <button class="vf-ctrl-btn" id="btn-pause" title="Pausar (Espaço)">
@@ -153,6 +175,15 @@
         </button>
       </div>
 
+      <!-- Botão Ver Resposta -->
+      <button class="vf-reveal-btn hidden" id="btn-ver-resposta">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+          <circle cx="10" cy="10" r="8"/>
+          <path d="M10 6v5l3 2" stroke-linecap="round"/>
+        </svg>
+        Ver resposta
+      </button>
+
       <!-- Feedback -->
       <div id="feedback-area" class="hidden">
         <div class="game-feedback" id="feedback-msg"></div>
@@ -170,7 +201,7 @@
           Não encontramos questões para esta disciplina ainda.<br>
           Tente outra ou aguarde novas adições!
         </p>
-        <a class="game-btn" id="btn-empty-back" href="#">Voltar</a>
+        <a class="game-btn" id="btn-empty-back" href="../../jogo.html">Voltar</a>
       </div>
     </section>
 

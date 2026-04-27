@@ -801,6 +801,7 @@ function abrirPerfilModal() {
                 <span class="pm-data-label">PIN</span>
                 <span class="pm-data-value pm-data-value--pin">• • •</span>
               </div>
+              <span class="pm-pin-admin-badge">admin</span>
             </div>
 
           </div>
