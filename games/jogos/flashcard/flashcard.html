@@ -33,39 +33,78 @@
   <div class="bg-grid"          aria-hidden="true"></div>
 
   <header class="header">
-    <div class="header__inner">
 
-      <a id="shell-back-btn" href="../../jogo.html" class="back-btn" aria-label="Voltar aos jogos">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2"
-             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <polyline points="15 18 9 12 15 6"/>
-        </svg>
-        <span>Jogos</span>
-      </a>
+    <!-- Botão voltar -->
+    <a id="shell-back-btn" href="../../jogo.html" class="back-btn" aria-label="Voltar aos jogos">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M13 16l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Voltar</span>
+    </a>
 
-      <div class="header__logo" aria-label="Nexus Study">
-        <div class="logo-mark" aria-hidden="true">N</div>
-        <div class="logo-text">
-          <span class="logo-title">Nexus</span>
-          <span class="logo-sub">Study</span>
+    <!-- Ícone + título + disciplina · semestre -->
+    <div class="header__identity">
+      <div class="header__icon" id="header-icon">🃏</div>
+      <div class="header__info">
+        <div class="header__name">Flashcard</div>
+        <div class="header__meta">
+          <span class="header__disc" id="header-disc-name">—</span>
+          <span class="header__meta-sep">·</span>
+          <span class="header__sem" id="header-sem">—</span>
         </div>
       </div>
-
-      <nav class="breadcrumb" aria-label="Localização">
-        <span class="breadcrumb__item">Flashcards</span>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <polyline points="9 18 15 12 9 6"/>
-        </svg>
-        <span class="breadcrumb__item breadcrumb__item--active"
-              id="breadcrumb-disc" aria-live="polite">—</span>
-      </nav>
-
     </div>
+
   </header>
 
-  <main class="main" id="card-root" role="main" aria-label="Sessão de flashcards">
+  <!-- ── TELA DE INÍCIO ── -->
+  <main class="main intro-main" id="intro-root" role="main" aria-label="Tela de início — Flashcards">
+
+    <div class="intro-card">
+
+      <div class="intro-badge" aria-hidden="true">
+        <i class="fas fa-layer-group"></i>
+        <span>Modo de estudo</span>
+      </div>
+
+      <h1 class="intro-title">Flash<em>cards</em></h1>
+      <p class="intro-subtitle">
+        Vire cada card e marque se acertou ou errou.<br>
+        O sistema adapta a frequência de revisão pra você.
+      </p>
+
+      <div class="intro-divider" aria-hidden="true"></div>
+
+      <div class="intro-meta" role="group" aria-label="Disciplina e semestre">
+        <span class="intro-chip intro-chip--disc" id="intro-chip-disc">
+          <i class="fas fa-book-open" aria-hidden="true"></i>
+          <span id="intro-disc-label">—</span>
+        </span>
+        <span class="intro-chip intro-chip--sem">
+          <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+          <span id="intro-sem-label">—</span>
+        </span>
+      </div>
+
+      <div class="intro-info" role="list" aria-label="Informações do deck">
+        <span class="intro-pill intro-pill--neutral" role="listitem">
+          <i class="fas fa-clone" aria-hidden="true"></i>
+          <strong id="intro-card-count">—</strong> questões no deck
+        </span>
+      </div>
+
+      <button class="intro-start-btn" id="intro-start-btn" type="button"
+              aria-label="Começar sessão de flashcards">
+        Começar
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+      </button>
+
+    </div>
+
+  </main>
+
+  <!-- ── JOGO (oculto até clicar em Começar) ── -->
+  <main class="main" id="card-root" role="main" aria-label="Sessão de flashcards" style="display:none">
 
     <div class="card-skeleton" id="card-skeleton" aria-busy="true" aria-label="Carregando flashcards">
       <div class="skeleton-bar skeleton-bar--short"></div>

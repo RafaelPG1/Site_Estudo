@@ -99,14 +99,59 @@ async function _srAtualizar(cardId, acertou, diffMarcada) {
   _srCache[cardId] = p;
 
   try {
-    const uid = _resolverUid(_estado.nomeUsuario);
-    await salvarPerfilSRS(uid, cardId, p, _estado.discId, _estado.semestre);
+    const uid = typeof _estado.nomeUsuario === 'object'
+  ? _estado.nomeUsuario.uid
+  : _estado.nomeUsuario;
+await salvarPerfilSRS(uid, cardId, p, _estado.discId, _estado.semestre);
   } catch (err) {
     console.error('[flashcard.js] Erro ao salvar SRS:', err);
   }
 }
 
+function _srMontarDeck(discId) {
+  // Usa _estado.cardsData — isolado por semestre
+  const todos = _estado.cardsData[discId] || [];
+  const agora = Date.now();
 
+  const vencidos  = [];
+  const novos     = [];
+  const cedo      = [];
+  const dominados = [];
+
+  todos.forEach(card => {
+    const p     = _srPerfil(card.id);
+    const visto = p.tentativas > 0;
+
+    if (p.dominado)                 dominados.push({ card, p });
+    else if (!visto)                novos.push({ card, p });
+    else if (p.proximaVez <= agora) vencidos.push({ card, p });
+    else                            cedo.push({ card, p });
+  });
+
+  vencidos.sort((a, b) =>
+    b.p.erros !== a.p.erros           ? b.p.erros - a.p.erros :
+    b.p.tentativas !== a.p.tentativas ? b.p.tentativas - a.p.tentativas :
+    a.p.proximaVez - b.p.proximaVez
+  );
+
+  cedo.sort((a, b) => a.p.proximaVez - b.p.proximaVez);
+  dominados.sort((a, b) => a.p.proximaVez - b.p.proximaVez);
+
+  const selecionados = [];
+  const add = lista => {
+    for (const item of lista) {
+      if (selecionados.length >= DECK_SIZE) break;
+      selecionados.push(item.card);
+    }
+  };
+
+  add(vencidos);
+  add(novos);
+  add(cedo);
+  add(dominados);
+
+  return _shuffle(selecionados);
+}
 
 function _srEstatisticas(discId) {
   // Usa _estado.cardsData — isolado por semestre
@@ -118,9 +163,9 @@ function _srEstatisticas(discId) {
     const p     = _srPerfil(card.id);
     const visto = p.tentativas > 0;
 
-    if (!visto)        novos++;
-    else if (p.dominado)       dominados++;
-    else                       vencidos++;
+    if (!visto)                                  novos++;
+    else if (p.dominado || p.proximaVez > agora) dominados++;
+    else                                         vencidos++;
   });
 
   return { total: todos.length, dominados, vencidos, novos };
@@ -155,10 +200,6 @@ function _shuffle(arr) {
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
-}
-
-function _resolverUid(u) {
-  return typeof u === 'object' ? u?.uid : u;
 }
 
 // Salva apenas IDs dos cards (não os objetos completos) para evitar
@@ -237,10 +278,7 @@ function _desfazer() {
   _estado.marcando   = false;
 
   if (snapshot.srPerfilAnterior) {
-    const { cardId, perfil } = snapshot.srPerfilAnterior;
-    _srCache[cardId] = perfil;
-    const uid = _resolverUid(_estado.nomeUsuario);
-    salvarPerfilSRS(uid, cardId, perfil, _estado.discId, _estado.semestre);
+    _srCache[snapshot.srPerfilAnterior.cardId] = snapshot.srPerfilAnterior.perfil;
   }
 
   _salvarSessao();
@@ -364,7 +402,7 @@ function _tplCena(card, tagCls) {
         <div class="cards-face cards-back" aria-hidden="true">
           <div class="cards-back-inner">
             <span class="cards-tag ${tagCls}" id="cards-tag-back">${_esc(categoriaTxt)}</span>
-            <div class="cards-answer" id="cards-answer">${_esc(respostaTxt)}</div>
+            <div class="cards-answer" id="cards-answer">${respostaTxt}</div>
 
             <div class="cards-diff-badge-wrap" id="cards-diff-badge-wrap">
               <span class="cards-diff-badge" id="cards-diff-badge"></span>
@@ -461,28 +499,38 @@ function _tplFinal() {
 }
 
 function _tplWrapper(discId, cards) {
+  const discLabel = DISC_LABEL[discId] ?? discId ?? '';
+  const { semestre } = _estado;
+
   return `
-    <div class="cards-controls">
-      <div class="cards-stats">
-        <div class="cards-stat-chip correct" aria-label="Acertos">
-          <div class="cards-stat-dot" aria-hidden="true"></div>
-          <span id="cards-stat-correct">0 acertos</span>
-        </div>
-        <div class="cards-stat-chip wrong" aria-label="Erros">
-          <div class="cards-stat-dot" aria-hidden="true"></div>
-          <span id="cards-stat-wrong">0 erros</span>
+    <div class="cards-game-header">
+      <div class="cards-game-header__left">
+        <div class="cards-stats">
+          <div class="cards-stat-chip correct" aria-label="Acertos">
+            <div class="cards-stat-dot" aria-hidden="true"></div>
+            <span id="cards-stat-correct">0 acertos</span>
+          </div>
+          <div class="cards-stat-chip wrong" aria-label="Erros">
+            <div class="cards-stat-dot" aria-hidden="true"></div>
+            <span id="cards-stat-wrong">0 erros</span>
+          </div>
         </div>
       </div>
-      <div class="cards-actions">
-        <button class="cards-ctrl-btn" id="cards-btn-undo" title="Desfazer (Z)" type="button" aria-label="Desfazer">
-          <i class="fas fa-rotate-left" aria-hidden="true"></i>
-        </button>
-        <button class="cards-ctrl-btn" id="cards-btn-shuffle" title="Embaralhar" type="button" aria-label="Embaralhar">
-          <i class="fas fa-shuffle" aria-hidden="true"></i>
-        </button>
-        <button class="cards-ctrl-btn cards-ctrl-btn--kbd" id="cards-btn-kbd" title="Atalhos" type="button" aria-label="Atalhos de teclado" aria-expanded="false">
-          <i class="fas fa-keyboard" aria-hidden="true"></i>
-        </button>
+      <div class="cards-game-header__right">
+        <div class="cards-actions">
+          <button class="cards-ctrl-btn" id="cards-btn-undo" title="Desfazer (Z)" type="button" aria-label="Desfazer">
+            <i class="fas fa-rotate-left" aria-hidden="true"></i>
+          </button>
+          <button class="cards-ctrl-btn" id="cards-btn-shuffle" title="Embaralhar" type="button" aria-label="Embaralhar">
+            <i class="fas fa-shuffle" aria-hidden="true"></i>
+          </button>
+          <button class="cards-ctrl-btn cards-ctrl-btn--kbd" id="cards-btn-kbd" title="Atalhos" type="button" aria-label="Atalhos de teclado" aria-expanded="false">
+            <i class="fas fa-keyboard" aria-hidden="true"></i>
+          </button>
+          <button class="cards-ctrl-btn cards-ctrl-btn--inicio" id="cards-btn-inicio" title="Voltar ao início" type="button" aria-label="Voltar ao início">
+            <i class="fas fa-house" aria-hidden="true"></i>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -502,13 +550,17 @@ function _tplWrapper(discId, cards) {
 
     <div class="cards-bottom" id="cards-bottom">
       <div class="cards-result-btns">
-        <button class="cards-result-btn cards-btn-wrong" id="cards-btn-wrong" type="button">
-          <i class="fas fa-xmark" aria-hidden="true"></i> Errei
-          <small style="font-size:.6rem;opacity:.5;margin-left:4px;">[E]</small>
+        <button class="cards-result-btn cards-btn-wrong" id="cards-btn-wrong" type="button" aria-label="Errei [E]">
+          <span class="btn-icon-wrap" aria-hidden="true">
+            <i class="fas fa-xmark"></i>
+          </span>
+          <span class="btn-label">Errei <span class="cards-diff-kbd-hint">[E]</span></span>
         </button>
-        <button class="cards-result-btn cards-btn-right" id="cards-btn-right" type="button">
-          <i class="fas fa-check" aria-hidden="true"></i> Acertei
-          <small style="font-size:.6rem;opacity:.5;margin-left:4px;">[A]</small>
+        <button class="cards-result-btn cards-btn-right" id="cards-btn-right" type="button" aria-label="Acertei [A]">
+          <span class="btn-icon-wrap" aria-hidden="true">
+            <i class="fas fa-check"></i>
+          </span>
+          <span class="btn-label">Acertei <span class="cards-diff-kbd-hint">[A]</span></span>
         </button>
       </div>
       <div class="cards-nav">
@@ -557,13 +609,13 @@ function _renderCard(direcaoAnimacao = 'next') {
   const { cards, current, discId, panelEl, resultado } = _estado;
 
   const todosRespondidos = cards.length > 0 && cards.every(c => resultado[c.id]);
-  const isUltimo        = todosRespondidos;
+  const isUltimo        = current >= cards.length || (current === cards.length && todosRespondidos);
 
   const wrap   = panelEl.querySelector('#cards-scene-wrap');
   const bottom = panelEl.querySelector('#cards-bottom');
   const tagCls = DISC_TAG_CLASS[discId] || 'tag-default';
 
-  if (isUltimo) {
+  if (isUltimo && todosRespondidos) {
     wrap.innerHTML       = _tplFinal();
     bottom.style.display = 'none';
     _limparSessao();
@@ -796,26 +848,10 @@ function _marcar(acertou) {
 
   _atualizarResultadoVisual(card.id);
 
-  const btnWrong = panelEl.querySelector('#cards-btn-wrong');
-  const btnRight = panelEl.querySelector('#cards-btn-right');
-  if (btnWrong) btnWrong.disabled = true;
-  if (btnRight) btnRight.disabled = true;
-
+  // Não avança automaticamente — usuário usa o botão Próximo
+  _estado.marcando = false;
+  _salvarSessao();
   _atualizarUI();
-
-  if (current === cards.length - 1) {
-    const bottom = panelEl.querySelector('#cards-bottom');
-    if (bottom) bottom.style.display = 'none';
-  }
-
-  setTimeout(() => {
-    _estado.current++;
-    _estado.marcando = false;
-    if (btnWrong) btnWrong.disabled = false;
-    if (btnRight) btnRight.disabled = false;
-    _salvarSessao();
-    _renderCard('next');
-  }, 700);
 }
 
 function _proximo() {
@@ -844,7 +880,7 @@ function _embaralhar() {
 
 function _reiniciar() {
   _limparSessao();
-  _estado.cards      = _srMontarDeck_com(_estado.cardsData, _estado.discId);
+  _estado.cards      = _srMontarDeck(_estado.discId);
   _estado.current    = 0;
   _estado.stats      = { correct: 0, wrong: 0 };
   _estado.difficulty = {};
@@ -871,6 +907,17 @@ function _criarWrapperEl(discId, cards) {
   wrap.querySelector('#cards-btn-next')   ?.addEventListener('click', _proximo);
   wrap.querySelector('#cards-btn-shuffle')?.addEventListener('click', _embaralhar);
   wrap.querySelector('#cards-btn-undo')   ?.addEventListener('click', _desfazer);
+
+  wrap.querySelector('#cards-btn-inicio')?.addEventListener('click', () => {
+    const cardRoot  = document.getElementById('card-root');
+    const introRoot = document.getElementById('intro-root');
+    if (cardRoot)  cardRoot.style.display  = 'none';
+    if (introRoot) introRoot.style.display = '';
+    _limparSessao();
+    // Oculta o badge do header ao voltar para o início
+    const hbadge = document.getElementById('header-game-badge');
+    if (hbadge) hbadge.style.display = 'none';
+  });
 
   wrap.querySelector('#cards-btn-kbd')?.addEventListener('click', () => {
     const kbdPanel = wrap.querySelector('#cards-kbd-panel');
@@ -899,6 +946,7 @@ export async function initCards(discId, panelEl, nomeUsuario) {
   const breadcrumb = document.getElementById('breadcrumb-disc');
   if (breadcrumb) breadcrumb.textContent = DISC_LABEL[discId] ?? discId;
   aplicarCoresDisciplina(discId, DISC_CORES);
+  document.body.dataset.disc = discId; // garante seletores CSS body[data-disc] no modo jogo
   document.getElementById('card-skeleton')?.remove();
 
   if (!cardsData[discId]?.length) {
@@ -914,8 +962,8 @@ export async function initCards(discId, panelEl, nomeUsuario) {
     return;
   }
 
-  const uid = _resolverUid(nomeUsuario);
-  _srCache = await carregarPerfisSRS(uid, discId, sem);
+  const uid = typeof nomeUsuario === 'object' ? nomeUsuario.uid : nomeUsuario;
+_srCache = await carregarPerfisSRS(uid, discId, sem);
 
   const sessaoSalva = window.flashcardSessao?.carregar(discId);
   let cards, estado;
@@ -967,6 +1015,22 @@ export async function initCards(discId, panelEl, nomeUsuario) {
   panelEl.appendChild(wrap);
   _renderCard();
   _registrarAtalhos();
+
+  // Exibe o badge no header da página com disciplina e semestre
+  const hbadge = document.getElementById('header-game-badge');
+  if (hbadge) {
+    const discLabel = DISC_LABEL[discId] ?? discId ?? '';
+    const hdisc = document.getElementById('header-game-disc');
+    const hsem  = document.getElementById('header-game-sem');
+    const hdot  = document.getElementById('header-game-dot');
+    if (hdisc) hdisc.textContent = discLabel;
+    if (hsem)  hsem.textContent  = sem ?? '';
+    if (hdot)  hdot.style.display = sem ? '' : 'none';
+    hbadge.style.display = '';
+    // aplica cor da disciplina ao ícone
+    const hicon = hbadge.querySelector('.header-game-icon');
+    if (hicon) hicon.dataset.disc = discId;
+  }
 }
 
 function _srMontarDeck_com(cardsData, discId) {
@@ -1031,7 +1095,62 @@ export function invalidarCacheSRS(discId) {
              ?? getUsuario()
              ?? 'visitante';
 
-  if (disc) {
-    initCards(disc, root, usuario);
+  if (!disc) return;
+
+  /* Aguarda o primeiro frame para garantir que o DOM está pintado */
+  requestAnimationFrame(() => {
+    _introPreencherDados(disc, sem);
+  });
+
+  /* Ao clicar em Começar: oculta intro, exibe jogo e inicia */
+  const startBtn = document.getElementById('intro-start-btn');
+  if (startBtn) {
+    startBtn.addEventListener('click', () => {
+      const introRoot = document.getElementById('intro-root');
+      if (introRoot) introRoot.style.display = 'none';
+      root.style.display = '';
+      initCards(disc, root, usuario);
+    });
   }
 })();
+
+/* ── Preenche os dados da tela de intro ── */
+function _introPreencherDados(disc, sem) {
+  /* Breadcrumb */
+  const breadcrumb = document.getElementById('breadcrumb-disc');
+  if (breadcrumb) breadcrumb.textContent = DISC_LABEL[disc] ?? disc ?? '—';
+
+  /* Cores da disciplina no :root e data-disc no body para os seletores CSS */
+  aplicarCoresDisciplina(disc, DISC_CORES);
+  document.body.dataset.disc = disc;
+
+  /* Chip disciplina — cor via body[data-disc] no CSS (flashcard.css).
+     Não aplicar inline styles aqui: eles sobreescrevem os seletores CSS
+     e ignoram as cores definidas em cores.js / theme.js. */
+  const discLabel = document.getElementById('intro-disc-label');
+  if (discLabel) discLabel.textContent = DISC_LABEL[disc] ?? disc ?? '—';
+
+  /* Chip semestre */
+  const semLabel = document.getElementById('intro-sem-label');
+  if (semLabel) semLabel.textContent = sem || '—';
+
+  /* Contagem real de cards disponíveis */
+  try {
+    const cardsData = getCardsData(sem);
+    const total     = cardsData[disc]?.length ?? 0;
+    const countEl   = document.getElementById('intro-card-count');
+    if (countEl) countEl.textContent = total > 0 ? String(total) : '—';
+  } catch (err) {
+    console.warn('[flashcard] Não foi possível carregar contagem de cards:', err.message);
+  }
+
+  /* Header — disc e semestre (visível já na intro) */
+  const hdisc = document.getElementById('header-disc-name');
+  const hsem  = document.getElementById('header-sem');
+  if (hdisc) hdisc.textContent = DISC_LABEL[disc] ?? disc ?? '—';
+  if (hsem)  hsem.textContent  = sem || '—';
+
+  /* Botão Voltar */
+  const backBtn = document.getElementById('shell-back-btn');
+  if (backBtn) backBtn.href = `../../jogo.html${sem ? `?sem=${sem}` : ''}`;
+}
