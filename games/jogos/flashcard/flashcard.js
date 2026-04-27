@@ -99,59 +99,14 @@ async function _srAtualizar(cardId, acertou, diffMarcada) {
   _srCache[cardId] = p;
 
   try {
-    const uid = typeof _estado.nomeUsuario === 'object'
-  ? _estado.nomeUsuario.uid
-  : _estado.nomeUsuario;
-await salvarPerfilSRS(uid, cardId, p, _estado.discId, _estado.semestre);
+    const uid = _resolverUid(_estado.nomeUsuario);
+    await salvarPerfilSRS(uid, cardId, p, _estado.discId, _estado.semestre);
   } catch (err) {
     console.error('[flashcard.js] Erro ao salvar SRS:', err);
   }
 }
 
-function _srMontarDeck(discId) {
-  // Usa _estado.cardsData — isolado por semestre
-  const todos = _estado.cardsData[discId] || [];
-  const agora = Date.now();
 
-  const vencidos  = [];
-  const novos     = [];
-  const cedo      = [];
-  const dominados = [];
-
-  todos.forEach(card => {
-    const p     = _srPerfil(card.id);
-    const visto = p.tentativas > 0;
-
-    if (p.dominado)                 dominados.push({ card, p });
-    else if (!visto)                novos.push({ card, p });
-    else if (p.proximaVez <= agora) vencidos.push({ card, p });
-    else                            cedo.push({ card, p });
-  });
-
-  vencidos.sort((a, b) =>
-    b.p.erros !== a.p.erros           ? b.p.erros - a.p.erros :
-    b.p.tentativas !== a.p.tentativas ? b.p.tentativas - a.p.tentativas :
-    a.p.proximaVez - b.p.proximaVez
-  );
-
-  cedo.sort((a, b) => a.p.proximaVez - b.p.proximaVez);
-  dominados.sort((a, b) => a.p.proximaVez - b.p.proximaVez);
-
-  const selecionados = [];
-  const add = lista => {
-    for (const item of lista) {
-      if (selecionados.length >= DECK_SIZE) break;
-      selecionados.push(item.card);
-    }
-  };
-
-  add(vencidos);
-  add(novos);
-  add(cedo);
-  add(dominados);
-
-  return _shuffle(selecionados);
-}
 
 function _srEstatisticas(discId) {
   // Usa _estado.cardsData — isolado por semestre
@@ -163,9 +118,9 @@ function _srEstatisticas(discId) {
     const p     = _srPerfil(card.id);
     const visto = p.tentativas > 0;
 
-    if (!visto)                                  novos++;
-    else if (p.dominado || p.proximaVez > agora) dominados++;
-    else                                         vencidos++;
+    if (!visto)        novos++;
+    else if (p.dominado)       dominados++;
+    else                       vencidos++;
   });
 
   return { total: todos.length, dominados, vencidos, novos };
@@ -200,6 +155,10 @@ function _shuffle(arr) {
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
+}
+
+function _resolverUid(u) {
+  return typeof u === 'object' ? u?.uid : u;
 }
 
 // Salva apenas IDs dos cards (não os objetos completos) para evitar
@@ -278,7 +237,10 @@ function _desfazer() {
   _estado.marcando   = false;
 
   if (snapshot.srPerfilAnterior) {
-    _srCache[snapshot.srPerfilAnterior.cardId] = snapshot.srPerfilAnterior.perfil;
+    const { cardId, perfil } = snapshot.srPerfilAnterior;
+    _srCache[cardId] = perfil;
+    const uid = _resolverUid(_estado.nomeUsuario);
+    salvarPerfilSRS(uid, cardId, perfil, _estado.discId, _estado.semestre);
   }
 
   _salvarSessao();
@@ -402,7 +364,7 @@ function _tplCena(card, tagCls) {
         <div class="cards-face cards-back" aria-hidden="true">
           <div class="cards-back-inner">
             <span class="cards-tag ${tagCls}" id="cards-tag-back">${_esc(categoriaTxt)}</span>
-            <div class="cards-answer" id="cards-answer">${respostaTxt}</div>
+            <div class="cards-answer" id="cards-answer">${_esc(respostaTxt)}</div>
 
             <div class="cards-diff-badge-wrap" id="cards-diff-badge-wrap">
               <span class="cards-diff-badge" id="cards-diff-badge"></span>
@@ -595,13 +557,13 @@ function _renderCard(direcaoAnimacao = 'next') {
   const { cards, current, discId, panelEl, resultado } = _estado;
 
   const todosRespondidos = cards.length > 0 && cards.every(c => resultado[c.id]);
-  const isUltimo        = current >= cards.length || (current === cards.length && todosRespondidos);
+  const isUltimo        = todosRespondidos;
 
   const wrap   = panelEl.querySelector('#cards-scene-wrap');
   const bottom = panelEl.querySelector('#cards-bottom');
   const tagCls = DISC_TAG_CLASS[discId] || 'tag-default';
 
-  if (isUltimo && todosRespondidos) {
+  if (isUltimo) {
     wrap.innerHTML       = _tplFinal();
     bottom.style.display = 'none';
     _limparSessao();
@@ -882,7 +844,7 @@ function _embaralhar() {
 
 function _reiniciar() {
   _limparSessao();
-  _estado.cards      = _srMontarDeck(_estado.discId);
+  _estado.cards      = _srMontarDeck_com(_estado.cardsData, _estado.discId);
   _estado.current    = 0;
   _estado.stats      = { correct: 0, wrong: 0 };
   _estado.difficulty = {};
@@ -952,8 +914,8 @@ export async function initCards(discId, panelEl, nomeUsuario) {
     return;
   }
 
-  const uid = typeof nomeUsuario === 'object' ? nomeUsuario.uid : nomeUsuario;
-_srCache = await carregarPerfisSRS(uid, discId, sem);
+  const uid = _resolverUid(nomeUsuario);
+  _srCache = await carregarPerfisSRS(uid, discId, sem);
 
   const sessaoSalva = window.flashcardSessao?.carregar(discId);
   let cards, estado;
@@ -1070,8 +1032,6 @@ export function invalidarCacheSRS(discId) {
              ?? 'visitante';
 
   if (disc) {
-    document.addEventListener('DOMContentLoaded', () => {
-      initCards(disc, root, usuario);
-    });
+    initCards(disc, root, usuario);
   }
 })();

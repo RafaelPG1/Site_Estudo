@@ -12,13 +12,10 @@ import { getDb } from '../../../src/firebase.js';
 const _chaveLocal = (usuario, discId, sem) =>
   `nexus_srs_${usuario}_${discId}_${sem}`;
 const _docRef = (usuario, discId, sem) => {
-  console.log('[_docRef] valores:', { usuario, discId, sem });
-  console.log('[_docRef] getDb():', getDb());
   return doc(getDb(), 'usuarios', usuario, 'srs_perfis', `${sem}_${discId}`);
 };
 /* ── CARREGAR ── */
 export async function carregarPerfisSRS(usuario, discId, sem) {
-    console.log('[carregarPerfisSRS] chamado com:', { usuario, discId, sem });
   if (!usuario || usuario === 'visitante') {
     return _lerLocal(usuario, discId, sem);
   }
