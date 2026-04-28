@@ -1,28 +1,16 @@
 /* ============================================================
-   NEXUS STUDY — games/jogos/vdd_falso/vdd_falso.js  (v6.2)
+   NEXUS STUDY — games/jogos/vdd_falso/vdd_falso.js  (v6.3)
 
-   Correções v6.2 (baseadas na análise de bugs):
-   - [BUG CRÍTICO] sorteiarPonderado(): adicionado fallback para
-     o último elemento quando rand expira por arredondamento de
-     ponto flutuante, eliminando o risco de loop infinito.
-   - [BUG] finalizarJogo(): precisão agora é calculada apenas
-     sobre questões respondidas (excluindo tempo esgotado).
-   - [BUG] MutationObserver em #vf-disc-tag: observer reescrito
-     para observar apenas childList sem subtree, lendo apenas
-     nós que não são o próprio discLbl — eliminando loop de
-     notificações.
-   - [POTENCIAL] DOMContentLoaded no módulo: trocado por
-     verificação de readyState para evitar miss em navegação
-     via history.back() ou cache.
-   - [POTENCIAL] montarDeck(): adicionada validação de deck
-     vazio após montagem.
-   - [POTENCIAL] ArrowLeft: timer parado explicitamente antes
-     de chamar irAnterior().
-   - [POTENCIAL] salvarResultadoVF(): questões com tempo
-     esgotado (null) excluídas dos resultados salvos no
-     histórico — evita contaminar o algoritmo ponderado.
-   - [POTENCIAL] togglePausa(): guard contra Space duplo quando
-     #btn-retomar está focado (no HTML, via keydown listener).
+   Novidades v6.3:
+   - [FEATURE] Badge de histórico por questão (vf-hist-badge):
+     exibido no canto superior direito do card, mostra o número
+     de tentativas anteriores e a taxa de acerto da questão.
+     Inclui modificadores visuais: crítico (< 50% ou mais erros
+     que acertos), ok (50–79%), dominado (≥ 80% com 3+ tent.).
+     Animação de entrada dispara a cada troca de questão.
+   - [FEATURE] estado.historicoVF: cache do histórico carregado
+     em memória para evitar leitura assíncrona a cada render.
+     Atualizado em init(), btnVoltarIntro e onRejogo.
    ============================================================ */
 
 import { Shell, Timer, Result, shuffle, lerParams } from '../../template/game-shell.js';
@@ -59,11 +47,17 @@ const estado = {
   // respostas[i] = true | false | null (null = tempo esgotado — neutro)
   // undefined = questão ainda não respondida
   respostas:  [],
+  // tempos[i] = segundos restantes da questão i (persistido ao navegar)
+  // Inicializado com CONFIG.TEMPO_POR_QUESTAO e decrementado pelo timer
+  tempos:     [],
   timer:      null,
   pausado:    false,
   usuario:    null,
   discId:     null,
   sem:        null,
+  // Cache do histórico de desempenho por questão
+  // (carregado em init() e mantido sincronizado após salvarResultadoVF)
+  historicoVF: {},
 };
 
 /* ══════════════════════════════════════════════════════════
@@ -224,6 +218,8 @@ function iniciarJogo() {
   estado.acertos   = 0;
   estado.erros     = 0;
   estado.respostas = new Array(estado.perguntas.length); // tudo undefined
+  // Cada questão começa com o tempo total disponível
+  estado.tempos    = new Array(estado.perguntas.length).fill(CONFIG.TEMPO_POR_QUESTAO);
   estado.pausado   = false;
   if (el.scoreCorrect) el.scoreCorrect.textContent = 0;
   atualizarContadores();
@@ -231,16 +227,86 @@ function iniciarJogo() {
   renderizarQuestao();
 }
 
-function criarTimer() {
+function criarTimer(totalInicial) {
   return Timer.criar({
-    total:  CONFIG.TEMPO_POR_QUESTAO,
-    onTick: (_r, pct) => aplicarCorBarra(pct),
+    // O Timer conta regressivamente a partir do tempo restante real da questão.
+    total: totalInicial ?? CONFIG.TEMPO_POR_QUESTAO,
+    onTick: (restante) => {
+      // Persiste o tempo restante a cada tick para que, ao navegar,
+      // o valor salvo seja sempre o mais recente possível.
+      estado.tempos[estado.indice] = restante;
+
+      // A barra SEMPRE deve refletir restante / tempo_total_fixo (30s).
+      // Setamos --timer-pct explicitamente para garantir que nenhum
+      // cálculo interno do Timer sobrescreva com valor errado.
+      const pctReal = (restante / CONFIG.TEMPO_POR_QUESTAO) * 100;
+      document.documentElement.style.setProperty('--timer-pct', pctReal + '%');
+      aplicarCorBarra(pctReal);
+    },
     onEnd:  () => {
       if (estado.respostas[estado.indice] === undefined) {
+        estado.tempos[estado.indice] = 0;
         registrarResposta(null);
       }
     },
   });
+}
+
+/* ══════════════════════════════════════════════════════════
+   BADGE DE HISTÓRICO POR QUESTÃO
+   Chamada dentro de renderizarQuestao() a cada troca de card.
+   ══════════════════════════════════════════════════════════ */
+
+function renderizarBadgeHistorico(questaoId) {
+  const badge    = $('vf-hist-badge');
+  const elTent   = $('vf-hist-tentativas');
+  const elTaxa   = $('vf-hist-taxa');
+  const elStatus = $('vf-hist-status');
+
+  if (!badge) return;
+
+  const h = estado.historicoVF[questaoId];
+
+  // Sem histórico ainda → oculta o badge completamente
+  if (!h || h.tentativas === 0) {
+    badge.hidden = true;
+    badge.className = 'vf-hist-badge';
+    return;
+  }
+
+  const { tentativas, acertos, erros } = h;
+  const taxa = Math.round((acertos / tentativas) * 100);
+
+  // ── Determinar status ──
+  // Crítico: visto 3+ vezes E taxa < 50%, OU mais erros que acertos
+  // Ok:      taxa entre 50–79%
+  // Dominado: taxa ≥ 80% com pelo menos 3 tentativas
+  let statusMod  = '';
+  let statusText = '';
+
+  const maisErrosQueAcertos = erros > acertos;
+
+  if (maisErrosQueAcertos || (tentativas >= 3 && taxa < 50)) {
+    statusMod  = 'vf-hist-badge--critico';
+    statusText = 'crítico';
+  } else if (tentativas >= 3 && taxa >= 80) {
+    statusMod  = 'vf-hist-badge--dominado';
+    statusText = 'dominado';
+  } else if (taxa >= 50) {
+    statusMod  = 'vf-hist-badge--ok';
+    statusText = 'ok';
+  }
+  // Se não se encaixa em nenhum (ex: 1 tentativa, 100%) → badge neutro sem status
+
+  // ── Atualizar DOM ──
+  if (elTent)   elTent.textContent   = tentativas;
+  if (elTaxa)   elTaxa.textContent   = `${taxa}%`;
+  if (elStatus) elStatus.textContent = statusText;
+
+  // Reinicia a animação (remove e reinsere a classe de animação)
+  badge.className = `vf-hist-badge${statusMod ? ' ' + statusMod : ''}`;
+  void badge.offsetWidth; // força reflow para restartar a animação CSS
+  badge.hidden = false;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -253,6 +319,9 @@ function renderizarQuestao() {
   const jaRespondeu = resp !== undefined;
   const correto     = jaRespondeu && resp === pergunta.resposta;
   const num         = estado.indice + 1;
+
+  // ← Atualiza/oculta o badge de histórico desta questão
+  renderizarBadgeHistorico(pergunta.id);
 
   // Texto
   if (el.qCurrent)     el.qCurrent.textContent    = num;
@@ -319,14 +388,28 @@ function renderizarQuestao() {
   renderDots();
 
   // Timer
-  estado.timer?.stop();
-  if (!jaRespondeu) {
-    estado.timer = criarTimer();
-    estado.timer.start();
-    aplicarCorBarra(100);
+  // Salva o tempo restante da questão anterior ANTES de parar o timer.
+  // Isso garante que, ao voltar para essa questão, o timer continue
+  // de onde parou em vez de reiniciar do zero.
+  if (estado.timer) {
+    // A última leitura já foi feita pelo onTick; paramos sem descartar.
+    estado.timer.stop();
+    estado.timer = null;
   }
-  // Nota: ao revisar questões já respondidas, a barra mantém o valor
-  // do CSS --timer-pct do último timer — comportamento intencional.
+
+  if (!jaRespondeu) {
+    // Recupera o tempo salvo para esta questão (pode ser < 30s se o
+    // usuário já havia visitado a questão antes e voltado).
+    const tempoRestante = estado.tempos[estado.indice] ?? CONFIG.TEMPO_POR_QUESTAO;
+    const pctInicial    = (tempoRestante / CONFIG.TEMPO_POR_QUESTAO) * 100;
+
+    estado.timer = criarTimer(tempoRestante);
+    estado.timer.start();
+    aplicarCorBarra(pctInicial);
+    // Atualiza a variável CSS para que a barra reflita o tempo correto
+    // imediatamente, antes do primeiro onTick.
+    document.documentElement.style.setProperty('--timer-pct', pctInicial + '%');
+  }
 }
 
 function atualizarBotoesNav() {
@@ -482,6 +565,7 @@ async function finalizarJogo() {
     onRejogo: async () => {
       const banco     = VDD_FALSO_DATA[estado.discId] ?? [];
       const historico = await carregarHistoricoVF(estado.usuario, estado.discId, estado.sem).catch(() => ({}));
+      estado.historicoVF = historico;                      // ← atualiza cache
       estado.perguntas = montarDeck(banco, historico);
       // [POTENCIAL CORRIGIDO] Valida deck não vazio antes de iniciar
       if (estado.perguntas.length === 0) {
@@ -494,6 +578,7 @@ async function finalizarJogo() {
   });
 
   const historico = await carregarHistoricoVF(estado.usuario, estado.discId, estado.sem).catch(() => ({}));
+  estado.historicoVF = historico;                          // ← atualiza cache pós-save
   renderEstatisticasQuestoes(historico, estado.perguntas);
 }
 
@@ -601,6 +686,9 @@ function setupPausa() {
   btnVoltarIntro?.addEventListener('click', async () => {
     estado.timer?.stop();
     estado.timer = null; estado.pausado = false;
+    // Reseta todos os tempos para que, ao iniciar novo jogo, cada
+    // questão comece com o tempo total (30s).
+    estado.tempos = [];
     pauseOverlay.classList.add('hidden');
     const btnPauseEl = $('btn-pause'); const pauseIconEl = $('pause-icon'); const pauseLabelEl = $('pause-label');
     btnPauseEl?.classList.remove('vf-ctrl-btn--paused');
@@ -608,8 +696,19 @@ function setupPausa() {
     if (pauseLabelEl) pauseLabelEl.textContent = 'Pausar';
     document.documentElement.style.setProperty('--timer-pct', '100%');
     aplicarCorBarra(100);
+    // Reseta o texto do display para o tempo total (ex: "00:30"),
+    // pois o onTick não será mais chamado depois que o timer parou.
+    const timerDisplay = document.getElementById('shell-timer-display');
+    if (timerDisplay) {
+      const t = CONFIG.TEMPO_POR_QUESTAO;
+      const mm = String(Math.floor(t / 60)).padStart(2, '0');
+      const ss = String(t % 60).padStart(2, '0');
+      timerDisplay.textContent = `${mm}:${ss}`;
+      timerDisplay.classList.remove('game-timer-display--danger', 'game-timer-display--mid');
+    }
     const banco     = VDD_FALSO_DATA[estado.discId] ?? [];
     const historico = await carregarHistoricoVF(estado.usuario, estado.discId, estado.sem).catch(() => ({}));
+    estado.historicoVF = historico;                        // ← atualiza cache
     estado.perguntas = montarDeck(banco, historico);
     // [POTENCIAL CORRIGIDO] Valida deck não vazio antes de voltar para intro
     if (estado.perguntas.length === 0) {
@@ -730,8 +829,9 @@ async function init() {
   estado.discId      = disc;
   estado.sem         = sem;
 
-  const historico  = await carregarHistoricoVF(estado.usuario, disc, sem).catch(() => ({}));
-  estado.perguntas = montarDeck(banco, historico);
+  const historico    = await carregarHistoricoVF(estado.usuario, disc, sem).catch(() => ({}));
+  estado.historicoVF = historico;                          // ← armazena cache no estado
+  estado.perguntas   = montarDeck(banco, historico);
 
   // [POTENCIAL CORRIGIDO] Valida deck não vazio após montagem
   if (estado.perguntas.length === 0) {

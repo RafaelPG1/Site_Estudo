@@ -795,7 +795,7 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 }
 
 .vf-btn__sub {
-  font-size: .75rem; font-weight: 400;
+  font-size: 0.90rem; font-weight: 400;
   letter-spacing: .01em;
 }
 
@@ -804,7 +804,7 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   background: rgba(var(--true-rgb),.08);
   border-color: rgba(var(--true-rgb),.3); color: var(--true-color);
 }
-.vf-btn--true .vf-btn__sub { color: rgba(var(--true-rgb),.6); }
+.vf-btn--true .vf-btn__sub { color: rgba(var(--true-rgb)); }
 .vf-btn--true:hover:not(:disabled) {
   background: rgba(var(--true-rgb),.14); border-color: rgba(var(--true-rgb),.55);
   box-shadow: 0 0 28px rgba(var(--true-rgb),.18); transform: translateY(-2px);
@@ -815,7 +815,7 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   background: rgba(var(--false-rgb),.08);
   border-color: rgba(var(--false-rgb),.3); color: var(--false-color);
 }
-.vf-btn--false .vf-btn__sub { color: rgba(var(--false-rgb),.6); }
+.vf-btn--false .vf-btn__sub { color: rgba(var(--false-rgb)); }
 .vf-btn--false:hover:not(:disabled) {
   background: rgba(var(--false-rgb),.14); border-color: rgba(var(--false-rgb),.55);
   box-shadow: 0 0 28px rgba(var(--false-rgb),.18); transform: translateY(-2px);
@@ -1128,4 +1128,109 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   .vf-nav-btn { padding: 10px 14px; }
   /* sidebar continua visível (é só um botão) */
   .game-result__actions { flex-direction: column; }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   BADGE DE HISTÓRICO POR QUESTÃO
+   (espelhado dos badges flutuantes do Flashcard — cards-viz-badge)
+   ════════════════════════════════════════════════════════════════ */
+
+.vf-hist-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill, 999px);
+  background: rgba(255, 255, 255, .06);
+  border: 1px solid rgba(255, 255, 255, .10);
+  color: rgba(255, 255, 255, .38);
+  font-size: .65rem;
+  font-weight: 600;
+  font-family: var(--font-body, 'DM Sans', sans-serif);
+  z-index: 3;
+  pointer-events: none;
+  transition: background .2s, color .2s, border-color .2s;
+  animation: vf-badge-pop .3s ease both;
+}
+
+/* Ícone de olho + número de tentativas */
+.vf-hist-badge__viz {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Separador central */
+.vf-hist-badge__sep {
+  opacity: .35;
+}
+
+/* Taxa de acerto — herda a cor do modificador no elemento pai */
+.vf-hist-badge__taxa {
+  letter-spacing: .02em;
+}
+
+/* Pílula de status (crítico / ok / dominado) */
+.vf-hist-badge__status {
+  display: none; /* oculta se vazio */
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: .58rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  line-height: 1.6;
+}
+.vf-hist-badge__status:not(:empty) {
+  display: inline-block;
+}
+
+/* — Modificadores de estado — */
+.vf-hist-badge--critico {
+  background: rgba(239, 68, 68, .13);
+  border-color: rgba(239, 68, 68, .32);
+  color: #f87171;
+}
+.vf-hist-badge--critico .vf-hist-badge__status {
+  background: rgba(239, 68, 68, .20);
+  color: #f87171;
+}
+
+.vf-hist-badge--ok {
+  background: rgba(251, 191, 36, .09);
+  border-color: rgba(251, 191, 36, .28);
+  color: #fbbf24;
+}
+.vf-hist-badge--ok .vf-hist-badge__status {
+  background: rgba(251, 191, 36, .18);
+  color: #fbbf24;
+}
+
+.vf-hist-badge--dominado {
+  background: rgba(52, 211, 153, .10);
+  border-color: rgba(52, 211, 153, .28);
+  color: #34d399;
+}
+.vf-hist-badge--dominado .vf-hist-badge__status {
+  background: rgba(52, 211, 153, .18);
+  color: #34d399;
+}
+
+/* Animação de entrada (idêntica ao badge-pop do Flashcard) */
+@keyframes vf-badge-pop {
+  from { opacity: 0; transform: scale(.72); }
+  to   { opacity: 1; transform: scale(1);   }
+}
+
+/* Responsivo — mobile */
+@media (max-width: 480px) {
+  .vf-hist-badge {
+    top: 10px;
+    right: 10px;
+    font-size: .6rem;
+    padding: 3px 8px;
+  }
 }
