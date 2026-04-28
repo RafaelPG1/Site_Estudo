@@ -1131,21 +1131,21 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 }
 
 /* ════════════════════════════════════════════════════════════════
-   BADGE DE HISTÓRICO POR QUESTÃO
-   (espelhado dos badges flutuantes do Flashcard — cards-viz-badge)
+   BADGE DE HISTÓRICO POR QUESTÃO — 3 segmentos
+   [tentativas] | [% acerto] | [STATUS]
    ════════════════════════════════════════════════════════════════ */
 
 .vf-hist-badge {
   position: absolute;
   top: 12px;
   right: 12px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
-  border-radius: var(--radius-pill, 999px);
-  background: rgba(255, 255, 255, .06);
+  display: inline-flex;
+  align-items: stretch;
+  gap: 0;
+  border-radius: 10px;
+  overflow: hidden;
   border: 1px solid rgba(255, 255, 255, .10);
+  background: rgba(255, 255, 255, .06);
   color: rgba(255, 255, 255, .38);
   font-size: .65rem;
   font-weight: 600;
@@ -1156,70 +1156,76 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   animation: vf-badge-pop .3s ease both;
 }
 
-/* Ícone de olho + número de tentativas */
-.vf-hist-badge__viz {
+/* Segmento genérico (tentativas e taxa) */
+.vf-hist-badge__seg {
   display: flex;
   align-items: center;
   gap: 4px;
+  padding: 4px 8px;
+  white-space: nowrap;
 }
 
-/* Separador central */
-.vf-hist-badge__sep {
-  opacity: .35;
+/* Divisor vertical entre segmentos */
+.vf-hist-badge__div {
+  width: 1px;
+  align-self: stretch;
+  background: currentColor;
+  opacity: .25;
+  flex-shrink: 0;
 }
 
-/* Taxa de acerto — herda a cor do modificador no elemento pai */
-.vf-hist-badge__taxa {
-  letter-spacing: .02em;
+/* Ícones SVG dentro dos segmentos */
+.vf-hist-badge__ico {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+  opacity: .75;
 }
 
-/* Pílula de status (crítico / ok / dominado) */
+/* Segmento de status — fundo levemente destacado */
 .vf-hist-badge__status {
-  display: none; /* oculta se vazio */
-  padding: 1px 6px;
-  border-radius: 999px;
-  font-size: .58rem;
+  display: none; /* oculto se vazio */
+  align-items: center;
+  padding: 4px 9px;
+  font-size: .6rem;
   font-weight: 700;
-  letter-spacing: .04em;
+  letter-spacing: .05em;
   text-transform: uppercase;
-  line-height: 1.6;
+  white-space: nowrap;
 }
 .vf-hist-badge__status:not(:empty) {
-  display: inline-block;
+  display: flex;
 }
 
 /* — Modificadores de estado — */
 .vf-hist-badge--critico {
-  background: rgba(239, 68, 68, .13);
-  border-color: rgba(239, 68, 68, .32);
+  background: rgba(239, 68, 68, .10);
+  border-color: rgba(239, 68, 68, .30);
   color: #f87171;
 }
 .vf-hist-badge--critico .vf-hist-badge__status {
-  background: rgba(239, 68, 68, .20);
-  color: #f87171;
+  background: rgba(239, 68, 68, .18);
 }
 
 .vf-hist-badge--ok {
-  background: rgba(251, 191, 36, .09);
-  border-color: rgba(251, 191, 36, .28);
+  background: rgba(251, 191, 36, .08);
+  border-color: rgba(251, 191, 36, .26);
   color: #fbbf24;
 }
 .vf-hist-badge--ok .vf-hist-badge__status {
-  background: rgba(251, 191, 36, .18);
-  color: #fbbf24;
+  background: rgba(251, 191, 36, .16);
 }
 
 .vf-hist-badge--dominado {
-  background: rgba(52, 211, 153, .10);
-  border-color: rgba(52, 211, 153, .28);
+  background: rgba(52, 211, 153, .08);
+  border-color: rgba(52, 211, 153, .26);
   color: #34d399;
 }
 .vf-hist-badge--dominado .vf-hist-badge__status {
-  background: rgba(52, 211, 153, .18);
-  color: #34d399;
+  background: rgba(52, 211, 153, .16);
 }
 
-/* Animação de entrada (idêntica ao badge-pop do Flashcard) */
+/* Animação de entrada */
 @keyframes vf-badge-pop {
   from { opacity: 0; transform: scale(.72); }
   to   { opacity: 1; transform: scale(1);   }
@@ -1231,6 +1237,8 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
     top: 10px;
     right: 10px;
     font-size: .6rem;
-    padding: 3px 8px;
+    border-radius: 8px;
   }
+  .vf-hist-badge__seg  { padding: 3px 7px; }
+  .vf-hist-badge__status { padding: 3px 7px; }
 }

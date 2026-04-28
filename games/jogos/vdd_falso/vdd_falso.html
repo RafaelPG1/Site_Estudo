@@ -212,12 +212,28 @@
 
             <!-- BADGE DE HISTÓRICO — 1º filho de #question-card -->
             <div class="vf-hist-badge" id="vf-hist-badge" aria-live="polite" hidden>
-              <span class="vf-hist-badge__viz">
-                <i class="fas fa-eye" aria-hidden="true"></i>
+              <!-- Segmento 1: tentativas -->
+              <span class="vf-hist-badge__seg">
+                <svg class="vf-hist-badge__ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                  <circle cx="8" cy="8" r="6"/>
+                  <path d="M5.5 8l1.5 1.5 3.5-3.5" stroke-linecap="round"/>
+                </svg>
                 <span id="vf-hist-tentativas">0</span>
+                <span aria-hidden="true"> tent.</span>
               </span>
-              <span class="vf-hist-badge__sep" aria-hidden="true">·</span>
-              <span class="vf-hist-badge__taxa" id="vf-hist-taxa">0%</span>
+              <!-- Divisor -->
+              <span class="vf-hist-badge__div" aria-hidden="true"></span>
+              <!-- Segmento 2: taxa de acerto -->
+              <span class="vf-hist-badge__seg">
+                <svg class="vf-hist-badge__ico" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                  <path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM7.25 10.5V7h1.5v3.5h-1.5zm0-4.5V4.5h1.5V6h-1.5z"/>
+                </svg>
+                <span id="vf-hist-taxa">0%</span>
+                <span aria-hidden="true"> acerto</span>
+              </span>
+              <!-- Divisor -->
+              <span class="vf-hist-badge__div" aria-hidden="true"></span>
+              <!-- Segmento 3: status -->
               <span class="vf-hist-badge__status" id="vf-hist-status"></span>
             </div>
 
