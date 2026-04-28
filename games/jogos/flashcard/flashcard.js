@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
-   NEXUS STUDY — games/jogos/flashcard/flashcard.js  (v3.2)
+   NEXUS STUDY — games/jogos/flashcard/flashcard.js  (v3.3)
 
    Seções:
      1. IMPORTS & CONSTANTES
@@ -21,15 +21,8 @@ import { carregarPerfisSRS, salvarPerfilSRS } from './storage.js';
 import { Shell, lerParams }                  from '../../template/game-shell.js';
 import { getUsuario }                        from '../../../src/global.js';
 
-import { DISC_CORES }               from '../../../shared/js/cores.js';
-import { aplicarCoresDisciplina }   from '../../../shared/js/theme.js';
-// Mapeamento disciplina → classe da tag
-const DISC_TAG_CLASS = {
-  design:      'tag-design',
-  banco_dados: 'tag-banco',
-  redes:       'tag-redes',
-  poo:         'tag-poo',
-};
+import { DISC_CORES }             from '../../../shared/js/cores.js';
+import { aplicarCoresDisciplina } from '../../../shared/js/theme.js';
 
 // Rótulos legíveis por disciplina
 const DISC_LABEL = {
@@ -100,9 +93,9 @@ async function _srAtualizar(cardId, acertou, diffMarcada) {
 
   try {
     const uid = typeof _estado.nomeUsuario === 'object'
-  ? _estado.nomeUsuario.uid
-  : _estado.nomeUsuario;
-await salvarPerfilSRS(uid, cardId, p, _estado.discId, _estado.semestre);
+      ? _estado.nomeUsuario.uid
+      : _estado.nomeUsuario;
+    await salvarPerfilSRS(uid, cardId, p, _estado.discId, _estado.semestre);
   } catch (err) {
     console.error('[flashcard.js] Erro ao salvar SRS:', err);
   }
@@ -613,7 +606,7 @@ function _renderCard(direcaoAnimacao = 'next') {
 
   const wrap   = panelEl.querySelector('#cards-scene-wrap');
   const bottom = panelEl.querySelector('#cards-bottom');
-  const tagCls = DISC_TAG_CLASS[discId] || 'tag-default';
+  const tagCls = 'tag-disc';
 
   if (isUltimo && todosRespondidos) {
     wrap.innerHTML       = _tplFinal();
@@ -939,14 +932,20 @@ export async function initCards(discId, panelEl, nomeUsuario) {
   destroyCards(panelEl);
 
   const { sem } = lerParams();
+
+  /* CORREÇÃO BUG 1: Shell.init já chama aplicarCoresDisciplina internamente.
+     Aplicamos as cores manualmente DEPOIS com o discId correto (parâmetro),
+     sobrescrevendo o que Shell fez com lerParams().disc — garante consistência
+     quando discId != lerParams().disc (ex: chamada externa). */
   Shell.init({ icon: '🃏', nome: 'Flashcards' });
+  aplicarCoresDisciplina(discId, DISC_CORES);
+  document.body.dataset.disc = discId;
 
   const cardsData = getCardsData(sem);
 
   const breadcrumb = document.getElementById('breadcrumb-disc');
   if (breadcrumb) breadcrumb.textContent = DISC_LABEL[discId] ?? discId;
-  aplicarCoresDisciplina(discId, DISC_CORES);
-  document.body.dataset.disc = discId; // garante seletores CSS body[data-disc] no modo jogo
+
   document.getElementById('card-skeleton')?.remove();
 
   if (!cardsData[discId]?.length) {
@@ -963,7 +962,7 @@ export async function initCards(discId, panelEl, nomeUsuario) {
   }
 
   const uid = typeof nomeUsuario === 'object' ? nomeUsuario.uid : nomeUsuario;
-_srCache = await carregarPerfisSRS(uid, discId, sem);
+  _srCache = await carregarPerfisSRS(uid, discId, sem);
 
   const sessaoSalva = window.flashcardSessao?.carregar(discId);
   let cards, estado;
@@ -1120,13 +1119,12 @@ function _introPreencherDados(disc, sem) {
   const breadcrumb = document.getElementById('breadcrumb-disc');
   if (breadcrumb) breadcrumb.textContent = DISC_LABEL[disc] ?? disc ?? '—';
 
-  /* Cores da disciplina no :root e data-disc no body para os seletores CSS */
+  /* CORREÇÃO BUG 3/4: Aplicar cores e data-disc ANTES do primeiro frame.
+     O rAF garante que o DOM está pronto, mas setProperty no :root é
+     síncrono e já vale para qualquer elemento que existir neste ponto. */
   aplicarCoresDisciplina(disc, DISC_CORES);
   document.body.dataset.disc = disc;
 
-  /* Chip disciplina — cor via body[data-disc] no CSS (flashcard.css).
-     Não aplicar inline styles aqui: eles sobreescrevem os seletores CSS
-     e ignoram as cores definidas em cores.js / theme.js. */
   const discLabel = document.getElementById('intro-disc-label');
   if (discLabel) discLabel.textContent = DISC_LABEL[disc] ?? disc ?? '—';
 

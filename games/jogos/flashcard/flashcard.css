@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
-   NEXUS STUDY — flashcard/flashcard.css  (v4 — image-match)
-   Layout fiel à imagem de referência.
+   NEXUS STUDY — flashcard/flashcard.css  (v5 — theme-clean)
+   ÚNICA fonte de cor dinâmica: theme.js → var(--cor-tema) / var(--cor-tema-rgb)
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── RESET ──────────────────────────────────────────────────── */
@@ -8,17 +8,32 @@
 
 /* ── VARIÁVEIS ──────────────────────────────────────────────── */
 :root {
+  /* Superfícies e bordas — nunca mudam com disciplina */
   --bg:          #070b14;
   --surface:     #0e1420;
   --surface-2:   #141c2e;
   --border:      rgba(255,255,255,0.07);
   --border-glow: rgba(255,255,255,0.14);
 
-  --accent:       #7c3aed;
-  --accent-light: #a78bfa;
-  --accent-dim:   rgba(124,58,237,0.15);
-  --accent-glow:  rgba(124,58,237,0.25);
+  /*
+   * CORES DE DISCIPLINA — NÃO DECLARADAS AQUI.
+   * São injetadas exclusivamente pelo theme.js em :root via
+   * style.setProperty() antes do primeiro render:
+   *
+   *   --cor-tema         hex principal    ex: #7aa8e8
+   *   --cor-tema-rgb     canais R,G,B     ex: 122, 168, 232
+   *   --cor-tema-2       hex secundária
+   *   --cor-tema-2-rgb   canais R,G,B
+   *
+   * USO no CSS:
+   *   cor sólida  → color: var(--cor-tema)
+   *   transparência → background: rgba(var(--cor-tema-rgb), .15)
+   *
+   * PROIBIDO: qualquer #hex ou rgb() fixo em propriedades que
+   * devam mudar por disciplina.
+   */
 
+  /* Feedback semântico — fixos, não mudam com disciplina */
   --correct:     #10b981;
   --correct-dim: rgba(16,185,129,0.15);
   --wrong:       #ef4444;
@@ -26,19 +41,17 @@
   --gold:        #f5b84c;
   --gold-dim:    rgba(245,184,76,0.13);
 
-  --disc-design: #d4537e;
-  --disc-banco:  #378add;
-  --disc-redes:  #a855f7;
-  --disc-poo:    #f5b84c;
-
+  /* Tipografia */
   --font-display: 'Cormorant Garamond', Georgia, serif;
   --font-body:    'DM Sans', system-ui, sans-serif;
 
+  /* Layout */
   --max-w:       960px;
   --radius:      16px;
   --radius-sm:   11px;
   --radius-pill: 99px;
 
+  /* Easing */
   --ease-card:  cubic-bezier(.4,0,.2,1);
   --ease-pop:   cubic-bezier(.34,1.56,.64,1);
   --ease-slide: cubic-bezier(.22,1,.36,1);
@@ -49,14 +62,8 @@ body { background: var(--bg); color: #f0ede6; font-family: var(--font-body); min
 a    { text-decoration: none; color: inherit; }
 [hidden] { display: none !important; }
 
-/* ── BACKGROUND ORBS (from fundo.css inline) ────────────────── */
-.bg-orb {
-  position: fixed; border-radius: 50%; pointer-events: none; z-index: 0;
-  filter: blur(80px); opacity: .45;
-}
-.bg-orb--1 { width: 600px; height: 600px; top: -200px; left: -150px; background: rgba(124,58,237,.18); }
-.bg-orb--2 { width: 500px; height: 500px; bottom: -100px; right: -100px; background: rgba(55,138,221,.12); }
-.bg-orb--3 { width: 400px; height: 400px; top: 40%; left: 55%; background: rgba(168,85,247,.1); }
+/* ── BACKGROUND ORBS — removidos (sem brilhos de disciplina no fundo) ── */
+.bg-orb { display: none; }
 .bg-grid {
   position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .025;
   background-image:
@@ -95,18 +102,17 @@ a    { text-decoration: none; color: inherit; }
   flex: 1; min-width: 0;
 }
 
+/* Ícone — usa cor da disciplina via theme.js */
 .header__icon {
   width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   font-size: 1.2rem;
-  background: rgba(124,58,237,.15);
-  border: 2px solid rgba(124,58,237,.4);
+  background: rgba(var(--cor-tema-rgb), .15);
+  border: 2px solid rgba(var(--cor-tema-rgb), .4);
+  transition: background .3s, border-color .3s;
 }
-body[data-disc="design"]      .header__icon { background:rgba(212,83,126,.15); border-color:rgba(212,83,126,.45); }
-body[data-disc="banco_dados"] .header__icon,
-body[data-disc="banco"]       .header__icon { background:rgba(55,138,221,.15);  border-color:rgba(55,138,221,.45); }
-body[data-disc="redes"]       .header__icon { background:rgba(168,85,247,.15);  border-color:rgba(168,85,247,.45); }
-body[data-disc="poo"]         .header__icon { background:rgba(245,184,76,.15);  border-color:rgba(245,184,76,.45); }
+
+/* REMOVIDO: body[data-disc="design"] .header__icon { ... } — e todos os similares */
 
 .header__info { min-width: 0; }
 
@@ -123,12 +129,12 @@ body[data-disc="poo"]         .header__icon { background:rgba(245,184,76,.15);  
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   margin-top: 2px;
 }
-.header__disc { color: var(--cor-tema, var(--accent-light)); font-weight: 500; }
-body[data-disc="design"]      .header__disc { color: #e785b0; }
-body[data-disc="banco_dados"] .header__disc,
-body[data-disc="banco"]       .header__disc { color: #60aef5; }
-body[data-disc="redes"]       .header__disc { color: #c084fc; }
-body[data-disc="poo"]         .header__disc { color: #fbbf24; }
+
+/* Nome da disciplina — sempre via --cor-tema */
+.header__disc { color: var(--cor-tema); font-weight: 500; }
+
+/* REMOVIDO: body[data-disc="*"] .header__disc { color: #hex } */
+
 .header__meta-sep { color: rgba(255,255,255,.25); }
 .header__sem      { color: rgba(255,255,255,.5); }
 
@@ -178,13 +184,10 @@ body[data-disc="poo"]         .header__disc { color: #fbbf24; }
   to   { opacity:1; transform:translateY(0); }
 }
 
-.panel-cards[data-disc="design"]     { --disc-accent: var(--disc-design); }
-.panel-cards[data-disc="banco_dados"]{ --disc-accent: var(--disc-banco); }
-.panel-cards[data-disc="banco"]      { --disc-accent: var(--disc-banco); }
-.panel-cards[data-disc="redes"]      { --disc-accent: var(--disc-redes); }
-.panel-cards[data-disc="poo"]        { --disc-accent: var(--disc-poo); }
+/* REMOVIDO: .panel-cards[data-disc="*"] { --disc-accent: ... } */
+/* REMOVIDO: toda variante --disc-accent — substituída por --cor-tema */
 
-/* ── GAME HEADER (ícone + título + disc/sem + stats + ações) ── */
+/* ── GAME HEADER ────────────────────────────────────────────── */
 .cards-game-header {
   display: flex; align-items: center; justify-content: space-between;
   gap: 1rem; flex-wrap: wrap;
@@ -199,21 +202,18 @@ body[data-disc="poo"]         .header__disc { color: #fbbf24; }
   display: flex; align-items: center; gap: .75rem; min-width: 0;
 }
 
+/* Ícone do jogo — usa cor da disciplina */
 .cards-game-icon {
   width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
-  background: linear-gradient(135deg, rgba(124,58,237,.35), rgba(139,92,246,.25));
-  border: 1px solid rgba(124,58,237,.35);
+  background: linear-gradient(135deg, rgba(var(--cor-tema-rgb), .35), rgba(var(--cor-tema-rgb), .18));
+  border: 1px solid rgba(var(--cor-tema-rgb), .35);
   display: flex; align-items: center; justify-content: center;
-  color: var(--accent-light); font-size: .9rem;
-  box-shadow: 0 0 16px rgba(124,58,237,.15);
+  color: var(--cor-tema); font-size: .9rem;
+  box-shadow: 0 0 16px rgba(var(--cor-tema-rgb), .12);
+  transition: background .3s, border-color .3s, box-shadow .3s;
 }
 
-/* disc-colored icon */
-.panel-cards[data-disc="design"]      .cards-game-icon { background: linear-gradient(135deg,rgba(212,83,126,.32),rgba(212,83,126,.18)); border-color:rgba(212,83,126,.38); color:#e785b0; box-shadow:0 0 16px rgba(212,83,126,.14); }
-.panel-cards[data-disc="banco_dados"] .cards-game-icon,
-.panel-cards[data-disc="banco"]       .cards-game-icon { background: linear-gradient(135deg,rgba(55,138,221,.32),rgba(55,138,221,.18)); border-color:rgba(55,138,221,.38); color:#60aef5; box-shadow:0 0 16px rgba(55,138,221,.14); }
-.panel-cards[data-disc="redes"]       .cards-game-icon { background: linear-gradient(135deg,rgba(168,85,247,.32),rgba(168,85,247,.18)); border-color:rgba(168,85,247,.38); color:#c084fc; box-shadow:0 0 16px rgba(168,85,247,.14); }
-.panel-cards[data-disc="poo"]         .cards-game-icon { background: linear-gradient(135deg,rgba(245,184,76,.32),rgba(245,184,76,.18)); border-color:rgba(245,184,76,.38); color:#fbbf24; box-shadow:0 0 16px rgba(245,184,76,.14); }
+/* REMOVIDO: .panel-cards[data-disc="*"] .cards-game-icon { ... } */
 
 .cards-game-info {
   display: flex; flex-direction: column; gap: 2px; min-width: 0;
@@ -226,16 +226,11 @@ body[data-disc="poo"]         .header__disc { color: #fbbf24; }
   display: flex; align-items: center; gap: 5px;
   font-size: .7rem; font-weight: 500; line-height: 1;
 }
-.cards-game-disc {
-  color: var(--cor-tema, var(--accent-light));
-}
 
-/* disc colors for meta */
-.panel-cards[data-disc="design"]      .cards-game-disc { color: #e785b0; }
-.panel-cards[data-disc="banco_dados"] .cards-game-disc,
-.panel-cards[data-disc="banco"]       .cards-game-disc { color: #60aef5; }
-.panel-cards[data-disc="redes"]       .cards-game-disc { color: #c084fc; }
-.panel-cards[data-disc="poo"]         .cards-game-disc { color: #fbbf24; }
+/* Nome da disciplina na meta — via --cor-tema */
+.cards-game-disc { color: var(--cor-tema); }
+
+/* REMOVIDO: .panel-cards[data-disc="*"] .cards-game-disc { color: #hex } */
 
 .cards-game-dot { color: rgba(255,255,255,.25); }
 .cards-game-sem { color: rgba(255,255,255,.38); }
@@ -265,10 +260,15 @@ body[data-disc="poo"]         .header__disc { color: #fbbf24; }
   transition: all .2s; font-family: var(--font-body);
 }
 .cards-ctrl-btn:hover { background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.18); color: rgba(255,255,255,.8); }
-.cards-ctrl-btn.active { background: var(--accent-dim); border-color: rgba(124,58,237,.38); color: var(--accent-light); }
+/* Estado ativo usa cor da disciplina */
+.cards-ctrl-btn.active {
+  background: rgba(var(--cor-tema-rgb), .12);
+  border-color: rgba(var(--cor-tema-rgb), .38);
+  color: var(--cor-tema);
+}
 .cards-ctrl-btn:disabled { opacity: .2; cursor: not-allowed; pointer-events: none; }
 
-/* Botão Início — destaque sutil */
+/* Botão Início */
 .cards-ctrl-btn--inicio {
   color: rgba(255,255,255,.52);
   border-color: rgba(255,255,255,.16);
@@ -288,13 +288,14 @@ body[data-disc="poo"]         .header__disc { color: #fbbf24; }
   height: 5px; background: rgba(255,255,255,.07);
   border-radius: var(--radius-pill); overflow: hidden;
 }
+/* Barra de progresso — usa cor da disciplina */
 .cards-progress-bar-fill {
   height: 100%; border-radius: var(--radius-pill);
-  background: linear-gradient(90deg, var(--accent), var(--accent-light));
+  background: linear-gradient(90deg, var(--cor-tema), var(--cor-tema-2));
   transition: width .55s var(--ease-card);
 }
 
-/* Dots */
+/* Dots de navegação */
 .cards-dots-row {
   display: flex; align-items: center; justify-content: center;
   gap: 5px; flex-wrap: wrap; padding: 2px 0;
@@ -304,9 +305,10 @@ body[data-disc="poo"]         .header__disc { color: #fbbf24; }
   border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06);
   cursor: pointer; transition: all .2s; flex-shrink: 0; padding: 0;
 }
-.cards-dot.dot-active  { width: 22px; border-radius: var(--radius-pill); background: rgba(124,58,237,.65); border-color: rgba(124,58,237,.85); }
-.cards-dot.dot-correct { background: rgba(16,185,129,.6); border-color: rgba(16,185,129,.85); }
-.cards-dot.dot-wrong   { background: rgba(239,68,68,.6);  border-color: rgba(239,68,68,.85); }
+/* Dot ativo — cor da disciplina */
+.cards-dot.dot-active  { width: 22px; border-radius: var(--radius-pill); background: rgba(var(--cor-tema-rgb), .65); border-color: rgba(var(--cor-tema-rgb), .85); }
+.cards-dot.dot-correct { background: rgba(16,185,129,.6);  border-color: rgba(16,185,129,.85); }
+.cards-dot.dot-wrong   { background: rgba(239,68,68,.6);   border-color: rgba(239,68,68,.85); }
 
 /* ── CENA 3D ────────────────────────────────────────────────── */
 .cards-scene {
@@ -334,8 +336,8 @@ body[data-disc="poo"]         .header__disc { color: #fbbf24; }
   border: 1px solid rgba(255,255,255,.1);
   box-shadow:
     0 0 0 1px rgba(255,255,255,.04) inset,
-    0 8px 32px rgba(0,0,0,.38),
-    0 2px 8px rgba(0,0,0,.2);
+    0 8px 32px rgba(0,0,0,.35),
+    0 0 28px rgba(var(--cor-tema-rgb), .08);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   display: flex; flex-direction: column;
@@ -346,6 +348,7 @@ body[data-disc="poo"]         .header__disc { color: #fbbf24; }
   min-height: clamp(300px, 42vh, 420px);
 }
 
+/* Face frente — glow usa cor da disciplina */
 .cards-front {
   background: linear-gradient(165deg, rgba(20,20,38,.85) 0%, rgba(14,20,32,.9) 100%);
   position: relative;
@@ -353,27 +356,17 @@ body[data-disc="poo"]         .header__disc { color: #fbbf24; }
 .cards-front::before {
   content:''; position:absolute; bottom:-60px; left:50%; transform:translateX(-50%);
   width:420px; height:210px;
-  background: radial-gradient(ellipse, rgba(124,58,237,.09) 0%, transparent 70%);
+  background: radial-gradient(ellipse, rgba(var(--cor-tema-rgb), .09) 0%, transparent 70%);
   pointer-events:none;
 }
 .cards-front::after {
   content:''; position:absolute; top:-60px; right:-50px;
   width:320px; height:320px;
-  background: radial-gradient(circle, rgba(124,58,237,.06) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(var(--cor-tema-rgb), .06) 0%, transparent 70%);
   pointer-events:none;
 }
 
-/* disc color glows on front face */
-.panel-cards[data-disc="design"] .cards-front::before     { background: radial-gradient(ellipse, rgba(212,83,126,.11) 0%, transparent 70%); }
-.panel-cards[data-disc="design"] .cards-front::after      { background: radial-gradient(circle,  rgba(212,83,126,.07) 0%, transparent 70%); }
-.panel-cards[data-disc="banco_dados"] .cards-front::before,
-.panel-cards[data-disc="banco"]  .cards-front::before     { background: radial-gradient(ellipse, rgba(55,138,221,.11)  0%, transparent 70%); }
-.panel-cards[data-disc="banco_dados"] .cards-front::after,
-.panel-cards[data-disc="banco"]  .cards-front::after      { background: radial-gradient(circle,  rgba(55,138,221,.07)  0%, transparent 70%); }
-.panel-cards[data-disc="redes"]  .cards-front::before     { background: radial-gradient(ellipse, rgba(168,85,247,.11)  0%, transparent 70%); }
-.panel-cards[data-disc="redes"]  .cards-front::after      { background: radial-gradient(circle,  rgba(168,85,247,.07)  0%, transparent 70%); }
-.panel-cards[data-disc="poo"]    .cards-front::before     { background: radial-gradient(ellipse, rgba(245,184,76,.11)  0%, transparent 70%); }
-.panel-cards[data-disc="poo"]    .cards-front::after      { background: radial-gradient(circle,  rgba(245,184,76,.07)  0%, transparent 70%); }
+/* REMOVIDO: .panel-cards[data-disc="*"] .cards-front::before/after */
 
 .cards-back {
   background: linear-gradient(165deg, rgba(12,22,18,.85) 0%, rgba(14,20,18,.9) 100%);
@@ -386,7 +379,7 @@ body[data-disc="poo"]         .header__disc { color: #fbbf24; }
   pointer-events:none;
 }
 
-/* answered states */
+/* Estados após resposta — feedback semântico (correto/errado — fixos) */
 .card-answered-correct .cards-face {
   border-color: rgba(16,185,129,.45);
   box-shadow: 0 0 0 1px rgba(16,185,129,.12) inset, 0 8px 32px rgba(0,0,0,.35), 0 0 28px rgba(16,185,129,.12);
@@ -396,23 +389,25 @@ body[data-disc="poo"]         .header__disc { color: #fbbf24; }
   box-shadow: 0 0 0 1px rgba(239,68,68,.10) inset, 0 8px 32px rgba(0,0,0,.35), 0 0 28px rgba(239,68,68,.10);
 }
 
-/* ── CONTEÚDO FRENTE ────────────────────────────────────────── */
-
-/* Q-number badge (top-left of front face via JS injected content, or via tag) */
+/* ── TAG DA DISCIPLINA (frente do card) ─────────────────────── */
+/*
+ * A tag recebe a classe .tag-disc (sem sufixo de disciplina).
+ * O JS injeta a classe, mas as cores vêm de --cor-tema.
+ * REMOVIDO: .cards-tag.tag-design / .tag-poo / etc.
+ */
 .cards-tag {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 3px 13px; border-radius: var(--radius-pill);
   font-size: .6rem; font-weight: 700; letter-spacing: 1.3px;
   text-transform: uppercase; margin-bottom: 1rem;
   position: relative; z-index: 1;
+  /* Cor via tema — única regra necessária */
+  border: 1px solid rgba(var(--cor-tema-rgb), .4);
+  background: rgba(var(--cor-tema-rgb), .12);
+  color: var(--cor-tema);
 }
-.cards-tag.tag-design    { border: 1px solid rgba(212,83,126,.4);  background: rgba(212,83,126,.12); color: #e785b0; }
-.cards-tag.tag-banco     { border: 1px solid rgba(55,138,221,.4);  background: rgba(55,138,221,.12); color: #60aef5; }
-.cards-tag.tag-banco_dados { border: 1px solid rgba(55,138,221,.4);  background: rgba(55,138,221,.12); color: #60aef5; }
-.cards-tag.tag-redes     { border: 1px solid rgba(168,85,247,.4);  background: rgba(168,85,247,.12); color: #c084fc; }
-.cards-tag.tag-poo       { border: 1px solid rgba(245,184,76,.4);  background: rgba(245,184,76,.12); color: #fbbf24; }
-.cards-tag.tag-default   { border: 1px solid rgba(124,58,237,.4);  background: rgba(124,58,237,.12); color: var(--accent-light); }
 
+/* ── CONTEÚDO FRENTE ────────────────────────────────────────── */
 .cards-question {
   font-family: var(--font-display);
   font-size: clamp(1.1rem, 2vw, 1.6rem);
@@ -425,7 +420,8 @@ body[data-disc="poo"]         .header__disc { color: #fbbf24; }
   font-size: .7rem; color: rgba(255,255,255,.45);
   position: relative; z-index: 1;
   display: flex; align-items: center; gap: 6px;
-  background: rgba(124,58,237,.08); border: 1px solid rgba(124,58,237,.20);
+  background: rgba(var(--cor-tema-rgb), .08);
+  border: 1px solid rgba(var(--cor-tema-rgb), .20);
   padding: 5px 14px; border-radius: var(--radius-pill); margin-bottom: .65rem;
 }
 
@@ -539,7 +535,7 @@ body[data-disc="poo"]         .header__disc { color: #fbbf24; }
 .cards-tooltip-body strong { font-weight: 700; }
 
 /* ════════════════════════════════════════════════════════════════
-   BOTÕES ERREI / ACERTEI  — estilo grande com ícone circular
+   BOTÕES ERREI / ACERTEI
    ════════════════════════════════════════════════════════════════ */
 .cards-bottom { display: flex; flex-direction: column; gap: .5rem; }
 
@@ -558,12 +554,10 @@ body[data-disc="poo"]         .header__disc { color: #fbbf24; }
   position: relative; overflow: hidden;
 }
 
-/* Label */
 .cards-result-btn .btn-label {
   font-size: inherit; font-weight: inherit; line-height: 1.2;
 }
 
-/* Icon circle */
 .cards-result-btn .btn-icon-wrap {
   width: 44px; height: 44px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
@@ -573,7 +567,7 @@ body[data-disc="poo"]         .header__disc { color: #fbbf24; }
 
 .cards-result-btn:hover .btn-icon-wrap { transform: scale(1.12); }
 
-/* ERREI */
+/* ERREI — feedback semântico (fixo) */
 .cards-btn-wrong {
   background: rgba(180,28,28,.18);
   border-color: rgba(239,68,68,.35);
@@ -596,7 +590,7 @@ body[data-disc="poo"]         .header__disc { color: #fbbf24; }
   border-color: rgba(239,68,68,.7);
 }
 
-/* ACERTEI */
+/* ACERTEI — feedback semântico (fixo) */
 .cards-btn-right {
   background: rgba(16,120,80,.18);
   border-color: rgba(16,185,129,.32);
@@ -672,8 +666,9 @@ kbd {
 .cards-undo-toast {
   position: absolute; bottom: -48px; left: 50%;
   transform: translateX(-50%) translateY(8px);
-  background: var(--accent-dim); border: 1px solid rgba(124,58,237,.38);
-  color: var(--accent-light); padding: 6px 18px; border-radius: var(--radius-pill);
+  background: rgba(var(--cor-tema-rgb), .12);
+  border: 1px solid rgba(var(--cor-tema-rgb), .38);
+  color: var(--cor-tema); padding: 6px 18px; border-radius: var(--radius-pill);
   font-size: .72rem; font-weight: 600; display: flex; align-items: center; gap: 7px;
   white-space: nowrap; pointer-events: none; opacity: 0;
   transition: opacity .2s ease, transform .2s ease; z-index: 20; font-family: var(--font-body);
@@ -692,15 +687,18 @@ kbd {
 .cards-finish-card {
   flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
   background: rgba(18,18,28,.72); border-radius: var(--radius);
-  border: 1px solid rgba(124,58,237,.35);
-  box-shadow: 0 0 0 1px rgba(124,58,237,.08) inset, 0 8px 32px rgba(0,0,0,.35), 0 0 32px rgba(124,58,237,.1);
+  border: 1px solid rgba(var(--cor-tema-rgb), .35);
+  box-shadow:
+    0 0 0 1px rgba(var(--cor-tema-rgb), .08) inset,
+    0 8px 32px rgba(0,0,0,.35),
+    0 0 32px rgba(var(--cor-tema-rgb), .1);
   padding: 2.4rem 3rem 2rem; text-align: center; gap: 1.1rem;
   animation: ckFadeUp .38s ease both; overflow: hidden; position: relative;
 }
 .cards-finish-card::before {
   content:''; position:absolute; bottom:-60px; left:50%; transform:translateX(-50%);
   width:460px; height:210px;
-  background: radial-gradient(ellipse, rgba(124,58,237,.1) 0%, transparent 70%);
+  background: radial-gradient(ellipse, rgba(var(--cor-tema-rgb), .10) 0%, transparent 70%);
   pointer-events:none;
 }
 .finish-icon       { font-size: 2.2rem; display: block; margin-bottom: .2rem; }
@@ -723,20 +721,28 @@ kbd {
 .finish-sr-status {
   display: flex; flex-direction: column; align-items: center; gap: 4px;
   padding: 10px 20px; border-radius: var(--radius-sm);
-  background: var(--accent-dim); border: 1px solid rgba(124,58,237,.18);
+  background: rgba(var(--cor-tema-rgb), .08);
+  border: 1px solid rgba(var(--cor-tema-rgb), .18);
   font-size: .72rem; color: rgba(255,255,255,.55); width: 100%; max-width: 320px;
 }
-.finish-sr-status i { color: var(--accent-light); font-size: .75rem; margin-bottom: 2px; }
+.finish-sr-status i { color: var(--cor-tema); font-size: .75rem; margin-bottom: 2px; }
 .finish-sr-status span:first-of-type { color: rgba(255,255,255,.75); font-weight: 600; font-size: .78rem; }
 .finish-sr-next { font-size: .67rem; color: rgba(255,255,255,.38); }
+
+/* Botão reiniciar — usa cor da disciplina */
 .finish-restart-btn {
   display: flex; align-items: center; gap: 7px;
   padding: .55rem 1.6rem; border-radius: var(--radius-pill);
-  background: var(--accent-dim); border: 1px solid rgba(124,58,237,.4);
-  color: var(--accent-light); font-family: var(--font-body);
+  background: rgba(var(--cor-tema-rgb), .12);
+  border: 1px solid rgba(var(--cor-tema-rgb), .4);
+  color: var(--cor-tema); font-family: var(--font-body);
   font-size: .8rem; font-weight: 600; cursor: pointer; transition: all .2s; margin-top: .2rem;
 }
-.finish-restart-btn:hover { background: rgba(124,58,237,.3); border-color: rgba(124,58,237,.6); box-shadow: 0 0 20px rgba(124,58,237,.2); }
+.finish-restart-btn:hover {
+  background: rgba(var(--cor-tema-rgb), .24);
+  border-color: rgba(var(--cor-tema-rgb), .6);
+  box-shadow: 0 0 20px rgba(var(--cor-tema-rgb), .18);
+}
 
 .cards-empty { text-align: center; padding: 3.5rem 1rem; color: rgba(255,255,255,.22); }
 .cards-empty i { font-size: 2rem; margin-bottom: .7rem; display: block; }
@@ -778,46 +784,43 @@ kbd {
   min-height: calc(100vh - 72px - 80px);
   padding: 2.5rem 1.5rem;
 }
+
+/* Intro card — bordas e glows via cor da disciplina */
 .intro-card {
   width: 100%; max-width: 520px;
   background: rgba(18,18,28,.78);
-  border: 1px solid rgba(124,58,237,.28); border-radius: 20px;
-  box-shadow: 0 0 0 1px rgba(124,58,237,.07) inset, 0 16px 48px rgba(0,0,0,.45), 0 0 52px rgba(124,58,237,.10);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 20px;
+  box-shadow: 0 16px 48px rgba(0,0,0,.45);
   padding: 2.8rem 2.8rem 2.4rem;
   display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0;
   position: relative; overflow: hidden;
   animation: intro-fade-up .44s cubic-bezier(.22,1,.36,1) both;
 }
-.intro-card::before {
-  content:''; position:absolute; top:-80px; left:50%; transform:translateX(-50%);
-  width:480px; height:220px;
-  background: radial-gradient(ellipse, rgba(124,58,237,.13) 0%, transparent 70%);
-  pointer-events:none;
-}
-.intro-card::after {
-  content:''; position:absolute; top:-50px; right:-60px;
-  width:300px; height:300px;
-  background: radial-gradient(circle, rgba(124,58,237,.07) 0%, transparent 70%);
-  pointer-events:none;
-}
+.intro-card::before { display: none; }
+.intro-card::after  { display: none; }
 @keyframes intro-fade-up {
   from { opacity:0; transform:translateY(20px); }
   to   { opacity:1; transform:translateY(0); }
 }
+
 .intro-badge {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 4px 14px; border-radius: var(--radius-pill);
-  background: rgba(124,58,237,.12); border: 1px solid rgba(124,58,237,.30);
+  background: rgba(var(--cor-tema-rgb), .12);
+  border: 1px solid rgba(var(--cor-tema-rgb), .30);
   font-size: .68rem; font-weight: 700; letter-spacing: 1.1px; text-transform: uppercase;
-  color: var(--accent-light); margin-bottom: 1.4rem; position: relative; z-index: 1;
+  color: var(--cor-tema); margin-bottom: 1.4rem; position: relative; z-index: 1;
 }
 .intro-badge i { font-size: .62rem; }
+
 .intro-title {
   font-family: var(--font-display);
   font-size: clamp(2rem,5vw,2.75rem); font-weight: 700; line-height: 1.1;
   letter-spacing: -.02em; color: #f0ede6; margin: 0 0 .4rem; position: relative; z-index: 1;
 }
-.intro-title em { font-style: italic; color: var(--accent-light); font-weight: 600; }
+.intro-title em { font-style: italic; color: var(--cor-tema); font-weight: 600; }
+
 .intro-subtitle {
   font-size: .8rem; color: rgba(255,255,255,.38); line-height: 1.65;
   margin: 0 0 1.9rem; position: relative; z-index: 1;
@@ -826,6 +829,7 @@ kbd {
   width: 100%; height: 1px; background: rgba(255,255,255,.06);
   margin-bottom: 1.8rem; position: relative; z-index: 1;
 }
+
 .intro-meta {
   display: flex; gap: .5rem; flex-wrap: wrap; justify-content: center;
   margin-bottom: 1.1rem; position: relative; z-index: 1;
@@ -836,13 +840,21 @@ kbd {
   font-size: .75rem; font-weight: 600;
 }
 .intro-chip i { font-size: .65rem; opacity: .85; color: inherit; }
-.intro-chip--disc { background: rgba(124,58,237,.12); border: 1px solid rgba(124,58,237,.32); color: var(--accent-light); }
-body[data-disc="design"]      .intro-chip--disc { background:rgba(212,83,126,.12); border-color:rgba(212,83,126,.32); color:#e785b0; }
-body[data-disc="banco_dados"] .intro-chip--disc { background:rgba(55,138,221,.12); border-color:rgba(55,138,221,.32); color:#60aef5; }
-body[data-disc="banco"]       .intro-chip--disc { background:rgba(55,138,221,.12); border-color:rgba(55,138,221,.32); color:#60aef5; }
-body[data-disc="redes"]       .intro-chip--disc { background:rgba(168,85,247,.12); border-color:rgba(168,85,247,.32); color:#c084fc; }
-body[data-disc="poo"]         .intro-chip--disc { background:rgba(245,184,76,.12); border-color:rgba(245,184,76,.32); color:#fbbf24; }
-.intro-chip--sem { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12); color: rgba(255,255,255,.45); }
+
+/* Chip da disciplina — usa cor da disciplina via tema */
+.intro-chip--disc {
+  background: rgba(var(--cor-tema-rgb), .12);
+  border: 1px solid rgba(var(--cor-tema-rgb), .32);
+  color: var(--cor-tema);
+}
+
+/* REMOVIDO: body[data-disc="*"] .intro-chip--disc { ... } */
+
+.intro-chip--sem {
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.12);
+  color: rgba(255,255,255,.45);
+}
 .intro-info {
   display: flex; gap: .45rem; flex-wrap: wrap; justify-content: center;
   margin-bottom: 2rem; position: relative; z-index: 1;
@@ -854,24 +866,30 @@ body[data-disc="poo"]         .intro-chip--disc { background:rgba(245,184,76,.12
 }
 .intro-pill strong { font-weight: 700; }
 .intro-pill i      { font-size: .62rem; }
-.intro-pill--neutral { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.11); color: rgba(255,255,255,.42); }
+.intro-pill--neutral {
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.11);
+  color: rgba(255,255,255,.42);
+}
+
+/* Botão iniciar — estilo escuro sutil com cor do tema */
 .intro-start-btn {
   display: flex; align-items: center; justify-content: center; gap: 9px;
-  width: 100%; padding: .85rem 2rem; border-radius: var(--radius-pill);
-  background: linear-gradient(135deg, rgba(124,58,237,.88), rgba(139,92,246,.88));
-  border: 1px solid rgba(124,58,237,.55); color: #fff;
+  width: 100%; padding: .75rem 2rem; border-radius: var(--radius-pill);
+  background: rgba(var(--cor-tema-rgb), .10);
+  border: 1px solid rgba(var(--cor-tema-rgb), .30);
+  color: var(--cor-tema);
   font-family: var(--font-body); font-size: .88rem; font-weight: 600;
   letter-spacing: .02em; cursor: pointer; position: relative; z-index: 1;
-  transition: all .22s var(--ease-card);
-  box-shadow: 0 0 28px rgba(124,58,237,.20), 0 4px 14px rgba(0,0,0,.30);
+  transition: background .2s, border-color .2s;
+  box-shadow: none;
 }
 .intro-start-btn:hover {
-  background: linear-gradient(135deg, #7c3aed, #8b5cf6);
-  box-shadow: 0 0 44px rgba(124,58,237,.36), 0 6px 20px rgba(0,0,0,.35);
-  transform: translateY(-2px);
+  background: rgba(var(--cor-tema-rgb), .18);
+  border-color: rgba(var(--cor-tema-rgb), .50);
 }
-.intro-start-btn:active { transform: translateY(0); }
-.intro-start-btn i { font-size: .78rem; }
+.intro-start-btn:active { transform: scale(.98); }
+.intro-start-btn i { font-size: .78rem; opacity: .8; }
 
 /* ── RESPONSIVO ─────────────────────────────────────────────── */
 @media (max-width: 680px) {
