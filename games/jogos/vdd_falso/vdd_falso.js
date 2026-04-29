@@ -1,24 +1,26 @@
 /* ============================================================
-   NEXUS STUDY — games/jogos/vdd_falso/vdd_falso.js  (v6.3)
+   NEXUS STUDY — games/jogos/vdd_falso/vdd_falso.js  (v6.4)
+
+   Novidades v6.4:
+   - [FIX] Import dinâmico de VDD_FALSO_DATA por ano do semestre.
+     O arquivo de dados é carregado de:
+       content/game/vdd_falso/{ano}/vdd_falso_data.js
+     onde {ano} é extraído do semestre (ex: '2026.2' → '2026').
+     Isso permite ter um arquivo de dados por ano (2026, 2027…)
+     sem precisar alterar o código do jogo.
+   - [FIX] Todas as referências diretas a VDD_FALSO_DATA foram
+     substituídas por estado.banco (cache carregado no init).
 
    Novidades v6.3:
-   - [FEATURE] Badge de histórico por questão (vf-hist-badge):
-     exibido no canto superior direito do card, mostra o número
-     de tentativas anteriores e a taxa de acerto da questão.
-     Inclui modificadores visuais: crítico (< 50% ou mais erros
-     que acertos), ok (50–79%), dominado (≥ 80% com 3+ tent.).
-     Animação de entrada dispara a cada troca de questão.
-   - [FEATURE] estado.historicoVF: cache do histórico carregado
-     em memória para evitar leitura assíncrona a cada render.
-     Atualizado em init(), btnVoltarIntro e onRejogo.
+   - [FEATURE] Badge de histórico por questão (vf-hist-badge).
+   - [FEATURE] estado.historicoVF: cache do histórico em memória.
    ============================================================ */
 
 import { Shell, Timer, Result, shuffle, lerParams } from '../../template/game-shell.js';
-import { VDD_FALSO_DATA }                           from '../../../content/game/vdd_falso/2026/vdd_falso_data.js';
 import { DISC_CORES }                               from '../../../shared/js/cores.js';
 import { aplicarCoresDisciplina }                   from '../../../shared/js/theme.js';
 import { carregarHistoricoVF, salvarResultadoVF }  from './storage_vf.js';
-import { getUsuario }                              from '../../../src/global.js';
+import { getUsuario, getDisciplinasDeSemestre }    from '../../../src/global.js';
 
 /* ══════════════════════════════════════════════════════════
    CONFIGURAÇÃO
@@ -40,6 +42,7 @@ const CONFIG = {
 
 const estado = {
   perguntas:  [],
+  banco:      [],   // ← cache do banco completo da disciplina (substitui VDD_FALSO_DATA global)
   indice:     0,
   pontos:     0,
   acertos:    0,
@@ -48,7 +51,6 @@ const estado = {
   // undefined = questão ainda não respondida
   respostas:  [],
   // tempos[i] = segundos restantes da questão i (persistido ao navegar)
-  // Inicializado com CONFIG.TEMPO_POR_QUESTAO e decrementado pelo timer
   tempos:     [],
   timer:      null,
   pausado:    false,
@@ -56,8 +58,9 @@ const estado = {
   discId:     null,
   sem:        null,
   // Cache do histórico de desempenho por questão
-  // (carregado em init() e mantido sincronizado após salvarResultadoVF)
   historicoVF: {},
+  // Modo revisão: joga apenas questões com erros no histórico
+  modoRevisao: false,
 };
 
 /* ══════════════════════════════════════════════════════════
@@ -135,6 +138,21 @@ function sorteiarPonderado(candidatos, n) {
   return sel;
 }
 
+/* Retorna questões do banco que têm pelo menos 1 erro no histórico,
+   ordenadas da maior taxa de erro para a menor. */
+function questoesComErro(banco, historico) {
+  return banco
+    .filter(q => {
+      const h = historico[q.id];
+      return h && h.erros > 0;
+    })
+    .sort((a, b) => {
+      const taxaA = historico[a.id].erros / historico[a.id].tentativas;
+      const taxaB = historico[b.id].erros / historico[b.id].tentativas;
+      return taxaB - taxaA;
+    });
+}
+
 function montarDeck(banco, historico) {
   const n = Math.min(CONFIG.MAX_QUESTOES, banco.length);
   const porAula = {};
@@ -186,7 +204,7 @@ function renderDots() {
     dot.type = 'button';
     dot.setAttribute('aria-label', `Questão ${i + 1}`);
     dot.className = 'vf-dot ' + (
-      atual      ? 'vf-dot--current'  :
+      atual       ? 'vf-dot--current'  :
       !respondida ? 'vf-dot--pending'  :
       correto     ? 'vf-dot--correct'  : 'vf-dot--wrong'
     );
@@ -200,6 +218,10 @@ function renderDots() {
    ══════════════════════════════════════════════════════════ */
 
 function mostrarTela(nome) {
+  // Sempre esconde o loader ao exibir qualquer tela
+  const screenLoading = document.getElementById('screen-loading');
+  screenLoading?.classList.add('hidden');
+
   el.screenIntro   ?.classList.add('hidden');
   el.screenQuestion?.classList.add('hidden');
   el.screenEmpty   ?.classList.add('hidden');
@@ -214,7 +236,15 @@ function mostrarTela(nome) {
    FLUXO
    ══════════════════════════════════════════════════════════ */
 
-function iniciarJogo() {
+function iniciarJogo(modoRevisao = false) {
+  estado.modoRevisao = modoRevisao;
+
+  // No modo revisão, remonta o deck só com questões com erros
+  if (modoRevisao) {
+    const erradas = questoesComErro(estado.banco, estado.historicoVF);
+    estado.perguntas = shuffle(erradas.slice(0, CONFIG.MAX_QUESTOES));
+  }
+
   estado.indice    = 0;
   estado.pontos    = 0;
   estado.acertos   = 0;
@@ -240,8 +270,6 @@ function criarTimer(totalInicial) {
       estado.tempos[estado.indice] = restante;
 
       // A barra SEMPRE deve refletir restante / tempo_total_fixo (30s).
-      // Setamos --timer-pct explicitamente para garantir que nenhum
-      // cálculo interno do Timer sobrescreva com valor errado.
       const pctReal = (restante / CONFIG.TEMPO_POR_QUESTAO) * 100;
       document.documentElement.style.setProperty('--timer-pct', pctReal + '%');
       aplicarCorBarra(pctReal);
@@ -257,7 +285,6 @@ function criarTimer(totalInicial) {
 
 /* ══════════════════════════════════════════════════════════
    BADGE DE HISTÓRICO POR QUESTÃO
-   Chamada dentro de renderizarQuestao() a cada troca de card.
    ══════════════════════════════════════════════════════════ */
 
 function renderizarBadgeHistorico(questaoId) {
@@ -280,10 +307,6 @@ function renderizarBadgeHistorico(questaoId) {
   const { tentativas, acertos, erros } = h;
   const taxa = Math.round((acertos / tentativas) * 100);
 
-  // ── Determinar status ──
-  // Crítico: visto 3+ vezes E taxa < 50%, OU mais erros que acertos
-  // Ok:      taxa entre 50–79%
-  // Dominado: taxa ≥ 80% com pelo menos 3 tentativas
   let statusMod  = '';
   let statusText = '';
 
@@ -299,16 +322,13 @@ function renderizarBadgeHistorico(questaoId) {
     statusMod  = 'vf-hist-badge--ok';
     statusText = 'ok';
   }
-  // Se não se encaixa em nenhum (ex: 1 tentativa, 100%) → badge neutro sem status
 
-  // ── Atualizar DOM ──
   if (elTent)   elTent.textContent   = tentativas;
   if (elTaxa)   elTaxa.textContent   = `${taxa}%`;
   if (elStatus) elStatus.textContent = statusText;
 
-  // Reinicia a animação (remove e reinsere a classe de animação)
   badge.className = `vf-hist-badge${statusMod ? ' ' + statusMod : ''}`;
-  void badge.offsetWidth; // força reflow para restartar a animação CSS
+  void badge.offsetWidth;
   badge.hidden = false;
 }
 
@@ -323,7 +343,6 @@ function renderizarQuestao() {
   const correto     = jaRespondeu && resp === pergunta.resposta;
   const num         = estado.indice + 1;
 
-  // ← Atualiza/oculta o badge de histórico desta questão
   renderizarBadgeHistorico(pergunta.id);
 
   // Texto
@@ -382,7 +401,6 @@ function renderizarQuestao() {
     }
   } else {
     el.feedbackArea?.classList.add('hidden');
-    // Reset da info-strip para texto padrão
     setInfoStrip(null);
   }
 
@@ -391,35 +409,27 @@ function renderizarQuestao() {
   renderDots();
 
   // Timer
-  // Salva o tempo restante da questão anterior ANTES de parar o timer.
-  // Isso garante que, ao voltar para essa questão, o timer continue
-  // de onde parou em vez de reiniciar do zero.
   if (estado.timer) {
-    // A última leitura já foi feita pelo onTick; paramos sem descartar.
     estado.timer.stop();
     estado.timer = null;
   }
 
   if (!jaRespondeu) {
-    // Recupera o tempo salvo para esta questão (pode ser < 30s se o
-    // usuário já havia visitado a questão antes e voltado).
     const tempoRestante = estado.tempos[estado.indice] ?? CONFIG.TEMPO_POR_QUESTAO;
     const pctInicial    = (tempoRestante / CONFIG.TEMPO_POR_QUESTAO) * 100;
 
     estado.timer = criarTimer(tempoRestante);
     estado.timer.start();
     aplicarCorBarra(pctInicial);
-    // Atualiza a variável CSS para que a barra reflita o tempo correto
-    // imediatamente, antes do primeiro onTick.
     document.documentElement.style.setProperty('--timer-pct', pctInicial + '%');
   }
 }
 
 function atualizarBotoesNav() {
-  const total         = estado.perguntas.length;
-  const ultimo        = estado.indice === total - 1;
-  const jaRespondeu   = estado.respostas[estado.indice] !== undefined;
-  const todasResp     = estado.respostas.every(r => r !== undefined);
+  const total       = estado.perguntas.length;
+  const ultimo      = estado.indice === total - 1;
+  const jaRespondeu = estado.respostas[estado.indice] !== undefined;
+  const todasResp   = estado.respostas.every(r => r !== undefined);
 
   if (el.btnAnterior) {
     el.btnAnterior.disabled = estado.indice === 0;
@@ -429,9 +439,6 @@ function atualizarBotoesNav() {
     const isFinish = ultimo && todasResp;
     el.btnProxima.disabled = !jaRespondeu;
     el.btnProxima.classList.toggle('vf-nav-btn--finish', isFinish);
-    // [CORREÇÃO] Atualiza apenas o conteúdo textual/SVG sem destruir
-    // listeners externos — comportamento idêntico ao original, mas
-    // documentado como padrão frágil.
     el.btnProxima.innerHTML = isFinish
       ? 'Finalizar <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12"><path d="M2 8l4 4 8-8" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'
       : 'Próxima <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12"><path d="M6 3l6 5-6 5V3z"/></svg>';
@@ -484,17 +491,11 @@ function navegarPara(i) {
 
 function irAnterior() {
   if (estado.indice > 0) {
-    // [POTENCIAL CORRIGIDO] Para o timer explicitamente antes de
-    // navegar para evitar race condition de 1 frame onde onEnd
-    // da questão abandonada ainda poderia disparar.
     estado.timer?.stop();
     navegarPara(estado.indice - 1);
   }
 }
 
-// [BUG 2 CORRIGIDO] Quando está na última questão mas nem todas foram
-// respondidas, avança para a primeira questão ainda pendente em vez
-// de travar silenciosamente.
 function irProxima() {
   const ultimo    = estado.indice === estado.perguntas.length - 1;
   const todasResp = estado.respostas.every(r => r !== undefined);
@@ -509,8 +510,7 @@ function irProxima() {
     return;
   }
 
-  // Está na última questão mas existem pendentes anteriores:
-  // vai para a primeira questão sem resposta.
+  // Está na última questão mas existem pendentes anteriores
   const primeiraPendente = estado.respostas.findIndex(r => r === undefined);
   if (primeiraPendente !== -1) {
     navegarPara(primeiraPendente);
@@ -545,19 +545,19 @@ async function finalizarJogo() {
     : 0;
 
   let emoji, titulo;
-  if      (pct >= 80) { emoji = '🏆'; titulo = 'Excelente!';    }
-  else if (pct >= 50) { emoji = '👍'; titulo = 'Bom trabalho!'; }
+  if      (pct >= 80) { emoji = '🏆'; titulo = 'Excelente!';     }
+  else if (pct >= 50) { emoji = '👍'; titulo = 'Bom trabalho!';  }
   else                { emoji = '📚'; titulo = 'Pode melhorar!'; }
 
-  const elSimb      = document.getElementById('resultado-simbolo');
-  const elTitulo    = document.getElementById('resultado-titulo');
-  const elPontos    = document.getElementById('resultado-pontos');
-  const elAcertos   = document.getElementById('resultado-acertos');
-  const elErros     = document.getElementById('resultado-erros');
-  const elPrecisao  = document.getElementById('resultado-precisao');
-  const elTempo     = document.getElementById('resultado-tempo');
-  const elSair      = document.getElementById('resultado-btn-sair');
-  const elRejogo    = document.getElementById('resultado-btn-rejogo');
+  const elSimb     = document.getElementById('resultado-simbolo');
+  const elTitulo   = document.getElementById('resultado-titulo');
+  const elPontos   = document.getElementById('resultado-pontos');
+  const elAcertos  = document.getElementById('resultado-acertos');
+  const elErros    = document.getElementById('resultado-erros');
+  const elPrecisao = document.getElementById('resultado-precisao');
+  const elTempo    = document.getElementById('resultado-tempo');
+  const elSair     = document.getElementById('resultado-btn-sair');
+  const elRejogo   = document.getElementById('resultado-btn-rejogo');
 
   if (elSimb)    elSimb.textContent    = emoji;
   if (elTitulo)  elTitulo.textContent  = titulo;
@@ -566,7 +566,6 @@ async function finalizarJogo() {
   if (elErros)   elErros.textContent   = estado.erros;
   if (elPrecisao) elPrecisao.textContent = pct + '%';
 
-  // Calcula e exibe o tempo total da sessão
   if (elTempo) {
     const totalSeg = Math.round((Date.now() - (estado.tempoInicio ?? Date.now())) / 1000);
     const mm = Math.floor(totalSeg / 60);
@@ -574,20 +573,43 @@ async function finalizarJogo() {
     elTempo.textContent = `${mm}:${ss}`;
   }
 
-  // Link de saída (para a tela de jogos) com semestre preservado
-  const sem = estado.sem;
-  if (elSair) elSair.href = `../../jogo.html${sem ? `?sem=${sem}` : ''}`;
+  // Botão Sair → volta para a tela de intro (sem navegar para outra página)
+  if (elSair) {
+    elSair.removeAttribute('href');
+    elSair.style.cursor = 'pointer';
+    const novoSair = elSair.cloneNode(true);
+    elSair.parentNode.replaceChild(novoSair, elSair);
+    novoSair.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const historico = await carregarHistoricoVF(estado.usuario, estado.discId, estado.sem).catch(() => ({}));
+      estado.historicoVF = historico;
+      estado.perguntas   = montarDeck(estado.banco, historico);
 
-  // Botão jogar novamente
+      // Atualiza botão "Revisar erros"
+      const erradasAtual = questoesComErro(estado.banco, historico);
+      if (el.btnRevisarErros) {
+        if (erradasAtual.length > 0) {
+          el.btnRevisarErros.classList.remove('hidden');
+          const countEl = $('vf-revisar-count');
+          if (countEl) countEl.textContent = erradasAtual.length;
+        } else {
+          el.btnRevisarErros.classList.add('hidden');
+        }
+      }
+
+      atualizarContadores();
+      mostrarTela('intro');
+    });
+  }
+
+  // Botão jogar novamente — usa estado.banco (já carregado no init)
   if (elRejogo) {
-    // Remove listeners anteriores clonando o elemento
     const novoRejogo = elRejogo.cloneNode(true);
     elRejogo.parentNode.replaceChild(novoRejogo, elRejogo);
     novoRejogo.addEventListener('click', async () => {
-      const banco     = VDD_FALSO_DATA[estado.discId] ?? [];
       const historico = await carregarHistoricoVF(estado.usuario, estado.discId, estado.sem).catch(() => ({}));
       estado.historicoVF = historico;
-      estado.perguntas   = montarDeck(banco, historico);
+      estado.perguntas   = montarDeck(estado.banco, historico);
       if (estado.perguntas.length === 0) {
         mostrarTela('empty');
         return;
@@ -597,12 +619,11 @@ async function finalizarJogo() {
     });
   }
 
-  // Exibe a tela de resultado e esconde as demais
   mostrarTela('result');
 
-  // Atualiza cache do histórico pós-save (sem precisar re-renderizar stats)
   const historico = await carregarHistoricoVF(estado.usuario, estado.discId, estado.sem).catch(() => ({}));
   estado.historicoVF = historico;
+  renderEstatisticasQuestoes(historico, estado.perguntas);
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -706,34 +727,49 @@ function setupPausa() {
   btnPause?.addEventListener('click', togglePausa);
   pauseOverlay.addEventListener('click', e => { if (e.target.closest('#btn-retomar')) togglePausa(); });
 
+  // Botão "Voltar ao início" — usa estado.banco (já carregado)
   btnVoltarIntro?.addEventListener('click', async () => {
     estado.timer?.stop();
-    estado.timer = null; estado.pausado = false;
-    // Reseta todos os tempos para que, ao iniciar novo jogo, cada
-    // questão comece com o tempo total (30s).
+    estado.timer = null;
+    estado.pausado = false;
     estado.tempos = [];
     pauseOverlay.classList.add('hidden');
-    const btnPauseEl = $('btn-pause'); const pauseIconEl = $('pause-icon'); const pauseLabelEl = $('pause-label');
+
+    const btnPauseEl   = $('btn-pause');
+    const pauseIconEl  = $('pause-icon');
+    const pauseLabelEl = $('pause-label');
     btnPauseEl?.classList.remove('vf-ctrl-btn--paused');
     if (pauseIconEl) { pauseIconEl.innerHTML = `<rect x="3" y="2" width="3.5" height="12" rx="1"/><rect x="9.5" y="2" width="3.5" height="12" rx="1"/>`; pauseIconEl.setAttribute('viewBox', '0 0 16 16'); }
     if (pauseLabelEl) pauseLabelEl.textContent = 'Pausar';
+
     document.documentElement.style.setProperty('--timer-pct', '100%');
     aplicarCorBarra(100);
-    // Reseta o texto do display para o tempo total (ex: "00:30"),
-    // pois o onTick não será mais chamado depois que o timer parou.
+
     const timerDisplay = document.getElementById('shell-timer-display');
     if (timerDisplay) {
-      const t = CONFIG.TEMPO_POR_QUESTAO;
+      const t  = CONFIG.TEMPO_POR_QUESTAO;
       const mm = String(Math.floor(t / 60)).padStart(2, '0');
       const ss = String(t % 60).padStart(2, '0');
       timerDisplay.textContent = `${mm}:${ss}`;
       timerDisplay.classList.remove('game-timer-display--danger', 'game-timer-display--mid');
     }
-    const banco     = VDD_FALSO_DATA[estado.discId] ?? [];
+
     const historico = await carregarHistoricoVF(estado.usuario, estado.discId, estado.sem).catch(() => ({}));
-    estado.historicoVF = historico;                        // ← atualiza cache
-    estado.perguntas = montarDeck(banco, historico);
-    // [POTENCIAL CORRIGIDO] Valida deck não vazio antes de voltar para intro
+    estado.historicoVF = historico;
+    estado.perguntas   = montarDeck(estado.banco, historico);
+
+    // Atualiza botão "Revisar erros" com histórico mais recente
+    const erradasAtual = questoesComErro(estado.banco, historico);
+    if (el.btnRevisarErros) {
+      if (erradasAtual.length > 0) {
+        el.btnRevisarErros.classList.remove('hidden');
+        const countEl = $('vf-revisar-count');
+        if (countEl) countEl.textContent = erradasAtual.length;
+      } else {
+        el.btnRevisarErros.classList.add('hidden');
+      }
+    }
+
     if (estado.perguntas.length === 0) {
       mostrarTela('empty');
       return;
@@ -742,13 +778,10 @@ function setupPausa() {
     mostrarTela('intro');
   });
 
-  // [POTENCIAL CORRIGIDO] Guard contra Space duplo quando #btn-retomar
-  // está focado, evitando toggle imediato pausa → despausa.
+  // Guard contra Space duplo quando #btn-retomar está focado
   document.addEventListener('keydown', e => {
     if (e.code === 'Space' && !el.screenQuestion?.classList.contains('hidden') &&
         estado.respostas[estado.indice] === undefined) {
-      // Se o foco está no btn-retomar, o Space naturalmente ativaria o
-      // clique no botão, que já chama togglePausa — não chamar de novo.
       if (document.activeElement?.id === 'btn-retomar') return;
       e.preventDefault();
       togglePausa();
@@ -773,8 +806,6 @@ function registrarAtalhos() {
       case 'f': case 'F': case '2': if (!jaResp) { e.preventDefault(); responder(false); } break;
       case 'ArrowRight': case 'Enter': if (jaResp) { e.preventDefault(); irProxima(); } break;
       case 'ArrowLeft':
-        // [POTENCIAL CORRIGIDO] Para o timer explicitamente antes de
-        // navegar para evitar race condition de 1 frame.
         e.preventDefault();
         estado.timer?.stop();
         irAnterior();
@@ -806,6 +837,7 @@ async function init() {
     screenEmpty:    $('screen-empty'),
     screenResult:   $('screen-result'),
     btnStart:       $('btn-start'),
+    btnRevisarErros:$('btn-revisar-erros'),
     btnTrue:        $('btn-true'),
     btnFalse:       $('btn-false'),
     btnAnterior:    $('btn-anterior'),
@@ -824,27 +856,45 @@ async function init() {
     timerBar:       document.querySelector('.game-timer-bar'),
   });
 
-  const { disc, sem, disciplina } = Shell.init({ icon: '⚖️', nome: 'Verdadeiro ou Falso' });
+  const { disc, sem } = Shell.init({ icon: '⚖️', nome: 'Verdadeiro ou Falso' });
 
-  // Preenche o pill de disciplina no footer do card com emoji + nome
+  const _listaDisciplinas = getDisciplinasDeSemestre(sem);
+  const disciplina = _listaDisciplinas.find(d => d.id === disc || d.arquivo === disc) ?? null;
+
+  // Preenche header
+  const shellDiscEl = document.getElementById('shell-disc-name');
+  if (shellDiscEl && disciplina) {
+    shellDiscEl.textContent = disciplina.apelido ?? disciplina.nome ?? disc;
+  }
+  const shellIconEl = document.getElementById('shell-icon');
+  if (shellIconEl && disciplina?.emoji) {
+    shellIconEl.textContent = disciplina.emoji;
+  }
+
   const discLblPill = document.getElementById('vf-disc-label');
   if (discLblPill && disciplina) {
     discLblPill.textContent = `${disciplina.emoji ?? ''} ${disciplina.apelido ?? disciplina.nome ?? disc}`.trim();
   }
 
-  // Remove o SVG genérico do pill (substituído pelo emoji da disciplina)
   const discPill = document.getElementById('vf-disc-tag-pill');
   if (discPill) {
     const svg = discPill.querySelector('svg');
     if (svg) svg.remove();
   }
 
-  // Substitui o SVG genérico do chip de disciplina na tela intro
-  // pelo emoji específico da disciplina vindo do global.js
+  const introDiscName = document.getElementById('intro-disc-name');
+  const introSemLabel = document.getElementById('intro-sem-label');
+  if (introDiscName) {
+    introDiscName.textContent = disciplina?.apelido ?? disciplina?.nome ?? disc ?? '—';
+  }
+  if (introSemLabel) {
+    introSemLabel.textContent = sem || '—';
+  }
+
   const introDiscChip = document.querySelector('.vf-intro-card__chip--disc');
-  if (introDiscChip && disciplina?.emoji) {
+  if (introDiscChip) {
     const chipSvg = introDiscChip.querySelector('svg');
-    if (chipSvg) {
+    if (chipSvg && disciplina?.emoji) {
       const emojiSpan = document.createElement('span');
       emojiSpan.textContent = disciplina.emoji;
       emojiSpan.style.cssText = 'font-size:13px; line-height:1; display:inline-flex; align-items:center;';
@@ -852,12 +902,45 @@ async function init() {
     }
   }
 
-  const banco = VDD_FALSO_DATA[disc] ?? [];
+  /* ── IMPORT DINÂMICO por ano ──────────────────────────────
+     sem = '2026.2' → ano = '2026'
+     Carrega: content/game/vdd_falso/2026/vdd_falso_data.js
+     Se o arquivo não existir → banco vazio → tela empty.
+  ─────────────────────────────────────────────────────────── */
+  const ano    = sem ? sem.split('.')[0] : null;
+  let banco    = [];
+  let semDisp  = null;
+
+  if (ano) {
+    try {
+      const modulo = await import(`../../../content/game/vdd_falso/${ano}/vdd_falso_data.js`);
+      semDisp = modulo.VDD_FALSO_DATA?.[sem] ?? null;
+      banco   = semDisp?.[disc] ?? [];
+    } catch (err) {
+      console.warn(`[vdd_falso] Arquivo de dados não encontrado para o ano ${ano}:`, err.message);
+    }
+  }
+
+  // Persiste o banco no estado para reutilização (rejogo, voltar ao início)
+  estado.banco = banco;
 
   if (banco.length === 0) {
     mostrarTela('empty');
     const btnBack = $('btn-empty-back');
     if (btnBack) btnBack.href = `../../jogo.html${sem ? `?sem=${sem}` : ''}`;
+
+    const emptyTitle = document.getElementById('empty-title');
+    const emptyDesc  = document.getElementById('empty-desc');
+    if (!semDisp || Object.keys(semDisp).length === 0) {
+      if (emptyTitle) emptyTitle.textContent = 'Indisponível neste semestre';
+      if (emptyDesc)  emptyDesc.innerHTML =
+        `O jogo <strong>Verdadeiro ou Falso</strong> ainda não está disponível para o semestre <strong>${sem || '—'}</strong>.<br>
+         Selecione outro semestre ou aguarde novas adições!`;
+    } else {
+      if (emptyTitle) emptyTitle.textContent = 'Sem perguntas';
+      if (emptyDesc)  emptyDesc.innerHTML =
+        'Não encontramos questões para esta disciplina ainda.<br>Tente outra ou aguarde novas adições!';
+    }
     return;
   }
 
@@ -867,10 +950,9 @@ async function init() {
   estado.sem         = sem;
 
   const historico    = await carregarHistoricoVF(estado.usuario, disc, sem).catch(() => ({}));
-  estado.historicoVF = historico;                          // ← armazena cache no estado
+  estado.historicoVF = historico;
   estado.perguntas   = montarDeck(banco, historico);
 
-  // [POTENCIAL CORRIGIDO] Valida deck não vazio após montagem
   if (estado.perguntas.length === 0) {
     mostrarTela('empty');
     const btnBack = $('btn-empty-back');
@@ -881,21 +963,27 @@ async function init() {
   atualizarContadores();
   aplicarCorBarra(100);
 
-  el.btnStart    ?.addEventListener('click', iniciarJogo);
+  el.btnStart    ?.addEventListener('click', () => iniciarJogo(false));
   el.btnTrue     ?.addEventListener('click', () => responder(true));
   el.btnFalse    ?.addEventListener('click', () => responder(false));
   el.btnAnterior ?.addEventListener('click', irAnterior);
   el.btnProxima  ?.addEventListener('click', irProxima);
+
+  // Botão "Revisar erros": só aparece se houver questões com erros no histórico
+  const erradas = questoesComErro(banco, historico);
+  if (erradas.length > 0 && el.btnRevisarErros) {
+    el.btnRevisarErros.classList.remove('hidden');
+    const countEl = $('vf-revisar-count');
+    if (countEl) countEl.textContent = erradas.length;
+    el.btnRevisarErros.addEventListener('click', () => iniciarJogo(true));
+  }
 
   setupPausa();
   registrarAtalhos();
   mostrarTela('intro');
 }
 
-// [POTENCIAL CORRIGIDO] type="module" é sempre defer — quando o módulo
-// executa, DOMContentLoaded pode já ter disparado em cenários de
-// history.back() ou navegação rápida com cache. A verificação de
-// readyState garante que init() seja chamado em qualquer caso.
+// type="module" é sempre defer — verifica readyState para segurança
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);
 } else {

@@ -83,8 +83,16 @@
   <!-- ══ CONTEÚDO ══ -->
   <main class="game-content">
 
+    <!-- ── LOADER (enquanto dados carregam) ── -->
+    <section id="screen-loading" class="vf-screen vf-screen--intro-centered">
+      <div class="vf-loading-card">
+        <div class="vf-loading-spinner"></div>
+        <p class="vf-loading-text">Carregando...</p>
+      </div>
+    </section>
+
     <!-- ── TELA: INTRO ── -->
-    <section id="screen-intro" class="vf-screen vf-screen--intro-centered">
+    <section id="screen-intro" class="vf-screen vf-screen--intro-centered hidden">
       <div class="vf-intro-card">
 
 
@@ -134,13 +142,19 @@
           <span id="intro-total-questoes">8</span> questões no deck
         </div>
 
-        <!-- Botão -->
-        <button class="game-btn vf-intro-card__btn" id="btn-start">
-          Começar
-          <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14">
-            <path d="M5 3l8 5-8 5V3z"/>
-          </svg>
-        </button>
+        <!-- Botões: Começar + Revisar erros -->
+        <div class="vf-intro-card__actions">
+          <button class="game-btn vf-intro-card__btn" id="btn-start">
+            Começar
+            <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14">
+              <path d="M5 3l8 5-8 5V3z"/>
+            </svg>
+          </button>
+          <button class="game-btn vf-intro-card__btn vf-intro-card__btn--revisar hidden" id="btn-revisar-erros">
+            Revisar erros
+            <span class="vf-revisar-count" id="vf-revisar-count">0</span>
+          </button>
+        </div>
 
       </div>
     </section>
@@ -403,15 +417,16 @@
     </section>
 
     <!-- ── TELA: SEM CONTEÚDO ── -->
-    <section id="screen-empty" class="vf-screen hidden">
-      <div class="vf-intro">
-        <div class="game-eyebrow">⚠️ Ops</div>
-        <h1 class="game-section-title">Sem perguntas</h1>
-        <p class="game-section-desc">
+    <section id="screen-empty" class="vf-screen vf-screen--intro-centered hidden">
+      <div class="vf-intro-card">
+        <div class="game-eyebrow" id="empty-eyebrow">⚠️ Ops</div>
+        <h1 class="vf-intro-card__title" id="empty-title">Sem perguntas</h1>
+        <div class="vf-intro-card__divider"></div>
+        <p class="vf-intro-card__desc" id="empty-desc">
           Não encontramos questões para esta disciplina ainda.<br>
           Tente outra ou aguarde novas adições!
         </p>
-        <a class="game-btn" id="btn-empty-back" href="../../jogo.html">Voltar</a>
+        <a class="resultado-btn resultado-btn--primario" id="btn-empty-back" href="../../jogo.html">Voltar</a>
       </div>
     </section>
 

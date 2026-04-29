@@ -3,12 +3,20 @@ Crie flashcards de estudo com base no conteúdo abaixo.
 Formato obrigatório (JSON):
 
 
-{
-"id": "1",
-"frente": "Pergunta clara e direta",
-"verso": "Resposta objetiva com palavras-chave em <strong>",
-"dica": "Dica curta para ajudar a lembrar"
-}
+   Estrutura:
+     {
+       [semestre]: {
+         [discId]: [
+           {
+             id:         string,   — identificador único (discId_aula_N)
+             aula:       number,   — número da aula de origem
+             enunciado:  string,
+             resposta:   true|false,
+             explicacao: string
+           }
+         ]
+       }
+     }
 
 
 Regras:

@@ -1400,6 +1400,48 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   transform: translateY(-1px);
 }
 
+/* ── Wrapper dos botões da intro ── */
+.vf-intro-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+/* Botão Revisar erros — vermelho suave */
+.vf-intro-card__btn--revisar {
+  background: rgba(var(--false-rgb), .08) !important;
+  border: 1.5px solid rgba(var(--false-rgb), .28) !important;
+  color: var(--false-color) !important;
+  box-shadow: none !important;
+  font-weight: 600;
+  letter-spacing: .03em;
+}
+.vf-intro-card__btn--revisar:hover {
+  background: rgba(var(--false-rgb), .15) !important;
+  border-color: rgba(var(--false-rgb), .5) !important;
+  filter: none !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Badge com a contagem de erros */
+.vf-revisar-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--pill);
+  background: rgba(var(--false-rgb), .18);
+  border: 1px solid rgba(var(--false-rgb), .30);
+  font-size: .68rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--false-color);
+  line-height: 1;
+}
+
 .vf-pause-resume-btn.game-btn {
   background: rgba(var(--disc-tema-rgb), .12);
   border: 1.5px solid rgba(var(--disc-tema-rgb), .35);
