@@ -203,9 +203,11 @@ function mostrarTela(nome) {
   el.screenIntro   ?.classList.add('hidden');
   el.screenQuestion?.classList.add('hidden');
   el.screenEmpty   ?.classList.add('hidden');
+  el.screenResult  ?.classList.add('hidden');
   if (nome === 'intro')    el.screenIntro   ?.classList.remove('hidden');
   if (nome === 'question') el.screenQuestion?.classList.remove('hidden');
   if (nome === 'empty')    el.screenEmpty   ?.classList.remove('hidden');
+  if (nome === 'result')   el.screenResult  ?.classList.remove('hidden');
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -217,6 +219,7 @@ function iniciarJogo() {
   estado.pontos    = 0;
   estado.acertos   = 0;
   estado.erros     = 0;
+  estado.tempoInicio = Date.now();
   estado.respostas = new Array(estado.perguntas.length); // tudo undefined
   // Cada questão começa com o tempo total disponível
   estado.tempos    = new Array(estado.perguntas.length).fill(CONFIG.TEMPO_POR_QUESTAO);
@@ -521,9 +524,7 @@ function irProxima() {
 async function finalizarJogo() {
   estado.timer?.stop();
 
-  // [POTENCIAL CORRIGIDO] Questões com tempo esgotado (resp === null)
-  // são excluídas dos resultados salvos no histórico, evitando
-  // contaminar o algoritmo ponderado de seleção nas sessões futuras.
+  // Questões com tempo esgotado (resp === null) são excluídas do histórico
   const resultados = estado.perguntas
     .map((p, i) => ({
       id:     p.id,
@@ -532,54 +533,76 @@ async function finalizarJogo() {
     }))
     .filter(r => r.resp !== null && r.resp !== undefined);
 
-  // [BUG 3 CORRIGIDO] Aguarda o save antes de carregar o histórico,
-  // evitando que as estatísticas sejam exibidas com dados desatualizados.
   try {
     await salvarResultadoVF(estado.usuario, estado.discId, estado.sem, resultados);
   } catch (err) {
     console.warn('[vdd_falso] Erro ao salvar:', err);
   }
 
-  const total       = estado.perguntas.length;
-  // [BUG CORRIGIDO] Precisão calculada apenas sobre questões
-  // respondidas (excluindo tempo esgotado), evitando deflacionar
-  // injustamente a porcentagem.
   const respondidas = estado.respostas.filter(r => r !== null && r !== undefined).length;
   const pct         = respondidas > 0
     ? Math.round((estado.acertos / respondidas) * 100)
     : 0;
 
-  let emoji, titulo, subtitulo;
-  if      (pct >= 80) { emoji = '🏆'; titulo = 'Excelente!';     subtitulo = 'Você domina este conteúdo. Continue assim!'; }
-  else if (pct >= 50) { emoji = '👍'; titulo = 'Bom trabalho!';  subtitulo = 'Você está no caminho certo. Revise os erros e tente novamente.'; }
-  else                { emoji = '📚'; titulo = 'Pode melhorar!'; subtitulo = 'Não desanime — revise o material e tente de novo!'; }
+  let emoji, titulo;
+  if      (pct >= 80) { emoji = '🏆'; titulo = 'Excelente!';    }
+  else if (pct >= 50) { emoji = '👍'; titulo = 'Bom trabalho!'; }
+  else                { emoji = '📚'; titulo = 'Pode melhorar!'; }
 
-  Result.mostrar({
-    emoji, titulo, subtitulo,
-    stats: [
-      { label: 'Pontos',   valor: estado.pontos  },
-      { label: 'Acertos',  valor: estado.acertos },
-      { label: 'Erros',    valor: estado.erros   },
-      { label: 'Precisão', valor: pct + '%'      },
-    ],
-    onRejogo: async () => {
+  const elSimb      = document.getElementById('resultado-simbolo');
+  const elTitulo    = document.getElementById('resultado-titulo');
+  const elPontos    = document.getElementById('resultado-pontos');
+  const elAcertos   = document.getElementById('resultado-acertos');
+  const elErros     = document.getElementById('resultado-erros');
+  const elPrecisao  = document.getElementById('resultado-precisao');
+  const elTempo     = document.getElementById('resultado-tempo');
+  const elSair      = document.getElementById('resultado-btn-sair');
+  const elRejogo    = document.getElementById('resultado-btn-rejogo');
+
+  if (elSimb)    elSimb.textContent    = emoji;
+  if (elTitulo)  elTitulo.textContent  = titulo;
+  if (elPontos)  elPontos.textContent  = estado.pontos;
+  if (elAcertos) elAcertos.textContent = estado.acertos;
+  if (elErros)   elErros.textContent   = estado.erros;
+  if (elPrecisao) elPrecisao.textContent = pct + '%';
+
+  // Calcula e exibe o tempo total da sessão
+  if (elTempo) {
+    const totalSeg = Math.round((Date.now() - (estado.tempoInicio ?? Date.now())) / 1000);
+    const mm = Math.floor(totalSeg / 60);
+    const ss = String(totalSeg % 60).padStart(2, '0');
+    elTempo.textContent = `${mm}:${ss}`;
+  }
+
+  // Link de saída (para a tela de jogos) com semestre preservado
+  const sem = estado.sem;
+  if (elSair) elSair.href = `../../jogo.html${sem ? `?sem=${sem}` : ''}`;
+
+  // Botão jogar novamente
+  if (elRejogo) {
+    // Remove listeners anteriores clonando o elemento
+    const novoRejogo = elRejogo.cloneNode(true);
+    elRejogo.parentNode.replaceChild(novoRejogo, elRejogo);
+    novoRejogo.addEventListener('click', async () => {
       const banco     = VDD_FALSO_DATA[estado.discId] ?? [];
       const historico = await carregarHistoricoVF(estado.usuario, estado.discId, estado.sem).catch(() => ({}));
-      estado.historicoVF = historico;                      // ← atualiza cache
-      estado.perguntas = montarDeck(banco, historico);
-      // [POTENCIAL CORRIGIDO] Valida deck não vazio antes de iniciar
+      estado.historicoVF = historico;
+      estado.perguntas   = montarDeck(banco, historico);
       if (estado.perguntas.length === 0) {
         mostrarTela('empty');
         return;
       }
       atualizarContadores();
       iniciarJogo();
-    },
-  });
+    });
+  }
 
+  // Exibe a tela de resultado e esconde as demais
+  mostrarTela('result');
+
+  // Atualiza cache do histórico pós-save (sem precisar re-renderizar stats)
   const historico = await carregarHistoricoVF(estado.usuario, estado.discId, estado.sem).catch(() => ({}));
-  estado.historicoVF = historico;                          // ← atualiza cache pós-save
-  renderEstatisticasQuestoes(historico, estado.perguntas);
+  estado.historicoVF = historico;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -781,6 +804,7 @@ async function init() {
     screenIntro:    $('screen-intro'),
     screenQuestion: $('screen-question'),
     screenEmpty:    $('screen-empty'),
+    screenResult:   $('screen-result'),
     btnStart:       $('btn-start'),
     btnTrue:        $('btn-true'),
     btnFalse:       $('btn-false'),

@@ -316,6 +316,72 @@
       </div><!-- /vf-game-layout -->
     </section>
 
+    <!-- ── TELA: RESULTADO ── -->
+    <section id="screen-result" class="vf-screen hidden">
+      <div class="resultado-nucleo">
+
+        <!-- Topo: símbolo + título -->
+        <div class="resultado-topo">
+          <div class="resultado-simbolo" id="resultado-simbolo">🏆</div>
+          <h2 class="resultado-titulo" id="resultado-titulo">Fim de jogo!</h2>
+        </div>
+
+        <!-- Separador decorativo -->
+        <div class="resultado-divisor">
+          <span class="resultado-divisor__linha"></span>
+          <span class="resultado-divisor__ponto"></span>
+          <span class="resultado-divisor__linha"></span>
+        </div>
+
+        <!-- Bloco de pontuação -->
+        <div class="resultado-pontuacao">
+          <span class="resultado-pontuacao__label">Pontuação final</span>
+          <div class="resultado-pontuacao__display">
+            <span class="resultado-pontuacao__valor" id="resultado-pontos">0</span>
+            <span class="resultado-pontuacao__sufixo">pts</span>
+          </div>
+        </div>
+
+        <!-- Métricas extras -->
+        <div class="resultado-metricas">
+          <div class="resultado-metrica resultado-metrica--acertos">
+            <span class="resultado-metrica__valor" id="resultado-acertos">0</span>
+            <span class="resultado-metrica__label">Acertos</span>
+          </div>
+          <div class="resultado-metrica resultado-metrica--erros">
+            <span class="resultado-metrica__valor" id="resultado-erros">0</span>
+            <span class="resultado-metrica__label">Erros</span>
+          </div>
+          <div class="resultado-metrica resultado-metrica--precisao">
+            <span class="resultado-metrica__valor" id="resultado-precisao">0%</span>
+            <span class="resultado-metrica__label">Precisão</span>
+          </div>
+          <div class="resultado-metrica resultado-metrica--tempo">
+            <span class="resultado-metrica__valor" id="resultado-tempo">0:00</span>
+            <span class="resultado-metrica__label">Tempo</span>
+          </div>
+        </div>
+
+        <!-- Ações -->
+        <div class="resultado-acoes">
+          <button class="resultado-btn resultado-btn--secundario" id="resultado-btn-rejogo">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+  <path d="M13.5 2.5v3.5h-3.5"/>
+  <path d="M13.3 6A6 6 0 1 0 12 12"/>
+</svg>
+            Jogar novamente
+          </button>
+          <a class="resultado-btn resultado-btn--primario" id="resultado-btn-sair" href="#">
+            Sair
+            <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14">
+              <path d="M5 3l8 5-8 5V3z"/>
+            </svg>
+          </a>
+        </div>
+
+      </div>
+    </section>
+
     <!-- ── TELA: SEM CONTEÚDO ── -->
     <section id="screen-empty" class="vf-screen hidden">
       <div class="vf-intro">
@@ -330,25 +396,6 @@
     </section>
 
   </main>
-</div>
-
-<!-- ══ TELA DE RESULTADO FINAL ══ -->
-<div class="game-result hidden" id="game-result">
-  <div class="game-result__card">
-    <div class="game-result__emoji" id="result-emoji">🏆</div>
-    <h2 class="game-result__title" id="result-title">Fim de jogo!</h2>
-    <p class="game-result__subtitle" id="result-subtitle"></p>
-    <div class="game-result__stats" id="result-stats"></div>
-    <div class="game-result__actions">
-      <button class="game-btn game-btn--outline" id="result-btn-rejogo">
-        Jogar novamente
-      </button>
-      <a class="game-btn" id="result-btn-sair" href="#">
-        Sair
-        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M5 3l8 5-8 5V3z"/></svg>
-      </a>
-    </div>
-  </div>
 </div>
 
 <script>
