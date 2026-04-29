@@ -14,7 +14,7 @@
    ============================================================ */
 
 import { Shell, Timer, Result, shuffle, lerParams } from '../../template/game-shell.js';
-import { VDD_FALSO_DATA }                           from '../../../content/game/vdd_falso/vdd_falso_data.js';
+import { VDD_FALSO_DATA }                           from '../../../content/game/vdd_falso/2026/vdd_falso_data.js';
 import { DISC_CORES }                               from '../../../shared/js/cores.js';
 import { aplicarCoresDisciplina }                   from '../../../shared/js/theme.js';
 import { carregarHistoricoVF, salvarResultadoVF }  from './storage_vf.js';
@@ -837,6 +837,19 @@ async function init() {
   if (discPill) {
     const svg = discPill.querySelector('svg');
     if (svg) svg.remove();
+  }
+
+  // Substitui o SVG genérico do chip de disciplina na tela intro
+  // pelo emoji específico da disciplina vindo do global.js
+  const introDiscChip = document.querySelector('.vf-intro-card__chip--disc');
+  if (introDiscChip && disciplina?.emoji) {
+    const chipSvg = introDiscChip.querySelector('svg');
+    if (chipSvg) {
+      const emojiSpan = document.createElement('span');
+      emojiSpan.textContent = disciplina.emoji;
+      emojiSpan.style.cssText = 'font-size:13px; line-height:1; display:inline-flex; align-items:center;';
+      chipSvg.replaceWith(emojiSpan);
+    }
   }
 
   const banco = VDD_FALSO_DATA[disc] ?? [];

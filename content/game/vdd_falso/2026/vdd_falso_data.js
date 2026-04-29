@@ -1,5 +1,5 @@
 /* ============================================================
-   NEXUS STUDY — content/game/vdd_falso/vdd_falso_data.js
+   NEXUS STUDY — content/game/vdd_falso/2026/vdd_falso_data.js
 
    Banco de perguntas de Verdadeiro ou Falso por disciplina.
    Estrutura:

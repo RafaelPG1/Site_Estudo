@@ -84,44 +84,64 @@
   <main class="game-content">
 
     <!-- ── TELA: INTRO ── -->
-    <section id="screen-intro" class="vf-screen">
-      <div class="vf-intro">
-        <div class="vf-intro__eyebrow">
-          <span class="vf-intro__icon">⚖️</span>
-          <span>Desafio de Conhecimento</span>
-        </div>
-        <h1 class="game-section-title">Verdadeiro <em>ou Falso?</em></h1>
-        <p class="game-section-desc">
-          Analise cada afirmação com atenção e decida:<br>
-          ela é <strong>verdadeira</strong> ou <strong>falsa</strong>?
+    <section id="screen-intro" class="vf-screen vf-screen--intro-centered">
+      <div class="vf-intro-card">
+
+
+        <!-- Título -->
+        <h1 class="vf-intro-card__title">Verdadeiro<em>ou Falso?</em></h1>
+
+        <!-- Descrição -->
+        <p class="vf-intro-card__desc">
+          Analise cada afirmação e decida se ela é verdadeira ou falsa.<br>
+          O sistema adapta as questões ao seu desempenho.
         </p>
 
-        <div class="vf-rules">
-          <div class="vf-rule">
-            <span class="vf-rule__icon">✅</span>
+        <!-- Divider -->
+        <div class="vf-intro-card__divider"></div>
+
+        <!-- Chips: disciplina · semestre -->
+        <div class="vf-intro-card__chips">
+          <span class="vf-intro-card__chip vf-intro-card__chip--disc">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style="opacity:.75"><path d="M2 3h12v1H2zm0 3h8v1H2zm0 3h10v1H2zm0 3h6v1H2z"/></svg>
+            <span id="intro-disc-name">—</span>
+          </span>
+          <span class="vf-intro-card__chip">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style="opacity:.75"><rect x="2" y="3" width="12" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M5 1v3M11 1v3M2 7h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <span id="intro-sem-label">—</span>
+          </span>
+        </div>
+
+        <!-- Regras inline -->
+        <div class="vf-intro-card__rules">
+          <div class="vf-intro-card__rule">
+            <span class="vf-intro-card__rule-dot vf-intro-card__rule-dot--true"></span>
             <span>Acerto: <strong>+10 pts</strong></span>
           </div>
-          <div class="vf-rule">
-            <span class="vf-rule__icon">❌</span>
-            <span>Erro: <strong>-5 pts</strong></span>
+          <div class="vf-intro-card__rule">
+            <span class="vf-intro-card__rule-dot vf-intro-card__rule-dot--false"></span>
+            <span>Erro: <strong>−5 pts</strong></span>
           </div>
-          <div class="vf-rule">
-            <span class="vf-rule__icon">⏱</span>
-            <span><strong>30 segundos</strong> por questão</span>
+          <div class="vf-intro-card__rule">
+            <span class="vf-intro-card__rule-dot vf-intro-card__rule-dot--time"></span>
+            <span><strong>30 s</strong> por questão</span>
           </div>
         </div>
 
-        <div class="vf-questoes-badge">
-          <span class="vf-questoes-badge__num" id="intro-total-questoes">8</span>
-          <span class="vf-questoes-badge__label">questões</span>
+        <!-- Badge de questões -->
+        <div class="vf-intro-card__badge">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="opacity:.7"><path d="M2 2h12v12H2z" fill="none" stroke="currentColor" stroke-width="1.4" rx="1"/><path d="M5 6h6M5 9h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <span id="intro-total-questoes">8</span> questões no deck
         </div>
 
-        <button class="game-btn" id="btn-start">
+        <!-- Botão -->
+        <button class="game-btn vf-intro-card__btn" id="btn-start">
           Começar
-          <svg viewBox="0 0 16 16" fill="currentColor">
+          <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14">
             <path d="M5 3l8 5-8 5V3z"/>
           </svg>
         </button>
+
       </div>
     </section>
 
@@ -429,6 +449,40 @@
         }
       });
       obs.observe(fill, { attributes: true, attributeFilter: ['style'] });
+    })();
+
+    // 2b. Sincronizar chip de disciplina e semestre no card intro
+    (function() {
+      const shellDisc = document.getElementById('shell-disc-name');
+      const shellSem  = document.getElementById('shell-sem');
+      const introDisc = document.getElementById('intro-disc-name');
+      const introSem  = document.getElementById('intro-sem-label');
+      function syncIntroChips() {
+        if (introDisc && shellDisc) {
+          const t = shellDisc.textContent.trim();
+          if (t && t !== '—') introDisc.textContent = t;
+        }
+        if (introSem && shellSem) {
+          const t = shellSem.textContent.trim();
+          if (t && t !== '—') introSem.textContent = t;
+        }
+        // Sincroniza pill de disciplina (emoji + nome)
+        const discPillName = document.getElementById('intro-disc-pill-name');
+        const discEmoji    = document.getElementById('intro-disc-emoji');
+        if (shellDisc && discPillName) {
+          const t = shellDisc.textContent.trim();
+          if (t && t !== '—') discPillName.textContent = t;
+        }
+        // Tenta pegar o emoji do ícone do shell (preenchido pelo Shell.init)
+        const shellIcon = document.getElementById('shell-icon');
+        if (shellIcon && discEmoji) {
+          const ico = shellIcon.textContent.trim();
+          if (ico && ico !== '⚖️') discEmoji.textContent = ico;
+        }
+      }
+      syncIntroChips();
+      if (shellDisc) new MutationObserver(syncIntroChips).observe(shellDisc, { childList: true, characterData: true, subtree: true });
+      if (shellSem)  new MutationObserver(syncIntroChips).observe(shellSem,  { childList: true, characterData: true, subtree: true });
     })();
 
     // 3. Sincronizar tag da disciplina no footer do card.
