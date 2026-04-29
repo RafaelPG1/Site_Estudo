@@ -33,7 +33,7 @@ const DISC_LABEL = {
 };
 
 const DECK_SIZE                 = 10;
-const ACERTOS_PARA_DOMINAR      = 5;
+const ACERTOS_PARA_DOMINAR      = 3;
 const MIN_TENTATIVAS_PENALIDADE = 4;
 
 /* ═════════════════════════════════════════════════════════════════
@@ -156,9 +156,10 @@ function _srEstatisticas(discId) {
     const p     = _srPerfil(card.id);
     const visto = p.tentativas > 0;
 
-    if (!visto)                                  novos++;
-    else if (p.dominado || p.proximaVez > agora) dominados++;
-    else                                         vencidos++;
+    if (!visto)         novos++;
+    else if (p.dominado) dominados++;
+    else if (p.proximaVez > agora) { /* em dia, mas não dominado — não conta */ }
+    else                vencidos++;
   });
 
   return { total: todos.length, dominados, vencidos, novos };
@@ -169,19 +170,21 @@ function _srEstatisticas(discId) {
    ═════════════════════════════════════════════════════════════════ */
 
 const ESTADO_INICIAL = () => ({
-  discId:      null,
-  semestre:    null,
-  nomeUsuario: null,
-  cardsData:   {},   // mapa { discId: cards[] } do semestre atual
-  cards:       [],
-  current:     0,
-  flipped:     false,
-  marcando:    false,
-  stats:       { correct: 0, wrong: 0 },
-  difficulty:  {},
-  resultado:   {},
-  historico:   [],
-  panelEl:     null,
+  discId:        null,
+  semestre:      null,
+  nomeUsuario:   null,
+  cardsData:     {},   // mapa { discId: cards[] } do semestre atual
+  cards:         [],
+  current:       0,
+  flipped:       false,
+  marcando:      false,
+  stats:         { correct: 0, wrong: 0 },
+  difficulty:    {},
+  resultado:     {},
+  historico:     [],
+  panelEl:       null,
+  modoRevisao:   false,
+  cardsRevisao:  null,
 });
 
 let _estado = ESTADO_INICIAL();
@@ -417,7 +420,7 @@ function _tplCena(card, tagCls) {
 }
 
 function _tplFinal() {
-  const { discId, cards, stats, difficulty } = _estado;
+  const { discId, cards, stats, difficulty, modoRevisao } = _estado;
   const total   = cards.length;
   const acertos = stats.correct;
   const erros   = stats.wrong;
@@ -454,10 +457,26 @@ function _tplFinal() {
   const icon = pct >= 70 ? '🎯' : pct >= 50 ? '📊' : '📚';
   const msg  = pct >= 70 ? 'Ótimo desempenho!' : pct >= 50 ? 'Bom trabalho!' : 'Continue praticando!';
 
+  const badgeRevisao = modoRevisao
+    ? `<div class="finish-revisao-badge"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i> Revisão de erros</div>`
+    : '';
+
+  const cardsAindaComErro = modoRevisao
+    ? (_estado.cardsRevisao ?? []).filter(card => {
+        const p = _srPerfil(card.id);
+        return p.erros > 0 && p.acertosConsecutivos === 0;
+      }).length
+    : 0;
+
+  const restartLabel = modoRevisao
+    ? `<i class="fas fa-rotate-left" aria-hidden="true"></i> Repetir revisão${cardsAindaComErro > 0 ? ` <span class="finish-restart-count">${cardsAindaComErro}</span>` : ''}`
+    : `<i class="fas fa-rotate-left" aria-hidden="true"></i> Novo deck`;
+
   return `
     <div class="cards-finish-scene">
-      <div class="cards-finish-card">
+      <div class="cards-finish-card${modoRevisao ? ' cards-finish-card--revisao' : ''}">
         <div>
+          ${badgeRevisao}
           <span class="finish-icon" aria-hidden="true">${icon}</span>
           <div class="finish-title">Deck concluído!</div>
           <div class="finish-subtitle">${msg}</div>
@@ -483,8 +502,44 @@ function _tplFinal() {
           <span class="finish-sr-next">${proximoTxt}</span>
         </div>
 
-        <button class="finish-restart-btn" id="cards-finish-restart" type="button">
-          <i class="fas fa-rotate-left" aria-hidden="true"></i> Novo deck
+        <div class="finish-progress-section">
+          <div class="finish-progress-label">
+            <i class="fas fa-chart-line" aria-hidden="true"></i>
+            Progresso por card
+          </div>
+          <div class="finish-progress-list">
+            ${cards.map(card => {
+              const p   = _srPerfil(card.id);
+              const pct = p.dominado ? 100 : Math.min(Math.round((p.acertosConsecutivos / ACERTOS_PARA_DOMINAR) * 100), 99);
+              const cls = p.dominado ? 'prog-dominado' : pct >= 66 ? 'prog-quase' : pct >= 33 ? 'prog-meio' : 'prog-inicio';
+              const resStr = _estado.resultado[card.id] === 'correct' ? 'correct' : _estado.resultado[card.id] === 'wrong' ? 'wrong' : '';
+              const iconRes = resStr === 'correct'
+                ? '<i class="fas fa-check prog-icon-correct" aria-hidden="true"></i>'
+                : resStr === 'wrong'
+                  ? '<i class="fas fa-xmark prog-icon-wrong" aria-hidden="true"></i>'
+                  : '';
+              const pergunta = _esc((card.frente ?? card.pergunta ?? '').slice(0, 48)) + ((card.frente ?? card.pergunta ?? '').length > 48 ? '…' : '');
+              const dominadoBadge = p.dominado
+                ? '<span class="prog-star" title="Dominado" aria-label="Card dominado"><i class="fas fa-star"></i></span>'
+                : '';
+              return `
+                <div class="finish-prog-row">
+                  <div class="finish-prog-meta">
+                    ${iconRes}
+                    <span class="finish-prog-text">${pergunta}</span>
+                    ${dominadoBadge}
+                  </div>
+                  <div class="finish-prog-bar-bg" title="${p.acertosConsecutivos} de ${ACERTOS_PARA_DOMINAR} acertos consecutivos">
+                    <div class="finish-prog-bar-fill ${cls}" style="width:${pct}%"></div>
+                  </div>
+                  <span class="finish-prog-pct">${p.dominado ? '✓' : `${p.acertosConsecutivos}/${ACERTOS_PARA_DOMINAR}`}</span>
+                </div>`;
+            }).join('')}
+          </div>
+        </div>
+
+        <button class="finish-restart-btn${modoRevisao ? ' finish-restart-btn--revisao' : ''}" id="cards-finish-restart" type="button">
+          ${restartLabel}
         </button>
       </div>
     </div>
@@ -493,10 +548,18 @@ function _tplFinal() {
 
 function _tplWrapper(discId, cards) {
   const discLabel = DISC_LABEL[discId] ?? discId ?? '';
-  const { semestre } = _estado;
+  const { semestre, modoRevisao } = _estado;
+
+  const bannerRevisao = modoRevisao ? `
+    <div class="cards-revisao-banner" role="alert" aria-label="Modo revisão de erros ativo">
+      <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+      <span class="cards-revisao-banner__label">Revisão de erros</span>
+      <span class="cards-revisao-banner__count">${cards.length} card${cards.length !== 1 ? 's' : ''}</span>
+    </div>` : '';
 
   return `
-    <div class="cards-game-header">
+    ${bannerRevisao}
+    <div class="cards-game-header${modoRevisao ? ' cards-game-header--revisao' : ''}">
       <div class="cards-game-header__left">
         <div class="cards-stats">
           <div class="cards-stat-chip correct" aria-label="Acertos">
@@ -871,9 +934,84 @@ function _embaralhar() {
   _renderCard('next');
 }
 
+function _tplRevisaoConcluida() {
+  return `
+    <div class="cards-finish-scene">
+      <div class="cards-finish-card cards-finish-card--revisao cards-finish-card--zerada">
+        <div class="finish-revisao-badge">
+          <i class="fas fa-triangle-exclamation" aria-hidden="true"></i> Revisão de erros
+        </div>
+        <span class="finish-icon" aria-hidden="true">🏆</span>
+        <div class="finish-title">Revisão concluída!</div>
+        <div class="finish-subtitle">Você zerou todos os erros desta sessão</div>
+
+        <div class="finish-stats">
+          <div class="finish-chip correct">
+            <i class="fas fa-check" aria-hidden="true"></i> Nenhum card pendente
+          </div>
+        </div>
+
+        <div class="finish-sr-status" style="max-width:320px">
+          <i class="fas fa-star" aria-hidden="true"></i>
+          <span>Todos os cards foram superados</span>
+          <span class="finish-sr-next">Continue praticando no deck normal</span>
+        </div>
+
+        <button class="finish-restart-btn finish-restart-btn--revisao" id="revisao-concluida-voltar" type="button">
+          <i class="fas fa-house" aria-hidden="true"></i> Voltar ao início
+        </button>
+      </div>
+    </div>
+  `;
+}
+
 function _reiniciar() {
   _limparSessao();
-  _estado.cards      = _srMontarDeck(_estado.discId);
+
+  let novasCards;
+  if (_estado.modoRevisao) {
+    // Relê o SRS em tempo real — exclui cards que já foram acertados e saíram da zona de erro
+    const todosRevisao = _estado.cardsRevisao ?? [];
+    const aindaComErro = todosRevisao.filter(card => {
+      const p = _srPerfil(card.id);
+      return p.erros > 0 && p.acertosConsecutivos === 0;
+    });
+
+    if (aindaComErro.length === 0) {
+      // Todos os cards foram superados — mostra tela de parabéns
+      _estado.cards     = [];
+      _estado.current   = 0;
+      _estado.stats     = { correct: 0, wrong: 0 };
+      _estado.difficulty= {};
+      _estado.resultado = {};
+      _estado.marcando  = false;
+      _estado.historico = [];
+      const panelEl = _estado.panelEl;
+      panelEl.querySelector('.panel-cards')?.remove();
+      const wrap = document.createElement('div');
+      wrap.className = 'panel-cards';
+      wrap.dataset.disc = _estado.discId;
+      wrap.dataset.revisao = 'true';
+      wrap.innerHTML = _tplRevisaoConcluida();
+      panelEl.appendChild(wrap);
+      wrap.querySelector('#revisao-concluida-voltar')?.addEventListener('click', () => {
+        const cardRoot  = document.getElementById('card-root');
+        const introRoot = document.getElementById('intro-root');
+        if (cardRoot)  cardRoot.style.display  = 'none';
+        if (introRoot) introRoot.style.display = '';
+        document.body.classList.remove('modo-revisao');
+      });
+      return;
+    }
+
+    // Atualiza cardsRevisao para a nova rodada (só os que ainda têm erro)
+    _estado.cardsRevisao = aindaComErro;
+    novasCards = _shuffle(aindaComErro.slice(0, DECK_SIZE));
+  } else {
+    novasCards = _srMontarDeck(_estado.discId);
+  }
+
+  _estado.cards      = novasCards;
   _estado.current    = 0;
   _estado.stats      = { correct: 0, wrong: 0 };
   _estado.difficulty = {};
@@ -892,7 +1030,11 @@ function _criarWrapperEl(discId, cards) {
   const wrap = document.createElement('div');
   wrap.className    = 'panel-cards';
   wrap.dataset.disc = discId;
+  if (_estado.modoRevisao) wrap.dataset.revisao = 'true';
   wrap.innerHTML    = _tplWrapper(discId, cards);
+
+  // Aplica/remove classe no body para o redesign global do modo revisão
+  document.body.classList.toggle('modo-revisao', !!_estado.modoRevisao);
 
   wrap.querySelector('#cards-btn-wrong')  ?.addEventListener('click', () => _marcar(false));
   wrap.querySelector('#cards-btn-right')  ?.addEventListener('click', () => _marcar(true));
@@ -907,6 +1049,7 @@ function _criarWrapperEl(discId, cards) {
     if (cardRoot)  cardRoot.style.display  = 'none';
     if (introRoot) introRoot.style.display = '';
     _limparSessao();
+    document.body.classList.remove('modo-revisao');
     // Oculta o badge do header ao voltar para o início
     const hbadge = document.getElementById('header-game-badge');
     if (hbadge) hbadge.style.display = 'none';
@@ -928,7 +1071,7 @@ function _criarWrapperEl(discId, cards) {
    10. API PÚBLICA
    ═════════════════════════════════════════════════════════════════ */
 
-export async function initCards(discId, panelEl, nomeUsuario) {
+export async function initCards(discId, panelEl, nomeUsuario, opcoes = {}) {
   destroyCards(panelEl);
 
   const { sem } = lerParams();
@@ -996,7 +1139,12 @@ export async function initCards(discId, panelEl, nomeUsuario) {
   }
 
   if (!estado) {
-    cards  = _srMontarDeck_com(cardsData, discId);
+    // Modo revisão: usa apenas os cards com erros passados como parâmetro
+    if (opcoes.modoRevisao && opcoes.cardsRevisao?.length) {
+      cards = _shuffle(opcoes.cardsRevisao.slice(0, DECK_SIZE));
+    } else {
+      cards = _srMontarDeck_com(cardsData, discId);
+    }
     estado = {
       ...ESTADO_INICIAL(),
       discId,
@@ -1005,6 +1153,8 @@ export async function initCards(discId, panelEl, nomeUsuario) {
       cardsData,
       cards,
       panelEl,
+      modoRevisao:  opcoes.modoRevisao  ?? false,
+      cardsRevisao: opcoes.cardsRevisao ?? null,
     };
   }
 
@@ -1114,7 +1264,7 @@ export function invalidarCacheSRS(discId) {
 })();
 
 /* ── Preenche os dados da tela de intro ── */
-function _introPreencherDados(disc, sem) {
+async function _introPreencherDados(disc, sem) {
   /* Breadcrumb */
   const breadcrumb = document.getElementById('breadcrumb-disc');
   if (breadcrumb) breadcrumb.textContent = DISC_LABEL[disc] ?? disc ?? '—';
@@ -1133,8 +1283,9 @@ function _introPreencherDados(disc, sem) {
   if (semLabel) semLabel.textContent = sem || '—';
 
   /* Contagem real de cards disponíveis */
+  let cardsData = {};
   try {
-    const cardsData = getCardsData(sem);
+    cardsData       = getCardsData(sem);
     const total     = cardsData[disc]?.length ?? 0;
     const countEl   = document.getElementById('intro-card-count');
     if (countEl) countEl.textContent = total > 0 ? String(total) : '—';
@@ -1151,4 +1302,112 @@ function _introPreencherDados(disc, sem) {
   /* Botão Voltar */
   const backBtn = document.getElementById('shell-back-btn');
   if (backBtn) backBtn.href = `../../jogo.html${sem ? `?sem=${sem}` : ''}`;
+
+  /* ── Botão "Revisar erros" ── */
+  _introAtualizarBotaoRevisar(disc, sem, cardsData);
+}
+
+/* Carrega o SRS e exibe/oculta o botão de revisão com a contagem correta */
+async function _introAtualizarBotaoRevisar(disc, sem, cardsData) {
+  const btn     = document.getElementById('intro-revisar-btn');
+  const countEl = document.getElementById('intro-revisar-count');
+  if (!btn) return;
+
+  try {
+    const todos    = cardsData[disc] ?? [];
+    if (todos.length === 0) return;
+
+    const uid      = new URLSearchParams(location.search).get('user') ?? getUsuario()?.uid ?? 'visitante';
+    const perfis   = await carregarPerfisSRS(uid, disc, sem).catch(() => ({}));
+
+    // Cards com pelo menos 1 erro no histórico SRS
+    const comErro  = todos.filter(c => {
+      const p = perfis[c.id];
+      return p && p.erros > 0;
+    });
+
+    if (comErro.length === 0) {
+      btn.classList.add('hidden');
+      return;
+    }
+
+    if (countEl) countEl.textContent = comErro.length;
+    btn.classList.remove('hidden');
+
+    // Garante que não duplica listeners (troca o nó)
+    const novo = btn.cloneNode(true);
+    btn.parentNode.replaceChild(novo, btn);
+    novo.addEventListener('click', () => _abrirModalRevisao(comErro, perfis, disc, sem));
+
+  } catch (err) {
+    console.warn('[flashcard] Erro ao verificar cards com erro:', err.message);
+  }
+}
+
+/* ── Modal de revisão de erros ── */
+function _abrirModalRevisao(comErro, perfis, disc, sem) {
+  const overlay  = document.getElementById('fc-modal-overlay');
+  const lista    = document.getElementById('fc-modal-list');
+  const btnStart = document.getElementById('fc-modal-start');
+  const btnClose = document.getElementById('fc-modal-close');
+  const btnCancel= document.getElementById('fc-modal-cancel');
+  if (!overlay || !lista) return;
+
+  // Ordena: maior taxa de erro primeiro
+  const ordenados = [...comErro].sort((a, b) => {
+    const pa = perfis[a.id] ?? { erros: 0, tentativas: 0 };
+    const pb = perfis[b.id] ?? { erros: 0, tentativas: 0 };
+    const taxaA = pa.tentativas > 0 ? pa.erros / pa.tentativas : 0;
+    const taxaB = pb.tentativas > 0 ? pb.erros / pb.tentativas : 0;
+    return taxaB - taxaA;
+  });
+
+  lista.innerHTML = '';
+  for (const card of ordenados) {
+    const p      = perfis[card.id] ?? { erros: 0, acertos: 0, tentativas: 0 };
+    const taxa   = p.tentativas > 0 ? Math.round((p.acertos / p.tentativas) * 100) : 0;
+    const cor    = taxa >= 70 ? '#34d399' : taxa >= 40 ? '#facc15' : '#f87171';
+    const icone  = taxa >= 70 ? 'fa-check' : taxa >= 40 ? 'fa-minus' : 'fa-xmark';
+    const frente = card.frente ?? card.pergunta ?? '';
+    const trecho = frente.length > 72 ? frente.slice(0, 72) + '…' : frente;
+
+    const row = document.createElement('div');
+    row.className = 'fc-modal-row';
+    row.setAttribute('role', 'listitem');
+    row.innerHTML = `
+      <span class="fc-modal-row__icon" style="color:${cor}">
+        <i class="fas ${icone}" aria-hidden="true"></i>
+      </span>
+      <span class="fc-modal-row__text">${trecho}</span>
+      <span class="fc-modal-row__stat" style="color:${cor}">
+        ${p.acertos}/${p.tentativas}
+        <span class="fc-modal-row__pct">${taxa}%</span>
+      </span>`;
+    lista.appendChild(row);
+  }
+
+  overlay.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+
+  function fechar() {
+    overlay.classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+
+  // Botão iniciar revisão
+  const novoStart = btnStart.cloneNode(true);
+  btnStart.parentNode.replaceChild(novoStart, btnStart);
+  novoStart.addEventListener('click', () => {
+    fechar();
+    const introRoot = document.getElementById('intro-root');
+    const cardRoot  = document.getElementById('card-root');
+    if (introRoot) introRoot.style.display = 'none';
+    if (cardRoot)  cardRoot.style.display  = '';
+    const usuario = new URLSearchParams(location.search).get('user') ?? getUsuario() ?? 'visitante';
+    initCards(disc, cardRoot, usuario, { modoRevisao: true, cardsRevisao: ordenados });
+  });
+
+  btnClose ?.addEventListener('click', fechar, { once: true });
+  btnCancel?.addEventListener('click', fechar, { once: true });
+  overlay   .addEventListener('click', e => { if (e.target === overlay) fechar(); }, { once: true });
 }

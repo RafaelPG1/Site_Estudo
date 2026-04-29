@@ -22,7 +22,7 @@
   />
 
   <link rel="stylesheet" href="../../../shared/css/fundo.css">
-  <link rel="stylesheet" href="flashcard.css?v=3" />
+  <link rel="stylesheet" href="flashcard.css?v=5" />
 </head>
 
 <body>
@@ -81,7 +81,27 @@
           <span id="intro-disc-label">—</span>
         </span>
         <span class="intro-chip intro-chip--sem">
-          <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+    <!-- NOVO ÍCONE DE CALENDÁRIO (calendar-days) -->
+      <svg xmlns="http://www.w3.org/2000/svg"
+          width="13" height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          style="opacity:0.98">
+        <path d="M8 2v4"/>
+        <path d="M16 2v4"/>
+        <rect width="18" height="18" x="3" y="4" rx="2"/>
+        <path d="M3 10h18"/>
+        <path d="M8 14h.01"/>
+        <path d="M12 14h.01"/>
+        <path d="M16 14h.01"/>
+        <path d="M8 18h.01"/>
+        <path d="M12 18h.01"/>
+        <path d="M16 18h.01"/>
+      </svg>
           <span id="intro-sem-label">—</span>
         </span>
       </div>
@@ -93,15 +113,51 @@
         </span>
       </div>
 
-      <button class="intro-start-btn" id="intro-start-btn" type="button"
-              aria-label="Começar sessão de flashcards">
-        Começar
-        <i class="fas fa-chevron-right" aria-hidden="true"></i>
-      </button>
+      <div class="intro-actions">
+        <button class="intro-start-btn" id="intro-start-btn" type="button"
+                aria-label="Começar sessão de flashcards">
+          Começar
+          <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        </button>
+
+        <button class="intro-revisar-btn hidden" id="intro-revisar-btn" type="button"
+                aria-label="Revisar cards com erros">
+          <i class="fas fa-rotate-left" aria-hidden="true"></i>
+          Revisar erros
+          <span class="intro-revisar-count" id="intro-revisar-count">0</span>
+        </button>
+      </div>
 
     </div>
 
   </main>
+
+  <!-- ── MODAL DE REVISÃO DE ERROS ── -->
+  <div class="fc-modal-overlay hidden" id="fc-modal-overlay" role="dialog"
+       aria-modal="true" aria-label="Cards com erros">
+    <div class="fc-modal" id="fc-modal">
+      <div class="fc-modal-header">
+        <div class="fc-modal-title">
+          <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+          Cards para revisar
+        </div>
+        <button class="fc-modal-close" id="fc-modal-close" type="button" aria-label="Fechar">
+          <i class="fas fa-xmark"></i>
+        </button>
+      </div>
+      <div class="fc-modal-subtitle" id="fc-modal-subtitle">
+        Cards que você errou ao menos uma vez, ordenados pela maior taxa de erro.
+      </div>
+      <div class="fc-modal-list" id="fc-modal-list" role="list"></div>
+      <div class="fc-modal-footer">
+        <button class="fc-modal-btn-cancel" id="fc-modal-cancel" type="button">Cancelar</button>
+        <button class="fc-modal-btn-start" id="fc-modal-start" type="button">
+          <i class="fas fa-rotate-left" aria-hidden="true"></i>
+          Iniciar revisão
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- ── JOGO (oculto até clicar em Começar) ── -->
   <main class="main" id="card-root" role="main" aria-label="Sessão de flashcards" style="display:none">

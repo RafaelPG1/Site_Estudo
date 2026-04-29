@@ -291,7 +291,7 @@ a    { text-decoration: none; color: inherit; }
 /* Barra de progresso — usa cor da disciplina */
 .cards-progress-bar-fill {
   height: 100%; border-radius: var(--radius-pill);
-  background: linear-gradient(90deg, var(--cor-tema), var(--cor-tema-2));
+  background: var(--cor-tema);
   transition: width .55s var(--ease-card);
 }
 
@@ -748,6 +748,87 @@ kbd {
 .cards-empty i { font-size: 2rem; margin-bottom: .7rem; display: block; }
 .cards-empty p { font-size: .82rem; }
 
+.finish-restart-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 20px; height: 20px; padding: 0 5px;
+  border-radius: var(--radius-pill);
+  background: rgba(229,62,62,.25);
+  font-size: .65rem; font-weight: 800; line-height: 1;
+  color: #fca5a5; margin-left: 4px;
+}
+
+.cards-finish-card--zerada .finish-sr-status {
+  border-color: rgba(245,184,76,.25);
+  background: rgba(245,184,76,.07);
+}
+.cards-finish-card--zerada .finish-sr-status i { color: #fbbf24; }
+
+/* ── PROGRESSO POR CARD (tela final) ────────────────────────── */
+.finish-progress-section {
+  width: 100%; display: flex; flex-direction: column; gap: 8px;
+  padding: 12px 16px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: var(--radius-sm);
+  max-height: 220px; overflow-y: auto;
+  scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.1) transparent;
+}
+.finish-progress-label {
+  font-size: .62rem; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: rgba(255,255,255,.3);
+  display: flex; align-items: center; gap: 6px; margin-bottom: 2px;
+}
+.finish-progress-label i { font-size: .6rem; color: var(--cor-tema); }
+.finish-progress-list { display: flex; flex-direction: column; gap: 8px; }
+
+.finish-prog-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 3px 8px;
+  align-items: center;
+}
+.finish-prog-meta {
+  grid-column: 1; grid-row: 1;
+  display: flex; align-items: center; gap: 5px;
+  min-width: 0;
+}
+.finish-prog-text {
+  font-size: .7rem; color: rgba(255,255,255,.58);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  min-width: 0; flex: 1;
+}
+.prog-star {
+  flex-shrink: 0; color: #fbbf24; font-size: .58rem;
+  animation: badge-pop .3s var(--ease-pop) both;
+}
+.prog-icon-correct { color: #34d399; font-size: .6rem; flex-shrink: 0; }
+.prog-icon-wrong   { color: #f87171; font-size: .6rem; flex-shrink: 0; }
+
+.finish-prog-bar-bg {
+  grid-column: 1; grid-row: 2;
+  height: 5px; border-radius: var(--radius-pill);
+  background: rgba(255,255,255,.07); overflow: hidden;
+}
+.finish-prog-bar-fill {
+  height: 100%; border-radius: var(--radius-pill);
+  transition: width .6s var(--ease-card);
+}
+.finish-prog-bar-fill.prog-inicio { background: rgba(255,255,255,.18); }
+.finish-prog-bar-fill.prog-meio   { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.finish-prog-bar-fill.prog-quase  { background: linear-gradient(90deg, #10b981, #34d399); }
+.finish-prog-bar-fill.prog-dominado {
+  background: linear-gradient(90deg, #fbbf24, #f59e0b);
+  box-shadow: 0 0 6px rgba(245,184,76,.5);
+}
+
+.finish-prog-pct {
+  grid-column: 2; grid-row: 1 / 3;
+  font-size: .65rem; font-weight: 700; color: rgba(255,255,255,.38);
+  white-space: nowrap; align-self: center;
+  min-width: 28px; text-align: right;
+}
+
 /* ── FOOTER ─────────────────────────────────────────────────── */
 .footer {
   position: relative; z-index: 2;
@@ -783,6 +864,7 @@ kbd {
   display: flex; align-items: center; justify-content: center;
   min-height: calc(100vh - 72px - 80px);
   padding: 2.5rem 1.5rem;
+  
 }
 
 /* Intro card — bordas e glows via cor da disciplina */
@@ -796,6 +878,7 @@ kbd {
   display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0;
   position: relative; overflow: hidden;
   animation: intro-fade-up .44s cubic-bezier(.22,1,.36,1) both;
+  
 }
 .intro-card::before { display: none; }
 .intro-card::after  { display: none; }
@@ -873,6 +956,11 @@ kbd {
 }
 
 /* Botão iniciar — estilo escuro sutil com cor do tema */
+.intro-actions {
+  display: flex; flex-direction: column; gap: .65rem;
+  width: 100%; position: relative; z-index: 1;
+}
+
 .intro-start-btn {
   display: flex; align-items: center; justify-content: center; gap: 9px;
   width: 100%; padding: .75rem 2rem; border-radius: var(--radius-pill);
@@ -891,7 +979,340 @@ kbd {
 .intro-start-btn:active { transform: scale(.98); }
 .intro-start-btn i { font-size: .78rem; opacity: .8; }
 
-/* ── RESPONSIVO ─────────────────────────────────────────────── */
+/* Botão revisar erros */
+.intro-revisar-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: .65rem 2rem; border-radius: var(--radius-pill);
+  background: rgba(239,68,68,.08);
+  border: 1px solid rgba(239,68,68,.22);
+  color: #f87171;
+  font-family: var(--font-body); font-size: .82rem; font-weight: 600;
+  letter-spacing: .02em; cursor: pointer;
+  transition: background .2s, border-color .2s;
+}
+.intro-revisar-btn:hover {
+  background: rgba(239,68,68,.16);
+  border-color: rgba(239,68,68,.40);
+}
+.intro-revisar-btn:active { transform: scale(.98); }
+.intro-revisar-btn i { font-size: .72rem; opacity: .85; }
+.intro-revisar-btn.hidden { display: none; }
+
+.intro-revisar-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 20px; height: 20px; padding: 0 5px;
+  border-radius: var(--radius-pill);
+  background: rgba(239,68,68,.22);
+  font-size: .65rem; font-weight: 700; line-height: 1;
+  color: #fca5a5;
+}
+
+/* ── MODAL DE REVISÃO ────────────────────────────────────────── */
+.fc-modal-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(4,7,14,.75);
+  backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1.25rem;
+  animation: fc-overlay-in .22s ease both;
+}
+.fc-modal-overlay.hidden { display: none; }
+@keyframes fc-overlay-in { from { opacity:0; } to { opacity:1; } }
+
+.fc-modal {
+  width: 100%; max-width: 500px; max-height: 85vh;
+  background: #0e1420;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 18px;
+  box-shadow: 0 24px 64px rgba(0,0,0,.7);
+  display: flex; flex-direction: column; overflow: hidden;
+  animation: fc-modal-in .28s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes fc-modal-in {
+  from { opacity:0; transform:translateY(20px) scale(.97); }
+  to   { opacity:1; transform:translateY(0)    scale(1);   }
+}
+
+.fc-modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.25rem 1.5rem 0;
+}
+.fc-modal-title {
+  display: flex; align-items: center; gap: 8px;
+  font-size: .95rem; font-weight: 700; color: #f0ede6;
+}
+.fc-modal-title i { color: #f87171; font-size: .85rem; }
+
+.fc-modal-close {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+  color: rgba(255,255,255,.5); cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: .75rem; transition: background .2s, color .2s;
+}
+.fc-modal-close:hover { background: rgba(255,255,255,.12); color: #f0ede6; }
+
+.fc-modal-subtitle {
+  padding: .5rem 1.5rem .85rem;
+  font-size: .73rem; color: rgba(255,255,255,.32); line-height: 1.55;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+.fc-modal-list {
+  flex: 1; overflow-y: auto; padding: .5rem 1rem;
+  scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.1) transparent;
+}
+
+.fc-modal-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: .65rem .5rem;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+  transition: background .15s;
+  border-radius: 8px;
+}
+.fc-modal-row:last-child { border-bottom: none; }
+.fc-modal-row:hover { background: rgba(255,255,255,.03); }
+
+.fc-modal-row__icon {
+  flex-shrink: 0; width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .7rem;
+  border-radius: 50%; background: rgba(255,255,255,.05);
+}
+.fc-modal-row__text {
+  flex: 1; font-size: .77rem; color: rgba(255,255,255,.72);
+  line-height: 1.4; min-width: 0;
+}
+.fc-modal-row__stat {
+  flex-shrink: 0; font-size: .7rem; font-weight: 700;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 1px;
+}
+.fc-modal-row__pct { font-size: .62rem; font-weight: 500; opacity: .75; }
+
+.fc-modal-footer {
+  display: flex; gap: .6rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid rgba(255,255,255,.07);
+}
+.fc-modal-btn-cancel {
+  flex: 1; padding: .6rem; border-radius: var(--radius-pill);
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+  color: rgba(255,255,255,.45); font-family: var(--font-body);
+  font-size: .8rem; font-weight: 600; cursor: pointer;
+  transition: background .2s;
+}
+.fc-modal-btn-cancel:hover { background: rgba(255,255,255,.1); color: rgba(255,255,255,.7); }
+.fc-modal-btn-start {
+  flex: 2; display: flex; align-items: center; justify-content: center; gap: 7px;
+  padding: .6rem 1.2rem; border-radius: var(--radius-pill);
+  background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.32);
+  color: #f87171; font-family: var(--font-body);
+  font-size: .82rem; font-weight: 700; cursor: pointer;
+  transition: background .2s, border-color .2s;
+}
+.fc-modal-btn-start:hover {
+  background: rgba(239,68,68,.22); border-color: rgba(239,68,68,.5);
+}
+.fc-modal-btn-start i { font-size: .72rem; }
+
+/* ══════════════════════════════════════════════════════════════════
+   MODO REVISÃO DE ERROS — redesign completo
+   ══════════════════════════════════════════════════════════════════ */
+
+:root {
+  --rev-rgb:       229,62,62;
+  --rev-amber-rgb: 245,158,11;
+}
+
+/* ── Header global em modo revisão ── */
+body.modo-revisao .header {
+  background: rgba(20,5,5,.95);
+  border-bottom-color: rgba(229,62,62,.28);
+  box-shadow: 0 1px 0 rgba(229,62,62,.10), 0 4px 24px rgba(0,0,0,.6);
+  position: relative;
+}
+body.modo-revisao .header::after {
+  content: '';
+  position: absolute; bottom: -1px; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%, rgba(229,62,62,.55) 20%,
+    rgba(245,158,11,.75) 50%,
+    rgba(229,62,62,.55) 80%, transparent 100%);
+  animation: rev-line 3s ease-in-out infinite;
+}
+@keyframes rev-line { 0%,100% { opacity:.45; } 50% { opacity:1; } }
+
+body.modo-revisao .header__disc { color: #f87171; }
+body.modo-revisao .header__icon {
+  background: rgba(229,62,62,.18);
+  border-color: rgba(229,62,62,.45);
+  box-shadow: 0 0 12px rgba(229,62,62,.18);
+}
+
+/* ── Banner de modo revisão ── */
+.cards-revisao-banner {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; border-radius: var(--radius-sm);
+  background: linear-gradient(135deg,
+    rgba(229,62,62,.15) 0%, rgba(160,20,20,.10) 60%, rgba(245,158,11,.07) 100%);
+  border: 1px solid rgba(229,62,62,.40);
+  box-shadow: 0 4px 20px rgba(229,62,62,.12), 0 0 0 1px rgba(229,62,62,.05) inset;
+  font-size: .73rem; font-weight: 700; color: #fca5a5;
+  letter-spacing: .03em;
+  animation: ckFadeUp .35s ease both, rev-pulse 4s ease-in-out 1s infinite;
+  position: relative; overflow: hidden;
+}
+.cards-revisao-banner::before {
+  content: '';
+  position: absolute; top: 0; bottom: 0; left: -120%; width: 60%;
+  background: linear-gradient(90deg, transparent, rgba(229,62,62,.07), transparent);
+  animation: rev-shimmer 3s ease-in-out infinite;
+}
+@keyframes rev-shimmer { 0% { left:-120%; } 100% { left:180%; } }
+@keyframes rev-pulse {
+  0%,100% { border-color: rgba(229,62,62,.40); box-shadow: 0 4px 20px rgba(229,62,62,.12); }
+  50%     { border-color: rgba(229,62,62,.58); box-shadow: 0 4px 24px rgba(229,62,62,.22); }
+}
+
+.cards-revisao-banner i { font-size: .7rem; opacity: .9; flex-shrink: 0; }
+.cards-revisao-banner__label {
+  font-size: .72rem; font-weight: 800; letter-spacing: .05em;
+  text-transform: uppercase; color: #fca5a5;
+}
+.cards-revisao-banner__count {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 3px 12px; border-radius: var(--radius-pill);
+  background: rgba(229,62,62,.22); border: 1px solid rgba(229,62,62,.45);
+  font-size: .67rem; font-weight: 800; color: #fca5a5;
+  margin-left: auto; flex-shrink: 0;
+}
+
+/* ── Game header em modo revisão ── */
+.cards-game-header--revisao {
+  border-color: rgba(229,62,62,.28);
+  background: linear-gradient(135deg, rgba(229,62,62,.07) 0%, rgba(20,5,5,.45) 100%);
+  box-shadow: 0 1px 12px rgba(229,62,62,.07);
+}
+.cards-game-header--revisao .cards-game-icon {
+  background: linear-gradient(135deg, rgba(229,62,62,.35), rgba(180,20,20,.18));
+  border-color: rgba(229,62,62,.42);
+  color: #f87171;
+  box-shadow: 0 0 16px rgba(229,62,62,.18);
+}
+.cards-game-header--revisao .cards-game-disc { color: #f87171; }
+
+/* Barra de progresso em modo revisão */
+.panel-cards[data-revisao="true"] .cards-progress-bar-fill {
+  background: linear-gradient(90deg, #e53e3e, #f59e0b) !important;
+}
+
+/* Dot ativo em modo revisão */
+.panel-cards[data-revisao="true"] .cards-dot.dot-active {
+  background: rgba(229,62,62,.65);
+  border-color: rgba(229,62,62,.90);
+  width: 22px;
+}
+
+/* Cards — frente em modo revisão */
+.panel-cards[data-revisao="true"] .cards-front {
+  background: linear-gradient(165deg, rgba(25,8,8,.88) 0%, rgba(18,10,14,.92) 100%);
+}
+.panel-cards[data-revisao="true"] .cards-front::before {
+  background: radial-gradient(ellipse, rgba(229,62,62,.08) 0%, transparent 70%);
+}
+.panel-cards[data-revisao="true"] .cards-front::after {
+  background: radial-gradient(circle, rgba(229,62,62,.05) 0%, transparent 70%);
+}
+.panel-cards[data-revisao="true"] .cards-face {
+  border-color: rgba(229,62,62,.16);
+  box-shadow:
+    0 0 0 1px rgba(229,62,62,.04) inset,
+    0 8px 32px rgba(0,0,0,.45),
+    0 0 28px rgba(229,62,62,.07);
+}
+
+/* Tag da disciplina em modo revisão */
+.panel-cards[data-revisao="true"] .cards-tag {
+  background: rgba(229,62,62,.12);
+  border-color: rgba(229,62,62,.35);
+  color: #f87171;
+}
+
+/* Dica em modo revisão */
+.panel-cards[data-revisao="true"] .cards-dica {
+  background: rgba(229,62,62,.08);
+  border-color: rgba(229,62,62,.18);
+}
+
+/* ── Tela final em modo revisão ── */
+.cards-finish-card--revisao {
+  border-color: rgba(229,62,62,.45) !important;
+  background: linear-gradient(160deg, rgba(28,8,8,.92) 0%, rgba(18,10,16,.95) 100%) !important;
+  box-shadow:
+    0 0 0 1px rgba(229,62,62,.10) inset,
+    0 12px 48px rgba(0,0,0,.55),
+    0 0 60px rgba(229,62,62,.14) !important;
+}
+.cards-finish-card--revisao::before {
+  background: radial-gradient(ellipse at 50% 0%, rgba(229,62,62,.12) 0%, transparent 65%) !important;
+}
+
+.finish-revisao-badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 6px 18px; border-radius: var(--radius-pill);
+  background: rgba(229,62,62,.14);
+  border: 1px solid rgba(229,62,62,.38);
+  font-size: .68rem; font-weight: 800; letter-spacing: 1.4px;
+  text-transform: uppercase; color: #fca5a5;
+  margin-bottom: 1.1rem;
+  animation: badge-pop .3s var(--ease-pop) both;
+  box-shadow: 0 0 20px rgba(229,62,62,.12);
+}
+.finish-revisao-badge i { font-size: .6rem; }
+
+.cards-finish-card--revisao .finish-icon {
+  filter: drop-shadow(0 0 12px rgba(229,62,62,.35));
+}
+
+.finish-restart-btn--revisao {
+  background: linear-gradient(135deg, rgba(229,62,62,.18), rgba(180,20,20,.14)) !important;
+  border-color: rgba(229,62,62,.50) !important;
+  color: #fca5a5 !important;
+  box-shadow: 0 4px 20px rgba(229,62,62,.12) !important;
+}
+.finish-restart-btn--revisao:hover {
+  background: linear-gradient(135deg, rgba(229,62,62,.28), rgba(200,30,30,.22)) !important;
+  border-color: rgba(229,62,62,.72) !important;
+  box-shadow: 0 4px 28px rgba(229,62,62,.28), 0 0 0 1px rgba(229,62,62,.12) inset !important;
+  color: #fef2f2 !important;
+}
+
+/* ── Botão revisar na intro ── */
+.intro-revisar-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: .7rem 1.8rem; border-radius: var(--radius-pill);
+  font-family: var(--font-body); font-size: .82rem; font-weight: 700;
+  cursor: pointer; border: 1px solid rgba(229,62,62,.35);
+  background: rgba(229,62,62,.10); color: #f87171;
+  transition: background .2s, border-color .2s, box-shadow .2s;
+}
+.intro-revisar-btn:hover {
+  background: rgba(229,62,62,.18);
+  border-color: rgba(229,62,62,.52);
+  box-shadow: 0 0 20px rgba(229,62,62,.14);
+}
+.intro-revisar-btn:active { transform: scale(.98); }
+.intro-revisar-btn i { font-size: .72rem; opacity: .85; }
+.intro-revisar-btn.hidden { display: none; }
+
+.intro-revisar-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 20px; height: 20px; padding: 0 5px;
+  border-radius: var(--radius-pill);
+  background: rgba(229,62,62,.22);
+  font-size: .65rem; font-weight: 700; line-height: 1; color: #fca5a5;
+}
+
+/* ── FIM MODO REVISÃO ──────────────────────────────────────────── */
 @media (max-width: 680px) {
   .header { padding: .85rem 1.1rem; }
   .main   { padding: 1.25rem .9rem 2.5rem; }
@@ -899,6 +1320,7 @@ kbd {
   .cards-scene { min-height: 0; }
   .cards-finish-scene { min-height: clamp(280px, 50vw, 380px); }
   .cards-finish-card  { padding: 1.5rem 1.2rem; }
+  .finish-progress-section { max-height: 160px; padding: 10px 12px; }
   .cards-result-btn   { padding: .7rem .6rem; font-size: .84rem; gap: .65rem; }
   .cards-result-btn .btn-icon-wrap { width: 36px; height: 36px; font-size: 1rem; }
   .cards-diff-btn     { font-size: .67rem; padding: 4px 11px; }
