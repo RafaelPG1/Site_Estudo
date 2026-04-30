@@ -61,6 +61,8 @@ const estado = {
   historicoVF: {},
   // Modo revisão: joga apenas questões com erros no histórico
   modoRevisao: false,
+  // Cache das questões com erro ao entrar no modo revisão
+  cardsRevisao: null,
 };
 
 /* ══════════════════════════════════════════════════════════
@@ -144,7 +146,9 @@ function questoesComErro(banco, historico) {
   return banco
     .filter(q => {
       const h = historico[q.id];
-      return h && h.erros > 0;
+      // Igual ao flashcard: tem erro E não tem nenhum acerto consecutivo
+      // (acertosConsecutivos > 0 significa que a última resposta foi correta)
+      return h && h.erros > 0 && (h.acertosConsecutivos ?? 0) === 0;
     })
     .sort((a, b) => {
       const taxaA = historico[a.id].erros / historico[a.id].tentativas;
@@ -239,10 +243,16 @@ function mostrarTela(nome) {
 function iniciarJogo(modoRevisao = false) {
   estado.modoRevisao = modoRevisao;
 
-  // No modo revisão, remonta o deck só com questões com erros
+  // No modo revisão, remonta o deck só com questões com erros.
+  // Se cardsRevisao já foi definido pelo caller (botão "Repetir revisão"),
+  // respeita o conjunto — não recomputa para não perder o contexto da sessão.
   if (modoRevisao) {
-    const erradas = questoesComErro(estado.banco, estado.historicoVF);
-    estado.perguntas = shuffle(erradas.slice(0, CONFIG.MAX_QUESTOES));
+    if (!estado.cardsRevisao || estado.cardsRevisao.length === 0) {
+      const erradas = questoesComErro(estado.banco, estado.historicoVF);
+      estado.cardsRevisao = erradas;
+      estado.perguntas = shuffle(erradas.slice(0, CONFIG.MAX_QUESTOES));
+    }
+    // se cardsRevisao já foi preenchido pelo caller, estado.perguntas já foi definido lá
   }
 
   estado.indice    = 0;
@@ -539,6 +549,25 @@ async function finalizarJogo() {
     console.warn('[vdd_falso] Erro ao salvar:', err);
   }
 
+  // Atualiza o cache em memoria com os resultados recem-salvos,
+  // sem depender de recarregar do Firestore (que pode ter latencia
+  // e retornar dados desatualizados, causando o botao "Revisar erros"
+  // mostrar questoes que ja foram acertadas nesta rodada).
+  for (const { id, acertou, resp } of resultados) {
+    if (resp === null || resp === undefined) continue;
+    const entrada = estado.historicoVF[id] ?? { tentativas: 0, acertos: 0, erros: 0, ultimaVez: 0, acertosConsecutivos: 0 };
+    entrada.tentativas++;
+    if (acertou) {
+      entrada.acertos++;
+      entrada.acertosConsecutivos = (entrada.acertosConsecutivos ?? 0) + 1;
+    } else {
+      entrada.erros++;
+      entrada.acertosConsecutivos = 0;
+    }
+    entrada.ultimaVez = Date.now();
+    estado.historicoVF[id] = entrada;
+  }
+
   const respondidas = estado.respostas.filter(r => r !== null && r !== undefined).length;
   const pct         = respondidas > 0
     ? Math.round((estado.acertos / respondidas) * 100)
@@ -581,12 +610,11 @@ async function finalizarJogo() {
     elSair.parentNode.replaceChild(novoSair, elSair);
     novoSair.addEventListener('click', async (e) => {
       e.preventDefault();
-      const historico = await carregarHistoricoVF(estado.usuario, estado.discId, estado.sem).catch(() => ({}));
-      estado.historicoVF = historico;
-      estado.perguntas   = montarDeck(estado.banco, historico);
+      // Usa historicoVF ja em memoria (atualizado apos salvar),
+      // monta novo deck e atualiza o botao "Revisar erros"
+      estado.perguntas = montarDeck(estado.banco, estado.historicoVF);
 
-      // Atualiza botão "Revisar erros"
-      const erradasAtual = questoesComErro(estado.banco, historico);
+      const erradasAtual = questoesComErro(estado.banco, estado.historicoVF);
       if (el.btnRevisarErros) {
         if (erradasAtual.length > 0) {
           el.btnRevisarErros.classList.remove('hidden');
@@ -602,14 +630,57 @@ async function finalizarJogo() {
     });
   }
 
-  // Botão jogar novamente — usa estado.banco (já carregado no init)
+  // Botão jogar novamente — comportamento diferente em modo revisão
   if (elRejogo) {
     const novoRejogo = elRejogo.cloneNode(true);
     elRejogo.parentNode.replaceChild(novoRejogo, elRejogo);
+
+    // Atualiza label do botão em modo revisão com contagem de pendentes
+    if (estado.modoRevisao) {
+      novoRejogo.textContent = '';
+      const iconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      iconSvg.setAttribute('viewBox', '0 0 16 16');
+      iconSvg.setAttribute('fill', 'none');
+      iconSvg.setAttribute('stroke', 'currentColor');
+      iconSvg.setAttribute('stroke-width', '1.6');
+      iconSvg.setAttribute('width', '16');
+      iconSvg.setAttribute('height', '16');
+      iconSvg.innerHTML = '<path d="M13.5 2.5v3.5h-3.5"/><path d="M13.3 6A6 6 0 1 0 12 12"/>';
+      novoRejogo.appendChild(iconSvg);
+      novoRejogo.appendChild(document.createTextNode(' Repetir revisão'));
+    }
+
     novoRejogo.addEventListener('click', async () => {
+      // Captura o estado da rodada ANTES do await para não perder os dados ao recarregar histórico
+      const perguntasRound = [...estado.perguntas];
+      const respostasRound = [...estado.respostas];
+      const eraRevisao     = estado.modoRevisao;
+
       const historico = await carregarHistoricoVF(estado.usuario, estado.discId, estado.sem).catch(() => ({}));
       estado.historicoVF = historico;
-      estado.perguntas   = montarDeck(estado.banco, historico);
+
+      if (eraRevisao) {
+        // Filtra só as questões que foram erradas OU tempo esgotado nesta rodada específica.
+        const erradasAgora = perguntasRound.filter((q, idx) => {
+          const resp = respostasRound[idx];
+          // Errou (resp existe mas é diferente da resposta correta) ou tempo esgotado (null)
+          return resp === null || resp !== q.resposta;
+        });
+
+        if (erradasAgora.length === 0) {
+          // Acertou tudo nesta rodada — mostra tela de parabéns
+          mostrarTelaRevisaoConcluida();
+          return;
+        }
+
+        estado.cardsRevisao = erradasAgora;
+        estado.perguntas = shuffle(erradasAgora.slice(0, CONFIG.MAX_QUESTOES));
+        atualizarContadores();
+        iniciarJogo(true);
+        return;
+      }
+
+      estado.perguntas = montarDeck(estado.banco, historico);
       if (estado.perguntas.length === 0) {
         mostrarTela('empty');
         return;
@@ -621,17 +692,82 @@ async function finalizarJogo() {
 
   mostrarTela('result');
 
-  const historico = await carregarHistoricoVF(estado.usuario, estado.discId, estado.sem).catch(() => ({}));
-  estado.historicoVF = historico;
-  renderEstatisticasQuestoes(historico, estado.perguntas);
+  // Usa o historicoVF ja atualizado em memoria (nao recarrega do Firestore
+  // para evitar latencia e dados desatualizados).
+  renderEstatisticasQuestoes(estado.historicoVF, estado.perguntas, estado.modoRevisao);
+
+  // Atualiza botao "Revisar erros" com base no historico em memoria
+  const erradasAgora = questoesComErro(estado.banco, estado.historicoVF);
+  if (el.btnRevisarErros) {
+    if (erradasAgora.length > 0) {
+      el.btnRevisarErros.classList.remove('hidden');
+      const countEl = $('vf-revisar-count');
+      if (countEl) countEl.textContent = erradasAgora.length;
+    } else {
+      el.btnRevisarErros.classList.add('hidden');
+    }
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   TELA DE REVISÃO CONCLUÍDA
+   ══════════════════════════════════════════════════════════ */
+
+function mostrarTelaRevisaoConcluida() {
+  const resultCard = document.querySelector('.resultado-nucleo');
+  if (!resultCard) { mostrarTela('intro'); return; }
+
+  resultCard.innerHTML = `
+    <div class="resultado-topo">
+      <div class="resultado-simbolo">🏆</div>
+      <h2 class="resultado-titulo">Revisão concluída!</h2>
+    </div>
+    <div class="resultado-divisor">
+      <span class="resultado-divisor__linha"></span>
+      <span class="resultado-divisor__ponto"></span>
+      <span class="resultado-divisor__linha"></span>
+    </div>
+    <p class="vf-revisao-concluida-msg">
+      Você superou todos os erros desta sessão de revisão! 🎉
+    </p>
+    <div class="resultado-acoes">
+      <button class="resultado-btn resultado-btn--primario" id="revisao-concluida-voltar">
+        Voltar ao início
+        <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14">
+          <path d="M5 3l8 5-8 5V3z"/>
+        </svg>
+      </button>
+    </div>
+  `;
+
+  mostrarTela('result');
+
+  document.getElementById('revisao-concluida-voltar')?.addEventListener('click', async () => {
+    const historico = await carregarHistoricoVF(estado.usuario, estado.discId, estado.sem).catch(() => ({}));
+    estado.historicoVF = historico;
+    estado.perguntas   = montarDeck(estado.banco, historico);
+    atualizarContadores();
+
+    const erradas = questoesComErro(estado.banco, historico);
+    if (el.btnRevisarErros) {
+      if (erradas.length > 0) {
+        el.btnRevisarErros.classList.remove('hidden');
+        const countEl = document.getElementById('vf-revisar-count');
+        if (countEl) countEl.textContent = erradas.length;
+      } else {
+        el.btnRevisarErros.classList.add('hidden');
+      }
+    }
+    mostrarTela('intro');
+  });
 }
 
 /* ══════════════════════════════════════════════════════════
    ESTATÍSTICAS POR QUESTÃO
    ══════════════════════════════════════════════════════════ */
 
-function renderEstatisticasQuestoes(historico, perguntas) {
-  const resultCard = document.querySelector('.game-result__card');
+function renderEstatisticasQuestoes(historico, perguntas, modoRevisao = false) {
+  const resultCard = document.querySelector('.game-result__card') ?? document.querySelector('.resultado-nucleo');
   if (!resultCard) return;
   resultCard.querySelector('.vf-stats-questoes')?.remove();
   const temDados = perguntas.some(q => historico[q.id]);
@@ -639,23 +775,64 @@ function renderEstatisticasQuestoes(historico, perguntas) {
 
   const painel = document.createElement('details');
   painel.className = 'vf-stats-questoes';
-  painel.innerHTML = `<summary><span class="vf-sq-summary-icon">📊</span>Desempenho por questão<span class="vf-sq-chevron">▾</span></summary>`;
+  painel.open = true;
+  painel.innerHTML = `<summary><span class="vf-sq-summary-icon">📊</span>Progresso por questão<span class="vf-sq-chevron">▾</span></summary>`;
 
   const lista = document.createElement('div');
   lista.className = 'vf-sq-lista';
+
   for (const q of perguntas) {
-    const h = historico[q.id];
-    if (!h) continue;
-    const taxa  = h.tentativas > 0 ? Math.round((h.acertos / h.tentativas) * 100) : 0;
-    const cor   = taxa >= 70 ? '#34d399' : taxa >= 40 ? '#facc15' : '#f87171';
-    const icone = taxa >= 70 ? '✓' : taxa >= 40 ? '~' : '✗';
-    const enun  = q.enunciado.length > 58 ? q.enunciado.slice(0, 58) + '…' : q.enunciado;
+    const h    = historico[q.id];
+    const resp = estado.respostas[estado.perguntas.indexOf(q)];
+    const acertouAgora = resp !== null && resp !== undefined && resp === q.resposta;
+    const errouAgora   = resp !== null && resp !== undefined && resp !== q.resposta;
+
+    const enun = q.enunciado.length > 52 ? q.enunciado.slice(0, 52) + '…' : q.enunciado;
+
+    let rowHtml;
+    if (modoRevisao) {
+      // Modo revisão: só mostra resultado desta rodada, sem histórico acumulado
+      const icone   = acertouAgora ? '✓' : errouAgora ? '✗' : '–';
+      const iconCor = acertouAgora ? '#34d399' : errouAgora ? '#f87171' : '#94a3b8';
+      const barCls  = acertouAgora ? 'vf-prog-bar--ok' : 'vf-prog-bar--critico';
+      const barPct  = acertouAgora ? 100 : 0;
+      const label   = acertouAgora ? 'Acertou' : errouAgora ? 'Errou' : '–';
+      rowHtml = `
+        <div class="vf-sq-meta">
+          <span class="vf-sq-icone" style="color:${iconCor}">${icone}</span>
+          <span class="vf-sq-enun">${enun}</span>
+          ${acertouAgora ? '<span class="vf-sq-superada" title="Acertou nesta rodada">⭐</span>' : ''}
+        </div>
+        <div class="vf-sq-prog-row">
+          <div class="vf-sq-bar-bg"><div class="vf-sq-bar-fill ${barCls}" style="width:${barPct}%"></div></div>
+          <span class="vf-sq-stat" style="color:${iconCor}">${label}</span>
+        </div>`;
+    } else {
+      // Modo normal: histórico acumulado
+      const acertos    = h ? h.acertos    : 0;
+      const tentativas = h ? h.tentativas : 0;
+      const taxa       = tentativas > 0 ? Math.round((acertos / tentativas) * 100) : 0;
+      const barPct = Math.min(taxa, 100);
+      const barCls = taxa >= 70 ? 'vf-prog-bar--ok' : taxa >= 40 ? 'vf-prog-bar--medio' : 'vf-prog-bar--critico';
+      const cor    = taxa >= 70 ? '#34d399' : taxa >= 40 ? '#facc15' : '#f87171';
+      const icone  = acertouAgora ? '✓' : errouAgora ? '✗' : (taxa >= 70 ? '✓' : taxa >= 40 ? '~' : '✗');
+      const iconCor= acertouAgora ? '#34d399' : errouAgora ? '#f87171' : cor;
+      rowHtml = `
+        <div class="vf-sq-meta">
+          <span class="vf-sq-icone" style="color:${iconCor}">${icone}</span>
+          <span class="vf-sq-enun">${enun}</span>
+        </div>
+        <div class="vf-sq-prog-row">
+          <div class="vf-sq-bar-bg" title="${acertos}/${tentativas} acertos acumulados (${taxa}%)">
+            <div class="vf-sq-bar-fill ${barCls}" style="width:${barPct}%"></div>
+          </div>
+          <span class="vf-sq-stat" style="color:${cor}">${tentativas > 0 ? acertos+'/'+tentativas : '—'}</span>
+        </div>`;
+    }
+
     const row = document.createElement('div');
-    row.className = 'vf-sq-row';
-    const si = document.createElement('span'); si.className = 'vf-sq-icone'; si.style.color = cor; si.textContent = icone;
-    const se = document.createElement('span'); se.className = 'vf-sq-enun'; se.textContent = enun;
-    const ss = document.createElement('span'); ss.className = 'vf-sq-stat'; ss.style.color = cor; ss.textContent = `${h.acertos}/${h.tentativas}`;
-    row.append(si, se, ss);
+    row.className = 'vf-sq-row vf-sq-row--prog';
+    row.innerHTML = rowHtml;
     lista.appendChild(row);
   }
   painel.appendChild(lista);

@@ -93,9 +93,15 @@ export async function salvarResultadoVF(usuario, discId, sem, resultados) {
   const atual = _lerLocal(usuario, discId, sem);
 
   for (const { id, acertou } of resultadosValidos) {
-    const entrada = atual[id] ?? { tentativas: 0, acertos: 0, erros: 0, ultimaVez: 0 };
+    const entrada = atual[id] ?? { tentativas: 0, acertos: 0, erros: 0, ultimaVez: 0, acertosConsecutivos: 0 };
     entrada.tentativas++;
-    acertou ? entrada.acertos++ : entrada.erros++;
+    if (acertou) {
+      entrada.acertos++;
+      entrada.acertosConsecutivos = (entrada.acertosConsecutivos ?? 0) + 1;
+    } else {
+      entrada.erros++;
+      entrada.acertosConsecutivos = 0;
+    }
     entrada.ultimaVez = Date.now();
     atual[id] = entrada;
   }

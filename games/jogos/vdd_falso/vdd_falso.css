@@ -1493,6 +1493,38 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 .vf-sq-enun  { color:var(--text-2); flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .vf-sq-stat  { font-family:var(--font-mono); font-size:.74rem; font-weight:500; flex-shrink:0; }
 
+/* Variante com barra de progresso */
+.vf-sq-row--prog {
+  display:flex; flex-direction:column; gap:4px; padding:8px 16px;
+  align-items:stretch;
+}
+.vf-sq-meta {
+  display:flex; align-items:center; gap:7px;
+}
+.vf-sq-meta .vf-sq-enun { font-size:.73rem; }
+.vf-sq-superada { font-size:.65rem; flex-shrink:0; }
+.vf-sq-prog-row {
+  display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center;
+}
+.vf-sq-bar-bg {
+  height:5px; border-radius:99px;
+  background:rgba(255,255,255,.07); overflow:hidden;
+}
+.vf-sq-bar-fill {
+  height:100%; border-radius:99px;
+  transition:width .5s cubic-bezier(.4,0,.2,1);
+}
+.vf-sq-bar-fill.vf-prog-bar--ok      { background:linear-gradient(90deg,#10b981,#34d399); }
+.vf-sq-bar-fill.vf-prog-bar--medio   { background:linear-gradient(90deg,#f59e0b,#fbbf24); }
+.vf-sq-bar-fill.vf-prog-bar--critico { background:linear-gradient(90deg,#ef4444,#f87171); }
+.vf-sq-prog-row .vf-sq-stat { font-size:.65rem; min-width:28px; text-align:right; }
+
+/* Tela revisão concluída */
+.vf-revisao-concluida-msg {
+  text-align:center; color:var(--text-2); font-size:.9rem; line-height:1.6;
+  padding:0 1rem;
+}
+
 /* ══════════════════════════════════════════════════════════
    14. RESPONSIVIDADE
    ══════════════════════════════════════════════════════════ */
