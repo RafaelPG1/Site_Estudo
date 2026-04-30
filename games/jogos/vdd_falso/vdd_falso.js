@@ -253,6 +253,13 @@ function iniciarJogo(modoRevisao = false) {
       estado.perguntas = shuffle(erradas.slice(0, CONFIG.MAX_QUESTOES));
     }
     // se cardsRevisao já foi preenchido pelo caller, estado.perguntas já foi definido lá
+  } else {
+    // [FIX] Modo normal: limpa qualquer resquício de sessão de revisão anterior
+    // e remonta o deck com seleção ponderada normal.
+    // Sem isso, se o usuário tinha entrado no modo revisão antes, estado.perguntas
+    // poderia conter apenas as questões erradas da revisão ao clicar em "Começar".
+    estado.cardsRevisao = null;
+    estado.perguntas = montarDeck(estado.banco, estado.historicoVF);
   }
 
   estado.indice    = 0;
@@ -610,6 +617,10 @@ async function finalizarJogo() {
     elSair.parentNode.replaceChild(novoSair, elSair);
     novoSair.addEventListener('click', async (e) => {
       e.preventDefault();
+      // Garante que qualquer rastro de sessão de revisão seja apagado
+      // antes de voltar à intro — o usuário vai clicar "Começar" (modo normal).
+      estado.modoRevisao  = false;
+      estado.cardsRevisao = null;
       // Usa historicoVF ja em memoria (atualizado apos salvar),
       // monta novo deck e atualiza o botao "Revisar erros"
       estado.perguntas = montarDeck(estado.banco, estado.historicoVF);
@@ -654,6 +665,9 @@ async function finalizarJogo() {
       // Captura o estado da rodada ANTES do await para não perder os dados ao recarregar histórico
       const perguntasRound = [...estado.perguntas];
       const respostasRound = [...estado.respostas];
+      // Modo normal: zera qualquer rastro de revisão ANTES de capturar eraRevisao,
+      // evitando que uma sessão de revisão anterior contamine esta rodada.
+      // eraRevisao captura o valor correto do modo que acabou de terminar.
       const eraRevisao     = estado.modoRevisao;
 
       const historico = await carregarHistoricoVF(estado.usuario, estado.discId, estado.sem).catch(() => ({}));
@@ -680,6 +694,9 @@ async function finalizarJogo() {
         return;
       }
 
+      // Modo normal: garante limpeza total de qualquer rastro de revisão
+      estado.modoRevisao  = false;
+      estado.cardsRevisao = null;
       estado.perguntas = montarDeck(estado.banco, historico);
       if (estado.perguntas.length === 0) {
         mostrarTela('empty');
@@ -907,9 +924,12 @@ function setupPausa() {
   // Botão "Voltar ao início" — usa estado.banco (já carregado)
   btnVoltarIntro?.addEventListener('click', async () => {
     estado.timer?.stop();
-    estado.timer = null;
-    estado.pausado = false;
-    estado.tempos = [];
+    estado.timer        = null;
+    estado.pausado      = false;
+    estado.tempos       = [];
+    // Garante que o modo revisão não vaze para a próxima sessão
+    estado.modoRevisao  = false;
+    estado.cardsRevisao = null;
     pauseOverlay.classList.add('hidden');
 
     const btnPauseEl   = $('btn-pause');
