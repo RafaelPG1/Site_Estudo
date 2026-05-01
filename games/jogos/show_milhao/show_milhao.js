@@ -1,132 +1,175 @@
-/* =============================================
-   SHOW DO MILHÃO — script.js
-   ============================================= */
+/* ============================================================
+   NEXUS STUDY — games/jogos/show_milhao/show_milhao.js
 
-// ── Banco de perguntas ──
-const PERGUNTAS = [
-  {
-    texto: "Qual é a capital do Brasil?",
-    alternativas: { A: "São Paulo", B: "Brasília", C: "Rio de Janeiro", D: "Salvador" },
-    correta: "B",
-    nivel: "Fácil"
-  },
-  {
-    texto: "Quantos planetas existem no Sistema Solar?",
-    alternativas: { A: "7", B: "9", C: "8", D: "10" },
-    correta: "C",
-    nivel: "Fácil"
-  },
-  {
-    texto: "Quem escreveu 'Dom Casmurro'?",
-    alternativas: { A: "José de Alencar", B: "Machado de Assis", C: "Carlos Drummond", D: "Clarice Lispector" },
-    correta: "B",
-    nivel: "Médio"
-  },
-  {
-    texto: "Em que ano o Brasil foi descoberto pelos portugueses?",
-    alternativas: { A: "1492", B: "1510", C: "1500", D: "1498" },
-    correta: "C",
-    nivel: "Médio"
-  },
-  {
-    texto: "Qual elemento químico tem o símbolo 'Au'?",
-    alternativas: { A: "Prata", B: "Ouro", C: "Cobre", D: "Alumínio" },
-    correta: "B",
-    nivel: "Médio"
-  },
-  {
-    texto: "Qual é o maior oceano do mundo?",
-    alternativas: { A: "Atlântico", B: "Índico", C: "Ártico", D: "Pacífico" },
-    correta: "D",
-    nivel: "Fácil"
-  },
-  {
-    texto: "Quem pintou a Mona Lisa?",
-    alternativas: { A: "Michelangelo", B: "Rafael", C: "Leonardo da Vinci", D: "Donatello" },
-    correta: "C",
-    nivel: "Médio"
-  },
-  {
-    texto: "Qual é o símbolo químico do sódio?",
-    alternativas: { A: "So", B: "Sn", C: "Na", D: "Sd" },
-    correta: "C",
-    nivel: "Difícil"
-  },
-  {
-    texto: "Em que continente fica o Egito?",
-    alternativas: { A: "Ásia", B: "Europa", C: "África", D: "Oriente Médio" },
-    correta: "C",
-    nivel: "Fácil"
-  },
-  {
-    texto: "Qual é a fórmula da água?",
-    alternativas: { A: "CO₂", B: "H₂O", C: "O₂", D: "H₂O₂" },
-    correta: "B",
-    nivel: "Fácil"
-  }
-];
+   Arquitetura idêntica ao vdd_falso.js:
+   - import dinâmico de dados por ano do semestre
+   - storage separado (storage_sm.js) com Firestore + localStorage
+   - seleção ponderada por histórico de desempenho
+   - timer via game-shell Timer (+ fallback nativo)
+   - telas: intro | question | result | empty
+   - pausa, atalhos de teclado
+   ============================================================ */
 
-// ── Tabela de prêmios ──
-const PREMIOS = [
-  { valor: "R$ 1.000",     marco: false },
-  { valor: "R$ 5.000",     marco: false },
-  { valor: "R$ 10.000",    marco: false },
-  { valor: "R$ 30.000",    marco: true  }, // marco de segurança
-  { valor: "R$ 50.000",    marco: false },
-  { valor: "R$ 100.000",   marco: false },
-  { valor: "R$ 150.000",   marco: false },
-  { valor: "R$ 300.000",   marco: true  }, // marco de segurança
-  { valor: "R$ 500.000",   marco: false },
-  { valor: "R$ 1.000.000", marco: false },
-];
+import { Shell, Timer, shuffle, lerParams }    from '../../template/game-shell.js';
+import { DISC_CORES }                          from '../../../shared/js/cores.js';
+import { aplicarCoresDisciplina }              from '../../../shared/js/theme.js';
+import { carregarHistoricoSM, salvarResultadoSM } from './storage_sm.js';
+import { getUsuario, getDisciplinasDeSemestre } from '../../../src/global.js';
 
-// ── Estado do jogo ──
-let estado = {
-  perguntaAtual: 0,
-  pontuacao: 0,
-  acertos: 0,
-  respondeu: false,
-  timer: null,
-  tempoRestante: 30,
-  perguntas: []
+/* ══════════════════════════════════════════════════════════
+   CONFIGURAÇÃO
+   ══════════════════════════════════════════════════════════ */
+
+const CONFIG = {
+  TEMPO_POR_QUESTAO: 30,
+  MAX_QUESTOES:      10,
+  PESO_NUNCA_VISTO:   3,
+  PESO_MIN:           1,
+  PESO_MAX:          10,
 };
 
-const TEMPO_LIMITE = 30;
+// Tabela de prêmios — 10 níveis
+const PREMIOS = [
+  { valor: 'R$ 1.000',     marco: false },
+  { valor: 'R$ 5.000',     marco: false },
+  { valor: 'R$ 10.000',    marco: false },
+  { valor: 'R$ 30.000',    marco: true  },
+  { valor: 'R$ 50.000',    marco: false },
+  { valor: 'R$ 100.000',   marco: false },
+  { valor: 'R$ 150.000',   marco: false },
+  { valor: 'R$ 300.000',   marco: true  },
+  { valor: 'R$ 500.000',   marco: false },
+  { valor: 'R$ 1.000.000', marco: false },
+];
+
 const CIRCUNFERENCIA = 276.46;
 
-// ── Iniciar jogo ──
-function iniciarJogo() {
-  estado.perguntas = embaralhar([...PERGUNTAS]);
-  estado.perguntaAtual = 0;
-  estado.pontuacao = 0;
-  estado.acertos = 0;
+/* ══════════════════════════════════════════════════════════
+   ESTADO
+   ══════════════════════════════════════════════════════════ */
 
-  mostrarTela('tela-jogo');
-  construirListaPremios();
-  carregarPergunta();
+const estado = {
+  perguntas:   [],
+  banco:       [],
+  indice:      0,
+  acertos:     0,
+  // respostas[i] = 'A'|'B'|'C'|'D' | null (tempo) | undefined (não respondeu)
+  respostas:   [],
+  tempos:      [],
+  timer:       null,
+  pausado:     false,
+  usuario:     null,
+  discId:      null,
+  sem:         null,
+  historicoSM: {},
+  tempoInicio: null,
+};
+
+/* ══════════════════════════════════════════════════════════
+   DOM
+   ══════════════════════════════════════════════════════════ */
+
+const $ = id => document.getElementById(id);
+const el = {};
+
+/* ══════════════════════════════════════════════════════════
+   SELEÇÃO PONDERADA (idêntica ao vdd_falso)
+   ══════════════════════════════════════════════════════════ */
+
+function calcularPeso(id, historico) {
+  const h = historico[id];
+  if (!h || h.tentativas === 0) return CONFIG.PESO_NUNCA_VISTO;
+  const taxaErro = h.erros / h.tentativas;
+  return Math.round(CONFIG.PESO_MIN + taxaErro * (CONFIG.PESO_MAX - CONFIG.PESO_MIN));
 }
 
-// ── Embaralhar array ──
-function embaralhar(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+function sorteiarPonderado(candidatos, n) {
+  const pool = [...candidatos];
+  const sel  = [];
+  while (sel.length < n && pool.length > 0) {
+    const total = pool.reduce((a, c) => a + c.peso, 0);
+    if (total <= 0) {
+      const i = Math.floor(Math.random() * pool.length);
+      sel.push(pool[i].item);
+      pool.splice(i, 1);
+      continue;
+    }
+    let rand = Math.random() * total;
+    let hit  = false;
+    for (let i = 0; i < pool.length; i++) {
+      rand -= pool[i].peso;
+      if (rand <= 0) {
+        sel.push(pool[i].item);
+        pool.splice(i, 1);
+        hit = true;
+        break;
+      }
+    }
+    if (!hit && pool.length > 0) {
+      sel.push(pool[pool.length - 1].item);
+      pool.splice(pool.length - 1, 1);
+    }
   }
-  return arr;
+  return sel;
 }
 
-// ── Mostrar tela ──
-function mostrarTela(id) {
-  document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
-  const tela = document.getElementById(id);
-  tela.classList.add('ativa');
+function montarDeck(banco, historico) {
+  const n    = Math.min(CONFIG.MAX_QUESTOES, banco.length);
+  const cands = banco.map(q => ({ item: q, peso: calcularPeso(q.id, historico) }));
+  return shuffle(sorteiarPonderado(cands, n));
 }
 
-// ── Construir lista de prêmios ──
+/* ══════════════════════════════════════════════════════════
+   TELAS
+   ══════════════════════════════════════════════════════════ */
+
+function mostrarTela(nome) {
+  $('screen-loading')?.classList.add('hidden');
+  el.screenIntro   ?.classList.add('hidden');
+  el.screenQuestion?.classList.add('hidden');
+  el.screenResult  ?.classList.add('hidden');
+  el.screenEmpty   ?.classList.add('hidden');
+  if (nome === 'intro')    el.screenIntro   ?.classList.remove('hidden');
+  if (nome === 'question') el.screenQuestion?.classList.remove('hidden');
+  if (nome === 'result')   el.screenResult  ?.classList.remove('hidden');
+  if (nome === 'empty')    el.screenEmpty   ?.classList.remove('hidden');
+}
+
+/* ══════════════════════════════════════════════════════════
+   BOLINHAS DE PROGRESSO
+   ══════════════════════════════════════════════════════════ */
+
+function renderDots() {
+  const container = $('sm-dots');
+  if (!container) return;
+  container.innerHTML = '';
+  estado.perguntas.forEach((p, i) => {
+    const resp       = estado.respostas[i];
+    const respondida = resp !== undefined;
+    const correto    = respondida && resp === p.correta;
+    const atual      = i === estado.indice;
+
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.setAttribute('aria-label', `Questão ${i + 1}`);
+    dot.className = 'sm-dot ' + (
+      atual       ? 'sm-dot--current' :
+      !respondida ? 'sm-dot--pending' :
+      correto     ? 'sm-dot--correct' : 'sm-dot--wrong'
+    );
+    dot.addEventListener('click', () => navegarPara(i));
+    container.appendChild(dot);
+  });
+}
+
+/* ══════════════════════════════════════════════════════════
+   LISTA DE PRÊMIOS LATERAL
+   ══════════════════════════════════════════════════════════ */
+
 function construirListaPremios() {
-  const lista = document.getElementById('lista-premios');
+  const lista = $('lista-premios');
+  if (!lista) return;
   lista.innerHTML = '';
-  // Exibir em ordem decrescente
   for (let i = PREMIOS.length - 1; i >= 0; i--) {
     const div = document.createElement('div');
     div.className = 'premio-item' + (PREMIOS[i].marco ? ' marco' : '');
@@ -137,215 +180,686 @@ function construirListaPremios() {
   atualizarPremios();
 }
 
-// ── Atualizar destaque na lista de prêmios ──
 function atualizarPremios() {
-  const idx = estado.perguntaAtual;
+  const idx = estado.indice;
   document.querySelectorAll('.premio-item').forEach((el, i) => {
-    // i vai de 0 (último prêmio) a 9 (primeiro prêmio na exibição invertida)
-    const pregIdx = PREMIOS.length - 1 - i; // índice real da pergunta
+    const pregIdx = PREMIOS.length - 1 - i;
     el.classList.remove('atual', 'conquistado');
-    if (pregIdx < idx) {
-      el.classList.add('conquistado');
-    } else if (pregIdx === idx) {
-      el.classList.add('atual');
-    }
+    if (pregIdx < idx)        el.classList.add('conquistado');
+    else if (pregIdx === idx) el.classList.add('atual');
   });
 }
 
-// ── Carregar pergunta ──
-function carregarPergunta() {
-  estado.respondeu = false;
-  const p = estado.perguntas[estado.perguntaAtual];
+/* ══════════════════════════════════════════════════════════
+   BARRA DE TIMER
+   ══════════════════════════════════════════════════════════ */
 
-  // HUD
-  document.getElementById('num-pergunta').textContent =
-    `${estado.perguntaAtual + 1}/${estado.perguntas.length}`;
-  document.getElementById('pontuacao-hud').textContent =
-    estado.pontuacao > 0 ? PREMIOS[estado.perguntaAtual - 1]?.valor || 'R$ 0' : 'R$ 0';
-  document.getElementById('pergunta-nivel').textContent = `Nível ${estado.perguntaAtual + 1} — ${p.nivel}`;
-  document.getElementById('pergunta-texto').textContent = p.texto;
-
-  // Alternativas
-  ['A','B','C','D'].forEach(letra => {
-    const btn = document.getElementById(`alt-${letra.toLowerCase()}`);
-    btn.classList.remove('correta', 'errada', 'revelada');
-    btn.disabled = false;
-    btn.style.opacity = '1';
-    document.getElementById(`texto-${letra.toLowerCase()}`).textContent = p.alternativas[letra];
-  });
-
-  // Esconder feedback
-  const fb = document.getElementById('feedback-box');
-  fb.classList.remove('visivel');
-
-  // Atualizar prêmios
-  atualizarPremios();
-
-  // Iniciar timer
-  iniciarTimer();
+function aplicarCorBarra(pct) {
+  const bar = el.timerBar;
+  if (!bar) return;
+  bar.classList.remove('game-timer-bar--green', 'game-timer-bar--mid', 'game-timer-bar--danger');
+  if      (pct <= 34) bar.classList.add('game-timer-bar--danger');
+  else if (pct <= 67) bar.classList.add('game-timer-bar--mid');
+  else                bar.classList.add('game-timer-bar--green');
 }
 
-// ── Timer ──
-function iniciarTimer() {
-  clearInterval(estado.timer);
-  estado.tempoRestante = TEMPO_LIMITE;
-  atualizarTimerUI();
+function atualizarTimerUI(restante) {
+  const el_num = $('timer-numero');
+  if (el_num) el_num.textContent = restante;
+
+  const offset = CIRCUNFERENCIA * (1 - restante / CONFIG.TEMPO_POR_QUESTAO);
+  const arco   = $('timer-arco');
+  if (arco) arco.style.strokeDashoffset = offset;
+
+  const pct = (restante / CONFIG.TEMPO_POR_QUESTAO) * 100;
+  document.documentElement.style.setProperty('--timer-pct', pct + '%');
+  aplicarCorBarra(pct);
 
   const timerContainer = document.querySelector('.timer-container');
-  timerContainer.classList.remove('timer-urgente');
-
-  estado.timer = setInterval(() => {
-    estado.tempoRestante--;
-    atualizarTimerUI();
-
-    if (estado.tempoRestante <= 5) {
-      timerContainer.classList.add('timer-urgente');
-    }
-
-    if (estado.tempoRestante <= 0) {
-      clearInterval(estado.timer);
-      tempoEsgotado();
-    }
-  }, 1000);
+  if (timerContainer) {
+    timerContainer.classList.toggle('timer-urgente', restante <= 5);
+  }
 }
 
-function atualizarTimerUI() {
-  const t = estado.tempoRestante;
-  document.getElementById('timer-numero').textContent = t;
+/* ══════════════════════════════════════════════════════════
+   FLUXO
+   ══════════════════════════════════════════════════════════ */
 
-  const progresso = t / TEMPO_LIMITE;
-  const offset = CIRCUNFERENCIA * (1 - progresso);
-  document.getElementById('timer-arco').style.strokeDashoffset = offset;
+function iniciarJogo() {
+  estado.perguntas   = montarDeck(estado.banco, estado.historicoSM);
+  estado.indice      = 0;
+  estado.acertos     = 0;
+  estado.tempoInicio = Date.now();
+  estado.respostas   = new Array(estado.perguntas.length); // undefined
+  estado.tempos      = new Array(estado.perguntas.length).fill(CONFIG.TEMPO_POR_QUESTAO);
+  estado.pausado     = false;
+
+  atualizarContadores();
+  construirListaPremios();
+  mostrarTela('question');
+  renderizarQuestao();
 }
 
-// ── Tempo esgotado ──
-function tempoEsgotado() {
-  if (estado.respondeu) return;
-  estado.respondeu = true;
+function criarTimer(totalInicial) {
+  return Timer.criar({
+    total: totalInicial ?? CONFIG.TEMPO_POR_QUESTAO,
+    onTick: (restante) => {
+      estado.tempos[estado.indice] = restante;
+      atualizarTimerUI(restante);
+    },
+    onEnd: () => {
+      if (estado.respostas[estado.indice] === undefined) {
+        estado.tempos[estado.indice] = 0;
+        registrarResposta(null);
+      }
+    },
+  });
+}
 
-  // Desabilitar alternativas
-  ['A','B','C','D'].forEach(letra => {
-    document.getElementById(`alt-${letra.toLowerCase()}`).disabled = true;
+/* ══════════════════════════════════════════════════════════
+   RENDERIZAR QUESTÃO
+   ══════════════════════════════════════════════════════════ */
+
+function renderizarQuestao() {
+  const pergunta    = estado.perguntas[estado.indice];
+  const resp        = estado.respostas[estado.indice];
+  const jaRespondeu = resp !== undefined;
+  const correto     = jaRespondeu && resp === pergunta.correta;
+  const num         = estado.indice + 1;
+
+  // Texto e nível
+  if (el.numPergunta) el.numPergunta.textContent = `${num}/${estado.perguntas.length}`;
+  if (el.perguntaNivel) el.perguntaNivel.textContent = `Nível ${num} — ${pergunta.nivel ?? ''}`;
+  if (el.perguntaTexto) el.perguntaTexto.textContent = pergunta.texto;
+  if (el.progressFill) el.progressFill.style.width = (num / estado.perguntas.length * 100) + '%';
+  if (el.pontuacaoHud) {
+    el.pontuacaoHud.textContent = estado.acertos > 0
+      ? PREMIOS[estado.acertos - 1]?.valor || 'R$ 0'
+      : 'R$ 0';
+  }
+
+  // Reset alternativas
+  ['a','b','c','d'].forEach(l => {
+    const btn  = $(`alt-${l}`);
+    const txt  = $(`texto-${l}`);
+    if (btn) {
+      btn.className = 'alt-btn';
+      btn.disabled  = jaRespondeu;
+      btn.style.opacity = '1';
+    }
+    if (txt) txt.textContent = pergunta.alternativas[l.toUpperCase()] ?? '';
   });
 
-  // Revelar resposta correta
-  const p = estado.perguntas[estado.perguntaAtual];
-  document.getElementById(`alt-${p.correta.toLowerCase()}`).classList.add('revelada');
+  // Estados pós-resposta
+  if (jaRespondeu) {
+    if (resp !== null) {
+      const letraEscolhida = resp.toLowerCase();
+      $(`alt-${letraEscolhida}`)?.classList.add(correto ? 'correta' : 'errada');
+    }
+    if (!correto) {
+      $(`alt-${pergunta.correta.toLowerCase()}`)?.classList.add('revelada');
+    }
+    mostrarFeedback(correto, resp === null);
+  } else {
+    $('feedback-box')?.classList.remove('visivel');
+  }
 
-  // Feedback
-  mostrarFeedback(false, true);
+  atualizarBotoesNav();
+  atualizarPremios();
+  renderDots();
+
+  // Timer
+  if (estado.timer) {
+    try { estado.timer.stop(); } catch (_) {}
+    estado.timer = null;
+  }
+
+  if (!jaRespondeu) {
+    const tempoRestante = estado.tempos[estado.indice] ?? CONFIG.TEMPO_POR_QUESTAO;
+    atualizarTimerUI(tempoRestante);
+
+    try {
+      estado.timer = criarTimer(tempoRestante);
+      estado.timer.start();
+    } catch (_) {
+      // Fallback setInterval
+      let t = tempoRestante;
+      estado._fallback = setInterval(() => {
+        t--;
+        estado.tempos[estado.indice] = t;
+        atualizarTimerUI(t);
+        if (t <= 0) {
+          clearInterval(estado._fallback);
+          if (estado.respostas[estado.indice] === undefined) registrarResposta(null);
+        }
+      }, 1000);
+    }
+  }
 }
 
-// ── Responder ──
+function atualizarBotoesNav() {
+  const total     = estado.perguntas.length;
+  const ultimo    = estado.indice === total - 1;
+  const jaResp    = estado.respostas[estado.indice] !== undefined;
+  const todasResp = estado.respostas.every(r => r !== undefined);
+
+  if (el.btnAnterior) el.btnAnterior.disabled = estado.indice === 0;
+
+  if (el.btnProxima) {
+    const isFinish = ultimo && todasResp;
+    el.btnProxima.disabled = !jaResp;
+    el.btnProxima.classList.toggle('sm-nav-btn--finish', isFinish);
+    el.btnProxima.innerHTML = isFinish
+      ? 'Finalizar <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M2 8l4 4 8-8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      : 'Próxima <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12"><path d="M6 3l6 5-6 5V3z"/></svg>';
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   RESPONDER
+   ══════════════════════════════════════════════════════════ */
+
 function responder(letra) {
-  if (estado.respondeu) return;
-  estado.respondeu = true;
-  clearInterval(estado.timer);
-
-  const p = estado.perguntas[estado.perguntaAtual];
-  const correta = letra === p.correta;
-
-  // Desabilitar todos
-  ['A','B','C','D'].forEach(l => {
-    document.getElementById(`alt-${l.toLowerCase()}`).disabled = true;
-  });
-
-  // Marcar selecionada e correta
-  const btnSelecionado = document.getElementById(`alt-${letra.toLowerCase()}`);
-  btnSelecionado.classList.add(correta ? 'correta' : 'errada');
-
-  if (!correta) {
-    document.getElementById(`alt-${p.correta.toLowerCase()}`).classList.add('revelada');
-  }
-
-  if (correta) {
-    estado.acertos++;
-    estado.pontuacao = estado.perguntaAtual + 1;
-  }
-
-  mostrarFeedback(correta, false);
+  if (estado.pausado) return;
+  if (estado.respostas[estado.indice] !== undefined) return;
+  try { estado.timer?.stop(); } catch (_) {}
+  clearInterval(estado._fallback);
+  registrarResposta(letra);
 }
 
-// ── Mostrar feedback ──
-function mostrarFeedback(correta, tempoAcabou) {
-  const fb = document.getElementById('feedback-box');
-  const icone = document.getElementById('feedback-icone');
-  const msg   = document.getElementById('feedback-msg');
-  const resp  = document.getElementById('feedback-resposta');
-  const btnProx = document.getElementById('btn-proxima');
+function registrarResposta(resp) {
+  const pergunta = estado.perguntas[estado.indice];
+  const correto  = resp === pergunta.correta;
 
-  const p = estado.perguntas[estado.perguntaAtual];
-  const isUltima = estado.perguntaAtual >= estado.perguntas.length - 1;
+  estado.respostas[estado.indice] = resp;
+
+  // resp === null (tempo esgotado) é neutro
+  if (resp !== null && correto) {
+    estado.acertos++;
+  }
+
+  renderizarQuestao();
+}
+
+/* ══════════════════════════════════════════════════════════
+   FEEDBACK
+   ══════════════════════════════════════════════════════════ */
+
+function mostrarFeedback(correto, tempoAcabou) {
+  const fb      = $('feedback-box');
+  const icone   = $('feedback-icone');
+  const msg     = $('feedback-msg');
+  const resp    = $('feedback-resposta');
+  const btnProx = $('btn-proxima');
+
+  const p       = estado.perguntas[estado.indice];
+  const isUltima = estado.indice >= estado.perguntas.length - 1;
+  const todasResp = estado.respostas.every(r => r !== undefined);
 
   if (tempoAcabou) {
-    icone.textContent = '⏰';
-    msg.textContent = 'Tempo Esgotado!';
-    msg.style.color = '#ff9800';
-    resp.textContent = `A resposta correta era: ${p.correta} — ${p.alternativas[p.correta]}`;
-  } else if (correta) {
-    icone.textContent = '✅';
-    msg.textContent = isUltima ? '🏆 Você é o Milionário!' : 'Correto! Excelente!';
-    msg.style.color = '#00e676';
-    resp.textContent = `Você ganhou: ${PREMIOS[estado.perguntaAtual].valor}`;
+    if (icone) icone.textContent = '⏰';
+    if (msg)   { msg.textContent = 'Tempo Esgotado!'; msg.style.color = '#ff9800'; }
+    if (resp)  resp.textContent  = `A resposta correta era: ${p.correta} — ${p.alternativas[p.correta]}`;
+  } else if (correto) {
+    if (icone) icone.textContent = isUltima ? '🏆' : '✅';
+    if (msg)   { msg.textContent = isUltima ? '🏆 Você é o Milionário!' : 'Correto! Excelente!'; msg.style.color = '#00e676'; }
+    if (resp)  resp.textContent  = `Você ganhou: ${PREMIOS[estado.indice].valor}`;
   } else {
-    icone.textContent = '❌';
-    msg.textContent = 'Resposta Errada!';
-    msg.style.color = '#ff1744';
-    resp.textContent = `A correta era: ${p.correta} — ${p.alternativas[p.correta]}`;
+    if (icone) icone.textContent = '❌';
+    if (msg)   { msg.textContent = 'Resposta Errada!'; msg.style.color = '#ff1744'; }
+    if (resp)  resp.textContent  = `A correta era: ${p.correta} — ${p.alternativas[p.correta]}`;
   }
 
-  btnProx.textContent = isUltima ? 'VER RESULTADO →' : 'PRÓXIMA →';
-  fb.classList.add('visivel');
-
-  // Se errou ou tempo acabou, vai pro resultado com pouca demora permitida
-  if (!correta || tempoAcabou) {
-    btnProx.textContent = 'VER RESULTADO →';
-    // Marca como última para ir ao fim
-    estado.perguntaAtual = estado.perguntas.length; // força ir ao fim
+  if (btnProx) {
+    const isFinish = (isUltima && todasResp) || !correto || tempoAcabou;
+    btnProx.textContent = isFinish ? 'VER RESULTADO →' : 'PRÓXIMA →';
   }
+
+  fb?.classList.add('visivel');
 }
 
-// ── Próxima pergunta ──
-function proximaPergunta() {
-  // Se for a última ou errou, vai para o fim
-  if (estado.perguntaAtual >= estado.perguntas.length) {
-    mostrarFim();
-    return;
-  }
+/* ══════════════════════════════════════════════════════════
+   NAVEGAÇÃO
+   ══════════════════════════════════════════════════════════ */
 
-  estado.perguntaAtual++;
-
-  if (estado.perguntaAtual >= estado.perguntas.length) {
-    mostrarFim();
-    return;
-  }
-
-  // Limpar feedback
-  document.getElementById('feedback-box').classList.remove('visivel');
-  carregarPergunta();
+function navegarPara(i) {
+  if (i < 0 || i >= estado.perguntas.length) return;
+  try { estado.timer?.stop(); } catch (_) {}
+  clearInterval(estado._fallback);
+  estado.indice = i;
+  renderizarQuestao();
 }
 
-// ── Tela final ──
-function mostrarFim() {
-  clearInterval(estado.timer);
-  const valorFinal = estado.acertos > 0 ? PREMIOS[estado.acertos - 1].valor : 'R$ 0';
+function irAnterior() {
+  if (estado.indice > 0) navegarPara(estado.indice - 1);
+}
+
+function irProxima() {
+  const ultimo    = estado.indice === estado.perguntas.length - 1;
+  const todasResp = estado.respostas.every(r => r !== undefined);
+
+  if (ultimo && todasResp) { finalizarJogo(); return; }
+  if (estado.indice < estado.perguntas.length - 1) { navegarPara(estado.indice + 1); return; }
+
+  const primeiraPendente = estado.respostas.findIndex(r => r === undefined);
+  if (primeiraPendente !== -1) navegarPara(primeiraPendente);
+}
+
+/* ══════════════════════════════════════════════════════════
+   FINALIZAR
+   ══════════════════════════════════════════════════════════ */
+
+async function finalizarJogo() {
+  try { estado.timer?.stop(); } catch (_) {}
+  clearInterval(estado._fallback);
+
+  // Filtra respostas válidas (exclui null = tempo esgotado)
+  const resultados = estado.perguntas
+    .map((p, i) => ({
+      id:     p.id ?? `q${i}`,
+      resp:   estado.respostas[i],
+      acertou: estado.respostas[i] === p.correta,
+    }))
+    .filter(r => r.resp !== null && r.resp !== undefined);
+
+  try {
+    await salvarResultadoSM(estado.usuario, estado.discId, estado.sem, resultados);
+  } catch (err) {
+    console.warn('[show_milhao] Erro ao salvar:', err);
+  }
+
+  // Atualiza cache em memória sem depender do Firestore
+  for (const { id, acertou, resp } of resultados) {
+    if (resp === null || resp === undefined) continue;
+    const entrada = estado.historicoSM[id] ?? {
+      tentativas: 0, acertos: 0, erros: 0, ultimaVez: 0, acertosConsecutivos: 0,
+    };
+    entrada.tentativas++;
+    if (acertou) { entrada.acertos++; entrada.acertosConsecutivos = (entrada.acertosConsecutivos ?? 0) + 1; }
+    else         { entrada.erros++;   entrada.acertosConsecutivos = 0; }
+    entrada.ultimaVez = Date.now();
+    estado.historicoSM[id] = entrada;
+  }
+
+  // Monta tela de resultado
+  const valorFinal    = estado.acertos > 0 ? PREMIOS[estado.acertos - 1].valor : 'R$ 0';
+  const respondidas   = estado.respostas.filter(r => r !== null && r !== undefined).length;
+  const pct           = respondidas > 0 ? Math.round((estado.acertos / respondidas) * 100) : 0;
   const todosCorretos = estado.acertos === estado.perguntas.length;
 
-  document.getElementById('fim-icone').textContent = todosCorretos ? '🏆' : estado.acertos >= 5 ? '🌟' : '😔';
-  document.getElementById('fim-titulo').textContent =
-    todosCorretos ? 'MILIONÁRIO!' : estado.acertos >= 7 ? 'Muito bem!' : estado.acertos >= 4 ? 'Bom jogo!' : 'Não foi dessa vez...';
-  document.getElementById('fim-msg').textContent =
-    todosCorretos
-      ? 'Incrível! Você acertou todas as perguntas!'
-      : `Você acertou ${estado.acertos} de ${estado.perguntas.length} perguntas.`;
-  document.getElementById('fim-valor').textContent = valorFinal;
-  document.getElementById('fim-acertos').textContent = `${estado.acertos} de ${estado.perguntas.length} corretas`;
+  let emoji, titulo;
+  if      (pct >= 80) { emoji = '🏆'; titulo = todosCorretos ? 'MILIONÁRIO!' : 'Excelente!'; }
+  else if (pct >= 50) { emoji = '🌟'; titulo = 'Muito bem!'; }
+  else                { emoji = '📚'; titulo = 'Pode melhorar!'; }
 
-  mostrarTela('tela-fim');
+  const elSimb     = $('resultado-simbolo');
+  const elTitulo   = $('resultado-titulo');
+  const elValor    = $('resultado-valor');
+  const elAcertos  = $('resultado-acertos');
+  const elErros    = $('resultado-erros');
+  const elPrecisao = $('resultado-precisao');
+  const elTempo    = $('resultado-tempo');
+  const elSair     = $('resultado-btn-sair');
+  const elRejogo   = $('resultado-btn-rejogo');
+
+  if (elSimb)    elSimb.textContent    = emoji;
+  if (elTitulo)  elTitulo.textContent  = titulo;
+  if (elValor)   elValor.textContent   = valorFinal;
+  if (elAcertos) elAcertos.textContent = estado.acertos;
+  if (elErros)   elErros.textContent   = respondidas - estado.acertos;
+  if (elPrecisao) elPrecisao.textContent = pct + '%';
+
+  if (elTempo) {
+    const totalSeg = Math.round((Date.now() - (estado.tempoInicio ?? Date.now())) / 1000);
+    const mm = Math.floor(totalSeg / 60);
+    const ss = String(totalSeg % 60).padStart(2, '0');
+    elTempo.textContent = `${mm}:${ss}`;
+  }
+
+  // Botão Sair → tela intro
+  if (elSair) {
+    elSair.removeAttribute('href');
+    const novoSair = elSair.cloneNode(true);
+    elSair.parentNode.replaceChild(novoSair, elSair);
+    novoSair.addEventListener('click', async (e) => {
+      e.preventDefault();
+      estado.perguntas = montarDeck(estado.banco, estado.historicoSM);
+      atualizarContadores();
+      mostrarTela('intro');
+    });
+  }
+
+  // Botão Jogar novamente
+  if (elRejogo) {
+    const novoRejogo = elRejogo.cloneNode(true);
+    elRejogo.parentNode.replaceChild(novoRejogo, elRejogo);
+    novoRejogo.addEventListener('click', async () => {
+      const historico = await carregarHistoricoSM(estado.usuario, estado.discId, estado.sem).catch(() => ({}));
+      estado.historicoSM = historico;
+      estado.perguntas   = montarDeck(estado.banco, historico);
+      if (estado.perguntas.length === 0) { mostrarTela('empty'); return; }
+      atualizarContadores();
+      iniciarJogo();
+    });
+  }
+
+  renderEstatisticasQuestoes(estado.historicoSM, estado.perguntas);
+  mostrarTela('result');
 }
 
-// ── Reiniciar ──
-function reiniciar() {
-  clearInterval(estado.timer);
-  mostrarTela('tela-inicio');
+/* ══════════════════════════════════════════════════════════
+   ESTATÍSTICAS POR QUESTÃO (tela de resultado)
+   ══════════════════════════════════════════════════════════ */
+
+function renderEstatisticasQuestoes(historico, perguntas) {
+  const resultCard = document.querySelector('.resultado-nucleo');
+  if (!resultCard) return;
+  resultCard.querySelector('.sm-stats-questoes')?.remove();
+
+  const temDados = perguntas.some(q => historico[q.id ?? '']);
+  if (!temDados) return;
+
+  const painel = document.createElement('details');
+  painel.className = 'sm-stats-questoes';
+  painel.open = true;
+  painel.innerHTML = `<summary><span class="sm-sq-summary-icon">📊</span>Progresso por questão<span class="sm-sq-chevron">▾</span></summary>`;
+
+  const lista = document.createElement('div');
+  lista.className = 'sm-sq-lista';
+
+  for (const q of perguntas) {
+    const h          = historico[q.id ?? ''];
+    const idx        = estado.perguntas.indexOf(q);
+    const respAtual  = estado.respostas[idx];
+    const acertouAgora = respAtual !== null && respAtual !== undefined && respAtual === q.correta;
+    const errouAgora   = respAtual !== null && respAtual !== undefined && respAtual !== q.correta;
+
+    const acertos    = h ? h.acertos    : 0;
+    const tentativas = h ? h.tentativas : 0;
+    const taxa       = tentativas > 0 ? Math.round((acertos / tentativas) * 100) : 0;
+    const barPct = Math.min(taxa, 100);
+    const barCls = taxa >= 70 ? 'sm-prog-bar--ok' : taxa >= 40 ? 'sm-prog-bar--medio' : 'sm-prog-bar--critico';
+    const cor    = taxa >= 70 ? '#34d399' : taxa >= 40 ? '#facc15' : '#f87171';
+    const icone  = acertouAgora ? '✓' : errouAgora ? '✗' : (taxa >= 70 ? '✓' : taxa >= 40 ? '~' : '✗');
+    const iconCor= acertouAgora ? '#34d399' : errouAgora ? '#f87171' : cor;
+
+    const enun = (q.texto ?? '').length > 52 ? q.texto.slice(0, 52) + '…' : (q.texto ?? '');
+
+    const row = document.createElement('div');
+    row.className = 'sm-sq-row sm-sq-row--prog';
+    row.innerHTML = `
+      <div class="sm-sq-meta">
+        <span class="sm-sq-icone" style="color:${iconCor}">${icone}</span>
+        <span class="sm-sq-enun">${enun}</span>
+      </div>
+      <div class="sm-sq-prog-row">
+        <div class="sm-sq-bar-bg" title="${acertos}/${tentativas} acertos acumulados (${taxa}%)">
+          <div class="sm-sq-bar-fill ${barCls}" style="width:${barPct}%"></div>
+        </div>
+        <span class="sm-sq-stat" style="color:${cor}">${tentativas > 0 ? acertos+'/'+tentativas : '—'}</span>
+      </div>`;
+    lista.appendChild(row);
+  }
+
+  painel.appendChild(lista);
+  resultCard.appendChild(painel);
+}
+
+/* ══════════════════════════════════════════════════════════
+   PAUSA
+   ══════════════════════════════════════════════════════════ */
+
+function setupPausa() {
+  const btnPause       = $('btn-pause');
+  const btnVoltarIntro = $('btn-voltar-intro');
+
+  const pauseOverlay = document.createElement('div');
+  pauseOverlay.id        = 'pause-overlay';
+  pauseOverlay.className = 'sm-pause-overlay hidden';
+  pauseOverlay.innerHTML = `
+  <div class="sm-pause-card">
+    <div class="sm-pause-header">
+      <div class="sm-pause-icon-ring">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
+          <rect x="5" y="3" width="4" height="18" rx="2"/>
+          <rect x="15" y="3" width="4" height="18" rx="2"/>
+        </svg>
+      </div>
+      <div>
+        <p class="sm-pause-title">Jogo pausado</p>
+        <p class="sm-pause-hint">O tempo está congelado</p>
+      </div>
+    </div>
+    <div class="sm-pause-divider"></div>
+    <div class="sm-pause-tip">
+      <span class="sm-pause-tip__icon">💡</span>
+      <span>Use o tempo para revisar sua estratégia antes de continuar.</span>
+    </div>
+    <button class="game-btn sm-pause-resume-btn" id="btn-retomar">
+      <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M5 3l8 5-8 5V3z"/></svg>
+      Retomar jogo
+    </button>
+    <p class="sm-pause-shortcut">ou pressione <kbd>Espaço</kbd></p>
+  </div>`;
+  document.body.appendChild(pauseOverlay);
+
+  function togglePausa() {
+    if (el.screenQuestion?.classList.contains('hidden')) return;
+    if (estado.respostas[estado.indice] !== undefined) return;
+
+    estado.pausado = !estado.pausado;
+    const btnPauseEl   = $('btn-pause');
+    const pauseIconEl  = $('pause-icon');
+    const pauseLabelEl = $('pause-label');
+
+    if (estado.pausado) {
+      try { estado.timer?.pause(); } catch (_) {}
+      pauseOverlay.classList.remove('hidden');
+      btnPauseEl?.classList.add('sm-ctrl-btn--paused');
+      if (pauseLabelEl) pauseLabelEl.textContent = 'Retomar';
+    } else {
+      try { estado.timer?.resume(); } catch (_) {}
+      pauseOverlay.classList.add('hidden');
+      btnPauseEl?.classList.remove('sm-ctrl-btn--paused');
+      if (pauseLabelEl) pauseLabelEl.textContent = 'Pausar';
+    }
+  }
+
+  btnPause?.addEventListener('click', togglePausa);
+  pauseOverlay.addEventListener('click', e => {
+    if (e.target.closest('#btn-retomar')) togglePausa();
+  });
+
+  btnVoltarIntro?.addEventListener('click', async () => {
+    try { estado.timer?.stop(); } catch (_) {}
+    clearInterval(estado._fallback);
+    estado.timer   = null;
+    estado.pausado = false;
+    pauseOverlay.classList.add('hidden');
+    $('btn-pause')?.classList.remove('sm-ctrl-btn--paused');
+    const pl = $('pause-label');
+    if (pl) pl.textContent = 'Pausar';
+
+    document.documentElement.style.setProperty('--timer-pct', '100%');
+    aplicarCorBarra(100);
+
+    const historico = await carregarHistoricoSM(estado.usuario, estado.discId, estado.sem).catch(() => ({}));
+    estado.historicoSM = historico;
+    estado.perguntas   = montarDeck(estado.banco, historico);
+    atualizarContadores();
+    mostrarTela('intro');
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.code === 'Space' && !el.screenQuestion?.classList.contains('hidden') &&
+        estado.respostas[estado.indice] === undefined) {
+      if (document.activeElement?.id === 'btn-retomar') return;
+      e.preventDefault();
+      togglePausa();
+    }
+  });
+}
+
+/* ══════════════════════════════════════════════════════════
+   ATALHOS
+   ══════════════════════════════════════════════════════════ */
+
+function registrarAtalhos() {
+  document.addEventListener('keydown', e => {
+    const tag = document.activeElement?.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+    if (estado.pausado) return;
+    if (!el.screenQuestion || el.screenQuestion.classList.contains('hidden')) return;
+
+    const jaResp = estado.respostas[estado.indice] !== undefined;
+    switch (e.key) {
+      case '1': case 'a': case 'A': if (!jaResp) { e.preventDefault(); responder('A'); } break;
+      case '2': case 'b': case 'B': if (!jaResp) { e.preventDefault(); responder('B'); } break;
+      case '3': case 'c': case 'C': if (!jaResp) { e.preventDefault(); responder('C'); } break;
+      case '4': case 'd': case 'D': if (!jaResp) { e.preventDefault(); responder('D'); } break;
+      case 'ArrowRight': case 'Enter': if (jaResp) { e.preventDefault(); irProxima(); } break;
+      case 'ArrowLeft':
+        e.preventDefault();
+        irAnterior();
+        break;
+    }
+  });
+}
+
+/* ══════════════════════════════════════════════════════════
+   CONTADORES
+   ══════════════════════════════════════════════════════════ */
+
+function atualizarContadores() {
+  const n = estado.perguntas.length;
+  if (el.scoreTotal) el.scoreTotal.textContent = n;
+  const introTotal = $('intro-total-questoes');
+  if (introTotal) introTotal.textContent = n;
+}
+
+/* ══════════════════════════════════════════════════════════
+   INIT
+   ══════════════════════════════════════════════════════════ */
+
+async function init() {
+  Object.assign(el, {
+    screenIntro:    $('screen-intro'),
+    screenQuestion: $('screen-question'),
+    screenResult:   $('screen-result'),
+    screenEmpty:    $('screen-empty'),
+    btnStart:       $('btn-start'),
+    btnAnterior:    $('btn-anterior'),
+    btnProxima:     $('btn-proxima'),
+    numPergunta:    $('num-pergunta'),
+    perguntaNivel:  $('pergunta-nivel'),
+    perguntaTexto:  $('pergunta-texto'),
+    progressFill:   $('progress-fill'),
+    pontuacaoHud:   $('pontuacao-hud'),
+    scoreTotal:     $('score-total'),
+    timerBar:       document.querySelector('.game-timer-bar'),
+  });
+
+  const { disc, sem } = Shell.init({ icon: '⭐', nome: 'Show do Milhão' });
+
+  const _listaDisciplinas = getDisciplinasDeSemestre(sem);
+  const disciplina = _listaDisciplinas.find(d => d.id === disc || d.arquivo === disc) ?? null;
+
+  // Preenche header
+  const shellDiscEl = $('shell-disc-name');
+  if (shellDiscEl && disciplina) shellDiscEl.textContent = disciplina.apelido ?? disciplina.nome ?? disc;
+  const shellIconEl = $('shell-icon');
+  if (shellIconEl && disciplina?.emoji) shellIconEl.textContent = disciplina.emoji;
+
+  const introDiscName = $('intro-disc-name');
+  const introSemLabel = $('intro-sem-label');
+  if (introDiscName) introDiscName.textContent = disciplina?.apelido ?? disciplina?.nome ?? disc ?? '—';
+  if (introSemLabel) introSemLabel.textContent = sem || '—';
+
+  const introDiscChip = document.querySelector('.sm-intro-card__chip--disc');
+  if (introDiscChip && disciplina?.emoji) {
+    const chipSvg = introDiscChip.querySelector('svg');
+    if (chipSvg) {
+      const emojiSpan = document.createElement('span');
+      emojiSpan.textContent = disciplina.emoji;
+      emojiSpan.style.cssText = 'font-size:13px; line-height:1; display:inline-flex; align-items:center;';
+      chipSvg.replaceWith(emojiSpan);
+    }
+  }
+
+  // Aplicar cores da disciplina
+  try { aplicarCoresDisciplina(disc, DISC_CORES); } catch (_) {}
+
+  /* ── Import dinâmico por ano ────────────────────────────── */
+  const ano    = sem ? sem.split('.')[0] : null;
+  let banco    = [];
+  let semDisp  = null;
+
+  if (ano) {
+    try {
+      const modulo = await import(`../../../content/game/show_milhao/${ano}/show_milhao_data.js`);
+      semDisp = modulo.SHOW_MILHAO_DATA?.[sem] ?? null;
+      banco   = semDisp?.[disc] ?? [];
+    } catch (err) {
+      console.warn(`[show_milhao] Arquivo de dados não encontrado para o ano ${ano}:`, err.message);
+    }
+  }
+
+  estado.banco = banco;
+
+  if (banco.length === 0) {
+    mostrarTela('empty');
+    const btnBack = $('btn-empty-back');
+    if (btnBack) btnBack.href = `../../jogo.html${sem ? `?sem=${sem}` : ''}`;
+
+    const emptyTitle = $('empty-title');
+    const emptyDesc  = $('empty-desc');
+    if (!semDisp || Object.keys(semDisp).length === 0) {
+      if (emptyTitle) emptyTitle.textContent = 'Indisponível neste semestre';
+      if (emptyDesc)  emptyDesc.innerHTML =
+        `O jogo <strong>Show do Milhão</strong> ainda não está disponível para o semestre <strong>${sem || '—'}</strong>.<br>
+         Selecione outro semestre ou aguarde novas adições!`;
+    } else {
+      if (emptyTitle) emptyTitle.textContent = 'Sem perguntas';
+      if (emptyDesc)  emptyDesc.innerHTML =
+        'Não encontramos questões para esta disciplina ainda.<br>Tente outra ou aguarde novas adições!';
+    }
+    return;
+  }
+
+  const usuarioObj   = getUsuario();
+  estado.usuario     = usuarioObj?.uid ?? 'visitante';
+  estado.discId      = disc;
+  estado.sem         = sem;
+
+  const historico    = await carregarHistoricoSM(estado.usuario, disc, sem).catch(() => ({}));
+  estado.historicoSM = historico;
+  estado.perguntas   = montarDeck(banco, historico);
+
+  if (estado.perguntas.length === 0) {
+    mostrarTela('empty');
+    return;
+  }
+
+  atualizarContadores();
+  aplicarCorBarra(100);
+
+  el.btnStart   ?.addEventListener('click', () => iniciarJogo());
+  el.btnAnterior?.addEventListener('click', irAnterior);
+  el.btnProxima ?.addEventListener('click', irProxima);
+
+  // Delegação de clique nas alternativas
+  $('alternativas')?.addEventListener('click', e => {
+    const btn = e.target.closest('.alt-btn');
+    if (btn && !btn.disabled) responder(btn.dataset.letra);
+  });
+
+  setupPausa();
+  registrarAtalhos();
+  mostrarTela('intro');
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
 }

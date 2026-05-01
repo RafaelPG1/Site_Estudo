@@ -4,12 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Show do Milhão</title>
+
+  <!-- Fundo compartilhado do projeto (camadas base) -->
   <link rel="stylesheet" href="../../../shared/css/fundo.css" />
+  <!-- Estilos específicos do jogo (complementa o fundo, não sobrescreve) -->
   <link rel="stylesheet" href="show_milhao.css" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Exo+2:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
+<!-- Background — estrutura idêntica ao vdd_falso -->
+<div class="bg-grid"></div>
+<div class="bg-orb bg-orb--1"></div>
+<div class="bg-orb bg-orb--2"></div>
 
   <!-- TELA INICIAL -->
   <div id="tela-inicio" class="tela ativa">
@@ -18,14 +27,14 @@
       <h1 class="titulo-jogo">Show do<br><span>Milhão</span></h1>
       <p class="subtitulo">Você tem coragem de chegar ao topo?</p>
     </div>
-    <button class="btn-jogar" onclick="iniciarJogo()">JOGAR AGORA</button>
+    <button class="btn-jogar" id="btn-jogar-inicio">JOGAR AGORA</button>
     <div class="rodape-inicio">10 perguntas · 30 segundos cada · Sem segunda chance</div>
   </div>
 
   <!-- TELA DO JOGO -->
   <div id="tela-jogo" class="tela">
 
-    <!-- Cabeçalho -->
+    <!-- Cabeçalho / HUD -->
     <div class="hud">
       <div class="hud-item">
         <span class="hud-label">PERGUNTA</span>
@@ -52,19 +61,19 @@
 
     <!-- Alternativas -->
     <div class="alternativas" id="alternativas">
-      <button class="alt-btn" id="alt-a" onclick="responder('A')">
+      <button class="alt-btn" id="alt-a" data-letra="A">
         <span class="alt-letra">A</span>
         <span class="alt-texto" id="texto-a"></span>
       </button>
-      <button class="alt-btn" id="alt-b" onclick="responder('B')">
+      <button class="alt-btn" id="alt-b" data-letra="B">
         <span class="alt-letra">B</span>
         <span class="alt-texto" id="texto-b"></span>
       </button>
-      <button class="alt-btn" id="alt-c" onclick="responder('C')">
+      <button class="alt-btn" id="alt-c" data-letra="C">
         <span class="alt-letra">C</span>
         <span class="alt-texto" id="texto-c"></span>
       </button>
-      <button class="alt-btn" id="alt-d" onclick="responder('D')">
+      <button class="alt-btn" id="alt-d" data-letra="D">
         <span class="alt-letra">D</span>
         <span class="alt-texto" id="texto-d"></span>
       </button>
@@ -75,10 +84,10 @@
       <div class="feedback-icone" id="feedback-icone"></div>
       <div class="feedback-msg" id="feedback-msg"></div>
       <div class="feedback-resposta" id="feedback-resposta"></div>
-      <button class="btn-proxima" id="btn-proxima" onclick="proximaPergunta()">PRÓXIMA →</button>
+      <button class="btn-proxima" id="btn-proxima">PRÓXIMA →</button>
     </div>
 
-    <!-- Barra de premiação -->
+    <!-- Barra de premiação lateral -->
     <div class="premiacao-lateral" id="premiacao-lateral">
       <div class="premia-titulo">PREMIAÇÃO</div>
       <div id="lista-premios"></div>
@@ -93,10 +102,11 @@
       <p class="fim-msg" id="fim-msg">Você completou o jogo!</p>
       <div class="fim-valor" id="fim-valor">R$ 0</div>
       <div class="fim-acertos" id="fim-acertos">0 de 10 corretas</div>
-      <button class="btn-jogar" onclick="reiniciar()">JOGAR NOVAMENTE</button>
+      <button class="btn-jogar" id="btn-jogar-novamente">JOGAR NOVAMENTE</button>
     </div>
   </div>
 
-  <script src="show_milhao.js"></script>
+  <!-- JS principal como módulo ES -->
+  <script type="module" src="show_milhao.js"></script>
 </body>
 </html>

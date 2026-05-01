@@ -1,5 +1,9 @@
 /* =============================================
-   SHOW DO MILHÃO — style.css
+   SHOW DO MILHÃO — show_milhao.css
+
+   Complementa o fundo.css do projeto.
+   Não redefine body background — apenas adiciona
+   camadas extras douradas por cima do fundo base.
    ============================================= */
 
 *, *::before, *::after {
@@ -21,35 +25,50 @@
   --fonte-titulo: 'Cinzel', serif;
   --fonte-corpo:  'Exo 2', sans-serif;
   --timer-circunferencia: 276.46px;
+
+  /* ── Tokens de fundo idênticos ao vdd_falso ── */
+  --bg: #0a0b14;
 }
 
-/* ── Sobrescreve fundo caso o arquivo não exista ── */
+/* ──────────────────────────────────────────────
+   FUNDO — sistema idêntico ao vdd_falso.css
+   O background é definido aqui, não delegado ao
+   fundo.css, garantindo comportamento idêntico.
+   ────────────────────────────────────────────── */
 body {
   font-family: var(--fonte-corpo);
   min-height: 100vh;
   overflow-x: hidden;
   color: var(--branco);
+  background: var(--bg);
 }
 
-/* Se o fundo.css não definir cor de fundo, garantimos algo legível */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(ellipse at 30% 20%, #0d1b6b 0%, #040816 60%);
-  z-index: -2;
+/* Grid de pontos — igual ao vdd_falso */
+.bg-grid {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse 90% 80% at 50% 40%, black 20%, transparent 85%);
 }
 
-/* Partículas douradas decorativas */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image:
-    radial-gradient(circle, rgba(255,215,0,0.12) 1px, transparent 1px);
-  background-size: 60px 60px;
-  z-index: -1;
-  pointer-events: none;
+/* Orbs de luz — iguais ao vdd_falso (usando cores douradas do Show do Milhão) */
+.bg-orb {
+  position: fixed; border-radius: 50%;
+  filter: blur(110px); pointer-events: none; z-index: 0; opacity: .25;
+}
+.bg-orb--1 {
+  width: 600px; height: 600px; top: -200px; left: -160px;
+  background: radial-gradient(circle, rgba(184, 134, 11, .25), transparent 70%);
+}
+.bg-orb--2 {
+  width: 500px; height: 500px; bottom: -160px; right: -120px;
+  background: radial-gradient(circle, rgba(255, 215, 0, .15), transparent 70%);
+}
+
+/* Garante que todo conteúdo do jogo fique acima do fundo */
+.tela, .premiacao-lateral {
+  position: relative;
+  z-index: 1;
 }
 
 /* ─────────────── TELAS ─────────────── */
@@ -309,7 +328,6 @@ body::after {
 }
 
 .alt-btn:active:not(:disabled) { transform: translateY(0); }
-
 .alt-btn:disabled { cursor: not-allowed; }
 
 .alt-letra {
@@ -460,19 +478,11 @@ body::after {
   border: 1px solid rgba(255,215,0,0.3);
 }
 
-.premio-item.conquistado {
-  color: var(--verde);
-}
-
-.premio-item.marco {
-  color: var(--ouro-claro);
-  font-weight: 700;
-}
+.premio-item.conquistado { color: var(--verde); }
+.premio-item.marco       { color: var(--ouro-claro); font-weight: 700; }
 
 /* ─────────────── TELA FIM ─────────────── */
-#tela-fim {
-  justify-content: center;
-}
+#tela-fim { justify-content: center; }
 
 .fim-container {
   display: flex;
@@ -549,5 +559,5 @@ body::after {
 
 @media (max-width: 480px) {
   .card-pergunta { padding: 20px 18px; }
-  .feedback-box { padding: 18px 16px; }
+  .feedback-box  { padding: 18px 16px; }
 }
