@@ -1,10 +1,13 @@
 /* ═══════════════════════════════════════════════════
    show_milhao_data.js — Perguntas do Show do Milhão
    Organizado por semestre → disciplina
-   content/game/show_milhao/show_milhao_data.js
+
+   IMPORTANTE: exporta `SHOW_MILHAO_DATA` (objeto nomeado)
+   pois o show_milhao.js acessa via:
+     modulo.SHOW_MILHAO_DATA?.[sem]?.[disc]
 ═══════════════════════════════════════════════════ */
 
-const _PERGUNTAS_POR_SEMESTRE = {
+export const SHOW_MILHAO_DATA = {
 
   '2026.2': {
 
@@ -14,7 +17,6 @@ const _PERGUNTAS_POR_SEMESTRE = {
       // POO — Programação Orientada a Objetos ☕
       // ─────────────────────────────────────────────────────────
 
-      // poo_001 · Encapsulamento
       {
         id: 'poo_001',
         texto: 'O que é encapsulamento em POO?',
@@ -27,8 +29,6 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'B',
         nivel: 'Fácil',
       },
-
-      // poo_002 · Herança em Java
       {
         id: 'poo_002',
         texto: 'Qual palavra-chave em Java é usada para herança?',
@@ -41,8 +41,6 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'B',
         nivel: 'Fácil',
       },
-
-      // poo_003 · Polimorfismo
       {
         id: 'poo_003',
         texto: 'O que é polimorfismo?',
@@ -55,8 +53,6 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'A',
         nivel: 'Médio',
       },
-
-      // poo_004 · Classe abstrata vs Interface
       {
         id: 'poo_004',
         texto: 'Qual é a diferença entre classe abstrata e interface em Java?',
@@ -69,8 +65,6 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'C',
         nivel: 'Difícil',
       },
-
-      // poo_005 · Construtor
       {
         id: 'poo_005',
         texto: 'O que é um construtor em POO?',
@@ -83,8 +77,6 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'B',
         nivel: 'Fácil',
       },
-
-      // poo_006 · Modificador static
       {
         id: 'poo_006',
         texto: "O que significa 'static' em um método Java?",
@@ -97,8 +89,6 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'C',
         nivel: 'Médio',
       },
-
-      // poo_007 · SOLID — SRP
       {
         id: 'poo_007',
         texto: 'Qual princípio SOLID define que uma classe deve ter apenas uma razão para mudar?',
@@ -111,8 +101,6 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'B',
         nivel: 'Médio',
       },
-
-      // poo_008 · Classe raiz em Java
       {
         id: 'poo_008',
         texto: 'Em Java, todas as classes herdam implicitamente de qual classe?',
@@ -125,8 +113,6 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'C',
         nivel: 'Médio',
       },
-
-      // poo_009 · Sobrecarga de métodos
       {
         id: 'poo_009',
         texto: 'O que é sobrecarga (overloading) de métodos?',
@@ -139,8 +125,6 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'B',
         nivel: 'Médio',
       },
-
-      // poo_010 · Modificador private
       {
         id: 'poo_010',
         texto: 'Qual modificador de acesso em Java torna um atributo visível apenas dentro da própria classe?',
@@ -153,7 +137,6 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'D',
         nivel: 'Fácil',
       },
-
     ],
 
     redes: [
@@ -162,21 +145,13 @@ const _PERGUNTAS_POR_SEMESTRE = {
       // REDES — Redes de Computadores I 🌐
       // ─────────────────────────────────────────────────────────
 
-      // redes_001 · Camada de rede no OSI
       {
         id: 'redes_001',
         texto: 'Qual camada do modelo OSI é responsável pelo endereçamento IP?',
-        alternativas: {
-          A: 'Enlace',
-          B: 'Transporte',
-          C: 'Rede',
-          D: 'Sessão',
-        },
+        alternativas: { A: 'Enlace', B: 'Transporte', C: 'Rede', D: 'Sessão' },
         correta: 'C',
         nivel: 'Médio',
       },
-
-      // redes_002 · TCP vs UDP
       {
         id: 'redes_002',
         texto: 'O protocolo TCP difere do UDP principalmente por:',
@@ -189,8 +164,6 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'B',
         nivel: 'Médio',
       },
-
-      // redes_003 · Função do DNS
       {
         id: 'redes_003',
         texto: 'Qual é a função do protocolo DNS?',
@@ -203,50 +176,27 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'C',
         nivel: 'Fácil',
       },
-
-      // redes_004 · Bits do IPv4
       {
         id: 'redes_004',
         texto: 'Quantos bits compõem um endereço IPv4?',
-        alternativas: {
-          A: '64',
-          B: '128',
-          C: '16',
-          D: '32',
-        },
+        alternativas: { A: '64', B: '128', C: '16', D: '32' },
         correta: 'D',
         nivel: 'Fácil',
       },
-
-      // redes_005 · Camadas do TCP/IP
       {
         id: 'redes_005',
         texto: 'O modelo TCP/IP possui quantas camadas?',
-        alternativas: {
-          A: '7',
-          B: '5',
-          C: '4',
-          D: '3',
-        },
+        alternativas: { A: '7', B: '5', C: '4', D: '3' },
         correta: 'C',
         nivel: 'Médio',
       },
-
-      // redes_006 · Protocolo de e-mail
       {
         id: 'redes_006',
         texto: 'Qual protocolo é usado para envio de e-mails?',
-        alternativas: {
-          A: 'FTP',
-          B: 'HTTP',
-          C: 'SMTP',
-          D: 'IMAP',
-        },
+        alternativas: { A: 'FTP', B: 'HTTP', C: 'SMTP', D: 'IMAP' },
         correta: 'C',
         nivel: 'Médio',
       },
-
-      // redes_007 · Sub-rede
       {
         id: 'redes_007',
         texto: 'O que é uma sub-rede (subnet)?',
@@ -259,22 +209,13 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'B',
         nivel: 'Difícil',
       },
-
-      // redes_008 · Roteador
       {
         id: 'redes_008',
         texto: 'Qual dispositivo opera na camada de rede e encaminha pacotes entre redes diferentes?',
-        alternativas: {
-          A: 'Switch',
-          B: 'Hub',
-          C: 'Roteador',
-          D: 'Repetidor',
-        },
+        alternativas: { A: 'Switch', B: 'Hub', C: 'Roteador', D: 'Repetidor' },
         correta: 'C',
         nivel: 'Fácil',
       },
-
-      // redes_009 · Função do DHCP
       {
         id: 'redes_009',
         texto: 'O protocolo DHCP serve para:',
@@ -287,21 +228,13 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'B',
         nivel: 'Médio',
       },
-
-      // redes_010 · Porta do HTTPS
       {
         id: 'redes_010',
         texto: 'Qual porta padrão o protocolo HTTPS utiliza?',
-        alternativas: {
-          A: '80',
-          B: '21',
-          C: '443',
-          D: '8080',
-        },
+        alternativas: { A: '80', B: '21', C: '443', D: '8080' },
         correta: 'C',
         nivel: 'Médio',
       },
-
     ],
 
     design: [
@@ -310,7 +243,6 @@ const _PERGUNTAS_POR_SEMESTRE = {
       // DESIGN — Design de Sistemas de Informação 🎨
       // ─────────────────────────────────────────────────────────
 
-      // design_001 · Diagrama de casos de uso
       {
         id: 'design_001',
         texto: 'O que é um diagrama de casos de uso na UML?',
@@ -323,8 +255,6 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'B',
         nivel: 'Fácil',
       },
-
-      // design_002 · Significado de UML
       {
         id: 'design_002',
         texto: 'O que significa UML?',
@@ -337,8 +267,6 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'A',
         nivel: 'Fácil',
       },
-
-      // design_003 · Diagrama de estados
       {
         id: 'design_003',
         texto: 'Qual diagrama UML representa o comportamento de um objeto ao longo do tempo?',
@@ -351,8 +279,6 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'C',
         nivel: 'Médio',
       },
-
-      // design_004 · Prototipagem
       {
         id: 'design_004',
         texto: 'O que é prototipagem no design de sistemas?',
@@ -365,8 +291,6 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'B',
         nivel: 'Médio',
       },
-
-      // design_005 · DFD
       {
         id: 'design_005',
         texto: 'Em qual notação é comum representar processos, fluxos e armazenamentos de dados?',
@@ -379,8 +303,6 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'B',
         nivel: 'Médio',
       },
-
-      // design_006 · Coesão alta
       {
         id: 'design_006',
         texto: "O princípio de 'coesão alta' em design de sistemas significa:",
@@ -393,8 +315,6 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'B',
         nivel: 'Difícil',
       },
-
-      // design_007 · Wireframe
       {
         id: 'design_007',
         texto: 'O que é um wireframe?',
@@ -407,8 +327,6 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'B',
         nivel: 'Fácil',
       },
-
-      // design_008 · Análise de requisitos
       {
         id: 'design_008',
         texto: 'Qual é o objetivo principal da análise de requisitos?',
@@ -421,8 +339,6 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'B',
         nivel: 'Fácil',
       },
-
-      // design_009 · Padrão MVC
       {
         id: 'design_009',
         texto: 'O padrão MVC separa a aplicação em:',
@@ -435,8 +351,6 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'B',
         nivel: 'Médio',
       },
-
-      // design_010 · Acoplamento baixo
       {
         id: 'design_010',
         texto: 'O que é acoplamento baixo (low coupling) em design de software?',
@@ -449,7 +363,6 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'C',
         nivel: 'Difícil',
       },
-
     ],
 
     banco_dados: [
@@ -458,7 +371,6 @@ const _PERGUNTAS_POR_SEMESTRE = {
       // BANCO DE DADOS — Fundamentos de Banco de Dados 🗄️
       // ─────────────────────────────────────────────────────────
 
-      // bd_001 · Chave primária
       {
         id: 'bd_001',
         texto: 'O que é uma chave primária em um banco de dados relacional?',
@@ -471,22 +383,13 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'B',
         nivel: 'Fácil',
       },
-
-      // bd_002 · Comando SELECT
       {
         id: 'bd_002',
         texto: 'Qual comando SQL é usado para consultar dados em uma tabela?',
-        alternativas: {
-          A: 'INSERT',
-          B: 'UPDATE',
-          C: 'SELECT',
-          D: 'DELETE',
-        },
+        alternativas: { A: 'INSERT', B: 'UPDATE', C: 'SELECT', D: 'DELETE' },
         correta: 'C',
         nivel: 'Fácil',
       },
-
-      // bd_003 · Sigla SGBD
       {
         id: 'bd_003',
         texto: 'O que significa a sigla SGBD?',
@@ -499,8 +402,6 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'A',
         nivel: 'Fácil',
       },
-
-      // bd_004 · Normalização
       {
         id: 'bd_004',
         texto: 'O que é normalização de banco de dados?',
@@ -513,22 +414,13 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'B',
         nivel: 'Médio',
       },
-
-      // bd_005 · ACID — Atomicidade
       {
         id: 'bd_005',
         texto: 'Qual propriedade ACID garante que uma transação seja concluída totalmente ou desfeita?',
-        alternativas: {
-          A: 'Consistência',
-          B: 'Isolamento',
-          C: 'Durabilidade',
-          D: 'Atomicidade',
-        },
+        alternativas: { A: 'Consistência', B: 'Isolamento', C: 'Durabilidade', D: 'Atomicidade' },
         correta: 'D',
         nivel: 'Difícil',
       },
-
-      // bd_006 · Chave estrangeira
       {
         id: 'bd_006',
         texto: 'O que é uma chave estrangeira (Foreign Key)?',
@@ -541,22 +433,13 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'B',
         nivel: 'Médio',
       },
-
-      // bd_007 · Cláusula WHERE
       {
         id: 'bd_007',
         texto: 'Qual cláusula SQL é usada para filtrar registros?',
-        alternativas: {
-          A: 'ORDER BY',
-          B: 'GROUP BY',
-          C: 'HAVING',
-          D: 'WHERE',
-        },
+        alternativas: { A: 'ORDER BY', B: 'GROUP BY', C: 'HAVING', D: 'WHERE' },
         correta: 'D',
         nivel: 'Fácil',
       },
-
-      // bd_008 · Entidade no modelo ER
       {
         id: 'bd_008',
         texto: 'Em um modelo Entidade-Relacionamento, o que é uma entidade?',
@@ -569,22 +452,13 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'B',
         nivel: 'Médio',
       },
-
-      // bd_009 · TRUNCATE vs DROP
       {
         id: 'bd_009',
         texto: 'Qual comando SQL remove todos os registros de uma tabela sem apagar sua estrutura?',
-        alternativas: {
-          A: 'DROP TABLE',
-          B: 'DELETE FROM',
-          C: 'TRUNCATE',
-          D: 'REMOVE',
-        },
+        alternativas: { A: 'DROP TABLE', B: 'DELETE FROM', C: 'TRUNCATE', D: 'REMOVE' },
         correta: 'C',
         nivel: 'Médio',
       },
-
-      // bd_010 · JOIN
       {
         id: 'bd_010',
         texto: 'O que é um JOIN no SQL?',
@@ -597,15 +471,8 @@ const _PERGUNTAS_POR_SEMESTRE = {
         correta: 'B',
         nivel: 'Médio',
       },
-
     ],
 
   },
 
 };
-
-export function getPerguntasData(semestre, disciplina) {
-  const sem = _PERGUNTAS_POR_SEMESTRE[semestre] ?? _PERGUNTAS_POR_SEMESTRE['2026.2'];
-  if (!disciplina) return sem ?? {};
-  return sem?.[disciplina] ?? [];
-}

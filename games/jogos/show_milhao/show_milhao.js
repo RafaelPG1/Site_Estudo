@@ -52,6 +52,7 @@ const estado = {
   perguntas:   [],
   banco:       [],
   indice:      0,
+  // acertos: quantidade de prêmios efetivamente conquistados (pontuação real)
   acertos:     0,
   // respostas[i] = 'A'|'B'|'C'|'D' | null (tempo) | undefined (não respondeu)
   respostas:   [],
@@ -63,6 +64,13 @@ const estado = {
   sem:         null,
   historicoSM: {},
   tempoInicio: null,
+  // Sistema de erro pendente:
+  // temErro: true se há um prêmio travado aguardando resolução
+  // indicePendente: índice da pergunta que gerou o erro (nível vermelho)
+  // premioPendente: valor (índice em PREMIOS) que será liberado ao acertar
+  temErro:        false,
+  indicePendente: null,
+  premioPendente: null,
 };
 
 /* ══════════════════════════════════════════════════════════
@@ -181,12 +189,26 @@ function construirListaPremios() {
 }
 
 function atualizarPremios() {
-  const idx = estado.indice;
-  document.querySelectorAll('.premio-item').forEach((el, i) => {
+  const conquistados = estado.acertos;
+  const idxPendente  = estado.indicePendente;
+  // Amarelo congelado no erro enquanto temErro=true; avanca so apos resolver
+  const nivelAtual   = estado.temErro ? estado.indicePendente : estado.acertos;
+
+  document.querySelectorAll('.premio-item').forEach((elItem, i) => {
+    // Lista renderizada de tras pra frente (maior premio no topo)
     const pregIdx = PREMIOS.length - 1 - i;
-    el.classList.remove('atual', 'conquistado');
-    if (pregIdx < idx)        el.classList.add('conquistado');
-    else if (pregIdx === idx) el.classList.add('atual');
+    elItem.classList.remove('atual', 'conquistado', 'pendente');
+
+    if (pregIdx === idxPendente) {
+      // Vermelho: travado por erro pendente
+      elItem.classList.add('pendente');
+    } else if (pregIdx < conquistados) {
+      // Verde: ja conquistado
+      elItem.classList.add('conquistado');
+    } else if (pregIdx === nivelAtual && !estado.temErro) {
+      // Amarelo: proximo nivel a ganhar (congelado se ha erro pendente)
+      elItem.classList.add('atual');
+    }
   });
 }
 
@@ -226,13 +248,16 @@ function atualizarTimerUI(restante) {
    ══════════════════════════════════════════════════════════ */
 
 function iniciarJogo() {
-  estado.perguntas   = montarDeck(estado.banco, estado.historicoSM);
-  estado.indice      = 0;
-  estado.acertos     = 0;
-  estado.tempoInicio = Date.now();
-  estado.respostas   = new Array(estado.perguntas.length); // undefined
-  estado.tempos      = new Array(estado.perguntas.length).fill(CONFIG.TEMPO_POR_QUESTAO);
-  estado.pausado     = false;
+  estado.perguntas      = montarDeck(estado.banco, estado.historicoSM);
+  estado.indice         = 0;
+  estado.acertos        = 0;
+  estado.tempoInicio    = Date.now();
+  estado.respostas      = new Array(estado.perguntas.length); // undefined
+  estado.tempos         = new Array(estado.perguntas.length).fill(CONFIG.TEMPO_POR_QUESTAO);
+  estado.pausado        = false;
+  estado.temErro        = false;
+  estado.indicePendente = null;
+  estado.premioPendente = null;
 
   atualizarContadores();
   construirListaPremios();
@@ -373,9 +398,30 @@ function registrarResposta(resp) {
 
   estado.respostas[estado.indice] = resp;
 
-  // resp === null (tempo esgotado) é neutro
-  if (resp !== null && correto) {
+  if (resp === null) {
+    // Tempo esgotado: neutro, nao altera pontuacao nem pendente
+
+  } else if (correto) {
+    // Acerto: SEMPRE sobe exatamente 1 nivel a partir do valor atual.
+    // Nunca deriva de estado.indice para nao pular niveis.
+    if (estado.temErro) {
+      // Tinha erro pendente: resolve o vermelho, depois sobe 1
+      estado.temErro        = false;
+      estado.indicePendente = null;
+      estado.premioPendente = null;
+    }
+    // Sobe 1 -- identico nos dois casos (com ou sem erro pendente)
     estado.acertos++;
+
+  } else {
+    // Erro: trava o nivel atual como vermelho, NAO sobe
+    // Primeiro erro define o pendente; erros seguintes nao sobrescrevem
+    if (!estado.temErro) {
+      estado.indicePendente = estado.indice;
+      estado.premioPendente = estado.indice;
+    }
+    estado.temErro = true;
+    // estado.acertos permanece intocado
   }
 
   renderizarQuestao();
@@ -400,14 +446,28 @@ function mostrarFeedback(correto, tempoAcabou) {
     if (icone) icone.textContent = '⏰';
     if (msg)   { msg.textContent = 'Tempo Esgotado!'; msg.style.color = '#ff9800'; }
     if (resp)  resp.textContent  = `A resposta correta era: ${p.correta} — ${p.alternativas[p.correta]}`;
+
   } else if (correto) {
+    // Detecta se este acerto resolveu um erro pendente:
+    // após registrarResposta, temErro já foi zerado se havia pendente
+    // Usamos o fato de que acertos === indice significa que o acerto liberou um nivel anterior
+    const resolveupendente = estado.acertos <= estado.indice; // acertos nao chegou ao indice+1
+
     if (icone) icone.textContent = isUltima ? '🏆' : '✅';
-    if (msg)   { msg.textContent = isUltima ? '🏆 Você é o Milionário!' : 'Correto! Excelente!'; msg.style.color = '#00e676'; }
-    if (resp)  resp.textContent  = `Você ganhou: ${PREMIOS[estado.indice].valor}`;
+    if (msg) {
+      if (resolveupendente) {
+        msg.textContent = '✅ Prêmio pendente conquistado!';
+      } else {
+        msg.textContent = isUltima ? '🏆 Você é o Milionário!' : 'Correto! Excelente!';
+      }
+      msg.style.color = '#00e676';
+    }
+    if (resp) resp.textContent = `Você ganhou: ${PREMIOS[estado.acertos - 1]?.valor || 'R$ 0'}`;
+
   } else {
     if (icone) icone.textContent = '❌';
-    if (msg)   { msg.textContent = 'Resposta Errada!'; msg.style.color = '#ff1744'; }
-    if (resp)  resp.textContent  = `A correta era: ${p.correta} — ${p.alternativas[p.correta]}`;
+    if (msg)   { msg.textContent = 'Resposta Errada! Prêmio travado 🔴'; msg.style.color = '#ff1744'; }
+    if (resp)  resp.textContent  = `A correta era: ${p.correta} — ${p.alternativas[p.correta]} · Acerte a próxima para ganhar ${PREMIOS[estado.indice]?.valor}`;
   }
 
   if (btnProx) {

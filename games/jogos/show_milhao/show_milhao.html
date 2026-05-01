@@ -5,9 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Show do Milhão</title>
 
-  <!-- Fundo compartilhado do projeto (camadas base) -->
   <link rel="stylesheet" href="../../../shared/css/fundo.css" />
-  <!-- Estilos específicos do jogo (complementa o fundo, não sobrescreve) -->
   <link rel="stylesheet" href="show_milhao.css" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,98 +13,166 @@
 </head>
 <body>
 
-<!-- Background — estrutura idêntica ao vdd_falso -->
+<!-- Background -->
 <div class="bg-grid"></div>
 <div class="bg-orb bg-orb--1"></div>
 <div class="bg-orb bg-orb--2"></div>
 
-  <!-- TELA INICIAL -->
-  <div id="tela-inicio" class="tela ativa">
-    <div class="logo-wrapper">
-      <div class="logo-estrela">★</div>
-      <h1 class="titulo-jogo">Show do<br><span>Milhão</span></h1>
-      <p class="subtitulo">Você tem coragem de chegar ao topo?</p>
-    </div>
-    <button class="btn-jogar" id="btn-jogar-inicio">JOGAR AGORA</button>
-    <div class="rodape-inicio">10 perguntas · 30 segundos cada · Sem segunda chance</div>
+<!-- ── TELA INTRO ── -->
+<div id="screen-intro" class="tela ativa">
+  <div class="logo-wrapper">
+    <div class="logo-estrela" id="shell-icon">★</div>
+    <h1 class="titulo-jogo">Show do<br><span>Milhão</span></h1>
+    <p class="subtitulo">Você tem coragem de chegar ao topo?</p>
   </div>
 
-  <!-- TELA DO JOGO -->
-  <div id="tela-jogo" class="tela">
+  <div class="sm-chips">
+    <span class="sm-chip sm-chip--disc sm-intro-card__chip sm-intro-card__chip--disc">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 13A6 6 0 1 1 8 2a6 6 0 0 1 0 12z"/>
+      </svg>
+      <span id="intro-disc-name">—</span>
+    </span>
+    <span class="sm-chip sm-chip--sem">
+      <span id="intro-sem-label">—</span>
+    </span>
+  </div>
 
-    <!-- Cabeçalho / HUD -->
-    <div class="hud">
-      <div class="hud-item">
-        <span class="hud-label">PERGUNTA</span>
-        <span class="hud-valor" id="num-pergunta">1/10</span>
-      </div>
-      <div class="timer-container">
-        <svg class="timer-svg" viewBox="0 0 100 100">
-          <circle class="timer-bg" cx="50" cy="50" r="44"/>
-          <circle class="timer-arco" id="timer-arco" cx="50" cy="50" r="44"/>
-        </svg>
-        <span class="timer-numero" id="timer-numero">30</span>
-      </div>
-      <div class="hud-item">
-        <span class="hud-label">PONTUAÇÃO</span>
-        <span class="hud-valor" id="pontuacao-hud">R$ 0</span>
-      </div>
+  <p class="sm-intro-info">
+    <span id="intro-total-questoes">10</span> perguntas · 30 segundos cada · Sem segunda chance
+  </p>
+
+  <button class="btn-jogar" id="btn-start">JOGAR AGORA</button>
+  <div class="rodape-inicio">Boa sorte! ✨</div>
+</div>
+
+<!-- ── TELA JOGO ── -->
+<div id="screen-question" class="tela hidden">
+
+  <div class="hud">
+    <div class="hud-item">
+      <span class="hud-label">PERGUNTA</span>
+      <span class="hud-valor" id="num-pergunta">1/10</span>
     </div>
-
-    <!-- Pergunta -->
-    <div class="card-pergunta">
-      <div class="pergunta-nivel" id="pergunta-nivel">Nível 1</div>
-      <p class="pergunta-texto" id="pergunta-texto">Carregando pergunta...</p>
+    <div class="timer-container">
+      <svg class="timer-svg" viewBox="0 0 100 100">
+        <circle class="timer-bg" cx="50" cy="50" r="44"/>
+        <circle class="timer-arco" id="timer-arco" cx="50" cy="50" r="44"/>
+      </svg>
+      <span class="timer-numero" id="timer-numero">30</span>
     </div>
-
-    <!-- Alternativas -->
-    <div class="alternativas" id="alternativas">
-      <button class="alt-btn" id="alt-a" data-letra="A">
-        <span class="alt-letra">A</span>
-        <span class="alt-texto" id="texto-a"></span>
-      </button>
-      <button class="alt-btn" id="alt-b" data-letra="B">
-        <span class="alt-letra">B</span>
-        <span class="alt-texto" id="texto-b"></span>
-      </button>
-      <button class="alt-btn" id="alt-c" data-letra="C">
-        <span class="alt-letra">C</span>
-        <span class="alt-texto" id="texto-c"></span>
-      </button>
-      <button class="alt-btn" id="alt-d" data-letra="D">
-        <span class="alt-letra">D</span>
-        <span class="alt-texto" id="texto-d"></span>
-      </button>
-    </div>
-
-    <!-- Feedback -->
-    <div class="feedback-box" id="feedback-box">
-      <div class="feedback-icone" id="feedback-icone"></div>
-      <div class="feedback-msg" id="feedback-msg"></div>
-      <div class="feedback-resposta" id="feedback-resposta"></div>
-      <button class="btn-proxima" id="btn-proxima">PRÓXIMA →</button>
-    </div>
-
-    <!-- Barra de premiação lateral -->
-    <div class="premiacao-lateral" id="premiacao-lateral">
-      <div class="premia-titulo">PREMIAÇÃO</div>
-      <div id="lista-premios"></div>
+    <div class="hud-item">
+      <span class="hud-label">PONTUAÇÃO</span>
+      <span class="hud-valor" id="pontuacao-hud">R$ 0</span>
     </div>
   </div>
 
-  <!-- TELA FINAL -->
-  <div id="tela-fim" class="tela">
-    <div class="fim-container">
-      <div class="fim-icone" id="fim-icone">🏆</div>
-      <h2 class="fim-titulo" id="fim-titulo">Parabéns!</h2>
-      <p class="fim-msg" id="fim-msg">Você completou o jogo!</p>
-      <div class="fim-valor" id="fim-valor">R$ 0</div>
-      <div class="fim-acertos" id="fim-acertos">0 de 10 corretas</div>
-      <button class="btn-jogar" id="btn-jogar-novamente">JOGAR NOVAMENTE</button>
+  <!-- Barra linear de progresso/timer -->
+  <div class="sm-progress-wrap">
+    <div id="progress-fill" class="game-timer-bar game-timer-bar--green"></div>
+  </div>
+
+  <!-- Bolinhas de progresso -->
+  <div id="sm-dots" class="sm-dots-container"></div>
+
+  <!-- Pergunta -->
+  <div class="card-pergunta">
+    <div class="pergunta-nivel" id="pergunta-nivel">Nível 1</div>
+    <p class="pergunta-texto" id="pergunta-texto">Carregando pergunta...</p>
+  </div>
+
+  <!-- Alternativas -->
+  <div class="alternativas" id="alternativas">
+    <button class="alt-btn" id="alt-a" data-letra="A">
+      <span class="alt-letra">A</span>
+      <span class="alt-texto" id="texto-a"></span>
+    </button>
+    <button class="alt-btn" id="alt-b" data-letra="B">
+      <span class="alt-letra">B</span>
+      <span class="alt-texto" id="texto-b"></span>
+    </button>
+    <button class="alt-btn" id="alt-c" data-letra="C">
+      <span class="alt-letra">C</span>
+      <span class="alt-texto" id="texto-c"></span>
+    </button>
+    <button class="alt-btn" id="alt-d" data-letra="D">
+      <span class="alt-letra">D</span>
+      <span class="alt-texto" id="texto-d"></span>
+    </button>
+  </div>
+
+  <!-- Feedback -->
+  <div class="feedback-box" id="feedback-box">
+    <div class="feedback-icone"    id="feedback-icone"></div>
+    <div class="feedback-msg"      id="feedback-msg"></div>
+    <div class="feedback-resposta" id="feedback-resposta"></div>
+    <button class="btn-proxima"    id="btn-proxima">PRÓXIMA →</button>
+  </div>
+
+  <!-- Navegação -->
+  <div class="sm-nav-row">
+    <button class="btn-proxima sm-nav-btn--secondary" id="btn-anterior">← Anterior</button>
+    <div class="sm-ctrl-btns">
+      <button id="btn-pause" class="btn-proxima sm-ctrl-btn sm-ctrl-btn--pause">
+        <span id="pause-icon">⏸</span>
+        <span id="pause-label">Pausar</span>
+      </button>
+      <button id="btn-voltar-intro" class="btn-proxima sm-ctrl-btn sm-ctrl-btn--menu">
+        ↩ Menu
+      </button>
     </div>
   </div>
 
-  <!-- JS principal como módulo ES -->
-  <script type="module" src="show_milhao.js"></script>
+  <!-- Premiação lateral -->
+  <div class="premiacao-lateral" id="premiacao-lateral">
+    <div class="premia-titulo">PREMIAÇÃO</div>
+    <div id="lista-premios"></div>
+  </div>
+</div>
+
+<!-- ── TELA RESULTADO ── -->
+<div id="screen-result" class="tela hidden">
+  <div class="fim-container resultado-nucleo">
+    <div class="fim-icone"  id="resultado-simbolo">🏆</div>
+    <h2 class="fim-titulo"  id="resultado-titulo">Parabéns!</h2>
+    <div class="fim-valor"  id="resultado-valor">R$ 0</div>
+
+    <div class="sm-stats-grid">
+      <div class="sm-stat-item">
+        <div class="sm-stat-num sm-stat-num--acertos" id="resultado-acertos">0</div>
+        <div class="sm-stat-label">ACERTOS</div>
+      </div>
+      <div class="sm-stat-item">
+        <div class="sm-stat-num sm-stat-num--erros" id="resultado-erros">0</div>
+        <div class="sm-stat-label">ERROS</div>
+      </div>
+      <div class="sm-stat-item">
+        <div class="sm-stat-num sm-stat-num--precisao" id="resultado-precisao">0%</div>
+        <div class="sm-stat-label">PRECISÃO</div>
+      </div>
+      <div class="sm-stat-item">
+        <div class="sm-stat-num sm-stat-num--tempo" id="resultado-tempo">0:00</div>
+        <div class="sm-stat-label">TEMPO</div>
+      </div>
+    </div>
+
+    <div class="sm-result-btns">
+      <button class="btn-jogar"  id="resultado-btn-rejogo">JOGAR NOVAMENTE</button>
+      <button class="btn-proxima sm-nav-btn--secondary" id="resultado-btn-sair">← Menu</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TELA VAZIA ── -->
+<div id="screen-empty" class="tela hidden">
+  <div class="fim-container">
+    <div class="fim-icone">📭</div>
+    <h2 class="fim-titulo" id="empty-title">Sem perguntas</h2>
+    <p  class="fim-msg"    id="empty-desc">Não encontramos questões para esta disciplina ainda.</p>
+    <a  class="btn-jogar"  id="btn-empty-back" href="#">← Voltar</a>
+  </div>
+</div>
+
+<script type="module" src="show_milhao.js"></script>
 </body>
 </html>
