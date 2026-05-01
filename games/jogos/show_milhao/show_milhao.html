@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Show do Milhão</title>
+  <link rel="stylesheet" href="../../../shared/css/fundo.css" />
+  <link rel="stylesheet" href="show_milhao.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Exo+2:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- TELA INICIAL -->
+  <div id="tela-inicio" class="tela ativa">
+    <div class="logo-wrapper">
+      <div class="logo-estrela">★</div>
+      <h1 class="titulo-jogo">Show do<br><span>Milhão</span></h1>
+      <p class="subtitulo">Você tem coragem de chegar ao topo?</p>
+    </div>
+    <button class="btn-jogar" onclick="iniciarJogo()">JOGAR AGORA</button>
+    <div class="rodape-inicio">10 perguntas · 30 segundos cada · Sem segunda chance</div>
+  </div>
+
+  <!-- TELA DO JOGO -->
+  <div id="tela-jogo" class="tela">
+
+    <!-- Cabeçalho -->
+    <div class="hud">
+      <div class="hud-item">
+        <span class="hud-label">PERGUNTA</span>
+        <span class="hud-valor" id="num-pergunta">1/10</span>
+      </div>
+      <div class="timer-container">
+        <svg class="timer-svg" viewBox="0 0 100 100">
+          <circle class="timer-bg" cx="50" cy="50" r="44"/>
+          <circle class="timer-arco" id="timer-arco" cx="50" cy="50" r="44"/>
+        </svg>
+        <span class="timer-numero" id="timer-numero">30</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">PONTUAÇÃO</span>
+        <span class="hud-valor" id="pontuacao-hud">R$ 0</span>
+      </div>
+    </div>
+
+    <!-- Pergunta -->
+    <div class="card-pergunta">
+      <div class="pergunta-nivel" id="pergunta-nivel">Nível 1</div>
+      <p class="pergunta-texto" id="pergunta-texto">Carregando pergunta...</p>
+    </div>
+
+    <!-- Alternativas -->
+    <div class="alternativas" id="alternativas">
+      <button class="alt-btn" id="alt-a" onclick="responder('A')">
+        <span class="alt-letra">A</span>
+        <span class="alt-texto" id="texto-a"></span>
+      </button>
+      <button class="alt-btn" id="alt-b" onclick="responder('B')">
+        <span class="alt-letra">B</span>
+        <span class="alt-texto" id="texto-b"></span>
+      </button>
+      <button class="alt-btn" id="alt-c" onclick="responder('C')">
+        <span class="alt-letra">C</span>
+        <span class="alt-texto" id="texto-c"></span>
+      </button>
+      <button class="alt-btn" id="alt-d" onclick="responder('D')">
+        <span class="alt-letra">D</span>
+        <span class="alt-texto" id="texto-d"></span>
+      </button>
+    </div>
+
+    <!-- Feedback -->
+    <div class="feedback-box" id="feedback-box">
+      <div class="feedback-icone" id="feedback-icone"></div>
+      <div class="feedback-msg" id="feedback-msg"></div>
+      <div class="feedback-resposta" id="feedback-resposta"></div>
+      <button class="btn-proxima" id="btn-proxima" onclick="proximaPergunta()">PRÓXIMA →</button>
+    </div>
+
+    <!-- Barra de premiação -->
+    <div class="premiacao-lateral" id="premiacao-lateral">
+      <div class="premia-titulo">PREMIAÇÃO</div>
+      <div id="lista-premios"></div>
+    </div>
+  </div>
+
+  <!-- TELA FINAL -->
+  <div id="tela-fim" class="tela">
+    <div class="fim-container">
+      <div class="fim-icone" id="fim-icone">🏆</div>
+      <h2 class="fim-titulo" id="fim-titulo">Parabéns!</h2>
+      <p class="fim-msg" id="fim-msg">Você completou o jogo!</p>
+      <div class="fim-valor" id="fim-valor">R$ 0</div>
+      <div class="fim-acertos" id="fim-acertos">0 de 10 corretas</div>
+      <button class="btn-jogar" onclick="reiniciar()">JOGAR NOVAMENTE</button>
+    </div>
+  </div>
+
+  <script src="show_milhao.js"></script>
+</body>
+</html>

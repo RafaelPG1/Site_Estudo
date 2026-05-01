@@ -46,6 +46,19 @@ const JOGOS = [
     // Mapeamento customizado: pasta e arquivo diferem do id
     rota: 'vdd_falso/vdd_falso.html',
   },
+
+
+    // ── DINÂMICA ──────────────────────────
+  {
+    id: 'show_milhao',
+    nome: 'Show do Milhão',
+    tipo: 'Dinâmica',
+    status: 'disponível',
+    icon: '🏆',
+    descricao: 'Responda 15 perguntas com ajudas disponíveis. Chegue ao topo!',
+    duracao: '10–20 min',
+    dificuldade: '★★★',
+  },
 ];
 
 

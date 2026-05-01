@@ -1408,38 +1408,50 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   width: 100%;
 }
 
-/* Botão Revisar erros — vermelho suave */
+/* Botão Revisar erros — design idêntico ao flashcard */
 .vf-intro-card__btn--revisar {
+  /* Sobrescreve herança do .game-btn para bater com .intro-revisar-btn do flashcard */
   background: rgba(var(--false-rgb), .08) !important;
-  border: 1.5px solid rgba(var(--false-rgb), .28) !important;
-  color: var(--false-color) !important;
+  border: 1px solid rgba(var(--false-rgb), .22) !important;
+  color: #f87171 !important;
   box-shadow: none !important;
-  font-weight: 600;
-  letter-spacing: .03em;
+  font-size: .82rem !important;
+  font-weight: 600 !important;
+  letter-spacing: .02em !important;
+  padding: .65rem 2rem !important;
+  /* Garante largura total igual ao flashcard */
+  width: 100% !important;
+  transition: background .2s, border-color .2s !important;
 }
 .vf-intro-card__btn--revisar:hover {
-  background: rgba(var(--false-rgb), .15) !important;
-  border-color: rgba(var(--false-rgb), .5) !important;
+  background: rgba(var(--false-rgb), .16) !important;
+  border-color: rgba(var(--false-rgb), .40) !important;
   filter: none !important;
-  transform: translateY(-1px) !important;
+  transform: scale(.98) !important;
+}
+.vf-intro-card__btn--revisar:active {
+  transform: scale(.98) !important;
+}
+.vf-intro-card__btn--revisar svg,
+.vf-intro-card__btn--revisar i {
+  font-size: .72rem;
+  opacity: .85;
 }
 
-/* Badge com a contagem de erros */
+/* Badge com a contagem de erros — idêntico ao .intro-revisar-count do flashcard */
 .vf-revisar-count {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: 20px;
   height: 20px;
-  padding: 0 6px;
+  padding: 0 5px;
   border-radius: var(--pill);
-  background: rgba(var(--false-rgb), .18);
-  border: 1px solid rgba(var(--false-rgb), .30);
-  font-size: .68rem;
+  background: rgba(var(--false-rgb), .22);
+  font-size: .65rem;
   font-weight: 700;
-  font-family: var(--font-mono);
-  color: var(--false-color);
   line-height: 1;
+  color: #fca5a5;
 }
 
 .vf-pause-resume-btn.game-btn {
@@ -1668,4 +1680,188 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   }
   .vf-hist-badge__seg  { padding: 3px 7px; }
   .vf-hist-badge__status { padding: 3px 7px; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   MODO REVISÃO DE ERROS — tema visual vermelho
+   Ativado via: body.modo-revisao  e  [data-revisao="true"]
+   ══════════════════════════════════════════════════════════ */
+
+:root {
+  --rev-rgb:       229, 62, 62;
+  --rev-amber-rgb: 245,158, 11;
+}
+
+/* ── Header global ── */
+body.modo-revisao .game-header {
+  background: rgba(20, 5, 5, .95);
+  border-bottom-color: rgba(229, 62, 62, .28);
+  box-shadow: 0 1px 0 rgba(229, 62, 62, .10), 0 4px 24px rgba(0, 0, 0, .6);
+}
+body.modo-revisao .game-header::after {
+  content: '';
+  position: absolute; bottom: -1px; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(229, 62, 62, .55) 20%,
+    rgba(245, 158, 11, .75) 50%,
+    rgba(229, 62, 62, .55) 80%,
+    transparent 100%);
+  animation: vf-rev-line 3s ease-in-out infinite;
+}
+@keyframes vf-rev-line {
+  0%, 100% { opacity: .45; }
+  50%       { opacity: 1;   }
+}
+
+/* Disc name no header fica vermelho */
+body.modo-revisao #shell-disc-name {
+  color: #f87171;
+}
+/* Ícone do header ganha borda e glow vermelho */
+body.modo-revisao .game-header__icon {
+  background: rgba(229, 62, 62, .18);
+  border-color: rgba(229, 62, 62, .45);
+  box-shadow: 0 0 12px rgba(229, 62, 62, .18);
+}
+
+/* ── Banner de revisão (injetado via JS dentro de .vf-main-area) ── */
+.vf-revisao-banner {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; border-radius: 10px;
+  background: linear-gradient(135deg,
+    rgba(229, 62, 62, .15) 0%,
+    rgba(160, 20, 20, .10) 60%,
+    rgba(245, 158, 11, .07) 100%);
+  border: 1px solid rgba(229, 62, 62, .40);
+  box-shadow: 0 4px 20px rgba(229, 62, 62, .12),
+              0 0 0 1px rgba(229, 62, 62, .05) inset;
+  font-size: .73rem; font-weight: 700; color: #fca5a5;
+  letter-spacing: .03em;
+  animation: vf-fade-up .35s ease both,
+             vf-rev-pulse 4s ease-in-out 1s infinite;
+  position: relative; overflow: hidden;
+}
+.vf-revisao-banner::before {
+  content: '';
+  position: absolute; top: 0; bottom: 0; left: -120%; width: 60%;
+  background: linear-gradient(90deg, transparent, rgba(229, 62, 62, .07), transparent);
+  animation: vf-rev-shimmer 3s ease-in-out infinite;
+}
+@keyframes vf-rev-shimmer { 0% { left: -120%; } 100% { left: 180%; } }
+@keyframes vf-rev-pulse {
+  0%, 100% { border-color: rgba(229, 62, 62, .40); box-shadow: 0 4px 20px rgba(229, 62, 62, .12); }
+  50%       { border-color: rgba(229, 62, 62, .58); box-shadow: 0 4px 24px rgba(229, 62, 62, .22); }
+}
+@keyframes vf-fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+.vf-revisao-banner__icon { font-size: .7rem; opacity: .9; flex-shrink: 0; }
+.vf-revisao-banner__label {
+  font-size: .72rem; font-weight: 800; letter-spacing: .05em;
+  text-transform: uppercase; color: #fca5a5;
+}
+.vf-revisao-banner__count {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 3px 12px; border-radius: 999px;
+  background: rgba(229, 62, 62, .22);
+  border: 1px solid rgba(229, 62, 62, .45);
+  font-size: .67rem; font-weight: 800; color: #fca5a5;
+  margin-left: auto; flex-shrink: 0;
+}
+
+/* ── Barra de progresso em modo revisão ── */
+#screen-question[data-revisao="true"] .game-progress-bar__fill {
+  background: linear-gradient(90deg, #e53e3e, #f59e0b) !important;
+}
+
+/* ── Dots: dot ativo em modo revisão ── */
+#screen-question[data-revisao="true"] .vf-dot.vf-dot--current {
+  background: rgba(229, 62, 62, .65);
+  border-color: rgba(229, 62, 62, .90);
+  width: 22px;
+}
+
+/* ── Top-bar em modo revisão ── */
+#screen-question[data-revisao="true"] .vf-top-bar {
+  border-color: rgba(229, 62, 62, .28);
+  background: linear-gradient(135deg, rgba(229, 62, 62, .07) 0%, rgba(20, 5, 5, .45) 100%);
+  box-shadow: 0 1px 12px rgba(229, 62, 62, .07);
+}
+#screen-question[data-revisao="true"] .vf-top-bar__questao strong {
+  color: #f87171;
+}
+
+/* ── Card da questão em modo revisão ── */
+#screen-question[data-revisao="true"] .vf-question-card {
+  background: linear-gradient(165deg, rgba(25, 8, 8, .88) 0%, rgba(18, 10, 14, .92) 100%);
+  border-color: rgba(229, 62, 62, .16);
+  box-shadow:
+    0 0 0 1px rgba(229, 62, 62, .04) inset,
+    0 8px 32px rgba(0, 0, 0, .45),
+    0 0 28px rgba(229, 62, 62, .07);
+}
+
+/* Disc tag pill em modo revisão */
+#screen-question[data-revisao="true"] .vf-disc-tag-pill {
+  background: rgba(229, 62, 62, .12);
+  border-color: rgba(229, 62, 62, .35);
+  color: #f87171;
+}
+
+/* Número da questão em modo revisão */
+#screen-question[data-revisao="true"] .vf-question-number {
+  background: rgba(229, 62, 62, .18);
+  border-color: rgba(229, 62, 62, .45);
+  color: #fca5a5;
+}
+
+/* Info strip em modo revisão (quando mostra explicação) */
+#screen-question[data-revisao="true"] .vf-info-strip {
+  background: rgba(229, 62, 62, .06);
+  border-color: rgba(229, 62, 62, .18);
+}
+
+/* ── Tela de resultado em modo revisão ── */
+body.modo-revisao .resultado-nucleo {
+  border-color: rgba(229, 62, 62, .45) !important;
+  background: linear-gradient(160deg, rgba(28, 8, 8, .92) 0%, rgba(18, 10, 16, .95) 100%) !important;
+  box-shadow:
+    0 0 0 1px rgba(229, 62, 62, .10) inset,
+    0 12px 48px rgba(0, 0, 0, .55),
+    0 0 60px rgba(229, 62, 62, .14) !important;
+}
+
+/* Badge "Revisão de erros" no topo da tela de resultado */
+.vf-finish-revisao-badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 6px 18px; border-radius: 999px;
+  background: rgba(229, 62, 62, .14);
+  border: 1px solid rgba(229, 62, 62, .38);
+  font-size: .68rem; font-weight: 800; letter-spacing: 1.4px;
+  text-transform: uppercase; color: #fca5a5;
+  margin-bottom: 1.1rem;
+  animation: vf-badge-pop .3s ease both;
+  box-shadow: 0 0 20px rgba(229, 62, 62, .12);
+}
+@keyframes vf-badge-pop {
+  from { opacity: 0; transform: scale(.72); }
+  to   { opacity: 1; transform: scale(1);   }
+}
+
+/* Botão "Repetir revisão" na tela de resultado */
+body.modo-revisao .resultado-btn--repetir-revisao {
+  background: linear-gradient(135deg, rgba(229, 62, 62, .18), rgba(180, 20, 20, .14)) !important;
+  border-color: rgba(229, 62, 62, .50) !important;
+  color: #fca5a5 !important;
+  box-shadow: 0 4px 20px rgba(229, 62, 62, .12) !important;
+}
+body.modo-revisao .resultado-btn--repetir-revisao:hover {
+  background: linear-gradient(135deg, rgba(229, 62, 62, .28), rgba(200, 30, 30, .22)) !important;
+  border-color: rgba(229, 62, 62, .72) !important;
+  box-shadow: 0 4px 28px rgba(229, 62, 62, .28),
+              0 0 0 1px rgba(229, 62, 62, .12) inset !important;
+  color: #fef2f2 !important;
 }

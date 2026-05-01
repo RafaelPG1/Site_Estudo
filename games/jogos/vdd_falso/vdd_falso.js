@@ -234,6 +234,31 @@ function mostrarTela(nome) {
   if (nome === 'question') el.screenQuestion?.classList.remove('hidden');
   if (nome === 'empty')    el.screenEmpty   ?.classList.remove('hidden');
   if (nome === 'result')   el.screenResult  ?.classList.remove('hidden');
+
+  // Aplica/remove tema vermelho de revisão no body e no screen-question
+  const emRevisao = !!estado.modoRevisao;
+  document.body.classList.toggle('modo-revisao', emRevisao);
+  el.screenQuestion?.dataset && (el.screenQuestion.dataset.revisao = emRevisao ? 'true' : 'false');
+
+  // ── Banner de revisão: injeta/remove dentro de .vf-main-area ──
+  const mainArea = el.screenQuestion?.querySelector('.vf-main-area');
+  if (mainArea) {
+    // Remove banner anterior (se existir)
+    mainArea.querySelector('.vf-revisao-banner')?.remove();
+    if (emRevisao && nome === 'question') {
+      const total = estado.perguntas?.length ?? 0;
+      const banner = document.createElement('div');
+      banner.className = 'vf-revisao-banner';
+      banner.setAttribute('role', 'alert');
+      banner.setAttribute('aria-label', 'Modo revisão de erros ativo');
+      banner.innerHTML = `
+        <i class="fas fa-triangle-exclamation vf-revisao-banner__icon" aria-hidden="true"></i>
+        <span class="vf-revisao-banner__label">Revisão de erros</span>
+        <span class="vf-revisao-banner__count">${total} questão${total !== 1 ? 'ões' : ''}</span>
+      `;
+      mainArea.insertBefore(banner, mainArea.firstChild);
+    }
+  }
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -595,6 +620,24 @@ async function finalizarJogo() {
   const elSair     = document.getElementById('resultado-btn-sair');
   const elRejogo   = document.getElementById('resultado-btn-rejogo');
 
+  // ── Badge e estilo de revisão na tela de resultado ──
+  const resultadoNucleo = document.querySelector('.resultado-nucleo');
+  if (resultadoNucleo) {
+    // Remove badge anterior
+    resultadoNucleo.querySelector('.vf-finish-revisao-badge')?.remove();
+    if (estado.modoRevisao) {
+      const badge = document.createElement('div');
+      badge.className = 'vf-finish-revisao-badge';
+      badge.innerHTML = `<i class="fas fa-triangle-exclamation" aria-hidden="true"></i> Revisão de erros`;
+      resultadoNucleo.insertBefore(badge, resultadoNucleo.firstChild);
+    }
+  }
+
+  // Aplica classe ao botão "Jogar novamente" em modo revisão
+  if (elRejogo && estado.modoRevisao) {
+    elRejogo.classList.add('resultado-btn--repetir-revisao');
+  }
+
   if (elSimb)    elSimb.textContent    = emoji;
   if (elTitulo)  elTitulo.textContent  = titulo;
   if (elPontos)  elPontos.textContent  = estado.pontos;
@@ -716,6 +759,9 @@ function mostrarTelaRevisaoConcluida() {
   if (!resultCard) { mostrarTela('intro'); return; }
 
   resultCard.innerHTML = `
+    <div class="vf-finish-revisao-badge">
+      <i class="fas fa-triangle-exclamation" aria-hidden="true"></i> Revisão de erros
+    </div>
     <div class="resultado-topo">
       <div class="resultado-simbolo">🏆</div>
       <h2 class="resultado-titulo">Revisão concluída!</h2>
