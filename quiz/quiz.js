@@ -8,7 +8,13 @@ import {
 import { sincronizarSemNaURL } from '../shared/js/url.js';
 import { preencherAnos } from '../shared/js/dom.js';
 
+import { injetarLogo } from '../shared/js/logo.js';
+
 (function () {
+
+  document.addEventListener('DOMContentLoaded', () => {
+    injetarLogo({ destino: '#header-logo-wrap', tamanho: 32, layout: 'stacked' });
+  });
 
   const semParam = new URLSearchParams(location.search).get('sem');
   if (semParam && SEMESTRES.includes(semParam)) setSemestre(semParam);

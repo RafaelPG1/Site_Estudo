@@ -36,6 +36,17 @@ import { DISC_CORES } from '../../shared/js/cores.js';
 import { resolverSemestreDeURL, sincronizarSemNaURL, propagarSemNosLinks } from '../../shared/js/url.js';
 import { aplicarCoresDisciplina } from '../../shared/js/theme.js';
 
+import { injetarLogo } from '../../shared/js/logo.js';
+
+document.addEventListener('DOMContentLoaded', () => {
+  injetarLogo({
+    destino:  '#header-logo-wrap',
+    tamanho:  32,
+    layout:   'stacked',
+    srcBase:  '../../../shared/img/logo.png',  // ajuste de caminho relativo
+    linkHref: '../../../index.html',
+  });
+});
 
 /* ── APLICA CORES DA DISCIPLINA (síncrono, sem FOUC) ─────── */
 aplicarCoresDisciplina(

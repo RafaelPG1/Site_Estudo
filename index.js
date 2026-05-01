@@ -11,6 +11,7 @@ import {
   getSemestreAtual, getDisciplinasDeSemestre,
 } from './src/global.js';
 
+import { injetarLogo } from './shared/js/logo.js';
 import { login, logout, carregarConfigs } from './src/firebase.js';
 import { criarSemestreSelect, preencherAnos } from './shared/js/dom.js';
 import { limparPerfisSRS } from './games/jogos/flashcard/storage.js';
@@ -23,6 +24,14 @@ document.addEventListener('DOMContentLoaded', () => {
     window.location.replace('/admin/admin.html');
     return;
   }
+
+  injetarLogo({
+    destino:  '#header-logo-wrap',
+    tamanho:  38,
+    layout:   'stacked',
+    srcBase:  './shared/img/logo.png',
+    linkHref: './index.html',
+  });
 
   setPagina('HOME');
   _refreshHeader();

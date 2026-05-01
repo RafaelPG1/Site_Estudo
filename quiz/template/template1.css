@@ -159,41 +159,59 @@ a { text-decoration: none; color: inherit; }
   gap: 0.55rem;
 }
 
-.logo-mark {
-  width: 32px; height: 32px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #4dd9b4, #7aa8e8);
+/* ── LOGO (injetada via logo.js) ── */
+#header-logo-wrap .nexus-logo__link {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--bg);
-  flex-shrink: 0;
-  box-shadow: 0 0 16px rgba(77, 217, 180, 0.2);
+  gap: 0.55rem;
+  text-decoration: none;
 }
 
-.logo-text {
+#header-logo-wrap .nexus-logo__img {
+  border-radius: 22%;
+  box-shadow:
+    0 2px 8px  rgba(0, 0, 0, 0.45),
+    0 0 12px   rgba(77, 217, 180, 0.35),
+    0 0 28px   rgba(77, 217, 180, 0.15);
+  transition:
+    filter     0.25s ease,
+    transform  0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+#header-logo-wrap .nexus-logo__link:hover .nexus-logo__img {
+  filter: drop-shadow(0 0 6px rgba(77, 217, 180, 0.7));
+  transform: scale(1.06);
+  box-shadow:
+    0 2px 12px rgba(0, 0, 0, 0.50),
+    0 0  18px  rgba(77, 217, 180, 0.55),
+    0 0  40px  rgba(77, 217, 180, 0.25);
+}
+
+#header-logo-wrap .nexus-logo__texto--stacked {
   display: flex;
   flex-direction: column;
-  line-height: 1.1;
+  line-height: 1;
+  gap: 0.18rem;
 }
 
-.logo-title {
-  font-family: var(--font-display);
-  font-size: 1.05rem;
-  font-weight: 600;
+#header-logo-wrap .nexus-logo__titulo {
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 500;
   color: var(--text-1);
+  line-height: 1;
   letter-spacing: 0.01em;
 }
 
-.logo-sub {
-  font-size: 0.58rem;
-  font-weight: 600;
+#header-logo-wrap .nexus-logo__sub {
+  font-family: var(--font-body);
+  font-size: 0.56rem;
+  font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: #4dd9b4;
+  line-height: 1;
 }
 
 /* Breadcrumb */
@@ -424,12 +442,12 @@ a { text-decoration: none; color: inherit; }
   .breadcrumb { display: none; }
   .main { padding: 1.75rem 1.25rem 3rem; }
   .page-header__title { font-size: 1.65rem; }
-  .logo-title { font-size: 0.95rem; }
+  .nexus-logo__titulo { font-size: 0.85rem; }
 }
 
 @media (max-width: 380px) {
   .page-header__title { font-size: 1.45rem; }
-  .logo-text { display: none; }
+  .nexus-logo__texto--stacked { display: none; }
 }
 
 

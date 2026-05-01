@@ -30,6 +30,7 @@ import { DISC_CORES } from '../../shared/js/cores.js';
 import { sincronizarSemNaURL, propagarSemNosLinks } from '../../shared/js/url.js';
 import { setText, setHTML } from '../../shared/js/dom.js';
 import { aplicarCoresDisciplina } from '../../shared/js/theme.js';
+import { injetarLogo } from '../../shared/js/logo.js';
 
 import { carregarRespostasQuiz, salvarRespostasQuiz, limparRespostasQuiz } from '../../src/firebase.js';
 
@@ -118,6 +119,16 @@ const modoConfig = MODOS_CONFIG[modo] ?? MODOS_CONFIG.questoes;
 /* ── APLICA CORES DA DISCIPLINA + ACENTO DO MODO ─────────── */
 
 aplicarCoresDisciplina(info.arquivo, DISC_CORES);
+
+document.addEventListener('DOMContentLoaded', () => {
+  injetarLogo({
+    destino:  '#header-logo-wrap',
+    tamanho:  32,
+    layout:   'stacked',
+    srcBase:  '../../shared/img/logo.png',
+    linkHref: '../quiz.html',
+  });
+});
 
 const cores = DISC_CORES[info.arquivo];
 if (cores) {

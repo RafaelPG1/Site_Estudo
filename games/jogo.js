@@ -12,6 +12,7 @@ import {
 
 import { sincronizarSemNaURL } from '../shared/js/url.js';
 import { preencherAnos }       from '../shared/js/dom.js';
+import { injetarLogo }         from '../shared/js/logo.js';
 
 'use strict';
 
@@ -415,6 +416,13 @@ function setupModal() {
 ═══════════════════════════════════════════ */
 
 function init() {
+  injetarLogo({
+    destino:  '#sidebar-logo-wrap',
+    tamanho:  36,
+    layout:   'stacked',
+    srcBase:  '../shared/img/logo.png',
+    linkHref: '../index.html',
+  });
   setupSemestreSelect();
   updateHeaderStats();
   applyFilters();

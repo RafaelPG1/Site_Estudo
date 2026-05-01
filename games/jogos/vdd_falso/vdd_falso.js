@@ -625,17 +625,7 @@ async function finalizarJogo() {
       // monta novo deck e atualiza o botao "Revisar erros"
       estado.perguntas = montarDeck(estado.banco, estado.historicoVF);
 
-      const erradasAtual = questoesComErro(estado.banco, estado.historicoVF);
-      if (el.btnRevisarErros) {
-        if (erradasAtual.length > 0) {
-          el.btnRevisarErros.classList.remove('hidden');
-          const countEl = $('vf-revisar-count');
-          if (countEl) countEl.textContent = erradasAtual.length;
-        } else {
-          el.btnRevisarErros.classList.add('hidden');
-        }
-      }
-
+      atualizarBtnRevisarErros(estado.banco, estado.historicoVF);
       atualizarContadores();
       mostrarTela('intro');
     });
@@ -714,16 +704,7 @@ async function finalizarJogo() {
   renderEstatisticasQuestoes(estado.historicoVF, estado.perguntas, estado.modoRevisao);
 
   // Atualiza botao "Revisar erros" com base no historico em memoria
-  const erradasAgora = questoesComErro(estado.banco, estado.historicoVF);
-  if (el.btnRevisarErros) {
-    if (erradasAgora.length > 0) {
-      el.btnRevisarErros.classList.remove('hidden');
-      const countEl = $('vf-revisar-count');
-      if (countEl) countEl.textContent = erradasAgora.length;
-    } else {
-      el.btnRevisarErros.classList.add('hidden');
-    }
-  }
+  atualizarBtnRevisarErros(estado.banco, estado.historicoVF);
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -761,20 +742,12 @@ function mostrarTelaRevisaoConcluida() {
 
   document.getElementById('revisao-concluida-voltar')?.addEventListener('click', async () => {
     const historico = await carregarHistoricoVF(estado.usuario, estado.discId, estado.sem).catch(() => ({}));
-    estado.historicoVF = historico;
-    estado.perguntas   = montarDeck(estado.banco, historico);
+    estado.historicoVF  = historico;
+    estado.modoRevisao  = false;
+    estado.cardsRevisao = null;
+    estado.perguntas    = montarDeck(estado.banco, historico);
     atualizarContadores();
-
-    const erradas = questoesComErro(estado.banco, historico);
-    if (el.btnRevisarErros) {
-      if (erradas.length > 0) {
-        el.btnRevisarErros.classList.remove('hidden');
-        const countEl = document.getElementById('vf-revisar-count');
-        if (countEl) countEl.textContent = erradas.length;
-      } else {
-        el.btnRevisarErros.classList.add('hidden');
-      }
-    }
+    atualizarBtnRevisarErros(estado.banco, historico);
     mostrarTela('intro');
   });
 }
@@ -956,16 +929,7 @@ function setupPausa() {
     estado.perguntas   = montarDeck(estado.banco, historico);
 
     // Atualiza botão "Revisar erros" com histórico mais recente
-    const erradasAtual = questoesComErro(estado.banco, historico);
-    if (el.btnRevisarErros) {
-      if (erradasAtual.length > 0) {
-        el.btnRevisarErros.classList.remove('hidden');
-        const countEl = $('vf-revisar-count');
-        if (countEl) countEl.textContent = erradasAtual.length;
-      } else {
-        el.btnRevisarErros.classList.add('hidden');
-      }
-    }
+    atualizarBtnRevisarErros(estado.banco, historico);
 
     if (estado.perguntas.length === 0) {
       mostrarTela('empty');
@@ -1012,8 +976,34 @@ function registrarAtalhos() {
 }
 
 /* ══════════════════════════════════════════════════════════
-   CONTADORES
+   BOTÃO "REVISAR ERROS" — atualiza visibilidade e listener
+   Centraliza toda a lógica do botão num único lugar para
+   garantir que o listener nunca se perca entre navegações.
    ══════════════════════════════════════════════════════════ */
+
+function atualizarBtnRevisarErros(banco, historico) {
+  const btn = el.btnRevisarErros ?? $('btn-revisar-erros');
+  if (!btn) return;
+
+  const erradas = questoesComErro(banco, historico);
+
+  if (erradas.length === 0) {
+    btn.classList.add('hidden');
+    return;
+  }
+
+  // Atualiza contador
+  const countEl = btn.querySelector('#vf-revisar-count') ?? $('vf-revisar-count');
+  if (countEl) countEl.textContent = erradas.length;
+
+  // Recria o listener toda vez (clone elimina duplicatas acumuladas)
+  const novo = btn.cloneNode(true);
+  btn.parentNode.replaceChild(novo, btn);
+  el.btnRevisarErros = novo; // atualiza referência no cache
+
+  novo.classList.remove('hidden');
+  novo.addEventListener('click', () => iniciarJogo(true));
+}
 
 function atualizarContadores() {
   const n = estado.perguntas.length;

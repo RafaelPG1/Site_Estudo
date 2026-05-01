@@ -19,6 +19,9 @@ import { resolverSemestreDeURL, sincronizarSemNaURL } from '../shared/js/url.js'
 import { criarSemestreSelect, preencherAnos } from '../shared/js/dom.js';
 import { aplicarCoresDisciplina } from '../shared/js/theme.js';
 
+import { injetarLogo } from '../shared/js/logo.js';
+
+injetarLogo({ destino: '#header-logo-wrap', tamanho: 32, layout: 'stacked' });
 
 /* ══════════════════════════════════════════════
    ESTADO

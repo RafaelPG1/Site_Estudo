@@ -1,0 +1,101 @@
+/* =============================================
+   NEXUS STUDY — shared/css/logo.css
+   Estilos do componente de logo injetado por logo.js.
+
+   Inclua em qualquer página que use injetarLogo():
+    <link rel="stylesheet" href="../shared/css/logo.css">
+   ============================================= */
+
+/* ── Wrapper base ────────────────────────────────── */
+.nexus-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  user-select: none;
+}
+
+/* ── Link ────────────────────────────────────────── */
+.nexus-logo__link {
+  display: inherit;
+  align-items: inherit;
+  gap: inherit;
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ── Imagem ──────────────────────────────────────── */
+.nexus-logo__img {
+  display: block;
+  object-fit: contain;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 22%;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.45),
+    0 0 12px rgba(77, 217, 180, 0.35),   /* glow verde suave permanente */
+    0 0 28px rgba(77, 217, 180, 0.15);   /* halo externo */
+  mix-blend-mode: normal;
+  transition: filter 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.nexus-logo__link:hover .nexus-logo__img,
+.nexus-logo:hover .nexus-logo__img {
+  filter: drop-shadow(0 0 6px rgba(77, 217, 180, 0.7));
+  transform: scale(1.06);
+  box-shadow:
+    0 2px 12px rgba(0, 0, 0, 0.5),
+    0 0 18px rgba(77, 217, 180, 0.55),
+    0 0 40px rgba(77, 217, 180, 0.25);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   LAYOUT STACKED — Nexus em cima, Study embaixo
+   Uso: layout: 'stacked'  (padrão)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.nexus-logo__texto--stacked {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   LAYOUT INLINE — Nexus  Study  (mesma linha)
+   Uso: layout: 'inline'
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.nexus-logo__texto--inline {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+
+/* "Study" no modo inline fica um pouco menor e
+    continua em teal, mas alinhado pela baseline */
+.nexus-logo__sub--inline {
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+}
+
+/* ── Tipografia compartilhada ────────────────────── */
+
+/* "Nexus" — grande, serif */
+.nexus-logo__titulo {
+  font-family: var(--font-display, 'Cormorant Garamond', Georgia, serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-1, #f0ede6);
+  white-space: nowrap;
+}
+
+/* "Study" — pequeno, teal, uppercase */
+.nexus-logo__sub {
+  font-family: var(--font-body, 'DM Sans', system-ui, sans-serif);
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--teal, #4dd9b4);
+  white-space: nowrap;
+}

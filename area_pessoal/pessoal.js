@@ -29,6 +29,7 @@ import {
 
 import { resolverSemestreDeURL } from '../shared/js/url.js';
 import { aplicarCoresDisciplina } from '../shared/js/theme.js';
+import { injetarLogo } from '../shared/js/logo.js';
 
 /* ── Módulo de sync (localStorage + Firebase) ── */
 import {
@@ -167,6 +168,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   setPagina('PESSOAL');
   document.getElementById('footer-year').textContent  = new Date().getFullYear();
   document.getElementById('sidebar-year').textContent = new Date().getFullYear();
+
+  injetarLogo({
+    destino:  '#header-logo-wrap',
+    tamanho:  32,
+    layout:   'stacked',
+    srcBase:  '../shared/img/logo.png',
+    linkHref: '../index.html',
+  });
 
   try {
     const mod = await import('../shared/js/cores.js');
