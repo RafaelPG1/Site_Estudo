@@ -58,9 +58,13 @@ export async function carregarHistoricoVF(usuario, discId, sem) {
       console.log(`[storage_vf] Histórico carregado do Firestore: ${usuario}/${sem}_${discId}`);
       return dados;
     }
-    // Firestore vazio → tenta local
-    return _lerLocal(usuario, discId, sem);
+    // Firestore retornou vazio (doc não existe ou foi apagado pelo admin)
+    // → zera o cache local para ficar em sincronia e retorna vazio
+    localStorage.removeItem(_chaveLocal(usuario, discId, sem));
+    console.log(`[storage_vf] Firestore vazio → cache local zerado: ${usuario}/${sem}_${discId}`);
+    return {};
   } catch (err) {
+    // Só usa localStorage como fallback em caso de falha de rede
     console.warn('[storage_vf] Firestore indisponível, usando localStorage:', err.message);
     return _lerLocal(usuario, discId, sem);
   }

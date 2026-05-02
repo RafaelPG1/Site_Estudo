@@ -405,6 +405,8 @@ async function _renderProgress() {
         <button class="tab active" data-tab="quiz">🧠 Quiz</button>
         <button class="tab" data-tab="pessoal">📋 Área Pessoal</button>
         <button class="tab" data-tab="srs">🃏 Flashcard (SRS)</button>
+        <button class="tab" data-tab="vf">✅ V ou F</button>
+        <button class="tab" data-tab="sm">⭐ Show do Milhão</button>
       </div>
 
       <!-- PAINEL QUIZ -->
@@ -440,10 +442,32 @@ async function _renderProgress() {
         </div>
       </div>
 
+      <!-- PAINEL V/F -->
+      <div class="section-panel" id="prog-panel-vf" style="display:none">
+        <div class="panel-header">
+          <span class="panel-title">Progresso — Verdadeiro ou Falso</span>
+          <span class="panel-count" id="prog-vf-count">${estudantes.length} estudantes</span>
+        </div>
+        <div id="prog-vf-wrap" class="data-table-wrap">
+          <div class="init-loading"><div class="spinner"></div><p>Carregando…</p></div>
+        </div>
+      </div>
+
+      <!-- PAINEL SHOW DO MILHÃO -->
+      <div class="section-panel" id="prog-panel-sm" style="display:none">
+        <div class="panel-header">
+          <span class="panel-title">Progresso — Show do Milhão</span>
+          <span class="panel-count" id="prog-sm-count">${estudantes.length} estudantes</span>
+        </div>
+        <div id="prog-sm-wrap" class="data-table-wrap">
+          <div class="init-loading"><div class="spinner"></div><p>Carregando…</p></div>
+        </div>
+      </div>
+
     </div>`;
 
   /* ── Tab switching ── */
-  const TABS = ['quiz', 'pessoal', 'srs'];
+  const TABS = ['quiz', 'pessoal', 'srs', 'vf', 'sm'];
   document.getElementById('prog-tabs').addEventListener('click', e => {
     const btn = e.target.closest('.tab');
     if (!btn) return;
@@ -462,12 +486,16 @@ async function _renderProgress() {
     _filtrarTabela('prog-quiz-wrap',    q);
     _filtrarTabela('prog-pessoal-wrap', q);
     _filtrarTabela('prog-srs-wrap',     q);
+    _filtrarTabela('prog-vf-wrap',      q);
+    _filtrarTabela('prog-sm-wrap',      q);
   });
 
-  /* ── Carrega os três painéis em paralelo ── */
+  /* ── Carrega os quatro painéis em paralelo ── */
   _carregarQuizProgress(estudantes);
   _carregarPessoalProgress(estudantes);
   _carregarSrsProgress(estudantes);
+  _carregarVfProgress(estudantes);
+  _carregarSmProgress(estudantes);
 }
 
 /* ── Filtra linhas da tabela por texto ── */
@@ -853,6 +881,293 @@ async function _limparSrsUsuario(uid) {
     console.log(`[admin] _limparSrsUsuario: uid="${uid}" ok (${snap.size} docs)`);
   } catch (err) {
     console.error('[admin] _limparSrsUsuario erro:', err);
+  }
+}
+
+/* ──────────────────────────────────────────────
+   V/F (VERDADEIRO OU FALSO) PROGRESS
+────────────────────────────────────────────── */
+async function _carregarVfProgress(estudantes) {
+  const wrap = document.getElementById('prog-vf-wrap');
+
+  const dados = await Promise.all(estudantes.map(async u => {
+    try {
+      const snap = await getDocs(collection(getDb(), 'usuarios', u.uid, 'vf_historico'));
+      let totalQuestoes = 0;
+      let totalTentativas = 0;
+      let totalAcertos = 0;
+      let totalErros = 0;
+      const discs = new Set();
+
+      snap.forEach(d => {
+        // id do doc = "{sem}_{discId}"  ex: "2026.2_design"
+        const idx = d.id.indexOf('_');
+        if (idx !== -1) discs.add(d.id.slice(idx + 1));
+
+        const data = d.data();
+        // Cada chave é um questaoId com { tentativas, acertos, erros, ultimaVez }
+        Object.values(data).forEach(q => {
+          if (q && typeof q === 'object') {
+            totalQuestoes++;
+            totalTentativas += q.tentativas ?? 0;
+            totalAcertos    += q.acertos    ?? 0;
+            totalErros      += q.erros      ?? 0;
+          }
+        });
+      });
+
+      const taxa = totalTentativas > 0
+        ? Math.round((totalAcertos / totalTentativas) * 100)
+        : null;
+
+      return {
+        uid: u.uid, nome: u.nome ?? u.uid, avatar: u.avatar ?? '🎓',
+        docs: snap.size, discs: discs.size,
+        totalQuestoes, totalTentativas, totalAcertos, totalErros, taxa,
+      };
+    } catch {
+      return {
+        uid: u.uid, nome: u.nome ?? u.uid, avatar: u.avatar ?? '🎓',
+        docs: 0, discs: 0,
+        totalQuestoes: 0, totalTentativas: 0, totalAcertos: 0, totalErros: 0, taxa: null,
+      };
+    }
+  }));
+
+  wrap.innerHTML = _buildVfTable(dados);
+  _bindVfActions(estudantes, dados);
+}
+
+function _buildVfTable(dados) {
+  if (!dados.length) return `<div class="empty-state">Nenhum dado encontrado.</div>`;
+
+  return `
+    <table class="data-table">
+      <thead><tr>
+        <th>Usuário</th>
+        <th>ID</th>
+        <th>Disciplinas</th>
+        <th>Questões vistas</th>
+        <th>✅ Acertos</th>
+        <th>❌ Erros</th>
+        <th>Taxa</th>
+        <th>Ações</th>
+      </tr></thead>
+      <tbody>
+        ${dados.map(r => {
+          const taxaClass = r.taxa === null ? 'badge--grey'
+                         : r.taxa >= 70    ? 'badge--green'
+                         : r.taxa >= 40    ? 'badge--amber'
+                         :                   'badge--rose';
+          const taxaLabel = r.taxa === null ? '—' : `${r.taxa}%`;
+          return `
+          <tr data-uid="${r.uid}">
+            <td><span style="font-size:1.1rem;margin-right:6px">${r.avatar}</span>${r.nome}</td>
+            <td><code class="quiz-id">${r.uid}</code></td>
+            <td>
+              <span class="badge ${r.discs > 0 ? 'badge--teal' : 'badge--grey'}">
+                ${r.discs} disc
+              </span>
+            </td>
+            <td>
+              <span class="badge ${r.totalQuestoes > 0 ? 'badge--blue' : 'badge--grey'}">
+                ${r.totalQuestoes}
+              </span>
+            </td>
+            <td>
+              <span class="badge ${r.totalAcertos > 0 ? 'badge--green' : 'badge--grey'}">
+                ${r.totalAcertos}
+              </span>
+            </td>
+            <td>
+              <span class="badge ${r.totalErros > 0 ? 'badge--rose' : 'badge--grey'}">
+                ${r.totalErros}
+              </span>
+            </td>
+            <td>
+              <span class="badge ${taxaClass}">${taxaLabel}</span>
+            </td>
+            <td>
+              <button class="icon-btn icon-btn--rose btn-limpar-vf"
+                      data-uid="${r.uid}" data-nome="${r.nome}"
+                      ${r.docs === 0 ? 'disabled' : ''}>
+                🧹 Limpar
+              </button>
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+
+function _bindVfActions(estudantes, dados) {
+  document.querySelectorAll('.btn-limpar-vf').forEach(btn => {
+    btn.addEventListener('click', () =>
+      _modalConfirmar(
+        `Limpar V/F de <strong>${btn.dataset.nome}</strong>?`,
+        'Apaga todo o histórico de Verdadeiro ou Falso do Firestore.',
+        'Limpar',
+        async () => {
+          await _limparVfUsuario(btn.dataset.uid);
+          _toast(`Histórico V/F de ${btn.dataset.nome} limpo! 🧹`);
+          _carregarVfProgress(estudantes);
+        },
+        btn
+      )
+    );
+  });
+}
+
+async function _limparVfUsuario(uid) {
+  try {
+    const snap = await getDocs(collection(getDb(), 'usuarios', uid, 'vf_historico'));
+    await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
+    console.log(`[admin] _limparVfUsuario: uid="${uid}" ok (${snap.size} docs)`);
+  } catch (err) {
+    console.error('[admin] _limparVfUsuario erro:', err);
+  }
+}
+
+/* ──────────────────────────────────────────────
+   SHOW DO MILHÃO PROGRESS
+────────────────────────────────────────────── */
+async function _carregarSmProgress(estudantes) {
+  const wrap = document.getElementById('prog-sm-wrap');
+
+  const dados = await Promise.all(estudantes.map(async u => {
+    try {
+      const snap = await getDocs(collection(getDb(), 'usuarios', u.uid, 'sm_historico'));
+      let totalQuestoes   = 0;
+      let totalTentativas = 0;
+      let totalAcertos    = 0;
+      let totalErros      = 0;
+      const discs = new Set();
+
+      snap.forEach(d => {
+        // id do doc = "{discId}__{sem}"  ex: "design__2026.2"
+        const idx = d.id.indexOf('__');
+        if (idx !== -1) discs.add(d.id.slice(0, idx));
+
+        const data = d.data();
+        Object.values(data).forEach(q => {
+          if (q && typeof q === 'object') {
+            totalQuestoes++;
+            totalTentativas += q.tentativas ?? 0;
+            totalAcertos    += q.acertos    ?? 0;
+            totalErros      += q.erros      ?? 0;
+          }
+        });
+      });
+
+      const taxa = totalTentativas > 0
+        ? Math.round((totalAcertos / totalTentativas) * 100)
+        : null;
+
+      return {
+        uid: u.uid, nome: u.nome ?? u.uid, avatar: u.avatar ?? '🎓',
+        docs: snap.size, discs: discs.size,
+        totalQuestoes, totalTentativas, totalAcertos, totalErros, taxa,
+      };
+    } catch {
+      return {
+        uid: u.uid, nome: u.nome ?? u.uid, avatar: u.avatar ?? '🎓',
+        docs: 0, discs: 0,
+        totalQuestoes: 0, totalTentativas: 0, totalAcertos: 0, totalErros: 0, taxa: null,
+      };
+    }
+  }));
+
+  wrap.innerHTML = _buildSmTable(dados);
+  _bindSmActions(estudantes, dados);
+}
+
+function _buildSmTable(dados) {
+  if (!dados.length) return `<div class="empty-state">Nenhum dado encontrado.</div>`;
+
+  return `
+    <table class="data-table">
+      <thead><tr>
+        <th>Usuário</th>
+        <th>ID</th>
+        <th>Disciplinas</th>
+        <th>Questões vistas</th>
+        <th>✅ Acertos</th>
+        <th>❌ Erros</th>
+        <th>Taxa</th>
+        <th>Ações</th>
+      </tr></thead>
+      <tbody>
+        ${dados.map(r => {
+          const taxaClass = r.taxa === null ? 'badge--grey'
+                         : r.taxa >= 70    ? 'badge--green'
+                         : r.taxa >= 40    ? 'badge--amber'
+                         :                   'badge--rose';
+          const taxaLabel = r.taxa === null ? '—' : `${r.taxa}%`;
+          return `
+          <tr data-uid="${r.uid}">
+            <td><span style="font-size:1.1rem;margin-right:6px">${r.avatar}</span>${r.nome}</td>
+            <td><code class="quiz-id">${r.uid}</code></td>
+            <td>
+              <span class="badge ${r.discs > 0 ? 'badge--teal' : 'badge--grey'}">
+                ${r.discs} disc
+              </span>
+            </td>
+            <td>
+              <span class="badge ${r.totalQuestoes > 0 ? 'badge--blue' : 'badge--grey'}">
+                ${r.totalQuestoes}
+              </span>
+            </td>
+            <td>
+              <span class="badge ${r.totalAcertos > 0 ? 'badge--green' : 'badge--grey'}">
+                ${r.totalAcertos}
+              </span>
+            </td>
+            <td>
+              <span class="badge ${r.totalErros > 0 ? 'badge--rose' : 'badge--grey'}">
+                ${r.totalErros}
+              </span>
+            </td>
+            <td>
+              <span class="badge ${taxaClass}">${taxaLabel}</span>
+            </td>
+            <td>
+              <button class="icon-btn icon-btn--rose btn-limpar-sm"
+                      data-uid="${r.uid}" data-nome="${r.nome}"
+                      ${r.docs === 0 ? 'disabled' : ''}>
+                🧹 Limpar
+              </button>
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+
+function _bindSmActions(estudantes, dados) {
+  document.querySelectorAll('.btn-limpar-sm').forEach(btn => {
+    btn.addEventListener('click', () =>
+      _modalConfirmar(
+        `Limpar Show do Milhão de <strong>${btn.dataset.nome}</strong>?`,
+        'Apaga todo o histórico de Show do Milhão do Firestore.',
+        'Limpar',
+        async () => {
+          await _limparSmUsuario(btn.dataset.uid);
+          _toast(`Histórico SM de ${btn.dataset.nome} limpo! 🧹`);
+          _carregarSmProgress(estudantes);
+        },
+        btn
+      )
+    );
+  });
+}
+
+async function _limparSmUsuario(uid) {
+  try {
+    const snap = await getDocs(collection(getDb(), 'usuarios', uid, 'sm_historico'));
+    await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
+    console.log(`[admin] _limparSmUsuario: uid="${uid}" ok (${snap.size} docs)`);
+  } catch (err) {
+    console.error('[admin] _limparSmUsuario erro:', err);
   }
 }
 
