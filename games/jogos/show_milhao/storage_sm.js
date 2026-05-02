@@ -15,7 +15,7 @@
      sm_estado__{uid}__{discId}__{sem}   ← estado da partida em curso
 ═══════════════════════════════════════════════════════════════ */
 
-import { doc, getDoc, setDoc, deleteDoc }
+import { doc, getDoc, setDoc, deleteDoc, arrayUnion, updateDoc }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 import { getDb } from '../../../src/firebase.js';
 
@@ -27,6 +27,9 @@ const _chaveEstado = (uid, discId, sem) => `sm_estado__${uid}__${discId}__${sem}
 
 const _docRef = (uid, discId, sem) =>
   doc(getDb(), 'usuarios', uid, 'sm_historico', `${discId}__${sem}`);
+
+const _docRefPont = (uid, discId, sem) =>
+  doc(getDb(), 'usuarios', uid, 'sm_pontuacoes', `${discId}__${sem}`);
 
 /* ════════════════════════════════════════════════════════════
    DEBUG
@@ -282,6 +285,140 @@ function _lerLocal(usuario, discId, sem) {
 }
 
 /* ════════════════════════════════════════════════════════════
+   PONTUAÇÃO — salvar resultado de uma partida
+   Estrutura Firestore:
+     /usuarios/{uid}/sm_pontuacoes/{discId}__{sem}
+       {
+         melhor:    { valor, acertos, precisao, tempo, data },
+         historico: [ ...últimas 20 partidas ]
+       }
+   Chave localStorage:
+     sm_pontuacoes__{uid}__{discId}__{sem}
+════════════════════════════════════════════════════════════ */
+
+const _chavePont = (uid, discId, sem) => `sm_pontuacoes__${uid}__${discId}__${sem}`;
+
+export async function salvarPontuacaoSM(usuario, discId, sem, entrada) {
+  /*
+    entrada: {
+      valor:    string  — ex.: 'R$ 100.000'
+      valorNum: number  — valor numérico para comparação, ex.: 100000
+      acertos:  number,
+      precisao: number  — 0-100,
+      tempo:    string  — ex.: '2:34',
+      data:     number  — Date.now()
+    }
+  */
+  if (!entrada || entrada.valorNum === undefined) {
+    smWarn('salvarPontuacaoSM: entrada inválida.', entrada);
+    return false;
+  }
+
+  const uid = usuario ?? '_local';
+  const chave = _chavePont(uid, discId, sem);
+
+  // 1. Lê estado atual do localStorage (cache local)
+  let local = null;
+  try {
+    const raw = localStorage.getItem(chave);
+    local = raw ? JSON.parse(raw) : null;
+  } catch (_) {}
+  if (!local) local = { melhor: null, historico: [] };
+
+  // Atualiza melhor pontuação
+  if (!local.melhor || entrada.valorNum > (local.melhor.valorNum ?? 0)) {
+    local.melhor = { ...entrada };
+  }
+
+  // Adiciona ao histórico (mantém últimas 20 partidas)
+  local.historico = [entrada, ...(local.historico ?? [])].slice(0, 20);
+
+  try {
+    localStorage.setItem(chave, JSON.stringify(local));
+    smLog(`Pontuação salva no localStorage: ${entrada.valor} | acertos ${entrada.acertos} | ${entrada.precisao}%`);
+  } catch (err) {
+    smError('Erro ao salvar pontuação no localStorage:', err);
+  }
+
+  // 2. Sincroniza com Firestore (somente usuários logados)
+  if (!usuario || usuario === 'visitante') return true;
+
+  try {
+    const ref  = _docRefPont(usuario, discId, sem);
+    const snap = await getDoc(ref);
+    const remoto = snap.exists() ? snap.data() : { melhor: null, historico: [] };
+
+    const novaMelhor = !remoto.melhor || entrada.valorNum > (remoto.melhor.valorNum ?? 0)
+      ? { ...entrada }
+      : remoto.melhor;
+
+    await setDoc(ref, {
+      melhor:    novaMelhor,
+      historico: arrayUnion(entrada),   // Firestore não garante ordem, mas evita reescrever tudo
+    }, { merge: true });
+
+    smLog(`✅ Pontuação salva no Firestore! uid="${usuario}" | ${discId}__${sem} | ${entrada.valor}`);
+    return true;
+  } catch (err) {
+    smError('Falha ao salvar pontuação no Firestore!');
+    smError('  uid:', usuario, '| discId:', discId, '| sem:', sem);
+    smError('  Código:', err.code ?? '(sem código)', '| Mensagem:', err.message);
+    return false;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   PONTUAÇÃO — carregar melhor pontuação e histórico
+   Fonte de verdade: Firestore → fallback localStorage
+════════════════════════════════════════════════════════════ */
+
+export async function carregarPontuacoesSM(usuario, discId, sem) {
+  const uid = usuario ?? '_local';
+  const chave = _chavePont(uid, discId, sem);
+
+  // Visitante — apenas localStorage
+  if (!usuario || usuario === 'visitante') {
+    try {
+      const raw = localStorage.getItem(chave);
+      return raw ? JSON.parse(raw) : { melhor: null, historico: [] };
+    } catch (_) {
+      return { melhor: null, historico: [] };
+    }
+  }
+
+  try {
+    const snap = await getDoc(_docRefPont(usuario, discId, sem));
+    if (snap.exists()) {
+      const dados = snap.data();
+      // Atualiza cache local
+      try { localStorage.setItem(chave, JSON.stringify(dados)); } catch (_) {}
+      smLog(`Pontuações carregadas do Firestore: ${usuario}/${discId}__${sem}`);
+      return dados;
+    }
+    return { melhor: null, historico: [] };
+  } catch (err) {
+    smWarn('Firestore indisponível ao carregar pontuações, usando localStorage:', err.message);
+    try {
+      const raw = localStorage.getItem(chave);
+      return raw ? JSON.parse(raw) : { melhor: null, historico: [] };
+    } catch (_) {
+      return { melhor: null, historico: [] };
+    }
+  }
+}
+
+/* Utilitário rápido — retorna só a melhor pontuação (síncrono, apenas localStorage) */
+export function melhorPontuacaoLocalSM(usuario, discId, sem) {
+  try {
+    const raw = localStorage.getItem(_chavePont(usuario ?? '_local', discId, sem));
+    if (!raw) return null;
+    return JSON.parse(raw)?.melhor ?? null;
+  } catch (_) {
+    return null;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
    DEBUG / UTILITÁRIOS
 ════════════════════════════════════════════════════════════ */
 
@@ -300,7 +437,11 @@ export function listarChavesSM() {
     const k = localStorage.key(i);
     if (k?.startsWith('sm_')) chaves.push(k);
   }
-  smLog('Chaves SM no localStorage:', chaves.length > 0 ? chaves : '(nenhuma)');
+  const hist  = chaves.filter(k => k.startsWith('sm_historico'));
+  const pont  = chaves.filter(k => k.startsWith('sm_pontuacoes'));
+  const estado = chaves.filter(k => k.startsWith('sm_estado'));
+  smLog(`Chaves SM: ${chaves.length} total | ${hist.length} histórico | ${pont.length} pontuações | ${estado.length} estado`);
+  if (chaves.length > 0) smLog('Lista:', chaves);
   return chaves;
 }
 

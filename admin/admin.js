@@ -21,8 +21,9 @@ import {
 
 import {
   collection, getDocs, deleteDoc, doc, setDoc,
-  getDocsFromServer,  // ← adiciona isso
+  getDocsFromServer,
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
 /* ══════════════════════════════════════════════════════════
    CONSTANTES
    ══════════════════════════════════════════════════════════ */
@@ -40,6 +41,7 @@ const AVATARS = [
   '📚', '💡', '☕', '🌟', '🎸', '🦁',
   '🐺', '🤖', '🧙', '🎭', '🏆', '🎲', '🛡️'
 ];
+
 /* ══════════════════════════════════════════════════════════
    ESTADO
    ══════════════════════════════════════════════════════════ */
@@ -162,16 +164,17 @@ async function _getUsuarios(force = false) {
 
 /* ══════════════════════════════════════════════════════════
    REMOVER USUÁRIO — apaga doc principal + subcoleções
+   Inclui sm_pontuacoes junto com sm_historico
    ══════════════════════════════════════════════════════════ */
 
 async function _removerUsuarioCompleto(uid) {
   try {
     const db = getDb();
+    const SUBCOLLECTIONS = [
+      'quiz_respostas', 'srs_perfis',
+      'sm_historico', 'sm_pontuacoes',   // ← ambas as subcoleções do SM
+    ];
 
-    // Lista de TODAS as subcoleções conhecidas do usuário
-    const SUBCOLLECTIONS = ['quiz_respostas', 'srs_perfis'];
-
-    // Apaga cada subcoleção conhecida
     for (const subCol of SUBCOLLECTIONS) {
       const colRef = collection(db, 'usuarios', uid, subCol);
       const snap   = await getDocs(colRef);
@@ -181,9 +184,7 @@ async function _removerUsuarioCompleto(uid) {
       }
     }
 
-    // Apaga o documento principal POR ÚLTIMO
     await deleteDoc(doc(db, 'usuarios', uid));
-
     console.log('[admin] _removerUsuarioCompleto ok →', uid);
     return { ok: true };
   } catch (err) {
@@ -385,12 +386,9 @@ function _bindUserCardActions() {
 /* ══════════════════════════════════════════════════════════
    SEÇÃO — PROGRESSO
    ══════════════════════════════════════════════════════════ */
-/* ══════════════════════════════════════════════════════════
-   SEÇÃO — PROGRESSO
-   ══════════════════════════════════════════════════════════ */
 
 async function _renderProgress() {
-  const users     = await _getUsuarios();
+  const users      = await _getUsuarios();
   const estudantes = users.filter(u => !u.admin);
 
   document.getElementById('content').innerHTML = `
@@ -490,7 +488,7 @@ async function _renderProgress() {
     _filtrarTabela('prog-sm-wrap',      q);
   });
 
-  /* ── Carrega os quatro painéis em paralelo ── */
+  /* ── Carrega todos os painéis em paralelo ── */
   _carregarQuizProgress(estudantes);
   _carregarPessoalProgress(estudantes);
   _carregarSrsProgress(estudantes);
@@ -590,7 +588,6 @@ function _bindQuizActions(dados) {
    ÁREA PESSOAL PROGRESS
 ────────────────────────────────────────────── */
 
-/* Lê todos os docs de pessoal de um uid */
 async function _getPessoalDocs(uid) {
   try {
     const snap = await getDocsFromServer(collection(getDb(), 'usuarios', uid, 'pessoal'));
@@ -606,24 +603,20 @@ async function _carregarPessoalProgress(estudantes) {
   const dados = await Promise.all(estudantes.map(async u => {
     const docs = await _getPessoalDocs(u.uid);
 
-    let totalChecked  = 0;
-    let totalTarefas  = 0;
-    let totalNotas    = 0;
+    let totalChecked = 0;
+    let totalTarefas = 0;
+    let totalNotas   = 0;
 
     docs.forEach(d => {
-  // checklist — array de IDs marcados
-  if (Array.isArray(d.checklist)) totalChecked += d.checklist.length;
-
-  // categorias — conta os itens dentro de cada categoria
-  if (Array.isArray(d.categorias)) {
-    d.categorias.forEach(cat => {
-      if (Array.isArray(cat.itens)) totalTarefas += cat.itens.length;
+      if (Array.isArray(d.checklist)) totalChecked += d.checklist.length;
+      if (Array.isArray(d.categorias)) {
+        d.categorias.forEach(cat => {
+          if (Array.isArray(cat.itens)) totalTarefas += cat.itens.length;
+        });
+      }
+      if (typeof d.nota === 'string' && d.nota.trim()) totalNotas++;
     });
-  }
 
-  // nota — string não vazia
-  if (typeof d.nota === 'string' && d.nota.trim()) totalNotas++;
-});
     return {
       uid: u.uid, nome: u.nome ?? u.uid, avatar: u.avatar ?? '🎓',
       docs: docs.length,
@@ -698,7 +691,6 @@ function _buildPessoalTable(dados) {
 function _bindPessoalActions(estudantes, dados) {
   const _reload = () => _carregarPessoalProgress(estudantes);
 
-  /* ── Limpar checklist ── */
   document.querySelectorAll('.btn-limpar-checklist').forEach(btn => {
     btn.addEventListener('click', () =>
       _modalConfirmar(
@@ -715,7 +707,6 @@ function _bindPessoalActions(estudantes, dados) {
     );
   });
 
-  /* ── Limpar tarefas ── */
   document.querySelectorAll('.btn-limpar-tarefas').forEach(btn => {
     btn.addEventListener('click', () =>
       _modalConfirmar(
@@ -732,7 +723,6 @@ function _bindPessoalActions(estudantes, dados) {
     );
   });
 
-  /* ── Limpar notas ── */
   document.querySelectorAll('.btn-limpar-notas').forEach(btn => {
     btn.addEventListener('click', () =>
       _modalConfirmar(
@@ -749,25 +739,23 @@ function _bindPessoalActions(estudantes, dados) {
     );
   });
 
-/* ── Limpar tudo (pessoal) ── */
-document.querySelectorAll('.btn-limpar-pessoal-tudo').forEach(btn => {
-  btn.addEventListener('click', () =>
-    _modalConfirmar(
-      `Limpar TUDO de <strong>${btn.dataset.nome}</strong>?`,
-      'Remove checklist, tarefas e notas de todas as disciplinas.',
-      'Limpar tudo',
-      async () => {
-        await _limparTodoPessoal(btn.dataset.uid);
-        _toast(`Área Pessoal de ${btn.dataset.nome} limpa! 🗑️`);
-        await _reload();  // ← await aqui também
-      },
-      btn
-    )
-  );
-});
+  document.querySelectorAll('.btn-limpar-pessoal-tudo').forEach(btn => {
+    btn.addEventListener('click', () =>
+      _modalConfirmar(
+        `Limpar TUDO de <strong>${btn.dataset.nome}</strong>?`,
+        'Remove checklist, tarefas e notas de todas as disciplinas.',
+        'Limpar tudo',
+        async () => {
+          await _limparTodoPessoal(btn.dataset.uid);
+          _toast(`Área Pessoal de ${btn.dataset.nome} limpa! 🗑️`);
+          await _reload();
+        },
+        btn
+      )
+    );
+  });
 }
 
-/* Zera um campo específico em todos os docs pessoal/{sem}_{discId} de um uid */
 async function _limparCampoPessoal(uid, campo, valorVazio) {
   try {
     const snap = await getDocs(collection(getDb(), 'usuarios', uid, 'pessoal'));
@@ -780,12 +768,12 @@ async function _limparCampoPessoal(uid, campo, valorVazio) {
   }
 }
 
-/* Apaga todos os dados pessoais de um uid — reutiliza o que já funciona */
 async function _limparTodoPessoal(uid) {
   await _limparCampoPessoal(uid, 'checklist', []);
   await _limparCampoPessoal(uid, 'categorias', []);
   await _limparCampoPessoal(uid, 'nota', '');
 }
+
 /* ──────────────────────────────────────────────
    SRS / FLASHCARD PROGRESS
 ────────────────────────────────────────────── */
@@ -799,7 +787,7 @@ async function _carregarSrsProgress(estudantes) {
       const discs = new Set();
       snap.forEach(d => {
         const data = d.data();
-        discs.add(d.id.split('_')[0]); // primeiro segmento do id = discId
+        discs.add(d.id.split('_')[0]);
         if (data.cards && typeof data.cards === 'object') {
           totalCards += Object.keys(data.cards).length;
         }
@@ -893,19 +881,13 @@ async function _carregarVfProgress(estudantes) {
   const dados = await Promise.all(estudantes.map(async u => {
     try {
       const snap = await getDocs(collection(getDb(), 'usuarios', u.uid, 'vf_historico'));
-      let totalQuestoes = 0;
-      let totalTentativas = 0;
-      let totalAcertos = 0;
-      let totalErros = 0;
+      let totalQuestoes = 0, totalTentativas = 0, totalAcertos = 0, totalErros = 0;
       const discs = new Set();
 
       snap.forEach(d => {
-        // id do doc = "{sem}_{discId}"  ex: "2026.2_design"
         const idx = d.id.indexOf('_');
         if (idx !== -1) discs.add(d.id.slice(idx + 1));
-
         const data = d.data();
-        // Cada chave é um questaoId com { tentativas, acertos, erros, ultimaVez }
         Object.values(data).forEach(q => {
           if (q && typeof q === 'object') {
             totalQuestoes++;
@@ -1029,25 +1011,23 @@ async function _limparVfUsuario(uid) {
 }
 
 /* ──────────────────────────────────────────────
-   SHOW DO MILHÃO PROGRESS
+   SHOW DO MILHÃO — PROGRESSO
+   Lê sm_historico (questões) + sm_pontuacoes (melhor prêmio e partidas)
+   Botões: limpar só pontuação | limpar tudo
 ────────────────────────────────────────────── */
 async function _carregarSmProgress(estudantes) {
   const wrap = document.getElementById('prog-sm-wrap');
 
   const dados = await Promise.all(estudantes.map(async u => {
     try {
-      const snap = await getDocs(collection(getDb(), 'usuarios', u.uid, 'sm_historico'));
-      let totalQuestoes   = 0;
-      let totalTentativas = 0;
-      let totalAcertos    = 0;
-      let totalErros      = 0;
+      // ── Histórico de questões ──
+      const snapHist = await getDocs(collection(getDb(), 'usuarios', u.uid, 'sm_historico'));
+      let totalQuestoes = 0, totalTentativas = 0, totalAcertos = 0, totalErros = 0;
       const discs = new Set();
 
-      snap.forEach(d => {
-        // id do doc = "{discId}__{sem}"  ex: "design__2026.2"
+      snapHist.forEach(d => {
         const idx = d.id.indexOf('__');
         if (idx !== -1) discs.add(d.id.slice(0, idx));
-
         const data = d.data();
         Object.values(data).forEach(q => {
           if (q && typeof q === 'object') {
@@ -1063,16 +1043,35 @@ async function _carregarSmProgress(estudantes) {
         ? Math.round((totalAcertos / totalTentativas) * 100)
         : null;
 
+      // ── Pontuações (sm_pontuacoes) ──
+      const snapPont = await getDocs(collection(getDb(), 'usuarios', u.uid, 'sm_pontuacoes'));
+      let melhorValorNum = 0;
+      let melhorValorStr = '—';
+      let totalPartidas  = 0;
+
+      snapPont.forEach(d => {
+        const data = d.data();
+        if (Array.isArray(data.historico)) totalPartidas += data.historico.length;
+        const vn = data.melhor?.valorNum ?? 0;
+        if (vn > melhorValorNum) {
+          melhorValorNum = vn;
+          melhorValorStr = data.melhor?.valor ?? '—';
+        }
+      });
+
       return {
         uid: u.uid, nome: u.nome ?? u.uid, avatar: u.avatar ?? '🎓',
-        docs: snap.size, discs: discs.size,
+        docsHist: snapHist.size, docsPont: snapPont.size,
+        discs: discs.size,
         totalQuestoes, totalTentativas, totalAcertos, totalErros, taxa,
+        melhorValorStr, melhorValorNum, totalPartidas,
       };
     } catch {
       return {
         uid: u.uid, nome: u.nome ?? u.uid, avatar: u.avatar ?? '🎓',
-        docs: 0, discs: 0,
+        docsHist: 0, docsPont: 0, discs: 0,
         totalQuestoes: 0, totalTentativas: 0, totalAcertos: 0, totalErros: 0, taxa: null,
+        melhorValorStr: '—', melhorValorNum: 0, totalPartidas: 0,
       };
     }
   }));
@@ -1089,8 +1088,9 @@ function _buildSmTable(dados) {
       <thead><tr>
         <th>Usuário</th>
         <th>ID</th>
-        <th>Disciplinas</th>
-        <th>Questões vistas</th>
+        <th>Discs</th>
+        <th>Partidas</th>
+        <th>💰 Melhor prêmio</th>
         <th>✅ Acertos</th>
         <th>❌ Erros</th>
         <th>Taxa</th>
@@ -1103,6 +1103,15 @@ function _buildSmTable(dados) {
                          : r.taxa >= 40    ? 'badge--amber'
                          :                   'badge--rose';
           const taxaLabel = r.taxa === null ? '—' : `${r.taxa}%`;
+
+          const premioClass = r.melhorValorNum >= 1000000 ? 'badge--gold'
+                            : r.melhorValorNum >= 300000  ? 'badge--amber'
+                            : r.melhorValorNum >= 30000   ? 'badge--teal'
+                            : r.melhorValorNum > 0        ? 'badge--blue'
+                            :                               'badge--grey';
+
+          const semDados = r.docsHist === 0 && r.docsPont === 0;
+
           return `
           <tr data-uid="${r.uid}">
             <td><span style="font-size:1.1rem;margin-right:6px">${r.avatar}</span>${r.nome}</td>
@@ -1113,8 +1122,13 @@ function _buildSmTable(dados) {
               </span>
             </td>
             <td>
-              <span class="badge ${r.totalQuestoes > 0 ? 'badge--blue' : 'badge--grey'}">
-                ${r.totalQuestoes}
+              <span class="badge ${r.totalPartidas > 0 ? 'badge--blue' : 'badge--grey'}">
+                ${r.totalPartidas}
+              </span>
+            </td>
+            <td>
+              <span class="badge ${premioClass}" title="${r.melhorValorNum > 0 ? r.melhorValorStr : 'Sem pontuação'}">
+                ${r.melhorValorStr}
               </span>
             </td>
             <td>
@@ -1130,11 +1144,16 @@ function _buildSmTable(dados) {
             <td>
               <span class="badge ${taxaClass}">${taxaLabel}</span>
             </td>
-            <td>
-              <button class="icon-btn icon-btn--rose btn-limpar-sm"
+            <td style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center;">
+              <button class="icon-btn icon-btn--amber btn-limpar-sm-pont"
                       data-uid="${r.uid}" data-nome="${r.nome}"
-                      ${r.docs === 0 ? 'disabled' : ''}>
-                🧹 Limpar
+                      ${r.docsPont === 0 ? 'disabled' : ''}>
+                💰 Pontuação
+              </button>
+              <button class="icon-btn icon-btn--rose btn-limpar-sm-tudo"
+                      data-uid="${r.uid}" data-nome="${r.nome}"
+                      ${semDados ? 'disabled' : ''}>
+                🧹 Tudo
               </button>
             </td>
           </tr>`;
@@ -1143,16 +1162,34 @@ function _buildSmTable(dados) {
     </table>`;
 }
 
-function _bindSmActions(estudantes, dados) {
-  document.querySelectorAll('.btn-limpar-sm').forEach(btn => {
+function _bindSmActions(estudantes) {
+  // Limpar apenas pontuações
+  document.querySelectorAll('.btn-limpar-sm-pont').forEach(btn => {
     btn.addEventListener('click', () =>
       _modalConfirmar(
-        `Limpar Show do Milhão de <strong>${btn.dataset.nome}</strong>?`,
-        'Apaga todo o histórico de Show do Milhão do Firestore.',
-        'Limpar',
+        `Limpar pontuações de <strong>${btn.dataset.nome}</strong>?`,
+        'Apaga o histórico de prêmios. O progresso de questões é mantido.',
+        'Limpar pontuações',
         async () => {
-          await _limparSmUsuario(btn.dataset.uid);
-          _toast(`Histórico SM de ${btn.dataset.nome} limpo! 🧹`);
+          await _limparSmPontuacoes(btn.dataset.uid);
+          _toast(`Pontuações SM de ${btn.dataset.nome} limpas! 💰`);
+          _carregarSmProgress(estudantes);
+        },
+        btn
+      )
+    );
+  });
+
+  // Limpar tudo (histórico de questões + pontuações)
+  document.querySelectorAll('.btn-limpar-sm-tudo').forEach(btn => {
+    btn.addEventListener('click', () =>
+      _modalConfirmar(
+        `Limpar TUDO do Show do Milhão de <strong>${btn.dataset.nome}</strong>?`,
+        'Apaga histórico de questões E histórico de pontuações/prêmios permanentemente.',
+        'Limpar tudo',
+        async () => {
+          await _limparSmCompleto(btn.dataset.uid);
+          _toast(`Show do Milhão de ${btn.dataset.nome} zerado! 🧹`);
           _carregarSmProgress(estudantes);
         },
         btn
@@ -1161,36 +1198,36 @@ function _bindSmActions(estudantes, dados) {
   });
 }
 
-async function _limparSmUsuario(uid) {
+async function _limparSmPontuacoes(uid) {
   try {
-    const snap = await getDocs(collection(getDb(), 'usuarios', uid, 'sm_historico'));
+    const snap = await getDocs(collection(getDb(), 'usuarios', uid, 'sm_pontuacoes'));
     await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
-    console.log(`[admin] _limparSmUsuario: uid="${uid}" ok (${snap.size} docs)`);
+    console.log(`[admin] _limparSmPontuacoes: uid="${uid}" ok (${snap.size} docs)`);
   } catch (err) {
-    console.error('[admin] _limparSmUsuario erro:', err);
+    console.error('[admin] _limparSmPontuacoes erro:', err);
   }
 }
 
+async function _limparSmHistorico(uid) {
+  try {
+    const snap = await getDocs(collection(getDb(), 'usuarios', uid, 'sm_historico'));
+    await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
+    console.log(`[admin] _limparSmHistorico: uid="${uid}" ok (${snap.size} docs)`);
+  } catch (err) {
+    console.error('[admin] _limparSmHistorico erro:', err);
+  }
+}
 
-function _bindProgressActions() {
-  document.querySelectorAll('.btn-limpar-quiz-prog').forEach(btn => {
-    btn.addEventListener('click', () =>
-      _modalConfirmar(
-        `Limpar quiz de <strong>${btn.dataset.nome}</strong>?`,
-        'Remove todo o progresso de quiz salvo no Firestore.',
-        'Limpar',
-        async () => {
-          const res = await limparTodoQuizUsuario(btn.dataset.uid);
-          _toast(res.ok ? `Quiz de ${btn.dataset.nome} limpo! 🧹` : 'Erro ao limpar.', !res.ok);
-        },
-        btn
-      )
-    );
-  });
+async function _limparSmCompleto(uid) {
+  await Promise.all([
+    _limparSmHistorico(uid),
+    _limparSmPontuacoes(uid),
+  ]);
 }
 
 /* ══════════════════════════════════════════════════════════
    SEÇÃO — RANKING
+   Tabs: Quiz | Show do Milhão
    ══════════════════════════════════════════════════════════ */
 
 async function _renderRanking() {
@@ -1198,17 +1235,55 @@ async function _renderRanking() {
 
   document.getElementById('content').innerHTML = `
     <div class="section-content">
-      <div class="section-panel">
+
+      <div class="tabs" id="ranking-tabs">
+        <button class="tab active" data-tab="quiz">🧠 Quiz</button>
+        <button class="tab"        data-tab="sm">⭐ Show do Milhão</button>
+      </div>
+
+      <!-- RANKING QUIZ -->
+      <div class="section-panel" id="ranking-panel-quiz">
         <div class="panel-header">
           <span class="panel-title">Ranking — Quizzes Finalizados</span>
         </div>
-        <div id="ranking-wrap">
+        <div id="ranking-quiz-wrap">
           <div class="init-loading"><div class="spinner"></div><p>Calculando…</p></div>
         </div>
       </div>
+
+      <!-- RANKING SHOW DO MILHÃO -->
+      <div class="section-panel" id="ranking-panel-sm" style="display:none">
+        <div class="panel-header">
+          <span class="panel-title">Ranking — Show do Milhão</span>
+          <span class="panel-count" style="font-size:.78rem;color:var(--text-3)">Melhor prêmio conquistado · Desempate por precisão</span>
+        </div>
+        <div id="ranking-sm-wrap">
+          <div class="init-loading"><div class="spinner"></div><p>Calculando…</p></div>
+        </div>
+      </div>
+
     </div>`;
 
+  document.getElementById('ranking-tabs').addEventListener('click', e => {
+    const btn = e.target.closest('.tab');
+    if (!btn) return;
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('#ranking-tabs .tab').forEach(b =>
+      b.classList.toggle('active', b.dataset.tab === tab)
+    );
+    document.getElementById('ranking-panel-quiz').style.display = tab === 'quiz' ? '' : 'none';
+    document.getElementById('ranking-panel-sm').style.display   = tab === 'sm'   ? '' : 'none';
+  });
+
   const estudantes = users.filter(u => !u.admin);
+  _carregarRankingQuiz(estudantes);
+  _carregarRankingSm(estudantes);
+}
+
+/* ── Ranking Quiz ── */
+async function _carregarRankingQuiz(estudantes) {
+  const wrap = document.getElementById('ranking-quiz-wrap');
+
   const scores = await Promise.all(estudantes.map(async u => {
     try {
       const snap = await getDocs(collection(getDb(), 'usuarios', u.uid, 'quiz_respostas'));
@@ -1224,12 +1299,8 @@ async function _renderRanking() {
 
   const MEDALS  = ['🥇','🥈','🥉'];
   const CLASSES = ['lb-item--top1','lb-item--top2','lb-item--top3'];
-  const wrap    = document.getElementById('ranking-wrap');
 
-  if (!scores.length) {
-    wrap.innerHTML = `<div class="empty-state">Sem dados ainda.</div>`;
-    return;
-  }
+  if (!scores.length) { wrap.innerHTML = `<div class="empty-state">Sem dados ainda.</div>`; return; }
 
   wrap.innerHTML = `<div class="leaderboard">
     ${scores.map((s, i) => `
@@ -1249,12 +1320,121 @@ async function _renderRanking() {
   </div>`;
 }
 
+/* ── Ranking Show do Milhão ── */
+async function _carregarRankingSm(estudantes) {
+  const wrap = document.getElementById('ranking-sm-wrap');
+
+  const scores = await Promise.all(estudantes.map(async u => {
+    try {
+      const snap = await getDocs(collection(getDb(), 'usuarios', u.uid, 'sm_pontuacoes'));
+      let melhorValorNum = 0;
+      let melhorValorStr = '—';
+      let melhorAcertos  = 0;
+      let melhorPrecisao = 0;
+      let melhorTempo    = '—';
+      let melhorData     = 0;
+      let totalPartidas  = 0;
+
+      snap.forEach(d => {
+        const data = d.data();
+        if (Array.isArray(data.historico)) totalPartidas += data.historico.length;
+        const vn = data.melhor?.valorNum ?? 0;
+        if (vn > melhorValorNum) {
+          melhorValorNum = vn;
+          melhorValorStr = data.melhor?.valor    ?? '—';
+          melhorAcertos  = data.melhor?.acertos  ?? 0;
+          melhorPrecisao = data.melhor?.precisao ?? 0;
+          melhorTempo    = data.melhor?.tempo     ?? '—';
+          melhorData     = data.melhor?.data      ?? 0;
+        }
+      });
+
+      return {
+        uid: u.uid, nome: u.nome ?? u.uid, avatar: u.avatar ?? '🎓',
+        melhorValorNum, melhorValorStr,
+        melhorAcertos, melhorPrecisao, melhorTempo, melhorData,
+        totalPartidas,
+      };
+    } catch {
+      return {
+        uid: u.uid, nome: u.nome ?? u.uid, avatar: u.avatar ?? '🎓',
+        melhorValorNum: 0, melhorValorStr: '—',
+        melhorAcertos: 0, melhorPrecisao: 0, melhorTempo: '—', melhorData: 0,
+        totalPartidas: 0,
+      };
+    }
+  }));
+
+  // Maior prêmio → maior precisão (desempate) → mais partidas
+  scores.sort((a, b) => {
+    if (b.melhorValorNum !== a.melhorValorNum) return b.melhorValorNum - a.melhorValorNum;
+    if (b.melhorPrecisao !== a.melhorPrecisao) return b.melhorPrecisao - a.melhorPrecisao;
+    return b.totalPartidas - a.totalPartidas;
+  });
+
+  if (!scores.length) { wrap.innerHTML = `<div class="empty-state">Sem dados ainda.</div>`; return; }
+
+  const MEDALS  = ['🥇','🥈','🥉'];
+  const CLASSES = ['lb-item--top1','lb-item--top2','lb-item--top3'];
+
+  const comPontos = scores.filter(s => s.melhorValorNum > 0);
+  const semPontos = scores.filter(s => s.melhorValorNum === 0);
+
+  const renderItem = (s, posicao, classeEl) => {
+    const premioClass = s.melhorValorNum >= 1000000 ? 'badge--gold'
+                      : s.melhorValorNum >= 300000  ? 'badge--amber'
+                      : s.melhorValorNum >= 30000   ? 'badge--teal'
+                      : s.melhorValorNum > 0        ? 'badge--blue'
+                      :                               'badge--grey';
+    const dataStr = s.melhorData
+      ? new Date(s.melhorData).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'2-digit' })
+      : '';
+
+    return `
+      <div class="lb-item ${classeEl}">
+        <div class="lb-rank">${posicao}</div>
+        <div class="lb-avatar">${s.avatar}</div>
+        <div class="lb-info">
+          <strong>${s.nome}</strong>
+          <span style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+            <span>${s.uid}</span>
+            ${s.totalPartidas > 0
+              ? `<span class="badge badge--grey" style="font-size:.65rem">${s.totalPartidas} partida${s.totalPartidas !== 1 ? 's' : ''}</span>`
+              : ''}
+            ${dataStr ? `<span style="font-size:.65rem;color:var(--text-3)">${dataStr}</span>` : ''}
+          </span>
+        </div>
+        <div class="lb-score">
+          <span class="badge ${premioClass}" style="font-size:.8rem;padding:4px 10px">
+            ${s.melhorValorStr}
+          </span>
+          ${s.melhorValorNum > 0
+            ? `<span class="lb-unit" style="margin-top:3px">${s.melhorAcertos} acerto${s.melhorAcertos !== 1 ? 's' : ''} · ${s.melhorPrecisao}%</span>`
+            : `<span class="lb-unit" style="margin-top:3px;color:var(--text-3)">sem partidas</span>`}
+        </div>
+      </div>`;
+  };
+
+  wrap.innerHTML = `<div class="leaderboard">
+    ${comPontos.map((s, i) =>
+        renderItem(s, MEDALS[i] ?? `#${i+1}`, CLASSES[i] ?? '')
+      ).join('')}
+    ${semPontos.length > 0 ? `
+      <div style="text-align:center;padding:10px 0 4px;color:var(--text-3);font-size:.75rem;letter-spacing:.5px">
+        — sem pontuação registrada —
+      </div>
+      ${semPontos.map((s, i) =>
+          renderItem(s, `#${comPontos.length + i + 1}`, '')
+        ).join('')}
+    ` : ''}
+  </div>`;
+}
+
 /* ══════════════════════════════════════════════════════════
    MODAL — CONFIRMAR (popover flutuante)
    ══════════════════════════════════════════════════════════ */
 
 function _modalConfirmar(titulo, subtitulo, labelConfirmar, onConfirm, anchorEl = null) {
-  // Remove qualquer popover anterior
   document.getElementById('confirm-modal')?.remove();
 
   const el = document.createElement('div');
@@ -1274,34 +1454,25 @@ function _modalConfirmar(titulo, subtitulo, labelConfirmar, onConfirm, anchorEl 
 
   document.body.appendChild(el);
 
-  /* ── Posicionamento ancorado ao botão ── */
   if (anchorEl) {
     const popW = 210;
-
     requestAnimationFrame(() => {
       const rect = anchorEl.getBoundingClientRect();
       const popH = el.offsetHeight;
-
       let left = rect.right - popW;
-      let top  = rect.top - popH - 10; // acima do botão por padrão
-
-      // Se não couber acima, posiciona abaixo
+      let top  = rect.top - popH - 10;
       if (top < 8) {
         top = rect.bottom + 8;
         el.querySelector('.mini-confirm__arrow').style.cssText =
           'bottom:auto;top:-5px;transform:rotate(225deg)';
       }
-
-      // Garante que não sai da tela pela esquerda
       if (left < 8) left = 8;
-
       el.style.left  = left + 'px';
       el.style.top   = top  + 'px';
       el.style.width = popW + 'px';
       el.classList.add('mini-confirm--open');
     });
   } else {
-    /* Fallback: centro da tela */
     el.style.left            = '50%';
     el.style.top             = '50%';
     el.style.transform       = 'translate(-50%,-50%) scale(1)';
@@ -1309,7 +1480,6 @@ function _modalConfirmar(titulo, subtitulo, labelConfirmar, onConfirm, anchorEl 
     requestAnimationFrame(() => el.classList.add('mini-confirm--open'));
   }
 
-  /* ── Fechar com animação ── */
   function _fechar() {
     el.classList.add('mini-confirm--closing');
     el.addEventListener('transitionend', () => el.remove(), { once: true });
@@ -1321,7 +1491,6 @@ function _modalConfirmar(titulo, subtitulo, labelConfirmar, onConfirm, anchorEl 
     await onConfirm();
   });
 
-  /* Clique fora fecha */
   setTimeout(() => {
     document.addEventListener('click', function handler(e) {
       if (!el.contains(e.target)) {
@@ -1382,16 +1551,15 @@ function _modalCriarUsuario() {
   document.getElementById('mc-cancel').addEventListener('click', () => overlay.remove());
 
   document.getElementById('mc-nome').addEventListener('input', e => {
-    /* ── Navegação entre campos com Enter ── */
-document.getElementById('mc-nome').addEventListener('keydown', e => {
-  if (e.key === 'Enter') document.getElementById('mc-id').focus();
-});
-document.getElementById('mc-id').addEventListener('keydown', e => {
-  if (e.key === 'Enter') document.getElementById('mc-pin').focus();
-});
-document.getElementById('mc-pin').addEventListener('keydown', e => {
-  if (e.key === 'Enter') document.getElementById('mc-save').click();
-});
+    document.getElementById('mc-nome').addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('mc-id').focus();
+    });
+    document.getElementById('mc-id').addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('mc-pin').focus();
+    });
+    document.getElementById('mc-pin').addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('mc-save').click();
+    });
     const idEl = document.getElementById('mc-id');
     if (!idEl.dataset.editado) {
       idEl.value = e.target.value.toLowerCase()
@@ -1524,7 +1692,7 @@ function _modalResetPin(uid, nome, isAdmin) {
 
   overlay.querySelector('.modal-box').innerHTML = `
     <div class="modal-header">
-      <span class="modal-title">Resetar PIN — ${nome}</span>
+      <span class="panel-title">Resetar PIN — ${nome}</span>
       <button class="modal-close" id="rp-close">✕</button>
     </div>
     <div class="modal-body">

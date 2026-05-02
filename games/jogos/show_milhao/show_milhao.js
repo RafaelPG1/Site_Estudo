@@ -19,6 +19,8 @@ import {
   carregarHistoricoSM,
   salvarResultadoSM,
   limparHistoricoSM,
+  salvarPontuacaoSM,
+  melhorPontuacaoLocalSM,
   debugEstado,
   smLog, smWarn, smError,
 } from './storage_sm.js';
@@ -319,6 +321,53 @@ function criarTimer(totalInicial) {
    RENDERIZAR QUESTÃO
    ══════════════════════════════════════════════════════════ */
 
+/* ══════════════════════════════════════════════════════════
+   BADGE DE HISTÓRICO POR QUESTÃO
+   ══════════════════════════════════════════════════════════ */
+
+function renderizarBadgeHistorico(questaoId) {
+  const badge    = $('sm-hist-badge');
+  const elTent   = $('sm-hist-tentativas');
+  const elTaxa   = $('sm-hist-taxa');
+  const elStatus = $('sm-hist-status');
+
+  if (!badge) return;
+
+  const h = estado.historicoSM[questaoId];
+
+  // Sem histórico → oculta o badge
+  if (!h || h.tentativas === 0) {
+    badge.hidden = true;
+    badge.className = 'sm-hist-badge';
+    return;
+  }
+
+  const { tentativas, acertos, erros } = h;
+  const taxa = Math.round((acertos / tentativas) * 100);
+
+  let statusMod  = '';
+  let statusText = '';
+
+  if (erros > acertos || (tentativas >= 3 && taxa < 50)) {
+    statusMod  = 'sm-hist-badge--critico';
+    statusText = 'crítico';
+  } else if (tentativas >= 3 && taxa >= 80) {
+    statusMod  = 'sm-hist-badge--dominado';
+    statusText = 'dominado';
+  } else if (taxa >= 50) {
+    statusMod  = 'sm-hist-badge--ok';
+    statusText = 'ok';
+  }
+
+  if (elTent)   elTent.textContent   = tentativas;
+  if (elTaxa)   elTaxa.textContent   = `${taxa}%`;
+  if (elStatus) elStatus.textContent = statusText;
+
+  badge.className = `sm-hist-badge${statusMod ? ' ' + statusMod : ''}`;
+  void badge.offsetWidth; // força reflow para re-disparar animação
+  badge.hidden = false;
+}
+
 function renderizarQuestao() {
   const pergunta    = estado.perguntas[estado.indice];
   const resp        = estado.respostas[estado.indice];
@@ -330,6 +379,8 @@ function renderizarQuestao() {
     `| resp: ${resp ?? 'pendente'}`,
     `| acertos: ${estado.acertos}`,
     `| temErro: ${estado.temErro}`);
+
+  renderizarBadgeHistorico(pergunta.id);
 
   if (el.numPergunta)  el.numPergunta.textContent  = `${num}/${estado.perguntas.length}`;
   if (el.perguntaNivel) el.perguntaNivel.textContent = `Nível ${num} — ${pergunta.nivel ?? ''}`;
@@ -568,6 +619,28 @@ async function finalizarJogo() {
   // Salva histórico no Firebase (mesmo padrão do vdd_falso)
   await salvarResultadoSM(estado.usuario, estado.discId, estado.sem, resultados);
 
+  // ── Salva pontuação desta partida ──────────────────────────
+  const totalSegFin   = Math.round((Date.now() - (estado.tempoInicio ?? Date.now())) / 1000);
+  const mmFin         = Math.floor(totalSegFin / 60);
+  const ssFin         = String(totalSegFin % 60).padStart(2, '0');
+  const respondidosFin = estado.respostas.filter(r => r !== null && r !== undefined).length;
+  const pctFin         = respondidosFin > 0 ? Math.round((estado.acertos / respondidosFin) * 100) : 0;
+
+  // Converte 'R$ 1.000.000' → número puro para comparação de ranking
+  const valorStr   = estado.acertos > 0 ? PREMIOS[estado.acertos - 1].valor : 'R$ 0';
+  const valorNum   = parseInt(valorStr.replace(/\D/g, ''), 10) || 0;
+
+  await salvarPontuacaoSM(estado.usuario, estado.discId, estado.sem, {
+    valor:    valorStr,
+    valorNum,
+    acertos:  estado.acertos,
+    erros:    respondidosFin - estado.acertos,
+    precisao: pctFin,
+    tempo:    `${mmFin}:${ssFin}`,
+    data:     Date.now(),
+  });
+  smLog(`Pontuação registrada: ${valorStr} | acertos ${estado.acertos} | ${pctFin}% | ${mmFin}:${ssFin}`);
+
   // Apaga o save de partida em curso (partida concluída)
   limparEstadoPartida(estado.usuario, estado.discId, estado.sem);
 
@@ -610,6 +683,17 @@ async function finalizarJogo() {
   if (elSimb)    elSimb.textContent    = emoji;
   if (elTitulo)  elTitulo.textContent  = titulo;
   if (elValor)   elValor.textContent   = valorFinal;
+
+  // Melhor pontuação histórica (síncrono — já estará em localStorage após salvarPontuacaoSM)
+  const melhor = melhorPontuacaoLocalSM(estado.usuario, estado.discId, estado.sem);
+  const elMelhor = document.getElementById('resultado-melhor');
+  if (elMelhor && melhor) {
+    const ehNovo = melhor.valorNum === (parseInt(valorFinal.replace(/\D/g, ''), 10) || 0) &&
+                   melhor.acertos  === estado.acertos;
+    elMelhor.textContent = `🏅 Melhor: ${melhor.valor} (${melhor.acertos} acertos · ${melhor.precisao}%)`;
+    elMelhor.style.display = 'block';
+    if (ehNovo) elMelhor.textContent = '🎉 Novo recorde! ' + elMelhor.textContent.slice(3);
+  }
   if (elAcertos) elAcertos.textContent = estado.acertos;
   if (elErros)   elErros.textContent   = respondidas - estado.acertos;
   if (elPrecisao) elPrecisao.textContent = pct + '%';

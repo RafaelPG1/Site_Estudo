@@ -118,6 +118,34 @@
 
   <!-- Pergunta -->
   <div class="card-pergunta">
+
+    <!-- BADGE DE HISTÓRICO -->
+    <div class="sm-hist-badge" id="sm-hist-badge" aria-live="polite" hidden>
+      <!-- Segmento 1: tentativas -->
+      <span class="sm-hist-badge__seg">
+        <svg class="sm-hist-badge__ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+          <circle cx="8" cy="8" r="6"/>
+          <path d="M5.5 8l1.5 1.5 3.5-3.5" stroke-linecap="round"/>
+        </svg>
+        <span id="sm-hist-tentativas">0</span>
+        <span aria-hidden="true"> tent.</span>
+      </span>
+      <!-- Divisor -->
+      <span class="sm-hist-badge__div" aria-hidden="true"></span>
+      <!-- Segmento 2: taxa de acerto -->
+      <span class="sm-hist-badge__seg">
+        <svg class="sm-hist-badge__ico" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM7.25 10.5V7h1.5v3.5h-1.5zm0-4.5V4.5h1.5V6h-1.5z"/>
+        </svg>
+        <span id="sm-hist-taxa">0%</span>
+        <span aria-hidden="true"> acerto</span>
+      </span>
+      <!-- Divisor -->
+      <span class="sm-hist-badge__div" aria-hidden="true"></span>
+      <!-- Segmento 3: status -->
+      <span class="sm-hist-badge__status" id="sm-hist-status"></span>
+    </div>
+
     <div class="pergunta-nivel" id="pergunta-nivel">Nível 1</div>
     <p class="pergunta-texto" id="pergunta-texto">Carregando pergunta...</p>
   </div>
@@ -168,6 +196,7 @@
     <div class="fim-icone"  id="resultado-simbolo">🏆</div>
     <h2 class="fim-titulo"  id="resultado-titulo">Parabéns!</h2>
     <div class="fim-valor"  id="resultado-valor">R$ 0</div>
+    <div class="fim-melhor" id="resultado-melhor" style="display:none;"></div>
 
     <div class="sm-stats-grid">
       <div class="sm-stat-item">

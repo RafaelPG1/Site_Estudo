@@ -675,6 +675,19 @@ body:has(#screen-question:not(.hidden)) #header-controls {
   letter-spacing: 2px;
 }
 
+/* Badge de melhor pontuação histórica */
+.fim-melhor {
+  font-size: .85rem;
+  font-weight: 600;
+  color: rgba(255, 215, 0, 0.75);
+  background: rgba(255, 215, 0, 0.07);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 20px;
+  padding: 6px 16px;
+  letter-spacing: .3px;
+  animation: fadeDown .5s ease .2s both;
+}
+
 /* ══════════════════════════════════════════════════════════
    CABEÇALHO — estilo vdd_falso adaptado para Show do Milhão
    ══════════════════════════════════════════════════════════ */
@@ -846,4 +859,116 @@ body:has(#screen-question:not(.hidden)) #header-controls {
 @keyframes pendente-pulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(255,23,68,0.3); }
   50%       { box-shadow: 0 0 0 4px rgba(255,23,68,0); }
+}
+/* ══════════════════════════════════════════════════════════
+   BADGE DE HISTÓRICO — Show do Milhão
+   Mesmo padrão visual do vdd_falso, com identidade dourada
+   ══════════════════════════════════════════════════════════ */
+
+.card-pergunta {
+  position: relative; /* ancora o badge */
+}
+
+.sm-hist-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: inline-flex;
+  align-items: stretch;
+  gap: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .10);
+  background: rgba(255, 255, 255, .06);
+  color: rgba(255, 255, 255, .60);
+  font-size: .65rem;
+  font-weight: 600;
+  font-family: 'Exo 2', sans-serif;
+  z-index: 3;
+  pointer-events: none;
+  transition: background .2s, color .2s, border-color .2s;
+  animation: sm-badge-pop .3s ease both;
+}
+
+.sm-hist-badge__seg {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  white-space: nowrap;
+}
+
+.sm-hist-badge__div {
+  width: 1px;
+  align-self: stretch;
+  background: currentColor;
+  opacity: .25;
+  flex-shrink: 0;
+}
+
+.sm-hist-badge__ico {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+  opacity: .75;
+}
+
+.sm-hist-badge__status {
+  display: none;
+  align-items: center;
+  padding: 4px 9px;
+  font-size: .6rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.sm-hist-badge__status:not(:empty) {
+  display: flex;
+}
+
+/* — Crítico: vermelho — */
+.sm-hist-badge--critico {
+  background: rgba(239, 68, 68, .10);
+  border-color: rgba(239, 68, 68, .30);
+  color: #f87171;
+}
+.sm-hist-badge--critico .sm-hist-badge__status {
+  background: rgba(239, 68, 68, .18);
+}
+
+/* — Ok: dourado (coerente com o tema SM) — */
+.sm-hist-badge--ok {
+  background: rgba(255, 215, 0, .08);
+  border-color: rgba(255, 215, 0, .28);
+  color: #ffd700;
+}
+.sm-hist-badge--ok .sm-hist-badge__status {
+  background: rgba(255, 215, 0, .15);
+}
+
+/* — Dominado: verde — */
+.sm-hist-badge--dominado {
+  background: rgba(52, 211, 153, .08);
+  border-color: rgba(52, 211, 153, .26);
+  color: #34d399;
+}
+.sm-hist-badge--dominado .sm-hist-badge__status {
+  background: rgba(52, 211, 153, .16);
+}
+
+@keyframes sm-badge-pop {
+  from { opacity: 0; transform: scale(.72); }
+  to   { opacity: 1; transform: scale(1);   }
+}
+
+@media (max-width: 480px) {
+  .sm-hist-badge {
+    top: 10px;
+    right: 10px;
+    font-size: .6rem;
+    border-radius: 8px;
+  }
+  .sm-hist-badge__seg    { padding: 3px 7px; }
+  .sm-hist-badge__status { padding: 3px 7px; }
 }
