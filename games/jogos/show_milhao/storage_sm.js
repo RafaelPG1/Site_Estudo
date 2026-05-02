@@ -1,88 +1,229 @@
-/* ═══════════════════════════════════════════════════
-   NEXUS STUDY — games/jogos/show_milhao/storage_sm.js
-   Histórico de desempenho do Show do Milhão persistido
-   no Firestore + localStorage (fallback/cache).
+/* ═══════════════════════════════════════════════════════════════
+   NEXUS STUDY — show_milhao/storage_sm.js
+   Persistência 100% localStorage — sem Firebase, sem dependências externas.
 
-   Chave local : nexus_sm_{usuario}_{discId}_{sem}
-   Firestore   : usuarios/{uid}/sm_historico/{sem}_{discId}
+   Chaves usadas:
+     sm_estado__{discId}__{sem}        ← estado completo da partida em curso
+     sm_historico__{uid}__{discId}__{sem}  ← histórico acumulado de desempenho
 
-   Estrutura de cada entrada:
+   Estado da partida (salvo após CADA ação):
      {
-       [questaoId]: {
-         tentativas: number,
-         acertos:    number,
-         erros:      number,
-         ultimaVez:  timestamp (ms),
-         acertosConsecutivos: number,
-       }
+       indice:         number,       ← questão atual
+       acertos:        number,       ← prêmios conquistados
+       respostas:      array,        ← undefined | null | 'A'|'B'|'C'|'D'
+       tempos:         number[],     ← tempo restante em cada questão
+       temErro:        boolean,
+       indicePendente: number|null,
+       premioPendente: number|null,
+       tempoInicio:    number,       ← Date.now() do início
+       perguntas:      object[],     ← deck embaralhado (IDs + dados completos)
+       discId:         string,
+       sem:            string,
+       uid:            string,
+       versao:         number,       ← para invalidar saves antigos
      }
+═══════════════════════════════════════════════════════════════ */
 
-   Nota: questões com tempo esgotado (resp === null)
-   são neutras — não incrementam acertos nem erros.
-   O filtro é aplicado tanto no caller (show_milhao.js)
-   quanto aqui como defesa em profundidade.
-═══════════════════════════════════════════════════ */
+const VERSAO_SAVE = 3; // incremente se mudar a estrutura do estado
 
-import { doc, getDoc, setDoc, deleteDoc }
-  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-import { getDb } from '../../../src/firebase.js';
+/* ── Prefixos de chave ─────────────────────────────────────── */
+const _chaveEstado    = (discId, sem)       => `sm_estado__${discId}__${sem}`;
+const _chaveHistorico = (uid, discId, sem)  => `sm_historico__${uid}__${discId}__${sem}`;
 
-/* ── Helpers de chave ── */
-const _chaveLocal = (usuario, discId, sem) =>
-  `nexus_sm_${usuario}_${discId}_${sem}`;
+/* ════════════════════════════════════════════════════════════
+   DEBUG — log prefixado, sempre ativo
+════════════════════════════════════════════════════════════ */
+export function smLog(...args) {
+  console.log('[SM-Storage]', ...args);
+}
+export function smWarn(...args) {
+  console.warn('[SM-Storage ⚠]', ...args);
+}
+export function smError(...args) {
+  console.error('[SM-Storage ✖]', ...args);
+}
 
-const _docRef = (usuario, discId, sem) =>
-  doc(getDb(), 'usuarios', usuario, 'sm_historico', `${sem}_${discId}`);
+/* ════════════════════════════════════════════════════════════
+   HELPERS INTERNOS
+════════════════════════════════════════════════════════════ */
 
-/* ══════════════════════════════════════════════════
-   CARREGAR histórico completo da disciplina
-══════════════════════════════════════════════════ */
-export async function carregarHistoricoSM(usuario, discId, sem) {
-  if (!usuario || usuario === 'visitante') {
-    return _lerLocal(usuario, discId, sem);
-  }
-
+/** Lê e parseia uma chave do localStorage. Retorna null em caso de falha. */
+function _ler(chave) {
   try {
-    const snap = await getDoc(_docRef(usuario, discId, sem));
-    if (snap.exists()) {
-      const dados = snap.data();
-      localStorage.setItem(
-        _chaveLocal(usuario, discId, sem),
-        JSON.stringify(dados),
-      );
-      console.log(`[storage_sm] Histórico carregado do Firestore: ${usuario}/${sem}_${discId}`);
-      return dados;
-    }
-    return _lerLocal(usuario, discId, sem);
+    const raw = localStorage.getItem(chave);
+    if (raw === null) return null;
+    return JSON.parse(raw);
   } catch (err) {
-    console.warn('[storage_sm] Firestore indisponível, usando localStorage:', err.message);
-    return _lerLocal(usuario, discId, sem);
+    smWarn(`Erro ao ler "${chave}":`, err.message);
+    return null;
   }
 }
 
-/* ══════════════════════════════════════════════════
-   SALVAR resultado de uma rodada
-   Recebe um array de resultados: [{ id, acertou, resp }]
+/**
+ * Escreve no localStorage e verifica que foi salvo corretamente.
+ * Retorna true em sucesso, false em falha.
+ */
+function _escrever(chave, dados) {
+  try {
+    const json = JSON.stringify(dados);
+    localStorage.setItem(chave, json);
 
-   Defesa em profundidade: questões com resp === null
-   (tempo esgotado) são excluídas antes de processar,
-   evitando contaminar o histórico com erros indevidos.
-══════════════════════════════════════════════════ */
-export async function salvarResultadoSM(usuario, discId, sem, resultados) {
-  const resultadosValidos = resultados.filter(
-    r => r.resp !== null && r.resp !== undefined
-  );
+    // Verificação pós-escrita obrigatória
+    const verificado = localStorage.getItem(chave);
+    if (verificado !== json) {
+      smError(`Verificação pós-escrita FALHOU para "${chave}". Dado não foi salvo!`);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    smError(`Erro ao escrever "${chave}":`, err.message);
+    return false;
+  }
+}
 
-  if (resultadosValidos.length === 0) return;
+/* ════════════════════════════════════════════════════════════
+   ESTADO DA PARTIDA EM CURSO
+   (salvo imediatamente após cada ação do usuário)
+════════════════════════════════════════════════════════════ */
 
-  // 1. Atualiza localStorage primeiro (rápido, nunca falha)
-  const atual = _lerLocal(usuario, discId, sem);
+/**
+ * Salva o estado completo da partida.
+ * DEVE ser chamado imediatamente após qualquer mudança de estado.
+ */
+export function salvarEstadoPartida(estado) {
+  const { discId, sem } = estado;
 
-  for (const { id, acertou } of resultadosValidos) {
+  if (!discId || !sem) {
+    smWarn('salvarEstadoPartida: discId ou sem ausente — abortando.', { discId, sem });
+    return false;
+  }
+
+  const payload = {
+    versao:         VERSAO_SAVE,
+    indice:         estado.indice,
+    acertos:        estado.acertos,
+    // JSON.stringify converte slots vazios (undefined) em null, que confunde com timeout.
+    // Usamos a string '__vazio__' como sentinela para "não respondida ainda".
+    respostas:      Array.from({ length: estado.respostas.length }, (_, i) =>
+                      estado.respostas[i] === undefined ? '__vazio__' : estado.respostas[i]
+                    ),
+    tempos:         estado.tempos,
+    temErro:        estado.temErro,
+    indicePendente: estado.indicePendente,
+    premioPendente: estado.premioPendente,
+    tempoInicio:    estado.tempoInicio,
+    perguntas:      estado.perguntas,
+    discId,
+    sem,
+    uid:            estado.usuario ?? '_local',
+    salvoEm:        Date.now(),
+  };
+
+  const chave = _chaveEstado(discId, sem);
+  const ok = _escrever(chave, payload);
+
+  if (ok) {
+    smLog(`Estado salvo ✓  [Q${estado.indice + 1} | acertos:${estado.acertos} | erros:${estado.temErro}]`,
+      `→ respostas: [${estado.respostas.map(r => r ?? '—').join(', ')}]`);
+  }
+
+  return ok;
+}
+
+/**
+ * Carrega o estado salvo de uma partida em curso.
+ * Retorna null se não houver save ou se estiver desatualizado/corrompido.
+ */
+export function carregarEstadoPartida(discId, sem) {
+  const chave = _chaveEstado(discId, sem);
+  const dados = _ler(chave);
+
+  if (!dados) {
+    smLog(`Sem partida salva para ${discId}/${sem}.`);
+    return null;
+  }
+
+  if (dados.versao !== VERSAO_SAVE) {
+    smWarn(`Save desatualizado (v${dados.versao} ≠ v${VERSAO_SAVE}) — descartando.`);
+    localStorage.removeItem(chave);
+    return null;
+  }
+
+  if (!dados.perguntas || !Array.isArray(dados.perguntas) || dados.perguntas.length === 0) {
+    smWarn('Save inválido (perguntas ausentes) — descartando.');
+    localStorage.removeItem(chave);
+    return null;
+  }
+
+  const idadeMin = Math.round((Date.now() - dados.salvoEm) / 60000);
+  smLog(`Partida salva encontrada ✓  (salva há ${idadeMin} min, Q${dados.indice + 1}/${dados.perguntas.length})`);
+
+  // Restaura sentinela '__vazio__' de volta para undefined (slot não respondido)
+  dados.respostas = dados.respostas.map(r => r === '__vazio__' ? undefined : r);
+
+  return dados;
+}
+
+/**
+ * Apaga o estado da partida em curso (ao finalizar ou reiniciar).
+ */
+export function limparEstadoPartida(discId, sem) {
+  const chave = _chaveEstado(discId, sem);
+  localStorage.removeItem(chave);
+  smLog(`Estado de partida apagado: ${chave}`);
+}
+
+/* ════════════════════════════════════════════════════════════
+   HISTÓRICO DE DESEMPENHO
+   (acumulado entre partidas — persiste para sempre)
+════════════════════════════════════════════════════════════ */
+
+/**
+ * Carrega o histórico acumulado de acertos/erros por questão.
+ * Retorna sempre um objeto (nunca null).
+ */
+export function carregarHistoricoSM(usuario, discId, sem) {
+  const uid   = usuario && usuario !== 'visitante' ? usuario : '_local';
+  const chave = _chaveHistorico(uid, discId, sem);
+  const dados = _ler(chave) ?? {};
+
+  smLog(`Histórico carregado: ${Object.keys(dados).length} questão(ões) com registro.`);
+  return dados;
+}
+
+/**
+ * Salva o resultado de uma rodada no histórico acumulado.
+ * resultados: [{ id, acertou, resp }]
+ * Questões com resp===null (timeout) são neutras e ignoradas.
+ */
+export function salvarResultadoSM(usuario, discId, sem, resultados) {
+  if (!Array.isArray(resultados) || resultados.length === 0) {
+    smWarn('salvarResultadoSM: lista vazia — nada a salvar.');
+    return false;
+  }
+
+  const validos = resultados.filter(r => r.resp !== null && r.resp !== undefined);
+
+  if (validos.length === 0) {
+    smLog('salvarResultadoSM: apenas timeouts — histórico não alterado.');
+    return false;
+  }
+
+  const uid   = usuario && usuario !== 'visitante' ? usuario : '_local';
+  const chave = _chaveHistorico(uid, discId, sem);
+
+  // Lê histórico atual
+  const atual = _ler(chave) ?? {};
+
+  // Aplica resultados desta rodada
+  for (const { id, acertou } of validos) {
+    if (!id) { smWarn('Questão sem id ignorada:', { id, acertou }); continue; }
+
     const entrada = atual[id] ?? {
       tentativas: 0, acertos: 0, erros: 0,
       ultimaVez: 0, acertosConsecutivos: 0,
     };
+
     entrada.tentativas++;
     if (acertou) {
       entrada.acertos++;
@@ -95,59 +236,69 @@ export async function salvarResultadoSM(usuario, discId, sem, resultados) {
     atual[id] = entrada;
   }
 
-  try {
-    localStorage.setItem(
-      _chaveLocal(usuario, discId, sem),
-      JSON.stringify(atual),
-    );
-  } catch (err) {
-    console.error('[storage_sm] Erro ao salvar localStorage:', err);
+  const ok = _escrever(chave, atual);
+
+  if (ok) {
+    smLog(`Histórico salvo ✓  ${validos.length} resultado(s) → total: ${Object.keys(atual).length} questão(ões).`);
+    smLog('Detalhe desta rodada:', validos.map(r => `${r.id}=${r.acertou ? '✓' : '✗'}`).join(' '));
   }
 
-  // 2. Sincroniza Firestore (merge para não sobrescrever outras questões)
-  if (!usuario || usuario === 'visitante') return;
+  return ok;
+}
 
-  try {
-    const patch = {};
-    for (const { id } of resultadosValidos) {
-      patch[id] = atual[id];
+/**
+ * Apaga o histórico acumulado de uma disciplina.
+ */
+export function limparHistoricoSM(usuario, discId, sem) {
+  const uid   = usuario && usuario !== 'visitante' ? usuario : '_local';
+  const chave = _chaveHistorico(uid, discId, sem);
+  localStorage.removeItem(chave);
+  smLog(`Histórico apagado: ${chave}`);
+}
+
+/* ════════════════════════════════════════════════════════════
+   DEBUG / UTILITÁRIOS
+════════════════════════════════════════════════════════════ */
+
+/** Imprime no console tudo que está salvo no localStorage do SM. */
+export function debugEstado(discId, sem) {
+  console.groupCollapsed('[SM-Debug] Estado completo do localStorage');
+
+  const estado = discId && sem ? _ler(_chaveEstado(discId, sem)) : null;
+  console.log('▶ Estado da partida:', estado ?? '(nenhum)');
+
+  const chaveHistRegex = /^sm_historico__/;
+  const historicos = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && chaveHistRegex.test(k)) {
+      historicos[k] = _ler(k);
     }
-    await setDoc(_docRef(usuario, discId, sem), patch, { merge: true });
-  } catch (err) {
-    console.warn('[storage_sm] Erro ao salvar no Firestore (dados no localStorage):', err.message);
   }
+  console.log('▶ Históricos salvos:', historicos);
+
+  const todasChavesSM = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith('sm_')) todasChavesSM.push(k);
+  }
+  console.log('▶ Todas as chaves SM:', todasChavesSM);
+  console.groupEnd();
 }
 
-/* ══════════════════════════════════════════════════
-   LIMPAR histórico de uma disciplina
-══════════════════════════════════════════════════ */
-export async function limparHistoricoSM(usuario, discId, sem) {
-  if (!usuario || usuario === 'visitante') {
-    localStorage.removeItem(_chaveLocal(usuario, discId, sem));
-    return;
+/** Lista todas as chaves SM no localStorage. */
+export function listarChavesSM() {
+  const chaves = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith('sm_')) chaves.push(k);
   }
-
-  // Apaga Firestore PRIMEIRO; só remove local após confirmação.
-  try {
-    await deleteDoc(_docRef(usuario, discId, sem));
-    console.log(`[storage_sm] Histórico apagado no Firestore: ${usuario}/${sem}_${discId}`);
-  } catch (err) {
-    console.warn('[storage_sm] Erro ao apagar no Firestore — localStorage mantido:', err.message);
-    return;
-  }
-
-  localStorage.removeItem(_chaveLocal(usuario, discId, sem));
+  smLog('Chaves SM encontradas:', chaves);
+  return chaves;
 }
 
-/* ══════════════════════════════════════════════════
-   HELPERS LOCAIS (internos)
-══════════════════════════════════════════════════ */
-function _lerLocal(usuario, discId, sem) {
-  try {
-    const salvo = localStorage.getItem(_chaveLocal(usuario, discId, sem));
-    return salvo ? JSON.parse(salvo) : {};
-  } catch (err) {
-    console.warn('[storage_sm] Erro ao ler localStorage (dado corrompido?):', err.message);
-    return {};
-  }
+// Expõe debugEstado globalmente para uso no console do browser
+if (typeof window !== 'undefined') {
+  window.smDebug = debugEstado;
+  window.smChaves = listarChavesSM;
 }

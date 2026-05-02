@@ -18,10 +18,45 @@
 <div class="bg-orb bg-orb--1"></div>
 <div class="bg-orb bg-orb--2"></div>
 
+<!-- ══ CABEÇALHO ══ -->
+<header class="game-header">
+  <!-- Botão voltar -->
+  <a id="shell-back-btn" class="game-header__back" href="../../jogo.html">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M13 16l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span>Voltar</span>
+  </a>
+
+  <!-- Ícone + título + disciplina · semestre -->
+  <div class="game-header__identity">
+    <div class="game-header__icon" id="shell-icon">★</div>
+    <div class="game-header__info">
+      <div class="game-header__name" id="shell-game-name">Show do Milhão</div>
+      <div class="game-header__meta">
+        <span id="shell-disc-name">—</span>
+        <span class="game-header__meta-sep">·</span>
+        <span id="shell-sem">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Controles globais no header -->
+  <div class="game-header__controls" id="header-controls" style="display:none;">
+    <button id="btn-pause" class="btn-proxima sm-ctrl-btn sm-ctrl-btn--pause">
+      <span id="pause-icon">⏸</span>
+      <span id="pause-label">Pausar</span>
+    </button>
+    <button id="btn-voltar-intro" class="btn-proxima sm-ctrl-btn sm-ctrl-btn--menu">
+      ↩ Menu
+    </button>
+  </div>
+</header>
+
 <!-- ── TELA INTRO ── -->
 <div id="screen-intro" class="tela ativa">
   <div class="logo-wrapper">
-    <div class="logo-estrela" id="shell-icon">★</div>
+    <div class="logo-estrela">★</div>
     <h1 class="titulo-jogo">Show do<br><span>Milhão</span></h1>
     <p class="subtitulo">Você tem coragem de chegar ao topo?</p>
   </div>
@@ -42,7 +77,13 @@
     <span id="intro-total-questoes">10</span> perguntas · 30 segundos cada · Sem segunda chance
   </p>
 
-  <button class="btn-jogar" id="btn-start">JOGAR AGORA</button>
+  <button class="btn-jogar sm-btn-nova" id="btn-start">JOGAR AGORA</button>
+
+  <!-- Botão continuar (aparece quando há save) -->
+  <div id="intro-continuar" class="sm-intro-continuar" style="display:none;">
+    <button class="btn-jogar sm-btn-continuar" id="btn-continuar">▶ Continuar partida</button>
+    <div class="sm-continuar-info" id="continuar-info"></div>
+  </div>
   <div class="rodape-inicio">Boa sorte! ✨</div>
 </div>
 
@@ -106,21 +147,12 @@
     <div class="feedback-icone"    id="feedback-icone"></div>
     <div class="feedback-msg"      id="feedback-msg"></div>
     <div class="feedback-resposta" id="feedback-resposta"></div>
-    <button class="btn-proxima"    id="btn-proxima">PRÓXIMA →</button>
   </div>
 
   <!-- Navegação -->
   <div class="sm-nav-row">
     <button class="btn-proxima sm-nav-btn--secondary" id="btn-anterior">← Anterior</button>
-    <div class="sm-ctrl-btns">
-      <button id="btn-pause" class="btn-proxima sm-ctrl-btn sm-ctrl-btn--pause">
-        <span id="pause-icon">⏸</span>
-        <span id="pause-label">Pausar</span>
-      </button>
-      <button id="btn-voltar-intro" class="btn-proxima sm-ctrl-btn sm-ctrl-btn--menu">
-        ↩ Menu
-      </button>
-    </div>
+    <button class="btn-proxima sm-nav-btn--proxima" id="btn-proxima" disabled>PRÓXIMA →</button>
   </div>
 
   <!-- Premiação lateral -->

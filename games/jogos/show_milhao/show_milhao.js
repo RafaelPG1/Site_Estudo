@@ -1,20 +1,27 @@
 /* ============================================================
    NEXUS STUDY — games/jogos/show_milhao/show_milhao.js
 
-   Arquitetura idêntica ao vdd_falso.js:
-   - import dinâmico de dados por ano do semestre
-   - storage separado (storage_sm.js) com Firestore + localStorage
-   - seleção ponderada por histórico de desempenho
-   - timer via game-shell Timer (+ fallback nativo)
-   - telas: intro | question | result | empty
-   - pausa, atalhos de teclado
+   Salvamento: 100% localStorage via storage_sm.js
+   - salvarEstadoPartida()  →  chamado após CADA ação do usuário
+   - carregarEstadoPartida() → ao iniciar, oferece retomar partida salva
+   - salvarResultadoSM()    →  ao finalizar, grava histórico acumulado
    ============================================================ */
 
 import { Shell, Timer, shuffle, lerParams }    from '../../template/game-shell.js';
 import { DISC_CORES }                          from '../../../shared/js/cores.js';
 import { aplicarCoresDisciplina }              from '../../../shared/js/theme.js';
-import { carregarHistoricoSM, salvarResultadoSM } from './storage_sm.js';
 import { getUsuario, getDisciplinasDeSemestre } from '../../../src/global.js';
+
+import {
+  salvarEstadoPartida,
+  carregarEstadoPartida,
+  limparEstadoPartida,
+  carregarHistoricoSM,
+  salvarResultadoSM,
+  limparHistoricoSM,
+  debugEstado,
+  smLog, smWarn, smError,
+} from './storage_sm.js';
 
 /* ══════════════════════════════════════════════════════════
    CONFIGURAÇÃO
@@ -28,7 +35,6 @@ const CONFIG = {
   PESO_MAX:          10,
 };
 
-// Tabela de prêmios — 10 níveis
 const PREMIOS = [
   { valor: 'R$ 1.000',     marco: false },
   { valor: 'R$ 5.000',     marco: false },
@@ -45,33 +51,36 @@ const PREMIOS = [
 const CIRCUNFERENCIA = 276.46;
 
 /* ══════════════════════════════════════════════════════════
-   ESTADO
+   ESTADO — fonte única de verdade
    ══════════════════════════════════════════════════════════ */
 
 const estado = {
-  perguntas:   [],
-  banco:       [],
-  indice:      0,
-  // acertos: quantidade de prêmios efetivamente conquistados (pontuação real)
-  acertos:     0,
-  // respostas[i] = 'A'|'B'|'C'|'D' | null (tempo) | undefined (não respondeu)
-  respostas:   [],
-  tempos:      [],
-  timer:       null,
-  pausado:     false,
-  usuario:     null,
-  discId:      null,
-  sem:         null,
-  historicoSM: {},
-  tempoInicio: null,
-  // Sistema de erro pendente:
-  // temErro: true se há um prêmio travado aguardando resolução
-  // indicePendente: índice da pergunta que gerou o erro (nível vermelho)
-  // premioPendente: valor (índice em PREMIOS) que será liberado ao acertar
+  perguntas:      [],
+  banco:          [],
+  indice:         0,
+  acertos:        0,
+  respostas:      [],   // undefined | null | 'A'|'B'|'C'|'D'
+  tempos:         [],
+  timer:          null,
+  pausado:        false,
+  usuario:        null,
+  discId:         null,
+  sem:            null,
+  historicoSM:    {},
+  tempoInicio:    null,
   temErro:        false,
   indicePendente: null,
   premioPendente: null,
+  _fallback:      null,
 };
+
+/* ══════════════════════════════════════════════════════════
+   SALVAR ESTADO — chamado após CADA ação
+   ══════════════════════════════════════════════════════════ */
+
+function salvar() {
+  return salvarEstadoPartida(estado);
+}
 
 /* ══════════════════════════════════════════════════════════
    DOM
@@ -81,7 +90,7 @@ const $ = id => document.getElementById(id);
 const el = {};
 
 /* ══════════════════════════════════════════════════════════
-   SELEÇÃO PONDERADA (idêntica ao vdd_falso)
+   SELEÇÃO PONDERADA
    ══════════════════════════════════════════════════════════ */
 
 function calcularPeso(id, historico) {
@@ -122,7 +131,7 @@ function sorteiarPonderado(candidatos, n) {
 }
 
 function montarDeck(banco, historico) {
-  const n    = Math.min(CONFIG.MAX_QUESTOES, banco.length);
+  const n     = Math.min(CONFIG.MAX_QUESTOES, banco.length);
   const cands = banco.map(q => ({ item: q, peso: calcularPeso(q.id, historico) }));
   return shuffle(sorteiarPonderado(cands, n));
 }
@@ -141,6 +150,7 @@ function mostrarTela(nome) {
   if (nome === 'question') el.screenQuestion?.classList.remove('hidden');
   if (nome === 'result')   el.screenResult  ?.classList.remove('hidden');
   if (nome === 'empty')    el.screenEmpty   ?.classList.remove('hidden');
+  smLog(`Tela: ${nome}`);
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -151,10 +161,18 @@ function renderDots() {
   const container = $('sm-dots');
   if (!container) return;
   container.innerHTML = '';
+
+  // Garante que perguntas e respostas têm o mesmo comprimento antes de renderizar
+  // Isso evita o bug onde um deck reordenado causa p.correta errado
+  if (estado.perguntas.length !== estado.respostas.length) {
+    smWarn(`renderDots: perguntas(${estado.perguntas.length}) ≠ respostas(${estado.respostas.length}) — deck dessincronizado!`);
+  }
+
   estado.perguntas.forEach((p, i) => {
     const resp       = estado.respostas[i];
     const respondida = resp !== undefined;
-    const correto    = respondida && resp === p.correta;
+    // Compara com a CORRETA da pergunta que está nesse índice do deck atual
+    const correto    = respondida && resp !== null && resp === p.correta;
     const atual      = i === estado.indice;
 
     const dot = document.createElement('button');
@@ -168,10 +186,16 @@ function renderDots() {
     dot.addEventListener('click', () => navegarPara(i));
     container.appendChild(dot);
   });
+
+  smLog(`Dots: [${estado.respostas.map((r, i) => {
+    if (r === undefined) return '?';
+    if (r === null) return '⏰';
+    return r === estado.perguntas[i]?.correta ? '✓' : '✗';
+  }).join('')}]`);
 }
 
 /* ══════════════════════════════════════════════════════════
-   LISTA DE PRÊMIOS LATERAL
+   LISTA DE PRÊMIOS
    ══════════════════════════════════════════════════════════ */
 
 function construirListaPremios() {
@@ -191,22 +215,17 @@ function construirListaPremios() {
 function atualizarPremios() {
   const conquistados = estado.acertos;
   const idxPendente  = estado.indicePendente;
-  // Amarelo congelado no erro enquanto temErro=true; avanca so apos resolver
   const nivelAtual   = estado.temErro ? estado.indicePendente : estado.acertos;
 
   document.querySelectorAll('.premio-item').forEach((elItem, i) => {
-    // Lista renderizada de tras pra frente (maior premio no topo)
     const pregIdx = PREMIOS.length - 1 - i;
     elItem.classList.remove('atual', 'conquistado', 'pendente');
 
     if (pregIdx === idxPendente) {
-      // Vermelho: travado por erro pendente
       elItem.classList.add('pendente');
     } else if (pregIdx < conquistados) {
-      // Verde: ja conquistado
       elItem.classList.add('conquistado');
     } else if (pregIdx === nivelAtual && !estado.temErro) {
-      // Amarelo: proximo nivel a ganhar (congelado se ha erro pendente)
       elItem.classList.add('atual');
     }
   });
@@ -226,8 +245,8 @@ function aplicarCorBarra(pct) {
 }
 
 function atualizarTimerUI(restante) {
-  const el_num = $('timer-numero');
-  if (el_num) el_num.textContent = restante;
+  const elNum = $('timer-numero');
+  if (elNum) elNum.textContent = restante;
 
   const offset = CIRCUNFERENCIA * (1 - restante / CONFIG.TEMPO_POR_QUESTAO);
   const arco   = $('timer-arco');
@@ -238,26 +257,34 @@ function atualizarTimerUI(restante) {
   aplicarCorBarra(pct);
 
   const timerContainer = document.querySelector('.timer-container');
-  if (timerContainer) {
-    timerContainer.classList.toggle('timer-urgente', restante <= 5);
-  }
+  timerContainer?.classList.toggle('timer-urgente', restante <= 5);
 }
 
 /* ══════════════════════════════════════════════════════════
-   FLUXO
+   FLUXO — INICIAR JOGO
    ══════════════════════════════════════════════════════════ */
 
-function iniciarJogo() {
-  estado.perguntas      = montarDeck(estado.banco, estado.historicoSM);
-  estado.indice         = 0;
-  estado.acertos        = 0;
-  estado.tempoInicio    = Date.now();
-  estado.respostas      = new Array(estado.perguntas.length); // undefined
-  estado.tempos         = new Array(estado.perguntas.length).fill(CONFIG.TEMPO_POR_QUESTAO);
-  estado.pausado        = false;
-  estado.temErro        = false;
-  estado.indicePendente = null;
-  estado.premioPendente = null;
+function iniciarJogo(retomando = false) {
+  if (!retomando) {
+    // Nova partida: limpa save anterior e monta deck novo
+    limparEstadoPartida(estado.discId, estado.sem);
+    estado.perguntas      = montarDeck(estado.banco, estado.historicoSM);
+    estado.indice         = 0;
+    estado.acertos        = 0;
+    estado.tempoInicio    = Date.now();
+    estado.respostas      = new Array(estado.perguntas.length); // undefined
+    estado.tempos         = new Array(estado.perguntas.length).fill(CONFIG.TEMPO_POR_QUESTAO);
+    estado.temErro        = false;
+    estado.indicePendente = null;
+    estado.premioPendente = null;
+    estado.pausado        = false;
+    smLog('Nova partida iniciada.', `Deck: ${estado.perguntas.length} questões.`);
+  } else {
+    smLog('Partida retomada do save.', `Q${estado.indice + 1}/${estado.perguntas.length}`);
+  }
+
+  // Salva imediatamente o estado inicial
+  salvar();
 
   atualizarContadores();
   construirListaPremios();
@@ -265,16 +292,23 @@ function iniciarJogo() {
   renderizarQuestao();
 }
 
+/* ══════════════════════════════════════════════════════════
+   TIMER
+   ══════════════════════════════════════════════════════════ */
+
 function criarTimer(totalInicial) {
   return Timer.criar({
     total: totalInicial ?? CONFIG.TEMPO_POR_QUESTAO,
     onTick: (restante) => {
       estado.tempos[estado.indice] = restante;
       atualizarTimerUI(restante);
+      // Salva o tempo restante a cada tick para não perder progresso
+      salvar();
     },
     onEnd: () => {
       if (estado.respostas[estado.indice] === undefined) {
         estado.tempos[estado.indice] = 0;
+        smLog(`Q${estado.indice + 1}: TIMEOUT — resposta nula registrada.`);
         registrarResposta(null);
       }
     },
@@ -292,21 +326,24 @@ function renderizarQuestao() {
   const correto     = jaRespondeu && resp === pergunta.correta;
   const num         = estado.indice + 1;
 
-  // Texto e nível
-  if (el.numPergunta) el.numPergunta.textContent = `${num}/${estado.perguntas.length}`;
+  smLog(`Renderizando Q${num}/${estado.perguntas.length}`,
+    `| resp: ${resp ?? 'pendente'}`,
+    `| acertos: ${estado.acertos}`,
+    `| temErro: ${estado.temErro}`);
+
+  if (el.numPergunta)  el.numPergunta.textContent  = `${num}/${estado.perguntas.length}`;
   if (el.perguntaNivel) el.perguntaNivel.textContent = `Nível ${num} — ${pergunta.nivel ?? ''}`;
   if (el.perguntaTexto) el.perguntaTexto.textContent = pergunta.texto;
-  if (el.progressFill) el.progressFill.style.width = (num / estado.perguntas.length * 100) + '%';
+  if (el.progressFill) el.progressFill.style.width  = (num / estado.perguntas.length * 100) + '%';
   if (el.pontuacaoHud) {
     el.pontuacaoHud.textContent = estado.acertos > 0
       ? PREMIOS[estado.acertos - 1]?.valor || 'R$ 0'
       : 'R$ 0';
   }
 
-  // Reset alternativas
   ['a','b','c','d'].forEach(l => {
-    const btn  = $(`alt-${l}`);
-    const txt  = $(`texto-${l}`);
+    const btn = $(`alt-${l}`);
+    const txt = $(`texto-${l}`);
     if (btn) {
       btn.className = 'alt-btn';
       btn.disabled  = jaRespondeu;
@@ -315,11 +352,9 @@ function renderizarQuestao() {
     if (txt) txt.textContent = pergunta.alternativas[l.toUpperCase()] ?? '';
   });
 
-  // Estados pós-resposta
   if (jaRespondeu) {
     if (resp !== null) {
-      const letraEscolhida = resp.toLowerCase();
-      $(`alt-${letraEscolhida}`)?.classList.add(correto ? 'correta' : 'errada');
+      $(`alt-${resp.toLowerCase()}`)?.classList.add(correto ? 'correta' : 'errada');
     }
     if (!correto) {
       $(`alt-${pergunta.correta.toLowerCase()}`)?.classList.add('revelada');
@@ -333,10 +368,14 @@ function renderizarQuestao() {
   atualizarPremios();
   renderDots();
 
-  // Timer
+  // Para timer anterior
   if (estado.timer) {
     try { estado.timer.stop(); } catch (_) {}
     estado.timer = null;
+  }
+  if (estado._fallback) {
+    clearInterval(estado._fallback);
+    estado._fallback = null;
   }
 
   if (!jaRespondeu) {
@@ -353,8 +392,10 @@ function renderizarQuestao() {
         t--;
         estado.tempos[estado.indice] = t;
         atualizarTimerUI(t);
+        salvar(); // salva a cada segundo no fallback também
         if (t <= 0) {
           clearInterval(estado._fallback);
+          estado._fallback = null;
           if (estado.respostas[estado.indice] === undefined) registrarResposta(null);
         }
       }, 1000);
@@ -387,8 +428,11 @@ function atualizarBotoesNav() {
 function responder(letra) {
   if (estado.pausado) return;
   if (estado.respostas[estado.indice] !== undefined) return;
+
   try { estado.timer?.stop(); } catch (_) {}
-  clearInterval(estado._fallback);
+  if (estado._fallback) { clearInterval(estado._fallback); estado._fallback = null; }
+
+  smLog(`Q${estado.indice + 1}: usuário escolheu "${letra}".`);
   registrarResposta(letra);
 }
 
@@ -399,30 +443,29 @@ function registrarResposta(resp) {
   estado.respostas[estado.indice] = resp;
 
   if (resp === null) {
-    // Tempo esgotado: neutro, nao altera pontuacao nem pendente
+    smLog(`Q${estado.indice + 1}: TIMEOUT — neutro.`);
 
   } else if (correto) {
-    // Acerto: SEMPRE sobe exatamente 1 nivel a partir do valor atual.
-    // Nunca deriva de estado.indice para nao pular niveis.
     if (estado.temErro) {
-      // Tinha erro pendente: resolve o vermelho, depois sobe 1
+      smLog(`Q${estado.indice + 1}: ACERTO → resolve erro pendente.`);
       estado.temErro        = false;
       estado.indicePendente = null;
       estado.premioPendente = null;
     }
-    // Sobe 1 -- identico nos dois casos (com ou sem erro pendente)
     estado.acertos++;
+    smLog(`Q${estado.indice + 1}: ACERTO ✓ | acertos agora: ${estado.acertos} → ${PREMIOS[estado.acertos - 1]?.valor}`);
 
   } else {
-    // Erro: trava o nivel atual como vermelho, NAO sobe
-    // Primeiro erro define o pendente; erros seguintes nao sobrescrevem
     if (!estado.temErro) {
       estado.indicePendente = estado.indice;
       estado.premioPendente = estado.indice;
     }
     estado.temErro = true;
-    // estado.acertos permanece intocado
+    smLog(`Q${estado.indice + 1}: ERRO ✗ | prêmio travado em ${PREMIOS[estado.indice]?.valor}`);
   }
+
+  // ── SALVA IMEDIATAMENTE após registrar a resposta ──
+  salvar();
 
   renderizarQuestao();
 }
@@ -438,8 +481,8 @@ function mostrarFeedback(correto, tempoAcabou) {
   const resp    = $('feedback-resposta');
   const btnProx = $('btn-proxima');
 
-  const p       = estado.perguntas[estado.indice];
-  const isUltima = estado.indice >= estado.perguntas.length - 1;
+  const p         = estado.perguntas[estado.indice];
+  const isUltima  = estado.indice >= estado.perguntas.length - 1;
   const todasResp = estado.respostas.every(r => r !== undefined);
 
   if (tempoAcabou) {
@@ -448,18 +491,12 @@ function mostrarFeedback(correto, tempoAcabou) {
     if (resp)  resp.textContent  = `A resposta correta era: ${p.correta} — ${p.alternativas[p.correta]}`;
 
   } else if (correto) {
-    // Detecta se este acerto resolveu um erro pendente:
-    // após registrarResposta, temErro já foi zerado se havia pendente
-    // Usamos o fato de que acertos === indice significa que o acerto liberou um nivel anterior
-    const resolveupendente = estado.acertos <= estado.indice; // acertos nao chegou ao indice+1
-
+    const resolveupendente = estado.acertos <= estado.indice;
     if (icone) icone.textContent = isUltima ? '🏆' : '✅';
     if (msg) {
-      if (resolveupendente) {
-        msg.textContent = '✅ Prêmio pendente conquistado!';
-      } else {
-        msg.textContent = isUltima ? '🏆 Você é o Milionário!' : 'Correto! Excelente!';
-      }
+      msg.textContent = resolveupendente
+        ? '✅ Prêmio pendente conquistado!'
+        : (isUltima ? '🏆 Você é o Milionário!' : 'Correto! Excelente!');
       msg.style.color = '#00e676';
     }
     if (resp) resp.textContent = `Você ganhou: ${PREMIOS[estado.acertos - 1]?.valor || 'R$ 0'}`;
@@ -485,8 +522,14 @@ function mostrarFeedback(correto, tempoAcabou) {
 function navegarPara(i) {
   if (i < 0 || i >= estado.perguntas.length) return;
   try { estado.timer?.stop(); } catch (_) {}
-  clearInterval(estado._fallback);
+  if (estado._fallback) { clearInterval(estado._fallback); estado._fallback = null; }
+
+  smLog(`Navegando Q${estado.indice + 1} → Q${i + 1}`);
   estado.indice = i;
+
+  // Salva mudança de índice
+  salvar();
+
   renderizarQuestao();
 }
 
@@ -509,26 +552,26 @@ function irProxima() {
    FINALIZAR
    ══════════════════════════════════════════════════════════ */
 
-async function finalizarJogo() {
+function finalizarJogo() {
   try { estado.timer?.stop(); } catch (_) {}
-  clearInterval(estado._fallback);
+  if (estado._fallback) { clearInterval(estado._fallback); estado._fallback = null; }
 
-  // Filtra respostas válidas (exclui null = tempo esgotado)
-  const resultados = estado.perguntas
-    .map((p, i) => ({
-      id:     p.id ?? `q${i}`,
-      resp:   estado.respostas[i],
-      acertou: estado.respostas[i] === p.correta,
-    }))
-    .filter(r => r.resp !== null && r.resp !== undefined);
+  smLog('Jogo finalizado. Salvando histórico...');
+  debugEstado(estado.discId, estado.sem);
 
-  try {
-    await salvarResultadoSM(estado.usuario, estado.discId, estado.sem, resultados);
-  } catch (err) {
-    console.warn('[show_milhao] Erro ao salvar:', err);
-  }
+  const resultados = estado.perguntas.map((p, i) => ({
+    id:      p.id ?? `q${i}`,
+    resp:    estado.respostas[i],
+    acertou: estado.respostas[i] === p.correta,
+  })).filter(r => r.resp !== null && r.resp !== undefined);
 
-  // Atualiza cache em memória sem depender do Firestore
+  // Salva histórico acumulado
+  salvarResultadoSM(estado.usuario, estado.discId, estado.sem, resultados);
+
+  // Apaga o save de partida em curso (partida concluída)
+  limparEstadoPartida(estado.discId, estado.sem);
+
+  // Atualiza cache em memória
   for (const { id, acertou, resp } of resultados) {
     if (resp === null || resp === undefined) continue;
     const entrada = estado.historicoSM[id] ?? {
@@ -537,7 +580,7 @@ async function finalizarJogo() {
     entrada.tentativas++;
     if (acertou) { entrada.acertos++; entrada.acertosConsecutivos = (entrada.acertosConsecutivos ?? 0) + 1; }
     else         { entrada.erros++;   entrada.acertosConsecutivos = 0; }
-    entrada.ultimaVez = Date.now();
+    entrada.ultimaVez     = Date.now();
     estado.historicoSM[id] = entrada;
   }
 
@@ -546,6 +589,8 @@ async function finalizarJogo() {
   const respondidas   = estado.respostas.filter(r => r !== null && r !== undefined).length;
   const pct           = respondidas > 0 ? Math.round((estado.acertos / respondidas) * 100) : 0;
   const todosCorretos = estado.acertos === estado.perguntas.length;
+
+  smLog(`Resultado final: ${estado.acertos} acertos / ${respondidas} respondidas → ${pct}% → ${valorFinal}`);
 
   let emoji, titulo;
   if      (pct >= 80) { emoji = '🏆'; titulo = todosCorretos ? 'MILIONÁRIO!' : 'Excelente!'; }
@@ -576,30 +621,28 @@ async function finalizarJogo() {
     elTempo.textContent = `${mm}:${ss}`;
   }
 
-  // Botão Sair → tela intro
   if (elSair) {
     elSair.removeAttribute('href');
     const novoSair = elSair.cloneNode(true);
     elSair.parentNode.replaceChild(novoSair, elSair);
     novoSair.addEventListener('click', async (e) => {
       e.preventDefault();
-      estado.perguntas = montarDeck(estado.banco, estado.historicoSM);
+      estado.historicoSM = carregarHistoricoSM(estado.usuario, estado.discId, estado.sem);
+      estado.perguntas   = montarDeck(estado.banco, estado.historicoSM);
       atualizarContadores();
       mostrarTela('intro');
     });
   }
 
-  // Botão Jogar novamente
   if (elRejogo) {
     const novoRejogo = elRejogo.cloneNode(true);
     elRejogo.parentNode.replaceChild(novoRejogo, elRejogo);
-    novoRejogo.addEventListener('click', async () => {
-      const historico = await carregarHistoricoSM(estado.usuario, estado.discId, estado.sem).catch(() => ({}));
-      estado.historicoSM = historico;
-      estado.perguntas   = montarDeck(estado.banco, historico);
+    novoRejogo.addEventListener('click', () => {
+      estado.historicoSM = carregarHistoricoSM(estado.usuario, estado.discId, estado.sem);
+      estado.perguntas   = montarDeck(estado.banco, estado.historicoSM);
       if (estado.perguntas.length === 0) { mostrarTela('empty'); return; }
       atualizarContadores();
-      iniciarJogo();
+      iniciarJogo(false);
     });
   }
 
@@ -608,7 +651,7 @@ async function finalizarJogo() {
 }
 
 /* ══════════════════════════════════════════════════════════
-   ESTATÍSTICAS POR QUESTÃO (tela de resultado)
+   ESTATÍSTICAS POR QUESTÃO
    ══════════════════════════════════════════════════════════ */
 
 function renderEstatisticasQuestoes(historico, perguntas) {
@@ -628,9 +671,9 @@ function renderEstatisticasQuestoes(historico, perguntas) {
   lista.className = 'sm-sq-lista';
 
   for (const q of perguntas) {
-    const h          = historico[q.id ?? ''];
-    const idx        = estado.perguntas.indexOf(q);
-    const respAtual  = estado.respostas[idx];
+    const h           = historico[q.id ?? ''];
+    const idx         = estado.perguntas.indexOf(q);
+    const respAtual   = estado.respostas[idx];
     const acertouAgora = respAtual !== null && respAtual !== undefined && respAtual === q.correta;
     const errouAgora   = respAtual !== null && respAtual !== undefined && respAtual !== q.correta;
 
@@ -642,8 +685,7 @@ function renderEstatisticasQuestoes(historico, perguntas) {
     const cor    = taxa >= 70 ? '#34d399' : taxa >= 40 ? '#facc15' : '#f87171';
     const icone  = acertouAgora ? '✓' : errouAgora ? '✗' : (taxa >= 70 ? '✓' : taxa >= 40 ? '~' : '✗');
     const iconCor= acertouAgora ? '#34d399' : errouAgora ? '#f87171' : cor;
-
-    const enun = (q.texto ?? '').length > 52 ? q.texto.slice(0, 52) + '…' : (q.texto ?? '');
+    const enun   = (q.texto ?? '').length > 52 ? q.texto.slice(0, 52) + '…' : (q.texto ?? '');
 
     const row = document.createElement('div');
     row.className = 'sm-sq-row sm-sq-row--prog';
@@ -717,11 +759,13 @@ function setupPausa() {
       pauseOverlay.classList.remove('hidden');
       btnPauseEl?.classList.add('sm-ctrl-btn--paused');
       if (pauseLabelEl) pauseLabelEl.textContent = 'Retomar';
+      smLog('Jogo PAUSADO.');
     } else {
       try { estado.timer?.resume(); } catch (_) {}
       pauseOverlay.classList.add('hidden');
       btnPauseEl?.classList.remove('sm-ctrl-btn--paused');
       if (pauseLabelEl) pauseLabelEl.textContent = 'Pausar';
+      smLog('Jogo RETOMADO.');
     }
   }
 
@@ -730,9 +774,9 @@ function setupPausa() {
     if (e.target.closest('#btn-retomar')) togglePausa();
   });
 
-  btnVoltarIntro?.addEventListener('click', async () => {
+  btnVoltarIntro?.addEventListener('click', () => {
     try { estado.timer?.stop(); } catch (_) {}
-    clearInterval(estado._fallback);
+    if (estado._fallback) { clearInterval(estado._fallback); estado._fallback = null; }
     estado.timer   = null;
     estado.pausado = false;
     pauseOverlay.classList.add('hidden');
@@ -743,11 +787,19 @@ function setupPausa() {
     document.documentElement.style.setProperty('--timer-pct', '100%');
     aplicarCorBarra(100);
 
-    const historico = await carregarHistoricoSM(estado.usuario, estado.discId, estado.sem).catch(() => ({}));
-    estado.historicoSM = historico;
-    estado.perguntas   = montarDeck(estado.banco, historico);
+    // ── CRÍTICO: salva o estado ANTES de qualquer outra operação ──
+    // Não remonta o deck aqui para não dessincronizar perguntas ↔ respostas
+    salvar();
+    smLog('Voltou ao menu — estado salvo para retomada posterior.',
+      `Deck preservado: ${estado.perguntas.length} questões, respostas: [${estado.respostas.map(r => r ?? '—').join(', ')}]`);
+
+    // Recarrega histórico em memória sem alterar o deck salvo
+    estado.historicoSM = carregarHistoricoSM(estado.usuario, estado.discId, estado.sem);
+    // NÃO recria o deck aqui — o deck correto está no save e será restaurado no modal
     atualizarContadores();
     mostrarTela('intro');
+    // Atualiza botão continuar na intro (save ainda existe)
+    el._atualizarBtnContinuar?.();
   });
 
   document.addEventListener('keydown', e => {
@@ -761,7 +813,7 @@ function setupPausa() {
 }
 
 /* ══════════════════════════════════════════════════════════
-   ATALHOS
+   ATALHOS DE TECLADO
    ══════════════════════════════════════════════════════════ */
 
 function registrarAtalhos() {
@@ -778,10 +830,7 @@ function registrarAtalhos() {
       case '3': case 'c': case 'C': if (!jaResp) { e.preventDefault(); responder('C'); } break;
       case '4': case 'd': case 'D': if (!jaResp) { e.preventDefault(); responder('D'); } break;
       case 'ArrowRight': case 'Enter': if (jaResp) { e.preventDefault(); irProxima(); } break;
-      case 'ArrowLeft':
-        e.preventDefault();
-        irAnterior();
-        break;
+      case 'ArrowLeft': e.preventDefault(); irAnterior(); break;
     }
   });
 }
@@ -795,6 +844,60 @@ function atualizarContadores() {
   if (el.scoreTotal) el.scoreTotal.textContent = n;
   const introTotal = $('intro-total-questoes');
   if (introTotal) introTotal.textContent = n;
+}
+
+/* ══════════════════════════════════════════════════════════
+   MODAL DE RETOMADA DE PARTIDA
+   ══════════════════════════════════════════════════════════ */
+
+function mostrarModalRetomada(saveData, onRetomar, onNova) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `
+    position:fixed;inset:0;z-index:200;
+    background:rgba(0,0,0,.85);backdrop-filter:blur(8px);
+    display:flex;align-items:center;justify-content:center;
+  `;
+
+  const q = saveData.perguntas.length;
+  const respondidas = saveData.respostas.filter(r => r !== undefined).length;
+  const idadeMin = Math.round((Date.now() - (saveData.salvoEm ?? saveData.tempoInicio ?? Date.now())) / 60000);
+
+  overlay.innerHTML = `
+    <div style="
+      background:rgba(5,10,40,.95);border:1px solid rgba(255,215,0,.35);
+      border-radius:12px;padding:32px 28px;max-width:380px;width:90%;
+      text-align:center;display:flex;flex-direction:column;gap:16px;
+    ">
+      <div style="font-size:2.5rem">⏱️</div>
+      <h2 style="font-family:'Cinzel',serif;color:#FFD700;font-size:1.3rem;">Partida em andamento</h2>
+      <p style="color:rgba(255,255,255,.65);font-size:.9rem;line-height:1.5;">
+        Você tem uma partida salva há <strong style="color:#FFD700">${idadeMin} min</strong>.
+        <br>Questão <strong style="color:#FFD700">${saveData.indice + 1}/${q}</strong>
+        · ${respondidas} respondida(s).
+      </p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
+        <button id="btn-retomar-save" style="
+          font-family:'Cinzel',serif;font-size:1rem;font-weight:700;letter-spacing:2px;
+          padding:14px 32px;background:linear-gradient(135deg,#B8860B,#FFD700);
+          color:#0a0e2a;border:none;border-radius:4px;cursor:pointer;
+        ">▶ CONTINUAR</button>
+        <button id="btn-nova-save" style="
+          font-family:'Cinzel',serif;font-size:.85rem;padding:10px 24px;
+          background:rgba(255,255,255,.07);color:rgba(255,255,255,.55);
+          border:1px solid rgba(255,255,255,.12);border-radius:4px;cursor:pointer;
+        ">Ignorar e jogar novo</button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(overlay);
+  overlay.querySelector('#btn-retomar-save').addEventListener('click', () => {
+    overlay.remove();
+    onRetomar();
+  });
+  overlay.querySelector('#btn-nova-save').addEventListener('click', () => {
+    overlay.remove();
+    onNova();
+  });
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -819,16 +922,18 @@ async function init() {
     timerBar:       document.querySelector('.game-timer-bar'),
   });
 
+  smLog('Inicializando Show do Milhão...');
+
   const { disc, sem } = Shell.init({ icon: '⭐', nome: 'Show do Milhão' });
 
   const _listaDisciplinas = getDisciplinasDeSemestre(sem);
   const disciplina = _listaDisciplinas.find(d => d.id === disc || d.arquivo === disc) ?? null;
 
-  // Preenche header
   const shellDiscEl = $('shell-disc-name');
   if (shellDiscEl && disciplina) shellDiscEl.textContent = disciplina.apelido ?? disciplina.nome ?? disc;
+  // Aplica emoji da disciplina no ícone do header (sobrescreve o padrão do Shell.init)
   const shellIconEl = $('shell-icon');
-  if (shellIconEl && disciplina?.emoji) shellIconEl.textContent = disciplina.emoji;
+  if (shellIconEl) shellIconEl.textContent = disciplina?.emoji ?? '⭐';
 
   const introDiscName = $('intro-disc-name');
   const introSemLabel = $('intro-sem-label');
@@ -841,18 +946,17 @@ async function init() {
     if (chipSvg) {
       const emojiSpan = document.createElement('span');
       emojiSpan.textContent = disciplina.emoji;
-      emojiSpan.style.cssText = 'font-size:13px; line-height:1; display:inline-flex; align-items:center;';
+      emojiSpan.style.cssText = 'font-size:13px;line-height:1;display:inline-flex;align-items:center;';
       chipSvg.replaceWith(emojiSpan);
     }
   }
 
-  // Aplicar cores da disciplina
   try { aplicarCoresDisciplina(disc, DISC_CORES); } catch (_) {}
 
-  /* ── Import dinâmico por ano ────────────────────────────── */
-  const ano    = sem ? sem.split('.')[0] : null;
-  let banco    = [];
-  let semDisp  = null;
+  /* ── Import dinâmico de dados ── */
+  const ano = sem ? sem.split('.')[0] : null;
+  let banco   = [];
+  let semDisp = null;
 
   if (ano) {
     try {
@@ -860,11 +964,12 @@ async function init() {
       semDisp = modulo.SHOW_MILHAO_DATA?.[sem] ?? null;
       banco   = semDisp?.[disc] ?? [];
     } catch (err) {
-      console.warn(`[show_milhao] Arquivo de dados não encontrado para o ano ${ano}:`, err.message);
+      smWarn(`Arquivo de dados não encontrado para o ano ${ano}:`, err.message);
     }
   }
 
   estado.banco = banco;
+  smLog(`Banco carregado: ${banco.length} questão(ões) para ${disc}/${sem}`);
 
   if (banco.length === 0) {
     mostrarTela('empty');
@@ -886,36 +991,102 @@ async function init() {
     return;
   }
 
-  const usuarioObj   = getUsuario();
-  estado.usuario     = usuarioObj?.uid ?? 'visitante';
-  estado.discId      = disc;
-  estado.sem         = sem;
+  const usuarioObj = getUsuario();
+  estado.usuario   = usuarioObj?.uid ?? 'visitante';
+  estado.discId    = disc;
+  estado.sem       = sem;
 
-  const historico    = await carregarHistoricoSM(estado.usuario, disc, sem).catch(() => ({}));
-  estado.historicoSM = historico;
-  estado.perguntas   = montarDeck(banco, historico);
+  // Carrega histórico do localStorage (síncrono, nunca falha)
+  estado.historicoSM = carregarHistoricoSM(estado.usuario, disc, sem);
 
-  if (estado.perguntas.length === 0) {
-    mostrarTela('empty');
-    return;
+  // Verifica se há partida salva
+  const saveData = carregarEstadoPartida(disc, sem);
+
+  // ── Função que configura/atualiza o botão continuar na intro ──
+  function atualizarBtnContinuar() {
+    const save = carregarEstadoPartida(estado.discId, estado.sem);
+    const blocoContinu = $('intro-continuar');
+    const btnContinu   = $('btn-continuar');
+    const infoCont     = $('continuar-info');
+
+    if (save && blocoContinu) {
+      const respondidas = save.respostas.filter(r => r !== '__vazio__' && r !== undefined).length;
+      const idadeMin    = Math.round((Date.now() - (save.salvoEm ?? save.tempoInicio ?? Date.now())) / 60000);
+      blocoContinu.style.display = 'flex';
+      if (infoCont) infoCont.textContent = `Questão ${save.indice + 1}/${save.perguntas.length} · ${respondidas} respondida(s) · salva há ${idadeMin} min`;
+
+      if (btnContinu && !btnContinu._bound) {
+        btnContinu._bound = true;
+        btnContinu.addEventListener('click', () => {
+          const latestSave = carregarEstadoPartida(estado.discId, estado.sem);
+          if (!latestSave) { atualizarBtnContinuar(); return; }
+
+          const idsBanco = new Set(banco.map(q => q.id));
+          const salvasValidas = latestSave.perguntas.filter(p => !p.id || idsBanco.has(p.id));
+          if (salvasValidas.length === 0) {
+            limparEstadoPartida(disc, sem);
+            blocoContinu.style.display = 'none';
+            return;
+          }
+
+          Object.assign(estado, {
+            perguntas:      latestSave.perguntas,
+            indice:         latestSave.indice,
+            acertos:        latestSave.acertos,
+            respostas:      Array.from(latestSave.respostas),
+            tempos:         Array.from(latestSave.tempos),
+            temErro:        latestSave.temErro,
+            indicePendente: latestSave.indicePendente,
+            premioPendente: latestSave.premioPendente,
+            tempoInicio:    latestSave.tempoInicio,
+          });
+
+          atualizarContadores();
+          aplicarCorBarra(100);
+          iniciarJogo(true);
+        });
+      }
+    } else if (blocoContinu) {
+      blocoContinu.style.display = 'none';
+    }
   }
 
-  atualizarContadores();
-  aplicarCorBarra(100);
-
-  el.btnStart   ?.addEventListener('click', () => iniciarJogo());
+  // ── Eventos fixos — registrados UMA única vez ──────────────────────
   el.btnAnterior?.addEventListener('click', irAnterior);
   el.btnProxima ?.addEventListener('click', irProxima);
 
-  // Delegação de clique nas alternativas
   $('alternativas')?.addEventListener('click', e => {
     const btn = e.target.closest('.alt-btn');
     if (btn && !btn.disabled) responder(btn.dataset.letra);
   });
 
+  el.btnStart?.addEventListener('click', () => {
+    smLog('btnStart clicado | perguntas em memória:', estado.perguntas.length);
+    limparEstadoPartida(estado.discId, estado.sem);
+    const blocoContinu = $('intro-continuar');
+    if (blocoContinu) blocoContinu.style.display = 'none';
+    estado.historicoSM = carregarHistoricoSM(estado.usuario, estado.discId, estado.sem);
+    estado.perguntas   = montarDeck(estado.banco, estado.historicoSM);
+    if (estado.perguntas.length === 0) { mostrarTela('empty'); return; }
+    iniciarJogo(false);
+  });
+
   setupPausa();
   registrarAtalhos();
+
+  // Monta deck inicial e atualiza botão continuar
+  estado.perguntas = montarDeck(banco, estado.historicoSM);
+  atualizarContadores();
+  aplicarCorBarra(100);
+  atualizarBtnContinuar();
   mostrarTela('intro');
+
+  // Quando voltar ao menu, atualiza o botão continuar
+  el._atualizarBtnContinuar = atualizarBtnContinuar;
+
+  // Expõe debug global
+  window.smDebugJogo = () => debugEstado(estado.discId, estado.sem);
+  smLog('Init concluído. Use smDebugJogo() no console para inspecionar o estado.');
 }
 
 if (document.readyState === 'loading') {

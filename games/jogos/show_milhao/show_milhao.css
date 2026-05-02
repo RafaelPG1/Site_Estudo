@@ -178,6 +178,40 @@ body {
   letter-spacing: 1px;
 }
 
+/* Bloco de continuar na intro */
+.sm-intro-continuar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.sm-btn-continuar {
+  width: 100%;
+  max-width: 340px;
+  background: rgba(255,255,255,.07) !important;
+  color: rgba(255,255,255,.55) !important;
+  box-shadow: none !important;
+  animation: none !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  clip-path: none !important;
+  font-size: 0.9rem !important;
+  padding: 12px 40px !important;
+}
+.sm-btn-continuar:hover { background: rgba(255,255,255,.12) !important; transform: none !important; }
+
+.sm-btn-nova {
+  width: 100%;
+  max-width: 340px;
+}
+
+.sm-continuar-info {
+  font-size: 0.78rem;
+  color: rgba(255,215,0,0.55);
+  letter-spacing: 0.5px;
+}
+
 /* ── BOTÕES PRINCIPAIS ── */
 .btn-jogar {
   font-family: var(--fonte-titulo);
@@ -204,7 +238,6 @@ body {
 .btn-jogar:active { transform: translateY(0); }
 
 .btn-proxima {
-  margin-top: 8px;
   font-family: var(--fonte-titulo);
   font-size: 0.9rem;
   letter-spacing: 2px;
@@ -231,6 +264,41 @@ body {
   border: 1px solid rgba(255,255,255,.12);
 }
 .sm-nav-btn--secondary:hover { background: rgba(255,255,255,.14); box-shadow: none; transform: none; }
+
+/* Controles globais no header (Pausar + Menu) */
+.game-header__controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* Mostra os controles apenas durante a tela de jogo */
+#screen-question:not(.hidden) ~ * #header-controls,
+body:has(#screen-question:not(.hidden)) #header-controls {
+  display: flex !important;
+}
+
+/* Botão PRÓXIMA na nav-row — mesmo design do Anterior, cor dourada */
+.sm-nav-btn--proxima {
+  margin-top: 0;
+  background: rgba(255, 215, 0, 0.08);
+  color: var(--ouro);
+  box-shadow: none;
+  clip-path: none;
+  border: 1px solid rgba(255, 215, 0, 0.25);
+}
+.sm-nav-btn--proxima:hover:not(:disabled) {
+  background: rgba(255, 215, 0, 0.16);
+  box-shadow: none;
+  transform: none;
+}
+.sm-nav-btn--proxima:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+}
 
 /* ── HUD ── */
 .hud {
@@ -598,6 +666,77 @@ body {
   text-shadow: 0 0 30px rgba(255,215,0,0.8);
   letter-spacing: 2px;
 }
+
+/* ══════════════════════════════════════════════════════════
+   CABEÇALHO — estilo vdd_falso adaptado para Show do Milhão
+   ══════════════════════════════════════════════════════════ */
+
+:root {
+  --header-h: 72px;
+}
+
+.game-header {
+  position: sticky; top: 0; z-index: 50;
+  height: var(--header-h);
+  background: rgba(10, 11, 20, .92);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 215, 0, 0.18);
+  display: flex; align-items: center;
+  padding: 0 24px; gap: 16px;
+  /* Linha dourada brilhante na base */
+  box-shadow: 0 1px 0 rgba(255, 215, 0, 0.10), 0 4px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* Botão voltar */
+.game-header__back {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: .82rem; font-weight: 500; color: var(--branco);
+  padding: 8px 18px; border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, .18);
+  background: rgba(255, 255, 255, .05);
+  transition: background .2s, border-color .2s;
+  white-space: nowrap; flex-shrink: 0;
+  text-decoration: none;
+}
+.game-header__back svg { width: 14px; height: 14px; }
+.game-header__back:hover {
+  background: rgba(255, 255, 255, .09);
+  border-color: rgba(255, 255, 255, .3);
+}
+
+/* Identidade — ícone circular + título/subtítulo */
+.game-header__identity {
+  display: flex; align-items: center; gap: 12px;
+  flex: 1; min-width: 0;
+}
+
+.game-header__icon {
+  width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem;
+  background: rgba(255, 215, 0, .12);
+  border: 2px solid rgba(255, 215, 0, .35);
+  box-shadow: 0 0 12px rgba(255, 215, 0, .12);
+}
+
+.game-header__info { min-width: 0; }
+
+.game-header__name {
+  font-family: var(--fonte-corpo);
+  font-size: 1.1rem; font-weight: 700; line-height: 1.15;
+  color: var(--branco);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.game-header__meta {
+  font-size: .8rem;
+  display: flex; align-items: center; gap: 8px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-top: 2px;
+}
+.game-header__meta #shell-disc-name { color: var(--ouro); font-weight: 500; }
+.game-header__meta #shell-sem       { color: rgba(255, 255, 255, .45); }
+.game-header__meta-sep              { color: rgba(255, 255, 255, .2); }
 
 /* ── OVERLAY DE PAUSA (criado dinamicamente pelo JS) ── */
 .sm-pause-overlay {
