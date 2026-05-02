@@ -4,7 +4,7 @@
    Salvamento: 100% localStorage via storage_sm.js
    - salvarEstadoPartida()  →  chamado após CADA ação do usuário
    - carregarEstadoPartida() → ao iniciar, oferece retomar partida salva
-   - salvarResultadoSM()    →  ao finalizar, grava histórico acumulado
+   - await salvarResultadoSM()    →  ao finalizar, grava histórico acumulado
    ============================================================ */
 
 import { Shell, Timer, shuffle, lerParams }    from '../../template/game-shell.js';
@@ -267,7 +267,7 @@ function atualizarTimerUI(restante) {
 function iniciarJogo(retomando = false) {
   if (!retomando) {
     // Nova partida: limpa save anterior e monta deck novo
-    limparEstadoPartida(estado.discId, estado.sem);
+    limparEstadoPartida(estado.usuario, estado.discId, estado.sem);
     estado.perguntas      = montarDeck(estado.banco, estado.historicoSM);
     estado.indice         = 0;
     estado.acertos        = 0;
@@ -552,12 +552,12 @@ function irProxima() {
    FINALIZAR
    ══════════════════════════════════════════════════════════ */
 
-function finalizarJogo() {
+async function finalizarJogo() {
   try { estado.timer?.stop(); } catch (_) {}
   if (estado._fallback) { clearInterval(estado._fallback); estado._fallback = null; }
 
   smLog('Jogo finalizado. Salvando histórico...');
-  debugEstado(estado.discId, estado.sem);
+  debugEstado(estado.usuario, estado.discId, estado.sem);
 
   const resultados = estado.perguntas.map((p, i) => ({
     id:      p.id ?? `q${i}`,
@@ -565,13 +565,13 @@ function finalizarJogo() {
     acertou: estado.respostas[i] === p.correta,
   })).filter(r => r.resp !== null && r.resp !== undefined);
 
-  // Salva histórico acumulado
-  salvarResultadoSM(estado.usuario, estado.discId, estado.sem, resultados);
+  // Salva histórico no Firebase (mesmo padrão do vdd_falso)
+  await salvarResultadoSM(estado.usuario, estado.discId, estado.sem, resultados);
 
   // Apaga o save de partida em curso (partida concluída)
-  limparEstadoPartida(estado.discId, estado.sem);
+  limparEstadoPartida(estado.usuario, estado.discId, estado.sem);
 
-  // Atualiza cache em memória
+  // Atualiza cache em memória (igual ao finalizarJogo do vdd_falso.js)
   for (const { id, acertou, resp } of resultados) {
     if (resp === null || resp === undefined) continue;
     const entrada = estado.historicoSM[id] ?? {
@@ -580,7 +580,7 @@ function finalizarJogo() {
     entrada.tentativas++;
     if (acertou) { entrada.acertos++; entrada.acertosConsecutivos = (entrada.acertosConsecutivos ?? 0) + 1; }
     else         { entrada.erros++;   entrada.acertosConsecutivos = 0; }
-    entrada.ultimaVez     = Date.now();
+    entrada.ultimaVez      = Date.now();
     estado.historicoSM[id] = entrada;
   }
 
@@ -627,7 +627,7 @@ function finalizarJogo() {
     elSair.parentNode.replaceChild(novoSair, elSair);
     novoSair.addEventListener('click', async (e) => {
       e.preventDefault();
-      estado.historicoSM = carregarHistoricoSM(estado.usuario, estado.discId, estado.sem);
+      estado.historicoSM = await carregarHistoricoSM(estado.usuario, estado.discId, estado.sem);
       estado.perguntas   = montarDeck(estado.banco, estado.historicoSM);
       atualizarContadores();
       mostrarTela('intro');
@@ -637,8 +637,8 @@ function finalizarJogo() {
   if (elRejogo) {
     const novoRejogo = elRejogo.cloneNode(true);
     elRejogo.parentNode.replaceChild(novoRejogo, elRejogo);
-    novoRejogo.addEventListener('click', () => {
-      estado.historicoSM = carregarHistoricoSM(estado.usuario, estado.discId, estado.sem);
+    novoRejogo.addEventListener('click', async () => {
+      estado.historicoSM = await carregarHistoricoSM(estado.usuario, estado.discId, estado.sem);
       estado.perguntas   = montarDeck(estado.banco, estado.historicoSM);
       if (estado.perguntas.length === 0) { mostrarTela('empty'); return; }
       atualizarContadores();
@@ -774,7 +774,7 @@ function setupPausa() {
     if (e.target.closest('#btn-retomar')) togglePausa();
   });
 
-  btnVoltarIntro?.addEventListener('click', () => {
+  btnVoltarIntro?.addEventListener('click', async () => {
     try { estado.timer?.stop(); } catch (_) {}
     if (estado._fallback) { clearInterval(estado._fallback); estado._fallback = null; }
     estado.timer   = null;
@@ -794,7 +794,7 @@ function setupPausa() {
       `Deck preservado: ${estado.perguntas.length} questões, respostas: [${estado.respostas.map(r => r ?? '—').join(', ')}]`);
 
     // Recarrega histórico em memória sem alterar o deck salvo
-    estado.historicoSM = carregarHistoricoSM(estado.usuario, estado.discId, estado.sem);
+    estado.historicoSM = await carregarHistoricoSM(estado.usuario, estado.discId, estado.sem);
     // NÃO recria o deck aqui — o deck correto está no save e será restaurado no modal
     atualizarContadores();
     localStorage.setItem('sm_saiu_voluntario__' + estado.discId + '__' + estado.sem, '1');
@@ -997,21 +997,21 @@ async function init() {
   estado.sem       = sem;
 
   // Carrega histórico do localStorage (síncrono, nunca falha)
-  estado.historicoSM = carregarHistoricoSM(estado.usuario, disc, sem);
+  estado.historicoSM = await carregarHistoricoSM(estado.usuario, disc, sem);
 
-  // Verifica se há partida salva
-  const saveData = carregarEstadoPartida(disc, sem);
+  // Verifica se há partida salva (agora isolada por uid)
+  const saveData = carregarEstadoPartida(estado.usuario, disc, sem);
 
   // ── Função compartilhada: retoma a partida salva ──
-  function retormarPartidaSalva() {
+  async function retormarPartidaSalva() {
     localStorage.removeItem('sm_saiu_voluntario__' + estado.discId + '__' + estado.sem);
-    const latestSave = carregarEstadoPartida(estado.discId, estado.sem);
+    const latestSave = carregarEstadoPartida(estado.usuario, estado.discId, estado.sem);
     if (!latestSave) { atualizarBtnContinuar(); return; }
 
     const idsBanco = new Set(banco.map(q => q.id));
     const salvasValidas = latestSave.perguntas.filter(p => !p.id || idsBanco.has(p.id));
     if (salvasValidas.length === 0) {
-      limparEstadoPartida(disc, sem);
+      limparEstadoPartida(estado.usuario, disc, sem);
       const blocoContinu = $('intro-continuar');
       if (blocoContinu) blocoContinu.style.display = 'none';
       return;
@@ -1036,7 +1036,7 @@ async function init() {
 
   // ── Função que configura/atualiza o botão continuar na intro ──
   function atualizarBtnContinuar() {
-    const save = carregarEstadoPartida(estado.discId, estado.sem);
+    const save = carregarEstadoPartida(estado.usuario, estado.discId, estado.sem);
     const blocoContinu = $('intro-continuar');
     const btnContinu   = $('btn-continuar');
     const infoCont     = $('continuar-info');
@@ -1065,12 +1065,12 @@ async function init() {
     if (btn && !btn.disabled) responder(btn.dataset.letra);
   });
 
-  el.btnStart?.addEventListener('click', () => {
+  el.btnStart?.addEventListener('click', async () => {
     smLog('btnStart clicado — nova partida do zero');
     localStorage.removeItem('sm_saiu_voluntario__' + estado.discId + '__' + estado.sem);
-    limparEstadoPartida(estado.discId, estado.sem);
+    limparEstadoPartida(estado.usuario, estado.discId, estado.sem);
     atualizarBtnContinuar();
-    estado.historicoSM = carregarHistoricoSM(estado.usuario, estado.discId, estado.sem);
+    estado.historicoSM = await carregarHistoricoSM(estado.usuario, estado.discId, estado.sem);
     estado.perguntas   = montarDeck(estado.banco, estado.historicoSM);
     if (estado.perguntas.length === 0) { mostrarTela('empty'); return; }
     iniciarJogo(false);
@@ -1084,11 +1084,10 @@ async function init() {
   atualizarContadores();
   aplicarCorBarra(100);
 
-  // F5 durante o jogo → retoma direto na tela de questões
-  // F5 após clicar Menu → fica na intro (flag sm_saiu_voluntario presente)
-  const _chaveVoluntario = 'sm_saiu_voluntario__' + disc + '__' + sem;
-  const _saiuVoluntario  = localStorage.getItem(_chaveVoluntario) === '1';
-  if (saveData && !_saiuVoluntario) {
+  // F5 durante o jogo → retoma direto | F5 após Menu → fica na intro
+  const _chaveVol = 'sm_saiu_voluntario__' + disc + '__' + sem;
+  const _saiuVol  = localStorage.getItem(_chaveVol) === '1';
+  if (saveData && !_saiuVol) {
     atualizarBtnContinuar();
     retormarPartidaSalva();
   } else {
@@ -1099,7 +1098,7 @@ async function init() {
   el._atualizarBtnContinuar = atualizarBtnContinuar;
 
   // Expõe debug global
-  window.smDebugJogo = () => debugEstado(estado.discId, estado.sem);
+  window.smDebugJogo = () => debugEstado(estado.usuario, estado.discId, estado.sem);
   smLog('Init concluído. Use smDebugJogo() no console para inspecionar o estado.');
 }
 
