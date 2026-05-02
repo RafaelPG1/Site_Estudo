@@ -185,21 +185,29 @@ body {
   align-items: center;
   gap: 8px;
   width: 100%;
+  margin-top: 16px;
 }
 
 .sm-btn-continuar {
   width: 100%;
   max-width: 340px;
-  background: rgba(255,255,255,.07) !important;
-  color: rgba(255,255,255,.55) !important;
+  background: transparent !important;
+  color: rgba(255,215,0,0.85) !important;
   box-shadow: none !important;
   animation: none !important;
-  border: 1px solid rgba(255,255,255,.12) !important;
+  border: 1px solid rgba(255,215,0,0.4) !important;
   clip-path: none !important;
+  border-radius: 4px !important;
   font-size: 0.9rem !important;
-  padding: 12px 40px !important;
+  padding: 13px 40px !important;
+  letter-spacing: 2px;
+  transition: background 0.2s, border-color 0.2s !important;
 }
-.sm-btn-continuar:hover { background: rgba(255,255,255,.12) !important; transform: none !important; }
+.sm-btn-continuar:hover {
+  background: rgba(255,215,0,0.08) !important;
+  border-color: rgba(255,215,0,0.7) !important;
+  transform: none !important;
+}
 
 .sm-btn-nova {
   width: 100%;
@@ -207,8 +215,8 @@ body {
 }
 
 .sm-continuar-info {
-  font-size: 0.78rem;
-  color: rgba(255,215,0,0.55);
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.35);
   letter-spacing: 0.5px;
 }
 

@@ -737,7 +737,7 @@ function setupPausa() {
       <span class="sm-pause-tip__icon">💡</span>
       <span>Use o tempo para revisar sua estratégia antes de continuar.</span>
     </div>
-    <button class="game-btn sm-pause-resume-btn" id="btn-retomar">
+    <button class="btn-proxima sm-pause-resume-btn" id="btn-retomar">
       <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M5 3l8 5-8 5V3z"/></svg>
       Retomar jogo
     </button>
@@ -797,6 +797,7 @@ function setupPausa() {
     estado.historicoSM = carregarHistoricoSM(estado.usuario, estado.discId, estado.sem);
     // NÃO recria o deck aqui — o deck correto está no save e será restaurado no modal
     atualizarContadores();
+    localStorage.setItem('sm_saiu_voluntario__' + estado.discId + '__' + estado.sem, '1');
     mostrarTela('intro');
     // Atualiza botão continuar na intro (save ainda existe)
     el._atualizarBtnContinuar?.();
@@ -885,7 +886,7 @@ function mostrarModalRetomada(saveData, onRetomar, onNova) {
           font-family:'Cinzel',serif;font-size:.85rem;padding:10px 24px;
           background:rgba(255,255,255,.07);color:rgba(255,255,255,.55);
           border:1px solid rgba(255,255,255,.12);border-radius:4px;cursor:pointer;
-        ">Ignorar e jogar novo</button>
+        ">← Voltar à tela inicial</button>
       </div>
     </div>`;
 
@@ -896,7 +897,6 @@ function mostrarModalRetomada(saveData, onRetomar, onNova) {
   });
   overlay.querySelector('#btn-nova-save').addEventListener('click', () => {
     overlay.remove();
-    onNova();
   });
 }
 
@@ -1002,6 +1002,38 @@ async function init() {
   // Verifica se há partida salva
   const saveData = carregarEstadoPartida(disc, sem);
 
+  // ── Função compartilhada: retoma a partida salva ──
+  function retormarPartidaSalva() {
+    localStorage.removeItem('sm_saiu_voluntario__' + estado.discId + '__' + estado.sem);
+    const latestSave = carregarEstadoPartida(estado.discId, estado.sem);
+    if (!latestSave) { atualizarBtnContinuar(); return; }
+
+    const idsBanco = new Set(banco.map(q => q.id));
+    const salvasValidas = latestSave.perguntas.filter(p => !p.id || idsBanco.has(p.id));
+    if (salvasValidas.length === 0) {
+      limparEstadoPartida(disc, sem);
+      const blocoContinu = $('intro-continuar');
+      if (blocoContinu) blocoContinu.style.display = 'none';
+      return;
+    }
+
+    Object.assign(estado, {
+      perguntas:      latestSave.perguntas,
+      indice:         latestSave.indice,
+      acertos:        latestSave.acertos,
+      respostas:      Array.from(latestSave.respostas),
+      tempos:         Array.from(latestSave.tempos),
+      temErro:        latestSave.temErro,
+      indicePendente: latestSave.indicePendente,
+      premioPendente: latestSave.premioPendente,
+      tempoInicio:    latestSave.tempoInicio,
+    });
+
+    atualizarContadores();
+    aplicarCorBarra(100);
+    iniciarJogo(true);
+  }
+
   // ── Função que configura/atualiza o botão continuar na intro ──
   function atualizarBtnContinuar() {
     const save = carregarEstadoPartida(estado.discId, estado.sem);
@@ -1017,34 +1049,7 @@ async function init() {
 
       if (btnContinu && !btnContinu._bound) {
         btnContinu._bound = true;
-        btnContinu.addEventListener('click', () => {
-          const latestSave = carregarEstadoPartida(estado.discId, estado.sem);
-          if (!latestSave) { atualizarBtnContinuar(); return; }
-
-          const idsBanco = new Set(banco.map(q => q.id));
-          const salvasValidas = latestSave.perguntas.filter(p => !p.id || idsBanco.has(p.id));
-          if (salvasValidas.length === 0) {
-            limparEstadoPartida(disc, sem);
-            blocoContinu.style.display = 'none';
-            return;
-          }
-
-          Object.assign(estado, {
-            perguntas:      latestSave.perguntas,
-            indice:         latestSave.indice,
-            acertos:        latestSave.acertos,
-            respostas:      Array.from(latestSave.respostas),
-            tempos:         Array.from(latestSave.tempos),
-            temErro:        latestSave.temErro,
-            indicePendente: latestSave.indicePendente,
-            premioPendente: latestSave.premioPendente,
-            tempoInicio:    latestSave.tempoInicio,
-          });
-
-          atualizarContadores();
-          aplicarCorBarra(100);
-          iniciarJogo(true);
-        });
+        btnContinu.addEventListener('click', retormarPartidaSalva);
       }
     } else if (blocoContinu) {
       blocoContinu.style.display = 'none';
@@ -1061,10 +1066,10 @@ async function init() {
   });
 
   el.btnStart?.addEventListener('click', () => {
-    smLog('btnStart clicado | perguntas em memória:', estado.perguntas.length);
+    smLog('btnStart clicado — nova partida do zero');
+    localStorage.removeItem('sm_saiu_voluntario__' + estado.discId + '__' + estado.sem);
     limparEstadoPartida(estado.discId, estado.sem);
-    const blocoContinu = $('intro-continuar');
-    if (blocoContinu) blocoContinu.style.display = 'none';
+    atualizarBtnContinuar();
     estado.historicoSM = carregarHistoricoSM(estado.usuario, estado.discId, estado.sem);
     estado.perguntas   = montarDeck(estado.banco, estado.historicoSM);
     if (estado.perguntas.length === 0) { mostrarTela('empty'); return; }
@@ -1078,9 +1083,18 @@ async function init() {
   estado.perguntas = montarDeck(banco, estado.historicoSM);
   atualizarContadores();
   aplicarCorBarra(100);
-  atualizarBtnContinuar();
-  mostrarTela('intro');
 
+  // F5 durante o jogo → retoma direto na tela de questões
+  // F5 após clicar Menu → fica na intro (flag sm_saiu_voluntario presente)
+  const _chaveVoluntario = 'sm_saiu_voluntario__' + disc + '__' + sem;
+  const _saiuVoluntario  = localStorage.getItem(_chaveVoluntario) === '1';
+  if (saveData && !_saiuVoluntario) {
+    atualizarBtnContinuar();
+    retormarPartidaSalva();
+  } else {
+    atualizarBtnContinuar();
+    mostrarTela('intro');
+  }
   // Quando voltar ao menu, atualiza o botão continuar
   el._atualizarBtnContinuar = atualizarBtnContinuar;
 
