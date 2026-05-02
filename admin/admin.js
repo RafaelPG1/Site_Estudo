@@ -1048,10 +1048,14 @@ async function _carregarSmProgress(estudantes) {
       let melhorValorNum = 0;
       let melhorValorStr = '—';
       let totalPartidas  = 0;
+      let acumulado      = 0;
 
       snapPont.forEach(d => {
         const data = d.data();
-        if (Array.isArray(data.historico)) totalPartidas += data.historico.length;
+        // totalPartidas: prefer campo direto, fallback para historico.length
+        totalPartidas += data.totalPartidas ?? (Array.isArray(data.historico) ? data.historico.length : 0);
+        // acumulado: soma dos campos acumulado de cada doc
+        acumulado += data.acumulado ?? 0;
         const vn = data.melhor?.valorNum ?? 0;
         if (vn > melhorValorNum) {
           melhorValorNum = vn;
@@ -1064,14 +1068,14 @@ async function _carregarSmProgress(estudantes) {
         docsHist: snapHist.size, docsPont: snapPont.size,
         discs: discs.size,
         totalQuestoes, totalTentativas, totalAcertos, totalErros, taxa,
-        melhorValorStr, melhorValorNum, totalPartidas,
+        melhorValorStr, melhorValorNum, totalPartidas, acumulado,
       };
     } catch {
       return {
         uid: u.uid, nome: u.nome ?? u.uid, avatar: u.avatar ?? '🎓',
         docsHist: 0, docsPont: 0, discs: 0,
         totalQuestoes: 0, totalTentativas: 0, totalAcertos: 0, totalErros: 0, taxa: null,
-        melhorValorStr: '—', melhorValorNum: 0, totalPartidas: 0,
+        melhorValorStr: '—', melhorValorNum: 0, totalPartidas: 0, acumulado: 0,
       };
     }
   }));
@@ -1090,7 +1094,8 @@ function _buildSmTable(dados) {
         <th>ID</th>
         <th>Discs</th>
         <th>Partidas</th>
-        <th>💰 Melhor prêmio</th>
+        <th>🏅 Melhor prêmio</th>
+        <th>💰 Acumulado</th>
         <th>✅ Acertos</th>
         <th>❌ Erros</th>
         <th>Taxa</th>
@@ -1109,6 +1114,15 @@ function _buildSmTable(dados) {
                             : r.melhorValorNum >= 30000   ? 'badge--teal'
                             : r.melhorValorNum > 0        ? 'badge--blue'
                             :                               'badge--grey';
+
+          const acumClass = r.acumulado >= 1000000 ? 'badge--gold'
+                          : r.acumulado >= 300000  ? 'badge--amber'
+                          : r.acumulado >= 30000   ? 'badge--teal'
+                          : r.acumulado > 0        ? 'badge--blue'
+                          :                          'badge--grey';
+          const acumFmt = r.acumulado > 0
+            ? 'R$ ' + r.acumulado.toLocaleString('pt-BR')
+            : '—';
 
           const semDados = r.docsHist === 0 && r.docsPont === 0;
 
@@ -1132,6 +1146,11 @@ function _buildSmTable(dados) {
               </span>
             </td>
             <td>
+              <span class="badge ${acumClass}" title="Soma de todos os prêmios">
+                ${acumFmt}
+              </span>
+            </td>
+            <td>
               <span class="badge ${r.totalAcertos > 0 ? 'badge--green' : 'badge--grey'}">
                 ${r.totalAcertos}
               </span>
@@ -1144,16 +1163,11 @@ function _buildSmTable(dados) {
             <td>
               <span class="badge ${taxaClass}">${taxaLabel}</span>
             </td>
-            <td style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center;">
-              <button class="icon-btn icon-btn--amber btn-limpar-sm-pont"
-                      data-uid="${r.uid}" data-nome="${r.nome}"
-                      ${r.docsPont === 0 ? 'disabled' : ''}>
-                💰 Pontuação
-              </button>
+            <td>
               <button class="icon-btn icon-btn--rose btn-limpar-sm-tudo"
                       data-uid="${r.uid}" data-nome="${r.nome}"
                       ${semDados ? 'disabled' : ''}>
-                🧹 Tudo
+                🧹 Limpar
               </button>
             </td>
           </tr>`;
@@ -1163,23 +1177,6 @@ function _buildSmTable(dados) {
 }
 
 function _bindSmActions(estudantes) {
-  // Limpar apenas pontuações
-  document.querySelectorAll('.btn-limpar-sm-pont').forEach(btn => {
-    btn.addEventListener('click', () =>
-      _modalConfirmar(
-        `Limpar pontuações de <strong>${btn.dataset.nome}</strong>?`,
-        'Apaga o histórico de prêmios. O progresso de questões é mantido.',
-        'Limpar pontuações',
-        async () => {
-          await _limparSmPontuacoes(btn.dataset.uid);
-          _toast(`Pontuações SM de ${btn.dataset.nome} limpas! 💰`);
-          _carregarSmProgress(estudantes);
-        },
-        btn
-      )
-    );
-  });
-
   // Limpar tudo (histórico de questões + pontuações)
   document.querySelectorAll('.btn-limpar-sm-tudo').forEach(btn => {
     btn.addEventListener('click', () =>
@@ -1334,10 +1331,12 @@ async function _carregarRankingSm(estudantes) {
       let melhorTempo    = '—';
       let melhorData     = 0;
       let totalPartidas  = 0;
+      let acumulado      = 0;
 
       snap.forEach(d => {
         const data = d.data();
-        if (Array.isArray(data.historico)) totalPartidas += data.historico.length;
+        totalPartidas += data.totalPartidas ?? (Array.isArray(data.historico) ? data.historico.length : 0);
+        acumulado     += data.acumulado ?? 0;
         const vn = data.melhor?.valorNum ?? 0;
         if (vn > melhorValorNum) {
           melhorValorNum = vn;
@@ -1353,14 +1352,14 @@ async function _carregarRankingSm(estudantes) {
         uid: u.uid, nome: u.nome ?? u.uid, avatar: u.avatar ?? '🎓',
         melhorValorNum, melhorValorStr,
         melhorAcertos, melhorPrecisao, melhorTempo, melhorData,
-        totalPartidas,
+        totalPartidas, acumulado,
       };
     } catch {
       return {
         uid: u.uid, nome: u.nome ?? u.uid, avatar: u.avatar ?? '🎓',
         melhorValorNum: 0, melhorValorStr: '—',
         melhorAcertos: 0, melhorPrecisao: 0, melhorTempo: '—', melhorData: 0,
-        totalPartidas: 0,
+        totalPartidas: 0, acumulado: 0,
       };
     }
   }));
@@ -1390,6 +1389,10 @@ async function _carregarRankingSm(estudantes) {
       ? new Date(s.melhorData).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'2-digit' })
       : '';
 
+    const acumFmt = s.acumulado > 0
+      ? '💰 ' + 'R$ ' + s.acumulado.toLocaleString('pt-BR')
+      : '';
+
     return `
       <div class="lb-item ${classeEl}">
         <div class="lb-rank">${posicao}</div>
@@ -1406,10 +1409,13 @@ async function _carregarRankingSm(estudantes) {
         </div>
         <div class="lb-score">
           <span class="badge ${premioClass}" style="font-size:.8rem;padding:4px 10px">
-            ${s.melhorValorStr}
+            🏅 ${s.melhorValorStr}
           </span>
+          ${acumFmt
+            ? `<span class="lb-unit" style="margin-top:3px;font-size:.7rem;color:var(--text-2)">${acumFmt}</span>`
+            : ''}
           ${s.melhorValorNum > 0
-            ? `<span class="lb-unit" style="margin-top:3px">${s.melhorAcertos} acerto${s.melhorAcertos !== 1 ? 's' : ''} · ${s.melhorPrecisao}%</span>`
+            ? `<span class="lb-unit" style="margin-top:2px">${s.melhorAcertos} acerto${s.melhorAcertos !== 1 ? 's' : ''} · ${s.melhorPrecisao}%</span>`
             : `<span class="lb-unit" style="margin-top:3px;color:var(--text-3)">sem partidas</span>`}
         </div>
       </div>`;

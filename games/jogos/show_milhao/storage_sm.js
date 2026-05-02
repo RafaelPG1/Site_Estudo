@@ -323,12 +323,16 @@ export async function salvarPontuacaoSM(usuario, discId, sem, entrada) {
     const raw = localStorage.getItem(chave);
     local = raw ? JSON.parse(raw) : null;
   } catch (_) {}
-  if (!local) local = { melhor: null, historico: [] };
+  if (!local) local = { melhor: null, historico: [], acumulado: 0, totalPartidas: 0 };
 
   // Atualiza melhor pontuação
   if (!local.melhor || entrada.valorNum > (local.melhor.valorNum ?? 0)) {
     local.melhor = { ...entrada };
   }
+
+  // Acumula prêmios (soma de todas as partidas)
+  local.acumulado    = (local.acumulado    ?? 0) + (entrada.valorNum ?? 0);
+  local.totalPartidas = (local.totalPartidas ?? 0) + 1;
 
   // Adiciona ao histórico (mantém últimas 20 partidas)
   local.historico = [entrada, ...(local.historico ?? [])].slice(0, 20);
@@ -352,9 +356,14 @@ export async function salvarPontuacaoSM(usuario, discId, sem, entrada) {
       ? { ...entrada }
       : remoto.melhor;
 
+    const novoAcumulado    = (remoto.acumulado    ?? 0) + (entrada.valorNum ?? 0);
+    const novoTotalPartidas = (remoto.totalPartidas ?? 0) + 1;
+
     await setDoc(ref, {
-      melhor:    novaMelhor,
-      historico: arrayUnion(entrada),   // Firestore não garante ordem, mas evita reescrever tudo
+      melhor:       novaMelhor,
+      acumulado:    novoAcumulado,
+      totalPartidas: novoTotalPartidas,
+      historico:    arrayUnion(entrada),   // Firestore não garante ordem, mas evita reescrever tudo
     }, { merge: true });
 
     smLog(`✅ Pontuação salva no Firestore! uid="${usuario}" | ${discId}__${sem} | ${entrada.valor}`);
@@ -413,6 +422,21 @@ export function melhorPontuacaoLocalSM(usuario, discId, sem) {
     const raw = localStorage.getItem(_chavePont(usuario ?? '_local', discId, sem));
     if (!raw) return null;
     return JSON.parse(raw)?.melhor ?? null;
+  } catch (_) {
+    return null;
+  }
+}
+
+/* Utilitário rápido — retorna acumulado e total de partidas (síncrono, apenas localStorage) */
+export function acumuladoLocalSM(usuario, discId, sem) {
+  try {
+    const raw = localStorage.getItem(_chavePont(usuario ?? '_local', discId, sem));
+    if (!raw) return null;
+    const dados = JSON.parse(raw);
+    return {
+      acumulado:    dados?.acumulado    ?? 0,
+      totalPartidas: dados?.totalPartidas ?? 0,
+    };
   } catch (_) {
     return null;
   }

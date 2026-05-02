@@ -21,6 +21,7 @@ import {
   limparHistoricoSM,
   salvarPontuacaoSM,
   melhorPontuacaoLocalSM,
+  acumuladoLocalSM,
   debugEstado,
   smLog, smWarn, smError,
 } from './storage_sm.js';
@@ -684,15 +685,30 @@ async function finalizarJogo() {
   if (elTitulo)  elTitulo.textContent  = titulo;
   if (elValor)   elValor.textContent   = valorFinal;
 
-  // Melhor pontuação histórica (síncrono — já estará em localStorage após salvarPontuacaoSM)
-  const melhor = melhorPontuacaoLocalSM(estado.usuario, estado.discId, estado.sem);
-  const elMelhor = document.getElementById('resultado-melhor');
-  if (elMelhor && melhor) {
-    const ehNovo = melhor.valorNum === (parseInt(valorFinal.replace(/\D/g, ''), 10) || 0) &&
-                   melhor.acertos  === estado.acertos;
-    elMelhor.textContent = `🏅 Melhor: ${melhor.valor} (${melhor.acertos} acertos · ${melhor.precisao}%)`;
-    elMelhor.style.display = 'block';
-    if (ehNovo) elMelhor.textContent = '🎉 Novo recorde! ' + elMelhor.textContent.slice(3);
+  // Melhor pontuação + acumulado histórico (síncrono — já estará em localStorage após salvarPontuacaoSM)
+  const melhor    = melhorPontuacaoLocalSM(estado.usuario, estado.discId, estado.sem);
+  const acumDados = acumuladoLocalSM(estado.usuario, estado.discId, estado.sem);
+  const elMelhor  = document.getElementById('resultado-melhor');
+
+  if (elMelhor) {
+    const linhas = [];
+
+    if (melhor) {
+      const ehNovo = melhor.valorNum === (parseInt(valorFinal.replace(/\D/g, ''), 10) || 0) &&
+                     melhor.acertos  === estado.acertos;
+      const prefixo = ehNovo ? '🎉 Novo recorde!' : '🏅 Melhor:';
+      linhas.push(`${prefixo} ${melhor.valor} (${melhor.acertos} acertos · ${melhor.precisao}%)`);
+    }
+
+    if (acumDados && acumDados.acumulado > 0) {
+      const acumFmt = 'R$ ' + acumDados.acumulado.toLocaleString('pt-BR');
+      linhas.push(`💰 Acumulado: ${acumFmt} em ${acumDados.totalPartidas} partida${acumDados.totalPartidas !== 1 ? 's' : ''}`);
+    }
+
+    if (linhas.length > 0) {
+      elMelhor.innerHTML = linhas.join('<br>');
+      elMelhor.style.display = 'block';
+    }
   }
   if (elAcertos) elAcertos.textContent = estado.acertos;
   if (elErros)   elErros.textContent   = respondidas - estado.acertos;
