@@ -125,7 +125,7 @@ Prefira texto limpo quando possível
 Gerar diretamente em JavaScript válido:
 
 [
-{
+  {
   tipo: "Asserção + Justificativa",
 
   texto: "Contexto limpo, sem marcações.",
@@ -139,7 +139,7 @@ Gerar diretamente em JavaScript válido:
 
   questionContinuation: "Se necessário.",
 
-  code: `// apenas se necessário`,
+  code: "// apenas se necessário",
 
   options: [
     "Alternativa A",
@@ -210,3 +210,4 @@ Exemplo genérico:
 // 2 - definição
 { ... }
 
+QUERO SOMENTE DIGITADO, NADA DE CRIAR UM QUIZ INTERATIVO SOMENTE TEXTO DIGITADO. nada de clipboard

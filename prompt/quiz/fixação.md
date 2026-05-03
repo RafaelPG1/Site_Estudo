@@ -137,3 +137,4 @@ Exemplo genérico:
 // 2 - definição
 { ... }
 
+QUERO SOMENTE DIGITADO, NADA DE CRIAR UM QUIZ INTERATIVO SOMENTE TEXTO DIGITADO. nada de clipboard

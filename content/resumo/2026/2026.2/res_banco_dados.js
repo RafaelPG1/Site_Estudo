@@ -5,6 +5,7 @@
 
 window.__nexusConteudo = {
   aulas: [
+    //Aula 9 — Definindo um Banco de Dados
     {
       aula: "Aula 9 — Definindo um Banco de Dados",
       ideia_central: "A DDL permite criar, modificar e remover estruturas em um banco de dados relacional.",
@@ -312,7 +313,7 @@ window.__nexusConteudo = {
 
       ]
     },
-
+    //Aula 10 — Manipulando um Banco de Dados
     {
       aula: "Aula 10 — Manipulando um Banco de Dados",
       ideia_central: "A DML permite buscar, inserir, atualizar e excluir dados em um banco de dados relacional usando SQL.",
@@ -607,8 +608,264 @@ window.__nexusConteudo = {
         }
  
       ]
-    }
+    },
+    //Aula 11 — Refinando Consultas em um Banco de Dados • Parte 1
+    {
+      aula: "Aula 11 — Refinando Consultas em um Banco de Dados • Parte 1",
+      ideia_central: "Não basta consultar dados — é preciso refiná-los usando filtros, operadores, funções de agregação e ordenação para obter exatamente o que se deseja.",
+      secoes: [
 
-  
+        {
+          id: "visao",
+          titulo: "📖 Visão Geral",
+          blocos: [
+            {
+              tipo: "lista",
+              titulo: "Principais tópicos:",
+              itens: [
+                "Filtrar dados com **WHERE**",
+                "Operadores especiais: **LIKE** · **BETWEEN** · **IN** · **IS NULL**",
+                "Ordenar resultados com **ORDER BY**",
+                "Realizar cálculos com **funções de agregação**",
+                "Agrupar dados com **GROUP BY**"
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "conceitos",
+          titulo: "🧠 Conceitos Principais",
+          blocos: [
+
+            {
+              tipo: "topico",
+              titulo: "🔹 Estrutura Básica de uma Consulta SQL",
+              lista: [
+                "**SELECT** → define o que será retornado",
+                "**FROM** → indica a tabela",
+                "**WHERE** → filtra os dados"
+              ],
+              codigo: "SELECT colunas\nFROM tabela\nWHERE condição;"
+            },
+
+            {
+              tipo: "topico",
+              titulo: "🔹 Ordem de Execução Real da Consulta",
+              lista: [
+                "**1º FROM** → define a origem dos dados",
+                "**2º WHERE** → filtra os registros",
+                "**3º SELECT** → mostra o resultado"
+              ]
+            },
+
+            {
+              tipo: "topico",
+              titulo: "🔹 Cláusula WHERE",
+              lista: [
+                "Restringe os dados retornados pela consulta",
+                "Seleciona apenas registros que satisfazem uma condição",
+                "✔ Não é obrigatória",
+                "✔ Muito usada em SELECT, UPDATE e DELETE"
+              ],
+              codigo: "SELECT * FROM alunos WHERE cod_curso = 10;"
+            },
+
+            {
+              tipo: "subtitulo",
+              texto: "Operadores da Cláusula WHERE"
+            },
+
+            {
+              tipo: "topico",
+              titulo: "📌 LIKE — Busca Textual",
+              lista: [
+                "Permite buscar **padrões em textos** usando curingas",
+                "**%** → qualquer sequência de caracteres",
+                "**_** → exatamente 1 caractere",
+                "✔ Usado para pesquisas flexíveis em strings"
+              ],
+              codigo: "-- Começa com Jorge:\nWHERE nome LIKE 'Jorge%'\n\n-- Contém Santos:\nWHERE nome LIKE '%Santos%'\n\n-- Segunda letra é 'u':\nWHERE nome LIKE '_u%'"
+            },
+
+            {
+              tipo: "topico",
+              titulo: "📌 BETWEEN — Intervalo de Valores",
+              lista: [
+                "Filtra valores dentro de um **intervalo fechado**",
+                "✔ Muito usado com datas e números",
+                "✔ Equivale a: >= valor_inicial AND <= valor_final"
+              ],
+              codigo: "WHERE dat_nasc BETWEEN '1980-01-01' AND '1989-12-31';"
+            },
+
+            {
+              tipo: "topico",
+              titulo: "📌 IN — Lista de Valores",
+              lista: [
+                "Filtra valores dentro de uma **lista predefinida**",
+                "✔ Equivalente a vários OR encadeados"
+              ],
+              codigo: "WHERE mat_alu IN (922155, 926465, 915550);\n\n-- Equivale a:\n-- mat_alu = 922155 OR mat_alu = 926465 OR mat_alu = 915550"
+            },
+
+            {
+              tipo: "topico",
+              titulo: "📌 IS NULL — Valores Nulos",
+              lista: [
+                "Verifica se um campo **não possui valor**",
+                "⚠ NULL ≠ vazio ou zero",
+                "⚠ Comparações com NULL resultam em UNKNOWN (nem verdadeiro nem falso)"
+              ],
+              codigo: "WHERE email IS NULL;"
+            },
+
+            {
+              tipo: "subtitulo",
+              texto: "Funções de Agregação"
+            },
+
+            {
+              tipo: "tabela",
+              titulo: "🔹 Principais Funções de Agregação",
+              colunas: ["Função", "Descrição"],
+              linhas: [
+                ["COUNT", "Conta registros"],
+                ["SUM",   "Soma valores"],
+                ["AVG",   "Calcula a média"],
+                ["MIN",   "Retorna o menor valor"],
+                ["MAX",   "Retorna o maior valor"]
+              ]
+            },
+
+            {
+              tipo: "topico",
+              titulo: "🔹 GROUP BY — Agrupamento de Dados",
+              lista: [
+                "Agrupa registros com base em **um ou mais campos**",
+                "✔ Usado para relatórios e estatísticas por categoria",
+                "⚠ Campos no SELECT devem estar no GROUP BY ou dentro de funções agregadas"
+              ],
+              codigo: "SELECT cod_curso, AVG(credito)\nFROM alunos\nGROUP BY cod_curso;"
+            },
+
+            {
+              tipo: "topico",
+              titulo: "🔹 ORDER BY — Ordenação de Resultados",
+              lista: [
+                "Ordena os resultados da consulta",
+                "**ASC** → crescente (padrão)",
+                "**DESC** → decrescente",
+                "✔ Pode ordenar por múltiplas colunas"
+              ],
+              codigo: "-- Crescente:\nORDER BY nome ASC;\n\n-- Decrescente:\nORDER BY credito DESC;\n\n-- Múltiplas colunas:\nORDER BY credito DESC, nome ASC;"
+            }
+
+          ]
+        },
+
+        {
+          id: "metodos",
+          titulo: "📊 Fórmulas e Métodos",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "🔹 Estrutura completa de consulta",
+              codigo: "SELECT colunas\nFROM tabela\nWHERE condição\nGROUP BY coluna\nORDER BY coluna ASC/DESC;"
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Funções de Agregação",
+              lista: [
+                "**COUNT** → `SELECT COUNT(*) FROM tabela;`",
+                "**SUM** → `SELECT SUM(coluna) FROM tabela;`",
+                "**AVG** → `SELECT AVG(coluna) FROM tabela;`",
+                "**MIN/MAX** → `SELECT MIN(coluna), MAX(coluna) FROM tabela;`"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Boas práticas com WHERE e operadores",
+              lista: [
+                "1. Usar LIKE com % e _ para buscas flexíveis em texto",
+                "2. Usar BETWEEN para intervalos de datas e números",
+                "3. Usar IN para substituir vários OR encadeados",
+                "4. Usar IS NULL (nunca = NULL) para verificar campos sem valor",
+                "5. Combinar GROUP BY com funções de agregação para relatórios"
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "exemplos",
+          titulo: "💡 Exemplos Explicativos",
+          blocos: [
+            {
+              tipo: "exemplo",
+              titulo: "Exemplo 1 — Filtro com LIKE",
+              texto: "Buscar todos os alunos cujo nome começa com 'Jorge'.",
+              detalhe: "👉 SELECT * FROM alunos WHERE nome LIKE 'Jorge%';"
+            },
+            {
+              tipo: "exemplo",
+              titulo: "Exemplo 2 — Intervalo com BETWEEN",
+              texto: "Retornar alunos nascidos na década de 80.",
+              detalhe: "👉 SELECT * FROM alunos WHERE dat_nasc BETWEEN '1980-01-01' AND '1989-12-31';"
+            },
+            {
+              tipo: "exemplo",
+              titulo: "Exemplo 3 — Lista com IN",
+              texto: "Buscar alunos por lista de matrículas específicas.",
+              detalhe: "👉 SELECT * FROM alunos WHERE mat_alu IN (922155, 926465);"
+            },
+            {
+              tipo: "exemplo",
+              titulo: "Exemplo 4 — Contagem com COUNT",
+              texto: "Descobrir a quantidade total de alunos cadastrados.",
+              detalhe: "👉 SELECT COUNT(*) FROM alunos;"
+            },
+            {
+              tipo: "exemplo",
+              titulo: "Exemplo 5 — Agrupamento com GROUP BY",
+              texto: "Calcular a média de créditos por curso.",
+              detalhe: "👉 SELECT cod_curso, AVG(credito) FROM alunos GROUP BY cod_curso;"
+            },
+            {
+              tipo: "exemplo",
+              titulo: "Exemplo 6 — Ordenação com ORDER BY",
+              texto: "Listar alunos em ordem decrescente de nome.",
+              detalhe: "👉 SELECT * FROM alunos ORDER BY nome DESC;"
+            }
+          ]
+        },
+
+        {
+          id: "resumo",
+          titulo: "🧾 Resumo Final para Revisão Rápida",
+          blocos: [
+            {
+              tipo: "lista",
+              itens: [
+                "**WHERE** → filtra dados da consulta",
+                "**LIKE** → busca por padrão em texto usando % e _",
+                "**BETWEEN** → filtra intervalo de valores (datas e números)",
+                "**IN** → filtra por lista de valores (substitui vários OR)",
+                "**IS NULL** → verifica campos sem valor (NULL ≠ zero ou vazio)",
+                "**COUNT** → conta registros · **SUM** → soma · **AVG** → média",
+                "**MIN** → menor valor · **MAX** → maior valor",
+                "**GROUP BY** → agrupa registros por campo",
+                "**ORDER BY** → ordena resultados (ASC crescente / DESC decrescente)"
+              ]
+            },
+            {
+              tipo: "destaque",
+              texto: "📌 Ideia-chave para prova: WHERE = filtro | LIKE/BETWEEN/IN/IS NULL = operadores especiais | Agregação = COUNT/SUM/AVG/MIN/MAX | GROUP BY = agrupar | ORDER BY = ordenar."
+            }
+          ]
+        }
+
+      ]
+    }
   ]
 };
