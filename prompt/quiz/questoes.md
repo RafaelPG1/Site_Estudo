@@ -182,7 +182,7 @@ Gerar diretamente em JavaScript válido:
 ```javascript
 [
   {
-    aula; "digite a aula viu"
+    aula; "digite a aula viu, cada aula por favor"
     tipo: "Explicativa",
 
     texto: "Explicação didática do conceito (modo aula).",
