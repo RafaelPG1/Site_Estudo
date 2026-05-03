@@ -75,7 +75,7 @@ Misture conceitos relacionados
 Priorize raciocínio
 NÃO dependa de conhecimento externo (quando possível)
 📊 DISTRIBUIÇÃO
-Total: 12 questões
+Total: 10 questões
 Pelo menos 1 de cada tipo
 Evitar repetição de estrutura
 🧠 NÍVEL
@@ -126,6 +126,7 @@ Gerar diretamente em JavaScript válido:
 
 [
   {
+    aula: "digite a aula"
   tipo: "Asserção + Justificativa",
 
   texto: "Contexto limpo, sem marcações.",
@@ -157,7 +158,7 @@ Gerar diretamente em JavaScript válido:
 
 Antes de finalizar, verifique:
 
-Existem exatamente 12 questões
+Existem exatamente 10 questões
 Está dentro de um array []
 Nenhum texto fora do código
 Todas possuem:

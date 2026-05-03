@@ -147,3 +147,5 @@ aulas: [
 ═══════════════════ OBJETIVO ═══════════════════
 Organizar o resumo dentro da estrutura aulas[],
 mantendo o conteúdo completo, claro e pronto para estudo.
+
+QUERO SOMENTE DIGITADO, NADA DE CRIAR UM QUIZ INTERATIVO SOMENTE TEXTO DIGITADO. nada de clipboard

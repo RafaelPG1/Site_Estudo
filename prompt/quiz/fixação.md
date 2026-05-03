@@ -1,6 +1,6 @@
 
 Você receberá um conteúdo como entrada (texto, resumo, aula ou PDF) de QUALQUER ÁREA do conhecimento.
-Sua tarefa é gerar 12 questões objetivas, claras, variadas e bem distribuídas em nível de dificuldade.
+Sua tarefa é gerar 10 questões objetivas, claras, variadas e bem distribuídas em nível de dificuldade.
 🎯 OBJETIVO
 Criar questões que:
 
@@ -39,7 +39,7 @@ Conceito básico
 Interpretação
 Aplicação simples ⚖️ DISTRIBUIÇÃO
 
-Total: 12 questões
+Total: 10 questões
 Misturar:
 Curtas
 Médias
@@ -56,6 +56,7 @@ alternativas muito longas comparadas às outras
 Não repetir estrutura de pergunta 📦 FORMATO DE SAÍDA (OBRIGATÓRIO) Gerar diretamente em JavaScript válido:
 [
 {
+  Aula: digite a aula 
   tipo: "Direta", // ou: "Curta", "Contexto", "Código"
 
   texto: "Contexto curto ou mínimo (sempre presente).",
@@ -87,7 +88,7 @@ Use variação:
 🚨 VALIDAÇÃO FINAL (OBRIGATÓRIA)
 Antes de finalizar, verifique:
 
-Existem exatamente 12 questões
+Existem exatamente 10 questões
 Está dentro de um array []
 Nenhum texto fora do código
 Todas possuem:
@@ -137,4 +138,4 @@ Exemplo genérico:
 // 2 - definição
 { ... }
 
-QUERO SOMENTE DIGITADO, NADA DE CRIAR UM QUIZ INTERATIVO SOMENTE TEXTO DIGITADO. nada de clipboard
+QUERO SOMENTE DIGITADO, NADA DE CRIAR UM QUIZ INTERATIVO SOMENTE TEXTO DIGITADO. nada de clipboard. proibo

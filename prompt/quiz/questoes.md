@@ -1,7 +1,7 @@
 
 Você receberá um conteúdo como entrada (texto, resumo, aula ou PDF) de QUALQUER ÁREA do conhecimento.
 
-Sua tarefa é gerar 12 questões de FIXAÇÃO EXPLICATIVA (modo aula), seguindo rigorosamente os padrões abaixo.
+Sua tarefa é gerar 10 questões de FIXAÇÃO EXPLICATIVA (modo aula), seguindo rigorosamente os padrões abaixo.
 
 ---
 
@@ -117,7 +117,7 @@ EXPLICA → PERGUNTA
 
 ⚖️ DISTRIBUIÇÃO
 
-Total: 12 questões
+Total: 10 questões
 
 ✔ Mínimo de 3 questões por tipo  
 ✔ Misturar tamanhos de texto  
@@ -182,6 +182,7 @@ Gerar diretamente em JavaScript válido:
 ```javascript
 [
   {
+    aula; "digite a aula viu"
     tipo: "Explicativa",
 
     texto: "Explicação didática do conceito (modo aula).",

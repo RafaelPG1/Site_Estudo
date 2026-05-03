@@ -6,6 +6,9 @@ window.questoes = {
   // ── Questões Práticas ──────────────────────────────────────
   questoes: [
 
+  // Aula 9 - Prototipagem e Norma ISO 9241
+
+  // Questão 1
   {
     aula: "Aula 9 — Prototipagem e Norma ISO 9241",
     tipo: "Explicativa",
@@ -20,6 +23,7 @@ window.questoes = {
     answer: 1,
     feedback: "O ==def==ciclo de vida== organiza o desenvolvimento em etapas, guiando desde o planejamento até a entrega e manutenção do sistema."
   },
+  // Questão 2
   {
     aula: "Aula 9 — Prototipagem e Norma ISO 9241",
     tipo: "Explicativa",
@@ -34,6 +38,7 @@ window.questoes = {
     answer: 2,
     feedback: "A rigidez sequencial do ==def==Modelo Cascata== impede revisões formais entre fases, tornando difícil incorporar mudanças após o início do desenvolvimento."
   },
+  // Questão 3
   {
     aula: "Aula 9 — Prototipagem e Norma ISO 9241",
     tipo: "Contextualizada",
@@ -48,6 +53,7 @@ window.questoes = {
     answer: 1,
     feedback: "O ==def==Modelo Espiral== se destaca pela ==rule==análise de riscos== em cada ciclo e pelo uso de ==proc==protótipos== para validação progressiva."
   },
+  // Questão 4
   {
     aula: "Aula 9 — Prototipagem e Norma ISO 9241",
     tipo: "Contextualizada",
@@ -62,6 +68,7 @@ window.questoes = {
     answer: 1,
     feedback: "O ==def==Modelo Iterativo== permite ==proc==adaptação contínua== e participação do usuário em cada ciclo, reduzindo o acúmulo de erros."
   },
+  // Questão 5
   {
     aula: "Aula 9 — Prototipagem e Norma ISO 9241",
     tipo: "Contextualizada",
@@ -76,6 +83,7 @@ window.questoes = {
     answer: 1,
     feedback: "No ==def==Modelo Estrela==, a ==rule==avaliação== é o centro do processo e qualquer etapa pode ser o ponto de partida, conferindo grande flexibilidade."
   },
+  // Questão 6
   {
     aula: "Aula 9 — Prototipagem e Norma ISO 9241",
     tipo: "Explicativa",
@@ -90,6 +98,7 @@ window.questoes = {
     answer: 2,
     feedback: "O ==def==Modelo de Shneiderman== se apoia em ==proc==especificação==, ==proc==prototipagem== e ==proc==testes de usabilidade== para garantir qualidade centrada no usuário."
   },
+  // Questão 7
   {
     aula: "Aula 9 — Prototipagem e Norma ISO 9241",
     tipo: "Contextualizada",
@@ -104,6 +113,7 @@ window.questoes = {
     answer: 2,
     feedback: "O ==def==Manifesto Ágil== valoriza pessoas, software funcional, colaboração do cliente e ==rule==adaptação a mudanças== acima de contratos e planos rígidos."
   },
+  // Questão 8
   {
     aula: "Aula 9 — Prototipagem e Norma ISO 9241",
     tipo: "Explicativa",
@@ -118,6 +128,7 @@ window.questoes = {
     answer: 2,
     feedback: "O ==def==Design Thinking== começa pela ==proc==empatia==: entender as necessidades reais do usuário antes de imaginar qualquer solução."
   },
+  // Questão 9
   {
     aula: "Aula 9 — Prototipagem e Norma ISO 9241",
     tipo: "Contextualizada",
@@ -132,6 +143,7 @@ window.questoes = {
     answer: 1,
     feedback: "O ==rule==princípio cocriativo== determina que usuários e partes interessadas participam ativamente da criação, tornando as soluções mais aderentes à realidade."
   },
+  // Questão 10
   {
     aula: "Aula 9 — Prototipagem e Norma ISO 9241",
     tipo: "Explicativa",
@@ -146,6 +158,7 @@ window.questoes = {
     answer: 1,
     feedback: "A ==def==ISO 9241== avalia usabilidade por meio de três dimensões: ==rule==eficácia== (atingir objetivos), ==rule==eficiência== (esforço empregado) e ==rule==satisfação== (experiência do usuário)."
   },
+  // Questão 11
   {
     aula: "Aula 9 — Prototipagem e Norma ISO 9241",
     tipo: "Aplicação",
@@ -160,6 +173,7 @@ window.questoes = {
     answer: 2,
     feedback: "A ==rule==tolerância a erros== exige que o sistema minimize erros e permita recuperação — ações irreversíveis sem confirmação violam diretamente esse princípio."
   },
+  // Questão 12
   {
     aula: "Aula 9 — Prototipagem e Norma ISO 9241",
     tipo: "Aplicação",
@@ -175,6 +189,7 @@ window.questoes = {
     feedback: "A ==rule==individualização== permite que o usuário adapte a interface às suas preferências, tornando a experiência mais acessível e personalizada."
   },
 
+  //  Aula 10 - Design de Interfaces e Prototipação
   // ── Questão 13 ── Explicativa
   {
     aula: "Aula 10 — Design de Interfaces e Prototipação",
@@ -425,13 +440,264 @@ window.questoes = {
     answer: 1,
 
     feedback: "No ==def==DCU==, o designer deve equilibrar as necessidades do usuário com as restrições reais do projeto. Ignorar limitações técnicas e financeiras gera soluções ideais no papel, mas inviáveis na prática."
-  }
+  },
+
+  // aula 11: Design Responsivo
+
+// 25 - design responsivo
+{
+  aula: "Aula 11 - Design Responsivo",
+  tipo: "Explicativa",
+
+  texto: "O design responsivo vai além de simplesmente reduzir o tamanho de um site. Ele envolve reorganizar, adaptar e otimizar a interface para cada tipo de dispositivo. Um site responsivo pode exibir uma coluna no celular e três colunas no desktop, mantendo sempre a usabilidade e o visual agradáveis.",
+
+  question: "O que diferencia um site responsivo de um site que apenas 'encolhe' em telas menores?",
+
+  options: [
+    "Um site responsivo usa fontes maiores em dispositivos móveis",
+    "Um site responsivo reorganiza e adapta seus elementos conforme o dispositivo",
+    "Um site responsivo carrega imagens em maior resolução no celular",
+    "Um site responsivo desativa o CSS em telas pequenas"
+  ],
+
+  answer: 1,
+
+  feedback: "O ==ddl==design responsivo== não é só redimensionamento — ele envolve reorganização dos elementos para garantir boa experiência em qualquer dispositivo."
+},
+
+// 26 - media queries
+{
+  aula: "Aula 11 - Design Responsivo",
+  tipo: "Explicativa",
+
+  texto: "As media queries são um recurso do CSS3 que permitem aplicar regras de estilo diferentes dependendo do tamanho da tela do usuário. Por exemplo, você pode definir que um elemento ocupe 100% da largura em celulares e apenas 50% em tablets, tudo dentro do mesmo arquivo CSS.",
+
+  question: "Qual é a principal função das media queries no CSS3?",
+
+  options: [
+    "Criar animações automáticas para dispositivos móveis",
+    "Aplicar estilos diferentes de acordo com o tamanho da tela",
+    "Definir a velocidade de carregamento da página",
+    "Controlar o número de fontes externas carregadas"
+  ],
+
+  answer: 1,
+
+  feedback: "Media queries permitem aplicar regras CSS condicionais, adaptando o layout conforme a resolução ou tamanho da tela do dispositivo."
+},
+
+// 27 - viewport
+{
+  aula: "Aula 11 - Design Responsivo",
+  tipo: "Contextualizada",
+
+  texto: "Quando um site não possui a meta tag viewport configurada, navegadores móveis costumam 'fingir' que a tela é mais larga do que realmente é, encolhendo o conteúdo para caber. A tag correta — com width=device-width e initial-scale=1 — instrui o navegador a usar a largura real do dispositivo e não aplicar zoom automático, garantindo que o layout responsivo funcione como esperado.",
+
+  question: "Por que a meta tag viewport é indispensável para o funcionamento do design responsivo em dispositivos móveis?",
+
+  options: [
+    "Ela define o tamanho mínimo das fontes na página",
+    "Ela impede que folhas de estilo externas sejam carregadas",
+    "Ela garante que o navegador use a largura real do dispositivo sem aplicar zoom automático",
+    "Ela ativa automaticamente as media queries no CSS"
+  ],
+
+  answer: 2,
+
+  feedback: "Sem a meta tag viewport, o navegador móvel pode distorcer o layout, ignorando as regras responsivas definidas no CSS."
+},
+
+// 28 - layout fluido
+{
+  aula: "Aula 11 - Design Responsivo",
+  tipo: "Aplicação",
+
+  texto: "Imagine que você está desenvolvendo um blog e quer que o conteúdo principal sempre ocupe 75% da tela, independente se o usuário acessa pelo celular ou pelo computador. Para isso, em vez de definir uma largura fixa em pixels, você usa porcentagem. Assim, o elemento se adapta proporcionalmente a qualquer resolução.",
+
+  question: "Qual prática representa o conceito de layout fluido em CSS?",
+
+  options: [
+    "Definir width: 960px para todos os elementos",
+    "Usar width: 75% para que o elemento se ajuste proporcionalmente à tela",
+    "Aplicar display: none em telas pequenas",
+    "Configurar height: 100vh em todos os containers"
+  ],
+
+  answer: 1,
+
+  feedback: "O ==def==layout fluido== usa medidas relativas como porcentagem, fazendo com que os elementos se redimensionem automaticamente conforme a tela."
+},
+
+// 29 - mobile first
+{
+  aula: "Aula 11 - Design Responsivo",
+  tipo: "Explicativa",
+
+  texto: "A metodologia Mobile First propõe que o desenvolvimento comece pelo layout para dispositivos móveis e, progressivamente, expanda-se para telas maiores. Essa abordagem força o desenvolvedor a priorizar o conteúdo essencial, resultando em interfaces mais limpas e com melhor desempenho.",
+
+  question: "Qual é o ponto de partida da metodologia Mobile First?",
+
+  options: [
+    "Criar o layout para desktop e depois adaptar para telas menores",
+    "Criar o layout para dispositivos móveis e expandir progressivamente para telas maiores",
+    "Desenvolver versões separadas do site para cada tipo de dispositivo",
+    "Iniciar pelo tablet como resolução intermediária"
+  ],
+
+  answer: 1,
+
+  feedback: "Mobile First começa pelos dispositivos menores, garantindo foco no essencial e melhor desempenho, depois expande para telas maiores com media queries de min-width."
+},
+
+// 30 - breakpoints
+{
+  aula: "Aula 11 - Design Responsivo",
+  tipo: "Explicativa",
+
+  texto: "Breakpoints são os pontos de 'quebra' do layout — resolucões específicas onde o design muda de comportamento. Por exemplo, abaixo de 480px o site exibe uma coluna, entre 480px e 768px passa para duas colunas, e acima disso exibe três. Eles são definidos diretamente dentro das media queries no CSS.",
+
+  question: "O que são breakpoints no contexto do design responsivo?",
+
+  options: [
+    "Erros que ocorrem quando o site não carrega corretamente no mobile",
+    "Resoluções específicas onde o layout muda de comportamento",
+    "Propriedades CSS que definem a velocidade das animações",
+    "Arquivos separados de CSS para cada tipo de dispositivo"
+  ],
+
+  answer: 1,
+
+  feedback: "Breakpoints definem os pontos de transição do layout, sendo configurados via media queries para ajustar o design em diferentes faixas de resolução."
+},
+
+// 31 - medidas relativas
+{
+  aula: "Aula 11 - Design Responsivo",
+  tipo: "Contextualizada",
+
+  texto: "No design responsivo, as medidas relativas têm papel central. O uso de porcentagem (%) para larguras e de em para tamanhos de fonte garante que os elementos se comportem de forma proporcional ao contexto em que estão inseridos. Em contrapartida, medidas absolutas como px, cm ou mm travam o layout em um tamanho fixo, dificultando a adaptação a diferentes telas.",
+
+  question: "Quais tipos de medidas são recomendados no design responsivo para garantir a adaptação do layout?",
+
+  options: [
+    "px e cm, por oferecerem precisão visual",
+    "pt e mm, usados em impressão",
+    "% e em, por serem relativas ao contexto da tela",
+    "vh e px, pois funcionam em todos os navegadores"
+  ],
+
+  answer: 2,
+
+  feedback: "Medidas relativas como % e em permitem que o layout se adapte proporcionalmente, enquanto medidas fixas como px impedem essa flexibilidade."
+},
+
+// 32 - ordem media queries
+{
+  aula: "Aula 11 - Design Responsivo",
+  tipo: "Aplicação",
+
+  texto: "Uma armadilha comum no CSS responsivo é ignorar a ordem das media queries. Como o CSS é lido de cima para baixo, uma regra definida depois pode sobrescrever uma anterior. Por isso, ao usar a abordagem Mobile First com min-width, as media queries devem ser ordenadas do menor para o maior breakpoint.",
+
+  question: "Por que a ordem das media queries no CSS é um ponto de atenção importante?",
+
+  options: [
+    "Porque media queries em ordem errada aumentam o tempo de carregamento",
+    "Porque regras definidas depois podem sobrescrever as anteriores, quebrando o layout",
+    "Porque o navegador ignora media queries fora de ordem",
+    "Porque apenas a primeira media query é lida pelo navegador"
+  ],
+
+  answer: 1,
+
+  feedback: "O CSS é interpretado em cascata, então uma media query posicionada depois pode substituir regras anteriores — a ==warn==ordem incorreta== pode quebrar o layout responsivo."
+},
+
+// 33 - grid responsivo
+{
+  aula: "Aula 11 - Design Responsivo",
+  tipo: "Aplicação",
+
+  texto: "Um grid responsivo adapta o número de colunas conforme a tela do usuário. Em telas pequenas, como celulares, o conteúdo é empilhado em uma única coluna para facilitar a leitura. Em tablets, passa para duas colunas. Em desktops, três ou mais colunas podem ser exibidas simultaneamente, aproveitando o espaço disponível.",
+
+  question: "Como um grid responsivo típico se comporta conforme o tamanho da tela aumenta?",
+
+  options: [
+    "Reduz o número de colunas para priorizar o conteúdo principal",
+    "Mantém sempre o mesmo número de colunas independente da tela",
+    "Aumenta o número de colunas conforme a tela fica maior",
+    "Remove colunas apenas em telas de desktop"
+  ],
+
+  answer: 2,
+
+  feedback: "O grid responsivo aumenta o número de colunas progressivamente: 1 no mobile, 2 no tablet e 3 ou mais no desktop, aproveitando o espaço de cada dispositivo."
+},
+
+// 34 - menu responsivo
+{
+  aula: "Aula 11 - Design Responsivo",
+  tipo: "Contextualizada",
+
+  texto: "A navegação de um site também precisa ser adaptada conforme o dispositivo. Em desktops, um menu horizontal com todos os itens visíveis é a solução mais comum. Já em celulares, exibir todos esses itens ocuparia boa parte da tela, por isso utiliza-se o menu hambúrguer — um ícone que, ao ser clicado, revela as opções de navegação.",
+
+  question: "Qual é a principal razão para usar o menu hambúrguer em dispositivos móveis?",
+
+  options: [
+    "Por ser mais bonito visualmente do que o menu horizontal",
+    "Para economizar espaço na tela, exibindo os itens apenas quando necessário",
+    "Porque dispositivos móveis não suportam menus horizontais",
+    "Para aumentar a velocidade de carregamento do site"
+  ],
+
+  answer: 1,
+
+  feedback: "O menu hambúrguer economiza espaço na tela do mobile, exibindo os itens de navegação apenas sob demanda — uma adaptação essencial da interface responsiva."
+},
+
+// 35 - min-width vs max-width
+{
+  aula: "Aula 11 - Design Responsivo",
+  tipo: "Explicativa",
+
+  texto: "Nas media queries, dois operadores são amplamente usados: max-width e min-width. O max-width aplica estilos até um determinado tamanho de tela — ideal para a abordagem Desktop First. Já o min-width aplica estilos a partir de um tamanho mínimo, sendo a escolha natural para quem adota Mobile First, onde o design parte do menor para o maior.",
+
+  question: "Qual operador de media query é mais adequado para uma abordagem Mobile First?",
+
+  options: [
+    "max-width, pois limita o estilo a telas pequenas",
+    "min-width, pois aplica estilos a partir de um tamanho mínimo de tela",
+    "max-height, pois controla a altura máxima do dispositivo",
+    "min-height, pois garante que o layout nunca fique comprimido"
+  ],
+
+  answer: 1,
+
+  feedback: "No Mobile First, usa-se ==rule==min-width== para expandir o layout progressivamente: os estilos base valem para telas pequenas, e as media queries adicionam regras para telas maiores."
+},
+
+// 36 - boas práticas
+{
+  aula: "Aula 11 - Design Responsivo",
+  tipo: "Contextualizada",
+
+  texto: "Ao construir um layout responsivo, algumas boas práticas fazem toda a diferença. Evitar excesso de media queries simplifica a manutenção do código. Usar medidas relativas reduz dependências de tamanho fixo. Sempre incluir a meta tag viewport garante que as regras CSS sejam respeitadas no mobile. Juntos, esses cuidados resultam em um site mais robusto e fácil de manter.",
+
+  question: "Qual conjunto de práticas representa uma abordagem correta no desenvolvimento de layouts responsivos?",
+
+  options: [
+    "Usar px em todos os elementos, muitas media queries e omitir a meta tag viewport",
+    "Usar medidas relativas, limitar media queries ao necessário e incluir a meta tag viewport",
+    "Criar arquivos CSS separados para cada resolução e usar cm para fontes",
+    "Aplicar width fixo no body e compensar com zoom via JavaScript"
+  ],
+
+  answer: 1,
+
+  feedback: "Boas práticas responsivas combinam medidas relativas, uso consciente de media queries e a presença obrigatória da meta tag viewport para garantir um layout funcional e mantível."
+},
 
   ],
 
-  /* ══════════════════════════════════════════════════════════
-     QUESTÕES ENADE — Design
-     ══════════════════════════════════════════════════════════ */
 /* ══════════════════════════════════════════════════════════
      QUESTÕES ENADE — Design
      ══════════════════════════════════════════════════════════ */
@@ -924,397 +1190,918 @@ window.questoes = {
       feedback: "Correto: A (I, II e IV). Os diagramas UML pertencem ao ==def==modelo conceitual== (I). Os esboços de aparência e fluxo de navegação compõem o modelo físico representacional e de interação, respectivamente (II). A sequência modelagem → prototipação é o fluxo correto no DCU (IV). A afirmativa III está **errada**: o storyboard é um protótipo de **baixa fidelidade** — é uma representação visual narrativa e simplificada, não uma simulação do produto final, que corresponderia ao mockup de alta fidelidade."
     },
 
+// aula 11: Design Responsivo
+
+// 25 - design responsivo
+{
+  aula: "Aula 11 - Design Responsivo",
+  tipo: "Conceitual contextualizada",
+
+  texto: "Uma equipe de desenvolvimento recebeu a tarefa de modernizar o portal de uma rede hospitalar. Os acessos vinham majoritariamente de dispositivos móveis, mas o site havia sido construído com larguras fixas em pixels, causando problemas graves de usabilidade em celulares e tablets. A equipe decidiu adotar design responsivo como solução estrutural.",
+
+  question: "Considerando o cenário apresentado, o ==def==design responsivo== vai além de simplesmente reduzir o tamanho do site. Assinale a alternativa que melhor descreve sua real finalidade:",
+
+  options: [
+    "Criar versões diferentes do site para cada dispositivo, com URLs distintas e folhas de estilo separadas.",
+    "Reorganizar, adaptar e otimizar a interface para diferentes dispositivos a partir de uma única base de código.",
+    "Reduzir automaticamente a resolução das imagens para que o carregamento seja mais rápido em redes móveis.",
+    "Garantir que o layout permaneça idêntico em todos os dispositivos, preservando a identidade visual da marca."
+  ],
+
+  answer: 1,
+
+  feedback: "Correto: B. O **design responsivo** não se limita a redimensionar elementos — envolve ==def==reorganização e adaptação== da interface para cada contexto de uso. Criar versões separadas (opção A) é uma abordagem antiga chamada design adaptativo, não responsivo. Manter o layout idêntico (opção D) contradiz o próprio conceito."
+},
+
+// 26 - media queries
+{
+  aula: "Aula 11 - Design Responsivo",
+  tipo: "Análise aplicada",
+
+  texto: "Durante o desenvolvimento de um sistema de notícias online, um desenvolvedor front-end escreveu o seguinte trecho de CSS para adaptar o layout do componente de artigos em dispositivos menores.",
+
+  question: "Analise o código abaixo e identifique seu comportamento correto:",
+
+  code: `@media (max-width: 600px) {
+  .artigo {
+    width: 100%;
+    font-size: 14px;
+  }
+}`,
+
+  options: [
+    "O estilo será aplicado somente em telas com largura superior a 600px.",
+    "O estilo será aplicado em qualquer tamanho de tela, substituindo todas as regras anteriores.",
+    "O estilo será aplicado apenas quando a largura da tela for igual ou menor que 600px.",
+    "O código é inválido pois media queries não aceitam a propriedade font-size."
+  ],
+
+  answer: 2,
+
+  feedback: "Correto: C. A diretiva ==ddl==@media (max-width: 600px)== define que os estilos contidos no bloco serão aplicados apenas quando a largura da viewport for igual ou inferior a 600px. É um dos ==key==breakpoints== mais comuns para dispositivos móveis."
+},
+
+// 27 - viewport
+{
+  aula: "Aula 11 - Design Responsivo",
+  tipo: "Asserção + Justificativa",
+
+  texto: "Ao inspecionar o comportamento de um site em um smartphone, um desenvolvedor percebeu que, mesmo com media queries corretamente configuradas, o layout continuava sendo renderizado como se fosse uma tela de desktop. Após investigação, verificou-se que a meta tag viewport estava ausente no HTML.",
+
+  question: "Avalie a seguinte asserção e sua justificativa:",
+
+  assertions: [
+    "A ausência da ==def==meta tag viewport== faz com que o navegador mobile renderize a página como se tivesse uma largura de desktop, ignorando os breakpoints definidos nas media queries.",
+    "[PORQUE] A meta tag viewport instrui o navegador a utilizar a largura real do dispositivo como referência de escala, permitindo que as media queries funcionem corretamente."
+  ],
+
+  options: [
+    "As duas afirmativas são verdadeiras, e a II justifica a I.",
+    "As duas afirmativas são verdadeiras, mas a II não justifica a I.",
+    "A afirmativa I é verdadeira e a II é falsa.",
+    "A afirmativa I é falsa e a II é verdadeira."
+  ],
+
+  answer: 0,
+
+  feedback: "Correto: A. Ambas as afirmativas são verdadeiras e há relação direta entre elas. Sem o ==def==viewport==, navegadores móveis assumem uma largura padrão de ~980px, tornando as media queries ineficazes. A tag `<meta name='viewport' content='width=device-width, initial-scale=1'>` resolve esse comportamento."
+},
+
+// 28 - layout fluido
+{
+  aula: "Aula 11 - Design Responsivo",
+  tipo: "Múltiplas afirmativas",
+
+  texto: "Em um projeto de e-commerce, a equipe de front-end debateu sobre as melhores práticas para construção de layouts responsivos. Surgiram divergências sobre o uso de medidas fixas versus relativas no CSS.",
+
+  question: "Avalie as afirmativas a seguir sobre ==def==layout fluido==:",
+
+  assertions: [
+    "I. O uso de porcentagens (%) para larguras permite que elementos se ajustem proporcionalmente ao tamanho da tela do usuário.",
+    "II. Medidas em pixels (px) são preferíveis para larguras de containers, pois garantem consistência visual entre dispositivos.",
+    "III. A unidade em pode ser utilizada para fontes, tornando o texto escalável em relação ao elemento pai.",
+    "IV. Utilizar width: 100% em um elemento garante que ele sempre ocupe toda a largura da tela, independentemente do contexto."
+  ],
+
+  options: [
+    "I e III, apenas.",
+    "I, II e III, apenas.",
+    "II e IV, apenas.",
+    "I, II, III e IV."
+  ],
+
+  answer: 0,
+
+  feedback: "Correto: A. As afirmativas I e III são verdadeiras. ==def==Medidas relativas== como % e em são o fundamento do layout fluido. A afirmativa II está errada pois px é uma medida fixa — inadequada para layouts responsivos. A afirmativa IV é imprecisa: `width: 100%` ocupa 100% do elemento pai, não necessariamente da tela."
+},
+
+// 29 - mobile first
+{
+  aula: "Aula 11 - Design Responsivo",
+  tipo: "Conceitual contextualizada",
+
+  texto: "Uma startup de tecnologia educacional iniciou o desenvolvimento de sua plataforma de cursos. Após análise de métricas, constatou-se que 78% dos acessos seriam feitos via smartphones. O líder técnico sugeriu adotar a metodologia Mobile First no desenvolvimento do front-end.",
+
+  question: "Qual é a característica central da abordagem ==def==Mobile First== e por que ela é recomendada nesse contexto?",
+
+  options: [
+    "Criar um layout desktop completo e depois remover funcionalidades para versões móveis, simplificando o processo de adaptação.",
+    "Desenvolver primeiro a versão mobile com foco no essencial e depois expandir progressivamente para telas maiores usando min-width.",
+    "Proibir o uso de imagens e animações na versão mobile para garantir desempenho máximo em redes lentas.",
+    "Utilizar exclusivamente frameworks como Bootstrap, que já implementam Mobile First por padrão sem necessidade de customização."
+  ],
+
+  answer: 1,
+
+  feedback: "Correto: B. O **Mobile First** parte do pressuposto de desenvolver para o contexto mais restrito primeiro, garantindo foco no conteúdo essencial. As ==proc==media queries com min-width== são usadas para escalar progressivamente o layout. A opção A descreve o processo inverso, chamado graceful degradation."
+},
+
+// 30 - breakpoints
+{
+  aula: "Aula 11 - Design Responsivo",
+  tipo: "Análise aplicada",
+
+  texto: "Um desenvolvedor está construindo um componente de grade de notícias com comportamento diferente em três contextos: celular, tablet e desktop. Ele utiliza breakpoints para definir o número de colunas exibidas.",
+
+  question: "Analise o trecho de CSS abaixo e determine o comportamento esperado:",
+
+  code: `.noticia { width: 100%; }
+
+@media (min-width: 768px) {
+  .noticia { width: 50%; }
+}
+
+@media (min-width: 960px) {
+  .noticia { width: 33.33%; }
+}`,
+
+  options: [
+    "Em celulares: 3 colunas. Em tablets: 2 colunas. Em desktops: 1 coluna.",
+    "Em celulares: 1 coluna. Em tablets: 2 colunas. Em desktops: 3 colunas.",
+    "O código é inválido pois media queries com min-width não podem ser aninhadas.",
+    "Em todos os tamanhos: 1 coluna, pois a regra sem media query sobrescreve todas as outras."
+  ],
+
+  answer: 1,
+
+  feedback: "Correto: B. Seguindo a abordagem ==ddl==Mobile First==, a regra base (sem media query) aplica 100% de largura — 1 coluna. A partir de ==key==768px==, cada item ocupa 50% — 2 colunas. A partir de ==key==960px==, 33.33% — 3 colunas. As regras se sobrescrevem progressivamente conforme o tamanho da tela aumenta."
+},
+
+// 31 - ordem media queries
+{
+  aula: "Aula 11 - Design Responsivo",
+  tipo: "Asserção + Justificativa",
+
+  texto: "Durante a revisão de código de um projeto web, um desenvolvedor sênior apontou que a ordem das media queries no arquivo CSS estava causando comportamentos inesperados no layout. Alguns estilos definidos para mobile estavam sendo sobrescritos por regras para desktop.",
+
+  question: "Avalie a asserção e sua justificativa:",
+
+  assertions: [
+    "A ==warn==ordem das media queries== no CSS interfere diretamente no resultado visual, podendo fazer com que regras anteriores sejam sobrescritas por regras posteriores com a mesma especificidade.",
+    "[PORQUE] O CSS segue o princípio da cascata, onde a última regra declarada com a mesma especificidade prevalece sobre as anteriores."
+  ],
+
+  options: [
+    "As duas afirmativas são verdadeiras, e a II justifica a I.",
+    "As duas afirmativas são verdadeiras, mas a II não justifica a I.",
+    "A afirmativa I é verdadeira e a II é falsa.",
+    "A afirmativa I é falsa e a II é verdadeira."
+  ],
+
+  answer: 0,
+
+  feedback: "Correto: A. O **princípio da cascata** do CSS determina que, quando há conflito de especificidade igual, a última regra declarada vence. Por isso, a ==warn==ordem das media queries== é crítica: no Mobile First, regras mobile vêm antes e são sobrescritas pelas de desktop via `min-width`. Inverter essa ordem gera comportamentos incorretos."
+},
+
+// 32 - meta tag viewport
+{
+  aula: "Aula 11 - Design Responsivo",
+  tipo: "Múltiplas afirmativas",
+
+  texto: "Em um workshop sobre desenvolvimento web responsivo, foram apresentadas diversas afirmações sobre a meta tag viewport e seu papel no ecossistema mobile.",
+
+  question: "Avalie as afirmativas sobre a ==def==meta tag viewport==:",
+
+  assertions: [
+    "I. A configuração content='width=device-width' instrui o navegador a usar a largura real do dispositivo como largura da viewport.",
+    "II. O atributo initial-scale=1 define que a página será carregada sem zoom aplicado inicialmente.",
+    "III. A meta tag viewport é uma propriedade do CSS3 e deve ser inserida dentro da folha de estilos.",
+    "IV. Sem a meta tag viewport, dispositivos móveis tendem a renderizar a página como se fosse uma tela larga, tornando o conteúdo muito pequeno."
+  ],
+
+  options: [
+    "I, II e IV, apenas.",
+    "I e II, apenas.",
+    "II, III e IV, apenas.",
+    "I, II, III e IV."
+  ],
+
+  answer: 0,
+
+  feedback: "Correto: A. As afirmativas I, II e IV são verdadeiras. A ==warn==afirmativa III é falsa==: a meta tag viewport não é CSS — ela é uma tag HTML inserida dentro do `<head>` do documento. É um dos erros conceituais mais comuns entre iniciantes em design responsivo."
+},
+
+// 33 - medidas relativas
+{
+  aula: "Aula 11 - Design Responsivo",
+  tipo: "Conceitual contextualizada",
+
+  texto: "Uma desenvolvedora está refatorando o CSS de um portal de notícias para torná-lo responsivo. Ela percebe que os elementos principais usam larguras em centímetros e fontes em milímetros, o que causa inconsistências graves entre dispositivos.",
+
+  question: "Qual das alternativas representa a substituição mais adequada para tornar o layout ==def==fluido e responsivo==?",
+
+  options: [
+    "Substituir centímetros por pixels, pois pixels são a unidade padrão do CSS e garantem precisão.",
+    "Substituir larguras por porcentagens e fontes por em ou rem, utilizando medidas relativas ao contexto do elemento.",
+    "Utilizar media queries para definir valores fixos diferentes em cada breakpoint, mantendo o uso de pixels.",
+    "Converter todas as medidas para viewport width (vw) e viewport height (vh), eliminando qualquer outra unidade."
+  ],
+
+  answer: 1,
+
+  feedback: "Correto: B. O **layout fluido** baseia-se em ==def==medidas relativas==: `%` para larguras de containers e `em`/`rem` para fontes. Pixels (opção A) continuam sendo fixos e não se adaptam. A opção C mantém rigidez nos valores. A opção D não é errada, mas `vw`/`vh` têm limitações específicas e não são substitutos universais de %."
+},
+
+// 34 - mobile first estratégia
+{
+  aula: "Aula 11 - Design Responsivo",
+  tipo: "Asserção + Justificativa",
+
+  texto: "Em um debate técnico, dois desenvolvedores discutiam qual abordagem seria mais eficiente: começar pelo design desktop e depois adaptar para mobile, ou iniciar pelo mobile e escalar para desktop.",
+
+  question: "Avalie a asserção e sua justificativa sobre a abordagem ==def==Mobile First==:",
+
+  assertions: [
+    "A metodologia Mobile First resulta em interfaces mais limpas e com melhor desempenho, pois obriga a priorizar apenas o conteúdo essencial desde o início do desenvolvimento.",
+    "[PORQUE] Ao partir de telas pequenas, os desenvolvedores são forçados a eliminar elementos desnecessários, e o carregamento progressivo de recursos adicionais para telas maiores é mais eficiente do que remover recursos para telas menores."
+  ],
+
+  options: [
+    "As duas afirmativas são verdadeiras, e a II justifica a I.",
+    "As duas afirmativas são verdadeiras, mas a II não justifica a I.",
+    "A afirmativa I é verdadeira e a II é falsa.",
+    "A afirmativa I é falsa e a II é verdadeira."
+  ],
+
+  answer: 0,
+
+  feedback: "Correto: A. Ambas as afirmativas são verdadeiras e há relação causal direta. O **Mobile First** impõe restrição como disciplina criativa: o espaço limitado força decisões de priorização de conteúdo. A ==proc==escala progressiva== via `min-width` é mais performática do que a degradação de recursos (Desktop First com `max-width`)."
+},
+
+// 35 - breakpoints comuns
+{
+  aula: "Aula 11 - Design Responsivo",
+  tipo: "Múltiplas afirmativas",
+
+  texto: "Uma equipe de UX/UI está padronizando os breakpoints do sistema de design de uma empresa. O líder de front-end apresentou uma proposta baseada nos breakpoints mais utilizados na indústria.",
+
+  question: "Avalie as afirmativas sobre ==def==breakpoints== e seu uso no design responsivo:",
+
+  assertions: [
+    "I. O valor 768px é amplamente utilizado como breakpoint para tablets, marcando a transição entre layouts de uma e duas colunas.",
+    "II. Breakpoints devem ser definidos com base exclusivamente nos dispositivos mais populares do mercado, ignorando o conteúdo da aplicação.",
+    "III. O excesso de breakpoints pode aumentar a complexidade do CSS e dificultar a manutenção do projeto.",
+    "IV. Media queries com max-width são a única forma válida de implementar breakpoints em projetos responsivos."
+  ],
+
+  options: [
+    "I e III, apenas.",
+    "I, II e III, apenas.",
+    "II e IV, apenas.",
+    "I, II, III e IV."
+  ],
+
+  answer: 0,
+
+  feedback: "Correto: A. As afirmativas I e III são verdadeiras. A afirmativa II está errada: boas práticas recomendam definir breakpoints com base no ==warn==comportamento do conteúdo==, não apenas nos dispositivos. A IV é falsa: tanto `max-width` quanto `min-width` são válidos — a escolha depende da abordagem (Desktop First ou Mobile First)."
+},
+
+// 36 - integração de conceitos
+{
+  aula: "Aula 11 - Design Responsivo",
+  tipo: "Análise aplicada",
+
+  texto: "Uma desenvolvedora júnior foi incumbida de criar uma página responsiva para um blog. Ela escreveu o seguinte código HTML e CSS, mas percebeu que o layout não se comportava como esperado em celulares.",
+
+  question: "Analise o código e identifique o principal problema que impede o funcionamento correto do design responsivo:",
+
+  code: `<!-- HTML -->
+<head>
+  <title>Blog</title>
+  <!-- meta viewport ausente -->
+</head>
+
+/* CSS */
+.container {
+  width: 960px;
+}
+
+.post {
+  width: 640px;
+  font-size: 16px;
+}`,
+
+  options: [
+    "O problema está apenas no CSS: as larguras deveriam usar em ao invés de px para fontes e % para larguras.",
+    "O código possui dois problemas combinados: ausência da meta tag viewport e uso de medidas fixas em px, impedindo a adaptação em telas menores.",
+    "O problema está apenas na ausência da meta tag viewport; as larguras em px são aceitáveis desde que as media queries sejam definidas corretamente.",
+    "O CSS está correto, pois define larguras explícitas. O único ajuste necessário é adicionar a meta tag viewport ao HTML."
+  ],
+
+  answer: 1,
+
+  feedback: "Correto: B. O código apresenta dois problemas que se somam: a ==warn==ausência da meta tag viewport== faz o navegador mobile ignorar a largura real da tela, e o uso de ==warn==larguras fixas em px== impede qualquer adaptação fluida. Um design verdadeiramente responsivo exige: viewport configurado, medidas relativas (%) e media queries. Nenhum dos dois problemas isolado resolve a situação completamente."
+}
+
+
   ],
 
   // ── Questões de Fixação ────────────────────────────────────
-fixacao: [
+  fixacao: [
 
-    // Aula 9 — Prototipagem e Norma ISO 9241
-    // Questão 1
-    {
-      aula: "Aula 9 — Prototipagem e Norma ISO 9241",
-      tipo: "Curta",
-      texto: "Sobre os modelos de ciclo de vida de software.",
-      question: "Qual modelo de ciclo de vida executa suas etapas de forma sequencial e linear, sem retorno formal às fases anteriores?",
-      options: [
-        "==def==Modelo Espiral==",
-        "==proc==Modelo Iterativo==",
-        "==def==Modelo Cascata==",
-        "==def==Modelo Estrela=="
-      ],
-      answer: 2,
-      feedback: "O ==def==Modelo Cascata== é caracterizado pelo fluxo sequencial: cada fase só começa após a conclusão da anterior, sem mecanismo formal de revisão."
-    },
+      // Aula 9 — Prototipagem e Norma ISO 9241
+      // Questão 1
+      {
+        aula: "Aula 9 — Prototipagem e Norma ISO 9241",
+        tipo: "Curta",
+        texto: "Sobre os modelos de ciclo de vida de software.",
+        question: "Qual modelo de ciclo de vida executa suas etapas de forma sequencial e linear, sem retorno formal às fases anteriores?",
+        options: [
+          "==def==Modelo Espiral==",
+          "==proc==Modelo Iterativo==",
+          "==def==Modelo Cascata==",
+          "==def==Modelo Estrela=="
+        ],
+        answer: 2,
+        feedback: "O ==def==Modelo Cascata== é caracterizado pelo fluxo sequencial: cada fase só começa após a conclusão da anterior, sem mecanismo formal de revisão."
+      },
 
-    // Questão 2
-    {
-      aula: "Aula 9 — Prototipagem e Norma ISO 9241",
-      tipo: "Direta",
-      texto: "Considere os modelos centrados no usuário estudados na disciplina.",
-      question: "O que diferencia o ==def==Modelo Estrela== dos demais modelos de ciclo de vida?",
-      options: [
-        "Ele elimina a fase de prototipagem para acelerar a entrega",
-        "Ele posiciona a avaliação como atividade central e permite início por qualquer etapa",
-        "Ele exige que os requisitos sejam completamente definidos antes do desenvolvimento",
-        "Ele é baseado exclusivamente em análise de riscos a cada ciclo"
-      ],
-      answer: 1,
-      feedback: "O ==def==Modelo Estrela== tem a avaliação no centro e pode ser iniciado a partir de qualquer etapa, conferindo alta flexibilidade e forte participação do usuário."
-    },
+      // Questão 2
+      {
+        aula: "Aula 9 — Prototipagem e Norma ISO 9241",
+        tipo: "Direta",
+        texto: "Considere os modelos centrados no usuário estudados na disciplina.",
+        question: "O que diferencia o ==def==Modelo Estrela== dos demais modelos de ciclo de vida?",
+        options: [
+          "Ele elimina a fase de prototipagem para acelerar a entrega",
+          "Ele posiciona a avaliação como atividade central e permite início por qualquer etapa",
+          "Ele exige que os requisitos sejam completamente definidos antes do desenvolvimento",
+          "Ele é baseado exclusivamente em análise de riscos a cada ciclo"
+        ],
+        answer: 1,
+        feedback: "O ==def==Modelo Estrela== tem a avaliação no centro e pode ser iniciado a partir de qualquer etapa, conferindo alta flexibilidade e forte participação do usuário."
+      },
 
-    // Questão 3
-    {
-      aula: "Aula 9 — Prototipagem e Norma ISO 9241",
-      tipo: "Contexto",
-      texto: "Uma equipe de desenvolvimento percebeu, após quatro meses de projeto, que os requisitos iniciais estavam desatualizados por conta de uma mudança na legislação. O modelo adotado não permitia retorno às fases anteriores sem comprometer cronograma e orçamento.",
-      question: "Qual modelo estava sendo utilizado e por que ele gerou esse problema?",
-      options: [
-        "==proc==Modelo Iterativo==, pois não prevê documentação de requisitos",
-        "==def==Modelo Espiral==, pois sua análise de riscos ignora mudanças legislativas",
-        "==def==Modelo Cascata==, pois sua estrutura sequencial não prevê revisão formal após cada etapa",
-        "==def==Modelo Estrela==, pois centraliza a avaliação e impede mudanças de requisitos"
-      ],
-      answer: 2,
-      feedback: "O ==def==Modelo Cascata== é rígido e sequencial. Mudanças de requisitos após o início do desenvolvimento geram alto custo e risco de retrabalho."
-    },
+      // Questão 3
+      {
+        aula: "Aula 9 — Prototipagem e Norma ISO 9241",
+        tipo: "Contexto",
+        texto: "Uma equipe de desenvolvimento percebeu, após quatro meses de projeto, que os requisitos iniciais estavam desatualizados por conta de uma mudança na legislação. O modelo adotado não permitia retorno às fases anteriores sem comprometer cronograma e orçamento.",
+        question: "Qual modelo estava sendo utilizado e por que ele gerou esse problema?",
+        options: [
+          "==proc==Modelo Iterativo==, pois não prevê documentação de requisitos",
+          "==def==Modelo Espiral==, pois sua análise de riscos ignora mudanças legislativas",
+          "==def==Modelo Cascata==, pois sua estrutura sequencial não prevê revisão formal após cada etapa",
+          "==def==Modelo Estrela==, pois centraliza a avaliação e impede mudanças de requisitos"
+        ],
+        answer: 2,
+        feedback: "O ==def==Modelo Cascata== é rígido e sequencial. Mudanças de requisitos após o início do desenvolvimento geram alto custo e risco de retrabalho."
+      },
 
-    // Questão 4
-    {
-      aula: "Aula 9 — Prototipagem e Norma ISO 9241",
-      tipo: "Direta",
-      texto: "Sobre ferramentas e artefatos utilizados no design de interfaces.",
-      question: "Qual é a principal função de um ==term==wireframe== no processo de design?",
-      options: [
-        "Definir as cores e tipografia da interface final",
-        "Executar o código da aplicação em ambiente de testes",
-        "Definir a estrutura e organização da interface, sem detalhes visuais",
-        "Armazenar os dados do banco de dados relacional"
-      ],
-      answer: 2,
-      feedback: "O ==term==wireframe== é um esqueleto da interface — define layout, hierarquia e posicionamento dos elementos, sem se preocupar com aspectos estéticos."
-    },
+      // Questão 4
+      {
+        aula: "Aula 9 — Prototipagem e Norma ISO 9241",
+        tipo: "Direta",
+        texto: "Sobre ferramentas e artefatos utilizados no design de interfaces.",
+        question: "Qual é a principal função de um ==term==wireframe== no processo de design?",
+        options: [
+          "Definir as cores e tipografia da interface final",
+          "Executar o código da aplicação em ambiente de testes",
+          "Definir a estrutura e organização da interface, sem detalhes visuais",
+          "Armazenar os dados do banco de dados relacional"
+        ],
+        answer: 2,
+        feedback: "O ==term==wireframe== é um esqueleto da interface — define layout, hierarquia e posicionamento dos elementos, sem se preocupar com aspectos estéticos."
+      },
 
-    // Questão 5
-    {
-      aula: "Aula 9 — Prototipagem e Norma ISO 9241",
-      tipo: "Contexto",
-      texto: "Em um portal de serviços públicos, todos os usuários conseguiam concluir seus agendamentos, mas relatavam desgaste e cansaço ao final do processo, devido ao grande número de etapas desnecessárias.",
-      question: "Qual dimensão de usabilidade da ==mark==ISO 9241== está comprometida nesse cenário?",
-      options: [
-        "==rule==Eficácia==, pois os usuários não conseguem atingir seus objetivos",
-        "Satisfação, pois o sistema não informa o estado das operações",
-        "==rule==Eficiência==, pois o esforço empregado é desproporcional ao resultado obtido",
-        "Autodescrição, pois a interface não explica suas funcionalidades"
-      ],
-      answer: 2,
-      feedback: "==rule==Eficiência== mede a relação entre o resultado e os recursos consumidos (tempo, esforço). Usuários que concluem tarefas com esforço excessivo têm problema de ==rule==eficiência==, não de ==rule==eficácia==."
-    },
+      // Questão 5
+      {
+        aula: "Aula 9 — Prototipagem e Norma ISO 9241",
+        tipo: "Contexto",
+        texto: "Em um portal de serviços públicos, todos os usuários conseguiam concluir seus agendamentos, mas relatavam desgaste e cansaço ao final do processo, devido ao grande número de etapas desnecessárias.",
+        question: "Qual dimensão de usabilidade da ==mark==ISO 9241== está comprometida nesse cenário?",
+        options: [
+          "==rule==Eficácia==, pois os usuários não conseguem atingir seus objetivos",
+          "Satisfação, pois o sistema não informa o estado das operações",
+          "==rule==Eficiência==, pois o esforço empregado é desproporcional ao resultado obtido",
+          "Autodescrição, pois a interface não explica suas funcionalidades"
+        ],
+        answer: 2,
+        feedback: "==rule==Eficiência== mede a relação entre o resultado e os recursos consumidos (tempo, esforço). Usuários que concluem tarefas com esforço excessivo têm problema de ==rule==eficiência==, não de ==rule==eficácia==."
+      },
 
-    // Questão 6
-    {
-      aula: "Aula 9 — Prototipagem e Norma ISO 9241",
-      tipo: "Curta",
-      texto: "Sobre os princípios de diálogo definidos pela Norma ==mark==ISO 9241-110==.",
-      question: "Qual princípio determina que o sistema deve informar ao usuário, em cada etapa, qual é o estado atual do processo e quais ações estão disponíveis?",
-      options: [
-        "==rule==Tolerância a erros==",
-        "==rule==Adequação à tarefa==",
-        "Individualização",
-        "==rule==Autodescrição=="
-      ],
-      answer: 3,
-      feedback: "O princípio de ==rule==autodescrição== exige que a interface seja transparente: o sistema deve sempre comunicar seu estado e orientar o usuário sobre as ações disponíveis."
-    },
+      // Questão 6
+      {
+        aula: "Aula 9 — Prototipagem e Norma ISO 9241",
+        tipo: "Curta",
+        texto: "Sobre os princípios de diálogo definidos pela Norma ==mark==ISO 9241-110==.",
+        question: "Qual princípio determina que o sistema deve informar ao usuário, em cada etapa, qual é o estado atual do processo e quais ações estão disponíveis?",
+        options: [
+          "==rule==Tolerância a erros==",
+          "==rule==Adequação à tarefa==",
+          "Individualização",
+          "==rule==Autodescrição=="
+        ],
+        answer: 3,
+        feedback: "O princípio de ==rule==autodescrição== exige que a interface seja transparente: o sistema deve sempre comunicar seu estado e orientar o usuário sobre as ações disponíveis."
+      },
 
-    // Questão 7
-    {
-      aula: "Aula 9 — Prototipagem e Norma ISO 9241",
-      tipo: "Aplicação",
-      texto: "Ao realizar um agendamento médico online, o usuário clicou por engano no botão 'Cancelar'. O sistema executou o cancelamento imediatamente, sem pedir confirmação nem oferecer forma de desfazer a ação.",
-      question: "Qual princípio da ==mark==ISO 9241-110== foi violado nessa situação?",
-      options: [
-        "Conformidade com as expectativas do usuário",
-        "==rule==Tolerância a erros==",
-        "==rule==Adequação à tarefa==",
-        "Aprendizado"
-      ],
-      answer: 1,
-      feedback: "==rule==Tolerância a erros== determina que o sistema deve minimizar erros e, quando ocorrem, permitir recuperação com o menor esforço possível. Ações irreversíveis sem confirmação violam diretamente esse princípio."
-    },
+      // Questão 7
+      {
+        aula: "Aula 9 — Prototipagem e Norma ISO 9241",
+        tipo: "Aplicação",
+        texto: "Ao realizar um agendamento médico online, o usuário clicou por engano no botão 'Cancelar'. O sistema executou o cancelamento imediatamente, sem pedir confirmação nem oferecer forma de desfazer a ação.",
+        question: "Qual princípio da ==mark==ISO 9241-110== foi violado nessa situação?",
+        options: [
+          "Conformidade com as expectativas do usuário",
+          "==rule==Tolerância a erros==",
+          "==rule==Adequação à tarefa==",
+          "Aprendizado"
+        ],
+        answer: 1,
+        feedback: "==rule==Tolerância a erros== determina que o sistema deve minimizar erros e, quando ocorrem, permitir recuperação com o menor esforço possível. Ações irreversíveis sem confirmação violam diretamente esse princípio."
+      },
 
-    // Questão 8
-    {
-      aula: "Aula 9 — Prototipagem e Norma ISO 9241",
-      tipo: "Direta",
-      texto: "Sobre os valores estabelecidos pelo ==def==Manifesto Ágil==.",
-      question: "Qual das opções representa corretamente uma das prioridades do ==def==Manifesto Ágil==?",
-      options: [
-        "Documentação abrangente em detrimento de software funcional",
-        "Processos e ferramentas acima de pessoas e interações",
-        "Contratos fechados como guia principal das decisões do projeto",
-        "Colaboração do cliente e resposta a mudanças acima de planos fixos"
-      ],
-      answer: 3,
-      feedback: "O ==def==Manifesto Ágil== prioriza: pessoas sobre processos, software funcional sobre documentação, colaboração do cliente sobre negociação contratual e adaptação sobre seguir um plano rígido."
-    },
+      // Questão 8
+      {
+        aula: "Aula 9 — Prototipagem e Norma ISO 9241",
+        tipo: "Direta",
+        texto: "Sobre os valores estabelecidos pelo ==def==Manifesto Ágil==.",
+        question: "Qual das opções representa corretamente uma das prioridades do ==def==Manifesto Ágil==?",
+        options: [
+          "Documentação abrangente em detrimento de software funcional",
+          "Processos e ferramentas acima de pessoas e interações",
+          "Contratos fechados como guia principal das decisões do projeto",
+          "Colaboração do cliente e resposta a mudanças acima de planos fixos"
+        ],
+        answer: 3,
+        feedback: "O ==def==Manifesto Ágil== prioriza: pessoas sobre processos, software funcional sobre documentação, colaboração do cliente sobre negociação contratual e adaptação sobre seguir um plano rígido."
+      },
 
-    // Questão 9
-    {
-      aula: "Aula 9 — Prototipagem e Norma ISO 9241",
-      tipo: "Contexto",
-      texto: "Uma startup de saúde realizou entrevistas com pacientes e médicos, observou rotinas clínicas e mapeou dores reais antes de esboçar qualquer solução. A equipe era composta por profissionais de áreas distintas trabalhando de forma colaborativa.",
-      question: "Qual abordagem de design está sendo aplicada nesse cenário?",
-      options: [
-        "==def==Modelo Cascata== com fase de levantamento de requisitos",
-        "==def==Modelo Espiral== com análise de riscos inicial",
-        "==def==Design Thinking==, com ênfase na empatia e ==mark==cocriação==",
-        "Modelo de Shneiderman, com foco em testes de usabilidade"
-      ],
-      answer: 2,
-      feedback: "O ==def==Design Thinking== é caracterizado por ser centrado no usuário, interdisciplinar e baseado em empatia — compreender necessidades reais antes de propor soluções."
-    },
+      // Questão 9
+      {
+        aula: "Aula 9 — Prototipagem e Norma ISO 9241",
+        tipo: "Contexto",
+        texto: "Uma startup de saúde realizou entrevistas com pacientes e médicos, observou rotinas clínicas e mapeou dores reais antes de esboçar qualquer solução. A equipe era composta por profissionais de áreas distintas trabalhando de forma colaborativa.",
+        question: "Qual abordagem de design está sendo aplicada nesse cenário?",
+        options: [
+          "==def==Modelo Cascata== com fase de levantamento de requisitos",
+          "==def==Modelo Espiral== com análise de riscos inicial",
+          "==def==Design Thinking==, com ênfase na empatia e ==mark==cocriação==",
+          "Modelo de Shneiderman, com foco em testes de usabilidade"
+        ],
+        answer: 2,
+        feedback: "O ==def==Design Thinking== é caracterizado por ser centrado no usuário, interdisciplinar e baseado em empatia — compreender necessidades reais antes de propor soluções."
+      },
 
-    // Questão 10
-    {
-      aula: "Aula 9 — Prototipagem e Norma ISO 9241",
-      tipo: "Curta",
-      texto: "Sobre os modelos de desenvolvimento de software e suas características.",
-      question: "Qual modelo de ciclo de vida inclui explicitamente análise de riscos em cada ciclo e utiliza protótipos como ferramenta de validação progressiva?",
-      options: [
-        "==def==Modelo Cascata==",
-        "==def==Modelo Espiral==",
-        "==def==Modelo Estrela==",
-        "==proc==Modelo Iterativo=="
-      ],
-      answer: 1,
-      feedback: "O ==def==Modelo Espiral== se diferencia dos demais por incorporar análise de riscos em cada ciclo e pelo uso sistemático de protótipos para validar o produto progressivamente."
-    },
+      // Questão 10
+      {
+        aula: "Aula 9 — Prototipagem e Norma ISO 9241",
+        tipo: "Curta",
+        texto: "Sobre os modelos de desenvolvimento de software e suas características.",
+        question: "Qual modelo de ciclo de vida inclui explicitamente análise de riscos em cada ciclo e utiliza protótipos como ferramenta de validação progressiva?",
+        options: [
+          "==def==Modelo Cascata==",
+          "==def==Modelo Espiral==",
+          "==def==Modelo Estrela==",
+          "==proc==Modelo Iterativo=="
+        ],
+        answer: 1,
+        feedback: "O ==def==Modelo Espiral== se diferencia dos demais por incorporar análise de riscos em cada ciclo e pelo uso sistemático de protótipos para validar o produto progressivamente."
+      },
 
-    // Questão 11
-    {
-      aula: "Aula 9 — Prototipagem e Norma ISO 9241",
-      tipo: "Aplicação",
-      texto: "Uma plataforma de e-commerce exibe um botão 'Comprar' e um botão 'Cancelar' com as mesmas cores, tamanho e destaque visual, sem qualquer diferenciação entre a ação principal e a secundária.",
-      question: "Qual problema de design está presente nesse layout?",
-      options: [
-        "Violação do princípio de individualização",
-        "Ausência de responsividade para dispositivos móveis",
-        "Falta de ==term==hierarquia visual== e contraste entre ações primária e secundária",
-        "Excesso de informações desnecessárias na interface"
-      ],
-      answer: 2,
-      feedback: "Sem contraste ou destaque, o usuário não identifica qual ação é prioritária. A ==term==hierarquia visual== é fundamental para guiar decisões e evitar cliques equivocados."
-    },
+      // Questão 11
+      {
+        aula: "Aula 9 — Prototipagem e Norma ISO 9241",
+        tipo: "Aplicação",
+        texto: "Uma plataforma de e-commerce exibe um botão 'Comprar' e um botão 'Cancelar' com as mesmas cores, tamanho e destaque visual, sem qualquer diferenciação entre a ação principal e a secundária.",
+        question: "Qual problema de design está presente nesse layout?",
+        options: [
+          "Violação do princípio de individualização",
+          "Ausência de responsividade para dispositivos móveis",
+          "Falta de ==term==hierarquia visual== e contraste entre ações primária e secundária",
+          "Excesso de informações desnecessárias na interface"
+        ],
+        answer: 2,
+        feedback: "Sem contraste ou destaque, o usuário não identifica qual ação é prioritária. A ==term==hierarquia visual== é fundamental para guiar decisões e evitar cliques equivocados."
+      },
 
-    // Questão 12
-    {
-      aula: "Aula 9 — Prototipagem e Norma ISO 9241",
-      tipo: "Direta",
-      texto: "Sobre os princípios do ==def==Design Thinking== e sua aplicação em projetos.",
-      question: "O que significa dizer que o ==def==Design Thinking== é uma abordagem 'holística'?",
-      options: [
-        "Que cada fase deve ser concluída isoladamente antes de avançar para a próxima",
-        "Que a solução deve contemplar todas as dimensões da experiência: tecnológica, de negócio, emocional e social",
-        "Que apenas especialistas técnicos participam do processo de desenvolvimento",
-        "Que o foco está exclusivamente na aparência visual do produto final"
-      ],
-      answer: 1,
-      feedback: "O princípio ==mark==holístico== do ==def==Design Thinking== considera que uma boa solução deve integrar todas as dimensões da experiência — não apenas o aspecto técnico, mas também o humano, emocional e de negócio."
-    },
+      // Questão 12
+      {
+        aula: "Aula 9 — Prototipagem e Norma ISO 9241",
+        tipo: "Direta",
+        texto: "Sobre os princípios do ==def==Design Thinking== e sua aplicação em projetos.",
+        question: "O que significa dizer que o ==def==Design Thinking== é uma abordagem 'holística'?",
+        options: [
+          "Que cada fase deve ser concluída isoladamente antes de avançar para a próxima",
+          "Que a solução deve contemplar todas as dimensões da experiência: tecnológica, de negócio, emocional e social",
+          "Que apenas especialistas técnicos participam do processo de desenvolvimento",
+          "Que o foco está exclusivamente na aparência visual do produto final"
+        ],
+        answer: 1,
+        feedback: "O princípio ==mark==holístico== do ==def==Design Thinking== considera que uma boa solução deve integrar todas as dimensões da experiência — não apenas o aspecto técnico, mas também o humano, emocional e de negócio."
+      },
 
-    // Aula 10 — Design de Interfaces e Prototipação
-    // Questão 13
-    {
-      aula: "Aula 10 — Design de Interfaces e Prototipação",
-      tipo: "Curta",
-      texto: "Sobre os objetivos da prototipação no processo de design.",
-      question: "Qual é o principal propósito de criar um protótipo antes de implementar o sistema final?",
-      options: [
-        "Substituir a documentação técnica do projeto",
-        "Testar ideias e identificar problemas antes do desenvolvimento",
-        "Definir o banco de dados relacional da aplicação",
-        "Gerar o código-fonte da interface automaticamente"
-      ],
-      answer: 1,
-      feedback: "A prototipação permite testar ideias, identificar problemas e economizar tempo e custo antes da implementação final, melhorando a experiência do usuário."
-    },
+      // Aula 10 — Design de Interfaces e Prototipação
+      // Questão 13
+      {
+        aula: "Aula 10 — Design de Interfaces e Prototipação",
+        tipo: "Curta",
+        texto: "Sobre os objetivos da prototipação no processo de design.",
+        question: "Qual é o principal propósito de criar um protótipo antes de implementar o sistema final?",
+        options: [
+          "Substituir a documentação técnica do projeto",
+          "Testar ideias e identificar problemas antes do desenvolvimento",
+          "Definir o banco de dados relacional da aplicação",
+          "Gerar o código-fonte da interface automaticamente"
+        ],
+        answer: 1,
+        feedback: "A prototipação permite testar ideias, identificar problemas e economizar tempo e custo antes da implementação final, melhorando a experiência do usuário."
+      },
 
-    // Questão 14
-    {
-      aula: "Aula 10 — Design de Interfaces e Prototipação",
-      tipo: "Direta",
-      texto: "Sobre as classificações de protótipos por fidelidade.",
-      question: "Qual afirmação descreve corretamente a diferença entre protótipos de baixa e alta fidelidade?",
-      options: [
-        "Baixa fidelidade é mais detalhado; alta fidelidade é mais simples",
-        "Ambos possuem o mesmo nível de detalhe visual",
-        "Baixa fidelidade gera mais ideias; alta fidelidade foca em detalhes próximos do produto final",
-        "Alta fidelidade é usada apenas na fase de análise de requisitos"
-      ],
-      answer: 2,
-      feedback: "Protótipos de baixa fidelidade são rascunhos simples que estimulam a geração de ideias, enquanto os de alta fidelidade são detalhados e próximos do produto final."
-    },
+      // Questão 14
+      {
+        aula: "Aula 10 — Design de Interfaces e Prototipação",
+        tipo: "Direta",
+        texto: "Sobre as classificações de protótipos por fidelidade.",
+        question: "Qual afirmação descreve corretamente a diferença entre protótipos de baixa e alta fidelidade?",
+        options: [
+          "Baixa fidelidade é mais detalhado; alta fidelidade é mais simples",
+          "Ambos possuem o mesmo nível de detalhe visual",
+          "Baixa fidelidade gera mais ideias; alta fidelidade foca em detalhes próximos do produto final",
+          "Alta fidelidade é usada apenas na fase de análise de requisitos"
+        ],
+        answer: 2,
+        feedback: "Protótipos de baixa fidelidade são rascunhos simples que estimulam a geração de ideias, enquanto os de alta fidelidade são detalhados e próximos do produto final."
+      },
 
-    // Questão 15
-    {
-      aula: "Aula 10 — Design de Interfaces e Prototipação",
-      tipo: "Contexto",
-      texto: "Uma equipe de design criou um esboço em papel com a disposição dos botões, menus e campos de formulário de um aplicativo, sem qualquer cor ou imagem.",
-      question: "Que tipo de artefato de prototipação está sendo descrito?",
-      options: [
-        "Mockup",
-        "Storyboard",
-        "Wireframe",
-        "Cenário"
-      ],
-      answer: 2,
-      feedback: "O wireframe é o 'esqueleto' da interface: representa estrutura, layout e posicionamento dos elementos sem detalhes visuais como cores ou imagens."
-    },
+      // Questão 15
+      {
+        aula: "Aula 10 — Design de Interfaces e Prototipação",
+        tipo: "Contexto",
+        texto: "Uma equipe de design criou um esboço em papel com a disposição dos botões, menus e campos de formulário de um aplicativo, sem qualquer cor ou imagem.",
+        question: "Que tipo de artefato de prototipação está sendo descrito?",
+        options: [
+          "Mockup",
+          "Storyboard",
+          "Wireframe",
+          "Cenário"
+        ],
+        answer: 2,
+        feedback: "O wireframe é o 'esqueleto' da interface: representa estrutura, layout e posicionamento dos elementos sem detalhes visuais como cores ou imagens."
+      },
 
-    // Questão 16
-    {
-      aula: "Aula 10 — Design de Interfaces e Prototipação",
-      tipo: "Direta",
-      texto: "Sobre os tipos de protótipos estudados na disciplina.",
-      question: "Qual tipo de protótipo utiliza narrativa textual para descrever, passo a passo, como o usuário interage com o sistema?",
-      options: [
-        "Wireframe",
-        "Cenário",
-        "Mockup",
-        "Modelo conceitual"
-      ],
-      answer: 1,
-      feedback: "Cenários são narrativas de uso que descrevem o passo a passo da interação entre o usuário e o sistema, como o exemplo do caixa eletrônico."
-    },
+      // Questão 16
+      {
+        aula: "Aula 10 — Design de Interfaces e Prototipação",
+        tipo: "Direta",
+        texto: "Sobre os tipos de protótipos estudados na disciplina.",
+        question: "Qual tipo de protótipo utiliza narrativa textual para descrever, passo a passo, como o usuário interage com o sistema?",
+        options: [
+          "Wireframe",
+          "Cenário",
+          "Mockup",
+          "Modelo conceitual"
+        ],
+        answer: 1,
+        feedback: "Cenários são narrativas de uso que descrevem o passo a passo da interação entre o usuário e o sistema, como o exemplo do caixa eletrônico."
+      },
 
-    // Questão 17
-    {
-      aula: "Aula 10 — Design de Interfaces e Prototipação",
-      tipo: "Aplicação",
-      texto: "Um designer precisa apresentar ao cliente uma versão da interface com cores reais, tipografia definida e imagens no lugar, simulando o produto final antes do desenvolvimento.",
-      question: "Qual tipo de artefato o designer deve entregar nesse caso?",
-      options: [
-        "Wireframe horizontal",
-        "Cenário de uso",
-        "Storyboard",
-        "Mockup"
-      ],
-      answer: 3,
-      feedback: "O mockup é a representação visual detalhada da interface, com cores, imagens e tipografia, sendo classificado como protótipo de alta fidelidade."
-    },
+      // Questão 17
+      {
+        aula: "Aula 10 — Design de Interfaces e Prototipação",
+        tipo: "Aplicação",
+        texto: "Um designer precisa apresentar ao cliente uma versão da interface com cores reais, tipografia definida e imagens no lugar, simulando o produto final antes do desenvolvimento.",
+        question: "Qual tipo de artefato o designer deve entregar nesse caso?",
+        options: [
+          "Wireframe horizontal",
+          "Cenário de uso",
+          "Storyboard",
+          "Mockup"
+        ],
+        answer: 3,
+        feedback: "O mockup é a representação visual detalhada da interface, com cores, imagens e tipografia, sendo classificado como protótipo de alta fidelidade."
+      },
 
-    // Questão 18
-    {
-      aula: "Aula 10 — Design de Interfaces e Prototipação",
-      tipo: "Contexto",
-      texto: "Em um sistema bancário, foram prototipadas todas as funcionalidades principais (sacar, transferir, pagar), porém nenhuma delas foi detalhada em profundidade.",
-      question: "Qual classificação de protótipo por estrutura descreve essa abordagem?",
-      options: [
-        "Protótipo vertical, pois cobre muitas funções",
-        "Protótipo horizontal, pois cobre muitas funções com pouco detalhamento",
-        "Protótipo de baixa fidelidade, pois não tem cores",
-        "Protótipo vertical, pois não detalha nenhuma função"
-      ],
-      answer: 1,
-      feedback: "O protótipo horizontal cobre muitas funcionalidades com pouco nível de detalhe, oferecendo uma visão ampla do sistema sem aprofundamento."
-    },
+      // Questão 18
+      {
+        aula: "Aula 10 — Design de Interfaces e Prototipação",
+        tipo: "Contexto",
+        texto: "Em um sistema bancário, foram prototipadas todas as funcionalidades principais (sacar, transferir, pagar), porém nenhuma delas foi detalhada em profundidade.",
+        question: "Qual classificação de protótipo por estrutura descreve essa abordagem?",
+        options: [
+          "Protótipo vertical, pois cobre muitas funções",
+          "Protótipo horizontal, pois cobre muitas funções com pouco detalhamento",
+          "Protótipo de baixa fidelidade, pois não tem cores",
+          "Protótipo vertical, pois não detalha nenhuma função"
+        ],
+        answer: 1,
+        feedback: "O protótipo horizontal cobre muitas funcionalidades com pouco nível de detalhe, oferecendo uma visão ampla do sistema sem aprofundamento."
+      },
 
-    // Questão 19
-    {
-      aula: "Aula 10 — Design de Interfaces e Prototipação",
-      tipo: "Curta",
-      texto: "Sobre os tipos de interação definidos pelos modelos conceituais.",
-      question: "Qual tipo de interação é caracterizado pelo uso de comandos como cliques, teclado ou voz para operar o sistema?",
-      options: [
-        "Exploração",
-        "Conversação",
-        "Instrução",
-        "Manipulação"
-      ],
-      answer: 2,
-      feedback: "O tipo instrução envolve o usuário emitindo comandos diretos ao sistema, como cliques em botões, atalhos de teclado ou comandos de voz."
-    },
+      // Questão 19
+      {
+        aula: "Aula 10 — Design de Interfaces e Prototipação",
+        tipo: "Curta",
+        texto: "Sobre os tipos de interação definidos pelos modelos conceituais.",
+        question: "Qual tipo de interação é caracterizado pelo uso de comandos como cliques, teclado ou voz para operar o sistema?",
+        options: [
+          "Exploração",
+          "Conversação",
+          "Instrução",
+          "Manipulação"
+        ],
+        answer: 2,
+        feedback: "O tipo instrução envolve o usuário emitindo comandos diretos ao sistema, como cliques em botões, atalhos de teclado ou comandos de voz."
+      },
 
-    // Questão 20
-    {
-      aula: "Aula 10 — Design de Interfaces e Prototipação",
-      tipo: "Direta",
-      texto: "Sobre os problemas de usabilidade e sua classificação.",
-      question: "Qual tipo de problema de usabilidade impede completamente o usuário de concluir sua tarefa?",
-      options: [
-        "Ruído",
-        "Obstáculo",
-        "Barreira",
-        "Problema secundário"
-      ],
-      answer: 2,
-      feedback: "Barreiras são problemas que impedem totalmente a realização da tarefa. Obstáculos dificultam mas permitem conclusão, enquanto ruídos causam dúvida ou confusão."
-    },
+      // Questão 20
+      {
+        aula: "Aula 10 — Design de Interfaces e Prototipação",
+        tipo: "Direta",
+        texto: "Sobre os problemas de usabilidade e sua classificação.",
+        question: "Qual tipo de problema de usabilidade impede completamente o usuário de concluir sua tarefa?",
+        options: [
+          "Ruído",
+          "Obstáculo",
+          "Barreira",
+          "Problema secundário"
+        ],
+        answer: 2,
+        feedback: "Barreiras são problemas que impedem totalmente a realização da tarefa. Obstáculos dificultam mas permitem conclusão, enquanto ruídos causam dúvida ou confusão."
+      },
 
-    // Questão 21
-    {
-      aula: "Aula 10 — Design de Interfaces e Prototipação",
-      tipo: "Aplicação",
-      texto: "Um usuário experiente relata que determinado recurso do sistema é confuso apenas para quem está usando pela primeira vez, mas não causa problema para usuários habituados.",
-      question: "Como esse problema de usabilidade seria classificado quanto ao perfil de usuário afetado?",
-      options: [
-        "Problema geral, pois afeta qualquer usuário",
-        "Problema de acessibilidade, pois envolve limitações físicas",
-        "Problema para usuário iniciante, pois afeta apenas quem não tem experiência",
-        "Problema para especialista, pois exige conhecimento avançado para percebê-lo"
-      ],
-      answer: 2,
-      feedback: "Os problemas de usabilidade podem ser classificados por perfil de usuário. Um problema que afeta apenas iniciantes é categorizado como problema para usuário iniciante."
-    },
+      // Questão 21
+      {
+        aula: "Aula 10 — Design de Interfaces e Prototipação",
+        tipo: "Aplicação",
+        texto: "Um usuário experiente relata que determinado recurso do sistema é confuso apenas para quem está usando pela primeira vez, mas não causa problema para usuários habituados.",
+        question: "Como esse problema de usabilidade seria classificado quanto ao perfil de usuário afetado?",
+        options: [
+          "Problema geral, pois afeta qualquer usuário",
+          "Problema de acessibilidade, pois envolve limitações físicas",
+          "Problema para usuário iniciante, pois afeta apenas quem não tem experiência",
+          "Problema para especialista, pois exige conhecimento avançado para percebê-lo"
+        ],
+        answer: 2,
+        feedback: "Os problemas de usabilidade podem ser classificados por perfil de usuário. Um problema que afeta apenas iniciantes é categorizado como problema para usuário iniciante."
+      },
 
-    // Questão 22
-    {
-      aula: "Aula 10 — Design de Interfaces e Prototipação",
-      tipo: "Contexto",
-      texto: "Uma equipe utilizou diagramas UML e metáforas do mundo real para representar como o sistema de agendamento funcionaria antes de qualquer linha de código ser escrita.",
-      question: "Que tipo de modelo está sendo produzido nessa atividade?",
-      options: [
-        "Modelo físico representacional",
-        "Modelo conceitual",
-        "Wireframe de alta fidelidade",
-        "Modelo físico operacional"
-      ],
-      answer: 1,
-      feedback: "O modelo conceitual representa como o sistema funciona na teoria, utilizando diagramas, UML e metáforas do mundo real para facilitar o entendimento antes da implementação."
-    },
+      // Questão 22
+      {
+        aula: "Aula 10 — Design de Interfaces e Prototipação",
+        tipo: "Contexto",
+        texto: "Uma equipe utilizou diagramas UML e metáforas do mundo real para representar como o sistema de agendamento funcionaria antes de qualquer linha de código ser escrita.",
+        question: "Que tipo de modelo está sendo produzido nessa atividade?",
+        options: [
+          "Modelo físico representacional",
+          "Modelo conceitual",
+          "Wireframe de alta fidelidade",
+          "Modelo físico operacional"
+        ],
+        answer: 1,
+        feedback: "O modelo conceitual representa como o sistema funciona na teoria, utilizando diagramas, UML e metáforas do mundo real para facilitar o entendimento antes da implementação."
+      },
 
-    // Questão 23
-    {
-      aula: "Aula 10 — Design de Interfaces e Prototipação",
-      tipo: "Curta",
-      texto: "Sobre os princípios do Design Centrado no Usuário (DCU).",
-      question: "Qual princípio do DCU está relacionado à capacidade do usuário de operar o sistema sem consultar um manual?",
-      options: [
-        "Ergonomia",
-        "Comunicabilidade",
-        "Intuitividade",
-        "Usabilidade"
-      ],
-      answer: 2,
-      feedback: "Intuitividade refere-se à capacidade do sistema de ser utilizado sem necessidade de instrução prévia, ou seja, o usuário consegue operar o sistema de forma natural."
-    },
+      // Questão 23
+      {
+        aula: "Aula 10 — Design de Interfaces e Prototipação",
+        tipo: "Curta",
+        texto: "Sobre os princípios do Design Centrado no Usuário (DCU).",
+        question: "Qual princípio do DCU está relacionado à capacidade do usuário de operar o sistema sem consultar um manual?",
+        options: [
+          "Ergonomia",
+          "Comunicabilidade",
+          "Intuitividade",
+          "Usabilidade"
+        ],
+        answer: 2,
+        feedback: "Intuitividade refere-se à capacidade do sistema de ser utilizado sem necessidade de instrução prévia, ou seja, o usuário consegue operar o sistema de forma natural."
+      },
 
-    // Questão 24
-    {
-      aula: "Aula 10 — Design de Interfaces e Prototipação",
-      tipo: "Aplicação",
-      texto: "Um designer optou por detalhar apenas o módulo de pagamento de um e-commerce, mapeando cada tela, validação e mensagem de erro com alta precisão, deixando as demais áreas sem protótipo.",
-      question: "Qual classificação de protótipo por estrutura descreve essa escolha?",
-      options: [
-        "Protótipo horizontal, pois cobre poucas funções",
-        "Protótipo vertical, pois foca em poucas funções com alto nível de detalhe",
-        "Protótipo de baixa fidelidade, pois não cobre todo o sistema",
-        "Protótipo horizontal de alta fidelidade"
-      ],
-      answer: 1,
-      feedback: "O protótipo vertical aprofunda poucas funcionalidades com alto nível de detalhamento, sendo útil para validar fluxos críticos do sistema antes da implementação."
-    },
+      // Questão 24
+      {
+        aula: "Aula 10 — Design de Interfaces e Prototipação",
+        tipo: "Aplicação",
+        texto: "Um designer optou por detalhar apenas o módulo de pagamento de um e-commerce, mapeando cada tela, validação e mensagem de erro com alta precisão, deixando as demais áreas sem protótipo.",
+        question: "Qual classificação de protótipo por estrutura descreve essa escolha?",
+        options: [
+          "Protótipo horizontal, pois cobre poucas funções",
+          "Protótipo vertical, pois foca em poucas funções com alto nível de detalhe",
+          "Protótipo de baixa fidelidade, pois não cobre todo o sistema",
+          "Protótipo horizontal de alta fidelidade"
+        ],
+        answer: 1,
+        feedback: "O protótipo vertical aprofunda poucas funcionalidades com alto nível de detalhamento, sendo útil para validar fluxos críticos do sistema antes da implementação."
+      },
 
-  ]
+      // Aula 11 — Design Responsivo
+      // Questão 25
+      {
+        aula: "Aula 11 — Design Responsivo",
+        tipo: "Direta",
+        texto: "O design responsivo é uma abordagem fundamental no desenvolvimento web moderno.",
+        question: "O que caracteriza um site com design responsivo?",
+        options: [
+          "Ter um layout fixo com largura de 1200px",
+          "Adaptar-se a diferentes tamanhos de tela sem perder usabilidade",
+          "Usar apenas imagens vetoriais para garantir qualidade",
+          "Carregar versões diferentes do site para cada dispositivo"
+        ],
+        answer: 1,
+        feedback: "Design responsivo significa que o site se adapta automaticamente a diferentes resoluções, reorganizando seus elementos para manter a usabilidade."
+      },
+
+      // Questão 26
+      {
+        aula: "Aula 11 — Design Responsivo",
+        tipo: "Código",
+        texto: "Considere o trecho de CSS abaixo.",
+        question: "O que o código a seguir faz quando a largura da tela for menor ou igual a 600px?",
+        code: `@media (max-width: 600px) {
+        body {
+          background-color: lightblue;
+        }
+      }`,
+        options: [
+          "Aplica fundo azul claro em todas as telas",
+          "Remove o fundo da página em telas pequenas",
+          "Aplica fundo azul claro apenas em telas com até 600px de largura",
+          "Bloqueia o acesso ao site em dispositivos móveis"
+        ],
+        answer: 2,
+        feedback: "A media query com max-width: 600px aplica o estilo somente quando a viewport tiver no máximo 600px de largura."
+      },
+
+      // Questão 27
+      {
+        aula: "Aula 11 — Design Responsivo",
+        tipo: "Curta",
+        texto: "A meta tag viewport é usada em páginas web para controlar a exibição em dispositivos móveis.",
+        question: "Qual é o principal objetivo da meta tag viewport?",
+        options: [
+          "Definir o idioma da página",
+          "Controlar o zoom e a escala de exibição no mobile",
+          "Aumentar a velocidade de carregamento",
+          "Bloquear o redimensionamento da janela no desktop"
+        ],
+        answer: 1,
+        feedback: "A meta tag viewport impede que o navegador encolha o site e permite controlar a escala inicial da página em dispositivos móveis."
+      },
+
+      // Questão 28
+      {
+        aula: "Aula 11 — Design Responsivo",
+        tipo: "Contexto",
+        texto: "Um desenvolvedor percebeu que ao redimensionar a janela do navegador, os elementos do site quebravam e se sobrepunham. Ele decidiu revisar as unidades de medida usadas no CSS.",
+        question: "Qual prática de layout fluido ajudaria a resolver esse problema?",
+        options: [
+          "Substituir medidas em % por valores fixos em px",
+          "Usar apenas a unidade cm para larguras",
+          "Usar medidas relativas como % e em no lugar de px",
+          "Definir largura mínima de 1280px para todos os elementos"
+        ],
+        answer: 2,
+        feedback: "O layout fluido usa medidas relativas (%, em) para que os elementos se adaptem proporcionalmente ao tamanho da tela."
+      },
+
+      // Questão 29
+      {
+        aula: "Aula 11 — Design Responsivo",
+        tipo: "Direta",
+        texto: "Existem diferentes estratégias para construir layouts responsivos.",
+        question: "O que define a metodologia Mobile First?",
+        options: [
+          "Criar o site primeiro para desktop e depois adaptar para mobile",
+          "Desenvolver o layout iniciando pelas telas menores e expandindo para as maiores",
+          "Usar apenas dispositivos móveis para testar o site",
+          "Desativar recursos visuais avançados em dispositivos móveis"
+        ],
+        answer: 1,
+        feedback: "Mobile First consiste em projetar o layout começando pelos dispositivos de menor tela, garantindo o essencial, e depois expandindo para tablets e desktops."
+      },
+
+      // Questão 30
+      {
+        aula: "Aula 11 — Design Responsivo",
+        tipo: "Curta",
+        texto: "Breakpoints são pontos definidos no CSS onde o layout do site é alterado.",
+        question: "Qual valor de breakpoint é normalmente associado a tablets?",
+        options: [
+          "480px",
+          "768px",
+          "1280px",
+          "960px"
+        ],
+        answer: 1,
+        feedback: "O breakpoint de 768px é o mais comumente associado a tablets, enquanto 480px é para celulares maiores e 960px+ para desktops."
+      },
+
+      // Questão 31
+      {
+        aula: "Aula 11 — Design Responsivo",
+        tipo: "Aplicação",
+        texto: "Uma equipe está desenvolvendo um portal de notícias que exibe cards de artigos. No mobile, cada card ocupa toda a largura. No desktop, devem aparecer lado a lado.",
+        question: "Qual abordagem é mais adequada para implementar esse comportamento?",
+        options: [
+          "Criar duas páginas HTML separadas, uma para mobile e outra para desktop",
+          "Usar JavaScript para detectar o dispositivo e trocar o CSS",
+          "Usar media queries para alterar a largura dos cards conforme a resolução",
+          "Fixar a largura dos cards em 50% independente do dispositivo"
+        ],
+        answer: 2,
+        feedback: "Media queries permitem aplicar estilos diferentes conforme o tamanho da tela, sendo a forma correta de reorganizar os cards entre mobile e desktop."
+      },
+
+      // Questão 32
+      {
+        aula: "Aula 11 — Design Responsivo",
+        tipo: "Contexto",
+        texto: "Durante uma revisão de código, um colega notou que algumas media queries estavam sobrescrevendo outras de forma inesperada.",
+        question: "Por que a ordem das media queries no CSS é importante?",
+        options: [
+          "Porque media queries mais antigas têm prioridade automática",
+          "Porque o navegador ignora todas exceto a primeira",
+          "Porque a última regra pode sobrescrever as anteriores em cascata",
+          "Porque a ordem afeta apenas o tempo de carregamento"
+        ],
+        answer: 2,
+        feedback: "No CSS, a cascata faz com que regras declaradas depois sobrescrevam as anteriores quando há conflito. Por isso, a ordem das media queries impacta diretamente no comportamento do layout."
+      },
+
+      // Questão 33
+      {
+        aula: "Aula 11 — Design Responsivo",
+        tipo: "Direta",
+        texto: "A escolha das unidades de medida no CSS impacta diretamente na responsividade do layout.",
+        question: "Quais unidades são recomendadas no design responsivo para garantir flexibilidade?",
+        options: [
+          "px e cm",
+          "mm e pt",
+          "% e em",
+          "vw e px"
+        ],
+        answer: 2,
+        feedback: "As unidades % e em são relativas e se ajustam ao contexto do elemento e da tela, sendo ideais para layouts responsivos."
+      },
+
+      // Questão 34
+      {
+        aula: "Aula 11 — Design Responsivo",
+        tipo: "Aplicação",
+        texto: "Em um projeto web, o menu de navegação exibe todos os itens horizontalmente no desktop. No entanto, em telas pequenas, esse comportamento prejudica a usabilidade.",
+        question: "Qual solução é mais adequada para menus em telas pequenas?",
+        options: [
+          "Remover o menu completamente no mobile",
+          "Reduzir o tamanho da fonte até caber na tela",
+          "Substituir o menu horizontal por um menu hambúrguer",
+          "Exibir o menu apenas ao rolar a página"
+        ],
+        answer: 2,
+        feedback: "O menu hambúrguer (ícone ☰) é a solução padrão para substituir menus horizontais em telas pequenas, economizando espaço e mantendo a navegação acessível."
+      },
+
+      // Questão 35
+      {
+        aula: "Aula 11 — Design Responsivo",
+        tipo: "Contexto",
+        texto: "Um desenvolvedor iniciante precisa criar um layout responsivo seguindo a metodologia Mobile First.",
+        question: "Qual é a ordem correta para estruturar o CSS nessa abordagem?",
+        options: [
+          "Criar o layout desktop, depois adicionar media queries com max-width",
+          "Criar o layout mobile, depois expandir com media queries usando min-width",
+          "Criar os layouts mobile e desktop separadamente e uni-los ao final",
+          "Usar apenas media queries com max-width para todos os dispositivos"
+        ],
+        answer: 1,
+        feedback: "No Mobile First, o CSS base é escrito para telas pequenas e as media queries com min-width são adicionadas progressivamente para adaptar o layout a telas maiores."
+      },
+
+      // Questão 36
+      {
+        aula: "Aula 11 — Design Responsivo",
+        tipo: "Direta",
+        texto: "A ideia central do design responsivo vai além de apenas reduzir o tamanho do site.",
+        question: "Qual afirmação resume melhor o conceito de design responsivo?",
+        options: [
+          "É suficiente reduzir a escala do site para caber em telas menores",
+          "Consiste em reorganizar, adaptar e otimizar a interface para cada tipo de dispositivo",
+          "Responsividade depende exclusivamente de JavaScript para detectar o dispositivo",
+          "Um site responsivo carrega arquivos CSS diferentes para cada resolução"
+        ],
+        answer: 1,
+        feedback: "Design responsivo não é apenas reduzir o site — é reorganizar e otimizar a interface para oferecer uma boa experiência em qualquer dispositivo."
+      },
+    ]
 
 };
