@@ -5,6 +5,10 @@
    Sem filtros internos — o jogo.js já fez a seleção.
    ============================================================ */
 
+/* ── IMPORTS DE TEMA ── */
+import { DISC_CORES }              from '../../../shared/js/cores.js';
+import { aplicarCoresDisciplina }  from '../../../shared/js/theme.js';
+
 /* ── PARAMS DA URL ── */
 const _p       = new URLSearchParams(location.search);
 const URL_DISC = _p.get('disc') ?? '';
@@ -46,32 +50,26 @@ function normalizar(txt) {
 
 /* ── APLICAR COR DA DISCIPLINA ── */
 function aplicarCorDisc(disc) {
-  const cor = (DISCIPLINAS[disc] ?? {}).cor ?? '#4f6fff';
-  document.documentElement.style.setProperty('--disc-cor', cor);
+  aplicarCoresDisciplina(disc, DISC_CORES);
 }
 
 /* ── TOPBAR: exibe disciplina e semestre da URL ── */
 function iniciarTopbar() {
-  // Semestre letivo
-  if (Els.topbarSem) {
-    Els.topbarSem.textContent = URL_SEM || '—';
-  }
+  if (Els.shellSem)
+    Els.shellSem.textContent = URL_SEM || '—';
 
-  // Nome da disciplina no header
-  if (Els.topbarDiscBadge) {
+  if (Els.shellDiscName) {
     const disc = DISCIPLINAS[URL_DISC];
-    if (disc) {
-      Els.topbarDiscBadge.textContent = `${disc.emoji ?? ''} ${disc.apelido}`.trim();
-    }
+    Els.shellDiscName.textContent = disc
+      ? `${disc.emoji ?? ''} ${disc.apelido}`.trim()
+      : URL_DISC || '—';
   }
 
-  // Cor global
   aplicarCorDisc(URL_DISC);
 
-  // Link de voltar preserva o semestre letivo
   const voltar = URL_SEM ? `../../jogo.html?sem=${URL_SEM}` : '../../jogo.html';
-  if (Els.backBtn)       Els.backBtn.href      = voltar;
-  if (Els.btnBackResult) Els.btnBackResult.href = voltar;
+  if (Els.backBtn)       Els.backBtn.href       = voltar;
+  if (Els.btnBackResult) Els.btnBackResult.href  = voltar;
 }
 
 /* ── CONSTRUIR LISTA ── */
@@ -114,7 +112,7 @@ function renderPergunta() {
   Els.discTag.innerHTML =
     `<span class="disc-sigla">${disc.sigla ?? p.disciplina.toUpperCase()}</span>
      ${disc.apelido ?? p.disciplina}`;
-  Els.discTag.style.color = disc.cor ?? 'var(--disc-cor)';
+  Els.discTag.style.color = 'var(--cor-tema)';
 
   // Semestre das questões (1º, 2º…)
   Els.semTag.textContent = SEMESTRES[p.semestre] ?? `${p.semestre}º Sem.`;
@@ -276,8 +274,8 @@ document.addEventListener('DOMContentLoaded', () => {
     resultErr:       $('result-err'),
     btnRestart:      $('btn-restart'),
     ringFill:        $('ring-fill'),
-    topbarSem:       $('topbar-sem'),
-    topbarDiscBadge: $('topbar-disc-badge'),
+    shellDiscName: $('shell-disc-name'),
+shellSem:      $('shell-sem'),
     backBtn:         $('back-btn'),
     btnBackResult:   $('btn-back-result'),
   });

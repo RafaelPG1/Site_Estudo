@@ -37,11 +37,15 @@
   --cf-dificil: #f06060;
 
   /* Cor ativa da disciplina (definida via JS) */
-  --disc-cor: var(--cf-accent);
+  --cor-tema: var(--cf-accent);
 
   /* Tipografia */
   --cf-ui:   'Syne', sans-serif;
   --cf-mono: 'JetBrains Mono', monospace;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body:    'DM Sans', system-ui, sans-serif;
+  --font-mono:    'DM Mono', monospace;
+  --font-syne:    'Syne', sans-serif;
 
   /* Radii */
   --r-sm: 5px;
@@ -59,7 +63,7 @@
 html { font-size: 16px; scroll-behavior: smooth; }
 
 body {
-  font-family: var(--cf-ui);
+  font-family: var(--font-body);
   background-color: var(--bg);
   color: var(--cf-t1);
   min-height: 100vh;
@@ -156,9 +160,9 @@ body {
   font-size: 1.3rem;
   background: rgba(79,111,255,.15);
   border: 2px solid rgba(79,111,255,.4);
-  /* Cor dinâmica via JS com --disc-cor */
-  background: rgba(var(--disc-cor-rgb, 79,111,255), .15);
-  border-color: rgba(var(--disc-cor-rgb, 79,111,255), .4);
+  /* Cor dinâmica via JS com --cor-tema */
+  background: rgba(var(--cor-tema-rgb, 79,111,255), .15);
+  border-color: rgba(var(--cor-tema-rgb, 79,111,255), .4);
 }
 
 .game-header__info { min-width: 0; }
@@ -176,14 +180,8 @@ body {
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-#topbar-disc-badge {
-  color: var(--disc-cor);
-  font-weight: 500;
-}
-
-#topbar-sem {
-  color: var(--cf-t2);
-}
+#shell-disc-name { color: var(--cor-tema); font-weight: 500; }
+#shell-sem       { color: var(--text-2, #9ca3af); }
 
 .game-header__meta-sep { color: var(--cf-t3); }
 
@@ -240,10 +238,10 @@ body {
 
 .progress-fill {
   height: 100%;
-  background: var(--disc-cor);
+  background: var(--cor-tema);
   border-radius: 99px;
   transition: width 0.6s var(--ease);
-  box-shadow: 0 0 10px var(--disc-cor);
+  box-shadow: 0 0 10px var(--cor-tema);
 }
 
 .score-row { display: flex; gap: 0.4rem; }
@@ -283,7 +281,7 @@ body {
   position: absolute;
   left: 0; top: 0; bottom: 0;
   width: 2px;
-  background: var(--disc-cor);
+  background: var(--cor-tema);
   opacity: 0.75;
 }
 
@@ -313,7 +311,7 @@ body {
   font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--disc-cor);
+  color: var(--cor-tema);
 }
 .disc-tag .disc-sigla {
   padding: 0.14rem 0.42rem;
@@ -367,7 +365,7 @@ body {
   letter-spacing: 0.01em;
 }
 .frase-texto .lacuna {
-  color: var(--disc-cor);
+  color: var(--cor-tema);
   font-weight: 600;
   letter-spacing: 0.08em;
 }
@@ -440,7 +438,7 @@ body {
 
 .btn-check {
   padding: 0.7rem 1.4rem;
-  background: var(--disc-cor);
+  background: var(--cor-tema);
   color: #fff;
   border: none;
   border-radius: var(--r-md);
@@ -622,8 +620,8 @@ body {
   width: 100%;
   padding: 0.65rem;
   background: transparent;
-  color: var(--disc-cor);
-  border: 1px solid var(--disc-cor);
+  color: var(--cor-tema);
+  border: 1px solid var(--cor-tema);
   border-radius: var(--r-md);
   font-family: var(--cf-ui);
   font-size: 0.8rem;
