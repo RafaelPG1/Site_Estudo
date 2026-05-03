@@ -46,7 +46,16 @@ const JOGOS = [
     // Mapeamento customizado: pasta e arquivo diferem do id
     rota: 'vdd_falso/vdd_falso.html',
   },
-
+  {
+    id: 'completar_frase',
+    nome: 'Completar Frase',
+    tipo: 'Pergunta',
+    status: 'disponível',
+    icon: '✏️',
+    descricao: 'Preencha lacunas em frases para fixar conceitos essenciais da disciplina selecionada.',
+    duracao: '4–7 min',
+    dificuldade: '★★☆',
+  },
 
     // ── DINÂMICA ──────────────────────────
   {

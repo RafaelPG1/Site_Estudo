@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-tema="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Complete a Frase — Nexus Study</title>
+  <link rel="stylesheet" href="completar_frase.css" />
+</head>
+<body>
+
+  <!-- FUNDO — orbs e grid (mesmo padrão do jogo.html) -->
+  <div class="bg-grid"      aria-hidden="true"></div>
+  <div class="bg-orb bg-orb--1" aria-hidden="true"></div>
+  <div class="bg-orb bg-orb--2" aria-hidden="true"></div>
+  <div class="bg-orb bg-orb--3" aria-hidden="true"></div>
+
+  <!-- HEADER -->
+  <header class="game-header">
+    <a id="back-btn" class="game-header__back" href="../../jogo.html">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M13 16l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Voltar</span>
+    </a>
+
+    <div class="game-header__identity">
+      <div class="game-header__icon" id="shell-icon">✏️</div>
+      <div class="game-header__info">
+        <div class="game-header__name">Complete a Frase</div>
+        <div class="game-header__meta">
+          <span id="topbar-disc-badge">—</span>
+          <span class="game-header__meta-sep">·</span>
+          <span id="topbar-sem">—</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- LAYOUT CENTRAL -->
+  <div class="game-layout">
+
+    <!-- BARRA DE STATUS -->
+    <div class="status-bar">
+      <div class="progress-block">
+        <div class="progress-meta">
+          <span class="progress-label" id="progress-label">0 / 0</span>
+          <span class="progress-pct"   id="progress-pct">0%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="score-row">
+        <span class="chip chip-ok"  id="chip-ok">✓ 0</span>
+        <span class="chip chip-err" id="chip-err">✗ 0</span>
+      </div>
+    </div>
+
+    <!-- CARD DA QUESTÃO -->
+    <div class="game-card" id="game-card">
+      <div class="card-inner">
+
+        <div class="card-header">
+          <span class="disc-tag" id="disc-tag">
+            <span class="disc-sigla">—</span>
+          </span>
+          <div class="card-badges">
+            <span class="sem-tag"   id="sem-tag">—</span>
+            <span class="nivel-tag" id="nivel-tag">Fácil</span>
+          </div>
+        </div>
+
+        <div class="question-num" id="question-num">QUESTÃO 01</div>
+
+        <p class="frase-texto" id="frase-texto">Carregando questão…</p>
+
+        <div class="hint-block">
+          <span class="hint-label">Dica</span>
+          <span class="letras-hint" id="letras-hint">—</span>
+        </div>
+
+        <div class="input-group">
+          <input
+            type="text"
+            id="input-answer"
+            class="input-answer"
+            placeholder="Digite a resposta…"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+          />
+          <button class="btn-check" id="btn-check">Verificar</button>
+        </div>
+
+        <div class="feedback-line" id="feedback-line"></div>
+
+        <button class="btn-next" id="btn-next">
+          Próxima questão <span class="arrow">→</span>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- TELA DE RESULTADO -->
+    <div class="screen-result" id="screen-result" role="region" aria-label="Resultado final">
+
+      <div class="score-ring-wrap">
+        <svg class="score-ring-svg" viewBox="0 0 128 128">
+          <circle class="score-ring-bg"   cx="64" cy="64" r="54" />
+          <circle class="score-ring-fill" cx="64" cy="64" r="54" id="ring-fill" />
+        </svg>
+        <div class="score-ring-center">
+          <span class="result-pct"       id="result-pct">0%</span>
+          <span class="result-pct-label">acerto</span>
+        </div>
+      </div>
+
+      <h2 class="result-title" id="result-title">Fim de jogo</h2>
+      <p  class="result-sub"   id="result-sub"></p>
+
+      <div class="result-stats">
+        <div class="result-stat ok">
+          <span class="val" id="result-ok">0</span>
+          <span class="lbl">Acertos</span>
+        </div>
+        <div class="result-stat err">
+          <span class="val" id="result-err">0</span>
+          <span class="lbl">Erros</span>
+        </div>
+      </div>
+
+      <div class="result-actions">
+        <button class="btn-restart"     id="btn-restart">↺ Jogar novamente</button>
+        <a      class="btn-back-result" id="btn-back-result" href="../../jogo.html">← Voltar aos jogos</a>
+      </div>
+
+    </div>
+
+  </div><!-- /game-layout -->
+
+  <script src="completar_frase_data.js"></script>
+  <script src="completar_frase.js"></script>
+</body>
+</html>
