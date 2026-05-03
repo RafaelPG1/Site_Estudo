@@ -3,17 +3,14 @@ Crie afirmações de Verdadeiro ou Falso com base no conteúdo abaixo.
 Formato obrigatório (JSON):
 
 
-     {
-       [discId]: [
-         {
+{
            id:        string,          — identificador único (discId_aula_N)
            aula:      number,          — número da aula de origem
            enunciado: string,
            resposta:  true|false,
            explicacao: string
          }
-       ]
-     }
+
 
 Regras:
 
@@ -63,3 +60,4 @@ Exemplo genérico:
 // 2 - definição
 { ... }
 
+QUERO SOMENTE DIGITADO, NADA DE CRIAR UM QUIZ INTERATIVO SOMENTE TEXTO DIGITADO. nada de clipboard
