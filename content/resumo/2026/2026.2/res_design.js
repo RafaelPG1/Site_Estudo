@@ -5,6 +5,7 @@
 
 window.__nexusConteudo = {
   aulas: [
+    // Aula 9 — Prototipagem e Norma ISO 9241
     {
       aula: "Aula 9 — Prototipagem e Norma ISO 9241",
       ideia_central: "Evolução do foco no desenvolvimento → de produto para usuário, priorizando experiência, usabilidade e satisfação.",
@@ -236,6 +237,7 @@ window.__nexusConteudo = {
       ]
     },
 
+    //Aula 10 — Design de Interfaces e Prototipação
     {
       aula: "Aula 10 — Design de Interfaces e Prototipação",
       ideia_central: "Primeiro modela → depois prototipa → depois implementa. Quanto melhor o protótipo, menos erros no sistema final.",
@@ -512,6 +514,248 @@ window.__nexusConteudo = {
         }
 
       ]
-    }
+    },
+
+    {
+aula: "Aula 11 — Design Responsivo",
+ideia_central: "Não basta reduzir o tamanho do site — é necessário reorganizar, adaptar e otimizar a interface para cada tipo de dispositivo.",
+secoes: [
+  {
+    id: "visao",
+    titulo: "🧭 Visão Geral",
+    blocos: [
+      {
+        tipo: "texto",
+        texto: "O design responsivo é uma abordagem essencial no desenvolvimento web moderno que permite que sites se adaptem a diferentes tamanhos de tela (celulares, tablets e desktops). Com o aumento do uso de dispositivos móveis, tornou-se indispensável criar interfaces que se ajustem automaticamente, mantenham boa usabilidade e preservem o design visual."
+      },
+      {
+        tipo: "lista",
+        titulo: "A aula aborda:",
+        itens: [
+          "Conceitos fundamentais do design responsivo",
+          "Técnicas como media queries, layout fluido, viewport",
+          "Metodologia Mobile First",
+          "Uso de breakpoints"
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "conceitos",
+    titulo: "🧠 Conceitos Principais",
+    blocos: [
+
+      {
+        tipo: "topico",
+        titulo: "📱 Design Responsivo",
+        lista: [
+          "Capacidade de um site se adaptar a diferentes telas",
+          "Não é apenas redimensionar → envolve **reorganizar elementos**",
+          "Objetivo: melhorar experiência do usuário (UX)"
+        ]
+      },
+
+      {
+        tipo: "topico",
+        titulo: "🎯 Media Queries",
+        lista: [
+          "Técnica do **CSS3**",
+          "Permite aplicar estilos diferentes conforme o tamanho da tela",
+          "Alterar tamanho, posição e visibilidade",
+          "Criar comportamentos diferentes conforme a resolução"
+        ]
+      },
+
+      {
+        tipo: "exemplo",
+        titulo: "Exemplo — Media Query",
+        texto: "@media (max-width: 600px) {\n  body {\n    background-color: lightblue;\n  }\n}",
+        detalhe: "👉 Aplica estilo somente quando a tela tiver no máximo 600px de largura"
+      },
+
+      {
+        tipo: "topico",
+        titulo: "📏 Meta Tag Viewport",
+        lista: [
+          "Define como a página será exibida em dispositivos móveis",
+          "Evita que o navegador 'encolha' o site",
+          "Controla o zoom e escala"
+        ]
+      },
+
+      {
+        tipo: "exemplo",
+        titulo: "Código padrão — Viewport",
+        texto: '<meta name="viewport" content="width=device-width, initial-scale=1">',
+        detalhe: "👉 Deve ser incluído no <head> de toda página responsiva"
+      },
+
+      {
+        tipo: "topico",
+        titulo: "🌊 Layout Fluido (Flexível)",
+        lista: [
+          "Usa **medidas relativas** (%) ao invés de fixas (px)",
+          "Adapta-se automaticamente ao tamanho da tela",
+          "Ideia principal: layout proporcional ao tamanho da tela"
+        ]
+      },
+
+      {
+        tipo: "exemplo",
+        titulo: "Exemplo — Layout Fluido",
+        texto: "body {\n  width: 100%;\n}\narticle {\n  width: 75%;\n}",
+        detalhe: "👉 Elementos ocupam proporção da tela, não tamanho fixo"
+      },
+
+      {
+        tipo: "topico",
+        titulo: "📲 Mobile First",
+        lista: [
+          "Estratégia que começa o design pelas **telas pequenas**",
+          "Depois adapta para telas maiores",
+          "**Vantagens**: foco no essencial · melhor desempenho · interface mais limpa"
+        ]
+      },
+
+      {
+        tipo: "topico",
+        titulo: "🔄 Breakpoints",
+        lista: [
+          "Pontos onde o **layout muda** conforme o tamanho da tela",
+          "Função: ajustar layout em diferentes resoluções"
+        ]
+      },
+
+      {
+        tipo: "exemplo",
+        titulo: "Exemplo — Breakpoint",
+        texto: "@media (max-width: 600px) {\n  .noticia {\n    width: 50%;\n  }\n}",
+        detalhe: "👉 A partir de 600px, o elemento .noticia ocupa 50% da largura"
+      }
+
+    ]
+  },
+
+  {
+    id: "metodos",
+    titulo: "⚙️ Métodos e Técnicas",
+    blocos: [
+
+      {
+        tipo: "topico",
+        titulo: "📌 1. Uso de Media Queries",
+        lista: [
+          "Adaptar layout por tamanho de tela",
+          "Exemplo: `@media screen and (min-width: 768px) { .elemento { width: 50%; } }`"
+        ]
+      },
+
+      {
+        tipo: "topico",
+        titulo: "📌 2. Layout com Medidas Relativas",
+        lista: [
+          "`%` → largura",
+          "`em` → fontes",
+          "**Evitar**: `px`, `cm`, `mm`"
+        ]
+      },
+
+      {
+        tipo: "topico",
+        titulo: "📌 3. Estrutura Mobile First",
+        lista: [
+          "1. Criar layout mobile",
+          "2. Adicionar media queries com `min-width`",
+          "3. Expandir para telas maiores"
+        ]
+      },
+
+      {
+        tipo: "tabela",
+        titulo: "📌 4. Breakpoints Comuns",
+        colunas: ["Breakpoint", "Dispositivo"],
+        linhas: [
+          ["480px",   "Celulares maiores"],
+          ["768px",   "Tablets"],
+          ["960px+",  "Desktops"],
+          ["1280px+", "Telas grandes"]
+        ]
+      },
+
+      {
+        tipo: "lista",
+        titulo: "⚠️ Observações importantes:",
+        itens: [
+          "A **ordem das media queries importa**",
+          "A última regra pode **sobrescrever** as anteriores",
+          "Evitar **excesso de media queries**"
+        ]
+      }
+
+    ]
+  },
+
+  {
+    id: "exemplos",
+    titulo: "📊 Exemplos Explicativos",
+    blocos: [
+
+      {
+        tipo: "exemplo",
+        titulo: "Exemplo 1 — Problema sem Media Queries",
+        texto: "Layout fluido → elementos se sobrepõem sem media queries para controlar o comportamento.",
+        detalhe: "👉 Solução: aplicar media queries para reorganizar os elementos"
+      },
+
+      {
+        tipo: "exemplo",
+        titulo: "Exemplo 2 — Grid Responsivo",
+        texto: "Mobile: 1 coluna · Tablet: 2 colunas · Desktop: 3 colunas",
+        detalhe: "👉 O número de colunas muda conforme o breakpoint ativo"
+      },
+
+      {
+        tipo: "exemplo",
+        titulo: "Exemplo 3 — Menu Responsivo",
+        texto: "Mobile → menu hambúrguer ☰ | Desktop → menu horizontal",
+        detalhe: "👉 A estrutura do menu muda completamente entre dispositivos"
+      },
+
+      {
+        tipo: "exemplo",
+        titulo: "Exemplo 4 — Troca de Logo",
+        texto: "Mobile → símbolo simples | Desktop → logo completo",
+        detalhe: "👉 Elementos visuais podem ser trocados conforme o tamanho da tela"
+      }
+
+    ]
+  },
+
+  {
+    id: "resumo",
+    titulo: "⚡ Resumo Final para Revisão Rápida",
+    blocos: [
+      {
+        tipo: "lista",
+        itens: [
+          "**Design Responsivo** → Adapta o layout a diferentes telas",
+          "**Media Queries** → Aplicam estilos condicionais (CSS)",
+          "**Viewport** → Controla escala e exibição no mobile",
+          "**Layout Fluido** → Usa medidas relativas (% e em)",
+          "**Mobile First** → Começa pelo mobile e evolui para desktop",
+          "**Breakpoints** → Pontos onde o layout muda"
+        ]
+      },
+      {
+        tipo: "destaque",
+        texto: "📌 Ideia-chave para prova: Não basta reduzir o tamanho do site — é necessário reorganizar, adaptar e otimizar a interface para cada tipo de dispositivo. Design responsivo envolve media queries, layout fluido, viewport e a metodologia Mobile First."
+      }
+    ]
+  }
+
+]
+}
+
   ]
 };
