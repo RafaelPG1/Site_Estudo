@@ -178,6 +178,90 @@ const _CARDS_POR_SEMESTRE = {
         dica: 'Storyboard = cenário em quadrinhos',
       },
 
+
+      // aula 11: Design Responsivo
+
+      // 21 - design responsivo
+      {
+        id: 'd21',
+        frente: 'Design responsivo significa apenas redimensionar o tamanho do site para caber em telas menores?',
+        verso: 'Falso. Design responsivo envolve <strong>reorganizar e adaptar os elementos</strong> da interface. O objetivo é manter a <strong>usabilidade e o design visual</strong> em diferentes dispositivos.',
+        dica: 'Responsivo = reorganizar, não só reduzir',
+      },
+
+      // 22 - media queries
+      {
+        id: 'd22',
+        frente: 'O que são media queries e para que servem?',
+        verso: 'Técnica do <strong>CSS3</strong> que aplica estilos diferentes conforme o tamanho da tela. Permite alterar <strong>tamanho, posição e visibilidade</strong> dos elementos por resolução.',
+        dica: 'Media query = estilo condicional por tela',
+      },
+
+      // 23 - viewport
+      {
+        id: 'd23',
+        frente: 'O que faz a meta tag viewport e por que é importante?',
+        verso: 'Define como a página é <strong>exibida e escalada em dispositivos móveis</strong>. Evita que o navegador "encolha" o site e controla o <strong>zoom e a escala</strong>.',
+        dica: 'Viewport = controle de escala mobile',
+      },
+
+      // 24 - layout fluido
+      {
+        id: 'd24',
+        frente: 'O que é layout fluido e quais medidas ele utiliza?',
+        verso: 'Layout que usa <strong>medidas relativas (% e em)</strong> ao invés de fixas (px), fazendo os elementos se adaptarem <strong>proporcionalmente</strong> ao tamanho da tela.',
+        dica: '% e em = fluido. px = fixo.',
+      },
+
+      // 25 - mobile first
+      {
+        id: 'd25',
+        frente: 'O que é a metodologia Mobile First e qual sua principal vantagem?',
+        verso: 'Estratégia que inicia o design pelas <strong>telas pequenas</strong> e expande para maiores usando <strong>min-width</strong>. Vantagens: foco no essencial, <strong>melhor desempenho</strong> e interface mais limpa.',
+        dica: 'Mobile First = pequeno para grande',
+      },
+
+      // 26 - breakpoints
+      {
+        id: 'd26',
+        frente: 'O que são breakpoints e quais são os valores mais comuns?',
+        verso: 'Pontos onde o <strong>layout muda conforme o tamanho da tela</strong>. Valores comuns: <strong>480px</strong> (celulares), <strong>768px</strong> (tablets), <strong>960px+</strong> (desktops), <strong>1280px+</strong> (telas grandes).',
+        dica: '480 / 768 / 960 / 1280',
+      },
+
+      // 27 - ordem queries
+      {
+        id: 'd27',
+        frente: 'Por que a ordem das media queries no CSS é importante?',
+        verso: 'Porque a <strong>última regra declarada pode sobrescrever as anteriores</strong>. A organização incorreta pode causar comportamentos inesperados no layout.',
+        dica: 'Última regra vence',
+      },
+
+      // 28 - grid responsivo
+      {
+        id: 'd28',
+        frente: 'Como funciona um grid responsivo típico em diferentes dispositivos?',
+        verso: 'O número de colunas varia por dispositivo: <strong>1 coluna</strong> no mobile, <strong>2 colunas</strong> no tablet e <strong>3 colunas</strong> no desktop, usando breakpoints e media queries.',
+        dica: 'Mobile=1, Tablet=2, Desktop=3',
+      },
+
+      // 29 - menu responsivo
+      {
+        id: 'd29',
+        frente: 'Qual é o padrão de menu responsivo para mobile e para desktop?',
+        verso: '<strong>Menu hambúrguer (☰)</strong> no mobile para economizar espaço. <strong>Menu horizontal</strong> no desktop, onde há espaço suficiente.',
+        dica: '☰ mobile → horizontal desktop',
+      },
+
+      // 30 - imagens responsivas
+      {
+        id: 'd30',
+        frente: 'Como o design responsivo trata elementos visuais como logos em diferentes dispositivos?',
+        verso: 'Adapta o visual conforme o dispositivo: <strong>símbolo simples</strong> no mobile e <strong>logo completo</strong> no desktop, otimizando espaço e mantendo a identidade visual.',
+        dica: 'Mobile = simples. Desktop = completo.',
+      },
+
+
     ],
 
     banco_dados: [
@@ -350,10 +434,257 @@ const _CARDS_POR_SEMESTRE = {
         dica: 'SELECT pode calcular — parênteses primeiro',
       },
 
+      // Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1
+
+      // 21 - cláusula WHERE
+      {
+        id: 'b21',
+        frente: 'O que faz a cláusula WHERE em uma consulta SQL?',
+        verso: 'Restringe os dados retornados, selecionando apenas registros que <strong>satisfazem uma condição</strong>. Pode ser usada em <strong>SELECT, UPDATE e DELETE</strong>.',
+        dica: 'WHERE = filtro de registros',
+      },
+
+      // 22 - operador LIKE
+      {
+        id: 'b22',
+        frente: 'O que faz o operador LIKE e quais curingas ele utiliza?',
+        verso: 'Realiza <strong>busca por padrão em textos</strong>. Curingas: <strong>%</strong> → qualquer sequência de caracteres; <strong>_</strong> → exatamente 1 caractere.',
+        dica: '% = vários. _ = um só.',
+      },
+
+      // 23 - operador BETWEEN
+      {
+        id: 'b23',
+        frente: 'O que faz o operador BETWEEN e a que é equivalente?',
+        verso: 'Filtra valores dentro de um <strong>intervalo inclusivo</strong>. Equivale a <strong>>= valor_inicial AND <= valor_final</strong>. Muito usado com <strong>datas e números</strong>.',
+        dica: 'BETWEEN = intervalo fechado',
+      },
+
+      // 24 - operador IN
+      {
+        id: 'b24',
+        frente: 'O que faz o operador IN e a que é equivalente?',
+        verso: 'Filtra registros cujo campo está dentro de uma <strong>lista de valores</strong>. Equivale a múltiplos <strong>OR</strong>: campo = v1 OR campo = v2 OR campo = v3.',
+        dica: 'IN = lista de OR',
+      },
+
+      // 25 - IS NULL
+      {
+        id: 'b25',
+        frente: 'O que faz IS NULL e por que NULL é diferente de vazio ou zero?',
+        verso: 'Verifica se um campo <strong>não possui valor algum</strong>. NULL não é vazio nem zero — comparações com NULL resultam em <strong>UNKNOWN</strong>, nem verdadeiro nem falso.',
+        dica: 'NULL ≠ vazio. NULL = ausência de valor.',
+      },
+
+      // 26 - funções de agregação
+      {
+        id: 'b26',
+        frente: 'Quais são as cinco funções de agregação do SQL e o que cada uma calcula?',
+        verso: '<strong>COUNT</strong> — conta registros;<br><strong>SUM</strong> — soma valores;<br><strong>AVG</strong> — média;<br><strong>MIN</strong> — menor valor;<br><strong>MAX</strong> — maior valor.',
+        dica: 'C-S-A-M-M: contar, somar, média, mín, máx',
+      },
+
+      // 27 - GROUP BY
+      {
+        id: 'b27',
+        frente: 'O que faz o GROUP BY e qual regra deve ser seguida no SELECT ao usá-lo?',
+        verso: 'Agrupa registros com base em um ou mais campos. No SELECT, todo campo listado deve estar no <strong>GROUP BY</strong> ou dentro de uma <strong>função de agregação</strong>.',
+        dica: 'SELECT = GROUP BY ou agregação',
+      },
+
+      // 28 - ORDER BY
+      {
+        id: 'b28',
+        frente: 'O que faz o ORDER BY e qual é seu comportamento padrão?',
+        verso: 'Ordena os resultados da consulta. Padrão: <strong>ASC (crescente)</strong>. Pode ordenar por <strong>múltiplas colunas</strong>, ex: ORDER BY credito DESC, nome ASC.',
+        dica: 'Padrão = ASC. Invertido = DESC.',
+      },
+
+      // 29 - ordem de execução
+      {
+        id: 'b29',
+        frente: 'Qual é a ordem real de execução de uma consulta SQL com WHERE?',
+        verso: '<strong>1. FROM</strong> — define a origem dos dados;<br><strong>2. WHERE</strong> — filtra os registros;<br><strong>3. SELECT</strong> — exibe o resultado.',
+        dica: 'FROM → WHERE → SELECT',
+      },
+
+      // 30 - estrutura completa
+      {
+        id: 'b30',
+        frente: 'Qual é a estrutura completa de uma consulta SQL com agrupamento e ordenação?',
+        verso: '<code>SELECT colunas<br>FROM tabela<br>WHERE condição<br>GROUP BY coluna<br>ORDER BY coluna ASC/DESC;</code>',
+        dica: 'SELECT → FROM → WHERE → GROUP → ORDER',
+      },
+
     ],
 
     redes: [],
-    poo:   [],
+    
+    poo:   [
+
+    // Aula 12- JavaFX definição
+    // questão 1
+    {
+      id: 'poo1',
+      frente: 'O que é JavaFX e para que serve?',
+      verso: '<strong>JavaFX</strong> é um framework moderno para criação de <strong>interfaces gráficas (GUI) em Java</strong>, substituto do Swing, com suporte a <strong>CSS</strong> e <strong>FXML</strong>.',
+      dica: 'JavaFX = GUI moderna em Java',
+    },
+
+    // 2 - estrutura básica
+    {
+      id: 'poo2',
+      frente: 'Quais são os 3 elementos principais da estrutura do JavaFX?',
+      verso: '<strong>Stage</strong> (janela), <strong>Scene</strong> (conteúdo) e <strong>Nodes</strong> (elementos visuais). A hierarquia é: Stage → Scene → Nodes.',
+      dica: 'Janela > Conteúdo > Elementos',
+    },
+
+    // 3 - Stage
+    {
+      id: 'poo3',
+      frente: 'O que é o Stage no JavaFX?',
+      verso: '<strong>Stage</strong> representa a <strong>janela da aplicação</strong>. Pode ter título, tamanho e ícone, e só comporta <strong>uma Scene ativa por vez</strong>.',
+      dica: 'Stage = janela',
+    },
+
+    // 4 - Scene
+    {
+      id: 'poo4',
+      frente: 'O que é a Scene no JavaFX e qual sua característica principal?',
+      verso: '<strong>Scene</strong> é a área onde os elementos são exibidos. Define o <strong>tamanho da interface</strong> e pode ser <strong>trocada dinamicamente</strong>.',
+      dica: 'Scene = conteúdo da janela',
+    },
+
+    // 5 - Nodes
+    {
+      id: 'poo5',
+      frente: 'O que são Nodes no JavaFX?',
+      verso: '<strong>Nodes</strong> são todos os elementos visuais da tela (botões, labels, campos, imagens). Todos herdam da classe <strong>Node</strong>.',
+      dica: 'Tudo na tela é um Node',
+    },
+
+    // 6 - layouts
+    {
+      id: 'poo6',
+      frente: 'Quais são os principais layouts do JavaFX e suas funções?',
+      verso: '<strong>VBox</strong> (vertical), <strong>HBox</strong> (horizontal), <strong>BorderPane</strong> (5 regiões) e <strong>GridPane</strong> (tabela). Evite posicionamento com coordenadas fixas.',
+      dica: 'Layout = organização automática',
+    },
+
+    // 7 - MVC
+    {
+      id: 'poo7',
+      frente: 'Como a arquitetura MVC se divide no JavaFX?',
+      verso: '<strong>Model</strong> (dados e regras), <strong>View</strong> (interface gráfica) e <strong>Controller</strong> (controle das ações). Garante <strong>baixo acoplamento</strong> e fácil manutenção.',
+      dica: 'MVC = separação de responsabilidades',
+    },
+
+    // 8 - FXML
+    {
+      id: 'poo8',
+      frente: 'O que é FXML e qual sua vantagem no JavaFX?',
+      verso: '<strong>FXML</strong> é um arquivo baseado em <strong>XML</strong> que define a interface gráfica, permitindo a <strong>separação entre design e código</strong> e uso do Scene Builder.',
+      dica: 'FXML = interface separada do código',
+    },
+
+    // 9 - eventos
+    {
+      id: 'poo9',
+      frente: 'Como eventos são tratados no JavaFX?',
+      verso: 'Eventos permitem <strong>interação do usuário</strong> (clique, digitação, seleção) e são implementados com <strong>expressões lambda</strong>, ex: <strong>btn.setOnAction(e -> { ... })</strong>.',
+      dica: 'Evento = lambda',
+    },
+
+    // 10 - POO + JavaFX
+    {
+      id: 'poo10',
+      frente: 'Como o JavaFX aplica conceitos de POO?',
+      verso: 'Cada tela é uma <strong>classe</strong>, componentes são <strong>objetos</strong>, e o framework usa <strong>herança, encapsulamento e polimorfismo</strong>, facilitando a aplicação de <strong>SOLID</strong>.',
+      dica: 'JavaFX = POO na prática',
+    },
+
+    // Aula 13 - JavaFX Avançado
+    // 11 - FXML definição
+    {
+      id: 'poo11',
+      frente: 'O que é FXML e qual sua função no JavaFX?',
+      verso: '<strong>FXML</strong> é uma linguagem baseada em <strong>XML</strong> que define a <strong>estrutura da interface</strong> sem conter lógica de programação. Funciona como o <strong>HTML da aplicação</strong>.',
+      dica: 'FXML = estrutura, sem lógica',
+    },
+
+    // 12 - Controller
+    {
+      id: 'poo12',
+      frente: 'Qual é o papel do Controller no JavaFX?',
+      verso: 'O <strong>Controller</strong> é responsável por <strong>receber eventos, processar dados e atualizar a interface</strong>. É o intermediário entre a View (FXML) e o Model.',
+      dica: 'Controller = ponte entre tela e dados',
+    },
+
+    // 13 - fluxo MVC
+    {
+      id: 'poo13',
+      frente: 'Qual é o fluxo da arquitetura MVC no JavaFX?',
+      verso: 'O fluxo é <strong>View → Controller → Model</strong>. A <strong>View</strong> exibe, o <strong>Controller</strong> controla a lógica e o <strong>Model</strong> representa os dados.',
+      dica: 'V → C → M',
+    },
+
+    // 14 - Binding
+    {
+      id: 'poo14',
+      frente: 'O que é Binding no JavaFX e qual sua vantagem?',
+      verso: '<strong>Binding</strong> é a <strong>ligação automática entre dados e interface</strong>. Atualiza valores em tempo real sem necessidade de código manual, reduzindo a quantidade de código.',
+      dica: 'Binding = atualização automática',
+    },
+
+    // 15 - Binding sintaxe
+    {
+      id: 'poo15',
+      frente: 'Como fazer binding entre um Label e um TextField no JavaFX?',
+      verso: 'Usando <strong>textProperty().bind()</strong>: <strong>lblMensagem.textProperty().bind(txtNome.textProperty())</strong>. O label atualiza automaticamente conforme o campo é digitado.',
+      dica: 'bind() = sincroniza propriedades',
+    },
+
+    // 16 - botão com binding
+    {
+      id: 'poo16',
+      frente: 'Como desabilitar um botão automaticamente quando um campo está vazio?',
+      verso: 'Usando <strong>disableProperty().bind(txtNome.textProperty().isEmpty())</strong>. O botão fica <strong>desativado enquanto o campo estiver vazio</strong> e ativa automaticamente ao preencher.',
+      dica: 'isEmpty() + bind() = botão inteligente',
+    },
+
+    // 17 - estrutura projeto
+    {
+      id: 'poo17',
+      frente: 'Como é organizada a estrutura de pastas de um projeto JavaFX com MVC?',
+      verso: 'Pastas separadas por responsabilidade: <strong>Main.java</strong> (entrada), <strong>view/</strong> (FXML), <strong>controller/</strong> (lógica) e <strong>model/</strong> (dados).',
+      dica: 'Uma pasta por camada MVC',
+    },
+
+    // 18 - FXMLLoader
+    {
+      id: 'poo18',
+      frente: 'Qual é a função do FXMLLoader no JavaFX?',
+      verso: '<strong>FXMLLoader</strong> carrega o arquivo <strong>FXML</strong>, cria a <strong>Scene</strong> com o conteúdo da interface e a vincula ao <strong>Stage</strong> para exibição.',
+      dica: 'FXMLLoader = carrega a tela',
+    },
+
+    // 19 - anotação @FXML
+    {
+      id: 'poo19',
+      frente: 'Para que serve a anotação @FXML no Controller?',
+      verso: 'A anotação <strong>@FXML</strong> vincula os <strong>componentes definidos no FXML</strong> aos atributos do Controller, permitindo acessar e manipular elementos da interface no código Java.',
+      dica: '@FXML = conecta tela ao código',
+    },
+
+    // 20 - Model
+    {
+      id: 'poo20',
+      frente: 'Qual é o papel da classe Model no JavaFX avançado?',
+      verso: 'O <strong>Model</strong> representa os <strong>dados do sistema</strong>, contendo atributos e métodos. Exemplo: classe <strong>Usuario</strong> com nome, encapsulado com getters, separando dados da interface.',
+      dica: 'Model = dados encapsulados',
+    },
+
+    ],
 
   },
 

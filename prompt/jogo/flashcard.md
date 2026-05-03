@@ -4,19 +4,14 @@ Formato obrigatório (JSON):
 
 
    Estrutura:
-     {
-       [semestre]: {
-         [discId]: [
-           {
-             id:         string,   — identificador único (discId_aula_N)
-             aula:       number,   — número da aula de origem
-             enunciado:  string,
-             resposta:   true|false,
-             explicacao: string
-           }
-         ]
-       }
-     }
+
+  {
+    id: string,        // identificador único (ex: b1, b2...)
+    frente: string,    // pergunta (clara e direta, estilo prova)
+    verso: string,     // resposta com palavras-chave em <strong>
+    dica: string       // dica curta (memorização rápida)
+  }
+
 
 
 Regras:
@@ -65,3 +60,4 @@ Exemplo genérico:
 // 2 - definição
 { ... }
 
+QUERO SOMENTE DIGITADO, NADA DE CRIAR UM QUIZ INTERATIVO SOMENTE TEXTO DIGITADO. nada de clipboard
