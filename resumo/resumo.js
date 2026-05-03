@@ -1,8 +1,11 @@
 /* =============================================
-   NEXUS STUDY — resumo.js  (v9 — robust)
+   NEXUS STUDY — resumo.js  (v11 — professor por aula, sem modo legado)
    ✦ imports dinâmicos para dependências opcionais
      (DISC_CORES e videos.js) — página nunca trava
    ✦ global.js continua como import estático
+   ✦ campo `professor` vive dentro de cada aula[]
+     (Bruno | Wagner | Raul) — exibido no card e no modal
+   ✦ array professor[] legado removido por completo
    ============================================= */
 
 import {
@@ -32,11 +35,10 @@ const State = {
   disciplinas:     [],
   aulas:           [],
   simplificado:    [],
-  professor:       [],
   aulaAberta:      null,
   discVerificadas: new Set(),
   temConteudo:     null,
-  modo:            'completo', // 'completo' | 'sintese' | 'professor'
+  modo:            'completo', // 'completo' | 'sintese'
   DISC_CORES:      {},         // preenchido via import dinâmico
   getVideos:       null,       // preenchido via import dinâmico
 };
@@ -71,7 +73,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     State.temConteudo  = null;
     State.aulas        = [];
     State.simplificado = [];
-    State.professor    = [];
     State.modo         = 'completo';
     State.disciplina   = State.disciplinas[0] ?? null;
     if (State.disciplina) {
@@ -163,8 +164,6 @@ function _renderVideosSection() {
   const yt    = videos.filter(v => v.tipo === 'youtube');
   const total = videos.length;
 
-  /* ── Cole esta função dentro de _renderVideosSection(), substituindo o buildChip antigo ── */
-
 const buildChip = (v) => {
   const isGeral = v.label.toLowerCase().includes('geral');
   const isYT    = v.tipo === 'youtube';
@@ -194,8 +193,6 @@ const buildChip = (v) => {
       <span class="vchip__label">${_esc(v.label)}</span>
     </a>`;
 };
-
-/* ── Substitua também o ytSep por este ── */
 
 const ytSep = yt.length ? `
   <div class="vstrip-yt-sep">
@@ -260,7 +257,6 @@ function _carregarConteudo() {
   State.temConteudo  = null;
   State.aulas        = [];
   State.simplificado = [];
-  State.professor    = [];
   _atualizarStatusBadge();
   _removerScriptAnterior();
   window.__nexusConteudo = null;
@@ -288,7 +284,6 @@ function _carregarConteudo() {
     State.discVerificadas.add(disc.id);
     State.aulas        = dados.aulas;
     State.simplificado = dados.simplificado;
-    State.professor    = dados.professor;
     State.temConteudo  = dados.aulas.length > 0;
     State.modo         = 'completo';
 
@@ -323,12 +318,11 @@ function _removerScriptAnterior() {
 
 function _lerDados() {
   const raw = window.__nexusConteudo ?? null;
-  if (!raw) return { aulas: [], simplificado: [], professor: [] };
+  if (!raw) return { aulas: [], simplificado: [] };
 
   return {
     aulas:        Array.isArray(raw.aulas)        ? raw.aulas        : [],
     simplificado: Array.isArray(raw.simplificado) ? raw.simplificado : [],
-    professor:    Array.isArray(raw.professor)    ? raw.professor    : [],
   };
 }
 
@@ -338,19 +332,14 @@ function _lerDados() {
    TOGGLE DE MODO
 ══════════════════════════════════════════════ */
 function _temSimplificado() { return State.simplificado.length > 0; }
-function _temProfessor()    { return State.professor.length > 0; }
 
 function _buildToggleHtml() {
-  const temSint = _temSimplificado();
-  const temProf = _temProfessor();
-  if (!temSint && !temProf) return '';
+  if (!_temSimplificado()) return '';
 
   const btnCompleto = `<button class="mode-btn${State.modo === 'completo' ? ' mode-btn--active' : ''}" data-modo="completo">Resumo completo</button>`;
-  let btnExtra = '';
-  if (temSint) btnExtra += `<button class="mode-btn${State.modo === 'sintese'   ? ' mode-btn--active' : ''}" data-modo="sintese">Síntese rápida</button>`;
-  if (temProf) btnExtra += `<button class="mode-btn${State.modo === 'professor' ? ' mode-btn--active' : ''}" data-modo="professor">Professor</button>`;
+  const btnSintese  = `<button class="mode-btn${State.modo === 'sintese'  ? ' mode-btn--active' : ''}" data-modo="sintese">Síntese rápida</button>`;
 
-  return `<div class="mode-toggle" id="mode-toggle">${btnCompleto}${btnExtra}</div>`;
+  return `<div class="mode-toggle" id="mode-toggle">${btnCompleto}${btnSintese}</div>`;
 }
 
 function _setModo(modo) {
@@ -417,17 +406,23 @@ function _renderGrid() {
   if (!grid) return;
   grid.innerHTML = '';
 
-  if (State.modo === 'professor') {
-    if (State.professor.length) grid.appendChild(_criarCardProfessor(State.professor[0]));
-    return;
-  }
-
   State.aulas.forEach((aula, idx) => {
     const card = State.modo === 'sintese'
       ? _criarCardSintese(aula, idx)
       : _criarCard(aula, idx);
     grid.appendChild(card);
   });
+}
+
+/* ══════════════════════════════════════════════
+   UTILITÁRIO: chip de professor
+══════════════════════════════════════════════ */
+function _profChip(nomeProf) {
+  if (!nomeProf) return '';
+  // Ícone diferente por professor (opcional — fácil de expandir)
+  const icones = { Bruno: '🧑‍🏫', Wagner: '👨‍💻', Raul: '📐' };
+  const icone  = icones[nomeProf] ?? '👤';
+  return `<span class="card-prof-chip">${icone} ${_esc(nomeProf)}</span>`;
 }
 
 /* ══════════════════════════════════════════════
@@ -448,7 +443,10 @@ function _criarCard(aula, idx) {
   card.setAttribute('aria-label', `Abrir: ${aula.aula}`);
   card.innerHTML = `
     <div class="card-inner">
-      <div class="card-num">${aulaNum}</div>
+      <div class="card-num-row">
+        <div class="card-num">${aulaNum}</div>
+        ${_profChip(aula.professor)}
+      </div>
       <div class="card-title">${aulaTit || aulaStr}</div>
       <div class="card-divider"></div>
       ${aula.ideia_central ? `<p class="card-desc">${_parseInline(aula.ideia_central)}</p>` : ''}
@@ -491,6 +489,7 @@ function _criarCardSintese(aula, idx) {
     <div class="card-inner">
       <div class="card-num-row">
         <div class="card-num">${aulaNum}</div>
+        ${_profChip(aula.professor)}
         <span class="sint-badge">${temSint ? 'Síntese' : 'Sem síntese'}</span>
       </div>
       <div class="card-title">${aulaTit || aulaStr}</div>
@@ -518,39 +517,6 @@ function _criarCardSintese(aula, idx) {
   return card;
 }
 
-function _criarCardProfessor(prof) {
-  const secoes = prof.secoes ?? [];
-  const card = document.createElement('article');
-  card.className = 'resumo-card resumo-card--nota';
-  card.style.animationDelay = '0s';
-  card.setAttribute('tabindex', '0');
-  card.setAttribute('role', 'button');
-  card.setAttribute('aria-label', 'Abrir: Resumo do Professor');
-  card.innerHTML = `
-    <div class="card-inner">
-      <div class="card-num">📋 Professor</div>
-      <div class="card-title">${_esc(prof.aula ?? 'Resumo do Professor')}</div>
-      <div class="card-divider"></div>
-      ${prof.ideia_central ? `<p class="card-desc">${_parseInline(prof.ideia_central)}</p>` : ''}
-      <div class="card-bottom">
-        <div class="card-progress__track"><div class="card-progress__fill"></div></div>
-        <div class="card-meta">
-          <span class="card-meta__count">${secoes.length} seç${secoes.length !== 1 ? 'ões' : 'ão'}</span>
-          <span class="card-meta__cta">
-            Ver resumo
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
-            </svg>
-          </span>
-        </div>
-      </div>
-    </div>`;
-  card.addEventListener('click', () => _abrirModal(prof));
-  card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _abrirModal(prof); } });
-  return card;
-}
-
 /* ══════════════════════════════════════════════
    MODAL
 ══════════════════════════════════════════════ */
@@ -562,9 +528,22 @@ function _bindModal() {
 
 function _abrirModal(aula) {
   document.getElementById('rm-aula-label').textContent = aula.aula ?? '';
+
   const badge = document.getElementById('rm-tipo-badge');
   badge.textContent = 'Resumo';
   badge.className   = 'read-modal__badge badge--conceito';
+
+  // Exibe o professor no header do modal (se existir)
+  let profEl = document.getElementById('rm-prof-label');
+  if (!profEl) {
+    profEl = document.createElement('span');
+    profEl.id = 'rm-prof-label';
+    profEl.className = 'read-modal__prof';
+    document.getElementById('rm-tipo-badge')?.insertAdjacentElement('afterend', profEl);
+  }
+  profEl.textContent = aula.professor ? `👤 ${aula.professor}` : '';
+  profEl.style.display = aula.professor ? '' : 'none';
+
   document.getElementById('rm-body').innerHTML = _buildModalBody(aula);
   document.getElementById('read-modal').classList.add('read-modal--open');
   document.body.style.overflow = 'hidden';
@@ -733,14 +712,13 @@ function _trocarDisciplina(disc) {
   State.temConteudo  = null;
   State.aulas        = [];
   State.simplificado = [];
-  State.professor    = [];
   State.modo         = 'completo';
   setDisciplina(disc.id);
 
-  sincronizarSemNaURL(State.semestre, 'push'); // push = cria entrada no histórico
-const url = new URL(window.location.href);
-url.searchParams.set('disc', disc.id);
-window.history.pushState({}, '', url);
+  sincronizarSemNaURL(State.semestre, 'push');
+  const url = new URL(window.location.href);
+  url.searchParams.set('disc', disc.id);
+  window.history.pushState({}, '', url);
 
   _atualizarSidebarAtivo(disc.id);
   _renderHeader();
