@@ -1,18 +1,92 @@
 /* ============================================================
-   NEXUS STUDY — completar_frase.js
-   Disciplina e semestre letivo vêm EXCLUSIVAMENTE da URL:
-     ?disc=poo&sem=2026.2  (passados pelo jogo.js)
-   Sem filtros internos — o jogo.js já fez a seleção.
-   ============================================================ */
+   NEXUS STUDY — completar_frase.js   (versão corrigida)
 
-/* ── IMPORTS DE TEMA ── */
-import { DISC_CORES }              from '../../../shared/js/cores.js';
-import { aplicarCoresDisciplina }  from '../../../shared/js/theme.js';
+   CORREÇÕES:
+   • Removidos imports de DISC_CORES, aplicarCoresDisciplina,
+     getDisciplinasDeSemestre e completarFraseData (module) —
+     todos causavam erros porque o HTML carrega este arquivo
+     como <script type="module"> mas os módulos externos
+     (global.js, cores.js, theme.js) não existem no caminho
+     relativo correto neste contexto.
+   • completarFraseData é lido de window.completarFraseData
+     (exposto pelo <script src="completar_frase_data.js"> que
+     já roda antes deste módulo).
+   • Cor de tema aplicada inline via CSS custom property.
+   • getDisciplinasDeSemestre substituído por stub que lê
+     apenas disc e sem da URL (sem dependência externa).
+   ============================================================ */
 
 /* ── PARAMS DA URL ── */
 const _p       = new URLSearchParams(location.search);
 const URL_DISC = _p.get('disc') ?? '';
 const URL_SEM  = _p.get('sem')  ?? '';
+
+/* ── ACESSO AOS DADOS (expostos como global pelo data.js) ── */
+function getDados() {
+  return window.completarFraseData ?? {};
+}
+
+/* ── CORES POR DISCIPLINA — espelho exato de shared/js/cores.js ──
+   Aplica o mesmo conjunto de custom properties que
+   aplicarCoresDisciplina() em shared/js/theme.js faz,
+   sem precisar importar os módulos externos. */
+const DISC_CORES = {
+  poo: {
+    corTema:     '#7aa8e8', corTemaRgb:  '122, 168, 232',
+    corTema2:    '#4dd9b4', corTema2Rgb: '77, 217, 180',
+  },
+  redes: {
+    corTema:     '#4dd9b4', corTemaRgb:  '77, 217, 180',
+    corTema2:    '#7aa8e8', corTema2Rgb: '122, 168, 232',
+  },
+  banco_dados: {
+    corTema:     '#e87a9a', corTemaRgb:  '232, 122, 154',
+    corTema2:    '#e8c97a', corTema2Rgb: '232, 201, 122',
+  },
+  design: {
+    corTema:     '#e8c97a', corTemaRgb:  '232, 201, 122',
+    corTema2:    '#4dd9b4', corTema2Rgb: '77, 217, 180',
+  },
+  _default: {
+    corTema:     '#7aa8e8', corTemaRgb:  '122, 168, 232',
+    corTema2:    '#4dd9b4', corTema2Rgb: '77, 217, 180',
+  },
+};
+
+function aplicarCorDisc(disc) {
+  const cores = DISC_CORES[disc] ?? DISC_CORES._default;
+  const r = document.documentElement.style;
+
+  /* Canônicas — usadas por completar_frase.css */
+  r.setProperty('--cor-tema',       cores.corTema);
+  r.setProperty('--cor-tema-rgb',   cores.corTemaRgb);
+  r.setProperty('--cor-tema-2',     cores.corTema2);
+  r.setProperty('--cor-tema-2-rgb', cores.corTema2Rgb);
+
+  /* Legadas — vdd_falso.css e outros usam --disc-tema */
+  r.setProperty('--disc-tema',      cores.corTema);
+  r.setProperty('--disc-tema-rgb',  cores.corTemaRgb);
+  r.setProperty('--disc-tema2',     cores.corTema2);
+  r.setProperty('--disc-tema2-rgb', cores.corTema2Rgb);
+
+  /* Abreviadas para rgba() inline no CSS */
+  r.setProperty('--dt-rgb',         cores.corTemaRgb);
+  r.setProperty('--dt2-rgb',        cores.corTema2Rgb);
+
+  /* Derivadas do completar_frase.css */
+  r.setProperty('--cf-accent',      cores.corTema);
+  r.setProperty('--cf-accent-d',    `rgba(${cores.corTemaRgb}, 0.10)`);
+  r.setProperty('--cf-accent-g',    `rgba(${cores.corTemaRgb}, 0.22)`);
+
+  /* Atributo no body — mesmo padrão do theme.js */
+  document.body.dataset.disc = disc;
+}
+
+/* ── METADADOS SIMPLES (sem global.js) ── */
+function getDiscMeta(discId) {
+  // Retorna objeto mínimo compatível com o que o código espera
+  return { apelido: discId?.toUpperCase() ?? '—' };
+}
 
 /* ── ESTADO ── */
 const Estado = {
@@ -26,8 +100,6 @@ const Estado = {
 /* ── SELETORES ── */
 const $ = id => document.getElementById(id);
 
-// Els é preenchido no DOMContentLoaded (como o VDD faz),
-// garantindo que todos os getElementById encontrem o DOM pronto.
 const Els = {};
 
 /* ── UTILS ── */
@@ -48,39 +120,33 @@ function normalizar(txt) {
     .trim();
 }
 
-/* ── APLICAR COR DA DISCIPLINA ── */
-function aplicarCorDisc(disc) {
-  aplicarCoresDisciplina(disc, DISC_CORES);
-}
-
-/* ── TOPBAR: exibe disciplina e semestre da URL ── */
+/* ── TOPBAR ── */
 function iniciarTopbar() {
   if (Els.shellSem)
     Els.shellSem.textContent = URL_SEM || '—';
 
-  if (Els.shellDiscName) {
-    const disc = DISCIPLINAS[URL_DISC];
-    Els.shellDiscName.textContent = disc
-      ? `${disc.emoji ?? ''} ${disc.apelido}`.trim()
-      : URL_DISC || '—';
-  }
+  if (Els.shellDiscName)
+    Els.shellDiscName.textContent = URL_DISC.toUpperCase() || '—';
 
   aplicarCorDisc(URL_DISC);
 
   const voltar = URL_SEM ? `../../jogo.html?sem=${URL_SEM}` : '../../jogo.html';
-  if (Els.backBtn)       Els.backBtn.href       = voltar;
-  if (Els.btnBackResult) Els.btnBackResult.href  = voltar;
+  if (Els.backBtn)       Els.backBtn.href      = voltar;
+  if (Els.btnBackResult) Els.btnBackResult.href = voltar;
 }
 
 /* ── CONSTRUIR LISTA ── */
 function construirLista() {
-  // Filtra apenas pela disciplina da URL
-  const fonte = (URL_DISC && URL_DISC !== 'all')
-    ? perguntas.filter(p => p.disciplina === URL_DISC)
-    : perguntas;
+  const dados    = getDados();
+  const semData  = dados[URL_SEM]  ?? {};
+  const discData = semData[URL_DISC] ?? [];
 
-  // Fallback: se disc não bater com nenhuma pergunta, usa tudo
-  Estado.lista = embaralhar(fonte.length ? fonte : perguntas);
+  // Fallback: junta todas as questões do semestre se não achar a disc
+  const fonte = discData.length
+    ? discData
+    : Object.values(semData).flat();
+
+  Estado.lista = embaralhar(fonte.length ? fonte : []);
 }
 
 /* ── INICIAR ── */
@@ -93,29 +159,29 @@ function iniciar() {
   construirLista();
 
   Els.screenResult.classList.remove('show');
-  Els.gameCard.style.display = '';
+  if (Els.gameCard) Els.gameCard.style.display = '';
 
   renderPergunta();
 }
 
 /* ── RENDERIZAR PERGUNTA ── */
 function renderPergunta() {
-  const p = Estado.lista[Estado.indice];
+  const p    = Estado.lista[Estado.indice];
+  const disc = getDiscMeta(URL_DISC);
 
   // Re-anima o card
   Els.gameCard.style.animation = 'none';
   void Els.gameCard.offsetWidth;
   Els.gameCard.style.animation = '';
 
-  // Disciplina tag no card
-  const disc = DISCIPLINAS[p.disciplina] ?? {};
+  // Tag de disciplina
   Els.discTag.innerHTML =
-    `<span class="disc-sigla">${disc.sigla ?? p.disciplina.toUpperCase()}</span>
-     ${disc.apelido ?? p.disciplina}`;
+    `<span class="disc-sigla">${disc.apelido?.split(' ')[0]?.toUpperCase() ?? URL_DISC.toUpperCase()}</span>
+     ${disc.apelido ?? URL_DISC}`;
   Els.discTag.style.color = 'var(--cor-tema)';
 
-  // Semestre das questões (1º, 2º…)
-  Els.semTag.textContent = SEMESTRES[p.semestre] ?? `${p.semestre}º Sem.`;
+  // Semestre letivo
+  Els.semTag.textContent = URL_SEM || '—';
 
   // Nível
   const nk = normalizar(p.nivel);
@@ -131,8 +197,14 @@ function renderPergunta() {
     '<span class="lacuna">______</span>'
   );
 
-  // Dica
+  // Dica de letras
   Els.letrasHint.textContent = p.letras;
+
+  // Dica contextual (campo opcional)
+  if (Els.dicaTexto) {
+    Els.dicaTexto.textContent  = p.dica ?? '';
+    if (Els.dicaWrap) Els.dicaWrap.style.display = p.dica ? '' : 'none';
+  }
 
   // Reset input
   Els.inputAnswer.value     = '';
@@ -165,8 +237,8 @@ function verificar() {
   Els.inputAnswer.disabled = true;
   Els.btnCheck.disabled    = true;
 
-  const p        = Estado.lista[Estado.indice];
-  const acertou  = normalizar(digitado) === normalizar(p.resposta);
+  const p       = Estado.lista[Estado.indice];
+  const acertou = normalizar(digitado) === normalizar(p.resposta);
 
   if (acertou) {
     Estado.acertos++;
@@ -246,14 +318,49 @@ function mostrarResultado() {
   Els.screenResult.classList.add('show');
 }
 
+/* ── TELAS ── */
+function mostrarIntro() {
+  const screenIntro = $('screen-intro');
+  const gameLayout  = $('game-layout');
+  if (screenIntro) screenIntro.style.display = '';
+  if (gameLayout)  gameLayout.style.display  = 'none';
+
+  // Chips da intro
+  const introDisc = $('intro-disc-name');
+  const introSem  = $('intro-sem-label');
+  if (introDisc) introDisc.textContent = URL_DISC.toUpperCase() || '—';
+  if (introSem)  introSem.textContent  = URL_SEM || '—';
+
+  // Badge total de questões
+  const totalEl = $('intro-total-questoes');
+  if (totalEl) {
+    const dados    = getDados();
+    const semData  = dados[URL_SEM]    ?? {};
+    const discData = semData[URL_DISC] ?? [];
+    const fonte = discData.length
+      ? discData
+      : Object.values(semData).flat();
+    totalEl.textContent = fonte.length;
+  }
+}
+
+function iniciarJogo() {
+  const screenIntro = $('screen-intro');
+  const gameLayout  = $('game-layout');
+  if (screenIntro) screenIntro.style.display = 'none';
+  if (gameLayout)  gameLayout.style.display  = '';
+  iniciar();
+}
+
 /* ── INIT ── */
 document.addEventListener('DOMContentLoaded', () => {
-  // Preenche Els aqui, com DOM garantido (padrão VDD)
   Object.assign(Els, {
     gameCard:        $('game-card'),
     screenResult:    $('screen-result'),
     fraseTexto:      $('frase-texto'),
     letrasHint:      $('letras-hint'),
+    dicaWrap:        $('dica-wrap'),
+    dicaTexto:       $('dica-texto'),
     discTag:         $('disc-tag'),
     nivelTag:        $('nivel-tag'),
     semTag:          $('sem-tag'),
@@ -274,18 +381,25 @@ document.addEventListener('DOMContentLoaded', () => {
     resultErr:       $('result-err'),
     btnRestart:      $('btn-restart'),
     ringFill:        $('ring-fill'),
-    shellDiscName: $('shell-disc-name'),
-shellSem:      $('shell-sem'),
+    shellDiscName:   $('shell-disc-name'),
+    shellSem:        $('shell-sem'),
     backBtn:         $('back-btn'),
     btnBackResult:   $('btn-back-result'),
   });
 
   iniciarTopbar();
-  iniciar();
+  mostrarIntro();
+
+  const btnStart = $('btn-start');
+  if (btnStart) btnStart.addEventListener('click', iniciarJogo);
+
+  Els.btnRestart.addEventListener('click', () => {
+    Els.screenResult.classList.remove('show');
+    mostrarIntro();
+  });
 
   Els.btnCheck.addEventListener('click', verificar);
   Els.btnNext.addEventListener('click', avancar);
-  Els.btnRestart.addEventListener('click', iniciar);
 
   Els.inputAnswer.addEventListener('keydown', e => {
     if (e.key === 'Enter') {

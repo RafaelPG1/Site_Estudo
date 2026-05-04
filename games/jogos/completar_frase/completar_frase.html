@@ -42,8 +42,86 @@
     </div>
   </header>
 
+  <!-- TELA INTRO -->
+  <main class="cf-main">
+
+    <section id="screen-intro" class="cf-screen cf-screen--centered">
+      <div class="cf-intro-card">
+
+        <!-- Título -->
+        <h1 class="cf-intro-card__title">Complete<em>a Frase</em></h1>
+
+        <!-- Descrição -->
+        <p class="cf-intro-card__desc">
+          Leia a frase com atenção e preencha a lacuna com a palavra correta.<br>
+          Use a dica de letras se precisar.
+        </p>
+
+        <!-- Divider -->
+        <div class="cf-intro-card__divider"></div>
+
+        <!-- Chips: disciplina · semestre -->
+        <div class="cf-intro-card__chips">
+          <span class="cf-intro-card__chip cf-intro-card__chip--disc">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style="opacity:.75">
+              <path d="M2 3h12v1H2zm0 3h8v1H2zm0 3h10v1H2zm0 3h6v1H2z"/>
+            </svg>
+            <span id="intro-disc-name">—</span>
+          </span>
+          <span class="cf-intro-card__chip">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" style="opacity:.75">
+              <path d="M8 2v4"/><path d="M16 2v4"/>
+              <rect width="18" height="18" x="3" y="4" rx="2"/>
+              <path d="M3 10h18"/>
+              <path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/>
+              <path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/>
+            </svg>
+            <span id="intro-sem-label">—</span>
+          </span>
+        </div>
+
+        <!-- Regras inline -->
+        <div class="cf-intro-card__rules">
+          <div class="cf-intro-card__rule">
+            <span class="cf-intro-card__rule-dot cf-intro-card__rule-dot--ok"></span>
+            <span>Acerto: <strong>resposta correta</strong></span>
+          </div>
+          <div class="cf-intro-card__rule">
+            <span class="cf-intro-card__rule-dot cf-intro-card__rule-dot--err"></span>
+            <span>Erro: <strong>gabarito exibido</strong></span>
+          </div>
+          <div class="cf-intro-card__rule">
+            <span class="cf-intro-card__rule-dot cf-intro-card__rule-dot--hint"></span>
+            <span>Dica de <strong>letras disponível</strong></span>
+          </div>
+        </div>
+
+        <!-- Badge de questões -->
+        <div class="cf-intro-card__badge">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M2 2h12v12H2z" fill="none" stroke="currentColor" stroke-width="1.4" rx="1"/>
+            <path d="M5 6h6M5 9h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+          <span id="intro-total-questoes">—</span> questões no deck
+        </div>
+
+        <!-- Botão Começar -->
+        <div class="cf-intro-card__actions">
+          <button class="cf-btn-start" id="btn-start">
+            Começar
+            <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14">
+              <path d="M5 3l8 5-8 5V3z"/>
+            </svg>
+          </button>
+        </div>
+
+      </div>
+    </section>
+
   <!-- LAYOUT CENTRAL -->
-  <div class="game-layout">
+  <div class="game-layout" id="game-layout" style="display:none">
 
     <!-- BARRA DE STATUS -->
     <div class="status-bar">
@@ -144,6 +222,7 @@
     </div>
 
   </div><!-- /game-layout -->
+  </main><!-- /cf-main -->
 
 <script src="completar_frase_data.js"></script>
 <script type="module" src="completar_frase.js"></script>
