@@ -1,20 +1,34 @@
 /* ============================================================
-   NEXUS STUDY — games/template/game-shell.css
+   NEXUS STUDY — games/template/game-shell.css  (v2.0)
 
    Base visual compartilhada por todos os jogos.
-   Cada jogo importa este arquivo e adiciona seu próprio CSS
-   para a mecânica interna.
+   Cada jogo importa este arquivo e adiciona seu CSS próprio.
 
    Seções:
      1. Tokens & Reset
      2. Background (grid + orbs)
      3. Shell Layout
      4. Header do jogo
-     5. Barra de timer
-     6. Área de conteúdo (slot)
-     7. Tela de resultado final
-     8. Utilitários compartilhados
-     9. Responsividade
+     5. Barra de timer  ← usada por VF e Show do Milhão
+     6. Timer numérico  ← usado pelo VF
+     7. Área de conteúdo
+     8. Tela de resultado final  ← usada via Result.mostrar()
+     9. Utilitários compartilhados (.game-btn, .game-badge …)
+    10. Responsividade
+
+   NOTAS DE REFATORAÇÃO v2.0
+   ──────────────────────────
+   • Arquivo antes estava definido mas NÃO era importado por nenhum
+     HTML. Cada jogo copiava os mesmos blocos em seu próprio CSS.
+   • Agora é a FONTE ÚNICA para:
+       – tokens (:root)
+       – .bg-grid / .bg-orb
+       – .game-shell / .game-header / .game-timer-bar
+       – .game-btn / .game-badge / .game-result
+   • vdd_falso.css e show_milhao.css REMOVERAM seus blocos duplicados
+     e passaram a importar este arquivo via <link>.
+   • Flashcard não usa .game-header nem .game-timer-bar — mantém seu
+     header próprio —, mas ainda beneficia dos tokens e do reset.
    ============================================================ */
 
 /* ══════════════════════════════════════════════════════════
@@ -22,18 +36,18 @@
    ══════════════════════════════════════════════════════════ */
 
 :root {
-  /* Cores base — sobrescritas por game-shell.js via --disc-tema */
-  --disc-tema:        #e8c97a;
-  --disc-tema-rgb:    232, 201, 122;
-  --disc-tema2:       #4dd9b4;
-  --disc-tema2-rgb:   77, 217, 180;
+  /* Cores da disciplina — sobrescritas por Shell.init() via JS */
+  --disc-tema:       #e8c97a;
+  --disc-tema-rgb:   232, 201, 122;
+  --disc-tema2:      #4dd9b4;
+  --disc-tema2-rgb:  77, 217, 180;
 
   /* Superfícies */
-  --bg:          #070b14;
-  --surface:     #0e1420;
-  --surface-2:   #141c2e;
-  --border:      rgba(255,255,255,0.07);
-  --border-hi:   rgba(255,255,255,0.14);
+  --bg:        #070b14;
+  --surface:   #0e1420;
+  --surface-2: #141c2e;
+  --border:    rgba(255,255,255,0.07);
+  --border-hi: rgba(255,255,255,0.14);
 
   /* Texto */
   --text-1: #f0ede6;
@@ -54,16 +68,17 @@
   --ease: cubic-bezier(.25,.8,.25,1);
   --t:    0.25s;
 
-  /* Timer */
-  --timer-pct: 100%;   /* 0–100 — atualizado por game-shell.js */
+  /* Timer — atualizado por Timer.criar() a cada tick */
+  --timer-pct: 100%;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 16px; scroll-behavior: smooth; }
-
+body { background: var(--bg); color: var(--text-1); font-family: var(--font-body); }
 
 a      { text-decoration: none; color: inherit; }
 button { border: none; background: none; cursor: pointer; font-family: inherit; color: inherit; }
+
 .hidden { display: none !important; }
 
 /* ══════════════════════════════════════════════════════════
@@ -83,17 +98,21 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   position: fixed; border-radius: 50%;
   filter: blur(90px); pointer-events: none; z-index: 0; opacity: .4;
 }
-/* Orb 1 — cor primária da disciplina */
 .bg-orb--1 {
   width: 520px; height: 520px; top: -140px; left: -100px;
   background: radial-gradient(circle, rgba(var(--disc-tema-rgb),.14), transparent 70%);
   animation: orb-drift 20s ease-in-out infinite alternate;
 }
-/* Orb 2 — cor secundária */
 .bg-orb--2 {
   width: 480px; height: 480px; bottom: -120px; right: -80px;
   background: radial-gradient(circle, rgba(var(--disc-tema2-rgb),.10), transparent 70%);
   animation: orb-drift 16s ease-in-out infinite alternate-reverse;
+}
+/* Orb 3 — opcional, usado pelo flashcard */
+.bg-orb--3 {
+  width: 360px; height: 360px; top: 40%; left: 60%;
+  background: radial-gradient(circle, rgba(var(--disc-tema2-rgb),.07), transparent 70%);
+  animation: orb-drift 24s ease-in-out infinite alternate;
 }
 @keyframes orb-drift {
   0%   { transform: translate(0,0) scale(1); }
@@ -110,15 +129,11 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   min-height: 100vh;
 }
 
-/* Área central — cada jogo preenche com sua mecânica */
 .game-content {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: flex; flex-direction: column; align-items: center;
   padding: 32px 24px 64px;
-  width: 100%;
-  max-width: 860px;
+  width: 100%; max-width: 860px;
   margin: 0 auto;
   animation: fade-up .45s ease both;
 }
@@ -130,6 +145,7 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 
 /* ══════════════════════════════════════════════════════════
    4. HEADER DO JOGO
+   Usado por: VF, Show do Milhão (e opcionalmente pelo Flashcard)
    ══════════════════════════════════════════════════════════ */
 
 .game-header {
@@ -139,8 +155,7 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   backdrop-filter: blur(18px);
   border-bottom: 1px solid var(--border);
   display: flex; align-items: center;
-  padding: 0 24px;
-  gap: 16px;
+  padding: 0 24px; gap: 16px;
 }
 
 /* Botão Voltar */
@@ -153,19 +168,18 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   transition: color var(--t), background var(--t), border-color var(--t);
   white-space: nowrap; flex-shrink: 0;
 }
-.game-header__back svg { width: 15px; height: 15px; }
+.game-header__back svg { width: 14px; height: 14px; }
 .game-header__back:hover {
   color: var(--text-1);
   background: rgba(var(--disc-tema-rgb),.08);
   border-color: rgba(var(--disc-tema-rgb),.3);
 }
 
-/* Identidade central */
+/* Identidade: ícone + nome + meta */
 .game-header__identity {
   display: flex; align-items: center; gap: 10px;
   flex: 1; min-width: 0;
 }
-
 .game-header__icon {
   width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
@@ -173,16 +187,13 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   background: rgba(var(--disc-tema-rgb),.12);
   border: 1px solid rgba(var(--disc-tema-rgb),.22);
 }
-
 .game-header__info { min-width: 0; }
-
 .game-header__name {
   font-family: var(--font-display);
   font-size: 1.1rem; font-weight: 600; line-height: 1.1;
   color: var(--disc-tema);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-
 .game-header__meta {
   font-size: .7rem; color: var(--text-3);
   display: flex; align-items: center; gap: 6px;
@@ -190,14 +201,21 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 }
 .game-header__meta-sep { opacity: .4; }
 
-/* Slot direito — cada jogo injeta seu placar aqui */
+/* Slot direito — cada jogo injeta timer/placar aqui */
 .game-header__score-slot {
   display: flex; align-items: center; gap: 10px;
   flex-shrink: 0;
 }
 
+/* Controles do header (Show do Milhão: pausar / menu) */
+.game-header__controls {
+  display: flex; align-items: center; gap: 8px;
+  flex-shrink: 0;
+}
+
 /* ══════════════════════════════════════════════════════════
    5. BARRA DE TIMER
+   Usada por: VF (.game-timer-bar__fill), Show do Milhão (#progress-fill)
    ══════════════════════════════════════════════════════════ */
 
 .game-timer-bar {
@@ -207,16 +225,28 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   flex-shrink: 0;
 }
 
+/* Versão com fill interno (VF usa essa estrutura) */
 .game-timer-bar__fill {
   position: absolute; top: 0; left: 0; bottom: 0;
   width: var(--timer-pct);
   background: linear-gradient(90deg, var(--disc-tema2), var(--disc-tema));
-  transition: width .25s linear, background-color .5s ease;
+  transition: width .25s linear, background .5s ease;
   box-shadow: 0 0 8px rgba(var(--disc-tema-rgb),.4);
 }
 
-/* Ficou com menos de 25% — muda para vermelho */
-.game-timer-bar--danger .game-timer-bar__fill {
+/* Show do Milhão usa #progress-fill direto (sem __fill) */
+#progress-fill {
+  height: 100%;
+  transition: width .25s linear;
+}
+
+/* Estados de cor da barra de timer */
+.game-timer-bar--green,
+.game-timer-bar--green .game-timer-bar__fill { background: linear-gradient(90deg, #22c55e, #16a34a); }
+.game-timer-bar--mid,
+.game-timer-bar--mid   .game-timer-bar__fill { background: linear-gradient(90deg, #f59e0b, #d97706); }
+.game-timer-bar--danger .game-timer-bar__fill,
+.game-timer-bar--danger {
   background: linear-gradient(90deg, #f87171, #ef4444);
   box-shadow: 0 0 10px rgba(239,68,68,.5);
   animation: timer-pulse .6s ease-in-out infinite alternate;
@@ -227,7 +257,11 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   to   { opacity: 1; }
 }
 
-/* Timer numérico — exibido opcionalmente no header */
+/* ══════════════════════════════════════════════════════════
+   6. TIMER NUMÉRICO (display no header)
+   Usado por: VF (game-timer-display), Shell.Timer (shell-timer-display)
+   ══════════════════════════════════════════════════════════ */
+
 .game-timer-display {
   font-family: var(--font-display);
   font-size: 1.35rem; font-weight: 700;
@@ -237,17 +271,19 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 }
 .game-timer-display--danger { color: #f87171; }
 
+/* Timer block (label + número) usado pelo VF */
+.game-timer-block {
+  display: flex; flex-direction: column; align-items: flex-end;
+}
+.game-timer-label {
+  font-size: .55rem; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--text-3); margin-bottom: 1px;
+}
+
 /* ══════════════════════════════════════════════════════════
-   6. ÁREA DE CONTEÚDO (slot do jogo)
+   7. ÁREA DE CONTEÚDO
    ══════════════════════════════════════════════════════════ */
 
-/*
-  .game-content é o wrapper principal.
-  Cada jogo coloca sua estrutura HTML dentro dele.
-  Estilos de mecânica ficam no CSS próprio do jogo.
-*/
-
-/* Cabeçalho de seção reutilizável dentro do conteúdo */
 .game-section-title {
   font-family: var(--font-display);
   font-size: clamp(1.6rem, 3.5vw, 2.4rem);
@@ -263,13 +299,12 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   line-height: 1.65; max-width: 480px;
 }
 
-/* Card base — jogos podem usar como bloco genérico */
+/* Card base genérico */
 .game-card-base {
   background: var(--surface);
   border: 1px solid var(--border-hi);
   border-radius: var(--radius);
-  padding: 24px;
-  width: 100%;
+  padding: 24px; width: 100%;
   transition: border-color var(--t) var(--ease), box-shadow var(--t) var(--ease);
 }
 .game-card-base--accent {
@@ -277,51 +312,9 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   box-shadow: 0 0 24px rgba(var(--disc-tema-rgb),.06);
 }
 
-/* Botão primário reutilizável */
-.game-btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  font-family: var(--font-display); font-size: 1rem; font-weight: 600;
-  padding: 12px 28px; border-radius: var(--pill);
-  background: var(--disc-tema); color: var(--bg);
-  box-shadow: 0 0 18px rgba(var(--disc-tema-rgb),.28);
-  transition: filter var(--t), box-shadow var(--t), transform var(--t);
-}
-.game-btn svg { width: 14px; height: 14px; transition: transform var(--t) var(--ease); }
-.game-btn:hover {
-  filter: brightness(1.1);
-  box-shadow: 0 0 30px rgba(var(--disc-tema-rgb),.45);
-  transform: translateY(-2px);
-}
-.game-btn:hover svg { transform: translateX(2px); }
-.game-btn:disabled {
-  background: rgba(255,255,255,.06); color: var(--text-3);
-  box-shadow: none; cursor: not-allowed; transform: none; filter: none;
-}
-
-/* Botão secundário (outline) */
-.game-btn--outline {
-  background: transparent;
-  border: 1px solid rgba(var(--disc-tema-rgb),.35);
-  color: var(--disc-tema);
-  box-shadow: none;
-}
-.game-btn--outline:hover {
-  background: rgba(var(--disc-tema-rgb),.08);
-  box-shadow: 0 0 16px rgba(var(--disc-tema-rgb),.18);
-}
-
-/* Badge genérico */
-.game-badge {
-  display: inline-flex; align-items: center; gap: 4px;
-  font-size: 10.5px; font-weight: 600; letter-spacing: .04em;
-  padding: 3px 10px; border-radius: var(--pill);
-  background: rgba(var(--disc-tema-rgb),.12);
-  color: var(--disc-tema);
-  border: 1px solid rgba(var(--disc-tema-rgb),.22);
-}
-
 /* ══════════════════════════════════════════════════════════
-   7. TELA DE RESULTADO FINAL
+   8. TELA DE RESULTADO FINAL
+   Usada via Result.mostrar() em: VF, Show do Milhão (parcial)
    ══════════════════════════════════════════════════════════ */
 
 .game-result {
@@ -351,8 +344,6 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   animation: result-in .4s cubic-bezier(.34,1.56,.64,1) both;
   overflow: hidden;
 }
-
-/* Borda superior colorida pela disciplina */
 .game-result__card::before {
   content: '';
   position: absolute; top: 0; left: 0; right: 0; height: 3px;
@@ -365,7 +356,6 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   to   { opacity: 1; transform: scale(1)   translateY(0); }
 }
 
-/* Emoji troféu / resultado */
 .game-result__emoji {
   font-size: 3.5rem;
   animation: result-pop .5s .15s cubic-bezier(.34,1.56,.64,1) both;
@@ -374,51 +364,72 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   from { transform: scale(0); }
   to   { transform: scale(1); }
 }
-
 .game-result__title {
   font-family: var(--font-display);
   font-size: 2rem; font-weight: 700; line-height: 1.1;
   color: var(--disc-tema);
 }
+.game-result__subtitle { font-size: .88rem; color: var(--text-2); line-height: 1.6; max-width: 320px; }
 
-.game-result__subtitle {
-  font-size: .88rem; color: var(--text-2); line-height: 1.6;
-  max-width: 320px;
-}
-
-/* Grid de estatísticas */
 .game-result__stats {
   display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
-  width: 100%;
-  padding: 16px 20px;
+  width: 100%; padding: 16px 20px;
   background: rgba(255,255,255,.03);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
 }
-
-.game-result__stat {
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
-  min-width: 72px;
-}
+.game-result__stat { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 72px; }
 .game-result__stat-value {
-  font-family: var(--font-display);
-  font-size: 1.6rem; font-weight: 700; line-height: 1;
+  font-family: var(--font-display); font-size: 1.6rem; font-weight: 700; line-height: 1;
   color: var(--disc-tema);
 }
-.game-result__stat-label {
-  font-size: 9.5px; text-transform: uppercase;
-  letter-spacing: .08em; color: var(--text-3);
-}
+.game-result__stat-label { font-size: 9.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-3); }
 
-/* Ações */
-.game-result__actions {
-  display: flex; gap: 10px; width: 100%; margin-top: 4px;
-}
+.game-result__actions { display: flex; gap: 10px; width: 100%; margin-top: 4px; }
 .game-result__actions .game-btn { flex: 1; }
 
 /* ══════════════════════════════════════════════════════════
-   8. UTILITÁRIOS COMPARTILHADOS
+   9. UTILITÁRIOS COMPARTILHADOS
    ══════════════════════════════════════════════════════════ */
+
+/* Botão primário */
+.game-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: var(--font-display); font-size: 1rem; font-weight: 600;
+  padding: 12px 28px; border-radius: var(--pill);
+  background: var(--disc-tema); color: var(--bg);
+  box-shadow: 0 0 18px rgba(var(--disc-tema-rgb),.28);
+  transition: filter var(--t), box-shadow var(--t), transform var(--t);
+}
+.game-btn:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 0 30px rgba(var(--disc-tema-rgb),.45);
+  transform: translateY(-2px);
+}
+.game-btn:disabled {
+  background: rgba(255,255,255,.06); color: var(--text-3);
+  box-shadow: none; cursor: not-allowed; transform: none; filter: none;
+}
+
+/* Botão outline */
+.game-btn--outline {
+  background: transparent;
+  border: 1px solid rgba(var(--disc-tema-rgb),.35);
+  color: var(--disc-tema); box-shadow: none;
+}
+.game-btn--outline:hover {
+  background: rgba(var(--disc-tema-rgb),.08);
+  box-shadow: 0 0 16px rgba(var(--disc-tema-rgb),.18);
+}
+
+/* Badge genérico */
+.game-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10.5px; font-weight: 600; letter-spacing: .04em;
+  padding: 3px 10px; border-radius: var(--pill);
+  background: rgba(var(--disc-tema-rgb),.12);
+  color: var(--disc-tema);
+  border: 1px solid rgba(var(--disc-tema-rgb),.22);
+}
 
 /* Eyebrow label */
 .game-eyebrow {
@@ -430,7 +441,7 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   padding: .3rem .85rem; border-radius: var(--pill);
 }
 
-/* Progresso (barra horizontal genérica) */
+/* Barra de progresso horizontal genérica */
 .game-progress-bar {
   width: 100%; height: 6px;
   background: rgba(255,255,255,.06);
@@ -444,14 +455,7 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   box-shadow: 0 0 8px rgba(var(--disc-tema-rgb),.35);
 }
 
-/* Contador de rodada */
-.game-round {
-  font-size: .78rem; color: var(--text-3);
-  display: flex; align-items: center; gap: 6px;
-}
-.game-round strong { color: var(--text-1); font-weight: 600; }
-
-/* Feedback inline (certo / errado) */
+/* Feedback inline (acerto / erro) */
 .game-feedback {
   font-size: .875rem; font-weight: 600;
   padding: 10px 20px; border-radius: var(--radius-sm);
@@ -462,14 +466,8 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   from { opacity: 0; transform: translateY(-6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.game-feedback--correct {
-  background: rgba(52,211,153,.12); color: #34d399;
-  border: 1px solid rgba(52,211,153,.25);
-}
-.game-feedback--wrong {
-  background: rgba(248,113,113,.12); color: #f87171;
-  border: 1px solid rgba(248,113,113,.25);
-}
+.game-feedback--correct { background: rgba(52,211,153,.12); color: #34d399; border: 1px solid rgba(52,211,153,.25); }
+.game-feedback--wrong   { background: rgba(248,113,113,.12); color: #f87171; border: 1px solid rgba(248,113,113,.25); }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 5px; }
@@ -477,12 +475,12 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 ::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 99px; }
 
 /* ══════════════════════════════════════════════════════════
-   9. RESPONSIVIDADE
+   10. RESPONSIVIDADE
    ══════════════════════════════════════════════════════════ */
 
 @media (max-width: 680px) {
   .game-header { padding: 0 16px; gap: 10px; }
-  .game-header__back span { display: none; }  /* só ícone no mobile */
+  .game-header__back span { display: none; }
   .game-content { padding: 24px 16px 48px; }
   .game-result__card { padding: 36px 20px 28px; }
   .game-result__actions { flex-direction: column; }

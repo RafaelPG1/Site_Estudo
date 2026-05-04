@@ -1,91 +1,37 @@
-/* ═══════════════════════════════════════════════════
-   NEXUS STUDY — games/jogos/flashcard/storage.js
+/* ═══════════════════════════════════════════════════════════════
+   NEXUS STUDY — games/jogos/flashcard/storage.js  (v2.0)
+
    SRS persistido no Firestore + localStorage (fallback/cache).
-   Chave local: nexus_srs_{usuario}_{discId}_{sem}
-   Firestore:   usuarios/{uid}/srs_perfis/{sem}_{discId}
-═══════════════════════════════════════════════════ */
 
-import { doc, getDoc, setDoc, deleteDoc }
-  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-import { getDb } from '../../../src/firebase.js';
+   REFATORAÇÃO v2.0
+   ────────────────
+   Agora usa criarStorage() de ../../template/storage-base.js para
+   o padrão Firestore+localStorage. A lógica de domínio (perfil SRS
+   individual) permanece aqui, pois é específica do flashcard.
 
-const _chaveLocal = (usuario, discId, sem) =>
-  `nexus_srs_${usuario}_${discId}_${sem}`;
-const _docRef = (usuario, discId, sem) => {
-  return doc(getDb(), 'usuarios', usuario, 'srs_perfis', `${sem}_${discId}`);
-};
-/* ── CARREGAR ── */
+   Chave local : nexus_srs_{usuario}_{discId}_{sem}
+   Firestore   : usuarios/{uid}/srs_perfis/{sem}_{discId}
+═══════════════════════════════════════════════════════════════ */
+
+import { criarStorage } from '../../template/storage-base.js';
+
+const _base = criarStorage({
+  colecaoFirestore: 'srs_perfis',
+  prefixoLocal:     'nexus_srs',
+  nomeSistema:      'storage_srs',
+});
+
+/* ── CARREGAR perfis completos da disciplina ── */
 export async function carregarPerfisSRS(usuario, discId, sem) {
-  if (!usuario || usuario === 'visitante') {
-    return _lerLocal(usuario, discId, sem);
-  }
-
-  try {
-    const snap = await getDoc(_docRef(usuario, discId, sem));
-    if (snap.exists()) {
-      const dados = snap.data();
-      localStorage.setItem(
-        _chaveLocal(usuario, discId, sem),
-        JSON.stringify(dados),
-      );
-      console.log(`[storage] SRS carregado do Firestore: ${usuario}/${sem}_${discId}`);
-      return dados;
-    }
-    return _lerLocal(usuario, discId, sem);
-  } catch (err) {
-    console.warn('[storage] Firestore indisponível, usando localStorage:', err.message);
-    return _lerLocal(usuario, discId, sem);
-  }
+  return _base.carregar(usuario, discId, sem);
 }
 
-/* ── SALVAR PERFIL INDIVIDUAL ── */
+/* ── SALVAR perfil de um card individual ── */
 export async function salvarPerfilSRS(usuario, cardId, perfil, discId, sem) {
-  _salvarLocal(usuario, cardId, perfil, discId, sem);
-
-  if (!usuario || usuario === 'visitante') return;
-
-  try {
-    await setDoc(
-      _docRef(usuario, discId, sem),
-      { [cardId]: perfil },
-      { merge: true },
-    );
-  } catch (err) {
-    console.warn('[storage] Erro ao salvar no Firestore (dados salvos no localStorage):', err.message);
-  }
+  await _base.salvarMerge(usuario, discId, sem, { [cardId]: perfil });
 }
 
-/* ── LIMPAR UMA DISCIPLINA ── */
+/* ── LIMPAR toda a disciplina ── */
 export async function limparPerfisSRS(usuario, discId, sem) {
-  localStorage.removeItem(_chaveLocal(usuario, discId, sem));
-
-  if (!usuario || usuario === 'visitante') return;
-
-  try {
-    await deleteDoc(_docRef(usuario, discId, sem));
-    console.log(`[storage] SRS apagado no Firestore: ${usuario}/${sem}_${discId}`);
-  } catch (err) {
-    console.warn('[storage] Erro ao apagar no Firestore:', err.message);
-  }
-}
-
-/* ── HELPERS LOCAIS ── */
-function _lerLocal(usuario, discId, sem) {
-  try {
-    const salvo = localStorage.getItem(_chaveLocal(usuario, discId, sem));
-    return salvo ? JSON.parse(salvo) : {};
-  } catch {
-    return {};
-  }
-}
-
-function _salvarLocal(usuario, cardId, perfil, discId, sem) {
-  try {
-    const chave = _chaveLocal(usuario, discId, sem);
-    const atual = JSON.parse(localStorage.getItem(chave) || '{}');
-    atual[cardId] = perfil;
-    localStorage.setItem(chave, JSON.stringify(atual));
-  } catch (err) {
-    console.error('[storage] Erro ao salvar local:', err);
-  }
+  await _base.limpar(usuario, discId, sem);
 }
