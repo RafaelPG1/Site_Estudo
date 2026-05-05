@@ -1,12 +1,15 @@
 /* =============================================
-   SHOW DO MILHÃO — show_milhao.css
-   ============================================= */
+   NEXUS STUDY — games/jogos/show_milhao/show_milhao.css  (v2.0)
 
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+   REFATORAÇÃO v2.0:
+   Reset (*), bg-grid, bg-orb e .hidden agora vêm de:
+     ../../template/game-shell.css  (importado no HTML)
+
+   Este arquivo contém APENAS:
+     • Tokens SM-específicos (--ouro, --verde, --vermelho, fontes Cinzel/Exo 2)
+     • Sobreposições do header para o Show do Milhão (ícone dourado circular)
+     • Todo o layout das telas SM (.tela, .hud, .alternativas, .premiacao, etc.)
+   ============================================= */
 
 :root {
   --ouro:        #FFD700;
@@ -24,6 +27,46 @@
   --bg: #0a0b14;
 }
 
+/* ══════════════════════════════════════════════════════════
+   SOBREPOSIÇÕES DO HEADER (SM-específico)
+   Sobreposições sobre .game-header definido em game-shell.css
+   ══════════════════════════════════════════════════════════ */
+
+:root {
+  --header-h: 72px;
+}
+
+.game-header {
+  background: rgba(10, 11, 20, .92);
+  border-bottom: 1px solid rgba(255, 215, 0, 0.18);
+  box-shadow: 0 1px 0 rgba(255, 215, 0, .10), 0 4px 24px rgba(0,0,0,.5);
+}
+
+.game-header__back {
+  color: var(--branco);
+  border: 1px solid rgba(255, 255, 255, .18);
+  background: rgba(255, 255, 255, .05);
+}
+.game-header__back:hover {
+  background: rgba(255, 255, 255, .09);
+  border-color: rgba(255, 255, 255, .3);
+}
+
+.game-header__icon {
+  width: 44px; height: 44px; border-radius: 50%;
+  font-size: 1.3rem;
+  background: rgba(255, 215, 0, .12);
+  border: 2px solid rgba(255, 215, 0, .35);
+  box-shadow: 0 0 12px rgba(255, 215, 0, .12);
+}
+
+.game-header__name { font-family: var(--fonte-corpo); color: var(--branco); }
+.game-header__meta #shell-disc-name { color: var(--ouro); font-weight: 500; }
+.game-header__meta #shell-sem       { color: rgba(255,255,255,.45); }
+.game-header__meta-sep              { color: rgba(255,255,255,.2); }
+
+.game-header__controls { display: flex; align-items: center; gap: 8px; }
+
 /* ── FUNDO ── */
 body {
   font-family: var(--fonte-corpo);
@@ -33,25 +76,6 @@ body {
   background: var(--bg);
 }
 
-.bg-grid {
-  position: fixed; inset: 0; z-index: 0; pointer-events: none;
-  background-image: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
-  background-size: 28px 28px;
-  mask-image: radial-gradient(ellipse 90% 80% at 50% 40%, black 20%, transparent 85%);
-}
-
-.bg-orb {
-  position: fixed; border-radius: 50%;
-  filter: blur(110px); pointer-events: none; z-index: 0; opacity: .25;
-}
-.bg-orb--1 {
-  width: 600px; height: 600px; top: -200px; left: -160px;
-  background: radial-gradient(circle, rgba(184,134,11,.25), transparent 70%);
-}
-.bg-orb--2 {
-  width: 500px; height: 500px; bottom: -160px; right: -120px;
-  background: radial-gradient(circle, rgba(255,215,0,.15), transparent 70%);
-}
 
 /* ── TELAS ── */
 .tela, .premiacao-lateral { position: relative; z-index: 1; }
@@ -690,77 +714,6 @@ body:has(#screen-question:not(.hidden)) #header-controls {
 
 /* ══════════════════════════════════════════════════════════
    CABEÇALHO — estilo vdd_falso adaptado para Show do Milhão
-   ══════════════════════════════════════════════════════════ */
-
-:root {
-  --header-h: 72px;
-}
-
-.game-header {
-  position: sticky; top: 0; z-index: 50;
-  height: var(--header-h);
-  background: rgba(10, 11, 20, .92);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 215, 0, 0.18);
-  display: flex; align-items: center;
-  padding: 0 24px; gap: 16px;
-  /* Linha dourada brilhante na base */
-  box-shadow: 0 1px 0 rgba(255, 215, 0, 0.10), 0 4px 24px rgba(0, 0, 0, 0.5);
-}
-
-/* Botão voltar */
-.game-header__back {
-  display: inline-flex; align-items: center; gap: 7px;
-  font-size: .82rem; font-weight: 500; color: var(--branco);
-  padding: 8px 18px; border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, .18);
-  background: rgba(255, 255, 255, .05);
-  transition: background .2s, border-color .2s;
-  white-space: nowrap; flex-shrink: 0;
-  text-decoration: none;
-}
-.game-header__back svg { width: 14px; height: 14px; }
-.game-header__back:hover {
-  background: rgba(255, 255, 255, .09);
-  border-color: rgba(255, 255, 255, .3);
-}
-
-/* Identidade — ícone circular + título/subtítulo */
-.game-header__identity {
-  display: flex; align-items: center; gap: 12px;
-  flex: 1; min-width: 0;
-}
-
-.game-header__icon {
-  width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.3rem;
-  background: rgba(255, 215, 0, .12);
-  border: 2px solid rgba(255, 215, 0, .35);
-  box-shadow: 0 0 12px rgba(255, 215, 0, .12);
-}
-
-.game-header__info { min-width: 0; }
-
-.game-header__name {
-  font-family: var(--fonte-corpo);
-  font-size: 1.1rem; font-weight: 700; line-height: 1.15;
-  color: var(--branco);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-
-.game-header__meta {
-  font-size: .8rem;
-  display: flex; align-items: center; gap: 8px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  margin-top: 2px;
-}
-.game-header__meta #shell-disc-name { color: var(--ouro); font-weight: 500; }
-.game-header__meta #shell-sem       { color: rgba(255, 255, 255, .45); }
-.game-header__meta-sep              { color: rgba(255, 255, 255, .2); }
-
-/* ── OVERLAY DE PAUSA (criado dinamicamente pelo JS) ── */
-.sm-pause-overlay {
   position: fixed; inset: 0; z-index: 100;
   background: rgba(0,0,0,.7);
   backdrop-filter: blur(6px);

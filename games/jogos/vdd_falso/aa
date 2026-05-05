@@ -1,42 +1,139 @@
 /* ============================================================
-   NEXUS STUDY — games/jogos/vdd_falso/vdd_falso.css  (v7.0)
-
-   REFATORAÇÃO v7.0:
-   Tokens base, reset, bg-grid/orb, .game-shell, .game-header,
-   .game-timer-bar e .hidden agora vêm de:
-     ../../template/game-shell.css  (importado no HTML)
-
-   Este arquivo contém APENAS:
-     • Tokens específicos do VF (--true-color, --false-color, --font-mono)
-     • Sobreposições do header para o VF (ícone circular, alturas)
-     • Sobreposições do timer para o VF (posição sticky, cores VF)
-     • Layout de todas as telas VF (.vf-screen, .vf-intro-card, etc.)
+   NEXUS STUDY — vdd_falso.css — redesign fiel à imagem de referência
    ============================================================ */
 
-:root {
-  /* ── Cores específicas do V/F ── */
-  --true-color:        #34d399;
-  --true-color-rgb:    52, 211, 153;
-  --false-color:       #f87171;
-  --false-color-rgb:   248, 113, 113;
-  --neutral-color:     #94a3b8;
-  --neutral-color-rgb: 148, 163, 184;
-  --font-mono: 'DM Mono', 'Fira Code', monospace;
+/* ══════════════════════════════════════════════════════════
+   1. TOKENS & RESET
+   ══════════════════════════════════════════════════════════ */
 
-  /* ── Sobreposição de dimensão do header (VF usa 72px vs 64px padrão) ── */
-  --header-h: 72px;
+:root {
+  --disc-tema:      #ec4899;
+  --disc-tema-rgb:  236, 72, 153;
+  --disc-tema2:     #a855f7;
+  --disc-tema2-rgb: 168, 85, 247;
+
+  --true-color:     #22c55e;
+  --true-rgb:       34, 197, 94;
+  --false-color:    #ef4444;
+  --false-rgb:      239, 68, 68;
+
+  --bg:        #0a0b14;
+  --surface:   #12131f;
+  --surface-2: #161727;
+  --surface-3: #0e0f1c;
+  --border:    rgba(255,255,255,0.07);
+  --border-hi: rgba(255,255,255,0.11);
+
+  --text-1: #f0ede6;
+  --text-2: #9ca3af;
+  --text-3: #4b5563;
+
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body:    'DM Sans', system-ui, sans-serif;
+  --font-mono:    'DM Mono', monospace;
+  --font-syne:    'Syne', sans-serif;
+
+  --header-h:  72px;
+  --radius:    14px;
+  --radius-sm: 10px;
+  --pill:      999px;
+
+  --ease: cubic-bezier(.25,.8,.25,1);
+  --t:    0.22s;
+
+  --timer-pct: 100%;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: var(--font-body); background: var(--bg); color: var(--text-1); }
+a { text-decoration: none; color: inherit; }
+button { border: none; background: none; cursor: pointer; font-family: inherit; color: inherit; }
+.hidden { display: none !important; }
+
+/* ══════════════════════════════════════════════════════════
+   2. BACKGROUND
+   ══════════════════════════════════════════════════════════ */
+
+.bg-grid {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse 90% 80% at 50% 40%, black 20%, transparent 85%);
+}
+
+.bg-orb {
+  position: fixed; border-radius: 50%;
+  filter: blur(110px); pointer-events: none; z-index: 0; opacity: .25;
+}
+.bg-orb--1 {
+  width: 600px; height: 600px; top: -200px; left: -160px;
+  background: radial-gradient(circle, rgba(var(--disc-tema-rgb),.2), transparent 70%);
+}
+.bg-orb--2 {
+  width: 500px; height: 500px; bottom: -160px; right: -120px;
+  background: radial-gradient(circle, rgba(var(--disc-tema2-rgb),.15), transparent 70%);
 }
 
 /* ══════════════════════════════════════════════════════════
-   SOBREPOSIÇÕES DO HEADER (VF-específico)
-   Sobreposições sobre .game-header definido em game-shell.css
+   3. SHELL
    ══════════════════════════════════════════════════════════ */
 
-/* Coloração dos meta-dados no header */
-#shell-disc-name { color: var(--disc-tema); font-weight: 900; }
-#shell-sem { color: var(--text-2); }
+.game-shell {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column;
+  min-height: 100vh;
+}
 
-/* Ícone circular específico do VF */
+.game-content {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 24px 24px 48px;
+  width: 100%;
+  animation: fade-up .4s ease both;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   4. HEADER — exatamente como na imagem
+   ══════════════════════════════════════════════════════════ */
+
+.game-header {
+  position: sticky; top: 0; z-index: 50;
+  height: var(--header-h);
+  background: rgba(10,11,20,.92);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 24px; gap: 16px;
+}
+
+/* Botão voltar — retângulo escuro com borda */
+.game-header__back {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: .82rem; font-weight: 500; color: var(--text-1);
+  padding: 8px 18px; border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.05);
+  transition: background var(--t), border-color var(--t);
+  white-space: nowrap; flex-shrink: 0;
+}
+.game-header__back svg { width: 14px; height: 14px; }
+.game-header__back:hover {
+  background: rgba(255,255,255,.09);
+  border-color: rgba(255,255,255,.3);
+}
+
+/* Identidade — ícone circular + título/subtítulo */
+.game-header__identity {
+  display: flex; align-items: center; gap: 12px;
+  flex: 1; min-width: 0;
+}
+
 .game-header__icon {
   width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
@@ -45,7 +142,43 @@
   border: 2px solid rgba(var(--disc-tema-rgb),.4);
 }
 
+.game-header__info { min-width: 0; }
 
+.game-header__name {
+  font-family: var(--font-body);
+  font-size: 1.1rem; font-weight: 700; line-height: 1.15;
+  color: var(--text-1);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.game-header__meta {
+  font-size: .8rem;
+  display: flex; align-items: center; gap: 8px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-top: 2px;
+}
+/* Disciplina em rosa */
+#shell-disc-name { color: var(--disc-tema); font-weight: 500; }
+/* Semestre em cinza */
+#shell-sem { color: var(--text-2); }
+.game-header__meta-sep { color: var(--text-3); }
+
+/* Slot do timer — lado direito */
+.game-header__score-slot {
+  display: flex; align-items: center; gap: 12px;
+  flex-shrink: 0;
+}
+
+/* Timer com relógio + TEMPO RESTANTE + número grande */
+.game-timer-wrapper {
+  display: flex; align-items: center; gap: 10px;
+}
+
+/* Ícone de relógio circular (rosa) */
+.game-timer-ring {
+  display: none;
+}
+.game-timer-ring__arc { display: none; }
 
 /* Ícone SVG do timer — injetado via HTML */
 .game-timer-icon {
@@ -58,6 +191,18 @@
   transition: background var(--t), border-color var(--t), box-shadow var(--t);
 }
 .game-timer-icon svg { display: block; }
+
+/* Pulsa suavemente quando em danger */
+.game-timer-icon--danger {
+  background: rgba(239,68,68,.12);
+  border-color: rgba(239,68,68,.40);
+  color: var(--false-color);
+  animation: icon-danger-pulse .7s ease-in-out infinite alternate;
+}
+@keyframes icon-danger-pulse {
+  from { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+  to   { box-shadow: 0 0 0 7px rgba(239,68,68,.18); }
+}
 
 /* Bloco: TEMPO RESTANTE acima, número abaixo — centralizados */
 .game-timer-block {
@@ -73,7 +218,6 @@
   line-height: 1; white-space: nowrap;
 }
 
-
 .game-timer-display {
   font-family: var(--font-mono);
   font-size: 1.5rem; font-weight: 700;
@@ -85,16 +229,37 @@
 .game-timer-display--danger { color: var(--false-color); }
 
 /* ══════════════════════════════════════════════════════════
-   BARRA DE TIMER STICKY (VF-específico)
-   Sobreposição de position sobre .game-timer-bar do shell
+   5. BARRA TIMER (linha fina colorida)
    ══════════════════════════════════════════════════════════ */
 
 .game-timer-bar {
-  position: sticky; top: var(--header-h); z-index: 40;
-  width: 100%; height: 4px;
-  background: rgba(var(--disc-tema-rgb), .10);
+  height: 3px;
+  background: rgba(255,255,255,.06);
+  position: sticky;
+  top: var(--header-h);
+  z-index: 49;
+  overflow: hidden; flex-shrink: 0;
 }
+.game-timer-bar__fill {
+  position: absolute; top: 0; left: 0; bottom: 0;
+  width: var(--timer-pct);
+  background: linear-gradient(90deg, var(--disc-tema2), var(--disc-tema));
+  transition: width .25s linear;
+}
+.game-timer-bar--green .game-timer-bar__fill { background: linear-gradient(90deg, #22c55e, #16a34a); }
+.game-timer-bar--mid   .game-timer-bar__fill { background: linear-gradient(90deg, #f59e0b, #d97706); }
+.game-timer-bar--danger .game-timer-bar__fill {
+  background: var(--false-color);
+  animation: timer-pulse .6s ease-in-out infinite alternate;
+}
+@keyframes timer-pulse { from { opacity:.75; } to { opacity:1; } }
 
+/* ══════════════════════════════════════════════════════════
+   6. TELA DE RESULTADO INLINE
+   ══════════════════════════════════════════════════════════ */
+
+/* A tela de resultado ocupa o espaço do game-content,
+   centralizada como as demais telas (intro, question, empty) */
 #screen-result {
   flex: 1;
   display: flex;
@@ -560,12 +725,6 @@
   background: var(--border);
 }
 
-.game-header__name {
-  font-family: var(--font-body);
-  font-size: 1.1rem; font-weight: 700; line-height: 1.15;
-  color: var(--text-1);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
 /* Chips: disciplina · semestre */
 .vf-intro-card__chips {
   display: flex;

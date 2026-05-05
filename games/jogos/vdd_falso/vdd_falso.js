@@ -17,6 +17,7 @@
    ============================================================ */
 
 import { Shell, Timer, Result, shuffle, lerParams } from '../../template/game-shell.js';
+import { calcularPeso, sorteiarPonderado }          from '../../template/deck.js';
 import { DISC_CORES }                               from '../../../shared/js/cores.js';
 import { aplicarCoresDisciplina }                   from '../../../shared/js/theme.js';
 import { carregarHistoricoVF, salvarResultadoVF }  from './storage_vf.js';
@@ -94,54 +95,6 @@ function setInfoStrip(texto) {
   }
 }
 
-/* ══════════════════════════════════════════════════════════
-   SELEÇÃO PONDERADA
-   ══════════════════════════════════════════════════════════ */
-
-function calcularPeso(id, historico) {
-  const h = historico[id];
-  if (!h || h.tentativas === 0) return CONFIG.PESO_NUNCA_VISTA;
-  const taxaErro = h.erros / h.tentativas;
-  return Math.round(CONFIG.PESO_MIN + taxaErro * (CONFIG.PESO_MAX - CONFIG.PESO_MIN));
-}
-
-// [BUG CRÍTICO CORRIGIDO] Adicionado fallback: se rand expirar sem
-// dar break (arredondamento de ponto flutuante), seleciona o último
-// elemento do pool em vez de deixar o while rodar infinitamente.
-function sorteiarPonderado(candidatos, n) {
-  const pool = [...candidatos];
-  const sel  = [];
-  while (sel.length < n && pool.length > 0) {
-    const total = pool.reduce((a, c) => a + c.peso, 0);
-    if (total <= 0) {
-      const i = Math.floor(Math.random() * pool.length);
-      sel.push(pool[i].item);
-      pool.splice(i, 1);
-      continue;
-    }
-    let rand = Math.random() * total;
-    let hit  = false;
-    for (let i = 0; i < pool.length; i++) {
-      rand -= pool[i].peso;
-      if (rand <= 0) {
-        sel.push(pool[i].item);
-        pool.splice(i, 1);
-        hit = true;
-        break;
-      }
-    }
-    // Fallback: rand chegou a exatamente zero após subtrair todos os
-    // pesos (arredondamento FP) — seleciona o último elemento restante.
-    if (!hit && pool.length > 0) {
-      sel.push(pool[pool.length - 1].item);
-      pool.splice(pool.length - 1, 1);
-    }
-  }
-  return sel;
-}
-
-/* Retorna questões do banco que têm pelo menos 1 erro no histórico,
-   ordenadas da maior taxa de erro para a menor. */
 function questoesComErro(banco, historico) {
   return banco
     .filter(q => {
@@ -168,11 +121,11 @@ function montarDeck(banco, historico) {
   const sel = new Set();
   for (const aula of Object.keys(porAula)) {
     if (sel.size >= n) break;
-    const cands = porAula[aula].filter(q => !sel.has(q.id)).map(q => ({ item: q, peso: calcularPeso(q.id, historico) }));
+    const cands = porAula[aula].filter(q => !sel.has(q.id)).map(q => ({ item: q, peso: calcularPeso(q.id, historico, { pesoNuncaVisto: CONFIG.PESO_NUNCA_VISTA, pesoMin: CONFIG.PESO_MIN, pesoMax: CONFIG.PESO_MAX }) }));
     const esc = sorteiarPonderado(cands, 1);
     if (esc[0]) sel.add(esc[0].id);
   }
-  const rest = banco.filter(q => !sel.has(q.id)).map(q => ({ item: q, peso: calcularPeso(q.id, historico) }));
+  const rest = banco.filter(q => !sel.has(q.id)).map(q => ({ item: q, peso: calcularPeso(q.id, historico, { pesoNuncaVisto: CONFIG.PESO_NUNCA_VISTA, pesoMin: CONFIG.PESO_MIN, pesoMax: CONFIG.PESO_MAX }) }));
   sorteiarPonderado(rest, n - sel.size).forEach(q => sel.add(q.id));
   return shuffle(banco.filter(q => sel.has(q.id)));
 }

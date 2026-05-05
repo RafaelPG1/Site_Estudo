@@ -8,6 +8,7 @@
    ============================================================ */
 
 import { Shell, Timer, shuffle, lerParams }    from '../../template/game-shell.js';
+import { calcularPeso, sorteiarPonderado }          from '../../template/deck.js';
 import { DISC_CORES }                          from '../../../shared/js/cores.js';
 import { aplicarCoresDisciplina }              from '../../../shared/js/theme.js';
 import { getUsuario, getDisciplinasDeSemestre } from '../../../src/global.js';
@@ -92,50 +93,9 @@ function salvar() {
 const $ = id => document.getElementById(id);
 const el = {};
 
-/* ══════════════════════════════════════════════════════════
-   SELEÇÃO PONDERADA
-   ══════════════════════════════════════════════════════════ */
-
-function calcularPeso(id, historico) {
-  const h = historico[id];
-  if (!h || h.tentativas === 0) return CONFIG.PESO_NUNCA_VISTO;
-  const taxaErro = h.erros / h.tentativas;
-  return Math.round(CONFIG.PESO_MIN + taxaErro * (CONFIG.PESO_MAX - CONFIG.PESO_MIN));
-}
-
-function sorteiarPonderado(candidatos, n) {
-  const pool = [...candidatos];
-  const sel  = [];
-  while (sel.length < n && pool.length > 0) {
-    const total = pool.reduce((a, c) => a + c.peso, 0);
-    if (total <= 0) {
-      const i = Math.floor(Math.random() * pool.length);
-      sel.push(pool[i].item);
-      pool.splice(i, 1);
-      continue;
-    }
-    let rand = Math.random() * total;
-    let hit  = false;
-    for (let i = 0; i < pool.length; i++) {
-      rand -= pool[i].peso;
-      if (rand <= 0) {
-        sel.push(pool[i].item);
-        pool.splice(i, 1);
-        hit = true;
-        break;
-      }
-    }
-    if (!hit && pool.length > 0) {
-      sel.push(pool[pool.length - 1].item);
-      pool.splice(pool.length - 1, 1);
-    }
-  }
-  return sel;
-}
-
 function montarDeck(banco, historico) {
   const n     = Math.min(CONFIG.MAX_QUESTOES, banco.length);
-  const cands = banco.map(q => ({ item: q, peso: calcularPeso(q.id, historico) }));
+  const cands = banco.map(q => ({ item: q, peso: calcularPeso(q.id, historico, { pesoNuncaVisto: CONFIG.PESO_NUNCA_VISTO, pesoMin: CONFIG.PESO_MIN, pesoMax: CONFIG.PESO_MAX }) }));
   return shuffle(sorteiarPonderado(cands, n));
 }
 

@@ -3,9 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Show do Milhão</title>
+  <title>Show do Milhão — Nexus Study</title>
 
-  <link rel="stylesheet" href="../../../shared/css/fundo.css" />
+  <!--
+    REFATORAÇÃO v2.0
+    ─────────────────
+    game-shell.css agora é a FONTE ÚNICA para:
+      :root (tokens compartilhados), reset, bg-grid/orb,
+      .game-shell, .game-header, .game-header__*, .hidden
+
+    show_milhao.css mantém:
+      tokens próprios (--ouro, --verde, --vermelho, fontes Cinzel/Exo 2)
+      sobreposições de header (alturas, cores específicas)
+      .sm-* — layout de telas, HUD, alternativas, premiação lateral
+      barra de timer própria (#progress-fill) já em game-shell.css
+  -->
+  <link rel="stylesheet" href="../../template/game-shell.css" />
   <link rel="stylesheet" href="show_milhao.css" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,14 +26,13 @@
 </head>
 <body>
 
-<!-- Background -->
+<!-- Background — definido em game-shell.css -->
 <div class="bg-grid"></div>
 <div class="bg-orb bg-orb--1"></div>
 <div class="bg-orb bg-orb--2"></div>
 
-<!-- ══ CABEÇALHO ══ -->
+<!-- ══ CABEÇALHO — estrutura definida em game-shell.css ══ -->
 <header class="game-header">
-  <!-- Botão voltar -->
   <a id="shell-back-btn" class="game-header__back" href="../../jogo.html">
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
       <path d="M13 16l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -28,7 +40,6 @@
     <span>Voltar</span>
   </a>
 
-  <!-- Ícone + título + disciplina · semestre -->
   <div class="game-header__identity">
     <div class="game-header__icon" id="shell-icon">★</div>
     <div class="game-header__info">
@@ -41,13 +52,13 @@
     </div>
   </div>
 
-  <!-- Controles globais no header -->
+  <!-- Controles: pausar / menu — ocultos até o jogo começar -->
   <div class="game-header__controls" id="header-controls" style="display:none;">
-    <button id="btn-pause" class="btn-proxima sm-ctrl-btn sm-ctrl-btn--pause">
+    <button id="btn-pause" class="game-btn game-btn--outline sm-ctrl-btn sm-ctrl-btn--pause">
       <span id="pause-icon">⏸</span>
       <span id="pause-label">Pausar</span>
     </button>
-    <button id="btn-voltar-intro" class="btn-proxima sm-ctrl-btn sm-ctrl-btn--menu">
+    <button id="btn-voltar-intro" class="game-btn game-btn--outline sm-ctrl-btn sm-ctrl-btn--menu">
       ↩ Menu
     </button>
   </div>
@@ -62,7 +73,7 @@
   </div>
 
   <div class="sm-chips">
-    <span class="sm-chip sm-chip--disc sm-intro-card__chip sm-intro-card__chip--disc">
+    <span class="sm-chip sm-chip--disc">
       <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
         <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 13A6 6 0 1 1 8 2a6 6 0 0 1 0 12z"/>
       </svg>
@@ -79,7 +90,7 @@
 
   <button class="btn-jogar sm-btn-nova" id="btn-start">JOGAR AGORA</button>
 
-  <!-- Botão continuar (aparece quando há save) -->
+  <!-- Botão continuar — aparece quando há save -->
   <div id="intro-continuar" class="sm-intro-continuar" style="display:none;">
     <button class="btn-jogar sm-btn-continuar" id="btn-continuar">▶ Continuar partida</button>
     <div class="sm-continuar-info" id="continuar-info"></div>
@@ -108,7 +119,7 @@
     </div>
   </div>
 
-  <!-- Barra linear de progresso/timer -->
+  <!-- Barra de timer — .game-timer-bar definida em game-shell.css -->
   <div class="sm-progress-wrap">
     <div id="progress-fill" class="game-timer-bar game-timer-bar--green"></div>
   </div>
@@ -119,9 +130,8 @@
   <!-- Pergunta -->
   <div class="card-pergunta">
 
-    <!-- BADGE DE HISTÓRICO -->
+    <!-- Badge de histórico por questão -->
     <div class="sm-hist-badge" id="sm-hist-badge" aria-live="polite" hidden>
-      <!-- Segmento 1: tentativas -->
       <span class="sm-hist-badge__seg">
         <svg class="sm-hist-badge__ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
           <circle cx="8" cy="8" r="6"/>
@@ -130,9 +140,7 @@
         <span id="sm-hist-tentativas">0</span>
         <span aria-hidden="true"> tent.</span>
       </span>
-      <!-- Divisor -->
       <span class="sm-hist-badge__div" aria-hidden="true"></span>
-      <!-- Segmento 2: taxa de acerto -->
       <span class="sm-hist-badge__seg">
         <svg class="sm-hist-badge__ico" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
           <path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM7.25 10.5V7h1.5v3.5h-1.5zm0-4.5V4.5h1.5V6h-1.5z"/>
@@ -140,9 +148,7 @@
         <span id="sm-hist-taxa">0%</span>
         <span aria-hidden="true"> acerto</span>
       </span>
-      <!-- Divisor -->
       <span class="sm-hist-badge__div" aria-hidden="true"></span>
-      <!-- Segmento 3: status -->
       <span class="sm-hist-badge__status" id="sm-hist-status"></span>
     </div>
 
@@ -172,15 +178,15 @@
 
   <!-- Feedback -->
   <div class="feedback-box" id="feedback-box">
-    <div class="feedback-icone"    id="feedback-icone"></div>
-    <div class="feedback-msg"      id="feedback-msg"></div>
+    <div class="feedback-icone" id="feedback-icone"></div>
+    <div class="feedback-msg"   id="feedback-msg"></div>
     <div class="feedback-resposta" id="feedback-resposta"></div>
   </div>
 
   <!-- Navegação -->
   <div class="sm-nav-row">
     <button class="btn-proxima sm-nav-btn--secondary" id="btn-anterior">← Anterior</button>
-    <button class="btn-proxima sm-nav-btn--proxima" id="btn-proxima" disabled>PRÓXIMA →</button>
+    <button class="btn-proxima sm-nav-btn--proxima"   id="btn-proxima" disabled>PRÓXIMA →</button>
   </div>
 
   <!-- Premiação lateral -->

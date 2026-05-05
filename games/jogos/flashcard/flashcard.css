@@ -1,7 +1,19 @@
 /* ═══════════════════════════════════════════════════════════════
-   NEXUS STUDY — flashcard/flashcard.css  (v5 — theme-clean)
-   ÚNICA fonte de cor dinâmica: theme.js → var(--cor-tema) / var(--cor-tema-rgb)
+   NEXUS STUDY — games/jogos/flashcard/flashcard.css  (v6.0)
+
+   REFATORAÇÃO v6.0:
+   O arquivo game-shell.css (importado no HTML) fornece:
+     • Tokens base compartilhados (:root --disc-tema, --bg, --surface…)
+     • Reset genérico (*, body, a, button)
+     • .hidden { display: none !important }
+     • .bg-grid e .bg-orb (animados com cores de disciplina)
+
+   Este arquivo mantém seus próprios tokens pois usa --cor-tema
+   (convenção do flashcard) em vez de --disc-tema (convenção do shell).
+   As sobreposições de .bg-grid e .bg-orb estão INTENCIONALMENTE
+   presentes pois o flashcard usa estilo próprio (sem orbs, grid monocromático).
    ═══════════════════════════════════════════════════════════════ */
+
 
 /* ── RESET ──────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
