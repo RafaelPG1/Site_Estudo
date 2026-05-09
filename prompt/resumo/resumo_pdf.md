@@ -21,32 +21,40 @@ Organize o resumo em:
 6. Resumo final para revisão rápida
 
 🖼️ 4. Imagens, gráficos e diagramas
-- Analise todas as imagens, gráficos, diagramas, tabelas e fluxogramas do PDF.
-- Se uma imagem for importante para entendimento do conteúdo ou relevante para provas, inclua no resumo.
-- Utilize EXATAMENTE a legenda original da imagem presente no PDF.
-- Preserve identificações como:
-  - "Figura 1"
-  - "Figura 2 – ..."
-  - "Gráfico 1"
-  - "Tabela 3"
-  - ou qualquer outro padrão usado no material.
-- NÃO renomeie imagens e NÃO invente títulos.
-- Caso a imagem não possua legenda oficial, escreva uma descrição curta identificando o conteúdo visual.
 
-- Para cada imagem importante, use o formato:
+- Analise imagens, gráficos, diagramas, tabelas e fluxogramas do PDF.
+- Inclua APENAS imagens realmente importantes para entendimento do conteúdo ou relevantes para provas.
+- NÃO inclua:
+  - slides apenas com texto;
+  - títulos de seção;
+  - objetivos;
+  - telas simples sem explicação técnica;
+  - conteúdos redundantes.
 
-[Imagem: Figura X – Nome original da figura (coloque se tiver 1.1 1.2 ou 2.2 e tal )]
+- Só crie uma seção de imagem quando houver:
+  - diagramas;
+  - fluxos;
+  - gráficos;
+  - tabelas relevantes;
+  - arquiteturas;
+  - interfaces importantes;
+  - comparações visuais;
+  - imagens que ajudem na compreensão da matéria.
+
+- Caso não exista imagem relevante em determinada seção, apenas explique o conteúdo normalmente no texto do resumo.
+
+- Utilize EXATAMENTE a legenda original da imagem presente no PDF quando existir.
+- NÃO renomeie figuras e NÃO invente títulos.
+
+Formato obrigatório:
+
+[Imagem: Nome original da figura]
+
 - Página: X
 - Parte do conteúdo: Nome da seção
-- Explicação: descrição resumida da imagem e sua importância
-- id que vc vai criar assim: [Padronização: Uso de prefixo (fig_) e letras minúsculas sem espaços.
+- Explicação: resumo da importância da imagem
+- id: identificador_tecnico_padronizado
 
-Semântica: Nomes baseados no conteúdo técnico (cláusulas SQL) em vez de números.
-
-Diferenciação: IDs que destacam o que torna cada imagem única (ex: com_distinct vs sem_distinct).
-Basicamente: [tipo] + [contexto] + [detalhe_técnico].
-]
-- Ignore imagens apenas decorativas ou sem relevância.
 📌 5. Formatação
 - Use títulos e subtítulos bem definidos
 - Use listas quando necessário
