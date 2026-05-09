@@ -56,7 +56,7 @@ alternativas muito longas comparadas às outras
 Não repetir estrutura de pergunta 📦 FORMATO DE SAÍDA (OBRIGATÓRIO) Gerar diretamente em JavaScript válido:
 [
 {
-  Aula: digite a aula 
+  aula: digite a aula 
   tipo: "Direta", // ou: "Curta", "Contexto", "Código"
 
   texto: "Contexto curto ou mínimo (sempre presente).",
