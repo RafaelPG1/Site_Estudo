@@ -35,7 +35,7 @@
 
     <!-- Ícone + título + disciplina · semestre -->
     <div class="game-header__identity">
-      <div class="game-header__icon" id="shell-icon">⚖️</div>
+      <div class="game-header__icon" id="shell-icon" data-locked="true">⚖️</div>
       <div class="game-header__info">
         <div class="game-header__name" id="shell-game-name">Verdadeiro ou Falso</div>
         <div class="game-header__meta">
@@ -622,6 +622,29 @@
   });
 </script>
 
+<script>
+  // ── LOCK: shell-icon nunca pode ser alterado por nenhum JS ──
+  // Roda antes do módulo vdd_falso.js para garantir que o ícone
+  // do jogo (⚖️) não seja sobrescrito pelo emoji da disciplina.
+  document.addEventListener('DOMContentLoaded', () => {
+    const el = document.getElementById('shell-icon');
+    if (!el) return;
+    // Blinda textContent e innerText via descriptor
+    const ICON = '⚖️';
+    Object.defineProperty(el, 'textContent', {
+      get: () => ICON,
+      set: () => { /* silenciosamente ignora qualquer tentativa de sobrescrever */ },
+      configurable: false,
+    });
+    Object.defineProperty(el, 'innerText', {
+      get: () => ICON,
+      set: () => { /* idem */ },
+      configurable: false,
+    });
+    // Garante que o DOM visual também esteja correto agora
+    el.firstChild && (el.firstChild.nodeValue = ICON);
+  }, { once: true });
+</script>
 <script type="module" src="vdd_falso.js"></script>
 </body>
 </html>

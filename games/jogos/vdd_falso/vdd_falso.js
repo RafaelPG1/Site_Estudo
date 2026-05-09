@@ -65,6 +65,8 @@ function _chaveSessao(usuario, discId, sem) {
 }
 
 function salvarSessao() {
+  // Não salva se o jogo ainda não foi iniciado (sem perguntas no deck ativo)
+  if (!estado.perguntas || estado.perguntas.length === 0) return;
   try {
     const chave = _chaveSessao(estado.usuario, estado.discId, estado.sem);
     // JSON.stringify converte undefined→null dentro de arrays, perdendo o sentido.
@@ -1216,10 +1218,7 @@ async function init() {
   if (shellDiscEl && disciplina) {
     shellDiscEl.textContent = disciplina.apelido ?? disciplina.nome ?? disc;
   }
-  const shellIconEl = document.getElementById('shell-icon');
-  if (shellIconEl && disciplina?.emoji) {
-    shellIconEl.textContent = disciplina.emoji;
-  }
+  // shell-icon mantém ⚖️ definido no HTML — nunca sobrescrever.
 
   const discLblPill = document.getElementById('vf-disc-label');
   if (discLblPill && disciplina) {
@@ -1330,11 +1329,13 @@ async function init() {
   setupPausa();
   registrarAtalhos();
 
-  /* ── Botão Voltar do header: limpa sessão antes de navegar ── */
+  /* ── Botão Voltar do header: salva sessão ao sair (não limpa) ──
+     A sessão só é limpa ao finalizar o jogo ou ao clicar "Começar",
+     para que o botão "Continuar" apareça ao retornar. */
   const shellBackBtn = document.getElementById('shell-back-btn');
   if (shellBackBtn) {
     shellBackBtn.addEventListener('click', () => {
-      limparSessao();
+      salvarSessao();
     });
   }
 
