@@ -1135,6 +1135,13 @@ function _configurarBtnContinuar(sessao) {
 
   const respondidas = sessao.respostas.filter(r => r !== undefined).length;
   const total       = sessao.perguntas.length;
+  const pendentes   = sessao.respostas.filter(r => r === undefined).length;
+
+  // Não exibe o botão se não há nenhuma questão pendente (sessão já concluída)
+  if (pendentes === 0) {
+    btn.classList.add('hidden');
+    return;
+  }
 
   // Clona para evitar listeners duplicados
   const novo = btn.cloneNode(true);

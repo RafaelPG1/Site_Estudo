@@ -1053,18 +1053,68 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 }
 
 .vf-ctrl-btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: .78rem; font-weight: 600; color: var(--text-1);
-  padding: 8px 16px; border-radius: 8px;
-  border: 1px solid rgba(255,255,255,.15);
-  background: rgba(255,255,255,.06);
-  transition: background var(--t), border-color var(--t);
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: .76rem; font-weight: 700; letter-spacing: .04em;
+  color: var(--text-1);
+  padding: 7px 15px; border-radius: var(--pill);
+  border: 1px solid rgba(255,255,255,.13);
+  background: rgba(255,255,255,.05);
+  backdrop-filter: blur(8px);
+  transition: background var(--t), border-color var(--t),
+              box-shadow var(--t), transform var(--t), color var(--t);
   cursor: pointer;
+  white-space: nowrap;
 }
-.vf-ctrl-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
-.vf-ctrl-btn:hover { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.25); }
-.vf-ctrl-btn--paused { color: var(--disc-tema) !important; }
-.vf-ctrl-btn--ghost { color: var(--text-1); }
+.vf-ctrl-btn svg {
+  width: 13px; height: 13px; flex-shrink: 0;
+  transition: transform var(--t);
+}
+.vf-ctrl-btn:hover {
+  background: rgba(255,255,255,.10);
+  border-color: rgba(255,255,255,.24);
+  box-shadow: 0 2px 12px rgba(0,0,0,.35);
+  transform: translateY(-1px);
+}
+.vf-ctrl-btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* Botão Pausar — destaque sutil com cor do tema */
+#btn-pause {
+  background: rgba(var(--disc-tema-rgb), .10);
+  border-color: rgba(var(--disc-tema-rgb), .28);
+  color: var(--disc-tema);
+}
+#btn-pause:hover {
+  background: rgba(var(--disc-tema-rgb), .18);
+  border-color: rgba(var(--disc-tema-rgb), .50);
+  box-shadow: 0 2px 16px rgba(var(--disc-tema-rgb), .18);
+}
+.vf-ctrl-btn--paused {
+  background: rgba(var(--disc-tema-rgb), .18) !important;
+  border-color: rgba(var(--disc-tema-rgb), .50) !important;
+  color: var(--disc-tema) !important;
+  box-shadow: 0 0 10px rgba(var(--disc-tema-rgb), .15) !important;
+}
+.vf-ctrl-btn--paused svg { transform: scale(1.1); }
+
+/* Botão Início — ícone da casa maior */
+#btn-voltar-intro svg {
+  width: 18px; height: 18px;
+}
+
+/* Botão Início — neutro/fantasma refinado */
+.vf-ctrl-btn--ghost {
+  color: var(--text-2);
+  background: rgba(255,255,255,.04);
+  border-color: rgba(255,255,255,.10);
+}
+.vf-ctrl-btn--ghost:hover {
+  color: var(--text-1);
+  background: rgba(255,255,255,.09);
+  border-color: rgba(255,255,255,.20);
+}
 
 /* ── Card da questão — grande, escuro, com Q2, texto, linha, tag ── */
 .vf-question-card {
