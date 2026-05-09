@@ -515,7 +515,7 @@ window.__nexusConteudo = {
 
       ]
     },
-
+    // Aula 11 — Design Responsivo
     {
 aula: "Aula 11 — Design Responsivo",
 ideia_central: "Não basta reduzir o tamanho do site — é necessário reorganizar, adaptar e otimizar a interface para cada tipo de dispositivo.",
@@ -755,7 +755,359 @@ secoes: [
   }
 
 ]
-}
+    },
+    // Aula 12 — CSS e HTML Comandos Básicos
+    {
+  aula: "Aula 12 — CSS e HTML Comandos Básicos",
+  ideia_central: "HTML estrutura o conteúdo de páginas web por meio de tags semânticas, enquanto o CSS estiliza essa estrutura com seletores e propriedades, permitindo separação entre forma e aparência.",
+  secoes: [
+
+    {
+      id: "visao",
+      titulo: "🧭 Visão Geral",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O material apresenta os conceitos fundamentais de **HTML5**, **CSS** e **Web Semântica**, com foco prático no uso do **Visual Studio Code (VSCode)** para estruturar e estilizar páginas web do zero."
+        },
+        {
+          tipo: "lista",
+          titulo: "A aula aborda:",
+          itens: [
+            "Estrutura básica do HTML5",
+            "Criação de listas, tabelas e imagens",
+            "Aplicação de estilos externos com CSS",
+            "Uso de classes e seletores CSS",
+            "Conceitos de Web Semântica"
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "Objetivos principais:",
+          itens: [
+            "Entender a estrutura básica do HTML5",
+            "Aprender comandos essenciais do CSS",
+            "Relacionar HTML + CSS",
+            "Aplicar conceitos de Web Semântica"
+          ]
+        }
+      ]
+    },
+
+    {
+      id: "html",
+      titulo: "🧠 HTML — Conceitos Principais",
+      blocos: [
+
+        {
+          tipo: "topico",
+          titulo: "O que é HTML",
+          lista: [
+            "**Linguagem de marcação** — não é linguagem de programação",
+            "Utilizada para **estruturar páginas web** com base em **tags**",
+            "Não executa lógica — apenas organiza conteúdo visual e semântico"
+          ]
+        },
+
+        {
+          tipo: "topico",
+          titulo: "📄 Estrutura Básica do HTML5",
+          texto: "A estrutura padrão gerada automaticamente pelo VSCode com o atalho `!`:"
+        },
+        {
+          tipo: "imagem",
+          src: "fig_html_estrutura_basica_html5.png",
+          pasta: "imagens_design/aula_12",
+          alt: "Figura 1 — Estrutura básica de uma página HTML5 gerada pelo VSCode",
+          num: 1
+        },
+        {
+          tipo: "tabela",
+          titulo: "Elementos da Estrutura",
+          colunas: ["Elemento", "Função"],
+          linhas: [
+            ["<!DOCTYPE html>", "Declara o tipo do documento (HTML5) — não é uma tag"],
+            ["<html lang=\"pt-BR\">", "Elemento raiz — agrupa todo o documento; define o idioma"],
+            ["<head>", "Contém metadados, título, links externos — não visível ao usuário"],
+            ["<body>", "Área visível: textos, imagens, vídeos, tabelas, menus"]
+          ]
+        },
+
+        {
+          tipo: "topico",
+          titulo: "🔤 Tags de Título e Texto",
+          lista: [
+            "`<h1>` até `<h6>` → títulos e subtítulos em hierarquia (`<h1>` = maior importância)",
+            "`<p>` → parágrafo de texto"
+          ]
+        },
+
+        {
+          tipo: "topico",
+          titulo: "📋 Listas HTML",
+          lista: [
+            "`<ul>` + `<li>` → lista **não ordenada** (com marcadores)",
+            "`<ol>` + `<li>` → lista **ordenada** (numeração automática)"
+          ]
+        },
+
+        {
+          tipo: "topico",
+          titulo: "🖼️ Inserção de Imagens",
+          lista: [
+            "Tag: `<img src=\"\">`",
+            "Atributo `src` define o caminho da imagem",
+            "Exemplo: `<img src=\"assets/img/html.jpg\">`"
+          ]
+        },
+
+        {
+          tipo: "tabela",
+          titulo: "📊 Estrutura de Tabelas HTML",
+          colunas: ["Tag", "Função"],
+          linhas: [
+            ["<table>", "Cria a tabela"],
+            ["<thead>", "Cabeçalho da tabela"],
+            ["<tbody>", "Corpo da tabela"],
+            ["<tr>", "Linha da tabela"],
+            ["<th>", "Título da coluna (negrito por padrão)"],
+            ["<td>", "Célula de dado"]
+          ]
+        },
+
+        {
+          tipo: "exemplo",
+          titulo: "Estrutura mínima de tabela",
+          texto: "<table>\n  <thead>\n    <tr>\n      <th>Produto</th>\n    </tr>\n  </thead>\n</table>",
+          detalhe: "👉 `<thead>` agrupa o cabeçalho; `<tbody>` agrupa as linhas de dados"
+        }
+
+      ]
+    },
+
+    {
+      id: "css",
+      titulo: "🎨 CSS — Conceitos Principais",
+      blocos: [
+
+        {
+          tipo: "topico",
+          titulo: "O que é CSS",
+          lista: [
+            "**Cascading Style Sheets** — estiliza páginas HTML",
+            "Permite **reutilização de estilos** e **separação entre estrutura e aparência**",
+            "Reduz retrabalho ao centralizar regras de estilo"
+          ]
+        },
+
+        {
+          tipo: "topico",
+          titulo: "🔗 Vinculação do CSS ao HTML",
+          texto: "O CSS externo é conectado dentro do `<head>` via tag `<link>`:",
+          codigo: "<link rel=\"stylesheet\" href=\"assets/css/style.css\">"
+        },
+
+        {
+          tipo: "topico",
+          titulo: "⚙️ Sintaxe CSS",
+          texto: "Estrutura básica de uma regra CSS:"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Regra CSS",
+          texto: "seletor {\n  propriedade: valor;\n}",
+          detalhe: "👉 Exemplo: `body { background: red; }` → fundo vermelho na página inteira"
+        },
+
+        {
+          tipo: "tabela",
+          titulo: "📌 Propriedades CSS Importantes",
+          colunas: ["Propriedade", "Função"],
+          linhas: [
+            ["font-family", "Define a fonte do texto (ex: Verdana)"],
+            ["text-transform", "Transforma letras: uppercase | lowercase | capitalize"],
+            ["padding", "Espaçamento interno ao elemento"],
+            ["margin", "Espaçamento externo ao elemento"],
+            ["border", "Define borda (espessura, estilo, cor)"],
+            ["border-radius", "Arredonda as bordas do elemento"],
+            ["width", "Define a largura do elemento"],
+            ["background-color", "Define a cor de fundo"],
+            ["float", "Posicionamento flutuante (ex: float: right)"],
+            ["display: flex", "Organiza elementos horizontal e flexivelmente — muito usado em menus e layouts modernos"]
+          ]
+        }
+
+      ]
+    },
+
+    {
+      id: "semantica",
+      titulo: "🌐 Web Semântica",
+      blocos: [
+
+        {
+          tipo: "topico",
+          titulo: "O que é Web Semântica",
+          lista: [
+            "Busca **dar significado** aos conteúdos da página",
+            "Facilita o entendimento por **buscadores** (SEO)",
+            "Melhora **indexação** e organização da página",
+            "Autores relacionados: **Tim Berners-Lee**, **James Hendler**, **Ora Lassila**"
+          ]
+        },
+
+        {
+          tipo: "tabela",
+          titulo: "Elementos Semânticos",
+          colunas: ["Tag", "Função"],
+          linhas: [
+            ["<section>", "Divide o conteúdo em seções temáticas"],
+            ["<nav>", "Menu de navegação — conjunto de links"],
+            ["<footer>", "Rodapé da página"],
+            ["<div>", "Container genérico — muito usado para organização visual e aplicação de CSS"]
+          ]
+        }
+
+      ]
+    },
+
+    {
+      id: "classes",
+      titulo: "🏷️ Classes CSS",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "Por que usar classes",
+          lista: [
+            "Permitem **reutilização de estilos** em múltiplos elementos",
+            "Organizam o código CSS",
+            "Seletor CSS: `.menu { }` — o ponto indica classe",
+            "Aplicação no HTML: `<div class=\"menu\">`"
+          ]
+        }
+      ]
+    },
+
+    {
+      id: "metodos",
+      titulo: "⚙️ Métodos e Técnicas",
+      blocos: [
+
+        {
+          tipo: "topico",
+          titulo: "📌 1. Criar Estrutura do Projeto",
+          lista: [
+            "1. Criar pasta do projeto",
+            "2. Criar `index.html`",
+            "3. Criar pasta `assets/css/`",
+            "4. Criar `style.css`",
+            "5. Vincular CSS ao HTML com `<link>`"
+          ]
+        },
+
+        {
+          tipo: "topico",
+          titulo: "📌 2. Menu Horizontal com Flexbox",
+          lista: [
+            "HTML: `<nav><ul><li>...</li></ul></nav>`",
+            "CSS: `display: flex; list-style: none;`"
+          ]
+        },
+
+        {
+          tipo: "topico",
+          titulo: "📌 3. Layout em Colunas com Float",
+          lista: [
+            "`.floatleft { width: 70%; float: left; }`",
+            "`.floatright { width: 30%; float: right; }`"
+          ]
+        }
+
+      ]
+    },
+
+    {
+      id: "exemplos",
+      titulo: "📊 Exemplos Explicativos",
+      blocos: [
+
+        {
+          tipo: "exemplo",
+          titulo: "Exemplo 1 — Título",
+          texto: "<h1>Testando</h1>",
+          detalhe: "👉 Exibe o título principal da página"
+        },
+
+        {
+          tipo: "exemplo",
+          titulo: "Exemplo 2 — CSS no Body",
+          texto: "body {\n  background: red;\n}",
+          detalhe: "👉 Aplica fundo vermelho em toda a página"
+        },
+
+        {
+          tipo: "exemplo",
+          titulo: "Exemplo 3 — Imagem com Bordas Arredondadas",
+          texto: "img {\n  border-radius: 40px;\n}",
+          detalhe: "👉 Arredonda as bordas de todas as imagens da página"
+        },
+
+        {
+          tipo: "texto",
+          texto: "Layout final do exercício prático — combina menu horizontal, colunas, lista, imagem e tabela estilizada usando HTML semântico + CSS:"
+        },
+        {
+          tipo: "imagem",
+          src: "fig_layout_html_css_menu_colunas.png",
+          pasta: "imagens_design/aula_12",
+          alt: "Figura 2 — Layout exemplo com menu horizontal, colunas, lista, imagem e tabela estilizada",
+          num: 2
+        }
+
+      ]
+    },
+
+    {
+      id: "resumo",
+      titulo: "⚡ Resumo Final para Revisão Rápida",
+      blocos: [
+        {
+          tipo: "tabela",
+          titulo: "Tags HTML importantes",
+          colunas: ["Tag", "Função"],
+          linhas: [
+            ["<h1>", "Título principal"],
+            ["<p>", "Parágrafo"],
+            ["<ul>", "Lista não ordenada"],
+            ["<img>", "Imagem"],
+            ["<table>", "Tabela"],
+            ["<section>", "Seção semântica"],
+            ["<nav>", "Navegação"],
+            ["<div>", "Container genérico"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Propriedades CSS importantes",
+          colunas: ["Propriedade", "Função"],
+          linhas: [
+            ["padding", "Espaço interno"],
+            ["margin", "Espaço externo"],
+            ["border", "Borda"],
+            ["width", "Largura"],
+            ["float", "Flutuação"],
+            ["display: flex", "Layout flexível"]
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "📌 Mais cobrados em prova: Estrutura HTML5 · Diferença entre HTML e CSS · Tags semânticas (`<nav>`, `<section>`, `<footer>`) · `padding` vs `margin` · Tabelas HTML · Classes CSS · `display: flex` · Web Semântica (Tim Berners-Lee)"
+        }
+      ]
+    }
+
+  ]
+    },
 
   ]
 };

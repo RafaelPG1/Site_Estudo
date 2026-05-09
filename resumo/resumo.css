@@ -1203,6 +1203,45 @@ pre {
   line-height: 1.5;
 }
 
+/* ── Bloco tipo "imagem" (figura dedicada, sem cabeçalho de tópico) ── */
+.rm-fig {
+  margin: 1rem 0 1.25rem;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-glow);
+  background: var(--surface-2);
+}
+
+.rm-fig__img {
+  width: 100%;
+  display: block;
+  object-fit: contain;
+  max-height: 480px;
+  border-radius: 12px 12px 0 0;
+}
+
+.rm-fig__caption {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.55rem 0.85rem 0.6rem;
+  font-size: 0.71rem;
+  color: var(--text-3);
+  font-style: italic;
+  line-height: 1.5;
+  border-top: 1px solid var(--border);
+}
+
+.rm-fig__num {
+  flex-shrink: 0;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 0.68rem;
+  color: var(--disc-tema);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 /* ═══════════════════════════════════════════════════════════════════
    NEXUS STUDY — videos_strip.css  (v3 — card redesign)
    Substitui todo o bloco de vídeos no final de resumo.css

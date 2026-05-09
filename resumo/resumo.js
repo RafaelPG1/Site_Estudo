@@ -594,23 +594,45 @@ function _bindModalTabs() {
 /* ══════════════════════════════════════════════
    RENDERIZADOR DE BLOCOS
 ══════════════════════════════════════════════ */
+/* ── Utilitário: monta o caminho base das imagens para a disciplina atual ── */
+function _imgBase() {
+  const [ano] = (State.semestre ?? '2026.1').split('.');
+  const disc  = State.disciplina;
+  // Caminho: content/resumo/<ano>/<semestre>/image/imagens_<arquivo>/
+  // Ex: content/resumo/2026/2026.2/image/imagens_banco_dados/
+  return disc
+    ? `../content/resumo/${ano}/${State.semestre}/image/imagens_${disc.arquivo}/`
+    : `../content/resumo/${ano}/${State.semestre}/image/`;
+}
+
 function _renderBloco(b) {
   switch (b.tipo) {
     case 'topico': {
-      const [ano] = (State.semestre ?? '2026.1').split('.');
-      const imgBase = `conteudo/${ano}/${State.semestre}/`;
+      const base = _imgBase();
       let html = `<div class="rm-topico">`;
       html += `<div class="rm-topico__titulo">${_parseInline(b.titulo ?? '')}</div>`;
       if (b.texto)  html += `<p class="rm-topico__texto">${_parseInline(b.texto)}</p>`;
       if (b.imagem) html += `
         <figure class="rm-topico__fig">
-          <img class="rm-topico__img" src="${_esc(imgBase + b.imagem.src)}" alt="${_esc(b.imagem.alt)}" loading="lazy" />
+          <img class="rm-topico__img" src="${_esc(base + b.imagem.src)}" alt="${_esc(b.imagem.alt)}" loading="lazy" />
           <figcaption class="rm-topico__fig-caption">${_esc(b.imagem.alt)}</figcaption>
         </figure>`;
       if (b.lista)  html += `<ul class="rm-lista">${b.lista.map(i => `<li><span>${_parseInline(i)}</span></li>`).join('')}</ul>`;
       if (b.codigo) html += `<pre class="rm-codigo"><code>${_esc(b.codigo)}</code></pre>`;
       html += `</div>`;
       return html;
+    }
+    case 'imagem': {
+      /* Bloco dedicado a figura/screenshot — sem título de tópico acima
+         Campos: src (nome do arquivo), alt (legenda), pasta (opcional,
+         para sobrescrever a pasta padrão da disciplina)               */
+      const base = b.pasta ? `../content/resumo/${(State.semestre ?? '2026.1').split('.')[0]}/${State.semestre}/image/${b.pasta}/` : _imgBase();
+      const num  = b.num ? `<span class="rm-fig__num">Figura ${b.num}</span>` : '';
+      return `
+        <figure class="rm-fig">
+          <img class="rm-fig__img" src="${_esc(base + b.src)}" alt="${_esc(b.alt ?? '')}" loading="lazy" />
+          <figcaption class="rm-fig__caption">${num}${_esc(b.alt ?? '')}</figcaption>
+        </figure>`;
     }
     case 'lista': {
       let html = '';

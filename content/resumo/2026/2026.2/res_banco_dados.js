@@ -866,8 +866,409 @@ window.__nexusConteudo = {
         }
 
       ]
+    },
+    // Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2
+    {
+  aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+  ideia_central: "Funções de agregação resumem grandes conjuntos de dados em valores únicos; HAVING filtra grupos após agrupamento; DISTINCT elimina duplicatas — ferramentas essenciais para transformar dados brutos em informações úteis.",
+  secoes: [
+
+    {
+      id: "visao",
+      titulo: "📖 Visão Geral",
+      blocos: [
+        {
+          tipo: "lista",
+          titulo: "Principais tópicos desta aula:",
+          itens: [
+            "**Funções de agregação** — resumir dados em um único valor",
+            "**Alias (AS)** — renomear campos calculados",
+            "**GROUP BY** — agrupar registros antes de agregar",
+            "**HAVING** — filtrar grupos (como WHERE, mas pós-agrupamento)",
+            "**Ordem de execução SQL** — muito cobrada em prova",
+            "**Valores NULL em agregações** — comportamento especial",
+            "**DISTINCT** — eliminar duplicatas no resultado",
+            "**DISTINCT em funções de agregação** — contar/somar sem repetição"
+          ]
+        }
+      ]
+    },
+
+    {
+      id: "agregacao",
+      titulo: "🧠 Funções de Agregação",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Funções de agregação processam **diversos valores de uma coluna** e retornam **um único resultado**. Operam sobre uma coluna inteira, não sobre linhas isoladas."
+        },
+        {
+          tipo: "tabela",
+          titulo: "🔹 Principais Funções",
+          colunas: ["Função", "Descrição", "Uso típico"],
+          linhas: [
+            ["AVG(col)",   "Calcula a média",        "Média salarial, nota, créditos"],
+            ["SUM(col)",   "Soma total",              "Total vendido, soma financeira"],
+            ["COUNT(*)",   "Conta todas as linhas",   "Quantidade de registros"],
+            ["COUNT(col)", "Conta valores não nulos", "Campos preenchidos"],
+            ["MAX(col)",   "Maior valor",             "Maior salário, data mais recente"],
+            ["MIN(col)",   "Menor valor",             "Menor preço, data mais antiga"]
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "📌 AVG() — Média",
+          lista: [
+            "Calcula o valor médio de uma coluna numérica",
+            "Ignora valores NULL automaticamente"
+          ],
+          codigo: "SELECT AVG(coluna)\nFROM tabela;"
+        },
+        {
+          tipo: "topico",
+          titulo: "📌 SUM() — Soma",
+          lista: [
+            "Soma todos os valores de uma coluna",
+            "Ignora valores NULL"
+          ],
+          codigo: "SELECT SUM(coluna)\nFROM tabela;"
+        },
+        {
+          tipo: "topico",
+          titulo: "📌 COUNT() — Contagem",
+          lista: [
+            "`COUNT(*)` → conta **todas** as linhas, inclusive com NULL",
+            "`COUNT(coluna)` → conta apenas valores **não nulos**",
+            "`COUNT(DISTINCT coluna)` → conta valores **únicos**",
+            "⚠ `COUNT(DISTINCT *)` é **inválido** no SQL padrão"
+          ],
+          codigo: "SELECT COUNT(*) FROM tabela;            -- conta tudo\nSELECT COUNT(col) FROM tabela;          -- ignora NULL\nSELECT COUNT(DISTINCT col) FROM tabela; -- únicos"
+        },
+        {
+          tipo: "topico",
+          titulo: "📌 MAX() e MIN()",
+          lista: [
+            "**MAX** → retorna o maior valor da coluna",
+            "**MIN** → retorna o menor valor da coluna",
+            "Funcionam com números, datas e textos"
+          ],
+          codigo: "SELECT MAX(coluna), MIN(coluna)\nFROM tabela;"
+        }
+      ]
+    },
+
+    {
+      id: "alias",
+      titulo: "📊 Agregação Básica e Alias (AS)",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "É o uso direto de funções agregadas sobre registros filtrados, normalmente combinado com **WHERE** para restringir o conjunto."
+        },
+        {
+          tipo: "topico",
+          titulo: "🔹 Exemplo — Média com filtro WHERE",
+          lista: [
+            "Busca a tabela `alunos`",
+            "Filtra alunos do curso 10",
+            "Calcula a média de `tot_cred`"
+          ],
+          codigo: "SELECT AVG(tot_cred)\nFROM alunos\nWHERE cod_curso = 10;"
+        },
+        {
+          tipo: "imagem",
+          src: "fig_selecao_media_creditos.png",
+          pasta: "imagens_banco_dados/aula_12",
+          num: "1",
+          alt: "Seleção de alunos com a média dos totais de créditos usando critério código do curso = 10"
+        },
+        {
+          tipo: "topico",
+          titulo: "🔹 Alias (AS) — Renomear o resultado",
+          texto: "Melhora a leitura do resultado ao dar um nome descritivo ao campo calculado.",
+          lista: [
+            "Sem alias: o cabeçalho exibe `AVG(tot_cred)` — difícil de ler",
+            "Com alias: o cabeçalho exibe `media_total_credito` — claro e objetivo"
+          ],
+          codigo: "SELECT AVG(tot_cred) AS media_total_credito\nFROM alunos\nWHERE cod_curso = 10;"
+        },
+        {
+          tipo: "imagem",
+          src: "fig_selecao_media_alias.png",
+          pasta: "imagens_banco_dados/aula_12",
+          num: "2",
+          alt: "Seleção de alunos com média de créditos e alias para nomear o campo calculado"
+        }
+      ]
+    },
+
+    {
+      id: "groupby",
+      titulo: "📂 Agrupamento com GROUP BY",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Permite dividir os registros em grupos antes de aplicar as funções de agregação. Cada grupo recebe seu próprio valor calculado."
+        },
+        {
+          tipo: "topico",
+          titulo: "🔹 Estrutura",
+          codigo: "SELECT coluna, agregacao(coluna)\nFROM tabela\nGROUP BY coluna;"
+        },
+        {
+          tipo: "topico",
+          titulo: "🔹 Exemplo — Média de créditos por curso",
+          lista: [
+            "SQL divide os registros por `cod_curso`",
+            "Cria um grupo para cada curso",
+            "Calcula a média separadamente para cada grupo"
+          ],
+          codigo: "SELECT cod_curso,\n       AVG(tot_cred) AS media_tot_cred\nFROM alunos\nGROUP BY cod_curso;"
+        },
+        {
+          tipo: "tabela",
+          titulo: "Exemplo prático de agrupamento",
+          colunas: ["Curso (entrada)", "Créditos", "→", "Curso (resultado)", "Média"],
+          linhas: [
+            ["10", "80",  "→", "10", "90"],
+            ["10", "100", "→", "20", "130"],
+            ["20", "120", "→", "",   ""],
+            ["20", "140", "→", "",   ""]
+          ]
+        },
+        {
+          tipo: "imagem",
+          src: "fig_agregacao_group_by.png",
+          pasta: "imagens_banco_dados/aula_12",
+          num: "3",
+          alt: "Exemplo de agregação com agrupamento — GROUP BY divide registros e calcula média por grupo"
+        },
+        {
+          tipo: "destaque",
+          texto: "📌 Sem GROUP BY, toda a tabela é tratada como **um único grupo** — a agregação retorna um valor global."
+        }
+      ]
+    },
+
+    {
+      id: "having",
+      titulo: "🔍 Cláusula HAVING",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Filtra os **grupos** criados pelo GROUP BY — assim como WHERE filtra linhas individuais, HAVING filtra grupos após o agrupamento."
+        },
+        {
+          tipo: "tabela",
+          titulo: "🔹 WHERE vs HAVING",
+          colunas: ["Cláusula", "Atua sobre", "Momento"],
+          linhas: [
+            ["WHERE",  "Linhas individuais", "Antes do agrupamento"],
+            ["HAVING", "Grupos",             "Após o agrupamento"]
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "🔹 Exemplo — Cursos com média maior que 100",
+          lista: [
+            "Agrupa registros por curso",
+            "Calcula a média de créditos de cada grupo",
+            "Remove grupos cuja média seja ≤ 100"
+          ],
+          codigo: "SELECT cod_curso,\n       AVG(tot_cred) AS media_tot_cred\nFROM alunos\nGROUP BY cod_curso\nHAVING AVG(tot_cred) > 100;"
+        },
+        {
+          tipo: "imagem",
+          src: "fig_exemplo_clausula_having.png",
+          pasta: "imagens_banco_dados/aula_12",
+          num: "4",
+          alt: "Exemplo de cláusula HAVING filtrando grupos após agrupamento"
+        },
+        {
+          tipo: "destaque",
+          texto: "📌 Regra para prova: todo atributo usado no HAVING **sem** função de agregação deve estar no GROUP BY."
+        }
+      ]
+    },
+
+    {
+      id: "execucao",
+      titulo: "⚙️ Ordem de Execução SQL",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "A ordem de **escrita** da query é diferente da ordem de **execução** interna do banco. Muito cobrado em prova."
+        },
+        {
+          tipo: "tabela",
+          titulo: "🔹 Ordem lógica de execução",
+          colunas: ["Passo", "Cláusula", "O que faz"],
+          linhas: [
+            ["1º", "FROM",     "Seleciona a(s) tabela(s)"],
+            ["2º", "WHERE",    "Filtra linhas individuais"],
+            ["3º", "GROUP BY", "Agrupa os registros filtrados"],
+            ["4º", "HAVING",   "Filtra os grupos"],
+            ["5º", "SELECT",   "Define o resultado final"],
+            ["6º", "ORDER BY", "Ordena o resultado"]
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "🔹 Ordem de escrita da query",
+          codigo: "SELECT\nFROM\nWHERE\nGROUP BY\nHAVING\nORDER BY"
+        }
+      ]
+    },
+
+    {
+      id: "nulos",
+      titulo: "⚠️ Valores NULL em Agregações",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Valores NULL recebem tratamento especial nas funções de agregação."
+        },
+        {
+          tipo: "topico",
+          titulo: "🔹 Regra geral",
+          lista: [
+            "**AVG, SUM, MAX, MIN, COUNT(coluna)** → **ignoram** NULL",
+            "**COUNT(*)** → **conta** todas as linhas, inclusive com NULL"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "🔹 Exemplo com NULL",
+          texto: "Tabela com créditos: 100, NULL, 200. A consulta abaixo retorna 150 — o NULL é ignorado.",
+          codigo: "SELECT AVG(tot_cred)\nFROM alunos;\n-- Resultado: 150  (NULL ignorado)"
+        },
+        {
+          tipo: "destaque",
+          texto: "📌 Para prova: se **todos** os valores da coluna forem NULL → COUNT() retorna 0; AVG/SUM/MAX/MIN retornam NULL."
+        }
+      ]
+    },
+
+    {
+      id: "distinct",
+      titulo: "🔄 Cláusula DISTINCT",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Remove **duplicatas** do resultado de uma consulta. Útil quando existem registros repetidos e deseja-se visualizar apenas valores únicos."
+        },
+        {
+          tipo: "topico",
+          titulo: "🔹 Sem DISTINCT × Com DISTINCT",
+          lista: [
+            "Sem DISTINCT: pode retornar cursos 10, 10, 20, 20, 30",
+            "Com DISTINCT: retorna apenas 10, 20, 30"
+          ],
+          codigo: "-- Sem DISTINCT (com duplicatas):\nSELECT cod_curso FROM alunos;\n\n-- Com DISTINCT (valores únicos):\nSELECT DISTINCT cod_curso FROM alunos;"
+        },
+        {
+          tipo: "imagem",
+          src: "fig_consulta_sem_distinct.png",
+          pasta: "imagens_banco_dados/aula_12",
+          num: "5",
+          alt: "Consulta simples de código de cursos — resultado com duplicatas"
+        },
+        {
+          tipo: "imagem",
+          src: "fig_consulta_com_distinct.png",
+          pasta: "imagens_banco_dados/aula_12",
+          num: "6",
+          alt: "Consulta usando DISTINCT — duplicatas eliminadas do resultado"
+        },
+        {
+          tipo: "topico",
+          titulo: "🔹 DISTINCT em Funções de Agregação",
+          lista: [
+            "Remove duplicatas **antes** de aplicar a agregação",
+            "Útil para contar itens únicos (ex: alunos que cursaram uma disciplina mais de uma vez)",
+            "⚠ `COUNT(DISTINCT *)` é **inválido** — usar sempre com nome de coluna",
+            "Palavra-chave **ALL** (padrão) mantém duplicatas — normalmente desnecessária"
+          ],
+          codigo: "-- Conta alunos únicos na disciplina 200070 no ano de 2001:\nSELECT COUNT(DISTINCT mat_alu)\nFROM historicos_escolares\nWHERE cod_disc = 200070\n  AND ano = 2001;"
+        },
+        {
+          tipo: "imagem",
+          src: "fig_distinct_agregacao_count.png",
+          pasta: "imagens_banco_dados/aula_12",
+          num: "7",
+          alt: "Consulta usando DISTINCT numa função de agregação COUNT — contagem sem duplicidade"
+        }
+      ]
+    },
+
+    {
+      id: "exemplos",
+      titulo: "💡 Exemplos Explicativos",
+      blocos: [
+        {
+          tipo: "exemplo",
+          titulo: "Exemplo 1 — Média geral",
+          texto: "Calcular a média de notas de todos os alunos sem filtro.",
+          detalhe: "👉 SELECT AVG(nota) FROM alunos;"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Exemplo 2 — Média por turma (GROUP BY)",
+          texto: "Calcular a média de notas separada por turma.",
+          detalhe: "👉 SELECT turma, AVG(nota) FROM alunos GROUP BY turma;"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Exemplo 3 — Filtrar grupos (HAVING)",
+          texto: "Mostrar apenas turmas com média superior a 7.",
+          detalhe: "👉 SELECT turma, AVG(nota) FROM alunos GROUP BY turma HAVING AVG(nota) > 7;"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Exemplo 4 — Valores únicos (DISTINCT)",
+          texto: "Listar todas as cidades dos clientes sem repetição.",
+          detalhe: "👉 SELECT DISTINCT cidade FROM clientes;"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Exemplo 5 — Contagem de alunos únicos",
+          texto: "Contar alunos distintos que cursaram uma disciplina, mesmo que tenham cursado mais de uma vez.",
+          detalhe: "👉 SELECT COUNT(DISTINCT mat_alu) FROM historicos_escolares WHERE cod_disc = 200070 AND ano = 2001;"
+        }
+      ]
+    },
+
+    {
+      id: "resumo",
+      titulo: "🧾 Resumo Final para Revisão Rápida",
+      blocos: [
+        {
+          tipo: "lista",
+          itens: [
+            "**AVG** → média · **SUM** → soma · **COUNT** → contagem · **MAX** → maior · **MIN** → menor",
+            "**COUNT(*)** conta tudo (inclusive NULL) · **COUNT(col)** ignora NULL",
+            "**Alias (AS)** → renomeia campos calculados para melhor leitura",
+            "**GROUP BY** → divide registros em grupos para agregação separada",
+            "**HAVING** → filtra grupos após agrupamento (WHERE filtra linhas antes)",
+            "**NULL** → ignorado por AVG/SUM/MAX/MIN/COUNT(col); COUNT(*) inclui",
+            "**DISTINCT** → remove duplicatas do resultado ou de dentro de agregações",
+            "**COUNT(DISTINCT col)** → válido · **COUNT(DISTINCT *)** → inválido"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "🔹 Ordem de execução (decorar para prova)",
+          codigo: "1º FROM → 2º WHERE → 3º GROUP BY → 4º HAVING → 5º SELECT → 6º ORDER BY"
+        },
+        {
+          tipo: "destaque",
+          texto: "📌 Ideia-chave: O refinamento de consultas transforma dados brutos em informações úteis para análise e tomada de decisão. WHERE filtra linhas | GROUP BY agrupa | HAVING filtra grupos | DISTINCT elimina duplicatas."
+        }
+      ]
     }
 
-    
   ]
+    }
+ 
+  ] 
 };
