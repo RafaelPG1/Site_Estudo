@@ -1002,9 +1002,19 @@ function _bindVfActions(estudantes, dados) {
 
 async function _limparVfUsuario(uid) {
   try {
+    // 1. Apaga Firestore: usuarios/{uid}/vf_historico/*
     const snap = await getDocs(collection(getDb(), 'usuarios', uid, 'vf_historico'));
     await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
-    console.log(`[admin] _limparVfUsuario: uid="${uid}" ok (${snap.size} docs)`);
+    console.log(`[admin] _limparVfUsuario Firestore: uid="${uid}" ok (${snap.size} docs)`);
+
+    // 2. Apaga localStorage: todas as chaves nexus_vf_{uid}_*
+    // Padrão de chave (storage_vf.js): nexus_vf_{usuario}_{discId}_{sem}
+    const prefixo = `nexus_vf_${uid}_`;
+    const keysParaRemover = Object.keys(localStorage).filter(k => k.startsWith(prefixo));
+    keysParaRemover.forEach(k => localStorage.removeItem(k));
+    if (keysParaRemover.length) {
+      console.log(`[admin] _limparVfUsuario localStorage: ${keysParaRemover.length} chave(s) removida(s) → ${uid}`);
+    }
   } catch (err) {
     console.error('[admin] _limparVfUsuario erro:', err);
   }

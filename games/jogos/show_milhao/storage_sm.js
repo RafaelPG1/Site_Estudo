@@ -178,6 +178,14 @@ export function carregarEstadoPartida(uid, discId, sem) {
   }
 
   const idadeMin = Math.round((Date.now() - dados.salvoEm) / 60000);
+
+  const LIMITE_MIN = 20;
+  if (idadeMin > LIMITE_MIN) {
+    smWarn(`Save expirado (salvo há ${idadeMin} min > ${LIMITE_MIN} min) — descartando.`);
+    localStorage.removeItem(chave);
+    return null;
+  }
+
   smLog(`Partida salva encontrada ✓ (uid="${uid}" | salva há ${idadeMin} min | Q${dados.indice + 1}/${dados.perguntas.length})`);
 
   dados.respostas = dados.respostas.map(r => r === '__vazio__' ? undefined : r);

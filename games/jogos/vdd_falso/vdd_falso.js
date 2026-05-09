@@ -38,6 +38,92 @@ const CONFIG = {
 };
 
 /* ══════════════════════════════════════════════════════════
+   SESSÃO PERSISTIDA (Continuar de onde parou)
+   ══════════════════════════════════════════════════════════
+
+   Chave: nexus_vf_sessao_{usuario}_{discId}_{sem}
+   Estrutura:
+   {
+     perguntas:   [...],   // deck completo da rodada
+     respostas:   [...],   // undefined = não respondida, true/false/null
+     tempos:      [...],   // segundos restantes por questão
+     indice:      N,
+     pontos:      N,
+     acertos:     N,
+     erros:       N,
+     modoRevisao: bool,
+     timestamp:   ms,
+   }
+   A sessão é removida quando o jogo é finalizado ou o usuário
+   clica em "Sair" / "Voltar ao início" conscientemente.
+══════════════════════════════════════════════════════════ */
+
+const SESSAO_TTL_MS = 24 * 60 * 60 * 1000; // 24 h
+
+function _chaveSessao(usuario, discId, sem) {
+  return `nexus_vf_sessao_${usuario}_${discId}_${sem}`;
+}
+
+function salvarSessao() {
+  try {
+    const chave = _chaveSessao(estado.usuario, estado.discId, estado.sem);
+    // JSON.stringify converte undefined→null dentro de arrays, perdendo o sentido.
+    // Usamos um objeto explícito por posição: { v: true/false/null } ou { v: '__p__' } = pendente.
+    const respostasSerializadas = estado.respostas.map(r =>
+      r === undefined ? { v: '__p__' } : { v: r }
+    );
+    const sessao = {
+      perguntas:   estado.perguntas,
+      respostas:   respostasSerializadas,   // array de { v: true|false|null|'__p__' }
+      tempos:      [...estado.tempos],
+      indice:      estado.indice,
+      pontos:      estado.pontos,
+      acertos:     estado.acertos,
+      erros:       estado.erros,
+      modoRevisao: estado.modoRevisao,
+      timestamp:   Date.now(),
+    };
+    localStorage.setItem(chave, JSON.stringify(sessao));
+  } catch (e) {
+    console.warn('[vdd_falso] Erro ao salvar sessão:', e);
+  }
+}
+
+function carregarSessaoSalva(usuario, discId, sem) {
+  try {
+    const chave = _chaveSessao(usuario, discId, sem);
+    const raw   = localStorage.getItem(chave);
+    if (!raw) return null;
+    const sessao = JSON.parse(raw);
+    // Expira após 24 h
+    if (Date.now() - (sessao.timestamp ?? 0) > SESSAO_TTL_MS) {
+      localStorage.removeItem(chave);
+      return null;
+    }
+    // Reconstitui undefined a partir do sentinel '__p__' (pendente)
+    sessao.respostas = sessao.respostas.map(r => {
+      // formato novo: { v: true|false|null|'__p__' }
+      if (r && typeof r === 'object' && 'v' in r) {
+        return r.v === '__p__' ? undefined : r.v;
+      }
+      // compatibilidade com formato antigo (string '__undef__' ou valor direto)
+      if (r === '__undef__' || r === null) return undefined;
+      return r;
+    });
+    return sessao;
+  } catch (e) {
+    return null;
+  }
+}
+
+function limparSessao() {
+  try {
+    const chave = _chaveSessao(estado.usuario, estado.discId, estado.sem);
+    localStorage.removeItem(chave);
+  } catch (e) { /* silencioso */ }
+}
+
+/* ══════════════════════════════════════════════════════════
    ESTADO
    ══════════════════════════════════════════════════════════ */
 
@@ -264,6 +350,9 @@ function criarTimer(totalInicial) {
       // o valor salvo seja sempre o mais recente possível.
       estado.tempos[estado.indice] = restante;
 
+      // Persiste sessão a cada 5 s (não a cada tick para evitar thrashing)
+      if (restante % 5 === 0) salvarSessao();
+
       // A barra SEMPRE deve refletir restante / tempo_total_fixo (30s).
       const pctReal = (restante / CONFIG.TEMPO_POR_QUESTAO) * 100;
       document.documentElement.style.setProperty('--timer-pct', pctReal + '%');
@@ -467,11 +556,34 @@ function registrarResposta(resp) {
       estado.pontos   = Math.max(0, estado.pontos - CONFIG.PONTOS_ERRO);
       estado.erros   += 1;
     }
+
+    // Salva esta questão no histórico imediatamente (sem esperar finalizar),
+    // para que erros/acertos já apareçam no "Revisar erros" mesmo ao sair.
+    const resultado = [{ id: pergunta.id, resp, acertou: correto }];
+    salvarResultadoVF(estado.usuario, estado.discId, estado.sem, resultado)
+      .then(() => {
+        // Atualiza o cache em memória igual ao finalizarJogo
+        const entrada = estado.historicoVF[pergunta.id] ?? {
+          tentativas: 0, acertos: 0, erros: 0, ultimaVez: 0, acertosConsecutivos: 0,
+        };
+        entrada.tentativas++;
+        if (correto) {
+          entrada.acertos++;
+          entrada.acertosConsecutivos = (entrada.acertosConsecutivos ?? 0) + 1;
+        } else {
+          entrada.erros++;
+          entrada.acertosConsecutivos = 0;
+        }
+        entrada.ultimaVez = Date.now();
+        estado.historicoVF[pergunta.id] = entrada;
+      })
+      .catch(err => console.warn('[vdd_falso] Erro ao salvar resposta:', err));
   }
 
   if (el.scoreCorrect) el.scoreCorrect.textContent = estado.acertos;
 
   renderizarQuestao();
+  salvarSessao(); // persiste sessão após cada resposta
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -482,6 +594,7 @@ function navegarPara(i) {
   if (i < 0 || i >= estado.perguntas.length) return;
   estado.indice = i;
   renderizarQuestao();
+  salvarSessao(); // persiste ao navegar (tempo restante atualizado)
 }
 
 function irAnterior() {
@@ -518,40 +631,21 @@ function irProxima() {
 
 async function finalizarJogo() {
   estado.timer?.stop();
+  limparSessao(); // rodada concluída — não precisa mais do ponto de retorno
 
-  // Questões com tempo esgotado (resp === null) são excluídas do histórico
+  // O histórico já foi salvo questão a questão em registrarResposta().
+  // Aqui não salvamos de novo para evitar duplicar tentativas/acertos/erros.
+  // O cache estado.historicoVF também já está atualizado em memória.
+
+  // Apenas garante que timeouts (resp === null) também não são contados
+  // (registrarResposta já os ignora, mas confirmamos aqui por segurança).
   const resultados = estado.perguntas
     .map((p, i) => ({
-      id:     p.id,
-      resp:   estado.respostas[i],
+      id:      p.id,
+      resp:    estado.respostas[i],
       acertou: estado.respostas[i] === p.resposta,
     }))
     .filter(r => r.resp !== null && r.resp !== undefined);
-
-  try {
-    await salvarResultadoVF(estado.usuario, estado.discId, estado.sem, resultados);
-  } catch (err) {
-    console.warn('[vdd_falso] Erro ao salvar:', err);
-  }
-
-  // Atualiza o cache em memoria com os resultados recem-salvos,
-  // sem depender de recarregar do Firestore (que pode ter latencia
-  // e retornar dados desatualizados, causando o botao "Revisar erros"
-  // mostrar questoes que ja foram acertadas nesta rodada).
-  for (const { id, acertou, resp } of resultados) {
-    if (resp === null || resp === undefined) continue;
-    const entrada = estado.historicoVF[id] ?? { tentativas: 0, acertos: 0, erros: 0, ultimaVez: 0, acertosConsecutivos: 0 };
-    entrada.tentativas++;
-    if (acertou) {
-      entrada.acertos++;
-      entrada.acertosConsecutivos = (entrada.acertosConsecutivos ?? 0) + 1;
-    } else {
-      entrada.erros++;
-      entrada.acertosConsecutivos = 0;
-    }
-    entrada.ultimaVez = Date.now();
-    estado.historicoVF[id] = entrada;
-  }
 
   const respondidas = estado.respostas.filter(r => r !== null && r !== undefined).length;
   const pct         = respondidas > 0
@@ -613,6 +707,9 @@ async function finalizarJogo() {
     elSair.parentNode.replaceChild(novoSair, elSair);
     novoSair.addEventListener('click', async (e) => {
       e.preventDefault();
+      limparSessao(); // usuário voltou ao início conscientemente
+      // Oculta o botão Continuar — sessão foi descartada
+      document.getElementById('btn-continuar')?.classList.add('hidden');
       // Garante que qualquer rastro de sessão de revisão seja apagado
       // antes de voltar à intro — o usuário vai clicar "Começar" (modo normal).
       estado.modoRevisao  = false;
@@ -893,17 +990,21 @@ function setupPausa() {
   btnPause?.addEventListener('click', togglePausa);
   pauseOverlay.addEventListener('click', e => { if (e.target.closest('#btn-retomar')) togglePausa(); });
 
-  // Botão "Voltar ao início" — usa estado.banco (já carregado)
+  // Botão "Voltar ao início" — SALVA a sessão para permitir "Continuar" depois
   btnVoltarIntro?.addEventListener('click', async () => {
+    // Para o timer e persiste o tempo restante atual
     estado.timer?.stop();
-    estado.timer        = null;
-    estado.pausado      = false;
-    estado.tempos       = [];
-    // Garante que o modo revisão não vaze para a próxima sessão
-    estado.modoRevisao  = false;
-    estado.cardsRevisao = null;
-    pauseOverlay.classList.add('hidden');
+    estado.timer   = null;
+    estado.pausado = false;
 
+    // Salva a sessão ANTES de qualquer limpeza de UI
+    salvarSessao();
+
+    // Lê a sessão recém-salva para configurar o botão Continuar
+    const sessaoParaContinuar = carregarSessaoSalva(estado.usuario, estado.discId, estado.sem);
+
+    // Restaura UI de pausa/pause button
+    pauseOverlay.classList.add('hidden');
     const btnPauseEl   = $('btn-pause');
     const pauseIconEl  = $('pause-icon');
     const pauseLabelEl = $('pause-label');
@@ -923,12 +1024,22 @@ function setupPausa() {
       timerDisplay.classList.remove('game-timer-display--danger', 'game-timer-display--mid');
     }
 
+    // Reseta estado de revisão para a próxima sessão normal
+    estado.modoRevisao  = false;
+    estado.cardsRevisao = null;
+    estado.tempos       = [];
+
     const historico = await carregarHistoricoVF(estado.usuario, estado.discId, estado.sem).catch(() => ({}));
     estado.historicoVF = historico;
     estado.perguntas   = montarDeck(estado.banco, historico);
 
     // Atualiza botão "Revisar erros" com histórico mais recente
     atualizarBtnRevisarErros(estado.banco, historico);
+
+    // Mostra/atualiza botão Continuar se há sessão salva
+    if (sessaoParaContinuar && sessaoParaContinuar.perguntas?.length > 0) {
+      _configurarBtnContinuar(sessaoParaContinuar);
+    }
 
     if (estado.perguntas.length === 0) {
       mostrarTela('empty');
@@ -1010,6 +1121,59 @@ function atualizarContadores() {
   if (el.qTotal)     el.qTotal.textContent     = n;
   const introTotal = $('intro-total-questoes');
   if (introTotal)    introTotal.textContent    = n;
+}
+
+/* ══════════════════════════════════════════════════════════
+   CONTINUAR SESSÃO SALVA
+   ══════════════════════════════════════════════════════════ */
+
+function _configurarBtnContinuar(sessao) {
+  const btn = document.getElementById('btn-continuar');
+  if (!btn) return;
+
+  const respondidas = sessao.respostas.filter(r => r !== undefined).length;
+  const total       = sessao.perguntas.length;
+
+  // Clona para evitar listeners duplicados
+  const novo = btn.cloneNode(true);
+  btn.parentNode.replaceChild(novo, btn);
+  novo.classList.remove('hidden');
+
+  const countEl = document.getElementById('continuar-progress');
+  if (countEl) countEl.textContent = `${respondidas}/${total}`;
+
+  novo.addEventListener('click', () => continuarSessao(sessao));
+}
+
+function continuarSessao(sessao) {
+  // Restaura estado completo da rodada salva
+  estado.perguntas   = sessao.perguntas;
+  estado.respostas   = sessao.respostas;
+  estado.indice      = sessao.indice  ?? 0;
+  estado.pontos      = sessao.pontos  ?? 0;
+  estado.acertos     = sessao.acertos ?? 0;
+  estado.erros       = sessao.erros   ?? 0;
+  estado.modoRevisao = sessao.modoRevisao ?? false;
+  estado.tempoInicio = Date.now();
+  estado.pausado     = false;
+
+  // Restaura os tempos salvos, mas reseta o timer da questão atual para o total
+  // (o timer parou quando o usuário saiu — recomeça do zero para ser justo)
+  const temposRestaurados = sessao.tempos
+    ? [...sessao.tempos]
+    : new Array(sessao.perguntas.length).fill(CONFIG.TEMPO_POR_QUESTAO);
+
+  // Reseta o tempo da questão onde o usuário parou (se ainda não respondida)
+  const indiceAtual = estado.indice;
+  if (estado.respostas[indiceAtual] === undefined) {
+    temposRestaurados[indiceAtual] = CONFIG.TEMPO_POR_QUESTAO;
+  }
+  estado.tempos = temposRestaurados;
+
+  if (el.scoreCorrect) el.scoreCorrect.textContent = estado.acertos;
+  atualizarContadores();
+  mostrarTela('question');
+  renderizarQuestao();
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -1149,7 +1313,6 @@ async function init() {
   atualizarContadores();
   aplicarCorBarra(100);
 
-  el.btnStart    ?.addEventListener('click', () => iniciarJogo(false));
   el.btnTrue     ?.addEventListener('click', () => responder(true));
   el.btnFalse    ?.addEventListener('click', () => responder(false));
   el.btnAnterior ?.addEventListener('click', irAnterior);
@@ -1166,6 +1329,28 @@ async function init() {
 
   setupPausa();
   registrarAtalhos();
+
+  /* ── Botão Voltar do header: limpa sessão antes de navegar ── */
+  const shellBackBtn = document.getElementById('shell-back-btn');
+  if (shellBackBtn) {
+    shellBackBtn.addEventListener('click', () => {
+      limparSessao();
+    });
+  }
+
+  /* ── Botão "Começar": inicia nova partida, descartando sessão salva ── */
+  el.btnStart?.addEventListener('click', () => {
+    limparSessao();
+    document.getElementById('btn-continuar')?.classList.add('hidden');
+    iniciarJogo(false);
+  });
+
+  /* ── SESSÃO SALVA: verifica se há uma rodada em andamento ── */
+  const sessaoSalva = carregarSessaoSalva(estado.usuario, disc, sem);
+  if (sessaoSalva && sessaoSalva.perguntas?.length > 0) {
+    _configurarBtnContinuar(sessaoSalva);
+  }
+
   mostrarTela('intro');
 }
 
