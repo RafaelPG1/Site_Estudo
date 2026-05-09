@@ -871,6 +871,262 @@ window.questoes = {
 
       feedback: "A estrutura correta é: SELECT → FROM → WHERE → GROUP BY → ORDER BY. Qualquer outra ordem gera erro de sintaxe no SQL."
     },
+
+    // aula: Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2
+
+    // 37 - funções agregação
+    {
+      aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+      tipo: "Explicativa",
+
+      texto: "As funções de agregação em SQL são usadas para resumir um conjunto de valores em um único resultado. Em vez de ver linha por linha, você obtém um número que representa todo o grupo — como a média de notas de uma turma, o total de vendas do mês ou a quantidade de clientes cadastrados. As principais funções são: AVG (média), SUM (soma), COUNT (contagem), MAX (maior valor) e MIN (menor valor).",
+
+      question: "Qual função de agregação deve ser usada para descobrir o maior salário registrado em uma tabela de funcionários?",
+
+      options: [
+        "AVG(salario), pois calcula o valor médio dos salários",
+        "SUM(salario), pois soma todos os salários da tabela",
+        "MAX(salario), pois retorna o maior valor da coluna",
+        "COUNT(salario), pois conta quantos salários existem"
+      ],
+
+      answer: 2,
+
+      feedback: "A função ==dml==MAX== retorna o maior valor presente em uma coluna. Para encontrar o menor, usaríamos MIN. AVG calcula média, SUM soma e COUNT conta registros."
+    },
+
+    // 38 - AVG com WHERE
+    {
+      aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+      tipo: "Aplicação",
+
+      texto: "Imagine que você precisa calcular a média de créditos apenas dos alunos de um curso específico, sem misturar com alunos de outros cursos. Para isso, combina-se a função AVG com a cláusula WHERE: primeiro o banco filtra somente os alunos daquele curso, e depois calcula a média sobre esse subconjunto filtrado. É como separar as fichas antes de fazer a conta.",
+
+      question: "Um analista quer saber a média de créditos dos alunos do curso de código 10. Qual consulta resolve isso corretamente?",
+
+      code:
+    `-- Opção A
+    SELECT AVG(tot_cred) FROM alunos;
+
+    -- Opção B
+    SELECT AVG(tot_cred) FROM alunos WHERE cod_curso = 10;
+
+    -- Opção C
+    SELECT tot_cred FROM alunos WHERE cod_curso = 10;
+
+    -- Opção D
+    SELECT SUM(tot_cred) FROM alunos WHERE cod_curso = 10;`,
+
+      options: [
+        "Opção A, pois AVG já calcula a média geral automaticamente",
+        "Opção B, pois filtra primeiro os alunos do curso 10 e então calcula a média",
+        "Opção C, pois retorna os créditos de cada aluno do curso",
+        "Opção D, pois soma os créditos dos alunos do curso 10"
+      ],
+
+      answer: 1,
+
+      feedback: "A opção B está correta: o WHERE restringe os registros ao curso 10 antes de a função AVG calcular a média. Sem o WHERE, a média seria geral — de todos os cursos."
+    },
+
+    // 39 - alias AS
+    {
+      aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+      tipo: "Explicativa",
+
+      texto: "Quando você usa uma função de agregação no SELECT, o banco de dados exibe o resultado com um cabeçalho pouco amigável, como 'AVG(tot_cred)'. Para melhorar isso, existe o operador AS, que permite dar um apelido (alias) ao resultado. É só uma questão de apresentação: o valor calculado continua o mesmo, mas o nome que aparece na coluna fica muito mais legível.",
+
+      question: "O que acontece quando usamos AS na consulta `SELECT AVG(tot_cred) AS media_creditos FROM alunos`?",
+
+      options: [
+        "O banco cria uma nova coluna permanente chamada media_creditos na tabela alunos",
+        "O valor calculado por AVG é alterado para coincidir com o nome media_creditos",
+        "O resultado é exibido com o cabeçalho media_creditos no lugar de AVG(tot_cred)",
+        "A consulta passa a calcular apenas os créditos de alunos chamados media_creditos"
+      ],
+
+      answer: 2,
+
+      feedback: "O AS define apenas o rótulo da coluna no resultado da consulta, sem alterar os dados nem a estrutura da tabela. É um recurso puramente de apresentação."
+    },
+
+    // 40 - GROUP BY conceito
+    {
+      aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+      tipo: "Explicativa",
+
+      texto: "A cláusula GROUP BY serve para dividir os registros de uma tabela em grupos antes de aplicar uma função de agregação. Sem ela, a agregação considera todos os registros como um único bloco. Com ela, cada grupo recebe seu próprio cálculo. Por exemplo: em vez de calcular a média geral de créditos de todos os alunos, você calcula a média separada para cada curso.",
+
+      question: "Qual é a função principal da cláusula GROUP BY em uma consulta SQL?",
+
+      options: [
+        "Ordenar os registros em ordem crescente ou decrescente",
+        "Filtrar os registros que não atendem a uma condição",
+        "Dividir os registros em grupos para que a agregação seja calculada separadamente em cada um",
+        "Eliminar valores duplicados do resultado da consulta"
+      ],
+
+      answer: 2,
+
+      feedback: "O ==rule==GROUP BY== agrupa os registros por um critério definido, permitindo que funções como AVG, SUM e COUNT operem sobre cada grupo de forma independente."
+    },
+
+    // 41 - GROUP BY regra SELECT
+    {
+      aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+      tipo: "Contextualizada",
+
+      texto: "O GROUP BY tem uma regra importante que costuma causar erro em quem está aprendendo: toda coluna que aparece no SELECT e não está dentro de uma função de agregação precisa, obrigatoriamente, estar também no GROUP BY. Isso porque o banco precisa saber como agrupar aquela coluna. Se ela não estiver no agrupamento, o banco não sabe qual valor exibir para o grupo — e retorna erro.",
+
+      question: "Por que a consulta abaixo causaria um erro de execução?",
+
+      code:
+    `SELECT cod_curso, nome_aluno, AVG(credito)
+    FROM alunos
+    GROUP BY cod_curso;`,
+
+      options: [
+        "Porque AVG não pode ser usada junto com GROUP BY",
+        "Porque nome_aluno aparece no SELECT mas não está no GROUP BY nem em função de agregação",
+        "Porque cod_curso deveria estar dentro de uma função de agregação",
+        "Porque WHERE é obrigatório quando se usa GROUP BY"
+      ],
+
+      answer: 1,
+
+      feedback: "A coluna nome_aluno está no SELECT mas fora de qualquer função de agregação e ausente do GROUP BY. Isso viola a regra do agrupamento: o banco não consegue determinar qual nome exibir para cada grupo de curso."
+    },
+
+    // 42 - HAVING introdução
+    {
+      aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+      tipo: "Explicativa",
+
+      texto: "Após agrupar registros com GROUP BY e calcular agregações, muitas vezes queremos filtrar apenas os grupos que atendem a algum critério — como mostrar só os cursos cuja média de créditos seja maior que 100. Para isso, existe o HAVING. Ele funciona como um WHERE, mas voltado para grupos: o WHERE filtra linhas antes do agrupamento, e o HAVING filtra grupos depois.",
+
+      question: "Qual é a diferença fundamental entre WHERE e HAVING em uma consulta com GROUP BY?",
+
+      options: [
+        "WHERE filtra grupos após o agrupamento; HAVING filtra linhas antes",
+        "WHERE e HAVING fazem a mesma coisa, mas HAVING é mais moderno",
+        "WHERE filtra linhas individuais antes do agrupamento; HAVING filtra grupos depois da agregação",
+        "HAVING só pode ser usado com a função COUNT; WHERE funciona com qualquer função"
+      ],
+
+      answer: 2,
+
+      feedback: "WHERE atua sobre linhas antes de qualquer agrupamento. ==rule==HAVING== atua sobre os grupos já formados, podendo usar funções de agregação em sua condição — algo que o WHERE não permite."
+    },
+
+    // 43 - HAVING aplicação
+    {
+      aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+      tipo: "Aplicação",
+
+      texto: "Você está analisando os dados de uma escola e precisa listar apenas as turmas cuja média de notas seja superior a 7. Primeiro os registros são agrupados por turma, depois a média é calculada para cada grupo, e só então os grupos com média abaixo de 7 são descartados. Esse descarte de grupos é feito exatamente pelo HAVING.",
+
+      question: "Qual consulta implementa corretamente o filtro de turmas com média de notas acima de 7?",
+
+      code:
+    `-- Opção A
+    SELECT turma, AVG(nota)
+    FROM alunos
+    WHERE AVG(nota) > 7
+    GROUP BY turma;
+
+    -- Opção B
+    SELECT turma, AVG(nota)
+    FROM alunos
+    GROUP BY turma
+    HAVING AVG(nota) > 7;
+
+    -- Opção C
+    SELECT turma, AVG(nota)
+    FROM alunos
+    HAVING AVG(nota) > 7;
+
+    -- Opção D
+    SELECT turma, AVG(nota)
+    FROM alunos
+    GROUP BY turma
+    WHERE nota > 7;`,
+
+      options: [
+        "Opção A, pois WHERE pode filtrar por função de agregação",
+        "Opção B, pois agrupa primeiro e depois filtra os grupos com HAVING",
+        "Opção C, pois HAVING pode ser usado sem GROUP BY",
+        "Opção D, pois WHERE filtra os grupos após o agrupamento"
+      ],
+
+      answer: 1,
+
+      feedback: "A opção B está correta. Funções de agregação não podem ser usadas no WHERE — esse é um erro muito comum. O ==dml==HAVING== é o lugar certo para filtrar grupos após o agrupamento."
+    },
+
+    // 44 - NULL em agregação
+    {
+      aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+      tipo: "Contextualizada",
+
+      texto: "Quando uma coluna possui registros com valor NULL, as funções de agregação têm um comportamento bem definido: elas simplesmente ignoram esses valores. Se uma tabela tem créditos de 100, NULL e 200, a função AVG calcula (100 + 200) / 2 = 150 — o NULL não entra na conta. A única exceção é COUNT(*), que conta todas as linhas, inclusive as que têm NULL em alguma coluna.",
+
+      question: "Uma tabela de alunos possui os valores 100, NULL e 200 na coluna tot_cred. Qual será o resultado de `SELECT AVG(tot_cred) FROM alunos`?",
+
+      options: [
+        "133, pois AVG divide a soma por todos os registros, incluindo o NULL como zero",
+        "150, pois AVG ignora o NULL e calcula a média apenas entre 100 e 200",
+        "NULL, pois a presença de qualquer NULL torna o resultado indefinido",
+        "0, pois o NULL é tratado como zero nas funções de agregação"
+      ],
+
+      answer: 1,
+
+      feedback: "As funções de agregação ignoram NULL automaticamente. Por isso, AVG soma 100 + 200 e divide por 2, resultando em 150. Só COUNT(*) conta linhas com NULL — as demais funções as descartam."
+    },
+
+    // 45 - DISTINCT simples
+    {
+      aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+      tipo: "Explicativa",
+
+      texto: "Quando consultamos uma coluna que tem muitos valores repetidos — como o código do curso de cada aluno — o resultado pode vir cheio de duplicatas. O DISTINCT resolve isso: ele elimina as repetições e exibe cada valor apenas uma vez. É importante saber que o DISTINCT age somente no resultado da consulta, sem apagar nada do banco de dados.",
+
+      question: "O que o DISTINCT faz ao ser usado em `SELECT DISTINCT cod_curso FROM alunos`?",
+
+      options: [
+        "Remove permanentemente os registros duplicados da tabela alunos",
+        "Exibe cada código de curso apenas uma vez no resultado, sem alterar a tabela",
+        "Ordena os cursos em ordem crescente e remove os menores",
+        "Conta quantas vezes cada código de curso aparece na tabela"
+      ],
+
+      answer: 1,
+
+      feedback: "==proc==DISTINCT== age apenas na exibição do resultado, filtrando duplicatas sem modificar os dados armazenados. A tabela continua exatamente igual após a consulta."
+    },
+
+    // 46 - COUNT DISTINCT
+    {
+      aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+      tipo: "Aplicação",
+
+      texto: "Às vezes, um aluno pode aparecer várias vezes em uma tabela de histórico — por exemplo, se cursou a mesma disciplina em anos diferentes. Se quisermos contar quantos alunos únicos cursaram determinada disciplina, não podemos usar COUNT simples, pois ele contaria o mesmo aluno mais de uma vez. A solução é combinar COUNT com DISTINCT: COUNT(DISTINCT mat_alu) conta cada matrícula apenas uma vez, independentemente de quantas vezes ela apareça.",
+
+      question: "Por que usar `COUNT(DISTINCT mat_alu)` no lugar de `COUNT(mat_alu)` ao contar alunos únicos em um histórico escolar?",
+
+      options: [
+        "Porque COUNT(mat_alu) ignora os valores NULL, enquanto DISTINCT não ignora",
+        "Porque COUNT(DISTINCT mat_alu) evita que o mesmo aluno seja contado mais de uma vez quando há registros repetidos",
+        "Porque DISTINCT transforma a contagem em soma dos valores únicos encontrados",
+        "Porque COUNT(mat_alu) só funciona com campos do tipo texto, e DISTINCT corrige isso"
+      ],
+
+      answer: 1,
+
+      feedback: "COUNT(DISTINCT coluna) descarta duplicatas antes de contar, garantindo que cada valor único seja contabilizado apenas uma vez. É ideal para cenários com históricos ou registros repetidos de um mesmo elemento."
+    },
+
+
   ],
 
 
@@ -1844,624 +2100,1064 @@ window.questoes = {
     feedback: "Correto: A. A opção A utiliza ==rule==IS NOT NULL== para filtrar e-mails antes do agrupamento, agrupa por curso e aplica `HAVING` para filtrar grupos com média acima de 30 — que é o mecanismo correto para filtrar após agregação. A opção B tenta usar `AVG()` no WHERE, o que é inválido. A opção C coloca WHERE após GROUP BY, violando a ==warn==ordem de cláusulas==. A opção D inverte ORDER BY e GROUP BY."
   },
 
- 
+  // aula: Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2
+
+  // 37 - AVG básico
+  {
+    tipo: "Conceitual contextualizada",
+    aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+    conteudo: "Funções de Agregação em SQL",
+    texto: "Um coordenador pedagógico precisa calcular a média geral de créditos totais dos alunos matriculados no curso de código 10. Ele não quer ver os registros individuais — apenas o valor médio resultante para subsidiar um relatório de desempenho acadêmico.",
+    question: "Qual consulta SQL retorna corretamente a média dos créditos totais apenas dos alunos do curso 10?",
+    code:
+  `-- Opção A
+  SELECT AVG(tot_cred)
+  FROM alunos
+  WHERE cod_curso = 10;
+
+  -- Opção B
+  SELECT SUM(tot_cred)
+  FROM alunos
+  WHERE cod_curso = 10;
+
+  -- Opção C
+  SELECT AVG(tot_cred)
+  FROM alunos
+  GROUP BY cod_curso;
+
+  -- Opção D
+  SELECT COUNT(tot_cred)
+  FROM alunos
+  WHERE cod_curso = 10;`,
+    options: [
+      "Opção A, pois aplica AVG sobre os registros filtrados pelo curso 10",
+      "Opção B, pois SUM calcula o valor acumulado dos créditos",
+      "Opção C, pois GROUP BY separa os cursos e calcula a média de cada um",
+      "Opção D, pois COUNT retorna a quantidade de registros com crédito"
+    ],
+    answer: 0,
+    feedback: "Correto: A. A função ==dml==AVG== calcula a média de uma coluna, e a cláusula WHERE restringe o cálculo apenas aos alunos do curso 10. A opção C calcula a média por curso, mas retorna todos os cursos — não apenas o 10. SUM e COUNT respondem perguntas diferentes: soma total e contagem de registros, respectivamente."
+  },
+
+  // 38 - alias AS
+  {
+    tipo: "Asserção + Justificativa",
+    aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+    conteudo: "Funções de Agregação em SQL",
+    texto: "Durante a elaboração de relatórios automáticos em um sistema de gestão acadêmica, um desenvolvedor percebeu que os cabeçalhos das colunas calculadas apareciam como expressões brutas — por exemplo, 'AVG(tot_cred)' — tornando os relatórios pouco legíveis para os coordenadores. Ele adicionou o operador AS para resolver o problema.",
+    question: "Analise as asserções a seguir e a relação proposta entre elas:",
+    assertions: [
+      "O uso de ==dml==AS== em uma consulta SQL permite renomear colunas calculadas no resultado, tornando o cabeçalho mais legível sem alterar os dados retornados.",
+      "[PORQUE] O operador ==dml==AS== é um alias de apresentação: ele modifica apenas o rótulo exibido na saída da consulta, não afetando o processamento interno nem os valores calculados pela função de agregação."
+    ],
+    options: [
+      "As asserções I e II são verdadeiras, e II justifica I",
+      "As asserções I e II são verdadeiras, mas II não justifica I",
+      "A asserção I é verdadeira e a II é falsa",
+      "A asserção I é falsa e a II é verdadeira"
+    ],
+    answer: 0,
+    feedback: "Correto: A. O ==dml==AS== renomeia colunas apenas na exibição do resultado (I), e a asserção II justifica exatamente isso ao explicar que se trata de um alias de apresentação — sem impacto nos dados ou no cálculo. A relação de justificativa entre as asserções é direta e precisa."
+  },
+
+  // 39 - GROUP BY agrupamento
+  {
+    tipo: "Análise de código SQL",
+    aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+    conteudo: "Funções de Agregação em SQL",
+    texto: "Uma universidade quer gerar um relatório com a média de créditos totais por curso. O banco de dados possui a tabela `alunos` com os campos `cod_curso` e `tot_cred`. O analista escreveu a seguinte consulta:",
+    question: "Avalie as afirmativas sobre a consulta abaixo:",
+    code:
+  `SELECT cod_curso, AVG(tot_cred) AS media_tot_cred
+  FROM alunos
+  GROUP BY cod_curso;`,
+    assertions: [
+      "A consulta está sintaticamente correta: `cod_curso` aparece no SELECT e também no GROUP BY, respeitando a regra de agrupamento.",
+      "Sem a cláusula GROUP BY, a mesma consulta calcularia a média geral de todos os alunos, independente do curso.",
+      "A cláusula GROUP BY divide os registros em subconjuntos por valor de `cod_curso` antes de aplicar a função AVG a cada grupo.",
+      "O alias `media_tot_cred` substitui o valor calculado por um texto fixo, impedindo que os valores numéricos sejam exibidos."
+    ],
+    questionContinuation: "São corretas as afirmativas:",
+    options: [
+      "I, II e III, apenas",
+      "I e III, apenas",
+      "II e IV, apenas",
+      "I, II, III e IV"
+    ],
+    answer: 0,
+    feedback: "Correto: A (I, II e III). A afirmativa IV está **errada**: o alias ==dml==AS== renomeia apenas o cabeçalho da coluna — não substitui nem oculta os valores numéricos retornados. As demais descrevem corretamente o funcionamento do ==rule==GROUP BY== e o comportamento da consulta com e sem agrupamento."
+  },
+
+  // 40 - HAVING vs WHERE
+  {
+    tipo: "Conceitual contextualizada",
+    aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+    conteudo: "Funções de Agregação em SQL",
+    texto: "Uma analista de dados precisa identificar quais cursos possuem média de créditos totais superior a 100. Ela já sabe que deve usar GROUP BY para agrupar por curso, mas tem dúvida sobre onde aplicar o filtro sobre a média: na cláusula WHERE ou na cláusula HAVING.",
+    question: "Qual alternativa descreve corretamente a diferença entre ==rule==WHERE== e ==rule==HAVING== nesse contexto?",
+    options: [
+      "WHERE e HAVING produzem o mesmo resultado quando aplicados a funções de agregação, diferindo apenas na posição dentro da consulta.",
+      "WHERE filtra linhas antes do agrupamento e não aceita funções de agregação; HAVING filtra grupos após o agrupamento e aceita funções de agregação.",
+      "HAVING substitui completamente o WHERE em consultas com GROUP BY, tornando o WHERE desnecessário.",
+      "WHERE filtra grupos com base em funções de agregação; HAVING filtra linhas individualmente antes da agregação."
+    ],
+    answer: 1,
+    feedback: "Correto: B. ==rule==WHERE== atua sobre linhas individuais antes do agrupamento e não pode receber funções de agregação como `AVG()`. ==rule==HAVING== atua sobre grupos após o agrupamento e é o local correto para filtros baseados em funções agregadas. As demais alternativas invertem ou confundem os papéis das duas cláusulas."
+  },
+
+  // 41 - HAVING script
+  {
+    tipo: "Análise de código SQL",
+    aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+    conteudo: "Funções de Agregação em SQL",
+    texto: "Um sistema de controle acadêmico precisa listar apenas os cursos cuja média de créditos totais dos alunos seja superior a 100. O analista escreveu a seguinte consulta para atender a esse requisito:",
+    question: "Avalie as afirmativas sobre o script SQL a seguir:",
+    code:
+  `SELECT cod_curso, AVG(tot_cred) AS media_tot_cred
+  FROM alunos
+  GROUP BY cod_curso
+  HAVING AVG(tot_cred) > 100;`,
+    assertions: [
+      "A cláusula HAVING filtra os grupos formados pelo GROUP BY, retornando apenas os cursos cuja média de créditos supera 100.",
+      "Seria possível substituir o HAVING por WHERE nessa consulta, pois ambos filtram registros com base em condições numéricas.",
+      "A consulta respeita a ordem correta das cláusulas SQL: FROM, GROUP BY, HAVING, SELECT.",
+      "Caso nenhum curso tenha média superior a 100, a consulta retorna um resultado vazio, sem erro de execução."
+    ],
+    questionContinuation: "São corretas as afirmativas:",
+    options: [
+      "I e IV, apenas",
+      "I, II e IV, apenas",
+      "II e III, apenas",
+      "I, II, III e IV"
+    ],
+    answer: 0,
+    feedback: "Correto: A (I e IV). A afirmativa II está **errada**: usar ==rule==WHERE== com função de agregação como `AVG()` causa erro de sintaxe — WHERE não aceita funções agregadas. A afirmativa III está **errada**: a ordem de escrita correta é FROM → WHERE → GROUP BY → HAVING → SELECT, mas a *execução lógica* é diferente da escrita — e a consulta apresentada está escrita corretamente, não na ordem de execução. As afirmativas I e IV descrevem comportamentos corretos do ==rule==HAVING==."
+  },
+
+  // 42 - NULL em agregação
+  {
+    tipo: "Asserção + Justificativa",
+    aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+    conteudo: "Funções de Agregação em SQL",
+    texto: "Uma equipe de auditoria percebeu que a média calculada pela função AVG em uma coluna de créditos estava diferente do esperado. Ao investigar, descobriram que vários registros possuíam o valor NULL nessa coluna. O engenheiro de dados explicou que esse comportamento era esperado pelo padrão SQL.",
+    question: "Analise as asserções a seguir e a relação proposta entre elas:",
+    assertions: [
+      "A função ==dml==AVG== ignora automaticamente os valores NULL no cálculo da média, considerando apenas os registros com valores não nulos.",
+      "[PORQUE] As funções de agregação SQL — exceto ==dml==COUNT(*)== — descartam valores NULL antes de processar os dados, pois NULL representa ausência de valor e não pode participar de operações aritméticas com resultado determinístico."
+    ],
+    options: [
+      "As asserções I e II são verdadeiras, e II justifica I",
+      "As asserções I e II são verdadeiras, mas II não justifica I",
+      "A asserção I é verdadeira e a II é falsa",
+      "A asserção I é falsa e a II é verdadeira"
+    ],
+    answer: 0,
+    feedback: "Correto: A. AVG ignora NULLs (I), e a asserção II justifica esse comportamento explicando a regra geral das funções de agregação: todas descartam NULL, exceto **COUNT(*)** que conta linhas independentemente. A distinção entre `COUNT(*)` e `COUNT(coluna)` é um ponto-chave: o segundo também ignora NULLs."
+  },
+
+  // 43 - COUNT variações
+  {
+    tipo: "Múltiplas afirmativas",
+    aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+    conteudo: "Funções de Agregação em SQL",
+    texto: "Um desenvolvedor está elaborando relatórios sobre uma tabela `historicos_escolares` que contém os campos `mat_alu`, `cod_disc`, `ano` e `nota`. Alguns alunos cursaram a mesma disciplina mais de uma vez em anos diferentes, e alguns registros possuem o campo `nota` preenchido com NULL.",
+    question: "Avalie as afirmativas a seguir sobre as variações do ==dml==COUNT==:",
+    assertions: [
+      "COUNT(*) retorna o número total de linhas da tabela ou do grupo, incluindo aquelas com valores NULL em qualquer coluna.",
+      "COUNT(nota) retorna apenas a quantidade de registros em que o campo `nota` possui valor não nulo, ignorando os NULLs.",
+      "COUNT(DISTINCT mat_alu) conta o número de matrículas únicas, evitando que o mesmo aluno seja contabilizado mais de uma vez.",
+      "COUNT(DISTINCT *) é uma sintaxe válida e equivalente ao uso de SELECT DISTINCT antes da contagem."
+    ],
+    questionContinuation: "São corretas apenas as afirmativas:",
+    options: [
+      "I, II e III, apenas",
+      "I e III, apenas",
+      "II e IV, apenas",
+      "I, II, III e IV"
+    ],
+    answer: 0,
+    feedback: "Correto: A (I, II e III). A afirmativa IV está **errada**: ==dml==COUNT(DISTINCT *)== é uma sintaxe **inválida** em SQL — não é possível combinar DISTINCT com o curinga `*` dentro de COUNT. As afirmativas I, II e III descrevem corretamente os três comportamentos distintos do COUNT: total de linhas, valores não nulos e valores únicos."
+  },
+
+  // 44 - DISTINCT simples
+  {
+    tipo: "Conceitual contextualizada",
+    aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+    conteudo: "Funções de Agregação em SQL",
+    texto: "Um sistema de gestão acadêmica armazena na tabela `alunos` o código do curso de cada aluno. Como muitos alunos pertencem ao mesmo curso, a coluna `cod_curso` apresenta vários valores repetidos. O coordenador solicita uma lista com os códigos de curso existentes, sem repetições.",
+    question: "Qual é o comportamento correto do ==proc==SELECT DISTINCT== ao ser aplicado nesse cenário?",
+    options: [
+      "SELECT DISTINCT remove permanentemente os registros duplicados da tabela `alunos`, mantendo apenas uma linha por curso.",
+      "SELECT DISTINCT elimina as linhas repetidas apenas no resultado da consulta, sem alterar os dados armazenados na tabela.",
+      "SELECT DISTINCT é equivalente ao GROUP BY cod_curso em todos os contextos, podendo ser usado de forma intercambiável.",
+      "SELECT DISTINCT só funciona corretamente quando combinado com ORDER BY, pois depende da ordenação para identificar duplicatas."
+    ],
+    answer: 1,
+    feedback: "Correto: B. O ==proc==SELECT DISTINCT== age exclusivamente sobre o **resultado da consulta**, suprimindo linhas duplicadas na exibição sem modificar os dados físicos da tabela. Embora DISTINCT e GROUP BY possam produzir resultados similares em alguns casos, não são intercambiáveis em todos os contextos — especialmente quando há funções de agregação envolvidas."
+  },
+
+  // 45 - ordem execução completa
+  {
+    tipo: "Múltiplas afirmativas",
+    aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+    conteudo: "Funções de Agregação em SQL",
+    texto: "Em uma prova prática de banco de dados, o professor apresentou a seguinte consulta e pediu que os alunos identificassem a ordem real de execução lógica e o papel de cada cláusula:",
+    question: "Avalie as afirmativas sobre a ordem de execução lógica da consulta abaixo:",
+    code:
+  `SELECT cod_curso, AVG(tot_cred) AS media
+  FROM alunos
+  WHERE email IS NOT NULL
+  GROUP BY cod_curso
+  HAVING AVG(tot_cred) > 80
+  ORDER BY cod_curso ASC;`,
+    assertions: [
+      "A cláusula WHERE é executada antes do GROUP BY, filtrando alunos sem e-mail antes que o agrupamento seja formado.",
+      "A cláusula HAVING é executada antes do WHERE, pois atua sobre os grupos, que são formados antes da filtragem de linhas.",
+      "A cláusula SELECT é executada após o GROUP BY e o HAVING, projetando apenas as colunas e expressões definidas.",
+      "A cláusula ORDER BY é a última a ser executada na ordem lógica, ordenando o resultado final após todas as demais operações."
+    ],
+    questionContinuation: "São corretas apenas as afirmativas:",
+    options: [
+      "I, III e IV, apenas",
+      "I e IV, apenas",
+      "II e III, apenas",
+      "I, II, III e IV"
+    ],
+    answer: 0,
+    feedback: "Correto: A (I, III e IV). A afirmativa II está **errada**: a ordem lógica correta é FROM → ==rule==WHERE== → GROUP BY → HAVING → SELECT → ORDER BY. O WHERE filtra *antes* do agrupamento, e o HAVING filtra *depois*. Inverter essa ordem é um erro conceitual clássico. As demais afirmativas descrevem corretamente os papéis de WHERE, SELECT e ORDER BY na sequência de execução."
+  },
+
+  // 46 - consulta integrada HAVING
+  {
+    tipo: "Análise de código SQL",
+    aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+    conteudo: "Funções de Agregação em SQL",
+    texto: "Uma analista de dados recebeu a tarefa de identificar erros em quatro variações de uma consulta que deveria retornar os cursos com média de créditos superior a 80, considerando apenas alunos com e-mail cadastrado.",
+    question: "Analise os scripts e avalie as afirmativas:",
+    code:
+  `-- Script 1
+  SELECT cod_curso, AVG(tot_cred)
+  FROM alunos
+  WHERE email IS NOT NULL
+  GROUP BY cod_curso
+  HAVING AVG(tot_cred) > 80;
+
+  -- Script 2
+  SELECT cod_curso, AVG(tot_cred)
+  FROM alunos
+  WHERE email IS NOT NULL AND AVG(tot_cred) > 80
+  GROUP BY cod_curso;
+
+  -- Script 3
+  SELECT cod_curso, AVG(tot_cred)
+  FROM alunos
+  GROUP BY cod_curso
+  HAVING AVG(tot_cred) > 80
+  WHERE email IS NOT NULL;
+
+  -- Script 4
+  SELECT cod_curso, COUNT(DISTINCT mat_alu)
+  FROM alunos
+  WHERE email IS NOT NULL
+  GROUP BY cod_curso
+  HAVING COUNT(DISTINCT mat_alu) > 5;`,
+    assertions: [
+      "O Script 1 está correto: filtra alunos sem e-mail antes do agrupamento via WHERE, e filtra grupos com média insuficiente via HAVING.",
+      "O Script 2 causará erro pois funções de agregação como AVG não são permitidas na cláusula WHERE.",
+      "O Script 3 está correto pois WHERE e HAVING podem aparecer em qualquer ordem após o GROUP BY.",
+      "O Script 4, embora use COUNT(DISTINCT) no lugar de AVG, é sintaticamente válido e retornaria os cursos com mais de 5 alunos únicos com e-mail cadastrado."
+    ],
+    questionContinuation: "São corretas as afirmativas:",
+    options: [
+      "I, II e IV, apenas",
+      "I e II, apenas",
+      "II e III, apenas",
+      "I, II, III e IV"
+    ],
+    answer: 0,
+    feedback: "Correto: A (I, II e IV). A afirmativa III está **errada**: o Script 3 coloca WHERE após o ==rule==HAVING==, violando a ordem obrigatória das cláusulas SQL — WHERE deve sempre preceder GROUP BY e HAVING. Isso causa erro de sintaxe. Os Scripts 1 e 4 são válidos e funcionais, e o Script 2 comete o erro clássico de usar ==dml==AVG== dentro do WHERE, o que é proibido."
+  },
   ],
 
 
-fixacao: [
+  fixacao: [
 
-    //Aula 9 - Definindo um Banco de Dados
+      //Aula 9 - Definindo um Banco de Dados
 
-  // 1 - DDL conceito
-  {
-    tipo: "Direta",
-    aula: "Aula 9 — Definindo um Banco de Dados",
-    texto: "Sobre os subconjuntos da linguagem SQL e sua classificação.",
-    question: "O que é ==ddl==DDL== (Data Definition Language) e quais comandos pertencem a ela?",
-    options: [
-      "Linguagem de manipulação de dados; inclui ==dml==INSERT==, ==dml==UPDATE== e ==dml==DELETE==",
-      "Linguagem de definição de estruturas; inclui ==ddl==CREATE==, ==ddl==ALTER== e ==danger==DROP==",
-      "Linguagem de consulta; inclui ==dml==SELECT==, WHERE e JOIN",
-      "Linguagem de controle de acesso; inclui GRANT e REVOKE"
-    ],
-    answer: 1,
-    feedback: "A ==ddl==DDL== é responsável por criar, modificar e remover estruturas do banco de dados. Seus principais comandos são ==ddl==CREATE==, ==ddl==ALTER== e ==danger==DROP== — distintos dos comandos ==dml==DML==, que manipulam dados."
-  },
+    // 1 - DDL conceito
+    {
+      tipo: "Direta",
+      aula: "Aula 9 — Definindo um Banco de Dados",
+      texto: "Sobre os subconjuntos da linguagem SQL e sua classificação.",
+      question: "O que é ==ddl==DDL== (Data Definition Language) e quais comandos pertencem a ela?",
+      options: [
+        "Linguagem de manipulação de dados; inclui ==dml==INSERT==, ==dml==UPDATE== e ==dml==DELETE==",
+        "Linguagem de definição de estruturas; inclui ==ddl==CREATE==, ==ddl==ALTER== e ==danger==DROP==",
+        "Linguagem de consulta; inclui ==dml==SELECT==, WHERE e JOIN",
+        "Linguagem de controle de acesso; inclui GRANT e REVOKE"
+      ],
+      answer: 1,
+      feedback: "A ==ddl==DDL== é responsável por criar, modificar e remover estruturas do banco de dados. Seus principais comandos são ==ddl==CREATE==, ==ddl==ALTER== e ==danger==DROP== — distintos dos comandos ==dml==DML==, que manipulam dados."
+    },
 
-  // 2 - primary key
-  {
-    tipo: "Curta",
-    aula: "Aula 9 — Definindo um Banco de Dados",
-    texto: "Sobre as restrições aplicadas a colunas no momento da criação de uma tabela.",
-    question: "Qual é a principal característica de uma ==key==PRIMARY KEY== em SQL?",
-    options: [
-      "Permite valores nulos e pode se repetir ao longo da tabela",
-      "Referencia um campo em outra tabela para garantir integridade referencial",
-      "Identifica unicamente cada registro; não pode ser nula nem repetida",
-      "Define o tipo de dado armazenado na coluna"
-    ],
-    answer: 2,
-    feedback: "A ==key==PRIMARY KEY== é a chave de identificação única de cada registro. Ela impõe duas regras fundamentais: unicidade (sem repetição) e `NOT NULL` obrigatório."
-  },
+    // 2 - primary key
+    {
+      tipo: "Curta",
+      aula: "Aula 9 — Definindo um Banco de Dados",
+      texto: "Sobre as restrições aplicadas a colunas no momento da criação de uma tabela.",
+      question: "Qual é a principal característica de uma ==key==PRIMARY KEY== em SQL?",
+      options: [
+        "Permite valores nulos e pode se repetir ao longo da tabela",
+        "Referencia um campo em outra tabela para garantir integridade referencial",
+        "Identifica unicamente cada registro; não pode ser nula nem repetida",
+        "Define o tipo de dado armazenado na coluna"
+      ],
+      answer: 2,
+      feedback: "A ==key==PRIMARY KEY== é a chave de identificação única de cada registro. Ela impõe duas regras fundamentais: unicidade (sem repetição) e `NOT NULL` obrigatório."
+    },
 
-  // 3 - script foreign key
-  {
-    tipo: "Código",
-    aula: "Aula 9 — Definindo um Banco de Dados",
-    texto: "Analise o script SQL abaixo, criado para um sistema de pedidos:",
-    question: "Qual afirmativa sobre o script é INCORRETA?",
-    code:
-  `CREATE TABLE clientes (
-    id_cliente  INTEGER      NOT NULL,
-    nome        VARCHAR(100) NOT NULL,
-    email       VARCHAR(150),
-    PRIMARY KEY (id_cliente)
-  );
-  
-  CREATE TABLE pedidos (
-    num_pedido  INTEGER  NOT NULL,
-    data_pedido DATE     NOT NULL,
-    id_cliente  INTEGER  NOT NULL,
-    PRIMARY KEY (num_pedido),
-    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente)
-  );`,
-    options: [
-      "O campo `email` aceita valores `NULL` pois não possui restrição `NOT NULL`",
-      "A ==key==FOREIGN KEY== em 'pedidos' impede inserção de pedidos com `id_cliente` inexistente em 'clientes'",
-      "A ==key==PRIMARY KEY== de 'pedidos' garante que `num_pedido` seja único e não nulo",
-      "O campo `id_cliente` na tabela 'pedidos' pode receber `NULL` por ser uma chave estrangeira"
-    ],
-    answer: 3,
-    feedback: "INCORRETA: o campo `id_cliente` em 'pedidos' possui `NOT NULL` explicitamente declarado, portanto não aceita `NULL`. ==key==FOREIGN KEY==, por si só, não impede `NULL` — mas a restrição `NOT NULL` sim."
-  },
+    // 3 - script foreign key
+    {
+      tipo: "Código",
+      aula: "Aula 9 — Definindo um Banco de Dados",
+      texto: "Analise o script SQL abaixo, criado para um sistema de pedidos:",
+      question: "Qual afirmativa sobre o script é INCORRETA?",
+      code:
+    `CREATE TABLE clientes (
+      id_cliente  INTEGER      NOT NULL,
+      nome        VARCHAR(100) NOT NULL,
+      email       VARCHAR(150),
+      PRIMARY KEY (id_cliente)
+    );
+    
+    CREATE TABLE pedidos (
+      num_pedido  INTEGER  NOT NULL,
+      data_pedido DATE     NOT NULL,
+      id_cliente  INTEGER  NOT NULL,
+      PRIMARY KEY (num_pedido),
+      FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente)
+    );`,
+      options: [
+        "O campo `email` aceita valores `NULL` pois não possui restrição `NOT NULL`",
+        "A ==key==FOREIGN KEY== em 'pedidos' impede inserção de pedidos com `id_cliente` inexistente em 'clientes'",
+        "A ==key==PRIMARY KEY== de 'pedidos' garante que `num_pedido` seja único e não nulo",
+        "O campo `id_cliente` na tabela 'pedidos' pode receber `NULL` por ser uma chave estrangeira"
+      ],
+      answer: 3,
+      feedback: "INCORRETA: o campo `id_cliente` em 'pedidos' possui `NOT NULL` explicitamente declarado, portanto não aceita `NULL`. ==key==FOREIGN KEY==, por si só, não impede `NULL` — mas a restrição `NOT NULL` sim."
+    },
 
-  // 4 - DROP vs DELETE
-  {
-    tipo: "Direta",
-    aula: "Aula 9 — Definindo um Banco de Dados",
-    texto: "Sobre os comandos de remoção em SQL.",
-    question: "Qual é a diferença fundamental entre ==danger==DROP TABLE== e ==dml==DELETE==?",
-    options: [
-      "==danger==DROP TABLE== remove apenas os dados; ==dml==DELETE== remove estrutura e dados",
-      "Ambos removem apenas os dados, preservando a estrutura da tabela",
-      "==danger==DROP TABLE== remove estrutura e dados permanentemente; ==dml==DELETE== remove apenas os dados",
-      "==dml==DELETE== só funciona com cláusula WHERE; ==danger==DROP TABLE== não aceita condições"
-    ],
-    answer: 2,
-    feedback: "==danger==DROP TABLE== elimina a tabela por completo — estrutura e dados — de forma permanente. ==dml==DELETE== remove registros (linhas) da tabela, mas preserva sua estrutura para uso futuro."
-  },
+    // 4 - DROP vs DELETE
+    {
+      tipo: "Direta",
+      aula: "Aula 9 — Definindo um Banco de Dados",
+      texto: "Sobre os comandos de remoção em SQL.",
+      question: "Qual é a diferença fundamental entre ==danger==DROP TABLE== e ==dml==DELETE==?",
+      options: [
+        "==danger==DROP TABLE== remove apenas os dados; ==dml==DELETE== remove estrutura e dados",
+        "Ambos removem apenas os dados, preservando a estrutura da tabela",
+        "==danger==DROP TABLE== remove estrutura e dados permanentemente; ==dml==DELETE== remove apenas os dados",
+        "==dml==DELETE== só funciona com cláusula WHERE; ==danger==DROP TABLE== não aceita condições"
+      ],
+      answer: 2,
+      feedback: "==danger==DROP TABLE== elimina a tabela por completo — estrutura e dados — de forma permanente. ==dml==DELETE== remove registros (linhas) da tabela, mas preserva sua estrutura para uso futuro."
+    },
 
-  // 5 - CASCADE vs RESTRICT
-  {
-    tipo: "Contexto",
-    aula: "Aula 9 — Definindo um Banco de Dados",
-    texto: "Um DBA precisou remover a tabela 'departamentos', mas ela era referenciada por chaves estrangeiras em outras três tabelas. Ele considerou usar ==mark==CASCADE== ou ==mark==RESTRICT== na operação.",
-    question: "Qual é o comportamento correto de cada opção nesse cenário?",
-    options: [
-      "==mark==CASCADE== bloqueia a exclusão enquanto houver dependências; ==mark==RESTRICT== propaga a exclusão automaticamente",
-      "==mark==CASCADE== propaga a exclusão para os objetos dependentes; ==mark==RESTRICT== bloqueia a operação se houver dependências",
-      "Ambas produzem o mesmo resultado, diferindo apenas no tempo de execução",
-      "==mark==RESTRICT== cria cópia de segurança antes de excluir; ==mark==CASCADE== apenas renomeia as referências"
-    ],
-    answer: 1,
-    feedback: "==mark==CASCADE== propaga a exclusão automaticamente para todos os objetos dependentes. ==mark==RESTRICT== (padrão implícito) bloqueia a operação enquanto existirem dependências — protegendo a integridade do banco."
-  },
+    // 5 - CASCADE vs RESTRICT
+    {
+      tipo: "Contexto",
+      aula: "Aula 9 — Definindo um Banco de Dados",
+      texto: "Um DBA precisou remover a tabela 'departamentos', mas ela era referenciada por chaves estrangeiras em outras três tabelas. Ele considerou usar ==mark==CASCADE== ou ==mark==RESTRICT== na operação.",
+      question: "Qual é o comportamento correto de cada opção nesse cenário?",
+      options: [
+        "==mark==CASCADE== bloqueia a exclusão enquanto houver dependências; ==mark==RESTRICT== propaga a exclusão automaticamente",
+        "==mark==CASCADE== propaga a exclusão para os objetos dependentes; ==mark==RESTRICT== bloqueia a operação se houver dependências",
+        "Ambas produzem o mesmo resultado, diferindo apenas no tempo de execução",
+        "==mark==RESTRICT== cria cópia de segurança antes de excluir; ==mark==CASCADE== apenas renomeia as referências"
+      ],
+      answer: 1,
+      feedback: "==mark==CASCADE== propaga a exclusão automaticamente para todos os objetos dependentes. ==mark==RESTRICT== (padrão implícito) bloqueia a operação enquanto existirem dependências — protegendo a integridade do banco."
+    },
 
-  // 6 - CHAR vs VARCHAR
-  {
-    tipo: "Curta",
-    aula: "Aula 9 — Definindo um Banco de Dados",
-    texto: "Sobre os tipos de dados disponíveis na linguagem SQL.",
-    question: "Qual a diferença entre os tipos ==type==CHAR(n)== e ==type==VARCHAR(n)==?",
-    options: [
-      "==type==CHAR== armazena números inteiros; ==type==VARCHAR== armazena texto",
-      "==type==CHAR== tem tamanho fixo, preenchendo com espaços; ==type==VARCHAR== tem tamanho variável, ocupando só o necessário",
-      "==type==CHAR== é para texto longo; ==type==VARCHAR== é limitado a 10 caracteres",
-      "==type==CHAR== e ==type==VARCHAR== são sinônimos em SQL padrão"
-    ],
-    answer: 1,
-    feedback: "==type==CHAR(n)== sempre ocupa exatamente `n` caracteres, preenchendo com espaços quando necessário. ==type==VARCHAR(n)== ocupa apenas o espaço do valor inserido, até o limite `n` — mais eficiente para campos com tamanho variável."
-  },
+    // 6 - CHAR vs VARCHAR
+    {
+      tipo: "Curta",
+      aula: "Aula 9 — Definindo um Banco de Dados",
+      texto: "Sobre os tipos de dados disponíveis na linguagem SQL.",
+      question: "Qual a diferença entre os tipos ==type==CHAR(n)== e ==type==VARCHAR(n)==?",
+      options: [
+        "==type==CHAR== armazena números inteiros; ==type==VARCHAR== armazena texto",
+        "==type==CHAR== tem tamanho fixo, preenchendo com espaços; ==type==VARCHAR== tem tamanho variável, ocupando só o necessário",
+        "==type==CHAR== é para texto longo; ==type==VARCHAR== é limitado a 10 caracteres",
+        "==type==CHAR== e ==type==VARCHAR== são sinônimos em SQL padrão"
+      ],
+      answer: 1,
+      feedback: "==type==CHAR(n)== sempre ocupa exatamente `n` caracteres, preenchendo com espaços quando necessário. ==type==VARCHAR(n)== ocupa apenas o espaço do valor inserido, até o limite `n` — mais eficiente para campos com tamanho variável."
+    },
 
-  // 7 - ALTER TABLE
-  {
-    tipo: "Contexto",
-    aula: "Aula 9 — Definindo um Banco de Dados",
-    texto: "Após a criação de uma tabela 'funcionarios', o analista precisou adicionar dois novos campos — 'telefone' e 'ramal' — sem recriar a tabela e sem perder os dados já cadastrados.",
-    question: "Qual comando deve ser utilizado e o que acontece com os registros existentes?",
-    options: [
-      "==ddl==CREATE TABLE==; os registros existentes são copiados automaticamente para a nova tabela",
-      "==danger==DROP TABLE== seguido de ==ddl==CREATE TABLE==; não é possível adicionar colunas sem recriar",
-      "==ddl==ALTER TABLE==; os registros existentes recebem `NULL` nas novas colunas por padrão",
-      "==dml==INSERT INTO==; os novos campos são preenchidos com zero por padrão"
-    ],
-    answer: 2,
-    feedback: "==ddl==ALTER TABLE== permite modificar tabelas existentes sem perder dados. Quando novas colunas são adicionadas sem valor `DEFAULT`, os registros já existentes recebem `NULL` nessas colunas."
-  },
+    // 7 - ALTER TABLE
+    {
+      tipo: "Contexto",
+      aula: "Aula 9 — Definindo um Banco de Dados",
+      texto: "Após a criação de uma tabela 'funcionarios', o analista precisou adicionar dois novos campos — 'telefone' e 'ramal' — sem recriar a tabela e sem perder os dados já cadastrados.",
+      question: "Qual comando deve ser utilizado e o que acontece com os registros existentes?",
+      options: [
+        "==ddl==CREATE TABLE==; os registros existentes são copiados automaticamente para a nova tabela",
+        "==danger==DROP TABLE== seguido de ==ddl==CREATE TABLE==; não é possível adicionar colunas sem recriar",
+        "==ddl==ALTER TABLE==; os registros existentes recebem `NULL` nas novas colunas por padrão",
+        "==dml==INSERT INTO==; os novos campos são preenchidos com zero por padrão"
+      ],
+      answer: 2,
+      feedback: "==ddl==ALTER TABLE== permite modificar tabelas existentes sem perder dados. Quando novas colunas são adicionadas sem valor `DEFAULT`, os registros já existentes recebem `NULL` nessas colunas."
+    },
 
-  // 8 - INFORMATION_SCHEMA
-  {
-    tipo: "Direta",
-    aula: "Aula 9 — Definindo um Banco de Dados",
-    texto: "Sobre os conceitos de organização em bancos de dados relacionais.",
-    question: "O que é o ==mark==INFORMATION_SCHEMA== em um banco de dados?",
-    options: [
-      "Uma tabela criada pelo usuário para armazenar informações de configuração do sistema",
-      "Um índice especial que acelera consultas em tabelas grandes",
-      "Um conjunto de metadados que armazena informações sobre a estrutura do próprio banco",
-      "Um comando ==ddl==DDL== equivalente ao ==ddl==ALTER TABLE== para renomear bancos"
-    ],
-    answer: 2,
-    feedback: "O ==mark==INFORMATION_SCHEMA== é um componente do catálogo que armazena metadados — informações sobre a estrutura do banco, como tabelas, colunas, restrições e tipos de dados existentes."
-  },
+    // 8 - INFORMATION_SCHEMA
+    {
+      tipo: "Direta",
+      aula: "Aula 9 — Definindo um Banco de Dados",
+      texto: "Sobre os conceitos de organização em bancos de dados relacionais.",
+      question: "O que é o ==mark==INFORMATION_SCHEMA== em um banco de dados?",
+      options: [
+        "Uma tabela criada pelo usuário para armazenar informações de configuração do sistema",
+        "Um índice especial que acelera consultas em tabelas grandes",
+        "Um conjunto de metadados que armazena informações sobre a estrutura do próprio banco",
+        "Um comando ==ddl==DDL== equivalente ao ==ddl==ALTER TABLE== para renomear bancos"
+      ],
+      answer: 2,
+      feedback: "O ==mark==INFORMATION_SCHEMA== é um componente do catálogo que armazena metadados — informações sobre a estrutura do banco, como tabelas, colunas, restrições e tipos de dados existentes."
+    },
 
-  // 9 - integridade referencial
-  {
-    tipo: "Aplicação",
-    aula: "Aula 9 — Definindo um Banco de Dados",
-    texto: "Um sistema de biblioteca foi modelado com as tabelas 'livros' e 'emprestimos'. A tabela 'emprestimos' possui uma ==key==FOREIGN KEY== referenciando 'livros'. Um bibliotecário tentou excluir um livro que tinha empréstimos ativos registrados.",
-    question: "O que acontece ao tentar excluir esse livro sem especificar ==mark==CASCADE==?",
-    options: [
-      "O livro é excluído e os empréstimos associados são automaticamente removidos",
-      "O banco cria uma cópia de segurança do livro antes de excluí-lo",
-      "A exclusão é bloqueada pelo banco, pois existem registros dependentes na tabela 'emprestimos'",
-      "Os empréstimos são atualizados com `NULL` no campo do livro e a exclusão prossegue"
-    ],
-    answer: 2,
-    feedback: "A ==key==FOREIGN KEY== implementa integridade referencial. Sem ==mark==CASCADE==, o comportamento padrão é ==mark==RESTRICT==: a exclusão é bloqueada enquanto existirem registros dependentes na tabela filha."
-  },
+    // 9 - integridade referencial
+    {
+      tipo: "Aplicação",
+      aula: "Aula 9 — Definindo um Banco de Dados",
+      texto: "Um sistema de biblioteca foi modelado com as tabelas 'livros' e 'emprestimos'. A tabela 'emprestimos' possui uma ==key==FOREIGN KEY== referenciando 'livros'. Um bibliotecário tentou excluir um livro que tinha empréstimos ativos registrados.",
+      question: "O que acontece ao tentar excluir esse livro sem especificar ==mark==CASCADE==?",
+      options: [
+        "O livro é excluído e os empréstimos associados são automaticamente removidos",
+        "O banco cria uma cópia de segurança do livro antes de excluí-lo",
+        "A exclusão é bloqueada pelo banco, pois existem registros dependentes na tabela 'emprestimos'",
+        "Os empréstimos são atualizados com `NULL` no campo do livro e a exclusão prossegue"
+      ],
+      answer: 2,
+      feedback: "A ==key==FOREIGN KEY== implementa integridade referencial. Sem ==mark==CASCADE==, o comportamento padrão é ==mark==RESTRICT==: a exclusão é bloqueada enquanto existirem registros dependentes na tabela filha."
+    },
 
-  // 10 - ALTER TABLE script
-  {
-    tipo: "Código",
-    aula: "Aula 9 — Definindo um Banco de Dados",
-    texto: "Um analista executou os seguintes comandos para ajustar a estrutura de um banco em produção:",
-    question: "Qual das afirmativas sobre o script abaixo é CORRETA?",
-    code:
-  `ALTER TABLE produtos
-    ADD COLUMN peso DECIMAL(8,3);
-  
-  ALTER TABLE produtos
-    ADD COLUMN ativo BOOLEAN NOT NULL DEFAULT TRUE;
-  
-  DROP TABLE temporarios CASCADE;`,
-    options: [
-      "O campo `peso` será preenchido com zero nos registros existentes por ser numérico",
-      "O campo `ativo` receberá `NULL` nos registros existentes pois possui `DEFAULT`",
-      "O campo `peso` receberá `NULL` nos registros existentes, pois não tem `DEFAULT` nem `NOT NULL`",
-      "==danger==DROP TABLE== não aceita ==mark==CASCADE== junto ao nome da tabela — gerará erro de sintaxe"
-    ],
-    answer: 2,
-    feedback: "Sem `DEFAULT` e sem `NOT NULL`, novas colunas adicionadas via ==ddl==ALTER TABLE== recebem `NULL` nos registros já existentes. O campo `ativo` receberá `TRUE` (seu `DEFAULT`). ==mark==CASCADE== no ==danger==DROP TABLE== é sintaxe válida."
-  },
+    // 10 - ALTER TABLE script
+    {
+      tipo: "Código",
+      aula: "Aula 9 — Definindo um Banco de Dados",
+      texto: "Um analista executou os seguintes comandos para ajustar a estrutura de um banco em produção:",
+      question: "Qual das afirmativas sobre o script abaixo é CORRETA?",
+      code:
+    `ALTER TABLE produtos
+      ADD COLUMN peso DECIMAL(8,3);
+    
+    ALTER TABLE produtos
+      ADD COLUMN ativo BOOLEAN NOT NULL DEFAULT TRUE;
+    
+    DROP TABLE temporarios CASCADE;`,
+      options: [
+        "O campo `peso` será preenchido com zero nos registros existentes por ser numérico",
+        "O campo `ativo` receberá `NULL` nos registros existentes pois possui `DEFAULT`",
+        "O campo `peso` receberá `NULL` nos registros existentes, pois não tem `DEFAULT` nem `NOT NULL`",
+        "==danger==DROP TABLE== não aceita ==mark==CASCADE== junto ao nome da tabela — gerará erro de sintaxe"
+      ],
+      answer: 2,
+      feedback: "Sem `DEFAULT` e sem `NOT NULL`, novas colunas adicionadas via ==ddl==ALTER TABLE== recebem `NULL` nos registros já existentes. O campo `ativo` receberá `TRUE` (seu `DEFAULT`). ==mark==CASCADE== no ==danger==DROP TABLE== é sintaxe válida."
+    },
 
-  // 11 - esquema e catálogo
-  {
-    tipo: "Contexto",
-    aula: "Aula 9 — Definindo um Banco de Dados",
-    texto: "Em uma entrevista técnica para DBA júnior, o candidato foi questionado sobre os conceitos de ==mark==Esquema== e ==mark==Catálogo== em bancos de dados relacionais.",
-    question: "Qual alternativa descreve corretamente esses conceitos?",
-    options: [
-      "==mark==Esquema== e ==mark==Catálogo== são sinônimos; ambos representam o conjunto de tabelas do banco",
-      "O ==mark==Catálogo== contém apenas as tabelas de dados do usuário; o ==mark==Esquema== armazena os metadados",
-      "O ==mark==Esquema== representa a estrutura lógica do banco (tabelas, views, restrições); o ==mark==Catálogo== é um conjunto de esquemas e contém metadados via ==mark==INFORMATION_SCHEMA==",
-      "O ==mark==Esquema== define os tipos de dados das colunas; o ==mark==Catálogo== armazena os registros inseridos pelos usuários"
-    ],
-    answer: 2,
-    feedback: "O ==mark==Esquema== é a estrutura lógica do banco (tabelas, views, restrições, tipos). O ==mark==Catálogo== é um conjunto de esquemas e expõe os metadados através do ==mark==INFORMATION_SCHEMA==. São conceitos distintos e complementares."
-  },
+    // 11 - esquema e catálogo
+    {
+      tipo: "Contexto",
+      aula: "Aula 9 — Definindo um Banco de Dados",
+      texto: "Em uma entrevista técnica para DBA júnior, o candidato foi questionado sobre os conceitos de ==mark==Esquema== e ==mark==Catálogo== em bancos de dados relacionais.",
+      question: "Qual alternativa descreve corretamente esses conceitos?",
+      options: [
+        "==mark==Esquema== e ==mark==Catálogo== são sinônimos; ambos representam o conjunto de tabelas do banco",
+        "O ==mark==Catálogo== contém apenas as tabelas de dados do usuário; o ==mark==Esquema== armazena os metadados",
+        "O ==mark==Esquema== representa a estrutura lógica do banco (tabelas, views, restrições); o ==mark==Catálogo== é um conjunto de esquemas e contém metadados via ==mark==INFORMATION_SCHEMA==",
+        "O ==mark==Esquema== define os tipos de dados das colunas; o ==mark==Catálogo== armazena os registros inseridos pelos usuários"
+      ],
+      answer: 2,
+      feedback: "O ==mark==Esquema== é a estrutura lógica do banco (tabelas, views, restrições, tipos). O ==mark==Catálogo== é um conjunto de esquemas e expõe os metadados através do ==mark==INFORMATION_SCHEMA==. São conceitos distintos e complementares."
+    },
 
-  // 12 - DECIMAL tipo
-  {
-    tipo: "Direta",
-    aula: "Aula 9 — Definindo um Banco de Dados",
-    texto: "Sobre o tipo de dado ==type==DECIMAL== em SQL e sua utilização.",
-    question: "O que representa a declaração ==type==DECIMAL(10, 2)== em uma coluna SQL?",
-    options: [
-      "Um número inteiro de até 10 dígitos, sem casas decimais",
-      "Um número com até 10 dígitos no total e 2 casas decimais",
-      "Um número com exatamente 2 dígitos inteiros e 10 casas decimais",
-      "Um número binário de 10 bits com precisão de 2 bytes"
-    ],
-    answer: 1,
-    feedback: "==type==DECIMAL(10, 2)== define um número com até 10 dígitos no total, sendo 2 deles após a vírgula. É o tipo ideal para valores monetários — diferente do ==type==BLOB==, que armazena dados binários como imagens e arquivos."
-  },
+    // 12 - DECIMAL tipo
+    {
+      tipo: "Direta",
+      aula: "Aula 9 — Definindo um Banco de Dados",
+      texto: "Sobre o tipo de dado ==type==DECIMAL== em SQL e sua utilização.",
+      question: "O que representa a declaração ==type==DECIMAL(10, 2)== em uma coluna SQL?",
+      options: [
+        "Um número inteiro de até 10 dígitos, sem casas decimais",
+        "Um número com até 10 dígitos no total e 2 casas decimais",
+        "Um número com exatamente 2 dígitos inteiros e 10 casas decimais",
+        "Um número binário de 10 bits com precisão de 2 bytes"
+      ],
+      answer: 1,
+      feedback: "==type==DECIMAL(10, 2)== define um número com até 10 dígitos no total, sendo 2 deles após a vírgula. É o tipo ideal para valores monetários — diferente do ==type==BLOB==, que armazena dados binários como imagens e arquivos."
+    },
 
-  // Aula 10 - Manipulando um Banco de Dados
-  // 13 - INSERT INTO
-  {
-    tipo: "Curta",
-    aula: "Aula 10 — Manipulando um Banco de Dados",
-    texto: "Sobre os comandos da linguagem DML em SQL.",
-    question: "Qual comando SQL é utilizado para inserir novos registros em uma tabela?",
-    options: [
-      "UPDATE",
-      "SELECT",
-      "INSERT INTO",
-      "ALTER TABLE"
-    ],
-    answer: 2,
-    feedback: "O comando INSERT INTO é responsável por adicionar novos registros a uma tabela existente. UPDATE modifica dados já existentes, e SELECT apenas consulta."
-  },
+    // Aula 10 - Manipulando um Banco de Dados
+    // 13 - INSERT INTO
+    {
+      tipo: "Curta",
+      aula: "Aula 10 — Manipulando um Banco de Dados",
+      texto: "Sobre os comandos da linguagem DML em SQL.",
+      question: "Qual comando SQL é utilizado para inserir novos registros em uma tabela?",
+      options: [
+        "UPDATE",
+        "SELECT",
+        "INSERT INTO",
+        "ALTER TABLE"
+      ],
+      answer: 2,
+      feedback: "O comando INSERT INTO é responsável por adicionar novos registros a uma tabela existente. UPDATE modifica dados já existentes, e SELECT apenas consulta."
+    },
 
-  // 14 - cláusula WHERE
-  {
-    tipo: "Direta",
-    aula: "Aula 10 — Manipulando um Banco de Dados",
-    texto: "Sobre a estrutura básica de uma consulta SQL.",
-    question: "Qual cláusula define a condição de filtragem em uma consulta SELECT?",
-    options: [
-      "FROM",
-      "ORDER BY",
-      "GROUP BY",
-      "WHERE"
-    ],
-    answer: 3,
-    feedback: "A cláusula WHERE é responsável por filtrar os registros retornados pela consulta, aplicando condições que os dados devem satisfazer para serem incluídos no resultado."
-  },
+    // 14 - cláusula WHERE
+    {
+      tipo: "Direta",
+      aula: "Aula 10 — Manipulando um Banco de Dados",
+      texto: "Sobre a estrutura básica de uma consulta SQL.",
+      question: "Qual cláusula define a condição de filtragem em uma consulta SELECT?",
+      options: [
+        "FROM",
+        "ORDER BY",
+        "GROUP BY",
+        "WHERE"
+      ],
+      answer: 3,
+      feedback: "A cláusula WHERE é responsável por filtrar os registros retornados pela consulta, aplicando condições que os dados devem satisfazer para serem incluídos no resultado."
+    },
 
-  // 15 - DELETE sem WHERE
-  {
-    tipo: "Contexto",
-    aula: "Aula 10 — Manipulando um Banco de Dados",
-    texto: "Um analista executou um comando DELETE sem especificar a cláusula WHERE em uma tabela com 10.000 registros.",
-    question: "Qual será o resultado dessa operação?",
-    options: [
-      "Apenas o primeiro registro será removido",
-      "O comando retornará erro por falta da cláusula WHERE",
-      "Todos os registros da tabela serão excluídos",
-      "A estrutura da tabela será removida junto com os dados"
-    ],
-    answer: 2,
-    feedback: "DELETE sem WHERE remove todos os registros da tabela, mas preserva sua estrutura. Para remover a estrutura, seria necessário usar DROP TABLE."
-  },
+    // 15 - DELETE sem WHERE
+    {
+      tipo: "Contexto",
+      aula: "Aula 10 — Manipulando um Banco de Dados",
+      texto: "Um analista executou um comando DELETE sem especificar a cláusula WHERE em uma tabela com 10.000 registros.",
+      question: "Qual será o resultado dessa operação?",
+      options: [
+        "Apenas o primeiro registro será removido",
+        "O comando retornará erro por falta da cláusula WHERE",
+        "Todos os registros da tabela serão excluídos",
+        "A estrutura da tabela será removida junto com os dados"
+      ],
+      answer: 2,
+      feedback: "DELETE sem WHERE remove todos os registros da tabela, mas preserva sua estrutura. Para remover a estrutura, seria necessário usar DROP TABLE."
+    },
 
-  // 16 - DISTINCT
-  {
-    tipo: "Código",
-    aula: "Aula 10 — Manipulando um Banco de Dados",
-    texto: "Analise o comando SQL abaixo e identifique seu comportamento:",
-    question: "O que será retornado pela consulta a seguir?",
-    code: `SELECT DISTINCT departamento
-  FROM funcionarios;`,
-    options: [
-      "Todos os registros da tabela, incluindo duplicatas",
-      "Apenas o primeiro registro de cada departamento em ordem alfabética",
-      "Os nomes de departamento sem repetição",
-      "Um erro, pois DISTINCT não é compatível com SELECT"
-    ],
-    answer: 2,
-    feedback: "DISTINCT elimina os valores duplicados do resultado. A consulta retorna cada valor de departamento uma única vez, sem repetições."
-  },
+    // 16 - DISTINCT
+    {
+      tipo: "Código",
+      aula: "Aula 10 — Manipulando um Banco de Dados",
+      texto: "Analise o comando SQL abaixo e identifique seu comportamento:",
+      question: "O que será retornado pela consulta a seguir?",
+      code: `SELECT DISTINCT departamento
+    FROM funcionarios;`,
+      options: [
+        "Todos os registros da tabela, incluindo duplicatas",
+        "Apenas o primeiro registro de cada departamento em ordem alfabética",
+        "Os nomes de departamento sem repetição",
+        "Um erro, pois DISTINCT não é compatível com SELECT"
+      ],
+      answer: 2,
+      feedback: "DISTINCT elimina os valores duplicados do resultado. A consulta retorna cada valor de departamento uma única vez, sem repetições."
+    },
 
-  // 17 - DML não procedural
-  {
-    tipo: "Direta",
-    aula: "Aula 10 — Manipulando um Banco de Dados",
-    texto: "Sobre os tipos de DML e sua forma de operação.",
-    question: "Qual é a característica da DML não procedural, como o SQL?",
-    options: [
-      "O usuário especifica o que quer e como o banco deve obtê-lo",
-      "Requer definição explícita dos índices antes de cada consulta",
-      "O usuário especifica apenas o que quer, sem indicar como obter",
-      "É utilizada exclusivamente para operações de exclusão e atualização"
-    ],
-    answer: 2,
-    feedback: "Na DML não procedural, o usuário informa apenas o resultado desejado. O banco de dados decide internamente a melhor forma de obtê-lo, tornando a linguagem mais simples de usar."
-  },
+    // 17 - DML não procedural
+    {
+      tipo: "Direta",
+      aula: "Aula 10 — Manipulando um Banco de Dados",
+      texto: "Sobre os tipos de DML e sua forma de operação.",
+      question: "Qual é a característica da DML não procedural, como o SQL?",
+      options: [
+        "O usuário especifica o que quer e como o banco deve obtê-lo",
+        "Requer definição explícita dos índices antes de cada consulta",
+        "O usuário especifica apenas o que quer, sem indicar como obter",
+        "É utilizada exclusivamente para operações de exclusão e atualização"
+      ],
+      answer: 2,
+      feedback: "Na DML não procedural, o usuário informa apenas o resultado desejado. O banco de dados decide internamente a melhor forma de obtê-lo, tornando a linguagem mais simples de usar."
+    },
 
-  // 18 - UPDATE com WHERE
-  {
-    tipo: "Código",
-    aula: "Aula 10 — Manipulando um Banco de Dados",
-    texto: "Um desenvolvedor escreveu o seguinte comando para reajustar salários:",
-    question: "Qual será o efeito do comando abaixo na tabela?",
-    code: `UPDATE empregados
-  SET salario = salario * 1.10
-  WHERE departamento = 'TI';`,
-    options: [
-      "Todos os salários da empresa serão aumentados em 10%",
-      "Apenas os salários do departamento TI serão aumentados em 10%",
-      "O comando criará uma nova coluna chamada salario na tabela",
-      "O comando excluirá os registros do departamento TI"
-    ],
-    answer: 1,
-    feedback: "O WHERE restringe a operação ao departamento TI. Sem o WHERE, todos os registros seriam atualizados. O SET define o novo valor multiplicando o salário atual por 1.10."
-  },
+    // 18 - UPDATE com WHERE
+    {
+      tipo: "Código",
+      aula: "Aula 10 — Manipulando um Banco de Dados",
+      texto: "Um desenvolvedor escreveu o seguinte comando para reajustar salários:",
+      question: "Qual será o efeito do comando abaixo na tabela?",
+      code: `UPDATE empregados
+    SET salario = salario * 1.10
+    WHERE departamento = 'TI';`,
+      options: [
+        "Todos os salários da empresa serão aumentados em 10%",
+        "Apenas os salários do departamento TI serão aumentados em 10%",
+        "O comando criará uma nova coluna chamada salario na tabela",
+        "O comando excluirá os registros do departamento TI"
+      ],
+      answer: 1,
+      feedback: "O WHERE restringe a operação ao departamento TI. Sem o WHERE, todos os registros seriam atualizados. O SET define o novo valor multiplicando o salário atual por 1.10."
+    },
 
-  // 19 - precedência operadores
-  {
-    tipo: "Aplicação",
-    aula: "Aula 10 — Manipulando um Banco de Dados",
-    texto: "Um sistema de RH precisa exibir o salário anual de cada funcionário, somando um bônus fixo de R$ 600 ao salário mensal antes de multiplicar por 12.",
-    question: "Qual expressão SQL calcula corretamente esse valor?",
-    options: [
-      "SELECT salario * 12 + 600 FROM empregados",
-      "SELECT 12 * salario + 600 FROM empregados",
-      "SELECT 12 * (salario + 600) FROM empregados",
-      "SELECT salario + 600 * 12 FROM empregados"
-    ],
-    answer: 2,
-    feedback: "Os parênteses garantem que o bônus seja somado ao salário mensal antes da multiplicação. Sem parênteses, a precedência dos operadores faria a multiplicação ocorrer primeiro, alterando o resultado."
-  },
+    // 19 - precedência operadores
+    {
+      tipo: "Aplicação",
+      aula: "Aula 10 — Manipulando um Banco de Dados",
+      texto: "Um sistema de RH precisa exibir o salário anual de cada funcionário, somando um bônus fixo de R$ 600 ao salário mensal antes de multiplicar por 12.",
+      question: "Qual expressão SQL calcula corretamente esse valor?",
+      options: [
+        "SELECT salario * 12 + 600 FROM empregados",
+        "SELECT 12 * salario + 600 FROM empregados",
+        "SELECT 12 * (salario + 600) FROM empregados",
+        "SELECT salario + 600 * 12 FROM empregados"
+      ],
+      answer: 2,
+      feedback: "Os parênteses garantem que o bônus seja somado ao salário mensal antes da multiplicação. Sem parênteses, a precedência dos operadores faria a multiplicação ocorrer primeiro, alterando o resultado."
+    },
 
-  // 20 - operador AND
-  {
-    tipo: "Curta",
-    aula: "Aula 10 — Manipulando um Banco de Dados",
-    texto: "Sobre os operadores lógicos disponíveis em SQL.",
-    question: "Qual operador lógico retorna resultados apenas quando TODAS as condições especificadas são verdadeiras simultaneamente?",
-    options: [
-      "OR",
-      "NOT",
-      "AND",
-      "BETWEEN"
-    ],
-    answer: 2,
-    feedback: "AND é o operador mais restritivo: exige que todas as condições sejam verdadeiras para que o registro seja incluído no resultado. OR basta que uma seja verdadeira."
-  },
+    // 20 - operador AND
+    {
+      tipo: "Curta",
+      aula: "Aula 10 — Manipulando um Banco de Dados",
+      texto: "Sobre os operadores lógicos disponíveis em SQL.",
+      question: "Qual operador lógico retorna resultados apenas quando TODAS as condições especificadas são verdadeiras simultaneamente?",
+      options: [
+        "OR",
+        "NOT",
+        "AND",
+        "BETWEEN"
+      ],
+      answer: 2,
+      feedback: "AND é o operador mais restritivo: exige que todas as condições sejam verdadeiras para que o registro seja incluído no resultado. OR basta que uma seja verdadeira."
+    },
 
-  // 21 - INSERT colunas específicas
-  {
-    tipo: "Contexto",
-    aula: "Aula 10 — Manipulando um Banco de Dados",
-    texto: "Uma equipe precisava inserir um novo curso no banco, mas só conhecia parte das colunas da tabela. Eles optaram por especificar as colunas no comando INSERT.",
-    question: "Qual sintaxe representa corretamente essa abordagem?",
-    options: [
-      "INSERT VALUES ('SI', 180) INTO cursos",
-      "INSERT INTO cursos VALUES ('SI', 180)",
-      "INSERT INTO cursos (nome, carga) VALUES ('SI', 180)",
-      "INSERT cursos SET nome = 'SI', carga = 180"
-    ],
-    answer: 2,
-    feedback: "Ao especificar as colunas no INSERT INTO, é possível inserir dados em apenas parte das colunas da tabela. As colunas omitidas receberão NULL ou seu valor DEFAULT."
-  },
+    // 21 - INSERT colunas específicas
+    {
+      tipo: "Contexto",
+      aula: "Aula 10 — Manipulando um Banco de Dados",
+      texto: "Uma equipe precisava inserir um novo curso no banco, mas só conhecia parte das colunas da tabela. Eles optaram por especificar as colunas no comando INSERT.",
+      question: "Qual sintaxe representa corretamente essa abordagem?",
+      options: [
+        "INSERT VALUES ('SI', 180) INTO cursos",
+        "INSERT INTO cursos VALUES ('SI', 180)",
+        "INSERT INTO cursos (nome, carga) VALUES ('SI', 180)",
+        "INSERT cursos SET nome = 'SI', carga = 180"
+      ],
+      answer: 2,
+      feedback: "Ao especificar as colunas no INSERT INTO, é possível inserir dados em apenas parte das colunas da tabela. As colunas omitidas receberão NULL ou seu valor DEFAULT."
+    },
 
-  // 22 - AND aplicado
-  {
-    tipo: "Aplicação",
-    aula: "Aula 10 — Manipulando um Banco de Dados",
-    texto: "Um analista precisa buscar todos os produtos com preço maior que R$ 100 e que pertençam à categoria 'Eletrônicos'.",
-    question: "Qual comando SQL atende corretamente essa necessidade?",
-    options: [
-      "SELECT * FROM produtos WHERE preco > 100 OR categoria = 'Eletrônicos'",
-      "SELECT * FROM produtos WHERE preco > 100 AND categoria = 'Eletrônicos'",
-      "SELECT * FROM produtos WHERE preco > 100 NOT categoria = 'Eletrônicos'",
-      "SELECT * FROM produtos WHERE preco > 100, categoria = 'Eletrônicos'"
-    ],
-    answer: 1,
-    feedback: "AND combina as duas condições exigindo que ambas sejam verdadeiras. OR retornaria produtos que satisfaçam qualquer uma das condições, ampliando o resultado indesejavelmente."
-  },
+    // 22 - AND aplicado
+    {
+      tipo: "Aplicação",
+      aula: "Aula 10 — Manipulando um Banco de Dados",
+      texto: "Um analista precisa buscar todos os produtos com preço maior que R$ 100 e que pertençam à categoria 'Eletrônicos'.",
+      question: "Qual comando SQL atende corretamente essa necessidade?",
+      options: [
+        "SELECT * FROM produtos WHERE preco > 100 OR categoria = 'Eletrônicos'",
+        "SELECT * FROM produtos WHERE preco > 100 AND categoria = 'Eletrônicos'",
+        "SELECT * FROM produtos WHERE preco > 100 NOT categoria = 'Eletrônicos'",
+        "SELECT * FROM produtos WHERE preco > 100, categoria = 'Eletrônicos'"
+      ],
+      answer: 1,
+      feedback: "AND combina as duas condições exigindo que ambas sejam verdadeiras. OR retornaria produtos que satisfaçam qualquer uma das condições, ampliando o resultado indesejavelmente."
+    },
 
-  // 23 - operador diferente
-  {
-    tipo: "Direta",
-    aula: "Aula 10 — Manipulando um Banco de Dados",
-    texto: "Sobre o operador de comparação para valores diferentes em SQL.",
-    question: "Qual operador é utilizado em SQL para verificar se dois valores são diferentes?",
-    options: [
-      "!=",
-      "NOT =",
-      "<>",
-      "≠"
-    ],
-    answer: 2,
-    feedback: "O operador <> é o padrão SQL para 'diferente de'. Embora != seja aceito em alguns SGBDs, o <> é o operador definido pelo padrão SQL ANSI para comparação de desigualdade."
-  },
+    // 23 - operador diferente
+    {
+      tipo: "Direta",
+      aula: "Aula 10 — Manipulando um Banco de Dados",
+      texto: "Sobre o operador de comparação para valores diferentes em SQL.",
+      question: "Qual operador é utilizado em SQL para verificar se dois valores são diferentes?",
+      options: [
+        "!=",
+        "NOT =",
+        "<>",
+        "≠"
+      ],
+      answer: 2,
+      feedback: "O operador <> é o padrão SQL para 'diferente de'. Embora != seja aceito em alguns SGBDs, o <> é o operador definido pelo padrão SQL ANSI para comparação de desigualdade."
+    },
 
-  // 24 - UPDATE registro específico
-  {
-    tipo: "Contexto",
-    aula: "Aula 10 — Manipulando um Banco de Dados",
-    texto: "Uma desenvolvedora precisava atualizar o e-mail de um cliente específico sem alterar os demais registros da tabela.",
-    question: "Qual estrutura de comando garante que apenas o registro desejado seja modificado?",
-    options: [
-      "UPDATE clientes SET email = 'novo@email.com'",
-      "UPDATE clientes SET email = 'novo@email.com' WHERE id_cliente = 42",
-      "INSERT INTO clientes SET email = 'novo@email.com' WHERE id_cliente = 42",
-      "DELETE FROM clientes WHERE id_cliente = 42 AND SET email = 'novo@email.com'"
-    ],
-    answer: 1,
-    feedback: "O UPDATE com WHERE restringe a atualização ao registro que satisfaz a condição. Sem WHERE, todos os registros da tabela teriam o e-mail alterado para o mesmo valor."
-  },
+    // 24 - UPDATE registro específico
+    {
+      tipo: "Contexto",
+      aula: "Aula 10 — Manipulando um Banco de Dados",
+      texto: "Uma desenvolvedora precisava atualizar o e-mail de um cliente específico sem alterar os demais registros da tabela.",
+      question: "Qual estrutura de comando garante que apenas o registro desejado seja modificado?",
+      options: [
+        "UPDATE clientes SET email = 'novo@email.com'",
+        "UPDATE clientes SET email = 'novo@email.com' WHERE id_cliente = 42",
+        "INSERT INTO clientes SET email = 'novo@email.com' WHERE id_cliente = 42",
+        "DELETE FROM clientes WHERE id_cliente = 42 AND SET email = 'novo@email.com'"
+      ],
+      answer: 1,
+      feedback: "O UPDATE com WHERE restringe a atualização ao registro que satisfaz a condição. Sem WHERE, todos os registros da tabela teriam o e-mail alterado para o mesmo valor."
+    },
 
-  //Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1
+    //Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1
 
-  // 25 - ordem execução SQL
-  {
-    tipo: "Direta",
-    aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
-    texto: "Considere a estrutura de execução de uma consulta SQL.",
-    question: "Qual é a ordem correta de execução das cláusulas em uma consulta SQL básica?",
-    options: [
-      "SELECT → FROM → WHERE",
-      "FROM → WHERE → SELECT",
-      "WHERE → FROM → SELECT",
-      "SELECT → WHERE → FROM"
-    ],
-    answer: 1,
-    feedback: "A ordem real de execução é: FROM (define a origem), WHERE (filtra os dados) e só então SELECT (projeta as colunas desejadas)."
-  },
+    // 25 - ordem execução SQL
+    {
+      tipo: "Direta",
+      aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
+      texto: "Considere a estrutura de execução de uma consulta SQL.",
+      question: "Qual é a ordem correta de execução das cláusulas em uma consulta SQL básica?",
+      options: [
+        "SELECT → FROM → WHERE",
+        "FROM → WHERE → SELECT",
+        "WHERE → FROM → SELECT",
+        "SELECT → WHERE → FROM"
+      ],
+      answer: 1,
+      feedback: "A ordem real de execução é: FROM (define a origem), WHERE (filtra os dados) e só então SELECT (projeta as colunas desejadas)."
+    },
 
-  // 26 - cláusula WHERE
-  {
-    tipo: "Contexto",
-    aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
-    texto: "Um sistema universitário armazena alunos em uma tabela. O administrador precisa listar apenas alunos vinculados ao curso de código 10.",
-    question: "Qual consulta SQL retorna corretamente esses alunos?",
-    options: [
-      "SELECT * FROM alunos ORDER BY cod_curso = 10;",
-      "SELECT * FROM alunos WHERE cod_curso = 10;",
-      "SELECT * FROM alunos GROUP BY cod_curso = 10;",
-      "SELECT cod_curso FROM alunos HAVING cod_curso = 10;"
-    ],
-    answer: 1,
-    feedback: "A cláusula WHERE é usada para filtrar registros com base em uma condição. As demais opções utilizam cláusulas incorretas para filtragem simples."
-  },
+    // 26 - cláusula WHERE
+    {
+      tipo: "Contexto",
+      aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
+      texto: "Um sistema universitário armazena alunos em uma tabela. O administrador precisa listar apenas alunos vinculados ao curso de código 10.",
+      question: "Qual consulta SQL retorna corretamente esses alunos?",
+      options: [
+        "SELECT * FROM alunos ORDER BY cod_curso = 10;",
+        "SELECT * FROM alunos WHERE cod_curso = 10;",
+        "SELECT * FROM alunos GROUP BY cod_curso = 10;",
+        "SELECT cod_curso FROM alunos HAVING cod_curso = 10;"
+      ],
+      answer: 1,
+      feedback: "A cláusula WHERE é usada para filtrar registros com base em uma condição. As demais opções utilizam cláusulas incorretas para filtragem simples."
+    },
 
-  // 27 - operador LIKE
-  {
-    tipo: "Código",
-    aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
-    texto: "Analise a consulta abaixo:",
-    question: "O que essa consulta retorna?",
-    code: `SELECT * FROM alunos\nWHERE nome LIKE 'Jorge%';`,
-    options: [
-      "Alunos cujo nome termina com 'Jorge'",
-      "Alunos cujo nome contém 'Jorge' em qualquer posição",
-      "Alunos cujo nome começa com 'Jorge'",
-      "Alunos cujo nome tem exatamente 5 letras após 'Jorge'"
-    ],
-    answer: 2,
-    feedback: "O curinga % representa qualquer sequência de caracteres. Posicionado após 'Jorge', indica que o nome deve começar com essa string."
-  },
+    // 27 - operador LIKE
+    {
+      tipo: "Código",
+      aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
+      texto: "Analise a consulta abaixo:",
+      question: "O que essa consulta retorna?",
+      code: `SELECT * FROM alunos\nWHERE nome LIKE 'Jorge%';`,
+      options: [
+        "Alunos cujo nome termina com 'Jorge'",
+        "Alunos cujo nome contém 'Jorge' em qualquer posição",
+        "Alunos cujo nome começa com 'Jorge'",
+        "Alunos cujo nome tem exatamente 5 letras após 'Jorge'"
+      ],
+      answer: 2,
+      feedback: "O curinga % representa qualquer sequência de caracteres. Posicionado após 'Jorge', indica que o nome deve começar com essa string."
+    },
 
-  // 28 - curinga underscore
-  {
-    tipo: "Direta",
-    aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
-    texto: "Sobre os curingas do operador LIKE no SQL:",
-    question: "O que o caractere underscore _ representa no LIKE?",
-    options: [
-      "Qualquer sequência de caracteres",
-      "Exatamente um caractere",
-      "O início de uma string",
-      "Um espaço em branco"
-    ],
-    answer: 1,
-    feedback: "O _ substitui exatamente um caractere. Já o % substitui qualquer sequência (zero ou mais caracteres)."
-  },
+    // 28 - curinga underscore
+    {
+      tipo: "Direta",
+      aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
+      texto: "Sobre os curingas do operador LIKE no SQL:",
+      question: "O que o caractere underscore _ representa no LIKE?",
+      options: [
+        "Qualquer sequência de caracteres",
+        "Exatamente um caractere",
+        "O início de uma string",
+        "Um espaço em branco"
+      ],
+      answer: 1,
+      feedback: "O _ substitui exatamente um caractere. Já o % substitui qualquer sequência (zero ou mais caracteres)."
+    },
 
-  // 29 - operador BETWEEN
-  {
-    tipo: "Contexto",
-    aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
-    texto: "Uma analista precisa encontrar todos os alunos nascidos durante a década de 1980.",
-    question: "Qual operador SQL é mais adequado para esse filtro por intervalo de datas?",
-    options: [
-      "LIKE",
-      "IN",
-      "BETWEEN",
-      "IS NULL"
-    ],
-    answer: 2,
-    feedback: "BETWEEN filtra valores dentro de um intervalo inclusivo, sendo ideal para datas e números. Equivale a >= valor_inicial AND <= valor_final."
-  },
+    // 29 - operador BETWEEN
+    {
+      tipo: "Contexto",
+      aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
+      texto: "Uma analista precisa encontrar todos os alunos nascidos durante a década de 1980.",
+      question: "Qual operador SQL é mais adequado para esse filtro por intervalo de datas?",
+      options: [
+        "LIKE",
+        "IN",
+        "BETWEEN",
+        "IS NULL"
+      ],
+      answer: 2,
+      feedback: "BETWEEN filtra valores dentro de um intervalo inclusivo, sendo ideal para datas e números. Equivale a >= valor_inicial AND <= valor_final."
+    },
 
-  // 30 - operador IN
-  {
-    tipo: "Código",
-    aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
-    texto: "Observe a consulta a seguir:",
-    question: "O operador IN nessa consulta é equivalente a qual expressão?",
-    code: `SELECT * FROM alunos\nWHERE mat_alu IN (922155, 926465, 915550);`,
-    options: [
-      "mat_alu BETWEEN 922155 AND 915550",
-      "mat_alu = 922155 OR mat_alu = 926465 OR mat_alu = 915550",
-      "mat_alu LIKE 922155 AND mat_alu LIKE 926465",
-      "mat_alu >= 922155 AND mat_alu <= 915550"
-    ],
-    answer: 1,
-    feedback: "O IN é um atalho para múltiplos OR. Verifica se o valor do campo corresponde a algum item da lista fornecida."
-  },
+    // 30 - operador IN
+    {
+      tipo: "Código",
+      aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
+      texto: "Observe a consulta a seguir:",
+      question: "O operador IN nessa consulta é equivalente a qual expressão?",
+      code: `SELECT * FROM alunos\nWHERE mat_alu IN (922155, 926465, 915550);`,
+      options: [
+        "mat_alu BETWEEN 922155 AND 915550",
+        "mat_alu = 922155 OR mat_alu = 926465 OR mat_alu = 915550",
+        "mat_alu LIKE 922155 AND mat_alu LIKE 926465",
+        "mat_alu >= 922155 AND mat_alu <= 915550"
+      ],
+      answer: 1,
+      feedback: "O IN é um atalho para múltiplos OR. Verifica se o valor do campo corresponde a algum item da lista fornecida."
+    },
 
-  // 31 - valor NULL
-  {
-    tipo: "Direta",
-    aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
-    texto: "Sobre valores nulos em SQL:",
-    question: "Qual afirmação sobre NULL é correta?",
-    options: [
-      "NULL é equivalente ao valor zero",
-      "NULL é equivalente a uma string vazia",
-      "Comparações com NULL resultam em UNKNOWN",
-      "NULL pode ser comparado com = normalmente"
-    ],
-    answer: 2,
-    feedback: "NULL representa ausência de valor. Comparações diretas com NULL (usando =) não funcionam — o resultado é UNKNOWN, por isso se usa IS NULL."
-  },
+    // 31 - valor NULL
+    {
+      tipo: "Direta",
+      aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
+      texto: "Sobre valores nulos em SQL:",
+      question: "Qual afirmação sobre NULL é correta?",
+      options: [
+        "NULL é equivalente ao valor zero",
+        "NULL é equivalente a uma string vazia",
+        "Comparações com NULL resultam em UNKNOWN",
+        "NULL pode ser comparado com = normalmente"
+      ],
+      answer: 2,
+      feedback: "NULL representa ausência de valor. Comparações diretas com NULL (usando =) não funcionam — o resultado é UNKNOWN, por isso se usa IS NULL."
+    },
 
-  // 32 - IS NULL
-  {
-    tipo: "Aplicação",
-    aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
-    texto: "Uma empresa quer saber quantos clientes estão cadastrados sem e-mail informado.",
-    question: "Qual cláusula deve ser usada para identificar registros sem valor no campo email?",
-    options: [
-      "WHERE email = ''",
-      "WHERE email = NULL",
-      "WHERE email IS NULL",
-      "WHERE email BETWEEN NULL AND NULL"
-    ],
-    answer: 2,
-    feedback: "Para verificar ausência de valor usa-se IS NULL. A comparação com = NULL sempre retorna UNKNOWN e nunca encontra registros."
-  },
+    // 32 - IS NULL
+    {
+      tipo: "Aplicação",
+      aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
+      texto: "Uma empresa quer saber quantos clientes estão cadastrados sem e-mail informado.",
+      question: "Qual cláusula deve ser usada para identificar registros sem valor no campo email?",
+      options: [
+        "WHERE email = ''",
+        "WHERE email = NULL",
+        "WHERE email IS NULL",
+        "WHERE email BETWEEN NULL AND NULL"
+      ],
+      answer: 2,
+      feedback: "Para verificar ausência de valor usa-se IS NULL. A comparação com = NULL sempre retorna UNKNOWN e nunca encontra registros."
+    },
 
-  // 33 - função COUNT
-  {
-    tipo: "Código",
-    aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
-    texto: "Analise a função abaixo aplicada a uma tabela:",
-    question: "O que a função COUNT(*) retorna nesse contexto?",
-    code: `SELECT COUNT(*) FROM alunos;`,
-    options: [
-      "A soma de todos os valores numéricos",
-      "O maior valor da tabela",
-      "O número total de registros na tabela",
-      "A média dos campos numéricos"
-    ],
-    answer: 2,
-    feedback: "COUNT(*) conta todos os registros da tabela, independentemente de valores nulos."
-  },
+    // 33 - função COUNT
+    {
+      tipo: "Código",
+      aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
+      texto: "Analise a função abaixo aplicada a uma tabela:",
+      question: "O que a função COUNT(*) retorna nesse contexto?",
+      code: `SELECT COUNT(*) FROM alunos;`,
+      options: [
+        "A soma de todos os valores numéricos",
+        "O maior valor da tabela",
+        "O número total de registros na tabela",
+        "A média dos campos numéricos"
+      ],
+      answer: 2,
+      feedback: "COUNT(*) conta todos os registros da tabela, independentemente de valores nulos."
+    },
 
-  // 34 - GROUP BY
-  {
-    tipo: "Contexto",
-    aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
-    texto: "Um relatório precisa exibir a média de créditos de alunos, separada por cada curso.",
-    question: "Qual cláusula SQL permite agrupar os resultados por curso antes de calcular a média?",
-    options: [
-      "ORDER BY",
-      "WHERE",
-      "HAVING",
-      "GROUP BY"
-    ],
-    answer: 3,
-    feedback: "GROUP BY agrupa os registros por um campo. Combinado com AVG(), gera estatísticas por categoria — nesse caso, por curso."
-  },
+    // 34 - GROUP BY
+    {
+      tipo: "Contexto",
+      aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
+      texto: "Um relatório precisa exibir a média de créditos de alunos, separada por cada curso.",
+      question: "Qual cláusula SQL permite agrupar os resultados por curso antes de calcular a média?",
+      options: [
+        "ORDER BY",
+        "WHERE",
+        "HAVING",
+        "GROUP BY"
+      ],
+      answer: 3,
+      feedback: "GROUP BY agrupa os registros por um campo. Combinado com AVG(), gera estatísticas por categoria — nesse caso, por curso."
+    },
 
-  // 35 - ORDER BY
-  {
-    tipo: "Aplicação",
-    aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
-    texto: "Uma consulta precisa listar os alunos em ordem alfabética decrescente pelo nome.",
-    question: "Qual trecho de código realiza essa ordenação corretamente?",
-    options: [
-      "GROUP BY nome ASC",
-      "ORDER BY nome DESC",
-      "WHERE nome DESC",
-      "ORDER BY nome, ASC"
-    ],
-    answer: 1,
-    feedback: "ORDER BY define a ordenação dos resultados. DESC indica ordem decrescente (Z→A). O padrão é ASC (crescente)."
-  },
+    // 35 - ORDER BY
+    {
+      tipo: "Aplicação",
+      aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
+      texto: "Uma consulta precisa listar os alunos em ordem alfabética decrescente pelo nome.",
+      question: "Qual trecho de código realiza essa ordenação corretamente?",
+      options: [
+        "GROUP BY nome ASC",
+        "ORDER BY nome DESC",
+        "WHERE nome DESC",
+        "ORDER BY nome, ASC"
+      ],
+      answer: 1,
+      feedback: "ORDER BY define a ordenação dos resultados. DESC indica ordem decrescente (Z→A). O padrão é ASC (crescente)."
+    },
 
-  // 36 - consulta completa
-  {
-    tipo: "Contexto",
-    aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
-    texto: "Um analista quer listar os cursos com suas respectivas médias de créditos, exibindo os cursos com maior média primeiro.",
-    question: "Qual é a estrutura correta para essa consulta?",
-    options: [
-      "SELECT cod_curso, AVG(credito) FROM alunos WHERE cod_curso ORDER BY AVG DESC;",
-      "SELECT cod_curso, AVG(credito) FROM alunos GROUP BY cod_curso ORDER BY AVG(credito) DESC;",
-      "SELECT cod_curso FROM alunos GROUP BY AVG(credito) ORDER BY cod_curso;",
-      "SELECT AVG(credito) FROM alunos ORDER BY cod_curso GROUP BY cod_curso;"
-    ],
-    answer: 1,
-    feedback: "A ordem correta é: SELECT → FROM → GROUP BY → ORDER BY. Campos no SELECT devem estar no GROUP BY ou dentro de funções de agregação."
-  },
+    // 36 - consulta completa
+    {
+      tipo: "Contexto",
+      aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
+      texto: "Um analista quer listar os cursos com suas respectivas médias de créditos, exibindo os cursos com maior média primeiro.",
+      question: "Qual é a estrutura correta para essa consulta?",
+      options: [
+        "SELECT cod_curso, AVG(credito) FROM alunos WHERE cod_curso ORDER BY AVG DESC;",
+        "SELECT cod_curso, AVG(credito) FROM alunos GROUP BY cod_curso ORDER BY AVG(credito) DESC;",
+        "SELECT cod_curso FROM alunos GROUP BY AVG(credito) ORDER BY cod_curso;",
+        "SELECT AVG(credito) FROM alunos ORDER BY cod_curso GROUP BY cod_curso;"
+      ],
+      answer: 1,
+      feedback: "A ordem correta é: SELECT → FROM → GROUP BY → ORDER BY. Campos no SELECT devem estar no GROUP BY ou dentro de funções de agregação."
+    },
 
-],
+    // aula: Refinando Consultas em um Banco de Dados - Parte 2
+
+    // 37 - funções agregadas
+    {
+      aula: "Aula 12 - Refinando Consultas em um Banco de Dados • Parte 2",
+      tipo: "Direta",
+      texto: "Funções de agregação processam valores de uma coluna e retornam um único resultado.",
+      question: "Qual função SQL é usada para calcular a soma total de valores de uma coluna?",
+      options: [
+        "AVG()",
+        "COUNT()",
+        "SUM()",
+        "MAX()"
+      ],
+      answer: 2,
+      feedback: "SUM() é a função responsável por somar todos os valores de uma coluna. AVG() calcula a média, COUNT() conta registros e MAX() retorna o maior valor."
+    },
+
+    // 38 - GROUP BY
+    {
+      aula: "Aula 12 - Refinando Consultas em um Banco de Dados • Parte 2",
+      tipo: "Contexto",
+      texto: "Um analista precisa descobrir a média de créditos dos alunos separada por curso, e não a média geral de todos os alunos juntos.",
+      question: "Qual cláusula SQL deve ser usada para dividir os registros em grupos antes de aplicar a agregação?",
+      options: [
+        "ORDER BY",
+        "WHERE",
+        "HAVING",
+        "GROUP BY"
+      ],
+      answer: 3,
+      feedback: "GROUP BY é a cláusula que divide os registros em grupos antes da aplicação das funções agregadas, permitindo calcular resultados separados por categoria."
+    },
+
+    // 39 - HAVING vs WHERE
+    {
+      aula: "Aula 12 - Refinando Consultas em um Banco de Dados • Parte 2",
+      tipo: "Direta",
+      texto: "WHERE e HAVING são cláusulas de filtragem, mas atuam em momentos diferentes da execução.",
+      question: "Qual é a diferença fundamental entre WHERE e HAVING no SQL?",
+      options: [
+        "WHERE filtra grupos e HAVING filtra linhas individuais",
+        "WHERE filtra linhas individuais e HAVING filtra grupos",
+        "WHERE e HAVING são equivalentes e podem ser usadas intercambiavelmente",
+        "WHERE só funciona com agregações e HAVING sem elas"
+      ],
+      answer: 1,
+      feedback: "WHERE filtra linhas individuais antes do agrupamento, enquanto HAVING filtra grupos após a aplicação do GROUP BY. Elas atuam em etapas distintas da execução."
+    },
+
+    // 40 - ordem execução
+    {
+      aula: "Aula 12 - Refinando Consultas em um Banco de Dados • Parte 2",
+      tipo: "Aplicação",
+      texto: "A ordem de execução lógica do SQL é frequentemente cobrada em provas e difere da ordem de escrita da consulta.",
+      question: "Qual é a ordem correta de execução lógica de uma consulta SQL com todas as cláusulas?",
+      options: [
+        "SELECT → FROM → WHERE → GROUP BY → HAVING → ORDER BY",
+        "FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY",
+        "FROM → GROUP BY → WHERE → HAVING → SELECT → ORDER BY",
+        "SELECT → WHERE → FROM → GROUP BY → HAVING → ORDER BY"
+      ],
+      answer: 1,
+      feedback: "A ordem de execução lógica é: FROM (seleciona tabelas), WHERE (filtra linhas), GROUP BY (agrupa), HAVING (filtra grupos), SELECT (define resultado) e ORDER BY (ordena). Isso difere da ordem em que escrevemos a consulta."
+    },
+
+    // 41 - valores NULL
+    {
+      aula: "Aula 12 - Refinando Consultas em um Banco de Dados • Parte 2",
+      tipo: "Contexto",
+      texto: "Uma tabela possui três registros na coluna créditos: 100, NULL e 200. Uma consulta executa AVG(creditos) sobre ela.",
+      question: "Qual será o resultado da função AVG() nessa situação?",
+      options: [
+        "133,33 — pois considera NULL como zero",
+        "150 — pois NULL é ignorado no cálculo",
+        "NULL — pois existe um valor nulo na coluna",
+        "0 — pois a função não consegue processar NULL"
+      ],
+      answer: 1,
+      feedback: "Funções de agregação como AVG() ignoram valores NULL automaticamente. O cálculo será feito apenas sobre os valores não nulos: (100 + 200) / 2 = 150."
+    },
+
+    // 42 - COUNT e NULL
+    {
+      aula: "Aula 12 - Refinando Consultas em um Banco de Dados • Parte 2",
+      tipo: "Direta",
+      texto: "O comportamento do COUNT() varia dependendo do argumento utilizado.",
+      question: "Qual forma do COUNT() conta todas as linhas, inclusive aquelas com valores NULL?",
+      options: [
+        "COUNT(coluna)",
+        "COUNT(DISTINCT coluna)",
+        "COUNT(*)",
+        "COUNT(ALL coluna)"
+      ],
+      answer: 2,
+      feedback: "COUNT(*) conta todas as linhas da tabela, independentemente de haver NULL em qualquer coluna. Já COUNT(coluna) ignora os valores NULL daquela coluna específica."
+    },
+
+    // 43 - DISTINCT básico
+    {
+      aula: "Aula 12 - Refinando Consultas em um Banco de Dados • Parte 2",
+      tipo: "Código",
+      texto: "Observe a consulta abaixo executada sobre uma tabela com os seguintes valores na coluna cod_curso: 10, 10, 20, 20, 30.",
+      question: "Quantas linhas serão retornadas pela consulta abaixo?",
+      code: `SELECT DISTINCT cod_curso
+    FROM alunos;`,
+      options: [
+        "5 linhas, pois retorna todos os registros",
+        "2 linhas, pois agrupa os valores repetidos",
+        "3 linhas, pois elimina as duplicatas",
+        "1 linha, pois DISTINCT sempre retorna um único valor"
+      ],
+      answer: 2,
+      feedback: "DISTINCT elimina valores duplicados. Com os valores 10, 10, 20, 20, 30, restam apenas três valores únicos: 10, 20 e 30. Por isso, serão retornadas 3 linhas."
+    },
+
+    // 44 - COUNT DISTINCT
+    {
+      aula: "Aula 12 - Refinando Consultas em um Banco de Dados • Parte 2",
+      tipo: "Aplicação",
+      texto: "Um sistema registra o histórico escolar dos alunos. Um aluno pode ter cursado a mesma disciplina mais de uma vez ao longo dos anos.",
+      question: "Para contar quantos alunos distintos cursaram uma disciplina em determinado ano, qual consulta é mais adequada?",
+      options: [
+        "SELECT COUNT(*) FROM historicos WHERE cod_disc = 200070 AND ano = 2001",
+        "SELECT COUNT(mat_alu) FROM historicos WHERE cod_disc = 200070 AND ano = 2001",
+        "SELECT COUNT(DISTINCT mat_alu) FROM historicos WHERE cod_disc = 200070 AND ano = 2001",
+        "SELECT DISTINCT COUNT(mat_alu) FROM historicos WHERE cod_disc = 200070 AND ano = 2001"
+      ],
+      answer: 2,
+      feedback: "COUNT(DISTINCT mat_alu) conta apenas as matrículas únicas, evitando que um mesmo aluno seja contado mais de uma vez caso tenha cursado a disciplina repetidamente."
+    },
+
+    // 45 - alias
+    {
+      aula: "Aula 12 - Refinando Consultas em um Banco de Dados • Parte 2",
+      tipo: "Curta",
+      texto: "O uso de alias melhora a legibilidade dos resultados de consultas SQL.",
+      question: "Qual é a finalidade do uso de AS em uma função de agregação no SELECT?",
+      options: [
+        "Criar uma nova coluna permanente na tabela",
+        "Dar um nome personalizado ao resultado calculado",
+        "Filtrar os valores antes da agregação",
+        "Ordenar os resultados em ordem alfabética"
+      ],
+      answer: 1,
+      feedback: "AS (alias) é usado para nomear o resultado de uma função agregada, substituindo o nome técnico automático como AVG(tot_cred) por algo mais legível como media_total_credito."
+    },
+
+    // 46 - DISTINCT restrição
+    {
+      aula: "Aula 12 - Refinando Consultas em um Banco de Dados • Parte 2",
+      tipo: "Direta",
+      texto: "Embora DISTINCT possa ser combinado com funções de agregação, existem restrições em sua utilização.",
+      question: "Qual das combinações abaixo é inválida no SQL padrão?",
+      options: [
+        "COUNT(DISTINCT mat_alu)",
+        "AVG(DISTINCT tot_cred)",
+        "COUNT(DISTINCT *)",
+        "SUM(DISTINCT valor)"
+      ],
+      answer: 2,
+      feedback: "COUNT(DISTINCT *) é inválido no SQL padrão. O DISTINCT dentro de funções de agregação exige uma coluna específica. COUNT(*) e COUNT(DISTINCT coluna) são válidos, mas não COUNT(DISTINCT *)."
+    },
+
+  ],
 
 };
