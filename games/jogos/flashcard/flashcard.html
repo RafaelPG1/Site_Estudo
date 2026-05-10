@@ -56,7 +56,7 @@
         <div class="header__name">Flashcard</div>
         <div class="header__meta">
           <span class="header__disc" id="header-disc-name">—</span>
-          <span class="header__meta-sep">·</span>
+          <span class="header__meta-sep">•</span>
           <span class="header__sem" id="header-sem">—</span>
         </div>
       </div>
@@ -113,6 +113,12 @@
                 aria-label="Começar sessão de flashcards">
           Começar
           <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        </button>
+
+        <button class="intro-start-btn intro-fc-btn--continuar hidden" id="intro-fc-btn-continuar" type="button"
+                aria-label="Continuar sessão anterior de onde parou">
+          Continuar
+          <span class="fc-continuar-count" id="fc-continuar-progress"></span>
         </button>
 
         <button class="intro-revisar-btn hidden" id="intro-revisar-btn" type="button"

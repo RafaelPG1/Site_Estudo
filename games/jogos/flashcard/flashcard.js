@@ -19,7 +19,7 @@
 import { getCardsData }                      from '../../../content/game/flashcards/cards_data.js';
 import { carregarPerfisSRS, salvarPerfilSRS } from './storage.js';
 import { Shell, lerParams }                  from '../../template/game-shell.js';
-import { getUsuario }                        from '../../../src/global.js';
+import { getUsuario, getDisciplinasDeSemestre } from '../../../src/global.js';
 
 import { DISC_CORES }             from '../../../shared/js/cores.js';
 import { aplicarCoresDisciplina } from '../../../shared/js/theme.js';
@@ -1249,12 +1249,15 @@ export function invalidarCacheSRS(discId) {
   /* Aguarda o primeiro frame para garantir que o DOM está pintado */
   requestAnimationFrame(() => {
     _introPreencherDados(disc, sem);
+    _configurarBtnContinuarFC(disc, root, usuario);
   });
 
-  /* Ao clicar em Começar: oculta intro, exibe jogo e inicia */
+  /* Ao clicar em Começar: limpa sessão e inicia novo deck */
   const startBtn = document.getElementById('intro-start-btn');
   if (startBtn) {
     startBtn.addEventListener('click', () => {
+      window.flashcardSessao?.limpar(disc);
+      document.getElementById('intro-fc-btn-continuar')?.classList.add('hidden');
       const introRoot = document.getElementById('intro-root');
       if (introRoot) introRoot.style.display = 'none';
       root.style.display = '';
@@ -1262,6 +1265,41 @@ export function invalidarCacheSRS(discId) {
     });
   }
 })();
+
+/* ── Botão "Continuar" — mesmo padrão do V/F ── */
+function _configurarBtnContinuarFC(disc, root, usuario) {
+  const btn = document.getElementById('intro-fc-btn-continuar');
+  if (!btn) return;
+
+  const sessao = window.flashcardSessao?.carregar(disc);
+  if (!sessao?.cards?.length) return;
+
+  const mesmoDia = sessao.ts &&
+    new Date(sessao.ts).toDateString() === new Date().toDateString();
+  if (!mesmoDia) return;
+
+  const totalCards  = sessao.cards.length;
+  const respondidos = Object.keys(sessao.resultado ?? {}).length;
+  const pendentes   = totalCards - respondidos;
+
+  // Não exibe se não há pendentes (sessão já concluída)
+  if (pendentes === 0) return;
+
+  const countEl = document.getElementById('fc-continuar-progress');
+  if (countEl) countEl.textContent = `${respondidos}/${totalCards}`;
+
+  // Clona para evitar listeners duplicados em chamadas repetidas
+  const novo = btn.cloneNode(true);
+  btn.parentNode.replaceChild(novo, btn);
+  novo.classList.remove('hidden');
+
+  novo.addEventListener('click', () => {
+    const introRoot = document.getElementById('intro-root');
+    if (introRoot) introRoot.style.display = 'none';
+    root.style.display = '';
+    initCards(disc, root, usuario); // initCards já restaura sessaoSalva
+  });
+}
 
 /* ── Preenche os dados da tela de intro ── */
 async function _introPreencherDados(disc, sem) {
@@ -1296,7 +1334,10 @@ async function _introPreencherDados(disc, sem) {
   /* Header — disc e semestre (visível já na intro) */
   const hdisc = document.getElementById('header-disc-name');
   const hsem  = document.getElementById('header-sem');
-  if (hdisc) hdisc.textContent = DISC_LABEL[disc] ?? disc ?? '—';
+  
+const disciplinas = getDisciplinasDeSemestre(sem);
+const discObj     = disciplinas.find(d => d.id === disc);
+if (hdisc) hdisc.textContent = discObj?.apelido ?? DISC_LABEL[disc] ?? disc ?? '—';
   if (hsem)  hsem.textContent  = sem || '—';
 
   /* Botão Voltar */

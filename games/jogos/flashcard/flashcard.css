@@ -147,7 +147,12 @@ a    { text-decoration: none; color: inherit; }
 
 /* REMOVIDO: body[data-disc="*"] .header__disc { color: #hex } */
 
-.header__meta-sep { color: rgba(255,255,255,.25); }
+.header__meta-sep {
+  color: var(--text-2);
+  font-size: 1.5rem; /* Ajuste conforme o desejado */
+  line-height: 1;    /* Evita que o símbolo empurre a altura da linha */
+}
+
 .header__sem      { color: rgba(255,255,255,.5); }
 
 /* ── MAIN ───────────────────────────────────────────────────── */
@@ -990,6 +995,33 @@ kbd {
 }
 .intro-start-btn:active { transform: scale(.98); }
 .intro-start-btn i { font-size: .78rem; opacity: .8; }
+
+/* Botão "Continuar" — padrão âmbar, mesmo estilo do V/F */
+.intro-fc-btn--continuar {
+  background: linear-gradient(135deg,
+    rgba(251,191,36,.18) 0%,
+    rgba(245,158,11,.12) 100%);
+  border: 1.5px solid rgba(251,191,36,.45);
+  color: #fbbf24;
+}
+.intro-fc-btn--continuar:hover {
+  background: linear-gradient(135deg,
+    rgba(251,191,36,.28) 0%,
+    rgba(245,158,11,.20) 100%);
+  border-color: rgba(251,191,36,.70);
+  box-shadow: 0 4px 22px rgba(251,191,36,.18);
+  color: #fde68a;
+}
+.intro-fc-btn--continuar.hidden { display: none; }
+
+/* Contador de progresso "0/10" */
+.fc-continuar-count {
+  font-size: .80rem;
+  font-weight: 600;
+  opacity: .65;
+  font-family: var(--font-body);
+  letter-spacing: .02em;
+}
 
 /* Botão revisar erros */
 .intro-revisar-btn {

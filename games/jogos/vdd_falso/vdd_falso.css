@@ -161,7 +161,12 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 #shell-disc-name { color: var(--disc-tema); font-weight: 500; }
 /* Semestre em cinza */
 #shell-sem { color: var(--text-2); }
-.game-header__meta-sep { color: var(--text-3); }
+
+.game-header__meta-sep {
+  color: var(--text-2);
+  font-size: 1.5rem; /* Ajuste conforme o desejado */
+  line-height: 1;    /* Evita que o símbolo empurre a altura da linha */
+}
 
 /* Slot do timer — lado direito */
 .game-header__score-slot {
@@ -825,12 +830,13 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 
 /* Contador de progresso ao lado do nome */
 .vf-continuar-count {
-  font-size: .75rem;
+  font-size: .80rem;
   font-weight: 600;
   opacity: .65;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   letter-spacing: .02em;
 }
+
 @media (max-width: 480px) {
   .vf-intro-card { padding: 36px 24px 32px; gap: 16px; }
   .vf-intro-card__title { font-size: 1.9rem; }
@@ -1534,12 +1540,12 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
   justify-content: center;
   min-width: 20px;
   height: 20px;
-  padding: 0 5px;
+  padding: 0 4px;
   border-radius: var(--pill);
   background: rgba(var(--false-rgb), .22);
   font-size: .65rem;
   font-weight: 700;
-  line-height: 1;
+  line-height: 20px;   /* ← igual ao height: força centralização vertical */
   color: #fca5a5;
 }
 
