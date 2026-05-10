@@ -113,6 +113,11 @@ function mostrarTela(nome) {
   if (nome === 'question') el.screenQuestion?.classList.remove('hidden');
   if (nome === 'result')   el.screenResult  ?.classList.remove('hidden');
   if (nome === 'empty')    el.screenEmpty   ?.classList.remove('hidden');
+
+  // Botões Pausar / Menu só aparecem durante as questões
+  const headerControls = $('header-controls');
+  if (headerControls) headerControls.classList.toggle('game-header__controls--visible', nome === 'question');
+
   smLog(`Tela: ${nome}`);
 }
 
@@ -984,7 +989,11 @@ async function init() {
 
   smLog('Inicializando Show do Milhão...');
 
-  const { disc, sem } = Shell.init({ icon: '⭐', nome: 'Show do Milhão' });
+  const { disc, sem } = Shell.init({ icon: '🃏', nome: 'Show do Milhão' });
+
+  // Garante que Pausar/Menu ficam ocultos até a tela de questões
+  const _hdrCtrl = $('header-controls');
+  if (_hdrCtrl) _hdrCtrl.classList.remove('game-header__controls--visible');
 
   const _listaDisciplinas = getDisciplinasDeSemestre(sem);
   const disciplina = _listaDisciplinas.find(d => d.id === disc || d.arquivo === disc) ?? null;
@@ -993,14 +1002,14 @@ async function init() {
   if (shellDiscEl && disciplina) shellDiscEl.textContent = disciplina.apelido ?? disciplina.nome ?? disc;
   // Aplica emoji da disciplina no ícone do header (sobrescreve o padrão do Shell.init)
   const shellIconEl = $('shell-icon');
-  if (shellIconEl) shellIconEl.textContent = disciplina?.emoji ?? '⭐';
+  if (shellIconEl) shellIconEl.textContent = '🃏';
 
   const introDiscName = $('intro-disc-name');
   const introSemLabel = $('intro-sem-label');
   if (introDiscName) introDiscName.textContent = disciplina?.apelido ?? disciplina?.nome ?? disc ?? '—';
   if (introSemLabel) introSemLabel.textContent = sem || '—';
 
-  const introDiscChip = document.querySelector('.sm-intro-card__chip--disc');
+  const introDiscChip = document.querySelector('.sm-chip--disc');
   if (introDiscChip && disciplina?.emoji) {
     const chipSvg = introDiscChip.querySelector('svg');
     if (chipSvg) {
