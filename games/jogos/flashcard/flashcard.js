@@ -1,17 +1,19 @@
 /* ═══════════════════════════════════════════════════════════════════
-   NEXUS STUDY — games/jogos/flashcard/flashcard.js  (v3.3)
+   NEXUS STUDY — games/jogos/flashcard/flashcard.js  (v4.0)
 
    Seções:
-     1. IMPORTS & CONSTANTES
-     2. ENGINE DE SPACED REPETITION (SRS)
-     3. ESTADO DA SESSÃO
-     4. ATALHOS DE TECLADO
-     5. DESFAZER (UNDO)
-     6. TEMPLATES HTML
-     7. RENDER
-     8. ATUALIZAÇÕES DE UI
-     9. AÇÕES DO USUÁRIO
-    10. API PÚBLICA  →  initCards / destroyCards
+     1.  IMPORTS & CONSTANTES
+     2.  ENGINE DE SPACED REPETITION (SRS)
+     3.  ESTADO DA SESSÃO
+     4.  SESSION MANAGER — persistência e restauração de estado
+     5.  SESSION GUARD  — detecção de saída real vs. reload
+     6.  ATALHOS DE TECLADO
+     7.  DESFAZER (UNDO)
+     8.  TEMPLATES HTML
+     9.  RENDER
+    10.  ATUALIZAÇÕES DE UI
+    11.  AÇÕES DO USUÁRIO
+    12.  API PÚBLICA  →  initCards / destroyCards
 ═══════════════════════════════════════════════════════════════════ */
 
 /* ── 1. IMPORTS & CONSTANTES ──────────────────────────────────── */
@@ -24,7 +26,6 @@ import { getUsuario, getDisciplinasDeSemestre } from '../../../src/global.js';
 import { DISC_CORES }             from '../../../shared/js/cores.js';
 import { aplicarCoresDisciplina } from '../../../shared/js/theme.js';
 
-// Rótulos legíveis por disciplina
 const DISC_LABEL = {
   design:      'Design',
   banco_dados: 'Banco de Dados',
@@ -38,8 +39,6 @@ const MIN_TENTATIVAS_PENALIDADE = 4;
 
 /* ═════════════════════════════════════════════════════════════════
    2. ENGINE DE SPACED REPETITION (SRS)
-   Todas as funções SRS usam _estado.cardsData — nunca uma variável
-   global — para garantir isolamento por semestre.
    ═════════════════════════════════════════════════════════════════ */
 
 let _srCache = {};
@@ -101,20 +100,16 @@ async function _srAtualizar(cardId, acertou, diffMarcada) {
   }
 }
 
-function _srMontarDeck(discId) {
-  // Usa _estado.cardsData — isolado por semestre
-  const todos = _estado.cardsData[discId] || [];
+/** Monta deck SRS a partir de _estado.cardsData (isolado por semestre). */
+function _srMontarDeck(discId, cardsData = _estado.cardsData) {
+  const todos = cardsData[discId] || [];
   const agora = Date.now();
 
-  const vencidos  = [];
-  const novos     = [];
-  const cedo      = [];
-  const dominados = [];
+  const vencidos = [], novos = [], cedo = [], dominados = [];
 
   todos.forEach(card => {
     const p     = _srPerfil(card.id);
     const visto = p.tentativas > 0;
-
     if (p.dominado)                 dominados.push({ card, p });
     else if (!visto)                novos.push({ card, p });
     else if (p.proximaVez <= agora) vencidos.push({ card, p });
@@ -126,7 +121,6 @@ function _srMontarDeck(discId) {
     b.p.tentativas !== a.p.tentativas ? b.p.tentativas - a.p.tentativas :
     a.p.proximaVez - b.p.proximaVez
   );
-
   cedo.sort((a, b) => a.p.proximaVez - b.p.proximaVez);
   dominados.sort((a, b) => a.p.proximaVez - b.p.proximaVez);
 
@@ -137,17 +131,11 @@ function _srMontarDeck(discId) {
       selecionados.push(item.card);
     }
   };
-
-  add(vencidos);
-  add(novos);
-  add(cedo);
-  add(dominados);
-
+  add(vencidos); add(novos); add(cedo); add(dominados);
   return _shuffle(selecionados);
 }
 
 function _srEstatisticas(discId) {
-  // Usa _estado.cardsData — isolado por semestre
   const todos = _estado.cardsData[discId] || [];
   const agora = Date.now();
   let dominados = 0, vencidos = 0, novos = 0;
@@ -155,11 +143,9 @@ function _srEstatisticas(discId) {
   todos.forEach(card => {
     const p     = _srPerfil(card.id);
     const visto = p.tentativas > 0;
-
     if (!visto)         novos++;
     else if (p.dominado) dominados++;
-    else if (p.proximaVez > agora) { /* em dia, mas não dominado — não conta */ }
-    else                vencidos++;
+    else if (p.proximaVez <= agora) vencidos++;
   });
 
   return { total: todos.length, dominados, vencidos, novos };
@@ -173,7 +159,7 @@ const ESTADO_INICIAL = () => ({
   discId:        null,
   semestre:      null,
   nomeUsuario:   null,
-  cardsData:     {},   // mapa { discId: cards[] } do semestre atual
+  cardsData:     {},
   cards:         [],
   current:       0,
   flipped:       false,
@@ -198,27 +184,303 @@ function _shuffle(arr) {
   return a;
 }
 
-// Salva apenas IDs dos cards (não os objetos completos) para evitar
-// mismatch ao restaurar a sessão após F5
-function _salvarSessao() {
-  window.flashcardSessao?.salvar({
-    ..._estado,
-    cards:     _estado.cards.map(c => c.id),
-    cardsData: undefined, // não serializa o mapa completo — é grande e desnecessário
-    panelEl:   undefined, // não serializa o DOM
-    historico: undefined, // historico tem objetos SRS — descarta ao salvar
-  });
-  // Persiste que o usuário está na tela de jogo
-  window.flashcardSessao?.salvarNavState(_estado.discId, 'game');
+/* ═════════════════════════════════════════════════════════════════
+   4. SESSION MANAGER
+   Responsável por toda a serialização/deserialização de estado.
+   Centraliza as chaves de localStorage e a lógica de TTL.
+   ═════════════════════════════════════════════════════════════════ */
+
+const SessionManager = (() => {
+  const TTL = 24 * 60 * 60 * 1000; // 24 h
+
+  const _chave    = discId => `nexus_fc_sessao_${discId}`;
+  const _chaveNav = discId => `nexus_fc_navstate_${discId}`;
+
+  /** Verifica se um timestamp ainda está dentro do TTL e do mesmo dia. */
+  function _valido(ts) {
+    if (!ts) return false;
+    if (Date.now() - ts > TTL) return false;
+    if (new Date(ts).toDateString() !== new Date().toDateString()) return false;
+    return true;
+  }
+
+  /* ── SESSÃO MID-GAME ── */
+
+  /** Persiste o estado atual do jogo (debounced internamente via salvarDebounced). */
+  function salvar(estado) {
+    try {
+      const { discId, current, resultado, cards, stats, difficulty } = estado;
+      if (!discId) return;
+      localStorage.setItem(
+        _chave(discId),
+        JSON.stringify({
+          current,
+          resultado,
+          cards: cards.map(c => c.id), // apenas IDs — objetos ficam em cardsData
+          stats,
+          difficulty,
+          ts: Date.now(),
+        }),
+      );
+    } catch (_) {}
+  }
+
+  function carregar(discId) {
+    try {
+      const raw = localStorage.getItem(_chave(discId));
+      if (!raw) return null;
+      const data = JSON.parse(raw);
+      if (!_valido(data.ts)) { limpar(discId); return null; }
+      return data;
+    } catch (_) { return null; }
+  }
+
+  function limpar(discId) {
+    try { localStorage.removeItem(_chave(discId)); } catch (_) {}
+  }
+
+  /* ── ESTADO DE NAVEGAÇÃO ── */
+
+  /**
+   * view: 'game' | 'intro'
+   * Salva qual tela estava ativa para o anti-flash e restauração.
+   */
+  function salvarNavState(discId, view) {
+    try {
+      if (!discId) return;
+      localStorage.setItem(
+        _chaveNav(discId),
+        JSON.stringify({ view, ts: Date.now() }),
+      );
+    } catch (_) {}
+  }
+
+  function carregarNavState(discId) {
+    try {
+      const raw = localStorage.getItem(_chaveNav(discId));
+      if (!raw) return null;
+      const data = JSON.parse(raw);
+      if (Date.now() - data.ts > TTL) { limparNavState(discId); return null; }
+      return data;
+    } catch (_) { return null; }
+  }
+
+  function limparNavState(discId) {
+    try { localStorage.removeItem(_chaveNav(discId)); } catch (_) {}
+  }
+
+  /* ── HELPERS ── */
+
+  /**
+   * Verifica se existe uma sessão de jogo válida e em andamento.
+   * Retorna { sessao, pendentes } ou null.
+   */
+  function sessaoAtiva(discId) {
+    const sessao = carregar(discId);
+    if (!sessao?.cards?.length) return null;
+    const respondidos = Object.keys(sessao.resultado ?? {}).length;
+    const pendentes   = sessao.cards.length - respondidos;
+    if (pendentes <= 0) return null;
+    return { sessao, pendentes, respondidos, total: sessao.cards.length };
+  }
+
+  /** Remove tudo relacionado a uma disciplina. */
+  function limparTudo(discId) {
+    limpar(discId);
+    limparNavState(discId);
+    // Remove o atributo anti-flash do <html> para liberar os estilos CSS.
+    document.documentElement.removeAttribute('data-fc-restore');
+  }
+
+  return {
+    salvar,
+    carregar,
+    limpar,
+    salvarNavState,
+    carregarNavState,
+    limparNavState,
+    sessaoAtiva,
+    limparTudo,
+    TTL,
+  };
+})();
+
+/* ── Salvar sessão com debounce para não sobrecarregar localStorage ── */
+let _salvarTimer = null;
+
+function _salvarSessao(imediato = false) {
+  if (imediato) {
+    clearTimeout(_salvarTimer);
+    _salvarTimer = null;
+    SessionManager.salvar(_estado);
+    SessionManager.salvarNavState(_estado.discId, 'game');
+    return;
+  }
+  clearTimeout(_salvarTimer);
+  _salvarTimer = setTimeout(() => {
+    SessionManager.salvar(_estado);
+    SessionManager.salvarNavState(_estado.discId, 'game');
+    _salvarTimer = null;
+  }, 150);
 }
 
 function _limparSessao() {
-  window.flashcardSessao?.limpar(_estado.discId);
-  window.flashcardSessao?.limparNavState(_estado.discId);
+  clearTimeout(_salvarTimer);
+  _salvarTimer = null;
+  SessionManager.limparTudo(_estado.discId);
 }
 
+/* Compatibilidade retroativa: expõe a API legada via window para o HTML inline */
+window.flashcardSessao = {
+  salvar:          e  => SessionManager.salvar(e),
+  carregar:        id => SessionManager.carregar(id),
+  limpar:          id => SessionManager.limpar(id),
+  salvarNavState:  (id, v) => SessionManager.salvarNavState(id, v),
+  carregarNavState: id => SessionManager.carregarNavState(id),
+  limparNavState:  id => SessionManager.limparNavState(id),
+};
+
 /* ═════════════════════════════════════════════════════════════════
-   4. ATALHOS DE TECLADO
+   5. SESSION GUARD
+   Detecta saída real da página vs. reload e limpa o estado
+   apenas quando o usuário sai definitivamente do fluxo de
+   flashcards (botão voltar do browser, navegação externa, fechar aba).
+
+   DESIGN:
+   ─────────────────────────────────────────────────────────────────
+   • pagehide  → evento mais confiável para saída/bfcache/fechar aba.
+   • pageshow  → detecta restauração do bfcache (persisted=true).
+   • popstate  → NÃO usamos aqui: popstate dispara para qualquer
+                 mudança de hash ou history.pushState(), não apenas
+                 para o botão físico de Voltar — causaria falsos
+                 positivos. A limpeza ao voltar é feita explicitamente
+                 pelos botões internos que chamam _limparSessao().
+
+   INTENÇÂO vs. SAÍDA ACIDENTAL:
+   ─────────────────────────────────────────────────────────────────
+   Toda ação intencional que sai do fluxo de cards (botão "Voltar ao
+   início", link de voltar para jogo.html) chama _limparSessao() antes
+   de navegar. O pagehide só limpa se _intent !== 'preserve', ou seja,
+   se foi uma saída não gerenciada (F5 não limpa — é reload, não saída).
+
+   F5 / RELOAD:
+   ─────────────────────────────────────────────────────────────────
+   O evento pagehide é disparado antes do reload com persisted=false,
+   mas a nossa lógica só limpa se a saída não foi um reload. Detectamos
+   isso porque:
+   1. No F5/reload a URL permanece idêntica.
+   2. Usamos performance.getEntriesByType('navigation')[0].type que vale
+      'reload' quando disponível.
+   3. Fallback: sessionStorage marker que sobrevive ao reload mas não
+      à navegação real (sessionStorage é limpo ao fechar a aba, mas não
+      no reload).
+   ═════════════════════════════════════════════════════════════════ */
+
+const SessionGuard = (() => {
+  /** Marcador de intenção de navegação.
+   *  'clear'    → saída intencional do fluxo (botão voltar, link externo)
+   *  'preserve' → dentro do fluxo (reload, transição interna sem saída)
+   *  null       → desconhecido (usa heurística de reload)
+   */
+  let _intent = null;
+  let _installed = false;
+
+  // Chave de sessionStorage usada para detectar reload vs. saída real.
+  // sessionStorage sobrevive ao F5 mas é limpo ao fechar aba/navegar.
+  const _SESSION_KEY = 'nexus_fc_alive';
+
+  function _onPageHide(e) {
+    if (_intent === 'clear') {
+      // Saída intencional já tratada por quem chamou _limparSessao()
+      return;
+    }
+
+    if (_intent === 'preserve') {
+      // Transição interna — preserva estado, não limpa.
+      return;
+    }
+
+    // Intenção desconhecida: distingue reload de saída real.
+    // sessionStorage.setItem sobrevive ao F5 mas não à navegação real.
+    // Se o item já estava lá quando pagehide dispara, é reload/bfcache.
+    const marker = sessionStorage.getItem(_SESSION_KEY);
+
+    if (e.persisted) {
+      // Entrando no bfcache — NÃO limpa: o pageshow vai lidar se necessário.
+      return;
+    }
+
+    if (marker) {
+      // O marker sobreviveu: muito provavelmente é um reload (F5).
+      // Não limpa — a sessão deve ser restaurada.
+      return;
+    }
+
+    // Sem marker: é uma saída real (nova URL, fechar aba).
+    // Limpa o estado para não restaurar indevidamente.
+    _limparTodosEstados();
+  }
+
+  function _onPageShow(e) {
+    if (e.persisted) {
+      // Voltou do bfcache. O pagehide anterior não limpou (bfcache case),
+      // mas aqui estamos numa página "congelada" de volta — o estado do
+      // JS foi restaurado do bfcache também, então está consistente.
+      // Apenas garantimos que o marker esteja presente.
+      _marcarVivo();
+    }
+  }
+
+  /** Marca que a sessão está viva (usado para detectar reload vs. saída real). */
+  function _marcarVivo() {
+    try { sessionStorage.setItem(_SESSION_KEY, '1'); } catch (_) {}
+  }
+
+  function _limparTodosEstados() {
+    SessionManager.limparTudo(_estado.discId);
+    try { sessionStorage.removeItem(_SESSION_KEY); } catch (_) {}
+  }
+
+  function instalar() {
+    if (_installed) return;
+    _installed = true;
+    _intent = null;
+    _marcarVivo();
+    window.addEventListener('pagehide', _onPageHide);
+    window.addEventListener('pageshow', _onPageShow);
+  }
+
+  function desinstalar() {
+    if (!_installed) return;
+    _installed = false;
+    window.removeEventListener('pagehide', _onPageHide);
+    window.removeEventListener('pageshow', _onPageShow);
+  }
+
+  /**
+   * Sinaliza que a próxima navegação deve LIMPAR o estado.
+   * Chamar antes de qualquer link/redirect que sai do fluxo de cards.
+   */
+  function sinalizarSaida() {
+    _intent = 'clear';
+  }
+
+  /**
+   * Sinaliza que a próxima transição é interna (sem saída do fluxo).
+   * Chamar antes de transições como reload programático ou troca de view.
+   */
+  function sinalizarPreservar() {
+    _intent = 'preserve';
+    // Auto-reset: se não houver pagehide em 500ms, volta ao neutro.
+    // Evita que uma preservação esquecida bloqueie limpeza futura.
+    setTimeout(() => { if (_intent === 'preserve') _intent = null; }, 500);
+  }
+
+  return { instalar, desinstalar, sinalizarSaida, sinalizarPreservar };
+})();
+
+/* ═════════════════════════════════════════════════════════════════
+   6. ATALHOS DE TECLADO
    ═════════════════════════════════════════════════════════════════ */
 
 let _keyHandlerFn = null;
@@ -263,7 +525,7 @@ function _removerAtalhos() {
 }
 
 /* ═════════════════════════════════════════════════════════════════
-   5. DESFAZER (UNDO)
+   7. DESFAZER (UNDO)
    ═════════════════════════════════════════════════════════════════ */
 
 function _desfazer() {
@@ -305,7 +567,7 @@ function _mostrarToastUndo() {
 }
 
 /* ═════════════════════════════════════════════════════════════════
-   6. TEMPLATES HTML
+   8. TEMPLATES HTML
    ═════════════════════════════════════════════════════════════════ */
 
 function _esc(str) {
@@ -558,8 +820,7 @@ function _tplFinal() {
 }
 
 function _tplWrapper(discId, cards) {
-  const discLabel = DISC_LABEL[discId] ?? discId ?? '';
-  const { semestre, modoRevisao } = _estado;
+  const { modoRevisao } = _estado;
 
   const bannerRevisao = modoRevisao ? `
     <div class="cards-revisao-banner" role="alert" aria-label="Modo revisão de erros ativo">
@@ -660,8 +921,39 @@ function _tplWrapper(discId, cards) {
   `;
 }
 
+function _tplRevisaoConcluida() {
+  return `
+    <div class="cards-finish-scene">
+      <div class="cards-finish-card cards-finish-card--revisao cards-finish-card--zerada">
+        <div class="finish-revisao-badge">
+          <i class="fas fa-triangle-exclamation" aria-hidden="true"></i> Revisão de erros
+        </div>
+        <span class="finish-icon" aria-hidden="true">🏆</span>
+        <div class="finish-title">Revisão concluída!</div>
+        <div class="finish-subtitle">Você zerou todos os erros desta sessão</div>
+
+        <div class="finish-stats">
+          <div class="finish-chip correct">
+            <i class="fas fa-check" aria-hidden="true"></i> Nenhum card pendente
+          </div>
+        </div>
+
+        <div class="finish-sr-status" style="max-width:320px">
+          <i class="fas fa-star" aria-hidden="true"></i>
+          <span>Todos os cards foram superados</span>
+          <span class="finish-sr-next">Continue praticando no deck normal</span>
+        </div>
+
+        <button class="finish-restart-btn finish-restart-btn--revisao" id="revisao-concluida-voltar" type="button">
+          <i class="fas fa-house" aria-hidden="true"></i> Voltar ao início
+        </button>
+      </div>
+    </div>
+  `;
+}
+
 /* ═════════════════════════════════════════════════════════════════
-   7. RENDER
+   9. RENDER
    ═════════════════════════════════════════════════════════════════ */
 
 function _animarEntradaCard(sceneWrap, direcao = 'next') {
@@ -738,7 +1030,7 @@ function _renderCard(direcaoAnimacao = 'next') {
 }
 
 /* ═════════════════════════════════════════════════════════════════
-   8. ATUALIZAÇÕES DE UI
+   10. ATUALIZAÇÕES DE UI
    ═════════════════════════════════════════════════════════════════ */
 
 function _atualizarResultadoVisual(cardId) {
@@ -880,7 +1172,7 @@ function _atualizarDots() {
 }
 
 /* ═════════════════════════════════════════════════════════════════
-   9. AÇÕES DO USUÁRIO
+   11. AÇÕES DO USUÁRIO
    ═════════════════════════════════════════════════════════════════ */
 
 function _flipCard() {
@@ -902,7 +1194,7 @@ function _marcarDificuldade(diff) {
 }
 
 function _marcar(acertou) {
-  const { cards, current, panelEl } = _estado;
+  const { cards, current } = _estado;
   if (current >= cards.length || _estado.marcando) return;
   _estado.marcando = true;
 
@@ -927,9 +1219,10 @@ function _marcar(acertou) {
 
   _atualizarResultadoVisual(card.id);
 
-  // Não avança automaticamente — usuário usa o botão Próximo
   _estado.marcando = false;
-  _salvarSessao();
+
+  // Salva imediatamente após marcar — é a ação mais crítica para persistência.
+  _salvarSessao(/* imediato */ true);
   _atualizarUI();
 }
 
@@ -957,43 +1250,11 @@ function _embaralhar() {
   _renderCard('next');
 }
 
-function _tplRevisaoConcluida() {
-  return `
-    <div class="cards-finish-scene">
-      <div class="cards-finish-card cards-finish-card--revisao cards-finish-card--zerada">
-        <div class="finish-revisao-badge">
-          <i class="fas fa-triangle-exclamation" aria-hidden="true"></i> Revisão de erros
-        </div>
-        <span class="finish-icon" aria-hidden="true">🏆</span>
-        <div class="finish-title">Revisão concluída!</div>
-        <div class="finish-subtitle">Você zerou todos os erros desta sessão</div>
-
-        <div class="finish-stats">
-          <div class="finish-chip correct">
-            <i class="fas fa-check" aria-hidden="true"></i> Nenhum card pendente
-          </div>
-        </div>
-
-        <div class="finish-sr-status" style="max-width:320px">
-          <i class="fas fa-star" aria-hidden="true"></i>
-          <span>Todos os cards foram superados</span>
-          <span class="finish-sr-next">Continue praticando no deck normal</span>
-        </div>
-
-        <button class="finish-restart-btn finish-restart-btn--revisao" id="revisao-concluida-voltar" type="button">
-          <i class="fas fa-house" aria-hidden="true"></i> Voltar ao início
-        </button>
-      </div>
-    </div>
-  `;
-}
-
 function _reiniciar() {
   _limparSessao();
 
   let novasCards;
   if (_estado.modoRevisao) {
-    // Relê o SRS em tempo real — exclui cards que já foram acertados e saíram da zona de erro
     const todosRevisao = _estado.cardsRevisao ?? [];
     const aindaComErro = todosRevisao.filter(card => {
       const p = _srPerfil(card.id);
@@ -1001,7 +1262,6 @@ function _reiniciar() {
     });
 
     if (aindaComErro.length === 0) {
-      // Todos os cards foram superados — mostra tela de parabéns
       _estado.cards     = [];
       _estado.current   = 0;
       _estado.stats     = { correct: 0, wrong: 0 };
@@ -1018,16 +1278,11 @@ function _reiniciar() {
       wrap.innerHTML = _tplRevisaoConcluida();
       panelEl.appendChild(wrap);
       wrap.querySelector('#revisao-concluida-voltar')?.addEventListener('click', () => {
-        const cardRoot  = document.getElementById('card-root');
-        const introRoot = document.getElementById('intro-root');
-        if (cardRoot)  cardRoot.style.display  = 'none';
-        if (introRoot) introRoot.style.display = '';
-        document.body.classList.remove('modo-revisao');
+        _voltarParaIntro();
       });
       return;
     }
 
-    // Atualiza cardsRevisao para a nova rodada (só os que ainda têm erro)
     _estado.cardsRevisao = aindaComErro;
     novasCards = _shuffle(aindaComErro.slice(0, DECK_SIZE));
   } else {
@@ -1049,6 +1304,33 @@ function _reiniciar() {
   _renderCard('next');
 }
 
+/**
+ * Volta para a tela de intro de forma padronizada.
+ * Garante que o SessionGuard não confunda essa transição com saída real.
+ * Atualiza o botão "Continuar" corretamente.
+ */
+function _voltarParaIntro() {
+  const cardRoot  = document.getElementById('card-root');
+  const introRoot = document.getElementById('intro-root');
+
+  // Remove o atributo anti-flash para liberar os estilos CSS bloqueantes.
+  document.documentElement.removeAttribute('data-fc-restore');
+
+  if (cardRoot)  cardRoot.style.display  = 'none';
+  if (introRoot) introRoot.style.display = '';
+  document.body.classList.remove('modo-revisao');
+
+  // Persiste que o usuário está na intro (não no jogo).
+  SessionManager.salvarNavState(_estado.discId, 'intro');
+
+  // Oculta o badge do header ao voltar para o início.
+  const hbadge = document.getElementById('header-game-badge');
+  if (hbadge) hbadge.style.display = 'none';
+
+  // Reconfigurar o botão Continuar sem recriar o nó — apenas atualiza o estado.
+  _atualizarBtnContinuar(_estado.discId, cardRoot, _estado.nomeUsuario);
+}
+
 function _criarWrapperEl(discId, cards) {
   const wrap = document.createElement('div');
   wrap.className    = 'panel-cards';
@@ -1056,7 +1338,6 @@ function _criarWrapperEl(discId, cards) {
   if (_estado.modoRevisao) wrap.dataset.revisao = 'true';
   wrap.innerHTML    = _tplWrapper(discId, cards);
 
-  // Aplica/remove classe no body para o redesign global do modo revisão
   document.body.classList.toggle('modo-revisao', !!_estado.modoRevisao);
 
   wrap.querySelector('#cards-btn-wrong')  ?.addEventListener('click', () => _marcar(false));
@@ -1066,25 +1347,7 @@ function _criarWrapperEl(discId, cards) {
   wrap.querySelector('#cards-btn-shuffle')?.addEventListener('click', _embaralhar);
   wrap.querySelector('#cards-btn-undo')   ?.addEventListener('click', _desfazer);
 
-  wrap.querySelector('#cards-btn-inicio')?.addEventListener('click', () => {
-    const cardRoot  = document.getElementById('card-root');
-    const introRoot = document.getElementById('intro-root');
-
-    // Remove o atributo do anti-flash para liberar as regras CSS com !important
-    // que foram aplicadas pelo script bloqueante no <head>.
-    document.documentElement.removeAttribute('data-fc-restore');
-
-    if (cardRoot)  cardRoot.style.display  = 'none';
-    if (introRoot) introRoot.style.display = '';
-    document.body.classList.remove('modo-revisao');
-    // Usuário voltou intencionalmente à intro — persiste nav state
-    window.flashcardSessao?.salvarNavState(_estado.discId, 'intro');
-    // Oculta o badge do header ao voltar para o início
-    const hbadge = document.getElementById('header-game-badge');
-    if (hbadge) hbadge.style.display = 'none';
-    // Re-exibe o botão Continuar se houver sessão em andamento
-    _configurarBtnContinuarFC(_estado.discId, cardRoot, _estado.nomeUsuario);
-  });
+  wrap.querySelector('#cards-btn-inicio')?.addEventListener('click', _voltarParaIntro);
 
   wrap.querySelector('#cards-btn-kbd')?.addEventListener('click', () => {
     const kbdPanel = wrap.querySelector('#cards-kbd-panel');
@@ -1099,7 +1362,7 @@ function _criarWrapperEl(discId, cards) {
 }
 
 /* ═════════════════════════════════════════════════════════════════
-   10. API PÚBLICA
+   12. API PÚBLICA
    ═════════════════════════════════════════════════════════════════ */
 
 export async function initCards(discId, panelEl, nomeUsuario, opcoes = {}) {
@@ -1107,10 +1370,6 @@ export async function initCards(discId, panelEl, nomeUsuario, opcoes = {}) {
 
   const { sem } = lerParams();
 
-  /* CORREÇÃO BUG 1: Shell.init já chama aplicarCoresDisciplina internamente.
-     Aplicamos as cores manualmente DEPOIS com o discId correto (parâmetro),
-     sobrescrevendo o que Shell fez com lerParams().disc — garante consistência
-     quando discId != lerParams().disc (ex: chamada externa). */
   Shell.init({ icon: '🃏', nome: 'Flashcards' });
   aplicarCoresDisciplina(discId, DISC_CORES);
   document.body.dataset.disc = discId;
@@ -1138,21 +1397,18 @@ export async function initCards(discId, panelEl, nomeUsuario, opcoes = {}) {
   const uid = typeof nomeUsuario === 'object' ? nomeUsuario.uid : nomeUsuario;
   _srCache = await carregarPerfisSRS(uid, discId, sem);
 
-  const sessaoSalva = window.flashcardSessao?.carregar(discId);
+  const sessaoInfo = SessionManager.sessaoAtiva(discId);
   let cards, estado;
 
-  const mesmoDia = sessaoSalva?.ts &&
-    new Date(sessaoSalva.ts).toDateString() === new Date().toDateString();
-
-  if (sessaoSalva?.cards?.length && mesmoDia) {
-    cards = sessaoSalva.cards
+  if (sessaoInfo && !opcoes.modoRevisao) {
+    const { sessao } = sessaoInfo;
+    // Reconstrói os objetos de card a partir dos IDs salvos + cardsData atual.
+    const cardsMapped = sessao.cards
       .map(id => cardsData[discId].find(c => c.id === id))
       .filter(Boolean);
 
-    if (cards.length !== sessaoSalva.cards.length) {
-      cards  = null;
-      estado = null;
-    } else {
+    if (cardsMapped.length === sessao.cards.length) {
+      cards  = cardsMapped;
       estado = {
         ...ESTADO_INICIAL(),
         discId,
@@ -1160,21 +1416,20 @@ export async function initCards(discId, panelEl, nomeUsuario, opcoes = {}) {
         nomeUsuario,
         cardsData,
         cards,
-        current:    sessaoSalva.current    ?? 0,
-        stats:      sessaoSalva.stats      ?? { correct: 0, wrong: 0 },
-        difficulty: sessaoSalva.difficulty ?? {},
-        resultado:  sessaoSalva.resultado  ?? {},
+        current:    sessao.current    ?? 0,
+        stats:      sessao.stats      ?? { correct: 0, wrong: 0 },
+        difficulty: sessao.difficulty ?? {},
+        resultado:  sessao.resultado  ?? {},
         panelEl,
       };
     }
   }
 
   if (!estado) {
-    // Modo revisão: usa apenas os cards com erros passados como parâmetro
     if (opcoes.modoRevisao && opcoes.cardsRevisao?.length) {
       cards = _shuffle(opcoes.cardsRevisao.slice(0, DECK_SIZE));
     } else {
-      cards = _srMontarDeck_com(cardsData, discId);
+      cards = _srMontarDeck(discId, cardsData);
     }
     estado = {
       ...ESTADO_INICIAL(),
@@ -1191,71 +1446,39 @@ export async function initCards(discId, panelEl, nomeUsuario, opcoes = {}) {
 
   _estado = estado;
 
+  // Instala o guard DEPOIS de definir _estado, pois o guard usa _estado.discId.
+  SessionGuard.instalar();
+
   const wrap = _criarWrapperEl(discId, cards);
   panelEl.appendChild(wrap);
   _renderCard();
   _registrarAtalhos();
 
-  // Exibe o badge no header da página com disciplina e semestre
+  // Badge no header da página.
   const hbadge = document.getElementById('header-game-badge');
   if (hbadge) {
-    const discLabel = DISC_LABEL[discId] ?? discId ?? '';
     const hdisc = document.getElementById('header-game-disc');
     const hsem  = document.getElementById('header-game-sem');
     const hdot  = document.getElementById('header-game-dot');
-    if (hdisc) hdisc.textContent = discLabel;
+    if (hdisc) hdisc.textContent = DISC_LABEL[discId] ?? discId ?? '';
     if (hsem)  hsem.textContent  = sem ?? '';
     if (hdot)  hdot.style.display = sem ? '' : 'none';
     hbadge.style.display = '';
-    // aplica cor da disciplina ao ícone
     const hicon = hbadge.querySelector('.header-game-icon');
     if (hicon) hicon.dataset.disc = discId;
   }
 }
 
-function _srMontarDeck_com(cardsData, discId) {
-  const todos = cardsData[discId] || [];
-  const agora = Date.now();
-
-  const vencidos = [], novos = [], cedo = [], dominados = [];
-
-  todos.forEach(card => {
-    const p     = _srPerfil(card.id);
-    const visto = p.tentativas > 0;
-    if (p.dominado)                 dominados.push({ card, p });
-    else if (!visto)                novos.push({ card, p });
-    else if (p.proximaVez <= agora) vencidos.push({ card, p });
-    else                            cedo.push({ card, p });
-  });
-
-  vencidos.sort((a, b) =>
-    b.p.erros !== a.p.erros           ? b.p.erros - a.p.erros :
-    b.p.tentativas !== a.p.tentativas ? b.p.tentativas - a.p.tentativas :
-    a.p.proximaVez - b.p.proximaVez
-  );
-  cedo.sort((a, b) => a.p.proximaVez - b.p.proximaVez);
-  dominados.sort((a, b) => a.p.proximaVez - b.p.proximaVez);
-
-  const selecionados = [];
-  const add = lista => {
-    for (const item of lista) {
-      if (selecionados.length >= DECK_SIZE) break;
-      selecionados.push(item.card);
-    }
-  };
-  add(vencidos); add(novos); add(cedo); add(dominados);
-  return _shuffle(selecionados);
-}
-
 export function destroyCards(panelEl) {
   panelEl?.querySelector('.panel-cards')?.remove();
   _removerAtalhos();
+  SessionGuard.desinstalar();
 }
 
 export const exibirCards  = initCards;
 export const removerCards = destroyCards;
 
-/* ── Invalida o cache em memória (chamado após reset externo) ── */
+/** Invalida o cache SRS em memória (chamado após reset externo). */
 export function invalidarCacheSRS(discId) {
   if (!discId) {
     _srCache = {};
@@ -1265,129 +1488,34 @@ export function invalidarCacheSRS(discId) {
   }
 }
 
-/* ── Auto-init standalone ── */
-(function _autoInit() {
-  const root = document.getElementById('card-root');
-  if (!root) return;
+/* ══════════════════════════════════════════════════════════════════
+   INTRO — preenchimento de dados e configuração de botões
+   ══════════════════════════════════════════════════════════════════ */
 
-  const { disc, sem } = lerParams();
-  const usuario = new URLSearchParams(location.search).get('user')
-             ?? getUsuario()
-             ?? 'visitante';
-
-  if (!disc) return;
-
-  /* ── RESTAURAÇÃO DE NAVEGAÇÃO (síncrona, sem rAF) ─────────────
-     O script bloqueante no <head> já aplicou display:none/block nos
-     elementos corretos antes do primeiro paint — aqui só precisamos
-     iniciar o jogo se a sessão for válida, sem nenhuma troca visual. */
-  const navState = window.flashcardSessao?.carregarNavState(disc);
-  if (navState?.view === 'game') {
-    const sessao    = window.flashcardSessao?.carregar(disc);
-    const mesmoDia  = sessao?.ts &&
-      new Date(sessao.ts).toDateString() === new Date().toDateString();
-    const pendentes = sessao?.cards?.length &&
-      (sessao.cards.length - Object.keys(sessao.resultado ?? {}).length) > 0;
-
-    if (mesmoDia && pendentes) {
-      // Sessão em andamento: o HTML já está correto (blocking script).
-      // Apenas inicia o jogo e preenche a intro em background.
-      _introPreencherDados(disc, sem);  // preenche dados para o header
-      initCards(disc, root, usuario);
-      return;
-    }
-
-    // Sessão concluída ou expirada: remove o atributo de restauração
-    // para que os estilos anti-flash não fiquem presos.
-    window.flashcardSessao?.limparNavState(disc);
-    document.documentElement.removeAttribute('data-fc-restore');
-  }
-
-  // Caminho normal (sem sessão ativa): preenche intro e configura botões.
-  _introPreencherDados(disc, sem);
-  _configurarBtnContinuarFC(disc, root, usuario);
-
-  /* Ao clicar em Começar: limpa sessão e inicia novo deck */
-  const startBtn = document.getElementById('intro-start-btn');
-  if (startBtn) {
-    startBtn.addEventListener('click', () => {
-      window.flashcardSessao?.limpar(disc);
-      window.flashcardSessao?.limparNavState(disc);
-      document.getElementById('intro-fc-btn-continuar')?.classList.add('hidden');
-      const introRoot = document.getElementById('intro-root');
-      if (introRoot) introRoot.style.display = 'none';
-      root.style.display = '';
-      initCards(disc, root, usuario);
-    });
-  }
-})();
-
-/* ── Botão "Continuar" — mesmo padrão do V/F ── */
-function _configurarBtnContinuarFC(disc, root, usuario) {
-  const btn = document.getElementById('intro-fc-btn-continuar');
-  if (!btn) return;
-
-  const sessao = window.flashcardSessao?.carregar(disc);
-  if (!sessao?.cards?.length) return;
-
-  const mesmoDia = sessao.ts &&
-    new Date(sessao.ts).toDateString() === new Date().toDateString();
-  if (!mesmoDia) return;
-
-  const totalCards  = sessao.cards.length;
-  const respondidos = Object.keys(sessao.resultado ?? {}).length;
-  const pendentes   = totalCards - respondidos;
-
-  // Não exibe se não há pendentes (sessão já concluída)
-  if (pendentes === 0) return;
-
-  const countEl = document.getElementById('fc-continuar-progress');
-  if (countEl) countEl.textContent = `${respondidos}/${totalCards}`;
-
-  // Clona para evitar listeners duplicados em chamadas repetidas
-  const novo = btn.cloneNode(true);
-  btn.parentNode.replaceChild(novo, btn);
-  novo.classList.remove('hidden');
-
-  novo.addEventListener('click', () => {
-    const introRoot = document.getElementById('intro-root');
-    if (introRoot) introRoot.style.display = 'none';
-    root.style.display = '';
-    initCards(disc, root, usuario); // initCards já restaura sessaoSalva
-  });
-}
-
-/* ── Preenche os dados da tela de intro ── */
+/** Preenche os dados da tela de intro. */
 async function _introPreencherDados(disc, sem) {
-  /* Breadcrumb */
   const breadcrumb = document.getElementById('breadcrumb-disc');
   if (breadcrumb) breadcrumb.textContent = DISC_LABEL[disc] ?? disc ?? '—';
 
-  /* CORREÇÃO BUG 3/4: Aplicar cores e data-disc ANTES do primeiro frame.
-     O rAF garante que o DOM está pronto, mas setProperty no :root é
-     síncrono e já vale para qualquer elemento que existir neste ponto. */
   aplicarCoresDisciplina(disc, DISC_CORES);
   document.body.dataset.disc = disc;
 
   const discLabel = document.getElementById('intro-disc-label');
   if (discLabel) discLabel.textContent = DISC_LABEL[disc] ?? disc ?? '—';
 
-  /* Chip semestre */
   const semLabel = document.getElementById('intro-sem-label');
   if (semLabel) semLabel.textContent = sem || '—';
 
-  /* Contagem real de cards disponíveis */
   let cardsData = {};
   try {
-    cardsData       = getCardsData(sem);
-    const total     = cardsData[disc]?.length ?? 0;
-    const countEl   = document.getElementById('intro-card-count');
+    cardsData     = getCardsData(sem);
+    const total   = cardsData[disc]?.length ?? 0;
+    const countEl = document.getElementById('intro-card-count');
     if (countEl) countEl.textContent = total > 0 ? String(total) : '—';
   } catch (err) {
     console.warn('[flashcard] Não foi possível carregar contagem de cards:', err.message);
   }
 
-  /* Header — disc e semestre (visível já na intro) */
   const hdisc = document.getElementById('header-disc-name');
   const hsem  = document.getElementById('header-sem');
 
@@ -1396,13 +1524,11 @@ async function _introPreencherDados(disc, sem) {
   if (hdisc) hdisc.textContent = discObj?.apelido ?? DISC_LABEL[disc] ?? disc ?? '—';
   if (hsem)  hsem.textContent  = sem || '—';
 
-  /* Ícone do chip de disciplina — usa emoji do global.js */
   const chipDisc = document.getElementById('intro-chip-disc');
   if (chipDisc) {
     const iconEl = chipDisc.querySelector('i');
     const emoji  = discObj?.emoji;
     if (emoji && iconEl) {
-      // Troca o <i> por um <span> com o emoji
       const span = document.createElement('span');
       span.textContent = emoji;
       span.setAttribute('aria-hidden', 'true');
@@ -1410,29 +1536,65 @@ async function _introPreencherDados(disc, sem) {
     }
   }
 
-  /* Botão Voltar */
   const backBtn = document.getElementById('shell-back-btn');
-  if (backBtn) backBtn.href = `../../jogo.html${sem ? `?sem=${sem}` : ''}`;
+  if (backBtn) {
+    // Ao clicar em "Voltar", sinaliza saída real do fluxo.
+    backBtn.href = `../../jogo.html${sem ? `?sem=${sem}` : ''}`;
+    backBtn.addEventListener('click', () => {
+      _limparSessao();
+      SessionGuard.sinalizarSaida();
+    }, { once: true });
+  }
 
-  /* ── Botão "Revisar erros" ── */
   _introAtualizarBotaoRevisar(disc, sem, cardsData);
 }
 
-/* Carrega o SRS e exibe/oculta o botão de revisão com a contagem correta */
+/**
+ * Atualiza o botão "Continuar" de forma idempotente — sem clonar nós.
+ * Usa um atributo data- para rastrear se o listener já foi registrado.
+ */
+function _atualizarBtnContinuar(disc, root, usuario) {
+  const btn     = document.getElementById('intro-fc-btn-continuar');
+  const countEl = document.getElementById('fc-continuar-progress');
+  if (!btn) return;
+
+  const info = SessionManager.sessaoAtiva(disc);
+
+  if (!info) {
+    btn.classList.add('hidden');
+    return;
+  }
+
+  // Atualiza o contador.
+  if (countEl) countEl.textContent = `${info.respondidos}/${info.total}`;
+  btn.classList.remove('hidden');
+
+  // Registra o listener apenas uma vez (guarda pela flag data-fc-listener).
+  if (!btn.dataset.fcListener) {
+    btn.dataset.fcListener = '1';
+    btn.addEventListener('click', () => {
+      const introRoot = document.getElementById('intro-root');
+      if (introRoot) introRoot.style.display = 'none';
+      root.style.display = '';
+      initCards(disc, root, usuario);
+    });
+  }
+}
+
+/** Carrega o SRS e exibe/oculta o botão de revisão com a contagem correta. */
 async function _introAtualizarBotaoRevisar(disc, sem, cardsData) {
   const btn     = document.getElementById('intro-revisar-btn');
   const countEl = document.getElementById('intro-revisar-count');
   if (!btn) return;
 
   try {
-    const todos    = cardsData[disc] ?? [];
+    const todos = cardsData[disc] ?? [];
     if (todos.length === 0) return;
 
-    const uid      = new URLSearchParams(location.search).get('user') ?? getUsuario()?.uid ?? 'visitante';
-    const perfis   = await carregarPerfisSRS(uid, disc, sem).catch(() => ({}));
+    const uid    = new URLSearchParams(location.search).get('user') ?? getUsuario()?.uid ?? 'visitante';
+    const perfis = await carregarPerfisSRS(uid, disc, sem).catch(() => ({}));
 
-    // Cards com pelo menos 1 erro no histórico SRS
-    const comErro  = todos.filter(c => {
+    const comErro = todos.filter(c => {
       const p = perfis[c.id];
       return p && p.erros > 0;
     });
@@ -1445,17 +1607,18 @@ async function _introAtualizarBotaoRevisar(disc, sem, cardsData) {
     if (countEl) countEl.textContent = comErro.length;
     btn.classList.remove('hidden');
 
-    // Garante que não duplica listeners (troca o nó)
-    const novo = btn.cloneNode(true);
-    btn.parentNode.replaceChild(novo, btn);
-    novo.addEventListener('click', () => _abrirModalRevisao(comErro, perfis, disc, sem));
+    // Idempotente: registra o listener apenas uma vez.
+    if (!btn.dataset.fcListener) {
+      btn.dataset.fcListener = '1';
+      btn.addEventListener('click', () => _abrirModalRevisao(comErro, perfis, disc, sem));
+    }
 
   } catch (err) {
     console.warn('[flashcard] Erro ao verificar cards com erro:', err.message);
   }
 }
 
-/* ── Modal de revisão de erros ── */
+/** Modal de revisão de erros. */
 function _abrirModalRevisao(comErro, perfis, disc, sem) {
   const overlay  = document.getElementById('fc-modal-overlay');
   const lista    = document.getElementById('fc-modal-list');
@@ -1464,7 +1627,6 @@ function _abrirModalRevisao(comErro, perfis, disc, sem) {
   const btnCancel= document.getElementById('fc-modal-cancel');
   if (!overlay || !lista) return;
 
-  // Ordena: maior taxa de erro primeiro
   const ordenados = [...comErro].sort((a, b) => {
     const pa = perfis[a.id] ?? { erros: 0, tentativas: 0 };
     const pb = perfis[b.id] ?? { erros: 0, tentativas: 0 };
@@ -1505,7 +1667,7 @@ function _abrirModalRevisao(comErro, perfis, disc, sem) {
     document.body.style.overflow = '';
   }
 
-  // Botão iniciar revisão
+  // Cria cópias limpas dos botões para evitar acúmulo de listeners.
   const novoStart = btnStart.cloneNode(true);
   btnStart.parentNode.replaceChild(novoStart, btnStart);
   novoStart.addEventListener('click', () => {
@@ -1522,3 +1684,63 @@ function _abrirModalRevisao(comErro, perfis, disc, sem) {
   btnCancel?.addEventListener('click', fechar, { once: true });
   overlay   .addEventListener('click', e => { if (e.target === overlay) fechar(); }, { once: true });
 }
+
+/* ── Auto-init standalone ─────────────────────────────────────── */
+(function _autoInit() {
+  const root = document.getElementById('card-root');
+  if (!root) return;
+
+  const { disc, sem } = lerParams();
+  const usuario = new URLSearchParams(location.search).get('user')
+             ?? getUsuario()
+             ?? 'visitante';
+
+  if (!disc) return;
+
+  /*
+   * RESTAURAÇÃO DE NAVEGAÇÃO
+   * ─────────────────────────────────────────────────────────────────
+   * O script bloqueante no <head> já aplicou os estilos corretos antes
+   * do primeiro paint (data-fc-restore="game"). Aqui verificamos a
+   * sessão e iniciamos o jogo silenciosamente se válida — sem nenhuma
+   * transição visual.
+   *
+   * Validações em ordem:
+   *   1. navState = 'game' (o usuário estava jogando)
+   *   2. sessão existe, é do mesmo dia e tem cards pendentes
+   *
+   * Se qualquer validação falhar: remove o atributo anti-flash e
+   * exibe a intro normalmente.
+   */
+  const navState  = SessionManager.carregarNavState(disc);
+  const sessaoInfo = navState?.view === 'game'
+    ? SessionManager.sessaoAtiva(disc)
+    : null;
+
+  if (sessaoInfo) {
+    // Sessão válida em andamento: inicia o jogo diretamente.
+    // O HTML já está com a tela correta (blocking script no <head>).
+    _introPreencherDados(disc, sem); // preenche header/breadcrumb em background
+    initCards(disc, root, usuario);
+    return;
+  }
+
+  // Nenhuma sessão válida: remove o atributo anti-flash e mostra a intro.
+  SessionManager.limparTudo(disc);
+  _introPreencherDados(disc, sem);
+  _atualizarBtnContinuar(disc, root, usuario);
+
+  const startBtn = document.getElementById('intro-start-btn');
+  if (startBtn) {
+    startBtn.addEventListener('click', () => {
+      // Limpa sessão anterior e começa novo deck.
+      SessionManager.limpar(disc);
+      SessionManager.limparNavState(disc);
+      document.getElementById('intro-fc-btn-continuar')?.classList.add('hidden');
+      const introRoot = document.getElementById('intro-root');
+      if (introRoot) introRoot.style.display = 'none';
+      root.style.display = '';
+      initCards(disc, root, usuario);
+    });
+  }
+})();
