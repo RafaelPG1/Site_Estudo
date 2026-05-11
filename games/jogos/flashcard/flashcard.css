@@ -433,13 +433,64 @@ a    { text-decoration: none; color: inherit; }
   letter-spacing: -.01em; max-width: 100%;
 }
 
+/* ── DICA (botão lâmpada + texto ocultável) ── */
+.cards-dica-wrap {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  margin-bottom: .65rem;
+}
+
+.cards-dica-btn {
+  height: 28px; border-radius: var(--radius-pill);
+  padding: 0 12px 0 10px;
+  border: 1px solid rgba(var(--cor-tema-rgb), .28);
+  background: rgba(var(--cor-tema-rgb), .08);
+  color: rgba(var(--cor-tema-rgb), .55);
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: .72rem; cursor: pointer;
+  transition: background .2s, border-color .2s, color .2s, box-shadow .2s;
+}
+.cards-dica-btn i { font-size: .75rem; }
+.cards-dica-btn__label {
+  font-family: var(--font-body);
+  font-size: .68rem; font-weight: 600;
+  letter-spacing: .03em;
+}
+.cards-dica-btn:hover {
+  background: rgba(var(--cor-tema-rgb), .18);
+  border-color: rgba(var(--cor-tema-rgb), .5);
+  color: var(--cor-tema);
+  box-shadow: 0 0 10px rgba(var(--cor-tema-rgb), .2);
+}
+.cards-dica-btn--ativa {
+  background: rgba(var(--cor-tema-rgb), .18);
+  border-color: rgba(var(--cor-tema-rgb), .55);
+  color: var(--cor-tema);
+  box-shadow: 0 0 12px rgba(var(--cor-tema-rgb), .25);
+}
+.cards-dica-btn--ativa i {
+  filter: drop-shadow(0 0 4px rgba(var(--cor-tema-rgb), .6));
+}
+
 .cards-dica {
   font-size: .7rem; color: rgba(255,255,255,.45);
-  position: relative; z-index: 1;
   display: flex; align-items: center; gap: 6px;
   background: rgba(var(--cor-tema-rgb), .08);
   border: 1px solid rgba(var(--cor-tema-rgb), .20);
-  padding: 5px 14px; border-radius: var(--radius-pill); margin-bottom: .65rem;
+  padding: 5px 14px; border-radius: var(--radius-pill);
+  transition: opacity .22s ease, transform .22s ease, max-height .22s ease;
+  overflow: hidden;
+}
+.cards-dica--oculta {
+  opacity: 0; max-height: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  padding-top: 0; padding-bottom: 0; border-width: 0;
+}
+.cards-dica--visivel {
+  opacity: 1; max-height: 120px;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 
 .cards-hint {
@@ -940,6 +991,7 @@ kbd {
   font-size: .75rem; font-weight: 600;
 }
 .intro-chip i { font-size: .65rem; opacity: .85; color: inherit; }
+.intro-chip span:first-child { line-height: 1; display: flex; align-items: center; }
 
 /* Chip da disciplina — usa cor da disciplina via tema */
 .intro-chip--disc {
@@ -1286,6 +1338,17 @@ body.modo-revisao .header__icon {
   background: rgba(229,62,62,.08);
   border-color: rgba(229,62,62,.18);
 }
+.panel-cards[data-revisao="true"] .cards-dica-btn {
+  border-color: rgba(229,62,62,.28);
+  background: rgba(229,62,62,.08);
+  color: rgba(229,62,62,.55);
+}
+.panel-cards[data-revisao="true"] .cards-dica-btn:hover,
+.panel-cards[data-revisao="true"] .cards-dica-btn--ativa {
+  background: rgba(229,62,62,.18);
+  border-color: rgba(229,62,62,.5);
+  color: #f87171;
+}
 
 /* ── Tela final em modo revisão ── */
 .cards-finish-card--revisao {
@@ -1328,32 +1391,6 @@ body.modo-revisao .header__icon {
   border-color: rgba(229,62,62,.72) !important;
   box-shadow: 0 4px 28px rgba(229,62,62,.28), 0 0 0 1px rgba(229,62,62,.12) inset !important;
   color: #fef2f2 !important;
-}
-
-/* ── Botão revisar na intro ── */
-.intro-revisar-btn {
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  padding: .7rem 1.8rem; border-radius: var(--radius-pill);
-  font-family: var(--font-body); font-size: .82rem; font-weight: 700;
-  cursor: pointer; border: 1px solid rgba(229,62,62,.35);
-  background: rgba(229,62,62,.10); color: #f87171;
-  transition: background .2s, border-color .2s, box-shadow .2s;
-}
-.intro-revisar-btn:hover {
-  background: rgba(229,62,62,.18);
-  border-color: rgba(229,62,62,.52);
-  box-shadow: 0 0 20px rgba(229,62,62,.14);
-}
-.intro-revisar-btn:active { transform: scale(.98); }
-.intro-revisar-btn i { font-size: .72rem; opacity: .85; }
-.intro-revisar-btn.hidden { display: none; }
-
-.intro-revisar-count {
-  display: inline-flex; align-items: center; justify-content: center;
-  min-width: 20px; height: 20px; padding: 0 5px;
-  border-radius: var(--radius-pill);
-  background: rgba(229,62,62,.22);
-  font-size: .65rem; font-weight: 700; line-height: 1; color: #fca5a5;
 }
 
 /* ── FIM MODO REVISÃO ──────────────────────────────────────────── */

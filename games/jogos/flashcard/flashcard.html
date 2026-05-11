@@ -176,9 +176,6 @@
 
   </main>
 
-  <footer class="footer">
-    <p>© <span id="footer-year"></span> Nexus Study · Desenvolvido para facilitar seus estudos</p>
-  </footer>
 
   <div class="card-toast" id="card-toast" role="status" aria-live="polite">
     <i class="fas fa-rotate-left" aria-hidden="true"></i>
@@ -190,11 +187,12 @@
   <script>
     window.flashcardSessao = {
       _chave: (discId) => `nexus_fc_sessao_${discId}`,
+      _TTL: 24 * 60 * 60 * 1000, // 24h em ms
       salvar(estado) {
         try {
           const { discId, current, resultado, historico, cards, stats, difficulty } = estado;
           if (!discId) return;
-          sessionStorage.setItem(
+          localStorage.setItem(
             this._chave(discId),
             JSON.stringify({ current, resultado, historico, cards, stats, difficulty, ts: Date.now() })
           );
@@ -202,12 +200,19 @@
       },
       carregar(discId) {
         try {
-          const raw = sessionStorage.getItem(this._chave(discId));
-          return raw ? JSON.parse(raw) : null;
+          const raw = localStorage.getItem(this._chave(discId));
+          if (!raw) return null;
+          const data = JSON.parse(raw);
+          // Expira após 24h
+          if (data.ts && Date.now() - data.ts > this._TTL) {
+            this.limpar(discId);
+            return null;
+          }
+          return data;
         } catch (_) { return null; }
       },
       limpar(discId) {
-        try { sessionStorage.removeItem(this._chave(discId)); } catch (_) {}
+        try { localStorage.removeItem(this._chave(discId)); } catch (_) {}
       },
     };
 

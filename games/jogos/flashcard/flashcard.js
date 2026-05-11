@@ -370,9 +370,15 @@ function _tplCena(card, tagCls) {
   }
 
   const dicaHtml = card.dica
-    ? `<div class="cards-dica" aria-label="Dica">
-         <i class="fas fa-lightbulb" aria-hidden="true"></i>
-         ${_esc(card.dica)}
+    ? `<div class="cards-dica-wrap">
+         <button class="cards-dica-btn" type="button" aria-label="Ver dica" aria-expanded="false" id="cards-dica-btn">
+           <i class="fas fa-lightbulb" aria-hidden="true"></i>
+           <span class="cards-dica-btn__label">Dica</span>
+         </button>
+         <div class="cards-dica cards-dica--oculta" id="cards-dica-texto" aria-live="polite">
+           <i class="fas fa-lightbulb" aria-hidden="true"></i>
+           ${_esc(card.dica)}
+         </div>
        </div>`
     : '';
 
@@ -706,6 +712,18 @@ function _renderCard(direcaoAnimacao = 'next') {
     badge.addEventListener('mouseleave', () => tip?.classList.remove('tooltip-visible'));
     badge.addEventListener('click', e => e.stopPropagation());
   });
+
+  const dicaBtn = wrap.querySelector('#cards-dica-btn');
+  const dicaTxt = wrap.querySelector('#cards-dica-texto');
+  if (dicaBtn && dicaTxt) {
+    dicaBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      const aberta = dicaTxt.classList.toggle('cards-dica--visivel');
+      dicaTxt.classList.toggle('cards-dica--oculta', !aberta);
+      dicaBtn.classList.toggle('cards-dica-btn--ativa', aberta);
+      dicaBtn.setAttribute('aria-expanded', String(aberta));
+    });
+  }
 
   _estado.flipped = false;
   _atualizarBotoesDiff(card.id);
@@ -1048,11 +1066,12 @@ function _criarWrapperEl(discId, cards) {
     const introRoot = document.getElementById('intro-root');
     if (cardRoot)  cardRoot.style.display  = 'none';
     if (introRoot) introRoot.style.display = '';
-    _limparSessao();
     document.body.classList.remove('modo-revisao');
     // Oculta o badge do header ao voltar para o início
     const hbadge = document.getElementById('header-game-badge');
     if (hbadge) hbadge.style.display = 'none';
+    // Re-exibe o botão Continuar se houver sessão em andamento
+    _configurarBtnContinuarFC(_estado.discId, cardRoot, _estado.nomeUsuario);
   });
 
   wrap.querySelector('#cards-btn-kbd')?.addEventListener('click', () => {
@@ -1334,11 +1353,25 @@ async function _introPreencherDados(disc, sem) {
   /* Header — disc e semestre (visível já na intro) */
   const hdisc = document.getElementById('header-disc-name');
   const hsem  = document.getElementById('header-sem');
-  
-const disciplinas = getDisciplinasDeSemestre(sem);
-const discObj     = disciplinas.find(d => d.id === disc);
-if (hdisc) hdisc.textContent = discObj?.apelido ?? DISC_LABEL[disc] ?? disc ?? '—';
+
+  const disciplinas = getDisciplinasDeSemestre(sem);
+  const discObj     = disciplinas.find(d => d.id === disc);
+  if (hdisc) hdisc.textContent = discObj?.apelido ?? DISC_LABEL[disc] ?? disc ?? '—';
   if (hsem)  hsem.textContent  = sem || '—';
+
+  /* Ícone do chip de disciplina — usa emoji do global.js */
+  const chipDisc = document.getElementById('intro-chip-disc');
+  if (chipDisc) {
+    const iconEl = chipDisc.querySelector('i');
+    const emoji  = discObj?.emoji;
+    if (emoji && iconEl) {
+      // Troca o <i> por um <span> com o emoji
+      const span = document.createElement('span');
+      span.textContent = emoji;
+      span.setAttribute('aria-hidden', 'true');
+      iconEl.replaceWith(span);
+    }
+  }
 
   /* Botão Voltar */
   const backBtn = document.getElementById('shell-back-btn');
