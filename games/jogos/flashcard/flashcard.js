@@ -208,9 +208,14 @@ function _salvarSessao() {
     panelEl:   undefined, // não serializa o DOM
     historico: undefined, // historico tem objetos SRS — descarta ao salvar
   });
+  // Persiste que o usuário está na tela de jogo
+  window.flashcardSessao?.salvarNavState(_estado.discId, 'game');
 }
 
-function _limparSessao() { window.flashcardSessao?.limpar(_estado.discId); }
+function _limparSessao() {
+  window.flashcardSessao?.limpar(_estado.discId);
+  window.flashcardSessao?.limparNavState(_estado.discId);
+}
 
 /* ═════════════════════════════════════════════════════════════════
    4. ATALHOS DE TECLADO
@@ -1064,9 +1069,16 @@ function _criarWrapperEl(discId, cards) {
   wrap.querySelector('#cards-btn-inicio')?.addEventListener('click', () => {
     const cardRoot  = document.getElementById('card-root');
     const introRoot = document.getElementById('intro-root');
+
+    // Remove o atributo do anti-flash para liberar as regras CSS com !important
+    // que foram aplicadas pelo script bloqueante no <head>.
+    document.documentElement.removeAttribute('data-fc-restore');
+
     if (cardRoot)  cardRoot.style.display  = 'none';
     if (introRoot) introRoot.style.display = '';
     document.body.classList.remove('modo-revisao');
+    // Usuário voltou intencionalmente à intro — persiste nav state
+    window.flashcardSessao?.salvarNavState(_estado.discId, 'intro');
     // Oculta o badge do header ao voltar para o início
     const hbadge = document.getElementById('header-game-badge');
     if (hbadge) hbadge.style.display = 'none';
@@ -1265,17 +1277,42 @@ export function invalidarCacheSRS(discId) {
 
   if (!disc) return;
 
-  /* Aguarda o primeiro frame para garantir que o DOM está pintado */
-  requestAnimationFrame(() => {
-    _introPreencherDados(disc, sem);
-    _configurarBtnContinuarFC(disc, root, usuario);
-  });
+  /* ── RESTAURAÇÃO DE NAVEGAÇÃO (síncrona, sem rAF) ─────────────
+     O script bloqueante no <head> já aplicou display:none/block nos
+     elementos corretos antes do primeiro paint — aqui só precisamos
+     iniciar o jogo se a sessão for válida, sem nenhuma troca visual. */
+  const navState = window.flashcardSessao?.carregarNavState(disc);
+  if (navState?.view === 'game') {
+    const sessao    = window.flashcardSessao?.carregar(disc);
+    const mesmoDia  = sessao?.ts &&
+      new Date(sessao.ts).toDateString() === new Date().toDateString();
+    const pendentes = sessao?.cards?.length &&
+      (sessao.cards.length - Object.keys(sessao.resultado ?? {}).length) > 0;
+
+    if (mesmoDia && pendentes) {
+      // Sessão em andamento: o HTML já está correto (blocking script).
+      // Apenas inicia o jogo e preenche a intro em background.
+      _introPreencherDados(disc, sem);  // preenche dados para o header
+      initCards(disc, root, usuario);
+      return;
+    }
+
+    // Sessão concluída ou expirada: remove o atributo de restauração
+    // para que os estilos anti-flash não fiquem presos.
+    window.flashcardSessao?.limparNavState(disc);
+    document.documentElement.removeAttribute('data-fc-restore');
+  }
+
+  // Caminho normal (sem sessão ativa): preenche intro e configura botões.
+  _introPreencherDados(disc, sem);
+  _configurarBtnContinuarFC(disc, root, usuario);
 
   /* Ao clicar em Começar: limpa sessão e inicia novo deck */
   const startBtn = document.getElementById('intro-start-btn');
   if (startBtn) {
     startBtn.addEventListener('click', () => {
       window.flashcardSessao?.limpar(disc);
+      window.flashcardSessao?.limparNavState(disc);
       document.getElementById('intro-fc-btn-continuar')?.classList.add('hidden');
       const introRoot = document.getElementById('intro-root');
       if (introRoot) introRoot.style.display = 'none';

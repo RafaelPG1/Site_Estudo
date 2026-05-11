@@ -31,6 +31,51 @@
 
   <link rel="stylesheet" href="../../template/game-shell.css" />
   <link rel="stylesheet" href="flashcard.css?v=6" />
+
+  <!--
+    ANTI-FLASH: script bloqueante executado ANTES do primeiro paint.
+    Lê o localStorage síncronamente e aplica display inline nos elementos
+    certos, impedindo qualquer frame intermediário com a tela errada.
+    Não depende de nenhum módulo JS — é puro, mínimo e sem side-effects.
+  -->
+  <script>
+    (function () {
+      try {
+        var TTL  = 24 * 60 * 60 * 1000;
+        var disc = new URLSearchParams(location.search).get('disc');
+        if (!disc) return;
+
+        /* Verifica navState */
+        var rawNav = localStorage.getItem('nexus_fc_navstate_' + disc);
+        if (!rawNav) return;
+        var nav = JSON.parse(rawNav);
+        if (nav.view !== 'game') return;
+        if (nav.ts && Date.now() - nav.ts > TTL) return;
+
+        /* Verifica sessão — precisa ter pendentes */
+        var rawSessao = localStorage.getItem('nexus_fc_sessao_' + disc);
+        if (!rawSessao) return;
+        var sessao = JSON.parse(rawSessao);
+        if (!sessao.ts || Date.now() - sessao.ts > TTL) return;
+        if (new Date(sessao.ts).toDateString() !== new Date().toDateString()) return;
+        var respondidos = sessao.resultado ? Object.keys(sessao.resultado).length : 0;
+        if (!sessao.cards || sessao.cards.length - respondidos <= 0) return;
+
+        /* Sessão válida em andamento: aplica display ANTES do paint */
+        document.documentElement.setAttribute('data-fc-restore', 'game');
+      } catch (_) { /* localStorage indisponível — ignora */ }
+    })();
+  </script>
+
+  <!--
+    CSS bloqueante: aplicado antes do render quando data-fc-restore="game"
+    está no <html>. Garante que o estado visual correto seja o primeiro
+    frame pintado — sem depender de JS de módulo ou requestAnimationFrame.
+  -->
+  <style>
+    html[data-fc-restore="game"] #intro-root { display: none !important; }
+    html[data-fc-restore="game"] #card-root  { display: block !important; }
+  </style>
 </head>
 
 <body>
@@ -186,8 +231,11 @@
 
   <script>
     window.flashcardSessao = {
-      _chave: (discId) => `nexus_fc_sessao_${discId}`,
+      _chave:      (discId) => `nexus_fc_sessao_${discId}`,
+      _chaveNav:   (discId) => `nexus_fc_navstate_${discId}`,
       _TTL: 24 * 60 * 60 * 1000, // 24h em ms
+
+      /* ── Sessão de cards (estado mid-session) ── */
       salvar(estado) {
         try {
           const { discId, current, resultado, historico, cards, stats, difficulty } = estado;
@@ -213,6 +261,34 @@
       },
       limpar(discId) {
         try { localStorage.removeItem(this._chave(discId)); } catch (_) {}
+      },
+
+      /* ── Estado de navegação (qual tela estava ativa) ── */
+      salvarNavState(discId, view) {
+        // view: 'game' | 'intro'
+        try {
+          if (!discId) return;
+          localStorage.setItem(
+            this._chaveNav(discId),
+            JSON.stringify({ view, ts: Date.now() })
+          );
+        } catch (_) {}
+      },
+      carregarNavState(discId) {
+        try {
+          const raw = localStorage.getItem(this._chaveNav(discId));
+          if (!raw) return null;
+          const data = JSON.parse(raw);
+          // Nav state só vale enquanto a sessão existir e for do mesmo dia
+          if (data.ts && Date.now() - data.ts > this._TTL) {
+            this.limparNavState(discId);
+            return null;
+          }
+          return data;
+        } catch (_) { return null; }
+      },
+      limparNavState(discId) {
+        try { localStorage.removeItem(this._chaveNav(discId)); } catch (_) {}
       },
     };
 
