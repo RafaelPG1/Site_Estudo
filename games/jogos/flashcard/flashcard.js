@@ -1706,18 +1706,18 @@ function _abrirModalRevisao(comErro, perfis, disc, sem) {
    * transição visual.
    *
    * Validações em ordem:
-   *   1. navState = 'game' (o usuário estava jogando)
-   *   2. sessão existe, é do mesmo dia e tem cards pendentes
-   *
-   * Se qualquer validação falhar: remove o atributo anti-flash e
-   * exibe a intro normalmente.
+   *   1. navState = 'game'  → sessão ativa: restaura o jogo diretamente.
+   *   2. navState = 'intro' → usuário pausou e voltou para a intro:
+   *                           exibe a intro com o botão "Continuar" visível.
+   *   3. sem navState       → primeira visita ou sessão expirada:
+   *                           limpa tudo e exibe a intro limpa.
    */
-  const navState  = SessionManager.carregarNavState(disc);
-  const sessaoInfo = navState?.view === 'game'
+  const navState   = SessionManager.carregarNavState(disc);
+  const sessaoAtivaNaGame = navState?.view === 'game'
     ? SessionManager.sessaoAtiva(disc)
     : null;
 
-  if (sessaoInfo) {
+  if (sessaoAtivaNaGame) {
     // Sessão válida em andamento: inicia o jogo diretamente.
     // O HTML já está com a tela correta (blocking script no <head>).
     _introPreencherDados(disc, sem); // preenche header/breadcrumb em background
@@ -1725,8 +1725,17 @@ function _abrirModalRevisao(comErro, perfis, disc, sem) {
     return;
   }
 
-  // Nenhuma sessão válida: remove o atributo anti-flash e mostra a intro.
-  SessionManager.limparTudo(disc);
+  // Verifica se existe uma sessão pausada (usuário estava na intro com jogo salvo).
+  // Neste caso NÃO limpa — o botão "Continuar" deve aparecer.
+  const sessaoPausada = navState?.view === 'intro'
+    ? SessionManager.sessaoAtiva(disc)
+    : null;
+
+  if (!sessaoPausada) {
+    // Sem sessão válida de nenhum tipo: limpa resquícios e começa do zero.
+    SessionManager.limparTudo(disc);
+  }
+
   _introPreencherDados(disc, sem);
   _atualizarBtnContinuar(disc, root, usuario);
 
