@@ -1,12 +1,39 @@
 /* ═══════════════════════════════════════════════════════════════════
-   NEXUS STUDY — games/jogos/flashcard/flashcard.js  (v4.0)
+   NEXUS STUDY — games/jogos/flashcard/flashcard.js  (v5.0)
+
+   REFATORAÇÃO v5.0 — Integração com session-nav.js
+   ──────────────────────────────────────────────────
+   • SessionManager (seção 4) e SessionGuard (seção 5) REMOVIDOS.
+     Toda a responsabilidade de persistência, anti-flash, detecção
+     de reload e limpeza de sessão agora pertence ao SessionNav
+     importado de ../../template/session-nav.js.
+
+   • FcNavBridge (seção 4-nova) faz a ponte entre o contrato do
+     SessionNav (voltado a jogos VF) e o esquema de dados do
+     flashcard (cards[], resultado{}, difficulty{}, stats{}).
+
+   • FcAntiFlash (seção 5-nova) encapsula a lógica de visibilidade
+     de telas intro/game que antes estava no script bloqueante do
+     HTML e no inline do flashcard.
+
+   CONTRATO DE USO DO SESSION-NAV PARA FLASHCARD
+   ──────────────────────────────────────────────
+   O SessionNav foi projetado para jogos VF; o flashcard tem um
+   esquema diferente. A estratégia adotada é:
+     • Mapeamos o estado do flashcard para os campos do SessionNav
+       no momento de salvar (fcEstadoParaSessaoNav).
+     • Ao restaurar, fazemos o caminho inverso (sessaoNavParaFcEstado).
+     • O campo `tela` do SessionNav é usado para distinguir
+       'game' (sessão em andamento) de 'intro' (pausado).
+     • pegarRestauravel() retorna apenas quando `tela === 'question'`
+       E houver pendentes — mesmo semântica de antes.
 
    Seções:
      1.  IMPORTS & CONSTANTES
      2.  ENGINE DE SPACED REPETITION (SRS)
      3.  ESTADO DA SESSÃO
-     4.  SESSION MANAGER — persistência e restauração de estado
-     5.  SESSION GUARD  — detecção de saída real vs. reload
+     4.  FC-NAV BRIDGE — adapta SessionNav ao esquema do flashcard
+     5.  FC ANTI-FLASH  — controla visibilidade das telas
      6.  ATALHOS DE TECLADO
      7.  DESFAZER (UNDO)
      8.  TEMPLATES HTML
@@ -14,17 +41,29 @@
     10.  ATUALIZAÇÕES DE UI
     11.  AÇÕES DO USUÁRIO
     12.  API PÚBLICA  →  initCards / destroyCards
+    13.  INTRO         →  preenchimento, botões, modal
+    14.  AUTO-INIT
 ═══════════════════════════════════════════════════════════════════ */
 
 /* ── 1. IMPORTS & CONSTANTES ──────────────────────────────────── */
 
-import { getCardsData }                      from '../../../content/game/flashcards/cards_data.js';
-import { carregarPerfisSRS, salvarPerfilSRS } from './storage.js';
-import { Shell, lerParams }                  from '../../template/game-shell.js';
+import { SessionNav }                          from '../../template/session-nav.js';
+import { getCardsData }                        from '../../../content/game/flashcards/cards_data.js';
+import { carregarPerfisSRS, salvarPerfilSRS }  from './storage.js';
+import { Shell, lerParams }                    from '../../template/game-shell.js';
 import { getUsuario, getDisciplinasDeSemestre } from '../../../src/global.js';
+import { DISC_CORES }                          from '../../../shared/js/cores.js';
+import { aplicarCoresDisciplina }              from '../../../shared/js/theme.js';
 
-import { DISC_CORES }             from '../../../shared/js/cores.js';
-import { aplicarCoresDisciplina } from '../../../shared/js/theme.js';
+/*
+ * ANTI-FLASH SÍNCRONO
+ * Deve ser chamado o mais cedo possível no carregamento do módulo,
+ * antes de qualquer await, para que o CSS de ocultação seja injetado
+ * antes do primeiro paint do browser.
+ * SessionNav.criar() também chama isso, mas se houver awaits antes
+ * dele, o browser pode já ter renderizado. Chamamos aqui para garantia.
+ */
+SessionNav.prepararAntiFlash();
 
 const DISC_LABEL = {
   design:      'Design',
@@ -143,7 +182,7 @@ function _srEstatisticas(discId) {
   todos.forEach(card => {
     const p     = _srPerfil(card.id);
     const visto = p.tentativas > 0;
-    if (!visto)         novos++;
+    if (!visto)          novos++;
     else if (p.dominado) dominados++;
     else if (p.proximaVez <= agora) vencidos++;
   });
@@ -185,299 +224,256 @@ function _shuffle(arr) {
 }
 
 /* ═════════════════════════════════════════════════════════════════
-   4. SESSION MANAGER
-   Responsável por toda a serialização/deserialização de estado.
-   Centraliza as chaves de localStorage e a lógica de TTL.
+   4. FC-NAV BRIDGE
+   ──────────────────────────────────────────────────────────────────
+   Adapta o contrato do SessionNav (projetado para jogos VF) ao
+   esquema de dados do flashcard.
+
+   MAPEAMENTO DE CAMPOS
+   ──────────────────────
+   SessionNav.salvar() espera:
+     { perguntas, respostas, tempos, indice, pontos,
+       acertos, erros, modoRevisao, tela }
+
+   Flashcard usa:
+     { cards[], resultado{}, difficulty{}, stats{},
+       current, modoRevisao, cardsRevisao }
+
+   Estratégia:
+   • perguntas  → IDs dos cards (array de strings)
+   • respostas  → array paralelo a perguntas; undefined = pendente,
+                  true = correct, false = wrong
+   • indice     → current (índice corrente)
+   • acertos    → stats.correct
+   • erros      → stats.wrong
+   • tempos     → array de dificuldades (easy/medium/hard/null)
+   • pontos     → serialização compacta de difficulty{}
+                  (JSON stringificado, armazenado como número 0 pois
+                   SessionNav valida pontos >= 0; usamos campo `tempos`
+                   para carregar difficulty de volta)
+   • tela       → 'question' durante o jogo, 'intro' na tela de inicio
+
+   NOTA: O campo `tempos` é reutilizado para transportar as
+   dificuldades por card. É um array do mesmo tamanho que `perguntas`,
+   onde cada posição contém a dificuldade marcada para aquele card
+   (ou null se não marcada). Isso permite restauração fiel.
    ═════════════════════════════════════════════════════════════════ */
 
-const SessionManager = (() => {
-  const TTL = 24 * 60 * 60 * 1000; // 24 h
+/** Instância singleton do SessionNav para o flashcard atual. */
+let _nav = null;
 
-  const _chave    = discId => `nexus_fc_sessao_${discId}`;
-  const _chaveNav = discId => `nexus_fc_navstate_${discId}`;
+/**
+ * Inicializa (ou reinicializa) o SessionNav com os parâmetros
+ * da disciplina e usuário atuais.
+ * Deve ser chamado uma única vez por sessão de página.
+ *
+ * @param {string} uid     - ID do usuário
+ * @param {string} discId  - ID da disciplina
+ * @param {string} sem     - Semestre
+ */
+function _navInicializar(uid, discId, sem) {
+  // Destrói instância anterior se existir (evita listeners duplicados).
+  _nav?.destruir();
 
-  /** Verifica se um timestamp ainda está dentro do TTL e do mesmo dia. */
-  function _valido(ts) {
-    if (!ts) return false;
-    if (Date.now() - ts > TTL) return false;
-    if (new Date(ts).toDateString() !== new Date().toDateString()) return false;
-    return true;
-  }
-
-  /* ── SESSÃO MID-GAME ── */
-
-  /** Persiste o estado atual do jogo (debounced internamente via salvarDebounced). */
-  function salvar(estado) {
-    try {
-      const { discId, current, resultado, cards, stats, difficulty } = estado;
-      if (!discId) return;
-      localStorage.setItem(
-        _chave(discId),
-        JSON.stringify({
-          current,
-          resultado,
-          cards: cards.map(c => c.id), // apenas IDs — objetos ficam em cardsData
-          stats,
-          difficulty,
-          ts: Date.now(),
-        }),
-      );
-    } catch (_) {}
-  }
-
-  function carregar(discId) {
-    try {
-      const raw = localStorage.getItem(_chave(discId));
-      if (!raw) return null;
-      const data = JSON.parse(raw);
-      if (!_valido(data.ts)) { limpar(discId); return null; }
-      return data;
-    } catch (_) { return null; }
-  }
-
-  function limpar(discId) {
-    try { localStorage.removeItem(_chave(discId)); } catch (_) {}
-  }
-
-  /* ── ESTADO DE NAVEGAÇÃO ── */
-
-  /**
-   * view: 'game' | 'intro'
-   * Salva qual tela estava ativa para o anti-flash e restauração.
+  /*
+   * A chave do SessionNav usa uid+discId+sem para isolamento total.
+   * O prefixo padrão do SessionNav é 'nexus_vf_sessao_'; mantemos
+   * isso como está — é uma chave de armazenamento interna.
    */
-  function salvarNavState(discId, view) {
-    try {
-      if (!discId) return;
-      localStorage.setItem(
-        _chaveNav(discId),
-        JSON.stringify({ view, ts: Date.now() }),
-      );
-    } catch (_) {}
-  }
+  _nav = SessionNav.criar({
+    uid,
+    discId,
+    sem,
+    ttlMs:      24 * 60 * 60 * 1000,
+    throttleMs: 150,
+  });
+}
 
-  function carregarNavState(discId) {
-    try {
-      const raw = localStorage.getItem(_chaveNav(discId));
-      if (!raw) return null;
-      const data = JSON.parse(raw);
-      if (Date.now() - data.ts > TTL) { limparNavState(discId); return null; }
-      return data;
-    } catch (_) { return null; }
-  }
+/**
+ * Converte o estado interno do flashcard para o formato esperado
+ * pelo SessionNav.salvar().
+ *
+ * @param {string} tela - 'question' | 'intro' | 'result'
+ */
+function _fcEstadoParaSessaoNav(tela = 'question') {
+  const { cards, resultado, difficulty, stats, current, modoRevisao } = _estado;
 
-  function limparNavState(discId) {
-    try { localStorage.removeItem(_chaveNav(discId)); } catch (_) {}
-  }
+  // IDs dos cards como "perguntas"
+  const perguntas = cards.map(c => c.id);
 
-  /* ── HELPERS ── */
+  // Respostas: undefined = não respondido, true = acertei, false = errei
+  const respostas = cards.map(c => {
+    const r = resultado[c.id];
+    if (r === 'correct') return true;
+    if (r === 'wrong')   return false;
+    return undefined;
+  });
 
-  /**
-   * Verifica se existe uma sessão de jogo válida e em andamento.
-   * Retorna { sessao, pendentes } ou null.
-   */
-  function sessaoAtiva(discId) {
-    const sessao = carregar(discId);
-    if (!sessao?.cards?.length) return null;
-    const respondidos = Object.keys(sessao.resultado ?? {}).length;
-    const pendentes   = sessao.cards.length - respondidos;
-    if (pendentes <= 0) return null;
-    return { sessao, pendentes, respondidos, total: sessao.cards.length };
-  }
-
-  /** Remove tudo relacionado a uma disciplina. */
-  function limparTudo(discId) {
-    limpar(discId);
-    limparNavState(discId);
-    // Remove o atributo anti-flash do <html> para liberar os estilos CSS.
-    document.documentElement.removeAttribute('data-fc-restore');
-  }
+  // Dificuldades paralelas — reutilizamos o campo `tempos`
+  const tempos = cards.map(c => difficulty[c.id] ?? null);
 
   return {
-    salvar,
-    carregar,
-    limpar,
-    salvarNavState,
-    carregarNavState,
-    limparNavState,
-    sessaoAtiva,
-    limparTudo,
-    TTL,
+    perguntas,
+    respostas,
+    tempos,
+    indice:      current,
+    pontos:      0,               // não usado pelo flashcard
+    acertos:     stats.correct,
+    erros:       stats.wrong,
+    modoRevisao: modoRevisao ?? false,
+    tela,                         // 'question' permite restauração automática
   };
-})();
+}
 
-/* ── Salvar sessão com debounce para não sobrecarregar localStorage ── */
-let _salvarTimer = null;
+/**
+ * Reconstrói o estado parcial do flashcard a partir de uma sessão
+ * lida pelo SessionNav.
+ * Retorna null se a sessão for inválida ou incompleta.
+ *
+ * @param {object}   sessao    - Sessão retornada por lerSessao() ou pegarRestauravel()
+ * @param {object}   cardsData - Dados completos dos cards da disciplina
+ * @param {string}   discId
+ * @returns {{ cards, current, stats, resultado, difficulty } | null}
+ */
+function _sessaoNavParaFcEstado(sessao, cardsData, discId) {
+  if (!sessao?.perguntas?.length) return null;
 
-function _salvarSessao(imediato = false) {
-  if (imediato) {
-    clearTimeout(_salvarTimer);
-    _salvarTimer = null;
-    SessionManager.salvar(_estado);
-    SessionManager.salvarNavState(_estado.discId, 'game');
-    return;
+  const todosDaDisc = cardsData[discId] ?? [];
+  const cardsById   = Object.fromEntries(todosDaDisc.map(c => [c.id, c]));
+
+  // Reconstrói objetos de card a partir dos IDs salvos
+  const cards = sessao.perguntas
+    .map(id => cardsById[id])
+    .filter(Boolean);
+
+  // Se algum ID não foi encontrado nos dados atuais, a sessão está corrompida
+  if (cards.length !== sessao.perguntas.length) {
+    console.warn('[flashcard] Sessão descartada: cards não encontrados no deck atual.');
+    return null;
   }
-  clearTimeout(_salvarTimer);
-  _salvarTimer = setTimeout(() => {
-    SessionManager.salvar(_estado);
-    SessionManager.salvarNavState(_estado.discId, 'game');
-    _salvarTimer = null;
-  }, 150);
+
+  // Reconstrói resultado{}
+  const resultado = {};
+  sessao.respostas?.forEach((r, i) => {
+    const id = sessao.perguntas[i];
+    if (r === true)       resultado[id] = 'correct';
+    else if (r === false) resultado[id] = 'wrong';
+    // undefined = pendente → não inclui no resultado
+  });
+
+  // Reconstrói difficulty{} a partir de tempos[]
+  const difficulty = {};
+  sessao.tempos?.forEach((diff, i) => {
+    if (diff) difficulty[sessao.perguntas[i]] = diff;
+  });
+
+  return {
+    cards,
+    current:    sessao.indice  ?? 0,
+    stats:      { correct: sessao.acertos ?? 0, wrong: sessao.erros ?? 0 },
+    resultado,
+    difficulty,
+    modoRevisao: sessao.modoRevisao ?? false,
+  };
 }
 
+/* ── Wrappers de persistência ──────────────────────────────────── */
+
+/** Persiste o estado atual como sessão em andamento. */
+function _salvarSessao(imediato = false) {
+  if (!_nav) return;
+  const payload = _fcEstadoParaSessaoNav('question');
+  if (imediato) {
+    _nav.salvar(payload);
+  } else {
+    _nav.salvarThrottled(payload);
+  }
+}
+
+/** Remove a sessão e reseta cache. Chame ao finalizar ou ao voltar. */
 function _limparSessao() {
-  clearTimeout(_salvarTimer);
-  _salvarTimer = null;
-  SessionManager.limparTudo(_estado.discId);
+  _nav?.limpar();
 }
 
-/* Compatibilidade retroativa: expõe a API legada via window para o HTML inline */
-window.flashcardSessao = {
-  salvar:          e  => SessionManager.salvar(e),
-  carregar:        id => SessionManager.carregar(id),
-  limpar:          id => SessionManager.limpar(id),
-  salvarNavState:  (id, v) => SessionManager.salvarNavState(id, v),
-  carregarNavState: id => SessionManager.carregarNavState(id),
-  limparNavState:  id => SessionManager.limparNavState(id),
-};
+/**
+ * Sinaliza saída real da página (ex: botão Voltar do header).
+ * O beforeunload do SessionNav não irá setar o stay-flag,
+ * garantindo que a próxima visita não restaure automaticamente.
+ * Sempre use junto com _limparSessao():
+ *   _sairParaRota();
+ *   _limparSessao();
+ */
+function _sairParaRota() {
+  _nav?.sairParaRota();
+}
+
+/**
+ * Verifica se existe sessão válida em andamento (cards pendentes).
+ * Não depende de reload-flag — útil para o botão "Continuar".
+ * @returns {{ sessao, pendentes, respondidos, total } | null}
+ */
+function _sessaoAtiva() {
+  if (!_nav) return null;
+
+  const sessao = _nav.lerSessao();
+  if (!sessao?.perguntas?.length) return null;
+
+  // Conta pendentes: respostas undefined
+  const pendentes   = sessao.respostas?.filter(r => r === undefined).length ?? 0;
+  const respondidos = sessao.perguntas.length - pendentes;
+
+  if (pendentes <= 0) return null;
+
+  return { sessao, pendentes, respondidos, total: sessao.perguntas.length };
+}
 
 /* ═════════════════════════════════════════════════════════════════
-   5. SESSION GUARD
-   Detecta saída real da página vs. reload e limpa o estado
-   apenas quando o usuário sai definitivamente do fluxo de
-   flashcards (botão voltar do browser, navegação externa, fechar aba).
+   5. FC ANTI-FLASH
+   ──────────────────────────────────────────────────────────────────
+   Controla a visibilidade das telas intro/game sem causar flash
+   visual ao recarregar ou restaurar sessão.
 
-   DESIGN:
-   ─────────────────────────────────────────────────────────────────
-   • pagehide  → evento mais confiável para saída/bfcache/fechar aba.
-   • pageshow  → detecta restauração do bfcache (persisted=true).
-   • popstate  → NÃO usamos aqui: popstate dispara para qualquer
-                 mudança de hash ou history.pushState(), não apenas
-                 para o botão físico de Voltar — causaria falsos
-                 positivos. A limpeza ao voltar é feita explicitamente
-                 pelos botões internos que chamam _limparSessao().
+   O SessionNav injeta CSS que oculta os elementos de tela genéricos
+   (#screen-intro, #screen-question etc.). Para o flashcard, que usa
+   IDs próprios (#intro-root, #card-root), mantemos o atributo
+   data-fc-restore no <html> como mecanismo complementar — o CSS
+   bloqueante no HTML já trata esse atributo antes do primeiro paint.
 
-   INTENÇÂO vs. SAÍDA ACIDENTAL:
-   ─────────────────────────────────────────────────────────────────
-   Toda ação intencional que sai do fluxo de cards (botão "Voltar ao
-   início", link de voltar para jogo.html) chama _limparSessao() antes
-   de navegar. O pagehide só limpa se _intent !== 'preserve', ou seja,
-   se foi uma saída não gerenciada (F5 não limpa — é reload, não saída).
-
-   F5 / RELOAD:
-   ─────────────────────────────────────────────────────────────────
-   O evento pagehide é disparado antes do reload com persisted=false,
-   mas a nossa lógica só limpa se a saída não foi um reload. Detectamos
-   isso porque:
-   1. No F5/reload a URL permanece idêntica.
-   2. Usamos performance.getEntriesByType('navigation')[0].type que vale
-      'reload' quando disponível.
-   3. Fallback: sessionStorage marker que sobrevive ao reload mas não
-      à navegação real (sessionStorage é limpo ao fechar a aba, mas não
-      no reload).
+   Responsabilidades:
+   • mostrarTela()   — exibe uma tela e oculta a outra
+   • pronto()        — sinaliza ao SessionNav que a tela correta
+                       foi exibida (remove anti-flash + consome flag)
    ═════════════════════════════════════════════════════════════════ */
 
-const SessionGuard = (() => {
-  /** Marcador de intenção de navegação.
-   *  'clear'    → saída intencional do fluxo (botão voltar, link externo)
-   *  'preserve' → dentro do fluxo (reload, transição interna sem saída)
-   *  null       → desconhecido (usa heurística de reload)
+const FcAntiFlash = {
+  /**
+   * Exibe a tela alvo e oculta a outra.
+   * @param {'intro' | 'game'} tela
    */
-  let _intent = null;
-  let _installed = false;
+  mostrarTela(tela) {
+    const introRoot = document.getElementById('intro-root');
+    const cardRoot  = document.getElementById('card-root');
 
-  // Chave de sessionStorage usada para detectar reload vs. saída real.
-  // sessionStorage sobrevive ao F5 mas é limpo ao fechar aba/navegar.
-  const _SESSION_KEY = 'nexus_fc_alive';
-
-  function _onPageHide(e) {
-    if (_intent === 'clear') {
-      // Saída intencional já tratada por quem chamou _limparSessao()
-      return;
+    if (tela === 'game') {
+      if (introRoot) introRoot.style.display = 'none';
+      if (cardRoot)  cardRoot.style.display  = '';
+      document.documentElement.setAttribute('data-fc-restore', 'game');
+    } else {
+      if (cardRoot)  cardRoot.style.display  = 'none';
+      if (introRoot) introRoot.style.display = '';
+      document.documentElement.removeAttribute('data-fc-restore');
     }
-
-    if (_intent === 'preserve') {
-      // Transição interna — preserva estado, não limpa.
-      return;
-    }
-
-    // Intenção desconhecida: distingue reload de saída real.
-    // sessionStorage.setItem sobrevive ao F5 mas não à navegação real.
-    // Se o item já estava lá quando pagehide dispara, é reload/bfcache.
-    const marker = sessionStorage.getItem(_SESSION_KEY);
-
-    if (e.persisted) {
-      // Entrando no bfcache — NÃO limpa: o pageshow vai lidar se necessário.
-      return;
-    }
-
-    if (marker) {
-      // O marker sobreviveu: muito provavelmente é um reload (F5).
-      // Não limpa — a sessão deve ser restaurada.
-      return;
-    }
-
-    // Sem marker: é uma saída real (nova URL, fechar aba).
-    // Limpa o estado para não restaurar indevidamente.
-    _limparTodosEstados();
-  }
-
-  function _onPageShow(e) {
-    if (e.persisted) {
-      // Voltou do bfcache. O pagehide anterior não limpou (bfcache case),
-      // mas aqui estamos numa página "congelada" de volta — o estado do
-      // JS foi restaurado do bfcache também, então está consistente.
-      // Apenas garantimos que o marker esteja presente.
-      _marcarVivo();
-    }
-  }
-
-  /** Marca que a sessão está viva (usado para detectar reload vs. saída real). */
-  function _marcarVivo() {
-    try { sessionStorage.setItem(_SESSION_KEY, '1'); } catch (_) {}
-  }
-
-  function _limparTodosEstados() {
-    SessionManager.limparTudo(_estado.discId);
-    try { sessionStorage.removeItem(_SESSION_KEY); } catch (_) {}
-  }
-
-  function instalar() {
-    if (_installed) return;
-    _installed = true;
-    _intent = null;
-    _marcarVivo();
-    window.addEventListener('pagehide', _onPageHide);
-    window.addEventListener('pageshow', _onPageShow);
-  }
-
-  function desinstalar() {
-    if (!_installed) return;
-    _installed = false;
-    window.removeEventListener('pagehide', _onPageHide);
-    window.removeEventListener('pageshow', _onPageShow);
-  }
+  },
 
   /**
-   * Sinaliza que a próxima navegação deve LIMPAR o estado.
-   * Chamar antes de qualquer link/redirect que sai do fluxo de cards.
+   * Remove o anti-flash e consome o reload-flag.
+   * Deve ser chamado APÓS mostrarTela() para que o primeiro frame
+   * pintado já seja o frame correto.
    */
-  function sinalizarSaida() {
-    _intent = 'clear';
-  }
-
-  /**
-   * Sinaliza que a próxima transição é interna (sem saída do fluxo).
-   * Chamar antes de transições como reload programático ou troca de view.
-   */
-  function sinalizarPreservar() {
-    _intent = 'preserve';
-    // Auto-reset: se não houver pagehide em 500ms, volta ao neutro.
-    // Evita que uma preservação esquecida bloqueie limpeza futura.
-    setTimeout(() => { if (_intent === 'preserve') _intent = null; }, 500);
-  }
-
-  return { instalar, desinstalar, sinalizarSaida, sinalizarPreservar };
-})();
+  pronto() {
+    _nav?.pronto();
+  },
+};
 
 /* ═════════════════════════════════════════════════════════════════
    6. ATALHOS DE TECLADO
@@ -977,6 +973,7 @@ function _renderCard(direcaoAnimacao = 'next') {
   if (isUltimo && todosRespondidos) {
     wrap.innerHTML       = _tplFinal();
     bottom.style.display = 'none';
+    // Sessão concluída — limpa para não restaurar na próxima visita.
     _limparSessao();
     panelEl.querySelector('#cards-finish-restart')?.addEventListener('click', _reiniciar);
     _atualizarUI();
@@ -1306,29 +1303,33 @@ function _reiniciar() {
 
 /**
  * Volta para a tela de intro de forma padronizada.
- * Garante que o SessionGuard não confunda essa transição com saída real.
- * Atualiza o botão "Continuar" corretamente.
+ *
+ * • Persiste tela='intro' para que pegarRestauravel() retorne null
+ *   ao recarregar (o usuário não estava no jogo), mas lerSessao()
+ *   ainda retorne a sessão para o botão "Continuar".
+ * • Remove o atributo data-fc-restore para liberar o CSS bloqueante.
+ * • NÃO chama sairParaRota() — a sessão deve continuar recuperável.
  */
 function _voltarParaIntro() {
-  const cardRoot  = document.getElementById('card-root');
-  const introRoot = document.getElementById('intro-root');
-
-  // Remove o atributo anti-flash para liberar os estilos CSS bloqueantes.
-  document.documentElement.removeAttribute('data-fc-restore');
-
-  if (cardRoot)  cardRoot.style.display  = 'none';
-  if (introRoot) introRoot.style.display = '';
+  FcAntiFlash.mostrarTela('intro');
   document.body.classList.remove('modo-revisao');
 
-  // Persiste que o usuário está na intro (não no jogo).
-  SessionManager.salvarNavState(_estado.discId, 'intro');
+  /*
+   * Persiste o estado como 'intro' (não 'question').
+   * Isso faz pegarRestauravel() retornar null no próximo reload
+   * (evita restauração automática), mas a sessão continua no
+   * localStorage para o botão "Continuar".
+   */
+  if (_nav) {
+    _nav.salvar(_fcEstadoParaSessaoNav('intro'));
+  }
 
   // Oculta o badge do header ao voltar para o início.
   const hbadge = document.getElementById('header-game-badge');
   if (hbadge) hbadge.style.display = 'none';
 
   // Reconfigurar o botão Continuar sem recriar o nó — apenas atualiza o estado.
-  _atualizarBtnContinuar(_estado.discId, cardRoot, _estado.nomeUsuario);
+  _atualizarBtnContinuar(_estado.discId, document.getElementById('card-root'), _estado.nomeUsuario);
 }
 
 function _criarWrapperEl(discId, cards) {
@@ -1397,29 +1398,21 @@ export async function initCards(discId, panelEl, nomeUsuario, opcoes = {}) {
   const uid = typeof nomeUsuario === 'object' ? nomeUsuario.uid : nomeUsuario;
   _srCache = await carregarPerfisSRS(uid, discId, sem);
 
-  const sessaoInfo = SessionManager.sessaoAtiva(discId);
+  // Tenta restaurar sessão salva, exceto em modo revisão
+  const sessaoInfo = !opcoes.modoRevisao ? _sessaoAtiva() : null;
   let cards, estado;
 
-  if (sessaoInfo && !opcoes.modoRevisao) {
-    const { sessao } = sessaoInfo;
-    // Reconstrói os objetos de card a partir dos IDs salvos + cardsData atual.
-    const cardsMapped = sessao.cards
-      .map(id => cardsData[discId].find(c => c.id === id))
-      .filter(Boolean);
-
-    if (cardsMapped.length === sessao.cards.length) {
-      cards  = cardsMapped;
+  if (sessaoInfo) {
+    const restaurado = _sessaoNavParaFcEstado(sessaoInfo.sessao, cardsData, discId);
+    if (restaurado) {
+      cards  = restaurado.cards;
       estado = {
         ...ESTADO_INICIAL(),
         discId,
-        semestre:   sem,
+        semestre:    sem,
         nomeUsuario,
         cardsData,
-        cards,
-        current:    sessao.current    ?? 0,
-        stats:      sessao.stats      ?? { correct: 0, wrong: 0 },
-        difficulty: sessao.difficulty ?? {},
-        resultado:  sessao.resultado  ?? {},
+        ...restaurado,
         panelEl,
       };
     }
@@ -1446,9 +1439,6 @@ export async function initCards(discId, panelEl, nomeUsuario, opcoes = {}) {
 
   _estado = estado;
 
-  // Instala o guard DEPOIS de definir _estado, pois o guard usa _estado.discId.
-  SessionGuard.instalar();
-
   const wrap = _criarWrapperEl(discId, cards);
   panelEl.appendChild(wrap);
   _renderCard();
@@ -1472,7 +1462,12 @@ export async function initCards(discId, panelEl, nomeUsuario, opcoes = {}) {
 export function destroyCards(panelEl) {
   panelEl?.querySelector('.panel-cards')?.remove();
   _removerAtalhos();
-  SessionGuard.desinstalar();
+  /*
+   * NÃO destruímos o _nav aqui porque destroyCards é chamado no
+   * início de initCards para limpar o DOM anterior — o _nav é
+   * criado/destruído em _navInicializar(), que tem ciclo de vida
+   * atrelado à página completa, não ao componente de cards.
+   */
 }
 
 export const exibirCards  = initCards;
@@ -1488,9 +1483,9 @@ export function invalidarCacheSRS(discId) {
   }
 }
 
-/* ══════════════════════════════════════════════════════════════════
-   INTRO — preenchimento de dados e configuração de botões
-   ══════════════════════════════════════════════════════════════════ */
+/* ═════════════════════════════════════════════════════════════════
+   13. INTRO — preenchimento de dados, botões e modal
+   ═════════════════════════════════════════════════════════════════ */
 
 /** Preenche os dados da tela de intro. */
 async function _introPreencherDados(disc, sem) {
@@ -1538,11 +1533,16 @@ async function _introPreencherDados(disc, sem) {
 
   const backBtn = document.getElementById('shell-back-btn');
   if (backBtn) {
-    // Ao clicar em "Voltar", sinaliza saída real do fluxo.
     backBtn.href = `../../jogo.html${sem ? `?sem=${sem}` : ''}`;
     backBtn.addEventListener('click', () => {
+      /*
+       * SAÍDA REAL: o usuário está saindo do fluxo de flashcards.
+       * 1. sairParaRota() → beforeunload não seta stay-flag.
+       * 2. limpar()       → remove sessão do localStorage.
+       * Resultado: próxima visita abre tela inicial, não questões antigas.
+       */
+      _sairParaRota();
       _limparSessao();
-      SessionGuard.sinalizarSaida();
     }, { once: true });
   }
 
@@ -1558,7 +1558,7 @@ function _atualizarBtnContinuar(disc, root, usuario) {
   const countEl = document.getElementById('fc-continuar-progress');
   if (!btn) return;
 
-  const info = SessionManager.sessaoAtiva(disc);
+  const info = _sessaoAtiva();
 
   if (!info) {
     btn.classList.add('hidden');
@@ -1573,9 +1573,7 @@ function _atualizarBtnContinuar(disc, root, usuario) {
   if (!btn.dataset.fcListener) {
     btn.dataset.fcListener = '1';
     btn.addEventListener('click', () => {
-      const introRoot = document.getElementById('intro-root');
-      if (introRoot) introRoot.style.display = 'none';
-      root.style.display = '';
+      FcAntiFlash.mostrarTela('game');
       initCards(disc, root, usuario);
     });
   }
@@ -1672,12 +1670,9 @@ function _abrirModalRevisao(comErro, perfis, disc, sem) {
   btnStart.parentNode.replaceChild(novoStart, btnStart);
   novoStart.addEventListener('click', () => {
     fechar();
-    const introRoot = document.getElementById('intro-root');
-    const cardRoot  = document.getElementById('card-root');
-    if (introRoot) introRoot.style.display = 'none';
-    if (cardRoot)  cardRoot.style.display  = '';
+    FcAntiFlash.mostrarTela('game');
     const usuario = new URLSearchParams(location.search).get('user') ?? getUsuario() ?? 'visitante';
-    initCards(disc, cardRoot, usuario, { modoRevisao: true, cardsRevisao: ordenados });
+    initCards(disc, document.getElementById('card-root'), usuario, { modoRevisao: true, cardsRevisao: ordenados });
   });
 
   btnClose ?.addEventListener('click', fechar, { once: true });
@@ -1685,71 +1680,111 @@ function _abrirModalRevisao(comErro, perfis, disc, sem) {
   overlay   .addEventListener('click', e => { if (e.target === overlay) fechar(); }, { once: true });
 }
 
-/* ── Auto-init standalone ─────────────────────────────────────── */
+/* ═════════════════════════════════════════════════════════════════
+   14. AUTO-INIT STANDALONE
+   ──────────────────────────────────────────────────────────────────
+   Fluxo de inicialização da página integrado ao SessionNav:
+
+   1. Deriva uid/disc/sem da URL.
+   2. Inicializa o SessionNav com _navInicializar() (cria instância,
+      injeta anti-flash).
+   3. Chama pegarRestauravel() — verifica reload-flag + sessão válida.
+      • Se retornar sessão com tela='question': restaura diretamente.
+      • Caso contrário: verifica se existe sessão pausada (tela='intro')
+        para exibir botão "Continuar", ou abre tela limpa.
+   4. Chama FcAntiFlash.pronto() para remover CSS de ocultação e
+      consumir o reload-flag.
+
+   FALLBACK DE SEGURANÇA
+   ──────────────────────
+   Se o estado salvo estiver corrompido (_sessaoNavParaFcEstado
+   retornar null), a sessão é descartada e o fluxo continua
+   normalmente pela intro, sem abrir questões antigas.
+   ═════════════════════════════════════════════════════════════════ */
 (function _autoInit() {
   const root = document.getElementById('card-root');
   if (!root) return;
 
   const { disc, sem } = lerParams();
-  const usuario = new URLSearchParams(location.search).get('user')
-             ?? getUsuario()
-             ?? 'visitante';
-
   if (!disc) return;
 
-  /*
-   * RESTAURAÇÃO DE NAVEGAÇÃO
-   * ─────────────────────────────────────────────────────────────────
-   * O script bloqueante no <head> já aplicou os estilos corretos antes
-   * do primeiro paint (data-fc-restore="game"). Aqui verificamos a
-   * sessão e iniciamos o jogo silenciosamente se válida — sem nenhuma
-   * transição visual.
-   *
-   * Validações em ordem:
-   *   1. navState = 'game'  → sessão ativa: restaura o jogo diretamente.
-   *   2. navState = 'intro' → usuário pausou e voltou para a intro:
-   *                           exibe a intro com o botão "Continuar" visível.
-   *   3. sem navState       → primeira visita ou sessão expirada:
-   *                           limpa tudo e exibe a intro limpa.
-   */
-  const navState   = SessionManager.carregarNavState(disc);
-  const sessaoAtivaNaGame = navState?.view === 'game'
-    ? SessionManager.sessaoAtiva(disc)
-    : null;
+  const uid = new URLSearchParams(location.search).get('user')
+           ?? getUsuario()?.uid
+           ?? 'visitante';
 
-  if (sessaoAtivaNaGame) {
-    // Sessão válida em andamento: inicia o jogo diretamente.
-    // O HTML já está com a tela correta (blocking script no <head>).
-    _introPreencherDados(disc, sem); // preenche header/breadcrumb em background
-    initCards(disc, root, usuario);
+  /*
+   * PASSO 1: Inicializa o SessionNav.
+   * Injeta anti-flash sincronamente e registra os listeners de ciclo
+   * de vida (beforeunload, pagehide, popstate).
+   */
+  _navInicializar(uid, disc, sem);
+
+  /*
+   * PASSO 2: Verifica se é um reload com sessão restaurável.
+   * pegarRestauravel() retorna a sessão apenas se:
+   *   • Stay-flag presente (foi reload, não nova entrada)
+   *   • Sessão com tela='question' (estava no jogo)
+   *   • Há cards pendentes
+   */
+  const sessaoRestauravel = _nav.pegarRestauravel();
+
+  if (sessaoRestauravel) {
+    /*
+     * RESTAURAÇÃO DIRETA: o CSS bloqueante no <html> já ocultou a intro
+     * e exibiu o card-root antes do primeiro paint.
+     * Aqui apenas preenchemos o header e iniciamos o jogo silenciosamente.
+     */
+    _introPreencherDados(disc, sem); // preenche header em segundo plano
+    FcAntiFlash.mostrarTela('game');
+    initCards(disc, root, uid);
+    FcAntiFlash.pronto(); // remove anti-flash + consome reload-flag
     return;
   }
 
-  // Verifica se existe uma sessão pausada (usuário estava na intro com jogo salvo).
-  // Neste caso NÃO limpa — o botão "Continuar" deve aparecer.
-  const sessaoPausada = navState?.view === 'intro'
-    ? SessionManager.sessaoAtiva(disc)
-    : null;
+  /*
+   * PASSO 3: Sem restauração automática.
+   * Verifica se há sessão pausada (tela='intro') para o botão "Continuar".
+   * Uma sessão é "pausada" quando o usuário clicou em "Voltar ao início"
+   * enquanto havia progresso — ela fica no localStorage com tela='intro'.
+   */
+  const sessaoPausada = _sessaoAtiva();
 
   if (!sessaoPausada) {
-    // Sem sessão válida de nenhum tipo: limpa resquícios e começa do zero.
-    SessionManager.limparTudo(disc);
+    /*
+     * Sem sessão de nenhum tipo: limpa qualquer resquício (ex: sessão
+     * expirada que não passou pelo TTL check, chave antiga do esquema
+     * anterior) e abre a intro limpa.
+     */
+    _nav.limpar();
+    document.documentElement.removeAttribute('data-fc-restore');
   }
 
+  /*
+   * PASSO 4: Exibe a intro.
+   * Preenche dados e configura botões. O botão "Continuar" só aparece
+   * se sessaoPausada existir.
+   */
   _introPreencherDados(disc, sem);
-  _atualizarBtnContinuar(disc, root, usuario);
+  _atualizarBtnContinuar(disc, root, uid);
 
   const startBtn = document.getElementById('intro-start-btn');
   if (startBtn) {
     startBtn.addEventListener('click', () => {
-      // Limpa sessão anterior e começa novo deck.
-      SessionManager.limpar(disc);
-      SessionManager.limparNavState(disc);
+      /*
+       * "Começar" nova sessão: descarta qualquer sessão anterior.
+       * limpar() reseta o cache do SessionNav para que pegarRestauravel()
+       * funcione corretamente na próxima verificação.
+       */
+      _nav.limpar();
       document.getElementById('intro-fc-btn-continuar')?.classList.add('hidden');
-      const introRoot = document.getElementById('intro-root');
-      if (introRoot) introRoot.style.display = 'none';
-      root.style.display = '';
-      initCards(disc, root, usuario);
+      FcAntiFlash.mostrarTela('game');
+      initCards(disc, root, uid);
     });
   }
+
+  /*
+   * PASSO 5: Remove o anti-flash após definir a tela correta.
+   * Deve ser o último passo para garantir zero flicker.
+   */
+  FcAntiFlash.pronto();
 })();

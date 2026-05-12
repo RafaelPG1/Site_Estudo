@@ -1,13 +1,23 @@
 <!--
-  NEXUS STUDY — games/jogos/flashcard/flashcard.html  (v2.0)
+  NEXUS STUDY — games/jogos/flashcard/flashcard.html  (v3.0)
 
-  REFATORAÇÃO v2.0
-  ─────────────────
-  game-shell.css agora é a FONTE ÚNICA para:
-    :root (tokens), reset, .bg-grid, .bg-orb, .hidden
+  REFATORAÇÃO v3.0 — Integração com session-nav.js
+  ──────────────────────────────────────────────────
+  • Script bloqueante legado substituído por importação do SessionNav.
+    A lógica de anti-flash agora vive inteiramente em session-nav.js
+    (SessionNav.prepararAntiFlash()), chamado no topo de flashcard.js.
 
-  flashcard.css mantém o header específico (.header, .back-btn)
-  e todo o layout da sessão de cards (.cards-*, .intro-*, .finish-*).
+  • O atributo data-fc-restore="game" no <html> ainda é usado como
+    sinal para o CSS bloqueante abaixo, mas quem o aplica agora é o
+    próprio flashcard.js via FcAntiFlash.mostrarTela('game').
+
+  • O bloco window.flashcardSessao (compatibilidade retroativa com
+    scripts inline) foi mantido como stub vazio — ele não é mais
+    necessário e pode ser removido em limpeza futura.
+
+  Fonte única de CSS:
+    game-shell.css  → tokens, reset, .bg-grid, .bg-orb, .hidden
+    flashcard.css   → header, layout de sessão de cards
 -->
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -30,52 +40,87 @@
   />
 
   <link rel="stylesheet" href="../../template/game-shell.css" />
-  <link rel="stylesheet" href="flashcard.css?v=6" />
+  <link rel="stylesheet" href="flashcard.css?v=7" />
 
   <!--
-    ANTI-FLASH: script bloqueante executado ANTES do primeiro paint.
-    Lê o localStorage síncronamente e aplica display inline nos elementos
-    certos, impedindo qualquer frame intermediário com a tela errada.
-    Não depende de nenhum módulo JS — é puro, mínimo e sem side-effects.
-  -->
-  <script>
-    (function () {
-      try {
-        var TTL  = 24 * 60 * 60 * 1000;
-        var disc = new URLSearchParams(location.search).get('disc');
-        if (!disc) return;
+    ANTI-FLASH PARA FLASHCARD
+    ─────────────────────────────────────────────────────────────────
+    Este bloco CSS é aplicado ANTES do primeiro paint.
 
-        /* Verifica navState */
-        var rawNav = localStorage.getItem('nexus_fc_navstate_' + disc);
-        if (!rawNav) return;
-        var nav = JSON.parse(rawNav);
-        if (nav.view !== 'game') return;
-        if (nav.ts && Date.now() - nav.ts > TTL) return;
+    O atributo data-fc-restore="game" é definido pelo script bloqueante
+    abaixo quando o SessionNav detecta uma sessão restaurável.
+    Isso garante que a tela de jogo seja o primeiro frame pintado,
+    sem nenhum flash de tela intermediário.
 
-        /* Verifica sessão — precisa ter pendentes */
-        var rawSessao = localStorage.getItem('nexus_fc_sessao_' + disc);
-        if (!rawSessao) return;
-        var sessao = JSON.parse(rawSessao);
-        if (!sessao.ts || Date.now() - sessao.ts > TTL) return;
-        if (new Date(sessao.ts).toDateString() !== new Date().toDateString()) return;
-        var respondidos = sessao.resultado ? Object.keys(sessao.resultado).length : 0;
-        if (!sessao.cards || sessao.cards.length - respondidos <= 0) return;
-
-        /* Sessão válida em andamento: aplica display ANTES do paint */
-        document.documentElement.setAttribute('data-fc-restore', 'game');
-      } catch (_) { /* localStorage indisponível — ignora */ }
-    })();
-  </script>
-
-  <!--
-    CSS bloqueante: aplicado antes do render quando data-fc-restore="game"
-    está no <html>. Garante que o estado visual correto seja o primeiro
-    frame pintado — sem depender de JS de módulo ou requestAnimationFrame.
+    Separado do anti-flash genérico do SessionNav (que usa IDs
+    #screen-intro / #screen-question) porque o flashcard usa IDs
+    próprios (#intro-root / #card-root).
   -->
   <style>
     html[data-fc-restore="game"] #intro-root { display: none !important; }
     html[data-fc-restore="game"] #card-root  { display: block !important; }
   </style>
+
+  <!--
+    SCRIPT BLOQUEANTE DE ANTI-FLASH
+    ─────────────────────────────────────────────────────────────────
+    Executado ANTES do primeiro paint, de forma SÍNCRONA.
+    Não depende de módulos ES — usa apenas o localStorage diretamente,
+    pois os módulos ES são sempre diferidos.
+
+    Lógica:
+    1. Verifica o stay-flag do SessionNav (_snav_stay) no sessionStorage.
+       Se ausente, não é reload — não restaura.
+    2. Lê a sessão do localStorage pela chave derivada de disc+user+sem.
+    3. Se a sessão for válida (não expirada, tela='question', pendentes>0),
+       aplica data-fc-restore="game" no <html> ANTES do render.
+
+    ATENÇÃO: Este script usa a mesma chave que o SessionNav gera
+    internamente: nexus_vf_sessao_{uid}_{discId}_{sem}.
+    Se o formato da chave mudar no SessionNav, este script deve ser
+    atualizado correspondentemente.
+
+    O módulo flashcard.js (via SessionNav.criar) assume o controle
+    após o carregamento e executa a lógica completa de restauração.
+  -->
+  <script>
+    (function () {
+      try {
+        // Verifica se é um reload (stay-flag do SessionNav).
+        if (sessionStorage.getItem('_snav_stay') !== '1') return;
+
+        var params = new URLSearchParams(location.search);
+        var disc   = params.get('disc');
+        var sem    = params.get('sem') || '';
+        var uid    = params.get('user') || 'visitante';
+        if (!disc) return;
+
+        // Chave gerada pelo SessionNav: nexus_vf_sessao_{uid}_{discId}_{sem}
+        var chave = 'nexus_vf_sessao_' + uid + '_' + disc + '_' + sem;
+        var raw   = localStorage.getItem(chave);
+        if (!raw) return;
+
+        var sessao = JSON.parse(raw);
+
+        // Valida TTL (24h)
+        var TTL = 24 * 60 * 60 * 1000;
+        if (!sessao.timestamp || Date.now() - sessao.timestamp > TTL) return;
+
+        // Só restaura automaticamente se estava na tela de questões
+        if (sessao.tela !== 'question') return;
+
+        // Verifica se há perguntas pendentes (respostas undefined = {v: '__p__'})
+        var respostas   = sessao.respostas || [];
+        var pendentes   = respostas.filter(function (r) {
+          return r && r.v === '__p__';
+        }).length;
+        if (pendentes === 0) return;
+
+        // Sessão válida em andamento — aplica anti-flash antes do paint
+        document.documentElement.setAttribute('data-fc-restore', 'game');
+      } catch (_) { /* localStorage indisponível — ignora */ }
+    })();
+  </script>
 </head>
 
 <body>
@@ -221,78 +266,22 @@
 
   </main>
 
-
   <div class="card-toast" id="card-toast" role="status" aria-live="polite">
     <i class="fas fa-rotate-left" aria-hidden="true"></i>
     <span id="card-toast-msg"></span>
   </div>
 
+  <!--
+    flashcard.js é o único ponto de entrada.
+    Ele importa SessionNav e chama SessionNav.prepararAntiFlash()
+    no topo do módulo (antes de qualquer await), garantindo que o
+    CSS de ocultação seja injetado o mais cedo possível.
+  -->
   <script type="module" src="flashcard.js"></script>
 
   <script>
-    window.flashcardSessao = {
-      _chave:      (discId) => `nexus_fc_sessao_${discId}`,
-      _chaveNav:   (discId) => `nexus_fc_navstate_${discId}`,
-      _TTL: 24 * 60 * 60 * 1000, // 24h em ms
-
-      /* ── Sessão de cards (estado mid-session) ── */
-      salvar(estado) {
-        try {
-          const { discId, current, resultado, historico, cards, stats, difficulty } = estado;
-          if (!discId) return;
-          localStorage.setItem(
-            this._chave(discId),
-            JSON.stringify({ current, resultado, historico, cards, stats, difficulty, ts: Date.now() })
-          );
-        } catch (_) {}
-      },
-      carregar(discId) {
-        try {
-          const raw = localStorage.getItem(this._chave(discId));
-          if (!raw) return null;
-          const data = JSON.parse(raw);
-          // Expira após 24h
-          if (data.ts && Date.now() - data.ts > this._TTL) {
-            this.limpar(discId);
-            return null;
-          }
-          return data;
-        } catch (_) { return null; }
-      },
-      limpar(discId) {
-        try { localStorage.removeItem(this._chave(discId)); } catch (_) {}
-      },
-
-      /* ── Estado de navegação (qual tela estava ativa) ── */
-      salvarNavState(discId, view) {
-        // view: 'game' | 'intro'
-        try {
-          if (!discId) return;
-          localStorage.setItem(
-            this._chaveNav(discId),
-            JSON.stringify({ view, ts: Date.now() })
-          );
-        } catch (_) {}
-      },
-      carregarNavState(discId) {
-        try {
-          const raw = localStorage.getItem(this._chaveNav(discId));
-          if (!raw) return null;
-          const data = JSON.parse(raw);
-          // Nav state só vale enquanto a sessão existir e for do mesmo dia
-          if (data.ts && Date.now() - data.ts > this._TTL) {
-            this.limparNavState(discId);
-            return null;
-          }
-          return data;
-        } catch (_) { return null; }
-      },
-      limparNavState(discId) {
-        try { localStorage.removeItem(this._chaveNav(discId)); } catch (_) {}
-      },
-    };
-
-    document.getElementById('footer-year').textContent = new Date().getFullYear();
+    document.getElementById('footer-year') &&
+      (document.getElementById('footer-year').textContent = new Date().getFullYear());
   </script>
 
 </body>
