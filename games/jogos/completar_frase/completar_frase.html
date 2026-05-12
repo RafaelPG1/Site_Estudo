@@ -187,11 +187,23 @@
           <!-- Frase com lacuna -->
           <p class="frase-texto" id="frase-texto">Carregando questão…</p>
 
-          <!-- Dica de letras -->
+          <!-- Contagem de letras + botão de dica aleatória -->
           <div class="hint-block">
-            <span class="hint-label">Dica:</span>
-            <span class="letras-hint" id="letras-hint">—</span>
+            <!-- Letras: número calculado dinamicamente pelo JS a partir da resposta normalizada -->
+            <span class="hint-label">Letras:</span>
+            <span class="letras-count" id="letras-count">—</span>
+
+            <!-- Botão que exibe uma dica aleatória do campo tips[] da questão -->
+            <button class="btn-show-dica" id="btn-show-dica" type="button">
+              <svg viewBox="0 0 16 16" fill="currentColor" width="11" height="11" aria-hidden="true">
+                <path d="M8 1a5.5 5.5 0 1 0 0 11A5.5 5.5 0 0 0 8 1zM7.25 4.75a.75.75 0 1 1 1.5 0 .75.75 0 0 1-1.5 0zm.75 2a.75.75 0 0 1 .75.75v2.5a.75.75 0 0 1-1.5 0v-2.5A.75.75 0 0 1 8 6.75z"/>
+              </svg>
+              Dica
+            </button>
           </div>
+
+          <!-- Painel onde a dica aleatória é exibida após clicar no botão -->
+          <div class="dica-panel" id="dica-panel" style="display:none"></div>
 
           <!-- Input + botão verificar -->
           <div class="input-group">

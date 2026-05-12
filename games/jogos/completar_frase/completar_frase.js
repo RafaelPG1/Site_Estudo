@@ -1,5 +1,15 @@
 /* ============================================================
-   NEXUS STUDY — completar_frase.js
+   NEXUS STUDY — completar_frase.js  (v3)
+
+   MUDANÇAS v3:
+   • Jogo limitado a MAX_QUESTOES (6) questões por partida
+   • Progresso, bolinhas e resultado sincronizados com 6 questões
+   • Botão "Dica" opera exclusivamente nos tips[] da questão atual
+   • Anti-repeat: não repete a mesma dica consecutivamente
+   • Animação da dica re-triggerada via classe CSS a cada clique
+   • Reset completo de dica (texto + classe + índice) ao trocar questão
+   • Removida atribuição duplicada de fraseTexto.innerHTML
+   • Intro badge exibe MAX_QUESTOES (não o total do deck)
 
    DEPENDÊNCIAS:
    • DISC_CORES importado de shared/js/cores.js
@@ -138,22 +148,21 @@ function pausar() {
   if (_pausado || Estado.respondida) return;
   _pausado = true;
   timerClear();
-  const overlay = document.getElementById('pause-overlay');
+  const overlay  = document.getElementById('pause-overlay');
   const btnPause = document.getElementById('btn-pause');
-  if (overlay) overlay.classList.remove('hidden');
+  if (overlay)  overlay.classList.remove('hidden');
   if (btnPause) btnPause.classList.add('btn-icon-ctrl--active');
 }
 
 function retomar() {
   if (!_pausado) return;
   _pausado = false;
-  const overlay = document.getElementById('pause-overlay');
+  const overlay  = document.getElementById('pause-overlay');
   const btnPause = document.getElementById('btn-pause');
-  if (overlay) overlay.classList.add('hidden');
+  if (overlay)  overlay.classList.add('hidden');
   if (btnPause) btnPause.classList.remove('btn-icon-ctrl--active');
   // Retoma o timer somente se a questão não foi respondida
   if (!Estado.respondida) {
-    // Reconstrói o timer com o tempo que sobrou
     _timerInterval = setInterval(() => {
       _timerRestante--;
       timerRender(_timerRestante);
@@ -198,6 +207,26 @@ function normalizar(txt) {
     .trim();
 }
 
+/* ── CONTAGEM DE LETRAS ──────────────────────────────────────
+   Conta APENAS os caracteres alfabéticos/numéricos da resposta,
+   ignorando espaços e acentos após normalização.
+   Isso garante que o número exibido em "Letras: X" coincida
+   exatamente com quantos campos o usuário precisa preencher.
+   ─────────────────────────────────────────────────────────── */
+function contarLetras(resposta) {
+  return normalizar(resposta).length;
+}
+
+/* ── GERAR UNDERSCORES ───────────────────────────────────────
+   Cria a sequência "_ _ _ _" com exatamente o mesmo número
+   de underscores retornado por contarLetras().
+   Ambos usam a mesma base (normalizar), então NUNCA divergem.
+   ─────────────────────────────────────────────────────────── */
+function gerarUnderscores(resposta) {
+  const n = contarLetras(resposta);
+  return Array(n).fill('_').join(' ');
+}
+
 /* ── TOPBAR ── */
 function iniciarTopbar() {
   if (Els.shellSem)
@@ -215,7 +244,12 @@ function iniciarTopbar() {
   if (Els.btnBackResult) Els.btnBackResult.href = voltar;
 }
 
-/* ── CONSTRUIR LISTA ── */
+/* ── CONSTRUIR LISTA ─────────────────────────────────────────
+   Embaralha o banco completo e fatia as primeiras MAX_QUESTOES.
+   Variedade a cada partida sem percorrer o deck inteiro.
+   ─────────────────────────────────────────────────────────── */
+const MAX_QUESTOES = 6;
+
 function construirLista() {
   const dados    = getDados();
   const semData  = dados[URL_SEM]    ?? {};
@@ -225,7 +259,9 @@ function construirLista() {
     ? discData
     : Object.values(semData).flat();
 
-  Estado.lista = embaralhar(fonte.length ? fonte : []);
+  const embaralhada = embaralhar(fonte.length ? fonte : []);
+  // Limita a MAX_QUESTOES; se o deck for menor, usa tudo
+  Estado.lista = embaralhada.slice(0, MAX_QUESTOES);
 }
 
 /* ── INICIAR ── */
@@ -270,16 +306,34 @@ function renderPergunta() {
 
   Els.questionNum.textContent = `QUESTÃO ${String(Estado.indice + 1).padStart(2, '0')}`;
 
+  /* ── LETRAS: contador + underscores sincronizados ──────────
+     contarLetras() e gerarUnderscores() usam a mesma base
+     (normalizar), então o número e os "_" NUNCA divergem.
+     ─────────────────────────────────────────────────────── */
+  const numLetras = contarLetras(p.resposta);
+  if (Els.letrasCount) {
+    Els.letrasCount.textContent = numLetras;
+  }
+
   Els.fraseTexto.innerHTML = p.frase.replace(
     '______',
-    '<span class="lacuna">______</span>'
+    `<span class="lacuna">${gerarUnderscores(p.resposta)}</span>`
   );
 
-  Els.letrasHint.textContent = p.letras;
-
-  if (Els.dicaTexto) {
-    Els.dicaTexto.textContent = p.dica ?? '';
-    if (Els.dicaWrap) Els.dicaWrap.style.display = p.dica ? '' : 'none';
+  /* ── RESET DO PAINEL DE DICA ─────────────────────────────
+     Executado a cada troca de questão:
+     1. Limpa texto e oculta o painel (sem resíduo da questão anterior)
+     2. Remove classe de animação para não vazar entre questões
+     3. Mostra/oculta botão conforme a questão ter tip ou não
+     ─────────────────────────────────────────────────────── */
+  if (Els.dicaPanel) {
+    Els.dicaPanel.style.display = 'none';
+    Els.dicaPanel.textContent   = '';
+    Els.dicaPanel.classList.remove('dica-panel--animando');
+  }
+  if (Els.btnShowDica) {
+    const temDicas = Array.isArray(p.tips) && p.tips.length > 0;
+    Els.btnShowDica.style.display = temDicas ? '' : 'none';
   }
 
   Els.inputAnswer.value     = '';
@@ -298,7 +352,7 @@ function renderPergunta() {
 
   const hist = Estado.historico[Estado.indice];
 
-  // FIX: timer só inicia se questão ainda não foi respondida
+  // Timer só inicia se a questão ainda não foi respondida
   if (!hist) {
     timerStart();
   } else {
@@ -330,6 +384,24 @@ function renderPergunta() {
   atualizarMeta();
 }
 
+/* ── MOSTRAR DICA ────────────────────────────────────────────
+   Exibe o único tip da questão atual. A cada clique re-anima
+   o painel via remoção + reinserção da classe CSS.
+   ─────────────────────────────────────────────────────────── */
+function mostrarDicaAleatoria() {
+  const p = Estado.lista[Estado.indice];
+  if (!p || !Array.isArray(p.tips) || p.tips.length === 0) return;
+
+  if (!Els.dicaPanel) return;
+
+  Els.dicaPanel.textContent = p.tips[0];
+
+  Els.dicaPanel.classList.remove('dica-panel--animando');
+  void Els.dicaPanel.offsetWidth; // reflow intencional
+  Els.dicaPanel.classList.add('dica-panel--animando');
+  Els.dicaPanel.style.display = 'block';
+}
+
 /* ── VERIFICAR ── */
 function verificar() {
   if (Estado.respondida) return;
@@ -348,6 +420,7 @@ function verificar() {
   Els.btnCheck.disabled    = true;
 
   timerClear();
+
   const acertou = normalizar(digitado) === normalizar(p.resposta);
 
   if (!Estado.historico[Estado.indice]) {
@@ -403,10 +476,10 @@ function renderDots() {
   if (!container) return;
   container.innerHTML = '';
   Estado.lista.forEach((_, i) => {
-    const hist      = Estado.historico[i];
+    const hist       = Estado.historico[i];
     const respondida = hist !== undefined;
-    const acertou   = respondida && hist.acertou;
-    const atual     = i === Estado.indice;
+    const acertou    = respondida && hist.acertou;
+    const atual      = i === Estado.indice;
 
     const dot = document.createElement('span');
     dot.className = 'cf-dot ' + (
@@ -444,7 +517,7 @@ function mostrarResultado() {
   Els.resultOk.textContent    = Estado.acertos;
   Els.resultErr.textContent   = Estado.erros;
 
-  const cor = pct >= 70 ? '#10D9A0' : pct >= 40 ? '#FFC857' : '#FF5F7E';
+  const cor        = pct >= 70 ? '#10D9A0' : pct >= 40 ? '#FFC857' : '#FF5F7E';
   const dashOffset = 339.3 * (1 - pct / 100);
   Els.ringFill.style.stroke = cor;
   Els.ringFill.style.filter = `drop-shadow(0 0 8px ${cor})`;
@@ -459,7 +532,6 @@ function mostrarResultado() {
 
 /* ── TELAS ── */
 function mostrarIntro() {
-  // FIX: para o timer ao voltar para a intro
   timerClear();
 
   const screenIntro = $('screen-intro');
@@ -485,13 +557,8 @@ function mostrarIntro() {
 
   const totalEl = $('intro-total-questoes');
   if (totalEl) {
-    const dados    = getDados();
-    const semData  = dados[URL_SEM]    ?? {};
-    const discData = semData[URL_DISC] ?? [];
-    const fonte = discData.length
-      ? discData
-      : Object.values(semData).flat();
-    totalEl.textContent = fonte.length;
+    // Mostra MAX_QUESTOES (não o total do deck) — é o que o jogador vai jogar
+    totalEl.textContent = MAX_QUESTOES;
   }
 }
 
@@ -506,44 +573,44 @@ function iniciarJogo() {
 /* ── INIT ── */
 document.addEventListener('DOMContentLoaded', () => {
   Object.assign(Els, {
-    gameCard:        $('game-card'),
-    screenResult:    $('screen-result'),
-    fraseTexto:      $('frase-texto'),
-    letrasHint:      $('letras-hint'),
-    dicaWrap:        $('dica-wrap'),
-    dicaTexto:       $('dica-texto'),
-    discTag:         $('disc-tag'),
-    nivelTag:        $('nivel-tag'),
-    semTag:          $('sem-tag'),
-    questionNum:     $('question-num'),
-    inputAnswer:     $('input-answer'),
-    btnCheck:        $('btn-check'),
-    feedbackLine:    $('feedback-line'),
-    btnNext:         $('btn-next'),
-    chipOk:          $('chip-ok'),
-    chipErr:         $('chip-err'),
-    progressFill:    $('progress-fill'),
-    progressLabel:   $('progress-label'),
-    progressPct:     $('progress-pct'),
-    resultPct:       $('result-pct'),
-    resultTitle:     $('result-title'),
-    resultSub:       $('result-sub'),
-    resultOk:        $('result-ok'),
-    resultErr:       $('result-err'),
-    btnPrev:         $('btn-prev'),
-    navBar:          $('nav-bar'),
-    btnRestart:      $('btn-restart'),
-    ringFill:        $('ring-fill'),
-    shellDiscName:   $('shell-disc-name'),
-    shellSem:        $('shell-sem'),
-    backBtn:         $('back-btn'),
-    btnBackResult:   $('btn-back-result'),
-    btnHome:         $('btn-home'),
+    gameCard:      $('game-card'),
+    screenResult:  $('screen-result'),
+    fraseTexto:    $('frase-texto'),
+    /* letras — novo sistema */
+    letrasCount:   $('letras-count'),   // <span> com o número
+    dicaPanel:     $('dica-panel'),     // <span> ou <p> onde a dica aparece
+    btnShowDica:   $('btn-show-dica'),  // botão "Mostrar dica"
+    discTag:       $('disc-tag'),
+    nivelTag:      $('nivel-tag'),
+    semTag:        $('sem-tag'),
+    questionNum:   $('question-num'),
+    inputAnswer:   $('input-answer'),
+    btnCheck:      $('btn-check'),
+    feedbackLine:  $('feedback-line'),
+    btnNext:       $('btn-next'),
+    chipOk:        $('chip-ok'),
+    chipErr:       $('chip-err'),
+    progressFill:  $('progress-fill'),
+    progressLabel: $('progress-label'),
+    progressPct:   $('progress-pct'),
+    resultPct:     $('result-pct'),
+    resultTitle:   $('result-title'),
+    resultSub:     $('result-sub'),
+    resultOk:      $('result-ok'),
+    resultErr:     $('result-err'),
+    btnPrev:       $('btn-prev'),
+    navBar:        $('nav-bar'),
+    btnRestart:    $('btn-restart'),
+    ringFill:      $('ring-fill'),
+    shellDiscName: $('shell-disc-name'),
+    shellSem:      $('shell-sem'),
+    backBtn:       $('back-btn'),
+    btnBackResult: $('btn-back-result'),
+    btnHome:       $('btn-home'),
   });
 
   iniciarTopbar();
   mostrarIntro();
-
 
   // Botão pausar
   const btnPauseEl = $('btn-pause');
@@ -553,7 +620,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnResumeEl = $('btn-resume');
   if (btnResumeEl) btnResumeEl.addEventListener('click', retomar);
 
-  // Atalho de teclado P / Escape
+  // Atalho de teclado Espaço / Escape
   document.addEventListener('keydown', e => {
     if (e.key === ' ' && document.activeElement !== Els.inputAnswer) {
       e.preventDefault();
@@ -566,7 +633,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnStart = $('btn-start');
   if (btnStart) btnStart.addEventListener('click', iniciarJogo);
 
-  // Botão Home — volta para a intro (para o timer, reseta estado)
+  // Botão Home — volta para a intro
   if (Els.btnHome) {
     Els.btnHome.addEventListener('click', () => {
       Els.screenResult.classList.remove('show');
@@ -601,4 +668,13 @@ document.addEventListener('DOMContentLoaded', () => {
       else avancar();
     }
   });
+
+  /* ── BOTÃO "Mostrar dica" ──────────────────────────────────
+     Usa delegação no card para não precisar re-bindar a cada
+     questão. O botão é re-exibido/ocultado dentro de
+     renderPergunta() conforme a questão tiver tips ou não.
+     ─────────────────────────────────────────────────────── */
+  if (Els.btnShowDica) {
+    Els.btnShowDica.addEventListener('click', mostrarDicaAleatoria);
+  }
 });
