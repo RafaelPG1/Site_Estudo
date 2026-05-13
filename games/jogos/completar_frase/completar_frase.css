@@ -985,30 +985,12 @@ body {
 }
 
 .cf-intro-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(var(--cor-tema-rgb),0.8) 40%,
-    rgba(var(--cor-tema-rgb),1.0) 50%,
-    rgba(var(--cor-tema-rgb),0.8) 60%,
-    transparent 100%
-  );
+  display: none;
 }
 
-/* Soft glow below top line */
+/* Soft glow below top line — removed */
 .cf-intro-card::after {
-  content: '';
-  position: absolute;
-  top: -50px; left: 50%;
-  transform: translateX(-50%);
-  width: 220px; height: 100px;
-  background: rgba(var(--cor-tema-rgb), 0.08);
-  filter: blur(30px);
-  border-radius: 50%;
-  pointer-events: none;
+  display: none;
 }
 
 /* Big pencil icon */
@@ -1095,14 +1077,13 @@ body {
 
 .cf-intro-card__badge {
   display: inline-flex; align-items: center; gap: 7px;
-  font-family: var(--font-body);
-  font-size: .72rem; font-weight: 400;
-  color: var(--text-1);
-  background: var(--surface-2);
+  font-size: .78rem; font-weight: 600;
+  color: var(--text-2);
+  background: var(--surface-3);
   border: 1px solid var(--border);
-  padding: 6px 16px;
+  padding: 7px 16px;
   border-radius: var(--pill);
-  letter-spacing: .06em;
+  letter-spacing: .04em;
 }
 
 /* Wrapper dos botões da intro — idêntico ao .vf-intro-card__actions do V/F */
@@ -1522,7 +1503,7 @@ body.modo-revisao .screen-result {
   transition: color .2s, background .2s;
 }
 .cf-stats-questoes summary::-webkit-details-marker { display: none; }
-.cf-stats-questoes summary:hover { color: var(--text-1, #e2e8f0); background: rgba(255,255,255,.03); }
+.cf-stats-questoes summary:hover { color: var(--text-3, #e2e8f0); background: rgba(255,255,255,.03); }
 .cf-stats-questoes[open] summary { border-bottom: 1px solid rgba(255,255,255,.08); }
 .cf-sq-summary-icon { font-size: .9rem; }
 .cf-sq-chevron {
