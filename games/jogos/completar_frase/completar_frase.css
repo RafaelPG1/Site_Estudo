@@ -188,7 +188,11 @@ body {
 
 #shell-disc-name { color: var(--cor-tema); font-weight: 600; }
 #shell-sem       { color: var(--text-3); }
-.game-header__meta-sep { color: var(--text-3); }
+.game-header__meta-sep {
+  color: var(--text-2);
+  font-size: 1.5rem; /* Ajuste conforme o desejado */
+
+}
 
 /* ═══════════════════════════════════════
    MAIN LAYOUT
@@ -1101,28 +1105,33 @@ body {
   letter-spacing: .06em;
 }
 
+/* Wrapper dos botões da intro — idêntico ao .vf-intro-card__actions do V/F */
 .cf-intro-card__actions {
-  width: 100%;
   display: flex;
-  justify-content: center;
-  margin-top: 4px;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  align-items: stretch;
 }
 
+/* Botão Começar — design idêntico ao #btn-start.game-btn do V/F */
 .cf-btn-start {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  padding: 0.75rem 2.5rem; border-radius: var(--pill);
-  background: rgba(var(--cor-tema-rgb), 0.12);
-  border: 1px solid rgba(var(--cor-tema-rgb), 0.40);
+  width: 100%;
+  padding: 11px 32px; border-radius: var(--pill);
+  font-family: var(--font-body); font-size: .95rem; font-weight: 600;
+  letter-spacing: .03em; cursor: pointer;
+  background: rgba(var(--cor-tema-rgb), .12);
+  border: 1.5px solid rgba(var(--cor-tema-rgb), .35);
   color: var(--cor-tema);
-  font-family: var(--font-ui); font-size: .88rem; font-weight: 700;
-  letter-spacing: .06em; cursor: pointer; position: relative; z-index: 1;
-  transition: all .2s var(--ease);
+  box-shadow: none;
+  transition: background var(--t), border-color var(--t), transform var(--t), filter var(--t);
 }
+.cf-btn-start svg { width: 14px; height: 14px; }
 .cf-btn-start:hover {
-  background: rgba(var(--cor-tema-rgb), 0.20);
-  border-color: rgba(var(--cor-tema-rgb), 0.65);
-  box-shadow: 0 0 24px rgba(var(--cor-tema-rgb), 0.22);
-  color: var(--text-1);
+  background: rgba(var(--cor-tema-rgb), .2);
+  border-color: rgba(var(--cor-tema-rgb), .6);
+  filter: none;
   transform: translateY(-1px);
 }
 .cf-btn-start:active { transform: scale(.98); }
@@ -1146,8 +1155,22 @@ body {
   border: 1px solid rgba(255,255,255,.18);
   background: rgba(255,255,255,.06);
   padding: 0;
-  cursor: default;
-  transition: width .25s var(--ease), background .25s, border-color .25s;
+  cursor: pointer;                          /* indica clicabilidade */
+  transition: width .25s var(--ease), background .25s, border-color .25s, transform .15s var(--ease), box-shadow .15s;
+  /* reset de estilos de botão */
+  font: inherit;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.cf-dot:hover:not(.cf-dot--current) {
+  transform: scale(1.35);
+  box-shadow: 0 0 8px rgba(255,255,255,.18);
+  border-color: rgba(255,255,255,.45);
+}
+.cf-dot:focus-visible {
+  outline: 2px solid rgba(var(--cor-tema-rgb), .7);
+  outline-offset: 2px;
 }
 
 .cf-dot--current {
@@ -1155,16 +1178,23 @@ body {
   width: 22px;
   background: rgba(var(--cor-tema-rgb), .65);
   border-color: rgba(var(--cor-tema-rgb), .85);
+  cursor: default;                          /* questão atual: não clicável */
 }
 
 .cf-dot--correct {
   background: rgba(16,217,160,.6);
   border-color: rgba(16,217,160,.85);
 }
+.cf-dot--correct:hover {
+  box-shadow: 0 0 8px rgba(16,217,160,.4);
+}
 
 .cf-dot--wrong {
   background: rgba(255,95,126,.6);
   border-color: rgba(255,95,126,.85);
+}
+.cf-dot--wrong:hover {
+  box-shadow: 0 0 8px rgba(255,95,126,.4);
 }
 
 /* ═══════════════════════════════════════
@@ -1333,41 +1363,51 @@ body {
    ══════════════════════════════════════════════════════════ */
 
 /* Botão "Revisar erros" na intro */
+/* Botão Revisar erros — design idêntico ao .vf-intro-card__btn--revisar do V/F */
 .cf-btn-revisar {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   width: 100%;
   padding: .65rem 2rem;
-  border-radius: var(--r, 10px);
-  background: rgba(239, 68, 68, .08);
-  border: 1px solid rgba(239, 68, 68, .22);
-  color: #f87171;
+  border-radius: var(--pill);
+  font-family: var(--font-body);
   font-size: .82rem;
   font-weight: 600;
   letter-spacing: .02em;
   cursor: pointer;
+  background: rgba(239, 68, 68, .08);
+  border: 1px solid rgba(239, 68, 68, .22);
+  color: #f87171;
+  box-shadow: none;
   transition: background .2s, border-color .2s, transform .1s;
+}
+.cf-btn-revisar svg,
+.cf-btn-revisar i {
+  font-size: .72rem;
+  opacity: .85;
 }
 .cf-btn-revisar:hover {
   background: rgba(239, 68, 68, .16);
   border-color: rgba(239, 68, 68, .40);
+  filter: none;
   transform: scale(.98);
 }
-.cf-btn-revisar:active { transform: scale(.97); }
+.cf-btn-revisar:active { transform: scale(.98); }
 .cf-btn-revisar.hidden { display: none; }
 
-/* Badge contador dentro do botão */
+/* Badge contador dentro do botão — idêntico ao .vf-revisar-count do V/F */
 .cf-revisar-count {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: 20px;
   height: 20px;
-  padding: 0 5px;
-  border-radius: 999px;
+  padding: 0 4px;
+  border-radius: var(--pill);
   background: rgba(239, 68, 68, .22);
+  border: 1px solid rgba(239, 68, 68, .35);
   font-size: .65rem;
   font-weight: 700;
   line-height: 1;
@@ -1526,44 +1566,47 @@ body.modo-revisao .screen-result {
    BOTÃO "CONTINUAR" — Complete a Frase
    Aparece na intro quando existe sessão salva com progresso.
    ══════════════════════════════════════════════════════════ */
+/* Botão Continuar — design idêntico ao .vf-intro-card__btn--continuar do V/F */
 .cf-btn-continuar {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: .65rem 2rem;
-  border-radius: var(--r, 10px);
-  background: rgba(var(--cf-accent-rgb, var(--cor-tema-rgb, 99,102,241)), .12);
-  border: 1px solid rgba(var(--cf-accent-rgb, var(--cor-tema-rgb, 99,102,241)), .28);
-  color: var(--cf-accent, var(--cor-tema, #818cf8));
-  font-size: .82rem;
+  padding: 11px 32px;
+  border-radius: var(--pill);
+  font-family: var(--font-body);
+  font-size: .95rem;
   font-weight: 600;
-  letter-spacing: .02em;
+  letter-spacing: .03em;
   cursor: pointer;
-  transition: background .2s, border-color .2s, transform .1s;
+  background: linear-gradient(135deg,
+    rgba(251, 191, 36, .18) 0%,
+    rgba(245, 158, 11, .12) 100%);
+  border: 1.5px solid rgba(251, 191, 36, .45);
+  color: #fbbf24;
+  box-shadow: none;
+  transition: background var(--t), border-color var(--t), box-shadow var(--t), color var(--t), transform var(--t);
 }
+.cf-btn-continuar svg { width: 14px; height: 14px; }
 .cf-btn-continuar:hover {
-  background: rgba(var(--cf-accent-rgb, var(--cor-tema-rgb, 99,102,241)), .22);
-  border-color: rgba(var(--cf-accent-rgb, var(--cor-tema-rgb, 99,102,241)), .45);
-  transform: scale(.98);
+  background: linear-gradient(135deg,
+    rgba(251, 191, 36, .28) 0%,
+    rgba(245, 158, 11, .20) 100%);
+  border-color: rgba(251, 191, 36, .70);
+  box-shadow: 0 4px 22px rgba(251, 191, 36, .18);
+  color: #fde68a;
+  transform: translateY(-1px);
 }
-.cf-btn-continuar:active { transform: scale(.97); }
+.cf-btn-continuar:active { transform: scale(.98); }
 .cf-btn-continuar.hidden { display: none; }
 
-/* Badge de progresso "3/6" dentro do botão */
+/* Badge de progresso "3/6" dentro do botão — idêntico ao .vf-continuar-count do V/F */
 .cf-continuar-progress {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 32px;
-  height: 20px;
-  padding: 0 6px;
-  border-radius: 999px;
-  background: rgba(var(--cf-accent-rgb, var(--cor-tema-rgb, 99,102,241)), .20);
-  font-size: .65rem;
-  font-weight: 700;
-  line-height: 1;
-  color: var(--cf-accent, var(--cor-tema, #818cf8));
+  font-size: .80rem;
+  font-weight: 600;
+  opacity: .65;
+  font-family: var(--font-body);
+  letter-spacing: .02em;
 }
 .cf-continuar-progress:empty { display: none; }

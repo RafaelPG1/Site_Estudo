@@ -669,19 +669,55 @@ function renderDots() {
   const container = document.getElementById('cf-dots');
   if (!container) return;
   container.innerHTML = '';
+
   Estado.lista.forEach((_, i) => {
     const hist       = Estado.historico[i];
     const respondida = hist !== undefined;
     const acertou    = respondida && hist.acertou;
     const atual      = i === Estado.indice;
 
-    const dot = document.createElement('span');
+    const dot = document.createElement('button');
+    dot.type      = 'button';
     dot.className = 'cf-dot ' + (
       atual       ? 'cf-dot--current' :
       !respondida ? ''                :
       acertou     ? 'cf-dot--correct' : 'cf-dot--wrong'
     );
-    dot.setAttribute('aria-label', `Questão ${i + 1}`);
+    dot.setAttribute('aria-label', `Ir para questão ${i + 1}`);
+    dot.title = `Questão ${i + 1}`;
+
+    /* ── NAVEGAÇÃO CLICÁVEL ──────────────────────────────────────
+       Ao clicar numa bolinha:
+       1. Para o timer da questão atual (sem registrar erro)
+       2. Atualiza Estado.indice para o índice clicado
+       3. Chama renderPergunta() — que restaura o estado salvo
+          no historico[] se a questão já foi respondida, ou inicia
+          nova questão (com timer) se ainda não foi respondida.
+       4. Salva a sessão imediatamente para manter sincronia com
+          sessionStorage (botão "Continuar" e reload seguro).
+       Proteção: não faz nada se já estamos na questão clicada,
+       evitando re-renderizações desnecessárias.
+       ─────────────────────────────────────────────────────────── */
+    dot.addEventListener('click', () => {
+      // Proteção: já estamos nesta questão → noop
+      if (i === Estado.indice) return;
+
+      // Para o timer da questão atual sem penalizar o usuário
+      timerClear();
+
+      // Navega para a questão clicada
+      Estado.indice = i;
+
+      // renderPergunta() cuida de tudo:
+      // • restaura resposta/feedback se já respondida (hist existe)
+      // • reseta e inicia timer se ainda não respondida
+      // • atualiza letras, frase, dica, barra de progresso e dots
+      renderPergunta();
+
+      // Persiste a posição atual na sessão para reload seguro
+      salvarSessao('question');
+    });
+
     container.appendChild(dot);
   });
 }
