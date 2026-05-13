@@ -378,8 +378,24 @@ function iniciarTopbar() {
   aplicarCorDisc(URL_DISC);
 
   const voltar = URL_SEM ? `../../jogo.html?sem=${URL_SEM}` : '../../jogo.html';
-  if (Els.backBtn)       Els.backBtn.href      = voltar;
-  if (Els.btnBackResult) Els.btnBackResult.href = voltar;
+  if (Els.backBtn) Els.backBtn.href = voltar;
+
+  // Botão "Voltar" na tela de resultado → volta para a intro do jogo
+  if (Els.btnBackResult) {
+    Els.btnBackResult.removeAttribute('href');
+    Els.btnBackResult.addEventListener('click', e => {
+      e.preventDefault();
+      timerClear();
+      limparSessao();
+      Els.screenResult.classList.remove('show');
+      document.body.classList.remove('modo-revisao');
+      Estado.modoRevisao  = false;
+      Estado.cardsRevisao = null;
+      if (Els.navBar)    Els.navBar.classList.remove('hidden');
+      if (Els.gameCard)  Els.gameCard.style.display = '';
+      mostrarIntro();
+    });
+  }
 }
 
 /* ── CONSTRUIR LISTA ─────────────────────────────────────────
@@ -844,7 +860,7 @@ function _renderEstatisticasQuestoes() {
   const painel = document.createElement('details');
   painel.className = 'cf-stats-questoes';
   painel.open = true;
-  painel.innerHTML = `<summary><span class="cf-sq-summary-icon">📊</span>Progresso por questão<span class="cf-sq-chevron">▾</span></summary>`;
+  painel.innerHTML = `<summary><span class="cf-sq-summary-icon">📊</span><span class="cf-sq-summary-text">Progresso por questão</span><span class="cf-sq-chevron"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6l4 4 4-4"/></svg></span></summary>`;
 
   const lista = document.createElement('div');
   lista.className = 'cf-sq-lista';
@@ -859,21 +875,21 @@ function _renderEstatisticasQuestoes() {
 
     let rowHtml;
 
+    let rowCls = '';
     if (Estado.modoRevisao) {
       const icone   = acertouAgora ? '✓' : errouAgora ? '✗' : '–';
-      const iconCor = acertouAgora ? '#34d399' : errouAgora ? '#f87171' : '#94a3b8';
+      rowCls        = acertouAgora ? 'cf-sq-row--ok' : errouAgora ? 'cf-sq-row--err' : '';
       const barCls  = acertouAgora ? 'cf-prog-bar--ok' : 'cf-prog-bar--critico';
       const barPct  = acertouAgora ? 100 : 0;
-      const label   = acertouAgora ? 'Acertou' : errouAgora ? 'Errou' : '–';
+      const label   = acertouAgora ? '100%' : errouAgora ? '0%' : '–';
       rowHtml = `
-        <div class="cf-sq-meta">
-          <span class="cf-sq-icone" style="color:${iconCor}">${icone}</span>
-          <span class="cf-sq-enun">${enun}</span>
-          ${acertouAgora ? '<span class="cf-sq-superada" title="Acertou nesta rodada">⭐</span>' : ''}
-        </div>
-        <div class="cf-sq-prog-row">
-          <div class="cf-prog-bar ${barCls}" style="width:${barPct}%"></div>
-          <span class="cf-sq-pct">${label}</span>
+        <span class="cf-sq-icone">${icone}</span>
+        <div class="cf-sq-body">
+          <span class="cf-sq-enun">${enun}${acertouAgora ? ' <span class="cf-sq-superada" title="Acertou nesta rodada">⭐</span>' : ''}</span>
+          <div class="cf-sq-prog-row">
+            <div class="cf-prog-track"><div class="cf-prog-bar ${barCls}" style="width:${barPct}%"></div></div>
+            <span class="cf-sq-pct">${label}</span>
+          </div>
         </div>`;
     } else {
       if (!h) continue;
@@ -881,21 +897,21 @@ function _renderEstatisticasQuestoes() {
       const taxa    = Math.round((acertos / tentativas) * 100);
       const barCls  = taxa >= 80 ? 'cf-prog-bar--ok' : taxa >= 50 ? 'cf-prog-bar--med' : 'cf-prog-bar--critico';
       const icone   = acertouAgora ? '✓' : errouAgora ? '✗' : '–';
-      const iconCor = acertouAgora ? '#34d399' : errouAgora ? '#f87171' : '#94a3b8';
+      rowCls        = acertouAgora ? 'cf-sq-row--ok' : errouAgora ? 'cf-sq-row--err' : '';
       rowHtml = `
-        <div class="cf-sq-meta">
-          <span class="cf-sq-icone" style="color:${iconCor}">${icone}</span>
+        <span class="cf-sq-icone">${icone}</span>
+        <div class="cf-sq-body">
           <span class="cf-sq-enun">${enun}</span>
-        </div>
-        <div class="cf-sq-prog-row">
-          <div class="cf-prog-bar ${barCls}" style="width:${taxa}%"></div>
-          <span class="cf-sq-pct">${taxa}%</span>
-        </div>
-        <div class="cf-sq-detalhe">${acertos} acerto${acertos !== 1 ? 's' : ''} / ${tentativas} tentativa${tentativas !== 1 ? 's' : ''}</div>`;
+          <div class="cf-sq-prog-row">
+            <div class="cf-prog-track"><div class="cf-prog-bar ${barCls}" style="width:${taxa}%"></div></div>
+            <span class="cf-sq-pct">${taxa}%</span>
+          </div>
+          <span class="cf-sq-detalhe">${acertos} acerto${acertos !== 1 ? 's' : ''} / ${tentativas} tentativa${tentativas !== 1 ? 's' : ''}</span>
+        </div>`;
     }
 
     const row = document.createElement('div');
-    row.className = 'cf-sq-row';
+    row.className = `cf-sq-row ${rowCls}`.trim();
     row.innerHTML = rowHtml;
     lista.appendChild(row);
   }
