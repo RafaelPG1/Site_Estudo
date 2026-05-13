@@ -85,6 +85,7 @@ function timerStart() {
   _timerInterval = setInterval(() => {
     _timerRestante--;
     timerRender(_timerRestante);
+    salvarSessaoThrottled(); // salva progresso a cada tick (throttled)
     if (_timerRestante <= 0) {
       timerClear();
       timerExpirou();
@@ -130,6 +131,9 @@ function timerExpirou() {
   if (!Estado.historico[Estado.indice]) {
     Estado.erros++;
     Estado.historico[Estado.indice] = { digitado: '', acertou: false };
+    // Registra timeout como erro no histórico de revisão
+    const questaoId = Estado.lista[Estado.indice]?.id;
+    if (questaoId) registrarNoHistorico(questaoId, false);
   }
 
   atualizarMeta();
@@ -166,6 +170,7 @@ function retomar() {
     _timerInterval = setInterval(() => {
       _timerRestante--;
       timerRender(_timerRestante);
+      salvarSessaoThrottled();
       if (_timerRestante <= 0) {
         timerClear();
         timerExpirou();
@@ -176,12 +181,16 @@ function retomar() {
 
 /* ── ESTADO ── */
 const Estado = {
-  lista:      [],
-  indice:     0,
-  acertos:    0,
-  erros:      0,
-  respondida: false,
-  historico:  [],
+  lista:        [],
+  banco:        [],      // banco completo da disciplina (para revisar erros)
+  indice:       0,
+  acertos:      0,
+  erros:        0,
+  respondida:   false,
+  historico:    [],      // [{digitado, acertou}] por índice da sessão atual
+  historicoRevisao: {}, // {[id]: {tentativas, acertos, erros, acertosConsecutivos}} persistido em localStorage
+  modoRevisao:  false,
+  cardsRevisao: null,
 };
 
 /* ── SELETORES ── */
@@ -206,6 +215,135 @@ function normalizar(txt) {
     .replace(/[^a-z0-9/]/g, '')
     .trim();
 }
+
+/* ── HISTORICO DE REVISÃO (localStorage) ────────────────────
+   Persiste {[questaoId]: {tentativas, acertos, erros, acertosConsecutivos}}
+   usando localStorage — sobrevive a fechamento de aba, voltar/avançar,
+   reload e qualquer navegação. É a única fonte de verdade para
+   o botão "Revisar erros".
+   ─────────────────────────────────────────────────────────── */
+const _HIST_KEY    = () => `nexus_cf_${URL_DISC}_${URL_SEM}`;
+
+/* ── SESSÃO "CONTINUAR" (sessionStorage) ─────────────────────
+   Armazena o progresso da partida atual para permitir continuar
+   após reload ou navegação dentro da mesma aba.
+
+   Chave isolada por módulo + disc + sem para não colidir com
+   o V/F ou outros módulos.
+
+   TTL: 24 h — sessões expiradas são descartadas silenciosamente.
+   ─────────────────────────────────────────────────────────── */
+const _SESS_KEY    = () => `nexus_cf_sess_${URL_DISC}_${URL_SEM}`;
+const _SESS_TTL_MS = 24 * 60 * 60 * 1000;  // 24 h
+
+/** Captura o snapshot completo do estado atual da partida. */
+function _snapshotEstado(tela = 'question') {
+  return {
+    lista:        Estado.lista,
+    historico:    Estado.historico,   // [{digitado, acertou}] por índice
+    indice:       Estado.indice,
+    acertos:      Estado.acertos,
+    erros:        Estado.erros,
+    modoRevisao:  Estado.modoRevisao,
+    cardsRevisao: Estado.cardsRevisao,
+    tela,                             // 'question' | 'intro'
+    ts:           Date.now(),
+  };
+}
+
+/** Persiste sessão no sessionStorage (mesma aba, sobrevive a reload). */
+function salvarSessao(tela = 'question') {
+  try {
+    const snap = _snapshotEstado(tela);
+    // Só salva se houver questões em andamento
+    if (!snap.lista?.length) return;
+    sessionStorage.setItem(_SESS_KEY(), JSON.stringify(snap));
+  } catch {}
+}
+
+let _sessThrottleTimer = null;
+/** Versão throttled (500 ms) para uso no timer tick. */
+function salvarSessaoThrottled() {
+  if (_sessThrottleTimer) return;
+  _sessThrottleTimer = setTimeout(() => {
+    _sessThrottleTimer = null;
+    salvarSessao('question');
+  }, 500);
+}
+
+/** Lê a sessão salva, validando TTL. Retorna null se inválida/expirada. */
+function lerSessao() {
+  try {
+    const raw = sessionStorage.getItem(_SESS_KEY());
+    if (!raw) return null;
+    const sess = JSON.parse(raw);
+    if (!sess?.lista?.length) return null;
+    if (Date.now() - (sess.ts ?? 0) > _SESS_TTL_MS) { limparSessao(); return null; }
+    return sess;
+  } catch { return null; }
+}
+
+/** Remove a sessão salva — chamado ao iniciar novo jogo ou ao finalizar. */
+function limparSessao() {
+  try { sessionStorage.removeItem(_SESS_KEY()); } catch {}
+}
+
+function lerHistoricoRevisao() {
+  try {
+    const raw = localStorage.getItem(_HIST_KEY());
+    return raw ? JSON.parse(raw) : {};
+  } catch { return {}; }
+}
+
+function salvarHistoricoRevisao(hist) {
+  try { localStorage.setItem(_HIST_KEY(), JSON.stringify(hist)); } catch {}
+}
+
+function registrarNoHistorico(questaoId, acertou) {
+  const hist = Estado.historicoRevisao;
+  const entrada = hist[questaoId] ?? {
+    tentativas: 0, acertos: 0, erros: 0, acertosConsecutivos: 0,
+  };
+  entrada.tentativas++;
+  if (acertou) {
+    entrada.acertos++;
+    entrada.acertosConsecutivos = (entrada.acertosConsecutivos ?? 0) + 1;
+  } else {
+    entrada.erros++;
+    entrada.acertosConsecutivos = 0;
+  }
+  hist[questaoId] = entrada;
+  salvarHistoricoRevisao(hist);
+}
+
+/* Questões com erro: erros > 0 e acertosConsecutivos === 0 */
+function questoesComErro(banco, historico) {
+  return banco
+    .filter(q => {
+      const h = historico[q.id];
+      return h && h.erros > 0 && (h.acertosConsecutivos ?? 0) === 0;
+    })
+    .sort((a, b) => {
+      const taxaA = historico[a.id].erros / historico[a.id].tentativas;
+      const taxaB = historico[b.id].erros / historico[b.id].tentativas;
+      return taxaB - taxaA;
+    });
+}
+
+/* Atualiza visibilidade do botão "Revisar erros" na intro */
+function atualizarBtnRevisarErros() {
+  const btn = document.getElementById('btn-revisar-erros');
+  if (!btn) return;
+  const erradas = questoesComErro(Estado.banco, Estado.historicoRevisao);
+  if (erradas.length === 0) {
+    btn.classList.add('hidden');
+    return;
+  }
+  const countEl = document.getElementById('cf-revisar-count');
+  if (countEl) countEl.textContent = erradas.length;
+  btn.classList.remove('hidden');
+}
+
 
 /* ── CONTAGEM DE LETRAS ──────────────────────────────────────
    Conta APENAS os caracteres alfabéticos/numéricos da resposta,
@@ -259,13 +397,27 @@ function construirLista() {
     ? discData
     : Object.values(semData).flat();
 
-  const embaralhada = embaralhar(fonte.length ? fonte : []);
-  // Limita a MAX_QUESTOES; se o deck for menor, usa tudo
-  Estado.lista = embaralhada.slice(0, MAX_QUESTOES);
+  // Banco completo para poder calcular revisão de erros
+  Estado.banco = fonte.length ? fonte : [];
+
+  if (Estado.modoRevisao && Estado.cardsRevisao?.length > 0) {
+    // Modo revisão: usa as questões erradas já calculadas
+    const embaralhada = embaralhar(Estado.cardsRevisao);
+    Estado.lista = embaralhada.slice(0, MAX_QUESTOES);
+  } else {
+    const embaralhada = embaralhar(Estado.banco);
+    Estado.lista = embaralhada.slice(0, MAX_QUESTOES);
+  }
 }
 
 /* ── INICIAR ── */
-function iniciar() {
+function iniciar(modoRevisao = false) {
+  Estado.modoRevisao = modoRevisao;
+
+  if (!modoRevisao) {
+    Estado.cardsRevisao = null;
+  }
+
   Estado.indice     = 0;
   Estado.acertos    = 0;
   Estado.erros      = 0;
@@ -273,13 +425,48 @@ function iniciar() {
   Estado.historico  = [];
   _pausado = false;
 
+  // Limpa sessão antiga — novo jogo, novo começo
+  limparSessao();
+
   construirLista();
 
   Els.screenResult.classList.remove('show');
   if (Els.gameCard) Els.gameCard.style.display = '';
 
+  // Banner de revisão
+  _atualizarBannerRevisao();
+
+  // Aplica classe no body para estilização
+  document.body.classList.toggle('modo-revisao', modoRevisao);
+
   renderPergunta();
   renderDots();
+}
+
+/* ── BANNER DE REVISÃO ──────────────────────────────────────
+   Injeta/remove o banner "Revisão de erros" no topo do game card.
+   ─────────────────────────────────────────────────────────── */
+function _atualizarBannerRevisao() {
+  const gameLayout = document.getElementById('game-layout');
+  if (!gameLayout) return;
+
+  gameLayout.querySelector('.cf-revisao-banner')?.remove();
+
+  if (Estado.modoRevisao) {
+    const total = Estado.lista?.length ?? 0;
+    const banner = document.createElement('div');
+    banner.className = 'cf-revisao-banner';
+    banner.setAttribute('role', 'alert');
+    banner.innerHTML = `
+      <span class="cf-revisao-banner__icon">⚠</span>
+      <span class="cf-revisao-banner__label">Revisão de erros</span>
+      <span class="cf-revisao-banner__count">${total} questão${total !== 1 ? 'ões' : ''}</span>
+    `;
+    // Insere antes do game-card
+    const card = document.getElementById('game-card');
+    if (card) gameLayout.insertBefore(banner, card);
+    else gameLayout.prepend(banner);
+  }
 }
 
 /* ── RENDERIZAR PERGUNTA ── */
@@ -441,6 +628,13 @@ function verificar() {
 
   Estado.historico[Estado.indice] = { digitado, acertou };
 
+  // Registra no histórico de revisão (persiste em localStorage)
+  const questaoId = Estado.lista[Estado.indice]?.id;
+  if (questaoId) registrarNoHistorico(questaoId, acertou);
+
+  // Persiste progresso para o botão "Continuar"
+  salvarSessao('question');
+
   atualizarMeta();
 
   const ultima = Estado.indice >= Estado.lista.length - 1;
@@ -495,9 +689,14 @@ function renderDots() {
 /* ── RESULTADO ── */
 function mostrarResultado() {
   timerClear();
+  // Jogo concluído — limpa sessão para não mostrar "Continuar" desnecessariamente
+  limparSessao();
   Els.gameCard.style.display = 'none';
   if (Els.navBar) Els.navBar.classList.add('hidden');
   Els.progressFill.style.width = '100%';
+
+  // Remove banner de revisão
+  document.getElementById('game-layout')?.querySelector('.cf-revisao-banner')?.remove();
 
   const total = Estado.lista.length;
   const pct   = total > 0 ? Math.round((Estado.acertos / total) * 100) : 0;
@@ -512,7 +711,7 @@ function mostrarResultado() {
     [0,   'Precisa revisar.',    'Dedique mais tempo ao conteúdo estudado.'],
   ];
   const [, titulo, sub] = msgs.find(([min]) => pct >= min);
-  Els.resultTitle.textContent = titulo;
+  Els.resultTitle.textContent = Estado.modoRevisao ? 'Revisão concluída' : titulo;
   Els.resultSub.textContent   = sub;
   Els.resultOk.textContent    = Estado.acertos;
   Els.resultErr.textContent   = Estado.erros;
@@ -527,17 +726,285 @@ function mostrarResultado() {
     })
   );
 
+  // Badge de revisão no topo do resultado
+  const resultCard = Els.screenResult.querySelector('.cf-result-inner') ?? Els.screenResult;
+  resultCard.querySelector('.cf-finish-revisao-badge')?.remove();
+  if (Estado.modoRevisao) {
+    const badge = document.createElement('div');
+    badge.className = 'cf-finish-revisao-badge';
+    badge.innerHTML = `<span>⚠</span> Revisão de erros`;
+    resultCard.insertBefore(badge, resultCard.firstChild);
+  }
+
+  // Atualiza botão "Jogar novamente" para "Repetir revisão" em modo revisão
+  const btnRestart = document.getElementById('btn-restart');
+  if (btnRestart) {
+    // Clona para remover listeners antigos
+    const novo = btnRestart.cloneNode(true);
+    btnRestart.parentNode.replaceChild(novo, btnRestart);
+    Els.btnRestart = novo;
+
+    if (Estado.modoRevisao) {
+      novo.innerHTML = `
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" width="14" height="14">
+          <path d="M13.5 2.5v3.5h-3.5"/>
+          <path d="M13.3 6A6 6 0 1 0 12 12"/>
+        </svg>
+        Repetir revisão
+      `;
+      novo.classList.add('btn-restart--revisao');
+      novo.addEventListener('click', () => {
+        Els.screenResult.classList.remove('show');
+        document.body.classList.remove('modo-revisao');
+        if (Els.navBar) Els.navBar.classList.remove('hidden');
+
+        // Verifica se ainda há erros nesta rodada
+        const erradasAgora = Estado.lista.filter((q, idx) => {
+          const h = Estado.historico[idx];
+          return !h || !h.acertou;
+        });
+
+        if (erradasAgora.length === 0) {
+          // Todas acertadas — revisão concluída!
+          _mostrarRevisaoConcluida();
+          return;
+        }
+
+        Estado.cardsRevisao = erradasAgora;
+        if (Els.gameCard) Els.gameCard.style.display = '';
+        iniciar(true);
+      });
+    } else {
+      novo.innerHTML = '↺ Jogar novamente';
+      novo.classList.remove('btn-restart--revisao');
+      novo.addEventListener('click', () => {
+        Els.screenResult.classList.remove('show');
+        document.body.classList.remove('modo-revisao');
+        if (Els.navBar) Els.navBar.classList.remove('hidden');
+        if (Els.gameCard) Els.gameCard.style.display = '';
+        mostrarIntro();
+      });
+    }
+  }
+
+  // Painel de estatísticas por questão
+  _renderEstatisticasQuestoes();
+
+  // Atualiza btn revisar erros na intro (será visto ao voltar)
+  atualizarBtnRevisarErros();
+
   Els.screenResult.classList.add('show');
+}
+
+/* ── ESTATÍSTICAS POR QUESTÃO (tela resultado) ───────────── */
+function _renderEstatisticasQuestoes() {
+  const resultCard = Els.screenResult.querySelector('.cf-result-inner') ?? Els.screenResult;
+  resultCard.querySelector('.cf-stats-questoes')?.remove();
+
+  const hist = Estado.historicoRevisao;
+  const temDados = Estado.lista.some(q => hist[q.id]);
+  if (!temDados && !Estado.modoRevisao) return;
+
+  const painel = document.createElement('details');
+  painel.className = 'cf-stats-questoes';
+  painel.open = true;
+  painel.innerHTML = `<summary><span class="cf-sq-summary-icon">📊</span>Progresso por questão<span class="cf-sq-chevron">▾</span></summary>`;
+
+  const lista = document.createElement('div');
+  lista.className = 'cf-sq-lista';
+
+  for (const [idx, q] of Estado.lista.entries()) {
+    const h             = hist[q.id];
+    const histSessao    = Estado.historico[idx];
+    const acertouAgora  = histSessao?.acertou === true;
+    const errouAgora    = histSessao !== undefined && !histSessao.acertou;
+    const enun = (q.frase ?? '').replace('______', '___').slice(0, 52) +
+                 ((q.frase ?? '').length > 52 ? '…' : '');
+
+    let rowHtml;
+
+    if (Estado.modoRevisao) {
+      const icone   = acertouAgora ? '✓' : errouAgora ? '✗' : '–';
+      const iconCor = acertouAgora ? '#34d399' : errouAgora ? '#f87171' : '#94a3b8';
+      const barCls  = acertouAgora ? 'cf-prog-bar--ok' : 'cf-prog-bar--critico';
+      const barPct  = acertouAgora ? 100 : 0;
+      const label   = acertouAgora ? 'Acertou' : errouAgora ? 'Errou' : '–';
+      rowHtml = `
+        <div class="cf-sq-meta">
+          <span class="cf-sq-icone" style="color:${iconCor}">${icone}</span>
+          <span class="cf-sq-enun">${enun}</span>
+          ${acertouAgora ? '<span class="cf-sq-superada" title="Acertou nesta rodada">⭐</span>' : ''}
+        </div>
+        <div class="cf-sq-prog-row">
+          <div class="cf-prog-bar ${barCls}" style="width:${barPct}%"></div>
+          <span class="cf-sq-pct">${label}</span>
+        </div>`;
+    } else {
+      if (!h) continue;
+      const { tentativas, acertos, erros } = h;
+      const taxa    = Math.round((acertos / tentativas) * 100);
+      const barCls  = taxa >= 80 ? 'cf-prog-bar--ok' : taxa >= 50 ? 'cf-prog-bar--med' : 'cf-prog-bar--critico';
+      const icone   = acertouAgora ? '✓' : errouAgora ? '✗' : '–';
+      const iconCor = acertouAgora ? '#34d399' : errouAgora ? '#f87171' : '#94a3b8';
+      rowHtml = `
+        <div class="cf-sq-meta">
+          <span class="cf-sq-icone" style="color:${iconCor}">${icone}</span>
+          <span class="cf-sq-enun">${enun}</span>
+        </div>
+        <div class="cf-sq-prog-row">
+          <div class="cf-prog-bar ${barCls}" style="width:${taxa}%"></div>
+          <span class="cf-sq-pct">${taxa}%</span>
+        </div>
+        <div class="cf-sq-detalhe">${acertos} acerto${acertos !== 1 ? 's' : ''} / ${tentativas} tentativa${tentativas !== 1 ? 's' : ''}</div>`;
+    }
+
+    const row = document.createElement('div');
+    row.className = 'cf-sq-row';
+    row.innerHTML = rowHtml;
+    lista.appendChild(row);
+  }
+
+  painel.appendChild(lista);
+  resultCard.appendChild(painel);
+}
+
+/* ── REVISÃO CONCLUÍDA ───────────────────────────────────── */
+function _mostrarRevisaoConcluida() {
+  const screenResult = Els.screenResult;
+  if (!screenResult) return;
+
+  const inner = screenResult.querySelector('.cf-result-inner') ?? screenResult;
+  const scoreRingWrap = inner.querySelector('.score-ring-wrap');
+  const resultActions = inner.querySelector('.result-actions');
+
+  // Substitui o conteúdo de ações e título
+  if (scoreRingWrap) {
+    scoreRingWrap.innerHTML = `<div class="cf-revisao-concluida-emoji">🏆</div>`;
+  }
+
+  const titleEl = inner.querySelector('.result-title');
+  const subEl   = inner.querySelector('.result-sub');
+  if (titleEl) titleEl.textContent = 'Revisão concluída!';
+  if (subEl)   subEl.textContent   = 'Você superou todos os erros desta sessão! 🎉';
+
+  if (resultActions) {
+    resultActions.innerHTML = `
+      <button class="btn-restart" id="btn-revisao-concluida-voltar">← Voltar ao início</button>
+    `;
+    document.getElementById('btn-revisao-concluida-voltar')?.addEventListener('click', () => {
+      screenResult.classList.remove('show');
+      document.body.classList.remove('modo-revisao');
+      Estado.modoRevisao  = false;
+      Estado.cardsRevisao = null;
+      if (Els.navBar) Els.navBar.classList.remove('hidden');
+      if (Els.gameCard) Els.gameCard.style.display = '';
+      atualizarBtnRevisarErros();
+      mostrarIntro();
+    });
+  }
+
+  screenResult.classList.add('show');
+}
+
+/* ── CONTINUAR SESSÃO ────────────────────────────────────────
+   Restaura o estado completo de uma sessão salva.
+   Chamado tanto pelo botão "Continuar" quanto automaticamente
+   em reload (quando tela === 'question').
+   ─────────────────────────────────────────────────────────── */
+function continuarSessao(sessao) {
+  Estado.lista        = sessao.lista;
+  Estado.historico    = sessao.historico  ?? [];
+  Estado.indice       = sessao.indice     ?? 0;
+  Estado.acertos      = sessao.acertos    ?? 0;
+  Estado.erros        = sessao.erros      ?? 0;
+  Estado.modoRevisao  = sessao.modoRevisao  ?? false;
+  Estado.cardsRevisao = sessao.cardsRevisao ?? null;
+  _pausado = false;
+
+  // Garante que o índice não aponte para uma questão além da lista
+  if (Estado.indice >= Estado.lista.length) {
+    Estado.indice = Estado.lista.length - 1;
+  }
+
+  const screenIntro = $('screen-intro');
+  const gameLayout  = $('game-layout');
+  if (screenIntro) screenIntro.style.display = 'none';
+  if (gameLayout)  gameLayout.style.display  = '';
+
+  Els.screenResult.classList.remove('show');
+  if (Els.gameCard) Els.gameCard.style.display = '';
+  if (Els.navBar) Els.navBar.classList.remove('hidden');
+
+  _atualizarBannerRevisao();
+  document.body.classList.toggle('modo-revisao', Estado.modoRevisao);
+
+  renderPergunta();
+  renderDots();
+  atualizarMeta();
+}
+
+/* ── BOTÃO "CONTINUAR" ───────────────────────────────────────
+   Configura visibilidade e handler do botão na intro.
+   ─────────────────────────────────────────────────────────── */
+function _configurarBtnContinuar(sessao) {
+  const btn = $('btn-continuar');
+  if (!btn) return;
+
+  // Verifica se há questões pendentes (não respondidas)
+  const pendentes = (sessao.historico ?? []).filter(h => h !== undefined).length;
+  const total     = sessao.lista?.length ?? 0;
+
+  // Não mostra se sessão já finalizada (todas respondidas)
+  if (pendentes >= total && total > 0) {
+    btn.classList.add('hidden');
+    return;
+  }
+
+  // Não mostra se não há progresso nenhum
+  if (pendentes === 0 && total === 0) {
+    btn.classList.add('hidden');
+    return;
+  }
+
+  // Clona para remover listeners antigos
+  const novo = btn.cloneNode(true);
+  btn.parentNode.replaceChild(novo, btn);
+  novo.classList.remove('hidden');
+
+  const progressEl = $('continuar-progress');
+  if (progressEl) progressEl.textContent = `${pendentes}/${total}`;
+
+  novo.addEventListener('click', () => {
+    continuarSessao(sessao);
+  });
 }
 
 /* ── TELAS ── */
 function mostrarIntro() {
   timerClear();
 
+  // Banco já foi populado no DOMContentLoaded — só garante fallback
+  // caso construirLista() ainda não tenha rodado (primeira visita)
+  if (Estado.banco.length === 0) {
+    const dados    = getDados();
+    const semData  = dados[URL_SEM]    ?? {};
+    const discData = semData[URL_DISC] ?? [];
+    Estado.banco = discData.length ? discData : Object.values(semData).flat();
+  }
+
+  // SEMPRE relê do localStorage — garante que erros de sessões
+  // anteriores (incluindo após voltar pelo histórico do browser)
+  // apareçam corretamente no botão "Revisar erros".
+  Estado.historicoRevisao = lerHistoricoRevisao();
+
   const screenIntro = $('screen-intro');
   const gameLayout  = $('game-layout');
   if (screenIntro) screenIntro.style.display = '';
   if (gameLayout)  gameLayout.style.display  = 'none';
+
+  // Remove banner de revisão ao voltar à intro
+  gameLayout?.querySelector('.cf-revisao-banner')?.remove();
+  document.body.classList.remove('modo-revisao');
 
   const introSem = $('intro-sem-label');
   const meta = getDiscMeta(URL_DISC);
@@ -557,17 +1024,28 @@ function mostrarIntro() {
 
   const totalEl = $('intro-total-questoes');
   if (totalEl) {
-    // Mostra MAX_QUESTOES (não o total do deck) — é o que o jogador vai jogar
     totalEl.textContent = MAX_QUESTOES;
+  }
+
+  // Atualiza botão "Revisar erros"
+  atualizarBtnRevisarErros();
+
+  // ── Detecta sessão salva para o botão "Continuar" ───────
+  const sessaoSalva = lerSessao();
+  if (sessaoSalva?.lista?.length > 0) {
+    _configurarBtnContinuar(sessaoSalva);
+  } else {
+    const btnContinuar = $('btn-continuar');
+    if (btnContinuar) btnContinuar.classList.add('hidden');
   }
 }
 
-function iniciarJogo() {
+function iniciarJogo(modoRevisao = false) {
   const screenIntro = $('screen-intro');
   const gameLayout  = $('game-layout');
   if (screenIntro) screenIntro.style.display = 'none';
   if (gameLayout)  gameLayout.style.display  = '';
-  iniciar();
+  iniciar(modoRevisao);
 }
 
 /* ── INIT ── */
@@ -609,8 +1087,74 @@ document.addEventListener('DOMContentLoaded', () => {
     btnHome:       $('btn-home'),
   });
 
+  // ── Popula banco IMEDIATAMENTE (antes de qualquer render) ──
+  // Isso garante que Estado.banco esteja pronto na intro mesmo
+  // após voltar do histórico do browser ou recarregar a página.
+  {
+    const dados    = getDados();
+    const semData  = dados[URL_SEM]    ?? {};
+    const discData = semData[URL_DISC] ?? [];
+    Estado.banco = discData.length ? discData : Object.values(semData).flat();
+  }
+
+  // ── Carrega histórico de revisão do localStorage ────────────
+  // localStorage persiste entre sessões, abas fechadas, reloads
+  // e navegação pelo histórico do browser.
+  Estado.historicoRevisao = lerHistoricoRevisao();
+
   iniciarTopbar();
-  mostrarIntro();
+
+  // Salva sessão com tela='intro' ao sair via botão Voltar do header
+  // para que o botão "Continuar" apareça ao retornar.
+  window.addEventListener('pagehide', () => {
+    if (Estado.lista.length > 0) salvarSessao('intro');
+  });
+
+  // ── Tenta restaurar sessão automaticamente em reload ───────
+  // Se a sessão foi salva com tela='question' (o usuário estava
+  // respondendo), restauramos direto na questão sem passar pela intro.
+  const _sessaoInicial = lerSessao();
+  if (_sessaoInicial?.tela === 'question' && _sessaoInicial?.lista?.length > 0) {
+    // Auto-restauração: pula a intro
+    Object.assign(Els, {
+      gameCard:      $('game-card'),
+      screenResult:  $('screen-result'),
+      fraseTexto:    $('frase-texto'),
+      letrasCount:   $('letras-count'),
+      dicaPanel:     $('dica-panel'),
+      btnShowDica:   $('btn-show-dica'),
+      discTag:       $('disc-tag'),
+      nivelTag:      $('nivel-tag'),
+      semTag:        $('sem-tag'),
+      questionNum:   $('question-num'),
+      inputAnswer:   $('input-answer'),
+      btnCheck:      $('btn-check'),
+      feedbackLine:  $('feedback-line'),
+      btnNext:       $('btn-next'),
+      chipOk:        $('chip-ok'),
+      chipErr:       $('chip-err'),
+      progressFill:  $('progress-fill'),
+      progressLabel: $('progress-label'),
+      progressPct:   $('progress-pct'),
+      resultPct:     $('result-pct'),
+      resultTitle:   $('result-title'),
+      resultSub:     $('result-sub'),
+      resultOk:      $('result-ok'),
+      resultErr:     $('result-err'),
+      btnPrev:       $('btn-prev'),
+      navBar:        $('nav-bar'),
+      btnRestart:    $('btn-restart'),
+      ringFill:      $('ring-fill'),
+      shellDiscName: $('shell-disc-name'),
+      shellSem:      $('shell-sem'),
+      backBtn:       $('back-btn'),
+      btnBackResult: $('btn-back-result'),
+      btnHome:       $('btn-home'),
+    });
+    continuarSessao(_sessaoInicial);
+  } else {
+    mostrarIntro();
+  }
 
   // Botão pausar
   const btnPauseEl = $('btn-pause');
@@ -629,26 +1173,46 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Escape' && _pausado) retomar();
   });
 
-  // Começar
+  // Começar (modo normal)
   const btnStart = $('btn-start');
-  if (btnStart) btnStart.addEventListener('click', iniciarJogo);
+  if (btnStart) btnStart.addEventListener('click', () => {
+    Estado.modoRevisao  = false;
+    Estado.cardsRevisao = null;
+    limparSessao(); // descarta sessão anterior
+    $('btn-continuar')?.classList.add('hidden');
+    iniciarJogo(false);
+  });
+
+  // Revisar erros
+  const btnRevisarErros = $('btn-revisar-erros');
+  if (btnRevisarErros) {
+    btnRevisarErros.addEventListener('click', () => {
+      const erradas = questoesComErro(Estado.banco, Estado.historicoRevisao);
+      if (erradas.length === 0) return;
+      Estado.cardsRevisao = erradas;
+      iniciarJogo(true);
+    });
+  }
 
   // Botão Home — volta para a intro
   if (Els.btnHome) {
     Els.btnHome.addEventListener('click', () => {
+      timerClear();
+      // Salva progresso com tela='intro' para exibir botão Continuar
+      // mas não restaurar automaticamente (evita pular a intro)
+      if (Estado.lista.length > 0) salvarSessao('intro');
       Els.screenResult.classList.remove('show');
+      document.body.classList.remove('modo-revisao');
+      Estado.modoRevisao  = false;
+      Estado.cardsRevisao = null;
       if (Els.navBar) Els.navBar.classList.remove('hidden');
       if (Els.gameCard) Els.gameCard.style.display = '';
       mostrarIntro();
     });
   }
 
-  // Reiniciar (da tela de resultado)
-  Els.btnRestart.addEventListener('click', () => {
-    Els.screenResult.classList.remove('show');
-    if (Els.navBar) Els.navBar.classList.remove('hidden');
-    mostrarIntro();
-  });
+  // Reiniciar (da tela de resultado) — delegado ao handler dinâmico em mostrarResultado
+  // O botão btn-restart é clonado a cada resultado, então não bindamos aqui.
 
   Els.btnCheck.addEventListener('click', verificar);
   Els.btnNext.addEventListener('click', avancar);

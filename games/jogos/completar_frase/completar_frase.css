@@ -1328,3 +1328,242 @@ body {
   border: 1px solid var(--border-hi);
   font-family: var(--font-mono); font-size: 0.64rem; color: var(--text-2);
 }
+/* ══════════════════════════════════════════════════════════
+   SISTEMA DE REVISÃO DE ERROS — Complete a Frase
+   ══════════════════════════════════════════════════════════ */
+
+/* Botão "Revisar erros" na intro */
+.cf-btn-revisar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: .65rem 2rem;
+  border-radius: var(--r, 10px);
+  background: rgba(239, 68, 68, .08);
+  border: 1px solid rgba(239, 68, 68, .22);
+  color: #f87171;
+  font-size: .82rem;
+  font-weight: 600;
+  letter-spacing: .02em;
+  cursor: pointer;
+  transition: background .2s, border-color .2s, transform .1s;
+}
+.cf-btn-revisar:hover {
+  background: rgba(239, 68, 68, .16);
+  border-color: rgba(239, 68, 68, .40);
+  transform: scale(.98);
+}
+.cf-btn-revisar:active { transform: scale(.97); }
+.cf-btn-revisar.hidden { display: none; }
+
+/* Badge contador dentro do botão */
+.cf-revisar-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: rgba(239, 68, 68, .22);
+  font-size: .65rem;
+  font-weight: 700;
+  line-height: 1;
+  color: #fca5a5;
+}
+
+/* Banner de revisão (dentro do game-layout) */
+.cf-revisao-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: linear-gradient(135deg,
+    rgba(239, 68, 68, .15) 0%,
+    rgba(160, 20, 20, .10) 60%,
+    rgba(245, 158, 11, .07) 100%);
+  border: 1px solid rgba(239, 68, 68, .40);
+  box-shadow: 0 4px 20px rgba(239, 68, 68, .12),
+              0 0 0 1px rgba(239, 68, 68, .05) inset;
+  font-size: .73rem;
+  font-weight: 700;
+  color: #fca5a5;
+  letter-spacing: .03em;
+  animation: cf-fade-up .35s ease both, cf-rev-pulse 4s ease-in-out 1s infinite;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: .5rem;
+}
+.cf-revisao-banner::before {
+  content: '';
+  position: absolute; top: 0; bottom: 0; left: -120%; width: 60%;
+  background: linear-gradient(90deg, transparent, rgba(239, 68, 68, .07), transparent);
+  animation: cf-rev-shimmer 3s ease-in-out infinite;
+}
+@keyframes cf-rev-shimmer { 0% { left: -120%; } 100% { left: 180%; } }
+@keyframes cf-rev-pulse {
+  0%, 100% { border-color: rgba(239, 68, 68, .40); }
+  50%       { border-color: rgba(239, 68, 68, .58); }
+}
+@keyframes cf-fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+.cf-revisao-banner__icon  { font-size: .8rem; opacity: .9; flex-shrink: 0; }
+.cf-revisao-banner__label {
+  font-size: .72rem; font-weight: 800; letter-spacing: .05em;
+  text-transform: uppercase; color: #fca5a5;
+}
+.cf-revisao-banner__count {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 3px 12px; border-radius: 999px;
+  background: rgba(239, 68, 68, .22);
+  border: 1px solid rgba(239, 68, 68, .45);
+  font-size: .67rem; font-weight: 800; color: #fca5a5;
+  margin-left: auto; flex-shrink: 0;
+}
+
+/* Badge "Revisão de erros" no topo da tela de resultado */
+.cf-finish-revisao-badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 6px 18px; border-radius: 999px;
+  background: rgba(239, 68, 68, .14);
+  border: 1px solid rgba(239, 68, 68, .38);
+  font-size: .68rem; font-weight: 800; letter-spacing: 1.4px;
+  text-transform: uppercase; color: #fca5a5;
+  margin-bottom: 1.1rem;
+  animation: cf-badge-pop .3s ease both;
+  box-shadow: 0 0 20px rgba(239, 68, 68, .12);
+}
+@keyframes cf-badge-pop {
+  from { opacity: 0; transform: scale(.72); }
+  to   { opacity: 1; transform: scale(1);   }
+}
+
+/* Botão "Repetir revisão" (tela resultado, modo revisão) */
+.btn-restart--revisao {
+  background: rgba(239, 68, 68, .12) !important;
+  border-color: rgba(239, 68, 68, .40) !important;
+  color: #fca5a5 !important;
+}
+.btn-restart--revisao:hover {
+  background: rgba(239, 68, 68, .22) !important;
+  border-color: rgba(239, 68, 68, .62) !important;
+  color: #fef2f2 !important;
+}
+
+/* Tela de resultado em modo revisão */
+body.modo-revisao .screen-result {
+  border-color: rgba(239, 68, 68, .30) !important;
+}
+
+/* Emoji grande na tela de revisão concluída */
+.cf-revisao-concluida-emoji {
+  font-size: 3rem;
+  line-height: 1;
+  text-align: center;
+  margin-bottom: .5rem;
+}
+
+/* ── PAINEL DE ESTATÍSTICAS POR QUESTÃO ── */
+.cf-stats-questoes {
+  width: 100%; margin-top: 12px;
+  border: 1px solid rgba(255,255,255,.10); border-radius: 10px;
+  overflow: hidden; background: rgba(255,255,255,.02);
+}
+.cf-stats-questoes summary {
+  display: flex; align-items: center; gap: 8px; padding: 11px 16px;
+  cursor: pointer; font-size: .78rem; font-weight: 500; color: var(--text-2, #94a3b8);
+  list-style: none; user-select: none;
+  transition: color .2s, background .2s;
+}
+.cf-stats-questoes summary::-webkit-details-marker { display: none; }
+.cf-stats-questoes summary:hover { color: var(--text-1, #e2e8f0); background: rgba(255,255,255,.03); }
+.cf-stats-questoes[open] summary { border-bottom: 1px solid rgba(255,255,255,.08); }
+.cf-sq-summary-icon { font-size: .9rem; }
+.cf-sq-chevron {
+  margin-left: auto; font-size: .7rem; color: var(--text-3, #64748b);
+  transition: transform .2s;
+}
+.cf-stats-questoes[open] .cf-sq-chevron { transform: rotate(180deg); }
+.cf-sq-lista {
+  padding: 4px 0 8px; display: flex; flex-direction: column;
+  max-height: 220px; overflow-y: auto;
+}
+.cf-sq-row {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 8px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  font-size: .76rem;
+}
+.cf-sq-row:last-child { border-bottom: none; }
+.cf-sq-meta { display: flex; align-items: center; gap: 7px; }
+.cf-sq-icone { font-size: .8rem; font-weight: 700; flex-shrink: 0; width: 14px; text-align: center; }
+.cf-sq-enun  { color: var(--text-2, #94a3b8); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: .73rem; }
+.cf-sq-superada { font-size: .65rem; flex-shrink: 0; }
+.cf-sq-prog-row {
+  display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center;
+}
+.cf-prog-bar {
+  height: 5px; border-radius: 99px;
+  background: rgba(255,255,255,.07);
+  overflow: hidden;
+  transition: width .5s cubic-bezier(.4,0,.2,1);
+}
+.cf-prog-bar--ok      { background: linear-gradient(90deg, #10b981, #34d399); }
+.cf-prog-bar--med     { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.cf-prog-bar--critico { background: linear-gradient(90deg, #ef4444, #f87171); }
+.cf-sq-pct { font-size: .65rem; min-width: 40px; text-align: right; color: var(--text-2, #94a3b8); font-weight: 600; }
+.cf-sq-detalhe {
+  font-size: .68rem; color: var(--text-3, #64748b);
+  padding-left: 21px;
+}
+/* ══════════════════════════════════════════════════════════
+   BOTÃO "CONTINUAR" — Complete a Frase
+   Aparece na intro quando existe sessão salva com progresso.
+   ══════════════════════════════════════════════════════════ */
+.cf-btn-continuar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: .65rem 2rem;
+  border-radius: var(--r, 10px);
+  background: rgba(var(--cf-accent-rgb, var(--cor-tema-rgb, 99,102,241)), .12);
+  border: 1px solid rgba(var(--cf-accent-rgb, var(--cor-tema-rgb, 99,102,241)), .28);
+  color: var(--cf-accent, var(--cor-tema, #818cf8));
+  font-size: .82rem;
+  font-weight: 600;
+  letter-spacing: .02em;
+  cursor: pointer;
+  transition: background .2s, border-color .2s, transform .1s;
+}
+.cf-btn-continuar:hover {
+  background: rgba(var(--cf-accent-rgb, var(--cor-tema-rgb, 99,102,241)), .22);
+  border-color: rgba(var(--cf-accent-rgb, var(--cor-tema-rgb, 99,102,241)), .45);
+  transform: scale(.98);
+}
+.cf-btn-continuar:active { transform: scale(.97); }
+.cf-btn-continuar.hidden { display: none; }
+
+/* Badge de progresso "3/6" dentro do botão */
+.cf-continuar-progress {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(var(--cf-accent-rgb, var(--cor-tema-rgb, 99,102,241)), .20);
+  font-size: .65rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--cf-accent, var(--cor-tema, #818cf8));
+}
+.cf-continuar-progress:empty { display: none; }
