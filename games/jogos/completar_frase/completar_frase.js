@@ -31,6 +31,112 @@ function getDados() {
 import { DISC_CORES }                from '../../../shared/js/cores.js';
 import { getDisciplinasDeSemestre } from '../../../src/global.js';
 
+/* ── SESSION NAV INLINE ─────────────────────────────────────────
+   Substitui o import de SessionNav por implementação local robusta.
+   Usa sessionStorage para sobreviver a F5/Ctrl+R na mesma aba
+   e localStorage para persistência entre sessões (botão Continuar).
+
+   Estratégia anti-loop:
+   • Ao salvar, grava também um flag de "reload esperado" em
+     sessionStorage com timestamp. Se o próximo load ocorrer dentro
+     de 5 s E o flag existir, é considerado reload → restaura.
+   • beforeunload seta o flag; pagehide confirma.
+   • sairParaRota() remove o flag → próximo load é entrada nova.
+   ─────────────────────────────────────────────────────────── */
+const _SN = (() => {
+  let _uid = '', _discId = '', _sem = '';
+
+  const _lsKey  = () => `nexus_cf_sess_${_discId}_${_sem}`;
+  const _ssKey  = () => `nexus_cf_snap_${_discId}_${_sem}`;
+  const _flgKey = () => `nexus_cf_reload_${_discId}_${_sem}`;
+
+  function criar({ uid = 'visitante', discId = '', sem = '' } = {}) {
+    _uid    = uid;
+    _discId = discId;
+    _sem    = sem;
+    return api;
+  }
+
+  /** Persiste snapshot no sessionStorage (reload-safe) e localStorage (cross-session). */
+  function salvar(snap) {
+    const payload = JSON.stringify({ ...snap, ts: Date.now() });
+    try { sessionStorage.setItem(_ssKey(), payload); } catch {}
+    try { localStorage.setItem(_lsKey(), payload);   } catch {}
+  }
+
+  let _throttleTimer = null;
+  function salvarThrottled(snap) {
+    if (_throttleTimer) return;
+    _throttleTimer = setTimeout(() => {
+      salvar(snap);
+      _throttleTimer = null;
+    }, 800);
+  }
+
+  function limpar() {
+    try { sessionStorage.removeItem(_ssKey()); } catch {}
+    try { localStorage.removeItem(_lsKey());   } catch {}
+    try { sessionStorage.removeItem(_flgKey()); } catch {}
+  }
+
+  /** Lê sessão do localStorage (botão "Continuar", cross-session). */
+  function lerSessao() {
+    try {
+      const raw = localStorage.getItem(_lsKey());
+      if (!raw) return null;
+      const obj = JSON.parse(raw);
+      // TTL 24 h
+      if (Date.now() - (obj.ts ?? 0) > 86_400_000) { limpar(); return null; }
+      return obj;
+    } catch { return null; }
+  }
+
+  /** Retorna snapshot restaurável APENAS se for reload da mesma aba.
+      Detecta reload pela presença de sessionStorage + flag de reload. */
+  function pegarRestauravel() {
+    try {
+      // Flag de reload: setado em beforeunload/pagehide
+      const flgRaw = sessionStorage.getItem(_flgKey());
+      if (!flgRaw) return null;
+      const flg = JSON.parse(flgRaw);
+      // Flag válido por 10 s (tempo mais que suficiente para o browser recarregar)
+      if (Date.now() - (flg.ts ?? 0) > 10_000) {
+        sessionStorage.removeItem(_flgKey());
+        return null;
+      }
+      // Consome o flag imediatamente para não restaurar em cargas futuras
+      sessionStorage.removeItem(_flgKey());
+
+      // Lê snapshot do sessionStorage (mais fresco que localStorage)
+      const raw = sessionStorage.getItem(_ssKey())
+               ?? localStorage.getItem(_lsKey());
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch { return null; }
+  }
+
+  /** Marca que a PRÓXIMA carga desta aba deve ser tratada como reload. */
+  function _setReloadFlag() {
+    try {
+      sessionStorage.setItem(_flgKey(), JSON.stringify({ ts: Date.now() }));
+    } catch {}
+  }
+
+  /** Chamado ao sair para outra rota (não reload). Remove flag para que
+      o próximo load seja tratado como entrada nova. */
+  function sairParaRota() {
+    try { sessionStorage.removeItem(_flgKey()); } catch {}
+  }
+
+  /** Chamado após a inicialização — noop nesta implementação. */
+  function pronto() {}
+
+  const api = { criar, salvar, salvarThrottled, limpar, lerSessao,
+                pegarRestauravel, sairParaRota, pronto, _setReloadFlag };
+  return api;
+})();
+
+
 function aplicarCorDisc(disc) {
   const cores = DISC_CORES[disc] ?? DISC_CORES._default;
   const r = document.documentElement.style;
@@ -148,6 +254,14 @@ function timerExpirou() {
 /* ── PAUSA ── */
 let _pausado = false;
 
+/* ── FLAG: usuário está na tela de intro ──
+   Setado true pelo botão Home e mostrarIntro().
+   Setado false ao iniciar/continuar jogo.
+   Usado pelo beforeunload para NÃO sobrescrever
+   a sessão com tela='question' quando o F5 é
+   dado enquanto o usuário está na intro. */
+let _naIntro = true;
+
 function pausar() {
   if (_pausado || Estado.respondida) return;
   _pausado = true;
@@ -191,6 +305,8 @@ const Estado = {
   historicoRevisao: {}, // {[id]: {tentativas, acertos, erros, acertosConsecutivos}} persistido em localStorage
   modoRevisao:  false,
   cardsRevisao: null,
+
+  _nav: null,   // instância do SessionNav — criada no DOMContentLoaded
 };
 
 /* ── SELETORES ── */
@@ -233,60 +349,54 @@ const _HIST_KEY    = () => `nexus_cf_${URL_DISC}_${URL_SEM}`;
 
    TTL: 24 h — sessões expiradas são descartadas silenciosamente.
    ─────────────────────────────────────────────────────────── */
-const _SESS_KEY    = () => `nexus_cf_sess_${URL_DISC}_${URL_SEM}`;
-const _SESS_TTL_MS = 24 * 60 * 60 * 1000;  // 24 h
 
 /** Captura o snapshot completo do estado atual da partida. */
 function _snapshotEstado(tela = 'question') {
+  // O SessionNav exige 'perguntas' e 'respostas' (array paralelo ao perguntas[]).
+  // Mapeamos lista→perguntas e historico→respostas para compatibilidade.
+  const respostas = Estado.lista.map((_, i) => {
+    const h = Estado.historico[i];
+    return h === undefined ? undefined : h;   // undefined = não respondida
+  });
+
   return {
-    lista:        Estado.lista,
-    historico:    Estado.historico,   // [{digitado, acertou}] por índice
+    perguntas:    Estado.lista,      // nav verifica perguntas.length
+    respostas,                       // nav verifica respostas com undefined
+    lista:        Estado.lista,      // mantido para continuarSessao()
+    historico:    Estado.historico,
     indice:       Estado.indice,
     acertos:      Estado.acertos,
     erros:        Estado.erros,
     modoRevisao:  Estado.modoRevisao,
     cardsRevisao: Estado.cardsRevisao,
-    tela,                             // 'question' | 'intro'
-    ts:           Date.now(),
+    tela,
   };
 }
-
 /** Persiste sessão no sessionStorage (mesma aba, sobrevive a reload). */
-function salvarSessao(tela = 'question') {
-  try {
-    const snap = _snapshotEstado(tela);
-    // Só salva se houver questões em andamento
-    if (!snap.lista?.length) return;
-    sessionStorage.setItem(_SESS_KEY(), JSON.stringify(snap));
-  } catch {}
-}
+
 
 let _sessThrottleTimer = null;
-/** Versão throttled (500 ms) para uso no timer tick. */
+
+
+function salvarSessao(tela = 'question') {
+  const snap = _snapshotEstado(tela);
+  if (!snap.lista?.length) return;
+  Estado._nav?.salvar(snap);
+}
+
 function salvarSessaoThrottled() {
-  if (_sessThrottleTimer) return;
-  _sessThrottleTimer = setTimeout(() => {
-    _sessThrottleTimer = null;
-    salvarSessao('question');
-  }, 500);
+  if (!Estado._nav) return;
+  Estado._nav.salvarThrottled(_snapshotEstado('question'));
 }
 
-/** Lê a sessão salva, validando TTL. Retorna null se inválida/expirada. */
-function lerSessao() {
-  try {
-    const raw = sessionStorage.getItem(_SESS_KEY());
-    if (!raw) return null;
-    const sess = JSON.parse(raw);
-    if (!sess?.lista?.length) return null;
-    if (Date.now() - (sess.ts ?? 0) > _SESS_TTL_MS) { limparSessao(); return null; }
-    return sess;
-  } catch { return null; }
-}
-
-/** Remove a sessão salva — chamado ao iniciar novo jogo ou ao finalizar. */
 function limparSessao() {
-  try { sessionStorage.removeItem(_SESS_KEY()); } catch {}
+  Estado._nav?.limpar();
 }
+
+function lerSessao() {
+  return Estado._nav?.lerSessao() ?? null;
+}
+
 
 function lerHistoricoRevisao() {
   try {
@@ -378,7 +488,13 @@ function iniciarTopbar() {
   aplicarCorDisc(URL_DISC);
 
   const voltar = URL_SEM ? `../../jogo.html?sem=${URL_SEM}` : '../../jogo.html';
-  if (Els.backBtn) Els.backBtn.href = voltar;
+  if (Els.backBtn) {
+    Els.backBtn.href = voltar;
+    Els.backBtn.addEventListener('click', () => {
+      salvarSessao('intro');           // preserva sessão para botão "Continuar"
+      Estado._nav?.sairParaRota();     // beforeunload NÃO seta reload-flag
+    });
+  }
 
   // Botão "Voltar" na tela de resultado → volta para a intro do jogo
   if (Els.btnBackResult) {
@@ -537,6 +653,7 @@ function renderPergunta() {
   if (Els.btnShowDica) {
     const temDicas = Array.isArray(p.tips) && p.tips.length > 0;
     Els.btnShowDica.style.display = temDicas ? '' : 'none';
+    Els.btnShowDica.classList.remove('btn-show-dica--aberta');
   }
 
   Els.inputAnswer.value     = '';
@@ -964,6 +1081,7 @@ function _mostrarRevisaoConcluida() {
    em reload (quando tela === 'question').
    ─────────────────────────────────────────────────────────── */
 function continuarSessao(sessao) {
+  _naIntro = false;
   Estado.lista        = sessao.lista;
   Estado.historico    = sessao.historico  ?? [];
   Estado.indice       = sessao.indice     ?? 0;
@@ -1033,6 +1151,7 @@ function _configurarBtnContinuar(sessao) {
 
 /* ── TELAS ── */
 function mostrarIntro() {
+  _naIntro = true;
   timerClear();
 
   // Banco já foi populado no DOMContentLoaded — só garante fallback
@@ -1093,6 +1212,7 @@ function mostrarIntro() {
 }
 
 function iniciarJogo(modoRevisao = false) {
+  _naIntro = false;
   const screenIntro = $('screen-intro');
   const gameLayout  = $('game-layout');
   if (screenIntro) screenIntro.style.display = 'none';
@@ -1154,59 +1274,51 @@ document.addEventListener('DOMContentLoaded', () => {
   // e navegação pelo histórico do browser.
   Estado.historicoRevisao = lerHistoricoRevisao();
 
+  // ── Cria instância do SessionNav inline ──
+  Estado._nav = _SN.criar({
+    uid:    'visitante',
+    discId: URL_DISC,
+    sem:    URL_SEM,
+  });
   iniciarTopbar();
 
-  // Salva sessão com tela='intro' ao sair via botão Voltar do header
-  // para que o botão "Continuar" apareça ao retornar.
-  window.addEventListener('pagehide', () => {
-    if (Estado.lista.length > 0) salvarSessao('intro');
+  // Seta flag de reload em QUALQUER unload (F5, Ctrl+R, fechar aba, navegar).
+  // sairParaRota() remove o flag quando a saída é intencional (botão Voltar).
+  window.addEventListener('beforeunload', () => {
+    Estado._nav?._setReloadFlag();
+    // Só salva como 'question' se o jogo estiver ativo (não na intro)
+    if (!_naIntro && Estado.lista.length > 0) {
+      salvarSessao('question');
+    }
   });
 
-  // ── Tenta restaurar sessão automaticamente em reload ───────
-  // Se a sessão foi salva com tela='question' (o usuário estava
-  // respondendo), restauramos direto na questão sem passar pela intro.
-  const _sessaoInicial = lerSessao();
-  if (_sessaoInicial?.tela === 'question' && _sessaoInicial?.lista?.length > 0) {
-    // Auto-restauração: pula a intro
-    Object.assign(Els, {
-      gameCard:      $('game-card'),
-      screenResult:  $('screen-result'),
-      fraseTexto:    $('frase-texto'),
-      letrasCount:   $('letras-count'),
-      dicaPanel:     $('dica-panel'),
-      btnShowDica:   $('btn-show-dica'),
-      discTag:       $('disc-tag'),
-      nivelTag:      $('nivel-tag'),
-      semTag:        $('sem-tag'),
-      questionNum:   $('question-num'),
-      inputAnswer:   $('input-answer'),
-      btnCheck:      $('btn-check'),
-      feedbackLine:  $('feedback-line'),
-      btnNext:       $('btn-next'),
-      chipOk:        $('chip-ok'),
-      chipErr:       $('chip-err'),
-      progressFill:  $('progress-fill'),
-      progressLabel: $('progress-label'),
-      progressPct:   $('progress-pct'),
-      resultPct:     $('result-pct'),
-      resultTitle:   $('result-title'),
-      resultSub:     $('result-sub'),
-      resultOk:      $('result-ok'),
-      resultErr:     $('result-err'),
-      btnPrev:       $('btn-prev'),
-      navBar:        $('nav-bar'),
-      btnRestart:    $('btn-restart'),
-      ringFill:      $('ring-fill'),
-      shellDiscName: $('shell-disc-name'),
-      shellSem:      $('shell-sem'),
-      backBtn:       $('back-btn'),
-      btnBackResult: $('btn-back-result'),
-      btnHome:       $('btn-home'),
-    });
-    continuarSessao(_sessaoInicial);
+  window.addEventListener('pagehide', () => {
+    Estado._nav?._setReloadFlag();
+    if (!_naIntro && Estado.lista.length > 0) salvarSessao('question');
+  });
+
+
+  // ── Lógica de restauração ────────────────────────────────────
+  // pegarRestauravel() retorna sessão apenas em reload da mesma aba.
+  // Em entrada nova (ou saída real), retorna null → vai para a intro.
+  const _sessaoRestauravel = Estado._nav.pegarRestauravel();
+
+  const _podeRestaurar = (s) =>
+    s?.lista?.length > 0 && s?.indice >= 0 && s?.tela === 'question';
+
+  if (_podeRestaurar(_sessaoRestauravel)) {
+    continuarSessao(_sessaoRestauravel);
   } else {
+    // Sem restauração automática → exibe intro mas configura botão Continuar
+    const _sessaoSalva = Estado._nav.lerSessao();
+    if (_sessaoSalva?.lista?.length > 0) {
+      _configurarBtnContinuar(_sessaoSalva);
+    }
     mostrarIntro();
   }
+
+  // Remove anti-flash e consome o flag _snav_stay do sessionStorage
+  Estado._nav.pronto();
 
   // Botão pausar
   const btnPauseEl = $('btn-pause');
@@ -1291,6 +1403,18 @@ document.addEventListener('DOMContentLoaded', () => {
      renderPergunta() conforme a questão tiver tips ou não.
      ─────────────────────────────────────────────────────── */
   if (Els.btnShowDica) {
-    Els.btnShowDica.addEventListener('click', mostrarDicaAleatoria);
+    /* Toggle: 1 clique abre, 1 clique fecha. */
+    Els.btnShowDica.addEventListener('click', () => {
+      const aberta = Els.btnShowDica.classList.contains('btn-show-dica--aberta');
+      if (aberta) {
+        Els.dicaPanel.style.display = 'none';
+        Els.dicaPanel.textContent   = '';
+        Els.dicaPanel.classList.remove('dica-panel--animando');
+        Els.btnShowDica.classList.remove('btn-show-dica--aberta');
+      } else {
+        mostrarDicaAleatoria();
+        Els.btnShowDica.classList.add('btn-show-dica--aberta');
+      }
+    });
   }
 });
