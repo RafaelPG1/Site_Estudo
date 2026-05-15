@@ -435,8 +435,7 @@ export function uiRenderizarQuestao({
  */
 export function uiAtualizarBtnRevisarErros(erradas, onIniciarRevisao) {
   const ids = [
-    { btn: 'sm-btn-revisar-erros',          count: 'sm-revisar-count' },
-    { btn: 'sm-btn-revisar-erros-resultado', count: 'sm-revisar-count-resultado' },
+    { btn: 'sm-btn-revisar-erros', count: 'sm-revisar-count' },
   ];
 
   for (const { btn: btnId } of ids) {
