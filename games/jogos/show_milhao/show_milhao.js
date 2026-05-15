@@ -1,24 +1,37 @@
 /* ============================================================
-   NEXUS STUDY — games/jogos/show_milhao/show_milhao.js
+   NEXUS STUDY — games/jogos/show_milhao/show_milhao.js  (v3.0)
 
-   Salvamento: 100% localStorage via storage_sm.js
-   - salvarEstadoPartida()  →  chamado após CADA ação do usuário
-   - carregarEstadoPartida() → ao iniciar, oferece retomar partida salva
-   - await salvarResultadoSM()    →  ao finalizar, grava histórico acumulado
+   REFATORAÇÃO v3.0
+   ────────────────
+   • Sistema "Continuar" via SessionNav (igual ao vdd_falso.js v7.0)
+     – Abandona o modal ad-hoc e a chave sm_saiu_voluntario__*
+     – Restauração automática em F5/reload via pegarRestauravel()
+     – Botão na intro via lerSessao() + configurarBtnContinuar()
+   • Sistema "Revisar Erros" (idêntico ao vdd_falso.js)
+     – modoRevisao em estado global
+     – questoesComErro() + filtro V/F
+     – Banner de revisão na tela de jogo
+     – Tela "Revisão concluída" após zerar todos os erros
+     – Botão "Revisar erros" na tela de resultado
+   • Persistência unificada via SessionNav (TTL 24 h, throttle 500 ms)
+   • Estado salvo após cada ação; restaurado sem sobrescrita no carregamento
+   • Compatível com storage_sm.js (histórico + pontuações Firestore)
+
+   Estrutura de sessão (snapshot):
+     { perguntas, respostas, tempos, indice, acertos, temErro,
+       indicePendente, premioPendente, modoRevisao, tempoInicio, tela }
    ============================================================ */
 
-import { Shell, Timer, shuffle, lerParams }    from '../../template/game-shell.js';
-import { calcularPeso, sorteiarPonderado }          from '../../template/deck.js';
-import { DISC_CORES }                          from '../../../shared/js/cores.js';
-import { aplicarCoresDisciplina }              from '../../../shared/js/theme.js';
+import { Shell, Timer, shuffle }              from '../../template/game-shell.js';
+import { calcularPeso, sorteiarPonderado }    from '../../template/deck.js';
+import { DISC_CORES }                         from '../../../shared/js/cores.js';
+import { aplicarCoresDisciplina }             from '../../../shared/js/theme.js';
 import { getUsuario, getDisciplinasDeSemestre } from '../../../src/global.js';
+import { SessionNav }                         from '../../template/session-nav.js';
 
 import {
-  salvarEstadoPartida,
-  carregarEstadoPartida,
-  limparEstadoPartida,
-  carregarHistoricoSM,
   salvarResultadoSM,
+  carregarHistoricoSM,
   limparHistoricoSM,
   salvarPontuacaoSM,
   melhorPontuacaoLocalSM,
@@ -29,15 +42,17 @@ import {
 
 /* ══════════════════════════════════════════════════════════
    CONFIGURAÇÃO
-   ══════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════════ */
 
-const CONFIG = {
+const CONFIG = Object.freeze({
   TEMPO_POR_QUESTAO: 30,
   MAX_QUESTOES:      10,
   PESO_NUNCA_VISTO:   3,
   PESO_MIN:           1,
   PESO_MAX:          10,
-};
+  SESSAO_TTL_MS:     24 * 60 * 60 * 1000,  // 24 h
+  SESSAO_THROTTLE_MS: 500,
+});
 
 const PREMIOS = [
   { valor: 'R$ 1.000',     marco: false },
@@ -56,7 +71,7 @@ const CIRCUNFERENCIA = 276.46;
 
 /* ══════════════════════════════════════════════════════════
    ESTADO — fonte única de verdade
-   ══════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════════ */
 
 const estado = {
   perguntas:      [],
@@ -66,49 +81,101 @@ const estado = {
   respostas:      [],   // undefined | null | 'A'|'B'|'C'|'D'
   tempos:         [],
   timer:          null,
+  _fallback:      null,
   pausado:        false,
   usuario:        null,
   discId:         null,
   sem:            null,
   historicoSM:    {},
+  modoRevisao:    false,
+  cardsRevisao:   null,
   tempoInicio:    null,
   temErro:        false,
   indicePendente: null,
   premioPendente: null,
-  _fallback:      null,
+  _nav:           null,   // instância do SessionNav
 };
 
 /* ══════════════════════════════════════════════════════════
-   SALVAR ESTADO — chamado após CADA ação
-   ══════════════════════════════════════════════════════════ */
-
-function salvar() {
-  return salvarEstadoPartida(estado);
-}
-
-/* ══════════════════════════════════════════════════════════
    DOM
-   ══════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════════ */
 
 const $ = id => document.getElementById(id);
 const el = {};
 
+/* ══════════════════════════════════════════════════════════
+   HELPERS DE SESSÃO (delegam ao SessionNav — igual vdd_falso)
+══════════════════════════════════════════════════════════ */
+
+function _snapshotEstado(tela = 'question') {
+  return {
+    perguntas:      estado.perguntas,
+    respostas:      estado.respostas,
+    tempos:         estado.tempos,
+    indice:         estado.indice,
+    acertos:        estado.acertos,
+    temErro:        estado.temErro,
+    indicePendente: estado.indicePendente,
+    premioPendente: estado.premioPendente,
+    modoRevisao:    estado.modoRevisao,
+    tempoInicio:    estado.tempoInicio,
+    tela,
+  };
+}
+
+function salvarSessao(tela = 'question') {
+  estado._nav?.salvar(_snapshotEstado(tela));
+}
+
+function salvarSessaoThrottled() {
+  estado._nav?.salvarThrottled(_snapshotEstado('question'));
+}
+
+function limparSessao() {
+  estado._nav?.limpar();
+}
+
+/* ══════════════════════════════════════════════════════════
+   LÓGICA DO DECK
+══════════════════════════════════════════════════════════ */
+
 function montarDeck(banco, historico) {
   const n     = Math.min(CONFIG.MAX_QUESTOES, banco.length);
-  const cands = banco.map(q => ({ item: q, peso: calcularPeso(q.id, historico, { pesoNuncaVisto: CONFIG.PESO_NUNCA_VISTO, pesoMin: CONFIG.PESO_MIN, pesoMax: CONFIG.PESO_MAX }) }));
+  const cands = banco.map(q => ({
+    item: q,
+    peso: calcularPeso(q.id, historico, {
+      pesoNuncaVisto: CONFIG.PESO_NUNCA_VISTO,
+      pesoMin:        CONFIG.PESO_MIN,
+      pesoMax:        CONFIG.PESO_MAX,
+    }),
+  }));
   return shuffle(sorteiarPonderado(cands, n));
+}
+
+function questoesComErro(banco, historico) {
+  return banco
+    .filter(q => {
+      const h = historico[q.id];
+      return h && h.erros > 0 && (h.acertosConsecutivos ?? 0) === 0;
+    })
+    .sort((a, b) => {
+      const taxaA = historico[a.id].erros / historico[a.id].tentativas;
+      const taxaB = historico[b.id].erros / historico[b.id].tentativas;
+      return taxaB - taxaA;
+    });
 }
 
 /* ══════════════════════════════════════════════════════════
    TELAS
-   ══════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════════ */
 
-function mostrarTela(nome) {
+function mostrarTela(nome, modoRevisao = false) {
   $('screen-loading')?.classList.add('hidden');
   el.screenIntro   ?.classList.add('hidden');
   el.screenQuestion?.classList.add('hidden');
   el.screenResult  ?.classList.add('hidden');
   el.screenEmpty   ?.classList.add('hidden');
+
   if (nome === 'intro')    el.screenIntro   ?.classList.remove('hidden');
   if (nome === 'question') el.screenQuestion?.classList.remove('hidden');
   if (nome === 'result')   el.screenResult  ?.classList.remove('hidden');
@@ -116,30 +183,47 @@ function mostrarTela(nome) {
 
   // Botões Pausar / Menu só aparecem durante as questões
   const headerControls = $('header-controls');
-  if (headerControls) headerControls.classList.toggle('game-header__controls--visible', nome === 'question');
+  if (headerControls) {
+    headerControls.classList.toggle('game-header__controls--visible', nome === 'question');
+  }
 
-  smLog(`Tela: ${nome}`);
+  // Banner de revisão
+  const questionScreen = el.screenQuestion;
+  if (questionScreen) {
+    questionScreen.querySelector('.sm-revisao-banner')?.remove();
+    if (modoRevisao && nome === 'question') {
+      const total  = estado.perguntas.length;
+      const banner = document.createElement('div');
+      banner.className = 'sm-revisao-banner';
+      banner.setAttribute('role', 'alert');
+      banner.setAttribute('aria-label', 'Modo revisão de erros ativo');
+      banner.innerHTML = `
+        <svg class="sm-revisao-banner__icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm-.75 4.5h1.5v4h-1.5v-4zm0 5h1.5v1.5h-1.5v-1.5z"/>
+        </svg>
+        <span class="sm-revisao-banner__label">Revisão de erros</span>
+        <span class="sm-revisao-banner__count">${total} questão${total !== 1 ? 'ões' : ''}</span>
+      `;
+      questionScreen.insertBefore(banner, questionScreen.firstChild);
+    }
+  }
+
+  document.body.classList.toggle('modo-revisao', !!modoRevisao);
+  smLog(`Tela: ${nome}${modoRevisao ? ' [revisão]' : ''}`);
 }
 
 /* ══════════════════════════════════════════════════════════
    BOLINHAS DE PROGRESSO
-   ══════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════════ */
 
 function renderDots() {
   const container = $('sm-dots');
   if (!container) return;
   container.innerHTML = '';
 
-  // Garante que perguntas e respostas têm o mesmo comprimento antes de renderizar
-  // Isso evita o bug onde um deck reordenado causa p.correta errado
-  if (estado.perguntas.length !== estado.respostas.length) {
-    smWarn(`renderDots: perguntas(${estado.perguntas.length}) ≠ respostas(${estado.respostas.length}) — deck dessincronizado!`);
-  }
-
   estado.perguntas.forEach((p, i) => {
     const resp       = estado.respostas[i];
     const respondida = resp !== undefined;
-    // Compara com a CORRETA da pergunta que está nesse índice do deck atual
     const correto    = respondida && resp !== null && resp === p.correta;
     const atual      = i === estado.indice;
 
@@ -154,17 +238,11 @@ function renderDots() {
     dot.addEventListener('click', () => navegarPara(i));
     container.appendChild(dot);
   });
-
-  smLog(`Dots: [${estado.respostas.map((r, i) => {
-    if (r === undefined) return '?';
-    if (r === null) return '⏰';
-    return r === estado.perguntas[i]?.correta ? '✓' : '✗';
-  }).join('')}]`);
 }
 
 /* ══════════════════════════════════════════════════════════
    LISTA DE PRÊMIOS
-   ══════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════════ */
 
 function construirListaPremios() {
   const lista = $('lista-premios');
@@ -201,7 +279,7 @@ function atualizarPremios() {
 
 /* ══════════════════════════════════════════════════════════
    BARRA DE TIMER
-   ══════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════════ */
 
 function aplicarCorBarra(pct) {
   const bar = el.timerBar;
@@ -229,88 +307,25 @@ function atualizarTimerUI(restante) {
 }
 
 /* ══════════════════════════════════════════════════════════
-   FLUXO — INICIAR JOGO
-   ══════════════════════════════════════════════════════════ */
-
-function iniciarJogo(retomando = false) {
-  if (!retomando) {
-    // Nova partida: limpa save anterior e monta deck novo
-    limparEstadoPartida(estado.usuario, estado.discId, estado.sem);
-    estado.perguntas      = montarDeck(estado.banco, estado.historicoSM);
-    estado.indice         = 0;
-    estado.acertos        = 0;
-    estado.tempoInicio    = Date.now();
-    estado.respostas      = new Array(estado.perguntas.length); // undefined
-    estado.tempos         = new Array(estado.perguntas.length).fill(CONFIG.TEMPO_POR_QUESTAO);
-    estado.temErro        = false;
-    estado.indicePendente = null;
-    estado.premioPendente = null;
-    estado.pausado        = false;
-    smLog('Nova partida iniciada.', `Deck: ${estado.perguntas.length} questões.`);
-  } else {
-    smLog('Partida retomada do save.', `Q${estado.indice + 1}/${estado.perguntas.length}`);
-  }
-
-  // Salva imediatamente o estado inicial
-  salvar();
-
-  atualizarContadores();
-  construirListaPremios();
-  mostrarTela('question');
-  renderizarQuestao();
-}
-
-/* ══════════════════════════════════════════════════════════
-   TIMER
-   ══════════════════════════════════════════════════════════ */
-
-function criarTimer(totalInicial) {
-  return Timer.criar({
-    total: totalInicial ?? CONFIG.TEMPO_POR_QUESTAO,
-    onTick: (restante) => {
-      estado.tempos[estado.indice] = restante;
-      atualizarTimerUI(restante);
-      // Salva o tempo restante a cada tick para não perder progresso
-      salvar();
-    },
-    onEnd: () => {
-      if (estado.respostas[estado.indice] === undefined) {
-        estado.tempos[estado.indice] = 0;
-        smLog(`Q${estado.indice + 1}: TIMEOUT — resposta nula registrada.`);
-        registrarResposta(null);
-      }
-    },
-  });
-}
-
-/* ══════════════════════════════════════════════════════════
-   RENDERIZAR QUESTÃO
-   ══════════════════════════════════════════════════════════ */
-
-/* ══════════════════════════════════════════════════════════
    BADGE DE HISTÓRICO POR QUESTÃO
-   ══════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════════ */
 
 function renderizarBadgeHistorico(questaoId) {
   const badge    = $('sm-hist-badge');
   const elTent   = $('sm-hist-tentativas');
   const elTaxa   = $('sm-hist-taxa');
   const elStatus = $('sm-hist-status');
-
   if (!badge) return;
 
   const h = estado.historicoSM[questaoId];
-
-  // Sem histórico → oculta o badge
   if (!h || h.tentativas === 0) {
-    badge.hidden = true;
+    badge.hidden    = true;
     badge.className = 'sm-hist-badge';
     return;
   }
 
   const { tentativas, acertos, erros } = h;
   const taxa = Math.round((acertos / tentativas) * 100);
-
   let statusMod  = '';
   let statusText = '';
 
@@ -330,9 +345,41 @@ function renderizarBadgeHistorico(questaoId) {
   if (elStatus) elStatus.textContent = statusText;
 
   badge.className = `sm-hist-badge${statusMod ? ' ' + statusMod : ''}`;
-  void badge.offsetWidth; // força reflow para re-disparar animação
+  void badge.offsetWidth;
   badge.hidden = false;
 }
+
+/* ══════════════════════════════════════════════════════════
+   TIMER
+══════════════════════════════════════════════════════════ */
+
+function _pararTimers() {
+  try { estado.timer?.stop(); } catch (_) {}
+  if (estado._fallback) { clearInterval(estado._fallback); estado._fallback = null; }
+  estado.timer = null;
+}
+
+function criarTimer(totalInicial) {
+  return Timer.criar({
+    total: totalInicial ?? CONFIG.TEMPO_POR_QUESTAO,
+    onTick: (restante) => {
+      estado.tempos[estado.indice] = restante;
+      atualizarTimerUI(restante);
+      salvarSessaoThrottled();
+    },
+    onEnd: () => {
+      if (estado.respostas[estado.indice] === undefined) {
+        estado.tempos[estado.indice] = 0;
+        smLog(`Q${estado.indice + 1}: TIMEOUT — resposta nula registrada.`);
+        registrarResposta(null);
+      }
+    },
+  });
+}
+
+/* ══════════════════════════════════════════════════════════
+   RENDERIZAR QUESTÃO
+══════════════════════════════════════════════════════════ */
 
 function renderizarQuestao() {
   const pergunta    = estado.perguntas[estado.indice];
@@ -344,14 +391,14 @@ function renderizarQuestao() {
   smLog(`Renderizando Q${num}/${estado.perguntas.length}`,
     `| resp: ${resp ?? 'pendente'}`,
     `| acertos: ${estado.acertos}`,
-    `| temErro: ${estado.temErro}`);
+    `| modoRevisao: ${estado.modoRevisao}`);
 
   renderizarBadgeHistorico(pergunta.id);
 
-  if (el.numPergunta)  el.numPergunta.textContent  = `${num}/${estado.perguntas.length}`;
+  if (el.numPergunta)   el.numPergunta.textContent  = `${num}/${estado.perguntas.length}`;
   if (el.perguntaNivel) el.perguntaNivel.textContent = `Nível ${num} — ${pergunta.nivel ?? ''}`;
   if (el.perguntaTexto) el.perguntaTexto.textContent = pergunta.texto;
-  if (el.progressFill) el.progressFill.style.width  = (num / estado.perguntas.length * 100) + '%';
+  if (el.progressFill)  el.progressFill.style.width  = (num / estado.perguntas.length * 100) + '%';
   if (el.pontuacaoHud) {
     el.pontuacaoHud.textContent = estado.acertos > 0
       ? PREMIOS[estado.acertos - 1]?.valor || 'R$ 0'
@@ -373,7 +420,7 @@ function renderizarQuestao() {
     if (resp !== null) {
       $(`alt-${resp.toLowerCase()}`)?.classList.add(correto ? 'correta' : 'errada');
     }
-    if (!correto) {
+    if (!correto && resp !== null) {
       $(`alt-${pergunta.correta.toLowerCase()}`)?.classList.add('revelada');
     }
     mostrarFeedback(correto, resp === null);
@@ -386,19 +433,11 @@ function renderizarQuestao() {
   renderDots();
 
   // Para timer anterior
-  if (estado.timer) {
-    try { estado.timer.stop(); } catch (_) {}
-    estado.timer = null;
-  }
-  if (estado._fallback) {
-    clearInterval(estado._fallback);
-    estado._fallback = null;
-  }
+  _pararTimers();
 
   if (!jaRespondeu) {
     const tempoRestante = estado.tempos[estado.indice] ?? CONFIG.TEMPO_POR_QUESTAO;
     atualizarTimerUI(tempoRestante);
-
     try {
       estado.timer = criarTimer(tempoRestante);
       estado.timer.start();
@@ -409,7 +448,7 @@ function renderizarQuestao() {
         t--;
         estado.tempos[estado.indice] = t;
         atualizarTimerUI(t);
-        salvar(); // salva a cada segundo no fallback também
+        salvarSessaoThrottled();
         if (t <= 0) {
           clearInterval(estado._fallback);
           estado._fallback = null;
@@ -439,23 +478,56 @@ function atualizarBotoesNav() {
 }
 
 /* ══════════════════════════════════════════════════════════
+   FLUXO PRINCIPAL — iniciarJogo
+══════════════════════════════════════════════════════════ */
+
+function iniciarJogo(modoRevisao = false) {
+  estado.modoRevisao = modoRevisao;
+
+  if (modoRevisao) {
+    if (!estado.cardsRevisao || estado.cardsRevisao.length === 0) {
+      estado.cardsRevisao = questoesComErro(estado.banco, estado.historicoSM);
+    }
+    estado.perguntas = shuffle(estado.cardsRevisao.slice(0, CONFIG.MAX_QUESTOES));
+  } else {
+    estado.cardsRevisao = null;
+    estado.perguntas    = montarDeck(estado.banco, estado.historicoSM);
+  }
+
+  estado.indice         = 0;
+  estado.acertos        = 0;
+  estado.tempoInicio    = Date.now();
+  estado.respostas      = new Array(estado.perguntas.length);
+  estado.tempos         = new Array(estado.perguntas.length).fill(CONFIG.TEMPO_POR_QUESTAO);
+  estado.temErro        = false;
+  estado.indicePendente = null;
+  estado.premioPendente = null;
+  estado.pausado        = false;
+
+  smLog(`${modoRevisao ? 'Revisão' : 'Nova partida'} iniciada. Deck: ${estado.perguntas.length} questões.`);
+
+  atualizarContadores();
+  construirListaPremios();
+  mostrarTela('question', modoRevisao);
+  renderizarQuestao();
+}
+
+/* ══════════════════════════════════════════════════════════
    RESPONDER
-   ══════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════════ */
 
 function responder(letra) {
   if (estado.pausado) return;
   if (estado.respostas[estado.indice] !== undefined) return;
 
-  try { estado.timer?.stop(); } catch (_) {}
-  if (estado._fallback) { clearInterval(estado._fallback); estado._fallback = null; }
-
+  _pararTimers();
   smLog(`Q${estado.indice + 1}: usuário escolheu "${letra}".`);
   registrarResposta(letra);
 }
 
 function registrarResposta(resp) {
   const pergunta = estado.perguntas[estado.indice];
-  const correto  = resp === pergunta.correta;
+  const correto  = resp !== null && resp === pergunta.correta;
 
   estado.respostas[estado.indice] = resp;
 
@@ -470,7 +542,7 @@ function registrarResposta(resp) {
       estado.premioPendente = null;
     }
     estado.acertos++;
-    smLog(`Q${estado.indice + 1}: ACERTO ✓ | acertos agora: ${estado.acertos} → ${PREMIOS[estado.acertos - 1]?.valor}`);
+    smLog(`Q${estado.indice + 1}: ACERTO ✓ | acertos: ${estado.acertos} → ${PREMIOS[estado.acertos - 1]?.valor}`);
 
   } else {
     if (!estado.temErro) {
@@ -478,25 +550,43 @@ function registrarResposta(resp) {
       estado.premioPendente = estado.indice;
     }
     estado.temErro = true;
-    smLog(`Q${estado.indice + 1}: ERRO ✗ | prêmio travado em ${PREMIOS[estado.indice]?.valor}`);
+    smLog(`Q${estado.indice + 1}: ERRO ✗ | prêmio travado`);
   }
 
-  // ── SALVA IMEDIATAMENTE após registrar a resposta ──
-  salvar();
+  // Persiste resposta e atualiza cache em memória
+  if (resp !== null) {
+    salvarResultadoSM(estado.usuario, estado.discId, estado.sem, [
+      { id: pergunta.id ?? `q${estado.indice}`, resp, acertou: correto },
+    ]).then(() => {
+      const entrada = estado.historicoSM[pergunta.id] ?? {
+        tentativas: 0, acertos: 0, erros: 0, ultimaVez: 0, acertosConsecutivos: 0,
+      };
+      entrada.tentativas++;
+      if (correto) {
+        entrada.acertos++;
+        entrada.acertosConsecutivos = (entrada.acertosConsecutivos ?? 0) + 1;
+      } else {
+        entrada.erros++;
+        entrada.acertosConsecutivos = 0;
+      }
+      entrada.ultimaVez            = Date.now();
+      estado.historicoSM[pergunta.id] = entrada;
+    }).catch(err => smWarn('Erro ao salvar resposta:', err));
+  }
 
+  salvarSessao();    // salvamento imediato após resposta
   renderizarQuestao();
 }
 
 /* ══════════════════════════════════════════════════════════
    FEEDBACK
-   ══════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════════ */
 
 function mostrarFeedback(correto, tempoAcabou) {
   const fb      = $('feedback-box');
   const icone   = $('feedback-icone');
   const msg     = $('feedback-msg');
   const resp    = $('feedback-resposta');
-  const btnProx = $('btn-proxima');
 
   const p         = estado.perguntas[estado.indice];
   const isUltima  = estado.indice >= estado.perguntas.length - 1;
@@ -508,12 +598,9 @@ function mostrarFeedback(correto, tempoAcabou) {
     if (resp)  resp.textContent  = `A resposta correta era: ${p.correta} — ${p.alternativas[p.correta]}`;
 
   } else if (correto) {
-    const resolveupendente = estado.acertos <= estado.indice;
     if (icone) icone.textContent = isUltima ? '🏆' : '✅';
     if (msg) {
-      msg.textContent = resolveupendente
-        ? '✅ Prêmio pendente conquistado!'
-        : (isUltima ? '🏆 Você é o Milionário!' : 'Correto! Excelente!');
+      msg.textContent = isUltima ? '🏆 Você é o Milionário!' : 'Correto! Excelente!';
       msg.style.color = '#00e676';
     }
     if (resp) resp.textContent = `Você ganhou: ${PREMIOS[estado.acertos - 1]?.valor || 'R$ 0'}`;
@@ -524,29 +611,19 @@ function mostrarFeedback(correto, tempoAcabou) {
     if (resp)  resp.textContent  = `A correta era: ${p.correta} — ${p.alternativas[p.correta]} · Acerte a próxima para ganhar ${PREMIOS[estado.indice]?.valor}`;
   }
 
-  if (btnProx) {
-    const isFinish = (isUltima && todasResp) || !correto || tempoAcabou;
-    btnProx.textContent = isFinish ? 'VER RESULTADO →' : 'PRÓXIMA →';
-  }
-
   fb?.classList.add('visivel');
 }
 
 /* ══════════════════════════════════════════════════════════
    NAVEGAÇÃO
-   ══════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════════ */
 
 function navegarPara(i) {
   if (i < 0 || i >= estado.perguntas.length) return;
-  try { estado.timer?.stop(); } catch (_) {}
-  if (estado._fallback) { clearInterval(estado._fallback); estado._fallback = null; }
-
+  _pararTimers();
   smLog(`Navegando Q${estado.indice + 1} → Q${i + 1}`);
   estado.indice = i;
-
-  // Salva mudança de índice
-  salvar();
-
+  salvarSessao();
   renderizarQuestao();
 }
 
@@ -567,14 +644,14 @@ function irProxima() {
 
 /* ══════════════════════════════════════════════════════════
    FINALIZAR
-   ══════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════════ */
 
 async function finalizarJogo() {
-  try { estado.timer?.stop(); } catch (_) {}
-  if (estado._fallback) { clearInterval(estado._fallback); estado._fallback = null; }
+  _pararTimers();
+  limparSessao();
+  estado._nav?.sairParaRota();
 
   smLog('Jogo finalizado. Salvando histórico...');
-  debugEstado(estado.usuario, estado.discId, estado.sem);
 
   const resultados = estado.perguntas.map((p, i) => ({
     id:      p.id ?? `q${i}`,
@@ -582,59 +659,65 @@ async function finalizarJogo() {
     acertou: estado.respostas[i] === p.correta,
   })).filter(r => r.resp !== null && r.resp !== undefined);
 
-  // Salva histórico no Firebase (mesmo padrão do vdd_falso)
+  // Em modo revisão apenas salva histórico (sem pontuação de prêmio)
   await salvarResultadoSM(estado.usuario, estado.discId, estado.sem, resultados);
 
-  // ── Salva pontuação desta partida ──────────────────────────
-  const totalSegFin   = Math.round((Date.now() - (estado.tempoInicio ?? Date.now())) / 1000);
-  const mmFin         = Math.floor(totalSegFin / 60);
-  const ssFin         = String(totalSegFin % 60).padStart(2, '0');
-  const respondidosFin = estado.respostas.filter(r => r !== null && r !== undefined).length;
-  const pctFin         = respondidosFin > 0 ? Math.round((estado.acertos / respondidosFin) * 100) : 0;
+  if (!estado.modoRevisao) {
+    // Salva pontuação apenas em partidas normais
+    const totalSeg     = Math.round((Date.now() - (estado.tempoInicio ?? Date.now())) / 1000);
+    const mm           = Math.floor(totalSeg / 60);
+    const ss           = String(totalSeg % 60).padStart(2, '0');
+    const respondidos  = estado.respostas.filter(r => r !== null && r !== undefined).length;
+    const pct          = respondidos > 0 ? Math.round((estado.acertos / respondidos) * 100) : 0;
+    const valorStr     = estado.acertos > 0 ? PREMIOS[estado.acertos - 1].valor : 'R$ 0';
+    const valorNum     = parseInt(valorStr.replace(/\D/g, ''), 10) || 0;
 
-  // Converte 'R$ 1.000.000' → número puro para comparação de ranking
-  const valorStr   = estado.acertos > 0 ? PREMIOS[estado.acertos - 1].valor : 'R$ 0';
-  const valorNum   = parseInt(valorStr.replace(/\D/g, ''), 10) || 0;
-
-  await salvarPontuacaoSM(estado.usuario, estado.discId, estado.sem, {
-    valor:    valorStr,
-    valorNum,
-    acertos:  estado.acertos,
-    erros:    respondidosFin - estado.acertos,
-    precisao: pctFin,
-    tempo:    `${mmFin}:${ssFin}`,
-    data:     Date.now(),
-  });
-  smLog(`Pontuação registrada: ${valorStr} | acertos ${estado.acertos} | ${pctFin}% | ${mmFin}:${ssFin}`);
-
-  // Apaga o save de partida em curso (partida concluída)
-  limparEstadoPartida(estado.usuario, estado.discId, estado.sem);
-
-  // Atualiza cache em memória (igual ao finalizarJogo do vdd_falso.js)
-  for (const { id, acertou, resp } of resultados) {
-    if (resp === null || resp === undefined) continue;
-    const entrada = estado.historicoSM[id] ?? {
-      tentativas: 0, acertos: 0, erros: 0, ultimaVez: 0, acertosConsecutivos: 0,
-    };
-    entrada.tentativas++;
-    if (acertou) { entrada.acertos++; entrada.acertosConsecutivos = (entrada.acertosConsecutivos ?? 0) + 1; }
-    else         { entrada.erros++;   entrada.acertosConsecutivos = 0; }
-    entrada.ultimaVez      = Date.now();
-    estado.historicoSM[id] = entrada;
+    await salvarPontuacaoSM(estado.usuario, estado.discId, estado.sem, {
+      valor: valorStr, valorNum,
+      acertos: estado.acertos,
+      erros:   respondidos - estado.acertos,
+      precisao: pct,
+      tempo:   `${mm}:${ss}`,
+      data:    Date.now(),
+    });
+    smLog(`Pontuação registrada: ${valorStr} | ${estado.acertos} acertos | ${pct}%`);
   }
 
-  // Monta tela de resultado
-  const valorFinal    = estado.acertos > 0 ? PREMIOS[estado.acertos - 1].valor : 'R$ 0';
+  _renderizarTelaResultado();
+}
+
+/* ══════════════════════════════════════════════════════════
+   TELA DE RESULTADO
+══════════════════════════════════════════════════════════ */
+
+function _renderizarTelaResultado() {
   const respondidas   = estado.respostas.filter(r => r !== null && r !== undefined).length;
   const pct           = respondidas > 0 ? Math.round((estado.acertos / respondidas) * 100) : 0;
+  const valorFinal    = estado.acertos > 0 ? PREMIOS[estado.acertos - 1].valor : 'R$ 0';
   const todosCorretos = estado.acertos === estado.perguntas.length;
 
   smLog(`Resultado final: ${estado.acertos} acertos / ${respondidas} respondidas → ${pct}% → ${valorFinal}`);
 
   let emoji, titulo;
-  if      (pct >= 80) { emoji = '🏆'; titulo = todosCorretos ? 'MILIONÁRIO!' : 'Excelente!'; }
+  if      (pct >= 80) { emoji = '🏆'; titulo = todosCorretos && !estado.modoRevisao ? 'MILIONÁRIO!' : 'Excelente!'; }
   else if (pct >= 50) { emoji = '🌟'; titulo = 'Muito bem!'; }
   else                { emoji = '📚'; titulo = 'Pode melhorar!'; }
+
+  // Badge de modo revisão
+  const resultCard = document.querySelector('.resultado-nucleo');
+  if (resultCard) {
+    resultCard.querySelector('.sm-finish-revisao-badge')?.remove();
+    if (estado.modoRevisao) {
+      const badge = document.createElement('div');
+      badge.className = 'sm-finish-revisao-badge';
+      badge.innerHTML = `
+        <svg viewBox="0 0 16 16" fill="currentColor" width="13" height="13" aria-hidden="true">
+          <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm-.75 4.5h1.5v4h-1.5v-4zm0 5h1.5v1.5h-1.5v-1.5z"/>
+        </svg>
+        Revisão de erros`;
+      resultCard.insertBefore(badge, resultCard.firstChild);
+    }
+  }
 
   const elSimb     = $('resultado-simbolo');
   const elTitulo   = $('resultado-titulo');
@@ -643,38 +726,11 @@ async function finalizarJogo() {
   const elErros    = $('resultado-erros');
   const elPrecisao = $('resultado-precisao');
   const elTempo    = $('resultado-tempo');
-  const elSair     = $('resultado-btn-sair');
-  const elRejogo   = $('resultado-btn-rejogo');
+  const elMelhor   = $('resultado-melhor');
 
   if (elSimb)    elSimb.textContent    = emoji;
   if (elTitulo)  elTitulo.textContent  = titulo;
-  if (elValor)   elValor.textContent   = valorFinal;
-
-  // Melhor pontuação + acumulado histórico (síncrono — já estará em localStorage após salvarPontuacaoSM)
-  const melhor    = melhorPontuacaoLocalSM(estado.usuario, estado.discId, estado.sem);
-  const acumDados = acumuladoLocalSM(estado.usuario, estado.discId, estado.sem);
-  const elMelhor  = document.getElementById('resultado-melhor');
-
-  if (elMelhor) {
-    const linhas = [];
-
-    if (melhor) {
-      const ehNovo = melhor.valorNum === (parseInt(valorFinal.replace(/\D/g, ''), 10) || 0) &&
-                     melhor.acertos  === estado.acertos;
-      const prefixo = ehNovo ? '🎉 Novo recorde!' : '🏅 Melhor:';
-      linhas.push(`${prefixo} ${melhor.valor} (${melhor.acertos} acertos · ${melhor.precisao}%)`);
-    }
-
-    if (acumDados && acumDados.acumulado > 0) {
-      const acumFmt = 'R$ ' + acumDados.acumulado.toLocaleString('pt-BR');
-      linhas.push(`💰 Acumulado: ${acumFmt} em ${acumDados.totalPartidas} partida${acumDados.totalPartidas !== 1 ? 's' : ''}`);
-    }
-
-    if (linhas.length > 0) {
-      elMelhor.innerHTML = linhas.join('<br>');
-      elMelhor.style.display = 'block';
-    }
-  }
+  if (elValor)   elValor.textContent   = estado.modoRevisao ? '— revisão —' : valorFinal;
   if (elAcertos) elAcertos.textContent = estado.acertos;
   if (elErros)   elErros.textContent   = respondidas - estado.acertos;
   if (elPrecisao) elPrecisao.textContent = pct + '%';
@@ -686,43 +742,320 @@ async function finalizarJogo() {
     elTempo.textContent = `${mm}:${ss}`;
   }
 
+  if (elMelhor && !estado.modoRevisao) {
+    const melhor    = melhorPontuacaoLocalSM(estado.usuario, estado.discId, estado.sem);
+    const acumDados = acumuladoLocalSM(estado.usuario, estado.discId, estado.sem);
+    const linhas = [];
+
+    if (melhor) {
+      const ehNovo = melhor.valorNum === (parseInt(valorFinal.replace(/\D/g, ''), 10) || 0) &&
+                     melhor.acertos  === estado.acertos;
+      linhas.push(`${ehNovo ? '🎉 Novo recorde!' : '🏅 Melhor:'} ${melhor.valor} (${melhor.acertos} acertos · ${melhor.precisao}%)`);
+    }
+    if (acumDados && acumDados.acumulado > 0) {
+      const acumFmt = 'R$ ' + acumDados.acumulado.toLocaleString('pt-BR');
+      linhas.push(`💰 Acumulado: ${acumFmt} em ${acumDados.totalPartidas} partida${acumDados.totalPartidas !== 1 ? 's' : ''}`);
+    }
+    if (linhas.length > 0) {
+      elMelhor.innerHTML = linhas.join('<br>');
+      elMelhor.style.display = 'block';
+    }
+  } else if (elMelhor && estado.modoRevisao) {
+    elMelhor.style.display = 'none';
+  }
+
+  // Botão "Sair → intro"
+  const elSair = $('resultado-btn-sair');
   if (elSair) {
     elSair.removeAttribute('href');
     const novoSair = elSair.cloneNode(true);
     elSair.parentNode.replaceChild(novoSair, elSair);
-    novoSair.addEventListener('click', async (e) => {
-      e.preventDefault();
-      estado.historicoSM = await carregarHistoricoSM(estado.usuario, estado.discId, estado.sem);
-      estado.perguntas   = montarDeck(estado.banco, estado.historicoSM);
-      atualizarContadores();
-      mostrarTela('intro');
-    });
+    novoSair.addEventListener('click', e => { e.preventDefault(); _aoSair(); });
   }
 
+  // Botão "Jogar novamente / Repetir revisão"
+  const elRejogo = $('resultado-btn-rejogo');
   if (elRejogo) {
     const novoRejogo = elRejogo.cloneNode(true);
     elRejogo.parentNode.replaceChild(novoRejogo, elRejogo);
-    novoRejogo.addEventListener('click', async () => {
-      estado.historicoSM = await carregarHistoricoSM(estado.usuario, estado.discId, estado.sem);
-      estado.perguntas   = montarDeck(estado.banco, estado.historicoSM);
-      if (estado.perguntas.length === 0) { mostrarTela('empty'); return; }
-      atualizarContadores();
-      iniciarJogo(false);
-    });
+
+    if (estado.modoRevisao) {
+      novoRejogo.innerHTML = '';
+      const iconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      iconSvg.setAttribute('viewBox', '0 0 16 16');
+      iconSvg.setAttribute('fill', 'none');
+      iconSvg.setAttribute('stroke', 'currentColor');
+      iconSvg.setAttribute('stroke-width', '1.6');
+      iconSvg.setAttribute('width', '16');
+      iconSvg.setAttribute('height', '16');
+      iconSvg.innerHTML = '<path d="M13.5 2.5v3.5h-3.5"/><path d="M13.3 6A6 6 0 1 0 12 12"/>';
+      novoRejogo.appendChild(iconSvg);
+      novoRejogo.appendChild(document.createTextNode(' Repetir revisão'));
+    }
+
+    novoRejogo.addEventListener('click', _aoRejogo);
   }
 
-  renderEstatisticasQuestoes(estado.historicoSM, estado.perguntas);
-  mostrarTela('result');
+  // Botão "Revisar erros" no resultado
+  _atualizarBtnRevisarErros();
+
+  renderEstatisticasQuestoes();
+  mostrarTela('result', false);
+}
+
+/* ══════════════════════════════════════════════════════════
+   BOTÃO "REVISAR ERROS"
+══════════════════════════════════════════════════════════ */
+
+function _atualizarBtnRevisarErros() {
+  const erradas = questoesComErro(estado.banco, estado.historicoSM);
+
+  // Configura os dois botões (intro e resultado) com IDs distintos
+  const ids = [
+    { btn: 'sm-btn-revisar-erros',           count: 'sm-revisar-count' },
+    { btn: 'sm-btn-revisar-erros-resultado',  count: 'sm-revisar-count-resultado' },
+  ];
+
+  for (const { btn: btnId, count: countId } of ids) {
+    const btn = $(btnId);
+    if (!btn) continue;
+
+    if (erradas.length === 0) {
+      btn.classList.add('hidden');
+      // Mostra/oculta o wrapper da intro
+      if (btnId === 'sm-btn-revisar-erros') {
+        const wrapper = $('sm-revisar-wrapper');
+        if (wrapper) wrapper.style.display = 'none';
+      }
+      continue;
+    }
+
+    const countEl = btn.querySelector(`#${countId}`) ?? btn.querySelector('.sm-revisar-badge');
+    if (countEl) countEl.textContent = erradas.length;
+
+    // Mostra o wrapper da intro
+    if (btnId === 'sm-btn-revisar-erros') {
+      const wrapper = $('sm-revisar-wrapper');
+      if (wrapper) wrapper.style.display = 'flex';
+    }
+
+    // Substitui o nó para limpar listeners anteriores
+    const novo = btn.cloneNode(true);
+    btn.parentNode.replaceChild(novo, btn);
+    novo.classList.remove('hidden');
+    novo.addEventListener('click', () => {
+      estado.cardsRevisao = erradas;
+      iniciarJogo(true);
+    });
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   BOTÃO "CONTINUAR" na intro
+══════════════════════════════════════════════════════════ */
+
+function configurarBtnContinuar(sessao, onContinuar) {
+  const bloco    = $('intro-continuar');
+  const btn      = $('btn-continuar');
+  const infoEl   = $('continuar-info');
+
+  if (!sessao || !bloco || !btn) return;
+
+  const respondidas = sessao.respostas.filter(r => r !== undefined).length;
+  const total       = sessao.perguntas.length;
+  const pendentes   = sessao.respostas.filter(r => r === undefined).length;
+
+  if (pendentes === 0) {
+    bloco.style.display = 'none';
+    return;
+  }
+
+  bloco.style.display = 'flex';
+  if (infoEl) {
+    const label = sessao.modoRevisao ? 'Revisão' : 'Partida';
+   
+  }
+
+  // Substitui o nó para limpar listeners anteriores
+  const novo = btn.cloneNode(true);
+  btn.parentNode.replaceChild(novo, btn);
+  novo.addEventListener('click', () => onContinuar(sessao));
+}
+
+/* ══════════════════════════════════════════════════════════
+   CALLBACKS DE FLUXO
+══════════════════════════════════════════════════════════ */
+
+async function _aoSair() {
+  limparSessao();
+  const bloco = $('intro-continuar');
+  if (bloco) bloco.style.display = 'none';
+
+  estado.modoRevisao  = false;
+  estado.cardsRevisao = null;
+
+  const historico = await carregarHistoricoSM(estado.usuario, estado.discId, estado.sem).catch(() => ({}));
+  estado.historicoSM = historico;
+  estado.perguntas   = montarDeck(estado.banco, historico);
+  atualizarContadores();
+  _atualizarBtnRevisarErros();
+  mostrarTela('intro', false);
+}
+
+async function _aoRejogo() {
+  const perguntasRound = [...estado.perguntas];
+  const respostasRound = [...estado.respostas];
+  const eraRevisao     = estado.modoRevisao;
+
+  const historico = await carregarHistoricoSM(estado.usuario, estado.discId, estado.sem).catch(() => ({}));
+  estado.historicoSM = historico;
+
+  if (eraRevisao) {
+    const erradasAgora = perguntasRound.filter((q, idx) => {
+      const resp = respostasRound[idx];
+      return resp === null || resp !== q.correta;
+    });
+    if (erradasAgora.length === 0) {
+      _mostrarTelaRevisaoConcluida(_voltarParaIntro);
+      return;
+    }
+    estado.cardsRevisao = erradasAgora;
+    estado.perguntas    = shuffle(erradasAgora.slice(0, CONFIG.MAX_QUESTOES));
+    atualizarContadores();
+    iniciarJogo(true);
+    return;
+  }
+
+  estado.modoRevisao  = false;
+  estado.cardsRevisao = null;
+  estado.perguntas    = montarDeck(estado.banco, historico);
+  if (estado.perguntas.length === 0) { mostrarTela('empty', false); return; }
+  atualizarContadores();
+  iniciarJogo(false);
+}
+
+async function _voltarParaIntro() {
+  const historico = await carregarHistoricoSM(estado.usuario, estado.discId, estado.sem).catch(() => ({}));
+  estado.historicoSM  = historico;
+  estado.modoRevisao  = false;
+  estado.cardsRevisao = null;
+  estado.perguntas    = montarDeck(estado.banco, historico);
+  atualizarContadores();
+  _atualizarBtnRevisarErros();
+
+  // Limpa botão continuar (sessão já foi limpa ao finalizar)
+  const bloco = $('intro-continuar');
+  if (bloco) bloco.style.display = 'none';
+
+  mostrarTela('intro', false);
+}
+
+/* Volta ao início a partir da pausa */
+async function _aoVoltarIntro() {
+  _pararTimers();
+  estado.pausado = false;
+
+  // Salva o estado atual como sessão para restauração posterior
+  salvarSessao('intro');
+
+  const historico = await carregarHistoricoSM(estado.usuario, estado.discId, estado.sem).catch(() => ({}));
+  estado.historicoSM = historico;
+
+  // Atualiza botão revisar na intro (não remonta deck — preserva o salvo)
+  _atualizarBtnRevisarErros();
+
+  // Configura botão continuar com a sessão salva
+  const sessaoSalva = estado._nav?.lerSessao();
+  if (sessaoSalva?.perguntas?.length > 0) {
+    configurarBtnContinuar(sessaoSalva, continuarSessao);
+  } else {
+    const bloco = $('intro-continuar');
+    if (bloco) bloco.style.display = 'none';
+  }
+
+  atualizarContadores();
+  mostrarTela('intro', false);
+}
+
+/* ══════════════════════════════════════════════════════════
+   RESTAURAR SESSÃO (botão Continuar / F5)
+══════════════════════════════════════════════════════════ */
+
+function continuarSessao(sessao) {
+  estado.perguntas      = sessao.perguntas;
+  estado.respostas      = sessao.respostas;
+  estado.indice         = sessao.indice         ?? 0;
+  estado.acertos        = sessao.acertos        ?? 0;
+  estado.modoRevisao    = sessao.modoRevisao    ?? false;
+  estado.temErro        = sessao.temErro        ?? false;
+  estado.indicePendente = sessao.indicePendente ?? null;
+  estado.premioPendente = sessao.premioPendente ?? null;
+  estado.tempoInicio    = Date.now();
+  estado.pausado        = false;
+
+  // Restaura tempos — reseta o timer da questão onde parou (sem resposta)
+  const temposRestaurados = sessao.tempos
+    ? [...sessao.tempos]
+    : new Array(sessao.perguntas.length).fill(CONFIG.TEMPO_POR_QUESTAO);
+
+  if (estado.respostas[estado.indice] === undefined) {
+    temposRestaurados[estado.indice] = CONFIG.TEMPO_POR_QUESTAO;
+  }
+  estado.tempos = temposRestaurados;
+
+  atualizarContadores();
+  construirListaPremios();
+  mostrarTela('question', estado.modoRevisao);
+  renderizarQuestao();
+}
+
+/* ══════════════════════════════════════════════════════════
+   TELA "REVISÃO CONCLUÍDA"
+══════════════════════════════════════════════════════════ */
+
+function _mostrarTelaRevisaoConcluida(onVoltar) {
+  const resultCard = document.querySelector('.resultado-nucleo');
+  if (!resultCard) { onVoltar(); return; }
+
+  resultCard.innerHTML = `
+    <div class="sm-finish-revisao-badge">
+      <svg viewBox="0 0 16 16" fill="currentColor" width="13" height="13" aria-hidden="true">
+        <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm-.75 4.5h1.5v4h-1.5v-4zm0 5h1.5v1.5h-1.5v-1.5z"/>
+      </svg>
+      Revisão de erros
+    </div>
+    <div class="fim-icone">🏆</div>
+    <h2 class="fim-titulo">Revisão concluída!</h2>
+    <p class="sm-revisao-concluida-msg">
+      Você superou todos os erros desta sessão de revisão! 🎉
+    </p>
+    <div class="sm-result-btns">
+      <button class="btn-jogar" id="revisao-concluida-voltar">
+        Voltar ao início
+        <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14">
+          <path d="M5 3l8 5-8 5V3z"/>
+        </svg>
+      </button>
+    </div>
+  `;
+
+  mostrarTela('result', false);
+  $('revisao-concluida-voltar')?.addEventListener('click', onVoltar);
 }
 
 /* ══════════════════════════════════════════════════════════
    ESTATÍSTICAS POR QUESTÃO
-   ══════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════════ */
 
-function renderEstatisticasQuestoes(historico, perguntas) {
+function renderEstatisticasQuestoes() {
   const resultCard = document.querySelector('.resultado-nucleo');
   if (!resultCard) return;
   resultCard.querySelector('.sm-stats-questoes')?.remove();
+
+  const historico  = estado.historicoSM;
+  const perguntas  = estado.perguntas;
+  const respostas  = estado.respostas;
+  const modoRevisao = estado.modoRevisao;
 
   const temDados = perguntas.some(q => historico[q.id ?? '']);
   if (!temDados) return;
@@ -737,34 +1070,57 @@ function renderEstatisticasQuestoes(historico, perguntas) {
 
   for (const q of perguntas) {
     const h           = historico[q.id ?? ''];
-    const idx         = estado.perguntas.indexOf(q);
-    const respAtual   = estado.respostas[idx];
+    const idx         = perguntas.indexOf(q);
+    const respAtual   = respostas[idx];
     const acertouAgora = respAtual !== null && respAtual !== undefined && respAtual === q.correta;
     const errouAgora   = respAtual !== null && respAtual !== undefined && respAtual !== q.correta;
 
-    const acertos    = h ? h.acertos    : 0;
-    const tentativas = h ? h.tentativas : 0;
-    const taxa       = tentativas > 0 ? Math.round((acertos / tentativas) * 100) : 0;
-    const barPct = Math.min(taxa, 100);
-    const barCls = taxa >= 70 ? 'sm-prog-bar--ok' : taxa >= 40 ? 'sm-prog-bar--medio' : 'sm-prog-bar--critico';
-    const cor    = taxa >= 70 ? '#34d399' : taxa >= 40 ? '#facc15' : '#f87171';
-    const icone  = acertouAgora ? '✓' : errouAgora ? '✗' : (taxa >= 70 ? '✓' : taxa >= 40 ? '~' : '✗');
-    const iconCor= acertouAgora ? '#34d399' : errouAgora ? '#f87171' : cor;
-    const enun   = (q.texto ?? '').length > 52 ? q.texto.slice(0, 52) + '…' : (q.texto ?? '');
-
     const row = document.createElement('div');
     row.className = 'sm-sq-row sm-sq-row--prog';
-    row.innerHTML = `
-      <div class="sm-sq-meta">
-        <span class="sm-sq-icone" style="color:${iconCor}">${icone}</span>
-        <span class="sm-sq-enun">${enun}</span>
-      </div>
-      <div class="sm-sq-prog-row">
-        <div class="sm-sq-bar-bg" title="${acertos}/${tentativas} acertos acumulados (${taxa}%)">
-          <div class="sm-sq-bar-fill ${barCls}" style="width:${barPct}%"></div>
+
+    if (modoRevisao) {
+      const icone   = acertouAgora ? '✓' : errouAgora ? '✗' : '–';
+      const iconCor = acertouAgora ? '#34d399' : errouAgora ? '#f87171' : '#94a3b8';
+      const barCls  = acertouAgora ? 'sm-sq-bar-fill--ok' : 'sm-sq-bar-fill--critico';
+      const barPct  = acertouAgora ? 100 : 0;
+      const label   = acertouAgora ? 'Acertou' : errouAgora ? 'Errou' : '–';
+      const enun    = (q.texto ?? '').length > 52 ? q.texto.slice(0, 52) + '…' : (q.texto ?? '');
+      row.innerHTML = `
+        <div class="sm-sq-meta">
+          <span class="sm-sq-icone" style="color:${iconCor}">${icone}</span>
+          <span class="sm-sq-enun">${enun}</span>
+          ${acertouAgora ? '<span class="sm-sq-superada" title="Acertou nesta rodada">⭐</span>' : ''}
         </div>
-        <span class="sm-sq-stat" style="color:${cor}">${tentativas > 0 ? acertos+'/'+tentativas : '—'}</span>
-      </div>`;
+        <div class="sm-sq-prog-row">
+          <div class="sm-sq-bar-bg">
+            <div class="sm-sq-bar-fill ${barCls}" style="width:${barPct}%"></div>
+          </div>
+          <span class="sm-sq-stat" style="color:${iconCor}">${label}</span>
+        </div>`;
+    } else {
+      const acertos    = h ? h.acertos    : 0;
+      const tentativas = h ? h.tentativas : 0;
+      const taxa       = tentativas > 0 ? Math.round((acertos / tentativas) * 100) : 0;
+      const barPct     = Math.min(taxa, 100);
+      const barCls     = taxa >= 70 ? 'sm-sq-bar-fill--ok' : taxa >= 40 ? 'sm-sq-bar-fill--medio' : 'sm-sq-bar-fill--critico';
+      const cor        = taxa >= 70 ? '#34d399' : taxa >= 40 ? '#facc15' : '#f87171';
+      const icone      = acertouAgora ? '✓' : errouAgora ? '✗' : (taxa >= 70 ? '✓' : taxa >= 40 ? '~' : '✗');
+      const iconCor    = acertouAgora ? '#34d399' : errouAgora ? '#f87171' : cor;
+      const enun       = (q.texto ?? '').length > 52 ? q.texto.slice(0, 52) + '…' : (q.texto ?? '');
+      row.innerHTML = `
+        <div class="sm-sq-meta">
+          <span class="sm-sq-icone" style="color:${iconCor}">${icone}</span>
+          <span class="sm-sq-enun">${enun}</span>
+          ${acertouAgora && tentativas >= 3 && taxa >= 80 ? '<span class="sm-sq-superada" title="Dominada">⭐</span>' : ''}
+        </div>
+        <div class="sm-sq-prog-row">
+          <div class="sm-sq-bar-bg" title="${acertos}/${tentativas} acertos acumulados (${taxa}%)">
+            <div class="sm-sq-bar-fill ${barCls}" style="width:${barPct}%"></div>
+          </div>
+          <span class="sm-sq-stat" style="color:${cor}">${tentativas > 0 ? acertos+'/'+tentativas : '—'}</span>
+        </div>`;
+    }
+
     lista.appendChild(row);
   }
 
@@ -774,7 +1130,7 @@ function renderEstatisticasQuestoes(historico, perguntas) {
 
 /* ══════════════════════════════════════════════════════════
    PAUSA
-   ══════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════════ */
 
 function setupPausa() {
   const btnPause       = $('btn-pause');
@@ -810,28 +1166,33 @@ function setupPausa() {
   </div>`;
   document.body.appendChild(pauseOverlay);
 
+  function _aplicarEstadoPausa(pausado) {
+    const btnPauseEl   = $('btn-pause');
+    const pauseLabelEl = $('pause-label');
+    if (pausado) {
+      pauseOverlay.classList.remove('hidden');
+      btnPauseEl?.classList.add('sm-ctrl-btn--paused');
+      if (pauseLabelEl) pauseLabelEl.textContent = 'Retomar';
+    } else {
+      pauseOverlay.classList.add('hidden');
+      btnPauseEl?.classList.remove('sm-ctrl-btn--paused');
+      if (pauseLabelEl) pauseLabelEl.textContent = 'Pausar';
+    }
+  }
+
   function togglePausa() {
     if (el.screenQuestion?.classList.contains('hidden')) return;
     if (estado.respostas[estado.indice] !== undefined) return;
 
     estado.pausado = !estado.pausado;
-    const btnPauseEl   = $('btn-pause');
-    const pauseIconEl  = $('pause-icon');
-    const pauseLabelEl = $('pause-label');
-
     if (estado.pausado) {
       try { estado.timer?.pause(); } catch (_) {}
-      pauseOverlay.classList.remove('hidden');
-      btnPauseEl?.classList.add('sm-ctrl-btn--paused');
-      if (pauseLabelEl) pauseLabelEl.textContent = 'Retomar';
       smLog('Jogo PAUSADO.');
     } else {
       try { estado.timer?.resume(); } catch (_) {}
-      pauseOverlay.classList.add('hidden');
-      btnPauseEl?.classList.remove('sm-ctrl-btn--paused');
-      if (pauseLabelEl) pauseLabelEl.textContent = 'Pausar';
       smLog('Jogo RETOMADO.');
     }
+    _aplicarEstadoPausa(estado.pausado);
   }
 
   btnPause?.addEventListener('click', togglePausa);
@@ -840,36 +1201,19 @@ function setupPausa() {
   });
 
   btnVoltarIntro?.addEventListener('click', async () => {
-    try { estado.timer?.stop(); } catch (_) {}
-    if (estado._fallback) { clearInterval(estado._fallback); estado._fallback = null; }
-    estado.timer   = null;
+    _pararTimers();
     estado.pausado = false;
-    pauseOverlay.classList.add('hidden');
-    $('btn-pause')?.classList.remove('sm-ctrl-btn--paused');
-    const pl = $('pause-label');
-    if (pl) pl.textContent = 'Pausar';
+    _aplicarEstadoPausa(false);
 
     document.documentElement.style.setProperty('--timer-pct', '100%');
     aplicarCorBarra(100);
 
-    // ── CRÍTICO: salva o estado ANTES de qualquer outra operação ──
-    // Não remonta o deck aqui para não dessincronizar perguntas ↔ respostas
-    salvar();
-    smLog('Voltou ao menu — estado salvo para retomada posterior.',
-      `Deck preservado: ${estado.perguntas.length} questões, respostas: [${estado.respostas.map(r => r ?? '—').join(', ')}]`);
-
-    // Recarrega histórico em memória sem alterar o deck salvo
-    estado.historicoSM = await carregarHistoricoSM(estado.usuario, estado.discId, estado.sem);
-    // NÃO recria o deck aqui — o deck correto está no save e será restaurado no modal
-    atualizarContadores();
-    localStorage.setItem('sm_saiu_voluntario__' + estado.discId + '__' + estado.sem, '1');
-    mostrarTela('intro');
-    // Atualiza botão continuar na intro (save ainda existe)
-    el._atualizarBtnContinuar?.();
+    await _aoVoltarIntro();
   });
 
   document.addEventListener('keydown', e => {
-    if (e.code === 'Space' && !el.screenQuestion?.classList.contains('hidden') &&
+    if (e.code === 'Space' &&
+        !el.screenQuestion?.classList.contains('hidden') &&
         estado.respostas[estado.indice] === undefined) {
       if (document.activeElement?.id === 'btn-retomar') return;
       e.preventDefault();
@@ -880,7 +1224,7 @@ function setupPausa() {
 
 /* ══════════════════════════════════════════════════════════
    ATALHOS DE TECLADO
-   ══════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════════ */
 
 function registrarAtalhos() {
   document.addEventListener('keydown', e => {
@@ -903,7 +1247,7 @@ function registrarAtalhos() {
 
 /* ══════════════════════════════════════════════════════════
    CONTADORES
-   ══════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════════ */
 
 function atualizarContadores() {
   const n = estado.perguntas.length;
@@ -913,61 +1257,8 @@ function atualizarContadores() {
 }
 
 /* ══════════════════════════════════════════════════════════
-   MODAL DE RETOMADA DE PARTIDA
-   ══════════════════════════════════════════════════════════ */
-
-function mostrarModalRetomada(saveData, onRetomar, onNova) {
-  const overlay = document.createElement('div');
-  overlay.style.cssText = `
-    position:fixed;inset:0;z-index:200;
-    background:rgba(0,0,0,.85);backdrop-filter:blur(8px);
-    display:flex;align-items:center;justify-content:center;
-  `;
-
-  const q = saveData.perguntas.length;
-  const respondidas = saveData.respostas.filter(r => r !== undefined).length;
-  const idadeMin = Math.round((Date.now() - (saveData.salvoEm ?? saveData.tempoInicio ?? Date.now())) / 60000);
-
-  overlay.innerHTML = `
-    <div style="
-      background:rgba(5,10,40,.95);border:1px solid rgba(255,215,0,.35);
-      border-radius:12px;padding:32px 28px;max-width:380px;width:90%;
-      text-align:center;display:flex;flex-direction:column;gap:16px;
-    ">
-      <div style="font-size:2.5rem">⏱️</div>
-      <h2 style="font-family:'Cinzel',serif;color:#FFD700;font-size:1.3rem;">Partida em andamento</h2>
-      <p style="color:rgba(255,255,255,.65);font-size:.9rem;line-height:1.5;">
-        Você tem uma partida salva há <strong style="color:#FFD700">${idadeMin} min</strong>.
-        <br>Questão <strong style="color:#FFD700">${saveData.indice + 1}/${q}</strong>
-        · ${respondidas} respondida(s).
-      </p>
-      <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
-        <button id="btn-retomar-save" style="
-          font-family:'Cinzel',serif;font-size:1rem;font-weight:700;letter-spacing:2px;
-          padding:14px 32px;background:linear-gradient(135deg,#B8860B,#FFD700);
-          color:#0a0e2a;border:none;border-radius:4px;cursor:pointer;
-        ">▶ CONTINUAR</button>
-        <button id="btn-nova-save" style="
-          font-family:'Cinzel',serif;font-size:.85rem;padding:10px 24px;
-          background:rgba(255,255,255,.07);color:rgba(255,255,255,.55);
-          border:1px solid rgba(255,255,255,.12);border-radius:4px;cursor:pointer;
-        ">← Voltar à tela inicial</button>
-      </div>
-    </div>`;
-
-  document.body.appendChild(overlay);
-  overlay.querySelector('#btn-retomar-save').addEventListener('click', () => {
-    overlay.remove();
-    onRetomar();
-  });
-  overlay.querySelector('#btn-nova-save').addEventListener('click', () => {
-    overlay.remove();
-  });
-}
-
-/* ══════════════════════════════════════════════════════════
    INIT
-   ══════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════════ */
 
 async function init() {
   Object.assign(el, {
@@ -987,22 +1278,19 @@ async function init() {
     timerBar:       document.querySelector('.game-timer-bar'),
   });
 
-  smLog('Inicializando Show do Milhão...');
+  smLog('Inicializando Show do Milhão v3.0...');
 
   const { disc, sem } = Shell.init({ icon: '🃏', nome: 'Show do Milhão' });
 
   // Garante que Pausar/Menu ficam ocultos até a tela de questões
-  const _hdrCtrl = $('header-controls');
-  if (_hdrCtrl) _hdrCtrl.classList.remove('game-header__controls--visible');
+  $('header-controls')?.classList.remove('game-header__controls--visible');
 
   const _listaDisciplinas = getDisciplinasDeSemestre(sem);
   const disciplina = _listaDisciplinas.find(d => d.id === disc || d.arquivo === disc) ?? null;
 
   const shellDiscEl = $('shell-disc-name');
   if (shellDiscEl && disciplina) shellDiscEl.textContent = disciplina.apelido ?? disciplina.nome ?? disc;
-  // Aplica emoji da disciplina no ícone do header (sobrescreve o padrão do Shell.init)
-  const shellIconEl = $('shell-icon');
-  if (shellIconEl) shellIconEl.textContent = '🃏';
+  $('shell-icon') && ($('shell-icon').textContent = '🃏');
 
   const introDiscName = $('intro-disc-name');
   const introSemLabel = $('intro-sem-label');
@@ -1022,7 +1310,7 @@ async function init() {
 
   try { aplicarCoresDisciplina(disc, DISC_CORES); } catch (_) {}
 
-  /* ── Import dinâmico de dados ── */
+  // ── Import dinâmico de dados ──
   const ano = sem ? sem.split('.')[0] : null;
   let banco   = [];
   let semDisp = null;
@@ -1041,12 +1329,11 @@ async function init() {
   smLog(`Banco carregado: ${banco.length} questão(ões) para ${disc}/${sem}`);
 
   if (banco.length === 0) {
-    mostrarTela('empty');
-    const btnBack = $('btn-empty-back');
-    if (btnBack) btnBack.href = `../../jogo.html${sem ? `?sem=${sem}` : ''}`;
-
+    mostrarTela('empty', false);
+    const btnBack    = $('btn-empty-back');
     const emptyTitle = $('empty-title');
     const emptyDesc  = $('empty-desc');
+    if (btnBack) btnBack.href = `../../jogo.html${sem ? `?sem=${sem}` : ''}`;
     if (!semDisp || Object.keys(semDisp).length === 0) {
       if (emptyTitle) emptyTitle.textContent = 'Indisponível neste semestre';
       if (emptyDesc)  emptyDesc.innerHTML =
@@ -1060,115 +1347,77 @@ async function init() {
     return;
   }
 
+  // ── Usuário e SessionNav ──
   const usuarioObj = getUsuario();
   estado.usuario   = usuarioObj?.uid ?? 'visitante';
   estado.discId    = disc;
   estado.sem       = sem;
 
-  // Carrega histórico do localStorage (síncrono, nunca falha)
-  estado.historicoSM = await carregarHistoricoSM(estado.usuario, disc, sem);
+  const nav = SessionNav.criar({
+    uid:        estado.usuario,
+    discId:     disc,
+    sem,
+    ttlMs:      CONFIG.SESSAO_TTL_MS,
+    throttleMs: CONFIG.SESSAO_THROTTLE_MS,
+  });
+  estado._nav = nav;
 
-  // Verifica se há partida salva (agora isolada por uid)
-  const saveData = carregarEstadoPartida(estado.usuario, disc, sem);
+  // ── Histórico e deck inicial ──
+  estado.historicoSM = await carregarHistoricoSM(estado.usuario, disc, sem).catch(() => ({}));
+  estado.perguntas   = montarDeck(banco, estado.historicoSM);
 
-  // ── Função compartilhada: retoma a partida salva ──
-  async function retormarPartidaSalva() {
-    localStorage.removeItem('sm_saiu_voluntario__' + estado.discId + '__' + estado.sem);
-    const latestSave = carregarEstadoPartida(estado.usuario, estado.discId, estado.sem);
-    if (!latestSave) { atualizarBtnContinuar(); return; }
+  atualizarContadores();
+  aplicarCorBarra(100);
 
-    const idsBanco = new Set(banco.map(q => q.id));
-    const salvasValidas = latestSave.perguntas.filter(p => !p.id || idsBanco.has(p.id));
-    if (salvasValidas.length === 0) {
-      limparEstadoPartida(estado.usuario, disc, sem);
-      const blocoContinu = $('intro-continuar');
-      if (blocoContinu) blocoContinu.style.display = 'none';
-      return;
-    }
+  // ── Botão Revisar Erros na intro ──
+  const erradasInit = questoesComErro(banco, estado.historicoSM);
+  if (erradasInit.length > 0) _atualizarBtnRevisarErros();
 
-    Object.assign(estado, {
-      perguntas:      latestSave.perguntas,
-      indice:         latestSave.indice,
-      acertos:        latestSave.acertos,
-      respostas:      Array.from(latestSave.respostas),
-      tempos:         Array.from(latestSave.tempos),
-      temErro:        latestSave.temErro,
-      indicePendente: latestSave.indicePendente,
-      premioPendente: latestSave.premioPendente,
-      tempoInicio:    latestSave.tempoInicio,
-    });
-
-    atualizarContadores();
-    aplicarCorBarra(100);
-    iniciarJogo(true);
-  }
-
-  // ── Função que configura/atualiza o botão continuar na intro ──
-  function atualizarBtnContinuar() {
-    const save = carregarEstadoPartida(estado.usuario, estado.discId, estado.sem);
-    const blocoContinu = $('intro-continuar');
-    const btnContinu   = $('btn-continuar');
-    const infoCont     = $('continuar-info');
-
-    if (save && blocoContinu) {
-      const respondidas = save.respostas.filter(r => r !== '__vazio__' && r !== undefined).length;
-      const idadeMin    = Math.round((Date.now() - (save.salvoEm ?? save.tempoInicio ?? Date.now())) / 60000);
-      blocoContinu.style.display = 'flex';
-      if (infoCont) infoCont.textContent = `Questão ${save.indice + 1}/${save.perguntas.length} · ${respondidas} respondida(s) · salva há ${idadeMin} min`;
-
-      if (btnContinu && !btnContinu._bound) {
-        btnContinu._bound = true;
-        btnContinu.addEventListener('click', retormarPartidaSalva);
-      }
-    } else if (blocoContinu) {
-      blocoContinu.style.display = 'none';
-    }
-  }
-
-  // ── Eventos fixos — registrados UMA única vez ──────────────────────
+  // ── Eventos dos botões de jogo ──
   el.btnAnterior?.addEventListener('click', irAnterior);
-  el.btnProxima ?.addEventListener('click', irProxima);
+  el.btnProxima?.addEventListener('click', irProxima);
 
   $('alternativas')?.addEventListener('click', e => {
     const btn = e.target.closest('.alt-btn');
     if (btn && !btn.disabled) responder(btn.dataset.letra);
   });
 
-  el.btnStart?.addEventListener('click', async () => {
-    smLog('btnStart clicado — nova partida do zero');
-    localStorage.removeItem('sm_saiu_voluntario__' + estado.discId + '__' + estado.sem);
-    limparEstadoPartida(estado.usuario, estado.discId, estado.sem);
-    atualizarBtnContinuar();
-    estado.historicoSM = await carregarHistoricoSM(estado.usuario, estado.discId, estado.sem);
-    estado.perguntas   = montarDeck(estado.banco, estado.historicoSM);
-    if (estado.perguntas.length === 0) { mostrarTela('empty'); return; }
+  el.btnStart?.addEventListener('click', () => {
+    limparSessao();
+    const bloco = $('intro-continuar');
+    if (bloco) bloco.style.display = 'none';
     iniciarJogo(false);
+  });
+
+  // Botão Voltar do header
+  document.getElementById('shell-back-btn')?.addEventListener('click', () => {
+    salvarSessao('intro');
+    nav.sairParaRota();
   });
 
   setupPausa();
   registrarAtalhos();
 
-  // Monta deck inicial e atualiza botão continuar
-  estado.perguntas = montarDeck(banco, estado.historicoSM);
-  atualizarContadores();
-  aplicarCorBarra(100);
+  // ── Restauração de sessão / intro ──
+  const sessaoRestauravel = nav.pegarRestauravel();
 
-  // F5 durante o jogo → retoma direto | F5 após Menu → fica na intro
-  const _chaveVol = 'sm_saiu_voluntario__' + disc + '__' + sem;
-  const _saiuVol  = localStorage.getItem(_chaveVol) === '1';
-  if (saveData && !_saiuVol) {
-    atualizarBtnContinuar();
-    retormarPartidaSalva();
+  if (sessaoRestauravel) {
+    // F5 durante o jogo → restaura direto na questão
+    continuarSessao(sessaoRestauravel);
+    nav.pronto();
   } else {
-    atualizarBtnContinuar();
-    mostrarTela('intro');
+    // Navegação nova → intro (com botão continuar se houver save)
+    const sessaoSalva = nav.lerSessao();
+    if (sessaoSalva?.perguntas?.length > 0) {
+      configurarBtnContinuar(sessaoSalva, continuarSessao);
+    }
+    mostrarTela('intro', false);
+    nav.pronto();
   }
-  // Quando voltar ao menu, atualiza o botão continuar
-  el._atualizarBtnContinuar = atualizarBtnContinuar;
 
   // Expõe debug global
   window.smDebugJogo = () => debugEstado(estado.usuario, estado.discId, estado.sem);
-  smLog('Init concluído. Use smDebugJogo() no console para inspecionar o estado.');
+  smLog('Init concluído. Use smDebugJogo() para inspecionar o estado.');
 }
 
 if (document.readyState === 'loading') {

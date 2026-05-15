@@ -6,17 +6,13 @@
   <title>Show do Milhão — Nexus Study</title>
 
   <!--
-    REFATORAÇÃO v2.0
+    REFATORAÇÃO v3.0
     ─────────────────
-    game-shell.css agora é a FONTE ÚNICA para:
-      :root (tokens compartilhados), reset, bg-grid/orb,
-      .game-shell, .game-header, .game-header__*, .hidden
-
-    show_milhao.css mantém:
-      tokens próprios (--ouro, --verde, --vermelho, fontes Cinzel/Exo 2)
-      sobreposições de header (alturas, cores específicas)
-      .sm-* — layout de telas, HUD, alternativas, premiação lateral
-      barra de timer própria (#progress-fill) já em game-shell.css
+    • Adiciona bloco "Revisar Erros" na intro (#sm-btn-revisar-erros)
+    • Adiciona bloco "Revisar Erros" na tela de resultado
+    • Adiciona #score-total para atualizarContadores()
+    • Adiciona #continuar-info dentro de #intro-continuar
+    • Remove dependência da chave sm_saiu_voluntario__*
   -->
   <link rel="stylesheet" href="../../template/game-shell.css" />
   <link rel="stylesheet" href="show_milhao.css" />
@@ -90,11 +86,23 @@
 
   <button class="btn-jogar sm-btn-nova" id="btn-start">JOGAR AGORA</button>
 
-  <!-- Botão continuar — aparece quando há save -->
+  <!-- Botão continuar — aparece quando há sessão salva -->
   <div id="intro-continuar" class="sm-intro-continuar" style="display:none;">
     <button class="btn-jogar sm-btn-continuar" id="btn-continuar">▶ Continuar partida</button>
     <div class="sm-continuar-info" id="continuar-info"></div>
   </div>
+
+  <!-- Botão Revisar Erros — aparece quando há erros no histórico -->
+  <div id="sm-revisar-wrapper" class="sm-revisar-wrapper" style="display:none;">
+    <button class="sm-btn-revisar-erros hidden" id="sm-btn-revisar-erros">
+      <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14" aria-hidden="true">
+        <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm-.75 4.5h1.5v4h-1.5v-4zm0 5h1.5v1.5h-1.5v-1.5z"/>
+      </svg>
+      Revisar Erros
+      <span class="sm-revisar-badge" id="sm-revisar-count">0</span>
+    </button>
+  </div>
+
   <div class="rodape-inicio">Boa sorte! ✨</div>
 </div>
 
@@ -119,7 +127,7 @@
     </div>
   </div>
 
-  <!-- Barra de timer — .game-timer-bar definida em game-shell.css -->
+  <!-- Barra de timer -->
   <div class="sm-progress-wrap">
     <div id="progress-fill" class="game-timer-bar game-timer-bar--green"></div>
   </div>
@@ -221,6 +229,17 @@
         <div class="sm-stat-num sm-stat-num--tempo" id="resultado-tempo">0:00</div>
         <div class="sm-stat-label">TEMPO</div>
       </div>
+    </div>
+
+    <!-- Botão Revisar Erros no resultado -->
+    <div class="sm-resultado-revisar">
+      <button class="sm-btn-revisar-erros hidden" id="sm-btn-revisar-erros-resultado">
+        <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14" aria-hidden="true">
+          <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm-.75 4.5h1.5v4h-1.5v-4zm0 5h1.5v1.5h-1.5v-1.5z"/>
+        </svg>
+        Revisar Erros
+        <span class="sm-revisar-badge" id="sm-revisar-count-resultado">0</span>
+      </button>
     </div>
 
     <div class="sm-result-btns">
