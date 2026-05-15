@@ -947,13 +947,15 @@ body:has(#screen-question:not(.hidden)) #header-controls {
 }
 
 /* ══════════════════════════════════════════════════════════
-   CABEÇALHO — estilo vdd_falso adaptado para Show do Milhão
+   OVERLAY DE PAUSA
+   ══════════════════════════════════════════════════════════ */
+.sm-pause-overlay {
   position: fixed; inset: 0; z-index: 100;
   background: rgba(0,0,0,.7);
   backdrop-filter: blur(6px);
   display: flex; align-items: center; justify-content: center;
 }
-.sm-pause-overlay.hidden { display: none !important; }
+.-overlay.hidden { display: none !important; }
 
 .sm-pause-card {
   background: var(--azul-card);
@@ -978,7 +980,7 @@ body:has(#screen-question:not(.hidden)) #header-controls {
 .sm-pause-tip          { display: flex; gap: 8px; align-items: flex-start; font-size: .82rem; color: rgba(255,255,255,.55); text-align: left; }
 .sm-pause-tip__icon    { font-size: 1rem; flex-shrink: 0; }
 .sm-pause-resume-btn   { width: 100%; justify-content: center; gap: 8px; }
-.sm-pause-shortcut     { font-size: .72rem; color: rgba(255,255,255,.3); }
+.sm-pause-shortcut     { font-size: .72rem; color: rgba(255,255,255,.7); }
 .sm-pause-shortcut kbd {
   background: rgba(255,255,255,.08);
   border: 1px solid rgba(255,255,255,.15);
