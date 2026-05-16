@@ -1,109 +1,363 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-disc="default">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Associação</title>
-  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <title>Associação — Nexus Study</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
   <link rel="stylesheet" href="associacao.css" />
 </head>
+
 <body>
 
-<div class="app-wrapper">
+<!-- Fundo decorativo -->
+<div class="assoc-bg-grid" aria-hidden="true"></div>
+<div class="assoc-bg-orb assoc-bg-orb--1" aria-hidden="true"></div>
+<div class="assoc-bg-orb assoc-bg-orb--2" aria-hidden="true"></div>
 
-  <header class="topbar">
-    <a href="#" class="btn-back" id="btn-back">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+<div class="assoc-shell">
+
+  <!-- ── TOPBAR ── -->
+  <header class="assoc-topbar">
+
+    <button class="assoc-back-btn" id="btn-back" type="button" aria-label="Voltar">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <polyline points="15 18 9 12 15 6"/>
       </svg>
       Voltar
-    </a>
-    <div class="progress-center">
-      <div class="round-label">RODADA <span id="round-current">1</span> DE <span id="round-total">?</span></div>
-      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
-      <div class="progress-pct" id="progress-pct">0%</div>
+    </button>
+
+    <div class="assoc-topbar__identity">
+      <div class="assoc-topbar__icon" id="topbar-icon" aria-hidden="true"></div>
+      <div class="assoc-topbar__info">
+        <span class="assoc-topbar__name" id="topbar-disc"></span>
+        <div class="assoc-topbar__meta">
+          <span id="topbar-sem"></span>
+          <span class="assoc-topbar__sep">·</span>
+          <span>Associação</span>
+        </div>
+      </div>
     </div>
-    <div class="timer-badge">
-      <div class="timer-icon">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+
+    <div class="assoc-progress-bar" style="opacity:0;">
+      <div class="assoc-progress-bar__labels">
+        RODADA <span id="round-current">1</span> / <span id="round-total">?</span>
+      </div>
+      <div class="assoc-progress-bar__track">
+        <div class="assoc-progress-bar__fill" id="progress-bar-fill"></div>
+      </div>
+    </div>
+
+    <div class="assoc-timer-slot" role="timer" aria-label="Tempo decorrido">
+      <div class="assoc-timer-icon" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
         </svg>
       </div>
-      <div class="timer-info">
-        <span class="timer-lbl">Tempo</span>
-        <span class="timer-val" id="timer-val">00:00</span>
+      <div class="assoc-timer-info">
+        <span class="assoc-timer-lbl">Tempo</span>
+        <span class="assoc-timer-val" id="timer-val">00:00</span>
       </div>
     </div>
+
   </header>
 
-  <section class="hero">
-    <h1 class="hero-title">Associação</h1>
-    <p class="hero-sub">Arraste as respostas para as perguntas correspondentes</p>
-  </section>
+  <!-- ── CONTEÚDO (trocado pelo JS) ── -->
+  <div class="assoc-content">
 
-  <main class="main-panel">
-    <div class="match-container">
+    <!-- TELA: LOADING -->
+    <section id="screen-loading" class="assoc-loading assoc-screen">
+      <div class="assoc-loading__spinner" aria-hidden="true"></div>
+      <span class="assoc-loading__label">Carregando…</span>
+    </section>
 
-      <div class="match-headers">
-        <div class="col-header">
-          <div class="col-dot cyan"></div>
-          <span class="col-title cyan">Perguntas</span>
-          <span class="card-count" id="q-count">4 itens</span>
+    <!-- TELA: INTRO -->
+    <section id="screen-intro" class="assoc-intro hidden">
+
+      <article class="assoc-intro__card">
+
+        <div class="assoc-intro__icon" id="intro-icon" aria-hidden="true"></div>
+
+        <div class="assoc-intro__badge">
+          <span class="assoc-intro__badge-mode">Associação</span>
         </div>
-        <div class="col-header">
-          <div class="col-dot gold"></div>
-          <span class="col-title gold">Respostas</span>
-          <span class="card-count" id="filled-count">0 / 4</span>
+
+        <h1 class="assoc-intro__disc" id="intro-disc"></h1>
+        <p  class="assoc-intro__sem"  id="intro-sem"></p>
+
+        <div class="assoc-intro__stats">
+          <div class="assoc-intro__stat">
+            <span class="assoc-intro__stat-val" id="intro-total-pares">0</span>
+            <span class="assoc-intro__stat-lbl">Pares</span>
+          </div>
+          <div class="assoc-intro__stat">
+            <span class="assoc-intro__stat-val" id="intro-total-rodadas">0</span>
+            <span class="assoc-intro__stat-lbl">Rodadas</span>
+          </div>
+        </div>
+
+        <p class="assoc-intro__desc">
+          Arraste as respostas para as perguntas correspondentes e teste seu conhecimento.
+        </p>
+
+        <div class="assoc-intro__actions">
+
+          <button class="btn btn-primary" id="btn-start" type="button">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            Começar
+          </button>
+
+          <button class="btn btn-secondary hidden" id="btn-continuar" type="button">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="5" y1="12" x2="19" y2="12"/>
+              <polyline points="12 5 19 12 12 19"/>
+            </svg>
+            Continuar
+            <span class="assoc-intro-chip-count" id="intro-continuar-prog"></span>
+          </button>
+
+        </div>
+      </article>
+
+    </section>
+
+    <!-- TELA: JOGO -->
+    <section id="screen-game" class="assoc-content hidden">
+
+      <div class="assoc-game-header">
+        <div class="assoc-game-header__left">
+          <div class="assoc-game-header__round">
+            RODADA <span id="round-current-game">1</span>
+          </div>
+        </div>
+        <div class="assoc-game-header__controls">
+
+          <button class="assoc-ctrl-btn" id="btn-pause" type="button" aria-label="Pausar jogo">
+            <svg id="pause-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
+                 aria-hidden="true">
+              <rect x="3" y="2" width="3.5" height="12" rx="1"/>
+              <rect x="9.5" y="2" width="3.5" height="12" rx="1"/>
+            </svg>
+            <span id="pause-label">Pausar</span>
+          </button>
+
+          <button class="assoc-ctrl-btn" id="btn-voltar-intro" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            Menu
+          </button>
+
         </div>
       </div>
 
-      <div class="match-grid" id="match-grid">
-        <!-- preenchido pelo JS -->
-      </div>
+      <main class="main-panel">
+        <div class="match-container">
 
-      <div class="answers-pool">
-        <div class="pool-header">
-          <div class="col-dot gold"></div>
-          <span class="pool-title">Respostas disponíveis — arraste para os campos acima</span>
-        </div>
-        <div class="pool-grid" id="pool-grid">
-          <!-- preenchido pelo JS -->
-        </div>
-      </div>
+          <div class="match-headers">
+            <div class="col-header">
+              <div class="col-dot cyan" aria-hidden="true"></div>
+              <span class="col-title cyan">Perguntas</span>
+              <span class="card-count" id="q-count" aria-live="polite">0 itens</span>
+            </div>
+            <div class="col-header">
+              <div class="col-dot gold" aria-hidden="true"></div>
+              <span class="col-title gold">Respostas</span>
+              <span class="card-count" id="filled-count" aria-live="polite">0 / 0</span>
+            </div>
+          </div>
 
+          <div class="match-grid" id="match-grid" aria-label="Pares pergunta-resposta"></div>
+
+          <div class="answers-pool">
+            <div class="pool-header">
+              <div class="col-dot gold" aria-hidden="true"></div>
+              <span class="pool-title">Respostas disponíveis — arraste para os campos acima</span>
+            </div>
+            <div class="pool-grid" id="pool-grid" aria-label="Banco de respostas"></div>
+          </div>
+
+        </div>
+      </main>
+
+      <footer class="footer-actions">
+
+        <button class="btn btn-secondary" id="btn-voltar" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Voltar
+        </button>
+
+        <button class="btn btn-secondary" id="btn-reset" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="23 4 23 10 17 10"/>
+            <polyline points="1 20 1 14 7 14"/>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+          </svg>
+          Desfazer tudo
+        </button>
+
+        <button class="btn btn-primary" id="btn-verificar" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
+               id="btn-verificar-icon" aria-hidden="true">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span id="btn-verificar-label">Verificar</span>
+        </button>
+
+      </footer>
+
+    </section>
+
+    <!-- TELA: RESULTADO -->
+    <section id="screen-result" class="assoc-result hidden">
+
+      <article class="assoc-result__card">
+
+        <div class="assoc-result__trophy" id="result-trophy" aria-hidden="true">🏆</div>
+
+        <h2 class="assoc-result__title"    id="result-title"></h2>
+        <p  class="assoc-result__subtitle" id="result-subtitle"></p>
+
+        <div class="assoc-result__stats">
+          <div class="assoc-result__stat">
+            <span class="assoc-result__stat-val assoc-result__stat-val--gold" id="result-pontos">0</span>
+            <span class="assoc-result__stat-lbl">Pontos</span>
+          </div>
+          <div class="assoc-result__stat">
+            <span class="assoc-result__stat-val assoc-result__stat-val--cyan" id="result-pct">0%</span>
+            <span class="assoc-result__stat-lbl">Acerto</span>
+          </div>
+          <div class="assoc-result__stat">
+            <span class="assoc-result__stat-val" id="result-acertos">0</span>
+            <span class="assoc-result__stat-lbl">Corretas</span>
+          </div>
+          <div class="assoc-result__stat">
+            <span class="assoc-result__stat-val assoc-result__stat-val--red" id="result-erros">0</span>
+            <span class="assoc-result__stat-lbl">Erradas</span>
+          </div>
+        </div>
+
+        <div class="assoc-result__stat assoc-result__stat--tempo">
+          <span class="assoc-result__stat-val" id="result-tempo">00:00</span>
+          <span class="assoc-result__stat-lbl">Tempo total</span>
+        </div>
+
+        <div class="assoc-result__feedback hidden" id="result-feedback" aria-live="polite">
+          <span class="assoc-result__feedback-icon" id="result-feedback-icon" aria-hidden="true"></span>
+          <span class="assoc-result__feedback-text" id="result-feedback-text"></span>
+        </div>
+
+        <div class="assoc-result__actions">
+          <button class="btn btn-secondary" id="btn-rejogo" type="button">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="23 4 23 10 17 10"/>
+              <polyline points="1 20 1 14 7 14"/>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            </svg>
+            Jogar novamente
+          </button>
+          <button class="btn btn-primary" id="btn-menu" type="button">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="6"  x2="21" y2="6"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+            Menu
+          </button>
+        </div>
+
+      </article>
+
+    </section>
+
+    <!-- TELA: EMPTY -->
+    <section id="screen-empty" class="assoc-empty hidden">
+      <div class="assoc-empty__icon" aria-hidden="true">📭</div>
+      <h2 class="assoc-empty__title">Nenhum conteúdo disponível</h2>
+      <p  class="assoc-empty__sub">Não foram encontrados pares para o semestre ativo.</p>
+      <button class="btn btn-secondary" id="btn-empty-back" type="button">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        Voltar
+      </button>
+    </section>
+
+  </div><!-- /.assoc-content -->
+
+</div><!-- /.assoc-shell -->
+
+
+<!-- OVERLAY DE PAUSA -->
+<div id="pause-overlay" class="assoc-pause-overlay hidden"
+     role="dialog" aria-modal="true" aria-label="Jogo pausado">
+  <div class="assoc-pause__card">
+
+    <div class="assoc-pause__icon" aria-hidden="true">⏸️</div>
+    <h2 class="assoc-pause__title">Pausado</h2>
+
+    <div class="assoc-pause__stats">
+      <div class="assoc-pause__row">
+        <span class="assoc-pause__row-lbl">Rodada</span>
+        <span class="assoc-pause__row-val" id="pause-rodada">—</span>
+      </div>
+      <div class="assoc-pause__row">
+        <span class="assoc-pause__row-lbl">Tempo</span>
+        <span class="assoc-pause__row-val" id="pause-tempo">00:00</span>
+      </div>
+      <div class="assoc-pause__row">
+        <span class="assoc-pause__row-lbl">Progresso</span>
+        <span class="assoc-pause__row-val" id="pause-pct">0%</span>
+      </div>
     </div>
-  </main>
 
-  <footer class="footer-actions">
+    <div class="assoc-pause__actions">
+      <button class="btn btn-primary" id="btn-retomar" type="button">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polygon points="5 3 19 12 5 21 5 3"/>
+        </svg>
+        Retomar
+      </button>
+      <button class="btn btn-secondary" id="btn-pause-menu" type="button">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="6"  x2="21" y2="6"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+        Ir ao menu
+      </button>
+    </div>
 
-    <button class="btn btn-secondary" id="btn-voltar">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="15 18 9 12 15 6"/>
-      </svg>
-      Voltar
-    </button>
-
-    <button class="btn btn-secondary" id="btn-reset">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
-        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-      </svg>
-      Desfazer tudo
-    </button>
-
-    <button class="btn btn-primary" id="btn-verificar">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" id="btn-verificar-icon">
-        <polyline points="20 6 9 17 4 12"/>
-      </svg>
-      <span id="btn-verificar-label">Verificar</span>
-    </button>
-
-  </footer>
-
+  </div>
 </div>
 
-<div id="trash-zone" class="trash-zone" aria-label="Arrastar para remover">
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+
+<!-- LIXEIRA FLUTUANTE -->
+<div id="trash-zone" class="trash-zone" aria-label="Solte aqui para remover resposta">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
     <polyline points="3 6 5 6 21 6"/>
     <path d="M19 6l-1 14H6L5 6"/>
     <path d="M10 11v6M14 11v6"/>
@@ -111,13 +365,12 @@
   </svg>
 </div>
 
-<div id="toast" class="toast"></div>
-    <div class="overlay-title" id="overlay-title"></div>
-    <div class="overlay-sub" id="overlay-sub"></div>
-    <button class="btn btn-primary overlay-btn" id="overlay-btn"></button>
-  </div>
-</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
 
 <script src="associacao.js" type="module"></script>
+
 </body>
 </html>

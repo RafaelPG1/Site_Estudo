@@ -1,25 +1,94 @@
-/* ─── ASSOCIAÇÃO — lógica principal (drag-and-drop reescrito) ─────────────── */
+/* ════════════════════════════════════════════════════════════════
+   NEXUS STUDY — Associação
+   associacao.js  (v2.0)
+
+   Arquitetura própria e independente. Não compartilha estado,
+   dependências internas ou componentes com o modo VDD/Falso.
+
+   Estrutura:
+     • CONFIG — constantes do jogo
+     • ESTADO — estado global centralizado
+     • TELAS — gerenciamento de telas (Screen Manager)
+     • TEMA — aplicação dinâmica de tema por disciplina
+     • DOM — cache de elementos
+     • TIMER — controle próprio de tempo
+     • TOAST — sistema de notificações
+     • STORAGE — persistência de rodadas
+     • INTRO — lógica da tela de introdução
+     • JOGO — renderização e lógica da rodada
+     • DRAG/DROP — arrastar e soltar (HTML5 + touch)
+     • VERIFICAÇÃO — correção e feedback
+     • RESULTADO — tela final com métricas
+     • PAUSA — overlay de pausa
+     • PONTUAÇÃO — sistema de pontos
+     • INIT — inicialização
+════════════════════════════════════════════════════════════════ */
 
 import { ASSOCIACAO_DATA } from './associacao_data.js';
-import { saveRound, loadRound, clearRound } from './storage_a.js';
+import { saveRound, loadRound, clearRound, clearAll } from './storage_a.js';
 
 (function () {
   'use strict';
 
-  const ITEMS_PER_ROUND = 4;
+  /* ══════════════════════════════════════════════════════════════
+     CONFIG
+  ══════════════════════════════════════════════════════════════ */
 
-  /* ══════════════════════════════════════════════════════
+  const CONFIG = Object.freeze({
+    ITEMS_PER_ROUND:   4,
+    PONTOS_ACERTO:    10,
+    PONTOS_ERRO:       3,
+    SEMESTRE_ATIVO:   '2026.2',
+    SESSION_KEY_SEED: 'assoc_seed',
+    SESSION_KEY_ROUND:'assoc_round',
+  });
+
+  /* Mapeamento disciplina → emoji */
+  const DISC_EMOJI = {
+    poo:         '⚙️',
+    design:      '🎨',
+    banco_dados: '🗄️',
+  };
+
+  const DISC_LABEL = {
+    poo:         'POO',
+    design:      'Design',
+    banco_dados: 'Banco de Dados',
+  };
+
+  /* ══════════════════════════════════════════════════════════════
+     ESTADO GLOBAL — único ponto de verdade
+  ══════════════════════════════════════════════════════════════ */
+
+  const estado = {
+    /* Dados */
+    allItems:     [],
+    discId:       null,
+    semestre:     CONFIG.SEMESTRE_ATIVO,
+
+    /* Rodada */
+    currentRound: 0,
+    totalRounds:  0,
+    roundItems:   [],
+    verified:     false,
+
+    /* Pontuação acumulada */
+    totalAcertos: 0,
+    totalErros:   0,
+    totalPontos:  0,
+
+    /* Timer */
+    timerSecs:    0,
+    timerRef:     null,
+    pausado:      false,
+
+    /* Controle de tela */
+    telaAtual:    'loading',
+  };
+
+  /* ══════════════════════════════════════════════════════════════
      HELPERS
-  ══════════════════════════════════════════════════════ */
-
-  function getAllItems() {
-    const all = [];
-    const sem = ASSOCIACAO_DATA['2026.2'];
-    Object.values(sem).forEach(function (disc) {
-      disc.forEach(function (item) { all.push(item); });
-    });
-    return all;
-  }
+  ══════════════════════════════════════════════════════════════ */
 
   function shuffle(arr) {
     const a = arr.slice();
@@ -36,107 +105,303 @@ import { saveRound, loadRound, clearRound } from './storage_a.js';
       .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
-  /* ══════════════════════════════════════════════════════
-     ESTADO GLOBAL — seed & rodada
-  ══════════════════════════════════════════════════════ */
-
-  let allItems;
-  const savedSeed = sessionStorage.getItem('assoc_seed');
-  if (savedSeed) {
-    const base  = getAllItems();
-    const order = JSON.parse(savedSeed);
-    allItems = order.map(function (id) {
-      return base.find(function (x) { return x.id === id; });
-    }).filter(Boolean);
-  } else {
-    allItems = shuffle(getAllItems());
-    sessionStorage.setItem('assoc_seed', JSON.stringify(allItems.map(function (x) { return x.id; })));
+  function formatTime(secs) {
+    const m = String(Math.floor(secs / 60)).padStart(2, '0');
+    const s = String(secs % 60).padStart(2, '0');
+    return m + ':' + s;
   }
 
-  const totalRounds = Math.ceil(allItems.length / ITEMS_PER_ROUND);
-  let currentRound  = parseInt(sessionStorage.getItem('assoc_round') || '0', 10);
-  let roundItems    = [];
-  let verified      = false;
+  /* ══════════════════════════════════════════════════════════════
+     DOM CACHE
+  ══════════════════════════════════════════════════════════════ */
 
-  /* ══════════════════════════════════════════════════════
-     SELETORES DOM
-  ══════════════════════════════════════════════════════ */
+  const $ = id => document.getElementById(id);
 
-  const matchGrid    = document.getElementById('match-grid');
-  const poolGrid     = document.getElementById('pool-grid');
-  const trashZone    = document.getElementById('trash-zone');
-  const filledCount  = document.getElementById('filled-count');
-  const qCount       = document.getElementById('q-count');
-  const roundCur     = document.getElementById('round-current');
-  const roundTot     = document.getElementById('round-total');
-  const progressFill = document.getElementById('progress-fill');
-  const progressPct  = document.getElementById('progress-pct');
-  const timerVal     = document.getElementById('timer-val');
-  const btnVoltar    = document.getElementById('btn-voltar');
-  const btnReset     = document.getElementById('btn-reset');
-  const btnVerif     = document.getElementById('btn-verificar');
-  const btnVerifLbl  = document.getElementById('btn-verificar-label');
-  const btnVerifIcon = document.getElementById('btn-verificar-icon');
-  const toast        = document.getElementById('toast');
+  const el = {};
 
-  /* ══════════════════════════════════════════════════════
+  function initDOM() {
+    Object.assign(el, {
+      /* Telas */
+      screenLoading: $('screen-loading'),
+      screenIntro:   $('screen-intro'),
+      screenGame:    $('screen-game'),
+      screenResult:  $('screen-result'),
+      screenEmpty:   $('screen-empty'),
+
+      /* Header global */
+      topbarDisc:    $('topbar-disc'),
+      topbarSem:     $('topbar-sem'),
+      topbarIcon:    $('topbar-icon'),
+      timerVal:      $('timer-val'),
+      progressFill:  $('progress-bar-fill'),
+
+      /* Intro */
+      introDisc:       $('intro-disc'),
+      introSem:        $('intro-sem'),
+      introIcon:       $('intro-icon'),
+      introTotalPares: $('intro-total-pares'),
+      introTotalRods:  $('intro-total-rodadas'),
+      btnStart:        $('btn-start'),
+      btnContinuar:    $('btn-continuar'),
+      continuarProg:   $('intro-continuar-prog'),
+
+      /* Jogo */
+      roundCur:        $('round-current'),
+      roundTot:        $('round-total'),
+      matchGrid:       $('match-grid'),
+      poolGrid:        $('pool-grid'),
+      qCount:          $('q-count'),
+      filledCount:     $('filled-count'),
+
+      /* Botões de jogo */
+      btnVoltar:       $('btn-voltar'),
+      btnReset:        $('btn-reset'),
+      btnVerif:        $('btn-verificar'),
+      btnVerifLbl:     $('btn-verificar-label'),
+      btnVerifIcon:    $('btn-verificar-icon'),
+      btnPause:        $('btn-pause'),
+      btnRetomar:      $('btn-retomar'),
+      pauseIcon:       $('pause-icon'),
+      pauseLabel:      $('pause-label'),
+      btnVoltarIntro:  $('btn-voltar-intro'),
+
+      /* Resultado */
+      resultTrophy:    $('result-trophy'),
+      resultTitle:     $('result-title'),
+      resultSubtitle:  $('result-subtitle'),
+      resultPontos:    $('result-pontos'),
+      resultAcertos:   $('result-acertos'),
+      resultErros:     $('result-erros'),
+      resultPct:       $('result-pct'),
+      resultTempo:     $('result-tempo'),
+      resultFeedback:  $('result-feedback'),
+      resultFeedIcon:  $('result-feedback-icon'),
+      resultFeedText:  $('result-feedback-text'),
+      btnRejogo:       $('btn-rejogo'),
+      btnMenu:         $('btn-menu'),
+
+      /* Pausa */
+      pauseOverlay:    $('pause-overlay'),
+      pauseRodada:     $('pause-rodada'),
+      pauseTempo:      $('pause-tempo'),
+      pausePct:        $('pause-pct'),
+      btnPauseMenu:    $('btn-pause-menu'),
+
+      /* Toast + lixeira */
+      toast:           $('toast'),
+      trashZone:       $('trash-zone'),
+
+      /* Botão voltar global */
+      btnBack:         $('btn-back'),
+    });
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     TEMA DINÂMICO
+  ══════════════════════════════════════════════════════════════ */
+
+  function aplicarTema(discId) {
+    document.documentElement.dataset.disc = discId || 'default';
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     SCREEN MANAGER — controle de telas
+  ══════════════════════════════════════════════════════════════ */
+
+  const TELAS = ['screenLoading', 'screenIntro', 'screenGame', 'screenResult', 'screenEmpty'];
+
+  function mostrarTela(nome) {
+    TELAS.forEach(function (k) {
+      if (el[k]) el[k].classList.add('hidden');
+    });
+    const alvo = el[nome];
+    if (alvo) {
+      alvo.classList.remove('hidden');
+      /* Reaplica animação */
+      alvo.classList.remove('assoc-screen');
+      void alvo.offsetWidth;
+      alvo.classList.add('assoc-screen');
+    }
+    estado.telaAtual = nome;
+
+    /* Mostra/oculta header de progresso apenas no jogo */
+    const isGame = nome === 'screenGame';
+    if (el.progressFill) {
+      el.progressFill.closest('.assoc-progress-bar').style.opacity = isGame ? '1' : '0';
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════════
      TIMER
-  ══════════════════════════════════════════════════════ */
-
-  let timerSecs = 0, timerInterval = null;
+  ══════════════════════════════════════════════════════════════ */
 
   function startTimer() {
-    clearInterval(timerInterval);
-    timerSecs = 0;
-    timerInterval = setInterval(function () {
-      timerSecs++;
-      const m = String(Math.floor(timerSecs / 60)).padStart(2, '0');
-      const s = String(timerSecs % 60).padStart(2, '0');
-      timerVal.textContent = m + ':' + s;
-    }, 1000);
+    clearInterval(estado.timerRef);
+    estado.timerSecs = 0;
+    _tickTimer();
+    estado.timerRef = setInterval(_tickTimer, 1000);
   }
 
-  /* ══════════════════════════════════════════════════════
+  function pausarTimer() {
+    clearInterval(estado.timerRef);
+    estado.timerRef = null;
+  }
+
+  function retornarTimer() {
+    if (!estado.timerRef) {
+      estado.timerRef = setInterval(_tickTimer, 1000);
+    }
+  }
+
+  function pararTimer() {
+    clearInterval(estado.timerRef);
+    estado.timerRef = null;
+  }
+
+  function _tickTimer() {
+    if (estado.pausado) return;
+    estado.timerSecs++;
+    const txt = formatTime(estado.timerSecs);
+    if (el.timerVal) el.timerVal.textContent = txt;
+    if (el.pauseTempo) el.pauseTempo.textContent = txt;
+  }
+
+  /* ══════════════════════════════════════════════════════════════
      TOAST
-  ══════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════════════ */
 
-  function showToast(msg, color) {
-    color = color || 'var(--cyan)';
-    toast.textContent = msg;
-    toast.style.color = color;
-    toast.style.borderColor = color === 'var(--gold)'
-      ? 'rgba(245,200,66,0.35)'
-      : color === '#ff8080'
-        ? 'rgba(255,128,128,0.35)'
-        : 'rgba(0,229,200,0.30)';
-    toast.classList.add('show');
-    clearTimeout(toast._t);
-    toast._t = setTimeout(function () { toast.classList.remove('show'); }, 2400);
+  function showToast(msg, tipo) {
+    if (!el.toast) return;
+    const cores = {
+      sucesso: { cor: 'var(--assoc-cyan)',  bdr: 'rgba(0,229,200,0.30)' },
+      erro:    { cor: '#ff8080',            bdr: 'rgba(255,128,128,0.30)' },
+      ouro:    { cor: 'var(--assoc-gold)',  bdr: 'rgba(245,200,66,0.30)' },
+      info:    { cor: 'var(--assoc-text-dim)', bdr: 'var(--assoc-border-mid)' },
+    };
+    const c = cores[tipo || 'sucesso'] || cores.sucesso;
+    el.toast.textContent = msg;
+    el.toast.style.color = c.cor;
+    el.toast.style.borderColor = c.bdr;
+    el.toast.classList.add('show');
+    clearTimeout(el.toast._t);
+    el.toast._t = setTimeout(function () { el.toast.classList.remove('show'); }, 2600);
   }
 
-  /* ══════════════════════════════════════════════════════
-     PROGRESS
-  ══════════════════════════════════════════════════════ */
+  /* ══════════════════════════════════════════════════════════════
+     PROGRESSO GLOBAL
+  ══════════════════════════════════════════════════════════════ */
 
-  function updateProgress() {
-    const pct = Math.round((currentRound / totalRounds) * 100);
-    progressFill.style.width = pct + '%';
-    progressPct.textContent  = pct + '%';
-    roundCur.textContent     = currentRound + 1;
-    roundTot.textContent     = totalRounds;
+  function atualizarProgressoGlobal() {
+    const pct = Math.round((estado.currentRound / estado.totalRounds) * 100);
+    if (el.progressFill) el.progressFill.style.width = pct + '%';
+    if (el.roundCur) el.roundCur.textContent = estado.currentRound + 1;
+    if (el.roundTot) el.roundTot.textContent = estado.totalRounds;
+    /* Pausa: rodada + % */
+    if (el.pauseRodada) el.pauseRodada.textContent = (estado.currentRound + 1) + '/' + estado.totalRounds;
+    if (el.pausePct) el.pausePct.textContent = pct + '%';
+
+    sessionStorage.setItem(CONFIG.SESSION_KEY_ROUND, estado.currentRound);
   }
 
-  function updateCount() {
-    const zones  = matchGrid.querySelectorAll('.drop-zone');
+  function atualizarContadorFilled() {
+    const zones  = el.matchGrid ? el.matchGrid.querySelectorAll('.drop-zone') : [];
     const filled = [...zones].filter(function (z) { return z.querySelector('.a-card'); }).length;
-    filledCount.textContent = filled + ' / ' + zones.length;
+    if (el.filledCount) el.filledCount.textContent = filled + ' / ' + zones.length;
   }
 
-  /* ══════════════════════════════════════════════════════
+  /* ══════════════════════════════════════════════════════════════
+     DADOS — carregar e organizar itens
+  ══════════════════════════════════════════════════════════════ */
+
+  function carregarItens() {
+    /* Descobrir disciplina ativa (primeira disponível ou via URL param) */
+    const params = new URLSearchParams(window.location.search);
+    const discParam = params.get('disc');
+
+    const semData = ASSOCIACAO_DATA[CONFIG.SEMESTRE_ATIVO] || {};
+    const discs   = Object.keys(semData);
+
+    if (discs.length === 0) return false;
+
+    /* Seleciona disciplina: param > primeira disponível */
+    estado.discId = (discParam && semData[discParam]) ? discParam : discs[0];
+
+    /* Poderia combinar múltiplas disciplinas, mas para manter organização
+       usa apenas a disciplina selecionada. Para usar todas, descomentar abaixo:
+       const items = discs.flatMap(d => semData[d] || []); */
+    const items = semData[estado.discId] || [];
+
+    if (items.length === 0) return false;
+
+    /* Seed persistida para manter ordem entre sessões */
+    const savedSeed = sessionStorage.getItem(CONFIG.SESSION_KEY_SEED);
+    if (savedSeed) {
+      try {
+        const order = JSON.parse(savedSeed);
+        estado.allItems = order
+          .map(id => items.find(x => x.id === id))
+          .filter(Boolean);
+        /* Se itens novos foram adicionados ao data após o seed, adiciona ao final */
+        const knownIds = new Set(order);
+        items.forEach(item => { if (!knownIds.has(item.id)) estado.allItems.push(item); });
+      } catch (e) {
+        estado.allItems = shuffle(items);
+        _salvarSeed();
+      }
+    } else {
+      estado.allItems = shuffle(items);
+      _salvarSeed();
+    }
+
+    estado.totalRounds  = Math.ceil(estado.allItems.length / CONFIG.ITEMS_PER_ROUND);
+    estado.currentRound = parseInt(sessionStorage.getItem(CONFIG.SESSION_KEY_ROUND) || '0', 10);
+    /* Garante que currentRound não está fora dos limites */
+    if (estado.currentRound >= estado.totalRounds) estado.currentRound = 0;
+
+    return true;
+  }
+
+  function _salvarSeed() {
+    sessionStorage.setItem(CONFIG.SESSION_KEY_SEED, JSON.stringify(estado.allItems.map(x => x.id)));
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     INTRO — preencher e exibir
+  ══════════════════════════════════════════════════════════════ */
+
+  function mostrarIntro() {
+    const discLabel = DISC_LABEL[estado.discId] || estado.discId;
+    const discEmoji = DISC_EMOJI[estado.discId] || '🃏';
+
+    /* Preencher header */
+    if (el.topbarDisc) el.topbarDisc.textContent = discLabel;
+    if (el.topbarSem)  el.topbarSem.textContent  = estado.semestre;
+    if (el.topbarIcon) el.topbarIcon.textContent  = discEmoji;
+
+    /* Preencher card da intro */
+    if (el.introDisc)       el.introDisc.textContent       = discLabel;
+    if (el.introSem)        el.introSem.textContent         = estado.semestre;
+    if (el.introIcon)       el.introIcon.textContent        = discEmoji;
+    if (el.introTotalPares) el.introTotalPares.textContent  = estado.allItems.length;
+    if (el.introTotalRods)  el.introTotalRods.textContent   = estado.totalRounds;
+
+    /* Botão continuar: só aparece se há rodada parcialmente feita */
+    const savedRound = loadValidRound(estado.currentRound);
+    const temProgresso = estado.currentRound > 0 || savedRound;
+    if (temProgresso && el.btnContinuar) {
+      el.btnContinuar.classList.remove('hidden');
+      if (el.continuarProg) {
+        el.continuarProg.textContent =
+          'Rodada ' + (estado.currentRound + 1) + '/' + estado.totalRounds;
+      }
+    }
+
+    mostrarTela('screenIntro');
+  }
+
+  /* ══════════════════════════════════════════════════════════════
      CARD FACTORY
-     Cria o elemento .a-card que FISICAMENTE se move
-     entre pool-grid e drop-zones.
-  ══════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════════════ */
 
   function makeCard(id, text) {
     const card = document.createElement('div');
@@ -150,71 +415,63 @@ import { saveRound, loadRound, clearRound } from './storage_a.js';
         '<circle cx="15" cy="5"  r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/>' +
       '</svg>' +
       '<span class="a-text">' + escHtml(text) + '</span>' +
-      /* X button — only shown via CSS on desktop for cards in-zone */
       '<button class="card-remove-btn" tabindex="-1" aria-label="Remover resposta">' +
-        '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">' +
+        '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"' +
+        ' stroke-width="2.8" stroke-linecap="round">' +
           '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>' +
         '</svg>' +
       '</button>';
 
-    /* X button click handler */
     card.querySelector('.card-remove-btn').addEventListener('click', function (e) {
       e.stopPropagation();
-      if (verified) return;
+      if (estado.verified) return;
       if (card.closest('.drop-zone')) {
         returnCardToPool(card);
         saveCurrentState();
-        updateCount();
-        showToast('Resposta devolvida ao banco');
+        atualizarContadorFilled();
+        showToast('Resposta devolvida ao banco', 'info');
       }
     });
 
-    /* ── Eventos drag HTML5 ── */
     card.addEventListener('dragstart', onCardDragStart);
     card.addEventListener('dragend',   onCardDragEnd);
-
-    /* ── Eventos touch ── */
     card.addEventListener('touchstart', onCardTouchStart, { passive: false });
 
     return card;
   }
 
-  /* ══════════════════════════════════════════════════════
+  /* ══════════════════════════════════════════════════════════════
      RENDER ROUND
-     Reconstrói toda a grade para a rodada corrente.
-  ══════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════════════ */
 
   function renderRound(restoredState) {
-    verified   = false;
-    const start = currentRound * ITEMS_PER_ROUND;
-    roundItems  = allItems.slice(start, start + ITEMS_PER_ROUND);
+    estado.verified  = false;
+    const start      = estado.currentRound * CONFIG.ITEMS_PER_ROUND;
+    estado.roundItems = estado.allItems.slice(start, start + CONFIG.ITEMS_PER_ROUND);
 
-    sessionStorage.setItem('assoc_round', currentRound);
-    updateProgress();
-    qCount.textContent = roundItems.length + ' itens';
+    atualizarProgressoGlobal();
+    if (el.qCount) el.qCount.textContent = estado.roundItems.length + ' itens';
 
-    /* Ordem do pool (embaralhada ou restaurada) */
+    /* Ordem do pool */
     let poolOrder;
     if (restoredState) {
-      /* IDs já colocados em slots */
-      const placedIds = new Set((restoredState.placements || []).map(function (p) { return p.answerId; }));
-      /* poolOrder salvo, mas garantindo que nenhum item do round seja perdido */
-      const savedPoolIds = (restoredState.poolOrder || []);
-      /* Itens que deveriam estar no pool mas não estão em nenhum dos dois lados → fallback */
-      const allRoundIds  = roundItems.map(function (x) { return x.id; });
+      const placedIds   = new Set((restoredState.placements || []).map(p => p.answerId));
+      const savedPoolIds = restoredState.poolOrder || [];
+      const allRoundIds  = estado.roundItems.map(x => x.id);
       const accountedIds = new Set([...placedIds, ...savedPoolIds]);
-      const missingIds   = allRoundIds.filter(function (id) { return !accountedIds.has(id); });
+      const missingIds   = allRoundIds.filter(id => !accountedIds.has(id));
       const finalPoolIds = savedPoolIds.concat(missingIds);
-      poolOrder = finalPoolIds.map(function (id) {
-        return roundItems.find(function (x) { return x.id === id; });
-      }).filter(Boolean);
+      poolOrder = finalPoolIds.map(id => estado.roundItems.find(x => x.id === id)).filter(Boolean);
     } else {
-      poolOrder = shuffle(roundItems.slice());
+      poolOrder = shuffle(estado.roundItems.slice());
     }
 
-    /* ── match-grid: perguntas + drop-zones vazias ── */
-    matchGrid.innerHTML = '';
-    roundItems.forEach(function (item, i) {
+    /* Limpa grids */
+    if (el.matchGrid) el.matchGrid.innerHTML = '';
+    if (el.poolGrid)  el.poolGrid.innerHTML  = '';
+
+    /* Constrói grid de perguntas + zonas */
+    estado.roundItems.forEach(function (item, i) {
       const row = document.createElement('div');
       row.className = 'match-row';
 
@@ -230,7 +487,6 @@ import { saveRound, loadRound, clearRound } from './storage_a.js';
       zone.dataset.correct    = item.resposta;
       zone.innerHTML = '<span class="drop-hint">Solte aqui</span>';
 
-      /* Eventos de zona (HTML5) */
       zone.addEventListener('dragenter', onZoneDragEnter);
       zone.addEventListener('dragover',  onZoneDragOver);
       zone.addEventListener('dragleave', onZoneDragLeave);
@@ -238,81 +494,73 @@ import { saveRound, loadRound, clearRound } from './storage_a.js';
 
       row.appendChild(qCell);
       row.appendChild(zone);
-      matchGrid.appendChild(row);
+      if (el.matchGrid) el.matchGrid.appendChild(row);
     });
 
-    /* ── pool-grid: respostas disponíveis ── */
-    poolGrid.innerHTML = '';
-    /* Remove listeners antigos antes de adicionar novos (evita acúmulo) */
-    poolGrid.removeEventListener('dragenter', onPoolDragEnter);
-    poolGrid.removeEventListener('dragover',  onPoolDragOver);
-    poolGrid.removeEventListener('dragleave', onPoolDragLeave);
-    poolGrid.removeEventListener('drop',      onPoolDrop);
-    poolGrid.addEventListener('dragenter', onPoolDragEnter);
-    poolGrid.addEventListener('dragover',  onPoolDragOver);
-    poolGrid.addEventListener('dragleave', onPoolDragLeave);
-    poolGrid.addEventListener('drop',      onPoolDrop);
+    /* Pool de respostas */
+    if (el.poolGrid) {
+      el.poolGrid.removeEventListener('dragenter', onPoolDragEnter);
+      el.poolGrid.removeEventListener('dragover',  onPoolDragOver);
+      el.poolGrid.removeEventListener('dragleave', onPoolDragLeave);
+      el.poolGrid.removeEventListener('drop',      onPoolDrop);
+      el.poolGrid.addEventListener('dragenter', onPoolDragEnter);
+      el.poolGrid.addEventListener('dragover',  onPoolDragOver);
+      el.poolGrid.addEventListener('dragleave', onPoolDragLeave);
+      el.poolGrid.addEventListener('drop',      onPoolDrop);
+    }
 
-    /* Trash zone events (bound once on first render, won't duplicate) */
-    if (!trashZone._bound) {
-      trashZone._bound = true;
-      trashZone.addEventListener('dragenter', onTrashDragEnter);
-      trashZone.addEventListener('dragover',  onTrashDragOver);
-      trashZone.addEventListener('dragleave', onTrashDragLeave);
-      trashZone.addEventListener('drop',      onTrashDrop);
+    if (el.trashZone && !el.trashZone._bound) {
+      el.trashZone._bound = true;
+      el.trashZone.addEventListener('dragenter', onTrashDragEnter);
+      el.trashZone.addEventListener('dragover',  onTrashDragOver);
+      el.trashZone.addEventListener('dragleave', onTrashDragLeave);
+      el.trashZone.addEventListener('drop',      onTrashDrop);
     }
 
     poolOrder.forEach(function (item) {
-      poolGrid.appendChild(makeCard(item.id, item.resposta));
+      if (el.poolGrid) el.poolGrid.appendChild(makeCard(item.id, item.resposta));
     });
 
     setVerifyState('verify');
+    mostrarTela('screenGame');
 
     if (restoredState) {
       restoreState(restoredState);
     } else {
-      updateCount();
+      atualizarContadorFilled();
       startTimer();
     }
   }
 
-  /* ══════════════════════════════════════════════════════
+  /* ══════════════════════════════════════════════════════════════
      RESTAURAR ESTADO SALVO
-  ══════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════════════ */
 
   function restoreState(state) {
-    state.placements.forEach(function (p) {
-      const zone = matchGrid.querySelector('.drop-zone[data-question-id="' + p.questionId + '"]');
-      const card = poolGrid.querySelector('.a-card[data-answer-id="' + p.answerId + '"]');
-      if (!zone || !card) return;
-      placeCardInZone(zone, card);
+    (state.placements || []).forEach(function (p) {
+      const zone = el.matchGrid && el.matchGrid.querySelector('.drop-zone[data-question-id="' + p.questionId + '"]');
+      const card = el.poolGrid  && el.poolGrid.querySelector('.a-card[data-answer-id="' + p.answerId + '"]');
+      if (zone && card) placeCardInZone(zone, card);
     });
-    updateCount();
+    atualizarContadorFilled();
     if (state.verified) {
-      verified = true;
-      clearInterval(timerInterval);
+      estado.verified = true;
+      pararTimer();
       applyVerifyFeedback();
-      setVerifyState(currentRound >= totalRounds - 1 ? 'finish' : 'next');
-      /* Bloquear drag após verificação */
+      setVerifyState(estado.currentRound >= estado.totalRounds - 1 ? 'finish' : 'next');
       lockAllCards();
     } else {
       startTimer();
     }
   }
 
-  /* ══════════════════════════════════════════════════════
-     OPERAÇÕES FÍSICAS DE ZONA
-     Cards se movem fisicamente no DOM.
-  ══════════════════════════════════════════════════════ */
+  /* ══════════════════════════════════════════════════════════════
+     OPERAÇÕES FÍSICAS DOM — mover cards
+  ══════════════════════════════════════════════════════════════ */
 
-  /**
-   * Move um card para dentro de uma zona.
-   * Remove o .drop-hint e aplica classe .filled.
-   */
   function placeCardInZone(zone, card) {
     const hint = zone.querySelector('.drop-hint');
-    if (hint) hint.style.display = 'none'; /* oculta, mantém no DOM */
-
+    if (hint) hint.style.display = 'none';
     zone.classList.add('filled');
     zone.classList.remove('drag-over', 'drag-over-swap', 'droppable');
     zone.appendChild(card);
@@ -320,29 +568,20 @@ import { saveRound, loadRound, clearRound } from './storage_a.js';
     card.classList.add('in-zone');
   }
 
-  /**
-   * Remove o card de uma zona e devolve ao pool.
-   * Restaura o .drop-hint e remove classe .filled.
-   */
   function returnCardToPool(card) {
-    const hint = card.closest('.drop-zone') &&
-                 card.closest('.drop-zone').querySelector('.drop-hint');
-    if (hint) hint.style.display = '';
-
     const zone = card.closest('.drop-zone');
     if (zone) {
+      const hint = zone.querySelector('.drop-hint');
+      if (hint) hint.style.display = '';
       zone.classList.remove('filled', 'drag-over', 'drag-over-swap', 'correct', 'wrong');
+      const ca = zone.querySelector('.correct-answer');
+      if (ca) ca.remove();
     }
-
     card.classList.remove('in-zone', 'dragging');
     card.classList.add('in-pool');
-    poolGrid.appendChild(card);
+    if (el.poolGrid) el.poolGrid.appendChild(card);
   }
 
-  /**
-   * Extrai o card de onde está (zona ou pool) sem destruí-lo.
-   * Retorna o card. Se estava em uma zona, limpa a zona.
-   */
   function detachCard(card) {
     const zone = card.closest('.drop-zone');
     if (zone) {
@@ -351,7 +590,6 @@ import { saveRound, loadRound, clearRound } from './storage_a.js';
       zone.classList.remove('filled', 'drag-over', 'drag-over-swap');
     }
     card.classList.remove('in-zone', 'in-pool', 'dragging');
-    /* Remove do pai sem destruir */
     if (card.parentNode) card.parentNode.removeChild(card);
     return card;
   }
@@ -363,310 +601,6 @@ import { saveRound, loadRound, clearRound } from './storage_a.js';
     });
   }
 
-  /* ══════════════════════════════════════════════════════
-     ESTADO DO DRAG
-  ══════════════════════════════════════════════════════ */
-
-  /* dragState guarda referência ao card sendo arrastado */
-  let dragState = null;
-
-  /* ghostEl: imagem customizada para o drag nativo */
-  let ghostEl = null;
-
-  function createGhost(text) {
-    if (ghostEl) ghostEl.remove();
-    ghostEl = document.createElement('div');
-    ghostEl.className = 'drag-ghost';
-    ghostEl.textContent = text;
-    document.body.appendChild(ghostEl);
-    return ghostEl;
-  }
-
-  /* ══════════════════════════════════════════════════════
-     DRAG HTML5 — CARDS
-  ══════════════════════════════════════════════════════ */
-
-  function onCardDragStart(e) {
-    if (verified) { e.preventDefault(); return; }
-    const card = e.currentTarget;
-    /* Registra a origem no momento exato do dragstart (antes de qualquer DOM change) */
-    const fromZone = card.closest('.drop-zone') || null;
-    dragState  = { card: card, dropped: false, fromZone: fromZone };
-
-    card.classList.add('dragging');
-
-    /* Ilumina todas as zonas como alvos */
-    matchGrid.querySelectorAll('.drop-zone').forEach(function (z) {
-      z.classList.add('droppable');
-    });
-
-    /* Mostra lixeira somente se o card está em uma zona (não se já está no pool) */
-    if (fromZone) {
-      showTrash();
-    }
-
-    const text  = card.querySelector('.a-text').textContent;
-    const ghost = createGhost(text);
-    e.dataTransfer.setDragImage(ghost, 28, 24);
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', card.dataset.answerId);
-  }
-
-  function onCardDragEnd() {
-    if (ghostEl) { ghostEl.remove(); ghostEl = null; }
-    hideTrash();
-
-    if (dragState) {
-      const card     = dragState.card;
-      const fromZone = dragState.fromZone; /* origem registrada no dragstart */
-      card.classList.remove('dragging');
-
-      /* Se o card não foi dropado em nenhum alvo válido */
-      if (!dragState.dropped) {
-        if (fromZone) {
-          /* Veio de uma zona e soltou fora → devolve ao pool */
-          returnCardToPool(card);
-          saveCurrentState();
-          updateCount();
-          showToast('Resposta devolvida');
-        } else if (!card.parentNode) {
-          /* Segurança: card sem pai → reinsere no pool */
-          poolGrid.appendChild(card);
-          card.classList.add('in-pool');
-          saveCurrentState();
-          updateCount();
-        }
-        /* Se veio do pool e soltou fora → permanece no pool (não faz nada) */
-      }
-      dragState = null;
-    }
-
-    matchGrid.querySelectorAll('.drop-zone').forEach(function (z) {
-      z.classList.remove('droppable', 'drag-over', 'drag-over-swap');
-    });
-    poolGrid.classList.remove('drag-over-pool');
-  }
-
-  /* ══════════════════════════════════════════════════════
-     DRAG HTML5 — DROP ZONES
-  ══════════════════════════════════════════════════════ */
-
-  function onZoneDragEnter(e) {
-    e.preventDefault();
-    if (!dragState || verified) return;
-    const zone = e.currentTarget;
-
-    /* Se a zona já tem um card diferente do que estamos arrastando → swap */
-    const existing = zone.querySelector('.a-card');
-    if (existing && existing !== dragState.card) {
-      zone.classList.remove('drag-over');
-      zone.classList.add('drag-over-swap');
-    } else {
-      zone.classList.remove('drag-over-swap');
-      zone.classList.add('drag-over');
-    }
-  }
-
-  function onZoneDragOver(e) {
-    e.preventDefault();
-    if (dragState && !verified) e.dataTransfer.dropEffect = 'move';
-  }
-
-  function onZoneDragLeave(e) {
-    const zone = e.currentTarget;
-    if (!zone.contains(e.relatedTarget)) {
-      zone.classList.remove('drag-over', 'drag-over-swap');
-    }
-  }
-
-  function onZoneDrop(e) {
-    e.preventDefault();
-    if (!dragState || verified) { endDrag(); return; }
-
-    const targetZone = e.currentTarget;
-    const card       = dragState.card;
-
-    /* Card já está nesta mesma zona → ignora */
-    if (targetZone === card.closest('.drop-zone')) {
-      targetZone.classList.remove('drag-over', 'drag-over-swap');
-      dragState.dropped = true;
-      endDrag();
-      return;
-    }
-
-    performDrop(targetZone, card);
-    dragState.dropped = true;
-    endDrag();
-  }
-
-  /* ══════════════════════════════════════════════════════
-     DRAG HTML5 — POOL (área de devolução)
-  ══════════════════════════════════════════════════════ */
-
-  function onPoolDragEnter(e) {
-    e.preventDefault();
-    if (!dragState || verified) return;
-    /* Só faz sentido se o card vem de uma zona */
-    if (dragState.fromZone) {
-      poolGrid.classList.add('drag-over-pool');
-    }
-  }
-
-  function onPoolDragOver(e) {
-    e.preventDefault();
-    if (dragState && !verified) e.dataTransfer.dropEffect = 'move';
-  }
-
-  function onPoolDragLeave(e) {
-    if (!poolGrid.contains(e.relatedTarget)) {
-      poolGrid.classList.remove('drag-over-pool');
-    }
-  }
-
-  function onPoolDrop(e) {
-    e.preventDefault();
-    poolGrid.classList.remove('drag-over-pool');
-    if (!dragState || verified) { endDrag(); return; }
-
-    const card = dragState.card;
-
-    /* Se card já está no pool, não faz nada */
-    if (card.closest('#pool-grid')) {
-      dragState.dropped = true;
-      endDrag();
-      return;
-    }
-
-    /* Card estava em uma zona → devolve ao pool */
-    detachCard(card);
-    card.classList.add('in-pool');
-    poolGrid.appendChild(card);
-
-    dragState.dropped = true;
-    saveCurrentState();
-    updateCount();
-    endDrag();
-  }
-
-  function endDrag() {
-    matchGrid.querySelectorAll('.drop-zone').forEach(function (z) {
-      z.classList.remove('droppable', 'drag-over', 'drag-over-swap');
-    });
-    poolGrid.classList.remove('drag-over-pool');
-    dragState = null;
-  }
-
-  /* ══════════════════════════════════════════════════════
-     LIXEIRA — helpers e eventos
-  ══════════════════════════════════════════════════════ */
-
-  function showTrash() {
-    trashZone.classList.add('visible');
-    trashZone.classList.remove('drag-over-trash');
-  }
-
-  function hideTrash() {
-    trashZone.classList.remove('visible', 'drag-over-trash');
-  }
-
-  function triggerTrashPulse() {
-    trashZone.classList.remove('pulse');
-    /* Force reflow to restart animation */
-    void trashZone.offsetWidth;
-    trashZone.classList.add('pulse');
-    setTimeout(function () { trashZone.classList.remove('pulse'); }, 600);
-  }
-
-  function onTrashDragEnter(e) {
-    e.preventDefault();
-    if (!dragState || verified) return;
-    /* Only allow trash if card is coming from a zone */
-    if (dragState.fromZone) {
-      trashZone.classList.add('drag-over-trash');
-    }
-  }
-
-  function onTrashDragOver(e) {
-    e.preventDefault();
-    if (dragState && !verified && dragState.fromZone) {
-      e.dataTransfer.dropEffect = 'move';
-    }
-  }
-
-  function onTrashDragLeave(e) {
-    if (!trashZone.contains(e.relatedTarget)) {
-      trashZone.classList.remove('drag-over-trash');
-    }
-  }
-
-  function onTrashDrop(e) {
-    e.preventDefault();
-    trashZone.classList.remove('drag-over-trash');
-    if (!dragState || verified) { endDrag(); return; }
-
-    const card = dragState.card;
-
-    /* Only accept cards from zones */
-    if (!dragState.fromZone) {
-      dragState.dropped = true;
-      endDrag();
-      return;
-    }
-
-    returnCardToPool(card);
-    triggerTrashPulse();
-    dragState.dropped = true;
-    saveCurrentState();
-    updateCount();
-    showToast('Resposta devolvida ao banco');
-    hideTrash();
-    endDrag();
-  }
-
-  /* ══════════════════════════════════════════════════════
-     LÓGICA DE DROP CENTRAL
-  ══════════════════════════════════════════════════════ */
-
-  function performDrop(targetZone, card) {
-    const existingCard = targetZone.querySelector('.a-card');
-    const fromZone     = card.closest('.drop-zone');   /* pode ser null (vem do pool) */
-
-    if (existingCard && existingCard !== card) {
-      /* ── SWAP / TROCA ──────────────────────────────────
-         O destino já tem um card diferente.
-         Se o card arrastado vem de uma zona → swap entre as duas zonas.
-         Se vem do pool → devolve o existente ao pool e coloca o novo.
-      ──────────────────────────────────────────────────── */
-      if (fromZone) {
-        /* Swap: retira ambos, troca de posição */
-        detachCard(card);
-        detachCard(existingCard);
-        placeCardInZone(targetZone, card);
-        placeCardInZone(fromZone,   existingCard);
-        animateZone(targetZone);
-        animateZone(fromZone);
-      } else {
-        /* Pool → zona ocupada: existingCard volta ao pool */
-        detachCard(card);          /* garante que não tem parentNode duplicado */
-        detachCard(existingCard);
-        existingCard.classList.add('in-pool');
-        poolGrid.appendChild(existingCard);
-        placeCardInZone(targetZone, card);
-        animateZone(targetZone);
-      }
-    } else {
-      /* ── ZONA VAZIA (ou mesmo card) ───────────────────
-         Move o card direto para a zona destino.
-      ──────────────────────────────────────────────────── */
-      detachCard(card);
-      placeCardInZone(targetZone, card);
-      animateZone(targetZone);
-    }
-
-    saveCurrentState();
-    updateCount();
-  }
-
   function animateZone(zone) {
     zone.animate(
       [{ transform: 'scale(1.03)' }, { transform: 'scale(1)' }],
@@ -674,229 +608,96 @@ import { saveRound, loadRound, clearRound } from './storage_a.js';
     );
   }
 
-  /* ══════════════════════════════════════════════════════
-     TOUCH DRAG & DROP
-  ══════════════════════════════════════════════════════ */
-
-  let touchGhost    = null;
-  let touchOffsetX  = 0;
-  let touchOffsetY  = 0;
-  let lastTouchZone = null;
-  let touchCard     = null;
-
-  function onCardTouchStart(e) {
-    if (verified) return;
-    e.preventDefault();
-
-    touchCard = e.currentTarget;
-    const touch = e.touches[0];
-    const rect  = touchCard.getBoundingClientRect();
-    touchOffsetX = touch.clientX - rect.left;
-    touchOffsetY = touch.clientY - rect.top;
-
-    /* Registra origem no momento do touchstart */
-    const fromZone = touchCard.closest('.drop-zone') || null;
-    dragState = { card: touchCard, dropped: false, fromZone: fromZone };
-    touchCard.classList.add('dragging');
-
-    /* Show trash if card is in a zone */
-    if (fromZone) {
-      showTrash();
-    }
-
-    /* Ghost visual */
-    touchGhost = touchCard.cloneNode(true);
-    touchGhost.classList.add('touch-ghost');
-    touchGhost.style.width = rect.width + 'px';
-    document.body.appendChild(touchGhost);
-    moveTouchGhost(touch.clientX, touch.clientY);
-
-    matchGrid.querySelectorAll('.drop-zone').forEach(function (z) {
-      z.classList.add('droppable');
-    });
-
-    document.addEventListener('touchmove',   onTouchMove,   { passive: false });
-    document.addEventListener('touchend',    onTouchEnd,    { once: true });
-    document.addEventListener('touchcancel', onTouchCancel, { once: true });
-  }
-
-  function onTouchMove(e) {
-    if (!dragState) return;
-    e.preventDefault();
-    const touch = e.touches[0];
-    moveTouchGhost(touch.clientX, touch.clientY);
-
-    touchGhost.style.visibility = 'hidden';
-    const el = document.elementFromPoint(touch.clientX, touch.clientY);
-    touchGhost.style.visibility = '';
-
-    const zone  = el ? el.closest('.drop-zone') : null;
-    const pool  = el ? el.closest('#pool-grid') : null;
-    const trash = el ? el.closest('#trash-zone') : null;
-
-    /* Atualiza highlights de zona */
-    if (zone !== lastTouchZone) {
-      if (lastTouchZone) lastTouchZone.classList.remove('drag-over', 'drag-over-swap');
-      if (zone) {
-        const existing = zone.querySelector('.a-card');
-        if (existing && existing !== dragState.card) {
-          zone.classList.add('drag-over-swap');
-        } else {
-          zone.classList.add('drag-over');
-        }
-      }
-      lastTouchZone = zone;
-    }
-
-    /* Pool highlight */
-    if (pool) {
-      poolGrid.classList.add('drag-over-pool');
-    } else {
-      poolGrid.classList.remove('drag-over-pool');
-    }
-
-    /* Trash highlight (only for cards from zones) */
-    if (dragState.fromZone) {
-      if (trash) {
-        trashZone.classList.add('drag-over-trash');
-      } else {
-        trashZone.classList.remove('drag-over-trash');
-      }
-    }
-  }
-
-  function onTouchEnd(e) {
-    if (!dragState) return;
-    document.removeEventListener('touchmove', onTouchMove);
-
-    const touch = (e.changedTouches || e.touches)[0];
-    touchGhost.style.visibility = 'hidden';
-    const el   = document.elementFromPoint(touch.clientX, touch.clientY);
-    touchGhost.style.visibility = '';
-
-    const targetZone  = el ? el.closest('.drop-zone') : null;
-    const targetPool  = el ? el.closest('#pool-grid') : null;
-    const targetTrash = el ? el.closest('#trash-zone') : null;
-
-    const fromZone = dragState.fromZone; /* origem registrada no touchstart */
-
-    if (targetTrash && fromZone && !verified) {
-      /* Dropped on trash — return to pool */
-      returnCardToPool(touchCard);
-      triggerTrashPulse();
-      saveCurrentState();
-      updateCount();
-      showToast('Resposta devolvida ao banco');
-    } else if (targetZone && !verified) {
-      /* Não fazer nada se soltou na zona de origem */
-      if (targetZone !== fromZone) {
-        performDrop(targetZone, touchCard);
-      }
-    } else if (targetPool && fromZone) {
-      /* Devolver ao pool explicitamente */
-      detachCard(touchCard);
-      touchCard.classList.add('in-pool');
-      poolGrid.appendChild(touchCard);
-      saveCurrentState();
-      updateCount();
-    } else if (!targetZone && !targetPool && fromZone && !verified) {
-      /* Dropped outside any valid area — return card to pool */
-      returnCardToPool(touchCard);
-      saveCurrentState();
-      updateCount();
-      showToast('Resposta devolvida');
-    }
-    /* Se veio do pool e soltou fora de zona → permanece no pool */
-
-    endTouchDrag();
-  }
-
-  function onTouchCancel() {
-    document.removeEventListener('touchmove', onTouchMove);
-    endTouchDrag();
-  }
-
-  function endTouchDrag() {
-    if (touchGhost) { touchGhost.remove(); touchGhost = null; }
-    if (touchCard)  { touchCard.classList.remove('dragging'); touchCard = null; }
-    if (lastTouchZone) { lastTouchZone.classList.remove('drag-over', 'drag-over-swap'); lastTouchZone = null; }
-    matchGrid.querySelectorAll('.drop-zone').forEach(function (z) {
-      z.classList.remove('droppable', 'drag-over', 'drag-over-swap');
-    });
-    poolGrid.classList.remove('drag-over-pool');
-    hideTrash();
-    dragState = null;
-  }
-
-  function moveTouchGhost(x, y) {
-    if (!touchGhost) return;
-    touchGhost.style.left = (x - touchOffsetX) + 'px';
-    touchGhost.style.top  = (y - touchOffsetY)  + 'px';
-  }
-
-  /* ══════════════════════════════════════════════════════
+  /* ══════════════════════════════════════════════════════════════
      PERSISTÊNCIA
-  ══════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════════════ */
 
   function saveCurrentState(isVerified) {
-    /* Coleta placements: cards dentro de drop-zones */
-    const zones = [...matchGrid.querySelectorAll('.drop-zone')];
+    if (!el.matchGrid || !el.poolGrid) return;
+    const zones = [...el.matchGrid.querySelectorAll('.drop-zone')];
     const placements = zones
-      .filter(function (z) { return z.querySelector('.a-card'); })
-      .map(function (z) {
-        const card = z.querySelector('.a-card');
-        return {
-          questionId : z.dataset.questionId,
-          answerId   : card.dataset.answerId,
-          text       : card.querySelector('.a-text').textContent
-        };
-      });
-
-    /* Ordem do pool: cards ainda no pool-grid */
-    const poolOrder = [...poolGrid.querySelectorAll('.a-card')]
-      .map(function (c) { return c.dataset.answerId; });
-
-    saveRound(currentRound, { placements, poolOrder, verified: !!isVerified });
+      .filter(z => z.querySelector('.a-card'))
+      .map(z => ({
+        questionId: z.dataset.questionId,
+        answerId:   z.querySelector('.a-card').dataset.answerId,
+        text:       z.querySelector('.a-text').textContent,
+      }));
+    const poolOrder = [...el.poolGrid.querySelectorAll('.a-card')]
+      .map(c => c.dataset.answerId);
+    saveRound(estado.currentRound, { placements, poolOrder, verified: !!isVerified });
   }
 
-  /* ══════════════════════════════════════════════════════
+  function loadValidRound(roundIndex) {
+    const state = loadRound(roundIndex);
+    if (!state) return null;
+    const start    = roundIndex * CONFIG.ITEMS_PER_ROUND;
+    const items    = estado.allItems.slice(start, start + CONFIG.ITEMS_PER_ROUND);
+    const roundIds = new Set(items.map(x => x.id));
+    const placedIds  = (state.placements || []).map(p => p.answerId);
+    const poolIds    = state.poolOrder || [];
+    const allSaved   = new Set([...placedIds, ...poolIds]);
+    const isValid    = [...roundIds].every(id => allSaved.has(id));
+    if (!isValid) {
+      console.warn('[associacao] Estado corrompido na rodada', roundIndex, '— descartando');
+      clearRound(roundIndex);
+      return null;
+    }
+    return state;
+  }
+
+  /* ══════════════════════════════════════════════════════════════
      VERIFICAÇÃO
-  ══════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════════════ */
 
   function doVerify() {
-    const zones  = [...matchGrid.querySelectorAll('.drop-zone')];
-    const filled = zones.filter(function (z) { return z.querySelector('.a-card'); }).length;
+    if (!el.matchGrid) return;
+    const zones  = [...el.matchGrid.querySelectorAll('.drop-zone')];
+    const filled = zones.filter(z => z.querySelector('.a-card')).length;
     if (filled < zones.length) {
-      showToast('Preencha todas as respostas antes de verificar!', '#ff8080');
+      showToast('Preencha todas as respostas antes de verificar!', 'erro');
       return;
     }
-    verified = true;
-    clearInterval(timerInterval);
+
+    estado.verified = true;
+    pararTimer();
     lockAllCards();
+
     const acertos = applyVerifyFeedback();
+    const total   = zones.length;
+    const erros   = total - acertos;
+
+    /* Acumular pontuação */
+    estado.totalAcertos += acertos;
+    estado.totalErros   += erros;
+    estado.totalPontos  += (acertos * CONFIG.PONTOS_ACERTO) - (erros * CONFIG.PONTOS_ERRO);
+    if (estado.totalPontos < 0) estado.totalPontos = 0;
+
     saveCurrentState(true);
-    const total  = zones.length;
-    const isLast = currentRound >= totalRounds - 1;
+
     if (acertos === total) {
-      showToast('🎯 Perfeito! ' + acertos + ' de ' + total + ' corretas!', 'var(--gold)');
+      showToast('🎯 Perfeito! ' + acertos + ' de ' + total, 'ouro');
     } else if (acertos > 0) {
-      showToast('👍 ' + acertos + ' de ' + total + ' corretas', 'var(--cyan)');
+      showToast('👍 ' + acertos + ' de ' + total + ' corretas', 'sucesso');
     } else {
-      showToast('😅 Nenhuma correta — veja as respostas', '#ff8080');
+      showToast('😅 Nenhuma correta — veja as respostas', 'erro');
     }
+
+    const isLast = estado.currentRound >= estado.totalRounds - 1;
     setVerifyState(isLast ? 'finish' : 'next');
   }
 
   function applyVerifyFeedback() {
-    const zones = [...matchGrid.querySelectorAll('.drop-zone')];
+    if (!el.matchGrid) return 0;
+    const zones = [...el.matchGrid.querySelectorAll('.drop-zone')];
     let acertos = 0;
     zones.forEach(function (zone) {
-      const correct = zone.dataset.correct;
-      const card    = zone.querySelector('.a-card');
-      const placed  = card ? card.querySelector('.a-text').textContent.trim() : '';
+      const correct  = zone.dataset.correct;
+      const card     = zone.querySelector('.a-card');
+      const placed   = card ? card.querySelector('.a-text').textContent.trim() : '';
       zone.classList.remove('correct', 'wrong');
       const oldCa = zone.querySelector('.correct-answer');
       if (oldCa) oldCa.remove();
+
       if (placed === correct) {
         acertos++;
         zone.classList.add('correct');
@@ -911,143 +712,637 @@ import { saveRound, loadRound, clearRound } from './storage_a.js';
     return acertos;
   }
 
+  /* ══════════════════════════════════════════════════════════════
+     ESTADOS DO BOTÃO VERIFICAR
+  ══════════════════════════════════════════════════════════════ */
+
   function setVerifyState(state) {
+    if (!el.btnVerif) return;
     if (state === 'verify') {
-      btnVerifLbl.textContent = 'Verificar';
-      btnVerifIcon.innerHTML  = '<polyline points="20 6 9 17 4 12"/>';
-      btnVerif.onclick = doVerify;
+      el.btnVerifLbl.textContent = 'Verificar';
+      el.btnVerifIcon.innerHTML  = '<polyline points="20 6 9 17 4 12"/>';
+      el.btnVerif.onclick = doVerify;
     } else if (state === 'next') {
-      btnVerifLbl.textContent = 'Próxima rodada';
-      btnVerifIcon.innerHTML  = '<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>';
-      btnVerif.onclick = function () {
-        currentRound++;
-        renderRound(loadValidRound(currentRound));
+      el.btnVerifLbl.textContent = 'Próxima rodada';
+      el.btnVerifIcon.innerHTML  = '<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>';
+      el.btnVerif.onclick = function () {
+        estado.currentRound++;
+        renderRound(loadValidRound(estado.currentRound));
       };
     } else if (state === 'finish') {
-      btnVerifLbl.textContent = 'Finalizar';
-      btnVerifIcon.innerHTML  = '<polyline points="20 6 9 17 4 12"/>';
-      btnVerif.onclick = function () {
-        showToast('🎉 Jogo finalizado!', 'var(--gold)');
-      };
+      el.btnVerifLbl.textContent = 'Ver resultado';
+      el.btnVerifIcon.innerHTML  = '<polyline points="20 6 9 17 4 12"/>';
+      el.btnVerif.onclick = mostrarResultado;
     }
   }
 
-  /* ══════════════════════════════════════════════════════
-     BOTÕES FOOTER
-  ══════════════════════════════════════════════════════ */
+  /* ══════════════════════════════════════════════════════════════
+     RESULTADO
+  ══════════════════════════════════════════════════════════════ */
 
-  btnVoltar.addEventListener('click', function () {
-    if (currentRound === 0) { showToast('Já estás na primeira rodada', '#ff8080'); return; }
-    currentRound--;
-    renderRound(loadValidRound(currentRound));
-  });
+  function mostrarResultado() {
+    pararTimer();
+    const total = estado.totalAcertos + estado.totalErros;
+    const pct   = total > 0 ? Math.round((estado.totalAcertos / total) * 100) : 0;
 
-  btnReset.addEventListener('click', function () {
-    if (verified) { showToast('Já verificado — avance ou volte para outra rodada', '#ff8080'); return; }
+    /* Trofeu + título */
+    let trophy = '🏆', title = 'Excelente!', subtit = 'Todas as rodadas concluídas';
+    if (pct === 100) { trophy = '🌟'; title = 'Perfeito!'; }
+    else if (pct >= 80) { trophy = '🏆'; title = 'Muito bem!'; }
+    else if (pct >= 60) { trophy = '👍'; title = 'Bom trabalho!'; }
+    else { trophy = '📚'; title = 'Continue praticando!'; subtit = 'A prática leva à perfeição'; }
 
-    /* Devolve todos os cards que estão nas zonas de volta ao pool */
-    matchGrid.querySelectorAll('.drop-zone').forEach(function (zone) {
-      const card = zone.querySelector('.a-card');
-      if (card) {
-        detachCard(card);
-        card.classList.add('in-pool');
-        poolGrid.appendChild(card);
+    if (el.resultTrophy)   el.resultTrophy.textContent   = trophy;
+    if (el.resultTitle)    el.resultTitle.textContent     = title;
+    if (el.resultSubtitle) el.resultSubtitle.textContent  = subtit;
+    if (el.resultPontos)   el.resultPontos.textContent    = estado.totalPontos;
+    if (el.resultAcertos)  el.resultAcertos.textContent   = estado.totalAcertos;
+    if (el.resultErros)    el.resultErros.textContent     = estado.totalErros;
+    if (el.resultPct)      el.resultPct.textContent       = pct + '%';
+    if (el.resultTempo)    el.resultTempo.textContent     = formatTime(estado.timerSecs);
+
+    /* Feedback textual */
+    if (el.resultFeedback) {
+      el.resultFeedback.classList.remove('hidden');
+      el.resultFeedback.className = 'assoc-result__feedback';
+      let feedTipo, feedIcon, feedText;
+      if (pct === 100) {
+        feedTipo = 'assoc-result__feedback--perfeito'; feedIcon = '⭐'; feedText = 'Pontuação máxima — perfeito!';
+      } else if (pct >= 80) {
+        feedTipo = 'assoc-result__feedback--otimo';    feedIcon = '🎯'; feedText = 'Excelente desempenho!';
+      } else if (pct >= 60) {
+        feedTipo = 'assoc-result__feedback--bom';      feedIcon = '💪'; feedText = 'Bom resultado, continue assim!';
+      } else {
+        feedTipo = 'assoc-result__feedback--treinar';  feedIcon = '📖'; feedText = 'Revise o conteúdo e tente novamente';
       }
-      zone.classList.remove('filled', 'drag-over', 'drag-over-swap', 'droppable', 'correct', 'wrong');
-      zone.title = '';
-      const hint = zone.querySelector('.drop-hint');
-      if (hint) hint.style.display = '';
-      const ca = zone.querySelector('.correct-answer');
-      if (ca) ca.remove();
-    });
-
-    clearRound(currentRound);
-    updateCount();
-    showToast('Rodada reiniciada');
-  });
-
-  /* ══════════════════════════════════════════════════════
-     CSS DINÂMICO para pool em drag-over
-  ══════════════════════════════════════════════════════ */
-
-  (function injectPoolDragStyle() {
-    const style = document.createElement('style');
-    style.textContent =
-      '#pool-grid.drag-over-pool {' +
-        'outline: 2px dashed rgba(0,229,200,0.45);' +
-        'outline-offset: 4px;' +
-        'background: rgba(0,229,200,0.04);' +
-        'border-radius: 10px;' +
-      '}' +
-      /* Card dentro de zona: visual compacto integrado */
-      '.drop-zone .a-card {' +
-        'width: 100%; margin: 0;' +
-        'background: transparent;' +
-        'border: none;' +
-        'padding: 0;' +
-        'box-shadow: none;' +
-        'cursor: grab;' +
-      '}' +
-      '.drop-zone.filled .a-card {' +
-        'pointer-events: auto;' +
-      '}' +
-      /* Zona filled com card dentro: layout */
-      '.drop-zone.filled {' +
-        'justify-content: flex-start;' +
-        'text-align: left;' +
-        'cursor: default;' +
-      '}' +
-      /* Remove hover vermelho antigo — remoção só por lixeira/X/drag-out */
-      '.drop-zone.filled:hover {' +
-        'border-color: rgba(0,229,200,0.50);' +
-        'background: rgba(0,229,200,0.09);' +
-      '}' +
-      '.drop-zone.filled:hover .drop-hint { color: var(--white); }' +
-      /* Card em zona herda visual do pool mas integrado */
-      '.drop-zone .a-card .a-text {' +
-        'font-size: 12.5px;' +
-        'font-weight: 400;' +
-        'color: var(--white-dim);' +
-        'line-height: 1.45;' +
-      '}' +
-      '.drop-zone .a-card:hover {' +
-        'border: none;' +
-        'box-shadow: none;' +
-        'opacity: 1;' +
-      '}' +
-      /* Indicador de que pode ser arrastado */
-      '.drop-zone .a-card .drag-icon {' +
-        'color: var(--cyan);' +
-        'opacity: 0.7;' +
-      '}';
-    document.head.appendChild(style);
-  })();
-
-  /* ══════════════════════════════════════════════════════
-     INIT
-  ══════════════════════════════════════════════════════ */
-
-  /* Valida o estado salvo antes de usá-lo — descarta se corrompido */
-  function loadValidRound(roundIndex) {
-    const state = loadRound(roundIndex);
-    if (!state) return null;
-    /* Verifica se todos os IDs do round estão contabilizados */
-    const start = roundIndex * ITEMS_PER_ROUND;
-    const items = allItems.slice(start, start + ITEMS_PER_ROUND);
-    const roundIds = new Set(items.map(function (x) { return x.id; }));
-    const placedIds  = (state.placements || []).map(function (p) { return p.answerId; });
-    const poolIds    = (state.poolOrder  || []);
-    const allSaved   = new Set([...placedIds, ...poolIds]);
-    /* Se algum ID da rodada não está em nenhum dos dois lados, o estado está inconsistente */
-    const isValid = [...roundIds].every(function (id) { return allSaved.has(id); });
-    if (!isValid) {
-      console.warn('[associacao] Estado corrompido para rodada', roundIndex, '— descartando');
-      clearRound(roundIndex);
-      return null;
+      el.resultFeedback.classList.add(feedTipo);
+      if (el.resultFeedIcon) el.resultFeedIcon.textContent = feedIcon;
+      if (el.resultFeedText) el.resultFeedText.textContent = feedText;
     }
-    return state;
+
+    mostrarTela('screenResult');
   }
 
-  renderRound(loadValidRound(currentRound));
+  /* ══════════════════════════════════════════════════════════════
+     PAUSA
+  ══════════════════════════════════════════════════════════════ */
+
+  function pausar() {
+    estado.pausado = true;
+    pausarTimer();
+    if (el.pauseOverlay) el.pauseOverlay.classList.remove('hidden');
+    /* Atualiza stats no overlay */
+    if (el.pauseTempo) el.pauseTempo.textContent = formatTime(estado.timerSecs);
+    /* Altera ícone do botão */
+    if (el.pauseIcon)  el.pauseIcon.innerHTML  = '<polygon points="5 3 19 12 5 21 5 3"/>';
+    if (el.pauseLabel) el.pauseLabel.textContent = 'Retomar';
+  }
+
+  function retomar() {
+    estado.pausado = false;
+    retornarTimer();
+    if (el.pauseOverlay) el.pauseOverlay.classList.add('hidden');
+    if (el.pauseIcon)  el.pauseIcon.innerHTML  =
+      '<rect x="3" y="2" width="3.5" height="12" rx="1"/>' +
+      '<rect x="9.5" y="2" width="3.5" height="12" rx="1"/>';
+    if (el.pauseLabel) el.pauseLabel.textContent = 'Pausar';
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     NOVO JOGO — reiniciar do zero
+  ══════════════════════════════════════════════════════════════ */
+
+  function novoJogo() {
+    clearAll();
+    estado.currentRound  = 0;
+    estado.totalAcertos  = 0;
+    estado.totalErros    = 0;
+    estado.totalPontos   = 0;
+    estado.timerSecs     = 0;
+    estado.pausado       = false;
+    /* Regera seed */
+    const semData = ASSOCIACAO_DATA[CONFIG.SEMESTRE_ATIVO] || {};
+    const items   = semData[estado.discId] || [];
+    estado.allItems    = shuffle(items);
+    estado.totalRounds = Math.ceil(estado.allItems.length / CONFIG.ITEMS_PER_ROUND);
+    _salvarSeed();
+    mostrarIntro();
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     DRAG HTML5 — CARDS
+  ══════════════════════════════════════════════════════════════ */
+
+  let dragState = null;
+  let ghostEl   = null;
+
+  function createGhost(text) {
+    if (ghostEl) ghostEl.remove();
+    ghostEl = document.createElement('div');
+    ghostEl.className = 'drag-ghost';
+    ghostEl.textContent = text;
+    document.body.appendChild(ghostEl);
+    return ghostEl;
+  }
+
+  function onCardDragStart(e) {
+    if (estado.verified || estado.pausado) { e.preventDefault(); return; }
+    const card     = e.currentTarget;
+    const fromZone = card.closest('.drop-zone') || null;
+    dragState = { card: card, dropped: false, fromZone: fromZone };
+    card.classList.add('dragging');
+    if (el.matchGrid) {
+      el.matchGrid.querySelectorAll('.drop-zone').forEach(z => z.classList.add('droppable'));
+    }
+    if (fromZone) showTrash();
+    const text  = card.querySelector('.a-text').textContent;
+    const ghost = createGhost(text);
+    e.dataTransfer.setDragImage(ghost, 28, 24);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', card.dataset.answerId);
+  }
+
+  function onCardDragEnd() {
+    if (ghostEl) { ghostEl.remove(); ghostEl = null; }
+    hideTrash();
+    if (dragState) {
+      const card     = dragState.card;
+      const fromZone = dragState.fromZone;
+      card.classList.remove('dragging');
+      if (!dragState.dropped) {
+        if (fromZone) {
+          returnCardToPool(card);
+          saveCurrentState();
+          atualizarContadorFilled();
+          showToast('Resposta devolvida', 'info');
+        } else if (!card.parentNode) {
+          if (el.poolGrid) el.poolGrid.appendChild(card);
+          card.classList.add('in-pool');
+          saveCurrentState();
+          atualizarContadorFilled();
+        }
+      }
+      dragState = null;
+    }
+    if (el.matchGrid) {
+      el.matchGrid.querySelectorAll('.drop-zone').forEach(z =>
+        z.classList.remove('droppable', 'drag-over', 'drag-over-swap')
+      );
+    }
+    if (el.poolGrid) el.poolGrid.classList.remove('drag-over-pool');
+  }
+
+  /* ── DROP ZONES ── */
+
+  function onZoneDragEnter(e) {
+    e.preventDefault();
+    if (!dragState || estado.verified) return;
+    const zone     = e.currentTarget;
+    const existing = zone.querySelector('.a-card');
+    if (existing && existing !== dragState.card) {
+      zone.classList.remove('drag-over');
+      zone.classList.add('drag-over-swap');
+    } else {
+      zone.classList.remove('drag-over-swap');
+      zone.classList.add('drag-over');
+    }
+  }
+
+  function onZoneDragOver(e) {
+    e.preventDefault();
+    if (dragState && !estado.verified) e.dataTransfer.dropEffect = 'move';
+  }
+
+  function onZoneDragLeave(e) {
+    const zone = e.currentTarget;
+    if (!zone.contains(e.relatedTarget)) {
+      zone.classList.remove('drag-over', 'drag-over-swap');
+    }
+  }
+
+  function onZoneDrop(e) {
+    e.preventDefault();
+    if (!dragState || estado.verified) { endDrag(); return; }
+    const targetZone = e.currentTarget;
+    const card       = dragState.card;
+    if (targetZone === card.closest('.drop-zone')) {
+      targetZone.classList.remove('drag-over', 'drag-over-swap');
+      dragState.dropped = true;
+      endDrag();
+      return;
+    }
+    performDrop(targetZone, card);
+    dragState.dropped = true;
+    endDrag();
+  }
+
+  /* ── POOL ── */
+
+  function onPoolDragEnter(e) {
+    e.preventDefault();
+    if (!dragState || estado.verified) return;
+    if (dragState.fromZone && el.poolGrid) el.poolGrid.classList.add('drag-over-pool');
+  }
+
+  function onPoolDragOver(e) {
+    e.preventDefault();
+    if (dragState && !estado.verified) e.dataTransfer.dropEffect = 'move';
+  }
+
+  function onPoolDragLeave(e) {
+    if (el.poolGrid && !el.poolGrid.contains(e.relatedTarget)) {
+      el.poolGrid.classList.remove('drag-over-pool');
+    }
+  }
+
+  function onPoolDrop(e) {
+    e.preventDefault();
+    if (el.poolGrid) el.poolGrid.classList.remove('drag-over-pool');
+    if (!dragState || estado.verified) { endDrag(); return; }
+    const card = dragState.card;
+    if (card.closest('#pool-grid')) { dragState.dropped = true; endDrag(); return; }
+    detachCard(card);
+    card.classList.add('in-pool');
+    if (el.poolGrid) el.poolGrid.appendChild(card);
+    dragState.dropped = true;
+    saveCurrentState();
+    atualizarContadorFilled();
+    endDrag();
+  }
+
+  function endDrag() {
+    if (el.matchGrid) {
+      el.matchGrid.querySelectorAll('.drop-zone').forEach(z =>
+        z.classList.remove('droppable', 'drag-over', 'drag-over-swap')
+      );
+    }
+    if (el.poolGrid) el.poolGrid.classList.remove('drag-over-pool');
+    dragState = null;
+  }
+
+  /* ── LIXEIRA ── */
+
+  function showTrash() { if (el.trashZone) el.trashZone.classList.add('visible'); }
+  function hideTrash() { if (el.trashZone) el.trashZone.classList.remove('visible', 'drag-over-trash'); }
+
+  function triggerTrashPulse() {
+    if (!el.trashZone) return;
+    el.trashZone.classList.remove('pulse');
+    void el.trashZone.offsetWidth;
+    el.trashZone.classList.add('pulse');
+    setTimeout(function () { el.trashZone.classList.remove('pulse'); }, 600);
+  }
+
+  function onTrashDragEnter(e) {
+    e.preventDefault();
+    if (!dragState || estado.verified || !dragState.fromZone) return;
+    if (el.trashZone) el.trashZone.classList.add('drag-over-trash');
+  }
+
+  function onTrashDragOver(e) {
+    e.preventDefault();
+    if (dragState && !estado.verified && dragState.fromZone) e.dataTransfer.dropEffect = 'move';
+  }
+
+  function onTrashDragLeave(e) {
+    if (el.trashZone && !el.trashZone.contains(e.relatedTarget)) {
+      el.trashZone.classList.remove('drag-over-trash');
+    }
+  }
+
+  function onTrashDrop(e) {
+    e.preventDefault();
+    if (el.trashZone) el.trashZone.classList.remove('drag-over-trash');
+    if (!dragState || estado.verified || !dragState.fromZone) { endDrag(); return; }
+    returnCardToPool(dragState.card);
+    triggerTrashPulse();
+    dragState.dropped = true;
+    saveCurrentState();
+    atualizarContadorFilled();
+    showToast('Resposta devolvida ao banco', 'info');
+    hideTrash();
+    endDrag();
+  }
+
+  /* ── DROP CENTRAL ── */
+
+  function performDrop(targetZone, card) {
+    const existingCard = targetZone.querySelector('.a-card');
+    const fromZone     = card.closest('.drop-zone');
+    if (existingCard && existingCard !== card) {
+      if (fromZone) {
+        detachCard(card);
+        detachCard(existingCard);
+        placeCardInZone(targetZone, card);
+        placeCardInZone(fromZone,   existingCard);
+        animateZone(targetZone);
+        animateZone(fromZone);
+      } else {
+        detachCard(card);
+        detachCard(existingCard);
+        existingCard.classList.add('in-pool');
+        if (el.poolGrid) el.poolGrid.appendChild(existingCard);
+        placeCardInZone(targetZone, card);
+        animateZone(targetZone);
+      }
+    } else {
+      detachCard(card);
+      placeCardInZone(targetZone, card);
+      animateZone(targetZone);
+    }
+    saveCurrentState();
+    atualizarContadorFilled();
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     TOUCH DRAG & DROP
+  ══════════════════════════════════════════════════════════════ */
+
+  let touchGhost    = null;
+  let touchOffsetX  = 0;
+  let touchOffsetY  = 0;
+  let lastTouchZone = null;
+  let touchCard     = null;
+
+  function onCardTouchStart(e) {
+    if (estado.verified || estado.pausado) return;
+    e.preventDefault();
+    touchCard = e.currentTarget;
+    const touch  = e.touches[0];
+    const rect   = touchCard.getBoundingClientRect();
+    touchOffsetX = touch.clientX - rect.left;
+    touchOffsetY = touch.clientY - rect.top;
+    const fromZone = touchCard.closest('.drop-zone') || null;
+    dragState = { card: touchCard, dropped: false, fromZone: fromZone };
+    touchCard.classList.add('dragging');
+
+    /* Clona como ghost */
+    touchGhost = touchCard.cloneNode(true);
+    touchGhost.classList.add('touch-ghost');
+    touchGhost.style.width  = touchCard.offsetWidth + 'px';
+    touchGhost.style.left   = (touch.clientX - touchOffsetX) + 'px';
+    touchGhost.style.top    = (touch.clientY - touchOffsetY)  + 'px';
+    document.body.appendChild(touchGhost);
+
+    if (fromZone) showTrash();
+    if (el.matchGrid) {
+      el.matchGrid.querySelectorAll('.drop-zone').forEach(z => z.classList.add('droppable'));
+    }
+
+    document.addEventListener('touchmove',   onTouchMove,   { passive: false });
+    document.addEventListener('touchend',    onTouchEnd,    { passive: false });
+    document.addEventListener('touchcancel', onTouchCancel, { passive: false });
+  }
+
+  function onTouchMove(e) {
+    e.preventDefault();
+    if (!dragState) return;
+    const touch = e.touches[0];
+    moveTouchGhost(touch.clientX, touch.clientY);
+
+    touchGhost.style.visibility = 'hidden';
+    const el2 = document.elementFromPoint(touch.clientX, touch.clientY);
+    touchGhost.style.visibility = '';
+
+    const zone  = el2 ? el2.closest('.drop-zone') : null;
+    const trash = el2 ? el2.closest('#trash-zone') : null;
+
+    /* Atualiza highlight */
+    if (lastTouchZone && lastTouchZone !== zone) {
+      lastTouchZone.classList.remove('drag-over', 'drag-over-swap');
+    }
+    if (zone && !estado.verified) {
+      const existing = zone.querySelector('.a-card');
+      if (existing && existing !== touchCard) {
+        zone.classList.add('drag-over-swap');
+      } else {
+        zone.classList.add('drag-over');
+      }
+      lastTouchZone = zone;
+    }
+
+    if (el.poolGrid) {
+      const pool = el2 ? el2.closest('#pool-grid') : null;
+      el.poolGrid.classList.toggle('drag-over-pool', !!(pool && dragState.fromZone));
+    }
+
+    if (dragState.fromZone && el.trashZone) {
+      el.trashZone.classList.toggle('drag-over-trash', !!trash);
+    }
+  }
+
+  function onTouchEnd(e) {
+    if (!dragState) return;
+    document.removeEventListener('touchmove',   onTouchMove);
+    document.removeEventListener('touchend',    onTouchEnd);
+    document.removeEventListener('touchcancel', onTouchCancel);
+
+    const touch = (e.changedTouches || e.touches)[0];
+    touchGhost.style.visibility = 'hidden';
+    const elAt = document.elementFromPoint(touch.clientX, touch.clientY);
+    touchGhost.style.visibility = '';
+
+    const targetZone  = elAt ? elAt.closest('.drop-zone') : null;
+    const targetPool  = elAt ? elAt.closest('#pool-grid') : null;
+    const targetTrash = elAt ? elAt.closest('#trash-zone') : null;
+    const fromZone    = dragState.fromZone;
+
+    if (targetTrash && fromZone && !estado.verified) {
+      returnCardToPool(touchCard);
+      triggerTrashPulse();
+      saveCurrentState();
+      atualizarContadorFilled();
+      showToast('Resposta devolvida ao banco', 'info');
+    } else if (targetZone && !estado.verified) {
+      if (targetZone !== fromZone) performDrop(targetZone, touchCard);
+    } else if (targetPool && fromZone) {
+      detachCard(touchCard);
+      touchCard.classList.add('in-pool');
+      if (el.poolGrid) el.poolGrid.appendChild(touchCard);
+      saveCurrentState();
+      atualizarContadorFilled();
+    } else if (!targetZone && !targetPool && fromZone && !estado.verified) {
+      returnCardToPool(touchCard);
+      saveCurrentState();
+      atualizarContadorFilled();
+      showToast('Resposta devolvida', 'info');
+    }
+
+    endTouchDrag();
+  }
+
+  function onTouchCancel() {
+    document.removeEventListener('touchmove',   onTouchMove);
+    document.removeEventListener('touchend',    onTouchEnd);
+    document.removeEventListener('touchcancel', onTouchCancel);
+    endTouchDrag();
+  }
+
+  function endTouchDrag() {
+    if (touchGhost) { touchGhost.remove(); touchGhost = null; }
+    if (touchCard)  { touchCard.classList.remove('dragging'); touchCard = null; }
+    if (lastTouchZone) { lastTouchZone.classList.remove('drag-over', 'drag-over-swap'); lastTouchZone = null; }
+    if (el.matchGrid) {
+      el.matchGrid.querySelectorAll('.drop-zone').forEach(z =>
+        z.classList.remove('droppable', 'drag-over', 'drag-over-swap')
+      );
+    }
+    if (el.poolGrid) el.poolGrid.classList.remove('drag-over-pool');
+    hideTrash();
+    dragState = null;
+  }
+
+  function moveTouchGhost(x, y) {
+    if (!touchGhost) return;
+    touchGhost.style.left = (x - touchOffsetX) + 'px';
+    touchGhost.style.top  = (y - touchOffsetY) + 'px';
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     EVENTOS DE BOTÕES
+  ══════════════════════════════════════════════════════════════ */
+
+  function bindEvents() {
+    /* Voltar (header) */
+    if (el.btnBack) {
+      el.btnBack.addEventListener('click', function (e) {
+        e.preventDefault();
+        if (estado.telaAtual === 'screenGame') {
+          mostrarIntro();
+        } else {
+          /* Em outros contextos, tenta navegar para a página anterior */
+          history.back();
+        }
+      });
+    }
+
+    /* Intro: Começar */
+    if (el.btnStart) {
+      el.btnStart.addEventListener('click', function () {
+        estado.totalAcertos = 0;
+        estado.totalErros   = 0;
+        estado.totalPontos  = 0;
+        estado.currentRound = 0;
+        renderRound(null);
+      });
+    }
+
+    /* Intro: Continuar */
+    if (el.btnContinuar) {
+      el.btnContinuar.addEventListener('click', function () {
+        renderRound(loadValidRound(estado.currentRound));
+      });
+    }
+
+    /* Jogo: Voltar rodada */
+    if (el.btnVoltar) {
+      el.btnVoltar.addEventListener('click', function () {
+        if (estado.currentRound === 0) {
+          showToast('Já estás na primeira rodada', 'erro');
+          return;
+        }
+        estado.currentRound--;
+        renderRound(loadValidRound(estado.currentRound));
+      });
+    }
+
+    /* Jogo: Desfazer tudo */
+    if (el.btnReset) {
+      el.btnReset.addEventListener('click', function () {
+        if (estado.verified) {
+          showToast('Já verificado — avance ou volte para outra rodada', 'erro');
+          return;
+        }
+        if (!el.matchGrid) return;
+        el.matchGrid.querySelectorAll('.drop-zone').forEach(function (zone) {
+          const card = zone.querySelector('.a-card');
+          if (card) {
+            detachCard(card);
+            card.classList.add('in-pool');
+            if (el.poolGrid) el.poolGrid.appendChild(card);
+          }
+          zone.classList.remove('filled', 'drag-over', 'drag-over-swap', 'droppable', 'correct', 'wrong');
+          zone.title = '';
+          const hint = zone.querySelector('.drop-hint');
+          if (hint) hint.style.display = '';
+          const ca = zone.querySelector('.correct-answer');
+          if (ca) ca.remove();
+        });
+        clearRound(estado.currentRound);
+        atualizarContadorFilled();
+        showToast('Rodada reiniciada', 'info');
+      });
+    }
+
+    /* Jogo: Pausa / Retomar */
+    if (el.btnPause) {
+      el.btnPause.addEventListener('click', function () {
+        if (!estado.pausado) pausar();
+        else retomar();
+      });
+    }
+
+    if (el.btnRetomar) {
+      el.btnRetomar.addEventListener('click', retomar);
+    }
+
+    /* Jogo: Ir para intro */
+    if (el.btnVoltarIntro) {
+      el.btnVoltarIntro.addEventListener('click', function () {
+        pararTimer();
+        mostrarIntro();
+      });
+    }
+
+    /* Pausa: menu */
+    if (el.btnPauseMenu) {
+      el.btnPauseMenu.addEventListener('click', function () {
+        retomar();
+        pararTimer();
+        mostrarIntro();
+      });
+    }
+
+    /* Resultado: jogar novamente */
+    if (el.btnRejogo) {
+      el.btnRejogo.addEventListener('click', novoJogo);
+    }
+
+    /* Resultado: menu */
+    if (el.btnMenu) {
+      el.btnMenu.addEventListener('click', function () {
+        novoJogo();
+        mostrarIntro();
+      });
+    }
+
+    /* Empty: voltar */
+    const btnEmptyBack = $('btn-empty-back');
+    if (btnEmptyBack) {
+      btnEmptyBack.addEventListener('click', function () {
+        history.back();
+      });
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     INIT
+  ══════════════════════════════════════════════════════════════ */
+
+  document.addEventListener('DOMContentLoaded', function () {
+    initDOM();
+    bindEvents();
+
+    /* Pequeno delay para a tela de loading aparecer */
+    setTimeout(function () {
+      const ok = carregarItens();
+      if (!ok) {
+        mostrarTela('screenEmpty');
+        return;
+      }
+      aplicarTema(estado.discId);
+      mostrarIntro();
+    }, 300);
+  });
 
 })();
