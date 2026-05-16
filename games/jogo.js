@@ -68,7 +68,21 @@ const JOGOS = [
     duracao: '10–20 min',
     dificuldade: '★★★',
   },
+
+    // ── ASSOCIAÇÃO ────────────────────────
+  {
+    id: 'associacao',
+    nome: 'Associação',
+    tipo: 'Associação',
+    status: 'disponível',
+    icon: '🔗',
+    descricao: 'Conecte conceitos com suas definições arrastando e soltando os pares corretos.',
+    duracao: '4–8 min',
+    dificuldade: '★★☆',
+  },
+  
 ];
+
 
 
 /* ═══════════════════════════════════════════
