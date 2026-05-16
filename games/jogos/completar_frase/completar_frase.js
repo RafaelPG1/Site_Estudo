@@ -119,7 +119,11 @@ function _timerExpirou() {
     if (questaoId) _registrarNoHistorico(questaoId, false);
   }
 
+  // Exibe a resposta correta no feedback
+  if (p?.resposta) UI.renderFeedback(false, p.resposta);
+
   _atualizarMeta();
+  _salvarSessao('question');
 
   const ultima = Estado.indice >= Estado.lista.length - 1;
   UI.renderBtnNextLabel(ultima);
@@ -133,8 +137,10 @@ export function normalizar(txt) {
   return (txt ?? '')
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9/]/g, '')
+    .replace(/[\u0300-\u036f]/g, '') // remove acentos
+    .replace(/[-_]/g, '')            // remove hífens e underscores
+    .replace(/\s+/g, '')             // remove todos os espaços
+    .replace(/[^a-z0-9/]/g, '')      // remove qualquer outro caractere especial
     .trim();
 }
 

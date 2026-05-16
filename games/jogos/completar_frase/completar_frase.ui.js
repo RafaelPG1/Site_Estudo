@@ -198,14 +198,10 @@ export function renderTimer(seg, total, warn, danger) {
 export function renderTimerExpirou() {
   if (Els.inputAnswer) {
     Els.inputAnswer.disabled = true;
-    Els.inputAnswer.value    = 'null';
+    Els.inputAnswer.value    = '';
     Els.inputAnswer.classList.add('state-err');
   }
   if (Els.btnCheck) Els.btnCheck.disabled = true;
-  if (Els.feedbackLine) {
-    Els.feedbackLine.className = 'feedback-line err show';
-    // O texto com a resposta correta é inserido pelo .js ao chamar renderFeedback
-  }
 }
 
 /* ══════════════════════════════════════════════════════════
