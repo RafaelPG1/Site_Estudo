@@ -455,6 +455,59 @@ export function esconderResultado() {
 }
 
 /* ══════════════════════════════════════════════════════════
+   TELA VAZIA — sem questões para a disciplina/semestre
+   ══════════════════════════════════════════════════════════ */
+export function mostrarTelaVazia({ disc, sem, semDisp }) {
+  // Esconde tudo e exibe a tela de empty se existir no HTML
+  if (Els.screenIntro)  Els.screenIntro.style.display  = 'none';
+  if (Els.gameLayout)   Els.gameLayout.style.display   = 'none';
+
+  const tela = $('screen-empty');
+  if (!tela) {
+    // Fallback: reutiliza a intro com mensagem de erro
+    if (Els.screenIntro) {
+      Els.screenIntro.style.display = '';
+      const desc = Els.screenIntro.querySelector('.cf-intro-card__desc');
+      if (desc) {
+        if (!semDisp || Object.keys(semDisp).length === 0) {
+          desc.innerHTML = `O jogo <strong>Complete a Frase</strong> ainda não está disponível
+            para o semestre <strong>${sem || '—'}</strong>.<br>
+            Selecione outro semestre ou aguarde novas adições!`;
+        } else {
+          desc.innerHTML = `Não encontramos questões para esta disciplina ainda.<br>
+            Tente outra ou aguarde novas adições!`;
+        }
+      }
+      // Esconde o botão Começar
+      $('btn-start')?.classList.add('hidden');
+    }
+    return;
+  }
+
+  // Configura link de voltar
+  const btnBack = $('btn-empty-back') ?? tela.querySelector('a');
+  if (btnBack) btnBack.href = `../../jogo.html${sem ? `?sem=${sem}` : ''}`;
+
+  // Texto da tela
+  const emptyTitle = $('empty-title') ?? tela.querySelector('h2');
+  const emptyDesc  = $('empty-desc')  ?? tela.querySelector('p');
+
+  if (!semDisp || Object.keys(semDisp).length === 0) {
+    if (emptyTitle) emptyTitle.textContent = 'Indisponível neste semestre';
+    if (emptyDesc)  emptyDesc.innerHTML =
+      `O jogo <strong>Complete a Frase</strong> ainda não está disponível
+       para o semestre <strong>${sem || '—'}</strong>.<br>
+       Selecione outro semestre ou aguarde novas adições!`;
+  } else {
+    if (emptyTitle) emptyTitle.textContent = 'Sem perguntas';
+    if (emptyDesc)  emptyDesc.innerHTML =
+      'Não encontramos questões para esta disciplina ainda.<br>Tente outra ou aguarde novas adições!';
+  }
+
+  tela.style.display = '';
+}
+
+/* ══════════════════════════════════════════════════════════
    BANNER DE REVISÃO
    ══════════════════════════════════════════════════════════ */
 export function atualizarBannerRevisao(modoRevisao, totalQuestoes) {

@@ -37,13 +37,6 @@ import * as UI                                          from './completar_frase.
 const { disc: URL_DISC, sem: URL_SEM } = lerParams();
 
 /* ══════════════════════════════════════════════════════════
-   ACESSO AOS DADOS  (expostos como global pelo data.js)
-   ══════════════════════════════════════════════════════════ */
-function getDados() {
-  return window.completarFraseData ?? {};
-}
-
-/* ══════════════════════════════════════════════════════════
    CONSTANTES
    ══════════════════════════════════════════════════════════ */
 export const MAX_QUESTOES  = 6;
@@ -252,16 +245,7 @@ function _lerSessao() {
    CONSTRUIR LISTA DE QUESTÕES
    ══════════════════════════════════════════════════════════ */
 function _construirLista() {
-  const dados    = getDados();
-  const semData  = dados[URL_SEM]    ?? {};
-  const discData = semData[URL_DISC] ?? [];
-
-  const fonte = discData.length
-    ? discData
-    : Object.values(semData).flat();
-
-  Estado.banco = fonte.length ? fonte : [];
-
+  // Estado.banco já foi populado no _init via import() dinâmico
   if (Estado.modoRevisao && Estado.cardsRevisao?.length > 0) {
     Estado.lista = shuffle(Estado.cardsRevisao).slice(0, MAX_QUESTOES);
   } else {
@@ -519,18 +503,7 @@ export function mostrarIntro() {
   _naIntro = true;
   _timerClear();
 
-  // Garante banco populado
-  if (Estado.banco.length === 0) {
-    const dados    = getDados();
-    const semData  = dados[URL_SEM]    ?? {};
-    const discData = semData[URL_DISC] ?? [];
-    Estado.banco = discData.length ? discData : Object.values(semData).flat();
-  }
-
-  // historicoRevisao já está em memória (carregado do Firestore no init).
-  // Recarregar do Firestore aqui causaria delay visual desnecessário.
-  // A memória é atualizada em _registrarNoHistorico() a cada resposta.
-
+  // Estado.banco já populado no _init via import() dinâmico
   const sessaoSalva = _lerSessao();
 
   UI.mostrarIntro({
@@ -590,19 +563,28 @@ async function _init() {
   /* ── 1. Shell (header + cores) ─────────────────────────── */
   Shell.init({ icon: '✏️', nome: 'Complete a Frase' });
 
-  /* ── 2. Popula banco imediatamente ─────────────────────── */
-  {
-    const dados    = getDados();
-    const semData  = dados[URL_SEM]    ?? {};
-    const discData = semData[URL_DISC] ?? [];
-    Estado.banco = discData.length ? discData : Object.values(semData).flat();
-  }
-
-  /* ── 3. Usuário ─────────────────────────────────────────── */
+  /* ── 2. Usuário ─────────────────────────────────────────── */
   const usuarioObj  = getUsuario();
   Estado.usuario    = usuarioObj?.uid ?? 'visitante';
   Estado.discId     = URL_DISC;
   Estado.sem        = URL_SEM;
+
+  /* ── 3. Carrega banco de questões via import() dinâmico ─── */
+  const ano = URL_SEM ? URL_SEM.split('.')[0] : null;
+  let semDisp = null;
+
+  if (ano) {
+    try {
+      const modulo = await import(
+        `../../../content/game/completar_frase/${ano}/completar_frase_data.js`
+      );
+      semDisp       = modulo.COMPLETAR_FRASE_DATA?.[URL_SEM] ?? null;
+      Estado.banco  = semDisp?.[URL_DISC] ?? [];
+    } catch (err) {
+      console.warn(`[completar_frase] Arquivo de dados não encontrado para ${ano}:`, err.message);
+      Estado.banco = [];
+    }
+  }
 
   /* ── 4. SessionNav ─────────────────────────────────────── */
   Estado._nav = SessionNav.criar({
@@ -611,7 +593,14 @@ async function _init() {
     sem:    URL_SEM,
   });
 
-  /* ── 5. Inicializa UI (binds de eventos) ───────────────── */
+  /* ── 5. Banco vazio → tela empty ───────────────────────── */
+  if (Estado.banco.length === 0) {
+    UI.mostrarTelaVazia({ disc: URL_DISC, sem: URL_SEM, semDisp });
+    Estado._nav.pronto();
+    return;
+  }
+
+  /* ── 6. Inicializa UI (binds de eventos) ───────────────── */
   UI.init({
     onVerificar:   verificar,
     onAvancar:     avancar,
@@ -651,7 +640,7 @@ async function _init() {
     },
   });
 
-  /* ── 6. Listeners de ciclo de vida (reload / F5) ───────── */
+  /* ── 7. Listeners de ciclo de vida (reload / F5) ───────── */
   window.addEventListener('beforeunload', () => {
     if (!_naIntro && Estado.lista.length > 0) _salvarSessao('question');
   });
@@ -660,7 +649,7 @@ async function _init() {
     if (!_naIntro && Estado.lista.length > 0) _salvarSessao('question');
   });
 
-  /* ── 7. Atalhos de teclado ─────────────────────────────── */
+  /* ── 8. Atalhos de teclado ─────────────────────────────── */
   document.addEventListener('keydown', e => {
     if (e.key === ' ' && document.activeElement?.id !== 'input-answer') {
       e.preventDefault();
@@ -669,16 +658,17 @@ async function _init() {
     if (e.key === 'Escape' && _pausado) retomar();
   });
 
-  /* ── 8. Carrega histórico do Firestore (com fallback localStorage) ── */
-  // Feito APÓS criar o SessionNav para que pegarRestauravel() não
-  // seja afetado pelo await (o reload-flag precisa ser lido antes).
+  /* ── 9. Pega sessão restaurável ANTES do await de histórico ──
+     O reload-flag do SessionNav é síncrono; o await abaixo não
+     pode vir antes, senão perde o flag em reloads rápidos.     */
   const _sessaoRestauravel = Estado._nav.pegarRestauravel();
 
+  /* ── 10. Carrega histórico do Firestore ─────────────────── */
   Estado.historicoRevisao = await carregarHistoricoCF(
     Estado.usuario, URL_DISC, URL_SEM,
   ).catch(() => ({}));
 
-  /* ── 9. Lógica de restauração ──────────────────────────── */
+  /* ── 11. Lógica de restauração ──────────────────────────── */
   const _podeRestaurar = (s) => {
     const lista = s?.lista ?? s?.perguntas ?? [];
     return lista.length > 0 && s?.indice >= 0 && s?.tela === 'question';
@@ -690,7 +680,7 @@ async function _init() {
     mostrarIntro();
   }
 
-  /* ── 10. Remove anti-flash (após decidir a tela) ────────── */
+  /* ── 12. Remove anti-flash ──────────────────────────────── */
   Estado._nav.pronto();
 }
 
