@@ -1112,8 +1112,8 @@ html, body {
 }
 
 .assoc-dot {
-  width: 5px;
-  height: 5px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   border: none;
   background: rgba(255,255,255,.14);
@@ -1124,7 +1124,7 @@ html, body {
 }
 
 .assoc-dot.dot-active {
-  width: 14px;
+  width: 28px;
   border-radius: 99px;
   background: var(--assoc-cyan);
   box-shadow: 0 0 6px rgba(0,229,200,.50);
@@ -1263,7 +1263,7 @@ html, body {
 
 .col-title {
   font-family: var(--font-display);
-  font-size: 14px; font-weight: 700;
+  font-size: 18px; font-weight: 700;
   letter-spacing: 0.22em;
   text-transform: uppercase;
 }
@@ -1324,7 +1324,7 @@ html, body {
 
 .q-text {
   flex: 1;
-  font-size: 13.5px; font-weight: 500;
+  font-size: 15px; font-weight: 500;
   color: var(--white);
   letter-spacing: 0.01em;
   line-height: 1.5;
@@ -1417,34 +1417,58 @@ html, body {
 
 /* Answers pool */
 .answers-pool {
+  min-height: 160px;
+  min-width: min(1023px, 100%);
   margin-top: 20px;
   background: rgba(255,255,255,0.02);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
+  border: 2px solid rgba(255,255,255,0.20);
+  border-radius: 20px ;
   padding: 16px 18px;
+  width: fit-content;      /* ← adicionar */
+  margin-left: auto;       /* ← adicionar */
+  margin-right: auto;      /* ← adicionar */
+  
 }
+.answers-pool .a-card .drag-icon {
+  margin-top: 0;
+  width: 20px;
+  height: 20px;
+}
+
+
 
 .pool-header {
   display: flex;
   align-items: center;
+  justify-content: center;  /* ← adicionar */
   gap: 8px;
   padding-bottom: 12px;
-  border-bottom: 1px solid var(--border-subtle);
+    border-bottom: 1px solid rgba(255,255,255,0.20);
   margin-bottom: 12px;
+  
 }
 
 .pool-title {
   font-family: var(--font-display);
-  font-size: 14px; font-weight: 700;
+  font-size: 18px; font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--gold);
 }
 
 .pool-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 8px;
+  align-items: stretch;
+
+}
+
+.pool-grid .a-card {
+  width: 240px;
+  flex-shrink: 0;
+  align-items: center; /* ← isso resolve */
 }
 
 .pool-grid .a-card .a-text {
@@ -1751,10 +1775,6 @@ html, body {
   box-shadow: none;
   cursor: grab;
   align-items: center;          /* ← adicione esta linha */
-}
-.pool-grid .a-card {
-  align-items: center;
-  min-height: 58px;
 }
 
 .drop-zone.filled .a-card { pointer-events: auto; }
