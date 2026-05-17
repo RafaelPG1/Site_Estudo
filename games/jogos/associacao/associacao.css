@@ -346,38 +346,7 @@ html, body {
   font-weight: 600;
 }
 
-/* Progress bar */
-.assoc-progress-bar {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  padding: 0 36px 14px;
-  transition: opacity 0.3s;
-}
 
-.assoc-progress-bar__labels {
-  font-family: var(--assoc-font-display);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  color: var(--text-3);
-  text-transform: uppercase;
-}
-
-.assoc-progress-bar__track {
-  height: 4px;
-  background: rgba(255,255,255,0.10);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.assoc-progress-bar__fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--assoc-disc-color), var(--assoc-cyan));
-  border-radius: 4px;
-  transition: width 0.5s var(--assoc-ease-out);
-  width: 0%;
-}
 
 /* Timer */
 .assoc-timer-slot {
@@ -1006,12 +975,166 @@ html, body {
 ══════════════════════════════════════════════════════════════ */
 
 /* Sub-header do jogo */
-.assoc-game-header {
-  padding: 0 36px 14px;
+/* ── ROUND CARD (rodada + progresso + controles) ── */
+.assoc-round-card {
+  margin: 0 36px 0;
+  padding: 14px 20px 12px;
+  margin-bottom: 20px;
+  background: rgba(255,255,255,.025);
+  border: 1px solid var(--assoc-border-subtle);
+  border-radius: var(--assoc-radius-md);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.assoc-round-card__top {
   display: flex;
   align-items: center;
   gap: 16px;
 }
+
+.assoc-round-card__label {
+  font-family: var(--assoc-font-display);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.assoc-round-card__label span {
+  color: var(--assoc-cyan);
+}
+
+.assoc-round-card__progress {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 5px;
+  min-width: 0;
+}
+
+.assoc-round-card__controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.assoc-round-card__counter {
+  font-family: var(--assoc-font-display);
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  color: rgba(255,255,255,.32);
+  padding-right: 4px;
+}
+
+.assoc-round-card__bottom {
+  display: flex;
+  align-items: center;
+  padding: 0 2px;
+}
+
+.assoc-progress-label {
+  font-family: var(--assoc-font-display);
+  font-size: .62rem;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.22);
+}
+
+.assoc-progress-bar-bg {
+  width: 100%;   /* ← era 70% com margin: 0 auto — agora herda do wrapper */
+  height: 4px;
+  background: rgba(255,255,255,.06);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+
+.assoc-progress-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--assoc-cyan) 0%, rgba(0,229,200,.55) 100%);
+  transition: width .6s cubic-bezier(.4,0,.2,1);
+  box-shadow: 0 0 6px rgba(0,229,200,.35);
+}
+
+/* ── Wrapper da barra + meta alinhadas ── */
+.assoc-progress-bar-wrapper {
+  width: 70%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ── Meta-linha acima da barra ── */
+.assoc-progress-bar-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.assoc-progress-meta-left {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+.assoc-progress-meta-right {
+  font-family: var(--font-body);
+  font-size: 0.70rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: rgba(var(--cor-tema-rgb));
+}
+
+/* ── Dots centralizados ── */
+.assoc-dots-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;   /* ← era flex-start */
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.assoc-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,.14);
+  flex-shrink: 0;
+  padding: 0;
+  cursor: default;
+  transition: all .25s var(--assoc-ease-sharp);
+}
+
+.assoc-dot.dot-active {
+  width: 14px;
+  border-radius: 99px;
+  background: var(--assoc-cyan);
+  box-shadow: 0 0 6px rgba(0,229,200,.50);
+}
+
+.assoc-dot.dot-done {
+  background: rgba(0,229,200,.35);
+}
+
+/* ── FIM ROUND CARD ── */
 
 .assoc-game-header__left {
   flex: 1;
@@ -1176,7 +1299,7 @@ html, body {
 /* Question cell */
 .q-cell {
   background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid rgba(255,255,255,0.15);
   border-radius: var(--radius-sm);
   padding: 13px 14px;
   display: flex;
@@ -1206,13 +1329,13 @@ html, body {
   letter-spacing: 0.01em;
   line-height: 1.5;
   word-break: break-word;
-  text-align: center;
+  text-align: left;
 }
 
 /* Drop zone */
 .drop-zone {
   background: var(--bg-card-alt);
-  border: 1.5px dashed rgba(255,255,255,0.14);
+  border: 1.5px dashed rgba(255,255,255,0.25);
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
@@ -1225,9 +1348,9 @@ html, body {
 }
 
 .drop-hint {
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 500;
-  color: var(--white-muted);
+  color: var(--text-2);
   letter-spacing: 0.07em;
   pointer-events: none;
   user-select: none;
@@ -1255,14 +1378,19 @@ html, body {
 .drop-zone.droppable { border-color: rgba(255,255,255,0.22); }
 .drop-zone.droppable.filled { border-color: rgba(0,229,200,0.30); }
 
+/* No seu associacao.css, localize e ajuste estas regras: */
+
 .drop-zone.filled {
   border-color: rgba(0,229,200,0.38);
   border-style: solid;
   background: rgba(0,229,200,0.07);
   cursor: pointer;
-  justify-content: center;
-  text-align: center;
+  justify-content: flex-start;  /* ← mude para: center */
+  text-align: center;           /* ← mude para: left */
+  align-items: center;          /* ← adicione esta linha */
 }
+
+
 .drop-zone.filled .drop-hint {
   font-size: 12.5px;
   font-weight: 400;
@@ -1307,7 +1435,7 @@ html, body {
 
 .pool-title {
   font-family: var(--font-display);
-  font-size: 10px; font-weight: 700;
+  font-size: 14px; font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--gold);
@@ -1317,6 +1445,10 @@ html, body {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 8px;
+}
+
+.pool-grid .a-card .a-text {
+  font-size: 15px; /* era 12.5px — ajuste conforme quiser */
 }
 
 /* Answer cards */
@@ -1611,18 +1743,26 @@ html, body {
 }
 
 .drop-zone .a-card {
-  width: 100%; margin: 0;
+  width: 100%;
+  margin: 0;
   background: transparent;
   border: none;
   padding: 0;
   box-shadow: none;
   cursor: grab;
+  align-items: center;          /* ← adicione esta linha */
 }
+.pool-grid .a-card {
+  align-items: center;
+  min-height: 58px;
+}
+
 .drop-zone.filled .a-card { pointer-events: auto; }
 .drop-zone.filled { justify-content: flex-start; text-align: left; cursor: default; }
 .drop-zone.filled:hover { border-color: rgba(0,229,200,0.50); background: rgba(0,229,200,0.09); }
 .drop-zone.filled:hover .drop-hint { color: var(--white); }
-.drop-zone .a-card .a-text { font-size: 12.5px; font-weight: 400; color: var(--white-dim); line-height: 1.45; }
+/* SEÇÃO 19 — substitua a linha existente */
+.drop-zone .a-card .a-text { font-size: 15px; font-weight: 400; color: var(--white-dim); line-height: 1.45; }
 .drop-zone .a-card:hover { border: none; box-shadow: none; opacity: 1; transform: none; }
 .drop-zone .a-card .drag-icon { color: var(--assoc-disc-color); opacity: 0.7; transition: color 0.4s; }
 
@@ -1632,7 +1772,8 @@ html, body {
 
 @media (max-width: 860px) {
   .assoc-topbar { padding: 16px 20px; gap: 14px; }
-  .assoc-game-header { padding: 0 20px 14px; }
+  .assoc-round-card { margin: 0 20px; }
+  .assoc-progress-wrap { padding: 0 20px 14px; }
   .main-panel { padding: 0 16px; }
   .footer-actions { padding: 18px 16px 0; gap: 10px; }
   .pool-grid { grid-template-columns: 1fr 1fr; }
@@ -1642,7 +1783,8 @@ html, body {
   .assoc-shell { padding-top: 120px; }
   .assoc-topbar { padding: 14px 16px; flex-wrap: wrap; }
   .assoc-topbar__identity { order: -1; flex: 1 0 100%; }
-  .assoc-game-header { padding: 0 16px 12px; }
+  .assoc-progress-wrap { padding: 0 16px 12px; }
+  .assoc-round-card { margin: 0 16px; }
   .match-row { grid-template-columns: 1fr; }
   .match-headers { grid-template-columns: 1fr; gap: 4px; }
   .match-headers .col-header:last-child { display: none; }
@@ -1656,4 +1798,5 @@ html, body {
   .assoc-pause__card { padding: 32px 24px; }
   .assoc-intro__disc { font-size: 30px; }
   .assoc-progress-bar { display: none; }
+
 }

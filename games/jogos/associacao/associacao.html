@@ -43,14 +43,7 @@
       </div>
     </div>
 
-    <div class="assoc-progress-bar" style="opacity:0;">
-      <div class="assoc-progress-bar__labels">
-        RODADA <span id="round-current">1</span> / <span id="round-total">?</span>
-      </div>
-      <div class="assoc-progress-bar__track">
-        <div class="assoc-progress-bar__fill" id="progress-bar-fill"></div>
-      </div>
-    </div>
+
 
     <div class="assoc-timer-slot" role="timer" aria-label="Tempo decorrido">
       <div class="assoc-timer-icon" aria-hidden="true">
@@ -166,42 +159,53 @@
     <!-- TELA: JOGO -->
     <section id="screen-game" class="assoc-content hidden">
 
-      <div class="assoc-game-header">
-        <div class="assoc-game-header__left">
-          <div class="assoc-game-header__round">
+      <!-- ── CARD DE RODADA (header + progresso + dots) ── -->
+      <div class="assoc-round-card">
+
+        <div class="assoc-round-card__top">
+          <div class="assoc-round-card__label">
             RODADA <span id="round-current-game">1</span>
           </div>
+
+        <div class="assoc-round-card__progress">
+          <div class="assoc-progress-bar-wrapper">
+            <div class="assoc-progress-bar-meta">
+              <span class="assoc-progress-meta-left" id="progress-respondidos">0 de 4 par respondidos</span>
+              <span class="assoc-progress-meta-right" id="round-counter-label">1 / 6</span>
+            </div>
+            <div class="assoc-progress-bar-bg">
+              <div class="assoc-progress-bar-fill" id="progress-bar-fill" style="width:0%"></div>
+            </div>
+          </div>
+          <div class="assoc-dots-row" id="assoc-dots-row" role="list" aria-label="Navegação por rodada"></div>
         </div>
-        <div class="assoc-game-header__controls">
 
-          <button class="assoc-ctrl-btn" id="btn-pause" type="button" aria-label="Pausar jogo">
-            <svg id="pause-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
-                 aria-hidden="true">
-              <rect x="3" y="2" width="3.5" height="12" rx="1"/>
-              <rect x="9.5" y="2" width="3.5" height="12" rx="1"/>
-            </svg>
-            <span id="pause-label">Pausar</span>
-          </button>
+          <div class="assoc-round-card__controls">
+            <button class="assoc-ctrl-btn" id="btn-pause" type="button" aria-label="Pausar jogo">
+              <svg id="pause-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
+                   aria-hidden="true">
+                <rect x="3" y="2" width="3.5" height="12" rx="1"/>
+                <rect x="9.5" y="2" width="3.5" height="12" rx="1"/>
+              </svg>
+              <span id="pause-label">Pausar</span>
+            </button>
 
-          <button class="assoc-ctrl-btn" id="btn-voltar-intro" type="button">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <polyline points="15 18 9 12 15 6"/>
-            </svg>
-            Menu
-          </button>
-
+            <button class="assoc-ctrl-btn" id="btn-voltar-intro" type="button">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+              Menu
+            </button>
+          </div>
         </div>
+
+
+
       </div>
-    <div class="assoc-progress-bar" style="opacity:0;">
-      <div class="assoc-progress-bar__labels">
-        RODADA <span id="round-current">1</span> / <span id="round-total">?</span>
-      </div>
-      <div class="assoc-progress-bar__track">
-        <div class="assoc-progress-bar__fill" id="progress-bar-fill"></div>
-      </div>
-    </div>
+
+
       <main class="main-panel">
         <div class="match-container">
 
