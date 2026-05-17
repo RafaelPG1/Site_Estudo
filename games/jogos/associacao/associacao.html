@@ -371,46 +371,41 @@
      role="dialog" aria-modal="true" aria-label="Jogo pausado">
   <div class="assoc-pause__card">
 
-    <div class="assoc-pause__icon" aria-hidden="true">⏸️</div>
-    <h2 class="assoc-pause__title">Pausado</h2>
-
-    <div class="assoc-pause__stats">
-      <div class="assoc-pause__row">
-        <span class="assoc-pause__row-lbl">Rodada</span>
-        <span class="assoc-pause__row-val" id="pause-rodada">—</span>
+    <div class="assoc-pause__header">
+      <div class="assoc-pause__header-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+          <rect x="5" y="3" width="4" height="18" rx="1"/>
+          <rect x="15" y="3" width="4" height="18" rx="1"/>
+        </svg>
       </div>
-      <div class="assoc-pause__row">
-        <span class="assoc-pause__row-lbl">Tempo</span>
-        <span class="assoc-pause__row-val" id="pause-tempo">00:00</span>
-      </div>
-      <div class="assoc-pause__row">
-        <span class="assoc-pause__row-lbl">Progresso</span>
-        <span class="assoc-pause__row-val" id="pause-pct">0%</span>
+      <div class="assoc-pause__header-text">
+        <h2 class="assoc-pause__title">Jogo pausado</h2>
+        <span class="assoc-pause__subtitle">O tempo está parado</span>
       </div>
     </div>
 
+    <div class="assoc-pause__tip">
+      <span class="assoc-pause__tip-icon">💡</span>
+      <p class="assoc-pause__tip-text">
+        Aproveite para revisar o conteúdo antes de continuar.
+        O timer só retoma quando você clicar em <strong>Retomar</strong>.
+      </p>
+    </div>
+
     <div class="assoc-pause__actions">
-      <button class="btn btn-primary" id="btn-retomar" type="button">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <button class="btn btn-primary assoc-pause__btn-retomar" id="btn-retomar" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none">
           <polygon points="5 3 19 12 5 21 5 3"/>
         </svg>
         Retomar
       </button>
-      <button class="btn btn-secondary" id="btn-pause-menu" type="button">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <line x1="3" y1="12" x2="21" y2="12"/>
-          <line x1="3" y1="6"  x2="21" y2="6"/>
-          <line x1="3" y1="18" x2="21" y2="18"/>
-        </svg>
-        Ir ao menu
-      </button>
+      <p class="assoc-pause__shortcut">
+        Pressione <kbd>Espaço</kbd> ou <kbd>Esc</kbd> para retomar
+      </p>
     </div>
 
   </div>
 </div>
-
 
 <!-- LIXEIRA FLUTUANTE -->
 <div id="trash-zone" class="trash-zone" aria-label="Solte aqui para remover resposta">

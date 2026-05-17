@@ -910,7 +910,7 @@ import { DISC_CORES }                                 from '../../../shared/js/c
     } else if (acertos > 0) {
       showToast('👍 ' + acertos + ' de ' + total + ' corretas', 'sucesso');
     } else {
-      showToast('😅 Nenhuma correta — veja as respostas', 'erro');
+      showToast('😅 Nenhuma correta', 'erro');
     }
 
     const isLast = estado.currentRound >= estado.totalRounds - 1;
@@ -1040,6 +1040,12 @@ import { DISC_CORES }                                 from '../../../shared/js/c
     if (el.pauseLabel)   el.pauseLabel.textContent = 'Pausar';
   }
 
+  document.addEventListener('keydown', function (e) {
+  if (estado.pausado && (e.code === 'Space' || e.code === 'Escape')) {
+    e.preventDefault();
+    retomar();
+  }
+});
   /* ══════════════════════════════════════════════════════════════
      NOVO JOGO — reiniciar do zero com seed limpa
 

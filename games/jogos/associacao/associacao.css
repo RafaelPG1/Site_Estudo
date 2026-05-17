@@ -893,8 +893,8 @@ html, body {
 .assoc-pause-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(5,14,26,0.85);
-  backdrop-filter: blur(16px);
+  background: rgba(5,14,26,0.45); /* era 0.88 — mais transparente */
+  backdrop-filter: blur(12px);    /* mantém o blur */
   z-index: var(--assoc-z-overlay);
   display: flex;
   align-items: center;
@@ -904,71 +904,125 @@ html, body {
 }
 
 .assoc-pause__card {
-  background: rgba(255,255,255,0.04);
+  background: #0b1829; /* era rgba(255,255,255,0.04) — sólido agora */
   border: 1px solid var(--assoc-border-mid);
   border-radius: 24px;
-  padding: 44px 40px;
-  max-width: 380px;
+  padding: 36px 36px 32px;
+  max-width: 360px;
   width: 100%;
-  text-align: center;
   backdrop-filter: blur(20px);
   box-shadow: var(--assoc-shadow-md), inset 0 1px 0 rgba(255,255,255,0.05);
   display: flex;
   flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Cabeçalho ── */
+.assoc-pause__header {
+  display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
 }
 
-.assoc-pause__icon { font-size: 44px; line-height: 1; }
-
-.assoc-pause__title {
-  font-family: var(--assoc-font-display);
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--text-1);
-  text-transform: uppercase;
+.assoc-pause__header-icon {
+  width: 48px; height: 48px;
+  border-radius: 14px;
+  background: rgba(245,200,66,0.12);
+  border: 1px solid rgba(245,200,66,0.30);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--assoc-gold);
+  flex-shrink: 0;
+  box-shadow: 0 0 18px rgba(245,200,66,0.12);
 }
 
-.assoc-pause__stats {
-  width: 100%;
+.assoc-pause__header-text {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 3px;
 }
 
-.assoc-pause__row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid var(--assoc-border-subtle);
-  border-radius: var(--assoc-radius-sm);
-}
-
-.assoc-pause__row-lbl {
-  font-family: var(--assoc-font-display);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-  color: var(--text-3);
-}
-
-.assoc-pause__row-val {
-  font-family: var(--assoc-font-display);
-  font-size: 16px;
+.assoc-pause__title {
+  font-family: var(--assoc-font-body);
+  font-size: 18px;
   font-weight: 700;
   color: var(--text-1);
+  line-height: 1.2;
 }
 
+.assoc-pause__subtitle {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+/* ── Dica ── */
+.assoc-pause__tip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--assoc-border-subtle);
+  border-radius: var(--assoc-radius-md);
+  padding: 14px 16px;
+}
+.assoc-pause__tip-icon {
+  margin-top: 0; /* era 1px */
+}
+
+.assoc-pause__tip-icon {
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.assoc-pause__tip-text {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.6;
+}
+
+.assoc-pause__tip-text strong {
+  color: var(--text-1);
+  font-weight: 600;
+}
+
+/* ── Ações ── */
 .assoc-pause__actions {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  width: 100%;
+  align-items: center;
+  gap: 12px;
 }
+
+.assoc-pause__btn-retomar {
+  width: 100%;
+  justify-content: center;
+  padding: 14px 30px;
+  font-size: 15px;
+}
+.assoc-pause__shortcut {
+  font-size: 12px;
+  color: var(--text-2);
+  text-align: center; /* ← adicione */
+  width: 100%;        /* ← garante que ocupe a largura toda */
+}
+
+.assoc-pause__shortcut kbd {
+  display: inline-flex;  /* ← troca inline-block por inline-flex */
+  align-items: center;   /* ← centraliza verticalmente */
+  justify-content: center;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid var(--assoc-border-mid);
+  border-radius: 5px;
+  padding: 3px 8px;      /* ← padding simétrico */
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1;        /* ← evita line-height inflado */
+}
+
 
 /* ══════════════════════════════════════════════════════════════
    12. TELA DE JOGO — GRID + DRAG-AND-DROP
@@ -1424,7 +1478,7 @@ html, body {
 
 /* Answers pool */
 .answers-pool {
-  min-height: 160px;
+  min-height: 200px;
   min-width: min(1023px, 100%);
   margin-top: 20px;
   background: rgba(255,255,255,0.02);
@@ -1622,6 +1676,8 @@ html, body {
 .toast {
   position: fixed;
   bottom: 32px; left: 50%;
+  bottom: auto;  /* remove o bottom */
+top: 100px; /* era 80px */
   transform: translateX(-50%) translateY(20px);
   background: rgba(10,25,45,0.92);
   border: 1px solid rgba(0,229,200,0.30);
@@ -1640,6 +1696,7 @@ html, body {
   white-space: nowrap;
   max-width: calc(100vw - 40px);
 }
+
 .toast.show {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
