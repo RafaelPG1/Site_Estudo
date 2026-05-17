@@ -1,15 +1,23 @@
 /* ════════════════════════════════════════════════════════════════
    NEXUS STUDY — Associação
-   associacao.js  (v2.0)
+   associacao.js  (v3.0)
 
-   Arquitetura própria e independente. Não compartilha estado,
-   dependências internas ou componentes com o modo VDD/Falso.
+   Arquitetura alinhada ao padrão do Flashcard (v6.0):
+     • Disciplinas, labels e emojis vêm de global.js
+     • Cores aplicadas por theme.js (inline style no :root)
+     • Semestre derivado da URL (?sem=), nunca hardcodado
+     • Nenhum map local de cores, labels ou emojis
+
+   Imports externos:
+     • getDisciplinasDeSemestre  ← src/global.js
+     • aplicarCoresDisciplina    ← shared/js/theme.js
+     • DISC_CORES                ← shared/js/cores.js
 
    Estrutura:
-     • CONFIG — constantes do jogo
-     • ESTADO — estado global centralizado
+     • CONFIG — constantes do jogo (sem semestre hardcodado)
+     • ESTADO — estado global centralizado (inclui discObj)
      • TELAS — gerenciamento de telas (Screen Manager)
-     • TEMA — aplicação dinâmica de tema por disciplina
+     • TEMA — delega inteiramente ao theme.js
      • DOM — cache de elementos
      • TIMER — controle próprio de tempo
      • TOAST — sistema de notificações
@@ -24,8 +32,11 @@
      • INIT — inicialização
 ════════════════════════════════════════════════════════════════ */
 
-import { ASSOCIACAO_DATA } from './associacao_data.js';
+import { ASSOCIACAO_DATA }                       from './associacao_data.js';
 import { saveRound, loadRound, clearRound, clearAll } from './storage_a.js';
+import { getDisciplinasDeSemestre }                  from '../../../src/global.js';
+import { aplicarCoresDisciplina }                    from '../../../shared/js/theme.js';
+import { DISC_CORES }                                from '../../../shared/js/cores.js';
 
 (function () {
   'use strict';
@@ -38,23 +49,20 @@ import { saveRound, loadRound, clearRound, clearAll } from './storage_a.js';
     ITEMS_PER_ROUND:   4,
     PONTOS_ACERTO:    10,
     PONTOS_ERRO:       3,
-    SEMESTRE_ATIVO:   '2026.2',
+    /*
+     * SEMESTRE_ATIVO removido — o semestre é sempre derivado da URL (?sem=)
+     * via carregarItens(), igual ao Flashcard. Nunca hardcoded aqui.
+     */
     SESSION_KEY_SEED: 'assoc_seed',
     SESSION_KEY_ROUND:'assoc_round',
   });
 
-  /* Mapeamento disciplina → emoji */
-  const DISC_EMOJI = {
-    poo:         '⚙️',
-    design:      '🎨',
-    banco_dados: '🗄️',
-  };
-
-  const DISC_LABEL = {
-    poo:         'POO',
-    design:      'Design',
-    banco_dados: 'Banco de Dados',
-  };
+  /*
+   * LABELS E EMOJIS — derivados de global.js/getDisciplinasDeSemestre()
+   * NÃO declarar aqui. Usados via estado.discObj (objeto disciplina completo).
+   * Acesse: estado.discObj.apelido  → label  (ex: 'Design de Sistemas')
+   *         estado.discObj.emoji    → emoji  (ex: '🎨')
+   */
 
   /* ══════════════════════════════════════════════════════════════
      ESTADO GLOBAL — único ponto de verdade
@@ -64,7 +72,8 @@ import { saveRound, loadRound, clearRound, clearAll } from './storage_a.js';
     /* Dados */
     allItems:     [],
     discId:       null,
-    semestre:     CONFIG.SEMESTRE_ATIVO,
+    discObj:      null,   /* objeto completo da disciplina (global.js) */
+    semestre:     null,   /* lido da URL (?sem=) ou fallback do global.js */
 
     /* Rodada */
     currentRound: 0,
@@ -131,7 +140,7 @@ import { saveRound, loadRound, clearRound, clearAll } from './storage_a.js';
       /* Header global */
       topbarDisc:    $('topbar-disc'),
       topbarSem:     $('topbar-sem'),
-      topbarIcon:    $('topbar-icon'),
+      /* topbarIcon: removido — ícone 🔗 é fixo no HTML, não precisa de JS */
       timerVal:      $('timer-val'),
       progressFill:  $('progress-bar-fill'),
 
@@ -200,8 +209,14 @@ import { saveRound, loadRound, clearRound, clearAll } from './storage_a.js';
      TEMA DINÂMICO
   ══════════════════════════════════════════════════════════════ */
 
+  /*
+   * TEMA — delega inteiramente ao theme.js (igual ao Flashcard).
+   * Escreve --cor-tema, --cor-tema-rgb, --disc-tema, --disc-tema-rgb etc.
+   * no inline style do documentElement (especificidade máxima).
+   * Também seta body.dataset.disc para seletores CSS de fallback.
+   */
   function aplicarTema(discId) {
-    document.documentElement.dataset.disc = discId || 'default';
+    aplicarCoresDisciplina(discId, DISC_CORES);
   }
 
   /* ══════════════════════════════════════════════════════════════
@@ -314,36 +329,64 @@ import { saveRound, loadRound, clearRound, clearAll } from './storage_a.js';
   ══════════════════════════════════════════════════════════════ */
 
   function carregarItens() {
-    /* Descobrir disciplina ativa (primeira disponível ou via URL param) */
-    const params = new URLSearchParams(window.location.search);
-    const discParam = params.get('disc');
+    /* ── 1. Derivar semestre e disciplina da URL (igual ao Flashcard) ── */
+    const params   = new URLSearchParams(window.location.search);
+    const semParam = params.get('sem');
+    const discParam= params.get('disc');
 
-    const semData = ASSOCIACAO_DATA[CONFIG.SEMESTRE_ATIVO] || {};
-    const discs   = Object.keys(semData);
+    /*
+     * Semestre: URL (?sem=) > fallback para a primeira chave de ASSOCIACAO_DATA.
+     * Nunca hardcodado aqui — a fonte de verdade é a URL ou os dados.
+     */
+    const semestresDisponiveis = Object.keys(ASSOCIACAO_DATA);
+    if (semestresDisponiveis.length === 0) return false;
+    estado.semestre = (semParam && ASSOCIACAO_DATA[semParam]) ? semParam : semestresDisponiveis[0];
 
-    if (discs.length === 0) return false;
+    const semData = ASSOCIACAO_DATA[estado.semestre] || {};
 
-    /* Seleciona disciplina: param > primeira disponível */
-    estado.discId = (discParam && semData[discParam]) ? discParam : discs[0];
+    /* ── 2. Resolver objeto da disciplina via global.js ── */
+    /*
+     * getDisciplinasDeSemestre() retorna o array de disciplinas definido
+     * em global.js — com id, nome, apelido, emoji, arquivo.
+     * Nunca duplicamos esses dados aqui.
+     */
+    const disciplinas = getDisciplinasDeSemestre(estado.semestre);
 
-    /* Poderia combinar múltiplas disciplinas, mas para manter organização
-       usa apenas a disciplina selecionada. Para usar todas, descomentar abaixo:
-       const items = discs.flatMap(d => semData[d] || []); */
-    const items = semData[estado.discId] || [];
+    /* Seleciona: URL (?disc=) > primeira disciplina com dados disponíveis */
+    let discObj = null;
+    if (discParam) {
+      discObj = disciplinas.find(function (d) {
+        return (d.id === discParam || d.arquivo === discParam) && semData[d.arquivo ?? d.id];
+      });
+    }
+    if (!discObj) {
+      discObj = disciplinas.find(function (d) {
+        return semData[d.arquivo ?? d.id];
+      });
+    }
 
+    if (!discObj) return false;
+
+    /* arquivo é a chave em ASSOCIACAO_DATA; fallback para id */
+    const discChave = discObj.arquivo ?? discObj.id;
+    const items     = semData[discChave] || [];
     if (items.length === 0) return false;
 
-    /* Seed persistida para manter ordem entre sessões */
+    /* Persiste no estado — acesse sempre via estado.discObj */
+    estado.discId  = discChave;
+    estado.discObj = discObj;
+
+    /* ── 3. Montar deck com seed persistida ── */
     const savedSeed = sessionStorage.getItem(CONFIG.SESSION_KEY_SEED);
     if (savedSeed) {
       try {
         const order = JSON.parse(savedSeed);
         estado.allItems = order
-          .map(id => items.find(x => x.id === id))
+          .map(function (id) { return items.find(function (x) { return x.id === id; }); })
           .filter(Boolean);
-        /* Se itens novos foram adicionados ao data após o seed, adiciona ao final */
+        /* Adiciona itens novos que não estavam no seed */
         const knownIds = new Set(order);
-        items.forEach(item => { if (!knownIds.has(item.id)) estado.allItems.push(item); });
+        items.forEach(function (item) { if (!knownIds.has(item.id)) estado.allItems.push(item); });
       } catch (e) {
         estado.allItems = shuffle(items);
         _salvarSeed();
@@ -355,7 +398,6 @@ import { saveRound, loadRound, clearRound, clearAll } from './storage_a.js';
 
     estado.totalRounds  = Math.ceil(estado.allItems.length / CONFIG.ITEMS_PER_ROUND);
     estado.currentRound = parseInt(sessionStorage.getItem(CONFIG.SESSION_KEY_ROUND) || '0', 10);
-    /* Garante que currentRound não está fora dos limites */
     if (estado.currentRound >= estado.totalRounds) estado.currentRound = 0;
 
     return true;
@@ -370,13 +412,18 @@ import { saveRound, loadRound, clearRound, clearAll } from './storage_a.js';
   ══════════════════════════════════════════════════════════════ */
 
   function mostrarIntro() {
-    const discLabel = DISC_LABEL[estado.discId] || estado.discId;
-    const discEmoji = DISC_EMOJI[estado.discId] || '🃏';
+    /*
+     * Labels e emoji vêm do objeto disciplina (global.js) — nunca de maps locais.
+     * apelido  → label curto exibido na UI  (ex: 'Design de Sistemas')
+     * emoji    → ícone da disciplina        (ex: '🎨')
+     */
+    const discObj  = estado.discObj || {};
+    const discLabel= discObj.apelido ?? discObj.nome ?? estado.discId;
+    const discEmoji= discObj.emoji   ?? '🃏';
 
     /* Preencher header */
     if (el.topbarDisc) el.topbarDisc.textContent = discLabel;
     if (el.topbarSem)  el.topbarSem.textContent  = estado.semestre;
-    if (el.topbarIcon) el.topbarIcon.textContent  = discEmoji;
 
     /* Preencher card da intro */
     if (el.introDisc)       el.introDisc.textContent       = discLabel;
@@ -384,6 +431,10 @@ import { saveRound, loadRound, clearRound, clearAll } from './storage_a.js';
     if (el.introIcon)       el.introIcon.textContent        = discEmoji;
     if (el.introTotalPares) el.introTotalPares.textContent  = estado.allItems.length;
     if (el.introTotalRods)  el.introTotalRods.textContent   = estado.totalRounds;
+
+    /* Preencher contador de deck */
+    const deckLbl = document.getElementById('intro-deck-label');
+    if (deckLbl) deckLbl.textContent = estado.allItems.length + ' pares no deck';
 
     /* Botão continuar: só aparece se há rodada parcialmente feita */
     const savedRound = loadValidRound(estado.currentRound);
@@ -450,7 +501,7 @@ import { saveRound, loadRound, clearRound, clearAll } from './storage_a.js';
     estado.roundItems = estado.allItems.slice(start, start + CONFIG.ITEMS_PER_ROUND);
 
     atualizarProgressoGlobal();
-    if (el.qCount) el.qCount.textContent = estado.roundItems.length + ' itens';
+    if (el.qCount) el.qCount.textContent = estado.roundItems.length + ' questões';
 
     /* Ordem do pool */
     let poolOrder;
@@ -821,7 +872,8 @@ import { saveRound, loadRound, clearRound, clearAll } from './storage_a.js';
     estado.timerSecs     = 0;
     estado.pausado       = false;
     /* Regera seed */
-    const semData = ASSOCIACAO_DATA[CONFIG.SEMESTRE_ATIVO] || {};
+    /* Usa estado.semestre (derivado da URL) — nunca valor hardcodado */
+    const semData = ASSOCIACAO_DATA[estado.semestre] || {};
     const items   = semData[estado.discId] || [];
     estado.allItems    = shuffle(items);
     estado.totalRounds = Math.ceil(estado.allItems.length / CONFIG.ITEMS_PER_ROUND);
@@ -1326,6 +1378,56 @@ import { saveRound, loadRound, clearRound, clearAll } from './storage_a.js';
   }
 
   /* ══════════════════════════════════════════════════════════════
+     IDENTIDADE SEM DADOS
+     Resolve disciplina e semestre da URL mesmo quando não há
+     questões, para preencher o cabeçalho na tela empty.
+  ══════════════════════════════════════════════════════════════ */
+
+  function _resolverIdentidadeSemDados() {
+    try {
+      const params    = new URLSearchParams(window.location.search);
+      const semParam  = params.get('sem');
+      const discParam = params.get('disc');
+
+      /* Semestre: URL > primeira chave de ASSOCIACAO_DATA > fallback */
+      const semestresDisponiveis = Object.keys(ASSOCIACAO_DATA);
+      estado.semestre = (semParam) ? semParam
+        : (semestresDisponiveis.length ? semestresDisponiveis[0] : '—');
+
+      /* Disciplina: tenta via global.js */
+      const disciplinas = getDisciplinasDeSemestre(estado.semestre);
+      let discObj = null;
+
+      if (discParam && disciplinas) {
+        discObj = disciplinas.find(function (d) {
+          return d.id === discParam || d.arquivo === discParam;
+        });
+      }
+      if (!discObj && disciplinas && disciplinas.length) {
+        discObj = disciplinas[0];
+      }
+
+      if (discObj) {
+        estado.discObj = discObj;
+        estado.discId  = discObj.arquivo ?? discObj.id;
+      }
+
+      /* Aplica tema e preenche topbar */
+      if (estado.discId) aplicarTema(estado.discId);
+
+      const label = (estado.discObj && (estado.discObj.apelido ?? estado.discObj.nome))
+        || estado.discId || '—';
+
+      if (el.topbarDisc) el.topbarDisc.textContent = label;
+      if (el.topbarSem)  el.topbarSem.textContent  = estado.semestre || '—';
+
+    } catch (e) {
+      /* Se global.js falhar, deixa cabeçalho vazio mas não quebra */
+      console.warn('[assoc] _resolverIdentidadeSemDados falhou:', e);
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════════
      INIT
   ══════════════════════════════════════════════════════════════ */
 
@@ -1337,6 +1439,9 @@ import { saveRound, loadRound, clearRound, clearAll } from './storage_a.js';
     setTimeout(function () {
       const ok = carregarItens();
       if (!ok) {
+        /* Mesmo sem questões, resolve disciplina/semestre da URL
+           para preencher o cabeçalho corretamente. */
+        _resolverIdentidadeSemDados();
         mostrarTela('screenEmpty');
         return;
       }

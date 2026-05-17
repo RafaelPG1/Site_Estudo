@@ -56,5 +56,7 @@ export const ASSOCIACAO_DATA = {
       { id: 'bd_a14', pergunta: 'SGBD',          resposta: 'Software que gerencia e controla acesso ao banco de dados' },
       { id: 'bd_a15', pergunta: 'DDL',           resposta: 'Linguagem SQL usada para criar e alterar estruturas de tabelas' },
     ],
+
+    redes: [],
   },
 };

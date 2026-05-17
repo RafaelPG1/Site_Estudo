@@ -32,13 +32,13 @@
     </button>
 
     <div class="assoc-topbar__identity">
-      <div class="assoc-topbar__icon" id="topbar-icon" aria-hidden="true"></div>
+      <div class="assoc-topbar__icon" aria-hidden="true">🔗</div>
       <div class="assoc-topbar__info">
-        <span class="assoc-topbar__name" id="topbar-disc"></span>
+        <span class="assoc-topbar__name">Associação</span>
         <div class="assoc-topbar__meta">
+          <span class="assoc-topbar__disc-name" id="topbar-disc"></span>
+          <span class="assoc-topbar__sep">•</span>
           <span id="topbar-sem"></span>
-          <span class="assoc-topbar__sep">·</span>
-          <span>Associação</span>
         </div>
       </div>
     </div>
@@ -77,46 +77,78 @@
       <span class="assoc-loading__label">Carregando…</span>
     </section>
 
-    <!-- TELA: INTRO -->
+        <!-- TELA: INTRO -->
     <section id="screen-intro" class="assoc-intro hidden">
 
       <article class="assoc-intro__card">
 
-        <div class="assoc-intro__icon" id="intro-icon" aria-hidden="true"></div>
-
-        <div class="assoc-intro__badge">
-          <span class="assoc-intro__badge-mode">Associação</span>
-        </div>
-
-        <h1 class="assoc-intro__disc" id="intro-disc"></h1>
-        <p  class="assoc-intro__sem"  id="intro-sem"></p>
-
-        <div class="assoc-intro__stats">
-          <div class="assoc-intro__stat">
-            <span class="assoc-intro__stat-val" id="intro-total-pares">0</span>
-            <span class="assoc-intro__stat-lbl">Pares</span>
-          </div>
-          <div class="assoc-intro__stat">
-            <span class="assoc-intro__stat-val" id="intro-total-rodadas">0</span>
-            <span class="assoc-intro__stat-lbl">Rodadas</span>
+        <!-- Título do jogo no topo -->
+        <div class="assoc-intro__game-title">
+          <div class="assoc-intro__game-title-text">
+            <span class="assoc-intro__game-name">Associação</span>
           </div>
         </div>
 
         <p class="assoc-intro__desc">
-          Arraste as respostas para as perguntas correspondentes e teste seu conhecimento.
+          Analise cada par e associe as respostas corretas às perguntas correspondentes.
+          Os pares são organizados por rodadas.
         </p>
 
+        <div class="assoc-intro__divider"></div>
+
+        <!-- Chips disciplina + semestre -->
+        <div class="assoc-intro__chips">
+          <span class="assoc-intro__chip assoc-intro__chip--disc">
+            <span id="intro-icon" aria-hidden="true"></span>
+            <span id="intro-disc"></span>
+          </span>
+          <span class="assoc-intro__chip assoc-intro__chip--sem">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <span id="intro-sem"></span>
+          </span>
+        </div>
+
+        <!-- Regras -->
+        <div class="assoc-intro__rules">
+          <div class="assoc-intro__rule">
+            <span class="assoc-intro__rule-dot assoc-intro__rule-dot--green"></span>
+            <span>Par correto: <strong>+10 pts</strong></span>
+          </div>
+          <div class="assoc-intro__rule">
+            <span class="assoc-intro__rule-dot assoc-intro__rule-dot--red"></span>
+            <span>Par errado: <strong>&#8722;5 pts</strong></span>
+          </div>
+          <div class="assoc-intro__rule">
+            <span class="assoc-intro__rule-dot assoc-intro__rule-dot--gold"></span>
+            <span><strong id="intro-total-rodadas">0</strong> rodadas &middot; <strong id="intro-total-pares">0</strong> pares</span>
+          </div>
+        </div>
+
+        <!-- Contador de pares -->
+        <div class="assoc-intro__deck-count">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+          <span id="intro-deck-label">0 pares no deck</span>
+        </div>
+
+        <!-- Botões -->
         <div class="assoc-intro__actions">
 
-          <button class="btn btn-primary" id="btn-start" type="button">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <polygon points="5 3 19 12 5 21 5 3"/>
-            </svg>
+          <button class="btn btn-intro-start" id="btn-start" type="button">
             Começar
           </button>
 
-          <button class="btn btn-secondary hidden" id="btn-continuar" type="button">
+          <button class="btn btn-intro-continue hidden" id="btn-continuar" type="button">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <line x1="5" y1="12" x2="19" y2="12"/>
@@ -162,7 +194,14 @@
 
         </div>
       </div>
-
+    <div class="assoc-progress-bar" style="opacity:0;">
+      <div class="assoc-progress-bar__labels">
+        RODADA <span id="round-current">1</span> / <span id="round-total">?</span>
+      </div>
+      <div class="assoc-progress-bar__track">
+        <div class="assoc-progress-bar__fill" id="progress-bar-fill"></div>
+      </div>
+    </div>
       <main class="main-panel">
         <div class="match-container">
 
@@ -170,7 +209,7 @@
             <div class="col-header">
               <div class="col-dot cyan" aria-hidden="true"></div>
               <span class="col-title cyan">Perguntas</span>
-              <span class="card-count" id="q-count" aria-live="polite">0 itens</span>
+
             </div>
             <div class="col-header">
               <div class="col-dot gold" aria-hidden="true"></div>
@@ -180,7 +219,6 @@
           </div>
 
           <div class="match-grid" id="match-grid" aria-label="Pares pergunta-resposta"></div>
-
           <div class="answers-pool">
             <div class="pool-header">
               <div class="col-dot gold" aria-hidden="true"></div>
@@ -291,16 +329,31 @@
 
     <!-- TELA: EMPTY -->
     <section id="screen-empty" class="assoc-empty hidden">
-      <div class="assoc-empty__icon" aria-hidden="true">📭</div>
-      <h2 class="assoc-empty__title">Nenhum conteúdo disponível</h2>
-      <p  class="assoc-empty__sub">Não foram encontrados pares para o semestre ativo.</p>
-      <button class="btn btn-secondary" id="btn-empty-back" type="button">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <polyline points="15 18 9 12 15 6"/>
-        </svg>
-        Voltar
-      </button>
+      <article class="assoc-empty__card">
+
+        <div class="assoc-empty__badge" aria-hidden="true">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          OPS
+        </div>
+
+        <h2 class="assoc-empty__title">Sem perguntas</h2>
+
+        <div class="assoc-empty__divider"></div>
+
+        <p class="assoc-empty__sub">
+          Não encontramos questões para esta disciplina ainda.<br>
+          Tente outra ou aguarde novas adições!
+        </p>
+
+        <button class="btn assoc-empty__btn" id="btn-empty-back" type="button">
+          Voltar
+        </button>
+
+      </article>
     </section>
 
   </div><!-- /.assoc-content -->
