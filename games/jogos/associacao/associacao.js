@@ -60,14 +60,15 @@ import { DISC_CORES }                                 from '../../../shared/js/c
      conforme definido em associacao_data.js (4 pares por questão).
   ══════════════════════════════════════════════════════════════ */
 
-  const CONFIG = Object.freeze({
-    ITEMS_PER_ROUND:   4,   // Pares por rodada — definido pela estrutura de dados (4 pares/questão)
-    PONTOS_ACERTO:    10,   // Pontos por par correto
-    PONTOS_ERRO:       3,   // Pontos descontados por par errado
-    SESSION_KEY_SEED:  'assoc_seed',
-    SESSION_KEY_ROUND: 'assoc_round',
-    SESSION_KEY_CTX:   'assoc_ctx',   // Guarda disc+sem para detectar troca de contexto
-  });
+const CONFIG = Object.freeze({
+  ITEMS_PER_ROUND:   4,
+  PONTOS_ACERTO:    10,
+  PONTOS_ERRO:       3,
+  ROUND_TIME_LIMIT: 30,  // ← adicione
+  SESSION_KEY_SEED:  'assoc_seed',
+  SESSION_KEY_ROUND: 'assoc_round',
+  SESSION_KEY_CTX:   'assoc_ctx',
+});
 
   /* ══════════════════════════════════════════════════════════════
      ESTADO GLOBAL — único ponto de verdade
@@ -276,12 +277,12 @@ import { DISC_CORES }                                 from '../../../shared/js/c
      TIMER
   ══════════════════════════════════════════════════════════════ */
 
-  function startTimer() {
-    clearInterval(estado.timerRef);
-    estado.timerSecs = 0;
-    _tickTimer();
-    estado.timerRef = setInterval(_tickTimer, 1000);
-  }
+function startTimer() {
+  clearInterval(estado.timerRef);
+  estado.timerSecs = CONFIG.ROUND_TIME_LIMIT;
+  _tickTimer();
+  estado.timerRef = setInterval(_tickTimer, 1000);
+}
 
   function pausarTimer() {
     clearInterval(estado.timerRef);
@@ -299,13 +300,64 @@ import { DISC_CORES }                                 from '../../../shared/js/c
     estado.timerRef = null;
   }
 
-  function _tickTimer() {
-    if (estado.pausado) return;
-    estado.timerSecs++;
-    const txt = formatTime(estado.timerSecs);
-    if (el.timerVal)   el.timerVal.textContent  = txt;
-    if (el.pauseTempo) el.pauseTempo.textContent = txt;
+function _tickTimer() {
+  if (estado.pausado) return;
+
+  const txt = formatTime(estado.timerSecs);
+  if (el.timerVal)   el.timerVal.textContent  = txt;
+  if (el.pauseTempo) el.pauseTempo.textContent = txt;
+if (el.timerVal) {
+  el.timerVal.classList.toggle('warning', estado.timerSecs <= 10);
+}
+  if (estado.timerSecs <= 0) {
+    pararTimer();
+    _tempoEsgotado();
+    return;
   }
+
+  estado.timerSecs--;
+}
+
+function _tempoEsgotado() {
+  if (estado.verified) return;
+  estado.verified = true;
+  lockAllCards();
+
+  /* Pega todos os cards ainda no pool */
+  const cardsNoPool = el.poolGrid
+    ? [...el.poolGrid.querySelectorAll('.a-card')]
+    : [];
+
+  /* Pega os slots vazios */
+  const zonesVazias = el.matchGrid
+    ? [...el.matchGrid.querySelectorAll('.drop-zone')]
+        .filter(function (z) { return !z.querySelector('.a-card'); })
+    : [];
+
+  /* Embaralha os cards do pool e distribui nos slots vazios */
+  const cardsEmbaralhados = shuffle(cardsNoPool.slice());
+  zonesVazias.forEach(function (zone, i) {
+    if (cardsEmbaralhados[i]) {
+      placeCardInZone(zone, cardsEmbaralhados[i]);
+    }
+  });
+
+  /* Aplica feedback visual — agora vai marcar errado pois estão embaralhados */
+  applyVerifyFeedback();
+  saveCurrentState(true);
+
+  const zones   = el.matchGrid ? [...el.matchGrid.querySelectorAll('.drop-zone')] : [];
+  const acertos = zones.filter(function (z) { return z.classList.contains('correct'); }).length;
+  const erros   = zones.length - acertos;
+  estado.totalErros  += erros;
+  estado.totalPontos += (acertos * CONFIG.PONTOS_ACERTO) - (erros * CONFIG.PONTOS_ERRO);
+  if (estado.totalPontos < 0) estado.totalPontos = 0;
+
+  showToast('⏰ Tempo esgotado! Veja as respostas corretas', 'erro');
+
+  const isLast = estado.currentRound >= estado.totalRounds - 1;
+  setVerifyState(isLast ? 'finish' : 'next');
+}
 
   /* ══════════════════════════════════════════════════════════════
      TOAST
@@ -576,10 +628,10 @@ import { DISC_CORES }                                 from '../../../shared/js/c
 
     /* Botão continuar */
     const savedRound   = loadValidRound(estado.currentRound);
-    const temProgresso = estado.currentRound > 0 || savedRound;
-    if (el.btnContinuar) {
-      el.btnContinuar.classList.toggle('hidden', !temProgresso);
-    }
+const temProgresso = estado.currentRound > 0 && estado.currentRound < estado.totalRounds;
+if (el.btnContinuar) {
+  el.btnContinuar.classList.toggle('hidden', !temProgresso);
+}
     if (temProgresso && el.continuarProg) {
       el.continuarProg.textContent =
         'Rodada ' + (estado.currentRound + 1) + '/' + estado.totalRounds;
@@ -990,29 +1042,11 @@ import { DISC_CORES }                                 from '../../../shared/js/c
     if (el.resultAcertos)  el.resultAcertos.textContent   = estado.totalAcertos;
     if (el.resultErros)    el.resultErros.textContent     = estado.totalErros;
     if (el.resultPct)      el.resultPct.textContent       = pct + '%';
-    if (el.resultTempo)    el.resultTempo.textContent     = formatTime(estado.timerSecs);
 
-    if (el.resultFeedback) {
-      el.resultFeedback.classList.remove('hidden');
-      el.resultFeedback.className = 'assoc-result__feedback';
-      let feedTipo, feedIcon, feedText;
-      if (pct === 100) {
-        feedTipo = 'assoc-result__feedback--perfeito';
-        feedIcon = '⭐'; feedText = 'Pontuação máxima — perfeito!';
-      } else if (pct >= 80) {
-        feedTipo = 'assoc-result__feedback--otimo';
-        feedIcon = '🎯'; feedText = 'Excelente desempenho!';
-      } else if (pct >= 60) {
-        feedTipo = 'assoc-result__feedback--bom';
-        feedIcon = '💪'; feedText = 'Bom resultado, continue assim!';
-      } else {
-        feedTipo = 'assoc-result__feedback--treinar';
-        feedIcon = '📖'; feedText = 'Revise o conteúdo e tente novamente';
-      }
-      el.resultFeedback.classList.add(feedTipo);
-      if (el.resultFeedIcon) el.resultFeedIcon.textContent = feedIcon;
-      if (el.resultFeedText) el.resultFeedText.textContent = feedText;
-    }
+
+if (el.resultFeedback) {
+  el.resultFeedback.classList.add('hidden');
+}
 
     mostrarTela('screenResult');
   }
@@ -1479,11 +1513,15 @@ import { DISC_CORES }                                 from '../../../shared/js/c
       });
     }
 
-    if (el.btnContinuar) {
-      el.btnContinuar.addEventListener('click', function () {
-        renderRound(loadValidRound(estado.currentRound));
-      });
+if (el.btnContinuar) {
+  el.btnContinuar.addEventListener('click', function () {
+    if (estado.currentRound >= estado.totalRounds) {
+      showToast('Todas as rodadas já foram concluídas!', 'erro');
+      return;
     }
+    renderRound(loadValidRound(estado.currentRound));
+  });
+}
 
     if (el.btnVoltar) {
       el.btnVoltar.addEventListener('click', function () {
@@ -1532,20 +1570,26 @@ import { DISC_CORES }                                 from '../../../shared/js/c
 
     if (el.btnRetomar) el.btnRetomar.addEventListener('click', retomar);
 
-    if (el.btnVoltarIntro) {
-      el.btnVoltarIntro.addEventListener('click', function () {
-        pararTimer();
-        mostrarIntro();
-      });
-    }
+if (el.btnVoltarIntro) {
+  el.btnVoltarIntro.addEventListener('click', function () {
+    pararTimer();
+    estado.timerSecs = CONFIG.ROUND_TIME_LIMIT; /* ← reseta para 30s */
+    if (el.timerVal) el.timerVal.textContent = formatTime(CONFIG.ROUND_TIME_LIMIT);
+    if (el.timerVal) el.timerVal.classList.remove('warning');
+    mostrarIntro();
+  });
+}
 
-    if (el.btnPauseMenu) {
-      el.btnPauseMenu.addEventListener('click', function () {
-        retomar();
-        pararTimer();
-        mostrarIntro();
-      });
-    }
+if (el.btnPauseMenu) {
+  el.btnPauseMenu.addEventListener('click', function () {
+    retomar();
+    pararTimer();
+    estado.timerSecs = CONFIG.ROUND_TIME_LIMIT; /* ← reseta */
+    if (el.timerVal) el.timerVal.textContent = formatTime(CONFIG.ROUND_TIME_LIMIT);
+    if (el.timerVal) el.timerVal.classList.remove('warning');
+    mostrarIntro();
+  });
+}
 
     if (el.btnRejogo) el.btnRejogo.addEventListener('click', novoJogo);
 

@@ -1702,6 +1702,16 @@ top: 100px; /* era 80px */
   transform: translateX(-50%) translateY(0);
 }
 
+.assoc-timer-val.warning {
+  color: #ff8080;
+  text-shadow: 0 0 14px rgba(255,80,80,0.5);
+  animation: assoc-timerPulse 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes assoc-timerPulse {
+  from { opacity: 1; }
+  to   { opacity: 0.55; }
+}
 /* ══════════════════════════════════════════════════════════════
    16. LIXEIRA FLUTUANTE
 ══════════════════════════════════════════════════════════════ */
