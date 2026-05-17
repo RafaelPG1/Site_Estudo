@@ -1108,6 +1108,543 @@ secoes: [
 
   ]
     },
+    // Aula 13 - Landing page com HTML
+    {
+    aula: "Aula 13 — Landing Page com HTML",
+    ideia_central: "Uma landing page é construída com HTML5 semântico, CSS, tipografia, cores e formulários — combinando estrutura, estilo e elementos visuais para criar páginas focadas em conversão e marketing digital.",
+    secoes: [
+    {
+      id: "visao",
+      titulo: "🧭 Visão Geral",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O material apresenta a construção de uma **landing page utilizando HTML5**, abordando organização do projeto, estruturação semântica, escolha de elementos visuais, imagens, cores, tipografia, tabelas e formulários HTML. A proposta é revisar conceitos fundamentais do desenvolvimento web front-end de forma prática."
+        },
+        {
+          tipo: "texto",
+          texto: "O conteúdo também reforça conceitos de **Web Semântica**, organização estrutural do HTML5 e a separação entre **estrutura (HTML)** e **estilo (CSS)**."
+        },
+        {
+          tipo: "lista",
+          titulo: "A aula aborda:",
+          itens: [
+            "O que é uma landing page e suas características",
+            "Organização de pastas do projeto",
+            "Escolha de imagens, cores, background e tipografia",
+            "Estruturação semântica com HTML5",
+            "Menu de navegação e grid layout",
+            "Tabelas e formulários HTML",
+            "Meta viewport e responsividade"
+          ]
+        }
+      ]
+    },
+
+    {
+      id: "landing_page",
+      titulo: "📄 O que é uma Landing Page",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Uma **landing page** é uma página única criada para divulgação, marketing, captação de contatos e promoção de produtos ou serviços. Sua comunicação é direta e visual, com poucos elementos distrativos."
+        },
+        {
+          tipo: "lista",
+          titulo: "Características principais:",
+          itens: [
+            "Foco direto em conversão",
+            "Conteúdo objetivo",
+            "Poucos elementos distrativos",
+            "Comunicação visual simples e clara"
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "Muito usada em:",
+          itens: [
+            "Campanhas digitais",
+            "Anúncios",
+            "Lançamentos de produtos",
+            "Páginas pessoais",
+            "Divulgação de serviços"
+          ]
+        }
+      ]
+    },
+
+    {
+      id: "organizacao",
+      titulo: "📁 Estruturação do Projeto",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "🔹 Organização de pastas",
+          texto: "O projeto deve ser organizado antes do desenvolvimento, separando estrutura, estilo e imagens:",
+          codigo: "Landing page/\n│\n├── index.html\n│\n└── assets/\n    ├── css/\n    │   └── style.css\n    │\n    └── img/"
+        },
+        {
+          tipo: "lista",
+          titulo: "Benefícios da organização:",
+          itens: [
+            "Manutenção",
+            "Organização",
+            "Reutilização",
+            "Escalabilidade do projeto"
+          ]
+        }
+      ]
+    },
+
+    {
+      id: "visual",
+      titulo: "🎨 Elementos Visuais",
+      blocos: [
+        {
+          tipo: "subtitulo",
+          texto: "Imagens"
+        },
+        {
+          tipo: "texto",
+          texto: "As imagens em uma landing page devem ser simples, objetivas e visualmente limpas. O material utiliza o site **Undraw** para baixar imagens **SVG** gratuitas."
+        },
+        {
+          tipo: "lista",
+          titulo: "As imagens em uma landing page devem:",
+          itens: [
+            "Reforçar a mensagem",
+            "Melhorar a experiência visual",
+            "Facilitar compreensão"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "🔹 Formato SVG",
+          lista: [
+            "Mantém qualidade",
+            "É leve",
+            "Permite escalabilidade",
+            "É ideal para web"
+          ]
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Cores"
+        },
+        {
+          tipo: "texto",
+          texto: "A escolha das cores envolve aspectos como psicologia das cores, temperatura, contraste, composição visual e identidade visual. O material utiliza o **Adobe Color** para gerar paletas baseadas em imagem."
+        },
+        {
+          tipo: "lista",
+          titulo: "Aspectos envolvidos na escolha das cores:",
+          itens: [
+            "Psicologia das cores",
+            "Temperatura",
+            "Contraste",
+            "Composição visual",
+            "Identidade visual"
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "🔹 Paleta de cores utilizada no projeto",
+          colunas: ["Cor", "Código Hex"],
+          linhas: [
+            ["Rosa",        "#F26D78"],
+            ["Roxo",        "#635EF2"],
+            ["Roxo escuro", "#5D59D9"],
+            ["Azul escuro", "#414059"],
+            ["Cinza claro", "#E4E4F2"]
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "🔹 RGB e Hexadecimal",
+          texto: "As cores HTML utilizam o sistema **RGB** com representação hexadecimal no formato `#RRGGBB`, onde RR = vermelho, GG = verde, BB = azul.",
+          codigo: "#RRGGBB"
+        },
+        {
+          tipo: "imagem",
+          src: "figura_esquema_cores.png",
+          pasta: "imagens_design/aula_13",
+          alt: "Figura 1 — Esquema de cores do projeto extraído automaticamente de uma imagem usando Adobe Color",
+          pagina: 6,
+          parte_do_conteudo: "Escolha da cor",
+          explicacao: "Apresenta a paleta de cores extraída automaticamente de uma imagem usando Adobe Color.",
+          id_figura: "figura_esquema_cores",
+          num: 1
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Background"
+        },
+        {
+          tipo: "texto",
+          texto: "O material apresenta o uso de backgrounds SVG personalizados usando o site **SvgBackgrounds**. O background contribui para estética, identidade visual, profundidade e modernização da interface."
+        },
+        {
+          tipo: "lista",
+          titulo: "Os backgrounds podem alterar:",
+          itens: [
+            "Cores",
+            "Ângulo",
+            "Movimento",
+            "Espessura"
+          ]
+        },
+        {
+          tipo: "imagem",
+          src: "figura_background_svg.png",
+          pasta: "imagens_design/aula_13",
+          alt: "Figura 2 — Background SVG utilizado como fundo visual da landing page",
+          pagina: 7,
+          parte_do_conteudo: "Escolha do background",
+          explicacao: "Mostra o padrão SVG utilizado como fundo visual da landing page.",
+          id_figura: "figura_background_svg",
+          num: 2
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Tipografia"
+        },
+        {
+          tipo: "texto",
+          texto: "A tipografia é um elemento essencial da comunicação visual. A escolha inadequada pode prejudicar leitura, usabilidade e experiência do usuário. O material utiliza o **Google Fonts** para importar fontes online gratuitamente."
+        },
+        {
+          tipo: "lista",
+          titulo: "A escolha inadequada pode prejudicar:",
+          itens: [
+            "Leitura",
+            "Usabilidade",
+            "Experiência do usuário"
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "As fontes transmitem sensações:",
+          itens: [
+            "Profissionalismo",
+            "Modernidade",
+            "Informalidade",
+            "Criatividade"
+          ]
+        }
+      ]
+    },
+
+    {
+      id: "html5",
+      titulo: "🧠 HTML5 e Web Semântica",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "🔹 Estrutura básica do HTML5",
+          codigo: "<!DOCTYPE html>\n<html lang=\"pt-BR\">\n<head>\n  <title>Landing Page</title>\n</head>\n<body>\n</body>\n</html>"
+        },
+        {
+          tipo: "imagem",
+          src: "figura_estrutura_html5.png",
+          pasta: "imagens_design/aula_13",
+          alt: "Figura 3 — Estrutura inicial obrigatória de um documento HTML5",
+          pagina: 8,
+          parte_do_conteudo: "Estruturando com HTML 5",
+          explicacao: "Apresenta a estrutura inicial obrigatória de um documento HTML5.",
+          id_figura: "figura_estrutura_html5",
+          num: 3
+        },
+        {
+          tipo: "topico",
+          titulo: "🔹 Web Semântica",
+          texto: "A Web Semântica busca criar páginas organizadas, compreensíveis, acessíveis e semanticamente corretas."
+        },
+        {
+          tipo: "lista",
+          titulo: "Objetivos da Web Semântica:",
+          itens: [
+            "Interpretação humana",
+            "Interpretação por mecanismos de busca",
+            "Acessibilidade",
+            "Manutenção do código"
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "🔹 Principais tags semânticas",
+          colunas: ["Tag", "Função"],
+          linhas: [
+            ["`<section>`",  "Separa seções temáticas do conteúdo"],
+            ["`<nav>`",      "Menu de navegação"],
+            ["`<article>`",  "Conteúdo independente (notícia, postagem, bloco de serviço)"],
+            ["`<aside>`",    "Conteúdo secundário"],
+            ["`<footer>`",   "Rodapé da página"],
+            ["`<div>`",      "Agrupamento genérico para organização visual e CSS"]
+          ]
+        },
+        {
+          tipo: "imagem",
+          src: "figura_web_semantica_site.png",
+          pasta: "imagens_design/aula_13",
+          alt: "Figura 4 — Print de tela demonstrando separação semântica de conteúdos usando tags HTML",
+          pagina: 16,
+          parte_do_conteudo: "Web Semântica",
+          explicacao: "Utilizada para demonstrar separação semântica de conteúdos utilizando tags HTML apropriadas.",
+          id_figura: "figura_web_semantica_site",
+          num: 4
+        }
+      ]
+    },
+
+    {
+      id: "estrutura_pagina",
+      titulo: "🏗️ Estrutura da Landing Page",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "🔹 Menu de Navegação",
+          texto: "A navegação é estruturada com `<nav>` para organizar os links internos da página:",
+          codigo: "<nav>\n  <ul>\n    <li><a href=\"#\">Home</a></li>\n  </ul>\n</nav>"
+        },
+        {
+          tipo: "topico",
+          titulo: "🔹 Grid Layout",
+          texto: "O conteúdo é organizado em uma estrutura de grid que divide a página em linhas, colunas e áreas organizadas, facilitando alinhamento, responsividade e organização visual."
+        },
+        {
+          tipo: "topico",
+          titulo: "🔹 Tag `<article>`",
+          texto: "A tag `<article>` representa conteúdo independente. Exemplos: notícia, postagem, bloco de serviço. No projeto, cada serviço utiliza um `<article>` contendo imagem, título e descrição para separar visualmente os blocos de conteúdo."
+        },
+        {
+          tipo: "lista",
+          titulo: "Seções do projeto de landing page:",
+          itens: [
+            "Menu de navegação",
+            "Seção introdutória",
+            "Grid de serviços (com `<article>`)",
+            "Tabela de preços",
+            "Formulário de contato",
+            "Rodapé (`<footer>`)"
+          ]
+        }
+      ]
+    },
+
+    {
+      id: "footer",
+      titulo: "🔻 Footer",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "A tag `<footer>` define o rodapé da página."
+        },
+        {
+          tipo: "lista",
+          titulo: "Uso comum — contém:",
+          itens: [
+            "Copyright",
+            "Contatos",
+            "Links",
+            "Informações finais"
+          ]
+        }
+      ]
+    },
+
+    {
+      id: "formulas_metodos",
+      titulo: "🔧 Fórmulas e Métodos",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "🔹 Estrutura básica HTML5",
+          codigo: "<!DOCTYPE html>\n<html lang=\"pt-BR\">\n<head>\n</head>\n<body>\n</body>\n</html>"
+        },
+        {
+          tipo: "topico",
+          titulo: "🔹 Estrutura de menu",
+          codigo: "<nav>\n  <ul>\n    <li><a href=\"#\">Home</a></li>\n  </ul>\n</nav>"
+        },
+        {
+          tipo: "topico",
+          titulo: "🔹 Estrutura de tabela",
+          codigo: "<table>\n  <thead>\n  </thead>\n  <tbody>\n  </tbody>\n</table>"
+        },
+        {
+          tipo: "topico",
+          titulo: "🔹 Estrutura de formulário",
+          codigo: "<form>\n  <input type=\"email\">\n  <input type=\"submit\">\n</form>"
+        },
+        {
+          tipo: "topico",
+          titulo: "🔹 Meta viewport",
+          codigo: "<meta name=\"viewport\"\ncontent=\"width=device-width, initial-scale=1\">"
+        },
+        {
+          tipo: "topico",
+          titulo: "🔹 Importação de fontes",
+          texto: "Utiliza bibliotecas como Google Fonts."
+        },
+        {
+          tipo: "topico",
+          titulo: "🔹 Uso de imagens SVG",
+          codigo: "<img src=\"assets/img/imagem.svg\">"
+        }
+      ]
+    },
+
+    {
+      id: "tabelas",
+      titulo: "📊 Tabelas HTML",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "As tabelas organizam dados em linhas e colunas, sendo úteis para exibir preços, comparações e informações estruturadas."
+        },
+        {
+          tipo: "tabela",
+          titulo: "🔹 Estrutura da tabela",
+          colunas: ["Elemento", "Função"],
+          linhas: [
+            ["`<table>`",  "Cria a tabela"],
+            ["`<thead>`",  "Cabeçalho da tabela"],
+            ["`<tbody>`",  "Corpo da tabela"],
+            ["`<tr>`",     "Linha da tabela"],
+            ["`<th>`",     "Cabeçalho da coluna (negrito por padrão)"],
+            ["`<td>`",     "Dado da célula"]
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "🔹 Estrutura básica",
+          codigo: "<table>\n  <thead>\n  </thead>\n  <tbody>\n  </tbody>\n</table>"
+        }
+      ]
+    },
+
+    {
+      id: "formularios",
+      titulo: "📝 Formulários HTML",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Os formulários permitem a entrada de dados do usuário, sendo usados para cadastro, login, contato e envio de informações. O elemento principal é a tag `<form>`."
+        },
+        {
+          tipo: "topico",
+          titulo: "🔹 Estrutura básica",
+          codigo: "<form>\n  <input type=\"email\">\n  <input type=\"submit\">\n</form>"
+        },
+        {
+          tipo: "tabela",
+          titulo: "🔹 Tipos de Input",
+          colunas: ["Tipo", "Função"],
+          linhas: [
+            ["text",     "Campo de texto livre"],
+            ["email",    "Valida formato de e-mail"],
+            ["password", "Oculta os caracteres digitados"],
+            ["date",     "Permite selecionar uma data"],
+            ["file",     "Permite envio de arquivos"],
+            ["radio",    "Permite apenas **uma** opção entre as apresentadas"],
+            ["checkbox", "Permite **múltiplas** seleções"],
+            ["range",    "Cria controle deslizante"],
+            ["submit",   "Envia o formulário"],
+            ["reset",    "Limpa o formulário"]
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "📌 Para prova: diferença entre `radio` (uma única opção) e `checkbox` (múltiplas opções)."
+        }
+      ]
+    },
+
+    {
+      id: "responsividade",
+      titulo: "📱 Responsividade — Meta Viewport",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O **meta viewport** é essencial para o design responsivo, adaptando a página a dispositivos móveis."
+        },
+        {
+          tipo: "topico",
+          titulo: "🔹 Tag meta viewport",
+          codigo: "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
+        },
+        {
+          tipo: "lista",
+          titulo: "O que faz:",
+          itens: [
+            "Ajusta a largura da página à tela do dispositivo",
+            "Define o nível de zoom inicial como 1 (sem zoom)"
+          ]
+        }
+      ]
+    },
+
+    {
+      id: "resumo",
+      titulo: "⚡ Resumo Final para Revisão Rápida",
+      blocos: [
+        {
+          tipo: "tabela",
+          titulo: "Tags semânticas importantes",
+          colunas: ["Tag", "Função"],
+          linhas: [
+            ["`<section>`",  "Seção temática"],
+            ["`<nav>`",      "Menu de navegação"],
+            ["`<article>`",  "Conteúdo independente"],
+            ["`<aside>`",    "Conteúdo secundário"],
+            ["`<footer>`",   "Rodapé"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Inputs de formulário",
+          colunas: ["Tipo", "Função"],
+          linhas: [
+            ["text / email / password", "Entradas de texto"],
+            ["date / file",             "Seleção de data e arquivo"],
+            ["radio",                   "Uma única opção"],
+            ["checkbox",                "Múltiplas opções"],
+            ["range",                   "Controle deslizante"],
+            ["submit / reset",          "Enviar / Limpar formulário"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Elementos de tabela",
+          colunas: ["Tag", "Função"],
+          linhas: [
+            ["`<table>`", "Tabela"],
+            ["`<tr>`",    "Linha"],
+            ["`<th>`",    "Cabeçalho"],
+            ["`<td>`",    "Dado"]
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "🔹 Cores — RGB e Hexadecimal",
+          texto: "As cores utilizam o sistema RGB com representação hexadecimal:",
+          codigo: "#RRGGBB"
+        },
+        {
+          tipo: "topico",
+          titulo: "🔹 Responsividade — Meta viewport",
+          codigo: "<meta name=\"viewport\"\ncontent=\"width=device-width, initial-scale=1\">"
+        },
+        {
+          tipo: "destaque",
+          texto: "📌 Mais cobrados em prova: Web Semântica · Estrutura HTML5 · Formulários e tipos de input · Diferença entre radio e checkbox · Tabelas HTML · Organização de landing page · Uso de `<section>`, `<article>`, `<nav>` e `<footer>` · Conceito de responsividade · Estrutura de grids · Função do meta viewport."
+        }
+      ]
+    }
+    ]
+    },
+
+    
 
   ]
 };

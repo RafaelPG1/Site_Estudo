@@ -476,7 +476,7 @@ import { DISC_CORES }                                 from '../../../shared/js/c
     }
 
     const deckLbl = $('intro-deck-label');
-    if (deckLbl) deckLbl.textContent = totalPares + ' pares no deck';
+    if (deckLbl) deckLbl.textContent = totalPares + ' questões no deck';
 
     /* Botão continuar — só aparece se há progresso E ainda não terminou */
     const temProgresso = estado.currentRound > 0 && estado.currentRound < estado.totalRounds;

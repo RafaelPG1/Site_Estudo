@@ -640,6 +640,8 @@ function _renderBloco(b) {
       html += `<ul class="rm-lista">${(b.itens ?? []).map(i => `<li><span>${_parseInline(i)}</span></li>`).join('')}</ul>`;
       return html;
     }
+    case 'texto':
+      return `<p class="rm-topico__texto" style="margin-bottom:0.75rem">${_parseInline(b.texto ?? '')}</p>`;
     case 'subtitulo':
       return `<div class="rm-subtitulo">${_parseInline(b.texto ?? '')}</div>`;
     case 'exemplo':
@@ -656,7 +658,7 @@ function _renderBloco(b) {
         <div class="rm-tabela-wrap">
           <table class="rm-tabela">
             <thead><tr>${cols.map(c => `<th>${_esc(c)}</th>`).join('')}</tr></thead>
-            <tbody>${rows.map(r => `<tr>${r.map(c => `<td><code>${_esc(c)}</code></td>`).join('')}</tr>`).join('')}</tbody>
+            <tbody>${rows.map(r => `<tr>${r.map(c => `<td>${_parseInline(c)}</td>`).join('')}</tr>`).join('')}</tbody>
           </table>
         </div>`;
     }
