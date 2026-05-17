@@ -7,1308 +7,8 @@ window.__nexusConteudo = {
   aulas: [
     //Aula 9 — Definindo um Banco de Dados
     {
-      aula: "Aula 9 — DDL: Data Definition Language",
-      ideia_central: "A DDL (Data Definition Language) e o subconjunto da SQL responsavel pela definicao e estruturacao de bancos de dados, utilizando os comandos CREATE, ALTER e DROP para criar, modificar e remover estruturas, garantindo integridade por meio de chaves primarias e estrangeiras.",
-      secoes: [
-
-        {
-          id: "visao",
-          titulo: "📖 Visão Geral do Conteúdo",
-          blocos: [
-            {
-              tipo: "texto",
-              texto: "Este modulo aborda os conceitos da DDL (Data Definition Language), subconjunto da SQL responsavel pela definicao e estruturacao de bancos de dados."
-            },
-            {
-              tipo: "lista",
-              titulo: "O conteudo apresenta:",
-              itens: [
-                "Conceito de DDL",
-                "Definicao de esquema e catalogo",
-                "Criacao de bancos e tabelas",
-                "Alteracao de estruturas",
-                "Remocao de bancos e tabelas",
-                "Criacao de chaves primarias e estrangeiras",
-                "Principais tipos de dados SQL"
-              ]
-            },
-            {
-              tipo: "lista",
-              titulo: "Comandos centrais estudados:",
-              itens: [
-                "`CREATE`",
-                "`ALTER`",
-                "`DROP`"
-              ]
-            },
-            {
-              tipo: "destaque",
-              texto: "O modulo tambem enfatiza a importancia das restricoes de integridade para garantir consistencia dos dados."
-            }
-          ]
-        },
-
-        {
-          id: "ddl",
-          titulo: "🧠 DDL — Data Definition Language",
-          blocos: [
-            {
-              tipo: "texto",
-              texto: "A DDL e a parte da SQL responsavel pela definicao da estrutura do banco de dados."
-            },
-            {
-              tipo: "topico",
-              titulo: "Ela permite:",
-              lista: [
-                "Criar estruturas",
-                "Alterar estruturas",
-                "Remover estruturas"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "A DDL define:",
-              lista: [
-                "Tabelas",
-                "Esquemas",
-                "Dominios",
-                "Indices",
-                "Restricoes",
-                "Permissoes",
-                "Armazenamento fisico"
-              ]
-            },
-            {
-              tipo: "tabela",
-              titulo: "Principais comandos DDL",
-              colunas: ["Comando", "Funcao"],
-              linhas: [
-                ["CREATE", "Criar objetos"],
-                ["ALTER",  "Modificar objetos"],
-                ["DROP",   "Remover objetos"]
-              ]
-            }
-          ]
-        },
-
-        {
-          id: "comandos_ddl",
-          titulo: "⚙️ Comandos DDL",
-          blocos: [
-            {
-              tipo: "topico",
-              titulo: "CREATE",
-              texto: "Utilizado para criacao de:",
-              lista: [
-                "Bancos de dados",
-                "Tabelas",
-                "Views",
-                "Procedimentos",
-                "Indices"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "ALTER",
-              texto: "Usado para modificar objetos existentes.",
-              lista: [
-                "Adicionar colunas",
-                "Remover colunas",
-                "Alterar tipos",
-                "Adicionar restricoes"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "DROP",
-              texto: "Remove objetos do banco.",
-              lista: [
-                "Pode excluir: tabelas, bancos, esquemas, indices"
-              ]
-            },
-            {
-              tipo: "destaque",
-              texto: "O comando DROP e destrutivo e exige cuidado."
-            }
-          ]
-        },
-
-        {
-          id: "esquema_catalogo",
-          titulo: "🗂️ Esquema e Catálogo",
-          blocos: [
-            {
-              tipo: "topico",
-              titulo: "Esquema (Schema)",
-              texto: "Um esquema e um agrupamento logico de objetos do banco de dados.",
-              lista: [
-                "Inclui: tabelas, views, restricoes, dominios, permissoes",
-                "Exemplo: `CREATE SCHEMA Exemplo;`"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "Catalogo",
-              texto: "O catalogo e uma colecao de esquemas.",
-              lista: [
-                "Todo catalogo possui `INFORMATION_SCHEMA`",
-                "Esse esquema especial contem metadados do banco"
-              ]
-            }
-          ]
-        },
-
-        {
-          id: "create_database",
-          titulo: "🏗️ CREATE DATABASE",
-          blocos: [
-            {
-              tipo: "texto",
-              texto: "Cria um banco de dados."
-            },
-            {
-              tipo: "topico",
-              titulo: "Sintaxe:",
-              lista: [
-                "`CREATE DATABASE nome_base;`"
-              ]
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Exemplo — Criar banco de dados",
-              texto: "Cria um banco de dados chamado Exemplo.",
-              detalhe: "CREATE DATABASE Exemplo;"
-            },
-            {
-              tipo: "imagem",
-              src: "fig_create_database_postgres.png",
-              pasta: "imagens_banco_dados/aula_09",
-              num: "1",
-              alt: "Criacao de banco de dados no PostgreSQL utilizando DDL"
-            },
-            {
-              tipo: "imagem",
-              src: "fig_create_database_gui.png",
-              pasta: "imagens_banco_dados/aula_09",
-              num: "2",
-              alt: "Criacao de banco usando interface grafica do PostgreSQL"
-            }
-          ]
-        },
-
-        {
-          id: "create_table",
-          titulo: "📋 CREATE TABLE",
-          blocos: [
-            {
-              tipo: "texto",
-              texto: "Cria tabelas. E necessario definir colunas, tipos e restricoes."
-            },
-            {
-              tipo: "topico",
-              titulo: "Sintaxe:",
-              lista: [
-                "`CREATE TABLE nome_tabela (`",
-                "`    campo atributo`",
-                "`);`"
-              ]
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Exemplo — Criar tabela alunos",
-              texto: "Cria a tabela alunos com matricula inteira e nome variavel.",
-              detalhe: "CREATE TABLE alunos (mat_alu INTEGER, nom_alu VARCHAR(50));"
-            },
-            {
-              tipo: "imagem",
-              src: "fig_create_table_alunos.png",
-              pasta: "imagens_banco_dados/aula_09",
-              num: "3",
-              alt: "Criacao da tabela alunos no banco de dados Exemplo usando CREATE TABLE"
-            }
-          ]
-        },
-
-        {
-          id: "tipos_dados",
-          titulo: "🔢 Tipos de Dados SQL",
-          blocos: [
-            {
-              tipo: "texto",
-              texto: "Os tipos de dados definem quais valores uma coluna aceita."
-            },
-            {
-              tipo: "topico",
-              titulo: "CHAR(n)",
-              texto: "Texto com tamanho fixo. Sempre ocupa n caracteres.",
-              lista: [
-                "Exemplo: `CHAR(10)` — sempre ocupa 10 caracteres"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "VARCHAR(n)",
-              texto: "Texto com tamanho variavel. Mais utilizado em nomes e descricoes.",
-              lista: [
-                "Exemplo: `VARCHAR(50)`"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "INTEGER",
-              lista: [
-                "Numero inteiro de 32 bits",
-                "Sintaxe: `INTEGER`"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "SMALLINT",
-              lista: [
-                "Inteiro menor (16 bits)",
-                "Sintaxe: `SMALLINT`"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "DECIMAL / NUMERIC",
-              lista: [
-                "Numeros com casas decimais",
-                "Exemplo: `DECIMAL(10,2)`"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "FLOAT",
-              lista: [
-                "Numero de ponto flutuante"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "DATE",
-              lista: [
-                "Armazena datas"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "TIME",
-              lista: [
-                "Armazena horarios"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "BLOB",
-              texto: "Armazena arquivos binarios.",
-              lista: [
-                "Imagens",
-                "Videos",
-                "Audios"
-              ]
-            },
-            {
-              tipo: "imagem",
-              src: "quadro_tipos_sql.png",
-              pasta: "imagens_banco_dados/aula_09",
-              num: "4",
-              alt: "Quadro com os principais tipos de dados utilizados na definicao de tabelas SQL"
-            }
-          ]
-        },
-
-        {
-          id: "alter",
-          titulo: "✏️ ALTER DATABASE e ALTER TABLE",
-          blocos: [
-            {
-              tipo: "topico",
-              titulo: "ALTER DATABASE",
-              texto: "Permite alterar propriedades do banco.",
-              lista: [
-                "Exemplo: `ALTER DATABASE Exemplo RENAME TO BDAcademico;`"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "ALTER TABLE",
-              texto: "Usado para modificar tabelas existentes.",
-              lista: [
-                "Adicionar colunas",
-                "Remover colunas",
-                "Alterar atributos",
-                "Adicionar restricoes"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "Adicionando coluna — sintaxe:",
-              lista: [
-                "`ALTER TABLE tabela`",
-                "`ADD coluna atributo;`"
-              ]
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Exemplo — Adicionar coluna CTPS",
-              texto: "Adiciona a coluna CTPS do tipo VARCHAR(8) na tabela alunos.",
-              detalhe: "ALTER TABLE Exemplo.alunos ADD CTPS VARCHAR(8);"
-            },
-            {
-              tipo: "destaque",
-              texto: "Valores NULL em ALTER TABLE: ao adicionar colunas, registros antigos recebem NULL. NOT NULL nao e permitido sem valor padrao (DEFAULT)."
-            }
-          ]
-        },
-
-        {
-          id: "drop",
-          titulo: "🗑️ DROP TABLE e DROP DATABASE",
-          blocos: [
-            {
-              tipo: "topico",
-              titulo: "DROP TABLE",
-              texto: "Remove tabelas do banco.",
-              lista: [
-                "Exemplo: `DROP TABLE curriculos CASCADE;`"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "CASCADE",
-              texto: "Remove:",
-              lista: [
-                "A tabela",
-                "Dependencias",
-                "Restricoes",
-                "Views relacionadas"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "RESTRICT",
-              lista: [
-                "So remove se nao houver dependencias"
-              ]
-            },
-            {
-              tipo: "tabela",
-              titulo: "Diferenca entre DELETE e DROP",
-              colunas: ["DELETE", "DROP"],
-              linhas: [
-                ["Remove registros",    "Remove estrutura"],
-                ["Mantem tabela",       "Exclui tabela"],
-                ["Pode usar WHERE",     "Estrutura desaparece"]
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "DROP DATABASE",
-              texto: "Remove completamente um banco de dados.",
-              lista: [
-                "Exemplo: `DROP DATABASE Exemplo;`"
-              ]
-            },
-            {
-              tipo: "destaque",
-              texto: "DROP DATABASE realiza exclusao fisica e geralmente irreversivel. Exige extremo cuidado."
-            },
-            {
-              tipo: "imagem",
-              src: "fig_drop_database.png",
-              pasta: "imagens_banco_dados/aula_09",
-              num: "5",
-              alt: "Exemplo de remocao de banco de dados no PostgreSQL usando DROP DATABASE"
-            }
-          ]
-        },
-
-        {
-          id: "chaves",
-          titulo: "🔑 Chave Primária e Chave Estrangeira",
-          blocos: [
-            {
-              tipo: "topico",
-              titulo: "Chave Primaria — PRIMARY KEY",
-              texto: "Identifica unicamente cada registro.",
-              lista: [
-                "Unica — nao pode se repetir",
-                "Nao nula — nao aceita NULL",
-                "Identifica registros de forma exclusiva"
-              ]
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Exemplo — PRIMARY KEY simples",
-              texto: "Define mat_alu como chave primaria.",
-              detalhe: "PRIMARY KEY (mat_alu)"
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Exemplo — PRIMARY KEY nomeada (PostgreSQL)",
-              texto: "Define a restricao com nome usando CONSTRAINT.",
-              detalhe: "CONSTRAINT alu_pk PRIMARY KEY (mat_alu)"
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Exemplo — CREATE TABLE com chave primaria",
-              texto: "Cria a tabela alunos com chave primaria definida via CONSTRAINT.",
-              detalhe: "CREATE TABLE alunos (mat_alu INTEGER, nom_alu VARCHAR(50), CONSTRAINT alu_pk PRIMARY KEY(mat_alu));"
-            },
-            {
-              tipo: "imagem",
-              src: "fig_primary_key.png",
-              pasta: "imagens_banco_dados/aula_09",
-              num: "6",
-              alt: "Exemplo de definicao de chave primaria em uma tabela SQL"
-            },
-            {
-              tipo: "topico",
-              titulo: "Chave Estrangeira — FOREIGN KEY",
-              texto: "Mantem integridade referencial e relaciona tabelas.",
-              lista: [
-                "Garante que o valor referenciado exista",
-                "Impede referencias invalidas",
-                "Exemplo: aluno so pode possuir curso existente"
-              ]
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Exemplo — FOREIGN KEY",
-              texto: "Relaciona o campo cod_curso da tabela atual com a tabela cursos.",
-              detalhe: "FOREIGN KEY (cod_curso) REFERENCES cursos(cod_curso)"
-            },
-            {
-              tipo: "imagem",
-              src: "fig_foreign_key.png",
-              pasta: "imagens_banco_dados/aula_09",
-              num: "7",
-              alt: "Exemplo de relacionamento entre tabelas usando chave estrangeira e integridade referencial"
-            }
-          ]
-        },
-
-        {
-          id: "formulas",
-          titulo: "📐 Fórmulas e Métodos",
-          blocos: [
-            {
-              tipo: "topico",
-              titulo: "Metodo de Criacao de Banco",
-              lista: [
-                "`CREATE DATABASE nome;`"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "Metodo de Criacao de Tabela",
-              lista: [
-                "`CREATE TABLE tabela (`",
-                "`    campo tipo`",
-                "`);`"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "Metodo de Alteracao",
-              lista: [
-                "`ALTER TABLE tabela`",
-                "`ADD coluna tipo;`"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "Metodo de Remocao",
-              lista: [
-                "Remover tabela: `DROP TABLE tabela;`",
-                "Remover banco: `DROP DATABASE banco;`"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "Metodo de Chave Primaria",
-              lista: [
-                "`PRIMARY KEY (campo)`"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "Metodo de Chave Estrangeira",
-              lista: [
-                "`FOREIGN KEY (campo)`",
-                "`REFERENCES tabela(campo)`"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "Metodo de Definicao de Tipos",
-              lista: [
-                "Texto fixo: `CHAR(10)`",
-                "Texto variavel: `VARCHAR(50)`",
-                "Numero decimal: `DECIMAL(10,2)`"
-              ]
-            }
-          ]
-        },
-
-        {
-          id: "exemplos",
-          titulo: "💡 Exemplos Explicativos",
-          blocos: [
-            {
-              tipo: "exemplo",
-              titulo: "Criar banco de dados",
-              texto: "Cria o banco de dados chamado Exemplo.",
-              detalhe: "CREATE DATABASE Exemplo;"
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Criar tabela alunos",
-              texto: "Cria a tabela alunos com matricula e nome.",
-              detalhe: "CREATE TABLE alunos (mat_alu INTEGER, nom_alu VARCHAR(50));"
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Criar tabela com chave primaria",
-              texto: "Cria a tabela alunos definindo chave primaria via CONSTRAINT.",
-              detalhe: "CREATE TABLE alunos (mat_alu INTEGER, nom_alu VARCHAR(50), CONSTRAINT alu_pk PRIMARY KEY(mat_alu));"
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Adicionar coluna",
-              texto: "Adiciona a coluna CTPS na tabela alunos.",
-              detalhe: "ALTER TABLE Exemplo.alunos ADD CTPS VARCHAR(8);"
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Renomear banco",
-              texto: "Renomeia o banco Exemplo para BDAcademico.",
-              detalhe: "ALTER DATABASE Exemplo RENAME TO BDAcademico;"
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Remover tabela",
-              texto: "Remove a tabela curriculos e suas dependencias.",
-              detalhe: "DROP TABLE curriculos CASCADE;"
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Criar chave estrangeira",
-              texto: "Relaciona cod_curso com a tabela cursos.",
-              detalhe: "FOREIGN KEY (cod_curso) REFERENCES cursos(cod_curso)"
-            }
-          ]
-        },
-
-        {
-          id: "resumo",
-          titulo: "🧾 Resumo Final para Revisão Rápida",
-          blocos: [
-            {
-              tipo: "lista",
-              itens: [
-                "**DDL** — define estrutura do banco",
-                "**CREATE** — cria objetos",
-                "**ALTER** — modifica objetos",
-                "**DROP** — remove objetos",
-                "`CREATE DATABASE` — cria bancos",
-                "`CREATE TABLE` — cria tabelas",
-                "`ALTER TABLE` — modifica tabelas",
-                "`DROP TABLE` — remove tabelas",
-                "`DROP DATABASE` — remove bancos",
-                "**CHAR** — texto fixo",
-                "**VARCHAR** — texto variavel",
-                "**INTEGER** — numero inteiro",
-                "**DECIMAL** — numero decimal",
-                "**DATE** — datas",
-                "**BLOB** — arquivos binarios",
-                "**PRIMARY KEY** — unica e nao nula",
-                "**FOREIGN KEY** — cria relacionamento e garante integridade referencial",
-                "**CASCADE** — remove dependencias junto",
-                "**RESTRICT** — impede exclusao com dependencias",
-                "**DROP** e destrutivo e exige cuidado"
-              ]
-            },
-            {
-              tipo: "lista",
-              titulo: "Pontos mais importantes para prova:",
-              itens: [
-                "Diferenca entre DDL e DML",
-                "Funcao dos comandos CREATE, ALTER e DROP",
-                "Estrutura do CREATE TABLE",
-                "Principais tipos de dados SQL",
-                "Diferenca entre CHAR e VARCHAR",
-                "Conceito de esquema e catalogo",
-                "Chave primaria e suas caracteristicas",
-                "Chave estrangeira e integridade referencial",
-                "Diferenca entre DELETE e DROP",
-                "Uso de CASCADE e RESTRICT"
-              ]
-            }
-          ]
-        }
-
-      ]
-    },
-    //Aula 10 — Manipulando um Banco de Dados
-    {
-      aula: "Aula 10 — Manipulando um Banco de Dados",
-      ideia_central: "A DML (Data Manipulation Language) e seus comandos SELECT, INSERT, UPDATE e DELETE permitem consultar, inserir, alterar e excluir dados em bancos de dados relacionais, sendo os operadores aritmeticos, de comparacao e logicos ferramentas essenciais para otimizar essas operacoes.",
-      secoes: [
-
-        {
-          id: "visao",
-          titulo: "📖 Visão Geral do Conteúdo",
-          blocos: [
-            {
-              tipo: "texto",
-              texto: "Este modulo apresenta os principais conceitos da DML (Data Manipulation Language), subconjunto da linguagem SQL responsavel pela manipulacao dos dados armazenados em bancos de dados."
-            },
-            {
-              tipo: "lista",
-              titulo: "Principais comandos estudados:",
-              itens: [
-                "**SELECT**",
-                "**INSERT**",
-                "**DELETE**",
-                "**UPDATE**"
-              ]
-            },
-            {
-              tipo: "lista",
-              titulo: "O modulo tambem aborda:",
-              itens: [
-                "Estrutura basica de consultas SQL",
-                "Operadores aritmeticos",
-                "Operadores de comparacao",
-                "Operadores logicos"
-              ]
-            },
-            {
-              tipo: "lista",
-              titulo: "O objetivo principal e ensinar como:",
-              itens: [
-                "Consultar dados",
-                "Inserir registros",
-                "Atualizar informacoes",
-                "Excluir registros",
-                "Otimizar consultas SQL"
-              ]
-            }
-          ]
-        },
-
-        {
-          id: "dml",
-          titulo: "🧠 DML — Data Manipulation Language",
-          blocos: [
-            {
-              tipo: "texto",
-              texto: "A DML e o subconjunto da SQL responsavel pela manipulacao dos dados armazenados no banco."
-            },
-            {
-              tipo: "topico",
-              titulo: "Ela permite:",
-              lista: [
-                "Buscar informacoes",
-                "Inserir novos registros",
-                "Alterar dados",
-                "Excluir registros"
-              ]
-            },
-            {
-              tipo: "tabela",
-              titulo: "Principais comandos DML",
-              colunas: ["Comando", "Funcao"],
-              linhas: [
-                ["SELECT", "Consultar dados"],
-                ["INSERT", "Inserir registros"],
-                ["UPDATE", "Alterar registros"],
-                ["DELETE", "Excluir registros"]
-              ]
-            },
-            {
-              tipo: "imagem",
-              src: "quadro_comandos_dml.png",
-              pasta: "imagens_banco_dados/aula_10",
-              num: "1",
-              alt: "Quadro com os principais comandos de manipulacao de registros da DML"
-            },
-            {
-              tipo: "topico",
-              titulo: "Tipos de DML",
-              texto: "O conteudo apresenta dois tipos principais:"
-            },
-            {
-              tipo: "topico",
-              titulo: "DML Procedural",
-              lista: [
-                "O usuario informa quais dados deseja",
-                "O usuario informa como obte-los"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "DML Nao-Procedural",
-              lista: [
-                "O usuario informa apenas quais dados deseja",
-                "O SGBD decide como obter os dados",
-                "A SQL e considerada predominantemente nao-procedural"
-              ]
-            }
-          ]
-        },
-
-        {
-          id: "query",
-          titulo: "🔎 Query (Consulta)",
-          blocos: [
-            {
-              tipo: "texto",
-              texto: "Uma query e um comando utilizado para recuperar informacoes do banco de dados."
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Exemplo de query basica",
-              texto: "Recupera os nomes dos alunos da tabela alunos.",
-              detalhe: "SELECT nome FROM alunos;"
-            }
-          ]
-        },
-
-        {
-          id: "estrutura_sql",
-          titulo: "📋 Estrutura Básica das Consultas SQL",
-          blocos: [
-            {
-              tipo: "texto",
-              texto: "As consultas SQL possuem tres clausulas principais: SELECT, FROM e WHERE."
-            },
-            {
-              tipo: "topico",
-              titulo: "Estrutura geral:",
-              lista: [
-                "`SELECT colunas`",
-                "`FROM tabela`",
-                "`WHERE condicao;`"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "SELECT",
-              texto: "Define quais colunas serao exibidas.",
-              lista: [
-                "Exemplo: `SELECT nom_alu FROM alunos;` — retorna os nomes dos alunos"
-              ]
-            },
-            {
-              tipo: "imagem",
-              src: "fig_select_nomes.png",
-              pasta: "imagens_banco_dados/aula_10",
-              num: "2",
-              alt: "Exemplo de selecao dos nomes de alunos na tabela alunos usando SELECT e FROM"
-            },
-            {
-              tipo: "imagem",
-              src: "fig_resultado_select.png",
-              pasta: "imagens_banco_dados/aula_10",
-              num: "3",
-              alt: "Resultado da selecao dos nomes de alunos na tabela alunos"
-            },
-            {
-              tipo: "topico",
-              titulo: "FROM",
-              texto: "Define a tabela utilizada na consulta.",
-              lista: [
-                "Exemplo: `FROM alunos`"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "WHERE",
-              texto: "Filtra registros.",
-              lista: [
-                "Exemplo: `WHERE cod_curso = 10`"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "Duplicidade em SQL",
-              texto: "A SQL permite registros duplicados nos resultados. Para eliminar duplicatas utiliza-se DISTINCT.",
-              lista: [
-                "Sintaxe: `SELECT DISTINCT coluna FROM tabela;`"
-              ]
-            },
-            {
-              tipo: "imagem",
-              src: "fig_select_codigos.png",
-              pasta: "imagens_banco_dados/aula_10",
-              num: "4",
-              alt: "Exemplo de selecao dos codigos dos cursos de todos os alunos"
-            },
-            {
-              tipo: "imagem",
-              src: "fig_duplicidade_sql.png",
-              pasta: "imagens_banco_dados/aula_10",
-              num: "5",
-              alt: "Resultado mostrando repeticao de registros em consultas SQL sem DISTINCT"
-            }
-          ]
-        },
-
-        {
-          id: "insert",
-          titulo: "➕ Comando INSERT",
-          blocos: [
-            {
-              tipo: "texto",
-              texto: "O comando INSERT adiciona novos registros na tabela."
-            },
-            {
-              tipo: "topico",
-              titulo: "Estrutura:",
-              lista: [
-                "`INSERT INTO tabela`",
-                "`VALUES (...);`"
-              ]
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Exemplo de INSERT",
-              texto: "Insere um novo curso na tabela cursos.",
-              detalhe: "INSERT INTO cursos VALUES (11, 'Sistemas de Informacao', 180, 1149);"
-            },
-            {
-              tipo: "imagem",
-              src: "fig_insert.png",
-              pasta: "imagens_banco_dados/aula_10",
-              num: "6",
-              alt: "Exemplo de insercao de dados na tabela cursos usando o comando INSERT"
-            },
-            {
-              tipo: "topico",
-              titulo: "INSERT com definicao de colunas",
-              texto: "Tambem e possivel especificar os campos explicitamente. Isso evita erros relacionados a ordem dos atributos.",
-              lista: [
-                "Exemplo: `INSERT INTO cursos (cod_curso, nome_curso, tot_cred, cod_coord) VALUES (11, 'Sistemas de Informacao', 180, 1149);`"
-              ]
-            },
-            {
-              tipo: "imagem",
-              src: "fig_insert_colunas.png",
-              pasta: "imagens_banco_dados/aula_10",
-              num: "7",
-              alt: "Exemplo de variacao do comando INSERT especificando explicitamente os campos"
-            }
-          ]
-        },
-
-        {
-          id: "delete",
-          titulo: "🗑️ Comando DELETE",
-          blocos: [
-            {
-              tipo: "texto",
-              texto: "Usado para excluir registros."
-            },
-            {
-              tipo: "topico",
-              titulo: "Estrutura:",
-              lista: [
-                "`DELETE FROM tabela`",
-                "`WHERE condicao;`"
-              ]
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Exemplo de DELETE",
-              texto: "Exclui o aluno com matricula 911113.",
-              detalhe: "DELETE FROM alunos WHERE mat_alu = 911113;"
-            },
-            {
-              tipo: "imagem",
-              src: "fig_delete.png",
-              pasta: "imagens_banco_dados/aula_10",
-              num: "8",
-              alt: "Exemplo de exclusao de registros usando o comando DELETE com WHERE"
-            },
-            {
-              tipo: "destaque",
-              texto: "DELETE sem WHERE: `DELETE FROM alunos;` — remove TODOS os registros da tabela. A tabela continua existindo, porem vazia."
-            },
-            {
-              tipo: "destaque",
-              texto: "Os comandos DELETE e UPDATE podem causar grandes prejuizos quando executados incorretamente. Principal risco: esquecer a clausula WHERE."
-            }
-          ]
-        },
-
-        {
-          id: "update",
-          titulo: "✏️ Comando UPDATE",
-          blocos: [
-            {
-              tipo: "texto",
-              texto: "Usado para atualizar registros existentes."
-            },
-            {
-              tipo: "topico",
-              titulo: "Estrutura:",
-              lista: [
-                "`UPDATE tabela`",
-                "`SET coluna = valor`",
-                "`WHERE condicao;`"
-              ]
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Exemplo de UPDATE",
-              texto: "Atualiza o nome do curso com codigo 11.",
-              detalhe: "UPDATE cursos SET nome_curso = 'SI - Sistemas de Informacao' WHERE cod_curso = 11;"
-            },
-            {
-              tipo: "imagem",
-              src: "fig_update.png",
-              pasta: "imagens_banco_dados/aula_10",
-              num: "9",
-              alt: "Exemplo de alteracao de dados existentes usando o comando UPDATE"
-            },
-            {
-              tipo: "destaque",
-              texto: "UPDATE sem WHERE: `UPDATE cursos SET nome_curso = 'Novo Nome';` — atualiza TODOS os registros da tabela."
-            }
-          ]
-        },
-
-        {
-          id: "operadores_aritmeticos",
-          titulo: "➗ Operadores Aritméticos",
-          blocos: [
-            {
-              tipo: "texto",
-              texto: "Utilizados em calculos matematicos. So funcionam em colunas numericas."
-            },
-            {
-              tipo: "tabela",
-              titulo: "Operadores aritmeticos",
-              colunas: ["Operador", "Funcao"],
-              linhas: [
-                ["+", "Soma"],
-                ["-", "Subtracao"],
-                ["*", "Multiplicacao"],
-                ["/", "Divisao"]
-              ]
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Exemplo de operador aritmetico",
-              texto: "Calcula o salario anual multiplicando o salario mensal por 12.",
-              detalhe: "SELECT nome, salario, salario*12 AS salario_anual FROM empregados;"
-            },
-            {
-              tipo: "topico",
-              titulo: "Precedencia de Operadores",
-              texto: "A SQL segue prioridade matematica.",
-              lista: [
-                "Exemplo: `12 * salario + 500` — primeiro multiplica, depois soma"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "Uso de Parenteses",
-              texto: "Os parenteses alteram a ordem de execucao.",
-              lista: [
-                "Exemplo: `12 * (salario + 500)` — soma primeiro, multiplica depois"
-              ]
-            }
-          ]
-        },
-
-        {
-          id: "operadores_comparacao",
-          titulo: "⚖️ Operadores de Comparação",
-          blocos: [
-            {
-              tipo: "texto",
-              texto: "Usados para comparar valores."
-            },
-            {
-              tipo: "tabela",
-              titulo: "Operadores de comparacao",
-              colunas: ["Operador", "Significado"],
-              linhas: [
-                ["=",  "Igual"],
-                [">",  "Maior"],
-                [">=", "Maior ou igual"],
-                ["<",  "Menor"],
-                ["<=", "Menor ou igual"],
-                ["<>", "Diferente"]
-              ]
-            },
-            {
-              tipo: "imagem",
-              src: "tabela_operadores_comparacao.png",
-              pasta: "imagens_banco_dados/aula_10",
-              num: "10",
-              alt: "Tabela com os operadores de comparacao utilizados em filtros SQL"
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Exemplo de operador de comparacao",
-              texto: "Retorna matriculas maiores ou iguais a 911113.",
-              detalhe: "SELECT * FROM alunos WHERE mat_alu >= 911113;"
-            },
-            {
-              tipo: "imagem",
-              src: "fig_operador_maior_igual.png",
-              pasta: "imagens_banco_dados/aula_10",
-              num: "11",
-              alt: "Exemplo de Select usando o operador maior ou igual em consultas SQL"
-            }
-          ]
-        },
-
-        {
-          id: "operadores_logicos",
-          titulo: "🔗 Operadores Lógicos",
-          blocos: [
-            {
-              tipo: "texto",
-              texto: "Combinam condicoes em consultas SQL."
-            },
-            {
-              tipo: "tabela",
-              titulo: "Operadores logicos",
-              colunas: ["Operador", "Funcao"],
-              linhas: [
-                ["AND", "Ambas as condicoes devem ser verdadeiras"],
-                ["OR",  "Pelo menos uma deve ser verdadeira"],
-                ["NOT", "Inverte a condicao"]
-              ]
-            },
-            {
-              tipo: "imagem",
-              src: "tabela_operadores_logicos.png",
-              pasta: "imagens_banco_dados/aula_10",
-              num: "12",
-              alt: "Tabela com os operadores logicos AND, OR e NOT"
-            },
-            {
-              tipo: "topico",
-              titulo: "Operador AND — mais restritivo",
-              texto: "As duas condicoes precisam ser verdadeiras.",
-              lista: [
-                "Exemplo: `WHERE tot_cred = 4 AND nom_disc = 'BANCO DE DADOS'`"
-              ]
-            },
-            {
-              tipo: "imagem",
-              src: "fig_operador_and.png",
-              pasta: "imagens_banco_dados/aula_10",
-              num: "13",
-              alt: "Exemplo de Select usando o operador comparativo AND para filtro restritivo"
-            },
-            {
-              tipo: "topico",
-              titulo: "Operador OR — mais amplo",
-              texto: "Basta uma condicao ser verdadeira.",
-              lista: [
-                "Exemplo: `WHERE tot_cred = 4 OR nom_disc = 'BANCO DE DADOS'`"
-              ]
-            },
-            {
-              tipo: "imagem",
-              src: "fig_operador_or.png",
-              pasta: "imagens_banco_dados/aula_10",
-              num: "14",
-              alt: "Exemplo de Select usando o operador comparativo OR para consultas mais amplas"
-            },
-            {
-              tipo: "topico",
-              titulo: "Operador NOT",
-              texto: "Inverte o resultado logico.",
-              lista: [
-                "Exemplo: `WHERE NOT cod_curso = 10` — seleciona registros que NAO pertencem ao curso 10"
-              ]
-            }
-          ]
-        },
-
-        {
-          id: "formulas",
-          titulo: "📐 Fórmulas e Métodos",
-          blocos: [
-            {
-              tipo: "topico",
-              titulo: "Estrutura Basica SQL",
-              lista: [
-                "`SELECT colunas`",
-                "`FROM tabela`",
-                "`WHERE condicao;`"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "Metodo de Insercao",
-              lista: [
-                "`INSERT INTO tabela`",
-                "`VALUES (...);`"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "Metodo de Exclusao",
-              lista: [
-                "`DELETE FROM tabela`",
-                "`WHERE condicao;`"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "Metodo de Atualizacao",
-              lista: [
-                "`UPDATE tabela`",
-                "`SET coluna = valor`",
-                "`WHERE condicao;`"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "Metodos de Comparacao",
-              lista: [
-                "**Igual:** `WHERE idade = 20`",
-                "**Maior:** `WHERE idade > 20`",
-                "**Diferente:** `WHERE idade <> 20`"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "Metodos Logicos",
-              lista: [
-                "**AND:** `WHERE idade > 18 AND cidade = 'Quixada'`",
-                "**OR:** `WHERE idade > 18 OR cidade = 'Quixada'`"
-              ]
-            },
-            {
-              tipo: "topico",
-              titulo: "Metodo Aritmetico",
-              lista: [
-                "Exemplo: `SELECT salario * 12 FROM empregados;`"
-              ]
-            }
-          ]
-        },
-
-        {
-          id: "exemplos",
-          titulo: "💡 Exemplos Explicativos",
-          blocos: [
-            {
-              tipo: "exemplo",
-              titulo: "Buscar nomes de alunos",
-              texto: "Retorna os nomes de todos os alunos da tabela.",
-              detalhe: "SELECT nom_alu FROM alunos;"
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Buscar codigos de cursos",
-              texto: "Retorna os codigos de cursos de todos os alunos.",
-              detalhe: "SELECT cod_curso FROM alunos;"
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Inserir curso",
-              texto: "Insere um novo registro na tabela cursos.",
-              detalhe: "INSERT INTO cursos VALUES (11, 'Sistemas de Informacao', 180, 1149);"
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Excluir aluno",
-              texto: "Remove o aluno com matricula 911113.",
-              detalhe: "DELETE FROM alunos WHERE mat_alu = 911113;"
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Atualizar curso",
-              texto: "Altera o nome do curso com codigo 11.",
-              detalhe: "UPDATE cursos SET nome_curso = 'SI - Sistemas de Informacao' WHERE cod_curso = 11;"
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Calcular salario anual",
-              texto: "Usa operador aritmetico para calcular salario anual.",
-              detalhe: "SELECT nome, salario, salario*12 AS salario_anual FROM empregados;"
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Filtro usando comparacao",
-              texto: "Retorna alunos com matricula maior ou igual a 911113.",
-              detalhe: "SELECT * FROM alunos WHERE mat_alu >= 911113;"
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Filtro usando AND",
-              texto: "Retorna registros onde ambas as condicoes sao verdadeiras.",
-              detalhe: "WHERE tot_cred = 4 AND nom_disc = 'BANCO DE DADOS'"
-            },
-            {
-              tipo: "exemplo",
-              titulo: "Filtro usando OR",
-              texto: "Retorna registros onde pelo menos uma condicao e verdadeira.",
-              detalhe: "WHERE tot_cred = 4 OR nom_disc = 'BANCO DE DADOS'"
-            }
-          ]
-        },
-
-        {
-          id: "resumo",
-          titulo: "🧾 Resumo Final para Revisão Rápida",
-          blocos: [
-            {
-              tipo: "lista",
-              itens: [
-                "**DML** — responsavel pela manipulacao dos dados",
-                "**SELECT** — consulta dados",
-                "**INSERT** — adiciona registros",
-                "**UPDATE** — altera registros",
-                "**DELETE** — remove registros",
-                "**WHERE** — filtra resultados",
-                "**DISTINCT** — remove duplicatas",
-                "**Operadores aritmeticos:** +, -, *, /",
-                "**Operadores de comparacao:** =, >, >=, <, <=, <>",
-                "**Operadores logicos:** AND, OR, NOT",
-                "**AND** e mais restritivo — ambas as condicoes devem ser verdadeiras",
-                "**OR** e mais amplo — basta uma condicao ser verdadeira",
-                "Parenteses alteram precedencia matematica",
-                "DELETE e UPDATE sem WHERE podem afetar toda a tabela"
-              ]
-            },
-            {
-              tipo: "lista",
-              titulo: "Pontos mais importantes para prova:",
-              itens: [
-                "Diferenca entre SELECT, INSERT, UPDATE e DELETE",
-                "Estrutura basica das consultas SQL",
-                "Funcao da clausula WHERE",
-                "Diferenca entre AND e OR",
-                "Operadores de comparacao",
-                "Operadores aritmeticos",
-                "Precedencia matematica em SQL",
-                "Perigo de UPDATE e DELETE sem WHERE",
-                "Conceito de DML",
-                "Uso do DISTINCT para eliminar duplicatas"
-              ]
-            }
-          ]
-        }
-
-      ]
-    },
-    //Aula 11 — Refinando Consultas em um Banco de Dados • Parte 1
-    {
-    aula: "Aula 11 — Refinando Consultas em um Banco de Dados • Parte 1",
-    ideia_central: "A cláusula WHERE e seus operadores (LIKE, BETWEEN, IN, IS NULL), combinados com funções de agregação e as cláusulas GROUP BY e ORDER BY, permitem transformar consultas SQL simples em consultas inteligentes e úteis para aplicações reais.",
+    aula: "Aula 9 — DDL: Data Definition Language",
+    ideia_central: "A DDL (Data Definition Language) e o subconjunto da SQL responsavel pela definicao e estruturacao de bancos de dados, utilizando os comandos CREATE, ALTER e DROP para criar, modificar e remover estruturas, garantindo integridade por meio de chaves primarias e estrangeiras.",
     secoes: [
     {
       id: "visao",
@@ -1316,104 +16,771 @@ window.__nexusConteudo = {
       blocos: [
         {
           tipo: "texto",
-          texto: "Este módulo aborda técnicas para refinar consultas SQL, permitindo selecionar, filtrar, agrupar, ordenar e calcular dados dentro de bancos de dados relacionais."
+          texto: "Este modulo aborda os conceitos da DDL (Data Definition Language), subconjunto da SQL responsavel pela definicao e estruturacao de bancos de dados."
         },
         {
           tipo: "lista",
-          titulo: "Principais temas estudados:",
+          titulo: "O conteudo apresenta:",
           itens: [
-            "**Cláusula WHERE**",
-            "**Operadores:** LIKE, BETWEEN, IN, IS NULL",
-            "**Funções de agregação:** COUNT, SUM, AVG, MIN, MAX",
-            "**Agrupamento** com GROUP BY",
-            "**Ordenação** com ORDER BY"
+            "Conceito de DDL",
+            "Definicao de esquema e catalogo",
+            "Criacao de bancos e tabelas",
+            "Alteracao de estruturas",
+            "Remocao de bancos e tabelas",
+            "Criacao de chaves primarias e estrangeiras",
+            "Principais tipos de dados SQL"
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "Comandos centrais estudados:",
+          itens: [
+            "`CREATE`",
+            "`ALTER`",
+            "`DROP`"
           ]
         },
         {
           tipo: "destaque",
-          texto: "O foco principal do conteúdo é mostrar como transformar consultas simples em consultas mais inteligentes e úteis para aplicações reais."
+          texto: "O modulo tambem enfatiza a importancia das restricoes de integridade para garantir consistencia dos dados."
         }
       ]
     },
 
     {
-      id: "conceitos_sql",
-      titulo: "🧠 Conceitos Principais — SQL e Refinamento de Consultas",
-      blocos: [
-        {
-          tipo: "topico",
-          titulo: "A linguagem SQL permite:",
-          lista: [
-            "Inserir dados",
-            "Alterar registros",
-            "Excluir informações",
-            "Consultar dados"
-          ]
-        },
-        {
-          tipo: "texto",
-          texto: "Em aplicações reais, normalmente não queremos todos os registros da tabela, mas apenas aqueles que atendem determinados critérios. Para isso, utilizamos cláusulas de refinamento."
-        }
-      ]
-    },
-
-    {
-      id: "clausulas",
-      titulo: "📋 Principais Cláusulas SQL",
-      blocos: [
-        {
-          tipo: "topico",
-          titulo: "SELECT",
-          texto: "Responsável por definir quais colunas serão exibidas.",
-          lista: [
-            "Exemplo: `SELECT nome, idade`"
-          ]
-        },
-        {
-          tipo: "topico",
-          titulo: "FROM",
-          texto: "Define de qual tabela os dados serão recuperados.",
-          lista: [
-            "Exemplo: `FROM alunos`"
-          ]
-        },
-        {
-          tipo: "topico",
-          titulo: "WHERE",
-          texto: "Filtra registros conforme condições específicas. É uma das cláusulas mais importantes da SQL.",
-          lista: [
-            "Exemplo: `WHERE idade > 18`"
-          ]
-        },
-        {
-          tipo: "topico",
-          titulo: "GROUP BY",
-          texto: "Agrupa registros que possuem valores iguais em determinadas colunas. Muito usada com funções de agregação."
-        },
-        {
-          tipo: "topico",
-          titulo: "HAVING",
-          texto: "Filtra resultados após agrupamentos. Utilizada junto com GROUP BY."
-        },
-        {
-          tipo: "topico",
-          titulo: "ORDER BY",
-          texto: "Ordena os resultados.",
-          lista: [
-            "Crescente: **ASC**",
-            "Decrescente: **DESC**"
-          ]
-        }
-      ]
-    },
-
-    {
-      id: "where",
-      titulo: "🔍 Cláusula WHERE",
+      id: "ddl",
+      titulo: "🧠 DDL — Data Definition Language",
       blocos: [
         {
           tipo: "texto",
-          texto: "A cláusula WHERE é usada para aplicar condições nas consultas."
+          texto: "A DDL e a parte da SQL responsavel pela definicao da estrutura do banco de dados."
+        },
+        {
+          tipo: "topico",
+          titulo: "Ela permite:",
+          lista: [
+            "Criar estruturas",
+            "Alterar estruturas",
+            "Remover estruturas"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "A DDL define:",
+          lista: [
+            "Tabelas",
+            "Esquemas",
+            "Dominios",
+            "Indices",
+            "Restricoes",
+            "Permissoes",
+            "Armazenamento fisico"
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Principais comandos DDL",
+          colunas: ["Comando", "Funcao"],
+          linhas: [
+            ["CREATE", "Criar objetos"],
+            ["ALTER",  "Modificar objetos"],
+            ["DROP",   "Remover objetos"]
+          ]
+        }
+      ]
+    },
+
+    {
+      id: "comandos_ddl",
+      titulo: "⚙️ Comandos DDL",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "CREATE",
+          texto: "Utilizado para criacao de:",
+          lista: [
+            "Bancos de dados",
+            "Tabelas",
+            "Views",
+            "Procedimentos",
+            "Indices"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "ALTER",
+          texto: "Usado para modificar objetos existentes.",
+          lista: [
+            "Adicionar colunas",
+            "Remover colunas",
+            "Alterar tipos",
+            "Adicionar restricoes"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "DROP",
+          texto: "Remove objetos do banco.",
+          lista: [
+            "Pode excluir: tabelas, bancos, esquemas, indices"
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "O comando DROP e destrutivo e exige cuidado."
+        }
+      ]
+    },
+
+    {
+      id: "esquema_catalogo",
+      titulo: "🗂️ Esquema e Catálogo",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "Esquema (Schema)",
+          texto: "Um esquema e um agrupamento logico de objetos do banco de dados.",
+          lista: [
+            "Inclui: tabelas, views, restricoes, dominios, permissoes",
+            "Exemplo: `CREATE SCHEMA Exemplo;`"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Catalogo",
+          texto: "O catalogo e uma colecao de esquemas.",
+          lista: [
+            "Todo catalogo possui `INFORMATION_SCHEMA`",
+            "Esse esquema especial contem metadados do banco"
+          ]
+        }
+      ]
+    },
+
+    {
+      id: "create_database",
+      titulo: "🏗️ CREATE DATABASE",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Cria um banco de dados."
+        },
+        {
+          tipo: "topico",
+          titulo: "Sintaxe:",
+          lista: [
+            "`CREATE DATABASE nome_base;`"
+          ]
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Exemplo — Criar banco de dados",
+          texto: "Cria um banco de dados chamado Exemplo.",
+          detalhe: "CREATE DATABASE Exemplo;"
+        },
+        {
+          tipo: "imagem",
+          src: "fig_create_database_postgres.png",
+          pasta: "imagens_banco_dados/aula_09",
+          num: "1",
+          alt: "Criacao de banco de dados no PostgreSQL utilizando DDL"
+        },
+        {
+          tipo: "imagem",
+          src: "fig_create_database_gui.png",
+          pasta: "imagens_banco_dados/aula_09",
+          num: "2",
+          alt: "Criacao de banco usando interface grafica do PostgreSQL"
+        }
+      ]
+    },
+
+    {
+      id: "create_table",
+      titulo: "📋 CREATE TABLE",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Cria tabelas. E necessario definir colunas, tipos e restricoes."
+        },
+        {
+          tipo: "topico",
+          titulo: "Sintaxe:",
+          lista: [
+            "`CREATE TABLE nome_tabela (`",
+            "`    campo atributo`",
+            "`);`"
+          ]
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Exemplo — Criar tabela alunos",
+          texto: "Cria a tabela alunos com matricula inteira e nome variavel.",
+          detalhe: "CREATE TABLE alunos (mat_alu INTEGER, nom_alu VARCHAR(50));"
+        },
+        {
+          tipo: "imagem",
+          src: "fig_create_table_alunos.png",
+          pasta: "imagens_banco_dados/aula_09",
+          num: "3",
+          alt: "Criacao da tabela alunos no banco de dados Exemplo usando CREATE TABLE"
+        }
+      ]
+    },
+
+    {
+      id: "tipos_dados",
+      titulo: "🔢 Tipos de Dados SQL",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Os tipos de dados definem quais valores uma coluna aceita."
+        },
+        {
+          tipo: "topico",
+          titulo: "CHAR(n)",
+          texto: "Texto com tamanho fixo. Sempre ocupa n caracteres.",
+          lista: [
+            "Exemplo: `CHAR(10)` — sempre ocupa 10 caracteres"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "VARCHAR(n)",
+          texto: "Texto com tamanho variavel. Mais utilizado em nomes e descricoes.",
+          lista: [
+            "Exemplo: `VARCHAR(50)`"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "INTEGER",
+          lista: [
+            "Numero inteiro de 32 bits",
+            "Sintaxe: `INTEGER`"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "SMALLINT",
+          lista: [
+            "Inteiro menor (16 bits)",
+            "Sintaxe: `SMALLINT`"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "DECIMAL / NUMERIC",
+          lista: [
+            "Numeros com casas decimais",
+            "Exemplo: `DECIMAL(10,2)`"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "FLOAT",
+          lista: [
+            "Numero de ponto flutuante"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "DATE",
+          lista: [
+            "Armazena datas"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "TIME",
+          lista: [
+            "Armazena horarios"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "BLOB",
+          texto: "Armazena arquivos binarios.",
+          lista: [
+            "Imagens",
+            "Videos",
+            "Audios"
+          ]
+        },
+        {
+          tipo: "imagem",
+          src: "quadro_tipos_sql.png",
+          pasta: "imagens_banco_dados/aula_09",
+          num: "Quadro 1",
+          alt: "Quadro com os principais tipos de dados utilizados na definicao de tabelas SQL"
+        }
+      ]
+    },
+
+    {
+      id: "alter",
+      titulo: "✏️ ALTER DATABASE e ALTER TABLE",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "ALTER DATABASE",
+          texto: "Permite alterar propriedades do banco.",
+          lista: [
+            "Exemplo: `ALTER DATABASE Exemplo RENAME TO BDAcademico;`"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "ALTER TABLE",
+          texto: "Usado para modificar tabelas existentes.",
+          lista: [
+            "Adicionar colunas",
+            "Remover colunas",
+            "Alterar atributos",
+            "Adicionar restricoes"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Adicionando coluna — sintaxe:",
+          lista: [
+            "`ALTER TABLE tabela`",
+            "`ADD coluna atributo;`"
+          ]
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Exemplo — Adicionar coluna CTPS",
+          texto: "Adiciona a coluna CTPS do tipo VARCHAR(8) na tabela alunos.",
+          detalhe: "ALTER TABLE Exemplo.alunos ADD CTPS VARCHAR(8);"
+        },
+        {
+          tipo: "destaque",
+          texto: "Valores NULL em ALTER TABLE: ao adicionar colunas, registros antigos recebem NULL. NOT NULL nao e permitido sem valor padrao (DEFAULT)."
+        }
+      ]
+    },
+
+    {
+      id: "drop",
+      titulo: "🗑️ DROP TABLE e DROP DATABASE",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "DROP TABLE",
+          texto: "Remove tabelas do banco.",
+          lista: [
+            "Exemplo: `DROP TABLE curriculos CASCADE;`"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "CASCADE",
+          texto: "Remove:",
+          lista: [
+            "A tabela",
+            "Dependencias",
+            "Restricoes",
+            "Views relacionadas"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "RESTRICT",
+          lista: [
+            "So remove se nao houver dependencias"
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Diferenca entre DELETE e DROP",
+          colunas: ["DELETE", "DROP"],
+          linhas: [
+            ["Remove registros",    "Remove estrutura"],
+            ["Mantem tabela",       "Exclui tabela"],
+            ["Pode usar WHERE",     "Estrutura desaparece"]
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "DROP DATABASE",
+          texto: "Remove completamente um banco de dados.",
+          lista: [
+            "Exemplo: `DROP DATABASE Exemplo;`"
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "DROP DATABASE realiza exclusao fisica e geralmente irreversivel. Exige extremo cuidado."
+        },
+        {
+          tipo: "imagem",
+          src: "fig_drop_database.png",
+          pasta: "imagens_banco_dados/aula_09",
+          num: "4",
+          alt: "Exemplo de remocao de banco de dados no PostgreSQL usando DROP DATABASE"
+        }
+      ]
+    },
+
+    {
+      id: "chaves",
+      titulo: "🔑 Chave Primária e Chave Estrangeira",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "Chave Primaria — PRIMARY KEY",
+          texto: "Identifica unicamente cada registro.",
+          lista: [
+            "Unica — nao pode se repetir",
+            "Nao nula — nao aceita NULL",
+            "Identifica registros de forma exclusiva"
+          ]
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Exemplo — PRIMARY KEY simples",
+          texto: "Define mat_alu como chave primaria.",
+          detalhe: "PRIMARY KEY (mat_alu)"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Exemplo — PRIMARY KEY nomeada (PostgreSQL)",
+          texto: "Define a restricao com nome usando CONSTRAINT.",
+          detalhe: "CONSTRAINT alu_pk PRIMARY KEY (mat_alu)"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Exemplo — CREATE TABLE com chave primaria",
+          texto: "Cria a tabela alunos com chave primaria definida via CONSTRAINT.",
+          detalhe: "CREATE TABLE alunos (mat_alu INTEGER, nom_alu VARCHAR(50), CONSTRAINT alu_pk PRIMARY KEY(mat_alu));"
+        },
+        {
+          tipo: "imagem",
+          src: "fig_primary_key.png",
+          pasta: "imagens_banco_dados/aula_09",
+          num: "5",
+          alt: "Exemplo de definicao de chave primaria em uma tabela SQL"
+        },
+        {
+          tipo: "topico",
+          titulo: "Chave Estrangeira — FOREIGN KEY",
+          texto: "Mantem integridade referencial e relaciona tabelas.",
+          lista: [
+            "Garante que o valor referenciado exista",
+            "Impede referencias invalidas",
+            "Exemplo: aluno so pode possuir curso existente"
+          ]
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Exemplo — FOREIGN KEY",
+          texto: "Relaciona o campo cod_curso da tabela atual com a tabela cursos.",
+          detalhe: "FOREIGN KEY (cod_curso) REFERENCES cursos(cod_curso)"
+        },
+        {
+          tipo: "imagem",
+          src: "fig_foreign_key.png",
+          pasta: "imagens_banco_dados/aula_09",
+          num: "6",
+          alt: "Exemplo de relacionamento entre tabelas usando chave estrangeira e integridade referencial"
+        }
+      ]
+    },
+
+    {
+      id: "formulas",
+      titulo: "📐 Fórmulas e Métodos",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "Metodo de Criacao de Banco",
+          lista: [
+            "`CREATE DATABASE nome;`"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Metodo de Criacao de Tabela",
+          lista: [
+            "`CREATE TABLE tabela (`",
+            "`    campo tipo`",
+            "`);`"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Metodo de Alteracao",
+          lista: [
+            "`ALTER TABLE tabela`",
+            "`ADD coluna tipo;`"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Metodo de Remocao",
+          lista: [
+            "Remover tabela: `DROP TABLE tabela;`",
+            "Remover banco: `DROP DATABASE banco;`"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Metodo de Chave Primaria",
+          lista: [
+            "`PRIMARY KEY (campo)`"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Metodo de Chave Estrangeira",
+          lista: [
+            "`FOREIGN KEY (campo)`",
+            "`REFERENCES tabela(campo)`"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Metodo de Definicao de Tipos",
+          lista: [
+            "Texto fixo: `CHAR(10)`",
+            "Texto variavel: `VARCHAR(50)`",
+            "Numero decimal: `DECIMAL(10,2)`"
+          ]
+        }
+      ]
+    },
+
+    {
+      id: "exemplos",
+      titulo: "💡 Exemplos Explicativos",
+      blocos: [
+        {
+          tipo: "exemplo",
+          titulo: "Criar banco de dados",
+          texto: "Cria o banco de dados chamado Exemplo.",
+          detalhe: "CREATE DATABASE Exemplo;"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Criar tabela alunos",
+          texto: "Cria a tabela alunos com matricula e nome.",
+          detalhe: "CREATE TABLE alunos (mat_alu INTEGER, nom_alu VARCHAR(50));"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Criar tabela com chave primaria",
+          texto: "Cria a tabela alunos definindo chave primaria via CONSTRAINT.",
+          detalhe: "CREATE TABLE alunos (mat_alu INTEGER, nom_alu VARCHAR(50), CONSTRAINT alu_pk PRIMARY KEY(mat_alu));"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Adicionar coluna",
+          texto: "Adiciona a coluna CTPS na tabela alunos.",
+          detalhe: "ALTER TABLE Exemplo.alunos ADD CTPS VARCHAR(8);"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Renomear banco",
+          texto: "Renomeia o banco Exemplo para BDAcademico.",
+          detalhe: "ALTER DATABASE Exemplo RENAME TO BDAcademico;"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Remover tabela",
+          texto: "Remove a tabela curriculos e suas dependencias.",
+          detalhe: "DROP TABLE curriculos CASCADE;"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Criar chave estrangeira",
+          texto: "Relaciona cod_curso com a tabela cursos.",
+          detalhe: "FOREIGN KEY (cod_curso) REFERENCES cursos(cod_curso)"
+        }
+      ]
+    },
+
+    {
+      id: "resumo",
+      titulo: "🧾 Resumo Final para Revisão Rápida",
+      blocos: [
+        {
+          tipo: "lista",
+          itens: [
+            "**DDL** — define estrutura do banco",
+            "**CREATE** — cria objetos",
+            "**ALTER** — modifica objetos",
+            "**DROP** — remove objetos",
+            "`CREATE DATABASE` — cria bancos",
+            "`CREATE TABLE` — cria tabelas",
+            "`ALTER TABLE` — modifica tabelas",
+            "`DROP TABLE` — remove tabelas",
+            "`DROP DATABASE` — remove bancos",
+            "**CHAR** — texto fixo",
+            "**VARCHAR** — texto variavel",
+            "**INTEGER** — numero inteiro",
+            "**DECIMAL** — numero decimal",
+            "**DATE** — datas",
+            "**BLOB** — arquivos binarios",
+            "**PRIMARY KEY** — unica e nao nula",
+            "**FOREIGN KEY** — cria relacionamento e garante integridade referencial",
+            "**CASCADE** — remove dependencias junto",
+            "**RESTRICT** — impede exclusao com dependencias",
+            "**DROP** e destrutivo e exige cuidado"
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "Pontos mais importantes para prova:",
+          itens: [
+            "Diferenca entre DDL e DML",
+            "Funcao dos comandos CREATE, ALTER e DROP",
+            "Estrutura do CREATE TABLE",
+            "Principais tipos de dados SQL",
+            "Diferenca entre CHAR e VARCHAR",
+            "Conceito de esquema e catalogo",
+            "Chave primaria e suas caracteristicas",
+            "Chave estrangeira e integridade referencial",
+            "Diferenca entre DELETE e DROP",
+            "Uso de CASCADE e RESTRICT"
+          ]
+        }
+      ]
+    }
+    ]
+    },
+    //Aula 10 — Manipulando um Banco de Dados
+    {
+    aula: "Aula 10 — Manipulando um Banco de Dados",
+    ideia_central: "A DML (Data Manipulation Language) e seus comandos SELECT, INSERT, UPDATE e DELETE permitem consultar, inserir, alterar e excluir dados em bancos de dados relacionais, sendo os operadores aritmeticos, de comparacao e logicos ferramentas essenciais para otimizar essas operacoes.",
+    secoes: [
+    {
+      id: "visao",
+      titulo: "📖 Visão Geral do Conteúdo",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Este modulo apresenta os principais conceitos da DML (Data Manipulation Language), subconjunto da linguagem SQL responsavel pela manipulacao dos dados armazenados em bancos de dados."
+        },
+        {
+          tipo: "lista",
+          titulo: "Principais comandos estudados:",
+          itens: [
+            "**SELECT**",
+            "**INSERT**",
+            "**DELETE**",
+            "**UPDATE**"
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "O modulo tambem aborda:",
+          itens: [
+            "Estrutura basica de consultas SQL",
+            "Operadores aritmeticos",
+            "Operadores de comparacao",
+            "Operadores logicos"
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "O objetivo principal e ensinar como:",
+          itens: [
+            "Consultar dados",
+            "Inserir registros",
+            "Atualizar informacoes",
+            "Excluir registros",
+            "Otimizar consultas SQL"
+          ]
+        }
+      ]
+    },
+
+    {
+      id: "dml",
+      titulo: "🧠 DML — Data Manipulation Language",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "A DML e o subconjunto da SQL responsavel pela manipulacao dos dados armazenados no banco."
+        },
+        {
+          tipo: "topico",
+          titulo: "Ela permite:",
+          lista: [
+            "Buscar informacoes",
+            "Inserir novos registros",
+            "Alterar dados",
+            "Excluir registros"
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Principais comandos DML",
+          colunas: ["Comando", "Funcao"],
+          linhas: [
+            ["SELECT", "Consultar dados"],
+            ["INSERT", "Inserir registros"],
+            ["UPDATE", "Alterar registros"],
+            ["DELETE", "Excluir registros"]
+          ]
+        },
+        {
+          tipo: "imagem",
+          src: "quadro_comandos_dml.png",
+          pasta: "imagens_banco_dados/aula_10",
+          num: "Quadro 1",
+          alt: "Quadro com os principais comandos de manipulacao de registros da DML"
+        },
+        {
+          tipo: "topico",
+          titulo: "Tipos de DML",
+          texto: "O conteudo apresenta dois tipos principais:"
+        },
+        {
+          tipo: "topico",
+          titulo: "DML Procedural",
+          lista: [
+            "O usuario informa quais dados deseja",
+            "O usuario informa como obte-los"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "DML Nao-Procedural",
+          lista: [
+            "O usuario informa apenas quais dados deseja",
+            "O SGBD decide como obter os dados",
+            "A SQL e considerada predominantemente nao-procedural"
+          ]
+        }
+      ]
+    },
+
+    {
+      id: "query",
+      titulo: "🔎 Query (Consulta)",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Uma query e um comando utilizado para recuperar informacoes do banco de dados."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Exemplo de query basica",
+          texto: "Recupera os nomes dos alunos da tabela alunos.",
+          detalhe: "SELECT nome FROM alunos;"
+        }
+      ]
+    },
+
+    {
+      id: "estrutura_sql",
+      titulo: "📋 Estrutura Básica das Consultas SQL",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "As consultas SQL possuem tres clausulas principais: SELECT, FROM e WHERE."
         },
         {
           tipo: "topico",
@@ -1425,326 +792,372 @@ window.__nexusConteudo = {
           ]
         },
         {
+          tipo: "topico",
+          titulo: "SELECT",
+          texto: "Define quais colunas serao exibidas.",
+          lista: [
+            "Exemplo: `SELECT nom_alu FROM alunos;` — retorna os nomes dos alunos"
+          ]
+        },
+        {
+          tipo: "imagem",
+          src: "fig_select_nomes.png",
+          pasta: "imagens_banco_dados/aula_10",
+          num: "Figura 1",
+          alt: "Exemplo de selecao dos nomes de alunos na tabela alunos usando SELECT e FROM"
+        },
+        {
+          tipo: "imagem",
+          src: "fig_resultado_select.png",
+          pasta: "imagens_banco_dados/aula_10",
+          num: "Figura 2",
+          alt: "Resultado da selecao dos nomes de alunos na tabela alunos"
+        },
+        {
+          tipo: "topico",
+          titulo: "FROM",
+          texto: "Define a tabela utilizada na consulta.",
+          lista: [
+            "Exemplo: `FROM alunos`"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "WHERE",
+          texto: "Filtra registros.",
+          lista: [
+            "Exemplo: `WHERE cod_curso = 10`"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Duplicidade em SQL",
+          texto: "A SQL permite registros duplicados nos resultados. Para eliminar duplicatas utiliza-se DISTINCT.",
+          lista: [
+            "Sintaxe: `SELECT DISTINCT coluna FROM tabela;`"
+          ]
+        },
+        {
+          tipo: "imagem",
+          src: "fig_select_codigos.png",
+          pasta: "imagens_banco_dados/aula_10",
+          num: "Figura 3",
+          alt: "Exemplo de selecao dos codigos dos cursos de todos os alunos"
+        },
+        {
+          tipo: "imagem",
+          src: "fig_duplicidade_sql.png",
+          pasta: "imagens_banco_dados/aula_10",
+          num: "Figura 4",
+          alt: "Resultado mostrando repeticao de registros em consultas SQL sem DISTINCT"
+        }
+      ]
+    },
+
+    {
+      id: "insert",
+      titulo: "➕ Comando INSERT",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O comando INSERT adiciona novos registros na tabela."
+        },
+        {
+          tipo: "topico",
+          titulo: "Estrutura:",
+          lista: [
+            "`INSERT INTO tabela`",
+            "`VALUES (...);`"
+          ]
+        },
+        {
           tipo: "exemplo",
-          titulo: "Exemplo — Filtrar alunos de um curso",
-          texto: "Retorna apenas os alunos do curso 10.",
-          detalhe: "SELECT * FROM alunos WHERE cod_curso = 10;"
+          titulo: "Exemplo de INSERT",
+          texto: "Insere um novo curso na tabela cursos.",
+          detalhe: "INSERT INTO cursos VALUES (11, 'Sistemas de Informacao', 180, 1149);"
+        },
+        {
+          tipo: "imagem",
+          src: "fig_insert.png",
+          pasta: "imagens_banco_dados/aula_10",
+          num: "Figura 5",
+          alt: "Exemplo de insercao de dados na tabela cursos usando o comando INSERT"
+        },
+        {
+          tipo: "topico",
+          titulo: "INSERT com definicao de colunas",
+          texto: "Tambem e possivel especificar os campos explicitamente. Isso evita erros relacionados a ordem dos atributos.",
+          lista: [
+            "Exemplo: `INSERT INTO cursos (cod_curso, nome_curso, tot_cred, cod_coord) VALUES (11, 'Sistemas de Informacao', 180, 1149);`"
+          ]
+        },
+        {
+          tipo: "imagem",
+          src: "fig_insert_colunas.png",
+          pasta: "imagens_banco_dados/aula_10",
+          num: "Figura 6",
+          alt: "Exemplo de variacao do comando INSERT especificando explicitamente os campos"
+        }
+      ]
+    },
+
+    {
+      id: "delete",
+      titulo: "🗑️ Comando DELETE",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Usado para excluir registros."
+        },
+        {
+          tipo: "topico",
+          titulo: "Estrutura:",
+          lista: [
+            "`DELETE FROM tabela`",
+            "`WHERE condicao;`"
+          ]
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Exemplo de DELETE",
+          texto: "Exclui o aluno com matricula 911113.",
+          detalhe: "DELETE FROM alunos WHERE mat_alu = 911113;"
+        },
+        {
+          tipo: "imagem",
+          src: "fig_delete.png",
+          pasta: "imagens_banco_dados/aula_10",
+          num: "Figura 7",
+          alt: "Exemplo de exclusao de registros usando o comando DELETE com WHERE"
         },
         {
           tipo: "destaque",
-          texto: "Ordem operacional das consultas SQL: embora escrevamos SELECT, FROM, WHERE — o banco processa na ordem FROM, WHERE, SELECT. Isso é importante para entender como a consulta funciona internamente."
-        }
-      ]
-    },
-
-    {
-      id: "like",
-      titulo: "🔤 Operador LIKE",
-      blocos: [
-        {
-          tipo: "texto",
-          texto: "O operador LIKE é utilizado para buscas textuais. Permite localizar padrões em strings."
-        },
-        {
-          tipo: "topico",
-          titulo: "Sintaxe:",
-          lista: [
-            "`WHERE campo LIKE 'valor'`"
-          ]
-        },
-        {
-          tipo: "topico",
-          titulo: "Uso do % (coringa)",
-          texto: "O simbolo % representa qualquer sequencia de caracteres.",
-          lista: [
-            "**Texto exato:** `LIKE 'Carlos'` — busca exatamente Carlos",
-            "**Contém texto:** `LIKE '%Santos%'` — busca qualquer texto contendo Santos",
-            "**Termina com:** `LIKE '%Silva'` — busca textos terminando em Silva",
-            "**Começa com:** `LIKE 'Jorge%'` — busca textos iniciando com Jorge"
-          ]
-        },
-        {
-          tipo: "imagem",
-          src: "fig_like_consulta_sql.png",
-          pasta: "imagens_banco_dados/aula_11",
-          num: "1",
-          alt: "Exemplo de consulta SQL usando o operador Like com % para buscas por padroes textuais em nomes"
-        },
-        {
-          tipo: "topico",
-          titulo: "Operador _ (underscore)",
-          texto: "Representa exatamente um caractere.",
-          lista: [
-            "`LIKE '_este'` — aceita: teste, veste, peste",
-            "`LIKE 'b_m'` — aceita: bom, bem"
-          ]
-        },
-        {
-          tipo: "imagem",
-          src: "fig_like_underscore.png",
-          pasta: "imagens_banco_dados/aula_11",
-          num: "2",
-          alt: "Exemplo de consulta SQL usando o operador Like com underscore para representar exatamente um caractere"
-        }
-      ]
-    },
-
-    {
-      id: "between",
-      titulo: "📏 Operador BETWEEN",
-      blocos: [
-        {
-          tipo: "texto",
-          texto: "Usado para trabalhar com intervalos. Muito comum com datas."
-        },
-        {
-          tipo: "topico",
-          titulo: "Sintaxe:",
-          lista: [
-            "`WHERE campo BETWEEN valor1 AND valor2`"
-          ]
-        },
-        {
-          tipo: "exemplo",
-          titulo: "Exemplo — Intervalo de datas de nascimento",
-          texto: "Retorna alunos nascidos entre essas datas.",
-          detalhe: "SELECT * FROM alunos WHERE dat_nasc BETWEEN '1980-01-01' AND '1989-12-31';"
-        },
-        {
-          tipo: "imagem",
-          src: "fig_between_datas.png",
-          pasta: "imagens_banco_dados/aula_11",
-          num: "3",
-          alt: "Exemplo de consulta SQL usando o operador de comparacao BETWEEN com intervalos de datas"
-        }
-      ]
-    },
-
-    {
-      id: "in",
-      titulo: "📋 Operador IN",
-      blocos: [
-        {
-          tipo: "texto",
-          texto: "Usado para verificar se um valor pertence a uma lista."
-        },
-        {
-          tipo: "topico",
-          titulo: "Sintaxe:",
-          lista: [
-            "`WHERE campo IN (valor1, valor2, valor3)`"
-          ]
-        },
-        {
-          tipo: "exemplo",
-          titulo: "Exemplo — Filtrar matriculas especificas",
-          texto: "Funciona como varios OR. Equivale a: WHERE mat_alu = 922155 OR mat_alu = 926465 OR mat_alu = 915550.",
-          detalhe: "WHERE mat_alu IN (922155, 926465, 915550);"
-        },
-        {
-          tipo: "imagem",
-          src: "fig_in_consulta.png",
-          pasta: "imagens_banco_dados/aula_11",
-          num: "4",
-          alt: "Exemplo de consulta SQL utilizando o operador de comparacao IN para filtragem baseada em multiplos valores"
-        }
-      ]
-    },
-
-    {
-      id: "is_null",
-      titulo: "⚠️ Operador IS NULL",
-      blocos: [
-        {
-          tipo: "texto",
-          texto: "Usado para verificar campos sem valor."
+          texto: "DELETE sem WHERE: `DELETE FROM alunos;` — remove TODOS os registros da tabela. A tabela continua existindo, porem vazia."
         },
         {
           tipo: "destaque",
-          texto: "NULL nao significa zero; NULL nao significa espaco vazio; significa ausencia de valor."
-        },
+          texto: "Os comandos DELETE e UPDATE podem causar grandes prejuizos quando executados incorretamente. Principal risco: esquecer a clausula WHERE."
+        }
+      ]
+    },
+
+    {
+      id: "update",
+      titulo: "✏️ Comando UPDATE",
+      blocos: [
         {
-          tipo: "exemplo",
-          titulo: "Exemplo — Buscar alunos sem e-mail",
-          texto: "Retorna alunos cujo campo e-mail nao possui valor.",
-          detalhe: "SELECT nom_alu, email FROM alunos WHERE email IS NULL;"
-        },
-        {
-          tipo: "imagem",
-          src: "fig_is_null.png",
-          pasta: "imagens_banco_dados/aula_11",
-          num: "5",
-          alt: "Exemplo de consulta SQL utilizando o operador IS NULL para buscar registros com campos sem valor"
+          tipo: "texto",
+          texto: "Usado para atualizar registros existentes."
         },
         {
           tipo: "topico",
-          titulo: "Problemas com NULL",
-          texto: "Operacoes envolvendo NULL geram resultado desconhecido (UNKNOWN).",
+          titulo: "Estrutura:",
           lista: [
-            "Exemplo: `1 < NULL` — nao e verdadeiro; nao e falso; e desconhecido"
+            "`UPDATE tabela`",
+            "`SET coluna = valor`",
+            "`WHERE condicao;`"
+          ]
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Exemplo de UPDATE",
+          texto: "Atualiza o nome do curso com codigo 11.",
+          detalhe: "UPDATE cursos SET nome_curso = 'SI – Sistemas de Informacao' WHERE cod_curso = 11;"
+        },
+        {
+          tipo: "imagem",
+          src: "fig_update.png",
+          pasta: "imagens_banco_dados/aula_10",
+          num: "Figura 8",
+          alt: "Exemplo de alteracao de dados existentes usando o comando UPDATE"
+        },
+        {
+          tipo: "destaque",
+          texto: "UPDATE sem WHERE: `UPDATE cursos SET nome_curso = 'Novo Nome';` — atualiza TODOS os registros da tabela."
+        }
+      ]
+    },
+
+    {
+      id: "operadores_introducao",
+      titulo: "🛠️ Operadores para Otimização de Consultas",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Os operadores ajudam a otimizar consultas SQL."
+        },
+        {
+          tipo: "topico",
+          titulo: "Os operadores permitem:",
+          lista: [
+            "Criar filtros",
+            "Refinar buscas",
+            "Realizar calculos",
+            "Melhorar consultas SQL"
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "Os principais tipos estudados foram:",
+          itens: [
+            "Operadores aritmeticos",
+            "Operadores de comparacao",
+            "Operadores logicos"
           ]
         }
       ]
     },
 
     {
-      id: "agregacao",
-      titulo: "📊 Funções de Agregação",
+      id: "operadores_aritmeticos",
+      titulo: "➗ Operadores Aritméticos",
       blocos: [
         {
           tipo: "texto",
-          texto: "Sao funcoes usadas para calculos estatisticos."
+          texto: "Utilizados em calculos matematicos. So funcionam em colunas numericas."
         },
         {
           tipo: "tabela",
-          titulo: "Principais funcoes de agregacao",
-          colunas: ["Funcao", "Objetivo"],
+          titulo: "Operadores aritmeticos",
+          colunas: ["Operador", "Funcao"],
           linhas: [
-            ["COUNT", "Contar registros"],
-            ["SUM",   "Somar valores"],
-            ["AVG",   "Media"],
-            ["MIN",   "Menor valor"],
-            ["MAX",   "Maior valor"]
+            ["+", "Soma"],
+            ["-", "Subtracao"],
+            ["*", "Multiplicacao"],
+            ["/", "Divisao"]
           ]
         },
         {
-          tipo: "imagem",
-          src: "quadro_funcoes_agregacao.png",
-          pasta: "imagens_banco_dados/aula_11",
-          num: "6",
-          alt: "Quadro com a relacao das funcoes de agregacao: COUNT, SUM, AVG, MIN e MAX"
+          tipo: "exemplo",
+          titulo: "Exemplo de operador aritmetico",
+          texto: "Calcula o salario anual multiplicando o salario mensal por 12.",
+          detalhe: "SELECT nome, salario, salario*12 AS salario_anual FROM empregados;"
         },
         {
           tipo: "topico",
-          titulo: "COUNT — Contar registros",
+          titulo: "Precedencia de Operadores",
+          texto: "A SQL segue prioridade matematica.",
           lista: [
-            "Conta todas as linhas da tabela.",
-            "Exemplo: `SELECT COUNT(*) FROM alunos;`"
-          ]
-        },
-        {
-          tipo: "topico",
-          titulo: "SUM — Somar valores",
-          lista: [
-            "Realiza soma de valores numericos.",
-            "Ignora valores NULL.",
-            "Funciona apenas com numeros.",
-            "Exemplo: `SELECT SUM(tot_cred) FROM alunos;`"
+            "Exemplo: `12 * salario + 500` — primeiro multiplica, depois soma"
           ]
         },
         {
           tipo: "topico",
-          titulo: "MIN — Menor valor",
+          titulo: "Uso de Parenteses",
+          texto: "Os parenteses alteram a ordem de execucao.",
           lista: [
-            "Retorna o menor valor.",
-            "Exemplo: `SELECT MIN(tot_cred) FROM alunos;`"
-          ]
-        },
-        {
-          tipo: "topico",
-          titulo: "MAX — Maior valor",
-          lista: [
-            "Retorna o maior valor.",
-            "Exemplo: `SELECT MAX(tot_cred) FROM alunos;`"
-          ]
-        },
-        {
-          tipo: "topico",
-          titulo: "AVG — Media",
-          lista: [
-            "Calcula a media.",
-            "Pode usar **ALL** — considera repetidos.",
-            "Pode usar **DISTINCT** — ignora repetidos.",
-            "Exemplo: `SELECT AVG(tot_cred) FROM alunos;`"
+            "Exemplo: `12 * (salario + 500)` — soma primeiro, multiplica depois"
           ]
         }
       ]
     },
 
     {
-      id: "groupby",
-      titulo: "📂 Agrupamento com GROUP BY",
+      id: "operadores_comparacao",
+      titulo: "⚖️ Operadores de Comparação",
       blocos: [
         {
           tipo: "texto",
-          texto: "GROUP BY agrupa registros. Muito utilizado junto com funcoes agregadas."
+          texto: "Usados para comparar valores."
         },
         {
-          tipo: "exemplo",
-          titulo: "Exemplo — Media de creditos por curso",
-          texto: "Separa alunos por curso e calcula a media dos creditos de cada curso.",
-          detalhe: "SELECT cod_curso, AVG(tot_cred) FROM alunos GROUP BY cod_curso;"
-        },
-        {
-          tipo: "imagem",
-          src: "fig_group_by.png",
-          pasta: "imagens_banco_dados/aula_11",
-          num: "7",
-          alt: "Exemplo de Select com funcao de agregacao e agrupamento GROUP BY"
-        },
-        {
-          tipo: "destaque",
-          texto: "Regra importante do GROUP BY: todo campo no SELECT deve estar no GROUP BY ou dentro de uma funcao agregada."
-        },
-        {
-          tipo: "exemplo",
-          titulo: "Exemplo de consulta INCORRETA com GROUP BY",
-          texto: "mat_alu nao esta agrupado nem agregado — isso gera erro.",
-          detalhe: "SELECT mat_alu, cod_curso, AVG(tot_cred) FROM alunos GROUP BY cod_curso;"
+          tipo: "tabela",
+          titulo: "Operadores de comparacao",
+          colunas: ["Operador", "Significado"],
+          linhas: [
+            ["=",  "Igual"],
+            [">",  "Maior"],
+            [">=", "Maior ou igual"],
+            ["<",  "Menor"],
+            ["<=", "Menor ou igual"],
+            ["<>", "Diferente"]
+          ]
         },
         {
           tipo: "imagem",
-          src: "fig_group_by_incorreto.png",
-          pasta: "imagens_banco_dados/aula_11",
-          num: "8",
-          alt: "Exemplo de Select incorreto usando GROUP BY com campo nao agrupado nem agregado"
+          src: "tabela_operadores_comparacao.png",
+          pasta: "imagens_banco_dados/aula_10",
+          num: "Tabela 1",
+          alt: "Tabela com os operadores de comparacao utilizados em filtros SQL"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Exemplo de operador de comparacao",
+          texto: "Retorna matriculas maiores ou iguais a 911113.",
+          detalhe: "SELECT * FROM alunos WHERE mat_alu >= 911113;"
+        },
+        {
+          tipo: "imagem",
+          src: "fig_operador_maior_igual.png",
+          pasta: "imagens_banco_dados/aula_10",
+          num: "Figura 9",
+          alt: "Exemplo de Select usando o operador maior ou igual em consultas SQL"
         }
       ]
     },
 
     {
-      id: "orderby",
-      titulo: "🔃 Ordenação com ORDER BY",
+      id: "operadores_logicos",
+      titulo: "🔗 Operadores Lógicos",
       blocos: [
         {
           tipo: "texto",
-          texto: "Usado para ordenar resultados."
+          texto: "Combinam condicoes em consultas SQL."
         },
         {
-          tipo: "topico",
-          titulo: "Ordem crescente:",
-          lista: [
-            "`ORDER BY nome ASC`"
-          ]
-        },
-        {
-          tipo: "topico",
-          titulo: "Ordem decrescente:",
-          lista: [
-            "`ORDER BY nome DESC`"
+          tipo: "tabela",
+          titulo: "Operadores logicos",
+          colunas: ["Operador", "Funcao"],
+          linhas: [
+            ["AND", "Ambas as condicoes devem ser verdadeiras"],
+            ["OR",  "Pelo menos uma deve ser verdadeira"],
+            ["NOT", "Inverte a condicao"]
           ]
         },
         {
           tipo: "imagem",
-          src: "fig_order_by_desc.png",
-          pasta: "imagens_banco_dados/aula_11",
-          num: "9",
-          alt: "Exemplo de Select com ORDER BY demonstrando ordenacao decrescente de registros"
+          src: "tabela_operadores_logicos.png",
+          pasta: "imagens_banco_dados/aula_10",
+          num: "Tabela 2",
+          alt: "Tabela com os operadores logicos AND, OR e NOT"
         },
         {
           tipo: "topico",
-          titulo: "Ordenacao por multiplas colunas",
-          texto: "Primeiro ordena creditos; depois desempata usando nome.",
+          titulo: "Operador AND — mais restritivo",
+          texto: "As duas condicoes precisam ser verdadeiras.",
           lista: [
-            "Exemplo: `ORDER BY tot_cred DESC, nom_alu ASC`"
+            "Exemplo: `WHERE tot_cred = 4 AND nom_disc = 'BANCO DE DADOS'`"
           ]
         },
         {
           tipo: "imagem",
-          src: "fig_order_by_multiplos.png",
-          pasta: "imagens_banco_dados/aula_11",
-          num: "10",
-          alt: "Exemplo de Select com ORDER BY utilizando mais de um campo para ordenacao"
+          src: "fig_operador_and.png",
+          pasta: "imagens_banco_dados/aula_10",
+          num: "Figura 10",
+          alt: "Exemplo de Select usando o operador comparativo AND para filtro restritivo"
+        },
+        {
+          tipo: "topico",
+          titulo: "Operador OR — mais amplo",
+          texto: "Basta uma condicao ser verdadeira.",
+          lista: [
+            "Exemplo: `WHERE tot_cred = 4 OR nom_disc = 'BANCO DE DADOS'`"
+          ]
+        },
+        {
+          tipo: "imagem",
+          src: "fig_operador_or.png",
+          pasta: "imagens_banco_dados/aula_10",
+          num: "Figura 11",
+          alt: "Exemplo de Select usando o operador comparativo OR para consultas mais amplas"
+        },
+        {
+          tipo: "topico",
+          titulo: "Operador NOT",
+          texto: "Inverte o resultado logico.",
+          lista: [
+            "Exemplo: `WHERE NOT cod_curso = 10` — seleciona registros que NAO pertencem ao curso 10"
+          ]
         }
       ]
     },
@@ -1755,47 +1168,60 @@ window.__nexusConteudo = {
       blocos: [
         {
           tipo: "topico",
-          titulo: "Estrutura Basica de Consulta SQL",
+          titulo: "Estrutura Basica SQL",
           lista: [
             "`SELECT colunas`",
             "`FROM tabela`",
-            "`WHERE condicao`",
-            "`GROUP BY campo`",
-            "`ORDER BY campo;`"
+            "`WHERE condicao;`"
           ]
         },
         {
           tipo: "topico",
-          titulo: "Metodos de Filtragem",
+          titulo: "Metodo de Insercao",
           lista: [
-            "**Igualdade:** `WHERE idade = 20`",
-            "**Intervalo:** `WHERE idade BETWEEN 18 AND 30`",
-            "**Lista:** `WHERE cidade IN ('Fortaleza', 'Quixada')`",
-            "**Texto:** `WHERE nome LIKE '%Silva%'`"
+            "`INSERT INTO tabela`",
+            "`VALUES (...);`"
           ]
         },
         {
           tipo: "topico",
-          titulo: "Metodos de Agregacao",
+          titulo: "Metodo de Exclusao",
           lista: [
-            "**Contagem:** `COUNT(*)`",
-            "**Soma:** `SUM(valor)`",
-            "**Media:** `AVG(valor)`",
-            "**Minimo:** `MIN(valor)`",
-            "**Maximo:** `MAX(valor)`"
+            "`DELETE FROM tabela`",
+            "`WHERE condicao;`"
           ]
         },
         {
           tipo: "topico",
-          titulo: "Metodo de Agrupamento",
-          texto: "`GROUP BY coluna` — usado para separar registros em grupos e calcular estatisticas por categoria."
+          titulo: "Metodo de Atualizacao",
+          lista: [
+            "`UPDATE tabela`",
+            "`SET coluna = valor`",
+            "`WHERE condicao;`"
+          ]
         },
         {
           tipo: "topico",
-          titulo: "Metodo de Ordenacao",
+          titulo: "Metodos de Comparacao",
           lista: [
-            "`ORDER BY coluna ASC` — crescente",
-            "`ORDER BY coluna DESC` — decrescente"
+            "**Igual:** `WHERE idade = 20`",
+            "**Maior:** `WHERE idade > 20`",
+            "**Diferente:** `WHERE idade <> 20`"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Metodos Logicos",
+          lista: [
+            "**AND:** `WHERE idade > 18 AND cidade = 'Quixada'`",
+            "**OR:** `WHERE idade > 18 OR cidade = 'Quixada'`"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Metodo Aritmetico",
+          lista: [
+            "Exemplo: `SELECT salario * 12 FROM empregados;`"
           ]
         }
       ]
@@ -1807,57 +1233,57 @@ window.__nexusConteudo = {
       blocos: [
         {
           tipo: "exemplo",
-          titulo: "Buscar alunos de um curso",
-          texto: "Retorna todos os registros de alunos do curso 10.",
-          detalhe: "SELECT * FROM alunos WHERE cod_curso = 10;"
+          titulo: "Buscar nomes de alunos",
+          texto: "Retorna os nomes de todos os alunos da tabela.",
+          detalhe: "SELECT nom_alu FROM alunos;"
         },
         {
           tipo: "exemplo",
-          titulo: "Buscar nomes iniciando com Jorge",
-          texto: "Utiliza o operador LIKE com % para localizar nomes que comecam com Jorge.",
-          detalhe: "SELECT * FROM alunos WHERE nom_alu LIKE 'Jorge%';"
+          titulo: "Buscar codigos de cursos",
+          texto: "Retorna os codigos de cursos de todos os alunos.",
+          detalhe: "SELECT cod_curso FROM alunos;"
         },
         {
           tipo: "exemplo",
-          titulo: "Buscar intervalo de datas",
-          texto: "Retorna alunos nascidos entre 1980 e 1989.",
-          detalhe: "SELECT * FROM alunos WHERE dat_nasc BETWEEN '1980-01-01' AND '1989-12-31';"
+          titulo: "Inserir curso",
+          texto: "Insere um novo registro na tabela cursos.",
+          detalhe: "INSERT INTO cursos VALUES (11, 'Sistemas de Informacao', 180, 1149);"
         },
         {
           tipo: "exemplo",
-          titulo: "Buscar registros em lista",
-          texto: "Filtra alunos por matriculas especificas usando o operador IN.",
-          detalhe: "SELECT * FROM alunos WHERE mat_alu IN (922155, 926465, 915550);"
+          titulo: "Excluir aluno",
+          texto: "Remove o aluno com matricula 911113.",
+          detalhe: "DELETE FROM alunos WHERE mat_alu = 911113;"
         },
         {
           tipo: "exemplo",
-          titulo: "Buscar valores nulos",
-          texto: "Retorna alunos que nao possuem e-mail cadastrado.",
-          detalhe: "SELECT nom_alu, email FROM alunos WHERE email IS NULL;"
+          titulo: "Atualizar curso",
+          texto: "Altera o nome do curso com codigo 11.",
+          detalhe: "UPDATE cursos SET nome_curso = 'SI – Sistemas de Informacao' WHERE cod_curso = 11;"
         },
         {
           tipo: "exemplo",
-          titulo: "Contar registros",
-          texto: "Conta todas as linhas da tabela alunos.",
-          detalhe: "SELECT COUNT(*) FROM alunos;"
+          titulo: "Calcular salario anual",
+          texto: "Usa operador aritmetico para calcular salario anual.",
+          detalhe: "SELECT nome, salario, salario*12 AS salario_anual FROM empregados;"
         },
         {
           tipo: "exemplo",
-          titulo: "Somar creditos",
-          texto: "Soma o total de creditos de todos os alunos.",
-          detalhe: "SELECT SUM(tot_cred) FROM alunos;"
+          titulo: "Filtro usando comparacao",
+          texto: "Retorna alunos com matricula maior ou igual a 911113.",
+          detalhe: "SELECT * FROM alunos WHERE mat_alu >= 911113;"
         },
         {
           tipo: "exemplo",
-          titulo: "Media por curso",
-          texto: "Calcula a media de creditos separada por curso usando GROUP BY.",
-          detalhe: "SELECT cod_curso, AVG(tot_cred) FROM alunos GROUP BY cod_curso;"
+          titulo: "Filtro usando AND",
+          texto: "Retorna registros onde ambas as condicoes sao verdadeiras.",
+          detalhe: "WHERE tot_cred = 4 AND nom_disc = 'BANCO DE DADOS'"
         },
         {
           tipo: "exemplo",
-          titulo: "Ordenar resultados",
-          texto: "Ordena os alunos pelo nome em ordem decrescente.",
-          detalhe: "SELECT * FROM alunos ORDER BY nom_alu DESC;"
+          titulo: "Filtro usando OR",
+          texto: "Retorna registros onde pelo menos uma condicao e verdadeira.",
+          detalhe: "WHERE tot_cred = 4 OR nom_disc = 'BANCO DE DADOS'"
         }
       ]
     },
@@ -1869,446 +1295,1142 @@ window.__nexusConteudo = {
         {
           tipo: "lista",
           itens: [
-            "**WHERE** — filtra registros",
-            "**LIKE** — busca padroes em textos",
-            "**%** — qualquer sequencia de caracteres",
-            "**_** — exatamente um caractere",
-            "**BETWEEN** — intervalo de valores",
-            "**IN** — lista de possibilidades",
-            "**IS NULL** — verifica ausencia de valor",
-            "**COUNT** — conta registros",
-            "**SUM** — soma valores",
-            "**AVG** — calcula media",
-            "**MIN** — menor valor",
-            "**MAX** — maior valor",
-            "**GROUP BY** — agrupa registros",
-            "**ORDER BY** — ordena resultados",
-            "**ASC** — crescente",
-            "**DESC** — decrescente",
-            "Todo campo no SELECT deve estar no GROUP BY ou em funcao agregada",
-            "NULL nao e zero nem vazio — e ausencia de valor",
-            "Funcoes agregadas ignoram NULL em varios casos"
+            "**DML** — responsavel pela manipulacao dos dados",
+            "**SELECT** — consulta dados",
+            "**INSERT** — adiciona registros",
+            "**UPDATE** — altera registros",
+            "**DELETE** — remove registros",
+            "**WHERE** — filtra resultados",
+            "**DISTINCT** — remove duplicatas",
+            "**Operadores aritmeticos:** +, -, *, /",
+            "**Operadores de comparacao:** =, >, >=, <, <=, <>",
+            "**Operadores logicos:** AND, OR, NOT",
+            "**AND** e mais restritivo — ambas as condicoes devem ser verdadeiras",
+            "**OR** e mais amplo — basta uma condicao ser verdadeira",
+            "Parenteses alteram precedencia matematica",
+            "DELETE e UPDATE sem WHERE podem afetar toda a tabela"
           ]
         },
         {
           tipo: "lista",
           titulo: "Pontos mais importantes para prova:",
           itens: [
-            "Diferenca entre LIKE, IN, BETWEEN e IS NULL",
-            "Uso correto do % e _",
-            "Funcoes agregadas e finalidade de cada uma",
-            "Regra obrigatoria do GROUP BY",
-            "Ordenacao crescente e decrescente",
-            "Diferenca entre COUNT(*) e outras agregacoes",
-            "Entendimento de NULL em SQL",
-            "Ordem logica de execucao das clausulas SQL: FROM, WHERE, SELECT"
+            "Diferenca entre SELECT, INSERT, UPDATE e DELETE",
+            "Estrutura basica das consultas SQL",
+            "Funcao da clausula WHERE",
+            "Diferenca entre AND e OR",
+            "Operadores de comparacao",
+            "Operadores aritmeticos",
+            "Precedencia matematica em SQL",
+            "Perigo de UPDATE e DELETE sem WHERE",
+            "Conceito de DML",
+            "Uso do DISTINCT para eliminar duplicatas"
           ]
         }
       ]
     }
     ]
     },
+    //Aula 11 — Refinando Consultas em um Banco de Dados • Parte 1
+    {
+      aula: "Aula 11 — Refinando Consultas em um Banco de Dados • Parte 1",
+      ideia_central: "A cláusula WHERE e seus operadores (LIKE, BETWEEN, IN, IS NULL), combinados com funções de agregação e as cláusulas GROUP BY e ORDER BY, permitem transformar consultas SQL simples em consultas inteligentes e úteis para aplicações reais.",
+      secoes: [
+        {
+          id: "visao",
+          titulo: "📖 Visão Geral do Conteúdo",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "Este módulo aborda técnicas para refinar consultas SQL, permitindo selecionar, filtrar, agrupar, ordenar e calcular dados dentro de bancos de dados relacionais."
+            },
+            {
+              tipo: "lista",
+              titulo: "Principais temas estudados:",
+              itens: [
+                "**Cláusula WHERE**",
+                "**Operadores:** LIKE, BETWEEN, IN, IS NULL",
+                "**Funções de agregação:** COUNT, SUM, AVG, MIN, MAX",
+                "**Agrupamento** com GROUP BY",
+                "**Ordenação** com ORDER BY"
+              ]
+            },
+            {
+              tipo: "destaque",
+              texto: "O foco principal do conteúdo é mostrar como transformar consultas simples em consultas mais inteligentes e úteis para aplicações reais."
+            }
+          ]
+        },
+
+        {
+          id: "conceitos_sql",
+          titulo: "🧠 Conceitos Principais — SQL e Refinamento de Consultas",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "A linguagem SQL permite:",
+              lista: [
+                "Inserir dados",
+                "Alterar registros",
+                "Excluir informações",
+                "Consultar dados"
+              ]
+            },
+            {
+              tipo: "texto",
+              texto: "Em aplicações reais, normalmente não queremos todos os registros da tabela, mas apenas aqueles que atendem determinados critérios. Para isso, utilizamos cláusulas de refinamento."
+            }
+          ]
+        },
+
+        {
+          id: "clausulas",
+          titulo: "📋 Principais Cláusulas SQL",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "SELECT",
+              texto: "Responsável por definir quais colunas serão exibidas.",
+              lista: [
+                "Exemplo: `SELECT nome, idade`"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "FROM",
+              texto: "Define de qual tabela os dados serão recuperados.",
+              lista: [
+                "Exemplo: `FROM alunos`"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "WHERE",
+              texto: "Filtra registros conforme condições específicas. É uma das cláusulas mais importantes da SQL.",
+              lista: [
+                "Exemplo: `WHERE idade > 18`"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "GROUP BY",
+              texto: "Agrupa registros que possuem valores iguais em determinadas colunas. Muito usada com funções de agregação."
+            },
+            {
+              tipo: "topico",
+              titulo: "HAVING",
+              texto: "Filtra resultados após agrupamentos. Utilizada junto com GROUP BY."
+            },
+            {
+              tipo: "topico",
+              titulo: "ORDER BY",
+              texto: "Ordena os resultados.",
+              lista: [
+                "Crescente: **ASC**",
+                "Decrescente: **DESC**"
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "where",
+          titulo: "🔍 Cláusula WHERE",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "A cláusula WHERE é usada para aplicar condições nas consultas."
+            },
+            {
+              tipo: "topico",
+              titulo: "Estrutura geral:",
+              lista: [
+                "`SELECT colunas`",
+                "`FROM tabela`",
+                "`WHERE condicao;`"
+              ]
+            },
+            {
+              tipo: "exemplo",
+              titulo: "Exemplo — Filtrar alunos de um curso",
+              texto: "Retorna apenas os alunos do curso 10.",
+              detalhe: "SELECT * FROM alunos WHERE cod_curso = 10;"
+            },
+            {
+              tipo: "destaque",
+              texto: "Ordem operacional das consultas SQL: embora escrevamos SELECT, FROM, WHERE — o banco processa na ordem FROM, WHERE, SELECT. Isso é importante para entender como a consulta funciona internamente."
+            }
+          ]
+        },
+
+        {
+          id: "like",
+          titulo: "🔤 Operador LIKE",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "O operador LIKE é utilizado para buscas textuais. Permite localizar padrões em strings."
+            },
+            {
+              tipo: "topico",
+              titulo: "Sintaxe:",
+              lista: [
+                "`WHERE campo LIKE 'valor'`"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Uso do % (coringa)",
+              texto: "O símbolo % representa qualquer sequência de caracteres.",
+              lista: [
+                "**Texto exato:** `LIKE 'Carlos'` — busca exatamente Carlos",
+                "**Contém texto:** `LIKE '%Santos%'` — busca qualquer texto contendo Santos",
+                "**Termina com:** `LIKE '%Silva'` — busca textos terminando em Silva",
+                "**Começa com:** `LIKE 'Jorge%'` — busca textos iniciando com Jorge"
+              ]
+            },
+            {
+              tipo: "imagem",
+              src: "fig_like_consulta_sql.png",
+              pasta: "imagens_banco_dados/aula_11",
+              num: "1",
+              alt: "Exemplo de consulta SQL usando o operador Like com % para buscas por padroes textuais em nomes"
+            },
+            {
+              tipo: "topico",
+              titulo: "Operador _ (underscore)",
+              texto: "Representa exatamente um caractere.",
+              lista: [
+                "`LIKE '_este'` — aceita: teste, veste, peste",
+                "`LIKE 'b_m'` — aceita: bom, bem"
+              ]
+            },
+            {
+              tipo: "imagem",
+              src: "fig_like_underscore.png",
+              pasta: "imagens_banco_dados/aula_11",
+              num: "2",
+              alt: "Exemplo de consulta SQL usando o operador Like com underscore para representar exatamente um caractere"
+            }
+          ]
+        },
+
+        {
+          id: "between",
+          titulo: "📏 Operador BETWEEN",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "Usado para trabalhar com intervalos. Muito comum com datas."
+            },
+            {
+              tipo: "topico",
+              titulo: "Sintaxe:",
+              lista: [
+                "`WHERE campo BETWEEN valor1 AND valor2`"
+              ]
+            },
+            {
+              tipo: "exemplo",
+              titulo: "Exemplo — Intervalo de datas de nascimento",
+              texto: "Retorna alunos nascidos entre essas datas.",
+              detalhe: "SELECT * FROM alunos WHERE dat_nasc BETWEEN '1980-01-01' AND '1989-12-31';"
+            },
+            {
+              tipo: "imagem",
+              src: "fig_between_datas.png",
+              pasta: "imagens_banco_dados/aula_11",
+              num: "3",
+              alt: "Exemplo de consulta SQL usando o operador de comparacao BETWEEN com intervalos de datas"
+            }
+          ]
+        },
+
+        {
+          id: "in",
+          titulo: "📋 Operador IN",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "Usado para verificar se um valor pertence a uma lista."
+            },
+            {
+              tipo: "topico",
+              titulo: "Sintaxe:",
+              lista: [
+                "`WHERE campo IN (valor1, valor2, valor3)`"
+              ]
+            },
+            {
+              tipo: "exemplo",
+              titulo: "Exemplo — Filtrar matriculas especificas",
+              texto: "Funciona como varios OR. Equivale a: WHERE mat_alu = 922155 OR mat_alu = 926465 OR mat_alu = 915550.",
+              detalhe: "WHERE mat_alu IN (922155, 926465, 915550);"
+            },
+            {
+              tipo: "imagem",
+              src: "fig_in_consulta.png",
+              pasta: "imagens_banco_dados/aula_11",
+              num: "4",
+              alt: "Exemplo de consulta SQL utilizando o operador de comparacao IN para filtragem baseada em multiplos valores"
+            }
+          ]
+        },
+
+        {
+          id: "is_null",
+          titulo: "⚠️ Operador IS NULL",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "Usado para verificar campos sem valor."
+            },
+            {
+              tipo: "destaque",
+              texto: "NULL nao significa zero; NULL nao significa espaco vazio; significa ausencia de valor."
+            },
+            {
+              tipo: "exemplo",
+              titulo: "Exemplo — Buscar alunos sem e-mail",
+              texto: "Retorna alunos cujo campo e-mail nao possui valor.",
+              detalhe: "SELECT nom_alu, email FROM alunos WHERE email IS NULL;"
+            },
+            {
+              tipo: "imagem",
+              src: "fig_is_null.png",
+              pasta: "imagens_banco_dados/aula_11",
+              num: "5",
+              alt: "Exemplo de consulta SQL utilizando o operador IS NULL para buscar registros com campos sem valor"
+            },
+            {
+              tipo: "topico",
+              titulo: "Problemas com NULL",
+              texto: "Operacoes envolvendo NULL geram resultado desconhecido (UNKNOWN).",
+              lista: [
+                "Exemplo: `1 < NULL` — nao e verdadeiro; nao e falso; e desconhecido"
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "agregacao",
+          titulo: "📊 Funções de Agregação",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "Sao funcoes usadas para calculos estatisticos."
+            },
+            {
+              tipo: "tabela",
+              titulo: "Principais funcoes de agregacao",
+              colunas: ["Funcao", "Objetivo"],
+              linhas: [
+                ["COUNT", "Contar registros"],
+                ["SUM",   "Somar valores"],
+                ["AVG",   "Media"],
+                ["MIN",   "Menor valor"],
+                ["MAX",   "Maior valor"]
+              ]
+            },
+            {
+              tipo: "imagem",
+              src: "quadro_funcoes_agregacao.png",
+              pasta: "imagens_banco_dados/aula_11",
+              num: "6",
+              alt: "Quadro com a relacao das funcoes de agregacao: COUNT, SUM, AVG, MIN e MAX"
+            },
+            {
+              tipo: "topico",
+              titulo: "COUNT — Contar registros",
+              lista: [
+                "Conta todas as linhas da tabela, incluindo linhas com valores NULL.",
+                "Exemplo: `SELECT COUNT(*) FROM alunos;`"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "SUM — Somar valores",
+              lista: [
+                "Realiza soma de valores numericos.",
+                "Ignora valores NULL.",
+                "Funciona apenas com numeros.",
+                "Exemplo: `SELECT SUM(tot_cred) FROM alunos;`"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "MIN — Menor valor",
+              lista: [
+                "Retorna o menor valor.",
+                "Exemplo: `SELECT MIN(tot_cred) FROM alunos;`"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "MAX — Maior valor",
+              lista: [
+                "Retorna o maior valor.",
+                "Exemplo: `SELECT MAX(tot_cred) FROM alunos;`"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "AVG — Media",
+              lista: [
+                "Calcula a media.",
+                "Pode usar **ALL** — considera repetidos.",
+                "Pode usar **DISTINCT** — ignora repetidos.",
+                "Exemplo: `SELECT AVG(tot_cred) FROM alunos;`"
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "groupby",
+          titulo: "📂 Agrupamento com GROUP BY",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "GROUP BY agrupa registros. Muito utilizado junto com funcoes agregadas."
+            },
+            {
+              tipo: "exemplo",
+              titulo: "Exemplo — Media de creditos por curso",
+              texto: "Separa alunos por curso e calcula a media dos creditos de cada curso.",
+              detalhe: "SELECT cod_curso, AVG(tot_cred) FROM alunos GROUP BY cod_curso;"
+            },
+            {
+              tipo: "imagem",
+              src: "fig_group_by.png",
+              pasta: "imagens_banco_dados/aula_11",
+              num: "7",
+              alt: "Exemplo de Select com funcao de agregacao e agrupamento GROUP BY"
+            },
+            {
+              tipo: "destaque",
+              texto: "Regra importante do GROUP BY: todo campo no SELECT deve estar no GROUP BY ou dentro de uma funcao agregada."
+            },
+            {
+              tipo: "exemplo",
+              titulo: "Exemplo de consulta INCORRETA com GROUP BY",
+              texto: "mat_alu nao esta agrupado nem agregado — isso gera erro.",
+              detalhe: "SELECT mat_alu, cod_curso, AVG(tot_cred) FROM alunos GROUP BY cod_curso;"
+            },
+            {
+              tipo: "imagem",
+              src: "fig_group_by_incorreto.png",
+              pasta: "imagens_banco_dados/aula_11",
+              num: "8",
+              alt: "Exemplo de Select incorreto usando GROUP BY com campo nao agrupado nem agregado"
+            }
+          ]
+        },
+
+        {
+          id: "orderby",
+          titulo: "🔃 Ordenação com ORDER BY",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "Usado para ordenar resultados."
+            },
+            {
+              tipo: "topico",
+              titulo: "Ordem crescente:",
+              lista: [
+                "`ORDER BY nome ASC`"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Ordem decrescente:",
+              lista: [
+                "`ORDER BY nome DESC`"
+              ]
+            },
+            {
+              tipo: "imagem",
+              src: "fig_order_by_desc.png",
+              pasta: "imagens_banco_dados/aula_11",
+              num: "9",
+              alt: "Exemplo de Select com ORDER BY demonstrando ordenacao decrescente de registros"
+            },
+            {
+              tipo: "topico",
+              titulo: "Ordenacao por multiplas colunas",
+              texto: "Primeiro ordena creditos; depois desempata usando nome.",
+              lista: [
+                "Exemplo: `ORDER BY tot_cred DESC, nom_alu ASC`"
+              ]
+            },
+            {
+              tipo: "imagem",
+              src: "fig_order_by_multiplos.png",
+              pasta: "imagens_banco_dados/aula_11",
+              num: "10",
+              alt: "Exemplo de Select com ORDER BY utilizando mais de um campo para ordenacao"
+            }
+          ]
+        },
+
+        {
+          id: "formulas",
+          titulo: "📐 Fórmulas e Métodos",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "Estrutura Basica de Consulta SQL",
+              lista: [
+                "`SELECT colunas`",
+                "`FROM tabela`",
+                "`WHERE condicao`",
+                "`GROUP BY campo`",
+                "`ORDER BY campo;`"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Metodos de Filtragem",
+              lista: [
+                "**Igualdade:** `WHERE idade = 20`",
+                "**Intervalo:** `WHERE idade BETWEEN 18 AND 30`",
+                "**Lista:** `WHERE cidade IN ('Fortaleza', 'Quixadá')`",
+                "**Texto:** `WHERE nome LIKE '%Silva%'`"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Metodos de Agregacao",
+              lista: [
+                "**Contagem:** `COUNT(*)`",
+                "**Soma:** `SUM(valor)`",
+                "**Media:** `AVG(valor)`",
+                "**Minimo:** `MIN(valor)`",
+                "**Maximo:** `MAX(valor)`"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Metodo de Agrupamento",
+              texto: "`GROUP BY coluna` — usado para separar registros em grupos e calcular estatisticas por categoria."
+            },
+            {
+              tipo: "topico",
+              titulo: "Metodo de Ordenacao",
+              lista: [
+                "`ORDER BY coluna ASC` — crescente",
+                "`ORDER BY coluna DESC` — decrescente"
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "exemplos",
+          titulo: "💡 Exemplos Explicativos",
+          blocos: [
+            {
+              tipo: "exemplo",
+              titulo: "Buscar alunos de um curso",
+              texto: "Retorna todos os registros de alunos do curso 10.",
+              detalhe: "SELECT * FROM alunos WHERE cod_curso = 10;"
+            },
+            {
+              tipo: "exemplo",
+              titulo: "Buscar nomes iniciando com Jorge",
+              texto: "Utiliza o operador LIKE com % para localizar nomes que comecam com Jorge.",
+              detalhe: "SELECT * FROM alunos WHERE nom_alu LIKE 'Jorge%';"
+            },
+            {
+              tipo: "exemplo",
+              titulo: "Buscar intervalo de datas",
+              texto: "Retorna alunos nascidos entre 1980 e 1989.",
+              detalhe: "SELECT * FROM alunos WHERE dat_nasc BETWEEN '1980-01-01' AND '1989-12-31';"
+            },
+            {
+              tipo: "exemplo",
+              titulo: "Buscar registros em lista",
+              texto: "Filtra alunos por matriculas especificas usando o operador IN.",
+              detalhe: "SELECT * FROM alunos WHERE mat_alu IN (922155, 926465, 915550);"
+            },
+            {
+              tipo: "exemplo",
+              titulo: "Buscar valores nulos",
+              texto: "Retorna alunos que nao possuem e-mail cadastrado.",
+              detalhe: "SELECT nom_alu, email FROM alunos WHERE email IS NULL;"
+            },
+            {
+              tipo: "exemplo",
+              titulo: "Contar registros",
+              texto: "Conta todas as linhas da tabela alunos.",
+              detalhe: "SELECT COUNT(*) FROM alunos;"
+            },
+            {
+              tipo: "exemplo",
+              titulo: "Somar creditos",
+              texto: "Soma o total de creditos de todos os alunos.",
+              detalhe: "SELECT SUM(tot_cred) FROM alunos;"
+            },
+            {
+              tipo: "exemplo",
+              titulo: "Media por curso",
+              texto: "Calcula a media de creditos separada por curso usando GROUP BY.",
+              detalhe: "SELECT cod_curso, AVG(tot_cred) FROM alunos GROUP BY cod_curso;"
+            },
+            {
+              tipo: "exemplo",
+              titulo: "Ordenar resultados",
+              texto: "Ordena os alunos pelo nome em ordem decrescente.",
+              detalhe: "SELECT * FROM alunos ORDER BY nom_alu DESC;"
+            }
+          ]
+        },
+
+        {
+          id: "resumo",
+          titulo: "🧾 Resumo Final para Revisão Rápida",
+          blocos: [
+            {
+              tipo: "lista",
+              itens: [
+                "**WHERE** — filtra registros",
+                "**LIKE** — busca padroes em textos",
+                "**%** — qualquer sequencia de caracteres",
+                "**_** — exatamente um caractere",
+                "**BETWEEN** — intervalo de valores",
+                "**IN** — lista de possibilidades",
+                "**IS NULL** — verifica ausencia de valor",
+                "**COUNT** — conta registros",
+                "**SUM** — soma valores",
+                "**AVG** — calcula media",
+                "**MIN** — menor valor",
+                "**MAX** — maior valor",
+                "**GROUP BY** — agrupa registros",
+                "**ORDER BY** — ordena resultados",
+                "**ASC** — crescente",
+                "**DESC** — decrescente",
+                "Todo campo no SELECT deve estar no GROUP BY ou em funcao agregada",
+                "NULL nao e zero nem vazio — e ausencia de valor",
+                "Funcoes agregadas ignoram NULL em varios casos"
+              ]
+            },
+            {
+              tipo: "lista",
+              titulo: "Pontos mais importantes para prova:",
+              itens: [
+                "Diferenca entre LIKE, IN, BETWEEN e IS NULL",
+                "Uso correto do % e _",
+                "Funcoes agregadas e finalidade de cada uma",
+                "Regra obrigatoria do GROUP BY",
+                "Ordenacao crescente e decrescente",
+                "Diferenca entre COUNT(*) e outras agregacoes — COUNT(*) conta todas as linhas inclusive com NULL; as demais ignoram NULL",
+                "Entendimento de NULL em SQL",
+                "Ordem logica de execucao das clausulas SQL: FROM, WHERE, SELECT"
+              ]
+            }
+          ]
+        }
+      ]
+    },
     // Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2
     {
-  aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
-  ideia_central: "Funções de agregação resumem grandes conjuntos de dados em valores únicos; HAVING filtra grupos após agrupamento; DISTINCT elimina duplicatas — ferramentas essenciais para transformar dados brutos em informações úteis.",
-  secoes: [
+      aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+      ideia_central: "Funções de agregação resumem grandes conjuntos de dados em valores únicos; HAVING filtra grupos após agrupamento; DISTINCT elimina duplicatas — ferramentas essenciais para transformar dados brutos em informações úteis.",
+      secoes: [
 
-    {
-      id: "visao",
-      titulo: "📖 Visão Geral",
-      blocos: [
         {
-          tipo: "lista",
-          titulo: "Principais tópicos desta aula:",
-          itens: [
-            "**Funções de agregação** — resumir dados em um único valor",
-            "**Alias (AS)** — renomear campos calculados",
-            "**GROUP BY** — agrupar registros antes de agregar",
-            "**HAVING** — filtrar grupos (como WHERE, mas pós-agrupamento)",
-            "**Ordem de execução SQL** — muito cobrada em prova",
-            "**Valores NULL em agregações** — comportamento especial",
-            "**DISTINCT** — eliminar duplicatas no resultado",
-            "**DISTINCT em funções de agregação** — contar/somar sem repetição"
-          ]
-        }
-      ]
-    },
-
-    {
-      id: "agregacao",
-      titulo: "🧠 Funções de Agregação",
-      blocos: [
-        {
-          tipo: "texto",
-          texto: "Funções de agregação processam **diversos valores de uma coluna** e retornam **um único resultado**. Operam sobre uma coluna inteira, não sobre linhas isoladas."
-        },
-        {
-          tipo: "tabela",
-          titulo: "🔹 Principais Funções",
-          colunas: ["Função", "Descrição", "Uso típico"],
-          linhas: [
-            ["AVG(col)",   "Calcula a média",        "Média salarial, nota, créditos"],
-            ["SUM(col)",   "Soma total",              "Total vendido, soma financeira"],
-            ["COUNT(*)",   "Conta todas as linhas",   "Quantidade de registros"],
-            ["COUNT(col)", "Conta valores não nulos", "Campos preenchidos"],
-            ["MAX(col)",   "Maior valor",             "Maior salário, data mais recente"],
-            ["MIN(col)",   "Menor valor",             "Menor preço, data mais antiga"]
-          ]
-        },
-        {
-          tipo: "topico",
-          titulo: "📌 AVG() — Média",
-          lista: [
-            "Calcula o valor médio de uma coluna numérica",
-            "Ignora valores NULL automaticamente"
-          ],
-          codigo: "SELECT AVG(coluna)\nFROM tabela;"
-        },
-        {
-          tipo: "topico",
-          titulo: "📌 SUM() — Soma",
-          lista: [
-            "Soma todos os valores de uma coluna",
-            "Ignora valores NULL"
-          ],
-          codigo: "SELECT SUM(coluna)\nFROM tabela;"
-        },
-        {
-          tipo: "topico",
-          titulo: "📌 COUNT() — Contagem",
-          lista: [
-            "`COUNT(*)` → conta **todas** as linhas, inclusive com NULL",
-            "`COUNT(coluna)` → conta apenas valores **não nulos**",
-            "`COUNT(DISTINCT coluna)` → conta valores **únicos**",
-            "⚠ `COUNT(DISTINCT *)` é **inválido** no SQL padrão"
-          ],
-          codigo: "SELECT COUNT(*) FROM tabela;            -- conta tudo\nSELECT COUNT(col) FROM tabela;          -- ignora NULL\nSELECT COUNT(DISTINCT col) FROM tabela; -- únicos"
-        },
-        {
-          tipo: "topico",
-          titulo: "📌 MAX() e MIN()",
-          lista: [
-            "**MAX** → retorna o maior valor da coluna",
-            "**MIN** → retorna o menor valor da coluna",
-            "Funcionam com números, datas e textos"
-          ],
-          codigo: "SELECT MAX(coluna), MIN(coluna)\nFROM tabela;"
-        }
-      ]
-    },
-
-    {
-      id: "alias",
-      titulo: "📊 Agregação Básica e Alias (AS)",
-      blocos: [
-        {
-          tipo: "texto",
-          texto: "É o uso direto de funções agregadas sobre registros filtrados, normalmente combinado com **WHERE** para restringir o conjunto."
-        },
-        {
-          tipo: "topico",
-          titulo: "🔹 Exemplo — Média com filtro WHERE",
-          lista: [
-            "Busca a tabela `alunos`",
-            "Filtra alunos do curso 10",
-            "Calcula a média de `tot_cred`"
-          ],
-          codigo: "SELECT AVG(tot_cred)\nFROM alunos\nWHERE cod_curso = 10;"
-        },
-        {
-          tipo: "imagem",
-          src: "fig_selecao_media_creditos.png",
-          pasta: "imagens_banco_dados/aula_12",
-          num: "1",
-          alt: "Seleção de alunos com a média dos totais de créditos usando critério código do curso = 10"
-        },
-        {
-          tipo: "topico",
-          titulo: "🔹 Alias (AS) — Renomear o resultado",
-          texto: "Melhora a leitura do resultado ao dar um nome descritivo ao campo calculado.",
-          lista: [
-            "Sem alias: o cabeçalho exibe `AVG(tot_cred)` — difícil de ler",
-            "Com alias: o cabeçalho exibe `media_total_credito` — claro e objetivo"
-          ],
-          codigo: "SELECT AVG(tot_cred) AS media_total_credito\nFROM alunos\nWHERE cod_curso = 10;"
-        },
-        {
-          tipo: "imagem",
-          src: "fig_selecao_media_alias.png",
-          pasta: "imagens_banco_dados/aula_12",
-          num: "2",
-          alt: "Seleção de alunos com média de créditos e alias para nomear o campo calculado"
-        }
-      ]
-    },
-
-    {
-      id: "groupby",
-      titulo: "📂 Agrupamento com GROUP BY",
-      blocos: [
-        {
-          tipo: "texto",
-          texto: "Permite dividir os registros em grupos antes de aplicar as funções de agregação. Cada grupo recebe seu próprio valor calculado."
-        },
-        {
-          tipo: "topico",
-          titulo: "🔹 Estrutura",
-          codigo: "SELECT coluna, agregacao(coluna)\nFROM tabela\nGROUP BY coluna;"
-        },
-        {
-          tipo: "topico",
-          titulo: "🔹 Exemplo — Média de créditos por curso",
-          lista: [
-            "SQL divide os registros por `cod_curso`",
-            "Cria um grupo para cada curso",
-            "Calcula a média separadamente para cada grupo"
-          ],
-          codigo: "SELECT cod_curso,\n       AVG(tot_cred) AS media_tot_cred\nFROM alunos\nGROUP BY cod_curso;"
-        },
-        {
-          tipo: "tabela",
-          titulo: "Exemplo prático de agrupamento",
-          colunas: ["Curso (entrada)", "Créditos", "→", "Curso (resultado)", "Média"],
-          linhas: [
-            ["10", "80",  "→", "10", "90"],
-            ["10", "100", "→", "20", "130"],
-            ["20", "120", "→", "",   ""],
-            ["20", "140", "→", "",   ""]
+          id: "visao",
+          titulo: "📖 Visão Geral",
+          blocos: [
+            {
+              tipo: "lista",
+              titulo: "Principais tópicos desta aula:",
+              itens: [
+                "**Funções de agregação** — resumir dados em um único valor",
+                "**Alias (AS)** — renomear campos calculados",
+                "**GROUP BY** — agrupar registros antes de agregar",
+                "**HAVING** — filtrar grupos (como WHERE, mas pós-agrupamento)",
+                "**Ordem de execução SQL** — muito cobrada em prova",
+                "**Valores NULL em agregações** — comportamento especial",
+                "**DISTINCT** — eliminar duplicatas no resultado",
+                "**DISTINCT em funções de agregação** — contar/somar sem repetição"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Funções de agregação — contexto de uso",
+              texto: "Permitem resumir grandes conjuntos de dados em valores únicos. São muito utilizadas para:",
+              lista: [
+                "Relatórios",
+                "Estatísticas",
+                "Indicadores de negócio",
+                "Consultas analíticas"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Cláusula DISTINCT — quando é importante",
+              lista: [
+                "Existem registros repetidos",
+                "Deseja-se visualizar apenas valores únicos",
+                "É necessário evitar contagens duplicadas"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Objetivo principal da aula — ensinar como:",
+              lista: [
+                "Aplicar agregações básicas",
+                "Agrupar resultados",
+                "Filtrar grupos",
+                "Tratar valores nulos",
+                "Eliminar redundâncias"
+              ]
+            }
           ]
         },
-        {
-          tipo: "imagem",
-          src: "fig_agregacao_group_by.png",
-          pasta: "imagens_banco_dados/aula_12",
-          num: "3",
-          alt: "Exemplo de agregação com agrupamento — GROUP BY divide registros e calcula média por grupo"
-        },
-        {
-          tipo: "destaque",
-          texto: "📌 Sem GROUP BY, toda a tabela é tratada como **um único grupo** — a agregação retorna um valor global."
-        }
-      ]
-    },
 
-    {
-      id: "having",
-      titulo: "🔍 Cláusula HAVING",
-      blocos: [
         {
-          tipo: "texto",
-          texto: "Filtra os **grupos** criados pelo GROUP BY — assim como WHERE filtra linhas individuais, HAVING filtra grupos após o agrupamento."
-        },
-        {
-          tipo: "tabela",
-          titulo: "🔹 WHERE vs HAVING",
-          colunas: ["Cláusula", "Atua sobre", "Momento"],
-          linhas: [
-            ["WHERE",  "Linhas individuais", "Antes do agrupamento"],
-            ["HAVING", "Grupos",             "Após o agrupamento"]
+          id: "agregacao",
+          titulo: "🧠 Funções de Agregação",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "Funções de agregação processam **diversos valores de uma coluna** e retornam **um único resultado**. Operam sobre uma coluna inteira, não sobre linhas isoladas."
+            },
+            {
+              tipo: "tabela",
+              titulo: "🔹 Principais Funções",
+              colunas: ["Função", "Descrição", "Uso típico"],
+              linhas: [
+                ["AVG(col)",   "Calcula a média",        "Média salarial, nota, créditos"],
+                ["SUM(col)",   "Soma total",              "Total vendido, soma financeira"],
+                ["COUNT(*)",   "Conta todas as linhas",   "Quantidade de registros"],
+                ["COUNT(col)", "Conta valores não nulos", "Campos preenchidos"],
+                ["MAX(col)",   "Maior valor",             "Maior salário, data mais recente"],
+                ["MIN(col)",   "Menor valor",             "Menor preço, data mais antiga"]
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "📌 AVG() — Média",
+              lista: [
+                "Calcula o valor médio de uma coluna numérica",
+                "Ignora valores NULL automaticamente",
+                "Uso: média salarial, média de notas, média de créditos"
+              ],
+              codigo: "SELECT AVG(coluna)\nFROM tabela;"
+            },
+            {
+              tipo: "topico",
+              titulo: "📌 SUM() — Soma",
+              lista: [
+                "Soma todos os valores de uma coluna",
+                "Ignora valores NULL",
+                "Uso: total vendido, soma de créditos, total financeiro"
+              ],
+              codigo: "SELECT SUM(coluna)\nFROM tabela;"
+            },
+            {
+              tipo: "topico",
+              titulo: "📌 COUNT() — Contagem",
+              lista: [
+                "`COUNT(*)` → conta **todas** as linhas, inclusive com NULL",
+                "`COUNT(coluna)` → conta apenas valores **não nulos**",
+                "`COUNT(DISTINCT coluna)` → conta valores **únicos**",
+                "⚠ `COUNT(DISTINCT *)` é **inválido** no SQL padrão",
+                "Uso: quantidade de alunos, número de vendas, total de registros"
+              ],
+              codigo: "SELECT COUNT(*) FROM tabela;            -- conta tudo\nSELECT COUNT(col) FROM tabela;          -- ignora NULL\nSELECT COUNT(DISTINCT col) FROM tabela; -- únicos"
+            },
+            {
+              tipo: "topico",
+              titulo: "📌 MAX() e MIN()",
+              lista: [
+                "**MAX** → retorna o maior valor da coluna — uso: maior salário, maior nota, data mais recente",
+                "**MIN** → retorna o menor valor da coluna — uso: menor nota, menor preço, data mais antiga",
+                "Funcionam com números, datas e textos"
+              ],
+              codigo: "SELECT MAX(coluna), MIN(coluna)\nFROM tabela;"
+            }
           ]
         },
-        {
-          tipo: "topico",
-          titulo: "🔹 Exemplo — Cursos com média maior que 100",
-          lista: [
-            "Agrupa registros por curso",
-            "Calcula a média de créditos de cada grupo",
-            "Remove grupos cuja média seja ≤ 100"
-          ],
-          codigo: "SELECT cod_curso,\n       AVG(tot_cred) AS media_tot_cred\nFROM alunos\nGROUP BY cod_curso\nHAVING AVG(tot_cred) > 100;"
-        },
-        {
-          tipo: "imagem",
-          src: "fig_exemplo_clausula_having.png",
-          pasta: "imagens_banco_dados/aula_12",
-          num: "4",
-          alt: "Exemplo de cláusula HAVING filtrando grupos após agrupamento"
-        },
-        {
-          tipo: "destaque",
-          texto: "📌 Regra para prova: todo atributo usado no HAVING **sem** função de agregação deve estar no GROUP BY."
-        }
-      ]
-    },
 
-    {
-      id: "execucao",
-      titulo: "⚙️ Ordem de Execução SQL",
-      blocos: [
         {
-          tipo: "texto",
-          texto: "A ordem de **escrita** da query é diferente da ordem de **execução** interna do banco. Muito cobrado em prova."
-        },
-        {
-          tipo: "tabela",
-          titulo: "🔹 Ordem lógica de execução",
-          colunas: ["Passo", "Cláusula", "O que faz"],
-          linhas: [
-            ["1º", "FROM",     "Seleciona a(s) tabela(s)"],
-            ["2º", "WHERE",    "Filtra linhas individuais"],
-            ["3º", "GROUP BY", "Agrupa os registros filtrados"],
-            ["4º", "HAVING",   "Filtra os grupos"],
-            ["5º", "SELECT",   "Define o resultado final"],
-            ["6º", "ORDER BY", "Ordena o resultado"]
+          id: "alias",
+          titulo: "📊 Agregação Básica e Alias (AS)",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "É o uso direto de funções agregadas sobre registros filtrados, normalmente combinado com **WHERE** para restringir o conjunto."
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Exemplo — Média com filtro WHERE",
+              lista: [
+                "Busca a tabela `alunos`",
+                "Filtra alunos do curso 10",
+                "Calcula a média de `tot_cred`"
+              ],
+              codigo: "SELECT AVG(tot_cred)\nFROM alunos\nWHERE cod_curso = 10;"
+            },
+            {
+              tipo: "imagem",
+              src: "fig_selecao_media_creditos.png",
+              pasta: "imagens_banco_dados/aula_12",
+              num: "1",
+              alt: "Seleção de alunos com a média dos totais de créditos usando critério código do curso = 10"
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Alias (AS) — Renomear o resultado",
+              texto: "Melhora a leitura do resultado ao dar um nome descritivo ao campo calculado.",
+              lista: [
+                "Sem alias: o cabeçalho exibe `AVG(tot_cred)` — difícil de ler",
+                "Com alias: o cabeçalho exibe `media_total_credito` — claro e objetivo"
+              ],
+              codigo: "SELECT AVG(tot_cred) AS media_total_credito\nFROM alunos\nWHERE cod_curso = 10;"
+            },
+            {
+              tipo: "imagem",
+              src: "fig_selecao_media_alias.png",
+              pasta: "imagens_banco_dados/aula_12",
+              num: "2",
+              alt: "Seleção de alunos com média de créditos e alias para nomear o campo calculado"
+            }
           ]
         },
-        {
-          tipo: "topico",
-          titulo: "🔹 Ordem de escrita da query",
-          codigo: "SELECT\nFROM\nWHERE\nGROUP BY\nHAVING\nORDER BY"
-        }
-      ]
-    },
 
-    {
-      id: "nulos",
-      titulo: "⚠️ Valores NULL em Agregações",
-      blocos: [
         {
-          tipo: "texto",
-          texto: "Valores NULL recebem tratamento especial nas funções de agregação."
-        },
-        {
-          tipo: "topico",
-          titulo: "🔹 Regra geral",
-          lista: [
-            "**AVG, SUM, MAX, MIN, COUNT(coluna)** → **ignoram** NULL",
-            "**COUNT(*)** → **conta** todas as linhas, inclusive com NULL"
+          id: "groupby",
+          titulo: "📂 Agrupamento com GROUP BY",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "Permite dividir os registros em grupos antes de aplicar as funções de agregação. Cada grupo recebe seu próprio valor calculado."
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Estrutura",
+              codigo: "SELECT coluna, agregacao(coluna)\nFROM tabela\nGROUP BY coluna;"
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Exemplo — Média de créditos por curso",
+              lista: [
+                "SQL divide os registros por `cod_curso`",
+                "Cria um grupo para cada curso",
+                "Calcula a média separadamente para cada grupo"
+              ],
+              codigo: "SELECT cod_curso,\n       AVG(tot_cred) AS media_tot_cred\nFROM alunos\nGROUP BY cod_curso;"
+            },
+            {
+              tipo: "tabela",
+              titulo: "Exemplo prático de agrupamento",
+              colunas: ["Curso (entrada)", "Créditos", "→", "Curso (resultado)", "Média"],
+              linhas: [
+                ["10", "80",  "→", "10", "90"],
+                ["10", "100", "→", "20", "130"],
+                ["20", "120", "→", "",   ""],
+                ["20", "140", "→", "",   ""]
+              ]
+            },
+            {
+              tipo: "imagem",
+              src: "fig_agregacao_group_by.png",
+              pasta: "imagens_banco_dados/aula_12",
+              num: "3",
+              alt: "Exemplo de agregação com agrupamento — GROUP BY divide registros e calcula média por grupo"
+            },
+            {
+              tipo: "destaque",
+              texto: "📌 Sem GROUP BY, toda a tabela é tratada como **um único grupo** — a agregação retorna um valor global."
+            }
           ]
         },
-        {
-          tipo: "topico",
-          titulo: "🔹 Exemplo com NULL",
-          texto: "Tabela com créditos: 100, NULL, 200. A consulta abaixo retorna 150 — o NULL é ignorado.",
-          codigo: "SELECT AVG(tot_cred)\nFROM alunos;\n-- Resultado: 150  (NULL ignorado)"
-        },
-        {
-          tipo: "destaque",
-          texto: "📌 Para prova: se **todos** os valores da coluna forem NULL → COUNT() retorna 0; AVG/SUM/MAX/MIN retornam NULL."
-        }
-      ]
-    },
 
-    {
-      id: "distinct",
-      titulo: "🔄 Cláusula DISTINCT",
-      blocos: [
         {
-          tipo: "texto",
-          texto: "Remove **duplicatas** do resultado de uma consulta. Útil quando existem registros repetidos e deseja-se visualizar apenas valores únicos."
-        },
-        {
-          tipo: "topico",
-          titulo: "🔹 Sem DISTINCT × Com DISTINCT",
-          lista: [
-            "Sem DISTINCT: pode retornar cursos 10, 10, 20, 20, 30",
-            "Com DISTINCT: retorna apenas 10, 20, 30"
-          ],
-          codigo: "-- Sem DISTINCT (com duplicatas):\nSELECT cod_curso FROM alunos;\n\n-- Com DISTINCT (valores únicos):\nSELECT DISTINCT cod_curso FROM alunos;"
-        },
-        {
-          tipo: "imagem",
-          src: "fig_consulta_sem_distinct.png",
-          pasta: "imagens_banco_dados/aula_12",
-          num: "5",
-          alt: "Consulta simples de código de cursos — resultado com duplicatas"
-        },
-        {
-          tipo: "imagem",
-          src: "fig_consulta_com_distinct.png",
-          pasta: "imagens_banco_dados/aula_12",
-          num: "6",
-          alt: "Consulta usando DISTINCT — duplicatas eliminadas do resultado"
-        },
-        {
-          tipo: "topico",
-          titulo: "🔹 DISTINCT em Funções de Agregação",
-          lista: [
-            "Remove duplicatas **antes** de aplicar a agregação",
-            "Útil para contar itens únicos (ex: alunos que cursaram uma disciplina mais de uma vez)",
-            "⚠ `COUNT(DISTINCT *)` é **inválido** — usar sempre com nome de coluna",
-            "Palavra-chave **ALL** (padrão) mantém duplicatas — normalmente desnecessária"
-          ],
-          codigo: "-- Conta alunos únicos na disciplina 200070 no ano de 2001:\nSELECT COUNT(DISTINCT mat_alu)\nFROM historicos_escolares\nWHERE cod_disc = 200070\n  AND ano = 2001;"
-        },
-        {
-          tipo: "imagem",
-          src: "fig_distinct_agregacao_count.png",
-          pasta: "imagens_banco_dados/aula_12",
-          num: "7",
-          alt: "Consulta usando DISTINCT numa função de agregação COUNT — contagem sem duplicidade"
-        }
-      ]
-    },
-
-    {
-      id: "exemplos",
-      titulo: "💡 Exemplos Explicativos",
-      blocos: [
-        {
-          tipo: "exemplo",
-          titulo: "Exemplo 1 — Média geral",
-          texto: "Calcular a média de notas de todos os alunos sem filtro.",
-          detalhe: "👉 SELECT AVG(nota) FROM alunos;"
-        },
-        {
-          tipo: "exemplo",
-          titulo: "Exemplo 2 — Média por turma (GROUP BY)",
-          texto: "Calcular a média de notas separada por turma.",
-          detalhe: "👉 SELECT turma, AVG(nota) FROM alunos GROUP BY turma;"
-        },
-        {
-          tipo: "exemplo",
-          titulo: "Exemplo 3 — Filtrar grupos (HAVING)",
-          texto: "Mostrar apenas turmas com média superior a 7.",
-          detalhe: "👉 SELECT turma, AVG(nota) FROM alunos GROUP BY turma HAVING AVG(nota) > 7;"
-        },
-        {
-          tipo: "exemplo",
-          titulo: "Exemplo 4 — Valores únicos (DISTINCT)",
-          texto: "Listar todas as cidades dos clientes sem repetição.",
-          detalhe: "👉 SELECT DISTINCT cidade FROM clientes;"
-        },
-        {
-          tipo: "exemplo",
-          titulo: "Exemplo 5 — Contagem de alunos únicos",
-          texto: "Contar alunos distintos que cursaram uma disciplina, mesmo que tenham cursado mais de uma vez.",
-          detalhe: "👉 SELECT COUNT(DISTINCT mat_alu) FROM historicos_escolares WHERE cod_disc = 200070 AND ano = 2001;"
-        }
-      ]
-    },
-
-    {
-      id: "resumo",
-      titulo: "🧾 Resumo Final para Revisão Rápida",
-      blocos: [
-        {
-          tipo: "lista",
-          itens: [
-            "**AVG** → média · **SUM** → soma · **COUNT** → contagem · **MAX** → maior · **MIN** → menor",
-            "**COUNT(*)** conta tudo (inclusive NULL) · **COUNT(col)** ignora NULL",
-            "**Alias (AS)** → renomeia campos calculados para melhor leitura",
-            "**GROUP BY** → divide registros em grupos para agregação separada",
-            "**HAVING** → filtra grupos após agrupamento (WHERE filtra linhas antes)",
-            "**NULL** → ignorado por AVG/SUM/MAX/MIN/COUNT(col); COUNT(*) inclui",
-            "**DISTINCT** → remove duplicatas do resultado ou de dentro de agregações",
-            "**COUNT(DISTINCT col)** → válido · **COUNT(DISTINCT *)** → inválido"
+          id: "having",
+          titulo: "🔍 Cláusula HAVING",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "Filtra os **grupos** criados pelo GROUP BY — assim como WHERE filtra linhas individuais, HAVING filtra grupos após o agrupamento."
+            },
+            {
+              tipo: "tabela",
+              titulo: "🔹 WHERE vs HAVING",
+              colunas: ["Cláusula", "Atua sobre", "Momento"],
+              linhas: [
+                ["WHERE",  "Linhas individuais", "Antes do agrupamento"],
+                ["HAVING", "Grupos",             "Após o agrupamento"]
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Exemplo — Cursos com média maior que 100",
+              lista: [
+                "Agrupa registros por curso",
+                "Calcula a média de créditos de cada grupo",
+                "Remove grupos cuja média seja ≤ 100"
+              ],
+              codigo: "SELECT cod_curso,\n       AVG(tot_cred) AS media_tot_cred\nFROM alunos\nGROUP BY cod_curso\nHAVING AVG(tot_cred) > 100;"
+            },
+            {
+              tipo: "imagem",
+              src: "fig_exemplo_clausula_having.png",
+              pasta: "imagens_banco_dados/aula_12",
+              num: "4",
+              alt: "Exemplo de cláusula HAVING filtrando grupos após agrupamento"
+            },
+            {
+              tipo: "destaque",
+              texto: "📌 Regra para prova: todo atributo usado no HAVING **sem** função de agregação deve estar no GROUP BY."
+            }
           ]
         },
-        {
-          tipo: "topico",
-          titulo: "🔹 Ordem de execução (decorar para prova)",
-          codigo: "1º FROM → 2º WHERE → 3º GROUP BY → 4º HAVING → 5º SELECT → 6º ORDER BY"
-        },
-        {
-          tipo: "destaque",
-          texto: "📌 Ideia-chave: O refinamento de consultas transforma dados brutos em informações úteis para análise e tomada de decisão. WHERE filtra linhas | GROUP BY agrupa | HAVING filtra grupos | DISTINCT elimina duplicatas."
-        }
-      ]
-    }
 
-  ]
+        {
+          id: "execucao",
+          titulo: "⚙️ Ordem de Execução SQL",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "A ordem de **escrita** da query é diferente da ordem de **execução** interna do banco. Muito cobrado em prova."
+            },
+            {
+              tipo: "tabela",
+              titulo: "🔹 Ordem lógica de execução",
+              colunas: ["Passo", "Cláusula", "O que faz"],
+              linhas: [
+                ["1º", "FROM",     "Seleciona a(s) tabela(s)"],
+                ["2º", "WHERE",    "Filtra linhas individuais"],
+                ["3º", "GROUP BY", "Agrupa os registros filtrados"],
+                ["4º", "HAVING",   "Filtra os grupos"],
+                ["5º", "SELECT",   "Define o resultado final"],
+                ["6º", "ORDER BY", "Ordena o resultado"]
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Ordem de escrita da query",
+              codigo: "SELECT\nFROM\nWHERE\nGROUP BY\nHAVING\nORDER BY"
+            }
+          ]
+        },
+
+        {
+          id: "nulos",
+          titulo: "⚠️ Valores NULL em Agregações",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "Valores NULL recebem tratamento especial nas funções de agregação."
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Regra geral",
+              lista: [
+                "**AVG, SUM, MAX, MIN, COUNT(coluna)** → **ignoram** NULL",
+                "**COUNT(*)** → **conta** todas as linhas, inclusive com NULL"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Exemplo com NULL",
+              texto: "Tabela com créditos: 100, NULL, 200. A consulta abaixo retorna 150 — o NULL é ignorado.",
+              codigo: "SELECT AVG(tot_cred)\nFROM alunos;\n-- Resultado: 150  (NULL ignorado)"
+            },
+            {
+              tipo: "destaque",
+              texto: "📌 Para prova: se **todos** os valores da coluna forem NULL → COUNT() retorna 0; AVG/SUM/MAX/MIN retornam NULL."
+            }
+          ]
+        },
+
+        {
+          id: "distinct",
+          titulo: "🔄 Cláusula DISTINCT",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "Remove **duplicatas** do resultado de uma consulta. Útil quando existem registros repetidos e deseja-se visualizar apenas valores únicos."
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Sem DISTINCT × Com DISTINCT",
+              lista: [
+                "Sem DISTINCT: pode retornar cursos 10, 10, 20, 20, 30",
+                "Com DISTINCT: retorna apenas 10, 20, 30"
+              ],
+              codigo: "-- Sem DISTINCT (com duplicatas):\nSELECT cod_curso FROM alunos;\n\n-- Com DISTINCT (valores únicos):\nSELECT DISTINCT cod_curso FROM alunos;"
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Utilidade — evita repetição de:",
+              lista: [
+                "Cursos",
+                "Departamentos",
+                "Categorias",
+                "Códigos"
+              ]
+            },
+            {
+              tipo: "imagem",
+              src: "fig_consulta_sem_distinct.png",
+              pasta: "imagens_banco_dados/aula_12",
+              num: "5",
+              alt: "Consulta simples de código de cursos — resultado com duplicatas"
+            },
+            {
+              tipo: "imagem",
+              src: "fig_consulta_com_distinct.png",
+              pasta: "imagens_banco_dados/aula_12",
+              num: "6",
+              alt: "Consulta usando DISTINCT — duplicatas eliminadas do resultado"
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 DISTINCT em Funções de Agregação",
+              lista: [
+                "Remove duplicatas **antes** de aplicar a agregação",
+                "Útil para contar itens únicos (ex: alunos que cursaram uma disciplina mais de uma vez)",
+                "Quando usar: matrículas repetidas, vendas duplicadas, registros históricos",
+                "⚠ `COUNT(DISTINCT *)` é **inválido** — usar sempre com nome de coluna",
+                "Palavra-chave **ALL** (padrão) mantém duplicatas — normalmente desnecessária"
+              ],
+              codigo: "-- Conta alunos únicos na disciplina 200070 no ano de 2001:\nSELECT COUNT(DISTINCT mat_alu)\nFROM historicos_escolares\nWHERE cod_disc = 200070\n  AND ano = 2001;"
+            },
+            {
+              tipo: "imagem",
+              src: "fig_distinct_agregacao_count.png",
+              pasta: "imagens_banco_dados/aula_12",
+              num: "7",
+              alt: "Consulta usando DISTINCT numa função de agregação COUNT — contagem sem duplicidade"
+            }
+          ]
+        },
+
+        {
+          id: "formulas",
+          titulo: "📐 Fórmulas e Métodos",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "Média",
+              texto: "`AVG(coluna)` — calcular valor médio."
+            },
+            {
+              tipo: "topico",
+              titulo: "Soma",
+              texto: "`SUM(coluna)` — totalizar valores."
+            },
+            {
+              tipo: "topico",
+              titulo: "Contagem",
+              lista: [
+                "`COUNT(*)` — conta todas as linhas",
+                "`COUNT(coluna)` — conta valores não nulos",
+                "`COUNT(DISTINCT coluna)` — conta valores únicos"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Máximo",
+              texto: "`MAX(coluna)` — maior valor."
+            },
+            {
+              tipo: "topico",
+              titulo: "Mínimo",
+              texto: "`MIN(coluna)` — menor valor."
+            },
+            {
+              tipo: "topico",
+              titulo: "Agrupamento",
+              texto: "`GROUP BY coluna` — divide registros em grupos."
+            },
+            {
+              tipo: "topico",
+              titulo: "Filtro de grupos",
+              texto: "`HAVING condição` — filtra grupos após agrupamento."
+            },
+            {
+              tipo: "topico",
+              titulo: "Remoção de duplicatas",
+              texto: "`DISTINCT` — elimina duplicatas do resultado."
+            }
+          ]
+        },
+
+        {
+          id: "exemplos",
+          titulo: "💡 Exemplos Explicativos",
+          blocos: [
+            {
+              tipo: "exemplo",
+              titulo: "Exemplo 1 — Média geral",
+              texto: "Calcular a média de notas de todos os alunos sem filtro.",
+              detalhe: "👉 SELECT AVG(nota) FROM alunos;"
+            },
+            {
+              tipo: "exemplo",
+              titulo: "Exemplo 2 — Média por turma (GROUP BY)",
+              texto: "Calcular a média de notas separada por turma.",
+              detalhe: "👉 SELECT turma, AVG(nota) FROM alunos GROUP BY turma;"
+            },
+            {
+              tipo: "exemplo",
+              titulo: "Exemplo 3 — Filtrar grupos (HAVING)",
+              texto: "Mostrar apenas turmas com média superior a 7.",
+              detalhe: "👉 SELECT turma, AVG(nota) FROM alunos GROUP BY turma HAVING AVG(nota) > 7;"
+            },
+            {
+              tipo: "exemplo",
+              titulo: "Exemplo 4 — Valores únicos (DISTINCT)",
+              texto: "Listar todas as cidades dos clientes sem repetição.",
+              detalhe: "👉 SELECT DISTINCT cidade FROM clientes;"
+            },
+            {
+              tipo: "exemplo",
+              titulo: "Exemplo 5 — Contagem de alunos únicos",
+              texto: "Contar alunos distintos que cursaram uma disciplina, mesmo que tenham cursado mais de uma vez.",
+              detalhe: "👉 SELECT COUNT(DISTINCT mat_alu) FROM historicos_escolares WHERE cod_disc = 200070 AND ano = 2001;"
+            }
+          ]
+        },
+
+        {
+          id: "resumo",
+          titulo: "🧾 Resumo Final para Revisão Rápida",
+          blocos: [
+            {
+              tipo: "lista",
+              itens: [
+                "**AVG** → média · **SUM** → soma · **COUNT** → contagem · **MAX** → maior · **MIN** → menor",
+                "**COUNT(*)** conta tudo (inclusive NULL) · **COUNT(col)** ignora NULL",
+                "**Alias (AS)** → renomeia campos calculados para melhor leitura",
+                "**GROUP BY** → divide registros em grupos para agregação separada",
+                "**HAVING** → filtra grupos após agrupamento (WHERE filtra linhas antes)",
+                "**NULL** → ignorado por AVG/SUM/MAX/MIN/COUNT(col); COUNT(*) inclui",
+                "**DISTINCT** → remove duplicatas do resultado ou de dentro de agregações",
+                "**COUNT(DISTINCT col)** → válido · **COUNT(DISTINCT *)** → inválido"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "🔹 Ordem de execução (decorar para prova)",
+              codigo: "1º FROM → 2º WHERE → 3º GROUP BY → 4º HAVING → 5º SELECT → 6º ORDER BY"
+            },
+            {
+              tipo: "destaque",
+              texto: "📌 Ideia-chave: O refinamento de consultas transforma dados brutos em informações úteis para análise e tomada de decisão. WHERE filtra linhas | GROUP BY agrupa | HAVING filtra grupos | DISTINCT elimina duplicatas."
+            }
+          ]
+        }
+
+      ]
     },
     // Aula 13 - Consultas Aninhadas e Junções
     {
@@ -2316,40 +2438,39 @@ window.__nexusConteudo = {
     ideia_central: "Consultas aninhadas permitem usar o resultado de um SELECT dentro de outro; JOINs combinam tabelas relacionadas — técnicas essenciais para recuperar informações complexas de bancos de dados relacionais.",
     secoes: [
     {
-      id: "visao",
-      titulo: "📖 Visão Geral",
-      blocos: [
-        {
-          tipo: "texto",
-          texto: "O material aborda técnicas avançadas de consultas em SQL, focando em **consultas aninhadas (subqueries)** e **junções (JOINs)** entre tabelas, com uso de chaves primárias, chaves estrangeiras e operadores relacionais."
-        },
-        {
-          tipo: "lista",
-          titulo: "Objetivo principal — mostrar como recuperar informações complexas utilizando:",
-          itens: [
-            "Consultas dentro de consultas",
-            "Combinação de múltiplas tabelas",
-            "Filtros avançados",
-            "Operadores de comparação"
-          ]
-        },
-        {
-          tipo: "lista",
-          titulo: "Principais tópicos desta aula:",
-          itens: [
-            "**Consultas Aninhadas Tipo I** — subconsulta independente, executa uma vez, usa `IN` / `NOT IN`",
-            "**Consultas Aninhadas Tipo II** — subconsulta correlacionada, executa várias vezes, usa `EXISTS` / `NOT EXISTS`",
-            "**Subconsultas na cláusula FROM** — geram tabelas derivadas (visões inline)",
-            "**Produto Cartesiano** — combinação de todas as linhas de duas tabelas",
-            "**INNER JOIN** — apenas registros com correspondência nas duas tabelas",
-            "**LEFT JOIN** — todos da esquerda, sem correspondência vira NULL",
-            "**RIGHT JOIN** — todos da direita, sem correspondência vira NULL",
-            "**FULL OUTER JOIN** — todos os registros das duas tabelas"
-          ]
-        }
-      ]
+    id: "visao",
+    titulo: "📖 Visão Geral",
+    blocos: [
+    {
+    tipo: "texto",
+    texto: "O material aborda técnicas avançadas de consultas em SQL, focando em consultas aninhadas (subqueries) e junções (JOINs) entre tabelas, com uso de chaves primárias, chaves estrangeiras e operadores relacionais."
     },
-
+    {
+    tipo: "lista",
+    titulo: "Objetivo principal — mostrar como recuperar informações complexas utilizando:",
+    itens: [
+    "Consultas dentro de consultas",
+    "Combinação de múltiplas tabelas",
+    "Filtros avançados",
+    "Operadores de comparação"
+    ]
+    },
+    {
+    tipo: "lista",
+    titulo: "Principais tópicos desta aula:",
+    itens: [
+    "Consultas Aninhadas Tipo I — subconsulta independente, executa uma vez, usa IN / NOT IN",
+    "Consultas Aninhadas Tipo II — subconsulta correlacionada, executa várias vezes, usa EXISTS / NOT EXISTS",
+    "Subconsultas na cláusula FROM — geram tabelas derivadas (visões inline)",
+    "Produto Cartesiano — combinação de todas as linhas de duas tabelas",
+    "INNER JOIN — apenas registros com correspondência nas duas tabelas",
+    "LEFT JOIN — todos da esquerda, sem correspondência vira NULL",
+    "RIGHT JOIN — todos da direita, sem correspondência vira NULL",
+    "FULL OUTER JOIN — todos os registros das duas tabelas"
+    ]
+    }
+    ]
+    },
     {
       id: "subqueries",
       titulo: "🧠 Consultas Aninhadas (Subqueries)",
@@ -2833,24 +2954,6 @@ window.__nexusConteudo = {
     },
 
     {
-      id: "operadores",
-      titulo: "⚙️ Operadores Importantes",
-      blocos: [
-        {
-          tipo: "tabela",
-          titulo: "🔹 Operadores de subconsulta",
-          colunas: ["Operador", "Função"],
-          linhas: [
-            ["IN",         "Verifica existência em uma lista de resultados"],
-            ["NOT IN",     "Verifica ausência em uma lista de resultados"],
-            ["EXISTS",     "Retorna verdadeiro se a subconsulta retornar linhas"],
-            ["NOT EXISTS", "Retorna verdadeiro se a subconsulta não retornar linhas"]
-          ]
-        }
-      ]
-    },
-
-    {
       id: "resumo",
       titulo: "🧾 Resumo Final para Revisão Rápida",
       blocos: [
@@ -2882,6 +2985,17 @@ window.__nexusConteudo = {
             "**LEFT JOIN** → todos da esquerda; sem correspondência → NULL",
             "**RIGHT JOIN** → todos da direita; sem correspondência → NULL",
             "**FULL OUTER JOIN** → todos os registros das duas tabelas, correspondentes ou não"
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Operadores importantes",
+          colunas: ["Operador", "Função"],
+          linhas: [
+            ["IN",         "Verifica existência em uma lista de resultados"],
+            ["NOT IN",     "Verifica ausência em uma lista de resultados"],
+            ["EXISTS",     "Retorna verdadeiro se a subconsulta retornar linhas"],
+            ["NOT EXISTS", "Retorna verdadeiro se a subconsulta não retornar linhas"]
           ]
         },
         {
