@@ -524,7 +524,7 @@ html, body {
   gap: 6px;
   border-radius: var(--assoc-radius-pill);
   padding: 5px 14px;
-  font-family: var(--assoc-font-display);
+  font-family: var(--font-body);
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.06em;

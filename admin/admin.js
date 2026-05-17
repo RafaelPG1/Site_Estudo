@@ -173,6 +173,7 @@ async function _removerUsuarioCompleto(uid) {
     const SUBCOLLECTIONS = [
       'quiz_respostas', 'srs_perfis',
       'sm_historico', 'sm_pontuacoes',   // ← ambas as subcoleções do SM
+      'assoc_historico',                  // ← histórico de associação
     ];
 
     for (const subCol of SUBCOLLECTIONS) {
@@ -405,6 +406,7 @@ async function _renderProgress() {
         <button class="tab" data-tab="srs">🃏 Flashcard (SRS)</button>
         <button class="tab" data-tab="vf">✅ V ou F</button>
         <button class="tab" data-tab="sm">⭐ Show do Milhão</button>
+        <button class="tab" data-tab="assoc">🔗 Associação</button>
       </div>
 
       <!-- PAINEL QUIZ -->
@@ -462,10 +464,21 @@ async function _renderProgress() {
         </div>
       </div>
 
+      <!-- PAINEL ASSOCIAÇÃO -->
+      <div class="section-panel" id="prog-panel-assoc" style="display:none">
+        <div class="panel-header">
+          <span class="panel-title">Progresso — Associação</span>
+          <span class="panel-count" id="prog-assoc-count">${estudantes.length} estudantes</span>
+        </div>
+        <div id="prog-assoc-wrap" class="data-table-wrap">
+          <div class="init-loading"><div class="spinner"></div><p>Carregando…</p></div>
+        </div>
+      </div>
+
     </div>`;
 
   /* ── Tab switching ── */
-  const TABS = ['quiz', 'pessoal', 'srs', 'vf', 'sm'];
+  const TABS = ['quiz', 'pessoal', 'srs', 'vf', 'sm', 'assoc'];
   document.getElementById('prog-tabs').addEventListener('click', e => {
     const btn = e.target.closest('.tab');
     if (!btn) return;
@@ -486,6 +499,7 @@ async function _renderProgress() {
     _filtrarTabela('prog-srs-wrap',     q);
     _filtrarTabela('prog-vf-wrap',      q);
     _filtrarTabela('prog-sm-wrap',      q);
+    _filtrarTabela('prog-assoc-wrap',   q);
   });
 
   /* ── Carrega todos os painéis em paralelo ── */
@@ -494,6 +508,7 @@ async function _renderProgress() {
   _carregarSrsProgress(estudantes);
   _carregarVfProgress(estudantes);
   _carregarSmProgress(estudantes);
+  _carregarAssocProgress(estudantes);
 }
 
 /* ── Filtra linhas da tabela por texto ── */
@@ -1230,6 +1245,151 @@ async function _limparSmCompleto(uid) {
     _limparSmHistorico(uid),
     _limparSmPontuacoes(uid),
   ]);
+}
+
+/* ──────────────────────────────────────────────
+   ASSOCIAÇÃO — PROGRESSO
+────────────────────────────────────────────── */
+async function _carregarAssocProgress(estudantes) {
+  const wrap = document.getElementById('prog-assoc-wrap');
+
+  const dados = await Promise.all(estudantes.map(async u => {
+    try {
+      const snap = await getDocs(collection(getDb(), 'usuarios', u.uid, 'assoc_historico'));
+      let totalPares = 0, totalTentativas = 0, totalAcertos = 0, totalErros = 0;
+      const discs = new Set();
+
+      snap.forEach(d => {
+        const idx = d.id.indexOf('_');
+        if (idx !== -1) discs.add(d.id.slice(idx + 1));
+        const data = d.data();
+        Object.values(data).forEach(q => {
+          if (q && typeof q === 'object') {
+            totalPares++;
+            totalTentativas += q.tentativas ?? 0;
+            totalAcertos    += q.acertos    ?? 0;
+            totalErros      += q.erros      ?? 0;
+          }
+        });
+      });
+
+      const taxa = totalTentativas > 0
+        ? Math.round((totalAcertos / totalTentativas) * 100)
+        : null;
+
+      return {
+        uid: u.uid, nome: u.nome ?? u.uid, avatar: u.avatar ?? '🎓',
+        docs: snap.size, discs: discs.size,
+        totalPares, totalTentativas, totalAcertos, totalErros, taxa,
+      };
+    } catch {
+      return {
+        uid: u.uid, nome: u.nome ?? u.uid, avatar: u.avatar ?? '🎓',
+        docs: 0, discs: 0,
+        totalPares: 0, totalTentativas: 0, totalAcertos: 0, totalErros: 0, taxa: null,
+      };
+    }
+  }));
+
+  wrap.innerHTML = _buildAssocTable(dados);
+  _bindAssocActions(estudantes, dados);
+}
+
+function _buildAssocTable(dados) {
+  if (!dados.length) return `<div class="empty-state">Nenhum dado encontrado.</div>`;
+
+  return `
+    <table class="data-table">
+      <thead><tr>
+        <th>Usuário</th>
+        <th>ID</th>
+        <th>Disciplinas</th>
+        <th>Pares vistos</th>
+        <th>✅ Acertos</th>
+        <th>❌ Erros</th>
+        <th>Taxa</th>
+        <th>Ações</th>
+      </tr></thead>
+      <tbody>
+        ${dados.map(r => {
+          const taxaClass = r.taxa === null ? 'badge--grey'
+                         : r.taxa >= 70    ? 'badge--green'
+                         : r.taxa >= 40    ? 'badge--amber'
+                         :                   'badge--rose';
+          const taxaLabel = r.taxa === null ? '—' : `${r.taxa}%`;
+          return `
+          <tr data-uid="${r.uid}">
+            <td><span style="font-size:1.1rem;margin-right:6px">${r.avatar}</span>${r.nome}</td>
+            <td><code class="quiz-id">${r.uid}</code></td>
+            <td>
+              <span class="badge ${r.discs > 0 ? 'badge--teal' : 'badge--grey'}">
+                ${r.discs} disc
+              </span>
+            </td>
+            <td>
+              <span class="badge ${r.totalPares > 0 ? 'badge--blue' : 'badge--grey'}">
+                ${r.totalPares}
+              </span>
+            </td>
+            <td>
+              <span class="badge ${r.totalAcertos > 0 ? 'badge--green' : 'badge--grey'}">
+                ${r.totalAcertos}
+              </span>
+            </td>
+            <td>
+              <span class="badge ${r.totalErros > 0 ? 'badge--rose' : 'badge--grey'}">
+                ${r.totalErros}
+              </span>
+            </td>
+            <td>
+              <span class="badge ${taxaClass}">${taxaLabel}</span>
+            </td>
+            <td>
+              <button class="icon-btn icon-btn--rose btn-limpar-assoc"
+                      data-uid="${r.uid}" data-nome="${r.nome}"
+                      ${r.docs === 0 ? 'disabled' : ''}>
+                🧹 Limpar
+              </button>
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+
+function _bindAssocActions(estudantes, dados) {
+  document.querySelectorAll('.btn-limpar-assoc').forEach(btn => {
+    btn.addEventListener('click', () =>
+      _modalConfirmar(
+        `Limpar Associação de <strong>${btn.dataset.nome}</strong>?`,
+        'Apaga todo o histórico de Associação do Firestore.',
+        'Limpar',
+        async () => {
+          await _limparAssocUsuario(btn.dataset.uid);
+          _toast(`Histórico Associação de ${btn.dataset.nome} limpo! 🧹`);
+          _carregarAssocProgress(estudantes);
+        },
+        btn
+      )
+    );
+  });
+}
+
+async function _limparAssocUsuario(uid) {
+  try {
+    const snap = await getDocs(collection(getDb(), 'usuarios', uid, 'assoc_historico'));
+    await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
+    console.log(`[admin] _limparAssocUsuario Firestore: uid="${uid}" ok (${snap.size} docs)`);
+
+    const prefixo = `nexus_assoc_${uid}_`;
+    const keysParaRemover = Object.keys(localStorage).filter(k => k.startsWith(prefixo));
+    keysParaRemover.forEach(k => localStorage.removeItem(k));
+    if (keysParaRemover.length) {
+      console.log(`[admin] _limparAssocUsuario localStorage: ${keysParaRemover.length} chave(s) → ${uid}`);
+    }
+  } catch (err) {
+    console.error('[admin] _limparAssocUsuario erro:', err);
+  }
 }
 
 /* ══════════════════════════════════════════════════════════

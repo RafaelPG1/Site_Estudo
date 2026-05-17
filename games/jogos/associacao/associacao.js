@@ -1,111 +1,50 @@
 /* ════════════════════════════════════════════════════════════════
    NEXUS STUDY — Associação
-   associacao.js  (v4.0 — nova estrutura de dados)
-
-   MUDANÇA PRINCIPAL (v3.x → v4.0):
-     A estrutura de dados da disciplina mudou de array plano para
-     objeto de questões:
-
-     ANTES (v3.x):
-       design: [
-         { id, pergunta, resposta },   // N pares, divididos pelo loader
-         ...
-       ]
-
-     AGORA (v4.0):
-       design: {
-         questao_1: [ { id, pergunta, resposta }, ... ],  // 4 pares
-         questao_2: [ ... ],
-         ...
-         questao_6: [ ... ],
-       }
-
-   IMPACTO DAS MUDANÇAS:
-     • Cada questao_X representa EXATAMENTE uma rodada do jogo.
-     • Cada rodada tem EXATAMENTE 4 pares (CONFIG.ITEMS_PER_ROUND = 4).
-     • O total de rodadas = Object.keys(disciplina).length (sempre 6).
-     • A seed agora persiste a ORDEM das questões (não dos pares),
-       pois os pares de cada rodada são embaralhados em tempo de
-       renderização.
-     • carregarItens() achata o objeto em array de arrays:
-       estado.allRounds = [ [4 pares], [4 pares], ... ]
-     • Toda referência a estado.allItems (array plano) foi substituída
-       por estado.allRounds (array de rodadas).
-     • renderRound() usa estado.allRounds[currentRound] diretamente,
-       sem fatiar com ITEMS_PER_ROUND.
-     • Validação de seed verifica IDs da rodada em allRounds.
-
-   CORREÇÕES herdadas de v3.2 (mantidas):
-     [FIX-A] Race condition em renderRound() eliminada.
-     [FIX-B] _atualizarRespondidos() usa CONFIG.ITEMS_PER_ROUND fixo.
-     [FIX-C] Pontuação da intro injetada via CONFIG.
-     [FIX-D] Detecção de troca de contexto via SESSION_KEY_CTX.
-     [FIX-E] roundCounterLbl exibe (currentRound+1) / totalRounds.
-     [FIX-F] intro-deck-label e intro-total-pares usam mesma fonte.
+   associacao.js  (v4.1 — histórico + timer regressivo)
 ════════════════════════════════════════════════════════════════ */
 
 import { ASSOCIACAO_DATA }                            from './associacao_data.js';
-import { saveRound, loadRound, clearRound, clearAll } from './storage_a.js';
-import { getDisciplinasDeSemestre }                   from '../../../src/global.js';
+import { saveRound, loadRound, clearRound, clearAll, salvarResultadoAssoc } from './storage_a.js';
+import { getDisciplinasDeSemestre, getUsuario }       from '../../../src/global.js';
 import { aplicarCoresDisciplina }                     from '../../../shared/js/theme.js';
 import { DISC_CORES }                                 from '../../../shared/js/cores.js';
-
-import { salvarResultadoAssoc } from './storage_a.js';
-import { getUsuario } from '../../../src/global.js';
 
 (function () {
   'use strict';
 
   /* ══════════════════════════════════════════════════════════════
-     CONFIG — fonte única de verdade para todas as constantes do jogo.
-
-     ITEMS_PER_ROUND agora reflete o tamanho fixo de cada questao_X
-     conforme definido em associacao_data.js (4 pares por questão).
+     CONFIG
   ══════════════════════════════════════════════════════════════ */
 
-const CONFIG = Object.freeze({
-  ITEMS_PER_ROUND:   4,
-  PONTOS_ACERTO:    10,
-  PONTOS_ERRO:       3,
-  ROUND_TIME_LIMIT: 30,  // ← adicione
-  SESSION_KEY_SEED:  'assoc_seed',
-  SESSION_KEY_ROUND: 'assoc_round',
-  SESSION_KEY_CTX:   'assoc_ctx',
-});
+  const CONFIG = Object.freeze({
+    ITEMS_PER_ROUND:   4,
+    PONTOS_ACERTO:    10,
+    PONTOS_ERRO:       3,
+    ROUND_TIME_LIMIT: 30,
+    SESSION_KEY_SEED:  'assoc_seed',
+    SESSION_KEY_ROUND: 'assoc_round',
+    SESSION_KEY_CTX:   'assoc_ctx',
+  });
 
   /* ══════════════════════════════════════════════════════════════
-     ESTADO GLOBAL — único ponto de verdade
-
-     MUDANÇA v4.0:
-       allItems  → removido (era array plano; não existe mais)
-       allRounds → array de rodadas: cada elemento é o array de 4 pares
-                   de uma questao_X, na ordem sorteada na sessão.
+     ESTADO GLOBAL
   ══════════════════════════════════════════════════════════════ */
 
   const estado = {
-    /* Dados */
-    allRounds:    [],   // [ [4 pares], [4 pares], ... ] — uma entrada por questão
+    allRounds:    [],
     discId:       null,
     discObj:      null,
     semestre:     null,
-
-    /* Rodada */
     currentRound: 0,
     totalRounds:  0,
-    roundItems:   [],   // os 4 pares da rodada atual (referência a allRounds[currentRound])
+    roundItems:   [],
     verified:     false,
-
-    /* Pontuação acumulada */
     totalAcertos: 0,
     totalErros:   0,
     totalPontos:  0,
-
-    /* Timer */
     timerSecs:    0,
     timerRef:     null,
     pausado:      false,
-
-    /* Controle de tela */
     telaAtual:    'loading',
   };
 
@@ -134,22 +73,9 @@ const CONFIG = Object.freeze({
     return m + ':' + s;
   }
 
-  /**
-   * Extrai o array de rodadas a partir do objeto de disciplina.
-   *
-   * A disciplina agora é um objeto { questao_1: [...], questao_2: [...], ... }.
-   * Esta função retorna um array de arrays, preservando a ordem das chaves
-   * (que segue a ordem de inserção no objeto, garantida pelo JS moderno).
-   *
-   * Exemplo de retorno:
-   *   [ [par1, par2, par3, par4], [par1, par2, par3, par4], ... ]
-   *
-   * @param {Object} discData — objeto da disciplina vindo de ASSOCIACAO_DATA
-   * @returns {Array<Array>} — array de rodadas (cada rodada = array de pares)
-   */
   function extrairRodadas(discData) {
     return Object.keys(discData)
-      .sort() // garante ordem questao_1, questao_2, ... questao_6
+      .sort()
       .map(function (key) { return discData[key]; })
       .filter(function (rodada) { return Array.isArray(rodada) && rodada.length > 0; });
   }
@@ -159,25 +85,19 @@ const CONFIG = Object.freeze({
   ══════════════════════════════════════════════════════════════ */
 
   const $ = id => document.getElementById(id);
-
   const el = {};
 
   function initDOM() {
     Object.assign(el, {
-      /* Telas */
       screenLoading: $('screen-loading'),
       screenIntro:   $('screen-intro'),
       screenGame:    $('screen-game'),
       screenResult:  $('screen-result'),
       screenEmpty:   $('screen-empty'),
-
-      /* Header global */
       topbarDisc:    $('topbar-disc'),
       topbarSem:     $('topbar-sem'),
       timerVal:      $('timer-val'),
       progressFill:  $('progress-bar-fill'),
-
-      /* Intro */
       introDisc:        $('intro-disc'),
       introSem:         $('intro-sem'),
       introIcon:        $('intro-icon'),
@@ -186,8 +106,6 @@ const CONFIG = Object.freeze({
       btnStart:         $('btn-start'),
       btnContinuar:     $('btn-continuar'),
       continuarProg:    $('intro-continuar-prog'),
-
-      /* Jogo */
       roundCurGame:    $('round-current-game'),
       progressResp:    $('progress-respondidos'),
       roundCounterLbl: $('round-counter-label'),
@@ -196,8 +114,6 @@ const CONFIG = Object.freeze({
       poolGrid:        $('pool-grid'),
       qCount:          $('q-count'),
       filledCount:     $('filled-count'),
-
-      /* Botões de jogo */
       btnVoltar:       $('btn-voltar'),
       btnReset:        $('btn-reset'),
       btnVerif:        $('btn-verificar'),
@@ -208,8 +124,6 @@ const CONFIG = Object.freeze({
       pauseIcon:       $('pause-icon'),
       pauseLabel:      $('pause-label'),
       btnVoltarIntro:  $('btn-voltar-intro'),
-
-      /* Resultado */
       resultTrophy:    $('result-trophy'),
       resultTitle:     $('result-title'),
       resultSubtitle:  $('result-subtitle'),
@@ -223,25 +137,19 @@ const CONFIG = Object.freeze({
       resultFeedText:  $('result-feedback-text'),
       btnRejogo:       $('btn-rejogo'),
       btnMenu:         $('btn-menu'),
-
-      /* Pausa */
       pauseOverlay:    $('pause-overlay'),
       pauseRodada:     $('pause-rodada'),
       pauseTempo:      $('pause-tempo'),
       pausePct:        $('pause-pct'),
       btnPauseMenu:    $('btn-pause-menu'),
-
-      /* Toast + lixeira */
       toast:           $('toast'),
       trashZone:       $('trash-zone'),
-
-      /* Botão voltar global */
       btnBack:         $('btn-back'),
     });
   }
 
   /* ══════════════════════════════════════════════════════════════
-     TEMA DINÂMICO — delega inteiramente ao theme.js
+     TEMA
   ══════════════════════════════════════════════════════════════ */
 
   function aplicarTema(discId) {
@@ -267,7 +175,6 @@ const CONFIG = Object.freeze({
     }
     estado.telaAtual = nome;
 
-    /* Visibilidade da barra de progresso */
     if (el.progressFill) {
       const barBg = el.progressFill.closest('.assoc-progress-bar-bg');
       if (barBg) {
@@ -277,15 +184,15 @@ const CONFIG = Object.freeze({
   }
 
   /* ══════════════════════════════════════════════════════════════
-     TIMER
+     TIMER — regressivo de 30s
   ══════════════════════════════════════════════════════════════ */
 
-function startTimer() {
-  clearInterval(estado.timerRef);
-  estado.timerSecs = CONFIG.ROUND_TIME_LIMIT;
-  _tickTimer();
-  estado.timerRef = setInterval(_tickTimer, 1000);
-}
+  function startTimer() {
+    clearInterval(estado.timerRef);
+    estado.timerSecs = CONFIG.ROUND_TIME_LIMIT;
+    _tickTimer();
+    estado.timerRef = setInterval(_tickTimer, 1000);
+  }
 
   function pausarTimer() {
     clearInterval(estado.timerRef);
@@ -303,64 +210,76 @@ function startTimer() {
     estado.timerRef = null;
   }
 
-function _tickTimer() {
-  if (estado.pausado) return;
+  function _tickTimer() {
+    if (estado.pausado) return;
 
-  const txt = formatTime(estado.timerSecs);
-  if (el.timerVal)   el.timerVal.textContent  = txt;
-  if (el.pauseTempo) el.pauseTempo.textContent = txt;
-if (el.timerVal) {
-  el.timerVal.classList.toggle('warning', estado.timerSecs <= 10);
-}
-  if (estado.timerSecs <= 0) {
-    pararTimer();
-    _tempoEsgotado();
-    return;
+    const txt = formatTime(estado.timerSecs);
+    if (el.timerVal)   el.timerVal.textContent  = txt;
+    if (el.pauseTempo) el.pauseTempo.textContent = txt;
+
+    if (el.timerVal) {
+      el.timerVal.classList.toggle('warning', estado.timerSecs <= 10);
+    }
+
+    if (estado.timerSecs <= 0) {
+      pararTimer();
+      _tempoEsgotado();
+      return;
+    }
+
+    estado.timerSecs--;
   }
 
-  estado.timerSecs--;
-}
+  function _tempoEsgotado() {
+    if (estado.verified) return;
+    estado.verified = true;
+    lockAllCards();
 
-function _tempoEsgotado() {
-  if (estado.verified) return;
-  estado.verified = true;
-  lockAllCards();
+    /* Pega cards ainda no pool e slots vazios */
+    const cardsNoPool = el.poolGrid
+      ? [...el.poolGrid.querySelectorAll('.a-card')]
+      : [];
 
-  /* Pega todos os cards ainda no pool */
-  const cardsNoPool = el.poolGrid
-    ? [...el.poolGrid.querySelectorAll('.a-card')]
-    : [];
+    const zonesVazias = el.matchGrid
+      ? [...el.matchGrid.querySelectorAll('.drop-zone')]
+          .filter(function (z) { return !z.querySelector('.a-card'); })
+      : [];
 
-  /* Pega os slots vazios */
-  const zonesVazias = el.matchGrid
-    ? [...el.matchGrid.querySelectorAll('.drop-zone')]
-        .filter(function (z) { return !z.querySelector('.a-card'); })
-    : [];
+    /* Distribui aleatoriamente nos slots vazios → ficam errados */
+    const cardsEmbaralhados = shuffle(cardsNoPool.slice());
+    zonesVazias.forEach(function (zone, i) {
+      if (cardsEmbaralhados[i]) {
+        placeCardInZone(zone, cardsEmbaralhados[i]);
+      }
+    });
 
-  /* Embaralha os cards do pool e distribui nos slots vazios */
-  const cardsEmbaralhados = shuffle(cardsNoPool.slice());
-  zonesVazias.forEach(function (zone, i) {
-    if (cardsEmbaralhados[i]) {
-      placeCardInZone(zone, cardsEmbaralhados[i]);
+    applyVerifyFeedback();
+    saveCurrentState(true);
+
+    const zones  = el.matchGrid ? [...el.matchGrid.querySelectorAll('.drop-zone')] : [];
+    const acertos = zones.filter(function (z) { return z.classList.contains('correct'); }).length;
+    const erros   = zones.length - acertos;
+    estado.totalErros  += erros;
+    estado.totalPontos += (acertos * CONFIG.PONTOS_ACERTO) - (erros * CONFIG.PONTOS_ERRO);
+    if (estado.totalPontos < 0) estado.totalPontos = 0;
+
+    /* Salva histórico — tempo esgotado = tudo errado */
+    const usuario = getUsuario();
+    if (usuario) {
+      const resultados = zones.map(function (zone) {
+        return {
+          id:      zone.dataset.questionId,
+          acertou: false,
+        };
+      });
+      salvarResultadoAssoc(usuario.uid, estado.discId, estado.semestre, resultados);
     }
-  });
 
-  /* Aplica feedback visual — agora vai marcar errado pois estão embaralhados */
-  applyVerifyFeedback();
-  saveCurrentState(true);
+    showToast('⏰ Tempo esgotado! Veja as respostas corretas', 'erro');
 
-  const zones   = el.matchGrid ? [...el.matchGrid.querySelectorAll('.drop-zone')] : [];
-  const acertos = zones.filter(function (z) { return z.classList.contains('correct'); }).length;
-  const erros   = zones.length - acertos;
-  estado.totalErros  += erros;
-  estado.totalPontos += (acertos * CONFIG.PONTOS_ACERTO) - (erros * CONFIG.PONTOS_ERRO);
-  if (estado.totalPontos < 0) estado.totalPontos = 0;
-
-  showToast('⏰ Tempo esgotado! Veja as respostas corretas', 'erro');
-
-  const isLast = estado.currentRound >= estado.totalRounds - 1;
-  setVerifyState(isLast ? 'finish' : 'next');
-}
+    const isLast = estado.currentRound >= estado.totalRounds - 1;
+    setVerifyState(isLast ? 'finish' : 'next');
+  }
 
   /* ══════════════════════════════════════════════════════════════
      TOAST
@@ -369,10 +288,10 @@ function _tempoEsgotado() {
   function showToast(msg, tipo) {
     if (!el.toast) return;
     const cores = {
-      sucesso: { cor: 'var(--assoc-cyan)',  bdr: 'rgba(0,229,200,0.30)' },
-      erro:    { cor: '#ff8080',            bdr: 'rgba(255,128,128,0.30)' },
-      ouro:    { cor: 'var(--assoc-gold)',  bdr: 'rgba(245,200,66,0.30)' },
-      info:    { cor: 'var(--assoc-text-dim)', bdr: 'var(--assoc-border-mid)' },
+      sucesso: { cor: 'var(--assoc-cyan)',      bdr: 'rgba(0,229,200,0.30)' },
+      erro:    { cor: '#ff8080',                bdr: 'rgba(255,128,128,0.30)' },
+      ouro:    { cor: 'var(--assoc-gold)',      bdr: 'rgba(245,200,66,0.30)' },
+      info:    { cor: 'var(--assoc-text-dim)',  bdr: 'var(--assoc-border-mid)' },
     };
     const c = cores[tipo || 'sucesso'] || cores.sucesso;
     el.toast.textContent       = msg;
@@ -385,36 +304,20 @@ function _tempoEsgotado() {
 
   /* ══════════════════════════════════════════════════════════════
      PROGRESSO GLOBAL
-
-     A barra de progresso reflete rodadas já concluídas em relação
-     ao total. O denominador é sempre estado.totalRounds (número
-     de questões na disciplina, normalmente 6).
-
-     _atualizarRespondidos() usa CONFIG.ITEMS_PER_ROUND (4) como
-     denominador fixo, garantindo consistência visual em todas as
-     situações.
   ══════════════════════════════════════════════════════════════ */
 
   function atualizarProgressoGlobal() {
     const cur = estado.currentRound;
     const tot = estado.totalRounds;
 
-    /* Barra de progresso: rodadas já concluídas */
     const pct = tot > 0 ? Math.round((cur / tot) * 100) : 0;
     if (el.progressFill) el.progressFill.style.width = pct + '%';
 
-    /* "RODADA X" no label */
-    if (el.roundCurGame) el.roundCurGame.textContent = cur + 1;
+    if (el.roundCurGame)    el.roundCurGame.textContent    = cur + 1;
+    if (el.roundCounterLbl) el.roundCounterLbl.textContent = (cur + 1) + ' / ' + tot;
 
-    /* "1 / 6" — rodada atual / total */
-    if (el.roundCounterLbl) {
-      el.roundCounterLbl.textContent = (cur + 1) + ' / ' + tot;
-    }
-
-    /* Inicia respondidos em 0 com denominador fixo */
     _atualizarRespondidos(0);
 
-    /* Dots — um por rodada */
     if (el.dotsRow) {
       el.dotsRow.innerHTML = '';
       for (let i = 0; i < tot; i++) {
@@ -428,20 +331,12 @@ function _tempoEsgotado() {
       }
     }
 
-    /* Pausa */
     if (el.pauseRodada) el.pauseRodada.textContent = (cur + 1) + '/' + tot;
     if (el.pausePct)    el.pausePct.textContent     = pct + '%';
 
     sessionStorage.setItem(CONFIG.SESSION_KEY_ROUND, cur);
   }
 
-  /**
-   * Atualiza "X de 4 respondidos" e "X / 4".
-   * O denominador é SEMPRE CONFIG.ITEMS_PER_ROUND (4), nunca
-   * roundItems.length, para garantir consistência visual.
-   *
-   * @param {number} filled — número de zonas preenchidas no momento
-   */
   function _atualizarRespondidos(filled) {
     const total = CONFIG.ITEMS_PER_ROUND;
     if (el.progressResp) {
@@ -460,18 +355,7 @@ function _tempoEsgotado() {
   }
 
   /* ══════════════════════════════════════════════════════════════
-     DADOS — carregar e organizar itens
-
-     MUDANÇA v4.0:
-       A disciplina é agora um objeto { questao_1: [...], ... }.
-       extrairRodadas() converte esse objeto em array de arrays.
-       A seed persiste a ORDEM DAS RODADAS (array de chaves de questão
-       embaralhadas), não mais os IDs dos pares individuais.
-       estado.allRounds é construído respeitando a ordem da seed.
-
-     Mantido de v3.2:
-       [FIX-D] Detecção de troca de contexto via SESSION_KEY_CTX.
-       [FIX-3] Seed validada contra as questões da disciplina atual.
+     DADOS
   ══════════════════════════════════════════════════════════════ */
 
   function carregarItens() {
@@ -483,8 +367,7 @@ function _tempoEsgotado() {
     if (semestresDisponiveis.length === 0) return false;
     estado.semestre = (semParam && ASSOCIACAO_DATA[semParam]) ? semParam : semestresDisponiveis[0];
 
-    const semData = ASSOCIACAO_DATA[estado.semestre] || {};
-
+    const semData     = ASSOCIACAO_DATA[estado.semestre] || {};
     const disciplinas = getDisciplinasDeSemestre(estado.semestre);
 
     let discObj = null;
@@ -494,40 +377,26 @@ function _tempoEsgotado() {
       });
     }
     if (!discObj) {
-      discObj = disciplinas.find(function (d) {
-        return semData[d.arquivo ?? d.id];
-      });
+      discObj = disciplinas.find(function (d) { return semData[d.arquivo ?? d.id]; });
     }
-
     if (!discObj) return false;
 
     const discChave = discObj.arquivo ?? discObj.id;
     const discData  = semData[discChave];
 
-    /* Valida que a disciplina existe e é um objeto com questões */
     if (!discData || typeof discData !== 'object' || Array.isArray(discData)) return false;
 
     const questaoKeys = Object.keys(discData).sort();
     if (questaoKeys.length === 0) return false;
 
-    /* [FIX-D] Detecta troca de contexto (disc ou semestre diferente) */
     const ctxAtual = estado.semestre + '|' + discChave;
     const ctxSalvo = sessionStorage.getItem(CONFIG.SESSION_KEY_CTX);
-    if (ctxSalvo && ctxSalvo !== ctxAtual) {
-      clearAll();
-    }
+    if (ctxSalvo && ctxSalvo !== ctxAtual) clearAll();
     sessionStorage.setItem(CONFIG.SESSION_KEY_CTX, ctxAtual);
 
     estado.discId  = discChave;
     estado.discObj = discObj;
 
-    /* ── Seed: persiste a ordem das QUESTÕES (não dos pares) ────────
-       A seed é um array de chaves de questão na ordem sorteada para
-       esta sessão. Ex.: ['questao_3','questao_1','questao_5',...]
-       Isso mantém a ordem das rodadas consistente durante a sessão,
-       enquanto os pares dentro de cada rodada são embaralhados na
-       hora da renderização.
-    ─────────────────────────────────────────────────────────────── */
     const validKeys = new Set(questaoKeys);
     const savedSeed = sessionStorage.getItem(CONFIG.SESSION_KEY_SEED);
     let seedValida  = false;
@@ -538,11 +407,8 @@ function _tempoEsgotado() {
         seedValida = Array.isArray(order) &&
                      order.length === questaoKeys.length &&
                      order.every(function (k) { return validKeys.has(k); });
-
         if (seedValida) {
-          /* Reconstrói allRounds na ordem salva */
           estado.allRounds = order.map(function (k) { return discData[k].slice(); });
-          /* Adiciona questões novas não presentes na seed (caso o deck cresça) */
           const knownKeys = new Set(order);
           questaoKeys.forEach(function (k) {
             if (!knownKeys.has(k)) estado.allRounds.push(discData[k].slice());
@@ -554,7 +420,6 @@ function _tempoEsgotado() {
     }
 
     if (!seedValida) {
-      /* Embaralha a ORDEM das questões e constrói allRounds */
       const ordemEmbaralhada = shuffle(questaoKeys);
       estado.allRounds = ordemEmbaralhada.map(function (k) { return discData[k].slice(); });
       _salvarSeed(ordemEmbaralhada);
@@ -569,22 +434,12 @@ function _tempoEsgotado() {
     return true;
   }
 
-  /**
-   * Salva a ordem das questões na sessão.
-   * @param {string[]} ordemKeys — array de chaves de questão ordenadas
-   */
   function _salvarSeed(ordemKeys) {
     sessionStorage.setItem(CONFIG.SESSION_KEY_SEED, JSON.stringify(ordemKeys));
   }
 
   /* ══════════════════════════════════════════════════════════════
-     INTRO — preencher e exibir
-
-     MUDANÇA v4.0:
-       totalPares = soma dos pares de todas as rodadas
-                  = estado.allRounds.reduce((acc, r) => acc + r.length, 0)
-       Mantido [FIX-C]: pontuação injetada via CONFIG.
-       Mantido [FIX-F]: intro-deck-label e intro-total-pares usam mesma fonte.
+     INTRO
   ══════════════════════════════════════════════════════════════ */
 
   function mostrarIntro() {
@@ -592,16 +447,12 @@ function _tempoEsgotado() {
     const discLabel = discObj.apelido ?? discObj.nome ?? estado.discId;
     const discEmoji = discObj.emoji   ?? '🃏';
 
-    /* Header */
     if (el.topbarDisc) el.topbarDisc.textContent = discLabel;
     if (el.topbarSem)  el.topbarSem.textContent  = estado.semestre;
+    if (el.introDisc)  el.introDisc.textContent  = discLabel;
+    if (el.introSem)   el.introSem.textContent   = estado.semestre;
+    if (el.introIcon)  el.introIcon.textContent  = discEmoji;
 
-    /* Card intro */
-    if (el.introDisc)       el.introDisc.textContent      = discLabel;
-    if (el.introSem)        el.introSem.textContent        = estado.semestre;
-    if (el.introIcon)       el.introIcon.textContent       = discEmoji;
-
-    /* Total de pares = soma dos pares de todas as rodadas */
     const totalPares = estado.allRounds.reduce(function (acc, rodada) {
       return acc + rodada.length;
     }, 0);
@@ -609,7 +460,6 @@ function _tempoEsgotado() {
     if (el.introTotalPares) el.introTotalPares.textContent = totalPares;
     if (el.introTotalRods)  el.introTotalRods.textContent  = estado.totalRounds;
 
-    /* [FIX-C] Injeta pontuação via CONFIG nos <strong> das regras */
     const introCard = el.screenIntro
       ? el.screenIntro.querySelector('.assoc-intro__card')
       : null;
@@ -625,16 +475,14 @@ function _tempoEsgotado() {
       }
     }
 
-    /* Contador de deck */
     const deckLbl = $('intro-deck-label');
     if (deckLbl) deckLbl.textContent = totalPares + ' pares no deck';
 
-    /* Botão continuar */
-    const savedRound   = loadValidRound(estado.currentRound);
-const temProgresso = estado.currentRound > 0 && estado.currentRound < estado.totalRounds;
-if (el.btnContinuar) {
-  el.btnContinuar.classList.toggle('hidden', !temProgresso);
-}
+    /* Botão continuar — só aparece se há progresso E ainda não terminou */
+    const temProgresso = estado.currentRound > 0 && estado.currentRound < estado.totalRounds;
+    if (el.btnContinuar) {
+      el.btnContinuar.classList.toggle('hidden', !temProgresso);
+    }
     if (temProgresso && el.continuarProg) {
       el.continuarProg.textContent =
         'Rodada ' + (estado.currentRound + 1) + '/' + estado.totalRounds;
@@ -686,33 +534,16 @@ if (el.btnContinuar) {
 
   /* ══════════════════════════════════════════════════════════════
      RENDER ROUND
-
-     MUDANÇA v4.0:
-       estado.roundItems = estado.allRounds[currentRound]
-       Não há mais fatiamento por ITEMS_PER_ROUND — cada rodada já
-       contém exatamente os pares da questão correspondente.
-       Os pares do POOL são embaralhados em renderização; os pares
-       das PERGUNTAS mantêm a ordem original da questão.
-
-     Mantido [FIX-A]: roundItems atribuído ANTES de atualizarProgressoGlobal().
   ══════════════════════════════════════════════════════════════ */
 
   function renderRound(restoredState) {
     estado.verified = false;
-
-    /* [FIX-A] Atribui roundItems ANTES de qualquer chamada que dependa dele */
     estado.roundItems = estado.allRounds[estado.currentRound] || [];
 
-    /* Atualiza progresso com roundItems já definido */
     atualizarProgressoGlobal();
 
     if (el.qCount) el.qCount.textContent = estado.roundItems.length + ' questões';
 
-    /* ── Ordem do pool de respostas ─────────────────────────────────
-       Se há estado restaurado: usa a ordem salva + completa os ausentes.
-       Caso contrário: embaralha os pares da rodada atual para o pool.
-       As PERGUNTAS (match-grid) sempre seguem a ordem original da questão.
-    ─────────────────────────────────────────────────────────────── */
     let poolOrder;
     if (restoredState) {
       const placedIds    = new Set((restoredState.placements || []).map(function (p) { return p.answerId; }));
@@ -725,18 +556,12 @@ if (el.btnContinuar) {
         .map(function (id) { return estado.roundItems.find(function (x) { return x.id === id; }); })
         .filter(Boolean);
     } else {
-      /* Embaralha só as RESPOSTAS do pool; as perguntas ficam na ordem original */
       poolOrder = shuffle(estado.roundItems.slice());
     }
 
-    /* Limpa grids */
     if (el.matchGrid) el.matchGrid.innerHTML = '';
     if (el.poolGrid)  el.poolGrid.innerHTML  = '';
 
-    /* ── Grid de perguntas + zonas de drop ──────────────────────────
-       A ordem das perguntas segue estado.roundItems (ordem da questão),
-       não é embaralhada, para manter coerência pedagógica.
-    ─────────────────────────────────────────────────────────────── */
     estado.roundItems.forEach(function (item, i) {
       const row = document.createElement('div');
       row.className = 'match-row';
@@ -763,7 +588,6 @@ if (el.btnContinuar) {
       if (el.matchGrid) el.matchGrid.appendChild(row);
     });
 
-    /* ── Pool de respostas ── */
     if (el.poolGrid) {
       el.poolGrid.removeEventListener('dragenter', onPoolDragEnter);
       el.poolGrid.removeEventListener('dragover',  onPoolDragOver);
@@ -799,7 +623,7 @@ if (el.btnContinuar) {
   }
 
   /* ══════════════════════════════════════════════════════════════
-     RESTAURAR ESTADO SALVO
+     RESTAURAR ESTADO
   ══════════════════════════════════════════════════════════════ */
 
   function restoreState(state) {
@@ -823,7 +647,7 @@ if (el.btnContinuar) {
   }
 
   /* ══════════════════════════════════════════════════════════════
-     OPERAÇÕES FÍSICAS DOM — mover cards
+     OPERAÇÕES DOM — mover cards
   ══════════════════════════════════════════════════════════════ */
 
   function placeCardInZone(zone, card) {
@@ -878,11 +702,6 @@ if (el.btnContinuar) {
 
   /* ══════════════════════════════════════════════════════════════
      PERSISTÊNCIA
-
-     MUDANÇA v4.0:
-       saveCurrentState() e loadValidRound() não precisam mais fatiar
-       allItems com ITEMS_PER_ROUND. Os IDs válidos para a rodada vêm
-       diretamente de estado.allRounds[roundIndex].
   ══════════════════════════════════════════════════════════════ */
 
   function saveCurrentState(isVerified) {
@@ -902,26 +721,18 @@ if (el.btnContinuar) {
     saveRound(estado.currentRound, { placements, poolOrder, verified: !!isVerified });
   }
 
-  /**
-   * Carrega e valida o estado salvo de uma rodada.
-   * Os IDs válidos são obtidos de estado.allRounds[roundIndex].
-   *
-   * @param {number} roundIndex — índice da rodada a carregar
-   * @returns {Object|null} — estado salvo válido ou null
-   */
   function loadValidRound(roundIndex) {
     const state = loadRound(roundIndex);
     if (!state) return null;
 
-    /* Obtém os pares da rodada a partir de allRounds */
     const rodada = estado.allRounds[roundIndex];
     if (!rodada || rodada.length === 0) return null;
 
-    const roundIds   = new Set(rodada.map(function (x) { return x.id; }));
-    const placedIds  = (state.placements || []).map(function (p) { return p.answerId; });
-    const poolIds    = state.poolOrder || [];
-    const allSaved   = new Set([...placedIds, ...poolIds]);
-    const isValid    = [...roundIds].every(function (id) { return allSaved.has(id); });
+    const roundIds  = new Set(rodada.map(function (x) { return x.id; }));
+    const placedIds = (state.placements || []).map(function (p) { return p.answerId; });
+    const poolIds   = state.poolOrder || [];
+    const allSaved  = new Set([...placedIds, ...poolIds]);
+    const isValid   = [...roundIds].every(function (id) { return allSaved.has(id); });
 
     if (!isValid) {
       console.warn('[associacao] Estado corrompido na rodada', roundIndex, '— descartando');
@@ -952,7 +763,6 @@ if (el.btnContinuar) {
     const total   = zones.length;
     const erros   = total - acertos;
 
-    /* Acumular pontuação baseada em CONFIG */
     estado.totalAcertos += acertos;
     estado.totalErros   += erros;
     estado.totalPontos  += (acertos * CONFIG.PONTOS_ACERTO) - (erros * CONFIG.PONTOS_ERRO);
@@ -971,18 +781,17 @@ if (el.btnContinuar) {
     const isLast = estado.currentRound >= estado.totalRounds - 1;
     setVerifyState(isLast ? 'finish' : 'next');
 
-    /* Salva no histórico */
-const usuario = getUsuario();
-if (usuario) {
-  const resultados = [...el.matchGrid.querySelectorAll('.drop-zone')]
-    .map(function (zone) {
-      return {
-        id:      zone.dataset.questionId,
-        acertou: zone.classList.contains('correct'),
-      };
-    });
-  salvarResultadoAssoc(usuario.uid, estado.discId, estado.semestre, resultados);
-}
+    /* Salva histórico */
+    const usuario = getUsuario();
+    if (usuario) {
+      const resultados = zones.map(function (zone) {
+        return {
+          id:      zone.dataset.questionId,
+          acertou: zone.classList.contains('correct'),
+        };
+      });
+      salvarResultadoAssoc(usuario.uid, estado.discId, estado.semestre, resultados);
+    }
   }
 
   function applyVerifyFeedback() {
@@ -1010,19 +819,6 @@ if (usuario) {
     });
     return acertos;
   }
-
-  /* Salva no histórico */
-const usuario = getUsuario();
-if (usuario) {
-  const resultados = [...el.matchGrid.querySelectorAll('.drop-zone')]
-    .map(function (zone) {
-      return {
-        id:      zone.dataset.questionId,
-        acertou: zone.classList.contains('correct'),
-      };
-    });
-  salvarResultadoAssoc(usuario.uid, estado.discId, estado.semestre, resultados);
-}
 
   /* ══════════════════════════════════════════════════════════════
      ESTADOS DO BOTÃO VERIFICAR
@@ -1064,18 +860,15 @@ if (usuario) {
     else if (pct >= 60) { trophy = '👍'; title = 'Bom trabalho!'; }
     else { trophy = '📚'; title = 'Continue praticando!'; subtit = 'A prática leva à perfeição'; }
 
-    if (el.resultTrophy)   el.resultTrophy.textContent   = trophy;
-    if (el.resultTitle)    el.resultTitle.textContent     = title;
-    if (el.resultSubtitle) el.resultSubtitle.textContent  = subtit;
-    if (el.resultPontos)   el.resultPontos.textContent    = estado.totalPontos;
-    if (el.resultAcertos)  el.resultAcertos.textContent   = estado.totalAcertos;
-    if (el.resultErros)    el.resultErros.textContent     = estado.totalErros;
-    if (el.resultPct)      el.resultPct.textContent       = pct + '%';
+    if (el.resultTrophy)   el.resultTrophy.textContent  = trophy;
+    if (el.resultTitle)    el.resultTitle.textContent    = title;
+    if (el.resultSubtitle) el.resultSubtitle.textContent = subtit;
+    if (el.resultPontos)   el.resultPontos.textContent   = estado.totalPontos;
+    if (el.resultAcertos)  el.resultAcertos.textContent  = estado.totalAcertos;
+    if (el.resultErros)    el.resultErros.textContent    = estado.totalErros;
+    if (el.resultPct)      el.resultPct.textContent      = pct + '%';
 
-
-if (el.resultFeedback) {
-  el.resultFeedback.classList.add('hidden');
-}
+    if (el.resultFeedback) el.resultFeedback.classList.add('hidden');
 
     mostrarTela('screenResult');
   }
@@ -1089,8 +882,8 @@ if (el.resultFeedback) {
     pausarTimer();
     if (el.pauseOverlay) el.pauseOverlay.classList.remove('hidden');
     if (el.pauseTempo)   el.pauseTempo.textContent = formatTime(estado.timerSecs);
-    if (el.pauseIcon)    el.pauseIcon.innerHTML     = '<polygon points="5 3 19 12 5 21 5 3"/>';
-    if (el.pauseLabel)   el.pauseLabel.textContent  = 'Retomar';
+    if (el.pauseIcon)    el.pauseIcon.innerHTML    = '<polygon points="5 3 19 12 5 21 5 3"/>';
+    if (el.pauseLabel)   el.pauseLabel.textContent = 'Retomar';
   }
 
   function retomar() {
@@ -1103,18 +896,16 @@ if (el.resultFeedback) {
     if (el.pauseLabel)   el.pauseLabel.textContent = 'Pausar';
   }
 
+  /* Atalho de teclado para retomar */
   document.addEventListener('keydown', function (e) {
-  if (estado.pausado && (e.code === 'Space' || e.code === 'Escape')) {
-    e.preventDefault();
-    retomar();
-  }
-});
-  /* ══════════════════════════════════════════════════════════════
-     NOVO JOGO — reiniciar do zero com seed limpa
+    if (estado.pausado && (e.code === 'Space' || e.code === 'Escape')) {
+      e.preventDefault();
+      retomar();
+    }
+  });
 
-     MUDANÇA v4.0:
-       Reconstrói allRounds embaralhando a ordem das questões do objeto
-       da disciplina. Não há mais fatiamento de array plano.
+  /* ══════════════════════════════════════════════════════════════
+     NOVO JOGO
   ══════════════════════════════════════════════════════════════ */
 
   function novoJogo() {
@@ -1123,20 +914,24 @@ if (el.resultFeedback) {
     estado.totalAcertos = 0;
     estado.totalErros   = 0;
     estado.totalPontos  = 0;
-    estado.timerSecs    = 0;
+    estado.timerSecs    = CONFIG.ROUND_TIME_LIMIT;
     estado.pausado      = false;
+
+    if (el.timerVal) {
+      el.timerVal.textContent = formatTime(CONFIG.ROUND_TIME_LIMIT);
+      el.timerVal.classList.remove('warning');
+    }
 
     const semData  = ASSOCIACAO_DATA[estado.semestre] || {};
     const discData = semData[estado.discId];
 
     if (discData && typeof discData === 'object' && !Array.isArray(discData)) {
       const ordemEmbaralhada = shuffle(Object.keys(discData).sort());
-      estado.allRounds  = ordemEmbaralhada.map(function (k) { return discData[k].slice(); });
+      estado.allRounds   = ordemEmbaralhada.map(function (k) { return discData[k].slice(); });
       estado.totalRounds = estado.allRounds.length;
       _salvarSeed(ordemEmbaralhada);
     }
 
-    /* Re-persiste o contexto após clearAll */
     const ctxAtual = estado.semestre + '|' + estado.discId;
     sessionStorage.setItem(CONFIG.SESSION_KEY_CTX, ctxAtual);
 
@@ -1542,15 +1337,15 @@ if (el.resultFeedback) {
       });
     }
 
-if (el.btnContinuar) {
-  el.btnContinuar.addEventListener('click', function () {
-    if (estado.currentRound >= estado.totalRounds) {
-      showToast('Todas as rodadas já foram concluídas!', 'erro');
-      return;
+    if (el.btnContinuar) {
+      el.btnContinuar.addEventListener('click', function () {
+        if (estado.currentRound >= estado.totalRounds) {
+          showToast('Todas as rodadas já foram concluídas!', 'erro');
+          return;
+        }
+        renderRound(loadValidRound(estado.currentRound));
+      });
     }
-    renderRound(loadValidRound(estado.currentRound));
-  });
-}
 
     if (el.btnVoltar) {
       el.btnVoltar.addEventListener('click', function () {
@@ -1599,26 +1394,30 @@ if (el.btnContinuar) {
 
     if (el.btnRetomar) el.btnRetomar.addEventListener('click', retomar);
 
-if (el.btnVoltarIntro) {
-  el.btnVoltarIntro.addEventListener('click', function () {
-    pararTimer();
-    estado.timerSecs = CONFIG.ROUND_TIME_LIMIT; /* ← reseta para 30s */
-    if (el.timerVal) el.timerVal.textContent = formatTime(CONFIG.ROUND_TIME_LIMIT);
-    if (el.timerVal) el.timerVal.classList.remove('warning');
-    mostrarIntro();
-  });
-}
+    if (el.btnVoltarIntro) {
+      el.btnVoltarIntro.addEventListener('click', function () {
+        pararTimer();
+        estado.timerSecs = CONFIG.ROUND_TIME_LIMIT;
+        if (el.timerVal) {
+          el.timerVal.textContent = formatTime(CONFIG.ROUND_TIME_LIMIT);
+          el.timerVal.classList.remove('warning');
+        }
+        mostrarIntro();
+      });
+    }
 
-if (el.btnPauseMenu) {
-  el.btnPauseMenu.addEventListener('click', function () {
-    retomar();
-    pararTimer();
-    estado.timerSecs = CONFIG.ROUND_TIME_LIMIT; /* ← reseta */
-    if (el.timerVal) el.timerVal.textContent = formatTime(CONFIG.ROUND_TIME_LIMIT);
-    if (el.timerVal) el.timerVal.classList.remove('warning');
-    mostrarIntro();
-  });
-}
+    if (el.btnPauseMenu) {
+      el.btnPauseMenu.addEventListener('click', function () {
+        retomar();
+        pararTimer();
+        estado.timerSecs = CONFIG.ROUND_TIME_LIMIT;
+        if (el.timerVal) {
+          el.timerVal.textContent = formatTime(CONFIG.ROUND_TIME_LIMIT);
+          el.timerVal.classList.remove('warning');
+        }
+        mostrarIntro();
+      });
+    }
 
     if (el.btnRejogo) el.btnRejogo.addEventListener('click', novoJogo);
 
