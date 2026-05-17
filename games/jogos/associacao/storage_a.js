@@ -1,62 +1,72 @@
-/* ════════════════════════════════════════════════════════
-   NEXUS STUDY — storage_a.js
-   Persiste o estado de cada rodada do jogo de Associação.
-   Usa sessionStorage (mantém durante a sessão do browser).
-   Para persistência entre sessões, troque por localStorage.
-   ════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+   NEXUS STUDY — games/jogos/associacao/storage_a.js
 
-const PREFIX = 'assoc_r_';
+   Histórico de desempenho do Associação persistido no
+   Firestore + localStorage (fallback/cache).
 
-/**
- * Salva o estado de uma rodada.
- * @param {number} roundIndex  - índice 0-based da rodada
- * @param {object} state       - { placements, poolOrder, verified }
- */
-export function saveRound(roundIndex, state) {
-  try {
-    sessionStorage.setItem(PREFIX + roundIndex, JSON.stringify(state));
-  } catch (e) {
-    console.warn('[storage_a] Falha ao salvar rodada', roundIndex, e);
-  }
+   Chave local : nexus_assoc_{usuario}_{discId}_{sem}
+   Firestore   : usuarios/{uid}/assoc_historico/{sem}_{discId}
+
+   Estrutura de cada entrada:
+     { [parId]: { tentativas, acertos, erros, ultimaVez } }
+═══════════════════════════════════════════════════════════════ */
+
+import { criarStorage, lerLocal, escreverLocal } from '../../template/storage-base.js';
+
+const _base = criarStorage({
+  colecaoFirestore: 'assoc_historico',
+  prefixoLocal:     'nexus_assoc',
+  nomeSistema:      'storage_a_historico',
+});
+
+const _chaveLocal = (usuario, discId, sem) =>
+  `nexus_assoc_${usuario}_${discId}_${sem}`;
+
+/* ══════════════════════════════════════════════════════════
+   CARREGAR histórico completo da disciplina
+══════════════════════════════════════════════════════════ */
+export async function carregarHistoricoAssoc(usuario, discId, sem) {
+  return _base.carregar(usuario, discId, sem);
 }
 
-/**
- * Carrega o estado salvo de uma rodada.
- * @param {number} roundIndex
- * @returns {object|null}
- */
-export function loadRound(roundIndex) {
-  try {
-    const raw = sessionStorage.getItem(PREFIX + roundIndex);
-    return raw ? JSON.parse(raw) : null;
-  } catch (e) {
-    console.warn('[storage_a] Falha ao carregar rodada', roundIndex, e);
-    return null;
+/* ══════════════════════════════════════════════════════════
+   SALVAR resultado de uma rodada
+   Recebe array de resultados: [{ id, acertou }]
+══════════════════════════════════════════════════════════ */
+export async function salvarResultadoAssoc(usuario, discId, sem, resultados) {
+  const validos = (resultados ?? []).filter(
+    r => r.id !== null && r.id !== undefined,
+  );
+
+  if (validos.length === 0) return;
+
+  const chave = _chaveLocal(usuario, discId, sem);
+  const atual = lerLocal(chave);
+
+  for (const { id, acertou } of validos) {
+    const entrada = atual[id] ?? {
+      tentativas: 0, acertos: 0, erros: 0, ultimaVez: 0,
+    };
+    entrada.tentativas++;
+    if (acertou) {
+      entrada.acertos++;
+    } else {
+      entrada.erros++;
+    }
+    entrada.ultimaVez = Date.now();
+    atual[id] = entrada;
   }
+
+  escreverLocal(chave, atual);
+
+  const patch = {};
+  for (const { id } of validos) patch[id] = atual[id];
+  await _base.salvarMerge(usuario, discId, sem, patch);
 }
 
-/**
- * Remove o estado salvo de uma rodada (ex: ao reiniciar).
- * @param {number} roundIndex
- */
-export function clearRound(roundIndex) {
-  try {
-    sessionStorage.removeItem(PREFIX + roundIndex);
-  } catch (e) {
-    console.warn('[storage_a] Falha ao limpar rodada', roundIndex, e);
-  }
-}
-
-/**
- * Limpa todos os dados do jogo (nova sessão completa).
- */
-export function clearAll() {
-  try {
-    const keys = Object.keys(sessionStorage).filter(function(k) {
-      return k.startsWith(PREFIX) || k === 'assoc_seed' || k === 'assoc_round';
-    });
-    keys.forEach(function(k) { sessionStorage.removeItem(k); });
-  } catch (e) {
-    console.warn('[storage_a] Falha ao limpar tudo', e);
-  }
+/* ══════════════════════════════════════════════════════════
+   LIMPAR histórico de uma disciplina
+══════════════════════════════════════════════════════════ */
+export async function limparHistoricoAssoc(usuario, discId, sem) {
+  await _base.limpar(usuario, discId, sem);
 }

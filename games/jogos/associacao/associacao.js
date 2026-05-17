@@ -50,6 +50,9 @@ import { getDisciplinasDeSemestre }                   from '../../../src/global.
 import { aplicarCoresDisciplina }                     from '../../../shared/js/theme.js';
 import { DISC_CORES }                                 from '../../../shared/js/cores.js';
 
+import { salvarResultadoAssoc } from './storage_a.js';
+import { getUsuario } from '../../../src/global.js';
+
 (function () {
   'use strict';
 
@@ -967,6 +970,19 @@ if (el.btnContinuar) {
 
     const isLast = estado.currentRound >= estado.totalRounds - 1;
     setVerifyState(isLast ? 'finish' : 'next');
+
+    /* Salva no histórico */
+const usuario = getUsuario();
+if (usuario) {
+  const resultados = [...el.matchGrid.querySelectorAll('.drop-zone')]
+    .map(function (zone) {
+      return {
+        id:      zone.dataset.questionId,
+        acertou: zone.classList.contains('correct'),
+      };
+    });
+  salvarResultadoAssoc(usuario.uid, estado.discId, estado.semestre, resultados);
+}
   }
 
   function applyVerifyFeedback() {
@@ -994,6 +1010,19 @@ if (el.btnContinuar) {
     });
     return acertos;
   }
+
+  /* Salva no histórico */
+const usuario = getUsuario();
+if (usuario) {
+  const resultados = [...el.matchGrid.querySelectorAll('.drop-zone')]
+    .map(function (zone) {
+      return {
+        id:      zone.dataset.questionId,
+        acertou: zone.classList.contains('correct'),
+      };
+    });
+  salvarResultadoAssoc(usuario.uid, estado.discId, estado.semestre, resultados);
+}
 
   /* ══════════════════════════════════════════════════════════════
      ESTADOS DO BOTÃO VERIFICAR
