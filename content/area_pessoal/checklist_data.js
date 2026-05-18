@@ -387,6 +387,7 @@ export const CHECKLIST_ITENS = {
 
   'design': {
     aulas: [
+      //Aula 9 - Prototipagem e Norma ISO 9241
       {
         nome: 'Aula 9 - Prototipagem e Norma ISO 9241',
         categorias: [
@@ -420,6 +421,7 @@ export const CHECKLIST_ITENS = {
           },
         ]
       },
+      //Aula 10 - Design de Interfaces e Prototipação
       {
         nome: 'Aula 10 - Design de Interfaces e Prototipação',
         categorias: [
@@ -453,6 +455,9 @@ export const CHECKLIST_ITENS = {
           },
         ]
       },
+      //
+
+      
     ]
   },
 
