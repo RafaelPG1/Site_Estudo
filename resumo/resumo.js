@@ -484,18 +484,6 @@ function _criarCard(aula, idx) {
       <div class="card-divider"></div>
       ${aula.ideia_central ? `<p class="card-desc">${_parseInline(aula.ideia_central)}</p>` : ''}
       <div class="card-bottom">
-        <div class="card-meta-row">
-          <span class="card-meta-chip">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"> <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-            ${secoes.length} seç${secoes.length !== 1 ? 'ões' : 'ão'}
-          </span>
-          <span class="card-meta-chip">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-            ${tempo}
-          </span>
-          <span class="card-meta-chip" style="color:${nivel.color};border-color:${nivel.color}22;background:${nivel.color}11">
-            ${nivel.label}
-          </span>
         </div>
         <div class="card-progress__track"><div class="card-progress__fill"></div></div>
         <div class="card-meta">
@@ -544,18 +532,18 @@ function _criarCardSintese(aula, idx) {
         ? `<p class="card-desc">${_parseInline(preview)}</p>`
         : `<p class="card-desc" style="font-style:italic;opacity:0.5">Síntese não disponível ainda.</p>`}
       <div class="card-bottom">
-        <div class="card-progress__track"><div class="card-progress__fill"></div></div>
-        <div class="card-meta">
-          <span class="card-meta__count">${temSint ? `${numSec} seç${numSec !== 1 ? 'ões' : 'ão'}` : '—'}</span>
-          ${temSint ? `
-          <span class="card-meta__cta">
-            Ver síntese
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
-            </svg>
-          </span>` : ''}
-        </div>
+  <div class="card-progress__track"><div class="card-progress__fill"></div></div>
+  <div class="card-meta">
+    <span class="card-meta__count">${secoes.length} seç${secoes.length !== 1 ? 'ões' : 'ão'}</span>
+    <span class="card-meta__cta">
+      Ver resumo
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
+      </svg>
+    </span>
+  </div>
+</div>
       </div>
     </div>`;
   card.addEventListener('click', () => { if (temSint) _abrirModal(sint); });
