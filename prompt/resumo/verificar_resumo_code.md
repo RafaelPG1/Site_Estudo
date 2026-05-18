@@ -1,6 +1,4 @@
-Perfeito! Aqui está o prompt de análise:
-
-Você receberá duas entradas:
+você receberá duas entradas:
 
 RESUMO ORIGINAL — o conteúdo da aula em texto puro
 OBJETO JS GERADO — o objeto JavaScript estruturado gerado a partir desse resumo

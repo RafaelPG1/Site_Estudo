@@ -8,174 +8,507 @@ window.__nexusConteudo = {
     // Aula 9 — Prototipagem e Norma ISO 9241
     {
       aula: "Aula 9 — Prototipagem e Norma ISO 9241",
-      ideia_central: "Evolução do foco no desenvolvimento → de produto para usuário, priorizando experiência, usabilidade e satisfação.",
+      ideia_central: "Os modelos de ciclo de vida de software evoluíram de abordagens sequenciais e rígidas para métodos centrados no usuário, culminando no Design Thinking e na Norma ISO 9241, que estabelece princípios de ergonomia, usabilidade e interação humano-computador para garantir interfaces mais eficientes e agradáveis.",
       secoes: [
-
         {
           id: "visao",
-          titulo: "📖 Visão Geral",
+          titulo: "🧭 Visão Geral do Conteúdo",
           blocos: [
+            {
+              tipo: "texto",
+              texto: "O material aborda os principais **modelos de ciclo de vida de software**, diferenciando abordagens **centradas no produto** e **centradas no usuário**. Também apresenta conceitos de **Design Thinking**, desenvolvimento ágil e os princípios da **Norma ISO 9241**, focada em usabilidade e ergonomia de interfaces."
+            },
+            {
+              tipo: "texto",
+              texto: "O conteúdo busca mostrar como os processos de desenvolvimento evoluíram: de modelos rígidos e sequenciais, para abordagens mais flexíveis, até métodos focados na experiência e necessidades do usuário."
+            },
             {
               tipo: "lista",
-              titulo: "A aula aborda:",
+              titulo: "Temas principais:",
               itens: [
-                "**Ciclos de vida de software**, divididos em: **Centrados no produto** (tradicionais) e **Centrados no usuário** (modernos)",
-                "**Modelos de desenvolvimento** (cascata, espiral, iterativo, estrela, Shneiderman)",
-                "**Design Thinking** como abordagem inovadora",
-                "**Norma ISO 9241**, voltada à **usabilidade e ergonomia de interfaces**"
+                "Modelos tradicionais de desenvolvimento: Cascata, Espiral, Iterativo",
+                "Modelos centrados no usuário: Modelo Estrela, Modelo de Shneiderman",
+                "Design Thinking",
+                "Norma ISO 9241",
+                "Usabilidade e ergonomia de interfaces"
               ]
             }
           ]
         },
 
         {
-          id: "conceitos",
-          titulo: "🧠 Conceitos Principais",
+          id: "ciclo_vida",
+          titulo: "🔄 Ciclo de Vida de Software",
           blocos: [
-
             {
-              tipo: "topico",
-              titulo: "🔹 Ciclo de vida de software",
-              texto: "É o **modelo que define as etapas de desenvolvimento** de um sistema, desde planejamento até uso."
+              tipo: "texto",
+              texto: "O **ciclo de vida** representa o conjunto de etapas utilizadas no desenvolvimento de um software, desde o planejamento até sua utilização final."
             },
-
             {
-              tipo: "topico",
-              titulo: "🔹 Engenharia de Software",
-              lista: [
-                "Conjunto de: **Técnicas**, **Ferramentas** e **Procedimentos**",
-                "Objetivo: construir software com **qualidade, custo e prazo controlados**"
+              tipo: "lista",
+              titulo: "Objetivos:",
+              itens: [
+                "Organizar o desenvolvimento",
+                "Controlar custos e prazos",
+                "Garantir qualidade",
+                "Reduzir erros",
+                "Melhorar a experiência do usuário"
               ]
             },
-
             {
-              tipo: "subtitulo",
-              texto: "Modelos centrados no produto"
-            },
-
-            {
-              tipo: "topico",
-              titulo: "📌 Modelo Cascata",
-              lista: [
-                "Fluxo **sequencial**",
-                "Etapas: 1. Requisitos → 2. Projeto → 3. Implementação → 4. Testes → 5. Manutenção",
-                "✔ Vantagem: Organização e controle",
-                "❌ Desvantagens: Pouca flexibilidade · Usuário pouco envolvido · Erros detectados tarde"
-              ]
-            },
-
-            {
-              tipo: "topico",
-              titulo: "📌 Modelo Espiral",
-              lista: [
-                "Desenvolvimento em ciclos (loops)",
-                "Envolve: Planejamento · Análise de riscos · Engenharia · Avaliação do cliente",
-                "✔ Destaque: Uso de **protótipos** · Redução de riscos"
-              ]
-            },
-
-            {
-              tipo: "topico",
-              titulo: "📌 Modelo Iterativo",
-              lista: [
-                "Baseado em **repetições (iterações)**",
-                "✔ Características: Correção contínua de erros · Adaptação a mudanças · Participação do usuário"
-              ]
-            },
-
-            {
-              tipo: "subtitulo",
-              texto: "Modelos centrados no usuário"
-            },
-
-            {
-              tipo: "topico",
-              titulo: "📌 Conceito principal",
-              lista: [
-                "Foco em: **Usabilidade** · **Experiência do usuário** · **Aspectos cognitivos e emocionais**"
-              ]
-            },
-
-            {
-              tipo: "topico",
-              titulo: "📌 Modelo Estrela",
-              lista: [
-                "Avaliação é o centro",
-                "Pode começar em qualquer etapa",
-                "✔ Destaque: Forte interação com usuário"
-              ]
-            },
-
-            {
-              tipo: "topico",
-              titulo: "📌 Modelo de Shneiderman",
-              lista: [
-                "Baseado em 3 pilares: **1. Especificação** · **2. Prototipagem** · **3. Testes de usabilidade**",
-                "✔ Analisa: Interface · Funcionalidade · Facilidade de uso"
-              ]
-            },
-
-            {
-              tipo: "topico",
-              titulo: "🔹 Manifesto Ágil",
-              lista: [
-                "Pessoas > processos",
-                "Software funcional > documentação",
-                "Colaboração do cliente",
-                "Adaptação a mudanças"
-              ]
-            },
-
-            {
-              tipo: "topico",
-              titulo: "🔹 Design Thinking",
-              lista: [
-                "Abordagem **centrada no ser humano**, baseada em: Empatia · Criatividade · Experimentação",
-                "Características: Interdisciplinar · Foco nas necessidades reais do usuário",
-                "Integra: Negócio · Tecnologia · Experiência humana",
-                "Princípios: 1. Centrado no usuário · 2. Cocriativo · 3. Sequencial · 4. Evidente · 5. Holístico"
-              ]
-            },
-
-            {
-              tipo: "topico",
-              titulo: "🔹 Norma ISO 9241",
-              lista: [
-                "Norma internacional de **usabilidade e ergonomia** em sistemas interativos",
-                "**Usuário** → quem interage com o sistema",
-                "**Contexto de uso** → ambiente, tarefas, ferramentas",
-                "**Eficácia** → atingir objetivos",
-                "**Eficiência** → com menor esforço",
-                "**Satisfação** → experiência do usuário"
+              tipo: "tabela",
+              titulo: "Duas abordagens principais",
+              colunas: ["Abordagem", "Foco"],
+              linhas: [
+                ["Centrada no produto", "Construção do sistema"],
+                ["Centrada no usuário", "Experiência e necessidades do usuário"]
               ]
             }
           ]
         },
 
         {
-          id: "metodos",
-          titulo: "📊 Métodos e Princípios",
+          id: "modelos_produto",
+          titulo: "🏗️ Modelos Centrados no Produto",
           blocos: [
             {
-              tipo: "topico",
-              titulo: "🔹 Métricas de Usabilidade (ISO 9241)",
-              lista: [
-                "**Eficácia** → resultado alcançado",
-                "**Eficiência** → esforço utilizado",
-                "**Satisfação** → percepção do usuário"
+              tipo: "subtitulo",
+              texto: "Modelo Cascata"
+            },
+            {
+              tipo: "texto",
+              texto: "É um modelo sequencial, rígido e linear. Uma etapa só começa quando a anterior termina."
+            },
+            {
+              tipo: "lista",
+              titulo: "Etapas:",
+              itens: [
+                "Definição de requisitos",
+                "Projeto",
+                "Implementação e testes unitários",
+                "Testes de integração",
+                "Operação e manutenção"
               ]
             },
             {
               tipo: "topico",
-              titulo: "🔹 Princípios de Diálogo (ISO 9241 — Parte 10)",
+              titulo: "Características",
               lista: [
-                "1. **Adequação à tarefa** → sistema ajuda na tarefa",
-                "2. **Autodescrição** → interface clara e compreensível",
-                "3. **Controle** → usuário controla ações",
-                "4. **Conformidade** → consistente com expectativas",
-                "5. **Tolerância a erros** → previne e trata erros",
-                "6. **Individualização** → adaptação ao usuário",
-                "7. **Aprendizado** → fácil de aprender"
+                "Forte controle organizacional",
+                "Fácil gerenciamento",
+                "Processo previsível"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Desvantagens",
+              lista: [
+                "Pouca flexibilidade",
+                "Mudanças são difíceis",
+                "Usuário participa apenas no início",
+                "Problemas podem ser descobertos somente no final",
+                "Alto retrabalho"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Quando funciona melhor",
+              lista: [
+                "Projetos simples",
+                "Requisitos muito bem definidos"
+              ]
+            },
+            {
+              tipo: "imagem",
+              src: "figura_modelo_cascata_iso9241.png",
+              pasta: "imagens_design/aula_09",
+              alt: "Figura 1 — Modelo cascata: fluxo sequencial evidenciando que cada etapa depende da conclusão da anterior",
+              num: 1
+            },
+
+            {
+              tipo: "subtitulo",
+              texto: "Modelo Espiral"
+            },
+            {
+              tipo: "texto",
+              texto: "Modelo que combina prototipagem, análise de riscos e interação com o cliente. O desenvolvimento ocorre em ciclos."
+            },
+            {
+              tipo: "lista",
+              titulo: "Etapas:",
+              itens: [
+                "Planejamento",
+                "Análise de riscos",
+                "Engenharia",
+                "Avaliação do cliente"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Características",
+              lista: [
+                "Uso de protótipos",
+                "Feedback constante",
+                "Redução de riscos"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Vantagens",
+              lista: [
+                "Maior flexibilidade",
+                "Correção antecipada de erros",
+                "Participação do cliente"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Desvantagens",
+              lista: [
+                "Mais complexo",
+                "Pode aumentar custos"
+              ]
+            },
+            {
+              tipo: "imagem",
+              src: "figura_modelo_espiral_iso9241.png",
+              pasta: "imagens_design/aula_09",
+              alt: "Figura 2 — Modelo espiral: ciclo de planejamento, análise de riscos, engenharia e avaliação do cliente",
+              num: 2
+            },
+
+            {
+              tipo: "subtitulo",
+              texto: "Modelo Iterativo"
+            },
+            {
+              tipo: "texto",
+              texto: "Baseado em repetição, refinamento contínuo e melhoria incremental. O software evolui em várias versões."
+            },
+            {
+              tipo: "lista",
+              titulo: "Estrutura principal:",
+              itens: [
+                "Planejamento inicial",
+                "Modelagem de negócios",
+                "Requisitos",
+                "Análise e design",
+                "Implementação",
+                "Testes",
+                "Avaliação",
+                "Implantação"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Características",
+              lista: [
+                "Correção contínua",
+                "Fácil adaptação",
+                "Reutilização",
+                "Participação do usuário"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Diferença para o modelo espiral",
+              texto: "No modelo iterativo, as repetições podem ocorrer antes da implementação e existe evolução contínua do sistema."
+            },
+            {
+              tipo: "imagem",
+              src: "figura_modelo_iterativo_iso9241.png",
+              pasta: "imagens_design/aula_09",
+              alt: "Figura 3 — Modelo iterativo: processo iterativo com repetição contínua entre planejamento, implementação, testes e implantação",
+              num: 3
+            }
+          ]
+        },
+
+        {
+          id: "modelos_usuario",
+          titulo: "👤 Modelos Centrados no Usuário",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "Esses modelos priorizam usabilidade, experiência do usuário, facilidade de uso e aspectos cognitivos e emocionais."
+            },
+
+            {
+              tipo: "subtitulo",
+              texto: "Modelo Estrela"
+            },
+            {
+              tipo: "texto",
+              texto: "Modelo centrado na **avaliação constante do usuário**. A avaliação é o núcleo do processo."
+            },
+            {
+              tipo: "topico",
+              titulo: "Características",
+              lista: [
+                "Qualquer etapa pode iniciar o projeto",
+                "Forte participação do usuário",
+                "Alta flexibilidade"
+              ]
+            },
+            {
+              tipo: "lista",
+              titulo: "Etapas:",
+              itens: [
+                "Implementação",
+                "Análise de tarefas",
+                "Prototipagem",
+                "Projeto conceitual",
+                "Especificação de requisitos",
+                "Avaliação"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Desvantagem",
+              texto: "Pouca adoção por empresas."
+            },
+            {
+              tipo: "imagem",
+              src: "figura_modelo_estrela_iso9241.png",
+              pasta: "imagens_design/aula_09",
+              alt: "Figura 4 — Modelo estrela: avaliação como elemento central do desenvolvimento centrado no usuário",
+              num: 4
+            },
+
+            {
+              tipo: "subtitulo",
+              texto: "Modelo de Shneiderman"
+            },
+            {
+              tipo: "tabela",
+              titulo: "Três pilares do modelo",
+              colunas: ["Pilar", "Função"],
+              linhas: [
+                ["Especificação", "Define layout, cores, dispositivos e ações"],
+                ["Prototipagem", "Criação de protótipos para avaliação"],
+                ["Testes de usabilidade", "Avaliação da interação e facilidade de uso"]
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Objetivos",
+              lista: [
+                "Melhorar interação humano-computador",
+                "Garantir usabilidade",
+                "Facilitar navegação"
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "agil",
+          titulo: "⚡ Desenvolvimento Ágil",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "O **Manifesto Ágil** (2001) foi criado para substituir modelos rígidos como o cascata."
+            },
+            {
+              tipo: "lista",
+              titulo: "Princípios centrais do Manifesto Ágil:",
+              itens: [
+                "Pessoas e interações acima de processos",
+                "Software funcionando acima de documentação extensa",
+                "Colaboração do cliente acima de contratos rígidos",
+                "Respostas rápidas às mudanças"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Objetivo",
+              texto: "Criar desenvolvimento mais leve, flexível e colaborativo."
+            }
+          ]
+        },
+
+        {
+          id: "design_thinking",
+          titulo: "💡 Design Thinking",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "Abordagem focada no ser humano, na criatividade, na inovação e na empatia. Vai além da funcionalidade técnica."
+            },
+            {
+              tipo: "topico",
+              titulo: "Empatia",
+              texto: "Entender emoções, desejos e necessidades do usuário."
+            },
+            {
+              tipo: "topico",
+              titulo: "Interdisciplinaridade",
+              texto: "Integra design, gestão, engenharia, tecnologia e negócios."
+            },
+            {
+              tipo: "topico",
+              titulo: "Experimentação",
+              texto: "Estimula criatividade, testes, protótipos e inovação."
+            },
+            {
+              tipo: "tabela",
+              titulo: "Princípios do Design Thinking",
+              colunas: ["Princípio", "Explicação"],
+              linhas: [
+                ["Centrado no usuário", "Desenvolvedor pensa como o cliente"],
+                ["Cocriativo", "Soluções criadas colaborativamente"],
+                ["Sequencial", "Processo dividido em etapas"],
+                ["Evidente", "Experiência deve ser memorável"],
+                ["Holístico", "Visão geral do projeto"]
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "usabilidade",
+          titulo: "🖱️ Usabilidade",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "Usabilidade é a facilidade com que um usuário consegue utilizar um sistema."
+            },
+            {
+              tipo: "lista",
+              titulo: "Aspectos analisados:",
+              itens: [
+                "Facilidade de aprendizagem",
+                "Eficiência",
+                "Satisfação",
+                "Prevenção de erros",
+                "Intuitividade"
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "iso9241",
+          titulo: "📋 Norma ISO 9241",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "Norma internacional voltada para ergonomia, usabilidade e interação humano-computador. Objetivo: garantir interfaces mais eficientes e agradáveis."
+            },
+            {
+              tipo: "tabela",
+              titulo: "Conceitos Fundamentais da ISO 9241",
+              colunas: ["Conceito", "Definição"],
+              linhas: [
+                ["Usuário", "Pessoa que utiliza o sistema"],
+                ["Contexto", "Ambiente e condições de uso"],
+                ["Eficácia", "Usuário consegue atingir objetivo"],
+                ["Eficiência", "Objetivo atingido com pouco esforço"],
+                ["Satisfação", "Qualidade da experiência do usuário"]
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "iso_parte10",
+          titulo: "🔟 Parte 10 da ISO 9241 — Princípios de Diálogo",
+          blocos: [
+            {
+              tipo: "destaque",
+              texto: "📌 A Parte 10 é a mais importante da norma para provas."
+            },
+
+            {
+              tipo: "topico",
+              titulo: "1. Adequação à tarefa",
+              lista: [
+                "Facilitar execução das tarefas",
+                "Reduzir esforço",
+                "Fornecer ajuda adequada"
+              ]
+            },
+
+            {
+              tipo: "topico",
+              titulo: "2. Autodescrição",
+              lista: [
+                "A interface deve explicar-se sozinha",
+                "Fornecer feedback imediato",
+                "Evitar necessidade de manuais"
+              ]
+            },
+
+            {
+              tipo: "topico",
+              titulo: "3. Controle",
+              lista: [
+                "O usuário deve controlar ações",
+                "Desfazer operações",
+                "Retomar tarefas",
+                "Controlar velocidade da interação"
+              ]
+            },
+
+            {
+              tipo: "topico",
+              titulo: "4. Conformidade com expectativas",
+              lista: [
+                "Seguir padrões conhecidos",
+                "Manter consistência",
+                "Usar linguagem familiar"
+              ]
+            },
+
+            {
+              tipo: "topico",
+              titulo: "5. Tolerância a erros",
+              lista: [
+                "Prevenir erros",
+                "Ajudar na correção",
+                "Avisar consequências importantes"
+              ]
+            },
+
+            {
+              tipo: "topico",
+              titulo: "6. Adequação à individualização",
+              lista: [
+                "Permitir personalização",
+                "Adaptação ao usuário",
+                "Ajustes conforme experiência e preferências"
+              ]
+            },
+
+            {
+              tipo: "topico",
+              titulo: "7. Adequação ao aprendizado",
+              lista: [
+                "Facilitar aprendizado",
+                "Permitir reaprendizagem",
+                "Ensinar durante o uso"
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "iso_partes_11a17",
+          titulo: "📑 Partes 11 a 17 da ISO 9241",
+          blocos: [
+            {
+              tipo: "tabela",
+              titulo: "Demais partes da norma",
+              colunas: ["Parte", "Tema"],
+              linhas: [
+                ["Parte 11", "Especificação da usabilidade"],
+                ["Parte 12", "Apresentação da informação"],
+                ["Parte 13", "Condução do usuário"],
+                ["Parte 14", "Diálogo por menu"],
+                ["Parte 15", "Linguagem de comandos"],
+                ["Parte 16", "Manipulação direta"],
+                ["Parte 17", "Formulários"]
               ]
             }
           ]
@@ -183,31 +516,31 @@ window.__nexusConteudo = {
 
         {
           id: "exemplos",
-          titulo: "💡 Exemplos Explicativos",
+          titulo: "💬 Exemplos Explicativos",
           blocos: [
             {
               tipo: "exemplo",
-              titulo: "Exemplo 1 — Tolerância a erros",
-              texto: "Sistema impede erro de digitação ou corrige automaticamente.",
-              detalhe: "👉 Ex: alerta de senha inválida"
+              titulo: "Modelo Cascata",
+              texto: "Um sistema só passa para testes após concluir completamente a implementação.",
+              detalhe: "Problema: se surgir erro de usabilidade no final, o sistema pode precisar ser refeito."
             },
             {
               tipo: "exemplo",
-              titulo: "Exemplo 2 — Controle do usuário",
-              texto: "Possibilidade de desfazer ações.",
-              detalhe: "👉 Ex: botão 'Desfazer' (Ctrl+Z)"
+              titulo: "Modelo Espiral",
+              texto: "Protótipos são apresentados ao cliente em várias etapas.",
+              detalhe: "Benefício: erros são encontrados mais cedo."
             },
             {
               tipo: "exemplo",
-              titulo: "Exemplo 3 — Individualização",
-              texto: "Personalização da interface.",
-              detalhe: "👉 Ex: alterar idioma ou tema"
+              titulo: "Adequação ao Aprendizado (ISO 9241)",
+              texto: "O Word permite adicionar palavras ao dicionário.",
+              detalhe: "Isso facilita aprendizado, adaptação e personalização da experiência."
             },
             {
               tipo: "exemplo",
-              titulo: "Exemplo 4 — Design Thinking",
-              texto: "Desenvolver app baseado em entrevistas com usuários.",
-              detalhe: "👉 Solução baseada em necessidade real, não suposição"
+              titulo: "Controle (ISO 9241)",
+              texto: "O Photoshop permite desfazer ações pelo histórico.",
+              detalhe: "Isso aumenta o controle do usuário, a liberdade criativa e a segurança."
             }
           ]
         },
@@ -217,274 +550,795 @@ window.__nexusConteudo = {
           titulo: "🧾 Resumo Final para Revisão Rápida",
           blocos: [
             {
-              tipo: "lista",
-              itens: [
-                "**Ciclo de vida** define como o software é desenvolvido",
-                "Modelos tradicionais: Cascata (linear) · Espiral (com protótipos) · Iterativo (repetições)",
-                "Evolução → foco no **usuário**: Modelo estrela · Shneiderman · Design Thinking",
-                "**Design Thinking**: Empatia + criatividade + colaboração",
-                "**ISO 9241**: Norma de usabilidade — baseada em eficácia · eficiência · satisfação",
-                "**7 princípios**: tarefa · autodescrição · controle · consistência · erros · personalização · aprendizado"
-              ]
+              tipo: "subtitulo",
+              texto: "Modelos Centrados no Produto"
             },
             {
+              tipo: "topico",
+              titulo: "Cascata",
+              lista: ["Sequencial", "Rígido", "Pouca flexibilidade"]
+            },
+            {
+              tipo: "topico",
+              titulo: "Espiral",
+              lista: ["Prototipagem", "Análise de riscos", "Feedback do cliente"]
+            },
+            {
+              tipo: "topico",
+              titulo: "Iterativo",
+              lista: ["Repetição contínua", "Melhoria gradual"]
+            },
+
+            {
+              tipo: "subtitulo",
+              texto: "Modelos Centrados no Usuário"
+            },
+            {
+              tipo: "topico",
+              titulo: "Modelo Estrela",
+              texto: "Avaliação constante do usuário como núcleo do processo."
+            },
+            {
+              tipo: "topico",
+              titulo: "Modelo de Shneiderman",
+              lista: ["Especificação", "Prototipagem", "Testes de usabilidade"]
+            },
+
+            {
+              tipo: "subtitulo",
+              texto: "Design Thinking"
+            },
+            {
+              tipo: "lista",
+              titulo: "Características:",
+              itens: ["Empatia", "Criatividade", "Colaboração", "Interdisciplinaridade"]
+            },
+            {
+              tipo: "lista",
+              titulo: "Princípios:",
+              itens: ["Centrado no usuário", "Cocriativo", "Sequencial", "Evidente", "Holístico"]
+            },
+
+            {
+              tipo: "subtitulo",
+              texto: "ISO 9241"
+            },
+            {
+              tipo: "lista",
+              titulo: "Conceitos:",
+              itens: ["Eficácia", "Eficiência", "Satisfação"]
+            },
+            {
+              tipo: "lista",
+              titulo: "7 Princípios da Parte 10:",
+              itens: [
+                "Adequação à tarefa",
+                "Autodescrição",
+                "Controle",
+                "Conformidade com expectativas",
+                "Tolerância a erros",
+                "Adequação à individualização",
+                "Adequação ao aprendizado"
+              ]
+            },
+
+            {
               tipo: "destaque",
-              texto: "📌 Ideia-chave para prova: Hoje o desenvolvimento não é mais sobre o sistema — é sobre o usuário."
+              texto: "📌 Pontos mais importantes para provas: diferença entre modelos centrados no produto e no usuário · características do modelo cascata · papel da prototipagem no modelo espiral · participação do usuário no modelo estrela · princípios do Design Thinking · Manifesto Ágil · conceitos de eficácia, eficiência e satisfação · os 7 princípios da ISO 9241 Parte 10."
             }
           ]
         }
-
       ]
     },
-
     //Aula 10 — Design de Interfaces e Prototipação
     {
       aula: "Aula 10 — Design de Interfaces e Prototipação",
-      ideia_central: "Primeiro modela → depois prototipa → depois implementa. Quanto melhor o protótipo, menos erros no sistema final.",
+      ideia_central: "O design de interfaces eficaz exige abordagem centrada no usuário, com atenção a usabilidade, ergonomia e comunicabilidade, e se materializa por meio de modelos conceituais, físicos e ferramentas de prototipação como wireframes, mockups e plataformas como NinjaMock e Figma.",
       secoes: [
-
         {
           id: "visao",
-          titulo: "📖 Visão Geral",
+          titulo: "🧭 Visão Geral do Conteúdo",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "O material aborda os principais conceitos relacionados ao **design de interfaces**, **design centrado no usuário** e **prototipação de sistemas**."
+            },
+            {
+              tipo: "lista",
+              titulo: "Foco principal:",
+              itens: [
+                "Compreender como criar interfaces intuitivas",
+                "Estruturar modelos conceituais",
+                "Transformar ideias em protótipos",
+                "Aplicar wireframes e mockups",
+                "Utilizar ferramentas práticas como NinjaMock e Figma",
+                "Melhorar a experiência do usuário (UX)"
+              ]
+            },
+            {
+              tipo: "lista",
+              titulo: "O desenvolvimento de interfaces deve considerar:",
+              itens: [
+                "Usabilidade",
+                "Ergonomia",
+                "Interação homem-máquina",
+                "Comunicação visual",
+                "Organização de componentes",
+                "Experiência do usuário"
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "design_centrado_usuario",
+          titulo: "👤 Design Centrado no Usuário",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "O design centrado no usuário busca desenvolver sistemas focados nas necessidades reais das pessoas."
+            },
+            {
+              tipo: "topico",
+              titulo: "Objetivos principais",
+              lista: [
+                "Garantir usabilidade",
+                "Melhorar a ergonomia",
+                "Criar interfaces intuitivas",
+                "Facilitar a aprendizagem do sistema",
+                "Reduzir necessidade de manuais",
+                "Simular elementos do mundo real para gerar familiaridade"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Responsabilidades do designer",
+              lista: [
+                "Analisar comportamento dos usuários",
+                "Compreender contexto de uso",
+                "Considerar limitações tecnológicas e financeiras",
+                "Definir requisitos funcionais e não funcionais",
+                "Estruturar funções da equipe",
+                "Organizar sequência de exibição dos elementos"
+              ]
+            },
+            {
+              tipo: "subtitulo",
+              texto: "Conceitos importantes"
+            },
+            {
+              tipo: "topico",
+              titulo: "Usabilidade",
+              texto: "Capacidade do sistema permitir que o usuário realize tarefas de forma eficiente."
+            },
+            {
+              tipo: "topico",
+              titulo: "Ergonomia",
+              texto: "Adequação da interface às capacidades humanas físicas e cognitivas."
+            },
+            {
+              tipo: "topico",
+              titulo: "Comunicabilidade",
+              texto: "Clareza da comunicação entre sistema e usuário."
+            },
+            {
+              tipo: "topico",
+              titulo: "Interação intuitiva",
+              texto: "Usuário aprende utilizando o sistema naturalmente."
+            }
+          ]
+        },
+
+        {
+          id: "modelos_conceituais",
+          titulo: "🧠 Modelos Conceituais",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "Modelos conceituais representam funções, relações e interações de um sistema."
+            },
+            {
+              tipo: "topico",
+              titulo: "Eles ajudam:",
+              lista: [
+                "No entendimento do sistema",
+                "No desenvolvimento das interfaces",
+                "Na representação da interação usuário-sistema"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Características",
+              lista: [
+                "Utilizam associações mentais",
+                "Representam conexões semânticas",
+                "Criam metáforas visuais",
+                "Aproximam sistema e mundo real"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Ferramentas utilizadas",
+              lista: [
+                "Diagramas UML",
+                "Diagramas de caso de uso",
+                "Diagramas de sequência",
+                "Modelos entidade-relacionamento",
+                "Rich Picture"
+              ]
+            },
+            {
+              tipo: "subtitulo",
+              texto: "UML (Unified Modeling Language)"
+            },
+            {
+              tipo: "texto",
+              texto: "Linguagem de modelagem baseada em orientação a objetos."
+            },
+            {
+              tipo: "topico",
+              titulo: "Utilizada para:",
+              lista: [
+                "Representar estruturas",
+                "Descrever comportamentos",
+                "Organizar aspectos do software"
+              ]
+            },
+            {
+              tipo: "imagem",
+              src: "figura_rich_picture_modelo.png",
+              pasta: "imagens_design/aula_10",
+              alt: "Figura 1 — Exemplo de modelo Rich Picture: demonstra relações conceituais entre entidades e conexões do sistema",
+              num: 1
+            }
+          ]
+        },
+
+        {
+          id: "tipos_interacao",
+          titulo: "🖱️ Tipos de Interação nos Modelos Conceituais",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "Instrução",
+              lista: [
+                "Usuário envia comandos ao sistema",
+                "Cliques",
+                "Voz",
+                "Teclado",
+                "Botões",
+                "Setas"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Conversação",
+              lista: [
+                "Interação por diálogo usando texto, voz ou inteligência artificial"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Manipulação e navegação",
+              lista: [
+                "Usuário manipula objetos virtuais diretamente",
+                "Exemplos: arrastar, mover, reorganizar elementos"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Exploração e pesquisa",
+              texto: "Sistema guia o usuário passo a passo."
+            }
+          ]
+        },
+
+        {
+          id: "modelos_fisicos",
+          titulo: "🏗️ Modelos Físicos",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "O design físico transforma o modelo conceitual em algo concreto."
+            },
+            {
+              tipo: "topico",
+              titulo: "Pode ser:",
+              lista: [
+                "Protótipo",
+                "Interface final",
+                "Produto implementado"
+              ]
+            },
+            {
+              tipo: "subtitulo",
+              texto: "Tipos de design físico"
+            },
+            {
+              tipo: "topico",
+              titulo: "Operacional",
+              lista: [
+                "Define o funcionamento do sistema",
+                "Define a estrutura dos dados",
+                "Define o armazenamento"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Representacional",
+              lista: [
+                "Define a aparência visual",
+                "Define a estética",
+                "Define os elementos gráficos"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "De interação",
+              lista: [
+                "Define a organização funcional",
+                "Define a sequência das ações",
+                "Define o fluxo de uso"
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "problemas_usabilidade",
+          titulo: "⚠️ Problemas de Usabilidade",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "Barreiras",
+              lista: [
+                "Impedem realização da tarefa",
+                "Exemplo: formato incompatível de arquivo"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Obstáculos",
+              lista: [
+                "Usuário consegue realizar a ação, mas com dificuldade",
+                "Exemplo: excesso de propagandas"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Ruídos",
+              lista: [
+                "Geram dúvidas ou confusão",
+                "Exemplo: informações pouco claras"
+              ]
+            },
+            {
+              tipo: "subtitulo",
+              texto: "Classificação dos problemas"
+            },
+            {
+              tipo: "topico",
+              titulo: "Gerais",
+              texto: "Afetam qualquer usuário."
+            },
+            {
+              tipo: "topico",
+              titulo: "Especializados",
+              texto: "Afetam usuários experientes."
+            },
+            {
+              tipo: "topico",
+              titulo: "Intuitivos",
+              texto: "Afetam iniciantes."
+            },
+            {
+              tipo: "topico",
+              titulo: "Acessibilidade",
+              texto: "Afetam usuários com necessidades especiais."
+            }
+          ]
+        },
+
+        {
+          id: "prototipagem",
+          titulo: "🧪 Conceitos de Prototipagem",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "A prototipagem cria representações visuais do sistema antes da implementação final."
+            },
+            {
+              tipo: "topico",
+              titulo: "Objetivos da prototipagem",
+              lista: [
+                "Obter feedback rápido",
+                "Economizar tempo e dinheiro",
+                "Testar alternativas",
+                "Encontrar erros antes da programação",
+                "Validar experiência do usuário",
+                "Apresentar ideias para investidores"
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "cenarios",
+          titulo: "📖 Cenários",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "Cenários são descrições narrativas de interação usuário-sistema."
+            },
+            {
+              tipo: "topico",
+              titulo: "Elementos dos cenários",
+              lista: [
+                "Usuário",
+                "Situação",
+                "Sequência de ações",
+                "Respostas do sistema",
+                "Contexto de uso"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Objetivo",
+              texto: "Planejar e analisar experiências de uso."
+            },
+            {
+              tipo: "exemplo",
+              titulo: "Cenário de caixa eletrônico",
+              texto: "Fluxo completo de uso do caixa eletrônico: 1) usuário insere cartão; 2) sistema valida; 3) senha é digitada; 4) usuário escolhe saque; 5) sistema libera dinheiro; 6) operação finalizada.",
+              detalhe: "Objetivo: representar interação completa e validar fluxo de uso."
+            }
+          ]
+        },
+
+        {
+          id: "storyboard",
+          titulo: "🎬 Storyboard",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "Storyboard é a representação gráfica da narrativa."
+            },
+            {
+              tipo: "topico",
+              titulo: "Funções",
+              lista: [
+                "Representar telas",
+                "Mostrar conexões",
+                "Ilustrar fluxo de interação"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Origem",
+              lista: [
+                "Cinema",
+                "Organização de cenas"
+              ]
+            },
+            {
+              tipo: "imagem",
+              src: "figura_storyboard_realidade_aumentada.png",
+              pasta: "imagens_design/aula_10",
+              alt: "Figura 2 — Storyboard simulando realidade aumentada: ilustra representação gráfica de interações e sequência narrativa",
+              num: 2
+            }
+          ]
+        },
+
+        {
+          id: "wireframe",
+          titulo: "🔲 Wireframe",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "Wireframe é um esqueleto visual da interface."
+            },
+            {
+              tipo: "topico",
+              titulo: "Características",
+              lista: [
+                "Simples",
+                "Sem cores",
+                "Sem detalhes visuais",
+                "Foco na estrutura"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Objetivos",
+              lista: [
+                "Organizar componentes",
+                "Definir arquitetura",
+                "Planejar navegação"
+              ]
+            },
+            {
+              tipo: "destaque",
+              texto: "📌 O wireframe é a base dos protótipos de alta fidelidade."
+            },
+            {
+              tipo: "imagem",
+              src: "figura_wireframe_mobile_first.png",
+              pasta: "imagens_design/aula_10",
+              alt: "Figura 3 — Wireframe de interface mobile first: apresenta estrutura básica de uma interface sem elementos gráficos avançados",
+              num: 3
+            }
+          ]
+        },
+
+        {
+          id: "mockup",
+          titulo: "🎨 Mockup",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "Mockup é um protótipo visual próximo do produto final."
+            },
+            {
+              tipo: "topico",
+              titulo: "Características",
+              lista: [
+                "Alta fidelidade",
+                "Aparência detalhada",
+                "Dimensões precisas",
+                "Representação estética realista"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Aplicações",
+              lista: [
+                "Aplicativos",
+                "Sistemas",
+                "Sites",
+                "Jogos digitais"
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "fidelidade",
+          titulo: "📐 Fidelidade do Protótipo",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "Baixa fidelidade",
+              lista: [
+                "Poucos detalhes",
+                "Rascunhos",
+                "Papel",
+                "Foco em ideias gerais",
+                "Vantagem: estimula discussões abertas"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Alta fidelidade",
+              lista: [
+                "Muitos detalhes",
+                "Aparência final",
+                "Interações completas",
+                "Vantagem: testes mais precisos"
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "horizontal_vertical",
+          titulo: "↔️ Prototipação Horizontal e Vertical",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "Horizontal",
+              lista: [
+                "Muitas funções",
+                "Pouco detalhamento",
+                "Objetivo: visão geral do sistema"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Vertical",
+              lista: [
+                "Menos funções",
+                "Grande aprofundamento",
+                "Objetivo: analisar detalhes específicos"
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "ferramentas",
+          titulo: "🛠️ Prototipação na Prática — Ferramentas",
           blocos: [
             {
               tipo: "lista",
-              titulo: "A aula aborda:",
+              titulo: "Ferramentas de prototipação apresentadas no material:",
               itens: [
-                "**Design Centrado no Usuário (DCU)** como abordagem principal",
-                "**Modelos conceituais e físicos** de sistemas",
-                "**Problemas de usabilidade**: barreiras, obstáculos e ruídos",
-                "**Prototipação**: conceitos, classificações e tipos",
-                "**Construção prática**: wireframe e mockup"
+                "Figma",
+                "Adobe XD",
+                "Framer",
+                "Axure",
+                "Sketch",
+                "Fluid",
+                "Proto.io",
+                "Justinmind",
+                "NinjaMock"
               ]
             }
           ]
         },
 
         {
-          id: "conceitos",
-          titulo: "🧠 Conceitos Principais",
+          id: "ninjamock",
+          titulo: "📱 Construção de Wireframe no NinjaMock",
           blocos: [
-
             {
               tipo: "topico",
-              titulo: "🔹 Design Centrado no Usuário (DCU)",
-              lista: [
-                "Abordagem que coloca o **usuário como foco principal** do sistema",
-                "**Usabilidade** → facilidade de uso",
-                "**Ergonomia** → conforto na interação",
-                "**Comunicabilidade** → clareza das informações",
-                "**Intuitividade** → uso sem necessidade de manual"
-              ]
+              titulo: "Objetivo",
+              texto: "Criar um wireframe mobile first."
             },
-
             {
               tipo: "topico",
-              titulo: "🔹 Papel do Designer",
-              lista: [
-                "Analisar comportamento e contexto do usuário",
-                "Definir requisitos funcionais e não funcionais",
-                "Considerar limitações técnicas e financeiras",
-                "Planejar a interação e estrutura do sistema"
-              ]
+              titulo: "Mobile First",
+              texto: "Desenvolvimento iniciado para telas pequenas."
             },
-
             {
               tipo: "topico",
-              titulo: "🔹 Modelos Conceituais",
+              titulo: "Estrutura utilizada",
               lista: [
-                "Representam **como o sistema funciona na teoria**",
-                "Conjunto de ideias e associações que ajudam a entender o sistema",
-                "Representam funções e conexões · Usam **metáforas do mundo real**",
-                "✔ Ferramentas: Diagramas (classe, caso de uso, sequência) · UML"
+                "Header",
+                "Botões",
+                "Menus",
+                "Textos",
+                "Rodapé"
               ]
             },
-
             {
-              tipo: "topico",
-              titulo: "🔹 Tipos de Interação (Modelos Conceituais)",
-              lista: [
-                "**Instrução** → comandos (clique, teclado, voz)",
-                "**Conversação** → interação com IA (chat, voz)",
-                "**Manipulação/Navegação** → interação direta com elementos",
-                "**Exploração/Pesquisa** → sistema guia o usuário"
-              ]
+              tipo: "imagem",
+              src: "figura_wireframe_ninjamock.png",
+              pasta: "imagens_design/aula_10",
+              alt: "Figura 4 — Wireframe tela inicial no NinjaMock: exemplo prático de wireframe desenvolvido na plataforma NinjaMock",
+              num: 4
             },
-
             {
-              tipo: "topico",
-              titulo: "🔹 Modelos Físicos",
-              lista: [
-                "Transformam o modelo conceitual em algo concreto",
-                "**Operacional** → funcionamento do sistema",
-                "**Representacional** → aparência visual",
-                "**Interação** → fluxo de uso"
-              ]
-            },
+              tipo: "imagem",
+              src: "figura_wireframe_completo.png",
+              pasta: "imagens_design/aula_10",
+              alt: "Figura 5 — Wireframe completo no NinjaMock: demonstra conjunto completo de telas wireframe conectadas",
+              num: 5
+            }
+          ]
+        },
 
+        {
+          id: "figma",
+          titulo: "🖥️ Construção de Mockup no Figma",
+          blocos: [
             {
               tipo: "subtitulo",
-              texto: "Problemas de Usabilidade"
+              texto: "Preparação do ambiente"
             },
-
             {
               tipo: "topico",
-              titulo: "⚠ Tipos de Problemas",
+              titulo: "Etapas de preparação",
               lista: [
-                "**Barreiras** → impedem a conclusão da tarefa",
-                "**Obstáculos** → dificultam, mas permitem concluir",
-                "**Ruídos** → causam dúvida ou confusão"
+                "Criação de frames",
+                "Definição de tamanhos",
+                "Escolha de cores",
+                "Organização visual"
               ]
             },
-
-            {
-              tipo: "topico",
-              titulo: "⚠ Classificação dos Problemas",
-              lista: [
-                "**Principais** → afetam todo o sistema",
-                "**Secundários** → afetam partes específicas",
-                "Por tipo de usuário: Geral · Especialista · Iniciante · Acessibilidade"
-              ]
-            },
-
             {
               tipo: "subtitulo",
-              texto: "Prototipação"
-            },
-
-            {
-              tipo: "topico",
-              titulo: "🔹 O que é Prototipação",
-              lista: [
-                "**Representação do sistema antes da implementação**",
-                "Objetivos: Testar ideias · Identificar problemas · Economizar tempo e custo · Melhorar UX"
-              ]
-            },
-
-            {
-              tipo: "tabela",
-              titulo: "🔹 Classificação por Fidelidade",
-              colunas: ["Tipo", "Característica", "Foco"],
-              linhas: [
-                ["Baixa fidelidade", "Simples, rascunho",          "Gera mais ideias"],
-                ["Alta fidelidade",  "Detalhado, próximo do final", "Foca em detalhes"]
-              ]
-            },
-
-            {
-              tipo: "tabela",
-              titulo: "🔹 Classificação por Estrutura",
-              colunas: ["Tipo", "Descrição"],
-              linhas: [
-                ["Horizontal", "Muitas funções, pouco detalhamento"],
-                ["Vertical",   "Menos funções, muito detalhamento"]
-              ]
-            },
-
-            {
-              tipo: "topico",
-              titulo: "📌 Cenários",
-              lista: [
-                "Narrativas de uso do sistema",
-                "Descrevem o **passo a passo da interação** usuário-sistema"
-              ]
-            },
-
-            {
-              tipo: "topico",
-              titulo: "📌 Storyboard",
-              lista: [
-                "Representação **visual** dos cenários",
-                "Mostra a sequência de telas e interações"
-              ]
-            },
-
-            {
-              tipo: "topico",
-              titulo: "📌 Wireframe",
-              lista: [
-                "Estrutura básica da interface (botões, menus, layout)",
-                "Sem cores ou imagens → foco em **organização**",
-                "✔ Funciona como o 'esqueleto' do sistema"
-              ]
-            },
-
-            {
-              tipo: "topico",
-              titulo: "📌 Mockup",
-              lista: [
-                "Interface visual **detalhada e próxima do produto final**",
-                "Inclui: Cores · Imagens · Tipografia",
-                "✔ Alta fidelidade → simula o produto final"
-              ]
-            }
-
-          ]
-        },
-
-        {
-          id: "metodos",
-          titulo: "📊 Métodos e Processos",
-          blocos: [
-            {
-              tipo: "topico",
-              titulo: "🔹 Fluxo de desenvolvimento centrado no usuário",
-              lista: [
-                "1. Analisar usuário e contexto",
-                "2. Definir requisitos",
-                "3. Criar modelo conceitual",
-                "4. Criar modelo físico",
-                "5. Prototipar (baixa → alta fidelidade)",
-                "6. Testar e identificar problemas de usabilidade",
-                "7. Implementar"
-              ]
+              texto: "Recursos utilizados"
             },
             {
               tipo: "topico",
-              titulo: "🔹 Escolha do tipo de protótipo",
+              titulo: "Recursos",
               lista: [
-                "**Cenário** → descrever fluxo em texto",
-                "**Storyboard** → visualizar sequência de telas",
-                "**Wireframe** → definir estrutura e layout",
-                "**Mockup** → validar design visual final"
+                "Ícones",
+                "Imagens",
+                "Componentes",
+                "Scrolling",
+                "Interações"
               ]
+            },
+            {
+              tipo: "subtitulo",
+              texto: "Atalhos importantes"
+            },
+            {
+              tipo: "topico",
+              titulo: "Atalhos",
+              lista: [
+                "`CTRL + SHIFT + K` → inserir imagens",
+                "`CTRL + D` → duplicar telas"
+              ]
+            },
+            {
+              tipo: "imagem",
+              src: "figura_ambiente_figma.png",
+              pasta: "imagens_design/aula_10",
+              alt: "Figura 6 — Ambiente de trabalho Figma: apresenta organização inicial do ambiente de design no Figma",
+              num: 6
+            },
+            {
+              tipo: "imagem",
+              src: "figura_mockup_alta_fidelidade.png",
+              pasta: "imagens_design/aula_10",
+              alt: "Figura 7 — Mockup de alta fidelidade: exemplo de protótipo visual próximo da interface final",
+              num: 7
             }
           ]
         },
 
         {
-          id: "exemplos",
-          titulo: "💡 Exemplos Explicativos",
+          id: "interacoes_figma",
+          titulo: "🔗 Interações no Figma",
           blocos: [
             {
-              tipo: "exemplo",
-              titulo: "Exemplo 1 — Cenário (caixa eletrônico)",
-              texto: "Usuário insere cartão → digita senha → escolhe saque → recebe dinheiro. Mostra o fluxo completo e o feedback do sistema.",
-              detalhe: "👉 Narrativa que guia o design da interface"
+              tipo: "texto",
+              texto: "O Figma permite criar conexões entre telas usando tipos de interação específicos."
             },
             {
-              tipo: "exemplo",
-              titulo: "Exemplo 2 — Wireframe",
-              texto: "Esboço com botões, menus e layout, sem cores ou imagens.",
-              detalhe: "👉 Define a estrutura antes de pensar no visual"
+              tipo: "topico",
+              titulo: "Tipos de interação disponíveis",
+              lista: [
+                "Touch Down",
+                "Touch Up",
+                "Vertical Scrolling"
+              ]
             },
             {
-              tipo: "exemplo",
-              titulo: "Exemplo 3 — Mockup",
-              texto: "Interface completa com cores, imagens e tipografia definidas.",
-              detalhe: "👉 Simula o produto final para validação"
+              tipo: "topico",
+              titulo: "Isso possibilita:",
+              lista: [
+                "Navegação simulada",
+                "Testes de usabilidade",
+                "Validação de fluxo"
+              ]
             },
             {
-              tipo: "exemplo",
-              titulo: "Exemplo 4 — Problema: Barreira",
-              texto: "Botão de confirmação invisível impede o usuário de concluir o cadastro.",
-              detalhe: "👉 Barreira → tarefa impossível de realizar"
+              tipo: "imagem",
+              src: "figura_interacoes_figma.png",
+              pasta: "imagens_design/aula_10",
+              alt: "Figura 8 — Interações entre as telas no Figma: demonstra conexões e fluxo de navegação entre telas",
+              num: 8
             },
             {
-              tipo: "exemplo",
-              titulo: "Exemplo 5 — Problema: Ruído",
-              texto: "Mensagem de erro genérica que não explica o que deu errado.",
-              detalhe: "👉 Ruído → causa confusão, mas não impede a tarefa"
+              tipo: "imagem",
+              src: "figura_preview_prototipo.png",
+              pasta: "imagens_design/aula_10",
+              alt: "Figura 9 — Modo de visualização do protótipo no Figma: mostra pré-visualização funcional do protótipo criado",
+              num: 9
+            }
+          ]
+        },
+
+        {
+          id: "metodo_prototipacao",
+          titulo: "📋 Método de Prototipação — Etapas",
+          blocos: [
+            {
+              tipo: "lista",
+              titulo: "Etapas gerais do método de prototipação:",
+              itens: [
+                "1. Definir objetivos",
+                "2. Escolher tipo de protótipo",
+                "3. Criar estrutura",
+                "4. Validar com usuários",
+                "5. Ajustar interface",
+                "6. Refinar fidelidade"
+              ]
             }
           ]
         },
@@ -494,267 +1348,668 @@ window.__nexusConteudo = {
           titulo: "🧾 Resumo Final para Revisão Rápida",
           blocos: [
             {
-              tipo: "lista",
-              itens: [
-                "**DCU** → usuário no centro: usabilidade · ergonomia · comunicabilidade · intuitividade",
-                "**Modelo conceitual** → ideia teórica do sistema (UML, diagramas)",
-                "**Modelo físico** → implementação visual e funcional (operacional · representacional · interação)",
-                "**Problemas de usabilidade** → Barreiras (impedem) · Obstáculos (dificultam) · Ruídos (confundem)",
-                "**Prototipação** → testar antes de desenvolver",
-                "Tipos: **Cenário** (texto) · **Storyboard** (visual narrativo) · **Wireframe** (estrutura) · **Mockup** (visual final)",
-                "Fidelidade: **Baixa** (ideias) · **Alta** (detalhes)",
-                "Estrutura: **Horizontal** (abrangente) · **Vertical** (profundo)"
+              tipo: "texto",
+              texto: "O **design centrado no usuário** prioriza: usabilidade, ergonomia e experiência do usuário. Os **modelos conceituais** representam: funções, conexões e interações. A **UML** é usada para modelagem de software. Os **modelos físicos** transformam ideias em interfaces concretas."
+            },
+            {
+              tipo: "topico",
+              titulo: "Problemas de usabilidade",
+              lista: [
+                "Barreiras",
+                "Obstáculos",
+                "Ruídos"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "A prototipagem ajuda a:",
+              lista: [
+                "Validar ideias",
+                "Reduzir custos",
+                "Melhorar UX"
+              ]
+            },
+            {
+              tipo: "tabela",
+              titulo: "Tipos de protótipos",
+              colunas: ["Tipo", "Característica"],
+              linhas: [
+                ["Cenário", "Narrativa textual"],
+                ["Storyboard", "Narrativa visual"],
+                ["Wireframe", "Estrutura básica"],
+                ["Mockup", "Visual detalhado"]
+              ]
+            },
+            {
+              tipo: "tabela",
+              titulo: "Fidelidade",
+              colunas: ["Tipo", "Característica"],
+              linhas: [
+                ["Baixa fidelidade", "Poucos detalhes"],
+                ["Alta fidelidade", "Próximo do produto final"]
+              ]
+            },
+            {
+              tipo: "tabela",
+              titulo: "Horizontal vs Vertical",
+              colunas: ["Tipo", "Característica"],
+              linhas: [
+                ["Horizontal", "Muitas funções, pouco detalhe"],
+                ["Vertical", "Poucas funções, muito detalhe"]
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Ferramentas importantes",
+              lista: [
+                "Figma",
+                "NinjaMock",
+                "Adobe XD",
+                "Framer",
+                "Sketch"
               ]
             },
             {
               tipo: "destaque",
-              texto: "📌 Ideia-chave para prova: Primeiro modela → depois prototipa → depois implementa. Quanto melhor o protótipo, menos erros no sistema final e melhor a experiência do usuário."
+              texto: "📌 Conceitos que mais caem em provas: Design centrado no usuário · Modelos conceituais · Wireframe · Mockup · Fidelidade (baixa e alta) · Usabilidade · Storyboard · Protótipos horizontais e verticais."
             }
           ]
         }
-
       ]
     },
     // Aula 11 — Design Responsivo
     {
-aula: "Aula 11 — Design Responsivo",
-ideia_central: "Não basta reduzir o tamanho do site — é necessário reorganizar, adaptar e otimizar a interface para cada tipo de dispositivo.",
-secoes: [
-  {
-    id: "visao",
-    titulo: "🧭 Visão Geral",
-    blocos: [
-      {
-        tipo: "texto",
-        texto: "O design responsivo é uma abordagem essencial no desenvolvimento web moderno que permite que sites se adaptem a diferentes tamanhos de tela (celulares, tablets e desktops). Com o aumento do uso de dispositivos móveis, tornou-se indispensável criar interfaces que se ajustem automaticamente, mantenham boa usabilidade e preservem o design visual."
-      },
-      {
-        tipo: "lista",
-        titulo: "A aula aborda:",
-        itens: [
-          "Conceitos fundamentais do design responsivo",
-          "Técnicas como media queries, layout fluido, viewport",
-          "Metodologia Mobile First",
-          "Uso de breakpoints"
-        ]
-      }
-    ]
-  },
+      aula: "Aula 11 — Design Responsivo",
+      ideia_central: "O Design Responsivo é a metodologia que permite interfaces web se adaptarem automaticamente a diferentes tamanhos de tela, sendo implementado por meio de Media Queries, Layout Fluido, Meta Tag Viewport, Breakpoints e a abordagem Mobile First, tornando-se obrigatório no desenvolvimento moderno diante do crescimento do acesso à internet por dispositivos móveis.",
+      secoes: [
+        {
+          id: "visao",
+          titulo: "🧭 Visão Geral do Conteúdo",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "O módulo aborda os principais fundamentos do **Design Responsivo**, metodologia essencial no desenvolvimento moderno de interfaces web. O objetivo principal é permitir que sites e sistemas funcionem corretamente em diferentes tamanhos de tela — principalmente em dispositivos móveis."
+            },
+            {
+              tipo: "lista",
+              titulo: "Conteúdos estudados:",
+              itens: [
+                "Conceito de Design Responsivo",
+                "Media Queries",
+                "Meta Tag Viewport",
+                "Layout Fluido",
+                "Mobile First",
+                "Breakpoints",
+                "Adaptação de layouts para diferentes dispositivos",
+                "Técnicas práticas de CSS responsivo"
+              ]
+            },
+            {
+              tipo: "texto",
+              texto: "O material enfatiza que o crescimento do acesso à internet por smartphones tornou obrigatório o desenvolvimento de interfaces adaptáveis."
+            }
+          ]
+        },
 
-  {
-    id: "conceitos",
-    titulo: "🧠 Conceitos Principais",
-    blocos: [
+        {
+          id: "design_responsivo",
+          titulo: "📱 Conceitos do Design Responsivo",
+          blocos: [
+            {
+              tipo: "subtitulo",
+              texto: "O que é Design Responsivo?"
+            },
+            {
+              tipo: "texto",
+              texto: "Design Responsivo é a capacidade de uma interface web se adaptar automaticamente a diferentes tamanhos de tela. O conceito foi popularizado por **Ethan Marcotte**, que trouxe a ideia da arquitetura para o desenvolvimento web."
+            },
+            {
+              tipo: "topico",
+              titulo: "Objetivo principal",
+              lista: [
+                "Boa usabilidade",
+                "Acessibilidade",
+                "Organização visual",
+                "Adaptação automática",
+                "Melhor experiência do usuário"
+              ]
+            },
+            {
+              tipo: "subtitulo",
+              texto: "Características principais"
+            },
+            {
+              tipo: "texto",
+              texto: "Um site responsivo deve:"
+            },
+            {
+              tipo: "lista",
+              itens: [
+                "Reorganizar elementos",
+                "Redimensionar conteúdos",
+                "Alterar posicionamentos",
+                "Adaptar menus",
+                "Modificar grids",
+                "Melhorar leitura e navegação"
+              ]
+            },
+            {
+              tipo: "destaque",
+              texto: "📌 Responsividade NÃO significa apenas 'diminuir' ou 'esticar' o layout. O desenvolvedor precisa: reorganizar os elementos, redesenhar partes da interface e alterar comportamentos conforme a tela."
+            },
+            {
+              tipo: "subtitulo",
+              texto: "Crescimento do uso mobile"
+            },
+            {
+              tipo: "texto",
+              texto: "Segundo a PNAD Contínua citada no material: o celular tornou-se o principal dispositivo de acesso à internet, e milhões de domicílios utilizam smartphones como principal meio de navegação. Isso explica por que interfaces modernas devem priorizar dispositivos móveis."
+            }
+          ]
+        },
 
-      {
-        tipo: "topico",
-        titulo: "📱 Design Responsivo",
-        lista: [
-          "Capacidade de um site se adaptar a diferentes telas",
-          "Não é apenas redimensionar → envolve **reorganizar elementos**",
-          "Objetivo: melhorar experiência do usuário (UX)"
-        ]
-      },
+        {
+          id: "media_queries",
+          titulo: "🎛️ Media Queries",
+          blocos: [
+            {
+              tipo: "subtitulo",
+              texto: "Conceito"
+            },
+            {
+              tipo: "texto",
+              texto: "Media Queries são recursos do CSS3 usados para aplicar estilos condicionais dependendo do tamanho da tela. São implementadas através da regra `@media`."
+            },
+            {
+              tipo: "topico",
+              titulo: "Função das Media Queries",
+              lista: [
+                "Alterar tamanho de elementos",
+                "Mudar alinhamentos",
+                "Ocultar componentes",
+                "Reorganizar grids",
+                "Adaptar menus",
+                "Mudar tipografia",
+                "Alterar posicionamentos"
+              ]
+            },
+            {
+              tipo: "subtitulo",
+              texto: "Exemplo básico"
+            },
+            {
+              tipo: "texto",
+              texto: "Quando a largura da tela for menor ou igual a 600px:\n```css\n@media only screen and (max-width: 600px) {\n    body {\n        background-color: lightblue;\n    }\n}```"
+            },
+            {
+              tipo: "topico",
+              titulo: "Explicação do funcionamento",
+              texto: "A condição `(max-width: 600px)` significa: aplicar o CSS SOMENTE em telas com até 600px de largura."
+            },
+            {
+              tipo: "imagem",
+              src: "figura_layout_fluido_sem_media_queries.png",
+              pasta: "imagens_design/aula_11",
+              alt: "Figura 1 — Layout fluido sem media queries: mostra um layout que possui fluidez, porém sem reorganização adequada dos elementos. Os textos ficam sobrepostos, demonstrando que apenas flexibilidade não resolve problemas de responsividade",
+              num: 1
+            },
+            {
+              tipo: "imagem",
+              src: "figura_resultado_media_queries.png",
+              pasta: "imagens_design/aula_11",
+              alt: "Figura 2 — Resultado do uso do media queries: demonstra como os elementos passam a ocupar 100% da largura em telas pequenas, reorganizando o conteúdo verticalmente e melhorando a legibilidade",
+              num: 2
+            },
+            {
+              tipo: "subtitulo",
+              texto: "Código explicado no material"
+            },
+            {
+              tipo: "texto",
+              texto: "```css\n.noticia {\n    float: left;\n    width: 25%;\n}\n\n@media (max-width: 400px) {\n    .noticia {\n        float: left;\n        width: 25%;\n    }\n}```"
+            },
+            {
+              tipo: "topico",
+              titulo: "Objetivo",
+              texto: "Fazer os elementos se reorganizarem em telas menores."
+            }
+          ]
+        },
 
-      {
-        tipo: "topico",
-        titulo: "🎯 Media Queries",
-        lista: [
-          "Técnica do **CSS3**",
-          "Permite aplicar estilos diferentes conforme o tamanho da tela",
-          "Alterar tamanho, posição e visibilidade",
-          "Criar comportamentos diferentes conforme a resolução"
-        ]
-      },
+        {
+          id: "breakpoints",
+          titulo: "📏 Breakpoints",
+          blocos: [
+            {
+              tipo: "subtitulo",
+              texto: "Conceito"
+            },
+            {
+              tipo: "texto",
+              texto: "Breakpoints são pontos específicos do tamanho da tela em que o layout muda de comportamento."
+            },
+            {
+              tipo: "topico",
+              titulo: "Exemplos de breakpoints",
+              lista: [
+                "Smartphone",
+                "Tablet",
+                "Notebook",
+                "Desktop"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Objetivo dos Breakpoints",
+              lista: [
+                "Reorganização da interface",
+                "Mudança de número de colunas",
+                "Adaptação visual",
+                "Melhoria da experiência do usuário"
+              ]
+            },
+            {
+              tipo: "imagem",
+              src: "figura_breakpoint_600px.png",
+              pasta: "imagens_design/aula_11",
+              alt: "Figura 3 — Exemplo de breakpoint definido para a largura máxima de 600px: ilustra como o layout altera a quantidade de colunas quando a largura máxima da tela é atingida",
+              num: 3
+            },
+            {
+              tipo: "subtitulo",
+              texto: "Código do breakpoint"
+            },
+            {
+              tipo: "texto",
+              texto: "```css\n@media (max-width: 600px) {\n    .noticia {\n        width: 50%;\n    }\n}```"
+            },
+            {
+              tipo: "topico",
+              titulo: "Resultado",
+              lista: [
+                "Os elementos passam a ocupar 50% da largura",
+                "Duas colunas em determinadas resoluções"
+              ]
+            },
+            {
+              tipo: "destaque",
+              texto: "📌 A ordem dos breakpoints importa. O último breakpoint escrito sobrescreve os anteriores."
+            },
+            {
+              tipo: "subtitulo",
+              texto: "Principais atributos usados"
+            },
+            {
+              tipo: "topico",
+              titulo: "width",
+              texto: "Largura da janela."
+            },
+            {
+              tipo: "topico",
+              titulo: "device-width",
+              texto: "Largura física do dispositivo."
+            },
+            {
+              tipo: "topico",
+              titulo: "height",
+              texto: "Altura da tela."
+            }
+          ]
+        },
 
-      {
-        tipo: "exemplo",
-        titulo: "Exemplo — Media Query",
-        texto: "@media (max-width: 600px) {\n  body {\n    background-color: lightblue;\n  }\n}",
-        detalhe: "👉 Aplica estilo somente quando a tela tiver no máximo 600px de largura"
-      },
+        {
+          id: "meta_viewport",
+          titulo: "🔖 Meta Tag Viewport",
+          blocos: [
+            {
+              tipo: "subtitulo",
+              texto: "Conceito"
+            },
+            {
+              tipo: "texto",
+              texto: "A Meta Tag Viewport controla como a página será renderizada em dispositivos móveis."
+            },
+            {
+              tipo: "topico",
+              titulo: "Sem ela:",
+              lista: [
+                "O navegador reduz automaticamente o site",
+                "O layout fica pequeno",
+                "A experiência piora"
+              ]
+            },
+            {
+              tipo: "subtitulo",
+              texto: "Código padrão"
+            },
+            {
+              tipo: "texto",
+              texto: "```html\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">```"
+            },
+            {
+              tipo: "subtitulo",
+              texto: "Explicação dos parâmetros"
+            },
+            {
+              tipo: "topico",
+              titulo: "width=device-width",
+              texto: "Define a largura da página igual à largura do dispositivo."
+            },
+            {
+              tipo: "topico",
+              titulo: "initial-scale=1",
+              texto: "Define o nível inicial de zoom."
+            },
+            {
+              tipo: "subtitulo",
+              texto: "Diferença entre zoom mobile e desktop"
+            },
+            {
+              tipo: "topico",
+              titulo: "Page Scale (mobile)",
+              lista: [
+                "Amplia apenas a visualização",
+                "Não altera o layout"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Page Zoom (desktop)",
+              lista: [
+                "Altera o viewport",
+                "Muda o tamanho renderizado da página"
+              ]
+            }
+          ]
+        },
 
-      {
-        tipo: "topico",
-        titulo: "📏 Meta Tag Viewport",
-        lista: [
-          "Define como a página será exibida em dispositivos móveis",
-          "Evita que o navegador 'encolha' o site",
-          "Controla o zoom e escala"
-        ]
-      },
+        {
+          id: "layout_fluido",
+          titulo: "🌊 Layout Fluido",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "Layout Fluido utiliza medidas relativas em vez de medidas absolutas."
+            },
+            {
+              tipo: "topico",
+              titulo: "Medidas absolutas — evitar:",
+              lista: [
+                "px",
+                "cm",
+                "mm",
+                "pt"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Medidas flexíveis — preferir:",
+              lista: [
+                "%",
+                "em",
+                "rem"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Objetivo",
+              texto: "Permitir adaptação automática do layout."
+            },
+            {
+              tipo: "subtitulo",
+              texto: "Exemplo"
+            },
+            {
+              tipo: "texto",
+              texto: "```css\nbody {\n    width:100%;\n}\n\narticle {\n    width:75%;\n    padding:10%;\n}```"
+            },
+            {
+              tipo: "topico",
+              titulo: "Explicação",
+              lista: [
+                "O body ocupa toda a largura",
+                "O article ocupa 75%",
+                "O padding adapta proporcionalmente"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Vantagens",
+              lista: [
+                "Flexibilidade",
+                "Melhor responsividade",
+                "Adaptação natural",
+                "Menos necessidade de media queries"
+              ]
+            }
+          ]
+        },
 
-      {
-        tipo: "exemplo",
-        titulo: "Código padrão — Viewport",
-        texto: '<meta name="viewport" content="width=device-width, initial-scale=1">',
-        detalhe: "👉 Deve ser incluído no <head> de toda página responsiva"
-      },
+        {
+          id: "mobile_first",
+          titulo: "📲 Mobile First",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "Mobile First é uma metodologia que propõe desenvolver primeiro para telas pequenas. Depois: adapta-se para tablets e adapta-se para desktops."
+            },
+            {
+              tipo: "topico",
+              titulo: "Criador",
+              texto: "Luke Wroblewski"
+            },
+            {
+              tipo: "subtitulo",
+              texto: "Objetivos do Mobile First"
+            },
+            {
+              tipo: "topico",
+              titulo: "1. Priorizar o essencial",
+              texto: "Telas pequenas obrigam foco no conteúdo importante."
+            },
+            {
+              tipo: "topico",
+              titulo: "2. Melhorar desempenho",
+              texto: "Menos elementos desnecessários."
+            },
+            {
+              tipo: "topico",
+              titulo: "3. Melhorar usabilidade",
+              texto: "Layouts mais limpos e organizados."
+            },
+            {
+              tipo: "imagem",
+              src: "figura_comparativo_mobile_first.png",
+              pasta: "imagens_design/aula_11",
+              alt: "Figura 4 — Comparativo do desktop first com o mobile first: compara o desenvolvimento tradicional desktop first com a metodologia mobile first, mostrando como o fluxo de adaptação muda",
+              num: 4
+            },
+            {
+              tipo: "imagem",
+              src: "figura_site_mobile_first.png",
+              pasta: "imagens_design/aula_11",
+              alt: "Figura 5 — Exemplo de site desenvolvido em mobile first: demonstra um layout inicialmente projetado para smartphones antes da adaptação para telas maiores",
+              num: 5
+            }
+          ]
+        },
 
-      {
-        tipo: "topico",
-        titulo: "🌊 Layout Fluido (Flexível)",
-        lista: [
-          "Usa **medidas relativas** (%) ao invés de fixas (px)",
-          "Adapta-se automaticamente ao tamanho da tela",
-          "Ideia principal: layout proporcional ao tamanho da tela"
-        ]
-      },
+        {
+          id: "breakpoints_pratica",
+          titulo: "⚙️ Breakpoints na Prática",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "O material apresenta exemplos reais de adaptação de layout usando media queries."
+            },
+            {
+              tipo: "subtitulo",
+              texto: "7.1 Alteração do Logo"
+            },
+            {
+              tipo: "topico",
+              titulo: "Objetivo",
+              texto: "Trocar o logo mobile pelo logo desktop em telas maiores."
+            },
+            {
+              tipo: "texto",
+              texto: "```css\n@media screen and (min-width: 480px) {\n    .logo {\n        width: 214px;\n        background: url(../img/logo.png) center center/214px no-repeat;\n    }\n\n    .btn {\n        font-size: 2em;\n    }\n}```"
+            },
+            {
+              tipo: "imagem",
+              src: "figura_alteracao_logo.png",
+              pasta: "imagens_design/aula_11",
+              alt: "Figura 6 — Comparativo após a media screen para a alteração de logo: mostra a substituição do logo simplificado mobile por um logo completo para desktop",
+              num: 6
+            },
+            {
+              tipo: "subtitulo",
+              texto: "7.2 Variação da Grid"
+            },
+            {
+              tipo: "topico",
+              titulo: "Objetivo",
+              texto: "Alterar quantidade de colunas conforme o tamanho da tela."
+            },
+            {
+              tipo: "tabela",
+              titulo: "Colunas por dispositivo",
+              colunas: ["Dispositivo", "Colunas"],
+              linhas: [
+                ["Smartphone", "1 coluna"],
+                ["Tablet", "2 colunas"],
+                ["Desktop", "3 colunas"]
+              ]
+            },
+            {
+              tipo: "texto",
+              texto: "```css\n@media screen and (min-width: 768px) {\n    .servico {\n        width: 49%;\n        float: left;\n    }\n}```"
+            },
+            {
+              tipo: "imagem",
+              src: "figura_variacao_grid.png",
+              pasta: "imagens_design/aula_11",
+              alt: "Figura 7 — Comparativo após a media screen de variação de grid: ilustra a reorganização das colunas conforme o aumento da largura da tela",
+              num: 7
+            },
+            {
+              tipo: "subtitulo",
+              texto: "7.3 Escala e alinhamento de botões"
+            },
+            {
+              tipo: "topico",
+              titulo: "Objetivo",
+              texto: "Reposicionar botões em telas maiores."
+            },
+            {
+              tipo: "topico",
+              titulo: "Alterações realizadas",
+              lista: [
+                "Alinhamento à direita",
+                "Redução de tamanho",
+                "Reorganização visual"
+              ]
+            },
+            {
+              tipo: "texto",
+              texto: "```css\n@media screen and (min-width: 960px) {\n    .buttons {\n        width: 30%;\n        float: right;\n    }\n}```"
+            },
+            {
+              tipo: "imagem",
+              src: "figura_botoes_responsivos.png",
+              pasta: "imagens_design/aula_11",
+              alt: "Figura 8 — Comparativo após a alteração de escala e alinhamentos dos botões: mostra como os botões são redimensionados e reposicionados em telas maiores",
+              num: 8
+            },
+            {
+              tipo: "subtitulo",
+              texto: "7.4 Menu Hambúrguer → Menu Horizontal"
+            },
+            {
+              tipo: "topico",
+              titulo: "Objetivo",
+              texto: "Substituir o menu hambúrguer por menu horizontal em desktops."
+            },
+            {
+              tipo: "texto",
+              texto: "```css\n@media screen and (min-width: 1280px) {\n\n    .btn-menu {\n        display: none;\n    }\n\n    .menu {\n        display: block !important;\n    }\n}```"
+            },
+            {
+              tipo: "topico",
+              titulo: "Importância do !important",
+              texto: "Força a substituição do comportamento anterior."
+            },
+            {
+              tipo: "imagem",
+              src: "figura_interface_desktop.png",
+              pasta: "imagens_design/aula_11",
+              alt: "Figura 9 — Interface gráfica desktop: apresenta o resultado final do layout responsivo adaptado para telas desktop",
+              num: 9
+            }
+          ]
+        },
 
-      {
-        tipo: "exemplo",
-        titulo: "Exemplo — Layout Fluido",
-        texto: "body {\n  width: 100%;\n}\narticle {\n  width: 75%;\n}",
-        detalhe: "👉 Elementos ocupam proporção da tela, não tamanho fixo"
-      },
-
-      {
-        tipo: "topico",
-        titulo: "📲 Mobile First",
-        lista: [
-          "Estratégia que começa o design pelas **telas pequenas**",
-          "Depois adapta para telas maiores",
-          "**Vantagens**: foco no essencial · melhor desempenho · interface mais limpa"
-        ]
-      },
-
-      {
-        tipo: "topico",
-        titulo: "🔄 Breakpoints",
-        lista: [
-          "Pontos onde o **layout muda** conforme o tamanho da tela",
-          "Função: ajustar layout em diferentes resoluções"
-        ]
-      },
-
-      {
-        tipo: "exemplo",
-        titulo: "Exemplo — Breakpoint",
-        texto: "@media (max-width: 600px) {\n  .noticia {\n    width: 50%;\n  }\n}",
-        detalhe: "👉 A partir de 600px, o elemento .noticia ocupa 50% da largura"
-      }
-
-    ]
-  },
-
-  {
-    id: "metodos",
-    titulo: "⚙️ Métodos e Técnicas",
-    blocos: [
-
-      {
-        tipo: "topico",
-        titulo: "📌 1. Uso de Media Queries",
-        lista: [
-          "Adaptar layout por tamanho de tela",
-          "Exemplo: `@media screen and (min-width: 768px) { .elemento { width: 50%; } }`"
-        ]
-      },
-
-      {
-        tipo: "topico",
-        titulo: "📌 2. Layout com Medidas Relativas",
-        lista: [
-          "`%` → largura",
-          "`em` → fontes",
-          "**Evitar**: `px`, `cm`, `mm`"
-        ]
-      },
-
-      {
-        tipo: "topico",
-        titulo: "📌 3. Estrutura Mobile First",
-        lista: [
-          "1. Criar layout mobile",
-          "2. Adicionar media queries com `min-width`",
-          "3. Expandir para telas maiores"
-        ]
-      },
-
-      {
-        tipo: "tabela",
-        titulo: "📌 4. Breakpoints Comuns",
-        colunas: ["Breakpoint", "Dispositivo"],
-        linhas: [
-          ["480px",   "Celulares maiores"],
-          ["768px",   "Tablets"],
-          ["960px+",  "Desktops"],
-          ["1280px+", "Telas grandes"]
-        ]
-      },
-
-      {
-        tipo: "lista",
-        titulo: "⚠️ Observações importantes:",
-        itens: [
-          "A **ordem das media queries importa**",
-          "A última regra pode **sobrescrever** as anteriores",
-          "Evitar **excesso de media queries**"
-        ]
-      }
-
-    ]
-  },
-
-  {
-    id: "exemplos",
-    titulo: "📊 Exemplos Explicativos",
-    blocos: [
-
-      {
-        tipo: "exemplo",
-        titulo: "Exemplo 1 — Problema sem Media Queries",
-        texto: "Layout fluido → elementos se sobrepõem sem media queries para controlar o comportamento.",
-        detalhe: "👉 Solução: aplicar media queries para reorganizar os elementos"
-      },
-
-      {
-        tipo: "exemplo",
-        titulo: "Exemplo 2 — Grid Responsivo",
-        texto: "Mobile: 1 coluna · Tablet: 2 colunas · Desktop: 3 colunas",
-        detalhe: "👉 O número de colunas muda conforme o breakpoint ativo"
-      },
-
-      {
-        tipo: "exemplo",
-        titulo: "Exemplo 3 — Menu Responsivo",
-        texto: "Mobile → menu hambúrguer ☰ | Desktop → menu horizontal",
-        detalhe: "👉 A estrutura do menu muda completamente entre dispositivos"
-      },
-
-      {
-        tipo: "exemplo",
-        titulo: "Exemplo 4 — Troca de Logo",
-        texto: "Mobile → símbolo simples | Desktop → logo completo",
-        detalhe: "👉 Elementos visuais podem ser trocados conforme o tamanho da tela"
-      }
-
-    ]
-  },
-
-  {
-    id: "resumo",
-    titulo: "⚡ Resumo Final para Revisão Rápida",
-    blocos: [
-      {
-        tipo: "lista",
-        itens: [
-          "**Design Responsivo** → Adapta o layout a diferentes telas",
-          "**Media Queries** → Aplicam estilos condicionais (CSS)",
-          "**Viewport** → Controla escala e exibição no mobile",
-          "**Layout Fluido** → Usa medidas relativas (% e em)",
-          "**Mobile First** → Começa pelo mobile e evolui para desktop",
-          "**Breakpoints** → Pontos onde o layout muda"
-        ]
-      },
-      {
-        tipo: "destaque",
-        texto: "📌 Ideia-chave para prova: Não basta reduzir o tamanho do site — é necessário reorganizar, adaptar e otimizar a interface para cada tipo de dispositivo. Design responsivo envolve media queries, layout fluido, viewport e a metodologia Mobile First."
-      }
-    ]
-  }
-
-]
+        {
+          id: "resumo",
+          titulo: "🧾 Resumo Final para Revisão Rápida",
+          blocos: [
+            {
+              tipo: "tabela",
+              titulo: "Conceitos fundamentais",
+              colunas: ["Conceito", "Definição"],
+              linhas: [
+                ["Design Responsivo", "Capacidade do layout adaptar-se a diferentes telas"],
+                ["Media Queries", "CSS condicional para responsividade"],
+                ["Layout Fluido", "Uso de medidas relativas"],
+                ["Mobile First", "Desenvolvimento iniciado pelo mobile"],
+                ["Breakpoints", "Pontos de mudança do layout"],
+                ["Meta Viewport", "Controla renderização em dispositivos móveis"]
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Principais ideias",
+              lista: [
+                "Responsividade é obrigatória no desenvolvimento moderno",
+                "Media Queries controlam adaptações condicionais",
+                "Layout fluido usa medidas relativas",
+                "Mobile First melhora foco e desempenho",
+                "Breakpoints ajustam layouts em diferentes resoluções",
+                "Meta Viewport controla renderização mobile",
+                "Menus, grids e botões precisam ser reorganizados conforme a tela"
+              ]
+            },
+            {
+              tipo: "subtitulo",
+              texto: "Fórmulas/estruturas importantes para memorizar"
+            },
+            {
+              tipo: "topico",
+              titulo: "Media Query",
+              texto: "```css\n@media screen and (max-width: 600px)```"
+            },
+            {
+              tipo: "topico",
+              titulo: "Meta Viewport",
+              texto: "```html\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">```"
+            },
+            {
+              tipo: "topico",
+              titulo: "Medidas recomendadas",
+              lista: ["%", "em", "rem"]
+            },
+            {
+              tipo: "topico",
+              titulo: "Medidas evitadas",
+              lista: ["px", "cm", "mm"]
+            },
+            {
+              tipo: "destaque",
+              texto: "📌 Dicas para prova: Responsividade ≠ apenas reduzir tamanho · Mobile First começa pelo menor dispositivo · Layout fluido depende de medidas relativas · Breakpoints devem ser organizados corretamente no CSS · O último breakpoint pode sobrescrever o anterior · Menu hambúrguer é comum no mobile · Desktop geralmente utiliza menu horizontal."
+            }
+          ]
+        }
+      ]
     },
     // Aula 12 — CSS e HTML Comandos Básicos
     {
