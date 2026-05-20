@@ -25,6 +25,45 @@
 
 /* ── UTILITÁRIO ─────────────────────────────────────────────────── */
 
+/**
+ * Sanitiza HTML da resposta permitindo apenas tags seguras:
+ * strong, em, br, code, ul, ol, li.
+ * Bloqueia scripts, eventos inline e qualquer outra tag.
+ */
+function _sanitizarRespostaHtml(html) {
+  const ALLOWED_TAGS = /^(strong|em|br|code|ul|ol|li)$/i;
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+
+  function limpar(node) {
+    for (let i = node.childNodes.length - 1; i >= 0; i--) {
+      const child = node.childNodes[i];
+      if (child.nodeType === Node.ELEMENT_NODE) {
+        if (!ALLOWED_TAGS.test(child.tagName)) {
+          node.replaceChild(document.createTextNode(child.textContent), child);
+        } else {
+          while (child.attributes.length > 0) {
+            child.removeAttribute(child.attributes[0].name);
+          }
+          limpar(child);
+        }
+      }
+    }
+  }
+
+  limpar(tmp);
+  return tmp.innerHTML;
+}
+
+/**
+ * _esc(str) — escapa texto puro para injeção segura em atributos e conteúdo
+ * de texto via innerHTML. Use para qualquer valor que deva ser tratado como
+ * texto literal (perguntas, categorias, dicas, etc.).
+ *
+ * NÃO use _esc() no verso do card: o verso pode conter HTML intencional
+ * (strong, em, code, ul/li…). Nesses casos use _sanitizarRespostaHtml()
+ * que mantém uma allowlist segura de tags.
+ */
 function _esc(str) {
   return String(str)
     .replace(/&/g, '&amp;')
@@ -39,7 +78,7 @@ function _esc(str) {
    ═════════════════════════════════════════════════════════════════ */
 
 function _tplCena(card, tagCls, estado, constantes) {
-  const { DISC_LABEL, ACERTOS_PARA_DOMINAR, MIN_TENTATIVAS_PENALIDADE } = constantes;
+  const { ACERTOS_PARA_DOMINAR, MIN_TENTATIVAS_PENALIDADE } = constantes;
   const { discId, srPerfil } = estado;
 
   const perfil     = srPerfil(card.id);
@@ -48,7 +87,9 @@ function _tplCena(card, tagCls, estado, constantes) {
 
   const perguntaTxt  = card.frente ?? card.pergunta ?? '';
   const respostaTxt  = card.verso  ?? card.resposta ?? '';
-  const categoriaTxt = card.categoria ?? DISC_LABEL[discId] ?? discId ?? '';
+  // Categoria resolvida pelo domínio (card.categoria) com fallback para discId.
+  // O label de disciplina legível é responsabilidade do domínio, não da UI.
+  const categoriaTxt = card.categoria ?? discId ?? '';
 
   const badgeViz = tentativas > 0
     ? `<div class="cards-viz-badge ${dominado ? 'viz-dominado' : ''}" aria-label="${tentativas} visualizações">
@@ -101,11 +142,11 @@ function _tplCena(card, tagCls, estado, constantes) {
 
   const dicaHtml = card.dica
     ? `<div class="cards-dica-wrap">
-         <button class="cards-dica-btn" type="button" aria-label="Ver dica" aria-expanded="false" id="cards-dica-btn">
+         <button class="cards-dica-btn" type="button" aria-label="Ver dica" aria-expanded="false" data-dica-btn>
            <i class="fas fa-lightbulb" aria-hidden="true"></i>
            <span class="cards-dica-btn__label">Dica</span>
          </button>
-         <div class="cards-dica cards-dica--oculta" id="cards-dica-texto" aria-live="polite">
+         <div class="cards-dica cards-dica--oculta" data-dica-texto aria-live="polite">
            <i class="fas fa-lightbulb" aria-hidden="true"></i>
            ${_esc(card.dica)}
          </div>
@@ -134,7 +175,7 @@ function _tplCena(card, tagCls, estado, constantes) {
         <div class="cards-face cards-back" aria-hidden="true">
           <div class="cards-back-inner">
             <span class="cards-tag ${tagCls}" id="cards-tag-back">${_esc(categoriaTxt)}</span>
-            <div class="cards-answer" id="cards-answer">${respostaTxt}</div>
+            <div class="cards-answer" id="cards-answer">${_sanitizarRespostaHtml(respostaTxt)}</div>
 
             <div class="cards-diff-badge-wrap" id="cards-diff-badge-wrap">
               <span class="cards-diff-badge" id="cards-diff-badge"></span>
@@ -456,9 +497,9 @@ export function criarUI(estado, ações, constantes) {
         case 'ArrowLeft': case 'ArrowUp':
           e.preventDefault(); ações.anterior(); break;
         case 'a': case 'A':
-          if (!marcando) ações.marcar(true); break;
+          if (!marcando && flipped) ações.marcar(true); break;
         case 'e': case 'E':
-          if (!marcando) ações.marcar(false); break;
+          if (!marcando && flipped) ações.marcar(false); break;
         case 'z': case 'Z':
           ações.desfazer(); break;
         case '1': if (flipped) ações.marcarDificuldade('easy');   break;
@@ -487,6 +528,8 @@ export function criarUI(estado, ações, constantes) {
     if (!toast) {
       toast = document.createElement('div');
       toast.className = 'cards-undo-toast';
+      toast.setAttribute('role', 'status');
+      toast.setAttribute('aria-live', 'polite');
       toast.innerHTML = '<i class="fas fa-rotate-left" aria-hidden="true"></i> Resposta desfeita';
       panelEl.appendChild(toast);
     }
@@ -586,11 +629,7 @@ export function criarUI(estado, ações, constantes) {
       btn.setAttribute('aria-selected', i === current ? 'true' : 'false');
 
       btn.addEventListener('click', () => {
-        const cardAlvo = cards[i];
-        if (i > estado.current && cardAlvo && !estado.resultado[cardAlvo.id]) return;
-        const dir = i > estado.current ? 'next' : 'prev';
-        estado.current = i;
-        renderCard(dir);
+        ações.irParaCard(i);
       });
 
       dotsRow.appendChild(btn);
@@ -650,7 +689,7 @@ export function criarUI(estado, ações, constantes) {
     const { cards, current, discId, panelEl, resultado } = estado;
 
     const todosRespondidos = cards.length > 0 && cards.every(c => resultado[c.id]);
-    const isUltimo        = current >= cards.length || (current === cards.length && todosRespondidos);
+    const isUltimo        = current >= cards.length && todosRespondidos;
 
     const wrap   = panelEl.querySelector('#cards-scene-wrap');
     const bottom = panelEl.querySelector('#cards-bottom');
@@ -668,7 +707,9 @@ export function criarUI(estado, ações, constantes) {
 
     if (current >= cards.length) {
       const primeiro = cards.findIndex(c => !resultado[c.id]);
-      estado.current = primeiro >= 0 ? primeiro : cards.length - 1;
+      // Delega ao domínio — UI não deve mutar estado.current diretamente.
+      ações.irParaCard(primeiro >= 0 ? primeiro : cards.length - 1);
+      return;
     }
 
     bottom.style.display = '';
@@ -690,11 +731,26 @@ export function criarUI(estado, ações, constantes) {
       const tip = badge.querySelector('.cards-tooltip');
       badge.addEventListener('mouseenter', () => tip?.classList.add('tooltip-visible'));
       badge.addEventListener('mouseleave', () => tip?.classList.remove('tooltip-visible'));
+      // Suporte touch: toggle ao tocar (mobile).
+      badge.addEventListener('touchend', e => {
+        e.stopPropagation();
+        const visivel = tip?.classList.toggle('tooltip-visible');
+        // Fecha ao tocar em qualquer outro lugar.
+        if (visivel) {
+          const fecharTip = ev => {
+            if (!badge.contains(ev.target)) {
+              tip?.classList.remove('tooltip-visible');
+              document.removeEventListener('touchend', fecharTip);
+            }
+          };
+          document.addEventListener('touchend', fecharTip);
+        }
+      });
       badge.addEventListener('click', e => e.stopPropagation());
     });
 
-    const dicaBtn = wrap.querySelector('#cards-dica-btn');
-    const dicaTxt = wrap.querySelector('#cards-dica-texto');
+    const dicaBtn = wrap.querySelector('[data-dica-btn]');
+    const dicaTxt = wrap.querySelector('[data-dica-texto]');
     if (dicaBtn && dicaTxt) {
       dicaBtn.addEventListener('click', e => {
         e.stopPropagation();

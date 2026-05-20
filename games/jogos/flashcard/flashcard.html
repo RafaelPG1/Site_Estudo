@@ -109,10 +109,14 @@
         // Só restaura automaticamente se estava na tela de questões
         if (sessao.tela !== 'question') return;
 
-        // Verifica se há perguntas pendentes (respostas undefined = {v: '__p__'})
+        // Verifica se há perguntas pendentes.
+        // Cobre os três formatos que _ehPendente() reconhece:
+        //   • null         — serialização JSON de undefined (formato antigo)
+        //   • { v:'__p__'} — formato atual do SessionNav
+        // (undefined nunca ocorre após JSON.parse, mas null sim)
         var respostas   = sessao.respostas || [];
         var pendentes   = respostas.filter(function (r) {
-          return r && r.v === '__p__';
+          return r === null || r === undefined || (r && r.v === '__p__');
         }).length;
         if (pendentes === 0) return;
 
@@ -278,11 +282,6 @@
     CSS de ocultação seja injetado o mais cedo possível.
   -->
   <script type="module" src="flashcard.js"></script>
-
-  <script>
-    document.getElementById('footer-year') &&
-      (document.getElementById('footer-year').textContent = new Date().getFullYear());
-  </script>
 
 </body>
 </html>

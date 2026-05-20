@@ -15,9 +15,6 @@
    ═══════════════════════════════════════════════════════════════ */
 
 
-/* ── RESET ──────────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 /* ── VARIÁVEIS ──────────────────────────────────────────────── */
 :root {
   /* Superfícies e bordas — nunca mudam com disciplina */
@@ -26,6 +23,7 @@
   --surface-2:   #141c2e;
   --border:      rgba(255,255,255,0.07);
   --border-glow: rgba(255,255,255,0.14);
+  --text-2:      rgba(255,255,255,0.38);
 
   /*
    * CORES DE DISCIPLINA — NÃO DECLARADAS AQUI.
@@ -67,6 +65,10 @@
   --ease-card:  cubic-bezier(.4,0,.2,1);
   --ease-pop:   cubic-bezier(.34,1.56,.64,1);
   --ease-slide: cubic-bezier(.22,1,.36,1);
+
+  /* Modo Revisão de Erros */
+  --rev-rgb:       229,62,62;
+  --rev-amber-rgb: 245,158,11;
 }
 
 html { scroll-behavior: smooth; }
@@ -598,6 +600,23 @@ a    { text-decoration: none; color: inherit; }
   content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%);
   border: 5px solid transparent; border-top-color: rgba(255,255,255,.12);
 }
+/* Em mobile, o badge fica no canto inferior esquerdo do card.
+   Ancorar o tooltip pela esquerda (left:0) evita overflow pela esquerda da viewport. */
+@media (max-width: 680px) {
+  .cards-tooltip {
+    left: 0;
+    transform: scale(.92);
+    min-width: 180px;
+    max-width: 200px;
+  }
+  .cards-tooltip.tooltip-visible {
+    transform: scale(1);
+  }
+  .cards-tooltip::after {
+    left: 18px;
+    transform: none;
+  }
+}
 .cards-tooltip-title { font-size: .68rem; font-weight: 700; margin-bottom: 5px; display: flex; align-items: center; gap: 5px; font-family: var(--font-body); }
 .cards-tooltip-body  { font-size: .63rem; color: rgba(255,255,255,.52); line-height: 1.6; font-family: var(--font-body); }
 .cards-tooltip-body strong { font-weight: 700; }
@@ -895,14 +914,6 @@ kbd {
   font-size: .65rem; font-weight: 700; color: rgba(255,255,255,.38);
   white-space: nowrap; align-self: center;
   min-width: 28px; text-align: right;
-}
-
-/* ── FOOTER ─────────────────────────────────────────────────── */
-.footer {
-  position: relative; z-index: 2;
-  text-align: center; padding: 1.75rem 2rem;
-  font-size: .76rem; color: rgba(255,255,255,.28);
-  letter-spacing: .04em; border-top: 1px solid var(--border); margin-top: 2rem;
 }
 
 /* ── CARD-TOAST GLOBAL ──────────────────────────────────────── */
@@ -1214,11 +1225,6 @@ kbd {
    MODO REVISÃO DE ERROS — redesign completo
    ══════════════════════════════════════════════════════════════════ */
 
-:root {
-  --rev-rgb:       229,62,62;
-  --rev-amber-rgb: 245,158,11;
-}
-
 /* ── Header global em modo revisão ── */
 body.modo-revisao .header {
   background: rgba(20,5,5,.95);
@@ -1298,7 +1304,7 @@ body.modo-revisao .header__icon {
 
 /* Barra de progresso em modo revisão */
 .panel-cards[data-revisao="true"] .cards-progress-bar-fill {
-  background: linear-gradient(90deg, #e53e3e, #f59e0b) !important;
+  background: linear-gradient(90deg, #e53e3e, #f59e0b);
 }
 
 /* Dot ativo em modo revisão */
@@ -1351,16 +1357,16 @@ body.modo-revisao .header__icon {
 }
 
 /* ── Tela final em modo revisão ── */
-.cards-finish-card--revisao {
-  border-color: rgba(229,62,62,.45) !important;
-  background: linear-gradient(160deg, rgba(28,8,8,.92) 0%, rgba(18,10,16,.95) 100%) !important;
+.cards-finish-scene .cards-finish-card--revisao {
+  border-color: rgba(229,62,62,.45);
+  background: linear-gradient(160deg, rgba(28,8,8,.92) 0%, rgba(18,10,16,.95) 100%);
   box-shadow:
     0 0 0 1px rgba(229,62,62,.10) inset,
     0 12px 48px rgba(0,0,0,.55),
-    0 0 60px rgba(229,62,62,.14) !important;
+    0 0 60px rgba(229,62,62,.14);
 }
-.cards-finish-card--revisao::before {
-  background: radial-gradient(ellipse at 50% 0%, rgba(229,62,62,.12) 0%, transparent 65%) !important;
+.cards-finish-scene .cards-finish-card--revisao::before {
+  background: radial-gradient(ellipse at 50% 0%, rgba(229,62,62,.12) 0%, transparent 65%);
 }
 
 .finish-revisao-badge {
@@ -1380,17 +1386,17 @@ body.modo-revisao .header__icon {
   filter: drop-shadow(0 0 12px rgba(229,62,62,.35));
 }
 
-.finish-restart-btn--revisao {
-  background: linear-gradient(135deg, rgba(229,62,62,.18), rgba(180,20,20,.14)) !important;
-  border-color: rgba(229,62,62,.50) !important;
-  color: #fca5a5 !important;
-  box-shadow: 0 4px 20px rgba(229,62,62,.12) !important;
+.cards-finish-scene .finish-restart-btn--revisao {
+  background: linear-gradient(135deg, rgba(229,62,62,.18), rgba(180,20,20,.14));
+  border-color: rgba(229,62,62,.50);
+  color: #fca5a5;
+  box-shadow: 0 4px 20px rgba(229,62,62,.12);
 }
-.finish-restart-btn--revisao:hover {
-  background: linear-gradient(135deg, rgba(229,62,62,.28), rgba(200,30,30,.22)) !important;
-  border-color: rgba(229,62,62,.72) !important;
-  box-shadow: 0 4px 28px rgba(229,62,62,.28), 0 0 0 1px rgba(229,62,62,.12) inset !important;
-  color: #fef2f2 !important;
+.cards-finish-scene .finish-restart-btn--revisao:hover {
+  background: linear-gradient(135deg, rgba(229,62,62,.28), rgba(200,30,30,.22));
+  border-color: rgba(229,62,62,.72);
+  box-shadow: 0 4px 28px rgba(229,62,62,.28), 0 0 0 1px rgba(229,62,62,.12) inset;
+  color: #fef2f2;
 }
 
 /* ── FIM MODO REVISÃO ──────────────────────────────────────────── */
@@ -1415,8 +1421,50 @@ body.modo-revisao .header__icon {
   .intro-title { font-size: 1.9rem; }
 }
 @media (max-width: 400px) {
-  .logo-title  { font-size: .95rem; }
-  .breadcrumb  { display: none; }
   .intro-meta  { flex-direction: column; align-items: center; }
   .header-game-badge { display: none !important; }
+}
+
+/* ── ACESSIBILIDADE: prefers-reduced-motion ─────────────────────
+   Usuários com sensibilidade a movimento (vestibular disorders,
+   epilepsia, etc.) recebem versões estáticas das animações contínuas.
+   Animações de entrada pontuais (ckFadeUp, badge-pop, card-enter-*)
+   são preservadas pois são breves e controladas pelo usuário.
+   ─────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  /* Shimmer e pulse do banner de revisão */
+  .cards-revisao-banner {
+    animation: ckFadeUp .35s ease both;
+  }
+  .cards-revisao-banner::before {
+    animation: none;
+  }
+
+  /* Linha pulsante no header em modo revisão */
+  body.modo-revisao .header::after {
+    animation: none;
+    opacity: .55;
+  }
+
+  /* Pulse do banner de revisão */
+  @keyframes rev-pulse {
+    0%, 100% { border-color: rgba(229,62,62,.50); }
+  }
+
+  /* Skeleton shimmer e pulse */
+  .skeleton-pulse {
+    animation: none;
+    opacity: .15;
+  }
+  .skeleton-bar {
+    animation: none;
+    opacity: .10;
+  }
+
+  /* Animações de entrada de card — reduz para fade simples */
+  .card-enter-next,
+  .card-enter-prev {
+    animation: none;
+    opacity: 1;
+  }
 }
