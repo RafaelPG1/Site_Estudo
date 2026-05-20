@@ -260,22 +260,10 @@ function _registrarResposta(resp) {
       estado.erros   += 1;
     }
 
-    // Persiste resposta e atualiza histórico em memória
+    // Persiste resposta e atualiza histórico em memória a partir do retorno do storage
     salvarResultadoVF(estado.usuario, estado.discId, estado.sem, [{ id: pergunta.id, resp, acertou: correto }])
-      .then(() => {
-        const entrada = estado.historicoVF[pergunta.id] ?? {
-          tentativas: 0, acertos: 0, erros: 0, ultimaVez: 0, acertosConsecutivos: 0,
-        };
-        entrada.tentativas++;
-        if (correto) {
-          entrada.acertos++;
-          entrada.acertosConsecutivos = (entrada.acertosConsecutivos ?? 0) + 1;
-        } else {
-          entrada.erros++;
-          entrada.acertosConsecutivos = 0;
-        }
-        entrada.ultimaVez = Date.now();
-        estado.historicoVF[pergunta.id] = entrada;
+      .then(historicoAtualizado => {
+        if (historicoAtualizado) estado.historicoVF = historicoAtualizado;
       })
       .catch(err => console.warn('[vdd_falso] Erro ao salvar resposta:', err));
   }
@@ -321,9 +309,11 @@ function irProxima() {
 async function finalizarJogo() {
   estado.timer?.stop();
   limparSessao();
-  estado._nav?.sairParaRota();
 
+  // sairParaRota() é chamado APÓS mostrarTela para garantir que a tela de
+  // resultado seja exibida antes de qualquer efeito colateral de navegação.
   mostrarTela('result', false);
+  estado._nav?.sairParaRota();
 
   renderizarResultado(
     {

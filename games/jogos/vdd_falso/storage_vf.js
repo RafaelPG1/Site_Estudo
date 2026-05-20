@@ -84,6 +84,8 @@ export async function salvarResultadoVF(usuario, discId, sem, resultados) {
   const patch = {};
   for (const { id } of validos) patch[id] = atual[id];
   await _base.salvarMerge(usuario, discId, sem, patch);
+
+  return atual; // retorna o histórico completo atualizado para o caller
 }
 
 /* ══════════════════════════════════════════════════════════

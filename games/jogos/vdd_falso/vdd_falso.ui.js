@@ -420,8 +420,32 @@ export function setupPausa({ getTimer, isPausado, setPausado, isQuestaoAtual, on
     overlay.className = 'vf-pause-overlay hidden';
     overlay.innerHTML = `
       <div class="vf-pause-card">
-        <p class="vf-pause-title">Pausado</p>
-        <button class="game-btn" id="btn-retomar">Retomar</button>
+        <div class="vf-pause-header">
+          <div class="vf-pause-icon-ring">
+            <svg viewBox="0 0 16 16" fill="currentColor" width="22" height="22">
+              <rect x="3" y="2" width="3.5" height="12" rx="1"/>
+              <rect x="9.5" y="2" width="3.5" height="12" rx="1"/>
+            </svg>
+          </div>
+          <div>
+            <p class="vf-pause-title">Jogo pausado</p>
+            <p class="vf-pause-hint">O tempo está parado</p>
+          </div>
+        </div>
+        <div class="vf-pause-divider"></div>
+        <div class="vf-pause-tip">
+          <span class="vf-pause-tip__icon">💡</span>
+          <span>Aproveite para revisar o conteúdo antes de continuar. O timer só retoma quando você clicar em <strong>Retomar</strong>.</span>
+        </div>
+        <button class="game-btn vf-pause-resume-btn" id="btn-retomar">
+          <svg viewBox="0 0 64 64" fill="currentColor" width="14" height="14" style="margin-right:6px">
+            <path d="M14 8l40 24L14 56V8z"/>
+          </svg>
+          Retomar
+        </button>
+        <p class="vf-pause-shortcut">
+          Pressione <kbd>Espaço</kbd> ou <kbd>Esc</kbd> para retomar
+        </p>
       </div>`;
     document.querySelector('.game-shell')?.appendChild(overlay);
     return overlay;
@@ -483,14 +507,24 @@ export function setupPausa({ getTimer, isPausado, setPausado, isQuestaoAtual, on
     await onVoltarIntro();
   });
 
-  // Atalho Espaço para pausar/retomar
+  // Atalho Espaço ou Esc para pausar/retomar
   document.addEventListener('keydown', e => {
-    if (e.code === 'Space' &&
-        !el.screenQuestion?.classList.contains('hidden') &&
-        isQuestaoAtual()) {
-      if (document.activeElement?.id === 'btn-retomar') return;
-      e.preventDefault();
-      togglePausa();
+    const isSpace = e.code === 'Space';
+    const isEsc   = e.code === 'Escape';
+
+    if (!el.screenQuestion?.classList.contains('hidden') && isQuestaoAtual()) {
+      // Esc: só retoma (se estiver pausado), não pausa
+      if (isEsc && isPausado()) {
+        e.preventDefault();
+        togglePausa();
+        return;
+      }
+      // Espaço: alterna pausa/retomar
+      if (isSpace) {
+        if (document.activeElement?.id === 'btn-retomar') return;
+        e.preventDefault();
+        togglePausa();
+      }
     }
   });
 }
@@ -661,9 +695,10 @@ export function renderEstatisticasQuestoes(historico, perguntas, respostas, modo
   const lista = document.createElement('div');
   lista.className = 'vf-sq-lista';
 
-  for (const q of perguntas) {
+  for (let i = 0; i < perguntas.length; i++) {
+    const q    = perguntas[i];
     const h    = historico[q.id];
-    const resp = respostas[perguntas.indexOf(q)];
+    const resp = respostas[i]; // índice direto — evita indexOf por referência que quebra com cópias do array
     const acertouAgora = resp !== null && resp !== undefined && resp === q.resposta;
     const errouAgora   = resp !== null && resp !== undefined && resp !== q.resposta;
     const enun = q.enunciado.length > 52 ? q.enunciado.slice(0, 52) + '…' : q.enunciado;
