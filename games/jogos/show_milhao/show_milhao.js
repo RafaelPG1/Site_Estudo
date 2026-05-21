@@ -795,15 +795,27 @@ if (document.readyState === 'loading') {
 // Esconde botões ao rolar no mobile
 const _headerControls = document.getElementById('header-controls');
 
+function _syncControls() {
+  if (window.innerWidth > 600) return;
+  const naTela = !document.getElementById('screen-question')?.classList.contains('hidden');
+  const noTopo = window.scrollY <= 1;   // threshold mínimo: some no primeiro pixel
+
+  if (naTela && noTopo) {
+    _headerControls?.style.setProperty('display', 'flex', 'important');
+  } else {
+    _headerControls?.style.setProperty('display', 'none', 'important');
+  }
+}
+
+let _rafPending = false;
 window.addEventListener('scroll', () => {
   if (window.innerWidth > 600) return;
-  const y = window.scrollY;
-  
-  if (y > 5) {
-    _headerControls?.style.setProperty('display', 'none', 'important');
-  } else {
-    if (!document.getElementById('screen-question')?.classList.contains('hidden')) {
-      _headerControls?.style.setProperty('display', 'flex', 'important');
-    }
-  }
+  if (_rafPending) return;
+  _rafPending = true;
+  requestAnimationFrame(() => {
+    _syncControls();
+    _rafPending = false;
+  });
 }, { passive: true });
+
+window.addEventListener('sm-tela-mudou', _syncControls);

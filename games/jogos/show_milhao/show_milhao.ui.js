@@ -120,6 +120,8 @@ export function uiMostrarTela(nome, modoRevisao = false, totalQuestoes = 0) {
   }
 
   document.body.classList.toggle('modo-revisao', !!modoRevisao);
+
+  window.dispatchEvent(new Event('sm-tela-mudou'));
 }
 
 /* ══════════════════════════════════════════════════════════
