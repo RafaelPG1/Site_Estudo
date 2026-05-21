@@ -9,7 +9,6 @@ import {
   setConfigs, getConfigs, resetConfigs,
   limparDadosQuiz,
   getSemestreAtual, getDisciplinasDeSemestre,
-  limparPerfisSRS,          // ← CORREÇÃO Bug#2: estava sendo usada sem import
 } from './src/global.js';
 
 import { injetarLogo } from './shared/js/logo.js';
@@ -635,30 +634,8 @@ function abrirModalConfig() {
   const disciplinas = getDisciplinasDeSemestre(sem);
   const uid         = getUsuario()?.uid ?? 'visitante';
 
-  /* ── Flashcard SRS ──
-     CORREÇÃO Bug#1: import() dinâmico envolto em try/catch para não
-     derrubar o restante da UI caso o arquivo não exista ainda.
-     CORREÇÃO Bug#2: limparPerfisSRS agora importada no topo do arquivo. */
+  /* ── Flashcard SRS ── */
   async function _resetarSRS(discId) {
-    try {
-      // limparPerfisSRS pode não existir em global.js ainda — protege
-      if (typeof limparPerfisSRS === 'function') {
-        if (discId) {
-          await limparPerfisSRS(uid, discId, sem);
-        } else {
-          for (const disc of disciplinas) {
-            await limparPerfisSRS(uid, disc.id, sem);
-            console.log(`[SRS] limpo: uid="${uid}" disc="${disc.id}" sem="${sem}"`);
-          }
-        }
-      } else {
-        console.warn('[SRS] limparPerfisSRS não disponível em global.js');
-      }
-    } catch (errSRS) {
-      console.warn('[SRS] erro ao limpar perfis:', errSRS);
-    }
-
-    // Import do módulo flashcard — opcional, não bloqueia o restante
     try {
       const mod = await import('./games/jogos/flashcard/flashcard.js');
       if (typeof mod?.invalidarCacheSRS === 'function') {
@@ -666,8 +643,7 @@ function abrirModalConfig() {
         console.log(`[SRS] cache invalidado: disc="${discId ?? 'todas'}"`);
       }
     } catch (errMod) {
-      // Módulo pode não existir ainda — não é erro crítico
-      console.warn('[SRS] flashcard.js não encontrado (não é crítico):', errMod?.message);
+      console.warn('[SRS] flashcard.js não encontrado (não crítico):', errMod?.message);
     }
   }
 
