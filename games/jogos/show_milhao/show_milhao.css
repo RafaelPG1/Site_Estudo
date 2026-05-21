@@ -362,6 +362,14 @@ body {
 }
 .sm-btn-continuar:active { transform: translateY(-1px) !important; }
 
+.sm-btn-continuar__icon {
+  flex-shrink: 0;
+  transition: transform 0.5s var(--ease);
+}
+.sm-btn-continuar:hover .sm-btn-continuar__icon {
+  transform: rotate(360deg);
+}
+
 .sm-btn-nova {
   width: 100%;
   max-width: 340px;
@@ -455,6 +463,17 @@ body {
     inset 0 1px 0 rgba(var(--cor-tema-rgb), 0.3);
 }
 .btn-jogar:active { transform: translateY(-1px); }
+
+/* Ícone dentro do btn-jogar (ex: raio no "JOGAR AGORA") */
+.btn-jogar__icon {
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 6px rgba(var(--cor-tema-rgb), 0.65));
+  transition: transform 0.2s var(--ease), filter 0.2s var(--ease);
+}
+.btn-jogar:hover .btn-jogar__icon {
+  transform: scale(1.18) rotate(-8deg);
+  filter: drop-shadow(0 0 10px rgba(var(--cor-tema-rgb), 1));
+}
 
 /* btn-proxima — botão de navegação */
 .btn-proxima {
@@ -864,7 +883,20 @@ body:has(#screen-question:not(.hidden)) #header-controls {
 .premio-item.atual      { background: rgba(var(--cor-tema-rgb), 0.15); color: var(--ouro); border: 1px solid rgba(var(--cor-tema-rgb), 0.3); }
 .premio-item.conquistado { color: var(--verde); }
 .premio-item.pendente    { background: rgba(255,23,68,0.15); color: #ff1744; border: 1px solid rgba(255,23,68,0.4); animation: pendente-pulse 1.5s ease-in-out infinite; }
-.premio-item.marco       { color: var(--ouro-claro); font-weight: 700; }
+
+
+/* Posição atual — dourado */
+.premio-item.atual { 
+  background: rgba(var(--cor-tema-rgb), 0.15); 
+  color: #facc15; 
+  border: 1px solid rgba(var(--cor-tema-rgb), 0.3); 
+}
+
+/* Marcos (níveis 4 e 8) — azul */
+.premio-item.marco { 
+  color: var(--cor-tema); 
+  font-weight: 700; 
+}
 
 /* ── TELA RESULTADO ── */
 .sm-stats-grid {
@@ -1177,12 +1209,10 @@ body:has(#screen-question:not(.hidden)) #header-controls {
 
 /* ── BOTÃO "REVISAR ERROS" ── */
 .sm-btn-revisar-erros {
-  /* Mesmo design do .btn-jogar, cor vermelha */
   position: relative;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
   overflow: hidden;
   width: 100%;
   max-width: 340px;
@@ -1191,7 +1221,7 @@ body:has(#screen-question:not(.hidden)) #header-controls {
   font-weight: 700;
   letter-spacing: 2px;
   text-transform: uppercase;
-  padding: 16px 48px;
+  padding: 16px 24px;
   border-radius: 14px;
   background: linear-gradient(
     135deg,
@@ -1209,6 +1239,12 @@ body:has(#screen-question:not(.hidden)) #header-controls {
   transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease),
               background 0.2s, border-color 0.2s;
   white-space: nowrap;
+}
+
+.sm-revisar-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* Brilho animado — revisar */
@@ -1261,27 +1297,56 @@ body:has(#screen-question:not(.hidden)) #header-controls {
 .sm-btn-revisar-erros:active {
   transform: translateY(-1px);
 }
+
+@keyframes sm-shake {
+  0%, 100% { transform: rotate(0deg); }
+  20%       { transform: rotate(-16deg); }
+  40%       { transform: rotate(13deg); }
+  60%       { transform: rotate(-10deg); }
+  80%       { transform: rotate(7deg); }
+}
+
+.sm-revisar-icon {
+  flex-shrink: 0;
+  display: inline-block;
+  transform-origin: center;
+  margin-right: 4px;
+}
+.sm-btn-revisar-erros:hover .sm-revisar-icon {
+  animation: sm-shake 0.45s ease both;
+  filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.8));
+}
 .sm-btn-revisar-erros.hidden {
   display: none !important;
 }
 
 /* Badge de contagem de erros */
-/* Badge de contagem de erros */
 .sm-revisar-badge {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 4px;
-  border-radius: 9px;
-  background: rgba(239, 68, 68, .25);
+  
+  width: 26px; 
+  height: 26px;
+  border-radius: 50%; 
+  border: 2px solid #f87171; 
+  background-color: transparent; 
+
+  /* Empurra o texto levemente para a direita. 
+     Se achar muito ou pouco, mude para 2px ou 3px */
+  padding-left: 2px; 
+
   color: #f87171;
-  font-size: .65rem;
+  font-size: 0.8rem; 
   font-weight: 800;
   line-height: 1;
-  font-family: var(--font-body); /* ← adicione aqui */
+  font-family: var(--font-body);
 }
+
 
 /* Wrapper do botão revisar na intro */
 .sm-revisar-wrapper {
@@ -1398,7 +1463,7 @@ body.modo-revisao .timer-numero {
   }
   .sm-btn-revisar-erros {
     font-size: .88rem;
-    padding: 14px 28px;
+    padding: 14px 20px;
     letter-spacing: 1.5px;
   }
 }

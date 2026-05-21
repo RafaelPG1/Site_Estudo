@@ -35,10 +35,10 @@
      adicionando apenas a lógica de domínio (ex: acumular tentativas).
 ═══════════════════════════════════════════════════════════════ */
 
-import { doc, getDoc, setDoc, deleteDoc }
-  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-import { getDb } from '../../../src/firebase.js';
-
+const _base = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+  ? ''
+  : '/Site_Estudo';
+const { getDb } = await import(`${_base}/src/firebase.js`);
 /* ══════════════════════════════════════════════════════════
    HELPERS GENÉRICOS DE localStorage
    ══════════════════════════════════════════════════════════ */
