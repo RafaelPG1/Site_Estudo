@@ -34,7 +34,6 @@ import {
   salvarPontuacaoSM,
   melhorPontuacaoLocalSM,
   acumuladoLocalSM,
-  debugEstado,
   smLog, smWarn, smError,
 } from './storage_sm.js';
 
@@ -356,25 +355,21 @@ function registrarResposta(resp) {
     smLog(`Q${estado.indice + 1}: ERRO ✗ | prêmio travado`);
   }
 
-  // Persiste no histórico e atualiza cache em memória
+  // Atualiza cache em memória de forma síncrona (o save real ocorre em finalizarJogo)
   if (resp !== null) {
-    salvarResultadoSM(estado.usuario, estado.discId, estado.sem, [
-      { id: pergunta.id ?? `q${estado.indice}`, resp, acertou: correto },
-    ]).then(() => {
-      const entrada = estado.historicoSM[pergunta.id] ?? {
-        tentativas: 0, acertos: 0, erros: 0, ultimaVez: 0, acertosConsecutivos: 0,
-      };
-      entrada.tentativas++;
-      if (correto) {
-        entrada.acertos++;
-        entrada.acertosConsecutivos = (entrada.acertosConsecutivos ?? 0) + 1;
-      } else {
-        entrada.erros++;
-        entrada.acertosConsecutivos = 0;
-      }
-      entrada.ultimaVez               = Date.now();
-      estado.historicoSM[pergunta.id] = entrada;
-    }).catch(err => smWarn('Erro ao salvar resposta:', err));
+    const entrada = estado.historicoSM[pergunta.id] ?? {
+      tentativas: 0, acertos: 0, erros: 0, ultimaVez: 0, acertosConsecutivos: 0,
+    };
+    entrada.tentativas++;
+    if (correto) {
+      entrada.acertos++;
+      entrada.acertosConsecutivos = (entrada.acertosConsecutivos ?? 0) + 1;
+    } else {
+      entrada.erros++;
+      entrada.acertosConsecutivos = 0;
+    }
+    entrada.ultimaVez               = Date.now();
+    estado.historicoSM[pergunta.id] = entrada;
   }
 
   salvarSessao();
@@ -619,15 +614,10 @@ function continuarSessao(sessao) {
   estado.tempoInicio    = Date.now();
   estado.pausado        = false;
 
-  // Restaura tempos — reseta o timer da questão onde parou (sem resposta)
-  const temposRestaurados = sessao.tempos
+  // Restaura tempos — mantém o tempo restante salvo para a questão ativa
+  estado.tempos = sessao.tempos
     ? [...sessao.tempos]
     : new Array(sessao.perguntas.length).fill(CONFIG.TEMPO_POR_QUESTAO);
-
-  if (estado.respostas[estado.indice] === undefined) {
-    temposRestaurados[estado.indice] = CONFIG.TEMPO_POR_QUESTAO;
-  }
-  estado.tempos = temposRestaurados;
 
   uiAtualizarContadores(estado.perguntas.length);
   uiConstruirListaPremios(PREMIOS);
@@ -781,9 +771,7 @@ async function init() {
     nav.pronto();
   }
 
-  // Expõe debug global
-  window.smDebugJogo = () => debugEstado(estado.usuario, estado.discId, estado.sem);
-  smLog('Init concluído. Use smDebugJogo() para inspecionar o estado.');
+  smLog('Init concluído.');
 }
 
 if (document.readyState === 'loading') {

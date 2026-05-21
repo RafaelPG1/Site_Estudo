@@ -1019,29 +1019,6 @@ body:has(#screen-question:not(.hidden)) #header-controls {
   border-radius: 3px; padding: 1px 5px; font-size: .7rem;
 }
 
-/* ── ESTATÍSTICAS POR QUESTÃO (criadas dinamicamente pelo JS) ── */
-.sm-stats-questoes { margin-top: 20px; width: 100%; max-width: 500px; }
-.sm-stats-questoes summary {
-  cursor: pointer;
-  display: flex; align-items: center; gap: 8px;
-  font-size: .85rem; color: rgba(255,255,255,.6);
-  list-style: none; padding: 8px 0;
-  border-top: 1px solid var(--borda);
-}
-.sm-sq-summary-icon { font-size: 1rem; }
-.sm-sq-chevron      { margin-left: auto; }
-.sm-sq-lista        { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
-.sm-sq-row          { display: flex; flex-direction: column; gap: 4px; }
-.sm-sq-meta         { display: flex; align-items: center; gap: 6px; }
-.sm-sq-icone        { font-size: .9rem; font-weight: 700; flex-shrink: 0; }
-.sm-sq-enun         { font-size: .78rem; color: rgba(255,255,255,.55); }
-.sm-sq-prog-row     { display: flex; align-items: center; gap: 8px; }
-.sm-sq-bar-bg       { flex: 1; height: 5px; background: rgba(255,255,255,.08); border-radius: 3px; overflow: hidden; }
-.sm-sq-bar-fill     { height: 100%; border-radius: 3px; transition: width .4s; }
-.sm-sq-bar-fill.sm-prog-bar--ok      { background: #34d399; }
-.sm-sq-bar-fill.sm-prog-bar--medio   { background: #facc15; }
-.sm-sq-bar-fill.sm-prog-bar--critico { background: #f87171; }
-.sm-sq-stat         { font-size: .72rem; font-weight: 700; min-width: 36px; text-align: right; }
 
 /* ── ANIMAÇÕES ── */
 @keyframes fadeDown {
@@ -1205,12 +1182,32 @@ body:has(#screen-question:not(.hidden)) #header-controls {
 }
 
 @media (max-width: 480px) {
+  /* ── Badge histórico: sai do topo da card e aparece no espaço entre a barra e a card ── */
+
+  /* Espaço extra no topo da card para acomodar o badge que "sai" */
+  .card-pergunta {
+    overflow: visible;
+    /* O gap entre elementos em #screen-question é 18px.
+       Badge tem ~26px. Criamos 34px de padding-top extra na card
+       para o badge ter onde pousar acima dela. */
+    padding-top: 44px;
+  }
+
   .sm-hist-badge {
-    top: 10px;
-    right: 10px;
+    /* Mantém posicionamento absoluto relativo à card */
+    position: absolute;
+
+    /* Move para FORA do topo da card (acima da borda superior) */
+    top: -34px;
+    /* Alinha à esquerda em vez de direita */
+    right: auto;
+    left: 0;
+
     font-size: .6rem;
     border-radius: 8px;
+    animation: sm-badge-pop .3s ease both;
   }
+
   .sm-hist-badge__seg    { padding: 3px 7px; }
   .sm-hist-badge__status { padding: 3px 7px; }
 }
@@ -1437,18 +1434,6 @@ body:has(#screen-question:not(.hidden)) #header-controls {
   text-align: center;
 }
 
-/* ── ESTATÍSTICAS — melhorias (v3.0) ── */
-/* Novo alias de classes para as barras de stats (sem sobrescrever antigos) */
-.sm-sq-bar-fill--ok      { background: #34d399; }
-.sm-sq-bar-fill--medio   { background: #facc15; }
-.sm-sq-bar-fill--critico { background: #f87171; }
-
-/* Ícone de estrela para questão dominada/acertada */
-.sm-sq-superada {
-  font-size: .8rem;
-  margin-left: 2px;
-  flex-shrink: 0;
-}
 
 /* ── MODO REVISÃO — body class ── */
 body.modo-revisao .sm-nav-btn--proxima {

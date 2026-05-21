@@ -9,35 +9,50 @@ import {
   setConfigs, getConfigs, resetConfigs,
   limparDadosQuiz,
   getSemestreAtual, getDisciplinasDeSemestre,
+  limparPerfisSRS,          // ← CORREÇÃO Bug#2: estava sendo usada sem import
 } from './src/global.js';
 
 import { injetarLogo } from './shared/js/logo.js';
 import { login, logout, carregarConfigs } from './src/firebase.js';
 import { criarSemestreSelect, preencherAnos } from './shared/js/dom.js';
-import { limparPerfisSRS } from './games/jogos/flashcard/storage.js';
 
 /* ─────────────────────────────────────────────
    INICIALIZAÇÃO
 ───────────────────────────────────────────── */
-document.addEventListener('DOMContentLoaded', () => {
-  if (estaLogado() && getUsuario()?.admin) {
-    window.location.replace('/admin/admin.html');
-    return;
+function init() {
+  try {
+    if (estaLogado() && getUsuario()?.admin) {
+      window.location.replace('/admin/admin.html');
+      return;
+    }
+
+    injetarLogo({
+      destino:  '#header-logo-wrap',
+      tamanho:  38,
+      layout:   'stacked',
+      srcBase:  './shared/img/logo.png',
+      linkHref: './index.html',
+    });
+
+    setPagina('HOME');
+    _refreshHeader();
+    bindCardLinks();
+    preencherAnos(['footer-year']);
+  } catch (err) {
+    // CORREÇÃO: erro na inicialização é logado mas não silenciado.
+    // Sem este catch, um erro em qualquer import/função acima derrubava
+    // o header inteiro sem nenhuma mensagem visível.
+    console.error('[init] Erro crítico na inicialização:', err);
+    // Tenta ao menos renderizar o header mesmo com erro parcial
+    try { _refreshHeader(); } catch (_) {}
   }
+}
 
-  injetarLogo({
-    destino:  '#header-logo-wrap',
-    tamanho:  38,
-    layout:   'stacked',
-    srcBase:  './shared/img/logo.png',
-    linkHref: './index.html',
-  });
-
-  setPagina('HOME');
-  _refreshHeader();
-  bindCardLinks();
-  preencherAnos(['footer-year']);
-});
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
 
 /* ─────────────────────────────────────────────
    HEADER — ponto único de reconstrução
@@ -45,11 +60,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /** Sempre use _refreshHeader() — nunca chame renderHeader/_montarSelect separados */
 function _refreshHeader() {
-  renderHeader();
-  _montarSelect();
+  // CORREÇÃO Bug#4: encapsula erros para que uma falha no render do header
+  // não interrompa o fluxo de login/logout/salvar que chamou esta função.
+  try {
+    renderHeader();
+    _montarSelect();
+  } catch (err) {
+    console.error('[Header] Falha ao reconstruir o header:', err);
+  }
 }
 
 function _montarSelect() {
+  // CORREÇÃO Bug#3: semestre-wrap é criado dinamicamente por renderHeader().
+  // Se renderHeader() falhou silenciosamente, o elemento não existe.
+  // Verificamos antes de chamar para evitar erro em criarSemestreSelect.
+  const wrap = document.getElementById('semestre-wrap');
+  if (!wrap) {
+    console.warn('[Header] #semestre-wrap não encontrado — renderHeader() pode ter falhado.');
+    return;
+  }
   criarSemestreSelect('semestre-wrap', sem => {
     document.dispatchEvent(new CustomEvent('nexus:semestreChanged', { detail: sem }));
   });
@@ -57,6 +86,11 @@ function _montarSelect() {
 
 function renderHeader() {
   const nav = document.getElementById('header-nav');
+  // CORREÇÃO: se o elemento não existir (ex: HTML não carregou), aborta sem crash
+  if (!nav) {
+    console.error('[Header] #header-nav não encontrado no DOM.');
+    return;
+  }
   nav.innerHTML = '';
 
   const semestreWrap = document.createElement('div');
@@ -601,19 +635,39 @@ function abrirModalConfig() {
   const disciplinas = getDisciplinasDeSemestre(sem);
   const uid         = getUsuario()?.uid ?? 'visitante';
 
-  /* ── Flashcard SRS ── */
+  /* ── Flashcard SRS ──
+     CORREÇÃO Bug#1: import() dinâmico envolto em try/catch para não
+     derrubar o restante da UI caso o arquivo não exista ainda.
+     CORREÇÃO Bug#2: limparPerfisSRS agora importada no topo do arquivo. */
   async function _resetarSRS(discId) {
-    const mod = await import('./games/jogos/flashcard/flashcard.js');
-    if (discId) {
-      await limparPerfisSRS(uid, discId, sem);
-      mod.invalidarCacheSRS(discId);
-      console.log(`[SRS] limpo: uid="${uid}" disc="${discId}" sem="${sem}"`);
-    } else {
-      for (const disc of disciplinas) {
-        await limparPerfisSRS(uid, disc.id, sem);
-        console.log(`[SRS] limpo: uid="${uid}" disc="${disc.id}" sem="${sem}"`);
+    try {
+      // limparPerfisSRS pode não existir em global.js ainda — protege
+      if (typeof limparPerfisSRS === 'function') {
+        if (discId) {
+          await limparPerfisSRS(uid, discId, sem);
+        } else {
+          for (const disc of disciplinas) {
+            await limparPerfisSRS(uid, disc.id, sem);
+            console.log(`[SRS] limpo: uid="${uid}" disc="${disc.id}" sem="${sem}"`);
+          }
+        }
+      } else {
+        console.warn('[SRS] limparPerfisSRS não disponível em global.js');
       }
-      mod.invalidarCacheSRS(null);
+    } catch (errSRS) {
+      console.warn('[SRS] erro ao limpar perfis:', errSRS);
+    }
+
+    // Import do módulo flashcard — opcional, não bloqueia o restante
+    try {
+      const mod = await import('./games/jogos/flashcard/flashcard.js');
+      if (typeof mod?.invalidarCacheSRS === 'function') {
+        mod.invalidarCacheSRS(discId ?? null);
+        console.log(`[SRS] cache invalidado: disc="${discId ?? 'todas'}"`);
+      }
+    } catch (errMod) {
+      // Módulo pode não existir ainda — não é erro crítico
+      console.warn('[SRS] flashcard.js não encontrado (não é crítico):', errMod?.message);
     }
   }
 

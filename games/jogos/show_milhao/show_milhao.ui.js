@@ -616,8 +616,7 @@ export function uiRenderizarResultado(dados) {
   // Botão "Revisar erros" no resultado
   uiAtualizarBtnRevisarErros(erradas, onRevisarErros);
 
-  // Estatísticas por questão
-  _renderEstatisticasQuestoes({ perguntas, respostas, historicoSM, modoRevisao });
+
 }
 
 /* ══════════════════════════════════════════════════════════
