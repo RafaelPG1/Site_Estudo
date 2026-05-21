@@ -35,8 +35,7 @@
      adicionando apenas a lógica de domínio (ex: acumular tentativas).
 ═══════════════════════════════════════════════════════════════ */
 
-// Pega a raiz do projeto automaticamente, seja onde for
-const _root = new URL('../../../', import.meta.url).href;
+const _root = new URL('../../', import.meta.url).href;
 const { getDb } = await import(`${_root}src/firebase.js`);
 /* ══════════════════════════════════════════════════════════
    HELPERS GENÉRICOS DE localStorage
