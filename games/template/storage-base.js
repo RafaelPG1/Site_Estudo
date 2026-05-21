@@ -37,6 +37,9 @@
 
 const _root = new URL('../../', import.meta.url).href;
 const { getDb } = await import(`${_root}src/firebase.js`);
+const { doc, getDoc, setDoc, deleteDoc } = await import(
+  'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'
+);
 /* ══════════════════════════════════════════════════════════
    HELPERS GENÉRICOS DE localStorage
    ══════════════════════════════════════════════════════════ */
