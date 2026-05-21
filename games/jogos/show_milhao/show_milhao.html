@@ -50,13 +50,18 @@
 
   <!-- Controles: pausar / menu — ocultos até o jogo começar -->
   <div class="game-header__controls" id="header-controls">
-    <button id="btn-pause" class="sm-ctrl-btn sm-ctrl-btn--pause">
-      <span id="pause-icon">⏸</span>
-      <span id="pause-label">Pausar</span>
-    </button>
-    <button id="btn-voltar-intro" class="sm-ctrl-btn sm-ctrl-btn--menu">
-      ↩ Menu
-    </button>
+<button id="btn-pause" class="sm-ctrl-btn sm-ctrl-btn--pause">
+  <svg id="pause-icon" viewBox="0 0 24 24" fill="currentColor" width="13" height="13">
+    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+  </svg>
+  <span id="pause-label">Pausar</span>
+</button>
+<button id="btn-voltar-intro" class="sm-ctrl-btn sm-ctrl-btn--menu">
+  <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13">
+    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+  </svg>
+  Menu
+</button>
   </div>
 </header>
 

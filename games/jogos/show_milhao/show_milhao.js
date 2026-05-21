@@ -791,3 +791,19 @@ if (document.readyState === 'loading') {
 } else {
   init();
 }
+
+// Esconde botões ao rolar no mobile
+const _headerControls = document.getElementById('header-controls');
+
+window.addEventListener('scroll', () => {
+  if (window.innerWidth > 600) return;
+  const y = window.scrollY;
+  
+  if (y > 5) {
+    _headerControls?.style.setProperty('display', 'none', 'important');
+  } else {
+    if (!document.getElementById('screen-question')?.classList.contains('hidden')) {
+      _headerControls?.style.setProperty('display', 'flex', 'important');
+    }
+  }
+}, { passive: true });

@@ -1073,15 +1073,27 @@ body:has(#screen-question:not(.hidden)) #header-controls {
   .hud               { padding: 10px 16px; }
   .sm-nav-row        { flex-direction: column; align-items: stretch; }
 }
+
+
 @media (max-width: 600px) {
-  /* Header responsivo — igual vdd_falso */
-  .game-header            { padding: 0 14px !important; gap: 10px !important; }
-  .game-header__back span { display: none !important; }
-  .game-header__icon      { width: 36px !important; height: 36px !important; font-size: 1rem !important; }
-  .game-header__name      { font-size: .95rem !important; }
-  .sm-ctrl-btn span       { display: none; }
-  .sm-ctrl-btn            { padding: 7px 10px !important; }
+  .game-header__controls {
+    position: fixed !important;
+    top: calc(var(--header-h) + 8px) !important;
+    right: 12px !important;
+    z-index: 49 !important;
+    margin-left: 0 !important;
+    gap: 6px !important;
+  }
+
+  #screen-question {
+    padding-top: 52px !important;
+  }
+
+
 }
+
+
+
 @media (max-width: 480px) {
   .card-pergunta { padding: 20px 18px; }
   .feedback-box  { padding: 18px 16px; }
