@@ -35,10 +35,9 @@
      adicionando apenas a lógica de domínio (ex: acumular tentativas).
 ═══════════════════════════════════════════════════════════════ */
 
-const _base = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
-  ? ''
-  : '/Site_Estudo';
-const { getDb } = await import(`${_base}/src/firebase.js`);
+// Pega a raiz do projeto automaticamente, seja onde for
+const _root = new URL('../../../', import.meta.url).href;
+const { getDb } = await import(`${_root}src/firebase.js`);
 /* ══════════════════════════════════════════════════════════
    HELPERS GENÉRICOS DE localStorage
    ══════════════════════════════════════════════════════════ */
