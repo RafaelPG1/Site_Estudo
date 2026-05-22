@@ -1048,7 +1048,16 @@ body:has(#screen-question:not(.hidden)) #header-controls {
   .premiacao-lateral { display: none; }
   #screen-question   { padding-bottom: 40px; }
   .hud               { padding: 10px 16px; }
-  .sm-nav-row        { flex-direction: column; align-items: stretch; }
+  .sm-nav-row {
+    flex-direction: row;    /* ← lado a lado em vez de coluna */
+    align-items: center;
+  }
+
+    .sm-nav-row .btn-proxima {
+    flex: 1;                /* cada botão ocupa metade do espaço */
+    justify-content: center;
+    text-align: center;
+  }
 }
 
 
@@ -1071,10 +1080,7 @@ body:has(#screen-question:not(.hidden)) #header-controls {
 
 
 
-@media (max-width: 480px) {
-  .card-pergunta { padding: 20px 18px; }
-  .feedback-box  { padding: 18px 16px; }
-}
+
 @keyframes pendente-pulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(255,23,68,0.3); }
   50%       { box-shadow: 0 0 0 4px rgba(255,23,68,0); }
@@ -1182,35 +1188,33 @@ body:has(#screen-question:not(.hidden)) #header-controls {
 }
 
 @media (max-width: 480px) {
-  /* ── Badge histórico: sai do topo da card e aparece no espaço entre a barra e a card ── */
 
-  /* Espaço extra no topo da card para acomodar o badge que "sai" */
+  .sm-progress-wrap,
+  .sm-dots-container {
+    margin-top: 0;
+  }
+
   .card-pergunta {
     overflow: visible;
-    /* O gap entre elementos em #screen-question é 18px.
-       Badge tem ~26px. Criamos 34px de padding-top extra na card
-       para o badge ter onde pousar acima dela. */
-    padding-top: 44px;
+    padding-top: 28px;
+    margin-top: 30px;
   }
 
   .sm-hist-badge {
-    /* Mantém posicionamento absoluto relativo à card */
     position: absolute;
-
-    /* Move para FORA do topo da card (acima da borda superior) */
     top: -34px;
-    /* Alinha à esquerda em vez de direita */
-    right: auto;
-    left: 0;
-
+    right: 0;        /* ← alinha à direita */
+    left: auto;      /* ← cancela qualquer left herdado */
     font-size: .6rem;
     border-radius: 8px;
+    z-index: 4;
     animation: sm-badge-pop .3s ease both;
   }
 
   .sm-hist-badge__seg    { padding: 3px 7px; }
   .sm-hist-badge__status { padding: 3px 7px; }
 }
+
 /* ══════════════════════════════════════════════════════════
    v3.0 — SISTEMA REVISAR ERROS + REVISÃO + CONTINUAR
    Segue o mesmo padrão visual do vdd_falso.css
@@ -1453,14 +1457,3 @@ body.modo-revisao .timer-numero {
 }
 
 /* ── RESPONSIVO — extras v3.0 ── */
-@media (max-width: 480px) {
-  .sm-revisao-banner {
-    padding: 6px 12px;
-    font-size: .72rem;
-  }
-  .sm-btn-revisar-erros {
-    font-size: .88rem;
-    padding: 14px 20px;
-    letter-spacing: 1.5px;
-  }
-}
