@@ -6,8 +6,8 @@
 import { ASSOCIACAO_DATA }                            from './associacao_data.js';
 import { saveRound, loadRound, clearRound, clearAll, salvarResultadoAssoc } from './storage_a.js';
 import { getDisciplinasDeSemestre, getUsuario }       from '../../../src/global.js';
-import { aplicarCoresDisciplina }                     from '../../../shared/js/theme.js';
-import { DISC_CORES }                                 from '../../../shared/js/cores.js';
+import { aplicarCoresDisciplina }                     from '../../../shared/js/themes/theme.js';
+import { DISC_CORES }                                 from '../../../shared/js/themes/cores.js';
 
 (function () {
   'use strict';

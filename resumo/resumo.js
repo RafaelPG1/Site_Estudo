@@ -18,11 +18,11 @@ import {
   SEMESTRES,
 } from '../src/global.js';
 
-import { resolverSemestreDeURL, sincronizarSemNaURL } from '../shared/js/url.js';
-import { criarSemestreSelect, preencherAnos } from '../shared/js/dom.js';
-import { aplicarCoresDisciplina } from '../shared/js/theme.js';
+import { resolverSemestreDeURL, sincronizarSemNaURL } from '../shared/js/utils/url.js';
+import { criarSemestreSelect, preencherAnos } from '../shared/js/utils/dom.js';
+import { aplicarCoresDisciplina } from '../shared/js/themes/theme.js';
 
-import { injetarLogo } from '../shared/js/logo.js';
+import { injetarLogo } from '../shared/js/utils/logo.js';
 
 injetarLogo({ destino: '#header-logo-wrap', tamanho: 32, layout: 'stacked' });
 

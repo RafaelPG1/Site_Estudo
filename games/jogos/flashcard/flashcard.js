@@ -101,8 +101,8 @@ import { getCardsData }                         from '../../../content/game/flas
 import { carregarPerfisSRS, salvarPerfilSRS }   from './storage.js';
 import { Shell, lerParams }                     from '../../template/game-shell.js';
 import { getUsuario, getDisciplinasDeSemestre } from '../../../src/global.js';
-import { DISC_CORES }                           from '../../../shared/js/cores.js';
-import { aplicarCoresDisciplina }               from '../../../shared/js/theme.js';
+import { DISC_CORES }                           from '../../../shared/js/themes/cores.js';
+import { aplicarCoresDisciplina }               from '../../../shared/js/themes/theme.js';
 import { criarUI }                              from './flashcard.ui.js';
 
 /*

@@ -52,8 +52,7 @@ a { text-decoration: none; color: inherit; }
   z-index: 10;
   padding: 1.25rem 2rem;
   border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(12px);
-  background: rgba(7, 11, 20, 0.6);
+  background: #070b14;
 }
 
 .header__inner {

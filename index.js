@@ -3,6 +3,10 @@
    Lógica da página inicial
    ============================================= */
 
+// no script da página (só durante dev)
+import { initSfxPlayground } from '/shared/js/audio/sfx-playground.js';
+initSfxPlayground();
+
 import {
   getEstado, setUsuario, getUsuario, estaLogado,
   setPagina,
@@ -11,9 +15,9 @@ import {
   getSemestreAtual, getDisciplinasDeSemestre,
 } from './src/global.js';
 
-import { injetarLogo } from './shared/js/logo.js';
+import { injetarLogo } from './shared/js/utils/logo.js';
 import { login, logout, carregarConfigs } from './src/firebase.js';
-import { criarSemestreSelect, preencherAnos } from './shared/js/dom.js';
+import { criarSemestreSelect, preencherAnos } from './shared/js/utils/dom.js';
 
 /* ─────────────────────────────────────────────
    INICIALIZAÇÃO
@@ -149,10 +153,15 @@ function renderHeader() {
    CARDS — links
 ───────────────────────────────────────────── */
 function bindCardLinks() {
+  // CORREÇÃO A2: IDs alinhados com os definidos no HTML (card-resumos com 's',
+  // card-pessoal presente) e paths corrigidos para a estrutura real de pastas
+  // (pasta games/, não jogos/). Antes, os IDs errados faziam o ?. silenciar
+  // o bind sem aviso — os cards funcionavam só pelo href nativo do <a>.
   const rotas = {
-    'card-resumo': './resumo/resumo.html',
-    'card-quiz':   './quiz/quiz.html',
-    'card-jogos':  './jogos/jogo.html',
+    'card-pessoal': './area_pessoal/pessoal.html',
+    'card-resumos': './resumo/resumo.html',
+    'card-quiz':    './quiz/quiz.html',
+    'card-jogos':   './games/jogo.html',
   };
   Object.entries(rotas).forEach(([id, path]) => {
     document.getElementById(id)?.addEventListener('click', () => {
@@ -330,8 +339,13 @@ function abrirModalLogin() {
       const configsRemota = await carregarConfigs(resultado.usuario.uid);
 
       if (configsRemota) {
-        setConfigs(configsRemota);
-        console.log('[login] configs aplicadas do Firebase ✓');
+        // CORREÇÃO A1: merge em vez de substituição total.
+        // Antes, setConfigs(configsRemota) sobrescrevia todas as preferências
+        // locais (tema, animações etc.) que o usuário havia alterado sem estar
+        // logado. Agora as configs locais têm prioridade sobre as remotas,
+        // preservando escolhas recentes do usuário feitas offline.
+        setConfigs({ ...configsRemota, ...getConfigs() });
+        console.log('[login] configs mescladas com Firebase ✓');
       } else {
         console.log('[login] nenhuma config remota — mantendo localStorage');
       }
@@ -566,7 +580,7 @@ function abrirModalConfig() {
     };
   }
 
-  function _autoSave() { setConfigs(_lerConfigs()); }
+  function _autoSave() { _configsAlteradas = true; setConfigs(_lerConfigs()); }
 
   document.getElementById('cfg-tema').addEventListener('change', _autoSave);
   document.getElementById('cfg-anim').addEventListener('change', _autoSave);
@@ -589,9 +603,13 @@ function abrirModalConfig() {
     if (concluir) { concluir.checked = false; concluir.disabled = true; }
   }
 
+  // CORREÇÃO M2: rastreia se houve alguma alteração real para não mostrar
+  // "Configurações salvas!" quando o usuário fecha o modal sem mudar nada.
+  let _configsAlteradas = false;
+
   function _fecharComToast() {
     fecharModal(modal);
-    mostrarToast('Configurações salvas!');
+    if (_configsAlteradas) mostrarToast('Configurações salvas!');
   }
 
   document.getElementById('modal-overlay-config').addEventListener('click', _fecharComToast);
@@ -599,6 +617,7 @@ function abrirModalConfig() {
 
   document.getElementById('btn-salvar-configs').addEventListener('click', () => {
     setConfigs(_lerConfigs());
+    _configsAlteradas = true;
     _fecharComToast();
   });
 
@@ -732,6 +751,10 @@ function _confirmar(btn, callback) {
   btn.classList.add('modal-btn--danger');
 
   setTimeout(() => {
+    // CORREÇÃO M1: verifica se o botão ainda está no DOM antes de manipulá-lo.
+    // Sem essa guarda, o timeout disparava sobre um elemento já removido quando
+    // o usuário fechava o modal durante a janela de confirmação de 3 s.
+    if (!document.body.contains(btn)) return;
     if (btn.dataset.confirmando === 'true') {
       btn.dataset.confirmando = 'false';
       btn.textContent = btn.dataset.textoOriginal;
@@ -972,7 +995,13 @@ function abrirPerfilModal() {
       if (typeof salvarAvatar === 'function') {
         await salvarAvatar(usuarioAtualizado.uid, avatarSelecionado);
       }
-    } catch (_) { /* função pode não existir ainda */ }
+    } catch (err) {
+      // CORREÇÃO C1: loga o erro em vez de silenciá-lo.
+      // Um catch vazio escondia falhas reais (token expirado, regra de
+      // segurança, rede instável), fazendo o avatar reverter na próxima
+      // sessão sem nenhum aviso visível no console.
+      console.warn('[salvarAvatar] Falha ao sincronizar com o Firebase:', err);
+    }
 
     fecharModal(modal);
     _refreshHeader();

@@ -24,8 +24,8 @@ const timer = Timer.criar({ total: 60, onEnd: () => encerrarJogo() });
 timer.start();
    ============================================================ */
 
-import { aplicarCoresDisciplina }   from '../../shared/js/theme.js';
-import { DISC_CORES }               from '../../shared/js/cores.js';
+import { aplicarCoresDisciplina }   from '../../shared/js/themes/theme.js';
+import { DISC_CORES }               from '../../shared/js/themes/cores.js';
 import { getDisciplinasDeSemestre } from '../../src/global.js';
 
 /* ══════════════════════════════════════════════════════════

@@ -32,11 +32,11 @@
 
   ============================================================ */
 
-import { DISC_CORES } from '../../shared/js/cores.js';
-import { resolverSemestreDeURL, sincronizarSemNaURL, propagarSemNosLinks } from '../../shared/js/url.js';
-import { aplicarCoresDisciplina } from '../../shared/js/theme.js';
+import { DISC_CORES } from '../../shared/js/themes/cores.js';
+import { resolverSemestreDeURL, sincronizarSemNaURL, propagarSemNosLinks } from '../../shared/js/utils/url.js';
+import { aplicarCoresDisciplina } from '../../shared/js/themes/theme.js';
 
-import { injetarLogo } from '../../shared/js/logo.js';
+import { injetarLogo } from '../../shared/js/utils/logo.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   injetarLogo({

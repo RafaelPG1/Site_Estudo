@@ -5,10 +5,10 @@ import {
   getDisciplinasDeSemestre,
 } from '../src/global.js';
 
-import { sincronizarSemNaURL } from '../shared/js/url.js';
-import { preencherAnos } from '../shared/js/dom.js';
+import { sincronizarSemNaURL } from '../shared/js/utils/url.js';
+import { preencherAnos } from '../shared/js/utils/dom.js';
 
-import { injetarLogo } from '../shared/js/logo.js';
+import { injetarLogo } from '../shared/js/utils/logo.js';
 
 (function () {
 

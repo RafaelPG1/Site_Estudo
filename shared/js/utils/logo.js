@@ -48,8 +48,8 @@ export function injetarLogo({
   layout     = 'stacked',
   exibirNome = true,
   classe     = '',
-  srcBase    = '../shared/img/logo.png',
-  linkHref   = '../index.html',
+  srcBase    = '../../shared/img/logo.png',
+  linkHref   = '../../index.html',
 } = {}) {
   const container = document.querySelector(destino);
   if (!container) {

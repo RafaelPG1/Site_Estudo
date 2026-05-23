@@ -22,8 +22,8 @@
    callbacks — nunca lê/grava Estado diretamente.
    ============================================================ */
 
-import { DISC_CORES }               from '../../../shared/js/cores.js';
-import { aplicarCoresDisciplina }   from '../../../shared/js/theme.js';
+import { DISC_CORES }               from '../../../shared/js/themes/cores.js';
+import { aplicarCoresDisciplina }   from '../../../shared/js/themes/theme.js';
 import { getDisciplinasDeSemestre } from '../../../src/global.js';
 import { lerParams }                from '../../template/game-shell.js';
 

@@ -23,8 +23,8 @@
 
 import { Shell, Timer, shuffle }               from '../../template/game-shell.js';
 import { calcularPeso, sorteiarPonderado }     from '../../template/deck.js';
-import { DISC_CORES }                          from '../../../shared/js/cores.js';
-import { aplicarCoresDisciplina }             from '../../../shared/js/theme.js';
+import { DISC_CORES }                          from '../../../shared/js/themes/cores.js';
+import { aplicarCoresDisciplina }             from '../../../shared/js/themes/theme.js';
 import { getUsuario, getDisciplinasDeSemestre } from '../../../src/global.js';
 import { SessionNav }                          from '../../template/session-nav.js';
 

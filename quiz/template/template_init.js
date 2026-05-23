@@ -26,11 +26,11 @@ import {
   getDisciplinasDeSemestre,
 } from '../../src/global.js';
 import Storage from '../../src/storage.js';
-import { DISC_CORES } from '../../shared/js/cores.js';
-import { sincronizarSemNaURL, propagarSemNosLinks } from '../../shared/js/url.js';
-import { setText, setHTML } from '../../shared/js/dom.js';
-import { aplicarCoresDisciplina } from '../../shared/js/theme.js';
-import { injetarLogo } from '../../shared/js/logo.js';
+import { DISC_CORES } from '../../shared/js/themes/cores.js';
+import { sincronizarSemNaURL, propagarSemNosLinks } from '../../shared/js/utils/url.js';
+import { setText, setHTML } from '../../shared/js/utils/dom.js';
+import { aplicarCoresDisciplina } from '../../shared/js/themes/theme.js';
+import { injetarLogo } from '../../shared/js/utils/logo.js';
 
 import { carregarRespostasQuiz, salvarRespostasQuiz, limparRespostasQuiz } from '../../src/firebase.js';
 

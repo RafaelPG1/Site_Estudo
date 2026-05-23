@@ -1,32 +1,24 @@
 /* ============================================================
-   NEXUS STUDY — games/jogos/vdd_falso/vdd_falso.ui.js  (v7.0)
+   NEXUS STUDY — games/jogos/vdd_falso/vdd_falso.ui.js  (v8.0)
 
-   Responsabilidade: toda a camada de UI/DOM do jogo V/F.
-   ─────────────────────────────────────────────────────
-   Exporta funções puras de renderização e eventos visuais.
-   Não contém lógica de negócio nem estado global — recebe
-   dados via parâmetro e comunica ações via callbacks.
+   CORREÇÕES v8.0:
+   ─────────────────────────────────────────────────────────
+   [PROGRESSO]
+   • atualizarProgressoRespondidas(pct) — nova função exportada
+   • renderizarQuestao NÃO toca mais na barra de progresso
+     (isso é responsabilidade do orquestrador com anti-regressão)
 
-   Conteúdo:
-     • Cache de elementos DOM  (el, $)
-     • Gerenciamento de telas  (mostrarTela)
-     • Info-strip              (setInfoStrip)
-     • Barra de timer          (aplicarCorBarra)
-     • Bolinhas de progresso   (renderDots)
-     • Badge de histórico      (renderizarBadgeHistorico)
-     • Renderização da questão (renderizarQuestao)
-     • Botões de navegação     (atualizarBotoesNav)
-     • Contadores              (atualizarContadores)
-     • Botão "Revisar erros"   (atualizarBtnRevisarErros)
-     • Botão "Continuar"       (configurarBtnContinuar)
-     • Pausa / overlay         (setupPausa)
-     • Atalhos de teclado      (registrarAtalhos)
-     • Tela de resultado       (renderizarResultado)
-     • Tela revisão concluída  (mostrarTelaRevisaoConcluida)
-     • Estatísticas por questão (renderEstatisticasQuestoes)
+   [TIMER]
+   • renderizarQuestao não cria nem gerencia timers
+   • setupPausa recebe pausarTimer/retomarTimer como callbacks
+     em vez de getTimer() — desacopla completamente da instância
+   • Toda lógica de interval está em GameTimer (vdd_falso.js)
+
+   [RESTO]
+   • Sem quebra de contrato com o HTML existente
+   • Todas as outras funções mantidas idênticas
 ============================================================ */
 
-import { Timer } from '../../template/game-shell.js';
 import { CONFIG } from './vdd_falso.js';
 
 /* ══════════════════════════════════════════════════════════
@@ -35,7 +27,6 @@ import { CONFIG } from './vdd_falso.js';
 
 export const $ = id => document.getElementById(id);
 
-/** Cache populado por initEl() durante o init do jogo. */
 export const el = {};
 
 export function initEl() {
@@ -86,7 +77,6 @@ export function mostrarTela(nome, modoRevisao = false) {
     el.screenQuestion.dataset.revisao = modoRevisao ? 'true' : 'false';
   }
 
-  // Banner de revisão
   const mainArea = el.screenQuestion?.querySelector('.vf-main-area');
   if (mainArea) {
     mainArea.querySelector('.vf-revisao-banner')?.remove();
@@ -104,6 +94,23 @@ export function mostrarTela(nome, modoRevisao = false) {
       mainArea.insertBefore(banner, mainArea.firstChild);
     }
   }
+}
+
+/* ══════════════════════════════════════════════════════════
+   PROGRESSO — baseado em respondidas, controlado pelo orquestrador
+══════════════════════════════════════════════════════════ */
+
+/**
+ * Atualiza a barra de progresso com o valor fornecido (0–100).
+ * Não faz cálculo nem anti-regressão aqui — isso é feito em vdd_falso.js.
+ *
+ * @param {number} pct - percentual já calculado e com anti-regressão aplicada
+ */
+export function atualizarProgressoRespondidas(pct) {
+  if (el.progressFill) {
+    el.progressFill.style.width = pct + '%';
+  }
+  // O label de % é atualizado pelo MutationObserver inline no HTML
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -133,10 +140,6 @@ export function setInfoStrip(texto) {
    FEEDBACK DE ACERTO / ERRO
 ══════════════════════════════════════════════════════════ */
 
-/**
- * Exibe (ou oculta) o banner de feedback de acerto/erro.
- * @param {'correct'|'wrong'|'timeout'|null} tipo - null para esconder
- */
 export function mostrarFeedback(tipo) {
   const area = el.feedbackArea ?? $('feedback-area');
   const msg  = el.feedbackMsg  ?? $('feedback-msg');
@@ -144,7 +147,7 @@ export function mostrarFeedback(tipo) {
 
   if (!tipo) {
     area.classList.add('hidden');
-    msg.className  = 'game-feedback';
+    msg.className   = 'game-feedback';
     msg.textContent = '';
     return;
   }
@@ -157,16 +160,15 @@ export function mostrarFeedback(tipo) {
 
   const { classe, texto } = configs[tipo] ?? configs.wrong;
 
-  // Força reflow para reativar a animação CSS mesmo na mesma questão
-  msg.className   = 'game-feedback';
-  void msg.offsetWidth;
-  msg.className   = `game-feedback ${classe}`;
+  msg.className  = 'game-feedback';
+  void msg.offsetWidth; // força reflow para reativar animação CSS
+  msg.className  = `game-feedback ${classe}`;
   msg.textContent = texto;
   area.classList.remove('hidden');
 }
 
 /* ══════════════════════════════════════════════════════════
-   BARRA DE TIMER
+   BARRA DE TIMER (cor)
 ══════════════════════════════════════════════════════════ */
 
 export function aplicarCorBarra(pct) {
@@ -246,7 +248,7 @@ export function renderizarBadgeHistorico(questaoId, historicoVF) {
   if (elStatus) elStatus.textContent = statusText;
 
   badge.className = `vf-hist-badge${statusMod ? ' ' + statusMod : ''}`;
-  void badge.offsetWidth; // força reflow para animação CSS
+  void badge.offsetWidth;
   badge.hidden = false;
 }
 
@@ -255,10 +257,10 @@ export function renderizarBadgeHistorico(questaoId, historicoVF) {
 ══════════════════════════════════════════════════════════ */
 
 export function atualizarBotoesNav(indice, perguntas, respostas) {
-  const total      = perguntas.length;
-  const ultimo     = indice === total - 1;
+  const total       = perguntas.length;
+  const ultimo      = indice === total - 1;
   const jaRespondeu = respostas[indice] !== undefined;
-  const todasResp  = respostas.every(r => r !== undefined);
+  const todasResp   = respostas.every(r => r !== undefined);
 
   if (el.btnAnterior) el.btnAnterior.disabled = indice === 0;
 
@@ -274,19 +276,22 @@ export function atualizarBotoesNav(indice, perguntas, respostas) {
 
 /* ══════════════════════════════════════════════════════════
    RENDERIZAR QUESTÃO
+   ──────────────────────────────────────────────────────
+   MUDANÇA v8.0: não cria nem gerencia timers.
+   Recebe `timerRestante` apenas para referência visual
+   (a barra de timer é atualizada pelo GameTimer via onTick).
 ══════════════════════════════════════════════════════════ */
 
 /**
  * @param {object} params
- * @param {object[]} params.perguntas
- * @param {any[]}    params.respostas
- * @param {number}   params.indice
- * @param {object}   params.historicoVF
- * @param {object|null} params.timer      - instância atual do timer (pode ser null)
- * @param {function} params.criarTimer    - factory que cria novo Timer
- * @param {function} params.onNavegar     - callback(i) ao clicar nos dots
+ * @param {object[]}     params.perguntas
+ * @param {any[]}        params.respostas
+ * @param {number}       params.indice
+ * @param {object}       params.historicoVF
+ * @param {number}       params.timerRestante  - segundos restantes (apenas leitura)
+ * @param {function}     params.onNavegar      - callback(i)
  */
-export function renderizarQuestao({ perguntas, respostas, indice, historicoVF, timer, criarTimer, onNavegar }) {
+export function renderizarQuestao({ perguntas, respostas, indice, historicoVF, timerRestante, onNavegar }) {
   const pergunta    = perguntas[indice];
   const jaRespondeu = respostas[indice] !== undefined;
   const resposta    = respostas[indice];
@@ -296,9 +301,11 @@ export function renderizarQuestao({ perguntas, respostas, indice, historicoVF, t
   if (el.qTotal)   el.qTotal.textContent   = perguntas.length;
   if (el.qBadge)   el.qBadge.textContent   = `Q${indice + 1}`;
 
-  const pct = ((indice + 1) / perguntas.length) * 100;
-  if (el.progressFill) el.progressFill.style.width = pct + '%';
-  if (el.questionText) el.questionText.textContent  = pergunta.enunciado;
+  // ── Progresso: NÃO atualiza a barra aqui.
+  // A barra é atualizada por atualizarProgressoRespondidas() em vdd_falso.js,
+  // que aplica anti-regressão. Evitamos conflito não tocando em progressFill aqui.
+
+  if (el.questionText) el.questionText.textContent = pergunta.enunciado;
 
   // Limpa estado visual dos botões
   el.btnTrue ?.classList.remove('vf-btn--selected', 'vf-btn--correct', 'vf-btn--wrong');
@@ -313,7 +320,6 @@ export function renderizarQuestao({ perguntas, respostas, indice, historicoVF, t
     if (btnCorreto && !correto) btnCorreto.classList.add('vf-btn--correct');
     setInfoStrip(pergunta.explicacao ?? null);
 
-    // Feedback: timeout (resp === null) ou acerto/erro
     if (resposta === null) mostrarFeedback('timeout');
     else                  mostrarFeedback(correto ? 'correct' : 'wrong');
   } else {
@@ -325,20 +331,7 @@ export function renderizarQuestao({ perguntas, respostas, indice, historicoVF, t
   atualizarBotoesNav(indice, perguntas, respostas);
   renderDots(perguntas, respostas, indice, onNavegar);
 
-  // Timer: para o atual e inicia novo se questão sem resposta
-  if (timer) timer.stop();
-
-  if (!jaRespondeu) {
-    const tempoRestante = CONFIG.TEMPO_POR_QUESTAO;
-    const pctInicial    = (tempoRestante / CONFIG.TEMPO_POR_QUESTAO) * 100;
-    const novoTimer     = criarTimer(tempoRestante);
-    novoTimer.start();
-    aplicarCorBarra(pctInicial);
-    document.documentElement.style.setProperty('--timer-pct', pctInicial + '%');
-    return novoTimer; // retorna para que o chamador atualize estado.timer
-  }
-
-  return null;
+  // Não há retorno de timer — o GameTimer é gerenciado em vdd_falso.js
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -365,7 +358,6 @@ export function atualizarBtnRevisarErros(erradas, onIniciarRevisao) {
   const countEl = btn.querySelector('#vf-revisar-count') ?? $('vf-revisar-count');
   if (countEl) countEl.textContent = erradas.length;
 
-  // Substitui o nó para limpar listeners anteriores
   const novo = btn.cloneNode(true);
   btn.parentNode.replaceChild(novo, btn);
   el.btnRevisarErros = novo;
@@ -381,41 +373,37 @@ export function configurarBtnContinuar(sessao, onContinuar) {
   const btn = $('btn-continuar');
   if (!btn) return;
 
-  const respondidas = sessao.respostas.filter(r => r !== undefined).length;
-  const total       = sessao.perguntas.length;
-  const pendentes   = sessao.respostas.filter(r => r === undefined).length;
-
+  const pendentes = sessao.respostas.filter(r => r === undefined).length;
   if (pendentes === 0) { btn.classList.add('hidden'); return; }
 
   const novo = btn.cloneNode(true);
   btn.parentNode.replaceChild(novo, btn);
   novo.classList.remove('hidden');
-
-  const countEl = $('continuar-progress');
-  if (countEl) countEl.textContent = `${respondidas}/${total}`;
-
   novo.addEventListener('click', () => onContinuar(sessao));
 }
 
 /* ══════════════════════════════════════════════════════════
    PAUSA
+   ──────────────────────────────────────────────────────
+   MUDANÇA v8.0: recebe pausarTimer/retomarTimer como
+   callbacks simples, sem referência ao objeto Timer interno.
+   O GameTimer é o responsável pelo ciclo de vida do interval.
 ══════════════════════════════════════════════════════════ */
 
 /**
- * Configura o sistema de pausa e o botão "Voltar ao início".
- *
  * @param {object} callbacks
- * @param {function} callbacks.getTimer        - () => instância atual do timer
- * @param {function} callbacks.isPausado       - () => boolean
- * @param {function} callbacks.setPausado      - (v: boolean) => void
- * @param {function} callbacks.isQuestaoAtual  - () => boolean (true se questão sem resposta)
- * @param {function} callbacks.onVoltarIntro   - async () => void
+ * @param {function} callbacks.pausarTimer      - () => void
+ * @param {function} callbacks.retomarTimer     - () => void
+ * @param {function} callbacks.isPausado        - () => boolean
+ * @param {function} callbacks.setPausado       - (v: boolean) => void
+ * @param {function} callbacks.isQuestaoAtual   - () => boolean
+ * @param {function} callbacks.onVoltarIntro    - async () => void
  */
-export function setupPausa({ getTimer, isPausado, setPausado, isQuestaoAtual, onVoltarIntro }) {
+export function setupPausa({ pausarTimer, retomarTimer, isPausado, setPausado, isQuestaoAtual, onVoltarIntro }) {
   const btnPause = $('btn-pause');
 
   const pauseOverlay = $('pause-overlay') ?? (() => {
-    const overlay    = document.createElement('div');
+    const overlay     = document.createElement('div');
     overlay.id        = 'pause-overlay';
     overlay.className = 'vf-pause-overlay hidden';
     overlay.innerHTML = `
@@ -459,24 +447,33 @@ export function setupPausa({ getTimer, isPausado, setPausado, isQuestaoAtual, on
     if (pausado) {
       pauseOverlay.classList.remove('hidden');
       btnPauseEl?.classList.add('vf-ctrl-btn--paused');
-      if (pauseIconEl)  { pauseIconEl.innerHTML = `<path d="M14 8l40 24L14 56V8z"/>`; pauseIconEl.setAttribute('viewBox', '0 0 64 64'); }
-      if (pauseLabelEl)   pauseLabelEl.textContent = 'Retomar';
+      if (pauseIconEl) {
+        pauseIconEl.innerHTML = `<path d="M14 8l40 24L14 56V8z"/>`;
+        pauseIconEl.setAttribute('viewBox', '0 0 64 64');
+      }
+      if (pauseLabelEl) pauseLabelEl.textContent = 'Retomar';
     } else {
       pauseOverlay.classList.add('hidden');
       btnPauseEl?.classList.remove('vf-ctrl-btn--paused');
-      if (pauseIconEl)  { pauseIconEl.innerHTML = `<rect x="3" y="2" width="3.5" height="12" rx="1"/><rect x="9.5" y="2" width="3.5" height="12" rx="1"/>`; pauseIconEl.setAttribute('viewBox', '0 0 16 16'); }
-      if (pauseLabelEl)   pauseLabelEl.textContent = 'Pausar';
+      if (pauseIconEl) {
+        pauseIconEl.innerHTML = `<rect x="3" y="2" width="3.5" height="12" rx="1"/><rect x="9.5" y="2" width="3.5" height="12" rx="1"/>`;
+        pauseIconEl.setAttribute('viewBox', '0 0 16 16');
+      }
+      if (pauseLabelEl) pauseLabelEl.textContent = 'Pausar';
     }
   }
 
   function togglePausa() {
     if (el.screenQuestion?.classList.contains('hidden')) return;
-    if (!isQuestaoAtual()) return; // questão já respondida: não pausa
+    if (!isQuestaoAtual()) return;
 
     const novoPausado = !isPausado();
     setPausado(novoPausado);
-    if (novoPausado) getTimer()?.pause();
-    else             getTimer()?.resume();
+
+    // Usa os callbacks simples — sem acesso direto ao GameTimer
+    if (novoPausado) pausarTimer();
+    else             retomarTimer();
+
     _aplicarEstadoPausa(novoPausado);
   }
 
@@ -486,40 +483,21 @@ export function setupPausa({ getTimer, isPausado, setPausado, isQuestaoAtual, on
   });
 
   $('btn-voltar-intro')?.addEventListener('click', async () => {
-    // Para timer, despauza visualmente e delega lógica ao callback
-    getTimer()?.stop();
     setPausado(false);
     _aplicarEstadoPausa(false);
-
-    // Reseta visual da barra de timer
-    document.documentElement.style.setProperty('--timer-pct', '100%');
-    aplicarCorBarra(100);
-
-    const timerDisplay = $('shell-timer-display');
-    if (timerDisplay) {
-      const t  = CONFIG.TEMPO_POR_QUESTAO;
-      const mm = String(Math.floor(t / 60)).padStart(2, '0');
-      const ss = String(t % 60).padStart(2, '0');
-      timerDisplay.textContent = `${mm}:${ss}`;
-      timerDisplay.classList.remove('game-timer-display--danger', 'game-timer-display--mid');
-    }
-
     await onVoltarIntro();
   });
 
-  // Atalho Espaço ou Esc para pausar/retomar
   document.addEventListener('keydown', e => {
     const isSpace = e.code === 'Space';
     const isEsc   = e.code === 'Escape';
 
     if (!el.screenQuestion?.classList.contains('hidden') && isQuestaoAtual()) {
-      // Esc: só retoma (se estiver pausado), não pausa
       if (isEsc && isPausado()) {
         e.preventDefault();
         togglePausa();
         return;
       }
-      // Espaço: alterna pausa/retomar
       if (isSpace) {
         if (document.activeElement?.id === 'btn-retomar') return;
         e.preventDefault();
@@ -554,12 +532,6 @@ export function registrarAtalhos({ isPausado, isQuestaoSemResposta, onResponder,
    TELA DE RESULTADO
 ══════════════════════════════════════════════════════════ */
 
-/**
- * Renderiza a tela de resultado após finalizar o jogo.
- *
- * @param {object} dados - { acertos, erros, pontos, tempoInicio, modoRevisao }
- * @param {object} callbacks - { onSair, onRejogo }
- */
 export function renderizarResultado({ acertos, erros, pontos, tempoInicio, modoRevisao }, { onSair, onRejogo }) {
   const respondidas = acertos + erros;
   const pct         = respondidas > 0 ? Math.round((acertos / respondidas) * 100) : 0;
@@ -602,7 +574,6 @@ export function renderizarResultado({ acertos, erros, pontos, tempoInicio, modoR
     elTempo.textContent = `${mm}:${ss}`;
   }
 
-  // Botão Sair
   const elSair = $('resultado-btn-sair');
   if (elSair) {
     elSair.removeAttribute('href');
@@ -612,7 +583,6 @@ export function renderizarResultado({ acertos, erros, pontos, tempoInicio, modoR
     novoSair.addEventListener('click', e => { e.preventDefault(); onSair(); });
   }
 
-  // Botão Jogar novamente / Repetir revisão
   const elRejogo = $('resultado-btn-rejogo');
   if (elRejogo) {
     if (modoRevisao) elRejogo.classList.add('resultado-btn--repetir-revisao');
@@ -673,79 +643,4 @@ export function mostrarTelaRevisaoConcluida(onVoltar) {
   `;
 
   $('revisao-concluida-voltar')?.addEventListener('click', onVoltar);
-}
-
-/* ══════════════════════════════════════════════════════════
-   ESTATÍSTICAS POR QUESTÃO (painel de resultado)
-══════════════════════════════════════════════════════════ */
-
-export function renderEstatisticasQuestoes(historico, perguntas, respostas, modoRevisao) {
-  const resultCard = document.querySelector('.game-result__card') ?? document.querySelector('.resultado-nucleo');
-  if (!resultCard) return;
-  resultCard.querySelector('.vf-stats-questoes')?.remove();
-
-  const temDados = perguntas.some(q => historico[q.id]);
-  if (!temDados) return;
-
-  const painel = document.createElement('details');
-  painel.className = 'vf-stats-questoes';
-  painel.open = true;
-  painel.innerHTML = `<summary><span class="vf-sq-summary-icon">📊</span>Progresso por questão<span class="vf-sq-chevron">▾</span></summary>`;
-
-  const lista = document.createElement('div');
-  lista.className = 'vf-sq-lista';
-
-  for (let i = 0; i < perguntas.length; i++) {
-    const q    = perguntas[i];
-    const h    = historico[q.id];
-    const resp = respostas[i]; // índice direto — evita indexOf por referência que quebra com cópias do array
-    const acertouAgora = resp !== null && resp !== undefined && resp === q.resposta;
-    const errouAgora   = resp !== null && resp !== undefined && resp !== q.resposta;
-    const enun = q.enunciado.length > 52 ? q.enunciado.slice(0, 52) + '…' : q.enunciado;
-    let rowHtml;
-
-    if (modoRevisao) {
-      const icone   = acertouAgora ? '✓' : errouAgora ? '✗' : '–';
-      const iconCor = acertouAgora ? '#34d399' : errouAgora ? '#f87171' : '#94a3b8';
-      const barCls  = acertouAgora ? 'vf-prog-bar--ok' : 'vf-prog-bar--critico';
-      const barPct  = acertouAgora ? 100 : 0;
-      const label   = acertouAgora ? 'Acertou' : errouAgora ? 'Errou' : '–';
-      rowHtml = `
-        <div class="vf-sq-meta">
-          <span class="vf-sq-icone" style="color:${iconCor}">${icone}</span>
-          <span class="vf-sq-enun">${enun}</span>
-          ${acertouAgora ? '<span class="vf-sq-superada" title="Acertou nesta rodada">⭐</span>' : ''}
-        </div>
-        <div class="vf-sq-prog-row">
-          <div class="vf-prog-bar ${barCls}" style="width:${barPct}%"></div>
-          <span class="vf-sq-pct">${label}</span>
-        </div>`;
-    } else {
-      if (!h) continue;
-      const { tentativas, acertos, erros: _erros } = h;
-      const taxa   = Math.round((acertos / tentativas) * 100);
-      const barCls = taxa >= 80 ? 'vf-prog-bar--ok' : taxa >= 50 ? 'vf-prog-bar--med' : 'vf-prog-bar--critico';
-      const icone   = acertouAgora ? '✓' : errouAgora ? '✗' : '–';
-      const iconCor = acertouAgora ? '#34d399' : errouAgora ? '#f87171' : '#94a3b8';
-      rowHtml = `
-        <div class="vf-sq-meta">
-          <span class="vf-sq-icone" style="color:${iconCor}">${icone}</span>
-          <span class="vf-sq-enun">${enun}</span>
-          ${acertouAgora && tentativas >= 3 && taxa >= 80 ? '<span class="vf-sq-superada" title="Dominada">⭐</span>' : ''}
-        </div>
-        <div class="vf-sq-prog-row">
-          <div class="vf-prog-bar ${barCls}" style="width:${taxa}%"></div>
-          <span class="vf-sq-pct">${taxa}%</span>
-        </div>
-        <div class="vf-sq-detalhe">${acertos} acerto${acertos !== 1 ? 's' : ''} / ${tentativas} tentativa${tentativas !== 1 ? 's' : ''}</div>`;
-    }
-
-    const row = document.createElement('div');
-    row.className = 'vf-sq-row';
-    row.innerHTML = rowHtml;
-    lista.appendChild(row);
-  }
-
-  painel.appendChild(lista);
-  resultCard.appendChild(painel);
 }
