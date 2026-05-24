@@ -15,6 +15,40 @@ import {
 import { injetarLogo } from './shared/js/utils/logo.js';
 import { login, logout, carregarConfigs } from './src/firebase.js';
 import { criarSemestreSelect, preencherAnos } from './shared/js/utils/dom.js';
+import audio from './shared/js/audio/sfx.js';
+
+/* ─────────────────────────────────────────────
+   SFX — mapa de sons por evento
+   ─────────────────────────────────────────────
+   Troque o valor de cada chave pelo ID do som
+   desejado (veja catalog em sfx.js).
+
+   Disponíveis por categoria:
+     click     → click, click2, click3, click4, click5, click6
+     hover     → hover, hover2, hover3, hover4, hover5, hover6, hover7, hover8
+     openModal → openModal1, openModal2, openModal3
+     closeModal→ closeModal1, closeModal2, closeModal3
+     select    → select1 … select10
+───────────────────────────────────────────── */
+const SFX_MAP = {
+  click:      'click',
+  hover:      'hover2',
+  openModal:  'openModal2',
+  closeModal: 'closeModal1',
+  select:     'select1',
+};
+
+/**
+ * Toca o som mapeado para um evento.
+ * Se o ID não existir no catálogo, falha silenciosamente.
+ *
+ * @param {'click'|'hover'|'openModal'|'closeModal'|'select'} event
+ */
+function playSound(event) {
+  const id = SFX_MAP[event];
+  if (!id) return;
+  try { audio.sfx[id]?.(); } catch (_) {}
+}
 
 /* ─────────────────────────────────────────────
    INICIALIZAÇÃO
@@ -70,7 +104,18 @@ function _montarSelect() {
     return;
   }
   criarSemestreSelect('semestre-wrap', sem => {
+    // Som de select ao confirmar a escolha do semestre
+    playSound('select');
     document.dispatchEvent(new CustomEvent('nexus:semestreChanged', { detail: sem }));
+  });
+
+  // Som de click ao abrir a lista do select do semestre
+  // Aguarda o elemento ser criado pelo criarSemestreSelect
+  requestAnimationFrame(() => {
+    const sel = wrap.querySelector('select');
+    if (sel) {
+      sel.addEventListener('mousedown', () => playSound('click'));
+    }
   });
 }
 
@@ -101,7 +146,8 @@ function renderHeader() {
       btnPerfil.textContent = avatarVal;
     }
 
-    btnPerfil.addEventListener('click', abrirPerfilModal);
+    // Sem hover — apenas click
+    btnPerfil.addEventListener('click', () => { playSound('click'); abrirPerfilModal(); });
     nav.appendChild(btnPerfil);
 
   } else {
@@ -109,7 +155,8 @@ function renderHeader() {
     btnEntrar.className   = 'nav-btn';
     btnEntrar.id          = 'btn-entrar';
     btnEntrar.textContent = 'Entrar';
-    btnEntrar.addEventListener('click', abrirModalLogin);
+    btnEntrar.addEventListener('mouseenter', () => playSound('hover'));
+    btnEntrar.addEventListener('click', () => { playSound('click'); abrirModalLogin(); });
     nav.appendChild(btnEntrar);
   }
 
@@ -131,12 +178,13 @@ function renderHeader() {
                l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09
                a1.65 1.65 0 0 0-1.51 1z"/>
     </svg>`;
-  btnConfig.addEventListener('click', abrirModalConfig);
+  // Sem hover — apenas click
+  btnConfig.addEventListener('click', () => { playSound('click'); abrirModalConfig(); });
   nav.appendChild(btnConfig);
 }
 
 /* ─────────────────────────────────────────────
-   CARDS — links
+   CARDS — links + hover
 ───────────────────────────────────────────── */
 function bindCardLinks() {
   const rotas = {
@@ -146,7 +194,11 @@ function bindCardLinks() {
     'card-jogos':   './games/jogo.html',
   };
   Object.entries(rotas).forEach(([id, path]) => {
-    document.getElementById(id)?.addEventListener('click', () => {
+    const card = document.getElementById(id);
+    if (!card) return;
+    card.addEventListener('mouseenter', () => playSound('hover'));
+    card.addEventListener('click', () => {
+      playSound('click');
       window.location.href = path;
     });
   });
@@ -157,6 +209,7 @@ function bindCardLinks() {
 ───────────────────────────────────────────── */
 function abrirModalLogin() {
   fecharTodosModais();
+  playSound('openModal');
 
   const modal = criarModal('login');
   modal.innerHTML = `
@@ -278,13 +331,15 @@ function abrirModalLogin() {
 
   document.getElementById('modal-overlay-login').addEventListener('click', () => {
     cards?.classList.remove('cards-hidden');
+    playSound('closeModal');
     fecharModal(modal);
   });
   document.getElementById('modal-close-login').addEventListener('click', () => {
     cards?.classList.remove('cards-hidden');
+    playSound('closeModal');
     fecharModal(modal);
   });
-  document.getElementById('btn-login-entrar').addEventListener('click', _tentarLogin);
+  document.getElementById('btn-login-entrar').addEventListener('click', () => { playSound('click'); _tentarLogin(); });
 
   async function _tentarLogin() {
     const nome = document.getElementById('login-nome').value.trim();
@@ -359,6 +414,7 @@ function abrirModalLogin() {
 ───────────────────────────────────────────── */
 function abrirModalConfig() {
   fecharTodosModais();
+  playSound('openModal');
 
   const cfg   = getConfigs();
   const modal = criarModal('config');
@@ -596,6 +652,7 @@ function abrirModalConfig() {
   let _configsAlteradas = false;
 
   function _fecharComToast() {
+    playSound('closeModal');
     fecharModal(modal);
     if (_configsAlteradas) mostrarToast('Configurações salvas!');
   }
@@ -604,12 +661,14 @@ function abrirModalConfig() {
   document.getElementById('modal-close-config').addEventListener('click',   _fecharComToast);
 
   document.getElementById('btn-salvar-configs').addEventListener('click', () => {
+    playSound('click');
     setConfigs(_lerConfigs());
     _configsAlteradas = true;
     _fecharComToast();
   });
 
   document.getElementById('btn-reset-configs').addEventListener('click', () => {
+    playSound('click');
     resetConfigs();
     fecharModal(modal);
     mostrarToast('Configurações resetadas.');
@@ -629,6 +688,7 @@ function abrirModalConfig() {
 
   if (estaLogado()) {
     document.getElementById('btn-logout')?.addEventListener('click', () => {
+      playSound('click');
       limparDadosQuiz();
       logout(); // logout() → setUsuario(null) → dispara nexus:logout via setTimeout
       fecharModal(modal);
@@ -761,6 +821,7 @@ const EMOJIS_PERFIL = [
 
 function abrirPerfilModal() {
   fecharTodosModais();
+  playSound('openModal');
 
   const u = getUsuario();
   if (!u) return;
@@ -950,6 +1011,7 @@ function abrirPerfilModal() {
   document.getElementById('pm-picker-grid')?.addEventListener('click', e => {
     const btn = e.target.closest('.ej');
     if (!btn) return;
+    playSound('click');
     avatarSelecionado = btn.dataset.emoji;
     _setPreview(avatarSelecionado);
     document.querySelectorAll('#pm-picker-grid .ej').forEach(b =>
@@ -957,19 +1019,22 @@ function abrirPerfilModal() {
     );
   });
 
-  document.getElementById('pm-toggle-picker')?.addEventListener('click',
-    () => pickerAberto ? _fecharPicker() : _abrirPicker()
-  );
+  document.getElementById('pm-toggle-picker')?.addEventListener('click', () => {
+    playSound('click');
+    pickerAberto ? _fecharPicker() : _abrirPicker();
+  });
 
   document.getElementById('pm-picker-close')?.addEventListener('click',  _fecharPicker);
-  document.getElementById('pm-picker-cancel')?.addEventListener('click', _fecharPicker);
+  document.getElementById('pm-picker-cancel')?.addEventListener('click', () => { playSound('click'); _fecharPicker(); });
 
   document.getElementById('pm-picker-ok')?.addEventListener('click', () => {
+    playSound('click');
     _aplicarAvatar(avatarSelecionado);
     _fecharPicker();
   });
 
   document.getElementById('pm-btn-salvar')?.addEventListener('click', async () => {
+    playSound('click');
     _aplicarAvatar(avatarSelecionado);
 
     const usuarioAtualizado = { ...getUsuario(), avatar: avatarSelecionado };
@@ -990,6 +1055,7 @@ function abrirPerfilModal() {
   });
 
   document.getElementById('pm-btn-logout')?.addEventListener('click', () => {
+    playSound('click');
     limparDadosQuiz();
     logout(); // logout() → setUsuario(null) → dispara nexus:logout via setTimeout
     fecharModal(modal);
@@ -997,8 +1063,8 @@ function abrirPerfilModal() {
     mostrarToast('Sessão encerrada.');
   });
 
-  document.getElementById('pm-close-btn')?.addEventListener('click',        () => fecharModal(modal));
-  document.getElementById('modal-overlay-perfil')?.addEventListener('click', () => fecharModal(modal));
+  document.getElementById('pm-close-btn')?.addEventListener('click', () => { playSound('closeModal'); fecharModal(modal); });
+  document.getElementById('modal-overlay-perfil')?.addEventListener('click', () => { playSound('closeModal'); fecharModal(modal); });
 }
 
 /* ─────────────────────────────────────────────

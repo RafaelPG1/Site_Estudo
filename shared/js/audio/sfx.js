@@ -637,7 +637,7 @@ export const catalog = [
 
     /* Select */
     {
-      id: 'select1', event: 'select', label: 'select 1',
+      id: 'select', event: 'select', label: 'select 1',
       category: 'select', type: 'sfx', variant: '', volume: 0.35,
       description: 'Select — tick ascendente, dois sines subindo, leve e confirmativo',
       fn() {
@@ -735,7 +735,7 @@ export const catalog = [
 
     /* Open Modal */
     {
-      id: 'openModal1', event: 'openModal', label: 'openModal 1',
+      id: 'openModal', event: 'openModal', label: 'openModal 1',
       category: 'openModal', type: 'sfx', variant: '', volume: 0.22,
       description: 'openModal — chime de entrada, dois sines em quinta simultâneos, cortina abrindo',
       fn() {
