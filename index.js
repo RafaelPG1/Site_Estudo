@@ -3,14 +3,11 @@
    Lógica da página inicial
    ============================================= */
 
-// no script da página (só durante dev)
-import { initSfxPlayground } from '/shared/js/audio/sfx-playground.js';
-initSfxPlayground();
-
 import {
   getEstado, setUsuario, getUsuario, estaLogado,
   setPagina,
   setConfigs, getConfigs, resetConfigs,
+  hydrateConfigs,
   limparDadosQuiz,
   getSemestreAtual, getDisciplinasDeSemestre,
 } from './src/global.js';
@@ -42,11 +39,7 @@ function init() {
     bindCardLinks();
     preencherAnos(['footer-year']);
   } catch (err) {
-    // CORREÇÃO: erro na inicialização é logado mas não silenciado.
-    // Sem este catch, um erro em qualquer import/função acima derrubava
-    // o header inteiro sem nenhuma mensagem visível.
     console.error('[init] Erro crítico na inicialização:', err);
-    // Tenta ao menos renderizar o header mesmo com erro parcial
     try { _refreshHeader(); } catch (_) {}
   }
 }
@@ -61,10 +54,7 @@ if (document.readyState === 'loading') {
    HEADER — ponto único de reconstrução
 ───────────────────────────────────────────── */
 
-/** Sempre use _refreshHeader() — nunca chame renderHeader/_montarSelect separados */
 function _refreshHeader() {
-  // CORREÇÃO Bug#4: encapsula erros para que uma falha no render do header
-  // não interrompa o fluxo de login/logout/salvar que chamou esta função.
   try {
     renderHeader();
     _montarSelect();
@@ -74,9 +64,6 @@ function _refreshHeader() {
 }
 
 function _montarSelect() {
-  // CORREÇÃO Bug#3: semestre-wrap é criado dinamicamente por renderHeader().
-  // Se renderHeader() falhou silenciosamente, o elemento não existe.
-  // Verificamos antes de chamar para evitar erro em criarSemestreSelect.
   const wrap = document.getElementById('semestre-wrap');
   if (!wrap) {
     console.warn('[Header] #semestre-wrap não encontrado — renderHeader() pode ter falhado.');
@@ -89,7 +76,6 @@ function _montarSelect() {
 
 function renderHeader() {
   const nav = document.getElementById('header-nav');
-  // CORREÇÃO: se o elemento não existir (ex: HTML não carregou), aborta sem crash
   if (!nav) {
     console.error('[Header] #header-nav não encontrado no DOM.');
     return;
@@ -153,10 +139,6 @@ function renderHeader() {
    CARDS — links
 ───────────────────────────────────────────── */
 function bindCardLinks() {
-  // CORREÇÃO A2: IDs alinhados com os definidos no HTML (card-resumos com 's',
-  // card-pessoal presente) e paths corrigidos para a estrutura real de pastas
-  // (pasta games/, não jogos/). Antes, os IDs errados faziam o ?. silenciar
-  // o bind sem aviso — os cards funcionavam só pelo href nativo do <a>.
   const rotas = {
     'card-pessoal': './area_pessoal/pessoal.html',
     'card-resumos': './resumo/resumo.html',
@@ -339,12 +321,11 @@ function abrirModalLogin() {
       const configsRemota = await carregarConfigs(resultado.usuario.uid);
 
       if (configsRemota) {
-        // CORREÇÃO A1: merge em vez de substituição total.
-        // Antes, setConfigs(configsRemota) sobrescrevia todas as preferências
-        // locais (tema, animações etc.) que o usuário havia alterado sem estar
-        // logado. Agora as configs locais têm prioridade sobre as remotas,
-        // preservando escolhas recentes do usuário feitas offline.
-        setConfigs({ ...configsRemota, ...getConfigs() });
+        // FIX 3: usa hydrateConfigs em vez de setConfigs.
+        // hydrateConfigs atualiza memória, localStorage e UI
+        // sem disparar write-back desnecessário no Firebase.
+        // setConfigs() é reservado para mudanças intencionais do usuário.
+        hydrateConfigs({ ...configsRemota, ...getConfigs() });
         console.log('[login] configs mescladas com Firebase ✓');
       } else {
         console.log('[login] nenhuma config remota — mantendo localStorage');
@@ -353,6 +334,15 @@ function abrirModalLogin() {
       cards?.classList.remove('cards-hidden');
       fecharModal(modal);
       _refreshHeader();
+
+      // Notifica audio-state.js que o login foi concluído e as configs
+      // já estão mergeadas no global. O audio-state.js usa o sistema de
+      // token para descartar o disparo anterior (feito via setTimeout em
+      // setUsuario) e aplicar o modo correto do Firebase para este usuário.
+      document.dispatchEvent(new CustomEvent('nexus:loginSuccess', {
+        detail: { uid: resultado.usuario.uid },
+      }));
+
       mostrarToast(`Bem-vindo, ${resultado.usuario.nome}! ${resultado.usuario.avatar}`);
 
     } else {
@@ -603,8 +593,6 @@ function abrirModalConfig() {
     if (concluir) { concluir.checked = false; concluir.disabled = true; }
   }
 
-  // CORREÇÃO M2: rastreia se houve alguma alteração real para não mostrar
-  // "Configurações salvas!" quando o usuário fecha o modal sem mudar nada.
   let _configsAlteradas = false;
 
   function _fecharComToast() {
@@ -642,7 +630,7 @@ function abrirModalConfig() {
   if (estaLogado()) {
     document.getElementById('btn-logout')?.addEventListener('click', () => {
       limparDadosQuiz();
-      logout();
+      logout(); // logout() → setUsuario(null) → dispara nexus:logout via setTimeout
       fecharModal(modal);
       _refreshHeader();
       mostrarToast('Sessão encerrada.');
@@ -751,9 +739,6 @@ function _confirmar(btn, callback) {
   btn.classList.add('modal-btn--danger');
 
   setTimeout(() => {
-    // CORREÇÃO M1: verifica se o botão ainda está no DOM antes de manipulá-lo.
-    // Sem essa guarda, o timeout disparava sobre um elemento já removido quando
-    // o usuário fechava o modal durante a janela de confirmação de 3 s.
     if (!document.body.contains(btn)) return;
     if (btn.dataset.confirmando === 'true') {
       btn.dataset.confirmando = 'false';
@@ -996,10 +981,6 @@ function abrirPerfilModal() {
         await salvarAvatar(usuarioAtualizado.uid, avatarSelecionado);
       }
     } catch (err) {
-      // CORREÇÃO C1: loga o erro em vez de silenciá-lo.
-      // Um catch vazio escondia falhas reais (token expirado, regra de
-      // segurança, rede instável), fazendo o avatar reverter na próxima
-      // sessão sem nenhum aviso visível no console.
       console.warn('[salvarAvatar] Falha ao sincronizar com o Firebase:', err);
     }
 
@@ -1010,7 +991,7 @@ function abrirPerfilModal() {
 
   document.getElementById('pm-btn-logout')?.addEventListener('click', () => {
     limparDadosQuiz();
-    logout();
+    logout(); // logout() → setUsuario(null) → dispara nexus:logout via setTimeout
     fecharModal(modal);
     _refreshHeader();
     mostrarToast('Sessão encerrada.');

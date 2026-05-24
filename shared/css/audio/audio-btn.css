@@ -4,9 +4,12 @@
    ============================================= */
 
 .abtn {
-  position: relative;
-  width: 88px;
-  height: 88px;
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  width: 44px;
+  height: 44px;
   border: none;
   background: none;
   cursor: pointer;
@@ -17,7 +20,7 @@
 
 .abtn .glow {
   position: absolute;
-  inset: -16px;
+  inset: -10px;
   border-radius: 50%;
   opacity: 0;
   transition: opacity .5s, background .5s;
@@ -26,7 +29,7 @@
 
 .abtn .ro {
   position: absolute;
-  inset: -7px;
+  inset: -5px;
   border-radius: 50%;
   border: 1px solid rgba(0,200,255,.13);
   transition: border-color .5s, transform .4s;
@@ -82,8 +85,8 @@
 
 .abtn .iw {
   position: relative;
-  width: 40px;
-  height: 40px;
+  width: 22px;
+  height: 22px;
 }
 
 .abtn .ic {
@@ -104,10 +107,3 @@
 
 @keyframes abtn-pulse  { 0% { transform: scale(1);    opacity: .65; } 100% { transform: scale(1.6);  opacity: 0; } }
 @keyframes abtn-ripple { 0% { transform: scale(.88);  opacity: .75; } 100% { transform: scale(1.65); opacity: 0; } }
-
-/* ── Ajuste quando dentro do header-nav ── */
-#header-nav .abtn {
-  align-self: center;
-  width: 44px;
-  height: 44px;
-}
