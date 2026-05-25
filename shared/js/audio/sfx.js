@@ -770,7 +770,7 @@ export const catalog = [
 
     /* Close Modal */
     {
-      id: 'closeModal1', event: 'closeModal', label: 'closeModal 1',
+      id: 'closeModal', event: 'closeModal', label: 'closeModal 1',
       category: 'closeModal', type: 'sfx', variant: '', volume: 0.2,
       description: 'closeModal — sweep descendente suave, dois sines descem juntos, fechamento aéreo',
       fn() {

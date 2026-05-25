@@ -34,8 +34,8 @@ const SFX_MAP = {
   click:      'click',
   hover:      'hover2',
   openModal:  'openModal2',
-  closeModal: 'closeModal1',
-  select:     'select1',
+  closeModal: 'closeModal',
+  select:     'select',
 };
 
 /**
