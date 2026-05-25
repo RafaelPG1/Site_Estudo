@@ -9,8 +9,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="shared/css/themes/fundo.css">
   <link rel="stylesheet" href="shared/css/themes/logo.css">
+  <!-- ✅ sound.css ANTES do style.css, dentro do <head> -->
+  <link rel="stylesheet" href="shared/css/audio/sound.css">
   <link rel="stylesheet" href="style.css" />
-
 </head>
 <body>
 
@@ -127,8 +128,7 @@
     <p>© <span id="footer-year"></span> Nexus Study · Desenvolvido para facilitar seus estudos</p>
   </footer>
 
+  <!-- ✅ Apenas index.js — sound.js já monta o botão flutuante internamente -->
   <script type="module" src="index.js"></script>
-    <link rel="stylesheet" href="/shared/css/audio/audio-btn.css">
-    <script type="module" src="/shared/js/audio/audio-btn.js"></script>
 </body>
 </html>

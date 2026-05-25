@@ -16,19 +16,10 @@ import { injetarLogo } from './shared/js/utils/logo.js';
 import { login, logout, carregarConfigs } from './src/firebase.js';
 import { criarSemestreSelect, preencherAnos } from './shared/js/utils/dom.js';
 import audio from './shared/js/audio/sfx.js';
+import Sound from './shared/js/audio/sound.js';
 
 /* ─────────────────────────────────────────────
    SFX — mapa de sons por evento
-   ─────────────────────────────────────────────
-   Troque o valor de cada chave pelo ID do som
-   desejado (veja catalog em sfx.js).
-
-   Disponíveis por categoria:
-     click     → click, click2, click3, click4, click5, click6
-     hover     → hover, hover2, hover3, hover4, hover5, hover6, hover7, hover8
-     openModal → openModal1, openModal2, openModal3
-     closeModal→ closeModal1, closeModal2, closeModal3
-     select    → select1 … select10
 ───────────────────────────────────────────── */
 const SFX_MAP = {
   click:      'click',
@@ -38,12 +29,6 @@ const SFX_MAP = {
   select:     'select',
 };
 
-/**
- * Toca o som mapeado para um evento.
- * Se o ID não existir no catálogo, falha silenciosamente.
- *
- * @param {'click'|'hover'|'openModal'|'closeModal'|'select'} event
- */
 function playSound(event) {
   const id = SFX_MAP[event];
   if (!id) return;
@@ -59,6 +44,8 @@ function init() {
       window.location.replace('/admin/admin.html');
       return;
     }
+
+    Sound.init();
 
     injetarLogo({
       destino:  '#header-logo-wrap',
@@ -104,13 +91,10 @@ function _montarSelect() {
     return;
   }
   criarSemestreSelect('semestre-wrap', sem => {
-    // Som de select ao confirmar a escolha do semestre
     playSound('select');
     document.dispatchEvent(new CustomEvent('nexus:semestreChanged', { detail: sem }));
   });
 
-  // Som de click ao abrir a lista do select do semestre
-  // Aguarda o elemento ser criado pelo criarSemestreSelect
   requestAnimationFrame(() => {
     const sel = wrap.querySelector('select');
     if (sel) {
@@ -146,7 +130,6 @@ function renderHeader() {
       btnPerfil.textContent = avatarVal;
     }
 
-    // Sem hover — apenas click
     btnPerfil.addEventListener('click', () => { playSound('click'); abrirPerfilModal(); });
     nav.appendChild(btnPerfil);
 
@@ -178,7 +161,6 @@ function renderHeader() {
                l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09
                a1.65 1.65 0 0 0-1.51 1z"/>
     </svg>`;
-  // Sem hover — apenas click
   btnConfig.addEventListener('click', () => { playSound('click'); abrirModalConfig(); });
   nav.appendChild(btnConfig);
 }
@@ -376,10 +358,6 @@ function abrirModalLogin() {
       const configsRemota = await carregarConfigs(resultado.usuario.uid);
 
       if (configsRemota) {
-        // FIX 3: usa hydrateConfigs em vez de setConfigs.
-        // hydrateConfigs atualiza memória, localStorage e UI
-        // sem disparar write-back desnecessário no Firebase.
-        // setConfigs() é reservado para mudanças intencionais do usuário.
         hydrateConfigs({ ...configsRemota, ...getConfigs() });
         console.log('[login] configs mescladas com Firebase ✓');
       } else {
@@ -390,10 +368,6 @@ function abrirModalLogin() {
       fecharModal(modal);
       _refreshHeader();
 
-      // Notifica audio-state.js que o login foi concluído e as configs
-      // já estão mergeadas no global. O audio-state.js usa o sistema de
-      // token para descartar o disparo anterior (feito via setTimeout em
-      // setUsuario) e aplicar o modo correto do Firebase para este usuário.
       document.dispatchEvent(new CustomEvent('nexus:loginSuccess', {
         detail: { uid: resultado.usuario.uid },
       }));
@@ -491,6 +465,28 @@ function abrirModalConfig() {
               <input type="checkbox" id="cfg-notif" ${cfg.notificacoes ? 'checked' : ''} />
               <span class="toggle__track"></span>
             </label>
+          </div>
+        </div>
+
+        <div class="modal__section">
+          <div class="modal__section-title">Áudio</div>
+          <div class="config-row">
+            <label>
+              Configurações de Som
+              <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
+                Ajuste volumes, variantes de SFX e trilhas sonoras.
+              </small>
+            </label>
+            <button class="modal-btn modal-btn--ghost" id="btn-abrir-audio">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                   style="display:inline-block;vertical-align:middle;margin-right:5px;">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+              </svg>
+              Configurar
+            </button>
           </div>
         </div>
 
@@ -675,6 +671,12 @@ function abrirModalConfig() {
     setTimeout(abrirModalConfig, 300);
   });
 
+  // ✅ CORREÇÃO: btn-abrir-audio agora chama Sound.openModal()
+  document.getElementById('btn-abrir-audio').addEventListener('click', () => {
+    playSound('click');
+    Sound.openModal();
+  });
+
   document.getElementById('btn-limpar-quiz').addEventListener('click', function () {
     _confirmar(this, () => {
       limparDadosQuiz();
@@ -690,7 +692,7 @@ function abrirModalConfig() {
     document.getElementById('btn-logout')?.addEventListener('click', () => {
       playSound('click');
       limparDadosQuiz();
-      logout(); // logout() → setUsuario(null) → dispara nexus:logout via setTimeout
+      logout();
       fecharModal(modal);
       _refreshHeader();
       mostrarToast('Sessão encerrada.');
@@ -1057,7 +1059,7 @@ function abrirPerfilModal() {
   document.getElementById('pm-btn-logout')?.addEventListener('click', () => {
     playSound('click');
     limparDadosQuiz();
-    logout(); // logout() → setUsuario(null) → dispara nexus:logout via setTimeout
+    logout();
     fecharModal(modal);
     _refreshHeader();
     mostrarToast('Sessão encerrada.');
