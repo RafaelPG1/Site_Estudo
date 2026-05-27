@@ -3006,6 +3006,591 @@ window.__nexusConteudo = {
     }
     ]
     },
+    // Aula 14 - BDOO e BDOR
+    {
+  aula: "Aula 14 — BDOO e BDOR",
+  ideia_central: "Bancos de dados orientados a objetos (BDOO) e objeto-relacionais (BDOR) surgiram para superar as limitações dos bancos relacionais tradicionais frente a dados complexos, incorporando encapsulamento, herança e polimorfismo.",
+  secoes: [
+  {
+    id: "visao",
+    titulo: "🧭 Visão Geral",
+    blocos: [
+      {
+        tipo: "texto",
+        texto: "O material aborda os conceitos de **BDOO (Banco de Dados Orientado a Objetos)** e **BDOR (Banco de Dados Objeto-Relacional)**, explicando por que os bancos relacionais tradicionais passaram a ter limitações, como a orientação a objetos influenciou os bancos de dados, e como implementar recursos orientados a objetos em bancos relacionais."
+      },
+      {
+        tipo: "lista",
+        titulo: "Temas abordados:",
+        itens: [
+          "Limitações dos bancos relacionais tradicionais frente a dados complexos",
+          "Conceitos fundamentais da computação orientada a objetos",
+          "Encapsulamento",
+          "Herança",
+          "Polimorfismo",
+          "Padrão ODMG",
+          "Tipos definidos pelo usuário",
+          "Herança de tipos e tabelas",
+          "Tipos de referência em SQL",
+          "Exemplos DDL e DML"
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "relacional_vs_oo",
+    titulo: "⚖️ Banco Relacional x Banco Orientado a Objetos",
+    blocos: [
+      {
+        tipo: "texto",
+        texto: "Os bancos relacionais tradicionais trabalham principalmente com tipos simples. Com a evolução tecnológica, surgiram dados complexos que geraram limitações nos SGBDs relacionais tradicionais."
+      },
+      {
+        tipo: "lista",
+        titulo: "Bancos relacionais tradicionais trabalham com:",
+        itens: [
+          "Números",
+          "Textos",
+          "Datas",
+          "Tipos simples"
+        ]
+      },
+      {
+        tipo: "lista",
+        titulo: "Com a evolução, surgiram dados complexos:",
+        itens: [
+          "Imagens",
+          "Vídeos",
+          "Mapas",
+          "Multimídia",
+          "Objetos complexos"
+        ]
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Problema principal",
+        texto: "Linguagens orientadas a objetos possuem tipos mais ricos, estruturas complexas, métodos e encapsulamento. Já o SQL tradicional não manipula facilmente objetos complexos. Isso criou incompatibilidade entre aplicações orientadas a objetos e bancos relacionais."
+      }
+    ]
+  },
+
+  {
+    id: "bdoo",
+    titulo: "🗄️ BDOO — Banco de Dados Orientado a Objetos",
+    blocos: [
+      {
+        tipo: "texto",
+        texto: "O BDOO surgiu para unir **persistência de dados** com o **paradigma orientado a objetos**. No BDOO, os dados são armazenados como objetos, os objetos possuem atributos e métodos, e existem relações entre objetos."
+      },
+      {
+        tipo: "lista",
+        titulo: "Características do BDOO:",
+        itens: [
+          "Encapsulamento",
+          "Herança",
+          "Polimorfismo",
+          "Reutilização",
+          "Objetos complexos",
+          "Integração com linguagens OO"
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "encapsulamento",
+    titulo: "🔒 Encapsulamento",
+    blocos: [
+      {
+        tipo: "texto",
+        texto: "**Encapsulamento** significa esconder detalhes internos e permitir acesso apenas pela interface do objeto."
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Estrutura de um objeto",
+        lista: [
+          "Dados (atributos/variáveis)",
+          "Procedimentos (métodos)"
+        ]
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Classe",
+        texto: "Uma **classe** define atributos, métodos e o comportamento dos objetos."
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Benefícios do encapsulamento",
+        lista: [
+          "**Reutilização** — classes podem ser reaproveitadas",
+          "**Independência de dados** — mudanças internas não afetam o código externo",
+          "**Redução de manutenção** — menos impacto em alterações futuras"
+        ]
+      },
+      {
+        tipo: "exemplo",
+        titulo: "Exemplo — Classe Point",
+        texto: "A classe `Point` possui variáveis X e Y, e métodos Distância e MesmaCoord. Os detalhes internos ficam ocultos."
+      },
+      {
+        tipo: "imagem",
+        src: "figura_bdoo_classe_metodos.png",
+        pasta: "imagens_banco_dados/aula_14",
+        alt: "Figura 1 — Exemplo de classe com suas variáveis e métodos",
+        num: 1
+      },
+      {
+        tipo: "imagem",
+        src: "figura_bdoo_reutilizacao_classes.png",
+        pasta: "imagens_banco_dados/aula_14",
+        alt: "Figura 2 — Exemplo de classe utilizando variáveis e métodos de outra — reutilização e encapsulamento",
+        num: 2
+      }
+    ]
+  },
+
+  {
+    id: "heranca",
+    titulo: "🧬 Herança",
+    blocos: [
+      {
+        tipo: "texto",
+        texto: "**Herança** permite criar subclasses que reutilizam atributos e métodos da superclasse."
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Conceitos",
+        lista: [
+          "**Superclasse** — classe pai",
+          "**Subclasse** — classe filha"
+        ]
+      },
+      {
+        tipo: "exemplo",
+        titulo: "Exemplo — CorPonto herda de Point",
+        texto: "A subclasse `CorPonto` herda coordenadas e métodos da classe `Point`, e adiciona os atributos cor e brilho."
+      },
+      {
+        tipo: "lista",
+        titulo: "Benefícios da herança:",
+        itens: [
+          "Reutilização",
+          "Redução de código",
+          "Organização hierárquica",
+          "Manutenção facilitada"
+        ]
+      },
+      {
+        tipo: "imagem",
+        src: "figura_bdoo_heranca_hierarquia.png",
+        pasta: "imagens_banco_dados/aula_14",
+        alt: "Figura 3 — Hierarquia de classe com a subclasse CorPonto",
+        num: 3
+      },
+      {
+        tipo: "imagem",
+        src: "figura_bdoo_subclasse_corponto.png",
+        pasta: "imagens_banco_dados/aula_14",
+        alt: "Figura 4 — Exemplo da hierarquia de classe com atributos herdados e novos atributos da subclasse CorPonto",
+        num: 4
+      }
+    ]
+  },
+
+  {
+    id: "polimorfismo",
+    titulo: "🔄 Polimorfismo",
+    blocos: [
+      {
+        tipo: "texto",
+        texto: "**Polimorfismo** significa \"várias formas\". Um método pode possuir implementações diferentes e comportar-se de forma diferente conforme a subclasse."
+      },
+      {
+        tipo: "exemplo",
+        titulo: "Exemplo — Método MesmaCoord",
+        texto: "Na classe `Point`, o método `MesmaCoord` compara coordenadas. Na classe `CorPonto`, o mesmo método compara coordenadas e cor."
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Vinculação",
+        lista: [
+          "**Vinculação estática** — ocorre na compilação; mais eficiente",
+          "**Vinculação dinâmica** — ocorre na execução; mais flexível; chamada de \"vinculação tardia\""
+        ]
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Verificação de tipos",
+        texto: "O SGBD garante compatibilidade entre objetos e métodos, prevenindo erros de tipo."
+      },
+      {
+        tipo: "imagem",
+        src: "figura_bdoo_processamento_mensagem.png",
+        pasta: "imagens_banco_dados/aula_14",
+        alt: "Figura 5 — Processamento de uma mensagem entre objetos e classes no paradigma orientado a objetos",
+        num: 5
+      }
+    ]
+  },
+
+  {
+    id: "odmg",
+    titulo: "📋 ODMG — Object Database Management Group",
+    blocos: [
+      {
+        tipo: "texto",
+        texto: "O **ODMG** foi criado para padronizar bancos orientados a objetos."
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Modelo de Objetos",
+        texto: "Define tipos, objetos e construtores."
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 ODL — Object Definition Language",
+        texto: "Usada para definir objetos e criar esquemas. Equivalente ao DDL nos bancos relacionais."
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 OQL — Object Query Language",
+        texto: "Linguagem de consulta baseada em SQL que adiciona herança, polimorfismo, objetos complexos e relacionamentos."
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Binding (Acoplamento)",
+        texto: "Responsável por mapear objetos da aplicação para o banco e converter estruturas OO para persistência."
+      }
+    ]
+  },
+
+  {
+    id: "bdor",
+    titulo: "🗃️ BDOR — Banco de Dados Objeto-Relacional",
+    blocos: [
+      {
+        tipo: "texto",
+        texto: "O **BDOR** combina o modelo relacional com recursos orientados a objetos. O objetivo é manter a robustez do modelo relacional com suporte a objetos complexos."
+      },
+      {
+        tipo: "lista",
+        titulo: "Benefícios:",
+        itens: [
+          "Tipos complexos",
+          "Integração com OO",
+          "Maior poder de modelagem",
+          "Reutilização"
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "tipos_usuario",
+    titulo: "🧩 Tipos Definidos pelo Usuário",
+    blocos: [
+      {
+        tipo: "texto",
+        texto: "O SQL objeto-relacional permite criar **tipos personalizados** para modelagem mais rica."
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Exemplo",
+        codigo: "create type Pessoa (\n    ID varchar(20),\n    nome varchar(20),\n    endereço varchar(20)\n);"
+      },
+      {
+        tipo: "lista",
+        titulo: "Vantagens:",
+        itens: [
+          "Modelagem mais rica",
+          "Representação mais próxima do mundo real",
+          "Reutilização de estruturas"
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "arrays_tipos_complexos",
+    titulo: "📦 Arrays e Tipos Complexos",
+    blocos: [
+      {
+        tipo: "texto",
+        texto: "Alguns SGBDs suportam ARRAY, tabelas como atributos e coleções."
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 PostgreSQL",
+        codigo: "INTEGER[]"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Oracle",
+        codigo: "VARRAY(10) OF INTEGER"
+      }
+    ]
+  },
+
+  {
+    id: "heranca_tipo",
+    titulo: "🔗 Herança de Tipo",
+    blocos: [
+      {
+        tipo: "texto",
+        texto: "Permite criar **subtipos** a partir de tipos existentes."
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Exemplo",
+        codigo: "create type Aluno under Pessoa"
+      },
+      {
+        tipo: "texto",
+        texto: "`Aluno` herda ID, nome e endereço de `Pessoa`, e adiciona o atributo formação."
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Conceitos importantes",
+        lista: [
+          "**Subtipo** — classe derivada",
+          "**Supertipo** — classe base"
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "heranca_tabela",
+    titulo: "📂 Herança de Tabela",
+    blocos: [
+      {
+        tipo: "texto",
+        texto: "Uma tabela pode herdar de outra tabela."
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Exemplo PostgreSQL",
+        codigo: "create table alunos\ninherits pessoas;"
+      },
+      {
+        tipo: "texto",
+        texto: "A tabela `alunos` recebe automaticamente os atributos de `pessoas`."
+      },
+      {
+        tipo: "lista",
+        titulo: "Vantagens:",
+        itens: [
+          "Reutilização estrutural",
+          "Especialização",
+          "Organização hierárquica"
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "referencias",
+    titulo: "🔍 Tipos de Referência em SQL",
+    blocos: [
+      {
+        tipo: "texto",
+        texto: "Os tipos de referência permitem criar referências entre objetos, funcionando de forma semelhante a ponteiros ou referências de objetos."
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Exemplo",
+        codigo: "diretor ref(Pessoa)"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 REF FROM",
+        texto: "Permite usar a chave primária como referência do objeto."
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Expressões de Caminho — SQL:1999",
+        texto: "Permitem acessar atributos do objeto referenciado, simplificando consultas e reduzindo joins explícitos.",
+        codigo: "diretor->nome"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 DEREF",
+        texto: "Retorna o objeto referenciado.",
+        codigo: "select deref(diretor).nome"
+      },
+      {
+        tipo: "lista",
+        titulo: "Benefícios das expressões de caminho:",
+        itens: [
+          "Simplifica consultas",
+          "Reduz joins explícitos",
+          "Melhora legibilidade"
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "ddl_dml",
+    titulo: "🛠️ DDL e DML",
+    blocos: [
+      {
+        tipo: "topico",
+        titulo: "🔹 DDL — Data Definition Language",
+        texto: "Usado para criar estruturas, definir tabelas e definir tipos.",
+        lista: [
+          "CREATE",
+          "ALTER",
+          "DROP"
+        ]
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 DML — Data Manipulation Language",
+        texto: "Usado para inserir, atualizar e consultar dados.",
+        lista: [
+          "INSERT",
+          "UPDATE",
+          "SELECT"
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "formulas_metodos",
+    titulo: "🔧 Fórmulas e Métodos",
+    blocos: [
+      {
+        tipo: "topico",
+        titulo: "🔹 Criar tipo personalizado",
+        codigo: "create type Pessoa (...);"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Criar tabela baseada em tipo",
+        codigo: "create table pessoas of Pessoa;"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Inserir dados",
+        codigo: "insert into pessoas values (...);"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Criar herança de tipo",
+        codigo: "create type Aluno under Pessoa"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Criar herança de tabela",
+        codigo: "create table alunos\ninherits pessoas;"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Criar referência",
+        codigo: "diretor ref(Pessoa)"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Acessar objeto referenciado",
+        codigo: "diretor->nome"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Recuperar referência com DEREF",
+        codigo: "select deref(diretor).nome"
+      }
+    ]
+  },
+
+  {
+    id: "exemplos",
+    titulo: "💡 Exemplos Explicativos",
+    blocos: [
+      {
+        tipo: "exemplo",
+        titulo: "Exemplo 1 — Encapsulamento",
+        texto: "Classe `Point` com atributos X e Y e métodos Distância e MesmaCoord. Os detalhes internos ficam ocultos, acessíveis apenas pela interface."
+      },
+      {
+        tipo: "exemplo",
+        titulo: "Exemplo 2 — Herança",
+        texto: "Classe `CorPonto` herda coordenadas e métodos da classe `Point`, e adiciona os atributos cor e brilho."
+      },
+      {
+        tipo: "exemplo",
+        titulo: "Exemplo 3 — Herança de Tipo SQL",
+        texto: "Professor herda atributos de Pessoa e adiciona o atributo salário.",
+        detalhe: "create type Professor under Pessoa"
+      },
+      {
+        tipo: "exemplo",
+        titulo: "Exemplo 4 — Referência",
+        texto: "Departamento possui `diretor` como referência para `Pessoa`. Isso evita joins manuais para acessar os dados do diretor."
+      }
+    ]
+  },
+
+  {
+    id: "resumo",
+    titulo: "⚡ Resumo Final para Revisão Rápida",
+    blocos: [
+      {
+        tipo: "tabela",
+        titulo: "BDOO vs BDOR",
+        colunas: ["Característica", "BDOO", "BDOR"],
+        linhas: [
+          ["Base",         "Orientado a objetos puro",        "Relacional + OO"],
+          ["Padrão",       "ODMG",                            "SQL:1999"],
+          ["Linguagem",    "ODL / OQL",                       "SQL estendido"],
+          ["Foco",         "Objetos, métodos, herança",       "Tipos, referências, herança de tabela"]
+        ]
+      },
+      {
+        tipo: "tabela",
+        titulo: "Pilares da OO",
+        colunas: ["Conceito", "Definição"],
+        linhas: [
+          ["Encapsulamento", "Esconde detalhes internos; acesso pela interface"],
+          ["Herança",        "Subclasses reutilizam atributos e métodos da superclasse"],
+          ["Polimorfismo",   "Mesmo método com implementações diferentes por subclasse"]
+        ]
+      },
+      {
+        tipo: "tabela",
+        titulo: "Recursos do BDOR em SQL",
+        colunas: ["Recurso", "Sintaxe"],
+        linhas: [
+          ["Criar tipo",           "`create type Pessoa (...)`"],
+          ["Herança de tipo",      "`create type Aluno under Pessoa`"],
+          ["Herança de tabela",    "`create table alunos inherits pessoas`"],
+          ["Referência",           "`diretor ref(Pessoa)`"],
+          ["Expressão de caminho", "`diretor->nome`"],
+          ["DEREF",                "`select deref(diretor).nome`"]
+        ]
+      },
+      {
+        tipo: "tabela",
+        titulo: "ODMG — Componentes",
+        colunas: ["Componente", "Função"],
+        linhas: [
+          ["Modelo de Objetos", "Define tipos, objetos e construtores"],
+          ["ODL",               "Define objetos e esquemas — equivalente ao DDL"],
+          ["OQL",               "Consulta baseada em SQL com suporte a herança e polimorfismo"],
+          ["Binding",           "Mapeia objetos da aplicação para o banco"]
+        ]
+      },
+      {
+        tipo: "destaque",
+        texto: "📌 Mais cobrados em prova: diferença entre BDOO e BDOR · encapsulamento · herança · polimorfismo · ODMG (ODL e OQL) · tipos definidos pelo usuário · herança de tipo · herança de tabela · tipos de referência · expressões de caminho (diretor->nome) · DEREF · DDL e DML."
+      }
+    ]
+  }
+  ]
+    }
+
 
   ] 
 };

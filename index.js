@@ -15,25 +15,8 @@ import {
 import { injetarLogo } from './shared/js/utils/logo.js';
 import { login, logout, carregarConfigs } from './src/firebase.js';
 import { criarSemestreSelect, preencherAnos } from './shared/js/utils/dom.js';
-import audio from './shared/js/audio/sfx.js';
 import Sound from './shared/js/audio/sound.js';
-
-/* ─────────────────────────────────────────────
-   SFX — mapa de sons por evento
-───────────────────────────────────────────── */
-const SFX_MAP = {
-  click:      'click',
-  hover:      'hover2',
-  openModal:  'openModal2',
-  closeModal: 'closeModal',
-  select:     'select',
-};
-
-function playSound(event) {
-  const id = SFX_MAP[event];
-  if (!id) return;
-  try { audio.sfx[id]?.(); } catch (_) {}
-}
+import { playSound } from './shared/js/audio/play.js';
 
 /* ─────────────────────────────────────────────
    INICIALIZAÇÃO

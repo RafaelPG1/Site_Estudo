@@ -2,7 +2,7 @@
 /* =============================================
    NEXUS STUDY — shared/js/audio/audio-state.js
    Estado global de áudio — fonte única de verdade
-   Versão 1.2
+   Versão 1.3
 
    RESPONSABILIDADES
    ─────────────────────────────────────────────
@@ -13,6 +13,7 @@
      - salvar estado no Firebase
      - reagir a login (nexus:loginSuccess) e logout (nexus:logout)
      - notificar subscribers quando o modo muda
+     - gerenciar fila de sons pendentes durante carregamento do Firebase
 
    ❌ Este módulo NÃO é responsável por:
      - criar DOM ou botões
@@ -26,12 +27,24 @@
    audio-state.js ←→ sfx.js        (aplica volume/mute)
    audio-state.js ←→ Firebase      (persiste por usuário)
    audio-state.js ←→ audio-btn.js  (notifica via subscribe)
+   audio-state.js ←→ play.js       (isReady / enqueue para fila de SFX)
 
    MODOS
    ─────────────────────────────────────────────
    'normal'  →  masterVolume 1.0, unmuted
    'low'     →  masterVolume 0.5, unmuted
    'mute'    →  masterVolume 0,   muted
+
+   FILA DE SFX (_sfxQueue)
+   ─────────────────────────────────────────────
+   Resolve a race condition entre playSound() e o carregamento
+   assíncrono do SFX_MAP do Firebase.
+
+   Ciclo de vida do _sfxReady:
+     true  (inicial) → visitante: DEFAULT_SFX_MAP disponível imediatamente
+     false           → início do nexus:loginSuccess (antes do await)
+     true            → após Firebase responder e _currentSfxMap ser aplicado
+     true  (logout)  → volta ao padrão; visitante pode tocar sons
 
    API PÚBLICA
    ─────────────────────────────────────────────
@@ -41,21 +54,17 @@
    audioState.unsubscribe(fn)       → remove subscriber
    audioState.loadFromFirebase(uid) → carrega e aplica estado salvo
    audioState.reset()               → volta ao padrão, sem persistir
+   audioState.getSfxMap()           → cópia do mapa atual
+   audioState.setSfxMap(action, id) → atualiza variante + persiste
+   audioState.isReady()             → true se SFX_MAP já foi aplicado
+   audioState.enqueue(event)        → enfileira evento para tocar quando pronto
    ============================================= */
 
 import audio from './sfx.js';
 import { carregarConfigs, salvarConfigs } from '../../../src/firebase.js';
 
-// getUsuario() foi REMOVIDO intencionalmente.
-// Este módulo rastreia o UID atual via _currentUid (seção 2b),
-// definido exclusivamente pelos eventos nexus:loginSuccess e nexus:logout.
-// Isso elimina toda dependência do estado global de auth e impede
-// que saves do Firebase usem o usuário errado em trocas rápidas de conta.
-
 /* ═══════════════════════════════════════════════
    1. DEFINIÇÃO DOS MODOS
-   Fonte única de verdade sobre o que cada modo
-   significa em termos de volume/mute.
 ═══════════════════════════════════════════════ */
 
 const MODES = {
@@ -70,64 +79,92 @@ const DEFAULT_MODE = 'normal';
 const VALID_MODES = Object.keys(MODES);
 
 /* ═══════════════════════════════════════════════
-   2. ESTADO EM MEMÓRIA
+   1b. SFX_MAP — mapa de sons por ação
+═══════════════════════════════════════════════ */
+
+/** Mapa padrão. Usado quando não há dado salvo no Firebase. */
+const DEFAULT_SFX_MAP = {
+  click:      'click',
+  hover:      'hover2',
+  openModal:  'openModal2',
+  closeModal: 'closeModal',
+  select:     'select',
+};
+
+/**
+ * Mapa atual em memória. Começa com os padrões e é sobrescrito
+ * pelo loadFromFirebase após login.
+ */
+let _currentSfxMap = { ...DEFAULT_SFX_MAP };
+
+/* ═══════════════════════════════════════════════
+   1c. FILA DE SFX — controle de prontidão
+   ─────────────────────────────────────────────
+   Resolve a race condition entre playSound() e o await do Firebase.
+
+   _sfxReady = true  → DEFAULT_SFX_MAP disponível (visitante ou pós-load)
+   _sfxReady = false → aguardando Firebase; sons são enfileirados
+
+   A fila é drenada em _flushSfxQueue() assim que _sfxReady volta a true.
+   play.js consulta isReady() e chama enqueue() quando necessário —
+   nenhum outro arquivo precisa saber desta fila.
 ═══════════════════════════════════════════════ */
 
 /**
- * Modo atual. Começa no padrão e é sobrescrito
- * pelo loadFromFirebase após login.
+ * Flag de prontidão do SFX_MAP.
+ * Inicia true: visitante usa DEFAULT_SFX_MAP imediatamente, sem esperar.
+ * Vira false no início de nexus:loginSuccess (antes do await Firebase).
+ * Volta a true após Firebase responder com o mapa do usuário.
  */
+let _sfxReady = true;
+
+/**
+ * Fila de eventos de áudio acumulados enquanto _sfxReady === false.
+ * Cada item é uma string de evento (ex: 'click', 'openModal').
+ * Drenada por _flushSfxQueue() na ordem de chegada (FIFO).
+ */
+const _sfxQueue = [];
+
+/**
+ * Drena todos os eventos enfileirados, tocando cada um com o
+ * _currentSfxMap já atualizado. Chamada apenas quando _sfxReady === true.
+ */
+function _flushSfxQueue() {
+  while (_sfxQueue.length) {
+    const event = _sfxQueue.shift();
+    const variantId = _currentSfxMap[event];
+    if (variantId) {
+      audio.sfx[variantId]?.();
+    } else {
+      console.warn(`[audio-state] _flushSfxQueue: evento "${event}" não encontrado no SFX_MAP.`);
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   2. ESTADO EM MEMÓRIA
+═══════════════════════════════════════════════ */
+
 let _currentMode = DEFAULT_MODE;
 
 /* ═══════════════════════════════════════════════
-   2b. UID INTERNO — dono do estado atual
-   ─────────────────────────────────────────────
-   Definido SOMENTE pelos listeners de auth abaixo.
-   Nunca lido de getUsuario() — isso eliminaria a
-   garantia de isolamento entre contas.
-
-   Ciclo de vida:
-     null          → nenhum usuário logado (visitante)
-     string (uid)  → usuário autenticado, capturado no
-                     momento exato do nexus:loginSuccess
-
-   Por que isso importa:
-     _persistToFirebase() é fire-and-forget. Sem _currentUid,
-     ela chamaria getUsuario() no momento da execução da Promise,
-     que pode ser após uma troca de conta — salvando no uid errado.
-     Com _currentUid, o uid é capturado no início do login e não
-     muda até o próximo evento de auth.
+   2b. UID INTERNO
 ═══════════════════════════════════════════════ */
 
 let _currentUid = null;
 
 /* ═══════════════════════════════════════════════
    2c. CONTROLE DE RACE CONDITION
-   ─────────────────────────────────────────────
-   Token incremental que identifica o request de
-   Firebase mais recente. Qualquer resposta cujo
-   token não bate com o atual é descartada — ela
-   pertence a um login anterior já invalidado.
-
-   Incrementado em dois momentos:
-     • início do listener nexus:loginSuccess  → invalida login anterior
-     • listener nexus:logout                  → invalida request pendente
 ═══════════════════════════════════════════════ */
 
 let _activeLoadToken = 0;
 
 /* ═══════════════════════════════════════════════
    3. SISTEMA DE SUBSCRIBERS
-   Interfaces (ex: audio-btn) se registram aqui
-   e recebem o novo modeId sempre que ele muda.
 ═══════════════════════════════════════════════ */
 
 const _subscribers = new Set();
 
-/**
- * Notifica todos os subscribers com o modo atual.
- * Chamado internamente após qualquer mudança de modo.
- */
 function _notify() {
   for (const fn of _subscribers) {
     try { fn(_currentMode); } catch (err) {
@@ -138,17 +175,8 @@ function _notify() {
 
 /* ═══════════════════════════════════════════════
    4. APLICAÇÃO NO sfx.js
-   Única função que traduz um modeId em chamadas
-   concretas na engine de áudio.
 ═══════════════════════════════════════════════ */
 
-/**
- * Aplica um modo diretamente na engine sfx.js.
- * Não altera _currentMode — apenas faz os gain nodes
- * refletirem os valores do modo recebido.
- *
- * @param {string} modeId — 'normal' | 'low' | 'mute'
- */
 function _applyToEngine(modeId) {
   const mode = MODES[modeId] ?? MODES[DEFAULT_MODE];
   audio.setMasterVolume(mode.masterVolume);
@@ -163,136 +191,116 @@ function _applyToEngine(modeId) {
    5. PERSISTÊNCIA — Firebase
 ═══════════════════════════════════════════════ */
 
-/**
- * Lê audioState do Firebase para um UID.
- * Retorna o modeId salvo ou null se não houver dado.
- *
- * @param {string} uid
- * @returns {Promise<string|null>}
- */
 async function _fetchFromFirebase(uid) {
   try {
     const configs = await carregarConfigs(uid);
     const saved   = configs?.audioState;
-    return VALID_MODES.includes(saved) ? saved : null;
+    const savedSfxMap = configs?.sfxMap ?? null;
+    return {
+      mode:   VALID_MODES.includes(saved) ? saved : null,
+      sfxMap: savedSfxMap && typeof savedSfxMap === 'object' ? savedSfxMap : null,
+    };
   } catch (err) {
     console.warn('[audio-state] Erro ao carregar Firebase:', err);
-    return null;
+    return { mode: null, sfxMap: null };
   }
 }
 
-/**
- * Salva o modeId no Firebase para o UID capturado no login.
- * Fire-and-forget — não bloqueia nada.
- *
- * Usa _currentUid (capturado em nexus:loginSuccess), NUNCA getUsuario().
- * Isso garante que o save sempre vai para o usuário que estava logado
- * no momento em que setMode() foi chamado, mesmo que getUsuario() já
- * tenha mudado por uma troca de conta subsequente.
- *
- * ATENÇÃO — por que usa getConfigs() aqui:
- * firebase.js salvarConfigs() faz setDoc({ configs: dados }, merge:true).
- * O merge ocorre no nível do documento, mas o campo "configs" é substituído
- * por inteiro. Se mandarmos apenas { audioState: modeId }, apagamos
- * tema, animacoes e todas as outras configs do usuário.
- * A solução é sempre salvar o objeto de configs completo com audioState atualizado.
- * getConfigs() é seguro aqui porque só lemos — não escrevemos de volta.
- *
- * @param {string} modeId
- */
 function _persistToFirebase(modeId) {
-  if (!_currentUid) return; // visitante ou pós-logout: não salva
+  if (!_currentUid) return;
 
-  // Captura uid e configs localmente para que a closure da Promise use
-  // valores fixos, independente de mudanças futuras em _currentUid ou
-  // no estado de configs durante o await do Firestore.
   const uid = _currentUid;
 
-  // Importa getConfigs apenas para compor o objeto completo a salvar.
-  // Nunca é usado para determinar o modo — isso é responsabilidade
-  // exclusiva de _currentMode e _currentUid deste módulo.
   import('../../../src/global.js').then(({ getConfigs }) => {
     const configsAtuais = getConfigs();
-    const payload = { ...configsAtuais, audioState: modeId };
+    const payload = { ...configsAtuais, audioState: modeId, sfxMap: _currentSfxMap };
     salvarConfigs(uid, payload).catch(err => {
       console.warn(`[audio-state] Erro ao salvar Firebase (uid="${uid}"):`, err);
     });
   }).catch(err => {
-    // Fallback: se o import dinâmico falhar (improvável, mas defensivo),
-    // salva só o audioState. Pior caso: outras configs ficam desatualizadas
-    // até o próximo setConfigs() do global.js.
     console.warn('[audio-state] fallback save sem configs completas:', err);
-    salvarConfigs(uid, { audioState: modeId }).catch(() => {});
+    salvarConfigs(uid, { audioState: modeId, sfxMap: _currentSfxMap }).catch(() => {});
+  });
+}
+
+function _persistSfxMapToFirebase() {
+  if (!_currentUid) return;
+  const uid = _currentUid;
+  import('../../../src/global.js').then(({ getConfigs }) => {
+    const configsAtuais = getConfigs();
+    const payload = { ...configsAtuais, audioState: _currentMode, sfxMap: _currentSfxMap };
+    salvarConfigs(uid, payload).catch(err => {
+      console.warn(`[audio-state] Erro ao salvar sfxMap Firebase (uid="${uid}"):`, err);
+    });
+  }).catch(err => {
+    console.warn('[audio-state] fallback sfxMap save sem configs completas:', err);
+    salvarConfigs(uid, { audioState: _currentMode, sfxMap: _currentSfxMap }).catch(() => {});
   });
 }
 
 /* ═══════════════════════════════════════════════
    6. LISTENERS DE AUTH
-   Centraliza aqui toda a lógica de login/logout.
 ═══════════════════════════════════════════════ */
 
 document.addEventListener('nexus:loginSuccess', async ({ detail }) => {
-  // O uid DEVE vir do detail do evento — nunca de getUsuario().
-  // O detail é preenchido pelo chamador (index.js ou global.js) no
-  // momento exato do login, antes de qualquer mudança de contexto.
   const uid = detail?.uid;
   if (!uid) {
     console.warn('[audio-state] nexus:loginSuccess sem uid no detail — ignorado.');
     return;
   }
 
-  // Captura o UID desta sessão antes de qualquer await.
-  // _persistToFirebase() usará este valor, não getUsuario().
   _currentUid = uid;
-
-  // Incrementa o token ANTES do await para invalidar qualquer
-  // request pendente de login anterior. Somente este token,
-  // capturado agora, tem autorização para alterar o estado.
   const token = ++_activeLoadToken;
 
-  // Reset imediato para estado padrão enquanto aguardamos Firebase.
-  // Garante que o usuário B nunca veja/ouça o estado do usuário A
-  // durante os ~200ms de latência da busca.
+  // Suspende sons personalizados até o Firebase responder.
+  // Qualquer playSound() chamado daqui até o _flushSfxQueue() será enfileirado.
+  _sfxReady = false;
+
   _currentMode = DEFAULT_MODE;
   audio.resetToDefaults();
   _applyToEngine(_currentMode);
   _notify();
 
-  // Busca Firebase — fonte de verdade para este usuário.
   const saved = await _fetchFromFirebase(uid);
 
-  // Guarda de race condition: se o token mudou durante o await,
-  // significa que chegou um logout ou um login mais recente.
-  // Esta resposta pertence a uma sessão já encerrada — descarta.
+  // Guard de race condition: descarta respostas de sessões anteriores.
   if (token !== _activeLoadToken) {
     console.log(`[audio-state] resposta antiga descartada (uid="${uid}", token=${token})`);
+    // Garante que _sfxReady não fique preso em false se este era o único load em voo.
+    // O token mais recente (logout ou novo login) é responsável por seu próprio _sfxReady.
     return;
   }
 
-  // Aplica resultado (sobrescreve o padrão acima com o valor real).
-  _currentMode = saved ?? DEFAULT_MODE;
+  // Aplica o mapa real do usuário.
+  _currentMode = saved.mode ?? DEFAULT_MODE;
+  _currentSfxMap = saved.sfxMap ? { ...DEFAULT_SFX_MAP, ...saved.sfxMap } : { ...DEFAULT_SFX_MAP };
   _applyToEngine(_currentMode);
   _notify();
 
+  // Ativa e drena a fila — agora os sons chegam com o mapa correto.
+  _sfxReady = true;
+  _flushSfxQueue();
+
   console.log(
     `[audio-state] uid="${uid}" → modo="${_currentMode}"`,
-    saved !== null ? '(Firebase)' : '(padrão — primeiro acesso)'
+    saved.mode !== null ? '(Firebase)' : '(padrão — primeiro acesso)'
   );
 });
 
 document.addEventListener('nexus:logout', () => {
-  // Limpa o UID antes de qualquer outra operação.
-  // A partir daqui _persistToFirebase() é no-op — sem uid, sem save.
   _currentUid = null;
-
-  // Incrementa o token para invalidar qualquer _fetchFromFirebase
-  // ainda em voo — sua resposta será descartada pelo guard acima.
   _activeLoadToken++;
 
   _currentMode = DEFAULT_MODE;
+  _currentSfxMap = { ...DEFAULT_SFX_MAP };
   audio.resetToDefaults();
   _applyToEngine(_currentMode);
   _notify();
+
+  // Descarta fila do login anterior e libera sons imediatamente
+  // (visitante usa DEFAULT_SFX_MAP, não precisa esperar nada).
+  _sfxQueue.length = 0;
+  _sfxReady = true;
 
   console.log('[audio-state] Logout → modo resetado para padrão');
 });
@@ -303,20 +311,10 @@ document.addEventListener('nexus:logout', () => {
 
 const audioState = {
 
-  /**
-   * Retorna o modeId atual.
-   * @returns {'normal'|'low'|'mute'}
-   */
   getMode() {
     return _currentMode;
   },
 
-  /**
-   * Define um novo modo, aplica na engine, persiste no Firebase
-   * e notifica todos os subscribers.
-   *
-   * @param {'normal'|'low'|'mute'} modeId
-   */
   setMode(modeId) {
     if (!VALID_MODES.includes(modeId)) {
       console.warn(`[audio-state] setMode: modo inválido "${modeId}". Use: ${VALID_MODES.join(', ')}`);
@@ -329,63 +327,41 @@ const audioState = {
     _notify();
   },
 
-  /**
-   * Registra uma função para ser chamada sempre que o modo mudar.
-   * A função recebe o novo modeId como argumento.
-   *
-   * @param {(modeId: string) => void} fn
-   */
   subscribe(fn) {
     if (typeof fn !== 'function') return;
     _subscribers.add(fn);
   },
 
-  /**
-   * Remove uma função registrada anteriormente.
-   *
-   * @param {(modeId: string) => void} fn
-   */
   unsubscribe(fn) {
     _subscribers.delete(fn);
   },
 
-  /**
-   * Carrega o estado do Firebase para um UID e aplica.
-   * Uso manual para casos onde o caller já tem o uid disponível
-   * e não quer depender do evento nexus:loginSuccess.
-   *
-   * Protegido pelo mesmo sistema de token para evitar que chamadas
-   * concorrentes externas corrompam o estado.
-   *
-   * @param {string} uid
-   * @returns {Promise<void>}
-   */
   async loadFromFirebase(uid) {
     if (!uid) return;
 
-    // Atualiza o UID interno e captura o token desta operação.
     _currentUid = uid;
     const token = ++_activeLoadToken;
 
+    // Suspende sons até o mapa deste uid ser aplicado.
+    _sfxReady = false;
+
     const saved = await _fetchFromFirebase(uid);
 
-    // Descarta se uma operação mais recente tomou o controle.
     if (token !== _activeLoadToken) {
       console.log(`[audio-state] loadFromFirebase descartado (uid="${uid}", token=${token})`);
       return;
     }
 
-    _currentMode = saved ?? DEFAULT_MODE;
+    _currentMode = saved.mode ?? DEFAULT_MODE;
+    _currentSfxMap = saved.sfxMap ? { ...DEFAULT_SFX_MAP, ...saved.sfxMap } : { ...DEFAULT_SFX_MAP };
     _applyToEngine(_currentMode);
     _notify();
+
+    // Ativa e drena a fila.
+    _sfxReady = true;
+    _flushSfxQueue();
   },
 
-  /**
-   * Reseta o estado para o padrão em memória.
-   * Não persiste no Firebase.
-   * Chamado internamente no logout — pode ser chamado externamente
-   * se necessário (ex: testes, troca de contexto).
-   */
   reset() {
     _currentMode = DEFAULT_MODE;
     audio.resetToDefaults();
@@ -393,22 +369,54 @@ const audioState = {
     _notify();
   },
 
-  /**
-   * Expõe os modos disponíveis para que interfaces
-   * possam iterar sem hardcodar os IDs.
-   * Retorna cópia — somente leitura.
-   */
   getModes() {
     return { ...MODES };
   },
 
-  /**
-   * Expõe os IDs válidos.
-   * @returns {string[]}
-   */
   getValidModes() {
     return [...VALID_MODES];
   },
+
+  getSfxMap() {
+    return { ..._currentSfxMap };
+  },
+
+  setSfxMap(action, variantId) {
+    if (!(action in DEFAULT_SFX_MAP)) {
+      console.warn(`[audio-state] setSfxMap: ação desconhecida "${action}". Use: ${Object.keys(DEFAULT_SFX_MAP).join(', ')}`);
+      return;
+    }
+    _currentSfxMap[action] = variantId;
+    _persistSfxMapToFirebase();
+    _notify();
+  },
+
+  /**
+   * Indica se o SFX_MAP do Firebase já foi carregado e aplicado.
+   *
+   * play.js consulta este método antes de executar um som.
+   * false → o mapa ainda não chegou do Firebase (janela de login).
+   * true  → mapa pronto; pode tocar imediatamente.
+   *
+   * @returns {boolean}
+   */
+  isReady() {
+    return _sfxReady;
+  },
+
+  /**
+   * Enfileira um evento de áudio para ser tocado assim que o SFX_MAP
+   * estiver pronto. Chamado por play.js quando isReady() === false.
+   *
+   * Os eventos são drenados em ordem FIFO por _flushSfxQueue(),
+   * com o mapa correto do usuário já aplicado.
+   *
+   * @param {string} event — chave do SFX_MAP (ex: 'click', 'hover')
+   */
+  enqueue(event) {
+    _sfxQueue.push(event);
+  },
+
 };
 
 export default audioState;

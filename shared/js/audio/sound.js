@@ -536,6 +536,17 @@ function _openModal() {
   if (_modalOpen) return;
   _modalOpen = true;
 
+  // Sincroniza selectedVariant com o SFX_MAP atual do audio-state
+  // para que o modal reflita os sons salvos do usuário.
+  const currentSfxMap = audioState.getSfxMap();
+  if (currentSfxMap.click)      _modalState.selectedVariant['click']  = currentSfxMap.click;
+  if (currentSfxMap.hover)      _modalState.selectedVariant['hover']  = currentSfxMap.hover;
+  if (currentSfxMap.select)     _modalState.selectedVariant['select'] = currentSfxMap.select;
+  // Para 'modal', openModal e closeModal são controlados pela mesma categoria
+  // mas o selectedVariant armazena apenas uma variante ativa por vez.
+  // Usa openModal como valor representativo da categoria 'modal'.
+  if (currentSfxMap.openModal)  _modalState.selectedVariant['modal']  = currentSfxMap.openModal;
+
   _renderCards();
   _renderMusicTracks();
   _initSliders();
@@ -771,6 +782,21 @@ function _buildVariantRow(cat, v) {
 
 function _setActiveVariant(catId, varId) {
   _modalState.selectedVariant[catId] = varId;
+
+  // Atualiza o SFX_MAP global via audio-state (persiste no Firebase)
+  // A categoria 'modal' controla openModal e closeModal separadamente.
+  // Para as demais categorias, o id da categoria é a chave do mapa.
+  if (catId !== 'modal') {
+    audioState.setSfxMap(catId, varId);
+  } else {
+    // Para modal, a chave do mapa corresponde ao prefixo da variante
+    if (varId.startsWith('open') || varId.startsWith('Open')) {
+      audioState.setSfxMap('openModal', varId);
+    } else {
+      audioState.setSfxMap('closeModal', varId);
+    }
+  }
+
   const card = document.getElementById(`snd-sc-${catId}`);
   if (!card) return;
   card.querySelectorAll('.snd-variant-row').forEach(row => {

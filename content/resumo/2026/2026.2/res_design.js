@@ -3083,6 +3083,519 @@ window.__nexusConteudo = {
   }
   ]
   },
+  // Aula 14 — Formatando com CSS
+  {
+  aula: "Aula 14 — Formatando com CSS",
+  ideia_central: "CSS é a linguagem responsável pela aparência visual das páginas HTML, permitindo estilizar cores, fontes, layouts, espaçamentos e responsividade de forma separada da estrutura.",
+  secoes: [
+  {
+    id: "visao",
+    titulo: "🧭 Visão Geral",
+    blocos: [
+      {
+        tipo: "texto",
+        texto: "O material apresenta os principais fundamentos de **CSS (Cascading Style Sheets)** aplicados ao desenvolvimento de uma **landing page**, mostrando como separar **estrutura (HTML)** de **estilo visual (CSS)**."
+      },
+      {
+        tipo: "lista",
+        titulo: "Temas centrais abordados:",
+        itens: [
+          "Vinculação do CSS ao HTML",
+          "Uso de bibliotecas externas de fontes",
+          "Seletores CSS",
+          "Classes e IDs",
+          "Variáveis CSS",
+          "Estilização de menus",
+          "Criação de layouts com CSS Grid",
+          "Estilização de tabelas e formulários",
+          "Organização visual e responsividade básica"
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "o_que_e_css",
+    titulo: "🎨 O que é CSS",
+    blocos: [
+      {
+        tipo: "texto",
+        texto: "**CSS** significa **Cascading Style Sheets** (Folhas de Estilo em Cascata). Sua função é definir a aparência visual das páginas HTML."
+      },
+      {
+        tipo: "lista",
+        titulo: "O CSS define:",
+        itens: [
+          "Aparência",
+          "Cores",
+          "Espaçamento",
+          "Fontes",
+          "Alinhamentos",
+          "Grids",
+          "Responsividade",
+          "Efeitos visuais"
+        ]
+      },
+      {
+        tipo: "lista",
+        titulo: "O CSS trabalha separado do HTML, permitindo:",
+        itens: [
+          "Organização",
+          "Reaproveitamento",
+          "Manutenção mais fácil",
+          "Melhor padronização visual"
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "vinculacao",
+    titulo: "🔗 Vinculando HTML e CSS",
+    blocos: [
+      {
+        tipo: "texto",
+        texto: "O HTML precisa estar conectado ao arquivo `.css` para que os estilos sejam aplicados."
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Código de vinculação",
+        codigo: "<link rel=\"stylesheet\" href=\"assets/css/style.css\">"
+      },
+      {
+        tipo: "lista",
+        titulo: "Importância:",
+        itens: [
+          "Separação entre conteúdo e design",
+          "Facilita manutenção",
+          "Permite reutilização do estilo"
+        ]
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Testando o vínculo do CSS",
+        texto: "Para verificar se o CSS está realmente conectado ao HTML, utiliza-se um teste simples: se a página mudar de cor, o vínculo funcionou.",
+        codigo: "body {\n    background-color: red;\n}"
+      }
+    ]
+  },
+
+  {
+    id: "fontes",
+    titulo: "✏️ Google Fonts e Tipografia",
+    blocos: [
+      {
+        tipo: "texto",
+        texto: "O material mostra como importar fontes externas usando o **Google Fonts**."
+      },
+      {
+        tipo: "lista",
+        titulo: "Fontes utilizadas no projeto:",
+        itens: [
+          "**Lato** → títulos",
+          "**Nunito** → textos"
+        ]
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Aplicação das fontes",
+        codigo: "body {\n    font-family: 'Nunito', sans-serif;\n}\n\nh1, h2, h3, h4, h5, h6 {\n    font-family: 'Lato', sans-serif;\n}"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Tipografia no Design",
+        texto: "A escolha tipográfica impacta diretamente a legibilidade, leitura, experiência do usuário e estética visual. Fontes inadequadas podem dificultar a leitura, gerar poluição visual e reduzir acessibilidade."
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 text-transform",
+        texto: "Transforma texto em maiúsculo.",
+        codigo: "h1 {\n    text-transform: uppercase;\n}"
+      }
+    ]
+  },
+
+  {
+    id: "seletores",
+    titulo: "🎯 Seletores CSS",
+    blocos: [
+      {
+        tipo: "subtitulo",
+        texto: "Seletores de Classe"
+      },
+      {
+        tipo: "texto",
+        texto: "Classes usam `.` no CSS. São reutilizáveis e podem ser aplicadas em vários elementos."
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Exemplo de classe",
+        codigo: ".bg {\n    background-image: url('../img/background-primary.svg');\n}"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Uso no HTML",
+        codigo: "<section class=\"bg\">"
+      },
+      {
+        tipo: "subtitulo",
+        texto: "Seletores de ID"
+      },
+      {
+        tipo: "texto",
+        texto: "IDs usam `#`. São identificadores únicos, usados em navegação e ideais para landing pages."
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Exemplo de ID",
+        codigo: "<section id=\"intro\">"
+      },
+      {
+        tipo: "imagem",
+        src: "figura_css_ids_sections.png",
+        pasta: "imagens_design/aula_14",
+        alt: "Figura 1 — Adicionando os identificadores de ID às seções HTML para navegação interna",
+        num: 1
+      },
+      {
+        tipo: "imagem",
+        src: "figura_css_linkagem_ids.png",
+        pasta: "imagens_design/aula_14",
+        alt: "Figura 2 — Linkando conteúdos com href='#id' para conectar itens do menu às seções",
+        num: 2
+      }
+    ]
+  },
+
+  {
+    id: "backgrounds",
+    titulo: "🖼️ Backgrounds",
+    blocos: [
+      {
+        tipo: "topico",
+        titulo: "🔹 background-image",
+        texto: "Define imagem de fundo.",
+        codigo: "background-image: url('../img/background-primary.svg');"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 background-size: cover",
+        texto: "Faz a imagem ocupar toda a área, cortando o excesso quando necessário.",
+        codigo: "background-size: cover;"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 background-position",
+        texto: "Centraliza a imagem.",
+        codigo: "background-position: center center;"
+      }
+    ]
+  },
+
+  {
+    id: "layout",
+    titulo: "📐 Layout e Posicionamento",
+    blocos: [
+      {
+        tipo: "subtitulo",
+        texto: "Classe .content"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Código",
+        codigo: ".content {\n    max-width: 1200px;\n    margin: 0 auto;\n}"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 max-width",
+        texto: "Define a largura máxima do elemento."
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 margin: 0 auto",
+        texto: "Centraliza o elemento horizontalmente."
+      },
+      {
+        tipo: "subtitulo",
+        texto: "Containers"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Código",
+        codigo: ".container {\n    padding: 3% 4%;\n    text-align: center;\n}"
+      }
+    ]
+  },
+
+  {
+    id: "variaveis",
+    titulo: "🔑 Variáveis CSS",
+    blocos: [
+      {
+        tipo: "texto",
+        texto: "Variáveis CSS são definidas em `:root` e podem ser reutilizadas em todo o arquivo."
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Definição",
+        codigo: ":root {\n    --cor-cinza: #e4e4f2;\n    --cor-azulescuro: #414059;\n    --gap: 30px;\n}"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Uso",
+        codigo: "color: var(--cor-cinza);"
+      },
+      {
+        tipo: "lista",
+        titulo: "Vantagens das variáveis:",
+        itens: [
+          "Reutilização",
+          "Padronização",
+          "Manutenção rápida",
+          "Consistência visual"
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "flexbox_menu",
+    titulo: "↔️ Flexbox no Menu",
+    blocos: [
+      {
+        tipo: "texto",
+        texto: "O menu utiliza **Flexbox** para distribuir seus elementos."
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Código",
+        codigo: "display: flex;\njustify-content: space-between;"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 display: flex",
+        texto: "Transforma elementos em layout flexível."
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 justify-content: space-between",
+        texto: "Distribui elementos com um no início e outro no fim."
+      },
+      {
+        tipo: "subtitulo",
+        texto: "Menu Fixo"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Código",
+        codigo: "position: fixed;\ntop: 0;"
+      },
+      {
+        tipo: "texto",
+        texto: "O menu permanece fixo enquanto a página rola."
+      },
+      {
+        tipo: "subtitulo",
+        texto: "Limpeza visual do menu"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Removendo marcadores da lista",
+        codigo: "list-style: none;"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Removendo sublinhado dos links",
+        codigo: "a {\n    text-decoration: none;\n}"
+      }
+    ]
+  },
+
+  {
+    id: "grid",
+    titulo: "⚙️ CSS Grid",
+    blocos: [
+      {
+        tipo: "texto",
+        texto: "O material introduz o **Grid Layout** para criação de layouts com colunas."
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Grid de 2 colunas",
+        texto: "Cria 2 colunas iguais.",
+        codigo: ".grid1 {\n    display: grid;\n    grid-template-columns: 1fr 1fr;\n}"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Grid de 3 colunas",
+        texto: "Cria 3 colunas proporcionais.",
+        codigo: ".grid2 {\n    grid-template-columns: 1fr 1fr 1fr;\n}"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Unidade fr (fraction)",
+        texto: "`1fr` representa uma fração do espaço disponível."
+      },
+      {
+        tipo: "imagem",
+        src: "figura_css_grid_classes.png",
+        pasta: "imagens_design/aula_14",
+        alt: "Figura 3 — Vinculando as classes aos seus elementos para funcionamento correto de grids com múltiplas colunas",
+        num: 3
+      }
+    ]
+  },
+
+  {
+    id: "responsividade",
+    titulo: "📱 Responsividade Básica",
+    blocos: [
+      {
+        tipo: "texto",
+        texto: "Imagens recebem propriedades para evitar distorções e se adaptar ao tamanho da coluna."
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Código",
+        codigo: "max-width: 100%;\nheight: auto;"
+      }
+    ]
+  },
+
+  {
+    id: "tabelas",
+    titulo: "📊 Estilização de Tabelas",
+    blocos: [
+      {
+        tipo: "topico",
+        titulo: "🔹 border-collapse",
+        texto: "Une bordas da tabela.",
+        codigo: "border-collapse: collapse;"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Estilo das células",
+        codigo: "table td, table th {\n    border: 1px solid gray;\n    padding: 5px;\n}"
+      }
+    ]
+  },
+
+  {
+    id: "formulas_metodos",
+    titulo: "🔧 Fórmulas e Métodos",
+    blocos: [
+      {
+        tipo: "topico",
+        titulo: "🔹 Vincular CSS externo",
+        codigo: "<link rel=\"stylesheet\" href=\"style.css\">"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Importar fontes",
+        lista: [
+          "Acessar Google Fonts",
+          "Escolher fonte",
+          "Copiar `<link>`",
+          "Aplicar `font-family`"
+        ]
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Criar variável CSS",
+        codigo: ":root {\n    --nome: valor;\n}\n\ncolor: var(--nome);"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Criar Grid — 2 colunas",
+        codigo: "grid-template-columns: 1fr 1fr;"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Criar Grid — 3 colunas",
+        codigo: "grid-template-columns: 1fr 1fr 1fr;"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Centralizar conteúdo",
+        codigo: "margin: 0 auto;"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Fixar menu",
+        codigo: "position: fixed;"
+      },
+      {
+        tipo: "topico",
+        titulo: "🔹 Remover sublinhado",
+        codigo: "text-decoration: none;"
+      }
+    ]
+  },
+
+  {
+    id: "exemplos",
+    titulo: "📊 Exemplos Explicativos",
+    blocos: [
+      {
+        tipo: "exemplo",
+        titulo: "Exemplo 1 — Classe reutilizável",
+        texto: "A classe `.bg` pode ser usada em sections, divs e containers.",
+        codigo: ".bg {\n    background-image: url(...);\n}"
+      },
+      {
+        tipo: "exemplo",
+        titulo: "Exemplo 2 — ID para navegação",
+        texto: "Ao clicar no link do menu, a página rola até a seção correspondente.",
+        codigo: "<section id=\"servicos\">\n\n<a href=\"#servicos\">"
+      },
+      {
+        tipo: "exemplo",
+        titulo: "Exemplo 3 — Grid",
+        texto: "Resultado: texto à esquerda, imagem à direita.",
+        codigo: "display: grid;\ngrid-template-columns: 1fr 1fr;"
+      }
+    ]
+  },
+
+  {
+    id: "resumo",
+    titulo: "⚡ Resumo Final para Revisão Rápida",
+    blocos: [
+      {
+        tipo: "tabela",
+        titulo: "Conceitos principais",
+        colunas: ["Conceito", "Resumo"],
+        linhas: [
+          ["CSS",              "Estiliza páginas HTML; separa conteúdo e aparência"],
+          ["Vinculação CSS",   "`<link rel='stylesheet' href='style.css'>`"],
+          ["Classes",         "Reutilizáveis; usam `.`"],
+          ["IDs",             "Únicos; usados em navegação com `#`"],
+          ["Variáveis CSS",   "Definidas em `:root`; usadas com `var(--nome)`"],
+          ["Flexbox",         "`display: flex` — usado em menus e alinhamentos"],
+          ["Grid 2 colunas",  "`grid-template-columns: 1fr 1fr`"],
+          ["Grid 3 colunas",  "`grid-template-columns: 1fr 1fr 1fr`"],
+          ["Menu fixo",       "`position: fixed`"],
+          ["Responsividade",  "`max-width: 100%; height: auto`"],
+          ["Sem bullets",     "`list-style: none`"],
+          ["Sem sublinhado",  "`text-decoration: none`"]
+        ]
+      },
+      {
+        tipo: "destaque",
+        texto: "📌 Mais cobrados em prova: diferença entre class e id · CSS Grid · Flexbox · variáveis CSS · vinculação HTML/CSS · Google Fonts · responsividade · propriedades de layout · background-image · padding, margin e border · navegação com IDs."
+      },
+      {
+        tipo: "imagem",
+        src: "figura_css_resultado_final.png",
+        pasta: "imagens_design/aula_14",
+        alt: "Figura 4 — Landing page totalmente estilizada com menu, grids, imagens, tabela e rodapé",
+        num: 4
+      }
+    ]
+  }
+  ]
+  },
+
 
 
 
