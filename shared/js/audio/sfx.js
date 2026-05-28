@@ -78,7 +78,12 @@ const _state = { ..._DEFAULT_SFX_STATE };
 let _ctx = null;
 
 function _getCtx() {
-  if (!_ctx) _ctx = new (window.AudioContext || window.webkitAudioContext)();
+  if (!_ctx) {
+    _ctx = new (window.AudioContext || window.webkitAudioContext)();
+    // Warmup: cria master/sfx/musicGain imediatamente ao criar o contexto.
+    // Evita que o primeiro hover pague o custo de createGain()/connect() no hot path.
+    _getGains();
+  }
   if (_ctx.state === 'suspended') _ctx.resume();
   return _ctx;
 }
@@ -136,7 +141,9 @@ function _tone({
   const ctx    = _getCtx();
   const gains  = _getGains();
   const decayT = decay ?? duration * 0.3;
-  const t      = ctx.currentTime;
+  // +0.005 s de lookahead: garante que o evento cai no próximo render block,
+  // evitando a latência de até ~6 ms quando currentTime está no meio do block atual.
+  const t      = ctx.currentTime + 0.005;
 
   const osc      = ctx.createOscillator();
   const gainNode = ctx.createGain();
@@ -529,7 +536,7 @@ export const catalog = [
         const o = ctx.createOscillator(), g = ctx.createGain();
         o.type = 'sine'; o.frequency.value = 960;
         g.gain.setValueAtTime(0, ctx.currentTime);
-        g.gain.linearRampToValueAtTime(this.volume, ctx.currentTime + 0.025);
+        g.gain.linearRampToValueAtTime(this.volume, ctx.currentTime + 0.005);
         g.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.07);
         o.connect(g); g.connect(gains.sfx); o.start(); o.stop(ctx.currentTime + 0.08);
     },
@@ -600,7 +607,7 @@ export const catalog = [
         o.type = 'sine'; o.frequency.setValueAtTime(500, ctx.currentTime);
         o.frequency.linearRampToValueAtTime(800, ctx.currentTime + 0.07);
         g.gain.setValueAtTime(0, ctx.currentTime);
-        g.gain.linearRampToValueAtTime(this.volume, ctx.currentTime + 0.015);
+        g.gain.linearRampToValueAtTime(this.volume, ctx.currentTime + 0.005);
         g.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.07);
         o.connect(g); g.connect(gains.sfx); o.start(); o.stop(ctx.currentTime + 0.08);
     },
@@ -629,7 +636,7 @@ export const catalog = [
         o.type = 'triangle'; o.frequency.setValueAtTime(1800, ctx.currentTime);
         o.frequency.linearRampToValueAtTime(1400, ctx.currentTime + 0.08);
         g.gain.setValueAtTime(0, ctx.currentTime);
-        g.gain.linearRampToValueAtTime(this.volume, ctx.currentTime + 0.02);
+        g.gain.linearRampToValueAtTime(this.volume, ctx.currentTime + 0.005);
         g.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.08);
         o.connect(g); g.connect(gains.sfx); o.start(); o.stop(ctx.currentTime + 0.09);
     },
