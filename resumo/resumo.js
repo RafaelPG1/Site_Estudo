@@ -24,6 +24,14 @@ import { aplicarCoresDisciplina } from '../shared/js/themes/theme.js';
 
 import { injetarLogo } from '../shared/js/utils/logo.js';
 
+/* ─────────────────────────────────────────────
+   ÁUDIO — sistema centralizado
+   Usar sempre playSound(event). Nunca chamar
+   audio.sfx diretamente neste arquivo.
+───────────────────────────────────────────── */
+import Sound      from '../shared/js/audio/sound.js';
+import { playSound } from '../shared/js/audio/play.js';
+
 injetarLogo({ destino: '#header-logo-wrap', tamanho: 32, layout: 'stacked' });
 
 /* ══════════════════════════════════════════════
@@ -55,6 +63,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   setPagina('RESUMO');
   preencherAnos();
 
+  // Inicializa o sistema de áudio (botão flutuante + modal interno)
+  Sound.init();
+
   // Imports opcionais
   try {
     const mod = await import('../shared/js/themes/cores.js');
@@ -69,6 +80,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   _resolverContexto();
 
   criarSemestreSelect('semestre-wrap-resumo', sem => {
+    // Som de select ao trocar semestre — igual ao index.js
+    playSound('select');
+
     State.semestre     = sem;
     State.disciplinas  = getDisciplinasDeSemestre(sem);
     State.temConteudo  = null;
@@ -87,6 +101,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     _carregarConteudo();
   }, State.semestre);
 
+  // Hover no select de semestre — vinculado após o select ser criado pelo criarSemestreSelect
+  requestAnimationFrame(() => {
+    const wrap = document.getElementById('semestre-wrap-resumo');
+    if (wrap) {
+      const sel = wrap.querySelector('select');
+      if (sel) {
+        sel.addEventListener('mousedown', () => playSound('click'));
+      }
+    }
+  });
+
   _renderSidebar();
   _renderHeader();
 
@@ -94,6 +119,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   _bindMobileDropdown();
   _initProgressBar();
   _carregarConteudo();
+
+  // Botão voltar ao início
+  document.getElementById('btn-back')?.addEventListener('mouseenter', () => playSound('hover'));
+  document.getElementById('btn-back')?.addEventListener('click',      () => playSound('click'));
 });
 
 
@@ -103,7 +132,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 function _initProgressBar() {
   const bar = document.getElementById('reading-progress');
   if (!bar) return;
-  // Atualiza progresso com base no scroll do painel de leitura
   document.addEventListener('scroll', () => {
     bar.classList.remove('reading-progress--visible');
   });
@@ -263,6 +291,7 @@ el.innerHTML = `
   </div>`;
 
 document.getElementById('videos-strip-toggle')?.addEventListener('click', () => {
+  playSound('click');
   document.getElementById('videos-strip-wrap')?.classList.toggle('videos-strip--open');
 });
 
@@ -363,6 +392,7 @@ function _buildToggleHtml() {
 
 function _setModo(modo) {
   if (State.modo === modo) return;
+  playSound('select');
   State.modo = modo;
   document.querySelectorAll('[data-modo]').forEach(btn => {
     btn.classList.toggle('mode-btn--active', btn.dataset.modo === modo);
@@ -443,7 +473,6 @@ function _profChip(nomeProf) {
   return `<span class="card-prof-chip">${icone} ${_esc(nomeProf)}</span>`;
 }
 
-/* ── Estima tempo de leitura baseado no nº de seções e blocos ── */
 function _estimarTempo(aula) {
   const secoes = aula.secoes ?? [];
   let blocos = 0;
@@ -452,11 +481,19 @@ function _estimarTempo(aula) {
   return `~${minutos} min`;
 }
 
-/* ── Determina nível baseado no número de seções ── */
 function _nivelAula(secoes) {
   if (secoes >= 5) return { label: 'Avançado', color: 'var(--rose)' };
   if (secoes >= 3) return { label: 'Intermediário', color: 'var(--amber)' };
   return { label: 'Introdutório', color: 'var(--teal)' };
+}
+
+/* ══════════════════════════════════════════════
+   HOVER NOS CARDS — anti-spam
+   Um hover por card: dispara ao entrar no card,
+   não repete enquanto o cursor move dentro dele.
+══════════════════════════════════════════════ */
+function _bindCardHover(card) {
+  card.addEventListener('mouseenter', () => playSound('hover'));
 }
 
 /* ══════════════════════════════════════════════
@@ -501,12 +538,16 @@ function _criarCard(aula, idx) {
         </div>
       </div>
     </div>`;
+
+  _bindCardHover(card);
+
   card.addEventListener('click', () => _abrirModal(aula));
   card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _abrirModal(aula); } });
   return card;
 }
 
 function _criarCardSintese(aula, idx) {
+  const secoes  = aula.secoes ?? [];
   const aulaStr = _esc(aula.aula ?? '');
   const m       = aulaStr.match(/^(Aula\s*[\d\/]+)\s*[—–-]\s*(.+)$/i);
   const aulaNum = m ? m[1] : aulaStr;
@@ -549,27 +590,40 @@ function _criarCardSintese(aula, idx) {
 </div>
       </div>
     </div>`;
+
+  _bindCardHover(card);
+
   card.addEventListener('click', () => { if (temSint) _abrirModal(sint); });
   card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (temSint) _abrirModal(sint); } });
   return card;
 }
 
 /* ══════════════════════════════════════════════
-   MODAL — painel lateral com TOC e scroll spy
-══════════════════════════════════════════════ */
-/* ══════════════════════════════════════════════
    READER — tela cheia com seções colapsáveis
 ══════════════════════════════════════════════ */
 function _bindModal() {
-  // Fechar com botão voltar
-  document.getElementById('read-modal-close')?.addEventListener('click', _fecharModal);
-  // Fechar com Escape
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') _fecharModal(); });
+  document.getElementById('read-modal-close')?.addEventListener('click', () => {
+    playSound('closeModal');
+    _fecharModal();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      // Só toca se o reader estiver aberto
+      if (document.getElementById('read-modal')?.classList.contains('read-modal--open')) {
+        playSound('closeModal');
+      }
+      _fecharModal();
+    }
+  });
 }
 
 let _progressCleanup = null;
 
 function _abrirModal(aula) {
+  // Sons de abertura
+  playSound('click');
+  playSound('openModal');
+
   // Preenche barra superior
   const aulaLabel = document.getElementById('rm-aula-label');
   if (aulaLabel) aulaLabel.textContent = aula.aula ?? '';
@@ -584,7 +638,7 @@ function _abrirModal(aula) {
   const body = document.getElementById('rm-body');
   if (body) body.innerHTML = _buildReaderBody(aula);
 
-  // Bind dos acordeões — chave isolada por aula/disciplina/semestre
+  // Bind dos acordeões
   const _accordionKey = _storageKeyAccordion(aula.aula ?? aula.id ?? String(Date.now()));
   _bindReaderAccordion(_accordionKey);
 
@@ -593,22 +647,20 @@ function _abrirModal(aula) {
   document.body.style.overflow = 'hidden';
   document.getElementById('read-modal-panel')?.focus();
 
-  // Barra de progresso integrada
+  // Barra de progresso
   if (_progressCleanup) _progressCleanup();
   const scrollEl = document.getElementById('rm-body-wrapper');
   _progressCleanup = _updateReadingProgress(scrollEl);
 }
 
-/* ── Gera chave única para localStorage baseada na aula + disciplina + semestre ── */
+/* ── Chave localStorage por aula + disciplina + semestre ── */
 function _storageKeyAccordion(aulaId) {
   const disc = State.disciplina?.id ?? 'unknown';
   const sem  = State.semestre    ?? 'unknown';
-  // Sanitiza o id para ser seguro como chave
   const safe = String(aulaId).replace(/[^a-zA-Z0-9_\-\.]/g, '_');
   return `nexus_accordion__${sem}__${disc}__${safe}`;
 }
 
-/* ── Lê o estado salvo do localStorage para uma dada chave ── */
 function _lerEstadoAccordion(key) {
   try {
     const raw = localStorage.getItem(key);
@@ -618,7 +670,6 @@ function _lerEstadoAccordion(key) {
   }
 }
 
-/* ── Persiste o estado atual de todos os accordions no localStorage ── */
 function _salvarEstadoAccordion(key) {
   try {
     const estado = {};
@@ -632,10 +683,9 @@ function _salvarEstadoAccordion(key) {
   } catch (_) {}
 }
 
-/* ── Restaura o estado salvo nos elementos do DOM ── */
 function _restaurarEstadoAccordion(key) {
   const estado = _lerEstadoAccordion(key);
-  if (!estado) return; // sem estado salvo → mantém padrão (primeira aberta)
+  if (!estado) return;
   document.querySelectorAll('.rm-collapse').forEach(sec => {
     const idx = sec.dataset.sec;
     if (idx !== undefined && estado[idx] !== undefined) {
@@ -647,7 +697,6 @@ function _restaurarEstadoAccordion(key) {
 }
 
 function _bindReaderAccordion(storageKey) {
-  // Restaura estado salvo antes de vincular eventos
   _restaurarEstadoAccordion(storageKey);
 
   document.querySelectorAll('.rm-collapse__trigger').forEach(btn => {
@@ -657,7 +706,7 @@ function _bindReaderAccordion(storageKey) {
       const isOpen = section.classList.contains('rm-collapse--open');
       section.classList.toggle('rm-collapse--open', !isOpen);
       btn.setAttribute('aria-expanded', String(!isOpen));
-      // Persiste estado isolado por aula
+      playSound('select');
       _salvarEstadoAccordion(storageKey);
     });
   });
@@ -732,12 +781,11 @@ function _fecharModal() {
     _progressCleanup();
     _progressCleanup = null;
   }
-  // Reseta a barra de progresso do reader
   const bar = document.getElementById('reading-progress');
   if (bar) { bar.style.width = '0%'; bar.classList.remove('reading-progress--visible'); }
 }
 
-/* Mantido para compatibilidade — reader usa _buildReaderBody */
+/* Mantido para compatibilidade */
 function _buildModalBody(aula) { return _buildReaderBody(aula); }
 function _bindModalTabs() {}
 function _ativarSecao() {}
@@ -856,6 +904,7 @@ function _renderSidebar() {
            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M9 18l6-6-6-6"/>
       </svg>`;
+    item.addEventListener('mouseenter', () => playSound('hover'));
     item.addEventListener('click', () => _trocarDisciplina(disc));
     list.appendChild(item);
   });
@@ -879,6 +928,7 @@ function _marcarStatusConteudo(discId, tem) {
 
 function _trocarDisciplina(disc) {
   if (disc.id === State.disciplina?.id) return;
+  playSound('click');
   State.disciplina   = disc;
   State.temConteudo  = null;
   State.aulas        = [];
@@ -939,8 +989,15 @@ function _nomeCurto(nome, max = 18) {
    MOBILE DROPDOWN
 ══════════════════════════════════════════════ */
 function _bindMobileDropdown() {
-  document.getElementById('mobile-disc-btn')?.addEventListener('click', _abrirMobileDropdown);
-  document.getElementById('mobile-dropdown-backdrop')?.addEventListener('click', _fecharMobileDropdown);
+  document.getElementById('mobile-disc-btn')?.addEventListener('mouseenter', () => playSound('hover'));
+  document.getElementById('mobile-disc-btn')?.addEventListener('click', () => {
+    playSound('click');
+    _abrirMobileDropdown();
+  });
+  document.getElementById('mobile-dropdown-backdrop')?.addEventListener('click', () => {
+    playSound('closeModal');
+    _fecharMobileDropdown();
+  });
 }
 
 function _abrirMobileDropdown() {
@@ -955,9 +1012,11 @@ function _abrirMobileDropdown() {
     btn.innerHTML = `
       <span class="disc-item__emoji">${disc.emoji}</span>
       <span class="disc-item__info"><span class="disc-item__nome">${disc.nome}</span></span>`;
+    btn.addEventListener('mouseenter', () => playSound('hover'));
     btn.addEventListener('click', () => _trocarDisciplina(disc));
     list.appendChild(btn);
   });
+  playSound('openModal');
   dd.classList.add('mobile-dropdown--open');
   document.body.style.overflow = 'hidden';
 }
@@ -989,7 +1048,6 @@ function _parseInline(str) {
 ══════════════════════════════════════════════ */
 (function _initFloatActions() {
 
-  /* ── Injeta HTML ── */
   const container = document.createElement('div');
   container.className = 'float-actions';
   container.setAttribute('aria-label', 'Ações rápidas');
@@ -1003,7 +1061,6 @@ function _parseInline(str) {
     <button class="float-btn float-btn--collapse" id="fab-collapse" data-tip="Recolher seções" aria-label="Recolher todas as seções">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
            stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-        <!-- ícone "collapse / minimizar" — duas setas apontando para o centro -->
         <polyline points="4 14 12 14 12 20"/>
         <polyline points="20 10 12 10 12 4"/>
         <line x1="4" y1="20" x2="12" y2="12"/>
@@ -1018,12 +1075,10 @@ function _parseInline(str) {
     </button>`;
   document.body.appendChild(container);
 
-  /* ── Referências ── */
   const fabTop      = document.getElementById('fab-top');
   const fabCollapse = document.getElementById('fab-collapse');
   const fabBottom   = document.getElementById('fab-bottom');
 
-  /* ── Obtém o elemento de scroll ativo (reader ou window) ── */
   function _getScrollTarget() {
     const reader = document.getElementById('read-modal');
     if (reader && reader.classList.contains('read-modal--open')) {
@@ -1032,8 +1087,8 @@ function _parseInline(str) {
     return window;
   }
 
-  /* ── Scroll to top ── */
   fabTop.addEventListener('click', () => {
+    playSound('click');
     const target = _getScrollTarget();
     if (target === window) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1042,8 +1097,8 @@ function _parseInline(str) {
     }
   });
 
-  /* ── Scroll to bottom ── */
   fabBottom.addEventListener('click', () => {
+    playSound('click');
     const target = _getScrollTarget();
     if (target === window) {
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
@@ -1052,8 +1107,8 @@ function _parseInline(str) {
     }
   });
 
-  /* ── Collapse all — fecha TODAS as seções, sem abrir ── */
   fabCollapse.addEventListener('click', () => {
+    playSound('select');
     const sections = document.querySelectorAll('.rm-collapse');
     if (!sections.length) return;
 
@@ -1063,10 +1118,8 @@ function _parseInline(str) {
       if (trigger) trigger.setAttribute('aria-expanded', 'false');
     });
 
-    // Persiste estado colapsado no localStorage usando a chave da aula aberta
     const aulaLabel = document.getElementById('rm-aula-label');
     if (aulaLabel && aulaLabel.textContent) {
-      // Reconstrói a mesma chave usada em _bindReaderAccordion
       const disc = window.__nexusState?.disciplina?.id ?? 'unknown';
       const sem  = window.__nexusState?.semestre       ?? 'unknown';
       const safe = String(aulaLabel.textContent).replace(/[^a-zA-Z0-9_\-\.]/g, '_');
@@ -1078,9 +1131,6 @@ function _parseInline(str) {
     }
   });
 
-  /* ── Os botões top/bottom ficam sempre visíveis quando o reader está aberto.
-     A exibição/ocultação do container .float-actions é feita pelo CSS via
-     body:has(.read-modal--open) — sem lógica de scroll. ── */
   fabTop.classList.remove('float-btn--hidden');
   fabBottom.classList.remove('float-btn--hidden');
 
