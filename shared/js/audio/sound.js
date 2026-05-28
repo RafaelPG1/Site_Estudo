@@ -1175,8 +1175,9 @@ function _resetAll() {
    SEÇÃO C — INICIALIZAÇÃO E API PÚBLICA
 ═══════════════════════════════════════════════ */
 
+// Adiciona a flag no topo, junto com _initialized
 let _initialized = false;
-
+let _modalBuilt   = false;
 /**
  * API pública do módulo de som.
  *
@@ -1193,22 +1194,24 @@ const Sound = {
    *
    * Seguro chamar múltiplas vezes — idempotente.
    */
-  init() {
-    if (_initialized) return;
-    _initialized = true;
 
-    _mountAudioBtn();
+// sound.js — linha 1196-1202
+init() {
+  if (_initialized) return;
+  _initialized = true;
+
+  _mountAudioBtn();
+  // ❌ _buildModalDOM();  ← REMOVER daqui
+},
+
+openModal() {
+  if (!_initialized) this.init();
+  if (!_modalBuilt) {      // ← nova flag
     _buildModalDOM();
-  },
-
-  /**
-   * Abre o modal de configuração de som.
-   * Chame isso no onClick do botão de áudio nas configurações do projeto.
-   */
-  openModal() {
-    if (!_initialized) this.init();
-    _openModal();
-  },
+    _modalBuilt = true;
+  }
+  _openModal();
+},
 
   /**
    * Fecha o modal (para integração externa).
