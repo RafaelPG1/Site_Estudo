@@ -1183,1249 +1183,1735 @@ window.questoes = {
       answer: 1,
 
       feedback: "O FULL OUTER JOIN retorna todos os registros das duas tabelas. Registros sem par ficam com NULL nos campos da tabela oposta, combinando o comportamento do LEFT e RIGHT JOIN."
+    },
+
+    // aula 14 BDOO e BDOR
+
+    // 51 - limitações relacionais
+    {
+      aula: "Aula 14 - BDOO e BDOR",
+      tipo: "Explicativa",
+
+      texto: "Os bancos de dados relacionais tradicionais foram criados para lidar com dados simples: números, textos e datas. Com o tempo, as aplicações passaram a precisar armazenar dados muito mais complexos, como imagens, vídeos e objetos multimídia. Esse avanço criou limitações nos SGBDs relacionais, que não foram projetados para esse tipo de dado.",
+
+      question: "O que motivou o surgimento de alternativas aos bancos de dados relacionais tradicionais?",
+
+      options: [
+        "A necessidade de reduzir o custo de licenciamento dos SGBDs",
+        "A dificuldade em armazenar dados complexos como imagens, vídeos e objetos",
+        "A impossibilidade de usar SQL em sistemas modernos",
+        "A falta de suporte a múltiplos usuários simultâneos"
+      ],
+
+      answer: 1,
+
+      feedback: "Os bancos relacionais foram projetados para tipos simples. Com dados complexos como imagens e vídeos, surgiram limitações que motivaram o desenvolvimento de novas abordagens, como o BDOO."
+    },
+
+    // 52 - conceito BDOO
+    {
+      aula: "Aula 14 - BDOO e BDOR",
+      tipo: "Explicativa",
+
+      texto: "O ==def==BDOO (Banco de Dados Orientado a Objetos)== surgiu para unir dois mundos: a persistência de dados e o paradigma orientado a objetos. Nesse modelo, os dados não são armazenados em linhas e colunas como nos bancos relacionais — eles são armazenados como objetos, que possuem atributos e métodos, assim como nas linguagens de programação orientadas a objetos.",
+
+      question: "Qual é a principal diferença entre o modelo de armazenamento do BDOO e o banco relacional tradicional?",
+
+      options: [
+        "O BDOO armazena dados em arquivos de texto plano, enquanto o relacional usa tabelas",
+        "O BDOO armazena dados como objetos com atributos e métodos, enquanto o relacional usa linhas e colunas",
+        "O BDOO não suporta consultas, enquanto o relacional usa SQL completo",
+        "O BDOO usa chaves primárias obrigatórias, enquanto o relacional não exige"
+      ],
+
+      answer: 1,
+
+      feedback: "No BDOO, os dados são armazenados como objetos — estruturas com atributos e métodos. Isso contrasta com o modelo relacional, que organiza dados em tabelas com linhas e colunas."
+    },
+
+    // 53 - encapsulamento
+    {
+      aula: "Aula 14 - BDOO e BDOR",
+      tipo: "Explicativa",
+
+      texto: "Encapsulamento é um dos pilares da orientação a objetos. A ideia é esconder os detalhes internos de um objeto e permitir que ele seja acessado apenas por sua interface — ou seja, pelos métodos que ele expõe. Isso traz benefícios como reutilização de código, independência de dados e menor impacto em manutenções futuras.",
+
+      question: "O que o encapsulamento garante em um objeto orientado a objetos?",
+
+      options: [
+        "Que todos os atributos do objeto sejam públicos e acessíveis diretamente",
+        "Que os detalhes internos fiquem ocultos e o acesso ocorra apenas pela interface do objeto",
+        "Que o objeto possa ser duplicado sem perda de dados",
+        "Que o objeto herde automaticamente métodos de outras classes"
+      ],
+
+      answer: 1,
+
+      feedback: "Encapsulamento significa proteger os detalhes internos do objeto. O acesso ocorre apenas pelos métodos definidos na interface, garantindo independência e facilitando a manutenção."
+    },
+
+    // 54 - herança
+    {
+      aula: "Aula 14 - BDOO e BDOR",
+      tipo: "Contextualizada",
+
+      texto: "Na orientação a objetos, a herança permite que uma subclasse aproveite os atributos e métodos de uma superclasse, sem precisar reescrever tudo do zero. Um exemplo clássico é a classe Point, que possui coordenadas X e Y. A subclasse CorPonto herda essas coordenadas e seus métodos, mas ainda adiciona novos atributos próprios: cor e brilho. Essa reutilização reduz código e organiza as classes de forma hierárquica.",
+
+      question: "No exemplo da aula, o que a subclasse CorPonto herda da superclasse Point e o que ela adiciona?",
+
+      options: [
+        "Herda apenas os métodos e adiciona novos atributos e superclasses",
+        "Herda coordenadas e métodos, e adiciona cor e brilho",
+        "Herda somente os atributos e cria métodos completamente novos",
+        "Herda cor e brilho, e adiciona as coordenadas X e Y"
+      ],
+
+      answer: 1,
+
+      feedback: "CorPonto herda as coordenadas X e Y e os métodos da classe Point, e acrescenta seus próprios atributos: cor e brilho. Isso ilustra o reaproveitamento que a herança proporciona."
+    },
+
+    // 55 - polimorfismo
+    {
+      aula: "Aula 14 - BDOO e BDOR",
+      tipo: "Explicativa",
+
+      texto: "Polimorfismo significa 'várias formas'. Na orientação a objetos, um mesmo método pode ter comportamentos diferentes dependendo da classe que o executa. Por exemplo, o método MesmaCoord na classe Point compara apenas coordenadas. Mas na subclasse CorPonto, o mesmo método compara coordenadas e também a cor. O método tem o mesmo nome, mas age de forma diferente conforme o contexto.",
+
+      question: "O que melhor define o conceito de polimorfismo na orientação a objetos?",
+
+      options: [
+        "A capacidade de um objeto herdar atributos de múltiplas superclasses ao mesmo tempo",
+        "A possibilidade de um mesmo método ter implementações diferentes conforme a classe que o usa",
+        "A criação de objetos com múltiplos construtores em uma mesma classe",
+        "A reutilização de código sem necessidade de criar subclasses"
+      ],
+
+      answer: 1,
+
+      feedback: "Polimorfismo permite que um método tenha comportamentos distintos de acordo com a classe que o implementa. O nome é o mesmo, mas a execução varia conforme o contexto."
+    },
+
+    // 56 - ODMG
+    {
+      aula: "Aula 14 - BDOO e BDOR",
+      tipo: "Contextualizada",
+
+      texto: "Com o crescimento dos bancos orientados a objetos, surgiu a necessidade de um padrão para garantir compatibilidade entre diferentes sistemas. O ODMG (Object Database Management Group) foi criado exatamente para isso. Ele define um modelo de objetos, uma linguagem de definição chamada ODL — equivalente ao DDL dos bancos relacionais — e uma linguagem de consulta chamada OQL, baseada em SQL, mas com suporte a herança, polimorfismo e objetos complexos.",
+
+      question: "Qual é o papel da OQL dentro do padrão ODMG?",
+
+      options: [
+        "Criar a estrutura física dos objetos no banco, similar ao CREATE TABLE",
+        "Mapear objetos da aplicação para o banco de dados de forma automática",
+        "Realizar consultas em bancos orientados a objetos com suporte a herança e polimorfismo",
+        "Substituir completamente o SQL em bancos relacionais tradicionais"
+      ],
+
+      answer: 2,
+
+      feedback: "A OQL é a linguagem de consulta do padrão ODMG. Ela é baseada em SQL, mas foi estendida para suportar recursos da orientação a objetos como herança, polimorfismo e objetos complexos."
+    },
+
+    // 57 - BDOR
+    {
+      aula: "Aula 14 - BDOO e BDOR",
+      tipo: "Explicativa",
+
+      texto: "O ==def==BDOR (Banco de Dados Objeto-Relacional)== representa uma solução intermediária entre os dois mundos: mantém a robustez e a familiaridade do modelo relacional, mas incorpora recursos da orientação a objetos. Em vez de abandonar o SQL, o BDOR o estende para suportar tipos complexos, herança, referências e objetos — tornando o banco mais poderoso sem perder compatibilidade.",
+
+      question: "O que diferencia o BDOR do BDOO?",
+
+      options: [
+        "O BDOR armazena objetos puros sem suporte a SQL, enquanto o BDOO usa tabelas",
+        "O BDOR combina o modelo relacional com recursos de orientação a objetos, enquanto o BDOO é puramente baseado em objetos",
+        "O BDOR não suporta herança, enquanto o BDOO oferece suporte completo",
+        "O BDOR é exclusivo do PostgreSQL, enquanto o BDOO é padrão em todos os SGBDs"
+      ],
+
+      answer: 1,
+
+      feedback: "O BDOO é puramente orientado a objetos. O BDOR é uma extensão do modelo relacional que incorpora recursos OO, mantendo compatibilidade com SQL e a robustez do modelo relacional."
+    },
+
+    // 58 - tipos definidos pelo usuário
+    {
+      aula: "Aula 14 - BDOO e BDOR",
+      tipo: "Aplicação",
+
+      texto: "Em bancos objeto-relacionais, o SQL permite criar tipos personalizados que vão além dos tipos primitivos como INTEGER e VARCHAR. Um tipo como Pessoa pode reunir vários atributos — ID, nome, endereço — em uma estrutura reutilizável. Essa estrutura pode ser usada como base para criar tabelas ou como atributo de outros tipos, aproximando o banco do modelo do mundo real.",
+
+      question: "Uma equipe precisa modelar dados de pessoas em um banco objeto-relacional, reutilizando a estrutura em diferentes tabelas. Qual recurso SQL atende essa necessidade?",
+
+      options: [
+        "Criar uma view com os atributos desejados e referenciá-la nas tabelas",
+        "Criar um tipo personalizado com CREATE TYPE e usá-lo como base para tabelas e outros tipos",
+        "Duplicar os atributos manualmente em cada tabela que precisar deles",
+        "Criar uma stored procedure que insere os atributos padrão em cada tabela"
+      ],
+
+      answer: 1,
+
+      feedback: "O CREATE TYPE permite definir estruturas reutilizáveis com múltiplos atributos. Esse tipo pode ser usado como base de tabelas ou como atributo de outros tipos, facilitando a modelagem e a reutilização."
+    },
+
+    // 59 - herança de tabela
+    {
+      aula: "Aula 14 - BDOO e BDOR",
+      tipo: "Aplicação",
+
+      texto: "No PostgreSQL, é possível criar uma tabela que herda a estrutura de outra usando a cláusula INHERITS. Por exemplo, a tabela alunos pode herdar todos os atributos da tabela pessoas — como nome e endereço — e ainda adicionar colunas específicas, como matrícula. Isso evita repetição de estrutura e organiza os dados de forma hierárquica.",
+
+      question: "Uma equipe quer criar a tabela 'alunos' que aproveite automaticamente os atributos da tabela 'pessoas' no PostgreSQL. Qual cláusula SQL implementa isso?",
+
+      options: [
+        "CREATE TABLE alunos EXTENDS pessoas;",
+        "CREATE TABLE alunos LIKE pessoas;",
+        "CREATE TABLE alunos INHERITS pessoas;",
+        "CREATE TABLE alunos FROM pessoas;"
+      ],
+
+      answer: 2,
+
+      feedback: "No PostgreSQL, a cláusula INHERITS permite que uma tabela herde automaticamente a estrutura de outra. Isso reutiliza atributos e organiza os dados de forma hierárquica."
+    },
+
+    // 60 - referências e DEREF
+    {
+      aula: "Aula 14 - BDOO e BDOR",
+      tipo: "Contextualizada",
+
+      texto: "Em bancos objeto-relacionais, é possível criar referências entre objetos usando o tipo REF. Funciona de forma parecida com ponteiros: em vez de duplicar dados, um objeto simplesmente aponta para outro. Para acessar os atributos do objeto referenciado, o SQL:1999 oferece a expressão de caminho (diretor->nome) ou a função DEREF, que retorna o objeto completo apontado pela referência.",
+
+      question: "Qual é a função do DEREF em uma consulta SQL objeto-relacional?",
+
+      options: [
+        "Criar uma nova referência entre dois objetos do banco",
+        "Excluir a referência entre objetos após a consulta ser executada",
+        "Retornar o objeto completo apontado por uma referência REF",
+        "Converter um tipo complexo em um tipo primitivo para comparação"
+      ],
+
+      answer: 2,
+
+      feedback: "DEREF é usado para recuperar o objeto referenciado por um campo do tipo REF. Em vez de retornar apenas o identificador, ele retorna o objeto completo, permitindo acessar seus atributos diretamente."
     }
+
   ],
 
 
   enade: [
-      // aula: Aula 9 — Definindo um Banco de Dados
-
-      // 1 - integridade referencial
-      {
-        tipo: "Asserção + Justificativa",
-        aula: "Aula 9 — Definindo um Banco de Dados",
-        conteudo: "DDL — Linguagem de Definição de Dados em SQL",
-        texto: "Uma empresa de logística passou por uma auditoria de qualidade de dados e identificou que pedidos estavam sendo cadastrados com códigos de cliente inexistentes no banco de dados. A equipe de TI foi acionada para reforçar a integridade dos dados entre as tabelas `pedidos` e `clientes`, garantindo que nenhum pedido pudesse referenciar um cliente que não existisse no sistema.",
-        question: "Analise as asserções a seguir e a relação proposta entre elas:",
-        assertions: [
-          "A definição de uma ==key==FOREIGN KEY== na tabela `pedidos` referenciando a tabela `clientes` impede que sejam inseridos pedidos com códigos de cliente inexistentes.",
-          "[PORQUE] A ==key==FOREIGN KEY== implementa a integridade referencial, que assegura que todo valor da coluna referenciadora exista na coluna referenciada da tabela pai."
-        ],
-        options: [
-          "As asserções I e II são verdadeiras, e II justifica I",
-          "As asserções I e II são verdadeiras, mas II não justifica I",
-          "A asserção I é verdadeira e a II é falsa",
-          "A asserção I é falsa e a II é verdadeira"
-        ],
-        answer: 0,
-        feedback: "Correto: A. A ==key==FOREIGN KEY== bloqueia inserções com valores que não existem na tabela referenciada (I). A asserção II explica exatamente o mecanismo que fundamenta esse comportamento — a **integridade referencial** — justificando I de forma direta e precisa."
-      },
-
-      // 2 - comandos DDL
-      {
-        tipo: "Múltiplas afirmativas",
-        aula: "Aula 9 — Definindo um Banco de Dados",
-        conteudo: "DDL — Linguagem de Definição de Dados em SQL",
-        texto: "Durante o projeto de um sistema hospitalar, o DBA precisou definir a estrutura completa do banco de dados utilizando comandos DDL. A equipe tinha dúvidas sobre as diferenças entre os comandos disponíveis e sobre o comportamento padrão de cada um deles ao ser executado.",
-        question: "Avalie as afirmativas a seguir sobre os comandos ==ddl==DDL== em SQL:",
-        assertions: [
-          "O comando ==ddl==CREATE TABLE== permite definir colunas, tipos de dados e restrições como ==key==PRIMARY KEY==, ==key==FOREIGN KEY== e `NOT NULL` em uma única instrução.",
-          "O comando ==ddl==DROP TABLE== remove permanentemente a estrutura e os dados da tabela, sendo diferente do ==dml==DELETE==, que remove apenas os dados sem afetar a estrutura.",
-          "O comando ==ddl==ALTER TABLE== pode ser usado para adicionar novas colunas a uma tabela existente, sendo que essas colunas recebem valor `NULL` por padrão nos registros já cadastrados.",
-          "O ==mark==INFORMATION_SCHEMA== é uma tabela comum do usuário onde se armazenam os dados operacionais do sistema hospitalar."
-        ],
-        questionContinuation: "São corretas apenas as afirmativas:",
-        options: [
-          "I, II e III, apenas",
-          "I e III, apenas",
-          "II e IV, apenas",
-          "I, II, III e IV"
-        ],
-        answer: 0,
-        feedback: "Correto: A (I, II e III). A afirmativa IV está **errada**: o ==mark==INFORMATION_SCHEMA== é um conjunto de **metadados** sobre a estrutura do banco — não uma tabela de dados operacionais do usuário. As afirmativas I, II e III descrevem corretamente o comportamento de ==ddl==CREATE TABLE==, ==danger==DROP TABLE== e ==ddl==ALTER TABLE==."
-      },
-
-      // 3 - CREATE TABLE e chaves
-      {
-        tipo: "Análise de código SQL",
-        aula: "Aula 9 — Definindo um Banco de Dados",
-        conteudo: "DDL — Linguagem de Definição de Dados em SQL",
-        texto: "Um sistema de controle de vendas foi modelado com as seguintes tabelas. Analise o script SQL criado pelo analista responsável pelo projeto:",
-        question: "Avalie as afirmativas sobre o script a seguir:",
-        code:
-      `CREATE TABLE produtos (
-        cod_produto  INTEGER      NOT NULL,
-        descricao    VARCHAR(200) NOT NULL,
-        preco        DECIMAL(10,2),
-        PRIMARY KEY (cod_produto)
-      );
-
-      CREATE TABLE vendas (
-        num_venda    INTEGER      NOT NULL,
-        data_venda   DATE         NOT NULL,
-        cod_produto  INTEGER      NOT NULL,
-        quantidade   INTEGER      NOT NULL,
-        PRIMARY KEY (num_venda),
-        FOREIGN KEY (cod_produto) REFERENCES produtos(cod_produto)
-      );`,
-        assertions: [
-          "O campo `preco` pode receber valor `NULL` pois não possui a restrição `NOT NULL`, ao contrário de `descricao` e `cod_produto`.",
-          "A ==key==PRIMARY KEY== da tabela `vendas` garante que o campo `num_venda` seja único e não nulo em todos os registros.",
-          "A ==key==FOREIGN KEY== em `vendas` impede que sejam cadastradas vendas com `cod_produto` que não exista previamente na tabela `produtos`.",
-          "O tipo ==type==DECIMAL(10,2)== indica que o campo `preco` armazena números inteiros de até 10 dígitos."
-        ],
-        questionContinuation: "São corretas as afirmativas:",
-        options: [
-          "I, II e III, apenas",
-          "I, II, III e IV",
-          "II e III, apenas",
-          "I e IV, apenas"
-        ],
-        answer: 0,
-        feedback: "Correto: A (I, II e III). A afirmativa IV está **errada**: ==type==DECIMAL(10,2)== indica número com até 10 dígitos no total e 2 casas decimais — não um inteiro. As demais são verdadeiras: `preco` aceita NULL por ausência de NOT NULL; ==key==PRIMARY KEY== garante unicidade e não nulidade; e a ==key==FOREIGN KEY== assegura integridade referencial."
-      },
-
-      // 4 - CASCADE e RESTRICT
-      {
-        tipo: "Conceitual",
-        aula: "Aula 9 — Definindo um Banco de Dados",
-        conteudo: "DDL — Linguagem de Definição de Dados em SQL",
-        texto: "Uma equipe de banco de dados precisou remover uma tabela que possuía relacionamentos com outras três tabelas via chaves estrangeiras. O DBA precisou decidir entre utilizar ==mark==CASCADE== ou ==mark==RESTRICT== ao executar o ==danger==DROP TABLE==, considerando o impacto em cada cenário para o ambiente de produção.",
-        question: "Sobre o comportamento das opções ==mark==CASCADE== e ==mark==RESTRICT== no contexto do ==ddl==DROP TABLE==, assinale a alternativa correta:",
-        options: [
-          "==mark==RESTRICT== remove automaticamente as dependências; CASCADE solicita confirmação do usuário antes de cada exclusão.",
-          "==mark==CASCADE== propaga a exclusão para objetos dependentes automaticamente; RESTRICT bloqueia a operação se houver dependências.",
-          "Ambas produzem o mesmo resultado final, diferindo apenas no tempo de execução.",
-          "CASCADE apenas renomeia as referências nas tabelas dependentes; RESTRICT cria uma cópia de segurança antes de remover."
-        ],
-        answer: 1,
-        feedback: "Correto: B. ==mark==CASCADE== propaga a exclusão automaticamente para os objetos dependentes. ==mark==RESTRICT== bloqueia a operação enquanto existirem dependências, protegendo a integridade do banco. As demais alternativas invertem ou distorcem esse comportamento — atenção especial à alternativa A, que inverte os papéis das duas opções."
-      },
-
-      // 5 - ALTER TABLE
-      {
-        tipo: "Asserção + Justificativa",
-        aula: "Aula 9 — Definindo um Banco de Dados",
-        conteudo: "DDL — Linguagem de Definição de Dados em SQL",
-        texto: "Em um sistema universitário, a coordenação de TI identificou que duas colunas da tabela `alunos` precisavam ser adicionadas após a criação inicial da tabela: o campo `telefone` e o campo `email`. O DBA optou por utilizar o comando ==ddl==ALTER TABLE== para incluir essas colunas sem recriar a tabela completa.",
-        question: "Analise as asserções a seguir e a relação proposta entre elas:",
-        assertions: [
-          "Ao adicionar novas colunas por meio do ==ddl==ALTER TABLE==, os registros já existentes na tabela recebem valor `NULL` nessas colunas por padrão, caso nenhum valor padrão seja especificado.",
-          "[PORQUE] O ==ddl==ALTER TABLE== modifica a estrutura da tabela existente sem apagar os dados já cadastrados, exigindo que as novas colunas sejam compatíveis com os registros atuais."
-        ],
-        options: [
-          "As asserções I e II são verdadeiras, e II justifica I",
-          "As asserções I e II são verdadeiras, mas II não justifica I",
-          "A asserção I é verdadeira e a II é falsa",
-          "A asserção I é falsa e a II é verdadeira"
-        ],
-        answer: 0,
-        feedback: "Correto: A. Novos campos adicionados via ==ddl==ALTER TABLE== recebem `NULL` por padrão nos registros existentes (I). A asserção II justifica esse comportamento: como o ==ddl==ALTER TABLE== preserva os dados, é necessário um valor compatível para os registros já presentes — e `NULL` é o valor padrão quando nenhum outro é especificado."
-      },
-
-      // 6 - tipos de dados
-      {
-        tipo: "Múltiplas afirmativas",
-        aula: "Aula 9 — Definindo um Banco de Dados",
-        conteudo: "DDL — Linguagem de Definição de Dados em SQL",
-        texto: "Um professor de banco de dados aplicou um exercício em que os alunos precisavam identificar as características dos tipos de dados SQL. As respostas foram apresentadas em forma de afirmativas para avaliação coletiva da turma.",
-        question: "Avalie as afirmativas a seguir sobre tipos de dados em SQL:",
-        assertions: [
-          "O tipo ==type==CHAR(n)== armazena cadeias de caracteres de tamanho **fixo**, preenchendo com espaços quando o valor inserido tiver menos que `n` caracteres.",
-          "O tipo ==type==VARCHAR(n)== armazena cadeias de caracteres de tamanho **variável**, ocupando apenas o espaço necessário para o valor inserido, até o limite `n`.",
-          "O tipo ==type==DATE== armazena apenas a parte de data (ano, mês e dia), enquanto `DATETIME` ou `TIMESTAMP` incluem também o horário.",
-          "O tipo ==type==BLOB== é utilizado para armazenar dados numéricos de alta precisão, como valores monetários em sistemas financeiros."
-        ],
-        questionContinuation: "São corretas apenas as afirmativas:",
-        options: [
-          "I, II e III, apenas",
-          "I e II, apenas",
-          "II, III e IV, apenas",
-          "I, II, III e IV"
-        ],
-        answer: 0,
-        feedback: "Correto: A (I, II e III). A afirmativa IV está **errada**: ==type==BLOB== (Binary Large Object) é usado para armazenar dados binários como imagens, áudios e arquivos — não valores numéricos de precisão. Para dados monetários, os tipos adequados são ==type==DECIMAL== ou ==type==NUMERIC==. As afirmativas I, II e III descrevem corretamente o comportamento dos seus respectivos tipos."
-      },
-
-      // 7 - ALTER TABLE script
-      {
-        tipo: "Análise de código SQL",
-        aula: "Aula 9 — Definindo um Banco de Dados",
-        conteudo: "DDL — Linguagem de Definição de Dados em SQL",
-        texto: "Um analista precisou ajustar a estrutura de um banco de dados existente após novos requisitos de negócio. Ele executou os seguintes comandos em sequência:",
-        question: "Avalie as afirmativas sobre o script SQL a seguir:",
-        code:
-      `-- Script de modificação da tabela funcionarios
-      ALTER TABLE funcionarios
-        ADD COLUMN ctps VARCHAR(20);
-
-      ALTER TABLE funcionarios
-        ADD COLUMN data_admissao DATE NOT NULL DEFAULT '2024-01-01';
-
-      ALTER TABLE departamentos
-        RENAME TO depto;`,
-        assertions: [
-          "O campo `ctps` será acrescentado à tabela `funcionarios` com valor `NULL` nos registros existentes, pois nenhuma restrição `NOT NULL` ou valor padrão foi especificado.",
-          "O campo `data_admissao` terá o valor `'2024-01-01'` preenchido automaticamente nos registros já existentes, pois foi definido com `DEFAULT`.",
-          "O terceiro comando ==ddl==ALTER TABLE== remove permanentemente a tabela `departamentos` e todos os seus dados.",
-          "Todos os três comandos pertencem à categoria ==ddl==DDL== da linguagem SQL, pois modificam estruturas do banco de dados sem inserir ou consultar dados."
-        ],
-        questionContinuation: "São corretas as afirmativas:",
-        options: [
-          "I, II e IV, apenas",
-          "I e II, apenas",
-          "III e IV, apenas",
-          "I, II, III e IV"
-        ],
-        answer: 0,
-        feedback: "Correto: A (I, II e IV). A afirmativa III está **errada**: `RENAME TO` apenas renomeia a tabela — não a remove nem apaga seus dados. Quem remove permanentemente é o ==danger==DROP TABLE==. As afirmativas I e II estão corretas sobre o comportamento do `DEFAULT` e do `NULL`, e IV está correta pois todos os comandos são ==ddl==DDL==."
-      },
-
-      // 8 - DROP DATABASE
-      {
-        tipo: "Asserção + Justificativa",
-        aula: "Aula 9 — Definindo um Banco de Dados",
-        conteudo: "DDL — Linguagem de Definição de Dados em SQL",
-        texto: "Durante uma manutenção emergencial em um sistema bancário, um administrador de banco de dados executou o comando ==danger==DROP DATABASE== no ambiente de produção ao invés do ambiente de homologação, resultando na perda completa de todos os dados do sistema. O incidente gerou uma revisão dos procedimentos de segurança operacional da empresa.",
-        question: "Analise as asserções a seguir e a relação proposta entre elas:",
-        assertions: [
-          "O comando ==danger==DROP DATABASE== remove permanentemente todo o banco de dados, incluindo todos os esquemas, tabelas, dados e demais objetos a ele associados, sem possibilidade de recuperação direta pelo SGBD.",
-          "[PORQUE] Diferentemente do ==dml==DELETE==, que opera sobre registros de uma tabela, o ==danger==DROP DATABASE== é um comando ==ddl==DDL== que atua na estrutura do banco, eliminando definitivamente todos os seus objetos e não deixando rastros recuperáveis pelo próprio banco."
-        ],
-        options: [
-          "As asserções I e II são verdadeiras, e II justifica I",
-          "As asserções I e II são verdadeiras, mas II não justifica I",
-          "A asserção I é verdadeira e a II é falsa",
-          "A asserção I é falsa e a II é verdadeira"
-        ],
-        answer: 0,
-        feedback: "Correto: A. O ==danger==DROP DATABASE== elimina tudo de forma definitiva (I), e a asserção II contextualiza e justifica esse comportamento ao diferenciá-lo do ==dml==DELETE== e ao explicar que se trata de um comando ==ddl==DDL== que age sobre a estrutura — não apenas sobre dados de uma tabela."
-      },
-
-      // 9 - PRIMARY KEY e FOREIGN KEY
-      {
-        tipo: "Múltiplas afirmativas",
-        aula: "Aula 9 — Definindo um Banco de Dados",
-        conteudo: "DDL — Linguagem de Definição de Dados em SQL",
-        texto: "Em uma prova prática de banco de dados, os alunos precisavam modelar um sistema de biblioteca com as tabelas `livros`, `autores` e `emprestimos`. A questão avaliava o conhecimento sobre ==key==PRIMARY KEY== e ==key==FOREIGN KEY== e suas implicações na integridade do banco de dados.",
-        question: "Avalie as afirmativas a seguir sobre ==key==PRIMARY KEY== e ==key==FOREIGN KEY==:",
-        assertions: [
-          "Uma ==key==PRIMARY KEY== pode ser composta por mais de uma coluna, formando uma **chave primária composta**, que garante unicidade pela combinação dos valores das colunas envolvidas.",
-          "Uma ==key==FOREIGN KEY== em `emprestimos` referenciando `livros` impede que um livro seja excluído da tabela `livros` enquanto existirem empréstimos associados a ele, a menos que seja usado ==mark==CASCADE==.",
-          "Uma coluna definida como ==key==PRIMARY KEY== aceita valores `NULL`, desde que o valor seja único em toda a tabela.",
-          "A ==key==FOREIGN KEY== cria um relacionamento lógico entre duas tabelas, sendo que a coluna referenciadora deve ter o mesmo tipo de dado que a coluna referenciada na tabela pai."
-        ],
-        questionContinuation: "São corretas apenas as afirmativas:",
-        options: [
-          "I, II e IV, apenas",
-          "I e IV, apenas",
-          "II e III, apenas",
-          "I, II, III e IV"
-        ],
-        answer: 0,
-        feedback: "Correto: A (I, II e IV). A afirmativa III está **errada**: ==key==PRIMARY KEY== **nunca** aceita `NULL` — esta é uma de suas regras fundamentais, independentemente de unicidade. As afirmativas I (chave composta), II (restrição de exclusão via ==mark==RESTRICT== implícito) e IV (compatibilidade de tipos) estão corretas."
-      },
-
-      // 10 - DROP TABLE com dependências
-      {
-        tipo: "Análise de código SQL",
-        aula: "Aula 9 — Definindo um Banco de Dados",
-        conteudo: "DDL — Linguagem de Definição de Dados em SQL",
-        texto: "Um estudante de banco de dados estava desenvolvendo o modelo físico de um sistema de recursos humanos. Após a criação inicial das tabelas, ele percebeu que precisava remover a tabela `cargos`, mas essa tabela era referenciada por `funcionarios` via ==key==FOREIGN KEY==. Ele então escreveu os seguintes comandos para resolver o problema:",
-        question: "Analise o script SQL e avalie as afirmativas:",
-        code:
-      `-- Tentativa 1
-      DROP TABLE cargos;
-
-      -- Tentativa 2
-      DROP TABLE cargos RESTRICT;
-
-      -- Tentativa 3
-      DROP TABLE cargos CASCADE;
-
-      -- Tentativa 4
-      DELETE FROM cargos;`,
-        assertions: [
-          "As tentativas 1 e 2 falharão se existirem registros em `funcionarios` referenciando `cargos`, pois ambas respeitam a integridade referencial.",
-          "A tentativa 3 removerá a tabela `cargos` e automaticamente eliminará ou propagará a remoção nos objetos dependentes, incluindo a ==key==FOREIGN KEY== em `funcionarios`.",
-          "A tentativa 4 remove permanentemente a estrutura da tabela `cargos`, liberando o espaço de metadados no catálogo do banco de dados.",
-          "Apenas a tentativa 3 resolve o problema de remover a tabela `cargos` com dependências existentes em `funcionarios`."
-        ],
-        questionContinuation: "São corretas as afirmativas:",
-        options: [
-          "I, II e IV, apenas",
-          "I e II, apenas",
-          "II e III, apenas",
-          "I, II, III e IV"
-        ],
-        answer: 0,
-        feedback: "Correto: A (I, II e IV). A afirmativa III está **errada**: o ==dml==DELETE== remove apenas os **dados (linhas)** da tabela, não a estrutura. Quem remove a estrutura é o ==danger==DROP TABLE==. As afirmativas I (comportamento de RESTRICT implícito e explícito), II (comportamento de ==mark==CASCADE==) e IV (única solução para o cenário com dependências) estão corretas."
-      },
-
-      // aula: Aula 10 — Manipulando um Banco de Dados
-
-      // 11 - INSERT sem colunas
-      {
-        tipo: "Asserção + Justificativa",
-        aula: "Aula 10 — Manipulando um Banco de Dados",
-        conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
-        texto: "Uma equipe de desenvolvimento de um sistema de RH percebeu que vários registros de funcionários estavam sendo inseridos sem o campo de departamento preenchido. Ao investigar, o analista constatou que o comando INSERT utilizado não especificava as colunas de destino, o que gerava inconsistências nos dados armazenados.",
-        question: "Analise as asserções a seguir e a relação proposta entre elas:",
-        assertions: [
-          "Ao utilizar ==dml==INSERT INTO tabela VALUES (...)== sem especificar os nomes das colunas, os valores informados devem corresponder exatamente à ordem e ao tipo de todas as colunas definidas na tabela.",
-          "[PORQUE] A sintaxe do ==dml==INSERT== sem lista de colunas exige que o banco de dados associe cada valor posicionalmente à estrutura completa da tabela, não permitindo omissões sem causar erro ou inconsistência."
-        ],
-        options: [
-          "As asserções I e II são verdadeiras, e II justifica I",
-          "As asserções I e II são verdadeiras, mas II não justifica I",
-          "A asserção I é verdadeira e a II é falsa",
-          "A asserção I é falsa e a II é verdadeira"
-        ],
-        answer: 0,
-        feedback: "Correto: A. Quando o ==dml==INSERT== não lista as colunas, o banco espera valores para **todas** as colunas na ordem exata de criação da tabela (I). A asserção II justifica diretamente esse comportamento, explicando o mecanismo posicional que fundamenta a restrição."
-      },
-
-      // 12 - DELETE
-      {
-        tipo: "Múltiplas afirmativas",
-        aula: "Aula 10 — Manipulando um Banco de Dados",
-        conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
-        texto: "Um professor de banco de dados pediu que os alunos avaliassem afirmativas sobre o comando DELETE em SQL. O objetivo era verificar se eles compreendiam a diferença entre excluir registros com e sem cláusula WHERE, além das características do comando em relação à estrutura da tabela.",
-        question: "Avalie as afirmativas a seguir sobre o comando ==dml==DELETE== em SQL:",
-        assertions: [
-          "O comando ==dml==DELETE FROM tabela== sem a cláusula ==rule==WHERE== remove todos os registros da tabela, mas preserva a estrutura (colunas, restrições e índices).",
-          "O comando ==dml==DELETE== pode remover uma coluna específica de um registro, desde que o nome da coluna seja informado após a palavra-chave DELETE.",
-          "A cláusula ==rule==WHERE== no ==dml==DELETE== permite filtrar quais registros serão removidos, garantindo precisão na exclusão dos dados.",
-          "O ==dml==DELETE== pertence à DML e, portanto, opera sobre os dados da tabela, não sobre sua estrutura."
-        ],
-        questionContinuation: "São corretas apenas as afirmativas:",
-        options: [
-          "I, III e IV, apenas",
-          "I e III, apenas",
-          "II e IV, apenas",
-          "I, II, III e IV"
-        ],
-        answer: 0,
-        feedback: "Correto: A (I, III e IV). A afirmativa II está **errada**: o ==dml==DELETE== remove **linhas inteiras** — nunca colunas isoladas. Para remover uma coluna, utiliza-se o ==ddl==ALTER TABLE==. As demais afirmativas descrevem corretamente o comportamento do DELETE sem WHERE, o papel do WHERE e a categorização do comando na **DML**."
-      },
-
-      // 13 - UPDATE e SELECT script
-      {
-        tipo: "Análise de código SQL",
-        aula: "Aula 10 — Manipulando um Banco de Dados",
-        conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
-        texto: "Durante o desenvolvimento de um sistema de cursos online, um analista executou os seguintes comandos SQL para manipular os dados das tabelas `alunos` e `cursos`:",
-        question: "Avalie as afirmativas sobre o script a seguir:",
-        code:
-      `UPDATE cursos
-      SET nome = 'SI - Sistemas de Informação'
-      WHERE codigo = 11;
-
-      UPDATE empregados
-      SET salario = salario * 1.10;
-
-      DELETE FROM alunos
-      WHERE matricula = 911113;
-
-      SELECT nome, salario, 12 * (salario + 500)
-      FROM empregados;`,
-        assertions: [
-          "O primeiro ==dml==UPDATE== altera apenas o registro cujo `codigo` é igual a 11, pois a cláusula ==rule==WHERE== restringe o escopo da atualização.",
-          "O segundo ==dml==UPDATE== aplica um reajuste de 10% no salário de **todos** os empregados, pois não possui cláusula ==warn==WHERE==.",
-          "O ==dml==DELETE== remove apenas a coluna `matricula` do aluno com matrícula 911113, mantendo os demais dados do registro.",
-          "A expressão `12 * (salario + 500)` no ==dml==SELECT== calcula o salário anual considerando um bônus mensal de 500, com os parênteses garantindo a precedência correta da operação."
-        ],
-        questionContinuation: "São corretas as afirmativas:",
-        options: [
-          "I, II e IV, apenas",
-          "I e IV, apenas",
-          "II e III, apenas",
-          "I, II, III e IV"
-        ],
-        answer: 0,
-        feedback: "Correto: A (I, II e IV). A afirmativa III está **errada**: o ==dml==DELETE== remove a **linha inteira** do aluno — não apenas uma coluna. Para remover a coluna, seria necessário ==ddl==ALTER TABLE==. As afirmativas I (WHERE restritivo), II (UPDATE sem WHERE afeta todos) e IV (precedência dos parênteses) estão corretas."
-      },
-
-      // 14 - precedência de operadores
-      {
-        tipo: "Asserção + Justificativa",
-        aula: "Aula 10 — Manipulando um Banco de Dados",
-        conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
-        texto: "Um analista de sistemas precisava gerar um relatório de salários anuais dos empregados, considerando um bônus fixo mensal de R$ 500,00. Ele escreveu a seguinte expressão na cláusula SELECT: `12 * salario + 500`. O gerente revisou e apontou que o resultado estava incorreto para a maioria dos registros.",
-        question: "Analise as asserções a seguir e a relação proposta entre elas:",
-        assertions: [
-          "A expressão `12 * salario + 500` **não** calcula corretamente o salário anual com bônus mensal, pois a multiplicação tem precedência sobre a soma, resultando em `(12 * salario) + 500` em vez de `12 * (salario + 500)`.",
-          "[PORQUE] Em SQL, assim como na matemática, os operadores aritméticos seguem uma ==rule==ordem de precedência== em que multiplicação e divisão são avaliadas antes de adição e subtração, podendo o uso de parênteses alterar essa ordem."
-        ],
-        options: [
-          "As asserções I e II são verdadeiras, e II justifica I",
-          "As asserções I e II são verdadeiras, mas II não justifica I",
-          "A asserção I é verdadeira e a II é falsa",
-          "A asserção I é falsa e a II é verdadeira"
-        ],
-        answer: 0,
-        feedback: "Correto: A. A expressão sem parênteses aplica o bônus de 500 apenas uma vez ao total anual, não mensalmente (I). A asserção II justifica exatamente isso: a ==rule==precedência de operadores== em SQL faz com que `*` seja avaliado antes de `+`, e parênteses são a solução para forçar a ordem desejada."
-      },
-
-      // 15 - operadores lógicos
-      {
-        tipo: "Múltiplas afirmativas",
-        aula: "Aula 10 — Manipulando um Banco de Dados",
-        conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
-        texto: "Em uma aula prática de banco de dados, os alunos precisavam montar consultas SQL usando operadores lógicos para filtrar registros de uma tabela de disciplinas. O professor avaliou as respostas verificando a compreensão dos operadores AND, OR e NOT.",
-        question: "Avalie as afirmativas a seguir sobre os ==proc==operadores lógicos== em SQL:",
-        assertions: [
-          "O operador ==rule==AND== retorna apenas os registros em que **todas** as condições combinadas são verdadeiras, tornando o filtro mais restritivo.",
-          "O operador ==rule==OR== retorna registros em que **pelo menos uma** das condições é verdadeira, tornando o filtro mais amplo que o AND.",
-          "O operador ==rule==NOT== é equivalente ao operador ==rule==AND== com condição negada, produzindo sempre o mesmo resultado em qualquer contexto.",
-          "A consulta `WHERE credito = 4 AND disciplina = 'BD'` retorna apenas registros em que **ambas** as condições são satisfeitas simultaneamente."
-        ],
-        questionContinuation: "São corretas apenas as afirmativas:",
-        options: [
-          "I, II e IV, apenas",
-          "I e II, apenas",
-          "II, III e IV, apenas",
-          "I, II, III e IV"
-        ],
-        answer: 0,
-        feedback: "Correto: A (I, II e IV). A afirmativa III está **errada**: ==rule==NOT== **inverte** uma condição individualmente (ex: `NOT disciplina = 'BD'`), enquanto ==rule==AND== combina duas condições exigindo que ambas sejam verdadeiras — são operadores com funções e semânticas distintas, não equivalentes. As afirmativas I, II e IV descrevem corretamente o comportamento dos operadores lógicos."
-      },
-
-      // 16 - SELECT DISTINCT
-      {
-        tipo: "Conceitual",
-        aula: "Aula 10 — Manipulando um Banco de Dados",
-        conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
-        texto: "Em um sistema de gestão acadêmica, o administrador precisava gerar uma lista de alunos sem repetição de nomes, já que vários alunos homônimos geravam duplicatas nos relatórios. Ele questionou a equipe sobre qual recurso SQL deveria ser usado para eliminar os valores repetidos no resultado da consulta.",
-        question: "Assinale a alternativa que descreve corretamente o uso do ==proc==SELECT DISTINCT== em SQL:",
-        options: [
-          "==proc==SELECT DISTINCT== remove fisicamente os registros duplicados da tabela, garantindo que apenas uma ocorrência de cada valor permaneça armazenada.",
-          "==proc==SELECT DISTINCT== elimina linhas duplicadas **apenas no resultado da consulta**, sem alterar os dados armazenados na tabela.",
-          "==proc==SELECT DISTINCT== é equivalente ao uso de ==rule==WHERE== com operador de igualdade, pois ambos filtram registros com base em valores específicos.",
-          "==proc==SELECT DISTINCT== só pode ser aplicado a colunas do tipo texto (VARCHAR ou CHAR), não sendo compatível com colunas numéricas."
-        ],
-        answer: 1,
-        feedback: "Correto: B. O ==proc==SELECT DISTINCT== age **apenas no resultado da consulta**, suprimindo linhas duplicadas na exibição sem modificar os dados físicos do banco. Ele não remove dados, não é equivalente ao WHERE e funciona com qualquer tipo de dado — numérico, texto ou data."
-      },
-
-      // 17 - UPDATE script análise
-      {
-        tipo: "Análise de código SQL",
-        aula: "Aula 10 — Manipulando um Banco de Dados",
-        conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
-        texto: "Uma analista de dados de uma empresa de varejo recebeu a tarefa de corrigir e analisar uma série de comandos SQL escritos por um estagiário. Ela identificou inconsistências no uso do UPDATE e precisava apontar quais comandos produziriam os resultados esperados.",
-        question: "Analise o script SQL e avalie as afirmativas:",
-        code:
-      `-- Comando A
-      UPDATE produtos
-      SET preco = preco * 1.05
-      WHERE categoria = 'Eletronicos';
-
-      -- Comando B
-      UPDATE produtos
-      SET preco = 0;
-
-      -- Comando C
-      UPDATE produtos
-      SET preco = 150.00, estoque = 0
-      WHERE cod_produto = 37;
-
-      -- Comando D
-      UPDATE produtos
-      SET WHERE preco > 100;`,
-        assertions: [
-          "O Comando A aplica um reajuste de 5% apenas nos produtos da categoria 'Eletrônicos', graças à cláusula ==rule==WHERE== que restringe o escopo.",
-          "O Comando B zerará o preço de **todos** os produtos da tabela, pois não possui cláusula ==warn==WHERE==.",
-          "O Comando C atualiza corretamente duas colunas ao mesmo tempo para o produto de código 37, usando ==proc==SET== com separação por vírgula.",
-          "O Comando D possui sintaxe válida em SQL padrão e filtrará corretamente os produtos com preço acima de 100."
-        ],
-        questionContinuation: "São corretas as afirmativas:",
-        options: [
-          "I, II e III, apenas",
-          "I e III, apenas",
-          "II e IV, apenas",
-          "I, II, III e IV"
-        ],
-        answer: 0,
-        feedback: "Correto: A (I, II e III). O Comando D possui **sintaxe inválida**: não é possível usar ==rule==WHERE== sem a cláusula ==proc==SET== devidamente preenchida — a instrução `UPDATE ... SET WHERE` não especifica o que alterar. Os comandos A, B e C estão sintaticamente corretos, embora B seja perigoso por alterar todos os registros."
-      },
-
-      // 18 - DELETE sem WHERE
-      {
-        tipo: "Asserção + Justificativa",
-        aula: "Aula 10 — Manipulando um Banco de Dados",
-        conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
-        texto: "Em um sistema de folha de pagamento, um desenvolvedor júnior executou o comando `DELETE FROM funcionarios` sem adicionar nenhuma condição. Imediatamente após a execução, percebeu o erro e tentou desfazer a operação acessando o banco diretamente — mas os dados não estavam mais acessíveis. O incidente foi registrado como falha crítica.",
-        question: "Analise as asserções a seguir e a relação proposta entre elas:",
-        assertions: [
-          "O comando ==warn==DELETE FROM funcionarios== sem cláusula ==rule==WHERE== remove **todos os registros** da tabela `funcionarios`, esvaziando completamente seu conteúdo.",
-          "[PORQUE] Na linguagem ==proc==DML==, o ==warn==DELETE== sem filtro opera sobre o conjunto completo de linhas da tabela, pois a ausência do ==rule==WHERE== é interpretada como uma condição sempre verdadeira para todos os registros."
-        ],
-        options: [
-          "As asserções I e II são verdadeiras, e II justifica I",
-          "As asserções I e II são verdadeiras, mas II não justifica I",
-          "A asserção I é verdadeira e a II é falsa",
-          "A asserção I é falsa e a II é verdadeira"
-        ],
-        answer: 0,
-        feedback: "Correto: A. O ==warn==DELETE== sem WHERE apaga todos os registros (I), e a asserção II explica o mecanismo por trás disso: a ausência de ==rule==WHERE== equivale a uma condição universalmente verdadeira, fazendo o comando agir sobre **todas as linhas** da tabela. A II justifica I de forma direta e precisa."
-      },
-
-      // 19 - estrutura SELECT
-      {
-        tipo: "Múltiplas afirmativas",
-        aula: "Aula 10 — Manipulando um Banco de Dados",
-        conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
-        texto: "Em uma prova prática de banco de dados, os alunos precisavam identificar as características da estrutura básica de uma consulta SQL com SELECT, FROM e WHERE. O professor avaliava tanto o conhecimento sintático quanto o entendimento semântico de cada cláusula.",
-        question: "Avalie as afirmativas a seguir sobre a estrutura de uma consulta ==proc==SELECT==:",
-        assertions: [
-          "A cláusula ==proc==FROM== indica a tabela (ou tabelas) de onde os dados serão recuperados, sendo obrigatória em toda consulta SQL que acesse dados de tabelas.",
-          "A cláusula ==rule==WHERE== é obrigatória em toda consulta ==proc==SELECT==; sem ela, o banco de dados retorna um erro de sintaxe.",
-          "A cláusula ==proc==SELECT== define **quais colunas** serão exibidas no resultado da consulta, podendo incluir expressões aritméticas e aliases.",
-          "É possível escrever `SELECT * FROM tabela` para retornar **todas as colunas** da tabela sem precisar listá-las individualmente."
-        ],
-        questionContinuation: "São corretas apenas as afirmativas:",
-        options: [
-          "I, III e IV, apenas",
-          "I e III, apenas",
-          "II e IV, apenas",
-          "I, II, III e IV"
-        ],
-        answer: 0,
-        feedback: "Correto: A (I, III e IV). A afirmativa II está **errada**: a cláusula ==rule==WHERE== é **opcional** — sua ausência não gera erro; apenas significa que nenhum filtro será aplicado e todos os registros serão retornados. As afirmativas I (FROM obrigatório), III (SELECT define colunas e aceita expressões) e IV (SELECT * retorna todas as colunas) estão corretas."
-      },
-
-      // 20 - INSERT variações
-      {
-        tipo: "Análise de código SQL",
-        aula: "Aula 10 — Manipulando um Banco de Dados",
-        conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
-        texto: "Uma empresa de e-commerce precisava inserir novos produtos no banco de dados. O analista responsável escreveu quatro variações do comando INSERT para testes, e a equipe precisava identificar quais estavam sintaticamente corretas e quais poderiam causar erros.",
-        question: "Analise os comandos INSERT a seguir e avalie as afirmativas:",
-        code:
-      `-- Inserção 1
-      INSERT INTO produtos VALUES (101, 'Notebook', 3500.00);
-
-      -- Inserção 2
-      INSERT INTO produtos (cod_produto, descricao)
-      VALUES (102, 'Mouse');
-
-      -- Inserção 3
-      INSERT INTO produtos (descricao, cod_produto)
-      VALUES (103, 'Teclado');
-
-      -- Inserção 4
-      INSERT INTO produtos (cod_produto, descricao, preco)
-      VALUES (104, 'Monitor');`,
-        assertions: [
-          "A Inserção 1 só será executada corretamente se a tabela `produtos` possuir exatamente 3 colunas na mesma ordem: `cod_produto`, `descricao` e `preco`.",
-          "A Inserção 2 é válida desde que as colunas não listadas aceitem valores `NULL` ou possuam valor `DEFAULT` definido.",
-          "A Inserção 3 causará erro pois os valores estão na ordem errada: o número 103 será inserido na coluna `descricao` (texto) e 'Teclado' em `cod_produto` (inteiro).",
-          "A Inserção 4 é válida pois lista 3 colunas e fornece 3 valores, satisfazendo a correspondência entre colunas e valores."
-        ],
-        questionContinuation: "São corretas as afirmativas:",
-        options: [
-          "I, II e III, apenas",
-          "I e II, apenas",
-          "II e IV, apenas",
-          "I, II, III e IV"
-        ],
-        answer: 0,
-        feedback: "Correto: A (I, II e III). A afirmativa IV está **errada**: a Inserção 4 lista 3 colunas (`cod_produto`, `descricao`, `preco`) mas fornece apenas **2 valores** — há uma incompatibilidade entre a quantidade de colunas e valores, o que causará erro de sintaxe. As afirmativas I (posicionamento obrigatório), II (colunas omitidas aceitam NULL/DEFAULT) e III (tipos incompatíveis causam erro) estão corretas."
-      },
-
-      // aula: Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1
-
-      // 21 - cláusula WHERE
-      {
-        tipo: "Conceitual contextualizada",
-        aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
-        conteudo: "Refinamento de Consultas em SQL",
-        texto: "Uma empresa de logística mantém um banco de dados com milhares de registros de entregas. A equipe de análise precisa consultar apenas as entregas realizadas para um determinado cliente, evitando carregar todos os dados desnecessariamente.",
-        question: "Considerando a estrutura de uma consulta SQL e a necessidade de restringir os dados retornados, qual cláusula deve ser utilizada para aplicar essa ==def==filtragem==?",
-        options: [
-          "GROUP BY, pois organiza os registros por critério definido",
-          "ORDER BY, pois seleciona apenas os registros relevantes",
-          "WHERE, pois permite definir uma condição que os registros devem satisfazer",
-          "SELECT, pois determina quais colunas serão exibidas no resultado"
-        ],
-        answer: 2,
-        feedback: "Correto: C. A cláusula **WHERE** é responsável por ==def==filtrar== os registros retornados, selecionando apenas aqueles que satisfazem a condição especificada. SELECT define colunas, ORDER BY ordena e GROUP BY agrupa — nenhum desses restringe linhas diretamente."
-      },
-
-      // 22 - operador LIKE
-      {
-        tipo: "Análise aplicada",
-        aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
-        conteudo: "Refinamento de Consultas em SQL",
-        texto: "Um sistema de gestão universitária permite que a secretaria busque alunos pelo nome, mesmo sem digitá-lo por completo. A consulta deve retornar todos os alunos cujo sobrenome contenha a palavra 'Santos', independentemente do que venha antes ou depois.",
-        question: "Qual das consultas abaixo atende corretamente a esse requisito?",
-        code: `-- Opção A
-      SELECT * FROM alunos WHERE nome LIKE 'Santos';
-
-      -- Opção B
-      SELECT * FROM alunos WHERE nome LIKE '%Santos%';
-
-      -- Opção C
-      SELECT * FROM alunos WHERE nome LIKE 'Santos%';
-
-      -- Opção D
-      SELECT * FROM alunos WHERE nome LIKE '_Santos';`,
-        options: [
-          "Opção A, pois busca pelo nome exato 'Santos'",
-          "Opção B, pois o uso de % antes e depois localiza 'Santos' em qualquer posição do texto",
-          "Opção C, pois retorna registros que começam com 'Santos'",
-          "Opção D, pois o _ substitui qualquer sequência de caracteres antes de 'Santos'"
-        ],
-        answer: 1,
-        feedback: "Correto: B. O operador ==dml==LIKE== com `'%Santos%'` utiliza o curinga `%` em ambos os lados, localizando a sequência 'Santos' em qualquer posição da string. A opção C retornaria apenas nomes que *começam* com Santos, e `_` representa exatamente 1 caractere, não uma sequência."
-      },
-
-      // 23 - operador BETWEEN
-      {
-        tipo: "Asserção + Justificativa",
-        aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
-        conteudo: "Refinamento de Consultas em SQL",
-        texto: "Uma analista de RH precisa listar todos os funcionários nascidos entre 1985 e 1994. Ela utiliza o operador BETWEEN para construir a condição na cláusula WHERE.",
-        question: "Analise as afirmativas a seguir sobre o comportamento do ==rule==BETWEEN==:",
-        assertions: [
-          "I. A condição `WHERE dat_nasc BETWEEN '1985-01-01' AND '1994-12-31'` é equivalente a `dat_nasc >= '1985-01-01' AND dat_nasc <= '1994-12-31'`, incluindo os limites do intervalo.",
-          "[PORQUE] II. O operador BETWEEN é exclusivo, ou seja, não inclui os valores dos extremos definidos."
-        ],
-        options: [
-          "I e II são verdadeiras, e II justifica I",
-          "I e II são verdadeiras, mas II não justifica I",
-          "I é verdadeira e II é falsa",
-          "I é falsa e II é verdadeira"
-        ],
-        answer: 2,
-        feedback: "Correto: C. A afirmativa I está **correta**: BETWEEN é inclusivo e equivale ao uso de >= e <=. A afirmativa II está ==warn==errada==, pois afirma que BETWEEN exclui os extremos — o que é uma armadilha conceitual comum. BETWEEN sempre inclui os valores limite."
-      },
-
-      // 24 - operador IN
-      {
-        tipo: "Múltiplas afirmativas",
-        aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
-        conteudo: "Refinamento de Consultas em SQL",
-        texto: "Em um sistema de controle acadêmico, um professor deseja consultar informações de três alunos específicos cujas matrículas são 922155, 926465 e 915550. Ele considera diferentes formas de construir essa consulta.",
-        question: "Avalie as afirmativas abaixo sobre o uso do operador ==rule==IN==:",
-        assertions: [
-          "I. A cláusula `WHERE mat_alu IN (922155, 926465, 915550)` retorna os registros cujos valores de mat_alu correspondem a qualquer um dos valores listados.",
-          "II. O operador IN é funcionalmente equivalente ao encadeamento de condições com OR para cada valor da lista.",
-          "III. O operador IN não pode ser usado com valores do tipo texto, sendo restrito a campos numéricos.",
-          "IV. Utilizar IN com uma lista extensa de valores pode ser substituído por uma subconsulta para maior legibilidade."
-        ],
-        options: [
-          "I, II e IV, apenas",
-          "I e III, apenas",
-          "II e IV, apenas",
-          "I, II, III e IV"
-        ],
-        answer: 0,
-        feedback: "Correto: A. As afirmativas **I, II e IV** são verdadeiras. O ==dml==IN== aceita listas de qualquer tipo compatível com o campo, inclusive texto — portanto, III está errada. A afirmativa IV reflete boa prática com subconsultas quando a lista é dinâmica."
-      },
-
-      // 25 - IS NULL
-      {
-        tipo: "Conceitual contextualizada",
-        aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
-        conteudo: "Refinamento de Consultas em SQL",
-        texto: "Durante uma auditoria de dados em um sistema hospitalar, a equipe identificou que alguns pacientes não possuem e-mail cadastrado. Para localizar esses registros, um desenvolvedor escreveu a seguinte consulta: `SELECT * FROM pacientes WHERE email = NULL`. Porém, a consulta não retornou nenhum resultado, mesmo havendo registros sem e-mail.",
-        question: "Qual é a explicação correta para o comportamento inesperado da consulta?",
-        options: [
-          "A consulta está correta, mas a tabela não possui registros com e-mail vazio",
-          "O operador = não pode ser usado com NULL, pois comparações com NULL resultam em UNKNOWN; a forma correta é `IS NULL`",
-          "NULL é equivalente a uma string vazia, e por isso a condição deveria ser `WHERE email = ''`",
-          "A cláusula WHERE não suporta comparações com campos do tipo texto"
-        ],
-        answer: 1,
-        feedback: "Correto: B. O ==warn==NULL== não pode ser comparado com `=`, pois qualquer comparação com NULL retorna **UNKNOWN** — nem verdadeiro nem falso — e o WHERE só retorna registros com condição verdadeira. A sintaxe correta é ==rule==IS NULL==. NULL também não equivale a string vazia ou zero."
-      },
-
-      // 26 - funções de agregação
-      {
-        tipo: "Análise aplicada",
-        aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
-        conteudo: "Refinamento de Consultas em SQL",
-        texto: "Uma loja virtual quer analisar seu desempenho de vendas. O banco de dados possui uma tabela `pedidos` com os campos: `id_pedido`, `valor_total` e `status`. A gerência solicita um relatório com: total de pedidos realizados, soma dos valores, e o maior e menor valor de pedido.",
-        question: "Qual consulta retorna corretamente todas essas informações em uma única instrução?",
-        code: `-- Opção A
-      SELECT COUNT(*), SUM(valor_total), MAX(valor_total), MIN(valor_total)
-      FROM pedidos;
-
-      -- Opção B
-      SELECT COUNT(id_pedido), AVG(valor_total), valor_total
-      FROM pedidos;
-
-      -- Opção C
-      SELECT SUM(*), COUNT(valor_total), MAX(*), MIN(*)
-      FROM pedidos;
-
-      -- Opção D
-      SELECT COUNT(*), SUM(valor_total)
-      FROM pedidos
-      GROUP BY valor_total;`,
-        options: [
-          "Opção A",
-          "Opção B",
-          "Opção C",
-          "Opção D"
-        ],
-        answer: 0,
-        feedback: "Correto: A. A ==dml==COUNT(*)== conta todos os registros, ==dml==SUM== soma os valores, e MAX/MIN retornam os extremos. A opção B inclui `valor_total` fora de agregação sem GROUP BY. A opção C usa `SUM(*)` e `MAX(*)`, que são sintaxes inválidas. A opção D agrupa por valor, o que distorce o relatório."
-      },
-
-      // 27 - GROUP BY regras
-      {
-        tipo: "Asserção + Justificativa",
-        aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
-        conteudo: "Refinamento de Consultas em SQL",
-        texto: "Um desenvolvedor está criando um relatório que exibe a média de créditos por curso em uma universidade. Ele escreve a seguinte consulta: `SELECT cod_curso, nome_aluno, AVG(credito) FROM alunos GROUP BY cod_curso`. Ao executar, o banco de dados retorna um erro.",
-        question: "Analise as afirmativas sobre a regra do ==rule==GROUP BY==:",
-        assertions: [
-          "I. A consulta está incorreta porque `nome_aluno` aparece no SELECT sem estar no GROUP BY nem dentro de uma função de agregação.",
-          "[PORQUE] II. Todo campo presente no SELECT que não seja uma função de agregação deve obrigatoriamente aparecer na cláusula GROUP BY."
-        ],
-        options: [
-          "I e II são verdadeiras, e II justifica I",
-          "I e II são verdadeiras, mas II não justifica I",
-          "I é verdadeira e II é falsa",
-          "I é falsa e II é verdadeira"
-        ],
-        answer: 0,
-        feedback: "Correto: A. Ambas as afirmativas são **verdadeiras** e II justifica I. A ==rule==regra do GROUP BY== exige que campos não agregados no SELECT estejam presentes no agrupamento. `nome_aluno` não está em nenhuma função agregada nem no GROUP BY, causando o erro."
-      },
-
-      // 28 - ORDER BY
-      {
-        tipo: "Múltiplas afirmativas",
-        aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
-        conteudo: "Refinamento de Consultas em SQL",
-        texto: "Um sistema de biblioteca precisa exibir livros ordenados por data de publicação (do mais recente para o mais antigo) e, em caso de empate na data, por título em ordem alfabética crescente.",
-        question: "Sobre o uso do ==dml==ORDER BY== para atender esse requisito, avalie:",
-        assertions: [
-          "I. A cláusula ORDER BY pode receber múltiplas colunas como critério de ordenação.",
-          "II. O padrão de ordenação, quando não especificado, é ASC (crescente).",
-          "III. A consulta `ORDER BY data_pub DESC, titulo ASC` atende ao requisito descrito.",
-          "IV. O ORDER BY é executado antes do WHERE na ordem interna de processamento do SQL."
-        ],
-        options: [
-          "I, II e III, apenas",
-          "I e III, apenas",
-          "II e IV, apenas",
-          "I, II, III e IV"
-        ],
-        answer: 0,
-        feedback: "Correto: A. As afirmativas I, II e III são **verdadeiras**. O ==dml==ORDER BY== suporta múltiplas colunas e o padrão é ASC. A afirmativa IV está ==warn==errada==: ORDER BY é processado após FROM, WHERE, GROUP BY e SELECT — é a última etapa da execução lógica."
-      },
-
-      // 29 - ordem de execução SQL
-      {
-        tipo: "Conceitual contextualizada",
-        aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
-        conteudo: "Refinamento de Consultas em SQL",
-        texto: "Durante uma aula de banco de dados, o professor explica que a ordem em que escrevemos uma consulta SQL não corresponde à ordem em que o banco de dados a executa internamente. Um aluno fica confuso sobre qual cláusula é processada primeiro.",
-        question: "Considerando a ordem real de ==rule==execução lógica== de uma consulta SQL com SELECT, FROM, WHERE, GROUP BY e ORDER BY, qual sequência está correta?",
-        options: [
-          "SELECT → FROM → WHERE → GROUP BY → ORDER BY",
-          "FROM → WHERE → GROUP BY → SELECT → ORDER BY",
-          "WHERE → FROM → SELECT → GROUP BY → ORDER BY",
-          "FROM → SELECT → WHERE → ORDER BY → GROUP BY"
-        ],
-        answer: 1,
-        feedback: "Correto: B. A ordem lógica de execução é: **FROM** (define a fonte), ==rule==WHERE== (filtra linhas), **GROUP BY** (agrupa), **SELECT** (projeta colunas) e **ORDER BY** (ordena o resultado final). Compreender essa sequência é essencial para escrever consultas corretas e evitar erros de referência."
-      },
-
-      // 30 - LIKE curingas
-      {
-        tipo: "Análise aplicada",
-        aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
-        conteudo: "Refinamento de Consultas em SQL",
-        texto: "Um sistema de RH armazena nomes de colaboradores. A equipe precisa encontrar todos cujo nome tenha exatamente a letra 'u' na segunda posição, independentemente do restante do nome.",
-        question: "Qual padrão no operador ==dml==LIKE== atende corretamente a esse critério?",
-        code: `-- Analise as opções:
-      -- A: WHERE nome LIKE '%u%'
-      -- B: WHERE nome LIKE '_u%'
-      -- C: WHERE nome LIKE 'u_%'
-      -- D: WHERE nome LIKE '__u%'`,
-        options: [
-          "WHERE nome LIKE '%u%', pois localiza 'u' em qualquer posição",
-          "WHERE nome LIKE '_u%', pois _ representa exatamente 1 caractere antes de 'u'",
-          "WHERE nome LIKE 'u_%', pois começa com 'u' seguido de qualquer caractere",
-          "WHERE nome LIKE '__u%', pois posiciona 'u' na terceira posição"
-        ],
-        answer: 1,
-        feedback: "Correto: B. O curinga ==rule==_== (underscore) representa exatamente **1 caractere**. Portanto, `'_u%'` garante que o primeiro caractere seja qualquer um e o segundo seja 'u', com qualquer sequência após. A opção A busca 'u' em qualquer posição; C exige 'u' na primeira posição; D posiciona 'u' na terceira."
-      },
-
-      // aula: Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2
-
-      // 31 - AVG básico
-      {
-        tipo: "Conceitual contextualizada",
-        aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
-        conteudo: "Funções de Agregação em SQL",
-        texto: "Um coordenador pedagógico precisa calcular a média geral de créditos totais dos alunos matriculados no curso de código 10. Ele não quer ver os registros individuais — apenas o valor médio resultante para subsidiar um relatório de desempenho acadêmico.",
-        question: "Qual consulta SQL retorna corretamente a média dos créditos totais apenas dos alunos do curso 10?",
-        code:
-      `-- Opção A
-      SELECT AVG(tot_cred)
-      FROM alunos
-      WHERE cod_curso = 10;
-
-      -- Opção B
-      SELECT SUM(tot_cred)
-      FROM alunos
-      WHERE cod_curso = 10;
-
-      -- Opção C
-      SELECT AVG(tot_cred)
-      FROM alunos
-      GROUP BY cod_curso;
-
-      -- Opção D
-      SELECT COUNT(tot_cred)
-      FROM alunos
-      WHERE cod_curso = 10;`,
-        options: [
-          "Opção A, pois aplica AVG sobre os registros filtrados pelo curso 10",
-          "Opção B, pois SUM calcula o valor acumulado dos créditos",
-          "Opção C, pois GROUP BY separa os cursos e calcula a média de cada um",
-          "Opção D, pois COUNT retorna a quantidade de registros com crédito"
-        ],
-        answer: 0,
-        feedback: "Correto: A. A função ==dml==AVG== calcula a média de uma coluna, e a cláusula WHERE restringe o cálculo apenas aos alunos do curso 10. A opção C calcula a média por curso, mas retorna todos os cursos — não apenas o 10. SUM e COUNT respondem perguntas diferentes: soma total e contagem de registros, respectivamente."
-      },
-
-      // 32 - alias AS
-      {
-        tipo: "Asserção + Justificativa",
-        aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
-        conteudo: "Funções de Agregação em SQL",
-        texto: "Durante a elaboração de relatórios automáticos em um sistema de gestão acadêmica, um desenvolvedor percebeu que os cabeçalhos das colunas calculadas apareciam como expressões brutas — por exemplo, 'AVG(tot_cred)' — tornando os relatórios pouco legíveis para os coordenadores. Ele adicionou o operador AS para resolver o problema.",
-        question: "Analise as asserções a seguir e a relação proposta entre elas:",
-        assertions: [
-          "O uso de ==dml==AS== em uma consulta SQL permite renomear colunas calculadas no resultado, tornando o cabeçalho mais legível sem alterar os dados retornados.",
-          "[PORQUE] O operador ==dml==AS== é um alias de apresentação: ele modifica apenas o rótulo exibido na saída da consulta, não afetando o processamento interno nem os valores calculados pela função de agregação."
-        ],
-        options: [
-          "As asserções I e II são verdadeiras, e II justifica I",
-          "As asserções I e II são verdadeiras, mas II não justifica I",
-          "A asserção I é verdadeira e a II é falsa",
-          "A asserção I é falsa e a II é verdadeira"
-        ],
-        answer: 0,
-        feedback: "Correto: A. O ==dml==AS== renomeia colunas apenas na exibição do resultado (I), e a asserção II justifica exatamente isso ao explicar que se trata de um alias de apresentação — sem impacto nos dados ou no cálculo. A relação de justificativa entre as asserções é direta e precisa."
-      },
-
-      // 33 - GROUP BY agrupamento
-      {
-        tipo: "Análise de código SQL",
-        aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
-        conteudo: "Funções de Agregação em SQL",
-        texto: "Uma universidade quer gerar um relatório com a média de créditos totais por curso. O banco de dados possui a tabela `alunos` com os campos `cod_curso` e `tot_cred`. O analista escreveu a seguinte consulta:",
-        question: "Avalie as afirmativas sobre a consulta abaixo:",
-        code:
-      `SELECT cod_curso, AVG(tot_cred) AS media_tot_cred
-      FROM alunos
-      GROUP BY cod_curso;`,
-        assertions: [
-          "A consulta está sintaticamente correta: `cod_curso` aparece no SELECT e também no GROUP BY, respeitando a regra de agrupamento.",
-          "Sem a cláusula GROUP BY, a mesma consulta calcularia a média geral de todos os alunos, independente do curso.",
-          "A cláusula GROUP BY divide os registros em subconjuntos por valor de `cod_curso` antes de aplicar a função AVG a cada grupo.",
-          "O alias `media_tot_cred` substitui o valor calculado por um texto fixo, impedindo que os valores numéricos sejam exibidos."
-        ],
-        questionContinuation: "São corretas as afirmativas:",
-        options: [
-          "I, II e III, apenas",
-          "I e III, apenas",
-          "II e IV, apenas",
-          "I, II, III e IV"
-        ],
-        answer: 0,
-        feedback: "Correto: A (I, II e III). A afirmativa IV está **errada**: o alias ==dml==AS== renomeia apenas o cabeçalho da coluna — não substitui nem oculta os valores numéricos retornados. As demais descrevem corretamente o funcionamento do ==rule==GROUP BY== e o comportamento da consulta com e sem agrupamento."
-      },
-
-      // 34 - HAVING vs WHERE
-      {
-        tipo: "Conceitual contextualizada",
-        aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
-        conteudo: "Funções de Agregação em SQL",
-        texto: "Uma analista de dados precisa identificar quais cursos possuem média de créditos totais superior a 100. Ela já sabe que deve usar GROUP BY para agrupar por curso, mas tem dúvida sobre onde aplicar o filtro sobre a média: na cláusula WHERE ou na cláusula HAVING.",
-        question: "Qual alternativa descreve corretamente a diferença entre ==rule==WHERE== e ==rule==HAVING== nesse contexto?",
-        options: [
-          "WHERE e HAVING produzem o mesmo resultado quando aplicados a funções de agregação, diferindo apenas na posição dentro da consulta.",
-          "WHERE filtra linhas antes do agrupamento e não aceita funções de agregação; HAVING filtra grupos após o agrupamento e aceita funções de agregação.",
-          "HAVING substitui completamente o WHERE em consultas com GROUP BY, tornando o WHERE desnecessário.",
-          "WHERE filtra grupos com base em funções de agregação; HAVING filtra linhas individualmente antes da agregação."
-        ],
-        answer: 1,
-        feedback: "Correto: B. ==rule==WHERE== atua sobre linhas individuais antes do agrupamento e não pode receber funções de agregação como `AVG()`. ==rule==HAVING== atua sobre grupos após o agrupamento e é o local correto para filtros baseados em funções agregadas. As demais alternativas invertem ou confundem os papéis das duas cláusulas."
-      },
-
-      // 35 - HAVING script
-      {
-        tipo: "Análise de código SQL",
-        aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
-        conteudo: "Funções de Agregação em SQL",
-        texto: "Um sistema de controle acadêmico precisa listar apenas os cursos cuja média de créditos totais dos alunos seja superior a 100. O analista escreveu a seguinte consulta para atender a esse requisito:",
-        question: "Avalie as afirmativas sobre o script SQL a seguir:",
-        code:
-      `SELECT cod_curso, AVG(tot_cred) AS media_tot_cred
-      FROM alunos
-      GROUP BY cod_curso
-      HAVING AVG(tot_cred) > 100;`,
-        assertions: [
-          "A cláusula HAVING filtra os grupos formados pelo GROUP BY, retornando apenas os cursos cuja média de créditos supera 100.",
-          "Seria possível substituir o HAVING por WHERE nessa consulta, pois ambos filtram registros com base em condições numéricas.",
-          "A consulta respeita a ordem correta das cláusulas SQL: FROM, GROUP BY, HAVING, SELECT.",
-          "Caso nenhum curso tenha média superior a 100, a consulta retorna um resultado vazio, sem erro de execução."
-        ],
-        questionContinuation: "São corretas as afirmativas:",
-        options: [
-          "I e IV, apenas",
-          "I, II e IV, apenas",
-          "II e III, apenas",
-          "I, II, III e IV"
-        ],
-        answer: 0,
-        feedback: "Correto: A (I e IV). A afirmativa II está **errada**: usar ==rule==WHERE== com função de agregação como `AVG()` causa erro de sintaxe — WHERE não aceita funções agregadas. A afirmativa III está **errada**: a ordem de escrita correta é FROM → WHERE → GROUP BY → HAVING → SELECT, mas a *execução lógica* é diferente da escrita — e a consulta apresentada está escrita corretamente, não na ordem de execução. As afirmativas I e IV descrevem comportamentos corretos do ==rule==HAVING==."
-      },
-
-      // 36 - NULL em agregação
-      {
-        tipo: "Asserção + Justificativa",
-        aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
-        conteudo: "Funções de Agregação em SQL",
-        texto: "Uma equipe de auditoria percebeu que a média calculada pela função AVG em uma coluna de créditos estava diferente do esperado. Ao investigar, descobriram que vários registros possuíam o valor NULL nessa coluna. O engenheiro de dados explicou que esse comportamento era esperado pelo padrão SQL.",
-        question: "Analise as asserções a seguir e a relação proposta entre elas:",
-        assertions: [
-          "A função ==dml==AVG== ignora automaticamente os valores NULL no cálculo da média, considerando apenas os registros com valores não nulos.",
-          "[PORQUE] As funções de agregação SQL — exceto ==dml==COUNT(*)== — descartam valores NULL antes de processar os dados, pois NULL representa ausência de valor e não pode participar de operações aritméticas com resultado determinístico."
-        ],
-        options: [
-          "As asserções I e II são verdadeiras, e II justifica I",
-          "As asserções I e II são verdadeiras, mas II não justifica I",
-          "A asserção I é verdadeira e a II é falsa",
-          "A asserção I é falsa e a II é verdadeira"
-        ],
-        answer: 0,
-        feedback: "Correto: A. AVG ignora NULLs (I), e a asserção II justifica esse comportamento explicando a regra geral das funções de agregação: todas descartam NULL, exceto **COUNT(*)** que conta linhas independentemente. A distinção entre `COUNT(*)` e `COUNT(coluna)` é um ponto-chave: o segundo também ignora NULLs."
-      },
-
-      // 37 - COUNT variações
-      {
-        tipo: "Múltiplas afirmativas",
-        aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
-        conteudo: "Funções de Agregação em SQL",
-        texto: "Um desenvolvedor está elaborando relatórios sobre uma tabela `historicos_escolares` que contém os campos `mat_alu`, `cod_disc`, `ano` e `nota`. Alguns alunos cursaram a mesma disciplina mais de uma vez em anos diferentes, e alguns registros possuem o campo `nota` preenchido com NULL.",
-        question: "Avalie as afirmativas a seguir sobre as variações do ==dml==COUNT==:",
-        assertions: [
-          "COUNT(*) retorna o número total de linhas da tabela ou do grupo, incluindo aquelas com valores NULL em qualquer coluna.",
-          "COUNT(nota) retorna apenas a quantidade de registros em que o campo `nota` possui valor não nulo, ignorando os NULLs.",
-          "COUNT(DISTINCT mat_alu) conta o número de matrículas únicas, evitando que o mesmo aluno seja contabilizado mais de uma vez.",
-          "COUNT(DISTINCT *) é uma sintaxe válida e equivalente ao uso de SELECT DISTINCT antes da contagem."
-        ],
-        questionContinuation: "São corretas apenas as afirmativas:",
-        options: [
-          "I, II e III, apenas",
-          "I e III, apenas",
-          "II e IV, apenas",
-          "I, II, III e IV"
-        ],
-        answer: 0,
-        feedback: "Correto: A (I, II e III). A afirmativa IV está **errada**: ==dml==COUNT(DISTINCT *)== é uma sintaxe **inválida** em SQL — não é possível combinar DISTINCT com o curinga `*` dentro de COUNT. As afirmativas I, II e III descrevem corretamente os três comportamentos distintos do COUNT: total de linhas, valores não nulos e valores únicos."
-      },
-
-      // 38 - DISTINCT simples
-      {
-        tipo: "Conceitual contextualizada",
-        aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
-        conteudo: "Funções de Agregação em SQL",
-        texto: "Um sistema de gestão acadêmica armazena na tabela `alunos` o código do curso de cada aluno. Como muitos alunos pertencem ao mesmo curso, a coluna `cod_curso` apresenta vários valores repetidos. O coordenador solicita uma lista com os códigos de curso existentes, sem repetições.",
-        question: "Qual é o comportamento correto do ==proc==SELECT DISTINCT== ao ser aplicado nesse cenário?",
-        options: [
-          "SELECT DISTINCT remove permanentemente os registros duplicados da tabela `alunos`, mantendo apenas uma linha por curso.",
-          "SELECT DISTINCT elimina as linhas repetidas apenas no resultado da consulta, sem alterar os dados armazenados na tabela.",
-          "SELECT DISTINCT é equivalente ao GROUP BY cod_curso em todos os contextos, podendo ser usado de forma intercambiável.",
-          "SELECT DISTINCT só funciona corretamente quando combinado com ORDER BY, pois depende da ordenação para identificar duplicatas."
-        ],
-        answer: 1,
-        feedback: "Correto: B. O ==proc==SELECT DISTINCT== age exclusivamente sobre o **resultado da consulta**, suprimindo linhas duplicadas na exibição sem modificar os dados físicos da tabela. Embora DISTINCT e GROUP BY possam produzir resultados similares em alguns casos, não são intercambiáveis em todos os contextos — especialmente quando há funções de agregação envolvidas."
-      },
-
-      // 39 - ordem execução completa
-      {
-        tipo: "Múltiplas afirmativas",
-        aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
-        conteudo: "Funções de Agregação em SQL",
-        texto: "Em uma prova prática de banco de dados, o professor apresentou a seguinte consulta e pediu que os alunos identificassem a ordem real de execução lógica e o papel de cada cláusula:",
-        question: "Avalie as afirmativas sobre a ordem de execução lógica da consulta abaixo:",
-        code:
-      `SELECT cod_curso, AVG(tot_cred) AS media
-      FROM alunos
-      WHERE email IS NOT NULL
-      GROUP BY cod_curso
-      HAVING AVG(tot_cred) > 80
-      ORDER BY cod_curso ASC;`,
-        assertions: [
-          "A cláusula WHERE é executada antes do GROUP BY, filtrando alunos sem e-mail antes que o agrupamento seja formado.",
-          "A cláusula HAVING é executada antes do WHERE, pois atua sobre os grupos, que são formados antes da filtragem de linhas.",
-          "A cláusula SELECT é executada após o GROUP BY e o HAVING, projetando apenas as colunas e expressões definidas.",
-          "A cláusula ORDER BY é a última a ser executada na ordem lógica, ordenando o resultado final após todas as demais operações."
-        ],
-        questionContinuation: "São corretas apenas as afirmativas:",
-        options: [
-          "I, III e IV, apenas",
-          "I e IV, apenas",
-          "II e III, apenas",
-          "I, II, III e IV"
-        ],
-        answer: 0,
-        feedback: "Correto: A (I, III e IV). A afirmativa II está **errada**: a ordem lógica correta é FROM → ==rule==WHERE== → GROUP BY → HAVING → SELECT → ORDER BY. O WHERE filtra *antes* do agrupamento, e o HAVING filtra *depois*. Inverter essa ordem é um erro conceitual clássico. As demais afirmativas descrevem corretamente os papéis de WHERE, SELECT e ORDER BY na sequência de execução."
-      },
-
-      // 40 - consulta integrada HAVING
-      {
-        tipo: "Análise de código SQL",
-        aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
-        conteudo: "Funções de Agregação em SQL",
-        texto: "Uma analista de dados recebeu a tarefa de identificar erros em quatro variações de uma consulta que deveria retornar os cursos com média de créditos superior a 80, considerando apenas alunos com e-mail cadastrado.",
-        question: "Analise os scripts e avalie as afirmativas:",
-        code:
-      `-- Script 1
-      SELECT cod_curso, AVG(tot_cred)
-      FROM alunos
-      WHERE email IS NOT NULL
-      GROUP BY cod_curso
-      HAVING AVG(tot_cred) > 80;
-
-      -- Script 2
-      SELECT cod_curso, AVG(tot_cred)
-      FROM alunos
-      WHERE email IS NOT NULL AND AVG(tot_cred) > 80
-      GROUP BY cod_curso;
-
-      -- Script 3
-      SELECT cod_curso, AVG(tot_cred)
-      FROM alunos
-      GROUP BY cod_curso
-      HAVING AVG(tot_cred) > 80
-      WHERE email IS NOT NULL;
-
-      -- Script 4
-      SELECT cod_curso, COUNT(DISTINCT mat_alu)
-      FROM alunos
-      WHERE email IS NOT NULL
-      GROUP BY cod_curso
-      HAVING COUNT(DISTINCT mat_alu) > 5;`,
-        assertions: [
-          "O Script 1 está correto: filtra alunos sem e-mail antes do agrupamento via WHERE, e filtra grupos com média insuficiente via HAVING.",
-          "O Script 2 causará erro pois funções de agregação como AVG não são permitidas na cláusula WHERE.",
-          "O Script 3 está correto pois WHERE e HAVING podem aparecer em qualquer ordem após o GROUP BY.",
-          "O Script 4, embora use COUNT(DISTINCT) no lugar de AVG, é sintaticamente válido e retornaria os cursos com mais de 5 alunos únicos com e-mail cadastrado."
-        ],
-        questionContinuation: "São corretas as afirmativas:",
-        options: [
-          "I, II e IV, apenas",
-          "I e II, apenas",
-          "II e III, apenas",
-          "I, II, III e IV"
-        ],
-        answer: 0,
-        feedback: "Correto: A (I, II e IV). A afirmativa III está **errada**: o Script 3 coloca WHERE após o ==rule==HAVING==, violando a ordem obrigatória das cláusulas SQL — WHERE deve sempre preceder GROUP BY e HAVING. Isso causa erro de sintaxe. Os Scripts 1 e 4 são válidos e funcionais, e o Script 2 comete o erro clássico de usar ==dml==AVG== dentro do WHERE, o que é proibido."
-      },
-
-      // aula: Aula 13 - Consultas Aninhadas e Junções
-
-      // 41 - subconsulta Tipo I
-      {
-        aula: "Aula 13 - Consultas Aninhadas e Junções",
-        tipo: "Análise aplicada",
-        texto: "Uma equipe de desenvolvimento precisa recuperar dados de alunos que obtiveram média maior ou igual a 7 no ano de 2001, cruzando informações entre as tabelas 'alunos' e 'historicos_escolares'. O desenvolvedor responsável optou por utilizar uma subconsulta na cláusula WHERE para resolver o problema.",
-        question: "Analise o trecho de código abaixo e assinale a alternativa que descreve corretamente o comportamento da consulta:",
-        code: `SELECT nom_alu, cod_curso, tot_cred
-      FROM alunos
-      WHERE mat_alu IN (
-        SELECT mat_alu
-        FROM historicos_escolares
-        WHERE media >= 7 AND ano = 2001
-      );`,
-        options: [
-          "A subconsulta executa repetidamente para cada linha da consulta externa, pois depende dos valores da tabela 'alunos'.",
-          "A subconsulta executa uma única vez, retornando um conjunto de matrículas que é reutilizado pela consulta principal.",
-          "O operador IN é substituível por EXISTS sem qualquer alteração no resultado ou no comportamento de execução.",
-          "A consulta retorna todos os alunos da tabela 'alunos', independentemente de seus registros em 'historicos_escolares'."
-        ],
-        answer: 1,
-        feedback: "Correto: B. Este é um exemplo clássico de ==ddl==subconsulta Tipo I==: ela executa apenas uma vez, de forma independente da consulta externa, gerando um conjunto de resultados que é então consumido pelo operador ==dml==IN==. Diferente da Tipo II (correlacionada), aqui não há referência à tabela externa dentro da subconsulta."
-      },
-
-      // 42 - Tipo I vs Tipo II
-      {
-        aula: "Aula 13 - Consultas Aninhadas e Junções",
-        tipo: "Asserção + Justificativa",
-        texto: "Em bancos de dados relacionais, as subconsultas podem ser classificadas em dois tipos principais com comportamentos distintos de execução. Compreender essa diferença é fundamental para prever o desempenho de uma consulta em cenários com grandes volumes de dados.",
-        question: "Avalie a asserção e a justificativa a seguir sobre ==ddl==subconsultas correlacionadas==:",
-        assertions: [
-          "I. Uma subconsulta do Tipo II (correlacionada) executa uma vez para cada linha processada pela consulta externa.",
-          "[PORQUE] II. A subconsulta correlacionada referencia colunas da consulta externa, criando uma dependência que impede sua execução isolada."
-        ],
-        options: [
-          "As afirmativas I e II são verdadeiras, e II justifica I.",
-          "As afirmativas I e II são verdadeiras, mas II não justifica I.",
-          "A afirmativa I é verdadeira e a II é falsa.",
-          "A afirmativa I é falsa e a II é verdadeira."
-        ],
-        answer: 0,
-        feedback: "Correto: A. Ambas são verdadeiras e a II justifica a I. Exatamente porque a subconsulta ==ddl==correlacionada== referencia valores da consulta externa, ela precisa ser reavaliada a cada linha, tornando sua execução repetida uma consequência direta dessa dependência."
-      },
-
-      // 43 - operador NOT IN
-      {
-        aula: "Aula 13 - Consultas Aninhadas e Junções",
-        tipo: "Conceitual contextualizada",
-        texto: "Em um sistema acadêmico, o setor de planejamento precisa identificar quais cursos não possuem nenhum aluno vinculado. Para isso, um analista de dados propõe duas abordagens distintas usando SQL: uma com NOT IN e outra com NOT EXISTS. Ambas buscam o mesmo resultado, mas diferem em funcionamento interno.",
-        question: "Sobre o operador ==dml==NOT IN== aplicado a subconsultas, assinale a alternativa correta:",
-        options: [
-          "NOT IN e NOT EXISTS sempre produzem resultados idênticos, inclusive quando existem valores NULL na subconsulta.",
-          "NOT IN realiza uma operação equivalente à diferença entre conjuntos, retornando registros da tabela principal ausentes no resultado da subconsulta.",
-          "NOT IN é uma variação do INNER JOIN e depende da existência de chaves estrangeiras para funcionar corretamente.",
-          "NOT IN executa a subconsulta múltiplas vezes, tornando-o mais eficiente que NOT EXISTS em grandes volumes de dados."
-        ],
-        answer: 1,
-        feedback: "Correto: B. O operador ==dml==NOT IN== implementa conceitualmente uma diferença de conjuntos (Tabela A − Tabela B), retornando apenas os elementos da consulta principal que não aparecem no resultado da subconsulta. Atenção: quando a subconsulta pode retornar valores ==danger==NULL==, o comportamento do NOT IN pode ser inesperado — nenhuma linha é retornada, pois NULL não é comparável diretamente."
-      },
-
-      // 44 - subconsulta no FROM
-      {
-        aula: "Aula 13 - Consultas Aninhadas e Junções",
-        tipo: "Múltiplas afirmativas",
-        texto: "Um desenvolvedor está construindo um relatório de desempenho acadêmico. Para modularizar a lógica e evitar repetição de código, ele decide utilizar uma subconsulta dentro da cláusula FROM, criando uma tabela derivada com as médias calculadas por curso. Essa técnica é conhecida como visão inline.",
-        question: "Sobre o uso de ==ddl==subconsultas na cláusula FROM==, avalie as afirmativas:",
-        assertions: [
-          "I. Uma subconsulta no FROM gera uma tabela temporária chamada tabela derivada, que pode ser referenciada na consulta externa por meio de um alias.",
-          "II. O uso de funções agregadas como AVG ou COUNT dentro de subconsultas no FROM geralmente exige o uso de GROUP BY para agrupar os resultados corretamente.",
-          "III. Subconsultas no FROM executam repetidamente para cada linha da consulta externa, assim como as subconsultas correlacionadas.",
-          "IV. A técnica de subconsulta no FROM favorece a legibilidade e a modularização das consultas SQL."
-        ],
-        options: [
-          "I, II e IV, apenas.",
-          "I e III, apenas.",
-          "II e III, apenas.",
-          "I, II, III e IV."
-        ],
-        answer: 0,
-        feedback: "Correto: A. As afirmativas I, II e IV são verdadeiras. A III é falsa: subconsultas no FROM não são correlacionadas — elas executam uma única vez e geram uma ==ddl==tabela derivada== estática. O comportamento de execução repetida é exclusivo das subconsultas ==type==Tipo II (correlacionadas)==."
-      },
-
-      // 45 - INNER JOIN
-      {
-        aula: "Aula 13 - Consultas Aninhadas e Junções",
-        tipo: "Análise aplicada",
-        texto: "Em um sistema de gestão universitária, as tabelas 'alunos' e 'cursos' estão relacionadas pela chave estrangeira 'cod_curso'. Alguns alunos foram cadastrados sem curso definido (cod_curso NULL), e alguns cursos não possuem alunos vinculados. Um relatório precisa listar apenas os alunos que possuem curso válido cadastrado.",
-        question: "Qual tipo de junção deve ser utilizado para retornar ==key==somente os registros com correspondência nas duas tabelas==?",
-        code: `SELECT a.nom_alu, c.nom_curso
-      FROM alunos a
-      ________ cursos c
-      ON a.cod_curso = c.cod_curso;`,
-        options: [
-          "LEFT JOIN, pois garante que todos os alunos sejam retornados, inclusive os sem curso.",
-          "FULL OUTER JOIN, pois combina todos os registros de ambas as tabelas.",
-          "INNER JOIN, pois retorna apenas os registros com correspondência nas duas tabelas.",
-          "RIGHT JOIN, pois prioriza os registros da tabela 'cursos'."
-        ],
-        answer: 2,
-        feedback: "Correto: C. O ==dml==INNER JOIN== funciona como a interseção entre dois conjuntos: retorna apenas os registros que possuem correspondência válida nas duas tabelas. Alunos com cod_curso ==danger==NULL== e cursos sem alunos são excluídos do resultado, que é exatamente o comportamento desejado no cenário."
-      },
-
-      // 46 - LEFT JOIN comportamento
-      {
-        aula: "Aula 13 - Consultas Aninhadas e Junções",
-        tipo: "Asserção + Justificativa",
-        texto: "Um analista precisa gerar uma lista completa de todos os alunos, incluindo aqueles que ainda não foram associados a nenhum curso. Para isso, ele utiliza LEFT JOIN entre as tabelas 'alunos' (esquerda) e 'cursos' (direita).",
-        question: "Avalie a asserção e a justificativa sobre o comportamento do ==dml==LEFT JOIN==:",
-        assertions: [
-          "I. Quando um aluno não possui curso correspondente na tabela 'cursos', os campos relacionados ao curso são preenchidos com NULL no resultado.",
-          "[PORQUE] II. O LEFT JOIN preserva todos os registros da tabela à esquerda, independentemente de existir correspondência na tabela à direita."
-        ],
-        options: [
-          "As afirmativas I e II são verdadeiras, e II justifica I.",
-          "As afirmativas I e II são verdadeiras, mas II não justifica I.",
-          "A afirmativa I é verdadeira e a II é falsa.",
-          "A afirmativa I é falsa e a II é verdadeira."
-        ],
-        answer: 0,
-        feedback: "Correto: A. O ==dml==LEFT JOIN== garante que todos os registros da tabela esquerda sejam mantidos. Quando não há correspondência na direita, os campos ausentes recebem ==danger==NULL==. A afirmativa II explica diretamente o porquê do comportamento descrito em I."
-      },
-
-      // 47 - RIGHT JOIN vs LEFT JOIN
-      {
-        aula: "Aula 13 - Consultas Aninhadas e Junções",
-        tipo: "Conceitual contextualizada",
-        texto: "Durante uma revisão de código, dois desenvolvedores discutem a equivalência entre RIGHT JOIN e LEFT JOIN. Um deles afirma que é sempre possível reescrever um RIGHT JOIN como um LEFT JOIN simplesmente invertendo a ordem das tabelas na cláusula FROM. O outro discorda, alegando que os tipos de junção têm comportamentos fundamentalmente diferentes.",
-        question: "Sobre a relação entre ==dml==RIGHT JOIN== e ==dml==LEFT JOIN==, assinale a alternativa correta:",
-        options: [
-          "RIGHT JOIN e LEFT JOIN são completamente distintos e não podem produzir resultados equivalentes em nenhuma situação.",
-          "Um RIGHT JOIN pode ser reescrito como LEFT JOIN invertendo a ordem das tabelas, pois ambos preservam todos os registros de uma das tabelas envolvidas.",
-          "RIGHT JOIN sempre retorna mais registros que LEFT JOIN, pois considera as duas tabelas simultaneamente.",
-          "A diferença entre RIGHT e LEFT JOIN está apenas na sintaxe; internamente, o banco de dados executa a mesma operação."
-        ],
-        answer: 1,
-        feedback: "Correto: B. O ==dml==RIGHT JOIN== preserva todos os registros da tabela à direita, enquanto o ==dml==LEFT JOIN== preserva os da esquerda. Como a lógica é simétrica, inverter a ordem das tabelas em um LEFT JOIN produz o mesmo resultado que um RIGHT JOIN. Essa equivalência é amplamente aceita e utilizada na prática."
-      },
-
-      // 48 - FULL OUTER JOIN
-      {
-        aula: "Aula 13 - Consultas Aninhadas e Junções",
-        tipo: "Múltiplas afirmativas",
-        texto: "Um relatório de auditoria acadêmica precisa consolidar informações de duas tabelas: 'alunos' e 'cursos'. O objetivo é identificar tanto alunos sem curso associado quanto cursos sem alunos matriculados, exibindo NULL nos campos sem correspondência.",
-        question: "Sobre o ==dml==FULL OUTER JOIN==, avalie as afirmativas:",
-        assertions: [
-          "I. O FULL OUTER JOIN retorna todos os registros de ambas as tabelas, preenchendo com NULL os campos sem correspondência em qualquer um dos lados.",
-          "II. O FULL OUTER JOIN pode ser considerado a união entre um LEFT JOIN e um RIGHT JOIN aplicados sobre as mesmas tabelas.",
-          "III. Registros sem correspondência em nenhuma das tabelas são ignorados pelo FULL OUTER JOIN, assim como no INNER JOIN.",
-          "IV. O FULL OUTER JOIN é útil para identificar inconsistências de dados entre tabelas relacionadas."
-        ],
-        options: [
-          "I, II e III, apenas.",
-          "I, II e IV, apenas.",
-          "II e IV, apenas.",
-          "I, II, III e IV."
-        ],
-        answer: 1,
-        feedback: "Correto: B. As afirmativas I, II e IV são verdadeiras. A III é falsa: o ==dml==FULL OUTER JOIN== não ignora registros sem correspondência — esse é exatamente o comportamento do ==dml==INNER JOIN==. O FULL OUTER JOIN faz o oposto: inclui todos os registros, dos dois lados, com ==danger==NULL== onde não houver match."
-      },
-
-      // 49 - produto cartesiano
-      {
-        aula: "Aula 13 - Consultas Aninhadas e Junções",
-        tipo: "Análise aplicada",
-        texto: "Um desenvolvedor júnior escreveu a seguinte consulta para listar alunos e seus cursos em um sistema acadêmico. Ao executar a consulta, percebeu que o resultado continha muito mais linhas do que o esperado, com combinações sem sentido entre alunos e cursos.",
-        question: "Analise o código abaixo e identifique a causa do problema:",
-        code: `SELECT a.nom_alu, c.nom_curso
-      FROM alunos a, cursos c;`,
-        options: [
-          "A consulta está incorreta sintaticamente e não deveria ser executada pelo banco de dados.",
-          "A ausência de uma cláusula WHERE com a condição de junção gerou um produto cartesiano, combinando cada aluno com cada curso.",
-          "O problema é que a consulta usa vírgula no FROM em vez de JOIN, o que impede qualquer tipo de junção.",
-          "O resultado excessivo ocorre porque a tabela 'alunos' possui índices que duplicam os registros automaticamente."
-        ],
-        answer: 1,
-        feedback: "Correto: B. A consulta realiza um ==danger==produto cartesiano==: ao listar duas tabelas no FROM sem uma condição de junção no WHERE, o banco de dados combina cada linha da tabela A com cada linha da tabela B. Para corrigir, seria necessário adicionar ==dml==WHERE a.cod_curso = c.cod_curso== ou utilizar INNER JOIN com a cláusula ON."
-      },
-
-      // 50 - EXISTS vs IN
-      {
-        aula: "Aula 13 - Consultas Aninhadas e Junções",
-        tipo: "Múltiplas afirmativas",
-        texto: "Uma empresa de software está migrando consultas antigas que utilizam o operador IN para versões mais eficientes com EXISTS. O time de banco de dados discute as diferenças conceituais e práticas entre os dois operadores, especialmente no contexto de subconsultas correlacionadas.",
-        question: "Sobre os operadores ==ddl==EXISTS== e ==ddl==IN== em subconsultas SQL, avalie as afirmativas:",
-        assertions: [
-          "I. O operador EXISTS retorna verdadeiro assim que a subconsulta encontrar a primeira linha correspondente, podendo ser mais eficiente que IN em alguns cenários.",
-          "II. O operador IN é geralmente associado a subconsultas Tipo I (independentes), enquanto EXISTS é frequentemente utilizado em subconsultas Tipo II (correlacionadas).",
-          "III. NOT EXISTS e NOT IN sempre produzem resultados idênticos, podendo ser utilizados de forma intercambiável sem restrições.",
-          "IV. O operador EXISTS verifica apenas a existência de linhas no resultado da subconsulta, sem se preocupar com os valores retornados por ela."
-        ],
-        options: [
-          "I e II, apenas.",
-          "I, II e III, apenas.",
-          "I, II e IV, apenas.",
-          "I, II, III e IV."
-        ],
-        answer: 2,
-        feedback: "Correto: C. As afirmativas I, II e IV são verdadeiras. A III é falsa: ==danger==NOT IN== e ==danger==NOT EXISTS== diferem quando a subconsulta pode retornar valores NULL. Com NULL presente, NOT IN não retorna nenhum registro (pois NULL não é comparável), enquanto NOT EXISTS se comporta conforme o esperado. Essa é uma armadilha clássica em SQL."
-      }
+    // aula: Aula 9 — Definindo um Banco de Dados
+
+    // 1 - integridade referencial
+    {
+      tipo: "Asserção + Justificativa",
+      aula: "Aula 9 — Definindo um Banco de Dados",
+      conteudo: "DDL — Linguagem de Definição de Dados em SQL",
+      texto: "Uma empresa de logística passou por uma auditoria de qualidade de dados e identificou que pedidos estavam sendo cadastrados com códigos de cliente inexistentes no banco de dados. A equipe de TI foi acionada para reforçar a integridade dos dados entre as tabelas `pedidos` e `clientes`, garantindo que nenhum pedido pudesse referenciar um cliente que não existisse no sistema.",
+      question: "Analise as asserções a seguir e a relação proposta entre elas:",
+      assertions: [
+        "A definição de uma ==key==FOREIGN KEY== na tabela `pedidos` referenciando a tabela `clientes` impede que sejam inseridos pedidos com códigos de cliente inexistentes.",
+        "[PORQUE] A ==key==FOREIGN KEY== implementa a integridade referencial, que assegura que todo valor da coluna referenciadora exista na coluna referenciada da tabela pai."
+      ],
+      options: [
+        "As asserções I e II são verdadeiras, e II justifica I",
+        "As asserções I e II são verdadeiras, mas II não justifica I",
+        "A asserção I é verdadeira e a II é falsa",
+        "A asserção I é falsa e a II é verdadeira"
+      ],
+      answer: 0,
+      feedback: "Correto: A. A ==key==FOREIGN KEY== bloqueia inserções com valores que não existem na tabela referenciada (I). A asserção II explica exatamente o mecanismo que fundamenta esse comportamento — a **integridade referencial** — justificando I de forma direta e precisa."
+    },
+
+    // 2 - comandos DDL
+    {
+      tipo: "Múltiplas afirmativas",
+      aula: "Aula 9 — Definindo um Banco de Dados",
+      conteudo: "DDL — Linguagem de Definição de Dados em SQL",
+      texto: "Durante o projeto de um sistema hospitalar, o DBA precisou definir a estrutura completa do banco de dados utilizando comandos DDL. A equipe tinha dúvidas sobre as diferenças entre os comandos disponíveis e sobre o comportamento padrão de cada um deles ao ser executado.",
+      question: "Avalie as afirmativas a seguir sobre os comandos ==ddl==DDL== em SQL:",
+      assertions: [
+        "O comando ==ddl==CREATE TABLE== permite definir colunas, tipos de dados e restrições como ==key==PRIMARY KEY==, ==key==FOREIGN KEY== e `NOT NULL` em uma única instrução.",
+        "O comando ==ddl==DROP TABLE== remove permanentemente a estrutura e os dados da tabela, sendo diferente do ==dml==DELETE==, que remove apenas os dados sem afetar a estrutura.",
+        "O comando ==ddl==ALTER TABLE== pode ser usado para adicionar novas colunas a uma tabela existente, sendo que essas colunas recebem valor `NULL` por padrão nos registros já cadastrados.",
+        "O ==mark==INFORMATION_SCHEMA== é uma tabela comum do usuário onde se armazenam os dados operacionais do sistema hospitalar."
+      ],
+      questionContinuation: "São corretas apenas as afirmativas:",
+      options: [
+        "I, II e III, apenas",
+        "I e III, apenas",
+        "II e IV, apenas",
+        "I, II, III e IV"
+      ],
+      answer: 0,
+      feedback: "Correto: A (I, II e III). A afirmativa IV está **errada**: o ==mark==INFORMATION_SCHEMA== é um conjunto de **metadados** sobre a estrutura do banco — não uma tabela de dados operacionais do usuário. As afirmativas I, II e III descrevem corretamente o comportamento de ==ddl==CREATE TABLE==, ==danger==DROP TABLE== e ==ddl==ALTER TABLE==."
+    },
+
+    // 3 - CREATE TABLE e chaves
+    {
+      tipo: "Análise de código SQL",
+      aula: "Aula 9 — Definindo um Banco de Dados",
+      conteudo: "DDL — Linguagem de Definição de Dados em SQL",
+      texto: "Um sistema de controle de vendas foi modelado com as seguintes tabelas. Analise o script SQL criado pelo analista responsável pelo projeto:",
+      question: "Avalie as afirmativas sobre o script a seguir:",
+      code:
+    `CREATE TABLE produtos (
+      cod_produto  INTEGER      NOT NULL,
+      descricao    VARCHAR(200) NOT NULL,
+      preco        DECIMAL(10,2),
+      PRIMARY KEY (cod_produto)
+    );
+
+    CREATE TABLE vendas (
+      num_venda    INTEGER      NOT NULL,
+      data_venda   DATE         NOT NULL,
+      cod_produto  INTEGER      NOT NULL,
+      quantidade   INTEGER      NOT NULL,
+      PRIMARY KEY (num_venda),
+      FOREIGN KEY (cod_produto) REFERENCES produtos(cod_produto)
+    );`,
+      assertions: [
+        "O campo `preco` pode receber valor `NULL` pois não possui a restrição `NOT NULL`, ao contrário de `descricao` e `cod_produto`.",
+        "A ==key==PRIMARY KEY== da tabela `vendas` garante que o campo `num_venda` seja único e não nulo em todos os registros.",
+        "A ==key==FOREIGN KEY== em `vendas` impede que sejam cadastradas vendas com `cod_produto` que não exista previamente na tabela `produtos`.",
+        "O tipo ==type==DECIMAL(10,2)== indica que o campo `preco` armazena números inteiros de até 10 dígitos."
+      ],
+      questionContinuation: "São corretas as afirmativas:",
+      options: [
+        "I, II e III, apenas",
+        "I, II, III e IV",
+        "II e III, apenas",
+        "I e IV, apenas"
+      ],
+      answer: 0,
+      feedback: "Correto: A (I, II e III). A afirmativa IV está **errada**: ==type==DECIMAL(10,2)== indica número com até 10 dígitos no total e 2 casas decimais — não um inteiro. As demais são verdadeiras: `preco` aceita NULL por ausência de NOT NULL; ==key==PRIMARY KEY== garante unicidade e não nulidade; e a ==key==FOREIGN KEY== assegura integridade referencial."
+    },
+
+    // 4 - CASCADE e RESTRICT
+    {
+      tipo: "Conceitual",
+      aula: "Aula 9 — Definindo um Banco de Dados",
+      conteudo: "DDL — Linguagem de Definição de Dados em SQL",
+      texto: "Uma equipe de banco de dados precisou remover uma tabela que possuía relacionamentos com outras três tabelas via chaves estrangeiras. O DBA precisou decidir entre utilizar ==mark==CASCADE== ou ==mark==RESTRICT== ao executar o ==danger==DROP TABLE==, considerando o impacto em cada cenário para o ambiente de produção.",
+      question: "Sobre o comportamento das opções ==mark==CASCADE== e ==mark==RESTRICT== no contexto do ==ddl==DROP TABLE==, assinale a alternativa correta:",
+      options: [
+        "==mark==RESTRICT== remove automaticamente as dependências; CASCADE solicita confirmação do usuário antes de cada exclusão.",
+        "==mark==CASCADE== propaga a exclusão para objetos dependentes automaticamente; RESTRICT bloqueia a operação se houver dependências.",
+        "Ambas produzem o mesmo resultado final, diferindo apenas no tempo de execução.",
+        "CASCADE apenas renomeia as referências nas tabelas dependentes; RESTRICT cria uma cópia de segurança antes de remover."
+      ],
+      answer: 1,
+      feedback: "Correto: B. ==mark==CASCADE== propaga a exclusão automaticamente para os objetos dependentes. ==mark==RESTRICT== bloqueia a operação enquanto existirem dependências, protegendo a integridade do banco. As demais alternativas invertem ou distorcem esse comportamento — atenção especial à alternativa A, que inverte os papéis das duas opções."
+    },
+
+    // 5 - ALTER TABLE
+    {
+      tipo: "Asserção + Justificativa",
+      aula: "Aula 9 — Definindo um Banco de Dados",
+      conteudo: "DDL — Linguagem de Definição de Dados em SQL",
+      texto: "Em um sistema universitário, a coordenação de TI identificou que duas colunas da tabela `alunos` precisavam ser adicionadas após a criação inicial da tabela: o campo `telefone` e o campo `email`. O DBA optou por utilizar o comando ==ddl==ALTER TABLE== para incluir essas colunas sem recriar a tabela completa.",
+      question: "Analise as asserções a seguir e a relação proposta entre elas:",
+      assertions: [
+        "Ao adicionar novas colunas por meio do ==ddl==ALTER TABLE==, os registros já existentes na tabela recebem valor `NULL` nessas colunas por padrão, caso nenhum valor padrão seja especificado.",
+        "[PORQUE] O ==ddl==ALTER TABLE== modifica a estrutura da tabela existente sem apagar os dados já cadastrados, exigindo que as novas colunas sejam compatíveis com os registros atuais."
+      ],
+      options: [
+        "As asserções I e II são verdadeiras, e II justifica I",
+        "As asserções I e II são verdadeiras, mas II não justifica I",
+        "A asserção I é verdadeira e a II é falsa",
+        "A asserção I é falsa e a II é verdadeira"
+      ],
+      answer: 0,
+      feedback: "Correto: A. Novos campos adicionados via ==ddl==ALTER TABLE== recebem `NULL` por padrão nos registros existentes (I). A asserção II justifica esse comportamento: como o ==ddl==ALTER TABLE== preserva os dados, é necessário um valor compatível para os registros já presentes — e `NULL` é o valor padrão quando nenhum outro é especificado."
+    },
+
+    // 6 - tipos de dados
+    {
+      tipo: "Múltiplas afirmativas",
+      aula: "Aula 9 — Definindo um Banco de Dados",
+      conteudo: "DDL — Linguagem de Definição de Dados em SQL",
+      texto: "Um professor de banco de dados aplicou um exercício em que os alunos precisavam identificar as características dos tipos de dados SQL. As respostas foram apresentadas em forma de afirmativas para avaliação coletiva da turma.",
+      question: "Avalie as afirmativas a seguir sobre tipos de dados em SQL:",
+      assertions: [
+        "O tipo ==type==CHAR(n)== armazena cadeias de caracteres de tamanho **fixo**, preenchendo com espaços quando o valor inserido tiver menos que `n` caracteres.",
+        "O tipo ==type==VARCHAR(n)== armazena cadeias de caracteres de tamanho **variável**, ocupando apenas o espaço necessário para o valor inserido, até o limite `n`.",
+        "O tipo ==type==DATE== armazena apenas a parte de data (ano, mês e dia), enquanto `DATETIME` ou `TIMESTAMP` incluem também o horário.",
+        "O tipo ==type==BLOB== é utilizado para armazenar dados numéricos de alta precisão, como valores monetários em sistemas financeiros."
+      ],
+      questionContinuation: "São corretas apenas as afirmativas:",
+      options: [
+        "I, II e III, apenas",
+        "I e II, apenas",
+        "II, III e IV, apenas",
+        "I, II, III e IV"
+      ],
+      answer: 0,
+      feedback: "Correto: A (I, II e III). A afirmativa IV está **errada**: ==type==BLOB== (Binary Large Object) é usado para armazenar dados binários como imagens, áudios e arquivos — não valores numéricos de precisão. Para dados monetários, os tipos adequados são ==type==DECIMAL== ou ==type==NUMERIC==. As afirmativas I, II e III descrevem corretamente o comportamento dos seus respectivos tipos."
+    },
+
+    // 7 - ALTER TABLE script
+    {
+      tipo: "Análise de código SQL",
+      aula: "Aula 9 — Definindo um Banco de Dados",
+      conteudo: "DDL — Linguagem de Definição de Dados em SQL",
+      texto: "Um analista precisou ajustar a estrutura de um banco de dados existente após novos requisitos de negócio. Ele executou os seguintes comandos em sequência:",
+      question: "Avalie as afirmativas sobre o script SQL a seguir:",
+      code:
+    `-- Script de modificação da tabela funcionarios
+    ALTER TABLE funcionarios
+      ADD COLUMN ctps VARCHAR(20);
+
+    ALTER TABLE funcionarios
+      ADD COLUMN data_admissao DATE NOT NULL DEFAULT '2024-01-01';
+
+    ALTER TABLE departamentos
+      RENAME TO depto;`,
+      assertions: [
+        "O campo `ctps` será acrescentado à tabela `funcionarios` com valor `NULL` nos registros existentes, pois nenhuma restrição `NOT NULL` ou valor padrão foi especificado.",
+        "O campo `data_admissao` terá o valor `'2024-01-01'` preenchido automaticamente nos registros já existentes, pois foi definido com `DEFAULT`.",
+        "O terceiro comando ==ddl==ALTER TABLE== remove permanentemente a tabela `departamentos` e todos os seus dados.",
+        "Todos os três comandos pertencem à categoria ==ddl==DDL== da linguagem SQL, pois modificam estruturas do banco de dados sem inserir ou consultar dados."
+      ],
+      questionContinuation: "São corretas as afirmativas:",
+      options: [
+        "I, II e IV, apenas",
+        "I e II, apenas",
+        "III e IV, apenas",
+        "I, II, III e IV"
+      ],
+      answer: 0,
+      feedback: "Correto: A (I, II e IV). A afirmativa III está **errada**: `RENAME TO` apenas renomeia a tabela — não a remove nem apaga seus dados. Quem remove permanentemente é o ==danger==DROP TABLE==. As afirmativas I e II estão corretas sobre o comportamento do `DEFAULT` e do `NULL`, e IV está correta pois todos os comandos são ==ddl==DDL==."
+    },
+
+    // 8 - DROP DATABASE
+    {
+      tipo: "Asserção + Justificativa",
+      aula: "Aula 9 — Definindo um Banco de Dados",
+      conteudo: "DDL — Linguagem de Definição de Dados em SQL",
+      texto: "Durante uma manutenção emergencial em um sistema bancário, um administrador de banco de dados executou o comando ==danger==DROP DATABASE== no ambiente de produção ao invés do ambiente de homologação, resultando na perda completa de todos os dados do sistema. O incidente gerou uma revisão dos procedimentos de segurança operacional da empresa.",
+      question: "Analise as asserções a seguir e a relação proposta entre elas:",
+      assertions: [
+        "O comando ==danger==DROP DATABASE== remove permanentemente todo o banco de dados, incluindo todos os esquemas, tabelas, dados e demais objetos a ele associados, sem possibilidade de recuperação direta pelo SGBD.",
+        "[PORQUE] Diferentemente do ==dml==DELETE==, que opera sobre registros de uma tabela, o ==danger==DROP DATABASE== é um comando ==ddl==DDL== que atua na estrutura do banco, eliminando definitivamente todos os seus objetos e não deixando rastros recuperáveis pelo próprio banco."
+      ],
+      options: [
+        "As asserções I e II são verdadeiras, e II justifica I",
+        "As asserções I e II são verdadeiras, mas II não justifica I",
+        "A asserção I é verdadeira e a II é falsa",
+        "A asserção I é falsa e a II é verdadeira"
+      ],
+      answer: 0,
+      feedback: "Correto: A. O ==danger==DROP DATABASE== elimina tudo de forma definitiva (I), e a asserção II contextualiza e justifica esse comportamento ao diferenciá-lo do ==dml==DELETE== e ao explicar que se trata de um comando ==ddl==DDL== que age sobre a estrutura — não apenas sobre dados de uma tabela."
+    },
+
+    // 9 - PRIMARY KEY e FOREIGN KEY
+    {
+      tipo: "Múltiplas afirmativas",
+      aula: "Aula 9 — Definindo um Banco de Dados",
+      conteudo: "DDL — Linguagem de Definição de Dados em SQL",
+      texto: "Em uma prova prática de banco de dados, os alunos precisavam modelar um sistema de biblioteca com as tabelas `livros`, `autores` e `emprestimos`. A questão avaliava o conhecimento sobre ==key==PRIMARY KEY== e ==key==FOREIGN KEY== e suas implicações na integridade do banco de dados.",
+      question: "Avalie as afirmativas a seguir sobre ==key==PRIMARY KEY== e ==key==FOREIGN KEY==:",
+      assertions: [
+        "Uma ==key==PRIMARY KEY== pode ser composta por mais de uma coluna, formando uma **chave primária composta**, que garante unicidade pela combinação dos valores das colunas envolvidas.",
+        "Uma ==key==FOREIGN KEY== em `emprestimos` referenciando `livros` impede que um livro seja excluído da tabela `livros` enquanto existirem empréstimos associados a ele, a menos que seja usado ==mark==CASCADE==.",
+        "Uma coluna definida como ==key==PRIMARY KEY== aceita valores `NULL`, desde que o valor seja único em toda a tabela.",
+        "A ==key==FOREIGN KEY== cria um relacionamento lógico entre duas tabelas, sendo que a coluna referenciadora deve ter o mesmo tipo de dado que a coluna referenciada na tabela pai."
+      ],
+      questionContinuation: "São corretas apenas as afirmativas:",
+      options: [
+        "I, II e IV, apenas",
+        "I e IV, apenas",
+        "II e III, apenas",
+        "I, II, III e IV"
+      ],
+      answer: 0,
+      feedback: "Correto: A (I, II e IV). A afirmativa III está **errada**: ==key==PRIMARY KEY== **nunca** aceita `NULL` — esta é uma de suas regras fundamentais, independentemente de unicidade. As afirmativas I (chave composta), II (restrição de exclusão via ==mark==RESTRICT== implícito) e IV (compatibilidade de tipos) estão corretas."
+    },
+
+    // 10 - DROP TABLE com dependências
+    {
+      tipo: "Análise de código SQL",
+      aula: "Aula 9 — Definindo um Banco de Dados",
+      conteudo: "DDL — Linguagem de Definição de Dados em SQL",
+      texto: "Um estudante de banco de dados estava desenvolvendo o modelo físico de um sistema de recursos humanos. Após a criação inicial das tabelas, ele percebeu que precisava remover a tabela `cargos`, mas essa tabela era referenciada por `funcionarios` via ==key==FOREIGN KEY==. Ele então escreveu os seguintes comandos para resolver o problema:",
+      question: "Analise o script SQL e avalie as afirmativas:",
+      code:
+    `-- Tentativa 1
+    DROP TABLE cargos;
+
+    -- Tentativa 2
+    DROP TABLE cargos RESTRICT;
+
+    -- Tentativa 3
+    DROP TABLE cargos CASCADE;
+
+    -- Tentativa 4
+    DELETE FROM cargos;`,
+      assertions: [
+        "As tentativas 1 e 2 falharão se existirem registros em `funcionarios` referenciando `cargos`, pois ambas respeitam a integridade referencial.",
+        "A tentativa 3 removerá a tabela `cargos` e automaticamente eliminará ou propagará a remoção nos objetos dependentes, incluindo a ==key==FOREIGN KEY== em `funcionarios`.",
+        "A tentativa 4 remove permanentemente a estrutura da tabela `cargos`, liberando o espaço de metadados no catálogo do banco de dados.",
+        "Apenas a tentativa 3 resolve o problema de remover a tabela `cargos` com dependências existentes em `funcionarios`."
+      ],
+      questionContinuation: "São corretas as afirmativas:",
+      options: [
+        "I, II e IV, apenas",
+        "I e II, apenas",
+        "II e III, apenas",
+        "I, II, III e IV"
+      ],
+      answer: 0,
+      feedback: "Correto: A (I, II e IV). A afirmativa III está **errada**: o ==dml==DELETE== remove apenas os **dados (linhas)** da tabela, não a estrutura. Quem remove a estrutura é o ==danger==DROP TABLE==. As afirmativas I (comportamento de RESTRICT implícito e explícito), II (comportamento de ==mark==CASCADE==) e IV (única solução para o cenário com dependências) estão corretas."
+    },
+
+    // aula: Aula 10 — Manipulando um Banco de Dados
+
+    // 11 - INSERT sem colunas
+    {
+      tipo: "Asserção + Justificativa",
+      aula: "Aula 10 — Manipulando um Banco de Dados",
+      conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
+      texto: "Uma equipe de desenvolvimento de um sistema de RH percebeu que vários registros de funcionários estavam sendo inseridos sem o campo de departamento preenchido. Ao investigar, o analista constatou que o comando INSERT utilizado não especificava as colunas de destino, o que gerava inconsistências nos dados armazenados.",
+      question: "Analise as asserções a seguir e a relação proposta entre elas:",
+      assertions: [
+        "Ao utilizar ==dml==INSERT INTO tabela VALUES (...)== sem especificar os nomes das colunas, os valores informados devem corresponder exatamente à ordem e ao tipo de todas as colunas definidas na tabela.",
+        "[PORQUE] A sintaxe do ==dml==INSERT== sem lista de colunas exige que o banco de dados associe cada valor posicionalmente à estrutura completa da tabela, não permitindo omissões sem causar erro ou inconsistência."
+      ],
+      options: [
+        "As asserções I e II são verdadeiras, e II justifica I",
+        "As asserções I e II são verdadeiras, mas II não justifica I",
+        "A asserção I é verdadeira e a II é falsa",
+        "A asserção I é falsa e a II é verdadeira"
+      ],
+      answer: 0,
+      feedback: "Correto: A. Quando o ==dml==INSERT== não lista as colunas, o banco espera valores para **todas** as colunas na ordem exata de criação da tabela (I). A asserção II justifica diretamente esse comportamento, explicando o mecanismo posicional que fundamenta a restrição."
+    },
+
+    // 12 - DELETE
+    {
+      tipo: "Múltiplas afirmativas",
+      aula: "Aula 10 — Manipulando um Banco de Dados",
+      conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
+      texto: "Um professor de banco de dados pediu que os alunos avaliassem afirmativas sobre o comando DELETE em SQL. O objetivo era verificar se eles compreendiam a diferença entre excluir registros com e sem cláusula WHERE, além das características do comando em relação à estrutura da tabela.",
+      question: "Avalie as afirmativas a seguir sobre o comando ==dml==DELETE== em SQL:",
+      assertions: [
+        "O comando ==dml==DELETE FROM tabela== sem a cláusula ==rule==WHERE== remove todos os registros da tabela, mas preserva a estrutura (colunas, restrições e índices).",
+        "O comando ==dml==DELETE== pode remover uma coluna específica de um registro, desde que o nome da coluna seja informado após a palavra-chave DELETE.",
+        "A cláusula ==rule==WHERE== no ==dml==DELETE== permite filtrar quais registros serão removidos, garantindo precisão na exclusão dos dados.",
+        "O ==dml==DELETE== pertence à DML e, portanto, opera sobre os dados da tabela, não sobre sua estrutura."
+      ],
+      questionContinuation: "São corretas apenas as afirmativas:",
+      options: [
+        "I, III e IV, apenas",
+        "I e III, apenas",
+        "II e IV, apenas",
+        "I, II, III e IV"
+      ],
+      answer: 0,
+      feedback: "Correto: A (I, III e IV). A afirmativa II está **errada**: o ==dml==DELETE== remove **linhas inteiras** — nunca colunas isoladas. Para remover uma coluna, utiliza-se o ==ddl==ALTER TABLE==. As demais afirmativas descrevem corretamente o comportamento do DELETE sem WHERE, o papel do WHERE e a categorização do comando na **DML**."
+    },
+
+    // 13 - UPDATE e SELECT script
+    {
+      tipo: "Análise de código SQL",
+      aula: "Aula 10 — Manipulando um Banco de Dados",
+      conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
+      texto: "Durante o desenvolvimento de um sistema de cursos online, um analista executou os seguintes comandos SQL para manipular os dados das tabelas `alunos` e `cursos`:",
+      question: "Avalie as afirmativas sobre o script a seguir:",
+      code:
+    `UPDATE cursos
+    SET nome = 'SI - Sistemas de Informação'
+    WHERE codigo = 11;
+
+    UPDATE empregados
+    SET salario = salario * 1.10;
+
+    DELETE FROM alunos
+    WHERE matricula = 911113;
+
+    SELECT nome, salario, 12 * (salario + 500)
+    FROM empregados;`,
+      assertions: [
+        "O primeiro ==dml==UPDATE== altera apenas o registro cujo `codigo` é igual a 11, pois a cláusula ==rule==WHERE== restringe o escopo da atualização.",
+        "O segundo ==dml==UPDATE== aplica um reajuste de 10% no salário de **todos** os empregados, pois não possui cláusula ==warn==WHERE==.",
+        "O ==dml==DELETE== remove apenas a coluna `matricula` do aluno com matrícula 911113, mantendo os demais dados do registro.",
+        "A expressão `12 * (salario + 500)` no ==dml==SELECT== calcula o salário anual considerando um bônus mensal de 500, com os parênteses garantindo a precedência correta da operação."
+      ],
+      questionContinuation: "São corretas as afirmativas:",
+      options: [
+        "I, II e IV, apenas",
+        "I e IV, apenas",
+        "II e III, apenas",
+        "I, II, III e IV"
+      ],
+      answer: 0,
+      feedback: "Correto: A (I, II e IV). A afirmativa III está **errada**: o ==dml==DELETE== remove a **linha inteira** do aluno — não apenas uma coluna. Para remover a coluna, seria necessário ==ddl==ALTER TABLE==. As afirmativas I (WHERE restritivo), II (UPDATE sem WHERE afeta todos) e IV (precedência dos parênteses) estão corretas."
+    },
+
+    // 14 - precedência de operadores
+    {
+      tipo: "Asserção + Justificativa",
+      aula: "Aula 10 — Manipulando um Banco de Dados",
+      conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
+      texto: "Um analista de sistemas precisava gerar um relatório de salários anuais dos empregados, considerando um bônus fixo mensal de R$ 500,00. Ele escreveu a seguinte expressão na cláusula SELECT: `12 * salario + 500`. O gerente revisou e apontou que o resultado estava incorreto para a maioria dos registros.",
+      question: "Analise as asserções a seguir e a relação proposta entre elas:",
+      assertions: [
+        "A expressão `12 * salario + 500` **não** calcula corretamente o salário anual com bônus mensal, pois a multiplicação tem precedência sobre a soma, resultando em `(12 * salario) + 500` em vez de `12 * (salario + 500)`.",
+        "[PORQUE] Em SQL, assim como na matemática, os operadores aritméticos seguem uma ==rule==ordem de precedência== em que multiplicação e divisão são avaliadas antes de adição e subtração, podendo o uso de parênteses alterar essa ordem."
+      ],
+      options: [
+        "As asserções I e II são verdadeiras, e II justifica I",
+        "As asserções I e II são verdadeiras, mas II não justifica I",
+        "A asserção I é verdadeira e a II é falsa",
+        "A asserção I é falsa e a II é verdadeira"
+      ],
+      answer: 0,
+      feedback: "Correto: A. A expressão sem parênteses aplica o bônus de 500 apenas uma vez ao total anual, não mensalmente (I). A asserção II justifica exatamente isso: a ==rule==precedência de operadores== em SQL faz com que `*` seja avaliado antes de `+`, e parênteses são a solução para forçar a ordem desejada."
+    },
+
+    // 15 - operadores lógicos
+    {
+      tipo: "Múltiplas afirmativas",
+      aula: "Aula 10 — Manipulando um Banco de Dados",
+      conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
+      texto: "Em uma aula prática de banco de dados, os alunos precisavam montar consultas SQL usando operadores lógicos para filtrar registros de uma tabela de disciplinas. O professor avaliou as respostas verificando a compreensão dos operadores AND, OR e NOT.",
+      question: "Avalie as afirmativas a seguir sobre os ==proc==operadores lógicos== em SQL:",
+      assertions: [
+        "O operador ==rule==AND== retorna apenas os registros em que **todas** as condições combinadas são verdadeiras, tornando o filtro mais restritivo.",
+        "O operador ==rule==OR== retorna registros em que **pelo menos uma** das condições é verdadeira, tornando o filtro mais amplo que o AND.",
+        "O operador ==rule==NOT== é equivalente ao operador ==rule==AND== com condição negada, produzindo sempre o mesmo resultado em qualquer contexto.",
+        "A consulta `WHERE credito = 4 AND disciplina = 'BD'` retorna apenas registros em que **ambas** as condições são satisfeitas simultaneamente."
+      ],
+      questionContinuation: "São corretas apenas as afirmativas:",
+      options: [
+        "I, II e IV, apenas",
+        "I e II, apenas",
+        "II, III e IV, apenas",
+        "I, II, III e IV"
+      ],
+      answer: 0,
+      feedback: "Correto: A (I, II e IV). A afirmativa III está **errada**: ==rule==NOT== **inverte** uma condição individualmente (ex: `NOT disciplina = 'BD'`), enquanto ==rule==AND== combina duas condições exigindo que ambas sejam verdadeiras — são operadores com funções e semânticas distintas, não equivalentes. As afirmativas I, II e IV descrevem corretamente o comportamento dos operadores lógicos."
+    },
+
+    // 16 - SELECT DISTINCT
+    {
+      tipo: "Conceitual",
+      aula: "Aula 10 — Manipulando um Banco de Dados",
+      conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
+      texto: "Em um sistema de gestão acadêmica, o administrador precisava gerar uma lista de alunos sem repetição de nomes, já que vários alunos homônimos geravam duplicatas nos relatórios. Ele questionou a equipe sobre qual recurso SQL deveria ser usado para eliminar os valores repetidos no resultado da consulta.",
+      question: "Assinale a alternativa que descreve corretamente o uso do ==proc==SELECT DISTINCT== em SQL:",
+      options: [
+        "==proc==SELECT DISTINCT== remove fisicamente os registros duplicados da tabela, garantindo que apenas uma ocorrência de cada valor permaneça armazenada.",
+        "==proc==SELECT DISTINCT== elimina linhas duplicadas **apenas no resultado da consulta**, sem alterar os dados armazenados na tabela.",
+        "==proc==SELECT DISTINCT== é equivalente ao uso de ==rule==WHERE== com operador de igualdade, pois ambos filtram registros com base em valores específicos.",
+        "==proc==SELECT DISTINCT== só pode ser aplicado a colunas do tipo texto (VARCHAR ou CHAR), não sendo compatível com colunas numéricas."
+      ],
+      answer: 1,
+      feedback: "Correto: B. O ==proc==SELECT DISTINCT== age **apenas no resultado da consulta**, suprimindo linhas duplicadas na exibição sem modificar os dados físicos do banco. Ele não remove dados, não é equivalente ao WHERE e funciona com qualquer tipo de dado — numérico, texto ou data."
+    },
+
+    // 17 - UPDATE script análise
+    {
+      tipo: "Análise de código SQL",
+      aula: "Aula 10 — Manipulando um Banco de Dados",
+      conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
+      texto: "Uma analista de dados de uma empresa de varejo recebeu a tarefa de corrigir e analisar uma série de comandos SQL escritos por um estagiário. Ela identificou inconsistências no uso do UPDATE e precisava apontar quais comandos produziriam os resultados esperados.",
+      question: "Analise o script SQL e avalie as afirmativas:",
+      code:
+    `-- Comando A
+    UPDATE produtos
+    SET preco = preco * 1.05
+    WHERE categoria = 'Eletronicos';
+
+    -- Comando B
+    UPDATE produtos
+    SET preco = 0;
+
+    -- Comando C
+    UPDATE produtos
+    SET preco = 150.00, estoque = 0
+    WHERE cod_produto = 37;
+
+    -- Comando D
+    UPDATE produtos
+    SET WHERE preco > 100;`,
+      assertions: [
+        "O Comando A aplica um reajuste de 5% apenas nos produtos da categoria 'Eletrônicos', graças à cláusula ==rule==WHERE== que restringe o escopo.",
+        "O Comando B zerará o preço de **todos** os produtos da tabela, pois não possui cláusula ==warn==WHERE==.",
+        "O Comando C atualiza corretamente duas colunas ao mesmo tempo para o produto de código 37, usando ==proc==SET== com separação por vírgula.",
+        "O Comando D possui sintaxe válida em SQL padrão e filtrará corretamente os produtos com preço acima de 100."
+      ],
+      questionContinuation: "São corretas as afirmativas:",
+      options: [
+        "I, II e III, apenas",
+        "I e III, apenas",
+        "II e IV, apenas",
+        "I, II, III e IV"
+      ],
+      answer: 0,
+      feedback: "Correto: A (I, II e III). O Comando D possui **sintaxe inválida**: não é possível usar ==rule==WHERE== sem a cláusula ==proc==SET== devidamente preenchida — a instrução `UPDATE ... SET WHERE` não especifica o que alterar. Os comandos A, B e C estão sintaticamente corretos, embora B seja perigoso por alterar todos os registros."
+    },
+
+    // 18 - DELETE sem WHERE
+    {
+      tipo: "Asserção + Justificativa",
+      aula: "Aula 10 — Manipulando um Banco de Dados",
+      conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
+      texto: "Em um sistema de folha de pagamento, um desenvolvedor júnior executou o comando `DELETE FROM funcionarios` sem adicionar nenhuma condição. Imediatamente após a execução, percebeu o erro e tentou desfazer a operação acessando o banco diretamente — mas os dados não estavam mais acessíveis. O incidente foi registrado como falha crítica.",
+      question: "Analise as asserções a seguir e a relação proposta entre elas:",
+      assertions: [
+        "O comando ==warn==DELETE FROM funcionarios== sem cláusula ==rule==WHERE== remove **todos os registros** da tabela `funcionarios`, esvaziando completamente seu conteúdo.",
+        "[PORQUE] Na linguagem ==proc==DML==, o ==warn==DELETE== sem filtro opera sobre o conjunto completo de linhas da tabela, pois a ausência do ==rule==WHERE== é interpretada como uma condição sempre verdadeira para todos os registros."
+      ],
+      options: [
+        "As asserções I e II são verdadeiras, e II justifica I",
+        "As asserções I e II são verdadeiras, mas II não justifica I",
+        "A asserção I é verdadeira e a II é falsa",
+        "A asserção I é falsa e a II é verdadeira"
+      ],
+      answer: 0,
+      feedback: "Correto: A. O ==warn==DELETE== sem WHERE apaga todos os registros (I), e a asserção II explica o mecanismo por trás disso: a ausência de ==rule==WHERE== equivale a uma condição universalmente verdadeira, fazendo o comando agir sobre **todas as linhas** da tabela. A II justifica I de forma direta e precisa."
+    },
+
+    // 19 - estrutura SELECT
+    {
+      tipo: "Múltiplas afirmativas",
+      aula: "Aula 10 — Manipulando um Banco de Dados",
+      conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
+      texto: "Em uma prova prática de banco de dados, os alunos precisavam identificar as características da estrutura básica de uma consulta SQL com SELECT, FROM e WHERE. O professor avaliava tanto o conhecimento sintático quanto o entendimento semântico de cada cláusula.",
+      question: "Avalie as afirmativas a seguir sobre a estrutura de uma consulta ==proc==SELECT==:",
+      assertions: [
+        "A cláusula ==proc==FROM== indica a tabela (ou tabelas) de onde os dados serão recuperados, sendo obrigatória em toda consulta SQL que acesse dados de tabelas.",
+        "A cláusula ==rule==WHERE== é obrigatória em toda consulta ==proc==SELECT==; sem ela, o banco de dados retorna um erro de sintaxe.",
+        "A cláusula ==proc==SELECT== define **quais colunas** serão exibidas no resultado da consulta, podendo incluir expressões aritméticas e aliases.",
+        "É possível escrever `SELECT * FROM tabela` para retornar **todas as colunas** da tabela sem precisar listá-las individualmente."
+      ],
+      questionContinuation: "São corretas apenas as afirmativas:",
+      options: [
+        "I, III e IV, apenas",
+        "I e III, apenas",
+        "II e IV, apenas",
+        "I, II, III e IV"
+      ],
+      answer: 0,
+      feedback: "Correto: A (I, III e IV). A afirmativa II está **errada**: a cláusula ==rule==WHERE== é **opcional** — sua ausência não gera erro; apenas significa que nenhum filtro será aplicado e todos os registros serão retornados. As afirmativas I (FROM obrigatório), III (SELECT define colunas e aceita expressões) e IV (SELECT * retorna todas as colunas) estão corretas."
+    },
+
+    // 20 - INSERT variações
+    {
+      tipo: "Análise de código SQL",
+      aula: "Aula 10 — Manipulando um Banco de Dados",
+      conteudo: "DML — Linguagem de Manipulação de Dados em SQL",
+      texto: "Uma empresa de e-commerce precisava inserir novos produtos no banco de dados. O analista responsável escreveu quatro variações do comando INSERT para testes, e a equipe precisava identificar quais estavam sintaticamente corretas e quais poderiam causar erros.",
+      question: "Analise os comandos INSERT a seguir e avalie as afirmativas:",
+      code:
+    `-- Inserção 1
+    INSERT INTO produtos VALUES (101, 'Notebook', 3500.00);
+
+    -- Inserção 2
+    INSERT INTO produtos (cod_produto, descricao)
+    VALUES (102, 'Mouse');
+
+    -- Inserção 3
+    INSERT INTO produtos (descricao, cod_produto)
+    VALUES (103, 'Teclado');
+
+    -- Inserção 4
+    INSERT INTO produtos (cod_produto, descricao, preco)
+    VALUES (104, 'Monitor');`,
+      assertions: [
+        "A Inserção 1 só será executada corretamente se a tabela `produtos` possuir exatamente 3 colunas na mesma ordem: `cod_produto`, `descricao` e `preco`.",
+        "A Inserção 2 é válida desde que as colunas não listadas aceitem valores `NULL` ou possuam valor `DEFAULT` definido.",
+        "A Inserção 3 causará erro pois os valores estão na ordem errada: o número 103 será inserido na coluna `descricao` (texto) e 'Teclado' em `cod_produto` (inteiro).",
+        "A Inserção 4 é válida pois lista 3 colunas e fornece 3 valores, satisfazendo a correspondência entre colunas e valores."
+      ],
+      questionContinuation: "São corretas as afirmativas:",
+      options: [
+        "I, II e III, apenas",
+        "I e II, apenas",
+        "II e IV, apenas",
+        "I, II, III e IV"
+      ],
+      answer: 0,
+      feedback: "Correto: A (I, II e III). A afirmativa IV está **errada**: a Inserção 4 lista 3 colunas (`cod_produto`, `descricao`, `preco`) mas fornece apenas **2 valores** — há uma incompatibilidade entre a quantidade de colunas e valores, o que causará erro de sintaxe. As afirmativas I (posicionamento obrigatório), II (colunas omitidas aceitam NULL/DEFAULT) e III (tipos incompatíveis causam erro) estão corretas."
+    },
+
+    // aula: Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1
+
+    // 21 - cláusula WHERE
+    {
+      tipo: "Conceitual contextualizada",
+      aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
+      conteudo: "Refinamento de Consultas em SQL",
+      texto: "Uma empresa de logística mantém um banco de dados com milhares de registros de entregas. A equipe de análise precisa consultar apenas as entregas realizadas para um determinado cliente, evitando carregar todos os dados desnecessariamente.",
+      question: "Considerando a estrutura de uma consulta SQL e a necessidade de restringir os dados retornados, qual cláusula deve ser utilizada para aplicar essa ==def==filtragem==?",
+      options: [
+        "GROUP BY, pois organiza os registros por critério definido",
+        "ORDER BY, pois seleciona apenas os registros relevantes",
+        "WHERE, pois permite definir uma condição que os registros devem satisfazer",
+        "SELECT, pois determina quais colunas serão exibidas no resultado"
+      ],
+      answer: 2,
+      feedback: "Correto: C. A cláusula **WHERE** é responsável por ==def==filtrar== os registros retornados, selecionando apenas aqueles que satisfazem a condição especificada. SELECT define colunas, ORDER BY ordena e GROUP BY agrupa — nenhum desses restringe linhas diretamente."
+    },
+
+    // 22 - operador LIKE
+    {
+      tipo: "Análise aplicada",
+      aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
+      conteudo: "Refinamento de Consultas em SQL",
+      texto: "Um sistema de gestão universitária permite que a secretaria busque alunos pelo nome, mesmo sem digitá-lo por completo. A consulta deve retornar todos os alunos cujo sobrenome contenha a palavra 'Santos', independentemente do que venha antes ou depois.",
+      question: "Qual das consultas abaixo atende corretamente a esse requisito?",
+      code: `-- Opção A
+    SELECT * FROM alunos WHERE nome LIKE 'Santos';
+
+    -- Opção B
+    SELECT * FROM alunos WHERE nome LIKE '%Santos%';
+
+    -- Opção C
+    SELECT * FROM alunos WHERE nome LIKE 'Santos%';
+
+    -- Opção D
+    SELECT * FROM alunos WHERE nome LIKE '_Santos';`,
+      options: [
+        "Opção A, pois busca pelo nome exato 'Santos'",
+        "Opção B, pois o uso de % antes e depois localiza 'Santos' em qualquer posição do texto",
+        "Opção C, pois retorna registros que começam com 'Santos'",
+        "Opção D, pois o _ substitui qualquer sequência de caracteres antes de 'Santos'"
+      ],
+      answer: 1,
+      feedback: "Correto: B. O operador ==dml==LIKE== com `'%Santos%'` utiliza o curinga `%` em ambos os lados, localizando a sequência 'Santos' em qualquer posição da string. A opção C retornaria apenas nomes que *começam* com Santos, e `_` representa exatamente 1 caractere, não uma sequência."
+    },
+
+    // 23 - operador BETWEEN
+    {
+      tipo: "Asserção + Justificativa",
+      aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
+      conteudo: "Refinamento de Consultas em SQL",
+      texto: "Uma analista de RH precisa listar todos os funcionários nascidos entre 1985 e 1994. Ela utiliza o operador BETWEEN para construir a condição na cláusula WHERE.",
+      question: "Analise as afirmativas a seguir sobre o comportamento do ==rule==BETWEEN==:",
+      assertions: [
+        "I. A condição `WHERE dat_nasc BETWEEN '1985-01-01' AND '1994-12-31'` é equivalente a `dat_nasc >= '1985-01-01' AND dat_nasc <= '1994-12-31'`, incluindo os limites do intervalo.",
+        "[PORQUE] II. O operador BETWEEN é exclusivo, ou seja, não inclui os valores dos extremos definidos."
+      ],
+      options: [
+        "I e II são verdadeiras, e II justifica I",
+        "I e II são verdadeiras, mas II não justifica I",
+        "I é verdadeira e II é falsa",
+        "I é falsa e II é verdadeira"
+      ],
+      answer: 2,
+      feedback: "Correto: C. A afirmativa I está **correta**: BETWEEN é inclusivo e equivale ao uso de >= e <=. A afirmativa II está ==warn==errada==, pois afirma que BETWEEN exclui os extremos — o que é uma armadilha conceitual comum. BETWEEN sempre inclui os valores limite."
+    },
+
+    // 24 - operador IN
+    {
+      tipo: "Múltiplas afirmativas",
+      aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
+      conteudo: "Refinamento de Consultas em SQL",
+      texto: "Em um sistema de controle acadêmico, um professor deseja consultar informações de três alunos específicos cujas matrículas são 922155, 926465 e 915550. Ele considera diferentes formas de construir essa consulta.",
+      question: "Avalie as afirmativas abaixo sobre o uso do operador ==rule==IN==:",
+      assertions: [
+        "I. A cláusula `WHERE mat_alu IN (922155, 926465, 915550)` retorna os registros cujos valores de mat_alu correspondem a qualquer um dos valores listados.",
+        "II. O operador IN é funcionalmente equivalente ao encadeamento de condições com OR para cada valor da lista.",
+        "III. O operador IN não pode ser usado com valores do tipo texto, sendo restrito a campos numéricos.",
+        "IV. Utilizar IN com uma lista extensa de valores pode ser substituído por uma subconsulta para maior legibilidade."
+      ],
+      options: [
+        "I, II e IV, apenas",
+        "I e III, apenas",
+        "II e IV, apenas",
+        "I, II, III e IV"
+      ],
+      answer: 0,
+      feedback: "Correto: A. As afirmativas **I, II e IV** são verdadeiras. O ==dml==IN== aceita listas de qualquer tipo compatível com o campo, inclusive texto — portanto, III está errada. A afirmativa IV reflete boa prática com subconsultas quando a lista é dinâmica."
+    },
+
+    // 25 - IS NULL
+    {
+      tipo: "Conceitual contextualizada",
+      aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
+      conteudo: "Refinamento de Consultas em SQL",
+      texto: "Durante uma auditoria de dados em um sistema hospitalar, a equipe identificou que alguns pacientes não possuem e-mail cadastrado. Para localizar esses registros, um desenvolvedor escreveu a seguinte consulta: `SELECT * FROM pacientes WHERE email = NULL`. Porém, a consulta não retornou nenhum resultado, mesmo havendo registros sem e-mail.",
+      question: "Qual é a explicação correta para o comportamento inesperado da consulta?",
+      options: [
+        "A consulta está correta, mas a tabela não possui registros com e-mail vazio",
+        "O operador = não pode ser usado com NULL, pois comparações com NULL resultam em UNKNOWN; a forma correta é `IS NULL`",
+        "NULL é equivalente a uma string vazia, e por isso a condição deveria ser `WHERE email = ''`",
+        "A cláusula WHERE não suporta comparações com campos do tipo texto"
+      ],
+      answer: 1,
+      feedback: "Correto: B. O ==warn==NULL== não pode ser comparado com `=`, pois qualquer comparação com NULL retorna **UNKNOWN** — nem verdadeiro nem falso — e o WHERE só retorna registros com condição verdadeira. A sintaxe correta é ==rule==IS NULL==. NULL também não equivale a string vazia ou zero."
+    },
+
+    // 26 - funções de agregação
+    {
+      tipo: "Análise aplicada",
+      aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
+      conteudo: "Refinamento de Consultas em SQL",
+      texto: "Uma loja virtual quer analisar seu desempenho de vendas. O banco de dados possui uma tabela `pedidos` com os campos: `id_pedido`, `valor_total` e `status`. A gerência solicita um relatório com: total de pedidos realizados, soma dos valores, e o maior e menor valor de pedido.",
+      question: "Qual consulta retorna corretamente todas essas informações em uma única instrução?",
+      code: `-- Opção A
+    SELECT COUNT(*), SUM(valor_total), MAX(valor_total), MIN(valor_total)
+    FROM pedidos;
+
+    -- Opção B
+    SELECT COUNT(id_pedido), AVG(valor_total), valor_total
+    FROM pedidos;
+
+    -- Opção C
+    SELECT SUM(*), COUNT(valor_total), MAX(*), MIN(*)
+    FROM pedidos;
+
+    -- Opção D
+    SELECT COUNT(*), SUM(valor_total)
+    FROM pedidos
+    GROUP BY valor_total;`,
+      options: [
+        "Opção A",
+        "Opção B",
+        "Opção C",
+        "Opção D"
+      ],
+      answer: 0,
+      feedback: "Correto: A. A ==dml==COUNT(*)== conta todos os registros, ==dml==SUM== soma os valores, e MAX/MIN retornam os extremos. A opção B inclui `valor_total` fora de agregação sem GROUP BY. A opção C usa `SUM(*)` e `MAX(*)`, que são sintaxes inválidas. A opção D agrupa por valor, o que distorce o relatório."
+    },
+
+    // 27 - GROUP BY regras
+    {
+      tipo: "Asserção + Justificativa",
+      aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
+      conteudo: "Refinamento de Consultas em SQL",
+      texto: "Um desenvolvedor está criando um relatório que exibe a média de créditos por curso em uma universidade. Ele escreve a seguinte consulta: `SELECT cod_curso, nome_aluno, AVG(credito) FROM alunos GROUP BY cod_curso`. Ao executar, o banco de dados retorna um erro.",
+      question: "Analise as afirmativas sobre a regra do ==rule==GROUP BY==:",
+      assertions: [
+        "I. A consulta está incorreta porque `nome_aluno` aparece no SELECT sem estar no GROUP BY nem dentro de uma função de agregação.",
+        "[PORQUE] II. Todo campo presente no SELECT que não seja uma função de agregação deve obrigatoriamente aparecer na cláusula GROUP BY."
+      ],
+      options: [
+        "I e II são verdadeiras, e II justifica I",
+        "I e II são verdadeiras, mas II não justifica I",
+        "I é verdadeira e II é falsa",
+        "I é falsa e II é verdadeira"
+      ],
+      answer: 0,
+      feedback: "Correto: A. Ambas as afirmativas são **verdadeiras** e II justifica I. A ==rule==regra do GROUP BY== exige que campos não agregados no SELECT estejam presentes no agrupamento. `nome_aluno` não está em nenhuma função agregada nem no GROUP BY, causando o erro."
+    },
+
+    // 28 - ORDER BY
+    {
+      tipo: "Múltiplas afirmativas",
+      aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
+      conteudo: "Refinamento de Consultas em SQL",
+      texto: "Um sistema de biblioteca precisa exibir livros ordenados por data de publicação (do mais recente para o mais antigo) e, em caso de empate na data, por título em ordem alfabética crescente.",
+      question: "Sobre o uso do ==dml==ORDER BY== para atender esse requisito, avalie:",
+      assertions: [
+        "I. A cláusula ORDER BY pode receber múltiplas colunas como critério de ordenação.",
+        "II. O padrão de ordenação, quando não especificado, é ASC (crescente).",
+        "III. A consulta `ORDER BY data_pub DESC, titulo ASC` atende ao requisito descrito.",
+        "IV. O ORDER BY é executado antes do WHERE na ordem interna de processamento do SQL."
+      ],
+      options: [
+        "I, II e III, apenas",
+        "I e III, apenas",
+        "II e IV, apenas",
+        "I, II, III e IV"
+      ],
+      answer: 0,
+      feedback: "Correto: A. As afirmativas I, II e III são **verdadeiras**. O ==dml==ORDER BY== suporta múltiplas colunas e o padrão é ASC. A afirmativa IV está ==warn==errada==: ORDER BY é processado após FROM, WHERE, GROUP BY e SELECT — é a última etapa da execução lógica."
+    },
+
+    // 29 - ordem de execução SQL
+    {
+      tipo: "Conceitual contextualizada",
+      aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
+      conteudo: "Refinamento de Consultas em SQL",
+      texto: "Durante uma aula de banco de dados, o professor explica que a ordem em que escrevemos uma consulta SQL não corresponde à ordem em que o banco de dados a executa internamente. Um aluno fica confuso sobre qual cláusula é processada primeiro.",
+      question: "Considerando a ordem real de ==rule==execução lógica== de uma consulta SQL com SELECT, FROM, WHERE, GROUP BY e ORDER BY, qual sequência está correta?",
+      options: [
+        "SELECT → FROM → WHERE → GROUP BY → ORDER BY",
+        "FROM → WHERE → GROUP BY → SELECT → ORDER BY",
+        "WHERE → FROM → SELECT → GROUP BY → ORDER BY",
+        "FROM → SELECT → WHERE → ORDER BY → GROUP BY"
+      ],
+      answer: 1,
+      feedback: "Correto: B. A ordem lógica de execução é: **FROM** (define a fonte), ==rule==WHERE== (filtra linhas), **GROUP BY** (agrupa), **SELECT** (projeta colunas) e **ORDER BY** (ordena o resultado final). Compreender essa sequência é essencial para escrever consultas corretas e evitar erros de referência."
+    },
+
+    // 30 - LIKE curingas
+    {
+      tipo: "Análise aplicada",
+      aula: "Aula 11 - Refinando Consultas em um Banco de Dados • Parte 1",
+      conteudo: "Refinamento de Consultas em SQL",
+      texto: "Um sistema de RH armazena nomes de colaboradores. A equipe precisa encontrar todos cujo nome tenha exatamente a letra 'u' na segunda posição, independentemente do restante do nome.",
+      question: "Qual padrão no operador ==dml==LIKE== atende corretamente a esse critério?",
+      code: `-- Analise as opções:
+    -- A: WHERE nome LIKE '%u%'
+    -- B: WHERE nome LIKE '_u%'
+    -- C: WHERE nome LIKE 'u_%'
+    -- D: WHERE nome LIKE '__u%'`,
+      options: [
+        "WHERE nome LIKE '%u%', pois localiza 'u' em qualquer posição",
+        "WHERE nome LIKE '_u%', pois _ representa exatamente 1 caractere antes de 'u'",
+        "WHERE nome LIKE 'u_%', pois começa com 'u' seguido de qualquer caractere",
+        "WHERE nome LIKE '__u%', pois posiciona 'u' na terceira posição"
+      ],
+      answer: 1,
+      feedback: "Correto: B. O curinga ==rule==_== (underscore) representa exatamente **1 caractere**. Portanto, `'_u%'` garante que o primeiro caractere seja qualquer um e o segundo seja 'u', com qualquer sequência após. A opção A busca 'u' em qualquer posição; C exige 'u' na primeira posição; D posiciona 'u' na terceira."
+    },
+
+    // aula: Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2
+
+    // 31 - AVG básico
+    {
+      tipo: "Conceitual contextualizada",
+      aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+      conteudo: "Funções de Agregação em SQL",
+      texto: "Um coordenador pedagógico precisa calcular a média geral de créditos totais dos alunos matriculados no curso de código 10. Ele não quer ver os registros individuais — apenas o valor médio resultante para subsidiar um relatório de desempenho acadêmico.",
+      question: "Qual consulta SQL retorna corretamente a média dos créditos totais apenas dos alunos do curso 10?",
+      code:
+    `-- Opção A
+    SELECT AVG(tot_cred)
+    FROM alunos
+    WHERE cod_curso = 10;
+
+    -- Opção B
+    SELECT SUM(tot_cred)
+    FROM alunos
+    WHERE cod_curso = 10;
+
+    -- Opção C
+    SELECT AVG(tot_cred)
+    FROM alunos
+    GROUP BY cod_curso;
+
+    -- Opção D
+    SELECT COUNT(tot_cred)
+    FROM alunos
+    WHERE cod_curso = 10;`,
+      options: [
+        "Opção A, pois aplica AVG sobre os registros filtrados pelo curso 10",
+        "Opção B, pois SUM calcula o valor acumulado dos créditos",
+        "Opção C, pois GROUP BY separa os cursos e calcula a média de cada um",
+        "Opção D, pois COUNT retorna a quantidade de registros com crédito"
+      ],
+      answer: 0,
+      feedback: "Correto: A. A função ==dml==AVG== calcula a média de uma coluna, e a cláusula WHERE restringe o cálculo apenas aos alunos do curso 10. A opção C calcula a média por curso, mas retorna todos os cursos — não apenas o 10. SUM e COUNT respondem perguntas diferentes: soma total e contagem de registros, respectivamente."
+    },
+
+    // 32 - alias AS
+    {
+      tipo: "Asserção + Justificativa",
+      aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+      conteudo: "Funções de Agregação em SQL",
+      texto: "Durante a elaboração de relatórios automáticos em um sistema de gestão acadêmica, um desenvolvedor percebeu que os cabeçalhos das colunas calculadas apareciam como expressões brutas — por exemplo, 'AVG(tot_cred)' — tornando os relatórios pouco legíveis para os coordenadores. Ele adicionou o operador AS para resolver o problema.",
+      question: "Analise as asserções a seguir e a relação proposta entre elas:",
+      assertions: [
+        "O uso de ==dml==AS== em uma consulta SQL permite renomear colunas calculadas no resultado, tornando o cabeçalho mais legível sem alterar os dados retornados.",
+        "[PORQUE] O operador ==dml==AS== é um alias de apresentação: ele modifica apenas o rótulo exibido na saída da consulta, não afetando o processamento interno nem os valores calculados pela função de agregação."
+      ],
+      options: [
+        "As asserções I e II são verdadeiras, e II justifica I",
+        "As asserções I e II são verdadeiras, mas II não justifica I",
+        "A asserção I é verdadeira e a II é falsa",
+        "A asserção I é falsa e a II é verdadeira"
+      ],
+      answer: 0,
+      feedback: "Correto: A. O ==dml==AS== renomeia colunas apenas na exibição do resultado (I), e a asserção II justifica exatamente isso ao explicar que se trata de um alias de apresentação — sem impacto nos dados ou no cálculo. A relação de justificativa entre as asserções é direta e precisa."
+    },
+
+    // 33 - GROUP BY agrupamento
+    {
+      tipo: "Análise de código SQL",
+      aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+      conteudo: "Funções de Agregação em SQL",
+      texto: "Uma universidade quer gerar um relatório com a média de créditos totais por curso. O banco de dados possui a tabela `alunos` com os campos `cod_curso` e `tot_cred`. O analista escreveu a seguinte consulta:",
+      question: "Avalie as afirmativas sobre a consulta abaixo:",
+      code:
+    `SELECT cod_curso, AVG(tot_cred) AS media_tot_cred
+    FROM alunos
+    GROUP BY cod_curso;`,
+      assertions: [
+        "A consulta está sintaticamente correta: `cod_curso` aparece no SELECT e também no GROUP BY, respeitando a regra de agrupamento.",
+        "Sem a cláusula GROUP BY, a mesma consulta calcularia a média geral de todos os alunos, independente do curso.",
+        "A cláusula GROUP BY divide os registros em subconjuntos por valor de `cod_curso` antes de aplicar a função AVG a cada grupo.",
+        "O alias `media_tot_cred` substitui o valor calculado por um texto fixo, impedindo que os valores numéricos sejam exibidos."
+      ],
+      questionContinuation: "São corretas as afirmativas:",
+      options: [
+        "I, II e III, apenas",
+        "I e III, apenas",
+        "II e IV, apenas",
+        "I, II, III e IV"
+      ],
+      answer: 0,
+      feedback: "Correto: A (I, II e III). A afirmativa IV está **errada**: o alias ==dml==AS== renomeia apenas o cabeçalho da coluna — não substitui nem oculta os valores numéricos retornados. As demais descrevem corretamente o funcionamento do ==rule==GROUP BY== e o comportamento da consulta com e sem agrupamento."
+    },
+
+    // 34 - HAVING vs WHERE
+    {
+      tipo: "Conceitual contextualizada",
+      aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+      conteudo: "Funções de Agregação em SQL",
+      texto: "Uma analista de dados precisa identificar quais cursos possuem média de créditos totais superior a 100. Ela já sabe que deve usar GROUP BY para agrupar por curso, mas tem dúvida sobre onde aplicar o filtro sobre a média: na cláusula WHERE ou na cláusula HAVING.",
+      question: "Qual alternativa descreve corretamente a diferença entre ==rule==WHERE== e ==rule==HAVING== nesse contexto?",
+      options: [
+        "WHERE e HAVING produzem o mesmo resultado quando aplicados a funções de agregação, diferindo apenas na posição dentro da consulta.",
+        "WHERE filtra linhas antes do agrupamento e não aceita funções de agregação; HAVING filtra grupos após o agrupamento e aceita funções de agregação.",
+        "HAVING substitui completamente o WHERE em consultas com GROUP BY, tornando o WHERE desnecessário.",
+        "WHERE filtra grupos com base em funções de agregação; HAVING filtra linhas individualmente antes da agregação."
+      ],
+      answer: 1,
+      feedback: "Correto: B. ==rule==WHERE== atua sobre linhas individuais antes do agrupamento e não pode receber funções de agregação como `AVG()`. ==rule==HAVING== atua sobre grupos após o agrupamento e é o local correto para filtros baseados em funções agregadas. As demais alternativas invertem ou confundem os papéis das duas cláusulas."
+    },
+
+    // 35 - HAVING script
+    {
+      tipo: "Análise de código SQL",
+      aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+      conteudo: "Funções de Agregação em SQL",
+      texto: "Um sistema de controle acadêmico precisa listar apenas os cursos cuja média de créditos totais dos alunos seja superior a 100. O analista escreveu a seguinte consulta para atender a esse requisito:",
+      question: "Avalie as afirmativas sobre o script SQL a seguir:",
+      code:
+    `SELECT cod_curso, AVG(tot_cred) AS media_tot_cred
+    FROM alunos
+    GROUP BY cod_curso
+    HAVING AVG(tot_cred) > 100;`,
+      assertions: [
+        "A cláusula HAVING filtra os grupos formados pelo GROUP BY, retornando apenas os cursos cuja média de créditos supera 100.",
+        "Seria possível substituir o HAVING por WHERE nessa consulta, pois ambos filtram registros com base em condições numéricas.",
+        "A consulta respeita a ordem correta das cláusulas SQL: FROM, GROUP BY, HAVING, SELECT.",
+        "Caso nenhum curso tenha média superior a 100, a consulta retorna um resultado vazio, sem erro de execução."
+      ],
+      questionContinuation: "São corretas as afirmativas:",
+      options: [
+        "I e IV, apenas",
+        "I, II e IV, apenas",
+        "II e III, apenas",
+        "I, II, III e IV"
+      ],
+      answer: 0,
+      feedback: "Correto: A (I e IV). A afirmativa II está **errada**: usar ==rule==WHERE== com função de agregação como `AVG()` causa erro de sintaxe — WHERE não aceita funções agregadas. A afirmativa III está **errada**: a ordem de escrita correta é FROM → WHERE → GROUP BY → HAVING → SELECT, mas a *execução lógica* é diferente da escrita — e a consulta apresentada está escrita corretamente, não na ordem de execução. As afirmativas I e IV descrevem comportamentos corretos do ==rule==HAVING==."
+    },
+
+    // 36 - NULL em agregação
+    {
+      tipo: "Asserção + Justificativa",
+      aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+      conteudo: "Funções de Agregação em SQL",
+      texto: "Uma equipe de auditoria percebeu que a média calculada pela função AVG em uma coluna de créditos estava diferente do esperado. Ao investigar, descobriram que vários registros possuíam o valor NULL nessa coluna. O engenheiro de dados explicou que esse comportamento era esperado pelo padrão SQL.",
+      question: "Analise as asserções a seguir e a relação proposta entre elas:",
+      assertions: [
+        "A função ==dml==AVG== ignora automaticamente os valores NULL no cálculo da média, considerando apenas os registros com valores não nulos.",
+        "[PORQUE] As funções de agregação SQL — exceto ==dml==COUNT(*)== — descartam valores NULL antes de processar os dados, pois NULL representa ausência de valor e não pode participar de operações aritméticas com resultado determinístico."
+      ],
+      options: [
+        "As asserções I e II são verdadeiras, e II justifica I",
+        "As asserções I e II são verdadeiras, mas II não justifica I",
+        "A asserção I é verdadeira e a II é falsa",
+        "A asserção I é falsa e a II é verdadeira"
+      ],
+      answer: 0,
+      feedback: "Correto: A. AVG ignora NULLs (I), e a asserção II justifica esse comportamento explicando a regra geral das funções de agregação: todas descartam NULL, exceto **COUNT(*)** que conta linhas independentemente. A distinção entre `COUNT(*)` e `COUNT(coluna)` é um ponto-chave: o segundo também ignora NULLs."
+    },
+
+    // 37 - COUNT variações
+    {
+      tipo: "Múltiplas afirmativas",
+      aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+      conteudo: "Funções de Agregação em SQL",
+      texto: "Um desenvolvedor está elaborando relatórios sobre uma tabela `historicos_escolares` que contém os campos `mat_alu`, `cod_disc`, `ano` e `nota`. Alguns alunos cursaram a mesma disciplina mais de uma vez em anos diferentes, e alguns registros possuem o campo `nota` preenchido com NULL.",
+      question: "Avalie as afirmativas a seguir sobre as variações do ==dml==COUNT==:",
+      assertions: [
+        "COUNT(*) retorna o número total de linhas da tabela ou do grupo, incluindo aquelas com valores NULL em qualquer coluna.",
+        "COUNT(nota) retorna apenas a quantidade de registros em que o campo `nota` possui valor não nulo, ignorando os NULLs.",
+        "COUNT(DISTINCT mat_alu) conta o número de matrículas únicas, evitando que o mesmo aluno seja contabilizado mais de uma vez.",
+        "COUNT(DISTINCT *) é uma sintaxe válida e equivalente ao uso de SELECT DISTINCT antes da contagem."
+      ],
+      questionContinuation: "São corretas apenas as afirmativas:",
+      options: [
+        "I, II e III, apenas",
+        "I e III, apenas",
+        "II e IV, apenas",
+        "I, II, III e IV"
+      ],
+      answer: 0,
+      feedback: "Correto: A (I, II e III). A afirmativa IV está **errada**: ==dml==COUNT(DISTINCT *)== é uma sintaxe **inválida** em SQL — não é possível combinar DISTINCT com o curinga `*` dentro de COUNT. As afirmativas I, II e III descrevem corretamente os três comportamentos distintos do COUNT: total de linhas, valores não nulos e valores únicos."
+    },
+
+    // 38 - DISTINCT simples
+    {
+      tipo: "Conceitual contextualizada",
+      aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+      conteudo: "Funções de Agregação em SQL",
+      texto: "Um sistema de gestão acadêmica armazena na tabela `alunos` o código do curso de cada aluno. Como muitos alunos pertencem ao mesmo curso, a coluna `cod_curso` apresenta vários valores repetidos. O coordenador solicita uma lista com os códigos de curso existentes, sem repetições.",
+      question: "Qual é o comportamento correto do ==proc==SELECT DISTINCT== ao ser aplicado nesse cenário?",
+      options: [
+        "SELECT DISTINCT remove permanentemente os registros duplicados da tabela `alunos`, mantendo apenas uma linha por curso.",
+        "SELECT DISTINCT elimina as linhas repetidas apenas no resultado da consulta, sem alterar os dados armazenados na tabela.",
+        "SELECT DISTINCT é equivalente ao GROUP BY cod_curso em todos os contextos, podendo ser usado de forma intercambiável.",
+        "SELECT DISTINCT só funciona corretamente quando combinado com ORDER BY, pois depende da ordenação para identificar duplicatas."
+      ],
+      answer: 1,
+      feedback: "Correto: B. O ==proc==SELECT DISTINCT== age exclusivamente sobre o **resultado da consulta**, suprimindo linhas duplicadas na exibição sem modificar os dados físicos da tabela. Embora DISTINCT e GROUP BY possam produzir resultados similares em alguns casos, não são intercambiáveis em todos os contextos — especialmente quando há funções de agregação envolvidas."
+    },
+
+    // 39 - ordem execução completa
+    {
+      tipo: "Múltiplas afirmativas",
+      aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+      conteudo: "Funções de Agregação em SQL",
+      texto: "Em uma prova prática de banco de dados, o professor apresentou a seguinte consulta e pediu que os alunos identificassem a ordem real de execução lógica e o papel de cada cláusula:",
+      question: "Avalie as afirmativas sobre a ordem de execução lógica da consulta abaixo:",
+      code:
+    `SELECT cod_curso, AVG(tot_cred) AS media
+    FROM alunos
+    WHERE email IS NOT NULL
+    GROUP BY cod_curso
+    HAVING AVG(tot_cred) > 80
+    ORDER BY cod_curso ASC;`,
+      assertions: [
+        "A cláusula WHERE é executada antes do GROUP BY, filtrando alunos sem e-mail antes que o agrupamento seja formado.",
+        "A cláusula HAVING é executada antes do WHERE, pois atua sobre os grupos, que são formados antes da filtragem de linhas.",
+        "A cláusula SELECT é executada após o GROUP BY e o HAVING, projetando apenas as colunas e expressões definidas.",
+        "A cláusula ORDER BY é a última a ser executada na ordem lógica, ordenando o resultado final após todas as demais operações."
+      ],
+      questionContinuation: "São corretas apenas as afirmativas:",
+      options: [
+        "I, III e IV, apenas",
+        "I e IV, apenas",
+        "II e III, apenas",
+        "I, II, III e IV"
+      ],
+      answer: 0,
+      feedback: "Correto: A (I, III e IV). A afirmativa II está **errada**: a ordem lógica correta é FROM → ==rule==WHERE== → GROUP BY → HAVING → SELECT → ORDER BY. O WHERE filtra *antes* do agrupamento, e o HAVING filtra *depois*. Inverter essa ordem é um erro conceitual clássico. As demais afirmativas descrevem corretamente os papéis de WHERE, SELECT e ORDER BY na sequência de execução."
+    },
+
+    // 40 - consulta integrada HAVING
+    {
+      tipo: "Análise de código SQL",
+      aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+      conteudo: "Funções de Agregação em SQL",
+      texto: "Uma analista de dados recebeu a tarefa de identificar erros em quatro variações de uma consulta que deveria retornar os cursos com média de créditos superior a 80, considerando apenas alunos com e-mail cadastrado.",
+      question: "Analise os scripts e avalie as afirmativas:",
+      code:
+    `-- Script 1
+    SELECT cod_curso, AVG(tot_cred)
+    FROM alunos
+    WHERE email IS NOT NULL
+    GROUP BY cod_curso
+    HAVING AVG(tot_cred) > 80;
+
+    -- Script 2
+    SELECT cod_curso, AVG(tot_cred)
+    FROM alunos
+    WHERE email IS NOT NULL AND AVG(tot_cred) > 80
+    GROUP BY cod_curso;
+
+    -- Script 3
+    SELECT cod_curso, AVG(tot_cred)
+    FROM alunos
+    GROUP BY cod_curso
+    HAVING AVG(tot_cred) > 80
+    WHERE email IS NOT NULL;
+
+    -- Script 4
+    SELECT cod_curso, COUNT(DISTINCT mat_alu)
+    FROM alunos
+    WHERE email IS NOT NULL
+    GROUP BY cod_curso
+    HAVING COUNT(DISTINCT mat_alu) > 5;`,
+      assertions: [
+        "O Script 1 está correto: filtra alunos sem e-mail antes do agrupamento via WHERE, e filtra grupos com média insuficiente via HAVING.",
+        "O Script 2 causará erro pois funções de agregação como AVG não são permitidas na cláusula WHERE.",
+        "O Script 3 está correto pois WHERE e HAVING podem aparecer em qualquer ordem após o GROUP BY.",
+        "O Script 4, embora use COUNT(DISTINCT) no lugar de AVG, é sintaticamente válido e retornaria os cursos com mais de 5 alunos únicos com e-mail cadastrado."
+      ],
+      questionContinuation: "São corretas as afirmativas:",
+      options: [
+        "I, II e IV, apenas",
+        "I e II, apenas",
+        "II e III, apenas",
+        "I, II, III e IV"
+      ],
+      answer: 0,
+      feedback: "Correto: A (I, II e IV). A afirmativa III está **errada**: o Script 3 coloca WHERE após o ==rule==HAVING==, violando a ordem obrigatória das cláusulas SQL — WHERE deve sempre preceder GROUP BY e HAVING. Isso causa erro de sintaxe. Os Scripts 1 e 4 são válidos e funcionais, e o Script 2 comete o erro clássico de usar ==dml==AVG== dentro do WHERE, o que é proibido."
+    },
+
+    // aula: Aula 13 - Consultas Aninhadas e Junções
+
+    // 41 - subconsulta Tipo I
+    {
+      aula: "Aula 13 - Consultas Aninhadas e Junções",
+      tipo: "Análise aplicada",
+      texto: "Uma equipe de desenvolvimento precisa recuperar dados de alunos que obtiveram média maior ou igual a 7 no ano de 2001, cruzando informações entre as tabelas 'alunos' e 'historicos_escolares'. O desenvolvedor responsável optou por utilizar uma subconsulta na cláusula WHERE para resolver o problema.",
+      question: "Analise o trecho de código abaixo e assinale a alternativa que descreve corretamente o comportamento da consulta:",
+      code: `SELECT nom_alu, cod_curso, tot_cred
+    FROM alunos
+    WHERE mat_alu IN (
+      SELECT mat_alu
+      FROM historicos_escolares
+      WHERE media >= 7 AND ano = 2001
+    );`,
+      options: [
+        "A subconsulta executa repetidamente para cada linha da consulta externa, pois depende dos valores da tabela 'alunos'.",
+        "A subconsulta executa uma única vez, retornando um conjunto de matrículas que é reutilizado pela consulta principal.",
+        "O operador IN é substituível por EXISTS sem qualquer alteração no resultado ou no comportamento de execução.",
+        "A consulta retorna todos os alunos da tabela 'alunos', independentemente de seus registros em 'historicos_escolares'."
+      ],
+      answer: 1,
+      feedback: "Correto: B. Este é um exemplo clássico de ==ddl==subconsulta Tipo I==: ela executa apenas uma vez, de forma independente da consulta externa, gerando um conjunto de resultados que é então consumido pelo operador ==dml==IN==. Diferente da Tipo II (correlacionada), aqui não há referência à tabela externa dentro da subconsulta."
+    },
+
+    // 42 - Tipo I vs Tipo II
+    {
+      aula: "Aula 13 - Consultas Aninhadas e Junções",
+      tipo: "Asserção + Justificativa",
+      texto: "Em bancos de dados relacionais, as subconsultas podem ser classificadas em dois tipos principais com comportamentos distintos de execução. Compreender essa diferença é fundamental para prever o desempenho de uma consulta em cenários com grandes volumes de dados.",
+      question: "Avalie a asserção e a justificativa a seguir sobre ==ddl==subconsultas correlacionadas==:",
+      assertions: [
+        "I. Uma subconsulta do Tipo II (correlacionada) executa uma vez para cada linha processada pela consulta externa.",
+        "[PORQUE] II. A subconsulta correlacionada referencia colunas da consulta externa, criando uma dependência que impede sua execução isolada."
+      ],
+      options: [
+        "As afirmativas I e II são verdadeiras, e II justifica I.",
+        "As afirmativas I e II são verdadeiras, mas II não justifica I.",
+        "A afirmativa I é verdadeira e a II é falsa.",
+        "A afirmativa I é falsa e a II é verdadeira."
+      ],
+      answer: 0,
+      feedback: "Correto: A. Ambas são verdadeiras e a II justifica a I. Exatamente porque a subconsulta ==ddl==correlacionada== referencia valores da consulta externa, ela precisa ser reavaliada a cada linha, tornando sua execução repetida uma consequência direta dessa dependência."
+    },
+
+    // 43 - operador NOT IN
+    {
+      aula: "Aula 13 - Consultas Aninhadas e Junções",
+      tipo: "Conceitual contextualizada",
+      texto: "Em um sistema acadêmico, o setor de planejamento precisa identificar quais cursos não possuem nenhum aluno vinculado. Para isso, um analista de dados propõe duas abordagens distintas usando SQL: uma com NOT IN e outra com NOT EXISTS. Ambas buscam o mesmo resultado, mas diferem em funcionamento interno.",
+      question: "Sobre o operador ==dml==NOT IN== aplicado a subconsultas, assinale a alternativa correta:",
+      options: [
+        "NOT IN e NOT EXISTS sempre produzem resultados idênticos, inclusive quando existem valores NULL na subconsulta.",
+        "NOT IN realiza uma operação equivalente à diferença entre conjuntos, retornando registros da tabela principal ausentes no resultado da subconsulta.",
+        "NOT IN é uma variação do INNER JOIN e depende da existência de chaves estrangeiras para funcionar corretamente.",
+        "NOT IN executa a subconsulta múltiplas vezes, tornando-o mais eficiente que NOT EXISTS em grandes volumes de dados."
+      ],
+      answer: 1,
+      feedback: "Correto: B. O operador ==dml==NOT IN== implementa conceitualmente uma diferença de conjuntos (Tabela A − Tabela B), retornando apenas os elementos da consulta principal que não aparecem no resultado da subconsulta. Atenção: quando a subconsulta pode retornar valores ==danger==NULL==, o comportamento do NOT IN pode ser inesperado — nenhuma linha é retornada, pois NULL não é comparável diretamente."
+    },
+
+    // 44 - subconsulta no FROM
+    {
+      aula: "Aula 13 - Consultas Aninhadas e Junções",
+      tipo: "Múltiplas afirmativas",
+      texto: "Um desenvolvedor está construindo um relatório de desempenho acadêmico. Para modularizar a lógica e evitar repetição de código, ele decide utilizar uma subconsulta dentro da cláusula FROM, criando uma tabela derivada com as médias calculadas por curso. Essa técnica é conhecida como visão inline.",
+      question: "Sobre o uso de ==ddl==subconsultas na cláusula FROM==, avalie as afirmativas:",
+      assertions: [
+        "I. Uma subconsulta no FROM gera uma tabela temporária chamada tabela derivada, que pode ser referenciada na consulta externa por meio de um alias.",
+        "II. O uso de funções agregadas como AVG ou COUNT dentro de subconsultas no FROM geralmente exige o uso de GROUP BY para agrupar os resultados corretamente.",
+        "III. Subconsultas no FROM executam repetidamente para cada linha da consulta externa, assim como as subconsultas correlacionadas.",
+        "IV. A técnica de subconsulta no FROM favorece a legibilidade e a modularização das consultas SQL."
+      ],
+      options: [
+        "I, II e IV, apenas.",
+        "I e III, apenas.",
+        "II e III, apenas.",
+        "I, II, III e IV."
+      ],
+      answer: 0,
+      feedback: "Correto: A. As afirmativas I, II e IV são verdadeiras. A III é falsa: subconsultas no FROM não são correlacionadas — elas executam uma única vez e geram uma ==ddl==tabela derivada== estática. O comportamento de execução repetida é exclusivo das subconsultas ==type==Tipo II (correlacionadas)==."
+    },
+
+    // 45 - INNER JOIN
+    {
+      aula: "Aula 13 - Consultas Aninhadas e Junções",
+      tipo: "Análise aplicada",
+      texto: "Em um sistema de gestão universitária, as tabelas 'alunos' e 'cursos' estão relacionadas pela chave estrangeira 'cod_curso'. Alguns alunos foram cadastrados sem curso definido (cod_curso NULL), e alguns cursos não possuem alunos vinculados. Um relatório precisa listar apenas os alunos que possuem curso válido cadastrado.",
+      question: "Qual tipo de junção deve ser utilizado para retornar ==key==somente os registros com correspondência nas duas tabelas==?",
+      code: `SELECT a.nom_alu, c.nom_curso
+    FROM alunos a
+    ________ cursos c
+    ON a.cod_curso = c.cod_curso;`,
+      options: [
+        "LEFT JOIN, pois garante que todos os alunos sejam retornados, inclusive os sem curso.",
+        "FULL OUTER JOIN, pois combina todos os registros de ambas as tabelas.",
+        "INNER JOIN, pois retorna apenas os registros com correspondência nas duas tabelas.",
+        "RIGHT JOIN, pois prioriza os registros da tabela 'cursos'."
+      ],
+      answer: 2,
+      feedback: "Correto: C. O ==dml==INNER JOIN== funciona como a interseção entre dois conjuntos: retorna apenas os registros que possuem correspondência válida nas duas tabelas. Alunos com cod_curso ==danger==NULL== e cursos sem alunos são excluídos do resultado, que é exatamente o comportamento desejado no cenário."
+    },
+
+    // 46 - LEFT JOIN comportamento
+    {
+      aula: "Aula 13 - Consultas Aninhadas e Junções",
+      tipo: "Asserção + Justificativa",
+      texto: "Um analista precisa gerar uma lista completa de todos os alunos, incluindo aqueles que ainda não foram associados a nenhum curso. Para isso, ele utiliza LEFT JOIN entre as tabelas 'alunos' (esquerda) e 'cursos' (direita).",
+      question: "Avalie a asserção e a justificativa sobre o comportamento do ==dml==LEFT JOIN==:",
+      assertions: [
+        "I. Quando um aluno não possui curso correspondente na tabela 'cursos', os campos relacionados ao curso são preenchidos com NULL no resultado.",
+        "[PORQUE] II. O LEFT JOIN preserva todos os registros da tabela à esquerda, independentemente de existir correspondência na tabela à direita."
+      ],
+      options: [
+        "As afirmativas I e II são verdadeiras, e II justifica I.",
+        "As afirmativas I e II são verdadeiras, mas II não justifica I.",
+        "A afirmativa I é verdadeira e a II é falsa.",
+        "A afirmativa I é falsa e a II é verdadeira."
+      ],
+      answer: 0,
+      feedback: "Correto: A. O ==dml==LEFT JOIN== garante que todos os registros da tabela esquerda sejam mantidos. Quando não há correspondência na direita, os campos ausentes recebem ==danger==NULL==. A afirmativa II explica diretamente o porquê do comportamento descrito em I."
+    },
+
+    // 47 - RIGHT JOIN vs LEFT JOIN
+    {
+      aula: "Aula 13 - Consultas Aninhadas e Junções",
+      tipo: "Conceitual contextualizada",
+      texto: "Durante uma revisão de código, dois desenvolvedores discutem a equivalência entre RIGHT JOIN e LEFT JOIN. Um deles afirma que é sempre possível reescrever um RIGHT JOIN como um LEFT JOIN simplesmente invertendo a ordem das tabelas na cláusula FROM. O outro discorda, alegando que os tipos de junção têm comportamentos fundamentalmente diferentes.",
+      question: "Sobre a relação entre ==dml==RIGHT JOIN== e ==dml==LEFT JOIN==, assinale a alternativa correta:",
+      options: [
+        "RIGHT JOIN e LEFT JOIN são completamente distintos e não podem produzir resultados equivalentes em nenhuma situação.",
+        "Um RIGHT JOIN pode ser reescrito como LEFT JOIN invertendo a ordem das tabelas, pois ambos preservam todos os registros de uma das tabelas envolvidas.",
+        "RIGHT JOIN sempre retorna mais registros que LEFT JOIN, pois considera as duas tabelas simultaneamente.",
+        "A diferença entre RIGHT e LEFT JOIN está apenas na sintaxe; internamente, o banco de dados executa a mesma operação."
+      ],
+      answer: 1,
+      feedback: "Correto: B. O ==dml==RIGHT JOIN== preserva todos os registros da tabela à direita, enquanto o ==dml==LEFT JOIN== preserva os da esquerda. Como a lógica é simétrica, inverter a ordem das tabelas em um LEFT JOIN produz o mesmo resultado que um RIGHT JOIN. Essa equivalência é amplamente aceita e utilizada na prática."
+    },
+
+    // 48 - FULL OUTER JOIN
+    {
+      aula: "Aula 13 - Consultas Aninhadas e Junções",
+      tipo: "Múltiplas afirmativas",
+      texto: "Um relatório de auditoria acadêmica precisa consolidar informações de duas tabelas: 'alunos' e 'cursos'. O objetivo é identificar tanto alunos sem curso associado quanto cursos sem alunos matriculados, exibindo NULL nos campos sem correspondência.",
+      question: "Sobre o ==dml==FULL OUTER JOIN==, avalie as afirmativas:",
+      assertions: [
+        "I. O FULL OUTER JOIN retorna todos os registros de ambas as tabelas, preenchendo com NULL os campos sem correspondência em qualquer um dos lados.",
+        "II. O FULL OUTER JOIN pode ser considerado a união entre um LEFT JOIN e um RIGHT JOIN aplicados sobre as mesmas tabelas.",
+        "III. Registros sem correspondência em nenhuma das tabelas são ignorados pelo FULL OUTER JOIN, assim como no INNER JOIN.",
+        "IV. O FULL OUTER JOIN é útil para identificar inconsistências de dados entre tabelas relacionadas."
+      ],
+      options: [
+        "I, II e III, apenas.",
+        "I, II e IV, apenas.",
+        "II e IV, apenas.",
+        "I, II, III e IV."
+      ],
+      answer: 1,
+      feedback: "Correto: B. As afirmativas I, II e IV são verdadeiras. A III é falsa: o ==dml==FULL OUTER JOIN== não ignora registros sem correspondência — esse é exatamente o comportamento do ==dml==INNER JOIN==. O FULL OUTER JOIN faz o oposto: inclui todos os registros, dos dois lados, com ==danger==NULL== onde não houver match."
+    },
+
+    // 49 - produto cartesiano
+    {
+      aula: "Aula 13 - Consultas Aninhadas e Junções",
+      tipo: "Análise aplicada",
+      texto: "Um desenvolvedor júnior escreveu a seguinte consulta para listar alunos e seus cursos em um sistema acadêmico. Ao executar a consulta, percebeu que o resultado continha muito mais linhas do que o esperado, com combinações sem sentido entre alunos e cursos.",
+      question: "Analise o código abaixo e identifique a causa do problema:",
+      code: `SELECT a.nom_alu, c.nom_curso
+    FROM alunos a, cursos c;`,
+      options: [
+        "A consulta está incorreta sintaticamente e não deveria ser executada pelo banco de dados.",
+        "A ausência de uma cláusula WHERE com a condição de junção gerou um produto cartesiano, combinando cada aluno com cada curso.",
+        "O problema é que a consulta usa vírgula no FROM em vez de JOIN, o que impede qualquer tipo de junção.",
+        "O resultado excessivo ocorre porque a tabela 'alunos' possui índices que duplicam os registros automaticamente."
+      ],
+      answer: 1,
+      feedback: "Correto: B. A consulta realiza um ==danger==produto cartesiano==: ao listar duas tabelas no FROM sem uma condição de junção no WHERE, o banco de dados combina cada linha da tabela A com cada linha da tabela B. Para corrigir, seria necessário adicionar ==dml==WHERE a.cod_curso = c.cod_curso== ou utilizar INNER JOIN com a cláusula ON."
+    },
+
+    // 50 - EXISTS vs IN
+    {
+      aula: "Aula 13 - Consultas Aninhadas e Junções",
+      tipo: "Múltiplas afirmativas",
+      texto: "Uma empresa de software está migrando consultas antigas que utilizam o operador IN para versões mais eficientes com EXISTS. O time de banco de dados discute as diferenças conceituais e práticas entre os dois operadores, especialmente no contexto de subconsultas correlacionadas.",
+      question: "Sobre os operadores ==ddl==EXISTS== e ==ddl==IN== em subconsultas SQL, avalie as afirmativas:",
+      assertions: [
+        "I. O operador EXISTS retorna verdadeiro assim que a subconsulta encontrar a primeira linha correspondente, podendo ser mais eficiente que IN em alguns cenários.",
+        "II. O operador IN é geralmente associado a subconsultas Tipo I (independentes), enquanto EXISTS é frequentemente utilizado em subconsultas Tipo II (correlacionadas).",
+        "III. NOT EXISTS e NOT IN sempre produzem resultados idênticos, podendo ser utilizados de forma intercambiável sem restrições.",
+        "IV. O operador EXISTS verifica apenas a existência de linhas no resultado da subconsulta, sem se preocupar com os valores retornados por ela."
+      ],
+      options: [
+        "I e II, apenas.",
+        "I, II e III, apenas.",
+        "I, II e IV, apenas.",
+        "I, II, III e IV."
+      ],
+      answer: 2,
+      feedback: "Correto: C. As afirmativas I, II e IV são verdadeiras. A III é falsa: ==danger==NOT IN== e ==danger==NOT EXISTS== diferem quando a subconsulta pode retornar valores NULL. Com NULL presente, NOT IN não retorna nenhum registro (pois NULL não é comparável), enquanto NOT EXISTS se comporta conforme o esperado. Essa é uma armadilha clássica em SQL."
+    },
+
+    // aula 14 BDOO e BDOR
+
+    // 51 - limitações relacionais
+    {
+      aula: "Aula 14 - BDOO e BDOR",
+      tipo: "Conceitual contextualizada",
+
+      texto: "Uma empresa de streaming precisa armazenar não apenas metadados textuais dos filmes, mas também thumbnails, arquivos de vídeo segmentados e estruturas de recomendação baseadas em preferências do usuário. O time de banco de dados percebe que o SGBD relacional atual não lida bem com essa complexidade de dados.",
+
+      question: "Qual é a limitação fundamental dos bancos de dados relacionais tradicionais que justifica a busca por alternativas nesse cenário?",
+
+      options: [
+        "Os bancos relacionais não suportam múltiplos usuários simultâneos em ambientes de alta concorrência",
+        "Os bancos relacionais foram projetados para tipos simples e têm dificuldade em manipular dados complexos como objetos multimídia",
+        "Os bancos relacionais não permitem o uso de chaves estrangeiras em tabelas com grande volume de dados",
+        "Os bancos relacionais exigem que todos os atributos sejam definidos em tempo de projeto, sem possibilidade de extensão"
+      ],
+
+      answer: 1,
+
+      feedback: "Correto: B. Os SGBDs relacionais foram projetados para tipos simples como números, textos e datas. Com dados complexos como **imagens, vídeos e objetos multimídia**, surgem limitações estruturais que motivaram o desenvolvimento do BDOO e do BDOR."
+    },
+
+    // 52 - BDOO vs relacional
+    {
+      aula: "Aula 14 - BDOO e BDOR",
+      tipo: "Asserção + Justificativa",
+
+      texto: "Com a popularização das linguagens orientadas a objetos como Java e C++, ficou evidente uma incompatibilidade entre o modelo de dados dessas linguagens e o modelo relacional. Aplicações passaram a modelar o mundo como objetos com atributos e comportamentos, enquanto os bancos armazenavam linhas e colunas sem suporte a métodos.",
+
+      question: "Analise a asserção e a justificativa a seguir:",
+
+      assertions: [
+        "O BDOO surgiu para eliminar a incompatibilidade entre aplicações orientadas a objetos e bancos de dados relacionais.",
+        "[PORQUE] No BDOO, os dados são armazenados como objetos que possuem atributos e métodos, integrando-se naturalmente ao paradigma das linguagens OO."
+      ],
+
+      options: [
+        "As duas afirmativas são verdadeiras, e a II justifica a I",
+        "As duas afirmativas são verdadeiras, mas a II não justifica a I",
+        "A afirmativa I é verdadeira e a II é falsa",
+        "A afirmativa I é falsa e a II é verdadeira"
+      ],
+
+      answer: 0,
+
+      feedback: "Correto: A. Ambas são verdadeiras e a relação é direta. O **BDOO** resolve a incompatibilidade ao armazenar dados como objetos com atributos e métodos, alinhando o banco ao paradigma ==def==orientado a objetos==."
+    },
+
+    // 53 - encapsulamento
+    {
+      aula: "Aula 14 - BDOO e BDOR",
+      tipo: "Múltiplas afirmativas",
+
+      texto: "Em um sistema bancário orientado a objetos, a classe ContaCorrente encapsula saldo, limite e histórico de transações. O acesso ao saldo só é permitido pelos métodos depositar(), sacar() e consultarSaldo(). Nenhum código externo manipula o atributo saldo diretamente.",
+
+      question: "Avalie as afirmações sobre ==def==encapsulamento== no contexto descrito:",
+
+      assertions: [
+        "I. O encapsulamento garante que os detalhes internos do objeto sejam ocultados, permitindo acesso apenas pela interface definida.",
+        "II. Um benefício do encapsulamento é que mudanças internas na classe não afetam o código externo que a utiliza.",
+        "III. O encapsulamento elimina a necessidade de métodos, pois os atributos ficam protegidos automaticamente.",
+        "IV. A reutilização de classes é um benefício indireto do encapsulamento, pois classes bem definidas podem ser aproveitadas em outros contextos."
+      ],
+
+      options: [
+        "I, II e IV, apenas",
+        "I e II, apenas",
+        "II, III e IV, apenas",
+        "I, II, III e IV"
+      ],
+
+      answer: 0,
+
+      feedback: "Correto: A. As afirmativas I, II e IV são verdadeiras. A III é falsa: o **encapsulamento** não elimina métodos — pelo contrário, são os métodos que formam a interface de acesso controlado aos atributos protegidos."
+    },
+
+    // 54 - herança OO
+    {
+      aula: "Aula 14 - BDOO e BDOR",
+      tipo: "Análise aplicada",
+
+      texto: "Uma equipe modela um sistema acadêmico orientado a objetos. Existe a classe Pessoa com atributos ID, nome e endereço. Delas derivam as classes Aluno (que adiciona matrícula e curso) e Professor (que adiciona salário e departamento). Ambas reutilizam a estrutura de Pessoa sem duplicar código.",
+
+      question: "Qual conceito da orientação a objetos está sendo aplicado nessa modelagem, e qual é seu principal benefício nesse contexto?",
+
+      options: [
+        "Polimorfismo, pois os métodos de Pessoa se comportam diferente em Aluno e Professor",
+        "Encapsulamento, pois os atributos de Pessoa ficam ocultos das subclasses",
+        "Herança, pois as subclasses reutilizam atributos e métodos da superclasse sem reescrever código",
+        "Binding dinâmico, pois a associação entre classes ocorre apenas em tempo de execução"
+      ],
+
+      answer: 2,
+
+      feedback: "Correto: C. O cenário descreve **herança**: Aluno e Professor são subclasses que reutilizam a estrutura de Pessoa (==def==superclasse==) e acrescentam atributos próprios, reduzindo duplicação e facilitando manutenção."
+    },
+
+    // 55 - polimorfismo e vinculação
+    {
+      aula: "Aula 14 - BDOO e BDOR",
+      tipo: "Asserção + Justificativa",
+
+      texto: "Em um BDOO, o método MesmaCoord está definido na classe Point para comparar coordenadas X e Y. Na subclasse CorPonto, o mesmo método é redefinido para comparar também a cor do ponto. Quando o sistema chama MesmaCoord em tempo de execução, o SGBD determina qual versão do método executar com base no tipo real do objeto.",
+
+      question: "Analise a asserção e a justificativa:",
+
+      assertions: [
+        "O comportamento descrito caracteriza ==def==polimorfismo== com vinculação dinâmica.",
+        "[PORQUE] Na vinculação dinâmica, a versão do método a ser executada é determinada em tempo de execução com base no tipo real do objeto, e não em tempo de compilação."
+      ],
+
+      options: [
+        "As duas afirmativas são verdadeiras, e a II justifica a I",
+        "As duas afirmativas são verdadeiras, mas a II não justifica a I",
+        "A afirmativa I é verdadeira e a II é falsa",
+        "A afirmativa I é falsa e a II é verdadeira"
+      ],
+
+      answer: 0,
+
+      feedback: "Correto: A. Ambas são verdadeiras. O **polimorfismo** permite múltiplas implementações de um método. A vinculação dinâmica — também chamada de vinculação tardia — resolve qual versão executar em tempo de execução, o que justifica diretamente a afirmativa I."
+    },
+
+    // 56 - ODMG componentes
+    {
+      aula: "Aula 14 - BDOO e BDOR",
+      tipo: "Múltiplas afirmativas",
+
+      texto: "Uma empresa está avaliando a adoção de um banco de dados orientado a objetos e precisa garantir que ele siga um padrão que facilite portabilidade e integração com aplicações OO. O padrão ODMG foi desenvolvido exatamente para esse fim.",
+
+      question: "Avalie as afirmações sobre os componentes do ==def==ODMG==:",
+
+      assertions: [
+        "I. A ODL (Object Definition Language) é usada para definir esquemas de objetos, sendo equivalente ao DDL nos bancos relacionais.",
+        "II. A OQL (Object Query Language) é uma linguagem de consulta baseada em SQL que adiciona suporte a herança, polimorfismo e objetos complexos.",
+        "III. O Binding é responsável por mapear objetos da aplicação para estruturas persistentes no banco.",
+        "IV. O Modelo de Objetos do ODMG substitui completamente o modelo relacional em qualquer SGBD que o adote."
+      ],
+
+      options: [
+        "I, II e III, apenas",
+        "I e II, apenas",
+        "II, III e IV, apenas",
+        "I, II, III e IV"
+      ],
+
+      answer: 0,
+
+      feedback: "Correto: A. As afirmativas I, II e III descrevem corretamente os componentes do ODMG. A IV é falsa: o **ODMG** é um padrão para BDOOs e não implica substituição do modelo relacional em todos os SGBDs."
+    },
+
+    // 57 - BDOR conceito
+    {
+      aula: "Aula 14 - BDOO e BDOR",
+      tipo: "Conceitual contextualizada",
+
+      texto: "Uma organização possui um sistema legado baseado em banco relacional com anos de dados históricos e consultas SQL consolidadas. A equipe técnica quer incorporar suporte a objetos complexos e tipos personalizados sem abandonar o modelo relacional nem reescrever toda a base de dados.",
+
+      question: "Qual abordagem de banco de dados atende melhor essa necessidade?",
+
+      options: [
+        "Migrar para um BDOO puro, pois ele oferece suporte completo a objetos e elimina as limitações relacionais",
+        "Manter o banco relacional e criar uma camada de aplicação que simule objetos via código",
+        "Adotar um BDOR, que combina a robustez do modelo relacional com extensões orientadas a objetos",
+        "Substituir o SQL por OQL, tornando o banco compatível com o padrão ODMG sem alterar a estrutura"
+      ],
+
+      answer: 2,
+
+      feedback: "Correto: C. O **BDOR** é a solução ideal: mantém a compatibilidade com SQL e a robustez do modelo relacional, enquanto adiciona suporte a ==ddl==tipos personalizados==, herança e objetos complexos."
+    },
+
+    // 58 - herança de tipo SQL
+    {
+      aula: "Aula 14 - BDOO e BDOR",
+      tipo: "Análise aplicada",
+
+      texto: "Um desenvolvedor precisa modelar em SQL objeto-relacional os tipos Pessoa (com ID, nome e endereço) e Professor (que possui tudo de Pessoa mais salário e departamento). Ele quer evitar duplicação de atributos e aproveitar a estrutura existente.",
+
+      question: "Qual instrução SQL implementa corretamente a herança de tipo nesse cenário?",
+
+      code: `// Opção A
+    CREATE TYPE Professor (
+      salario DECIMAL,
+      departamento VARCHAR(30)
+    );
+
+    // Opção B
+    CREATE TYPE Professor UNDER Pessoa (
+      salario DECIMAL,
+      departamento VARCHAR(30)
+    );
+
+    // Opção C
+    CREATE TYPE Professor EXTENDS Pessoa (
+      salario DECIMAL,
+      departamento VARCHAR(30)
+    );
+
+    // Opção D
+    CREATE TYPE Professor INHERITS Pessoa (
+      salario DECIMAL,
+      departamento VARCHAR(30)
+    );`,
+
+      options: [
+        "Opção A",
+        "Opção B",
+        "Opção C",
+        "Opção D"
+      ],
+
+      answer: 1,
+
+      feedback: "Correto: B. Em SQL objeto-relacional, a cláusula **UNDER** é usada para criar herança de tipo. `CREATE TYPE Professor UNDER Pessoa` define Professor como subtipo de Pessoa, herdando seus atributos e adicionando os próprios."
+    },
+
+    // 59 - referência e expressão de caminho
+    {
+      aula: "Aula 14 - BDOO e BDOR",
+      tipo: "Asserção + Justificativa",
+
+      texto: "Em um banco objeto-relacional, a tabela Departamento possui um atributo diretor do tipo REF(Pessoa). Para consultar o nome do diretor de cada departamento, o desenvolvedor usa a expressão diretor->nome em vez de escrever um JOIN explícito entre as tabelas.",
+
+      question: "Analise a asserção e a justificativa:",
+
+      assertions: [
+        "O uso de ==ddl==tipos de referência== com expressões de caminho simplifica consultas ao eliminar JOINs explícitos entre tabelas relacionadas.",
+        "[PORQUE] A expressão de caminho diretor->nome navega diretamente pelo objeto referenciado, acessando seus atributos sem necessidade de junção manual."
+      ],
+
+      options: [
+        "As duas afirmativas são verdadeiras, e a II justifica a I",
+        "As duas afirmativas são verdadeiras, mas a II não justifica a I",
+        "A afirmativa I é verdadeira e a II é falsa",
+        "A afirmativa I é falsa e a II é verdadeira"
+      ],
+
+      answer: 0,
+
+      feedback: "Correto: A. Ambas são verdadeiras. As **expressões de caminho** navegam por referências de objeto diretamente, tornando as consultas mais legíveis e eliminando JOINs manuais — o que justifica o benefício descrito na afirmativa I."
+    },
+
+    // 60 - DDL e DML em BDOR
+    {
+      aula: "Aula 14 - BDOO e BDOR",
+      tipo: "Múltiplas afirmativas",
+
+      texto: "Em um banco objeto-relacional, a equipe executa uma série de operações: cria um tipo personalizado Produto, define uma tabela baseada nesse tipo, insere registros e consulta dados com SELECT. O líder técnico pede que cada operação seja classificada corretamente entre DDL e DML.",
+
+      question: "Avalie as afirmações sobre ==ddl==DDL== e ==dml==DML== no contexto objeto-relacional:",
+
+      assertions: [
+        "I. CREATE TYPE e CREATE TABLE são operações DDL, pois definem estruturas do banco.",
+        "II. INSERT e SELECT são operações DML, pois manipulam os dados armazenados.",
+        "III. O comando DROP TABLE é uma operação DML, pois remove dados da tabela.",
+        "IV. ALTER TYPE é uma operação DDL, pois modifica a definição de uma estrutura existente."
+      ],
+
+      options: [
+        "I, II e IV, apenas",
+        "I e II, apenas",
+        "II e III, apenas",
+        "I, II, III e IV"
+      ],
+
+      answer: 0,
+
+      feedback: "Correto: A. As afirmativas I, II e IV são verdadeiras. A III é falsa: **DROP TABLE** é uma operação **DDL**, não DML — ela remove a estrutura da tabela, não apenas seus dados. DML se limita a INSERT, UPDATE, DELETE e SELECT."
+    }
+
   ],
 
 
@@ -3272,6 +3758,228 @@ window.questoes = {
     answer: 3,
     feedback: "O FULL OUTER JOIN é o único que retorna todos os registros das duas tabelas, tanto os que possuem correspondência quanto os que não possuem, preenchendo com NULL onde necessário."
   },
+
+  // aula 14 BDOO e BDOR
+
+  // 51 - limitações relacionais
+  {
+    aula: "Aula 14 - BDOO e BDOR",
+    tipo: "Direta",
+
+    texto: "Bancos de dados relacionais tradicionais foram projetados para tipos simples como números, textos e datas.",
+
+    question: "Qual tipo de dado gerou limitações nos SGBDs relacionais tradicionais?",
+
+    options: [
+      "Dados numéricos com muitas casas decimais",
+      "Dados complexos como imagens, vídeos e objetos multimídia",
+      "Textos com caracteres especiais e acentuação",
+      "Datas em fusos horários diferentes"
+    ],
+
+    answer: 1,
+
+    feedback: "Com a evolução tecnológica, surgiram dados complexos como imagens, vídeos e mapas. Os bancos relacionais, projetados para tipos simples, não conseguiam lidar bem com essa complexidade."
+  },
+
+  // 52 - conceito BDOO
+  {
+    aula: "Aula 14 - BDOO e BDOR",
+    tipo: "Curta",
+
+    texto: "O BDOO surgiu para unir persistência de dados com o paradigma orientado a objetos.",
+
+    question: "Como os dados são armazenados em um BDOO?",
+
+    options: [
+      "Em linhas e colunas, como nos bancos relacionais",
+      "Em arquivos de texto estruturados com chave-valor",
+      "Como objetos que possuem atributos e métodos",
+      "Em grafos de nós e arestas sem estrutura fixa"
+    ],
+
+    answer: 2,
+
+    feedback: "No BDOO, os dados são armazenados como objetos — estruturas que possuem atributos (dados) e métodos (comportamentos), refletindo o paradigma orientado a objetos."
+  },
+
+  // 53 - encapsulamento
+  {
+    aula: "Aula 14 - BDOO e BDOR",
+    tipo: "Direta",
+
+    texto: "Encapsulamento é um dos pilares da orientação a objetos.",
+
+    question: "O que significa encapsulamento em um objeto orientado a objetos?",
+
+    options: [
+      "Permitir que qualquer código externo acesse diretamente os atributos do objeto",
+      "Esconder os detalhes internos e permitir acesso apenas pela interface do objeto",
+      "Criar múltiplas instâncias de um mesmo objeto na memória",
+      "Herdar automaticamente métodos de outras classes sem reescrevê-los"
+    ],
+
+    answer: 1,
+
+    feedback: "Encapsulamento significa proteger os detalhes internos do objeto. O acesso ocorre apenas pelos métodos definidos na interface, garantindo independência e facilitando manutenção."
+  },
+
+  // 54 - herança
+  {
+    aula: "Aula 14 - BDOO e BDOR",
+    tipo: "Contexto",
+
+    texto: "No exemplo da aula, a classe Point possui coordenadas X e Y e os métodos Distância e MesmaCoord. A subclasse CorPonto é criada a partir dela.",
+
+    question: "O que a subclasse CorPonto herda de Point e o que ela adiciona?",
+
+    options: [
+      "Herda apenas os métodos e adiciona as coordenadas X e Y",
+      "Herda coordenadas e métodos, e adiciona cor e brilho",
+      "Herda somente cor e brilho, e cria novos métodos do zero",
+      "Herda tudo de Point sem possibilidade de adicionar novos atributos"
+    ],
+
+    answer: 1,
+
+    feedback: "CorPonto herda as coordenadas X e Y e os métodos da classe Point, e acrescenta seus próprios atributos: cor e brilho. Esse é o funcionamento clássico da herança."
+  },
+
+  // 55 - polimorfismo
+  {
+    aula: "Aula 14 - BDOO e BDOR",
+    tipo: "Contexto",
+
+    texto: "O método MesmaCoord existe tanto na classe Point quanto na subclasse CorPonto, mas com comportamentos diferentes em cada uma.",
+
+    question: "Qual conceito da orientação a objetos descreve essa situação?",
+
+    options: [
+      "Encapsulamento, pois o método está oculto nas duas classes",
+      "Herança, pois CorPonto criou o método a partir do zero",
+      "Polimorfismo, pois o mesmo método tem implementações diferentes conforme a classe",
+      "Binding estático, pois a versão do método é decidida antes da execução"
+    ],
+
+    answer: 2,
+
+    feedback: "Polimorfismo significa 'várias formas'. Um mesmo método pode ter comportamentos distintos dependendo da classe que o implementa — exatamente o que ocorre com MesmaCoord em Point e CorPonto."
+  },
+
+  // 56 - ODMG
+  {
+    aula: "Aula 14 - BDOO e BDOR",
+    tipo: "Direta",
+
+    texto: "O ODMG foi criado para padronizar bancos de dados orientados a objetos.",
+
+    question: "Qual componente do ODMG equivale ao DDL dos bancos relacionais?",
+
+    options: [
+      "OQL",
+      "Binding",
+      "Modelo de Objetos",
+      "ODL"
+    ],
+
+    answer: 3,
+
+    feedback: "A ODL (Object Definition Language) é usada para definir objetos e criar esquemas em BDOOs, sendo equivalente ao DDL dos bancos relacionais — que usa comandos como CREATE e ALTER."
+  },
+
+  // 57 - BDOR
+  {
+    aula: "Aula 14 - BDOO e BDOR",
+    tipo: "Aplicação",
+
+    texto: "Uma empresa quer modernizar seu banco relacional para suportar tipos complexos e herança, mas não quer abandonar o SQL nem reescrever toda a base de dados.",
+
+    question: "Qual abordagem de banco de dados atende melhor essa necessidade?",
+
+    options: [
+      "Migrar completamente para um BDOO puro",
+      "Adotar um BDOR, que combina o modelo relacional com recursos orientados a objetos",
+      "Criar uma camada de aplicação em Java para simular objetos",
+      "Substituir todas as tabelas por arquivos JSON no sistema de arquivos"
+    ],
+
+    answer: 1,
+
+    feedback: "O BDOR é a solução ideal: mantém a robustez e compatibilidade com SQL do modelo relacional, e adiciona suporte a tipos personalizados, herança e objetos complexos."
+  },
+
+  // 58 - tipos definidos pelo usuário
+  {
+    aula: "Aula 14 - BDOO e BDOR",
+    tipo: "Código",
+
+    texto: "Em SQL objeto-relacional, é possível criar tipos personalizados para modelar estruturas mais próximas do mundo real.",
+
+    question: "O que o código abaixo está fazendo?",
+
+    code: `CREATE TYPE Pessoa (
+    ID VARCHAR(20),
+    nome VARCHAR(20),
+    endereco VARCHAR(20)
+  );`,
+
+    options: [
+      "Criando uma tabela chamada Pessoa com três colunas",
+      "Inserindo três registros na tabela Pessoa",
+      "Definindo um tipo personalizado chamado Pessoa com três atributos",
+      "Declarando uma variável do tipo Pessoa para uso em procedures"
+    ],
+
+    answer: 2,
+
+    feedback: "CREATE TYPE define um tipo personalizado no SQL objeto-relacional. Esse tipo pode ser reutilizado como base para tabelas ou como atributo de outros tipos, aproximando o banco do modelo do mundo real."
+  },
+
+  // 59 - herança de tabela
+  {
+    aula: "Aula 14 - BDOO e BDOR",
+    tipo: "Código",
+
+    texto: "No PostgreSQL, uma tabela pode herdar a estrutura de outra usando a cláusula INHERITS.",
+
+    question: "O que o comando abaixo produz no banco de dados?",
+
+    code: `CREATE TABLE alunos
+  INHERITS pessoas;`,
+
+    options: [
+      "Cria uma cópia idêntica da tabela pessoas com outro nome",
+      "Cria a tabela alunos herdando automaticamente os atributos de pessoas",
+      "Cria um relacionamento de chave estrangeira entre alunos e pessoas",
+      "Cria uma view chamada alunos baseada na tabela pessoas"
+    ],
+
+    answer: 1,
+
+    feedback: "INHERITS cria herança de tabela no PostgreSQL. A tabela alunos recebe automaticamente todos os atributos de pessoas, podendo ainda ter colunas adicionais próprias."
+  },
+
+  // 60 - referência e DEREF
+  {
+    aula: "Aula 14 - BDOO e BDOR",
+    tipo: "Aplicação",
+
+    texto: "Em um banco objeto-relacional, a tabela Departamento possui um atributo diretor do tipo REF(Pessoa). Para consultar o nome do diretor, o desenvolvedor usa DEREF.",
+
+    question: "Qual é a função do DEREF nessa consulta?",
+
+    options: [
+      "Criar uma nova referência entre o departamento e a pessoa",
+      "Excluir a referência após a consulta ser executada",
+      "Retornar o objeto completo apontado pela referência REF",
+      "Converter o tipo REF em uma chave estrangeira comum"
+    ],
+
+    answer: 2,
+
+    feedback: "DEREF recupera o objeto referenciado por um campo REF. Em vez de retornar apenas o identificador, ele retorna o objeto completo, permitindo acessar seus atributos diretamente na consulta."
+  }
+
   ],
 
 };
