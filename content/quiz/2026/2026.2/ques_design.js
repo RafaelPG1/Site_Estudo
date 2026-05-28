@@ -647,7 +647,7 @@ window.questoes = {
 
     // aula: Aula 13 - Landing page com HTML
 
-    // 51 - landing page
+    // 41 - landing page
     {
       aula: "Aula 13 - Landing page com HTML",
       tipo: "Explicativa",
@@ -668,7 +668,7 @@ window.questoes = {
       feedback: "A landing page se diferencia justamente pela objetividade: ela elimina distrações e direciona o visitante para uma única ação, como preencher um formulário ou conhecer um serviço."
     },
 
-    // 52 - organização de pastas
+    // 42 - organização de pastas
     {
       aula: "Aula 13 - Landing page com HTML",
       tipo: "Aplicação",
@@ -689,7 +689,7 @@ window.questoes = {
       feedback: "A estrutura recomendada separa o HTML na raiz e agrupa os recursos de apoio dentro de assets/css e assets/img, tornando o projeto mais organizado e fácil de manter."
     },
 
-    // 53 - formato SVG
+    // 43 - formato SVG
     {
       aula: "Aula 13 - Landing page com HTML",
       tipo: "Explicativa",
@@ -710,7 +710,7 @@ window.questoes = {
       feedback: "SVG é vetorial, ou seja, não perde qualidade ao ser redimensionado. Isso o torna perfeito para ícones, ilustrações e backgrounds em landing pages."
     },
 
-    // 54 - paleta de cores
+    // 44 - paleta de cores
     {
       aula: "Aula 13 - Landing page com HTML",
       tipo: "Contextualizada",
@@ -731,7 +731,7 @@ window.questoes = {
       feedback: "O formato hexadecimal em HTML segue o padrão #RRGGBB, onde cada par representa a intensidade de vermelho, verde e azul. O valor #635EF2 é um exemplo válido desse formato."
     },
 
-    // 55 - web semântica
+    // 45 - web semântica
     {
       aula: "Aula 13 - Landing page com HTML",
       tipo: "Explicativa",
@@ -752,7 +752,7 @@ window.questoes = {
       feedback: "Tags semânticas comunicam o propósito de cada seção da página, beneficiando tanto a manutenção do código quanto o SEO e a acessibilidade."
     },
 
-    // 56 - tags semânticas
+    // 46 - tags semânticas
     {
       aula: "Aula 13 - Landing page com HTML",
       tipo: "Aplicação",
@@ -773,7 +773,7 @@ window.questoes = {
       feedback: "A tag nav indica semanticamente que aquele bloco é de navegação. Combinada com ul e li, forma a estrutura correta e acessível para menus em HTML5."
     },
 
-    // 57 - tabelas HTML
+    // 47 - tabelas HTML
     {
       aula: "Aula 13 - Landing page com HTML",
       tipo: "Explicativa",
@@ -794,7 +794,7 @@ window.questoes = {
       feedback: "A tag th (table header) define células de cabeçalho, geralmente exibidas em negrito e centralizadas por padrão. Já td é usada para as demais células de dados."
     },
 
-    // 58 - tipos de input
+    // 48 - tipos de input
     {
       aula: "Aula 13 - Landing page com HTML",
       tipo: "Contextualizada",
@@ -815,7 +815,7 @@ window.questoes = {
       feedback: "O input do tipo radio é ideal quando o usuário deve escolher uma única opção entre várias. O checkbox, por sua vez, é usado quando múltiplas seleções são permitidas."
     },
 
-    // 59 - meta viewport
+    // 49 - meta viewport
     {
       aula: "Aula 13 - Landing page com HTML",
       tipo: "Aplicação",
@@ -836,7 +836,7 @@ window.questoes = {
       feedback: "A meta viewport é essencial para o design responsivo. Ela adapta a largura da página ao tamanho da tela do dispositivo e define o zoom inicial, garantindo boa visualização em mobile."
     },
 
-    // 60 - tipografia
+    // 50 - tipografia
     {
       aula: "Aula 13 - Landing page com HTML",
       tipo: "Contextualizada",
@@ -855,6 +855,218 @@ window.questoes = {
       answer: 2,
 
       feedback: "A tipografia comunica sensações e valores: profissionalismo, modernidade, criatividade. Uma escolha inadequada pode comprometer a experiência do usuário e a credibilidade da página."
+    },
+
+    // aula 14 Formatando com CSS
+
+    // 51 - vinculação CSS
+    {
+      aula: "Aula 14 - Formatando com CSS",
+      tipo: "Explicativa",
+
+      texto: "Para que o navegador saiba qual arquivo CSS aplicar a uma página HTML, é preciso fazer uma vinculação explícita. Isso é feito com a tag <link> dentro do <head> do HTML, informando o caminho do arquivo de estilo. Sem essa ligação, todo o CSS escrito fica invisível para o navegador — a página carrega sem nenhum estilo aplicado.",
+
+      question: "Qual tag é usada para vincular um arquivo CSS externo ao HTML?",
+
+      options: [
+        "<style src='style.css'>",
+        "<link rel='stylesheet' href='style.css'>",
+        "<css href='style.css'>",
+        "<script src='style.css'>"
+      ],
+
+      answer: 1,
+
+      feedback: "A tag correta é <link rel='stylesheet' href='...'>, inserida no <head> do HTML. Ela instrui o navegador a carregar o arquivo CSS externo antes de renderizar a página."
+    },
+
+    // 52 - teste de vínculo
+    {
+      aula: "Aula 14 - Formatando com CSS",
+      tipo: "Aplicação",
+
+      texto: "Quando se começa a trabalhar com CSS, uma prática comum é testar se o arquivo está corretamente vinculado ao HTML antes de escrever qualquer estilo definitivo. Uma forma simples de fazer isso é aplicar uma cor de fundo chamativa — como vermelho — no seletor body. Se a cor aparecer na página, o vínculo está funcionando.",
+
+      question: "Um aluno escreveu o CSS abaixo, mas a página não mudou de cor. Qual é a causa mais provável?\n\nbody {\n  background-color: red;\n}",
+
+      options: [
+        "A propriedade background-color não existe no CSS",
+        "O valor 'red' está incorreto e deveria ser '#red'",
+        "O arquivo CSS não está corretamente vinculado ao HTML",
+        "O seletor body só funciona com IDs"
+      ],
+
+      answer: 2,
+
+      feedback: "Se nenhuma regra CSS aparece na página, o problema mais provável é a ausência ou erro no caminho do <link> que conecta o HTML ao arquivo CSS."
+    },
+
+    // 53 - separação de responsabilidades
+    {
+      aula: "Aula 14 - Formatando com CSS",
+      tipo: "Explicativa",
+
+      texto: "Uma das boas práticas mais fundamentais no desenvolvimento web é separar estrutura de estilo. O HTML cuida do conteúdo e da semântica — o que a página diz. O CSS cuida da aparência — como a página parece. Manter esses dois arquivos separados facilita a manutenção, permite reaproveitar o estilo em várias páginas e torna o código mais organizado.",
+
+      question: "Por que é recomendado manter o CSS em arquivo separado do HTML?",
+
+      options: [
+        "Porque o navegador não consegue ler CSS dentro do HTML",
+        "Para facilitar manutenção, reaproveitamento e organização do código",
+        "Porque o CSS só funciona quando está em arquivo externo",
+        "Para que o HTML fique menor e carregue mais rápido obrigatoriamente"
+      ],
+
+      answer: 1,
+
+      feedback: "Separar HTML e CSS é uma questão de organização e boas práticas. Facilita manutenção, permite reutilização do mesmo estilo em múltiplas páginas e deixa cada arquivo com uma responsabilidade clara."
+    },
+
+    // 54 - Google Fonts
+    {
+      aula: "Aula 14 - Formatando com CSS",
+      tipo: "Explicativa",
+
+      texto: "Nem toda fonte está disponível em todos os computadores. Para garantir que a tipografia da página seja exibida corretamente em qualquer dispositivo, é possível importar fontes externas usando o Google Fonts. O processo é simples: acessa-se o site, escolhe-se a fonte, copia-se o <link> gerado e cola-se no <head> do HTML. Em seguida, a fonte é aplicada via CSS com a propriedade font-family.",
+
+      question: "Qual é a ordem correta para usar uma fonte do Google Fonts em uma página?",
+
+      options: [
+        "Aplicar font-family no CSS e depois acessar o Google Fonts",
+        "Instalar a fonte no sistema operacional e referenciar no CSS",
+        "Copiar o <link> do Google Fonts, colar no <head> e aplicar font-family no CSS",
+        "Baixar o arquivo .ttf e vinculá-lo diretamente no HTML"
+      ],
+
+      answer: 2,
+
+      feedback: "O fluxo correto é: acessar o Google Fonts → escolher a fonte → copiar o <link> → colar no <head> do HTML → aplicar font-family no CSS."
+    },
+
+    // 55 - tipografia e legibilidade
+    {
+      aula: "Aula 14 - Formatando com CSS",
+      tipo: "Contextualizada",
+
+      texto: "A escolha das fontes em um projeto vai além do gosto estético. Uma tipografia bem escolhida melhora a legibilidade e contribui para a experiência do usuário. Na landing page da aula, foram usadas duas fontes com papéis distintos: Lato para títulos — por ser mais forte e impactante — e Nunito para textos corridos — por ser mais suave e confortável para leitura prolongada. Fontes inadequadas podem gerar poluição visual e até reduzir a acessibilidade.",
+
+      question: "Qual critério guiou o uso de fontes diferentes para títulos e textos na landing page da aula?",
+
+      options: [
+        "As fontes foram escolhidas aleatoriamente para variar o visual",
+        "Cada fonte tem características que servem melhor a um propósito: impacto nos títulos e conforto nos textos",
+        "O Google Fonts só disponibiliza essas duas fontes gratuitamente",
+        "A diferença de fontes é obrigatória pela especificação do CSS"
+      ],
+
+      answer: 1,
+
+      feedback: "A escolha tipográfica deve considerar legibilidade e contexto. Lato foi usada em títulos pela força visual, e Nunito nos textos pela leitura mais fluida."
+    },
+
+    // 56 - seletores de classe
+    {
+      aula: "Aula 14 - Formatando com CSS",
+      tipo: "Explicativa",
+
+      texto: "No CSS, as ==ddl==classes== são seletores identificados pelo ponto (.) antes do nome. Elas permitem aplicar um mesmo conjunto de estilos em múltiplos elementos HTML. Um elemento recebe uma classe através do atributo class='nome' no HTML. A principal característica das classes é a reutilização: o mesmo estilo pode ser aplicado em quantos elementos forem necessários.",
+
+      question: "Qual é a forma correta de criar e usar uma classe CSS chamada 'destaque'?",
+
+      options: [
+        "CSS: #destaque {} → HTML: id='destaque'",
+        "CSS: .destaque {} → HTML: class='destaque'",
+        "CSS: destaque {} → HTML: name='destaque'",
+        "CSS: @destaque {} → HTML: style='destaque'"
+      ],
+
+      answer: 1,
+
+      feedback: "Classes usam . no CSS e são referenciadas com o atributo class no HTML. São reutilizáveis e podem ser aplicadas em múltiplos elementos."
+    },
+
+    // 57 - seletores ID
+    {
+      aula: "Aula 14 - Formatando com CSS",
+      tipo: "Contextualizada",
+
+      texto: "Diferente das classes, os ==ddl==IDs== são identificadores únicos — cada ID deve aparecer apenas uma vez por página. No CSS, são referenciados com o símbolo #. Uma aplicação muito comum de IDs em landing pages é a navegação interna: ao definir id='servicos' em uma seção, é possível criar um link href='#servicos' no menu que, ao ser clicado, rola a página automaticamente até aquela seção.",
+
+      question: "Por que IDs são mais indicados do que classes para criar navegação interna em uma landing page?",
+
+      options: [
+        "Porque IDs carregam mais rápido que classes no navegador",
+        "Porque IDs são únicos na página, permitindo referenciar seções específicas com href='#id'",
+        "Porque o CSS só aceita IDs como destino de links internos",
+        "Porque classes não podem ser usadas em tags <section>"
+      ],
+
+      answer: 1,
+
+      feedback: "IDs são únicos por página, o que os torna ideais para navegação interna. O href='#id' rola a página até o elemento com aquele identificador."
+    },
+
+    // 58 - variáveis CSS
+    {
+      aula: "Aula 14 - Formatando com CSS",
+      tipo: "Explicativa",
+
+      texto: "CSS permite criar ==ddl==variáveis== para armazenar valores reutilizáveis, como cores e espaçamentos. Elas são declaradas dentro do seletor :root usando dois hífens antes do nome: --nome-da-variavel. Para usá-las em qualquer parte do CSS, basta chamar var(--nome-da-variavel). Isso garante consistência visual e facilita mudanças: alterar o valor em um único lugar atualiza toda a página.",
+
+      question: "Qual é a vantagem principal de usar variáveis CSS com :root?",
+
+      options: [
+        "Permite usar JavaScript para controlar o CSS diretamente",
+        "Torna o carregamento da página mais rápido",
+        "Centraliza valores reutilizáveis, facilitando manutenção e garantindo consistência visual",
+        "Substitui completamente a necessidade de usar classes"
+      ],
+
+      answer: 2,
+
+      feedback: "Variáveis CSS definidas em :root são acessíveis em todo o arquivo. Mudar o valor em um lugar reflete em todos os elementos que a utilizam."
+    },
+
+    // 59 - Flexbox no menu
+    {
+      aula: "Aula 14 - Formatando com CSS",
+      tipo: "Aplicação",
+
+      texto: "Flexbox é um modelo de layout do CSS que organiza elementos em linha ou coluna de forma flexível. No menu da landing page da aula, foi usado display: flex com justify-content: space-between para posicionar o logo de um lado e os links do outro, sem precisar calcular margens manualmente. O Flexbox distribui o espaço disponível de forma automática entre os itens.",
+
+      question: "Um desenvolvedor quer que o logo fique à esquerda do menu e os links de navegação à direita, sem cálculo manual de espaços. Qual combinação resolve isso?",
+
+      options: [
+        "display: block e margin: auto",
+        "display: flex e justify-content: space-between",
+        "display: grid e grid-template-columns: 1fr 1fr",
+        "position: absolute e right: 0"
+      ],
+
+      answer: 1,
+
+      feedback: "display: flex ativa o Flexbox e justify-content: space-between distribui os itens nos extremos do container — perfeito para menus com logo e links."
+    },
+
+    // 60 - CSS Grid
+    {
+      aula: "Aula 14 - Formatando com CSS",
+      tipo: "Contextualizada",
+
+      texto: "O CSS Grid é um sistema de layout que permite dividir a página em colunas e linhas de forma precisa. Com display: grid e grid-template-columns, define-se quantas colunas o layout terá e qual o tamanho de cada uma. A unidade fr (fraction) representa uma fração do espaço disponível — então 1fr 1fr cria duas colunas iguais, e 1fr 1fr 1fr cria três colunas proporcionais. É ideal para seções com texto e imagem lado a lado.",
+
+      question: "O que o código abaixo produz na página?\n\n.grid {\n  display: grid;\n  grid-template-columns: 1fr 1fr;\n}",
+
+      options: [
+        "Uma coluna com dois elementos empilhados",
+        "Duas colunas de tamanho igual dividindo o espaço disponível",
+        "Dois elementos flutuando lado a lado com float",
+        "Uma tabela com duas células de largura fixa"
+      ],
+
+      answer: 1,
+
+      feedback: "1fr 1fr cria duas colunas que dividem igualmente o espaço do container. A unidade fr é proporcional e calculada automaticamente pelo navegador."
     }
 
   ],
@@ -2065,844 +2277,1325 @@ window.questoes = {
     answer: 0,
 
     feedback: "Correto: A (I, II e III). A estrutura de `<nav>` com lista é semanticamente correta para menus (I). O `<article>` é adequado para blocos de conteúdo independente como serviços (II). A estrutura de tabela com `<thead>`, `<tbody>`, `<th>` e `<td>` segue a semântica correta (III). A afirmativa IV está **errada**: ==danger==`<footer>`== é uma tag semântica de uso geral, aplicável a qualquer página web — inclusive landing pages de página única. Não existe essa restrição."
+  },
+
+  // aula 14 Formatando com CSS
+
+  // 51 - vinculação HTML/CSS
+  {
+    aula: "Aula 14 - Formatando com CSS",
+    tipo: "Conceitual contextualizada",
+
+    texto: "Uma equipe de desenvolvimento iniciou um projeto de landing page. O designer entregou o arquivo style.css com todas as regras visuais definidas, mas ao abrir o HTML no navegador, a página aparece completamente sem estilo. O desenvolvedor responsável precisa identificar o que está faltando.",
+
+    question: "Qual é a causa mais provável para a página não aplicar o CSS, e como corrigi-la?",
+
+    options: [
+      "O arquivo CSS está com nome errado e deve ser renomeado para index.css",
+      "Falta a tag <link rel='stylesheet' href='style.css'> no <head> do HTML",
+      "O navegador precisa ser reiniciado para carregar arquivos CSS externos",
+      "O CSS só funciona se escrito dentro de uma tag <style> no próprio HTML"
+    ],
+
+    answer: 1,
+
+    feedback: "Correto: B. Para que o navegador carregue um arquivo CSS externo, é obrigatória a presença da tag **<link>** com rel='stylesheet' e o caminho correto no atributo href, inserida no <head> do HTML."
+  },
+
+  // 52 - separação estrutura/estilo
+  {
+    aula: "Aula 14 - Formatando com CSS",
+    tipo: "Asserção + Justificativa",
+
+    texto: "No desenvolvimento web moderno, é prática consolidada manter o HTML e o CSS em arquivos separados. Essa abordagem reflete o princípio de separação de responsabilidades, onde cada tecnologia tem um papel bem definido no projeto.",
+
+    question: "Analise a asserção e a justificativa a seguir:",
+
+    assertions: [
+      "Manter o CSS em arquivo externo separado do HTML facilita a manutenção e permite reutilizar o mesmo estilo em múltiplas páginas.",
+      "[PORQUE] O CSS externo é carregado pelo navegador uma única vez e pode ser armazenado em cache, além de deixar o HTML focado apenas na estrutura do conteúdo."
+    ],
+
+    options: [
+      "As duas afirmativas são verdadeiras, e a II justifica a I",
+      "As duas afirmativas são verdadeiras, mas a II não justifica a I",
+      "A afirmativa I é verdadeira e a II é falsa",
+      "A afirmativa I é falsa e a II é verdadeira"
+    ],
+
+    answer: 0,
+
+    feedback: "Correto: A. Ambas são verdadeiras. O arquivo CSS externo favorece **reaproveitamento** e manutenção, e a justificativa é válida: o cache do navegador reduz requisições e o HTML fica responsável apenas pela estrutura."
+  },
+
+  // 53 - seletores classe vs ID
+  {
+    aula: "Aula 14 - Formatando com CSS",
+    tipo: "Múltiplas afirmativas",
+
+    texto: "Em CSS, classes e IDs são os dois principais tipos de seletores usados para aplicar estilos a elementos HTML. Cada um tem características e casos de uso distintos que influenciam diretamente na organização e manutenção do código.",
+
+    question: "Avalie as afirmações a seguir sobre ==ddl==classes== e ==ddl==IDs== no CSS:",
+
+    assertions: [
+      "I. Classes são identificadas pelo símbolo . no CSS e podem ser aplicadas em múltiplos elementos da página.",
+      "II. IDs são identificados pelo símbolo # e devem ser únicos por página.",
+      "III. Uma mesma classe pode ser usada em elementos de tipos diferentes, como <div> e <section>.",
+      "IV. IDs e classes têm exatamente o mesmo nível de especificidade no CSS."
+    ],
+
+    options: [
+      "I, II e III, apenas",
+      "I e III, apenas",
+      "II e IV, apenas",
+      "I, II, III e IV"
+    ],
+
+    answer: 0,
+
+    feedback: "Correto: A. As afirmativas I, II e III são verdadeiras. A IV é falsa: **IDs têm especificidade maior** que classes no CSS, o que significa que regras com ID sobrepõem regras com classe quando há conflito."
+  },
+
+  // 54 - variáveis CSS
+  {
+    aula: "Aula 14 - Formatando com CSS",
+    tipo: "Análise aplicada",
+
+    texto: "Uma desenvolvedora está estilizando uma landing page com várias seções que compartilham a mesma paleta de cores. Atualmente, ela repete o valor #414059 em mais de 20 propriedades diferentes no arquivo CSS. O cliente avisou que pode pedir mudanças na identidade visual ao longo do projeto.",
+
+    question: "Considerando a situação descrita, qual abordagem tornaria a manutenção do código mais eficiente diante de possíveis mudanças de cor?",
+
+    options: [
+      "Usar um comentário no topo do CSS indicando qual cor deve ser alterada manualmente",
+      "Criar uma classe .cor-padrao e aplicar em todos os elementos que usam a cor",
+      "Declarar a cor como variável CSS em :root e referenciar com var() em todas as propriedades",
+      "Substituir o valor hexadecimal por um nome de cor equivalente em inglês"
+    ],
+
+    answer: 2,
+
+    feedback: "Correto: C. ==ddl==Variáveis CSS== declaradas em :root centralizam o valor em um único ponto. Ao mudar --cor-azulescuro: #414059 para outro valor, todos os elementos que usam **var(--cor-azulescuro)** são atualizados automaticamente."
+  },
+
+  // 55 - Flexbox
+  {
+    aula: "Aula 14 - Formatando com CSS",
+    tipo: "Asserção + Justificativa",
+
+    texto: "No projeto da landing page, o menu de navegação precisa posicionar o logotipo à esquerda e os links de navegação à direita, ocupando toda a largura do cabeçalho. Para isso, foi utilizado Flexbox com a propriedade justify-content: space-between.",
+
+    question: "Analise a asserção e a justificativa:",
+
+    assertions: [
+      "O uso de ==def==display: flex== com justify-content: space-between é adequado para distribuir o logo e os links nos extremos opostos do menu.",
+      "[PORQUE] O justify-content: space-between distribui os itens de forma que o primeiro fique no início e o último no fim do container, sem cálculo manual de margens."
+    ],
+
+    options: [
+      "As duas afirmativas são verdadeiras, e a II justifica a I",
+      "As duas afirmativas são verdadeiras, mas a II não justifica a I",
+      "A afirmativa I é verdadeira e a II é falsa",
+      "A afirmativa I é falsa e a II é verdadeira"
+    ],
+
+    answer: 0,
+
+    feedback: "Correto: A. Ambas são verdadeiras e a relação é válida. **justify-content: space-between** posiciona o primeiro item no início e o último no fim do container flex, sendo ideal para menus com logo e links."
+  },
+
+  // 56 - menu fixo
+  {
+    aula: "Aula 14 - Formatando com CSS",
+    tipo: "Conceitual contextualizada",
+
+    texto: "Em uma landing page de página única, o usuário precisa rolar bastante para acessar seções diferentes. O cliente solicitou que o menu de navegação permaneça sempre visível no topo da tela, independente de quanto o usuário role a página.",
+
+    question: "Qual propriedade CSS implementa corretamente esse comportamento?",
+
+    options: [
+      "position: relative e top: 0, para manter o menu no fluxo da página",
+      "position: absolute e top: 0, para posicionar o menu em relação ao container pai",
+      "position: fixed e top: 0, para fixar o menu em relação à janela do navegador",
+      "display: sticky e top: 0, para tornar o menu visível apenas na rolagem"
+    ],
+
+    answer: 2,
+
+    feedback: "Correto: C. ==def==position: fixed== remove o elemento do fluxo normal do documento e o mantém posicionado em relação à viewport — a janela do navegador. Com top: 0, o menu fica sempre no topo independente da rolagem."
+  },
+
+  // 57 - CSS Grid
+  {
+    aula: "Aula 14 - Formatando com CSS",
+    tipo: "Múltiplas afirmativas",
+
+    texto: "O CSS Grid é um sistema de layout bidimensional amplamente usado para organizar seções de páginas web em colunas e linhas. Na landing page da aula, foram utilizados grids de duas e três colunas para estruturar o conteúdo visualmente.",
+
+    question: "Avalie as afirmações sobre ==ddl==CSS Grid==:",
+
+    assertions: [
+      "I. A propriedade grid-template-columns: 1fr 1fr cria duas colunas de tamanho igual.",
+      "II. A unidade fr representa uma fração do espaço disponível no container do grid.",
+      "III. Para ativar o grid em um elemento, é necessário declarar display: grid.",
+      "IV. O CSS Grid só funciona corretamente se combinado com Flexbox no mesmo elemento."
+    ],
+
+    options: [
+      "I, II e III, apenas",
+      "I e II, apenas",
+      "II, III e IV, apenas",
+      "I, II, III e IV"
+    ],
+
+    answer: 0,
+
+    feedback: "Correto: A. As afirmativas I, II e III são verdadeiras. A IV é falsa: **Grid e Flexbox são sistemas independentes** e não precisam ser usados juntos. Cada um resolve diferentes problemas de layout."
+  },
+
+  // 58 - background-image
+  {
+    aula: "Aula 14 - Formatando com CSS",
+    tipo: "Análise aplicada",
+
+    texto: "Um desenvolvedor aplicou uma imagem de fundo em uma seção da landing page usando background-image, mas a imagem está aparecendo cortada e não ocupa toda a área da seção. Ele quer que a imagem cubra completamente o espaço disponível, mesmo que parte dela seja cortada nas bordas.",
+
+    question: "Qual propriedade CSS resolve corretamente o problema descrito?",
+
+    options: [
+      "background-size: contain, para exibir a imagem inteira sem corte",
+      "background-size: cover, para cobrir toda a área mesmo que a imagem seja parcialmente cortada",
+      "background-position: center, para centralizar a imagem sem redimensioná-la",
+      "background-repeat: no-repeat, para impedir que a imagem se repita na área"
+    ],
+
+    answer: 1,
+
+    feedback: "Correto: B. ==def==background-size: cover== faz a imagem escalar para cobrir completamente a área do elemento, cortando o excesso quando necessário. É diferente de contain, que exibe a imagem inteira sem corte mas pode deixar espaços vazios."
+  },
+
+  // 59 - responsividade de imagem
+  {
+    aula: "Aula 14 - Formatando com CSS",
+    tipo: "Asserção + Justificativa",
+
+    texto: "Ao montar um layout com CSS Grid de duas colunas, as imagens inseridas nas colunas estavam ultrapassando os limites da coluna e quebrando o layout em telas menores. A solução aplicada foi adicionar max-width: 100% e height: auto às imagens.",
+
+    question: "Analise a asserção e a justificativa:",
+
+    assertions: [
+      "Aplicar max-width: 100% e height: auto nas imagens é uma prática eficaz para evitar que elas ultrapassem os limites do container e se distorçam.",
+      "[PORQUE] O max-width: 100% limita a largura da imagem ao tamanho do seu container, e o height: auto preserva a proporção original da imagem automaticamente."
+    ],
+
+    options: [
+      "As duas afirmativas são verdadeiras, e a II justifica a I",
+      "As duas afirmativas são verdadeiras, mas a II não justifica a I",
+      "A afirmativa I é verdadeira e a II é falsa",
+      "A afirmativa I é falsa e a II é verdadeira"
+    ],
+
+    answer: 0,
+
+    feedback: "Correto: A. Ambas são verdadeiras e a justificativa é direta: **max-width: 100%** impede que a imagem extrapole o container, e **height: auto** garante que a proporção seja mantida ao redimensionar."
+  },
+
+  // 60 - navegação com IDs
+  {
+    aula: "Aula 14 - Formatando com CSS",
+    tipo: "Conceitual contextualizada",
+
+    texto: "Em uma landing page de página única, todas as seções — introdução, serviços, sobre e contato — estão empilhadas verticalmente. O cliente quer que os links do menu levem o usuário diretamente a cada seção ao clicar, sem carregar uma nova página.",
+
+    question: "Qual combinação de HTML implementa corretamente essa navegação interna?",
+
+    options: [
+      "Usar class='servicos' na seção e href='servicos' no link do menu",
+      "Usar id='servicos' na seção e href='#servicos' no link do menu",
+      "Usar name='servicos' na seção e href='/servicos' no link do menu",
+      "Usar data-section='servicos' na seção e href='?section=servicos' no link do menu"
+    ],
+
+    answer: 1,
+
+    feedback: "Correto: B. A navegação interna é feita com **id** no elemento de destino e href='#id' no link. Ao clicar, o navegador rola automaticamente até o elemento com aquele identificador, sem recarregar a página."
   }
+
 
   ],
 
   // ── Questões de Fixação ────────────────────────────────────
-fixacao: [
+  fixacao: [
 
-  // Aula 9 — Prototipagem e Norma ISO 9241
-  // Questão 1
-  {
-    aula: "Aula 9 — Prototipagem e Norma ISO 9241",
-    tipo: "Curta",
-    texto: "Sobre os modelos de ciclo de vida de software.",
-    question: "Qual modelo de ciclo de vida executa suas etapas de forma sequencial e linear, sem retorno formal às fases anteriores?",
-    options: [
-      "==def==Modelo Espiral==",
-      "==proc==Modelo Iterativo==",
-      "==def==Modelo Cascata==",
-      "==def==Modelo Estrela=="
-    ],
-    answer: 2,
-    feedback: "O ==def==Modelo Cascata== é caracterizado pelo fluxo sequencial: cada fase só começa após a conclusão da anterior, sem mecanismo formal de revisão."
-  },
+    // Aula 9 — Prototipagem e Norma ISO 9241
+    // Questão 1
+    {
+      aula: "Aula 9 — Prototipagem e Norma ISO 9241",
+      tipo: "Curta",
+      texto: "Sobre os modelos de ciclo de vida de software.",
+      question: "Qual modelo de ciclo de vida executa suas etapas de forma sequencial e linear, sem retorno formal às fases anteriores?",
+      options: [
+        "==def==Modelo Espiral==",
+        "==proc==Modelo Iterativo==",
+        "==def==Modelo Cascata==",
+        "==def==Modelo Estrela=="
+      ],
+      answer: 2,
+      feedback: "O ==def==Modelo Cascata== é caracterizado pelo fluxo sequencial: cada fase só começa após a conclusão da anterior, sem mecanismo formal de revisão."
+    },
 
-  // Questão 2
-  {
-    aula: "Aula 9 — Prototipagem e Norma ISO 9241",
-    tipo: "Direta",
-    texto: "Considere os modelos centrados no usuário estudados na disciplina.",
-    question: "O que diferencia o ==def==Modelo Estrela== dos demais modelos de ciclo de vida?",
-    options: [
-      "Ele elimina a fase de prototipagem para acelerar a entrega",
-      "Ele posiciona a avaliação como atividade central e permite início por qualquer etapa",
-      "Ele exige que os requisitos sejam completamente definidos antes do desenvolvimento",
-      "Ele é baseado exclusivamente em análise de riscos a cada ciclo"
-    ],
-    answer: 1,
-    feedback: "O ==def==Modelo Estrela== tem a avaliação no centro e pode ser iniciado a partir de qualquer etapa, conferindo alta flexibilidade e forte participação do usuário."
-  },
+    // Questão 2
+    {
+      aula: "Aula 9 — Prototipagem e Norma ISO 9241",
+      tipo: "Direta",
+      texto: "Considere os modelos centrados no usuário estudados na disciplina.",
+      question: "O que diferencia o ==def==Modelo Estrela== dos demais modelos de ciclo de vida?",
+      options: [
+        "Ele elimina a fase de prototipagem para acelerar a entrega",
+        "Ele posiciona a avaliação como atividade central e permite início por qualquer etapa",
+        "Ele exige que os requisitos sejam completamente definidos antes do desenvolvimento",
+        "Ele é baseado exclusivamente em análise de riscos a cada ciclo"
+      ],
+      answer: 1,
+      feedback: "O ==def==Modelo Estrela== tem a avaliação no centro e pode ser iniciado a partir de qualquer etapa, conferindo alta flexibilidade e forte participação do usuário."
+    },
 
-  // Questão 3
-  {
-    aula: "Aula 9 — Prototipagem e Norma ISO 9241",
-    tipo: "Contexto",
-    texto: "Uma equipe de desenvolvimento percebeu, após quatro meses de projeto, que os requisitos iniciais estavam desatualizados por conta de uma mudança na legislação. O modelo adotado não permitia retorno às fases anteriores sem comprometer cronograma e orçamento.",
-    question: "Qual modelo estava sendo utilizado e por que ele gerou esse problema?",
-    options: [
-      "==proc==Modelo Iterativo==, pois não prevê documentação de requisitos",
-      "==def==Modelo Espiral==, pois sua análise de riscos ignora mudanças legislativas",
-      "==def==Modelo Cascata==, pois sua estrutura sequencial não prevê revisão formal após cada etapa",
-      "==def==Modelo Estrela==, pois centraliza a avaliação e impede mudanças de requisitos"
-    ],
-    answer: 2,
-    feedback: "O ==def==Modelo Cascata== é rígido e sequencial. Mudanças de requisitos após o início do desenvolvimento geram alto custo e risco de retrabalho."
-  },
+    // Questão 3
+    {
+      aula: "Aula 9 — Prototipagem e Norma ISO 9241",
+      tipo: "Contexto",
+      texto: "Uma equipe de desenvolvimento percebeu, após quatro meses de projeto, que os requisitos iniciais estavam desatualizados por conta de uma mudança na legislação. O modelo adotado não permitia retorno às fases anteriores sem comprometer cronograma e orçamento.",
+      question: "Qual modelo estava sendo utilizado e por que ele gerou esse problema?",
+      options: [
+        "==proc==Modelo Iterativo==, pois não prevê documentação de requisitos",
+        "==def==Modelo Espiral==, pois sua análise de riscos ignora mudanças legislativas",
+        "==def==Modelo Cascata==, pois sua estrutura sequencial não prevê revisão formal após cada etapa",
+        "==def==Modelo Estrela==, pois centraliza a avaliação e impede mudanças de requisitos"
+      ],
+      answer: 2,
+      feedback: "O ==def==Modelo Cascata== é rígido e sequencial. Mudanças de requisitos após o início do desenvolvimento geram alto custo e risco de retrabalho."
+    },
 
-  // Questão 4
-  {
-    aula: "Aula 9 — Prototipagem e Norma ISO 9241",
-    tipo: "Direta",
-    texto: "Sobre ferramentas e artefatos utilizados no design de interfaces.",
-    question: "Qual é a principal função de um ==term==wireframe== no processo de design?",
-    options: [
-      "Definir as cores e tipografia da interface final",
-      "Executar o código da aplicação em ambiente de testes",
-      "Definir a estrutura e organização da interface, sem detalhes visuais",
-      "Armazenar os dados do banco de dados relacional"
-    ],
-    answer: 2,
-    feedback: "O ==term==wireframe== é um esqueleto da interface — define layout, hierarquia e posicionamento dos elementos, sem se preocupar com aspectos estéticos."
-  },
+    // Questão 4
+    {
+      aula: "Aula 9 — Prototipagem e Norma ISO 9241",
+      tipo: "Direta",
+      texto: "Sobre ferramentas e artefatos utilizados no design de interfaces.",
+      question: "Qual é a principal função de um ==term==wireframe== no processo de design?",
+      options: [
+        "Definir as cores e tipografia da interface final",
+        "Executar o código da aplicação em ambiente de testes",
+        "Definir a estrutura e organização da interface, sem detalhes visuais",
+        "Armazenar os dados do banco de dados relacional"
+      ],
+      answer: 2,
+      feedback: "O ==term==wireframe== é um esqueleto da interface — define layout, hierarquia e posicionamento dos elementos, sem se preocupar com aspectos estéticos."
+    },
 
-  // Questão 5
-  {
-    aula: "Aula 9 — Prototipagem e Norma ISO 9241",
-    tipo: "Contexto",
-    texto: "Em um portal de serviços públicos, todos os usuários conseguiam concluir seus agendamentos, mas relatavam desgaste e cansaço ao final do processo, devido ao grande número de etapas desnecessárias.",
-    question: "Qual dimensão de usabilidade da ==mark==ISO 9241== está comprometida nesse cenário?",
-    options: [
-      "==rule==Eficácia==, pois os usuários não conseguem atingir seus objetivos",
-      "Satisfação, pois o sistema não informa o estado das operações",
-      "==rule==Eficiência==, pois o esforço empregado é desproporcional ao resultado obtido",
-      "Autodescrição, pois a interface não explica suas funcionalidades"
-    ],
-    answer: 2,
-    feedback: "==rule==Eficiência== mede a relação entre o resultado e os recursos consumidos (tempo, esforço). Usuários que concluem tarefas com esforço excessivo têm problema de ==rule==eficiência==, não de ==rule==eficácia==."
-  },
+    // Questão 5
+    {
+      aula: "Aula 9 — Prototipagem e Norma ISO 9241",
+      tipo: "Contexto",
+      texto: "Em um portal de serviços públicos, todos os usuários conseguiam concluir seus agendamentos, mas relatavam desgaste e cansaço ao final do processo, devido ao grande número de etapas desnecessárias.",
+      question: "Qual dimensão de usabilidade da ==mark==ISO 9241== está comprometida nesse cenário?",
+      options: [
+        "==rule==Eficácia==, pois os usuários não conseguem atingir seus objetivos",
+        "Satisfação, pois o sistema não informa o estado das operações",
+        "==rule==Eficiência==, pois o esforço empregado é desproporcional ao resultado obtido",
+        "Autodescrição, pois a interface não explica suas funcionalidades"
+      ],
+      answer: 2,
+      feedback: "==rule==Eficiência== mede a relação entre o resultado e os recursos consumidos (tempo, esforço). Usuários que concluem tarefas com esforço excessivo têm problema de ==rule==eficiência==, não de ==rule==eficácia==."
+    },
 
-  // Questão 6
-  {
-    aula: "Aula 9 — Prototipagem e Norma ISO 9241",
-    tipo: "Curta",
-    texto: "Sobre os princípios de diálogo definidos pela Norma ==mark==ISO 9241-110==.",
-    question: "Qual princípio determina que o sistema deve informar ao usuário, em cada etapa, qual é o estado atual do processo e quais ações estão disponíveis?",
-    options: [
-      "==rule==Tolerância a erros==",
-      "==rule==Adequação à tarefa==",
-      "Individualização",
-      "==rule==Autodescrição=="
-    ],
-    answer: 3,
-    feedback: "O princípio de ==rule==autodescrição== exige que a interface seja transparente: o sistema deve sempre comunicar seu estado e orientar o usuário sobre as ações disponíveis."
-  },
+    // Questão 6
+    {
+      aula: "Aula 9 — Prototipagem e Norma ISO 9241",
+      tipo: "Curta",
+      texto: "Sobre os princípios de diálogo definidos pela Norma ==mark==ISO 9241-110==.",
+      question: "Qual princípio determina que o sistema deve informar ao usuário, em cada etapa, qual é o estado atual do processo e quais ações estão disponíveis?",
+      options: [
+        "==rule==Tolerância a erros==",
+        "==rule==Adequação à tarefa==",
+        "Individualização",
+        "==rule==Autodescrição=="
+      ],
+      answer: 3,
+      feedback: "O princípio de ==rule==autodescrição== exige que a interface seja transparente: o sistema deve sempre comunicar seu estado e orientar o usuário sobre as ações disponíveis."
+    },
 
-  // Questão 7
-  {
-    aula: "Aula 9 — Prototipagem e Norma ISO 9241",
-    tipo: "Aplicação",
-    texto: "Ao realizar um agendamento médico online, o usuário clicou por engano no botão 'Cancelar'. O sistema executou o cancelamento imediatamente, sem pedir confirmação nem oferecer forma de desfazer a ação.",
-    question: "Qual princípio da ==mark==ISO 9241-110== foi violado nessa situação?",
-    options: [
-      "Conformidade com as expectativas do usuário",
-      "==rule==Tolerância a erros==",
-      "==rule==Adequação à tarefa==",
-      "Aprendizado"
-    ],
-    answer: 1,
-    feedback: "==rule==Tolerância a erros== determina que o sistema deve minimizar erros e, quando ocorrem, permitir recuperação com o menor esforço possível. Ações irreversíveis sem confirmação violam diretamente esse princípio."
-  },
+    // Questão 7
+    {
+      aula: "Aula 9 — Prototipagem e Norma ISO 9241",
+      tipo: "Aplicação",
+      texto: "Ao realizar um agendamento médico online, o usuário clicou por engano no botão 'Cancelar'. O sistema executou o cancelamento imediatamente, sem pedir confirmação nem oferecer forma de desfazer a ação.",
+      question: "Qual princípio da ==mark==ISO 9241-110== foi violado nessa situação?",
+      options: [
+        "Conformidade com as expectativas do usuário",
+        "==rule==Tolerância a erros==",
+        "==rule==Adequação à tarefa==",
+        "Aprendizado"
+      ],
+      answer: 1,
+      feedback: "==rule==Tolerância a erros== determina que o sistema deve minimizar erros e, quando ocorrem, permitir recuperação com o menor esforço possível. Ações irreversíveis sem confirmação violam diretamente esse princípio."
+    },
 
-  // Questão 8
-  {
-    aula: "Aula 9 — Prototipagem e Norma ISO 9241",
-    tipo: "Contexto",
-    texto: "Uma startup de saúde realizou entrevistas com pacientes e médicos, observou rotinas clínicas e mapeou dores reais antes de esboçar qualquer solução. A equipe era composta por profissionais de áreas distintas trabalhando de forma colaborativa.",
-    question: "Qual abordagem de design está sendo aplicada nesse cenário?",
-    options: [
-      "==def==Modelo Cascata== com fase de levantamento de requisitos",
-      "==def==Modelo Espiral== com análise de riscos inicial",
-      "==def==Design Thinking==, com ênfase na empatia e ==mark==cocriação==",
-      "Modelo de Shneiderman, com foco em testes de usabilidade"
-    ],
-    answer: 2,
-    feedback: "O ==def==Design Thinking== é caracterizado por ser centrado no usuário, interdisciplinar e baseado em empatia — compreender necessidades reais antes de propor soluções."
-  },
+    // Questão 8
+    {
+      aula: "Aula 9 — Prototipagem e Norma ISO 9241",
+      tipo: "Contexto",
+      texto: "Uma startup de saúde realizou entrevistas com pacientes e médicos, observou rotinas clínicas e mapeou dores reais antes de esboçar qualquer solução. A equipe era composta por profissionais de áreas distintas trabalhando de forma colaborativa.",
+      question: "Qual abordagem de design está sendo aplicada nesse cenário?",
+      options: [
+        "==def==Modelo Cascata== com fase de levantamento de requisitos",
+        "==def==Modelo Espiral== com análise de riscos inicial",
+        "==def==Design Thinking==, com ênfase na empatia e ==mark==cocriação==",
+        "Modelo de Shneiderman, com foco em testes de usabilidade"
+      ],
+      answer: 2,
+      feedback: "O ==def==Design Thinking== é caracterizado por ser centrado no usuário, interdisciplinar e baseado em empatia — compreender necessidades reais antes de propor soluções."
+    },
 
-  // Questão 9
-  {
-    aula: "Aula 9 — Prototipagem e Norma ISO 9241",
-    tipo: "Curta",
-    texto: "Sobre os modelos de desenvolvimento de software e suas características.",
-    question: "Qual modelo de ciclo de vida inclui explicitamente análise de riscos em cada ciclo e utiliza protótipos como ferramenta de validação progressiva?",
-    options: [
-      "==def==Modelo Cascata==",
-      "==def==Modelo Espiral==",
-      "==def==Modelo Estrela==",
-      "==proc==Modelo Iterativo=="
-    ],
-    answer: 1,
-    feedback: "O ==def==Modelo Espiral== se diferencia dos demais por incorporar análise de riscos em cada ciclo e pelo uso sistemático de protótipos para validar o produto progressivamente."
-  },
+    // Questão 9
+    {
+      aula: "Aula 9 — Prototipagem e Norma ISO 9241",
+      tipo: "Curta",
+      texto: "Sobre os modelos de desenvolvimento de software e suas características.",
+      question: "Qual modelo de ciclo de vida inclui explicitamente análise de riscos em cada ciclo e utiliza protótipos como ferramenta de validação progressiva?",
+      options: [
+        "==def==Modelo Cascata==",
+        "==def==Modelo Espiral==",
+        "==def==Modelo Estrela==",
+        "==proc==Modelo Iterativo=="
+      ],
+      answer: 1,
+      feedback: "O ==def==Modelo Espiral== se diferencia dos demais por incorporar análise de riscos em cada ciclo e pelo uso sistemático de protótipos para validar o produto progressivamente."
+    },
 
-  // Questão 10
-  {
-    aula: "Aula 9 — Prototipagem e Norma ISO 9241",
-    tipo: "Direta",
-    texto: "Sobre os princípios do ==def==Design Thinking== e sua aplicação em projetos.",
-    question: "O que significa dizer que o ==def==Design Thinking== é uma abordagem 'holística'?",
-    options: [
-      "Que cada fase deve ser concluída isoladamente antes de avançar para a próxima",
-      "Que a solução deve contemplar todas as dimensões da experiência: tecnológica, de negócio, emocional e social",
-      "Que apenas especialistas técnicos participam do processo de desenvolvimento",
-      "Que o foco está exclusivamente na aparência visual do produto final"
-    ],
-    answer: 1,
-    feedback: "O princípio ==mark==holístico== do ==def==Design Thinking== considera que uma boa solução deve integrar todas as dimensões da experiência — não apenas o aspecto técnico, mas também o humano, emocional e de negócio."
-  },
+    // Questão 10
+    {
+      aula: "Aula 9 — Prototipagem e Norma ISO 9241",
+      tipo: "Direta",
+      texto: "Sobre os princípios do ==def==Design Thinking== e sua aplicação em projetos.",
+      question: "O que significa dizer que o ==def==Design Thinking== é uma abordagem 'holística'?",
+      options: [
+        "Que cada fase deve ser concluída isoladamente antes de avançar para a próxima",
+        "Que a solução deve contemplar todas as dimensões da experiência: tecnológica, de negócio, emocional e social",
+        "Que apenas especialistas técnicos participam do processo de desenvolvimento",
+        "Que o foco está exclusivamente na aparência visual do produto final"
+      ],
+      answer: 1,
+      feedback: "O princípio ==mark==holístico== do ==def==Design Thinking== considera que uma boa solução deve integrar todas as dimensões da experiência — não apenas o aspecto técnico, mas também o humano, emocional e de negócio."
+    },
 
-  // Aula 10 — Design de Interfaces e Prototipação
-  // Questão 11
-  {
-    aula: "Aula 10 — Design de Interfaces e Prototipação",
-    tipo: "Curta",
-    texto: "Sobre os objetivos da prototipação no processo de design.",
-    question: "Qual é o principal propósito de criar um protótipo antes de implementar o sistema final?",
-    options: [
-      "Substituir a documentação técnica do projeto",
-      "Testar ideias e identificar problemas antes do desenvolvimento",
-      "Definir o banco de dados relacional da aplicação",
-      "Gerar o código-fonte da interface automaticamente"
-    ],
-    answer: 1,
-    feedback: "A prototipação permite testar ideias, identificar problemas e economizar tempo e custo antes da implementação final, melhorando a experiência do usuário."
-  },
+    // Aula 10 — Design de Interfaces e Prototipação
+    // Questão 11
+    {
+      aula: "Aula 10 — Design de Interfaces e Prototipação",
+      tipo: "Curta",
+      texto: "Sobre os objetivos da prototipação no processo de design.",
+      question: "Qual é o principal propósito de criar um protótipo antes de implementar o sistema final?",
+      options: [
+        "Substituir a documentação técnica do projeto",
+        "Testar ideias e identificar problemas antes do desenvolvimento",
+        "Definir o banco de dados relacional da aplicação",
+        "Gerar o código-fonte da interface automaticamente"
+      ],
+      answer: 1,
+      feedback: "A prototipação permite testar ideias, identificar problemas e economizar tempo e custo antes da implementação final, melhorando a experiência do usuário."
+    },
 
-  // Questão 12
-  {
-    aula: "Aula 10 — Design de Interfaces e Prototipação",
-    tipo: "Direta",
-    texto: "Sobre as classificações de protótipos por fidelidade.",
-    question: "Qual afirmação descreve corretamente a diferença entre protótipos de baixa e alta fidelidade?",
-    options: [
-      "Baixa fidelidade é mais detalhado; alta fidelidade é mais simples",
-      "Ambos possuem o mesmo nível de detalhe visual",
-      "Baixa fidelidade gera mais ideias; alta fidelidade foca em detalhes próximos do produto final",
-      "Alta fidelidade é usada apenas na fase de análise de requisitos"
-    ],
-    answer: 2,
-    feedback: "Protótipos de baixa fidelidade são rascunhos simples que estimulam a geração de ideias, enquanto os de alta fidelidade são detalhados e próximos do produto final."
-  },
+    // Questão 12
+    {
+      aula: "Aula 10 — Design de Interfaces e Prototipação",
+      tipo: "Direta",
+      texto: "Sobre as classificações de protótipos por fidelidade.",
+      question: "Qual afirmação descreve corretamente a diferença entre protótipos de baixa e alta fidelidade?",
+      options: [
+        "Baixa fidelidade é mais detalhado; alta fidelidade é mais simples",
+        "Ambos possuem o mesmo nível de detalhe visual",
+        "Baixa fidelidade gera mais ideias; alta fidelidade foca em detalhes próximos do produto final",
+        "Alta fidelidade é usada apenas na fase de análise de requisitos"
+      ],
+      answer: 2,
+      feedback: "Protótipos de baixa fidelidade são rascunhos simples que estimulam a geração de ideias, enquanto os de alta fidelidade são detalhados e próximos do produto final."
+    },
 
-  // Questão 13
-  {
-    aula: "Aula 10 — Design de Interfaces e Prototipação",
-    tipo: "Contexto",
-    texto: "Uma equipe de design criou um esboço em papel com a disposição dos botões, menus e campos de formulário de um aplicativo, sem qualquer cor ou imagem.",
-    question: "Que tipo de artefato de prototipação está sendo descrito?",
-    options: [
-      "Mockup",
-      "Storyboard",
-      "Wireframe",
-      "Cenário"
-    ],
-    answer: 2,
-    feedback: "O wireframe é o 'esqueleto' da interface: representa estrutura, layout e posicionamento dos elementos sem detalhes visuais como cores ou imagens."
-  },
+    // Questão 13
+    {
+      aula: "Aula 10 — Design de Interfaces e Prototipação",
+      tipo: "Contexto",
+      texto: "Uma equipe de design criou um esboço em papel com a disposição dos botões, menus e campos de formulário de um aplicativo, sem qualquer cor ou imagem.",
+      question: "Que tipo de artefato de prototipação está sendo descrito?",
+      options: [
+        "Mockup",
+        "Storyboard",
+        "Wireframe",
+        "Cenário"
+      ],
+      answer: 2,
+      feedback: "O wireframe é o 'esqueleto' da interface: representa estrutura, layout e posicionamento dos elementos sem detalhes visuais como cores ou imagens."
+    },
 
-  // Questão 14
-  {
-    aula: "Aula 10 — Design de Interfaces e Prototipação",
-    tipo: "Direta",
-    texto: "Sobre os tipos de protótipos estudados na disciplina.",
-    question: "Qual tipo de protótipo utiliza narrativa textual para descrever, passo a passo, como o usuário interage com o sistema?",
-    options: [
-      "Wireframe",
-      "Cenário",
-      "Mockup",
-      "Modelo conceitual"
-    ],
-    answer: 1,
-    feedback: "Cenários são narrativas de uso que descrevem o passo a passo da interação entre o usuário e o sistema, como o exemplo do caixa eletrônico."
-  },
+    // Questão 14
+    {
+      aula: "Aula 10 — Design de Interfaces e Prototipação",
+      tipo: "Direta",
+      texto: "Sobre os tipos de protótipos estudados na disciplina.",
+      question: "Qual tipo de protótipo utiliza narrativa textual para descrever, passo a passo, como o usuário interage com o sistema?",
+      options: [
+        "Wireframe",
+        "Cenário",
+        "Mockup",
+        "Modelo conceitual"
+      ],
+      answer: 1,
+      feedback: "Cenários são narrativas de uso que descrevem o passo a passo da interação entre o usuário e o sistema, como o exemplo do caixa eletrônico."
+    },
 
-  // Questão 15
-  {
-    aula: "Aula 10 — Design de Interfaces e Prototipação",
-    tipo: "Aplicação",
-    texto: "Um designer precisa apresentar ao cliente uma versão da interface com cores reais, tipografia definida e imagens no lugar, simulando o produto final antes do desenvolvimento.",
-    question: "Qual tipo de artefato o designer deve entregar nesse caso?",
-    options: [
-      "Wireframe horizontal",
-      "Cenário de uso",
-      "Storyboard",
-      "Mockup"
-    ],
-    answer: 3,
-    feedback: "O mockup é a representação visual detalhada da interface, com cores, imagens e tipografia, sendo classificado como protótipo de alta fidelidade."
-  },
+    // Questão 15
+    {
+      aula: "Aula 10 — Design de Interfaces e Prototipação",
+      tipo: "Aplicação",
+      texto: "Um designer precisa apresentar ao cliente uma versão da interface com cores reais, tipografia definida e imagens no lugar, simulando o produto final antes do desenvolvimento.",
+      question: "Qual tipo de artefato o designer deve entregar nesse caso?",
+      options: [
+        "Wireframe horizontal",
+        "Cenário de uso",
+        "Storyboard",
+        "Mockup"
+      ],
+      answer: 3,
+      feedback: "O mockup é a representação visual detalhada da interface, com cores, imagens e tipografia, sendo classificado como protótipo de alta fidelidade."
+    },
 
-  // Questão 16
-  {
-    aula: "Aula 10 — Design de Interfaces e Prototipação",
-    tipo: "Contexto",
-    texto: "Em um sistema bancário, foram prototipadas todas as funcionalidades principais (sacar, transferir, pagar), porém nenhuma delas foi detalhada em profundidade.",
-    question: "Qual classificação de protótipo por estrutura descreve essa abordagem?",
-    options: [
-      "Protótipo vertical, pois cobre muitas funções",
-      "Protótipo horizontal, pois cobre muitas funções com pouco detalhamento",
-      "Protótipo de baixa fidelidade, pois não tem cores",
-      "Protótipo vertical, pois não detalha nenhuma função"
-    ],
-    answer: 1,
-    feedback: "O protótipo horizontal cobre muitas funcionalidades com pouco nível de detalhe, oferecendo uma visão ampla do sistema sem aprofundamento."
-  },
+    // Questão 16
+    {
+      aula: "Aula 10 — Design de Interfaces e Prototipação",
+      tipo: "Contexto",
+      texto: "Em um sistema bancário, foram prototipadas todas as funcionalidades principais (sacar, transferir, pagar), porém nenhuma delas foi detalhada em profundidade.",
+      question: "Qual classificação de protótipo por estrutura descreve essa abordagem?",
+      options: [
+        "Protótipo vertical, pois cobre muitas funções",
+        "Protótipo horizontal, pois cobre muitas funções com pouco detalhamento",
+        "Protótipo de baixa fidelidade, pois não tem cores",
+        "Protótipo vertical, pois não detalha nenhuma função"
+      ],
+      answer: 1,
+      feedback: "O protótipo horizontal cobre muitas funcionalidades com pouco nível de detalhe, oferecendo uma visão ampla do sistema sem aprofundamento."
+    },
 
-  // Questão 17
-  {
-    aula: "Aula 10 — Design de Interfaces e Prototipação",
-    tipo: "Direta",
-    texto: "Sobre os problemas de usabilidade e sua classificação.",
-    question: "Qual tipo de problema de usabilidade impede completamente o usuário de concluir sua tarefa?",
-    options: [
-      "Ruído",
-      "Obstáculo",
-      "Barreira",
-      "Problema secundário"
-    ],
-    answer: 2,
-    feedback: "Barreiras são problemas que impedem totalmente a realização da tarefa. Obstáculos dificultam mas permitem conclusão, enquanto ruídos causam dúvida ou confusão."
-  },
+    // Questão 17
+    {
+      aula: "Aula 10 — Design de Interfaces e Prototipação",
+      tipo: "Direta",
+      texto: "Sobre os problemas de usabilidade e sua classificação.",
+      question: "Qual tipo de problema de usabilidade impede completamente o usuário de concluir sua tarefa?",
+      options: [
+        "Ruído",
+        "Obstáculo",
+        "Barreira",
+        "Problema secundário"
+      ],
+      answer: 2,
+      feedback: "Barreiras são problemas que impedem totalmente a realização da tarefa. Obstáculos dificultam mas permitem conclusão, enquanto ruídos causam dúvida ou confusão."
+    },
 
-  // Questão 18
-  {
-    aula: "Aula 10 — Design de Interfaces e Prototipação",
-    tipo: "Aplicação",
-    texto: "Um usuário experiente relata que determinado recurso do sistema é confuso apenas para quem está usando pela primeira vez, mas não causa problema para usuários habituados.",
-    question: "Como esse problema de usabilidade seria classificado quanto ao perfil de usuário afetado?",
-    options: [
-      "Problema geral, pois afeta qualquer usuário",
-      "Problema de acessibilidade, pois envolve limitações físicas",
-      "Problema para usuário iniciante, pois afeta apenas quem não tem experiência",
-      "Problema para especialista, pois exige conhecimento avançado para percebê-lo"
-    ],
-    answer: 2,
-    feedback: "Os problemas de usabilidade podem ser classificados por perfil de usuário. Um problema que afeta apenas iniciantes é categorizado como problema para usuário iniciante."
-  },
+    // Questão 18
+    {
+      aula: "Aula 10 — Design de Interfaces e Prototipação",
+      tipo: "Aplicação",
+      texto: "Um usuário experiente relata que determinado recurso do sistema é confuso apenas para quem está usando pela primeira vez, mas não causa problema para usuários habituados.",
+      question: "Como esse problema de usabilidade seria classificado quanto ao perfil de usuário afetado?",
+      options: [
+        "Problema geral, pois afeta qualquer usuário",
+        "Problema de acessibilidade, pois envolve limitações físicas",
+        "Problema para usuário iniciante, pois afeta apenas quem não tem experiência",
+        "Problema para especialista, pois exige conhecimento avançado para percebê-lo"
+      ],
+      answer: 2,
+      feedback: "Os problemas de usabilidade podem ser classificados por perfil de usuário. Um problema que afeta apenas iniciantes é categorizado como problema para usuário iniciante."
+    },
 
-  // Questão 19
-  {
-    aula: "Aula 10 — Design de Interfaces e Prototipação",
-    tipo: "Contexto",
-    texto: "Uma equipe utilizou diagramas UML e metáforas do mundo real para representar como o sistema de agendamento funcionaria antes de qualquer linha de código ser escrita.",
-    question: "Que tipo de modelo está sendo produzido nessa atividade?",
-    options: [
-      "Modelo físico representacional",
-      "Modelo conceitual",
-      "Wireframe de alta fidelidade",
-      "Modelo físico operacional"
-    ],
-    answer: 1,
-    feedback: "O modelo conceitual representa como o sistema funciona na teoria, utilizando diagramas, UML e metáforas do mundo real para facilitar o entendimento antes da implementação."
-  },
+    // Questão 19
+    {
+      aula: "Aula 10 — Design de Interfaces e Prototipação",
+      tipo: "Contexto",
+      texto: "Uma equipe utilizou diagramas UML e metáforas do mundo real para representar como o sistema de agendamento funcionaria antes de qualquer linha de código ser escrita.",
+      question: "Que tipo de modelo está sendo produzido nessa atividade?",
+      options: [
+        "Modelo físico representacional",
+        "Modelo conceitual",
+        "Wireframe de alta fidelidade",
+        "Modelo físico operacional"
+      ],
+      answer: 1,
+      feedback: "O modelo conceitual representa como o sistema funciona na teoria, utilizando diagramas, UML e metáforas do mundo real para facilitar o entendimento antes da implementação."
+    },
 
-  // Questão 20
-  {
-    aula: "Aula 10 — Design de Interfaces e Prototipação",
-    tipo: "Aplicação",
-    texto: "Um designer optou por detalhar apenas o módulo de pagamento de um e-commerce, mapeando cada tela, validação e mensagem de erro com alta precisão, deixando as demais áreas sem protótipo.",
-    question: "Qual classificação de protótipo por estrutura descreve essa escolha?",
-    options: [
-      "Protótipo horizontal, pois cobre poucas funções",
-      "Protótipo vertical, pois foca em poucas funções com alto nível de detalhe",
-      "Protótipo de baixa fidelidade, pois não cobre todo o sistema",
-      "Protótipo horizontal de alta fidelidade"
-    ],
-    answer: 1,
-    feedback: "O protótipo vertical aprofunda poucas funcionalidades com alto nível de detalhamento, sendo útil para validar fluxos críticos do sistema antes da implementação."
-  },
+    // Questão 20
+    {
+      aula: "Aula 10 — Design de Interfaces e Prototipação",
+      tipo: "Aplicação",
+      texto: "Um designer optou por detalhar apenas o módulo de pagamento de um e-commerce, mapeando cada tela, validação e mensagem de erro com alta precisão, deixando as demais áreas sem protótipo.",
+      question: "Qual classificação de protótipo por estrutura descreve essa escolha?",
+      options: [
+        "Protótipo horizontal, pois cobre poucas funções",
+        "Protótipo vertical, pois foca em poucas funções com alto nível de detalhe",
+        "Protótipo de baixa fidelidade, pois não cobre todo o sistema",
+        "Protótipo horizontal de alta fidelidade"
+      ],
+      answer: 1,
+      feedback: "O protótipo vertical aprofunda poucas funcionalidades com alto nível de detalhamento, sendo útil para validar fluxos críticos do sistema antes da implementação."
+    },
 
-  // Aula 11 — Design Responsivo
-  // Questão 21
-  {
-    aula: "Aula 11 — Design Responsivo",
-    tipo: "Direta",
-    texto: "O design responsivo é uma abordagem fundamental no desenvolvimento web moderno.",
-    question: "O que caracteriza um site com design responsivo?",
-    options: [
-      "Ter um layout fixo com largura de 1200px",
-      "Adaptar-se a diferentes tamanhos de tela sem perder usabilidade",
-      "Usar apenas imagens vetoriais para garantir qualidade",
-      "Carregar versões diferentes do site para cada dispositivo"
-    ],
-    answer: 1,
-    feedback: "Design responsivo significa que o site se adapta automaticamente a diferentes resoluções, reorganizando seus elementos para manter a usabilidade."
-  },
+    // Aula 11 — Design Responsivo
+    // Questão 21
+    {
+      aula: "Aula 11 — Design Responsivo",
+      tipo: "Direta",
+      texto: "O design responsivo é uma abordagem fundamental no desenvolvimento web moderno.",
+      question: "O que caracteriza um site com design responsivo?",
+      options: [
+        "Ter um layout fixo com largura de 1200px",
+        "Adaptar-se a diferentes tamanhos de tela sem perder usabilidade",
+        "Usar apenas imagens vetoriais para garantir qualidade",
+        "Carregar versões diferentes do site para cada dispositivo"
+      ],
+      answer: 1,
+      feedback: "Design responsivo significa que o site se adapta automaticamente a diferentes resoluções, reorganizando seus elementos para manter a usabilidade."
+    },
 
-  // Questão 22
-  {
-    aula: "Aula 11 — Design Responsivo",
-    tipo: "Código",
-    texto: "Considere o trecho de CSS abaixo.",
-    question: "O que o código a seguir faz quando a largura da tela for menor ou igual a 600px?",
-    code: `@media (max-width: 600px) {
-    body {
-      background-color: lightblue;
+    // Questão 22
+    {
+      aula: "Aula 11 — Design Responsivo",
+      tipo: "Código",
+      texto: "Considere o trecho de CSS abaixo.",
+      question: "O que o código a seguir faz quando a largura da tela for menor ou igual a 600px?",
+      code: `@media (max-width: 600px) {
+      body {
+        background-color: lightblue;
+      }
+    }`,
+      options: [
+        "Aplica fundo azul claro em todas as telas",
+        "Remove o fundo da página em telas pequenas",
+        "Aplica fundo azul claro apenas em telas com até 600px de largura",
+        "Bloqueia o acesso ao site em dispositivos móveis"
+      ],
+      answer: 2,
+      feedback: "A media query com max-width: 600px aplica o estilo somente quando a viewport tiver no máximo 600px de largura."
+    },
+
+    // Questão 23
+    {
+      aula: "Aula 11 — Design Responsivo",
+      tipo: "Curta",
+      texto: "A meta tag viewport é usada em páginas web para controlar a exibição em dispositivos móveis.",
+      question: "Qual é o principal objetivo da meta tag viewport?",
+      options: [
+        "Definir o idioma da página",
+        "Controlar o zoom e a escala de exibição no mobile",
+        "Aumentar a velocidade de carregamento",
+        "Bloquear o redimensionamento da janela no desktop"
+      ],
+      answer: 1,
+      feedback: "A meta tag viewport impede que o navegador encolha o site e permite controlar a escala inicial da página em dispositivos móveis."
+    },
+
+    // Questão 24
+    {
+      aula: "Aula 11 — Design Responsivo",
+      tipo: "Contexto",
+      texto: "Um desenvolvedor percebeu que ao redimensionar a janela do navegador, os elementos do site quebravam e se sobrepunham. Ele decidiu revisar as unidades de medida usadas no CSS.",
+      question: "Qual prática de layout fluido ajudaria a resolver esse problema?",
+      options: [
+        "Substituir medidas em % por valores fixos em px",
+        "Usar apenas a unidade cm para larguras",
+        "Usar medidas relativas como % e em no lugar de px",
+        "Definir largura mínima de 1280px para todos os elementos"
+      ],
+      answer: 2,
+      feedback: "O layout fluido usa medidas relativas (%, em) para que os elementos se adaptem proporcionalmente ao tamanho da tela."
+    },
+
+    // Questão 25
+    {
+      aula: "Aula 11 — Design Responsivo",
+      tipo: "Direta",
+      texto: "Existem diferentes estratégias para construir layouts responsivos.",
+      question: "O que define a metodologia Mobile First?",
+      options: [
+        "Criar o site primeiro para desktop e depois adaptar para mobile",
+        "Desenvolver o layout iniciando pelas telas menores e expandindo para as maiores",
+        "Usar apenas dispositivos móveis para testar o site",
+        "Desativar recursos visuais avançados em dispositivos móveis"
+      ],
+      answer: 1,
+      feedback: "Mobile First consiste em projetar o layout começando pelos dispositivos de menor tela, garantindo o essencial, e depois expandindo para tablets e desktops."
+    },
+
+    // Questão 26
+    {
+      aula: "Aula 11 — Design Responsivo",
+      tipo: "Curta",
+      texto: "Breakpoints são pontos definidos no CSS onde o layout do site é alterado.",
+      question: "Qual valor de breakpoint é normalmente associado a tablets?",
+      options: [
+        "480px",
+        "768px",
+        "1280px",
+        "960px"
+      ],
+      answer: 1,
+      feedback: "O breakpoint de 768px é o mais comumente associado a tablets, enquanto 480px é para celulares maiores e 960px+ para desktops."
+    },
+
+    // Questão 27
+    {
+      aula: "Aula 11 — Design Responsivo",
+      tipo: "Aplicação",
+      texto: "Uma equipe está desenvolvendo um portal de notícias que exibe cards de artigos. No mobile, cada card ocupa toda a largura. No desktop, devem aparecer lado a lado.",
+      question: "Qual abordagem é mais adequada para implementar esse comportamento?",
+      options: [
+        "Criar duas páginas HTML separadas, uma para mobile e outra para desktop",
+        "Usar JavaScript para detectar o dispositivo e trocar o CSS",
+        "Usar media queries para alterar a largura dos cards conforme a resolução",
+        "Fixar a largura dos cards em 50% independente do dispositivo"
+      ],
+      answer: 2,
+      feedback: "Media queries permitem aplicar estilos diferentes conforme o tamanho da tela, sendo a forma correta de reorganizar os cards entre mobile e desktop."
+    },
+
+    // Questão 28
+    {
+      aula: "Aula 11 — Design Responsivo",
+      tipo: "Direta",
+      texto: "A escolha das unidades de medida no CSS impacta diretamente na responsividade do layout.",
+      question: "Quais unidades são recomendadas no design responsivo para garantir flexibilidade?",
+      options: [
+        "px e cm",
+        "mm e pt",
+        "% e em",
+        "vw e px"
+      ],
+      answer: 2,
+      feedback: "As unidades % e em são relativas e se ajustam ao contexto do elemento e da tela, sendo ideais para layouts responsivos."
+    },
+
+    // Questão 29
+    {
+      aula: "Aula 11 — Design Responsivo",
+      tipo: "Aplicação",
+      texto: "Em um projeto web, o menu de navegação exibe todos os itens horizontalmente no desktop. No entanto, em telas pequenas, esse comportamento prejudica a usabilidade.",
+      question: "Qual solução é mais adequada para menus em telas pequenas?",
+      options: [
+        "Remover o menu completamente no mobile",
+        "Reduzir o tamanho da fonte até caber na tela",
+        "Substituir o menu horizontal por um menu hambúrguer",
+        "Exibir o menu apenas ao rolar a página"
+      ],
+      answer: 2,
+      feedback: "O menu hambúrguer (ícone ☰) é a solução padrão para substituir menus horizontais em telas pequenas, economizando espaço e mantendo a navegação acessível."
+    },
+
+    // Questão 30
+    {
+      aula: "Aula 11 — Design Responsivo",
+      tipo: "Contexto",
+      texto: "Um desenvolvedor iniciante precisa criar um layout responsivo seguindo a metodologia Mobile First.",
+      question: "Qual é a ordem correta para estruturar o CSS nessa abordagem?",
+      options: [
+        "Criar o layout desktop, depois adicionar media queries com max-width",
+        "Criar o layout mobile, depois expandir com media queries usando min-width",
+        "Criar os layouts mobile e desktop separadamente e uni-los ao final",
+        "Usar apenas media queries com max-width para todos os dispositivos"
+      ],
+      answer: 1,
+      feedback: "No Mobile First, o CSS base é escrito para telas pequenas e as media queries com min-width são adicionadas progressivamente para adaptar o layout a telas maiores."
+    },
+
+    // Aula 12 - CSS e HTML Comandos Básicos
+
+    // Questão 31
+    {
+      aula: "Aula 12 - CSS e HTML Comandos Básicos",
+      tipo: "Direta",
+      texto: "O HTML5 possui uma estrutura padrão reconhecida por todos os navegadores modernos.",
+      question: "Qual elemento define o tipo do documento e indica ao navegador que o arquivo utiliza o padrão HTML5?",
+      options: [
+        "<!DOCTYPE html>",
+        "<html lang='pt-BR'>",
+        "<meta charset='UTF-8'>",
+        "<head>"
+      ],
+      answer: 0,
+      feedback: "O <!DOCTYPE html> não é uma tag HTML, mas uma declaração que informa ao navegador a versão do HTML utilizada no documento."
+    },
+
+    // Questão 32
+    {
+      aula: "Aula 12 - CSS e HTML Comandos Básicos",
+      tipo: "Curta",
+      texto: "Na estrutura do HTML5, cada seção possui uma função específica.",
+      question: "Qual das opções abaixo representa corretamente um conteúdo que fica dentro da tag <head>?",
+      options: [
+        "Parágrafos e imagens visíveis ao usuário",
+        "Tabelas com dados da página",
+        "Título da página e links para arquivos CSS externos",
+        "Menus de navegação e rodapé"
+      ],
+      answer: 2,
+      feedback: "A tag <head> contém metadados, configurações e links externos como o <title> e <link rel='stylesheet'>, que não são exibidos diretamente na página."
+    },
+
+    // Questão 33
+    {
+      aula: "Aula 12 - CSS e HTML Comandos Básicos",
+      tipo: "Código",
+      texto: "Analise o trecho de código abaixo:",
+      question: "Qual será o comportamento visual desse trecho ao ser renderizado no navegador?",
+      code: `<ol>
+      <li>HTML</li>
+      <li>CSS</li>
+      <li>JavaScript</li>
+    </ol>`,
+      options: [
+        "Uma lista com marcadores (bolinhas) para cada item",
+        "Uma lista numerada com HTML, CSS e JavaScript",
+        "Três parágrafos separados por ponto e vírgula",
+        "Uma lista sem nenhuma marcação visual"
+      ],
+      answer: 1,
+      feedback: "A tag <ol> cria uma lista ordenada, que numera automaticamente cada item <li>. Listas com marcadores usam <ul>."
+    },
+
+    // Questão 34
+    {
+      aula: "Aula 12 - CSS e HTML Comandos Básicos",
+      tipo: "Direta",
+      texto: "Para separar estrutura de aparência, o CSS externo é vinculado ao HTML.",
+      question: "Onde deve ser inserida a tag <link> para conectar um arquivo CSS externo a uma página HTML?",
+      options: [
+        "Dentro da tag <body>, antes do conteúdo",
+        "Após o fechamento da tag </html>",
+        "Dentro da tag <head>",
+        "Dentro da tag <footer>"
+      ],
+      answer: 2,
+      feedback: "A tag <link rel='stylesheet' href='...'> deve ser inserida dentro do <head>, pois é nessa seção que ficam as configurações e referências externas da página."
+    },
+
+    // Questão 35
+    {
+      aula: "Aula 12 - CSS e HTML Comandos Básicos",
+      tipo: "Contexto",
+      texto: "Um desenvolvedor percebe que o texto dentro de um botão está muito próximo das bordas do elemento, mas o botão em si está bem posicionado na página.",
+      question: "Qual propriedade CSS ele deve ajustar para resolver esse problema?",
+      options: [
+        "margin",
+        "border",
+        "padding",
+        "float"
+      ],
+      answer: 2,
+      feedback: "O padding define o espaçamento interno entre o conteúdo e a borda do elemento. O margin controla o espaço externo entre elementos distintos."
+    },
+
+    // Questão 36
+    {
+      aula: "Aula 12 - CSS e HTML Comandos Básicos",
+      tipo: "Direta",
+      texto: "As tabelas HTML possuem tags específicas para cada parte de sua estrutura.",
+      question: "Qual tag é utilizada para definir uma célula de dados no corpo de uma tabela HTML?",
+      options: [
+        "<th>",
+        "<tr>",
+        "<td>",
+        "<tbody>"
+      ],
+      answer: 2,
+      feedback: "A tag <td> representa uma célula de dados comum. A tag <th> é usada para células de cabeçalho, e <tr> define uma linha inteira da tabela."
+    },
+
+    // Questão 37
+    {
+      aula: "Aula 12 - CSS e HTML Comandos Básicos",
+      tipo: "Aplicação",
+      texto: "Uma desenvolvedora precisa criar um menu de navegação com os itens dispostos horizontalmente e com distribuição flexível do espaço.",
+      question: "Qual propriedade CSS é mais adequada para esse tipo de layout?",
+      options: [
+        "float: left",
+        "display: flex",
+        "border-radius",
+        "text-transform: uppercase"
+      ],
+      answer: 1,
+      feedback: "O display: flex organiza os elementos de forma horizontal e flexível, sendo amplamente utilizado em menus e layouts modernos."
+    },
+
+    // Questão 38
+    {
+      aula: "Aula 12 - CSS e HTML Comandos Básicos",
+      tipo: "Contexto",
+      texto: "Ao analisar o código de um site, um desenvolvedor percebe que todos os elementos usam apenas <div> e <span>, sem nenhuma tag semântica.",
+      question: "Qual é a principal desvantagem dessa abordagem em relação à Web Semântica?",
+      options: [
+        "O site ficará visualmente deformado no navegador",
+        "O CSS não conseguirá estilizar elementos <div>",
+        "Os mecanismos de busca terão dificuldade em interpretar e indexar o conteúdo",
+        "Os títulos <h1> deixarão de funcionar corretamente"
+      ],
+      answer: 2,
+      feedback: "A Web Semântica busca dar significado ao conteúdo para que buscadores e tecnologias assistivas entendam a estrutura da página. Usar apenas <div> sem tags semânticas prejudica a indexação e organização."
+    },
+
+    // Questão 39
+    {
+      aula: "Aula 12 - CSS e HTML Comandos Básicos",
+      tipo: "Código",
+      texto: "Considere o seguinte trecho de HTML e CSS:",
+      question: "O que acontece ao aplicar a classe 'destaque' ao parágrafo?",
+      code: `/* CSS */
+    .destaque {
+      background-color: yellow;
+      font-family: Verdana;
     }
-  }`,
-    options: [
-      "Aplica fundo azul claro em todas as telas",
-      "Remove o fundo da página em telas pequenas",
-      "Aplica fundo azul claro apenas em telas com até 600px de largura",
-      "Bloqueia o acesso ao site em dispositivos móveis"
-    ],
-    answer: 2,
-    feedback: "A media query com max-width: 600px aplica o estilo somente quando a viewport tiver no máximo 600px de largura."
-  },
 
-  // Questão 23
-  {
-    aula: "Aula 11 — Design Responsivo",
-    tipo: "Curta",
-    texto: "A meta tag viewport é usada em páginas web para controlar a exibição em dispositivos móveis.",
-    question: "Qual é o principal objetivo da meta tag viewport?",
-    options: [
-      "Definir o idioma da página",
-      "Controlar o zoom e a escala de exibição no mobile",
-      "Aumentar a velocidade de carregamento",
-      "Bloquear o redimensionamento da janela no desktop"
-    ],
-    answer: 1,
-    feedback: "A meta tag viewport impede que o navegador encolha o site e permite controlar a escala inicial da página em dispositivos móveis."
-  },
+    <!-- HTML -->
+    <p class="destaque">Texto importante</p>`,
+      options: [
+        "O parágrafo recebe fundo amarelo e fonte Verdana",
+        "Apenas a cor do texto muda para amarelo",
+        "A classe só funciona em elementos <div>",
+        "O parágrafo some da página"
+      ],
+      answer: 0,
+      feedback: "As classes CSS permitem aplicar conjuntos de estilos a qualquer elemento HTML. Ao usar class='destaque', o parágrafo herda o fundo amarelo e a fonte Verdana definidos na classe."
+    },
 
-  // Questão 24
-  {
-    aula: "Aula 11 — Design Responsivo",
-    tipo: "Contexto",
-    texto: "Um desenvolvedor percebeu que ao redimensionar a janela do navegador, os elementos do site quebravam e se sobrepunham. Ele decidiu revisar as unidades de medida usadas no CSS.",
-    question: "Qual prática de layout fluido ajudaria a resolver esse problema?",
-    options: [
-      "Substituir medidas em % por valores fixos em px",
-      "Usar apenas a unidade cm para larguras",
-      "Usar medidas relativas como % e em no lugar de px",
-      "Definir largura mínima de 1280px para todos os elementos"
-    ],
-    answer: 2,
-    feedback: "O layout fluido usa medidas relativas (%, em) para que os elementos se adaptem proporcionalmente ao tamanho da tela."
-  },
+    // Questão 40
+    {
+      aula: "Aula 12 - CSS e HTML Comandos Básicos",
+      tipo: "Aplicação",
+      texto: "Um desenvolvedor deseja criar um layout com duas colunas: o conteúdo principal ocupando 70% da largura à esquerda e uma barra lateral com 30% à direita.",
+      question: "Qual combinação de propriedades CSS representa corretamente essa estrutura?",
+      options: [
+        ".principal { width: 70%; float: right; } .lateral { width: 30%; float: left; }",
+        ".principal { width: 70%; float: left; } .lateral { width: 30%; float: right; }",
+        ".principal { width: 70%; margin: auto; } .lateral { width: 30%; margin: auto; }",
+        ".principal { display: flex; } .lateral { display: flex; }"
+      ],
+      answer: 1,
+      feedback: "Para um layout de duas colunas com float, o conteúdo principal deve ter float: left com 70% e a barra lateral float: right com 30%, posicionando-os lado a lado."
+    },
 
-  // Questão 25
-  {
-    aula: "Aula 11 — Design Responsivo",
-    tipo: "Direta",
-    texto: "Existem diferentes estratégias para construir layouts responsivos.",
-    question: "O que define a metodologia Mobile First?",
-    options: [
-      "Criar o site primeiro para desktop e depois adaptar para mobile",
-      "Desenvolver o layout iniciando pelas telas menores e expandindo para as maiores",
-      "Usar apenas dispositivos móveis para testar o site",
-      "Desativar recursos visuais avançados em dispositivos móveis"
-    ],
-    answer: 1,
-    feedback: "Mobile First consiste em projetar o layout começando pelos dispositivos de menor tela, garantindo o essencial, e depois expandindo para tablets e desktops."
-  },
+    // Aula 13 - Landing page com HTML
 
-  // Questão 26
-  {
-    aula: "Aula 11 — Design Responsivo",
-    tipo: "Curta",
-    texto: "Breakpoints são pontos definidos no CSS onde o layout do site é alterado.",
-    question: "Qual valor de breakpoint é normalmente associado a tablets?",
-    options: [
-      "480px",
-      "768px",
-      "1280px",
-      "960px"
-    ],
-    answer: 1,
-    feedback: "O breakpoint de 768px é o mais comumente associado a tablets, enquanto 480px é para celulares maiores e 960px+ para desktops."
-  },
+    // Questão 41
+    {
+      aula: "Aula 13 - Landing page com HTML",
+      tipo: "Direta",
+      texto: "Landing pages são amplamente usadas em campanhas de marketing digital.",
+      question: "Qual é o principal objetivo de uma landing page?",
+      options: [
+        "Exibir todas as páginas e seções de um site institucional.",
+        "Converter visitantes e capturar leads com foco em uma única mensagem.",
+        "Gerenciar o cadastro de usuários em um sistema administrativo.",
+        "Apresentar um blog com múltiplos artigos e categorias."
+      ],
+      answer: 1,
+      feedback: "A landing page é uma página única criada para conversão de visitantes, captação de contatos e comunicação direta — com poucos elementos distrativos e foco total na ação desejada."
+    },
 
-  // Questão 27
-  {
-    aula: "Aula 11 — Design Responsivo",
-    tipo: "Aplicação",
-    texto: "Uma equipe está desenvolvendo um portal de notícias que exibe cards de artigos. No mobile, cada card ocupa toda a largura. No desktop, devem aparecer lado a lado.",
-    question: "Qual abordagem é mais adequada para implementar esse comportamento?",
-    options: [
-      "Criar duas páginas HTML separadas, uma para mobile e outra para desktop",
-      "Usar JavaScript para detectar o dispositivo e trocar o CSS",
-      "Usar media queries para alterar a largura dos cards conforme a resolução",
-      "Fixar a largura dos cards em 50% independente do dispositivo"
-    ],
-    answer: 2,
-    feedback: "Media queries permitem aplicar estilos diferentes conforme o tamanho da tela, sendo a forma correta de reorganizar os cards entre mobile e desktop."
-  },
+    // Questão 42
+    {
+      aula: "Aula 13 - Landing page com HTML",
+      tipo: "Direta",
+      texto: "Todo documento HTML5 segue uma estrutura básica obrigatória.",
+      question: "Qual tag define o início do conteúdo visível ao usuário em uma página HTML5?",
+      options: [
+        "<head>",
+        "<html>",
+        "<body>",
+        "<title>"
+      ],
+      answer: 2,
+      feedback: "A tag <body> contém todo o conteúdo visível da página — textos, imagens, botões, menus. Já o <head> armazena metadados, links de CSS e o título da aba, que não são exibidos diretamente ao usuário."
+    },
 
-  // Questão 28
-  {
-    aula: "Aula 11 — Design Responsivo",
-    tipo: "Direta",
-    texto: "A escolha das unidades de medida no CSS impacta diretamente na responsividade do layout.",
-    question: "Quais unidades são recomendadas no design responsivo para garantir flexibilidade?",
-    options: [
-      "px e cm",
-      "mm e pt",
-      "% e em",
-      "vw e px"
-    ],
-    answer: 2,
-    feedback: "As unidades % e em são relativas e se ajustam ao contexto do elemento e da tela, sendo ideais para layouts responsivos."
-  },
+    // Questão 43
+    {
+      aula: "Aula 13 - Landing page com HTML",
+      tipo: "Contexto",
+      texto: "Um desenvolvedor iniciante colocou todos os arquivos do projeto — HTML, CSS e imagens — na mesma pasta raiz. Com o crescimento do projeto, ficou difícil localizar e manter os arquivos.",
+      question: "Qual estrutura de pastas representa a organização mais adequada para um projeto de landing page?",
+      options: [
+        "Todos os arquivos na raiz, separados por prefixo no nome (ex: css_style.css, img_logo.png).",
+        "index.html na raiz e uma pasta assets com subpastas css e img.",
+        "Um único arquivo HTML com CSS e imagens embutidos diretamente no código.",
+        "Pasta separada para cada página, com CSS e imagens duplicadas em cada uma."
+      ],
+      answer: 1,
+      feedback: "A estrutura recomendada mantém o index.html na raiz e organiza os recursos dentro de assets/css e assets/img. Essa separação melhora manutenção, organização e escalabilidade do projeto."
+    },
 
-  // Questão 29
-  {
-    aula: "Aula 11 — Design Responsivo",
-    tipo: "Aplicação",
-    texto: "Em um projeto web, o menu de navegação exibe todos os itens horizontalmente no desktop. No entanto, em telas pequenas, esse comportamento prejudica a usabilidade.",
-    question: "Qual solução é mais adequada para menus em telas pequenas?",
-    options: [
-      "Remover o menu completamente no mobile",
-      "Reduzir o tamanho da fonte até caber na tela",
-      "Substituir o menu horizontal por um menu hambúrguer",
-      "Exibir o menu apenas ao rolar a página"
-    ],
-    answer: 2,
-    feedback: "O menu hambúrguer (ícone ☰) é a solução padrão para substituir menus horizontais em telas pequenas, economizando espaço e mantendo a navegação acessível."
-  },
+    // Questão 44
+    {
+      aula: "Aula 13 - Landing page com HTML",
+      tipo: "Direta",
+      texto: "A escolha do formato de imagem impacta diretamente a qualidade visual e o desempenho de uma landing page.",
+      question: "Por que o formato SVG é considerado ideal para ícones e ilustrações em páginas web?",
+      options: [
+        "Porque suporta animações de vídeo e áudio embutidos no arquivo.",
+        "Porque é um formato rasterizado com alta compressão e carregamento rápido.",
+        "Porque mantém qualidade visual em qualquer tamanho, sendo leve e escalável.",
+        "Porque é o único formato compatível com todos os navegadores modernos."
+      ],
+      answer: 2,
+      feedback: "O SVG é um formato vetorial que não perde qualidade ao ser redimensionado, é leve e escalável — características ideais para ícones e ilustrações em páginas responsivas."
+    },
 
-  // Questão 30
-  {
-    aula: "Aula 11 — Design Responsivo",
-    tipo: "Contexto",
-    texto: "Um desenvolvedor iniciante precisa criar um layout responsivo seguindo a metodologia Mobile First.",
-    question: "Qual é a ordem correta para estruturar o CSS nessa abordagem?",
-    options: [
-      "Criar o layout desktop, depois adicionar media queries com max-width",
-      "Criar o layout mobile, depois expandir com media queries usando min-width",
-      "Criar os layouts mobile e desktop separadamente e uni-los ao final",
-      "Usar apenas media queries com max-width para todos os dispositivos"
-    ],
-    answer: 1,
-    feedback: "No Mobile First, o CSS base é escrito para telas pequenas e as media queries com min-width são adicionadas progressivamente para adaptar o layout a telas maiores."
-  },
+    // Questão 45
+    {
+      aula: "Aula 13 - Landing page com HTML",
+      tipo: "Direta",
+      texto: "No CSS, as cores são frequentemente representadas no formato hexadecimal.",
+      question: "O que representa cada par de caracteres no código de cor #RRGGBB?",
+      options: [
+        "Resolução, Gradiente e Brilho da cor na tela.",
+        "Os canais de vermelho, verde e azul, respectivamente.",
+        "Os níveis de opacidade, saturação e luminosidade.",
+        "Código de fonte, tamanho e peso tipográfico da cor."
+      ],
+      answer: 1,
+      feedback: "No sistema hexadecimal #RRGGBB, RR representa vermelho, GG representa verde e BB representa azul. Cada par varia de 00 (ausência) a FF (intensidade máxima), compondo qualquer cor do modelo RGB."
+    },
 
-  // Aula 12 - CSS e HTML Comandos Básicos
+    // Questão 46
+    {
+      aula: "Aula 13 - Landing page com HTML",
+      tipo: "Contexto",
+      texto: "Durante uma auditoria de código, um desenvolvedor encontrou uma página onde menus, rodapé e seções de conteúdo eram todos marcados com <div>.",
+      question: "Qual conjunto de tags semânticas do HTML5 substituiria corretamente essas divs?",
+      options: [
+        "<menu>, <base>, <content> e <bottom>",
+        "<nav>, <article>, <section> e <footer>",
+        "<list>, <block>, <area> e <end>",
+        "<header>, <link>, <text> e <close>"
+      ],
+      answer: 1,
+      feedback: "As tags semânticas corretas são: <nav> para menus, <article> para conteúdo independente, <section> para divisões temáticas e <footer> para o rodapé. Elas dão significado à estrutura, favorecendo acessibilidade e indexação por buscadores."
+    },
 
-  // Questão 31
-  {
-    aula: "Aula 12 - CSS e HTML Comandos Básicos",
-    tipo: "Direta",
-    texto: "O HTML5 possui uma estrutura padrão reconhecida por todos os navegadores modernos.",
-    question: "Qual elemento define o tipo do documento e indica ao navegador que o arquivo utiliza o padrão HTML5?",
-    options: [
-      "<!DOCTYPE html>",
-      "<html lang='pt-BR'>",
-      "<meta charset='UTF-8'>",
-      "<head>"
-    ],
-    answer: 0,
-    feedback: "O <!DOCTYPE html> não é uma tag HTML, mas uma declaração que informa ao navegador a versão do HTML utilizada no documento."
-  },
+    // Questão 47
+    {
+      aula: "Aula 13 - Landing page com HTML",
+      tipo: "Direta",
+      texto: "Formulários HTML oferecem diferentes tipos de input para diferentes necessidades de seleção.",
+      question: "Qual é a diferença fundamental entre os inputs do tipo radio e checkbox?",
+      options: [
+        "Radio aceita texto digitado; checkbox aceita apenas cliques.",
+        "Radio permite selecionar apenas uma opção do grupo; checkbox permite múltiplas seleções.",
+        "Radio é usado para datas; checkbox é usado para arquivos.",
+        "Ambos têm a mesma função, diferindo apenas na aparência visual."
+      ],
+      answer: 1,
+      feedback: "O input type='radio' permite que o usuário escolha apenas uma opção dentro de um grupo. Já o type='checkbox' permite selecionar múltiplas opções simultaneamente — essa distinção é fundamental para criar formulários funcionalmente corretos."
+    },
 
-  // Questão 32
-  {
-    aula: "Aula 12 - CSS e HTML Comandos Básicos",
-    tipo: "Curta",
-    texto: "Na estrutura do HTML5, cada seção possui uma função específica.",
-    question: "Qual das opções abaixo representa corretamente um conteúdo que fica dentro da tag <head>?",
-    options: [
-      "Parágrafos e imagens visíveis ao usuário",
-      "Tabelas com dados da página",
-      "Título da página e links para arquivos CSS externos",
-      "Menus de navegação e rodapé"
-    ],
-    answer: 2,
-    feedback: "A tag <head> contém metadados, configurações e links externos como o <title> e <link rel='stylesheet'>, que não são exibidos diretamente na página."
-  },
+    // Questão 48
+    {
+      aula: "Aula 13 - Landing page com HTML",
+      tipo: "Contexto",
+      texto: "A equipe de design de uma startup escolheu uma fonte manuscrita para todos os textos do sistema, incluindo campos de formulário e tabelas de dados.",
+      question: "Do ponto de vista da usabilidade, qual é o principal risco dessa escolha tipográfica?",
+      options: [
+        "Fontes manuscritas aumentam o tamanho dos arquivos CSS além do limite suportado pelos navegadores.",
+        "A escolha pode prejudicar a legibilidade em textos longos ou pequenos, comprometendo a experiência do usuário.",
+        "Fontes externas como Google Fonts são incompatíveis com campos de formulário HTML.",
+        "Fontes manuscritas não são suportadas pelo sistema de cores hexadecimais do CSS."
+      ],
+      answer: 1,
+      feedback: "A tipografia influencia diretamente a legibilidade, usabilidade e experiência do usuário. Fontes manuscritas podem ser adequadas para títulos decorativos, mas prejudicam a leitura em textos corridos, formulários e tabelas — contextos que exigem clareza e precisão visual."
+    },
 
-  // Questão 33
-  {
-    aula: "Aula 12 - CSS e HTML Comandos Básicos",
-    tipo: "Código",
-    texto: "Analise o trecho de código abaixo:",
-    question: "Qual será o comportamento visual desse trecho ao ser renderizado no navegador?",
-    code: `<ol>
-    <li>HTML</li>
-    <li>CSS</li>
-    <li>JavaScript</li>
-  </ol>`,
-    options: [
-      "Uma lista com marcadores (bolinhas) para cada item",
-      "Uma lista numerada com HTML, CSS e JavaScript",
-      "Três parágrafos separados por ponto e vírgula",
-      "Uma lista sem nenhuma marcação visual"
-    ],
-    answer: 1,
-    feedback: "A tag <ol> cria uma lista ordenada, que numera automaticamente cada item <li>. Listas com marcadores usam <ul>."
-  },
+    // Questão 49
+    {
+      aula: "Aula 13 - Landing page com HTML",
+      tipo: "Código",
+      texto: "Um desenvolvedor criou o seguinte formulário para coletar dados de contato em uma landing page.",
+      question: "Qual input está com o tipo incorreto para sua finalidade descrita no placeholder?",
+      code: `<form>
+    <input type="text" placeholder="Seu nome completo">
+    <input type="text" placeholder="Seu e-mail">
+    <input type="password" placeholder="Crie uma senha">
+    <input type="submit" value="Enviar">
+  </form>`,
+      options: [
+        "O primeiro input, pois nomes devem usar type='name'.",
+        "O segundo input, pois e-mails devem usar type='email' para validação automática.",
+        "O terceiro input, pois senhas devem usar type='text' para visibilidade.",
+        "O quarto input, pois botões de envio devem usar type='button'."
+      ],
+      answer: 1,
+      feedback: "O campo de e-mail está usando type='text', que não realiza nenhuma validação de formato. O correto é type='email', que valida automaticamente se o valor digitado corresponde ao padrão de um endereço de e-mail antes do envio do formulário."
+    },
 
-  // Questão 34
-  {
-    aula: "Aula 12 - CSS e HTML Comandos Básicos",
-    tipo: "Direta",
-    texto: "Para separar estrutura de aparência, o CSS externo é vinculado ao HTML.",
-    question: "Onde deve ser inserida a tag <link> para conectar um arquivo CSS externo a uma página HTML?",
-    options: [
-      "Dentro da tag <body>, antes do conteúdo",
-      "Após o fechamento da tag </html>",
-      "Dentro da tag <head>",
-      "Dentro da tag <footer>"
-    ],
-    answer: 2,
-    feedback: "A tag <link rel='stylesheet' href='...'> deve ser inserida dentro do <head>, pois é nessa seção que ficam as configurações e referências externas da página."
-  },
+    // Questão 50
+    {
+      aula: "Aula 13 - Landing page com HTML",
+      tipo: "Aplicação",
+      texto: "Uma landing page estava sendo exibida corretamente no desktop, mas em smartphones o conteúdo aparecia muito pequeno, como uma versão miniaturizada da tela de computador.",
+      question: "Qual tag, ausente no código, é a principal responsável por esse comportamento em dispositivos móveis?",
+      options: [
+        "<link rel='mobile' href='mobile.css'>",
+        "<meta name='viewport' content='width=device-width, initial-scale=1'>",
+        "<style media='screen and (max-width: 600px)'>",
+        "<script src='responsive.js'></script>"
+      ],
+      answer: 1,
+      feedback: "Sem a meta tag viewport, navegadores móveis renderizam a página assumindo uma largura de desktop (cerca de 980px) e a comprimem para caber na tela, resultando no efeito de miniaturização descrito. A tag <meta name='viewport' content='width=device-width, initial-scale=1'> instrui o navegador a usar a largura real do dispositivo como referência."
+    },
+      // aula 14 Formatando com CSS
 
-  // Questão 35
-  {
-    aula: "Aula 12 - CSS e HTML Comandos Básicos",
-    tipo: "Contexto",
-    texto: "Um desenvolvedor percebe que o texto dentro de um botão está muito próximo das bordas do elemento, mas o botão em si está bem posicionado na página.",
-    question: "Qual propriedade CSS ele deve ajustar para resolver esse problema?",
-    options: [
-      "margin",
-      "border",
-      "padding",
-      "float"
-    ],
-    answer: 2,
-    feedback: "O padding define o espaçamento interno entre o conteúdo e a borda do elemento. O margin controla o espaço externo entre elementos distintos."
-  },
+    // 51 - o que é CSS
+    {
+      aula: "Aula 14 - Formatando com CSS",
+      tipo: "Direta",
 
-  // Questão 36
-  {
-    aula: "Aula 12 - CSS e HTML Comandos Básicos",
-    tipo: "Direta",
-    texto: "As tabelas HTML possuem tags específicas para cada parte de sua estrutura.",
-    question: "Qual tag é utilizada para definir uma célula de dados no corpo de uma tabela HTML?",
-    options: [
-      "<th>",
-      "<tr>",
-      "<td>",
-      "<tbody>"
-    ],
-    answer: 2,
-    feedback: "A tag <td> representa uma célula de dados comum. A tag <th> é usada para células de cabeçalho, e <tr> define uma linha inteira da tabela."
-  },
+      texto: "CSS significa Cascading Style Sheets.",
 
-  // Questão 37
-  {
-    aula: "Aula 12 - CSS e HTML Comandos Básicos",
-    tipo: "Aplicação",
-    texto: "Uma desenvolvedora precisa criar um menu de navegação com os itens dispostos horizontalmente e com distribuição flexível do espaço.",
-    question: "Qual propriedade CSS é mais adequada para esse tipo de layout?",
-    options: [
-      "float: left",
-      "display: flex",
-      "border-radius",
-      "text-transform: uppercase"
-    ],
-    answer: 1,
-    feedback: "O display: flex organiza os elementos de forma horizontal e flexível, sendo amplamente utilizado em menus e layouts modernos."
-  },
+      question: "Qual é a principal função do CSS no desenvolvimento web?",
 
-  // Questão 38
-  {
-    aula: "Aula 12 - CSS e HTML Comandos Básicos",
-    tipo: "Contexto",
-    texto: "Ao analisar o código de um site, um desenvolvedor percebe que todos os elementos usam apenas <div> e <span>, sem nenhuma tag semântica.",
-    question: "Qual é a principal desvantagem dessa abordagem em relação à Web Semântica?",
-    options: [
-      "O site ficará visualmente deformado no navegador",
-      "O CSS não conseguirá estilizar elementos <div>",
-      "Os mecanismos de busca terão dificuldade em interpretar e indexar o conteúdo",
-      "Os títulos <h1> deixarão de funcionar corretamente"
-    ],
-    answer: 2,
-    feedback: "A Web Semântica busca dar significado ao conteúdo para que buscadores e tecnologias assistivas entendam a estrutura da página. Usar apenas <div> sem tags semânticas prejudica a indexação e organização."
-  },
+      options: [
+        "Estruturar o conteúdo da página com elementos e tags",
+        "Definir a aparência visual da página, como cores, fontes e espaçamentos",
+        "Gerenciar requisições entre o navegador e o servidor",
+        "Criar a lógica de interação e comportamento da página"
+      ],
 
-  // Questão 39
-  {
-    aula: "Aula 12 - CSS e HTML Comandos Básicos",
-    tipo: "Código",
-    texto: "Considere o seguinte trecho de HTML e CSS:",
-    question: "O que acontece ao aplicar a classe 'destaque' ao parágrafo?",
-    code: `/* CSS */
-  .destaque {
-    background-color: yellow;
-    font-family: Verdana;
-  }
+      answer: 1,
 
-  <!-- HTML -->
-  <p class="destaque">Texto importante</p>`,
-    options: [
-      "O parágrafo recebe fundo amarelo e fonte Verdana",
-      "Apenas a cor do texto muda para amarelo",
-      "A classe só funciona em elementos <div>",
-      "O parágrafo some da página"
-    ],
-    answer: 0,
-    feedback: "As classes CSS permitem aplicar conjuntos de estilos a qualquer elemento HTML. Ao usar class='destaque', o parágrafo herda o fundo amarelo e a fonte Verdana definidos na classe."
-  },
+      feedback: "CSS é responsável pelo estilo visual da página — cores, fontes, espaçamentos e layout — enquanto o HTML cuida da estrutura."
+    },
 
-  // Questão 40
-  {
-    aula: "Aula 12 - CSS e HTML Comandos Básicos",
-    tipo: "Aplicação",
-    texto: "Um desenvolvedor deseja criar um layout com duas colunas: o conteúdo principal ocupando 70% da largura à esquerda e uma barra lateral com 30% à direita.",
-    question: "Qual combinação de propriedades CSS representa corretamente essa estrutura?",
-    options: [
-      ".principal { width: 70%; float: right; } .lateral { width: 30%; float: left; }",
-      ".principal { width: 70%; float: left; } .lateral { width: 30%; float: right; }",
-      ".principal { width: 70%; margin: auto; } .lateral { width: 30%; margin: auto; }",
-      ".principal { display: flex; } .lateral { display: flex; }"
-    ],
-    answer: 1,
-    feedback: "Para um layout de duas colunas com float, o conteúdo principal deve ter float: left com 70% e a barra lateral float: right com 30%, posicionando-os lado a lado."
-  },
+    // 52 - vinculação CSS
+    {
+      aula: "Aula 14 - Formatando com CSS",
+      tipo: "Código",
 
-  // Aula 13 - Landing page com HTML
+      texto: "Para aplicar um arquivo CSS externo a uma página HTML, é necessário informar ao navegador onde encontrá-lo.",
 
-  // Questão 41
-  {
-    aula: "Aula 13 - Landing page com HTML",
-    tipo: "Direta",
-    texto: "Landing pages são amplamente usadas em campanhas de marketing digital.",
-    question: "Qual é o principal objetivo de uma landing page?",
-    options: [
-      "Exibir todas as páginas e seções de um site institucional.",
-      "Converter visitantes e capturar leads com foco em uma única mensagem.",
-      "Gerenciar o cadastro de usuários em um sistema administrativo.",
-      "Apresentar um blog com múltiplos artigos e categorias."
-    ],
-    answer: 1,
-    feedback: "A landing page é uma página única criada para conversão de visitantes, captação de contatos e comunicação direta — com poucos elementos distrativos e foco total na ação desejada."
-  },
+      question: "Qual das opções abaixo vincula corretamente um arquivo CSS externo ao HTML?",
 
-  // Questão 42
-  {
-    aula: "Aula 13 - Landing page com HTML",
-    tipo: "Direta",
-    texto: "Todo documento HTML5 segue uma estrutura básica obrigatória.",
-    question: "Qual tag define o início do conteúdo visível ao usuário em uma página HTML5?",
-    options: [
-      "<head>",
-      "<html>",
-      "<body>",
-      "<title>"
-    ],
-    answer: 2,
-    feedback: "A tag <body> contém todo o conteúdo visível da página — textos, imagens, botões, menus. Já o <head> armazena metadados, links de CSS e o título da aba, que não são exibidos diretamente ao usuário."
-  },
+      code: `<!-- Opção A -->
+    <style href="style.css">
 
-  // Questão 43
-  {
-    aula: "Aula 13 - Landing page com HTML",
-    tipo: "Contexto",
-    texto: "Um desenvolvedor iniciante colocou todos os arquivos do projeto — HTML, CSS e imagens — na mesma pasta raiz. Com o crescimento do projeto, ficou difícil localizar e manter os arquivos.",
-    question: "Qual estrutura de pastas representa a organização mais adequada para um projeto de landing page?",
-    options: [
-      "Todos os arquivos na raiz, separados por prefixo no nome (ex: css_style.css, img_logo.png).",
-      "index.html na raiz e uma pasta assets com subpastas css e img.",
-      "Um único arquivo HTML com CSS e imagens embutidos diretamente no código.",
-      "Pasta separada para cada página, com CSS e imagens duplicadas em cada uma."
-    ],
-    answer: 1,
-    feedback: "A estrutura recomendada mantém o index.html na raiz e organiza os recursos dentro de assets/css e assets/img. Essa separação melhora manutenção, organização e escalabilidade do projeto."
-  },
+    <!-- Opção B -->
+    <link rel="stylesheet" href="style.css">
 
-  // Questão 44
-  {
-    aula: "Aula 13 - Landing page com HTML",
-    tipo: "Direta",
-    texto: "A escolha do formato de imagem impacta diretamente a qualidade visual e o desempenho de uma landing page.",
-    question: "Por que o formato SVG é considerado ideal para ícones e ilustrações em páginas web?",
-    options: [
-      "Porque suporta animações de vídeo e áudio embutidos no arquivo.",
-      "Porque é um formato rasterizado com alta compressão e carregamento rápido.",
-      "Porque mantém qualidade visual em qualquer tamanho, sendo leve e escalável.",
-      "Porque é o único formato compatível com todos os navegadores modernos."
-    ],
-    answer: 2,
-    feedback: "O SVG é um formato vetorial que não perde qualidade ao ser redimensionado, é leve e escalável — características ideais para ícones e ilustrações em páginas responsivas."
-  },
+    <!-- Opção C -->
+    <css src="style.css">
 
-  // Questão 45
-  {
-    aula: "Aula 13 - Landing page com HTML",
-    tipo: "Direta",
-    texto: "No CSS, as cores são frequentemente representadas no formato hexadecimal.",
-    question: "O que representa cada par de caracteres no código de cor #RRGGBB?",
-    options: [
-      "Resolução, Gradiente e Brilho da cor na tela.",
-      "Os canais de vermelho, verde e azul, respectivamente.",
-      "Os níveis de opacidade, saturação e luminosidade.",
-      "Código de fonte, tamanho e peso tipográfico da cor."
-    ],
-    answer: 1,
-    feedback: "No sistema hexadecimal #RRGGBB, RR representa vermelho, GG representa verde e BB representa azul. Cada par varia de 00 (ausência) a FF (intensidade máxima), compondo qualquer cor do modelo RGB."
-  },
+    <!-- Opção D -->
+    <script rel="stylesheet" href="style.css">`,
 
-  // Questão 46
-  {
-    aula: "Aula 13 - Landing page com HTML",
-    tipo: "Contexto",
-    texto: "Durante uma auditoria de código, um desenvolvedor encontrou uma página onde menus, rodapé e seções de conteúdo eram todos marcados com <div>.",
-    question: "Qual conjunto de tags semânticas do HTML5 substituiria corretamente essas divs?",
-    options: [
-      "<menu>, <base>, <content> e <bottom>",
-      "<nav>, <article>, <section> e <footer>",
-      "<list>, <block>, <area> e <end>",
-      "<header>, <link>, <text> e <close>"
-    ],
-    answer: 1,
-    feedback: "As tags semânticas corretas são: <nav> para menus, <article> para conteúdo independente, <section> para divisões temáticas e <footer> para o rodapé. Elas dão significado à estrutura, favorecendo acessibilidade e indexação por buscadores."
-  },
+      options: [
+        "Opção A",
+        "Opção B",
+        "Opção C",
+        "Opção D"
+      ],
 
-  // Questão 47
-  {
-    aula: "Aula 13 - Landing page com HTML",
-    tipo: "Direta",
-    texto: "Formulários HTML oferecem diferentes tipos de input para diferentes necessidades de seleção.",
-    question: "Qual é a diferença fundamental entre os inputs do tipo radio e checkbox?",
-    options: [
-      "Radio aceita texto digitado; checkbox aceita apenas cliques.",
-      "Radio permite selecionar apenas uma opção do grupo; checkbox permite múltiplas seleções.",
-      "Radio é usado para datas; checkbox é usado para arquivos.",
-      "Ambos têm a mesma função, diferindo apenas na aparência visual."
-    ],
-    answer: 1,
-    feedback: "O input type='radio' permite que o usuário escolha apenas uma opção dentro de um grupo. Já o type='checkbox' permite selecionar múltiplas opções simultaneamente — essa distinção é fundamental para criar formulários funcionalmente corretos."
-  },
+      answer: 1,
 
-  // Questão 48
-  {
-    aula: "Aula 13 - Landing page com HTML",
-    tipo: "Contexto",
-    texto: "A equipe de design de uma startup escolheu uma fonte manuscrita para todos os textos do sistema, incluindo campos de formulário e tabelas de dados.",
-    question: "Do ponto de vista da usabilidade, qual é o principal risco dessa escolha tipográfica?",
-    options: [
-      "Fontes manuscritas aumentam o tamanho dos arquivos CSS além do limite suportado pelos navegadores.",
-      "A escolha pode prejudicar a legibilidade em textos longos ou pequenos, comprometendo a experiência do usuário.",
-      "Fontes externas como Google Fonts são incompatíveis com campos de formulário HTML.",
-      "Fontes manuscritas não são suportadas pelo sistema de cores hexadecimais do CSS."
-    ],
-    answer: 1,
-    feedback: "A tipografia influencia diretamente a legibilidade, usabilidade e experiência do usuário. Fontes manuscritas podem ser adequadas para títulos decorativos, mas prejudicam a leitura em textos corridos, formulários e tabelas — contextos que exigem clareza e precisão visual."
-  },
+      feedback: "A tag correta é <link rel='stylesheet' href='style.css'>, inserida no <head> do HTML. As demais opções usam tags ou atributos incorretos."
+    },
 
-  // Questão 49
-  {
-    aula: "Aula 13 - Landing page com HTML",
-    tipo: "Código",
-    texto: "Um desenvolvedor criou o seguinte formulário para coletar dados de contato em uma landing page.",
-    question: "Qual input está com o tipo incorreto para sua finalidade descrita no placeholder?",
-    code: `<form>
-  <input type="text" placeholder="Seu nome completo">
-  <input type="text" placeholder="Seu e-mail">
-  <input type="password" placeholder="Crie uma senha">
-  <input type="submit" value="Enviar">
-</form>`,
-    options: [
-      "O primeiro input, pois nomes devem usar type='name'.",
-      "O segundo input, pois e-mails devem usar type='email' para validação automática.",
-      "O terceiro input, pois senhas devem usar type='text' para visibilidade.",
-      "O quarto input, pois botões de envio devem usar type='button'."
-    ],
-    answer: 1,
-    feedback: "O campo de e-mail está usando type='text', que não realiza nenhuma validação de formato. O correto é type='email', que valida automaticamente se o valor digitado corresponde ao padrão de um endereço de e-mail antes do envio do formulário."
-  },
+    // 53 - teste de vínculo
+    {
+      aula: "Aula 14 - Formatando com CSS",
+      tipo: "Curta",
 
-  // Questão 50
-  {
-    aula: "Aula 13 - Landing page com HTML",
-    tipo: "Aplicação",
-    texto: "Uma landing page estava sendo exibida corretamente no desktop, mas em smartphones o conteúdo aparecia muito pequeno, como uma versão miniaturizada da tela de computador.",
-    question: "Qual tag, ausente no código, é a principal responsável por esse comportamento em dispositivos móveis?",
-    options: [
-      "<link rel='mobile' href='mobile.css'>",
-      "<meta name='viewport' content='width=device-width, initial-scale=1'>",
-      "<style media='screen and (max-width: 600px)'>",
-      "<script src='responsive.js'></script>"
-    ],
-    answer: 1,
-    feedback: "Sem a meta tag viewport, navegadores móveis renderizam a página assumindo uma largura de desktop (cerca de 980px) e a comprimem para caber na tela, resultando no efeito de miniaturização descrito. A tag <meta name='viewport' content='width=device-width, initial-scale=1'> instrui o navegador a usar a largura real do dispositivo como referência."
-  }
+      texto: "Durante o desenvolvimento, é comum verificar se o CSS está sendo carregado corretamente pelo navegador.",
 
-]
+      question: "Qual é a forma mais rápida de testar se o arquivo CSS está vinculado ao HTML?",
+
+      options: [
+        "Abrir o terminal e executar o arquivo CSS diretamente",
+        "Aplicar uma cor de fundo chamativa no seletor body e verificar se a página muda",
+        "Criar um segundo arquivo HTML e importar o CSS nele",
+        "Verificar se o arquivo CSS tem mais de 10 linhas escritas"
+      ],
+
+      answer: 1,
+
+      feedback: "Aplicar background-color: red no body é um teste rápido e prático. Se a cor aparecer na página, o vínculo está funcionando corretamente."
+    },
+
+    // 54 - Google Fonts
+    {
+      aula: "Aula 14 - Formatando com CSS",
+      tipo: "Contexto",
+
+      texto: "Um desenvolvedor quer usar a fonte Nunito nos textos da landing page, mas ela não está instalada nos computadores dos usuários.",
+
+      question: "Qual é a solução correta para garantir que a fonte apareça em qualquer dispositivo?",
+
+      options: [
+        "Instalar a fonte no servidor de hospedagem do site",
+        "Orientar os usuários a instalarem a fonte manualmente",
+        "Importar a fonte via Google Fonts com um <link> no <head> e aplicar com font-family no CSS",
+        "Converter a fonte para imagem e inserir no HTML"
+      ],
+
+      answer: 2,
+
+      feedback: "O Google Fonts permite importar fontes externas via <link> no HTML. Com font-family no CSS, a fonte é aplicada em qualquer dispositivo sem precisar de instalação local."
+    },
+
+    // 55 - classes CSS
+    {
+      aula: "Aula 14 - Formatando com CSS",
+      tipo: "Direta",
+
+      texto: "Seletores de classe são um dos recursos mais usados no CSS.",
+
+      question: "Como uma classe chamada 'card' é declarada no CSS e aplicada no HTML?",
+
+      options: [
+        "CSS: #card {} → HTML: id='card'",
+        "CSS: .card {} → HTML: class='card'",
+        "CSS: @card {} → HTML: name='card'",
+        "CSS: card {} → HTML: type='card'"
+      ],
+
+      answer: 1,
+
+      feedback: "Classes usam ponto (.) no CSS e são referenciadas com o atributo class no HTML. São reutilizáveis e podem ser aplicadas em múltiplos elementos."
+    },
+
+    // 56 - variáveis CSS
+    {
+      aula: "Aula 14 - Formatando com CSS",
+      tipo: "Código",
+
+      texto: "Variáveis CSS são declaradas em :root e reutilizadas ao longo do arquivo.",
+
+      question: "Qual código declara e usa corretamente uma variável CSS?",
+
+      code: `// Opção A
+    body { --cor-principal: #414059; }
+    h1 { color: var(cor-principal); }
+
+    // Opção B
+    :root { --cor-principal: #414059; }
+    h1 { color: var(--cor-principal); }
+
+    // Opção C
+    :root { $cor-principal: #414059; }
+    h1 { color: $cor-principal; }
+
+    // Opção D
+    root { --cor-principal: #414059; }
+    h1 { color: --cor-principal; }`,
+
+      options: [
+        "Opção A",
+        "Opção B",
+        "Opção C",
+        "Opção D"
+      ],
+
+      answer: 1,
+
+      feedback: "Variáveis CSS são declaradas em :root com dois hífens (--nome) e usadas com var(--nome). A opção B é a única sintaticamente correta."
+    },
+
+    // 57 - Flexbox
+    {
+      aula: "Aula 14 - Formatando com CSS",
+      tipo: "Contexto",
+
+      texto: "No menu da landing page, o logo precisa ficar à esquerda e os links de navegação à direita, ocupando toda a largura do cabeçalho.",
+
+      question: "Qual combinação de propriedades CSS resolve esse layout de forma eficiente?",
+
+      options: [
+        "display: block e text-align: right",
+        "display: flex e justify-content: space-between",
+        "position: absolute e right: 0",
+        "display: grid e grid-template-columns: auto"
+      ],
+
+      answer: 1,
+
+      feedback: "display: flex transforma o container em layout flexível, e justify-content: space-between posiciona o primeiro item no início e o último no fim — ideal para menus."
+    },
+
+    // 58 - menu fixo
+    {
+      aula: "Aula 14 - Formatando com CSS",
+      tipo: "Direta",
+
+      texto: "Em landing pages, é comum que o menu permaneça visível enquanto o usuário rola a página.",
+
+      question: "Qual propriedade CSS mantém o menu fixo no topo da tela durante a rolagem?",
+
+      options: [
+        "position: relative",
+        "position: absolute",
+        "position: fixed",
+        "position: static"
+      ],
+
+      answer: 2,
+
+      feedback: "position: fixed remove o elemento do fluxo do documento e o mantém fixo em relação à janela do navegador, independente da rolagem."
+    },
+
+    // 59 - CSS Grid
+    {
+      aula: "Aula 14 - Formatando com CSS",
+      tipo: "Aplicação",
+
+      texto: "Uma seção da landing page precisa exibir três cartões lado a lado, ocupando o mesmo espaço cada um.",
+
+      question: "Qual CSS cria corretamente esse layout de três colunas iguais?",
+
+      options: [
+        "display: flex; flex-columns: 3;",
+        "display: grid; grid-template-columns: 1fr 1fr 1fr;",
+        "display: grid; columns: 3 equal;",
+        "display: block; width: 33% each;"
+      ],
+
+      answer: 1,
+
+      feedback: "display: grid com grid-template-columns: 1fr 1fr 1fr cria três colunas que dividem o espaço disponível em partes iguais usando a unidade fr."
+    },
+
+    // 60 - responsividade imagem
+    {
+      aula: "Aula 14 - Formatando com CSS",
+      tipo: "Curta",
+
+      texto: "Imagens dentro de colunas de Grid podem extrapolar os limites e quebrar o layout.",
+
+      question: "Qual conjunto de propriedades impede que uma imagem ultrapasse a largura da coluna e se distorça?",
+
+      options: [
+        "width: 100% e height: 100%",
+        "max-width: 100% e height: auto",
+        "min-width: 100% e height: fixed",
+        "overflow: hidden e height: auto"
+      ],
+
+      answer: 1,
+
+      feedback: "max-width: 100% impede que a imagem ultrapasse o container, e height: auto preserva a proporção original. É a combinação padrão para imagens responsivas."
+    }
+
+  ]
 
 };

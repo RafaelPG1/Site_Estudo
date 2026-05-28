@@ -124,6 +124,7 @@ Total: 10 questões
 ✔ Misturar níveis de explicação  
 ✔ Evitar repetição  
 
+QUERO SOMENTE 10 QUESTÕES NADA A MAIS VIU
 ---
 
 🧠 NÍVEL
