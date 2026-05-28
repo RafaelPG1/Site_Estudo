@@ -284,6 +284,34 @@ function _aplicarConfigs(cfg) {
 /* ── Aplica configs salvas na inicialização ── */
 _aplicarConfigs(_estado.configs);
 
+/* ── Bootstrap loginSuccess — navegação entre páginas ──────
+   Quando o usuário navega de index.html para resumo.html (ou
+   qualquer outra página secundária), o browser destrói todo o
+   contexto JS e cria um novo do zero. audio-state.js reinicia
+   com _currentSfxAreaMap = {} e _currentUid = null, e nunca
+   recebe nexus:loginSuccess porque o login já ocorreu na página
+   anterior.
+
+   Se o localStorage já tem um usuário logado ao carregar o módulo,
+   disparamos nexus:loginSuccess aqui para que audio-state.js
+   execute _fetchFromFirebase() e hidrate _currentSfxAreaMap
+   corretamente em qualquer página.
+
+   setTimeout(0): garante que todos os módulos (audio-state.js,
+   sound.js) terminaram seus top-level imports antes do evento
+   chegar. Seguro: audio-state.js já tem _activeLoadToken para
+   descartar respostas stale, e setUsuario() tem guard de uid
+   para evitar disparo duplo em chamadas posteriores.
+   ─────────────────────────────────────────────────────────── */
+if (_estado.usuario?.uid) {
+  console.log('[global] bootstrap loginSuccess:', _estado.usuario.uid);
+  setTimeout(() => {
+    document.dispatchEvent(new CustomEvent('nexus:loginSuccess', {
+      detail: { uid: _estado.usuario.uid },
+    }));
+  }, 0);
+}
+
 /* ══════════════════════════════════════════════════════════
    QUIZ — limpar dados
    ══════════════════════════════════════════════════════════ */

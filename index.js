@@ -343,7 +343,11 @@ function abrirModalLogin() {
       const configsRemota = await carregarConfigs(resultado.usuario.uid);
 
       if (configsRemota) {
-        hydrateConfigs({ ...configsRemota, ...getConfigs() });
+        // Firebase tem prioridade: dados remotos sobrescrevem localStorage.
+        // Ordem anterior era { ...configsRemota, ...getConfigs() }, o que
+        // fazia o localStorage sobrescrever o Firebase — apagando sfxAreaMap
+        // e outros campos que só existem no registro remoto.
+        hydrateConfigs({ ...getConfigs(), ...configsRemota });
         console.log('[login] configs mescladas com Firebase ✓');
       } else {
         console.log('[login] nenhuma config remota — mantendo localStorage');

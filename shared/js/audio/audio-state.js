@@ -336,6 +336,7 @@ function _persistSfxMapToFirebase()  { _persistAllToFirebase(); }
 
 document.addEventListener('nexus:loginSuccess', async ({ detail }) => {
   const uid = detail?.uid;
+  console.log('[audio-state] loginSuccess recebido:', uid);
   if (!uid) {
     console.warn('[audio-state] nexus:loginSuccess sem uid no detail — ignorado.');
     return;
@@ -374,6 +375,7 @@ document.addEventListener('nexus:loginSuccess', async ({ detail }) => {
     `[audio-state] uid="${uid}" → modo="${_currentMode}"`,
     saved.mode !== null ? '(Firebase)' : '(padrão — primeiro acesso)'
   );
+  console.log('[audio-state] sfxAreaMap hidratado:', JSON.stringify(_currentSfxAreaMap));
 });
 
 document.addEventListener('nexus:logout', () => {
