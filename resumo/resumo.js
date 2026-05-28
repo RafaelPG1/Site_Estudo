@@ -45,6 +45,9 @@ const State = {
   _tocObserver:    null,
 };
 
+// Expõe State para módulos auxiliares (ex: botões flutuantes)
+window.__nexusState = State;
+
 /* ══════════════════════════════════════════════
    BOOT
 ══════════════════════════════════════════════ */
@@ -54,7 +57,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Imports opcionais
   try {
-    const mod = await import('../shared/js/cores.js');
+    const mod = await import('../shared/js/themes/cores.js');
     State.DISC_CORES = mod.DISC_CORES ?? {};
   } catch (_) {}
 
@@ -581,8 +584,9 @@ function _abrirModal(aula) {
   const body = document.getElementById('rm-body');
   if (body) body.innerHTML = _buildReaderBody(aula);
 
-  // Bind dos acordeões
-  _bindReaderAccordion();
+  // Bind dos acordeões — chave isolada por aula/disciplina/semestre
+  const _accordionKey = _storageKeyAccordion(aula.aula ?? aula.id ?? String(Date.now()));
+  _bindReaderAccordion(_accordionKey);
 
   // Abre
   document.getElementById('read-modal').classList.add('read-modal--open');
@@ -595,13 +599,66 @@ function _abrirModal(aula) {
   _progressCleanup = _updateReadingProgress(scrollEl);
 }
 
-function _bindReaderAccordion() {
+/* ── Gera chave única para localStorage baseada na aula + disciplina + semestre ── */
+function _storageKeyAccordion(aulaId) {
+  const disc = State.disciplina?.id ?? 'unknown';
+  const sem  = State.semestre    ?? 'unknown';
+  // Sanitiza o id para ser seguro como chave
+  const safe = String(aulaId).replace(/[^a-zA-Z0-9_\-\.]/g, '_');
+  return `nexus_accordion__${sem}__${disc}__${safe}`;
+}
+
+/* ── Lê o estado salvo do localStorage para uma dada chave ── */
+function _lerEstadoAccordion(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+/* ── Persiste o estado atual de todos os accordions no localStorage ── */
+function _salvarEstadoAccordion(key) {
+  try {
+    const estado = {};
+    document.querySelectorAll('.rm-collapse').forEach(sec => {
+      const idx = sec.dataset.sec;
+      if (idx !== undefined) {
+        estado[idx] = sec.classList.contains('rm-collapse--open');
+      }
+    });
+    localStorage.setItem(key, JSON.stringify(estado));
+  } catch (_) {}
+}
+
+/* ── Restaura o estado salvo nos elementos do DOM ── */
+function _restaurarEstadoAccordion(key) {
+  const estado = _lerEstadoAccordion(key);
+  if (!estado) return; // sem estado salvo → mantém padrão (primeira aberta)
+  document.querySelectorAll('.rm-collapse').forEach(sec => {
+    const idx = sec.dataset.sec;
+    if (idx !== undefined && estado[idx] !== undefined) {
+      sec.classList.toggle('rm-collapse--open', estado[idx]);
+      const trigger = sec.querySelector('.rm-collapse__trigger');
+      if (trigger) trigger.setAttribute('aria-expanded', String(estado[idx]));
+    }
+  });
+}
+
+function _bindReaderAccordion(storageKey) {
+  // Restaura estado salvo antes de vincular eventos
+  _restaurarEstadoAccordion(storageKey);
+
   document.querySelectorAll('.rm-collapse__trigger').forEach(btn => {
     btn.addEventListener('click', () => {
       const section = btn.closest('.rm-collapse');
       if (!section) return;
       const isOpen = section.classList.contains('rm-collapse--open');
       section.classList.toggle('rm-collapse--open', !isOpen);
+      btn.setAttribute('aria-expanded', String(!isOpen));
+      // Persiste estado isolado por aula
+      _salvarEstadoAccordion(storageKey);
     });
   });
 }
@@ -612,16 +669,20 @@ function _buildReaderBody(aula) {
   const m       = aulaStr.match(/^(Aula\s*[\d\/]+)\s*[—–-]\s*(.+)$/i);
   const aulaNum = m ? m[1] : aulaStr;
   const aulaTit = m ? m[2] : '';
-  const nivel   = _nivelAula(secoes.length);
-  const tempo   = _estimarTempo(aula);
+  const aulaNumero = aulaNum.replace(/\D/g, '');
 
   let html = `
     <div class="reader__hero">
+      ${aulaNumero ? `<div class="reader__hero-number">${_esc(aulaNumero)}</div>` : ''}
       <div class="reader__hero-eyebrow">${_esc(aulaNum)}</div>
       <h1 class="reader__hero-title">${_esc(aulaTit || aulaStr)}</h1>
+      <div class="hero-divider"></div>
       <div class="reader__hero-meta">
         <span class="reader__hero-chip">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"> <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          </svg>
           ${secoes.length} seç${secoes.length !== 1 ? 'ões' : 'ão'}
         </span>
         ${aula.professor ? `<span class="reader__hero-chip">👤 ${_esc(aula.professor)}</span>` : ''}
@@ -635,7 +696,6 @@ function _buildReaderBody(aula) {
     </div>`;
   }
 
-  // Seções colapsáveis — primeira aberta por padrão
   secoes.forEach((sec, i) => {
     const isFirst = i === 0;
     html += `
@@ -791,7 +851,6 @@ function _renderSidebar() {
       <span class="disc-item__emoji">${disc.emoji}</span>
       <span class="disc-item__info">
         <span class="disc-item__nome">${disc.nome}</span>
-        <span class="disc-item__status disc-item__status--hint" id="disc-status-${disc.id}">Clique</span>
       </span>
       <svg class="disc-item__chevron" viewBox="0 0 24 24" fill="none"
            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -923,3 +982,106 @@ function _parseInline(str) {
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/`([^`]+)`/g, '<code>$1</code>');
 }
+
+/* ══════════════════════════════════════════════
+   BOTÕES FLUTUANTES LATERAIS
+   ✦ Scroll to top / Collapse all / Scroll to bottom
+══════════════════════════════════════════════ */
+(function _initFloatActions() {
+
+  /* ── Injeta HTML ── */
+  const container = document.createElement('div');
+  container.className = 'float-actions';
+  container.setAttribute('aria-label', 'Ações rápidas');
+  container.innerHTML = `
+    <button class="float-btn float-btn--top" id="fab-top" data-tip="Ir ao topo" aria-label="Rolar até o topo">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="18 15 12 9 6 15"/>
+      </svg>
+    </button>
+    <button class="float-btn float-btn--collapse" id="fab-collapse" data-tip="Recolher seções" aria-label="Recolher todas as seções">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <!-- ícone "collapse / minimizar" — duas setas apontando para o centro -->
+        <polyline points="4 14 12 14 12 20"/>
+        <polyline points="20 10 12 10 12 4"/>
+        <line x1="4" y1="20" x2="12" y2="12"/>
+        <line x1="20" y1="4" x2="12" y2="12"/>
+      </svg>
+    </button>
+    <button class="float-btn float-btn--bottom" id="fab-bottom" data-tip="Ir ao final" aria-label="Rolar até o final">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+    </button>`;
+  document.body.appendChild(container);
+
+  /* ── Referências ── */
+  const fabTop      = document.getElementById('fab-top');
+  const fabCollapse = document.getElementById('fab-collapse');
+  const fabBottom   = document.getElementById('fab-bottom');
+
+  /* ── Obtém o elemento de scroll ativo (reader ou window) ── */
+  function _getScrollTarget() {
+    const reader = document.getElementById('read-modal');
+    if (reader && reader.classList.contains('read-modal--open')) {
+      return document.getElementById('rm-body-wrapper') ?? window;
+    }
+    return window;
+  }
+
+  /* ── Scroll to top ── */
+  fabTop.addEventListener('click', () => {
+    const target = _getScrollTarget();
+    if (target === window) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      target.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  });
+
+  /* ── Scroll to bottom ── */
+  fabBottom.addEventListener('click', () => {
+    const target = _getScrollTarget();
+    if (target === window) {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    } else {
+      target.scrollTo({ top: target.scrollHeight, behavior: 'smooth' });
+    }
+  });
+
+  /* ── Collapse all — fecha TODAS as seções, sem abrir ── */
+  fabCollapse.addEventListener('click', () => {
+    const sections = document.querySelectorAll('.rm-collapse');
+    if (!sections.length) return;
+
+    sections.forEach(sec => {
+      sec.classList.remove('rm-collapse--open');
+      const trigger = sec.querySelector('.rm-collapse__trigger');
+      if (trigger) trigger.setAttribute('aria-expanded', 'false');
+    });
+
+    // Persiste estado colapsado no localStorage usando a chave da aula aberta
+    const aulaLabel = document.getElementById('rm-aula-label');
+    if (aulaLabel && aulaLabel.textContent) {
+      // Reconstrói a mesma chave usada em _bindReaderAccordion
+      const disc = window.__nexusState?.disciplina?.id ?? 'unknown';
+      const sem  = window.__nexusState?.semestre       ?? 'unknown';
+      const safe = String(aulaLabel.textContent).replace(/[^a-zA-Z0-9_\-\.]/g, '_');
+      try {
+        const estado = {};
+        sections.forEach(sec => { if (sec.dataset.sec !== undefined) estado[sec.dataset.sec] = false; });
+        localStorage.setItem(`nexus_accordion__${sem}__${disc}__${safe}`, JSON.stringify(estado));
+      } catch (_) {}
+    }
+  });
+
+  /* ── Os botões top/bottom ficam sempre visíveis quando o reader está aberto.
+     A exibição/ocultação do container .float-actions é feita pelo CSS via
+     body:has(.read-modal--open) — sem lógica de scroll. ── */
+  fabTop.classList.remove('float-btn--hidden');
+  fabBottom.classList.remove('float-btn--hidden');
+
+})();

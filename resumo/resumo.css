@@ -137,11 +137,11 @@ a { text-decoration: none; color: inherit; }
   flex-shrink: 0;
 }
 .header__center {
-  position: absolute;
+  position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 0.73rem; font-weight: 500;
-  letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3);
+  font-size: 0.83rem; font-weight: 500;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-2);
   white-space: nowrap;
   pointer-events: none;
   max-width: 38%;
@@ -159,7 +159,7 @@ a { text-decoration: none; color: inherit; }
   max-width: 300px;
 }
 
-.disc-badge,
+.disc-badge { display: none !important; }
 .status-badge {
   display: flex;
   align-items: center;
@@ -798,21 +798,60 @@ a { text-decoration: none; color: inherit; }
 
 /* Cabeçalho do resumo */
 .reader__hero {
+  position: relative;
   margin-bottom: 2.5rem;
   padding-bottom: 2rem;
   border-bottom: 1px solid var(--border);
   text-align: center;
 }
+
 .reader__hero-eyebrow {
-  font-size: 1.3rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.62rem;
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--disc-tema);
-  margin-bottom: 0.6rem;
+  margin-bottom: 1rem;
   transition: color 0.4s;
-  font-family: var(--font-body);
 }
+.reader__hero-eyebrow::before,
+.reader__hero-eyebrow::after {
+  content: '';
+  display: block;
+  width: 28px;
+  height: 1px;
+  background: rgba(var(--disc-tema-rgb), 0.4);
+  border-radius: 99px;
+}
+
+.hero-divider {
+  width: 32px;
+  height: 2px;
+  background: rgba(var(--disc-tema-rgb), 0.35);
+  border-radius: 99px;
+  margin: 1.25rem auto;
+}
+
+.reader__hero-number {
+  font-family: var(--font-display);
+  font-size: 7rem;
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(var(--disc-tema-rgb), 0.06);
+  position: absolute;
+  top: -1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  letter-spacing: -0.04em;
+  pointer-events: none;
+  white-space: nowrap;
+  user-select: none;
+  transition: color 0.4s;
+}
+
 .reader__hero-title {
   font-family: var(--font-display);
   font-size: clamp(1.7rem, 3.5vw, 2.6rem);
@@ -1489,4 +1528,119 @@ pre {
   .btn-back__label { display: none; }
   .reader__bar-aula { max-width: 160px; }
   .reader__hero-title { font-size: 1.5rem; }
+}
+
+/* ══════════════════════════════════════════
+   BOTÕES FLUTUANTES LATERAIS (Float Actions)
+══════════════════════════════════════════ */
+.float-actions {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 50%;
+  transform: translateY(50%);
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  pointer-events: none; /* container transparente ao mouse */
+  /* Oculto por padrão — aparece só quando o reader estiver aberto */
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.22s var(--ease-out), visibility 0.22s var(--ease-out);
+}
+
+/* Exibe os botões somente quando o reader estiver aberto */
+.read-modal--open ~ .float-actions,
+body:has(.read-modal--open) .float-actions {
+  opacity: 1;
+  visibility: visible;
+}
+
+.float-btn {
+  pointer-events: all;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-md);
+  background: var(--surface-2);
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition:
+    background 0.18s var(--ease-out),
+    color      0.18s var(--ease-out),
+    border-color 0.18s var(--ease-out),
+    box-shadow 0.18s var(--ease-out),
+    opacity    0.22s var(--ease-out),
+    transform  0.22s var(--ease-out);
+  box-shadow: var(--shadow-sm);
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.float-btn:hover {
+  background: var(--surface-3);
+  color: var(--text-1);
+  border-color: var(--border-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.float-btn:active {
+  transform: scale(0.92);
+}
+
+/* Foco acessível */
+.float-btn:focus-visible {
+  outline: 2px solid rgba(var(--disc-tema-rgb), 0.5);
+  outline-offset: 2px;
+}
+
+/* Ícone de colapso — cor de destaque sutil */
+.float-btn--collapse:hover {
+  color: var(--disc-tema);
+  border-color: rgba(var(--disc-tema-rgb), 0.28);
+}
+
+/* Botões ocultos quando irrelevantes */
+.float-btn--hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.85);
+}
+
+/* Tooltip */
+.float-btn::after {
+  content: attr(data-tip);
+  position: absolute;
+  right: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text-1);
+  background: var(--surface-3);
+  border: 1px solid var(--border-md);
+  border-radius: var(--radius-sm);
+  padding: 0.3rem 0.55rem;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s var(--ease-out);
+  box-shadow: var(--shadow-sm);
+}
+
+.float-btn:hover::after {
+  opacity: 1;
+}
+
+/* Em mobile pequeno, esconde tooltips para não transbordar */
+@media (max-width: 440px) {
+  .float-btn::after { display: none; }
+  .float-actions { right: 0.65rem; }
+  .float-btn { width: 34px; height: 34px; }
 }
