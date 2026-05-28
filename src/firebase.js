@@ -1,5 +1,5 @@
 /* =============================================
-   NEXUS STUDY — firebase.js
+   NEXUS STUDY — src/firebase.js
    Autenticação com Firestore + PIN com hash SHA-256
    src/firebase.js
    ============================================= */

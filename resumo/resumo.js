@@ -1,5 +1,5 @@
 /* =============================================
-   NEXUS STUDY — resumo.js  (v12 — Premium Docs Edition)
+   NEXUS STUDY — resumo/resumo.js  (v13 — área 'resumos' em todos os playSound)
    ✦ Toda lógica da v11 preservada
    ✦ Modal substituído por painel lateral deslizante
    ✦ TOC sidebar com scroll spy dentro do painel
@@ -26,7 +26,7 @@ import { injetarLogo } from '../shared/js/utils/logo.js';
 
 /* ─────────────────────────────────────────────
    ÁUDIO — sistema centralizado
-   Usar sempre playSound(event). Nunca chamar
+   Usar sempre playSound(event, 'resumos'). Nunca chamar
    audio.sfx diretamente neste arquivo.
 ───────────────────────────────────────────── */
 import Sound      from '../shared/js/audio/sound.js';
@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   criarSemestreSelect('semestre-wrap-resumo', sem => {
     // Som de select ao trocar semestre — igual ao index.js
-    playSound('select');
+    playSound('select', 'resumos');
 
     State.semestre     = sem;
     State.disciplinas  = getDisciplinasDeSemestre(sem);
@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (wrap) {
       const sel = wrap.querySelector('select');
       if (sel) {
-        sel.addEventListener('mousedown', () => playSound('click'));
+        sel.addEventListener('mousedown', () => playSound('click', 'resumos'));
       }
     }
   });
@@ -121,8 +121,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   _carregarConteudo();
 
   // Botão voltar ao início
-  document.getElementById('btn-back')?.addEventListener('mouseenter', () => playSound('hover'));
-  document.getElementById('btn-back')?.addEventListener('click',      () => playSound('click'));
+  document.getElementById('btn-back')?.addEventListener('mouseenter', () => playSound('hover', 'resumos'));
+  document.getElementById('btn-back')?.addEventListener('click',      () => playSound('click', 'resumos'));
 });
 
 
@@ -291,7 +291,7 @@ el.innerHTML = `
   </div>`;
 
 document.getElementById('videos-strip-toggle')?.addEventListener('click', () => {
-  playSound('click');
+  playSound('click', 'resumos');
   document.getElementById('videos-strip-wrap')?.classList.toggle('videos-strip--open');
 });
 
@@ -392,7 +392,7 @@ function _buildToggleHtml() {
 
 function _setModo(modo) {
   if (State.modo === modo) return;
-  playSound('select');
+  playSound('select', 'resumos');
   State.modo = modo;
   document.querySelectorAll('[data-modo]').forEach(btn => {
     btn.classList.toggle('mode-btn--active', btn.dataset.modo === modo);
@@ -493,7 +493,7 @@ function _nivelAula(secoes) {
    não repete enquanto o cursor move dentro dele.
 ══════════════════════════════════════════════ */
 function _bindCardHover(card) {
-  card.addEventListener('mouseenter', () => playSound('hover'));
+  card.addEventListener('mouseenter', () => playSound('hover', 'resumos'));
 }
 
 /* ══════════════════════════════════════════════
@@ -603,14 +603,14 @@ function _criarCardSintese(aula, idx) {
 ══════════════════════════════════════════════ */
 function _bindModal() {
   document.getElementById('read-modal-close')?.addEventListener('click', () => {
-    playSound('closeModal');
+    playSound('closeModal', 'resumos');
     _fecharModal();
   });
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       // Só toca se o reader estiver aberto
       if (document.getElementById('read-modal')?.classList.contains('read-modal--open')) {
-        playSound('closeModal');
+        playSound('closeModal', 'resumos');
       }
       _fecharModal();
     }
@@ -621,8 +621,8 @@ let _progressCleanup = null;
 
 function _abrirModal(aula) {
   // Sons de abertura
-  playSound('click');
-  playSound('openModal');
+  playSound('click', 'resumos');
+  playSound('openModal', 'resumos');
 
   // Preenche barra superior
   const aulaLabel = document.getElementById('rm-aula-label');
@@ -706,7 +706,7 @@ function _bindReaderAccordion(storageKey) {
       const isOpen = section.classList.contains('rm-collapse--open');
       section.classList.toggle('rm-collapse--open', !isOpen);
       btn.setAttribute('aria-expanded', String(!isOpen));
-      playSound('select');
+      playSound('select', 'resumos');
       _salvarEstadoAccordion(storageKey);
     });
   });
@@ -904,7 +904,7 @@ function _renderSidebar() {
            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M9 18l6-6-6-6"/>
       </svg>`;
-    item.addEventListener('mouseenter', () => playSound('hover'));
+    item.addEventListener('mouseenter', () => playSound('hover', 'resumos'));
     item.addEventListener('click', () => _trocarDisciplina(disc));
     list.appendChild(item);
   });
@@ -928,7 +928,7 @@ function _marcarStatusConteudo(discId, tem) {
 
 function _trocarDisciplina(disc) {
   if (disc.id === State.disciplina?.id) return;
-  playSound('click');
+  playSound('click', 'resumos');
   State.disciplina   = disc;
   State.temConteudo  = null;
   State.aulas        = [];
@@ -989,13 +989,13 @@ function _nomeCurto(nome, max = 18) {
    MOBILE DROPDOWN
 ══════════════════════════════════════════════ */
 function _bindMobileDropdown() {
-  document.getElementById('mobile-disc-btn')?.addEventListener('mouseenter', () => playSound('hover'));
+  document.getElementById('mobile-disc-btn')?.addEventListener('mouseenter', () => playSound('hover', 'resumos'));
   document.getElementById('mobile-disc-btn')?.addEventListener('click', () => {
-    playSound('click');
+    playSound('click', 'resumos');
     _abrirMobileDropdown();
   });
   document.getElementById('mobile-dropdown-backdrop')?.addEventListener('click', () => {
-    playSound('closeModal');
+    playSound('closeModal', 'resumos');
     _fecharMobileDropdown();
   });
 }
@@ -1012,11 +1012,11 @@ function _abrirMobileDropdown() {
     btn.innerHTML = `
       <span class="disc-item__emoji">${disc.emoji}</span>
       <span class="disc-item__info"><span class="disc-item__nome">${disc.nome}</span></span>`;
-    btn.addEventListener('mouseenter', () => playSound('hover'));
+    btn.addEventListener('mouseenter', () => playSound('hover', 'resumos'));
     btn.addEventListener('click', () => _trocarDisciplina(disc));
     list.appendChild(btn);
   });
-  playSound('openModal');
+  playSound('openModal', 'resumos');
   dd.classList.add('mobile-dropdown--open');
   document.body.style.overflow = 'hidden';
 }
@@ -1088,7 +1088,7 @@ function _parseInline(str) {
   }
 
   fabTop.addEventListener('click', () => {
-    playSound('click');
+    playSound('click', 'resumos');
     const target = _getScrollTarget();
     if (target === window) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1098,7 +1098,7 @@ function _parseInline(str) {
   });
 
   fabBottom.addEventListener('click', () => {
-    playSound('click');
+    playSound('click', 'resumos');
     const target = _getScrollTarget();
     if (target === window) {
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
@@ -1108,7 +1108,7 @@ function _parseInline(str) {
   });
 
   fabCollapse.addEventListener('click', () => {
-    playSound('select');
+    playSound('select', 'resumos');
     const sections = document.querySelectorAll('.rm-collapse');
     if (!sections.length) return;
 

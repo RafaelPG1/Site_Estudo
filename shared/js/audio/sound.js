@@ -532,21 +532,95 @@ function _buildModalDOM() {
 
 /* ── Abertura e fechamento ── */
 
+/* ── Sync overrides from audio-state (NOVO v1.2) ── */
+
+/**
+ * Lê o sfxAreaMap atual do audio-state e popula _specificOverrides
+ * para que o modal reflita os overrides já salvos no Firebase.
+ *
+ * Formato do sfxAreaMap (audio-state):
+ *   { game: { click: 'click5' }, resumos: { click: 'click3' } }
+ *
+ * Formato de _specificOverrides (sound.js):
+ *   { click: { Game: 'click5', Resumos: null, ... }, ... }
+ *
+ * A conversão normaliza as chaves de área para o case exato de cat.areas
+ * (ex: 'game' → 'Game', 'resumos' → 'Resumos').
+ */
+function _syncOverridesFromState() {
+  const areaMap = audioState.getSfxAreaMap?.() ?? {};
+
+  console.log('[sound] _syncOverridesFromState: sfxAreaMap do audio-state =', JSON.stringify(areaMap));
+
+  // ── 1. Reseta _specificOverrides para o estado limpo (null = sem override) ──
+  // Necessário para evitar overrides "fantasma" de sessões anteriores
+  // que foram removidos no Firebase mas ainda vivem no objeto local.
+  _CATEGORIES.forEach(cat => {
+    cat.areas.forEach(area => {
+      _specificOverrides[cat.id][area] = null;
+    });
+  });
+
+  // ── 2. Mapa reverso: lowercase → label exato de área ──
+  // cat.areas usa título (ex: 'Game', 'Resumos'); sfxAreaMap usa lowercase (ex: 'game', 'resumos').
+  const areaLabelByKey = {};
+  _CATEGORIES.forEach(cat => {
+    cat.areas.forEach(area => {
+      areaLabelByKey[area.toLowerCase()] = area;
+    });
+  });
+
+  // ── 3. Propaga overrides do Firebase para _specificOverrides ──
+  Object.entries(areaMap).forEach(([areaKey, actionMap]) => {
+    const areaLabel = areaLabelByKey[areaKey];
+    if (!areaLabel) {
+      console.warn('[sound] _syncOverridesFromState: chave de área desconhecida "' + areaKey + '" — ignorada');
+      return;
+    }
+
+    Object.entries(actionMap).forEach(([action, variantId]) => {
+      // action pode ser 'click', 'hover', 'select', 'openModal', 'closeModal'.
+      // catId do modal: 'modal' para ambas as actions de modal; caso contrário = action.
+      const catId = (action === 'openModal' || action === 'closeModal') ? 'modal' : action;
+      if (_specificOverrides[catId] !== undefined) {
+        _specificOverrides[catId][areaLabel] = variantId || null;
+        console.log(`[sound] _syncOverridesFromState: override aplicado catId="${catId}" area="${areaLabel}" variant="${variantId}"`);
+      }
+    });
+  });
+
+  // ── 4. Recalcula selectedAreas ──
+  // Uma área aparece em selectedAreas[catId] somente se NÃO tiver override (= null).
+  _CATEGORIES.forEach(cat => {
+    _modalState.selectedAreas[cat.id] = cat.areas.filter(
+      area => _specificOverrides[cat.id][area] === null
+    );
+  });
+}
+
 function _openModal() {
   if (_modalOpen) return;
   _modalOpen = true;
 
-  // Sincroniza selectedVariant com o SFX_MAP atual do audio-state
-  // para que o modal reflita os sons salvos do usuário.
+  // ── 1. Sincroniza som GERAL com o SFX_MAP atual do audio-state ──
+  // Feito sempre ao abrir para refletir o que o Firebase retornou após o login.
   const currentSfxMap = audioState.getSfxMap();
   if (currentSfxMap.click)      _modalState.selectedVariant['click']  = currentSfxMap.click;
   if (currentSfxMap.hover)      _modalState.selectedVariant['hover']  = currentSfxMap.hover;
   if (currentSfxMap.select)     _modalState.selectedVariant['select'] = currentSfxMap.select;
-  // Para 'modal', openModal e closeModal são controlados pela mesma categoria
-  // mas o selectedVariant armazena apenas uma variante ativa por vez.
-  // Usa openModal como valor representativo da categoria 'modal'.
   if (currentSfxMap.openModal)  _modalState.selectedVariant['modal']  = currentSfxMap.openModal;
 
+  // ── 2. Sincroniza overrides por área com o sfxAreaMap do audio-state ──
+  // _resetModalState() zera _specificOverrides ao carregar o módulo.
+  // _syncOverridesFromState() repopula a partir do audio-state (que já tem
+  // os dados do Firebase) sempre que o modal é aberto.
+  // Isto também cobre o caso de reinício de página: audio-state hidrata
+  // no loginSuccess, sound.js só rende ao abrir o modal.
+  _syncOverridesFromState();
+
+  console.log('[sound] _openModal: _specificOverrides após sync =', JSON.stringify(_specificOverrides));
+
+  // ── 3. Renderiza com o estado correto ──
   _renderCards();
   _renderMusicTracks();
   _initSliders();
@@ -554,7 +628,6 @@ function _openModal() {
   _overlay.classList.add('is-open');
   _wrap.classList.add('is-open');
 
-  // Fecha ao clicar no fundo (fora do painel)
   _wrap.addEventListener('click', _onWrapClick);
   document.addEventListener('keydown', _onKeyDown);
 }
@@ -969,7 +1042,18 @@ function _renderSpecPanel(cat) {
 
   document.getElementById('snd-specPanelClose').addEventListener('click', _closeSpecPanel);
   document.getElementById('snd-specPanelClear').addEventListener('click', () => {
-    cat.areas.forEach(area => { _specificOverrides[cat.id][area] = null; });
+    cat.areas.forEach(area => {
+      _specificOverrides[cat.id][area] = null;
+
+      // ── NOVO v1.2: remove os overrides do audio-state (→ Firebase) ──
+      const areaKey = area.toLowerCase();
+      if (cat.id !== 'modal') {
+        audioState.setSfxAreaMap(areaKey, cat.id, null);
+      } else {
+        audioState.setSfxAreaMap(areaKey, 'openModal',  null);
+        audioState.setSfxAreaMap(areaKey, 'closeModal', null);
+      }
+    });
     _modalState.selectedAreas[cat.id] = [...cat.areas];
     _renderSpecPanel(cat);
     _syncGeneralChips(cat.id);
@@ -1073,6 +1157,26 @@ function _buildSpecTableRow(cat, variant) {
         if (idx === -1) areas.push(area);
       }
 
+      // ── NOVO v1.2: persiste o override no audio-state (→ Firebase) ──
+      // Mapeia catId do modal para a chave de action do sfxMap.
+      // Para a categoria 'modal', openModal e closeModal são ações distintas;
+      // determinamos qual pelo prefixo da variante selecionada.
+      const areaKey = area.toLowerCase();
+      if (cat.id !== 'modal') {
+        audioState.setSfxAreaMap(areaKey, cat.id, newOverride);
+      } else {
+        // Para modal: a variante começa com 'open' ou 'close' → determina a action
+        if (newOverride === null) {
+          // Limpa ambas as actions de modal para esta área
+          audioState.setSfxAreaMap(areaKey, 'openModal',  null);
+          audioState.setSfxAreaMap(areaKey, 'closeModal', null);
+        } else if (newOverride.startsWith('open') || newOverride.startsWith('Open')) {
+          audioState.setSfxAreaMap(areaKey, 'openModal', newOverride);
+        } else {
+          audioState.setSfxAreaMap(areaKey, 'closeModal', newOverride);
+        }
+      }
+
       _renderSpecPanel(cat);
       _syncGeneralChips(cat.id);
       _syncSpecBtn(cat.id);
@@ -1148,6 +1252,19 @@ function _resetAll() {
   audio.setMusicVolume(0.4);
   audio.unmute();
   audio.setEnabled(true);
+
+  // ── NOVO v1.2: limpa todos os overrides de área no audio-state (→ Firebase) ──
+  _CATEGORIES.forEach(cat => {
+    cat.areas.forEach(area => {
+      const areaKey = area.toLowerCase();
+      if (cat.id !== 'modal') {
+        audioState.setSfxAreaMap(areaKey, cat.id, null);
+      } else {
+        audioState.setSfxAreaMap(areaKey, 'openModal',  null);
+        audioState.setSfxAreaMap(areaKey, 'closeModal', null);
+      }
+    });
+  });
 
   _resetModalState();
   _closeSpecPanel();

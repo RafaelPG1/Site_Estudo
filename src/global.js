@@ -1,5 +1,5 @@
 /* =============================================
-   NEXUS STUDY — global.js
+   NEXUS STUDY — src/global.js
    Estado global e utilitários compartilhados
    src/global.js
 
@@ -29,6 +29,19 @@
 
 import Storage from './storage.js';
 import { salvarConfigs } from './firebase.js';
+
+// Importação lazy do audio-state para evitar ciclo de módulos.
+// Usada em setConfigs() para incluir sfxAreaMap no payload do Firebase.
+let _audioState = null;
+async function _getAudioState() {
+  if (!_audioState) {
+    try {
+      const mod = await import('./shared/js/audio/audio-state.js');
+      _audioState = mod.default;
+    } catch (_) { /* se não disponível, ignora */ }
+  }
+  return _audioState;
+}
 /* ── Expõe Storage para o quiz_engine (IIFE sem módulo) ── */
 window.NexusStorage = Storage;
 
@@ -222,22 +235,32 @@ export function setConfigs(novas) {
 
   const u = _estado.usuario;
   if (u?.uid) {
-    // FIX 2: Remove audioState do payload antes de salvar no Firebase.
+    // FIX 2 (v2.3): Remove audioState/sfxMap/sfxAreaMap do estado local
+    // e os reincorpora a partir do audio-state.js (fonte única de verdade).
     //
-    // Por que: audioState é propriedade exclusiva do audio-state.js.
-    // Se o salvarmos aqui, sobrescrevemos o valor correto que o
-    // audio-state.js acabou de ler e salvar do Firebase deste usuário.
-    // O audio-state.js gerencia seu próprio ciclo de persistência —
-    // ele salva audioState mesclado com getConfigs() para evitar
-    // apagar os outros campos. Se salvarmos audioState aqui também,
-    // os dois sistemas pisam um no outro dependendo de quem chegar por
-    // último no Firestore.
+    // Por que não basta remover:
+    // salvarConfigs usa setDoc(..., { configs }, { merge: true }).
+    // O Firestore faz merge apenas no nível do documento — o campo
+    // `configs` é substituído inteiro. Logo, um save parcial (sem
+    // sfxAreaMap) apaga o sfxAreaMap salvo anteriormente pelo audio-state.
     //
-    // Solução: global.js nunca escreve audioState. audio-state.js é o dono.
-    const { audioState: _ignorar, ...payloadSemAudio } = _estado.configs;
+    // Solução: buscar o snapshot atual do audio-state e incluí-lo
+    // sempre no payload, garantindo que sfxAreaMap nunca seja omitido.
+    const { audioState: _d1, sfxMap: _d2, sfxAreaMap: _d3, ...restConfigs } = _estado.configs;
 
-    console.log('[global] setConfigs: enviando para Firebase →', payloadSemAudio);
-    salvarConfigs(u.uid, payloadSemAudio).catch(() => {});
+    _getAudioState().then(as => {
+      const audioPayload = as?.getAudioPayload?.() ?? {};
+      const payload = { ...restConfigs, ...audioPayload };
+      console.log('[global] setConfigs: enviando para Firebase →', payload);
+      salvarConfigs(u.uid, payload).catch(() => {});
+    }).catch(() => {
+      // Fallback: salva sem os campos de áudio (não apaga se já existiam,
+      // pois o Firestore merge acontece no nível do documento).
+      // Na prática isso só corre se audio-state.js não carregou.
+      const payload = { ...restConfigs };
+      console.log('[global] setConfigs (fallback): enviando para Firebase →', payload);
+      salvarConfigs(u.uid, payload).catch(() => {});
+    });
   } else {
     console.log('[global] setConfigs: usuário não logado, só localStorage');
   }

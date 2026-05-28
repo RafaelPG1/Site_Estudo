@@ -1,5 +1,5 @@
 /* =============================================
-   NEXUS STUDY — storage.js
+   NEXUS STUDY — src/storage.js
 src/storage.js
    Controle centralizado do localStorage
    ============================================= */

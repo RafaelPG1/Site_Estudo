@@ -152,18 +152,20 @@ function renderHeader() {
    CARDS — links + hover
 ───────────────────────────────────────────── */
 function bindCardLinks() {
+  // Cada card mapeia para a área correspondente no sfxAreaMap.
+  // Permite que o usuário configure sons distintos por área via modal.
   const rotas = {
-    'card-pessoal': './area_pessoal/pessoal.html',
-    'card-resumos': './resumo/resumo.html',
-    'card-quiz':    './quiz/quiz.html',
-    'card-jogos':   './games/jogo.html',
+    'card-pessoal': { path: './area_pessoal/pessoal.html', area: 'perfil'  },
+    'card-resumos': { path: './resumo/resumo.html',        area: 'resumos' },
+    'card-quiz':    { path: './quiz/quiz.html',            area: 'quiz'    },
+    'card-jogos':   { path: './games/jogo.html',           area: 'game'    },
   };
-  Object.entries(rotas).forEach(([id, path]) => {
+  Object.entries(rotas).forEach(([id, { path, area }]) => {
     const card = document.getElementById(id);
     if (!card) return;
-    card.addEventListener('mouseenter', () => playSound('hover'));
+    card.addEventListener('mouseenter', () => playSound('hover', area));
     card.addEventListener('click', () => {
-      playSound('click');
+      playSound('click', area);
       window.location.href = path;
     });
   });
