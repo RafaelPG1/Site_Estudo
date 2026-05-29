@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
     tamanho:  32,
     layout:   'stacked',
     srcBase:  '../../shared/img/logo.png',
-    linkHref: '../quiz.html',
+    linkHref: '../../index.html',
   });
 });
 
