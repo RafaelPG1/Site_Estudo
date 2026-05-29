@@ -3589,8 +3589,593 @@ window.__nexusConteudo = {
     ]
   }
   ]
-    }
+    },
 
+    // Aula 15 - Projeto de Banco de Dados
+    {
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  ideia_central: "Um banco de dados bem projetado depende de boa modelagem, regras de negócio corretas, relacionamentos bem definidos, normalização adequada e implementação física consistente.",
+  secoes: [
+    {
+      id: "visao_geral",
+      titulo: "Visão geral do conteúdo",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "A aula aborda o processo completo de **projeto de banco de dados**, desde a definição do problema até a implementação prática utilizando SQL."
+        },
+        {
+          tipo: "lista",
+          titulo: "Conteúdo dividido em",
+          itens: [
+            "Planejamento do banco de dados",
+            "Definição do escopo",
+            "Modelagem conceitual",
+            "Modelagem lógica",
+            "Modelagem física",
+            "Construção do banco",
+            "Comandos DDL",
+            "Comandos DML",
+            "Operações de manipulação de dados"
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "O foco principal é mostrar como transformar necessidades do negócio em um banco de dados estruturado, organizado e funcional."
+        }
+      ]
+    },
+    {
+      id: "conceitos_principais",
+      titulo: "Conceitos principais",
+      blocos: [
+        {
+          tipo: "subtitulo",
+          texto: "Projeto de Banco de Dados"
+        },
+        {
+          tipo: "texto",
+          texto: "O projeto de banco de dados é o processo de planejamento e organização das informações que serão armazenadas."
+        },
+        {
+          tipo: "lista",
+          titulo: "Objetivos principais",
+          itens: [
+            "Evitar redundância de dados",
+            "Garantir integridade das informações",
+            "Melhorar desempenho",
+            "Organizar relacionamentos entre dados",
+            "Facilitar consultas e manutenção"
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "O material enfatiza que um projeto bem estruturado é essencial principalmente em sistemas grandes e corporativos."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "SGBD (Sistema Gerenciador de Banco de Dados)"
+        },
+        {
+          tipo: "lista",
+          titulo: "Responsabilidades do SGBD",
+          itens: [
+            "Armazenar dados",
+            "Manipular informações",
+            "Controlar acessos",
+            "Garantir segurança",
+            "Executar consultas"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "SGBDs Gratuitos/Open Source",
+          lista: [
+            "PostgreSQL",
+            "MySQL"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "SGBDs Comerciais",
+          lista: [
+            "Oracle",
+            "DB2",
+            "SQL Server",
+            "Sybase",
+            "Informix"
+          ]
+        }
+      ]
+    },
+    {
+      id: "etapas_projeto",
+      titulo: "Etapas do Projeto de Banco de Dados",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "1. Definir o objetivo do banco",
+          texto: "É necessário entender qual problema será resolvido, quais informações serão armazenadas e quais relatórios serão necessários."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Exemplos de objetivos",
+          texto: "Controle de clubes, campeonatos, jogadores e premiações."
+        },
+        {
+          tipo: "topico",
+          titulo: "2. Identificar entidades",
+          texto: "Entidades representam objetos do mundo real. Cada entidade normalmente vira uma tabela."
+        },
+        {
+          tipo: "lista",
+          titulo: "Exemplos de entidades",
+          itens: [
+            "Cliente",
+            "Clube",
+            "Jogador",
+            "Federação",
+            "Campeonato"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "3. Identificar atributos",
+          texto: "Atributos são características das entidades."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Atributos da entidade Jogador",
+          texto: "nome, RG, data_nascimento"
+        },
+        {
+          tipo: "topico",
+          titulo: "4. Definir identificadores (chaves)",
+          texto: "Cada entidade precisa de um atributo que identifique registros de forma única. Esses identificadores são chamados de **Chaves primárias (Primary Key)**."
+        },
+        {
+          tipo: "lista",
+          titulo: "Exemplos de identificadores",
+          itens: [
+            "jogador_id",
+            "clube_id",
+            "federacao_id"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "5. Definir relacionamentos",
+          texto: "Relacionamentos mostram como entidades se conectam."
+        },
+        {
+          tipo: "lista",
+          titulo: "Exemplos de relacionamentos",
+          itens: [
+            "Um clube possui vários jogadores",
+            "Uma federação possui vários clubes",
+            "Um jogador recebe vários prêmios"
+          ]
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Cardinalidade"
+        },
+        {
+          tipo: "texto",
+          texto: "Define quantas ocorrências podem existir entre entidades."
+        },
+        {
+          tipo: "tabela",
+          titulo: "Tipos de cardinalidade",
+          colunas: ["Tipo", "Significado"],
+          linhas: [
+            ["1:1", "Um para um"],
+            ["1:N", "Um para muitos"],
+            ["N:M", "Muitos para muitos"]
+          ]
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Cardinalidade 1:N",
+          texto: "Um clube pode possuir vários jogadores → 1:N"
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Normalização"
+        },
+        {
+          tipo: "texto",
+          texto: "Processo usado para eliminar redundância, evitar inconsistências e organizar melhor os dados."
+        },
+        {
+          tipo: "lista",
+          titulo: "Objetivos da normalização",
+          itens: [
+            "Evitar repetição desnecessária",
+            "Reduzir anomalias de atualização",
+            "Melhorar integridade"
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "O material cita normalização até a **3ª Forma Normal (3FN)**."
+        }
+      ]
+    },
+    {
+      id: "escopo",
+      titulo: "Definição do Escopo",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O projeto utilizado como exemplo foi um banco de dados da CBF."
+        },
+        {
+          tipo: "lista",
+          titulo: "O sistema deveria armazenar",
+          itens: [
+            "Federações",
+            "Clubes",
+            "Campeonatos",
+            "Jogadores",
+            "Posições",
+            "Prêmios"
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "Regras de negócio definidas no escopo",
+          itens: [
+            "Cada clube pertence a uma federação",
+            "Jogadores pertencem a clubes",
+            "Jogadores possuem posições",
+            "Campeonatos possuem clubes participantes",
+            "Jogadores podem receber vários prêmios"
+          ]
+        }
+      ]
+    },
+    {
+      id: "modelo_conceitual",
+      titulo: "Modelo Conceitual",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O modelo conceitual representa a visão geral do negócio, incluindo entidades, atributos, relacionamentos e regras de negócio."
+        },
+        {
+          tipo: "lista",
+          titulo: "Características",
+          itens: [
+            "Independente de tecnologia",
+            "Fácil entendimento",
+            "Usado com usuários e analistas",
+            "Não depende do SGBD",
+            "Alto nível de abstração",
+            "Fácil comunicação entre usuários e desenvolvedores",
+            "Foca nas regras do negócio"
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "Elementos principais",
+          itens: [
+            "Entidades",
+            "Atributos",
+            "Relacionamentos"
+          ]
+        },
+        {
+          tipo: "imagem",
+          src: "figura_modelo_conceitual_cbf.png",
+          pasta: "imagens_banco_de_dados/aula_1",
+          alt: "Modelo conceitual do sistema da CBF mostrando entidades, atributos e relacionamentos sem detalhes técnicos",
+          num: 1
+        }
+      ]
+    },
+    {
+      id: "modelo_logico",
+      titulo: "Modelo Lógico",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Transforma o modelo conceitual em estruturas compatíveis com bancos relacionais."
+        },
+        {
+          tipo: "lista",
+          titulo: "Define",
+          itens: [
+            "Tabelas",
+            "Chaves primárias",
+            "Chaves estrangeiras",
+            "Relacionamentos",
+            "Entidades associativas"
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "Características",
+          itens: [
+            "Deriva do modelo conceitual",
+            "Possui chaves primárias",
+            "Possui chaves estrangeiras",
+            "Utiliza normalização",
+            "Segue padrões de nomenclatura"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Chave Primária (PK)",
+          texto: "Identifica unicamente cada registro. Exemplo: `PRIMARY KEY (jogador_id)`"
+        },
+        {
+          tipo: "topico",
+          titulo: "Chave Estrangeira (FK)",
+          texto: "Cria relacionamento entre tabelas. Exemplo: `FOREIGN KEY (clube_id) REFERENCES Clube(clube_id)`"
+        },
+        {
+          tipo: "imagem",
+          src: "image_modelo_logico.png",
+          pasta: "imagens_banco_de_dados/aula_1",
+          alt: "Modelo lógico com tabelas, chaves primárias, estrangeiras e entidades associativas do sistema da CBF",
+          num: 2
+        }
+      ]
+    },
+    {
+      id: "modelo_fisico",
+      titulo: "Modelo Físico",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Representa a implementação real no SGBD."
+        },
+        {
+          tipo: "lista",
+          titulo: "Define",
+          itens: [
+            "Tipos de dados",
+            "Índices",
+            "Restrições",
+            "Tabelas físicas",
+            "Armazenamento"
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "Características",
+          itens: [
+            "Depende do SGBD",
+            "Define tipos dos campos",
+            "Define campos obrigatórios",
+            "Define índices",
+            "Implementa relacionamentos reais"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Relacionamento Identificado",
+          texto: "A chave estrangeira faz parte da chave primária."
+        },
+        {
+          tipo: "topico",
+          titulo: "Relacionamento Não Identificado",
+          texto: "A chave estrangeira NÃO faz parte da chave primária."
+        },
+        {
+          tipo: "imagem",
+          src: "image_modelo_fisico.png",
+          pasta: "imagens_banco_de_dados/aula_1",
+          alt: "Modelo físico com tipos de dados, relacionamentos identificados e não identificados e campos obrigatórios",
+          num: 3
+        }
+      ]
+    },
+    {
+      id: "ddl_dml",
+      titulo: "DDL e DML",
+      blocos: [
+        {
+          tipo: "subtitulo",
+          texto: "DDL — Data Definition Language"
+        },
+        {
+          tipo: "texto",
+          texto: "Comandos usados para criar tabelas, alterar estruturas e remover objetos."
+        },
+        {
+          tipo: "lista",
+          titulo: "Principais comandos DDL",
+          itens: [
+            "CREATE",
+            "ALTER",
+            "DROP"
+          ]
+        },
+        {
+          tipo: "subtitulo",
+          texto: "DML — Data Manipulation Language"
+        },
+        {
+          tipo: "texto",
+          texto: "Comandos usados para manipular dados."
+        },
+        {
+          tipo: "lista",
+          titulo: "Principais comandos DML",
+          itens: [
+            "INSERT",
+            "UPDATE",
+            "DELETE",
+            "SELECT"
+          ]
+        }
+      ]
+    },
+    {
+      id: "formulas_metodos",
+      titulo: "Fórmulas e Métodos SQL",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "Estrutura geral do CREATE TABLE",
+          texto: "Uso: criar tabelas.\n\n`CREATE TABLE nome_tabela (\n    coluna tipo,\n    PRIMARY KEY(coluna)\n);`"
+        },
+        {
+          tipo: "topico",
+          titulo: "Inserção de dados",
+          texto: "Uso: inserir registros.\n\n`INSERT INTO tabela(coluna1, coluna2)\nVALUES(valor1, valor2);`"
+        },
+        {
+          tipo: "topico",
+          titulo: "Atualização de dados",
+          texto: "Uso: modificar registros existentes.\n\n`UPDATE tabela\nSET coluna = valor\nWHERE condicao;`"
+        },
+        {
+          tipo: "topico",
+          titulo: "Exclusão de dados",
+          texto: "Uso: remover registros.\n\n`DELETE FROM tabela\nWHERE condicao;`"
+        },
+        {
+          tipo: "topico",
+          titulo: "Consulta com JOIN",
+          texto: "Uso: relacionar dados entre tabelas.\n\n`SELECT *\nFROM tabela1\nINNER JOIN tabela2\nON tabela1.id = tabela2.id;`"
+        },
+        {
+          tipo: "topico",
+          titulo: "Consulta com GROUP BY",
+          texto: "Uso: agrupar resultados e gerar relatórios.\n\n`SELECT federacao.sigla, COUNT(clube_id)\nFROM clube\nINNER JOIN federacao\nON clube.federacao_federacao_id = federacao.federacao_id\nGROUP BY federacao.sigla;`"
+        }
+      ]
+    },
+    {
+      id: "exemplos",
+      titulo: "Exemplos Explicativos",
+      blocos: [
+        {
+          tipo: "exemplo",
+          titulo: "Relacionamento Federação → Clube",
+          texto: "Uma federação possui vários clubes; um clube pertence a apenas uma federação.",
+          detalhe: "Cardinalidade: 1:N"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Relacionamento N:M — Clube ↔ Campeonato",
+          texto: "Um clube participa de vários campeonatos; um campeonato possui vários clubes.",
+          detalhe: "Cardinalidade N:M. Esse tipo normalmente gera uma entidade associativa."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Integridade referencial",
+          texto: "Um jogador só pode existir se o clube existir e a posição existir. Isso é garantido pelas chaves estrangeiras."
+        }
+      ]
+    },
+    {
+      id: "construcao_banco",
+      titulo: "Construção do Banco e Ferramentas",
+      blocos: [
+        {
+          tipo: "imagem",
+          src: "image_geracao_ddl.png",
+          pasta: "imagens_banco_de_dados/aula_1",
+          alt: "Geração automática de scripts SQL no MySQLWorkbench",
+          num: 4
+        },
+        {
+          tipo: "imagem",
+          src: "image_conversao_sqlines.png",
+          pasta: "imagens_banco_de_dados/aula_1",
+          alt: "Conversão de scripts MySQL para PostgreSQL usando a ferramenta SQLines",
+          num: 5
+        },
+        {
+          tipo: "imagem",
+          src: "image_pgadmin_criacao_bd.png",
+          pasta: "imagens_banco_de_dados/aula_1",
+          alt: "Criação de um novo banco de dados no PostgreSQL via PGAdmin",
+          num: 6
+        },
+        {
+          tipo: "imagem",
+          src: "image_consulta_clubes_federacao.png",
+          pasta: "imagens_banco_de_dados/aula_1",
+          alt: "Consulta de clubes por federação demonstrando uso de JOIN e GROUP BY para geração de relatórios",
+          num: 7
+        },
+        {
+          tipo: "lista",
+          titulo: "Ferramentas citadas",
+          itens: [
+            "MySQLWorkbench — geração de scripts DDL",
+            "PostgreSQL — SGBD open source utilizado",
+            "PGAdmin — interface gráfica para PostgreSQL",
+            "SQLines — conversão de scripts entre diferentes SGBDs"
+          ]
+        }
+      ]
+    },
+    {
+      id: "resumo",
+      titulo: "Resumo Final para Revisão Rápida",
+      blocos: [
+        {
+          tipo: "lista",
+          titulo: "Pontos mais importantes",
+          itens: [
+            "Projeto de banco de dados organiza dados de forma estruturada",
+            "Objetivos: evitar redundância, garantir integridade, melhorar desempenho"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Etapas do projeto",
+          lista: [
+            "1. Definir objetivo",
+            "2. Identificar entidades",
+            "3. Definir atributos",
+            "4. Definir chaves",
+            "5. Definir relacionamentos",
+            "6. Normalizar"
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Modelos",
+          colunas: ["Modelo", "Objetivo"],
+          linhas: [
+            ["Conceitual", "Visão do negócio"],
+            ["Lógico", "Estrutura relacional"],
+            ["Físico", "Implementação real"]
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "Conceitos fundamentais",
+          itens: [
+            "Entidade",
+            "Atributo",
+            "Relacionamento",
+            "Cardinalidade",
+            "Chave primária",
+            "Chave estrangeira",
+            "Normalização"
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Relacionamentos",
+          colunas: ["Tipo", "Exemplo"],
+          linhas: [
+            ["1:N", "Federação → Clube"],
+            ["N:M", "Clube ↔ Campeonato"]
+          ]
+        }
+      ]
+    }
+  ]
+    }
 
   ] 
 };

@@ -3596,6 +3596,617 @@ window.__nexusConteudo = {
   ]
   },
 
+  // Aula 15 - Revisão Projeto de Design para Web
+
+  {
+  aula: "Aula 15 - Revisão Projeto de Design para Web",
+  ideia_central: "Um bom projeto web deve ser responsivo, centrado no usuário, organizado semanticamente, acessível, visualmente consistente, ergonomicamente adequado e otimizado para diferentes dispositivos.",
+  secoes: [
+    {
+      id: "visao_geral",
+      titulo: "Visão geral do conteúdo",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O material apresenta uma revisão prática dos principais conceitos de **Design para Web**, focando no desenvolvimento de um site utilizando a metodologia **Mobile First**."
+        },
+        {
+          tipo: "lista",
+          titulo: "A aula integra conceitos de",
+          itens: [
+            "Design de interfaces",
+            "HTML5",
+            "CSS3",
+            "Responsividade",
+            "JavaScript/JQuery",
+            "Ergonomia",
+            "Engenharia semiótica",
+            "Psicologia cognitiva",
+            "Tipografia",
+            "Cores",
+            "Testes de interfaces",
+            "Hospedagem de sites"
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "O projeto desenvolvido durante o módulo consiste na criação de uma interface web responsiva, começando por telas pequenas (smartphones) e depois adaptando para tablets e desktops através de **Media Queries**."
+        }
+      ]
+    },
+    {
+      id: "mobile_first",
+      titulo: "Mobile First",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O conceito de **Mobile First** consiste em desenvolver primeiro para dispositivos móveis e, posteriormente, adaptar o layout para telas maiores."
+        },
+        {
+          tipo: "lista",
+          titulo: "Características",
+          itens: [
+            "Foco em telas pequenas",
+            "Priorização de conteúdo essencial",
+            "Melhor desempenho",
+            "Responsividade gradual",
+            "Adaptação progressiva via breakpoints"
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "Vantagens",
+          itens: [
+            "Melhor experiência em smartphones",
+            "Organização mais eficiente do layout",
+            "Código mais limpo",
+            "Maior compatibilidade"
+          ]
+        },
+        {
+          tipo: "imagem",
+          src: "image_wireframe_mobile_first.png",
+          pasta: "imagens_design_web/aula_1",
+          alt: "Wireframe inicial da interface mobile first representando a organização visual do layout antes da implementação",
+          num: 1
+        }
+      ]
+    },
+    {
+      id: "design_centrado_usuario",
+      titulo: "Design Centrado no Usuário",
+      blocos: [
+        {
+          tipo: "lista",
+          titulo: "O conteúdo reforça a importância do",
+          itens: [
+            "Foco no usuário",
+            "Ergonomia",
+            "Usabilidade",
+            "Acessibilidade",
+            "Comunicabilidade"
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "O projeto deve considerar",
+          itens: [
+            "Necessidades do usuário",
+            "Facilidade de navegação",
+            "Clareza visual",
+            "Consistência",
+            "Conforto cognitivo"
+          ]
+        }
+      ]
+    },
+    {
+      id: "ergonomia",
+      titulo: "Ergonomia de Interfaces",
+      blocos: [
+        {
+          tipo: "tabela",
+          titulo: "Critérios ergonômicos",
+          colunas: ["Critério", "Função"],
+          linhas: [
+            ["Compatibilidade", "Interface coerente com expectativas do usuário"],
+            ["Condução", "Orientação da navegação"],
+            ["Carga de trabalho", "Redução do esforço mental"],
+            ["Homogeneidade", "Padrões consistentes"],
+            ["Controle explícito", "Usuário controla ações"],
+            ["Adaptabilidade", "Interface flexível"],
+            ["Gestão de erros", "Prevenção e tratamento de erros"]
+          ]
+        }
+      ]
+    },
+    {
+      id: "engenharia_semiotica",
+      titulo: "Engenharia Semiótica",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "A engenharia semiótica analisa a comunicação entre designer, sistema e usuário."
+        },
+        {
+          tipo: "lista",
+          titulo: "A interface transmite mensagens através de",
+          itens: [
+            "Signos visuais",
+            "Símbolos",
+            "Comportamentos",
+            "Feedbacks"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Etapas da inspeção semiótica",
+          lista: [
+            "1. Inspeção de signos metalinguísticos",
+            "2. Inspeção de signos estáticos",
+            "3. Inspeção de signos dinâmicos",
+            "4. Comparação das metamensagens",
+            "5. Avaliação da metacomunicação"
+          ]
+        }
+      ]
+    },
+    {
+      id: "psicologia_cognitiva",
+      titulo: "Psicologia Cognitiva no Design",
+      blocos: [
+        {
+          tipo: "tabela",
+          titulo: "Fatores cognitivos importantes",
+          colunas: ["Conceito", "Objetivo"],
+          linhas: [
+            ["Atenção seletiva", "Direcionar foco do usuário"],
+            ["Vigilância", "Detectar informações importantes"],
+            ["Memória de curto prazo", "Facilitar retenção momentânea"],
+            ["Memória de longo prazo", "Facilitar aprendizado"],
+            ["Interpretação", "Compreensão visual"],
+            ["Categorização", "Organização mental"]
+          ]
+        }
+      ]
+    },
+    {
+      id: "elementos_compositivos",
+      titulo: "Elementos Compositivos do Design",
+      blocos: [
+        {
+          tipo: "subtitulo",
+          texto: "Tipografia"
+        },
+        {
+          tipo: "lista",
+          titulo: "Fontes escolhidas",
+          itens: [
+            "**Lato Black 900** → títulos",
+            "**Nunito Regular 400** → textos"
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "Objetivos da tipografia",
+          itens: [
+            "Melhorar leitura",
+            "Criar hierarquia visual",
+            "Reforçar identidade visual"
+          ]
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Cores"
+        },
+        {
+          tipo: "lista",
+          titulo: "As cores possuem",
+          itens: [
+            "Valor emocional",
+            "Valor psicológico",
+            "Valor semiótico"
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "O esquema de cores deve considerar",
+          itens: [
+            "Contraste",
+            "Harmonia",
+            "Temperatura",
+            "Significado visual"
+          ]
+        },
+        {
+          tipo: "imagem",
+          src: "image_esquema_cores.png",
+          pasta: "imagens_design_web/aula_1",
+          alt: "Paleta de cores utilizada no projeto demonstrando a definição da identidade visual",
+          num: 2
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Imagens e Ícones"
+        },
+        {
+          tipo: "texto",
+          texto: "Os ícones foram implementados usando **FontAwesome**."
+        },
+        {
+          tipo: "lista",
+          titulo: "Objetivos",
+          itens: [
+            "Melhorar comunicação visual",
+            "Reforçar significados",
+            "Facilitar navegação"
+          ]
+        }
+      ]
+    },
+    {
+      id: "html5",
+      titulo: "Estrutura HTML5",
+      blocos: [
+        {
+          tipo: "lista",
+          titulo: "O HTML é utilizado para",
+          itens: [
+            "Estruturar conteúdo",
+            "Organizar elementos semânticos",
+            "Definir hierarquia da página"
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Elementos utilizados",
+          colunas: ["Elemento", "Função"],
+          linhas: [
+            ["``", "Cabeçalho"],
+            ["``", "Navegação"],
+            ["``", "Conteúdo principal"],
+            ["``", "Conteúdo independente"],
+            ["``", "Agrupamento temático"],
+            ["``", "Rodapé"]
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Estrutura HTML básica",
+          texto: "Uso: estrutura inicial da página.\n\n`\n\n\n  Mobile First\n\n\n\n`"
+        },
+        {
+          tipo: "topico",
+          titulo: "Inclusão do CSS",
+          texto: "Uso: vincular arquivo CSS externo.\n\n``"
+        },
+        {
+          tipo: "imagem",
+          src: "image_interface_mobile.png",
+          pasta: "imagens_design_web/aula_1",
+          alt: "Resultado final da versão mobile do site após aplicação do HTML e CSS",
+          num: 3
+        }
+      ]
+    },
+    {
+      id: "css3",
+      titulo: "CSS3",
+      blocos: [
+        {
+          tipo: "lista",
+          titulo: "O CSS é responsável pela",
+          itens: [
+            "Estilização",
+            "Layout",
+            "Responsividade",
+            "Animações visuais",
+            "Formatação gráfica"
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "Conceitos importantes",
+          itens: [
+            "Classes",
+            "Seletores",
+            "Responsividade",
+            "Hover",
+            "Background",
+            "Grid",
+            "Float",
+            "Media queries"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Background com CSS",
+          texto: "Uso: inserir imagem de fundo fixa.\n\n`.banner {\n  background: url(../img/background-primary.svg) no-repeat fixed;\n}`"
+        },
+        {
+          tipo: "topico",
+          titulo: "Botão responsivo (hambúrguer circular)",
+          texto: "Uso: criar botão hambúrguer circular.\n\n`.btn-menu {\n  width: 56px;\n  height: 56px;\n  border-radius: 36px;\n}`"
+        },
+        {
+          tipo: "topico",
+          titulo: "Ocultar menu",
+          texto: "Uso: esconder menu até ação do usuário.\n\n`.menu {\n  display: none;\n}`"
+        },
+        {
+          tipo: "topico",
+          titulo: "Grid responsiva",
+          texto: "Uso: organizar conteúdo em colunas.\n\n`.servico {\n  width: 49%;\n  float: left;\n}`"
+        }
+      ]
+    },
+    {
+      id: "menu_hamburger_jquery",
+      titulo: "Menu Hambúrguer e JQuery",
+      blocos: [
+        {
+          tipo: "subtitulo",
+          texto: "Menu Hambúrguer"
+        },
+        {
+          tipo: "lista",
+          titulo: "O menu mobile utiliza",
+          itens: [
+            "Botão hambúrguer",
+            "Menu oculto",
+            "JavaScript/JQuery"
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "Funcionamento",
+          itens: [
+            "Botão abre o menu",
+            "Botão close fecha o menu",
+            "Menu ocupa tela inteira no mobile"
+          ]
+        },
+        {
+          tipo: "subtitulo",
+          texto: "JQuery"
+        },
+        {
+          tipo: "texto",
+          texto: "O JQuery é uma biblioteca JavaScript usada para simplificar scripts, manipular elementos e criar interatividade."
+        },
+        {
+          tipo: "lista",
+          titulo: "No projeto foi usado para",
+          itens: [
+            "Mostrar menu",
+            "Ocultar menu"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Mostrar menu com JQuery",
+          texto: "Uso: abrir menu ao clicar no botão hambúrguer.\n\n`$(\".btn-menu\").click(function() {\n  $(\".menu\").show();\n});`"
+        },
+        {
+          tipo: "topico",
+          titulo: "Esconder menu com JQuery",
+          texto: "Uso: fechar menu ao clicar no botão close.\n\n`$(\".btn-close\").click(function() {\n  $(\".menu\").hide();\n});`"
+        }
+      ]
+    },
+    {
+      id: "responsividade_breakpoints",
+      titulo: "Responsividade e Breakpoints",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "A responsividade adapta o layout conforme o tamanho da tela, utilizando **Media Queries** e **Breakpoints**."
+        },
+        {
+          tipo: "topico",
+          titulo: "Tablet — @media screen and (min-width: 768px)",
+          lista: [
+            "Transformar grid em 2 colunas",
+            "Reorganizar formulário",
+            "Ajustar tamanhos"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Desktop — @media screen and (min-width: 960px)",
+          lista: [
+            "Layout em 3 colunas",
+            "Reorganizar botões",
+            "Ampliar tipografia"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "WideScreen — @media screen and (min-width: 1280px)",
+          lista: [
+            "Remover menu hambúrguer",
+            "Exibir menu horizontal",
+            "Melhorar navegação desktop"
+          ]
+        },
+        {
+          tipo: "imagem",
+          src: "image_responsividade_mobile_desktop.png",
+          pasta: "imagens_design_web/aula_1",
+          alt: "Comparação do layout mobile com o desktop evidenciando as adaptações responsivas",
+          num: 4
+        }
+      ]
+    },
+    {
+      id: "hospedagem",
+      titulo: "Hospedagem Gratuita",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Foi utilizada a plataforma **Netlify Drop** para hospedagem gratuita do projeto."
+        },
+        {
+          tipo: "lista",
+          titulo: "Funções",
+          itens: [
+            "Deploy do site",
+            "Hospedagem gratuita",
+            "Geração de domínio"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Etapas de publicação",
+          lista: [
+            "1. Cadastro na plataforma",
+            "2. Upload da pasta do projeto",
+            "3. Deploy",
+            "4. Geração de URL"
+          ]
+        }
+      ]
+    },
+    {
+      id: "testes_interface",
+      titulo: "Testes de Interface",
+      blocos: [
+        {
+          tipo: "lista",
+          titulo: "O conteúdo aborda",
+          itens: [
+            "Testes funcionais",
+            "Performance",
+            "Acessibilidade",
+            "SEO",
+            "Boas práticas"
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "Ferramenta utilizada: **Lighthouse** (Chrome DevTools)"
+        },
+        {
+          tipo: "tabela",
+          titulo: "Categorias avaliadas pelo Lighthouse",
+          colunas: ["Categoria", "Objetivo"],
+          linhas: [
+            ["Performance", "Velocidade"],
+            ["Accessibility", "Acessibilidade"],
+            ["Best Practices", "Boas práticas"],
+            ["SEO", "Otimização para buscas"],
+            ["PWA", "Compatibilidade moderna"]
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "Problemas comuns detectados",
+          itens: [
+            "Ausência de atributo alt em imagens",
+            "Links quebrados",
+            "Falta de meta description"
+          ]
+        }
+      ]
+    },
+    {
+      id: "exemplos",
+      titulo: "Exemplos Explicativos",
+      blocos: [
+        {
+          tipo: "exemplo",
+          titulo: "Menu Mobile",
+          texto: "O menu hambúrguer economiza espaço e melhora a navegação mobile, aparecendo apenas em telas pequenas.",
+          detalhe: "Em telas grandes é substituído por menu horizontal."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Grid Responsiva",
+          texto: "No mobile os serviços aparecem verticalmente; no tablet em duas colunas; no desktop em três colunas.",
+          detalhe: "Isso melhora organização, aproveitamento do espaço e leitura."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Responsividade via Media Queries",
+          texto: "Através das Media Queries o layout muda automaticamente, elementos redimensionam, botões reorganizam posição e o menu adapta seu comportamento conforme o breakpoint ativo."
+        }
+      ]
+    },
+    {
+      id: "resumo",
+      titulo: "Resumo Final para Revisão Rápida",
+      blocos: [
+        {
+          tipo: "tabela",
+          titulo: "Ferramentas utilizadas",
+          colunas: ["Ferramenta", "Função"],
+          linhas: [
+            ["VSCode", "Desenvolvimento"],
+            ["Chrome", "Visualização"],
+            ["Window Resizer", "Simulação de telas"],
+            ["FontAwesome", "Ícones"],
+            ["Google Fonts", "Tipografia"],
+            ["Netlify", "Hospedagem"],
+            ["Lighthouse", "Testes"]
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Mobile First",
+          lista: [
+            "Desenvolvimento começa pelo mobile",
+            "Adaptação gradual para telas maiores"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "HTML5",
+          lista: [
+            "Estrutura e semântica da página",
+            "Tags principais: header, nav, main, article, section, footer"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "CSS3",
+          lista: [
+            "Layout, cores, responsividade e estilização"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Responsividade — Breakpoints usados",
+          lista: [
+            "768px → tablet",
+            "960px → desktop",
+            "1280px → widescreen"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "JQuery",
+          lista: [
+            "Abrir menu",
+            "Fechar menu",
+            "Criar interatividade"
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "Testes importantes",
+          itens: [
+            "Acessibilidade",
+            "Performance",
+            "SEO",
+            "Boas práticas",
+            "Responsividade"
+          ]
+        }
+      ]
+    }
+  ]
+  }
+
 
 
 
