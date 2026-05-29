@@ -86,6 +86,30 @@ import audio from './sfx.js';
 import { carregarConfigs, salvarConfigs } from '../../../src/firebase.js';
 
 /* ═══════════════════════════════════════════════
+   DEBUG FLAG (espelha sfx.js — setar true só em dev)
+═══════════════════════════════════════════════ */
+const _DEBUG = false;
+const _dbg   = _DEBUG ? (...a) => console.log('[audio-state]', ...a) : () => {};
+
+/* ═══════════════════════════════════════════════
+   DEBOUNCE DE PERSISTÊNCIA
+   ─────────────────────────────────────────────
+   Consolida múltiplas alterações rápidas (ex: mover slider,
+   trocar área, resetar) em um único write no Firebase.
+   800 ms é conservador o suficiente para capturar rajadas
+   de setSfxAreaMap() do _resetAll() e _saveAll() sem perder dados.
+═══════════════════════════════════════════════ */
+let _persistTimer = null;
+
+function _schedulePersist() {
+  if (_persistTimer) clearTimeout(_persistTimer);
+  _persistTimer = setTimeout(() => {
+    _persistTimer = null;
+    _persistAllToFirebaseNow();
+  }, 800);
+}
+
+/* ═══════════════════════════════════════════════
    1. DEFINIÇÃO DOS MODOS
 ═══════════════════════════════════════════════ */
 
@@ -163,6 +187,13 @@ let _currentSfxAreaMap = {};
  * Volta a true após Firebase responder com o mapa do usuário.
  */
 let _sfxReady = true;
+// [DIAG] Estado inicial do audio-state no carregamento do módulo
+console.log('[DIAG:audio-state] módulo carregado', {
+  '_sfxReady inicial': _sfxReady,
+  '_currentMode': 'normal (default)',
+  'DEFAULT_SFX_MAP': { click: 'click', hover: 'hover2', openModal: 'openModal2', closeModal: 'closeModal', select: 'select' },
+  'timestamp': Date.now(),
+});
 
 /* ─────────────────────────────────────────────
    GATE DE INICIALIZAÇÃO — waitUntilReady()
@@ -196,18 +227,45 @@ function _resetReadyPromise() {
 const _sfxQueue = [];
 
 /**
- * Drena todos os eventos enfileirados, tocando cada um com o
- * _currentSfxMap / _currentSfxAreaMap já atualizados.
- * Chamada apenas quando _sfxReady === true.
+ * Drena a fila de eventos de áudio.
+ *
+ * Deduplicação de hover: durante login/loading podem acumular vários
+ * eventos 'hover' na fila. Tocar todos juntos seria uma explosão de sons.
+ * Estratégia: mantém apenas o ÚLTIMO hover de cada área — descarta os anteriores.
+ * Outros eventos (click, openModal, etc.) continuam tocando normalmente.
  */
 function _flushSfxQueue() {
-  while (_sfxQueue.length) {
-    const { event, area } = _sfxQueue.shift();
+  if (!_sfxQueue.length) return;
+
+  // Deduplicar: para cada (event=hover, area), manter só a última entrada.
+  // Para demais eventos, manter todas em ordem.
+  const deduped = [];
+  // Rastreia se já existe um hover (por área) mais recente na fila.
+  const hoverSeen = new Set();
+
+  // Percorre de trás para frente para identificar o último hover de cada área.
+  for (let i = _sfxQueue.length - 1; i >= 0; i--) {
+    const item = _sfxQueue[i];
+    if (item.event === 'hover') {
+      const key = item.area ?? '__global__';
+      if (!hoverSeen.has(key)) {
+        hoverSeen.add(key);
+        deduped.unshift(item); // mantém o mais recente
+      }
+      // anteriores do mesmo área+hover são descartados silenciosamente
+    } else {
+      deduped.unshift(item);
+    }
+  }
+
+  _sfxQueue.length = 0;
+
+  for (const { event, area } of deduped) {
     const variantId = _resolveVariant(event, area);
     if (variantId) {
       audio.sfx[variantId]?.();
     } else {
-      console.warn(`[audio-state] _flushSfxQueue: evento "${event}" não encontrado no SFX_MAP.`);
+      _dbg('_flushSfxQueue: evento "' + event + '" não encontrado no SFX_MAP.');
     }
   }
 }
@@ -287,7 +345,7 @@ function _applyToEngine(modeId) {
   }
   audio.setMusicVolume?.(_volumes.music);
   audio.setSfxVolume?.(_volumes.sfx);
-  console.log('[audio-state] mode:', modeId, '| volumes:', JSON.stringify(_volumes));
+  _dbg('mode:', modeId, '| volumes:', _volumes);
 }
 
 /* ═══════════════════════════════════════════════
@@ -297,14 +355,12 @@ function _applyToEngine(modeId) {
 async function _fetchFromFirebase(uid) {
   try {
     const configs      = await carregarConfigs(uid);
-
-    // configs é o objeto dentro de snap.data().configs (ver firebase.js)
     const saved        = configs?.audioState;
     const savedSfxMap  = configs?.sfxMap     ?? null;
     const savedAreaMap = configs?.sfxAreaMap ?? null;
     const savedVolumes = configs?.volumes    ?? null;
 
-    console.log('[audio-state] _fetchFromFirebase: uid="' + uid + '" sfxMap=', savedSfxMap, 'sfxAreaMap=', savedAreaMap);
+    _dbg('_fetchFromFirebase: uid="' + uid + '" sfxMap=', savedSfxMap, 'sfxAreaMap=', savedAreaMap);
 
     return {
       mode:    VALID_MODES.includes(saved) ? saved : null,
@@ -313,54 +369,51 @@ async function _fetchFromFirebase(uid) {
       volumes: savedVolumes && typeof savedVolumes === 'object' ? savedVolumes : null,
     };
   } catch (err) {
-    console.warn('[audio-state] Erro ao carregar Firebase:', err);
+    _dbg('Erro ao carregar Firebase:', err);
     return { mode: null, sfxMap: null, areaMap: null };
   }
 }
 
 /**
- * Persiste o estado completo (modo + sfxMap + sfxAreaMap) no Firebase.
- * Usado por setMode, setSfxMap, setSfxAreaMap e clearSfxAreaOverride.
+ * Executa o write imediato no Firebase com o estado atual.
+ * NÃO chamar diretamente — usar _persistAllToFirebase() (debounced).
  */
-function _persistAllToFirebase() {
+async function _persistAllToFirebaseNow() {
   if (!_currentUid) return;
   const uid = _currentUid;
 
-  // Snapshot imediato — evita closure stale em trocas rápidas de configuração.
+  // Snapshot síncrono — evita closure stale.
   const modeSnap = _currentMode;
   const sfxSnap  = { ..._currentSfxMap };
-  const areaSnap = JSON.parse(JSON.stringify(_currentSfxAreaMap));
+  // Cópia rasa de dois níveis — suficiente para o schema { area: { action: variant } }.
+  // Evita JSON.parse(JSON.stringify) no hot path mantendo correção.
+  const areaSnap = {};
+  for (const [k, v] of Object.entries(_currentSfxAreaMap)) areaSnap[k] = { ...v };
   const volSnap  = { ..._volumes };
 
-  import('../../../src/global.js').then(({ getConfigs }) => {
-    const configsAtuais = getConfigs();
-    // Remove as chaves de áudio do getConfigs() para não pisar nas versões corretas.
-    // audio-state.js é dono exclusivo de audioState, sfxMap e sfxAreaMap.
+  try {
+    const { getConfigs } = await import('../../../src/global.js');
+    const configsAtuais  = getConfigs();
     const { audioState: _d1, sfxMap: _d2, sfxAreaMap: _d3, volumes: _d4, ...restConfigs } = configsAtuais;
+    const payload = { ...restConfigs, audioState: modeSnap, sfxMap: sfxSnap, sfxAreaMap: areaSnap, volumes: volSnap };
+    _dbg('persistindo →', modeSnap, volSnap);
+    await salvarConfigs(uid, payload);
+  } catch (_) {
+    // fallback sem global.js
+    try {
+      await salvarConfigs(uid, { audioState: modeSnap, sfxMap: sfxSnap, sfxAreaMap: areaSnap, volumes: volSnap });
+    } catch (err) {
+      _dbg('Erro ao salvar Firebase:', err);
+    }
+  }
+}
 
-    const payload = {
-      ...restConfigs,
-      audioState: modeSnap,
-      sfxMap:     sfxSnap,
-      sfxAreaMap: areaSnap,
-      volumes:    volSnap,
-    };
-
-    console.log('[audio-state] persistindo → sfxAreaMap:', JSON.stringify(areaSnap), '| sfxMap:', JSON.stringify(sfxSnap));
-
-    salvarConfigs(uid, payload).catch(err => {
-      console.warn(`[audio-state] Erro ao salvar Firebase (uid="${uid}"):`, err);
-    });
-  }).catch(() => {
-    const payload = {
-      audioState: modeSnap,
-      sfxMap:     sfxSnap,
-      sfxAreaMap: areaSnap,
-      volumes:    volSnap,
-    };
-    console.log('[audio-state] persistindo (fallback) → sfxAreaMap:', JSON.stringify(areaSnap));
-    salvarConfigs(uid, payload).catch(() => {});
-  });
+/**
+ * Agenda persistência no Firebase com debounce de 800 ms.
+ * Múltiplas chamadas rápidas (reset, slider, área) geram apenas 1 write.
+ */
+function _persistAllToFirebase() {
+  _schedulePersist();
 }
 
 /* Aliases mantidos por compatibilidade com código existente */
@@ -373,18 +426,18 @@ function _persistSfxMapToFirebase()  { _persistAllToFirebase(); }
 
 document.addEventListener('nexus:loginSuccess', async ({ detail }) => {
   const uid = detail?.uid;
-  console.log('[audio-state] loginSuccess recebido:', uid);
-  if (!uid) {
-    console.warn('[audio-state] nexus:loginSuccess sem uid no detail — ignorado.');
-    return;
-  }
+  _dbg('loginSuccess recebido:', uid);
+  if (!uid) return;
 
   _currentUid = uid;
   const token = ++_activeLoadToken;
 
-  // Suspende sons personalizados até o Firebase responder.
+  // [DIAG] Momento em que _sfxReady vai para false (sons começam a ser enfileirados)
+  console.log('[DIAG:audio-state] nexus:loginSuccess → _sfxReady = false (início do load Firebase)', {
+    uid, token, 'timestamp': Date.now(),
+  });
   _sfxReady = false;
-  _resetReadyPromise();     // novo ciclo de login: recria a Promise
+  _resetReadyPromise();
 
   _currentMode = DEFAULT_MODE;
   audio.resetToDefaults();
@@ -394,11 +447,10 @@ document.addEventListener('nexus:loginSuccess', async ({ detail }) => {
   const saved = await _fetchFromFirebase(uid);
 
   if (token !== _activeLoadToken) {
-    console.log(`[audio-state] resposta antiga descartada (uid="${uid}", token=${token})`);
+    _dbg('resposta antiga descartada (uid="' + uid + '", token=' + token + ')');
     return;
   }
 
-  // Aplica mapa global do usuário.
   _currentMode       = saved.mode ?? DEFAULT_MODE;
   _currentSfxMap     = saved.sfxMap  ? { ...DEFAULT_SFX_MAP, ...saved.sfxMap  } : { ...DEFAULT_SFX_MAP };
   _currentSfxAreaMap = saved.areaMap ? { ...saved.areaMap } : {};
@@ -406,24 +458,30 @@ document.addEventListener('nexus:loginSuccess', async ({ detail }) => {
     _volumes.master = typeof saved.volumes.master === 'number' ? saved.volumes.master : 1.0;
     _volumes.music  = typeof saved.volumes.music  === 'number' ? saved.volumes.music  : 1.0;
     _volumes.sfx    = typeof saved.volumes.sfx    === 'number' ? saved.volumes.sfx    : 1.0;
-    console.log('[audio-state] volumes carregados do Firebase:', JSON.stringify(_volumes));
+    _dbg('volumes carregados do Firebase:', _volumes);
   }
   _applyToEngine(_currentMode);
   _notify();
 
-  // Ativa e drena a fila — agora os sons chegam com o mapa correto.
   _sfxReady = true;
-  _readyResolve();          // gate: desbloqueia waitUntilReady()
+  // [DIAG] Firebase carregado, _sfxReady voltou para true
+  console.log('[DIAG:audio-state] nexus:loginSuccess → _sfxReady = true (Firebase carregado)', {
+    '_currentMode': _currentMode,
+    '_currentSfxMap': { ..._currentSfxMap },
+    '_sfxQueue restante': _sfxQueue.length,
+    'timestamp': Date.now(),
+  });
+  _readyResolve();
   _flushSfxQueue();
 
-  console.log(
-    `[audio-state] uid="${uid}" → modo="${_currentMode}"`,
-    saved.mode !== null ? '(Firebase)' : '(padrão — primeiro acesso)'
-  );
-  console.log('[audio-state] sfxAreaMap hidratado:', JSON.stringify(_currentSfxAreaMap));
+  _dbg('uid="' + uid + '" → modo="' + _currentMode + '"', saved.mode !== null ? '(Firebase)' : '(padrão)');
+  _dbg('sfxAreaMap hidratado:', _currentSfxAreaMap);
 });
 
 document.addEventListener('nexus:logout', () => {
+  // Cancela qualquer persist pendente antes de limpar o uid.
+  if (_persistTimer) { clearTimeout(_persistTimer); _persistTimer = null; }
+
   _currentUid        = null;
   _activeLoadToken++;
 
@@ -437,7 +495,7 @@ document.addEventListener('nexus:logout', () => {
   _sfxQueue.length = 0;
   _sfxReady = true;
 
-  console.log('[audio-state] Logout → modo resetado para padrão');
+  _dbg('Logout → modo resetado para padrão');
 });
 
 /* ═══════════════════════════════════════════════
@@ -452,7 +510,7 @@ const audioState = {
 
   setMode(modeId) {
     if (!VALID_MODES.includes(modeId)) {
-      console.warn(`[audio-state] setMode: modo inválido "${modeId}". Use: ${VALID_MODES.join(', ')}`);
+      _dbg('setMode: modo inválido "' + modeId + '"');
       return;
     }
     _currentMode = modeId;
@@ -480,7 +538,7 @@ const audioState = {
     const saved = await _fetchFromFirebase(uid);
 
     if (token !== _activeLoadToken) {
-      console.log(`[audio-state] loadFromFirebase descartado (uid="${uid}", token=${token})`);
+      _dbg('loadFromFirebase descartado (uid="' + uid + '", token=' + token + ')');
       return;
     }
 
@@ -491,13 +549,13 @@ const audioState = {
       _volumes.master = typeof saved.volumes.master === 'number' ? saved.volumes.master : 1.0;
       _volumes.music  = typeof saved.volumes.music  === 'number' ? saved.volumes.music  : 1.0;
       _volumes.sfx    = typeof saved.volumes.sfx    === 'number' ? saved.volumes.sfx    : 1.0;
-      console.log('[audio-state] volumes carregados (loadFromFirebase):', JSON.stringify(_volumes));
+      _dbg('volumes carregados (loadFromFirebase):', _volumes);
     }
     _applyToEngine(_currentMode);
     _notify();
 
     _sfxReady = true;
-    _readyResolve();          // gate: desbloqueia waitUntilReady()
+    _readyResolve();
     _flushSfxQueue();
   },
 
@@ -530,14 +588,13 @@ const audioState = {
    */
   setVolume(channel, value) {
     if (!['master', 'music', 'sfx'].includes(channel)) {
-      console.warn('[audio-state] setVolume: canal invalido:', channel);
+      _dbg('setVolume: canal invalido:', channel);
       return;
     }
     const clamped = Math.max(0, Math.min(2, Number(value) || 0));
     _volumes[channel] = clamped;
-    console.log('[audio-state] volume:', channel, '=', clamped, '| todos:', JSON.stringify(_volumes));
+    _dbg('volume:', channel, '=', clamped);
 
-    // Aplica na engine imediatamente
     if (channel === 'master') {
       if (clamped === 0) { audio.setMasterVolume(0); audio.mute(); }
       else               { audio.unmute(); audio.setMasterVolume(clamped); }
@@ -547,7 +604,6 @@ const audioState = {
       audio.setSfxVolume?.(clamped);
     }
 
-    // Persiste no Firebase (inclui modo + sfxMap + sfxAreaMap + volumes)
     _persistAllToFirebase();
   },
 
@@ -559,7 +615,7 @@ const audioState = {
 
   setSfxMap(action, variantId) {
     if (!(action in DEFAULT_SFX_MAP)) {
-      console.warn(`[audio-state] setSfxMap: ação desconhecida "${action}". Use: ${Object.keys(DEFAULT_SFX_MAP).join(', ')}`);
+      _dbg('setSfxMap: ação desconhecida "' + action + '"');
       return;
     }
     _currentSfxMap[action] = variantId;
@@ -576,7 +632,11 @@ const audioState = {
    * @returns {Object}
    */
   getSfxAreaMap() {
-    return JSON.parse(JSON.stringify(_currentSfxAreaMap));
+    // Cópia rasa de dois níveis — suficiente para o schema { area: { action: variant } }.
+    // Evita JSON.parse/stringify no hot path mantendo isolamento correto.
+    const copy = {};
+    for (const [k, v] of Object.entries(_currentSfxAreaMap)) copy[k] = { ...v };
+    return copy;
   },
 
   /**
@@ -589,27 +649,24 @@ const audioState = {
    */
   setSfxAreaMap(area, action, variantId) {
     if (!(action in DEFAULT_SFX_MAP)) {
-      console.warn(`[audio-state] setSfxAreaMap: ação desconhecida "${action}". Use: ${Object.keys(DEFAULT_SFX_MAP).join(', ')}`);
+      _dbg('setSfxAreaMap: ação desconhecida "' + action + '"');
       return;
     }
 
     const key = area.toLowerCase();
 
     if (variantId == null) {
-      // Remove o override desta área+action
       if (_currentSfxAreaMap[key]) {
         delete _currentSfxAreaMap[key][action];
         if (Object.keys(_currentSfxAreaMap[key]).length === 0) {
           delete _currentSfxAreaMap[key];
         }
       }
-      console.log(`[audio-state] setSfxAreaMap: removido override área="${key}" action="${action}" | mapa atual:`, JSON.stringify(_currentSfxAreaMap));
+      _dbg('setSfxAreaMap: removido override área="' + key + '" action="' + action + '"');
     } else {
-      if (!_currentSfxAreaMap[key]) {
-        _currentSfxAreaMap[key] = {};
-      }
+      if (!_currentSfxAreaMap[key]) _currentSfxAreaMap[key] = {};
       _currentSfxAreaMap[key][action] = variantId;
-      console.log(`[audio-state] setSfxAreaMap: definido área="${key}" action="${action}" variant="${variantId}" | mapa atual:`, JSON.stringify(_currentSfxAreaMap));
+      _dbg('setSfxAreaMap: definido área="' + key + '" action="' + action + '" variant="' + variantId + '"');
     }
 
     _persistAllToFirebase();
@@ -674,10 +731,12 @@ const audioState = {
    * @returns {{ audioState: string, sfxMap: object, sfxAreaMap: object }}
    */
   getAudioPayload() {
+    const areaSnap = {};
+    for (const [k, v] of Object.entries(_currentSfxAreaMap)) areaSnap[k] = { ...v };
     return {
       audioState: _currentMode,
       sfxMap:     { ..._currentSfxMap },
-      sfxAreaMap: JSON.parse(JSON.stringify(_currentSfxAreaMap)),
+      sfxAreaMap: areaSnap,
       volumes:    { ..._volumes },
     };
   },

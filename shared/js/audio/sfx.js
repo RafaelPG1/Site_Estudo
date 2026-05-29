@@ -72,21 +72,172 @@ const _state = { ..._DEFAULT_SFX_STATE };
 // (setMasterVolume, mute, unmute) com os valores corretos do Firebase.
 
 /* ═══════════════════════════════════════════════
-   2. CONTEXTO DE ÁUDIO (lazy)
+   1b. DEBUG FLAG
+   Setar DEBUG_AUDIO = true no console para ativar logs detalhados.
+   Em produção fica false — elimina micro-travadas com DevTools aberto.
 ═══════════════════════════════════════════════ */
 
-let _ctx = null;
+const DEBUG_AUDIO = false;
+const _dbg = DEBUG_AUDIO ? (...a) => console.log('[sfx]', ...a) : () => {};
 
+/* ═══════════════════════════════════════════════
+   2. CONTEXTO DE ÁUDIO — UNLOCK POR TRUSTED GESTURE
+   ─────────────────────────────────────────────
+   REGRA FUNDAMENTAL: o AudioContext NUNCA é criado automaticamente.
+   Criado apenas dentro de um trusted event handler (pointerdown/
+   touchstart/keydown), onde o browser sempre permite autoplay.
+
+   POR QUE SÍNCRONO:
+     new AudioContext() criado dentro de um trusted event handler
+     nasce em state 'running' nos browsers modernos (Chrome ≥ 66,
+     Firefox ≥ 71, Safari ≥ 14.5) — sem precisar de resume() async.
+     Se por algum motivo nascer 'suspended', ctx.resume() é chamado
+     mas o SFX do mesmo evento já pode tocar: _isCtxReady() usa o
+     estado real do ctx, não a flag _ctxUnlocked.
+
+   FLUXO DO PRIMEIRO CLICK:
+     1. pointerdown  → _unlockAudioContext() cria ctx ('running')
+                     → _ctxUnlocked = true, gains criados, warmup
+     2. click        → playSound() → _isCtxReady() = true → SOM TOCA
+     Resultado: som toca no mesmo clique que desbloqueou.
+
+   PROTEÇÕES:
+     - _getCtx()      → retorna _ctx (null antes do unlock)
+     - _isCtxReady()  → !!_ctx && _ctx.state === 'running'
+     - _tone()/_seq() → abortam silenciosamente se !_isCtxReady()
+     - play.js        → guard _isCtxReady() — hover silencioso pré-unlock
+
+   EVENTOS DE UNLOCK: click, pointerdown, touchstart, keydown
+     NÃO inclui pointermove/pointerenter/hover — não são trusted gestures
+     para autoplay policy do Chrome.
+═══════════════════════════════════════════════ */
+
+let _ctx         = null;
+let _ctxUnlocked = false;
+
+/**
+ * Retorna o AudioContext atual.
+ * NÃO cria o contexto — retorna null antes do primeiro unlock.
+ */
 function _getCtx() {
-  if (!_ctx) {
-    _ctx = new (window.AudioContext || window.webkitAudioContext)();
-    // Warmup: cria master/sfx/musicGain imediatamente ao criar o contexto.
-    // Evita que o primeiro hover pague o custo de createGain()/connect() no hot path.
-    _getGains();
-  }
-  if (_ctx.state === 'suspended') _ctx.resume();
   return _ctx;
 }
+
+/**
+ * Verifica se o contexto está em state 'running' agora.
+ * Usa ctx.state diretamente — não depende de flag async.
+ * É a única verificação que importa para decidir se um som pode tocar.
+ */
+function _isCtxReady() {
+  return !!_ctx && _ctx.state === 'running';
+}
+
+/**
+ * Cria e prepara o AudioContext dentro de um trusted event handler.
+ * ÚNICA função que executa `new AudioContext()`.
+ *
+ * Síncrona do ponto de vista do evento: new AudioContext() em trusted
+ * handler nasce em 'running' na maioria dos casos. Se nascer 'suspended'
+ * (raro), ctx.resume() é disparado em background — o contexto fica pronto
+ * para o próximo evento sem bloquear o atual.
+ *
+ * Idempotente: chamadas subsequentes são no-op se já desbloqueado.
+ */
+function _unlockAudioContext() {
+  if (_ctxUnlocked) return;
+
+  try {
+    if (!_ctx) {
+      _ctx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    // [DIAG] Estado imediatamente após new AudioContext()
+    console.log('[DIAG:sfx] _unlockAudioContext — ctx criado', {
+      'ctx.state ANTES do resume': _ctx.state,
+      '_ctxUnlocked (ainda false)': _ctxUnlocked,
+      'timestamp': Date.now(),
+    });
+
+    // Caso raro: contexto criado em 'suspended' (ex: múltiplas abas).
+    // resume() em background — não bloqueia, não gera warning.
+    if (_ctx.state === 'suspended') {
+      _ctx.resume().then(() => {
+        // [DIAG] Estado após resume() completar (assíncrono)
+        console.log('[DIAG:sfx] ctx.resume() COMPLETOU', {
+          'ctx.state APÓS resume': _ctx.state,
+          '_ctxUnlocked': _ctxUnlocked,
+          '_isCtxReady()': _isCtxReady(),
+          'timestamp': Date.now(),
+        });
+      }).catch(() => {});
+    }
+
+    // Marca como desbloqueado assim que o contexto existe e está (ou
+    // ficará) running. _isCtxReady() usa ctx.state real como segunda
+    // verificação — sons só tocam quando running de fato.
+    _ctxUnlocked = true;
+
+    // [DIAG] Estado após setar _ctxUnlocked = true (ainda síncrono)
+    console.log('[DIAG:sfx] _ctxUnlocked = true foi setado', {
+      '_ctxUnlocked': _ctxUnlocked,
+      'ctx.state AGORA': _ctx.state,
+      '_isCtxReady()': _isCtxReady(),
+      'DIVERGÊNCIA (_ctxUnlocked != _isCtxReady)': _ctxUnlocked !== _isCtxReady(),
+      'timestamp': Date.now(),
+    });
+
+    _getGains();
+    _warmup();
+    _dbg('AudioContext desbloqueado');
+
+  } catch (err) {
+    // [DIAG] Captura erros silenciados
+    console.error('[DIAG:sfx] _unlockAudioContext FALHOU:', err);
+  }
+}
+
+/**
+ * Pré-aquece o AudioContext após unlock:
+ * oscilador silencioso de 1 ms para forçar inicialização do renderer,
+ * evitando "engasgo" no primeiro som real.
+ */
+function _warmup() {
+  if (!_isCtxReady() || !_masterGain) return;
+  try {
+    const osc = _ctx.createOscillator();
+    const g   = _ctx.createGain();
+    g.gain.value = 0;
+    osc.connect(g);
+    g.connect(_masterGain);
+    osc.start(_ctx.currentTime);
+    osc.stop(_ctx.currentTime + 0.001);
+    _dbg('warmup executado');
+  } catch (_) {}
+}
+
+/* ─────────────────────────────────────────────
+   LISTENERS DE UNLOCK
+   Instalados na carga do módulo — removidos após primeiro unlock.
+   Apenas trusted gestures: click, pointerdown, touchstart, keydown.
+   NÃO inclui pointermove, pointerenter ou qualquer evento de hover.
+   { capture: true, passive: true } — máxima prioridade, zero overhead.
+───────────────────────────────────────────── */
+(function _installUnlockListeners() {
+  const EVENTS = ['click', 'pointerdown', 'touchstart', 'keydown'];
+
+  function _onTrustedGesture() {
+    _unlockAudioContext();
+    if (_ctxUnlocked) {
+      EVENTS.forEach(ev =>
+        document.removeEventListener(ev, _onTrustedGesture, { capture: true })
+      );
+    }
+  }
+
+  EVENTS.forEach(ev =>
+    document.addEventListener(ev, _onTrustedGesture, { capture: true, passive: true })
+  );
+}());
 
 /* ═══════════════════════════════════════════════
    3. NÓS DE GANHO (gain nodes por canal)
@@ -97,16 +248,18 @@ let _sfxGain    = null;
 let _musicGain  = null;
 
 function _getGains() {
-  const ctx = _getCtx();
+  // Só cria os gain nodes se o contexto já estiver desbloqueado.
+  // Sem contexto pronto, retorna null silenciosamente.
+  if (!_isCtxReady()) return null;
 
   if (!_masterGain) {
-    _masterGain = ctx.createGain();
-    _sfxGain    = ctx.createGain();
-    _musicGain  = ctx.createGain();
+    _masterGain = _ctx.createGain();
+    _sfxGain    = _ctx.createGain();
+    _musicGain  = _ctx.createGain();
 
     _sfxGain.connect(_masterGain);
     _musicGain.connect(_masterGain);
-    _masterGain.connect(ctx.destination);
+    _masterGain.connect(_ctx.destination);
 
     _syncGains();
   }
@@ -136,13 +289,41 @@ function _tone({
   type    = 'sine',
   volume  = 1,
 }) {
-  if (!_state.enabled || _state.muted) return;
+  // [DIAG] Entrada em _tone() — captura o estado exato no momento do disparo
+  console.log('[DIAG:sfx] _tone() ENTRADA', {
+    freq,
+    '_state.enabled': _state.enabled,
+    '_state.muted': _state.muted,
+    '_ctxUnlocked': _ctxUnlocked,
+    'ctx existe': !!_ctx,
+    'ctx.state': _ctx?.state ?? 'null',
+    '_isCtxReady()': _isCtxReady(),
+    '_masterGain existe': !!_masterGain,
+    'timestamp': Date.now(),
+  });
 
-  const ctx    = _getCtx();
+  if (!_state.enabled || _state.muted) {
+    console.warn('[DIAG:sfx] _tone() BLOQUEADO — enabled/muted', { enabled: _state.enabled, muted: _state.muted });
+    return;
+  }
+  // Guard estrito: aborta silenciosamente se o contexto não estiver pronto.
+  // Não tenta criar contexto, não loga warnings, não faz retry.
+  if (!_isCtxReady()) {
+    console.warn('[DIAG:sfx] _tone() BLOQUEADO — _isCtxReady() = false', {
+      '_ctxUnlocked': _ctxUnlocked,
+      'ctx existe': !!_ctx,
+      'ctx.state': _ctx?.state ?? 'null',
+    });
+    return;
+  }
+
+  const ctx    = _ctx;
   const gains  = _getGains();
+  if (!gains) {
+    console.warn('[DIAG:sfx] _tone() BLOQUEADO — _getGains() retornou null');
+    return;
+  }
   const decayT = decay ?? duration * 0.3;
-  // +0.005 s de lookahead: garante que o evento cai no próximo render block,
-  // evitando a latência de até ~6 ms quando currentTime está no meio do block atual.
   const t      = ctx.currentTime + 0.005;
 
   const osc      = ctx.createOscillator();
@@ -166,10 +347,32 @@ function _tone({
 
   osc.start(t);
   osc.stop(t + duration + 0.01);
+
+  // [DIAG] Confirma que o som foi agendado com sucesso
+  console.log('[DIAG:sfx] _tone() SOM AGENDADO', { freq, type, volume, t });
 }
 
 function _seq(notes) {
-  if (!_state.enabled || _state.muted) return;
+  // [DIAG] Entrada em _seq()
+  console.log('[DIAG:sfx] _seq() ENTRADA', {
+    '_state.enabled': _state.enabled,
+    '_state.muted': _state.muted,
+    '_isCtxReady()': _isCtxReady(),
+    'ctx.state': _ctx?.state ?? 'null',
+    'notas': notes.length,
+    'timestamp': Date.now(),
+  });
+
+  if (!_state.enabled || _state.muted) {
+    console.warn('[DIAG:sfx] _seq() BLOQUEADO — enabled/muted');
+    return;
+  }
+  if (!_isCtxReady()) {
+    console.warn('[DIAG:sfx] _seq() BLOQUEADO — _isCtxReady() = false', {
+      'ctx.state': _ctx?.state ?? 'null',
+    });
+    return;
+  }
   notes.forEach(({ delay = 0, ...rest }) => {
     setTimeout(() => _tone(rest), delay * 1000);
   });
@@ -186,9 +389,8 @@ const _bgmEngine = {
     if (!_currentBgm) return;
     const { nodes } = _currentBgm;
 
-    if (fadeTime > 0 && _musicGain) {
-      const ctx = _getCtx();
-      const t   = ctx.currentTime;
+    if (fadeTime > 0 && _musicGain && _isCtxReady()) {
+      const t = _ctx.currentTime;
       _musicGain.gain.setValueAtTime(_musicGain.gain.value, t);
       _musicGain.gain.linearRampToValueAtTime(0, t + fadeTime);
       setTimeout(() => {
@@ -204,13 +406,15 @@ const _bgmEngine = {
 
   play(id, buildFn) {
     if (!_state.enabled || _state.muted) return;
+    if (!_isCtxReady()) return;
     if (_currentBgm?.id === id) return;
 
     this.stop(0.3);
 
     setTimeout(() => {
+      if (!_isCtxReady()) return;
       _getGains();
-      const nodes = buildFn(_getCtx(), _musicGain);
+      const nodes = buildFn(_ctx, _musicGain);
       _currentBgm = { id, nodes: Array.isArray(nodes) ? nodes : [nodes] };
     }, _currentBgm ? 350 : 0);
   },
@@ -443,7 +647,7 @@ export const catalog = [
     category: 'click', type: 'sfx', variant: '', volume: 0.28,
     description: 'Click — blip suave triangle, ultra discreto',
     fn() {
-        const ctx = _getCtx(); const gains = _getGains();
+        if (!_isCtxReady()) return; const ctx = _ctx; const gains = _getGains();
         const o = ctx.createOscillator(), g = ctx.createGain();
         o.type = 'triangle'; o.frequency.setValueAtTime(1100, ctx.currentTime);
         o.frequency.exponentialRampToValueAtTime(700, ctx.currentTime + 0.045);
@@ -457,7 +661,7 @@ export const catalog = [
     category: 'click', type: 'sfx', variant: '', volume: 0.45,
     description: 'Click — tap leve sine com decay exponencial, mobile-first',
     fn() {
-        const ctx = _getCtx(); const gains = _getGains();
+        if (!_isCtxReady()) return; const ctx = _ctx; const gains = _getGains();
         const o = ctx.createOscillator(), g = ctx.createGain();
         o.type = 'sine'; o.frequency.setValueAtTime(500, ctx.currentTime);
         o.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.07);
@@ -471,7 +675,7 @@ export const catalog = [
     category: 'click', type: 'sfx', variant: '', volume: 0.25,
     description: 'Click — pluck sintético sawtooth, orgânico e digital',
     fn() {
-        const ctx = _getCtx(); const gains = _getGains();
+        if (!_isCtxReady()) return; const ctx = _ctx; const gains = _getGains();
         const o = ctx.createOscillator(), g = ctx.createGain();
         o.type = 'sawtooth'; o.frequency.setValueAtTime(440, ctx.currentTime);
         o.frequency.exponentialRampToValueAtTime(380, ctx.currentTime + 0.12);
@@ -485,7 +689,7 @@ export const catalog = [
     category: 'click', type: 'sfx', variant: '', volume: 0.5,
     description: 'Click — double tap dois tocks graves rápidos',
     fn() {
-        const ctx = _getCtx(); const gains = _getGains();
+        if (!_isCtxReady()) return; const ctx = _ctx; const gains = _getGains();
         [0, 70].forEach(ms => {
         setTimeout(() => {
             const o = ctx.createOscillator(), g = ctx.createGain();
@@ -503,7 +707,7 @@ export const catalog = [
     category: 'click', type: 'sfx', variant: '', volume: 0.22,
     description: 'Click — micro ping sine alto curtíssimo, notificação silenciosa',
     fn() {
-        const ctx = _getCtx(); const gains = _getGains();
+        if (!_isCtxReady()) return; const ctx = _ctx; const gains = _getGains();
         const o = ctx.createOscillator(), g = ctx.createGain();
         o.type = 'sine'; o.frequency.value = 1400;
         g.gain.setValueAtTime(this.volume, ctx.currentTime);
@@ -516,7 +720,7 @@ export const catalog = [
     category: 'click', type: 'sfx', variant: '', volume: 0.7,
     description: 'Click — thud sólido sine sub-grave, botão com peso',
     fn() {
-        const ctx = _getCtx(); const gains = _getGains();
+        if (!_isCtxReady()) return; const ctx = _ctx; const gains = _getGains();
         const o = ctx.createOscillator(), g = ctx.createGain();
         o.type = 'sine'; o.frequency.setValueAtTime(140, ctx.currentTime);
         o.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.1);
@@ -532,7 +736,7 @@ export const catalog = [
     category: 'hover', type: 'sfx', variant: '', volume: 0.1,
     description: 'Hover — breath sine suavíssimo, presença quase inaudível',
     fn() {
-        const ctx = _getCtx(); const gains = _getGains();
+        if (!_isCtxReady()) return; const ctx = _ctx; const gains = _getGains();
         const o = ctx.createOscillator(), g = ctx.createGain();
         o.type = 'sine'; o.frequency.value = 960;
         g.gain.setValueAtTime(0, ctx.currentTime);
@@ -546,7 +750,7 @@ export const catalog = [
     category: 'hover', type: 'sfx', variant: '', volume: 0.12,
     description: 'Hover — whisper alto sine aéreo com sweep descendente',
     fn() {
-        const ctx = _getCtx(); const gains = _getGains();
+        if (!_isCtxReady()) return; const ctx = _ctx; const gains = _getGains();
         const o = ctx.createOscillator(), g = ctx.createGain();
         o.type = 'sine'; o.frequency.setValueAtTime(2200, ctx.currentTime);
         o.frequency.exponentialRampToValueAtTime(1600, ctx.currentTime + 0.06);
@@ -560,7 +764,7 @@ export const catalog = [
     category: 'hover', type: 'sfx', variant: '', volume: 0.13,
     description: 'Hover — drip leve sine descendente, gota delicada',
     fn() {
-        const ctx = _getCtx(); const gains = _getGains();
+        if (!_isCtxReady()) return; const ctx = _ctx; const gains = _getGains();
         const o = ctx.createOscillator(), g = ctx.createGain();
         o.type = 'sine'; o.frequency.setValueAtTime(1400, ctx.currentTime);
         o.frequency.exponentialRampToValueAtTime(700, ctx.currentTime + 0.055);
@@ -574,7 +778,7 @@ export const catalog = [
     category: 'hover', type: 'sfx', variant: '', volume: 0.18,
     description: 'Hover — tap suave sine grave curtíssimo, quase tátil',
     fn() {
-        const ctx = _getCtx(); const gains = _getGains();
+        if (!_isCtxReady()) return; const ctx = _ctx; const gains = _getGains();
         const o = ctx.createOscillator(), g = ctx.createGain();
         o.type = 'sine'; o.frequency.setValueAtTime(340, ctx.currentTime);
         o.frequency.exponentialRampToValueAtTime(120, ctx.currentTime + 0.05);
@@ -588,7 +792,7 @@ export const catalog = [
     category: 'hover', type: 'sfx', variant: '', volume: 0.11,
     description: 'Hover — blip neutro triangle flat, presença subliminar',
     fn() {
-        const ctx = _getCtx(); const gains = _getGains();
+        if (!_isCtxReady()) return; const ctx = _ctx; const gains = _getGains();
         const o = ctx.createOscillator(), g = ctx.createGain();
         o.type = 'triangle'; o.frequency.value = 1050;
         g.gain.setValueAtTime(0, ctx.currentTime);
@@ -602,7 +806,7 @@ export const catalog = [
     category: 'hover', type: 'sfx', variant: '', volume: 0.13,
     description: 'Hover — glide sci-fi sine ascendente, interface holográfica',
     fn() {
-        const ctx = _getCtx(); const gains = _getGains();
+        if (!_isCtxReady()) return; const ctx = _ctx; const gains = _getGains();
         const o = ctx.createOscillator(), g = ctx.createGain();
         o.type = 'sine'; o.frequency.setValueAtTime(500, ctx.currentTime);
         o.frequency.linearRampToValueAtTime(800, ctx.currentTime + 0.07);
@@ -617,7 +821,7 @@ export const catalog = [
     category: 'hover', type: 'sfx', variant: '', volume: 0.09,
     description: 'Hover — tick micro square retrô quase inaudível, pura textura',
     fn() {
-        const ctx = _getCtx(); const gains = _getGains();
+        if (!_isCtxReady()) return; const ctx = _ctx; const gains = _getGains();
         const o = ctx.createOscillator(), g = ctx.createGain();
         o.type = 'square'; o.frequency.setValueAtTime(600, ctx.currentTime);
         o.frequency.linearRampToValueAtTime(420, ctx.currentTime + 0.03);
@@ -631,7 +835,7 @@ export const catalog = [
     category: 'hover', type: 'sfx', variant: '', volume: 0.1,
     description: 'Hover — hiss suave triangle alto com fade simétrico, UI premium',
     fn() {
-        const ctx = _getCtx(); const gains = _getGains();
+        if (!_isCtxReady()) return; const ctx = _ctx; const gains = _getGains();
         const o = ctx.createOscillator(), g = ctx.createGain();
         o.type = 'triangle'; o.frequency.setValueAtTime(1800, ctx.currentTime);
         o.frequency.linearRampToValueAtTime(1400, ctx.currentTime + 0.08);
@@ -1365,15 +1569,15 @@ const audio = {
   stopAll() { _bgmEngine.stop(0); },
 
   fadeOut(duration = 1) {
-    if (!_masterGain) return;
-    const ctx = _getCtx(); const t = ctx.currentTime;
+    if (!_masterGain || !_isCtxReady()) return;
+    const t = _ctx.currentTime;
     _masterGain.gain.setValueAtTime(_masterGain.gain.value, t);
     _masterGain.gain.linearRampToValueAtTime(0, t + duration);
   },
 
   fadeIn(duration = 1) {
-    if (!_masterGain) return;
-    const ctx = _getCtx(); const t = ctx.currentTime;
+    if (!_masterGain || !_isCtxReady()) return;
+    const t = _ctx.currentTime;
     _masterGain.gain.setValueAtTime(0, t);
     _masterGain.gain.linearRampToValueAtTime(_state.masterVolume, t + duration);
   },
@@ -1389,6 +1593,19 @@ const audio = {
   },
 
   getState() { return { ..._state }; },
+
+  /**
+   * Indica se o AudioContext foi criado e está pronto.
+   * Baseado em _ctxUnlocked, setado de forma síncrona dentro do
+   * trusted event handler — sem depender de microtask async.
+   * @returns {boolean}
+   */
+  isUnlocked() {
+    // [DIAG] Consultado pelo play.js — mostra o estado da flag vs ctx real
+    // REMOVER este log após diagnóstico (é chamado em todo hover/click)
+    // console.log('[DIAG:sfx] isUnlocked()', { _ctxUnlocked, 'ctx.state': _ctx?.state ?? 'null', '_isCtxReady': _isCtxReady() });
+    return _ctxUnlocked;
+  },
 };
 
 export default audio;

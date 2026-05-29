@@ -2,141 +2,116 @@
 /* =============================================
    NEXUS STUDY — shared/js/audio/play.js
    Dispatcher central de SFX
-   Versão 1.2  ← suporte a área/página
+   Versão 1.5  ← guard correto pós-unlock síncrono
 
-   RESPONSABILIDADE ÚNICA
+   MUDANÇAS v1.4 → v1.5
    ─────────────────────────────────────────────
-   Expõe playSound(event, area?) — ponto único de disparo
-   de efeitos sonoros em qualquer página do projeto.
+   - Removido audio.unlock?.() — hover NÃO inicia unlock
+   - Guard usa audio.isUnlocked() como hard-block para hover e
+     qualquer evento pré-unlock; sons só passam após primeiro click
+   - Primeiro click: pointerdown dispara _unlockAudioContext() de forma
+     síncrona no sfx.js → _ctxUnlocked = true antes do evento click
+     chegar aqui → som do primeiro clique toca imediatamente
+   - Hover silencioso antes do primeiro click: correto por spec
 
-   ARQUITETURA
-   ─────────────────────────────────────────────
-   playSound(event, area?)
-     │
-     ├─ audioState.isReady()            → SFX_MAP do Firebase já carregou?
-     │     false → audioState.enqueue(event, area) e sai (sem som agora)
-     │     true  → continua
-     │
-     ├─ audioState.resolveVariant(event, area)
-     │     1. Verifica _currentSfxAreaMap[area]?.[event]  (override específico)
-     │     2. Fallback: _currentSfxMap[event]             (som geral)
-     │
-     ├─ audio.sfx[variantId]?.()        → executa via engine sfx.js
-     └─ fallback silencioso             → nunca lança erro
-
-   RESOLUÇÃO DE ÁREA
-   ─────────────────────────────────────────────
-   playSound('click')           → usa som geral de click
-   playSound('click', 'game')   → usa override de click para game,
-                                   ou geral se não houver override
-   playSound('hover', 'resumos')→ usa override de hover para resumos,
-                                   ou geral se não houver override
-
-   A área é opcional e case-insensitive (normalizada em audio-state.js).
-   Páginas que não passam área continuam funcionando exatamente como antes.
-
-   POR QUE A FILA EXISTE
-   ─────────────────────────────────────────────
-   Durante o login, há uma janela de ~200ms entre a UI chamar playSound()
-   e o Firebase terminar de entregar o SFX_MAP personalizado do usuário.
-   Sem a fila, sons chamados nessa janela usariam DEFAULT_SFX_MAP —
-   potencialmente a variante errada para aquele usuário.
-
-   Com a fila (incluindo a área):
-     - playSound('click', 'game') chama isReady() → false → enqueue('click', 'game')
-     - audio-state.js termina de carregar o Firebase (sfxMap + sfxAreaMap)
-     - _flushSfxQueue() toca todos os eventos pendentes com os mapas corretos
-
-   DEPENDÊNCIAS
-   ─────────────────────────────────────────────
-   audio-state.js  — fonte única de verdade (SFX_MAP + área + modo + fila)
-   sfx.js          — engine de áudio (executa o som de fato)
-
-   ESTE ARQUIVO NÃO:
-   ─────────────────────────────────────────────
-   ❌ armazena estado próprio
-   ❌ acessa Firebase diretamente
-   ❌ conhece o esquema de modos (normal/low/mute)
-   ❌ conhece o schema de área — delega tudo para audio-state
-   ❌ cria DOM ou elementos visuais
-   ❌ duplica lógica de audio-state ou sfx
-
-   USO
-   ─────────────────────────────────────────────
-   import { playSound } from '/shared/js/audio/play.js';
-
-   // Sons gerais (sem área — comportamento idêntico à v1.1)
-   playSound('click');
-   playSound('hover');
-   playSound('openModal');
-   playSound('closeModal');
-   playSound('select');
-
-   // Sons com área específica (usa override se existir, senão usa geral)
-   playSound('click',  'game');
-   playSound('hover',  'resumos');
-   playSound('select', 'quiz');
-   playSound('click',  'perfil');
-
-   A área pode ser qualquer string lowercase que corresponda às chaves
-   definidas no sfxAreaMap do Firebase (configuradas pelo modal).
+   FLUXO DO PRIMEIRO CLICK:
+     pointerdown → sfx.js cria ctx, seta _ctxUnlocked = true
+     click       → playSound('click') → isUnlocked() = true → SOM TOCA
    ============================================= */
 
 import audioState from './audio-state.js';
 import audio      from './sfx.js';
 
+/* ─────────────────────────────────────────────
+   DEBUG FLAG
+   Setar DEBUG_AUDIO = true para ativar logs de diagnóstico.
+   Em produção fica false — elimina micro-travadas com DevTools aberto.
+───────────────────────────────────────────── */
+const DEBUG_AUDIO = false;
+const _dbg = DEBUG_AUDIO ? (...a) => console.log('[play]', ...a) : () => {};
+
+/* ─────────────────────────────────────────────
+   THROTTLE DE HOVER
+   Mínimo de 40 ms entre disparos de 'hover'.
+   Evita flood ao mover o mouse rapidamente sobre elementos,
+   sem perder o primeiro disparo (comportamento imediato).
+   Cada área tem seu próprio timer para não bloquear áreas diferentes.
+───────────────────────────────────────────── */
+const _hoverLastTs = new Map(); // key: area ?? '__global__' → timestamp
+
+function _isHoverThrottled(area) {
+  const key  = area ?? '__global__';
+  const now  = Date.now();
+  const last = _hoverLastTs.get(key) ?? 0;
+  if (now - last < 40) return true;
+  _hoverLastTs.set(key, now);
+  return false;
+}
+
 /**
  * Toca o efeito sonoro mapeado para a ação informada,
  * respeitando o override da área/página quando fornecido.
  *
- * Resolução de variante:
- *   1. Override de área: sfxAreaMap[area]?.[event]   → se existir, usa
- *   2. Som geral:        sfxMap[event]               → fallback
- *   3. Silêncio          → se nenhum mapeamento existir
- *
- * Se o SFX_MAP do Firebase ainda não foi carregado (janela de login),
- * o evento (com sua área) é enfileirado em audio-state.js e tocado
- * automaticamente assim que o mapa correto estiver disponível —
- * nunca é perdido, nunca usa a variante errada.
- *
- * @param {string}      event — chave do SFX_MAP (ex: 'click', 'hover', 'openModal')
- * @param {string|null} [area] — identificador de área/página (ex: 'game', 'resumos')
- *                               Opcional. Se omitido, usa apenas o som geral.
+ * @param {string}      event — chave do SFX_MAP (ex: 'click', 'hover')
+ * @param {string|null} [area] — identificador de área (ex: 'game', 'resumos')
  */
 export function playSound(event, area = null) {
-  // Se o SFX_MAP ainda não foi carregado do Firebase, enfileira o evento
-  // (com sua área) e sai. audio-state.js vai tocá-lo com os mapas corretos
-  // assim que estiver pronto, via _flushSfxQueue().
+  // [DIAG] Entrada em playSound() — snapshot completo do estado no momento do disparo
+  const _diagIsUnlocked  = audio.isUnlocked();
+  const _diagIsReady     = audioState.isReady();
+  const _diagThrottled   = event === 'hover' ? _isHoverThrottled.__diagPeek?.(area) : 'N/A (não é hover)';
+  console.log(`[DIAG:play] playSound("${event}", "${area}") ENTRADA`, {
+    'audio.isUnlocked()': _diagIsUnlocked,
+    'audioState.isReady()': _diagIsReady,
+    'timestamp': Date.now(),
+  });
+
+  // Guard primário: silêncio total antes do primeiro trusted gesture.
+  // pointerdown no sfx.js seta isUnlocked() de forma síncrona — então
+  // o evento 'click' que sempre segue o pointerdown já passa por aqui
+  // com isUnlocked() = true. Hover antes do primeiro click: silencioso.
+  if (!audio.isUnlocked()) {
+    console.warn('[DIAG:play] BLOQUEADO em isUnlocked() — retornando silenciosamente');
+    return;
+  }
+
+  // Throttle de hover: descarta chamadas excessivas sem enfileirar.
+  if (event === 'hover' && _isHoverThrottled(area)) {
+    console.log('[DIAG:play] BLOQUEADO em hover throttle', { area, 'timestamp': Date.now() });
+    return;
+  }
+
+  // Se o SFX_MAP ainda não foi carregado do Firebase, enfileira o evento.
+  // audio-state.js vai drená-los com os mapas corretos via _flushSfxQueue().
   if (!audioState.isReady()) {
+    console.warn('[DIAG:play] BLOQUEADO — audioState não está ready, enfileirando', { event, area });
     audioState.enqueue(event, area);
     return;
   }
 
-  // Delega toda a lógica de resolução para audio-state.
-  // Ele verifica: área → geral → undefined.
   const variantId = audioState.resolveVariant(event, area);
 
-  // Log de diagnóstico — aparece para todos os sons (com ou sem área).
-  // Mostra qual variante foi escolhida e se veio de override de área ou do mapa geral.
-  if (area) {
-    const areaMap     = audioState.getSfxAreaMap();
-    const areaKey     = area.toLowerCase();
-    const hasOverride = areaMap[areaKey]?.[event];
-    console.log(
-      `[play] playSound("${event}", "${area}") → variant="${variantId}"`,
-      hasOverride
-        ? `(área override: "${hasOverride}")`
-        : '(sem override — usando geral)'
-    );
-  } else {
-    console.log(`[play] playSound("${event}") → variant="${variantId}" (geral)`);
+  // [DIAG] Variante resolvida — se undefined, silêncio aqui
+  console.log(`[DIAG:play] resolveVariant("${event}", "${area}") →`, variantId ?? 'undefined ← SOM VAI MORRER AQUI');
+
+  if (DEBUG_AUDIO) {
+    if (area) {
+      const areaMap     = audioState.getSfxAreaMap();
+      const hasOverride = areaMap[area.toLowerCase()]?.[event];
+      _dbg('playSound("' + event + '", "' + area + '") → variant="' + variantId + '"',
+           hasOverride ? '(área override: "' + hasOverride + '")' : '(sem override — usando geral)');
+    } else {
+      _dbg('playSound("' + event + '") → variant="' + variantId + '" (geral)');
+    }
   }
 
   if (!variantId) {
-    console.warn(`[play] playSound: evento "${event}"${area ? ` (área "${area}")` : ''} não encontrado no SFX_MAP.`);
+    console.warn(`[DIAG:play] BLOQUEADO — variantId undefined para evento="${event}" área="${area}"`);
+    _dbg('evento "' + event + '"' + (area ? ' (área "' + area + '")' : '') + ' não encontrado no SFX_MAP.');
     return;
   }
 
-  // Executa o som via engine sfx.js.
+  // [DIAG] Chegou até aqui — vai chamar a fn do catálogo
+  console.log(`[DIAG:play] Chamando audio.sfx["${variantId}"]()`);
   audio.sfx[variantId]?.();
 }
