@@ -225,7 +225,7 @@ const _CATEGORIES = [
     desc: 'Sons ao clicar em botões e elementos.',
     icon: '◉',
     cls: 'snd-sound-card--click',
-    areas: ['Game', 'Quiz', 'Perfil', 'Resumos'],
+    areas: ['Inicial', 'Game', 'Quiz', 'Perfil', 'Resumos'],
     defaultVariant: 'click',
     variants: [
       { id: 'click',  label: 'Click 1 — Triangle blip',    fn: () => audio.sfx.click?.() },
@@ -242,7 +242,7 @@ const _CATEGORIES = [
     desc: 'Sons ao passar o cursor sobre elementos.',
     icon: '◈',
     cls: 'snd-sound-card--hover',
-    areas: ['Game', 'Quiz', 'Perfil', 'Resumos'],
+    areas: ['Inicial', 'Game', 'Quiz', 'Perfil', 'Resumos'],
     defaultVariant: 'hover2',
     variants: [
       { id: 'hover',  label: 'Hover 1 — Breath sine',       fn: () => audio.sfx.hover?.() },
@@ -261,7 +261,7 @@ const _CATEGORIES = [
     desc: 'Sons ao selecionar opções e respostas.',
     icon: '⊛',
     cls: 'snd-sound-card--select',
-    areas: ['Game', 'Quiz', 'Perfil', 'Resumos'],
+    areas: ['Inicial', 'Game', 'Quiz', 'Perfil', 'Resumos'],
     defaultVariant: 'select',
     variants: [
       { id: 'select',   label: 'Select 1 — Tick ascendente',  fn: () => audio.sfx.select?.() },
@@ -282,7 +282,7 @@ const _CATEGORIES = [
     desc: 'Sons ao abrir e fechar modais e painéis.',
     icon: '⊡',
     cls: 'snd-sound-card--modal',
-    areas: ['Game', 'Quiz', 'Perfil', 'Resumos'],
+    areas: ['Inicial', 'Game', 'Quiz', 'Perfil', 'Resumos'],
     defaultVariant: 'openModal2',
     variants: [
       { id: 'openModal',   label: 'Open 1 — Chime entrada',      fn: () => audio.sfx.openModal?.() },

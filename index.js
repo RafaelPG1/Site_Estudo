@@ -153,7 +153,9 @@ function renderHeader() {
 ───────────────────────────────────────────── */
 function bindCardLinks() {
   // Cada card mapeia para a área correspondente no sfxAreaMap.
-  // Permite que o usuário configure sons distintos por área via modal.
+  // HOVER: sempre usa a área 'inicial' — o usuário ainda está na página inicial,
+  //        não na área de destino. O som específico da área só entra após navegar.
+  // CLICK: usa a área de destino (som de confirmação de entrada na área).
   const rotas = {
     'card-pessoal': { path: './area_pessoal/pessoal.html', area: 'perfil'  },
     'card-resumos': { path: './resumo/resumo.html',        area: 'resumos' },
@@ -163,7 +165,8 @@ function bindCardLinks() {
   Object.entries(rotas).forEach(([id, { path, area }]) => {
     const card = document.getElementById(id);
     if (!card) return;
-    card.addEventListener('mouseenter', () => playSound('hover', area));
+    // 'inicial': som configurado para a página inicial, independente do destino do card
+    card.addEventListener('mouseenter', () => playSound('hover', 'inicial'));
     card.addEventListener('click', () => {
       playSound('click', area);
       window.location.href = path;
