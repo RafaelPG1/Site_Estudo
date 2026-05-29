@@ -2,7 +2,7 @@
 /* =============================================
    NEXUS STUDY — shared/js/audio/audio-state.js
    Estado global de áudio — fonte única de verdade
-   Versão 1.4  ← area-overrides implementados
+   Versão 1.5  ← gate de inicialização (waitUntilReady)
 
    RESPONSABILIDADES
    ─────────────────────────────────────────────
@@ -42,7 +42,7 @@
        closeModal: 'closeModal',
        select: 'select'
      },
-     sfxAreaMap: {                   // ← NOVO: overrides por área
+     sfxAreaMap: {                   // overrides por área
        game:    { click: 'click5' },
        resumos: { click: 'click3', hover: 'hover4' },
        quiz:    { select: 'select3' }
@@ -79,6 +79,7 @@
    audioState.resolveVariant(action, area?)  → resolve variante final (área → geral)
    audioState.isReady()                      → true se SFX_MAP já foi aplicado
    audioState.enqueue(event, area?)          → enfileira evento para tocar quando pronto
+   audioState.waitUntilReady()               → Promise que resolve quando SFX_MAP estiver pronto
    ============================================= */
 
 import audio from './sfx.js';
@@ -119,7 +120,7 @@ const DEFAULT_SFX_MAP = {
 let _currentSfxMap = { ...DEFAULT_SFX_MAP };
 
 /* ═══════════════════════════════════════════════
-   1c. SFX_AREA_MAP — overrides por área/página  ← NOVO
+   1c. SFX_AREA_MAP — overrides por área/página
    ─────────────────────────────────────────────
    Estrutura:
    {
@@ -162,6 +163,30 @@ let _currentSfxAreaMap = {};
  * Volta a true após Firebase responder com o mapa do usuário.
  */
 let _sfxReady = true;
+
+/* ─────────────────────────────────────────────
+   GATE DE INICIALIZAÇÃO — waitUntilReady()
+   ─────────────────────────────────────────────
+   Promise que resolve uma única vez: quando o SFX_MAP estiver
+   completamente pronto (visitante: imediato; usuário logado: após Firebase).
+
+   _readyResolve é guardado para ser chamado nos dois pontos onde
+   _sfxReady vira true:
+     1. visitante           → resolve imediatamente (abaixo)
+     2. nexus:loginSuccess  → resolve após _fetchFromFirebase concluir
+     3. loadFromFirebase()  → idem
+
+   Se o usuário efetuar novo login após logout, a Promise é recriada
+   (_resetReadyPromise) para que novos chamadores de waitUntilReady()
+   aguardem o novo ciclo de carregamento.
+───────────────────────────────────────────── */
+let _readyResolve;
+let _readyPromise = new Promise(res => { _readyResolve = res; });
+_readyResolve(); // visitante: já está pronto
+
+function _resetReadyPromise() {
+  _readyPromise = new Promise(res => { _readyResolve = res; });
+}
 
 /**
  * Fila de eventos de áudio acumulados enquanto _sfxReady === false.
@@ -347,6 +372,7 @@ document.addEventListener('nexus:loginSuccess', async ({ detail }) => {
 
   // Suspende sons personalizados até o Firebase responder.
   _sfxReady = false;
+  _resetReadyPromise();     // novo ciclo de login: recria a Promise
 
   _currentMode = DEFAULT_MODE;
   audio.resetToDefaults();
@@ -363,12 +389,13 @@ document.addEventListener('nexus:loginSuccess', async ({ detail }) => {
   // Aplica mapa global do usuário.
   _currentMode       = saved.mode ?? DEFAULT_MODE;
   _currentSfxMap     = saved.sfxMap  ? { ...DEFAULT_SFX_MAP, ...saved.sfxMap  } : { ...DEFAULT_SFX_MAP };
-  _currentSfxAreaMap = saved.areaMap ? { ...saved.areaMap } : {};   // ← NOVO
+  _currentSfxAreaMap = saved.areaMap ? { ...saved.areaMap } : {};
   _applyToEngine(_currentMode);
   _notify();
 
   // Ativa e drena a fila — agora os sons chegam com o mapa correto.
   _sfxReady = true;
+  _readyResolve();          // gate: desbloqueia waitUntilReady()
   _flushSfxQueue();
 
   console.log(
@@ -384,7 +411,7 @@ document.addEventListener('nexus:logout', () => {
 
   _currentMode       = DEFAULT_MODE;
   _currentSfxMap     = { ...DEFAULT_SFX_MAP };
-  _currentSfxAreaMap = {};   // ← NOVO: limpa overrides no logout
+  _currentSfxAreaMap = {};
   audio.resetToDefaults();
   _applyToEngine(_currentMode);
   _notify();
@@ -441,11 +468,12 @@ const audioState = {
 
     _currentMode       = saved.mode ?? DEFAULT_MODE;
     _currentSfxMap     = saved.sfxMap  ? { ...DEFAULT_SFX_MAP, ...saved.sfxMap  } : { ...DEFAULT_SFX_MAP };
-    _currentSfxAreaMap = saved.areaMap ? { ...saved.areaMap } : {};   // ← NOVO
+    _currentSfxAreaMap = saved.areaMap ? { ...saved.areaMap } : {};
     _applyToEngine(_currentMode);
     _notify();
 
     _sfxReady = true;
+    _readyResolve();          // gate: desbloqueia waitUntilReady()
     _flushSfxQueue();
   },
 
@@ -480,7 +508,7 @@ const audioState = {
     _notify();
   },
 
-  // ── SFX_AREA_MAP — overrides por área ─────── ← NOVO
+  // ── SFX_AREA_MAP — overrides por área ───────
 
   /**
    * Retorna uma cópia profunda do mapa de overrides por área.
@@ -616,6 +644,23 @@ const audioState = {
    */
   enqueue(event, area = null) {
     _sfxQueue.push({ event, area });
+  },
+
+  /**
+   * Retorna a Promise interna de prontidão do SFX_MAP.
+   *
+   * Resolve quando:
+   *   - visitante: imediatamente (DEFAULT_SFX_MAP disponível)
+   *   - usuário logado: após Firebase carregar sfxMap + sfxAreaMap
+   *
+   * Uso:
+   *   await audioState.waitUntilReady();
+   *   // daqui em diante playSound() usa o mapa correto
+   *
+   * @returns {Promise<void>}
+   */
+  waitUntilReady() {
+    return _readyPromise;
   },
 
 };

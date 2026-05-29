@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* =============================================
    NEXUS STUDY — index.js
    Lógica da página inicial
@@ -21,7 +22,7 @@ import { playSound } from './shared/js/audio/play.js';
 /* ─────────────────────────────────────────────
    INICIALIZAÇÃO
 ───────────────────────────────────────────── */
-function init() {
+async function init() {
   try {
     if (estaLogado() && getUsuario()?.admin) {
       window.location.replace('/admin/admin.html');
@@ -40,6 +41,12 @@ function init() {
 
     setPagina('HOME');
     _refreshHeader();
+
+    // Aguarda o SFX_MAP estar 100% pronto antes de registrar eventos
+    // que disparam playSound(). Para visitantes resolve imediatamente;
+    // para usuários já logados aguarda o Firebase carregar sfxAreaMap.
+    await Sound.waitUntilReady();
+
     bindCardLinks();
     preencherAnos(['footer-year']);
   } catch (err) {
@@ -74,14 +81,14 @@ function _montarSelect() {
     return;
   }
   criarSemestreSelect('semestre-wrap', sem => {
-    playSound('select');
+    playSound('select', 'inicial');
     document.dispatchEvent(new CustomEvent('nexus:semestreChanged', { detail: sem }));
   });
 
   requestAnimationFrame(() => {
     const sel = wrap.querySelector('select');
     if (sel) {
-      sel.addEventListener('mousedown', () => playSound('click'));
+      sel.addEventListener('mousedown', () => playSound('click', 'inicial'));
     }
   });
 }
@@ -113,7 +120,7 @@ function renderHeader() {
       btnPerfil.textContent = avatarVal;
     }
 
-    btnPerfil.addEventListener('click', () => { playSound('click'); abrirPerfilModal(); });
+    btnPerfil.addEventListener('click', () => { playSound('click', 'inicial'); abrirPerfilModal(); });
     nav.appendChild(btnPerfil);
 
   } else {
@@ -121,8 +128,8 @@ function renderHeader() {
     btnEntrar.className   = 'nav-btn';
     btnEntrar.id          = 'btn-entrar';
     btnEntrar.textContent = 'Entrar';
-    btnEntrar.addEventListener('mouseenter', () => playSound('hover'));
-    btnEntrar.addEventListener('click', () => { playSound('click'); abrirModalLogin(); });
+    btnEntrar.addEventListener('mouseenter', () => playSound('hover', 'inicial'));
+    btnEntrar.addEventListener('click', () => { playSound('click', 'inicial'); abrirModalLogin(); });
     nav.appendChild(btnEntrar);
   }
 
@@ -144,7 +151,7 @@ function renderHeader() {
                l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09
                a1.65 1.65 0 0 0-1.51 1z"/>
     </svg>`;
-  btnConfig.addEventListener('click', () => { playSound('click'); abrirModalConfig(); });
+  btnConfig.addEventListener('click', () => { playSound('click', 'inicial'); abrirModalConfig(); });
   nav.appendChild(btnConfig);
 }
 
@@ -179,7 +186,7 @@ function bindCardLinks() {
 ───────────────────────────────────────────── */
 function abrirModalLogin() {
   fecharTodosModais();
-  playSound('openModal');
+  playSound('openModal', 'inicial');
 
   const modal = criarModal('login');
   modal.innerHTML = `
@@ -301,15 +308,15 @@ function abrirModalLogin() {
 
   document.getElementById('modal-overlay-login').addEventListener('click', () => {
     cards?.classList.remove('cards-hidden');
-    playSound('closeModal');
+    playSound('closeModal', 'inicial');
     fecharModal(modal);
   });
   document.getElementById('modal-close-login').addEventListener('click', () => {
     cards?.classList.remove('cards-hidden');
-    playSound('closeModal');
+    playSound('closeModal', 'inicial');
     fecharModal(modal);
   });
-  document.getElementById('btn-login-entrar').addEventListener('click', () => { playSound('click'); _tentarLogin(); });
+  document.getElementById('btn-login-entrar').addEventListener('click', () => { playSound('click', 'inicial'); _tentarLogin(); });
 
   async function _tentarLogin() {
     const nome = document.getElementById('login-nome').value.trim();
@@ -380,7 +387,7 @@ function abrirModalLogin() {
 ───────────────────────────────────────────── */
 function abrirModalConfig() {
   fecharTodosModais();
-  playSound('openModal');
+  playSound('openModal', 'inicial');
 
   const cfg   = getConfigs();
   const modal = criarModal('config');
@@ -640,7 +647,7 @@ function abrirModalConfig() {
   let _configsAlteradas = false;
 
   function _fecharComToast() {
-    playSound('closeModal');
+    playSound('closeModal', 'inicial');
     fecharModal(modal);
     if (_configsAlteradas) mostrarToast('Configurações salvas!');
   }
@@ -649,14 +656,14 @@ function abrirModalConfig() {
   document.getElementById('modal-close-config').addEventListener('click',   _fecharComToast);
 
   document.getElementById('btn-salvar-configs').addEventListener('click', () => {
-    playSound('click');
+    playSound('click', 'inicial');
     setConfigs(_lerConfigs());
     _configsAlteradas = true;
     _fecharComToast();
   });
 
   document.getElementById('btn-reset-configs').addEventListener('click', () => {
-    playSound('click');
+    playSound('click', 'inicial');
     resetConfigs();
     fecharModal(modal);
     mostrarToast('Configurações resetadas.');
@@ -665,7 +672,7 @@ function abrirModalConfig() {
 
   // ✅ CORREÇÃO: btn-abrir-audio agora chama Sound.openModal()
   document.getElementById('btn-abrir-audio').addEventListener('click', () => {
-    playSound('click');
+    playSound('click', 'inicial');
     Sound.openModal();
   });
 
@@ -682,7 +689,7 @@ function abrirModalConfig() {
 
   if (estaLogado()) {
     document.getElementById('btn-logout')?.addEventListener('click', () => {
-      playSound('click');
+      playSound('click', 'inicial');
       limparDadosQuiz();
       logout();
       fecharModal(modal);
@@ -815,7 +822,7 @@ const EMOJIS_PERFIL = [
 
 function abrirPerfilModal() {
   fecharTodosModais();
-  playSound('openModal');
+  playSound('openModal', 'inicial');
 
   const u = getUsuario();
   if (!u) return;
@@ -1005,7 +1012,7 @@ function abrirPerfilModal() {
   document.getElementById('pm-picker-grid')?.addEventListener('click', e => {
     const btn = e.target.closest('.ej');
     if (!btn) return;
-    playSound('click');
+    playSound('click', 'inicial');
     avatarSelecionado = btn.dataset.emoji;
     _setPreview(avatarSelecionado);
     document.querySelectorAll('#pm-picker-grid .ej').forEach(b =>
@@ -1014,21 +1021,21 @@ function abrirPerfilModal() {
   });
 
   document.getElementById('pm-toggle-picker')?.addEventListener('click', () => {
-    playSound('click');
+    playSound('click', 'inicial');
     pickerAberto ? _fecharPicker() : _abrirPicker();
   });
 
   document.getElementById('pm-picker-close')?.addEventListener('click',  _fecharPicker);
-  document.getElementById('pm-picker-cancel')?.addEventListener('click', () => { playSound('click'); _fecharPicker(); });
+  document.getElementById('pm-picker-cancel')?.addEventListener('click', () => { playSound('click', 'inicial'); _fecharPicker(); });
 
   document.getElementById('pm-picker-ok')?.addEventListener('click', () => {
-    playSound('click');
+    playSound('click', 'inicial');
     _aplicarAvatar(avatarSelecionado);
     _fecharPicker();
   });
 
   document.getElementById('pm-btn-salvar')?.addEventListener('click', async () => {
-    playSound('click');
+    playSound('click', 'inicial');
     _aplicarAvatar(avatarSelecionado);
 
     const usuarioAtualizado = { ...getUsuario(), avatar: avatarSelecionado };
@@ -1049,7 +1056,7 @@ function abrirPerfilModal() {
   });
 
   document.getElementById('pm-btn-logout')?.addEventListener('click', () => {
-    playSound('click');
+    playSound('click', 'inicial');
     limparDadosQuiz();
     logout();
     fecharModal(modal);
@@ -1057,8 +1064,8 @@ function abrirPerfilModal() {
     mostrarToast('Sessão encerrada.');
   });
 
-  document.getElementById('pm-close-btn')?.addEventListener('click', () => { playSound('closeModal'); fecharModal(modal); });
-  document.getElementById('modal-overlay-perfil')?.addEventListener('click', () => { playSound('closeModal'); fecharModal(modal); });
+  document.getElementById('pm-close-btn')?.addEventListener('click', () => { playSound('closeModal', 'inicial'); fecharModal(modal); });
+  document.getElementById('modal-overlay-perfil')?.addEventListener('click', () => { playSound('closeModal', 'inicial'); fecharModal(modal); });
 }
 
 /* ─────────────────────────────────────────────

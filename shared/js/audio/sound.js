@@ -1336,6 +1336,24 @@ openModal() {
   closeModal() {
     _closeModal();
   },
+
+  /**
+   * Retorna a Promise de prontidão do SFX_MAP.
+   * Delega para audioState.waitUntilReady().
+   *
+   * Resolve quando:
+   *   - visitante: imediatamente (DEFAULT_SFX_MAP disponível)
+   *   - usuário logado: após Firebase carregar sfxMap + sfxAreaMap
+   *
+   * Uso no index.js:
+   *   await Sound.waitUntilReady();
+   *   bindCardLinks(); // garante que os sons corretos já estão carregados
+   *
+   * @returns {Promise<void>}
+   */
+  waitUntilReady() {
+    return audioState.waitUntilReady();
+  },
 };
 
 export default Sound;

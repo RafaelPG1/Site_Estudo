@@ -116,11 +116,11 @@ export function playSound(event, area = null) {
   // Ele verifica: área → geral → undefined.
   const variantId = audioState.resolveVariant(event, area);
 
-  // Log de diagnóstico — mostra qual variante foi escolhida e por quê.
-  // Permite confirmar se o override de área está sendo aplicado.
+  // Log de diagnóstico — aparece para todos os sons (com ou sem área).
+  // Mostra qual variante foi escolhida e se veio de override de área ou do mapa geral.
   if (area) {
-    const areaMap    = audioState.getSfxAreaMap();
-    const areaKey    = area.toLowerCase();
+    const areaMap     = audioState.getSfxAreaMap();
+    const areaKey     = area.toLowerCase();
     const hasOverride = areaMap[areaKey]?.[event];
     console.log(
       `[play] playSound("${event}", "${area}") → variant="${variantId}"`,
@@ -128,6 +128,8 @@ export function playSound(event, area = null) {
         ? `(área override: "${hasOverride}")`
         : '(sem override — usando geral)'
     );
+  } else {
+    console.log(`[play] playSound("${event}") → variant="${variantId}" (geral)`);
   }
 
   if (!variantId) {
