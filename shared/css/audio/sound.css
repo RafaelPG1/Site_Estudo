@@ -1,6 +1,6 @@
 /* =============================================
    NEXUS STUDY — shared/css/audio/sound.css
-   Sistema de áudio unificado — v1.0
+   Sistema de áudio unificado — v1.1
    Originado de: som.css + audio-btn.css + sfx-playground.css
    ============================================= */
 
@@ -35,6 +35,10 @@
   --snd-amber-dim:   rgba(245, 158, 11, 0.12);
   --snd-amber-glow:  rgba(245, 158, 11, 0.18);
   --snd-amber-ring:  rgba(245, 158, 11, 0.35);
+
+  --snd-green:       #34d399;
+  --snd-green-dim:   rgba(52, 211, 153, 0.12);
+  --snd-green-ring:  rgba(52, 211, 153, 0.35);
 
   --snd-t1: #dceeff;
   --snd-t2: #a8c8e8;
@@ -80,8 +84,6 @@
 
 /* ═══════════════════════════════════════════════
    3. WRAPPER DO MODAL
-   ✅ CORRIGIDO: overflow: hidden para não criar
-   barra de scroll extra na página
 ═══════════════════════════════════════════════ */
 
 .snd-modal-wrap {
@@ -89,11 +91,11 @@
   inset: 0;
   z-index: 1101;
   display: flex;
-  align-items: center;        /* ✅ centraliza verticalmente */
+  align-items: center;
   justify-content: center;
   padding: 32px 20px;
   pointer-events: none;
-  overflow: hidden;           /* ✅ era overflow-y: auto — causava barra extra */
+  overflow: hidden;
   box-sizing: border-box;
 }
 
@@ -104,14 +106,12 @@
 
 /* ═══════════════════════════════════════════════
    4. PAINEL MODAL
-   ✅ CORRIGIDO: max-height para o scroll ficar
-   interno ao modal, não na página
 ═══════════════════════════════════════════════ */
 
 .snd-modal {
   width: 100%;
   max-width: 780px;
-  max-height: calc(100vh - 64px); /* ✅ limita altura — scroll interno no body */
+  max-height: calc(100vh - 64px);
   background: var(--snd-s1);
   border: 1px solid var(--snd-s1-border);
   border-radius: var(--snd-r-2xl);
@@ -154,7 +154,7 @@
   padding: 20px 24px;
   border-bottom: 1px solid var(--snd-s1-border);
   gap: 8px;
-  flex-shrink: 0; /* ✅ header nunca encolhe */
+  flex-shrink: 0;
 }
 
 .snd-modal__header-left {
@@ -230,12 +230,12 @@
 /* ── Body ── */
 .snd-modal__body {
   flex: 1;
-  overflow-y: auto; /* ✅ scroll apenas aqui, dentro do modal */
+  overflow-y: auto;
   padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 28px;
-  min-height: 0; /* ✅ necessário para flex + overflow funcionar */
+  min-height: 0;
 }
 
 .snd-modal__body::-webkit-scrollbar { width: 3px; }
@@ -256,7 +256,7 @@
   border-top: 1px solid var(--snd-s1-border);
   background: var(--snd-s1);
   gap: 8px;
-  flex-shrink: 0; /* ✅ footer nunca encolhe */
+  flex-shrink: 0;
 }
 
 .snd-modal__footer-note {
@@ -286,6 +286,7 @@
 .snd-modal__footer-actions {
   display: flex;
   gap: 8px;
+  margin-left: auto;
 }
 
 
@@ -301,12 +302,16 @@
   padding: 7px 16px;
   border-radius: var(--snd-r-md);
   cursor: pointer;
-  transition: background var(--snd-t-fast), border-color var(--snd-t-fast), color var(--snd-t-fast);
+  transition: background var(--snd-t-fast), border-color var(--snd-t-fast), color var(--snd-t-fast), opacity var(--snd-t-fast);
   border: 1px solid transparent;
 }
 .snd-btn:focus-visible {
   outline: 2px solid var(--snd-cyan-ring);
   outline-offset: 2px;
+}
+.snd-btn:disabled {
+  cursor: default;
+  opacity: 0.6;
 }
 
 .snd-btn--ghost {
@@ -320,6 +325,18 @@
   color: var(--snd-t1);
 }
 .snd-btn--ghost:active { opacity: 0.7; }
+
+.snd-btn--save {
+  background: var(--snd-green-dim);
+  border-color: rgba(52, 211, 153, 0.3);
+  color: var(--snd-green);
+}
+.snd-btn--save:hover {
+  background: rgba(52, 211, 153, 0.2);
+  border-color: rgba(52, 211, 153, 0.5);
+}
+.snd-btn--save:active { opacity: 0.8; }
+.snd-btn--save:focus-visible { outline-color: var(--snd-green-ring); }
 
 .snd-btn--primary {
   background: var(--snd-cyan-dim);
@@ -478,7 +495,6 @@
 .snd-slider-group__value--music { color: var(--snd-violet); }
 .snd-slider-group__value--sfx   { color: var(--snd-amber); }
 
-.snd-slider-group.is-above .snd-slider-group__value                { color: var(--snd-cyan); }
 .snd-slider-group.is-above.snd-music-slider .snd-slider-group__value { color: var(--snd-violet); }
 .snd-slider-group.is-above.snd-sfx-slider   .snd-slider-group__value { color: var(--snd-amber); }
 
@@ -537,9 +553,8 @@
 .snd-slider:active::-webkit-slider-thumb { transform: scale(1.05); }
 .snd-slider:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px var(--snd-cyan-ring); }
 
-.snd-slider-group.is-snapped .snd-slider--master::-webkit-slider-thumb { box-shadow: 0 0 0 4px var(--snd-cyan-ring); }
-.snd-slider-group.is-snapped .snd-slider--music::-webkit-slider-thumb  { box-shadow: 0 0 0 4px var(--snd-violet-ring); }
-.snd-slider-group.is-snapped .snd-slider--sfx::-webkit-slider-thumb    { box-shadow: 0 0 0 4px var(--snd-amber-ring); }
+.snd-slider-group.is-snapped .snd-slider--music::-webkit-slider-thumb { box-shadow: 0 0 0 4px var(--snd-violet-ring); }
+.snd-slider-group.is-snapped .snd-slider--sfx::-webkit-slider-thumb   { box-shadow: 0 0 0 4px var(--snd-amber-ring); }
 
 .snd-slider-fill {
   position: absolute; z-index: 1;

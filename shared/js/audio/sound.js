@@ -212,7 +212,6 @@ function _mountAudioBtn() {
 /* ── Dados ── */
 
 const _SLIDER_MAX      = 200;
-const _DEFAULT_MASTER  = 100;
 const _DEFAULT_MUSIC   = 100;
 const _DEFAULT_SFX     = 100;
 const _SNAP_POINT      = 100;
@@ -307,9 +306,7 @@ const _MUSIC_TRACKS = [
 /* ── Estado do modal ── */
 
 const _modalState = {
-  masterEnabled: true,
   musicEnabled:  true,
-  masterSlider:  _DEFAULT_MASTER,
   musicSlider:   _DEFAULT_MUSIC,
   sfxSlider:     _DEFAULT_SFX,
   selectedVariant: {},
@@ -321,15 +318,18 @@ const _modalState = {
 const _specificOverrides = {};
 
 function _resetModalState() {
-  _modalState.masterEnabled = true;
   _modalState.musicEnabled  = true;
-  _modalState.masterSlider  = _DEFAULT_MASTER;
   _modalState.musicSlider   = _DEFAULT_MUSIC;
   _modalState.sfxSlider     = _DEFAULT_SFX;
   _modalState.playingMusic  = null;
 
   _CATEGORIES.forEach(cat => {
-    _modalState.selectedVariant[cat.id] = cat.defaultVariant;
+    if (cat.id === 'modal') {
+      _modalState.selectedVariant['modal-open']  = 'openModal2';
+      _modalState.selectedVariant['modal-close'] = 'closeModal';
+    } else {
+      _modalState.selectedVariant[cat.id] = cat.defaultVariant;
+    }
     _modalState.enabledCats[cat.id]     = true;
     _modalState.selectedAreas[cat.id]   = [...cat.areas];
     _specificOverrides[cat.id] = {};
@@ -406,25 +406,6 @@ function _buildModalDOM() {
         </div>
         <div class="snd-global-card">
           <div class="snd-sliders">
-
-            <!-- Master -->
-            <div class="snd-slider-group" id="snd-sliderGroupMaster">
-              <div class="snd-slider-group__label">
-                <span>Volume Geral</span>
-                <span class="snd-slider-group__value" id="snd-masterValDisplay">1.0</span>
-              </div>
-              <div class="snd-slider-track-wrap">
-                <div class="snd-slider-fill" id="snd-masterFill"></div>
-                <div class="snd-slider-mark" id="snd-masterMark" title="Padrão (1.0)"></div>
-                <input type="range" class="snd-slider snd-slider--master" id="snd-masterSlider"
-                  min="0" max="200" step="1" value="100" aria-label="Volume Geral" />
-              </div>
-              <div class="snd-slider-scale">
-                <span>0</span>
-                <span class="snd-slider-scale__default">1.0 <em>padrão</em></span>
-                <span>2.0</span>
-              </div>
-            </div>
 
             <!-- Music -->
             <div class="snd-slider-group" id="snd-sliderGroupMusic">
@@ -504,11 +485,13 @@ function _buildModalDOM() {
 
     <!-- Footer -->
     <footer class="snd-modal__footer">
-      <span class="snd-modal__footer-note">Alterações aplicadas em tempo real · Não salvo</span>
+      <div class="snd-modal__footer-note">
+        <span>NEXUS AUDIO</span>
+      </div>
       <div class="snd-modal__footer-actions">
         <button class="snd-btn snd-btn--ghost" id="snd-resetBtn">Resetar</button>
         <button class="snd-btn snd-btn--primary" id="snd-closeBtn2">Fechar</button>
-      </div>
+        <button class="snd-btn snd-btn--save" id="snd-saveBtn">Salvar</button>
     </footer>
   `;
 
@@ -608,7 +591,8 @@ function _openModal() {
   if (currentSfxMap.click)      _modalState.selectedVariant['click']  = currentSfxMap.click;
   if (currentSfxMap.hover)      _modalState.selectedVariant['hover']  = currentSfxMap.hover;
   if (currentSfxMap.select)     _modalState.selectedVariant['select'] = currentSfxMap.select;
-  if (currentSfxMap.openModal)  _modalState.selectedVariant['modal']  = currentSfxMap.openModal;
+  if (currentSfxMap.openModal)  _modalState.selectedVariant['modal-open']  = currentSfxMap.openModal;
+  if (currentSfxMap.closeModal) _modalState.selectedVariant['modal-close'] = currentSfxMap.closeModal;
 
   // ── 2. Sincroniza overrides por área com o sfxAreaMap do audio-state ──
   // _resetModalState() zera _specificOverrides ao carregar o módulo.
@@ -664,6 +648,7 @@ function _bindModalEvents() {
   _modalEl.querySelector('#snd-close-btn').addEventListener('click',   _closeModal);
   _modalEl.querySelector('#snd-closeBtn2').addEventListener('click',   _closeModal);
   _modalEl.querySelector('#snd-resetBtn').addEventListener('click',    _resetAll);
+  _modalEl.querySelector('#snd-saveBtn').addEventListener('click',     _saveAll);
 
   _modalEl.querySelector('#snd-musicToggle').addEventListener('change', e => {
     _modalState.musicEnabled = e.target.checked;
@@ -674,18 +659,31 @@ function _bindModalEvents() {
 
 /* ── Sliders ── */
 
-function _initSliders() {
-  _syncSlider('snd-masterSlider', 'snd-masterFill', 'snd-masterValDisplay', 'snd-sliderGroupMaster', _modalState.masterSlider, 'master');
+/**
+ * Inicializa os sliders de volume.
+ *
+ * @param {boolean} [skipStateSync=false] — quando true, usa os valores já presentes em
+ *   _modalState (ex: logo após um reset) sem reidratar do audioState. Isso evita a
+ *   race condition em que getVolumes() retorna os valores antigos do Firebase antes
+ *   de a gravação do reset ser confirmada, desfazendo o reset visualmente.
+ */
+function _initSliders(skipStateSync = false) {
+  if (!skipStateSync) {
+    // Caminho normal (abertura do modal): hidrata _modalState com os volumes
+    // reais vindos do audioState (Firebase ou padrão).
+    const _savedVols = audioState.getVolumes();
+    _modalState.musicSlider = Math.round(_savedVols.music * 100);
+    _modalState.sfxSlider   = Math.round(_savedVols.sfx   * 100);
+    console.log('[sound] _initSliders: volumes do audioState =', JSON.stringify(_savedVols));
+  } else {
+    console.log('[sound] _initSliders: skipStateSync=true — usando _modalState atual sem reidratar do audioState');
+  }
+
   _syncSlider('snd-musicSlider',  'snd-musicFill',  'snd-musicValDisplay',  'snd-sliderGroupMusic',  _modalState.musicSlider,  'music');
   _syncSlider('snd-sfxSlider',    'snd-sfxFill',    'snd-sfxValDisplay',    'snd-sliderGroupSfx',    _modalState.sfxSlider,    'sfx');
 
-  _attachSlider('snd-masterSlider', 'snd-masterFill', 'snd-masterValDisplay', 'snd-sliderGroupMaster', 'master');
   _attachSlider('snd-musicSlider',  'snd-musicFill',  'snd-musicValDisplay',  'snd-sliderGroupMusic',  'music');
   _attachSlider('snd-sfxSlider',    'snd-sfxFill',    'snd-sfxValDisplay',    'snd-sliderGroupSfx',    'sfx');
-
-  audio.setMasterVolume(_modalState.masterSlider / 100);
-  audio.setMusicVolume(_modalState.musicSlider   / 100);
-  audio.setSfxVolume?.(_modalState.sfxSlider     / 100);
 }
 
 function _attachSlider(sliderId, fillId, displayId, groupId, type) {
@@ -700,9 +698,9 @@ function _attachSlider(sliderId, fillId, displayId, groupId, type) {
     _syncSlider(sliderId, fillId, displayId, groupId, val, type);
 
     const realVal = val / 100;
-    if (type === 'music')  { _modalState.musicSlider  = val; audio.setMusicVolume(realVal); }
-    else if (type === 'sfx') { _modalState.sfxSlider  = val; audio.setSfxVolume?.(realVal); }
-    else                   { _modalState.masterSlider = val; audio.setMasterVolume(realVal); }
+    // Delega para audioState: ele aplica na engine, loga e persiste no Firebase.
+    if (type === 'music')  { _modalState.musicSlider  = val; audioState.setVolume('music',  realVal); }
+    else                   { _modalState.sfxSlider    = val; audioState.setVolume('sfx',    realVal); }
   });
 }
 
@@ -832,7 +830,11 @@ function _buildCatToggle(catId) {
 }
 
 function _buildVariantRow(cat, v) {
-  const isActive = _modalState.selectedVariant[cat.id] === v.id;
+  // Para modal, open e close usam slots separados.
+  const _modalSlot = cat.id === 'modal'
+    ? ((v.id.startsWith('open') || v.id.startsWith('Open')) ? 'modal-open' : 'modal-close')
+    : cat.id;
+  const isActive = _modalState.selectedVariant[_modalSlot] === v.id;
   const row = document.createElement('div');
   row.className = `snd-variant-row${isActive ? ' is-active' : ''}`;
   row.dataset.cat = cat.id;
@@ -860,25 +862,35 @@ function _setActiveVariant(catId, varId) {
   // A categoria 'modal' controla openModal e closeModal separadamente.
   // Para as demais categorias, o id da categoria é a chave do mapa.
   if (catId !== 'modal') {
+    _modalState.selectedVariant[catId] = varId;
     audioState.setSfxMap(catId, varId);
   } else {
-    // Para modal, a chave do mapa corresponde ao prefixo da variante
+    // Para modal, open e close tem slots e chaves separados.
     if (varId.startsWith('open') || varId.startsWith('Open')) {
+      _modalState.selectedVariant['modal-open'] = varId;
       audioState.setSfxMap('openModal', varId);
     } else {
+      _modalState.selectedVariant['modal-close'] = varId;
       audioState.setSfxMap('closeModal', varId);
     }
   }
 
   const card = document.getElementById(`snd-sc-${catId}`);
   if (!card) return;
-  card.querySelectorAll('.snd-variant-row').forEach(row => {
-    row.classList.toggle('is-active', row.dataset.var === varId);
-  });
+  if (catId === 'modal') {
+    const isOpen = varId.startsWith('open') || varId.startsWith('Open');
+    card.querySelectorAll('.snd-variant-row').forEach(row => {
+      const rowIsOpen = row.dataset.var.startsWith('open') || row.dataset.var.startsWith('Open');
+      if (rowIsOpen === isOpen) row.classList.toggle('is-active', row.dataset.var === varId);
+    });
+  } else {
+    card.querySelectorAll('.snd-variant-row').forEach(row => {
+      row.classList.toggle('is-active', row.dataset.var === varId);
+    });
+  }
 }
 
 function _triggerPreview(variant, btn) {
-  if (!_modalState.masterEnabled) return;
   variant.fn();
   btn.classList.add('is-playing');
   setTimeout(() => btn.classList.remove('is-playing'), 500);
@@ -1002,6 +1014,7 @@ function _openSpecPanel(cat, triggerBtn) {
 }
 
 function _closeSpecPanel() {
+  if (!_specPanelEl) return;
   _specPanelEl.classList.remove('is-open');
   _specOverlay.classList.remove('is-open');
   _activePanelCatId = null;
@@ -1223,7 +1236,7 @@ function _renderMusicTracks() {
 
 function _toggleMusicTrack(track) {
   if (_modalState.playingMusic === track.id) { _stopMusic(); return; }
-  if (!_modalState.masterEnabled || !_modalState.musicEnabled) return;
+  if (!_modalState.musicEnabled) return;
   _modalState.playingMusic = track.id;
   track.fn();
   _syncMusicUI();
@@ -1245,15 +1258,87 @@ function _syncMusicUI() {
 }
 
 
+/* ── Save ── */
+
+function _saveAll() {
+  // Persiste volumes atuais via audioState (→ Firebase/local state)
+  audioState.setVolume('music',  _modalState.musicSlider  / 100);
+  audioState.setVolume('sfx',    _modalState.sfxSlider    / 100);
+
+  // Persiste todos os overrides de área já aplicados durante a sessão do modal.
+  // audioState.setSfxAreaMap() persiste cada entrada no Firebase individualmente;
+  // aqui forçamos uma gravação explícita de todo o estado atual.
+  _CATEGORIES.forEach(cat => {
+    cat.areas.forEach(area => {
+      const areaKey  = area.toLowerCase();
+      const override = _specificOverrides[cat.id]?.[area] ?? null;
+      if (cat.id !== 'modal') {
+        audioState.setSfxAreaMap(areaKey, cat.id, override);
+      } else {
+        // Para modal só persiste se a variante estiver claramente classificada
+        if (override === null) {
+          audioState.setSfxAreaMap(areaKey, 'openModal',  null);
+          audioState.setSfxAreaMap(areaKey, 'closeModal', null);
+        } else if (override.startsWith('open') || override.startsWith('Open')) {
+          audioState.setSfxAreaMap(areaKey, 'openModal', override);
+        } else {
+          audioState.setSfxAreaMap(areaKey, 'closeModal', override);
+        }
+      }
+    });
+  });
+
+  // Feedback visual breve no botão
+  const btn = document.getElementById('snd-saveBtn');
+  if (btn) {
+    const prev = btn.textContent;
+    btn.textContent = 'Salvo ✓';
+    btn.disabled = true;
+    setTimeout(() => { btn.textContent = prev; btn.disabled = false; }, 1400);
+  }
+
+  console.log('[sound] _saveAll: configurações salvas', {
+    music: _modalState.musicSlider / 100,
+    sfx:   _modalState.sfxSlider   / 100,
+  });
+}
+
+
 /* ── Reset total ── */
 
+/**
+ * DEFAULT_SFX_MAP espelha os valores padrão definidos em audio-state.js.
+ * Centralizado aqui para que _resetAll() possa restaurar o audioState
+ * sem depender de uma referência à constante interna do outro módulo.
+ */
+const _DEFAULT_SFX_MAP = {
+  click:      'click',
+  hover:      'hover2',
+  select:     'select',
+  openModal:  'openModal2',
+  closeModal: 'closeModal',
+};
+
 function _resetAll() {
+  // ── 1. Reseta engine de áudio ──
   audio.setMasterVolume(1.0);
   audio.setMusicVolume(0.4);
   audio.unmute();
   audio.setEnabled(true);
 
-  // ── NOVO v1.2: limpa todos os overrides de área no audio-state (→ Firebase) ──
+  // ── 2. Reseta volumes no audioState ANTES de qualquer _initSliders ──
+  // Sem isso, _initSliders() leria os volumes antigos do Firebase e desfaria o reset.
+  audioState.setVolume('music', 0.4);
+  audioState.setVolume('sfx',   1.0);
+
+  // ── 3. Restaura sfxMap para os padrões no audioState (→ Firebase) ──
+  // Bug anterior: _resetAll nunca propagava variantes globais resetadas para
+  // o audioState, então playSound() continuava usando as variantes customizadas.
+  Object.entries(_DEFAULT_SFX_MAP).forEach(([event, variantId]) => {
+    audioState.setSfxMap(event, variantId);
+  });
+
+  // ── 4. Limpa todos os overrides de área no audioState (→ Firebase) ──
   _CATEGORIES.forEach(cat => {
     cat.areas.forEach(area => {
       const areaKey = area.toLowerCase();
@@ -1266,25 +1351,47 @@ function _resetAll() {
     });
   });
 
+  // ── 5. Reseta estado local do modal ──
   _resetModalState();
-  _closeSpecPanel();
-  _stopMusic();
+
+  // ── 6. Operações de DOM — seguras mesmo com modal fechado ──
+  // Cada operação verifica a existência do elemento antes de agir.
+  if (_modalOpen) {
+    _closeSpecPanel();
+    _stopMusic();
+  } else {
+    // Modal fechado: para música sem tentar manipular DOM do spec panel
+    audio.music?.stop?.();
+    _modalState.playingMusic = null;
+  }
 
   const musicToggle = document.getElementById('snd-musicToggle');
   if (musicToggle) musicToggle.checked = true;
 
-  _syncSlider('snd-masterSlider', 'snd-masterFill', 'snd-masterValDisplay', 'snd-sliderGroupMaster', _DEFAULT_MASTER, 'master');
-  _syncSlider('snd-musicSlider',  'snd-musicFill',  'snd-musicValDisplay',  'snd-sliderGroupMusic',  _DEFAULT_MUSIC,  'music');
-  _syncSlider('snd-sfxSlider',    'snd-sfxFill',    'snd-sfxValDisplay',    'snd-sliderGroupSfx',    _DEFAULT_SFX,    'sfx');
+  // _syncSlider é seguro (verifica getElementById internamente), mas
+  // só faz sentido executar se os elementos existirem no DOM.
+  if (document.getElementById('snd-musicSlider')) {
+    _syncSlider('snd-musicSlider', 'snd-musicFill', 'snd-musicValDisplay', 'snd-sliderGroupMusic', _DEFAULT_MUSIC, 'music');
+    _syncSlider('snd-sfxSlider',   'snd-sfxFill',   'snd-sfxValDisplay',   'snd-sliderGroupSfx',   _DEFAULT_SFX,   'sfx');
 
-  // Rebind sliders (state reset, need to mark as unbound)
-  ['snd-masterSlider', 'snd-musicSlider', 'snd-sfxSlider'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) delete el.dataset.sndBound;
-  });
-  _initSliders();
+    // Rebind sliders: apaga flag de bind para que _initSliders os reanexa.
+    // NÃO chama _initSliders() aqui — ele leria do audioState e poderia
+    // reidratar valores antes da gravação no Firebase ser confirmada.
+    // Os sliders já estão visualmente corretos pelo _syncSlider acima.
+    ['snd-musicSlider', 'snd-sfxSlider'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) delete el.dataset.sndBound;
+    });
+    // Reanexar listeners manualmente com os valores padrão já aplicados
+    _attachSlider('snd-musicSlider', 'snd-musicFill', 'snd-musicValDisplay', 'snd-sliderGroupMusic', 'music');
+    _attachSlider('snd-sfxSlider',   'snd-sfxFill',   'snd-sfxValDisplay',   'snd-sliderGroupSfx',   'sfx');
+  }
 
-  _renderCards();
+  if (document.getElementById('snd-cardsGrid')) {
+    _renderCards();
+  }
+
+  console.log('[sound] _resetAll: reset completo — sfxMap, sfxAreaMap, volumes e estado local restaurados aos padrões.');
 }
 
 
@@ -1353,6 +1460,24 @@ openModal() {
    */
   waitUntilReady() {
     return audioState.waitUntilReady();
+  },
+
+  /**
+   * Reseta todas as configurações de áudio para os valores padrão.
+   * Equivale a pressionar "Resetar" dentro do modal de áudio, mas
+   * pode ser chamado de fora (ex: botão "Resetar padrão" do modal de configs).
+   *
+   * Seguro em qualquer situação:
+   *   - Modal aberto   → reseta estado, DOM e fecha spec panel
+   *   - Modal fechado  → reseta apenas estado interno + audioState (sem tocar DOM)
+   *   - Modal não construído → idem ao caso "fechado"
+   *
+   * Após o reset, playSound() imediatamente usa os sons padrão porque
+   * o audioState (fonte de verdade) é atualizado de forma síncrona antes
+   * de qualquer gravação assíncrona no Firebase.
+   */
+  resetAudio() {
+    _resetAll();
   },
 };
 

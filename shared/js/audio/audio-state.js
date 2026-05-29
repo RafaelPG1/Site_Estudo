@@ -243,6 +243,9 @@ function _resolveVariant(action, area) {
 
 let _currentMode = DEFAULT_MODE;
 
+/** Volumes por canal — persistidos no Firebase. */
+let _volumes = { master: 1.0, music: 1.0, sfx: 1.0 };
+
 /* ═══════════════════════════════════════════════
    2b. UID INTERNO
 ═══════════════════════════════════════════════ */
@@ -275,12 +278,16 @@ function _notify() {
 
 function _applyToEngine(modeId) {
   const mode = MODES[modeId] ?? MODES[DEFAULT_MODE];
-  audio.setMasterVolume(mode.masterVolume);
   if (mode.muted) {
+    audio.setMasterVolume(0);
     audio.mute();
   } else {
     audio.unmute();
+    audio.setMasterVolume(_volumes.master);
   }
+  audio.setMusicVolume?.(_volumes.music);
+  audio.setSfxVolume?.(_volumes.sfx);
+  console.log('[audio-state] mode:', modeId, '| volumes:', JSON.stringify(_volumes));
 }
 
 /* ═══════════════════════════════════════════════
@@ -295,6 +302,7 @@ async function _fetchFromFirebase(uid) {
     const saved        = configs?.audioState;
     const savedSfxMap  = configs?.sfxMap     ?? null;
     const savedAreaMap = configs?.sfxAreaMap ?? null;
+    const savedVolumes = configs?.volumes    ?? null;
 
     console.log('[audio-state] _fetchFromFirebase: uid="' + uid + '" sfxMap=', savedSfxMap, 'sfxAreaMap=', savedAreaMap);
 
@@ -302,6 +310,7 @@ async function _fetchFromFirebase(uid) {
       mode:    VALID_MODES.includes(saved) ? saved : null,
       sfxMap:  savedSfxMap  && typeof savedSfxMap  === 'object' ? savedSfxMap  : null,
       areaMap: savedAreaMap && typeof savedAreaMap === 'object' ? savedAreaMap : null,
+      volumes: savedVolumes && typeof savedVolumes === 'object' ? savedVolumes : null,
     };
   } catch (err) {
     console.warn('[audio-state] Erro ao carregar Firebase:', err);
@@ -321,18 +330,20 @@ function _persistAllToFirebase() {
   const modeSnap = _currentMode;
   const sfxSnap  = { ..._currentSfxMap };
   const areaSnap = JSON.parse(JSON.stringify(_currentSfxAreaMap));
+  const volSnap  = { ..._volumes };
 
   import('../../../src/global.js').then(({ getConfigs }) => {
     const configsAtuais = getConfigs();
     // Remove as chaves de áudio do getConfigs() para não pisar nas versões corretas.
     // audio-state.js é dono exclusivo de audioState, sfxMap e sfxAreaMap.
-    const { audioState: _d1, sfxMap: _d2, sfxAreaMap: _d3, ...restConfigs } = configsAtuais;
+    const { audioState: _d1, sfxMap: _d2, sfxAreaMap: _d3, volumes: _d4, ...restConfigs } = configsAtuais;
 
     const payload = {
       ...restConfigs,
       audioState: modeSnap,
       sfxMap:     sfxSnap,
       sfxAreaMap: areaSnap,
+      volumes:    volSnap,
     };
 
     console.log('[audio-state] persistindo → sfxAreaMap:', JSON.stringify(areaSnap), '| sfxMap:', JSON.stringify(sfxSnap));
@@ -345,6 +356,7 @@ function _persistAllToFirebase() {
       audioState: modeSnap,
       sfxMap:     sfxSnap,
       sfxAreaMap: areaSnap,
+      volumes:    volSnap,
     };
     console.log('[audio-state] persistindo (fallback) → sfxAreaMap:', JSON.stringify(areaSnap));
     salvarConfigs(uid, payload).catch(() => {});
@@ -390,6 +402,12 @@ document.addEventListener('nexus:loginSuccess', async ({ detail }) => {
   _currentMode       = saved.mode ?? DEFAULT_MODE;
   _currentSfxMap     = saved.sfxMap  ? { ...DEFAULT_SFX_MAP, ...saved.sfxMap  } : { ...DEFAULT_SFX_MAP };
   _currentSfxAreaMap = saved.areaMap ? { ...saved.areaMap } : {};
+  if (saved.volumes) {
+    _volumes.master = typeof saved.volumes.master === 'number' ? saved.volumes.master : 1.0;
+    _volumes.music  = typeof saved.volumes.music  === 'number' ? saved.volumes.music  : 1.0;
+    _volumes.sfx    = typeof saved.volumes.sfx    === 'number' ? saved.volumes.sfx    : 1.0;
+    console.log('[audio-state] volumes carregados do Firebase:', JSON.stringify(_volumes));
+  }
   _applyToEngine(_currentMode);
   _notify();
 
@@ -469,6 +487,12 @@ const audioState = {
     _currentMode       = saved.mode ?? DEFAULT_MODE;
     _currentSfxMap     = saved.sfxMap  ? { ...DEFAULT_SFX_MAP, ...saved.sfxMap  } : { ...DEFAULT_SFX_MAP };
     _currentSfxAreaMap = saved.areaMap ? { ...saved.areaMap } : {};
+    if (saved.volumes) {
+      _volumes.master = typeof saved.volumes.master === 'number' ? saved.volumes.master : 1.0;
+      _volumes.music  = typeof saved.volumes.music  === 'number' ? saved.volumes.music  : 1.0;
+      _volumes.sfx    = typeof saved.volumes.sfx    === 'number' ? saved.volumes.sfx    : 1.0;
+      console.log('[audio-state] volumes carregados (loadFromFirebase):', JSON.stringify(_volumes));
+    }
     _applyToEngine(_currentMode);
     _notify();
 
@@ -490,6 +514,41 @@ const audioState = {
 
   getValidModes() {
     return [...VALID_MODES];
+  },
+
+  // ── VOLUMES ──────────────────────────────────
+
+  /** Retorna copia dos volumes atuais. */
+  getVolumes() {
+    return { ..._volumes };
+  },
+
+  /**
+   * Atualiza o volume de um canal, aplica na engine e persiste no Firebase.
+   * @param {'master'|'music'|'sfx'} channel
+   * @param {number} value  0.0 a 2.0
+   */
+  setVolume(channel, value) {
+    if (!['master', 'music', 'sfx'].includes(channel)) {
+      console.warn('[audio-state] setVolume: canal invalido:', channel);
+      return;
+    }
+    const clamped = Math.max(0, Math.min(2, Number(value) || 0));
+    _volumes[channel] = clamped;
+    console.log('[audio-state] volume:', channel, '=', clamped, '| todos:', JSON.stringify(_volumes));
+
+    // Aplica na engine imediatamente
+    if (channel === 'master') {
+      if (clamped === 0) { audio.setMasterVolume(0); audio.mute(); }
+      else               { audio.unmute(); audio.setMasterVolume(clamped); }
+    } else if (channel === 'music') {
+      audio.setMusicVolume?.(clamped);
+    } else {
+      audio.setSfxVolume?.(clamped);
+    }
+
+    // Persiste no Firebase (inclui modo + sfxMap + sfxAreaMap + volumes)
+    _persistAllToFirebase();
   },
 
   // ── SFX_MAP GLOBAL ──────────────────────────
@@ -619,6 +678,7 @@ const audioState = {
       audioState: _currentMode,
       sfxMap:     { ..._currentSfxMap },
       sfxAreaMap: JSON.parse(JSON.stringify(_currentSfxAreaMap)),
+      volumes:    { ..._volumes },
     };
   },
 

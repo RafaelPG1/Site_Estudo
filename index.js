@@ -662,13 +662,14 @@ function abrirModalConfig() {
     _fecharComToast();
   });
 
-  document.getElementById('btn-reset-configs').addEventListener('click', () => {
-    playSound('click', 'inicial');
-    resetConfigs();
-    fecharModal(modal);
-    mostrarToast('Configurações resetadas.');
-    setTimeout(abrirModalConfig, 300);
-  });
+document.getElementById('btn-reset-configs').addEventListener('click', () => {
+  playSound('click', 'inicial');
+  resetConfigs();
+  Sound.resetAudio();          // ← linha nova
+  fecharModal(modal);
+  mostrarToast('Configurações resetadas.');
+  setTimeout(abrirModalConfig, 300);
+});
 
   // ✅ CORREÇÃO: btn-abrir-audio agora chama Sound.openModal()
   document.getElementById('btn-abrir-audio').addEventListener('click', () => {

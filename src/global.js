@@ -36,7 +36,8 @@ let _audioState = null;
 async function _getAudioState() {
   if (!_audioState) {
     try {
-      const mod = await import('./shared/js/audio/audio-state.js');
+      //voltar uma pasta e entrar na pasta
+      const mod = await import('../shared/js/audio/audio-state.js');
       _audioState = mod.default;
     } catch (_) { /* se não disponível, ignora */ }
   }
