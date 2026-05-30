@@ -1,6 +1,6 @@
 // @ts-nocheck
 /* =============================================
-   NEXUS STUDY — shared/js/audio/audio-btn.js
+   NEXUS STUDY — shared/js/audio/ui/audio-btn.js
    Botão de volume global — autoexecutável
    <script type="module" src="/shared/js/audio/audio-btn.js"></script>
 
@@ -18,7 +18,7 @@
      - lógica de _memState / _idxById / _defaultIdx / _currentIdx
 
    ADICIONADO:
-     - import audioState from './audio-state.js'
+     - import audioState from '../state/audio-state.js'
      - audioState.subscribe(callback) para receber atualizações de modo
      - _renderMode(modeId) — única função que traduz modeId em visual
 
@@ -42,7 +42,7 @@
    ❌ NÃO aplica volume na engine diretamente
    ============================================= */
 
-import audioState from './audio-state.js';
+import audioState from '../state/audio-state.js';
 
 /* ═══════════════════════════════════════════════
    1. DEFINIÇÃO DOS ESTADOS VISUAIS
@@ -253,4 +253,26 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', _mount);
 } else {
   _mount();
+}
+
+/* ═══════════════════════════════════════════════
+   5. API EXPORTADA — para uso por sound.js
+   Permite que Sound.init() / Sound.reinit() montem
+   e destruam o botão sem duplicar código.
+═══════════════════════════════════════════════ */
+
+/**
+ * Monta o botão flutuante se ainda não existir.
+ * Idempotente: chamadas repetidas são no-ops.
+ */
+export function mountAudioBtn() {
+  _mount();
+}
+
+/**
+ * Remove o botão flutuante do DOM.
+ * Usado por Sound.reinit() antes de recriar o botão.
+ */
+export function destroyAudioBtn() {
+  document.getElementById('audio-btn-global')?.remove();
 }

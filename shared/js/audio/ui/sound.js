@@ -1,6 +1,6 @@
 // @ts-nocheck
 /* =============================================
-   NEXUS STUDY — shared/js/audio/sound.js
+   NEXUS STUDY — shared/js/audio/ui/sound.js
    Sistema de áudio unificado — v2.0
    (integra vol-slider.js — slider pixel-perfect)
 
@@ -42,163 +42,17 @@
    Sound.closeModal();
    ============================================= */
 
-import audio          from './sfx.js';
-import audioState     from './audio-state.js';
+import audio          from '../engine/sfx.js';
+import audioState     from '../state/audio-state.js';
 import makeVolumeSlider from './vol-slider.js';
+import { mountAudioBtn, destroyAudioBtn } from './audio-btn.js';
 
 /* ═══════════════════════════════════════════════
    SEÇÃO A — BOTÃO FLUTUANTE DE VOLUME
+   Implementação centralizada em ui/audio-btn.js.
+   sound.js delega montagem e destruição via API
+   exportada, sem duplicar dados visuais nem lógica.
 ═══════════════════════════════════════════════ */
-
-const _VISUAL_STATES = [
-  {
-    id:     'normal',
-    label:  'Volume ativado',
-    stroke: '#00d4ff',
-    glow:   'radial-gradient(circle,rgba(0,210,255,.26) 0%,transparent 70%)',
-    ro:     'rgba(0,200,255,.18)',
-    rm:     'rgba(0,200,255,.26)',
-    bg:     'rgba(0,28,52,.88)',
-    border: 'rgba(0,200,255,.42)',
-    pulse:  'rgba(0,200,255,.3)',
-    anim:   true,
-    ic:     'iN',
-  },
-  {
-    id:     'mute',
-    label:  'Mudo',
-    stroke: '#ff4d5e',
-    glow:   'radial-gradient(circle,rgba(255,50,80,.2) 0%,transparent 70%)',
-    ro:     'rgba(255,60,80,.13)',
-    rm:     'rgba(255,60,80,.2)',
-    bg:     'rgba(28,4,6,.9)',
-    border: 'rgba(255,60,80,.36)',
-    pulse:  'rgba(255,60,80,.25)',
-    anim:   false,
-    ic:     'iM',
-  },
-  {
-    id:     'low',
-    label:  'Volume reduzido',
-    stroke: '#00e8be',
-    glow:   'radial-gradient(circle,rgba(0,240,190,.16) 0%,transparent 70%)',
-    ro:     'rgba(0,220,180,.14)',
-    rm:     'rgba(0,220,180,.22)',
-    bg:     'rgba(0,18,16,.88)',
-    border: 'rgba(0,220,180,.34)',
-    pulse:  'rgba(0,200,160,.22)',
-    anim:   true,
-    ic:     'iL',
-  },
-];
-
-const _CYCLE_ORDER = ['normal', 'mute', 'low'];
-const _visualById  = Object.fromEntries(_VISUAL_STATES.map(s => [s.id, s]));
-
-function _createAudioBtn() {
-  const btn = document.createElement('button');
-  btn.className = 'abtn';
-  btn.id = 'audio-btn-global';
-  btn.setAttribute('aria-label', _visualById['normal'].label);
-  btn.innerHTML = `
-    <div class="glow"></div>
-    <div class="ro"></div>
-    <div class="rm"></div>
-    <div class="pulse"></div>
-    <div class="ripple"></div>
-    <div class="body">
-      <div class="iw">
-        <svg class="ic on" data-ic="iN" width="22" height="22" viewBox="0 0 44 44">
-          <path d="M14 17H10a1 1 0 00-1 1v8a1 1 0 001 1h4l7 6V11l-7 6z" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M25 16.5C27.5 18 29 20 29 22s-1.5 5.5-4 6.5"           fill="none" stroke-width="1.8" stroke-linecap="round"/>
-          <path d="M28.5 13.5C32.5 16 35 19 35 22s-2.5 6-6.5 8.5"         fill="none" stroke-width="1.8" stroke-linecap="round"/>
-          <path d="M32 10.5C37.5 14 41 18 41 22s-3.5 8-9 11.5"            fill="none" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>
-        <svg class="ic" data-ic="iM" width="22" height="22" viewBox="0 0 44 44">
-          <path d="M14 17H10a1 1 0 00-1 1v8a1 1 0 001 1h4l7 6V11l-7 6z" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-          <line x1="26" y1="17" x2="36" y2="27" stroke-width="2" stroke-linecap="round"/>
-          <line x1="36" y1="17" x2="26" y2="27" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-        <svg class="ic" data-ic="iL" width="22" height="22" viewBox="0 0 44 44">
-          <path d="M14 17H10a1 1 0 00-1 1v8a1 1 0 001 1h4l7 6V11l-7 6z" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M25 16.5C27.5 18 29 20 29 22s-1.5 5.5-4 6.5"          fill="none" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>
-      </div>
-    </div>
-  `;
-  return btn;
-}
-
-function _initAudioBtnLogic(btn) {
-  const glow  = btn.querySelector('.glow');
-  const ro    = btn.querySelector('.ro');
-  const rm    = btn.querySelector('.rm');
-  const bd    = btn.querySelector('.body');
-  const pu    = btn.querySelector('.pulse');
-  const ri    = btn.querySelector('.ripple');
-  const icons = {};
-  btn.querySelectorAll('[data-ic]').forEach(el => { icons[el.dataset.ic] = el; });
-
-  let _lastRenderedId = null;
-
-  function _renderMode(modeId) {
-    const s = _visualById[modeId] ?? _visualById['normal'];
-
-    if (_lastRenderedId && _lastRenderedId !== modeId) {
-      const fromIc = _visualById[_lastRenderedId]?.ic;
-      const toIc   = s.ic;
-      if (fromIc && fromIc !== toIc) {
-        icons[fromIc].classList.remove('on');
-        icons[fromIc].classList.add('out');
-        setTimeout(() => {
-          icons[fromIc].classList.remove('out');
-          icons[toIc].classList.add('on');
-        }, 170);
-      }
-    } else if (!_lastRenderedId) {
-      icons[s.ic].classList.add('on');
-    }
-
-    glow.style.background = s.glow;
-    glow.style.opacity    = '1';
-    ro.style.borderColor  = s.ro;
-    rm.style.borderColor  = s.rm;
-    bd.style.background   = s.bg;
-    bd.style.borderColor  = s.border;
-    Object.values(icons).forEach(el =>
-      el.querySelectorAll('path, line').forEach(p => p.style.stroke = s.stroke)
-    );
-    pu.style.borderColor = s.pulse;
-    pu.style.animation   = 'none';
-    if (s.anim) { void pu.offsetWidth; pu.style.animation = 'abtn-pulse 1.9s ease-out infinite'; }
-    btn.setAttribute('aria-label', s.label);
-    btn.dataset.state = s.id;
-
-    _lastRenderedId = modeId;
-  }
-
-  _renderMode(audioState.getMode());
-  audioState.subscribe(_renderMode);
-
-  btn.addEventListener('click', () => {
-    const currentMode = audioState.getMode();
-    const currentIdx  = _CYCLE_ORDER.indexOf(currentMode);
-    const nextMode    = _CYCLE_ORDER[(currentIdx + 1) % _CYCLE_ORDER.length];
-
-    audioState.setMode(nextMode);
-
-    ri.style.animation = 'none';
-    void ri.offsetWidth;
-    ri.style.animation = 'abtn-ripple .5s ease-out forwards';
-  });
-}
-
-function _mountAudioBtn() {
-  if (document.getElementById('audio-btn-global')) return;
-  const btn = _createAudioBtn();
-  _initAudioBtnLogic(btn);
-  document.body.appendChild(btn);
-}
 
 
 /* ═══════════════════════════════════════════════
@@ -895,8 +749,6 @@ function _buildVariantRow(cat, v) {
 }
 
 function _setActiveVariant(catId, varId) {
-  _modalState.selectedVariant[catId] = varId;
-
   if (catId !== 'modal') {
     _modalState.selectedVariant[catId] = varId;
     audioState.setSfxMap(catId, varId);
@@ -1021,6 +873,36 @@ function _countOverrides(catId) {
   return Object.values(_specificOverrides[catId]).filter(v => v !== null).length;
 }
 
+/**
+ * Aplica um override de área no audioState, tratando a categoria 'modal'
+ * de forma especial (split em openModal / closeModal).
+ *
+ * Centraliza a lógica que antes estava duplicada em:
+ *   - _buildSpecTableRow (click handler)
+ *   - _renderSpecPanel   (botão "Limpar overrides")
+ *   - _saveAll
+ *   - _resetAll
+ *
+ * @param {string}      catId     — id da categoria (ex: 'click', 'modal')
+ * @param {string}      area      — label da área (ex: 'Game') — normalizado internamente
+ * @param {string|null} variantId — id da variante ou null para remover override
+ */
+function _applyModalAreaOverride(catId, area, variantId) {
+  const areaKey = area.toLowerCase();
+  if (catId !== 'modal') {
+    audioState.setSfxAreaMap(areaKey, catId, variantId);
+  } else {
+    if (variantId === null) {
+      audioState.setSfxAreaMap(areaKey, 'openModal',  null);
+      audioState.setSfxAreaMap(areaKey, 'closeModal', null);
+    } else if (variantId.startsWith('open') || variantId.startsWith('Open')) {
+      audioState.setSfxAreaMap(areaKey, 'openModal', variantId);
+    } else {
+      audioState.setSfxAreaMap(areaKey, 'closeModal', variantId);
+    }
+  }
+}
+
 
 /* ── Spec Panel ── */
 
@@ -1092,14 +974,7 @@ function _renderSpecPanel(cat) {
   document.getElementById('snd-specPanelClear').addEventListener('click', () => {
     cat.areas.forEach(area => {
       _specificOverrides[cat.id][area] = null;
-
-      const areaKey = area.toLowerCase();
-      if (cat.id !== 'modal') {
-        audioState.setSfxAreaMap(areaKey, cat.id, null);
-      } else {
-        audioState.setSfxAreaMap(areaKey, 'openModal',  null);
-        audioState.setSfxAreaMap(areaKey, 'closeModal', null);
-      }
+      _applyModalAreaOverride(cat.id, area, null);
     });
     _modalState.selectedAreas[cat.id] = [...cat.areas];
     _renderSpecPanel(cat);
@@ -1202,19 +1077,7 @@ function _buildSpecTableRow(cat, variant) {
         if (idx === -1) areas.push(area);
       }
 
-      const areaKey = area.toLowerCase();
-      if (cat.id !== 'modal') {
-        audioState.setSfxAreaMap(areaKey, cat.id, newOverride);
-      } else {
-        if (newOverride === null) {
-          audioState.setSfxAreaMap(areaKey, 'openModal',  null);
-          audioState.setSfxAreaMap(areaKey, 'closeModal', null);
-        } else if (newOverride.startsWith('open') || newOverride.startsWith('Open')) {
-          audioState.setSfxAreaMap(areaKey, 'openModal', newOverride);
-        } else {
-          audioState.setSfxAreaMap(areaKey, 'closeModal', newOverride);
-        }
-      }
+      _applyModalAreaOverride(cat.id, area, newOverride);
 
       _renderSpecPanel(cat);
       _syncGeneralChips(cat.id);
@@ -1292,20 +1155,8 @@ function _saveAll() {
 
   _CATEGORIES.forEach(cat => {
     cat.areas.forEach(area => {
-      const areaKey  = area.toLowerCase();
       const override = _specificOverrides[cat.id]?.[area] ?? null;
-      if (cat.id !== 'modal') {
-        audioState.setSfxAreaMap(areaKey, cat.id, override);
-      } else {
-        if (override === null) {
-          audioState.setSfxAreaMap(areaKey, 'openModal',  null);
-          audioState.setSfxAreaMap(areaKey, 'closeModal', null);
-        } else if (override.startsWith('open') || override.startsWith('Open')) {
-          audioState.setSfxAreaMap(areaKey, 'openModal', override);
-        } else {
-          audioState.setSfxAreaMap(areaKey, 'closeModal', override);
-        }
-      }
+      _applyModalAreaOverride(cat.id, area, override);
     });
   });
 
@@ -1342,6 +1193,7 @@ function _resetAll() {
   audio.setEnabled(true);
 
   // 2. Volumes no audioState (antes de setValue nos sliders)
+  audioState.setVolume('master', 1.0);
   audioState.setVolume('music', 0.5);
   audioState.setVolume('sfx',   0.5);
 
@@ -1353,13 +1205,7 @@ function _resetAll() {
   // 4. Limpa overrides de área → Firebase
   _CATEGORIES.forEach(cat => {
     cat.areas.forEach(area => {
-      const areaKey = area.toLowerCase();
-      if (cat.id !== 'modal') {
-        audioState.setSfxAreaMap(areaKey, cat.id, null);
-      } else {
-        audioState.setSfxAreaMap(areaKey, 'openModal',  null);
-        audioState.setSfxAreaMap(areaKey, 'closeModal', null);
-      }
+      _applyModalAreaOverride(cat.id, area, null);
     });
   });
 
@@ -1403,7 +1249,7 @@ const Sound = {
   init() {
     if (_initialized) return;
     _initialized = true;
-    _mountAudioBtn();
+    mountAudioBtn();
   },
 
   openModal() {
@@ -1428,8 +1274,7 @@ const Sound = {
   },
 
   reinit() {
-    const old = document.getElementById('audio-btn-global');
-    if (old) old.remove();
+    destroyAudioBtn();
 
     _initialized = false;
 

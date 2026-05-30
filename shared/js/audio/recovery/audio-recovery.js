@@ -1,8 +1,8 @@
 // @ts-nocheck
 /* =============================================
-   NEXUS STUDY — shared/js/audio/audio-recovery.js
+   NEXUS STUDY — shared/js/audio/recovery/audio-recovery.js
    Recuperação automática do AudioContext entre páginas
-   Versão 2.0 — corrige flood de erros no hover fallback
+   Versão 2.1 — remove parâmetro `full` inerte de _tryResume
 
    BUGS CORRIGIDOS v1.0 → v2.0
    ─────────────────────────────────────────────
@@ -13,21 +13,18 @@
       Fix: _inflight lock — apenas UMA tentativa de resume por vez.
       Enquanto a Promise está pendente, novos eventos são descartados.
 
-   2. resumeCtx() NO HOVER: chamar audio.resumeCtx() a cada pointermove
-      resetava os gain nodes repetidamente (efeito colateral pesado).
-
-      Fix: o hover fallback chama ctx.resume() diretamente via
-      audio.getCtxForRecovery() — uma API mínima que expõe só o ctx
-      sem os efeitos colaterais do resumeCtx().
-
-      ALTERNATIVA sem modificar sfx.js: o hover fallback verifica se o
-      ctx está realmente suspended antes de chamar resumeCtx(), e usa
-      um debounce de 500ms entre tentativas.
-
-   3. _hoverFallbackInstalled não protegia contra re-entradas async:
+   2. _hoverFallbackInstalled não protegia contra re-entradas async:
       o flag era setado mas a Promise de 200ms permitia overlap.
 
       Fix: _inflight flag separado do _hoverFallbackInstalled.
+
+   MUDANÇA v2.0 → v2.1
+   ─────────────────────────────────────────────
+   Removido o parâmetro `full` de _tryResume(). Uma versão anterior
+   documentava dois caminhos distintos (full/light) referenciando
+   audio.getCtxForRecovery(), mas esse método nunca existiu em sfx.js.
+   Ambos os ramos sempre chamavam audio.resumeCtx(). O parâmetro era
+   inerte e gerava confusão. _tryResume() agora recebe apenas `audio`.
    ============================================= */
 
 /** Flag de instalação por instância de módulo (uma por página). */
@@ -51,29 +48,31 @@ const _RESUME_THROTTLE_MS = 500;
  * Possui lock de inflight e throttle para evitar flood de erros.
  * Retorna Promise<boolean> — true se ctx ficou running.
  *
+ * Sempre chama audio.resumeCtx(), que é idempotente nos gain nodes:
+ * recria-os apenas se estiverem null (o que ocorre após bfcache restore),
+ * e reinstala o listener de gesto. O custo extra no hover fallback é
+ * desprezível porque o throttle de 500 ms garante no máximo 2 chamadas/s.
+ *
+ * Nota: o parâmetro `full` foi removido. Uma versão anterior documentava
+ * um caminho "leve" via audio.getCtxForRecovery() para o hover fallback,
+ * mas esse método nunca existiu em sfx.js. Ambos os ramos chamavam
+ * audio.resumeCtx() de qualquer forma, tornando o parâmetro inerte.
+ * A API foi simplificada para refletir o comportamento real.
+ *
  * @param {object} audio — instância exportada de sfx.js
- * @param {boolean} [full=true] — se true usa audio.resumeCtx() (recria gains);
- *                                se false usa só ctx.resume() via sfx interno
  */
-async function _tryResume(audio, full = true) {
+async function _tryResume(audio) {
   if (audio.isUnlocked()) return true;
 
   const now = Date.now();
-  if (_resumeInflight)                         return false;
+  if (_resumeInflight)                              return false;
   if (now - _lastResumeAttempt < _RESUME_THROTTLE_MS) return false;
 
-  _resumeInflight       = true;
-  _lastResumeAttempt    = now;
+  _resumeInflight    = true;
+  _lastResumeAttempt = now;
 
   try {
-    if (full) {
-      audio.resumeCtx();    // reset gains + ctx.resume() + reinstala listener de gesto
-    } else {
-      // Caminho leve: só tenta resume no ctx sem recriar gain nodes.
-      // Usado pelo hover fallback onde o ctx pode estar suspended por
-      // autoplay policy, não por bfcache (gains ainda são válidos).
-      audio.resumeCtx();    // mesma chamada — sfx.js já é idempotente nos gains
-    }
+    audio.resumeCtx();    // reset gains (se null) + ctx.resume() + reinstala listener de gesto
     // Aguarda até 300 ms para o ctx sair de 'suspended'
     await new Promise(resolve => setTimeout(resolve, 300));
     return audio.isUnlocked();
@@ -175,7 +174,7 @@ function _installHoverFallback(audio) {
       return;
     }
     // _tryResume tem throttle interno — chamadas em excesso são no-ops baratos
-    const ok = await _tryResume(audio, false);
+    const ok = await _tryResume(audio);
     if (ok) {
       console.log('[audio-recovery] ctx resumido via pointermove');
       _cleanup();

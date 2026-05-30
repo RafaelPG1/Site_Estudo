@@ -1,6 +1,6 @@
 // @ts-nocheck
 /* =============================================
-   NEXUS STUDY — audio/index.js
+   NEXUS STUDY — audio/audio-api.js
    Ponto de entrada público do sistema de áudio
    ─────────────────────────────────────────────
    Reexporta tudo que o restante do app precisa
@@ -10,15 +10,17 @@
 
    USO RECOMENDADO
    ─────────────────────────────────────────────
-   import audio            from './audio/index.js'; // engine
-   import audioState       from './audio/index.js'; // estado
-   import { playSound }    from './audio/index.js'; // dispatcher
-   import Sound            from './audio/index.js'; // modal UI
-   import { installAudioRecovery } from './audio/index.js';
+   import audio            from './audio/audio-api.js'; // engine
+   import audioState       from './audio/audio-api.js'; // estado
+   import { playSound }    from './audio/audio-api.js'; // dispatcher
+   import Sound            from './audio/audio-api.js'; // modal UI
+   import { installAudioRecovery } from './audio/audio-api.js';
 
    OU com named imports:
-   import { audio, audioState, playSound, Sound, installAudioRecovery }
-     from './audio/index.js';
+   import { audio, audioState, playSound, Sound,
+            mountAudioBtn, destroyAudioBtn,
+            installAudioRecovery }
+     from './audio/audio-api.js';
    ============================================= */
 
 // Engine
@@ -32,6 +34,7 @@ export { default as audioState }  from './state/audio-state.js';
 // UI
 export { default as Sound }        from './ui/sound.js';
 export { default as makeVolumeSlider } from './ui/vol-slider.js';
+export { mountAudioBtn, destroyAudioBtn } from './ui/audio-btn.js';
 
 // Recovery
 export { installAudioRecovery }    from './recovery/audio-recovery.js';

@@ -16,10 +16,10 @@ import {
 import { injetarLogo } from './shared/js/utils/logo.js';
 import { login, logout, carregarConfigs } from './src/firebase.js';
 import { criarSemestreSelect, preencherAnos } from './shared/js/utils/dom.js';
-import Sound from './shared/js/audio/sound.js';
-import audio from './shared/js/audio/sfx.js';                                    // ← NOVO
-import { installAudioRecovery } from './shared/js/audio/audio-recovery.js';      // ← NOVO
-import { playSound } from './shared/js/audio/play.js';
+import Sound from './shared/js/audio/ui/sound.js';
+import audio from './shared/js/audio/engine/sfx.js';                                    // ← NOVO
+import { installAudioRecovery } from './shared/js/audio/recovery/audio-recovery.js';      // ← NOVO
+import { playSound } from './shared/js/audio/engine/play.js';
 
 /* ─────────────────────────────────────────────
    INICIALIZAÇÃO

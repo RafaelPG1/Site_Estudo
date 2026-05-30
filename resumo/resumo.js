@@ -29,8 +29,8 @@ import { injetarLogo } from '../shared/js/utils/logo.js';
    Usar sempre playSound(event, 'resumos'). Nunca chamar
    audio.sfx diretamente neste arquivo.
 ───────────────────────────────────────────── */
-import Sound      from '../shared/js/audio/sound.js';
-import { playSound } from '../shared/js/audio/play.js';
+import Sound      from '../shared/js/audio/ui/sound.js';
+import { playSound } from '../shared/js/audio/engine/play.js';
 
 injetarLogo({ destino: '#header-logo-wrap', tamanho: 32, layout: 'stacked',       area:      'resumos',
       playSound,   });

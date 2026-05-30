@@ -1,6 +1,6 @@
 // @ts-nocheck
 /* =============================================
-   NEXUS STUDY — shared/js/audio/play.js
+   NEXUS STUDY — shared/js/audio/engine/play.js
    Dispatcher central de SFX
    Versão 2.1  ← log corrigido (sfx + master)
 
@@ -8,9 +8,13 @@
    ─────────────────────────────────────────────
    - Log agora exibe sfxVolume e masterVolume separadamente,
      evitando leitura enganosa do vol=1.00 (que era só o master).
+
+   REFATORAÇÃO (estrutura)
+   ─────────────────────────────────────────────
+   - Imports atualizados para nova estrutura de pastas
    ============================================= */
 
-import audioState from './audio-state.js';
+import audioState from '../state/audio-state.js';
 import audio      from './sfx.js';
 
 /* ─────────────────────────────────────────────

@@ -1,256 +1,58 @@
 // @ts-nocheck
 /* =============================================
-   NEXUS STUDY — shared/js/audio/sfx.js
-   Engine central de áudio do projeto
-   Versão 4.0 — engine de áudio pura
+   NEXUS STUDY — shared/js/audio/engine/sfx-catalog.js
+   Catálogo completo de sons (SFX + BGM)
+   ─────────────────────────────────────────────
+   Responsabilidade exclusiva:
+   ✅ Definir todas as entradas de som (type: 'sfx' | 'music')
+   ✅ Usar as primitivas importadas de sfx-core.js
+
+   ❌ Lógica de engine, gain nodes, estado, Firebase, UI
+   ─────────────────────────────────────────────
+   Os alias abaixo tornam o corpo de cada fn() idêntico
+   ao original do sfx.js — zero alteração de lógica.
    ============================================= */
 
-/* ═══════════════════════════════════════════════
-   1. ESTADO GLOBAL — somente em memória
-═══════════════════════════════════════════════ */
+import {
+  tone        as _tone,
+  seq         as _seq,
+  bgmEngine   as _bgmEngine,
+  isCtxReady  as _isCtxReady,
+  getCtx,
+  getGains    as _getGains,
+} from './sfx-core.js';
 
-const _DEFAULT_SFX_STATE = {
-  enabled:      true,
-  muted:        false,
-  masterVolume: 0.7,
-  sfxVolume:    0.8,
-  musicVolume:  0.4,
-};
-
-const _state = { ..._DEFAULT_SFX_STATE };
-
-/* ═══════════════════════════════════════════════
-   1b. DEBUG FLAG
-═══════════════════════════════════════════════ */
-
-const DEBUG_AUDIO = false;
-const _dbg = DEBUG_AUDIO ? (...a) => console.log('[sfx]', ...a) : () => {};
-
-/* ═══════════════════════════════════════════════
-   2. CONTEXTO DE ÁUDIO — EAGER + RESUME POR GESTO (v5.1)
-═══════════════════════════════════════════════ */
-
-let _ctx = null;
-
-function _isCtxReady() {
-  return !!_ctx && _ctx.state === 'running';
-}
-
-function _resumeCtx() {
-  if (!_ctx || _ctx.state !== 'suspended') return;
-  _ctx.resume().then(() => {
-    _getGains();   // cria os gain nodes se ainda não existirem
-    _syncGains();  // garante que _state atual (já hidratado pelo Firebase) é aplicado
-    _warmup();
-    _dbg('AudioContext resumed por gesto do usuário, state:', _ctx.state);
-  }).catch(() => {});
-}
-
-function _installResumeListener() {
-  const EVENTS = ['click', 'pointerdown', 'touchstart', 'keydown'];
-
-  function _onGesture() {
-    _resumeCtx();
-    EVENTS.forEach(ev =>
-      document.removeEventListener(ev, _onGesture, { capture: true })
-    );
-  }
-
-  EVENTS.forEach(ev =>
-    document.addEventListener(ev, _onGesture, { capture: true, passive: true })
-  );
-}
-
-function _warmup() {
-  if (!_isCtxReady() || !_masterGain) return;
-  try {
-    const osc = _ctx.createOscillator();
-    const g   = _ctx.createGain();
-    g.gain.value = 0;
-    osc.connect(g);
-    g.connect(_masterGain);
-    osc.start(_ctx.currentTime);
-    osc.stop(_ctx.currentTime + 0.001);
-    _dbg('warmup executado');
-  } catch (_) {}
-}
-
-/* ═══════════════════════════════════════════════
-   3. NÓS DE GANHO (gain nodes por canal)
-   IMPORTANTE: declarados ANTES do bloco try abaixo
-   para evitar ReferenceError de hoisting com let.
-═══════════════════════════════════════════════ */
-
-let _masterGain = null;
-let _sfxGain    = null;
-let _musicGain  = null;
-
-function _getGains() {
-  if (!_isCtxReady()) return null;
-
-  if (!_masterGain) {
-    _masterGain = _ctx.createGain();
-    _sfxGain    = _ctx.createGain();
-    _musicGain  = _ctx.createGain();
-
-    _sfxGain.connect(_masterGain);
-    _musicGain.connect(_masterGain);
-    _masterGain.connect(_ctx.destination);
-
-    _syncGains();
-  }
-
-  return { master: _masterGain, sfx: _sfxGain, music: _musicGain };
-}
-
-function _syncGains() {
-  if (!_masterGain) return;
-  const muted = _state.muted || !_state.enabled;
-  _masterGain.gain.value = muted ? 0 : _state.masterVolume;
-  _sfxGain.gain.value    = _state.sfxVolume;
-  _musicGain.gain.value  = _state.musicVolume;
-}
-
-// Cria o AudioContext imediatamente.
-// _masterGain já está declarado acima — sem ReferenceError.
-try {
-  _ctx = new (window.AudioContext || window.webkitAudioContext)();
-  if (_ctx.state === 'running') {
-    _getGains();
-    _warmup();
-    _dbg('AudioContext nasceu running');
-  } else {
-    _dbg('AudioContext suspended — aguardando gesto para resume()');
-    _installResumeListener();
-  }
-} catch (err) {
-  console.error('[sfx] AudioContext não suportado:', err);
-}
-
-/* ═══════════════════════════════════════════════
-   4. PRIMITIVAS DE SOM
-═══════════════════════════════════════════════ */
-
-function _tone({
-  freq,
-  freqEnd,
-  duration,
-  attack  = 0.005,
-  decay,
-  sustain = 0,
-  type    = 'sine',
-  volume  = 1,
-}) {
-  if (!_state.enabled || _state.muted) return;
-  if (!_isCtxReady()) return;
-
-  const ctx    = _ctx;
-  const gains  = _getGains();
-  if (!gains) return;
-  const decayT = decay ?? duration * 0.3;
-  const t      = ctx.currentTime + 0.005;
-
-  const osc      = ctx.createOscillator();
-  const gainNode = ctx.createGain();
-
-  osc.connect(gainNode);
-  gainNode.connect(gains.sfx);
-
-  osc.type            = type;
-  osc.frequency.value = freq;
-
-  if (freqEnd !== undefined && freqEnd !== freq) {
-    osc.frequency.setValueAtTime(freq, t);
-    osc.frequency.linearRampToValueAtTime(freqEnd, t + duration);
-  }
-
-  gainNode.gain.setValueAtTime(0, t);
-  gainNode.gain.linearRampToValueAtTime(volume, t + attack);
-  gainNode.gain.linearRampToValueAtTime(sustain * volume, t + attack + decayT);
-  gainNode.gain.linearRampToValueAtTime(0, t + duration);
-
-  osc.start(t);
-  osc.stop(t + duration + 0.01);
-}
-
-function _seq(notes) {
-  if (!_state.enabled || _state.muted) return;
-  if (!_isCtxReady()) return;
-  notes.forEach(({ delay = 0, ...rest }) => {
-    setTimeout(() => _tone(rest), delay * 1000);
-  });
-}
-
-/* ═══════════════════════════════════════════════
-   5. SISTEMA DE MÚSICA / BGM
-═══════════════════════════════════════════════ */
-
-let _currentBgm = null;
-
-const _bgmEngine = {
-  stop(fadeTime = 0.5) {
-    if (!_currentBgm) return;
-    const { nodes } = _currentBgm;
-
-    if (fadeTime > 0 && _musicGain && _isCtxReady()) {
-      const t = _ctx.currentTime;
-      _musicGain.gain.setValueAtTime(_musicGain.gain.value, t);
-      _musicGain.gain.linearRampToValueAtTime(0, t + fadeTime);
-      setTimeout(() => {
-        nodes.forEach(n => { try { n.stop(); } catch (_) {} });
-        _musicGain.gain.value = _state.musicVolume;
-        _currentBgm = null;
-      }, fadeTime * 1000 + 50);
-    } else {
-      nodes.forEach(n => { try { n.stop(); } catch (_) {} });
-      _currentBgm = null;
-    }
+// Proxy transparente para que "const ctx = _ctx" funcione nas funções inline.
+// _ctx.createOscillator() → getCtx().createOscillator()
+const _ctx = new Proxy({}, {
+  get(_, prop) {
+    const real = getCtx();
+    if (!real) return undefined;
+    const val = real[prop];
+    return typeof val === 'function' ? val.bind(real) : val;
   },
+});
 
-  play(id, buildFn) {
-    if (!_state.enabled || _state.muted) return;
-    if (!_isCtxReady()) return;
-    if (_currentBgm?.id === id) return;
-
-    this.stop(0.3);
-
-    setTimeout(() => {
-      if (!_isCtxReady()) return;
-      _getGains();
-      const nodes = buildFn(_ctx, _musicGain);
-      _currentBgm = { id, nodes: Array.isArray(nodes) ? nodes : [nodes] };
-    }, _currentBgm ? 350 : 0);
+// _currentBgm acessado pelas funções de BGM para checar o id ativo
+const _bgmRef = new Proxy({}, {
+  get(_, prop) { return _bgmEngine.getCurrent()?.[prop]; },
+});
+// Sobrescrito abaixo no escopo para os fn() de música que fazem:
+// if (!_currentBgm || _currentBgm.id !== 'music-xxx') return;
+const _currentBgm = new Proxy({}, {
+  get(_, prop) {
+    const cur = _bgmEngine.getCurrent();
+    if (!cur) return prop === Symbol.toPrimitive ? () => null : undefined;
+    return cur[prop];
   },
+});
 
-  playUrl(id, url) {
-    if (!_state.enabled || _state.muted) return;
-    if (_currentBgm?.id === id) return;
-
-    this.stop(0.3);
-
-    setTimeout(() => {
-      const el = new Audio(url);
-      el.loop   = true;
-      el.volume = _state.musicVolume * _state.masterVolume;
-      el.play().catch(() => {});
-
-      _currentBgm = {
-        id,
-        nodes: [],
-        _el: el,
-        stop: () => { el.pause(); el.currentTime = 0; },
-      };
-    }, _currentBgm ? 350 : 0);
-  },
-
-  currentId() {
-    return _currentBgm?.id ?? null;
-  },
-};
-
-/* ═══════════════════════════════════════════════
-   6. CATÁLOGO GLOBAL
-═══════════════════════════════════════════════ */
+// Tornar _currentBgm falsy quando null — o truque: as verificações são:
+//   if (!_currentBgm || _currentBgm.id !== '...')
+// O Proxy acima não é falsy. Solução: usar uma função getter no lugar.
+// Redefinimos o padrão para que as funções de BGM usem getCurrent() diretamente.
+// Como as fn() são closures do catálogo, injetamos o helper via escopo.
+function _isBgmActive(id) { return _bgmEngine.getCurrent()?.id === id; }
 
 export const catalog = [
     /* ── Feedback ────────────────────────────── */
@@ -935,7 +737,7 @@ export const catalog = [
           let i = 0;
           const arpGain = ctx.createGain(); arpGain.gain.value = 0.08; arpGain.connect(dest);
           function playArpNote() {
-            if (!_currentBgm || _currentBgm.id !== 'music-menu') return;
+            if (!_isBgmActive('music-menu')) return;
             const osc = ctx.createOscillator(); const g = ctx.createGain();
             osc.connect(g); g.connect(arpGain); osc.type = 'sine';
             osc.frequency.value = notes[i % notes.length];
@@ -970,7 +772,7 @@ export const catalog = [
           let ai = 0, aphrase = 0, acount = 0;
           const ag = ctx.createGain(); ag.gain.value = 0.08; ag.connect(dest);
           function arp() {
-            if (!_currentBgm || _currentBgm.id !== 'music-game') return;
+            if (!_isBgmActive('music-game')) return;
             const sc = arpPhrases[aphrase];
             const o = ctx.createOscillator(), g = ctx.createGain();
             o.type = 'square'; o.frequency.value = sc[ai % sc.length];
@@ -988,7 +790,7 @@ export const catalog = [
           const pulseG = ctx.createGain(); pulseG.gain.value = 0.06; pulseG.connect(dest);
           const pSeq = [110, 110, 138, 110, 82, 110, 138, 165];
           function pulse() {
-            if (!_currentBgm || _currentBgm.id !== 'music-game') return;
+            if (!_isBgmActive('music-game')) return;
             const o = ctx.createOscillator(), g = ctx.createGain();
             o.type = 'triangle'; o.frequency.value = pSeq[pi % pSeq.length];
             g.gain.setValueAtTime(0, ctx.currentTime);
@@ -1003,12 +805,12 @@ export const catalog = [
           const shimG = ctx.createGain(); shimG.gain.value = 0.025; shimG.connect(dest);
           const shimNotes = [784, 880, 1047, 1174, 1047, 880];
           function shim() {
-            if (!_currentBgm || _currentBgm.id !== 'music-game') return;
+            if (!_isBgmActive('music-game')) return;
             si++;
             if (si % 7 === 0) {
               shimNotes.forEach((f, i) => {
                 setTimeout(() => {
-                  if (!_currentBgm || _currentBgm.id !== 'music-game') return;
+                  if (!_isBgmActive('music-game')) return;
                   const o = ctx.createOscillator(), g = ctx.createGain();
                   o.type = 'sine'; o.frequency.value = f;
                   g.gain.setValueAtTime(0, ctx.currentTime);
@@ -1044,7 +846,7 @@ export const catalog = [
           let wi = 0;
           const wg = ctx.createGain(); wg.gain.value = 0.055; wg.connect(dest);
           function doWarm() {
-            if (!_currentBgm || _currentBgm.id !== 'music-quiz') return;
+            if (!_isBgmActive('music-quiz')) return;
             const o = ctx.createOscillator(), g = ctx.createGain();
             o.connect(g); g.connect(wg); o.type = 'triangle';
             o.frequency.value = warm[wi % warm.length];
@@ -1060,7 +862,7 @@ export const catalog = [
           let mi = 0;
           const melg = ctx.createGain(); melg.gain.value = 0.075; melg.connect(dest);
           function doMel() {
-            if (!_currentBgm || _currentBgm.id !== 'music-quiz') return;
+            if (!_isBgmActive('music-quiz')) return;
             const o = ctx.createOscillator(), g = ctx.createGain();
             o.connect(g); g.connect(melg); o.type = 'sine';
             o.frequency.value = melody[mi % melody.length];
@@ -1105,7 +907,7 @@ export const catalog = [
           let si = 0, scaleIdx = 0, phraseCount = 0;
           const mg = ctx.createGain(); mg.gain.value = 0.065; mg.connect(dest);
           function mel() {
-            if (!_currentBgm || _currentBgm.id !== 'music-results') return;
+            if (!_isBgmActive('music-results')) return;
             const scale = scales[scaleIdx];
             const o = ctx.createOscillator(), g = ctx.createGain();
             o.connect(g); g.connect(mg); o.type = 'sine';
@@ -1124,7 +926,7 @@ export const catalog = [
           let bi = 0;
           const bassG = ctx.createGain(); bassG.gain.value = 0.05; bassG.connect(dest);
           function bass() {
-            if (!_currentBgm || _currentBgm.id !== 'music-results') return;
+            if (!_isBgmActive('music-results')) return;
             const o = ctx.createOscillator(), g = ctx.createGain();
             o.connect(g); g.connect(bassG); o.type = 'sine';
             o.frequency.value = bassSeq[bi % bassSeq.length];
@@ -1138,12 +940,12 @@ export const catalog = [
           let shimmerTimer = 0;
           const shimG = ctx.createGain(); shimG.gain.value = 0.03; shimG.connect(dest);
           function shimmer() {
-            if (!_currentBgm || _currentBgm.id !== 'music-results') return;
+            if (!_isBgmActive('music-results')) return;
             shimmerTimer++;
             if (shimmerTimer % 5 === 0) {
               [523, 659, 784, 659].forEach((f, i) => {
                 setTimeout(() => {
-                  if (!_currentBgm || _currentBgm.id !== 'music-results') return;
+                  if (!_isBgmActive('music-results')) return;
                   const o = ctx.createOscillator(), g = ctx.createGain();
                   o.connect(g); g.connect(shimG); o.type = 'triangle';
                   o.frequency.value = f;
@@ -1190,7 +992,7 @@ export const catalog = [
           let mi = 0, mphrase = 0, mcount = 0;
           const mg = ctx.createGain(); mg.gain.value = 0.072; mg.connect(dest);
           function mel() {
-            if (!_currentBgm || _currentBgm.id !== 'music-profile') return;
+            if (!_isBgmActive('music-profile')) return;
             const sc = melPhrases[mphrase];
             const o = ctx.createOscillator(), g = ctx.createGain();
             o.type = 'sine'; o.frequency.value = sc[mi % sc.length];
@@ -1209,7 +1011,7 @@ export const catalog = [
           const bassSeq = [98, 98, 110, 98, 82, 98, 110, 123];
           const bassG = ctx.createGain(); bassG.gain.value = 0.06; bassG.connect(dest);
           function bass() {
-            if (!_currentBgm || _currentBgm.id !== 'music-profile') return;
+            if (!_isBgmActive('music-profile')) return;
             const o = ctx.createOscillator(), g = ctx.createGain();
             o.type = 'sine'; o.frequency.value = bassSeq[bi % bassSeq.length];
             g.gain.setValueAtTime(0, ctx.currentTime);
@@ -1223,12 +1025,12 @@ export const catalog = [
           const shimG = ctx.createGain(); shimG.gain.value = 0.03; shimG.connect(dest);
           const shimNotes = [523, 659, 784, 880, 784, 659];
           function shim() {
-            if (!_currentBgm || _currentBgm.id !== 'music-profile') return;
+            if (!_isBgmActive('music-profile')) return;
             scnt++;
             if (scnt % 6 === 0) {
               shimNotes.forEach((f, i) => {
                 setTimeout(() => {
-                  if (!_currentBgm || _currentBgm.id !== 'music-profile') return;
+                  if (!_isBgmActive('music-profile')) return;
                   const o = ctx.createOscillator(), g = ctx.createGain();
                   o.type = 'triangle'; o.frequency.value = f;
                   g.gain.setValueAtTime(0, ctx.currentTime);
@@ -1247,168 +1049,3 @@ export const catalog = [
     },
 
 ];
-
-/* ═══════════════════════════════════════════════
-   7. API PÚBLICA — sfx (efeitos)
-═══════════════════════════════════════════════ */
-
-const _sfxMap = {};
-catalog
-  .filter(e => e.type === 'sfx')
-  .forEach(e => { _sfxMap[e.id] = e; });
-
-const sfxApi = new Proxy({}, {
-  get(_, id) {
-    const entry = _sfxMap[id];
-    if (entry) return () => entry.fn.call(entry);
-    return undefined;
-  },
-});
-
-/* ═══════════════════════════════════════════════
-   8. API PÚBLICA — music (bgm)
-═══════════════════════════════════════════════ */
-
-const _musicMap = {};
-catalog
-  .filter(e => e.type === 'music')
-  .forEach(e => { _musicMap[e.id] = e; });
-
-const musicApi = new Proxy({
-  stop:      (fade) => _bgmEngine.stop(fade),
-  currentId: ()     => _bgmEngine.currentId(),
-}, {
-  get(target, key) {
-    if (key in target) return target[key];
-    const entry =
-      _musicMap[key] ||
-      _musicMap[`music-${key}`] ||
-      Object.values(_musicMap).find(e => e.label === key);
-    if (entry) return () => entry.fn.call(entry);
-    return undefined;
-  },
-});
-
-/* ═══════════════════════════════════════════════
-   8b. ÍNDICE DE EVENTOS
-═══════════════════════════════════════════════ */
-
-const _eventMap = {};
-catalog
-  .filter(e => e.type === 'sfx' && e.event)
-  .forEach(e => {
-    if (!_eventMap[e.event]) _eventMap[e.event] = [];
-    _eventMap[e.event].push(e);
-  });
-
-function playEvent(eventName, { variant } = {}) {
-  const entries = _eventMap[eventName];
-  if (!entries || entries.length === 0) {
-    console.warn(`[audio] playEvent: evento "${eventName}" não encontrado no catálogo.`);
-    return;
-  }
-
-  let entry;
-  if (variant) {
-    entry = entries.find(e => e.id === variant) ?? entries[Math.floor(Math.random() * entries.length)];
-  } else {
-    entry = entries[Math.floor(Math.random() * entries.length)];
-  }
-  entry.fn.call(entry);
-}
-
-/* ═══════════════════════════════════════════════
-   9. API PRINCIPAL (export default)
-═══════════════════════════════════════════════ */
-
-const audio = {
-
-  catalog,
-
-  sfx: sfxApi,
-
-  music: musicApi,
-
-  playEvent,
-
-  setMasterVolume(val) {
-    _state.masterVolume = Math.min(1.5, Math.max(0, Number(val) || 0));
-    _syncGains();
-  },
-
-  setSfxVolume(val) {
-    _state.sfxVolume = Math.min(1.5, Math.max(0, Number(val) || 0));
-    _syncGains();
-  },
-
-  setMusicVolume(val) {
-    _state.musicVolume = Math.min(1.5, Math.max(0, Number(val) || 0));
-    _syncGains();
-  },
-
-  getMasterVolume() { return _state.masterVolume; },
-  getSfxVolume()    { return _state.sfxVolume; },
-  getMusicVolume()  { return _state.musicVolume; },
-
-  setEnabled(bool) {
-    _state.enabled = !!bool;
-    _syncGains();
-  },
-
-  isEnabled() { return _state.enabled; },
-
-  mute() {
-    _state.muted = true;
-    _syncGains();
-  },
-
-  unmute() {
-    _state.muted = false;
-    _syncGains();
-  },
-
-  isMuted() { return _state.muted; },
-
-  stopAll() { _bgmEngine.stop(0); },
-
-  fadeOut(duration = 1) {
-    if (!_masterGain || !_isCtxReady()) return;
-    const t = _ctx.currentTime;
-    _masterGain.gain.setValueAtTime(_masterGain.gain.value, t);
-    _masterGain.gain.linearRampToValueAtTime(0, t + duration);
-  },
-
-  fadeIn(duration = 1) {
-    if (!_masterGain || !_isCtxReady()) return;
-    const t = _ctx.currentTime;
-    _masterGain.gain.setValueAtTime(0, t);
-    _masterGain.gain.linearRampToValueAtTime(_state.masterVolume, t + duration);
-  },
-
-  resetToDefaults() {
-    Object.assign(_state, { ..._DEFAULT_SFX_STATE });
-    _syncGains();
-  },
-
-  getState() { return { ..._state }; },
-
-  isUnlocked() {
-    return _isCtxReady();
-  },
-
-  /**
-   * Tenta resumir o AudioContext suspenso e reinstala o listener de gesto.
-   * Chamado pelo sound.js após restauração do bfcache (pageshow persisted).
-   */
-  resumeCtx() {
-    // Reseta os gain nodes para forçar recriação após resume
-    _masterGain = null;
-    _sfxGain    = null;
-    _musicGain  = null;
-    _resumeCtx();
-    _installResumeListener();
-  },
-
-};
-
-export default audio;

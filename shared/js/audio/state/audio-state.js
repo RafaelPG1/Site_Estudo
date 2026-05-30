@@ -1,6 +1,6 @@
 // @ts-nocheck
 /* =============================================
-   NEXUS STUDY — shared/js/audio/audio-state.js
+   NEXUS STUDY — shared/js/audio/state/audio-state.js
    Estado global de áudio — fonte única de verdade
    Versão 1.5  ← gate de inicialização (waitUntilReady)
 
@@ -59,9 +59,9 @@
 
    MODOS
    ─────────────────────────────────────────────
-   'normal'  →  masterVolume 1.0, unmuted
-   'low'     →  masterVolume 0.5, unmuted
-   'mute'    →  masterVolume 0,   muted
+   'normal'  →  masterVolume 1.0 (fixo), unmuted
+   'low'     →  masterVolume 0.5 (fixo), unmuted
+   'mute'    →  masterVolume 0   (fixo), muted
 
    API PÚBLICA
    ─────────────────────────────────────────────
@@ -82,8 +82,8 @@
    audioState.waitUntilReady()               → Promise que resolve quando SFX_MAP estiver pronto
    ============================================= */
 
-import audio from './sfx.js';
-import { carregarConfigs, salvarConfigs } from '../../../src/firebase.js';
+import audio from '../engine/sfx.js';
+import { carregarConfigs, salvarConfigs } from '../../../../src/firebase.js';
 
 /* ═══════════════════════════════════════════════
    INSTRUMENTAÇÃO DE PERFORMANCE — remover após medir
@@ -148,9 +148,9 @@ function _schedulePersist() {
 ═══════════════════════════════════════════════ */
 
 const MODES = {
-  normal: { masterVolume: 1.0, muted: false },
-  low:    { masterVolume: 0.5, muted: false },
-  mute:   { masterVolume: 0,   muted: true  },
+  normal: { muted: false },
+  low:    { muted: false },
+  mute:   { muted: true  },
 };
 
 const DEFAULT_MODE = 'normal';
@@ -342,7 +342,7 @@ function _resolveVariant(action, area) {
 let _currentMode = DEFAULT_MODE;
 
 /** Volumes por canal — persistidos no Firebase. */
-let _volumes = { master: 1.0, music: 1.0, sfx: 1.0 };
+let _volumes = { master: 1.0, music: 0.5, sfx: 0.5 };
 
 /* ═══════════════════════════════════════════════
    2b. UID INTERNO
@@ -392,6 +392,40 @@ function _applyToEngine(modeId) {
    5. PERSISTÊNCIA — Firebase
 ═══════════════════════════════════════════════ */
 
+/**
+ * Aplica um objeto `saved` (resultado de _fetchFromFirebase ou do detail
+ * de nexus:loginSuccess) ao estado em memória e na engine de áudio.
+ *
+ * Centraliza o bloco que antes estava duplicado em:
+ *   - nexus:loginSuccess handler
+ *   - loadFromFirebase()
+ *
+ * NÃO altera _sfxReady, _readyResolve nem drena a fila —
+ * esses passos pertencem ao fluxo de cada chamador.
+ *
+ * @param {{ mode: string|null, sfxMap: object|null, areaMap: object|null, volumes: object|null }} saved
+ */
+function _applyLoadedState(saved) {
+  _currentMode       = saved.mode ?? DEFAULT_MODE;
+  _currentSfxMap     = saved.sfxMap  ? { ...DEFAULT_SFX_MAP, ...saved.sfxMap  } : { ...DEFAULT_SFX_MAP };
+  _currentSfxAreaMap = saved.areaMap ? { ...saved.areaMap } : {};
+
+  if (saved.volumes) {
+    _volumes.master = typeof saved.volumes.master === 'number' ? saved.volumes.master : 1.0;
+    _volumes.music  = typeof saved.volumes.music  === 'number' ? saved.volumes.music  : 0.5;
+    _volumes.sfx    = typeof saved.volumes.sfx    === 'number' ? saved.volumes.sfx    : 0.5;
+    _dbg('volumes carregados:', _volumes);
+  }
+
+  // Aplica volumes individualmente nos canais além de _applyToEngine,
+  // garantindo que _state do sfx.js reflita os valores do Firebase
+  // mesmo que o AudioContext ainda esteja suspended no momento do resume.
+  audio.setSfxVolume?.(_volumes.sfx);
+  audio.setMusicVolume?.(_volumes.music);
+  _applyToEngine(_currentMode);
+  _notify();
+}
+
 async function _fetchFromFirebase(uid) {
   try {
     _perf.firebaseStart = performance.now();
@@ -434,7 +468,7 @@ async function _persistAllToFirebaseNow() {
   const volSnap  = { ..._volumes };
 
   try {
-    const { getConfigs } = await import('../../../src/global.js');
+    const { getConfigs } = await import('../../../../src/global.js');
     const configsAtuais  = getConfigs();
     const { audioState: _d1, sfxMap: _d2, sfxAreaMap: _d3, volumes: _d4, ...restConfigs } = configsAtuais;
     const payload = { ...restConfigs, audioState: modeSnap, sfxMap: sfxSnap, sfxAreaMap: areaSnap, volumes: volSnap };
@@ -457,10 +491,6 @@ async function _persistAllToFirebaseNow() {
 function _persistAllToFirebase() {
   _schedulePersist();
 }
-
-/* Aliases mantidos por compatibilidade com código existente */
-function _persistToFirebase()        { _persistAllToFirebase(); }
-function _persistSfxMapToFirebase()  { _persistAllToFirebase(); }
 
 /* ═══════════════════════════════════════════════
    6. LISTENERS DE AUTH
@@ -522,22 +552,8 @@ document.addEventListener('nexus:loginSuccess', async ({ detail }) => {
     return;
   }
 
-  _currentMode       = saved.mode ?? DEFAULT_MODE;
-  _currentSfxMap     = saved.sfxMap  ? { ...DEFAULT_SFX_MAP, ...saved.sfxMap  } : { ...DEFAULT_SFX_MAP };
-  _currentSfxAreaMap = saved.areaMap ? { ...saved.areaMap } : {};
-  if (saved.volumes) {
-    _volumes.master = typeof saved.volumes.master === 'number' ? saved.volumes.master : 1.0;
-    _volumes.music  = typeof saved.volumes.music  === 'number' ? saved.volumes.music  : 1.0;
-    _volumes.sfx    = typeof saved.volumes.sfx    === 'number' ? saved.volumes.sfx    : 1.0;
-    _dbg('volumes carregados do Firebase:', _volumes);
-  }
-  // Aplica volumes individualmente nos canais além de _applyToEngine,
-  // garantindo que _state do sfx.js reflita os valores do Firebase
-  // mesmo que o AudioContext ainda esteja suspended no momento do resume.
-  audio.setSfxVolume?.(_volumes.sfx);
-  audio.setMusicVolume?.(_volumes.music);
-  _applyToEngine(_currentMode);
-  _notify();
+  _applyLoadedState(saved);
+  _dbg('volumes carregados do Firebase (loginSuccess):', _volumes);
 
   _sfxReady = true;
   _perf.sfxReadyTrue = performance.now();
@@ -593,7 +609,7 @@ const audioState = {
     }
     _currentMode = modeId;
     _applyToEngine(_currentMode);
-    _persistToFirebase();
+    _persistAllToFirebase();
     _notify();
   },
 
@@ -620,19 +636,7 @@ const audioState = {
       return;
     }
 
-    _currentMode       = saved.mode ?? DEFAULT_MODE;
-    _currentSfxMap     = saved.sfxMap  ? { ...DEFAULT_SFX_MAP, ...saved.sfxMap  } : { ...DEFAULT_SFX_MAP };
-    _currentSfxAreaMap = saved.areaMap ? { ...saved.areaMap } : {};
-    if (saved.volumes) {
-      _volumes.master = typeof saved.volumes.master === 'number' ? saved.volumes.master : 1.0;
-      _volumes.music  = typeof saved.volumes.music  === 'number' ? saved.volumes.music  : 1.0;
-      _volumes.sfx    = typeof saved.volumes.sfx    === 'number' ? saved.volumes.sfx    : 1.0;
-      _dbg('volumes carregados (loadFromFirebase):', _volumes);
-    }
-    audio.setSfxVolume?.(_volumes.sfx);
-    audio.setMusicVolume?.(_volumes.music);
-    _applyToEngine(_currentMode);
-    _notify();
+    _applyLoadedState(saved);
 
     _sfxReady = true;
     _readyResolve();
@@ -699,7 +703,7 @@ const audioState = {
       return;
     }
     _currentSfxMap[action] = variantId;
-    _persistSfxMapToFirebase();
+    _persistAllToFirebase();
     _notify();
   },
 

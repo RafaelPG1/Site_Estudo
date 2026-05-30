@@ -1,5 +1,5 @@
 /* =============================================
-   NEXUS STUDY — shared/js/audio/vol-slider.js
+   NEXUS STUDY — shared/js/audio/ui/vol-slider.js
    Módulo de Volume Refatorado — v2.0
 
    RESPONSABILIDADE
