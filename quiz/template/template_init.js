@@ -1,22 +1,5 @@
 /* ============================================================
    NEXUS STUDY — quiz/template/template_init.js
-
-   Responsabilidades:
-     1. Lê o contexto completo da URL (?disc=&modo=&sem=)
-     2. Atualiza o global.js (setSemestre, setDisciplina, setPagina)
-     3. Aplica as cores da disciplina + acento do modo via CSS vars
-     4. Atualiza os textos do DOM (título, breadcrumb, footer…)
-     5. Confirma o back-btn
-     6. Expõe window.NEXUS_URL_BACK para o quiz_engine.js
-     7. Injeta o nav-float (binds dos botões ficam no quiz_engine.js)
-     8. Carrega o arquivo de conteúdo e depois o quiz_engine.js
-
-   ADICIONAR UM NOVO MODO:
-     1. Adicione uma entrada em MODOS_CONFIG abaixo.
-     2. Se o acento deve ser diferente das duas cores da disciplina,
-        defina accent/accentRgb fixos — caso contrário, use
-        corTema ou corTema2 que já vêm do DISC_CORES.
-     Só isso. Nenhum outro arquivo precisa mudar.
    ============================================================ */
 
 import {
@@ -31,6 +14,10 @@ import { sincronizarSemNaURL, propagarSemNosLinks } from '../../shared/js/utils/
 import { setText, setHTML } from '../../shared/js/utils/dom.js';
 import { aplicarCoresDisciplina } from '../../shared/js/themes/theme.js';
 import { injetarLogo } from '../../shared/js/utils/logo.js';
+import Sound from '../../shared/js/audio/sound.js';
+import audio from '../../shared/js/audio/sfx.js';
+import { installAudioRecovery } from '../../shared/js/audio/audio-recovery.js';
+import { playSound } from '../../shared/js/audio/play.js';
 
 import { carregarRespostasQuiz, salvarRespostasQuiz, limparRespostasQuiz } from '../../src/firebase.js';
 
@@ -38,6 +25,7 @@ import { carregarRespostasQuiz, salvarRespostasQuiz, limparRespostasQuiz } from 
 window.NexusStorage = Storage;
 /* ── EXPÕE FIREBASE PARA O QUIZ_ENGINE (IIFE sem módulo) ── */
 window.NexusFirebase = { salvarRespostasQuiz, carregarRespostasQuiz, limparRespostasQuiz };
+
 /* ── LÊ CONTEXTO DA URL ───────────────────────────────────── */
 const params   = new URLSearchParams(location.search);
 const disc     = params.get('disc') || 'poo';
@@ -48,7 +36,6 @@ const semestre = params.get('sem')  || '2026.2';
 window.__NEXUS_QUIZ_DISC__     = disc;
 window.__NEXUS_QUIZ_MODO__     = modo;
 window.__NEXUS_QUIZ_SEMESTRE__ = semestre;
-// window.NexusStorage já é exposto logo no início do arquivo ✓
 window.TIPO_QUIZ = modo;
 
 /* ── EXTRAI O ANO DO SEMESTRE ─────────────────────────────── */
@@ -73,20 +60,6 @@ if (!discInfo) {
 const info = discInfo ?? lista[0] ?? { id: disc, nome: disc, arquivo: disc, emoji: '📚' };
 
 /* ── CONFIGURAÇÃO DE MODOS ────────────────────────────────── */
-/*
-   Cada modo define:
-     breadcrumb  → texto no breadcrumb do header
-     h1          → HTML do <h1> (pode conter <em>)
-     label       → texto para o footer e <title>
-     getAccent   → função que recebe as cores da disciplina
-                   e retorna { accent, accentRgb }
-                   Use corTema para acento primário (ex: ava)
-                   Use corTema2 para acento secundário (ex: questoes)
-                   Ou defina uma cor fixa para modos especiais.
-
-   Para adicionar um novo modo, basta adicionar uma entrada aqui.
-*/
-
 const MODOS_CONFIG = {
   ava: {
     breadcrumb: 'AVA',
@@ -117,7 +90,6 @@ const MODOS_CONFIG = {
 const modoConfig = MODOS_CONFIG[modo] ?? MODOS_CONFIG.questoes;
 
 /* ── APLICA CORES DA DISCIPLINA + ACENTO DO MODO ─────────── */
-
 aplicarCoresDisciplina(info.arquivo, DISC_CORES);
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -128,21 +100,20 @@ document.addEventListener('DOMContentLoaded', () => {
     srcBase:  '../../shared/img/logo.png',
     linkHref: '../../index.html',
   });
+
+  Sound.init();
+  installAudioRecovery({ Sound, audio });
 });
 
 const cores = DISC_CORES[info.arquivo];
 if (cores) {
   const root   = document.documentElement;
   const accent = modoConfig.getAccent(cores);
-
-  /* Acento unificado — consumido pelo template.css */
   root.style.setProperty('--accent',     accent.accent);
   root.style.setProperty('--accent-rgb', accent.accentRgb);
 } else {
   console.warn(`[template_init] Sem cores definidas para "${info.arquivo}"`);
 }
-
-
 
 setText('disc-emoji',      info.emoji);
 setText('disc-nome',       info.nome);
@@ -151,10 +122,8 @@ setText('breadcrumb-modo', modoConfig.breadcrumb);
 setHTML('page-title-h1',   modoConfig.h1);
 setText('page-footer',     `Nexus Study · ${info.nome} · ${modoConfig.label}`);
 
-/* Atualiza o <title> da aba */
 document.title = `${modoConfig.breadcrumb} — Nexus Study`;
 
-/* Marca o modo no body para eventual uso via CSS ([data-modo="ava"]) */
 document.body.dataset.disciplina = info.arquivo;
 document.body.dataset.modo       = modo;
 
@@ -190,16 +159,27 @@ nav.innerHTML = `
     <i class="fas fa-layer-group" aria-hidden="true"></i>
   </button>
   <div class="nav-divider" aria-hidden="true"></div>
-<button id="btn-legenda" class="nav-btn btn-legenda" title="Informações" type="button">
-  <i class="fas fa-circle-info" aria-hidden="true"></i>
-</button>
+  <button id="btn-legenda" class="nav-btn btn-legenda" title="Informações" type="button">
+    <i class="fas fa-circle-info" aria-hidden="true"></i>
+  </button>
 `;
 document.body.appendChild(nav);
 
-// Substitui o bloco "CARREGA CONTEÚDO → ENGINE" no final do template_init.js
+/* ── SOM NOS BOTÕES DO NAV-FLOAT ──────────────────────────── */
+Sound.waitUntilReady().then(() => {
+  [
+    'btn-up', 'btn-left', 'btn-down',
+    'restartButton', 'revealButton',
+    'btn-toggle-modo', 'btn-legenda',
+  ].forEach(id => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.addEventListener('mouseenter', () => playSound('hover', 'quiz'));
+    btn.addEventListener('click',      () => playSound('click', 'quiz'));
+  });
+});
 
 /* ── CARREGA CONTEÚDO + UI + FIREBASE EM PARALELO → ENGINE ── */
-
 function _loadScript(src) {
   return new Promise(function (resolve, reject) {
     var s = document.createElement('script');
@@ -213,8 +193,6 @@ function _loadScript(src) {
 const contentSrc = `../../content/quiz/${ano}/${semestre}/ques_${info.arquivo}.js`;
 const uiSrc      = '../js/quiz_ui.js';
 
-/* Firebase roda em paralelo — nunca bloqueia o render */
-/* Firebase dispara em paralelo com timeout — nunca bloqueia o quiz */
 const usuario = Storage.get('usuario', null);
 
 if (usuario?.uid) {
@@ -228,7 +206,6 @@ if (usuario?.uid) {
   window.__NEXUS_FIREBASE_RESPOSTAS__ = null;
 }
 
-/* Só conteúdo + UI precisam estar prontos para subir o engine */
 Promise.all([
   _loadScript(contentSrc).catch(() => {
     const c = document.getElementById('quiz-container');
