@@ -746,10 +746,9 @@ function _buildReaderBody(aula) {
   }
 
   secoes.forEach((sec, i) => {
-    const isFirst = i === 0;
     html += `
-      <div class="rm-collapse${isFirst ? ' rm-collapse--open' : ''}" data-sec="${i}">
-        <button class="rm-collapse__trigger" aria-expanded="${isFirst}">
+      <div class="rm-collapse" data-sec="${i}">
+        <button class="rm-collapse__trigger" aria-expanded="false">
           <span class="rm-collapse__icon">${String(i + 1).padStart(2,'0')}</span>
           <span style="flex:1;text-align:left;font-size:0.9rem;font-weight:600;color:inherit;line-height:1.35">${_esc(sec.titulo)}</span>
           <svg class="rm-collapse__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none"
@@ -1058,7 +1057,7 @@ function _parseInline(str) {
         <polyline points="18 15 12 9 6 15"/>
       </svg>
     </button>
-    <button class="float-btn float-btn--collapse" id="fab-collapse" data-tip="Recolher seções" aria-label="Recolher todas as seções">
+    <button class="float-btn float-btn--collapse" id="fab-collapse" data-tip="Recolher seções" aria-label="Recolher todas as seções" style="margin-top:0.75rem;margin-bottom:0.75rem;">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
            stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="4 14 12 14 12 20"/>
