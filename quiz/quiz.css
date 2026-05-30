@@ -49,21 +49,26 @@ a { text-decoration: none; color: inherit; }
   z-index: 10;
   padding: 1.1rem 2rem;
   border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(14px);
-  background: rgba(7, 11, 20, 0.65);
+  background: var(--bg);
 }
 
 .header__inner {
   max-width: var(--max-w);
   margin: 0 auto;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   gap: 1rem;
+}
+
+#header-logo-wrap {
+  display: flex;
+  justify-content: center;
 }
 
 /* Back button */
 .back-btn {
+  justify-self: start;
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
@@ -137,14 +142,11 @@ a { text-decoration: none; color: inherit; }
   line-height: 1;
 }
 
-/* ── LADO DIREITO DO HEADER: select + breadcrumb ── */
-/*
-  Agrupa o seletor de semestre e o breadcrumb lado a lado.
-  Fica no lugar do breadcrumb anterior, à direita do logo.
-*/
+/* ── LADO DIREITO DO HEADER: select ── */
 .header__right {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 0.75rem;
 }
 
@@ -456,9 +458,6 @@ a { text-decoration: none; color: inherit; }
 /* ── RESPONSIVIDADE ── */
 @media (max-width: 680px) {
   .header { padding: 0.9rem 1.25rem; }
-
-  /* No mobile, oculta o breadcrumb e mantém só o select */
-  .breadcrumb { display: none; }
 
   .main { padding: 2rem 1.25rem 2rem; }
   .page-header__title { font-size: 2rem; }

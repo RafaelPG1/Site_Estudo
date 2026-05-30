@@ -50,21 +50,26 @@ a { text-decoration: none; color: inherit; }
   z-index: 10;
   padding: 1.1rem 2rem;
   border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(14px);
-  background: rgba(7, 11, 20, 0.65);
+  background: var(--bg);
 }
 
 .header__inner {
   max-width: var(--max-w);
   margin: 0 auto;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   gap: 1rem;
+}
+
+#header-logo-wrap {
+  display: flex;
+  justify-content: center;
 }
 
 /* ── BOTÃO VOLTAR ── */
 .back-btn {
+  justify-self: start;
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
@@ -146,10 +151,26 @@ a { text-decoration: none; color: inherit; }
   line-height: 1;
 }
 
+/* ── BADGE DE SEMESTRE ── */
+.header__sem-badge {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--text-2);
+  background-color: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-glow);
+  border-radius: 8px;
+  padding: 0.4rem 0.75rem;
+  justify-self: end;
+  white-space: nowrap;
+}
+
 /* ── BREADCRUMB ── */
 .breadcrumb {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 0.35rem;
   font-size: 0.75rem;
   color: var(--text-3);
@@ -422,7 +443,6 @@ a { text-decoration: none; color: inherit; }
   letter-spacing: 0.04em;
   border-top: 1px solid var(--border);
   margin-top: 2rem;
-
 }
 
 /* ── FIXAÇÃO — roxo/violeta ── */

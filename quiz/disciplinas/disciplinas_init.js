@@ -8,8 +8,8 @@ import { resolverSemestreDeURL, sincronizarSemNaURL, propagarSemNosLinks } from 
 import { aplicarCoresDisciplina } from '../../shared/js/themes/theme.js';
 import { injetarLogo } from '../../shared/js/utils/logo.js';
 import Sound from '../../shared/js/audio/sound.js';
-import audio from '../../shared/js/audio/sfx.js';                                        // ← NOVO
-import { installAudioRecovery } from '../../shared/js/audio/audio-recovery.js';          // ← NOVO
+import audio from '../../shared/js/audio/sfx.js';
+import { installAudioRecovery } from '../../shared/js/audio/audio-recovery.js';
 import { playSound } from '../../shared/js/audio/play.js';
 
 /* ── APLICA CORES DA DISCIPLINA (síncrono, sem FOUC) ─────── */
@@ -29,6 +29,10 @@ aplicarCoresDisciplina(
     'a[href*="template.html"]',
   ]);
 
+  // Exibe o semestre ativo no header
+  const badge = document.getElementById('header-sem-badge');
+  if (badge) badge.textContent = sem;
+
   document.querySelectorAll('[data-semestres]').forEach(function (card) {
     const semestresDoCard = card.dataset.semestres
       .split(',')
@@ -42,7 +46,7 @@ aplicarCoresDisciplina(
 /* ── ÁUDIO + LOGO ─────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', async () => {
   Sound.init();
-  installAudioRecovery({ Sound, audio });                                              // ← NOVO (substitui pageshow manual)
+  installAudioRecovery({ Sound, audio });
   await Sound.waitUntilReady();
 
   injetarLogo({
@@ -63,5 +67,3 @@ document.addEventListener('DOMContentLoaded', async () => {
     card.addEventListener('click',      () => playSound('click', 'quiz'));
   });
 });
-
-// pageshow removido — agora gerenciado pelo installAudioRecovery acima

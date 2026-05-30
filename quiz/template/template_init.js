@@ -26,6 +26,8 @@ window.NexusStorage = Storage;
 /* ── EXPÕE FIREBASE PARA O QUIZ_ENGINE (IIFE sem módulo) ── */
 window.NexusFirebase = { salvarRespostasQuiz, carregarRespostasQuiz, limparRespostasQuiz };
 
+/* Expõe playSound para quiz_engine.js (IIFE clássica sem acesso a módulos ES) */
+window.__nexusPlaySound = playSound;
 /* ── LÊ CONTEXTO DA URL ───────────────────────────────────── */
 const params   = new URLSearchParams(location.search);
 const disc     = params.get('disc') || 'poo';
@@ -92,17 +94,24 @@ const modoConfig = MODOS_CONFIG[modo] ?? MODOS_CONFIG.questoes;
 /* ── APLICA CORES DA DISCIPLINA + ACENTO DO MODO ─────────── */
 aplicarCoresDisciplina(info.arquivo, DISC_CORES);
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   injetarLogo({
     destino:  '#header-logo-wrap',
     tamanho:  32,
     layout:   'stacked',
     srcBase:  '../../shared/img/logo.png',
     linkHref: '../../index.html',
+    area:     'quiz',       // ← adiciona
+    playSound,              // ← adiciona
   });
 
   Sound.init();
   installAudioRecovery({ Sound, audio });
+
+  await Sound.waitUntilReady();
+
+  document.querySelector('.back-btn')
+    ?.addEventListener('click', () => playSound('click', 'quiz'));
 });
 
 const cores = DISC_CORES[info.arquivo];
@@ -117,10 +126,11 @@ if (cores) {
 
 setText('disc-emoji',      info.emoji);
 setText('disc-nome',       info.nome);
-setText('breadcrumb-disc', info.id.toUpperCase().replace(/_/g, ' '));
-setText('breadcrumb-modo', modoConfig.breadcrumb);
 setHTML('page-title-h1',   modoConfig.h1);
 setText('page-footer',     `Nexus Study · ${info.nome} · ${modoConfig.label}`);
+
+const semBadge = document.getElementById('header-sem-badge');
+if (semBadge) semBadge.textContent = semestre;
 
 document.title = `${modoConfig.breadcrumb} — Nexus Study`;
 

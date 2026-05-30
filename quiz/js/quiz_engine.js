@@ -674,10 +674,17 @@ if (r.respondidas < r.total) {
     /* ── 8. INTERAÇÃO DO USUÁRIO ──────────────────────────── */
 
     function selectOption(qi, oi) {
-      if (revelado || respostas[qi] !== undefined) return;
-      respostas[qi] = oi;
+  if (revelado || respostas[qi] !== undefined) return;
+  respostas[qi] = oi;
 
-      _atualizarOpcoes(qi);
+  /* ── SOM DE ACERTO / ERRO ── */
+  var _playSound = window.__nexusPlaySound;
+  if (typeof _playSound === 'function') {
+    var acertou = oi === questoes[qi].answer;
+    _playSound(acertou ? 'correct' : 'wrong', 'quiz');
+  }
+
+  _atualizarOpcoes(qi);
 
       var card = document.getElementById('q-' + qi);
       if (card && !card.querySelector('.feedback')) {
