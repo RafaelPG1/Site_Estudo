@@ -164,11 +164,16 @@ const VALID_MODES = Object.keys(MODES);
 
 /** Mapa padrão global. Usado quando não há dado salvo no Firebase. */
 const DEFAULT_SFX_MAP = {
-  click:      'click',
-  hover:      'hover2',
-  openModal:  'openModal2',
-  closeModal: 'closeModal',
-  select:     'select',
+  click:        'click',
+  hover:        'hover2',
+  openModal:    'openModal2',
+  closeModal:   'closeModal',
+  select:       'select',
+  correct:      'correct4',
+  wrong:        'wrong',
+  timeout:      'timeout',
+  pause:        'pause1',
+  timerWarning: 'timerWarning1',
 };
 
 /**
