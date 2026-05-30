@@ -671,7 +671,7 @@ const audioState = {
       _dbg('setVolume: canal invalido:', channel);
       return;
     }
-    const clamped = Math.max(0, Math.min(2, Number(value) || 0));
+    const clamped = Math.max(0, Math.min(1.5, Number(value) || 0));
     _volumes[channel] = clamped;
     _dbg('volume:', channel, '=', clamped);
 

@@ -1,7 +1,9 @@
 /* =============================================
    NEXUS STUDY — shared/css/audio/sound.css
-   Sistema de áudio unificado — v1.1
+   Sistema de áudio unificado — v1.2
    Originado de: som.css + audio-btn.css + sfx-playground.css
+   v1.2: seções 7 e 9 (sliders nativos) removidas —
+         substituídas por vol-slider.css
    ============================================= */
 
 
@@ -384,26 +386,7 @@
 
 
 /* ═══════════════════════════════════════════════
-   7. CARD GLOBAL (sliders de volume)
-═══════════════════════════════════════════════ */
-
-.snd-global-card {
-  background: var(--snd-s2);
-  border: 1px solid var(--snd-s2-border);
-  border-radius: var(--snd-r-xl);
-  overflow: hidden;
-}
-
-.snd-sliders {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-
-/* ═══════════════════════════════════════════════
-   8. TOGGLE
+   7. TOGGLE
 ═══════════════════════════════════════════════ */
 
 .snd-toggle {
@@ -465,135 +448,7 @@
 
 
 /* ═══════════════════════════════════════════════
-   9. SLIDERS
-═══════════════════════════════════════════════ */
-
-.snd-slider-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.snd-slider-group__label {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-family: var(--snd-body);
-  font-size: 12px;
-  color: var(--snd-t2);
-}
-
-.snd-slider-group__value {
-  font-family: var(--snd-mono);
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--snd-cyan);
-  min-width: 32px;
-  text-align: right;
-  transition: color var(--snd-t-fast);
-}
-.snd-slider-group__value--music { color: var(--snd-violet); }
-.snd-slider-group__value--sfx   { color: var(--snd-amber); }
-
-.snd-slider-group.is-above.snd-music-slider .snd-slider-group__value { color: var(--snd-violet); }
-.snd-slider-group.is-above.snd-sfx-slider   .snd-slider-group__value { color: var(--snd-amber); }
-
-.snd-slider-track-wrap {
-  position: relative;
-  height: 32px;
-  display: flex;
-  align-items: center;
-}
-
-.snd-slider {
-  position: relative; z-index: 2;
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%; height: 100%;
-  background: transparent;
-  cursor: pointer;
-  outline: none;
-  padding: 12px 0;
-}
-
-.snd-slider::-webkit-slider-runnable-track {
-  height: 3px;
-  background: var(--snd-s3-border);
-  border-radius: 99px;
-}
-.snd-slider::-moz-range-track {
-  height: 3px;
-  background: var(--snd-s3-border);
-  border-radius: 99px;
-}
-
-.snd-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 18px; height: 18px;
-  border-radius: 50%;
-  background: var(--snd-s2);
-  border: 2px solid var(--snd-cyan);
-  margin-top: -7.5px;
-  transition: border-color var(--snd-t-fast), transform var(--snd-t-spring), box-shadow var(--snd-t-fast);
-}
-.snd-slider::-moz-range-thumb {
-  width: 18px; height: 18px;
-  border-radius: 50%;
-  background: var(--snd-s2);
-  border: 2px solid var(--snd-cyan);
-  transition: border-color var(--snd-t-fast), transform var(--snd-t-spring), box-shadow var(--snd-t-fast);
-}
-
-.snd-slider--music::-webkit-slider-thumb { border-color: var(--snd-violet); }
-.snd-slider--music::-moz-range-thumb     { border-color: var(--snd-violet); }
-.snd-slider--sfx::-webkit-slider-thumb   { border-color: var(--snd-amber); }
-.snd-slider--sfx::-moz-range-thumb       { border-color: var(--snd-amber); }
-
-.snd-slider:hover::-webkit-slider-thumb  { transform: scale(1.2); }
-.snd-slider:active::-webkit-slider-thumb { transform: scale(1.05); }
-.snd-slider:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px var(--snd-cyan-ring); }
-
-.snd-slider-group.is-snapped .snd-slider--music::-webkit-slider-thumb { box-shadow: 0 0 0 4px var(--snd-violet-ring); }
-.snd-slider-group.is-snapped .snd-slider--sfx::-webkit-slider-thumb   { box-shadow: 0 0 0 4px var(--snd-amber-ring); }
-
-.snd-slider-fill {
-  position: absolute; z-index: 1;
-  left: 0; top: 50%; transform: translateY(-50%);
-  height: 3px;
-  background: var(--snd-cyan);
-  border-radius: 99px;
-  pointer-events: none;
-  transition: width 40ms linear;
-}
-.snd-slider-fill--music { background: var(--snd-violet); }
-.snd-slider-fill--sfx   { background: var(--snd-amber); }
-
-.snd-slider-mark {
-  position: absolute; z-index: 3;
-  width: 2px; height: 10px;
-  left: 50%;
-  top: 50%; transform: translate(-50%, -50%);
-  background: var(--snd-s3-border);
-  border-radius: 1px;
-  pointer-events: none;
-}
-
-.snd-slider-scale {
-  display: flex;
-  justify-content: space-between;
-  font-family: var(--snd-mono);
-  font-size: 9px;
-  color: var(--snd-t3);
-  letter-spacing: 0.04em;
-  margin-top: 2px;
-}
-
-.snd-slider-scale__default { color: var(--snd-t3); }
-.snd-slider-scale__default em { font-style: italic; opacity: 0.7; }
-
-
-/* ═══════════════════════════════════════════════
-   10. GRID DE CATEGORIAS
+   8. GRID DE CATEGORIAS
 ═══════════════════════════════════════════════ */
 
 .snd-cards-grid {
@@ -888,7 +743,7 @@
 
 
 /* ═══════════════════════════════════════════════
-   11. SPEC OVERLAY + PANEL
+   9. SPEC OVERLAY + PANEL
 ═══════════════════════════════════════════════ */
 
 .snd-spec-overlay {
@@ -1113,7 +968,7 @@
 
 
 /* ═══════════════════════════════════════════════
-   12. MUSIC CARD
+   10. MUSIC CARD
 ═══════════════════════════════════════════════ */
 
 .snd-music-card {
@@ -1241,7 +1096,7 @@
 
 
 /* ═══════════════════════════════════════════════
-   13. BOTÃO GLOBAL DE ÁUDIO (audio-btn)
+   11. BOTÃO GLOBAL DE ÁUDIO (audio-btn)
 ═══════════════════════════════════════════════ */
 
 .abtn {
@@ -1357,7 +1212,7 @@
 
 
 /* ═══════════════════════════════════════════════
-   14. RESPONSIVE
+   12. RESPONSIVE
 ═══════════════════════════════════════════════ */
 
 @media (max-width: 520px) {

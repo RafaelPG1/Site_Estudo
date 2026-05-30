@@ -1332,17 +1332,17 @@ const audio = {
   playEvent,
 
   setMasterVolume(val) {
-    _state.masterVolume = Math.min(2, Math.max(0, Number(val) || 0));
+    _state.masterVolume = Math.min(1.5, Math.max(0, Number(val) || 0));
     _syncGains();
   },
 
   setSfxVolume(val) {
-    _state.sfxVolume = Math.min(2, Math.max(0, Number(val) || 0));
+    _state.sfxVolume = Math.min(1.5, Math.max(0, Number(val) || 0));
     _syncGains();
   },
 
   setMusicVolume(val) {
-    _state.musicVolume = Math.min(2, Math.max(0, Number(val) || 0));
+    _state.musicVolume = Math.min(1.5, Math.max(0, Number(val) || 0));
     _syncGains();
   },
 

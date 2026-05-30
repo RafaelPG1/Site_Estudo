@@ -1,0 +1,377 @@
+/* =============================================
+   NEXUS STUDY — shared/css/audio/vol-slider.css
+   Módulo de Volume Refatorado — v2.0
+   Substitui as seções 7 e 9 de sound.css
+   ============================================= */
+
+/*
+  TOKENS USADOS (já declarados em sound.css — não redeclare)
+  --snd-s2, --snd-s2-border, --snd-s3, --snd-s3-border
+  --snd-cyan, --snd-violet, --snd-amber
+  --snd-t1, --snd-t2, --snd-t3
+  --snd-mono, --snd-body
+  --snd-r-md, --snd-r-xl
+  --snd-t-fast, --snd-t-mid, --snd-t-spring
+*/
+
+
+/* ═══════════════════════════════════════════════
+   1. CARD GLOBAL (contém os dois sliders)
+═══════════════════════════════════════════════ */
+
+.vol-card {
+  background: var(--snd-s2);
+  border: 1px solid var(--snd-s2-border);
+  border-radius: var(--snd-r-xl);
+  overflow: hidden;
+}
+
+.vol-card-inner {
+  padding: 20px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.vol-divider {
+  height: 1px;
+  background: var(--snd-s2-border);
+  margin: 0 -20px;      /* sangra até as bordas do card */
+}
+
+
+/* ═══════════════════════════════════════════════
+   2. GRUPO DE SLIDER (header + trilha + escala)
+═══════════════════════════════════════════════ */
+
+.vol-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── Header ── */
+
+.vol-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.vol-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--snd-body);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--snd-t2);
+}
+
+.vol-label-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: transform var(--snd-t-spring);
+}
+
+.vol-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Badge de snap (aparece apenas no ponto exato) */
+.vol-badge {
+  font-family: var(--snd-mono);
+  font-size: 7.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity var(--snd-t-mid), transform var(--snd-t-spring);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.vol-badge.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Valor numérico */
+.vol-val {
+  font-family: var(--snd-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  min-width: 40px;
+  text-align: right;
+  transition: color var(--snd-t-fast);
+}
+
+
+/* ═══════════════════════════════════════════════
+   3. TRILHA DO SLIDER
+═══════════════════════════════════════════════ */
+
+.vol-track-wrap {
+  position: relative;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Fundo da trilha ── */
+.vol-track-bg {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 4px;
+  border-radius: 99px;
+  background: var(--snd-s3-border);
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* ── Fill (progresso preenchido) ── */
+.vol-track-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 99px;
+  width: 0%;
+  /* Transição ultra-rápida: 30ms evita "lag" mas ainda suaviza */
+  transition: width 30ms linear;
+  pointer-events: none;
+}
+
+
+/* ═══════════════════════════════════════════════
+   4. SNAP MARKS
+   left posicionado via JS com a fórmula correta:
+   px = (val/MAX) * (trackW - THUMB_PX) + THUMB_PX/2
+═══════════════════════════════════════════════ */
+
+.vol-snap-mark {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 8px;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.12);
+  pointer-events: none;
+  z-index: 2;
+  transition: background var(--snd-t-mid), height var(--snd-t-mid);
+}
+
+.vol-snap-mark.near {
+  height: 10px;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.vol-snap-mark.active {
+  height: 12px;
+}
+
+
+/* ═══════════════════════════════════════════════
+   5. INPUT RANGE NATIVO (invisível, cobre tudo)
+   Só captura eventos; o visual é 100% nosso.
+═══════════════════════════════════════════════ */
+
+.vol-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 10;
+  margin: 0;
+  padding: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+}
+
+/* Remove thumb nativo em todos os engines */
+.vol-input::-webkit-slider-thumb { -webkit-appearance: none; width: 0; height: 0; }
+.vol-input::-moz-range-thumb     { width: 0; height: 0; border: none; background: transparent; }
+.vol-input::-ms-thumb             { width: 0; height: 0; }
+
+/* Remove trilha nativa */
+.vol-input::-webkit-slider-runnable-track { background: transparent; }
+.vol-input::-moz-range-track              { background: transparent; }
+
+/* Focus-visible: anel no thumb via :focus-within do wrap */
+.vol-track-wrap:focus-within .vol-thumb {
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 0 3px var(--vol-snap-ring, rgba(255, 255, 255, 0.25));
+}
+
+
+/* ═══════════════════════════════════════════════
+   6. THUMB (glassmorphism)
+   left posicionado via JS; transform centraliza.
+═══════════════════════════════════════════════ */
+
+.vol-thumb {
+  position: absolute;
+  top: 50%;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  /* Centraliza: left aponta o centro exato do thumb */
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 5;
+  will-change: left;
+
+  /* Glassmorphism */
+  background: rgba(14, 22, 38, 0.72);
+  backdrop-filter: blur(8px) saturate(1.4);
+  -webkit-backdrop-filter: blur(8px) saturate(1.4);
+  border: 1.5px solid var(--vol-thumb-border, rgba(255, 255, 255, 0.25));
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+  /* Só tamanho e sombra têm transição — left NÃO tem (atualizado via JS/rAF) */
+  transition:
+    width        150ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    height       150ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow   150ms ease,
+    border-color 150ms ease;
+}
+
+/* Ponto central colorido (núcleo) */
+.vol-thumb::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  opacity: 0.4;
+  transition: opacity var(--snd-t-mid), inset var(--snd-t-mid);
+}
+
+/* Brilho superior (arco de luz) */
+.vol-thumb::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  right: 4px;
+  height: 38%;
+  border-radius: 99px 99px 0 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.20),
+    rgba(255, 255, 255, 0.00)
+  );
+  pointer-events: none;
+}
+
+/* Hover: cresce levemente */
+.vol-track-wrap:hover .vol-thumb {
+  width: 24px;
+  height: 24px;
+}
+.vol-track-wrap:hover .vol-thumb::before {
+  opacity: 0.55;
+  inset: 3px;
+}
+
+/* Dragging: encolhe + remove transição de posição */
+.vol-track-wrap.dragging .vol-thumb {
+  width: 20px;
+  height: 20px;
+  transition: none; /* sem transição enquanto arrasta */
+}
+.vol-track-wrap.dragging .vol-thumb::before {
+  opacity: 0.6;
+}
+
+/* Snap: anel de glow ao redor do thumb */
+.vol-track-wrap.snapped .vol-thumb {
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 0 4px var(--vol-snap-ring);
+}
+
+
+/* ═══════════════════════════════════════════════
+   7. ESCALA (legendas embaixo)
+═══════════════════════════════════════════════ */
+
+.vol-scale {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--snd-mono);
+  font-size: 9px;
+  color: var(--snd-t3);
+  letter-spacing: 0.04em;
+  padding: 0 2px;
+}
+
+.vol-scale span { opacity: 0.7; }
+.vol-scale .def  { color: var(--snd-t2); opacity: 0.85; font-style: italic; }
+
+
+/* ═══════════════════════════════════════════════
+   8. VARIANTES DE COR  (music / sfx)
+   Aplique data-type="music" ou data-type="sfx"
+   no .vol-group.
+═══════════════════════════════════════════════ */
+
+/* ── MUSIC (violeta) ── */
+.vol-group[data-type="music"] {
+  --vol-fill-start:   #7c3aed;
+  --vol-fill-end:     #a78bfa;
+  --vol-thumb-border: rgba(167, 139, 250, 0.55);
+  --vol-snap-ring:    rgba(167, 139, 250, 0.28);
+  --vol-accent:       var(--snd-violet);
+}
+.vol-group[data-type="music"] .vol-label-dot  { background: var(--snd-violet); }
+.vol-group[data-type="music"] .vol-track-fill { background: linear-gradient(90deg, var(--vol-fill-start), var(--vol-fill-end)); }
+.vol-group[data-type="music"] .vol-val        { color: var(--snd-violet); }
+.vol-group[data-type="music"] .vol-badge      { background: rgba(167, 139, 250, 0.13); color: var(--snd-violet); border: 1px solid rgba(167, 139, 250, 0.3); }
+.vol-group[data-type="music"] .vol-thumb::before { background: var(--snd-violet); }
+.vol-group[data-type="music"] .vol-snap-mark.active { background: rgba(167, 139, 250, 0.55); }
+
+/* ── SFX (âmbar) ── */
+.vol-group[data-type="sfx"] {
+  --vol-fill-start:   #b45309;
+  --vol-fill-end:     #f59e0b;
+  --vol-thumb-border: rgba(245, 158, 11, 0.55);
+  --vol-snap-ring:    rgba(245, 158, 11, 0.28);
+  --vol-accent:       var(--snd-amber);
+}
+.vol-group[data-type="sfx"] .vol-label-dot  { background: var(--snd-amber); }
+.vol-group[data-type="sfx"] .vol-track-fill { background: linear-gradient(90deg, var(--vol-fill-start), var(--vol-fill-end)); }
+.vol-group[data-type="sfx"] .vol-val        { color: var(--snd-amber); }
+.vol-group[data-type="sfx"] .vol-badge      { background: rgba(245, 158, 11, 0.10); color: var(--snd-amber); border: 1px solid rgba(245, 158, 11, 0.3); }
+.vol-group[data-type="sfx"] .vol-thumb::before { background: var(--snd-amber); }
+.vol-group[data-type="sfx"] .vol-snap-mark.active { background: rgba(245, 158, 11, 0.55); }
+
+
+/* ═══════════════════════════════════════════════
+   9. RESPONSIVO
+═══════════════════════════════════════════════ */
+
+@media (max-width: 520px) {
+  .vol-card-inner { padding: 16px 16px 12px; }
+  .vol-divider    { margin: 0 -16px; }
+}
