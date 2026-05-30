@@ -32,13 +32,13 @@ async function init() {
     Sound.init();
 
     injetarLogo({
-      destino:  '#header-logo-wrap',
-      tamanho:  38,
-      layout:   'stacked',
-      srcBase:  './shared/img/logo.png',
-      linkHref: './index.html',
+      destino:   '#header-logo-wrap',
+      tamanho:   38,
+      srcBase:   './shared/img/logo.png',
+      linkHref:  './index.html',
+      area:      'inicial',
+      playSound,            // ← NOVO
     });
-
     setPagina('HOME');
     _refreshHeader();
 

@@ -42,6 +42,7 @@
      injetarLogo({ destino: '#hero-logo', tamanho: 64, exibirNome: false });
    ============================================================ */
 
+// parâmetros: adicionar playSound
 export function injetarLogo({
   destino    = '#logo-wrap',
   tamanho    = 36,
@@ -50,6 +51,8 @@ export function injetarLogo({
   classe     = '',
   srcBase    = '../../shared/img/logo.png',
   linkHref   = '../../index.html',
+  area       = null,
+  playSound  = null,   // ← NOVO
 } = {}) {
   const container = document.querySelector(destino);
   if (!container) {
@@ -102,6 +105,14 @@ export function injetarLogo({
   } else {
     wrap.appendChild(img);
     if (exibirNome) wrap.appendChild(texto);
+  }   
+  /* ── Sons ────────────────────────────────────── */
+  if (area && typeof playSound === 'function') {
+    const target = linkHref ? wrap.querySelector('.nexus-logo__link') : wrap;
+    if (target) {
+      target.addEventListener('mouseenter', () => playSound('hover', area));
+      target.addEventListener('click',      () => playSound('click', area));
+    }
   }
 
   container.innerHTML = '';
