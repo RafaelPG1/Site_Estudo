@@ -1,3 +1,8 @@
+// @ts-nocheck
+/* =============================================
+   NEXUS STUDY — quiz/quiz.js
+   ============================================= */
+
 import {
   SEMESTRES,
   getSemestreAtual,
@@ -7,21 +12,44 @@ import {
 
 import { sincronizarSemNaURL } from '../shared/js/utils/url.js';
 import { preencherAnos } from '../shared/js/utils/dom.js';
-
 import { injetarLogo } from '../shared/js/utils/logo.js';
+import Sound from '../shared/js/audio/sound.js';
+import audio from '../shared/js/audio/sfx.js';                                       // ← NOVO
+import { installAudioRecovery } from '../shared/js/audio/audio-recovery.js';         // ← NOVO
+import { playSound } from '../shared/js/audio/play.js';
 
 (function () {
 
-  document.addEventListener('DOMContentLoaded', () => {
-    injetarLogo({ destino: '#header-logo-wrap', tamanho: 32, layout: 'stacked' });
+  document.addEventListener('DOMContentLoaded', async () => {
+    Sound.init();
+    installAudioRecovery({ Sound, audio });                                           // ← NOVO (substitui pageshow manual)
+    await Sound.waitUntilReady();
+
+    injetarLogo({
+      destino:  '#header-logo-wrap',
+      tamanho:  32,
+      layout:   'stacked',
+      srcBase:  '../shared/img/logo.png',
+      linkHref: '../index.html',
+      area:     'quiz',
+      playSound,
+    });
+
+    document.querySelector('.back-btn')
+      ?.addEventListener('click', () => playSound('click', 'quiz'));
+
+    const sel = document.getElementById('quiz-semestre-select');
+    sel?.addEventListener('mousedown', () => playSound('click', 'quiz'));
+    sel?.addEventListener('change',    () => playSound('select', 'quiz'));
   });
+
+  // pageshow removido — agora gerenciado pelo installAudioRecovery acima
 
   const semParam = new URLSearchParams(location.search).get('sem');
   if (semParam && SEMESTRES.includes(semParam)) setSemestre(semParam);
 
   let semAtual = getSemestreAtual();
 
-  /* ── Popula o <select> já existente no HTML ── */
   const select = document.getElementById('quiz-semestre-select');
   SEMESTRES.forEach(s => {
     const opt = document.createElement('option');
@@ -30,13 +58,11 @@ import { injetarLogo } from '../shared/js/utils/logo.js';
     select.appendChild(opt);
   });
 
-  /* ── Mapa de cores por disciplina (classe CSS) ── */
   const DISC_CLASS = {
     poo: 'disc-card--blue', redes: 'disc-card--teal',
     design: 'disc-card--gold', banco_dados: 'disc-card--rose',
   };
 
-  /* ── Gera os cards a partir do global.js ── */
   function gerarCards(sem) {
     const ano   = sem.split('.')[0];
     const grid  = document.getElementById('disciplines-grid');
@@ -82,6 +108,10 @@ import { injetarLogo } from '../shared/js/utils/logo.js';
         </div>
         <div class="disc-card__glow"></div>
       `;
+
+      a.addEventListener('mouseenter', () => playSound('hover', 'quiz'));
+      a.addEventListener('click',      () => playSound('click', 'quiz'));
+
       grid.insertBefore(a, msgEl);
     });
   }

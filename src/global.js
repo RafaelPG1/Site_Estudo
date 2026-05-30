@@ -166,11 +166,15 @@ export function setUsuario(usuario) {
     if (anterior?.uid !== usuario.uid) {
       // Usa setTimeout(0) para garantir que qualquer código síncrono
       // após setUsuario() termine antes de o audio-btn reagir.
-      setTimeout(() => {
-        document.dispatchEvent(new CustomEvent('nexus:loginSuccess', {
-          detail: { uid: usuario.uid },
-        }));
-      }, 0);
+      // global.js — dentro de setUsuario(), substituir o setTimeout
+setTimeout(() => {
+  document.dispatchEvent(new CustomEvent('nexus:loginSuccess', {
+    detail: {
+      uid:     usuario.uid,
+      configs: Storage.get('configs', null),  // ← idem
+    },
+  }));
+}, 0);  
     }
   } else {
     Storage.remove('usuario');
@@ -304,11 +308,15 @@ _aplicarConfigs(_estado.configs);
    descartar respostas stale, e setUsuario() tem guard de uid
    para evitar disparo duplo em chamadas posteriores.
    ─────────────────────────────────────────────────────────── */
+// global.js — substituir o bloco bootstrap (final do arquivo)
 if (_estado.usuario?.uid) {
   console.log('[global] bootstrap loginSuccess:', _estado.usuario.uid);
   setTimeout(() => {
     document.dispatchEvent(new CustomEvent('nexus:loginSuccess', {
-      detail: { uid: _estado.usuario.uid },
+      detail: {
+        uid:     _estado.usuario.uid,
+        configs: Storage.get('configs', null),  // ← inclui configs do localStorage
+      },
     }));
   }, 0);
 }

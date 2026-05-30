@@ -3,53 +3,10 @@
    NEXUS STUDY — shared/js/audio/sfx.js
    Engine central de áudio do projeto
    Versão 4.0 — engine de áudio pura
-
-   MUDANÇAS v3.0 → v4.0
-   ─────────────────────────────────────────────
-   REMOVIDO:
-     - createAudioSettings() — widget DOM de configuração de som
-     - createToggle()        — botão toggle legado
-     - _injectAudioSettingsStyle() — injeção de CSS no document.head
-     - _AUDIO_SETTINGS_STYLE_ID   — constante de ID do style tag
-     - _AUDIO_MODES               — array de modos visuais (mudo/50%/normal)
-     - ICON_ON / ICON_OFF         — SVGs inline para o toggle legado
-     - syncFromConfigs(cfg)       — método que conhecia schema externo de config
-
-   POR QUÊ?
-   ─────────────────────────────────────────────
-   sfx.js é uma engine de áudio — não um gerenciador de UI.
-   Criar elementos DOM, injetar CSS e entender schemas de config
-   externos são responsabilidades do audio-btn.js.
-
-   O audio-btn.js já gerencia:
-     - os três modos (on / low / muted)
-     - a interface visual do botão
-     - a persistência via Firebase
-     - a sincronização de estado por usuário
-
-   Para aplicar estado, o audio-btn chama diretamente:
-     audio.setMasterVolume(valor)
-     audio.mute()
-     audio.unmute()
-
-   Não é necessário que o sfx.js conheça o schema { sounds, masterVolume, ... }.
-
-   MANTIDO (inalterado):
-     - toda a engine de áudio (AudioContext, GainNodes, osciladores)
-     - _tone, _seq, _bgmEngine
-     - API pública completa (sfx, music, playEvent)
-     - setMasterVolume / setSfxVolume / setMusicVolume e getters
-     - mute / unmute / isMuted / setEnabled / isEnabled
-     - fadeOut / fadeIn / stopAll
-     - resetToDefaults / getState
-     - catálogo completo
    ============================================= */
 
 /* ═══════════════════════════════════════════════
    1. ESTADO GLOBAL — somente em memória
-   Não lê localStorage na inicialização.
-   Não lê getUsuario() na inicialização.
-   Valores aplicados via API pública (audio-btn chama setMasterVolume etc.)
 ═══════════════════════════════════════════════ */
 
 const _DEFAULT_SFX_STATE = {
@@ -60,21 +17,10 @@ const _DEFAULT_SFX_STATE = {
   musicVolume:  0.4,
 };
 
-// Estado em memória — sempre começa do padrão.
-// Será sobrescrito pelo audio-btn após o login via Firebase.
 const _state = { ..._DEFAULT_SFX_STATE };
-
-// _persist() e _sfxStorageKey() REMOVIDOS intencionalmente (v3.0).
-// O audio-btn.js é responsável pela persistência de estado por usuário.
-
-// Listeners de nexus:loginSuccess e nexus:logout REMOVIDOS intencionalmente (v3.0).
-// audio-btn.js já escuta esses eventos e chama a API pública do sfx
-// (setMasterVolume, mute, unmute) com os valores corretos do Firebase.
 
 /* ═══════════════════════════════════════════════
    1b. DEBUG FLAG
-   Setar DEBUG_AUDIO = true no console para ativar logs detalhados.
-   Em produção fica false — elimina micro-travadas com DevTools aberto.
 ═══════════════════════════════════════════════ */
 
 const DEBUG_AUDIO = false;
@@ -82,42 +28,14 @@ const _dbg = DEBUG_AUDIO ? (...a) => console.log('[sfx]', ...a) : () => {};
 
 /* ═══════════════════════════════════════════════
    2. CONTEXTO DE ÁUDIO — EAGER + RESUME POR GESTO (v5.1)
-   ─────────────────────────────────────────────
-   O Chrome não permite resume() fora de um trusted gesture quando
-   o AudioContext nasce suspended. A estratégia é:
-
-   1. new AudioContext() no module scope → objeto existe imediatamente.
-      Se nascer 'running' (sessão já tem permissão): gains + warmup
-      feitos na hora, tudo pronto antes do primeiro hover.
-
-   2. Se nascer 'suspended' (primeira visita na sessão / F5 sem interação
-      prévia): instala um listener one-shot em { capture:true } para os
-      4 trusted gestures. No primeiro gesto do usuário resume() é chamado
-      de dentro do evento → Chrome aceita → ctx vai para 'running'.
-
-   O guard _isCtxReady() em _tone()/_seq() descarta sons silenciosamente
-   enquanto o ctx ainda estiver suspended. Na prática o usuário não percebe:
-   o primeiro hover (que ele provoca movendo o mouse) já é o gesto que
-   dispara o resume(), e o som do hover seguinte já toca.
-
-   isUnlocked() mantido na API pública — delega para _isCtxReady().
 ═══════════════════════════════════════════════ */
 
 let _ctx = null;
 
-/**
- * Verifica se o contexto está em state 'running' agora.
- * Única verificação usada por _tone(), _seq() e play.js.
- */
 function _isCtxReady() {
   return !!_ctx && _ctx.state === 'running';
 }
 
-/**
- * Chama ctx.resume() de dentro de um trusted gesture e,
- * após completar, cria os gains e faz warmup.
- * Idempotente: no-op se ctx já estiver running.
- */
 function _resumeCtx() {
   if (!_ctx || _ctx.state !== 'suspended') return;
   _ctx.resume().then(() => {
@@ -127,10 +45,6 @@ function _resumeCtx() {
   }).catch(() => {});
 }
 
-/**
- * Instala um listener one-shot nos 4 trusted gestures para chamar
- * _resumeCtx(). Removido automaticamente após o primeiro disparo.
- */
 function _installResumeListener() {
   const EVENTS = ['click', 'pointerdown', 'touchstart', 'keydown'];
 
@@ -146,11 +60,6 @@ function _installResumeListener() {
   );
 }
 
-/**
- * Pré-aquece o AudioContext:
- * oscilador silencioso de 1 ms para forçar inicialização do renderer,
- * evitando "engasgo" no primeiro som real.
- */
 function _warmup() {
   if (!_isCtxReady() || !_masterGain) return;
   try {
@@ -165,24 +74,10 @@ function _warmup() {
   } catch (_) {}
 }
 
-// Cria o AudioContext imediatamente.
-// Se nascer running: pronto. Se suspended: instala listener de resume.
-try {
-  _ctx = new (window.AudioContext || window.webkitAudioContext)();
-  if (_ctx.state === 'running') {
-    _getGains();
-    _warmup();
-    _dbg('AudioContext nasceu running');
-  } else {
-    _dbg('AudioContext suspended — aguardando gesto para resume()');
-    _installResumeListener();
-  }
-} catch (err) {
-  console.error('[sfx] AudioContext não suportado:', err);
-}
-
 /* ═══════════════════════════════════════════════
    3. NÓS DE GANHO (gain nodes por canal)
+   IMPORTANTE: declarados ANTES do bloco try abaixo
+   para evitar ReferenceError de hoisting com let.
 ═══════════════════════════════════════════════ */
 
 let _masterGain = null;
@@ -190,8 +85,6 @@ let _sfxGain    = null;
 let _musicGain  = null;
 
 function _getGains() {
-  // Só cria os gain nodes se o contexto já estiver desbloqueado.
-  // Sem contexto pronto, retorna null silenciosamente.
   if (!_isCtxReady()) return null;
 
   if (!_masterGain) {
@@ -215,6 +108,22 @@ function _syncGains() {
   _masterGain.gain.value = muted ? 0 : _state.masterVolume;
   _sfxGain.gain.value    = _state.sfxVolume;
   _musicGain.gain.value  = _state.musicVolume;
+}
+
+// Cria o AudioContext imediatamente.
+// _masterGain já está declarado acima — sem ReferenceError.
+try {
+  _ctx = new (window.AudioContext || window.webkitAudioContext)();
+  if (_ctx.state === 'running') {
+    _getGains();
+    _warmup();
+    _dbg('AudioContext nasceu running');
+  } else {
+    _dbg('AudioContext suspended — aguardando gesto para resume()');
+    _installResumeListener();
+  }
+} catch (err) {
+  console.error('[sfx] AudioContext não suportado:', err);
 }
 
 /* ═══════════════════════════════════════════════
@@ -1475,11 +1384,6 @@ const audio = {
     _masterGain.gain.linearRampToValueAtTime(_state.masterVolume, t + duration);
   },
 
-  /**
-   * Reseta o estado de áudio para os valores padrão.
-   * Chamado pelo audio-btn no logout para garantir estado limpo.
-   * Não persiste — audio-btn gerencia o ciclo de vida de persistência.
-   */
   resetToDefaults() {
     Object.assign(_state, { ..._DEFAULT_SFX_STATE });
     _syncGains();
@@ -1487,14 +1391,23 @@ const audio = {
 
   getState() { return { ..._state }; },
 
-  /**
-   * Indica se o AudioContext existe e está em state 'running'.
-   * Mantido por compatibilidade com play.js — delega para _isCtxReady().
-   * @returns {boolean}
-   */
   isUnlocked() {
     return _isCtxReady();
   },
+
+  /**
+   * Tenta resumir o AudioContext suspenso e reinstala o listener de gesto.
+   * Chamado pelo sound.js após restauração do bfcache (pageshow persisted).
+   */
+  resumeCtx() {
+    // Reseta os gain nodes para forçar recriação após resume
+    _masterGain = null;
+    _sfxGain    = null;
+    _musicGain  = null;
+    _resumeCtx();
+    _installResumeListener();
+  },
+
 };
 
 export default audio;

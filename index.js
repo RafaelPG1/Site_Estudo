@@ -17,6 +17,8 @@ import { injetarLogo } from './shared/js/utils/logo.js';
 import { login, logout, carregarConfigs } from './src/firebase.js';
 import { criarSemestreSelect, preencherAnos } from './shared/js/utils/dom.js';
 import Sound from './shared/js/audio/sound.js';
+import audio from './shared/js/audio/sfx.js';                                    // ← NOVO
+import { installAudioRecovery } from './shared/js/audio/audio-recovery.js';      // ← NOVO
 import { playSound } from './shared/js/audio/play.js';
 
 /* ─────────────────────────────────────────────
@@ -30,6 +32,7 @@ async function init() {
     }
 
     Sound.init();
+    installAudioRecovery({ Sound, audio });                                       // ← NOVO
 
     injetarLogo({
       destino:   '#header-logo-wrap',
@@ -37,7 +40,7 @@ async function init() {
       srcBase:   './shared/img/logo.png',
       linkHref:  './index.html',
       area:      'inicial',
-      playSound,            // ← NOVO
+      playSound,
     });
     setPagina('HOME');
     _refreshHeader();
@@ -353,10 +356,6 @@ function abrirModalLogin() {
       const configsRemota = await carregarConfigs(resultado.usuario.uid);
 
       if (configsRemota) {
-        // Firebase tem prioridade: dados remotos sobrescrevem localStorage.
-        // Ordem anterior era { ...configsRemota, ...getConfigs() }, o que
-        // fazia o localStorage sobrescrever o Firebase — apagando sfxAreaMap
-        // e outros campos que só existem no registro remoto.
         hydrateConfigs({ ...getConfigs(), ...configsRemota });
         console.log('[login] configs mescladas com Firebase ✓');
       } else {
@@ -662,16 +661,15 @@ function abrirModalConfig() {
     _fecharComToast();
   });
 
-document.getElementById('btn-reset-configs').addEventListener('click', () => {
-  playSound('click', 'inicial');
-  resetConfigs();
-  Sound.resetAudio();          // ← linha nova
-  fecharModal(modal);
-  mostrarToast('Configurações resetadas.');
-  setTimeout(abrirModalConfig, 300);
-});
+  document.getElementById('btn-reset-configs').addEventListener('click', () => {
+    playSound('click', 'inicial');
+    resetConfigs();
+    Sound.resetAudio();
+    fecharModal(modal);
+    mostrarToast('Configurações resetadas.');
+    setTimeout(abrirModalConfig, 300);
+  });
 
-  // ✅ CORREÇÃO: btn-abrir-audio agora chama Sound.openModal()
   document.getElementById('btn-abrir-audio').addEventListener('click', () => {
     playSound('click', 'inicial');
     Sound.openModal();

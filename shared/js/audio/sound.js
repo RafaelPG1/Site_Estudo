@@ -1399,86 +1399,69 @@ function _resetAll() {
    SEÇÃO C — INICIALIZAÇÃO E API PÚBLICA
 ═══════════════════════════════════════════════ */
 
-// Adiciona a flag no topo, junto com _initialized
 let _initialized = false;
-let _modalBuilt   = false;
-/**
- * API pública do módulo de som.
- *
- * Sound.init()        — inicializa botão flutuante + constrói DOM do modal
- * Sound.openModal()   — abre o modal de configuração
- * Sound.closeModal()  — fecha o modal
- */
+let _modalBuilt  = false;
+
 const Sound = {
 
-  /**
-   * Inicializa o sistema de áudio:
-   * - Monta o botão flutuante de volume (.abtn)
-   * - Constrói o DOM do modal (uma única vez)
-   *
-   * Seguro chamar múltiplas vezes — idempotente.
-   */
+  init() {
+    if (_initialized) return;
+    _initialized = true;
+    _mountAudioBtn();
+  },
 
-// sound.js — linha 1196-1202
-init() {
-  if (_initialized) return;
-  _initialized = true;
+  openModal() {
+    if (!_initialized) this.init();
+    if (!_modalBuilt) {
+      _buildModalDOM();
+      _modalBuilt = true;
+    }
+    _openModal();
+  },
 
-  _mountAudioBtn();
-  // ❌ _buildModalDOM();  ← REMOVER daqui
-},
-
-openModal() {
-  if (!_initialized) this.init();
-  if (!_modalBuilt) {      // ← nova flag
-    _buildModalDOM();
-    _modalBuilt = true;
-  }
-  _openModal();
-},
-
-  /**
-   * Fecha o modal (para integração externa).
-   */
   closeModal() {
     _closeModal();
   },
 
-  /**
-   * Retorna a Promise de prontidão do SFX_MAP.
-   * Delega para audioState.waitUntilReady().
-   *
-   * Resolve quando:
-   *   - visitante: imediatamente (DEFAULT_SFX_MAP disponível)
-   *   - usuário logado: após Firebase carregar sfxMap + sfxAreaMap
-   *
-   * Uso no index.js:
-   *   await Sound.waitUntilReady();
-   *   bindCardLinks(); // garante que os sons corretos já estão carregados
-   *
-   * @returns {Promise<void>}
-   */
   waitUntilReady() {
     return audioState.waitUntilReady();
   },
 
-  /**
-   * Reseta todas as configurações de áudio para os valores padrão.
-   * Equivale a pressionar "Resetar" dentro do modal de áudio, mas
-   * pode ser chamado de fora (ex: botão "Resetar padrão" do modal de configs).
-   *
-   * Seguro em qualquer situação:
-   *   - Modal aberto   → reseta estado, DOM e fecha spec panel
-   *   - Modal fechado  → reseta apenas estado interno + audioState (sem tocar DOM)
-   *   - Modal não construído → idem ao caso "fechado"
-   *
-   * Após o reset, playSound() imediatamente usa os sons padrão porque
-   * o audioState (fonte de verdade) é atualizado de forma síncrona antes
-   * de qualquer gravação assíncrona no Firebase.
-   */
   resetAudio() {
     _resetAll();
   },
+
+  /**
+   * Reinicializa o botão flutuante após restauração do bfcache.
+   * Chamado no evento pageshow quando e.persisted === true.
+   * Remove o botão antigo (órfão do cache) e cria um novo.
+   */
+// sound.js — reinit() atualizado
+reinit() {
+  // Remove o botão órfão deixado pelo bfcache (sempre, não só se existir)
+  const old = document.getElementById('audio-btn-global');
+  if (old) old.remove();
+ 
+  // Reseta APENAS o flag do botão — modal permanece construído
+  _initialized = false;
+ 
+  // Recria o botão flutuante com listeners frescos
+  this.init();
+ 
+  // Resume o AudioContext e reinstala o listener de gesto
+  audio.resumeCtx();
+ 
+  console.log('[sound] reinit() executado — botão recriado, ctx resume tentado');
+},
+ 
+/**
+ * Tenta resumir o AudioContext sem recriar o botão flutuante.
+ * Chamado por audio-recovery.js nos eventos de recuperação silenciosa
+ * (visibilitychange, popstate, focus) onde o botão já está no DOM.
+ */
+resetCtx() {
+  audio.resumeCtx();
+},
 };
 
 export default Sound;
