@@ -86,6 +86,40 @@ import audio from './sfx.js';
 import { carregarConfigs, salvarConfigs } from '../../../src/firebase.js';
 
 /* ═══════════════════════════════════════════════
+   INSTRUMENTAÇÃO DE PERFORMANCE — remover após medir
+   Coleta tempos reais do bootstrap com performance.now().
+   Resultados ficam em window.__audioPerf (console: window.__audioPerf)
+═══════════════════════════════════════════════ */
+const _perf = window.__audioPerf = {
+  moduleLoad:        performance.now(),
+  sfxReadyInitial:   null,
+  loginSuccessStart: null,
+  firebaseStart:     null,
+  firebaseEnd:       null,
+  sfxReadyTrue:      null,
+  flushQueue:        null,
+  report() {
+    const p = window.__audioPerf;
+    const lines = [
+      '╔══════════════════════════════════════════',
+      '║  AUDIO PERF REPORT',
+      '╠══════════════════════════════════════════',
+      `║  módulo carregado:         ${p.moduleLoad?.toFixed(2)} ms (desde navigationStart)`,
+      `║  sfxReady inicial (true):  ${p.sfxReadyInitial?.toFixed(2)} ms`,
+      `║  loginSuccess recebido:    ${p.loginSuccessStart?.toFixed(2)} ms`,
+      `║  Firebase read start:      ${p.firebaseStart?.toFixed(2)} ms`,
+      `║  Firebase read end:        ${p.firebaseEnd?.toFixed(2)} ms`,
+      `║  Firebase RTT:             ${p.firebaseStart != null && p.firebaseEnd != null ? (p.firebaseEnd - p.firebaseStart).toFixed(2) + ' ms' : 'N/A'}`,
+      `║  sfxReady = true:          ${p.sfxReadyTrue?.toFixed(2)} ms`,
+      `║  flushQueue:               ${p.flushQueue?.toFixed(2)} ms`,
+      `║  total login→ready:        ${p.loginSuccessStart != null && p.sfxReadyTrue != null ? (p.sfxReadyTrue - p.loginSuccessStart).toFixed(2) + ' ms' : 'N/A'}`,
+      '╚══════════════════════════════════════════',
+    ];
+    console.log(lines.join('\n'));
+  },
+};
+
+/* ═══════════════════════════════════════════════
    DEBUG FLAG (espelha sfx.js — setar true só em dev)
 ═══════════════════════════════════════════════ */
 const _DEBUG = false;
@@ -187,6 +221,7 @@ let _currentSfxAreaMap = {};
  * Volta a true após Firebase responder com o mapa do usuário.
  */
 let _sfxReady = true;
+_perf.sfxReadyInitial = performance.now();
 // [DIAG] Estado inicial do audio-state no carregamento do módulo
 console.log('[DIAG:audio-state] módulo carregado', {
   '_sfxReady inicial': _sfxReady,
@@ -354,7 +389,9 @@ function _applyToEngine(modeId) {
 
 async function _fetchFromFirebase(uid) {
   try {
+    _perf.firebaseStart = performance.now();
     const configs      = await carregarConfigs(uid);
+    _perf.firebaseEnd  = performance.now();
     const saved        = configs?.audioState;
     const savedSfxMap  = configs?.sfxMap     ?? null;
     const savedAreaMap = configs?.sfxAreaMap ?? null;
@@ -431,6 +468,7 @@ document.addEventListener('nexus:loginSuccess', async ({ detail }) => {
 
   _currentUid = uid;
   const token = ++_activeLoadToken;
+  _perf.loginSuccessStart = performance.now();
 
   // [DIAG] Momento em que _sfxReady vai para false (sons começam a ser enfileirados)
   console.log('[DIAG:audio-state] nexus:loginSuccess → _sfxReady = false (início do load Firebase)', {
@@ -444,7 +482,35 @@ document.addEventListener('nexus:loginSuccess', async ({ detail }) => {
   _applyToEngine(_currentMode);
   _notify();
 
-  const saved = await _fetchFromFirebase(uid);
+  // [PERF] Se o index.js já passou configs no detail do evento, usamos diretamente.
+  // Isso elimina a segunda consulta ao Firebase (round-trip de 150–2000 ms).
+  // Fallback para _fetchFromFirebase mantido para compatibilidade caso o detail
+  // não contenha configs (ex: disparos de loginSuccess de outros contextos).
+  let saved;
+  if (detail?.configs) {
+    const c = detail.configs;
+    const savedMode    = c?.audioState;
+    const savedSfxMap  = c?.sfxMap     ?? null;
+    const savedAreaMap = c?.sfxAreaMap ?? null;
+    const savedVolumes = c?.volumes    ?? null;
+    _dbg('loginSuccess: usando configs do detail (sem round-trip Firebase)', { savedMode, savedSfxMap });
+    console.log('[DIAG:audio-state] nexus:loginSuccess → configs recebidas via detail (0ms Firebase)', {
+      'timestamp': Date.now(),
+    });
+    saved = {
+      mode:    VALID_MODES.includes(savedMode) ? savedMode : null,
+      sfxMap:  savedSfxMap  && typeof savedSfxMap  === 'object' ? savedSfxMap  : null,
+      areaMap: savedAreaMap && typeof savedAreaMap === 'object' ? savedAreaMap : null,
+      volumes: savedVolumes && typeof savedVolumes === 'object' ? savedVolumes : null,
+    };
+  } else {
+    // Fallback: index.js não incluiu configs no detail — faz a leitura normalmente.
+    _dbg('loginSuccess: detail sem configs, fazendo _fetchFromFirebase (fallback)');
+    console.warn('[DIAG:audio-state] nexus:loginSuccess → detail sem configs, executando fallback Firebase', {
+      'timestamp': Date.now(),
+    });
+    saved = await _fetchFromFirebase(uid);
+  }
 
   if (token !== _activeLoadToken) {
     _dbg('resposta antiga descartada (uid="' + uid + '", token=' + token + ')');
@@ -464,6 +530,7 @@ document.addEventListener('nexus:loginSuccess', async ({ detail }) => {
   _notify();
 
   _sfxReady = true;
+  _perf.sfxReadyTrue = performance.now();
   // [DIAG] Firebase carregado, _sfxReady voltou para true
   console.log('[DIAG:audio-state] nexus:loginSuccess → _sfxReady = true (Firebase carregado)', {
     '_currentMode': _currentMode,
@@ -472,6 +539,7 @@ document.addEventListener('nexus:loginSuccess', async ({ detail }) => {
     'timestamp': Date.now(),
   });
   _readyResolve();
+  _perf.flushQueue = performance.now();
   _flushSfxQueue();
 
   _dbg('uid="' + uid + '" → modo="' + _currentMode + '"', saved.mode !== null ? '(Firebase)' : '(padrão)');

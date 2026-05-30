@@ -81,123 +81,73 @@ const DEBUG_AUDIO = false;
 const _dbg = DEBUG_AUDIO ? (...a) => console.log('[sfx]', ...a) : () => {};
 
 /* ═══════════════════════════════════════════════
-   2. CONTEXTO DE ÁUDIO — UNLOCK POR TRUSTED GESTURE
+   2. CONTEXTO DE ÁUDIO — EAGER + RESUME POR GESTO (v5.1)
    ─────────────────────────────────────────────
-   REGRA FUNDAMENTAL: o AudioContext NUNCA é criado automaticamente.
-   Criado apenas dentro de um trusted event handler (pointerdown/
-   touchstart/keydown), onde o browser sempre permite autoplay.
+   O Chrome não permite resume() fora de um trusted gesture quando
+   o AudioContext nasce suspended. A estratégia é:
 
-   POR QUE SÍNCRONO:
-     new AudioContext() criado dentro de um trusted event handler
-     nasce em state 'running' nos browsers modernos (Chrome ≥ 66,
-     Firefox ≥ 71, Safari ≥ 14.5) — sem precisar de resume() async.
-     Se por algum motivo nascer 'suspended', ctx.resume() é chamado
-     mas o SFX do mesmo evento já pode tocar: _isCtxReady() usa o
-     estado real do ctx, não a flag _ctxUnlocked.
+   1. new AudioContext() no module scope → objeto existe imediatamente.
+      Se nascer 'running' (sessão já tem permissão): gains + warmup
+      feitos na hora, tudo pronto antes do primeiro hover.
 
-   FLUXO DO PRIMEIRO CLICK:
-     1. pointerdown  → _unlockAudioContext() cria ctx ('running')
-                     → _ctxUnlocked = true, gains criados, warmup
-     2. click        → playSound() → _isCtxReady() = true → SOM TOCA
-     Resultado: som toca no mesmo clique que desbloqueou.
+   2. Se nascer 'suspended' (primeira visita na sessão / F5 sem interação
+      prévia): instala um listener one-shot em { capture:true } para os
+      4 trusted gestures. No primeiro gesto do usuário resume() é chamado
+      de dentro do evento → Chrome aceita → ctx vai para 'running'.
 
-   PROTEÇÕES:
-     - _getCtx()      → retorna _ctx (null antes do unlock)
-     - _isCtxReady()  → !!_ctx && _ctx.state === 'running'
-     - _tone()/_seq() → abortam silenciosamente se !_isCtxReady()
-     - play.js        → guard _isCtxReady() — hover silencioso pré-unlock
+   O guard _isCtxReady() em _tone()/_seq() descarta sons silenciosamente
+   enquanto o ctx ainda estiver suspended. Na prática o usuário não percebe:
+   o primeiro hover (que ele provoca movendo o mouse) já é o gesto que
+   dispara o resume(), e o som do hover seguinte já toca.
 
-   EVENTOS DE UNLOCK: click, pointerdown, touchstart, keydown
-     NÃO inclui pointermove/pointerenter/hover — não são trusted gestures
-     para autoplay policy do Chrome.
+   isUnlocked() mantido na API pública — delega para _isCtxReady().
 ═══════════════════════════════════════════════ */
 
-let _ctx         = null;
-let _ctxUnlocked = false;
-
-/**
- * Retorna o AudioContext atual.
- * NÃO cria o contexto — retorna null antes do primeiro unlock.
- */
-function _getCtx() {
-  return _ctx;
-}
+let _ctx = null;
 
 /**
  * Verifica se o contexto está em state 'running' agora.
- * Usa ctx.state diretamente — não depende de flag async.
- * É a única verificação que importa para decidir se um som pode tocar.
+ * Única verificação usada por _tone(), _seq() e play.js.
  */
 function _isCtxReady() {
   return !!_ctx && _ctx.state === 'running';
 }
 
 /**
- * Cria e prepara o AudioContext dentro de um trusted event handler.
- * ÚNICA função que executa `new AudioContext()`.
- *
- * Síncrona do ponto de vista do evento: new AudioContext() em trusted
- * handler nasce em 'running' na maioria dos casos. Se nascer 'suspended'
- * (raro), ctx.resume() é disparado em background — o contexto fica pronto
- * para o próximo evento sem bloquear o atual.
- *
- * Idempotente: chamadas subsequentes são no-op se já desbloqueado.
+ * Chama ctx.resume() de dentro de um trusted gesture e,
+ * após completar, cria os gains e faz warmup.
+ * Idempotente: no-op se ctx já estiver running.
  */
-function _unlockAudioContext() {
-  if (_ctxUnlocked) return;
-
-  try {
-    if (!_ctx) {
-      _ctx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-
-    // [DIAG] Estado imediatamente após new AudioContext()
-    console.log('[DIAG:sfx] _unlockAudioContext — ctx criado', {
-      'ctx.state ANTES do resume': _ctx.state,
-      '_ctxUnlocked (ainda false)': _ctxUnlocked,
-      'timestamp': Date.now(),
-    });
-
-    // Caso raro: contexto criado em 'suspended' (ex: múltiplas abas).
-    // resume() em background — não bloqueia, não gera warning.
-    if (_ctx.state === 'suspended') {
-      _ctx.resume().then(() => {
-        // [DIAG] Estado após resume() completar (assíncrono)
-        console.log('[DIAG:sfx] ctx.resume() COMPLETOU', {
-          'ctx.state APÓS resume': _ctx.state,
-          '_ctxUnlocked': _ctxUnlocked,
-          '_isCtxReady()': _isCtxReady(),
-          'timestamp': Date.now(),
-        });
-      }).catch(() => {});
-    }
-
-    // Marca como desbloqueado assim que o contexto existe e está (ou
-    // ficará) running. _isCtxReady() usa ctx.state real como segunda
-    // verificação — sons só tocam quando running de fato.
-    _ctxUnlocked = true;
-
-    // [DIAG] Estado após setar _ctxUnlocked = true (ainda síncrono)
-    console.log('[DIAG:sfx] _ctxUnlocked = true foi setado', {
-      '_ctxUnlocked': _ctxUnlocked,
-      'ctx.state AGORA': _ctx.state,
-      '_isCtxReady()': _isCtxReady(),
-      'DIVERGÊNCIA (_ctxUnlocked != _isCtxReady)': _ctxUnlocked !== _isCtxReady(),
-      'timestamp': Date.now(),
-    });
-
+function _resumeCtx() {
+  if (!_ctx || _ctx.state !== 'suspended') return;
+  _ctx.resume().then(() => {
     _getGains();
     _warmup();
-    _dbg('AudioContext desbloqueado');
-
-  } catch (err) {
-    // [DIAG] Captura erros silenciados
-    console.error('[DIAG:sfx] _unlockAudioContext FALHOU:', err);
-  }
+    _dbg('AudioContext resumed por gesto do usuário, state:', _ctx.state);
+  }).catch(() => {});
 }
 
 /**
- * Pré-aquece o AudioContext após unlock:
+ * Instala um listener one-shot nos 4 trusted gestures para chamar
+ * _resumeCtx(). Removido automaticamente após o primeiro disparo.
+ */
+function _installResumeListener() {
+  const EVENTS = ['click', 'pointerdown', 'touchstart', 'keydown'];
+
+  function _onGesture() {
+    _resumeCtx();
+    EVENTS.forEach(ev =>
+      document.removeEventListener(ev, _onGesture, { capture: true })
+    );
+  }
+
+  EVENTS.forEach(ev =>
+    document.addEventListener(ev, _onGesture, { capture: true, passive: true })
+  );
+}
+
+/**
+ * Pré-aquece o AudioContext:
  * oscilador silencioso de 1 ms para forçar inicialização do renderer,
  * evitando "engasgo" no primeiro som real.
  */
@@ -215,29 +165,21 @@ function _warmup() {
   } catch (_) {}
 }
 
-/* ─────────────────────────────────────────────
-   LISTENERS DE UNLOCK
-   Instalados na carga do módulo — removidos após primeiro unlock.
-   Apenas trusted gestures: click, pointerdown, touchstart, keydown.
-   NÃO inclui pointermove, pointerenter ou qualquer evento de hover.
-   { capture: true, passive: true } — máxima prioridade, zero overhead.
-───────────────────────────────────────────── */
-(function _installUnlockListeners() {
-  const EVENTS = ['click', 'pointerdown', 'touchstart', 'keydown'];
-
-  function _onTrustedGesture() {
-    _unlockAudioContext();
-    if (_ctxUnlocked) {
-      EVENTS.forEach(ev =>
-        document.removeEventListener(ev, _onTrustedGesture, { capture: true })
-      );
-    }
+// Cria o AudioContext imediatamente.
+// Se nascer running: pronto. Se suspended: instala listener de resume.
+try {
+  _ctx = new (window.AudioContext || window.webkitAudioContext)();
+  if (_ctx.state === 'running') {
+    _getGains();
+    _warmup();
+    _dbg('AudioContext nasceu running');
+  } else {
+    _dbg('AudioContext suspended — aguardando gesto para resume()');
+    _installResumeListener();
   }
-
-  EVENTS.forEach(ev =>
-    document.addEventListener(ev, _onTrustedGesture, { capture: true, passive: true })
-  );
-}());
+} catch (err) {
+  console.error('[sfx] AudioContext não suportado:', err);
+}
 
 /* ═══════════════════════════════════════════════
    3. NÓS DE GANHO (gain nodes por canal)
@@ -294,7 +236,6 @@ function _tone({
     freq,
     '_state.enabled': _state.enabled,
     '_state.muted': _state.muted,
-    '_ctxUnlocked': _ctxUnlocked,
     'ctx existe': !!_ctx,
     'ctx.state': _ctx?.state ?? 'null',
     '_isCtxReady()': _isCtxReady(),
@@ -310,7 +251,6 @@ function _tone({
   // Não tenta criar contexto, não loga warnings, não faz retry.
   if (!_isCtxReady()) {
     console.warn('[DIAG:sfx] _tone() BLOQUEADO — _isCtxReady() = false', {
-      '_ctxUnlocked': _ctxUnlocked,
       'ctx existe': !!_ctx,
       'ctx.state': _ctx?.state ?? 'null',
     });
@@ -1595,16 +1535,12 @@ const audio = {
   getState() { return { ..._state }; },
 
   /**
-   * Indica se o AudioContext foi criado e está pronto.
-   * Baseado em _ctxUnlocked, setado de forma síncrona dentro do
-   * trusted event handler — sem depender de microtask async.
+   * Indica se o AudioContext existe e está em state 'running'.
+   * Mantido por compatibilidade com play.js — delega para _isCtxReady().
    * @returns {boolean}
    */
   isUnlocked() {
-    // [DIAG] Consultado pelo play.js — mostra o estado da flag vs ctx real
-    // REMOVER este log após diagnóstico (é chamado em todo hover/click)
-    // console.log('[DIAG:sfx] isUnlocked()', { _ctxUnlocked, 'ctx.state': _ctx?.state ?? 'null', '_isCtxReady': _isCtxReady() });
-    return _ctxUnlocked;
+    return _isCtxReady();
   },
 };
 

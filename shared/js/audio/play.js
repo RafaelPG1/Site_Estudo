@@ -2,21 +2,16 @@
 /* =============================================
    NEXUS STUDY — shared/js/audio/play.js
    Dispatcher central de SFX
-   Versão 1.5  ← guard correto pós-unlock síncrono
+   Versão 2.0  ← sem unlock gate (AudioContext eager)
 
-   MUDANÇAS v1.4 → v1.5
+   MUDANÇAS v1.5 → v2.0
    ─────────────────────────────────────────────
-   - Removido audio.unlock?.() — hover NÃO inicia unlock
-   - Guard usa audio.isUnlocked() como hard-block para hover e
-     qualquer evento pré-unlock; sons só passam após primeiro click
-   - Primeiro click: pointerdown dispara _unlockAudioContext() de forma
-     síncrona no sfx.js → _ctxUnlocked = true antes do evento click
-     chegar aqui → som do primeiro clique toca imediatamente
-   - Hover silencioso antes do primeiro click: correto por spec
-
-   FLUXO DO PRIMEIRO CLICK:
-     pointerdown → sfx.js cria ctx, seta _ctxUnlocked = true
-     click       → playSound('click') → isUnlocked() = true → SOM TOCA
+   - Removido trusted-gesture gate (sfx.js v5.0 cria o AudioContext
+     imediatamente no module scope)
+   - isUnlocked() agora significa ctx.state === 'running', não mais
+     "usuário já clicou". Janela suspended é < 50 ms no load inicial.
+   - Guard mantido: sons descartados silenciosamente se ctx ainda
+     não estiver running (transitório, imperceptível ao usuário).
    ============================================= */
 
 import audioState from './audio-state.js';
@@ -56,22 +51,17 @@ function _isHoverThrottled(area) {
  * @param {string|null} [area] — identificador de área (ex: 'game', 'resumos')
  */
 export function playSound(event, area = null) {
-  // [DIAG] Entrada em playSound() — snapshot completo do estado no momento do disparo
-  const _diagIsUnlocked  = audio.isUnlocked();
-  const _diagIsReady     = audioState.isReady();
-  const _diagThrottled   = event === 'hover' ? _isHoverThrottled.__diagPeek?.(area) : 'N/A (não é hover)';
+  // [DIAG] Entrada em playSound()
   console.log(`[DIAG:play] playSound("${event}", "${area}") ENTRADA`, {
-    'audio.isUnlocked()': _diagIsUnlocked,
-    'audioState.isReady()': _diagIsReady,
+    'audio.isUnlocked()': audio.isUnlocked(),
+    'audioState.isReady()': audioState.isReady(),
     'timestamp': Date.now(),
   });
 
-  // Guard primário: silêncio total antes do primeiro trusted gesture.
-  // pointerdown no sfx.js seta isUnlocked() de forma síncrona — então
-  // o evento 'click' que sempre segue o pointerdown já passa por aqui
-  // com isUnlocked() = true. Hover antes do primeiro click: silencioso.
+  // Guard primário: ctx ainda não está running (suspended logo após load da página).
+  // Janela típica < 50 ms — o usuário não percebe. Hover silencioso nesse intervalo.
   if (!audio.isUnlocked()) {
-    console.warn('[DIAG:play] BLOQUEADO em isUnlocked() — retornando silenciosamente');
+    console.warn('[DIAG:play] BLOQUEADO — ctx não está running ainda');
     return;
   }
 
