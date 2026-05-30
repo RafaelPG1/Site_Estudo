@@ -39,7 +39,8 @@ function _isCtxReady() {
 function _resumeCtx() {
   if (!_ctx || _ctx.state !== 'suspended') return;
   _ctx.resume().then(() => {
-    _getGains();
+    _getGains();   // cria os gain nodes se ainda não existirem
+    _syncGains();  // garante que _state atual (já hidratado pelo Firebase) é aplicado
     _warmup();
     _dbg('AudioContext resumed por gesto do usuário, state:', _ctx.state);
   }).catch(() => {});
@@ -1331,17 +1332,17 @@ const audio = {
   playEvent,
 
   setMasterVolume(val) {
-    _state.masterVolume = Math.min(1, Math.max(0, Number(val) || 0));
+    _state.masterVolume = Math.min(2, Math.max(0, Number(val) || 0));
     _syncGains();
   },
 
   setSfxVolume(val) {
-    _state.sfxVolume = Math.min(1, Math.max(0, Number(val) || 0));
+    _state.sfxVolume = Math.min(2, Math.max(0, Number(val) || 0));
     _syncGains();
   },
 
   setMusicVolume(val) {
-    _state.musicVolume = Math.min(1, Math.max(0, Number(val) || 0));
+    _state.musicVolume = Math.min(2, Math.max(0, Number(val) || 0));
     _syncGains();
   },
 

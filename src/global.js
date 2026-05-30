@@ -3,28 +3,32 @@
    Estado global e utilitários compartilhados
    src/global.js
 
-   v2.2 — Separação entre hidratação e persistência de configs
+   v2.3 — volumes não resetam para 1.0 ao navegar entre páginas
    ─────────────────────────────────────────────
-   MUDANÇAS v2.1 → v2.2
+   MUDANÇAS v2.2 → v2.3
    ─────────────────────────────────────────────
-   FIX 3 — hydrateConfigs() adicionado para uso no login.
-     Antes: index.js chamava setConfigs() para hidratar o estado após
-     o merge com Firebase, o que disparava um write-back desnecessário
-     no Firestore a cada login — lendo o dado e imediatamente salvando
-     de volta.
-     Agora: hydrateConfigs() atualiza memória, localStorage e UI
-     SEM persistir no Firebase. setConfigs() continua sendo usado
-     exclusivamente para mudanças intencionais do usuário (tema,
-     animações, toggles, etc.).
+   FIX 4 — Removido `configs` do detail de nexus:loginSuccess
+     nos disparos do global.js (setUsuario + bootstrap).
 
-   MANTIDO (inalterado de v2.1):
+     Problema: o localStorage armazena tema, animações, etc., mas NÃO
+     armazena o campo `volumes` — esse campo é gerenciado exclusivamente
+     pelo audio-state.js e salvo direto no Firebase.
+     Quando o detail.configs chegava sem `volumes`, o audio-state.js
+     interpretava savedVolumes = null e resetava master/sfx/music para
+     1.0, ignorando os valores salvos pelo usuário no modal de áudio.
+
+     Solução: não incluir configs no detail nesses disparos. O
+     audio-state.js cai no branch do _fetchFromFirebase, que lê o
+     documento completo — incluindo `volumes` — e aplica corretamente.
+
+     O index.js continua podendo passar configs no detail quando quiser
+     (ele faz o merge completo incluindo volumes antes de disparar).
+
+   MANTIDO (inalterado de v2.2):
    ─────────────────────────────────────────────
    FIX 1 — setUsuario(null) limpa _estado.configs no logout.
    FIX 2 — setConfigs() exclui audioState do save no Firebase.
-     - todos os getters/setters
-     - lógica de semestre, disciplina, quiz
-     - disparo de nexus:loginSuccess e nexus:logout
-     - _aplicarConfigs (tema, animações)
+   FIX 3 — hydrateConfigs() sem write-back no Firebase.
    ============================================= */
 
 import Storage from './storage.js';
@@ -36,7 +40,6 @@ let _audioState = null;
 async function _getAudioState() {
   if (!_audioState) {
     try {
-      //voltar uma pasta e entrar na pasta
       const mod = await import('../shared/js/audio/audio-state.js');
       _audioState = mod.default;
     } catch (_) { /* se não disponível, ignora */ }
@@ -147,12 +150,11 @@ export function estaLogado()  { return _estado.usuario !== null; }
  * corretamente em qualquer página — quiz, resumo, jogo, etc. —
  * sem precisar de código extra em cada uma delas.
  *
- * O index.js dispara nexus:loginSuccess manualmente DEPOIS do merge
- * de configs para garantir que o audio-state leia o Firebase já com
- * o estado correto. O disparo interno aqui (via setTimeout) ocorre
- * antes do merge, então o index.js cancela o efeito colateral usando
- * o sistema de token do audio-state.js — comportamento esperado e seguro.
- * Nas demais páginas, este disparo aqui é o único necessário.
+ * FIX 4: NÃO incluímos configs no detail aqui.
+ * O localStorage não armazena `volumes` (gerenciado pelo audio-state.js),
+ * então passar configs do localStorage faria o audio-state resetar os
+ * volumes para 1.0 a cada login. Sem configs no detail, o audio-state
+ * executa _fetchFromFirebase e lê o documento completo com `volumes`.
  */
 export function setUsuario(usuario) {
   const anterior = _estado.usuario;
@@ -164,33 +166,22 @@ export function setUsuario(usuario) {
     // Só dispara loginSuccess se realmente trocou de usuário
     // (evita disparo duplicado em atualizações de avatar/configs)
     if (anterior?.uid !== usuario.uid) {
-      // Usa setTimeout(0) para garantir que qualquer código síncrono
-      // após setUsuario() termine antes de o audio-btn reagir.
-      // global.js — dentro de setUsuario(), substituir o setTimeout
-setTimeout(() => {
-  document.dispatchEvent(new CustomEvent('nexus:loginSuccess', {
-    detail: {
-      uid:     usuario.uid,
-      configs: Storage.get('configs', null),  // ← idem
-    },
-  }));
-}, 0);  
+      setTimeout(() => {
+        document.dispatchEvent(new CustomEvent('nexus:loginSuccess', {
+          detail: { uid: usuario.uid },
+          // FIX 4: sem configs — audio-state busca do Firebase
+          // e lê `volumes` corretamente.
+        }));
+      }, 0);
     }
   } else {
     Storage.remove('usuario');
 
     // FIX 1: Limpa configs em memória no logout.
-    // Sem isso, getConfigs() retorna os dados do usuário que saiu,
-    // e o próximo login herda audioState e outras configs via merge.
-    // Nota: não chamamos salvarConfigs() aqui — não há usuário logado
-    // para salvar. Apenas o estado em memória e o localStorage são limpos.
     _estado.configs = _defaultConfigs();
     Storage.set('configs', _estado.configs);
     _aplicarConfigs(_estado.configs);
 
-    // Só dispara logout se havia um usuário logado antes.
-    // Este é o ÚNICO lugar que deve disparar nexus:logout.
-    // index.js NÃO deve disparar este evento manualmente.
     if (anterior !== null) {
       setTimeout(() => {
         document.dispatchEvent(new CustomEvent('nexus:logout'));
@@ -211,14 +202,6 @@ export function getConfigs() { return { ..._estado.configs }; }
  *
  * Use para: login, inicialização, restore de estado remoto.
  * NÃO use para mudanças intencionais do usuário — use setConfigs().
- *
- * Por que existe:
- * setConfigs() sempre persiste no Firebase quando há usuário logado.
- * Durante o login, o index.js precisa aplicar as configs remotas sem
- * gerar um write-back desnecessário (ler do Firebase e imediatamente
- * salvar de volta é redundante e potencialmente conflitante).
- *
- * @param {object} novas — objeto parcial ou completo de configs
  */
 export function hydrateConfigs(novas) {
   _estado.configs = { ..._estado.configs, ...novas };
@@ -228,10 +211,7 @@ export function hydrateConfigs(novas) {
 
 /**
  * Define novas configs, persiste no Firebase e aplica na UI.
- * Use SOMENTE para mudanças intencionais do usuário
- * (tema, animações, notificações, toggles de quiz, etc.).
- *
- * Para hidratação no login, use hydrateConfigs().
+ * Use SOMENTE para mudanças intencionais do usuário.
  */
 export function setConfigs(novas) {
   _estado.configs = { ..._estado.configs, ...novas };
@@ -240,17 +220,6 @@ export function setConfigs(novas) {
 
   const u = _estado.usuario;
   if (u?.uid) {
-    // FIX 2 (v2.3): Remove audioState/sfxMap/sfxAreaMap do estado local
-    // e os reincorpora a partir do audio-state.js (fonte única de verdade).
-    //
-    // Por que não basta remover:
-    // salvarConfigs usa setDoc(..., { configs }, { merge: true }).
-    // O Firestore faz merge apenas no nível do documento — o campo
-    // `configs` é substituído inteiro. Logo, um save parcial (sem
-    // sfxAreaMap) apaga o sfxAreaMap salvo anteriormente pelo audio-state.
-    //
-    // Solução: buscar o snapshot atual do audio-state e incluí-lo
-    // sempre no payload, garantindo que sfxAreaMap nunca seja omitido.
     const { audioState: _d1, sfxMap: _d2, sfxAreaMap: _d3, ...restConfigs } = _estado.configs;
 
     _getAudioState().then(as => {
@@ -259,9 +228,6 @@ export function setConfigs(novas) {
       console.log('[global] setConfigs: enviando para Firebase →', payload);
       salvarConfigs(u.uid, payload).catch(() => {});
     }).catch(() => {
-      // Fallback: salva sem os campos de áudio (não apaga se já existiam,
-      // pois o Firestore merge acontece no nível do documento).
-      // Na prática isso só corre se audio-state.js não carregou.
       const payload = { ...restConfigs };
       console.log('[global] setConfigs (fallback): enviando para Firebase →', payload);
       salvarConfigs(u.uid, payload).catch(() => {});
@@ -290,33 +256,21 @@ function _aplicarConfigs(cfg) {
 _aplicarConfigs(_estado.configs);
 
 /* ── Bootstrap loginSuccess — navegação entre páginas ──────
-   Quando o usuário navega de index.html para resumo.html (ou
-   qualquer outra página secundária), o browser destrói todo o
-   contexto JS e cria um novo do zero. audio-state.js reinicia
-   com _currentSfxAreaMap = {} e _currentUid = null, e nunca
-   recebe nexus:loginSuccess porque o login já ocorreu na página
-   anterior.
+   Quando o usuário navega entre páginas, o JS é destruído e
+   recriado do zero. Este disparo garante que audio-state.js
+   receba nexus:loginSuccess em qualquer página secundária.
 
-   Se o localStorage já tem um usuário logado ao carregar o módulo,
-   disparamos nexus:loginSuccess aqui para que audio-state.js
-   execute _fetchFromFirebase() e hidrate _currentSfxAreaMap
-   corretamente em qualquer página.
-
-   setTimeout(0): garante que todos os módulos (audio-state.js,
-   sound.js) terminaram seus top-level imports antes do evento
-   chegar. Seguro: audio-state.js já tem _activeLoadToken para
-   descartar respostas stale, e setUsuario() tem guard de uid
-   para evitar disparo duplo em chamadas posteriores.
+   FIX 4: NÃO passamos configs no detail — sem `volumes` no
+   localStorage, isso causava reset dos volumes para 1.0.
+   O audio-state.js executa _fetchFromFirebase e lê o documento
+   completo incluindo `volumes`.
    ─────────────────────────────────────────────────────────── */
-// global.js — substituir o bloco bootstrap (final do arquivo)
 if (_estado.usuario?.uid) {
   console.log('[global] bootstrap loginSuccess:', _estado.usuario.uid);
   setTimeout(() => {
     document.dispatchEvent(new CustomEvent('nexus:loginSuccess', {
-      detail: {
-        uid:     _estado.usuario.uid,
-        configs: Storage.get('configs', null),  // ← inclui configs do localStorage
-      },
+      detail: { uid: _estado.usuario.uid },
+      // FIX 4: sem configs — audio-state busca do Firebase.
     }));
   }, 0);
 }

@@ -531,6 +531,11 @@ document.addEventListener('nexus:loginSuccess', async ({ detail }) => {
     _volumes.sfx    = typeof saved.volumes.sfx    === 'number' ? saved.volumes.sfx    : 1.0;
     _dbg('volumes carregados do Firebase:', _volumes);
   }
+  // Aplica volumes individualmente nos canais além de _applyToEngine,
+  // garantindo que _state do sfx.js reflita os valores do Firebase
+  // mesmo que o AudioContext ainda esteja suspended no momento do resume.
+  audio.setSfxVolume?.(_volumes.sfx);
+  audio.setMusicVolume?.(_volumes.music);
   _applyToEngine(_currentMode);
   _notify();
 
@@ -624,6 +629,8 @@ const audioState = {
       _volumes.sfx    = typeof saved.volumes.sfx    === 'number' ? saved.volumes.sfx    : 1.0;
       _dbg('volumes carregados (loadFromFirebase):', _volumes);
     }
+    audio.setSfxVolume?.(_volumes.sfx);
+    audio.setMusicVolume?.(_volumes.music);
     _applyToEngine(_currentMode);
     _notify();
 

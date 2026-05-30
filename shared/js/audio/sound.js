@@ -1,7 +1,8 @@
 // @ts-nocheck
 /* =============================================
    NEXUS STUDY — shared/js/audio/sound.js
-   Sistema de áudio unificado — v1.0
+   Sistema de áudio unificado — v1.1
+   (fix: posicionamento correto dos snap marks do slider)
 
    ORIGINADO DE:
      som.js       → modal de configuração de som (DOM + lógica)
@@ -212,10 +213,15 @@ function _mountAudioBtn() {
 /* ── Dados ── */
 
 const _SLIDER_MAX      = 200;
-const _DEFAULT_MUSIC   = 100;
-const _DEFAULT_SFX     = 100;
-const _SNAP_POINT      = 100;
+const _DEFAULT_MUSIC   = 50;
+const _DEFAULT_SFX     = 50;
+const _SNAP_POINTS     = [50, 100, 150]; // 0.5 (padrão), 1.0, 1.5
 const _SNAP_ZONE       = 4;
+const _SNAP_POINT      = 50; // ponto principal de snap (padrão)
+
+// Largura do thumb em px — deve ser igual ao definido no CSS
+// (.snd-slider::-webkit-slider-thumb { width: 18px })
+const _THUMB_PX = 18;
 
 const _CATEGORIES = [
   {
@@ -292,7 +298,6 @@ const _CATEGORIES = [
       { id: 'closeModal3', label: 'Close 3 — Retro dismiss',     fn: () => audio.sfx.closeModal3?.() },
     ],
   },
-
   {
     id: 'correct',
     name: 'Correct Sounds',
@@ -429,6 +434,72 @@ let _specPanelEl  = null;
 let _modalOpen    = false;
 let _activePanelCatId = null;
 
+// ResizeObserver para reposicionar marks quando o modal muda de tamanho
+let _markResizeObserver = null;
+
+
+/* ═══════════════════════════════════════════════
+   SNAP MARK POSITIONING
+   ─────────────────────────────────────────────
+   O browser comprime o range real do thumb para
+   [thumbW/2, trackWidth - thumbW/2], então a
+   posição real em px de um valor v é:
+
+     px = (v / MAX) * (trackW - thumbW) + thumbW/2
+
+   Usando apenas percentagem (v/MAX * 100%) o mark
+   fica correto apenas no centro (50%); nos extremos
+   acumula um erro de até thumbW/2 = 9px.
+═══════════════════════════════════════════════ */
+
+/**
+ * Calcula a posição em px do centro do thumb para um dado valor,
+ * compensando o espaço reservado pelo browser nas extremidades.
+ *
+ * @param {number} val       — valor do slider (entre 0 e MAX)
+ * @param {number} trackW    — largura total do elemento <input> em px
+ * @param {number} [max]     — valor máximo do slider (padrão: _SLIDER_MAX)
+ * @returns {number} posição em px a partir da borda esquerda do track
+ */
+function _thumbPx(val, trackW, max = _SLIDER_MAX) {
+  const ratio = val / max;
+  return ratio * (trackW - _THUMB_PX) + _THUMB_PX / 2;
+}
+
+/**
+ * Posiciona os snap marks de um slider usando a fórmula correta.
+ * Deve ser chamada após o layout estar disponível (requestAnimationFrame
+ * ou ResizeObserver) pois depende de getBoundingClientRect().
+ *
+ * @param {string}   sliderId — id do <input type="range">
+ * @param {string[]} markIds  — ids dos elementos .snd-slider-mark,
+ *                              na mesma ordem que _SNAP_POINTS
+ */
+function _positionSnapMarks(sliderId, markIds) {
+  const slider = document.getElementById(sliderId);
+  if (!slider) return;
+
+  const trackW = slider.getBoundingClientRect().width;
+  if (trackW === 0) return; // modal ainda não visível
+
+  _SNAP_POINTS.forEach((snapVal, i) => {
+    const el = document.getElementById(markIds[i]);
+    if (!el) return;
+    const px = _thumbPx(snapVal, trackW);
+    // Sobrescreve o left inline definido no HTML; mantém o transform do CSS
+    el.style.left = px + 'px';
+  });
+}
+
+/**
+ * Reposiciona todos os snap marks de ambos os sliders.
+ * Chamada pelo ResizeObserver e pelo requestAnimationFrame após abertura.
+ */
+function _repositionAllMarks() {
+  _positionSnapMarks('snd-musicSlider', ['snd-musicMark50', 'snd-musicMark100', 'snd-musicMark150']);
+  _positionSnapMarks('snd-sfxSlider',   ['snd-sfxMark50',   'snd-sfxMark100',   'snd-sfxMark150']);
+}
+
 
 /* ── Criação do DOM do modal ── */
 
@@ -490,17 +561,21 @@ function _buildModalDOM() {
             <div class="snd-slider-group" id="snd-sliderGroupMusic">
               <div class="snd-slider-group__label">
                 <span>Música (BGM)</span>
-                <span class="snd-slider-group__value snd-slider-group__value--music" id="snd-musicValDisplay">0.4</span>
+                <span class="snd-slider-group__value snd-slider-group__value--music" id="snd-musicValDisplay">0.50</span>
               </div>
               <div class="snd-slider-track-wrap">
                 <div class="snd-slider-fill snd-slider-fill--music" id="snd-musicFill"></div>
-                <div class="snd-slider-mark snd-slider-mark--music" id="snd-musicMark" title="Padrão (1.0)"></div>
+                <div class="snd-slider-mark snd-slider-mark--snap" id="snd-musicMark50"  title="0.5 (padrão)"></div>
+                <div class="snd-slider-mark snd-slider-mark--snap" id="snd-musicMark100" title="1.0"></div>
+                <div class="snd-slider-mark snd-slider-mark--snap" id="snd-musicMark150" title="1.5"></div>
                 <input type="range" class="snd-slider snd-slider--music" id="snd-musicSlider"
-                  min="0" max="200" step="1" value="100" aria-label="Volume de Música" />
+                  min="0" max="200" step="1" value="50" aria-label="Volume de Música" />
               </div>
               <div class="snd-slider-scale">
                 <span>0</span>
-                <span class="snd-slider-scale__default">1.0 <em>padrão</em></span>
+                <span class="snd-slider-scale__default">0.5 <em>padrão</em></span>
+                <span>1.0</span>
+                <span>1.5</span>
                 <span>2.0</span>
               </div>
             </div>
@@ -509,17 +584,21 @@ function _buildModalDOM() {
             <div class="snd-slider-group" id="snd-sliderGroupSfx">
               <div class="snd-slider-group__label">
                 <span>Efeitos (SFX)</span>
-                <span class="snd-slider-group__value snd-slider-group__value--sfx" id="snd-sfxValDisplay">1.0</span>
+                <span class="snd-slider-group__value snd-slider-group__value--sfx" id="snd-sfxValDisplay">0.50</span>
               </div>
               <div class="snd-slider-track-wrap">
                 <div class="snd-slider-fill snd-slider-fill--sfx" id="snd-sfxFill"></div>
-                <div class="snd-slider-mark snd-slider-mark--sfx" id="snd-sfxMark" title="Padrão (1.0)"></div>
+                <div class="snd-slider-mark snd-slider-mark--snap" id="snd-sfxMark50"  title="0.5 (padrão)"></div>
+                <div class="snd-slider-mark snd-slider-mark--snap" id="snd-sfxMark100" title="1.0"></div>
+                <div class="snd-slider-mark snd-slider-mark--snap" id="snd-sfxMark150" title="1.5"></div>
                 <input type="range" class="snd-slider snd-slider--sfx" id="snd-sfxSlider"
-                  min="0" max="200" step="1" value="100" aria-label="Volume de Efeitos" />
+                  min="0" max="200" step="1" value="50" aria-label="Volume de Efeitos" />
               </div>
               <div class="snd-slider-scale">
                 <span>0</span>
-                <span class="snd-slider-scale__default">1.0 <em>padrão</em></span>
+                <span class="snd-slider-scale__default">0.5 <em>padrão</em></span>
+                <span>1.0</span>
+                <span>1.5</span>
                 <span>2.0</span>
               </div>
             </div>
@@ -571,6 +650,7 @@ function _buildModalDOM() {
         <button class="snd-btn snd-btn--ghost" id="snd-resetBtn">Resetar</button>
         <button class="snd-btn snd-btn--primary" id="snd-closeBtn2">Fechar</button>
         <button class="snd-btn snd-btn--save" id="snd-saveBtn">Salvar</button>
+      </div>
     </footer>
   `;
 
@@ -587,6 +667,13 @@ function _buildModalDOM() {
   document.body.appendChild(_wrap);
   document.body.appendChild(_specOverlay);
   document.body.appendChild(_specPanelEl);
+
+  // ResizeObserver: reposiciona marks se o modal for redimensionado
+  // (ex: rotação de tela, redimensionamento de janela com modal aberto)
+  _markResizeObserver = new ResizeObserver(() => {
+    if (_modalOpen) _repositionAllMarks();
+  });
+  _markResizeObserver.observe(_modalEl);
 
   _bindModalEvents();
 }
@@ -615,8 +702,6 @@ function _syncOverridesFromState() {
   console.log('[sound] _syncOverridesFromState: sfxAreaMap do audio-state =', JSON.stringify(areaMap));
 
   // ── 1. Reseta _specificOverrides para o estado limpo (null = sem override) ──
-  // Necessário para evitar overrides "fantasma" de sessões anteriores
-  // que foram removidos no Firebase mas ainda vivem no objeto local.
   _CATEGORIES.forEach(cat => {
     cat.areas.forEach(area => {
       _specificOverrides[cat.id][area] = null;
@@ -624,7 +709,6 @@ function _syncOverridesFromState() {
   });
 
   // ── 2. Mapa reverso: lowercase → label exato de área ──
-  // cat.areas usa título (ex: 'Game', 'Resumos'); sfxAreaMap usa lowercase (ex: 'game', 'resumos').
   const areaLabelByKey = {};
   _CATEGORIES.forEach(cat => {
     cat.areas.forEach(area => {
@@ -641,8 +725,6 @@ function _syncOverridesFromState() {
     }
 
     Object.entries(actionMap).forEach(([action, variantId]) => {
-      // action pode ser 'click', 'hover', 'select', 'openModal', 'closeModal'.
-      // catId do modal: 'modal' para ambas as actions de modal; caso contrário = action.
       const catId = (action === 'openModal' || action === 'closeModal') ? 'modal' : action;
       if (_specificOverrides[catId] !== undefined) {
         _specificOverrides[catId][areaLabel] = variantId || null;
@@ -652,7 +734,6 @@ function _syncOverridesFromState() {
   });
 
   // ── 4. Recalcula selectedAreas ──
-  // Uma área aparece em selectedAreas[catId] somente se NÃO tiver override (= null).
   _CATEGORIES.forEach(cat => {
     _modalState.selectedAreas[cat.id] = cat.areas.filter(
       area => _specificOverrides[cat.id][area] === null
@@ -665,20 +746,14 @@ function _openModal() {
   _modalOpen = true;
 
   // ── 1. Sincroniza som GERAL com o SFX_MAP atual do audio-state ──
-  // Feito sempre ao abrir para refletir o que o Firebase retornou após o login.
   const currentSfxMap = audioState.getSfxMap();
-  if (currentSfxMap.click)      _modalState.selectedVariant['click']  = currentSfxMap.click;
-  if (currentSfxMap.hover)      _modalState.selectedVariant['hover']  = currentSfxMap.hover;
-  if (currentSfxMap.select)     _modalState.selectedVariant['select'] = currentSfxMap.select;
+  if (currentSfxMap.click)      _modalState.selectedVariant['click']       = currentSfxMap.click;
+  if (currentSfxMap.hover)      _modalState.selectedVariant['hover']       = currentSfxMap.hover;
+  if (currentSfxMap.select)     _modalState.selectedVariant['select']      = currentSfxMap.select;
   if (currentSfxMap.openModal)  _modalState.selectedVariant['modal-open']  = currentSfxMap.openModal;
   if (currentSfxMap.closeModal) _modalState.selectedVariant['modal-close'] = currentSfxMap.closeModal;
 
   // ── 2. Sincroniza overrides por área com o sfxAreaMap do audio-state ──
-  // _resetModalState() zera _specificOverrides ao carregar o módulo.
-  // _syncOverridesFromState() repopula a partir do audio-state (que já tem
-  // os dados do Firebase) sempre que o modal é aberto.
-  // Isto também cobre o caso de reinício de página: audio-state hidrata
-  // no loginSuccess, sound.js só rende ao abrir o modal.
   _syncOverridesFromState();
 
   console.log('[sound] _openModal: _specificOverrides após sync =', JSON.stringify(_specificOverrides));
@@ -690,6 +765,13 @@ function _openModal() {
 
   _overlay.classList.add('is-open');
   _wrap.classList.add('is-open');
+
+  // ── 4. Posiciona snap marks após o layout estar disponível ──
+  // requestAnimationFrame garante que o browser já calculou as dimensões
+  // do modal antes de chamarmos getBoundingClientRect() nos sliders.
+  requestAnimationFrame(() => {
+    _repositionAllMarks();
+  });
 
   _wrap.addEventListener('click', _onWrapClick);
   document.addEventListener('keydown', _onKeyDown);
@@ -748,8 +830,6 @@ function _bindModalEvents() {
  */
 function _initSliders(skipStateSync = false) {
   if (!skipStateSync) {
-    // Caminho normal (abertura do modal): hidrata _modalState com os volumes
-    // reais vindos do audioState (Firebase ou padrão).
     const _savedVols = audioState.getVolumes();
     _modalState.musicSlider = Math.round(_savedVols.music * 100);
     _modalState.sfxSlider   = Math.round(_savedVols.sfx   * 100);
@@ -772,12 +852,13 @@ function _attachSlider(sliderId, fillId, displayId, groupId, type) {
 
   input.addEventListener('input', () => {
     let val = parseInt(input.value, 10);
-    if (Math.abs(val - _SNAP_POINT) <= _SNAP_ZONE) { val = _SNAP_POINT; input.value = val; }
+    for (const sp of _SNAP_POINTS) {
+      if (Math.abs(val - sp) <= _SNAP_ZONE) { val = sp; input.value = val; break; }
+    }
 
     _syncSlider(sliderId, fillId, displayId, groupId, val, type);
 
     const realVal = val / 100;
-    // Delega para audioState: ele aplica na engine, loga e persiste no Firebase.
     if (type === 'music')  { _modalState.musicSlider  = val; audioState.setVolume('music',  realVal); }
     else                   { _modalState.sfxSlider    = val; audioState.setVolume('sfx',    realVal); }
   });
@@ -793,9 +874,9 @@ function _syncSlider(sliderId, fillId, displayId, groupId, val, type = 'master')
   input.value = val;
   fill.style.width = `${(val / _SLIDER_MAX) * 100}%`;
   display.textContent = (val / 100).toFixed(2);
-  group.classList.toggle('is-snapped', val === _SNAP_POINT);
+  group.classList.toggle('is-snapped', _SNAP_POINTS.includes(val));
 
-  const above = val > 100;
+  const above = val > 50;
   group.classList.toggle('is-above', above);
   group.classList.remove('snd-music-slider', 'snd-sfx-slider');
   if (above && type === 'music') group.classList.add('snd-music-slider');
@@ -909,7 +990,6 @@ function _buildCatToggle(catId) {
 }
 
 function _buildVariantRow(cat, v) {
-  // Para modal, open e close usam slots separados.
   const _modalSlot = cat.id === 'modal'
     ? ((v.id.startsWith('open') || v.id.startsWith('Open')) ? 'modal-open' : 'modal-close')
     : cat.id;
@@ -937,14 +1017,10 @@ function _buildVariantRow(cat, v) {
 function _setActiveVariant(catId, varId) {
   _modalState.selectedVariant[catId] = varId;
 
-  // Atualiza o SFX_MAP global via audio-state (persiste no Firebase)
-  // A categoria 'modal' controla openModal e closeModal separadamente.
-  // Para as demais categorias, o id da categoria é a chave do mapa.
   if (catId !== 'modal') {
     _modalState.selectedVariant[catId] = varId;
     audioState.setSfxMap(catId, varId);
   } else {
-    // Para modal, open e close tem slots e chaves separados.
     if (varId.startsWith('open') || varId.startsWith('Open')) {
       _modalState.selectedVariant['modal-open'] = varId;
       audioState.setSfxMap('openModal', varId);
@@ -1137,7 +1213,6 @@ function _renderSpecPanel(cat) {
     cat.areas.forEach(area => {
       _specificOverrides[cat.id][area] = null;
 
-      // ── NOVO v1.2: remove os overrides do audio-state (→ Firebase) ──
       const areaKey = area.toLowerCase();
       if (cat.id !== 'modal') {
         audioState.setSfxAreaMap(areaKey, cat.id, null);
@@ -1249,17 +1324,11 @@ function _buildSpecTableRow(cat, variant) {
         if (idx === -1) areas.push(area);
       }
 
-      // ── NOVO v1.2: persiste o override no audio-state (→ Firebase) ──
-      // Mapeia catId do modal para a chave de action do sfxMap.
-      // Para a categoria 'modal', openModal e closeModal são ações distintas;
-      // determinamos qual pelo prefixo da variante selecionada.
       const areaKey = area.toLowerCase();
       if (cat.id !== 'modal') {
         audioState.setSfxAreaMap(areaKey, cat.id, newOverride);
       } else {
-        // Para modal: a variante começa com 'open' ou 'close' → determina a action
         if (newOverride === null) {
-          // Limpa ambas as actions de modal para esta área
           audioState.setSfxAreaMap(areaKey, 'openModal',  null);
           audioState.setSfxAreaMap(areaKey, 'closeModal', null);
         } else if (newOverride.startsWith('open') || newOverride.startsWith('Open')) {
@@ -1340,13 +1409,9 @@ function _syncMusicUI() {
 /* ── Save ── */
 
 function _saveAll() {
-  // Persiste volumes atuais via audioState (→ Firebase/local state)
   audioState.setVolume('music',  _modalState.musicSlider  / 100);
   audioState.setVolume('sfx',    _modalState.sfxSlider    / 100);
 
-  // Persiste todos os overrides de área já aplicados durante a sessão do modal.
-  // audioState.setSfxAreaMap() persiste cada entrada no Firebase individualmente;
-  // aqui forçamos uma gravação explícita de todo o estado atual.
   _CATEGORIES.forEach(cat => {
     cat.areas.forEach(area => {
       const areaKey  = area.toLowerCase();
@@ -1354,7 +1419,6 @@ function _saveAll() {
       if (cat.id !== 'modal') {
         audioState.setSfxAreaMap(areaKey, cat.id, override);
       } else {
-        // Para modal só persiste se a variante estiver claramente classificada
         if (override === null) {
           audioState.setSfxAreaMap(areaKey, 'openModal',  null);
           audioState.setSfxAreaMap(areaKey, 'closeModal', null);
@@ -1367,7 +1431,6 @@ function _saveAll() {
     });
   });
 
-  // Feedback visual breve no botão
   const btn = document.getElementById('snd-saveBtn');
   if (btn) {
     const prev = btn.textContent;
@@ -1385,11 +1448,6 @@ function _saveAll() {
 
 /* ── Reset total ── */
 
-/**
- * DEFAULT_SFX_MAP espelha os valores padrão definidos em audio-state.js.
- * Centralizado aqui para que _resetAll() possa restaurar o audioState
- * sem depender de uma referência à constante interna do outro módulo.
- */
 const _DEFAULT_SFX_MAP = {
   click:      'click',
   hover:      'hover2',
@@ -1401,18 +1459,15 @@ const _DEFAULT_SFX_MAP = {
 function _resetAll() {
   // ── 1. Reseta engine de áudio ──
   audio.setMasterVolume(1.0);
-  audio.setMusicVolume(0.4);
+  audio.setMusicVolume(0.5);
   audio.unmute();
   audio.setEnabled(true);
 
   // ── 2. Reseta volumes no audioState ANTES de qualquer _initSliders ──
-  // Sem isso, _initSliders() leria os volumes antigos do Firebase e desfaria o reset.
-  audioState.setVolume('music', 0.4);
-  audioState.setVolume('sfx',   1.0);
+  audioState.setVolume('music', 0.5);
+  audioState.setVolume('sfx',   0.5);
 
   // ── 3. Restaura sfxMap para os padrões no audioState (→ Firebase) ──
-  // Bug anterior: _resetAll nunca propagava variantes globais resetadas para
-  // o audioState, então playSound() continuava usando as variantes customizadas.
   Object.entries(_DEFAULT_SFX_MAP).forEach(([event, variantId]) => {
     audioState.setSfxMap(event, variantId);
   });
@@ -1433,13 +1488,11 @@ function _resetAll() {
   // ── 5. Reseta estado local do modal ──
   _resetModalState();
 
-  // ── 6. Operações de DOM — seguras mesmo com modal fechado ──
-  // Cada operação verifica a existência do elemento antes de agir.
+  // ── 6. Operações de DOM ──
   if (_modalOpen) {
     _closeSpecPanel();
     _stopMusic();
   } else {
-    // Modal fechado: para música sem tentar manipular DOM do spec panel
     audio.music?.stop?.();
     _modalState.playingMusic = null;
   }
@@ -1447,23 +1500,19 @@ function _resetAll() {
   const musicToggle = document.getElementById('snd-musicToggle');
   if (musicToggle) musicToggle.checked = true;
 
-  // _syncSlider é seguro (verifica getElementById internamente), mas
-  // só faz sentido executar se os elementos existirem no DOM.
   if (document.getElementById('snd-musicSlider')) {
     _syncSlider('snd-musicSlider', 'snd-musicFill', 'snd-musicValDisplay', 'snd-sliderGroupMusic', _DEFAULT_MUSIC, 'music');
     _syncSlider('snd-sfxSlider',   'snd-sfxFill',   'snd-sfxValDisplay',   'snd-sliderGroupSfx',   _DEFAULT_SFX,   'sfx');
 
-    // Rebind sliders: apaga flag de bind para que _initSliders os reanexa.
-    // NÃO chama _initSliders() aqui — ele leria do audioState e poderia
-    // reidratar valores antes da gravação no Firebase ser confirmada.
-    // Os sliders já estão visualmente corretos pelo _syncSlider acima.
     ['snd-musicSlider', 'snd-sfxSlider'].forEach(id => {
       const el = document.getElementById(id);
       if (el) delete el.dataset.sndBound;
     });
-    // Reanexar listeners manualmente com os valores padrão já aplicados
     _attachSlider('snd-musicSlider', 'snd-musicFill', 'snd-musicValDisplay', 'snd-sliderGroupMusic', 'music');
     _attachSlider('snd-sfxSlider',   'snd-sfxFill',   'snd-sfxValDisplay',   'snd-sliderGroupSfx',   'sfx');
+
+    // Reposiciona marks após reset (valores voltam ao padrão = 50)
+    requestAnimationFrame(_repositionAllMarks);
   }
 
   if (document.getElementById('snd-cardsGrid')) {
@@ -1515,32 +1564,27 @@ const Sound = {
    * Chamado no evento pageshow quando e.persisted === true.
    * Remove o botão antigo (órfão do cache) e cria um novo.
    */
-// sound.js — reinit() atualizado
-reinit() {
-  // Remove o botão órfão deixado pelo bfcache (sempre, não só se existir)
-  const old = document.getElementById('audio-btn-global');
-  if (old) old.remove();
- 
-  // Reseta APENAS o flag do botão — modal permanece construído
-  _initialized = false;
- 
-  // Recria o botão flutuante com listeners frescos
-  this.init();
- 
-  // Resume o AudioContext e reinstala o listener de gesto
-  audio.resumeCtx();
- 
-  console.log('[sound] reinit() executado — botão recriado, ctx resume tentado');
-},
- 
-/**
- * Tenta resumir o AudioContext sem recriar o botão flutuante.
- * Chamado por audio-recovery.js nos eventos de recuperação silenciosa
- * (visibilitychange, popstate, focus) onde o botão já está no DOM.
- */
-resetCtx() {
-  audio.resumeCtx();
-},
+  reinit() {
+    const old = document.getElementById('audio-btn-global');
+    if (old) old.remove();
+
+    _initialized = false;
+
+    this.init();
+
+    audio.resumeCtx();
+
+    console.log('[sound] reinit() executado — botão recriado, ctx resume tentado');
+  },
+
+  /**
+   * Tenta resumir o AudioContext sem recriar o botão flutuante.
+   * Chamado por audio-recovery.js nos eventos de recuperação silenciosa
+   * (visibilitychange, popstate, focus) onde o botão já está no DOM.
+   */
+  resetCtx() {
+    audio.resumeCtx();
+  },
 };
 
 export default Sound;

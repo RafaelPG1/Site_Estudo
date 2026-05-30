@@ -2,16 +2,12 @@
 /* =============================================
    NEXUS STUDY — shared/js/audio/play.js
    Dispatcher central de SFX
-   Versão 2.0  ← sem unlock gate (AudioContext eager)
+   Versão 2.1  ← log corrigido (sfx + master)
 
-   MUDANÇAS v1.5 → v2.0
+   MUDANÇAS v2.0 → v2.1
    ─────────────────────────────────────────────
-   - Removido trusted-gesture gate (sfx.js v5.0 cria o AudioContext
-     imediatamente no module scope)
-   - isUnlocked() agora significa ctx.state === 'running', não mais
-     "usuário já clicou". Janela suspended é < 50 ms no load inicial.
-   - Guard mantido: sons descartados silenciosamente se ctx ainda
-     não estiver running (transitório, imperceptível ao usuário).
+   - Log agora exibe sfxVolume e masterVolume separadamente,
+     evitando leitura enganosa do vol=1.00 (que era só o master).
    ============================================= */
 
 import audioState from './audio-state.js';
@@ -50,7 +46,7 @@ export function playSound(event, area = null) {
   const variantId = audioState.resolveVariant(event, area);
   if (!variantId) return;
 
-  const vol = audio.getMasterVolume();
-  console.log(`[sfx] ${variantId} | vol=${vol.toFixed(2)}`);
+  const sfx = audio.getSfxVolume();
+  console.log(`[sfx] ${variantId} | sfx=${sfx.toFixed(2)}`);
   audio.sfx[variantId]?.();
 }
