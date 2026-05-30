@@ -14,10 +14,7 @@ import { sincronizarSemNaURL, propagarSemNosLinks } from '../../shared/js/utils/
 import { setText, setHTML } from '../../shared/js/utils/dom.js';
 import { aplicarCoresDisciplina } from '../../shared/js/themes/theme.js';
 import { injetarLogo } from '../../shared/js/utils/logo.js';
-import Sound from '../../shared/js/audio/sound.js';
-import audio from '../../shared/js/audio/sfx.js';
-import { installAudioRecovery } from '../../shared/js/audio/audio-recovery.js';
-import { playSound } from '../../shared/js/audio/play.js';
+import { Sound, audio, installAudioRecovery, playSound } from '../../shared/js/audio/audio-api.js'; // ← MIGRADO
 
 import { carregarRespostasQuiz, salvarRespostasQuiz, limparRespostasQuiz } from '../../src/firebase.js';
 
@@ -101,8 +98,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     layout:   'stacked',
     srcBase:  '../../shared/img/logo.png',
     linkHref: '../../index.html',
-    area:     'quiz',       // ← adiciona
-    playSound,              // ← adiciona
+    area:     'quiz',
+    playSound,
   });
 
   Sound.init();

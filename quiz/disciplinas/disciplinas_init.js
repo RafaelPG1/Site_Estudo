@@ -7,10 +7,7 @@ import { DISC_CORES } from '../../shared/js/themes/cores.js';
 import { resolverSemestreDeURL, sincronizarSemNaURL, propagarSemNosLinks } from '../../shared/js/utils/url.js';
 import { aplicarCoresDisciplina } from '../../shared/js/themes/theme.js';
 import { injetarLogo } from '../../shared/js/utils/logo.js';
-import Sound from '../../shared/js/audio/sound.js';
-import audio from '../../shared/js/audio/sfx.js';
-import { installAudioRecovery } from '../../shared/js/audio/audio-recovery.js';
-import { playSound } from '../../shared/js/audio/play.js';
+import { Sound, audio, installAudioRecovery, playSound } from '../../shared/js/audio/audio-api.js'; // ← MIGRADO
 
 /* ── APLICA CORES DA DISCIPLINA (síncrono, sem FOUC) ─────── */
 aplicarCoresDisciplina(

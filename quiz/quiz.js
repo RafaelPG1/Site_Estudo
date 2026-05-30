@@ -13,10 +13,7 @@ import {
 import { sincronizarSemNaURL } from '../shared/js/utils/url.js';
 import { preencherAnos } from '../shared/js/utils/dom.js';
 import { injetarLogo } from '../shared/js/utils/logo.js';
-import Sound from '../shared/js/audio/sound.js';
-import audio from '../shared/js/audio/sfx.js';                                       // ← NOVO
-import { installAudioRecovery } from '../shared/js/audio/audio-recovery.js';         // ← NOVO
-import { playSound } from '../shared/js/audio/play.js';
+import { Sound, audio, installAudioRecovery, playSound } from '../shared/js/audio/audio-api.js'; // ← MIGRADO
 
 (function () {
 
