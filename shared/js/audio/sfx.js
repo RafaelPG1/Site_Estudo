@@ -231,38 +231,12 @@ function _tone({
   type    = 'sine',
   volume  = 1,
 }) {
-  // [DIAG] Entrada em _tone() — captura o estado exato no momento do disparo
-  console.log('[DIAG:sfx] _tone() ENTRADA', {
-    freq,
-    '_state.enabled': _state.enabled,
-    '_state.muted': _state.muted,
-    'ctx existe': !!_ctx,
-    'ctx.state': _ctx?.state ?? 'null',
-    '_isCtxReady()': _isCtxReady(),
-    '_masterGain existe': !!_masterGain,
-    'timestamp': Date.now(),
-  });
-
-  if (!_state.enabled || _state.muted) {
-    console.warn('[DIAG:sfx] _tone() BLOQUEADO — enabled/muted', { enabled: _state.enabled, muted: _state.muted });
-    return;
-  }
-  // Guard estrito: aborta silenciosamente se o contexto não estiver pronto.
-  // Não tenta criar contexto, não loga warnings, não faz retry.
-  if (!_isCtxReady()) {
-    console.warn('[DIAG:sfx] _tone() BLOQUEADO — _isCtxReady() = false', {
-      'ctx existe': !!_ctx,
-      'ctx.state': _ctx?.state ?? 'null',
-    });
-    return;
-  }
+  if (!_state.enabled || _state.muted) return;
+  if (!_isCtxReady()) return;
 
   const ctx    = _ctx;
   const gains  = _getGains();
-  if (!gains) {
-    console.warn('[DIAG:sfx] _tone() BLOQUEADO — _getGains() retornou null');
-    return;
-  }
+  if (!gains) return;
   const decayT = decay ?? duration * 0.3;
   const t      = ctx.currentTime + 0.005;
 
@@ -287,32 +261,11 @@ function _tone({
 
   osc.start(t);
   osc.stop(t + duration + 0.01);
-
-  // [DIAG] Confirma que o som foi agendado com sucesso
-  console.log('[DIAG:sfx] _tone() SOM AGENDADO', { freq, type, volume, t });
 }
 
 function _seq(notes) {
-  // [DIAG] Entrada em _seq()
-  console.log('[DIAG:sfx] _seq() ENTRADA', {
-    '_state.enabled': _state.enabled,
-    '_state.muted': _state.muted,
-    '_isCtxReady()': _isCtxReady(),
-    'ctx.state': _ctx?.state ?? 'null',
-    'notas': notes.length,
-    'timestamp': Date.now(),
-  });
-
-  if (!_state.enabled || _state.muted) {
-    console.warn('[DIAG:sfx] _seq() BLOQUEADO — enabled/muted');
-    return;
-  }
-  if (!_isCtxReady()) {
-    console.warn('[DIAG:sfx] _seq() BLOQUEADO — _isCtxReady() = false', {
-      'ctx.state': _ctx?.state ?? 'null',
-    });
-    return;
-  }
+  if (!_state.enabled || _state.muted) return;
+  if (!_isCtxReady()) return;
   notes.forEach(({ delay = 0, ...rest }) => {
     setTimeout(() => _tone(rest), delay * 1000);
   });

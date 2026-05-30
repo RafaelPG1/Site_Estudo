@@ -18,14 +18,6 @@ import audioState from './audio-state.js';
 import audio      from './sfx.js';
 
 /* ─────────────────────────────────────────────
-   DEBUG FLAG
-   Setar DEBUG_AUDIO = true para ativar logs de diagnóstico.
-   Em produção fica false — elimina micro-travadas com DevTools aberto.
-───────────────────────────────────────────── */
-const DEBUG_AUDIO = false;
-const _dbg = DEBUG_AUDIO ? (...a) => console.log('[play]', ...a) : () => {};
-
-/* ─────────────────────────────────────────────
    THROTTLE DE HOVER
    Mínimo de 40 ms entre disparos de 'hover'.
    Evita flood ao mover o mouse rapidamente sobre elementos,
@@ -51,57 +43,14 @@ function _isHoverThrottled(area) {
  * @param {string|null} [area] — identificador de área (ex: 'game', 'resumos')
  */
 export function playSound(event, area = null) {
-  // [DIAG] Entrada em playSound()
-  console.log(`[DIAG:play] playSound("${event}", "${area}") ENTRADA`, {
-    'audio.isUnlocked()': audio.isUnlocked(),
-    'audioState.isReady()': audioState.isReady(),
-    'timestamp': Date.now(),
-  });
-
-  // Guard primário: ctx ainda não está running (suspended logo após load da página).
-  // Janela típica < 50 ms — o usuário não percebe. Hover silencioso nesse intervalo.
-  if (!audio.isUnlocked()) {
-    console.warn('[DIAG:play] BLOQUEADO — ctx não está running ainda');
-    return;
-  }
-
-  // Throttle de hover: descarta chamadas excessivas sem enfileirar.
-  if (event === 'hover' && _isHoverThrottled(area)) {
-    console.log('[DIAG:play] BLOQUEADO em hover throttle', { area, 'timestamp': Date.now() });
-    return;
-  }
-
-  // Se o SFX_MAP ainda não foi carregado do Firebase, enfileira o evento.
-  // audio-state.js vai drená-los com os mapas corretos via _flushSfxQueue().
-  if (!audioState.isReady()) {
-    console.warn('[DIAG:play] BLOQUEADO — audioState não está ready, enfileirando', { event, area });
-    audioState.enqueue(event, area);
-    return;
-  }
+  if (!audio.isUnlocked()) return;
+  if (event === 'hover' && _isHoverThrottled(area)) return;
+  if (!audioState.isReady()) { audioState.enqueue(event, area); return; }
 
   const variantId = audioState.resolveVariant(event, area);
+  if (!variantId) return;
 
-  // [DIAG] Variante resolvida — se undefined, silêncio aqui
-  console.log(`[DIAG:play] resolveVariant("${event}", "${area}") →`, variantId ?? 'undefined ← SOM VAI MORRER AQUI');
-
-  if (DEBUG_AUDIO) {
-    if (area) {
-      const areaMap     = audioState.getSfxAreaMap();
-      const hasOverride = areaMap[area.toLowerCase()]?.[event];
-      _dbg('playSound("' + event + '", "' + area + '") → variant="' + variantId + '"',
-           hasOverride ? '(área override: "' + hasOverride + '")' : '(sem override — usando geral)');
-    } else {
-      _dbg('playSound("' + event + '") → variant="' + variantId + '" (geral)');
-    }
-  }
-
-  if (!variantId) {
-    console.warn(`[DIAG:play] BLOQUEADO — variantId undefined para evento="${event}" área="${area}"`);
-    _dbg('evento "' + event + '"' + (area ? ' (área "' + area + '")' : '') + ' não encontrado no SFX_MAP.');
-    return;
-  }
-
-  // [DIAG] Chegou até aqui — vai chamar a fn do catálogo
-  console.log(`[DIAG:play] Chamando audio.sfx["${variantId}"]()`);
+  const vol = audio.getMasterVolume();
+  console.log(`[sfx] ${variantId} | vol=${vol.toFixed(2)}`);
   audio.sfx[variantId]?.();
 }
