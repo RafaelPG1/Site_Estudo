@@ -1,0 +1,298 @@
+/* =============================================
+   NEXUS STUDY — shared/css/audio/audio-btns.css
+   Botões flutuantes de áudio (SFX + Música)
+
+   ESTRUTURA
+   ─────────────────────────────────────────────
+   SEÇÃO 1 — BASE COMPARTILHADA (.abtn)
+   SEÇÃO 2 — BOTÃO SFX (#audio-btn-global + hint)
+   SEÇÃO 3 — BOTÃO MÚSICA (#music-btn-global + tooltips)
+   SEÇÃO 4 — RESPONSIVE
+
+   USO
+   ─────────────────────────────────────────────
+   <link rel="stylesheet" href="shared/css/audio/audio-btns.css">
+
+   DEPENDÊNCIA
+   ─────────────────────────────────────────────
+   sound.css deve ser carregado antes deste arquivo
+   (fornece os tokens --snd-* usados pelo modal).
+   ============================================= */
+
+
+/* ═══════════════════════════════════════════════
+   SEÇÃO 1 — BASE COMPARTILHADA
+   Estrutura visual comum aos dois botões.
+   Mexer aqui afeta AMBOS simultaneamente.
+═══════════════════════════════════════════════ */
+
+.abtn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  outline: none;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.abtn .glow {
+  position: absolute;
+  inset: -10px;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity .5s, background .5s;
+  pointer-events: none;
+}
+
+.abtn .ro {
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,200,255,.13);
+  transition: border-color .5s, transform .4s;
+}
+
+.abtn .rm {
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,200,255,.2);
+  transition: border-color .5s;
+}
+
+.abtn .body {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(6,18,36,.88);
+  border: 1px solid rgba(0,200,255,.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color .5s, background .5s, transform .12s;
+}
+
+.abtn .body::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 12%; right: 12%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(180,240,255,.28), transparent);
+}
+
+.abtn .pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.abtn .ripple {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(0,200,255,.5);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.abtn .iw {
+  position: relative;
+  width: 22px;
+  height: 22px;
+}
+
+.abtn .ic {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  transition: opacity .3s ease, transform .3s cubic-bezier(.34,1.56,.64,1);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.abtn .ic.on  { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+.abtn .ic.out { opacity: 0; transform: translate(-50%,-50%) scale(.65); }
+
+.abtn:hover .ro    { transform: scale(1.07); }
+.abtn:hover .body  { border-color: rgba(0,200,255,.42); }
+.abtn:active .body { transform: scale(.92); }
+
+@keyframes abtn-pulse  { 0% { transform: scale(1);   opacity: .65; } 100% { transform: scale(1.6);  opacity: 0; } }
+@keyframes abtn-ripple { 0% { transform: scale(.88); opacity: .75; } 100% { transform: scale(1.65); opacity: 0; } }
+
+/* Variante quando montado dentro do header-nav */
+#header-nav .abtn {
+  align-self: center;
+  width: 44px;
+  height: 44px;
+}
+
+
+/* ═══════════════════════════════════════════════
+   SEÇÃO 2 — BOTÃO SFX
+   Estilos exclusivos do #audio-btn-global.
+   Mexer aqui NÃO afeta o botão de música.
+═══════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────
+   HINT DE DESBLOQUEIO DO AUDIOCONTEXT
+   Badge discreto que aparece antes do primeiro
+   gesto do usuário (política de autoplay).
+───────────────────────────────────────────── */
+
+#abtn-unlock-hint {
+  position: fixed;
+  bottom: 24px;                          /* alinha verticalmente com o botão SFX */
+  right: calc(24px + 44px + 12px);       /* à esquerda do botão: right do botão + largura + gap */
+  /* remova bottom: calc(...) que estava acima */
+  
+  background: rgba(0, 18, 36, 0.92);
+  border: 1px solid rgba(0, 200, 255, 0.35);
+  border-radius: 8px;
+  padding: 6px 10px 6px 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-family: inherit;
+  color: rgba(180, 230, 255, 0.9);
+  max-width: 184px;
+  line-height: 1.5;
+  pointer-events: none;
+  z-index: 9998;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transform: translateX(4px);            /* animação vem da direita agora */
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+#abtn-unlock-hint.is-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+#abtn-unlock-hint.is-hiding {
+  opacity: 0;
+  transform: translateX(4px);
+}
+
+#abtn-unlock-hint__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(0, 200, 255, 0.8);
+  flex-shrink: 0;
+  animation: abtn-hint-blink 1.4s ease-in-out infinite;
+}
+
+@keyframes abtn-hint-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+
+/* ═══════════════════════════════════════════════
+   SEÇÃO 3 — BOTÃO MÚSICA
+   Estilos exclusivos do #music-btn-global.
+   Mexer aqui NÃO afeta o botão SFX.
+═══════════════════════════════════════════════ */
+
+/* Posicionamento — seletor de ID garante precedência sobre .abtn.
+   Fórmula: bottom do .abtn (24px) + altura do .abtn (44px) + gap (10px) = 78px */
+#music-btn-global {
+  bottom: 85px;  /* era 78px — aumentei o gap de 10 para 20px */
+  right: 24px;
+}
+
+/* ─────────────────────────────────────────────
+   TOOLTIPS DE IDENTIDADE
+   Aparecem no hover para distinguir os dois botões.
+   O tooltip do SFX só aparece quando o botão de
+   música existe na página (body:has).
+───────────────────────────────────────────── */
+
+.mbtn::after {
+  content: 'música';
+  position: absolute;
+  right: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%) translateX(4px);
+  background: rgba(0, 16, 28, 0.92);
+  border: 1px solid rgba(255, 190, 60, 0.3);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 10px;
+  font-family: inherit;
+  color: rgba(255, 200, 80, 0.88);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  letter-spacing: 0.04em;
+}
+
+.mbtn:hover::after {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+body:has(#music-btn-global) #audio-btn-global::after {
+  content: 'efeitos';
+  position: absolute;
+  right: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%) translateX(4px);
+  background: rgba(0, 16, 28, 0.92);
+  border: 1px solid rgba(0, 200, 255, 0.25);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 10px;
+  font-family: inherit;
+  color: rgba(0, 210, 255, 0.85);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  letter-spacing: 0.04em;
+}
+
+body:has(#music-btn-global) #audio-btn-global:hover::after {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+
+/* ═══════════════════════════════════════════════
+   SEÇÃO 4 — RESPONSIVE
+   Ajustes mobile para ambos os botões.
+   Se alterar o bottom do SFX, ajuste o do música
+   também (fórmula: base + 44 + 10).
+═══════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+  .abtn {
+    bottom: 16px;
+    right: 16px;
+  }
+
+  #abtn-unlock-hint {
+    bottom: 16px;
+    right: calc(16px + 44px + 12px);   /* 72px */
+  }
+
+  #music-btn-global {
+    bottom: 75px;  /* 16 base + 44 altura + 10 gap */
+    right: 16px;
+  }
+}

@@ -46,24 +46,12 @@ import {
 } from './pessoal_sync.js';
 
 /* ── Áudio ── */
-import audio from '../shared/js/audio/sfx.js';
-
-/* ─────────────────────────────────────────────
-   SFX — mesmos sons do index.js
-───────────────────────────────────────────── */
-const SFX_MAP = {
-  click:      'click',
-  hover:      'hover2',
-  openModal:  'openModal2',
-  closeModal: 'closeModal',
-  select:     'select',
-};
-
-function playSound(event) {
-  const id = SFX_MAP[event];
-  if (!id) return;
-  try { audio.sfx[id]?.(); } catch (_) {}
-}
+import {
+  Sound,
+  audio,
+  installAudioRecovery,
+  playSound,
+} from '../shared/js/audio/audio-api.js';
 
 /* ══════════════════════════════════════════════
    ESTADO
@@ -125,8 +113,8 @@ function _confirmar(msg) {
       backdrop.removeEventListener('click', onCancel);
       resolve(result);
     };
-    const onOk     = () => { playSound('click'); close(true);  };
-    const onCancel = () => { playSound('click'); close(false); };
+    const onOk     = () => { playSound('click', 'perfil'); close(true);  };
+    const onCancel = () => { playSound('click', 'perfil'); close(false); };
     btnOk.addEventListener('click', onOk);
     btnCan.addEventListener('click', onCancel);
     backdrop.addEventListener('click', onCancel);
@@ -177,11 +165,11 @@ function _miniConfirmar(anchorEl) {
     setTimeout(() => document.addEventListener('mousedown', onOutside), 10);
 
     pop.querySelector('.mini-confirm__btn--ok').addEventListener('click', () => {
-      playSound('click');
+      playSound('click', 'perfil');
       close(true);
     });
     pop.querySelector('.mini-confirm__btn--cancel').addEventListener('click', () => {
-      playSound('click');
+      playSound('click', 'perfil');
       close(false);
     });
   });
@@ -192,6 +180,8 @@ function _miniConfirmar(anchorEl) {
 ══════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', async () => {
   setPagina('PESSOAL');
+  Sound.init();
+  installAudioRecovery({ Sound, audio });
   document.getElementById('footer-year').textContent  = new Date().getFullYear();
   document.getElementById('sidebar-year').textContent = new Date().getFullYear();
 
@@ -305,7 +295,7 @@ function _renderSemestreSelector() {
 
   /* Som de click ao abrir a lista, select ao confirmar */
 select.addEventListener('change', e => {
-  playSound('select');
+  playSound('select', 'perfil');
   _trocarSemestre(e.target.value);
 });
 
@@ -315,7 +305,7 @@ wrap.appendChild(select);
    igual ao padrão usado no index.js (_montarSelect) */
 requestAnimationFrame(() => {
   const sel = wrap.querySelector('select');
-  if (sel) sel.addEventListener('mousedown', () => playSound('click'));
+  if (sel) sel.addEventListener('mousedown', () => playSound('click', 'perfil'));
 });
 }
 
@@ -353,7 +343,7 @@ function _bindTabs() {
   document.getElementById('main-tabs')?.addEventListener('click', e => {
     const btn = e.target.closest('[data-tab]');
     if (!btn) return;
-    playSound('select');
+    playSound('select', 'perfil');
     _setAba(btn.dataset.tab);
   });
 }
@@ -505,9 +495,9 @@ function _renderSidebar() {
         <path d="M9 18l6-6-6-6"/>
       </svg>`;
 
-    item.addEventListener('mouseenter', () => playSound('hover'));
+    item.addEventListener('mouseenter', () => playSound('hover', 'perfil'));
     item.addEventListener('click', () => {
-      playSound('select');
+      playSound('select', 'perfil');
       _trocarDisciplina(disc);
     });
     list.appendChild(item);
@@ -630,25 +620,25 @@ function _buildCatSection(cat, ci) {
     </div>`;
 
   section.querySelector('.cat-edit').addEventListener('click', () => {
-    playSound('click');
+    playSound('click', 'perfil');
     _editarCategoria(cat.id, section);
   });
   section.querySelector('.cat-delete').addEventListener('click', () => {
-    playSound('click');
+    playSound('click', 'perfil');
     _deletarCategoria(cat.id, section);
   });
 
   section.querySelector('.cat-items').addEventListener('click', e => {
     const delBtn = e.target.closest('.item-delete');
     if (delBtn) {
-      playSound('click');
+      playSound('click', 'perfil');
       const row = delBtn.closest('.item-row');
       _deletarItem(cat.id, delBtn.dataset.itemId, row);
       return;
     }
     const editBtn = e.target.closest('.item-edit');
     if (editBtn) {
-      playSound('click');
+      playSound('click', 'perfil');
       const row = editBtn.closest('.item-row');
       _editarItem(cat.id, editBtn.dataset.itemId, row);
       return;
@@ -656,7 +646,7 @@ function _buildCatSection(cat, ci) {
     const row = e.target.closest('.item-row');
     if (!row || row.classList.contains('item-editing')) return;
     if (e.target.closest('.item-edit-input')) return;
-    playSound('click');
+    playSound('click', 'perfil');
     _toggleItem(cat.id, row.dataset.itemId, row);
   });
 
@@ -677,7 +667,7 @@ function _buildCatSection(cat, ci) {
       return;
     }
 
-    playSound('click');
+    playSound('click', 'perfil');
 
     const cats = _getCategoriasAtivas();
     const c = cats.find(c => c.id === cat.id);
@@ -791,7 +781,7 @@ function _editarItem(catId, itemId, rowEl) {
   const save = () => {
     const newText = input.value.trim();
     if (!newText) { input.classList.add('input-error'); input.focus(); return; }
-    playSound('click');
+    playSound('click', 'perfil');
     const cats = _getCategoriasAtivas();
     const cat  = cats.find(c => c.id === catId);
     if (cat) {
@@ -801,7 +791,7 @@ function _editarItem(catId, itemId, rowEl) {
     _restore(newText);
   };
 
-  const cancel = () => { playSound('click'); _restore(original); };
+  const cancel = () => { playSound('click', 'perfil'); _restore(original); };
   const onOutside = (e) => { if (!rowEl.contains(e.target)) save(); };
   setTimeout(() => document.addEventListener('mousedown', onOutside), 10);
 
@@ -876,14 +866,14 @@ function _editarCategoria(catId, sectionEl) {
   const save = () => {
     const newNome = input.value.trim();
     if (!newNome) { input.classList.add('input-error'); input.focus(); return; }
-    playSound('click');
+    playSound('click', 'perfil');
     const cats = _getCategoriasAtivas();
     const cat  = cats.find(c => c.id === catId);
     if (cat) { cat.nome = newNome; _salvarCategoriasAtivas(cats); }
     _restore(newNome);
   };
 
-  const cancel = () => { playSound('click'); _restore(original); };
+  const cancel = () => { playSound('click', 'perfil'); _restore(original); };
   const onOutside = (e) => { if (!sectionEl.contains(e.target)) cancel(); };
   setTimeout(() => document.addEventListener('mousedown', onOutside), 10);
 
@@ -924,7 +914,7 @@ function _bindAddTask() {
   const add = () => {
     const nome = input?.value.trim();
     if (!nome) { showErr(); input?.focus(); return; }
-    playSound('click');
+    playSound('click', 'perfil');
     const cats = _getCategoriasAtivas();
     cats.push({ id: _uid(), nome, itens: [] });
     _salvarCategoriasAtivas(cats);
@@ -1152,7 +1142,7 @@ function _renderClPanel() {
 
       /* Som ao abrir/fechar seção do checklist */
       section.querySelector('.cl-section__header--toggle').addEventListener('click', () => {
-        playSound('click');
+        playSound('click', 'perfil');
         section.classList.toggle('cl-section--collapsed');
       });
     });
@@ -1161,7 +1151,7 @@ function _renderClPanel() {
 
     /* Som ao abrir/fechar grupo do checklist */
     groupEl.querySelector('.cl-group__header').addEventListener('click', () => {
-      playSound('click');
+      playSound('click', 'perfil');
       groupEl.classList.toggle('cl-group--collapsed');
     });
 
@@ -1182,7 +1172,7 @@ function _bindChecklist() {
     const input = e.target.closest('.cl-item__input');
     if (!input) return;
 
-    playSound('click');
+    playSound('click', 'perfil');
 
     const itemId  = input.dataset.itemId;
     const discId  = input.dataset.discId;
@@ -1273,7 +1263,7 @@ function _bindNotes() {
   document.getElementById('note-copy-btn')?.addEventListener('click', async () => {
     const val = textarea.value;
     if (!val.trim()) return;
-    playSound('click');
+    playSound('click', 'perfil');
     try {
       await navigator.clipboard.writeText(val);
       const btn = document.getElementById('note-copy-btn');
@@ -1287,7 +1277,7 @@ function _bindNotes() {
 
   document.getElementById('note-clear-btn')?.addEventListener('click', async () => {
     if (!textarea.value.trim()) return;
-    playSound('click');
+    playSound('click', 'perfil');
     const ok = await _confirmar('Limpar todas as anotações desta disciplina?');
     if (!ok) return;
     textarea.value = '';
@@ -1341,11 +1331,11 @@ function _savedLabel(discId) {
 ══════════════════════════════════════════════ */
 function _bindMobileDropdown() {
   document.getElementById('mobile-disc-btn')?.addEventListener('click', () => {
-    playSound('click');
+    playSound('click', 'perfil');
     _abrirMobileDropdown();
   });
   document.getElementById('mobile-dropdown-backdrop')?.addEventListener('click', () => {
-    playSound('click');
+    playSound('click', 'perfil');
     _fecharMobileDropdown();
   });
 }
@@ -1364,7 +1354,7 @@ function _abrirMobileDropdown() {
       <span class="disc-item__emoji">${disc.emoji}</span>
       <span class="disc-item__info"><span class="disc-item__nome">${disc.nome}</span></span>`;
     btn.addEventListener('click', () => {
-      playSound('select');
+      playSound('select', 'perfil');
       _trocarDisciplina(disc);
     });
     list.appendChild(btn);
@@ -1420,15 +1410,15 @@ function _smoothScrollTo(targetY, duration = 1400) {
 
 function _bindFab() {
   document.getElementById('fab-top')?.addEventListener('click', () => {
-    playSound('click');
+    playSound('click', 'perfil');
     _smoothScrollTo(0);
   });
   document.getElementById('fab-bottom')?.addEventListener('click', () => {
-    playSound('click');
+    playSound('click', 'perfil');
     _smoothScrollTo(document.body.scrollHeight);
   });
   document.getElementById('fab-collapse')?.addEventListener('click', () => {
-    playSound('click');
+    playSound('click', 'perfil');
     document.querySelectorAll('.cl-group').forEach(g => g.classList.add('cl-group--collapsed'));
     document.querySelectorAll('.cl-section').forEach(s => s.classList.add('cl-section--collapsed'));
   });

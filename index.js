@@ -1,11 +1,27 @@
-// @ts-nocheck
+
 /* =============================================
    NEXUS STUDY — index.js
    Lógica da página inicial
+
+   ESTRUTURA
+   ─────────────────────────────────────────────
+   SEÇÃO 1 — IMPORTS
+   SEÇÃO 2 — INICIALIZAÇÃO
+   SEÇÃO 3 — HEADER
+   SEÇÃO 4 — CARDS
+   SEÇÃO 5 — MODAL LOGIN
+   SEÇÃO 6 — MODAL CONFIG
+   SEÇÃO 7 — MODAL PERFIL
+   SEÇÃO 8 — UTILITÁRIOS (modais + toast)
    ============================================= */
 
+
+/* ═══════════════════════════════════════════════
+   SEÇÃO 1 — IMPORTS
+═══════════════════════════════════════════════ */
+
 import {
-  getEstado, setUsuario, getUsuario, estaLogado,
+  setUsuario, getUsuario, estaLogado,
   setPagina,
   setConfigs, getConfigs, resetConfigs,
   hydrateConfigs,
@@ -13,9 +29,9 @@ import {
   getSemestreAtual, getDisciplinasDeSemestre,
 } from './src/global.js';
 
-import { injetarLogo } from './shared/js/utils/logo.js';
-import { login, logout, carregarConfigs } from './src/firebase.js';
-import { criarSemestreSelect, preencherAnos } from './shared/js/utils/dom.js';
+import { injetarLogo }                        from './shared/js/utils/logo.js';
+import { login, logout, carregarConfigs }      from './src/firebase.js';
+import { criarSemestreSelect, preencherAnos }  from './shared/js/utils/dom.js';
 import {
   Sound,
   audio,
@@ -23,9 +39,11 @@ import {
   playSound,
 } from './shared/js/audio/audio-api.js';
 
-/* ─────────────────────────────────────────────
-   INICIALIZAÇÃO
-───────────────────────────────────────────── */
+
+/* ═══════════════════════════════════════════════
+   SEÇÃO 2 — INICIALIZAÇÃO
+═══════════════════════════════════════════════ */
+
 async function init() {
   try {
     if (estaLogado() && getUsuario()?.admin) {
@@ -34,16 +52,17 @@ async function init() {
     }
 
     Sound.init();
-    installAudioRecovery({ Sound, audio });                                       // ← NOVO
+    installAudioRecovery({ Sound, audio });
 
     injetarLogo({
-      destino:   '#header-logo-wrap',
-      tamanho:   38,
-      srcBase:   './shared/img/logo.png',
-      linkHref:  './index.html',
-      area:      'inicial',
+      destino:  '#header-logo-wrap',
+      tamanho:  38,
+      srcBase:  './shared/img/logo.png',
+      linkHref: './index.html',
+      area:     'inicial',
       playSound,
     });
+
     setPagina('HOME');
     _refreshHeader();
 
@@ -52,8 +71,9 @@ async function init() {
     // para usuários já logados aguarda o Firebase carregar sfxAreaMap.
     await Sound.waitUntilReady();
 
-    bindCardLinks();
+    _bindCardLinks();
     preencherAnos(['footer-year']);
+
   } catch (err) {
     console.error('[init] Erro crítico na inicialização:', err);
     try { _refreshHeader(); } catch (_) {}
@@ -66,13 +86,16 @@ if (document.readyState === 'loading') {
   init();
 }
 
-/* ─────────────────────────────────────────────
-   HEADER — ponto único de reconstrução
-───────────────────────────────────────────── */
+
+/* ═══════════════════════════════════════════════
+   SEÇÃO 3 — HEADER
+   Ponto único de reconstrução do header-nav.
+   Chamado na inicialização e após login/logout.
+═══════════════════════════════════════════════ */
 
 function _refreshHeader() {
   try {
-    renderHeader();
+    _renderHeader();
     _montarSelect();
   } catch (err) {
     console.error('[Header] Falha ao reconstruir o header:', err);
@@ -82,9 +105,10 @@ function _refreshHeader() {
 function _montarSelect() {
   const wrap = document.getElementById('semestre-wrap');
   if (!wrap) {
-    console.warn('[Header] #semestre-wrap não encontrado — renderHeader() pode ter falhado.');
+    console.warn('[Header] #semestre-wrap não encontrado — _renderHeader() pode ter falhado.');
     return;
   }
+
   criarSemestreSelect('semestre-wrap', sem => {
     playSound('select', 'inicial');
     document.dispatchEvent(new CustomEvent('nexus:semestreChanged', { detail: sem }));
@@ -92,13 +116,11 @@ function _montarSelect() {
 
   requestAnimationFrame(() => {
     const sel = wrap.querySelector('select');
-    if (sel) {
-      sel.addEventListener('mousedown', () => playSound('click', 'inicial'));
-    }
+    if (sel) sel.addEventListener('mousedown', () => playSound('click', 'inicial'));
   });
 }
 
-function renderHeader() {
+function _renderHeader() {
   const nav = document.getElementById('header-nav');
   if (!nav) {
     console.error('[Header] #header-nav não encontrado no DOM.');
@@ -106,26 +128,28 @@ function renderHeader() {
   }
   nav.innerHTML = '';
 
+  // Semestre select
   const semestreWrap = document.createElement('div');
   semestreWrap.id = 'semestre-wrap';
   nav.appendChild(semestreWrap);
 
+  // Avatar (logado) ou botão Entrar (visitante)
   if (estaLogado()) {
-    const u = getUsuario();
+    const u         = getUsuario();
     const avatarVal = u.avatar ?? u.nome.charAt(0).toUpperCase();
 
     const btnPerfil = document.createElement('button');
     btnPerfil.className = 'nav-btn--avatar';
-    btnPerfil.id    = 'btn-perfil';
-    btnPerfil.title = u.nome;
+    btnPerfil.id        = 'btn-perfil';
+    btnPerfil.title     = u.nome;
+    btnPerfil.innerHTML = u.foto
+      ? `<img src="${u.foto}" alt="${u.nome}" class="avatar-img" />`
+      : avatarVal;
 
-    if (u.foto) {
-      btnPerfil.innerHTML = `<img src="${u.foto}" alt="${u.nome}" class="avatar-img" />`;
-    } else {
-      btnPerfil.textContent = avatarVal;
-    }
-
-    btnPerfil.addEventListener('click', () => { playSound('click', 'inicial'); abrirPerfilModal(); });
+    btnPerfil.addEventListener('click', () => {
+      playSound('click', 'inicial');
+      _abrirPerfilModal();
+    });
     nav.appendChild(btnPerfil);
 
   } else {
@@ -134,14 +158,18 @@ function renderHeader() {
     btnEntrar.id          = 'btn-entrar';
     btnEntrar.textContent = 'Entrar';
     btnEntrar.addEventListener('mouseenter', () => playSound('hover', 'inicial'));
-    btnEntrar.addEventListener('click', () => { playSound('click', 'inicial'); abrirModalLogin(); });
+    btnEntrar.addEventListener('click', () => {
+      playSound('click', 'inicial');
+      _abrirModalLogin();
+    });
     nav.appendChild(btnEntrar);
   }
 
+  // Botão configurações
   const btnConfig = document.createElement('button');
   btnConfig.className = 'nav-btn nav-btn--icon';
-  btnConfig.id    = 'btn-config';
-  btnConfig.title = 'Configurações';
+  btnConfig.id        = 'btn-config';
+  btnConfig.title     = 'Configurações';
   btnConfig.innerHTML = `
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -156,28 +184,31 @@ function renderHeader() {
                l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09
                a1.65 1.65 0 0 0-1.51 1z"/>
     </svg>`;
-  btnConfig.addEventListener('click', () => { playSound('click', 'inicial'); abrirModalConfig(); });
+  btnConfig.addEventListener('click', () => {
+    playSound('click', 'inicial');
+    _abrirModalConfig();
+  });
   nav.appendChild(btnConfig);
 }
 
-/* ─────────────────────────────────────────────
-   CARDS — links + hover
-───────────────────────────────────────────── */
-function bindCardLinks() {
-  // Cada card mapeia para a área correspondente no sfxAreaMap.
-  // HOVER: sempre usa a área 'inicial' — o usuário ainda está na página inicial,
-  //        não na área de destino. O som específico da área só entra após navegar.
-  // CLICK: usa a área de destino (som de confirmação de entrada na área).
+
+/* ═══════════════════════════════════════════════
+   SEÇÃO 4 — CARDS
+   Cada card tem hover com área 'inicial' (usuário
+   ainda está na home) e click com a área de destino.
+═══════════════════════════════════════════════ */
+
+function _bindCardLinks() {
   const rotas = {
     'card-pessoal': { path: './area_pessoal/pessoal.html', area: 'perfil'  },
     'card-resumos': { path: './resumo/resumo.html',        area: 'resumos' },
     'card-quiz':    { path: './quiz/quiz.html',            area: 'quiz'    },
     'card-jogos':   { path: './games/jogo.html',           area: 'game'    },
   };
+
   Object.entries(rotas).forEach(([id, { path, area }]) => {
     const card = document.getElementById(id);
     if (!card) return;
-    // 'inicial': som configurado para a página inicial, independente do destino do card
     card.addEventListener('mouseenter', () => playSound('hover', 'inicial'));
     card.addEventListener('click', () => {
       playSound('click', area);
@@ -186,14 +217,20 @@ function bindCardLinks() {
   });
 }
 
-/* ─────────────────────────────────────────────
-   MODAL LOGIN — Nome + PIN
-───────────────────────────────────────────── */
-function abrirModalLogin() {
-  fecharTodosModais();
+
+/* ═══════════════════════════════════════════════
+   SEÇÃO 5 — MODAL LOGIN
+   Fluxo: nome + PIN → login() → loginSuccess event
+   Modo admin detectado pelo nome 'admin'.
+═══════════════════════════════════════════════ */
+
+function _abrirModalLogin() {
+  _fecharTodosModais();
   playSound('openModal', 'inicial');
 
-  const modal = criarModal('login');
+  const cards = document.querySelector('.cards-grid');
+  const modal = _criarModal('login');
+
   modal.innerHTML = `
     <div class="modal__overlay" id="modal-overlay-login"></div>
     <div class="modal__box modal__box--sm" role="dialog" aria-modal="true" aria-label="Entrar">
@@ -224,52 +261,39 @@ function abrirModalLogin() {
       </div>
 
       <div class="modal__body-scroll">
-      <div class="modal__section">
+        <div class="modal__section">
 
-        <div class="config-row config-row--col">
-          <label for="login-nome">Nome</label>
-          <input
-            type="text"
-            id="login-nome"
-            class="config-input"
-            placeholder="seu nome"
-            maxlength="30"
-            autocomplete="off"
-            autocapitalize="off"
-          />
-        </div>
-
-        <div class="config-row config-row--col">
-          <label for="login-pin">PIN</label>
-          <div class="pin-wrap">
-            <input
-              type="password"
-              id="login-pin"
-              class="config-input"
-              placeholder="• • •"
-              maxlength="3"
-              inputmode="numeric"
-              autocomplete="off"
-            />
-            <button type="button" class="pin-eye" id="btn-pin-eye" aria-label="Mostrar PIN" tabindex="-1">
-              <svg id="pin-eye-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                <circle cx="12" cy="12" r="3"/>
-              </svg>
-            </button>
+          <div class="config-row config-row--col">
+            <label for="login-nome">Nome</label>
+            <input type="text" id="login-nome" class="config-input"
+              placeholder="seu nome" maxlength="30"
+              autocomplete="off" autocapitalize="off" />
           </div>
+
+          <div class="config-row config-row--col">
+            <label for="login-pin">PIN</label>
+            <div class="pin-wrap">
+              <input type="password" id="login-pin" class="config-input"
+                placeholder="• • •" maxlength="3"
+                inputmode="numeric" autocomplete="off" />
+              <button type="button" class="pin-eye" id="btn-pin-eye"
+                      aria-label="Mostrar PIN" tabindex="-1">
+                <svg id="pin-eye-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <p id="login-erro" class="login-erro" style="display:none"></p>
+
         </div>
-
-        <p id="login-erro" class="login-erro" style="display:none"></p>
-
-      </div>
       </div>
 
       <div class="modal__footer">
-        <button class="modal-btn modal-btn--primary" id="btn-login-entrar">
-          Entrar
-        </button>
+        <button class="modal-btn modal-btn--primary" id="btn-login-entrar">Entrar</button>
       </div>
 
     </div>`;
@@ -277,11 +301,9 @@ function abrirModalLogin() {
   document.body.appendChild(modal);
   requestAnimationFrame(() => modal.classList.add('modal--open'));
 
-  const inputNome = document.getElementById('login-nome');
-  const box       = modal.querySelector('.modal__box');
-  const cards     = document.querySelector('.cards-grid');
-
-  inputNome.addEventListener('input', function () {
+  /* ── Detecta modo admin pelo nome ── */
+  const box = modal.querySelector('.modal__box');
+  document.getElementById('login-nome').addEventListener('input', function () {
     const isAdmin = this.value.trim().toLowerCase() === 'admin';
     const pin = document.getElementById('login-pin');
     pin.setAttribute('maxlength', isAdmin ? '9' : '3');
@@ -290,6 +312,7 @@ function abrirModalLogin() {
     cards?.classList.toggle('cards-hidden', isAdmin);
   });
 
+  /* ── Toggle visibilidade do PIN ── */
   document.getElementById('btn-pin-eye').addEventListener('click', function () {
     const pin  = document.getElementById('login-pin');
     const icon = document.getElementById('pin-eye-icon');
@@ -303,25 +326,28 @@ function abrirModalLogin() {
          <circle cx="12" cy="12" r="3"/>`;
   });
 
+  /* ── Atalhos de teclado ── */
   document.getElementById('login-nome').addEventListener('keydown', e => {
     if (e.key === 'Enter') document.getElementById('login-pin').focus();
   });
-
   document.getElementById('login-pin').addEventListener('keydown', e => {
     if (e.key === 'Enter') _tentarLogin();
   });
 
-  document.getElementById('modal-overlay-login').addEventListener('click', () => {
+  /* ── Fechar ── */
+  function _fecharLogin() {
     cards?.classList.remove('cards-hidden');
     playSound('closeModal', 'inicial');
-    fecharModal(modal);
+    _fecharModal(modal);
+  }
+  document.getElementById('modal-overlay-login').addEventListener('click', _fecharLogin);
+  document.getElementById('modal-close-login').addEventListener('click',   _fecharLogin);
+
+  /* ── Submit ── */
+  document.getElementById('btn-login-entrar').addEventListener('click', () => {
+    playSound('click', 'inicial');
+    _tentarLogin();
   });
-  document.getElementById('modal-close-login').addEventListener('click', () => {
-    cards?.classList.remove('cards-hidden');
-    playSound('closeModal', 'inicial');
-    fecharModal(modal);
-  });
-  document.getElementById('btn-login-entrar').addEventListener('click', () => { playSound('click', 'inicial'); _tentarLogin(); });
 
   async function _tentarLogin() {
     const nome = document.getElementById('login-nome').value.trim();
@@ -346,17 +372,16 @@ function abrirModalLogin() {
     btn.disabled    = false;
 
     if (resultado.ok) {
-
       if (resultado.usuario.admin) {
         cards?.classList.remove('cards-hidden');
-        fecharModal(modal);
+        _fecharModal(modal);
         window.location.replace('/admin/admin.html');
         return;
       }
 
       limparDadosQuiz();
-      const configsRemota = await carregarConfigs(resultado.usuario.uid);
 
+      const configsRemota = await carregarConfigs(resultado.usuario.uid);
       if (configsRemota) {
         hydrateConfigs({ ...getConfigs(), ...configsRemota });
         console.log('[login] configs mescladas com Firebase ✓');
@@ -365,7 +390,7 @@ function abrirModalLogin() {
       }
 
       cards?.classList.remove('cards-hidden');
-      fecharModal(modal);
+      _fecharModal(modal);
       _refreshHeader();
 
       document.dispatchEvent(new CustomEvent('nexus:loginSuccess', {
@@ -383,15 +408,18 @@ function abrirModalLogin() {
   }
 }
 
-/* ─────────────────────────────────────────────
-   MODAL CONFIG
-───────────────────────────────────────────── */
-function abrirModalConfig() {
-  fecharTodosModais();
+
+/* ═══════════════════════════════════════════════
+   SEÇÃO 6 — MODAL CONFIG
+   Aparência, sistema, áudio, quiz, flashcard e área pessoal.
+═══════════════════════════════════════════════ */
+
+function _abrirModalConfig() {
+  _fecharTodosModais();
   playSound('openModal', 'inicial');
 
   const cfg   = getConfigs();
-  const modal = criarModal('config');
+  const modal = _criarModal('config');
 
   modal.innerHTML = `
     <div class="modal__overlay" id="modal-overlay-config"></div>
@@ -430,14 +458,11 @@ function abrirModalConfig() {
             </div>
             <div class="config-perfil__info">
               <strong>${getUsuario().nome}</strong>
-              <span style="color:var(--text-2,#a8a49c); font-size:.8rem">
-                ${getUsuario().uid}
-              </span>
+              <span style="color:var(--text-2,#a8a49c);font-size:.8rem">${getUsuario().uid}</span>
             </div>
             <button class="config-perfil__logout" id="btn-logout">Sair</button>
           </div>
-        </div>
-        ` : ''}
+        </div>` : ''}
 
         <div class="modal__section">
           <div class="modal__section-title">Aparência</div>
@@ -473,7 +498,7 @@ function abrirModalConfig() {
           <div class="config-row">
             <label>
               Configurações de Som
-              <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
+              <small style="display:block;font-weight:400;opacity:0.6;font-size:0.72em;margin-top:2px;">
                 Ajuste volumes, variantes de SFX e trilhas sonoras.
               </small>
             </label>
@@ -496,7 +521,7 @@ function abrirModalConfig() {
           <div class="config-row">
             <label for="cfg-salvar-parcial">
               Salvar progresso
-              <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
+              <small style="display:block;font-weight:400;opacity:0.6;font-size:0.72em;margin-top:2px;">
                 Quando ativado, o progresso parcial é salvo enquanto você responde.
                 Desativado, apaga 10&nbsp;min após sair da aba.
               </small>
@@ -511,10 +536,9 @@ function abrirModalConfig() {
           <div class="config-row">
             <label for="cfg-salvar-progresso">
               Salvar ao concluir
-              <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
+              <small style="display:block;font-weight:400;opacity:0.6;font-size:0.72em;margin-top:2px;">
                 Quando ativado, o resultado fica salvo permanentemente.
                 Desativado, apaga 20&nbsp;s após sair da aba.
-                Progresso parcial é sempre salvo.
               </small>
             </label>
             <label class="toggle">
@@ -527,14 +551,11 @@ function abrirModalConfig() {
           <div class="config-row">
             <label>
               Limpar dados do quiz
-              <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
-                Remove todo progresso salvo de todos os quizzes. Configs e
-                demais dados do sistema não são afetados.
+              <small style="display:block;font-weight:400;opacity:0.6;font-size:0.72em;margin-top:2px;">
+                Remove todo progresso salvo de todos os quizzes.
               </small>
             </label>
-            <button class="modal-btn modal-btn--danger" id="btn-limpar-quiz">
-              Limpar
-            </button>
+            <button class="modal-btn modal-btn--danger" id="btn-limpar-quiz">Limpar</button>
           </div>
         </div>
 
@@ -544,7 +565,7 @@ function abrirModalConfig() {
           <div class="config-row">
             <label>
               Limpar disciplina
-              <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
+              <small style="display:block;font-weight:400;opacity:0.6;font-size:0.72em;margin-top:2px;">
                 Zera o progresso de repetição espaçada de uma disciplina específica.
               </small>
             </label>
@@ -554,13 +575,11 @@ function abrirModalConfig() {
           <div class="config-row">
             <label>
               Limpar tudo
-              <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
+              <small style="display:block;font-weight:400;opacity:0.6;font-size:0.72em;margin-top:2px;">
                 Zera o SRS de todas as disciplinas do semestre atual.
               </small>
             </label>
-            <button class="modal-btn modal-btn--danger" id="btn-limpar-srs-tudo">
-              Limpar tudo
-            </button>
+            <button class="modal-btn modal-btn--danger" id="btn-limpar-srs-tudo">Limpar tudo</button>
           </div>
         </div>
 
@@ -570,7 +589,7 @@ function abrirModalConfig() {
           <div class="config-row">
             <label>
               Limpar checklist
-              <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
+              <small style="display:block;font-weight:400;opacity:0.6;font-size:0.72em;margin-top:2px;">
                 Desmarca todos os itens do checklist de uma disciplina específica.
               </small>
             </label>
@@ -580,7 +599,7 @@ function abrirModalConfig() {
           <div class="config-row">
             <label>
               Limpar tarefas
-              <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
+              <small style="display:block;font-weight:400;opacity:0.6;font-size:0.72em;margin-top:2px;">
                 Remove todas as categorias e tarefas de uma disciplina específica.
               </small>
             </label>
@@ -590,20 +609,18 @@ function abrirModalConfig() {
           <div class="config-row">
             <label>
               Limpar tudo
-              <small style="display:block; font-weight:400; opacity:0.6; font-size:0.72em; margin-top:2px;">
+              <small style="display:block;font-weight:400;opacity:0.6;font-size:0.72em;margin-top:2px;">
                 Limpa checklist e tarefas de todas as disciplinas do semestre atual.
               </small>
             </label>
-            <button class="modal-btn modal-btn--danger" id="btn-limpar-pessoal-tudo">
-              Limpar tudo
-            </button>
+            <button class="modal-btn modal-btn--danger" id="btn-limpar-pessoal-tudo">Limpar tudo</button>
           </div>
         </div>
 
       </div>
 
       <div class="modal__footer">
-        <button class="modal-btn modal-btn--ghost" id="btn-reset-configs">Resetar padrão</button>
+        <button class="modal-btn modal-btn--ghost"   id="btn-reset-configs">Resetar padrão</button>
         <button class="modal-btn modal-btn--primary" id="btn-salvar-configs">Salvar</button>
       </div>
 
@@ -612,6 +629,7 @@ function abrirModalConfig() {
   document.body.appendChild(modal);
   requestAnimationFrame(() => modal.classList.add('modal--open'));
 
+  /* ── Leitura dos campos ── */
   function _lerConfigs() {
     return {
       tema:                   document.getElementById('cfg-tema').value,
@@ -622,6 +640,7 @@ function abrirModalConfig() {
     };
   }
 
+  let _configsAlteradas = false;
   function _autoSave() { _configsAlteradas = true; setConfigs(_lerConfigs()); }
 
   document.getElementById('cfg-tema').addEventListener('change', _autoSave);
@@ -645,17 +664,17 @@ function abrirModalConfig() {
     if (concluir) { concluir.checked = false; concluir.disabled = true; }
   }
 
-  let _configsAlteradas = false;
-
+  /* ── Fechar ── */
   function _fecharComToast() {
     playSound('closeModal', 'inicial');
-    fecharModal(modal);
+    _fecharModal(modal);
     if (_configsAlteradas) mostrarToast('Configurações salvas!');
   }
 
   document.getElementById('modal-overlay-config').addEventListener('click', _fecharComToast);
   document.getElementById('modal-close-config').addEventListener('click',   _fecharComToast);
 
+  /* ── Footer actions ── */
   document.getElementById('btn-salvar-configs').addEventListener('click', () => {
     playSound('click', 'inicial');
     setConfigs(_lerConfigs());
@@ -667,9 +686,9 @@ function abrirModalConfig() {
     playSound('click', 'inicial');
     resetConfigs();
     Sound.resetAudio();
-    fecharModal(modal);
+    _fecharModal(modal);
     mostrarToast('Configurações resetadas.');
-    setTimeout(abrirModalConfig, 300);
+    setTimeout(_abrirModalConfig, 300);
   });
 
   document.getElementById('btn-abrir-audio').addEventListener('click', () => {
@@ -677,42 +696,39 @@ function abrirModalConfig() {
     Sound.openModal();
   });
 
+  /* ── Quiz: limpar ── */
   document.getElementById('btn-limpar-quiz').addEventListener('click', function () {
     _confirmar(this, () => {
       limparDadosQuiz();
       console.log('[Quiz] dados do quiz apagados via configurações');
-      if (typeof window.__nexusQuizNotifyCleared === 'function') {
-        window.__nexusQuizNotifyCleared();
-      }
+      window.__nexusQuizNotifyCleared?.();
       mostrarToast('Dados do quiz apagados.');
     });
   });
 
+  /* ── Logout ── */
   if (estaLogado()) {
     document.getElementById('btn-logout')?.addEventListener('click', () => {
       playSound('click', 'inicial');
       limparDadosQuiz();
       logout();
-      fecharModal(modal);
+      _fecharModal(modal);
       _refreshHeader();
       mostrarToast('Sessão encerrada.');
     });
   }
 
+  /* ── Flashcard SRS ── */
   const sem         = getSemestreAtual();
   const disciplinas = getDisciplinasDeSemestre(sem);
-  const uid         = getUsuario()?.uid ?? 'visitante';
 
-  /* ── Flashcard SRS ── */
   async function _resetarSRS(discId) {
     try {
       const mod = await import('./games/jogos/flashcard/flashcard.js');
-      if (typeof mod?.invalidarCacheSRS === 'function') {
-        mod.invalidarCacheSRS(discId ?? null);
-        console.log(`[SRS] cache invalidado: disc="${discId ?? 'todas'}"`);
-      }
-    } catch (errMod) {
-      console.warn('[SRS] flashcard.js não encontrado (não crítico):', errMod?.message);
+      mod?.invalidarCacheSRS?.(discId ?? null);
+      console.log(`[SRS] cache invalidado: disc="${discId ?? 'todas'}"`);
+    } catch (err) {
+      console.warn('[SRS] flashcard.js não encontrado (não crítico):', err?.message);
     }
   }
 
@@ -786,60 +802,33 @@ function abrirModalConfig() {
   });
 }
 
-function _confirmar(btn, callback) {
-  if (btn.dataset.confirmando === 'true') {
-    btn.dataset.confirmando = 'false';
-    btn.textContent = btn.dataset.textoOriginal;
-    btn.classList.remove('modal-btn--danger');
-    callback();
-    return;
-  }
 
-  btn.dataset.textoOriginal = btn.textContent;
-  btn.dataset.confirmando   = 'true';
-  btn.textContent = 'Tem certeza?';
-  btn.classList.add('modal-btn--danger');
+/* ═══════════════════════════════════════════════
+   SEÇÃO 7 — MODAL PERFIL
+   Avatar picker (emoji) + logout.
+═══════════════════════════════════════════════ */
 
-  setTimeout(() => {
-    if (!document.body.contains(btn)) return;
-    if (btn.dataset.confirmando === 'true') {
-      btn.dataset.confirmando = 'false';
-      btn.textContent = btn.dataset.textoOriginal;
-      btn.classList.remove('modal-btn--danger');
-    }
-  }, 3000);
-}
-
-/* ─────────────────────────────────────────────
-   MODAL PERFIL
-───────────────────────────────────────────── */
-
-const EMOJIS_PERFIL = [
+const _EMOJIS_PERFIL = [
   '🎓','🧑‍💻','👾','🦊','🐉','🌙',
   '⚡','🔥','🎯','🧠','🚀','🦁',
   '📚','💡','☕','🌟','🎸','🐺',
   '🤖','🧙','🎭','🏆','🎲','🛡️',
 ];
 
-function abrirPerfilModal() {
-  fecharTodosModais();
+function _abrirPerfilModal() {
+  _fecharTodosModais();
   playSound('openModal', 'inicial');
 
   const u = getUsuario();
   if (!u) return;
 
-  const avatarAtual = u.foto
-    ? null
-    : (u.avatar ?? u.nome.charAt(0).toUpperCase());
-
-  const avatarHTML = u.foto
+  const avatarAtual  = u.foto ? null : (u.avatar ?? u.nome.charAt(0).toUpperCase());
+  const avatarHTML   = u.foto
     ? `<img src="${u.foto}" alt="${u.nome}" class="pm-avatar__img" />`
     : `<span class="pm-avatar__emoji" id="pm-avatar-emoji">${avatarAtual}</span>`;
-
-  const badgeHTML = u.admin
+  const badgeHTML    = u.admin
     ? `<div class="pm-data-badge pm-data-badge--admin">admin</div>`
     : `<div class="pm-data-badge pm-data-badge--locked">verificado</div>`;
-
   const changeBtnHTML = u.foto ? '' : `
     <button class="pm-change-btn" id="pm-toggle-picker" type="button">
       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -849,13 +838,12 @@ function abrirPerfilModal() {
       </svg>
       Alterar avatar
     </button>`;
-
-  const emojiGridHTML = EMOJIS_PERFIL.map(e => `
+  const emojiGridHTML = _EMOJIS_PERFIL.map(e => `
     <button type="button" class="ej${e === avatarAtual ? ' on' : ''}"
             data-emoji="${e}">${e}</button>
   `).join('');
 
-  const modal = criarModal('perfil');
+  const modal = _criarModal('perfil');
   modal.innerHTML = `
     <div class="modal__overlay" id="modal-overlay-perfil"></div>
     <div class="pm-duo">
@@ -870,13 +858,9 @@ function abrirPerfilModal() {
               <line x1="6"  y1="6" x2="18" y2="18"/>
             </svg>
           </button>
-
           <div class="pm-avatar-ring">
-            <div class="pm-avatar-inner" id="pm-avatar-display">
-              ${avatarHTML}
-            </div>
+            <div class="pm-avatar-inner" id="pm-avatar-display">${avatarHTML}</div>
           </div>
-
           <h3 class="pm-username">${u.nome}</h3>
           ${changeBtnHTML}
         </div>
@@ -964,9 +948,7 @@ function abrirPerfilModal() {
           </div>
 
           <div class="pm-picker-grid-wrap">
-            <div class="pm-picker-grid" id="pm-picker-grid">
-              ${emojiGridHTML}
-            </div>
+            <div class="pm-picker-grid" id="pm-picker-grid">${emojiGridHTML}</div>
           </div>
 
           <div class="pm-picker-foot">
@@ -985,11 +967,12 @@ function abrirPerfilModal() {
   let avatarSelecionado = avatarAtual;
   let pickerAberto      = false;
 
+  /* ── Helpers do picker ── */
   function _setPreview(e) {
-    const previewEmoji = document.getElementById('pm-picker-preview-emoji');
-    const previewVal   = document.getElementById('pm-picker-preview-val');
-    if (previewEmoji) previewEmoji.textContent = e;
-    if (previewVal)   previewVal.textContent   = e;
+    const el = document.getElementById('pm-picker-preview-emoji');
+    const vl = document.getElementById('pm-picker-preview-val');
+    if (el) el.textContent = e;
+    if (vl) vl.textContent = e;
   }
 
   function _abrirPicker() {
@@ -1010,6 +993,7 @@ function abrirPerfilModal() {
     avatarSelecionado = emoji;
   }
 
+  /* ── Eventos do picker ── */
   document.getElementById('pm-picker-grid')?.addEventListener('click', e => {
     const btn = e.target.closest('.ej');
     if (!btn) return;
@@ -1027,14 +1011,17 @@ function abrirPerfilModal() {
   });
 
   document.getElementById('pm-picker-close')?.addEventListener('click',  _fecharPicker);
-  document.getElementById('pm-picker-cancel')?.addEventListener('click', () => { playSound('click', 'inicial'); _fecharPicker(); });
-
+  document.getElementById('pm-picker-cancel')?.addEventListener('click', () => {
+    playSound('click', 'inicial');
+    _fecharPicker();
+  });
   document.getElementById('pm-picker-ok')?.addEventListener('click', () => {
     playSound('click', 'inicial');
     _aplicarAvatar(avatarSelecionado);
     _fecharPicker();
   });
 
+  /* ── Salvar perfil ── */
   document.getElementById('pm-btn-salvar')?.addEventListener('click', async () => {
     playSound('click', 'inicial');
     _aplicarAvatar(avatarSelecionado);
@@ -1051,56 +1038,94 @@ function abrirPerfilModal() {
       console.warn('[salvarAvatar] Falha ao sincronizar com o Firebase:', err);
     }
 
-    fecharModal(modal);
+    _fecharModal(modal);
     _refreshHeader();
     mostrarToast('Perfil atualizado!');
   });
 
+  /* ── Logout ── */
   document.getElementById('pm-btn-logout')?.addEventListener('click', () => {
     playSound('click', 'inicial');
     limparDadosQuiz();
     logout();
-    fecharModal(modal);
+    _fecharModal(modal);
     _refreshHeader();
     mostrarToast('Sessão encerrada.');
   });
 
-  document.getElementById('pm-close-btn')?.addEventListener('click', () => { playSound('closeModal', 'inicial'); fecharModal(modal); });
-  document.getElementById('modal-overlay-perfil')?.addEventListener('click', () => { playSound('closeModal', 'inicial'); fecharModal(modal); });
+  /* ── Fechar ── */
+  function _fecharPerfil() { playSound('closeModal', 'inicial'); _fecharModal(modal); }
+  document.getElementById('pm-close-btn')?.addEventListener('click',         _fecharPerfil);
+  document.getElementById('modal-overlay-perfil')?.addEventListener('click', _fecharPerfil);
 }
 
-/* ─────────────────────────────────────────────
-   UTILITÁRIOS DE MODAL
-───────────────────────────────────────────── */
-function criarModal(id) {
+
+/* ═══════════════════════════════════════════════
+   SEÇÃO 8 — UTILITÁRIOS
+   ─────────────────────────────────────────────
+   8a. Modais — criar, fechar, fechar todos
+   8b. Confirmar ação destrutiva (dois cliques)
+   8c. Toast — empilhamento + reposicionamento
+═══════════════════════════════════════════════ */
+
+/* ── 8a. Modais ── */
+
+function _criarModal(id) {
   const el = document.createElement('div');
   el.className = 'modal';
   el.id = `modal-${id}`;
   return el;
 }
 
-function fecharModal(modal) {
+function _fecharModal(modal) {
   modal.classList.remove('modal--open');
   modal.addEventListener('transitionend', () => modal.remove(), { once: true });
 }
 
-function fecharTodosModais() {
+function _fecharTodosModais() {
   document.querySelectorAll('.modal').forEach(m => m.remove());
 }
 
-/* ─────────────────────────────────────────────
-   TOAST
-───────────────────────────────────────────── */
+/* ── 8b. Confirmação de ação destrutiva ──
+   Primeiro clique: transforma o botão em "Tem certeza?" (3 s).
+   Segundo clique:  executa o callback.                          */
+
+function _confirmar(btn, callback) {
+  if (btn.dataset.confirmando === 'true') {
+    btn.dataset.confirmando = 'false';
+    btn.textContent = btn.dataset.textoOriginal;
+    btn.classList.remove('modal-btn--danger');
+    callback();
+    return;
+  }
+
+  btn.dataset.textoOriginal = btn.textContent;
+  btn.dataset.confirmando   = 'true';
+  btn.textContent = 'Tem certeza?';
+  btn.classList.add('modal-btn--danger');
+
+  setTimeout(() => {
+    if (!document.body.contains(btn)) return;
+    if (btn.dataset.confirmando === 'true') {
+      btn.dataset.confirmando = 'false';
+      btn.textContent = btn.dataset.textoOriginal;
+      btn.classList.remove('modal-btn--danger');
+    }
+  }, 3000);
+}
+
+/* ── 8c. Toast ── */
+
 function mostrarToast(msg) {
   const OFFSET   = 12;
   const DURATION = 2800;
 
   const existentes = document.querySelectorAll('.nexus-toast');
-  let nextBottom = 32;
+  let nextBottom   = 32;
   existentes.forEach(t => { nextBottom += t.offsetHeight + OFFSET; });
 
   const t = document.createElement('div');
-  t.className = 'nexus-toast';
+  t.className   = 'nexus-toast';
   t.textContent = msg;
   t.style.bottom = `${nextBottom}px`;
   document.body.appendChild(t);
@@ -1118,7 +1143,7 @@ function mostrarToast(msg) {
 
 function _reposicionarToasts() {
   const OFFSET = 12;
-  let bottom = 32;
+  let bottom   = 32;
   document.querySelectorAll('.nexus-toast').forEach(t => {
     t.style.bottom = `${bottom}px`;
     bottom += t.offsetHeight + OFFSET;

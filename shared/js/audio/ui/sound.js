@@ -45,7 +45,7 @@
 import audio          from '../engine/sfx.js';
 import audioState     from '../state/audio-state.js';
 import makeVolumeSlider from './vol-slider.js';
-import { mountAudioBtn, destroyAudioBtn } from './audio-btn.js';
+import { mountAudioBtn, destroyAudioBtn } from './audio-btns.js';
 
 /* ═══════════════════════════════════════════════
    SEÇÃO A — BOTÃO FLUTUANTE DE VOLUME
@@ -194,9 +194,9 @@ const _CATEGORIES = [
     icon: '⚠',
     cls: 'snd-sound-card--timerwarning',
     areas: ['Quiz', 'Game'],
-    defaultVariant: 'timerWarning1',
+    defaultVariant: 'timerWarning',
     variants: [
-      { id: 'timerWarning1', label: 'Warning 1 — Três beeps crescentes',  fn: () => audio.sfx.timerWarning1?.() },
+      { id: 'timerWarning',  label: 'Warning 1 — Três beeps crescentes',  fn: () => audio.sfx.timerWarning?.()  },
       { id: 'timerWarning2', label: 'Warning 2 — Coração acelerado',      fn: () => audio.sfx.timerWarning2?.() },
       { id: 'timerWarning3', label: 'Warning 3 — Duplo alerta nervoso',   fn: () => audio.sfx.timerWarning3?.() },
       { id: 'timerWarning4', label: 'Warning 4 — Conta regressiva',       fn: () => audio.sfx.timerWarning4?.() },
@@ -209,9 +209,9 @@ const _CATEGORIES = [
     icon: '⏸',
     cls: 'snd-sound-card--pause',
     areas: ['Quiz', 'Game'],
-    defaultVariant: 'pause1',
+    defaultVariant: 'pause',
     variants: [
-      { id: 'pause1', label: 'Pause 1 — Dois tons descendentes', fn: () => audio.sfx.pause1?.() },
+      { id: 'pause', label: 'Pause 1 — Dois tons descendentes', fn: () => audio.sfx.pause?.() },
       { id: 'pause2', label: 'Pause 2 — Fade out lento',         fn: () => audio.sfx.pause2?.() },
       { id: 'pause3', label: 'Pause 3 — Thud + shimmer',         fn: () => audio.sfx.pause3?.() },
       { id: 'pause4', label: 'Pause 4 — Tock + drone',           fn: () => audio.sfx.pause4?.() },
@@ -1183,11 +1183,11 @@ const _DEFAULT_SFX_MAP = {
   select:       'select',
   openModal:    'openModal2',
   closeModal:   'closeModal',
-  correct:      'correct4',
-  wrong:        'wrong',
-  timeout:      'timeout',
-  pause:        'pause1',
-  timerWarning: 'timerWarning1',
+  correct:      'correct',
+  wrong:        'wrong6',
+  timeout:      'timeout4',
+  pause:        'pause',
+  timerWarning: 'timerWarning',
 };
 
 function _resetAll() {

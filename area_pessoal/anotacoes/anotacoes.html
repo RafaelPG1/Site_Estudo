@@ -1,144 +1,266 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Anotações — Nexus Study</title>
+  <title>Noted</title>
+  <link rel="stylesheet" href="anotacoes.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../pessoal.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
 </head>
-<body class="notes-page">
+<body>
 
-  <!-- Ambient background -->
-  <div class="bg-orb bg-orb--1"></div>
-  <div class="bg-orb bg-orb--2"></div>
-  <div class="bg-orb bg-orb--3"></div>
-  <div class="bg-grid"></div>
+<!-- NOTIFICATIONS -->
+<div id="notif-container" aria-live="polite" aria-atomic="true"></div>
 
-  <!-- ═══════════ HEADER ═══════════ -->
-  <header class="header">
-    <div class="header__inner">
-      <div class="header__left">
-        <a href="../pessoal.html" class="btn-back" title="Voltar">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
-          </svg>
-        </a>
-        <div class="logo">
-          <span class="logo__mark">N</span>
-          <div class="logo__text">
-            <span class="logo__title">Nexus</span>
-            <span class="logo__sub">Study</span>
-          </div>
-        </div>
-        <div class="breadcrumb">
-          <span class="breadcrumb__sep">/</span>
-          <a href="../pessoal.html"
-             style="font-size:.8rem;font-weight:500;color:var(--t3);letter-spacing:.03em;
-                    transition:color .2s;"
-             onmouseover="this.style.color='var(--t2)'"
-             onmouseout="this.style.color='var(--t3)'">
-            Área Pessoal
-          </a>
-          <span class="breadcrumb__sep">/</span>
-          <span class="breadcrumb__page">Anotações</span>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <!-- ═══════════ MAIN ═══════════ -->
-  <main class="main">
-
-    <!-- Toolbar -->
-    <div class="notes-toolbar">
-      <div class="notes-toolbar__left">
-        <div style="display:flex;align-items:center;gap:.7rem;">
-          <span style="font-size:1.6rem;line-height:1;filter:drop-shadow(0 0 10px rgba(77,217,180,.35));">📝</span>
-          <div>
-            <h1 style="font-family:var(--f-display);font-size:clamp(1.6rem,4vw,2.2rem);
-                        font-weight:600;color:var(--teal);letter-spacing:-.01em;line-height:1.1;">
-              Anotações
-            </h1>
-            <p style="font-size:.72rem;color:var(--t3);margin-top:.1rem;font-weight:300;">
-              Ctrl+S para salvar
-            </p>
-          </div>
-        </div>
-      </div>
-      <div class="notes-toolbar__right">
-        <!-- Save status -->
-        <span class="save-status" id="save-status">
-          <span class="save-dot"></span>
-          <span id="save-label">Aguardando</span>
-        </span>
-        <!-- Clear -->
-        <button class="notes-btn notes-btn--danger" id="btn-clear" title="Limpar tudo">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"/>
-            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-            <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
-          </svg>
-          Limpar
-        </button>
-        <!-- Save -->
-        <button class="notes-btn notes-btn--primary" id="btn-save">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-            <polyline points="17 21 17 13 7 13 7 21"/>
-            <polyline points="7 3 7 8 15 8"/>
-          </svg>
-          Salvar
-        </button>
-      </div>
-    </div>
-
-    <!-- Notepad -->
-    <div class="notes-pad">
-      <textarea
-        class="notes-textarea"
-        id="notes-textarea"
-        placeholder="Comece a digitar suas anotações…&#10;&#10;Use este espaço para registrar ideias, resumos de aula, dúvidas ou qualquer coisa que queira lembrar."
-        spellcheck="true"
-        autocomplete="off"
-        aria-label="Área de anotações"
-      ></textarea>
-      <div class="notes-meta">
-        <span class="notes-wordcount" id="notes-wordcount">0 palavras · 0 caracteres</span>
-      </div>
-    </div>
-
-  </main>
-
-  <footer class="footer">
-    <p>© <span id="footer-year"></span> Nexus Study · Anotações</p>
-  </footer>
-
-  <!-- Toast -->
-  <div class="nexus-toast" id="nexus-toast" role="status" aria-live="polite"></div>
-
-  <!-- Confirm modal (clear) -->
-  <div class="modal-backdrop" id="modal-backdrop" role="dialog"
-       aria-modal="true" aria-label="Confirmar limpeza">
-    <div class="modal-box">
-      <div class="modal-head">
-        <h3>Limpar anotações?</h3>
-      </div>
-      <div class="modal-body">
-        Todo o conteúdo será apagado permanentemente. Esta ação não pode ser desfeita.
-      </div>
-      <div class="modal-actions">
-        <button class="notes-btn" id="btn-modal-cancel">Cancelar</button>
-        <button class="notes-btn notes-btn--danger" id="btn-modal-confirm">Limpar tudo</button>
-      </div>
+<!-- MODAL: delete confirm -->
+<div id="modal-delete" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-del-title">
+  <div class="modal-box">
+    <p id="modal-del-title" class="modal-heading">Excluir esta anotação?</p>
+    <p class="modal-sub">Esta ação não pode ser desfeita.</p>
+    <div class="modal-row">
+      <button id="del-cancel" class="btn btn-ghost">Cancelar</button>
+      <button id="del-confirm" class="btn btn-danger">Excluir</button>
     </div>
   </div>
+</div>
 
-  <script type="module" src="anotacoes.js"></script>
+<!-- MODAL: insert link -->
+<div id="modal-link" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-label="Inserir link">
+  <div class="modal-box">
+    <p class="modal-heading">Inserir link</p>
+    <label class="field-label">Texto</label>
+    <input id="link-text" type="text" class="text-input" placeholder="Texto exibido" />
+    <label class="field-label" style="margin-top:.75rem">URL</label>
+    <input id="link-url" type="url" class="text-input" placeholder="https://..." />
+    <div class="modal-row" style="margin-top:1.25rem">
+      <button id="link-cancel" class="btn btn-ghost">Cancelar</button>
+      <button id="link-ok" class="btn btn-primary">Inserir</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+
+    <div class="sb-top">
+      <div class="sb-brand">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <rect x="1" y="1" width="16" height="16" rx="3" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M5 6h8M5 9h8M5 12h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span class="sb-brand-name">Noted</span>
+      </div>
+      <button id="theme-btn" class="icon-btn" title="Alternar tema" aria-label="Alternar tema">
+        <!-- sun/moon injected by JS -->
+      </button>
+    </div>
+
+    <!-- Search -->
+    <div class="sb-search-wrap">
+      <svg class="sb-search-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <input id="search-input" type="search" class="sb-search" placeholder="Pesquisar..." aria-label="Pesquisar anotações" />
+    </div>
+
+    <!-- New note -->
+    <button id="btn-new" class="btn-new" aria-label="Nova anotação">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+        <path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      Nova anotação
+    </button>
+
+    <!-- Notes list -->
+    <div id="notes-list" class="notes-list" role="list"></div>
+
+  </aside>
+
+  <!-- MAIN -->
+  <main id="main">
+
+    <!-- Empty state -->
+    <div id="empty-state" class="empty-state">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true" class="empty-icon">
+        <rect x="8" y="6" width="32" height="36" rx="4" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M16 16h16M16 22h16M16 28h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <p class="empty-title">Nenhuma anotação selecionada</p>
+      <p class="empty-sub">Selecione uma anotação ou crie uma nova.</p>
+      <button class="btn btn-primary" onclick="App.newNote()">Nova anotação</button>
+    </div>
+
+    <!-- Editor -->
+    <div id="editor-wrap" class="editor-wrap hidden">
+
+      <!-- Top bar -->
+      <div id="editor-top" class="editor-top">
+        <input id="note-title" class="note-title" type="text" placeholder="Título" maxlength="120" aria-label="Título da anotação" spellcheck="false" />
+        <div class="top-actions">
+          <span id="save-status" class="save-status" aria-live="polite">Salvo</span>
+          <button id="btn-export-txt"  class="icon-btn" title="Exportar como .txt"  aria-label="Exportar como .txt">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M9 2H4a1 1 0 00-1 1v10a1 1 0 001 1h8a1 1 0 001-1V6L9 2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M9 2v4h4" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6 9h4M6 11.5h2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </button>
+          <button id="btn-export-html" class="icon-btn" title="Exportar como .html" aria-label="Exportar como .html">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M5 4L2 8l3 4M11 4l3 4-3 4M9.5 3l-3 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button id="btn-duplicate"   class="icon-btn" title="Duplicar" aria-label="Duplicar anotação">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M11 5V3.5A1.5 1.5 0 009.5 2h-6A1.5 1.5 0 002 3.5v6A1.5 1.5 0 003.5 11H5" stroke="currentColor" stroke-width="1.3"/></svg>
+          </button>
+          <button id="btn-delete"      class="icon-btn icon-btn-danger" title="Excluir" aria-label="Excluir anotação">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2.5 4.5h11M6 4.5V3h4v1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.5 4.5l.9 8.1a1 1 0 001 .9h5.2a1 1 0 001-.9l.9-8.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.5 7v4M9.5 7v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Meta row -->
+      <div class="editor-meta">
+        <span id="meta-created">—</span>
+        <span class="meta-sep">·</span>
+        <span id="meta-modified">—</span>
+        <span class="meta-sep">·</span>
+        <span id="word-count">0 palavras</span>
+      </div>
+
+      <!-- Toolbar -->
+      <div id="toolbar" class="toolbar" role="toolbar" aria-label="Formatação">
+
+        <div class="tb-group">
+          <select id="tb-block" class="tb-select" title="Estilo de texto" aria-label="Estilo de texto">
+            <option value="p">Parágrafo</option>
+            <option value="h1">Título 1</option>
+            <option value="h2">Título 2</option>
+            <option value="h3">Título 3</option>
+            <option value="pre">Código</option>
+          </select>
+        </div>
+
+        <div class="tb-sep"></div>
+
+        <div class="tb-group">
+          <!-- Bold -->
+          <button class="tb-btn" data-cmd="bold" title="Negrito (Ctrl+B)" aria-label="Negrito">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M4 3h4.5a3 3 0 010 6H4V3zM4 9h5a3 3 0 010 6H4V9z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          </button>
+          <!-- Italic -->
+          <button class="tb-btn" data-cmd="italic" title="Itálico (Ctrl+I)" aria-label="Itálico">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M6 3h5M4 12h5M9 3l-3 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </button>
+          <!-- Underline -->
+          <button class="tb-btn" data-cmd="underline" title="Sublinhado (Ctrl+U)" aria-label="Sublinhado">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 13h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M4 3v5a3.5 3.5 0 007 0V3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </button>
+          <!-- Strikethrough -->
+          <button class="tb-btn" data-cmd="strikeThrough" title="Tachado" aria-label="Tachado">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 7.5h11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M5 4c0-1.1.9-1.5 2.5-1.5S10 3 10 4.5c0 1-.8 1.7-2 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M10 11c0 1.1-.9 1.5-2.5 1.5S5 12 5 10.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+
+        <div class="tb-sep"></div>
+
+        <div class="tb-group">
+          <!-- Align left -->
+          <button class="tb-btn" data-cmd="justifyLeft" title="Alinhar à esquerda" aria-label="Alinhar à esquerda">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 3h11M2 6h7M2 9h11M2 12h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+          <!-- Align center -->
+          <button class="tb-btn" data-cmd="justifyCenter" title="Centralizar" aria-label="Centralizar">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 3h11M4 6h7M2 9h11M4 12h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+          <!-- Align right -->
+          <button class="tb-btn" data-cmd="justifyRight" title="Alinhar à direita" aria-label="Alinhar à direita">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 3h11M6 6h7M2 9h11M6 12h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+          <!-- Justify -->
+          <button class="tb-btn" data-cmd="justifyFull" title="Justificar" aria-label="Justificar">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 3h11M2 6h11M2 9h11M2 12h11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+
+        <div class="tb-sep"></div>
+
+        <div class="tb-group">
+          <!-- Bullet list -->
+          <button class="tb-btn" data-cmd="insertUnorderedList" title="Lista com marcadores" aria-label="Lista com marcadores">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="3" cy="4" r="1.2" fill="currentColor"/><circle cx="3" cy="8" r="1.2" fill="currentColor"/><circle cx="3" cy="12" r="1.2" fill="currentColor"/><path d="M6.5 4h6.5M6.5 8h6.5M6.5 12h6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+          <!-- Ordered list -->
+          <button class="tb-btn" data-cmd="insertOrderedList" title="Lista numerada" aria-label="Lista numerada">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 3h1.5V6M2 6h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 9.5h2.5c0 0 0 1.5-2.5 1.5h2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 4h6.5M7 8h6.5M7 12h6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+          <!-- Indent -->
+          <button class="tb-btn" data-cmd="indent" title="Aumentar recuo (Tab)" aria-label="Aumentar recuo">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 3h11M6 6h7M6 9h7M2 12h11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2 6l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <!-- Outdent -->
+          <button class="tb-btn" data-cmd="outdent" title="Diminuir recuo (Shift+Tab)" aria-label="Diminuir recuo">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 3h11M6 6h7M6 9h7M2 12h11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M5 6l-3 3 3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+
+        <div class="tb-sep"></div>
+
+        <div class="tb-group">
+          <!-- Link -->
+          <button class="tb-btn" id="tb-link" title="Inserir link (Ctrl+K)" aria-label="Inserir link">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M6 9a3.5 3.5 0 005 0l2-2a3.5 3.5 0 00-5-5L7 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M9 6a3.5 3.5 0 00-5 0L2 8a3.5 3.5 0 005 5l1-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+          <!-- Image -->
+          <button class="tb-btn" id="tb-image" title="Inserir imagem" aria-label="Inserir imagem">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="2.5" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><circle cx="5" cy="6" r="1.2" fill="currentColor"/><path d="M1.5 10.5l3.5-3.5 3 3 2-2 3 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <!-- Clear formatting -->
+          <button class="tb-btn" data-cmd="removeFormat" title="Limpar formatação" aria-label="Limpar formatação">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 4h9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M5.5 4L4 12h3l1-5.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 8l-3 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M8 12h5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M13 2L2 13" stroke="var(--danger)" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+
+        <div class="tb-sep"></div>
+
+        <div class="tb-group">
+          <!-- Undo -->
+          <button class="tb-btn" data-cmd="undo" title="Desfazer (Ctrl+Z)" aria-label="Desfazer">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2.5 6.5H9a4 4 0 010 8H5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.5 6.5L5 4M2.5 6.5L5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <!-- Redo -->
+          <button class="tb-btn" data-cmd="redo" title="Refazer (Ctrl+Y)" aria-label="Refazer">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M12.5 6.5H6a4 4 0 000 8h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.5 6.5L10 4M12.5 6.5L10 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+
+        <div class="tb-sep"></div>
+
+        <!-- Text color -->
+        <div class="tb-group">
+          <label class="tb-color-label" title="Cor do texto" aria-label="Cor do texto">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 12L6.5 2L11 12M4 9h6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <input type="color" id="tb-color-text" value="#ffffff" />
+          </label>
+          <label class="tb-color-label" title="Destaque" aria-label="Destaque">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><rect x="1" y="9" width="12" height="3" rx="1" fill="currentColor" opacity=".35"/><path d="M4 9L7 2.5L10 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <input type="color" id="tb-color-bg" value="#f0c040" />
+          </label>
+        </div>
+
+      </div><!-- /toolbar -->
+
+      <!-- Content editable -->
+      <div id="editor" class="editor" contenteditable="true" spellcheck="true"
+           aria-label="Conteúdo da anotação" aria-multiline="true"
+           data-placeholder="Comece a escrever..."></div>
+
+    </div><!-- /editor-wrap -->
+  </main>
+</div><!-- /app -->
+
+<!-- Hidden inputs -->
+<input type="file" id="img-input" accept="image/*" style="display:none" aria-hidden="true" />
+
+<script src="anotacoes.js"></script>
 </body>
 </html>

@@ -169,11 +169,11 @@ const DEFAULT_SFX_MAP = {
   openModal:    'openModal2',
   closeModal:   'closeModal',
   select:       'select',
-  correct:      'correct4',
-  wrong:        'wrong',
-  timeout:      'timeout',
-  pause:        'pause1',
-  timerWarning: 'timerWarning1',
+  correct:      'correct',
+  wrong:        'wrong6',
+  timeout:      'timeout4',
+  pause:        'pause',
+  timerWarning: 'timerWarning',
 };
 
 /**

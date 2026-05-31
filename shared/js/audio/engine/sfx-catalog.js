@@ -621,7 +621,7 @@ export const catalog = [
 
     /* Pause */
     {
-      id: 'pause1', event: 'pause', label: 'pause 1',
+      id: 'pause', event: 'pause', label: 'pause',
       category: 'pause', type: 'sfx', variant: '', volume: 0.38,
       description: 'pause — dois tons descendentes suaves sine, sensação de desacelerar',
       fn() {
@@ -666,7 +666,7 @@ export const catalog = [
 
     /* Timer Warning */
     {
-      id: 'timerWarning1', event: 'timerWarning', label: 'timerWarning 1',
+      id: 'timerWarning', event: 'timerWarning', label: 'timerWarning',
       category: 'timerWarning', type: 'sfx', variant: 'warning', volume: 0.36,
       description: 'timerWarning — três beeps triangle crescentes, urgência escalando',
       fn() {
