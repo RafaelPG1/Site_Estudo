@@ -148,11 +148,11 @@ const _CATEGORIES = [
     areas: ['Quiz', 'Game'],
     defaultVariant: 'correct4',
     variants: [
-      { id: 'correct4', label: 'Correct 1 — Ping duplo',        fn: () => audio.sfx.correct4?.() },
-      { id: 'correct5', label: 'Correct 2 — Chime 3 notas',     fn: () => audio.sfx.correct5?.() },
-      { id: 'correct6', label: 'Correct 3 — Retro 8-bit',       fn: () => audio.sfx.correct6?.() },
-      { id: 'correct7', label: 'Correct 4 — Arpejo rápido',     fn: () => audio.sfx.correct7?.() },
-      { id: 'correct8', label: 'Correct 5 — Tick shimmer',      fn: () => audio.sfx.correct8?.() },
+      { id: 'correct',  label: 'Correct 1 — Ping duplo',        fn: () => audio.sfx.correct?.()  },
+      { id: 'correct2', label: 'Correct 2 — Chime 3 notas',     fn: () => audio.sfx.correct2?.() },
+      { id: 'correct3', label: 'Correct 3 — Retro 8-bit',       fn: () => audio.sfx.correct3?.() },
+      { id: 'correct4', label: 'Correct 4 — Arpejo rápido',     fn: () => audio.sfx.correct4?.() },
+      { id: 'correct5', label: 'Correct 5 — Tick shimmer',      fn: () => audio.sfx.correct5?.() },
     ],
   },
   {
@@ -1178,11 +1178,16 @@ function _saveAll() {
 /* ── Reset total ── */
 
 const _DEFAULT_SFX_MAP = {
-  click:      'click',
-  hover:      'hover2',
-  select:     'select',
-  openModal:  'openModal2',
-  closeModal: 'closeModal',
+  click:        'click',
+  hover:        'hover2',
+  select:       'select',
+  openModal:    'openModal2',
+  closeModal:   'closeModal',
+  correct:      'correct4',
+  wrong:        'wrong',
+  timeout:      'timeout',
+  pause:        'pause1',
+  timerWarning: 'timerWarning1',
 };
 
 function _resetAll() {

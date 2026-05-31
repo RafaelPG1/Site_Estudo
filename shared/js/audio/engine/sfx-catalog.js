@@ -59,9 +59,9 @@ export const catalog = [
 
     /* Botões de acertos */
     {
-    id: 'correct4',
+    id: 'correct',
     event: 'correct',
-    label: 'correct 4',
+    label: 'correct',
     category: 'feedback',
     type: 'sfx',
     variant: 'success',
@@ -75,9 +75,9 @@ export const catalog = [
     },
     },
     {
-    id: 'correct5',
+    id: 'correct2',
     event: 'correct',
-    label: 'correct 5',
+    label: 'correct 2',
     category: 'feedback',
     type: 'sfx',
     variant: 'success',
@@ -92,9 +92,9 @@ export const catalog = [
     },
     },
     {
-    id: 'correct6',
+    id: 'correct3',
     event: 'correct',
-    label: 'correct 6',
+    label: 'correct 3',
     category: 'feedback',
     type: 'sfx',
     variant: 'success',
@@ -108,9 +108,9 @@ export const catalog = [
     },
     },
     {
-    id: 'correct7',
+    id: 'correct4',
     event: 'correct',
-    label: 'correct 7',
+    label: 'correct 4',
     category: 'feedback',
     type: 'sfx',
     variant: 'success',
@@ -126,9 +126,9 @@ export const catalog = [
     },
     },
     {
-    id: 'correct8',
+    id: 'correct5',
     event: 'correct',
-    label: 'correct 8',
+    label: 'correct 5',
     category: 'feedback',
     type: 'sfx',
     variant: 'success',

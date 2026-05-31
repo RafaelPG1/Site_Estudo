@@ -406,8 +406,28 @@ function _applyToEngine(modeId) {
  * @param {{ mode: string|null, sfxMap: object|null, areaMap: object|null, volumes: object|null }} saved
  */
 function _applyLoadedState(saved) {
-  _currentMode       = saved.mode ?? DEFAULT_MODE;
-  _currentSfxMap     = saved.sfxMap  ? { ...DEFAULT_SFX_MAP, ...saved.sfxMap  } : { ...DEFAULT_SFX_MAP };
+  _currentMode = saved.mode ?? DEFAULT_MODE;
+
+  if (saved.sfxMap) {
+    /* Sanitização: descarta variantes salvas no Firebase que não existem mais
+       no catálogo atual (ex: 'correct8' após renomeação dos ids).
+       Variantes inválidas caem de volta para o DEFAULT_SFX_MAP da ação. */
+    const sanitized = {};
+    for (const [action, variantId] of Object.entries(saved.sfxMap)) {
+      if (audio.sfx[variantId] !== undefined) {
+        sanitized[action] = variantId;
+      } else {
+        console.warn(
+          `[audio-state] sfxMap do Firebase ignorado: "${action}" → "${variantId}" ` +
+          `não existe no catálogo. Usando padrão: "${DEFAULT_SFX_MAP[action]}".`
+        );
+      }
+    }
+    _currentSfxMap = { ...DEFAULT_SFX_MAP, ...sanitized };
+  } else {
+    _currentSfxMap = { ...DEFAULT_SFX_MAP };
+  }
+
   _currentSfxAreaMap = saved.areaMap ? { ...saved.areaMap } : {};
 
   if (saved.volumes) {
