@@ -160,6 +160,7 @@ function _initLogic(btn) {
   ───────────────────────────────────────────── */
 
   let _lastRenderedId = null;
+  let _iconTimer      = null;   // guard contra cliques rápidos
 
   function _renderMode(modeId) {
     const s = _visualById[modeId] ?? _visualById['normal'];
@@ -169,11 +170,18 @@ function _initLogic(btn) {
       const fromIc = _visualById[_lastRenderedId]?.ic;
       const toIc   = s.ic;
       if (fromIc && fromIc !== toIc) {
-        icons[fromIc].classList.remove('on');
+        // Cancela qualquer transição anterior ainda pendente e limpa
+        // TODOS os ícones — evita que classes órfãs causem sobreposição.
+        clearTimeout(_iconTimer);
+        Object.values(icons).forEach(el =>
+          el.classList.remove('on', 'out')
+        );
+
         icons[fromIc].classList.add('out');
-        setTimeout(() => {
-          icons[fromIc].classList.remove('out');
+        _iconTimer = setTimeout(() => {
+          Object.values(icons).forEach(el => el.classList.remove('on', 'out'));
           icons[toIc].classList.add('on');
+          _iconTimer = null;
         }, 170);
       }
     } else if (!_lastRenderedId) {

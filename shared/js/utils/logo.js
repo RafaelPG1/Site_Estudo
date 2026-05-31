@@ -42,6 +42,26 @@
      injetarLogo({ destino: '#hero-logo', tamanho: 64, exibirNome: false });
    ============================================================ */
 
+/* ── Mapa de área por fragmento de pathname ──────────────────────── */
+const _AREA_MAP = [
+  { match: /\/quiz\//,         area: 'quiz'     },
+  { match: /\/resumo\//,       area: 'resumos'  },
+  { match: /\/games?\//,       area: 'game'     },
+  { match: /\/area_pessoal\//, area: 'perfil'   },
+  { match: /\/admin\//,        area: 'inicial'  },
+];
+
+/**
+ * Retorna a área de áudio correspondente ao pathname atual.
+ * Fallback: 'inicial'.
+ */
+export function getAreaFromPath(path = window.location.pathname) {
+  for (const { match, area } of _AREA_MAP) {
+    if (match.test(path)) return area;
+  }
+  return 'inicial';
+}
+
 // parâmetros: adicionar playSound
 export function injetarLogo({
   destino    = '#logo-wrap',
@@ -52,8 +72,11 @@ export function injetarLogo({
   srcBase    = '../../shared/img/logo.png',
   linkHref   = '../../index.html',
   area       = null,
-  playSound  = null,   // ← NOVO
+  playSound  = null,
 } = {}) {
+  // Se area não foi passada, detecta automaticamente pelo pathname.
+  // Garante que páginas sem area explícita disparam o som correto.
+  const _area = area ?? getAreaFromPath();
   const container = document.querySelector(destino);
   if (!container) {
     console.warn('[logo.js] Destino não encontrado:', destino);
@@ -107,11 +130,11 @@ export function injetarLogo({
     if (exibirNome) wrap.appendChild(texto);
   }   
   /* ── Sons ────────────────────────────────────── */
-  if (area && typeof playSound === 'function') {
+  if (_area && typeof playSound === 'function') {
     const target = linkHref ? wrap.querySelector('.nexus-logo__link') : wrap;
     if (target) {
-      target.addEventListener('mouseenter', () => playSound('hover', area));
-      target.addEventListener('click',      () => playSound('click', area));
+      target.addEventListener('mouseenter', () => playSound('hover', _area));
+      target.addEventListener('click',      () => playSound('click', _area));
     }
   }
 
