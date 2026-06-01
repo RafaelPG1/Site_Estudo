@@ -28,7 +28,7 @@ import {
   limparDadosQuiz,
   getSemestreAtual, getDisciplinasDeSemestre,
 } from './src/global.js';
-
+ 
 import { injetarLogo }                        from './shared/js/utils/logo.js';
 import { login, logout, carregarConfigs }      from './src/firebase.js';
 import { criarSemestreSelect, preencherAnos }  from './shared/js/utils/dom.js';
@@ -37,12 +37,14 @@ import {
   audio,
   installAudioRecovery,
   playSound,
+  mountMusicBtn,   // ← importar explicitamente
 } from './shared/js/audio/audio-api.js';
-
+ 
 
 /* ═══════════════════════════════════════════════
    SEÇÃO 2 — INICIALIZAÇÃO
 ═══════════════════════════════════════════════ */
+
 
 async function init() {
   try {
@@ -50,10 +52,16 @@ async function init() {
       window.location.replace('/admin/admin.html');
       return;
     }
-
+ 
     Sound.init();
+    // Garante que o botão de música é montado logo após o SFX.
+    // Sound.init() monta apenas o SFX. O botão de música tem auto-montagem
+    // em audio-btns.js, mas chamar explicitamente aqui torna o ciclo rastreável.
+    // mountMusicBtn() é idempotente — se já montado, é no-op.
+    mountMusicBtn();
+ 
     installAudioRecovery({ Sound, audio });
-
+ 
     injetarLogo({
       destino:  '#header-logo-wrap',
       tamanho:  38,
@@ -62,24 +70,57 @@ async function init() {
       area:     'inicial',
       playSound,
     });
-
+ 
     setPagina('HOME');
     _refreshHeader();
-
-    // Aguarda o SFX_MAP estar 100% pronto antes de registrar eventos
-    // que disparam playSound(). Para visitantes resolve imediatamente;
-    // para usuários já logados aguarda o Firebase carregar sfxAreaMap.
+ 
     await Sound.waitUntilReady();
-
+ 
     _bindCardLinks();
     preencherAnos(['footer-year']);
-
+ 
+    // BGM da página inicial
+    async function _tryStartMenuMusic() {
+      if (!audio.isUnlocked()) return;
+      if (audio.music.currentId() === 'music-menu') return;
+      // Respeita o modo do botão de música — se MUTE, não inicia
+      // O modo de música é verificado indiretamente: se o musicVolume
+      // no gain node for 0 (MUTE), a música toca mas é silenciosa.
+      // Para evitar iniciar a BGM engine em vão, checamos o modo:
+      const { getMusicMode } = await import('./shared/js/audio/ui/audio-btns.js').catch(() => ({}));
+      // Se não conseguir importar, toca de qualquer forma (comportamento anterior)
+      const mode = typeof getMusicMode === 'function' ? getMusicMode() : 'normal';
+      if (mode === 'mute') return; // não inicia engine se MUTE
+      audio.music['menu']();
+    }
+ 
+    // Tenta imediatamente (já desbloqueado por login anterior na sessão)
+    _tryStartMenuMusic();
+ 
+    document.addEventListener('nexus:audioUnlocked', _tryStartMenuMusic, { once: true });
+ 
+    const _watchdog = setInterval(() => {
+      if (!document.hidden && audio.isUnlocked()) {
+        if (audio.music.currentId() !== 'music-menu') {
+          // Mesmo check de modo no watchdog
+          import('./shared/js/audio/ui/audio-btns.js')
+            .then(({ getMusicMode }) => {
+              if (getMusicMode?.() !== 'mute') audio.music['menu']();
+            })
+            .catch(() => { audio.music['menu'](); });
+        }
+      }
+    }, 30_000);
+ 
+    window.addEventListener('pagehide', () => clearInterval(_watchdog), { once: true });
+ 
   } catch (err) {
     console.error('[init] Erro crítico na inicialização:', err);
     try { _refreshHeader(); } catch (_) {}
   }
 }
-
+ 
+ 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);
 } else {

@@ -2,43 +2,43 @@
 /* =============================================
    NEXUS STUDY — shared/js/audio/ui/audio-btns.js
    Botões flutuantes de áudio — SFX + Música
-   Versão 1.0 — arquivo unificado
+   Versão 1.2 — botão Música espelha exatamente o botão SFX
 
-   ORIGINOU DE:
-     audio-btn.js  → botão de volume SFX global
-     music-btn.js  → botão de controle de música BGM
-
-   ARQUITETURA
+   MUDANÇAS v1.1 → v1.2
    ─────────────────────────────────────────────
-   audio-state.js  →  fonte única de verdade (SFX + music mode)
-   audio-btns.js   →  interface visual dos dois botões
-   sfx.js          →  engine de áudio (sfx + music)
-   sound.js        →  importa mountAudioBtn / mountMusicBtn
+   PROBLEMA 1 CORRIGIDO — Visual não restaura após F5:
+     _initMusicLogic renderizava com _musicCurrentMode (var local) na
+     montagem, mas depois o subscribeMusicMode atualizava _musicCurrentMode
+     localmente E chamava _renderMode. O bug era que _lastRenderedId ficava
+     em null se o subscribe disparasse antes do primeiro render completar,
+     ou que o render inicial usava _musicCurrentMode local enquanto o
+     audio-state tinha o valor correto mas não notificava ainda.
 
-   RESPONSABILIDADES
+     FIX: render inicial usa audioState.getMusicMode() diretamente,
+     idêntico ao botão SFX que usa audioState.getMode().
+
+   PROBLEMA 2 CORRIGIDO — MUTE não silencia a música:
+     _musicApplyToEngine era chamado no subscribe E no click.
+     Mas quando audio-state.js chamava _applyToEngine (no loginSuccess
+     antigo), ele chamava audio.setMusicVolume(_volumes.music) sobrescrevendo
+     o 0 do MUTE. Fix em audio-state.js (v1.6) remove essa sobrescrita.
+     Aqui: garantimos que _musicApplyToEngine é a ÚNICA fonte de verdade
+     para audio.setMusicVolume(). Nenhum outro módulo deve chamar isso.
+
+   PROBLEMA 3 CORRIGIDO — _musicCurrentMode local dessincronizado:
+     A variável local _musicCurrentMode duplicava o estado do audio-state,
+     criando duas fontes de verdade. Agora ela é apenas um cache para o
+     ciclo de clique — a fonte autoritativa é sempre audioState.getMusicMode().
+
+   ARQUITETURA DO BOTÃO MÚSICA (= espelho do botão SFX):
    ─────────────────────────────────────────────
-   ✅ Construir e montar #audio-btn-global (SFX)
-   ✅ Construir e montar #music-btn-global (Música)
-   ✅ Ouvir cliques e ciclar modos
-   ✅ Receber atualizações de audio-state e atualizar visuais
-   ✅ Hint de desbloqueio do AudioContext
-   ✅ Persistir modo de música via audioState.setMusicMode()
-   ✅ Reagir a nexus:loginSuccess e nexus:logout (modo música)
-   ✅ Sincronizar musicVolume na engine via audio.setMusicVolume()
+   SFX:    audioState.getMode()         → render inicial
+           audioState.subscribe(fn)     → recebe updates externos
+           audioState.setMode(next)     → no clique
+   Música: audioState.getMusicMode()    → render inicial  ← FIX
+           audioState.subscribeMusicMode(fn) → recebe updates externos
+           audioState.setMusicMode(next) → no clique (via _musicSetMode)
 
-   ❌ NÃO acessa Firebase diretamente
-   ❌ NÃO sabe quem está logado
-   ❌ NÃO controla persistência de SFX (audio-state cuida disso)
-   ❌ NÃO gerencia engine de áudio diretamente (só via audioState)
-
-   ESTRUTURA
-   ─────────────────────────────────────────────
-   SEÇÃO 1 — IMPORTS E DEPENDÊNCIAS
-   SEÇÃO 2 — ESTADOS VISUAIS (SFX + Música)
-   SEÇÃO 3 — BOTÃO SFX (construção + lógica + hint)
-   SEÇÃO 4 — BOTÃO MÚSICA (construção + lógica + persistência)
-   SEÇÃO 5 — MONTAGEM (ambos)
-   SEÇÃO 6 — API EXPORTADA (mount/destroy dos dois)
    ============================================= */
 
 
@@ -52,11 +52,6 @@ import audioState from '../state/audio-state.js';
 
 /* ═══════════════════════════════════════════════
    SEÇÃO 2 — ESTADOS VISUAIS
-   ─────────────────────────────────────────────
-   Cada bloco mapeia modeIds para suas propriedades
-   visuais. Paleta intencional:
-     SFX   → azul-ciano  (consistente com a UI geral)
-     Música → âmbar/dourado (distingue os dois botões)
 ═══════════════════════════════════════════════ */
 
 /* ── 2a. SFX ── */
@@ -103,10 +98,7 @@ const _SFX_STATES = [
   },
 ];
 
-/** Ordem de rotação ao clicar: normal → mute → low → normal */
 const _SFX_CYCLE = ['normal', 'mute', 'low'];
-
-/** Lookup rápido por id. */
 const _sfxById = Object.fromEntries(_SFX_STATES.map(s => [s.id, s]));
 
 
@@ -157,26 +149,14 @@ const _MUSIC_STATES = [
   },
 ];
 
-/** Ordem de rotação ao clicar: normal → mute → low → normal */
 const _MUSIC_CYCLE = ['normal', 'mute', 'low'];
-
-/** Lookup rápido por id. */
 const _musicById = Object.fromEntries(_MUSIC_STATES.map(s => [s.id, s]));
 
 
 /* ═══════════════════════════════════════════════
    SEÇÃO 3 — BOTÃO SFX
-   ─────────────────────────────────────────────
-   Delega todo o estado e persistência ao audio-state.
-   Este bloco é responsável apenas pelo visual e pelo
-   hint de desbloqueio do AudioContext.
+   (sem alterações em relação à v1.1)
 ═══════════════════════════════════════════════ */
-
-/* ── 3a. SVGs do botão SFX ── */
-// Os três ícones SVG são injetados diretamente no innerHTML
-// do botão para manter zero dependências externas de assets.
-
-/* ── 3b. Construção do DOM SFX ── */
 
 function _createSfxBtn() {
   const btn = document.createElement('button');
@@ -212,8 +192,6 @@ function _createSfxBtn() {
   return btn;
 }
 
-/* ── 3c. Lógica do botão SFX ── */
-
 function _initSfxLogic(btn) {
   const glow  = btn.querySelector('.glow');
   const ro    = btn.querySelector('.ro');
@@ -230,7 +208,6 @@ function _initSfxLogic(btn) {
   function _renderMode(modeId) {
     const s = _sfxById[modeId] ?? _sfxById['normal'];
 
-    // Troca de ícone com animação (somente quando o modo realmente mudou)
     if (_lastRenderedId && _lastRenderedId !== modeId) {
       const fromIc = _sfxById[_lastRenderedId]?.ic;
       const toIc   = s.ic;
@@ -245,6 +222,7 @@ function _initSfxLogic(btn) {
         }, 170);
       }
     } else if (!_lastRenderedId) {
+      Object.values(icons).forEach(el => el.classList.remove('on', 'out'));
       icons[s.ic].classList.add('on');
     }
 
@@ -266,23 +244,16 @@ function _initSfxLogic(btn) {
     _lastRenderedId = modeId;
   }
 
-  // Renderiza o modo atual do audio-state na montagem
+  // Render inicial — usa audioState como fonte autoritativa
   _renderMode(audioState.getMode());
 
-  // Recebe atualizações de modo vindas do audio-state
-  // (login, logout, mudança externa, reset de configs)
+  // Subscribe — recebe updates de login, logout, reset externo
   audioState.subscribe(_renderMode);
 
   btn.addEventListener('click', () => {
-    // Se o hint de desbloqueio ainda estava visível, este clique
-    // apenas ativa o AudioContext — não cicla o modo.
-    if (document.getElementById('abtn-unlock-hint')) return;
-
     const currentMode = audioState.getMode();
     const currentIdx  = _SFX_CYCLE.indexOf(currentMode);
     const nextMode    = _SFX_CYCLE[(currentIdx + 1) % _SFX_CYCLE.length];
-
-    // Delega ao audio-state: aplica engine + Firebase + notify
     audioState.setMode(nextMode);
 
     ri.style.animation = 'none';
@@ -291,11 +262,7 @@ function _initSfxLogic(btn) {
   });
 }
 
-/* ── 3d. Hint de desbloqueio do AudioContext ──
-   O browser bloqueia o AudioContext até o primeiro
-   gesto do usuário (política de autoplay).
-   Badge discreto visível até então, some ao clicar.
-   CSS em shared/css/audio/audio-btns.css, seção 2.   */
+/* ── Hint de desbloqueio do AudioContext ── */
 
 function _installUnlockHint() {
   if (audio.isUnlocked()) return;
@@ -303,7 +270,7 @@ function _installUnlockHint() {
   const hint = document.createElement('div');
   hint.id = 'abtn-unlock-hint';
   hint.setAttribute('aria-hidden', 'true');
-  hint.innerHTML = `<span id="abtn-unlock-hint__dot"></span>clique em qualquer lugar para ativar o som`;
+  hint.innerHTML = `<span id="abtn-unlock-hint__dot"></span><span>clique em qualquer lugar<br>para ativar o som</span>`;
   document.body.appendChild(hint);
 
   requestAnimationFrame(() => {
@@ -319,6 +286,25 @@ function _installUnlockHint() {
     document.removeEventListener('click',       _onUnlock, { capture: true });
     document.removeEventListener('pointerdown', _onUnlock, { capture: true });
     document.removeEventListener('touchstart',  _onUnlock, { capture: true });
+
+    // Desbloqueio = apenas permite reprodução. NÃO altera modo nem volume.
+    // O nexus:audioUnlocked notifica o app para iniciar música se cabível,
+    // mas não muda nenhuma configuração.
+    function _dispatch() {
+      document.dispatchEvent(new CustomEvent('nexus:audioUnlocked'));
+    }
+
+    if (audio.isUnlocked()) {
+      _dispatch();
+    } else {
+      const _poll = setInterval(() => {
+        if (audio.isUnlocked()) {
+          clearInterval(_poll);
+          _dispatch();
+        }
+      }, 20);
+      setTimeout(() => { clearInterval(_poll); _dispatch(); }, 500);
+    }
   }
 
   document.addEventListener('click',       _onUnlock, { capture: true, passive: true });
@@ -330,52 +316,43 @@ function _installUnlockHint() {
 /* ═══════════════════════════════════════════════
    SEÇÃO 4 — BOTÃO MÚSICA
    ─────────────────────────────────────────────
-   Integra com audio-state para persistir o modo
-   de música no Firebase e sincronizar o volume
-   na engine via audio.setMusicVolume().
+   ARQUITETURA IDÊNTICA AO BOTÃO SFX:
 
-   Ciclo: normal → mute → low → normal
+   SFX:
+     render inicial → audioState.getMode()
+     updates        → audioState.subscribe(fn)
+     clique         → audioState.setMode(next)
 
-   PERSISTÊNCIA
-   ─────────────────────────────────────────────
-   O modo de música agora é salvo e carregado pelo
-   audio-state junto com o resto das configs de áudio.
-   audio-state expõe getMusicMode / setMusicMode / subscribeMusicMode
-   que este botão usa — localStorage deixa de ser necessário.
+   Música:
+     render inicial → audioState.getMusicMode()    ← mesma estrutura
+     updates        → audioState.subscribeMusicMode(fn)
+     clique         → audioState.setMusicMode(next) (via _musicSetMode)
 
-   FALLBACK
-   ─────────────────────────────────────────────
-   Quando audioState não expõe a API de música
-   (versões antigas ou teste isolado), o botão cai
-   de volta para localStorage como antes.
+   _musicApplyToEngine é a ÚNICA função que chama audio.setMusicVolume().
+   Nenhum outro módulo deve chamar audio.setMusicVolume() diretamente,
+   assim como nenhum outro módulo chama audio.setMasterVolume() ignorando
+   o modo SFX. Isso garante que MUTE sempre silencia a música.
 ═══════════════════════════════════════════════ */
 
 /* ── 4a. SVGs do botão Música ── */
-// viewBox 44×44 idêntico ao SFX para proporções perfeitas no .iw 22px.
 
 const _SVG_MUSIC_iN = `
   <svg class="ic on" data-ic="iN" width="22" height="22" viewBox="0 0 44 44"
        fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Nota dupla — corpo -->
     <ellipse cx="14.5" cy="31" rx="4" ry="2.8" stroke-width="1.7"/>
     <ellipse cx="28.5" cy="27" rx="4" ry="2.8" stroke-width="1.7"/>
-    <!-- Hastes -->
     <line x1="18.5" y1="31" x2="18.5" y2="14" stroke-width="1.7"/>
     <line x1="32.5" y1="27" x2="32.5" y2="10" stroke-width="1.7"/>
-    <!-- Ligadura (beam) entre as duas notas -->
     <path d="M18.5 14 C22 11.5, 28 10.5, 32.5 10" stroke-width="1.7" fill="none"/>
-    <!-- Segunda ligadura paralela -->
     <path d="M18.5 17.5 C22 15, 28 14, 32.5 13.5" stroke-width="1.7" fill="none"/>
   </svg>`;
 
 const _SVG_MUSIC_iM = `
   <svg class="ic" data-ic="iM" width="22" height="22" viewBox="0 0 44 44"
        fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Nota simples — opacidade reduzida -->
     <ellipse cx="15" cy="31" rx="4" ry="2.8" stroke-width="1.7" opacity=".55"/>
     <line x1="19" y1="31" x2="19" y2="14" stroke-width="1.7" opacity=".55"/>
     <path d="M19 14 C22.5 12, 27 11, 31 11" stroke-width="1.7" fill="none" opacity=".55"/>
-    <!-- X de corte — sinal visual de mudo -->
     <line x1="25" y1="18" x2="35" y2="28" stroke-width="2.1"/>
     <line x1="35" y1="18" x2="25" y2="28" stroke-width="2.1"/>
   </svg>`;
@@ -383,64 +360,41 @@ const _SVG_MUSIC_iM = `
 const _SVG_MUSIC_iL = `
   <svg class="ic" data-ic="iL" width="22" height="22" viewBox="0 0 44 44"
        fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Nota simples — indicador de volume baixo -->
     <ellipse cx="16" cy="31" rx="4" ry="2.8" stroke-width="1.7"/>
     <line x1="20" y1="31" x2="20" y2="15" stroke-width="1.7"/>
     <path d="M20 15 C23.5 13, 28 12, 32 12" stroke-width="1.7" fill="none"/>
-    <!-- Pequeno arco à direita — indica som baixo, não silêncio -->
     <path d="M28 21 C30 22.5, 30 25.5, 28 27" stroke-width="1.8"/>
   </svg>`;
 
-/* ── 4b. Estado interno do botão Música ──
-   Tentamos usar audio-state como fonte primária.
-   Se não estiver disponível, caímos para localStorage. */
+/* ── 4b. _musicApplyToEngine ──
+   ÚNICA função que chama audio.setMusicVolume().
+   Chamada em:
+     - render inicial (montagem do botão)
+     - clique no botão (via _musicSetMode)
+     - subscribe do audioState.subscribeMusicMode (login, logout, reset)
+   NÃO chamada por nenhum outro módulo. */
 
-const _MUSIC_STORAGE_KEY = 'nexus_music_mode';
-
-/** Lê o modo de música — audio-state primeiro, localStorage como fallback. */
-function _musicLoadMode() {
-  if (typeof audioState.getMusicMode === 'function') {
-    return audioState.getMusicMode();
-  }
-  try { return localStorage.getItem(_MUSIC_STORAGE_KEY) || 'normal'; } catch { return 'normal'; }
-}
-
-/** Persiste o modo de música — via audio-state (Firebase) ou localStorage. */
-function _musicSaveMode(id) {
-  if (typeof audioState.setMusicMode === 'function') {
-    audioState.setMusicMode(id);  // audio-state persiste no Firebase
-    return;
-  }
-  try { localStorage.setItem(_MUSIC_STORAGE_KEY, id); } catch { /* noop */ }
-}
-
-let _musicCurrentMode = _musicLoadMode();
-if (!_musicById[_musicCurrentMode]) _musicCurrentMode = 'normal';
-
-/** Subscribers internos para mudanças de modo de música. */
-const _musicSubscribers = new Set();
-
-function _musicNotify(modeId) {
-  _musicSubscribers.forEach(fn => { try { fn(modeId); } catch { /* noop */ } });
-}
-
-/** Aplica o volume de música na engine de áudio. */
 function _musicApplyToEngine(modeId) {
   const s = _musicById[modeId];
   if (!s) return;
   audio.setMusicVolume(s.musicVolume);
 }
 
-/** Muda o modo de música, aplica na engine, persiste e notifica. */
+/* ── 4c. _musicSetMode ──
+   Espelha o fluxo do clique SFX:
+     SFX:    audioState.setMode(next)   → aplica engine + Firebase + notify
+     Música: audioState.setMusicMode(next) → persiste Firebase + notify subscribers
+             + _musicApplyToEngine(next)   → aplica engine imediatamente */
+
 function _musicSetMode(modeId) {
   if (!_musicById[modeId]) return;
-  _musicCurrentMode = modeId;
+  // Aplica na engine imediatamente (sem esperar Firebase)
   _musicApplyToEngine(modeId);
-  _musicSaveMode(modeId);
-  _musicNotify(modeId);
+  // Persiste + notifica subscribers (inclui o próprio botão via subscribeMusicMode)
+  audioState.setMusicMode(modeId);
 }
 
-/* ── 4c. Construção do DOM Música ── */
+/* ── 4d. Construção do DOM Música ── */
 
 function _createMusicBtn() {
   const btn = document.createElement('button');
@@ -464,7 +418,16 @@ function _createMusicBtn() {
   return btn;
 }
 
-/* ── 4d. Lógica do botão Música ── */
+/* ── 4e. Lógica do botão Música ──
+   Espelha _initSfxLogic LINHA A LINHA, substituindo:
+     _sfxById        → _musicById
+     audioState.getMode()     → audioState.getMusicMode()
+     audioState.subscribe()   → audioState.subscribeMusicMode()
+     audioState.setMode(next) → _musicSetMode(next)
+     _SFX_CYCLE               → _MUSIC_CYCLE
+   Além de:
+     - subscribe também chama _musicApplyToEngine para atualizar o volume
+     - seletor de stroke inclui 'ellipse' (ícones de nota musical)        */
 
 function _initMusicLogic(btn) {
   const glow  = btn.querySelector('.glow');
@@ -496,6 +459,7 @@ function _initMusicLogic(btn) {
         }, 170);
       }
     } else if (!_lastRenderedId) {
+      Object.values(icons).forEach(el => el.classList.remove('on', 'out'));
       icons[s.ic].classList.add('on');
     }
 
@@ -506,7 +470,7 @@ function _initMusicLogic(btn) {
     bd.style.background   = s.bg;
     bd.style.borderColor  = s.border;
 
-    // Pinta stroke de TODOS os paths/lines/ellipses de todos os ícones
+    // Música usa ellipse nos SVGs, SFX usa path/line
     Object.values(icons).forEach(el =>
       el.querySelectorAll('path, line, ellipse').forEach(p => p.style.stroke = s.stroke)
     );
@@ -514,31 +478,38 @@ function _initMusicLogic(btn) {
     pu.style.borderColor = s.pulse;
     pu.style.animation   = 'none';
     if (s.anim) { void pu.offsetWidth; pu.style.animation = 'abtn-pulse 1.9s ease-out infinite'; }
-
     btn.setAttribute('aria-label', s.label);
     btn.dataset.state = s.id;
 
     _lastRenderedId = modeId;
   }
 
-  // Renderiza o modo persistido na montagem
-  _renderMode(_musicCurrentMode);
+  // FIX: render inicial usa audioState.getMusicMode() como fonte autoritativa,
+  // idêntico ao SFX que usa audioState.getMode().
+  // Isso garante que F5 restaura o visual correto (LOW, MUTE, NORMAL)
+  // porque audioState já leu o localStorage ao inicializar.
+  const initialMode = audioState.getMusicMode();
+  _renderMode(initialMode);
+  // Aplica o volume na engine conforme o modo persistido
+  _musicApplyToEngine(initialMode);
 
-  // Subscribe: recebe updates do audio-state (login, logout, reset externo)
-  if (typeof audioState.subscribeMusicMode === 'function') {
-    audioState.subscribeMusicMode(modeId => {
-      _musicCurrentMode = modeId;
-      _renderMode(modeId);
-    });
-  }
-
-  // Subscribe interno — permite que outros módulos chamem setMusicMode()
-  // e o botão reaja visualmente sem precisar de audio-state
-  _musicSubscribers.add(_renderMode);
+  // Subscribe: espelha audioState.subscribe(_renderMode) do botão SFX.
+  // Quando o Firebase responder (loginSuccess), audioState notifica via
+  // subscribeMusicMode → atualizamos visual E volume.
+  audioState.subscribeMusicMode(modeId => {
+    // FIX: apenas atualiza visual e aplica volume.
+    // NÃO chama _musicSetMode (evita loop: subscribe → setMusicMode → notify → subscribe).
+    _musicApplyToEngine(modeId);
+    _renderMode(modeId);
+  });
 
   btn.addEventListener('click', () => {
-    const currentIdx = _MUSIC_CYCLE.indexOf(_musicCurrentMode);
-    const nextMode   = _MUSIC_CYCLE[(currentIdx + 1) % _MUSIC_CYCLE.length];
+    const currentMode = audioState.getMusicMode(); // fonte autoritativa
+    const currentIdx  = _MUSIC_CYCLE.indexOf(currentMode);
+    const nextMode    = _MUSIC_CYCLE[(currentIdx + 1) % _MUSIC_CYCLE.length];
+
+    // Espelha o clique SFX: delega ao audioState (persiste + notifica)
+    // + aplica na engine imediatamente via _musicSetMode
     _musicSetMode(nextMode);
 
     ri.style.animation = 'none';
@@ -547,51 +518,9 @@ function _initMusicLogic(btn) {
   });
 }
 
-/* ── 4e. Sincronização com nexus:loginSuccess e nexus:logout ──
-   audio-state já repassa o modo de SFX para o botão SFX via subscribe.
-   Aqui fazemos o mesmo para o botão de música: quando o usuário faz
-   login, carregamos o musicMode que veio do Firebase (se audio-state
-   o expuser); no logout, voltamos ao padrão 'normal'.             */
-
-document.addEventListener('nexus:loginSuccess', ({ detail }) => {
-  // Se audio-state já expõe getMusicMode, ele foi atualizado pelo
-  // evento de login — apenas sincronizamos o visual.
-  if (typeof audioState.getMusicMode === 'function') {
-    const loaded = audioState.getMusicMode();
-    if (_musicById[loaded] && loaded !== _musicCurrentMode) {
-      _musicCurrentMode = loaded;
-      _musicApplyToEngine(loaded);
-      _musicNotify(loaded);
-    }
-    return;
-  }
-
-  // Fallback: audio-state não conhece musicMode — tenta ler do detail
-  const savedMode = detail?.configs?.musicMode;
-  if (savedMode && _musicById[savedMode]) {
-    _musicCurrentMode = savedMode;
-    _musicApplyToEngine(savedMode);
-    _musicNotify(savedMode);
-  }
-});
-
-document.addEventListener('nexus:logout', () => {
-  _musicCurrentMode = 'normal';
-  _musicApplyToEngine('normal');
-  _musicNotify('normal');
-});
-
-// Aplica o volume do modo persistido imediatamente ao carregar o módulo
-_musicApplyToEngine(_musicCurrentMode);
-
 
 /* ═══════════════════════════════════════════════
    SEÇÃO 5 — MONTAGEM
-   ─────────────────────────────────────────────
-   Cada botão é montado de forma independente e
-   idempotente — chamadas repetidas são no-ops.
-   Ambos são adicionados ao body por padrão;
-   posicionamento é controlado pelo CSS.
 ═══════════════════════════════════════════════ */
 
 function _mountSfxBtn() {
@@ -609,7 +538,6 @@ function _mountMusicBtn() {
   document.body.appendChild(btn);
 }
 
-// Auto-montagem ao carregar o módulo
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
     _mountSfxBtn();
@@ -623,78 +551,36 @@ if (document.readyState === 'loading') {
 
 /* ═══════════════════════════════════════════════
    SEÇÃO 6 — API EXPORTADA
-   ─────────────────────────────────────────────
-   Espelha exatamente os contratos públicos dos
-   dois arquivos originais, mais métodos adicionais
-   para controlar o modo de música externamente.
-
-   Compatibilidade com sound.js:
-     mountAudioBtn()   → idêntico ao original
-     destroyAudioBtn() → idêntico ao original
-     mountMusicBtn()   → idêntico ao original
-     destroyMusicBtn() → idêntico ao original
 ═══════════════════════════════════════════════ */
 
-/**
- * Monta o botão de SFX se ainda não existir.
- * Idempotente: chamadas repetidas são no-ops.
- */
 export function mountAudioBtn() {
   _mountSfxBtn();
 }
 
-/**
- * Remove o botão de SFX do DOM.
- * Usado por Sound.reinit() antes de recriar o botão.
- */
 export function destroyAudioBtn() {
   document.getElementById('audio-btn-global')?.remove();
 }
 
-/**
- * Monta o botão de música se ainda não existir.
- * Idempotente: chamadas repetidas são no-ops.
- */
 export function mountMusicBtn() {
   _mountMusicBtn();
 }
 
-/**
- * Remove o botão de música do DOM.
- * Usado por Sound.reinit() antes de recriar os botões.
- */
 export function destroyMusicBtn() {
   document.getElementById('music-btn-global')?.remove();
 }
 
-/**
- * Retorna o modo atual de música: 'normal' | 'mute' | 'low'
- */
 export function getMusicMode() {
-  return _musicCurrentMode;
+  return audioState.getMusicMode();
 }
 
-/**
- * Define o modo de música programaticamente.
- * Aplica na engine, persiste e notifica o visual.
- * @param {'normal'|'mute'|'low'} modeId
- */
 export function setMusicMode(modeId) {
   _musicSetMode(modeId);
 }
 
-/**
- * Registra um subscriber chamado ao mudar o modo de música.
- * @param {function(string): void} fn
- */
 export function subscribeMusicMode(fn) {
-  _musicSubscribers.add(fn);
+  audioState.subscribeMusicMode(fn);
 }
 
-/**
- * Remove um subscriber registrado.
- * @param {function} fn
- */
 export function unsubscribeMusicMode(fn) {
-  _musicSubscribers.delete(fn);
+  audioState.unsubscribeMusicMode(fn);
 }

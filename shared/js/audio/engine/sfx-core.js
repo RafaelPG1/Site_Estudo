@@ -215,27 +215,30 @@ export const bgmEngine = {
         nodes.forEach(n => { try { n.stop(); } catch (_) {} });
         _musicGain.gain.value = _state.musicVolume;
         _currentBgm = null;
+        try { localStorage.removeItem('nexus_last_track'); } catch (_) {}
       }, fadeTime * 1000 + 50);
     } else {
       nodes.forEach(n => { try { n.stop(); } catch (_) {} });
       _currentBgm = null;
+      try { localStorage.removeItem('nexus_last_track'); } catch (_) {}
     }
   },
 
-  play(id, buildFn) {
-    if (!_state.enabled || _state.muted) return;
+play(id, buildFn) {
+  if (!_state.enabled || _state.muted) return;
+  if (!_isCtxReady()) return;
+  if (_currentBgm?.id === id) return;
+
+  this.stop(0.3);
+
+  setTimeout(() => {
     if (!_isCtxReady()) return;
-    if (_currentBgm?.id === id) return;
-
-    this.stop(0.3);
-
-    setTimeout(() => {
-      if (!_isCtxReady()) return;
-      _getGains();
-      const nodes = buildFn(_ctx, _musicGain);
-      _currentBgm = { id, nodes: Array.isArray(nodes) ? nodes : [nodes] };
-    }, _currentBgm ? 350 : 0);
-  },
+    _getGains();
+    const nodes = buildFn(_ctx, _musicGain);
+    _currentBgm = { id, nodes: Array.isArray(nodes) ? nodes : [nodes] };
+    try { localStorage.setItem('nexus_last_track', id); } catch (_) {}
+  }, _currentBgm ? 350 : 0);
+},
 
   playUrl(id, url) {
     if (!_state.enabled || _state.muted) return;
@@ -348,6 +351,9 @@ const audio = {
   setMasterVolume(val) {
     _state.masterVolume = Math.min(1.5, Math.max(0, Number(val) || 0));
     _syncGains();
+    if (_currentBgm?._el) {
+      _currentBgm._el.volume = Math.min(1, _state.musicVolume * _state.masterVolume);
+    }
   },
 
   setSfxVolume(val) {
@@ -358,6 +364,11 @@ const audio = {
   setMusicVolume(val) {
     _state.musicVolume = Math.min(1.5, Math.max(0, Number(val) || 0));
     _syncGains();
+    // Atualiza volume do elemento <Audio> ativo (bgmEngine.playUrl),
+    // que não passa pelo _musicGain e precisa ser sincronizado manualmente.
+    if (_currentBgm?._el) {
+      _currentBgm._el.volume = Math.min(1, _state.musicVolume * _state.masterVolume);
+    }
   },
 
   getMasterVolume() { return _state.masterVolume; },

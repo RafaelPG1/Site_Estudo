@@ -2,93 +2,41 @@
 /* =============================================
    NEXUS STUDY — shared/js/audio/state/audio-state.js
    Estado global de áudio — fonte única de verdade
-   Versão 1.5  ← gate de inicialização (waitUntilReady)
+   Versão 1.6  ← corrige reset indevido no loginSuccess
 
-   RESPONSABILIDADES
+   MUDANÇAS v1.5 → v1.6
    ─────────────────────────────────────────────
-   ✅ Este módulo É responsável por:
-     - manter o modo de áudio atual (normal / low / mute)
-     - aplicar o modo no sfx.js (setMasterVolume, mute, unmute)
-     - carregar estado do Firebase por usuário
-     - salvar estado no Firebase
-     - reagir a login (nexus:loginSuccess) e logout (nexus:logout)
-     - notificar subscribers quando o modo muda
-     - gerenciar fila de sons pendentes durante carregamento do Firebase
-     - manter SFX_MAP global (geral) e overrides por área
-     - resolver variante correta dado (action, area)
+   PROBLEMA CORRIGIDO:
+     nexus:loginSuccess apagava _currentMode, _currentMusicMode e
+     volumes ANTES do Firebase responder, chamando:
+       _currentMode = DEFAULT_MODE;
+       audio.resetToDefaults();      ← RAIZ DO BUG
+       _applyToEngine(_currentMode);
+       _notify();
+     Isso sobrescrevia as escolhas do usuário (LOW, MUTE) com 'normal'
+     durante o processo de desbloqueio/login, que pode chegar antes do Firebase.
 
-   ❌ Este módulo NÃO é responsável por:
-     - criar DOM ou botões
-     - renderizar interface
-     - injetar CSS
-     - engine de áudio (isso é o sfx.js)
-     - consultar o estado global de auth (getUsuario) — usa _currentUid interno
+   FIX:
+     - Removidas as três linhas acima do nexus:loginSuccess handler.
+     - O estado anterior é PRESERVADO durante o carregamento do Firebase.
+     - _applyLoadedState() é chamado apenas APÓS o Firebase responder.
+     - audio.resetToDefaults() movido para nexus:logout (onde faz sentido).
+     - _applyToEngine agora recebe o musicMode como segundo parâmetro e
+       aplica o volume de música RESPEITANDO o modo do botão de música,
+       em vez de sobrescrever com _volumes.music cegamente.
 
-   ARQUITETURA
-   ─────────────────────────────────────────────
-   audio-state.js ←→ sfx.js        (aplica volume/mute)
-   audio-state.js ←→ Firebase      (persiste por usuário)
-   audio-state.js ←→ audio-btn.js  (notifica via subscribe)
-   audio-state.js ←→ play.js       (isReady / enqueue / resolveVariant)
+   REGRA DE OURO:
+     O desbloqueio do AudioContext (nexus:audioUnlocked, clique físico,
+     pageshow persisted) NÃO deve alterar nenhuma configuração do usuário.
+     Só deve permitir a reprodução de áudio com os volumes JÁ definidos.
 
-   SCHEMA FIREBASE (após v1.4)
-   ─────────────────────────────────────────────
-   {
-     audioState: 'normal',          // modo de volume
-     sfxMap: {                       // sons globais
-       click: 'click2',
-       hover: 'hover2',
-       openModal: 'openModal2',
-       closeModal: 'closeModal',
-       select: 'select'
-     },
-     sfxAreaMap: {                   // overrides por área
-       game:    { click: 'click5' },
-       resumos: { click: 'click3', hover: 'hover4' },
-       quiz:    { select: 'select3' }
-     }
-   }
-
-   RESOLUÇÃO DE VARIANTE (resolveVariant)
-   ─────────────────────────────────────────────
-   resolveVariant(action, area?)
-     1. Se area for fornecida e _currentSfxAreaMap[area][action] existir
-        → usa o override específico da área
-     2. Caso contrário, usa _currentSfxMap[action] (geral)
-     3. Se nenhum existir → undefined (silêncio)
-
-   MODOS
-   ─────────────────────────────────────────────
-   'normal'  →  masterVolume 1.0 (fixo), unmuted
-   'low'     →  masterVolume 0.5 (fixo), unmuted
-   'mute'    →  masterVolume 0   (fixo), muted
-
-   API PÚBLICA
-   ─────────────────────────────────────────────
-   audioState.getMode()                      → 'normal' | 'low' | 'mute'
-   audioState.setMode(id)                    → aplica + persiste + notifica
-   audioState.subscribe(fn)                  → fn(modeId) chamado em cada mudança
-   audioState.unsubscribe(fn)                → remove subscriber
-   audioState.loadFromFirebase(uid)          → carrega e aplica estado salvo
-   audioState.reset()                        → volta ao padrão, sem persistir
-   audioState.getSfxMap()                    → cópia do mapa geral atual
-   audioState.setSfxMap(action, id)          → atualiza variante geral + persiste
-   audioState.getSfxAreaMap()                → cópia do mapa de overrides por área
-   audioState.setSfxAreaMap(area, action, id)→ define override de área + persiste
-   audioState.clearSfxAreaOverride(area, action) → remove override de área + persiste
-   audioState.resolveVariant(action, area?)  → resolve variante final (área → geral)
-   audioState.isReady()                      → true se SFX_MAP já foi aplicado
-   audioState.enqueue(event, area?)          → enfileira evento para tocar quando pronto
-   audioState.waitUntilReady()               → Promise que resolve quando SFX_MAP estiver pronto
    ============================================= */
 
 import audio from '../engine/sfx.js';
 import { carregarConfigs, salvarConfigs } from '../../../../src/firebase.js';
 
 /* ═══════════════════════════════════════════════
-   INSTRUMENTAÇÃO DE PERFORMANCE — remover após medir
-   Coleta tempos reais do bootstrap com performance.now().
-   Resultados ficam em window.__audioPerf (console: window.__audioPerf)
+   INSTRUMENTAÇÃO DE PERFORMANCE
 ═══════════════════════════════════════════════ */
 const _perf = window.__audioPerf = {
   moduleLoad:        performance.now(),
@@ -104,7 +52,7 @@ const _perf = window.__audioPerf = {
       '╔══════════════════════════════════════════',
       '║  AUDIO PERF REPORT',
       '╠══════════════════════════════════════════',
-      `║  módulo carregado:         ${p.moduleLoad?.toFixed(2)} ms (desde navigationStart)`,
+      `║  módulo carregado:         ${p.moduleLoad?.toFixed(2)} ms`,
       `║  sfxReady inicial (true):  ${p.sfxReadyInitial?.toFixed(2)} ms`,
       `║  loginSuccess recebido:    ${p.loginSuccessStart?.toFixed(2)} ms`,
       `║  Firebase read start:      ${p.firebaseStart?.toFixed(2)} ms`,
@@ -120,18 +68,13 @@ const _perf = window.__audioPerf = {
 };
 
 /* ═══════════════════════════════════════════════
-   DEBUG FLAG (espelha sfx.js — setar true só em dev)
+   DEBUG FLAG
 ═══════════════════════════════════════════════ */
 const _DEBUG = false;
 const _dbg   = _DEBUG ? (...a) => console.log('[audio-state]', ...a) : () => {};
 
 /* ═══════════════════════════════════════════════
    DEBOUNCE DE PERSISTÊNCIA
-   ─────────────────────────────────────────────
-   Consolida múltiplas alterações rápidas (ex: mover slider,
-   trocar área, resetar) em um único write no Firebase.
-   800 ms é conservador o suficiente para capturar rajadas
-   de setSfxAreaMap() do _resetAll() e _saveAll() sem perder dados.
 ═══════════════════════════════════════════════ */
 let _persistTimer = null;
 
@@ -155,14 +98,12 @@ const MODES = {
 
 const DEFAULT_MODE = 'normal';
 
-/** IDs válidos de modo — usados para validação de entrada. */
 const VALID_MODES = Object.keys(MODES);
 
 /* ═══════════════════════════════════════════════
-   1b. SFX_MAP — mapa de sons globais por ação
+   1b. SFX_MAP
 ═══════════════════════════════════════════════ */
 
-/** Mapa padrão global. Usado quando não há dado salvo no Firebase. */
 const DEFAULT_SFX_MAP = {
   click:        'click',
   hover:        'hover2',
@@ -176,81 +117,26 @@ const DEFAULT_SFX_MAP = {
   timerWarning: 'timerWarning',
 };
 
-/**
- * Mapa atual global em memória.
- * Começa com os padrões e é sobrescrito pelo loadFromFirebase após login.
- */
 let _currentSfxMap = { ...DEFAULT_SFX_MAP };
 
 /* ═══════════════════════════════════════════════
-   1c. SFX_AREA_MAP — overrides por área/página
-   ─────────────────────────────────────────────
-   Estrutura:
-   {
-     game:    { click: 'click5' },
-     resumos: { click: 'click3', hover: 'hover4' },
-     quiz:    { select: 'select3' }
-   }
-
-   Chaves de área são normalizadas para lowercase (game, quiz, resumos, perfil).
-   Cada área contém apenas os actions que têm override definido.
-   Actions sem override herdam o valor do _currentSfxMap global.
+   1c. SFX_AREA_MAP
 ═══════════════════════════════════════════════ */
 
-/**
- * Mapa de overrides por área em memória.
- * Inicia vazio; é sobrescrito pelo loadFromFirebase após login.
- */
 let _currentSfxAreaMap = {};
 
 /* ═══════════════════════════════════════════════
-   1d. FILA DE SFX — controle de prontidão
-   ─────────────────────────────────────────────
-   Resolve a race condition entre playSound() e o await do Firebase.
-
-   _sfxReady = true  → DEFAULT_SFX_MAP disponível (visitante ou pós-load)
-   _sfxReady = false → aguardando Firebase; sons são enfileirados
-
-   A fila é drenada em _flushSfxQueue() assim que _sfxReady volta a true.
-   play.js consulta isReady() e chama enqueue() quando necessário —
-   nenhum outro arquivo precisa saber desta fila.
-
-   A partir de v1.4 cada item da fila carrega também a área:
-   { event: 'click', area: 'game' }
+   1d. FILA DE SFX
 ═══════════════════════════════════════════════ */
 
-/**
- * Flag de prontidão do SFX_MAP.
- * Inicia true: visitante usa DEFAULT_SFX_MAP imediatamente, sem esperar.
- * Vira false no início de nexus:loginSuccess (antes do await Firebase).
- * Volta a true após Firebase responder com o mapa do usuário.
- */
 let _sfxReady = true;
 _perf.sfxReadyInitial = performance.now();
-// [DIAG] Estado inicial do audio-state no carregamento do módulo
 console.log('[DIAG:audio-state] módulo carregado', {
   '_sfxReady inicial': _sfxReady,
   '_currentMode': 'normal (default)',
-  'DEFAULT_SFX_MAP': { click: 'click', hover: 'hover2', openModal: 'openModal2', closeModal: 'closeModal', select: 'select' },
   'timestamp': Date.now(),
 });
 
-/* ─────────────────────────────────────────────
-   GATE DE INICIALIZAÇÃO — waitUntilReady()
-   ─────────────────────────────────────────────
-   Promise que resolve uma única vez: quando o SFX_MAP estiver
-   completamente pronto (visitante: imediato; usuário logado: após Firebase).
-
-   _readyResolve é guardado para ser chamado nos dois pontos onde
-   _sfxReady vira true:
-     1. visitante           → resolve imediatamente (abaixo)
-     2. nexus:loginSuccess  → resolve após _fetchFromFirebase concluir
-     3. loadFromFirebase()  → idem
-
-   Se o usuário efetuar novo login após logout, a Promise é recriada
-   (_resetReadyPromise) para que novos chamadores de waitUntilReady()
-   aguardem o novo ciclo de carregamento.
-───────────────────────────────────────────── */
 let _readyResolve;
 let _readyPromise = new Promise(res => { _readyResolve = res; });
 _readyResolve(); // visitante: já está pronto
@@ -259,40 +145,22 @@ function _resetReadyPromise() {
   _readyPromise = new Promise(res => { _readyResolve = res; });
 }
 
-/**
- * Fila de eventos de áudio acumulados enquanto _sfxReady === false.
- * Cada item: { event: string, area: string|null }
- * Drenada por _flushSfxQueue() na ordem de chegada (FIFO).
- */
 const _sfxQueue = [];
 
-/**
- * Drena a fila de eventos de áudio.
- *
- * Deduplicação de hover: durante login/loading podem acumular vários
- * eventos 'hover' na fila. Tocar todos juntos seria uma explosão de sons.
- * Estratégia: mantém apenas o ÚLTIMO hover de cada área — descarta os anteriores.
- * Outros eventos (click, openModal, etc.) continuam tocando normalmente.
- */
 function _flushSfxQueue() {
   if (!_sfxQueue.length) return;
 
-  // Deduplicar: para cada (event=hover, area), manter só a última entrada.
-  // Para demais eventos, manter todas em ordem.
   const deduped = [];
-  // Rastreia se já existe um hover (por área) mais recente na fila.
   const hoverSeen = new Set();
 
-  // Percorre de trás para frente para identificar o último hover de cada área.
   for (let i = _sfxQueue.length - 1; i >= 0; i--) {
     const item = _sfxQueue[i];
     if (item.event === 'hover') {
       const key = item.area ?? '__global__';
       if (!hoverSeen.has(key)) {
         hoverSeen.add(key);
-        deduped.unshift(item); // mantém o mais recente
+        deduped.unshift(item);
       }
-      // anteriores do mesmo área+hover são descartados silenciosamente
     } else {
       deduped.unshift(item);
     }
@@ -314,18 +182,6 @@ function _flushSfxQueue() {
    1e. RESOLUÇÃO INTERNA DE VARIANTE
 ═══════════════════════════════════════════════ */
 
-/**
- * Resolve a variante final para um dado par (action, area).
- *
- * Prioridade:
- *   1. Override de área: _currentSfxAreaMap[area]?.[action]
- *   2. Global:           _currentSfxMap[action]
- *   3. undefined         (silêncio — tratado pelo chamador)
- *
- * @param {string}      action — chave do SFX_MAP (ex: 'click')
- * @param {string|null} area   — identificador de área (ex: 'game', 'resumos')
- * @returns {string|undefined}
- */
 function _resolveVariant(action, area) {
   if (area) {
     const normalizedArea = area.toLowerCase();
@@ -341,7 +197,22 @@ function _resolveVariant(action, area) {
 
 let _currentMode = DEFAULT_MODE;
 
-/** Volumes por canal — persistidos no Firebase. */
+const VALID_MUSIC_MODES = ['normal', 'mute', 'low'];
+let _currentMusicMode = (() => {
+  try { return localStorage.getItem('nexus_music_mode') || 'normal'; } catch { return 'normal'; }
+})();
+if (!VALID_MUSIC_MODES.includes(_currentMusicMode)) _currentMusicMode = 'normal';
+
+const _musicModeSubscribers = new Set();
+
+function _notifyMusicMode() {
+  for (const fn of _musicModeSubscribers) {
+    try { fn(_currentMusicMode); } catch (err) {
+      console.warn('[audio-state] musicMode subscriber error:', err);
+    }
+  }
+}
+
 let _volumes = { master: 1.0, music: 0.5, sfx: 0.5 };
 
 /* ═══════════════════════════════════════════════
@@ -372,6 +243,20 @@ function _notify() {
 
 /* ═══════════════════════════════════════════════
    4. APLICAÇÃO NO sfx.js
+
+   REGRA FUNDAMENTAL:
+   _applyToEngine NÃO toca em musicVolume.
+   O volume de música é controlado EXCLUSIVAMENTE pelo botão de música
+   (audio-btns.js) via _musicApplyToEngine → audio.setMusicVolume().
+
+   Se _applyToEngine sobrescrevesse musicVolume, um loginSuccess ou
+   qualquer mudança no modo SFX resetaria o volume da música para
+   _volumes.music, ignorando o modo do botão (LOW = 0.25, MUTE = 0).
+
+   Volumes por canal:
+     master → controlado pelo modo SFX (normal/low/mute)
+     sfx    → controlado pelo slider de SFX no modal
+     music  → controlado pelo botão de música (audio-btns.js)
 ═══════════════════════════════════════════════ */
 
 function _applyToEngine(modeId) {
@@ -383,9 +268,11 @@ function _applyToEngine(modeId) {
     audio.unmute();
     audio.setMasterVolume(_volumes.master);
   }
-  audio.setMusicVolume?.(_volumes.music);
+  // SFX volume — controlado pelo slider
   audio.setSfxVolume?.(_volumes.sfx);
-  _dbg('mode:', modeId, '| volumes:', _volumes);
+  // NOTA: audio.setMusicVolume NÃO é chamado aqui.
+  // O botão de música (audio-btns.js) é o único responsável pelo canal music.
+  _dbg('_applyToEngine mode:', modeId, '| master:', _volumes.master, '| sfx:', _volumes.sfx);
 }
 
 /* ═══════════════════════════════════════════════
@@ -393,25 +280,22 @@ function _applyToEngine(modeId) {
 ═══════════════════════════════════════════════ */
 
 /**
- * Aplica um objeto `saved` (resultado de _fetchFromFirebase ou do detail
- * de nexus:loginSuccess) ao estado em memória e na engine de áudio.
+ * Aplica estado carregado do Firebase ao estado em memória e na engine.
  *
- * Centraliza o bloco que antes estava duplicado em:
- *   - nexus:loginSuccess handler
- *   - loadFromFirebase()
- *
- * NÃO altera _sfxReady, _readyResolve nem drena a fila —
- * esses passos pertencem ao fluxo de cada chamador.
- *
- * @param {{ mode: string|null, sfxMap: object|null, areaMap: object|null, volumes: object|null }} saved
+ * IMPORTANTE: NÃO chama audio.resetToDefaults().
+ * Os volumes e modos são aplicados individualmente para não sobrescrever
+ * o estado do canal de música (controlado pelo botão de música).
  */
 function _applyLoadedState(saved) {
   _currentMode = saved.mode ?? DEFAULT_MODE;
 
+  if (saved.musicMode && VALID_MUSIC_MODES.includes(saved.musicMode)) {
+    _currentMusicMode = saved.musicMode;
+    try { localStorage.setItem('nexus_music_mode', _currentMusicMode); } catch { /* noop */ }
+    _notifyMusicMode();
+  }
+
   if (saved.sfxMap) {
-    /* Sanitização: descarta variantes salvas no Firebase que não existem mais
-       no catálogo atual (ex: 'correct8' após renomeação dos ids).
-       Variantes inválidas caem de volta para o DEFAULT_SFX_MAP da ação. */
     const sanitized = {};
     for (const [action, variantId] of Object.entries(saved.sfxMap)) {
       if (audio.sfx[variantId] !== undefined) {
@@ -437,13 +321,16 @@ function _applyLoadedState(saved) {
     _dbg('volumes carregados:', _volumes);
   }
 
-  // Aplica volumes individualmente nos canais além de _applyToEngine,
-  // garantindo que _state do sfx.js reflita os valores do Firebase
-  // mesmo que o AudioContext ainda esteja suspended no momento do resume.
+  // Aplica SFX volume diretamente (sem tocar no music — botão de música cuida disso)
   audio.setSfxVolume?.(_volumes.sfx);
-  audio.setMusicVolume?.(_volumes.music);
+
+  // Aplica o modo SFX (master + mute/unmute) mas NÃO sobrescreve music
   _applyToEngine(_currentMode);
   _notify();
+
+  // O musicMode chega via subscribeMusicMode → _musicApplyToEngine em audio-btns.js
+  // _notifyMusicMode() já foi chamado acima quando saved.musicMode existia.
+  // Se não havia musicMode salvo, o botão de música mantém o estado atual (localStorage).
 }
 
 async function _fetchFromFirebase(uid) {
@@ -452,6 +339,7 @@ async function _fetchFromFirebase(uid) {
     const configs      = await carregarConfigs(uid);
     _perf.firebaseEnd  = performance.now();
     const saved        = configs?.audioState;
+    const savedMusicMode = configs?.musicMode ?? null;
     const savedSfxMap  = configs?.sfxMap     ?? null;
     const savedAreaMap = configs?.sfxAreaMap ?? null;
     const savedVolumes = configs?.volumes    ?? null;
@@ -459,10 +347,11 @@ async function _fetchFromFirebase(uid) {
     _dbg('_fetchFromFirebase: uid="' + uid + '" sfxMap=', savedSfxMap, 'sfxAreaMap=', savedAreaMap);
 
     return {
-      mode:    VALID_MODES.includes(saved) ? saved : null,
-      sfxMap:  savedSfxMap  && typeof savedSfxMap  === 'object' ? savedSfxMap  : null,
-      areaMap: savedAreaMap && typeof savedAreaMap === 'object' ? savedAreaMap : null,
-      volumes: savedVolumes && typeof savedVolumes === 'object' ? savedVolumes : null,
+      mode:      VALID_MODES.includes(saved) ? saved : null,
+      musicMode: VALID_MUSIC_MODES.includes(savedMusicMode) ? savedMusicMode : null,
+      sfxMap:    savedSfxMap  && typeof savedSfxMap  === 'object' ? savedSfxMap  : null,
+      areaMap:   savedAreaMap && typeof savedAreaMap === 'object' ? savedAreaMap : null,
+      volumes:   savedVolumes && typeof savedVolumes === 'object' ? savedVolumes : null,
     };
   } catch (err) {
     _dbg('Erro ao carregar Firebase:', err);
@@ -470,19 +359,13 @@ async function _fetchFromFirebase(uid) {
   }
 }
 
-/**
- * Executa o write imediato no Firebase com o estado atual.
- * NÃO chamar diretamente — usar _persistAllToFirebase() (debounced).
- */
 async function _persistAllToFirebaseNow() {
   if (!_currentUid) return;
   const uid = _currentUid;
 
-  // Snapshot síncrono — evita closure stale.
-  const modeSnap = _currentMode;
+  const modeSnap      = _currentMode;
+  const musicModeSnap = _currentMusicMode;
   const sfxSnap  = { ..._currentSfxMap };
-  // Cópia rasa de dois níveis — suficiente para o schema { area: { action: variant } }.
-  // Evita JSON.parse(JSON.stringify) no hot path mantendo correção.
   const areaSnap = {};
   for (const [k, v] of Object.entries(_currentSfxAreaMap)) areaSnap[k] = { ...v };
   const volSnap  = { ..._volumes };
@@ -490,24 +373,19 @@ async function _persistAllToFirebaseNow() {
   try {
     const { getConfigs } = await import('../../../../src/global.js');
     const configsAtuais  = getConfigs();
-    const { audioState: _d1, sfxMap: _d2, sfxAreaMap: _d3, volumes: _d4, ...restConfigs } = configsAtuais;
-    const payload = { ...restConfigs, audioState: modeSnap, sfxMap: sfxSnap, sfxAreaMap: areaSnap, volumes: volSnap };
-    _dbg('persistindo →', modeSnap, volSnap);
+    const { audioState: _d1, sfxMap: _d2, sfxAreaMap: _d3, volumes: _d4, musicMode: _d5, ...restConfigs } = configsAtuais;
+    const payload = { ...restConfigs, audioState: modeSnap, musicMode: musicModeSnap, sfxMap: sfxSnap, sfxAreaMap: areaSnap, volumes: volSnap };
+    _dbg('persistindo →', modeSnap, musicModeSnap, volSnap);
     await salvarConfigs(uid, payload);
   } catch (_) {
-    // fallback sem global.js
     try {
-      await salvarConfigs(uid, { audioState: modeSnap, sfxMap: sfxSnap, sfxAreaMap: areaSnap, volumes: volSnap });
+      await salvarConfigs(uid, { audioState: modeSnap, musicMode: musicModeSnap, sfxMap: sfxSnap, sfxAreaMap: areaSnap, volumes: volSnap });
     } catch (err) {
       _dbg('Erro ao salvar Firebase:', err);
     }
   }
 }
 
-/**
- * Agenda persistência no Firebase com debounce de 800 ms.
- * Múltiplas chamadas rápidas (reset, slider, área) geram apenas 1 write.
- */
 function _persistAllToFirebase() {
   _schedulePersist();
 }
@@ -525,45 +403,41 @@ document.addEventListener('nexus:loginSuccess', async ({ detail }) => {
   const token = ++_activeLoadToken;
   _perf.loginSuccessStart = performance.now();
 
-  // [DIAG] Momento em que _sfxReady vai para false (sons começam a ser enfileirados)
-  console.log('[DIAG:audio-state] nexus:loginSuccess → _sfxReady = false (início do load Firebase)', {
-    uid, token, 'timestamp': Date.now(),
+  // FIX v1.6: NÃO resetamos _currentMode nem chamamos audio.resetToDefaults() aqui.
+  // O estado do usuário (LOW, MUTE) deve ser PRESERVADO durante o carregamento do Firebase.
+  // Se o usuário estava em LOW antes do login, o áudio continua em LOW enquanto o Firebase
+  // carrega. _applyLoadedState() aplicará o estado correto quando o Firebase responder.
+  console.log('[DIAG:audio-state] nexus:loginSuccess → aguardando Firebase (estado preservado)', {
+    uid, token,
+    '_currentMode (preservado)': _currentMode,
+    '_currentMusicMode (preservado)': _currentMusicMode,
+    'timestamp': Date.now(),
   });
+
   _sfxReady = false;
   _resetReadyPromise();
 
-  _currentMode = DEFAULT_MODE;
-  audio.resetToDefaults();
-  _applyToEngine(_currentMode);
-  _notify();
+  // FIX v1.6: Sem _currentMode = DEFAULT_MODE, sem audio.resetToDefaults(),
+  // sem _applyToEngine, sem _notify aqui. O estado ATUAL é mantido.
 
-  // [PERF] Se o index.js já passou configs no detail do evento, usamos diretamente.
-  // Isso elimina a segunda consulta ao Firebase (round-trip de 150–2000 ms).
-  // Fallback para _fetchFromFirebase mantido para compatibilidade caso o detail
-  // não contenha configs (ex: disparos de loginSuccess de outros contextos).
   let saved;
   if (detail?.configs) {
     const c = detail.configs;
-    const savedMode    = c?.audioState;
-    const savedSfxMap  = c?.sfxMap     ?? null;
-    const savedAreaMap = c?.sfxAreaMap ?? null;
-    const savedVolumes = c?.volumes    ?? null;
+    const savedMode      = c?.audioState;
+    const savedMusicMode = c?.musicMode   ?? null;
+    const savedSfxMap    = c?.sfxMap      ?? null;
+    const savedAreaMap   = c?.sfxAreaMap  ?? null;
+    const savedVolumes   = c?.volumes     ?? null;
     _dbg('loginSuccess: usando configs do detail (sem round-trip Firebase)', { savedMode, savedSfxMap });
-    console.log('[DIAG:audio-state] nexus:loginSuccess → configs recebidas via detail (0ms Firebase)', {
-      'timestamp': Date.now(),
-    });
     saved = {
-      mode:    VALID_MODES.includes(savedMode) ? savedMode : null,
-      sfxMap:  savedSfxMap  && typeof savedSfxMap  === 'object' ? savedSfxMap  : null,
-      areaMap: savedAreaMap && typeof savedAreaMap === 'object' ? savedAreaMap : null,
-      volumes: savedVolumes && typeof savedVolumes === 'object' ? savedVolumes : null,
+      mode:      VALID_MODES.includes(savedMode) ? savedMode : null,
+      musicMode: VALID_MUSIC_MODES.includes(savedMusicMode) ? savedMusicMode : null,
+      sfxMap:    savedSfxMap  && typeof savedSfxMap  === 'object' ? savedSfxMap  : null,
+      areaMap:   savedAreaMap && typeof savedAreaMap === 'object' ? savedAreaMap : null,
+      volumes:   savedVolumes && typeof savedVolumes === 'object' ? savedVolumes : null,
     };
   } else {
-    // Fallback: index.js não incluiu configs no detail — faz a leitura normalmente.
     _dbg('loginSuccess: detail sem configs, fazendo _fetchFromFirebase (fallback)');
-    console.warn('[DIAG:audio-state] nexus:loginSuccess → detail sem configs, executando fallback Firebase', {
-      'timestamp': Date.now(),
-    });
     saved = await _fetchFromFirebase(uid);
   }
 
@@ -577,9 +451,9 @@ document.addEventListener('nexus:loginSuccess', async ({ detail }) => {
 
   _sfxReady = true;
   _perf.sfxReadyTrue = performance.now();
-  // [DIAG] Firebase carregado, _sfxReady voltou para true
   console.log('[DIAG:audio-state] nexus:loginSuccess → _sfxReady = true (Firebase carregado)', {
     '_currentMode': _currentMode,
+    '_currentMusicMode': _currentMusicMode,
     '_currentSfxMap': { ..._currentSfxMap },
     '_sfxQueue restante': _sfxQueue.length,
     'timestamp': Date.now(),
@@ -593,21 +467,27 @@ document.addEventListener('nexus:loginSuccess', async ({ detail }) => {
 });
 
 document.addEventListener('nexus:logout', () => {
-  // Cancela qualquer persist pendente antes de limpar o uid.
   if (_persistTimer) { clearTimeout(_persistTimer); _persistTimer = null; }
 
   _currentUid        = null;
   _activeLoadToken++;
 
+  // No logout SIM resetamos — o usuário saiu, estado volta ao padrão
   _currentMode       = DEFAULT_MODE;
+  _currentMusicMode  = 'normal';
   _currentSfxMap     = { ...DEFAULT_SFX_MAP };
   _currentSfxAreaMap = {};
+
+  // Aqui sim usamos resetToDefaults() porque o usuário saiu explicitamente
   audio.resetToDefaults();
   _applyToEngine(_currentMode);
   _notify();
+  _notifyMusicMode();
 
   _sfxQueue.length = 0;
   _sfxReady = true;
+
+  try { localStorage.setItem('nexus_music_mode', 'normal'); } catch { /* noop */ }
 
   _dbg('Logout → modo resetado para padrão');
 });
@@ -678,18 +558,34 @@ const audioState = {
     return [...VALID_MODES];
   },
 
+  // ── MODO DE MÚSICA ───────────────────────────
+
+  getMusicMode() {
+    return _currentMusicMode;
+  },
+
+  setMusicMode(modeId) {
+    if (!VALID_MUSIC_MODES.includes(modeId)) return;
+    _currentMusicMode = modeId;
+    try { localStorage.setItem('nexus_music_mode', modeId); } catch { /* noop */ }
+    _persistAllToFirebase();
+    _notifyMusicMode();
+  },
+
+  subscribeMusicMode(fn) {
+    if (typeof fn === 'function') _musicModeSubscribers.add(fn);
+  },
+
+  unsubscribeMusicMode(fn) {
+    _musicModeSubscribers.delete(fn);
+  },
+
   // ── VOLUMES ──────────────────────────────────
 
-  /** Retorna copia dos volumes atuais. */
   getVolumes() {
     return { ..._volumes };
   },
 
-  /**
-   * Atualiza o volume de um canal, aplica na engine e persiste no Firebase.
-   * @param {'master'|'music'|'sfx'} channel
-   * @param {number} value  0.0 a 2.0
-   */
   setVolume(channel, value) {
     if (!['master', 'music', 'sfx'].includes(channel)) {
       _dbg('setVolume: canal invalido:', channel);
@@ -703,7 +599,27 @@ const audioState = {
       if (clamped === 0) { audio.setMasterVolume(0); audio.mute(); }
       else               { audio.unmute(); audio.setMasterVolume(clamped); }
     } else if (channel === 'music') {
-      audio.setMusicVolume?.(clamped);
+      // Atualiza _volumes.music mas NÃO aplica direto na engine aqui.
+      // O botão de música é quem controla audio.setMusicVolume().
+      // Se o slider de música do modal mudar _volumes.music, o botão de música
+      // não perde o controle — a próxima vez que o modo mudar, ele aplica o
+      // musicVolume correto do modo (normal=1.0, low=0.25, mute=0).
+      // Mas o slider quer aplicar imediatamente para o usuário ouvir.
+      // Solução: aplica na engine SOMENTE se o modo de música for 'normal',
+      // para não sobrescrever um LOW (0.25) ou MUTE (0) com o valor do slider.
+      //
+      // Na prática: o slider de música no modal de som ajusta o volume BASE.
+      // O botão de música aplica um MULTIPLICADOR sobre esse volume base.
+      // Nesta arquitetura simplificada, o botão de música define o volume final.
+      // Então o slider altera _volumes.music (persistência) e também aplica
+      // se o modo atual permitir (não-mute).
+      const musicMode = _currentMusicMode;
+      if (musicMode !== 'mute') {
+        // Escala pelo modo: normal usa 100% do slider, low usa 50%
+        const scale = musicMode === 'low' ? 0.5 : 1.0;
+        audio.setMusicVolume?.(clamped * scale);
+      }
+      // Se musicMode === 'mute', não aplica — respeita o mute do botão de música
     } else {
       audio.setSfxVolume?.(clamped);
     }
@@ -727,30 +643,14 @@ const audioState = {
     _notify();
   },
 
-  // ── SFX_AREA_MAP — overrides por área ───────
+  // ── SFX_AREA_MAP ────────────────────────────
 
-  /**
-   * Retorna uma cópia profunda do mapa de overrides por área.
-   * Formato: { game: { click: 'click5' }, resumos: { click: 'click3' } }
-   *
-   * @returns {Object}
-   */
   getSfxAreaMap() {
-    // Cópia rasa de dois níveis — suficiente para o schema { area: { action: variant } }.
-    // Evita JSON.parse/stringify no hot path mantendo isolamento correto.
     const copy = {};
     for (const [k, v] of Object.entries(_currentSfxAreaMap)) copy[k] = { ...v };
     return copy;
   },
 
-  /**
-   * Define um override de áudio para uma área/página específica.
-   * Se variantId for null ou undefined, equivale a clearSfxAreaOverride.
-   *
-   * @param {string} area      — ex: 'game', 'resumos', 'quiz', 'perfil'
-   * @param {string} action    — chave do SFX_MAP (ex: 'click', 'hover')
-   * @param {string|null} variantId — ex: 'click5', ou null para remover
-   */
   setSfxAreaMap(area, action, variantId) {
     if (!(action in DEFAULT_SFX_MAP)) {
       _dbg('setSfxAreaMap: ação desconhecida "' + action + '"');
@@ -777,22 +677,10 @@ const audioState = {
     _notify();
   },
 
-  /**
-   * Remove o override de uma área+action específica.
-   * Após a remoção, playSound usará o som global para essa combinação.
-   *
-   * @param {string} area   — ex: 'game'
-   * @param {string} action — ex: 'click'
-   */
   clearSfxAreaOverride(area, action) {
     this.setSfxAreaMap(area, action, null);
   },
 
-  /**
-   * Remove todos os overrides de uma área inteira.
-   *
-   * @param {string} area — ex: 'game'
-   */
   clearAreaOverrides(area) {
     const key = area.toLowerCase();
     if (_currentSfxAreaMap[key]) {
@@ -804,41 +692,18 @@ const audioState = {
 
   // ── RESOLUÇÃO DE VARIANTE ────────────────────
 
-  /**
-   * Resolve a variante final para um dado par (action, area).
-   *
-   * Prioridade:
-   *   1. Override de área:  _currentSfxAreaMap[area]?.[action]
-   *   2. Global:            _currentSfxMap[action]
-   *   3. undefined          (silêncio — tratado pelo chamador)
-   *
-   * Exposto na API pública para play.js e outros módulos.
-   *
-   * @param {string}      action — chave do SFX_MAP (ex: 'click')
-   * @param {string|null} [area] — identificador de área (ex: 'game')
-   * @returns {string|undefined}
-   */
   resolveVariant(action, area) {
     return _resolveVariant(action, area);
   },
 
   // ── SNAPSHOT DE ÁUDIO PARA PERSISTÊNCIA ─────
 
-  /**
-   * Retorna um snapshot dos três campos de áudio que audio-state.js
-   * controla, para que global.js possa incluí-los no payload do Firebase
-   * sem depender de importação circular ou leitura assíncrona.
-   *
-   * Usado em setConfigs() do global.js para garantir que sfxAreaMap
-   * nunca seja apagado por um save parcial de configs gerais.
-   *
-   * @returns {{ audioState: string, sfxMap: object, sfxAreaMap: object }}
-   */
   getAudioPayload() {
     const areaSnap = {};
     for (const [k, v] of Object.entries(_currentSfxAreaMap)) areaSnap[k] = { ...v };
     return {
       audioState: _currentMode,
+      musicMode:  _currentMusicMode,
       sfxMap:     { ..._currentSfxMap },
       sfxAreaMap: areaSnap,
       volumes:    { ..._volumes },
@@ -847,41 +712,14 @@ const audioState = {
 
   // ── FILA DE SFX ─────────────────────────────
 
-  /**
-   * Indica se o SFX_MAP do Firebase já foi carregado e aplicado.
-   * @returns {boolean}
-   */
   isReady() {
     return _sfxReady;
   },
 
-  /**
-   * Enfileira um evento de áudio para ser tocado assim que o SFX_MAP
-   * estiver pronto. Chamado por play.js quando isReady() === false.
-   *
-   * A partir de v1.4 aceita um segundo parâmetro opcional `area`,
-   * para que o som correto seja tocado quando a fila for drenada.
-   *
-   * @param {string}      event — chave do SFX_MAP (ex: 'click')
-   * @param {string|null} [area] — identificador de área (ex: 'game')
-   */
   enqueue(event, area = null) {
     _sfxQueue.push({ event, area });
   },
 
-  /**
-   * Retorna a Promise interna de prontidão do SFX_MAP.
-   *
-   * Resolve quando:
-   *   - visitante: imediatamente (DEFAULT_SFX_MAP disponível)
-   *   - usuário logado: após Firebase carregar sfxMap + sfxAreaMap
-   *
-   * Uso:
-   *   await audioState.waitUntilReady();
-   *   // daqui em diante playSound() usa o mapa correto
-   *
-   * @returns {Promise<void>}
-   */
   waitUntilReady() {
     return _readyPromise;
   },

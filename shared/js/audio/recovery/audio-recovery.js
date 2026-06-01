@@ -99,14 +99,27 @@ export function installAudioRecovery({ Sound, audio }) {
      detectar restauração do cache. Reinit recria o botão flutuante
      (que fica órfão no bfcache) e força um resume().
   ────────────────────────────────────────────────────────── */
-  window.addEventListener('pageshow', async (e) => {
-    if (!e.persisted) return;
-    console.log('[audio-recovery] pageshow persisted — reinit');
-    Sound.reinit();                    // recria botão + audio.resumeCtx() interno
-    await _tryResume(audio);
+window.addEventListener('pageshow', async (e) => {
+  if (!e.persisted) return;
+  console.log('[audio-recovery] pageshow persisted — reinit');
+  Sound.reinit();
+  const ok = await _tryResume(audio);
+  if (ok) {
+    _resumeMusicAfterRestore();
+  } else {
     _installHoverFallback(audio);
-  });
+  }
+});
 
+function _resumeMusicAfterRestore() {
+  try {
+    const track = localStorage.getItem('nexus_last_track');
+    const mode  = localStorage.getItem('nexus_music_mode') || 'normal';
+    if (track && mode !== 'mute') {
+      audio.music[track]?.();
+    }
+  } catch (_) {}
+}
   /* ── 2. Visibilidade — aba voltando ao foco ──────────────
      Browsers suspendem AudioContext de tabs em segundo plano.
   ────────────────────────────────────────────────────────── */

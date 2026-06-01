@@ -45,7 +45,7 @@
 import audio          from '../engine/sfx.js';
 import audioState     from '../state/audio-state.js';
 import makeVolumeSlider from './vol-slider.js';
-import { mountAudioBtn, destroyAudioBtn } from './audio-btns.js';
+import { mountAudioBtn, destroyAudioBtn, mountMusicBtn, destroyMusicBtn } from './audio-btns.js';
 
 /* ═══════════════════════════════════════════════
    SEÇÃO A — BOTÃO FLUTUANTE DE VOLUME
@@ -1278,17 +1278,19 @@ const Sound = {
     _resetAll();
   },
 
-  reinit() {
-    destroyAudioBtn();
+reinit() {
+  destroyAudioBtn();
+  destroyMusicBtn();    // estava faltando
 
-    _initialized = false;
+  _initialized = false;
 
-    this.init();
+  this.init();
+  mountMusicBtn();      // init() só monta o SFX btn
 
-    audio.resumeCtx();
+  audio.resumeCtx();
 
-    console.log('[sound] reinit() executado — botão recriado, ctx resume tentado');
-  },
+  console.log('[sound] reinit() executado — botões recriados, ctx resume tentado');
+},
 
   resetCtx() {
     audio.resumeCtx();
