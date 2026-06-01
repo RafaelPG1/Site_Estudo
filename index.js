@@ -241,7 +241,7 @@ function _renderHeader() {
 
 function _bindCardLinks() {
   const rotas = {
-    'card-pessoal': { path: './area_pessoal/pessoal.html', area: 'perfil'  },
+    'card-pessoal': { path: './pessoal/pessoal.html', area: 'perfil'  },
     'card-resumos': { path: './resumo/resumo.html',        area: 'resumos' },
     'card-quiz':    { path: './quiz/quiz.html',            area: 'quiz'    },
     'card-jogos':   { path: './games/jogo.html',           area: 'game'    },
@@ -809,7 +809,7 @@ function _abrirModalConfig() {
       btnCl.title       = `Limpar checklist de ${disc.nome}`;
       btnCl.addEventListener('click', () => {
         _confirmar(btnCl, async () => {
-          const { saveCheckedIds } = await import('./area_pessoal/pessoal_sync.js');
+          const { saveCheckedIds } = await import('./pessoal/pessoal_sync.js');
           saveCheckedIds(sem, disc.id, new Set());
           mostrarToast(`Checklist de ${disc.apelido} limpo.`);
         });
@@ -822,7 +822,7 @@ function _abrirModalConfig() {
       btnTask.title       = `Limpar tarefas de ${disc.nome}`;
       btnTask.addEventListener('click', () => {
         _confirmar(btnTask, async () => {
-          const { setCategorias } = await import('./area_pessoal/pessoal_sync.js');
+          const { setCategorias } = await import('./pessoal/pessoal_sync.js');
           setCategorias(sem, disc.id, []);
           mostrarToast(`Tarefas de ${disc.apelido} apagadas.`);
         });
@@ -833,7 +833,7 @@ function _abrirModalConfig() {
 
   document.getElementById('btn-limpar-pessoal-tudo')?.addEventListener('click', function () {
     _confirmar(this, async () => {
-      const { saveCheckedIds, setCategorias } = await import('./area_pessoal/pessoal_sync.js');
+      const { saveCheckedIds, setCategorias } = await import('./pessoal/pessoal_sync.js');
       for (const disc of disciplinas) {
         saveCheckedIds(sem, disc.id, new Set());
         setCategorias(sem, disc.id, []);

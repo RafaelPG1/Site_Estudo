@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   try {
-    const mod = await import('../shared/js/cores.js');
+    const mod = await import('../shared/js/themes/cores.js');
     State.DISC_CORES = mod.DISC_CORES ?? {};
   } catch (_) {}
 
