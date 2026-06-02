@@ -53,7 +53,7 @@ function _resumeCtx() {
     _getGains();
     _syncGains();
     _warmup();
-    _dbg('AudioContext resumed por gesto do usuário, state:', _ctx.state);
+    document.dispatchEvent(new CustomEvent('nexus:audioUnlocked')); // ← add
   }).catch(() => {});
 }
 

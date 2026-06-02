@@ -37,9 +37,9 @@ import {
   audio,
   installAudioRecovery,
   playSound,
-  mountMusicBtn,   // ← importar explicitamente
+  mountMusicBtn,
+  getMusicMode,  // ← add
 } from './shared/js/audio/audio-api.js';
- 
 
 /* ═══════════════════════════════════════════════
    SEÇÃO 2 — INICIALIZAÇÃO
@@ -80,37 +80,30 @@ async function init() {
     preencherAnos(['footer-year']);
  
     // BGM da página inicial
-    async function _tryStartMenuMusic() {
-      if (!audio.isUnlocked()) return;
-      if (audio.music.currentId() === 'music-menu') return;
-      // Respeita o modo do botão de música — se MUTE, não inicia
-      // O modo de música é verificado indiretamente: se o musicVolume
-      // no gain node for 0 (MUTE), a música toca mas é silenciosa.
-      // Para evitar iniciar a BGM engine em vão, checamos o modo:
-      const { getMusicMode } = await import('./shared/js/audio/ui/audio-btns.js').catch(() => ({}));
-      // Se não conseguir importar, toca de qualquer forma (comportamento anterior)
-      const mode = typeof getMusicMode === 'function' ? getMusicMode() : 'normal';
-      if (mode === 'mute') return; // não inicia engine se MUTE
-      audio.music['menu']();
-    }
+async function _tryStartMenuMusic() {
+  if (!audio.isUnlocked()) return;
+  if (audio.music.currentId() === 'music-menu') return;
+
+  // getMusicMode já foi importado no topo do arquivo junto com mountMusicBtn
+  const mode = getMusicMode?.() ?? 'normal';
+  if (mode === 'mute') return;
+
+  audio.music['menu']();
+}
  
     // Tenta imediatamente (já desbloqueado por login anterior na sessão)
     _tryStartMenuMusic();
  
     document.addEventListener('nexus:audioUnlocked', _tryStartMenuMusic, { once: true });
  
-    const _watchdog = setInterval(() => {
-      if (!document.hidden && audio.isUnlocked()) {
-        if (audio.music.currentId() !== 'music-menu') {
-          // Mesmo check de modo no watchdog
-          import('./shared/js/audio/ui/audio-btns.js')
-            .then(({ getMusicMode }) => {
-              if (getMusicMode?.() !== 'mute') audio.music['menu']();
-            })
-            .catch(() => { audio.music['menu'](); });
-        }
-      }
-    }, 30_000);
+const _watchdog = setInterval(() => {
+  if (!document.hidden && audio.isUnlocked()) {
+    if (audio.music.currentId() !== 'music-menu') {
+      const mode = getMusicMode?.() ?? 'normal';
+      if (mode !== 'mute') audio.music['menu']();
+    }
+  }
+}, 30_000);
  
     window.addEventListener('pagehide', () => clearInterval(_watchdog), { once: true });
  
