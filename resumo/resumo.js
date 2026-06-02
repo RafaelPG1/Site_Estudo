@@ -31,8 +31,15 @@ import { injetarLogo } from '../shared/js/utils/logo.js';
 ───────────────────────────────────────────── */
 import { Sound, playSound } from '../shared/js/audio/audio-api.js';
 
-injetarLogo({ destino: '#header-logo-wrap', tamanho: 32, layout: 'stacked',       area:      'resumos',
-      playSound,   });
+injetarLogo({ 
+  destino: '#header-logo-wrap', 
+  tamanho: 38, 
+  layout: 'stacked',       
+  area: 'resumos',
+  playSound,   
+  srcBase:  '../shared/img/logo.png',
+    linkHref: '../index.html',
+});
 
 /* ══════════════════════════════════════════════
    ESTADO
