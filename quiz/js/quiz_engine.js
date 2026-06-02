@@ -64,6 +64,20 @@
       return 'quiz_smap_' + _uid() + '_' + _disc + '_' + _modo + '_' + _semestre;
     }
 
+    function _stepStateKey() {
+      return 'quiz_step_' + _uid() + '_' + _disc + '_' + _modo + '_' + _semestre;
+    }
+
+    function _salvarEstadoStep() {
+      if (!_Storage) return;
+      _Storage.set(_stepStateKey(), { ativo: modoStep, atual: stepAtual });
+    }
+
+    function _limparEstadoStep() {
+      if (!_Storage) return;
+      _Storage.remove(_stepStateKey());
+    }
+
     function _salvarFinalizadoAtivo() {
       if (!_Storage) return false;
       try {
@@ -339,7 +353,8 @@
     var stepAtual        = 0;
     var stepWrapper      = null;
     var mostrandoSoErros = false;
-    var aulaGrupos       = [];
+    var aulaGrupos           = [];
+    var _stepAulaBannerTimer = null;
 
     function _restaurar() {
       if (!_disc || !_Storage) return null;
@@ -790,7 +805,7 @@ if (r.respondidas < r.total) {
       }
 
       _atualizarBotaoErros();
-      _atualizarTodosResultadosAula();
+      if (!modoStep) _atualizarTodosResultadosAula();
     }
 
     /* ── 10. VER ERROS ────────────────────────────────────── */
@@ -1100,10 +1115,14 @@ if (r.respondidas < r.total) {
       }
 
       smoothScrollToTop();
+      _salvarEstadoStep();
     }
 
     function _sairModoStep() {
       modoStep = false;
+
+      /* Limpa banner de aula pendente */
+      if (_stepAulaBannerTimer) { clearTimeout(_stepAulaBannerTimer); _stepAulaBannerTimer = null; }
 
       if (stepWrapper && stepWrapper.parentNode === container) {
         stepWrapper.style.transition = 'none';
@@ -1139,6 +1158,7 @@ if (r.respondidas < r.total) {
         var iToggle = toggle.querySelector('i');
         if (iToggle) iToggle.className = 'fas fa-layer-group';
       }
+      _limparEstadoStep();
     }
 
     function toggleModo() {
@@ -1146,12 +1166,64 @@ if (r.respondidas < r.total) {
       else          { _entrarModoStep(); }
     }
 
+    function _aulaDeQuestao(qi) {
+      var grupo = aulaGrupos[_grupoDeQuestao(qi)];
+      return grupo ? grupo.aula : null;
+    }
+
+    function _mostrarBannerAula(nomeAula) {
+      if (!nomeAula) return;
+
+      var headerEl = document.getElementById('step-shell-header');
+      if (!headerEl) return;
+
+      /* Remove banner anterior imediatamente */
+      var antigo = headerEl.querySelector('.step-aula-banner');
+      if (antigo) antigo.remove();
+
+      var banner = document.createElement('div');
+      banner.className = 'step-aula-banner';
+      banner.setAttribute('aria-live', 'polite');
+      banner.innerHTML =
+        '<span class="step-aula-banner__icon"><i class="fas fa-layer-group" aria-hidden="true"></i></span>' +
+        '<span class="step-aula-banner__label">Nova aula</span>' +
+        '<span class="step-aula-banner__nome">' + nomeAula + '</span>' +
+        '<span class="step-aula-banner__pill">▸</span>';
+
+      headerEl.appendChild(banner);
+      /* Banner fica visível até a próxima navegação — sem auto-dismiss */
+    }
+
+    function _removerBannerAula() {
+      var headerEl = document.getElementById('step-shell-header');
+      if (!headerEl) return;
+      var banner = headerEl.querySelector('.step-aula-banner');
+      if (!banner) return;
+      banner.classList.add('step-aula-out');
+      banner.addEventListener('animationend', function () { banner.remove(); }, { once: true });
+    }
+
     function irParaQuestao(index) {
       if (index < 0 || index >= questoes.length) return;
       var direcao = index > stepAtual ? 'forward' : 'back';
+
+      /* Ao avançar: detecta mudança de aula */
+      if (direcao === 'forward' && aulaGrupos.length > 1) {
+        var aulaAtual = _aulaDeQuestao(stepAtual);
+        var aulaNova  = _aulaDeQuestao(index);
+        if (aulaNova && aulaNova !== aulaAtual) {
+          _mostrarBannerAula(aulaNova);
+        } else {
+          _removerBannerAula(); /* mesma aula — remove banner se havia um */
+        }
+      } else {
+        _removerBannerAula(); /* voltando — remove sempre */
+      }
+
       stepAtual = index;
       _aplicarModoStep(direcao);
       smoothScrollToTop();
+      _salvarEstadoStep();
     }
 
     function proximaQuestao()  { irParaQuestao(stepAtual + 1); }
@@ -1180,6 +1252,23 @@ if (r.respondidas < r.total) {
     var btnToggle = document.getElementById('btn-toggle-modo');
     if (btnToggle) btnToggle.addEventListener('click', toggleModo);
 
+    /* ── NAVEGAÇÃO POR SETAS DO TECLADO (apenas no modo step) ── */
+    document.addEventListener('keydown', function (e) {
+      if (!modoStep) return;
+
+      /* Ignora se o foco estiver num input/textarea para não interferir com digitação */
+      var tag = document.activeElement && document.activeElement.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        proximaQuestao();
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        questaoAnterior();
+      }
+    });
+
     var btnLeft = document.getElementById('btn-left');
     var urlBack = window.NEXUS_URL_BACK || null;
     if (btnLeft) {
@@ -1191,6 +1280,14 @@ if (r.respondidas < r.total) {
     }
 
     renderizar();
+
+    if (_Storage) {
+      var _stepSalvo = _Storage.get(_stepStateKey(), null);
+      if (_stepSalvo && _stepSalvo.ativo) {
+        stepAtual = _stepSalvo.atual || 0;
+        _entrarModoStep();
+      }
+    }
 
     if (Object.keys(respostas).length === questoes.length) {
       atualizarResultados();

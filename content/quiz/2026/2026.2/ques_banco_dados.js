@@ -1395,7 +1395,218 @@ window.questoes = {
       answer: 2,
 
       feedback: "DEREF é usado para recuperar o objeto referenciado por um campo do tipo REF. Em vez de retornar apenas o identificador, ele retorna o objeto completo, permitindo acessar seus atributos diretamente."
-    }
+    },
+    // aula: Aula 15 - Projeto de Banco de Dados
+
+// 61 - projeto banco dados
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Explicativa",
+
+  texto: "Antes de criar qualquer tabela, um bom desenvolvedor passa pela etapa de planejamento do banco de dados. Esse processo envolve entender o problema, definir o que será armazenado e antecipar quais relatórios o sistema precisará gerar. Sem esse planejamento, o banco tende a acumular dados duplicados e se tornar difícil de manter com o tempo.",
+
+  question: "Por que a etapa de planejamento é considerada essencial antes de iniciar a construção de um banco de dados?",
+
+  options: [
+    "Porque permite escolher o SGBD mais barato do mercado",
+    "Porque garante que os comandos SQL sejam escritos mais rapidamente",
+    "Porque evita redundâncias, garante integridade e facilita a manutenção futura",
+    "Porque substitui a necessidade de criar modelos conceituais e lógicos"
+  ],
+
+  answer: 2,
+
+  feedback: "O planejamento existe justamente para evitar problemas como dados duplicados e inconsistências. Um banco bem projetado desde o início é mais organizado, performático e fácil de expandir."
+},
+
+// 62 - entidades atributos
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Explicativa",
+
+  texto: "No projeto de banco de dados, chamamos de ==def==entidade== qualquer objeto do mundo real que precisa ser representado no sistema, como um Jogador ou um Clube. Já os ==def==atributos== são as características que descrevem essa entidade — por exemplo, um Jogador possui nome, RG e data de nascimento. Cada entidade normalmente se transforma em uma tabela, e seus atributos viram as colunas dessa tabela.",
+
+  question: "Em um sistema de controle esportivo, qual das opções representa corretamente uma entidade e um de seus atributos?",
+
+  options: [
+    "Entidade: data_nascimento / Atributo: Jogador",
+    "Entidade: Jogador / Atributo: nome",
+    "Entidade: PRIMARY KEY / Atributo: clube_id",
+    "Entidade: SELECT / Atributo: FROM"
+  ],
+
+  answer: 1,
+
+  feedback: "Jogador é o objeto do mundo real (entidade), e nome é uma característica que o descreve (atributo). Essa distinção é fundamental para estruturar as tabelas corretamente."
+},
+
+// 63 - chave primária
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Explicativa",
+
+  texto: "Imagine que um banco de dados possui centenas de jogadores cadastrados. Para diferenciar cada um deles de forma única — mesmo que dois jogadores tenham o mesmo nome — usamos um identificador exclusivo chamado ==key==chave primária==. Ela garante que nenhum registro se repita e serve como referência para os relacionamentos com outras tabelas.",
+
+  question: "Qual é a função da chave primária em uma tabela de banco de dados?",
+
+  options: [
+    "Criar um relacionamento automático com todas as outras tabelas",
+    "Permitir que um campo aceite valores nulos sem restrição",
+    "Identificar cada registro de forma única dentro da tabela",
+    "Definir o tipo de dado que será armazenado na coluna"
+  ],
+
+  answer: 2,
+
+  feedback: "A chave primária existe para garantir unicidade — cada linha da tabela terá um valor diferente nesse campo, evitando registros duplicados e possibilitando relacionamentos seguros."
+},
+
+// 64 - modelo conceitual
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Contextualizada",
+
+  texto: "Quando um analista de sistemas se reúne com o cliente para entender as necessidades do negócio, o resultado dessa conversa pode ser representado em um modelo conceitual. Esse modelo mostra entidades, relacionamentos e regras de negócio de forma simples e visual, sem se preocupar com qual banco de dados será usado. É como um esboço do sistema — qualquer pessoa, técnica ou não, consegue entender.",
+
+  question: "Qual das características abaixo é exclusiva do modelo conceitual, diferenciando-o dos demais modelos?",
+
+  options: [
+    "Define os tipos de dados de cada coluna",
+    "Implementa as chaves estrangeiras entre tabelas",
+    "É independente de tecnologia e focado nas regras do negócio",
+    "Especifica os índices e campos obrigatórios do banco"
+  ],
+
+  answer: 2,
+
+  feedback: "O modelo conceitual opera em alto nível de abstração — ele representa o negócio, não a tecnologia. Por isso é ideal para comunicação entre analistas e usuários antes de qualquer decisão técnica."
+},
+
+// 65 - modelo lógico
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Contextualizada",
+
+  texto: "Após entender o negócio pelo modelo conceitual, o próximo passo é traduzir essas ideias em estruturas compatíveis com bancos relacionais. No modelo lógico, as entidades viram tabelas, os identificadores viram chaves primárias e os relacionamentos passam a ser representados por chaves estrangeiras. Também é nessa etapa que relacionamentos N:M geram entidades associativas — tabelas intermediárias que conectam duas entidades.",
+
+  question: "O que distingue o modelo lógico do modelo conceitual em um projeto de banco de dados?",
+
+  options: [
+    "O modelo lógico é mais abstrato e não usa chaves",
+    "O modelo lógico introduz chaves primárias, estrangeiras e entidades associativas",
+    "O modelo lógico depende diretamente do SGBD escolhido",
+    "O modelo lógico substitui completamente o modelo físico"
+  ],
+
+  answer: 1,
+
+  feedback: "O modelo lógico transforma a visão de negócio em estrutura relacional, definindo chaves e relacionamentos. Ele ainda não depende do SGBD, mas já está pronto para ser implementado."
+},
+
+// 66 - modelo físico
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Aplicação",
+
+  texto: "Uma equipe de desenvolvimento finalizou o modelo lógico de um sistema e agora precisa implementar o banco em PostgreSQL. Nessa etapa, cada coluna recebe um tipo de dado específico (como VARCHAR ou INTEGER), campos obrigatórios são marcados como NOT NULL, e índices são criados para acelerar as consultas. Essa fase é totalmente dependente do SGBD escolhido.",
+
+  question: "Nesse cenário, em qual modelo de banco de dados a equipe está trabalhando?",
+
+  options: [
+    "Modelo conceitual",
+    "Modelo entidade-relacionamento",
+    "Modelo lógico",
+    "Modelo físico"
+  ],
+
+  answer: 3,
+
+  feedback: "O modelo físico é a implementação real no SGBD. É nele que se definem tipos de dados, restrições, índices e a estrutura que será de fato criada no banco."
+},
+
+// 67 - relacionamento identificado
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Contextualizada",
+
+  texto: "No modelo físico, os relacionamentos entre tabelas podem ser classificados como identificados ou não identificados. No ==key==relacionamento identificado==, a chave estrangeira passa a fazer parte da chave primária da tabela filha — ou seja, a identidade do registro filho depende diretamente do registro pai. Já no não identificado, a chave estrangeira existe na tabela filha, mas não compõe a chave primária dela.",
+
+  question: "Em qual situação um relacionamento é classificado como identificado?",
+
+  options: [
+    "Quando a chave estrangeira aceita valores nulos",
+    "Quando a chave estrangeira faz parte da chave primária da tabela filha",
+    "Quando as duas tabelas possuem o mesmo nome de coluna",
+    "Quando o relacionamento é do tipo N:M"
+  ],
+
+  answer: 1,
+
+  feedback: "No relacionamento identificado, a existência do registro filho depende do pai — por isso a FK compõe a PK. Isso reforça a dependência entre as entidades no nível físico."
+},
+
+// 68 - DDL comandos
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Explicativa",
+
+  texto: "Em SQL, os comandos são organizados em categorias conforme sua finalidade. Os comandos ==ddl==DDL== (Data Definition Language) são responsáveis por criar, alterar e remover estruturas do banco de dados — como tabelas e índices. Eles não manipulam dados em si, mas definem o esquema onde os dados serão armazenados. Os três principais comandos DDL são CREATE, ALTER e DROP.",
+
+  question: "Qual das alternativas representa corretamente os três comandos principais da categoria DDL?",
+
+  options: [
+    "INSERT, UPDATE e DELETE",
+    "SELECT, FROM e WHERE",
+    "CREATE, ALTER e DROP",
+    "JOIN, GROUP BY e ORDER BY"
+  ],
+
+  answer: 2,
+
+  feedback: "DDL cuida da estrutura do banco: CREATE cria objetos, ALTER modifica e DROP remove. Nenhum deles manipula registros — isso é papel do DML."
+},
+
+// 69 - DML manipulação
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Aplicação",
+
+  texto: "Depois que as tabelas estão criadas, o sistema começa a receber dados reais. Um novo jogador é cadastrado, um nome digitado errado precisa ser corrigido e um registro duplicado deve ser removido. Todas essas operações são realizadas com comandos ==dml==DML== (Data Manipulation Language), que trabalham diretamente sobre os dados armazenados nas tabelas.",
+
+  question: "Associando as operações do cenário acima, qual sequência de comandos DML corresponde respectivamente a cadastrar, corrigir e remover um registro?",
+
+  options: [
+    "CREATE, ALTER, DROP",
+    "INSERT, UPDATE, DELETE",
+    "SELECT, INSERT, ALTER",
+    "UPDATE, SELECT, CREATE"
+  ],
+
+  answer: 1,
+
+  feedback: "INSERT adiciona novos registros, UPDATE modifica os existentes e DELETE os remove. Esses três comandos formam o núcleo das operações de manipulação de dados no DML."
+},
+
+// 70 - JOIN GROUP BY
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Aplicação",
+
+  texto: "Para gerar relatórios úteis em um banco de dados relacional, muitas vezes precisamos combinar informações de duas ou mais tabelas. O INNER JOIN conecta registros relacionados entre tabelas, enquanto o GROUP BY agrupa os resultados por um critério específico — permitindo, por exemplo, contar quantos clubes cada federação possui em vez de listar todos um por um.",
+
+  question: "Em uma consulta que exibe a quantidade de clubes por federação, qual par de recursos SQL torna isso possível?",
+
+  options: [
+    "DROP e ALTER",
+    "WHERE e HAVING",
+    "INNER JOIN e GROUP BY",
+    "INSERT e SELECT"
+  ],
+
+  answer: 2,
+
+  feedback: "O INNER JOIN conecta as tabelas Clube e Federação pelo campo em comum, e o GROUP BY agrupa os resultados pela sigla da federação para que o COUNT() calcule o total de clubes de cada uma."
+}
 
   ],
 
@@ -2912,7 +3123,259 @@ window.questoes = {
       feedback: "Correto: A. As afirmativas I, II e IV são verdadeiras. A III é falsa: **DROP TABLE** é uma operação **DDL**, não DML — ela remove a estrutura da tabela, não apenas seus dados. DML se limita a INSERT, UPDATE, DELETE e SELECT."
     },
 
+    // aula: Aula 15 - Projeto de Banco de Dados
 
+// 61 - modelos comparação
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Múltiplas afirmativas",
+
+  texto: "Uma empresa de tecnologia contratou um analista para estruturar o banco de dados de um novo sistema de gestão esportiva. Durante o processo, ele produziu três artefatos distintos: um diagrama de alto nível para apresentar ao cliente, um esquema com tabelas e chaves para validar com a equipe técnica, e um script SQL final para execução no PostgreSQL. Cada artefato corresponde a uma das três etapas clássicas de modelagem de banco de dados.",
+
+  question: "Avalie as afirmativas a seguir sobre as etapas de modelagem de banco de dados:",
+
+  assertions: [
+    "I. O modelo conceitual é independente de tecnologia e representa entidades, atributos e relacionamentos sob a ótica do negócio.",
+    "II. O ==ddl==modelo lógico== introduz chaves primárias, chaves estrangeiras e entidades associativas, derivando do modelo conceitual.",
+    "III. O modelo físico depende diretamente do SGBD escolhido e define tipos de dados, índices e campos obrigatórios.",
+    "IV. O modelo conceitual já especifica os tipos de dados de cada coluna, antecipando a implementação física."
+  ],
+
+  options: [
+    "I, II e III, apenas",
+    "I e III, apenas",
+    "II e IV, apenas",
+    "I, II, III e IV"
+  ],
+
+  answer: 0,
+
+  feedback: "Correto: A. As afirmativas I, II e III descrevem corretamente as três etapas. A IV é falsa: o **modelo conceitual** não define tipos de dados — essa responsabilidade pertence ao modelo físico."
+},
+
+// 62 - cardinalidade N:M
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Asserção + Justificativa",
+
+  texto: "No sistema da CBF, um clube pode participar de vários campeonatos ao longo da temporada, e cada campeonato reúne múltiplos clubes simultaneamente. Esse tipo de vínculo entre entidades exige uma solução específica na modelagem relacional para evitar anomalias estruturais.",
+
+  question: "Analise a asserção e a justificativa a seguir:",
+
+  assertions: [
+    "I. O relacionamento entre Clube e Campeonato exige a criação de uma entidade associativa no modelo lógico.",
+    "[PORQUE] II. Relacionamentos ==type==N:M== não podem ser representados diretamente com chaves estrangeiras simples em bancos relacionais sem gerar redundância ou perda de integridade."
+  ],
+
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+
+  answer: 0,
+
+  feedback: "Correto: A. Ambas as afirmativas são verdadeiras e há relação direta entre elas: a limitação estrutural dos relacionamentos **N:M** em bancos relacionais é exatamente o que motiva a criação de uma entidade associativa."
+},
+
+// 63 - chave estrangeira
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Análise aplicada",
+
+  texto: "Durante a implementação do banco de dados esportivo, um desenvolvedor tentou inserir um registro na tabela Jogador referenciando um clube_id que não existia na tabela Clube. O SGBD rejeitou a operação imediatamente, exibindo uma mensagem de violação de restrição.",
+
+  question: "Qual mecanismo do banco de dados impediu essa inserção e qual é sua função no modelo relacional?",
+
+  options: [
+    "PRIMARY KEY — impede registros duplicados na tabela Jogador",
+    "FOREIGN KEY — garante que o valor referenciado exista na tabela pai antes de permitir a inserção",
+    "UNIQUE — restringe valores repetidos no campo clube_id da tabela Jogador",
+    "INDEX — acelera a busca pelo clube_id, bloqueando inserções inconsistentes"
+  ],
+
+  answer: 1,
+
+  feedback: "Correto: B. A **FOREIGN KEY** implementa a integridade referencial: ela impede que um registro filho seja criado sem que o registro pai correspondente já exista, garantindo consistência entre as tabelas."
+},
+
+// 64 - normalização
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Asserção + Justificativa",
+
+  texto: "Uma equipe de banco de dados identificou que a tabela principal do sistema armazenava o nome da federação repetido em cada linha de clube cadastrado. Ao aplicar normalização, separaram a informação em uma tabela específica de Federação e criaram um relacionamento entre as tabelas.",
+
+  question: "Analise a asserção e a justificativa propostas:",
+
+  assertions: [
+    "I. A ==dml==normalização== elimina redundâncias e reduz anomalias de atualização nos dados.",
+    "[PORQUE] II. Quando uma informação se repete em múltiplas linhas, qualquer atualização precisa ser feita em todos os registros simultaneamente, o que aumenta o risco de inconsistência."
+  ],
+
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+
+  answer: 0,
+
+  feedback: "Correto: A. A justificativa II descreve exatamente o problema que a **normalização** resolve: dados repetidos geram anomalias de atualização, e separar as informações em tabelas distintas elimina esse risco."
+},
+
+// 65 - DDL DML distinção
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Múltiplas afirmativas",
+
+  texto: "Em um projeto de banco de dados, os comandos SQL são categorizados conforme sua finalidade. Um desenvolvedor precisa: criar a tabela de jogadores, inserir os primeiros registros, alterar a estrutura de uma coluna existente e atualizar o nome de um jogador cadastrado incorretamente.",
+
+  question: "Considerando as operações descritas, avalie as afirmativas:",
+
+  assertions: [
+    "I. Criar a tabela de jogadores é uma operação ==ddl==DDL==, executada com o comando CREATE.",
+    "II. Inserir os primeiros registros é uma operação DML, executada com o comando INSERT.",
+    "III. Alterar a estrutura de uma coluna é uma operação DML, pois modifica dados existentes.",
+    "IV. Atualizar o nome de um jogador é uma operação DML, executada com o comando UPDATE."
+  ],
+
+  options: [
+    "I, II e IV, apenas",
+    "I e III, apenas",
+    "II e IV, apenas",
+    "I, II, III e IV"
+  ],
+
+  answer: 0,
+
+  feedback: "Correto: A. As afirmativas I, II e IV são verdadeiras. A III é falsa: alterar estrutura de coluna é operação **DDL** (comando ALTER), pois modifica o esquema da tabela, não os dados."
+},
+
+// 66 - relacionamento identificado
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Conceitual contextualizada",
+
+  texto: "Ao modelar fisicamente o banco de dados da CBF, o arquiteto percebeu que certas tabelas filhas só faziam sentido existir se houvesse um registro pai correspondente. Em alguns casos, a chave estrangeira foi incluída como parte da chave primária composta da tabela filha; em outros, ela foi adicionada como campo independente.",
+
+  question: "Qual é a diferença fundamental entre um ==key==relacionamento identificado== e um não identificado no modelo físico?",
+
+  options: [
+    "No identificado, a FK é opcional; no não identificado, a FK é obrigatória",
+    "No identificado, a FK compõe a PK da tabela filha; no não identificado, a FK existe mas não faz parte da PK",
+    "No identificado, não há FK; a relação é feita apenas por índices",
+    "No identificado, a tabela filha pode existir sem registro pai; no não identificado, não pode"
+  ],
+
+  answer: 1,
+
+  feedback: "Correto: B. No **relacionamento identificado**, a chave estrangeira integra a chave primária da tabela filha, indicando dependência de existência. No não identificado, a FK existe como campo separado, sem compor a PK."
+},
+
+// 67 - escopo regras negócio
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Múltiplas afirmativas",
+
+  texto: "Na fase de definição de escopo do sistema da CBF, foram estabelecidas regras de negócio que determinam como as entidades se relacionam. Essas regras precisam ser fielmente representadas no modelo de dados para que o banco reflita corretamente a realidade do domínio.",
+
+  question: "Avalie as afirmativas sobre as regras de negócio definidas no escopo do sistema:",
+
+  assertions: [
+    "I. Cada clube pertence a exatamente uma federação, configurando uma cardinalidade 1:N entre Federação e Clube.",
+    "II. Um jogador pode receber vários prêmios, o que implica cardinalidade 1:N entre Jogador e Prêmio.",
+    "III. Um jogador pode pertencer a múltiplos clubes simultaneamente, conforme as regras do sistema.",
+    "IV. Campeonatos possuem múltiplos clubes participantes, e clubes podem disputar múltiplos campeonatos."
+  ],
+
+  options: [
+    "I, II e IV, apenas",
+    "I e IV, apenas",
+    "II e III, apenas",
+    "I, II, III e IV"
+  ],
+
+  answer: 0,
+
+  feedback: "Correto: A. As afirmativas I, II e IV estão alinhadas com as regras do escopo. A III é falsa: segundo o modelo, jogadores pertencem a um clube — não há regra de múltiplos clubes simultâneos."
+},
+
+// 68 - SGBD classificação
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Conceitual contextualizada",
+
+  texto: "Uma startup com orçamento reduzido precisa escolher um SGBD para seu novo sistema. O CTO listou as opções disponíveis: Oracle, PostgreSQL, DB2, MySQL, SQL Server e Sybase. Para reduzir custos de licenciamento, a equipe decidiu priorizar soluções open source sem abrir mão de robustez.",
+
+  question: "Considerando as opções apresentadas, quais SGBDs atendem ao critério de serem gratuitos ou open source?",
+
+  options: [
+    "Oracle e DB2",
+    "SQL Server e MySQL",
+    "PostgreSQL e MySQL",
+    "Sybase e PostgreSQL"
+  ],
+
+  answer: 2,
+
+  feedback: "Correto: C. **PostgreSQL** e **MySQL** são os SGBDs open source citados. Oracle, DB2, SQL Server, Sybase e Informix são soluções comerciais que exigem licenciamento pago."
+},
+
+// 69 - JOIN GROUP BY análise
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Análise aplicada",
+
+  texto: "O gestor da CBF solicitou um relatório que mostrasse quantos clubes cada federação possui cadastrados no sistema. O desenvolvedor responsável escreveu uma consulta SQL que combina as tabelas Clube e Federação, agrupando os resultados pela sigla de cada federação.",
+
+  question: "Analise o trecho de código abaixo e identifique a afirmativa correta sobre seu comportamento:",
+
+  code: `SELECT federacao.sigla, COUNT(clube_id)
+FROM clube
+INNER JOIN federacao
+ON clube.federacao_federacao_id = federacao.federacao_id
+GROUP BY federacao.sigla;`,
+
+  options: [
+    "O INNER JOIN retorna todos os registros de clube, mesmo os que não possuem federação associada",
+    "O GROUP BY agrupa os clubes por sigla da federação, e o COUNT contabiliza quantos clubes cada grupo possui",
+    "O COUNT(clube_id) soma os valores numéricos do campo clube_id, gerando um total acumulado",
+    "Sem o GROUP BY, a consulta retornaria erro de sintaxe no PostgreSQL"
+  ],
+
+  answer: 1,
+
+  feedback: "Correto: B. O **GROUP BY** organiza os registros em grupos por sigla da federação, e o `COUNT(clube_id)` conta quantos clubes existem em cada grupo. O INNER JOIN retorna apenas os registros com correspondência em ambas as tabelas — não todos os clubes."
+},
+
+// 70 - etapas projeto ordem
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Asserção + Justificativa",
+
+  texto: "Durante uma auditoria de qualidade em um projeto de banco de dados corporativo, identificou-se que a equipe havia pulado a etapa de definição de entidades e atributos, partindo diretamente para a criação das tabelas no SGBD. O resultado foi um banco com dados duplicados, relacionamentos inconsistentes e dificuldade de manutenção.",
+
+  question: "Avalie a asserção e a justificativa a seguir:",
+
+  assertions: [
+    "I. Respeitar a sequência das etapas do projeto de banco de dados — da definição do objetivo até a implementação física — é fundamental para garantir integridade e qualidade do sistema.",
+    "[PORQUE] II. Cada etapa do projeto ==rule==fornece insumos== para a seguinte: sem identificar entidades e atributos, não é possível definir chaves, relacionamentos e normalização de forma consistente."
+  ],
+
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+
+  answer: 0,
+
+  feedback: "Correto: A. A afirmativa II explica diretamente por que a sequência importa: as etapas são interdependentes. Sem **entidades e atributos** bem definidos, as etapas de chaves, relacionamentos e normalização ficam comprometidas, gerando exatamente os problemas observados na auditoria."
+}
   ],
 
 
@@ -3980,7 +4443,172 @@ window.questoes = {
 
     feedback: "DEREF recupera o objeto referenciado por um campo REF. Em vez de retornar apenas o identificador, ele retorna o objeto completo, permitindo acessar seus atributos diretamente na consulta."
   },
-  
+  // aula: Aula 15 - Projeto de Banco de Dados
+
+// 61 - modelo conceitual
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Direta",
+  texto: "O modelo conceitual é a primeira etapa formal de representação de um banco de dados.",
+  question: "Qual é a principal característica do modelo conceitual?",
+  options: [
+    "Define tipos de dados e índices físicos",
+    "Depende diretamente do SGBD utilizado",
+    "Representa a visão do negócio de forma independente de tecnologia",
+    "Implementa as chaves estrangeiras entre tabelas"
+  ],
+  answer: 2,
+  feedback: "O modelo conceitual é independente de tecnologia e representa entidades, atributos e relacionamentos sob a ótica do negócio, sem detalhes técnicos."
+},
+
+// 62 - cardinalidade
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Contexto",
+  texto: "Em um sistema da CBF, um clube pode participar de vários campeonatos e um campeonato pode ter vários clubes inscritos.",
+  question: "Qual é a cardinalidade correta para o relacionamento entre Clube e Campeonato?",
+  options: [
+    "1:1",
+    "1:N",
+    "N:1",
+    "N:M"
+  ],
+  answer: 3,
+  feedback: "Quando ambos os lados do relacionamento podem ter múltiplas ocorrências, a cardinalidade é N:M (muitos para muitos)."
+},
+
+// 63 - entidade associativa
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Curta",
+  texto: "Relacionamentos N:M exigem uma solução especial na modelagem lógica.",
+  question: "O que normalmente é criado para representar um relacionamento N:M no modelo lógico?",
+  options: [
+    "Uma chave primária composta na tabela principal",
+    "Uma entidade associativa",
+    "Um índice único em ambas as tabelas",
+    "Uma chave estrangeira dupla na mesma tabela"
+  ],
+  answer: 1,
+  feedback: "Relacionamentos N:M são resolvidos criando uma entidade associativa (tabela intermediária) que conecta as duas entidades envolvidas."
+},
+
+// 64 - normalização
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Direta",
+  texto: "A normalização é um processo fundamental no projeto de banco de dados relacional.",
+  question: "Qual é o objetivo principal da normalização?",
+  options: [
+    "Aumentar a quantidade de tabelas para melhorar a leitura",
+    "Eliminar redundâncias e evitar inconsistências nos dados",
+    "Definir os tipos físicos das colunas no SGBD",
+    "Criar índices automáticos em todas as tabelas"
+  ],
+  answer: 1,
+  feedback: "A normalização busca eliminar redundância de dados e evitar anomalias de atualização, organizando os dados de forma consistente até a 3ª Forma Normal."
+},
+
+// 65 - chave estrangeira
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Aplicação",
+  texto: "No banco de dados da CBF, a tabela Jogador precisa referenciar a tabela Clube para garantir que todo jogador pertença a um clube válido.",
+  question: "Qual recurso SQL é responsável por garantir essa integridade referencial?",
+  options: [
+    "PRIMARY KEY",
+    "UNIQUE",
+    "FOREIGN KEY",
+    "INDEX"
+  ],
+  answer: 2,
+  feedback: "A FOREIGN KEY (chave estrangeira) cria o vínculo entre tabelas e garante que um registro só exista se o registro referenciado também existir."
+},
+
+// 66 - DDL
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Curta",
+  texto: "Em SQL, os comandos são agrupados por finalidade.",
+  question: "Qual dos comandos abaixo pertence à categoria DDL?",
+  options: [
+    "INSERT",
+    "UPDATE",
+    "SELECT",
+    "CREATE"
+  ],
+  answer: 3,
+  feedback: "CREATE é um comando DDL (Data Definition Language), usado para criar estruturas como tabelas. INSERT, UPDATE e SELECT pertencem ao DML."
+},
+
+// 67 - modelo físico
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Contexto",
+  texto: "Após a modelagem lógica, o desenvolvedor precisa implementar o banco em um SGBD específico, definindo tipos de dados e restrições reais.",
+  question: "Essa etapa corresponde a qual modelo de banco de dados?",
+  options: [
+    "Modelo conceitual",
+    "Modelo lógico",
+    "Modelo físico",
+    "Modelo entidade-relacionamento"
+  ],
+  answer: 2,
+  feedback: "O modelo físico é a etapa de implementação real, dependente do SGBD escolhido, onde se definem tipos de dados, índices, campos obrigatórios e relacionamentos físicos."
+},
+
+// 68 - relacionamento identificado
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Direta",
+  texto: "No modelo físico, os relacionamentos entre tabelas podem ser classificados de duas formas distintas.",
+  question: "O que caracteriza um relacionamento identificado?",
+  options: [
+    "A chave estrangeira é opcional e pode ser nula",
+    "A chave estrangeira faz parte da chave primária da tabela filha",
+    "A chave primária é gerada automaticamente pelo SGBD",
+    "A chave estrangeira referencia uma tabela externa ao banco"
+  ],
+  answer: 1,
+  feedback: "No relacionamento identificado, a chave estrangeira compõe a chave primária da tabela dependente, indicando que a entidade filha depende da pai para existir."
+},
+
+// 69 - DML SELECT
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Código",
+  texto: "O comando abaixo é executado em um banco da CBF.",
+  question: "Qual é a finalidade do GROUP BY nessa consulta?",
+  code: `SELECT federacao.sigla, COUNT(clube_id)
+FROM clube
+INNER JOIN federacao
+ON clube.federacao_federacao_id = federacao.federacao_id
+GROUP BY federacao.sigla;`,
+  options: [
+    "Filtrar apenas federações com mais de um clube",
+    "Ordenar os resultados alfabeticamente pela sigla",
+    "Agrupar os clubes por federação para contar quantos cada uma possui",
+    "Remover registros duplicados da tabela clube"
+  ],
+  answer: 2,
+  feedback: "O GROUP BY agrupa os registros pela sigla da federação, permitindo que o COUNT() calcule quantos clubes pertencem a cada uma delas."
+},
+
+// 70 - SGBD
+{
+  aula: "Aula 15 - Projeto de Banco de Dados",
+  tipo: "Curta",
+  texto: "Existem diferentes SGBDs disponíveis no mercado, classificados entre gratuitos e comerciais.",
+  question: "Qual das alternativas lista apenas SGBDs classificados como gratuitos ou open source segundo o conteúdo da aula?",
+  options: [
+    "Oracle e DB2",
+    "SQL Server e Sybase",
+    "PostgreSQL e MySQL",
+    "Informix e Oracle"
+  ],
+  answer: 2,
+  feedback: "PostgreSQL e MySQL são os SGBDs open source citados na aula. Oracle, DB2, SQL Server, Sybase e Informix são exemplos de SGBDs comerciais."
+}
 
 
   ],
