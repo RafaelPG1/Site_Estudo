@@ -2910,7 +2910,8 @@ window.questoes = {
       answer: 0,
 
       feedback: "Correto: A. As afirmativas I, II e IV são verdadeiras. A III é falsa: **DROP TABLE** é uma operação **DDL**, não DML — ela remove a estrutura da tabela, não apenas seus dados. DML se limita a INSERT, UPDATE, DELETE e SELECT."
-    }
+    },
+
 
   ],
 
@@ -3978,7 +3979,9 @@ window.questoes = {
     answer: 2,
 
     feedback: "DEREF recupera o objeto referenciado por um campo REF. Em vez de retornar apenas o identificador, ele retorna o objeto completo, permitindo acessar seus atributos diretamente na consulta."
-  }
+  },
+  
+
 
   ],
 

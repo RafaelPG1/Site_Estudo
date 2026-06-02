@@ -1067,7 +1067,219 @@ window.questoes = {
       answer: 1,
 
       feedback: "1fr 1fr cria duas colunas que dividem igualmente o espaço do container. A unidade fr é proporcional e calculada automaticamente pelo navegador."
-    }
+    },
+
+    // aula: Aula 15 - Revisão Projeto de Design para Web
+
+// 61 - Mobile First
+{
+  aula: "Aula 15 - Revisão Projeto de Design para Web",
+  tipo: "Explicativa",
+
+  texto: "O Mobile First é uma abordagem de desenvolvimento web que propõe começar o projeto pelas telas menores — como smartphones — e só depois expandir o layout para tablets e desktops. Essa lógica inverte a ordem tradicional e força o designer a priorizar o que realmente importa, já que o espaço disponível é limitado. O resultado costuma ser um código mais enxuto e uma experiência mais fluida em dispositivos móveis.",
+
+  question: "Qual é o princípio central da abordagem Mobile First no desenvolvimento web?",
+
+  options: [
+    "Desenvolver primeiro para desktops e depois adaptar para telas menores",
+    "Criar layouts fixos que funcionem igualmente em todos os dispositivos",
+    "Começar o desenvolvimento pelos dispositivos móveis e expandir progressivamente para telas maiores",
+    "Eliminar o uso de Media Queries para simplificar o código"
+  ],
+
+  answer: 2,
+
+  feedback: "No Mobile First, o desenvolvimento parte das telas menores em direção às maiores, garantindo foco no conteúdo essencial e melhor experiência em smartphones."
+},
+
+// 62 - Media Queries
+{
+  aula: "Aula 15 - Revisão Projeto de Design para Web",
+  tipo: "Aplicação",
+
+  texto: "Imagine que você está desenvolvendo um site seguindo o Mobile First. O layout para smartphones já está pronto, mas agora você precisa reorganizar os elementos quando a tela for maior — colocando o menu na lateral e exibindo mais colunas de conteúdo. Para isso, o CSS oferece um recurso específico que permite aplicar estilos diferentes de acordo com o tamanho da tela do dispositivo.",
+
+  question: "Qual recurso do CSS deve ser utilizado para adaptar o layout progressivamente conforme o tamanho da tela aumenta?",
+
+  options: [
+    "Pseudo-classes",
+    "Media Queries",
+    "Variáveis CSS",
+    "Seletores de atributo"
+  ],
+
+  answer: 1,
+
+  feedback: "As ==rule==Media Queries== permitem definir regras CSS condicionais baseadas no tamanho da tela, sendo o recurso central para a adaptação progressiva no Mobile First."
+},
+
+// 63 - Design Centrado Usuário
+{
+  aula: "Aula 15 - Revisão Projeto de Design para Web",
+  tipo: "Explicativa",
+
+  texto: "O Design Centrado no Usuário coloca as necessidades reais de quem vai usar a interface acima de qualquer preferência estética do designer. Isso significa pensar em usabilidade — quão fácil é usar o sistema —, acessibilidade — se pessoas com diferentes necessidades conseguem utilizá-lo —, e comunicabilidade — se a interface consegue transmitir suas funções claramente. Um projeto bem centrado no usuário resulta em navegação intuitiva e conforto cognitivo durante o uso.",
+
+  question: "Qual das opções abaixo representa um dos pilares do Design Centrado no Usuário?",
+
+  options: [
+    "Priorizar o visual moderno em detrimento da facilidade de uso",
+    "Garantir que o designer tenha liberdade criativa total sem restrições funcionais",
+    "Considerar acessibilidade, usabilidade e comunicabilidade no projeto da interface",
+    "Desenvolver primeiro as funcionalidades avançadas antes das básicas"
+  ],
+
+  answer: 2,
+
+  feedback: "O Design Centrado no Usuário envolve usabilidade, acessibilidade, comunicabilidade, clareza visual e conforto cognitivo — todos voltados às necessidades reais do usuário."
+},
+
+// 64 - Ergonomia condução
+{
+  aula: "Aula 15 - Revisão Projeto de Design para Web",
+  tipo: "Aplicação",
+
+  texto: "Pense em um aplicativo de banco onde, ao entrar em qualquer tela, você sempre sabe onde está, o que pode fazer e como voltar. Essa sensação de orientação constante não é acidente — ela é resultado da aplicação de um critério ergonômico específico. Interfaces bem projetadas guiam o usuário durante toda a navegação, reduzindo a sensação de perda ou confusão.",
+
+  question: "Qual critério ergonômico é responsável por orientar o usuário durante a navegação, indicando onde ele está e quais ações estão disponíveis?",
+
+  options: [
+    "Homogeneidade",
+    "Adaptabilidade",
+    "Condução",
+    "Controle explícito"
+  ],
+
+  answer: 2,
+
+  feedback: "O critério de Condução trata exatamente da orientação do usuário durante a navegação, garantindo que ele sempre saiba onde está e o que pode fazer."
+},
+
+// 65 - Ergonomia carga trabalho
+{
+  aula: "Aula 15 - Revisão Projeto de Design para Web",
+  tipo: "Explicativa",
+
+  texto: "Toda vez que um usuário precisa memorizar informações entre telas, preencher campos desnecessários ou processar muitas opções ao mesmo tempo, ele está sendo submetido a um esforço mental elevado. Um bom design deve minimizar esse esforço, tornando a interação mais fluida e menos cansativa. Esse cuidado com o esforço mental que a interface exige do usuário é tratado por um critério ergonômico específico.",
+
+  question: "Qual critério ergonômico trata da redução do esforço mental exigido do usuário durante o uso da interface?",
+
+  options: [
+    "Gestão de erros",
+    "Carga de trabalho",
+    "Compatibilidade",
+    "Homogeneidade"
+  ],
+
+  answer: 1,
+
+  feedback: "O critério de Carga de trabalho visa reduzir o esforço mental do usuário, simplificando interações e evitando sobrecarga cognitiva desnecessária."
+},
+
+// 66 - Engenharia Semiótica
+{
+  aula: "Aula 15 - Revisão Projeto de Design para Web",
+  tipo: "Contextualizada",
+
+  texto: "A Engenharia Semiótica parte de uma ideia interessante: toda interface é, na prática, uma mensagem. Quando o designer cria botões, ícones, animações e textos, ele está codificando intenções de uso. O sistema funciona como o canal que transmite essa mensagem ao usuário. Signos visuais, símbolos, comportamentos e feedbacks são os elementos que carregam esse significado. A análise dessa comunicação envolve três atores principais: o designer, o sistema e o usuário.",
+
+  question: "Na perspectiva da ==def==Engenharia Semiótica==, o que a interface representa dentro do processo de comunicação?",
+
+  options: [
+    "A intenção final do usuário ao interagir com o sistema",
+    "Uma mensagem do designer para o usuário, mediada pelo sistema",
+    "Um conjunto de regras técnicas independente de interpretação humana",
+    "O resultado visual do processo de desenvolvimento front-end"
+  ],
+
+  answer: 1,
+
+  feedback: "Na Engenharia Semiótica, a interface é a mensagem que o designer envia ao usuário por meio do sistema, utilizando signos visuais, comportamentos e feedbacks como elementos comunicativos."
+},
+
+// 67 - Inspeção semiótica etapas
+{
+  aula: "Aula 15 - Revisão Projeto de Design para Web",
+  tipo: "Explicativa",
+
+  texto: "A Inspeção Semiótica é um método de avaliação de interfaces que segue uma sequência definida de etapas. Começa analisando os signos que explicam o próprio sistema (metalinguísticos), depois os elementos visuais fixos (estáticos) e os que mudam com a interação (dinâmicos). Em seguida, compara as mensagens transmitidas por esses diferentes signos e, por fim, avalia a qualidade geral da comunicação entre designer e usuário.",
+
+  question: "Qual é a ordem correta das etapas iniciais da Inspeção Semiótica?",
+
+  options: [
+    "Signos dinâmicos → Signos estáticos → Signos metalinguísticos",
+    "Signos metalinguísticos → Signos estáticos → Signos dinâmicos",
+    "Avaliação da metacomunicação → Comparação das metamensagens → Signos estáticos",
+    "Comparação das metamensagens → Signos dinâmicos → Signos metalinguísticos"
+  ],
+
+  answer: 1,
+
+  feedback: "A Inspeção Semiótica começa pelos signos metalinguísticos, avança para os estáticos e dinâmicos, depois compara as metamensagens e finaliza com a avaliação da metacomunicação."
+},
+
+// 68 - Psicologia cognitiva
+{
+  aula: "Aula 15 - Revisão Projeto de Design para Web",
+  tipo: "Contextualizada",
+
+  texto: "O design de interfaces dialoga diretamente com como o cérebro humano processa informações. Alguns fatores cognitivos são especialmente relevantes: a atenção seletiva define o que o usuário percebe primeiro; a memória de curto prazo limita quantas informações ele consegue reter de uma vez; e a categorização ajuda o cérebro a organizar elementos em grupos com significado. Quando esses fatores são ignorados no projeto, a interface se torna confusa e difícil de usar.",
+
+  question: "Um designer quer que o usuário identifique rapidamente o botão de ação principal em uma tela com muitos elementos. Qual fator cognitivo ele deve explorar para alcançar esse objetivo?",
+
+  options: [
+    "Memória de longo prazo",
+    "Vigilância",
+    "Atenção seletiva",
+    "Interpretação"
+  ],
+
+  answer: 2,
+
+  feedback: "A atenção seletiva é o mecanismo cognitivo que direciona o foco do usuário. Ao criar destaque visual para o botão principal, o designer explora esse fator para guiar a percepção."
+},
+
+// 69 - Tipografia objetivos
+{
+  aula: "Aula 15 - Revisão Projeto de Design para Web",
+  tipo: "Aplicação",
+
+  texto: "A tipografia em um projeto web vai muito além da escolha de uma fonte bonita. Ela cumpre papéis funcionais importantes: organiza as informações em níveis de importância, facilita a leitura do conteúdo e contribui para que o site transmita uma identidade visual coerente. Por isso, no projeto estudado na aula, foram escolhidas fontes diferentes para títulos e para textos corridos — cada uma com uma função específica.",
+
+  question: "No projeto desenvolvido durante o módulo, qual fonte foi escolhida para os textos corridos e qual era o objetivo principal dessa diferenciação tipográfica?",
+
+  options: [
+    "Lato Black 900, para reforçar a identidade visual nos parágrafos",
+    "Nunito Regular 400, para criar hierarquia visual e melhorar a leitura",
+    "Roboto Regular, para garantir maior compatibilidade entre navegadores",
+    "Open Sans 400, para uniformizar títulos e textos em uma única fonte"
+  ],
+
+  answer: 1,
+
+  feedback: "A Nunito Regular 400 foi escolhida para textos corridos. Combinada com a Lato Black 900 nos títulos, essa diferenciação cria hierarquia visual e melhora a experiência de leitura."
+},
+
+// 70 - HTML semântico
+{
+  aula: "Aula 15 - Revisão Projeto de Design para Web",
+  tipo: "Explicativa",
+
+  texto: "O HTML5 trouxe uma série de elementos semânticos que vão além da simples organização visual da página — eles comunicam o significado de cada bloco de conteúdo. Usar `<header>` indica que aquela área é o cabeçalho; `<nav>` sinaliza um bloco de navegação; `<article>` representa um conteúdo independente. Isso beneficia a acessibilidade, melhora a leitura do código por outros desenvolvedores e auxilia mecanismos de busca a compreenderem a estrutura do site.",
+
+  question: "Qual elemento HTML semântico deve ser utilizado para delimitar um bloco de conteúdo independente, como uma notícia ou post de blog?",
+
+  options: [
+    "<section>",
+    "<main>",
+    "<article>",
+    "<div>"
+  ],
+
+  answer: 2,
+
+  feedback: "O elemento `<article>` representa conteúdo independente e autossuficiente, como uma notícia ou post. Diferente de `<section>`, ele faz sentido mesmo fora do contexto da página."
+}
 
   ],
 
@@ -2518,7 +2730,255 @@ window.questoes = {
     answer: 1,
 
     feedback: "Correto: B. A navegação interna é feita com **id** no elemento de destino e href='#id' no link. Ao clicar, o navegador rola automaticamente até o elemento com aquele identificador, sem recarregar a página."
-  }
+  },
+  
+    // aula: Aula 15 - Revisão Projeto de Design para Web
+
+    // 61 - Mobile First
+    {
+      aula: "Aula 15 - Revisão Projeto de Design para Web",
+      tipo: "Asserção + Justificativa",
+
+      texto: "A abordagem Mobile First tem se consolidado como estratégia preferencial no desenvolvimento web moderno, especialmente diante do crescente uso de smartphones para acesso à internet.",
+
+      question: "Avalie a asserção e a justificativa a seguir sobre o ==def==Mobile First==.",
+
+      assertions: [
+        "I. O Mobile First prioriza o desenvolvimento para telas pequenas antes de adaptar o layout para dispositivos maiores.",
+        "[PORQUE] II. Iniciar o desenvolvimento pelo menor contexto de tela obriga o designer a focar no ==rule==conteúdo essencial==, resultando em código mais organizado e layouts progressivamente mais ricos."
+      ],
+
+      options: [
+        "I e II são verdadeiras, e II justifica I",
+        "I e II são verdadeiras, mas II não justifica I",
+        "I é verdadeira e II é falsa",
+        "I é falsa e II é verdadeira"
+      ],
+
+      answer: 0,
+
+      feedback: "Correto: A. O **Mobile First** parte das telas menores para as maiores, e essa restrição inicial força a priorização do essencial, o que de fato justifica a produção de código mais limpo e bem estruturado."
+    },
+
+    // 62 - Design Centrado Usuário
+    {
+      aula: "Aula 15 - Revisão Projeto de Design para Web",
+      tipo: "Múltiplas afirmativas",
+
+      texto: "Uma equipe de design web está revisando os princípios que devem nortear o projeto de uma nova interface. O líder do time afirma que o Design Centrado no Usuário envolve múltiplas dimensões além da estética.",
+
+      question: "Considerando os pilares do ==def==Design Centrado no Usuário==, assinale as afirmativas corretas.",
+
+      assertions: [
+        "I. A acessibilidade é um dos aspectos considerados no Design Centrado no Usuário.",
+        "II. A comunicabilidade diz respeito à capacidade da interface de transmitir suas funções ao usuário.",
+        "III. O conforto cognitivo é irrelevante, pois o usuário se adapta à interface com o tempo.",
+        "IV. A facilidade de navegação é um requisito do projeto centrado no usuário."
+      ],
+
+      options: [
+        "I, II e IV, apenas",
+        "I e III, apenas",
+        "II e III, apenas",
+        "I, II, III e IV"
+      ],
+
+      answer: 0,
+
+      feedback: "Correto: A. O **Design Centrado no Usuário** inclui acessibilidade, comunicabilidade e facilidade de navegação. A afirmativa III está errada pois o ==warn==conforto cognitivo== é explicitamente considerado um requisito do projeto."
+    },
+
+    // 63 - Ergonomia critérios
+    {
+      aula: "Aula 15 - Revisão Projeto de Design para Web",
+      tipo: "Análise aplicada",
+
+      texto: "Durante uma auditoria de usabilidade, um especialista identifica que a interface de um sistema não fornece orientações claras sobre onde o usuário está e quais ações podem ser realizadas. Os menus mudam de posição entre as telas e os rótulos variam para a mesma função.",
+
+      question: "Com base nos critérios ergonômicos de interfaces, quais dois critérios estão sendo ==warn==violados== nesse sistema?",
+
+      options: [
+        "Adaptabilidade e Controle explícito",
+        "Condução e Homogeneidade",
+        "Gestão de erros e Compatibilidade",
+        "Carga de trabalho e Adaptabilidade"
+      ],
+
+      answer: 1,
+
+      feedback: "Correto: B. **Condução** refere-se à orientação da navegação — ausente quando o usuário não sabe onde está. **Homogeneidade** exige padrões consistentes — violada quando menus e rótulos variam entre telas."
+    },
+
+    // 64 - Engenharia Semiótica
+    {
+      aula: "Aula 15 - Revisão Projeto de Design para Web",
+      tipo: "Asserção + Justificativa",
+
+      texto: "A Engenharia Semiótica propõe que toda interface é, em essência, uma mensagem do designer para o usuário, mediada pelo sistema.",
+
+      question: "Avalie a asserção e a justificativa a seguir sobre a ==def==Engenharia Semiótica==.",
+
+      assertions: [
+        "I. A interface comunica significados por meio de signos visuais, símbolos, comportamentos e feedbacks.",
+        "[PORQUE] II. O sistema atua como canal de comunicação entre o ==proc==designer== e o usuário, transmitindo intenções de uso por meio dos elementos da interface."
+      ],
+
+      options: [
+        "I e II são verdadeiras, e II justifica I",
+        "I e II são verdadeiras, mas II não justifica I",
+        "I é verdadeira e II é falsa",
+        "I é falsa e II é verdadeira"
+      ],
+
+      answer: 0,
+
+      feedback: "Correto: A. Na **Engenharia Semiótica**, o sistema é o meio pelo qual o designer comunica suas intenções ao usuário, e os signos visuais, comportamentos e feedbacks são os elementos dessa comunicação — II justifica I diretamente."
+    },
+
+    // 65 - Inspeção semiótica
+    {
+      aula: "Aula 15 - Revisão Projeto de Design para Web",
+      tipo: "Múltiplas afirmativas",
+
+      texto: "Uma equipe aplica o método de Inspeção Semiótica em uma interface web educacional. Cada membro é responsável por conduzir uma das etapas previstas no método.",
+
+      question: "Assinale as etapas que fazem parte da ==def==Inspeção Semiótica== conforme o conteúdo estudado.",
+
+      assertions: [
+        "I. Inspeção de signos metalinguísticos.",
+        "II. Teste de carga de trabalho cognitivo.",
+        "III. Comparação das metamensagens.",
+        "IV. Avaliação da metacomunicação."
+      ],
+
+      options: [
+        "I, III e IV, apenas",
+        "I e II, apenas",
+        "II, III e IV, apenas",
+        "I, II, III e IV"
+      ],
+
+      answer: 0,
+
+      feedback: "Correto: A. As etapas da **Inspeção Semiótica** são: inspeção de signos metalinguísticos, estáticos e dinâmicos, comparação das metamensagens e avaliação da metacomunicação. ==warn==Teste de carga de trabalho== não pertence a esse método."
+    },
+
+    // 66 - Psicologia cognitiva
+    {
+      aula: "Aula 15 - Revisão Projeto de Design para Web",
+      tipo: "Conceitual contextualizada",
+
+      texto: "Um designer percebe que usuários abandonam o formulário de cadastro de seu site após poucos segundos. Ao analisar a interface, nota que há muitos campos, textos longos e opções em excesso exibidas simultaneamente.",
+
+      question: "Considerando os fatores cognitivos do design, qual conceito da ==def==Psicologia Cognitiva== está sendo mais diretamente comprometido nessa situação?",
+
+      options: [
+        "Vigilância",
+        "Categorização",
+        "Memória de longo prazo",
+        "Memória de curto prazo"
+      ],
+
+      answer: 3,
+
+      feedback: "Correto: D. A **memória de curto prazo** tem capacidade limitada. Interfaces com excesso de informações simultâneas sobrecarregam esse recurso, dificultando a retenção momentânea e aumentando o abandono da tarefa."
+    },
+
+    // 67 - Tipografia hierarquia
+    {
+      aula: "Aula 15 - Revisão Projeto de Design para Web",
+      tipo: "Asserção + Justificativa",
+
+      texto: "A escolha tipográfica em projetos web vai além da estética — ela impacta diretamente a experiência de leitura e a percepção da identidade visual.",
+
+      question: "Avalie a asserção e a justificativa sobre o papel da ==def==tipografia== no design web.",
+
+      assertions: [
+        "I. Utilizar fontes distintas para títulos e textos corridos contribui para a criação de hierarquia visual na interface.",
+        "[PORQUE] II. A ==rule==hierarquia visual== orienta o olhar do usuário, indicando quais informações têm maior relevância dentro da página."
+      ],
+
+      options: [
+        "I e II são verdadeiras, e II justifica I",
+        "I e II são verdadeiras, mas II não justifica I",
+        "I é verdadeira e II é falsa",
+        "I é falsa e II é verdadeira"
+      ],
+
+      answer: 0,
+
+      feedback: "Correto: A. A diferenciação tipográfica entre títulos e textos cria **hierarquia visual**, e essa hierarquia de fato orienta o olhar do usuário — II justifica I de forma direta e coerente."
+    },
+
+    // 68 - Cores semiótica
+    {
+      aula: "Aula 15 - Revisão Projeto de Design para Web",
+      tipo: "Múltiplas afirmativas",
+
+      texto: "Na definição da paleta de cores de um projeto web, o designer deve considerar múltiplas dimensões além da preferência estética pessoal.",
+
+      question: "Assinale as afirmativas corretas sobre o uso de ==def==cores== no design para web.",
+
+      assertions: [
+        "I. As cores possuem valor emocional, psicológico e semiótico.",
+        "II. O contraste e a harmonia são fatores relevantes na definição do esquema cromático.",
+        "III. A temperatura da cor não interfere na percepção do usuário sobre a interface.",
+        "IV. O significado visual das cores deve ser considerado no projeto."
+      ],
+
+      options: [
+        "I, II e IV, apenas",
+        "I e III, apenas",
+        "II, III e IV, apenas",
+        "I, II, III e IV"
+      ],
+
+      answer: 0,
+
+      feedback: "Correto: A. As cores têm **valor emocional, psicológico e semiótico**, e o esquema deve considerar contraste, harmonia e significado. A afirmativa III está errada: ==warn==temperatura da cor== influencia diretamente a percepção e o estado emocional do usuário."
+    },
+
+    // 69 - HTML semântico
+    {
+      aula: "Aula 15 - Revisão Projeto de Design para Web",
+      tipo: "Análise aplicada",
+
+      texto: "Um desenvolvedor junior está estruturando o HTML de um portal de notícias. Ele utiliza apenas `<div>` para organizar todos os blocos da página — cabeçalho, navegação, conteúdo principal, artigos individuais e rodapé.",
+
+      question: "Avalie as consequências dessa escolha em relação ao uso de ==def==elementos semânticos== do HTML5.",
+
+      options: [
+        "Não há impacto, pois `<div>` e elementos semânticos têm o mesmo comportamento visual e estrutural",
+        "O uso exclusivo de `<div>` prejudica a acessibilidade e a legibilidade do código, pois elementos como `<nav>`, `<article>` e `<footer>` comunicam significado estrutural",
+        "Elementos semânticos são recomendados apenas para projetos com JavaScript, sendo `<div>` suficiente em páginas estáticas",
+        "O impacto é exclusivamente estético, sem relação com hierarquia ou navegabilidade"
+      ],
+
+      answer: 1,
+
+      feedback: "Correto: B. Elementos como **`<nav>`**, **`<article>`** e **`<footer>`** comunicam a função estrutural de cada bloco, beneficiando acessibilidade, SEO e legibilidade do código. ==warn==Usar apenas `<div>`== elimina esse significado semântico."
+    },
+
+    // 70 - FontAwesome ícones
+    {
+      aula: "Aula 15 - Revisão Projeto de Design para Web",
+      tipo: "Conceitual contextualizada",
+
+      texto: "Durante o desenvolvimento do projeto web do módulo, a equipe decidiu incorporar ícones à interface para complementar textos e facilitar a identificação de funcionalidades pelos usuários.",
+
+      question: "Qual biblioteca foi utilizada para implementar ícones no projeto, e qual o principal objetivo dessa escolha segundo o conteúdo estudado?",
+
+      options: [
+        "Bootstrap Icons, para garantir responsividade automática dos ícones",
+        "Material Icons, para padronizar o visual com o ecossistema Google",
+        "FontAwesome, para melhorar a comunicação visual e facilitar a navegação",
+        "Heroicons, para reduzir o tempo de carregamento da página"
+      ],
+
+      answer: 2,
+
+      feedback: "Correto: C. O projeto utilizou **FontAwesome** com os objetivos explícitos de melhorar a comunicação visual e facilitar a navegação, integrando os ícones como elementos semióticos da interface."
+    }
 
 
   ],
@@ -3594,7 +4054,168 @@ window.questoes = {
       answer: 1,
 
       feedback: "max-width: 100% impede que a imagem ultrapasse o container, e height: auto preserva a proporção original. É a combinação padrão para imagens responsivas."
-    }
+    },
+      // aula: Aula 15 - Revisão Projeto de Design para Web
+
+  // 61 - Mobile First
+  {
+    aula: "Aula 15 - Revisão Projeto de Design para Web",
+    tipo: "Direta",
+    texto: "A metodologia Mobile First define uma ordem de desenvolvimento específica.",
+    question: "Qual é a ordem correta de desenvolvimento no Mobile First?",
+    options: [
+      "Desktop → Tablet → Smartphone",
+      "Smartphone → Tablet → Desktop",
+      "Tablet → Smartphone → Desktop",
+      "Desktop → Smartphone → Tablet"
+    ],
+    answer: 1,
+    feedback: "No Mobile First, o desenvolvimento começa pelos dispositivos menores (smartphones) e progride gradualmente para telas maiores, como tablets e desktops."
+  },
+
+  // 62 - Media Queries
+  {
+    aula: "Aula 15 - Revisão Projeto de Design para Web",
+    tipo: "Contexto",
+    texto: "Uma desenvolvedora está criando um site responsivo seguindo a abordagem Mobile First e precisa adaptar o layout para telas maiores em determinados pontos.",
+    question: "Qual recurso CSS ela deve utilizar para realizar essas adaptações progressivas?",
+    options: [
+      "Flexbox",
+      "Media Queries",
+      "FontAwesome",
+      "Pseudo-elementos"
+    ],
+    answer: 1,
+    feedback: "Media Queries permitem definir estilos específicos para diferentes tamanhos de tela, viabilizando a adaptação progressiva do layout do Mobile First ao Desktop."
+  },
+
+  // 63 - ergonomia compatibilidade
+  {
+    aula: "Aula 15 - Revisão Projeto de Design para Web",
+    tipo: "Direta",
+    texto: "Entre os critérios ergonômicos de interfaces, um deles trata da coerência entre a interface e as expectativas do usuário.",
+    question: "Qual critério ergonômico corresponde a essa descrição?",
+    options: [
+      "Adaptabilidade",
+      "Condução",
+      "Compatibilidade",
+      "Homogeneidade"
+    ],
+    answer: 2,
+    feedback: "Compatibilidade é o critério que garante que a interface seja coerente com as expectativas e modelos mentais do usuário, facilitando o uso."
+  },
+
+  // 64 - semiótica signos
+  {
+    aula: "Aula 15 - Revisão Projeto de Design para Web",
+    tipo: "Curta",
+    texto: "A engenharia semiótica estuda a comunicação entre designer, sistema e usuário.",
+    question: "Qual das opções abaixo NÃO é citada como forma de transmissão de mensagens pela interface?",
+    options: [
+      "Signos visuais",
+      "Feedbacks",
+      "Algoritmos de busca",
+      "Comportamentos"
+    ],
+    answer: 2,
+    feedback: "A interface transmite mensagens por meio de signos visuais, símbolos, comportamentos e feedbacks. Algoritmos de busca não fazem parte desse conjunto semiótico."
+  },
+
+  // 65 - HTML semântico
+  {
+    aula: "Aula 15 - Revisão Projeto de Design para Web",
+    tipo: "Aplicação",
+    texto: "Um desenvolvedor precisa marcar o trecho de navegação principal do seu site com o elemento HTML semântico correto.",
+    question: "Qual elemento HTML deve ser usado para representar a área de navegação?",
+    options: [
+      "<header>",
+      "<section>",
+      "<nav>",
+      "<aside>"
+    ],
+    answer: 2,
+    feedback: "O elemento <nav> é utilizado especificamente para definir blocos de navegação, sendo o elemento semântico correto para links de menu principal."
+  },
+
+  // 66 - psicologia cognitiva
+  {
+    aula: "Aula 15 - Revisão Projeto de Design para Web",
+    tipo: "Contexto",
+    texto: "Ao projetar uma interface, o designer quer garantir que o usuário perceba rapidamente as informações mais importantes da tela.",
+    question: "Qual conceito da psicologia cognitiva está diretamente relacionado a esse objetivo?",
+    options: [
+      "Memória de longo prazo",
+      "Categorização",
+      "Atenção seletiva",
+      "Interpretação"
+    ],
+    answer: 2,
+    feedback: "A atenção seletiva é o mecanismo cognitivo responsável por direcionar o foco do usuário para informações relevantes, sendo fundamental para guiar a percepção na interface."
+  },
+
+  // 67 - tipografia
+  {
+    aula: "Aula 15 - Revisão Projeto de Design para Web",
+    tipo: "Direta",
+    texto: "No projeto desenvolvido durante o módulo, duas fontes foram selecionadas com papéis distintos.",
+    question: "Qual fonte foi utilizada especificamente para títulos?",
+    options: [
+      "Nunito Regular 400",
+      "Lato Black 900",
+      "Roboto Bold 700",
+      "Open Sans 600"
+    ],
+    answer: 1,
+    feedback: "A fonte Lato Black 900 foi escolhida para títulos, enquanto Nunito Regular 400 foi destinada aos textos corridos, criando hierarquia visual clara."
+  },
+
+  // 68 - ergonomia erros
+  {
+    aula: "Aula 15 - Revisão Projeto de Design para Web",
+    tipo: "Curta",
+    texto: "Um dos critérios ergonômicos trata de como a interface lida com situações inesperadas durante o uso.",
+    question: "Qual critério ergonômico corresponde à prevenção e ao tratamento de erros?",
+    options: [
+      "Controle explícito",
+      "Carga de trabalho",
+      "Gestão de erros",
+      "Condução"
+    ],
+    answer: 2,
+    feedback: "Gestão de erros é o critério ergonômico que abrange tanto a prevenção quanto o tratamento de erros, ajudando o usuário a identificar e recuperar-se de falhas."
+  },
+
+  // 69 - inspeção semiótica
+  {
+    aula: "Aula 15 - Revisão Projeto de Design para Web",
+    tipo: "Contexto",
+    texto: "Uma equipe aplica o método de inspeção semiótica em uma interface web e segue as etapas previstas pelo método.",
+    question: "Qual é a última etapa do processo de inspeção semiótica descrito no conteúdo?",
+    options: [
+      "Inspeção de signos dinâmicos",
+      "Comparação das metamensagens",
+      "Avaliação da metacomunicação",
+      "Inspeção de signos metalinguísticos"
+    ],
+    answer: 2,
+    feedback: "A avaliação da metacomunicação é a etapa final da inspeção semiótica, onde se analisa a qualidade geral da comunicação entre designer e usuário mediada pelo sistema."
+  },
+
+  // 70 - Mobile First vantagens
+  {
+    aula: "Aula 15 - Revisão Projeto de Design para Web",
+    tipo: "Aplicação",
+    texto: "Uma startup decide adotar o Mobile First no desenvolvimento do seu novo produto web, esperando benefícios concretos para o projeto.",
+    question: "Qual das opções abaixo representa uma vantagem direta do uso da abordagem Mobile First?",
+    options: [
+      "Maior uso de animações complexas",
+      "Código mais limpo e organizado",
+      "Dependência reduzida de Media Queries",
+      "Layout fixo para todos os dispositivos"
+    ],
+    answer: 1,
+    feedback: "Uma das vantagens do Mobile First é produzir código mais limpo, pois a priorização do essencial desde o início evita acúmulo de regras CSS desnecessárias."
+  }
 
   ]
 
