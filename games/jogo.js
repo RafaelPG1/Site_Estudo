@@ -13,6 +13,14 @@ import {
 import { sincronizarSemNaURL } from '../shared/js/utils/url.js';
 import { preencherAnos }       from '../shared/js/utils/dom.js';
 import { injetarLogo }         from '../shared/js/utils/logo.js';
+import {
+  Sound,
+  audio,
+  installAudioRecovery,
+  playSound,
+  mountMusicBtn,
+  getMusicMode,
+} from '../shared/js/audio/audio-api.js';
 
 'use strict';
 
@@ -220,8 +228,9 @@ function buildCard(game) {
     </div>
   `;
 
-  card.addEventListener('click',   (e) => { if (!e.target.closest('.card__play-btn--disabled')) openModal(game); });
-  card.addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key === ' ') && !e.target.closest('.card__play-btn--disabled')) openModal(game); });
+  card.addEventListener('mouseenter', () => playSound('hover', 'jogo'));
+  card.addEventListener('click',   (e) => { if (!e.target.closest('.card__play-btn--disabled')) { playSound('click', 'jogo'); openModal(game); } });
+  card.addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key === ' ') && !e.target.closest('.card__play-btn--disabled')) { playSound('click', 'jogo'); openModal(game); } });
 
   return card;
 }
@@ -264,6 +273,7 @@ function updateHeaderStats() {
 ═══════════════════════════════════════════ */
 
 function openModal(game) {
+  playSound('openModal', 'jogo');
   const overlay = DOM.modalOverlay();
   const modal   = DOM.modal();
   const { cls: statusCls, label: statusLabel } = statusInfo(game.status);
@@ -332,6 +342,7 @@ function openModal(game) {
     playBtn.disabled = false;
 
     playBtn.onclick = () => {
+      playSound('click', 'jogo');
       const discArquivo = sel.value;
       if (!discArquivo) {
         sel.classList.add('modal__disc-select--error');
@@ -342,7 +353,8 @@ function openModal(game) {
       handlePlay(game, discArquivo, sem);
     };
 
-    sel.addEventListener('change', () => sel.classList.remove('modal__disc-select--error'), { once: false });
+    sel.addEventListener('mousedown', () => playSound('click', 'jogo'));
+    sel.addEventListener('change', () => { playSound('select', 'jogo'); sel.classList.remove('modal__disc-select--error'); }, { once: false });
   }
 
   overlay.classList.remove('hidden');
@@ -351,6 +363,7 @@ function openModal(game) {
 }
 
 function closeModal() {
+  playSound('closeModal', 'jogo');
   DOM.modalOverlay().classList.add('hidden');
   document.body.style.overflow = '';
 }
@@ -394,7 +407,9 @@ function setupSemestreSelect() {
 
   sincronizarSemNaURL(semAtual);
 
+  sel.addEventListener('mousedown', () => playSound('click', 'jogo'));
   sel.addEventListener('change', () => {
+    playSound('select', 'jogo');
     semAtual = sel.value;
     setSemestre(semAtual);
     sincronizarSemNaURL(semAtual, 'push');
@@ -413,6 +428,7 @@ function setupPills(containerId, filterKey) {
   container.addEventListener('click', (e) => {
     const btn = e.target.closest('.pill');
     if (!btn) return;
+    playSound('select', 'jogo');
     container.querySelectorAll('.pill').forEach(p => p.classList.remove('pill--active'));
     btn.classList.add('pill--active');
     state[filterKey] = btn.dataset.value;
@@ -428,6 +444,7 @@ function setupSort() {
   const sel = DOM.sortSelect();
   if (!sel) return;
   sel.addEventListener('change', () => {
+    playSound('select', 'jogo');
     state.sortBy = sel.value;
     applyFilters();
   });
@@ -438,7 +455,7 @@ function setupSort() {
 ═══════════════════════════════════════════ */
 
 function setupModal() {
-  DOM.modalClose()?.addEventListener('click', closeModal);
+  DOM.modalClose()?.addEventListener('click', () => { playSound('click', 'jogo'); closeModal(); });
   DOM.modalOverlay()?.addEventListener('click', (e) => {
     if (e.target === DOM.modalOverlay()) closeModal();
   });
@@ -447,17 +464,28 @@ function setupModal() {
   });
 }
 
+function setupBtnVoltar() {
+  const btn = document.querySelector('#btn-voltar, .btn-voltar, [data-action="back"]');
+  if (!btn) return;
+  btn.addEventListener('click', () => playSound('click', 'jogo'));
+}
+
 /* ═══════════════════════════════════════════
    14. INIT
 ═══════════════════════════════════════════ */
 
 function init() {
+  Sound.init();
+  mountMusicBtn();
+  installAudioRecovery({ Sound, audio });
+
   injetarLogo({
     destino:  '#sidebar-logo-wrap',
     tamanho:  36,
     layout:   'stacked',
     srcBase:  '../shared/img/logo.png',
     linkHref: '../index.html',
+    playSound,
   });
   setupSemestreSelect();
   updateHeaderStats();
@@ -465,6 +493,7 @@ function init() {
   setupPills('filter-type', 'filterType');
   setupSort();
   setupModal();
+  setupBtnVoltar();
   preencherAnos(); // preenche footer-year se existir
 }
 
