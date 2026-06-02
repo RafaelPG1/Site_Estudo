@@ -69,7 +69,7 @@ export function injetarLogo({
   layout     = 'stacked',
   exibirNome = true,
   classe     = '',
-  srcBase    = '../../shared/img/logo.png',
+  srcBase    = '../../img/logo.png',
   linkHref   = '../../index.html',
   area       = null,
   playSound  = null,
@@ -85,7 +85,7 @@ export function injetarLogo({
 
   /* ── Imagem ──────────────────────────────────────────── */
   const img     = document.createElement('img');
-  img.src       = srcBase;
+  img.src = new URL(srcBase, import.meta.url).href;
   img.alt       = 'Nexus Study';
   img.height    = tamanho;
   img.width     = tamanho;
