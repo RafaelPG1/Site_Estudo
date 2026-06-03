@@ -1,25 +1,27 @@
 /* ============================================================
-   NEXUS STUDY — shared/js/utils/logo.js  (v2 — autossuficiente)
-
-   Uso:
-     import { injetarLogo } from '../shared/js/utils/logo.js';
-     injetarLogo('#header-logo-wrap');
-     // ou
-     injetarLogo({ destino: '#header-logo-wrap' });
-
-   Parâmetros opcionais (todos com padrão sensato):
-     destino   {string}  Seletor CSS do container. Padrão: '#logo-wrap'
-     tamanho   {number}  Altura da img em px.      Padrão: 36
+   NEXUS STUDY — shared/js/utils/logo.js  (v2.1)
    ============================================================ */
 
 import { playSound as _playSound } from '../audio/audio-api.js';
 
-/* ── Resolve o caminho absoluto da imagem uma única vez,
-      relativo ao próprio logo.js (shared/js/utils/ → shared/img/)
-   ─────────────────────────────────────────────────────────────── */
+/* ── Caminho da imagem resolvido uma vez, relativo ao logo.js ── */
 const _LOGO_SRC = new URL('../../img/logo.png', import.meta.url).href;
 
-/* ── Mapa de área por fragmento de pathname ──────────────────── */
+/* ── Raiz do projeto calculada a partir do logo.js ─────────────
+   logo.js sempre está em: <raiz>/shared/js/utils/logo.js
+   Então a raiz é tudo antes de '/shared/'.
+   Isso é independente da página que chamou injetarLogo().
+   ─────────────────────────────────────────────────────────── */
+function _hrefRaiz() {
+  const url     = new URL(import.meta.url);
+  const partes  = url.pathname.split('/').filter(Boolean);
+  const idx     = partes.indexOf('shared');
+  if (idx < 0) return './index.html'; // fallback seguro
+  const raiz    = '/' + partes.slice(0, idx).join('/') + '/';
+  return raiz + 'index.html';
+}
+
+/* ── Mapa de área por pathname ──────────────────────────────── */
 const _AREA_MAP = [
   { match: /\/quiz\//,         area: 'quiz'    },
   { match: /\/resumo\//,       area: 'resumos' },
@@ -35,29 +37,14 @@ export function getAreaFromPath(path = window.location.pathname) {
   return 'inicial';
 }
 
-/* ── Calcula o href para a raiz do projeto ───────────────────────
-   Conta os segmentos de pasta do pathname atual e sobe todos eles.
-   Ex: /Site_Estudo/resumo/resumo.html → 2 segmentos → ../../
-       /Site_Estudo/index.html         → 1 segmento  → ../
-   ─────────────────────────────────────────────────────────────── */
-function _hrefRaiz() {
-  const parts = window.location.pathname
-    .split('/')
-    .filter(Boolean);          // remove strings vazias
-  // O último segmento é o arquivo HTML — remove ele, sobram as pastas
-  const depth = parts.length - 1;
-  if (depth <= 0) return './index.html';
-  return '../'.repeat(depth) + 'index.html';
-}
-
 /* ── API pública ─────────────────────────────────────────────── */
 export function injetarLogo(opcoes = {}) {
   // Aceita string direta: injetarLogo('#header-logo-wrap')
   if (typeof opcoes === 'string') opcoes = { destino: opcoes };
 
   const {
-    destino  = '#logo-wrap',
-    tamanho  = 36,
+    destino = '#logo-wrap',
+    tamanho = 36,
   } = opcoes;
 
   const container = document.querySelector(destino);
@@ -70,15 +57,15 @@ export function injetarLogo(opcoes = {}) {
   const href = _hrefRaiz();
 
   /* ── Imagem ── */
-  const img       = document.createElement('img');
-  img.src         = _LOGO_SRC;
-  img.alt         = 'Nexus Study';
-  img.height      = tamanho;
-  img.width       = tamanho;
-  img.className   = 'nexus-logo__img';
-  img.loading     = 'lazy';
+  const img     = document.createElement('img');
+  img.src       = _LOGO_SRC;
+  img.alt       = 'Nexus Study';
+  img.height    = tamanho;
+  img.width     = tamanho;
+  img.className = 'nexus-logo__img';
+  img.loading   = 'lazy';
 
-  /* ── Texto (sempre stacked: Nexus / Study) ── */
+  /* ── Texto ── */
   const texto = document.createElement('div');
   texto.className = 'nexus-logo__texto nexus-logo__texto--stacked';
   texto.innerHTML = `
@@ -86,7 +73,7 @@ export function injetarLogo(opcoes = {}) {
     <span class="nexus-logo__sub">Study</span>
   `;
 
-  /* ── Link para a raiz ── */
+  /* ── Link ── */
   const link = document.createElement('a');
   link.href      = href;
   link.className = 'nexus-logo__link';
