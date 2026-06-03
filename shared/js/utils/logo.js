@@ -85,7 +85,7 @@ export function injetarLogo({
 
   /* ── Imagem ──────────────────────────────────────────── */
   const img     = document.createElement('img');
-  img.src = srcBase;
+  img.src = new URL('../../../img/logo.png', import.meta.url).href;
   img.alt       = 'Nexus Study';
   img.height    = tamanho;
   img.width     = tamanho;
