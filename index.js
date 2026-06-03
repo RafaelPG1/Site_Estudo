@@ -62,14 +62,7 @@ async function init() {
  
     installAudioRecovery({ Sound, audio });
  
-    injetarLogo({
-      destino:  '#header-logo-wrap',
-      tamanho:  38,
-      srcBase:  './shared/img/logo.png',
-      linkHref: './index.html',
-      area:     'inicial',
-      playSound,
-    });
+    injetarLogo('#header-logo-wrap');
  
     setPagina('HOME');
     _refreshHeader();
