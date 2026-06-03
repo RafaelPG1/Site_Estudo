@@ -195,7 +195,12 @@ function _resolveVariant(action, area) {
    2. ESTADO EM MEMÓRIA
 ═══════════════════════════════════════════════ */
 
-let _currentMode = DEFAULT_MODE;
+let _currentMode = (() => {
+  try {
+    const saved = localStorage.getItem('nexus_sfx_mode');
+    return VALID_MODES.includes(saved) ? saved : DEFAULT_MODE;
+  } catch { return DEFAULT_MODE; }
+})();
 
 const VALID_MUSIC_MODES = ['normal', 'mute', 'low'];
 let _currentMusicMode = (() => {
@@ -502,16 +507,15 @@ const audioState = {
     return _currentMode;
   },
 
-  setMode(modeId) {
-    if (!VALID_MODES.includes(modeId)) {
-      _dbg('setMode: modo inválido "' + modeId + '"');
-      return;
-    }
-    _currentMode = modeId;
-    _applyToEngine(_currentMode);
-    _persistAllToFirebase();
-    _notify();
-  },
+setMode(modeId) {
+  if (!VALID_MODES.includes(modeId)) return;
+  _currentMode = modeId;
+  // adiciona aqui:
+  try { localStorage.setItem('nexus_sfx_mode', modeId); } catch {}
+  _applyToEngine(_currentMode);
+  _notify();
+  _schedulePersist();
+},
 
   subscribe(fn) {
     if (typeof fn !== 'function') return;

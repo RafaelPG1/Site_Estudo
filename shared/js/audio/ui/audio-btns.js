@@ -221,10 +221,11 @@ function _initSfxLogic(btn) {
           _iconTimer = null;
         }, 170);
       }
-    } else if (!_lastRenderedId) {
-      Object.values(icons).forEach(el => el.classList.remove('on', 'out'));
-      icons[s.ic].classList.add('on');
-    }
+} else {
+  // mesmo modo ou primeiro render — garante ícone correto
+  Object.values(icons).forEach(el => el.classList.remove('on', 'out'));
+  icons[s.ic].classList.add('on');
+}
 
     glow.style.background = s.glow;
     glow.style.opacity    = '1';
