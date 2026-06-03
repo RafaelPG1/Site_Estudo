@@ -37,7 +37,7 @@ injetarLogo({
   layout: 'stacked',       
   area: 'resumos',
   playSound,   
-  srcBase: '../shared/img/logo.png',  // continua igual
+  srcBase: '../../shared/img/logo.png',  // ← era '../shared/img/logo.png'
   linkHref: '../index.html',
 });
 
