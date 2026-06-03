@@ -16,7 +16,7 @@ function _hrefRaiz() {
   const url     = new URL(import.meta.url);
   const partes  = url.pathname.split('/').filter(Boolean);
   const idx     = partes.indexOf('shared');
-  if (idx < 0) return './index.html'; // fallback seguro
+  if (idx < 0) return '/index.html';
   const raiz    = '/' + partes.slice(0, idx).join('/') + '/';
   return raiz + 'index.html';
 }
@@ -26,7 +26,7 @@ const _AREA_MAP = [
   { match: /\/quiz\//,         area: 'quiz'    },
   { match: /\/resumo\//,       area: 'resumos' },
   { match: /\/games?\//,       area: 'game'    },
-  { match: /\/area_pessoal\//, area: 'perfil'  },
+  { match: /\/pessoal\//, area: 'perfil' },
   { match: /\/admin\//,        area: 'inicial' },
 ];
 
@@ -42,10 +42,11 @@ export function injetarLogo(opcoes = {}) {
   // Aceita string direta: injetarLogo('#header-logo-wrap')
   if (typeof opcoes === 'string') opcoes = { destino: opcoes };
 
-  const {
-    destino = '#logo-wrap',
-    tamanho = 36,
-  } = opcoes;
+const { destino, tamanho = 36 } = opcoes;
+if (!destino) {
+  console.error('[logo.js] injetarLogo() chamada sem destino.');
+  return null;
+}
 
   const container = document.querySelector(destino);
   if (!container) {
@@ -63,7 +64,7 @@ export function injetarLogo(opcoes = {}) {
   img.height    = tamanho;
   img.width     = tamanho;
   img.className = 'nexus-logo__img';
-  img.loading   = 'lazy';
+  img.loading = 'eager';
 
   /* ── Texto ── */
   const texto = document.createElement('div');
