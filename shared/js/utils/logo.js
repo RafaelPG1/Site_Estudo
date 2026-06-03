@@ -1,5 +1,5 @@
 /* ============================================================
-   NEXUS STUDY — shared/js/logo.js
+   NEXUS STUDY — shared/js/utils/logo.js
    Injeta a logo do projeto no DOM de forma declarativa.
 
    Uso básico:
@@ -85,7 +85,7 @@ export function injetarLogo({
 
   /* ── Imagem ──────────────────────────────────────────── */
   const img     = document.createElement('img');
-  img.src = new URL(srcBase, import.meta.url).href;
+  img.src = srcBase;
   img.alt       = 'Nexus Study';
   img.height    = tamanho;
   img.width     = tamanho;
