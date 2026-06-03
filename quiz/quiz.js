@@ -22,15 +22,7 @@ import { Sound, audio, installAudioRecovery, playSound } from '../shared/js/audi
     installAudioRecovery({ Sound, audio });                                           // ← NOVO (substitui pageshow manual)
     await Sound.waitUntilReady();
 
-    injetarLogo({
-      destino:  '#header-logo-wrap',
-      tamanho:  32,
-      layout:   'stacked',
-      srcBase:  '../shared/img/logo.png',
-      linkHref: '../index.html',
-      area:     'quiz',
-      playSound,
-    });
+injetarLogo('#header-logo-wrap');
 
     document.querySelector('.back-btn')
       ?.addEventListener('click', () => playSound('click', 'quiz'));

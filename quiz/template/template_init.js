@@ -92,15 +92,7 @@ const modoConfig = MODOS_CONFIG[modo] ?? MODOS_CONFIG.questoes;
 aplicarCoresDisciplina(info.arquivo, DISC_CORES);
 
 document.addEventListener('DOMContentLoaded', async () => {
-  injetarLogo({
-    destino:  '#header-logo-wrap',
-    tamanho:  32,
-    layout:   'stacked',
-    srcBase:  '../../shared/img/logo.png',
-    linkHref: '../../index.html',
-    area:     'quiz',
-    playSound,
-  });
+injetarLogo('#header-logo-wrap');
 
   Sound.init();
   installAudioRecovery({ Sound, audio });
