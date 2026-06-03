@@ -9,8 +9,7 @@
      setHTML(id, html)                                    → atalho para innerHTML
    ============================================================ */
 
-import { SEMESTRES, getSemestreAtual, setSemestre } from '../../../src/global.js';
-
+import { SEMESTRES, getSemestreAtual, setSemestre, parseSemestre } from '../../../src/global.js';
 /* ─────────────────────────────────────────────────────────────
    criarSemestreSelect
    Cria e injeta um <select> de semestres dentro do elemento
@@ -47,7 +46,8 @@ export function criarSemestreSelect(wrapId, onChange, semestreAtual) {
   SEMESTRES.forEach(s => {
     const opt       = document.createElement('option');
     opt.value       = s;
-    opt.textContent = s;
+    const { periodo, ap } = parseSemestre(s);
+opt.textContent = ap ? `${periodo} · ${ap}` : periodo;
     if (s === atual) opt.selected = true;
     select.appendChild(opt);
   });

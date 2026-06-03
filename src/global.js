@@ -53,7 +53,7 @@ window.NexusStorage = Storage;
    CONSTANTES
    ══════════════════════════════════════════════════════════ */
 
-export const SEMESTRES = ['2026.2', '2026.1','2027.1' ];
+export const SEMESTRES = ['2026.1-AP2', '2026.1-AP1','2027.1' ];
 
 
 /* ══════════════════════════════════════════════════════════
@@ -61,21 +61,12 @@ export const SEMESTRES = ['2026.2', '2026.1','2027.1' ];
    ══════════════════════════════════════════════════════════ */
 
 const _DISCIPLINAS = {
-
-  '2026.2': [
-    { id: 'poo',        nome: 'Programação Orientada a Objetos',  apelido: 'P.O.O.',            emoji: '☕',  arquivo: 'poo' },
-    { id: 'redes',      nome: 'Redes de Computadores I',          apelido: 'Redes I',            emoji: '🌐', arquivo: 'redes' },
-    { id: 'design',     nome: 'Design de Sistemas de Informação', apelido: 'Design de Sistemas', emoji: '🎨', arquivo: 'design' },
-    { id: 'banco_dados',nome: 'Fundamentos de Banco de Dados',    apelido: 'Banco de dados',     emoji: '🗄️', arquivo: 'banco_dados' },
-  ],
-
   '2026.1': [
     { id: 'poo',        nome: 'Programação Orientada a Objetos',  apelido: 'P.O.O.',            emoji: '☕',  arquivo: 'poo' },
     { id: 'redes',      nome: 'Redes de Computadores I',          apelido: 'Redes I',            emoji: '🌐', arquivo: 'redes' },
     { id: 'design',     nome: 'Design de Sistemas de Informação', apelido: 'Design de Sistemas', emoji: '🎨', arquivo: 'design' },
     { id: 'banco_dados',nome: 'Fundamentos de Banco de Dados',    apelido: 'Banco de dados',     emoji: '🗄️', arquivo: 'banco_dados' },
   ],
-
 };
 
 /* ══════════════════════════════════════════════════════════
@@ -84,7 +75,9 @@ const _DISCIPLINAS = {
 
 let _estado = {
   pagina:     'HOME',
-  semestre:   Storage.get('semestre_atual', SEMESTRES[0]),
+semestre: SEMESTRES.includes(Storage.get('semestre_atual'))
+            ? Storage.get('semestre_atual')
+            : SEMESTRES[0],
   disciplina: null,
   usuario:    Storage.get('usuario', null),
   configs:    Storage.get('configs', _defaultConfigs()),
@@ -129,7 +122,27 @@ export function setDisciplina(id) {
 }
 
 export function getDisciplinasDeSemestre(semestre) {
-  return _DISCIPLINAS[semestre] ?? [];
+  const { periodo } = parseSemestre(semestre);
+  return _DISCIPLINAS[periodo] ?? _DISCIPLINAS[semestre] ?? [];
+  // fallback _DISCIPLINAS[semestre] garante compatibilidade com semestres
+  // futuros que usem a chave direta (ex: '2027.1')
+}
+/**
+ * Decompõe um semestre no formato 'YYYY.N-APX' ou 'YYYY.N'.
+ *
+ * Exemplos:
+ *   parseSemestre('2026.1-AP2') → { ano: '2026', periodo: '2026.1', ap: 'AP2' }
+ *   parseSemestre('2026.1-AP1') → { ano: '2026', periodo: '2026.1', ap: 'AP1' }
+ *   parseSemestre('2027.1')     → { ano: '2027', periodo: '2027.1', ap: null  }
+ */
+export function parseSemestre(sem) {
+  const match = String(sem).match(/^(\d{4})(\.\d+)(?:-(.+))?$/);
+  if (!match) return { ano: '', periodo: sem, ap: null };
+  return {
+    ano:     match[1],
+    periodo: match[1] + match[2],   // ex: '2026.1'
+    ap:      match[3] ?? null,      // ex: 'AP2' | null
+  };
 }
 
 /* ══════════════════════════════════════════════════════════

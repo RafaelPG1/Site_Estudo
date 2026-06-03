@@ -16,6 +16,7 @@ import {
   setPagina,
   setSemestre,
   SEMESTRES,
+  parseSemestre,
 } from '../src/global.js';
 
 import { resolverSemestreDeURL, sincronizarSemNaURL } from '../shared/js/utils/url.js';
@@ -319,8 +320,9 @@ function _carregarConteudo() {
     return;
   }
 
-  const [ano] = (State.semestre ?? '2026.1').split('.');
-  const src = `../content/resumo/${ano}/${State.semestre}/res_${disc.arquivo}.js`;
+const { ano, periodo, ap } = parseSemestre(State.semestre ?? '2026.1');
+const apPath = ap ? `/${ap}` : '';
+const src = `../content/resumo/${ano}/${periodo}${apPath}/res_${disc.arquivo}.js`;
 
   const script = document.createElement('script');
   script.src = src;
@@ -793,11 +795,12 @@ function _initTocScrollSpy() {}
    RENDERIZADOR DE BLOCOS
 ══════════════════════════════════════════════ */
 function _imgBase() {
-  const [ano] = (State.semestre ?? '2026.1').split('.');
-  const disc  = State.disciplina;
+  const { ano, periodo, ap } = parseSemestre(State.semestre ?? '2026.1');
+  const apPath = ap ? `/${ap}` : '';
+  const disc   = State.disciplina;
   return disc
-    ? `../content/resumo/${ano}/${State.semestre}/image/imagens_${disc.arquivo}/`
-    : `../content/resumo/${ano}/${State.semestre}/image/`;
+    ? `../content/resumo/${ano}/${periodo}${apPath}/image/imagens_${disc.arquivo}/`
+    : `../content/resumo/${ano}/${periodo}${apPath}/image/`;
 }
 
 function _renderBloco(b) {
@@ -818,8 +821,10 @@ function _renderBloco(b) {
       return html;
     }
     case 'imagem': {
+      const { ano, periodo, ap } = parseSemestre(State.semestre ?? '2026.1');
+      const apPath = ap ? `/${ap}` : '';
       const base = b.pasta
-        ? `../content/resumo/${(State.semestre ?? '2026.1').split('.')[0]}/${State.semestre}/image/${b.pasta}/`
+        ? `../content/resumo/${ano}/${periodo}${apPath}/image/${b.pasta}/`
         : _imgBase();
       const num  = b.num ? `<span class="rm-fig__num">Figura ${b.num}</span>` : '';
       return `
