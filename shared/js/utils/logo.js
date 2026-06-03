@@ -13,11 +13,13 @@ const _LOGO_SRC = new URL('../../img/logo.png', import.meta.url).href;
    Isso é independente da página que chamou injetarLogo().
    ─────────────────────────────────────────────────────────── */
 function _hrefRaiz() {
-  const url     = new URL(import.meta.url);
-  const partes  = url.pathname.split('/').filter(Boolean);
-  const idx     = partes.indexOf('shared');
-  if (idx < 0) return '/index.html';
-  const raiz    = '/' + partes.slice(0, idx).join('/') + '/';
+  const url    = new URL(import.meta.url);
+  const partes = url.pathname.split('/').filter(Boolean);
+  const idx    = partes.indexOf('shared');
+
+  if (idx <= 0) return '/index.html'; // localhost ou raiz absoluta
+  
+  const raiz = '/' + partes.slice(0, idx).join('/') + '/';
   return raiz + 'index.html';
 }
 
