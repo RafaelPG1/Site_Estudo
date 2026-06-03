@@ -1,5 +1,5 @@
 // ============================================================
-// NEXUS STUDY — quiz/conteudo/2026/2026.2/banco_dados.js
+// NEXUS STUDY — quiz/conteudo/2026/AP2/banco_dados.js
 // ============================================================
 window.questoes = {
 

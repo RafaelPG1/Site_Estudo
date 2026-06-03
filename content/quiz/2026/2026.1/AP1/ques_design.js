@@ -1,6 +1,6 @@
 // ============================================================
-// NEXUS STUDY — quiz/conteudo/2026/2026.1/ques_design.js
-// Design de Sistemas de Informação — Questões 2026.1
+// NEXUS STUDY — quiz/conteudo/2026/AP1/ques_design.js
+// Design de Sistemas de Informação — Questões AP1
 // Convertido do formato v1 para v2
 // ============================================================
 

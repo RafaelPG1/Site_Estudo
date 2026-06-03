@@ -1,6 +1,6 @@
 // ============================================================
-// NEXUS STUDY — quiz/conteudo/2026/2026.1/ques_poo.js
-// Programação Orientada a Objetos — Questões 2026.1
+// NEXUS STUDY — quiz/conteudo/2026/AP1/ques_poo.js
+// Programação Orientada a Objetos — Questões AP1
 // Convertido do formato v1 para v2
 // ============================================================
 

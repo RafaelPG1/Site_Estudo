@@ -212,36 +212,47 @@
        2. Defina o mapa de tipos com { iconCls, iconTxt, nome, desc }
        3. Pronto — nenhum outro arquivo precisa mudar.
      ────────────────────────────────────────────────────────── */
-  var _TIPOS_SEMESTRE_ESPECIAL = {
+var _TIPOS_SEMESTRE_ESPECIAL = {
 
-    '2026.1': {
-      'Contextualizada': {
-        iconCls: 'nlg-icon-con',
-        iconTxt: 'CTX',
-        nome:    'Contextualizada',
-        desc:    'Situação-contexto antes da pergunta — interprete e responda',
-      },
-      'Asserção': {
-        iconCls: 'nlg-icon-aj',
-        iconTxt: 'A+J',
-        nome:    'Asserção + Justificativa',
-        desc:    'Duas afirmativas ligadas por PORQUE — avalie cada uma separadamente',
-      },
-      'Afirmativas': {
-        iconCls: 'nlg-icon-ma',
-        iconTxt: 'I–IV',
-        nome:    'Múltiplas afirmativas',
-        desc:    'Avalie quais afirmativas estão corretas e marque a combinação certa',
-      },
-      /* ── Adicione outros tipos de 2026.1 aqui se surgirem ── */
+  '2026.1': {
+    'Contextualizada': {
+      iconCls: 'nlg-icon-con',
+      iconTxt: 'CTX',
+      nome:    'Contextualizada',
+      desc:    'Situação-contexto antes da pergunta — interprete e responda',
     },
+    'Asserção': {
+      iconCls: 'nlg-icon-aj',
+      iconTxt: 'A+J',
+      nome:    'Asserção + Justificativa',
+      desc:    'Duas afirmativas ligadas por PORQUE — avalie cada uma separadamente',
+    },
+    'Afirmativas': {
+      iconCls: 'nlg-icon-ma',
+      iconTxt: 'I–IV',
+      nome:    'Múltiplas afirmativas',
+      desc:    'Avalie quais afirmativas estão corretas e marque a combinação certa',
+    },
+  },
 
-  };
+  '2026.1-AP1': null,   // herda de '2026.1'
+  '2026.1-AP2': null,   // herda de '2026.1'
+
+};
 
   /* Retorna true se o semestre usa leitura dinâmica de tipos */
-  function _isSemestreEspecial(sem) {
-    return Object.prototype.hasOwnProperty.call(_TIPOS_SEMESTRE_ESPECIAL, sem);
-  }
+function _isSemestreEspecial(sem) {
+  return Object.prototype.hasOwnProperty.call(_TIPOS_SEMESTRE_ESPECIAL, sem);
+}
+
+/* Retorna o mapa de tipos do semestre, seguindo herança para semestres com sufixo */
+function _resolverMapaTipos(sem) {
+  var mapa = _TIPOS_SEMESTRE_ESPECIAL[sem];
+  if (mapa !== null && mapa !== undefined) return mapa;
+  /* mapa === null → herda pelo período base (ex: '2026.1-AP2' → '2026.1') */
+  var periodo = sem.includes('-') ? sem.split('-')[0] : sem;
+  return _TIPOS_SEMESTRE_ESPECIAL[periodo] || null;
+}
 
   /* ──────────────────────────────────────────────────────────
      _buildTiposEspecial
@@ -249,8 +260,8 @@
      extrai os tipos únicos na ordem de aparição e monta as
      linhas de tipo para o modal.
      ────────────────────────────────────────────────────────── */
-  function _buildTiposEspecial(listEl, sem, modo, _tipoRow) {
-    var tipoMap   = _TIPOS_SEMESTRE_ESPECIAL[sem];
+function _buildTiposEspecial(listEl, sem, modo, _tipoRow, tipoMap) {
+  tipoMap = tipoMap || _resolverMapaTipos(sem);
     var conteudo  = window.questoes || {};
 
     /* Escolhe a lista certa conforme o modo ativo */
@@ -454,7 +465,7 @@
          Lê os tipos reais do window.questoes já carregado e
          renderiza com a configuração visual definida acima.
          ════════════════════════════════════════════════════════ */
-      _buildTiposEspecial(sTipos.list, _sem, _modo, _tipoRow);
+      _buildTiposEspecial(sTipos.list, _sem, _modo, _tipoRow, _resolverMapaTipos(_sem));
 
     } else if (_modo === 'enade') {
       /* ── Tipos padrão ENADE (2026.2 em diante) ───────────── */

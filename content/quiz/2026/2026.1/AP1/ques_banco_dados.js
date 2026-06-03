@@ -1,8 +1,8 @@
 // ============================================================
-// NEXUS STUDY — quiz/conteudo/2026/2026.1/banco_dados.js
+// NEXUS STUDY — quiz/conteudo/2026/AP1/banco_dados.js
 // Convertido do formato v1 para v2
-// Modos disponíveis no 2026.1: questoes apenas
-// (AVA não existe para banco_dados no 2026.1)
+// Modos disponíveis no AP1: questoes apenas
+// (AVA não existe para banco_dados no AP1)
 // ============================================================
 
 window.questoes = {
@@ -1227,7 +1227,7 @@ window.questoes = {
 
   ],
 
-  // Modo AVA não existe para banco_dados no semestre 2026.1
+  // Modo AVA não existe para banco_dados no semestre AP1
   ava: [],
 
 };

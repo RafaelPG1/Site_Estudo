@@ -46,7 +46,7 @@
 
     var _disc     = window.__NEXUS_QUIZ_DISC__     || null;
     var _modo     = window.__NEXUS_QUIZ_MODO__     || tipo;
-    var _semestre = window.__NEXUS_QUIZ_SEMESTRE__ || '2026.2';
+    var _semestre = window.__NEXUS_QUIZ_SEMESTRE__ || '';
     var _Storage  = window.NexusStorage            || null;
 
     /* ── UID do usuário logado (isola dados por pessoa) ── */

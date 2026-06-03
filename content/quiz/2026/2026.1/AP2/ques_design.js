@@ -1,5 +1,5 @@
 // ============================================================
-// NEXUS STUDY — quiz/conteudo/2026/2026.2/design.js
+// NEXUS STUDY — quiz/conteudo/2026/AP2/design.js
 // ============================================================
 window.questoes = {
 

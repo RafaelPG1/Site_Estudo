@@ -1,6 +1,6 @@
 // ============================================================
-// NEXUS STUDY — quiz/conteudo/2026/2026.1/ques_redes.js
-// Redes de Computadores I — Questões 2026.1
+// NEXUS STUDY — quiz/conteudo/2026/AP1/ques_redes.js
+// Redes de Computadores I — Questões AP1
 // Convertido do formato v1 para v2
 // ============================================================
 

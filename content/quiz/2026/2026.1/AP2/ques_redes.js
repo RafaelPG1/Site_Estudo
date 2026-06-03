@@ -1,5 +1,5 @@
 // ============================================================
-// NEXUS STUDY — quiz/conteudo/2026/2026.2/redes.js
+// NEXUS STUDY — quiz/conteudo/2026/AP2/redes.js
 // Questões de Redes de Computadores
 // ============================================================
 
@@ -9,10 +9,10 @@ window.questoes = {
 
   ],
 
-ava: [
+enade: [
 
 ],
 
+fixacao: [],
 
-enade: []
 };

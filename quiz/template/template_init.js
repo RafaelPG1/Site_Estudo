@@ -7,6 +7,7 @@ import {
   setDisciplina,
   setSemestre,
   getDisciplinasDeSemestre,
+  SEMESTRES,
 } from '../../src/global.js';
 import Storage from '../../src/storage.js';
 import { DISC_CORES } from '../../shared/js/themes/cores.js';
@@ -29,7 +30,7 @@ window.__nexusPlaySound = playSound;
 const params   = new URLSearchParams(location.search);
 const disc     = params.get('disc') || 'poo';
 const modo     = params.get('modo') || 'questoes';
-const semestre = params.get('sem')  || '2026.2';
+const semestre = params.get('sem') || SEMESTRES[0];
 
 /* ── EXPÕE CONTEXTO DO QUIZ PARA O ENGINE ─────────────────── */
 window.__NEXUS_QUIZ_DISC__     = disc;
@@ -38,7 +39,7 @@ window.__NEXUS_QUIZ_SEMESTRE__ = semestre;
 window.TIPO_QUIZ = modo;
 
 /* ── EXTRAI O ANO DO SEMESTRE ─────────────────────────────── */
-const ano = semestre.split('.')[0];
+
 
 /* ── ATUALIZA O GLOBAL ────────────────────────────────────── */
 setSemestre(semestre);
@@ -188,8 +189,13 @@ function _loadScript(src) {
     document.head.appendChild(s);
   });
 }
+const ano     = semestre.split('.')[0];
+const _apPart = semestre.includes('-') ? semestre.split('-')[1] : null;
+const _period = semestre.includes('-') ? semestre.split('-')[0] : semestre;
+const contentSrc = _apPart
+  ? `../../content/quiz/${ano}/${_period}/${_apPart}/ques_${info.arquivo}.js`
+  : `../../content/quiz/${ano}/${semestre}/ques_${info.arquivo}.js`;
 
-const contentSrc = `../../content/quiz/${ano}/${semestre}/ques_${info.arquivo}.js`;
 const uiSrc      = '../js/quiz_ui.js';
 
 const usuario = Storage.get('usuario', null);
