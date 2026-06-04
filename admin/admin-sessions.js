@@ -7,7 +7,7 @@
 import { getDb } from '../src/firebase.js';
 
 import {
-  collection, getDocs, deleteDoc, doc,
+  collection, getDocs, deleteDoc,
   query, orderBy, limit,
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
@@ -18,10 +18,10 @@ import { _getUsuarios, _toast, _modalConfirmar } from './admin.js';
    ══════════════════════════════════════════════════════════ */
 
 const _SESS_STATUS_MAP = {
-  ativo:        { label: 'Ativa',       cls: 'badge--teal'  },
-  normal:       { label: 'Normal',      cls: 'badge--green' },
-  beforeunload: { label: 'Fechamento',  cls: 'badge--blue'  },
-  timeout:      { label: 'Timeout',     cls: 'badge--amber' },
+  ativo:        { label: 'Ativa',      cls: 'badge--teal'  },
+  normal:       { label: 'Encerrada',  cls: 'badge--grey'  },
+  beforeunload: { label: 'Fechamento', cls: 'badge--blue'  },
+  timeout:      { label: 'Timeout',    cls: 'badge--amber' },
 };
 
 export async function _renderSessions() {
@@ -70,8 +70,8 @@ export async function _renderSessions() {
 }
 
 async function _carregarSessoes() {
-  const wrap    = document.getElementById('sess-wrap');
-  const countEl = document.getElementById('sess-count');
+  const wrap     = document.getElementById('sess-wrap');
+  const countEl  = document.getElementById('sess-count');
   const usuarios = await _getUsuarios();
 
   try {
@@ -99,23 +99,35 @@ async function _carregarSessoes() {
     }
 
     wrap.innerHTML = `
-      <table class="data-table sess-table" id="sess-table">
-        <thead>
-          <tr>
-            <th>Usuário</th>
-            <th>ID</th>
-            <th>Data</th>
-            <th>Entrada</th>
-            <th>Saída</th>
-            <th>Duração</th>
-            <th>Status</th>
-            <th>Logs</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${comSessoes.map(g => _buildMainRow(g)).join('')}
-        </tbody>
-      </table>`;
+      <div style="overflow-x:auto;">
+        <table class="data-table" id="sess-table" style="min-width:720px;table-layout:fixed;width:100%">
+          <colgroup>
+            <col style="width:18%">
+            <col style="width:16%">
+            <col style="width:10%">
+            <col style="width:11%">
+            <col style="width:11%">
+            <col style="width:12%">
+            <col style="width:13%">
+            <col style="width:9%">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Usuário</th>
+              <th>ID</th>
+              <th>Data</th>
+              <th>Entrada</th>
+              <th>Saída</th>
+              <th>Duração</th>
+              <th>Status</th>
+              <th>Logs</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${comSessoes.map(g => _buildMainRow(g)).join('')}
+          </tbody>
+        </table>
+      </div>`;
 
     _bindSessionActions();
 
@@ -128,8 +140,8 @@ async function _carregarSessoes() {
 function _buildMainRow({ usuario: u, sessoes }) {
   const agora     = Date.now();
   const sete_dias = 7 * 24 * 60 * 60 * 1000;
-  const sessAtiva = sessoes.find(s => s.encerramento === 'ativo');
   const ultima    = sessoes[0];
+  const sessAtiva = sessoes.find(s => s.encerramento === 'ativo');
   const logs7dias = sessoes.filter(s => (s.entrada ?? 0) >= agora - sete_dias);
 
   const duracaoTotal = sessoes.reduce((acc, s) => acc + (s.duracao ?? 0), 0);
@@ -140,27 +152,32 @@ function _buildMainRow({ usuario: u, sessoes }) {
   const enc    = ultima?.encerramento ?? 'ativo';
   const status = _SESS_STATUS_MAP[enc] ?? { label: enc, cls: 'badge--grey' };
 
-  // Status badge: inline-flex para alinhar ponto + texto corretamente
   const statusBadge = sessAtiva
-    ? `<span class="badge badge--teal sess-status-ativa"><span class="sess-dot"></span>Ativa</span>`
-    : `<span class="badge ${status.cls}">${status.label}</span>`;
+    ? `<span class="badge badge--teal" style="display:inline-flex;align-items:center;gap:5px;font-size:.72rem">
+         <span style="width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0"></span>
+         Ativa
+       </span>`
+    : `<span class="badge ${status.cls}" style="font-size:.72rem">${status.label}</span>`;
 
   return `
     <tr data-uid="${u.uid}" data-nome="${(u.nome ?? '').toLowerCase()}">
       <td>
-        <div style="display:flex;align-items:center;gap:0.5rem">
-          <span style="font-size:1.05rem;line-height:1">${u.avatar ?? '🎓'}</span>
-          <span>${u.nome ?? u.uid}</span>
+        <div style="display:flex;align-items:center;gap:.5rem;overflow:hidden">
+          <span style="flex-shrink:0;font-size:1.05rem;line-height:1">${u.avatar ?? '🎓'}</span>
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.nome ?? u.uid}</span>
         </div>
       </td>
-      <td><code class="quiz-id">${u.uid}</code></td>
-      <td class="sess-num">${entrada ? entrada.toLocaleDateString('pt-BR') : '—'}</td>
-      <td class="sess-num">${entrada ? entrada.toLocaleTimeString('pt-BR') : '—'}</td>
-      <td class="sess-num">${saida   ? saida.toLocaleTimeString('pt-BR')   : '—'}</td>
+      <td><code class="quiz-id" style="font-size:.72rem">${u.uid}</code></td>
+      <td style="white-space:nowrap">${entrada ? entrada.toLocaleDateString('pt-BR') : '—'}</td>
+      <td style="white-space:nowrap;font-variant-numeric:tabular-nums">${entrada ? entrada.toLocaleTimeString('pt-BR') : '—'}</td>
+      <td style="white-space:nowrap;font-variant-numeric:tabular-nums">${saida   ? saida.toLocaleTimeString('pt-BR')   : '—'}</td>
       <td style="font-family:monospace;color:var(--teal);white-space:nowrap">${_formatarDuracao(duracaoTotal)}</td>
       <td>${statusBadge}</td>
       <td>
-        <button class="sess-logs-btn" data-uid="${u.uid}" title="Ver logs dos últimos 7 dias">
+        <button class="sess-logs-btn" data-uid="${u.uid}" title="Ver logs dos últimos 7 dias"
+                style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;font-size:.73rem;
+                       border-radius:6px;border:1px solid var(--border);background:transparent;
+                       color:var(--text-2);cursor:pointer;white-space:nowrap">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="4" width="18" height="18" rx="2"/>
@@ -169,117 +186,169 @@ function _buildMainRow({ usuario: u, sessoes }) {
             <line x1="3"  y1="10" x2="21" y2="10"/>
           </svg>
           Logs
-          ${logs7dias.length ? `<span class="sess-logs-badge">${logs7dias.length}</span>` : ''}
+          ${logs7dias.length
+            ? `<span style="background:var(--teal);color:#fff;border-radius:999px;
+                            padding:1px 6px;font-size:.65rem;font-weight:600">${logs7dias.length}</span>`
+            : ''}
         </button>
       </td>
     </tr>`;
 }
 
-/* ── Modal de logs dos últimos 7 dias ── */
+/* ══════════════════════════════════════════════════════════
+   MODAL DE LOGS — overlay real com position:fixed inline
+   ══════════════════════════════════════════════════════════ */
+
 function _abrirModalLogs(uid, nome, avatar, logs7dias) {
-  // Remove modal anterior se existir
   document.getElementById('sess-log-modal')?.remove();
 
   const rows = logs7dias.length
     ? logs7dias.map(s => {
         const e  = s.entrada ? new Date(s.entrada) : null;
         const sa = s.saida   ? new Date(s.saida)   : null;
-        const st = _SESS_STATUS_MAP[s.encerramento ?? 'ativo'] ?? { label: s.encerramento, cls: 'badge--grey' };
+        const st = _SESS_STATUS_MAP[s.encerramento ?? 'ativo'] ?? { label: s.encerramento ?? '—', cls: 'badge--grey' };
         const dur = s.duracao != null ? _formatarDuracao(s.duracao) : '—';
         const pct = s.duracao ? Math.min(100, Math.round(s.duracao / 72000)) : 0;
 
         return `
-          <div class="slog-row">
-            <div class="slog-top">
-              <div class="slog-date">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="4" width="18" height="18" rx="2"/>
-                  <line x1="16" y1="2" x2="16" y2="6"/>
-                  <line x1="8" y1="2" x2="8" y2="6"/>
-                  <line x1="3" y1="10" x2="21" y2="10"/>
-                </svg>
-                ${e ? e.toLocaleDateString('pt-BR') : '—'}
-              </div>
-              <div class="slog-times">
-                <span class="slog-time-in">
+          <div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;
+                      background:var(--surface-2,rgba(255,255,255,.03));margin-bottom:10px">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <span style="font-size:.75rem;color:var(--text-3);display:flex;align-items:center;gap:4px">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                  ${e ? e.toLocaleDateString('pt-BR') : '—'}
+                </span>
+                <span style="font-size:.8rem;color:var(--text-1);font-variant-numeric:tabular-nums;
+                             display:flex;align-items:center;gap:5px">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                        stroke-width="2.5" stroke-linecap="round">
                     <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                   </svg>
-                  ${e ? e.toLocaleTimeString('pt-BR') : '—'}
+                  <strong>${e ? e.toLocaleTimeString('pt-BR') : '—'}</strong>
+                  <span style="color:var(--text-3)">→</span>
+                  ${sa ? sa.toLocaleTimeString('pt-BR') : '—'}
                 </span>
-                <span class="slog-arrow">→</span>
-                <span class="slog-time-out">${sa ? sa.toLocaleTimeString('pt-BR') : '—'}</span>
               </div>
-              <div class="slog-right">
-                <span class="slog-dur">${dur}</span>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-family:monospace;color:var(--teal);font-size:.82rem;font-weight:600">${dur}</span>
                 <span class="badge ${st.cls}" style="font-size:.65rem;padding:.18rem .55rem">${st.label}</span>
               </div>
             </div>
-            <div class="slog-bar-wrap">
-              <div class="slog-bar" style="width:${pct}%"></div>
-            </div>
+            ${pct > 0 ? `
+            <div style="margin-top:10px;height:3px;border-radius:999px;background:var(--border);overflow:hidden">
+              <div style="width:${pct}%;height:100%;border-radius:999px;background:var(--teal)"></div>
+            </div>` : ''}
           </div>`;
       }).join('')
-    : `<div class="empty-state" style="padding:2.5rem">Nenhuma sessão nos últimos 7 dias.</div>`;
+    : `<div style="padding:2.5rem;text-align:center;color:var(--text-3);font-size:.85rem">
+         Nenhuma sessão nos últimos 7 dias.
+       </div>`;
 
   const totalDur = logs7dias.reduce((a, s) => a + (s.duracao ?? 0), 0);
 
-  const html = `
-    <div class="modal-overlay" id="sess-log-modal">
-      <div class="modal-box slog-modal-box">
-        <div class="slog-modal-head">
-          <div class="slog-modal-user">
-            <div class="slog-modal-avatar">${avatar ?? '🎓'}</div>
-            <div>
-              <div class="slog-modal-name">${nome}</div>
-              <div class="slog-modal-sub">Logs dos últimos 7 dias</div>
+  /*
+   * position:fixed + z-index:99999 direto no style inline —
+   * imune a qualquer overflow:hidden ou stacking context do .layout pai.
+   */
+  const overlay = document.createElement('div');
+  overlay.id = 'sess-log-modal';
+  overlay.style.cssText = [
+    'position:fixed',
+    'inset:0',
+    'z-index:99999',
+    'background:rgba(0,0,0,.65)',
+    'backdrop-filter:blur(4px)',
+    '-webkit-backdrop-filter:blur(4px)',
+    'display:flex',
+    'align-items:center',
+    'justify-content:center',
+    'padding:20px',
+    'opacity:0',
+    'transition:opacity .2s ease',
+  ].join(';');
+
+  overlay.innerHTML = `
+    <div id="sess-log-box" style="
+      background:var(--surface,#16181d);
+      border:1px solid var(--border);
+      border-radius:16px;
+      width:100%;
+      max-width:560px;
+      max-height:80vh;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      transform:translateY(14px);
+      transition:transform .22s ease;
+      box-shadow:0 24px 60px rgba(0,0,0,.5);
+    ">
+      <!-- Cabeçalho -->
+      <div style="display:flex;align-items:center;justify-content:space-between;
+                  padding:18px 20px;border-bottom:1px solid var(--border);flex-shrink:0">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="font-size:1.6rem;line-height:1">${avatar ?? '🎓'}</div>
+          <div>
+            <div style="font-weight:600;font-size:.95rem;color:var(--text-1)">${nome}</div>
+            <div style="font-size:.72rem;color:var(--text-3);margin-top:2px">Logs dos últimos 7 dias</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px">
+          <div style="display:flex;align-items:center;gap:12px;font-size:.75rem">
+            <div style="text-align:center">
+              <div style="font-weight:700;font-size:1rem;color:var(--text-1)">${logs7dias.length}</div>
+              <div style="color:var(--text-3)">sessões</div>
+            </div>
+            <div style="width:1px;height:28px;background:var(--border)"></div>
+            <div style="text-align:center">
+              <div style="font-weight:700;font-size:1rem;color:var(--teal);font-family:monospace">
+                ${_formatarDuracao(totalDur)}
+              </div>
+              <div style="color:var(--text-3)">total</div>
             </div>
           </div>
-          <div class="slog-modal-stats">
-            <div class="slog-stat">
-              <span class="slog-stat-val">${logs7dias.length}</span>
-              <span class="slog-stat-lbl">sessões</span>
-            </div>
-            <div class="slog-stat-sep"></div>
-            <div class="slog-stat">
-              <span class="slog-stat-val" style="color:var(--teal)">${_formatarDuracao(totalDur)}</span>
-              <span class="slog-stat-lbl">total</span>
-            </div>
-          </div>
-          <button class="modal-close slog-modal-close">✕</button>
+          <button id="sess-log-close" style="
+            width:30px;height:30px;border-radius:50%;border:1px solid var(--border);
+            background:transparent;color:var(--text-2);font-size:.85rem;cursor:pointer;
+            display:flex;align-items:center;justify-content:center;flex-shrink:0;
+          ">✕</button>
         </div>
-        <div class="slog-modal-body">
-          ${rows}
-        </div>
+      </div>
+      <!-- Corpo com scroll próprio do modal -->
+      <div style="overflow-y:auto;padding:16px 20px;flex:1">
+        ${rows}
       </div>
     </div>`;
 
-  // Inserir diretamente no body — o #modal-root fica dentro de .layout que tem
-  // overflow:hidden, o que corta o overlay com position:absolute.
-  // Os outros modais (_criarOverlay) também usam document.body.
-  const el = document.createElement('div');
-  el.innerHTML = html;
-  document.body.appendChild(el.firstElementChild);
+  document.body.appendChild(overlay);
 
-  // FIX: usar a classe correta do CSS: modal-overlay--open (não --show)
-  const overlay = document.getElementById('sess-log-modal');
   requestAnimationFrame(() => {
-    overlay.classList.add('modal-overlay--open');
-    overlay.querySelector('.slog-modal-box').classList.add('modal-box--open');
+    overlay.style.opacity = '1';
+    overlay.querySelector('#sess-log-box').style.transform = 'translateY(0)';
   });
 
   const fechar = () => {
-    overlay.classList.remove('modal-overlay--open');
-    overlay.querySelector('.slog-modal-box').classList.remove('modal-box--open');
-    setTimeout(() => overlay.remove(), 250);
+    overlay.style.opacity = '0';
+    overlay.querySelector('#sess-log-box').style.transform = 'translateY(14px)';
+    setTimeout(() => overlay.remove(), 220);
   };
 
-  overlay.querySelector('.slog-modal-close').addEventListener('click', fechar);
+  overlay.querySelector('#sess-log-close').addEventListener('click', fechar);
   overlay.addEventListener('click', e => { if (e.target === overlay) fechar(); });
+
+  const onKey = e => {
+    if (e.key === 'Escape') { fechar(); document.removeEventListener('keydown', onKey); }
+  };
+  document.addEventListener('keydown', onKey);
 }
 
+/* ── Bind de eventos — apenas botão Logs (sem delete) ── */
 function _bindSessionActions() {
   document.querySelectorAll('.sess-logs-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -291,12 +360,12 @@ function _bindSessionActions() {
       const sete_dias = 7 * 24 * 60 * 60 * 1000;
       const logs7     = grupo.sessoes.filter(s => (s.entrada ?? 0) >= agora - sete_dias);
 
-      // FIX: busca nome direto do cache, não do DOM
       _abrirModalLogs(uid, grupo.usuario.nome ?? uid, grupo.usuario.avatar, logs7);
     });
   });
 }
 
+/* ── Limpar sessões com mais de 30 dias ── */
 async function _limparSessoesAntigas() {
   const LIMITE_MS = 30 * 24 * 60 * 60 * 1000;
   const corte     = Date.now() - LIMITE_MS;
@@ -319,7 +388,7 @@ async function _limparSessoesAntigas() {
   }
 }
 
-/* ── Formata duração em ms para "Xh Ym Zs" ── */
+/* ── Formata duração em ms → "Xh Ym Zs" ── */
 function _formatarDuracao(ms) {
   if (!ms || ms < 0) return '—';
   const s   = Math.floor(ms / 1000);

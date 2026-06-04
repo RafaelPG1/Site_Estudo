@@ -398,12 +398,11 @@ button { cursor: pointer; font-family: var(--font-body); }
   transition: background 0.15s, border-color 0.15s;
 }
 .icon-btn:disabled {
-  opacity: 0.25;            /* Bem mais transparente */
-  filter: grayscale(100%);  /* Remove a cor para não distrair */
+  opacity: 0.25;
+  filter: grayscale(100%);
   cursor: not-allowed;
-  border-color: rgba(255, 255, 255, 0.05); /* Borda quase invisível */
+  border-color: rgba(255, 255, 255, 0.05);
 }
-
 
 .icon-btn--blue  { color: var(--blue); border-color: rgba(122,168,232,0.25); background: rgba(122,168,232,0.06); }
 .icon-btn--blue:hover { border-color: var(--blue); background: rgba(122,168,232,0.14); }
@@ -912,7 +911,7 @@ button { cursor: pointer; font-family: var(--font-body); }
    SEÇÃO — SESSÕES
 ══════════════════════════════════════════ */
 
-/* badge--blue — cor azul para encerramento "Fechamento" */
+/* badge--blue — Fechamento */
 .badge--blue {
   color: var(--blue);
   background: rgba(122,168,232,0.1);
@@ -920,45 +919,127 @@ button { cursor: pointer; font-family: var(--font-body); }
 }
 
 /* ══════════════════════════════════════════
-   SESSÕES — TABELA + MODAL DE LOGS
+   SESSÕES — TABELA
+   8 colunas: Usuário | ID | Data | Entrada |
+              Saída | Duração | Status | Logs
 ══════════════════════════════════════════ */
 
-/* Tabela sem overflow horizontal — layout fixo */
+/*
+ * Estratégia: sem min-width fixo, sem overflow-x no wrapper.
+ * A tabela se adapta ao container com table-layout:fixed.
+ * Padding lateral dos td reduzido (0.65rem) para dar respiro
+ * a 8 colunas sem forçar scroll horizontal.
+ *
+ * Hierarquia de larguras — total = 100%:
+ *   Usuário   20%  — nome + avatar
+ *   ID        13%  — código curto
+ *   Data      10%  — dd/mm/aaaa
+ *   Entrada   10%  — hh:mm:ss
+ *   Saída     10%  — hh:mm:ss
+ *   Duração   11%  — XhYYmZZs
+ *   Status    13%  — badge
+ *   Logs      13%  — botão
+ */
 .sess-table {
   table-layout: fixed;
   width: 100%;
 }
+
+/* Padding lateral menor que o padrão .data-table para caber 8 col */
 .sess-table th,
 .sess-table td {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  padding-left:  0.65rem;
+  padding-right: 0.65rem;
 }
-/* Larguras somando 100% */
-.sess-table th:nth-child(1) { width: 20%; }   /* Usuário  */
-.sess-table th:nth-child(2) { width: 11%; }   /* ID       */
-.sess-table th:nth-child(3) { width: 10%; }   /* Data     */
-.sess-table th:nth-child(4) { width: 9%;  }   /* Entrada  */
-.sess-table th:nth-child(5) { width: 9%;  }   /* Saída    */
-.sess-table th:nth-child(6) { width: 10%; }   /* Duração  */
-.sess-table th:nth-child(7) { width: 13%; }   /* Status   */
-.sess-table th:nth-child(8) { width: 18%; }   /* Logs     */
 
-/* Números com largura fixa */
+/* Larguras por coluna via nth-child */
+.sess-table th:nth-child(1),
+.sess-table td:nth-child(1) { width: 20%; }   /* Usuário  */
+
+.sess-table th:nth-child(2),
+.sess-table td:nth-child(2) { width: 13%; }   /* ID       */
+
+.sess-table th:nth-child(3),
+.sess-table td:nth-child(3) { width: 10%; }   /* Data     */
+
+.sess-table th:nth-child(4),
+.sess-table td:nth-child(4) { width: 10%; }   /* Entrada  */
+
+.sess-table th:nth-child(5),
+.sess-table td:nth-child(5) { width: 10%; }   /* Saída    */
+
+.sess-table th:nth-child(6),
+.sess-table td:nth-child(6) { width: 11%; }   /* Duração  */
+
+.sess-table th:nth-child(7),
+.sess-table td:nth-child(7) { width: 13%; }   /* Status   */
+
+.sess-table th:nth-child(8),
+.sess-table td:nth-child(8) { width: 13%; }   /* Logs     */
+
+/*
+ * Colunas de hora/data: fonte tabular para alinhamento numérico,
+ * tamanho ligeiramente menor para respirar dentro da coluna estreita.
+ * white-space:nowrap impede quebra, overflow:hidden corta silenciosamente.
+ */
+.sess-table td:nth-child(3) {
+  /* Data — cor mais discreta para separar visualmente de Entrada */
+  color: var(--text-3);
+  font-size: 0.79rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sess-table td:nth-child(4),
+.sess-table td:nth-child(5) {
+  /* Entrada / Saída — destaque leve */
+  color: var(--text-1);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sess-table td:nth-child(6) {
+  /* Duração — destaque em teal, monospace */
+  font-family: monospace;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--teal);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* Status — centralizado verticalmente, sem espaço excessivo */
+.sess-table td:nth-child(7) {
+  vertical-align: middle;
+}
+
+/* Logs — coluna de ação, sem overflow:hidden para não cortar o botão */
+.sess-table td:nth-child(8) {
+  overflow: visible;
+  vertical-align: middle;
+  padding-right: 1rem; /* respiro à direita */
+}
+
+/* Números tabulares (classe mantida para compatibilidade) */
 .sess-num {
   font-variant-numeric: tabular-nums;
   color: var(--text-2);
   font-size: 0.82rem;
 }
 
-/* Badge "Ativa" — inline-flex para alinhar ponto + texto */
+/* Badge "Ativa" com ponto */
 .sess-status-ativa {
   display: inline-flex;
   align-items: center;
   gap: 5px;
 }
 
-/* Ponto pulsante do status Ativa */
+/* Ponto pulsante */
 .sess-dot {
   width: 6px;
   height: 6px;
@@ -968,11 +1049,11 @@ button { cursor: pointer; font-family: var(--font-body); }
   animation: sess-dot-pulse 2s ease-in-out infinite;
 }
 @keyframes sess-dot-pulse {
-  0%,100% { opacity: 1; }
-  50%      { opacity: 0.4; }
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
 }
 
-/* Botão Logs compacto */
+/* Botão Logs */
 .sess-logs-btn {
   display: inline-flex;
   align-items: center;
@@ -995,7 +1076,7 @@ button { cursor: pointer; font-family: var(--font-body); }
   color: var(--teal);
 }
 
-/* Badge numérico no botão Logs */
+/* Badge numérico dentro do botão Logs */
 .sess-logs-badge {
   display: inline-flex;
   align-items: center;
@@ -1111,7 +1192,6 @@ button { cursor: pointer; font-family: var(--font-body); }
 }
 .slog-modal-close:hover { color: var(--text-1); background: rgba(255,255,255,0.06); }
 
-/* Corpo do modal */
 .slog-modal-body {
   flex: 1;
   overflow-y: auto;
@@ -1123,7 +1203,6 @@ button { cursor: pointer; font-family: var(--font-body); }
 .slog-modal-body::-webkit-scrollbar { width: 2px; }
 .slog-modal-body::-webkit-scrollbar-thumb { background: rgba(77,217,180,0.2); border-radius: 2px; }
 
-/* Card de cada sessão no modal */
 .slog-row {
   border: 1px solid var(--border);
   border-radius: 11px;
@@ -1187,7 +1266,6 @@ button { cursor: pointer; font-family: var(--font-body); }
   font-weight: 600;
 }
 
-/* Barra de duração visual */
 .slog-bar-wrap {
   height: 2px;
   background: rgba(255,255,255,0.05);
