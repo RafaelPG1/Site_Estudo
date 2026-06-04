@@ -907,3 +907,298 @@ button { cursor: pointer; font-family: var(--font-body); }
   background: rgba(232,122,154,0.22);
   border-color: rgba(232,122,154,0.6);
 }
+
+/* ══════════════════════════════════════════
+   SEÇÃO — SESSÕES
+══════════════════════════════════════════ */
+
+/* badge--blue — cor azul para encerramento "Fechamento" */
+.badge--blue {
+  color: var(--blue);
+  background: rgba(122,168,232,0.1);
+  border-color: rgba(122,168,232,0.25);
+}
+
+/* ══════════════════════════════════════════
+   SESSÕES — TABELA + MODAL DE LOGS
+══════════════════════════════════════════ */
+
+/* Tabela sem overflow horizontal — layout fixo */
+.sess-table {
+  table-layout: fixed;
+  width: 100%;
+}
+.sess-table th,
+.sess-table td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Larguras somando 100% */
+.sess-table th:nth-child(1) { width: 20%; }   /* Usuário  */
+.sess-table th:nth-child(2) { width: 11%; }   /* ID       */
+.sess-table th:nth-child(3) { width: 10%; }   /* Data     */
+.sess-table th:nth-child(4) { width: 9%;  }   /* Entrada  */
+.sess-table th:nth-child(5) { width: 9%;  }   /* Saída    */
+.sess-table th:nth-child(6) { width: 10%; }   /* Duração  */
+.sess-table th:nth-child(7) { width: 13%; }   /* Status   */
+.sess-table th:nth-child(8) { width: 18%; }   /* Logs     */
+
+/* Números com largura fixa */
+.sess-num {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-2);
+  font-size: 0.82rem;
+}
+
+/* Badge "Ativa" — inline-flex para alinhar ponto + texto */
+.sess-status-ativa {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Ponto pulsante do status Ativa */
+.sess-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+  animation: sess-dot-pulse 2s ease-in-out infinite;
+}
+@keyframes sess-dot-pulse {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+
+/* Botão Logs compacto */
+.sess-logs-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  padding: 0.26rem 0.6rem;
+  border-radius: 7px;
+  border: 1px solid var(--border-glow);
+  background: rgba(255,255,255,0.03);
+  color: var(--text-2);
+  font-size: 0.72rem;
+  font-weight: 500;
+  font-family: var(--font-body);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.sess-logs-btn:hover {
+  background: rgba(77,217,180,0.08);
+  border-color: rgba(77,217,180,0.3);
+  color: var(--teal);
+}
+
+/* Badge numérico no botão Logs */
+.sess-logs-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: rgba(77,217,180,0.18);
+  color: var(--teal);
+  font-size: 0.6rem;
+  font-weight: 700;
+  border: 1px solid rgba(77,217,180,0.25);
+}
+
+/* ── MODAL DE LOGS ── */
+.slog-modal-box {
+  width: 540px;
+  max-width: calc(100vw - 2rem);
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+.slog-modal-head {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem 1.4rem;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+  flex-shrink: 0;
+}
+
+.slog-modal-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.slog-modal-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: var(--gold-dim);
+  border: 1.5px solid rgba(232,201,122,0.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.slog-modal-name {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.slog-modal-sub {
+  font-size: 0.7rem;
+  color: var(--text-3);
+  margin-top: 0.1rem;
+}
+
+.slog-modal-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.slog-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.slog-stat-val {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-1);
+  line-height: 1;
+}
+
+.slog-stat-lbl {
+  font-size: 0.62rem;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.slog-stat-sep {
+  width: 1px;
+  height: 28px;
+  background: var(--border);
+}
+
+.slog-modal-close {
+  background: none;
+  border: none;
+  color: var(--text-3);
+  font-size: 0.9rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+.slog-modal-close:hover { color: var(--text-1); background: rgba(255,255,255,0.06); }
+
+/* Corpo do modal */
+.slog-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.75rem 1.1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.slog-modal-body::-webkit-scrollbar { width: 2px; }
+.slog-modal-body::-webkit-scrollbar-thumb { background: rgba(77,217,180,0.2); border-radius: 2px; }
+
+/* Card de cada sessão no modal */
+.slog-row {
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--surface);
+  padding: 0.7rem 0.9rem 0.55rem;
+  transition: border-color 0.15s;
+}
+.slog-row:hover { border-color: var(--border-glow); }
+
+.slog-top {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.slog-date {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  color: var(--text-2);
+  font-weight: 500;
+  min-width: 80px;
+}
+
+.slog-times {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  flex: 1;
+}
+
+.slog-time-in {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--text-1);
+}
+
+.slog-arrow {
+  color: var(--text-3);
+  font-size: 0.7rem;
+}
+
+.slog-time-out { color: var(--text-2); }
+
+.slog-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.slog-dur {
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: var(--teal);
+  font-weight: 600;
+}
+
+/* Barra de duração visual */
+.slog-bar-wrap {
+  height: 2px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 2px;
+  margin-top: 0.5rem;
+  overflow: hidden;
+}
+.slog-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--teal), var(--blue));
+  border-radius: 2px;
+  min-width: 3px;
+  transition: width 0.4s ease;
+}

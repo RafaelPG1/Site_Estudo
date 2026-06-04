@@ -1,4 +1,3 @@
-
 /* =============================================
    NEXUS STUDY — index.js
    Lógica da página inicial
@@ -31,6 +30,7 @@ import {
  
 import { injetarLogo }                        from './shared/js/utils/logo.js';
 import { login, logout, carregarConfigs }      from './src/firebase.js';
+import { iniciarSessao, encerrarSessao }        from './shared/js/utils/session-tracker.js';
 import { criarSemestreSelect, preencherAnos }  from './shared/js/utils/dom.js';
 import {
   Sound,
@@ -66,6 +66,22 @@ async function init() {
  
     setPagina('HOME');
     _refreshHeader();
+
+    // ── Sessões ─────────────────────────────────────────────
+    // nexus:loginSuccess é disparado em dois cenários:
+    //   1. Login real: index.js dispara após resultado.ok (linha ~423).
+    //   2. Bootstrap: global.js dispara via setTimeout(0) ao carregar
+    //      qualquer página quando o usuário já está autenticado
+    //      (cobre F5 e navegação entre páginas).
+    // Em ambos os casos, iniciarSessao() verifica o sessionStorage:
+    //   - Se houver sessão ativa desta aba → retoma sem criar novo doc.
+    //   - Se não houver → cria novo documento no Firestore.
+    document.addEventListener('nexus:loginSuccess', () => iniciarSessao());
+
+    // nexus:logout é disparado por setUsuario(null) no global.js,
+    // que é chamado por logout() em todos os fluxos de logout.
+    document.addEventListener('nexus:logout', () => encerrarSessao());
+    // ────────────────────────────────────────────────────────
  
     await Sound.waitUntilReady();
  
