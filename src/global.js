@@ -295,3 +295,9 @@ if (_estado.usuario?.uid) {
 export function limparDadosQuiz() {
   Storage.clearAllQuizData();
 }
+
+window.__nexusCtx = {
+  getSemestre:    getSemestreAtual,
+  getDisciplinas: getDisciplinasDeSemestre,
+  parseSemestre:  parseSemestre,
+};

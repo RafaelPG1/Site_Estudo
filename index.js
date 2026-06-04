@@ -130,6 +130,24 @@ if (document.readyState === 'loading') {
 }
 
 
+// ── Assistente Nexus ─────────────────────────────────────────
+const _iaScripts = [
+  '/shared/js/ia/ia-ui.js',
+  '/shared/js/ia/ia-search.js',
+  '/shared/js/ia/ia.js',
+];
+
+_iaScripts.reduce((promise, src) => {
+  return promise.then(() => new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error(`[Nexus IA] Falha ao carregar: ${src}`));
+    document.body.appendChild(s);
+  }));
+}, Promise.resolve());
+
+
 /* ═══════════════════════════════════════════════
    SEÇÃO 3 — HEADER
    Ponto único de reconstrução do header-nav.
