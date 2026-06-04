@@ -1,11 +1,8 @@
 /* =============================================
    NEXUS STUDY — disciplinas_global.css
-   Estilos globais compartilhados por todas
-   as disciplinas. NÃO edite cores aqui —
-   use os arquivos por disciplina.
    ============================================= */
 
-/* ── TOKENS PADRÃO (sobrescritos por disciplina) ── */
+/* ── TOKENS PADRÃO ── */
 :root {
   --bg:          #070b14;
   --surface:     #0e1420;
@@ -38,10 +35,7 @@
 }
 
 html { scroll-behavior: smooth; }
-
 a { text-decoration: none; color: inherit; }
-
-
 
 /* ── HEADER ── */
 .header {
@@ -90,7 +84,7 @@ a { text-decoration: none; color: inherit; }
   border-color: rgba(var(--cor-tema-rgb), 0.3);
 }
 
-/* ── LOGO (injetada via logo.js) ── */
+/* ── LOGO ── */
 .header__logo {
   display: flex;
   align-items: center;
@@ -110,10 +104,7 @@ a { text-decoration: none; color: inherit; }
     0 2px 8px  rgba(0, 0, 0, 0.45),
     0 0 12px   rgba(77, 217, 180, 0.35),
     0 0 28px   rgba(77, 217, 180, 0.15);
-  transition:
-    filter     0.25s ease,
-    transform  0.25s ease,
-    box-shadow 0.25s ease;
+  transition: filter 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 #header-logo-wrap .nexus-logo__link:hover .nexus-logo__img {
@@ -254,9 +245,16 @@ a { text-decoration: none; color: inherit; }
 }
 
 /* ── CARD — base ── */
+/*
+  Cards começam com display:none.
+  O JS adiciona .visivel nos sobreviventes do filtro,
+  que ativa display:flex e dispara fade-up com delay
+  calculado dinamicamente via --card-delay.
+  O grid reflui do zero, sempre da esquerda.
+*/
 .disc-card {
+  display: none;
   position: relative;
-  display: flex;
   flex-direction: column;
   gap: 1rem;
   padding: 1.75rem;
@@ -271,6 +269,11 @@ a { text-decoration: none; color: inherit; }
     border-color 0.3s ease;
   text-decoration: none;
   min-height: 200px;
+}
+
+.disc-card.visivel {
+  display: flex;
+  animation: fade-up 0.5s var(--card-delay, 0.05s) ease both;
 }
 
 .disc-card:hover {
@@ -365,7 +368,6 @@ a { text-decoration: none; color: inherit; }
 
 /* ── TEMAS DOS CARDS ── */
 
-/* ── CARD AVA — cor fixa azul, igual em todas as disciplinas ── */
 .disc-card--ava {
   background: linear-gradient(145deg, #0e1420, rgba(122, 168, 232, 0.07));
   border-color: rgba(122, 168, 232, 0.18);
@@ -375,9 +377,7 @@ a { text-decoration: none; color: inherit; }
   border-color: rgba(122, 168, 232, 0.4);
   box-shadow: 0 12px 40px rgba(122, 168, 232, 0.15);
 }
-.disc-card--ava .disc-card__icon-wrap {
-  background: rgba(122, 168, 232, 0.12);
-}
+.disc-card--ava .disc-card__icon-wrap { background: rgba(122, 168, 232, 0.12); }
 .disc-card--ava .disc-card__title { color: white; }
 .disc-card--ava:hover .disc-card__arrow {
   border-color: #7aa8e8;
@@ -387,7 +387,6 @@ a { text-decoration: none; color: inherit; }
 }
 .disc-card--ava:hover .disc-card__cta-label { color: #7aa8e8; }
 
-/* Quiz — cor fixa teal, igual em todas as disciplinas */
 .disc-card--quiz {
   background: linear-gradient(145deg, #0e1420, rgba(77, 217, 180, 0.07));
   border-color: rgba(77, 217, 180, 0.18);
@@ -397,9 +396,7 @@ a { text-decoration: none; color: inherit; }
   border-color: rgba(77, 217, 180, 0.4);
   box-shadow: 0 12px 40px rgba(77, 217, 180, 0.15);
 }
-.disc-card--quiz .disc-card__icon-wrap {
-  background: rgba(77, 217, 180, 0.12);
-}
+.disc-card--quiz .disc-card__icon-wrap { background: rgba(77, 217, 180, 0.12); }
 .disc-card--quiz .disc-card__title { color: white; }
 .disc-card--quiz:hover .disc-card__arrow {
   border-color: #4dd9b4;
@@ -409,7 +406,6 @@ a { text-decoration: none; color: inherit; }
 }
 .disc-card--quiz:hover .disc-card__cta-label { color: #4dd9b4; }
 
-/* ── ENADE — laranja ── */
 .disc-card--enade {
   background: linear-gradient(145deg, #0e1420, rgba(249, 115, 22, 0.07));
   border-color: rgba(249, 115, 22, 0.18);
@@ -432,20 +428,6 @@ a { text-decoration: none; color: inherit; }
 }
 .disc-card--enade:hover .disc-card__cta-label { color: #f97316; }
 
-/* ── FOOTER ── */
-.footer {
-  position: relative;
-  z-index: 2;
-  text-align: center;
-  padding: 1.75rem 2rem;
-  font-size: 0.76rem;
-  color: var(--text-3);
-  letter-spacing: 0.04em;
-  border-top: 1px solid var(--border);
-  margin-top: 2rem;
-}
-
-/* ── FIXAÇÃO — roxo/violeta ── */
 .disc-card--fixacao {
   background: linear-gradient(145deg, #0e1420, rgba(168, 85, 247, 0.07));
   border-color: rgba(168, 85, 247, 0.18);
@@ -468,16 +450,24 @@ a { text-decoration: none; color: inherit; }
 }
 .disc-card--fixacao:hover .disc-card__cta-label { color: #a855f7; }
 
+/* ── FOOTER ── */
+.footer {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 1.75rem 2rem;
+  font-size: 0.76rem;
+  color: var(--text-3);
+  letter-spacing: 0.04em;
+  border-top: 1px solid var(--border);
+  margin-top: 2rem;
+}
+
 /* ── ANIMAÇÕES ── */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(18px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-
-.disciplines .disc-card:nth-child(1) { animation: fade-up 0.5s 0.25s ease both; }
-.disciplines .disc-card:nth-child(2) { animation: fade-up 0.5s 0.33s ease both; }
-.disciplines .disc-card:nth-child(3) { animation: fade-up 0.5s 0.41s ease both; }
-.disciplines .disc-card:nth-child(4) { animation: fade-up 0.5s 0.49s ease both; }
 
 /* ── RESPONSIVIDADE ── */
 @media (max-width: 680px) {

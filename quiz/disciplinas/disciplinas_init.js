@@ -2,19 +2,13 @@
 /* =============================================
    NEXUS STUDY — quiz/disciplinas/disciplinas_init.js
 
-   v3.0 — filtro dinâmico por window.questoes
+   v3.2 — filtro com display:none + delay dinâmico
    ─────────────────────────────────────────────
-   Carrega o JS de questões do semestre/AP ativo e oculta
-   os cards cujo data-modo não existe em window.questoes.
-   Assim, não é necessário manter data-semestres manualmente
-   em nenhum HTML de disciplina.
-
-   Fluxo:
-   1. Resolve o semestre da URL (ex: "2026.1-AP2")
-   2. Extrai disciplina do pathname (ex: "banco_dados")
-   3. Monta o caminho do JS: quiz/2026/2026.1/AP2/ques_banco_dados.js
-   4. Injeta <script> e aguarda load
-   5. Lê window.questoes e oculta cards sem conteúdo
+   Cards começam com display:none via CSS.
+   Após o filtro, os sobreviventes recebem display:flex
+   e --card-delay calculado pela posição real (0, 1, 2...),
+   garantindo que o grid reflua corretamente e a animação
+   escalonada funcione independente de quais cards existem.
    ============================================= */
 
 import { DISC_CORES } from '../../shared/js/themes/cores.js';
@@ -30,33 +24,18 @@ const _discId = location.pathname.split('/').pop().replace('.html', '');
 aplicarCoresDisciplina(_discId, DISC_CORES);
 
 /* ── UTILITÁRIO: monta caminho do JS de questões ─────────── */
-/**
- * Dado "2026.1-AP2" e "banco_dados", retorna o caminho relativo
- * a partir de quiz/disciplinas/ até content/quiz/:
- *
- *   ../../content/quiz/2026/2026.1/AP2/ques_banco_dados.js
- *
- * Se sem for "2027.1" (sem AP), usa a raiz do período:
- *
- *   ../../content/quiz/2027/2027.1/ques_banco_dados.js
- */
 function _caminhoQuestoes(sem, discId) {
   const { ano, periodo, ap } = parseSemestre(sem);
-  const base = `../../../content/quiz/${ano}/${periodo}`;  // sobe de quiz/disciplinas/ para a raiz, entra em content/quiz/
+  const base = `../../../content/quiz/${ano}/${periodo}`;
   if (ap) {
     return `${base}/${ap}/ques_${discId}.js`;
   }
   return `${base}/ques_${discId}.js`;
 }
 
-/* ── CARREGA JS DE QUESTÕES E FILTRA CARDS ───────────────── */
-/**
- * Injeta o script de questões no <head> e resolve quando carregado.
- * Rejeita se o arquivo não existir (404) ou demorar >5s.
- */
+/* ── CARREGA JS DE QUESTÕES ──────────────────────────────── */
 function _carregarQuestoes(src) {
   return new Promise((resolve, reject) => {
-    // Evita duplo carregamento
     if (document.querySelector(`script[src="${src}"]`)) {
       resolve();
       return;
@@ -67,34 +46,41 @@ function _carregarQuestoes(src) {
     s.onerror = () => reject(new Error(`Não foi possível carregar: ${src}`));
     document.head.appendChild(s);
 
-    // Timeout de segurança
     setTimeout(() => reject(new Error(`Timeout: ${src}`)), 5000);
   });
 }
 
+/* ── REVELA CARDS COM DELAY DINÂMICO ─────────────────────── */
 /**
- * Oculta os cards cujo data-modo não existe como chave em window.questoes
- * ou cujo array esteja vazio.
- *
- * Se window.questoes não existir (JS não carregado), mantém todos visíveis
- * para não quebrar a UI.
+ * Recebe a lista de cards sobreviventes, atribui --card-delay
+ * com base na posição real (0, 1, 2...) e remove display:none.
+ * O grid reflui do zero — sempre da esquerda para a direita.
  */
+function _revelarCards(cards) {
+  cards.forEach(function (card, i) {
+    card.style.setProperty('--card-delay', `${0.05 + i * 0.08}s`);
+    card.classList.add('visivel');
+  });
+}
+
+/* ── FILTRA CARDS E DISPARA ANIMAÇÃO ─────────────────────── */
 function _filtrarCardsPorQuestoes() {
   const questoes = window.questoes;
 
+  const todos = Array.from(document.querySelectorAll('[data-modo]'));
+
   if (!questoes || typeof questoes !== 'object') {
-    // Sem dados: exibe tudo (fail-open)
     console.warn('[disciplinas_init] window.questoes não disponível — exibindo todos os cards.');
+    _revelarCards(todos);
     return;
   }
 
-  document.querySelectorAll('[data-modo]').forEach(function (card) {
+  const sobreviventes = todos.filter(function (card) {
     const modo = card.dataset.modo;
-    const temConteudo = Array.isArray(questoes[modo]) && questoes[modo].length > 0;
-    if (!temConteudo) {
-      card.style.display = 'none';
-    }
+    return Array.isArray(questoes[modo]) && questoes[modo].length > 0;
   });
+
+  _revelarCards(sobreviventes);
 }
 
 /* ── SEMESTRE, LINKS E FILTRO ────────────────────────────── */
@@ -108,28 +94,26 @@ function _filtrarCardsPorQuestoes() {
     'a[href*="template.html"]',
   ]);
 
-  // Exibe o semestre ativo no header
   const badge = document.getElementById('header-sem-badge');
   if (badge) badge.textContent = sem;
 
-  // Compatibilidade: se ainda houver cards com data-semestres (HTML antigo),
-  // aplica filtro simples por semestre base antes do filtro dinâmico.
-  const semBase = sem.split('-')[0]; // "2026.1-AP2" → "2026.1"
+  // Compatibilidade com data-semestres (HTML antigo)
+  const semBase = sem.split('-')[0];
   document.querySelectorAll('[data-semestres]').forEach(function (card) {
     const semestresDoCard = card.dataset.semestres.split(',').map(s => s.trim());
-    // Match exato (ex: "2026.1-AP2") OU match na base (ex: "2026.1")
     const visivel = semestresDoCard.includes(sem) || semestresDoCard.includes(semBase);
     if (!visivel) card.style.display = 'none';
   });
 
-  // Carrega o JS de questões e filtra por data-modo
+  // Carrega questões → filtra → anima só os sobreviventes
   const src = _caminhoQuestoes(sem, _discId);
   try {
     await _carregarQuestoes(src);
     _filtrarCardsPorQuestoes();
   } catch (err) {
     console.warn('[disciplinas_init] Erro ao carregar questões:', err.message);
-    // Fail-open: mantém os cards visíveis
+    // Fail-open: mostra todos
+    _revelarCards(Array.from(document.querySelectorAll('[data-modo]')));
   }
 })();
 

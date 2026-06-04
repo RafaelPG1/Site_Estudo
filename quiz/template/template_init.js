@@ -39,7 +39,7 @@ window.__NEXUS_QUIZ_SEMESTRE__ = semestre;
 window.TIPO_QUIZ = modo;
 
 /* ── EXTRAI O ANO DO SEMESTRE ─────────────────────────────── */
-
+const ano = semestre.split('.')[0];
 
 /* ── ATUALIZA O GLOBAL ────────────────────────────────────── */
 setSemestre(semestre);
@@ -189,7 +189,6 @@ function _loadScript(src) {
     document.head.appendChild(s);
   });
 }
-const ano     = semestre.split('.')[0];
 const _apPart = semestre.includes('-') ? semestre.split('-')[1] : null;
 const _period = semestre.includes('-') ? semestre.split('-')[0] : semestre;
 const contentSrc = _apPart
