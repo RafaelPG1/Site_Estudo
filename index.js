@@ -134,6 +134,7 @@ if (document.readyState === 'loading') {
 const _iaScripts = [
   '/shared/js/ia/ia-ui.js',
   '/shared/js/ia/ia-search.js',
+  '/shared/js/ia/ia-loader.js',   // ← adicionado entre search e ia.js
   '/shared/js/ia/ia.js',
 ];
 

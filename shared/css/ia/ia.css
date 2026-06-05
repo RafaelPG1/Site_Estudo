@@ -1,7 +1,14 @@
 /* ============================================================
    ASSISTENTE NEXUS — ia.css
    Isolado: todos os seletores prefixados com #nexus-* ou .nexus-*
-   Sem interferência no resto do sistema
+   Sem interferência no resto do sistema.
+
+   CORREÇÃO CSS: estilos das features (FIX 10/11/13/8) que antes
+   eram injetados via _injetarEstilos() em ia-ui.js foram movidos
+   para cá e reescritos usando as variáveis canônicas do tema
+   (--nx-*). Isso elimina o uso de variáveis inexistentes como
+   --nexus-primary, --nexus-surface, --nexus-text-muted que
+   causavam fallbacks incorretos e visual inconsistente.
    ============================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
@@ -28,6 +35,14 @@
   --nx-z-btn:        9998;
   --nx-z-panel:      9999;
   --nx-transition:   0.22s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Cores das features (FIX 10/11/13) — integradas ao tema */
+  --nx-disc-active-bg:   rgba(0, 200, 255, 0.06);
+  --nx-disc-active-text: var(--nx-accent);
+  --nx-chip-border:      var(--nx-border-hover);
+  --nx-chip-text:        var(--nx-accent);
+  --nx-chip-hover-bg:    rgba(0, 200, 255, 0.14);
+  --nx-feedback-hover:   rgba(255, 255, 255, 0.06);
 }
 
 /* ── BOTÃO FLUTUANTE ────────────────────────────────────────── */
@@ -255,6 +270,53 @@
   height: 12px;
 }
 
+/* ── BARRA DE DISCIPLINA ATIVA (FIX 10) ────────────────────── */
+/*
+ * CORREÇÃO CSS: reescrita usando variáveis --nx-* do tema.
+ * Antes usava --nexus-surface e --nexus-primary que não existem,
+ * causando fallbacks para valores genéricos (#f5f5f5, #1a73e8)
+ * incompatíveis com o tema escuro.
+ */
+#nexus-disc-bar {
+  display: flex;
+  align-items: center;
+  padding: 5px 14px;
+  background: var(--nx-bg);
+  border-bottom: 1px solid var(--nx-border);
+  min-height: 26px;
+  flex-shrink: 0;
+  transition: background var(--nx-transition);
+}
+
+#nexus-disc-label {
+  font-family: var(--nx-font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--nx-text-dim);
+  transition: color var(--nx-transition);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#nexus-disc-bar.nexus-disc-ativa {
+  background: var(--nx-disc-active-bg);
+}
+
+#nexus-disc-bar.nexus-disc-ativa #nexus-disc-label {
+  color: var(--nx-disc-active-text);
+}
+
+/* Ícone de livro antes do label quando ativa */
+#nexus-disc-bar.nexus-disc-ativa::before {
+  content: '📚';
+  margin-right: 6px;
+  font-size: 11px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
 /* ── ÁREA DE MENSAGENS ──────────────────────────────────────── */
 #nexus-messages {
   flex: 1;
@@ -267,12 +329,8 @@
 }
 
 /* Scrollbar customizada */
-#nexus-messages::-webkit-scrollbar {
-  width: 4px;
-}
-#nexus-messages::-webkit-scrollbar-track {
-  background: transparent;
-}
+#nexus-messages::-webkit-scrollbar       { width: 4px; }
+#nexus-messages::-webkit-scrollbar-track { background: transparent; }
 #nexus-messages::-webkit-scrollbar-thumb {
   background: var(--nx-border);
   border-radius: 4px;
@@ -366,7 +424,7 @@
   border-bottom-left-radius: 3px;
 }
 
-/* ── MENSAGEM DE BOAS-VINDAS (sistema) ──────────────────────── */
+/* ── MENSAGEM DE SISTEMA ────────────────────────────────────── */
 .nexus-msg.nexus-system {
   align-self: center;
   max-width: 100%;
@@ -381,6 +439,18 @@
   text-align: center;
   border-radius: 8px;
   padding: 7px 14px;
+}
+
+/* ── BANNER DE RESTAURAÇÃO (FIX 8) ─────────────────────────── */
+/*
+ * CORREÇÃO CSS: antes usava --nexus-text-muted (inexistente).
+ * Agora usa --nx-text-dim do tema canônico.
+ */
+.nexus-restore-banner .nexus-msg-bubble {
+  font-size: 10px;
+  color: var(--nx-text-dim);
+  border-style: dashed;
+  padding: 4px 10px;
 }
 
 /* ── TYPING INDICATOR ───────────────────────────────────────── */
@@ -476,6 +546,11 @@
   box-shadow: 0 0 0 3px var(--nx-accent-dim);
 }
 
+#nexus-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 #nexus-send {
   width: 40px;
   height: 40px;
@@ -502,6 +577,13 @@
   transform: translateY(0) scale(0.95);
 }
 
+#nexus-send:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 #nexus-send svg {
   width: 16px;
   height: 16px;
@@ -514,6 +596,91 @@
   margin-top: 7px;
   text-align: center;
   letter-spacing: 0.03em;
+}
+
+/* ── FEATURES ADICIONAIS ────────────────────────────────────── */
+/*
+ * CORREÇÃO CSS: seção unificada para FIX 10 / 11 / 13.
+ * Antes injetada via JS com variáveis de tema erradas.
+ * Agora integrada aqui com variáveis --nx-* canônicas.
+ */
+
+/* Chips de sugestão (FIX 11) */
+.nexus-sugestoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px 2px 8px;
+}
+
+.nexus-sugestao-chip {
+  cursor: pointer;
+  border: 1px solid var(--nx-chip-border);
+  background: transparent;
+  color: var(--nx-chip-text);
+  border-radius: 16px;
+  padding: 4px 12px;
+  font-family: var(--nx-font-mono);
+  font-size: 11px;
+  line-height: 1.4;
+  transition: background var(--nx-transition), color var(--nx-transition), border-color var(--nx-transition);
+  text-align: left;
+  max-width: 100%;
+}
+
+.nexus-sugestao-chip:hover,
+.nexus-sugestao-chip:focus {
+  background: var(--nx-chip-hover-bg);
+  border-color: var(--nx-accent);
+  outline: none;
+}
+
+/* Feedback 👍/👎 (FIX 13) */
+.nexus-feedback {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 2px 6px 34px;
+  opacity: 0.65;
+  transition: opacity var(--nx-transition);
+}
+
+.nexus-feedback:hover {
+  opacity: 1;
+}
+
+.nexus-feedback-btn {
+  cursor: pointer;
+  border: 1px solid var(--nx-border);
+  background: transparent;
+  font-size: 14px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  transition: background var(--nx-transition), transform var(--nx-transition), border-color var(--nx-transition);
+  line-height: 1;
+  color: var(--nx-text-dim);
+}
+
+.nexus-feedback-btn:hover {
+  background: var(--nx-feedback-hover);
+  border-color: var(--nx-border-hover);
+  transform: scale(1.15);
+}
+
+.nexus-feedback-btn.nexus-feedback-ativo {
+  opacity: 1;
+  background: var(--nx-accent-dim);
+  border-color: var(--nx-border-hover);
+}
+
+.nexus-feedback-btn:disabled {
+  cursor: default;
+}
+
+.nexus-feedback-label {
+  font-family: var(--nx-font-mono);
+  font-size: 10px;
+  color: var(--nx-text-dim);
 }
 
 /* ── RESPONSIVO ─────────────────────────────────────────────── */

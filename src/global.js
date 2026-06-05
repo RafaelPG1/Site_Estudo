@@ -297,7 +297,9 @@ export function limparDadosQuiz() {
 }
 
 window.__nexusCtx = {
-  getSemestre:    getSemestreAtual,
-  getDisciplinas: getDisciplinasDeSemestre,
-  parseSemestre:  parseSemestre,
+  getSemestre:        getSemestreAtual,
+  getDisciplinas:     getDisciplinasDeSemestre,
+  parseSemestre:      parseSemestre,
+  getDisciplinaAtual: getDisciplinaAtual,  // null na home, id nas páginas de conteúdo
 };
+ 

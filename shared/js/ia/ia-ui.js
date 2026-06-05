@@ -13,7 +13,19 @@
  *   - Lógica de negócio
  *   - Chamadas a APIs externas
  *
- * API pública:  window.NexusUI
+ * API pública: window.NexusUI
+ *
+ * ── CHANGELOG ───────────────────────────────────────────────
+ * FIX 10  — atualizarDiscAtiva(): atualiza o indicador no header.
+ * FIX 11  — mostrarSugestoes(): renderiza chips clicáveis no chat.
+ * FIX 13  — renderFeedback(): adiciona 👍/👎 após cada resposta do bot.
+ *
+ * CORREÇÃO CSS — _injetarEstilos() REMOVIDA.
+ *   Todos os estilos das features FIX 10/11/13 foram movidos para
+ *   ia.css (seção "── FEATURES ADICIONAIS ──"). Isso elimina o
+ *   conflito de variáveis CSS e garante tema consistente.
+ *   ia-ui.js não injeta mais nenhum <style> no DOM.
+ * ────────────────────────────────────────────────────────────
  */
 
 (function () {
@@ -96,6 +108,10 @@
         <button id="nexus-close" aria-label="Fechar chat">${SVG.close}</button>
       </div>
 
+      <div id="nexus-disc-bar" aria-live="polite">
+        <span id="nexus-disc-label">Sem disciplina ativa</span>
+      </div>
+
       <div id="nexus-messages" role="log" aria-live="polite"></div>
 
       <div id="nexus-typing" aria-hidden="true">
@@ -122,6 +138,9 @@
 
     document.body.appendChild(fab);
     document.body.appendChild(panel);
+
+    // CORREÇÃO CSS: _injetarEstilos() removida.
+    // Todos os estilos estão em ia.css — nenhum <style> é injetado via JS.
   }
 
   /* ── RENDERIZAÇÃO DE MENSAGENS ───────────────────────────── */
@@ -130,46 +149,159 @@
    * Renderiza uma mensagem no painel.
    * @param {{ role: 'user'|'bot'|'system', text: string, time?: string }} msg
    */
-function renderMessage(msg) {
-  const msgs = document.getElementById('nexus-messages');
-  if (!msgs) return;
+  function renderMessage(msg) {
+    const msgs = document.getElementById('nexus-messages');
+    if (!msgs) return;
 
-  const time = msg.time || _getTime();
+    const time = msg.time || _getTime();
 
-  if (msg.role === 'system') {
-    const el = document.createElement('div');
-    el.className = 'nexus-msg nexus-system';
-    el.innerHTML = `<div class="nexus-msg-bubble">${_sanitize(msg.text)}</div>`;
-    msgs.appendChild(el);
+    if (msg.role === 'system') {
+      const el = document.createElement('div');
+      el.className = 'nexus-msg nexus-system';
+      el.innerHTML = `<div class="nexus-msg-bubble">${_sanitize(msg.text)}</div>`;
+      msgs.appendChild(el);
+      _scrollToBottom();
+      return;
+    }
+
+    const isUser  = msg.role === 'user';
+    const wrapper = document.createElement('div');
+    wrapper.className = `nexus-msg ${isUser ? 'nexus-user' : 'nexus-bot'}`;
+
+    if (isUser) {
+      wrapper.innerHTML = `
+        <div>
+          <div class="nexus-msg-bubble">${_sanitize(msg.text)}</div>
+          <div class="nexus-msg-time">${time}</div>
+        </div>
+        <div class="nexus-msg-avatar">${SVG.user}</div>
+      `;
+    } else {
+      // _sanitize escapa HTML, depois converte \n → <br>
+      const textoBot = _sanitize(msg.text).replace(/\n/g, '<br>');
+      wrapper.innerHTML = `
+        <div class="nexus-msg-avatar">${SVG.bot}</div>
+        <div>
+          <div class="nexus-msg-bubble">${textoBot}</div>
+          <div class="nexus-msg-time">${time}</div>
+        </div>
+      `;
+    }
+
+    msgs.appendChild(wrapper);
     _scrollToBottom();
-    return;
   }
 
-  const isUser = msg.role === 'user';
-  const wrapper = document.createElement('div');
-  wrapper.className = `nexus-msg ${isUser ? 'nexus-user' : 'nexus-bot'}`;
+  /* ── FIX 10: INDICADOR DE DISCIPLINA ATIVA ───────────────── */
 
-  if (isUser) {
-    wrapper.innerHTML = `
-      <div>
-        <div class="nexus-msg-bubble">${_sanitize(msg.text)}</div>
-        <div class="nexus-msg-time">${time}</div>
-      </div>
-      <div class="nexus-msg-avatar">${SVG.user}</div>
-    `;
-  } else {
-    wrapper.innerHTML = `
-      <div class="nexus-msg-avatar">${SVG.bot}</div>
-      <div>
-        <div class="nexus-msg-bubble">${_sanitize(msg.text)}</div>
-        <div class="nexus-msg-time">${time}</div>
-      </div>
-    `;
+  /**
+   * Atualiza o indicador de disciplina no header do chat.
+   * Chamado por ia.js sempre que a disciplina muda.
+   *
+   * @param {string|null} nomeDisc — nome da disciplina ou null
+   */
+  function atualizarDiscAtiva(nomeDisc) {
+    const bar   = document.getElementById('nexus-disc-bar');
+    const label = document.getElementById('nexus-disc-label');
+    if (!bar || !label) return;
+
+    if (nomeDisc) {
+      label.textContent = nomeDisc;
+      bar.classList.add('nexus-disc-ativa');
+    } else {
+      label.textContent = 'Sem disciplina ativa';
+      bar.classList.remove('nexus-disc-ativa');
+    }
   }
 
-  msgs.appendChild(wrapper);
-  _scrollToBottom();
-}
+  /* ── FIX 11: SUGESTÕES CLICÁVEIS ─────────────────────────── */
+
+  /**
+   * Renderiza chips de sugestão clicáveis abaixo do histórico.
+   * Remove sugestões anteriores antes de adicionar novas.
+   *
+   * @param {string[]} sugestoes
+   * @param {(texto: string) => void} onSugestaoClick
+   */
+  function mostrarSugestoes(sugestoes, onSugestaoClick) {
+    const msgs = document.getElementById('nexus-messages');
+    if (!msgs || !sugestoes.length) return;
+
+    // Remove conjunto anterior de sugestões
+    const anterior = msgs.querySelector('.nexus-sugestoes');
+    if (anterior) anterior.remove();
+
+    const container = document.createElement('div');
+    container.className = 'nexus-sugestoes';
+
+    sugestoes.forEach(function (texto) {
+      const btn = document.createElement('button');
+      btn.className = 'nexus-sugestao-chip';
+      btn.textContent = texto;
+      btn.setAttribute('aria-label', 'Perguntar: ' + texto);
+      btn.addEventListener('click', function () {
+        container.remove();
+        if (typeof onSugestaoClick === 'function') {
+          onSugestaoClick(texto);
+        }
+      });
+      container.appendChild(btn);
+    });
+
+    msgs.appendChild(container);
+    _scrollToBottom();
+  }
+
+  /* ── FIX 13: FEEDBACK 👍 / 👎 ─────────────────────────────── */
+
+  /**
+   * Adiciona linha de feedback (👍 / 👎) após uma resposta do bot.
+   *
+   * @param {string} feedbackId
+   * @param {(id: string, valor: 'positivo'|'negativo') => void} onFeedback
+   */
+  function renderFeedback(feedbackId, onFeedback) {
+    const msgs = document.getElementById('nexus-messages');
+    if (!msgs || !feedbackId) return;
+
+    const row = document.createElement('div');
+    row.className = 'nexus-feedback';
+    row.setAttribute('data-feedback-id', feedbackId);
+
+    const label = document.createElement('span');
+    label.className = 'nexus-feedback-label';
+    label.textContent = 'Útil?';
+
+    const btnPos = document.createElement('button');
+    btnPos.className = 'nexus-feedback-btn';
+    btnPos.setAttribute('aria-label', 'Resposta útil');
+    btnPos.textContent = '👍';
+
+    const btnNeg = document.createElement('button');
+    btnNeg.className = 'nexus-feedback-btn';
+    btnNeg.setAttribute('aria-label', 'Resposta não útil');
+    btnNeg.textContent = '👎';
+
+    function _votar(valor, btnAtivo, btnInativo) {
+      if (typeof onFeedback === 'function') {
+        onFeedback(feedbackId, valor);
+      }
+      btnAtivo.classList.add('nexus-feedback-ativo');
+      btnPos.disabled = true;
+      btnNeg.disabled = true;
+      btnInativo.style.opacity = '0.3';
+      label.textContent = valor === 'positivo' ? 'Obrigado!' : 'Anotado!';
+    }
+
+    btnPos.addEventListener('click', function () { _votar('positivo', btnPos, btnNeg); });
+    btnNeg.addEventListener('click', function () { _votar('negativo', btnNeg, btnPos); });
+
+    row.appendChild(label);
+    row.appendChild(btnPos);
+    row.appendChild(btnNeg);
+    msgs.appendChild(row);
+    _scrollToBottom();
+  }
 
   /* ── TYPING INDICATOR ────────────────────────────────────── */
   function showTyping() {
@@ -233,16 +365,14 @@ function renderMessage(msg) {
 
   /**
    * Monta o DOM e vincula os eventos de UI.
-   * O callback onSend(text) é chamado pelo controlador (ia.js)
-   * quando o usuário submete uma mensagem.
-   * @param {{ onSend: (text: string) => void, onClose?: () => void }} callbacks
+   * @param {{ onSend: (text: string) => void }} callbacks
    */
   function init(callbacks) {
-    if (document.getElementById('nexus-fab')) return; // já inicializado
+    if (document.getElementById('nexus-fab')) return;
 
     _buildUI();
 
-    const fab   = document.getElementById('nexus-fab');
+    const fab      = document.getElementById('nexus-fab');
     const closeBtn = document.getElementById('nexus-close');
     const sendBtn  = document.getElementById('nexus-send');
     const input    = document.getElementById('nexus-input');
@@ -300,6 +430,9 @@ function renderMessage(msg) {
     renderMessage,
     showTyping,
     hideTyping,
+    atualizarDiscAtiva,
+    mostrarSugestoes,
+    renderFeedback,
   };
 
 }());
