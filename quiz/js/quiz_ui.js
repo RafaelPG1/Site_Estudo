@@ -265,9 +265,14 @@ function _buildTiposEspecial(listEl, sem, modo, _tipoRow, tipoMap) {
     var conteudo  = window.questoes || {};
 
     /* Escolhe a lista certa conforme o modo ativo */
-    var lista = modo === 'ava'
-      ? (conteudo.ava      || [])
-      : (conteudo.questoes || []);
+// quiz_ui.js — _buildTiposEspecial, linha ~268
+var lista = modo === 'ava'
+  ? (conteudo.ava      || [])
+  : modo === 'enade'
+  ? (conteudo.enade    || [])
+  : modo === 'fixacao'
+  ? (conteudo.fixacao  || [])
+  : (conteudo.questoes || []);
 
     /* Extrai tipos únicos preservando a ordem de aparição */
     var vistos  = {};
