@@ -18,7 +18,7 @@
  * ── CHANGELOG ───────────────────────────────────────────────
  * FIX 10  — atualizarDiscAtiva(): atualiza o indicador no header.
  * FIX 11  — mostrarSugestoes(): renderiza chips clicáveis no chat.
- * FIX 13  — renderFeedback(): adiciona 👍/👎 após cada resposta do bot.
+ * FIX 13  — renderFeedback() REMOVIDA (sistema de feedback eliminado).
  *
  * CORREÇÃO CSS — _injetarEstilos() REMOVIDA.
  *   Todos os estilos das features FIX 10/11/13 foram movidos para
@@ -56,6 +56,10 @@
                <path d="M2 17l10 5 10-5"/>
                <path d="M2 12l10 5 10-5"/>
              </svg>`,
+    reset: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="1 4 1 10 7 10"/>
+              <path d="M3.51 15a9 9 0 1 0 .49-4.95"/>
+            </svg>`,
     fab: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
             <circle cx="9" cy="10" r="0.8" fill="currentColor" stroke="none"/>
@@ -105,6 +109,7 @@
             <span>v1.0 · em desenvolvimento</span>
           </div>
         </div>
+        <button id="nexus-reset" aria-label="Resetar chat" title="Resetar chat">${SVG.reset}</button>
         <button id="nexus-close" aria-label="Fechar chat">${SVG.close}</button>
       </div>
 
@@ -220,7 +225,10 @@
    * Renderiza chips de sugestão clicáveis abaixo do histórico.
    * Remove sugestões anteriores antes de adicionar novas.
    *
-   * @param {string[]} sugestoes
+   * UX-4: aceita array de strings OU objetos { label, cmd, tipo }.
+   * Quando tipo === 'disc', o chip recebe aparência de comando /disc.
+   *
+   * @param {(string|{label:string, cmd:string, tipo?:string})[]} sugestoes
    * @param {(texto: string) => void} onSugestaoClick
    */
   function mostrarSugestoes(sugestoes, onSugestaoClick) {
@@ -234,72 +242,29 @@
     const container = document.createElement('div');
     container.className = 'nexus-sugestoes';
 
-    sugestoes.forEach(function (texto) {
+    sugestoes.forEach(function (item) {
+      // Suporta string simples ou objeto {label, cmd, tipo}
+      const label = typeof item === 'string' ? item : item.label;
+      const cmd   = typeof item === 'string' ? item : (item.cmd || item.label);
+      const tipo  = typeof item === 'string' ? null  : (item.tipo || null);
+
       const btn = document.createElement('button');
-      btn.className = 'nexus-sugestao-chip';
-      btn.textContent = texto;
-      btn.setAttribute('aria-label', 'Perguntar: ' + texto);
-      btn.addEventListener('click', function () {
+      btn.className = 'nexus-sugestao-chip' + (tipo === 'disc' ? ' nexus-sugestao-chip--disc' : '');
+      btn.textContent = label;
+      btn.setAttribute('aria-label', tipo === 'disc' ? 'Selecionar disciplina: ' + label : 'Perguntar: ' + label);
+      btn.addEventListener('click', function (e) {
+        // stopPropagation evita que o listener global de "clique fora"
+        // detecte o target como fora do painel após o container.remove().
+        e.stopPropagation();
         container.remove();
         if (typeof onSugestaoClick === 'function') {
-          onSugestaoClick(texto);
+          onSugestaoClick(cmd);
         }
       });
       container.appendChild(btn);
     });
 
     msgs.appendChild(container);
-    _scrollToBottom();
-  }
-
-  /* ── FIX 13: FEEDBACK 👍 / 👎 ─────────────────────────────── */
-
-  /**
-   * Adiciona linha de feedback (👍 / 👎) após uma resposta do bot.
-   *
-   * @param {string} feedbackId
-   * @param {(id: string, valor: 'positivo'|'negativo') => void} onFeedback
-   */
-  function renderFeedback(feedbackId, onFeedback) {
-    const msgs = document.getElementById('nexus-messages');
-    if (!msgs || !feedbackId) return;
-
-    const row = document.createElement('div');
-    row.className = 'nexus-feedback';
-    row.setAttribute('data-feedback-id', feedbackId);
-
-    const label = document.createElement('span');
-    label.className = 'nexus-feedback-label';
-    label.textContent = 'Útil?';
-
-    const btnPos = document.createElement('button');
-    btnPos.className = 'nexus-feedback-btn';
-    btnPos.setAttribute('aria-label', 'Resposta útil');
-    btnPos.textContent = '👍';
-
-    const btnNeg = document.createElement('button');
-    btnNeg.className = 'nexus-feedback-btn';
-    btnNeg.setAttribute('aria-label', 'Resposta não útil');
-    btnNeg.textContent = '👎';
-
-    function _votar(valor, btnAtivo, btnInativo) {
-      if (typeof onFeedback === 'function') {
-        onFeedback(feedbackId, valor);
-      }
-      btnAtivo.classList.add('nexus-feedback-ativo');
-      btnPos.disabled = true;
-      btnNeg.disabled = true;
-      btnInativo.style.opacity = '0.3';
-      label.textContent = valor === 'positivo' ? 'Obrigado!' : 'Anotado!';
-    }
-
-    btnPos.addEventListener('click', function () { _votar('positivo', btnPos, btnNeg); });
-    btnNeg.addEventListener('click', function () { _votar('negativo', btnNeg, btnPos); });
-
-    row.appendChild(label);
-    row.appendChild(btnPos);
-    row.appendChild(btnNeg);
-    msgs.appendChild(row);
     _scrollToBottom();
   }
 
@@ -365,7 +330,7 @@
 
   /**
    * Monta o DOM e vincula os eventos de UI.
-   * @param {{ onSend: (text: string) => void }} callbacks
+   * @param {{ onSend: (text: string) => void, onReset?: () => void }} callbacks
    */
   function init(callbacks) {
     if (document.getElementById('nexus-fab')) return;
@@ -374,11 +339,19 @@
 
     const fab      = document.getElementById('nexus-fab');
     const closeBtn = document.getElementById('nexus-close');
+    const resetBtn = document.getElementById('nexus-reset');
     const sendBtn  = document.getElementById('nexus-send');
     const input    = document.getElementById('nexus-input');
 
     if (fab)      fab.addEventListener('click', toggle);
     if (closeBtn) closeBtn.addEventListener('click', close);
+
+    if (resetBtn) {
+      resetBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (typeof callbacks.onReset === 'function') callbacks.onReset();
+      });
+    }
 
     if (sendBtn) {
       sendBtn.addEventListener('click', () => _submitInput(input, callbacks.onSend));
@@ -432,7 +405,6 @@
     hideTyping,
     atualizarDiscAtiva,
     mostrarSugestoes,
-    renderFeedback,
   };
 
 }());

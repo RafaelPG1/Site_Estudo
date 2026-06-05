@@ -705,3 +705,72 @@
     right: 20px;
   }
 }
+
+
+/* ── CHIPS DE COMANDO /disc (UX-4) ─────────────────────────── */
+/*
+ * Aparência de comando oficial de terminal — distinta dos chips
+ * de sugestão de conteúdo comuns. Usa fonte mono e prefixo visual
+ * para comunicar que é um comando executável, não uma pergunta.
+ */
+.nexus-sugestao-chip--disc {
+  font-family: var(--nx-font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: var(--nx-accent);
+  border-color: var(--nx-border-hover);
+  background: var(--nx-accent-dim);
+  border-radius: 6px;
+  padding: 5px 10px;
+  position: relative;
+}
+
+.nexus-sugestao-chip--disc::before {
+  content: '⌘';
+  margin-right: 5px;
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.nexus-sugestao-chip--disc:hover,
+.nexus-sugestao-chip--disc:focus {
+  background: rgba(0, 200, 255, 0.18);
+  border-color: var(--nx-accent);
+  box-shadow: 0 0 8px var(--nx-accent-glow);
+  outline: none;
+}
+
+/* ── BOTÃO RESET (⟳) ───────────────────────────────────────── */
+#nexus-reset {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: 1px solid var(--nx-border);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--nx-text-dim);
+  transition: background var(--nx-transition), color var(--nx-transition),
+              border-color var(--nx-transition), transform var(--nx-transition);
+  flex-shrink: 0;
+  outline: none;
+}
+
+#nexus-reset:hover {
+  background: rgba(0, 200, 255, 0.08);
+  border-color: var(--nx-border-hover);
+  color: var(--nx-accent);
+  transform: rotate(-45deg);
+}
+
+#nexus-reset:active {
+  transform: rotate(-180deg);
+}
+
+#nexus-reset svg {
+  width: 12px;
+  height: 12px;
+}

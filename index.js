@@ -136,6 +136,8 @@ const _iaScripts = [
   '/shared/js/ia/ia-search.js',
   '/shared/js/ia/ia-loader.js',   // ← adicionado entre search e ia.js
   '/shared/js/ia/ia.js',
+  '/shared/js/ia/ia-worker.js',
+  
 ];
 
 _iaScripts.reduce((promise, src) => {
