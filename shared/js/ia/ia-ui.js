@@ -1,410 +1,512 @@
 /**
  * ASSISTENTE NEXUS — ia-ui.js
- * Camada de interface pura.
  *
- * Responsabilidades:
- *   - Construir e injetar o DOM (FAB + painel)
- *   - Renderizar mensagens (user / bot / system)
- *   - Controlar typing indicator e scroll
- *   - Abrir / fechar / alternar o painel
+ * PATCH scroll-isolado:
+ *   O painel #nexus-panel captura wheel e touchmove, impedindo
+ *   que o scroll vaze para a página quando o mouse está sobre o modal.
  *
- * NÃO faz:
- *   - Busca de conteúdo
- *   - Lógica de negócio
- *   - Chamadas a APIs externas
- *
- * API pública: window.NexusUI
- *
- * ── CHANGELOG ───────────────────────────────────────────────
- * FIX 10  — atualizarDiscAtiva(): atualiza o indicador no header.
- * FIX 11  — mostrarSugestoes(): renderiza chips clicáveis no chat.
- * FIX 13  — renderFeedback() REMOVIDA (sistema de feedback eliminado).
- *
- * CORREÇÃO CSS — _injetarEstilos() REMOVIDA.
- *   Todos os estilos das features FIX 10/11/13 foram movidos para
- *   ia.css (seção "── FEATURES ADICIONAIS ──"). Isso elimina o
- *   conflito de variáveis CSS e garante tema consistente.
- *   ia-ui.js não injeta mais nenhum <style> no DOM.
- * ────────────────────────────────────────────────────────────
+ * PATCH fechar-só-pelo-botão:
+ *   Remove o listener de "clicar fora para fechar".
+ *   O painel só fecha via FAB (toggle) ou botão X interno.
  */
 
 (function () {
   'use strict';
 
-  /* ── ÍCONES SVG ────────────────────────────────────────────── */
-  const SVG = {
-    bot: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="11" width="18" height="11" rx="2"/>
-            <path d="M12 2v4M8 11V8a4 4 0 0 1 8 0v3"/>
-            <circle cx="9" cy="16" r="1" fill="currentColor" stroke="none"/>
-            <circle cx="15" cy="16" r="1" fill="currentColor" stroke="none"/>
-          </svg>`,
-    user: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-             <circle cx="12" cy="8" r="4"/>
-             <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-           </svg>`,
-    send: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-             <line x1="22" y1="2" x2="11" y2="13"/>
-             <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-           </svg>`,
-    close: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-              <line x1="18" y1="6" x2="6" y2="18"/>
-              <line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>`,
-    header: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-               <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-               <path d="M2 17l10 5 10-5"/>
-               <path d="M2 12l10 5 10-5"/>
-             </svg>`,
-    reset: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="1 4 1 10 7 10"/>
-              <path d="M3.51 15a9 9 0 1 0 .49-4.95"/>
-            </svg>`,
-    fab: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            <circle cx="9" cy="10" r="0.8" fill="currentColor" stroke="none"/>
-            <circle cx="12" cy="10" r="0.8" fill="currentColor" stroke="none"/>
-            <circle cx="15" cy="10" r="0.8" fill="currentColor" stroke="none"/>
-          </svg>`,
-  };
+  let _onSend  = null;
+  let _onReset = null;
 
-  /* ── HELPERS ─────────────────────────────────────────────── */
-  function _sanitize(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
+  /* ══════════════════════════════════════════════════════════
+     TEMPLATES HTML
+  ══════════════════════════════════════════════════════════ */
+
+  function _iconSparkle(size) {
+    size = size || 18;
+    return (
+      '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24"' +
+      ' fill="none" stroke="currentColor"' +
+      ' stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"' +
+      ' aria-hidden="true">' +
+      '<path d="M12 2 L13.5 8.5 L20 10 L13.5 11.5 L12 18 L10.5 11.5 L4 10 L10.5 8.5 Z"/>' +
+      '<circle cx="19" cy="5"  r="1.1" fill="#00c8ff" stroke="none"/>' +
+      '<circle cx="5"  cy="19" r="0.8" fill="#00c8ff" stroke="none"/>' +
+      '</svg>'
+    );
   }
 
-  function _getTime() {
-    return new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  function _iconClose() {
+    return (
+      '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"' +
+      ' stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<line x1="18" y1="6" x2="6" y2="18"/>' +
+      '<line x1="6"  y1="6" x2="18" y2="18"/>' +
+      '</svg>'
+    );
   }
 
-  function _scrollToBottom() {
-    const msgs = document.getElementById('nexus-messages');
-    if (msgs) msgs.scrollTop = msgs.scrollHeight;
+  function _iconReset() {
+    return (
+      '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"' +
+      ' stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<polyline points="1 4 1 10 7 10"/>' +
+      '<path d="M3.51 15a9 9 0 1 0 .49-4.5"/>' +
+      '</svg>'
+    );
   }
 
-  /* ── CONSTRUÇÃO DO DOM ───────────────────────────────────── */
-  function _buildUI() {
-    // Botão flutuante
-    const fab = document.createElement('button');
-    fab.id = 'nexus-fab';
-    fab.setAttribute('aria-label', 'Abrir Assistente Nexus');
-    fab.setAttribute('title', 'Assistente Nexus');
-    fab.innerHTML = `<span id="nexus-fab-icon">${SVG.fab}</span>`;
+  function _iconSend() {
+    return (
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"' +
+      ' stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<line x1="22" y1="2" x2="11" y2="13"/>' +
+      '<polygon points="22 2 15 22 11 13 2 9 22 2"/>' +
+      '</svg>'
+    );
+  }
 
-    // Painel
-    const panel = document.createElement('div');
-    panel.id = 'nexus-panel';
+  function _iconHeaderIA() {
+    return (
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c8ff"' +
+      ' stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M12 2 L13.5 8.5 L20 10 L13.5 11.5 L12 18 L10.5 11.5 L4 10 L10.5 8.5 Z"/>' +
+      '<circle cx="19" cy="5"  r="1.1" fill="#00c8ff" stroke="none"/>' +
+      '<circle cx="5"  cy="19" r="0.8" fill="#00c8ff" stroke="none"/>' +
+      '</svg>'
+    );
+  }
+
+  function _iconBot() {
+    return (
+      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"' +
+      ' stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<line x1="12" y1="2" x2="12" y2="5"/>' +
+      '<circle cx="12" cy="2" r="1" fill="currentColor" stroke="none"/>' +
+      '<rect x="3" y="5" width="18" height="13" rx="3" ry="3"/>' +
+      '<circle cx="9"  cy="11" r="1.5" fill="currentColor" stroke="none"/>' +
+      '<circle cx="15" cy="11" r="1.5" fill="currentColor" stroke="none"/>' +
+      '<path d="M9 15 Q12 17 15 15"/>' +
+      '<line x1="3"  y1="10" x2="1"  y2="10"/>' +
+      '<line x1="21" y1="10" x2="23" y2="10"/>' +
+      '</svg>'
+    );
+  }
+
+  function _iconUser() {
+    return (
+      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"' +
+      ' stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<circle cx="12" cy="8" r="4"/>' +
+      '<path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>' +
+      '</svg>'
+    );
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     CRIAÇÃO DOS ELEMENTOS NO DOM
+  ══════════════════════════════════════════════════════════ */
+
+  function _criarFAB() {
+    var fab = document.createElement('button');
+    fab.id   = 'nexus-fab';
+    fab.type = 'button';
+    fab.setAttribute('aria-label', 'Assistente Nexus — abrir chat');
+    fab.setAttribute('aria-expanded', 'false');
+
+    fab.innerHTML =
+      '<div id="nexus-fab-body">' +
+        '<div id="nexus-fab-icon-wrap">' +
+          '<span id="nexus-fab-icon">' + _iconSparkle(18) + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div id="nexus-fab-ripple" aria-hidden="true"></div>' +
+      '<span class="nexus-fab-label" aria-hidden="true">nexus ia</span>';
+
+    return fab;
+  }
+
+  function _criarPainel() {
+    var panel = document.createElement('div');
+    panel.id            = 'nexus-panel';
     panel.setAttribute('role', 'dialog');
-    panel.setAttribute('aria-label', 'Assistente Nexus');
     panel.setAttribute('aria-modal', 'true');
-    panel.innerHTML = `
-      <div id="nexus-header">
-        <div id="nexus-header-icon">${SVG.header}</div>
-        <div id="nexus-header-info">
-          <div id="nexus-title">Assistente Nexus</div>
-          <div id="nexus-subtitle">
-            <span class="nexus-status-dot nexus-dev"></span>
-            <span>v1.0 · em desenvolvimento</span>
-          </div>
-        </div>
-        <button id="nexus-reset" aria-label="Resetar chat" title="Resetar chat">${SVG.reset}</button>
-        <button id="nexus-close" aria-label="Fechar chat">${SVG.close}</button>
-      </div>
+    panel.setAttribute('aria-label', 'Assistente Nexus');
 
-      <div id="nexus-disc-bar" aria-live="polite">
-        <span id="nexus-disc-label">Sem disciplina ativa</span>
-      </div>
+    panel.innerHTML =
+      '<div id="nexus-header">' +
+        '<div id="nexus-header-icon">' + _iconHeaderIA() + '</div>' +
+        '<div id="nexus-header-info">' +
+          '<div id="nexus-title">Nexus IA</div>' +
+          '<div id="nexus-subtitle">' +
+            '<span class="nexus-status-dot nexus-dev" aria-hidden="true"></span>' +
+            'assistente de estudos' +
+          '</div>' +
+        '</div>' +
+        '<button id="nexus-reset" type="button" aria-label="Reiniciar conversa">' +
+          _iconReset() +
+        '</button>' +
+        '<button id="nexus-close" type="button" aria-label="Fechar assistente">' +
+          _iconClose() +
+        '</button>' +
+      '</div>' +
 
-      <div id="nexus-messages" role="log" aria-live="polite"></div>
+      '<div id="nexus-disc-bar">' +
+        '<span id="nexus-disc-label">nenhuma disciplina selecionada</span>' +
+      '</div>' +
 
-      <div id="nexus-typing" aria-hidden="true">
-        <div class="nexus-msg-avatar">${SVG.bot}</div>
-        <div class="nexus-typing-dots">
-          <span></span><span></span><span></span>
-        </div>
-      </div>
+      '<div id="nexus-messages" role="log" aria-live="polite" aria-atomic="false"></div>' +
 
-      <div id="nexus-footer">
-        <div id="nexus-input-row">
-          <textarea
-            id="nexus-input"
-            rows="1"
-            placeholder="Digite sua mensagem…"
-            aria-label="Mensagem para o Assistente Nexus"
-            maxlength="1000"
-          ></textarea>
-          <button id="nexus-send" aria-label="Enviar mensagem">${SVG.send}</button>
-        </div>
-        <div id="nexus-hint">Enter para enviar · Shift+Enter para nova linha</div>
-      </div>
-    `;
+      '<div id="nexus-typing" aria-label="Nexus está digitando" aria-live="polite">' +
+        '<div class="nexus-msg-avatar" aria-hidden="true">' + _iconBot() + '</div>' +
+        '<div class="nexus-typing-dots">' +
+          '<span></span><span></span><span></span>' +
+        '</div>' +
+      '</div>' +
 
-    document.body.appendChild(fab);
-    document.body.appendChild(panel);
+      '<div id="nexus-footer">' +
+        '<div id="nexus-input-row">' +
+          '<textarea' +
+          ' id="nexus-input"' +
+          ' rows="1"' +
+          ' placeholder="Digite sua mensagem…"' +
+          ' aria-label="Mensagem para o assistente"' +
+          ' autocomplete="off"' +
+          ' spellcheck="false"' +
+          '></textarea>' +
+          '<button id="nexus-send" type="button" aria-label="Enviar mensagem">' +
+            _iconSend() +
+          '</button>' +
+        '</div>' +
+        '<div id="nexus-hint">Enter para enviar  ·  Shift+Enter para nova linha</div>' +
+      '</div>';
 
-    // CORREÇÃO CSS: _injetarEstilos() removida.
-    // Todos os estilos estão em ia.css — nenhum <style> é injetado via JS.
+    return panel;
   }
 
-  /* ── RENDERIZAÇÃO DE MENSAGENS ───────────────────────────── */
+  /* ══════════════════════════════════════════════════════════
+     RENDERIZAÇÃO DE MENSAGENS
+  ══════════════════════════════════════════════════════════ */
 
-  /**
-   * Renderiza uma mensagem no painel.
-   * @param {{ role: 'user'|'bot'|'system', text: string, time?: string }} msg
-   */
+  function _escapeHtml(str) {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function _formatarTexto(texto) {
+    var escaped = _escapeHtml(texto);
+    escaped = escaped
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g,     '<em>$1</em>')
+      .replace(/`(.+?)`/g,       '<code style="font-family:\'JetBrains Mono\',monospace;font-size:11px;background:rgba(0,200,255,0.08);padding:1px 4px;border-radius:3px;">$1</code>');
+    escaped = escaped.replace(/\n/g, '<br>');
+    return escaped;
+  }
+
+  function _renderRodape(rodape) {
+    if (!rodape) return '';
+    return (
+      '<div class="nexus-rodape-ia">' +
+        (rodape.linha1 ? '<span class="nexus-rodape-ia-linha1">' + _escapeHtml(rodape.linha1) + '</span>' : '') +
+        (rodape.linha2 ? '<span class="nexus-rodape-ia-linha2">' + _escapeHtml(rodape.linha2) + '</span>' : '') +
+      '</div>'
+    );
+  }
+
   function renderMessage(msg) {
-    const msgs = document.getElementById('nexus-messages');
-    if (!msgs) return;
+    var container = document.getElementById('nexus-messages');
+    if (!container) return;
 
-    const time = msg.time || _getTime();
+    var el = document.createElement('div');
 
-    if (msg.role === 'system') {
-      const el = document.createElement('div');
-      el.className = 'nexus-msg nexus-system';
-      el.innerHTML = `<div class="nexus-msg-bubble">${_sanitize(msg.text)}</div>`;
-      msgs.appendChild(el);
-      _scrollToBottom();
-      return;
-    }
+    if (msg.role === 'user') {
+      el.className = 'nexus-msg nexus-user';
+      el.innerHTML =
+        '<div class="nexus-msg-avatar" aria-hidden="true">' + _iconUser() + '</div>' +
+        '<div class="nexus-msg-wrap">' +
+          '<div class="nexus-msg-bubble">' + _formatarTexto(msg.text) + '</div>' +
+          (msg.time ? '<div class="nexus-msg-time">' + _escapeHtml(msg.time) + '</div>' : '') +
+        '</div>';
 
-    const isUser  = msg.role === 'user';
-    const wrapper = document.createElement('div');
-    wrapper.className = `nexus-msg ${isUser ? 'nexus-user' : 'nexus-bot'}`;
+    } else if (msg.role === 'bot') {
+      el.className = 'nexus-msg nexus-bot';
+      el.innerHTML =
+        '<div class="nexus-msg-avatar" aria-hidden="true">' + _iconBot() + '</div>' +
+        '<div class="nexus-msg-wrap">' +
+          '<div class="nexus-msg-bubble">' +
+            _formatarTexto(msg.text) +
+            _renderRodape(msg.rodape) +
+          '</div>' +
+          (msg.time ? '<div class="nexus-msg-time">' + _escapeHtml(msg.time) + '</div>' : '') +
+        '</div>';
 
-    if (isUser) {
-      wrapper.innerHTML = `
-        <div>
-          <div class="nexus-msg-bubble">${_sanitize(msg.text)}</div>
-          <div class="nexus-msg-time">${time}</div>
-        </div>
-        <div class="nexus-msg-avatar">${SVG.user}</div>
-      `;
     } else {
-      // _sanitize escapa HTML, depois converte \n → <br>
-      const textoBot = _sanitize(msg.text).replace(/\n/g, '<br>');
-      wrapper.innerHTML = `
-        <div class="nexus-msg-avatar">${SVG.bot}</div>
-        <div>
-          <div class="nexus-msg-bubble">${textoBot}</div>
-          <div class="nexus-msg-time">${time}</div>
-        </div>
-      `;
+      el.className = 'nexus-msg nexus-system';
+      el.innerHTML =
+        '<div class="nexus-msg-bubble">' + _formatarTexto(msg.text) + '</div>';
     }
 
-    msgs.appendChild(wrapper);
-    _scrollToBottom();
+    container.appendChild(el);
+    _scrollToBottom(container);
   }
 
-  /* ── FIX 10: INDICADOR DE DISCIPLINA ATIVA ───────────────── */
+  function _scrollToBottom(container) {
+    requestAnimationFrame(function () {
+      container.scrollTop = container.scrollHeight;
+    });
+  }
 
-  /**
-   * Atualiza o indicador de disciplina no header do chat.
-   * Chamado por ia.js sempre que a disciplina muda.
-   *
-   * @param {string|null} nomeDisc — nome da disciplina ou null
-   */
-  function atualizarDiscAtiva(nomeDisc) {
-    const bar   = document.getElementById('nexus-disc-bar');
-    const label = document.getElementById('nexus-disc-label');
+  /* ══════════════════════════════════════════════════════════
+     TYPING INDICATOR
+  ══════════════════════════════════════════════════════════ */
+
+  function showTyping() {
+    var el = document.getElementById('nexus-typing');
+    var container = document.getElementById('nexus-messages');
+    if (!el) return;
+    el.classList.add('nexus-visible');
+    if (container) {
+      container.appendChild(el);
+      _scrollToBottom(container);
+    }
+  }
+
+  function hideTyping() {
+    var el = document.getElementById('nexus-typing');
+    if (!el) return;
+    el.classList.remove('nexus-visible');
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     CHIPS DE SUGESTÃO
+  ══════════════════════════════════════════════════════════ */
+
+  function mostrarSugestoes(chips, onClick) {
+    var container = document.getElementById('nexus-messages');
+    if (!container) return;
+    var anterior = container.querySelector('.nexus-sugestoes');
+    if (anterior) anterior.remove();
+
+    if (!chips || !chips.length) return;
+
+    var wrap = document.createElement('div');
+    wrap.className = 'nexus-sugestoes';
+
+    chips.forEach(function (chip) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+
+      var classes = ['nexus-sugestao-chip'];
+      if (chip.tipo === 'disc')     classes.push('nexus-sugestao-chip--disc');
+      if (chip.tipo === 'disc-cmd') classes.push('nexus-sugestao-chip--disc', 'nexus-sugestao-chip--disc-cmd');
+      btn.className = classes.join(' ');
+
+      btn.textContent = chip.label;
+      btn.setAttribute('aria-label', 'Sugestão: ' + chip.label);
+
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        wrap.remove();
+        if (typeof onClick === 'function') onClick(chip.cmd || chip.label);
+      });
+
+      wrap.appendChild(btn);
+    });
+
+    container.appendChild(wrap);
+    _scrollToBottom(container);
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     BARRA DE DISCIPLINA ATIVA
+  ══════════════════════════════════════════════════════════ */
+
+  function atualizarDiscAtiva(apelido) {
+    var bar   = document.getElementById('nexus-disc-bar');
+    var label = document.getElementById('nexus-disc-label');
     if (!bar || !label) return;
 
-    if (nomeDisc) {
-      label.textContent = nomeDisc;
+    if (apelido) {
+      label.textContent = apelido;
       bar.classList.add('nexus-disc-ativa');
     } else {
-      label.textContent = 'Sem disciplina ativa';
+      label.textContent = 'nenhuma disciplina selecionada';
       bar.classList.remove('nexus-disc-ativa');
     }
   }
 
-  /* ── FIX 11: SUGESTÕES CLICÁVEIS ─────────────────────────── */
+  /* ══════════════════════════════════════════════════════════
+     CONTROLE DO PAINEL (abrir / fechar / toggle)
+  ══════════════════════════════════════════════════════════ */
 
-  /**
-   * Renderiza chips de sugestão clicáveis abaixo do histórico.
-   * Remove sugestões anteriores antes de adicionar novas.
-   *
-   * UX-4: aceita array de strings OU objetos { label, cmd, tipo }.
-   * Quando tipo === 'disc', o chip recebe aparência de comando /disc.
-   *
-   * @param {(string|{label:string, cmd:string, tipo?:string})[]} sugestoes
-   * @param {(texto: string) => void} onSugestaoClick
-   */
-  function mostrarSugestoes(sugestoes, onSugestaoClick) {
-    const msgs = document.getElementById('nexus-messages');
-    if (!msgs || !sugestoes.length) return;
+  function _setPainelAberto(aberto) {
+    var fab   = document.getElementById('nexus-fab');
+    var panel = document.getElementById('nexus-panel');
+    if (!fab || !panel) return;
 
-    // Remove conjunto anterior de sugestões
-    const anterior = msgs.querySelector('.nexus-sugestoes');
-    if (anterior) anterior.remove();
+    if (aberto) {
+      panel.classList.add('nexus-open');
+      fab.classList.add('nexus-active');
+      fab.setAttribute('aria-expanded', 'true');
 
-    const container = document.createElement('div');
-    container.className = 'nexus-sugestoes';
+      var input = document.getElementById('nexus-input');
+      if (input) setTimeout(function () { input.focus(); }, 260);
 
-    sugestoes.forEach(function (item) {
-      // Suporta string simples ou objeto {label, cmd, tipo}
-      const label = typeof item === 'string' ? item : item.label;
-      const cmd   = typeof item === 'string' ? item : (item.cmd || item.label);
-      const tipo  = typeof item === 'string' ? null  : (item.tipo || null);
-
-      const btn = document.createElement('button');
-      btn.className = 'nexus-sugestao-chip' + (tipo === 'disc' ? ' nexus-sugestao-chip--disc' : '');
-      btn.textContent = label;
-      btn.setAttribute('aria-label', tipo === 'disc' ? 'Selecionar disciplina: ' + label : 'Perguntar: ' + label);
-      btn.addEventListener('click', function (e) {
-        // stopPropagation evita que o listener global de "clique fora"
-        // detecte o target como fora do painel após o container.remove().
-        e.stopPropagation();
-        container.remove();
-        if (typeof onSugestaoClick === 'function') {
-          onSugestaoClick(cmd);
-        }
-      });
-      container.appendChild(btn);
-    });
-
-    msgs.appendChild(container);
-    _scrollToBottom();
+    } else {
+      panel.classList.remove('nexus-open');
+      fab.classList.remove('nexus-active');
+      fab.setAttribute('aria-expanded', 'false');
+    }
   }
 
-  /* ── TYPING INDICATOR ────────────────────────────────────── */
-  function showTyping() {
-    const el   = document.getElementById('nexus-typing');
-    const msgs = document.getElementById('nexus-messages');
-    if (!el || !msgs) return;
-    msgs.appendChild(el);
-    el.classList.add('nexus-visible');
-    _scrollToBottom();
-  }
-
-  function hideTyping() {
-    const el = document.getElementById('nexus-typing');
-    if (el) el.classList.remove('nexus-visible');
-  }
-
-  /* ── ABRIR / FECHAR / ALTERNAR ───────────────────────────── */
-  let _isOpen = false;
-
-  function open() {
-    if (_isOpen) return;
-    _isOpen = true;
-    const panel = document.getElementById('nexus-panel');
-    const fab   = document.getElementById('nexus-fab');
-    if (!panel || !fab) return;
-    panel.classList.add('nexus-open');
-    fab.classList.add('nexus-active');
-    fab.setAttribute('aria-label', 'Fechar Assistente Nexus');
-    setTimeout(() => {
-      const input = document.getElementById('nexus-input');
-      if (input) input.focus();
-    }, 280);
-  }
-
-  function close() {
-    if (!_isOpen) return;
-    _isOpen = false;
-    const panel = document.getElementById('nexus-panel');
-    const fab   = document.getElementById('nexus-fab');
-    if (!panel || !fab) return;
-    panel.classList.remove('nexus-open');
-    fab.classList.remove('nexus-active');
-    fab.setAttribute('aria-label', 'Abrir Assistente Nexus');
-  }
-
+  function open()   { _setPainelAberto(true);  }
+  function close()  { _setPainelAberto(false); }
   function toggle() {
-    _isOpen ? close() : open();
+    var panel = document.getElementById('nexus-panel');
+    if (!panel) return;
+    _setPainelAberto(!panel.classList.contains('nexus-open'));
   }
 
-  function isOpen() {
-    return _isOpen;
+  /* ══════════════════════════════════════════════════════════
+     PATCH scroll-isolado
+     Captura wheel e touchmove no painel para impedir que o
+     scroll vaze para a página quando o mouse está sobre o modal.
+  ══════════════════════════════════════════════════════════ */
+  function _bindScrollIsolado(panel) {
+    // wheel — desktop
+    panel.addEventListener('wheel', function (e) {
+      var messages = document.getElementById('nexus-messages');
+      if (!messages) return;
+
+      var atTop    = messages.scrollTop === 0;
+      var atBottom = messages.scrollTop + messages.clientHeight >= messages.scrollHeight - 1;
+
+      // Bloqueia só se o scroll interno não tiver mais para onde ir nessa direção
+      var scrollingUp   = e.deltaY < 0;
+      var scrollingDown = e.deltaY > 0;
+
+      if ((scrollingUp && atTop) || (scrollingDown && atBottom)) {
+        e.preventDefault();
+      }
+
+      // Em todos os outros casos deixa o #nexus-messages scrollar normalmente
+      // mas para a propagação para a página
+      e.stopPropagation();
+    }, { passive: false });
+
+    // touchmove — mobile
+    var _touchStartY = 0;
+    panel.addEventListener('touchstart', function (e) {
+      _touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    panel.addEventListener('touchmove', function (e) {
+      var messages = document.getElementById('nexus-messages');
+      if (!messages) return;
+
+      var deltaY    = _touchStartY - e.touches[0].clientY;
+      var atTop     = messages.scrollTop === 0;
+      var atBottom  = messages.scrollTop + messages.clientHeight >= messages.scrollHeight - 1;
+
+      if ((deltaY < 0 && atTop) || (deltaY > 0 && atBottom)) {
+        e.preventDefault();
+      }
+      e.stopPropagation();
+    }, { passive: false });
   }
 
-  /* ── AUTO-RESIZE TEXTAREA ────────────────────────────────── */
-  function _autoResize(textarea) {
-    textarea.style.height = 'auto';
-    textarea.style.height = Math.min(textarea.scrollHeight, 100) + 'px';
-  }
+  /* ══════════════════════════════════════════════════════════
+     EVENTOS DO INPUT
+  ══════════════════════════════════════════════════════════ */
 
-  /* ── INICIALIZAÇÃO ───────────────────────────────────────── */
+  function _bindInput() {
+    var input   = document.getElementById('nexus-input');
+    var sendBtn = document.getElementById('nexus-send');
+    if (!input || !sendBtn) return;
 
-  /**
-   * Monta o DOM e vincula os eventos de UI.
-   * @param {{ onSend: (text: string) => void, onReset?: () => void }} callbacks
-   */
-  function init(callbacks) {
-    if (document.getElementById('nexus-fab')) return;
-
-    _buildUI();
-
-    const fab      = document.getElementById('nexus-fab');
-    const closeBtn = document.getElementById('nexus-close');
-    const resetBtn = document.getElementById('nexus-reset');
-    const sendBtn  = document.getElementById('nexus-send');
-    const input    = document.getElementById('nexus-input');
-
-    if (fab)      fab.addEventListener('click', toggle);
-    if (closeBtn) closeBtn.addEventListener('click', close);
-
-    if (resetBtn) {
-      resetBtn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        if (typeof callbacks.onReset === 'function') callbacks.onReset();
-      });
-    }
-
-    if (sendBtn) {
-      sendBtn.addEventListener('click', () => _submitInput(input, callbacks.onSend));
-    }
-
-    if (input) {
-      input.addEventListener('input', function () { _autoResize(this); });
-      input.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          _submitInput(this, callbacks.onSend);
-        }
-      });
-    }
-
-    // Fecha com Escape
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && _isOpen) close();
+    input.addEventListener('input', function () {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 100) + 'px';
     });
 
-    // Clique fora fecha (apenas desktop)
-    document.addEventListener('click', function (e) {
-      if (!_isOpen) return;
-      const panel = document.getElementById('nexus-panel');
-      const fab_  = document.getElementById('nexus-fab');
-      if (panel && fab_ && !panel.contains(e.target) && !fab_.contains(e.target)) {
-        close();
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        _enviar();
       }
     });
+
+    sendBtn.addEventListener('click', _enviar);
   }
 
-  function _submitInput(input, onSend) {
+  function _enviar() {
+    var input = document.getElementById('nexus-input');
     if (!input) return;
-    const text = input.value.trim();
-    if (!text) return;
+    var texto = input.value.trim();
+    if (!texto) return;
     input.value = '';
     input.style.height = 'auto';
-    input.focus();
-    if (typeof onSend === 'function') onSend(text);
+    input.classList.remove('nexus-input--cmd');
+    if (typeof _onSend === 'function') _onSend(texto);
   }
 
-  /* ── API PÚBLICA ─────────────────────────────────────────── */
+  /* ══════════════════════════════════════════════════════════
+     EVENTO DO BOTÃO RESET
+  ══════════════════════════════════════════════════════════ */
+
+  function _bindReset() {
+    var btn = document.getElementById('nexus-reset');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      if (typeof _onReset === 'function') _onReset();
+    });
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     INICIALIZAÇÃO PÚBLICA — NexusUI.init()
+     PATCH fechar-só-pelo-botão: _bindClickFora() removido.
+     O painel só fecha via FAB (toggle) ou botão #nexus-close.
+  ══════════════════════════════════════════════════════════ */
+
+  function init(opts) {
+    opts     = opts    || {};
+    _onSend  = opts.onSend  || null;
+    _onReset = opts.onReset || null;
+
+    if (document.getElementById('nexus-fab')) return;
+
+    var fab   = _criarFAB();
+    var panel = _criarPainel();
+    document.body.appendChild(fab);
+    document.body.appendChild(panel);
+
+    // FAB abre/fecha (toggle)
+    fab.addEventListener('click', toggle);
+
+    // Botão X fecha
+    document.getElementById('nexus-close').addEventListener('click', close);
+
+    _bindInput();
+    _bindReset();
+    _bindScrollIsolado(panel);   // PATCH scroll-isolado
+    // _bindClickFora() — REMOVIDO (PATCH fechar-só-pelo-botão)
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     API PÚBLICA
+  ══════════════════════════════════════════════════════════ */
+
   window.NexusUI = {
-    init,
-    open,
-    close,
-    toggle,
-    isOpen,
-    renderMessage,
-    showTyping,
-    hideTyping,
-    atualizarDiscAtiva,
-    mostrarSugestoes,
+    init:               init,
+    open:               open,
+    close:              close,
+    toggle:             toggle,
+    renderMessage:      renderMessage,
+    showTyping:         showTyping,
+    hideTyping:         hideTyping,
+    mostrarSugestoes:   mostrarSugestoes,
+    atualizarDiscAtiva: atualizarDiscAtiva,
   };
 
 }());

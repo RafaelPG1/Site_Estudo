@@ -1,35 +1,21 @@
 /* =============================================
-   NEXUS STUDY — shared/css/audio/audio-btns.css
-   Botões flutuantes de áudio (SFX + Música)
-
-   ESTRUTURA
-   ─────────────────────────────────────────────
-   SEÇÃO 1 — BASE COMPARTILHADA (.abtn)
-   SEÇÃO 2 — BOTÃO SFX (#audio-btn-global + hint)
-   SEÇÃO 3 — BOTÃO MÚSICA (#music-btn-global + tooltips)
-   SEÇÃO 4 — RESPONSIVE
-
-   USO
-   ─────────────────────────────────────────────
-   <link rel="stylesheet" href="shared/css/audio/audio-btns.css">
-
-   DEPENDÊNCIA
-   ─────────────────────────────────────────────
-   sound.css deve ser carregado antes deste arquivo
-   (fornece os tokens --snd-* usados pelo modal).
+   audio-btns.css — PATCH pilha-botoes
+   
+   Pilha de baixo pra cima:
+     24px  → IA (nexus-fab)        44px de altura
+     90px  → SFX (audio-btn)       44px de altura  (24 + 44 + 22 gap)
+     152px → Música (music-btn)    44px de altura  (90 + 44 + 18 gap)
    ============================================= */
 
 
 /* ═══════════════════════════════════════════════
    SEÇÃO 1 — BASE COMPARTILHADA
-   Estrutura visual comum aos dois botões.
-   Mexer aqui afeta AMBOS simultaneamente.
 ═══════════════════════════════════════════════ */
 
 .abtn {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
+  bottom: 90px;   /* era 24px — agora sobe para ficar acima do FAB da IA */
+  right: 28px;
   z-index: 9999;
   width: 44px;
   height: 44px;
@@ -141,22 +127,12 @@
 
 /* ═══════════════════════════════════════════════
    SEÇÃO 2 — BOTÃO SFX
-   Estilos exclusivos do #audio-btn-global.
-   Mexer aqui NÃO afeta o botão de música.
 ═══════════════════════════════════════════════ */
-
-/* ─────────────────────────────────────────────
-   HINT DE DESBLOQUEIO DO AUDIOCONTEXT
-   Badge discreto que aparece antes do primeiro
-   gesto do usuário (política de autoplay).
-───────────────────────────────────────────── */
 
 #abtn-unlock-hint {
   position: fixed;
-  bottom: 24px;                          /* alinha verticalmente com o botão SFX */
-  right: calc(24px + 44px + 12px);       /* à esquerda do botão: right do botão + largura + gap */
-  /* remova bottom: calc(...) que estava acima */
-  
+  bottom: 90px;                          /* alinha com o botão SFX */
+  right: calc(28px + 44px + 12px);
   background: rgba(0, 18, 36, 0.92);
   border: 1px solid rgba(0, 200, 255, 0.35);
   border-radius: 8px;
@@ -173,7 +149,7 @@
   z-index: 9998;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
   opacity: 0;
-  transform: translateX(4px);            /* animação vem da direita agora */
+  transform: translateX(4px);
   transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
@@ -204,23 +180,13 @@
 
 /* ═══════════════════════════════════════════════
    SEÇÃO 3 — BOTÃO MÚSICA
-   Estilos exclusivos do #music-btn-global.
-   Mexer aqui NÃO afeta o botão SFX.
+   Fórmula: bottom SFX (90) + altura .abtn (44) + gap (18) = 152px
 ═══════════════════════════════════════════════ */
 
-/* Posicionamento — seletor de ID garante precedência sobre .abtn.
-   Fórmula: bottom do .abtn (24px) + altura do .abtn (44px) + gap (10px) = 78px */
 #music-btn-global {
-  bottom: 85px;  /* era 78px — aumentei o gap de 10 para 20px */
-  right: 24px;
+  bottom: 152px;
+  right: 28px;
 }
-
-/* ─────────────────────────────────────────────
-   TOOLTIPS DE IDENTIDADE
-   Aparecem no hover para distinguir os dois botões.
-   O tooltip do SFX só aparece quando o botão de
-   música existe na página (body:has).
-───────────────────────────────────────────── */
 
 .mbtn::after {
   content: 'música';
@@ -275,24 +241,25 @@ body:has(#music-btn-global) #audio-btn-global:hover::after {
 
 /* ═══════════════════════════════════════════════
    SEÇÃO 4 — RESPONSIVE
-   Ajustes mobile para ambos os botões.
-   Se alterar o bottom do SFX, ajuste o do música
-   também (fórmula: base + 44 + 10).
+   Fórmula mobile: base 16px
+     SFX    → 16px  (base)           ← .abtn
+     Música → 16 + 44 + 14 = 74px   ← #music-btn-global
+   IA FAB permanece em 16px no ia.css (mobile).
 ═══════════════════════════════════════════════ */
 
 @media (max-width: 480px) {
   .abtn {
-    bottom: 16px;
-    right: 16px;
+    bottom: 74px;
+    right: 20px;
   }
 
   #abtn-unlock-hint {
-    bottom: 16px;
-    right: calc(16px + 44px + 12px);   /* 72px */
+    bottom: 74px;
+    right: calc(20px + 44px + 12px);
   }
 
   #music-btn-global {
-    bottom: 75px;  /* 16 base + 44 altura + 10 gap */
-    right: 16px;
+    bottom: 136px;
+    right: 20px;
   }
 }

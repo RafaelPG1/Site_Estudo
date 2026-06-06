@@ -1,16 +1,3 @@
-/* ============================================================
-   ASSISTENTE NEXUS — ia.css
-   Isolado: todos os seletores prefixados com #nexus-* ou .nexus-*
-   Sem interferência no resto do sistema.
-
-   CORREÇÃO CSS: estilos das features (FIX 10/11/13/8) que antes
-   eram injetados via _injetarEstilos() em ia-ui.js foram movidos
-   para cá e reescritos usando as variáveis canônicas do tema
-   (--nx-*). Isso elimina o uso de variáveis inexistentes como
-   --nexus-primary, --nexus-surface, --nexus-text-muted que
-   causavam fallbacks incorretos e visual inconsistente.
-   ============================================================ */
-
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 /* ── VARIÁVEIS ─────────────────────────────────────────────── */
@@ -36,96 +23,199 @@
   --nx-z-panel:      9999;
   --nx-transition:   0.22s cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* Cores das features (FIX 10/11/13) — integradas ao tema */
   --nx-disc-active-bg:   rgba(0, 200, 255, 0.06);
   --nx-disc-active-text: var(--nx-accent);
   --nx-chip-border:      var(--nx-border-hover);
   --nx-chip-text:        var(--nx-accent);
   --nx-chip-hover-bg:    rgba(0, 200, 255, 0.14);
   --nx-feedback-hover:   rgba(255, 255, 255, 0.06);
+
+  --nx-cmd-color:        #ffb347;
+  --nx-cmd-color-dim:    rgba(255, 179, 71, 0.10);
+  --nx-cmd-color-border: rgba(255, 179, 71, 0.40);
+  --nx-cmd-color-hover:  rgba(255, 179, 71, 0.18);
+  --nx-cmd-color-glow:   rgba(255, 179, 71, 0.25);
 }
 
-/* ── BOTÃO FLUTUANTE ────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════
+   BOTÃO FLUTUANTE DA IA — redesenhado para parear com .abtn
+   Mesmo tamanho 44×44, mesmo right 28px, posição base 24px.
+   Visual: hexágono/círculo minimalista dark com acento ciano.
+   ══════════════════════════════════════════════════════════════ */
+
 #nexus-fab {
   position: fixed;
-  bottom: 28px;
+  bottom: 24px;
   right: 28px;
   z-index: var(--nx-z-btn);
-  width: 56px;
-  height: 56px;
+
+  /* TAMANHO IGUAL AOS BOTÕES DE ÁUDIO */
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  border: 1px solid var(--nx-border-hover);
-  background: var(--nx-bg);
+
+  /* Sem border aqui — a borda é feita via ::before e .body para consistência */
+  border: none;
+  background: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.5), 0 0 0 1px var(--nx-border), inset 0 1px 0 rgba(255,255,255,0.05);
-  transition: transform var(--nx-transition), box-shadow var(--nx-transition), border-color var(--nx-transition);
   outline: none;
+  flex-shrink: 0;
   -webkit-tap-highlight-color: transparent;
+
+  /* Sem animation padrão — os efeitos são todos via pseudo-elementos abaixo */
 }
 
+/* Anel externo — eco visual */
 #nexus-fab::before {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 200, 255, 0.13);
+  transition: border-color 0.5s, transform 0.4s;
+  pointer-events: none;
+}
+
+/* Anel médio */
+#nexus-fab::after {
   content: '';
   position: absolute;
   inset: -1px;
   border-radius: 50%;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0%,
-    var(--nx-accent) 30%,
-    transparent 60%,
-    var(--nx-accent) 90%,
-    transparent 100%
-  );
-  opacity: 0;
-  transition: opacity var(--nx-transition);
-  animation: nexus-spin 3s linear infinite;
-  mask: radial-gradient(farthest-side, transparent calc(100% - 2px), white calc(100% - 2px));
-  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), white calc(100% - 2px));
+  border: 1px solid rgba(0, 200, 255, 0.20);
+  transition: border-color 0.5s;
+  pointer-events: none;
 }
 
-#nexus-fab:hover::before,
-#nexus-fab.nexus-active::before {
-  opacity: 1;
+/* Corpo principal do botão */
+#nexus-fab-body {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(6, 18, 36, 0.88);
+  border: 1px solid rgba(0, 200, 255, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.5s, background 0.5s, transform 0.12s;
 }
 
-#nexus-fab:hover {
-  transform: translateY(-3px) scale(1.06);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 20px var(--nx-accent-glow), 0 0 0 1px var(--nx-border-hover);
+/* Linha de reflexo no topo — igual ao .abtn .body::before */
+#nexus-fab-body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 12%;
+  right: 12%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(180, 240, 255, 0.28), transparent);
 }
 
-#nexus-fab:active {
-  transform: translateY(-1px) scale(0.98);
-}
-
-#nexus-fab-icon {
-  width: 26px;
-  height: 26px;
-  transition: transform var(--nx-transition), opacity var(--nx-transition);
+/* Ícone IA — wrap */
+#nexus-fab-icon-wrap {
   position: relative;
-  z-index: 1;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+/* SVG do ícone */
+#nexus-fab-icon {
+  width: 18px;
+  height: 18px;
+  color: #00c8ff;
+  stroke: #00c8ff;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s;
+}
+
+/* Estados */
+#nexus-fab:hover::before {
+  border-color: rgba(0, 200, 255, 0.35);
+  transform: scale(1.07);
+}
+
+#nexus-fab:hover::after {
+  border-color: rgba(0, 200, 255, 0.42);
+}
+
+#nexus-fab:hover #nexus-fab-body {
+  border-color: rgba(0, 200, 255, 0.42);
+  background: rgba(6, 18, 36, 0.94);
+}
+
+#nexus-fab:hover #nexus-fab-icon {
+  transform: scale(1.12);
+}
+
+#nexus-fab:active #nexus-fab-body {
+  transform: scale(0.92);
+}
+
+/* Estado aberto: ícone gira para X */
 #nexus-fab.nexus-active #nexus-fab-icon {
-  transform: rotate(90deg) scale(0.85);
-  opacity: 0.7;
+  transform: rotate(45deg) scale(0.88);
+  opacity: 0.65;
 }
 
-/* Pulse quando fechado */
-@keyframes nexus-pulse {
-  0%, 100% { box-shadow: 0 4px 24px rgba(0,0,0,0.5), 0 0 0 1px var(--nx-border); }
-  50%       { box-shadow: 0 4px 24px rgba(0,0,0,0.5), 0 0 16px var(--nx-accent-glow), 0 0 0 1px var(--nx-border-hover); }
+/* Pulse sutil quando fechado — mesmo estilo do .abtn */
+@keyframes nexus-fab-idle {
+  0%, 100% { opacity: 0.85; }
+  50%       { opacity: 1; }
 }
 
-@keyframes nexus-spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+#nexus-fab:not(.nexus-active) #nexus-fab-body {
+  animation: nexus-fab-idle 3s ease-in-out infinite;
 }
 
-#nexus-fab:not(.nexus-active) {
-  animation: nexus-pulse 3s ease-in-out infinite;
+/* Ripple ao abrir */
+#nexus-fab-ripple {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 200, 255, 0.5);
+  opacity: 0;
+  pointer-events: none;
+}
+
+@keyframes nexus-fab-pulse {
+  0%   { transform: scale(0.88); opacity: 0.75; }
+  100% { transform: scale(1.65); opacity: 0; }
+}
+
+#nexus-fab.nexus-active #nexus-fab-ripple {
+  animation: nexus-fab-pulse 0.55s ease-out forwards;
+}
+
+/* Tooltip "IA" ao hover — igual ao ::after dos botões de música */
+#nexus-fab .nexus-fab-label {
+  position: absolute;
+  right: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%) translateX(4px);
+  background: rgba(0, 16, 28, 0.92);
+  border: 1px solid rgba(0, 200, 255, 0.25);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 10px;
+  font-family: var(--nx-font-mono);
+  color: rgba(0, 210, 255, 0.85);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  letter-spacing: 0.04em;
+}
+
+#nexus-fab:hover .nexus-fab-label {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
 }
 
 /* ── PAINEL DO CHAT ─────────────────────────────────────────── */
@@ -147,7 +237,6 @@
   overflow: hidden;
   font-family: var(--nx-font-ui);
 
-  /* Estado inicial: escondido */
   opacity: 0;
   transform: translateY(18px) scale(0.97);
   pointer-events: none;
@@ -162,7 +251,6 @@
   pointer-events: all;
 }
 
-/* Linha decorativa topo */
 #nexus-panel::before {
   content: '';
   position: absolute;
@@ -270,13 +358,7 @@
   height: 12px;
 }
 
-/* ── BARRA DE DISCIPLINA ATIVA (FIX 10) ────────────────────── */
-/*
- * CORREÇÃO CSS: reescrita usando variáveis --nx-* do tema.
- * Antes usava --nexus-surface e --nexus-primary que não existem,
- * causando fallbacks para valores genéricos (#f5f5f5, #1a73e8)
- * incompatíveis com o tema escuro.
- */
+/* ── BARRA DE DISCIPLINA ATIVA ──────────────────────────────── */
 #nexus-disc-bar {
   display: flex;
   align-items: center;
@@ -308,7 +390,6 @@
   color: var(--nx-disc-active-text);
 }
 
-/* Ícone de livro antes do label quando ativa */
 #nexus-disc-bar.nexus-disc-ativa::before {
   content: '📚';
   margin-right: 6px;
@@ -328,7 +409,6 @@
   scroll-behavior: smooth;
 }
 
-/* Scrollbar customizada */
 #nexus-messages::-webkit-scrollbar       { width: 4px; }
 #nexus-messages::-webkit-scrollbar-track { background: transparent; }
 #nexus-messages::-webkit-scrollbar-thumb {
@@ -354,14 +434,15 @@
 }
 
 .nexus-msg-avatar {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 10px;
+  align-self: flex-start;
 }
 
 .nexus-msg-bubble {
@@ -424,7 +505,7 @@
   border-bottom-left-radius: 3px;
 }
 
-/* ── MENSAGEM DE SISTEMA ────────────────────────────────────── */
+/* ── MENSAGEM SISTEMA ───────────────────────────────────────── */
 .nexus-msg.nexus-system {
   align-self: center;
   max-width: 100%;
@@ -441,11 +522,7 @@
   padding: 7px 14px;
 }
 
-/* ── BANNER DE RESTAURAÇÃO (FIX 8) ─────────────────────────── */
-/*
- * CORREÇÃO CSS: antes usava --nexus-text-muted (inexistente).
- * Agora usa --nx-text-dim do tema canônico.
- */
+/* ── BANNER RESTAURAÇÃO ─────────────────────────────────────── */
 .nexus-restore-banner .nexus-msg-bubble {
   font-size: 10px;
   color: var(--nx-text-dim);
@@ -461,14 +538,12 @@
   animation: nexus-msg-in 0.22s ease both;
 }
 
-#nexus-typing.nexus-visible {
-  display: flex;
-}
+#nexus-typing.nexus-visible { display: flex; }
 
 #nexus-typing .nexus-msg-avatar {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   background: rgba(255, 179, 71, 0.08);
   border: 1px solid rgba(255, 179, 71, 0.20);
   color: #ffb347;
@@ -531,7 +606,8 @@
   resize: none;
   min-height: 40px;
   max-height: 100px;
-  transition: border-color var(--nx-transition), box-shadow var(--nx-transition);
+  transition: border-color var(--nx-transition), box-shadow var(--nx-transition),
+              color var(--nx-transition), caret-color var(--nx-transition);
   line-height: 1.4;
   overflow-y: auto;
 }
@@ -551,6 +627,22 @@
   cursor: not-allowed;
 }
 
+#nexus-input.nexus-input--cmd {
+  border-color: var(--nx-cmd-color-border);
+  box-shadow: 0 0 0 3px var(--nx-cmd-color-dim);
+  color: var(--nx-cmd-color);
+  caret-color: var(--nx-cmd-color);
+}
+
+#nexus-input.nexus-input--cmd::placeholder {
+  color: rgba(255, 179, 71, 0.45);
+}
+
+#nexus-input.nexus-input--cmd:focus {
+  border-color: var(--nx-cmd-color);
+  box-shadow: 0 0 0 3px var(--nx-cmd-color-dim);
+}
+
 #nexus-send {
   width: 40px;
   height: 40px;
@@ -563,7 +655,9 @@
   justify-content: center;
   flex-shrink: 0;
   color: var(--nx-accent);
-  transition: background var(--nx-transition), transform var(--nx-transition), box-shadow var(--nx-transition);
+  transition: background var(--nx-transition), transform var(--nx-transition),
+              box-shadow var(--nx-transition), border-color var(--nx-transition),
+              color var(--nx-transition);
   outline: none;
 }
 
@@ -573,9 +667,7 @@
   transform: translateY(-1px);
 }
 
-#nexus-send:active {
-  transform: translateY(0) scale(0.95);
-}
+#nexus-send:active { transform: translateY(0) scale(0.95); }
 
 #nexus-send:disabled {
   opacity: 0.4;
@@ -584,9 +676,18 @@
   box-shadow: none;
 }
 
-#nexus-send svg {
-  width: 16px;
-  height: 16px;
+#nexus-send svg { width: 16px; height: 16px; }
+
+#nexus-input.nexus-input--cmd ~ #nexus-send,
+#nexus-footer:has(#nexus-input.nexus-input--cmd) #nexus-send {
+  border-color: var(--nx-cmd-color-border);
+  background: var(--nx-cmd-color-dim);
+  color: var(--nx-cmd-color);
+}
+
+#nexus-footer:has(#nexus-input.nexus-input--cmd) #nexus-send:hover {
+  background: var(--nx-cmd-color-hover);
+  box-shadow: 0 0 12px var(--nx-cmd-color-glow);
 }
 
 #nexus-hint {
@@ -596,16 +697,14 @@
   margin-top: 7px;
   text-align: center;
   letter-spacing: 0.03em;
+  transition: color var(--nx-transition);
 }
 
-/* ── FEATURES ADICIONAIS ────────────────────────────────────── */
-/*
- * CORREÇÃO CSS: seção unificada para FIX 10 / 11 / 13.
- * Antes injetada via JS com variáveis de tema erradas.
- * Agora integrada aqui com variáveis --nx-* canônicas.
- */
+#nexus-footer:has(#nexus-input.nexus-input--cmd) #nexus-hint {
+  color: rgba(255, 179, 71, 0.50);
+}
 
-/* Chips de sugestão (FIX 11) */
+/* ── CHIPS DE SUGESTÃO ──────────────────────────────────────── */
 .nexus-sugestoes {
   display: flex;
   flex-wrap: wrap;
@@ -635,7 +734,7 @@
   outline: none;
 }
 
-/* Feedback 👍/👎 (FIX 13) */
+/* ── FEEDBACK ───────────────────────────────────────────────── */
 .nexus-feedback {
   display: flex;
   align-items: center;
@@ -645,9 +744,7 @@
   transition: opacity var(--nx-transition);
 }
 
-.nexus-feedback:hover {
-  opacity: 1;
-}
+.nexus-feedback:hover { opacity: 1; }
 
 .nexus-feedback-btn {
   cursor: pointer;
@@ -673,9 +770,7 @@
   border-color: var(--nx-border-hover);
 }
 
-.nexus-feedback-btn:disabled {
-  cursor: default;
-}
+.nexus-feedback-btn:disabled { cursor: default; }
 
 .nexus-feedback-label {
   font-family: var(--nx-font-mono);
@@ -696,23 +791,15 @@
     transform: translateY(100%);
   }
 
-  #nexus-panel.nexus-open {
-    transform: translateY(0);
-  }
+  #nexus-panel.nexus-open { transform: translateY(0); }
 
   #nexus-fab {
-    bottom: 20px;
+    bottom: 16px;
     right: 20px;
   }
 }
 
-
-/* ── CHIPS DE COMANDO /disc (UX-4) ─────────────────────────── */
-/*
- * Aparência de comando oficial de terminal — distinta dos chips
- * de sugestão de conteúdo comuns. Usa fonte mono e prefixo visual
- * para comunicar que é um comando executável, não uma pergunta.
- */
+/* ── CHIPS /disc PADRÃO ─────────────────────────────────────── */
 .nexus-sugestao-chip--disc {
   font-family: var(--nx-font-mono);
   font-size: 11px;
@@ -741,7 +828,29 @@
   outline: none;
 }
 
-/* ── BOTÃO RESET (⟳) ───────────────────────────────────────── */
+/* ── CHIPS /disc MODO COMANDO (UX-5) ────────────────────────── */
+.nexus-sugestao-chip--disc-cmd {
+  color: var(--nx-cmd-color);
+  border-color: var(--nx-cmd-color-border);
+  background: var(--nx-cmd-color-dim);
+}
+
+.nexus-sugestao-chip--disc-cmd::before {
+  content: '⌘';
+  margin-right: 5px;
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.nexus-sugestao-chip--disc-cmd:hover,
+.nexus-sugestao-chip--disc-cmd:focus {
+  background: var(--nx-cmd-color-hover);
+  border-color: var(--nx-cmd-color);
+  box-shadow: 0 0 8px var(--nx-cmd-color-glow);
+  outline: none;
+}
+
+/* ── BOTÃO RESET ────────────────────────────────────────────── */
 #nexus-reset {
   width: 28px;
   height: 28px;
@@ -766,11 +875,55 @@
   transform: rotate(-45deg);
 }
 
-#nexus-reset:active {
-  transform: rotate(-180deg);
+#nexus-reset:active { transform: rotate(-180deg); }
+#nexus-reset svg { width: 12px; height: 12px; }
+
+/* ── RODAPÉ RESPOSTA IA ─────────────────────────────────────── */
+.nexus-rodape-ia {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgb(75, 78, 78);
+  gap: 2px;
 }
 
-#nexus-reset svg {
-  width: 12px;
-  height: 12px;
+.nexus-rodape-ia-linha1 {
+  font-family: var(--nx-font-mono);
+  font-size: 10px;
+  color: #6dbf96;
+  line-height: 1.3;
+}
+
+.nexus-rodape-ia-linha2 {
+  font-family: var(--nx-font-mono);
+  font-size: 9.5px;
+  color: #5aaa80;
+  line-height: 1.3;
+}
+
+/* =============================================
+   PATCH POSICIONAMENTO — sobrescreve abaixo
+   ============================================= */
+#nexus-fab {
+  bottom: 24px;
+  right: 28px;
+}
+
+#nexus-panel {
+  bottom: 92px;
+  right: 28px;
+}
+
+@media (max-width: 480px) {
+  #nexus-fab {
+    bottom: 16px;
+    right: 20px;
+  }
+
+  #nexus-panel {
+    bottom: 0;
+    right: 0;
+  }
 }

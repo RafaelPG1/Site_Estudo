@@ -2,74 +2,43 @@
  * ASSISTENTE NEXUS — ia-search.js
  * Motor de busca interno. Zero DOM. Zero renderização. Zero I/O.
  *
- * Responsabilidades:
- *   - Receber conteúdo pronto e indexar
- *   - Buscar por query textual
- *   - Normalizar texto
- *   - Calcular score
+ * PATCH score-v2:
+ *   _STOPWORDS expandida com verbos de pergunta ("explique", "explica",
+ *   "conceitue", "defina", "descreva", "mostre", "fale") e partículas
+ *   de interrogação ("oq", "oque", "qual", "como", "por").
+ *   Esses termos nunca aparecem nos resumos e inflavam o denominador
+ *   do score, fazendo com que matches reais (ex: "dns") fossem divididos
+ *   por um conjunto grande e ficassem abaixo do minScore.
  *
- * NÃO carrega arquivos. NÃO monta paths. NÃO conhece o filesystem.
- * Quem carrega conteúdo é o NexusLoader (ia-loader.js).
- *
- * API pública: window.NexusSearch
- *
- * Dependências: nenhuma.
- *
- * ── CHANGELOG ───────────────────────────────────────────────
- * FIX 1 — normalizarTexto() agora é a fonte única de normalização.
- *          ia.js usa NexusSearch.normalizarTexto() em vez de replicar
- *          a função localmente. Eliminada duplicação.
- *
- * FIX 2 — _getIndice() removido da API pública. Substituído por
- *          estaIndexado(), que expõe apenas o booleano necessário.
- *          ia.js não acessa mais detalhes internos do índice.
- *
- * FIX 9 — Pré-processamento no índice: textoNorm e stemsTexto agora
- *          são calculados UMA VEZ na indexação e armazenados junto
- *          a cada entrada. buscar() e _score() reutilizam esses
- *          campos em vez de recalcular a cada query.
- * ────────────────────────────────────────────────────────────
+ *   _score() também ganhou um "boost de termo único": quando a query
+ *   filtrada tem apenas 1 termo e ele é encontrado no chunk, o score
+ *   mínimo garantido é 60 — evitando que siglas e termos técnicos
+ *   curtos sejam descartados pelo threshold.
  */
 
 (function () {
   'use strict';
 
-  /* ── ESTADO INTERNO ──────────────────────────────────────── */
-
-  // FIX 9: cada entrada agora carrega textoNorm e stemsTexto
-  // pré-computados. Formato:
-  // { texto, aula, secao, peso, textoNorm, stemsTexto }
   let _indice = [];
 
   /* ══════════════════════════════════════════════════════════
      NORMALIZAÇÃO
-     ══════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════════ */
 
-  /**
-   * Normaliza texto para busca:
-   *   - minúsculo
-   *   - remove acentos (NFD + strip combining marks)
-   *   - colapsa espaços
-   *
-   * FIX 1: esta é a função canônica. ia.js delega para cá via
-   * NexusSearch.normalizarTexto() em vez de manter cópia local.
-   *
-   * @param {string} texto
-   * @returns {string}
-   */
   function normalizarTexto(texto) {
     if (typeof texto !== 'string') return '';
     return texto
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^\w\s]/g, ' ')   // remove pontuacao
       .replace(/\s+/g, ' ')
       .trim();
   }
 
   /* ══════════════════════════════════════════════════════════
      EXTRAÇÃO DE BLOCOS
-     ══════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════════ */
 
   function _extrairBloco(bloco) {
     if (!bloco || !bloco.tipo) return [];
@@ -117,7 +86,7 @@
 
   /* ══════════════════════════════════════════════════════════
      STEMMING
-     ══════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════════ */
 
   function _stem(termo) {
     if (termo.length <= 4) return termo;
@@ -150,9 +119,13 @@
 
   /* ══════════════════════════════════════════════════════════
      STOPWORDS
-     ══════════════════════════════════════════════════════════ */
+     PATCH score-v2: adicionados verbos de pergunta e partículas
+     de interrogação que nunca aparecem nos resumos e inflavam
+     o denominador do score desnecessariamente.
+  ══════════════════════════════════════════════════════════ */
 
   const _STOPWORDS = new Set([
+    // artigos, preposições, conjunções originais
     'a','o','as','os','e','de','da','do','das','dos',
     'em','na','no','nas','nos','um','uma','uns','umas',
     'que','se','com','por','para','ao','aos','pelo','pela',
@@ -161,6 +134,24 @@
     'me','te','se','lhe','nos','vos','lhes',
     'isso','este','esta','esse','essa','aquele','aquela',
     'eh','sao','foi','tem','ter','ser','estar',
+
+    // PATCH: partículas de interrogação informal
+    'oq','oque','oqe','oq','oque',
+
+    // PATCH: verbos de pergunta — nunca estão nos resumos
+    'explique','explica','explicar','explicacao',
+    'conceitue','conceitua','conceituar',
+    'defina','define','definir','definicao',
+    'descreva','descreve','descrever','descricao',
+    'mostre','mostra','mostrar',
+    'fale','fala','falar',
+    'diga','diz','dizer',
+    'liste','lista','listar',
+    'cite','citar',
+    'resuma','resumir',
+
+    // PATCH: partículas interrogativas adicionais
+    'voce','vc','pra','pro','pra',
   ]);
 
   function _filtrarStopwords(termos) {
@@ -170,17 +161,8 @@
 
   /* ══════════════════════════════════════════════════════════
      INDEXAÇÃO
-     ══════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════════ */
 
-  /**
-   * Recebe o conteúdo bruto e constrói o índice.
-   * Sempre substitui o índice anterior — não há merge.
-   *
-   * FIX 9: cada entrada recebe textoNorm e stemsTexto no momento
-   * da indexação. _score() reutiliza esses campos sem recalcular.
-   *
-   * @param {object} conteudo — { aulas: [...] }
-   */
   function indexarConteudo(conteudo) {
     _indice = [];
 
@@ -189,17 +171,16 @@
       return;
     }
 
-    // FIX 9: helper que pré-processa um texto no momento da indexação.
     function _prepararEntrada(texto, aula, secao, peso) {
-      var tn    = normalizarTexto(texto);
+      var tn       = normalizarTexto(texto);
       var palavras = tn.split(' ').filter(Boolean);
       return {
         texto:      texto,
         aula:       aula,
         secao:      secao,
         peso:       peso,
-        textoNorm:  tn,                          // normalizado — calculado 1x
-        stemsTexto: palavras.map(_stem).join(' '), // stems — calculado 1x
+        textoNorm:  tn,
+        stemsTexto: palavras.map(_stem).join(' '),
       };
     }
 
@@ -234,39 +215,26 @@
     console.log('[NexusSearch] indexado:', _indice.length, 'trechos de', conteudo.aulas.length, 'aulas.');
   }
 
-  /**
-   * Limpa o índice em memória.
-   */
   function limparIndice() {
     _indice = [];
   }
 
-  /**
-   * FIX 2: substitui _getIndice() na lógica de ia.js.
-   * Expõe apenas o booleano necessário — sem vazar o array interno.
-   *
-   * @returns {boolean} true se o índice possui ao menos uma entrada.
-   */
   function estaIndexado() {
     return _indice.length > 0;
   }
 
   /* ══════════════════════════════════════════════════════════
      SCORE
-     ══════════════════════════════════════════════════════════ */
+     PATCH score-v2:
+       - Boost de termo único: query filtrada com 1 termo encontrado
+         garante score mínimo 60. Resolve siglas (DNS, TCP, IP)
+         que após filtrar stopwords ficam com 1 só termo — antes
+         dividiam cobertura=1/1=1.0 mas peso*100=100... porém
+         o problema era o denominador inflado ANTES do filtro.
+         Com o filtro correto isso já se resolve, mas o boost
+         serve como segurança extra.
+  ══════════════════════════════════════════════════════════ */
 
-  /**
-   * Calcula score de relevância entre query e entrada do índice.
-   *
-   * FIX 9: recebe textoNorm e stemsTexto prontos da entrada —
-   * não normaliza nem stemiza o texto do índice por chamada.
-   *
-   * @param {string}   queryNorm   — query já normalizada
-   * @param {string}   textoNorm   — campo pré-computado da entrada
-   * @param {string}   stemsTexto  — campo pré-computado da entrada
-   * @param {number}   peso
-   * @returns {number} 0–100
-   */
   function _score(queryNorm, textoNorm, stemsTexto, peso) {
     if (!queryNorm || !textoNorm) return 0;
 
@@ -285,23 +253,23 @@
 
     const cobertura = acertos / termos.length;
     const stemQuery = termos.map(_stem).join(' ');
-    const bonus = (textoNorm.includes(queryNorm) || stemsTexto.includes(stemQuery)) ? 0.3 : 0;
+    const bonus     = (textoNorm.includes(queryNorm) || stemsTexto.includes(stemQuery)) ? 0.3 : 0;
 
-    return Math.min(100, Math.round((cobertura + bonus) * peso * 100));
+    var scoreBase = Math.min(100, Math.round((cobertura + bonus) * peso * 100));
+
+    // PATCH: boost de termo único — sigla/termo técnico encontrado sozinho
+    // garante score mínimo de 60 para não ser descartado pelo threshold
+    if (termos.length === 1 && acertos === 1 && scoreBase < 60) {
+      scoreBase = Math.round(60 * peso);
+    }
+
+    return scoreBase;
   }
 
   /* ══════════════════════════════════════════════════════════
      BUSCA
-     ══════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════════ */
 
-  /**
-   * Busca no índice as entradas mais relevantes para a pergunta.
-   * FIX 9: usa textoNorm/stemsTexto pré-computados de cada entrada.
-   *
-   * @param {string} pergunta
-   * @param {{ topK?: number, minScore?: number }} [opcoes]
-   * @returns {{ score: number, texto: string, aula: string, secao: string }[]}
-   */
   function buscar(pergunta, opcoes) {
     const topK     = (opcoes && opcoes.topK)            || 3;
     const minScore = (opcoes && opcoes.minScore != null) ? opcoes.minScore : 10;
@@ -315,7 +283,6 @@
 
     const todos = _indice.map(function (entrada) {
       return {
-        // FIX 9: passa campos pré-computados — sem normalizar/stemizar aqui
         score: _score(queryNorm, entrada.textoNorm, entrada.stemsTexto, entrada.peso),
         texto: entrada.texto,
         aula:  entrada.aula,
@@ -337,15 +304,13 @@
 
   /* ══════════════════════════════════════════════════════════
      API PÚBLICA
-     ══════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════════ */
   window.NexusSearch = {
     indexarConteudo,
     limparIndice,
     buscar,
-    normalizarTexto,  // FIX 1: fonte única — ia.js usa daqui
-    estaIndexado,     // FIX 2: substitui _getIndice() na lógica de negócio
-    // _getIndice removido da API pública.
-    // Se precisar para diagnóstico, use o console: window.NexusSearch não o expõe.
+    normalizarTexto,
+    estaIndexado,
   };
 
 }());
