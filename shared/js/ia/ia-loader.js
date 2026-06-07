@@ -20,24 +20,56 @@
   let _pathCarregado = null;
 
   /* ══════════════════════════════════════════════════════════
+     DETECÇÃO DA RAIZ DO SITE
+     ══════════════════════════════════════════════════════════ */
+
+  /**
+   * Detecta a URL raiz do site a partir do src do próprio script.
+   *
+   * ia-loader.js sempre está em: <raiz>/shared/js/ia/ia-loader.js
+   * Sobe 4 segmentos para obter a raiz absoluta — funciona em localhost
+   * e no GitHub Pages com qualquer subdiretório, independente de qual
+   * página chamou o script.
+   *
+   * Exemplo:
+   *   src = "https://rafaelpg1.github.io/Site_Estudo/shared/js/ia/ia-loader.js"
+   *   raiz = "https://rafaelpg1.github.io/Site_Estudo"
+   *
+   * @returns {string}
+   */
+  function _detectarRaiz() {
+    const scripts = document.querySelectorAll('script[src*="ia-loader.js"]');
+    if (scripts.length) {
+      const url    = new URL(scripts[scripts.length - 1].src);
+      const partes = url.pathname.split('/').filter(Boolean);
+      // Remove os 4 últimos: ia-loader.js, ia, js, shared
+      const raizPartes = partes.slice(0, partes.length - 4);
+      return url.origin + (raizPartes.length ? '/' + raizPartes.join('/') : '');
+    }
+    return window.location.origin;
+  }
+
+  const _raizSite = _detectarRaiz();
+
+  /* ══════════════════════════════════════════════════════════
      MONTAGEM DE PATH
      ══════════════════════════════════════════════════════════ */
 
   /**
-   * Monta o path do arquivo res_*.js a partir do contexto.
+   * Monta a URL absoluta do arquivo res_*.js a partir do contexto.
    *
-   * Usa path relativo (sem / inicial) para funcionar corretamente
-   * tanto em localhost quanto no GitHub Pages com subdiretório.
+   * Usa a raiz detectada em _detectarRaiz() — funciona em qualquer
+   * página (index, resumo/, quiz/, etc.) sem ajuste manual.
    *
    * Formatos suportados:
-   *   Com AP:  content/resumo/{ano}/{periodo}/{ap}/res_{arquivo}.js
-   *   Sem AP:  content/resumo/{ano}/{periodo}/res_{arquivo}.js
+   *   Com AP:  <raiz>/content/resumo/{ano}/{periodo}/{ap}/res_{arquivo}.js
+   *   Sem AP:  <raiz>/content/resumo/{ano}/{periodo}/res_{arquivo}.js
    *
    * @param {{ ano: string, periodo: string, ap: string|null, arquivo: string }} ctx
    * @returns {string}
    */
   function _montarPath(ctx) {
-    const base = 'content/resumo/' + ctx.ano + '/' + ctx.periodo;
+    const base = _raizSite + '/content/resumo/' + ctx.ano + '/' + ctx.periodo;
     if (ctx.ap) {
       return base + '/' + ctx.ap + '/res_' + ctx.arquivo + '.js';
     }
