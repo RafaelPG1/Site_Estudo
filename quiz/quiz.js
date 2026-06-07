@@ -15,6 +15,33 @@ import { preencherAnos } from '../shared/js/utils/dom.js';
 import { injetarLogo } from '../shared/js/utils/logo.js';
 import { Sound, audio, installAudioRecovery, playSound } from '../shared/js/audio/audio-api.js'; // ← MIGRADO
 
+// ── Assistente Nexus ──────────────────────────────────────────
+// Usa import.meta.url para resolver a raiz a partir deste arquivo
+// (quiz/quiz.js → sobe 1 nível → raiz)
+function _loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error(`[Nexus IA] Falha ao carregar: ${src}`));
+    document.body.appendChild(s);
+  });
+}
+function _carregarIA() {
+  const raiz = new URL('../', import.meta.url).href.replace(/\/$/, '');
+  const deps = [
+    raiz + '/shared/js/ia/ia-ui.js',
+    raiz + '/shared/js/ia/ia-search.js',
+    raiz + '/shared/js/ia/ia-loader.js',
+    raiz + '/shared/js/ia/ia-worker.js',
+  ];
+  Promise.all(deps.map(_loadScript))
+    .then(() => _loadScript(raiz + '/shared/js/ia/ia.js'))
+    .catch(err => console.error(err));
+}
+_carregarIA();
+// ─────────────────────────────────────────────────────────────
+
 (function () {
 
   document.addEventListener('DOMContentLoaded', async () => {

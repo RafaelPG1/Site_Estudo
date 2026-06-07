@@ -966,6 +966,80 @@ a { text-decoration: none; color: inherit; }
   gap: 5px;
   z-index: 100;
 }
+/* ── BOTÕES FLUTUANTES MENORES (só no template) ──────────── */
+
+/* ── BOTÃO IA MENOR (só no template) ── */
+#nexus-fab {
+  width: 36px;      /* era 32 */
+  height: 36px;     /* era 32 */
+  bottom: 18px;
+  right: 20px;
+}
+
+#nexus-fab::before {
+  inset: -4px;
+}
+
+#nexus-fab::after {
+  inset: -1px;
+}
+
+#nexus-fab-body {
+  inset: 0;
+}
+
+#nexus-fab-icon-wrap {
+  width: 18px;      /* era 16 */
+  height: 18px;     /* era 16 */
+}
+
+#nexus-fab-icon {
+  width: 16px;      /* era 14 */
+  height: 16px;     /* era 14 */
+}
+
+/* SFX e Música — reposiciona a pilha toda */
+.abtn {
+  width: 36px;      /* era 32 */
+  height: 36px;     /* era 32 */
+  bottom: 70px;     /* era 60 → 18 + 36 + 16 gap */
+  right: 20px;
+}
+
+#music-btn-global {
+  width: 36px;      /* era 32 */
+  height: 36px;     /* era 32 */
+  bottom: 122px;    /* era 104 → 70 + 36 + 16 gap */
+  right: 20px;
+}
+
+/* Nav-float de volta para a direita, acima da pilha */
+.nav-float {
+  left: auto;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  max-height: calc(100vh - 220px);
+  overflow: hidden;
+  z-index: 50;
+}
+
+.nav-btn {
+  width: 28px;
+  height: 28px;
+  font-size: 0.72rem;
+}
+
+/* Mobile */
+@media (max-width: 680px) {
+  .abtn            { bottom: 64px;  right: 14px; width: 34px; height: 34px; }
+  #music-btn-global{ bottom: 110px; right: 14px; width: 34px; height: 34px; }
+  #nexus-fab       { bottom: 14px;  right: 14px; width: 34px; height: 34px; }
+  #nexus-panel     { right: 14px; }
+  .nav-float       { right: 14px; left: auto; }
+  .nav-btn         { width: 26px; height: 26px; }
+}
+
 
 .nav-divider {
   height: 1px;

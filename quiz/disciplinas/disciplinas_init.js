@@ -18,6 +18,33 @@ import { injetarLogo } from '../../shared/js/utils/logo.js';
 import { Sound, audio, installAudioRecovery, playSound } from '../../shared/js/audio/audio-api.js';
 import { parseSemestre } from '../../src/global.js';
 
+// ── Assistente Nexus ──────────────────────────────────────────
+// Usa import.meta.url para resolver a raiz a partir deste arquivo
+// (quiz/disciplinas/disciplinas_init.js → sobe 2 níveis → raiz)
+// Isso garante que o path é correto independente de qual HTML chamou.
+(function _carregarIA() {
+  var raiz = new URL('../../', import.meta.url).href.replace(/\/$/, '');
+  function _loadScript(src) {
+    return new Promise(function (resolve, reject) {
+      var s = document.createElement('script');
+      s.src = src;
+      s.onload = resolve;
+      s.onerror = function () { reject(new Error('[Nexus IA] Falha ao carregar: ' + src)); };
+      document.body.appendChild(s);
+    });
+  }
+  var deps = [
+    raiz + '/shared/js/ia/ia-ui.js',
+    raiz + '/shared/js/ia/ia-search.js',
+    raiz + '/shared/js/ia/ia-loader.js',
+    raiz + '/shared/js/ia/ia-worker.js',
+  ];
+  Promise.all(deps.map(_loadScript))
+    .then(function () { return _loadScript(raiz + '/shared/js/ia/ia.js'); })
+    .catch(function (err) { console.error(err); });
+}());
+// ─────────────────────────────────────────────────────────────
+
 /* ── APLICA CORES DA DISCIPLINA (síncrono, sem FOUC) ─────── */
 const _discId = location.pathname.split('/').pop().replace('.html', '');
 

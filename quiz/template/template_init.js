@@ -19,6 +19,32 @@ import { Sound, audio, installAudioRecovery, playSound } from '../../shared/js/a
 
 import { carregarRespostasQuiz, salvarRespostasQuiz, limparRespostasQuiz } from '../../src/firebase.js';
 
+// ── Assistente Nexus ──────────────────────────────────────────
+// Usa import.meta.url para resolver a raiz a partir deste arquivo
+// (quiz/template/template_init.js → sobe 2 níveis → raiz)
+(function _carregarIA() {
+  var raiz = new URL('../../', import.meta.url).href.replace(/\/$/, '');
+  function _loadScript(src) {
+    return new Promise(function (resolve, reject) {
+      var s = document.createElement('script');
+      s.src = src;
+      s.onload = resolve;
+      s.onerror = function () { reject(new Error('[Nexus IA] Falha ao carregar: ' + src)); };
+      document.body.appendChild(s);
+    });
+  }
+  var deps = [
+    raiz + '/shared/js/ia/ia-ui.js',
+    raiz + '/shared/js/ia/ia-search.js',
+    raiz + '/shared/js/ia/ia-loader.js',
+    raiz + '/shared/js/ia/ia-worker.js',
+  ];
+  Promise.all(deps.map(_loadScript))
+    .then(function () { return _loadScript(raiz + '/shared/js/ia/ia.js'); })
+    .catch(function (err) { console.error(err); });
+}());
+// ─────────────────────────────────────────────────────────────
+
 /* ── EXPÕE NO WINDOW PARA SCRIPTS CLÁSSICOS (quiz_engine.js) ── */
 window.NexusStorage = Storage;
 /* ── EXPÕE FIREBASE PARA O QUIZ_ENGINE (IIFE sem módulo) ── */
