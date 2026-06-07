@@ -38,7 +38,7 @@ import {
   installAudioRecovery,
   playSound,
   mountMusicBtn,
-  getMusicMode,  // ← add
+  getMusicMode,
 } from './shared/js/audio/audio-api.js';
 
 /* ═══════════════════════════════════════════════
@@ -54,10 +54,6 @@ async function init() {
     }
  
     Sound.init();
-    // Garante que o botão de música é montado logo após o SFX.
-    // Sound.init() monta apenas o SFX. O botão de música tem auto-montagem
-    // em audio-btns.js, mas chamar explicitamente aqui torna o ciclo rastreável.
-    // mountMusicBtn() é idempotente — se já montado, é no-op.
     mountMusicBtn();
  
     installAudioRecovery({ Sound, audio });
@@ -68,18 +64,7 @@ async function init() {
     _refreshHeader();
 
     // ── Sessões ─────────────────────────────────────────────
-    // nexus:loginSuccess é disparado em dois cenários:
-    //   1. Login real: index.js dispara após resultado.ok (linha ~423).
-    //   2. Bootstrap: global.js dispara via setTimeout(0) ao carregar
-    //      qualquer página quando o usuário já está autenticado
-    //      (cobre F5 e navegação entre páginas).
-    // Em ambos os casos, iniciarSessao() verifica o sessionStorage:
-    //   - Se houver sessão ativa desta aba → retoma sem criar novo doc.
-    //   - Se não houver → cria novo documento no Firestore.
     document.addEventListener('nexus:loginSuccess', () => iniciarSessao());
-
-    // nexus:logout é disparado por setUsuario(null) no global.js,
-    // que é chamado por logout() em todos os fluxos de logout.
     document.addEventListener('nexus:logout', () => encerrarSessao());
     // ────────────────────────────────────────────────────────
  
@@ -89,30 +74,29 @@ async function init() {
     preencherAnos(['footer-year']);
  
     // BGM da página inicial
-async function _tryStartMenuMusic() {
-  if (!audio.isUnlocked()) return;
-  if (audio.music.currentId() === 'music-menu') return;
+    async function _tryStartMenuMusic() {
+      if (!audio.isUnlocked()) return;
+      if (audio.music.currentId() === 'music-menu') return;
 
-  // getMusicMode já foi importado no topo do arquivo junto com mountMusicBtn
-  const mode = getMusicMode?.() ?? 'normal';
-  if (mode === 'mute') return;
+      const mode = getMusicMode?.() ?? 'normal';
+      if (mode === 'mute') return;
 
-  audio.music['menu']();
-}
+      audio.music['menu']();
+    }
  
     // Tenta imediatamente (já desbloqueado por login anterior na sessão)
     _tryStartMenuMusic();
  
     document.addEventListener('nexus:audioUnlocked', _tryStartMenuMusic, { once: true });
  
-const _watchdog = setInterval(() => {
-  if (!document.hidden && audio.isUnlocked()) {
-    if (audio.music.currentId() !== 'music-menu') {
-      const mode = getMusicMode?.() ?? 'normal';
-      if (mode !== 'mute') audio.music['menu']();
-    }
-  }
-}, 30_000);
+    const _watchdog = setInterval(() => {
+      if (!document.hidden && audio.isUnlocked()) {
+        if (audio.music.currentId() !== 'music-menu') {
+          const mode = getMusicMode?.() ?? 'normal';
+          if (mode !== 'mute') audio.music['menu']();
+        }
+      }
+    }, 30_000);
  
     window.addEventListener('pagehide', () => clearInterval(_watchdog), { once: true });
  
@@ -131,24 +115,30 @@ if (document.readyState === 'loading') {
 
 
 // ── Assistente Nexus ─────────────────────────────────────────
-const _iaScripts = [
-  '/shared/js/ia/ia-ui.js',
-  '/shared/js/ia/ia-search.js',
-  '/shared/js/ia/ia-loader.js',   // ← adicionado entre search e ia.js
-  '/shared/js/ia/ia.js',
-  '/shared/js/ia/ia-worker.js',
-  
-];
+// FIX 1: ia-worker.js movido para antes de ia.js
+// FIX 2: dependências carregadas em paralelo; ia.js só executa após todas prontas
 
-_iaScripts.reduce((promise, src) => {
-  return promise.then(() => new Promise((resolve, reject) => {
+function _loadScript(src) {
+  return new Promise((resolve, reject) => {
     const s = document.createElement('script');
     s.src = src;
     s.onload = resolve;
     s.onerror = () => reject(new Error(`[Nexus IA] Falha ao carregar: ${src}`));
     document.body.appendChild(s);
-  }));
-}, Promise.resolve());
+  });
+}
+
+const _iaDeps = [
+  '/shared/js/ia/ia-ui.js',
+  '/shared/js/ia/ia-search.js',
+  '/shared/js/ia/ia-loader.js',
+  '/shared/js/ia/ia-worker.js',   // ← agora antes de ia.js
+];
+
+// Carrega todas as dependências em paralelo, depois ia.js
+Promise.all(_iaDeps.map(_loadScript))
+  .then(() => _loadScript('/shared/js/ia/ia.js'))
+  .catch(err => console.error(err));
 
 
 /* ═══════════════════════════════════════════════
