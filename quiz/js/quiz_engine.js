@@ -428,9 +428,12 @@ document.addEventListener('visibilitychange', function () {
       }).join('<br>');
     }
 
-    function renderAssertions(assertions) {
+    function renderAssertions(assertions, tipo) {
       if (!assertions || assertions.length === 0) return '';
       var romanos = ['I', 'II', 'III', 'IV', 'V', 'VI'];
+
+      /* Checklist em qualquer questão com assertions, exceto Asserção + Justificativa */
+      var comChk = tipo !== 'Asserção + Justificativa' && tipo !== 'Asserção';
 
       var items = assertions.map(function (text, idx) {
         var isPorque  = text.indexOf('[PORQUE]') === 0;
@@ -438,13 +441,17 @@ document.addEventListener('visibilitychange', function () {
         var num       = romanos[idx] || String(idx + 1);
         var rendered  = renderMarkup(cleanText);
 
+        var chkBtn = (comChk && !isPorque)
+          ? '<button class="assertion-chk" data-chk="0" aria-label="Marcar assertiva ' + num + '" type="button"></button>'
+          : '';
+
         if (isPorque) {
           return (
             '<div class="assertion-connector"><span class="connector-label">PORQUE</span></div>' +
             '<div class="assertion"><span class="assertion-num">' + num + '.</span><span>' + rendered + '</span></div>'
           );
         }
-        return '<div class="assertion"><span class="assertion-num">' + num + '.</span><span>' + rendered + '</span></div>';
+        return '<div class="assertion"><span class="assertion-num">' + num + '.</span><span>' + rendered + '</span>' + chkBtn + '</div>';
       }).join('');
 
       return '<div class="assertions">' + items + '</div>';
@@ -460,7 +467,7 @@ document.addEventListener('visibilitychange', function () {
       if (q.texto)                html += '<div class="question-texto">'         + renderMarkup(q.texto)                + '</div>';
       if (q.miniEnunciado)        html += '<div class="question-mini-enunciado">' + renderMarkup(q.miniEnunciado)        + '</div>';
       if (q.code)                 html += renderCodeBlock(q.code);
-      if (q.assertions && q.assertions.length > 0) html += renderAssertions(q.assertions);
+      if (q.assertions && q.assertions.length > 0) html += renderAssertions(q.assertions, q.tipo);
       if (q.image)                html += '<div class="question-image"><img src="' + q.image + '" alt="Imagem da questão"></div>';
       if (q.questionContinuation) html += '<div class="question-text">'           + renderMarkup(q.questionContinuation) + '</div>';
       if (q.question)             html += '<div class="question-enunciado">'      + renderMarkup(q.question)             + '</div>';
@@ -656,6 +663,17 @@ if (r.respondidas < r.total) {
         container.appendChild(resultEl);
         if (!modoStep) _atualizarResultadoAula(0);
       }
+
+      /* ── CHECKLIST ENADE — bind nos botões de assertiva ── */
+      container.querySelectorAll('.assertion-chk').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var s = (parseInt(btn.dataset.chk) + 1) % 3;
+          btn.dataset.chk = s;
+          btn.className = 'assertion-chk' + (s === 1 ? ' chk-wrong' : s === 2 ? ' chk-right' : '');
+          btn.textContent = s === 1 ? '✕' : s === 2 ? '✓' : '';
+        });
+      });
     }
 
     function _aplicarEstadoOpcao(btn, qi, ai) {

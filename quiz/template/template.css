@@ -1350,3 +1350,43 @@ a { text-decoration: none; color: inherit; }
   .step-btn           { padding: 0.48rem 0.85rem; font-size: 0.76rem; }
   .code-block         { font-size: 0.72rem; padding: 0.7rem 0.85rem; }
 }
+/* ── CHECKLIST ENADE (assertiva) ────────────────────────── */
+.assertion { position: relative; flex-wrap: wrap; }
+
+.assertion-chk {
+  position: absolute;
+  bottom: 6px;
+  right: 8px;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.09);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  line-height: 14px;
+  color: transparent;
+  opacity: 0.35;
+  transition: opacity 0.15s, background 0.15s, border-color 0.15s;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.assertion-chk:hover { opacity: 1; }
+
+.assertion-chk.chk-wrong {
+  background: rgba(248, 113, 113, 0.15);
+  border-color: rgba(248, 113, 113, 0.45);
+  color: #f87171;
+  opacity: 1;
+}
+
+.assertion-chk.chk-right {
+  background: rgba(74, 222, 128, 0.15);
+  border-color: rgba(74, 222, 128, 0.45);
+  color: #4ade80;
+  opacity: 1;
+}
