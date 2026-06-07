@@ -480,12 +480,20 @@ function _renderGrid() {
   if (!grid) return;
   grid.innerHTML = '';
 
-  State.aulas.forEach((aula, idx) => {
-    const card = State.modo === 'sintese'
-      ? _criarCardSintese(aula, idx)
-      : _criarCard(aula, idx);
-    grid.appendChild(card);
-  });
+  if (State.modo === 'sintese') {
+    // Síntese rápida: mostra apenas aulas que têm síntese disponível
+    State.aulas.forEach((aula, idx) => {
+      const sint = State.simplificado[idx] ?? null;
+      const temSint = !!(sint && (sint.ideia_central || (sint.secoes ?? []).length > 0));
+      if (!temSint) return; // pula aulas sem síntese
+      const card = _criarCardSintese(aula, idx);
+      grid.appendChild(card);
+    });
+  } else {
+    State.aulas.forEach((aula, idx) => {
+      grid.appendChild(_criarCard(aula, idx));
+    });
+  }
 }
 
 /* ══════════════════════════════════════════════
@@ -603,9 +611,9 @@ function _criarCardSintese(aula, idx) {
       <div class="card-bottom">
   <div class="card-progress__track"><div class="card-progress__fill"></div></div>
   <div class="card-meta">
-    <span class="card-meta__count">${secoes.length} seç${secoes.length !== 1 ? 'ões' : 'ão'}</span>
+    <span class="card-meta__count">${numSec} seç${numSec !== 1 ? 'ões' : 'ão'}</span>
     <span class="card-meta__cta">
-      Ver resumo
+      Ver síntese
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>

@@ -122,43 +122,51 @@ Bloco "lista":
 tipo: "lista",
 itens: [...]
 }
-
 ═══════════════════ IMAGENS E DIAGRAMAS ═══════════════════
 
-* Imagens são opcionais.
-* NÃO criar seções exclusivas para imagens.
-* NÃO descrever imagens decorativas.
-* NÃO descrever imagens repetidas.
-* NÃO descrever imagens sem valor didático.
-
-Incluir imagem apenas quando representar:
-
-* diagramas;
-* fluxogramas;
-* arquiteturas;
-* mapas mentais;
-* gráficos importantes;
-* tabelas comparativas;
-* esquemas técnicos;
-* processos visuais relevantes.
+* Preservar imagens relevantes existentes no conteúdo original.
+* NÃO inventar imagens.
+* NÃO criar imagens novas.
+* NÃO gerar descrições substituindo imagens existentes.
+* Sempre que o conteúdo original possuir metadados da imagem, preservar exatamente os valores informados.
 
 Formato obrigatório:
 
 {
 tipo: "imagem",
-titulo: "Nome da figura ou tema principal",
-descricao: "Resumo curto do que a imagem demonstra"
+src: "arquivo_original.ext",
+pasta: "caminho/original",
+num: "numero_original",
+alt: "texto_alternativo_original"
 }
 
-Regras adicionais:
+Regras:
 
-* Máximo de 1 imagem por seção.
-* A descrição deve possuir apenas uma frase curta.
-* Se a informação puder ser resumida facilmente em texto, não gerar bloco de imagem.
-* Em caso de dúvida, priorizar texto.
+* O campo `src` é obrigatório.
+* O campo `pasta` é obrigatório.
+* O campo `num` é obrigatório.
+* O campo `alt` é obrigatório.
+* Nunca remover esses campos.
+* Nunca renomear arquivos.
+* Nunca alterar caminhos.
+* Nunca alterar numeração.
+* Nunca resumir ou reescrever o valor de `alt`.
+* Utilizar exatamente os dados existentes no conteúdo recebido.
+* Se uma imagem relevante existir no conteúdo original, ela deve ser preservada no simplificado.
+* Se a imagem não possuir os metadados necessários, não invente valores.
 * Nunca gerar URLs.
 * Nunca gerar markdown de imagem.
-* Nunca copiar imagens.
+* Nunca converter imagem em texto quando os metadados já estiverem disponíveis.
+
+Exemplo:
+
+{
+tipo: "imagem",
+src: "fig_create_database_postgres.png",
+pasta: "imagens_banco_dados/aula_09",
+num: "1",
+alt: "Criacao de banco de dados no PostgreSQL utilizando DDL"
+}
 
 ═══════════════════ COMENTÁRIOS OBRIGATÓRIOS ═══════════════════
 

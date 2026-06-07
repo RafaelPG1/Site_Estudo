@@ -4178,7 +4178,1303 @@ window.__nexusConteudo = {
     }
   ],
 
-  simplificado: []
+  simplificado: [
+
+  // Aula 9 — DDL: Data Definition Language
+  {
+    aula: "Aula 9 — DDL: Data Definition Language",
+
+    ideia_central: "DDL é o subconjunto da SQL responsável por criar, modificar e remover estruturas de bancos de dados, garantindo integridade por meio de chaves primárias e estrangeiras.",
+
+    secoes: [
+
+      {
+        id: "ddl-conceito",
+        titulo: "📌 DDL e Comandos Principais",
+
+        blocos: [
+
+          // 1 - conceito DDL
+          {
+            tipo: "topico",
+            titulo: "🔹 DDL — Data Definition Language",
+            lista: [
+              "**DDL** → define a estrutura do banco de dados",
+              "**CREATE** → cria objetos (bancos, tabelas, views, índices)",
+              "**ALTER** → modifica objetos existentes",
+              "**DROP** → remove objetos do banco"
+            ]
+          },
+
+          // 2 - esquema e catálogo
+          {
+            tipo: "topico",
+            titulo: "🔹 Esquema e Catálogo",
+            lista: [
+              "**Esquema (Schema)** → agrupamento lógico de objetos do banco (tabelas, views, restrições, domínios)",
+              "**Catálogo** → coleção de esquemas; contém `INFORMATION_SCHEMA` com metadados do banco",
+              "Exemplo: `CREATE SCHEMA Exemplo;`"
+            ]
+          },
+
+          // 3 - create database e table
+          {
+            tipo: "topico",
+            titulo: "🔹 CREATE DATABASE e CREATE TABLE",
+            lista: [
+              "Criar banco: `CREATE DATABASE nome;`",
+              "Criar tabela: `CREATE TABLE tabela (campo tipo);`",
+              "Exemplo: `CREATE TABLE alunos (mat_alu INTEGER, nom_alu VARCHAR(50));`"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "fig_create_database_postgres.png",
+            pasta: "imagens_banco_dados/aula_09",
+            num: "1",
+            alt: "Criacao de banco de dados no PostgreSQL utilizando DDL"
+          },
+
+          {
+            tipo: "imagem",
+            src: "fig_create_table_alunos.png",
+            pasta: "imagens_banco_dados/aula_09",
+            num: "3",
+            alt: "Criacao da tabela alunos no banco de dados Exemplo usando CREATE TABLE"
+          }
+
+        ]
+      },
+
+      {
+        id: "tipos-chaves",
+        titulo: "📌 Tipos de Dados e Restrições de Integridade",
+
+        blocos: [
+
+          // 4 - tipos de dados
+          {
+            tipo: "topico",
+            titulo: "🔹 Principais Tipos de Dados SQL",
+            lista: [
+              "**CHAR(n)** → texto de tamanho fixo, sempre ocupa n caracteres",
+              "**VARCHAR(n)** → texto de tamanho variável",
+              "**INTEGER** → número inteiro 32 bits",
+              "**SMALLINT** → inteiro menor, 16 bits",
+              "**DECIMAL(p,s)** / **NUMERIC** → número com casas decimais",
+              "**FLOAT** → ponto flutuante",
+              "**DATE** → armazena datas",
+              "**TIME** → armazena horários",
+              "**BLOB** → arquivos binários (imagens, vídeos, áudios)"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "quadro_tipos_sql.png",
+            pasta: "imagens_banco_dados/aula_09",
+            num: "Quadro 1",
+            alt: "Quadro com os principais tipos de dados utilizados na definicao de tabelas SQL"
+          },
+
+          // 5 - chave primária
+          {
+            tipo: "topico",
+            titulo: "🔹 PRIMARY KEY — Chave Primária",
+            lista: [
+              "**Única** → não pode se repetir",
+              "**Não nula** → não aceita NULL",
+              "Sintaxe simples: `PRIMARY KEY (campo)`",
+              "Sintaxe nomeada: `CONSTRAINT alu_pk PRIMARY KEY (mat_alu)`"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "fig_primary_key.png",
+            pasta: "imagens_banco_dados/aula_09",
+            num: "5",
+            alt: "Exemplo de definicao de chave primaria em uma tabela SQL"
+          },
+
+          // 6 - chave estrangeira
+          {
+            tipo: "topico",
+            titulo: "🔹 FOREIGN KEY — Chave Estrangeira",
+            lista: [
+              "**Integridade referencial** → garante que o valor referenciado exista",
+              "Impede referências inválidas entre tabelas",
+              "Sintaxe: `FOREIGN KEY (campo) REFERENCES tabela(campo)`"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "fig_foreign_key.png",
+            pasta: "imagens_banco_dados/aula_09",
+            num: "6",
+            alt: "Exemplo de relacionamento entre tabelas usando chave estrangeira e integridade referencial"
+          }
+
+        ]
+      },
+
+      {
+        id: "alter-drop",
+        titulo: "📌 ALTER e DROP",
+
+        blocos: [
+
+          // 7 - alter
+          {
+            tipo: "topico",
+            titulo: "🔹 ALTER DATABASE e ALTER TABLE",
+            lista: [
+              "Renomear banco: `ALTER DATABASE Exemplo RENAME TO BDAcademico;`",
+              "Adicionar coluna: `ALTER TABLE tabela ADD coluna tipo;`",
+              "Ao adicionar coluna, registros antigos recebem `NULL`",
+              "`NOT NULL` sem `DEFAULT` não é permitido em ALTER TABLE"
+            ]
+          },
+
+          // 8 - drop e diferenças
+          {
+            tipo: "topico",
+            titulo: "🔹 DROP TABLE e DROP DATABASE",
+            lista: [
+              "`DROP TABLE tabela CASCADE;` → remove tabela e dependências (views, restrições)",
+              "`DROP TABLE tabela RESTRICT;` → só remove se não houver dependências",
+              "`DROP DATABASE banco;` → exclusão física e geralmente irreversível",
+              "**DELETE** → remove registros, mantém estrutura da tabela",
+              "**DROP** → remove a estrutura completamente"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "fig_drop_database.png",
+            pasta: "imagens_banco_dados/aula_09",
+            num: "4",
+            alt: "Exemplo de remocao de banco de dados no PostgreSQL usando DROP DATABASE"
+          }
+
+        ]
+      }
+
+    ]
+  },
+
+  // Aula 10 — Manipulando um Banco de Dados
+  {
+    aula: "Aula 10 — Manipulando um Banco de Dados",
+
+    ideia_central: "DML é o subconjunto SQL que manipula dados por meio dos comandos SELECT, INSERT, UPDATE e DELETE, com operadores aritméticos, de comparação e lógicos para otimizar consultas.",
+
+    secoes: [
+
+      {
+        id: "dml-comandos",
+        titulo: "📌 DML e Comandos Principais",
+
+        blocos: [
+
+          // 1 - conceito DML
+          {
+            tipo: "topico",
+            titulo: "🔹 DML — Data Manipulation Language",
+            lista: [
+              "**DML** → manipula dados armazenados no banco",
+              "**DML Procedural** → usuário define quais dados e como obtê-los",
+              "**DML Não-Procedural** → usuário define apenas quais dados; o SGBD decide como — SQL é predominantemente não-procedural",
+              "**SELECT** → consulta dados",
+              "**INSERT** → insere registros",
+              "**UPDATE** → altera registros",
+              "**DELETE** → exclui registros"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "quadro_comandos_dml.png",
+            pasta: "imagens_banco_dados/aula_10",
+            num: "Quadro 1",
+            alt: "Quadro com os principais comandos de manipulacao de registros da DML"
+          },
+
+          // 2 - estrutura básica SELECT
+          {
+            tipo: "topico",
+            titulo: "🔹 Estrutura Básica das Consultas SQL",
+            lista: [
+              "`SELECT colunas FROM tabela WHERE condição;`",
+              "**SELECT** → define quais colunas exibir",
+              "**FROM** → define a tabela da consulta",
+              "**WHERE** → filtra registros",
+              "**DISTINCT** → elimina duplicatas: `SELECT DISTINCT coluna FROM tabela;`"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "fig_select_nomes.png",
+            pasta: "imagens_banco_dados/aula_10",
+            num: "Figura 1",
+            alt: "Exemplo de selecao dos nomes de alunos na tabela alunos usando SELECT e FROM"
+          },
+
+          // 3 - insert update delete
+          {
+            tipo: "topico",
+            titulo: "🔹 INSERT, UPDATE e DELETE",
+            lista: [
+              "**INSERT:** `INSERT INTO tabela VALUES (...);`",
+              "Inserção com colunas explícitas evita erros de ordem de atributos",
+              "**UPDATE:** `UPDATE tabela SET coluna = valor WHERE condição;`",
+              "**DELETE:** `DELETE FROM tabela WHERE condição;`",
+              "UPDATE e DELETE **sem WHERE** afetam todos os registros da tabela"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "fig_insert.png",
+            pasta: "imagens_banco_dados/aula_10",
+            num: "Figura 5",
+            alt: "Exemplo de insercao de dados na tabela cursos usando o comando INSERT"
+          },
+
+          {
+            tipo: "imagem",
+            src: "fig_delete.png",
+            pasta: "imagens_banco_dados/aula_10",
+            num: "Figura 7",
+            alt: "Exemplo de exclusao de registros usando o comando DELETE com WHERE"
+          },
+
+          {
+            tipo: "imagem",
+            src: "fig_update.png",
+            pasta: "imagens_banco_dados/aula_10",
+            num: "Figura 8",
+            alt: "Exemplo de alteracao de dados existentes usando o comando UPDATE"
+          }
+
+        ]
+      },
+
+      {
+        id: "operadores",
+        titulo: "📌 Operadores SQL",
+
+        blocos: [
+
+          // 4 - operadores aritméticos
+          {
+            tipo: "topico",
+            titulo: "🔹 Operadores Aritméticos",
+            lista: [
+              "Funcionam apenas em colunas numéricas",
+              "`+` soma, `-` subtração, `*` multiplicação, `/` divisão",
+              "SQL segue precedência matemática: `*` e `/` antes de `+` e `-`",
+              "Parênteses alteram a ordem: `12 * (salario + 500)`",
+              "Exemplo: `SELECT salario * 12 AS salario_anual FROM empregados;`"
+            ]
+          },
+
+          // 5 - operadores de comparação
+          {
+            tipo: "topico",
+            titulo: "🔹 Operadores de Comparação",
+            lista: [
+              "`=` igual, `<>` diferente",
+              "`>` maior, `>=` maior ou igual",
+              "`<` menor, `<=` menor ou igual",
+              "Exemplo: `WHERE mat_alu >= 911113`"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "tabela_operadores_comparacao.png",
+            pasta: "imagens_banco_dados/aula_10",
+            num: "Tabela 1",
+            alt: "Tabela com os operadores de comparacao utilizados em filtros SQL"
+          },
+
+          // 6 - operadores lógicos
+          {
+            tipo: "topico",
+            titulo: "🔹 Operadores Lógicos",
+            lista: [
+              "**AND** → mais restritivo; ambas as condições devem ser verdadeiras",
+              "**OR** → mais amplo; basta uma condição ser verdadeira",
+              "**NOT** → inverte o resultado lógico",
+              "Exemplo AND: `WHERE tot_cred = 4 AND nom_disc = 'BANCO DE DADOS'`",
+              "Exemplo OR: `WHERE tot_cred = 4 OR nom_disc = 'BANCO DE DADOS'`",
+              "Exemplo NOT: `WHERE NOT cod_curso = 10`"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "tabela_operadores_logicos.png",
+            pasta: "imagens_banco_dados/aula_10",
+            num: "Tabela 2",
+            alt: "Tabela com os operadores logicos AND, OR e NOT"
+          }
+
+        ]
+      }
+
+    ]
+  },
+
+    // Aula 11 — Refinando Consultas Parte 1
+  {
+    aula: "Aula 11 — Refinando Consultas em um Banco de Dados • Parte 1",
+
+    ideia_central: "A cláusula WHERE e seus operadores (LIKE, BETWEEN, IN, IS NULL), combinados com funções de agregação e as cláusulas GROUP BY e ORDER BY, permitem transformar consultas SQL simples em consultas inteligentes e úteis para aplicações reais.",
+
+    secoes: [
+
+      {
+        id: "clausulas-where",
+        titulo: "📌 Cláusulas de Filtragem",
+
+        blocos: [
+
+          // 1 - cláusulas SQL
+          {
+            tipo: "topico",
+            titulo: "🔹 Principais Cláusulas SQL",
+            lista: [
+              "**SELECT** → define quais colunas exibir",
+              "**FROM** → define a tabela da consulta",
+              "**WHERE** → filtra registros por condição",
+              "**GROUP BY** → agrupa registros com valores iguais; usado com funções de agregação",
+              "**HAVING** → filtra resultados após agrupamento",
+              "**ORDER BY ASC** → ordem crescente; **DESC** → ordem decrescente"
+            ]
+          },
+
+          // 2 - ordem de execução
+          {
+            tipo: "topico",
+            titulo: "🔹 Ordem de Execução Interna",
+            lista: [
+              "Escrevemos: `SELECT → FROM → WHERE`",
+              "Banco processa: `FROM → WHERE → SELECT`"
+            ]
+          },
+
+          // 3 - operador LIKE
+          {
+            tipo: "topico",
+            titulo: "🔹 Operador LIKE",
+            lista: [
+              "Busca padrões textuais em strings",
+              "`%` → qualquer sequência de caracteres",
+              "`_` → exatamente um caractere",
+              "`LIKE 'Jorge%'` → começa com Jorge",
+              "`LIKE '%Silva'` → termina com Silva",
+              "`LIKE '%Santos%'` → contém Santos",
+              "`LIKE '_este'` → aceita: teste, veste, peste"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "fig_like_consulta_sql.png",
+            pasta: "imagens_banco_dados/aula_11",
+            num: "1",
+            alt: "Exemplo de consulta SQL usando o operador Like com % para buscas por padroes textuais em nomes"
+          },
+
+          {
+            tipo: "imagem",
+            src: "fig_like_underscore.png",
+            pasta: "imagens_banco_dados/aula_11",
+            num: "2",
+            alt: "Exemplo de consulta SQL usando o operador Like com underscore para representar exatamente um caractere"
+          },
+
+          // 4 - between e in
+          {
+            tipo: "topico",
+            titulo: "🔹 Operadores BETWEEN e IN",
+            lista: [
+              "**BETWEEN** → intervalo de valores; muito comum com datas",
+              "Sintaxe: `WHERE campo BETWEEN valor1 AND valor2`",
+              "**IN** → verifica se valor pertence a uma lista; equivale a múltiplos OR",
+              "Sintaxe: `WHERE campo IN (valor1, valor2, valor3)`"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "fig_between_datas.png",
+            pasta: "imagens_banco_dados/aula_11",
+            num: "3",
+            alt: "Exemplo de consulta SQL usando o operador de comparacao BETWEEN com intervalos de datas"
+          },
+
+          {
+            tipo: "imagem",
+            src: "fig_in_consulta.png",
+            pasta: "imagens_banco_dados/aula_11",
+            num: "4",
+            alt: "Exemplo de consulta SQL utilizando o operador de comparacao IN para filtragem baseada em multiplos valores"
+          },
+
+          // 5 - IS NULL
+          {
+            tipo: "topico",
+            titulo: "🔹 Operador IS NULL",
+            lista: [
+              "**NULL** → ausência de valor; não é zero nem espaço vazio",
+              "Sintaxe: `WHERE campo IS NULL`",
+              "Operações com NULL geram resultado UNKNOWN",
+              "Exemplo: `1 < NULL` → não é verdadeiro nem falso, é desconhecido"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "fig_is_null.png",
+            pasta: "imagens_banco_dados/aula_11",
+            num: "5",
+            alt: "Exemplo de consulta SQL utilizando o operador IS NULL para buscar registros com campos sem valor"
+          }
+
+        ]
+      },
+
+      {
+        id: "agregacao-agrupamento",
+        titulo: "📌 Funções de Agregação, GROUP BY e ORDER BY",
+
+        blocos: [
+
+          // 6 - funções de agregação
+          {
+            tipo: "topico",
+            titulo: "🔹 Funções de Agregação",
+            lista: [
+              "**COUNT(*)** → conta todas as linhas, inclusive com NULL",
+              "**SUM(col)** → soma valores numéricos; ignora NULL",
+              "**AVG(col)** → calcula média; pode usar ALL (considera repetidos) ou DISTINCT (ignora repetidos)",
+              "**MIN(col)** → retorna o menor valor",
+              "**MAX(col)** → retorna o maior valor"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "quadro_funcoes_agregacao.png",
+            pasta: "imagens_banco_dados/aula_11",
+            num: "6",
+            alt: "Quadro com a relacao das funcoes de agregacao: COUNT, SUM, AVG, MIN e MAX"
+          },
+
+          // 7 - GROUP BY
+          {
+            tipo: "topico",
+            titulo: "🔹 GROUP BY",
+            lista: [
+              "Agrupa registros antes de aplicar funções de agregação",
+              "Cada grupo recebe seu próprio valor calculado",
+              "**Regra obrigatória:** todo campo no SELECT deve estar no GROUP BY ou dentro de função de agregação",
+              "Exemplo: `SELECT cod_curso, AVG(tot_cred) FROM alunos GROUP BY cod_curso;`"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "fig_group_by.png",
+            pasta: "imagens_banco_dados/aula_11",
+            num: "7",
+            alt: "Exemplo de Select com funcao de agregacao e agrupamento GROUP BY"
+          },
+
+          {
+            tipo: "imagem",
+            src: "fig_group_by_incorreto.png",
+            pasta: "imagens_banco_dados/aula_11",
+            num: "8",
+            alt: "Exemplo de Select incorreto usando GROUP BY com campo nao agrupado nem agregado"
+          },
+
+          // 8 - ORDER BY
+          {
+            tipo: "topico",
+            titulo: "🔹 ORDER BY",
+            lista: [
+              "`ORDER BY coluna ASC` → crescente (padrão)",
+              "`ORDER BY coluna DESC` → decrescente",
+              "Múltiplas colunas: `ORDER BY tot_cred DESC, nom_alu ASC` → desempata pelo segundo campo"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "fig_order_by_desc.png",
+            pasta: "imagens_banco_dados/aula_11",
+            num: "9",
+            alt: "Exemplo de Select com ORDER BY demonstrando ordenacao decrescente de registros"
+          },
+
+          {
+            tipo: "imagem",
+            src: "fig_order_by_multiplos.png",
+            pasta: "imagens_banco_dados/aula_11",
+            num: "10",
+            alt: "Exemplo de Select com ORDER BY utilizando mais de um campo para ordenacao"
+          }
+
+        ]
+      }
+
+    ]
+  },
+
+  // Aula 12 — Refinando Consultas Parte 2
+  {
+    aula: "Aula 12 — Refinando Consultas em um Banco de Dados • Parte 2",
+
+    ideia_central: "Funções de agregação resumem grandes conjuntos de dados em valores únicos; HAVING filtra grupos após agrupamento; DISTINCT elimina duplicatas — ferramentas essenciais para transformar dados brutos em informações úteis.",
+
+    secoes: [
+
+      {
+        id: "agregacao-alias",
+        titulo: "📌 Funções de Agregação e Alias",
+
+        blocos: [
+
+          // 1 - funções de agregação
+          {
+            tipo: "topico",
+            titulo: "🔹 Funções de Agregação",
+            lista: [
+              "Processam diversos valores de uma coluna e retornam um único resultado",
+              "**AVG(col)** → média; ignora NULL",
+              "**SUM(col)** → soma total; ignora NULL",
+              "**COUNT(*)** → conta todas as linhas inclusive com NULL",
+              "**COUNT(col)** → conta apenas valores não nulos",
+              "**COUNT(DISTINCT col)** → conta valores únicos",
+              "**MAX(col)** → maior valor",
+              "**MIN(col)** → menor valor",
+              "`COUNT(DISTINCT *)` é **inválido** no SQL padrão"
+            ]
+          },
+
+          // 2 - alias
+          {
+            tipo: "topico",
+            titulo: "🔹 Alias (AS)",
+            lista: [
+              "Renomeia campos calculados para melhor leitura do resultado",
+              "Sem alias: cabeçalho exibe `AVG(tot_cred)`",
+              "Com alias: cabeçalho exibe `media_total_credito`",
+              "Sintaxe: `SELECT AVG(tot_cred) AS media_total_credito FROM alunos WHERE cod_curso = 10;`"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "fig_selecao_media_creditos.png",
+            pasta: "imagens_banco_dados/aula_12",
+            num: "1",
+            alt: "Seleção de alunos com a média dos totais de créditos usando critério código do curso = 10"
+          },
+
+          {
+            tipo: "imagem",
+            src: "fig_selecao_media_alias.png",
+            pasta: "imagens_banco_dados/aula_12",
+            num: "2",
+            alt: "Seleção de alunos com média de créditos e alias para nomear o campo calculado"
+          }
+
+        ]
+      },
+
+      {
+        id: "groupby-having-execucao",
+        titulo: "📌 GROUP BY, HAVING e Ordem de Execução",
+
+        blocos: [
+
+          // 3 - GROUP BY
+          {
+            tipo: "topico",
+            titulo: "🔹 GROUP BY",
+            lista: [
+              "Divide registros em grupos antes da agregação",
+              "Cada grupo recebe seu próprio valor calculado",
+              "Sem GROUP BY: toda a tabela é tratada como um único grupo",
+              "Sintaxe: `SELECT cod_curso, AVG(tot_cred) AS media_tot_cred FROM alunos GROUP BY cod_curso;`"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "fig_agregacao_group_by.png",
+            pasta: "imagens_banco_dados/aula_12",
+            num: "3",
+            alt: "Exemplo de agregação com agrupamento — GROUP BY divide registros e calcula média por grupo"
+          },
+
+          // 4 - HAVING
+          {
+            tipo: "topico",
+            titulo: "🔹 HAVING",
+            lista: [
+              "Filtra grupos após agrupamento (WHERE filtra linhas antes do agrupamento)",
+              "**WHERE** → atua sobre linhas individuais, antes do GROUP BY",
+              "**HAVING** → atua sobre grupos, após o GROUP BY",
+              "Regra: atributo no HAVING sem função de agregação deve estar no GROUP BY",
+              "Exemplo: `HAVING AVG(tot_cred) > 100`"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "fig_exemplo_clausula_having.png",
+            pasta: "imagens_banco_dados/aula_12",
+            num: "4",
+            alt: "Exemplo de cláusula HAVING filtrando grupos após agrupamento"
+          },
+
+          // 5 - ordem de execução
+          {
+            tipo: "topico",
+            titulo: "🔹 Ordem de Execução SQL",
+            lista: [
+              "1º `FROM` → seleciona tabelas",
+              "2º `WHERE` → filtra linhas individuais",
+              "3º `GROUP BY` → agrupa registros filtrados",
+              "4º `HAVING` → filtra os grupos",
+              "5º `SELECT` → define o resultado final",
+              "6º `ORDER BY` → ordena o resultado"
+            ]
+          },
+
+          // 6 - NULL em agregações
+          {
+            tipo: "topico",
+            titulo: "🔹 Valores NULL em Agregações",
+            lista: [
+              "**AVG, SUM, MAX, MIN, COUNT(col)** → ignoram NULL",
+              "**COUNT(*)** → conta todas as linhas inclusive com NULL",
+              "Se todos os valores forem NULL: COUNT() retorna 0; AVG/SUM/MAX/MIN retornam NULL"
+            ]
+          }
+
+        ]
+      },
+
+      {
+        id: "distinct",
+        titulo: "📌 DISTINCT",
+
+        blocos: [
+
+          // 7 - DISTINCT
+          {
+            tipo: "topico",
+            titulo: "🔹 Cláusula DISTINCT",
+            lista: [
+              "Remove duplicatas do resultado da consulta",
+              "Sintaxe: `SELECT DISTINCT coluna FROM tabela;`",
+              "**DISTINCT em agregações** → remove duplicatas antes de aplicar a função",
+              "`COUNT(DISTINCT col)` → válido; conta valores únicos",
+              "`COUNT(DISTINCT *)` → **inválido**",
+              "**ALL** (padrão implícito) → mantém duplicatas"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "fig_consulta_sem_distinct.png",
+            pasta: "imagens_banco_dados/aula_12",
+            num: "5",
+            alt: "Consulta simples de código de cursos — resultado com duplicatas"
+          },
+
+          {
+            tipo: "imagem",
+            src: "fig_consulta_com_distinct.png",
+            pasta: "imagens_banco_dados/aula_12",
+            num: "6",
+            alt: "Consulta usando DISTINCT — duplicatas eliminadas do resultado"
+          },
+
+          {
+            tipo: "imagem",
+            src: "fig_distinct_agregacao_count.png",
+            pasta: "imagens_banco_dados/aula_12",
+            num: "7",
+            alt: "Consulta usando DISTINCT numa função de agregação COUNT — contagem sem duplicidade"
+          }
+
+        ]
+      }
+
+    ]
+  },
+
+  // Aula 13 — Consultas Aninhadas e Junções
+  {
+    aula: "Aula 13 — Consultas Aninhadas e Junções",
+
+    ideia_central: "Consultas aninhadas permitem usar o resultado de um SELECT dentro de outro; JOINs combinam tabelas relacionadas — técnicas essenciais para recuperar informações complexas de bancos de dados relacionais.",
+
+    secoes: [
+
+      {
+        id: "subqueries",
+        titulo: "📌 Consultas Aninhadas (Subqueries)",
+
+        blocos: [
+
+          // 1 - conceito e tipo I
+          {
+            tipo: "topico",
+            titulo: "🔹 Conceito e Tipo I — Independente",
+            lista: [
+              "**Subconsulta** → instrução SELECT dentro de outro SELECT",
+              "Pode aparecer em: `WHERE`, `HAVING`, `FROM`",
+              "**Tipo I** → independente da consulta externa; executa uma vez; usa `IN` / `NOT IN`",
+              "Fluxo: subconsulta executa primeiro → resultado é usado como filtro pela consulta principal",
+              "**NOT IN** → diferença entre conjuntos; retorna elementos que não existem na outra tabela"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_consulta_tipo1_sql.png",
+            pasta: "imagens_banco_dados/aula_13",
+            num: "1",
+            alt: "Exemplo de consulta aninhada Tipo I utilizando IN para filtrar alunos com média maior ou igual a 7"
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_not_in_diferenca.png",
+            pasta: "imagens_banco_dados/aula_13",
+            num: "2",
+            alt: "Exemplo de consulta usando NOT IN para encontrar registros inexistentes em outra tabela — diferença entre conjuntos"
+          },
+
+          // 2 - tipo II
+          {
+            tipo: "topico",
+            titulo: "🔹 Tipo II — Correlacionada",
+            lista: [
+              "**Tipo II** → depende da consulta externa; executa uma vez por linha da consulta principal",
+              "Fluxo: consulta externa seleciona linha → interna executa com valores dessa linha → repete para cada linha",
+              "**EXISTS** → verdadeiro se a subconsulta retornar uma ou mais linhas",
+              "**NOT EXISTS** → verdadeiro se a subconsulta não retornar linhas",
+              "Tipo I: executa uma vez, não depende da externa, usa IN | Tipo II: executa várias vezes, depende da externa, usa EXISTS"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_subconsulta_correlacionada.png",
+            pasta: "imagens_banco_dados/aula_13",
+            num: "3",
+            alt: "Exemplo de consulta aninhada Tipo II demonstrando NOT EXISTS e execução repetida da subconsulta"
+          },
+
+          // 3 - subconsulta no FROM
+          {
+            tipo: "topico",
+            titulo: "🔹 Subconsulta na Cláusula FROM",
+            lista: [
+              "Gera **tabela derivada** (visão inline) — tabela temporária usada pela consulta externa",
+              "Requer alias obrigatório: `FROM (SELECT ...) AS alias`",
+              "Com funções agregadas na subconsulta, geralmente exige `GROUP BY`",
+              "Vantagens: organização, reutilização de resultados intermediários, legibilidade"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_subconsulta_from.png",
+            pasta: "imagens_banco_dados/aula_13",
+            num: "4",
+            alt: "Exemplo de subconsulta na cláusula FROM criando tabela derivada com cálculo de média e aliases"
+          }
+
+        ]
+      },
+
+      {
+        id: "joins",
+        titulo: "📌 Junções (JOINs)",
+
+        blocos: [
+
+          // 4 - produto cartesiano e INNER JOIN
+          {
+            tipo: "topico",
+            titulo: "🔹 Produto Cartesiano e INNER JOIN",
+            lista: [
+              "**Produto Cartesiano** → combina cada linha da tabela A com cada linha da tabela B; gera muitas combinações; precisa de filtros no WHERE",
+              "**INNER JOIN** → retorna apenas registros com correspondência nas duas tabelas; funciona como interseção de conjuntos",
+              "Valores NULL não combinam automaticamente no INNER JOIN",
+              "Sintaxe: `FROM A INNER JOIN B ON A.id = B.id`"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_produto_cartesiano.png",
+            pasta: "imagens_banco_dados/aula_13",
+            num: "5",
+            alt: "Exemplo de consulta utilizando produto cartesiano com relação por chave estrangeira"
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_inner_join.png",
+            pasta: "imagens_banco_dados/aula_13",
+            num: "6",
+            alt: "Exemplo de consulta utilizando INNER JOIN retornando apenas registros relacionados nas duas tabelas"
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_teoria_conjuntos_inner.png",
+            pasta: "imagens_banco_dados/aula_13",
+            num: "7",
+            alt: "Comparativo do INNER JOIN com teoria dos conjuntos — interseção entre tabelas"
+          },
+
+          // 5 - outer joins
+          {
+            tipo: "topico",
+            titulo: "🔹 LEFT JOIN, RIGHT JOIN e FULL OUTER JOIN",
+            lista: [
+              "**LEFT JOIN** → todos os registros da tabela esquerda; sem correspondência na direita → NULL",
+              "**RIGHT JOIN** → inverso do LEFT; todos da direita; sem correspondência na esquerda → NULL",
+              "**FULL OUTER JOIN** → todos os registros das duas tabelas; sem correspondência em qualquer lado → NULL"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_left_join.png",
+            pasta: "imagens_banco_dados/aula_13",
+            num: "8",
+            alt: "Comparativo do LEFT JOIN com teoria dos conjuntos — todos os elementos da esquerda são mantidos"
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_right_join.png",
+            pasta: "imagens_banco_dados/aula_13",
+            num: "9",
+            alt: "Comparativo do RIGHT JOIN com teoria dos conjuntos — todos os elementos da direita são mantidos"
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_full_outer_join.png",
+            pasta: "imagens_banco_dados/aula_13",
+            num: "10",
+            alt: "Comparativo do FULL OUTER JOIN — união completa das tabelas incluindo registros sem correspondência"
+          }
+
+        ]
+      }
+
+    ]
+  },
+  // Aula 14 — BDOO e BDOR
+  {
+    aula: "Aula 14 — BDOO e BDOR",
+
+    ideia_central: "Bancos de dados orientados a objetos (BDOO) e objeto-relacionais (BDOR) surgiram para superar as limitações dos bancos relacionais tradicionais frente a dados complexos, incorporando encapsulamento, herança e polimorfismo.",
+
+    secoes: [
+
+      {
+        id: "relacional-vs-oo",
+        titulo: "📌 Banco Relacional x Banco Orientado a Objetos",
+
+        blocos: [
+
+          // 1 - limitações relacionais
+          {
+            tipo: "topico",
+            titulo: "🔹 Limitações dos Bancos Relacionais",
+            lista: [
+              "Relacionais tradicionais trabalham com tipos simples: números, textos, datas",
+              "Com a evolução surgiram dados complexos: imagens, vídeos, mapas, multimídia",
+              "SQL tradicional não manipula facilmente objetos complexos",
+              "Isso criou incompatibilidade entre aplicações orientadas a objetos e bancos relacionais"
+            ]
+          },
+
+          // 2 - BDOO
+          {
+            tipo: "topico",
+            titulo: "🔹 BDOO — Banco de Dados Orientado a Objetos",
+            lista: [
+              "Une **persistência de dados** com o **paradigma orientado a objetos**",
+              "Dados armazenados como objetos com atributos e métodos",
+              "Características: encapsulamento, herança, polimorfismo, reutilização, integração com linguagens OO"
+            ]
+          },
+
+          // 3 - BDOR
+          {
+            tipo: "topico",
+            titulo: "🔹 BDOR — Banco de Dados Objeto-Relacional",
+            lista: [
+              "Combina modelo relacional com recursos orientados a objetos",
+              "Mantém robustez relacional com suporte a objetos complexos",
+              "Benefícios: tipos complexos, maior poder de modelagem, reutilização"
+            ]
+          }
+
+        ]
+      },
+
+      {
+        id: "pilares-oo",
+        titulo: "📌 Pilares da Orientação a Objetos",
+
+        blocos: [
+
+          // 4 - encapsulamento
+          {
+            tipo: "topico",
+            titulo: "🔹 Encapsulamento",
+            lista: [
+              "Esconde detalhes internos; acesso apenas pela interface do objeto",
+              "Objeto possui: dados (atributos) e procedimentos (métodos)",
+              "**Classe** → define atributos, métodos e comportamento dos objetos",
+              "Benefícios: reutilização, independência de dados, redução de manutenção"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_bdoo_classe_metodos.png",
+            pasta: "imagens_banco_dados/aula_14",
+            num: "1",
+            alt: "Figura 1 — Exemplo de classe com suas variáveis e métodos"
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_bdoo_reutilizacao_classes.png",
+            pasta: "imagens_banco_dados/aula_14",
+            num: "2",
+            alt: "Figura 2 — Exemplo de classe utilizando variáveis e métodos de outra — reutilização e encapsulamento"
+          },
+
+          // 5 - herança
+          {
+            tipo: "topico",
+            titulo: "🔹 Herança",
+            lista: [
+              "Subclasses reutilizam atributos e métodos da superclasse",
+              "**Superclasse** → classe pai; **Subclasse** → classe filha",
+              "Exemplo: `CorPonto` herda coordenadas de `Point` e adiciona cor e brilho",
+              "Benefícios: reutilização, redução de código, organização hierárquica"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_bdoo_heranca_hierarquia.png",
+            pasta: "imagens_banco_dados/aula_14",
+            num: "3",
+            alt: "Figura 3 — Hierarquia de classe com a subclasse CorPonto"
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_bdoo_subclasse_corponto.png",
+            pasta: "imagens_banco_dados/aula_14",
+            num: "4",
+            alt: "Figura 4 — Exemplo da hierarquia de classe com atributos herdados e novos atributos da subclasse CorPonto"
+          },
+
+          // 6 - polimorfismo
+          {
+            tipo: "topico",
+            titulo: "🔹 Polimorfismo",
+            lista: [
+              "Mesmo método com implementações diferentes por subclasse",
+              "Exemplo: `MesmaCoord` em `Point` compara coordenadas; em `CorPonto` compara coordenadas e cor",
+              "**Vinculação estática** → ocorre na compilação; mais eficiente",
+              "**Vinculação dinâmica** → ocorre na execução; mais flexível; chamada de vinculação tardia",
+              "O SGBD garante compatibilidade entre objetos e métodos"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_bdoo_processamento_mensagem.png",
+            pasta: "imagens_banco_dados/aula_14",
+            num: "5",
+            alt: "Figura 5 — Processamento de uma mensagem entre objetos e classes no paradigma orientado a objetos"
+          }
+
+        ]
+      },
+
+      {
+        id: "odmg-bdor-sql",
+        titulo: "📌 ODMG e Recursos do BDOR em SQL",
+
+        blocos: [
+
+          // 7 - ODMG
+          {
+            tipo: "topico",
+            titulo: "🔹 ODMG — Object Database Management Group",
+            lista: [
+              "Padrão criado para padronizar bancos orientados a objetos",
+              "**Modelo de Objetos** → define tipos, objetos e construtores",
+              "**ODL (Object Definition Language)** → define objetos e esquemas; equivalente ao DDL relacional",
+              "**OQL (Object Query Language)** → consulta baseada em SQL com suporte a herança, polimorfismo e objetos complexos",
+              "**Binding** → mapeia objetos da aplicação para o banco"
+            ]
+          },
+
+          // 8 - tipos e herança SQL
+          {
+            tipo: "topico",
+            titulo: "🔹 Tipos Definidos pelo Usuário e Herança em SQL",
+            lista: [
+              "**Tipo personalizado:** `CREATE TYPE Pessoa (ID varchar(20), nome varchar(20), endereço varchar(20));`",
+              "**Herança de tipo:** `CREATE TYPE Aluno UNDER Pessoa` → Aluno herda atributos de Pessoa",
+              "**Herança de tabela (PostgreSQL):** `CREATE TABLE alunos INHERITS pessoas;`",
+              "Arrays: PostgreSQL usa `INTEGER[]`; Oracle usa `VARRAY(10) OF INTEGER`"
+            ]
+          },
+
+          // 9 - referências SQL
+          {
+            tipo: "topico",
+            titulo: "🔹 Tipos de Referência em SQL",
+            lista: [
+              "Permitem criar referências entre objetos, como ponteiros",
+              "Sintaxe: `diretor ref(Pessoa)`",
+              "**REF FROM** → usa chave primária como referência do objeto",
+              "**Expressões de caminho (SQL:1999):** `diretor->nome` → acessa atributo do objeto referenciado sem join explícito",
+              "**DEREF** → retorna o objeto referenciado: `SELECT DEREF(diretor).nome`"
+            ]
+          }
+
+        ]
+      }
+
+    ]
+  },
+
+  // Aula 15 — Projeto de Banco de Dado
+  {
+    aula: "Aula 15 — Projeto de Banco de Dados",
+
+    ideia_central: "Um banco de dados bem projetado depende de boa modelagem, regras de negócio corretas, relacionamentos bem definidos, normalização adequada e implementação física consistente.",
+
+    secoes: [
+
+      {
+        id: "etapas-projeto",
+        titulo: "📌 Etapas do Projeto de Banco de Dados",
+
+        blocos: [
+
+          // 1 - conceito e objetivos
+          {
+            tipo: "topico",
+            titulo: "🔹 Conceito e Objetivos",
+            lista: [
+              "**Projeto de BD** → processo de planejamento e organização das informações a serem armazenadas",
+              "Objetivos: evitar redundância, garantir integridade, melhorar desempenho, facilitar consultas e manutenção",
+              "**SGBD** → armazena dados, controla acessos, garante segurança e executa consultas",
+              "SGBDs gratuitos: `PostgreSQL`, `MySQL`; Comerciais: `Oracle`, `SQL Server`, `DB2`"
+            ]
+          },
+
+          // 2 - etapas
+          {
+            tipo: "topico",
+            titulo: "🔹 Etapas do Projeto",
+            lista: [
+              "1. **Definir objetivo** → qual problema será resolvido e quais informações serão armazenadas",
+              "2. **Identificar entidades** → objetos do mundo real; cada entidade vira uma tabela",
+              "3. **Identificar atributos** → características das entidades",
+              "4. **Definir chaves (PK)** → atributo que identifica registros de forma única",
+              "5. **Definir relacionamentos** → como as entidades se conectam",
+              "6. **Normalizar** → eliminar redundância e evitar inconsistências (até 3FN)"
+            ]
+          },
+
+          // 3 - cardinalidade
+          {
+            tipo: "topico",
+            titulo: "🔹 Cardinalidade",
+            lista: [
+              "**1:1** → um para um",
+              "**1:N** → um para muitos; exemplo: um clube possui vários jogadores",
+              "**N:M** → muitos para muitos; exemplo: clube ↔ campeonato; gera entidade associativa"
+            ]
+          }
+
+        ]
+      },
+
+      {
+        id: "modelos",
+        titulo: "📌 Modelos Conceitual, Lógico e Físico",
+
+        blocos: [
+
+          // 4 - modelo conceitual
+          {
+            tipo: "topico",
+            titulo: "🔹 Modelo Conceitual",
+            lista: [
+              "Visão geral do negócio; independente de tecnologia e SGBD",
+              "Elementos: entidades, atributos e relacionamentos",
+              "Alto nível de abstração; facilita comunicação entre usuários e desenvolvedores",
+              "Foca nas regras do negócio"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_modelo_conceitual_cbf.png",
+            pasta: "imagens_banco_de_dados/aula_1",
+            num: "1",
+            alt: "Modelo conceitual do sistema da CBF mostrando entidades, atributos e relacionamentos sem detalhes técnicos"
+          },
+
+          // 5 - modelo lógico
+          {
+            tipo: "topico",
+            titulo: "🔹 Modelo Lógico",
+            lista: [
+              "Transforma o modelo conceitual em estruturas relacionais",
+              "Define: tabelas, PKs, FKs, relacionamentos, entidades associativas",
+              "Utiliza normalização e padrões de nomenclatura",
+              "**PK:** `PRIMARY KEY (jogador_id)` | **FK:** `FOREIGN KEY (clube_id) REFERENCES Clube(clube_id)`"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "image_modelo_logico.png",
+            pasta: "imagens_banco_de_dados/aula_1",
+            num: "2",
+            alt: "Modelo lógico com tabelas, chaves primárias, estrangeiras e entidades associativas do sistema da CBF"
+          },
+
+          // 6 - modelo físico
+          {
+            tipo: "topico",
+            titulo: "🔹 Modelo Físico",
+            lista: [
+              "Implementação real no SGBD; depende do banco escolhido",
+              "Define: tipos de dados, índices, restrições, campos obrigatórios, armazenamento",
+              "**Relacionamento identificado** → FK faz parte da PK",
+              "**Relacionamento não identificado** → FK não faz parte da PK"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "image_modelo_fisico.png",
+            pasta: "imagens_banco_de_dados/aula_1",
+            num: "3",
+            alt: "Modelo físico com tipos de dados, relacionamentos identificados e não identificados e campos obrigatórios"
+          }
+
+        ]
+      },
+
+      {
+        id: "ddl-dml-ferramentas",
+        titulo: "📌 DDL, DML e Ferramentas",
+
+        blocos: [
+
+          // 7 - DDL e DML
+          {
+            tipo: "topico",
+            titulo: "🔹 DDL e DML",
+            lista: [
+              "**DDL** → cria e gerencia estruturas: `CREATE`, `ALTER`, `DROP`",
+              "**DML** → manipula dados: `INSERT`, `UPDATE`, `DELETE`, `SELECT`",
+              "Consulta com JOIN: `SELECT * FROM tabela1 INNER JOIN tabela2 ON tabela1.id = tabela2.id`",
+              "Relatório com GROUP BY: `SELECT federacao.sigla, COUNT(clube_id) FROM clube INNER JOIN federacao ON ... GROUP BY federacao.sigla`"
+            ]
+          },
+
+          // 8 - ferramentas
+          {
+            tipo: "topico",
+            titulo: "🔹 Ferramentas Utilizadas",
+            lista: [
+              "**MySQLWorkbench** → geração automática de scripts DDL",
+              "**PostgreSQL** → SGBD open source utilizado no projeto",
+              "**PGAdmin** → interface gráfica para PostgreSQL",
+              "**SQLines** → conversão de scripts entre diferentes SGBDs"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "image_geracao_ddl.png",
+            pasta: "imagens_banco_de_dados/aula_1",
+            num: "4",
+            alt: "Geração automática de scripts SQL no MySQLWorkbench"
+          },
+
+          {
+            tipo: "imagem",
+            src: "image_conversao_sqlines.png",
+            pasta: "imagens_banco_de_dados/aula_1",
+            num: "5",
+            alt: "Conversão de scripts MySQL para PostgreSQL usando a ferramenta SQLines"
+          },
+
+          {
+            tipo: "imagem",
+            src: "image_pgadmin_criacao_bd.png",
+            pasta: "imagens_banco_de_dados/aula_1",
+            num: "6",
+            alt: "Criação de um novo banco de dados no PostgreSQL via PGAdmin"
+          },
+
+          {
+            tipo: "imagem",
+            src: "image_consulta_clubes_federacao.png",
+            pasta: "imagens_banco_de_dados/aula_1",
+            num: "7",
+            alt: "Consulta de clubes por federação demonstrando uso de JOIN e GROUP BY para geração de relatórios"
+          }
+
+        ]
+      }
+
+    ]
+  },
+
+
+
+]
 
 
 

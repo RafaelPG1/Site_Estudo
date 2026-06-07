@@ -1,4 +1,4 @@
-/* =============================================
+  /* =============================================
    NEXUS STUDY — res_design.js
    Disciplina: Design de Sistemas
    ============================================= */
@@ -3595,9 +3595,7 @@ window.__nexusConteudo = {
   }
   ]
   },
-
   // Aula 15 - Revisão Projeto de Design para Web
-
   {
   aula: "Aula 15 - Revisão Projeto de Design para Web",
   ideia_central: "Um bom projeto web deve ser responsivo, centrado no usuário, organizado semanticamente, acessível, visualmente consistente, ergonomicamente adequado e otimizado para diferentes dispositivos.",
@@ -3665,8 +3663,8 @@ window.__nexusConteudo = {
         },
         {
           tipo: "imagem",
-          src: "image_wireframe_mobile_first.png",
-          pasta: "imagens_design_web/aula_1",
+          src: "figura_wireframe_mobile_first.png",
+          pasta: "imagens_design/aula_15",
           alt: "Wireframe inicial da interface mobile first representando a organização visual do layout antes da implementação",
           num: 1
         }
@@ -3820,8 +3818,8 @@ window.__nexusConteudo = {
         },
         {
           tipo: "imagem",
-          src: "image_esquema_cores.png",
-          pasta: "imagens_design_web/aula_1",
+          src: "figura_esquema_cores.png",
+          pasta: "imagens_design/aula_15",
           alt: "Paleta de cores utilizada no projeto demonstrando a definição da identidade visual",
           num: 2
         },
@@ -3882,8 +3880,8 @@ window.__nexusConteudo = {
         },
         {
           tipo: "imagem",
-          src: "image_interface_mobile.png",
-          pasta: "imagens_design_web/aula_1",
+          src: "figura_interface_mobile.png",
+          pasta: "imagens_design/aula_15",
           alt: "Resultado final da versão mobile do site após aplicação do HTML e CSS",
           num: 3
         }
@@ -4031,8 +4029,8 @@ window.__nexusConteudo = {
         },
         {
           tipo: "imagem",
-          src: "image_responsividade_mobile_desktop.png",
-          pasta: "imagens_design_web/aula_1",
+          src: "figura_responsividade_mobile_desktop.png",
+          pasta: "imagens_design/aula_15",
           alt: "Comparação do layout mobile com o desktop evidenciando as adaptações responsivas",
           num: 4
         }
@@ -4207,8 +4205,982 @@ window.__nexusConteudo = {
   ]
   }
 
+  ],
 
+  simplificado: [
+  // Aula 9 — Prototipagem e Norma ISO 9241
+  {
+    aula: "Aula 9 — Prototipagem e Norma ISO 9241",
 
+    ideia_central: "Os modelos de ciclo de vida evoluíram de abordagens sequenciais e rígidas para métodos centrados no usuário, culminando no Design Thinking e na Norma ISO 9241, que estabelece princípios de ergonomia, usabilidade e interação humano-computador.",
 
+    secoes: [
+
+      {
+        id: "ciclo-vida-modelos",
+        titulo: "📌 Ciclo de Vida e Modelos de Desenvolvimento",
+
+        blocos: [
+
+          // 1 - modelos centrados no produto
+          {
+            tipo: "topico",
+            titulo: "🔹 Modelos Centrados no Produto",
+            lista: [
+              "**Cascata** → sequencial e rígido; uma etapa só começa quando a anterior termina; pouca flexibilidade; usuário participa apenas no início",
+              "**Espiral** → combina prototipagem, análise de riscos e feedback do cliente em ciclos; mais flexível; pode aumentar custos",
+              "**Iterativo** → baseado em repetição e melhoria incremental; software evolui em várias versões; fácil adaptação; participação do usuário"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_modelo_cascata_iso9241.png",
+            pasta: "imagens_design/aula_09",
+            num: "1",
+            alt: "Figura 1 — Modelo cascata: fluxo sequencial evidenciando que cada etapa depende da conclusão da anterior"
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_modelo_espiral_iso9241.png",
+            pasta: "imagens_design/aula_09",
+            num: "2",
+            alt: "Figura 2 — Modelo espiral: ciclo de planejamento, análise de riscos, engenharia e avaliação do cliente"
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_modelo_iterativo_iso9241.png",
+            pasta: "imagens_design/aula_09",
+            num: "3",
+            alt: "Figura 3 — Modelo iterativo: processo iterativo com repetição contínua entre planejamento, implementação, testes e implantação"
+          },
+
+          // 2 - modelos centrados no usuário
+          {
+            tipo: "topico",
+            titulo: "🔹 Modelos Centrados no Usuário",
+            lista: [
+              "**Modelo Estrela** → avaliação constante como núcleo; qualquer etapa pode iniciar o projeto; alta flexibilidade; pouca adoção por empresas",
+              "**Modelo de Shneiderman** → três pilares: especificação (layout, cores, ações), prototipagem e testes de usabilidade"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_modelo_estrela_iso9241.png",
+            pasta: "imagens_design/aula_09",
+            num: "4",
+            alt: "Figura 4 — Modelo estrela: avaliação como elemento central do desenvolvimento centrado no usuário"
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_modelo_shneiderman_iso9241.png",
+            pasta: "imagens_design/aula_09",
+            num: "5",
+            alt: "Figura 5 — Modelo de Shneiderman: pilares de especificação, prototipagem e testes de usabilidade"
+          },
+
+          // 3 - ágil e design thinking
+          {
+            tipo: "topico",
+            titulo: "🔹 Desenvolvimento Ágil e Design Thinking",
+            lista: [
+              "**Manifesto Ágil (2001)** → pessoas e interações acima de processos; software funcionando acima de documentação; colaboração do cliente; respostas rápidas às mudanças",
+              "**Design Thinking** → focado no ser humano; empatia, criatividade, colaboração e experimentação",
+              "Princípios do DT: centrado no usuário, cocriativo, sequencial, evidente, holístico"
+            ]
+          }
+
+        ]
+      },
+
+      {
+        id: "iso9241",
+        titulo: "📌 Norma ISO 9241",
+
+        blocos: [
+
+          // 4 - conceitos fundamentais
+          {
+            tipo: "topico",
+            titulo: "🔹 Conceitos Fundamentais",
+            lista: [
+              "Norma voltada para ergonomia, usabilidade e interação humano-computador",
+              "**Eficácia** → usuário consegue atingir o objetivo",
+              "**Eficiência** → objetivo atingido com pouco esforço",
+              "**Satisfação** → qualidade da experiência do usuário"
+            ]
+          },
+
+          // 5 - parte 10 (7 princípios)
+          {
+            tipo: "topico",
+            titulo: "🔹 Parte 10 — 7 Princípios de Diálogo",
+            lista: [
+              "1. **Adequação à tarefa** → facilitar execução, reduzir esforço, fornecer ajuda",
+              "2. **Autodescrição** → interface explica-se sozinha; feedback imediato; evita manuais",
+              "3. **Controle** → usuário controla ações, desfaz operações, controla velocidade",
+              "4. **Conformidade com expectativas** → padrões conhecidos, consistência, linguagem familiar",
+              "5. **Tolerância a erros** → prevenir, ajudar na correção, avisar consequências",
+              "6. **Adequação à individualização** → permite personalização e adaptação ao usuário",
+              "7. **Adequação ao aprendizado** → facilita aprendizado e ensina durante o uso"
+            ]
+          },
+
+          // 6 - partes 11 a 17
+          {
+            tipo: "topico",
+            titulo: "🔹 Partes 11 a 17 da ISO 9241",
+            lista: [
+              "**Parte 11** → especificação da usabilidade",
+              "**Parte 12** → apresentação da informação",
+              "**Parte 13** → condução do usuário",
+              "**Parte 14** → diálogo por menu",
+              "**Parte 15** → linguagem de comandos",
+              "**Parte 16** → manipulação direta",
+              "**Parte 17** → formulários"
+            ]
+          }
+
+        ]
+      }
+
+    ]
+  },
+
+  // Aula 10 — Design de Interfaces e Prototipação
+  {
+    aula: "Aula 10 — Design de Interfaces e Prototipação",
+
+    ideia_central: "O design de interfaces eficaz exige abordagem centrada no usuário, com atenção a usabilidade, ergonomia e comunicabilidade, materializando-se por meio de modelos conceituais, físicos e ferramentas como wireframes, mockups, NinjaMock e Figma.",
+
+    secoes: [
+
+      {
+        id: "design-modelos",
+        titulo: "📌 Design Centrado no Usuário e Modelos",
+
+        blocos: [
+
+          // 1 - design centrado no usuário
+          {
+            tipo: "topico",
+            titulo: "🔹 Design Centrado no Usuário",
+            lista: [
+              "**Usabilidade** → sistema permite tarefas de forma eficiente",
+              "**Ergonomia** → adequação às capacidades físicas e cognitivas humanas",
+              "**Comunicabilidade** → clareza da comunicação entre sistema e usuário",
+              "**Interação intuitiva** → usuário aprende utilizando o sistema naturalmente",
+              "Designer deve: analisar comportamento, considerar contexto, definir requisitos, organizar sequência de elementos"
+            ]
+          },
+
+          // 2 - modelos conceituais
+          {
+            tipo: "topico",
+            titulo: "🔹 Modelos Conceituais",
+            lista: [
+              "Representam funções, relações e interações do sistema",
+              "Utilizam associações mentais, metáforas visuais e conexões semânticas",
+              "Ferramentas: diagramas UML, casos de uso, sequência, ER, Rich Picture",
+              "**UML** → linguagem de modelagem baseada em orientação a objetos"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_rich_picture_modelo.png",
+            pasta: "imagens_design/aula_10",
+            num: "1",
+            alt: "Figura 1 — Exemplo de modelo Rich Picture: demonstra relações conceituais entre entidades e conexões do sistema"
+          },
+
+          // 3 - tipos de interação
+          {
+            tipo: "topico",
+            titulo: "🔹 Tipos de Interação",
+            lista: [
+              "**Instrução** → cliques, voz, teclado, botões",
+              "**Conversação** → diálogo por texto, voz ou IA",
+              "**Manipulação e navegação** → arrastar, mover, reorganizar objetos virtuais",
+              "**Exploração e pesquisa** → sistema guia o usuário passo a passo"
+            ]
+          },
+
+          // 4 - modelos físicos e problemas de usabilidade
+          {
+            tipo: "topico",
+            titulo: "🔹 Modelos Físicos e Problemas de Usabilidade",
+            lista: [
+              "**Design operacional** → funcionamento, estrutura e armazenamento",
+              "**Design representacional** → aparência visual e elementos gráficos",
+              "**Design de interação** → organização funcional e fluxo de uso",
+              "**Barreiras** → impedem realização da tarefa",
+              "**Obstáculos** → tarefa realizada com dificuldade",
+              "**Ruídos** → geram dúvidas ou confusão"
+            ]
+          }
+
+        ]
+      },
+
+      {
+        id: "prototipagem",
+        titulo: "📌 Prototipagem",
+
+        blocos: [
+
+          // 5 - tipos de protótipo
+          {
+            tipo: "topico",
+            titulo: "🔹 Tipos de Protótipos",
+            lista: [
+              "**Cenário** → descrição narrativa textual de interação usuário-sistema",
+              "**Storyboard** → representação gráfica da narrativa; origem no cinema",
+              "**Wireframe** → esqueleto visual; sem cores nem detalhes; foco na estrutura; base dos protótipos de alta fidelidade",
+              "**Mockup** → protótipo visual próximo do produto final; alta fidelidade; dimensões precisas"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_storyboard_realidade_aumentada.png",
+            pasta: "imagens_design/aula_10",
+            num: "2",
+            alt: "Figura 2 — Storyboard simulando realidade aumentada: ilustra representação gráfica de interações e sequência narrativa"
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_wireframe_mobile_first.png",
+            pasta: "imagens_design/aula_10",
+            num: "3",
+            alt: "Figura 3 — Wireframe de interface mobile first: apresenta estrutura básica de uma interface sem elementos gráficos avançados"
+          },
+
+          // 6 - fidelidade e orientação
+          {
+            tipo: "topico",
+            titulo: "🔹 Fidelidade e Orientação do Protótipo",
+            lista: [
+              "**Baixa fidelidade** → poucos detalhes; rascunhos em papel; estimula discussões abertas",
+              "**Alta fidelidade** → aparência final; interações completas; testes mais precisos",
+              "**Horizontal** → muitas funções, pouco detalhamento; visão geral do sistema",
+              "**Vertical** → menos funções, grande aprofundamento; analisa detalhes específicos"
+            ]
+          },
+
+          // 7 - ferramentas NinjaMock e Figma
+          {
+            tipo: "topico",
+            titulo: "🔹 Ferramentas — NinjaMock e Figma",
+            lista: [
+              "**NinjaMock** → criação de wireframes mobile first com header, botões, menus, textos e rodapé",
+              "**Figma** → criação de mockups de alta fidelidade; suporta ícones, imagens, componentes, scrolling e interações",
+              "Atalhos Figma: `CTRL+SHIFT+K` inserir imagens; `CTRL+D` duplicar telas",
+              "Interações Figma: Touch Down, Touch Up, Vertical Scrolling — permitem navegação simulada"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_wireframe_ninjamock.png",
+            pasta: "imagens_design/aula_10",
+            num: "4",
+            alt: "Figura 4 — Wireframe tela inicial no NinjaMock: exemplo prático de wireframe desenvolvido na plataforma NinjaMock"
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_wireframe_completo.png",
+            pasta: "imagens_design/aula_10",
+            num: "5",
+            alt: "Figura 5 — Wireframe completo no NinjaMock: demonstra conjunto completo de telas wireframe conectadas"
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_ambiente_figma.png",
+            pasta: "imagens_design/aula_10",
+            num: "6",
+            alt: "Figura 6 — Ambiente de trabalho Figma: apresenta organização inicial do ambiente de design no Figma"
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_mockup_alta_fidelidade.png",
+            pasta: "imagens_design/aula_10",
+            num: "7",
+            alt: "Figura 7 — Mockup de alta fidelidade: exemplo de protótipo visual próximo da interface final"
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_interacoes_figma.png",
+            pasta: "imagens_design/aula_10",
+            num: "8",
+            alt: "Figura 8 — Interações entre as telas no Figma: demonstra conexões e fluxo de navegação entre telas"
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_preview_prototipo.png",
+            pasta: "imagens_design/aula_10",
+            num: "9",
+            alt: "Figura 9 — Modo de visualização do protótipo no Figma: mostra pré-visualização funcional do protótipo criado"
+          }
+
+        ]
+      }
+
+    ]
+  },
+
+  // Aula 11 — Design Responsivo
+  {
+    aula: "Aula 11 — Design Responsivo",
+
+    ideia_central: "Design Responsivo é a metodologia que permite interfaces web se adaptarem automaticamente a diferentes telas, implementada por Media Queries, Layout Fluido, Meta Tag Viewport, Breakpoints e Mobile First.",
+
+    secoes: [
+
+      {
+        id: "responsivo-conceitos",
+        titulo: "📌 Conceitos do Design Responsivo",
+
+        blocos: [
+
+          // 1 - conceito e características
+          {
+            tipo: "topico",
+            titulo: "🔹 Design Responsivo",
+            lista: [
+              "Popularizado por **Ethan Marcotte**",
+              "Capacidade de interface web se adaptar automaticamente a diferentes tamanhos de tela",
+              "Responsividade ≠ apenas reduzir ou esticar o layout; exige reorganizar elementos, redesenhar partes e alterar comportamentos",
+              "Crescimento do uso mobile tornou responsividade obrigatória no desenvolvimento moderno"
+            ]
+          },
+
+          // 2 - media queries
+          {
+            tipo: "topico",
+            titulo: "🔹 Media Queries",
+            lista: [
+              "Recurso do `CSS3` para aplicar estilos condicionais conforme o tamanho da tela",
+              "Implementadas com a regra `@media`",
+              "Permitem: alterar tamanhos, mudar alinhamentos, ocultar componentes, reorganizar grids, adaptar menus",
+              "Exemplo: `@media only screen and (max-width: 600px) { body { background-color: lightblue; } }`"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_layout_fluido_sem_media_queries.png",
+            pasta: "imagens_design/aula_11",
+            num: "1",
+            alt: "Figura 1 — Layout fluido sem media queries: mostra um layout que possui fluidez, porém sem reorganização adequada dos elementos. Os textos ficam sobrepostos, demonstrando que apenas flexibilidade não resolve problemas de responsividade"
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_resultado_media_queries.png",
+            pasta: "imagens_design/aula_11",
+            num: "2",
+            alt: "Figura 2 — Resultado do uso do media queries: demonstra como os elementos passam a ocupar 100% da largura em telas pequenas, reorganizando o conteúdo verticalmente e melhorando a legibilidade"
+          },
+
+          // 3 - breakpoints
+          {
+            tipo: "topico",
+            titulo: "🔹 Breakpoints",
+            lista: [
+              "Pontos específicos do tamanho da tela em que o layout muda de comportamento",
+              "Exemplos: smartphone, tablet, notebook, desktop",
+              "A ordem dos breakpoints importa: o último escrito sobrescreve os anteriores",
+              "Atributos: `width` (largura da janela), `device-width` (largura física), `height` (altura da tela)"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_breakpoint_600px.png",
+            pasta: "imagens_design/aula_11",
+            num: "3",
+            alt: "Figura 3 — Exemplo de breakpoint definido para a largura máxima de 600px: ilustra como o layout altera a quantidade de colunas quando a largura máxima da tela é atingida"
+          },
+
+          // 4 - meta viewport e layout fluido
+          {
+            tipo: "topico",
+            titulo: "🔹 Meta Tag Viewport e Layout Fluido",
+            lista: [
+              "**Meta Viewport** → controla renderização em dispositivos móveis; sem ela o navegador reduz o site automaticamente",
+              "Código: `<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">`",
+              "**Layout Fluido** → usa medidas relativas (`%`, `em`, `rem`) em vez de absolutas (`px`, `cm`, `pt`)",
+              "**Mobile First** → criado por **Luke Wroblewski**; desenvolve primeiro para telas pequenas; prioriza conteúdo essencial e melhora desempenho"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_comparativo_mobile_first.png",
+            pasta: "imagens_design/aula_11",
+            num: "4",
+            alt: "Figura 4 — Comparativo do desktop first com o mobile first: compara o desenvolvimento tradicional desktop first com a metodologia mobile first, mostrando como o fluxo de adaptação muda"
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_site_mobile_first.png",
+            pasta: "imagens_design/aula_11",
+            num: "5",
+            alt: "Figura 5 — Exemplo de site desenvolvido em mobile first: demonstra um layout inicialmente projetado para smartphones antes da adaptação para telas maiores"
+          }
+
+        ]
+      },
+
+      {
+        id: "breakpoints-pratica",
+        titulo: "📌 Breakpoints na Prática",
+
+        blocos: [
+
+          // 5 - adaptações práticas
+          {
+            tipo: "topico",
+            titulo: "🔹 Adaptações por Breakpoint",
+            lista: [
+              "**Logo** → `min-width: 480px` troca logo mobile pelo desktop",
+              "**Grid** → smartphone: 1 coluna; tablet: 2 colunas; desktop: 3 colunas",
+              "**Botões** → `min-width: 960px` reposiciona à direita e reduz tamanho",
+              "**Menu** → `min-width: 1280px` oculta botão hambúrguer (`display: none`) e exibe menu horizontal (`display: block !important`)"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_alteracao_logo.png",
+            pasta: "imagens_design/aula_11",
+            num: "6",
+            alt: "Figura 6 — Comparativo após a media screen para a alteração de logo: mostra a substituição do logo simplificado mobile por um logo completo para desktop"
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_variacao_grid.png",
+            pasta: "imagens_design/aula_11",
+            num: "7",
+            alt: "Figura 7 — Comparativo após a media screen de variação de grid: ilustra a reorganização das colunas conforme o aumento da largura da tela"
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_botoes_responsivos.png",
+            pasta: "imagens_design/aula_11",
+            num: "8",
+            alt: "Figura 8 — Comparativo após a alteração de escala e alinhamentos dos botões: mostra como os botões são redimensionados e reposicionados em telas maiores"
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_interface_desktop.png",
+            pasta: "imagens_design/aula_11",
+            num: "9",
+            alt: "Figura 9 — Interface gráfica desktop: apresenta o resultado final do layout responsivo adaptado para telas desktop"
+          }
+
+        ]
+      }
+
+    ]
+  },
+
+  // Aula 12 — CSS e HTML Comandos Básicos
+  {
+    aula: "Aula 12 — CSS e HTML Comandos Básicos",
+
+    ideia_central: "HTML estrutura o conteúdo de páginas web por meio de tags semânticas, enquanto o CSS estiliza essa estrutura com seletores e propriedades, permitindo separação entre forma e aparência.",
+
+    secoes: [
+
+      {
+        id: "html-estrutura",
+        titulo: "📌 HTML — Estrutura e Tags",
+
+        blocos: [
+
+          // 1 - conceito e estrutura
+          {
+            tipo: "topico",
+            titulo: "🔹 HTML — Conceito e Estrutura Básica",
+            lista: [
+              "**Linguagem de marcação** → não é linguagem de programação; apenas organiza conteúdo",
+              "`<!DOCTYPE html>` → declara tipo do documento; não é uma tag",
+              "`<html lang=\"pt-BR\">` → elemento raiz; define idioma",
+              "`<head>` → metadados, título, links externos; não visível ao usuário",
+              "`<body>` → área visível: textos, imagens, vídeos, tabelas, menus"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "fig_html_estrutura_basica_html5.png",
+            pasta: "imagens_design/aula_12",
+            num: "1",
+            alt: "Figura 1 — Estrutura básica de uma página HTML5 gerada pelo VSCode"
+          },
+
+          // 2 - tags principais
+          {
+            tipo: "topico",
+            titulo: "🔹 Tags Principais",
+            lista: [
+              "`<h1>` a `<h6>` → títulos em hierarquia (`<h1>` = maior importância)",
+              "`<p>` → parágrafo de texto",
+              "`<ul>` + `<li>` → lista não ordenada (marcadores) | `<ol>` + `<li>` → lista ordenada (numeração)",
+              "`<img src=\"\">` → inserção de imagens pelo atributo `src`",
+              "`<table>` → tabela | `<thead>` cabeçalho | `<tbody>` corpo | `<tr>` linha | `<th>` título coluna | `<td>` célula"
+            ]
+          },
+
+          // 3 - web semântica
+          {
+            tipo: "topico",
+            titulo: "🔹 Web Semântica",
+            lista: [
+              "Dá significado aos conteúdos; facilita buscadores (SEO) e acessibilidade",
+              "Autores: **Tim Berners-Lee**, James Hendler, Ora Lassila",
+              "`<section>` → seção temática | `<nav>` → menu de navegação | `<footer>` → rodapé | `<div>` → container genérico"
+            ]
+          }
+
+        ]
+      },
+
+      {
+        id: "css-conceitos",
+        titulo: "📌 CSS — Conceitos e Propriedades",
+
+        blocos: [
+
+          // 4 - css conceito e sintaxe
+          {
+            tipo: "topico",
+            titulo: "🔹 CSS — Conceito, Vinculação e Sintaxe",
+            lista: [
+              "**CSS** → Cascading Style Sheets; estiliza páginas HTML; separa estrutura de aparência",
+              "Vinculação no `<head>`: `<link rel=\"stylesheet\" href=\"assets/css/style.css\">`",
+              "Sintaxe: `seletor { propriedade: valor; }`",
+              "**Classes** → reutilizáveis; seletor CSS usa `.`; aplicação no HTML usa `class=\"nome\"`"
+            ]
+          },
+
+          // 5 - propriedades CSS
+          {
+            tipo: "topico",
+            titulo: "🔹 Propriedades CSS Importantes",
+            lista: [
+              "`font-family` → define fonte | `text-transform` → uppercase / lowercase / capitalize",
+              "`padding` → espaçamento interno | `margin` → espaçamento externo",
+              "`border` → borda | `border-radius` → arredonda bordas",
+              "`width` → largura | `background-color` → cor de fundo",
+              "`float` → posicionamento flutuante | `display: flex` → layout flexível para menus e layouts modernos"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "fig_layout_html_css_menu_colunas.png",
+            pasta: "imagens_design/aula_12",
+            num: "2",
+            alt: "Figura 2 — Layout exemplo com menu horizontal, colunas, lista, imagem e tabela estilizada"
+          }
+
+        ]
+      }
+
+    ]
+  },
+
+  // Aula 13 — Landing Page com HTML
+  {
+    aula: "Aula 13 — Landing Page com HTML",
+
+    ideia_central: "Uma landing page é construída com HTML5 semântico, CSS, tipografia, cores e formulários — combinando estrutura, estilo e elementos visuais para criar páginas focadas em conversão.",
+
+    secoes: [
+
+      {
+        id: "landing-estrutura",
+        titulo: "📌 Landing Page e Estrutura do Projeto",
+
+        blocos: [
+
+          // 1 - landing page e organização
+          {
+            tipo: "topico",
+            titulo: "🔹 Landing Page e Organização de Projeto",
+            lista: [
+              "**Landing page** → página única para marketing, captação de leads e promoção; comunicação direta e visual",
+              "Organização de pastas: `index.html` + `assets/css/style.css` + `assets/img/`",
+              "Benefícios da organização: manutenção, reutilização e escalabilidade"
+            ]
+          },
+
+          // 2 - elementos visuais
+          {
+            tipo: "topico",
+            titulo: "🔹 Elementos Visuais",
+            lista: [
+              "**Imagens SVG** → leves, escaláveis e ideais para web; fonte: Undraw",
+              "**Cores** → envolvem psicologia, temperatura, contraste e identidade visual; ferramenta: Adobe Color",
+              "Cores em HTML: sistema `RGB` com representação hexadecimal `#RRGGBB`",
+              "**Backgrounds SVG** → personalizados via SvgBackgrounds; contribuem para estética e profundidade visual",
+              "**Tipografia** → escolha impacta leitura e UX; fontes importadas via Google Fonts"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_esquema_cores.png",
+            pasta: "imagens_design/aula_13",
+            num: "1",
+            alt: "Figura 1 — Esquema de cores do projeto extraído automaticamente de uma imagem usando Adobe Color"
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_background_svg.png",
+            pasta: "imagens_design/aula_13",
+            num: "2",
+            alt: "Figura 2 — Background SVG utilizado como fundo visual da landing page"
+          }
+
+        ]
+      },
+
+      {
+        id: "html5-semantica-formularios",
+        titulo: "📌 HTML5, Semântica e Formulários",
+
+        blocos: [
+
+          // 3 - HTML5 e web semântica
+          {
+            tipo: "topico",
+            titulo: "🔹 HTML5 e Web Semântica",
+            lista: [
+              "`<section>` → seção temática | `<nav>` → menu | `<article>` → conteúdo independente",
+              "`<aside>` → conteúdo secundário | `<footer>` → rodapé | `<div>` → agrupamento genérico",
+              "Web Semântica: interpretação por humanos e buscadores; melhora acessibilidade e SEO"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_estrutura_html5.png",
+            pasta: "imagens_design/aula_13",
+            num: "3",
+            alt: "Figura 3 — Estrutura inicial obrigatória de um documento HTML5"
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_web_semantica_site.png",
+            pasta: "imagens_design/aula_13",
+            num: "4",
+            alt: "Figura 4 — Print de tela demonstrando separação semântica de conteúdos usando tags HTML"
+          },
+
+          // 4 - tabelas e formulários
+          {
+            tipo: "topico",
+            titulo: "🔹 Tabelas e Formulários HTML",
+            lista: [
+              "Tabela: `<table>` → `<thead>` → `<tbody>` → `<tr>` → `<th>` (cabeçalho) → `<td>` (dado)",
+              "Formulário: tag `<form>` com `<input>` de vários tipos",
+              "`text` / `email` / `password` → entradas de texto | `date` / `file` → data e arquivo",
+              "`radio` → **uma única opção** | `checkbox` → **múltiplas opções**",
+              "`range` → controle deslizante | `submit` → enviar | `reset` → limpar",
+              "**Meta viewport:** `<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">`"
+            ]
+          }
+
+        ]
+      }
+
+    ]
+  },
+
+  // Aula 14 — Formatando com CSS
+  {
+    aula: "Aula 14 — Formatando com CSS",
+
+    ideia_central: "CSS define a aparência visual das páginas HTML, permitindo estilizar cores, fontes, layouts, espaçamentos e responsividade de forma separada da estrutura.",
+
+    secoes: [
+
+      {
+        id: "css-seletores-variaveis",
+        titulo: "📌 CSS — Seletores, Variáveis e Tipografia",
+
+        blocos: [
+
+          // 1 - vinculação e fontes
+          {
+            tipo: "topico",
+            titulo: "🔹 Vinculação e Tipografia",
+            lista: [
+              "Vinculação: `<link rel=\"stylesheet\" href=\"assets/css/style.css\">`",
+              "Teste de vínculo: `body { background-color: red; }`",
+              "**Google Fonts** → importa fontes externas; Lato (títulos) e Nunito (textos)",
+              "`font-family: 'Nunito', sans-serif` → corpo | `font-family: 'Lato', sans-serif` → títulos",
+              "`text-transform: uppercase` → transforma texto em maiúsculo"
+            ]
+          },
+
+          // 2 - classes, IDs e variáveis
+          {
+            tipo: "topico",
+            titulo: "🔹 Classes, IDs e Variáveis CSS",
+            lista: [
+              "**Classes** → reutilizáveis; CSS usa `.nome`; HTML usa `class=\"nome\"`",
+              "**IDs** → únicos; CSS usa `#nome`; HTML usa `id=\"nome\"`; ideais para navegação interna com `href=\"#id\"`",
+              "**Variáveis CSS** → definidas em `:root { --nome: valor; }`; usadas com `var(--nome)`",
+              "Vantagens das variáveis: reutilização, padronização, manutenção rápida e consistência visual"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_css_ids_sections.png",
+            pasta: "imagens_design/aula_14",
+            num: "1",
+            alt: "Figura 1 — Adicionando os identificadores de ID às seções HTML para navegação interna"
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_css_linkagem_ids.png",
+            pasta: "imagens_design/aula_14",
+            num: "2",
+            alt: "Figura 2 — Linkando conteúdos com href='#id' para conectar itens do menu às seções"
+          }
+
+        ]
+      },
+
+      {
+        id: "css-layout",
+        titulo: "📌 Layout, Flexbox e Grid",
+
+        blocos: [
+
+          // 3 - backgrounds e layout
+          {
+            tipo: "topico",
+            titulo: "🔹 Backgrounds e Layout",
+            lista: [
+              "`background-image: url(...)` → define imagem de fundo",
+              "`background-size: cover` → imagem ocupa toda a área",
+              "`background-position: center center` → centraliza a imagem",
+              "`max-width: 1200px; margin: 0 auto` → limita largura e centraliza conteúdo horizontalmente"
+            ]
+          },
+
+          // 4 - flexbox e menu
+          {
+            tipo: "topico",
+            titulo: "🔹 Flexbox e Menu",
+            lista: [
+              "`display: flex` → layout flexível",
+              "`justify-content: space-between` → um elemento no início, outro no fim",
+              "`position: fixed; top: 0` → menu permanece fixo durante scroll",
+              "`list-style: none` → remove marcadores | `text-decoration: none` → remove sublinhado dos links"
+            ]
+          },
+
+          // 5 - CSS grid
+          {
+            tipo: "topico",
+            titulo: "🔹 CSS Grid",
+            lista: [
+              "`display: grid` → ativa grid layout",
+              "`grid-template-columns: 1fr 1fr` → 2 colunas iguais",
+              "`grid-template-columns: 1fr 1fr 1fr` → 3 colunas proporcionais",
+              "`1fr` → uma fração do espaço disponível",
+              "Responsividade de imagens: `max-width: 100%; height: auto`"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_css_grid_classes.png",
+            pasta: "imagens_design/aula_14",
+            num: "3",
+            alt: "Figura 3 — Vinculando as classes aos seus elementos para funcionamento correto de grids com múltiplas colunas"
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_css_resultado_final.png",
+            pasta: "imagens_design/aula_14",
+            num: "4",
+            alt: "Figura 4 — Landing page totalmente estilizada com menu, grids, imagens, tabela e rodapé"
+          }
+
+        ]
+      }
+
+    ]
+  },
+
+  // Aula 15 — Revisão Projeto de Design para Web
+  {
+    aula: "Aula 15 — Revisão Projeto de Design para Web",
+
+    ideia_central: "Um bom projeto web deve ser responsivo, centrado no usuário, organizado semanticamente, acessível, visualmente consistente, ergonomicamente adequado e otimizado para diferentes dispositivos.",
+
+    secoes: [
+
+      {
+        id: "mobile-first-design",
+        titulo: "📌 Mobile First, Design e Elementos Visuais",
+
+        blocos: [
+
+          // 1 - mobile first
+          {
+            tipo: "topico",
+            titulo: "🔹 Mobile First",
+            lista: [
+              "Desenvolve primeiro para dispositivos móveis; adapta progressivamente para telas maiores via breakpoints",
+              "Breakpoints usados: `768px` tablet | `960px` desktop | `1280px` widescreen",
+              "Vantagens: melhor experiência mobile, código mais limpo, maior compatibilidade"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_wireframe_mobile_first.png",
+            pasta: "imagens_design/aula_15",
+            num: "1",
+            alt: "Wireframe inicial da interface mobile first representando a organização visual do layout antes da implementação"
+          },
+
+          // 2 - design centrado no usuário e ergonomia
+          {
+            tipo: "topico",
+            titulo: "🔹 Design Centrado no Usuário e Ergonomia",
+            lista: [
+              "Foco em: ergonomia, usabilidade, acessibilidade, comunicabilidade e conforto cognitivo",
+              "**Compatibilidade** → coerente com expectativas | **Condução** → orienta navegação",
+              "**Carga de trabalho** → reduz esforço mental | **Homogeneidade** → padrões consistentes",
+              "**Controle explícito** → usuário controla ações | **Adaptabilidade** → interface flexível"
+            ]
+          },
+
+          // 3 - engenharia semiótica e psicologia cognitiva
+          {
+            tipo: "topico",
+            titulo: "🔹 Engenharia Semiótica e Psicologia Cognitiva",
+            lista: [
+              "**Engenharia semiótica** → analisa comunicação entre designer, sistema e usuário; interface transmite signos visuais, símbolos e feedbacks",
+              "**Atenção seletiva** → direcionar foco | **Memória de curto prazo** → facilitar retenção momentânea",
+              "**Categorização** → organização mental | **Interpretação** → compreensão visual"
+            ]
+          },
+
+          // 4 - elementos compositivos
+          {
+            tipo: "topico",
+            titulo: "🔹 Tipografia, Cores e Ícones",
+            lista: [
+              "Fontes: **Lato Black 900** (títulos) e **Nunito Regular 400** (textos)",
+              "Cores: valor emocional, psicológico e semiótico; considerar contraste, harmonia e temperatura",
+              "**FontAwesome** → biblioteca de ícones para melhorar comunicação visual"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_esquema_cores.png",
+            pasta: "imagens_design/aula_15",
+            num: "2",
+            alt: "Paleta de cores utilizada no projeto demonstrando a definição da identidade visual"
+          }
+
+        ]
+      },
+
+      {
+        id: "html-css-jquery",
+        titulo: "📌 HTML5, CSS3, jQuery e Hospedagem",
+
+        blocos: [
+
+          // 5 - HTML e CSS
+          {
+            tipo: "topico",
+            titulo: "🔹 HTML5 e CSS3",
+            lista: [
+              "Tags HTML5: `<header>` | `<nav>` | `<main>` | `<article>` | `<section>` | `<footer>`",
+              "CSS3 define: layout, cores, responsividade, hover, grids e animações visuais",
+              "`background: url(...) no-repeat fixed` → fundo fixo",
+              "`.btn-menu { border-radius: 36px; }` → botão hambúrguer circular",
+              "`.menu { display: none; }` → menu oculto até ação do usuário"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_interface_mobile.png",
+            pasta: "imagens_design/aula_15",
+            num: "3",
+            alt: "Resultado final da versão mobile do site após aplicação do HTML e CSS"
+          },
+
+          // 6 - jQuery e menu hambúrguer
+          {
+            tipo: "topico",
+            titulo: "🔹 Menu Hambúrguer e jQuery",
+            lista: [
+              "**jQuery** → biblioteca JS para simplificar scripts e criar interatividade",
+              "Abrir menu: `$(\".btn-menu\").click(function() { $(\".menu\").show(); });`",
+              "Fechar menu: `$(\".btn-close\").click(function() { $(\".menu\").hide(); });`",
+              "Em widescreen (`1280px`): oculta hambúrguer e exibe menu horizontal"
+            ]
+          },
+
+          // 7 - hospedagem e testes
+          {
+            tipo: "topico",
+            titulo: "🔹 Hospedagem e Testes com Lighthouse",
+            lista: [
+              "**Netlify Drop** → hospedagem gratuita; upload da pasta → deploy → URL gerada",
+              "**Lighthouse** (Chrome DevTools) → avalia: Performance, Accessibility, Best Practices, SEO, PWA",
+              "Problemas comuns: ausência de `alt` em imagens, links quebrados, falta de meta description",
+              "Ferramentas do projeto: VSCode, Chrome, Window Resizer, FontAwesome, Google Fonts, Netlify"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "figura_responsividade_mobile_desktop.png",
+            pasta: "imagens_design/aula_15",
+            num: "4",
+            alt: "Comparação do layout mobile com o desktop evidenciando as adaptações responsivas"
+          }
+
+        ]
+      }
+
+    ]
+  },
   ]
 };
