@@ -88,8 +88,8 @@ function _defaultConfigs() {
     tema:                 'dark',
     animacoes:            true,
     notificacoes:         false,
-    salvarProgressoParcial: false,
-    salvarProgresso:      true,
+    salvarProgressoParcial: true,
+    salvarProgresso:      false,
   };
 }
 

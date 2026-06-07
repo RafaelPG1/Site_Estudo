@@ -134,7 +134,7 @@
        ══════════════════════════════════════════════════════════ */
 
     var EXPIRY_FINALIZADO_MS = 20000;    // 20s  — salvarProgresso OFF
-    var EXPIRY_PARCIAL_MS    = 120000;   // 2min — salvarProgressoParcial OFF
+    var EXPIRY_PARCIAL_MS = 600000;   // 10min — conforme descrito na UI
 
     function _leftAtKey() {
       return 'quiz_leftat_' + _uid() + '_' + _disc + '_' + _modo + '_' + _semestre;
@@ -219,17 +219,12 @@
     /* pagehide: cobre F5, fechar aba e navegação para outra página */
     window.addEventListener('pagehide', _registrarSaida);
 
-    document.addEventListener('visibilitychange', function () {
-      if (document.hidden) {
-        /* Usuário saiu (troca de aba, minimizou, etc.) */
-        _registrarSaida();
-      } else {
-        /* Usuário voltou — passa reiniciar() como callback de expiração.
-           reiniciar() só existe após o boot, mas visibilitychange
-           só dispara depois que a página já carregou, então é seguro. */
-        _verificarRetorno(reiniciar);
-      }
-    });
+document.addEventListener('visibilitychange', function () {
+  if (document.hidden) {
+    _registrarSaida(); // continua gravando o timestamp ao sair
+  }
+  // Ao voltar: NÃO verifica aqui. A verificação acontece só no boot (pagehide → F5/renavegar)
+});
 
     /* ── Questões ─────────────────────────────────────────── */
 
