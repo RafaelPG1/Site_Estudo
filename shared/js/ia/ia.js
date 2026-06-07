@@ -40,6 +40,7 @@
     processando:    false,
     discsCacheadas: {},
     discIndexadaId: null,
+    conteudoAtual:  null,  // conteudo da disc escolhida pelo usuario (isolado do window.__nexusConteudo)
   };
 
   function _normalizar(str) {
@@ -148,38 +149,38 @@
   }
 
   function _resolverDisc() {
+    // Se o usuario ja escolheu uma disciplina explicitamente via /disc,
+    // respeitamos essa escolha — a navegacao na sidebar nao interfere.
+    if (state.discEscolhida) return state.discEscolhida;
+
+    // Sem escolha explicita: usa a disciplina ativa na pagina como ponto
+    // de partida (comportamento de pre-carga silenciosa apenas).
     const ctx = _getCtxBridge();
-    if (!ctx) return state.discEscolhida || null;
+    if (!ctx) return null;
     const idAtivo = ctx.getDisciplinaAtual ? ctx.getDisciplinaAtual() : null;
     if (idAtivo) {
       const discs = _getDisciplinas();
       if (discs) {
         const found = discs.find(function (d) { return d.id === idAtivo; });
-        if (found) {
-          if (state.discEscolhida && state.discEscolhida.id !== found.id) {
-            NexusSearch.limparIndice();
-            NexusLoader.limpar();
-            state.discEscolhida  = null;
-            state.discIndexadaId = null;
-            _salvarDiscAtiva();
-          }
-          return found;
-        }
+        if (found) return found;
       }
     }
-    return state.discEscolhida || null;
+    return null;
   }
 
   async function _garantirConteudo(disc) {
     const loaderCtx = _montarCtx(disc);
-    if (!loaderCtx) return false;
+    if (!loaderCtx) return null;
     const conteudo = await NexusLoader.carregar(loaderCtx);
-    if (!conteudo) return false;
+    if (!conteudo) return null;
     if (!NexusSearch.estaIndexado() || state.discIndexadaId !== disc.id) {
       NexusSearch.indexarConteudo(conteudo);
       state.discIndexadaId = disc.id;
     }
-    return true;
+    // Guarda o conteudo no state para nao depender de window.__nexusConteudo
+    // (que pode ser sobrescrito pelo resumo.js ao trocar de disciplina na sidebar)
+    state.conteudoAtual = conteudo;
+    return conteudo;
   }
 
   function _limparContexto() {
@@ -188,6 +189,7 @@
     state.discEscolhida  = null;
     state.aguardandoDisc = false;
     state.discIndexadaId = null;
+    state.conteudoAtual  = null;
     _salvarDiscAtiva();
     NexusUI.atualizarDiscAtiva(null);
     if (typeof window.NexusWorker !== 'undefined') NexusWorker.limparHistorico();
@@ -430,7 +432,7 @@
   }
 
   function _responderResumoAula(numAula, nomeDisc) {
-    const conteudo = window.__nexusConteudo;
+    const conteudo = state.conteudoAtual || window.__nexusConteudo;
     if (!conteudo || !Array.isArray(conteudo.aulas)) {
       return 'Conteúdo não carregado. Selecione uma disciplina primeiro.';
     }
@@ -1118,8 +1120,8 @@ async function _executarSemDisc(texto) {
     /* ── 4. RESUMO DE AULA ── */
     const numAula = _detectarResumoAula(texto);
     if (numAula !== null) {
-      const ok = await _garantirConteudo(disc);
-      if (!ok) { _renderBot('Não consegui carregar o conteúdo. Tente novamente.'); return; }
+      const conteudoResumo = await _garantirConteudo(disc);
+      if (!conteudoResumo) { _renderBot('Não consegui carregar o conteúdo. Tente novamente.'); return; }
       _renderBot(_responderResumoAula(numAula, disc.apelido));
       return;
     }
@@ -1135,8 +1137,8 @@ async function _executarSemDisc(texto) {
     /* ── 6. LOCALIZAÇÃO DE CONTEÚDO ── */
     const termoLocalizar = _detectarLocalizacao(texto);
     if (termoLocalizar !== null) {
-      const okLoc = await _garantirConteudo(disc);
-      if (!okLoc) { _renderBot('Não consegui carregar o conteúdo de ' + disc.apelido + '. Tente novamente.'); return; }
+      const conteudoLoc = await _garantirConteudo(disc);
+      if (!conteudoLoc) { _renderBot('Não consegui carregar o conteúdo de ' + disc.apelido + '. Tente novamente.'); return; }
       NexusUI.atualizarDiscAtiva(disc.apelido);
       _renderBot(_responderLocalizacao(termoLocalizar, disc.apelido));
       return;
@@ -1147,8 +1149,8 @@ async function _executarSemDisc(texto) {
     const ehGlobal    = !ehNavegacao && _detectarPerguntaGlobal(texto);
 
     /* ── 8. CARREGAMENTO E BUSCA ── */
-    const ok = await _garantirConteudo(disc);
-    if (!ok) { _renderBot('Não consegui carregar o conteúdo de ' + disc.apelido + '. Tente novamente.'); return; }
+    const conteudoDisc = await _garantirConteudo(disc);
+    if (!conteudoDisc) { _renderBot('Não consegui carregar o conteúdo de ' + disc.apelido + '. Tente novamente.'); return; }
 
     NexusUI.atualizarDiscAtiva(disc.apelido);
 
@@ -1157,11 +1159,11 @@ async function _executarSemDisc(texto) {
 
     if (ehNavegacao) {
       tipoContexto = 'estrutura';
-      resultados   = _montarMapaDisc(window.__nexusConteudo);
+      resultados   = _montarMapaDisc(conteudoDisc);
       console.log('[NexusAssistant] contexto: estrutura (' + resultados.length + ' aulas)');
     } else if (ehGlobal) {
       tipoContexto = 'global';
-      resultados   = _montarContextoGlobal(window.__nexusConteudo);
+      resultados   = _montarContextoGlobal(conteudoDisc);
       console.log('[NexusAssistant] contexto: global (' + resultados.length + ' aulas)');
     } else {
       tipoContexto = 'conteudo';
@@ -1335,8 +1337,8 @@ async function _executarSemDisc(texto) {
     NexusUI.atualizarDiscAtiva(state.discEscolhida ? state.discEscolhida.apelido : null);
 
     if (state.discEscolhida) {
-      _garantirConteudo(state.discEscolhida).then(function (ok) {
-        if (ok && !restaurado) {
+      _garantirConteudo(state.discEscolhida).then(function (conteudo) {
+        if (conteudo && !restaurado) {
           const loaderCtx = _montarCtx(state.discEscolhida);
           if (loaderCtx) {
             NexusLoader.carregar(loaderCtx).then(function (c) {

@@ -56,6 +56,36 @@ const State = {
 // Expõe State para módulos auxiliares (ex: botões flutuantes)
 window.__nexusState = State;
 
+// ── Assistente Nexus ─────────────────────────────────────────
+// Carregado imediatamente — sem esperar DOMContentLoaded nem Sound.
+// Isso garante que o FAB da IA apareça junto com os botões de áudio.
+
+function _loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error(`[Nexus IA] Falha ao carregar: ${src}`));
+    document.body.appendChild(s);
+  });
+}
+
+function _carregarIA() {
+  const deps = [
+    '/shared/js/ia/ia-ui.js',
+    '/shared/js/ia/ia-search.js',
+    '/shared/js/ia/ia-loader.js',
+    '/shared/js/ia/ia-worker.js',
+  ];
+  Promise.all(deps.map(_loadScript))
+    .then(() => _loadScript('/shared/js/ia/ia.js'))
+    .catch(err => console.error(err));
+}
+
+_carregarIA();
+// ─────────────────────────────────────────────────────────────
+
+
 /* ══════════════════════════════════════════════
    BOOT
 ══════════════════════════════════════════════ */
@@ -124,30 +154,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btn-back')?.addEventListener('mouseenter', () => playSound('hover', 'resumos'));
   document.getElementById('btn-back')?.addEventListener('click',      () => playSound('click', 'resumos'));
 });
-
-
-// ── Assistente Nexus ─────────────────────────────────────────
-function _loadScript(src) {
-  return new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = src;
-    s.onload = resolve;
-    s.onerror = () => reject(new Error(`[Nexus IA] Falha ao carregar: ${src}`));
-    document.body.appendChild(s);
-  });
-}
-
-const _iaDeps = [
-  '/shared/js/ia/ia-ui.js',
-  '/shared/js/ia/ia-search.js',
-  '/shared/js/ia/ia-loader.js',
-  '/shared/js/ia/ia-worker.js',
-];
-
-Promise.all(_iaDeps.map(_loadScript))
-  .then(() => _loadScript('/shared/js/ia/ia.js'))
-  .catch(err => console.error(err));
-// ─────────────────────────────────────────────────────────────
 
 
 /* ══════════════════════════════════════════════
@@ -663,7 +669,8 @@ function _abrirModal(aula) {
 
   const badge = document.getElementById('rm-tipo-badge');
   if (badge) {
-    badge.textContent = 'Resumo';
+    const isSintese = State.modo === 'sintese';
+    badge.textContent = isSintese ? 'Síntese' : 'Resumo';
     badge.className   = 'reader__bar-badge badge--conceito';
   }
 
@@ -862,7 +869,7 @@ function _renderBloco(b) {
       return `
         <figure class="rm-fig">
           <img class="rm-fig__img" src="${_esc(base + b.src)}" alt="${_esc(b.alt ?? '')}" loading="lazy" />
-          <figcaption class="rm-fig__caption">${num}${_esc(b.alt ?? '')}</figcaption>
+          <figcaption class="rm-fig__caption">${num}<span class="rm-fig__caption-text">${_esc(b.alt ?? '')}</span></figcaption>
         </figure>`;
     }
     case 'lista': {

@@ -327,11 +327,7 @@
     const contexto   = _serializarContexto(resultados);
     const historico  = _getHistoricoParaEnvio();
     const ehQuestao_ = _ehQuestao(pergunta);
-    
-  const deveRegistrar = registrarNoHistorico !== false;
-  if (deveRegistrar) {
-    _registrarTurno(pergunta.trim(), textoFormatado);
-  }
+
     const resultado = await _chamarWorker({
       pergunta:      pergunta.trim(),
       contexto:      contexto,
@@ -357,8 +353,12 @@
     }
 
     // Registra o turno somente após sucesso confirmado
-    _registrarTurno(pergunta.trim(), textoFormatado);
-  return { texto: textoFormatado, fonte: resultado.fonte, modelo: resultado.modelo };
+    const deveRegistrar = registrarNoHistorico !== false;
+    if (deveRegistrar) {
+      _registrarTurno(pergunta.trim(), textoFormatado);
+    }
+
+    return { texto: textoFormatado, fonte: resultado.fonte, modelo: resultado.modelo };
   }
 
   /**

@@ -1,7 +1,6 @@
 window.__nexusConteudo = {
 
   aulas: [
-
     {
   aula: "Camada de Aplicação — Protocolos, Paradigmas e Serviços",
   ideia_central: "A Camada de Aplicação é a interface direta entre o usuário e a rede, definindo os protocolos e paradigmas que sustentam todos os serviços da Internet, como HTTP, FTP, SMTP, DNS e P2P.",
@@ -691,9 +690,344 @@ window.__nexusConteudo = {
     }
   ]
     }
-
   ],
 
-  simplificado: []
+  simplificado: [
+  // aula: Camada de Aplicação — Protocolos, Paradigmas e Serviços
+  {
+    aula: "Aula 1 — Camada de Aplicação: Protocolos, Paradigmas e Serviços",
+
+    ideia_central: "A Camada de Aplicação é a interface direta entre o usuário e a rede, definindo os protocolos e paradigmas que sustentam todos os serviços da Internet, como HTTP, FTP, SMTP, DNS e P2P.",
+
+    secoes: [
+      {
+        id: "conceitos_paradigmas",
+        titulo: "📌 Conceitos Fundamentais e Paradigmas",
+        blocos: [
+
+          // 1 - camada aplicação
+          {
+            tipo: "topico",
+            titulo: "🔹 Camada de Aplicação",
+            lista: [
+              "**5ª camada** da pilha TCP/IP — interface direta entre usuário e rede",
+              "**Conexão lógica** → as pontas comunicam-se ignorando roteadores intermediários",
+              "**Única camada** que não fornece serviços a outras camadas — só consome da camada de transporte",
+              "Protocolos essenciais (`HTTP`, `SMTP`, `DNS`) normalmente integrados ao Sistema Operacional"
+            ]
+          },
+
+          // 2 - paradigmas
+          {
+            tipo: "topico",
+            titulo: "🔹 Paradigmas de Comunicação",
+            lista: [
+              "**Cliente-Servidor** → servidor sempre ativo; cliente inicia a comunicação; arquitetura centralizada",
+              "**P2P** → sem servidor centralizado; peers atuam como cliente e servidor simultaneamente; arquitetura descentralizada",
+              "**Paradigma Misto** → servidor localiza o endereço do par; troca de dados ocorre diretamente entre peers (ex: Skype antigo)"
+            ]
+          },
+
+          // 3 - socket
+          {
+            tipo: "topico",
+            titulo: "🔹 Interface Socket",
+            lista: [
+              "**API** mais comum para comunicação de aplicações com a rede",
+              "Identificado unicamente por: **Endereço IP** (identifica a máquina) + **Número de Porta** (identifica o processo)",
+              "`IPv4` possui 32 bits; porta possui 16 bits (até 65.535 portas)",
+              "Abstrai a rede como operação de leitura/escrita, similar a um arquivo"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "socket_interface_diagram.png",
+            pasta: "imagens_redes/aula_15",
+            num: "1",
+            alt: "Posicionamento da interface socket e estrutura do endereço — mostra que o socket funciona como teclado (entrada), monitor (saída) ou arquivo (entrada e saída), voltado para a rede"
+          }
+
+        ]
+      },
+
+      {
+        id: "http_cookies_proxy",
+        titulo: "📌 HTTP, Cookies e Proxy",
+        blocos: [
+
+          // 4 - http
+          {
+            tipo: "topico",
+            titulo: "🔹 Protocolo HTTP",
+            lista: [
+              "**Porta 80** sobre `TCP`; base da WWW (repositório distribuído de informações)",
+              "**Não Persistente** → nova conexão `TCP` por objeto; custo: múltiplos handshakes (2 RTT por objeto)",
+              "**Persistente** (`HTTP/1.1`) → conexão mantida aberta após resposta; economiza RTT",
+              "**RTT** (Round-Trip Time) = tempo de ida e volta de um pacote entre cliente e servidor"
+            ]
+          },
+
+          // 5 - métodos http
+          {
+            tipo: "topico",
+            titulo: "🔹 Métodos e Códigos HTTP",
+            lista: [
+              "**GET** → solicita documento | **HEAD** → solicita metadados do documento",
+              "**POST** → envia dados para processamento | **PUT** → publica documento no servidor",
+              "**DELETE** → remove página | **TRACE** → diagnóstico (ecoa solicitação)",
+              "**200 OK** → sucesso | **301 Moved Permanently** → recurso movido",
+              "**404 Not Found** → recurso inexistente | **500 Internal Server Error** → erro no servidor"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "http_message_structure.png",
+            pasta: "imagens_redes/aula_15",
+            num: "2",
+            alt: "Estrutura lado a lado de uma mensagem de pedido (esquerda) e resposta (direita): linha de solicitação/estado, cabeçalhos, linha em branco e corpo"
+          },
+
+          // 6 - cookies
+          {
+            tipo: "topico",
+            titulo: "🔹 Cookies",
+            lista: [
+              "`HTTP` é **stateless** por padrão — cookies adicionam estado à comunicação",
+              "Servidor envia cabeçalho `Set-Cookie`; navegador armazena e reenvia em pedidos futuros",
+              "Usos: carrinhos de compra, autenticação de sessão, personalização",
+              "Controverso: permite rastreamento de comportamento por agências de publicidade"
+            ]
+          },
+
+          // 7 - proxy
+          {
+            tipo: "topico",
+            titulo: "🔹 Servidor Proxy (Cache Web)",
+            lista: [
+              "Intermediário entre cliente e servidor Web — mantém **cache** de respostas recentes",
+              "Duplo papel: **servidor** para o cliente original e **cliente** para o servidor destino",
+              "Benefícios: reduz carga no servidor, diminui tráfego e melhora latência",
+              "Pode ser instalado no host do usuário, na LAN corporativa ou no `ISP`"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "proxy_server_diagram.png",
+            pasta: "imagens_redes/aula_15",
+            num: "4",
+            alt: "Múltiplos clientes numa rede local enviando requisições ao servidor proxy, que se conecta à Internet e aos servidores Web destino, ilustrando a centralização do cache"
+          }
+
+        ]
+      },
+
+      {
+        id: "ftp_email_dns",
+        titulo: "📌 FTP, E-mail e DNS",
+        blocos: [
+
+          // 8 - ftp
+          {
+            tipo: "topico",
+            titulo: "🔹 Protocolo FTP",
+            lista: [
+              "Padrão para transferência de arquivos entre sistemas heterogêneos",
+              "**Porta 21** → conexão de controle (comandos e autenticação)",
+              "**Porta 20** → conexão de dados (transferência real do arquivo)",
+              "⚠️ Envia senhas em texto às claras → recomenda-se `SSL-FTP`"
+            ]
+          },
+
+          // 9 - email
+          {
+            tipo: "topico",
+            titulo: "🔹 Correio Eletrônico (E-mail)",
+            lista: [
+              "**UA** (Agente de Usuário) → interface para ler/compor e-mails (ex: Outlook)",
+              "**MTA** (Agente de Transferência) → transfere mensagem entre servidores via `SMTP`",
+              "**MAA** (Agente de Acesso) → permite ao destinatário recuperar mensagens (`POP` ou `IMAP`)",
+              "`SMTP` porta **25** → Push (envia mensagem ao servidor)",
+              "`POP` porta **110** → Pull (baixa e remove mensagens do servidor)",
+              "`IMAP` porta **143** → Pull (mantém mensagens no servidor; sincronização)"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "email_flow_diagram.png",
+            pasta: "imagens_redes/aula_15",
+            num: "5",
+            alt: "Fluxo completo de e-mail: Alice (remetente) → UA → MTA via SMTP → Internet → MTA servidor destino via SMTP → MAA via POP/IMAP → Bob (destinatário)"
+          },
+
+          // 10 - mime
+          {
+            tipo: "topico",
+            titulo: "🔹 Extensões MIME",
+            lista: [
+              "E-mail original suporta apenas **ASCII de 7 bits** — `MIME` permite envio de binários e acentos",
+              "**Base64** → divide blocos de 6 bits e mapeia para ASCII de 8 bits; overhead de ~33%",
+              "**Quoted-Printable** → para mensagens majoritariamente ASCII com poucos caracteres especiais (convertidos para hexadecimal)"
+            ]
+          },
+
+          // 11 - dns
+          {
+            tipo: "topico",
+            titulo: "🔹 DNS — Sistema de Nomes de Domínio",
+            lista: [
+              "Mapeia nomes amigáveis (`www.google.com`) para endereços IP numéricos",
+              "Base de dados **distribuída** globalmente — evita ponto único de falha",
+              "Espaço **hierárquico** em árvore invertida com até 128 níveis; rótulo de até 63 caracteres",
+              "**Zona** → parte contígua da árvore sob autoridade de um servidor específico"
+            ]
+          },
+
+          // 12 - resolução dns
+          {
+            tipo: "topico",
+            titulo: "🔹 Tipos de Resolução DNS",
+            lista: [
+              "**Recursiva** → servidor local resolve tudo e devolve a resposta pronta ao cliente",
+              "**Iterativa** → servidor retorna o endereço do próximo servidor; cliente faz cada nova consulta",
+              "**Caching** → servidores armazenam mapeamentos recentes (não autoritativos) para acelerar consultas futuras"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "dns_hierarchy_tree.png",
+            pasta: "imagens_redes/aula_15",
+            num: "6",
+            alt: "Árvore hierárquica do DNS com Servidor Raiz no topo, seguido por servidores TLD (edu, com, us) e domínios de segundo nível (fhda.edu, bk.edu, mcgraw.com, irwin.com)"
+          }
+
+        ]
+      },
+
+      {
+        id: "p2p_telnet_ssh_osi",
+        titulo: "📌 P2P, Acesso Remoto e Modelos de Referência",
+        blocos: [
+
+          // 13 - dht
+          {
+            tipo: "topico",
+            titulo: "🔹 P2P — DHT (Tabelas de Hash Distribuídas)",
+            lista: [
+              "Redes P2P **estruturadas** localizam arquivos sem servidores centrais",
+              "Espaço de endereços: anel lógico de **2^m** posições (geralmente m = 160 com `SHA-1`)",
+              "**ID do nó** = `hash(IP)` | **Chave do arquivo** = `hash(nome do arquivo)`",
+              "Responsável pelo arquivo: nó **sucessor** mais próximo da chave no anel"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "dht_ring_diagram.png",
+            pasta: "imagens_redes/aula_15",
+            num: "7",
+            alt: "Anel DHT com espaço de IDs de tamanho 2^5 (m=5), mostrando como o arquivo 'Liberdade' tem sua chave calculada por hash(nome)=14 e é armazenado no nó N17"
+          },
+
+          // 14 - chord
+          {
+            tipo: "topico",
+            titulo: "🔹 Algoritmo Chord",
+            lista: [
+              "Protocolo `DHT` com **Tabelas de Derivação (finger tables)** para roteamento eficiente",
+              "Cada nó conhece **m** outros nós estratégicos → busca em tempo **O(log N)**",
+              "Busca via **RPC** (Chamada de Procedimento Remoto) entre nós do anel",
+              "**Estabilização** periódica para lidar com entrada/saída dinâmica de peers"
+            ]
+          },
+
+          // 15 - bittorrent
+          {
+            tipo: "topico",
+            titulo: "🔹 BitTorrent",
+            lista: [
+              "Compartilhamento colaborativo de arquivos grandes divididos em **chunks (pedaços)**",
+              "**Enxame (Swarm)** → conjunto de todos os peers compartilhando um arquivo",
+              "**Seeds** → peers com arquivo completo | **Leeches** → peers ainda obtendo partes",
+              "**Tit-for-tat** → peer fornece pedaços apenas para quem também lhe envia dados (equidade)",
+              "**Tracker** → monitora o enxame e fornece lista de vizinhos para novos peers",
+              "Versões modernas usam `DHT` para eliminar trackers centrais"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "bittorrent_swarm_diagram.png",
+            pasta: "imagens_redes/aula_15",
+            num: "8",
+            alt: "Tracker central e 11 peers, cada um com diferentes pedaços do arquivo (de 5 pedaços no total), ilustrando o conceito de enxame, seeds e leeches"
+          },
+
+          // 16 - telnet ssh
+          {
+            tipo: "topico",
+            titulo: "🔹 TELNET e SSH",
+            lista: [
+              "`TELNET` → acesso remoto via **NVT** (Terminal Virtual de Rede); ⚠️ trafega credenciais em texto às claras",
+              "`SSH` → acesso remoto **seguro** com autenticação e criptografia sobre `TCP`",
+              "**SSH-TRANS** → cria canal seguro garantindo privacidade e integridade",
+              "**SSH-AUTH** → autentica o cliente no servidor",
+              "**SSH-CONN** → cria **túnel seguro** para proteger outros protocolos vulneráveis (`FTP`, `SMTP`)"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "ssh_tunnel_ftp_diagram.png",
+            pasta: "imagens_redes/aula_15",
+            num: "9",
+            alt: "SSH criando um túnel entre Cliente SSH e Servidor SSH, por dentro do qual o tráfego FTP trafega de forma segura — ilustra port forwarding"
+          },
+
+          // 17 - osi vs tcpip
+          {
+            tipo: "topico",
+            titulo: "🔹 OSI vs. TCP/IP",
+            lista: [
+              "**OSI** → 7 camadas; modelo **teórico**; camadas Sessão e Apresentação frequentemente vazias na prática",
+              "**TCP/IP** → 5 camadas; modelo **prático**; Aplicação absorve Sessão e Apresentação",
+              "Crítica ao TCP/IP: não distingue claramente serviço, interface e protocolo"
+            ]
+          },
+
+          {
+            tipo: "imagem",
+            src: "osi_tcpip_comparison.png",
+            pasta: "imagens_redes/aula_15",
+            num: "10",
+            alt: "Comparativo lado a lado das 7 camadas OSI (Física, Enlace, Rede, Transporte, Sessão, Apresentação, Aplicação) versus as 5 camadas TCP/IP, com a camada de Aplicação absorvendo as 3 camadas superiores do OSI"
+          },
+
+          // 18 - tabela portas
+          {
+            tipo: "topico",
+            titulo: "🔹 Protocolos, Portas e Transportes",
+            lista: [
+              "`HTTP` → porta **80** / `TCP` → Web",
+              "`HTTPS` → porta **443** / `TCP` → Web segura",
+              "`FTP` controle → porta **21** / `TCP` | dados → porta **20** / `TCP`",
+              "`SMTP` → porta **25** / `TCP` → envio de e-mail",
+              "`POP3` → porta **110** / `TCP` → recebimento (remove do servidor)",
+              "`IMAP` → porta **143** / `TCP` → recebimento (mantém no servidor)",
+              "`DNS` → porta **53** / `UDP`/`TCP` → resolução de nomes",
+              "`TELNET` → porta **23** / `TCP` → acesso remoto inseguro",
+              "`SSH` → porta **22** / `TCP` → acesso remoto seguro"
+            ]
+          }
+
+        ]
+      }
+    ]
+  }
+  ]
 
 };

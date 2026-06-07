@@ -45,6 +45,35 @@ import {
    SEÇÃO 2 — INICIALIZAÇÃO
 ═══════════════════════════════════════════════ */
 
+// ── Assistente Nexus ─────────────────────────────────────────
+// Carregado o quanto antes — sem esperar Sound nem nada mais.
+// Isso garante que o FAB da IA apareça junto com os botões de áudio.
+
+function _loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error(`[Nexus IA] Falha ao carregar: ${src}`));
+    document.body.appendChild(s);
+  });
+}
+
+function _carregarIA() {
+  const deps = [
+    '/shared/js/ia/ia-ui.js',
+    '/shared/js/ia/ia-search.js',
+    '/shared/js/ia/ia-loader.js',
+    '/shared/js/ia/ia-worker.js',
+  ];
+  Promise.all(deps.map(_loadScript))
+    .then(() => _loadScript('/shared/js/ia/ia.js'))
+    .catch(err => console.error(err));
+}
+
+_carregarIA();
+// ─────────────────────────────────────────────────────────────
+
 
 async function init() {
   try {
@@ -112,33 +141,6 @@ if (document.readyState === 'loading') {
 } else {
   init();
 }
-
-
-// ── Assistente Nexus ─────────────────────────────────────────
-// FIX 1: ia-worker.js movido para antes de ia.js
-// FIX 2: dependências carregadas em paralelo; ia.js só executa após todas prontas
-
-function _loadScript(src) {
-  return new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = src;
-    s.onload = resolve;
-    s.onerror = () => reject(new Error(`[Nexus IA] Falha ao carregar: ${src}`));
-    document.body.appendChild(s);
-  });
-}
-
-const _iaDeps = [
-  '/shared/js/ia/ia-ui.js',
-  '/shared/js/ia/ia-search.js',
-  '/shared/js/ia/ia-loader.js',
-  '/shared/js/ia/ia-worker.js',   // ← agora antes de ia.js
-];
-
-// Carrega todas as dependências em paralelo, depois ia.js
-Promise.all(_iaDeps.map(_loadScript))
-  .then(() => _loadScript('/shared/js/ia/ia.js'))
-  .catch(err => console.error(err));
 
 
 /* ═══════════════════════════════════════════════
