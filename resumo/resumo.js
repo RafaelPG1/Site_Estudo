@@ -78,7 +78,7 @@ function _carregarIA() {
     '../shared/js/ia/ia-worker.js',
   ];
   Promise.all(deps.map(_loadScript))
-    .then(() => _loadScript('/shared/js/ia/ia.js'))
+    .then(() => _loadScript('../shared/js/ia/ia.js'))
     .catch(err => console.error(err));
 }
 
