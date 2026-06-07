@@ -126,6 +126,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 
+// ── Assistente Nexus ─────────────────────────────────────────
+function _loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error(`[Nexus IA] Falha ao carregar: ${src}`));
+    document.body.appendChild(s);
+  });
+}
+
+const _iaDeps = [
+  '/shared/js/ia/ia-ui.js',
+  '/shared/js/ia/ia-search.js',
+  '/shared/js/ia/ia-loader.js',
+  '/shared/js/ia/ia-worker.js',
+];
+
+Promise.all(_iaDeps.map(_loadScript))
+  .then(() => _loadScript('/shared/js/ia/ia.js'))
+  .catch(err => console.error(err));
+// ─────────────────────────────────────────────────────────────
+
+
 /* ══════════════════════════════════════════════
    BARRA DE PROGRESSO DE LEITURA
 ══════════════════════════════════════════════ */
