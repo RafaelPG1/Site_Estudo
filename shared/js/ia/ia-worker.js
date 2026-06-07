@@ -179,11 +179,13 @@
    * @returns {boolean}
    */
   function _ehQuestao(pergunta) {
+    // BUG 3 FIX: /me\s+explica/i removido — classificava perguntas conceituais
+    // legítimas ("me explica o que é DNS") como questões de prova, enviando
+    // ehQuestao:true ao worker e degradando silenciosamente a resposta do tutor.
     return (
       /\b[A-Ea-e]\s*[\)\.]/.test(pergunta) ||
       /qual\s+(a\s+)?(resposta|alternativa|correta|certa|gabarito)/i.test(pergunta) ||
-      /quest[aã]o\s+\d+/i.test(pergunta) ||
-      /me\s+explica/i.test(pergunta)
+      /quest[aã]o\s+\d+/i.test(pergunta)
     );
   }
 
@@ -313,9 +315,10 @@
    *   null = falhou, ia.js deve usar fallback local (_formatarResposta)
    */
   async function perguntar(opcoes) {
-    if (!_habilitado) return null;
+  if (!_habilitado) return null;
 
-    const { pergunta, resultados, disciplina, tipoContexto } = opcoes;
+  const { pergunta, resultados, disciplina, tipoContexto, semContexto, registrarNoHistorico } = opcoes;
+
 
     if (!pergunta || !pergunta.trim()) return null;
 
@@ -324,7 +327,11 @@
     const contexto   = _serializarContexto(resultados);
     const historico  = _getHistoricoParaEnvio();
     const ehQuestao_ = _ehQuestao(pergunta);
-
+    
+  const deveRegistrar = registrarNoHistorico !== false;
+  if (deveRegistrar) {
+    _registrarTurno(pergunta.trim(), textoFormatado);
+  }
     const resultado = await _chamarWorker({
       pergunta:      pergunta.trim(),
       contexto:      contexto,
@@ -351,12 +358,7 @@
 
     // Registra o turno somente após sucesso confirmado
     _registrarTurno(pergunta.trim(), textoFormatado);
-
-    return {
-      texto:  textoFormatado,
-      fonte:  resultado.fonte,
-      modelo: resultado.modelo,
-    };
+  return { texto: textoFormatado, fonte: resultado.fonte, modelo: resultado.modelo };
   }
 
   /**
@@ -394,7 +396,7 @@
     };
   }
 
-  /* ══════════════════════════════════════════════════════════
+  /* ═════════════════════════════c═════════════════════════════
      REGISTRO GLOBAL
      ══════════════════════════════════════════════════════════ */
 

@@ -276,6 +276,14 @@
     var el = document.getElementById('nexus-typing');
     if (!el) return;
     el.classList.remove('nexus-visible');
+    // BUG 4 FIX: showTyping() move o elemento para dentro de #nexus-messages
+    // via appendChild. Se hideTyping() não o reposicionar, a próxima chamada de
+    // renderMessage() pode intercalar o typing entre mensagens no DOM.
+    // Reposicionamos no início do footer para manter a estrutura original.
+    var footer = document.getElementById('nexus-footer');
+    if (footer && el.parentNode !== footer) {
+      footer.insertBefore(el, footer.firstChild);
+    }
   }
 
   /* ══════════════════════════════════════════════════════════

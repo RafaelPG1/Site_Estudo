@@ -211,12 +211,16 @@
   }
 
   async function _confirmarDisc(disc) {
-    NexusSearch.limparIndice();
-    NexusLoader.limpar();
-    state.discIndexadaId = null;
-    state.discEscolhida  = disc;
-    state.aguardandoDisc = false;
-    _salvarDiscAtiva();
+  NexusSearch.limparIndice();
+  NexusLoader.limpar();
+  state.discIndexadaId = null;
+  state.discEscolhida  = disc;
+  state.aguardandoDisc = false;
+  _salvarDiscAtiva();
+
+  // ← ADICIONE ESTA LINHA
+  if (typeof window.NexusWorker !== 'undefined') NexusWorker.limparHistorico();
+  
 
     const loaderCtx = _montarCtx(disc);
     if (!loaderCtx) {
@@ -915,15 +919,19 @@
         }
 
         /* ── Caso: match exato ── */
-        const discExata          = resultadoCmd.disc;
-        const perguntaResidual   = resultadoCmd.perguntaResidual || '';
-        const discJaAtiva        = state.discEscolhida && discExata.id === state.discEscolhida.id;
+const discExata        = resultadoCmd.disc;
+const perguntaResidual = resultadoCmd.perguntaResidual || '';
+const discJaAtiva      = state.discEscolhida && discExata.id === state.discEscolhida.id;
 
-        if (!discJaAtiva) {
-          _limparContexto();
-          const carregou = await _confirmarDisc(discExata);
-          if (!carregou) return;
-        }
+if (!discJaAtiva) {
+  _limparContexto(); // já limpa o histórico do avaworker
+  const carregou = await _confirmarDisc(discExata);
+  if (!carregou) return;
+} else {
+  // mesmo que a disc já estivesse ativa, limpa o histórico
+  // se veio de uma conversa sem disc (ex: "onde aprendo tcp?")
+  if (typeof window.NexusWorker !== 'undefined') NexusWorker.limparHistorico();
+}
 
         if (perguntaResidual.length >= 2) {
           await _executarBuscaNaDisc(perguntaResidual, discExata);
@@ -936,20 +944,21 @@
       /* ── 3. MODO: aguardando escolha de disciplina ── */
       if (state.aguardandoDisc) {
         const disc = _matchDisc(texto);
-        if (!disc) {
-          const discs    = _getDisciplinas() || [];
-          const exemplos = discs.slice(0, 4).map(function (d) { return '/disc ' + d.id; }).join('  ');
-          _renderBot('Não reconheci "' + texto.trim() + '".\n\nUse /disc <nome> para selecionar. Exemplos:\n  ' + exemplos);
-          NexusUI.mostrarSugestoes(_chipsDiscs(discs.slice(0, 4)), _onSugestaoClick);
+        if (disc) {
+          await _confirmarDisc(disc);
           return;
         }
-        await _confirmarDisc(disc);
-        return;
+        // PATCH sem-disc: não reconheceu uma disc — não bloqueia.
+        // Zera a flag e deixa responder normalmente sem disciplina.
+        state.aguardandoDisc = false;
       }
 
       /* ── MODO NORMAL: disciplina já selecionada ── */
       const disc = _resolverDisc();
-      if (!disc) { _pedirDisc(); return; }
+
+      // PATCH sem-disc: sem disciplina, responde com conhecimento externo
+      // em vez de bloquear. _executarSemDisc() também detecta "onde aprendo X".
+      if (!disc) { await _executarSemDisc(texto); return; }
 
       await _executarBuscaNaDisc(texto, disc);
 
@@ -962,6 +971,129 @@
       _setInputBloqueado(false);
     }
   }
+
+
+  /* ══════════════════════════════════════════════════════════
+     _executarSemDisc()
+     PATCH sem-disc: responde sem disciplina selecionada.
+     · Saudação pura → boas-vindas + chips das disciplinas disponíveis
+     · "em qual disciplina aprendo X" → detecta e sugere a disc certa
+     · Qualquer outra pergunta → responde com conhecimento externo (IA)
+  ══════════════════════════════════════════════════════════ */
+async function _executarSemDisc(texto) {
+
+  /* ── Saudação pura ── */
+  if (_ehSaudacao(texto)) {
+    const discs = _getDisciplinas() || [];
+    const lista = discs.map(function (d) { return '  /disc ' + d.id + '   — ' + d.nome; }).join('\n');
+    _renderBot(
+      'Ola! 👋\n\n' +
+      'Nenhuma disciplina selecionada ainda. Voce pode perguntar qualquer coisa — ' +
+      'respondo com conhecimento geral — ou selecione uma disciplina para eu buscar no conteudo do site:\n\n' + lista
+    );
+    const chips = discs.map(function (d) { return { label: '/disc ' + d.id, cmd: '/disc ' + d.id, tipo: 'disc' }; });
+    NexusUI.mostrarSugestoes(chips, _onSugestaoClick);
+    return;
+  }
+
+  /* ── Detecta "em qual disciplina aprendo X" / "onde vejo X" ── */
+  var normTexto = _normalizar(texto);
+  var ehOndeAprende = (
+    /\b(qual|em qual|que|em que)\s+(disciplina|materia|aula|curso)\b/.test(normTexto) ||
+    /\b(onde|quando)\s+(vejo|aprendo|estudo|tem|cai)\b/.test(normTexto)
+  );
+
+  if (ehOndeAprende) {
+    /* Extrai o termo com menos agressividade — mantém palavras técnicas */
+    var termoRaw = normTexto
+      .replace(/\b(em qual|qual|em que|que|onde|quando)\b/g, ' ')
+      .replace(/\b(disciplina|materia|aula|curso|aprendo|estudo|vejo|tem|cai|posso|aprender)\b/g, ' ')
+      .replace(/\b(eu|e|a|o|de|da|do|para|pra)\b/g, ' ')
+      .replace(/\s+/g, ' ').trim();
+
+    var discsOndeAprende = _getDisciplinas() || [];
+
+    /* Pré-carrega em paralelo todas as discs ainda não cacheadas */
+    await Promise.all(discsOndeAprende.map(function (d) {
+      return _carregarDiscParaBuscaGlobal(d);
+    }));
+
+    var matchDiscs = [];
+
+    if (termoRaw.length >= 2) {
+      discsOndeAprende.forEach(function (d) {
+        var trechos = state.discsCacheadas[d.id] || [];
+        var hits = 0;
+        for (var j = 0; j < trechos.length; j++) {
+          if (_normalizar(trechos[j].texto || '').includes(termoRaw)) hits++;
+        }
+        if (hits > 0) matchDiscs.push({ disc: d, hits: hits });
+      });
+      matchDiscs.sort(function (a, b) { return b.hits - a.hits; });
+    }
+
+    if (matchDiscs.length > 0) {
+      /* Encontrou nos resumos → sugere a(s) disc(s) */
+      var topDiscs = matchDiscs.slice(0, 2);
+      var lista = topDiscs.map(function (m) {
+        return '  /disc ' + m.disc.id + '   — ' + m.disc.nome;
+      }).join('\n');
+      _renderBot(
+        'Você provavelmente encontra isso em:\n\n' + lista +
+        '\n\nSelecione para eu buscar no conteúdo do site.'
+      );
+      NexusUI.mostrarSugestoes(
+        topDiscs.map(function (m) {
+          return { label: '/disc ' + m.disc.id, cmd: '/disc ' + m.disc.id, tipo: 'disc' };
+        }),
+        _onSugestaoClick
+      );
+    } else {
+      /* Não encontrou nos resumos → sugere /disc sem apontar uma específica */
+      var todasDiscs = discsOndeAprende;
+      var listaGeral = todasDiscs.map(function (d) {
+        return '  /disc ' + d.id + '   — ' + d.nome;
+      }).join('\n');
+      _renderBot(
+        'Não encontrei esse assunto nos resumos disponíveis.\n\n' +
+        'Selecione uma disciplina para eu buscar no conteúdo completo:\n\n' + listaGeral
+      );
+      NexusUI.mostrarSugestoes(
+        todasDiscs.map(function (d) {
+          return { label: '/disc ' + d.id, cmd: '/disc ' + d.id, tipo: 'disc' };
+        }),
+        _onSugestaoClick
+      );
+    }
+    return; // <-- sempre retorna, nunca cai na IA
+  }
+
+  /* ── Qualquer outra pergunta → IA com conhecimento externo ── */
+  NexusUI.showTyping();
+  try {
+    const respostaIA = await NexusWorker.perguntar({
+      pergunta:     texto,
+      resultados:   [],
+      disciplina:   null,
+      tipoContexto: 'conteudo',
+      semContexto:  true,
+    });
+    if (respostaIA) {
+      const rodape = (respostaIA.fonte || respostaIA.modelo) ? {
+        linha1: ['IA: ' + (respostaIA.fonte || ''), respostaIA.modelo || ''].filter(Boolean).join(' · '),
+        linha2: 'fonte: conhecimento externo',
+      } : null;
+      _renderBot(respostaIA.texto, rodape);
+    } else {
+      _renderBot('Nao consegui processar sua pergunta. Tente novamente.');
+    }
+  } catch (e) {
+    console.error('[NexusAssistant] _executarSemDisc erro:', e);
+    _renderBot('Ocorreu um erro ao processar sua pergunta. Tente novamente.');
+  } finally {
+    NexusUI.hideTyping();
+  }
+}
 
   /* ══════════════════════════════════════════════════════════
      _executarBuscaNaDisc()
@@ -1089,6 +1221,21 @@
     console.log('[NexusAssistant] semestre mudou — contexto e cache limpos.');
   });
 
+  function _mostrarBoasVindas() {
+    var discs = _getDisciplinas();
+    if (!discs || !discs.length) return;
+    var lista = discs.map(function (d) { return '  /disc ' + d.id + '   — ' + d.nome; }).join('\n');
+    _renderBot(
+      'Disciplinas disponíveis:\n\n' + lista + '\n\n' +
+      'Selecione uma disciplina para eu buscar no conteúdo do site, ' +
+      'ou pergunte qualquer coisa e respondo com conhecimento geral.'
+    );
+    var chips = discs.map(function (d) {
+      return { label: '/disc ' + d.id, cmd: '/disc ' + d.id, tipo: 'disc' };
+    });
+    NexusUI.mostrarSugestoes(chips, _onSugestaoClick);
+  }
+
   function _addWelcomeMessage() {
     const msg = { role: 'system', text: '⬡  Nexus IA', time: _getTime() };
     _push(msg);
@@ -1112,7 +1259,8 @@
     msgs.forEach(function (msg) { NexusUI.renderMessage(msg); });
 
     if (!state.discEscolhida) {
-      state.aguardandoDisc = true;
+      // PATCH sem-disc: não seta aguardandoDisc=true — o usuário pode
+      // perguntar livremente. Chips aparecem como sugestão, não bloqueio.
       const discs = _getDisciplinas();
       if (discs && discs.length) {
         const chips = discs.map(function (d) {
@@ -1148,7 +1296,7 @@
     NexusUI.hideTyping();
     _setInputBloqueado(false);
     _addWelcomeMessage();
-    _pedirDisc();
+    _mostrarBoasVindas();
     console.log('[NexusAssistant] chat resetado.');
   }
 
@@ -1199,6 +1347,9 @@
         }
       });
     } else if (!restaurado) {
+      // PATCH sem-disc: sempre mostra boas-vindas com lista de disciplinas.
+      // Pré-carrega via bridge se disponível, mas sem ocultar a mensagem.
+      _mostrarBoasVindas();
       const discInicial = _resolverDisc();
       if (discInicial) {
         const loaderCtx = _montarCtx(discInicial);
@@ -1210,13 +1361,9 @@
               state.discEscolhida  = discInicial;
               _salvarDiscAtiva();
               NexusUI.atualizarDiscAtiva(discInicial.apelido);
-              const sugestoes = _gerarSugestoes(conteudo);
-              if (sugestoes.length > 0) NexusUI.mostrarSugestoes(sugestoes, _onSugestaoClick);
             }
           });
         }
-      } else {
-        _pedirDisc();
       }
     }
   }

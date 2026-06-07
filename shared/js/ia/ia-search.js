@@ -151,7 +151,39 @@
     'resuma','resumir',
 
     // PATCH: partículas interrogativas adicionais
-    'voce','vc','pra','pro','pra',
+    'voce','vc','pra','pro',
+
+    // PATCH informal-br: expressões coloquiais brasileiras que nunca aparecem
+    // em resumos acadêmicos e inflariam o denominador do score inutilmente.
+
+    // Interjeições / reações
+    'cara','mano','mana','brother','bro','bi',
+    'puts','poxa','putz','caramba','nossa','eita','uai','xi',
+    'ah','ah','eh','oh','ih','uh','hm','hmm',
+    'kkk','kkkk','kkkkk','kk','haha','hahaha','rsrs','rsrsrs','lol',
+    'aeee','aeeeee','ueee',
+
+    // Expressões de dificuldade / desabafo (só tokens únicos — o filtro opera por palavra)
+    'travei','emperrei',
+    'dificil','pesado','complicado','chato','saco',
+    'socorro','perdido','perdida',
+
+    // Conectores e transições informais
+    // (versões acentuadas omitidas — normalizarTexto remove acentos antes do filtro)
+    'ta','dai','ai','tipo','assim','entao',
+    'ate','ne','num','nao','so','la',
+    'tb','tbm','tmb','tambem',
+
+    // Intensificadores informais vazios (mt/mto são só abreviações de chat)
+    'mt','mto',
+    'super','hiper','mega','ultra',
+
+    // Confirmações / hesitações de chat
+    'ok','okay','hm',
+
+    // Saudações (redundante com _ehSaudacao mas protege o score também)
+    'oi','ola','hey','hi','hello','eai','salve','opa',
+    'bom','boa','noite','tarde','dia',
   ]);
 
   function _filtrarStopwords(termos) {
