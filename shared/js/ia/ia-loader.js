@@ -26,15 +26,18 @@
   /**
    * Monta o path do arquivo res_*.js a partir do contexto.
    *
+   * Usa path relativo (sem / inicial) para funcionar corretamente
+   * tanto em localhost quanto no GitHub Pages com subdiretório.
+   *
    * Formatos suportados:
-   *   Com AP:  /content/resumo/{ano}/{periodo}/{ap}/res_{arquivo}.js
-   *   Sem AP:  /content/resumo/{ano}/{periodo}/res_{arquivo}.js
+   *   Com AP:  content/resumo/{ano}/{periodo}/{ap}/res_{arquivo}.js
+   *   Sem AP:  content/resumo/{ano}/{periodo}/res_{arquivo}.js
    *
    * @param {{ ano: string, periodo: string, ap: string|null, arquivo: string }} ctx
    * @returns {string}
    */
   function _montarPath(ctx) {
-    const base = '/content/resumo/' + ctx.ano + '/' + ctx.periodo;
+    const base = 'content/resumo/' + ctx.ano + '/' + ctx.periodo;
     if (ctx.ap) {
       return base + '/' + ctx.ap + '/res_' + ctx.arquivo + '.js';
     }
