@@ -56,24 +56,31 @@
      ══════════════════════════════════════════════════════════ */
 
   /**
-   * Monta a URL absoluta do arquivo res_*.js a partir do contexto.
+   * Monta a URL absoluta do arquivo de conteúdo a partir do contexto.
    *
    * Usa a raiz detectada em _detectarRaiz() — funciona em qualquer
    * página (index, resumo/, quiz/, etc.) sem ajuste manual.
    *
-   * Formatos suportados:
-   *   Com AP:  <raiz>/content/resumo/{ano}/{periodo}/{ap}/res_{arquivo}.js
-   *   Sem AP:  <raiz>/content/resumo/{ano}/{periodo}/res_{arquivo}.js
+   * ctx.fonte  — subpasta em content/ (ex: 'resumo', 'quiz', 'game').
+   *              Padrão: 'resumo' para compatibilidade com código existente.
+   * ctx.prefixo — prefixo do arquivo (ex: 'res_', 'ques_').
+   *              Padrão: 'res_' para compatibilidade com código existente.
    *
-   * @param {{ ano: string, periodo: string, ap: string|null, arquivo: string }} ctx
+   * Formatos suportados:
+   *   Com AP:  <raiz>/content/{fonte}/{ano}/{periodo}/{ap}/{prefixo}{arquivo}.js
+   *   Sem AP:  <raiz>/content/{fonte}/{ano}/{periodo}/{prefixo}{arquivo}.js
+   *
+   * @param {{ fonte?: string, prefixo?: string, ano: string, periodo: string, ap: string|null, arquivo: string }} ctx
    * @returns {string}
    */
   function _montarPath(ctx) {
-    const base = _raizSite + '/content/resumo/' + ctx.ano + '/' + ctx.periodo;
+    var fonte   = ctx.fonte   || 'resumo';
+    var prefixo = ctx.prefixo || 'res_';
+    var base    = _raizSite + '/content/' + fonte + '/' + ctx.ano + '/' + ctx.periodo;
     if (ctx.ap) {
-      return base + '/' + ctx.ap + '/res_' + ctx.arquivo + '.js';
+      return base + '/' + ctx.ap + '/' + prefixo + ctx.arquivo + '.js';
     }
-    return base + '/res_' + ctx.arquivo + '.js';
+    return base + '/' + prefixo + ctx.arquivo + '.js';
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -87,15 +94,16 @@
    * leitura de conteúdo stale de outra disciplina.
    *
    * @param {string} path
-   * @returns {Promise<object|null>} conteúdo (__nexusConteudo) ou null em caso de falha
+   * @param {string} varGlobal — nome da variável global que o script define
+   * @returns {Promise<object|null>} conteúdo ou null em caso de falha
    */
-  function _injetarScript(path) {
+  function _injetarScript(path, varGlobal) {
     return new Promise(function (resolve) {
       // Remove script anterior do DOM (não afeta o índice — só o DOM)
       const anterior = document.getElementById('nexus-conteudo-script');
       if (anterior) anterior.remove();
 
-      // Garante que não existe conteúdo stale de outra disciplina
+      // Limpa ambas as variáveis conhecidas para evitar leitura de conteúdo stale
       window.__nexusConteudo = undefined;
 
       const s = document.createElement('script');
@@ -103,10 +111,12 @@
       s.src = path;
 
       s.onload = function () {
-        if (window.__nexusConteudo) {
-          resolve(window.__nexusConteudo);
+        // Lê a variável que este script específico define
+        const conteudo = window[varGlobal];
+        if (conteudo) {
+          resolve(conteudo);
         } else {
-          console.warn('[NexusLoader] script carregado mas __nexusConteudo não definido:', path);
+          console.warn('[NexusLoader] script carregado mas "' + varGlobal + '" não definido:', path);
           resolve(null);
         }
       };
@@ -125,13 +135,18 @@
      ══════════════════════════════════════════════════════════ */
 
   /**
-   * Carrega o arquivo res_*.js correspondente ao contexto.
+   * Carrega o arquivo de conteúdo correspondente ao contexto.
+   *
+   * ctx.varGlobal — nome da variável global que o script define.
+   *   'resumo' define window.__nexusConteudo  → varGlobal: '__nexusConteudo'
+   *   'quiz'   define window.questoes         → varGlobal: 'questoes'
+   *   Padrão: '__nexusConteudo' para compatibilidade com código existente.
    *
    * Cache: se o path resultante for idêntico ao último carregado
-   * com sucesso E window.__nexusConteudo ainda existir, retorna
+   * com sucesso E a variável global ainda existir, retorna
    * o conteúdo em memória sem nova injeção de script.
    *
-   * @param {{ ano: string, periodo: string, ap: string|null, arquivo: string }} ctx
+   * @param {{ fonte?: string, prefixo?: string, varGlobal?: string, ano: string, periodo: string, ap: string|null, arquivo: string }} ctx
    * @returns {Promise<object|null>} conteúdo ou null
    */
   async function carregar(ctx) {
@@ -140,22 +155,22 @@
       return null;
     }
 
+    const varGlobal = ctx.varGlobal || '__nexusConteudo';
     const path = _montarPath(ctx);
 
     // Cache hit: mesmo arquivo já carregado e conteúdo ainda na memória
-    if (_pathCarregado === path && window.__nexusConteudo) {
+    if (_pathCarregado === path && window[varGlobal]) {
       console.log('[NexusLoader] cache hit:', path);
-      return window.__nexusConteudo;
+      return window[varGlobal];
     }
 
     console.log('[NexusLoader] carregando:', path);
-    const conteudo = await _injetarScript(path);
+    const conteudo = await _injetarScript(path, varGlobal);
 
     if (conteudo) {
       _pathCarregado = path;
       console.log('[NexusLoader] carregado com sucesso:', path);
     } else {
-      // Carregamento falhou — reseta cache para forçar nova tentativa futura
       _pathCarregado = null;
     }
 

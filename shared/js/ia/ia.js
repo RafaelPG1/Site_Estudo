@@ -145,7 +145,18 @@
     if (!ctx || !disc) return null;
     const sem    = ctx.getSemestre();
     const parsed = ctx.parseSemestre(sem);
-    return { ano: parsed.ano, periodo: parsed.periodo, ap: parsed.ap, arquivo: disc.arquivo };
+
+    // Detecta a fonte de conteúdo ativa.
+    // Prioridade: bridge estendido → variável global do template → padrão 'resumo'.
+    // window.__NEXUS_QUIZ_MODO__ é setado por template_init.js antes de qualquer
+    // chamada da IA, então é a leitura mais segura no contexto de quiz.
+    const fonte = (ctx.getFonte && ctx.getFonte())
+      || (window.__NEXUS_QUIZ_MODO__ !== undefined ? 'quiz' : 'resumo');
+
+    const prefixo   = fonte === 'quiz' ? 'ques_'    : ((ctx.getPrefixo  && ctx.getPrefixo())  || 'res_');
+    const varGlobal = fonte === 'quiz' ? 'questoes' : ((ctx.getVarGlobal && ctx.getVarGlobal()) || '__nexusConteudo');
+
+    return { ano: parsed.ano, periodo: parsed.periodo, ap: parsed.ap, arquivo: disc.arquivo, fonte, prefixo, varGlobal };
   }
 
   function _resolverDisc() {
@@ -174,11 +185,16 @@
     const conteudo = await NexusLoader.carregar(loaderCtx);
     if (!conteudo) return null;
     if (!NexusSearch.estaIndexado() || state.discIndexadaId !== disc.id) {
-      NexusSearch.indexarConteudo(conteudo);
+      const fonte = window.__NEXUS_QUIZ_MODO__ !== undefined ? 'quiz' : 'resumo';
+      if (fonte === 'quiz') {
+        // conteudo é window.questoes: { questoes:[], enade:[], fixacao:[], ava:[] }
+        const modo = window.__NEXUS_QUIZ_MODO__ || 'questoes';
+        NexusSearch.indexarQuestoes(conteudo, modo);
+      } else {
+        NexusSearch.indexarConteudo(conteudo);
+      }
       state.discIndexadaId = disc.id;
     }
-    // Guarda o conteudo no state para nao depender de window.__nexusConteudo
-    // (que pode ser sobrescrito pelo resumo.js ao trocar de disciplina na sidebar)
     state.conteudoAtual = conteudo;
     return conteudo;
   }
@@ -1098,6 +1114,104 @@ async function _executarSemDisc(texto) {
 }
 
   /* ══════════════════════════════════════════════════════════
+     QUIZ — funções auxiliares
+     ══════════════════════════════════════════════════════════ */
+
+  /**
+   * Detecta referência a número de questão na mensagem do usuário.
+   * Captura padrões como: "questão 5", "q5", "#5", "numero 12", "a questão 3".
+   * Retorna o número (inteiro, base 1) ou null se não houver referência.
+   *
+   * @param {string} texto
+   * @returns {number|null}
+   */
+  function _detectarNumeroQuestao(texto) {
+    var norm = NexusSearch.normalizarTexto(texto.trim());
+    var padroes = [
+      /\bquest(?:ao|oes?)?\s*n?[o°]?\s*(\d+)\b/,  // questão 5, questão no 5
+      /\bq\s*(\d+)\b/,                              // q5, q 5
+      /#(\d+)\b/,                                   // #5
+      /\bnumero\s+(\d+)\b/,                         // numero 5
+      /\b(\d+)[aª]\s*quest/,                        // 5ª quest...
+    ];
+    for (var i = 0; i < padroes.length; i++) {
+      var m = norm.match(padroes[i]);
+      if (m) return parseInt(m[1], 10);
+    }
+    return null;
+  }
+
+  /**
+   * Serializa a questão completa em texto para o worker.
+   * Inclui número, enunciado, alternativas, gabarito e feedback.
+   *
+   * @param {number} numero
+   * @param {object} q — objeto da questão do ques_*.js
+   * @returns {string}
+   */
+  function _serializarQuestao(numero, q) {
+    var linhas = ['Questão ' + numero + (q.aula ? ' (' + q.aula + ')' : '') + ':'];
+    if (q.texto)    linhas.push('Contexto: ' + q.texto);
+    if (q.question) linhas.push('Enunciado: ' + q.question);
+    if (Array.isArray(q.assertions)) {
+      linhas.push('Afirmativas:');
+      q.assertions.forEach(function (a) { linhas.push('  ' + a); });
+    }
+    if (Array.isArray(q.options)) {
+      linhas.push('Alternativas:');
+      q.options.forEach(function (opt, i) {
+        var letra = String.fromCharCode(65 + i); // A, B, C, D, E
+        linhas.push('  ' + letra + ') ' + opt);
+      });
+    }
+    if (typeof q.answer === 'number') {
+      var gabarito = String.fromCharCode(65 + q.answer);
+      linhas.push('Gabarito: ' + gabarito);
+    }
+    if (q.feedback) linhas.push('Feedback oficial: ' + q.feedback);
+    return linhas.join('\n');
+  }
+
+  /**
+   * Envia a questão serializada ao worker e renderiza a resposta.
+   * Usa o mesmo caminho de NexusWorker.perguntar() que o resumo —
+   * apenas o conteúdo do contexto é diferente.
+   *
+   * @param {string} pergunta — texto original do usuário
+   * @param {string} ctxQuestao — questão serializada por _serializarQuestao
+   * @param {object} disc — disciplina ativa
+   */
+  async function _responderSobreQuestao(pergunta, ctxQuestao, disc) {
+    if (typeof window.NexusWorker !== 'undefined') {
+      // Passa a questão como um "resultado" com score alto
+      // para que _serializarContexto do worker a receba como contexto
+      const resultadoFake = [{ score: 100, texto: ctxQuestao, aula: '', secao: 'Quiz' }];
+      let respostaIA = null;
+      try {
+        respostaIA = await NexusWorker.perguntar({
+          pergunta:     pergunta,
+          resultados:   resultadoFake,
+          disciplina:   disc.id,
+          tipoContexto: 'conteudo',
+          semContexto:  false,
+        });
+      } catch (e) {
+        console.warn('[NexusAssistant] _responderSobreQuestao erro worker:', e);
+      }
+      if (respostaIA) {
+        const rodape = (respostaIA.fonte || respostaIA.modelo) ? {
+          linha1: ['IA: ' + (respostaIA.fonte || ''), respostaIA.modelo || ''].filter(Boolean).join(' · '),
+          linha2: 'fonte: questões do quiz',
+        } : null;
+        _renderBot(respostaIA.texto, rodape);
+        return;
+      }
+    }
+    // Fallback sem IA: exibe a questão formatada diretamente
+    _renderBot(ctxQuestao);
+  }
+
+  /* ══════════════════════════════════════════════════════════
      _executarBuscaNaDisc()
      ══════════════════════════════════════════════════════════ */
   async function _executarBuscaNaDisc(texto, disc) {
@@ -1115,6 +1229,27 @@ async function _executarSemDisc(texto) {
     if (_ehAgradecimento(texto)) {
       _renderBot('De nada! 😊 Se tiver mais dúvidas sobre ' + disc.apelido + ', é só perguntar.');
       return;
+    }
+
+    /* ── 1. QUIZ: lookup de questão por número ── */
+    const fonte  = window.__NEXUS_QUIZ_MODO__ !== undefined ? 'quiz' : 'resumo';
+    if (fonte === 'quiz') {
+      const numQ = _detectarNumeroQuestao(texto);
+      if (numQ !== null) {
+        const conteudoQ = await _garantirConteudo(disc);
+        if (!conteudoQ) { _renderBot('Não consegui carregar as questões. Tente novamente.'); return; }
+        const q = NexusSearch.buscarQuestaoPorNumero(numQ);
+        if (!q) {
+          _renderBot('Questão ' + numQ + ' não encontrada no modo atual.');
+          return;
+        }
+        // Monta contexto rico para o worker
+        const ctxQuestao = _serializarQuestao(numQ, q);
+        await _responderSobreQuestao(texto, ctxQuestao, disc);
+        return;
+      }
+      // Busca textual dentro das questões (sem lookup direto)
+      // Cai no fluxo normal abaixo — NexusSearch.buscar() já usa o índice de quiz
     }
 
     /* ── 4. RESUMO DE AULA ── */

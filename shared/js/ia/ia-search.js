@@ -337,8 +337,96 @@
   /* ══════════════════════════════════════════════════════════
      API PÚBLICA
   ══════════════════════════════════════════════════════════ */
+  /* ══════════════════════════════════════════════════════════
+     INDEXAÇÃO DE QUIZ
+     Indexa questoes[modo] do arquivo ques_*.js.
+     O _indice existente é reutilizado — limparIndice() funciona para ambos.
+  ══════════════════════════════════════════════════════════ */
+
+  /**
+   * Indexa as questões de um modo específico.
+   * Deve ser chamado APÓS limparIndice() para não misturar com resumo.
+   *
+   * @param {object} questoes  — window.questoes do ques_*.js
+   * @param {string} modo      — 'questoes'|'enade'|'fixacao'|'ava'
+   */
+  function indexarQuestoes(questoes, modo) {
+    _indice = [];
+
+    if (!questoes || !Array.isArray(questoes[modo]) || !questoes[modo].length) {
+      console.warn('[NexusSearch] indexarQuestoes: modo "' + modo + '" não encontrado ou vazio.');
+      return;
+    }
+
+    var lista = questoes[modo];
+
+    lista.forEach(function (q, i) {
+      var numero = i + 1;
+      var aula   = q.aula || '';
+
+      // Texto buscável: enunciado + alternativas + contexto
+      var partes = [];
+      if (q.texto)    partes.push(q.texto);
+      if (q.question) partes.push(q.question);
+      if (Array.isArray(q.assertions)) partes.push(q.assertions.join(' '));
+      if (Array.isArray(q.options))    partes.push(q.options.join(' '));
+
+      var textoCompleto = partes.join(' ');
+      var tn = normalizarTexto(textoCompleto);
+
+      _indice.push({
+        texto:      textoCompleto,
+        aula:       aula,
+        secao:      modo,
+        peso:       1.0,
+        textoNorm:  tn,
+        stemsTexto: tn.split(' ').filter(Boolean).map(_stem).join(' '),
+        _numero:    numero,
+        _modo:      modo,
+        _q:         q,
+      });
+
+      // Feedback indexado separadamente (peso menor)
+      if (q.feedback) {
+        var fnorm = normalizarTexto(q.feedback);
+        _indice.push({
+          texto:      q.feedback,
+          aula:       aula,
+          secao:      modo + '/feedback',
+          peso:       0.8,
+          textoNorm:  fnorm,
+          stemsTexto: fnorm.split(' ').filter(Boolean).map(_stem).join(' '),
+          _numero:    numero,
+          _modo:      modo,
+          _q:         q,
+        });
+      }
+    });
+
+    console.log('[NexusSearch] indexarQuestoes: ' + lista.length + ' questões indexadas para modo "' + modo + '".');
+  }
+
+  /**
+   * Retorna a questão completa pelo número (base 1) ou null.
+   * Busca apenas entradas de enunciado (não feedback).
+   *
+   * @param {number} numero
+   * @returns {object|null}
+   */
+  function buscarQuestaoPorNumero(numero) {
+    for (var i = 0; i < _indice.length; i++) {
+      var e = _indice[i];
+      if (e._numero === numero && e.secao && !e.secao.includes('/feedback')) {
+        return e._q || null;
+      }
+    }
+    return null;
+  }
+
   window.NexusSearch = {
     indexarConteudo,
+    indexarQuestoes,
+    buscarQuestaoPorNumero,
     limparIndice,
     buscar,
     normalizarTexto,
