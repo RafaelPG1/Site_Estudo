@@ -21,18 +21,19 @@
     return;
   }
 
-  // ── Registra o SW ────────────────────────────────────────────
+  // ── Detecta base do projeto (funciona em localhost E GitHub Pages) ──
+  // Ex: localhost → base = '/'
+  // Ex: usuario.github.io/nexus-study/ → base = '/nexus-study/'
+  const base = location.pathname.replace(/\/[^/]*$/, '/');
+
   window.addEventListener('load', () => {
     navigator.serviceWorker
-      .register('/sw.js', { scope: '/' })
+      .register(base + 'sw.js', { scope: base })
       .then(registration => {
 
         console.info('[PWA] Service Worker registrado:', registration.scope);
 
         // ── Detecta atualização disponível ───────────────────
-        // Quando você muda CACHE_VERSION no sw.js e faz deploy,
-        // o browser instala o novo SW em background.
-        // Quando estiver pronto, avisa o usuário.
         registration.addEventListener('updatefound', () => {
           const novoSW = registration.installing;
           if (!novoSW) return;
@@ -42,7 +43,6 @@
               novoSW.state === 'installed' &&
               navigator.serviceWorker.controller
             ) {
-              // Novo conteúdo disponível — avisa discretamente
               _mostrarAvisoAtualizacao();
             }
           });
@@ -53,22 +53,16 @@
         console.error('[PWA] Falha ao registrar Service Worker:', err);
       });
 
-    // ── Recarrega automaticamente após o SW assumir o controle ──
-    // Garante que a página já esteja sob o SW na próxima visita
+    // ── Recarrega após o SW assumir controle ──────────────────
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      // Só recarrega se o usuário não estiver digitando algo
       if (document.visibilityState === 'hidden') return;
       window.location.reload();
     });
   });
 
 
-  /* ── Aviso de atualização ────────────────────────────────────
-     Aparece um toast discreto na parte de baixo da tela.
-     O usuário pode clicar para recarregar com o novo conteúdo.
-     Reutiliza o estilo .nexus-toast se já existir no CSS.    */
+  /* ── Aviso de atualização ──────────────────────────────────── */
   function _mostrarAvisoAtualizacao() {
-    // Evita duplicar o aviso
     if (document.getElementById('pwa-update-toast')) return;
 
     const toast = document.createElement('div');
@@ -115,7 +109,6 @@
       window.location.reload();
     });
 
-    // Remove automaticamente após 15 segundos se ignorado
     setTimeout(() => toast.remove(), 15_000);
   }
 

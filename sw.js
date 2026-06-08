@@ -8,99 +8,93 @@
    push pro GitHub. O SW vai baixar tudo de novo.
    ============================================= */
 
-const CACHE_VERSION = 'nexus-v1';
+const CACHE_VERSION = 'nexus-v2';
+
+/* ─────────────────────────────────────────────
+   BASE DO PROJETO
+   Em localhost → ''
+   Em GitHub Pages → '/nome-do-repo'
+   O SW detecta automaticamente pelo seu próprio URL.
+───────────────────────────────────────────── */
+const BASE = self.location.pathname.replace(/\/sw\.js$/, '');
 
 /* ─────────────────────────────────────────────
    ASSETS ESTÁTICOS
    Tudo que precisa funcionar offline.
-   Organize por seção para facilitar manutenção.
 ───────────────────────────────────────────── */
 
 const ASSETS_CORE = [
   // Raiz
-  '/',
-  '/index.html',
-  '/index.js',
-  '/style.css',
-  '/manifest.json',
+  BASE + '/',
+  BASE + '/index.html',
+  BASE + '/index.js',
+  BASE + '/style.css',
+  BASE + '/manifest.json',
 
   // Shared — CSS
-  '/shared/css/themes/fundo.css',
-  '/shared/css/themes/logo.css',
-  '/shared/css/audio/sound.css',
-  '/shared/css/audio/audio-btns.css',
-  '/shared/css/audio/vol-slider.css',
-  '/shared/css/ia/ia.css',
+  BASE + '/shared/css/themes/fundo.css',
+  BASE + '/shared/css/themes/logo.css',
+  BASE + '/shared/css/audio/sound.css',
+  BASE + '/shared/css/audio/audio-btns.css',
+  BASE + '/shared/css/audio/vol-slider.css',
+  BASE + '/shared/css/ia/ia.css',
 
   // Shared — JS utilitários
-  '/shared/js/utils/logo.js',
-  '/shared/js/utils/session-tracker.js',
-  '/shared/js/utils/dom.js',
-  '/shared/js/office/pwa.js',
+  BASE + '/shared/js/utils/logo.js',
+  BASE + '/shared/js/utils/session-tracker.js',
+  BASE + '/shared/js/utils/dom.js',
+  BASE + '/shared/js/office/pwa.js',
 
   // Shared — JS áudio
-  '/shared/js/audio/audio-api.js',
+  BASE + '/shared/js/audio/audio-api.js',
 
   // Shared — JS IA
-  '/shared/js/ia/ia-ui.js',
-  '/shared/js/ia/ia-search.js',
-  '/shared/js/ia/ia-loader.js',
-  '/shared/js/ia/ia-worker.js',
-  '/shared/js/ia/ia.js',
+  BASE + '/shared/js/ia/ia-ui.js',
+  BASE + '/shared/js/ia/ia-search.js',
+  BASE + '/shared/js/ia/ia-loader.js',
+  BASE + '/shared/js/ia/ia-worker.js',
+  BASE + '/shared/js/ia/ia.js',
 
   // Src (módulos internos)
-  '/src/global.js',
-  '/src/firebase.js',
+  BASE + '/src/global.js',
+  BASE + '/src/firebase.js',
 ];
 
 const ASSETS_RESUMO = [
-  '/resumo/resumo.html',
-  // ↓ Adicione aqui os JS/CSS da seção Resumo
-  // '/resumo/resumo.js',
-  // '/resumo/resumo.css',
+  BASE + '/resumo/resumo.html',
+  // BASE + '/resumo/resumo.js',
+  // BASE + '/resumo/resumo.css',
 ];
 
 const ASSETS_QUIZ = [
-  '/quiz/quiz.html',
-  // '/quiz/quiz.js',
-  // '/quiz/quiz.css',
+  BASE + '/quiz/quiz.html',
+  // BASE + '/quiz/quiz.js',
+  // BASE + '/quiz/quiz.css',
 ];
 
 const ASSETS_GAMES = [
-  '/games/jogo.html',
-  // '/games/jogo.js',
-  // '/games/jogo.css',
+  BASE + '/games/jogo.html',
+  // BASE + '/games/jogo.js',
+  // BASE + '/games/jogo.css',
 ];
 
 const ASSETS_PESSOAL = [
-  '/pessoal/pessoal.html',
-  // '/pessoal/pessoal.js',
-  // '/pessoal/pessoal.css',
+  BASE + '/pessoal/pessoal.html',
+  // BASE + '/pessoal/pessoal.js',
+  // BASE + '/pessoal/pessoal.css',
 ];
 
 const ASSETS_ADMIN = [
-  '/admin/admin.html',
-  // '/admin/admin.js',
-  // '/admin/admin.css',
+  BASE + '/admin/admin.html',
+  // BASE + '/admin/admin.js',
+  // BASE + '/admin/admin.css',
 ];
 
-/* ─────────────────────────────────────────────
-   IMAGENS DOS RESUMOS
-   Liste aqui as imagens em /content/resumo/
-   Exemplo: '/content/resumo/1ano/1sem/ap1/image/fig1.png'
-
-   DICA: Se forem muitas imagens (~200+), você pode
-   cachear só quando o usuário abre o resumo.
-   Veja a estratégia "cache on demand" no final.
-───────────────────────────────────────────── */
 const ASSETS_IMAGENS = [
   // Adicione as imagens aqui conforme o projeto crescer
-  // '/content/resumo/...',
+  // BASE + '/content/resumo/...',
 ];
 
-/* ─────────────────────────────────────────────
-   LISTA FINAL — todos os assets juntos
-───────────────────────────────────────────── */
 const TODOS_ASSETS = [
   ...ASSETS_CORE,
   ...ASSETS_RESUMO,
@@ -113,8 +107,6 @@ const TODOS_ASSETS = [
 
 /* ─────────────────────────────────────────────
    DOMÍNIOS EXTERNOS — sempre network (nunca cache)
-   Firebase, Anthropic e Google Fonts precisam
-   de internet; se offline, falham silenciosamente.
 ───────────────────────────────────────────── */
 const NETWORK_ONLY_ORIGINS = [
   'https://firestore.googleapis.com',
@@ -127,12 +119,11 @@ const NETWORK_ONLY_ORIGINS = [
 
 
 /* ═══════════════════════════════════════════════
-   INSTALL — baixa e cacheia todos os assets
+   INSTALL
 ═══════════════════════════════════════════════ */
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_VERSION).then(cache => {
-      // Cacheia em lotes para não travar em erros individuais
       const promises = TODOS_ASSETS.map(url =>
         cache.add(url).catch(err =>
           console.warn(`[SW] Falha ao cachear: ${url}`, err)
@@ -140,13 +131,13 @@ self.addEventListener('install', event => {
       );
       return Promise.all(promises);
     })
-    .then(() => self.skipWaiting()) // Ativa imediatamente sem esperar tab fechar
+    .then(() => self.skipWaiting())
   );
 });
 
 
 /* ═══════════════════════════════════════════════
-   ACTIVATE — remove caches de versões antigas
+   ACTIVATE
 ═══════════════════════════════════════════════ */
 self.addEventListener('activate', event => {
   event.waitUntil(
@@ -160,30 +151,18 @@ self.addEventListener('activate', event => {
           })
       )
     )
-    .then(() => self.clients.claim()) // Assume controle de todas as tabs abertas
+    .then(() => self.clients.claim())
   );
 });
 
 
 /* ═══════════════════════════════════════════════
-   FETCH — estratégia por tipo de recurso
-
-   ┌─────────────────────────────────────────┐
-   │  Externo (Firebase/Anthropic/Fonts)     │
-   │  → Network Only (sem cache)             │
-   ├─────────────────────────────────────────┤
-   │  Imagens dos resumos (/content/resumo/) │
-   │  → Cache First + cache on demand        │
-   ├─────────────────────────────────────────┤
-   │  Todo o resto (HTML, JS, CSS)           │
-   │  → Cache First (rápido + offline)       │
-   └─────────────────────────────────────────┘
+   FETCH
 ═══════════════════════════════════════════════ */
 self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
   if (!url.protocol.startsWith('http')) return;
-  // Ignora requisições não-GET (POST do Firebase, etc.)
   if (request.method !== 'GET') return;
 
   // ── Network Only para serviços externos ──────────────
@@ -198,12 +177,11 @@ self.addEventListener('fetch', event => {
   }
 
   // ── Cache First + cache on demand para imagens ───────
-  if (url.pathname.startsWith('/content/resumo/') &&
+  if (url.pathname.startsWith(BASE + '/content/resumo/') &&
       /\.(png|jpg|jpeg|webp|gif|svg)$/i.test(url.pathname)) {
     event.respondWith(
       caches.match(request).then(cached => {
         if (cached) return cached;
-        // Não está no cache → busca na rede E guarda para próxima vez
         return fetch(request).then(response => {
           if (response.ok) {
             const clone = response.clone();
@@ -220,7 +198,6 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(request).then(cached => {
       if (cached) return cached;
-      // Não está no cache → tenta a rede (primeira visita ou arquivo novo)
       return fetch(request).then(response => {
         if (response.ok) {
           const clone = response.clone();
@@ -228,9 +205,8 @@ self.addEventListener('fetch', event => {
         }
         return response;
       }).catch(() => {
-        // Offline e sem cache → retorna página offline genérica se for HTML
         if (request.headers.get('accept')?.includes('text/html')) {
-          return caches.match('/index.html');
+          return caches.match(BASE + '/index.html');
         }
         return new Response('', { status: 503 });
       });
