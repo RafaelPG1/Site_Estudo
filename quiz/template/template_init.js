@@ -185,6 +185,10 @@ nav.innerHTML = `
     <i class="fas fa-layer-group" aria-hidden="true"></i>
   </button>
   <div class="nav-divider" aria-hidden="true"></div>
+  <button id="btn-filtro-aulas" class="nav-btn btn-filtro-aulas" title="Filtrar aulas" type="button">
+    <i class="fas fa-filter" aria-hidden="true"></i>
+  </button>
+  <div class="nav-divider" aria-hidden="true"></div>
   <button id="btn-legenda" class="nav-btn btn-legenda" title="Informações" type="button">
     <i class="fas fa-circle-info" aria-hidden="true"></i>
   </button>
@@ -196,7 +200,7 @@ Sound.waitUntilReady().then(() => {
   [
     'btn-up', 'btn-left', 'btn-down',
     'restartButton', 'revealButton',
-    'btn-toggle-modo', 'btn-legenda',
+    'btn-toggle-modo', 'btn-filtro-aulas', 'btn-legenda',
   ].forEach(id => {
     const btn = document.getElementById(id);
     if (!btn) return;

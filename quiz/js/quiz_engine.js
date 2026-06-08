@@ -1,5 +1,5 @@
 /* ============================================================
-   NEXUS STUDY — quiz/quiz_engine.js  (v8)
+   NEXUS STUDY — quiz/quiz_engine.js  (v9)
    Lógica de estado do quiz — depende de quiz_ui.js
 
    ÍNDICE:
@@ -15,6 +15,12 @@
     10. Ver erros .................. L.490
     11. Modo Step .................. L.560
     12. Binds e boot ............... L.760
+    13. Filtro de aulas ............. (novo)
+
+   v9 — filtro de aulas:
+     Novo botão na nav-float para o usuário escolher
+     quais aulas exibir. Painel lateral com checkboxes.
+     aulasFiltradas=null → todas; Set<string> → filtradas.
 
    v8 — embaralhamento por grupo de aula:
      Questões são embaralhadas DENTRO de cada aula, preservando
@@ -340,6 +346,71 @@ document.addEventListener('visibilitychange', function () {
       return feedback.trim();
     }
 
+    /* ── FILTRO DE AULAS — helpers ────────────────────────── */
+
+    /* Retorna lista de aulas únicas de questoesBase, em ordem de aparição */
+    function _todasAsAulas() {
+      var vistas = {};
+      var lista  = [];
+      questoesBase.forEach(function (q) {
+        var aula = q.aula !== undefined ? q.aula : null;
+        if (aula !== null && !vistas[aula]) {
+          vistas[aula] = true;
+          lista.push(aula);
+        }
+      });
+      return lista;
+    }
+
+    /* Atualiza o badge numérico no botão quando há filtro ativo */
+    function _atualizarBadgeFiltro() {
+      var btn = document.getElementById('btn-filtro-aulas');
+      if (!btn) return;
+
+      var todasAulas = _todasAsAulas();
+      var ativo = aulasFiltradas !== null && aulasFiltradas.size < todasAulas.length;
+      btn.classList.toggle('filtro-ativo', ativo);
+
+      var badge = btn.querySelector('.filtro-badge');
+      if (badge) badge.remove();
+
+      if (ativo) {
+        var b = document.createElement('span');
+        b.className   = 'filtro-badge';
+        b.textContent = aulasFiltradas.size;
+        btn.appendChild(b);
+      }
+    }
+
+    /* Aplica o filtro atual: reconstrói questoes e re-renderiza */
+    function _aplicarFiltro() {
+      var base = aulasFiltradas === null
+        ? questoesBase
+        : questoesBase.filter(function (q) {
+            var aula = q.aula !== undefined ? q.aula : null;
+            return aulasFiltradas.has(aula);
+          });
+
+      if (base.length === 0) base = questoesBase; // fallback: se filtro excluiu tudo
+
+      respostas        = {};
+      revelado         = false;
+      mostrandoSoErros = false;
+      stepAtual        = 0;
+
+      questoes = criarCopiaEmbaralhada(base, null);
+
+      var resultsEl = document.getElementById('results');
+      if (resultsEl) { resultsEl.style.display = 'none'; resultsEl.innerHTML = ''; }
+
+      _resetarBotaoErros();
+      renderizar();
+      atualizarResultados();
+      smoothScrollToTop();
+      _atualizarBadgeFiltro();
+    }
+
+
     /* ── 4. ESTADO E RESTAURAÇÃO ──────────────────────────── */
 
     var respostas        = {};
@@ -350,6 +421,7 @@ document.addEventListener('visibilitychange', function () {
     var mostrandoSoErros = false;
     var aulaGrupos           = [];
     var _stepAulaBannerTimer = null;
+    var aulasFiltradas        = null; // null = todas; Set<string> = aulas selecionadas
 
     function _restaurar() {
       if (!_disc || !_Storage) return null;
@@ -1291,6 +1363,111 @@ if (r.respondidas < r.total) {
         console.warn('[quiz_engine] window.NEXUS_URL_BACK não definido. #btn-left desativado.');
       }
     }
+
+    /* ── 13. FILTRO DE AULAS — painel lateral ─────────────── */
+
+    function _iniciarFiltroAulas() {
+      var btnFiltro = document.getElementById('btn-filtro-aulas');
+      if (!btnFiltro) return;
+
+      /* Overlay */
+      var overlay = document.createElement('div');
+      overlay.id        = 'filtro-overlay';
+      overlay.className = 'filtro-overlay';
+      document.body.appendChild(overlay);
+
+      /* Painel */
+      var painel = document.createElement('div');
+      painel.id        = 'filtro-painel';
+      painel.className = 'filtro-painel';
+      painel.setAttribute('role', 'dialog');
+      painel.setAttribute('aria-label', 'Filtrar aulas');
+      document.body.appendChild(painel);
+
+      function _abrirPainel() {
+        var aulas = _todasAsAulas();
+        if (aulas.length <= 1) return; // sem sentido filtrar com 1 aula
+
+        painel.innerHTML =
+          '<div class="filtro-header">' +
+            '<span class="filtro-titulo"><i class="fas fa-filter" aria-hidden="true"></i> Filtrar aulas</span>' +
+            '<button class="filtro-close" id="filtro-close-btn" type="button" aria-label="Fechar">×</button>' +
+          '</div>' +
+          '<div class="filtro-body">' +
+            '<div class="filtro-acoes">' +
+              '<button class="filtro-acao-btn" id="filtro-todas"   type="button">Todas</button>' +
+              '<button class="filtro-acao-btn" id="filtro-nenhuma" type="button">Nenhuma</button>' +
+            '</div>' +
+            '<ul class="filtro-lista" id="filtro-lista"></ul>' +
+          '</div>' +
+          '<div class="filtro-footer">' +
+            '<button class="filtro-aplicar" id="filtro-aplicar-btn" type="button">Aplicar</button>' +
+          '</div>';
+
+        var lista = painel.querySelector('#filtro-lista');
+        aulas.forEach(function (aula) {
+          var li = document.createElement('li');
+          li.className = 'filtro-item';
+          var checked = aulasFiltradas === null || aulasFiltradas.has(aula);
+          li.innerHTML =
+            '<label class="filtro-label">' +
+              '<input type="checkbox" class="filtro-chk" value="' + aula.replace(/"/g, '&quot;') + '"' +
+                (checked ? ' checked' : '') + '>' +
+              '<span>' + aula + '</span>' +
+            '</label>';
+          lista.appendChild(li);
+        });
+
+        painel.querySelector('#filtro-todas').addEventListener('click', function () {
+          painel.querySelectorAll('.filtro-chk').forEach(function (c) { c.checked = true; });
+        });
+
+        painel.querySelector('#filtro-nenhuma').addEventListener('click', function () {
+          painel.querySelectorAll('.filtro-chk').forEach(function (c) { c.checked = false; });
+        });
+
+        painel.querySelector('#filtro-close-btn').addEventListener('click', _fecharPainel);
+
+        painel.querySelector('#filtro-aplicar-btn').addEventListener('click', function () {
+          var marcadas = [];
+          painel.querySelectorAll('.filtro-chk:checked').forEach(function (c) {
+            marcadas.push(c.value);
+          });
+
+          if (marcadas.length === 0 || marcadas.length === aulas.length) {
+            aulasFiltradas = null;
+          } else {
+            aulasFiltradas = new Set(marcadas);
+          }
+
+          _fecharPainel();
+          _aplicarFiltro();
+        });
+
+        overlay.classList.add('filtro-show');
+        painel.classList.add('filtro-show');
+        btnFiltro.classList.add('nlg-active');
+      }
+
+      function _fecharPainel() {
+        overlay.classList.remove('filtro-show');
+        painel.classList.remove('filtro-show');
+        btnFiltro.classList.remove('nlg-active');
+      }
+
+      btnFiltro.addEventListener('click', function () {
+        painel.classList.contains('filtro-show') ? _fecharPainel() : _abrirPainel();
+      });
+
+      overlay.addEventListener('click', _fecharPainel);
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && painel.classList.contains('filtro-show')) _fecharPainel();
+      });
+    }
+
+    _iniciarFiltroAulas();
+
 
     renderizar();
 
