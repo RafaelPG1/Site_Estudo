@@ -1028,6 +1028,431 @@ window.__nexusConteudo = {
       }
     ]
   }
+  ],
+
+  resumao: [
+  {
+  aula: "AULA RESUMÃO",
+  ideia_central: "A Camada de Aplicação é a interface direta entre usuário e rede, sustentada por protocolos como HTTP, FTP, SMTP, DNS e P2P, paradigmas cliente-servidor e P2P, e mecanismos como cookies, proxy, MIME, DNS e SSH.",
+  secoes: [
+  {
+  id: "visao_geral",
+  titulo: "🧭 Visão Geral",
+  blocos: [
+  {
+  tipo: "lista",
+  titulo: "Conteúdo coberto",
+  itens: [
+  "Camada de Aplicação — posição na pilha TCP/IP, características e paradigmas",
+  "Interface Socket — API de comunicação (IP + Porta)",
+  "HTTP — conexões, métodos, códigos de estado, cookies, proxy",
+  "FTP — duas conexões (controle porta 21 + dados porta 20)",
+  "E-mail — agentes UA/MTA/MAA, protocolos SMTP/POP/IMAP, extensão MIME",
+  "DNS — hierarquia, zonas, resolução recursiva vs iterativa",
+  "P2P — DHT, Chord, BitTorrent (enxame, seeds, leeches, tit-for-tat)",
+  "Acesso remoto — TELNET (inseguro) vs SSH (seguro, tunelamento)",
+  "Modelos OSI (7 camadas) vs TCP/IP (5 camadas)"
   ]
+  }
+  ]
+  },
+  {
+  id: "conceitos_essenciais",
+  titulo: "📚 Conceitos Essenciais",
+  blocos: [
+  {
+  tipo: "tabela",
+  titulo: "Definições fundamentais",
+  colunas: ["Conceito", "Definição"],
+  linhas: [
+  ["Camada de Aplicação", "5ª camada da pilha TCP/IP; interface direta com o usuário; única que NÃO serve outras camadas — apenas consome da camada de transporte"],
+  ["Conexão Lógica", "As duas pontas comunicam-se como se houvesse ligação direta, ignorando roteadores intermediários"],
+  ["Socket", "API de E/S de rede; identificado univocamente por IP (32 bits) + Porta (16 bits)"],
+  ["RTT", "Round-Trip Time — tempo que um pacote leva para ir ao servidor e voltar"],
+  ["Stateless (HTTP)", "HTTP não guarda estado entre requisições; Cookies resolvem isso"],
+  ["Cookie", "Mecanismo que adiciona estado ao HTTP: servidor envia Set-Cookie; cliente reenvia em pedidos futuros"],
+  ["Proxy (Cache Web)", "Intermediário entre cliente e servidor Web; armazena cópias de respostas recentes"],
+  ["FTP", "Protocolo de transferência de arquivos com duas conexões TCP separadas"],
+  ["SMTP", "Protocolo push — 'empurra' e-mail do cliente para o servidor (porta 25)"],
+  ["POP", "Protocolo pull — baixa e-mails do servidor e os remove (porta 110)"],
+  ["IMAP", "Protocolo pull — sincroniza e-mails mantendo-os no servidor (porta 143)"],
+  ["MIME", "Extensão que permite enviar dados não-ASCII (imagens, acentos) por e-mail"],
+  ["DNS", "Sistema de Nomes de Domínio — mapeia nomes amigáveis para endereços IP"],
+  ["Zona DNS", "Parte contígua da árvore DNS sob autoridade de um servidor específico"],
+  ["DHT", "Tabela de Hash Distribuída — localiza arquivos em redes P2P sem servidor central"],
+  ["Chord", "Protocolo DHT com finger tables; busca em O(log N) saltos"],
+  ["BitTorrent", "Protocolo P2P que divide arquivos em chunks; usa tit-for-tat para equidade"],
+  ["Tit-for-tat", "Estratégia BitTorrent: peer fornece chunks apenas para quem também lhe envia dados"],
+  ["NVT", "Terminal Virtual de Rede — solução do TELNET para heterogeneidade entre SOs"],
+  ["SSH-CONN", "Componente SSH que cria túnel seguro para proteger outros protocolos (port forwarding)"]
+  ]
+  }
+  ]
+  },
+  {
+  id: "comandos_sintaxe",
+  titulo: "⚙️ Protocolos, Portas e Sintaxe",
+  blocos: [
+  {
+  tipo: "tabela",
+  titulo: "Protocolos, portas e funções",
+  colunas: ["Protocolo", "Porta", "Transporte", "Função"],
+  linhas: [
+  ["HTTP", "80", "TCP", "Web"],
+  ["HTTPS", "443", "TCP", "Web segura"],
+  ["FTP Controle", "21", "TCP", "Comandos e autenticação FTP"],
+  ["FTP Dados", "20", "TCP", "Transferência real de arquivos"],
+  ["SMTP", "25", "TCP", "Envio de e-mail (push)"],
+  ["POP3", "110", "TCP", "Recebimento e-mail — remove do servidor"],
+  ["IMAP", "143", "TCP", "Recebimento e-mail — mantém no servidor"],
+  ["DNS", "53", "UDP/TCP", "Resolução de nomes de domínio"],
+  ["TELNET", "23", "TCP", "Acesso remoto inseguro (texto às claras)"],
+  ["SSH", "22", "TCP", "Acesso remoto seguro (criptografado)"]
+  ]
+  },
+  {
+  tipo: "tabela",
+  titulo: "Métodos HTTP",
+  colunas: ["Método", "Ação"],
+  linhas: [
+  ["GET", "Solicita um documento ao servidor"],
+  ["HEAD", "Solicita informações sobre o documento (sem o conteúdo)"],
+  ["PUT", "Envia (publica) um documento do cliente para o servidor"],
+  ["POST", "Envia informação do cliente para processamento no servidor"],
+  ["TRACE", "Ecoa a solicitação recebida (diagnóstico)"],
+  ["DELETE", "Remove a página Web"],
+  ["OPTIONS", "Consulta opções disponíveis"]
+  ]
+  },
+  {
+  tipo: "tabela",
+  titulo: "Códigos de estado HTTP",
+  colunas: ["Código", "Significado"],
+  linhas: [
+  ["200 OK", "Requisição bem-sucedida"],
+  ["301 Moved Permanently", "Recurso movido permanentemente"],
+  ["404 Not Found", "Recurso não encontrado"],
+  ["500 Internal Server Error", "Erro interno do servidor"]
+  ]
+  },
+  {
+  tipo: "tabela",
+  titulo: "Agentes do sistema de e-mail",
+  colunas: ["Agente", "Sigla", "Função", "Exemplo"],
+  linhas: [
+  ["Agente de Usuário", "UA", "Interface para ler/compor e-mails", "Outlook, Thunderbird"],
+  ["Agente de Transferência", "MTA", "Transfere mensagem entre servidores", "Servidor SMTP"],
+  ["Agente de Acesso", "MAA", "Permite recuperar mensagens do servidor", "POP ou IMAP"]
+  ]
+  },
+  {
+  tipo: "tabela",
+  titulo: "Mecanismos MIME",
+  colunas: ["Mecanismo", "Uso"],
+  linhas: [
+  ["Base64", "Converte binários em ASCII; overhead de ~33%; 3 bytes → 4 caracteres"],
+  ["Quoted-Printable", "Para mensagens quase-ASCII com poucos caracteres especiais (acentos → hexadecimal)"]
+  ]
+  },
+  {
+  tipo: "tabela",
+  titulo: "Componentes SSH",
+  colunas: ["Componente", "Função"],
+  linhas: [
+  ["SSH-TRANS", "Cria canal seguro sobre TCP — privacidade e integridade"],
+  ["SSH-AUTH", "Autentica o cliente no servidor"],
+  ["SSH-CONN", "Port Forwarding — túnel seguro para proteger outros protocolos (FTP, SMTP)"]
+  ]
+  },
+  {
+  tipo: "exemplo",
+  titulo: "Estrutura de Resposta HTTP",
+  texto: "Linha de estado + cabeçalhos + corpo",
+  detalhe: "HTTP/1.1 200 OK\nDate: Mon, 31 Mar 2026 12:00:00 GMT\nContent-Type: text/html\n\n<html>Ola, mundo</html>"
+  },
+  {
+  tipo: "exemplo",
+  titulo: "DHT — encontrar arquivo",
+  texto: "hash('Liberdade') = 14 → responsável: nó N17 (sucessor mais próximo no anel)",
+  detalhe: "N17 armazena a referência: (110.34.56.20, porta 5200)"
+  }
+  ]
+  },
+  {
+  id: "comparacoes",
+  titulo: "⚖️ Comparações Importantes",
+  blocos: [
+  {
+  tipo: "tabela",
+  titulo: "Paradigmas de comunicação",
+  colunas: ["Aspecto", "Cliente-Servidor", "P2P", "Misto"],
+  linhas: [
+  ["Servidor", "Sempre ativo, centralizado", "Não existe servidor central", "Servidor só para localização"],
+  ["Responsabilidade", "Concentrada no servidor", "Distribuída entre peers", "Híbrida"],
+  ["Exemplo", "HTTP, FTP, SMTP", "BitTorrent, DHT", "Skype antigo"]
+  ]
+  },
+  {
+  tipo: "tabela",
+  titulo: "HTTP Não Persistente vs Persistente",
+  colunas: ["Tipo", "Comportamento", "Custo"],
+  linhas: [
+  ["Não Persistente", "Nova conexão TCP por objeto", "2 RTT por objeto (handshake + requisição)"],
+  ["Persistente (HTTP/1.1)", "Conexão TCP reutilizada", "1 RTT adicional por objeto após o primeiro"]
+  ]
+  },
+  {
+  tipo: "tabela",
+  titulo: "POP vs IMAP",
+  colunas: ["Aspecto", "POP (porta 110)", "IMAP (porta 143)"],
+  linhas: [
+  ["Mensagens no servidor", "Removidas após download", "Mantidas e sincronizadas"],
+  ["Ideal para", "Acesso de um único dispositivo", "Múltiplos dispositivos"]
+  ]
+  },
+  {
+  tipo: "tabela",
+  titulo: "DNS Recursivo vs Iterativo",
+  colunas: ["Tipo", "Comportamento"],
+  linhas: [
+  ["Recursivo", "Servidor local resolve tudo e devolve o IP final ao cliente"],
+  ["Iterativo", "Servidor responde com o endereço do próximo servidor; cliente faz cada consulta"]
+  ]
+  },
+  {
+  tipo: "tabela",
+  titulo: "TELNET vs SSH",
+  colunas: ["Aspecto", "TELNET (porta 23)", "SSH (porta 22)"],
+  linhas: [
+  ["Segurança", "Texto às claras — usuário e senha expostos", "Criptografado — autenticação segura"],
+  ["Tunelamento", "Não", "Sim (SSH-CONN protege outros protocolos)"]
+  ]
+  },
+  {
+  tipo: "tabela",
+  titulo: "OSI vs TCP/IP",
+  colunas: ["Aspecto", "OSI (7 camadas)", "TCP/IP (5 camadas)"],
+  linhas: [
+  ["Tipo", "Modelo teórico e burocrático", "Modelo prático e flexível"],
+  ["Camadas extras", "Sessão e Apresentação (frequentemente vazias)", "Absorvidas pela Camada de Aplicação"],
+  ["Uso", "Referência acadêmica", "Implementação real da Internet"]
+  ]
+  },
+  {
+  tipo: "tabela",
+  titulo: "DHT vs Chord",
+  colunas: ["Aspecto", "DHT (geral)", "Chord (específico)"],
+  linhas: [
+  ["Estrutura", "Anel lógico de 2^m posições", "Anel com finger tables"],
+  ["Busca", "Depende da implementação", "O(log N) saltos"],
+  ["Roteamento", "Genérico", "Cada nó conhece m sucessores estratégicos"]
+  ]
+  }
+  ]
+  },
+  {
+  id: "processos_etapas",
+  titulo: "📋 Processos e Etapas",
+  blocos: [
+  {
+  tipo: "topico",
+  titulo: "Fluxo completo de e-mail",
+  lista: [
+  "1. Remetente (Alice) compõe e-mail no UA",
+  "2. UA envia via SMTP ao MTA do remetente (porta 25)",
+  "3. MTA do remetente encaminha via SMTP ao MTA do destinatário",
+  "4. MTA do destinatário armazena a mensagem",
+  "5. Destinatário (Bob) recupera via POP (porta 110) ou IMAP (porta 143) usando MAA"
+  ]
+  },
+  {
+  tipo: "topico",
+  titulo: "Resolução DNS Recursiva",
+  lista: [
+  "1. Cliente consulta servidor DNS local",
+  "2. DNS local não sabe → consulta servidor raiz",
+  "3. Raiz indica servidor TLD (.com, .br etc.)",
+  "4. TLD indica servidor autoritativo do domínio",
+  "5. Autoritativo retorna o IP",
+  "6. DNS local entrega IP ao cliente e armazena em cache (não autoritativo)"
+  ]
+  },
+  {
+  tipo: "topico",
+  titulo: "Localização de arquivo na DHT (Chord)",
+  lista: [
+  "1. Calcular hash(nome_arquivo) → gera a Chave",
+  "2. Calcular hash(IP) → gera o ID do nó",
+  "3. Encontrar o nó sucessor mais próximo da Chave no anel",
+  "4. Esse nó armazena a referência (IP + porta do peer que tem o arquivo)",
+  "5. Busca realizada via RPC em O(log N) saltos"
+  ]
+  },
+  {
+  tipo: "topico",
+  titulo: "Conexão HTTP Não Persistente (por objeto)",
+  lista: [
+  "1. Cliente inicia handshake TCP → 1 RTT",
+  "2. Cliente envia requisição HTTP + servidor responde → 1 RTT",
+  "3. Total: 2 RTT por objeto + tempo de transmissão",
+  "4. Conexão TCP encerrada após o objeto"
+  ]
+  }
+  ]
+  },
+  {
+  id: "imagens_importantes",
+  titulo: "🖼️ Imagens Importantes",
+  blocos: [
+  {
+  tipo: "imagem",
+  src: "socket_interface_diagram.png",
+  pasta: "imagens_redes/aula_15",
+  alt: "Posicionamento da interface socket e estrutura do endereço — mostra que o socket funciona como teclado (entrada), monitor (saída) ou arquivo (entrada e saída), voltado para a rede",
+  num: 1
+  },
+  {
+  tipo: "destaque",
+  texto: "📌 Socket = abstração de E/S de rede. Identificado por IP + Porta. Programador 'lê e escreve' como se fosse um arquivo."
+  },
+  {
+  tipo: "imagem",
+  src: "http_message_structure.png",
+  pasta: "imagens_redes/aula_15",
+  alt: "Estrutura lado a lado de uma mensagem de pedido (esquerda) e resposta (direita): linha de solicitação/estado, cabeçalhos, linha em branco e corpo",
+  num: 2
+  },
+  {
+  tipo: "destaque",
+  texto: "📌 Request: Método + URL + Versão. Response: Versão + Código de Estado + Frase. Ambos têm cabeçalhos e corpo separados por linha em branco."
+  },
+  {
+  tipo: "imagem",
+  src: "proxy_server_diagram.png",
+  pasta: "imagens_redes/aula_15",
+  alt: "Múltiplos clientes numa rede local enviando requisições ao servidor proxy, que se conecta à Internet e aos servidores Web destino, ilustrando a centralização do cache",
+  num: 4
+  },
+  {
+  tipo: "destaque",
+  texto: "📌 Proxy = servidor para o cliente E cliente para o servidor Web. Reduz tráfego e latência via cache centralizado."
+  },
+  {
+  tipo: "imagem",
+  src: "email_flow_diagram.png",
+  pasta: "imagens_redes/aula_15",
+  alt: "Fluxo completo de e-mail: Alice (remetente) → UA → MTA via SMTP → Internet → MTA servidor destino via SMTP → MAA via POP/IMAP → Bob (destinatário)",
+  num: 5
+  },
+  {
+  tipo: "destaque",
+  texto: "📌 SMTP é sempre push (envio). POP/IMAP são pull (recebimento). O e-mail passa por dois MTAs antes de chegar ao destinatário."
+  },
+  {
+  tipo: "imagem",
+  src: "dns_hierarchy_tree.png",
+  pasta: "imagens_redes/aula_15",
+  alt: "Árvore hierárquica do DNS com Servidor Raiz no topo, seguido por servidores TLD (edu, com, us) e domínios de segundo nível (fhda.edu, bk.edu, mcgraw.com, irwin.com)",
+  num: 6
+  },
+  {
+  tipo: "destaque",
+  texto: "📌 DNS = árvore invertida com até 128 níveis. Raiz → TLD → Domínio de segundo nível. Cada zona tem um servidor primário autoritativo."
+  },
+  {
+  tipo: "imagem",
+  src: "dht_ring_diagram.png",
+  pasta: "imagens_redes/aula_15",
+  alt: "Anel DHT com espaço de IDs de tamanho 2^5 (m=5), mostrando como o arquivo 'Liberdade' tem sua chave calculada por hash(nome)=14 e é armazenado no nó N17",
+  num: 7
+  },
+  {
+  tipo: "destaque",
+  texto: "📌 DHT: hash(arquivo) = chave → nó responsável = sucessor mais próximo no anel de 2^m posições. SHA-1 gera IDs de 160 bits (m=160)."
+  },
+  {
+  tipo: "imagem",
+  src: "bittorrent_swarm_diagram.png",
+  pasta: "imagens_redes/aula_15",
+  alt: "Tracker central e 11 peers, cada um com diferentes pedaços do arquivo (de 5 pedaços no total), ilustrando o conceito de enxame, seeds e leeches",
+  num: 8
+  },
+  {
+  tipo: "destaque",
+  texto: "📌 Seeds = arquivo completo. Leeches = ainda baixando. Tit-for-tat = só recebo de quem também me envia. Versões modernas eliminam o tracker via DHT."
+  },
+  {
+  tipo: "imagem",
+  src: "ssh_tunnel_ftp_diagram.png",
+  pasta: "imagens_redes/aula_15",
+  alt: "SSH criando um túnel entre Cliente SSH e Servidor SSH, por dentro do qual o tráfego FTP trafega de forma segura — ilustra port forwarding",
+  num: 9
+  },
+  {
+  tipo: "destaque",
+  texto: "📌 SSH-CONN (port forwarding): cria túnel criptografado que protege protocolos inseguros como FTP e SMTP por dentro do SSH."
+  },
+  {
+  tipo: "imagem",
+  src: "osi_tcpip_comparison.png",
+  pasta: "imagens_redes/aula_15",
+  alt: "Comparativo lado a lado das 7 camadas OSI (Física, Enlace, Rede, Transporte, Sessão, Apresentação, Aplicação) versus as 5 camadas TCP/IP, com a camada de Aplicação absorvendo as 3 camadas superiores do OSI",
+  num: 10
+  },
+  {
+  tipo: "destaque",
+  texto: "📌 TCP/IP tem 5 camadas. OSI tem 7. As camadas Sessão e Apresentação do OSI são absorvidas pela Camada de Aplicação no TCP/IP."
+  }
+  ]
+  },
+  {
+  id: "decore_para_prova",
+  titulo: "🎯 Decore para a Prova",
+  blocos: [
+  {
+  tipo: "tabela",
+  titulo: "Pontos mais cobrados",
+  colunas: ["Tema", "O que cai na prova"],
+  linhas: [
+  ["Camada de Aplicação", "É a ÚNICA que não serve outras camadas — só consome da camada de transporte"],
+  ["Socket", "IP (32 bits) + Porta (16 bits) identificam unicamente um processo"],
+  ["HTTP", "Stateless por padrão; persistente = padrão HTTP/1.1; 2 RTT por objeto na versão não persistente"],
+  ["Cookies", "Mecanismo que adiciona estado ao HTTP stateless"],
+  ["Proxy", "Age como servidor para o cliente E como cliente para o servidor Web"],
+  ["FTP", "Duas conexões TCP: controle (porta 21) + dados (porta 20)"],
+  ["SMTP/POP/IMAP", "SMTP = push (porta 25); POP = pull remove (porta 110); IMAP = pull mantém (porta 143)"],
+  ["MIME", "Base64: 3 bytes → 4 chars ASCII, overhead ~33%; Quoted-Printable: para textos quase-ASCII"],
+  ["DNS", "Recursivo = servidor resolve tudo; Iterativo = servidor indica o próximo; Caching = não autoritativo"],
+  ["DHT/Chord", "Anel de 2^m posições; SHA-1 gera chaves de 160 bits; Chord busca em O(log N)"],
+  ["BitTorrent", "Seeds = completo; Leeches = baixando; Tit-for-tat = equidade; Tracker → DHT nas versões modernas"],
+  ["TELNET vs SSH", "TELNET = texto às claras (porta 23); SSH = criptografado (porta 22) com port forwarding"],
+  ["OSI vs TCP/IP", "OSI = 7 camadas teóricas; TCP/IP = 5 camadas práticas (absorve Sessão e Apresentação)"]
+  ]
+  },
+  {
+  tipo: "destaque",
+  texto: "📌 Portas para memorizar: HTTP=80 | HTTPS=443 | FTP-Ctrl=21 | FTP-Dados=20 | SMTP=25 | POP3=110 | IMAP=143 | DNS=53 | TELNET=23 | SSH=22"
+  },
+  {
+  tipo: "destaque",
+  texto: "📌 DNS Recursivo: servidor 'resolve tudo pra você'. DNS Iterativo: servidor 'te manda pro próximo'. Caching: resposta armazenada é 'não autoritativa'."
+  },
+  {
+  tipo: "destaque",
+  texto: "📌 MIME Base64: converte cada 3 bytes (24 bits) em 4 caracteres ASCII (32 bits) → overhead de 33%."
+  },
+  {
+  tipo: "destaque",
+  texto: "📌 HTTP Não Persistente = 2 RTT por objeto (1 handshake TCP + 1 requisição HTTP). Persistente = reutiliza conexão, economiza RTTs."
+  },
+  {
+  tipo: "destaque",
+  texto: "📌 Paradigma Misto (ex: Skype antigo) = usa servidor apenas para ENCONTRAR o par; troca de dados ocorre diretamente entre peers."
+  }
+  ]
+  }
+  ]
+  }
+]
 
 };
