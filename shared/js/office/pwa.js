@@ -21,10 +21,14 @@
     return;
   }
 
-  // ── Detecta base do projeto (funciona em localhost E GitHub Pages) ──
-  // Ex: localhost → base = '/'
-  // Ex: usuario.github.io/nexus-study/ → base = '/nexus-study/'
-  const base = location.pathname.replace(/\/[^/]*$/, '/');
+  // ── Detecta base do projeto ───────────────────────────────────
+  // O pwa.js sempre fica em: <root>/shared/js/office/pwa.js
+  // Então a raiz do projeto é exatamente 3 níveis acima do script.
+  // Funciona em localhost, GitHub Pages e qualquer subpasta.
+  const _scriptSrc = document.currentScript?.src || '';
+  const base = _scriptSrc
+    ? new URL('../../../', _scriptSrc).pathname
+    : location.pathname.replace(/\/[^/]*$/, '/'); // fallback
 
   window.addEventListener('load', () => {
     navigator.serviceWorker

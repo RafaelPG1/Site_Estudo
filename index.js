@@ -78,7 +78,7 @@ _carregarIA();
 async function init() {
   try {
     if (estaLogado() && getUsuario()?.admin) {
-      window.location.replace('/admin/admin.html');
+      window.location.replace('./admin/admin.html');
       return;
     }
  
@@ -431,7 +431,7 @@ function _abrirModalLogin() {
       if (resultado.usuario.admin) {
         cards?.classList.remove('cards-hidden');
         _fecharModal(modal);
-        window.location.replace('/admin/admin.html');
+        window.location.replace('./admin/admin.html');
         return;
       }
 
