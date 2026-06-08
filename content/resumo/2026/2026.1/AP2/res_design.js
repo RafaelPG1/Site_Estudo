@@ -5182,5 +5182,782 @@ window.__nexusConteudo = {
 
     ]
   },
+  ],
+
+  resumao: [{
+  aula: "AULA RESUMÃO",
+  ideia_central: "Design para Web abrange ciclos de vida de software, design centrado no usuário, ISO 9241, prototipagem, design responsivo, HTML5 semântico, CSS3 e boas práticas de testes — tudo integrado para criar interfaces eficientes, acessíveis e responsivas.",
+  secoes: [
+    {
+      id: "visao_geral",
+      titulo: "🧭 Visão Geral do Conteúdo",
+      blocos: [
+        {
+          tipo: "lista",
+          titulo: "Mapa das aulas cobertas",
+          itens: [
+            "Aula 9 — Ciclos de vida de software, modelos centrados no produto/usuário, Design Thinking, ISO 9241",
+            "Aula 10 — Design de interfaces, modelos conceituais e físicos, prototipagem, wireframe, mockup, Figma, NinjaMock",
+            "Aula 11 — Design Responsivo: Media Queries, Meta Viewport, Layout Fluido, Mobile First, Breakpoints",
+            "Aula 12 — HTML5 básico, CSS, Web Semântica, estrutura, tabelas, listas, classes",
+            "Aula 13 — Landing page com HTML5: cores, tipografia, background, formulários, responsividade",
+            "Aula 14 — CSS avançado: seletores, Flexbox, Grid, variáveis CSS, backgrounds, menu fixo",
+            "Aula 15 — Revisão integrada: Mobile First, ergonomia, semiótica, JQuery, hospedagem, testes Lighthouse"
+          ]
+        }
+      ]
+    },
+    {
+      id: "conceitos_essenciais",
+      titulo: "📚 Conceitos Essenciais",
+      blocos: [
+        {
+          tipo: "tabela",
+          titulo: "Definições fundamentais",
+          colunas: ["Conceito", "Definição"],
+          linhas: [
+            ["Ciclo de vida de software", "Conjunto de etapas do desenvolvimento, do planejamento ao uso final"],
+            ["Usabilidade", "Facilidade com que o usuário realiza tarefas no sistema com eficiência e satisfação"],
+            ["Ergonomia", "Adequação da interface às capacidades físicas e cognitivas humanas"],
+            ["Comunicabilidade", "Clareza da comunicação entre sistema e usuário"],
+            ["Design Thinking", "Abordagem centrada no ser humano: empatia, criatividade, colaboração e experimentação"],
+            ["ISO 9241", "Norma internacional de ergonomia, usabilidade e interação humano-computador"],
+            ["Eficácia (ISO 9241)", "O usuário consegue atingir o objetivo"],
+            ["Eficiência (ISO 9241)", "O objetivo é atingido com pouco esforço"],
+            ["Satisfação (ISO 9241)", "Qualidade da experiência do usuário"],
+            ["Design Responsivo", "Capacidade de uma interface web adaptar-se automaticamente a diferentes tamanhos de tela"],
+            ["Mobile First", "Metodologia que desenvolve primeiro para telas pequenas e depois escala para maiores (Luke Wroblewski)"],
+            ["Breakpoint", "Ponto específico de largura de tela em que o layout muda de comportamento"],
+            ["Media Query", "Recurso CSS3 (@media) que aplica estilos condicionais segundo o tamanho da tela"],
+            ["Layout Fluido", "Uso de medidas relativas (%, em, rem) para adaptação automática do layout"],
+            ["Meta Viewport", "Tag HTML que controla como a página é renderizada em dispositivos móveis"],
+            ["Wireframe", "Esqueleto visual da interface: simples, sem cores, foco na estrutura"],
+            ["Mockup", "Protótipo visual de alta fidelidade com aparência próxima ao produto final"],
+            ["Storyboard", "Representação gráfica narrativa do fluxo de interação (origem: cinema)"],
+            ["HTML", "Linguagem de marcação (não programação) para estruturar páginas web"],
+            ["CSS", "Cascading Style Sheets — define a aparência visual das páginas HTML"],
+            ["Web Semântica", "Uso de tags com significado para facilitar compreensão por humanos e buscadores (Tim Berners-Lee)"],
+            ["Landing page", "Página única focada em conversão, marketing e captação de contatos"],
+            ["UML", "Linguagem de modelagem baseada em orientação a objetos para representar estruturas de software"],
+            ["Manifesto Ágil", "Documento (2001) que prioriza pessoas, software funcional, colaboração e resposta a mudanças"]
+          ]
+        }
+      ]
+    },
+    {
+      id: "modelos_ciclo_vida",
+      titulo: "🔄 Modelos de Ciclo de Vida",
+      blocos: [
+        {
+          tipo: "tabela",
+          titulo: "Comparação entre modelos",
+          colunas: ["Modelo", "Tipo", "Características principais", "Desvantagens"],
+          linhas: [
+            ["Cascata", "Produto", "Sequencial, rígido, linear; etapa só começa quando anterior termina", "Pouca flexibilidade; usuário só participa no início; erros descobertos no final"],
+            ["Espiral", "Produto", "Ciclos com prototipagem, análise de riscos e avaliação do cliente", "Mais complexo; pode aumentar custos"],
+            ["Iterativo", "Produto", "Repetição contínua; melhoria incremental; software evolui em versões", "—"],
+            ["Modelo Estrela", "Usuário", "Avaliação como núcleo; qualquer etapa pode iniciar; alta flexibilidade", "Pouca adoção por empresas"],
+            ["Modelo Shneiderman", "Usuário", "Especificação + Prototipagem + Testes de usabilidade", "—"]
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "📌 Diferença chave: modelos centrados no PRODUTO focam na construção do sistema; modelos centrados no USUÁRIO focam na experiência e necessidades humanas."
+        },
+        {
+          tipo: "tabela",
+          titulo: "Modelo Estrela — Etapas",
+          colunas: ["Etapa"],
+          linhas: [
+            ["Implementação"],
+            ["Análise de tarefas"],
+            ["Prototipagem"],
+            ["Projeto conceitual"],
+            ["Especificação de requisitos"],
+            ["Avaliação (núcleo central)"]
+          ]
+        }
+      ]
+    },
+    {
+      id: "iso9241",
+      titulo: "📋 ISO 9241 — Parte 10 (Os 7 Princípios de Diálogo)",
+      blocos: [
+        {
+          tipo: "destaque",
+          texto: "📌 A Parte 10 da ISO 9241 é a mais importante para provas. Memorize os 7 princípios."
+        },
+        {
+          tipo: "tabela",
+          titulo: "7 Princípios da Parte 10",
+          colunas: ["Nº", "Princípio", "Resumo"],
+          linhas: [
+            ["1", "Adequação à tarefa", "Facilitar execução, reduzir esforço, fornecer ajuda adequada"],
+            ["2", "Autodescrição", "Interface explica-se sozinha; feedback imediato; sem necessidade de manuais"],
+            ["3", "Controle", "Usuário controla ações, pode desfazer operações e controlar velocidade"],
+            ["4", "Conformidade com expectativas", "Seguir padrões conhecidos, manter consistência, linguagem familiar"],
+            ["5", "Tolerância a erros", "Prevenir erros, ajudar na correção, avisar sobre consequências importantes"],
+            ["6", "Adequação à individualização", "Permitir personalização e ajustes conforme experiência e preferências"],
+            ["7", "Adequação ao aprendizado", "Facilitar e permitir reaprendizagem; ensinar durante o uso"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Partes 11 a 17 da ISO 9241",
+          colunas: ["Parte", "Tema"],
+          linhas: [
+            ["11", "Especificação da usabilidade"],
+            ["12", "Apresentação da informação"],
+            ["13", "Condução do usuário"],
+            ["14", "Diálogo por menu"],
+            ["15", "Linguagem de comandos"],
+            ["16", "Manipulação direta"],
+            ["17", "Formulários"]
+          ]
+        }
+      ]
+    },
+    {
+      id: "design_thinking",
+      titulo: "💡 Design Thinking",
+      blocos: [
+        {
+          tipo: "tabela",
+          titulo: "5 Princípios do Design Thinking",
+          colunas: ["Princípio", "Explicação"],
+          linhas: [
+            ["Centrado no usuário", "Desenvolvedor pensa como o cliente"],
+            ["Cocriativo", "Soluções criadas colaborativamente"],
+            ["Sequencial", "Processo dividido em etapas"],
+            ["Evidente", "Experiência deve ser memorável"],
+            ["Holístico", "Visão geral do projeto"]
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Pilares do Design Thinking",
+          lista: [
+            "Empatia — entender emoções, desejos e necessidades do usuário",
+            "Interdisciplinaridade — integra design, gestão, engenharia, tecnologia e negócios",
+            "Experimentação — estimula criatividade, testes, protótipos e inovação"
+          ]
+        }
+      ]
+    },
+    {
+      id: "prototipagem",
+      titulo: "🧪 Prototipagem",
+      blocos: [
+        {
+          tipo: "tabela",
+          titulo: "Tipos de protótipos",
+          colunas: ["Tipo", "Característica"],
+          linhas: [
+            ["Cenário", "Narrativa textual da interação usuário-sistema"],
+            ["Storyboard", "Narrativa visual gráfica (origem: cinema)"],
+            ["Wireframe", "Estrutura básica — simples, sem cores, foco em organização"],
+            ["Mockup", "Visual detalhado, alta fidelidade, próximo do produto final"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Fidelidade do protótipo",
+          colunas: ["Tipo", "Características", "Vantagem"],
+          linhas: [
+            ["Baixa fidelidade", "Rascunhos, papel, poucos detalhes", "Estimula discussões abertas"],
+            ["Alta fidelidade", "Aparência final, interações completas", "Testes mais precisos"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Prototipação Horizontal vs Vertical",
+          colunas: ["Tipo", "Funções", "Detalhamento", "Objetivo"],
+          linhas: [
+            ["Horizontal", "Muitas", "Pouco", "Visão geral do sistema"],
+            ["Vertical", "Menos", "Grande", "Analisar detalhes específicos"]
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "Ferramentas de prototipação",
+          itens: ["Figma", "Adobe XD", "Framer", "Axure", "Sketch", "Fluid", "Proto.io", "Justinmind", "NinjaMock"]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Problemas de usabilidade",
+          colunas: ["Tipo", "Descrição", "Exemplo"],
+          linhas: [
+            ["Barreira", "Impede realização da tarefa", "Formato incompatível de arquivo"],
+            ["Obstáculo", "Tarefa realizada com dificuldade", "Excesso de propagandas"],
+            ["Ruído", "Gera dúvidas ou confusão", "Informações pouco claras"]
+          ]
+        }
+      ]
+    },
+    {
+      id: "design_responsivo",
+      titulo: "📱 Design Responsivo",
+      blocos: [
+        {
+          tipo: "destaque",
+          texto: "📌 Responsividade NÃO significa apenas 'diminuir' o layout — é preciso reorganizar elementos, redesenhar partes e alterar comportamentos conforme a tela."
+        },
+        {
+          tipo: "tabela",
+          titulo: "Elementos do Design Responsivo",
+          colunas: ["Elemento", "Função"],
+          linhas: [
+            ["Media Query (@media)", "CSS condicional: aplica estilos para tamanhos específicos de tela"],
+            ["Breakpoint", "Ponto de largura onde o layout muda de comportamento"],
+            ["Layout Fluido", "Uso de medidas relativas (%, em, rem) para adaptação automática"],
+            ["Meta Viewport", "Controla renderização em dispositivos móveis"],
+            ["Mobile First", "Desenvolvimento começa pelo menor dispositivo (Luke Wroblewski)"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Medidas CSS",
+          colunas: ["Tipo", "Exemplos", "Uso"],
+          linhas: [
+            ["Absolutas — EVITAR", "px, cm, mm, pt", "Não se adaptam automaticamente"],
+            ["Relativas — PREFERIR", "%, em, rem", "Adaptação fluida ao layout"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Breakpoints típicos (Mobile First)",
+          colunas: ["Breakpoint", "Dispositivo", "Exemplo"],
+          linhas: [
+            ["min-width: 768px", "Tablet", "Grid 2 colunas"],
+            ["min-width: 960px", "Desktop", "Grid 3 colunas"],
+            ["min-width: 1280px", "Widescreen", "Menu horizontal (remove hambúrguer)"]
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "📌 A ordem dos breakpoints importa! O último breakpoint escrito no CSS sobrescreve os anteriores."
+        }
+      ]
+    },
+    {
+      id: "comandos_sintaxe",
+      titulo: "⚙️ Comandos e Sintaxe — HTML e CSS",
+      blocos: [
+        {
+          tipo: "subtitulo",
+          texto: "HTML5 — Estrutura Básica"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Estrutura obrigatória HTML5",
+          texto: "Gerada pelo VSCode com atalho `!`",
+          detalhe: "<!DOCTYPE html>\n<html lang=\"pt-BR\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>Página</title>\n  <link rel=\"stylesheet\" href=\"assets/css/style.css\">\n</head>\n<body>\n</body>\n</html>"
+        },
+        {
+          tipo: "subtitulo",
+          texto: "HTML5 — Tags Importantes"
+        },
+        {
+          tipo: "tabela",
+          titulo: "Tags HTML essenciais",
+          colunas: ["Tag", "Função"],
+          linhas: [
+            ["<!DOCTYPE html>", "Declara tipo do documento — NÃO é uma tag HTML"],
+            ["<html lang>", "Elemento raiz; define idioma"],
+            ["<head>", "Metadados, título, links — não visível ao usuário"],
+            ["<body>", "Área visível: textos, imagens, vídeos, menus"],
+            ["<h1> a <h6>", "Títulos em hierarquia (h1 = maior importância)"],
+            ["<p>", "Parágrafo de texto"],
+            ["<ul> + <li>", "Lista não ordenada (marcadores)"],
+            ["<ol> + <li>", "Lista ordenada (numeração automática)"],
+            ["<img src=\"\">", "Inserção de imagem"],
+            ["<table>", "Cria tabela"],
+            ["<thead>", "Cabeçalho da tabela"],
+            ["<tbody>", "Corpo da tabela"],
+            ["<tr>", "Linha da tabela"],
+            ["<th>", "Título da coluna (negrito por padrão)"],
+            ["<td>", "Célula de dado"],
+            ["<form>", "Formulário — entrada de dados do usuário"],
+            ["<a href=\"#id\">", "Link de âncora — navega para seção da página"]
+          ]
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Tags Semânticas"
+        },
+        {
+          tipo: "tabela",
+          titulo: "Web Semântica — Tags",
+          colunas: ["Tag", "Função"],
+          linhas: [
+            ["<header>", "Cabeçalho da página"],
+            ["<nav>", "Menu de navegação — conjunto de links"],
+            ["<main>", "Conteúdo principal"],
+            ["<section>", "Divide conteúdo em seções temáticas"],
+            ["<article>", "Conteúdo independente (notícia, serviço, postagem)"],
+            ["<aside>", "Conteúdo secundário"],
+            ["<footer>", "Rodapé da página"],
+            ["<div>", "Container genérico para organização visual e CSS"]
+          ]
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Formulários — Tipos de Input"
+        },
+        {
+          tipo: "tabela",
+          titulo: "Tipos de input HTML",
+          colunas: ["Tipo", "Função"],
+          linhas: [
+            ["text", "Campo de texto livre"],
+            ["email", "Valida formato de e-mail"],
+            ["password", "Oculta os caracteres digitados"],
+            ["date", "Permite selecionar uma data"],
+            ["file", "Permite envio de arquivos"],
+            ["radio", "Permite apenas UMA opção entre as apresentadas"],
+            ["checkbox", "Permite MÚLTIPLAS seleções"],
+            ["range", "Cria controle deslizante"],
+            ["submit", "Envia o formulário"],
+            ["reset", "Limpa o formulário"]
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "📌 Diferença cobrada em prova: radio = UMA opção; checkbox = MÚLTIPLAS opções."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "CSS — Sintaxe e Propriedades"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Sintaxe básica CSS",
+          texto: "seletor { propriedade: valor; }",
+          detalhe: "body { background-color: red; }"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Vinculação CSS ao HTML",
+          texto: "Dentro do <head>",
+          detalhe: "<link rel=\"stylesheet\" href=\"assets/css/style.css\">"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Meta Viewport",
+          texto: "Obrigatório para responsividade mobile",
+          detalhe: "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Media Query básica",
+          texto: "Aplica CSS para telas até 600px",
+          detalhe: "@media only screen and (max-width: 600px) {\n  .noticia { width: 100%; }\n}"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Variáveis CSS",
+          texto: "Definir em :root e usar com var()",
+          detalhe: ":root {\n  --cor-azul: #414059;\n  --gap: 30px;\n}\n\ncolor: var(--cor-azul);"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "CSS Grid — 2 e 3 colunas",
+          texto: "Unidade fr = fração do espaço disponível",
+          detalhe: "/* 2 colunas */\ngrid-template-columns: 1fr 1fr;\n\n/* 3 colunas */\ngrid-template-columns: 1fr 1fr 1fr;"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Flexbox no menu",
+          texto: "Distribuição de elementos no menu",
+          detalhe: "display: flex;\njustify-content: space-between;"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Menu fixo",
+          texto: "Permanece fixo ao rolar a página",
+          detalhe: "position: fixed;\ntop: 0;"
+        },
+        {
+          tipo: "example",
+          titulo: "Menu hambúrguer → horizontal (breakpoint)",
+          texto: "Substitui menu mobile por horizontal no desktop",
+          detalhe: "@media screen and (min-width: 1280px) {\n  .btn-menu { display: none; }\n  .menu { display: block !important; }\n}"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "JQuery — abrir/fechar menu",
+          texto: "Biblioteca JavaScript para interatividade",
+          detalhe: "// Abrir\n$(\".btn-menu\").click(function() {\n  $(\".menu\").show();\n});\n\n// Fechar\n$(\".btn-close\").click(function() {\n  $(\".menu\").hide();\n});"
+        },
+        {
+          tipo: "tabela",
+          titulo: "Propriedades CSS fundamentais",
+          colunas: ["Propriedade", "Função"],
+          linhas: [
+            ["font-family", "Define a fonte"],
+            ["text-transform", "Transforma texto: uppercase | lowercase | capitalize"],
+            ["padding", "Espaçamento INTERNO ao elemento"],
+            ["margin", "Espaçamento EXTERNO ao elemento"],
+            ["margin: 0 auto", "Centraliza elemento horizontalmente"],
+            ["border", "Define borda (espessura, estilo, cor)"],
+            ["border-radius", "Arredonda bordas"],
+            ["border-collapse", "Une bordas de tabelas"],
+            ["width / max-width", "Largura / largura máxima"],
+            ["background-color", "Cor de fundo"],
+            ["background-image: url()", "Imagem de fundo"],
+            ["background-size: cover", "Imagem cobre toda a área"],
+            ["background-position: center", "Centraliza imagem de fundo"],
+            ["float", "Posicionamento flutuante (left/right)"],
+            ["display: flex", "Layout flexível — muito usado em menus"],
+            ["display: grid", "Layout em grade/colunas"],
+            ["display: none", "Oculta o elemento"],
+            ["list-style: none", "Remove marcadores de lista"],
+            ["text-decoration: none", "Remove sublinhado de links"],
+            ["max-width: 100%; height: auto", "Imagens responsivas"],
+            ["position: fixed", "Fixa elemento independentemente do scroll"]
+          ]
+        }
+      ]
+    },
+    {
+      id: "comparacoes",
+      titulo: "⚖️ Comparações Importantes",
+      blocos: [
+        {
+          tipo: "tabela",
+          titulo: "Abordagens de desenvolvimento",
+          colunas: ["Abordagem", "Foco"],
+          linhas: [
+            ["Centrada no produto", "Construção do sistema"],
+            ["Centrada no usuário", "Experiência e necessidades do usuário"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Classe vs ID no CSS",
+          colunas: ["Tipo", "Símbolo", "Reuso", "Uso típico"],
+          linhas: [
+            ["Classe", "`.nome` no CSS / `class=\"nome\"` no HTML", "Reutilizável em múltiplos elementos", "Estilização geral"],
+            ["ID", "`#nome` no CSS / `id=\"nome\"` no HTML", "Único por página", "Navegação interna com href=\"#id\""]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "padding vs margin",
+          colunas: ["Propriedade", "Onde age"],
+          linhas: [
+            ["padding", "Espaçamento INTERNO (entre conteúdo e borda)"],
+            ["margin", "Espaçamento EXTERNO (entre elemento e outros elementos)"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Mobile First vs Desktop First",
+          colunas: ["Aspecto", "Mobile First", "Desktop First"],
+          linhas: [
+            ["Começa em", "Tela pequena (smartphone)", "Tela grande (desktop)"],
+            ["Adaptação", "Escala para cima (min-width)", "Reduz para baixo (max-width)"],
+            ["Prioridade", "Conteúdo essencial primeiro", "Recursos completos primeiro"],
+            ["Vantagem", "Melhor desempenho e foco", "Visual completo desde o início"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Page Scale (mobile) vs Page Zoom (desktop)",
+          colunas: ["Tipo", "Efeito"],
+          linhas: [
+            ["Page Scale (mobile)", "Amplia apenas a visualização; não altera o layout"],
+            ["Page Zoom (desktop)", "Altera o viewport; muda o tamanho renderizado da página"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Wireframe vs Mockup",
+          colunas: ["Tipo", "Fidelidade", "Características"],
+          linhas: [
+            ["Wireframe", "Baixa", "Simples, sem cores, sem detalhes visuais, foco em estrutura"],
+            ["Mockup", "Alta", "Aparência detalhada, dimensões precisas, representação estética realista"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Problemas de usabilidade",
+          colunas: ["Tipo", "Impacto"],
+          linhas: [
+            ["Barreira", "Impede completamente a tarefa"],
+            ["Obstáculo", "Tarefa possível, mas com dificuldade"],
+            ["Ruído", "Gera dúvidas ou confusão"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "HTML vs CSS",
+          colunas: ["HTML", "CSS"],
+          linhas: [
+            ["Estrutura o conteúdo", "Estiliza a aparência"],
+            ["Linguagem de marcação (tags)", "Linguagem de estilos (seletores + propriedades)"],
+            ["Define o que existe na página", "Define como a página parece"]
+          ]
+        }
+      ]
+    },
+    {
+      id: "processos_etapas",
+      titulo: "📋 Processos e Etapas",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "Manifesto Ágil — 4 Valores",
+          lista: [
+            "1. Pessoas e interações acima de processos",
+            "2. Software funcionando acima de documentação extensa",
+            "3. Colaboração do cliente acima de contratos rígidos",
+            "4. Respostas rápidas às mudanças"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Prototipação — Etapas gerais",
+          lista: [
+            "1. Definir objetivos",
+            "2. Escolher tipo de protótipo",
+            "3. Criar estrutura",
+            "4. Validar com usuários",
+            "5. Ajustar interface",
+            "6. Refinar fidelidade"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Modelo Cascata — Etapas",
+          lista: [
+            "1. Definição de requisitos",
+            "2. Projeto",
+            "3. Implementação e testes unitários",
+            "4. Testes de integração",
+            "5. Operação e manutenção"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Inspeção Semiótica — Etapas",
+          lista: [
+            "1. Inspeção de signos metalinguísticos",
+            "2. Inspeção de signos estáticos",
+            "3. Inspeção de signos dinâmicos",
+            "4. Comparação das metamensagens",
+            "5. Avaliação da metacomunicação"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Hospedagem com Netlify Drop — Etapas",
+          lista: [
+            "1. Cadastro na plataforma",
+            "2. Upload da pasta do projeto",
+            "3. Deploy",
+            "4. Geração de URL"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Estrutura de projeto web (organização de pastas)",
+          lista: [
+            "projeto/",
+            "├── index.html",
+            "└── assets/",
+            "    ├── css/style.css",
+            "    └── img/"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Importar fonte do Google Fonts",
+          lista: [
+            "1. Acessar Google Fonts",
+            "2. Escolher fonte",
+            "3. Copiar <link> para o <head>",
+            "4. Aplicar font-family no CSS"
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Lighthouse — Categorias avaliadas",
+          colunas: ["Categoria", "Objetivo"],
+          linhas: [
+            ["Performance", "Velocidade de carregamento"],
+            ["Accessibility", "Acessibilidade"],
+            ["Best Practices", "Boas práticas de desenvolvimento"],
+            ["SEO", "Otimização para mecanismos de busca"],
+            ["PWA", "Compatibilidade com apps modernos"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Critérios ergonômicos",
+          colunas: ["Critério", "Função"],
+          linhas: [
+            ["Compatibilidade", "Interface coerente com expectativas do usuário"],
+            ["Condução", "Orientação da navegação"],
+            ["Carga de trabalho", "Redução do esforço mental"],
+            ["Homogeneidade", "Padrões consistentes"],
+            ["Controle explícito", "Usuário controla ações"],
+            ["Adaptabilidade", "Interface flexível"],
+            ["Gestão de erros", "Prevenção e tratamento de erros"]
+          ]
+        }
+      ]
+    },
+    {
+      id: "imagens_importantes",
+      titulo: "🖼️ Imagens Importantes",
+      blocos: [
+        {
+          tipo: "imagem",
+          src: "figura_modelo_cascata_iso9241.png",
+          pasta: "imagens_design/aula_09",
+          alt: "Figura 1 — Modelo cascata: fluxo sequencial evidenciando que cada etapa depende da conclusão da anterior",
+          num: 1
+        },
+        {
+          tipo: "destaque",
+          texto: "📌 Modelo Cascata: visualizar o fluxo LINEAR. Cada etapa BLOQUEADA pela anterior. Erros descobertos somente no final."
+        },
+        {
+          tipo: "imagem",
+          src: "figura_modelo_espiral_iso9241.png",
+          pasta: "imagens_design/aula_09",
+          alt: "Figura 2 — Modelo espiral: ciclo de planejamento, análise de riscos, engenharia e avaliação do cliente",
+          num: 2
+        },
+        {
+          tipo: "destaque",
+          texto: "📌 Modelo Espiral: 4 fases em CICLO — Planejamento → Análise de riscos → Engenharia → Avaliação do cliente."
+        },
+        {
+          tipo: "imagem",
+          src: "figura_modelo_estrela_iso9241.png",
+          pasta: "imagens_design/aula_09",
+          alt: "Figura 4 — Modelo estrela: avaliação como elemento central do desenvolvimento centrado no usuário",
+          num: 4
+        },
+        {
+          tipo: "destaque",
+          texto: "📌 Modelo Estrela: AVALIAÇÃO no centro. Qualquer etapa pode iniciar o projeto — diferente de todos os outros modelos."
+        },
+        {
+          tipo: "imagem",
+          src: "figura_wireframe_mobile_first.png",
+          pasta: "imagens_design/aula_10",
+          alt: "Figura 3 — Wireframe de interface mobile first: apresenta estrutura básica de uma interface sem elementos gráficos avançados",
+          num: 3
+        },
+        {
+          tipo: "destaque",
+          texto: "📌 Wireframe: estrutura BÁSICA, sem cor, sem detalhes visuais. É a base dos protótipos de alta fidelidade."
+        },
+        {
+          tipo: "imagem",
+          src: "figura_resultado_media_queries.png",
+          pasta: "imagens_design/aula_11",
+          alt: "Figura 2 — Resultado do uso do media queries: demonstra como os elementos passam a ocupar 100% da largura em telas pequenas, reorganizando o conteúdo verticalmente e melhorando a legibilidade",
+          num: 2
+        },
+        {
+          tipo: "destaque",
+          texto: "📌 Media Queries: elementos passam a 100% da largura em telas pequenas — reorganização VERTICAL do conteúdo."
+        },
+        {
+          tipo: "imagem",
+          src: "figura_comparativo_mobile_first.png",
+          pasta: "imagens_design/aula_11",
+          alt: "Figura 4 — Comparativo do desktop first com o mobile first: compara o desenvolvimento tradicional desktop first com a metodologia mobile first, mostrando como o fluxo de adaptação muda",
+          num: 4
+        },
+        {
+          tipo: "destaque",
+          texto: "📌 Mobile First vs Desktop First: fluxo de adaptação INVERSO — Mobile First escala para cima (min-width); Desktop First reduz para baixo (max-width)."
+        },
+        {
+          tipo: "imagem",
+          src: "figura_responsividade_mobile_desktop.png",
+          pasta: "imagens_design/aula_15",
+          alt: "Comparação do layout mobile com o desktop evidenciando as adaptações responsivas",
+          num: 4
+        },
+        {
+          tipo: "destaque",
+          texto: "📌 Responsividade: mesmo conteúdo, layout completamente diferente. Breakpoints controlam a transição entre versões."
+        }
+      ]
+    },
+    {
+      id: "decore_para_prova",
+      titulo: "🎯 Decore para a Prova",
+      blocos: [
+        {
+          tipo: "tabela",
+          titulo: "Pontos mais cobrados — por tema",
+          colunas: ["Tema", "O que cai na prova"],
+          linhas: [
+            ["Ciclos de vida", "Diferença entre modelos centrados no produto e no usuário; características do Cascata; papel da prototipagem no Espiral; avaliação como núcleo do Modelo Estrela"],
+            ["Design Thinking", "5 princípios (centrado no usuário, cocriativo, sequencial, evidente, holístico); 4 valores do Manifesto Ágil"],
+            ["ISO 9241", "Os 7 princípios da Parte 10; conceitos de eficácia, eficiência e satisfação; temas das Partes 11 a 17"],
+            ["Prototipagem", "Tipos (cenário, storyboard, wireframe, mockup); fidelidade (baixa x alta); horizontal x vertical"],
+            ["Responsividade", "Media Query (@media); Mobile First (min-width); breakpoints; layout fluido (medidas relativas); meta viewport"],
+            ["HTML5", "Estrutura básica; diferença entre HTML e CSS; tags semânticas (nav, section, article, footer); tabelas; formulários"],
+            ["CSS", "padding vs margin; classe vs ID; display: flex; CSS Grid (fr); variáveis (:root/var()); position: fixed"],
+            ["Formulários", "radio = uma opção; checkbox = múltiplas opções; tipos de input"],
+            ["Web Semântica", "Objetivo (significado para buscadores); autores (Tim Berners-Lee); principais tags semânticas"],
+            ["Ergonomia", "7 critérios ergonômicos; psicologia cognitiva; engenharia semiótica"],
+            ["Testes", "Lighthouse: Performance, Accessibility, Best Practices, SEO, PWA"]
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "📌 ISO 9241 Parte 10 — Os 7 princípios em ordem: 1-Adequação à tarefa · 2-Autodescrição · 3-Controle · 4-Conformidade com expectativas · 5-Tolerância a erros · 6-Adequação à individualização · 7-Adequação ao aprendizado"
+        },
+        {
+          tipo: "destaque",
+          texto: "📌 Medidas relativas para usar: %, em, rem. Medidas absolutas para EVITAR: px, cm, mm, pt."
+        },
+        {
+          tipo: "destaque",
+          texto: "📌 Mobile First = min-width nos breakpoints. Desktop First = max-width nos breakpoints."
+        },
+        {
+          tipo: "destaque",
+          texto: "📌 Modelo Estrela: AVALIAÇÃO é o núcleo central e qualquer etapa pode ser a primeira — único modelo com essa característica."
+        },
+        {
+          tipo: "destaque",
+          texto: "📌 Wireframe = baixa fidelidade, sem cores, estrutura básica. Mockup = alta fidelidade, visual detalhado, próximo do produto final."
+        },
+        {
+          tipo: "destaque",
+          texto: "📌 radio (um único valor) vs checkbox (múltiplos valores) — diferença clássica de prova."
+        },
+        {
+          tipo: "tabela",
+          titulo: "Ferramentas e suas funções",
+          colunas: ["Ferramenta", "Função"],
+          linhas: [
+            ["Figma", "Mockup de alta fidelidade e protótipos interativos"],
+            ["NinjaMock", "Wireframe mobile first"],
+            ["VSCode", "Editor de código (atalho `!` gera estrutura HTML5)"],
+            ["Google Fonts", "Importação de tipografias online gratuitas"],
+            ["Adobe Color", "Geração de paletas de cores"],
+            ["FontAwesome", "Biblioteca de ícones"],
+            ["Netlify Drop", "Hospedagem gratuita de sites estáticos"],
+            ["Lighthouse", "Testes de performance, acessibilidade, SEO e boas práticas"],
+            ["JQuery", "Biblioteca JS para simplificar scripts e interatividade"]
+          ]
+        }
+      ]
+    }
   ]
+}]
+  
+
+
 };

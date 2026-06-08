@@ -1502,6 +1502,45 @@ pre {
 .resumo-card--sintese { --card-variant: sintese; }
 
 /* ══════════════════════════════════════════
+   RESUMÃO
+══════════════════════════════════════════ */
+.resumo-card--resumao { --card-variant: resumao; }
+
+.resumao-badge {
+  font-size: 0.58rem; font-weight: 700;
+  letter-spacing: 0.09em; text-transform: uppercase;
+  padding: 0.18rem 0.55rem;
+  border-radius: 99px;
+  background: rgba(157,126,248,0.12);
+  border: 1px solid rgba(157,126,248,0.32);
+  color: var(--violet);
+  margin-left: auto;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.resumo-card--resumao:hover {
+  border-color: rgba(157,126,248,0.28);
+  box-shadow: 0 0 0 1px rgba(157,126,248,0.14), var(--shadow-md);
+}
+
+.badge--resumao {
+  background: rgba(157,126,248,0.13);
+  border: 1px solid rgba(157,126,248,0.28);
+  color: var(--violet);
+  font-size: 0.62rem; font-weight: 700;
+  letter-spacing: 0.07em; text-transform: uppercase;
+  padding: 0.18rem 0.65rem;
+  border-radius: 99px;
+}
+
+.resumao-chip {
+  background: rgba(157,126,248,0.09) !important;
+  border-color: rgba(157,126,248,0.22) !important;
+  color: var(--violet) !important;
+}
+
+/* ══════════════════════════════════════════
    RESPONSIVIDADE
 ══════════════════════════════════════════ */
 @media (max-width: 1024px) {

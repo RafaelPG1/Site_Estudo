@@ -5474,7 +5474,531 @@ window.__nexusConteudo = {
 
 
 
-]
+],
+
+  resumao: [
+   {
+  aula: "AULA RESUMÃO",
+  ideia_central: "DDL define estruturas, DML manipula dados, refinamentos e JOINs recuperam informações complexas, BDOO/BDOR incorporam orientação a objetos, e um bom projeto de banco passa por modelagem conceitual, lógica e física.",
+  secoes: [
+    {
+      id: "visao_geral",
+      titulo: "Visão Geral",
+      blocos: [
+        {
+          tipo: "lista",
+          titulo: "Mapa rápido por módulo:",
+          itens: [
+            "Aula 9 — DDL: CREATE, ALTER, DROP · chaves primária e estrangeira · tipos de dados SQL",
+            "Aula 10 — DML: SELECT, INSERT, UPDATE, DELETE · operadores aritméticos, comparação e lógicos",
+            "Aula 11 — Refinando parte 1: WHERE, LIKE, BETWEEN, IN, IS NULL · funções de agregação · GROUP BY · ORDER BY",
+            "Aula 12 — Refinando parte 2: HAVING · DISTINCT · alias AS · ordem de execução SQL · NULL em agregações",
+            "Aula 13 — Subqueries e JOINs: Tipo I (IN/NOT IN) · Tipo II (EXISTS/NOT EXISTS) · tabelas derivadas · INNER/LEFT/RIGHT/FULL OUTER JOIN",
+            "Aula 14 — BDOO e BDOR: encapsulamento · herança · polimorfismo · ODMG (ODL/OQL) · tipos definidos pelo usuário · herança de tipo e tabela · referências",
+            "Aula 15 — Projeto de BD: modelagem conceitual/lógica/física · cardinalidade · normalização · DDL e DML aplicados"
+          ]
+        }
+      ]
+    },
+    {
+      id: "conceitos_essenciais",
+      titulo: "Conceitos Essenciais",
+      blocos: [
+        {
+          tipo: "tabela",
+          colunas: ["Conceito", "Definição"],
+          linhas: [
+            ["DDL", "Subconjunto SQL que define estruturas — CREATE, ALTER, DROP"],
+            ["DML", "Subconjunto SQL que manipula dados — SELECT, INSERT, UPDATE, DELETE"],
+            ["Esquema", "Agrupamento lógico de objetos do banco (tabelas, views, restrições)"],
+            ["Catálogo", "Coleção de esquemas; contém INFORMATION_SCHEMA com metadados"],
+            ["PRIMARY KEY", "Identifica unicamente cada registro — única e não nula"],
+            ["FOREIGN KEY", "Garante integridade referencial entre tabelas"],
+            ["CASCADE", "Remove dependências junto com o objeto excluído"],
+            ["RESTRICT", "Impede exclusão se houver dependências"],
+            ["NULL", "Ausência de valor — não é zero nem espaço vazio"],
+            ["DISTINCT", "Elimina duplicatas do resultado da consulta"],
+            ["Alias (AS)", "Renomeia campos calculados no resultado"],
+            ["Subquery Tipo I", "Subconsulta independente, executa uma vez, usa IN / NOT IN"],
+            ["Subquery Tipo II", "Subconsulta correlacionada, executa por linha, usa EXISTS / NOT EXISTS"],
+            ["Tabela derivada", "Resultado de subconsulta usada no FROM como tabela temporária"],
+            ["Produto cartesiano", "Combinação de todas as linhas de duas tabelas sem filtro de relacionamento"],
+            ["BDOO", "Banco orientado a objetos — dados como objetos com atributos e métodos"],
+            ["BDOR", "Banco objeto-relacional — modelo relacional com recursos OO"],
+            ["Encapsulamento", "Oculta detalhes internos; acesso apenas pela interface do objeto"],
+            ["Herança", "Subclasse reutiliza atributos e métodos da superclasse"],
+            ["Polimorfismo", "Mesmo método com implementações diferentes por subclasse"],
+            ["ODL", "Object Definition Language — define objetos e esquemas no ODMG"],
+            ["OQL", "Object Query Language — consulta baseada em SQL com suporte a herança e polimorfismo"],
+            ["Binding", "Mapeia objetos da aplicação para o banco de dados"],
+            ["Cardinalidade", "Define quantas ocorrências existem entre entidades (1:1, 1:N, N:M)"],
+            ["Normalização", "Processo para eliminar redundância e evitar inconsistências (até 3FN)"]
+          ]
+        }
+      ]
+    },
+    {
+      id: "comandos_sintaxe",
+      titulo: "Comandos e Sintaxe",
+      blocos: [
+        {
+          tipo: "subtitulo",
+          texto: "DDL"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "CREATE DATABASE",
+          texto: "Cria um banco de dados.",
+          detalhe: "CREATE DATABASE nome;"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "CREATE TABLE com PRIMARY KEY",
+          texto: "Cria tabela com chave primária nomeada.",
+          detalhe: "CREATE TABLE alunos (\n  mat_alu INTEGER,\n  nom_alu VARCHAR(50),\n  CONSTRAINT alu_pk PRIMARY KEY (mat_alu)\n);"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "ALTER TABLE",
+          texto: "Adiciona coluna a tabela existente. Registros antigos recebem NULL.",
+          detalhe: "ALTER TABLE alunos ADD CTPS VARCHAR(8);"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "DROP TABLE / DROP DATABASE",
+          texto: "Remove tabela com dependências (CASCADE) ou banco inteiro.",
+          detalhe: "DROP TABLE curriculos CASCADE;\nDROP DATABASE nome;"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "FOREIGN KEY",
+          texto: "Relaciona tabelas garantindo integridade referencial.",
+          detalhe: "FOREIGN KEY (cod_curso) REFERENCES cursos(cod_curso)"
+        },
+        {
+          tipo: "subtitulo",
+          texto: "DML"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "SELECT",
+          texto: "Estrutura básica de consulta.",
+          detalhe: "SELECT colunas\nFROM tabela\nWHERE condição;"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "INSERT",
+          texto: "Inserir registro com colunas explícitas.",
+          detalhe: "INSERT INTO cursos (cod_curso, nome_curso, tot_cred, cod_coord)\nVALUES (11, 'Sistemas de Informação', 180, 1149);"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "UPDATE",
+          texto: "Atualizar registros — sempre usar WHERE.",
+          detalhe: "UPDATE cursos\nSET nome_curso = 'SI – Sistemas de Informação'\nWHERE cod_curso = 11;"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "DELETE",
+          texto: "Excluir registros — sempre usar WHERE.",
+          detalhe: "DELETE FROM alunos WHERE mat_alu = 911113;"
+        },
+        {
+          tipo: "destaque",
+          texto: "UPDATE e DELETE sem WHERE afetam TODOS os registros da tabela. Principal pegadinha de prova."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Refinamento de consultas"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "LIKE",
+          texto: "% = qualquer sequência de caracteres. _ = exatamente um caractere.",
+          detalhe: "WHERE nom_alu LIKE 'Jorge%'   -- começa com Jorge\nWHERE nom_alu LIKE '%Santos%'  -- contém Santos\nWHERE campo   LIKE '_este'     -- 1 char antes de 'este'"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "BETWEEN / IN / IS NULL",
+          texto: "Filtros de intervalo, lista e ausência de valor.",
+          detalhe: "WHERE dat_nasc BETWEEN '1980-01-01' AND '1989-12-31'\nWHERE mat_alu IN (922155, 926465, 915550)\nWHERE email IS NULL"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "GROUP BY + HAVING",
+          texto: "Agrupa e filtra grupos. Alias melhora legibilidade.",
+          detalhe: "SELECT cod_curso, AVG(tot_cred) AS media_tot_cred\nFROM alunos\nGROUP BY cod_curso\nHAVING AVG(tot_cred) > 100;"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "ORDER BY",
+          texto: "Ordenação crescente e decrescente, com múltiplas colunas.",
+          detalhe: "ORDER BY tot_cred DESC, nom_alu ASC"
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Subqueries"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Subquery Tipo I — IN",
+          texto: "Subconsulta independente. Executa uma vez.",
+          detalhe: "SELECT nom_alu, cod_curso, tot_cred\nFROM alunos\nWHERE mat_alu IN (\n  SELECT mat_alu\n  FROM historicos_escolares\n  WHERE media >= 7 AND ano = 2001\n);"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Subquery Tipo II — EXISTS",
+          texto: "Subconsulta correlacionada. Executa para cada linha da consulta externa.",
+          detalhe: "SELECT *\nFROM tabelaA\nWHERE EXISTS (\n  SELECT *\n  FROM tabelaB\n  WHERE tabelaA.id = tabelaB.id\n);"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Subconsulta no FROM",
+          texto: "Gera tabela derivada (visão inline).",
+          detalhe: "SELECT *\nFROM (\n  SELECT cod_curso, AVG(tot_cred) AS media\n  FROM alunos\n  GROUP BY cod_curso\n) AS sub;"
+        },
+        {
+          tipo: "subtitulo",
+          texto: "JOINs"
+        },
+        {
+          tipo: "codigo",
+          codigo: "-- INNER JOIN: só registros relacionados\nFROM A INNER JOIN B ON A.id = B.id\n\n-- LEFT JOIN: todos da esquerda; direita NULL se sem correspondência\nFROM A LEFT JOIN B ON A.id = B.id\n\n-- RIGHT JOIN: todos da direita; esquerda NULL se sem correspondência\nFROM A RIGHT JOIN B ON A.id = B.id\n\n-- FULL OUTER JOIN: todos os registros das duas tabelas\nFROM A FULL OUTER JOIN B ON A.id = B.id"
+        },
+        {
+          tipo: "subtitulo",
+          texto: "BDOR — SQL objeto-relacional"
+        },
+        {
+          tipo: "codigo",
+          codigo: "-- Criar tipo personalizado\nCREATE TYPE Pessoa (\n  ID VARCHAR(20),\n  nome VARCHAR(20),\n  endereco VARCHAR(20)\n);\n\n-- Herança de tipo\nCREATE TYPE Aluno UNDER Pessoa;\n\n-- Tabela baseada em tipo\nCREATE TABLE pessoas OF Pessoa;\n\n-- Herança de tabela (PostgreSQL)\nCREATE TABLE alunos INHERITS pessoas;\n\n-- Referência e expressão de caminho\ndiretor REF(Pessoa)\nSELECT diretor->nome ...\nSELECT DEREF(diretor).nome ..."
+        }
+      ]
+    },
+    {
+      id: "comparacoes",
+      titulo: "Comparações",
+      blocos: [
+        {
+          tipo: "tabela",
+          titulo: "Comparações fundamentais",
+          colunas: ["A", "B", "Diferença principal"],
+          linhas: [
+            ["DDL", "DML", "DDL define estruturas; DML manipula dados"],
+            ["DELETE", "DROP", "DELETE remove registros (tabela existe); DROP remove a estrutura"],
+            ["CHAR", "VARCHAR", "CHAR é tamanho fixo; VARCHAR é variável (mais eficiente)"],
+            ["AND", "OR", "AND exige ambas verdadeiras; OR basta uma"],
+            ["WHERE", "HAVING", "WHERE filtra linhas antes do agrupamento; HAVING filtra grupos depois"],
+            ["COUNT(*)", "COUNT(col)", "COUNT(*) inclui NULL; COUNT(col) ignora NULL"],
+            ["INNER JOIN", "LEFT JOIN", "INNER só retorna correspondências; LEFT mantém todos da esquerda"],
+            ["LEFT JOIN", "RIGHT JOIN", "LEFT = todos da esquerda; RIGHT = todos da direita"],
+            ["FULL OUTER JOIN", "INNER JOIN", "FULL retorna tudo (com NULL nos sem par); INNER só os pares"],
+            ["Subquery Tipo I", "Subquery Tipo II", "Tipo I executa uma vez (IN); Tipo II executa por linha (EXISTS)"],
+            ["IN", "EXISTS", "IN compara com lista de valores; EXISTS verifica existência de linhas"],
+            ["NOT IN", "NOT EXISTS", "NOT IN falha se lista contiver NULL; NOT EXISTS é mais seguro"],
+            ["BDOO", "BDOR", "BDOO = OO puro (ODMG/OQL); BDOR = relacional + OO (SQL:1999)"],
+            ["Modelo conceitual", "Modelo lógico", "Conceitual = visão negócio (independente de SGBD); Lógico = estrutura relacional com PKs e FKs"],
+            ["Modelo lógico", "Modelo físico", "Lógico = independente de SGBD; Físico = implementação real com tipos, índices e restrições"],
+            ["Rel. identificado", "Rel. não identificado", "Identificado: FK faz parte da PK; Não identificado: FK não faz parte da PK"]
+          ]
+        }
+      ]
+    },
+    {
+      id: "processos_etapas",
+      titulo: "Processos e Etapas",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "Ordem de execução SQL",
+          texto: "A ordem de escrita difere da ordem de execução interna — muito cobrado em prova.",
+          lista: [
+            "1. FROM — seleciona a(s) tabela(s)",
+            "2. WHERE — filtra linhas individuais",
+            "3. GROUP BY — agrupa os registros filtrados",
+            "4. HAVING — filtra os grupos",
+            "5. SELECT — define o resultado final",
+            "6. ORDER BY — ordena o resultado"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Etapas do projeto de banco de dados",
+          lista: [
+            "1. Definir o objetivo do banco (qual problema resolver)",
+            "2. Identificar entidades (objetos do mundo real → tabelas)",
+            "3. Identificar atributos (características de cada entidade)",
+            "4. Definir identificadores — chaves primárias (PK)",
+            "5. Definir relacionamentos e cardinalidade (1:1, 1:N, N:M)",
+            "6. Normalizar (eliminar redundância — até 3ª Forma Normal)",
+            "7. Modelo conceitual → lógico → físico",
+            "8. Implementação com DDL e DML"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Fluxo de execução de subquery Tipo I",
+          lista: [
+            "1. A subconsulta executa primeiro (independentemente)",
+            "2. O resultado é armazenado como lista de valores",
+            "3. A consulta principal usa esse resultado como filtro (IN / NOT IN)"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Fluxo de execução de subquery Tipo II",
+          lista: [
+            "1. A consulta externa seleciona uma linha",
+            "2. A consulta interna executa usando valores dessa linha",
+            "3. Processo repete para cada linha da consulta externa",
+            "4. EXISTS retorna verdadeiro se a interna retornar ao menos uma linha"
+          ]
+        }
+      ]
+    },
+    {
+      id: "imagens_importantes",
+      titulo: "Imagens Importantes",
+      blocos: [
+        {
+          tipo: "imagem",
+          src: "quadro_tipos_sql.png",
+          pasta: "imagens_banco_dados/aula_09",
+          num: "Quadro 1",
+          alt: "Quadro com os principais tipos de dados utilizados na definicao de tabelas SQL"
+        },
+        {
+          tipo: "destaque",
+          texto: "Memorize os tipos SQL e suas diferenças: CHAR (fixo) vs VARCHAR (variável), INTEGER vs SMALLINT (tamanho), DATE/TIME, BLOB (binário)."
+        },
+        {
+          tipo: "imagem",
+          src: "fig_primary_key.png",
+          pasta: "imagens_banco_dados/aula_09",
+          num: "5",
+          alt: "Exemplo de definicao de chave primaria em uma tabela SQL"
+        },
+        {
+          tipo: "destaque",
+          texto: "PRIMARY KEY: única + não nula. Pode ser definida inline ou via CONSTRAINT com nome."
+        },
+        {
+          tipo: "imagem",
+          src: "fig_foreign_key.png",
+          pasta: "imagens_banco_dados/aula_09",
+          num: "6",
+          alt: "Exemplo de relacionamento entre tabelas usando chave estrangeira e integridade referencial"
+        },
+        {
+          tipo: "destaque",
+          texto: "FOREIGN KEY garante integridade referencial — impede que um aluno referencie um curso inexistente."
+        },
+        {
+          tipo: "imagem",
+          src: "quadro_comandos_dml.png",
+          pasta: "imagens_banco_dados/aula_10",
+          num: "Quadro 1",
+          alt: "Quadro com os principais comandos de manipulacao de registros da DML"
+        },
+        {
+          tipo: "destaque",
+          texto: "Os quatro comandos DML: SELECT (consulta), INSERT (insere), UPDATE (altera), DELETE (remove)."
+        },
+        {
+          tipo: "imagem",
+          src: "tabela_operadores_comparacao.png",
+          pasta: "imagens_banco_dados/aula_10",
+          num: "Tabela 1",
+          alt: "Tabela com os operadores de comparacao utilizados em filtros SQL"
+        },
+        {
+          tipo: "destaque",
+          texto: "Operador de diferença em SQL é <> (não != como em algumas linguagens)."
+        },
+        {
+          tipo: "imagem",
+          src: "tabela_operadores_logicos.png",
+          pasta: "imagens_banco_dados/aula_10",
+          num: "Tabela 2",
+          alt: "Tabela com os operadores logicos AND, OR e NOT"
+        },
+        {
+          tipo: "destaque",
+          texto: "AND é mais restritivo; OR é mais amplo. NOT inverte. Parênteses controlam precedência."
+        },
+        {
+          tipo: "imagem",
+          src: "quadro_funcoes_agregacao.png",
+          pasta: "imagens_banco_dados/aula_11",
+          num: "6",
+          alt: "Quadro com a relacao das funcoes de agregacao: COUNT, SUM, AVG, MIN e MAX"
+        },
+        {
+          tipo: "destaque",
+          texto: "Cinco funções de agregação: COUNT, SUM, AVG, MIN, MAX. Apenas COUNT(*) não ignora NULL."
+        },
+        {
+          tipo: "imagem",
+          src: "fig_agregacao_group_by.png",
+          pasta: "imagens_banco_dados/aula_12",
+          num: "3",
+          alt: "Exemplo de agregação com agrupamento — GROUP BY divide registros e calcula média por grupo"
+        },
+        {
+          tipo: "destaque",
+          texto: "Sem GROUP BY, toda a tabela é tratado como um único grupo. Com GROUP BY, cada grupo recebe seu próprio valor calculado."
+        },
+        {
+          tipo: "imagem",
+          src: "fig_exemplo_clausula_having.png",
+          pasta: "imagens_banco_dados/aula_12",
+          num: "4",
+          alt: "Exemplo de cláusula HAVING filtrando grupos após agrupamento"
+        },
+        {
+          tipo: "destaque",
+          texto: "HAVING filtra grupos após agrupamento. Todo atributo no HAVING sem função agregada deve estar no GROUP BY."
+        },
+        {
+          tipo: "imagem",
+          src: "figura_consulta_tipo1_sql.png",
+          pasta: "imagens_banco_dados/aula_13",
+          num: 1,
+          alt: "Exemplo de consulta aninhada Tipo I utilizando IN para filtrar alunos com média maior ou igual a 7"
+        },
+        {
+          tipo: "destaque",
+          texto: "Subquery Tipo I com IN: subconsulta executa uma vez e retorna lista usada pela consulta externa."
+        },
+        {
+          tipo: "imagem",
+          src: "figura_subconsulta_correlacionada.png",
+          pasta: "imagens_banco_dados/aula_13",
+          num: 3,
+          alt: "Exemplo de consulta aninhada Tipo II demonstrando NOT EXISTS e execução repetida da subconsulta"
+        },
+        {
+          tipo: "destaque",
+          texto: "Subquery Tipo II com NOT EXISTS: executa para cada linha da externa. Mais seguro que NOT IN quando há NULLs."
+        },
+        {
+          tipo: "imagem",
+          src: "figura_inner_join.png",
+          pasta: "imagens_banco_dados/aula_13",
+          num: 6,
+          alt: "Exemplo de consulta utilizando INNER JOIN retornando apenas registros relacionados nas duas tabelas"
+        },
+        {
+          tipo: "destaque",
+          texto: "INNER JOIN = interseção. Se não há correspondência, o registro não aparece em nenhum dos lados."
+        },
+        {
+          tipo: "imagem",
+          src: "figura_left_join.png",
+          pasta: "imagens_banco_dados/aula_13",
+          num: 8,
+          alt: "Comparativo do LEFT JOIN com teoria dos conjuntos — todos os elementos da esquerda são mantidos"
+        },
+        {
+          tipo: "destaque",
+          texto: "LEFT JOIN: todos da esquerda aparecem. Sem correspondência na direita → campos da direita ficam NULL."
+        },
+        {
+          tipo: "imagem",
+          src: "figura_full_outer_join.png",
+          pasta: "imagens_banco_dados/aula_13",
+          num: 10,
+          alt: "Comparativo do FULL OUTER JOIN — união completa das tabelas incluindo registros sem correspondência"
+        },
+        {
+          tipo: "destaque",
+          texto: "FULL OUTER JOIN: todos os registros das duas tabelas. Sem par → campos ausentes ficam NULL."
+        },
+        {
+          tipo: "imagem",
+          src: "figura_bdoo_heranca_hierarquia.png",
+          pasta: "imagens_banco_dados/aula_14",
+          num: 3,
+          alt: "Figura 3 — Hierarquia de classe com a subclasse CorPonto"
+        },
+        {
+          tipo: "destaque",
+          texto: "Herança OO: subclasse herda atributos e métodos da superclasse e pode adicionar novos."
+        },
+        {
+          tipo: "imagem",
+          src: "image_modelo_logico.png",
+          pasta: "imagens_banco_de_dados/aula_1",
+          num: 2,
+          alt: "Modelo lógico com tabelas, chaves primárias, estrangeiras e entidades associativas do sistema da CBF"
+        },
+        {
+          tipo: "destaque",
+          texto: "Modelo lógico: tabelas com PKs e FKs definidas. Relacionamentos N:M geram entidade associativa."
+        },
+        {
+          tipo: "imagem",
+          src: "image_modelo_fisico.png",
+          pasta: "imagens_banco_de_dados/aula_1",
+          num: 3,
+          alt: "Modelo físico com tipos de dados, relacionamentos identificados e não identificados e campos obrigatórios"
+        },
+        {
+          tipo: "destaque",
+          texto: "Modelo físico: implementação real no SGBD com tipos, índices e restrições. Depende do SGBD escolhido."
+        }
+      ]
+    },
+    {
+      id: "decore_para_prova",
+      titulo: "Decore para a Prova",
+      blocos: [
+        {
+          tipo: "tabela",
+          titulo: "Pontos mais cobrados — todas as aulas",
+          colunas: ["Ponto", "O que saber"],
+          linhas: [
+            ["Ordem de execução SQL", "FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY"],
+            ["NULL", "Não é zero, não é espaço — ausência de valor. Operação com NULL = UNKNOWN"],
+            ["GROUP BY — regra obrigatória", "Todo campo no SELECT deve estar no GROUP BY ou dentro de função agregada"],
+            ["HAVING vs WHERE", "WHERE filtra linhas antes do agrupamento; HAVING filtra grupos depois"],
+            ["COUNT(*) vs COUNT(col)", "COUNT(*) conta tudo inclusive NULL; COUNT(col) ignora NULL; COUNT(DISTINCT *) é inválido"],
+            ["LIKE coringas", "% = qualquer sequência de caracteres; _ = exatamente 1 caractere"],
+            ["UPDATE/DELETE sem WHERE", "Afeta TODOS os registros da tabela — principal armadilha de prova"],
+            ["DROP DATABASE", "Exclusão física, geralmente irreversível — exige extremo cuidado"],
+            ["PRIMARY KEY", "Única + não nula. Definida com CONSTRAINT para ter nome"],
+            ["FOREIGN KEY", "Garante integridade referencial — impede referência inválida"],
+            ["CASCADE vs RESTRICT", "CASCADE remove junto; RESTRICT impede exclusão se houver dependência"],
+            ["CHAR vs VARCHAR", "CHAR é tamanho fixo (ocupa sempre n bytes); VARCHAR é variável"],
+            ["DELETE vs DROP", "DELETE remove registros (tabela continua); DROP remove a estrutura"],
+            ["Subquery Tipo I vs II", "I = independente, executa uma vez, usa IN; II = correlacionada, executa por linha, usa EXISTS"],
+            ["NOT IN com NULL", "Se a lista contiver NULL, NOT IN retorna vazio — prefira NOT EXISTS"],
+            ["EXISTS vs IN", "EXISTS verifica existência de linhas; IN compara com lista de valores"],
+            ["INNER vs LEFT JOIN", "INNER = interseção (só pares); LEFT = todos da esquerda + NULL onde não há par"],
+            ["FULL OUTER JOIN", "Todos os registros das duas tabelas; campos sem par ficam NULL"],
+            ["Pilares OO", "Encapsulamento (oculta detalhes) + Herança (reutiliza) + Polimorfismo (várias formas)"],
+            ["ODMG", "ODL = define objetos; OQL = consulta com herança; Binding = mapeia OO ↔ BD"],
+            ["Herança SQL", "CREATE TYPE sub UNDER super; CREATE TABLE filho INHERITS pai"],
+            ["Expressão de caminho", "diretor->nome acessa atributo do objeto referenciado sem JOIN explícito"],
+            ["DEREF", "SELECT DEREF(diretor).nome — retorna o objeto referenciado"],
+            ["Modelos de projeto", "Conceitual (negócio, sem SGBD) → Lógico (relacional, PKs/FKs) → Físico (SGBD real, tipos)"],
+            ["Cardinalidade N:M", "Gera entidade associativa (tabela intermediária com FKs para ambas as entidades)"],
+            ["Normalização", "Elimina redundância e anomalias de atualização; material cobre até 3FN"]
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "DML procedural: usuário diz QUAIS dados e COMO obtê-los. DML não-procedural (SQL): usuário diz apenas QUAIS dados; o SGBD decide como obtê-los."
+        },
+        {
+          tipo: "destaque",
+          texto: "Ao adicionar coluna com ALTER TABLE, registros antigos recebem NULL. NOT NULL sem DEFAULT não é permitido."
+        }
+      ]
+    }
+  ]
+}
+  ]
 
 
 

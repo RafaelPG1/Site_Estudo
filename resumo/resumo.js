@@ -43,10 +43,11 @@ const State = {
   disciplinas:     [],
   aulas:           [],
   simplificado:    [],
+  resumao:         [],
   aulaAberta:      null,
   discVerificadas: new Set(),
   temConteudo:     null,
-  modo:            'completo', // 'completo' | 'sintese'
+  modo:            'completo', // 'completo' | 'sintese' | 'resumao'
   DISC_CORES:      {},
   getVideos:       null,
   // Scroll spy cleanup
@@ -118,6 +119,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     State.temConteudo  = null;
     State.aulas        = [];
     State.simplificado = [];
+    State.resumao      = [];
     State.modo         = 'completo';
     State.disciplina   = State.disciplinas[0] ?? null;
     if (State.disciplina) {
@@ -337,6 +339,7 @@ function _carregarConteudo() {
   State.temConteudo  = null;
   State.aulas        = [];
   State.simplificado = [];
+  State.resumao      = [];
   _atualizarStatusBadge();
   _removerScriptAnterior();
   window.__nexusConteudo = null;
@@ -365,6 +368,7 @@ const src = `../content/resumo/${ano}/${periodo}${apPath}/res_${disc.arquivo}.js
     State.discVerificadas.add(disc.id);
     State.aulas        = dados.aulas;
     State.simplificado = dados.simplificado;
+    State.resumao      = dados.resumao;
     State.temConteudo  = dados.aulas.length > 0;
     State.modo         = 'completo';
 
@@ -404,6 +408,7 @@ function _lerDados() {
   return {
     aulas:        Array.isArray(raw.aulas)        ? raw.aulas        : [],
     simplificado: Array.isArray(raw.simplificado) ? raw.simplificado : [],
+    resumao:      Array.isArray(raw.resumao)       ? raw.resumao      : [],
   };
 }
 
@@ -411,14 +416,20 @@ function _lerDados() {
    TOGGLE DE MODO
 ══════════════════════════════════════════════ */
 function _temSimplificado() { return State.simplificado.length > 0; }
+function _temResumao()      { return State.resumao.length > 0; }
 
 function _buildToggleHtml() {
-  if (!_temSimplificado()) return '';
+  if (!_temSimplificado() && !_temResumao()) return '';
 
   const btnCompleto = `<button class="mode-btn${State.modo === 'completo' ? ' mode-btn--active' : ''}" data-modo="completo">Resumo completo</button>`;
-  const btnSintese  = `<button class="mode-btn${State.modo === 'sintese'  ? ' mode-btn--active' : ''}" data-modo="sintese">Síntese rápida</button>`;
+  const btnSintese  = _temSimplificado()
+    ? `<button class="mode-btn${State.modo === 'sintese'  ? ' mode-btn--active' : ''}" data-modo="sintese">Síntese rápida</button>`
+    : '';
+  const btnResumao  = _temResumao()
+    ? `<button class="mode-btn${State.modo === 'resumao'  ? ' mode-btn--active' : ''}" data-modo="resumao">Resumão</button>`
+    : '';
 
-  return `<div class="mode-toggle" id="mode-toggle">${btnCompleto}${btnSintese}</div>`;
+  return `<div class="mode-toggle" id="mode-toggle">${btnCompleto}${btnSintese}${btnResumao}</div>`;
 }
 
 function _setModo(modo) {
@@ -493,6 +504,16 @@ function _renderGrid() {
       const temSint = !!(sint && (sint.ideia_central || (sint.secoes ?? []).length > 0));
       if (!temSint) return; // pula aulas sem síntese
       const card = _criarCardSintese(aula, idx);
+      grid.appendChild(card);
+    });
+  } else if (State.modo === 'resumao') {
+    // Resumão: cada entrada de State.resumao é um objeto no formato de aula
+    // (com aula, ideia_central, secoes) — um card por entrada
+    State.resumao.forEach((res, idx) => {
+      if (!res) return;
+      const temRes = !!(res.ideia_central || (res.secoes ?? []).length > 0);
+      if (!temRes) return;
+      const card = _criarCardResumao(res, idx);
       grid.appendChild(card);
     });
   } else {
@@ -636,6 +657,93 @@ function _criarCardSintese(aula, idx) {
   card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (temSint) _abrirModal(sint); } });
   return card;
 }
+
+/* ══════════════════════════════════════════════
+   CARD — Resumão
+══════════════════════════════════════════════ */
+function _criarCardResumao(res, idx) {
+  // res tem o mesmo formato de uma aula: { aula, ideia_central, secoes }
+  const aulaStr = _esc(res.aula ?? '');
+  const m       = aulaStr.match(/^(Aula\s*[\d\/]+)\s*[—–-]\s*(.+)$/i);
+  const aulaNum = m ? m[1] : aulaStr;
+  const aulaTit = m ? m[2] : '';
+  const preview = res.ideia_central ?? null;
+  const numSec  = (res.secoes ?? []).length;
+
+  const card = document.createElement('article');
+  card.className = 'resumo-card resumo-card--nota resumo-card--resumao';
+  card.style.animationDelay = `${idx * 0.055}s`;
+  card.setAttribute('tabindex', '0');
+  card.setAttribute('role', 'button');
+  card.setAttribute('aria-label', `Resumão: ${res.aula}`);
+  card.innerHTML = `
+    <div class="card-inner">
+      <div class="card-num-row">
+        <div class="card-num">${aulaNum}</div>
+        <span class="resumao-badge">Resumão</span>
+      </div>
+      <div class="card-title">${aulaTit || aulaStr}</div>
+      <div class="card-divider"></div>
+      ${preview
+        ? `<p class="card-desc">${_parseInline(preview)}</p>`
+        : `<p class="card-desc" style="font-style:italic;opacity:0.5">Resumão não disponível ainda.</p>`}
+      <div class="card-bottom">
+        <div class="card-progress__track"><div class="card-progress__fill"></div></div>
+        <div class="card-meta">
+          <span class="card-meta__count">${numSec} seç${numSec !== 1 ? 'ões' : 'ão'}</span>
+          <span class="card-meta__cta">
+            Ver resumão
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
+            </svg>
+          </span>
+        </div>
+      </div>
+    </div>`;
+
+  _bindCardHover(card);
+
+  card.addEventListener('click', () => _abrirModalResumao(res));
+  card.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _abrirModalResumao(res); }
+  });
+  return card;
+}
+
+/* ══════════════════════════════════════════════
+   READER — RESUMÃO
+══════════════════════════════════════════════ */
+function _abrirModalResumao(res) {
+  // res tem o mesmo formato de uma aula: { aula, ideia_central, secoes }
+  // reutiliza o reader normal com badge diferente
+  playSound('click', 'resumos');
+  playSound('openModal', 'resumos');
+
+  const aulaLabel = document.getElementById('rm-aula-label');
+  if (aulaLabel) aulaLabel.textContent = res.aula ?? '';
+
+  const badge = document.getElementById('rm-tipo-badge');
+  if (badge) {
+    badge.textContent = 'Resumão';
+    badge.className   = 'reader__bar-badge badge--resumao';
+  }
+
+  const body = document.getElementById('rm-body');
+  if (body) body.innerHTML = _buildReaderBody(res);
+
+  const _accordionKey = _storageKeyAccordion((res.aula ?? String(Date.now())) + '__resumao');
+  _bindReaderAccordion(_accordionKey);
+
+  document.getElementById('read-modal').classList.add('read-modal--open');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('read-modal-panel')?.focus();
+
+  if (_progressCleanup) _progressCleanup();
+  const scrollEl = document.getElementById('rm-body-wrapper');
+  _progressCleanup = _updateReadingProgress(scrollEl);
+}
+
 
 /* ══════════════════════════════════════════════
    READER — tela cheia com seções colapsáveis
@@ -975,6 +1083,7 @@ function _trocarDisciplina(disc) {
   State.temConteudo  = null;
   State.aulas        = [];
   State.simplificado = [];
+  State.resumao      = [];
   State.modo         = 'completo';
   setDisciplina(disc.id);
 

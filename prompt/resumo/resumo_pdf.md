@@ -1,3 +1,4 @@
+<!-- RESUMO -->
 Você receberá um PDF como entrada.
 
 Sua tarefa é produzir um resumo detalhado, completo e didático, focado no aprendizado para provas.

@@ -1,3 +1,4 @@
+<!-- simplificado -->
 Você receberá um conteúdo de estudo (resumo, aula, PDF ou texto).
 
 Sua tarefa é transformar esse conteúdo EXCLUSIVAMENTE na estrutura `simplificado[]`.
