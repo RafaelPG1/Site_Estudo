@@ -246,9 +246,10 @@ document.addEventListener('visibilitychange', function () {
     if (!listaQuestoes || !Array.isArray(listaQuestoes) || listaQuestoes.length === 0) {
       if (container) {
         container.innerHTML =
-          '<div style="padding:2rem;text-align:center;color:#f87171;">' +
-          '<p>⚠️ Nenhuma questão encontrada para o tipo <strong>"' + tipo + '"</strong>.<br>' +
-          'Verifique se o arquivo de conteúdo está correto.</p>' +
+          '<div style="padding:3rem 2rem;text-align:center;color:var(--text-2,#a8a49c);">' +
+          '<div style="font-size:2.5rem;margin-bottom:1rem;">📭</div>' +
+          '<p style="font-size:1rem;margin-bottom:0.5rem;">Nenhum conteúdo disponível para <strong style="color:var(--text-1,#f0ede6);">' + tipo.toUpperCase() + '</strong> neste semestre.</p>' +
+          '<p style="font-size:0.85rem;opacity:0.6;">As questões serão adicionadas em breve.</p>' +
           '</div>';
       }
       return;

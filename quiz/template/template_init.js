@@ -56,7 +56,11 @@ window.__nexusPlaySound = playSound;
 const params   = new URLSearchParams(location.search);
 const disc     = params.get('disc') || 'poo';
 const modo     = params.get('modo') || 'questoes';
-const semestre = params.get('sem') || SEMESTRES[0];
+/* Normaliza o casing do AP: "2026.1-ap2" → "2026.1-AP2".
+   SEMESTRES[] e os diretórios físicos usam maiúsculas.
+   Sem essa normalização, o caminho gerado seria .../ap2/ques_*.js
+   que não existe em servidores Linux case-sensitive. */
+const semestre = (params.get('sem') || SEMESTRES[0]).replace(/-(.+)$/, (_, ap) => '-' + ap.toUpperCase());
 
 /* ── EXPÕE CONTEXTO DO QUIZ PARA O ENGINE ─────────────────── */
 window.__NEXUS_QUIZ_DISC__     = disc;

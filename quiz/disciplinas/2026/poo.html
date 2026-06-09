@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="../../../shared/css/audio/sound.css">
   <link rel="stylesheet" href="../disciplinas_global.css" />
   <link rel="stylesheet" href="../../../shared/css/audio/audio-btns.css" />
-      <link rel="stylesheet" href="../../../shared/css/ia/ia.css">
+  <link rel="stylesheet" href="../../../shared/css/ia/ia.css">
 </head>
 <body>
 
@@ -45,20 +45,19 @@
     </div>
 
     <!--
-      Todos os cards possíveis estão aqui.
-      disciplinas_init.js carrega o ques_poo.js do semestre ativo,
-      lê window.questoes e oculta automaticamente os cards cujo data-modo
-      não existe no objeto.
+      Os 4 cards existem diretamente no HTML.
+      Eles nascem visíveis via CSS (display:flex no .disc-card base).
+      O JavaScript não decide se um card existe ou aparece.
+      O JavaScript apenas propaga o semestre nos hrefs via
+      propagarSemNosLinks('a[href*="template.html"]').
     -->
     <div class="disciplines">
 
       <!-- AVA -->
       <a href="../../template/template.html?disc=poo&modo=ava"
-         class="disc-card disc-card--ava" id="link-ava"
+         class="disc-card disc-card--ava"
          data-modo="ava">
-        <div class="disc-card__icon-col">
-          <div class="disc-card__icon-wrap"><span>📚</span></div>
-        </div>
+        <div class="disc-card__icon-wrap"><span>📚</span></div>
         <div class="disc-card__body">
           <h2 class="disc-card__title">AVA</h2>
           <p class="disc-card__desc">Questões extraídas das atividades do AVA</p>
@@ -74,11 +73,9 @@
 
       <!-- QUESTÕES -->
       <a href="../../template/template.html?disc=poo&modo=questoes"
-         class="disc-card disc-card--quiz" id="link-quiz"
+         class="disc-card disc-card--quiz"
          data-modo="questoes">
-        <div class="disc-card__icon-col">
-          <div class="disc-card__icon-wrap"><span>❓</span></div>
-        </div>
+        <div class="disc-card__icon-wrap"><span>❓</span></div>
         <div class="disc-card__body">
           <h2 class="disc-card__title">Questões</h2>
           <p class="disc-card__desc">Questões adaptativas criadas por IA com feedback explicativo.</p>
@@ -94,11 +91,9 @@
 
       <!-- ENADE -->
       <a href="../../template/template.html?disc=poo&modo=enade"
-         class="disc-card disc-card--enade" id="link-enade"
+         class="disc-card disc-card--enade"
          data-modo="enade">
-        <div class="disc-card__icon-col">
-          <div class="disc-card__icon-wrap"><span>🏛️</span></div>
-        </div>
+        <div class="disc-card__icon-wrap"><span>🏛️</span></div>
         <div class="disc-card__body">
           <h2 class="disc-card__title">ENADE</h2>
           <p class="disc-card__desc">Questões estilo ENADE com contexto aplicado, asserções e análise crítica.</p>
@@ -114,11 +109,9 @@
 
       <!-- FIXAÇÃO -->
       <a href="../../template/template.html?disc=poo&modo=fixacao"
-         class="disc-card disc-card--fixacao" id="link-fixacao"
+         class="disc-card disc-card--fixacao"
          data-modo="fixacao">
-        <div class="disc-card__icon-col">
-          <div class="disc-card__icon-wrap"><span>📌</span></div>
-        </div>
+        <div class="disc-card__icon-wrap"><span>📌</span></div>
         <div class="disc-card__body">
           <h2 class="disc-card__title">Fixação</h2>
           <p class="disc-card__desc">Questões de revisão para consolidar o conteúdo estudado.</p>

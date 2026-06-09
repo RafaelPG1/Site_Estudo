@@ -4217,6 +4217,8 @@ window.questoes = {
     feedback: "Uma das vantagens do Mobile First é produzir código mais limpo, pois a priorização do essencial desde o início evita acúmulo de regras CSS desnecessárias."
   }
 
-  ]
+  ],
+
+ava:[]
 
 };

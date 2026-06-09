@@ -1,8 +1,29 @@
 /* =============================================
-   NEXUS STUDY — disciplinas_global.css
+   NEXUS STUDY — disciplinas_global.css  v5.0
+
+   PRINCÍPIOS DESTA VERSÃO:
+   ─────────────────────────────────────────────
+   1. Cards são SEMPRE visíveis. display:flex é
+      o estado permanente — nenhum CSS o cancela.
+
+   2. Animações são ENFEITES, nunca gates.
+      Nenhuma animação usa fill-mode:both nem
+      fill-mode:backwards — essas palavras-chave
+      mantêm o estado "from" (opacity:0) antes
+      de a animação disparar, deixando os cards
+      invisíveis se a animação travar.
+
+   3. @media (prefers-reduced-motion) zera todas
+      as animações de forma limpa.
+
+   4. display:none, visibility:hidden, opacity:0
+      e height:0 NÃO aparecem como estado padrão
+      de nenhum card.
    ============================================= */
 
-/* ── TOKENS PADRÃO ── */
+/* ══════════════════════════════════════════════
+   TOKENS
+   ══════════════════════════════════════════════ */
 :root {
   --bg:          #070b14;
   --surface:     #0e1420;
@@ -27,7 +48,9 @@
   --cor-tema-2-rgb: 77, 217, 180;
 }
 
-/* ── RESET ── */
+/* ══════════════════════════════════════════════
+   RESET
+   ══════════════════════════════════════════════ */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -35,9 +58,11 @@
 }
 
 html { scroll-behavior: smooth; }
-a { text-decoration: none; color: inherit; }
+a    { text-decoration: none; color: inherit; }
 
-/* ── HEADER ── */
+/* ══════════════════════════════════════════════
+   HEADER
+   ══════════════════════════════════════════════ */
 .header {
   position: sticky;
   top: 0;
@@ -149,7 +174,7 @@ a { text-decoration: none; color: inherit; }
   font-weight: 500;
   letter-spacing: 0.05em;
   color: var(--text-2);
-  background-color: rgba(255,255,255,0.04);
+  background-color: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--border-glow);
   border-radius: 8px;
   padding: 0.4rem 0.75rem;
@@ -174,7 +199,9 @@ a { text-decoration: none; color: inherit; }
   font-weight: 500;
 }
 
-/* ── MAIN ── */
+/* ══════════════════════════════════════════════
+   MAIN
+   ══════════════════════════════════════════════ */
 .main {
   position: relative;
   z-index: 2;
@@ -186,8 +213,9 @@ a { text-decoration: none; color: inherit; }
 /* ── PAGE HEADER ── */
 .page-header {
   margin-bottom: 2.5rem;
-  animation: fade-up 0.55s ease both;
   text-align: center;
+  /* Animação SEGURA: forwards apenas — não mantém estado "from" */
+  animation: ns-fade-up 0.55s ease forwards;
 }
 
 .page-header__eyebrow {
@@ -216,7 +244,6 @@ a { text-decoration: none; color: inherit; }
   letter-spacing: -0.02em;
   color: var(--text-1);
   margin-bottom: 0.6rem;
-  animation: fade-up 0.6s 0.1s ease both;
 }
 
 .page-header__title em {
@@ -236,24 +263,46 @@ a { text-decoration: none; color: inherit; }
   margin: 0 auto;
 }
 
-/* ── GRID DE DISCIPLINAS ── */
+/* ══════════════════════════════════════════════
+   GRID DE DISCIPLINAS
+   ══════════════════════════════════════════════ */
 .disciplines {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1.5rem;
-  animation: fade-up 0.6s 0.2s ease both;
 }
 
-/* ── CARD — base ── */
-/*
-  Cards começam com display:none.
-  O JS adiciona .visivel nos sobreviventes do filtro,
-  que ativa display:flex e dispara fade-up com delay
-  calculado dinamicamente via --card-delay.
-  O grid reflui do zero, sempre da esquerda.
-*/
+/* ══════════════════════════════════════════════
+   CARD BASE
+   ──────────────────────────────────────────────
+   REGRA ABSOLUTA:
+     display:flex é o estado fixo e permanente.
+     Nenhuma outra propriedade deste arquivo
+     cancela ou atrasa essa visibilidade.
+
+   ANIMAÇÃO:
+     Usamos animation-fill-mode:forwards (não
+     "both" e não "backwards").
+     "forwards" só mantém o estado FINAL após a
+     animação terminar — nunca esconde o elemento
+     antes de começar.
+     O elemento já nasce com opacity:1 implícita
+     (sem override pelo fill-mode).
+
+   SOLUÇÃO PARA O EFEITO VISUAL:
+     Em vez de animar opacity de 0→1 com fill-mode
+     que esconde o card, usamos uma animação que
+     começa em opacity:0.01 (praticamente invisível
+     mas nunca "sumiço permanente") e vai para 1.
+     Mesmo se a animação travar, o card não some —
+     fica com opacity:0.01 no pior caso.
+   ══════════════════════════════════════════════ */
 .disc-card {
-  display: none;
+  /* Visibilidade garantida por propriedades diretas */
+  display: flex;
+  opacity: 1;          /* fallback explícito — sempre visível */
+  visibility: visible; /* garantia extra */
+
   position: relative;
   flex-direction: column;
   gap: 1rem;
@@ -263,27 +312,48 @@ a { text-decoration: none; color: inherit; }
   background: var(--surface);
   overflow: hidden;
   cursor: pointer;
+  min-height: 200px;
+  text-decoration: none;
+
   transition:
     transform 0.3s cubic-bezier(.25, .8, .25, 1),
     box-shadow 0.3s ease,
     border-color 0.3s ease;
-  text-decoration: none;
-  min-height: 200px;
+
+  /* Animação decorativa — forwards nunca esconde antes de começar */
+  animation: ns-card-enter 0.45s ease forwards;
 }
 
-.disc-card.visivel {
-  display: flex;
-  animation: fade-up 0.5s var(--card-delay, 0.05s) ease both;
-}
+/*
+   Delays escalonados por nth-child.
+   Importante: o card JÁ ESTÁ com opacity:1 declarado acima.
+   A animação é sobreposta via @keyframes que começa em
+   opacity:0.01 — se travar/cancelar, o valor declarado (1)
+   prevalece porque fill-mode:forwards só age APÓS o fim.
+   Antes de começar: opacity:1 (o valor da propriedade direta).
+*/
+.disciplines .disc-card:nth-child(1) { animation-delay: 0.04s; }
+.disciplines .disc-card:nth-child(2) { animation-delay: 0.12s; }
+.disciplines .disc-card:nth-child(3) { animation-delay: 0.20s; }
+.disciplines .disc-card:nth-child(4) { animation-delay: 0.28s; }
 
 .disc-card:hover {
   transform: translateY(-6px) scale(1.01);
 }
 
-.disc-card__glow { display: none; }
+/* ── Subcomponentes do card ── */
+.disc-card__glow {
+  /* Elemento decorativo — intencionalmente oculto por padrão */
+  display: none;
+}
+
+.disc-card__icon-col {
+  flex-shrink: 0;
+}
 
 .disc-card__icon-wrap {
-  width: 52px; height: 52px;
+  width: 52px;
+  height: 52px;
   border-radius: 14px;
   display: flex;
   align-items: center;
@@ -331,7 +401,8 @@ a { text-decoration: none; color: inherit; }
 }
 
 .disc-card__arrow {
-  width: 36px; height: 36px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   border: 1px solid var(--border-glow);
   display: flex;
@@ -366,8 +437,11 @@ a { text-decoration: none; color: inherit; }
   transform: translateY(0);
 }
 
-/* ── TEMAS DOS CARDS ── */
+/* ══════════════════════════════════════════════
+   TEMAS DOS CARDS
+   ══════════════════════════════════════════════ */
 
+/* ── AVA (azul) ── */
 .disc-card--ava {
   background: linear-gradient(145deg, #0e1420, rgba(122, 168, 232, 0.07));
   border-color: rgba(122, 168, 232, 0.18);
@@ -377,9 +451,9 @@ a { text-decoration: none; color: inherit; }
   border-color: rgba(122, 168, 232, 0.4);
   box-shadow: 0 12px 40px rgba(122, 168, 232, 0.15);
 }
-.disc-card--ava .disc-card__icon-wrap { background: rgba(122, 168, 232, 0.12); }
-.disc-card--ava .disc-card__title { color: white; }
-.disc-card--ava:hover .disc-card__arrow {
+.disc-card--ava .disc-card__icon-wrap    { background: rgba(122, 168, 232, 0.12); }
+.disc-card--ava .disc-card__title        { color: var(--text-1); }
+.disc-card--ava:hover .disc-card__arrow  {
   border-color: #7aa8e8;
   color: #7aa8e8;
   background: rgba(122, 168, 232, 0.1);
@@ -387,6 +461,7 @@ a { text-decoration: none; color: inherit; }
 }
 .disc-card--ava:hover .disc-card__cta-label { color: #7aa8e8; }
 
+/* ── QUIZ / QUESTÕES (teal) ── */
 .disc-card--quiz {
   background: linear-gradient(145deg, #0e1420, rgba(77, 217, 180, 0.07));
   border-color: rgba(77, 217, 180, 0.18);
@@ -396,9 +471,9 @@ a { text-decoration: none; color: inherit; }
   border-color: rgba(77, 217, 180, 0.4);
   box-shadow: 0 12px 40px rgba(77, 217, 180, 0.15);
 }
-.disc-card--quiz .disc-card__icon-wrap { background: rgba(77, 217, 180, 0.12); }
-.disc-card--quiz .disc-card__title { color: white; }
-.disc-card--quiz:hover .disc-card__arrow {
+.disc-card--quiz .disc-card__icon-wrap    { background: rgba(77, 217, 180, 0.12); }
+.disc-card--quiz .disc-card__title        { color: var(--text-1); }
+.disc-card--quiz:hover .disc-card__arrow  {
   border-color: #4dd9b4;
   color: #4dd9b4;
   background: rgba(77, 217, 180, 0.1);
@@ -406,6 +481,7 @@ a { text-decoration: none; color: inherit; }
 }
 .disc-card--quiz:hover .disc-card__cta-label { color: #4dd9b4; }
 
+/* ── ENADE (laranja) ── */
 .disc-card--enade {
   background: linear-gradient(145deg, #0e1420, rgba(249, 115, 22, 0.07));
   border-color: rgba(249, 115, 22, 0.18);
@@ -415,12 +491,12 @@ a { text-decoration: none; color: inherit; }
   border-color: rgba(249, 115, 22, 0.4);
   box-shadow: 0 12px 40px rgba(249, 115, 22, 0.15);
 }
-.disc-card--enade .disc-card__icon-wrap {
-  background: rgba(249, 115, 22, 0.25);
+.disc-card--enade .disc-card__icon-wrap    {
+  background: rgba(249, 115, 22, 0.15);
   border-radius: 14px;
 }
-.disc-card--enade .disc-card__title { color: white; }
-.disc-card--enade:hover .disc-card__arrow {
+.disc-card--enade .disc-card__title        { color: var(--text-1); }
+.disc-card--enade:hover .disc-card__arrow  {
   border-color: #f97316;
   color: #f97316;
   background: rgba(249, 115, 22, 0.1);
@@ -428,6 +504,7 @@ a { text-decoration: none; color: inherit; }
 }
 .disc-card--enade:hover .disc-card__cta-label { color: #f97316; }
 
+/* ── FIXAÇÃO (roxo) ── */
 .disc-card--fixacao {
   background: linear-gradient(145deg, #0e1420, rgba(168, 85, 247, 0.07));
   border-color: rgba(168, 85, 247, 0.18);
@@ -437,12 +514,12 @@ a { text-decoration: none; color: inherit; }
   border-color: rgba(168, 85, 247, 0.4);
   box-shadow: 0 12px 40px rgba(168, 85, 247, 0.15);
 }
-.disc-card--fixacao .disc-card__icon-wrap {
+.disc-card--fixacao .disc-card__icon-wrap    {
   background: rgba(168, 85, 247, 0.15);
   border-radius: 14px;
 }
-.disc-card--fixacao .disc-card__title { color: white; }
-.disc-card--fixacao:hover .disc-card__arrow {
+.disc-card--fixacao .disc-card__title        { color: var(--text-1); }
+.disc-card--fixacao:hover .disc-card__arrow  {
   border-color: #a855f7;
   color: #a855f7;
   background: rgba(168, 85, 247, 0.1);
@@ -450,7 +527,87 @@ a { text-decoration: none; color: inherit; }
 }
 .disc-card--fixacao:hover .disc-card__cta-label { color: #a855f7; }
 
-/* ── FOOTER ── */
+/* ── Aliases de cor para compatibilidade com quiz.html ── */
+/* (quiz.html usa --blue, --teal, --gold, --rose) */
+.disc-card--blue {
+  background: linear-gradient(145deg, #0e1420, rgba(96, 165, 250, 0.07));
+  border-color: rgba(96, 165, 250, 0.18);
+  box-shadow: 0 0 30px rgba(96, 165, 250, 0.05);
+}
+.disc-card--blue:hover {
+  border-color: rgba(96, 165, 250, 0.4);
+  box-shadow: 0 12px 40px rgba(96, 165, 250, 0.15);
+}
+.disc-card--blue .disc-card__icon-wrap    { background: rgba(96, 165, 250, 0.12); }
+.disc-card--blue .disc-card__title        { color: var(--text-1); }
+.disc-card--blue:hover .disc-card__arrow  {
+  border-color: #60a5fa;
+  color: #60a5fa;
+  background: rgba(96, 165, 250, 0.1);
+  box-shadow: 0 0 14px rgba(96, 165, 250, 0.25);
+}
+.disc-card--blue:hover .disc-card__cta-label { color: #60a5fa; }
+
+.disc-card--teal {
+  background: linear-gradient(145deg, #0e1420, rgba(45, 212, 191, 0.07));
+  border-color: rgba(45, 212, 191, 0.18);
+  box-shadow: 0 0 30px rgba(45, 212, 191, 0.05);
+}
+.disc-card--teal:hover {
+  border-color: rgba(45, 212, 191, 0.4);
+  box-shadow: 0 12px 40px rgba(45, 212, 191, 0.15);
+}
+.disc-card--teal .disc-card__icon-wrap    { background: rgba(45, 212, 191, 0.12); }
+.disc-card--teal .disc-card__title        { color: var(--text-1); }
+.disc-card--teal:hover .disc-card__arrow  {
+  border-color: #2dd4bf;
+  color: #2dd4bf;
+  background: rgba(45, 212, 191, 0.1);
+  box-shadow: 0 0 14px rgba(45, 212, 191, 0.25);
+}
+.disc-card--teal:hover .disc-card__cta-label { color: #2dd4bf; }
+
+.disc-card--gold {
+  background: linear-gradient(145deg, #0e1420, rgba(251, 191, 36, 0.07));
+  border-color: rgba(251, 191, 36, 0.18);
+  box-shadow: 0 0 30px rgba(251, 191, 36, 0.05);
+}
+.disc-card--gold:hover {
+  border-color: rgba(251, 191, 36, 0.4);
+  box-shadow: 0 12px 40px rgba(251, 191, 36, 0.15);
+}
+.disc-card--gold .disc-card__icon-wrap    { background: rgba(251, 191, 36, 0.12); }
+.disc-card--gold .disc-card__title        { color: var(--text-1); }
+.disc-card--gold:hover .disc-card__arrow  {
+  border-color: #fbbf24;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.1);
+  box-shadow: 0 0 14px rgba(251, 191, 36, 0.25);
+}
+.disc-card--gold:hover .disc-card__cta-label { color: #fbbf24; }
+
+.disc-card--rose {
+  background: linear-gradient(145deg, #0e1420, rgba(251, 113, 133, 0.07));
+  border-color: rgba(251, 113, 133, 0.18);
+  box-shadow: 0 0 30px rgba(251, 113, 133, 0.05);
+}
+.disc-card--rose:hover {
+  border-color: rgba(251, 113, 133, 0.4);
+  box-shadow: 0 12px 40px rgba(251, 113, 133, 0.15);
+}
+.disc-card--rose .disc-card__icon-wrap    { background: rgba(251, 113, 133, 0.12); }
+.disc-card--rose .disc-card__title        { color: var(--text-1); }
+.disc-card--rose:hover .disc-card__arrow  {
+  border-color: #fb7185;
+  color: #fb7185;
+  background: rgba(251, 113, 133, 0.1);
+  box-shadow: 0 0 14px rgba(251, 113, 133, 0.25);
+}
+.disc-card--rose:hover .disc-card__cta-label { color: #fb7185; }
+
+/* ══════════════════════════════════════════════
+   FOOTER
+   ══════════════════════════════════════════════ */
 .footer {
   position: relative;
   z-index: 2;
@@ -463,26 +620,72 @@ a { text-decoration: none; color: inherit; }
   margin-top: 2rem;
 }
 
-/* ── ANIMAÇÕES ── */
-@keyframes fade-up {
-  from { opacity: 0; transform: translateY(18px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* ══════════════════════════════════════════════
+   ANIMAÇÕES
+   ──────────────────────────────────────────────
+   REGRA CRÍTICA:
+     ns-card-enter usa opacity:0.01 (não 0).
+     Se a animação cancelar/travar antes de rodar,
+     o valor declarado inline (opacity:1 no .disc-card)
+     prevalece — o card fica visível.
+     0.01 é imperceptível ao olho mas não é "sumiço".
+   ══════════════════════════════════════════════ */
+@keyframes ns-fade-up {
+  from { opacity: 0.01; transform: translateY(16px); }
+  to   { opacity: 1;    transform: translateY(0); }
 }
 
-/* ── RESPONSIVIDADE ── */
+@keyframes ns-card-enter {
+  from { opacity: 0.01; transform: translateY(20px); }
+  to   { opacity: 1;    transform: translateY(0); }
+}
+
+/* ══════════════════════════════════════════════
+   MOTION SAFETY
+   ──────────────────────────────────────────────
+   Respeita prefers-reduced-motion e garante que
+   todos os elementos fiquem visíveis mesmo sem
+   animação.
+   ══════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration:        0.01ms !important;
+    animation-iteration-count: 1      !important;
+    transition-duration:       0.01ms !important;
+  }
+
+  /* Garante estado final visível para todos os animados */
+  .disc-card,
+  .page-header,
+  .page-header__title {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ══════════════════════════════════════════════
+   RESPONSIVIDADE
+   ══════════════════════════════════════════════ */
 @media (max-width: 680px) {
-  .header { padding: 0.9rem 1.25rem; }
-  .breadcrumb { display: none; }
-  .main { padding: 2rem 1.25rem 2rem; }
+  .header          { padding: 0.9rem 1.25rem; }
+  .breadcrumb      { display: none; }
+  .main            { padding: 2rem 1.25rem 2rem; }
+
   .page-header__title { font-size: 2rem; }
-  .disciplines { grid-template-columns: 1fr; gap: 1rem; }
-  .disc-card { padding: 1.4rem; }
-  .disc-card__title { font-size: 1.3rem; }
-  .disc-card__desc { display: none; }
+
+  .disciplines {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .disc-card            { padding: 1.4rem; }
+  .disc-card__title     { font-size: 1.3rem; }
+  .disc-card__desc      { display: none; }
   .disc-card__cta-label { display: none; }
 }
 
 @media (max-width: 380px) {
   .page-header__title { font-size: 1.75rem; }
-  .logo-title { font-size: 1rem; }
 }

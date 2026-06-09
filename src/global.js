@@ -53,6 +53,27 @@ window.NexusStorage = Storage;
    CONSTANTES
    ══════════════════════════════════════════════════════════ */
 
+/* ══════════════════════════════════════════════════════════
+   NORMALIZAÇÃO DE SEMESTRE
+   ══════════════════════════════════════════════════════════
+
+   Converte qualquer variação de casing para maiúsculo na
+   parte do AP. Ex: "2026.1-ap2" → "2026.1-AP2".
+
+   Por que é necessário:
+     SEMESTRES[] usa maiúsculas ("2026.1-AP2").
+     Os diretórios físicos no servidor também.
+     Mas a URL pode chegar com qualquer casing.
+     parseSemestre() preserva o casing que recebe —
+     então "2026.1-ap2" gera ap="ap2" e o caminho
+     resultante .../ap2/ques_*.js não é encontrado.
+   ══════════════════════════════════════════════════════════ */
+function _normalizarSemestre(s) {
+  if (!s) return s;
+  // Normaliza apenas a parte após o hífen, preservando o formato YYYY.N
+  return String(s).replace(/-(.+)$/, (_, ap) => '-' + ap.toUpperCase());
+}
+
 export const SEMESTRES = ['2026.1-AP2', '2026.1-AP1','2027.1' ];
 
 
@@ -75,9 +96,10 @@ const _DISCIPLINAS = {
 
 let _estado = {
   pagina:     'HOME',
-semestre: SEMESTRES.includes(Storage.get('semestre_atual'))
-            ? Storage.get('semestre_atual')
-            : SEMESTRES[0],
+  semestre: (() => {
+    const raw = _normalizarSemestre(Storage.get('semestre_atual') || '');
+    return SEMESTRES.includes(raw) ? raw : SEMESTRES[0];
+  })(),
   disciplina: null,
   usuario:    Storage.get('usuario', null),
   configs:    Storage.get('configs', _defaultConfigs()),
@@ -107,8 +129,15 @@ export function setPagina(pagina)  { _estado.pagina = pagina; }
 export function getSemestreAtual() { return _estado.semestre; }
 
 export function setSemestre(s) {
-  _estado.semestre = s;
-  Storage.set('semestre_atual', s);
+  /* Normaliza para maiúsculo antes de salvar.
+     Garante que "2026.1-ap2" vire "2026.1-AP2", igual ao padrão
+     de SEMESTRES[] e dos diretórios físicos no servidor.
+     Sem essa normalização, parseSemestre() extrairia ap="ap2"
+     e o caminho gerado seria .../ap2/ques_*.js — não encontrado
+     em servidores Linux case-sensitive onde o diretório é AP2/. */
+  const normalizado = _normalizarSemestre(s);
+  _estado.semestre = normalizado;
+  Storage.set('semestre_atual', normalizado);
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -302,4 +331,3 @@ window.__nexusCtx = {
   parseSemestre:      parseSemestre,
   getDisciplinaAtual: getDisciplinaAtual,  // null na home, id nas páginas de conteúdo
 };
- 
