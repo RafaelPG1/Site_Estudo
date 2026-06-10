@@ -350,6 +350,7 @@
    * @param {object} questoes  — window.questoes do ques_*.js
    * @param {string} modo      — 'questoes'|'enade'|'fixacao'|'ava'
    */
+// DEPOIS:
   function indexarQuestoes(questoes, modo) {
     _indice = [];
 
@@ -358,7 +359,13 @@
       return;
     }
 
-    var lista = questoes[modo];
+    // Usa a ordem visual (pós-shuffle) se disponível.
+    // window.__NEXUS_QUESTOES_VISUAIS__ é setado pelo quiz_engine logo após
+    // criarCopiaEmbaralhada(), garantindo que a IA numera as questões
+    // exatamente como o usuário as vê na tela.
+    var lista = (window.__NEXUS_QUESTOES_VISUAIS__ && window.__NEXUS_QUESTOES_VISUAIS__.length)
+      ? window.__NEXUS_QUESTOES_VISUAIS__
+      : questoes[modo];
 
     lista.forEach(function (q, i) {
       var numero = i + 1;

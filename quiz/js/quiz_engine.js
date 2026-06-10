@@ -400,6 +400,7 @@ document.addEventListener('visibilitychange', function () {
       stepAtual        = 0;
 
       questoes = criarCopiaEmbaralhada(base, null);
+      window.__NEXUS_QUESTOES_VISUAIS__ = questoes;
 
       var resultsEl = document.getElementById('results');
       if (resultsEl) { resultsEl.style.display = 'none'; resultsEl.innerHTML = ''; }
@@ -474,6 +475,7 @@ document.addEventListener('visibilitychange', function () {
     _verificarRetorno(null);
     var savedShuffleMap = _restaurar();
     var questoes = criarCopiaEmbaralhada(questoesBase, savedShuffleMap);
+    window.__NEXUS_QUESTOES_VISUAIS__ = questoes;
 
     if (savedShuffleMap === null && _disc && _Storage) {
       _salvarShuffleMap();
