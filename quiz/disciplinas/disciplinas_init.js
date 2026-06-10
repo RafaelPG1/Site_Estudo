@@ -15,18 +15,20 @@
      2. Exibir o badge de semestre no header       (visual)
      3. Aplicar cores da disciplina               (visual)
      4. Inicializar áudio e logo                  (UX)
-     5. Carregar arquivo de questões em background (opcional)
+     5. Verificar disponibilidade de conteúdo     (UX — opcional)
+        Carrega ques_*.js em background, lê window.questoes
+        e aplica disc-card--vazio nos modos sem questões.
 
    GARANTIAS:
      - Cada responsabilidade está isolada em seu próprio
        try/catch. Uma falha em qualquer etapa NÃO afeta
        as outras etapas e NÃO afeta os cards.
-     - O carregamento das questões (etapa 5) é assíncrono
+     - A verificação de conteúdo (etapa 5) é assíncrona
        e não bloqueia nada. Se o arquivo não existir, os
-       cards continuam visíveis e funcionais.
+       cards ficam com disc-card--vazio mas permanecem no DOM.
      - Não há nenhuma condição que possa resultar em
-       display:none, visibility:hidden, opacity:0 ou
-       remoção de qualquer card do DOM.
+       display:none, visibility:hidden ou remoção de
+       qualquer card do DOM.
    ============================================================ */
 
 /* ──────────────────────────────────────────────────────────
@@ -46,6 +48,7 @@ import {
   installAudioRecovery,
   playSound,
 } from '../../shared/js/audio/audio-api.js';
+import { SEMESTRES, parseSemestre } from '../../src/global.js';
 
 
 /* ──────────────────────────────────────────────────────────
@@ -248,3 +251,234 @@ document.addEventListener('DOMContentLoaded', function _onDomReady() {
   } catch (e) { /* ignora */ }
 
 });
+
+/* ──────────────────────────────────────────────────────────
+   ETAPA 5 — Verificar disponibilidade de conteúdo por modo
+   ────────────────────────────────────────────────────────────
+   LÓGICA:
+     Um card só é desabilitado se NENHUM semestre de SEMESTRES[]
+     (importado do global.js) tiver questões para aquele modo.
+     Isso garante que a verificação funcione independente de
+     ?sem= estar ou não na URL.
+
+   ALGORITMO:
+     1. Para cada semestre de SEMESTRES[], monta o caminho do
+        ques_<discId>.js usando parseSemestre() (mesma função
+        usada pelo template_init e pelo engine).
+     2. Dispara todos os <script> em paralelo.
+     3. Cada onload registra quais modos têm questões num mapa
+        compartilhado (modosComConteudo).
+     4. Quando todos responderem (onload ou onerror), desabilita
+        apenas os modos que nenhum semestre supriu.
+
+   FONTE DA VERDADE:
+     SEMESTRES[] e parseSemestre() vêm de src/global.js —
+     mesma fonte usada pelo template_init.js e pelo quiz_engine.
+     Não há lista duplicada aqui. Ao adicionar um semestre no
+     global.js, a verificação passa a incluí-lo automaticamente.
+
+   GARANTIAS:
+     - Cards NUNCA são removidos do DOM.
+     - disc-card--vazio apenas reduz opacidade e bloqueia
+       pointer-events (ver disciplinas_global.css).
+     - Se todos os scripts falharem (sem internet, discId errado),
+       nenhum card é desabilitado — preferimos falso-positivo
+       (card habilitado sem conteúdo) a ocultar conteúdo válido.
+   ────────────────────────────────────────────────────────── */
+(function _verificarConteudo() {
+  try {
+    /* ── utilidade de log ── */
+    var TAG = '[CHECK:' + _discId + ']';
+    function _log() {
+      var args = Array.prototype.slice.call(arguments);
+      args.unshift(TAG);
+      console.log.apply(console, args);
+    }
+
+    if (!_discId || _discId === 'desconhecida') {
+      _log('abortado — _discId inválido:', JSON.stringify(_discId));
+      return;
+    }
+    if (!Array.isArray(SEMESTRES) || SEMESTRES.length === 0) {
+      _log('abortado — SEMESTRES vazio ou não é array:', SEMESTRES);
+      return;
+    }
+
+    _log('iniciando verificação');
+    _log('SEMESTRES =', JSON.stringify(SEMESTRES));
+
+    var _base = new URL('../../', import.meta.url).href.replace(/\/$/, '');
+    _log('_base =', _base);
+
+    /* Mapa: data-modo do card → chave em window.questoes */
+    var MODO_KEY = { ava: 'ava', questoes: 'questoes', enade: 'enade', fixacao: 'fixacao' };
+
+    /* modos que encontraram pelo menos um semestre com questões */
+    var modosComConteudo = {};
+
+    var total      = SEMESTRES.length;
+    var resolvidos = 0;
+
+    _log('total de semestres a verificar =', total);
+
+    function _onTodosResolvidos() {
+      _log('─── RESULTADO FINAL ───────────────────────────');
+      _log('acumulado modosComConteudo =', JSON.stringify(modosComConteudo));
+      try {
+        document.querySelectorAll('.disc-card[data-modo]').forEach(function (card) {
+          var key = MODO_KEY[card.dataset.modo];
+          if (!key) {
+            _log('[FINAL] card data-modo="' + card.dataset.modo + '" — sem mapeamento em MODO_KEY, ignorado');
+            return;
+          }
+          var habilitado = !!modosComConteudo[key];
+          _log('[FINAL] modo=' + card.dataset.modo + ' → ' + (habilitado ? 'ENABLED' : 'DISABLED (disc-card--vazio)'));
+          if (!habilitado) {
+            card.classList.add('disc-card--vazio');
+            card.setAttribute('aria-disabled', 'true');
+            card.setAttribute('tabindex', '-1');
+          }
+        });
+      } catch (e) {
+        console.warn('[disciplinas_init] Erro ao aplicar estado dos cards:', e.message);
+      }
+    }
+
+    function _tick() {
+      resolvidos += 1;
+      _log('tick: resolvidos=' + resolvidos + '/' + total);
+      if (resolvidos >= total) _onTodosResolvidos();
+    }
+
+    /*
+       CORREÇÃO DE CONDIÇÃO DE CORRIDA:
+         Os scripts são carregados em série, não em paralelo.
+         Motivo: cada ques_*.js sobrescreve window.questoes.
+         Se dois scripts carregam em paralelo, o onload do
+         primeiro pode ler window.questoes já sobrescrito pelo
+         segundo — capturando dados errados ou misturados.
+         Carregando em série, cada onload lê o window.questoes
+         exato do script que acabou de executar.
+    */
+    var _fila = SEMESTRES.slice(); /* cópia para não mutar o array importado */
+
+    function _proximoScript() {
+      if (_fila.length === 0) {
+        _log('fila vazia — nenhum script pendente');
+        return;
+      }
+      var semStr = _fila.shift();
+      _log('─── semestre=' + semStr + ' ──────────────────────────');
+      try {
+        var parsed = parseSemestre(semStr);
+        _log('parseSemestre =', JSON.stringify(parsed));
+
+        var src = parsed.ap
+          ? _base + '/content/quiz/' + parsed.ano + '/' + parsed.periodo + '/' + parsed.ap + '/ques_' + _discId + '.js'
+          : _base + '/content/quiz/' + parsed.ano + '/' + parsed.periodo + '/ques_' + _discId + '.js';
+
+        _log('src =', src);
+
+        var s = document.createElement('script');
+        s.src = src;
+
+        s.onload = function () {
+          _log('loaded=true  src=' + src);
+          try {
+            var q = window.questoes;
+
+            /* ── DIAGNÓSTICO COMPLETO ── */
+            _log('── DIAGNÓSTICO window.questoes ─────────────────');
+            _log('typeof window.questoes =', typeof q);
+            _log('window.questoes (valor completo):');
+            console.log(q);
+
+            if (q === null) {
+              _log('window.questoes é null');
+            } else if (q === undefined) {
+              _log('window.questoes é undefined');
+            } else if (typeof q !== 'object') {
+              _log('window.questoes NÃO é um objeto — typeof:', typeof q, '— valor:', q);
+            } else {
+              try {
+                _log('Object.keys(window.questoes) =', JSON.stringify(Object.keys(q)));
+              } catch (ek) {
+                _log('Object.keys falhou:', ek.message);
+              }
+
+              /* Diagnóstico por modo */
+              var MODOS_DIAG = ['ava', 'questoes', 'fixacao', 'enade'];
+              MODOS_DIAG.forEach(function (chave) {
+                var existe = Object.prototype.hasOwnProperty.call(q, chave);
+                var val    = q[chave];
+                var isArr  = Array.isArray(val);
+                var tp     = val === null ? 'null' : val === undefined ? 'undefined' : typeof val;
+                var len    = isArr ? val.length : (tp === 'object' && val !== null ? '(object, não array)' : 'N/A');
+
+                _log(
+                  chave + ':' +
+                  '  existe=' + existe +
+                  '  typeof=' + tp +
+                  '  Array.isArray=' + isArr +
+                  '  length=' + len
+                );
+
+                /* Mostra o valor completo se não for array ou for vazio */
+                if (!isArr || val.length === 0) {
+                  _log(chave + ' valor completo:');
+                  console.log(val);
+                } else {
+                  _log(chave + ' é array com ' + val.length + ' elementos ✓');
+                }
+              });
+            }
+            _log('── FIM DO DIAGNÓSTICO ──────────────────────────');
+
+            if (!q || typeof q !== 'object') {
+              _log('window.questoes inválido — nenhum modo atualizado');
+            } else {
+              Object.keys(MODO_KEY).forEach(function (modo) {
+                var chave = MODO_KEY[modo];
+                var arr   = q[chave];
+                var len   = Array.isArray(arr) ? arr.length : -1;
+                _log(
+                  'modo=' + modo +
+                  '  chave=' + chave +
+                  '  Array.isArray=' + Array.isArray(arr) +
+                  '  length=' + len +
+                  (len > 0 ? '  ✓ tem conteúdo' : '  ✗ vazio/ausente')
+                );
+                if (Array.isArray(arr) && arr.length > 0) {
+                  modosComConteudo[chave] = true;
+                }
+              });
+            }
+          } catch (e) {
+            _log('ERRO ao ler window.questoes:', e.message);
+          }
+          _log('acumulado após semestre=' + semStr + ':', JSON.stringify(modosComConteudo));
+          _tick();
+          _proximoScript();
+        };
+
+        s.onerror = function () {
+          _log('loaded=false (404 ou erro de rede)  src=' + src);
+          _tick();
+          _proximoScript();
+        };
+
+        document.body.appendChild(s);
+      } catch (e) {
+        _log('EXCEÇÃO ao montar script para semestre=' + semStr + ':', e.message);
+        _tick();
+        _proximoScript();
+      }
+    }
+
+    _proximoScript(); /* inicia a fila */
+
+  } catch (e) {
+    console.warn('[disciplinas_init] _verificarConteudo falhou:', e.message);
+    /* Falha total: não desabilita nada — preferimos cards habilitados. */
+  }
+}());

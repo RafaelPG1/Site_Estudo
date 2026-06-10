@@ -1446,7 +1446,8 @@ window.questoes = {
       feedback: "Correto: A. As afirmativas I e IV são corretas. A II está **errada**: centralizar lógica de negócio e persistência no Controller viola o ==danger==princípio da Responsabilidade Única==. A III também está errada: `@FXML` não elimina a referência no FXML — pelo contrário, depende do `fx:id` declarado lá para fazer a injeção."
     }
 
-  ]
+  ],
 
+  ava: []
 
 };
