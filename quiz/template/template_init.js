@@ -246,11 +246,16 @@ if (usuario?.uid) {
 
 Promise.all([
   _loadScript(contentSrc).catch(() => {
-    const c = document.getElementById('quiz-container');
-    if (c) c.innerHTML =
-      `<div style="padding:2rem;text-align:center;color:#f87171;">` +
-      `⚠️ Arquivo não encontrado: ${ano}/${semestre}/${info.arquivo}.js</div>`;
-    return Promise.reject('content-not-found');
+    /* Conteúdo ausente não é erro fatal — fornece estrutura vazia
+       para que o engine carregue normalmente e exiba
+       "Nenhum conteúdo disponível" por conta própria. */
+    console.warn('[template_init] Arquivo de conteúdo não encontrado:', contentSrc);
+    window.questoes = window.questoes || {
+      ava:      [],
+      questoes: [],
+      fixacao:  [],
+      enade:    [],
+    };
   }),
   _loadScript(uiSrc),
 ])
@@ -260,7 +265,7 @@ Promise.all([
   document.body.appendChild(engine);
 })
 .catch(err => {
-  if (err !== 'content-not-found') console.error('[template_init] Falha:', err);
+  console.error('[template_init] Falha ao carregar UI do quiz:', err);
 });
 
 propagarSemNosLinks(semestre, ['.header__logo[href*="quiz.html"]']);

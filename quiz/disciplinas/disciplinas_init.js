@@ -46,7 +46,7 @@ import {
   installAudioRecovery,
   playSound,
 } from '../../shared/js/audio/audio-api.js';
-import { parseSemestre } from '../../src/global.js';
+
 
 /* ──────────────────────────────────────────────────────────
    ASSISTENTE NEXUS (carregamento em background, sem impacto)
@@ -197,44 +197,7 @@ try {
   }
 } catch (e) { /* ignora */ }
 
-/* ──────────────────────────────────────────────────────────
-   ETAPA 3 — Carregamento de questões (background, opcional)
-   ────────────────────────────────────────────────────────────
-   COMPLETAMENTE OPCIONAL.
-   Os cards já estão visíveis. Este bloco só serve para
-   disponibilizar window.questoes para uso futuro
-   (contadores de questões, etc.).
-   Nenhuma falha aqui afeta os cards.
-   ────────────────────────────────────────────────────────── */
-(function _carregarQuestoes() {
-  if (!_sem || !_discId || _discId === 'desconhecida') return;
 
-  try {
-    var parsed  = parseSemestre(_sem);
-    var ano     = parsed.ano;
-    var periodo = parsed.periodo;
-    var ap      = parsed.ap;
-    var base    = '../../../content/quiz/' + ano + '/' + periodo;
-    var src     = ap
-      ? base + '/' + ap + '/ques_' + _discId + '.js'
-      : base + '/ques_' + _discId + '.js';
-
-    var s    = document.createElement('script');
-    s.src    = src + '?v=' + Date.now();
-    s.async  = true; /* nunca bloqueia o parser */
-    s.onload = function () {
-      console.info('[disciplinas_init] Questões carregadas:', src);
-    };
-    s.onerror = function () {
-      console.info('[disciplinas_init] Arquivo de questões não encontrado (normal se não houver):', src);
-      /* Cards continuam visíveis — nenhuma ação necessária */
-    };
-    document.head.appendChild(s);
-  } catch (e) {
-    console.warn('[disciplinas_init] Erro ao montar caminho das questões:', e.message);
-    /* Cards continuam visíveis */
-  }
-}());
 
 /* ──────────────────────────────────────────────────────────
    ETAPA 4 — Áudio, logo e eventos de hover/click nos cards
