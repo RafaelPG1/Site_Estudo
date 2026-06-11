@@ -101,7 +101,6 @@ export function installAudioRecovery({ Sound, audio }) {
   ────────────────────────────────────────────────────────── */
 window.addEventListener('pageshow', async (e) => {
   if (!e.persisted) return;
-  console.log('[audio-recovery] pageshow persisted — reinit');
   Sound.reinit();
   const ok = await _tryResume(audio);
   if (ok) {
@@ -125,7 +124,6 @@ function _resumeMusicAfterRestore() {
   ────────────────────────────────────────────────────────── */
   document.addEventListener('visibilitychange', async () => {
     if (document.hidden) return;
-    console.log('[audio-recovery] visibilitychange visible — tentando resume');
     const ok = await _tryResume(audio);
     if (!ok) _installHoverFallback(audio);
   });
@@ -134,7 +132,6 @@ function _resumeMusicAfterRestore() {
      Captura history.back() / history.forward() sem bfcache.
   ────────────────────────────────────────────────────────── */
   window.addEventListener('popstate', async () => {
-    console.log('[audio-recovery] popstate — tentando resume');
     const ok = await _tryResume(audio);
     if (!ok) _installHoverFallback(audio);
   });
@@ -144,7 +141,6 @@ function _resumeMusicAfterRestore() {
   ────────────────────────────────────────────────────────── */
   window.addEventListener('focus', async () => {
     if (audio.isUnlocked()) return;
-    console.log('[audio-recovery] window focus — tentando resume');
     const ok = await _tryResume(audio);
     if (!ok) _installHoverFallback(audio);
   });
@@ -178,7 +174,6 @@ function _installHoverFallback(audio) {
   if (audio.isUnlocked())      return;
 
   _hoverFallbackInstalled = true;
-  console.log('[audio-recovery] hover fallback instalado');
 
   async function _onMove() {
     if (audio.isUnlocked()) {
@@ -189,7 +184,6 @@ function _installHoverFallback(audio) {
     // _tryResume tem throttle interno — chamadas em excesso são no-ops baratos
     const ok = await _tryResume(audio);
     if (ok) {
-      console.log('[audio-recovery] ctx resumido via pointermove');
       _cleanup();
     }
   }

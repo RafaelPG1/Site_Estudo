@@ -131,11 +131,6 @@ let _currentSfxAreaMap = {};
 
 let _sfxReady = true;
 _perf.sfxReadyInitial = performance.now();
-console.log('[DIAG:audio-state] módulo carregado', {
-  '_sfxReady inicial': _sfxReady,
-  '_currentMode': 'normal (default)',
-  'timestamp': Date.now(),
-});
 
 let _readyResolve;
 let _readyPromise = new Promise(res => { _readyResolve = res; });
@@ -412,13 +407,6 @@ document.addEventListener('nexus:loginSuccess', async ({ detail }) => {
   // O estado do usuário (LOW, MUTE) deve ser PRESERVADO durante o carregamento do Firebase.
   // Se o usuário estava em LOW antes do login, o áudio continua em LOW enquanto o Firebase
   // carrega. _applyLoadedState() aplicará o estado correto quando o Firebase responder.
-  console.log('[DIAG:audio-state] nexus:loginSuccess → aguardando Firebase (estado preservado)', {
-    uid, token,
-    '_currentMode (preservado)': _currentMode,
-    '_currentMusicMode (preservado)': _currentMusicMode,
-    'timestamp': Date.now(),
-  });
-
   _sfxReady = false;
   _resetReadyPromise();
 
@@ -456,13 +444,6 @@ document.addEventListener('nexus:loginSuccess', async ({ detail }) => {
 
   _sfxReady = true;
   _perf.sfxReadyTrue = performance.now();
-  console.log('[DIAG:audio-state] nexus:loginSuccess → _sfxReady = true (Firebase carregado)', {
-    '_currentMode': _currentMode,
-    '_currentMusicMode': _currentMusicMode,
-    '_currentSfxMap': { ..._currentSfxMap },
-    '_sfxQueue restante': _sfxQueue.length,
-    'timestamp': Date.now(),
-  });
   _readyResolve();
   _perf.flushQueue = performance.now();
   _flushSfxQueue();
