@@ -362,6 +362,20 @@ function _applyLoadedState(saved) {
   // Aplica SFX volume diretamente (sem tocar no music — botão de música cuida disso)
   audio.setSfxVolume?.(_volumes.sfx);
 
+  // Restaura visibilidade dos botões flutuantes (SFX / Música) se o Firebase tiver os valores.
+  // Sem isso, navegar entre páginas resetava os flags para o default (musicBtnEnabled=false)
+  // porque o loginSuccess bootstrap reconstruía o estado sem esses campos.
+  if (typeof saved.sfxBtnEnabled === 'boolean') {
+    _sfxBtnEnabled = saved.sfxBtnEnabled;
+    try { localStorage.setItem('nexus_sfx_btn_enabled', String(_sfxBtnEnabled)); } catch { /* noop */ }
+    _notifySfxBtnEnabled();
+  }
+  if (typeof saved.musicBtnEnabled === 'boolean') {
+    _musicBtnEnabled = saved.musicBtnEnabled;
+    try { localStorage.setItem('nexus_music_btn_enabled', String(_musicBtnEnabled)); } catch { /* noop */ }
+    _notifyMusicBtnEnabled();
+  }
+
   // Aplica o modo SFX (master + mute/unmute) mas NÃO sobrescreve music
   _applyToEngine(_currentMode);
   _notify();
@@ -381,19 +395,23 @@ async function _fetchFromFirebase(uid) {
     const savedSfxMap  = configs?.sfxMap     ?? null;
     const savedAreaMap = configs?.sfxAreaMap ?? null;
     const savedVolumes = configs?.volumes    ?? null;
+    const savedSfxBtnEnabled   = typeof configs?.sfxBtnEnabled   === 'boolean' ? configs.sfxBtnEnabled   : null;
+    const savedMusicBtnEnabled = typeof configs?.musicBtnEnabled === 'boolean' ? configs.musicBtnEnabled : null;
 
     _dbg('_fetchFromFirebase: uid="' + uid + '" sfxMap=', savedSfxMap, 'sfxAreaMap=', savedAreaMap);
 
     return {
-      mode:      VALID_MODES.includes(saved) ? saved : null,
-      musicMode: VALID_MUSIC_MODES.includes(savedMusicMode) ? savedMusicMode : null,
-      sfxMap:    savedSfxMap  && typeof savedSfxMap  === 'object' ? savedSfxMap  : null,
-      areaMap:   savedAreaMap && typeof savedAreaMap === 'object' ? savedAreaMap : null,
-      volumes:   savedVolumes && typeof savedVolumes === 'object' ? savedVolumes : null,
+      mode:            VALID_MODES.includes(saved) ? saved : null,
+      musicMode:       VALID_MUSIC_MODES.includes(savedMusicMode) ? savedMusicMode : null,
+      sfxMap:          savedSfxMap  && typeof savedSfxMap  === 'object' ? savedSfxMap  : null,
+      areaMap:         savedAreaMap && typeof savedAreaMap === 'object' ? savedAreaMap : null,
+      volumes:         savedVolumes && typeof savedVolumes === 'object' ? savedVolumes : null,
+      sfxBtnEnabled:   savedSfxBtnEnabled,
+      musicBtnEnabled: savedMusicBtnEnabled,
     };
   } catch (err) {
     _dbg('Erro ao carregar Firebase:', err);
-    return { mode: null, sfxMap: null, areaMap: null };
+    return { mode: null, sfxMap: null, areaMap: null, sfxBtnEnabled: null, musicBtnEnabled: null };
   }
 }
 
@@ -401,23 +419,25 @@ async function _persistAllToFirebaseNow() {
   if (!_currentUid) return;
   const uid = _currentUid;
 
-  const modeSnap      = _currentMode;
-  const musicModeSnap = _currentMusicMode;
-  const sfxSnap  = { ..._currentSfxMap };
-  const areaSnap = {};
+  const modeSnap           = _currentMode;
+  const musicModeSnap      = _currentMusicMode;
+  const sfxSnap            = { ..._currentSfxMap };
+  const areaSnap           = {};
   for (const [k, v] of Object.entries(_currentSfxAreaMap)) areaSnap[k] = { ...v };
-  const volSnap  = { ..._volumes };
+  const volSnap            = { ..._volumes };
+  const sfxBtnEnabledSnap  = _sfxBtnEnabled;
+  const musicBtnEnabledSnap = _musicBtnEnabled;
 
   try {
     const { getConfigs } = await import('../../../../src/global.js');
     const configsAtuais  = getConfigs();
-    const { audioState: _d1, sfxMap: _d2, sfxAreaMap: _d3, volumes: _d4, musicMode: _d5, ...restConfigs } = configsAtuais;
-    const payload = { ...restConfigs, audioState: modeSnap, musicMode: musicModeSnap, sfxMap: sfxSnap, sfxAreaMap: areaSnap, volumes: volSnap };
-    _dbg('persistindo →', modeSnap, musicModeSnap, volSnap);
+    const { audioState: _d1, sfxMap: _d2, sfxAreaMap: _d3, volumes: _d4, musicMode: _d5, sfxBtnEnabled: _d6, musicBtnEnabled: _d7, ...restConfigs } = configsAtuais;
+    const payload = { ...restConfigs, audioState: modeSnap, musicMode: musicModeSnap, sfxMap: sfxSnap, sfxAreaMap: areaSnap, volumes: volSnap, sfxBtnEnabled: sfxBtnEnabledSnap, musicBtnEnabled: musicBtnEnabledSnap };
+    _dbg('persistindo →', modeSnap, musicModeSnap, volSnap, 'sfxBtn:', sfxBtnEnabledSnap, 'musicBtn:', musicBtnEnabledSnap);
     await salvarConfigs(uid, payload);
   } catch (_) {
     try {
-      await salvarConfigs(uid, { audioState: modeSnap, musicMode: musicModeSnap, sfxMap: sfxSnap, sfxAreaMap: areaSnap, volumes: volSnap });
+      await salvarConfigs(uid, { audioState: modeSnap, musicMode: musicModeSnap, sfxMap: sfxSnap, sfxAreaMap: areaSnap, volumes: volSnap, sfxBtnEnabled: sfxBtnEnabledSnap, musicBtnEnabled: musicBtnEnabledSnap });
     } catch (err) {
       _dbg('Erro ao salvar Firebase:', err);
     }
@@ -459,13 +479,17 @@ document.addEventListener('nexus:loginSuccess', async ({ detail }) => {
     const savedSfxMap    = c?.sfxMap      ?? null;
     const savedAreaMap   = c?.sfxAreaMap  ?? null;
     const savedVolumes   = c?.volumes     ?? null;
+    const savedSfxBtnEnabled   = typeof c?.sfxBtnEnabled   === 'boolean' ? c.sfxBtnEnabled   : null;
+    const savedMusicBtnEnabled = typeof c?.musicBtnEnabled === 'boolean' ? c.musicBtnEnabled : null;
     _dbg('loginSuccess: usando configs do detail (sem round-trip Firebase)', { savedMode, savedSfxMap });
     saved = {
-      mode:      VALID_MODES.includes(savedMode) ? savedMode : null,
-      musicMode: VALID_MUSIC_MODES.includes(savedMusicMode) ? savedMusicMode : null,
-      sfxMap:    savedSfxMap  && typeof savedSfxMap  === 'object' ? savedSfxMap  : null,
-      areaMap:   savedAreaMap && typeof savedAreaMap === 'object' ? savedAreaMap : null,
-      volumes:   savedVolumes && typeof savedVolumes === 'object' ? savedVolumes : null,
+      mode:            VALID_MODES.includes(savedMode) ? savedMode : null,
+      musicMode:       VALID_MUSIC_MODES.includes(savedMusicMode) ? savedMusicMode : null,
+      sfxMap:          savedSfxMap  && typeof savedSfxMap  === 'object' ? savedSfxMap  : null,
+      areaMap:         savedAreaMap && typeof savedAreaMap === 'object' ? savedAreaMap : null,
+      volumes:         savedVolumes && typeof savedVolumes === 'object' ? savedVolumes : null,
+      sfxBtnEnabled:   savedSfxBtnEnabled,
+      musicBtnEnabled: savedMusicBtnEnabled,
     };
   } else {
     _dbg('loginSuccess: detail sem configs, fazendo _fetchFromFirebase (fallback)');
@@ -725,11 +749,13 @@ setMode(modeId) {
     const areaSnap = {};
     for (const [k, v] of Object.entries(_currentSfxAreaMap)) areaSnap[k] = { ...v };
     return {
-      audioState: _currentMode,
-      musicMode:  _currentMusicMode,
-      sfxMap:     { ..._currentSfxMap },
-      sfxAreaMap: areaSnap,
-      volumes:    { ..._volumes },
+      audioState:      _currentMode,
+      musicMode:       _currentMusicMode,
+      sfxMap:          { ..._currentSfxMap },
+      sfxAreaMap:      areaSnap,
+      volumes:         { ..._volumes },
+      sfxBtnEnabled:   _sfxBtnEnabled,
+      musicBtnEnabled: _musicBtnEnabled,
     };
   },
 

@@ -63,23 +63,36 @@ window.__nexusState = State;
 
 function _loadScript(src) {
   return new Promise((resolve, reject) => {
+    // Verifica se já foi carregado (evita duplicatas em hot-reload)
+    if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
     const s = document.createElement('script');
     s.src = src;
     s.onload = resolve;
     s.onerror = () => reject(new Error(`[Nexus IA] Falha ao carregar: ${src}`));
-    document.body.appendChild(s);
+    // Usa document.head: sempre disponível, mesmo antes do <body> ser parseado.
+    // document.body pode ainda não existir quando _carregarIA() executa no
+    // topo do módulo (antes do DOMContentLoaded).
+    (document.head ?? document.documentElement).appendChild(s);
   });
 }
 
 function _carregarIA() {
+  // Todos os 5 scripts são baixados em paralelo; ia.js só executa
+  // depois que as 4 deps terminaram — mas o download já ocorreu.
+  // Os <link rel="modulepreload"> no <head> adiantam ainda mais:
+  // o browser inicia o fetch antes mesmo deste código rodar.
   const deps = [
     '../shared/js/ia/ia-ui.js',
     '../shared/js/ia/ia-search.js',
     '../shared/js/ia/ia-loader.js',
     '../shared/js/ia/ia-worker.js',
   ];
-  Promise.all(deps.map(_loadScript))
-    .then(() => _loadScript('../shared/js/ia/ia.js'))
+
+  const depPromises = deps.map(_loadScript);
+  const iaPromise   = _loadScript('../shared/js/ia/ia.js'); // download inicia já
+
+  Promise.all(depPromises)
+    .then(() => iaPromise)            // execução de ia.js aguarda as deps
     .catch(err => console.error(err));
 }
 

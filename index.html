@@ -175,6 +175,20 @@
   </footer>
 
   <!-- ═══════════════════════════════════════════
+       PRÉ-CARREGAMENTO — Scripts da IA
+       Informa ao browser para baixar esses arquivos
+       imediatamente, em paralelo com o resto da página,
+       sem bloquear a renderização. Elimina o double
+       waterfall causado pelo carregamento dinâmico em
+       _carregarIA() (Promise.all → then → ia.js).
+  ═══════════════════════════════════════════ -->
+  <link rel="preload" href="shared/js/ia/ia-ui.js"     as="script" />
+  <link rel="preload" href="shared/js/ia/ia-search.js" as="script" />
+  <link rel="preload" href="shared/js/ia/ia-loader.js" as="script" />
+  <link rel="preload" href="shared/js/ia/ia-worker.js" as="script" />
+  <link rel="preload" href="shared/js/ia/ia.js"        as="script" />
+
+  <!-- ═══════════════════════════════════════════
        SCRIPTS
   ═══════════════════════════════════════════ -->
   <script type="module" src="index.js"></script>

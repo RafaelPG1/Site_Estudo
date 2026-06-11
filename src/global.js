@@ -76,8 +76,7 @@ function _normalizarSemestre(s) {
 
 
 export const SEMESTRES = [
-  '2026.2-AP2',
-  '2026.2-AP1',
+
   '2026.1-AP2',
   '2026.1-AP1'
 ];
@@ -299,7 +298,7 @@ export function getConfigs() { return { ..._estado.configs }; }
 export function hydrateConfigs(novas) {
   _estado.configs = { ..._estado.configs, ...novas };
   Storage.set('configs', _estado.configs);
-  _aplicarConfigs(_estado.configs);
+  _aplicarConfigs(_estado.configs, { syncAudio: true });
 }
 
 /**
@@ -309,11 +308,11 @@ export function hydrateConfigs(novas) {
 export function setConfigs(novas) {
   _estado.configs = { ..._estado.configs, ...novas };
   Storage.set('configs', _estado.configs);
-  _aplicarConfigs(_estado.configs);
+  _aplicarConfigs(_estado.configs, { syncAudio: true });
 
   const u = _estado.usuario;
   if (u?.uid) {
-    const { audioState: _d1, sfxMap: _d2, sfxAreaMap: _d3, ...restConfigs } = _estado.configs;
+    const { audioState: _d1, sfxMap: _d2, sfxAreaMap: _d3, sfxBtnEnabled: _d4, musicBtnEnabled: _d5, ...restConfigs } = _estado.configs;
 
     _getAudioState().then(as => {
       const audioPayload = as?.getAudioPayload?.() ?? {};
@@ -336,7 +335,7 @@ export function resetConfigs() {
   _aplicarConfigs(_estado.configs);
 }
 
-function _aplicarConfigs(cfg) {
+function _aplicarConfigs(cfg, { syncAudio = false } = {}) {
   document.documentElement.dataset.tema = cfg.tema ?? 'dark';
   if (!cfg.animacoes) {
     document.documentElement.classList.add('sem-animacoes');
@@ -346,23 +345,26 @@ function _aplicarConfigs(cfg) {
 
   // ── Botões flutuantes de áudio (Efeitos / Música) ──────────
   // Sincroniza os toggles "Efeitos sonoros" e "Música de fundo"
-  // (configs gerais, sincronizadas via Firebase) com o
-  // audio-state.js, que controla a visibilidade dos botões
-  // flutuantes e o mute dos canais correspondentes.
+  // SOMENTE quando syncAudio=true (mudança intencional do usuário via
+  // setConfigs ou hydrateConfigs pós-Firebase).
   //
-  // Importação lazy evita ciclo de módulos (audio-state.js não
-  // importa global.js, mas o bundler pode reordenar). Se o campo
-  // não existir na config (usuário antigo sem o campo salvo),
-  // mantém o que já estiver em audio-state (default: ativado).
-  _getAudioState().then(as => {
-    if (!as) return;
-    if (typeof cfg.sfxBtnEnabled === 'boolean') {
-      as.setSfxBtnEnabled(cfg.sfxBtnEnabled);
-    }
-    if (typeof cfg.musicBtnEnabled === 'boolean') {
-      as.setMusicBtnEnabled(cfg.musicBtnEnabled);
-    }
-  }).catch(() => { /* audio-state ainda não disponível — ignora */ });
+  // NÃO sincroniza na inicialização do módulo (_aplicarConfigs chamado
+  // com syncAudio=false, o padrão), porque nesse momento os valores em
+  // localStorage podem ser o default (musicBtnEnabled=false) e ainda não
+  // refletem o que está no Firebase. Sincronizar aqui causaria:
+  //   1. setMusicBtnEnabled(false) → _persistAllToFirebase() → sobrescreve Firebase com false
+  //   2. Ao navegar → lê Firebase → false → botão some
+  if (syncAudio) {
+    _getAudioState().then(as => {
+      if (!as) return;
+      if (typeof cfg.sfxBtnEnabled === 'boolean') {
+        as.setSfxBtnEnabled(cfg.sfxBtnEnabled);
+      }
+      if (typeof cfg.musicBtnEnabled === 'boolean') {
+        as.setMusicBtnEnabled(cfg.musicBtnEnabled);
+      }
+    }).catch(() => { /* audio-state ainda não disponível — ignora */ });
+  }
 }
 
 /* ── Aplica configs salvas na inicialização ── */

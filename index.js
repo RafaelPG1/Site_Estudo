@@ -726,6 +726,8 @@ function _abrirModalConfig() {
       notificacoes:           document.getElementById('cfg-notif').checked,
       salvarProgressoParcial: document.getElementById('cfg-salvar-parcial').checked,
       salvarProgresso:        document.getElementById('cfg-salvar-progresso').checked,
+      sfxBtnEnabled:          document.getElementById('cfg-sfx-enabled').checked,
+      musicBtnEnabled:        document.getElementById('cfg-music-enabled').checked,
     };
   }
 
@@ -739,11 +741,13 @@ function _abrirModalConfig() {
 
   document.getElementById('cfg-sfx-enabled').addEventListener('change', function () {
     setSfxBtnEnabled(this.checked);
+    setConfigs({ sfxBtnEnabled: this.checked });
     if (this.checked) playSound('click', 'inicial');
   });
 
   document.getElementById('cfg-music-enabled').addEventListener('change', function () {
     setMusicBtnEnabled(this.checked);
+    setConfigs({ musicBtnEnabled: this.checked });
     playSound('click', 'inicial');
   });
 
