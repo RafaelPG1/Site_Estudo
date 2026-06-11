@@ -1,5 +1,5 @@
 /* ============================================================
-   NEXUS STUDY — quiz/quiz_ui.js  (v2 — suporte semestre 2026.1)
+   NEXUS STUDY — quiz/quiz_ui.js  (v3 — QUIZ-ISOLATION)
    Utilitários de interface — sem estado do quiz
 
    ÍNDICE:
@@ -20,6 +20,12 @@
               Para adicionar outro semestre especial, siga o mesmo
               padrão: adicione a chave em _TIPOS_SEMESTRE_ESPECIAL
               e o semestre em _isSemestreEspecial().
+
+   v3 — QUIZ-ISOLATION:
+     _buildTiposEspecial() só acessa window.questoes quando o token
+     de sessão de quiz estiver válido (window.__NEXUS_QUIZ_TOKEN__
+     definido). Sem token: exibe mensagem de fallback e não expõe
+     nenhuma estrutura de questão para o modal.
    ============================================================ */
 
 (function () {
@@ -255,6 +261,16 @@ function _resolverMapaTipos(sem) {
 }
 
   /* ──────────────────────────────────────────────────────────
+     QUIZ-ISOLATION — guarda de token local
+     Cópia intencional — quiz_ui.js não depende de ia.js.
+     ────────────────────────────────────────────────────────── */
+  function _quizTokenValidoUI() {
+    var t = window.__NEXUS_QUIZ_TOKEN__;
+    if (!t || typeof t !== 'string') return false;
+    return window.__NEXUS_QUIZ_MODO__ !== undefined;
+  }
+
+  /* ──────────────────────────────────────────────────────────
      _buildTiposEspecial
      Lê window.questoes (já carregado antes deste script),
      extrai os tipos únicos na ordem de aparição e monta as
@@ -262,6 +278,17 @@ function _resolverMapaTipos(sem) {
      ────────────────────────────────────────────────────────── */
 function _buildTiposEspecial(listEl, sem, modo, _tipoRow, tipoMap) {
   tipoMap = tipoMap || _resolverMapaTipos(sem);
+
+    /* QUIZ-ISOLATION: só acessa window.questoes com token válido */
+    if (!_quizTokenValidoUI()) {
+      var aviso = document.createElement('div');
+      aviso.className   = 'nlg-enade-block';
+      aviso.style.cssText = 'opacity:0.6;';
+      aviso.textContent = 'Tipos não disponíveis fora do quiz.';
+      listEl.appendChild(aviso);
+      return;
+    }
+
     var conteudo  = window.questoes || {};
 
     /* Escolhe a lista certa conforme o modo ativo */

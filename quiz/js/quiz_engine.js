@@ -1,21 +1,35 @@
 /* ============================================================
-   NEXUS STUDY — quiz/quiz_engine.js  (v9)
+   NEXUS STUDY — quiz/quiz_engine.js  (v10 — QUIZ-ISOLATION)
    Lógica de estado do quiz — depende de quiz_ui.js
 
    ÍNDICE:
-     1. Contexto e configuração .... L.25
-     2. Expiração (20s) ............ L.55
-     3. Embaralhamento ............. L.100
-     4. Estado e restauração ....... L.140
-     5. Feedback e corpo ........... L.190
-     6. Resultado por aula ......... L.240
-     7. Renderização ............... L.295
-     8. Interação do usuário ....... L.385
-     9. Resultado global ........... L.455
-    10. Ver erros .................. L.490
-    11. Modo Step .................. L.560
-    12. Binds e boot ............... L.760
-    13. Filtro de aulas ............. (novo)
+     0. QUIZ-ISOLATION — guarda de token .... L.35
+     1. Contexto e configuração ........... L.95
+     2. Expiração (20s) ................... L.140
+     3. Embaralhamento ..................... L.190
+     4. Estado e restauração .............. L.240
+     5. Feedback e corpo .................. L.300
+     6. Resultado por aula ................ L.350
+     7. Renderização ...................... L.410
+     8. Interação do usuário .............. L.510
+     9. Resultado global .................. L.590
+    10. Ver erros ......................... L.640
+    11. Modo Step ......................... L.720
+    12. Binds e boot ...................... L.930
+    13. Filtro de aulas ................... L.980
+
+   v10 — QUIZ-ISOLATION:
+     + Guarda de token: initQuiz() só executa se
+       window.__NEXUS_QUIZ_TOKEN__ estiver definido
+       e window.__NEXUS_QUIZ_MODO__ corresponder ao
+       token autorizado por NexusSearch.
+     + Purge no unload: pagehide/beforeunload zeram
+       window.questoes e window.__NEXUS_QUESTOES_VISUAIS__
+       APÓS o template_init (que já revogou o token).
+       Garante que não haja rastro de questões no window
+       após a saída da página de quiz.
+     + window.questoes é lido mas nunca reexportado para
+       fora do escopo da IIFE.
 
    v9 — filtro de aulas:
      Novo botão na nav-float para o usuário escolher
@@ -39,10 +53,66 @@
   var renderCodeBlock   = window.QuizUI.renderCodeBlock;
 
   /* ══════════════════════════════════════════════════════════
+     0. QUIZ-ISOLATION — GUARDA DE TOKEN
+
+     Princípio: quiz_engine.js SÓ inicializa se o token de
+     sessão de quiz estiver presente e válido. Se alguém carregar
+     este script manualmente fora do template_init (sem token),
+     o initQuiz() retorna imediatamente sem renderizar nada.
+
+     Além disso, os listeners de pagehide/beforeunload garantem
+     que window.questoes e window.__NEXUS_QUESTOES_VISUAIS__
+     sejam zerados ao sair, fechando qualquer janela de acesso
+     via console ou scripts injetados após o unload.
+     ══════════════════════════════════════════════════════════ */
+
+  /**
+   * Retorna true se o token de quiz estiver ativo.
+   * Cópia local — não depende de ia.js nem ia-search.js.
+   *
+   * @returns {boolean}
+   */
+  function _quizTokenValido() {
+    var t = window.__NEXUS_QUIZ_TOKEN__;
+    if (!t || typeof t !== 'string') return false;
+    return window.__NEXUS_QUIZ_MODO__ !== undefined;
+  }
+
+  /**
+   * Purga todos os dados de quiz do window.
+   * Chamado em beforeunload / pagehide.
+   * template_init já revogou o token; este purge remove os dados.
+   */
+  function _purgarDadosQuiz() {
+    try { window.questoes = null;                    } catch (e) {}
+    try { window.__NEXUS_QUESTOES_VISUAIS__ = null;  } catch (e) {}
+    // __NEXUS_QUIZ_TOKEN__, __NEXUS_QUIZ_MODO__ etc.
+    // já foram removidos pelo template_init._revogarTokenQuiz()
+  }
+
+  window.addEventListener('beforeunload', _purgarDadosQuiz);
+  window.addEventListener('pagehide',     _purgarDadosQuiz);
+
+  /* ══════════════════════════════════════════════════════════
      INIT QUIZ
      ══════════════════════════════════════════════════════════ */
 
   function initQuiz() {
+
+    /* ── GUARDA DE TOKEN — bloqueia execução sem token válido ── */
+    if (!_quizTokenValido()) {
+      console.warn('[quiz_engine] initQuiz bloqueado: token de quiz não encontrado ou inválido.');
+      var container = document.getElementById('quiz-container');
+      if (container) {
+        container.innerHTML =
+          '<div style="padding:3rem 2rem;text-align:center;color:var(--text-2,#a8a49c);">' +
+          '<div style="font-size:2.5rem;margin-bottom:1rem;">🔒</div>' +
+          '<p style="font-size:1rem;margin-bottom:0.5rem;">Sessão de quiz expirada ou inválida.</p>' +
+          '<p style="font-size:0.85rem;opacity:0.6;">Recarregue a página para iniciar uma nova sessão.</p>' +
+          '</div>';
+      }
+      return;
+    }
 
     /* ── 1. CONTEXTO E CONFIGURAÇÃO ───────────────────────── */
 
@@ -224,12 +294,12 @@
     /* pagehide: cobre F5, fechar aba e navegação para outra página */
     window.addEventListener('pagehide', _registrarSaida);
 
-document.addEventListener('visibilitychange', function () {
-  if (document.hidden) {
-    _registrarSaida(); // continua gravando o timestamp ao sair
-  }
-  // Ao voltar: NÃO verifica aqui. A verificação acontece só no boot (pagehide → F5/renavegar)
-});
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) {
+        _registrarSaida(); // continua gravando o timestamp ao sair
+      }
+      // Ao voltar: NÃO verifica aqui. A verificação acontece só no boot (pagehide → F5/renavegar)
+    });
 
     /* ── Questões ─────────────────────────────────────────── */
 
@@ -581,59 +651,58 @@ document.addEventListener('visibilitychange', function () {
       var r   = _calcularResultadoAula(grupo.indices);
       var pct = r.total > 0 ? Math.round((r.respondidas / r.total) * 100) : 0;
 
-if (r.respondidas < r.total) {
-  /* ── Card de PROGRESSO ── */
-  el.className = 'subject-result subject-result--progress';
-  el.innerHTML =
-    '<div style="width:42px; height:42px; border-radius:12px; flex-shrink:0;' +
-    '            background:' + _AZUL_BG + '; border: 1px solid ' + _AZUL_ICON_BD + ';' +
-    '            display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow: inset 0 0 10px rgba(0,0,0,0.1);">' +
-    '  📋' +
-    '</div>' +
-    '<div style="flex:1; display:flex; flex-direction:column; gap:0.5rem;">' +
-    '  <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:' + _AZUL_EYEBROW + '; opacity:0.8;">' +
-    '    Progresso da aula' +
-    '  </div>' +
-    '  <div class="sr-progress-bar">' +
-    '    <div class="sr-progress-fill" style="width:' + pct + '%; background: linear-gradient(90deg, ' + _AZUL_BAR_FROM + ', ' + _AZUL_BAR_TO + '); height:100%;"></div>' +
-    '  </div>' +
-    '  <div style="font-size:0.75rem; color: #fff; opacity: 0.7;">' +
-    '    <strong>' + r.respondidas + '</strong> de ' + r.total + ' questões respondidas' +
-    '  </div>' +
-    '</div>' +
-    '<div style="text-align: right; min-width: 60px;">' +
-    '  <div style="font-size:1.5rem; font-weight:800; color:' + _AZUL_PCT + '; font-variant-numeric: tabular-nums;">' +
-    '    ' + pct + '<span style="font-size: 0.9rem; margin-left: 2px;">%</span>' +
-    '  </div>' +
-    '</div>';
+      if (r.respondidas < r.total) {
+        /* ── Card de PROGRESSO ── */
+        el.className = 'subject-result subject-result--progress';
+        el.innerHTML =
+          '<div style="width:42px; height:42px; border-radius:12px; flex-shrink:0;' +
+          '            background:' + _AZUL_BG + '; border: 1px solid ' + _AZUL_ICON_BD + ';' +
+          '            display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow: inset 0 0 10px rgba(0,0,0,0.1);">' +
+          '  📋' +
+          '</div>' +
+          '<div style="flex:1; display:flex; flex-direction:column; gap:0.5rem;">' +
+          '  <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:' + _AZUL_EYEBROW + '; opacity:0.8;">' +
+          '    Progresso da aula' +
+          '  </div>' +
+          '  <div class="sr-progress-bar">' +
+          '    <div class="sr-progress-fill" style="width:' + pct + '%; background: linear-gradient(90deg, ' + _AZUL_BAR_FROM + ', ' + _AZUL_BAR_TO + '); height:100%;"></div>' +
+          '  </div>' +
+          '  <div style="font-size:0.75rem; color: #fff; opacity: 0.7;">' +
+          '    <strong>' + r.respondidas + '</strong> de ' + r.total + ' questões respondidas' +
+          '  </div>' +
+          '</div>' +
+          '<div style="text-align: right; min-width: 60px;">' +
+          '  <div style="font-size:1.5rem; font-weight:800; color:' + _AZUL_PCT + '; font-variant-numeric: tabular-nums;">' +
+          '    ' + pct + '<span style="font-size: 0.9rem; margin-left: 2px;">%</span>' +
+          '  </div>' +
+          '</div>';
+      } else {
+        /* ── Card de RESULTADO (Concluído) ── */
+        var pctA       = r.total > 0 ? Math.round((r.acertos / r.total) * 100) : 0;
+        var successColor = pctA >= 70 ? '#4ADE80' : '#FACC15';
 
-} else {
-  /* ── Card de RESULTADO (Concluído) ── */
-  var pctA       = r.total > 0 ? Math.round((r.acertos / r.total) * 100) : 0;
-  var successColor = pctA >= 70 ? '#4ADE80' : '#FACC15';
-
-  el.className = 'subject-result subject-result--progress';
-  el.innerHTML =
-    '<div style="width:42px; height:42px; border-radius:12px; flex-shrink:0;' +
-    '            background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.2);' +
-    '            display:flex; align-items:center; justify-content:center; font-size:18px;">' +
-    '  🎯' +
-    '</div>' +
-    '<div style="flex:1; display:flex; flex-direction:column; gap:0.2rem;">' +
-    '  <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color: #4ADE80;">' +
-    '    Concluído' +
-    '  </div>' +
-    '  <div style="font-size:0.85rem; color: #fff;">' +
-    '    Você acertou <strong>' + r.acertos + '</strong> de ' + r.total +
-    '  </div>' +
-    '</div>' +
-    '<div style="text-align: right;">' +
-    '  <div style="font-size:1.75rem; font-weight:800; color: ' + successColor + ';">' +
-    '    ' + pctA + '%' +
-    '  </div>' +
-    '</div>';
-}
-}
+        el.className = 'subject-result subject-result--progress';
+        el.innerHTML =
+          '<div style="width:42px; height:42px; border-radius:12px; flex-shrink:0;' +
+          '            background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.2);' +
+          '            display:flex; align-items:center; justify-content:center; font-size:18px;">' +
+          '  🎯' +
+          '</div>' +
+          '<div style="flex:1; display:flex; flex-direction:column; gap:0.2rem;">' +
+          '  <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color: #4ADE80;">' +
+          '    Concluído' +
+          '  </div>' +
+          '  <div style="font-size:0.85rem; color: #fff;">' +
+          '    Você acertou <strong>' + r.acertos + '</strong> de ' + r.total +
+          '  </div>' +
+          '</div>' +
+          '<div style="text-align: right;">' +
+          '  <div style="font-size:1.75rem; font-weight:800; color: ' + successColor + ';">' +
+          '    ' + pctA + '%' +
+          '  </div>' +
+          '</div>';
+      }
+    }
 
     function _atualizarTodosResultadosAula() {
       aulaGrupos.forEach(function (_, gi) { _atualizarResultadoAula(gi); });
@@ -718,22 +787,22 @@ if (r.respondidas < r.total) {
         var isUltimoDoGrupo = !proxQ || aulaProx !== aulaAtual;
 
         if (isUltimoDoGrupo && aulaGrupos.length > 0) {
-        var gi = aulaGrupos.length - 1;
-        var resultEl = document.createElement('div');
-        resultEl.id        = 'aula-result-' + gi;
-        resultEl.className = 'subject-result subject-result--progress';
-        container.appendChild(resultEl);
-        if (!modoStep) _atualizarResultadoAula(gi);
-      }
+          var gi = aulaGrupos.length - 1;
+          var resultEl = document.createElement('div');
+          resultEl.id        = 'aula-result-' + gi;
+          resultEl.className = 'subject-result subject-result--progress';
+          container.appendChild(resultEl);
+          if (!modoStep) _atualizarResultadoAula(gi);
+        }
       });
 
       /* Fallback: lista vazia ou nenhum grupo criado */
       if (aulaGrupos.length === 0 && questoes.length > 0) {
         aulaGrupos.push({ aula: null, indices: questoes.map(function (_, i) { return i; }) });
-        var resultEl = document.createElement('div');
-        resultEl.id        = 'aula-result-0';
-        resultEl.className = 'subject-result subject-result--progress';
-        container.appendChild(resultEl);
+        var resultEl2 = document.createElement('div');
+        resultEl2.id        = 'aula-result-0';
+        resultEl2.className = 'subject-result subject-result--progress';
+        container.appendChild(resultEl2);
         if (!modoStep) _atualizarResultadoAula(0);
       }
 
@@ -775,17 +844,17 @@ if (r.respondidas < r.total) {
     /* ── 8. INTERAÇÃO DO USUÁRIO ──────────────────────────── */
 
     function selectOption(qi, oi) {
-  if (revelado || respostas[qi] !== undefined) return;
-  respostas[qi] = oi;
+      if (revelado || respostas[qi] !== undefined) return;
+      respostas[qi] = oi;
 
-  /* ── SOM DE ACERTO / ERRO ── */
-  var _playSound = window.__nexusPlaySound;
-  if (typeof _playSound === 'function') {
-    var acertou = oi === questoes[qi].answer;
-    _playSound(acertou ? 'correct' : 'wrong', 'quiz');
-  }
+      /* ── SOM DE ACERTO / ERRO ── */
+      var _playSound = window.__nexusPlaySound;
+      if (typeof _playSound === 'function') {
+        var acertou = oi === questoes[qi].answer;
+        _playSound(acertou ? 'correct' : 'wrong', 'quiz');
+      }
 
-  _atualizarOpcoes(qi);
+      _atualizarOpcoes(qi);
 
       var card = document.getElementById('q-' + qi);
       if (card && !card.querySelector('.feedback')) {
@@ -1468,7 +1537,6 @@ if (r.respondidas < r.total) {
     }
 
     _iniciarFiltroAulas();
-
 
     renderizar();
 

@@ -1,6 +1,5 @@
 /**
- * ASSISTENTE NEXUS — ia-worker.js
- * Módulo de integração com a IA externa.
+ * ASSISTENTE NEXUS — ia-worker.js  v3.0 (QUIZ-ISOLATION)
  *
  * Responsabilidades exclusivas:
  *   - Manter histórico curto da sessão (somente em memória)
@@ -9,6 +8,16 @@
  *   - Fallback em caso de falha
  *   - Converter markdown da resposta em texto formatado para NexusUI
  *
+ * PATCH QUIZ-ISOLATION:
+ *   _sanitizarResultados() — remove qualquer entrada cujo campo `secao`
+ *   seja 'Quiz' ou contenha '/feedback' quando o contexto de quiz não
+ *   estiver ativo (window.__NEXUS_QUIZ_TOKEN__ ausente).
+ *   Isso fecha o último vetor: mesmo que ia.js passasse resultados de
+ *   quiz por engano, o worker nunca os receberia sem o token.
+ *
+ *   _contextoQuizAtivo() — cópia local da verificação de token.
+ *   O worker não depende de ia.js para decidir o que filtrar.
+ *
  * NÃO:
  *   - Conhece disciplinas, semestres ou o índice de busca
  *   - Toca no DOM diretamente
@@ -16,8 +25,6 @@
  *   - Salva perguntas do usuário
  *
  * API pública: window.NexusWorker
- *
- * Dependências: nenhuma (pode ser carregado antes ou depois de ia.js).
  *
  * ── CONTRATO COM O WORKER ────────────────────────────────────
  * POST { pergunta, contexto, historico, disciplina, ehQuestao }
@@ -28,19 +35,6 @@
  * Somente texto limpo — sem role 'system', 'bot', metadados ou HTML.
  * Expira automaticamente após SESSION_TTL_MS de inatividade.
  * Reset explícito disponível via NexusWorker.limparHistorico().
- *
- * ── CHANGELOG ────────────────────────────────────────────────
- * FIX TUTOR — _serializarContexto() reescrito: contexto agora é
- *   emoldurado como "fatos de referência", não como "material de apoio".
- *   O frame anterior induzia o modelo a reformular os trechos.
- *   O novo frame instrui o modelo a usar os fatos como âncora factual
- *   enquanto formula a própria resposta de tutor.
- *
- * FIX TUTOR — modoExplicacao removido do payload. O worker v7.1
- *   não usa mais esse campo para selecionar system prompt. O modelo
- *   interpreta o estilo diretamente a partir da pergunta do usuário,
- *   o que produz respostas mais naturais e adaptadas.
- * ─────────────────────────────────────────────────────────────
  */
 
 (function () {
@@ -48,46 +42,74 @@
 
   /* ══════════════════════════════════════════════════════════
      CONFIGURAÇÃO
-     ══════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════════ */
 
-  // URL do Cloudflare Worker. Trocar aqui quando necessário.
-  const WORKER_URL = 'https://restless-flower-1924.rafaelpeixoto475.workers.dev/';
-
-  // Máximo de turnos (par user+assistant) mantidos no histórico.
-  // 5 turnos = 10 mensagens → contexto de ~3 trocas anteriores visíveis.
-  const MAX_TURNS = 5;
-
-  // Tempo de inatividade em ms antes de expirar o histórico (2 horas).
+  const WORKER_URL    = 'https://restless-flower-1924.rafaelpeixoto475.workers.dev/';
+  const MAX_TURNS     = 5;
   const SESSION_TTL_MS = 2 * 60 * 60 * 1000;
-
-  // Limite de caracteres para o contexto enviado ao worker.
-  // Worker aceita até 4500 — mantemos margem para historico e pergunta.
-  const CONTEXTO_MAX = 3000;
+  const CONTEXTO_MAX  = 3000;
 
   /* ══════════════════════════════════════════════════════════
      ESTADO INTERNO
-     ══════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════════ */
 
-  // Histórico limpo: apenas { role: 'user'|'assistant', content: string }
-  // Nunca inclui 'system', 'bot', feedbackId ou HTML.
-  let _historico = [];
-
-  // Timestamp da última interação. Usado para expirar o histórico.
+  let _historico       = [];
   let _ultimaAtividade = 0;
+  let _habilitado      = true;
 
-  // Flag que permite desabilitar a IA sem remover o módulo.
-  // ia.js pode chamar NexusWorker.setHabilitado(false) para voltar ao
-  // modo somente-busca sem recarregar a página.
-  let _habilitado = true;
+  /* ══════════════════════════════════════════════════════════
+     VERIFICAÇÃO DE CONTEXTO DE QUIZ (cópia local — independente)
+     O worker não confia que ia.js filtrou tudo. Verifica por conta
+     própria antes de serializar qualquer contexto com marcação de quiz.
+  ══════════════════════════════════════════════════════════ */
+
+  /**
+   * Retorna true se o contexto de quiz estiver ativo com token válido.
+   * Cópia intencional de ia.js — o worker não deve depender de outro módulo.
+   *
+   * @returns {boolean}
+   */
+  function _contextoQuizAtivo() {
+    var t = window.__NEXUS_QUIZ_TOKEN__;
+    if (!t || typeof t !== 'string') return false;
+    return window.__NEXUS_QUIZ_MODO__ !== undefined;
+  }
+
+  /**
+   * Remove entradas de quiz dos resultados quando o contexto de quiz
+   * não estiver ativo. Barreira de segurança final antes do envio ao worker.
+   *
+   * Entradas de quiz têm secao === 'Quiz' ou secao contendo '/feedback',
+   * ou texto que inclui padrões típicos de serialização de questão
+   * ('Gabarito:', 'Feedback oficial:', 'Alternativas:').
+   *
+   * @param {{ score, texto, aula, secao }[]} resultados
+   * @returns {{ score, texto, aula, secao }[]}
+   */
+  function _sanitizarResultados(resultados) {
+    if (!resultados || !resultados.length) return resultados;
+    if (_contextoQuizAtivo()) return resultados; // dentro do quiz: passa tudo
+
+    return resultados.filter(function (r) {
+      // Filtra por secao
+      if (r.secao === 'Quiz') return false;
+      if (typeof r.secao === 'string' && r.secao.includes('/feedback')) return false;
+
+      // Filtra por padrões de texto que indicam serialização de questão com gabarito
+      if (typeof r.texto === 'string') {
+        if (/^Gabarito:\s*[A-E]\b/m.test(r.texto))          return false;
+        if (/^Feedback oficial:/m.test(r.texto))             return false;
+        if (/^Alternativas:\s*\n\s*[A-E]\)/m.test(r.texto)) return false;
+      }
+
+      return true;
+    });
+  }
 
   /* ══════════════════════════════════════════════════════════
      HISTÓRICO DE SESSÃO
-     ══════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════════ */
 
-  /**
-   * Verifica e aplica a expiração por inatividade.
-   * Chamado no início de cada interação.
-   */
   function _verificarExpiracao() {
     if (_ultimaAtividade > 0 && Date.now() - _ultimaAtividade > SESSION_TTL_MS) {
       _historico = [];
@@ -95,18 +117,10 @@
     }
   }
 
-  /**
-   * Registra um turno completo no histórico.
-   * Descarta o turno mais antigo quando MAX_TURNS é atingido.
-   *
-   * @param {string} pergunta  — texto do usuário (já enviado ao worker)
-   * @param {string} resposta  — texto da IA (sem HTML)
-   */
   function _registrarTurno(pergunta, resposta) {
     _historico.push({ role: 'user',      content: pergunta });
     _historico.push({ role: 'assistant', content: resposta });
 
-    // Mantém apenas os últimos MAX_TURNS turnos (MAX_TURNS * 2 mensagens)
     const maxMensagens = MAX_TURNS * 2;
     if (_historico.length > maxMensagens) {
       _historico = _historico.slice(_historico.length - maxMensagens);
@@ -115,47 +129,32 @@
     _ultimaAtividade = Date.now();
   }
 
-  /**
-   * Retorna uma cópia do histórico para envio ao worker.
-   * Exclui o último par (pergunta atual) — ele já está no campo `pergunta`.
-   * O worker usa o histórico para contexto das trocas ANTERIORES.
-   *
-   * @returns {{ role: string, content: string }[]}
-   */
   function _getHistoricoParaEnvio() {
-    // O histórico contém turnos já finalizados.
-    // Enviamos tudo — a pergunta atual ainda não foi registrada.
     return _historico.slice();
   }
 
   /* ══════════════════════════════════════════════════════════
      SERIALIZAÇÃO DO CONTEXTO
-     ══════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════════ */
 
   /**
-   * Converte os resultados de NexusSearch.buscar() em uma string de
-   * contexto para o worker.
+   * Converte resultados em string de contexto para o worker.
+   * Aplica _sanitizarResultados() antes de serializar — garante que
+   * nenhum dado de quiz chegue ao worker sem token ativo.
    *
-   * FIX TUTOR: o formato anterior apresentava os trechos como
-   * "Material de apoio", um frame que induzia o modelo a reformulá-los.
-   * O novo formato os apresenta como "Fatos de referência" e inclui
-   * uma instrução explícita de que o modelo deve usá-los como âncora
-   * factual — não como roteiro a ser reescrito.
-   *
-   * Formato gerado:
-   *   Fatos de referência (use como âncora, não reescreva):
-   *   • [Aula X · Seção Y] trecho do conteúdo...
-   *   • [Aula X · Seção Z] outro trecho...
-   *
-   * @param {{ score: number, texto: string, aula: string, secao: string }[]} resultados
-   * @returns {string} contexto serializado, limitado a CONTEXTO_MAX chars
+   * @param {{ score, texto, aula, secao }[]} resultados
+   * @returns {string}
    */
   function _serializarContexto(resultados) {
     if (!resultados || !resultados.length) return '';
 
+    // Sanitização final: remove entradas de quiz se contexto não estiver ativo
+    const seguros = _sanitizarResultados(resultados);
+    if (!seguros || !seguros.length) return '';
+
     const linhas = ['Fatos de referência (use como âncora factual, não reescreva):'];
 
-    resultados.forEach(function (r) {
+    seguros.forEach(function (r) {
       const origem = r.aula
         ? (r.secao && r.secao !== r.aula ? r.aula + ' · ' + r.secao : r.aula)
         : (r.secao || 'Conteúdo');
@@ -169,19 +168,9 @@
 
   /* ══════════════════════════════════════════════════════════
      DETECÇÃO DE TIPO DE PERGUNTA
-     ══════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════════ */
 
-  /**
-   * Heurística simples para sinalizar ao worker que a pergunta
-   * é sobre uma questão de prova/exercício.
-   *
-   * @param {string} pergunta
-   * @returns {boolean}
-   */
   function _ehQuestao(pergunta) {
-    // BUG 3 FIX: /me\s+explica/i removido — classificava perguntas conceituais
-    // legítimas ("me explica o que é DNS") como questões de prova, enviando
-    // ehQuestao:true ao worker e degradando silenciosamente a resposta do tutor.
     return (
       /\b[A-Ea-e]\s*[\)\.]/.test(pergunta) ||
       /qual\s+(a\s+)?(resposta|alternativa|correta|certa|gabarito)/i.test(pergunta) ||
@@ -191,57 +180,32 @@
 
   /* ══════════════════════════════════════════════════════════
      FORMATAÇÃO DE MARKDOWN
-     Copiado de ia_antigo e adaptado para retornar texto puro
-     (com \n para quebras de linha) em vez de HTML, já que
-     NexusUI.renderMessage() usa _sanitize() + \n→<br>.
-     ══════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════════ */
 
-  /**
-   * Converte markdown simples para texto com formatação visual mínima.
-   * NexusUI espera texto puro — não HTML — nas mensagens do bot.
-   * Converte bold, listas e cabeçalhos para representações em texto.
-   *
-   * @param {string} texto
-   * @returns {string}
-   */
   function _markdownParaTexto(texto) {
     if (!texto) return '';
 
     return texto
-      // Remove blocos de código (mantém só o conteúdo)
       .replace(/```[\w]*\n?([\s\S]*?)```/g, function (_, cod) {
         return '\n' + cod.trim() + '\n';
       })
-      // Inline code: remove backticks
       .replace(/`([^`]+)`/g, '$1')
-      // Negrito: **texto** ou __texto__
       .replace(/\*\*(.+?)\*\*/g, '$1')
       .replace(/__(.+?)__/g, '$1')
-      // Itálico: *texto* ou _texto_
       .replace(/\*([^*\n]+)\*/g, '$1')
       .replace(/_([^_\n]+)_/g, '$1')
-      // Cabeçalhos → linha em maiúscula
       .replace(/^#{1,3}\s+(.+)$/gm, function (_, titulo) {
         return titulo.toUpperCase();
       })
-      // Listas: * item ou - item → • item
       .replace(/^[*\-]\s+(.+)$/gm, '• $1')
-      // Colapsa 3+ newlines para no máximo 2
       .replace(/\n{3,}/g, '\n\n')
       .trim();
   }
 
   /* ══════════════════════════════════════════════════════════
      COMUNICAÇÃO COM O WORKER
-     ══════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════════ */
 
-  /**
-   * Envia a requisição ao worker e retorna { resposta, fonte, modelo }.
-   * Não lança exceção — erros são normalizados no chamador (perguntar()).
-   *
-   * @param {object} payload
-   * @returns {Promise<{ resposta: string, fonte: string, modelo: string }|null>}
-   */
   async function _chamarWorker(payload) {
     let res;
     try {
@@ -256,7 +220,6 @@
     }
 
     if (res.status === 429) {
-      // Rate limit — sinaliza de volta ao chamador com mensagem específica
       return { resposta: '⚠️ Muitas perguntas agora 😅 Tente novamente em alguns segundos.', fonte: null, modelo: null };
     }
 
@@ -287,58 +250,59 @@
 
   /* ══════════════════════════════════════════════════════════
      API PÚBLICA PRINCIPAL
-     ══════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════════ */
 
   /**
    * Ponto de entrada principal.
-   * Chamado por ia.js no bloco de busca normal, APÓS NexusSearch.buscar().
+   * Chamado por ia.js após NexusSearch.buscar() ou buscarQuiz().
    *
-   * Recebe a pergunta e os resultados já prontos do NexusSearch.
-   * Monta o contexto, chama o worker, registra o turno, retorna o texto.
-   *
-   * Em caso de falha, retorna null para que ia.js use o fallback local.
-   *
-   * FIX TUTOR: modoExplicacao não é mais enviado ao worker. O modelo
-   * adapta o estilo de resposta a partir da própria pergunta do usuário.
-   *
-   * GLOBAL-3: tipoContexto ('conteudo' | 'global' | 'estrutura') é
-   * repassado ao worker para seleção do system prompt adequado.
+   * QUIZ-ISOLATION:
+   *   Aplica _sanitizarResultados() em `resultados` antes de serializar.
+   *   Mesmo que ia.js passe dados de quiz por engano, são removidos aqui.
    *
    * @param {{
-   *   pergunta:     string,
-   *   resultados:   { score: number, texto: string, aula: string, secao: string }[],
-   *   disciplina:   string,
-   *   tipoContexto: string,
+   *   pergunta:              string,
+   *   resultados:            { score, texto, aula, secao }[],
+   *   disciplina:            string,
+   *   tipoContexto:          string,
+   *   semContexto?:          boolean,
+   *   registrarNoHistorico?: boolean,
    * }} opcoes
    *
-   * @returns {Promise<{ texto: string, fonte: string|null, modelo: string|null }|null>}
-   *   null = falhou, ia.js deve usar fallback local (_formatarResposta)
+   * @returns {Promise<{ texto, fonte, modelo }|null>}
    */
   async function perguntar(opcoes) {
-  if (!_habilitado) return null;
+    if (!_habilitado) return null;
 
-  const { pergunta, resultados, disciplina, tipoContexto, semContexto, registrarNoHistorico } = opcoes;
-
+    const {
+      pergunta,
+      resultados,
+      disciplina,
+      tipoContexto,
+      semContexto,
+      registrarNoHistorico,
+    } = opcoes;
 
     if (!pergunta || !pergunta.trim()) return null;
 
     _verificarExpiracao();
 
-    const contexto   = _serializarContexto(resultados);
+    // Sanitização final: nunca envia contexto de quiz sem token ativo
+    const resultadosSeguros = _sanitizarResultados(resultados || []);
+
+    const contexto   = _serializarContexto(resultadosSeguros);
     const historico  = _getHistoricoParaEnvio();
     const ehQuestao_ = _ehQuestao(pergunta);
 
     const resultado = await _chamarWorker({
-      pergunta:      pergunta.trim(),
-      contexto:      contexto,
-      historico:     historico,
-      disciplina:    disciplina || '',
-      ehQuestao:     ehQuestao_,
-      tipoContexto:  tipoContexto || 'conteudo',
-      // modoExplicacao removido: o worker não usa mais esse campo.
+      pergunta:     pergunta.trim(),
+      contexto:     contexto,
+      historico:    historico,
+      disciplina:   disciplina || '',
+      ehQuestao:    ehQuestao_,
+      tipoContexto: tipoContexto || 'conteudo',
     });
 
-    // Falha de rede ou worker indisponível — sinaliza fallback
     if (!resultado) {
       console.warn('[NexusWorker] falha no worker — fallback local ativado.');
       return null;
@@ -346,13 +310,11 @@
 
     const textoFormatado = _markdownParaTexto(resultado.resposta);
 
-    // Log claro do provedor e modelo utilizados
     if (resultado.fonte) {
       console.log('[NexusWorker] usando ' + resultado.fonte +
         (resultado.modelo ? ' · modelo: ' + resultado.modelo : ''));
     }
 
-    // Registra o turno somente após sucesso confirmado
     const deveRegistrar = registrarNoHistorico !== false;
     if (deveRegistrar) {
       _registrarTurno(pergunta.trim(), textoFormatado);
@@ -361,34 +323,17 @@
     return { texto: textoFormatado, fonte: resultado.fonte, modelo: resultado.modelo };
   }
 
-  /**
-   * Limpa o histórico da sessão.
-   * Deve ser chamado por ia.js em _resetarChat() e em _limparContexto().
-   */
   function limparHistorico() {
     _historico       = [];
     _ultimaAtividade = 0;
     console.log('[NexusWorker] histórico de sessão limpo.');
   }
 
-  /**
-   * Habilita ou desabilita a IA sem recarregar a página.
-   * Quando desabilitada, perguntar() retorna null imediatamente,
-   * fazendo ia.js cair no fallback local.
-   *
-   * @param {boolean} valor
-   */
   function setHabilitado(valor) {
     _habilitado = !!valor;
     console.log('[NexusWorker] IA ' + (_habilitado ? 'habilitada' : 'desabilitada') + '.');
   }
 
-  /**
-   * Retorna o estado atual do módulo.
-   * Útil para diagnóstico em ia.js.
-   *
-   * @returns {{ habilitado: boolean, turnosNoHistorico: number }}
-   */
   function status() {
     return {
       habilitado:        _habilitado,
@@ -396,9 +341,9 @@
     };
   }
 
-  /* ═════════════════════════════c═════════════════════════════
+  /* ══════════════════════════════════════════════════════════
      REGISTRO GLOBAL
-     ══════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════════ */
 
   window.NexusWorker = {
     perguntar,
