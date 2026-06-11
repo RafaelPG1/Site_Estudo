@@ -692,41 +692,35 @@ a    { text-decoration: none; color: inherit; }
 /* ══════════════════════════════════════════════
    CARD VAZIO — modo sem conteúdo disponível
    ──────────────────────────────────────────────
-   Regra: o card permanece no DOM e é visível.
-   Apenas sinaliza que não há conteúdo: reduz
-   opacidade, bloqueia pointer-events e exibe
-   badge "Em breve". Nenhuma propriedade aqui
-   usa display:none ou visibility:hidden.
+   Regra: cards sem conteúdo são ocultados do DOM
+   visualmente. Não exibimos badge "Em breve" —
+   se não há conteúdo, o card simplesmente não
+   aparece para o usuário.
    ══════════════════════════════════════════════ */
 .disc-card--vazio {
-  opacity: 0.42;
+  display: none !important;
+}
+
+/* ══════════════════════════════════════════════
+   ANTI-FLASH — catalog ainda não resolvido
+   ──────────────────────────────────────────────
+   Enquanto o catalog.json não terminou de
+   carregar, todos os cards ficam invisíveis
+   (mas ocupam espaço para não causar reflow).
+   O JS remove data-catalog-loading do <html>
+   assim que o fetch terminar (sucesso ou erro),
+   revelando os cards com uma transição suave.
+   ══════════════════════════════════════════════ */
+:root[data-catalog-loading] .disc-card {
+  visibility: hidden;
   pointer-events: none;
-  cursor: default;
-  filter: grayscale(0.6);
-  transform: none !important; /* cancela hover lift */
-  animation: none !important; /* evita piscar ao aparecer */
 }
 
-.disc-card--vazio::after {
-  content: 'Em breve';
-  position: absolute;
-  top: 0.85rem;
-  right: 0.85rem;
-  font-family: var(--font-body);
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text-3);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-glow);
-  border-radius: 6px;
-  padding: 0.2rem 0.5rem;
-  /* Sobrepõe o disc-card__arrow que fica no mesmo canto */
-  z-index: 1;
+:root:not([data-catalog-loading]) .disc-card:not(.disc-card--vazio) {
+  animation: ns-card-reveal 0.18s ease both;
 }
 
-/* Garante visibilidade mesmo com reduced-motion */
-@media (prefers-reduced-motion: reduce) {
-  .disc-card--vazio { opacity: 0.42 !important; }
+@keyframes ns-card-reveal {
+  from { opacity: 0.01; }
+  to   { opacity: 1; }
 }

@@ -226,6 +226,7 @@ document.addEventListener('DOMContentLoaded', function () {
           '[disciplinas_init] Semestre "' + _sem + '" não encontrado no catalog.json.' +
           ' Nenhum card será desabilitado.'
         );
+        try { document.documentElement.removeAttribute('data-catalog-loading'); } catch (_) {}
         return;
       }
 
@@ -236,6 +237,7 @@ document.addEventListener('DOMContentLoaded', function () {
           '[disciplinas_init] Disciplina "' + _discId + '" não encontrada em "' + _sem + '"' +
           ' no catalog.json. Nenhum card será desabilitado.'
         );
+        try { document.documentElement.removeAttribute('data-catalog-loading'); } catch (_) {}
         return;
       }
 
@@ -253,5 +255,9 @@ document.addEventListener('DOMContentLoaded', function () {
     .catch(function (err) {
       /* Falha no fetch: mantém todos os cards habilitados */
       console.warn('[disciplinas_init] Falha ao carregar catalog.json:', err.message);
+    })
+    .finally(function () {
+      /* Sempre revela os cards ao terminar, com ou sem erro */
+      try { document.documentElement.removeAttribute('data-catalog-loading'); } catch (_) {}
     });
 }());
