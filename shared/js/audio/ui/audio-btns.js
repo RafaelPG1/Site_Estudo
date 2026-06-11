@@ -526,17 +526,31 @@ function _initMusicLogic(btn) {
 
 function _mountSfxBtn() {
   if (document.getElementById('audio-btn-global')) return;
+  if (!audioState.getSfxBtnEnabled()) return; // usuário desativou nas Configurações
   const btn = _createSfxBtn();
   _initSfxLogic(btn);
   document.body.appendChild(btn);
   _installUnlockHint();
 }
 
+function _destroySfxBtn() {
+  document.getElementById('audio-btn-global')?.remove();
+  document.getElementById('abtn-unlock-hint')?.remove();
+}
+
 function _mountMusicBtn() {
   if (document.getElementById('music-btn-global')) return;
+  if (!audioState.getMusicBtnEnabled()) return; // usuário desativou nas Configurações
   const btn = _createMusicBtn();
   _initMusicLogic(btn);
   document.body.appendChild(btn);
+}
+
+// ── Aplica o estado inicial de habilitação (silencia o canal
+//    correspondente caso o usuário tenha desativado nas Configurações) ──
+audioState.setSfxBtnEnabled(audioState.getSfxBtnEnabled());
+if (!audioState.getMusicBtnEnabled()) {
+  audio.setMusicVolume(0);
 }
 
 if (document.readyState === 'loading') {
@@ -548,6 +562,25 @@ if (document.readyState === 'loading') {
   _mountSfxBtn();
   _mountMusicBtn();
 }
+
+// ── Reage a alterações em tempo real (toggles em Configurações) ──
+audioState.subscribeSfxBtnEnabled(enabled => {
+  if (enabled) {
+    _mountSfxBtn();
+  } else {
+    _destroySfxBtn();
+  }
+});
+
+audioState.subscribeMusicBtnEnabled(enabled => {
+  if (enabled) {
+    _mountMusicBtn();
+    _musicApplyToEngine(audioState.getMusicMode());
+  } else {
+    audio.setMusicVolume(0);
+    document.getElementById('music-btn-global')?.remove();
+  }
+});
 
 
 /* ═══════════════════════════════════════════════
@@ -584,4 +617,40 @@ export function subscribeMusicMode(fn) {
 
 export function unsubscribeMusicMode(fn) {
   audioState.unsubscribeMusicMode(fn);
+}
+
+/* ── 6b. Visibilidade dos botões (SFX / Música) ──
+   Espelha o padrão de getMusicMode/setMusicMode acima:
+   wrappers finos sobre audioState, fonte única de verdade. */
+
+export function getSfxBtnEnabled() {
+  return audioState.getSfxBtnEnabled();
+}
+
+export function setSfxBtnEnabled(enabled) {
+  audioState.setSfxBtnEnabled(enabled);
+}
+
+export function subscribeSfxBtnEnabled(fn) {
+  audioState.subscribeSfxBtnEnabled(fn);
+}
+
+export function unsubscribeSfxBtnEnabled(fn) {
+  audioState.unsubscribeSfxBtnEnabled(fn);
+}
+
+export function getMusicBtnEnabled() {
+  return audioState.getMusicBtnEnabled();
+}
+
+export function setMusicBtnEnabled(enabled) {
+  audioState.setMusicBtnEnabled(enabled);
+}
+
+export function subscribeMusicBtnEnabled(fn) {
+  audioState.subscribeMusicBtnEnabled(fn);
+}
+
+export function unsubscribeMusicBtnEnabled(fn) {
+  audioState.unsubscribeMusicBtnEnabled(fn);
 }

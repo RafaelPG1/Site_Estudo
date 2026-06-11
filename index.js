@@ -39,6 +39,10 @@ import {
   playSound,
   mountMusicBtn,
   getMusicMode,
+  getSfxBtnEnabled,
+  setSfxBtnEnabled,
+  getMusicBtnEnabled,
+  setMusicBtnEnabled,
 } from './shared/js/audio/audio-api.js';
 
 /* ═══════════════════════════════════════════════
@@ -551,6 +555,35 @@ function _abrirModalConfig() {
 
         <div class="modal__section">
           <div class="modal__section-title">Áudio</div>
+
+          <div class="config-row">
+            <label for="cfg-sfx-enabled">
+              Efeitos sonoros
+              <small style="display:block;font-weight:400;opacity:0.6;font-size:0.72em;margin-top:2px;">
+                Sons de clique, hover e outras interações. Quando desativado,
+                o botão flutuante de SFX é ocultado.
+              </small>
+            </label>
+            <label class="toggle">
+              <input type="checkbox" id="cfg-sfx-enabled" ${getSfxBtnEnabled() ? 'checked' : ''} />
+              <span class="toggle__track"></span>
+            </label>
+          </div>
+
+          <div class="config-row">
+            <label for="cfg-music-enabled">
+              Música de fundo
+              <small style="display:block;font-weight:400;opacity:0.6;font-size:0.72em;margin-top:2px;">
+                Trilhas sonoras ambiente. Quando desativado, a música para
+                e o botão flutuante de música é ocultado.
+              </small>
+            </label>
+            <label class="toggle">
+              <input type="checkbox" id="cfg-music-enabled" ${getMusicBtnEnabled() ? 'checked' : ''} />
+              <span class="toggle__track"></span>
+            </label>
+          </div>
+
           <div class="config-row">
             <label>
               Configurações de Som
@@ -703,6 +736,16 @@ function _abrirModalConfig() {
   document.getElementById('cfg-anim').addEventListener('change', _autoSave);
   document.getElementById('cfg-notif').addEventListener('change', _autoSave);
   document.getElementById('cfg-salvar-progresso').addEventListener('change', _autoSave);
+
+  document.getElementById('cfg-sfx-enabled').addEventListener('change', function () {
+    setSfxBtnEnabled(this.checked);
+    if (this.checked) playSound('click', 'inicial');
+  });
+
+  document.getElementById('cfg-music-enabled').addEventListener('change', function () {
+    setMusicBtnEnabled(this.checked);
+    playSound('click', 'inicial');
+  });
 
   document.getElementById('cfg-salvar-parcial').addEventListener('change', function () {
     const concluir = document.getElementById('cfg-salvar-progresso');

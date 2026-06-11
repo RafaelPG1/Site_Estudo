@@ -263,3 +263,26 @@ body:has(#music-btn-global) #audio-btn-global:hover::after {
     right: 20px;
   }
 }
+
+
+/* ═══════════════════════════════════════════════
+   SEÇÃO 5 — REPOSICIONAMENTO QUANDO SFX DESATIVADO
+   ─────────────────────────────────────────────
+   Quando o usuário desativa "Efeitos sonoros" nas
+   Configurações, audio-btns.js remove #audio-btn-global
+   do DOM. O botão de Música (se ativo) desce e ocupa
+   a posição que era do SFX, evitando o "buraco" na pilha.
+
+   Se SFX for reativado, a regra deixa de bater (o elemento
+   volta a existir) e a Música retorna à posição normal (152px).
+═══════════════════════════════════════════════ */
+
+body:not(:has(#audio-btn-global)) #music-btn-global {
+  bottom: 90px;
+}
+
+@media (max-width: 480px) {
+  body:not(:has(#audio-btn-global)) #music-btn-global {
+    bottom: 74px;
+  }
+}

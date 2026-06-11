@@ -38,6 +38,14 @@ export {
   setMusicMode,
   subscribeMusicMode,
   unsubscribeMusicMode,
+  getSfxBtnEnabled,
+  setSfxBtnEnabled,
+  subscribeSfxBtnEnabled,
+  unsubscribeSfxBtnEnabled,
+  getMusicBtnEnabled,
+  setMusicBtnEnabled,
+  subscribeMusicBtnEnabled,
+  unsubscribeMusicBtnEnabled,
 } from './ui/audio-btns.js';
 
 // Recovery

@@ -213,6 +213,52 @@ function _notifyMusicMode() {
   }
 }
 
+/* ═══════════════════════════════════════════════
+   2a-bis. VISIBILIDADE DOS BOTÕES FLUTUANTES (SFX / MÚSICA)
+   ─────────────────────────────────────────────
+   Controla se o botão flutuante aparece na tela e se o
+   canal correspondente fica audível.
+
+   - SFX desativado    → botão some + audio.mute() (via _applyToEngine)
+   - Música desativada → botão some + audio.setMusicVolume(0)
+
+   Persistido apenas em localStorage (preferência local de UI,
+   não sincronizada via Firebase).
+═══════════════════════════════════════════════ */
+
+let _sfxBtnEnabled = (() => {
+  try {
+    const v = localStorage.getItem('nexus_sfx_btn_enabled');
+    return v === null ? true : v === 'true';
+  } catch { return true; }
+})();
+
+let _musicBtnEnabled = (() => {
+  try {
+    const v = localStorage.getItem('nexus_music_btn_enabled');
+    return v === null ? true : v === 'true';
+  } catch { return true; }
+})();
+
+const _sfxBtnSubscribers   = new Set();
+const _musicBtnSubscribers = new Set();
+
+function _notifySfxBtnEnabled() {
+  for (const fn of _sfxBtnSubscribers) {
+    try { fn(_sfxBtnEnabled); } catch (err) {
+      console.warn('[audio-state] sfxBtnEnabled subscriber error:', err);
+    }
+  }
+}
+
+function _notifyMusicBtnEnabled() {
+  for (const fn of _musicBtnSubscribers) {
+    try { fn(_musicBtnEnabled); } catch (err) {
+      console.warn('[audio-state] musicBtnEnabled subscriber error:', err);
+    }
+  }
+}
+
 let _volumes = { master: 1.0, music: 0.5, sfx: 0.5 };
 
 /* ═══════════════════════════════════════════════
@@ -261,7 +307,9 @@ function _notify() {
 
 function _applyToEngine(modeId) {
   const mode = MODES[modeId] ?? MODES[DEFAULT_MODE];
-  if (mode.muted) {
+  if (mode.muted || !_sfxBtnEnabled) {
+    // mode.muted (botão SFX no ciclo MUTE) OU _sfxBtnEnabled=false
+    // (usuário desativou efeitos sonoros nas Configurações) → silencia.
     audio.setMasterVolume(0);
     audio.mute();
   } else {
@@ -272,7 +320,7 @@ function _applyToEngine(modeId) {
   audio.setSfxVolume?.(_volumes.sfx);
   // NOTA: audio.setMusicVolume NÃO é chamado aqui.
   // O botão de música (audio-btns.js) é o único responsável pelo canal music.
-  _dbg('_applyToEngine mode:', modeId, '| master:', _volumes.master, '| sfx:', _volumes.sfx);
+  _dbg('_applyToEngine mode:', modeId, '| master:', _volumes.master, '| sfx:', _volumes.sfx, '| sfxBtnEnabled:', _sfxBtnEnabled);
 }
 
 /* ═══════════════════════════════════════════════
@@ -707,6 +755,47 @@ setMode(modeId) {
 
   waitUntilReady() {
     return _readyPromise;
+  },
+
+  // ── VISIBILIDADE DOS BOTÕES (SFX / MÚSICA) ──
+  // Controla se o botão flutuante aparece e se o canal
+  // correspondente fica audível. Ver seção 2a-bis acima.
+
+  getSfxBtnEnabled() {
+    return _sfxBtnEnabled;
+  },
+
+  setSfxBtnEnabled(enabled) {
+    _sfxBtnEnabled = !!enabled;
+    try { localStorage.setItem('nexus_sfx_btn_enabled', String(_sfxBtnEnabled)); } catch { /* noop */ }
+    _applyToEngine(_currentMode);
+    _notifySfxBtnEnabled();
+  },
+
+  subscribeSfxBtnEnabled(fn) {
+    if (typeof fn === 'function') _sfxBtnSubscribers.add(fn);
+  },
+
+  unsubscribeSfxBtnEnabled(fn) {
+    _sfxBtnSubscribers.delete(fn);
+  },
+
+  getMusicBtnEnabled() {
+    return _musicBtnEnabled;
+  },
+
+  setMusicBtnEnabled(enabled) {
+    _musicBtnEnabled = !!enabled;
+    try { localStorage.setItem('nexus_music_btn_enabled', String(_musicBtnEnabled)); } catch { /* noop */ }
+    _notifyMusicBtnEnabled();
+  },
+
+  subscribeMusicBtnEnabled(fn) {
+    if (typeof fn === 'function') _musicBtnSubscribers.add(fn);
+  },
+
+  unsubscribeMusicBtnEnabled(fn) {
+    _musicBtnSubscribers.delete(fn);
   },
 
 };
