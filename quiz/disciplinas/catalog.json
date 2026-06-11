@@ -1,0 +1,34 @@
+{
+  "_comentario": "Fonte única de disponibilidade de modos por semestre e disciplina. Atualize este arquivo manualmente ao adicionar novos ques_*.js. Os valores booleanos refletem se o array do modo possui questões no arquivo de conteúdo correspondente.",
+
+  "2026.1-AP1": {
+    "poo":          { "ava": false, "questoes": false, "enade": true, "fixacao": true },
+    "banco_dados":  { "ava": true,  "questoes": true,  "enade": true, "fixacao": true },
+    "design":       { "ava": true,  "questoes": true,  "enade": true, "fixacao": true },
+    "redes":        { "ava": true,  "questoes": true,  "enade": true, "fixacao": true }
+  },
+
+  "2026.1-AP2": {
+    "poo":          { "ava": true,  "questoes": false, "enade": true, "fixacao": true },
+    "banco_dados":  { "ava": true,  "questoes": true,  "enade": true, "fixacao": true },
+    "design":       { "ava": true,  "questoes": true,  "enade": true, "fixacao": true },
+    "redes":        { "ava": true,  "questoes": true,  "enade": true, "fixacao": true }
+  },
+
+  "2026.2-AP1": {
+    "analise_projeto":           { "ava": true, "questoes": true, "enade": true, "fixacao": true },
+    "estruturas_dados":          { "ava": true, "questoes": true, "enade": true, "fixacao": true },
+    "legislacao":                { "ava": true, "questoes": true, "enade": true, "fixacao": true },
+    "psicologia_organizacional": { "ava": true, "questoes": true, "enade": true, "fixacao": true },
+    "redes2":                    { "ava": true, "questoes": true, "enade": true, "fixacao": true }
+  },
+
+  "2026.2-AP2": {
+    "analise_projeto":           { "ava": true, "questoes": true, "enade": true, "fixacao": true },
+    "estruturas_dados":          { "ava": true, "questoes": true, "enade": true, "fixacao": true },
+    "legislacao":                { "ava": true, "questoes": true, "enade": true, "fixacao": true },
+    "psicologia_organizacional": { "ava": true, "questoes": true, "enade": true, "fixacao": true },
+    "redes2":                    { "ava": true, "questoes": true, "enade": true, "fixacao": true }
+  }
+}
+

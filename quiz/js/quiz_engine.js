@@ -46,12 +46,11 @@
 
     /* ── 1. CONTEXTO E CONFIGURAÇÃO ───────────────────────── */
 
-    var tipo = window.TIPO_QUIZ
+    var _disc     = window.__NEXUS_QUIZ_DISC__     || null;
+    var _modo     = window.__NEXUS_QUIZ_MODO__
       || new URLSearchParams(location.search).get('modo')
       || 'questoes';
-
-    var _disc     = window.__NEXUS_QUIZ_DISC__     || null;
-    var _modo     = window.__NEXUS_QUIZ_MODO__     || tipo;
+    var tipo      = _modo;
     var _semestre = window.__NEXUS_QUIZ_SEMESTRE__ || '';
     var _Storage  = window.NexusStorage            || null;
 
@@ -585,55 +584,54 @@ document.addEventListener('visibilitychange', function () {
 if (r.respondidas < r.total) {
   /* ── Card de PROGRESSO ── */
   el.className = 'subject-result subject-result--progress';
-  el.innerHTML = `
-    <div style="width:42px; height:42px; border-radius:12px; flex-shrink:0; 
-                background: ${ _AZUL_BG }; border: 1px solid ${ _AZUL_ICON_BD }; 
-                display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow: inset 0 0 10px rgba(0,0,0,0.1);">
-      📋
-    </div>
-    <div style="flex:1; display:flex; flex-direction:column; gap:0.5rem;">
-      <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color: ${ _AZUL_EYEBROW }; opacity: 0.8;">
-        Progresso da aula
-      </div>
-      <div class="sr-progress-bar">
-        <div class="sr-progress-fill" style="width:${pct}%; background: linear-gradient(90deg, ${ _AZUL_BAR_FROM }, ${ _AZUL_BAR_TO }); height:100%;"></div>
-      </div>
-      <div style="font-size:0.75rem; color: #fff; opacity: 0.7;">
-        <strong>${r.respondidas}</strong> de ${r.total} questões respondidas
-      </div>
-    </div>
-    <div style="text-align: right; min-width: 60px;">
-      <div style="font-size:1.5rem; font-weight:800; color: ${ _AZUL_PCT }; font-variant-numeric: tabular-nums;">
-        ${pct}<span style="font-size: 0.9rem; margin-left: 2px;">%</span>
-      </div>
-    </div>`;
+  el.innerHTML =
+    '<div style="width:42px; height:42px; border-radius:12px; flex-shrink:0;' +
+    '            background:' + _AZUL_BG + '; border: 1px solid ' + _AZUL_ICON_BD + ';' +
+    '            display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow: inset 0 0 10px rgba(0,0,0,0.1);">' +
+    '  📋' +
+    '</div>' +
+    '<div style="flex:1; display:flex; flex-direction:column; gap:0.5rem;">' +
+    '  <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:' + _AZUL_EYEBROW + '; opacity:0.8;">' +
+    '    Progresso da aula' +
+    '  </div>' +
+    '  <div class="sr-progress-bar">' +
+    '    <div class="sr-progress-fill" style="width:' + pct + '%; background: linear-gradient(90deg, ' + _AZUL_BAR_FROM + ', ' + _AZUL_BAR_TO + '); height:100%;"></div>' +
+    '  </div>' +
+    '  <div style="font-size:0.75rem; color: #fff; opacity: 0.7;">' +
+    '    <strong>' + r.respondidas + '</strong> de ' + r.total + ' questões respondidas' +
+    '  </div>' +
+    '</div>' +
+    '<div style="text-align: right; min-width: 60px;">' +
+    '  <div style="font-size:1.5rem; font-weight:800; color:' + _AZUL_PCT + '; font-variant-numeric: tabular-nums;">' +
+    '    ' + pct + '<span style="font-size: 0.9rem; margin-left: 2px;">%</span>' +
+    '  </div>' +
+    '</div>';
 
 } else {
   /* ── Card de RESULTADO (Concluído) ── */
-  var pctA = r.total > 0 ? Math.round((r.acertos / r.total) * 100) : 0;
-  // Cor verde para sucesso (exemplo de lógica visual)
-  const successColor = pctA >= 70 ? '#4ADE80' : '#FACC15'; 
-  
+  var pctA       = r.total > 0 ? Math.round((r.acertos / r.total) * 100) : 0;
+  var successColor = pctA >= 70 ? '#4ADE80' : '#FACC15';
+
   el.className = 'subject-result subject-result--progress';
-  el.innerHTML = `
-    <div style="width:42px; height:42px; border-radius:12px; flex-shrink:0; 
-                background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.2); 
-                display:flex; align-items:center; justify-content:center; font-size:18px;">
-      🎯
-    </div>
-    <div style="flex:1; display:flex; flex-direction:column; gap:0.2rem;">
-      <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color: #4ADE80;">
-        Concluído
-      </div>
-      <div style="font-size:0.85rem; color: #fff;">
-        Você acertou <strong>${r.acertos}</strong> de ${r.total}
-      </div>
-    </div>
-    <div style="text-align: right;">
-      <div style="font-size:1.75rem; font-weight:800; color: ${successColor};">
-        ${pctA}%
-      </div>
-    </div>`;
+  el.innerHTML =
+    '<div style="width:42px; height:42px; border-radius:12px; flex-shrink:0;' +
+    '            background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.2);' +
+    '            display:flex; align-items:center; justify-content:center; font-size:18px;">' +
+    '  🎯' +
+    '</div>' +
+    '<div style="flex:1; display:flex; flex-direction:column; gap:0.2rem;">' +
+    '  <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color: #4ADE80;">' +
+    '    Concluído' +
+    '  </div>' +
+    '  <div style="font-size:0.85rem; color: #fff;">' +
+    '    Você acertou <strong>' + r.acertos + '</strong> de ' + r.total +
+    '  </div>' +
+    '</div>' +
+    '<div style="text-align: right;">' +
+    '  <div style="font-size:1.75rem; font-weight:800; color: ' + successColor + ';">' +
+    '    ' + pctA + '%' +
+    '  </div>' +
+    '</div>';
 }
 }
 

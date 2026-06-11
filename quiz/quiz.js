@@ -13,11 +13,9 @@ import {
 import { sincronizarSemNaURL } from '../shared/js/utils/url.js';
 import { preencherAnos } from '../shared/js/utils/dom.js';
 import { injetarLogo } from '../shared/js/utils/logo.js';
-import { Sound, audio, installAudioRecovery, playSound } from '../shared/js/audio/audio-api.js'; // ← MIGRADO
+import { Sound, audio, installAudioRecovery, playSound } from '../shared/js/audio/audio-api.js';
 
 // ── Assistente Nexus ──────────────────────────────────────────
-// Usa import.meta.url para resolver a raiz a partir deste arquivo
-// (quiz/quiz.js → sobe 1 nível → raiz)
 function _loadScript(src) {
   return new Promise((resolve, reject) => {
     const s = document.createElement('script');
@@ -46,10 +44,10 @@ _carregarIA();
 
   document.addEventListener('DOMContentLoaded', async () => {
     Sound.init();
-    installAudioRecovery({ Sound, audio });                                           // ← NOVO (substitui pageshow manual)
+    installAudioRecovery({ Sound, audio });
     await Sound.waitUntilReady();
 
-injetarLogo('#header-logo-wrap');
+    injetarLogo('#header-logo-wrap');
 
     document.querySelector('.back-btn')
       ?.addEventListener('click', () => playSound('click', 'quiz'));
@@ -58,8 +56,6 @@ injetarLogo('#header-logo-wrap');
     sel?.addEventListener('mousedown', () => playSound('click', 'quiz'));
     sel?.addEventListener('change',    () => playSound('select', 'quiz'));
   });
-
-  // pageshow removido — agora gerenciado pelo installAudioRecovery acima
 
   const semParam = new URLSearchParams(location.search).get('sem');
   if (semParam && SEMESTRES.includes(semParam)) setSemestre(semParam);
@@ -75,20 +71,28 @@ injetarLogo('#header-logo-wrap');
   });
 
   const DISC_CLASS = {
-    poo: 'disc-card--blue', redes: 'disc-card--teal',
-    design: 'disc-card--gold', banco_dados: 'disc-card--rose',
+    poo:        'disc-card--blue',
+    redes:      'disc-card--teal',
+    design:     'disc-card--gold',
+    banco_dados: 'disc-card--rose',
   };
 
+  function _resolverPeriodo(sem) {
+    /* "2026.1-AP2" → "2026.1" · "2026.1" → "2026.1" */
+    return sem.includes('-') ? sem.split('-')[0] : sem;
+  }
+
   function gerarCards(sem) {
-    const ano   = sem.split('.')[0];
-    const grid  = document.getElementById('disciplines-grid');
-    const msgEl = document.getElementById('disciplines-empty');
-    const discs = getDisciplinasDeSemestre(sem);
+    const periodo = _resolverPeriodo(sem);
+    const ano     = periodo.split('.')[0];
+    const grid    = document.getElementById('disciplines-grid');
+    const msgEl   = document.getElementById('disciplines-empty');
+    const discs   = getDisciplinasDeSemestre(sem);
 
     grid.querySelectorAll('.disc-card').forEach(c => c.remove());
 
     if (!discs.length) {
-      msgEl.textContent = `Nenhuma disciplina cadastrada para ${sem}.`;
+      msgEl.textContent  = `Nenhuma disciplina cadastrada para ${sem}.`;
       msgEl.style.display = 'block';
       return;
     }
@@ -96,7 +100,8 @@ injetarLogo('#header-logo-wrap');
     msgEl.style.display = 'none';
 
     discs.forEach(disc => {
-      const href  = `disciplinas/${ano}/${disc.arquivo}.html?sem=${sem}`;
+      /* Caminho correto: disciplinas/{ano}/{periodo}/{arquivo}.html?sem={sem} */
+      const href  = `disciplinas/${ano}/${periodo}/${disc.arquivo}.html?sem=${sem}`;
       const cls   = DISC_CLASS[disc.id] ?? 'disc-card--blue';
       const label = disc.apelido ?? disc.nome;
 
@@ -144,4 +149,4 @@ injetarLogo('#header-logo-wrap');
 
   preencherAnos(['footer-year']);
 
-})();
+}());

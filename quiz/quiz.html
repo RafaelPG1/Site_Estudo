@@ -14,8 +14,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../shared/css/themes/fundo.css">
-    <link rel="stylesheet" href="../shared/css/audio/sound.css">
-      <link rel="stylesheet" href="../shared/css/audio/audio-btns.css" />
+  <link rel="stylesheet" href="../shared/css/audio/sound.css">
+  <link rel="stylesheet" href="../shared/css/audio/audio-btns.css" />
   <link rel="stylesheet" href="../shared/css/ia/ia.css">
   <link rel="stylesheet" href="quiz.css" />
 </head>
@@ -41,9 +41,9 @@
         <span>Início</span>
       </a>
 
-        <div id="header-logo-wrap" class="header__logo"></div>
+      <div id="header-logo-wrap" class="header__logo"></div>
 
-      <!-- Lado direito: select + breadcrumb lado a lado -->
+      <!-- Lado direito: select de semestre -->
       <div class="header__right">
 
         <!-- Options são populadas dinamicamente pelo quiz.js via SEMESTRES do global.js -->
@@ -71,110 +71,11 @@
     </div>
 
     <!--
-      data-semestres: lista separada por vírgula dos semestres ativos.
-      Ex: data-semestres="2026.2" ou data-semestres="2026.1,2026.2"
-
-      As 4 disciplinas existem em 2026.1 e 2026.2.
-      O 2027.1 não tem cards — ao selecioná-lo o grid fica vazio
-      e a mensagem #disciplines-empty é exibida pelo quiz.js.
+      Cards gerados dinamicamente pelo quiz.js a partir de getDisciplinasDeSemestre().
+      Para adicionar ou remover disciplinas, edite apenas o global.js.
     -->
     <div class="disciplines" id="disciplines-grid" role="list">
-
-      <!-- POO -->
-      <a href="disciplinas/2026/poo.html"
-         class="disc-card disc-card--blue" role="listitem"
-         data-semestres="2026.1,2026.2" aria-label="Programação Orientada a Objetos">
-        <div class="disc-card__icon-col">
-          <div class="disc-card__icon-wrap" aria-hidden="true"><span>☕</span></div>
-        </div>
-        <div class="disc-card__body">
-          <h2 class="disc-card__title">POO</h2>
-          <p class="disc-card__desc">Programação Orientada a Objetos</p>
-        </div>
-        <div class="disc-card__cta" aria-hidden="true">
-          <div class="disc-card__arrow">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
-            </svg>
-          </div>
-          <span class="disc-card__cta-label">Iniciar</span>
-        </div>
-        <div class="disc-card__glow" aria-hidden="true"></div>
-      </a>
-
-      <!-- Redes -->
-      <a href="disciplinas/2026/redes.html"
-         class="disc-card disc-card--teal" role="listitem"
-         data-semestres="2026.1,2026.2" aria-label="Redes de Computadores">
-        <div class="disc-card__icon-col">
-          <div class="disc-card__icon-wrap" aria-hidden="true"><span>🌐</span></div>
-        </div>
-        <div class="disc-card__body">
-          <h2 class="disc-card__title">Redes</h2>
-          <p class="disc-card__desc">Redes de Computadores</p>
-        </div>
-        <div class="disc-card__cta" aria-hidden="true">
-          <div class="disc-card__arrow">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
-            </svg>
-          </div>
-          <span class="disc-card__cta-label">Iniciar</span>
-        </div>
-        <div class="disc-card__glow" aria-hidden="true"></div>
-      </a>
-
-      <!-- Design -->
-      <a href="disciplinas/2026/design.html"
-         class="disc-card disc-card--gold" role="listitem"
-         data-semestres="2026.1,2026.2" aria-label="Design de Sistemas de Informação">
-        <div class="disc-card__icon-col">
-          <div class="disc-card__icon-wrap" aria-hidden="true"><span>🎨</span></div>
-        </div>
-        <div class="disc-card__body">
-          <h2 class="disc-card__title">Design</h2>
-          <p class="disc-card__desc">Design de Sistemas de Informação</p>
-        </div>
-        <div class="disc-card__cta" aria-hidden="true">
-          <div class="disc-card__arrow">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
-            </svg>
-          </div>
-          <span class="disc-card__cta-label">Iniciar</span>
-        </div>
-        <div class="disc-card__glow" aria-hidden="true"></div>
-      </a>
-
-      <!-- Banco de Dados -->
-      <a href="disciplinas/2026/banco_dados.html"
-         class="disc-card disc-card--rose" role="listitem"
-         data-semestres="2026.1,2026.2" aria-label="Fundamentos de Banco de Dados">
-        <div class="disc-card__icon-col">
-          <div class="disc-card__icon-wrap" aria-hidden="true"><span>🗄️</span></div>
-        </div>
-        <div class="disc-card__body">
-          <h2 class="disc-card__title">Banco de Dados</h2>
-          <p class="disc-card__desc">Fundamentos de Banco de Dados</p>
-        </div>
-        <div class="disc-card__cta" aria-hidden="true">
-          <div class="disc-card__arrow">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
-            </svg>
-          </div>
-          <span class="disc-card__cta-label">Iniciar</span>
-        </div>
-        <div class="disc-card__glow" aria-hidden="true"></div>
-      </a>
-
-      <!-- Mensagem quando o semestre não tem disciplinas -->
       <p class="disciplines-empty" id="disciplines-empty" aria-live="polite"></p>
-
     </div><!-- /disciplines -->
 
   </main>

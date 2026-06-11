@@ -74,7 +74,7 @@ function _normalizarSemestre(s) {
   return String(s).replace(/-(.+)$/, (_, ap) => '-' + ap.toUpperCase());
 }
 
-export const SEMESTRES = ['2026.1-AP2', '2026.1-AP1','2027.1' ];
+export const SEMESTRES = ['2026.1-AP2', '2026.1-AP1','2026.2-AP1' ];
 
 
 /* ══════════════════════════════════════════════════════════
@@ -88,6 +88,16 @@ const _DISCIPLINAS = {
     { id: 'design',     nome: 'Design de Sistemas de Informação', apelido: 'Design de Sistemas', emoji: '🎨', arquivo: 'design' },
     { id: 'banco_dados',nome: 'Fundamentos de Banco de Dados',    apelido: 'Banco de dados',     emoji: '🗄️', arquivo: 'banco_dados' },
   ],
+  
+  '2026.2': [
+    { id: 'analise_projeto',          nome: 'Análise e Projeto de Sistemas I',      apelido: 'APS I',                    emoji: '📐', arquivo: 'analise_projeto' },
+    { id: 'estruturas_dados',         nome: 'Estruturas de Dados',                  apelido: 'Estruturas de Dados',      emoji: '🧩', arquivo: 'estruturas_dados' },
+    { id: 'legislacao',               nome: 'Legislação Empresarial e Trabalhista', apelido: 'Legislação',              emoji: '⚖️', arquivo: 'legislacao' },
+    { id: 'psicologia_organizacional',nome: 'Psicologia Organizacional',            apelido: 'Psicologia Org.',         emoji: '🧠', arquivo: 'psicologia_organizacional' },
+    { id: 'redes2',                   nome: 'Redes de Computadores II',             apelido: 'Redes II',                emoji: '🌐', arquivo: 'redes2' },
+  ],
+
+
 };
 
 /* ══════════════════════════════════════════════════════════

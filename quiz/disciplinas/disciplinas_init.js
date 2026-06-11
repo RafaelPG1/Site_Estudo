@@ -1,185 +1,126 @@
 // @ts-nocheck
 /* ============================================================
-   NEXUS STUDY — quiz/disciplinas/disciplinas_init.js  v5.0
+   NEXUS STUDY — quiz/disciplinas/disciplinas_init.js  v6.1
 
-   ARQUITETURA DESTA VERSÃO
-   ────────────────────────────────────────────────────────────
-   PRINCÍPIO ÚNICO:
-     Os cards existem no HTML. Eles já estão visíveis.
-     Este arquivo NUNCA decide se um card existe.
-     Este arquivo NUNCA esconde um card.
-     Este arquivo NUNCA bloqueia a exibição de um card.
+   RESPONSABILIDADES (e apenas estas):
+     1. Resolver o semestre da URL                  (navegação)
+     2. Propagar ?sem= nos hrefs dos cards          (navegação)
+     3. Exibir badge de semestre no header          (visual)
+     4. Aplicar cores da disciplina                 (visual)
+     5. Injetar logo                                (visual)
+     6. Inicializar áudio e eventos nos cards       (UX)
+     7. Buscar catalog.json e marcar cards          (UX)
+        sem conteúdo como disc-card--vazio
 
-   RESPONSABILIDADES (por ordem de prioridade):
-     1. Propagar ?sem= nos hrefs dos cards         (crítico)
-     2. Exibir o badge de semestre no header       (visual)
-     3. Aplicar cores da disciplina               (visual)
-     4. Inicializar áudio e logo                  (UX)
-     5. Verificar disponibilidade de conteúdo     (UX — opcional)
-        Carrega ques_*.js em background, lê window.questoes
-        e aplica disc-card--vazio nos modos sem questões.
-
-   GARANTIAS:
-     - Cada responsabilidade está isolada em seu próprio
-       try/catch. Uma falha em qualquer etapa NÃO afeta
-       as outras etapas e NÃO afeta os cards.
-     - A verificação de conteúdo (etapa 5) é assíncrona
-       e não bloqueia nada. Se o arquivo não existir, os
-       cards ficam com disc-card--vazio mas permanecem no DOM.
-     - Não há nenhuma condição que possa resultar em
-       display:none, visibility:hidden ou remoção de
-       qualquer card do DOM.
+   PROIBIÇÕES ABSOLUTAS:
+     ✗ Carregar ques_*.js
+     ✗ Criar elementos <script> dinamicamente
+     ✗ Ler window.questoes
+     ✗ Montar caminhos de conteúdo de quiz
+     ✗ Conhecer template_init.js ou quiz_engine.js
+     ✗ Verificar arrays de questões
+     ✗ Decidir o que o template deve fazer
    ============================================================ */
 
-/* ──────────────────────────────────────────────────────────
-   IMPORTS
-   ────────────────────────────────────────────────────────── */
-import { DISC_CORES } from '../../shared/js/themes/cores.js';
+import { DISC_CORES }          from '../../shared/js/themes/cores.js';
+import { aplicarCoresDisciplina } from '../../shared/js/themes/theme.js';
+import { injetarLogo }            from '../../shared/js/utils/logo.js';
 import {
   resolverSemestreDeURL,
   sincronizarSemNaURL,
   propagarSemNosLinks,
 } from '../../shared/js/utils/url.js';
-import { aplicarCoresDisciplina } from '../../shared/js/themes/theme.js';
-import { injetarLogo }             from '../../shared/js/utils/logo.js';
 import {
   Sound,
   audio,
   installAudioRecovery,
   playSound,
 } from '../../shared/js/audio/audio-api.js';
-import { SEMESTRES, parseSemestre } from '../../src/global.js';
 
 
-/* ──────────────────────────────────────────────────────────
-   ASSISTENTE NEXUS (carregamento em background, sem impacto)
-   ────────────────────────────────────────────────────────── */
+/* ── Assistente Nexus (background, sem impacto no fluxo) ─── */
 (function _carregarIA() {
   try {
     var raiz = new URL('../../', import.meta.url).href.replace(/\/$/, '');
-
-    function _loadScript(src) {
-      return new Promise(function (resolve, reject) {
-        var s    = document.createElement('script');
-        s.src    = src;
-        s.onload = resolve;
-        s.onerror = function () {
-          reject(new Error('[Nexus IA] Falha: ' + src));
-        };
+    function _load(src) {
+      return new Promise(function (res, rej) {
+        var s = document.createElement('script');
+        s.src = src;
+        s.onload = res;
+        s.onerror = function () { rej(new Error(src)); };
         document.body.appendChild(s);
       });
     }
-
     Promise.all([
-      _loadScript(raiz + '/shared/js/ia/ia-ui.js'),
-      _loadScript(raiz + '/shared/js/ia/ia-search.js'),
-      _loadScript(raiz + '/shared/js/ia/ia-loader.js'),
-      _loadScript(raiz + '/shared/js/ia/ia-worker.js'),
+      _load(raiz + '/shared/js/ia/ia-ui.js'),
+      _load(raiz + '/shared/js/ia/ia-search.js'),
+      _load(raiz + '/shared/js/ia/ia-loader.js'),
+      _load(raiz + '/shared/js/ia/ia-worker.js'),
     ])
-      .then(function () { return _loadScript(raiz + '/shared/js/ia/ia.js'); })
-      .catch(function (err) { console.warn('[disciplinas_init] IA não carregada:', err.message); });
-  } catch (e) {
-    /* IA não é essencial — falha silenciosamente */
-  }
+      .then(function () { return _load(raiz + '/shared/js/ia/ia.js'); })
+      .catch(function (err) {
+        console.warn('[disciplinas_init] IA não carregada:', err.message);
+      });
+  } catch (_) { /* IA não é essencial */ }
 }());
 
-/* ──────────────────────────────────────────────────────────
-   ETAPA 0 — Resolver o ID da disciplina a partir da URL
-   ────────────────────────────────────────────────────────── */
+
+/* ══════════════════════════════════════════════════════════
+   PASSO 1 — Resolver ID da disciplina a partir da URL
+   ══════════════════════════════════════════════════════════ */
 var _discId = 'desconhecida';
 try {
   _discId = location.pathname.split('/').pop().replace('.html', '') || 'desconhecida';
-} catch (e) {
-  console.warn('[disciplinas_init] Não foi possível ler o discId da URL:', e.message);
-}
+} catch (_) {}
 
-/* ──────────────────────────────────────────────────────────
-   ETAPA 1 — Aplicar cores da disciplina (síncrono, sem FOUC)
-   Isolado: se a disciplina não tiver cores cadastradas,
-   o sistema continua sem cores personalizadas — sem crash.
-   ────────────────────────────────────────────────────────── */
+
+/* ══════════════════════════════════════════════════════════
+   PASSO 2 — Aplicar cores da disciplina (síncrono, evita FOUC)
+   ══════════════════════════════════════════════════════════ */
 try {
   if (DISC_CORES && DISC_CORES[_discId]) {
     aplicarCoresDisciplina(_discId, DISC_CORES);
-  } else {
-    console.info(
-      '[disciplinas_init] Cores não definidas para "' + _discId + '". ' +
-      'Usando tema padrão.'
-    );
   }
 } catch (e) {
-  console.warn('[disciplinas_init] Erro ao aplicar cores:', e.message);
-  /* Cards continuam visíveis com o tema padrão */
+  console.warn('[disciplinas_init] Cores não aplicadas:', e.message);
 }
 
-/* ──────────────────────────────────────────────────────────
-   ETAPA 2 — Resolver semestre e propagar nos cards
 
-   ORDEM DE PRIORIDADE (da mais confiável para a menos):
-     1. URLSearchParams direta  — fonte da verdade, nunca valida
-     2. resolverSemestreDeURL() — pode rejeitar formatos como
-        "2026.1-ap2" se não estiver em SEMESTRES[]
-     3. String vazia            — pior caso; cards ainda aparecem
+/* ══════════════════════════════════════════════════════════
+   PASSO 3 — Resolver semestre
 
-   POR QUÊ URLSearchParams PRIMEIRO:
-     resolverSemestreDeURL() valida o semestre contra a lista
-     global SEMESTRES[]. Semestres com AP (ex: "2026.1-ap2")
-     podem não estar nessa lista, fazendo a função retornar
-     vazio mesmo quando a URL tem o valor correto.
-     Lendo direto da URL garantimos que "2026.1-ap2" sempre
-     seja preservado e propagado.
-   ────────────────────────────────────────────────────────── */
+   Prioridade:
+     1. URLSearchParams direto (nunca rejeita formatos como "2026.1-AP2")
+     2. resolverSemestreDeURL() como fallback
+   ══════════════════════════════════════════════════════════ */
 var _sem = '';
-
-/* 1ª tentativa: leitura direta da URL — nunca valida, nunca rejeita */
 try {
   var _rawSem = new URLSearchParams(location.search).get('sem') || '';
-  /* Normaliza o casing do AP: "2026.1-ap2" → "2026.1-AP2".
-     SEMESTRES[] e os diretórios físicos usam maiúsculas.
-     parseSemestre() preserva o casing recebido — sem
-     normalização aqui, o caminho gerado seria .../ap2/ques_*.js
-     que não existe em servidores Linux (case-sensitive). */
-  _sem = _rawSem.replace(/-(.+)$/, function(_, ap) { return '-' + ap.toUpperCase(); });
-} catch (e) { /* ignora — browser muito antigo */ }
+  /* Normaliza casing do AP: "2026.1-ap2" → "2026.1-AP2" */
+  _sem = _rawSem.replace(/-(.+)$/, function (_, ap) { return '-' + ap.toUpperCase(); });
+} catch (_) {}
 
-/* 2ª tentativa: se a URL não tinha ?sem=, tenta a função utilitária */
 if (!_sem) {
-  try {
-    _sem = resolverSemestreDeURL() || '';
-  } catch (e) {
-    console.warn('[disciplinas_init] resolverSemestreDeURL falhou:', e.message);
-  }
+  try { _sem = resolverSemestreDeURL() || ''; } catch (_) {}
 }
 
-/* Sincroniza na URL (não crítico) */
+/* Sincroniza na URL sem adicionar entrada no histórico */
 try {
   if (_sem) sincronizarSemNaURL(_sem);
-} catch (e) { /* ignora */ }
+} catch (_) {}
 
-/*
-   Propaga ?sem= nos hrefs dos 4 cards.
-   Os seletores cobrem os padrões usados em banco_dados.html,
-   poo.html, redes.html e design.html.
-   NUNCA esconde cards — apenas atualiza o href.
-*/
+
+/* ══════════════════════════════════════════════════════════
+   PASSO 4 — Propagar ?sem= nos hrefs dos cards e back-btn
+   ══════════════════════════════════════════════════════════ */
 try {
   propagarSemNosLinks(_sem, [
     'a[href*="template.html"]',
-    'a[href*="ava_template"]',
-    'a[href*="quiz_template"]',
-    'a[href*="quiz.html"]',
     '.disc-card[href]',
   ]);
-} catch (e) {
-  console.warn('[disciplinas_init] propagarSemNosLinks falhou — aplicando fallback manual:', e.message);
-}
+} catch (_) {}
 
-/*
-   Fallback manual: garante que TODOS os links .disc-card
-   tenham ?sem= correto, independente de propagarSemNosLinks.
-   Cobre o caso de "2026.1-ap2" ser rejeitado pela função
-   utilitária mas estar correto na URL.
-*/
+/* Fallback manual — garante que todos os links .disc-card recebam ?sem= */
 if (_sem) {
   try {
     document.querySelectorAll('a.disc-card, a[href*="template.html"]').forEach(function (link) {
@@ -187,298 +128,130 @@ if (_sem) {
         var url = new URL(link.href, location.href);
         url.searchParams.set('sem', _sem);
         link.href = url.toString();
-      } catch (e2) { /* link inválido — ignora */ }
+      } catch (_) {}
     });
-  } catch (e) { /* ignora */ }
+  } catch (_) {}
 }
 
-/* Atualiza o badge de semestre no header */
+/* Badge de semestre no header */
 try {
   var _badge = document.getElementById('header-sem-badge');
-  if (_badge) {
-    _badge.textContent = _sem || '—';
-  }
-} catch (e) { /* ignora */ }
+  if (_badge) _badge.textContent = _sem || '—';
+} catch (_) {}
 
 
+/* ══════════════════════════════════════════════════════════
+   PASSO 5 — Logo, áudio e eventos (após DOMContentLoaded)
+   ══════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', function () {
 
-/* ──────────────────────────────────────────────────────────
-   ETAPA 4 — Áudio, logo e eventos de hover/click nos cards
-   Tudo dentro de DOMContentLoaded para garantir que o DOM
-   esteja completo. Cada bloco é independente.
-   ────────────────────────────────────────────────────────── */
-document.addEventListener('DOMContentLoaded', function _onDomReady() {
-
-  /* ── Logo ── */
-  try {
-    injetarLogo('#header-logo-wrap');
-  } catch (e) {
-    console.warn('[disciplinas_init] injetarLogo falhou:', e.message);
+  /* Logo */
+  try { injetarLogo('#header-logo-wrap'); } catch (e) {
+    console.warn('[disciplinas_init] Logo não injetada:', e.message);
   }
 
-  /* ── Áudio ── */
+  /* Áudio */
   try {
     Sound.init();
     installAudioRecovery({ Sound, audio });
   } catch (e) {
-    console.warn('[disciplinas_init] Sound.init falhou:', e.message);
+    console.warn('[disciplinas_init] Áudio não iniciado:', e.message);
   }
 
-  /* ── Eventos nos cards (não bloqueiam a aparição dos cards) ── */
+  /* Eventos de hover e click nos cards */
   try {
     var backBtn = document.getElementById('back-btn');
     if (backBtn) {
       backBtn.addEventListener('click', function () {
-        try { playSound('click', 'quiz'); } catch (e) {}
+        try { playSound('click', 'quiz'); } catch (_) {}
       });
     }
 
     document.querySelectorAll('.disc-card').forEach(function (card) {
       card.addEventListener('mouseenter', function () {
-        try { playSound('hover', 'quiz'); } catch (e) {}
+        try { playSound('hover', 'quiz'); } catch (_) {}
       });
       card.addEventListener('click', function () {
-        try { playSound('click', 'quiz'); } catch (e) {}
+        try { playSound('click', 'quiz'); } catch (_) {}
       });
     });
-  } catch (e) {
-    /* Eventos são UX extra — falha silenciosa */
-  }
+  } catch (_) {}
 
-  /* ── Aguarda áudio estar pronto (não bloqueia nada) ── */
+  /* Áudio pronto em background */
+  try { Sound.waitUntilReady().catch(function () {}); } catch (_) {}
+
+  /* Footer: ano atual */
   try {
-    Sound.waitUntilReady().catch(function () { /* ignora */ });
-  } catch (e) { /* ignora */ }
+    var yearEl = document.getElementById('footer-year');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+  } catch (_) {}
 
 });
 
-/* ──────────────────────────────────────────────────────────
-   ETAPA 5 — Verificar disponibilidade de conteúdo por modo
-   ────────────────────────────────────────────────────────────
-   LÓGICA:
-     Um card só é desabilitado se NENHUM semestre de SEMESTRES[]
-     (importado do global.js) tiver questões para aquele modo.
-     Isso garante que a verificação funcione independente de
-     ?sem= estar ou não na URL.
 
-   ALGORITMO:
-     1. Para cada semestre de SEMESTRES[], monta o caminho do
-        ques_<discId>.js usando parseSemestre() (mesma função
-        usada pelo template_init e pelo engine).
-     2. Dispara todos os <script> em paralelo.
-     3. Cada onload registra quais modos têm questões num mapa
-        compartilhado (modosComConteudo).
-     4. Quando todos responderem (onload ou onerror), desabilita
-        apenas os modos que nenhum semestre supriu.
+/* ══════════════════════════════════════════════════════════
+   PASSO 6 — Verificar disponibilidade via catalog.json
 
-   FONTE DA VERDADE:
-     SEMESTRES[] e parseSemestre() vêm de src/global.js —
-     mesma fonte usada pelo template_init.js e pelo quiz_engine.
-     Não há lista duplicada aqui. Ao adicionar um semestre no
-     global.js, a verificação passa a incluí-lo automaticamente.
+   Fluxo:
+     1. Usa o semestre completo como chave do catalog
+        (ex: "2026.1-AP1", "2026.1-AP2" — sem extração de período base)
+     2. Faz fetch de ./catalog.json (mesma pasta do disciplinas_init.js)
+     3. Lê catalog[_sem][discId]
+     4. Para cada card com data-modo, aplica disc-card--vazio
+        se o modo estiver ausente ou false no catalog
 
-   GARANTIAS:
-     - Cards NUNCA são removidos do DOM.
-     - disc-card--vazio apenas reduz opacidade e bloqueia
-       pointer-events (ver disciplinas_global.css).
-     - Se todos os scripts falharem (sem internet, discId errado),
-       nenhum card é desabilitado — preferimos falso-positivo
-       (card habilitado sem conteúdo) a ocultar conteúdo válido.
-   ────────────────────────────────────────────────────────── */
-(function _verificarConteudo() {
-  try {
-    /* ── utilidade de log ── */
-    var TAG = '[CHECK:' + _discId + ']';
-    function _log() {
-      var args = Array.prototype.slice.call(arguments);
-      args.unshift(TAG);
-      console.log.apply(console, args);
-    }
+   Garantias:
+     - Nunca remove cards do DOM
+     - Se o fetch falhar, nenhum card é desabilitado
+       (preferimos falso-positivo a esconder conteúdo válido)
+     - Assíncrono: não bloqueia a exibição dos cards
+   ══════════════════════════════════════════════════════════ */
+(function _aplicarDisponibilidade() {
 
-    if (!_discId || _discId === 'desconhecida') {
-      _log('abortado — _discId inválido:', JSON.stringify(_discId));
-      return;
-    }
-    if (!Array.isArray(SEMESTRES) || SEMESTRES.length === 0) {
-      _log('abortado — SEMESTRES vazio ou não é array:', SEMESTRES);
-      return;
-    }
+  if (!_sem || !_discId || _discId === 'desconhecida') return;
 
-    _log('iniciando verificação');
-    _log('SEMESTRES =', JSON.stringify(SEMESTRES));
+  /* Caminho do catalog relativo à raiz do projeto */
+  var _catalogUrl = new URL('./catalog.json', import.meta.url).href;
 
-    var _base = new URL('../../', import.meta.url).href.replace(/\/$/, '');
-    _log('_base =', _base);
-
-    /* Mapa: data-modo do card → chave em window.questoes */
-    var MODO_KEY = { ava: 'ava', questoes: 'questoes', enade: 'enade', fixacao: 'fixacao' };
-
-    /* modos que encontraram pelo menos um semestre com questões */
-    var modosComConteudo = {};
-
-    var total      = SEMESTRES.length;
-    var resolvidos = 0;
-
-    _log('total de semestres a verificar =', total);
-
-    function _onTodosResolvidos() {
-      _log('─── RESULTADO FINAL ───────────────────────────');
-      _log('acumulado modosComConteudo =', JSON.stringify(modosComConteudo));
-      try {
-        document.querySelectorAll('.disc-card[data-modo]').forEach(function (card) {
-          var key = MODO_KEY[card.dataset.modo];
-          if (!key) {
-            _log('[FINAL] card data-modo="' + card.dataset.modo + '" — sem mapeamento em MODO_KEY, ignorado');
-            return;
-          }
-          var habilitado = !!modosComConteudo[key];
-          _log('[FINAL] modo=' + card.dataset.modo + ' → ' + (habilitado ? 'ENABLED' : 'DISABLED (disc-card--vazio)'));
-          if (!habilitado) {
-            card.classList.add('disc-card--vazio');
-            card.setAttribute('aria-disabled', 'true');
-            card.setAttribute('tabindex', '-1');
-          }
-        });
-      } catch (e) {
-        console.warn('[disciplinas_init] Erro ao aplicar estado dos cards:', e.message);
-      }
-    }
-
-    function _tick() {
-      resolvidos += 1;
-      _log('tick: resolvidos=' + resolvidos + '/' + total);
-      if (resolvidos >= total) _onTodosResolvidos();
-    }
-
-    /*
-       CORREÇÃO DE CONDIÇÃO DE CORRIDA:
-         Os scripts são carregados em série, não em paralelo.
-         Motivo: cada ques_*.js sobrescreve window.questoes.
-         Se dois scripts carregam em paralelo, o onload do
-         primeiro pode ler window.questoes já sobrescrito pelo
-         segundo — capturando dados errados ou misturados.
-         Carregando em série, cada onload lê o window.questoes
-         exato do script que acabou de executar.
-    */
-    var _fila = SEMESTRES.slice(); /* cópia para não mutar o array importado */
-
-    function _proximoScript() {
-      if (_fila.length === 0) {
-        _log('fila vazia — nenhum script pendente');
+  fetch(_catalogUrl)
+    .then(function (res) {
+      if (!res.ok) throw new Error('catalog.json retornou HTTP ' + res.status);
+      return res.json();
+    })
+    .then(function (catalog) {
+      var semesterEntry = catalog[_sem];
+      if (!semesterEntry) {
+        /* Semestre não declarado no catalog — não desabilita nada */
+        console.info(
+          '[disciplinas_init] Semestre "' + _sem + '" não encontrado no catalog.json.' +
+          ' Nenhum card será desabilitado.'
+        );
         return;
       }
-      var semStr = _fila.shift();
-      _log('─── semestre=' + semStr + ' ──────────────────────────');
-      try {
-        var parsed = parseSemestre(semStr);
-        _log('parseSemestre =', JSON.stringify(parsed));
 
-        var src = parsed.ap
-          ? _base + '/content/quiz/' + parsed.ano + '/' + parsed.periodo + '/' + parsed.ap + '/ques_' + _discId + '.js'
-          : _base + '/content/quiz/' + parsed.ano + '/' + parsed.periodo + '/ques_' + _discId + '.js';
-
-        _log('src =', src);
-
-        var s = document.createElement('script');
-        s.src = src;
-
-        s.onload = function () {
-          _log('loaded=true  src=' + src);
-          try {
-            var q = window.questoes;
-
-            /* ── DIAGNÓSTICO COMPLETO ── */
-            _log('── DIAGNÓSTICO window.questoes ─────────────────');
-            _log('typeof window.questoes =', typeof q);
-            _log('window.questoes (valor completo):');
-            console.log(q);
-
-            if (q === null) {
-              _log('window.questoes é null');
-            } else if (q === undefined) {
-              _log('window.questoes é undefined');
-            } else if (typeof q !== 'object') {
-              _log('window.questoes NÃO é um objeto — typeof:', typeof q, '— valor:', q);
-            } else {
-              try {
-                _log('Object.keys(window.questoes) =', JSON.stringify(Object.keys(q)));
-              } catch (ek) {
-                _log('Object.keys falhou:', ek.message);
-              }
-
-              /* Diagnóstico por modo */
-              var MODOS_DIAG = ['ava', 'questoes', 'fixacao', 'enade'];
-              MODOS_DIAG.forEach(function (chave) {
-                var existe = Object.prototype.hasOwnProperty.call(q, chave);
-                var val    = q[chave];
-                var isArr  = Array.isArray(val);
-                var tp     = val === null ? 'null' : val === undefined ? 'undefined' : typeof val;
-                var len    = isArr ? val.length : (tp === 'object' && val !== null ? '(object, não array)' : 'N/A');
-
-                _log(
-                  chave + ':' +
-                  '  existe=' + existe +
-                  '  typeof=' + tp +
-                  '  Array.isArray=' + isArr +
-                  '  length=' + len
-                );
-
-                /* Mostra o valor completo se não for array ou for vazio */
-                if (!isArr || val.length === 0) {
-                  _log(chave + ' valor completo:');
-                  console.log(val);
-                } else {
-                  _log(chave + ' é array com ' + val.length + ' elementos ✓');
-                }
-              });
-            }
-            _log('── FIM DO DIAGNÓSTICO ──────────────────────────');
-
-            if (!q || typeof q !== 'object') {
-              _log('window.questoes inválido — nenhum modo atualizado');
-            } else {
-              Object.keys(MODO_KEY).forEach(function (modo) {
-                var chave = MODO_KEY[modo];
-                var arr   = q[chave];
-                var len   = Array.isArray(arr) ? arr.length : -1;
-                _log(
-                  'modo=' + modo +
-                  '  chave=' + chave +
-                  '  Array.isArray=' + Array.isArray(arr) +
-                  '  length=' + len +
-                  (len > 0 ? '  ✓ tem conteúdo' : '  ✗ vazio/ausente')
-                );
-                if (Array.isArray(arr) && arr.length > 0) {
-                  modosComConteudo[chave] = true;
-                }
-              });
-            }
-          } catch (e) {
-            _log('ERRO ao ler window.questoes:', e.message);
-          }
-          _log('acumulado após semestre=' + semStr + ':', JSON.stringify(modosComConteudo));
-          _tick();
-          _proximoScript();
-        };
-
-        s.onerror = function () {
-          _log('loaded=false (404 ou erro de rede)  src=' + src);
-          _tick();
-          _proximoScript();
-        };
-
-        document.body.appendChild(s);
-      } catch (e) {
-        _log('EXCEÇÃO ao montar script para semestre=' + semStr + ':', e.message);
-        _tick();
-        _proximoScript();
+      var discEntry = semesterEntry[_discId];
+      if (!discEntry) {
+        /* Disciplina não declarada para este semestre — não desabilita nada */
+        console.info(
+          '[disciplinas_init] Disciplina "' + _discId + '" não encontrada em "' + _sem + '"' +
+          ' no catalog.json. Nenhum card será desabilitado.'
+        );
+        return;
       }
-    }
 
-    _proximoScript(); /* inicia a fila */
+      document.querySelectorAll('.disc-card[data-modo]').forEach(function (card) {
+        var modo = card.dataset.modo;
+        var disponivel = discEntry[modo] === true;
 
-  } catch (e) {
-    console.warn('[disciplinas_init] _verificarConteudo falhou:', e.message);
-    /* Falha total: não desabilita nada — preferimos cards habilitados. */
-  }
+        if (!disponivel) {
+          card.classList.add('disc-card--vazio');
+          card.setAttribute('aria-disabled', 'true');
+          card.setAttribute('tabindex', '-1');
+        }
+      });
+    })
+    .catch(function (err) {
+      /* Falha no fetch: mantém todos os cards habilitados */
+      console.warn('[disciplinas_init] Falha ao carregar catalog.json:', err.message);
+    });
 }());
