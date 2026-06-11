@@ -4,15 +4,14 @@
    ============================================= */
 
 import {
-  SEMESTRES,
   getSemestreAtual,
   setSemestre,
   getDisciplinasDeSemestre,
 } from '../src/global.js';
 
-import { sincronizarSemNaURL } from '../shared/js/utils/url.js';
-import { preencherAnos } from '../shared/js/utils/dom.js';
-import { injetarLogo } from '../shared/js/utils/logo.js';
+import { sincronizarSemNaURL }            from '../shared/js/utils/url.js';
+import { criarSemestreSelect, preencherAnos } from '../shared/js/utils/dom.js';
+import { injetarLogo }                    from '../shared/js/utils/logo.js';
 import { Sound, audio, installAudioRecovery, playSound } from '../shared/js/audio/audio-api.js';
 
 // ── Assistente Nexus ──────────────────────────────────────────
@@ -42,38 +41,17 @@ _carregarIA();
 
 (function () {
 
-  document.addEventListener('DOMContentLoaded', async () => {
-    Sound.init();
-    installAudioRecovery({ Sound, audio });
-    await Sound.waitUntilReady();
-
-    injetarLogo('#header-logo-wrap');
-
-    document.querySelector('.back-btn')
-      ?.addEventListener('click', () => playSound('click', 'quiz'));
-
-    const sel = document.getElementById('quiz-semestre-select');
-    sel?.addEventListener('mousedown', () => playSound('click', 'quiz'));
-    sel?.addEventListener('change',    () => playSound('select', 'quiz'));
-  });
-
+  // ── Lê ?sem= da URL e aplica antes de qualquer coisa ─────────
   const semParam = new URLSearchParams(location.search).get('sem');
-  if (semParam && SEMESTRES.includes(semParam)) setSemestre(semParam);
+  if (semParam) setSemestre(semParam);
 
   let semAtual = getSemestreAtual();
 
-  const select = document.getElementById('quiz-semestre-select');
-  SEMESTRES.forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = s; opt.textContent = s;
-    if (s === semAtual) opt.selected = true;
-    select.appendChild(opt);
-  });
-
+  // ── Disciplinas ───────────────────────────────────────────────
   const DISC_CLASS = {
-    poo:        'disc-card--blue',
-    redes:      'disc-card--teal',
-    design:     'disc-card--gold',
+    poo:         'disc-card--blue',
+    redes:       'disc-card--teal',
+    design:      'disc-card--gold',
     banco_dados: 'disc-card--rose',
   };
 
@@ -92,7 +70,7 @@ _carregarIA();
     grid.querySelectorAll('.disc-card').forEach(c => c.remove());
 
     if (!discs.length) {
-      msgEl.textContent  = `Nenhuma disciplina cadastrada para ${sem}.`;
+      msgEl.textContent   = `Nenhuma disciplina cadastrada para ${sem}.`;
       msgEl.style.display = 'block';
       return;
     }
@@ -100,7 +78,6 @@ _carregarIA();
     msgEl.style.display = 'none';
 
     discs.forEach(disc => {
-      /* Caminho correto: disciplinas/{ano}/{periodo}/{arquivo}.html?sem={sem} */
       const href  = `disciplinas/${ano}/${periodo}/${disc.arquivo}.html?sem=${sem}`;
       const cls   = DISC_CLASS[disc.id] ?? 'disc-card--blue';
       const label = disc.apelido ?? disc.nome;
@@ -137,16 +114,43 @@ _carregarIA();
     });
   }
 
-  gerarCards(semAtual);
-  sincronizarSemNaURL(semAtual);
+  // ── Monta o select de semestre igual ao index.js ──────────────
+  function _montarSelect() {
+    const wrap = document.getElementById('semestre-wrap');
+    if (!wrap) {
+      console.warn('[Quiz] #semestre-wrap não encontrado.');
+      return;
+    }
 
-  select.addEventListener('change', () => {
-    semAtual = select.value;
-    setSemestre(semAtual);
+    criarSemestreSelect('semestre-wrap', sem => {
+      semAtual = sem;
+      setSemestre(sem);
+      gerarCards(sem);
+      sincronizarSemNaURL(sem);
+      playSound('select', 'quiz');
+    });
+
+    requestAnimationFrame(() => {
+      const sel = wrap.querySelector('select');
+      if (sel) sel.addEventListener('mousedown', () => playSound('click', 'quiz'));
+    });
+  }
+
+  // ── Inicialização ─────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', async () => {
+    Sound.init();
+    installAudioRecovery({ Sound, audio });
+    await Sound.waitUntilReady();
+
+    injetarLogo('#header-logo-wrap');
+
+    document.querySelector('.back-btn')
+      ?.addEventListener('click', () => playSound('click', 'quiz'));
+
+    _montarSelect();
     gerarCards(semAtual);
     sincronizarSemNaURL(semAtual);
+    preencherAnos(['footer-year']);
   });
-
-  preencherAnos(['footer-year']);
 
 }());

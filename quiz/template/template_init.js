@@ -304,23 +304,44 @@ function _injetarNavFloat() {
   nav.setAttribute('aria-label', 'Navegação rápida');
 
   nav.innerHTML =
-    _criarBotaoNav('btn-up',            'Ir ao topo',               'fas fa-arrow-up')    +
-    _criarBotaoNav('btn-left',          'Voltar',                   'fas fa-rotate-left') +
-    _criarBotaoNav('btn-down',          'Ir ao final',              'fas fa-arrow-down')  +
-    '<div class="nav-divider" aria-hidden="true"></div>'                                  +
-    _criarBotaoNav('restartButton',     'Reiniciar',                'fas fa-rotate-right')+
-    _criarBotaoNav('revealButton',      'Revelar respostas',        'fas fa-eye')         +
-    '<div class="nav-divider" aria-hidden="true"></div>'                                  +
-    '<button id="btn-toggle-modo" class="nav-btn btn-toggle-modo" title="Modo Step (uma questão por vez)" type="button">' +
-      '<i class="fas fa-layer-group" aria-hidden="true"></i></button>'                    +
-    '<div class="nav-divider" aria-hidden="true"></div>'                                  +
+    _criarBotaoNav('btn-up',        'Ir ao topo',        'fas fa-arrow-up')    +
+    _criarBotaoNav('btn-left',      'Voltar',            'fas fa-rotate-left') +
+    _criarBotaoNav('btn-down',      'Ir ao final',       'fas fa-arrow-down')  +
+    '<div class="nav-divider" aria-hidden="true"></div>'                        +
+    _criarBotaoNav('restartButton', 'Reiniciar',         'fas fa-rotate-right')+
+    _criarBotaoNav('revealButton',  'Revelar respostas', 'fas fa-eye')         +
+    '<div class="nav-divider" aria-hidden="true"></div>'                        +
+    '<button id="btn-toggle-modo" class="nav-btn btn-toggle-modo" title="Modo Step" type="button">' +
+      '<i class="fas fa-layer-group" aria-hidden="true"></i></button>'          +
+    '<div class="nav-divider" aria-hidden="true"></div>'                        +
     '<button id="btn-filtro-aulas" class="nav-btn btn-filtro-aulas" title="Filtrar aulas" type="button">' +
-      '<i class="fas fa-filter" aria-hidden="true"></i></button>'                         +
-    '<div class="nav-divider" aria-hidden="true"></div>'                                  +
-    '<button id="btn-legenda" class="nav-btn btn-legenda" title="Informações" type="button">' +
-      '<i class="fas fa-circle-info" aria-hidden="true"></i></button>';
+      '<i class="fas fa-filter" aria-hidden="true"></i></button>'               +
+    '<div class="nav-divider" aria-hidden="true"></div>'                        +
+'<button id="btn-legenda" class="nav-btn btn-legenda" title="Informações" type="button">' +
+      '<i class="fas fa-circle-info" aria-hidden="true"></i></button>'  +
+    '<div class="nav-divider nav-divider--externo" aria-hidden="true"></div>'; // ← adiciona aqui
 
   document.body.appendChild(nav);
+
+  var moved = { fab: false, music: false, sfx: false };
+
+  var observer = new MutationObserver(function () {
+    if (!moved.music) {
+      var music = document.getElementById('music-btn-global');
+      if (music) { nav.appendChild(music); moved.music = true; }
+    }
+    if (!moved.sfx) {
+      var sfx = document.querySelector('.abtn');
+      if (sfx) { nav.appendChild(sfx); moved.sfx = true; }
+    }
+    if (!moved.fab) {
+      var fab = document.getElementById('nexus-fab');
+      if (fab) { nav.appendChild(fab); moved.fab = true; }
+    }
+    if (moved.fab && moved.music && moved.sfx) observer.disconnect();
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
 }
 
 

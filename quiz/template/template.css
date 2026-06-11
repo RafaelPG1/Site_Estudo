@@ -960,12 +960,13 @@ a { text-decoration: none; color: inherit; }
   position: fixed;
   right: 16px;
   top: 50%;
-  transform: translateY(-50%);
+  transform: translateY(calc(-48% + 10px));
   display: flex;
   flex-direction: column;
   gap: 5px;
   z-index: 100;
 }
+
 /* ── BOTÕES FLUTUANTES MENORES (só no template) ──────────── */
 
 /* ── BOTÃO IA MENOR (só no template) ── */
@@ -1006,19 +1007,13 @@ a { text-decoration: none; color: inherit; }
   right: 20px;
 }
 
-#music-btn-global {
-  width: 36px;      /* era 32 */
-  height: 36px;     /* era 32 */
-  bottom: 122px;    /* era 104 → 70 + 36 + 16 gap */
-  right: 20px;
-}
 
 /* Nav-float de volta para a direita, acima da pilha */
 .nav-float {
   left: auto;
   right: 20px;
   top: 50%;
-  transform: translateY(-50%);
+
 
  overflow: visible;          /* ← permite o scale/glow vazar */
   max-height: calc(100vh - 220px);
@@ -2417,3 +2412,138 @@ button,
   .step-btn        { font-size: 0.68rem; padding: 0.42rem 0.65rem; }
 }
 
+
+
+
+
+
+/* ── Botões externos integrados na nav-float ── */
+#nexus-fab,
+.abtn,
+#music-btn-global {
+  position: relative !important;
+  bottom: auto !important;
+  right: auto !important;
+  top: auto !important;
+  left: auto !important;
+  flex-shrink: 0 !important;
+  width: 36px !important;
+  height: 36px !important;
+}
+
+/* Quadrado igual aos nav-btn */
+#nexus-fab,
+#nexus-fab::before,
+#nexus-fab::after,
+#nexus-fab-body,
+.abtn,
+.abtn .ro,
+.abtn .rm,
+.abtn .body,
+.abtn .pulse,
+.abtn .ripple {
+  border-radius: 9px !important;
+}
+
+/* Pseudo-elementos internos do FAB precisam de inset correto */
+#nexus-fab::before { inset: -4px !important; }
+#nexus-fab::after  { inset: -1px !important; }
+#nexus-fab-body    { inset: 0 !important; }
+
+/* Espaço extra: IA separado do último botão de áudio */
+#nexus-fab {
+  margin-top: 8px !important;
+}
+
+.nav-divider--externo {
+  height: 1px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: none !important;
+  margin: 3px 0 8px !important; /* mais espaço abaixo da linha, empurrando os botões de áudio/IA */
+}
+
+/* ══════════════════════════════════════════════════════════
+   TEMPLATE — Desativa animações de pulse/ripple dos botões
+   de áudio (.abtn) e IA (#nexus-fab) nesta página.
+   Os @keyframes continuam declarados nos shared CSS;
+   aqui apenas zeramos animation e opacity dos elementos
+   que produzem o efeito de "círculo crescendo/sumindo".
+   ══════════════════════════════════════════════════════════ */
+
+/* Áudio — desativa pulse e ripple */
+.abtn .pulse,
+.abtn .ripple {
+  animation: none !important;
+  opacity: 0 !important;
+}
+
+/* IA — desativa idle (piscar) e ripple ao abrir */
+#nexus-fab:not(.nexus-active) #nexus-fab-body {
+  animation: none !important;
+}
+
+#nexus-fab-ripple,
+#nexus-fab.nexus-active #nexus-fab-ripple {
+  animation: none !important;
+  opacity: 0 !important;
+}
+
+/* ══════════════════════════════════════════════════════════
+   TEMPLATE — Remove anéis externos dos botões na nav-float
+   ══════════════════════════════════════════════════════════ */
+
+/* Áudio — remove anel externo e anel médio */
+.nav-float .abtn .ro,
+.nav-float .abtn .rm {
+  border-color: transparent !important;
+}
+.nav-float .abtn .glow {
+  display: none !important;
+}
+
+/* IA — remove anel externo (::before) e anel médio (::after) */
+.nav-float #nexus-fab::before,
+.nav-float #nexus-fab::after {
+  border-color: transparent !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   TEMPLATE — Hover dos botões IA e Áudio na nav-float
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Transição igual aos nav-btn (all 0.22s ease) ──────── */
+.nav-float .abtn,
+.nav-float #nexus-fab {
+  transition: transform 0.22s ease, filter 0.22s ease !important;
+}
+
+/* ── Hover: mesmo scale dos nav-btn ────────────────────── */
+.nav-float .abtn:hover,
+.nav-float #nexus-fab:hover {
+  transform: scale(1.08) !important;
+  filter: brightness(1.35) saturate(1.15) !important;
+}
+
+/* ── Filhos não duplicam scale ──────────────────────────── */
+.nav-float .abtn:hover .body,
+.nav-float .abtn:hover .ro,
+.nav-float #nexus-fab:hover #nexus-fab-body {
+  transform: none !important;
+}
+
+/* ── border-radius quadrado em todos os elementos internos ─
+   Garante que ao comprimir (zoom) fique achatado igual
+   aos nav-btn, não circular                               */
+.nav-float .abtn,
+.nav-float .abtn .ro,
+.nav-float .abtn .rm,
+.nav-float .abtn .body,
+.nav-float .abtn .pulse,
+.nav-float .abtn .ripple,
+.nav-float #nexus-fab,
+.nav-float #nexus-fab::before,
+.nav-float #nexus-fab::after,
+.nav-float #nexus-fab-body {
+  border-radius: 9px !important;
+}
