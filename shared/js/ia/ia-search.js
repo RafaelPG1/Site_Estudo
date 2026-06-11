@@ -1,25 +1,111 @@
 /**
- * ASSISTENTE NEXUS — ia-search.js
- * Motor de busca interno. Zero DOM. Zero renderização. Zero I/O.
+ * ASSISTENTE NEXUS — ia-search.js  v3.0 (QUIZ-ISOLATION)
  *
- * PATCH score-v2:
- *   _STOPWORDS expandida com verbos de pergunta ("explique", "explica",
- *   "conceitue", "defina", "descreva", "mostre", "fale") e partículas
- *   de interrogação ("oq", "oque", "qual", "como", "por").
- *   Esses termos nunca aparecem nos resumos e inflavam o denominador
- *   do score, fazendo com que matches reais (ex: "dns") fossem divididos
- *   por um conjunto grande e ficassem abaixo do minScore.
+ * BREAKING CHANGE — Índices completamente separados:
  *
- *   _score() também ganhou um "boost de termo único": quando a query
- *   filtrada tem apenas 1 termo e ele é encontrado no chunk, o score
- *   mínimo garantido é 60 — evitando que siglas e termos técnicos
- *   curtos sejam descartados pelo threshold.
+ *   _indiceResumo  — alimentado por indexarConteudo()
+ *                    usado por buscar() em todos os contextos
+ *
+ *   _indiceQuiz    — alimentado por _indexarQuestoesInterno()
+ *                    NUNCA exposto via buscar() público
+ *                    acessível SOMENTE via buscarQuiz() / buscarQuestaoPorNumero()
+ *                    exige token de sessão gerado pelo template_init
+ *
+ * Qualquer tentativa de chamar indexarQuestoes() ou as funções de busca
+ * de quiz sem o token correto é silenciosamente bloqueada e os índices
+ * são retornados vazios — sem erro, sem exceção, sem vazamento.
+ *
+ * TOKEN DE SESSÃO:
+ *   template_init.js deve chamar NexusSearch.autorizarQuiz(token) ANTES
+ *   de qualquer indexação de questões.
+ *   O token é gerado uma vez por sessão de quiz (crypto.randomUUID ou
+ *   Math.random fallback) e armazenado em window.__NEXUS_QUIZ_TOKEN__.
+ *   Ao sair do quiz (unload / visibilitychange → hidden), template_init
+ *   chama NexusSearch.revogarQuiz() para zerar o token e o índice.
+ *
+ * API PÚBLICA (não muda para consumidores de resumo):
+ *   NexusSearch.indexarConteudo(conteudo)
+ *   NexusSearch.buscar(pergunta, opcoes)
+ *   NexusSearch.limparIndice()       — limpa APENAS _indiceResumo
+ *   NexusSearch.estaIndexado()       — reflete apenas _indiceResumo
+ *   NexusSearch.normalizarTexto(str)
+ *
+ * API RESTRITA (quiz — exige token):
+ *   NexusSearch.autorizarQuiz(token)
+ *   NexusSearch.revogarQuiz()
+ *   NexusSearch.indexarQuestoes(questoes, modo, token)
+ *   NexusSearch.buscarQuiz(pergunta, opcoes, token)
+ *   NexusSearch.buscarQuestaoPorNumero(numero, token)
+ *   NexusSearch.estaIndexadoQuiz(token)
+ *   NexusSearch.limparIndiceQuiz(token)
  */
 
 (function () {
   'use strict';
 
-  let _indice = [];
+  /* ══════════════════════════════════════════════════════════
+     ÍNDICES SEPARADOS
+  ══════════════════════════════════════════════════════════ */
+
+  /** Índice de conteúdo de resumo — alimentado por indexarConteudo() */
+  let _indiceResumo = [];
+
+  /**
+   * Índice de questões de quiz — alimentado por _indexarQuestoesInterno().
+   * Cada entrada pode conter _q (objeto completo com gabarito/feedback).
+   * NUNCA sai deste módulo via buscar() público.
+   */
+  let _indiceQuiz = [];
+
+  /* ══════════════════════════════════════════════════════════
+     TOKEN DE SESSÃO DE QUIZ
+  ══════════════════════════════════════════════════════════ */
+
+  /**
+   * Token autorizado para operações de quiz nesta sessão.
+   * null = quiz não autorizado.
+   * Qualquer chamada de API de quiz com token diferente é bloqueada.
+   */
+  let _tokenQuizAtivo = null;
+
+  /**
+   * Verifica se o token fornecido é válido para acesso ao quiz.
+   * Nunca lança exceção — retorna false silenciosamente.
+   *
+   * @param {string|undefined} token
+   * @returns {boolean}
+   */
+  function _tokenValido(token) {
+    if (!token || typeof token !== 'string') return false;
+    if (!_tokenQuizAtivo)                    return false;
+    return token === _tokenQuizAtivo;
+  }
+
+  /**
+   * Registra o token de sessão de quiz.
+   * Chamado exclusivamente por template_init.js durante o boot.
+   *
+   * @param {string} token
+   */
+  function autorizarQuiz(token) {
+    if (!token || typeof token !== 'string') {
+      console.warn('[NexusSearch] autorizarQuiz: token inválido ignorado.');
+      return;
+    }
+    _tokenQuizAtivo = token;
+    console.log('[NexusSearch] sessão de quiz autorizada.');
+  }
+
+  /**
+   * Invalida o token e zera imediatamente o índice de quiz.
+   * Chamado por template_init.js em beforeunload / pagehide / visibilitychange.
+   * Após este ponto qualquer acesso ao índice de quiz retorna resultado vazio.
+   */
+  function revogarQuiz() {
+    _tokenQuizAtivo = null;
+    _indiceQuiz     = [];
+    console.log('[NexusSearch] sessão de quiz revogada — índice de quiz zerado.');
+  }
 
   /* ══════════════════════════════════════════════════════════
      NORMALIZAÇÃO
@@ -31,13 +117,13 @@
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^\w\s]/g, ' ')   // remove pontuacao
+      .replace(/[^\w\s]/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
   }
 
   /* ══════════════════════════════════════════════════════════
-     EXTRAÇÃO DE BLOCOS
+     EXTRAÇÃO DE BLOCOS (resumo)
   ══════════════════════════════════════════════════════════ */
 
   function _extrairBloco(bloco) {
@@ -119,13 +205,9 @@
 
   /* ══════════════════════════════════════════════════════════
      STOPWORDS
-     PATCH score-v2: adicionados verbos de pergunta e partículas
-     de interrogação que nunca aparecem nos resumos e inflavam
-     o denominador do score desnecessariamente.
   ══════════════════════════════════════════════════════════ */
 
   const _STOPWORDS = new Set([
-    // artigos, preposições, conjunções originais
     'a','o','as','os','e','de','da','do','das','dos',
     'em','na','no','nas','nos','um','uma','uns','umas',
     'que','se','com','por','para','ao','aos','pelo','pela',
@@ -134,11 +216,7 @@
     'me','te','se','lhe','nos','vos','lhes',
     'isso','este','esta','esse','essa','aquele','aquela',
     'eh','sao','foi','tem','ter','ser','estar',
-
-    // PATCH: partículas de interrogação informal
-    'oq','oque','oqe','oq','oque',
-
-    // PATCH: verbos de pergunta — nunca estão nos resumos
+    'oq','oque','oqe',
     'explique','explica','explicar','explicacao',
     'conceitue','conceitua','conceituar',
     'defina','define','definir','definicao',
@@ -149,39 +227,21 @@
     'liste','lista','listar',
     'cite','citar',
     'resuma','resumir',
-
-    // PATCH: partículas interrogativas adicionais
     'voce','vc','pra','pro',
-
-    // PATCH informal-br: expressões coloquiais brasileiras que nunca aparecem
-    // em resumos acadêmicos e inflariam o denominador do score inutilmente.
-
-    // Interjeições / reações
     'cara','mano','mana','brother','bro','bi',
     'puts','poxa','putz','caramba','nossa','eita','uai','xi',
-    'ah','ah','eh','oh','ih','uh','hm','hmm',
+    'ah','oh','ih','uh','hm','hmm',
     'kkk','kkkk','kkkkk','kk','haha','hahaha','rsrs','rsrsrs','lol',
     'aeee','aeeeee','ueee',
-
-    // Expressões de dificuldade / desabafo (só tokens únicos — o filtro opera por palavra)
     'travei','emperrei',
     'dificil','pesado','complicado','chato','saco',
     'socorro','perdido','perdida',
-
-    // Conectores e transições informais
-    // (versões acentuadas omitidas — normalizarTexto remove acentos antes do filtro)
     'ta','dai','ai','tipo','assim','entao',
-    'ate','ne','num','nao','so','la',
+    'ne','num','nao','so','la',
     'tb','tbm','tmb','tambem',
-
-    // Intensificadores informais vazios (mt/mto são só abreviações de chat)
     'mt','mto',
     'super','hiper','mega','ultra',
-
-    // Confirmações / hesitações de chat
-    'ok','okay','hm',
-
-    // Saudações (redundante com _ehSaudacao mas protege o score também)
+    'ok','okay',
     'oi','ola','hey','hi','hello','eai','salve','opa',
     'bom','boa','noite','tarde','dia',
   ]);
@@ -192,79 +252,7 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     INDEXAÇÃO
-  ══════════════════════════════════════════════════════════ */
-
-  function indexarConteudo(conteudo) {
-    _indice = [];
-
-    if (!conteudo || !Array.isArray(conteudo.aulas)) {
-      console.warn('[NexusSearch] indexarConteudo: conteúdo inválido ou sem aulas.');
-      return;
-    }
-
-    function _prepararEntrada(texto, aula, secao, peso) {
-      var tn       = normalizarTexto(texto);
-      var palavras = tn.split(' ').filter(Boolean);
-      return {
-        texto:      texto,
-        aula:       aula,
-        secao:      secao,
-        peso:       peso,
-        textoNorm:  tn,
-        stemsTexto: palavras.map(_stem).join(' '),
-      };
-    }
-
-    conteudo.aulas.forEach(function (aula) {
-      const nomeAula = aula.aula || '';
-
-      if (aula.ideia_central) {
-        _indice.push(_prepararEntrada(aula.ideia_central, nomeAula, 'Ideia Central', 1.5));
-      }
-
-      if (Array.isArray(aula.secoes)) {
-        aula.secoes.forEach(function (secao) {
-          const tituloSecao = secao.titulo || '';
-
-          if (tituloSecao) {
-            _indice.push(_prepararEntrada(tituloSecao, nomeAula, tituloSecao, 1.2));
-          }
-
-          if (Array.isArray(secao.blocos)) {
-            secao.blocos.forEach(function (bloco) {
-              _extrairBloco(bloco).forEach(function (trecho) {
-                if (trecho && trecho.trim()) {
-                  _indice.push(_prepararEntrada(trecho.trim(), nomeAula, tituloSecao, 1.0));
-                }
-              });
-            });
-          }
-        });
-      }
-    });
-
-    console.log('[NexusSearch] indexado:', _indice.length, 'trechos de', conteudo.aulas.length, 'aulas.');
-  }
-
-  function limparIndice() {
-    _indice = [];
-  }
-
-  function estaIndexado() {
-    return _indice.length > 0;
-  }
-
-  /* ══════════════════════════════════════════════════════════
      SCORE
-     PATCH score-v2:
-       - Boost de termo único: query filtrada com 1 termo encontrado
-         garante score mínimo 60. Resolve siglas (DNS, TCP, IP)
-         que após filtrar stopwords ficam com 1 só termo — antes
-         dividiam cobertura=1/1=1.0 mas peso*100=100... porém
-         o problema era o denominador inflado ANTES do filtro.
-         Com o filtro correto isso já se resolve, mas o boost
-         serve como segurança extra.
   ══════════════════════════════════════════════════════════ */
 
   function _score(queryNorm, textoNorm, stemsTexto, peso) {
@@ -289,8 +277,6 @@
 
     var scoreBase = Math.min(100, Math.round((cobertura + bonus) * peso * 100));
 
-    // PATCH: boost de termo único — sigla/termo técnico encontrado sozinho
-    // garante score mínimo de 60 para não ser descartado pelo threshold
     if (termos.length === 1 && acertos === 1 && scoreBase < 60) {
       scoreBase = Math.round(60 * peso);
     }
@@ -299,70 +285,104 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     BUSCA
+     HELPERS DE PREPARAÇÃO DE ENTRADA
   ══════════════════════════════════════════════════════════ */
 
-  function buscar(pergunta, opcoes) {
-    const topK     = (opcoes && opcoes.topK)            || 3;
-    const minScore = (opcoes && opcoes.minScore != null) ? opcoes.minScore : 10;
-
-    const queryNorm = normalizarTexto(pergunta);
-
-    if (!queryNorm || !_indice.length) {
-      console.warn('[NexusSearch] buscar: query vazia ou índice vazio.');
-      return [];
-    }
-
-    const todos = _indice.map(function (entrada) {
-      return {
-        score: _score(queryNorm, entrada.textoNorm, entrada.stemsTexto, entrada.peso),
-        texto: entrada.texto,
-        aula:  entrada.aula,
-        secao: entrada.secao,
-      };
-    });
-
-    const resultados = todos
-      .sort(function (a, b) { return b.score - a.score; })
-      .filter(function (r) { return r.score >= minScore; })
-      .slice(0, topK);
-
-    console.log('[NexusSearch] buscar: query=' + JSON.stringify(queryNorm) +
-                ' | chunks=' + _indice.length +
-                ' | aprovados=' + resultados.length);
-
-    return resultados;
+  function _prepararEntrada(texto, aula, secao, peso) {
+    var tn       = normalizarTexto(texto);
+    var palavras = tn.split(' ').filter(Boolean);
+    return {
+      texto:      texto,
+      aula:       aula,
+      secao:      secao,
+      peso:       peso,
+      textoNorm:  tn,
+      stemsTexto: palavras.map(_stem).join(' '),
+    };
   }
 
   /* ══════════════════════════════════════════════════════════
-     API PÚBLICA
-  ══════════════════════════════════════════════════════════ */
-  /* ══════════════════════════════════════════════════════════
-     INDEXAÇÃO DE QUIZ
-     Indexa questoes[modo] do arquivo ques_*.js.
-     O _indice existente é reutilizado — limparIndice() funciona para ambos.
+     INDEXAÇÃO DE RESUMO (público)
   ══════════════════════════════════════════════════════════ */
 
   /**
-   * Indexa as questões de um modo específico.
-   * Deve ser chamado APÓS limparIndice() para não misturar com resumo.
+   * Indexa conteúdo de resumo em _indiceResumo.
+   * NÃO toca em _indiceQuiz.
    *
-   * @param {object} questoes  — window.questoes do ques_*.js
-   * @param {string} modo      — 'questoes'|'enade'|'fixacao'|'ava'
+   * @param {object} conteudo — estrutura { aulas: [...] }
    */
-// DEPOIS:
-  function indexarQuestoes(questoes, modo) {
-    _indice = [];
+  function indexarConteudo(conteudo) {
+    _indiceResumo = [];
+
+    if (!conteudo || !Array.isArray(conteudo.aulas)) {
+      console.warn('[NexusSearch] indexarConteudo: conteúdo inválido ou sem aulas.');
+      return;
+    }
+
+    conteudo.aulas.forEach(function (aula) {
+      const nomeAula = aula.aula || '';
+
+      if (aula.ideia_central) {
+        _indiceResumo.push(_prepararEntrada(aula.ideia_central, nomeAula, 'Ideia Central', 1.5));
+      }
+
+      if (Array.isArray(aula.secoes)) {
+        aula.secoes.forEach(function (secao) {
+          const tituloSecao = secao.titulo || '';
+
+          if (tituloSecao) {
+            _indiceResumo.push(_prepararEntrada(tituloSecao, nomeAula, tituloSecao, 1.2));
+          }
+
+          if (Array.isArray(secao.blocos)) {
+            secao.blocos.forEach(function (bloco) {
+              _extrairBloco(bloco).forEach(function (trecho) {
+                if (trecho && trecho.trim()) {
+                  _indiceResumo.push(_prepararEntrada(trecho.trim(), nomeAula, tituloSecao, 1.0));
+                }
+              });
+            });
+          }
+        });
+      }
+    });
+
+    console.log('[NexusSearch] indexado:', _indiceResumo.length, 'trechos de resumo de', conteudo.aulas.length, 'aulas.');
+  }
+
+  /**
+   * Limpa APENAS o índice de resumo.
+   * O índice de quiz NÃO é afetado por esta função —
+   * use limparIndiceQuiz(token) para isso.
+   */
+  function limparIndice() {
+    _indiceResumo = [];
+  }
+
+  /** Retorna true se o índice de resumo tiver ao menos um trecho. */
+  function estaIndexado() {
+    return _indiceResumo.length > 0;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     INDEXAÇÃO DE QUIZ (restrita por token)
+  ══════════════════════════════════════════════════════════ */
+
+  /**
+   * Implementação interna real de indexação de quiz.
+   * Só chamada após verificação de token.
+   *
+   * Armazena objeto completo (_q) mas SOMENTE em _indiceQuiz —
+   * nunca mistura com _indiceResumo.
+   */
+  function _indexarQuestoesInterno(questoes, modo) {
+    _indiceQuiz = [];
 
     if (!questoes || !Array.isArray(questoes[modo]) || !questoes[modo].length) {
       console.warn('[NexusSearch] indexarQuestoes: modo "' + modo + '" não encontrado ou vazio.');
       return;
     }
 
-    // Usa a ordem visual (pós-shuffle) se disponível.
-    // window.__NEXUS_QUESTOES_VISUAIS__ é setado pelo quiz_engine logo após
-    // criarCopiaEmbaralhada(), garantindo que a IA numera as questões
-    // exatamente como o usuário as vê na tela.
     var lista = (window.__NEXUS_QUESTOES_VISUAIS__ && window.__NEXUS_QUESTOES_VISUAIS__.length)
       ? window.__NEXUS_QUESTOES_VISUAIS__
       : questoes[modo];
@@ -371,7 +391,7 @@
       var numero = i + 1;
       var aula   = q.aula || '';
 
-      // Texto buscável: enunciado + alternativas + contexto
+      // Texto buscável: apenas enunciado e alternativas (sem gabarito/feedback)
       var partes = [];
       if (q.texto)    partes.push(q.texto);
       if (q.question) partes.push(q.question);
@@ -381,7 +401,7 @@
       var textoCompleto = partes.join(' ');
       var tn = normalizarTexto(textoCompleto);
 
-      _indice.push({
+      _indiceQuiz.push({
         texto:      textoCompleto,
         aula:       aula,
         secao:      modo,
@@ -390,13 +410,13 @@
         stemsTexto: tn.split(' ').filter(Boolean).map(_stem).join(' '),
         _numero:    numero,
         _modo:      modo,
-        _q:         q,
+        _q:         q,   // objeto completo — permanece SOMENTE em _indiceQuiz
       });
 
-      // Feedback indexado separadamente (peso menor)
+      // Feedback indexado separadamente (peso menor) — mas também somente em _indiceQuiz
       if (q.feedback) {
         var fnorm = normalizarTexto(q.feedback);
-        _indice.push({
+        _indiceQuiz.push({
           texto:      q.feedback,
           aula:       aula,
           secao:      modo + '/feedback',
@@ -414,15 +434,146 @@
   }
 
   /**
+   * API pública de indexação de quiz — exige token.
+   * Chamado por ia.js > _garantirConteudo() SOMENTE quando
+   * window.__NEXUS_QUIZ_MODO__ está definido.
+   *
+   * @param {object} questoes
+   * @param {string} modo
+   * @param {string} token  — deve coincidir com o token autorizado
+   */
+  function indexarQuestoes(questoes, modo, token) {
+    if (!_tokenValido(token)) {
+      console.warn('[NexusSearch] indexarQuestoes bloqueado: token inválido ou quiz não autorizado.');
+      return;
+    }
+    _indexarQuestoesInterno(questoes, modo);
+  }
+
+  /**
+   * Limpa o índice de quiz.
+   * Exige token — fora do template_init não tem efeito.
+   *
+   * @param {string} token
+   */
+  function limparIndiceQuiz(token) {
+    if (!_tokenValido(token)) {
+      console.warn('[NexusSearch] limparIndiceQuiz bloqueado: token inválido.');
+      return;
+    }
+    _indiceQuiz = [];
+    console.log('[NexusSearch] índice de quiz limpo via token.');
+  }
+
+  /** Retorna true se o índice de quiz estiver ativo e populado. Exige token. */
+  function estaIndexadoQuiz(token) {
+    if (!_tokenValido(token)) return false;
+    return _indiceQuiz.length > 0;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     BUSCA DE RESUMO (pública — sempre usa _indiceResumo)
+  ══════════════════════════════════════════════════════════ */
+
+  /**
+   * Busca no índice de RESUMO.
+   * Nunca acessa _indiceQuiz.
+   *
+   * @param {string} pergunta
+   * @param {object} [opcoes]
+   * @returns {{ score, texto, aula, secao }[]}
+   */
+  function buscar(pergunta, opcoes) {
+    const topK     = (opcoes && opcoes.topK)            || 3;
+    const minScore = (opcoes && opcoes.minScore != null) ? opcoes.minScore : 10;
+
+    const queryNorm = normalizarTexto(pergunta);
+
+    if (!queryNorm || !_indiceResumo.length) {
+      if (_indiceResumo.length === 0) {
+        console.warn('[NexusSearch] buscar: índice de resumo vazio.');
+      }
+      return [];
+    }
+
+    const todos = _indiceResumo.map(function (entrada) {
+      return {
+        score: _score(queryNorm, entrada.textoNorm, entrada.stemsTexto, entrada.peso),
+        texto: entrada.texto,
+        aula:  entrada.aula,
+        secao: entrada.secao,
+      };
+    });
+
+    const resultados = todos
+      .sort(function (a, b) { return b.score - a.score; })
+      .filter(function (r) { return r.score >= minScore; })
+      .slice(0, topK);
+
+    console.log('[NexusSearch] buscar (resumo): query=' + JSON.stringify(queryNorm) +
+                ' | chunks=' + _indiceResumo.length +
+                ' | aprovados=' + resultados.length);
+
+    return resultados;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     BUSCA DE QUIZ (restrita por token)
+  ══════════════════════════════════════════════════════════ */
+
+  /**
+   * Busca no índice de QUIZ.
+   * Retorna array vazio se o token for inválido ou o quiz não autorizado.
+   * O resultado NÃO inclui _q (gabarito/feedback) — apenas texto, aula, secao, score.
+   *
+   * @param {string} pergunta
+   * @param {object} [opcoes]
+   * @param {string} token
+   * @returns {{ score, texto, aula, secao }[]}
+   */
+  function buscarQuiz(pergunta, opcoes, token) {
+    if (!_tokenValido(token)) {
+      console.warn('[NexusSearch] buscarQuiz bloqueado: token inválido.');
+      return [];
+    }
+
+    const topK     = (opcoes && opcoes.topK)            || 3;
+    const minScore = (opcoes && opcoes.minScore != null) ? opcoes.minScore : 10;
+    const queryNorm = normalizarTexto(pergunta);
+
+    if (!queryNorm || !_indiceQuiz.length) return [];
+
+    const todos = _indiceQuiz.map(function (entrada) {
+      return {
+        score: _score(queryNorm, entrada.textoNorm, entrada.stemsTexto, entrada.peso),
+        // _q NÃO é exposto aqui — somente texto de busca
+        texto: entrada.texto,
+        aula:  entrada.aula,
+        secao: entrada.secao,
+      };
+    });
+
+    return todos
+      .sort(function (a, b) { return b.score - a.score; })
+      .filter(function (r) { return r.score >= minScore; })
+      .slice(0, topK);
+  }
+
+  /**
    * Retorna a questão completa pelo número (base 1) ou null.
-   * Busca apenas entradas de enunciado (não feedback).
+   * Exige token — fora do template retorna null silenciosamente.
    *
    * @param {number} numero
+   * @param {string} token
    * @returns {object|null}
    */
-  function buscarQuestaoPorNumero(numero) {
-    for (var i = 0; i < _indice.length; i++) {
-      var e = _indice[i];
+  function buscarQuestaoPorNumero(numero, token) {
+    if (!_tokenValido(token)) {
+      console.warn('[NexusSearch] buscarQuestaoPorNumero bloqueado: token inválido.');
+      return null;
+    }
+    for (var i = 0; i < _indiceQuiz.length; i++) {
+      var e = _indiceQuiz[i];
       if (e._numero === numero && e.secao && !e.secao.includes('/feedback')) {
         return e._q || null;
       }
@@ -430,14 +581,26 @@
     return null;
   }
 
+  /* ══════════════════════════════════════════════════════════
+     API PÚBLICA
+  ══════════════════════════════════════════════════════════ */
+
   window.NexusSearch = {
+    // Resumo (sempre disponível)
     indexarConteudo,
-    indexarQuestoes,
-    buscarQuestaoPorNumero,
-    limparIndice,
     buscar,
-    normalizarTexto,
+    limparIndice,
     estaIndexado,
+    normalizarTexto,
+
+    // Quiz (exigem token em cada chamada)
+    autorizarQuiz,
+    revogarQuiz,
+    indexarQuestoes,
+    buscarQuiz,
+    buscarQuestaoPorNumero,
+    estaIndexadoQuiz,
+    limparIndiceQuiz,
   };
 
 }());

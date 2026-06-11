@@ -13,8 +13,34 @@
 (function () {
   'use strict';
 
-  let _onSend  = null;
-  let _onReset = null;
+  let _onSend    = null;
+  let _onReset   = null;
+  let _playSound = null;
+
+  /* Resolve o caminho do audio-api.js relativo a este script,
+     igual ao que logo.js faz com import.meta.url — mas via
+     document.currentScript, que funciona em scripts não-module. */
+  (function _carregarPlaySound() {
+    var script = document.currentScript ||
+      (function () {
+        var scripts = document.querySelectorAll('script[src*="ia-ui.js"]');
+        return scripts[scripts.length - 1];
+      }());
+
+    if (!script) return;
+
+    var base   = new URL(script.src);
+    var partes = base.pathname.split('/');
+    // ia-ui.js está em: <raiz>/shared/js/ia/ia-ui.js
+    // audio-api.js em:  <raiz>/shared/js/audio/audio-api.js
+    partes[partes.length - 2] = 'audio';
+    partes[partes.length - 1] = 'audio-api.js';
+    var audioUrl = base.origin + partes.join('/');
+
+    import(audioUrl)
+      .then(function (mod) { _playSound = mod.playSound || null; })
+      .catch(function (err) { console.warn('[NexusUI] playSound não carregado:', err); });
+  }());
 
   /* ══════════════════════════════════════════════════════════
      TEMPLATES HTML
@@ -315,6 +341,7 @@
 
       btn.addEventListener('click', function (e) {
         e.stopPropagation();
+        if (typeof _playSound === 'function') _playSound('click', 'inicial');
         wrap.remove();
         if (typeof onClick === 'function') onClick(chip.cmd || chip.label);
       });
@@ -354,6 +381,7 @@
     if (!fab || !panel) return;
 
     if (aberto) {
+      if (typeof _playSound === 'function') _playSound('openModal', 'inicial');
       panel.classList.add('nexus-open');
       fab.classList.add('nexus-active');
       fab.setAttribute('aria-expanded', 'true');
@@ -362,6 +390,7 @@
       if (input) setTimeout(function () { input.focus(); }, 260);
 
     } else {
+      if (typeof _playSound === 'function') _playSound('closeModal', 'inicial');
       panel.classList.remove('nexus-open');
       fab.classList.remove('nexus-active');
       fab.setAttribute('aria-expanded', 'false');
@@ -467,6 +496,7 @@
     var btn = document.getElementById('nexus-reset');
     if (!btn) return;
     btn.addEventListener('click', function () {
+      if (typeof _playSound === 'function') _playSound('click', 'inicial');
       if (typeof _onReset === 'function') _onReset();
     });
   }

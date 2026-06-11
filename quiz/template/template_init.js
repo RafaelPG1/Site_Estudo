@@ -1,6 +1,6 @@
 // @ts-nocheck
 /* ============================================================
-   NEXUS STUDY — quiz/template/template_init.js  v8.0
+   NEXUS STUDY — quiz/template/template_init.js  v9.0
 
    RESPONSABILIDADES (e apenas estas):
      1. Ler e validar parâmetros da URL           _lerParams()
@@ -12,6 +12,13 @@
      7. Montar caminho do conteúdo               _resolverCaminhoConteudo()
      8. Aguardar Firebase (fire-and-forget)      _aguardarFirebase()
      9. Carregar conteúdo + UI + engine          _carregarQuiz()
+
+   v9.0 — QUIZ-ISOLATION:
+     + Gera token de sessão de quiz              _gerarTokenQuiz()
+     + Registra token em NexusSearch             _autorizarQuizNoSearch()
+     + Revoga token ao sair da página            _instalarRevogacao()
+     Sem token ativo: NexusSearch, ia.js e ia-worker.js recusam
+     qualquer acesso a questões, gabaritos, feedbacks e alternativas.
 
    PROIBIÇÕES ABSOLUTAS:
      ✗ Lógica de negócio do quiz
@@ -82,6 +89,105 @@ var MODOS_CONFIG = {
   enade:    { breadcrumb: 'ENADE',    h1: 'Questões <em>ENADE</em>',      label: 'Questões ENADE'    },
   fixacao:  { breadcrumb: 'Fixação',  h1: 'Questões de <em>Fixação</em>', label: 'Fixação'           },
 };
+
+
+/* ══════════════════════════════════════════════════════════
+   QUIZ-ISOLATION — TOKEN DE SESSÃO
+   ══════════════════════════════════════════════════════════ */
+
+/**
+ * Gera um token criptograficamente aleatório para a sessão de quiz.
+ * Usa crypto.randomUUID() quando disponível; cai em Math.random() como fallback.
+ *
+ * O token é armazenado em window.__NEXUS_QUIZ_TOKEN__ e lido por
+ * NexusSearch, ia.js e ia-worker.js para autorizar operações de quiz.
+ *
+ * @returns {string} token gerado
+ */
+function _gerarTokenQuiz() {
+  var token;
+  try {
+    token = crypto.randomUUID();
+  } catch (e) {
+    // Fallback para ambientes sem crypto.randomUUID (Safari < 15.4)
+    token = 'nxq-' +
+      Math.random().toString(36).slice(2) +
+      Math.random().toString(36).slice(2) +
+      Date.now().toString(36);
+  }
+  window.__NEXUS_QUIZ_TOKEN__ = token;
+  console.log('[template_init] token de sessão de quiz gerado.');
+  return token;
+}
+
+/**
+ * Registra o token em NexusSearch assim que o módulo estiver disponível.
+ * Como ia-search.js é carregado em background (_carregarIA), usamos polling
+ * com intervalo curto. Máximo de 30 tentativas (≈ 3s).
+ *
+ * @param {string} token
+ */
+function _autorizarQuizNoSearch(token) {
+  var tentativas = 0;
+  var MAX_TENTATIVAS = 30;
+
+  var intervalo = setInterval(function () {
+    tentativas++;
+
+    if (typeof window.NexusSearch !== 'undefined' && window.NexusSearch.autorizarQuiz) {
+      clearInterval(intervalo);
+      window.NexusSearch.autorizarQuiz(token);
+      console.log('[template_init] NexusSearch autorizado para quiz.');
+      return;
+    }
+
+    if (tentativas >= MAX_TENTATIVAS) {
+      clearInterval(intervalo);
+      console.warn('[template_init] NexusSearch não disponível após ' + MAX_TENTATIVAS + ' tentativas — quiz não autorizado.');
+    }
+  }, 100);
+}
+
+/**
+ * Instala os listeners que revogam o token ao sair da página.
+ *
+ * Usa beforeunload + pagehide (Mobile Safari não dispara beforeunload
+ * de forma confiável). Ambos chamam _revogarTokenQuiz() que zera
+ * window.__NEXUS_QUIZ_TOKEN__ e limpa o índice de quiz no NexusSearch.
+ */
+function _instalarRevogacao() {
+
+  function _revogarTokenQuiz() {
+    console.log('[template_init] revogando token de quiz...');
+
+    // Remove a flag de modo (impede que ia.js reutilize o contexto)
+    try { delete window.__NEXUS_QUIZ_MODO__; } catch (e) {}
+    try { delete window.__NEXUS_QUIZ_SEMESTRE__; } catch (e) {}
+    try { delete window.__NEXUS_QUIZ_DISC__; } catch (e) {}
+    try { delete window.__NEXUS_QUESTOES_VISUAIS__; } catch (e) {}
+
+    // Revoga o token no NexusSearch (zera _indiceQuiz internamente)
+    if (typeof window.NexusSearch !== 'undefined' && window.NexusSearch.revogarQuiz) {
+      window.NexusSearch.revogarQuiz();
+    }
+
+    // Remove o token do window — qualquer verificação posterior retorna null
+    try { delete window.__NEXUS_QUIZ_TOKEN__; } catch (e) {}
+
+    // Limpa o histórico do worker para não vazar contexto de quiz em
+    // perguntas feitas logo após a saída do template
+    if (typeof window.NexusWorker !== 'undefined' && window.NexusWorker.limparHistorico) {
+      window.NexusWorker.limparHistorico();
+    }
+
+    // Zera window.questoes (dados do ques_*.js) para não deixar rastro
+    // acessível via console ou outros scripts que leiam window diretamente
+    try { window.questoes = null; } catch (e) {}
+  }
+
+  window.addEventListener('beforeunload', _revogarTokenQuiz);
+  window.addEventListener('pagehide',     _revogarTokenQuiz);
+}
 
 
 /* ══════════════════════════════════════════════════════════
@@ -371,17 +477,20 @@ function _atualizarEstadoGlobal(params) {
        1. Lê parâmetros da URL
        2. Resolve disciplina
        3. Aplica tema (evita FOUC)
-       4. Expõe globais e contexto do quiz
-       5. Atualiza estado global
+       4. Gera token de sessão de quiz          ← NOVO v9.0
+       5. Expõe globais e contexto do quiz
+       6. Atualiza estado global
 
      [assíncrono, após DOMContentLoaded]
-       6. Monta componentes visuais
-       7. Injeta nav-float
-       8. Inicializa áudio
+       7. Monta componentes visuais
+       8. Injeta nav-float
+       9. Inicializa áudio
 
      [assíncrono, paralelo, sem bloquear DOM]
-       9. Aguarda Firebase (máx 3s)
-      10. Carrega conteúdo + UI + engine
+      10. Autoriza NexusSearch (polling até modulo estar pronto) ← NOVO v9.0
+      11. Instala revogação do token em beforeunload / pagehide  ← NOVO v9.0
+      12. Aguarda Firebase (máx 3s)
+      13. Carrega conteúdo + UI + engine
    ══════════════════════════════════════════════════════════ */
 
 var _params     = _lerParams();
@@ -389,9 +498,19 @@ var _info       = _resolverDisciplina(_params.disc, _params.semestre);
 var _modoConfig = MODOS_CONFIG[_params.modo] || MODOS_CONFIG.questoes;
 
 _aplicarTema(_info.arquivo);
+
+/* QUIZ-ISOLATION: gera o token ANTES de expor qualquer contexto de quiz */
+var _quizToken = _gerarTokenQuiz();
+
 _exponerGlobais();
 _exponerContextoQuiz(_params);
 _atualizarEstadoGlobal(_params);
+
+/* QUIZ-ISOLATION: autoriza o NexusSearch assim que ele estiver disponível */
+_autorizarQuizNoSearch(_quizToken);
+
+/* QUIZ-ISOLATION: instala revogação automática ao sair da página */
+_instalarRevogacao();
 
 document.addEventListener('DOMContentLoaded', function () {
   _montarVisual(_params, _info, _modoConfig);
