@@ -10,24 +10,31 @@
   ═══════════════════════════════════════════ -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap"
-        rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
   <!-- ═══════════════════════════════════════════
-       ESTILOS — ordem importa:
-         1. Temas base (fundo, logo)
-         2. Áudio (sound.css ANTES de audio-btns.css)
-         3. Página (style.css)
-         4. Componentes (vol-slider)
+       ESTILOS BASE
   ═══════════════════════════════════════════ -->
   <link rel="stylesheet" href="shared/css/themes/fundo.css" />
   <link rel="stylesheet" href="shared/css/themes/logo.css" />
+
+  <!-- ═══════════════════════════════════════════
+       ESTILOS DE ÁUDIO (sound antes de audio-btns)
+  ═══════════════════════════════════════════ -->
   <link rel="stylesheet" href="shared/css/audio/sound.css" />
   <link rel="stylesheet" href="shared/css/audio/audio-btns.css" />
-  <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="shared/css/audio/vol-slider.css" />
-  <link rel="stylesheet" href="shared/css/ia/ia.css">
+
+  <!-- ═══════════════════════════════════════════
+       ESTILOS DE COMPONENTES
+  ═══════════════════════════════════════════ -->
+  <link rel="stylesheet" href="shared/css/ia/ia.css" />
   <link rel="stylesheet" href="shared/css/themes/semestre-picker.css" />
+
+  <!-- ═══════════════════════════════════════════
+       ESTILOS DA PÁGINA
+  ═══════════════════════════════════════════ -->
+  <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
@@ -48,7 +55,7 @@
   <header class="header">
     <div class="header__inner">
       <div class="header__logo" id="header-logo-wrap"></div>
-      <nav class="header__nav"  id="header-nav"        aria-label="Navegação principal"></nav>
+      <nav class="header__nav" id="header-nav" aria-label="Navegação principal"></nav>
     </div>
   </header>
 
@@ -66,7 +73,7 @@
 
         <a href="./pessoal/pessoal.html" class="card card--personal"
            id="card-pessoal" role="listitem">
-          <div class="card__glow"     aria-hidden="true"></div>
+          <div class="card__glow"      aria-hidden="true"></div>
           <div class="card__icon-wrap" aria-hidden="true">
             <span class="card__icon">📚</span>
           </div>
@@ -74,8 +81,8 @@
             <h2 class="card__title">Área Pessoal</h2>
             <p  class="card__desc">Seu painel, histórico e progresso de estudos</p>
           </div>
-          <div class="card__tag"  aria-hidden="true">Perfil</div>
-          <div class="card__cta"  aria-hidden="true">
+          <div class="card__tag" aria-hidden="true">Perfil</div>
+          <div class="card__cta" aria-hidden="true">
             <div class="card__arrow">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                    stroke="currentColor" stroke-width="2"
@@ -89,7 +96,7 @@
 
         <a href="./resumo/resumo.html" class="card card--summaries"
            id="card-resumos" role="listitem">
-          <div class="card__glow"     aria-hidden="true"></div>
+          <div class="card__glow"      aria-hidden="true"></div>
           <div class="card__icon-wrap" aria-hidden="true">
             <span class="card__icon">🧠</span>
           </div>
@@ -97,8 +104,8 @@
             <h2 class="card__title">Resumos</h2>
             <p  class="card__desc">Resumos de aulas gerados e organizados por tema</p>
           </div>
-          <div class="card__tag"  aria-hidden="true">Conteúdo</div>
-          <div class="card__cta"  aria-hidden="true">
+          <div class="card__tag" aria-hidden="true">Conteúdo</div>
+          <div class="card__cta" aria-hidden="true">
             <div class="card__arrow">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                    stroke="currentColor" stroke-width="2"
@@ -112,7 +119,7 @@
 
         <a href="./quiz/quiz.html" class="card card--quiz"
            id="card-quiz" role="listitem">
-          <div class="card__glow"     aria-hidden="true"></div>
+          <div class="card__glow"      aria-hidden="true"></div>
           <div class="card__icon-wrap" aria-hidden="true">
             <span class="card__icon">❓</span>
           </div>
@@ -120,8 +127,8 @@
             <h2 class="card__title">Quiz</h2>
             <p  class="card__desc">Questões inteligentes geradas por IA para fixação</p>
           </div>
-          <div class="card__tag"  aria-hidden="true">Praticar</div>
-          <div class="card__cta"  aria-hidden="true">
+          <div class="card__tag" aria-hidden="true">Praticar</div>
+          <div class="card__cta" aria-hidden="true">
             <div class="card__arrow">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                    stroke="currentColor" stroke-width="2"
@@ -135,7 +142,7 @@
 
         <a href="./games/jogo.html" class="card card--games"
            id="card-jogos" role="listitem">
-          <div class="card__glow"     aria-hidden="true"></div>
+          <div class="card__glow"      aria-hidden="true"></div>
           <div class="card__icon-wrap" aria-hidden="true">
             <span class="card__icon">🎮</span>
           </div>
@@ -143,8 +150,8 @@
             <h2 class="card__title">Jogos</h2>
             <p  class="card__desc">Aprenda jogando — memória, associação e desafios</p>
           </div>
-          <div class="card__tag"  aria-hidden="true">Diversão</div>
-          <div class="card__cta"  aria-hidden="true">
+          <div class="card__tag" aria-hidden="true">Diversão</div>
+          <div class="card__cta" aria-hidden="true">
             <div class="card__arrow">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                    stroke="currentColor" stroke-width="2"
@@ -169,12 +176,8 @@
 
   <!-- ═══════════════════════════════════════════
        SCRIPTS
-       Apenas index.js — sound.js monta os botões
-       flutuantes de áudio internamente via Sound.init().
   ═══════════════════════════════════════════ -->
   <script type="module" src="index.js"></script>
-
-
 
 </body>
 </html>

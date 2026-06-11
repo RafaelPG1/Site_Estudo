@@ -5,22 +5,38 @@
 -->
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nexus Study</title>
 
+  <!-- ═══════════════════════════════════════════
+       FONTES
+  ═══════════════════════════════════════════ -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../../shared/css/themes/fundo.css">
-    <link rel="stylesheet" href="../../shared/css/audio/sound.css">
-    <link rel="stylesheet" href="../../shared/css/audio/audio-btns.css" />
-      <link rel="stylesheet" href="../../shared/css/ia/ia.css">
-  <!-- CSS unificado: base global + estilos do quiz -->
+  <!-- ═══════════════════════════════════════════
+       ESTILOS BASE
+  ═══════════════════════════════════════════ -->
+  <link rel="stylesheet" href="../../shared/css/themes/fundo.css" />
+
+  <!-- ═══════════════════════════════════════════
+       ESTILOS DE ÁUDIO (sound antes de audio-btns)
+  ═══════════════════════════════════════════ -->
+  <link rel="stylesheet" href="../../shared/css/audio/sound.css" />
+  <link rel="stylesheet" href="../../shared/css/audio/audio-btns.css" />
+
+  <!-- ═══════════════════════════════════════════
+       ESTILOS DE COMPONENTES
+  ═══════════════════════════════════════════ -->
+  <link rel="stylesheet" href="../../shared/css/ia/ia.css" />
+
+  <!-- ═══════════════════════════════════════════
+       ESTILOS DA PÁGINA
+  ═══════════════════════════════════════════ -->
   <link rel="stylesheet" href="./template.css" />
 
   <!--
@@ -53,13 +69,17 @@
   <div class="bg-orb bg-orb--3" aria-hidden="true"></div>
   <div class="bg-grid"          aria-hidden="true"></div>
 
+  <!-- ═══════════════════════════════════════════
+       HEADER
+  ═══════════════════════════════════════════ -->
   <header class="header">
     <div class="header__inner">
 
       <a href="../disciplinas/2026/poo.html?sem=2026.2"
          class="back-btn"
          aria-label="Voltar para a disciplina">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <polyline points="15 18 9 12 15 6"/>
         </svg>
         <span>Voltar</span>
@@ -72,6 +92,9 @@
     </div>
   </header>
 
+  <!-- ═══════════════════════════════════════════
+       MAIN
+  ═══════════════════════════════════════════ -->
   <main class="main" id="main-content">
 
     <div class="page-header">
@@ -92,7 +115,6 @@
           <i class="fas fa-rotate-right" aria-hidden="true"></i>
           <span>Reiniciar</span>
         </button>
-        
         <button id="errors" class="action-button errors-button" type="button" aria-live="polite">
           <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
           <span>Ver erros</span>
@@ -108,10 +130,16 @@
 
   </main>
 
+  <!-- ═══════════════════════════════════════════
+       FOOTER
+  ═══════════════════════════════════════════ -->
   <footer class="page-footer" id="page-footer">
     Nexus Study
   </footer>
 
+  <!-- ═══════════════════════════════════════════
+       SCRIPTS
+  ═══════════════════════════════════════════ -->
   <script type="module" src="template_init.js"></script>
 
 </body>

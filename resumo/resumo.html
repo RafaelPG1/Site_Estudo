@@ -4,15 +4,36 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Resumos — Nexus Study</title>
+
+  <!-- ═══════════════════════════════════════════
+       FONTES
+  ═══════════════════════════════════════════ -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../shared/css/themes/fundo.css">
-  <link rel="stylesheet" href="resumo.css" />
-  <link rel="stylesheet" href="../shared/css/audio/sound.css">
+
+  <!-- ═══════════════════════════════════════════
+       ESTILOS BASE
+  ═══════════════════════════════════════════ -->
+  <link rel="stylesheet" href="../shared/css/themes/fundo.css" />
+
+  <!-- ═══════════════════════════════════════════
+       ESTILOS DE ÁUDIO (sound antes de audio-btns)
+  ═══════════════════════════════════════════ -->
+  <link rel="stylesheet" href="../shared/css/audio/sound.css" />
   <link rel="stylesheet" href="../shared/css/audio/audio-btns.css" />
-  <link rel="stylesheet" href="../shared/css/ia/ia.css">
-    <link rel="manifest" href="../manifest.json" />
+
+  <!-- ═══════════════════════════════════════════
+       ESTILOS DE COMPONENTES
+  ═══════════════════════════════════════════ -->
+  <link rel="stylesheet" href="../shared/css/ia/ia.css" />
+
+  <!-- ═══════════════════════════════════════════
+       ESTILOS DA PÁGINA
+  ═══════════════════════════════════════════ -->
+  <link rel="stylesheet" href="resumo.css" />
+
+  <link rel="manifest" href="../manifest.json" />
 </head>
 <body>
 
@@ -24,7 +45,9 @@
   <!-- Barra de progresso de leitura -->
   <div class="reading-progress" id="reading-progress"></div>
 
-  <!-- ===== HEADER ===== -->
+  <!-- ═══════════════════════════════════════════
+       HEADER
+  ═══════════════════════════════════════════ -->
   <header class="header" id="app-header">
     <div class="header__inner">
 
@@ -53,7 +76,9 @@
     </div>
   </header>
 
-  <!-- ===== LAYOUT COM SIDEBAR ===== -->
+  <!-- ═══════════════════════════════════════════
+       LAYOUT COM SIDEBAR
+  ═══════════════════════════════════════════ -->
   <div class="layout">
 
     <!-- SIDEBAR de disciplinas -->
@@ -136,10 +161,11 @@
     </div><!-- /content-area -->
   </div><!-- /layout -->
 
-  <!-- ===== READER MODE — tela cheia, foco total ===== -->
+  <!-- ═══════════════════════════════════════════
+       READER MODE
+  ═══════════════════════════════════════════ -->
   <div class="reader" id="read-modal" role="dialog" aria-modal="true" aria-label="Leitura do resumo">
 
-    <!-- Barra superior do reader -->
     <header class="reader__bar" id="read-modal-panel" tabindex="-1">
       <button class="reader__back" id="read-modal-close" aria-label="Fechar leitor">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
@@ -159,12 +185,8 @@
       </div>
     </header>
 
-    <!-- Área de scroll -->
     <div class="reader__scroll" id="rm-body-wrapper">
-
-      <!-- Conteúdo centralizado -->
       <div class="reader__content" id="rm-body"></div>
-
     </div>
 
     <!-- TOC flutuante (oculto, mantido para compatibilidade JS) -->
@@ -172,7 +194,9 @@
 
   </div>
 
-  <!-- ===== DROPDOWN MOBILE DE DISCIPLINAS ===== -->
+  <!-- ═══════════════════════════════════════════
+       DROPDOWN MOBILE DE DISCIPLINAS
+  ═══════════════════════════════════════════ -->
   <div class="mobile-dropdown" id="mobile-dropdown">
     <div class="mobile-dropdown__backdrop" id="mobile-dropdown-backdrop"></div>
     <div class="mobile-dropdown__sheet" id="mobile-dropdown-sheet">
@@ -182,7 +206,9 @@
     </div>
   </div>
 
-
+  <!-- ═══════════════════════════════════════════
+       SCRIPTS
+  ═══════════════════════════════════════════ -->
   <script type="module" src="resumo.js"></script>
 
 </body>

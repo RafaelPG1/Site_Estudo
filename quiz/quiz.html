@@ -4,19 +4,37 @@
 -->
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Quiz · Nexus Study</title>
 
+  <!-- ═══════════════════════════════════════════
+       FONTES
+  ═══════════════════════════════════════════ -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../shared/css/themes/fundo.css">
-  <link rel="stylesheet" href="../shared/css/audio/sound.css">
+
+  <!-- ═══════════════════════════════════════════
+       ESTILOS BASE
+  ═══════════════════════════════════════════ -->
+  <link rel="stylesheet" href="../shared/css/themes/fundo.css" />
+
+  <!-- ═══════════════════════════════════════════
+       ESTILOS DE ÁUDIO (sound antes de audio-btns)
+  ═══════════════════════════════════════════ -->
+  <link rel="stylesheet" href="../shared/css/audio/sound.css" />
   <link rel="stylesheet" href="../shared/css/audio/audio-btns.css" />
-  <link rel="stylesheet" href="../shared/css/ia/ia.css">
+
+  <!-- ═══════════════════════════════════════════
+       ESTILOS DE COMPONENTES
+  ═══════════════════════════════════════════ -->
+  <link rel="stylesheet" href="../shared/css/ia/ia.css" />
+
+  <!-- ═══════════════════════════════════════════
+       ESTILOS DA PÁGINA
+  ═══════════════════════════════════════════ -->
   <link rel="stylesheet" href="quiz.css" />
 </head>
 
@@ -27,9 +45,9 @@
   <div class="bg-orb bg-orb--3" aria-hidden="true"></div>
   <div class="bg-grid"          aria-hidden="true"></div>
 
-  <!-- ════════════════════════════════════════════════════════
+  <!-- ═══════════════════════════════════════════
        HEADER
-       ════════════════════════════════════════════════════════ -->
+  ═══════════════════════════════════════════ -->
   <header class="header">
     <div class="header__inner">
 
@@ -43,22 +61,18 @@
 
       <div id="header-logo-wrap" class="header__logo"></div>
 
-      <!-- Lado direito: select de semestre -->
       <div class="header__right">
-
-        <!-- Options são populadas dinamicamente pelo quiz.js via SEMESTRES do global.js -->
         <select id="quiz-semestre-select" class="semestre-select"
                 title="Selecionar semestre" aria-label="Semestre">
         </select>
-
-      </div><!-- /.header__right -->
+      </div>
 
     </div>
   </header>
 
-  <!-- ════════════════════════════════════════════════════════
+  <!-- ═══════════════════════════════════════════
        MAIN
-       ════════════════════════════════════════════════════════ -->
+  ═══════════════════════════════════════════ -->
   <main class="main">
 
     <div class="page-header">
@@ -70,20 +84,22 @@
       <p class="page-header__desc">Selecione a matéria para iniciar sua sessão de estudos</p>
     </div>
 
-    <!--
-      Cards gerados dinamicamente pelo quiz.js a partir de getDisciplinasDeSemestre().
-      Para adicionar ou remover disciplinas, edite apenas o global.js.
-    -->
     <div class="disciplines" id="disciplines-grid" role="list">
       <p class="disciplines-empty" id="disciplines-empty" aria-live="polite"></p>
-    </div><!-- /disciplines -->
+    </div>
 
   </main>
 
+  <!-- ═══════════════════════════════════════════
+       FOOTER
+  ═══════════════════════════════════════════ -->
   <footer class="footer">
     <p>© <span id="footer-year"></span> Nexus Study · Desenvolvido para facilitar seus estudos</p>
   </footer>
 
+  <!-- ═══════════════════════════════════════════
+       SCRIPTS
+  ═══════════════════════════════════════════ -->
   <script type="module" src="quiz.js"></script>
 
 </body>
