@@ -34,6 +34,7 @@
 
 import audio from '../engine/sfx.js';
 import { carregarConfigs, salvarConfigs } from '../../../../src/firebase.js';
+import { AUDIO_DEFAULTS } from '../../../../src/global.js';
 
 /* ═══════════════════════════════════════════════
    INSTRUMENTAÇÃO DE PERFORMANCE
@@ -96,7 +97,7 @@ const MODES = {
   mute:   { muted: true  },
 };
 
-const DEFAULT_MODE = 'normal';
+const DEFAULT_MODE = AUDIO_DEFAULTS.sfxMode;
 
 const VALID_MODES = Object.keys(MODES);
 
@@ -104,18 +105,7 @@ const VALID_MODES = Object.keys(MODES);
    1b. SFX_MAP
 ═══════════════════════════════════════════════ */
 
-const DEFAULT_SFX_MAP = {
-  click:        'click',
-  hover:        'hover2',
-  openModal:    'openModal2',
-  closeModal:   'closeModal',
-  select:       'select',
-  correct:      'correct',
-  wrong:        'wrong6',
-  timeout:      'timeout4',
-  pause:        'pause',
-  timerWarning: 'timerWarning',
-};
+const DEFAULT_SFX_MAP = AUDIO_DEFAULTS.sfxMap;
 
 let _currentSfxMap = { ...DEFAULT_SFX_MAP };
 
@@ -193,15 +183,15 @@ function _resolveVariant(action, area) {
 let _currentMode = (() => {
   try {
     const saved = localStorage.getItem('nexus_sfx_mode');
-    return VALID_MODES.includes(saved) ? saved : DEFAULT_MODE;
-  } catch { return DEFAULT_MODE; }
+    return VALID_MODES.includes(saved) ? saved : AUDIO_DEFAULTS.sfxMode;
+  } catch { return AUDIO_DEFAULTS.sfxMode; }
 })();
 
 const VALID_MUSIC_MODES = ['normal', 'mute', 'low'];
 let _currentMusicMode = (() => {
-  try { return localStorage.getItem('nexus_music_mode') || 'normal'; } catch { return 'normal'; }
+  try { return localStorage.getItem('nexus_music_mode') || AUDIO_DEFAULTS.musicMode; } catch { return AUDIO_DEFAULTS.musicMode; }
 })();
-if (!VALID_MUSIC_MODES.includes(_currentMusicMode)) _currentMusicMode = 'normal';
+if (!VALID_MUSIC_MODES.includes(_currentMusicMode)) _currentMusicMode = AUDIO_DEFAULTS.musicMode;
 
 const _musicModeSubscribers = new Set();
 
@@ -229,15 +219,15 @@ function _notifyMusicMode() {
 let _sfxBtnEnabled = (() => {
   try {
     const v = localStorage.getItem('nexus_sfx_btn_enabled');
-    return v === null ? true : v === 'true';
-  } catch { return true; }
+    return v === null ? AUDIO_DEFAULTS.sfxBtnEnabled : v === 'true';
+  } catch { return AUDIO_DEFAULTS.sfxBtnEnabled; }
 })();
 
 let _musicBtnEnabled = (() => {
   try {
     const v = localStorage.getItem('nexus_music_btn_enabled');
-    return v === null ? true : v === 'true';
-  } catch { return true; }
+    return v === null ? AUDIO_DEFAULTS.musicBtnEnabled : v === 'true';
+  } catch { return AUDIO_DEFAULTS.musicBtnEnabled; }
 })();
 
 const _sfxBtnSubscribers   = new Set();
@@ -259,7 +249,7 @@ function _notifyMusicBtnEnabled() {
   }
 }
 
-let _volumes = { master: 1.0, music: 0.5, sfx: 0.5 };
+let _volumes = { ...AUDIO_DEFAULTS.volumes };
 
 /* ═══════════════════════════════════════════════
    2b. UID INTERNO
@@ -507,8 +497,8 @@ document.addEventListener('nexus:logout', () => {
   _activeLoadToken++;
 
   // No logout SIM resetamos — o usuário saiu, estado volta ao padrão
-  _currentMode       = DEFAULT_MODE;
-  _currentMusicMode  = 'normal';
+  _currentMode       = AUDIO_DEFAULTS.sfxMode;
+  _currentMusicMode  = AUDIO_DEFAULTS.musicMode;
   _currentSfxMap     = { ...DEFAULT_SFX_MAP };
   _currentSfxAreaMap = {};
 
@@ -521,7 +511,7 @@ document.addEventListener('nexus:logout', () => {
   _sfxQueue.length = 0;
   _sfxReady = true;
 
-  try { localStorage.setItem('nexus_music_mode', 'normal'); } catch { /* noop */ }
+  try { localStorage.setItem('nexus_music_mode', AUDIO_DEFAULTS.musicMode); } catch { /* noop */ }
 
   _dbg('Logout → modo resetado para padrão');
 });

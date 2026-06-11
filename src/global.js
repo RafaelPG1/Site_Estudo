@@ -40,7 +40,7 @@ let _audioState = null;
 async function _getAudioState() {
   if (!_audioState) {
     try {
-      const mod = await import('../shared/js/audio/audio-state.js');
+      const mod = await import('../shared/js/audio/state/audio-state.js');
       _audioState = mod.default;
     } catch (_) { /* se não disponível, ignora */ }
   }
@@ -109,6 +109,49 @@ const _DISCIPLINAS = {
 };
 
 /* ══════════════════════════════════════════════════════════
+   PADRÕES DE ÁUDIO — fonte única de verdade
+   Importado por audio-state.js para eliminar valores
+   hardcoded espalhados. Qualquer padrão de áudio muda
+   APENAS aqui.
+   ══════════════════════════════════════════════════════════ */
+
+export const AUDIO_DEFAULTS = {
+  sfxMode:         'normal',
+  musicMode:       'normal',
+  sfxBtnEnabled:   true,
+  musicBtnEnabled: false,
+  volumes: {
+    master: 1.0,
+    music:  0.5,
+    sfx:    0.5,
+  },
+  sfxMap: {
+    click:        'click',
+    hover:        'hover2',
+    openModal:    'openModal2',
+    closeModal:   'closeModal',
+    select:       'select',
+    correct:      'correct',
+    wrong:        'wrong6',
+    timeout:      'timeout4',
+    pause:        'pause',
+    timerWarning: 'timerWarning',
+  },
+};
+
+function _defaultConfigs() {
+  return {
+    tema:                   'dark',
+    animacoes:              true,
+    notificacoes:           false,
+    salvarProgressoParcial: true,
+    salvarProgresso:        false,
+    sfxBtnEnabled:          AUDIO_DEFAULTS.sfxBtnEnabled,
+    musicBtnEnabled:        AUDIO_DEFAULTS.musicBtnEnabled,
+  };
+}
+
+/* ══════════════════════════════════════════════════════════
    ESTADO INTERNO
    ══════════════════════════════════════════════════════════ */
 
@@ -122,16 +165,6 @@ let _estado = {
   usuario:    Storage.get('usuario', null),
   configs:    Storage.get('configs', _defaultConfigs()),
 };
-
-function _defaultConfigs() {
-  return {
-    tema:                 'dark',
-    animacoes:            true,
-    notificacoes:         false,
-    salvarProgressoParcial: true,
-    salvarProgresso:      false,
-  };
-}
 
 /* ══════════════════════════════════════════════════════════
    GETTERS / SETTERS — página
@@ -310,6 +343,26 @@ function _aplicarConfigs(cfg) {
   } else {
     document.documentElement.classList.remove('sem-animacoes');
   }
+
+  // ── Botões flutuantes de áudio (Efeitos / Música) ──────────
+  // Sincroniza os toggles "Efeitos sonoros" e "Música de fundo"
+  // (configs gerais, sincronizadas via Firebase) com o
+  // audio-state.js, que controla a visibilidade dos botões
+  // flutuantes e o mute dos canais correspondentes.
+  //
+  // Importação lazy evita ciclo de módulos (audio-state.js não
+  // importa global.js, mas o bundler pode reordenar). Se o campo
+  // não existir na config (usuário antigo sem o campo salvo),
+  // mantém o que já estiver em audio-state (default: ativado).
+  _getAudioState().then(as => {
+    if (!as) return;
+    if (typeof cfg.sfxBtnEnabled === 'boolean') {
+      as.setSfxBtnEnabled(cfg.sfxBtnEnabled);
+    }
+    if (typeof cfg.musicBtnEnabled === 'boolean') {
+      as.setMusicBtnEnabled(cfg.musicBtnEnabled);
+    }
+  }).catch(() => { /* audio-state ainda não disponível — ignora */ });
 }
 
 /* ── Aplica configs salvas na inicialização ── */
