@@ -1,5 +1,5 @@
 /* ============================================================
-   NEXUS STUDY — quiz/template/template1.css
+   NEXUS STUDY — quiz/template/template.css
    CSS unificado: base global + estilos do quiz/ava/enade.
 
    O acento é controlado pela variável --accent, definida
@@ -1019,8 +1019,9 @@ a { text-decoration: none; color: inherit; }
   right: 20px;
   top: 50%;
   transform: translateY(-50%);
+
+ overflow: visible;          /* ← permite o scale/glow vazar */
   max-height: calc(100vh - 220px);
-  overflow: hidden;
   z-index: 50;
 }
 
@@ -1612,10 +1613,807 @@ a { text-decoration: none; color: inherit; }
   color: #fff;
 }
 
-/* Mobile */
-@media (max-width: 680px) {
-  .filtro-painel {
-    width: min(280px, 92vw);
-    max-height: 72vh;
+/* ============================================================
+   NEXUS STUDY — mobile-responsive.css
+   Correções de responsividade para dispositivos móveis
+   Adicionar após template.css (ou ao final do mesmo arquivo)
+
+   Breakpoints cobertos:
+     320px  — iPhone SE 1ª gen / mínimo
+     375px  — iPhone SE 3ª gen / iPhone 12 mini
+     390px  — iPhone 14 / 15
+     414px  — iPhone Plus / Max
+     428px  — iPhone 14 Plus
+     768px  — iPad / tablet portrait
+
+   Estratégia: refinamentos progressivos sobre o CSS existente.
+   Nenhuma funcionalidade ou identidade visual foi alterada.
+   ============================================================ */
+
+
+/* ══════════════════════════════════════════════════════════
+   1. RESET GLOBAL ANTI-OVERFLOW
+   ══════════════════════════════════════════════════════════ */
+
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   2. HEADER
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 428px) {
+
+  .header {
+    padding: 0.65rem 1rem;
+  }
+
+  .header__inner {
+    gap: 0.5rem;
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+
+  .back-btn {
+    font-size: 0.72rem;
+    padding: 0.32rem 0.6rem;
+    gap: 0.3rem;
+    border-radius: 7px;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  /* Oculta texto "Voltar" em telas pequenas, mantém ícone */
+  .back-btn span { display: none; }
+
+  #header-logo-wrap .nexus-logo__img {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  #header-logo-wrap .nexus-logo__titulo { font-size: 0.8rem; }
+  #header-logo-wrap .nexus-logo__sub    { font-size: 0.5rem; }
+
+  .header__sem-badge {
+    font-size: 0.65rem;
+    padding: 0.3rem 0.5rem;
+    border-radius: 6px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
+
+@media (max-width: 340px) {
+  .header__sem-badge { display: none; }
+  #header-logo-wrap .nexus-logo__texto--stacked { display: none; }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   3. MAIN / PAGE HEADER
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .main {
+    padding: 1.5rem 1rem 5rem;
+    gap: 1.2rem;
+  }
+
+  .page-header__eyebrow {
+    font-size: 0.6rem;
+    padding: 0.25rem 0.7rem;
+    letter-spacing: 0.12em;
+  }
+
+  .page-header__title {
+    font-size: 2rem;
+    line-height: 1.2;
+  }
+}
+
+@media (max-width: 428px) {
+  .main { padding: 1.25rem 0.9rem 5rem; }
+  .page-header__title { font-size: 1.75rem; }
+}
+
+@media (max-width: 375px) {
+  .page-header__title { font-size: 1.55rem; }
+}
+
+@media (max-width: 320px) {
+  .main { padding: 1rem 0.75rem 5rem; }
+  .page-header__title { font-size: 1.35rem; }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   4. CARDS DE QUESTÃO
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .question-container {
+    padding: 1.1rem 1rem;
+    border-radius: 14px;
+    margin-bottom: 0.75rem;
+  }
+
+  .question-number        { font-size: 0.72rem; margin-bottom: 0.6rem; }
+  .question-type-eyebrow  { font-size: 0.58rem; padding: 0.15rem 0.55rem; }
+  .question-enunciado,
+  .question-text          { font-size: 0.875rem; line-height: 1.65; }
+  .question-texto         { font-size: 0.825rem; padding: 0.65rem 0.85rem; }
+  .question-mini-enunciado { font-size: 0.825rem; }
+}
+
+@media (max-width: 428px) {
+  .question-container {
+    padding: 0.9rem 0.85rem;
+    border-left-width: 2px;
+    border-radius: 12px;
+  }
+
+  .question-enunciado,
+  .question-text { font-size: 0.845rem; margin-bottom: 0.75rem; }
+  .question-texto { font-size: 0.8rem; padding: 0.55rem 0.75rem; }
+}
+
+@media (max-width: 375px) {
+  .question-container { padding: 0.8rem 0.75rem; }
+  .question-enunciado,
+  .question-text       { font-size: 0.825rem; }
+}
+
+@media (max-width: 320px) {
+  .question-container { padding: 0.75rem 0.7rem; }
+  .question-enunciado,
+  .question-text      { font-size: 0.8rem; }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   5. OPÇÕES (ALTERNATIVAS)
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .options { gap: 0.45rem; }
+
+  .option {
+    padding: 0.75rem 0.95rem;
+    font-size: 0.845rem;
+    line-height: 1.5;
+    border-radius: 9px;
+    min-height: 44px;
+  }
+}
+
+/* Remove translate em hover para touch devices */
+@media (hover: none) {
+  .option:hover { transform: none; }
+}
+
+@media (max-width: 428px) {
+  .option {
+    padding: 0.7rem 0.85rem;
+    font-size: 0.825rem;
+    border-radius: 8px;
+  }
+}
+
+@media (max-width: 375px) {
+  .option { font-size: 0.8rem; padding: 0.65rem 0.8rem; }
+}
+
+@media (max-width: 320px) {
+  .option { padding: 0.6rem 0.75rem; font-size: 0.78rem; }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   6. ASSERTIVAS
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .assertions {
+    gap: 0.4rem;
+    margin: 0.5rem 0 0.85rem;
+  }
+
+  .assertion {
+    padding: 0.55rem 0.8rem;
+    font-size: 0.825rem;
+    line-height: 1.6;
+    border-radius: 8px;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  .assertion-num { font-size: 0.68rem; min-width: 18px; }
+  .connector-label { font-size: 0.6rem; padding: 0.12rem 0.5rem; }
+}
+
+@media (max-width: 428px) {
+  .assertion {
+    padding: 0.5rem 0.7rem;
+    font-size: 0.8rem;
+    gap: 0.55rem;
+  }
+}
+
+@media (max-width: 320px) {
+  .assertion { font-size: 0.78rem; padding: 0.45rem 0.65rem; }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   7. BLOCO DE CÓDIGO
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .code-block {
+    font-size: 0.72rem;
+    padding: 0.75rem 0.9rem;
+    border-radius: 0 8px 8px 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: pre;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 428px) {
+  .code-block { font-size: 0.68rem; padding: 0.65rem 0.8rem; }
+}
+
+@media (max-width: 375px) {
+  .code-block { font-size: 0.64rem; padding: 0.6rem 0.7rem; }
+}
+
+@media (max-width: 320px) {
+  .code-block { font-size: 0.6rem; padding: 0.55rem 0.65rem; }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   8. FEEDBACK
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .feedback {
+    padding: 0.75rem 0.9rem;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    border-radius: 8px;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+}
+
+@media (max-width: 428px) {
+  .feedback { padding: 0.7rem 0.8rem; font-size: 0.775rem; }
+}
+
+@media (max-width: 320px) {
+  .feedback { font-size: 0.75rem; padding: 0.6rem 0.7rem; }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   9. TÍTULO DE ASSUNTO (AULA)
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .subject-title {
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    padding: 1.2rem 0 0.6rem;
+    word-break: break-word;
+  }
+}
+
+@media (max-width: 428px) {
+  .subject-title { font-size: 0.7rem; letter-spacing: 0.12em; }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   10. RESULTADOS POR AULA
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .subject-result {
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+    gap: 0.75rem;
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+
+  .sr-pct   { font-size: 1.5rem; }
+  .sr-score { font-size: 0.78rem; }
+  .sr-title { font-size: 0.6rem; }
+}
+
+@media (max-width: 428px) {
+  .subject-result {
+    padding: 0.75rem 0.85rem;
+    gap: 0.6rem;
+    border-radius: 10px;
+  }
+
+  /* Ícone do card */
+  .subject-result > div:first-child {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px;
+  }
+
+  /* Percentual do card */
+  .subject-result > div:last-child > div {
+    font-size: 1.35rem !important;
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   11. RESULTADO GLOBAL
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .results {
+    padding: 1.5rem 1.1rem;
+    border-radius: 14px;
+  }
+
+  .percentage { font-size: 3rem; }
+  .score      { font-size: 0.85rem; }
+  .results h2 { font-size: 0.6rem; }
+  .results p  { font-size: 0.8rem; }
+}
+
+@media (max-width: 428px) {
+  .results   { padding: 1.25rem 0.9rem; }
+  .percentage { font-size: 2.5rem; }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   12. BOTÕES DE AÇÃO
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .buttons-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+
+  .action-button {
+    padding: 0.55rem 1rem;
+    font-size: 0.78rem;
+    border-radius: 8px;
+    min-height: 40px;
+  }
+}
+
+@media (max-width: 428px) {
+  .buttons-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .action-button {
+    width: 100%;
+    justify-content: center;
+    padding: 0.7rem 1rem;
+    font-size: 0.8rem;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 320px) {
+  .action-button { font-size: 0.75rem; padding: 0.65rem 0.9rem; }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   13. NAV FLOAT
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .nav-float {
+    right: 10px;
+    gap: 4px;
+  overflow: visible;
+  max-height: calc(100vh - 240px);
+  }
+
+  .nav-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 0.72rem;
+    border-radius: 8px;
+    min-width: 34px;
+    min-height: 34px;
+  }
+
+  .nav-divider { margin: 2px 0; }
+}
+
+@media (max-width: 428px) {
+  .nav-float {
+    right: 8px;
+    gap: 3px;
+    /* Posição relativa ao topo, evita cobrir os botões de ação */
+    top: 50%;
+    transform: translateY(-50%);
+  overflow: visible;
+  max-height: calc(100vh - 240px);
+  }
+
+  .nav-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 0.68rem;
+  }
+}
+
+@media (max-width: 375px) {
+  .nav-float { right: 6px; }
+  .nav-btn   { width: 30px; height: 30px; }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   14. FAB — BOTÃO IA + ÁUDIO
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  #nexus-fab         { width: 40px; height: 40px; bottom: 16px; right: 16px; }
+  .abtn              { width: 38px; height: 38px; bottom: 68px; right: 16px; }
+  #music-btn-global  { width: 38px; height: 38px; bottom: 118px; right: 16px; }
+}
+
+@media (max-width: 428px) {
+  #nexus-fab         { width: 38px; height: 38px; bottom: 14px; right: 14px; }
+  .abtn              { width: 36px; height: 36px; bottom: 64px; right: 14px; }
+  #music-btn-global  { width: 36px; height: 36px; bottom: 112px; right: 14px; }
+}
+
+@media (max-width: 375px) {
+  #nexus-fab         { width: 36px; height: 36px; bottom: 12px; right: 12px; }
+  .abtn              { width: 34px; height: 34px; bottom: 60px; right: 12px; }
+  #music-btn-global  { width: 34px; height: 34px; bottom: 106px; right: 12px; }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   15. PAINEL IA
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  #nexus-panel {
+    right: 10px !important;
+    width: min(320px, calc(100vw - 20px)) !important;
+    max-height: 70vh !important;
+  }
+}
+
+@media (max-width: 428px) {
+  #nexus-panel {
+    right: 8px !important;
+    bottom: 60px !important;
+    width: calc(100vw - 16px) !important;
+    max-width: 360px !important;
+    max-height: 65vh !important;
+    border-radius: 14px !important;
+  }
+}
+
+@media (max-width: 375px) {
+  #nexus-panel {
+    right: 6px !important;
+    width: calc(100vw - 12px) !important;
+    max-height: 60vh !important;
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   16. MODO STEP
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  #step-shell-header,
+  #step-shell-footer  { padding: 0 0.5rem; }
+
+  .step-header        { gap: 0.4rem; padding-bottom: 0.5rem; }
+  .step-progress-wrapper { gap: 0.55rem; }
+  .step-counter       { font-size: 0.68rem; min-width: 36px; }
+  .step-badge         { font-size: 0.64rem; padding: 0.14rem 0.45rem; }
+  .step-footer        { padding-top: 0.6rem; gap: 0.75rem; }
+  .step-dot           { width: 9px; height: 9px; }
+  .step-dot-active    { width: 18px; }
+  .step-dots          { gap: 3px; }
+
+  .step-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.78rem;
+    border-radius: 7px;
+    min-height: 40px;
+  }
+}
+
+@media (max-width: 428px) {
+  .step-btn {
+    padding: 0.48rem 0.8rem;
+    font-size: 0.74rem;
+    min-height: 42px;
+  }
+
+  .step-counter    { font-size: 0.65rem; }
+  .step-dot        { width: 8px; height: 8px; }
+  .step-dot-active { width: 16px; }
+}
+
+@media (max-width: 375px) {
+  .step-btn { padding: 0.45rem 0.7rem; font-size: 0.7rem; }
+}
+
+@media (max-width: 320px) {
+  .step-btn { font-size: 0.68rem; padding: 0.42rem 0.65rem; }
+}
+
+/* Banner de aula */
+@media (max-width: 768px) {
+  .step-aula-banner {
+    font-size: 0.68rem;
+    padding: 0.4rem 0.7rem;
+    gap: 0.5rem;
+    border-radius: 7px;
+  }
+
+  .step-aula-banner__nome { font-size: 0.68rem; }
+  .step-aula-banner__pill { display: none; }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   17. MODAL DE LEGENDA
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  #nexus-legenda-modal {
+    right: 52px !important;
+    width: min(280px, calc(100vw - 60px)) !important;
+    max-height: 72vh !important;
+  }
+}
+
+@media (max-width: 428px) {
+  #nexus-legenda-modal {
+    right: auto !important;
+    left: 50% !important;
+    transform: translateX(-50%) translateY(-50%) !important;
+    width: calc(100vw - 24px) !important;
+    max-width: 360px !important;
+    max-height: 75vh !important;
+    border-radius: 14px !important;
+  }
+
+  #nexus-legenda-modal.nlg-show {
+    transform: translateX(-50%) translateY(-50%) scale(1) !important;
+  }
+
+  .nlg-header          { padding: 0.8rem 0.9rem 0.65rem; }
+  .nlg-title           { font-size: 0.82rem; }
+  .nlg-eyebrow         { font-size: 0.48rem; }
+  .nlg-body            { padding: 0.55rem 0.75rem; gap: 0.4rem; max-height: 55vh; }
+  .nlg-tipo-row,
+  .nlg-chip-row        { padding: 0.38rem 0.5rem; gap: 0.5rem; border-radius: 8px; }
+  .nlg-tipo-icon       { width: 26px; height: 26px; font-size: 0.5rem; border-radius: 7px; }
+  .nlg-tipo-nome       { font-size: 0.7rem; }
+  .nlg-tipo-desc       { font-size: 0.58rem; }
+  .nlg-chip            { font-size: 0.55rem; padding: 2px 5px; min-width: 60px; }
+  .nlg-desc-main       { font-size: 0.68rem; }
+  .nlg-desc-sub        { font-size: 0.57rem; }
+  .nlg-footer          { padding: 0.45rem 0.75rem; }
+  .nlg-footer-text     { font-size: 0.55rem; }
+  .nlg-enade-block     { padding: 0.45rem 0.6rem; }
+  .nlg-enade-icon      { font-size: 0.78rem; }
+  .nlg-enade-desc      { font-size: 0.62rem; }
+  .nlg-enade-label     { font-size: 0.48rem; }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   18. FILTRO DE AULAS
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .filtro-painel    { width: min(290px, 90vw); max-height: 75vh; }
+  .filtro-header    { padding: 0.85rem 1rem 0.7rem; }
+  .filtro-titulo    { font-size: 0.78rem; }
+  .filtro-label     { padding: 0.42rem 0.5rem; font-size: 0.75rem; }
+  .filtro-aplicar   { padding: 0.55rem; font-size: 0.78rem; }
+  .filtro-acao-btn  { padding: 0.3rem 0; font-size: 0.68rem; }
+}
+
+@media (max-width: 428px) {
+  .filtro-painel {
+    width: calc(100vw - 16px);
+    max-width: 340px;
+    max-height: 70vh;
+  }
+
+  .filtro-label   { min-height: 40px; }
+  .filtro-chk     { width: 16px; height: 16px; }
+  .filtro-aplicar { min-height: 44px; font-size: 0.82rem; }
+}
+
+@media (max-width: 375px) {
+  .filtro-painel { width: calc(100vw - 8px); max-width: none; }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   19. IMAGENS DAS QUESTÕES
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .question-image        { margin: 0.75rem 0; }
+  .question-image img    { max-width: 100%; height: auto; border-radius: 8px; }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   20. CHIPS / INLINE CODE — anti-overflow
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .chip,
+  .inline-code {
+    white-space: normal;
+    word-break: break-word;
+    display: inline;
+    font-size: 0.78em;
+  }
+
+  .assertion .chip,
+  .question-texto .chip,
+  .question-enunciado .chip,
+  .feedback .chip,
+  .assertion code,
+  .question-texto code,
+  .question-enunciado code,
+  .feedback code {
+    white-space: normal;
+    word-break: break-word;
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   21. FOOTER
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .page-footer { font-size: 0.65rem; padding: 1.1rem 1rem; }
+}
+
+@media (max-width: 428px) {
+  .page-footer {
+    font-size: 0.6rem;
+    padding: 1rem 0.9rem;
+    margin-bottom: 60px; /* espaço para FAB */
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   22. CHECKLIST ASSERTIVA
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 428px) {
+  .assertion-chk {
+    width: 16px;
+    height: 16px;
+    font-size: 10px;
+    bottom: 5px;
+    right: 6px;
+    opacity: 0.5;
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   23. META BADGES
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .page-header__meta { gap: 0.75rem; font-size: 0.72rem; }
+  .meta-badge        { font-size: 0.68rem; padding: 0.18rem 0.6rem; }
+}
+
+@media (max-width: 428px) {
+  .page-header__meta { flex-wrap: wrap; gap: 0.5rem; }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   24. ORBS DE FUNDO — performance mobile
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .bg-orb { opacity: 0.4; filter: blur(60px); }
+  .bg-orb--1 { width: 300px; height: 300px; }
+  .bg-orb--2 { width: 250px; height: 250px; }
+  .bg-orb--3 { width: 200px; height: 200px; }
+}
+
+@media (max-width: 428px) {
+  .bg-orb { opacity: 0.3; filter: blur(50px); }
+  .bg-orb--1 { width: 220px; height: 220px; }
+  .bg-orb--2 { width: 180px; height: 180px; }
+  .bg-orb--3 { width: 140px; height: 140px; }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   25. QUIZ CONTAINER
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  #quiz-container {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   26. TOUCH — previne duplo-tap zoom no iOS
+   ══════════════════════════════════════════════════════════ */
+
+button,
+.option,
+.back-btn,
+.nav-btn,
+.step-btn,
+.action-button,
+.filtro-label,
+.filtro-aplicar,
+.filtro-acao-btn,
+.filtro-close,
+.assertion-chk,
+.step-dot {
+  touch-action: manipulation;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   27. 320px — iPhone SE 1ª geração
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 320px) {
+  .feedback        { font-size: 0.75rem; padding: 0.6rem 0.7rem; }
+  .assertion       { font-size: 0.78rem; padding: 0.45rem 0.65rem; }
+  .action-button   { font-size: 0.75rem; padding: 0.65rem 0.9rem; }
+  .step-btn        { font-size: 0.68rem; padding: 0.42rem 0.65rem; }
+}
+
