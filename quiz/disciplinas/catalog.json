@@ -9,10 +9,10 @@
   },
 
   "2026.1-AP2": {
-    "poo":          { "ava": true,  "questoes": false, "enade": true, "fixacao": true },
-    "banco_dados":  { "ava": true,  "questoes": true,  "enade": true, "fixacao": true },
-    "design":       { "ava": true,  "questoes": true,  "enade": true, "fixacao": true },
-    "redes":        { "ava": true,  "questoes": true,  "enade": true, "fixacao": true }
+    "poo":          { "ava": false,  "questoes": true, "enade": true, "fixacao": true },
+    "banco_dados":  { "ava": false,  "questoes": true, "enade": true, "fixacao": true },
+    "design":       { "ava": false,  "questoes": true, "enade": true, "fixacao": true },
+    "redes":        { "ava": false,  "questoes": true, "enade": true, "fixacao": true }
   },
 
   "2026.2-AP1": {
