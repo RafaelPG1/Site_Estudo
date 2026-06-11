@@ -74,7 +74,15 @@ function _normalizarSemestre(s) {
   return String(s).replace(/-(.+)$/, (_, ap) => '-' + ap.toUpperCase());
 }
 
-export const SEMESTRES = ['2026.2-AP1','2026.1-AP2', '2026.1-AP1'];
+
+export const SEMESTRES = [
+  '2026.2-AP2',
+  '2026.2-AP1',
+  '2026.1-AP2',
+  '2026.1-AP1'
+];
+
+
 
 
 /* ══════════════════════════════════════════════════════════

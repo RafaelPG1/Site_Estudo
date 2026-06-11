@@ -1,0 +1,228 @@
+/* ============================================================
+   NEXUS STUDY — shared/css/themes/semestre-picker.css
+   Dropdown customizado de semestre — agrupa opções por ano.
+
+   v2 — FIX: .sp-overlay removido.
+        O overlay no body com z-index: 199 ficava acima do <header>
+        (que tem z-index menor), cobrindo o painel e bloqueando
+        todos os eventos de mouse nos itens. O fechamento ao clicar
+        fora agora é feito via pointerdown no document (dom.js).
+   ============================================================ */
+
+/* ── Variáveis locais (herda do :root do projeto) ─────────── */
+.sp-wrap {
+  position: relative;
+  display: inline-block;
+  font-family: var(--font-body, 'DM Sans', system-ui, sans-serif);
+  user-select: none;
+  z-index: 200;
+}
+
+/* ── Botão disparador ───────────────────────────────────────── */
+.sp-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem 0.35rem 0.9rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  min-width: 140px;
+}
+
+.sp-trigger:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.sp-wrap.is-open .sp-trigger {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+/* Texto do semestre selecionado */
+.sp-trigger__label {
+  flex: 1;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-1, #f0ede6);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Badge do AP ao lado do período */
+.sp-trigger__ap {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.45rem;
+  border-radius: 4px;
+  background: rgba(77, 217, 180, 0.15);
+  color: var(--teal, #4dd9b4);
+  line-height: 1;
+}
+
+/* Seta */
+.sp-trigger__arrow {
+  width: 14px;
+  height: 14px;
+  color: var(--text-2, #a8a49c);
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.sp-wrap.is-open .sp-trigger__arrow {
+  transform: rotate(180deg);
+}
+
+/* ── Dropdown panel ─────────────────────────────────────────── */
+.sp-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 210px;
+  max-height: 220px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--surface-2, #141c2e);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 10px;
+  padding: 0.4rem 0;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transform: translateY(-6px) scale(0.98);
+  pointer-events: none;
+  transition: opacity 0.15s, transform 0.15s;
+  z-index: 201;
+}
+
+.sp-wrap.is-open .sp-panel {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+/* ── Scrollbar customizada do painel ────────────────────────── */
+.sp-panel::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sp-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sp-panel::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+}
+
+.sp-panel::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* Firefox */
+.sp-panel {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+}
+
+/* ── Grupo de ano ───────────────────────────────────────────── */
+.sp-group {
+  padding: 0;
+}
+
+/* Cabeçalho do grupo (o ano) */
+.sp-group__label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.9rem 0.3rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3, #a09a8e);
+}
+
+.sp-group__label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* Divisor entre grupos */
+.sp-group + .sp-group {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin-top: 0.3rem;
+  padding-top: 0.3rem;
+}
+
+/* ── Item de semestre ───────────────────────────────────────── */
+.sp-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.9rem;
+  cursor: pointer;
+  transition: background 0.1s;
+  border-radius: 0;
+}
+
+.sp-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.sp-item.is-selected {
+  background: rgba(77, 217, 180, 0.08);
+}
+
+/* Ícone de check para o item selecionado */
+.sp-item__check {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: var(--teal, #4dd9b4);
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+
+.sp-item.is-selected .sp-item__check {
+  opacity: 1;
+}
+
+/* Textos do item */
+.sp-item__body {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+}
+
+.sp-item__periodo {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-1, #f0ede6);
+}
+
+.sp-item.is-selected .sp-item__periodo {
+  color: var(--teal, #4dd9b4);
+}
+
+/* Badge de AP dentro do item */
+.sp-item__ap {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  background: rgba(77, 217, 180, 0.10);
+  color: var(--teal, #4dd9b4);
+  line-height: 1.2;
+}
+
+.sp-item.is-selected .sp-item__ap {
+  background: rgba(77, 217, 180, 0.2);
+}
