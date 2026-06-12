@@ -920,6 +920,7 @@
       }
 
       questoes = criarCopiaEmbaralhada(questoesBase);
+      window.__NEXUS_QUESTOES_VISUAIS__ = questoes;
       if (_disc && _Storage) _salvarShuffleMap();
 
       var resultsEl = document.getElementById('results');

@@ -66,6 +66,9 @@
   ══════════════════════════════════════════════════════════ */
 
   function _purgarContextoQuiz() {
+    _ultimoContexto           = null;
+    _ultimoMapaVisualRastreio = null;
+
     try { delete window.__NEXUS_QUIZ_MODO__; } catch (e) {}
 
     if (typeof window.NexusQuizSearch !== 'undefined') {
@@ -186,8 +189,76 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     MONTAGEM DE CONTEXTO DE CARREGAMENTO (quiz)
+     RASTREAMENTO DO MAPA VISUAL
+     Detecta quando __NEXUS_QUESTOES_VISUAIS__ foi substituído
+     (reinício ou filtro) para forçar reindexação da IA.
   ══════════════════════════════════════════════════════════ */
+
+  /**
+   * Referência ao array __NEXUS_QUESTOES_VISUAIS__ da última indexação.
+   * Comparação por identidade (===) detecta substituição do array.
+   */
+  var _ultimoMapaVisual = null;
+
+  /* ══════════════════════════════════════════════════════════
+     CONTEXTO EXPLÍCITO DA ÚLTIMA QUESTÃO DISCUTIDA
+
+     Permite que perguntas de acompanhamento sem número explícito
+     ("por que a alternativa B está errada?", "e a resposta?",
+     "essa está errada?") sejam resolvidas para a MESMA questão
+     visual já tratada na resposta anterior — sem qualquer busca
+     textual ou aproximação.
+
+     _ultimoContexto = { tipo: 'questao', visual: N, original: M }
+       visual   — número exibido ao usuário (base 1, índice em
+                   __NEXUS_QUESTOES_VISUAIS__)
+       original — índice original da questão no arquivo ques_*
+                   (q.__qiOriginal__), guardado apenas para
+                   diagnóstico/logs — a busca em si sempre usa
+                   o número visual via buscarQuestaoPorNumero().
+
+     É invalidado sempre que __NEXUS_QUESTOES_VISUAIS__ é substituído
+     (reinício, filtro de aulas) — a referência anterior não tem mais
+     correspondência garantida com a nova ordem visual.
+  ══════════════════════════════════════════════════════════ */
+
+  var _ultimoContexto           = null;
+  var _ultimoMapaVisualRastreio = null;
+
+  /**
+   * Registra a questão visual atualmente em discussão.
+   * @param {number} numeroVisual
+   * @param {object} q — objeto visual retornado por buscarQuestaoPorNumero()
+   */
+  function _registrarContexto(numeroVisual, q) {
+    _ultimoContexto = {
+      tipo:     'questao',
+      visual:   numeroVisual,
+      original: (q && typeof q.__qiOriginal__ === 'number') ? q.__qiOriginal__ : null,
+    };
+  }
+
+  /**
+   * Se __NEXUS_QUESTOES_VISUAIS__ foi substituído desde a última
+   * pergunta, zera o contexto da última questão discutida.
+   */
+  function _resetRastreioSeMapaMudou() {
+    var atual = window.__NEXUS_QUESTOES_VISUAIS__;
+    if (atual && atual.length && atual !== _ultimoMapaVisualRastreio) {
+      _ultimoContexto           = null;
+      _ultimoMapaVisualRastreio = atual;
+    }
+  }
+
+  /**
+   * Retorna true se o mapa visual foi substituído desde a última indexação.
+   * @returns {boolean}
+   */
+  function _mapaVisualMudou() {
+    var atual = window.__NEXUS_QUESTOES_VISUAIS__;
+    if (!atual || !atual.length) return false;
+    return atual !== _ultimoMapaVisual;
+  }
 
   function _getCtxBridge() {
     return window.__nexusCtx || null;
@@ -223,7 +294,39 @@
     const token = _quizToken();
     const modo  = window.__NEXUS_QUIZ_MODO__;
 
-    if (NexusQuizSearch.estaIndexadoQuiz(token)) return window.questoes || null;
+    // Força reindexação se __NEXUS_QUESTOES_VISUAIS__ foi substituído
+    // (acontece em reiniciar() e _aplicarFiltro() no quiz_engine)
+    if (_mapaVisualMudou()) {
+      console.log('[NexusQuizAssistant] mapa visual mudou — reindexando questões.');
+      NexusQuizSearch.limparIndiceQuiz(token);
+    }
+
+    if (NexusQuizSearch.estaIndexadoQuiz(token)) {
+      // Atualiza referência visual mesmo em cache hit para manter _ultimoMapaVisual
+      // sincronizado após reinício detectado acima
+      _ultimoMapaVisual = window.__NEXUS_QUESTOES_VISUAIS__ || _ultimoMapaVisual;
+      return window.questoes || null;
+    }
+
+    // ── Aguarda __NEXUS_QUESTOES_VISUAIS__ estar disponível ────────────
+    // O quiz_engine o seta após criarCopiaEmbaralhada(). Se a IA indexar
+    // antes disso (timing), forçamos uma espera curta para garantir que
+    // a indexação use sempre o mapeamento visual correto.
+    var visuais = window.__NEXUS_QUESTOES_VISUAIS__;
+    if (!visuais || !visuais.length) {
+      visuais = await new Promise(function (resolve) {
+        var tentativas = 0;
+        var MAX = 20; // 1s no máximo (20 × 50ms)
+        var timer = setInterval(function () {
+          tentativas++;
+          var v = window.__NEXUS_QUESTOES_VISUAIS__;
+          if ((v && v.length) || tentativas >= MAX) {
+            clearInterval(timer);
+            resolve(v || null);
+          }
+        }, 50);
+      });
+    }
 
     const loaderCtx = _montarCtxQuiz(disc);
     if (!loaderCtx) return null;
@@ -232,7 +335,83 @@
     if (!questoes) return null;
 
     NexusQuizSearch.indexarQuestoes(questoes, modo, token);
+
+    // Registra o mapa visual atual como referência para próxima comparação
+    _ultimoMapaVisual = window.__NEXUS_QUESTOES_VISUAIS__ || null;
+
     return questoes;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     PALAVRAS NEUTRAS DE REFERÊNCIA À QUESTÃO
+
+     Conjunto de palavras que, isoladas, não carregam conteúdo
+     técnico — apenas indicam que o usuário está falando SOBRE
+     uma questão (verbos de pedido, pronomes, conectores, termos
+     do próprio domínio "questão/alternativa/resposta").
+     Usado para decidir se um número solto na frase ("a 1",
+     "explica 1") é referência à questão ou parte do conteúdo
+     ("o IPv4 possui 32 bits").
+
+     Reaproveita window.NexusTextUtils.STOPWORDS (que já cobre boa
+     parte dos verbos de pedido — explica, fala, mostra, resuma,
+     diga, descreva — e pronomes/conectores) e complementa com
+     termos específicos do domínio de quiz.
+  ══════════════════════════════════════════════════════════ */
+
+  var PALAVRAS_REFERENCIA_EXTRA = new Set([
+    'a', 'o', 'as', 'os', 'e', 'ou', 'que', 'se', 'com', 'sobre',
+    'da', 'do', 'na', 'no', 'em', 'pra', 'pro', 'para', 'por',
+    'ela', 'ele', 'isto',
+    'questao', 'questoes', 'pergunta', 'perguntas',
+    'alternativa', 'alternativas', 'opcao', 'opcoes',
+    'letra', 'letras', 'item', 'itens',
+    'resposta', 'respostas', 'gabarito',
+    'correta', 'correto', 'certa', 'certo',
+    'errada', 'errado', 'incorreta', 'incorreto',
+    'assunto', 'assuntos', 'significa', 'significado',
+    'trata', 'tratando', 'aborda', 'abordar',
+    'conta', 'conte', 'contar',
+    'descreve', 'descreva', 'descrever',
+    'analisa', 'analise', 'analisar',
+    'comenta', 'comente', 'comentar',
+    'responde', 'responda', 'responder',
+    'entendi', 'entender', 'compreendi', 'compreender',
+  ]);
+
+  /**
+   * Retorna true se a palavra normalizada não carrega conteúdo
+   * técnico — ou é uma stopword geral, um termo neutro de
+   * referência a questão, ou uma letra de alternativa (a-e).
+   *
+   * @param {string} palavra — token já normalizado
+   * @returns {boolean}
+   */
+  function _ehPalavraDeReferencia(palavra) {
+    if (!palavra) return true;
+    var u = window.NexusTextUtils;
+    return u.STOPWORDS.has(palavra)
+        || PALAVRAS_REFERENCIA_EXTRA.has(palavra)
+        || /^[a-e]$/.test(palavra);
+  }
+
+  /**
+   * Verifica se, removendo o número da frase, tudo o que resta
+   * são palavras neutras de referência (verbos de pedido,
+   * pronomes, conectores, vocabulário de quiz).
+   *
+   * Ex.: "me explica a 1"      → resta "me explica a"      → true
+   *      "fala sobre a 1"      → resta "fala sobre a"      → true
+   *      "tenho 20 minutos"    → resta "tenho minutos"     → false
+   *      "o ipv4 possui 32 bits" → resta "o ipv4 possui bits" → false
+   *
+   * @param {string} normSemNumero — texto normalizado, com o
+   *   número já removido
+   * @returns {boolean}
+   */
+  function _restanteEhReferencia(normSemNumero) {
+    var tokens = normSemNumero.split(' ').filter(Boolean);
+    return tokens.every(_ehPalavraDeReferencia);
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -247,20 +426,123 @@
       /#(\d+)\b/,
       /\bnumero\s+(\d+)\b/,
       /\b(\d+)[aª]\s*quest/,
+      // "resposta da 1", "explica a 2", "vamos pra 3", "vou pro 4"
+      /\b(?:da|do|na|no|pra|pro|essa|esta|aquela)\s+(\d+)\b/,
     ];
     for (var i = 0; i < padroes.length; i++) {
       var m = norm.match(padroes[i]);
       if (m) return parseInt(m[1], 10);
     }
+
+    // ── Último recurso: número solto na frase ──────────────────────────
+    // "me explica a 1", "fala da 1", "a 1", "1", "e a 1?", "resuma a 1"...
+    //
+    // Só é aceito como referência à questão se:
+    //   (a) estiver dentro do intervalo de questões do quiz atual, E
+    //   (b) o restante da frase (sem o número) for composto apenas
+    //       por palavras neutras de referência — caso contrário o
+    //       número é parte do CONTEÚDO ("o IPv4 possui 32 bits",
+    //       "a porta 443 usa HTTPS", "o exercício tem 15 linhas").
+    var bare = norm.match(/\b(\d+)\b/);
+    if (bare) {
+      var n = parseInt(bare[1], 10);
+      var visuais = window.__NEXUS_QUESTOES_VISUAIS__;
+      var dentroDoIntervalo = !visuais || !visuais.length || (n >= 1 && n <= visuais.length);
+
+      if (dentroDoIntervalo) {
+        var semNumero = (norm.slice(0, bare.index) + ' ' + norm.slice(bare.index + bare[0].length)).trim();
+        if (_restanteEhReferencia(semNumero)) {
+          return n;
+        }
+      }
+    }
+
     return null;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     REFERÊNCIA IMPLÍCITA À ÚLTIMA QUESTÃO DISCUTIDA
+  ══════════════════════════════════════════════════════════ */
+
+  /**
+   * Detecta perguntas de acompanhamento que se referem à questão
+   * discutida na interação anterior, sem citar um número.
+   *
+   * TRUE:  "por que a alternativa B está errada?", "e a B?",
+   *        "e a opção C?", "essa questão fala sobre o quê?",
+   *        "por que essa está certa?", "explica essa alternativa",
+   *        "e a resposta?", "essa está errada?", "qual o assunto?",
+   *        "essa questão fala sobre MVC?"
+   *
+   * Só é consultada quando _detectarNumeroQuestao() não encontra
+   * número algum E existe um _ultimoContexto registrado.
+   */
+  function _referenciaImplicita(texto) {
+    var norm = window.NexusTextUtils.normalizarTexto(texto);
+
+    // "alternativa B", "opcao c", "letra D", "item a"
+    if (/\b(alternativa|opcao|letra|item)\s*[a-e]\b/.test(norm)) return true;
+
+    // "e a b?", "e a c?" — referência curta a uma alternativa
+    if (/^e\s+[ao]\s*[a-e]\b/.test(norm)) return true;
+
+    // "essa/esta/nessa/nesta/dessa/desta/aquela questao/pergunta/alternativa/opcao"
+    if (/\b(essa|esta|nessa|nesta|dessa|desta|aquela)\s+(questao|pergunta|alternativa|opcao)\b/.test(norm)) return true;
+
+    // "por que está certa/errada?", "ela está certa?", "essa está errada?"
+    if (/\b(certa|certo|errada|errado|correta|correto|incorreta|incorreto)\b/.test(norm)) return true;
+
+    // "e a resposta?", "qual a resposta?", "qual o gabarito?"
+    if (/\b(resposta|gabarito)\b/.test(norm)) return true;
+
+    // "qual o assunto?", "o que isso significa?", "sobre o que ela fala?",
+    // "essa questão aborda o quê?"
+    if (/\b(assunto|significa|significado|aborda|abordar|trata|tratando)\b/.test(norm)) return true;
+
+    return false;
   }
 
   /* ══════════════════════════════════════════════════════════
      SERIALIZAÇÃO DE QUESTÃO
   ══════════════════════════════════════════════════════════ */
 
+  /**
+   * Serializa uma questão para envio ao worker.
+   *
+   * A questão recebida (q) SEMPRE vem de __NEXUS_QUESTOES_VISUAIS__
+   * (via buscarQuestaoPorNumero) — ou seja, é o objeto exato que o
+   * quiz_engine usa para renderizar a tela. Por isso:
+   *
+   *   q.options  = alternativas na ordem VISUAL (embaralhada)
+   *   q.answer   = índice da correta na ordem VISUAL
+   *   q.feedback = já reescrito com a letra visual correta
+   *
+   * O worker recebe tudo alinhado com o que o usuário vê.
+   * O campo __qiOriginal__ (índice no arquivo original) é ignorado —
+   * é dado interno do engine e irrelevante para a IA.
+   *
+   * @param {number} numero — número visual (base 1)
+   * @param {object} q     — objeto de questão visual de __NEXUS_QUESTOES_VISUAIS__
+   * @returns {string}
+   */
   function _serializarQuestao(numero, q) {
-    var linhas = ['Questão ' + numero + (q.aula ? ' (' + q.aula + ')' : '') + ':'];
+    var visuais = window.__NEXUS_QUESTOES_VISUAIS__;
+    var totalQuestoes = visuais ? visuais.length : '?';
+
+    var linhas = [
+      // Nota de desambiguação: o usuário pode ter perguntado usando
+      // apenas o número ("me explica a 1", "qual a resposta da 2?").
+      // Sem isso, alguns modelos confundem esse número com itens/regras
+      // numeradas do PRÓPRIO prompt de sistema do worker e respondem
+      // sobre "a regra 1" em vez da questão do quiz.
+      'NOTA: se a pergunta do usuário citar apenas um número (ex.: "1", "a 1", ' +
+      '"questão 1"), esse número se refere À QUESTÃO ' + numero + ' DESTE QUIZ, ' +
+      'detalhada abaixo — não a regras, passos ou itens numerados das suas ' +
+      'próprias instruções.',
+      '',
+      'Questão ' + numero + ' de ' + totalQuestoes +
+      (q.aula ? ' (' + q.aula + ')' : '') + ':'
+    ];
 
     if (q.texto)    linhas.push('Contexto: ' + q.texto);
     if (q.question) linhas.push('Enunciado: ' + q.question);
@@ -270,19 +552,27 @@
       q.assertions.forEach(function (a) { linhas.push('  ' + a); });
     }
 
+    // Alternativas na ordem VISUAL — exatamente como aparecem na tela.
+    // q.options já foi embaralhado pelo quiz_engine; q.answer é o índice
+    // correto nessa ordem embaralhada. Nenhuma tradução necessária.
     if (Array.isArray(q.options)) {
-      linhas.push('Alternativas:');
+      linhas.push('Alternativas (exatamente como aparecem na tela para o usuário):');
       q.options.forEach(function (opt, i) {
-        var letra = String.fromCharCode(65 + i);
-        linhas.push('  ' + letra + ') ' + opt);
+        var letra   = String.fromCharCode(65 + i);
+        var marcador = (typeof q.answer === 'number' && _contextoQuizAtivo() && i === q.answer)
+          ? ' ← correta'
+          : '';
+        linhas.push('  ' + letra + ') ' + opt + marcador);
       });
     }
 
-    // Gabarito e feedback: SOMENTE dentro do template de quiz com token válido
+    // Gabarito e feedback: SOMENTE dentro do template de quiz com token válido.
+    // q.answer e q.feedback já foram recalculados pelo quiz_engine para a
+    // ordem visual — correspondem exatamente ao que o usuário está vendo.
     if (_contextoQuizAtivo()) {
       if (typeof q.answer === 'number') {
         var gabarito = String.fromCharCode(65 + q.answer);
-        linhas.push('Gabarito: ' + gabarito);
+        linhas.push('Gabarito (letra visual): ' + gabarito + ')');
       }
       if (q.feedback) linhas.push('Feedback oficial: ' + q.feedback);
     }
@@ -344,8 +634,11 @@
    *   - Perguntas de explicação/análise → retorna false (fluxo normal de resumo)
    *
    * Dentro do quiz:
-   *   - Questão com número → serializa e responde via worker
-   *   - Pergunta geral → busca por texto no índice de questões
+   *   - Questão com número → lê diretamente de __NEXUS_QUESTOES_VISUAIS__ (sem indexação)
+   *   - Pergunta geral     → busca por texto no índice de questões (com indexação)
+   *
+   * A busca por número usa __NEXUS_QUESTOES_VISUAIS__ como fonte de verdade,
+   * garantindo que a IA veja exatamente o mesmo estado que o usuário.
    */
   async function interceptar(pergunta, disc, renderBot) {
     if (!_contextoQuizAtivo()) {
@@ -360,26 +653,47 @@
     }
 
     const numQ = _detectarNumeroQuestao(pergunta);
-    if (numQ === null) {
-      return await _interceptarBuscaQuiz(pergunta, disc, renderBot);
+
+    // ── Mapa visual pode ter sido substituído (reinício/filtro) ─────────
+    // Invalida a referência da última questão discutida nesse caso.
+    _resetRastreioSeMapaMudou();
+
+    // ── Sem número explícito: tenta resolver por referência implícita ──
+    // Ex: "por que a alternativa B está errada?" após já termos
+    // discutido a questão N. Reaproveita a mesma questão visual —
+    // nunca busca por aproximação textual.
+    var numQResolvido = numQ;
+    if (numQResolvido === null && _ultimoContexto !== null && _referenciaImplicita(pergunta)) {
+      numQResolvido = _ultimoContexto.visual;
     }
 
-    const questoes = await _garantirIndexacaoQuiz(disc);
-    if (!questoes) {
-      renderBot('Não consegui carregar as questões. Tente novamente.');
+    // ── Busca por número: usa __NEXUS_QUESTOES_VISUAIS__ diretamente ────
+    // Não depende de indexação — vai direto ao mapeamento atual do engine.
+    // A indexação (para busca por texto) ainda acontece em _interceptarBuscaQuiz.
+    if (numQResolvido !== null) {
+      const token = _quizToken();
+
+      // buscarQuestaoPorNumero agora usa __NEXUS_QUESTOES_VISUAIS__ como
+      // fonte primária — retorna o objeto visual sem necessidade de indexação
+      const q = NexusQuizSearch.buscarQuestaoPorNumero(numQResolvido, token);
+
+      if (!q) {
+        // Verifica se o número está fora do intervalo para dar mensagem útil
+        var visuais = window.__NEXUS_QUESTOES_VISUAIS__;
+        var total   = visuais ? visuais.length : '?';
+        renderBot('Questão ' + numQResolvido + ' não encontrada. O quiz atual tem ' + total + ' questões.');
+        return true;
+      }
+
+      _registrarContexto(numQResolvido, q);
+
+      const ctxQuestao = _serializarQuestao(numQResolvido, q);
+      await _responderSobreQuestao(pergunta, ctxQuestao, disc, renderBot);
       return true;
     }
 
-    const token = _quizToken();
-    const q     = NexusQuizSearch.buscarQuestaoPorNumero(numQ, token);
-    if (!q) {
-      renderBot('Questão ' + numQ + ' não encontrada no modo atual.');
-      return true;
-    }
-
-    const ctxQuestao = _serializarQuestao(numQ, q);
-    await _responderSobreQuestao(pergunta, ctxQuestao, disc, renderBot);
-    return true;
+    // ── Busca por texto: usa índice (requer indexação) ───────────────────
+    return await _interceptarBuscaQuiz(pergunta, disc, renderBot);
   }
 
   /**

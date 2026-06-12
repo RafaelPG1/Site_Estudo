@@ -268,10 +268,24 @@
   }
 
   /**
-   * Retorna a questão completa pelo número (base 1) ou null.
+   * Retorna a questão completa pelo número VISUAL (base 1) ou null.
    * Exige token — fora do template retorna null silenciosamente.
    *
-   * @param {number} numero
+   * Fonte de verdade primária: window.__NEXUS_QUESTOES_VISUAIS__
+   *   Esse array é mantido pelo quiz_engine e reflete exatamente a ordem
+   *   e o embaralhamento de alternativas que o usuário está vendo na tela.
+   *   Cada objeto já tem options/answer na ordem visual — sem necessidade de
+   *   nenhuma tradução adicional.
+   *
+   *   numero=1 → __NEXUS_QUESTOES_VISUAIS__[0]  (Questão 1 visual)
+   *   numero=3 → __NEXUS_QUESTOES_VISUAIS__[2]  (Questão 3 visual)
+   *
+   * Fonte de fallback: índice interno (_indice)
+   *   Usado apenas quando __NEXUS_QUESTOES_VISUAIS__ não está disponível.
+   *   Pode ter defasagem de embaralhamento em edge cases de timing — por
+   *   isso é apenas fallback.
+   *
+   * @param {number} numero — número visual (base 1, como exibido ao usuário)
    * @param {string} token
    * @returns {object|null}
    */
@@ -280,6 +294,24 @@
       console.warn('[NexusQuizSearch] buscarQuestaoPorNumero bloqueado: token inválido.');
       return null;
     }
+
+    // ── Fonte primária: array visual do quiz_engine ──────────────────────
+    // __NEXUS_QUESTOES_VISUAIS__ é setado por quiz_engine em toda inicialização,
+    // reinício e aplicação de filtro — é sempre a versão atual que o usuário vê.
+    var visuais = window.__NEXUS_QUESTOES_VISUAIS__;
+    if (Array.isArray(visuais) && visuais.length > 0) {
+      var idx = numero - 1; // converte base-1 (visual) para base-0 (array)
+      if (idx >= 0 && idx < visuais.length) {
+        console.log('[NexusQuizSearch] buscarQuestaoPorNumero: usando mapa visual para questão', numero);
+        return visuais[idx];
+      }
+      console.warn('[NexusQuizSearch] buscarQuestaoPorNumero: questão', numero, 'fora do intervalo (total:', visuais.length, ')');
+      return null;
+    }
+
+    // ── Fallback: índice interno ─────────────────────────────────────────
+    // Usado apenas quando __NEXUS_QUESTOES_VISUAIS__ não está disponível.
+    console.warn('[NexusQuizSearch] buscarQuestaoPorNumero: __NEXUS_QUESTOES_VISUAIS__ ausente, usando índice interno como fallback.');
     for (var i = 0; i < _indice.length; i++) {
       var e = _indice[i];
       if (e._numero === numero && e.secao && !e.secao.includes('/feedback')) {
