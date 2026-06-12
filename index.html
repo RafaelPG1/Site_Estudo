@@ -182,11 +182,14 @@
        waterfall causado pelo carregamento dinâmico em
        _carregarIA() (Promise.all → then → ia.js).
   ═══════════════════════════════════════════ -->
-  <link rel="preload" href="shared/js/ia/ia-ui.js"     as="script" />
-  <link rel="preload" href="shared/js/ia/ia-search.js" as="script" />
-  <link rel="preload" href="shared/js/ia/ia-loader.js" as="script" />
-  <link rel="preload" href="shared/js/ia/ia-worker.js" as="script" />
-  <link rel="preload" href="shared/js/ia/ia.js"        as="script" />
+
+<link rel="preload" href="shared/js/ia/core/text-utils.js"  as="script" />
+<link rel="preload" href="shared/js/ia/core/loader.js"      as="script" />
+<link rel="preload" href="shared/js/ia/core/worker.js"      as="script" />
+<link rel="preload" href="shared/js/ia/core/ui.js"          as="script" />
+<link rel="preload" href="shared/js/ia/resumo/search.js"    as="script" />
+<link rel="preload" href="shared/js/ia/resumo/assistant.js" as="script" />
+<link rel="preload" href="shared/js/ia/init.js"             as="script" />
 
   <!-- ═══════════════════════════════════════════
        SCRIPTS

@@ -1,5 +1,5 @@
 /**
- * ASSISTENTE NEXUS — ia-ui.js
+ * NEXUS — shared/js/ia/core/ui.js
  *
  * PATCH scroll-isolado:
  *   O painel #nexus-panel captura wheel e touchmove, impedindo
@@ -8,6 +8,11 @@
  * PATCH fechar-só-pelo-botão:
  *   Remove o listener de "clicar fora para fechar".
  *   O painel só fecha via FAB (toggle) ou botão X interno.
+ *
+ * Responsabilidade exclusiva: renderização do painel de chat.
+ * NÃO conhece resumo, quiz, disciplinas ou lógica de domínio.
+ *
+ * API pública: window.NexusUI
  */
 
 (function () {
@@ -23,7 +28,11 @@
   (function _carregarPlaySound() {
     var script = document.currentScript ||
       (function () {
-        var scripts = document.querySelectorAll('script[src*="ia-ui.js"]');
+        var scripts = document.querySelectorAll('script[src*="ui.js"]');
+        // Filtra para garantir que é o arquivo correto
+        for (var i = scripts.length - 1; i >= 0; i--) {
+          if (scripts[i].src.includes('/ia/core/ui.js')) return scripts[i];
+        }
         return scripts[scripts.length - 1];
       }());
 
@@ -31,10 +40,10 @@
 
     var base   = new URL(script.src);
     var partes = base.pathname.split('/');
-    // ia-ui.js está em: <raiz>/shared/js/ia/ia-ui.js
-    // audio-api.js em:  <raiz>/shared/js/audio/audio-api.js
-    partes[partes.length - 2] = 'audio';
-    partes[partes.length - 1] = 'audio-api.js';
+    // ui.js está em:        <raiz>/shared/js/ia/core/ui.js
+    // audio-api.js está em: <raiz>/shared/js/audio/audio-api.js
+    // Sobe 3 níveis (ui.js, core, ia) e entra em js/audio/audio-api.js
+    partes.splice(partes.length - 3, 3, 'audio', 'audio-api.js');
     var audioUrl = base.origin + partes.join('/');
 
     import(audioUrl)
@@ -302,10 +311,6 @@
     var el = document.getElementById('nexus-typing');
     if (!el) return;
     el.classList.remove('nexus-visible');
-    // BUG 4 FIX: showTyping() move o elemento para dentro de #nexus-messages
-    // via appendChild. Se hideTyping() não o reposicionar, a próxima chamada de
-    // renderMessage() pode intercalar o typing entre mensagens no DOM.
-    // Reposicionamos no início do footer para manter a estrutura original.
     var footer = document.getElementById('nexus-footer');
     if (footer && el.parentNode !== footer) {
       footer.insertBefore(el, footer.firstChild);
@@ -411,7 +416,6 @@
      scroll vaze para a página quando o mouse está sobre o modal.
   ══════════════════════════════════════════════════════════ */
   function _bindScrollIsolado(panel) {
-    // wheel — desktop
     panel.addEventListener('wheel', function (e) {
       var messages = document.getElementById('nexus-messages');
       if (!messages) return;
@@ -419,7 +423,6 @@
       var atTop    = messages.scrollTop === 0;
       var atBottom = messages.scrollTop + messages.clientHeight >= messages.scrollHeight - 1;
 
-      // Bloqueia só se o scroll interno não tiver mais para onde ir nessa direção
       var scrollingUp   = e.deltaY < 0;
       var scrollingDown = e.deltaY > 0;
 
@@ -427,12 +430,9 @@
         e.preventDefault();
       }
 
-      // Em todos os outros casos deixa o #nexus-messages scrollar normalmente
-      // mas para a propagação para a página
       e.stopPropagation();
     }, { passive: false });
 
-    // touchmove — mobile
     var _touchStartY = 0;
     panel.addEventListener('touchstart', function (e) {
       _touchStartY = e.touches[0].clientY;
@@ -442,9 +442,9 @@
       var messages = document.getElementById('nexus-messages');
       if (!messages) return;
 
-      var deltaY    = _touchStartY - e.touches[0].clientY;
-      var atTop     = messages.scrollTop === 0;
-      var atBottom  = messages.scrollTop + messages.clientHeight >= messages.scrollHeight - 1;
+      var deltaY   = _touchStartY - e.touches[0].clientY;
+      var atTop    = messages.scrollTop === 0;
+      var atBottom = messages.scrollTop + messages.clientHeight >= messages.scrollHeight - 1;
 
       if ((deltaY < 0 && atTop) || (deltaY > 0 && atBottom)) {
         e.preventDefault();
@@ -519,16 +519,12 @@
     document.body.appendChild(fab);
     document.body.appendChild(panel);
 
-    // FAB abre/fecha (toggle)
     fab.addEventListener('click', toggle);
-
-    // Botão X fecha
     document.getElementById('nexus-close').addEventListener('click', close);
 
     _bindInput();
     _bindReset();
-    _bindScrollIsolado(panel);   // PATCH scroll-isolado
-    // _bindClickFora() — REMOVIDO (PATCH fechar-só-pelo-botão)
+    _bindScrollIsolado(panel);
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -536,15 +532,15 @@
   ══════════════════════════════════════════════════════════ */
 
   window.NexusUI = {
-    init:               init,
-    open:               open,
-    close:              close,
-    toggle:             toggle,
-    renderMessage:      renderMessage,
-    showTyping:         showTyping,
-    hideTyping:         hideTyping,
-    mostrarSugestoes:   mostrarSugestoes,
-    atualizarDiscAtiva: atualizarDiscAtiva,
+    init,
+    open,
+    close,
+    toggle,
+    renderMessage,
+    showTyping,
+    hideTyping,
+    mostrarSugestoes,
+    atualizarDiscAtiva,
   };
 
 }());

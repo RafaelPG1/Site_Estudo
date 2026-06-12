@@ -1,9 +1,10 @@
 /**
- * ASSISTENTE NEXUS — ia-loader.js
- * Responsabilidade exclusiva: carregar arquivos res_*.js no DOM.
+ * NEXUS — shared/js/ia/core/loader.js
  *
- * NÃO indexa. NÃO busca. NÃO conhece o motor de busca.
- * Retorna o conteúdo bruto para quem chamar — o orquestrador decide o que fazer.
+ * Responsabilidade exclusiva: carregar arquivos de conteúdo no DOM.
+ *
+ * NÃO indexa. NÃO busca. NÃO conhece resumo nem quiz.
+ * Retorna o conteúdo bruto para quem chamar — o assistant decide o que fazer.
  *
  * API pública: window.NexusLoader
  *
@@ -21,30 +22,35 @@
 
   /* ══════════════════════════════════════════════════════════
      DETECÇÃO DA RAIZ DO SITE
-     ══════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════════ */
 
   /**
    * Detecta a URL raiz do site a partir do src do próprio script.
    *
-   * ia-loader.js sempre está em: <raiz>/shared/js/ia/ia-loader.js
-   * Sobe 4 segmentos para obter a raiz absoluta — funciona em localhost
+   * loader.js sempre está em: <raiz>/shared/js/ia/core/loader.js
+   * Sobe 5 segmentos para obter a raiz absoluta — funciona em localhost
    * e no GitHub Pages com qualquer subdiretório, independente de qual
    * página chamou o script.
    *
    * Exemplo:
-   *   src = "https://rafaelpg1.github.io/Site_Estudo/shared/js/ia/ia-loader.js"
+   *   src = "https://rafaelpg1.github.io/Site_Estudo/shared/js/ia/core/loader.js"
    *   raiz = "https://rafaelpg1.github.io/Site_Estudo"
    *
    * @returns {string}
    */
   function _detectarRaiz() {
-    const scripts = document.querySelectorAll('script[src*="ia-loader.js"]');
+    const scripts = document.querySelectorAll('script[src*="loader.js"]');
     if (scripts.length) {
-      const url    = new URL(scripts[scripts.length - 1].src);
-      const partes = url.pathname.split('/').filter(Boolean);
-      // Remove os 4 últimos: ia-loader.js, ia, js, shared
-      const raizPartes = partes.slice(0, partes.length - 4);
-      return url.origin + (raizPartes.length ? '/' + raizPartes.join('/') : '');
+      // Pega o último script com esse nome (mais seguro em caso de múltiplos)
+      for (var i = scripts.length - 1; i >= 0; i--) {
+        if (scripts[i].src.includes('/ia/core/loader.js')) {
+          const url    = new URL(scripts[i].src);
+          const partes = url.pathname.split('/').filter(Boolean);
+          // Remove os 5 últimos: loader.js, core, ia, js, shared
+          const raizPartes = partes.slice(0, partes.length - 5);
+          return url.origin + (raizPartes.length ? '/' + raizPartes.join('/') : '');
+        }
+      }
     }
     return window.location.origin;
   }
@@ -53,18 +59,15 @@
 
   /* ══════════════════════════════════════════════════════════
      MONTAGEM DE PATH
-     ══════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════════ */
 
   /**
    * Monta a URL absoluta do arquivo de conteúdo a partir do contexto.
    *
-   * Usa a raiz detectada em _detectarRaiz() — funciona em qualquer
-   * página (index, resumo/, quiz/, etc.) sem ajuste manual.
-   *
-   * ctx.fonte  — subpasta em content/ (ex: 'resumo', 'quiz', 'game').
-   *              Padrão: 'resumo' para compatibilidade com código existente.
-   * ctx.prefixo — prefixo do arquivo (ex: 'res_', 'ques_').
-   *              Padrão: 'res_' para compatibilidade com código existente.
+   * ctx.fonte    — subpasta em content/ (ex: 'resumo', 'quiz').
+   *                Padrão: 'resumo'.
+   * ctx.prefixo  — prefixo do arquivo (ex: 'res_', 'ques_').
+   *                Padrão: 'res_'.
    *
    * Formatos suportados:
    *   Com AP:  <raiz>/content/{fonte}/{ano}/{periodo}/{ap}/{prefixo}{arquivo}.js
@@ -85,7 +88,7 @@
 
   /* ══════════════════════════════════════════════════════════
      CARREGAMENTO
-     ══════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════════ */
 
   /**
    * Injeta um <script> no DOM e aguarda seu carregamento.
@@ -99,11 +102,9 @@
    */
   function _injetarScript(path, varGlobal) {
     return new Promise(function (resolve) {
-      // Remove script anterior do DOM (não afeta o índice — só o DOM)
       const anterior = document.getElementById('nexus-conteudo-script');
       if (anterior) anterior.remove();
 
-      // Limpa ambas as variáveis conhecidas para evitar leitura de conteúdo stale
       window.__nexusConteudo = undefined;
 
       const s = document.createElement('script');
@@ -111,7 +112,6 @@
       s.src = path;
 
       s.onload = function () {
-        // Lê a variável que este script específico define
         const conteudo = window[varGlobal];
         if (conteudo) {
           resolve(conteudo);
@@ -132,7 +132,7 @@
 
   /* ══════════════════════════════════════════════════════════
      API PÚBLICA
-     ══════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════════ */
 
   /**
    * Carrega o arquivo de conteúdo correspondente ao contexto.
@@ -140,7 +140,7 @@
    * ctx.varGlobal — nome da variável global que o script define.
    *   'resumo' define window.__nexusConteudo  → varGlobal: '__nexusConteudo'
    *   'quiz'   define window.questoes         → varGlobal: 'questoes'
-   *   Padrão: '__nexusConteudo' para compatibilidade com código existente.
+   *   Padrão: '__nexusConteudo'.
    *
    * Cache: se o path resultante for idêntico ao último carregado
    * com sucesso E a variável global ainda existir, retorna
@@ -193,7 +193,7 @@
 
   /**
    * Retorna o path do arquivo atualmente em cache, ou null.
-   * Útil para diagnóstico e para ia.js verificar mudanças de contexto.
+   * Útil para diagnóstico e para o assistant verificar mudanças de contexto.
    *
    * @returns {string|null}
    */

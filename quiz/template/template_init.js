@@ -56,6 +56,7 @@ import { carregarRespostasQuiz, salvarRespostasQuiz, limparRespostasQuiz } from 
 
 (function _carregarIA() {
   var raiz = new URL('../../', import.meta.url).href.replace(/\/$/, '');
+  var BASE = raiz + '/shared/js/ia/';
 
   function _load(src) {
     return new Promise(function (res, rej) {
@@ -67,13 +68,26 @@ import { carregarRespostasQuiz, salvarRespostasQuiz, limparRespostasQuiz } from 
     });
   }
 
+  // Etapa 1: deps base sem dependências entre si — carregam em paralelo
   Promise.all([
-    _load(raiz + '/shared/js/ia/ia-ui.js'),
-    _load(raiz + '/shared/js/ia/ia-search.js'),
-    _load(raiz + '/shared/js/ia/ia-loader.js'),
-    _load(raiz + '/shared/js/ia/ia-worker.js'),
+    _load(BASE + 'core/text-utils.js'),
+    _load(BASE + 'core/loader.js'),
+    _load(BASE + 'core/worker.js'),
+    _load(BASE + 'core/ui.js'),
   ])
-    .then(function () { return _load(raiz + '/shared/js/ia/ia.js'); })
+    // Etapa 2: os dois módulos de search podem carregar em paralelo
+    .then(function () {
+      return Promise.all([
+        _load(BASE + 'resumo/search.js'),
+        _load(BASE + 'quiz/search.js'),
+      ]);
+    })
+    // Etapa 3: assistant de resumo — precisa dos dois search prontos
+    .then(function () { return _load(BASE + 'resumo/assistant.js'); })
+    // Etapa 4: assistant de quiz — intercepta perguntas quando token ativo
+    .then(function () { return _load(BASE + 'quiz/assistant.js'); })
+    // Etapa 5: init — detecta contexto e autoriza NexusQuizSearch
+    .then(function () { return _load(BASE + 'init.js'); })
     .catch(function (err) { console.error(err); });
 }());
 
@@ -121,36 +135,80 @@ function _gerarTokenQuiz() {
 }
 
 /**
- * Registra o token em NexusSearch assim que o módulo estiver disponível.
- * Como ia-search.js é carregado em background (_carregarIA), usamos polling
- * com intervalo curto. Máximo de 30 tentativas (≈ 3s).
+ * Aguarda NexusQuizSearch (nova arquitetura) ou NexusSearch (alias de
+ * compatibilidade) ficarem disponíveis e autoriza o token de quiz.
+ *
+ * Na nova arquitetura, init.js também chama NexusQuizSearch.autorizarQuiz()
+ * quando detecta o token — este polling é uma segunda camada de segurança
+ * para garantir que a autorização ocorra mesmo se init.js já tiver rodado.
  *
  * @param {string} token
  */
 function _autorizarQuizNoSearch(token) {
-  var tentativas = 0;
+  var tentativas     = 0;
   var MAX_TENTATIVAS = 30;
 
   var intervalo = setInterval(function () {
     tentativas++;
 
+    // Prefere NexusQuizSearch (nova arquitetura)
+    if (typeof window.NexusQuizSearch !== 'undefined' && window.NexusQuizSearch.autorizarQuiz) {
+      clearInterval(intervalo);
+      window.NexusQuizSearch.autorizarQuiz(token);
+      console.log('[template_init] NexusQuizSearch autorizado para quiz.');
+      return;
+    }
+
+    // Fallback: NexusSearch (alias de compatibilidade em quiz/search.js)
     if (typeof window.NexusSearch !== 'undefined' && window.NexusSearch.autorizarQuiz) {
       clearInterval(intervalo);
       window.NexusSearch.autorizarQuiz(token);
-      console.log('[template_init] NexusSearch autorizado para quiz.');
+      console.log('[template_init] NexusSearch (alias) autorizado para quiz.');
       return;
     }
 
     if (tentativas >= MAX_TENTATIVAS) {
       clearInterval(intervalo);
-      console.warn('[template_init] NexusSearch não disponível após ' + MAX_TENTATIVAS + ' tentativas — quiz não autorizado.');
+      console.warn('[template_init] NexusQuizSearch não disponível após ' + MAX_TENTATIVAS + ' tentativas — quiz não autorizado.');
     }
   }, 100);
 }
 
 /**
- * Instala os listeners que revogam o token ao sair da página.
+ * Notifica o assistente de resumo que entramos em contexto de quiz,
+ * selecionando automaticamente a disciplina no chat.
  *
+ * Aguarda NexusQuizAssistant estar disponível (carregado em background).
+ * Chamado após a autorização do token — garante que o chat já sabe
+ * qual disciplina está ativa sem que o usuário precise digitar /disc.
+ *
+ * @param {string} discId — id da disciplina (ex: 'design', 'poo')
+ */
+function _notificarDiscNoChat(discId) {
+  if (!discId) return;
+
+  var tentativas     = 0;
+  var MAX_TENTATIVAS = 50; // 5s — IA carrega em background
+
+  var intervalo = setInterval(function () {
+    tentativas++;
+
+    if (typeof window.NexusQuizAssistant !== 'undefined' &&
+        typeof window.NexusQuizAssistant.notificarEntradaNoQuiz === 'function') {
+      clearInterval(intervalo);
+      window.NexusQuizAssistant.notificarEntradaNoQuiz(discId);
+      return;
+    }
+
+    if (tentativas >= MAX_TENTATIVAS) {
+      clearInterval(intervalo);
+      console.warn('[template_init] NexusQuizAssistant não disponível — notificação de disciplina falhou.');
+    }
+  }, 100);
+}
+
+
+ /*
  * Usa beforeunload + pagehide (Mobile Safari não dispara beforeunload
  * de forma confiável). Ambos chamam _revogarTokenQuiz() que zera
  * window.__NEXUS_QUIZ_TOKEN__ e limpa o índice de quiz no NexusSearch.
@@ -166,7 +224,11 @@ function _instalarRevogacao() {
     try { delete window.__NEXUS_QUIZ_DISC__; } catch (e) {}
     try { delete window.__NEXUS_QUESTOES_VISUAIS__; } catch (e) {}
 
-    // Revoga o token no NexusSearch (zera _indiceQuiz internamente)
+    // Revoga o token no NexusQuizSearch (nova arquitetura)
+    if (typeof window.NexusQuizSearch !== 'undefined' && window.NexusQuizSearch.revogarQuiz) {
+      window.NexusQuizSearch.revogarQuiz();
+    }
+    // Fallback: NexusSearch (alias de compatibilidade)
     if (typeof window.NexusSearch !== 'undefined' && window.NexusSearch.revogarQuiz) {
       window.NexusSearch.revogarQuiz();
     }
@@ -530,6 +592,9 @@ _atualizarEstadoGlobal(_params);
 
 /* QUIZ-ISOLATION: autoriza o NexusSearch assim que ele estiver disponível */
 _autorizarQuizNoSearch(_quizToken);
+
+/* CHAT: seleciona automaticamente a disciplina no chat */
+_notificarDiscNoChat(_params.disc);
 
 /* QUIZ-ISOLATION: instala revogação automática ao sair da página */
 _instalarRevogacao();

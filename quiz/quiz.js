@@ -26,14 +26,17 @@ function _loadScript(src) {
 }
 function _carregarIA() {
   const raiz = new URL('../', import.meta.url).href.replace(/\/$/, '');
+  const BASE = raiz + '/shared/js/ia/';
   const deps = [
-    raiz + '/shared/js/ia/ia-ui.js',
-    raiz + '/shared/js/ia/ia-search.js',
-    raiz + '/shared/js/ia/ia-loader.js',
-    raiz + '/shared/js/ia/ia-worker.js',
+    BASE + 'core/text-utils.js',
+    BASE + 'core/loader.js',
+    BASE + 'core/worker.js',
+    BASE + 'core/ui.js',
+    BASE + 'resumo/search.js',
   ];
   Promise.all(deps.map(_loadScript))
-    .then(() => _loadScript(raiz + '/shared/js/ia/ia.js'))
+    .then(() => _loadScript(BASE + 'resumo/assistant.js'))
+    .then(() => _loadScript(BASE + 'init.js'))
     .catch(err => console.error(err));
 }
 _carregarIA();

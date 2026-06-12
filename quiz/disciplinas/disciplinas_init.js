@@ -42,6 +42,7 @@ import {
 (function _carregarIA() {
   try {
     var raiz = new URL('../../', import.meta.url).href.replace(/\/$/, '');
+    var BASE = raiz + '/shared/js/ia/';
     function _load(src) {
       return new Promise(function (res, rej) {
         var s = document.createElement('script');
@@ -52,12 +53,14 @@ import {
       });
     }
     Promise.all([
-      _load(raiz + '/shared/js/ia/ia-ui.js'),
-      _load(raiz + '/shared/js/ia/ia-search.js'),
-      _load(raiz + '/shared/js/ia/ia-loader.js'),
-      _load(raiz + '/shared/js/ia/ia-worker.js'),
+      _load(BASE + 'core/text-utils.js'),
+      _load(BASE + 'core/loader.js'),
+      _load(BASE + 'core/worker.js'),
+      _load(BASE + 'core/ui.js'),
+      _load(BASE + 'resumo/search.js'),
     ])
-      .then(function () { return _load(raiz + '/shared/js/ia/ia.js'); })
+      .then(function () { return _load(BASE + 'resumo/assistant.js'); })
+      .then(function () { return _load(BASE + 'init.js'); })
       .catch(function (err) {
         console.warn('[disciplinas_init] IA não carregada:', err.message);
       });

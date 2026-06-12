@@ -64,15 +64,18 @@ function _loadScript(src) {
 }
 
 function _carregarIA() {
-const deps = [
-  'shared/js/ia/ia-ui.js',    // sem a / inicial
-  'shared/js/ia/ia-search.js',
-  'shared/js/ia/ia-loader.js',
-  'shared/js/ia/ia-worker.js',
-];
-Promise.all(deps.map(_loadScript))
-  .then(() => _loadScript('shared/js/ia/ia.js'))
-  .catch(err => console.error(err));
+  const BASE = 'shared/js/ia/';
+  const deps = [
+    BASE + 'core/text-utils.js',
+    BASE + 'core/loader.js',
+    BASE + 'core/worker.js',
+    BASE + 'core/ui.js',
+    BASE + 'resumo/search.js',
+  ];
+  Promise.all(deps.map(_loadScript))
+    .then(() => _loadScript(BASE + 'resumo/assistant.js'))
+    .then(() => _loadScript(BASE + 'init.js'))
+    .catch(err => console.error(err));
 }
 
 _carregarIA();

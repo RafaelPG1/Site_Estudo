@@ -1,63 +1,53 @@
 /**
- * ASSISTENTE NEXUS — ia.js  v3.0 (QUIZ-ISOLATION)
+ * NEXUS — shared/js/ia/resumo/assistant.js
  *
- * PATCH QUIZ-ISOLATION (estrutural):
+ * Orquestrador do sistema de IA para Resumos.
  *
- *   1. TOKEN DE SESSÃO DE QUIZ
- *      _quizToken() lê window.__NEXUS_QUIZ_TOKEN__ gerado pelo template_init.
- *      Todas as operações que envolvem dados de quiz (indexação, busca,
- *      serialização, envio ao worker) exigem esse token internamente.
- *      Sem token => operação é no-op silenciosa.
+ * Responsabilidades:
+ *   - Fluxo completo do chat (receber mensagem → processar → responder)
+ *   - Seleção e troca de disciplina
+ *   - Busca no conteúdo de resumo (por disciplina e global)
+ *   - Localização de conteúdo ("em qual aula está X?")
+ *   - Resumo de aula específica
+ *   - Navegação pela estrutura do curso
+ *   - Histórico de conversa e persistência de sessão
+ *   - Integração com NexusWorker para respostas da IA
  *
- *   2. ÍNDICES SEPARADOS
- *      NexusSearch agora mantém _indiceResumo e _indiceQuiz fisicamente
- *      separados. buscar() público nunca acessa _indiceQuiz.
- *      Chamadas de indexarQuestoes / buscarQuiz / buscarQuestaoPorNumero
- *      exigem o token em cada chamada.
+ * NÃO conhece:
+ *   - Token de quiz
+ *   - Gabarito, feedback, questões
+ *   - Purge de sessão de quiz
+ *   - Serialização de questões
+ *   - Contexto de quiz
  *
- *   3. SERIALIZAÇÃO DE QUESTÃO SEM GABARITO FORA DO TEMPLATE
- *      _serializarQuestao() inclui gabarito e feedback SOMENTE quando
- *      _contextoQuizAtivo() retorna true (token presente e válido).
- *      Fora do quiz, o contexto enviado ao worker nunca contém gabarito.
+ * Depende de:
+ *   - core/ui.js          (window.NexusUI)
+ *   - core/loader.js      (window.NexusLoader)
+ *   - core/worker.js      (window.NexusWorker)
+ *   - core/text-utils.js  (window.NexusTextUtils)
+ *   - resumo/search.js    (window.NexusResumoSearch)
+ *   - window.__nexusCtx   (bridge de contexto)
  *
- *   4. PURGE DO ÍNDICE DE QUIZ AO SAIR
- *      _purgarContextoQuiz() é chamado em beforeunload / pagehide e
- *      visibilitychange → hidden. Zera token, índice e contexto de quiz.
- *
- *   5. RESTAURAÇÃO DE SESSÃO NUNCA REINDEXARÁ QUIZ
- *      _garantirConteudo() verifica _contextoQuizAtivo() antes de tentar
- *      indexar questões. Sessões restauradas em páginas sem template_init
- *      ativo só indexarão 'resumo', independentemente do fonteIndexada salvo.
- *
- *   6. CACHE DE BUSCA GLOBAL (discsCacheadas) NUNCA CONTÉM QUESTÕES
- *      _carregarDiscParaBuscaGlobal() opera exclusivamente sobre res_*.js
- *      (estrutura de resumo). Nunca carrega ques_*.js.
- *
- *   7. WORKER: contexto de quiz NÃO é enviado fora do template
- *      _responderSobreQuestao() e _executarBuscaNaDisc() verificam
- *      _contextoQuizAtivo() antes de montar resultados com dados de questão.
- *
- * INVARIANTE CENTRAL:
- *   Fora do template_init (sem window.__NEXUS_QUIZ_TOKEN__ válido):
- *     ❌ NexusSearch.buscar() → retorna apenas trechos de resumo
- *     ❌ NexusSearch.buscarQuiz() → retorna []
- *     ❌ NexusSearch.buscarQuestaoPorNumero() → retorna null
- *     ❌ NexusSearch.indexarQuestoes() → no-op
- *     ❌ _serializarQuestao() → sem gabarito/feedback
- *     ❌ _responderSobreQuestao() → retorna sem enviar dados de questão
- *     ❌ worker nunca recebe gabarito, feedback ou alternativas do quiz
- *     ✅ Resumo disponível normalmente
+ * API pública: window.NexusAssistant
  */
 
 (function () {
   'use strict';
 
-  const REPLY_DELAY_MS  = 900;
-  const TOP_K           = 8;
-  const MIN_SCORE       = 15;
-  const MAX_HISTORY     = 20;
-  const SESSION_KEY     = 'nexus_chat_history';
-  const SESSION_DISC    = 'nexus_disc_ativa';
+  /* ══════════════════════════════════════════════════════════
+     CONFIGURAÇÃO
+  ══════════════════════════════════════════════════════════ */
+
+  const REPLY_DELAY_MS = 900;
+  const TOP_K          = 8;
+  const MIN_SCORE      = 15;
+  const MAX_HISTORY    = 20;
+  const SESSION_KEY    = 'nexus_chat_history';
+  const SESSION_DISC   = 'nexus_disc_ativa';
+
+  /* ══════════════════════════════════════════════════════════
+     ESTADO
+  ══════════════════════════════════════════════════════════ */
 
   const state = {
     messages:       [],
@@ -67,93 +57,37 @@
     processando:    false,
     discsCacheadas: {},
     discIndexadaId: null,
-    fonteIndexada:  null,
     conteudoAtual:  null,
   };
 
   /* ══════════════════════════════════════════════════════════
-     TOKEN E CONTEXTO DE QUIZ
-  ══════════════════════════════════════════════════════════ */
-
-  /**
-   * Retorna o token de quiz ativo ou null.
-   * ÚNICA fonte de verdade para autorização de quiz.
-   *
-   * @returns {string|null}
-   */
-  function _quizToken() {
-    var t = window.__NEXUS_QUIZ_TOKEN__;
-    if (!t || typeof t !== 'string') return null;
-    return t;
-  }
-
-  /**
-   * Retorna true SE E SOMENTE SE estivermos dentro de um template
-   * de quiz com token de sessão válido.
-   *
-   * NÃO depende de window.__NEXUS_QUIZ_MODO__ sozinho (que persiste
-   * entre navegações no mesmo tab). O token é a âncora segura.
-   *
-   * @returns {boolean}
-   */
-  function _contextoQuizAtivo() {
-    return _quizToken() !== null && window.__NEXUS_QUIZ_MODO__ !== undefined;
-  }
-
-  /**
-   * Purga todo o contexto de quiz desta sessão.
-   * Chamado em unload, pagehide e visibilitychange → hidden.
-   * Após esta chamada nenhum dado de quiz fica acessível.
-   */
-  function _purgarContextoQuiz() {
-    // Remove a flag de modo do quiz
-    try { delete window.__NEXUS_QUIZ_MODO__; } catch (e) {}
-
-    // Revoga o token no NexusSearch (zera _indiceQuiz)
-    if (typeof window.NexusSearch !== 'undefined' && NexusSearch.revogarQuiz) {
-      NexusSearch.revogarQuiz();
-    }
-
-    // Limpa estado local
-    state.fonteIndexada  = null;
-    state.discIndexadaId = null;
-    state.conteudoAtual  = null;
-
-    // Remove token do window para fechar o acesso
-    try { delete window.__NEXUS_QUIZ_TOKEN__; } catch (e) {}
-
-    console.log('[NexusAssistant] contexto de quiz purgado.');
-  }
-
-  /* ── Listeners de purge automático ── */
-  (function _instalarListenersPurge() {
-    // beforeunload / pagehide: saída da página de quiz
-    window.addEventListener('beforeunload', _purgarContextoQuiz);
-    window.addEventListener('pagehide',     _purgarContextoQuiz);
-
-    // visibilitychange → hidden: usuário troca de aba ou minimiza
-    // Não purgamos aqui para não quebrar retorno imediato ao quiz,
-    // mas zeramos caso __NEXUS_QUIZ_MODO__ não esteja mais definido.
-    document.addEventListener('visibilitychange', function () {
-      if (document.visibilityState === 'hidden') return; // deixa para beforeunload
-      // Quando volta (visible): verifica se ainda está no template de quiz
-      if (document.visibilityState === 'visible' && !_contextoQuizAtivo()) {
-        _purgarContextoQuiz();
-      }
-    });
-  }());
-
-  /* ══════════════════════════════════════════════════════════
-     HELPERS DE STATE
+     HELPERS DE ACESSO
   ══════════════════════════════════════════════════════════ */
 
   function _normalizar(str) {
-    return NexusSearch.normalizarTexto(str);
+    return window.NexusTextUtils.normalizarTexto(str);
   }
 
   function _getTime() {
     return new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   }
+
+  function _getCtxBridge() {
+    const ctx = window.__nexusCtx;
+    if (!ctx) { console.warn('[NexusAssistant] window.__nexusCtx não disponível.'); return null; }
+    return ctx;
+  }
+
+  function _getDisciplinas() {
+    const ctx = _getCtxBridge();
+    if (!ctx) return null;
+    const sem = ctx.getSemestre();
+    return ctx.getDisciplinas(sem) || null;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     HISTÓRICO E PERSISTÊNCIA
+  ══════════════════════════════════════════════════════════ */
 
   function _push(msg) {
     state.messages.push(msg);
@@ -231,36 +165,35 @@
     } catch (e) {}
   }
 
-  function _getCtxBridge() {
-    const ctx = window.__nexusCtx;
-    if (!ctx) { console.warn('[NexusAssistant] window.__nexusCtx não disponível.'); return null; }
-    return ctx;
-  }
+  /* ══════════════════════════════════════════════════════════
+     MONTAGEM DE CONTEXTO DE CARREGAMENTO
+  ══════════════════════════════════════════════════════════ */
 
-  function _getDisciplinas() {
-    const ctx = _getCtxBridge();
-    if (!ctx) return null;
-    const sem = ctx.getSemestre();
-    return ctx.getDisciplinas(sem) || null;
-  }
-
+  /**
+   * Monta o contexto para NexusLoader.carregar().
+   * Sempre com fonte='resumo' — este módulo nunca carrega quiz.
+   *
+   * @param {object} disc
+   * @returns {object|null}
+   */
   function _montarCtx(disc) {
     const ctx = _getCtxBridge();
     if (!ctx || !disc) return null;
     const sem    = ctx.getSemestre();
     const parsed = ctx.parseSemestre(sem);
 
-    // A fonte só é 'quiz' se o contexto de quiz estiver explicitamente ativo
-    // com token válido. Em qualquer outra situação (incluindo restauração de
-    // sessão em páginas sem template_init), a fonte é sempre 'resumo'.
-    const fonte = _contextoQuizAtivo()
-      ? 'quiz'
-      : ((ctx.getFonte && ctx.getFonte() === 'resumo') ? 'resumo' : 'resumo');
+    const prefixo   = (ctx.getPrefixo   && ctx.getPrefixo())   || 'res_';
+    const varGlobal = (ctx.getVarGlobal && ctx.getVarGlobal()) || '__nexusConteudo';
 
-    const prefixo   = fonte === 'quiz' ? 'ques_'    : ((ctx.getPrefixo  && ctx.getPrefixo())  || 'res_');
-    const varGlobal = fonte === 'quiz' ? 'questoes' : ((ctx.getVarGlobal && ctx.getVarGlobal()) || '__nexusConteudo');
-
-    return { ano: parsed.ano, periodo: parsed.periodo, ap: parsed.ap, arquivo: disc.arquivo, fonte, prefixo, varGlobal };
+    return {
+      ano:       parsed.ano,
+      periodo:   parsed.periodo,
+      ap:        parsed.ap,
+      arquivo:   disc.arquivo,
+      fonte:     'resumo',
+      prefixo,
+      varGlobal,
+    };
   }
 
   function _resolverDisc() {
@@ -278,46 +211,33 @@
     return null;
   }
 
+  /* ══════════════════════════════════════════════════════════
+     CARREGAMENTO E INDEXAÇÃO
+  ══════════════════════════════════════════════════════════ */
+
   /**
-   * Garante que o conteúdo está carregado e indexado.
+   * Garante que o conteúdo de resumo está carregado e indexado.
+   * Sempre usa fonte='resumo', nunca toca em quiz.
    *
-   * QUIZ-ISOLATION:
-   *   - Só indexa questões se _contextoQuizAtivo() for true E o token for válido.
-   *   - Se o contexto de quiz não estiver ativo, força fonte='resumo' independente
-   *     do que estiver em state.fonteIndexada (evita reutilização de índice de quiz
-   *     após restauração de sessão).
+   * @param {object} disc
+   * @returns {Promise<object|null>}
    */
   async function _garantirConteudo(disc) {
     const loaderCtx = _montarCtx(disc);
     if (!loaderCtx) return null;
+
     const conteudo = await NexusLoader.carregar(loaderCtx);
     if (!conteudo) return null;
 
-    // Força sempre 'resumo' fora do contexto de quiz ativo
-    const fonte = _contextoQuizAtivo() ? 'quiz' : 'resumo';
-
     const precisaReindexar = (
-      !NexusSearch.estaIndexado() ||
-      state.discIndexadaId !== disc.id ||
-      state.fonteIndexada  !== fonte
+      !NexusResumoSearch.estaIndexado() ||
+      state.discIndexadaId !== disc.id
     );
 
-    // Também reindexar se o índice de quiz foi revogado mas fonteIndexada='quiz'
-    const quizRevogado = (state.fonteIndexada === 'quiz' && !_contextoQuizAtivo());
-
-    if (precisaReindexar || quizRevogado) {
-      if (fonte === 'quiz') {
-        const token = _quizToken();
-        const modo  = window.__NEXUS_QUIZ_MODO__ || 'questoes';
-        // Passa o token — NexusSearch valida internamente
-        NexusSearch.indexarQuestoes(conteudo, modo, token);
-      } else {
-        // Garante que o índice de quiz foi limpo antes de indexar o resumo
-        NexusSearch.limparIndice();
-        NexusSearch.indexarConteudo(conteudo);
-      }
+    if (precisaReindexar) {
+      NexusResumoSearch.limparIndice();
+      NexusResumoSearch.indexarConteudo(conteudo);
       state.discIndexadaId = disc.id;
-      state.fonteIndexada  = fonte;
     }
 
     state.conteudoAtual = conteudo;
@@ -325,12 +245,11 @@
   }
 
   function _limparContexto() {
-    NexusSearch.limparIndice();
+    NexusResumoSearch.limparIndice();
     NexusLoader.limpar();
     state.discEscolhida  = null;
     state.aguardandoDisc = false;
     state.discIndexadaId = null;
-    state.fonteIndexada  = null;
     state.conteudoAtual  = null;
     _salvarDiscAtiva();
     NexusUI.atualizarDiscAtiva(null);
@@ -338,64 +257,9 @@
     console.log('[NexusAssistant] contexto limpo.');
   }
 
-  function _pedirDisc() {
-    const discs = _getDisciplinas();
-    if (!discs || !discs.length) {
-      _renderBot('Não encontrei disciplinas para o semestre atual.');
-      return;
-    }
-    const lista = discs.map(function (d) { return '  /disc ' + d.id + '   — ' + d.nome; }).join('\n');
-    _renderBot(
-      'Disciplinas disponíveis:\n\n' + lista + '\n\n' +
-      'Digite o nome da disciplina ou use /disc <nome> para selecionar.'
-    );
-    const chips = discs.map(function (d) { return { label: '/disc ' + d.id, cmd: '/disc ' + d.id, tipo: 'disc' }; });
-    NexusUI.mostrarSugestoes(chips, _onSugestaoClick);
-    state.aguardandoDisc = true;
-  }
-
-  async function _confirmarDisc(disc) {
-    NexusSearch.limparIndice();
-    NexusLoader.limpar();
-    state.discIndexadaId = null;
-    state.fonteIndexada  = null;
-    state.discEscolhida  = disc;
-    state.aguardandoDisc = false;
-    _salvarDiscAtiva();
-
-    if (typeof window.NexusWorker !== 'undefined') NexusWorker.limparHistorico();
-
-    const loaderCtx = _montarCtx(disc);
-    if (!loaderCtx) {
-      state.discEscolhida = null;
-      _salvarDiscAtiva();
-      _renderBot('Não consegui montar o contexto de ' + disc.apelido + '. Tente novamente.');
-      return false;
-    }
-    const conteudo = await NexusLoader.carregar(loaderCtx);
-    if (!conteudo) {
-      state.discEscolhida = null;
-      _salvarDiscAtiva();
-      _renderBot('Não consegui carregar o conteúdo de ' + disc.apelido + '. Tente novamente.');
-      return false;
-    }
-
-    // _confirmarDisc sempre indexa o RESUMO — nunca quiz
-    // (o quiz é indexado sob demanda em _garantirConteudo quando dentro do template)
-    NexusSearch.indexarConteudo(conteudo);
-    state.discIndexadaId = disc.id;
-    state.fonteIndexada  = 'resumo';
-
-    NexusUI.atualizarDiscAtiva(disc.apelido);
-    const sugestoes = _gerarSugestoes(conteudo);
-    _renderBot(
-      '✓ Disciplina carregada: ' + disc.apelido + '\n\n' +
-      'Pode fazer perguntas sobre ' + disc.nome + '.\n' +
-      'Para trocar: /disc <nome>  ·  Ajuda: ?'
-    );
-    if (sugestoes.length > 0) NexusUI.mostrarSugestoes(sugestoes, _onSugestaoClick);
-    return true;
-  }
+  /* ══════════════════════════════════════════════════════════
+     MATCH DE DISCIPLINA
+  ══════════════════════════════════════════════════════════ */
 
   function _matchDisc(texto) {
     const discs = _getDisciplinas();
@@ -475,6 +339,10 @@
     return { tipo: 'multiplo', candidatos, query, perguntaResidual: residual };
   }
 
+  /* ══════════════════════════════════════════════════════════
+     DETECÇÃO DE INTENÇÃO
+  ══════════════════════════════════════════════════════════ */
+
   function _ehPedidoAjuda(texto) {
     const norm = _normalizar(texto);
     return norm === 'ajuda' || norm === '?' || norm === 'help';
@@ -514,45 +382,28 @@
     });
   }
 
+  /**
+   * Detecta pedidos EXPLÍCITOS de gabarito/resposta correta.
+   *
+   * Retorna true SOMENTE para pedidos diretos de resposta — nunca para
+   * perguntas de explicação, análise ou estudo da questão.
+   *
+   * TRUE:  "qual o gabarito?", "qual é a resposta?", "qual a letra correta?",
+   *        "me dá a resposta", "resposta correta", "gabarito da 3"
+   *
+   * FALSE: "me explica a questão 1", "qual assunto essa questão aborda?",
+   *        "por que essa alternativa está errada?", "questão 3",
+   *        "essa questão fala sobre TCP?", "explique a questão 5"
+   */
   function _ehPerguntaSobreGabarito(texto) {
     var norm = _normalizar(texto.trim());
-    var PADROES = [
-      /\b(?:qual|me\s+(?:fala|diz|passa))\s+(?:e\s+a?\s+|a?\s+)?(?:resposta|gabarito|alternativa\s+correta)\b/,
-      /\b(?:resposta|gabarito)\s+(?:d[ao]s?\s+)?(?:quest(?:ao|oes?)?|q\s*\d|#\s*\d|\d)/,
-      /\b(?:resposta|gabarito)\s+(?:corret[ao]s?|certo|certa)s?\b/,
-      /\bqual\s+(?:e\s+a?\s+)?(?:letra|alternativa|opcao)\s+corret[ao]\b/,
-      /\bquest(?:ao|oes?)?\s*(?:n?[o°]?\s*)?\d+\s+(?:resposta|gabarito|alternativa|letra)\b/,
-      /\b(?:resposta|gabarito)\s+(?:e|eh|e\s+a|eh\s+a)\s+[a-e]\b/,
-      /\bqual\s+(?:e\s+)?(?:o\s+)?gabarito\b/,
-      /\bme\s+(?:da|fala|diz)\s+(?:o\s+)?gabarito\b/,
-    ];
-    for (var i = 0; i < PADROES.length; i++) {
-      if (PADROES[i].test(norm)) return true;
-    }
-    var temNumero   = /\d+/.test(norm);
-    var temGabarito = /\b(?:resposta|gabarito|alternativa|letra\s+corret[ao])\b/.test(norm);
-    if (temNumero && temGabarito && norm.split(' ').length <= 8) return true;
+    if (/\bgabarito\b/.test(norm))                                                             return true;
+    if (/\bresposta\s+(certa|correta)\b/.test(norm))                                           return true;
+    if (/\bqual\s+(e\s+)?a\s+resposta\b/.test(norm))                                          return true;
+    if (/\bqual\s+(e\s+)?(a\s+)?(alternativa|letra|opcao)\s+(certa|correta)\b/.test(norm))    return true;
+    if (/\bme\s+(da|passa|fala)\s+(a\s+)?resposta\b/.test(norm))                              return true;
+    if (/\bresposta\s+d[ao]s?\s+(quest(ao|oes?)?\s*)?\d+\b/.test(norm))                       return true;
     return false;
-  }
-
-  function _responderAjuda(discAtual) {
-    const discs = _getDisciplinas() || [];
-    const exemplosDiscs = discs.map(function (d) { return '  /disc ' + d.id + '   — ' + d.apelido; }).join('\n');
-    const discAtualLinha = discAtual
-      ? 'Disciplina atual: ' + discAtual.apelido + ' (' + discAtual.nome + ')'
-      : 'Nenhuma disciplina selecionada.';
-    _renderBot(
-      discAtualLinha + '\n\n' +
-      'Comandos:\n' +
-      '  /disc <nome>   — selecionar ou trocar disciplina\n' +
-      '  resumo aula N  — ideia central da aula N\n' +
-      '  buscar em tudo: <termo>  — buscar em todas as disciplinas\n' +
-      '  ajuda / ?      — exibir esta mensagem\n\n' +
-      'Dica: use /disc em qualquer ponto da mensagem:\n' +
-      '  "oq é tcp em /disc redes?" → seleciona Redes e já responde\n\n' +
-      'Disciplinas disponíveis:\n' + exemplosDiscs + '\n\n' +
-      'Qualquer outra mensagem é tratada como busca na disciplina atual.'
-    );
   }
 
   function _detectarResumoAula(texto) {
@@ -568,35 +419,6 @@
       if (m) return parseInt(m[1], 10);
     }
     return null;
-  }
-
-  function _responderResumoAula(numAula, nomeDisc) {
-    // Usa apenas conteudo de resumo — nunca window.questoes
-    const conteudo = state.conteudoAtual;
-    if (!conteudo || !Array.isArray(conteudo.aulas)) {
-      return 'Conteúdo não carregado. Selecione uma disciplina primeiro.';
-    }
-    const aula = conteudo.aulas.find(function (a) {
-      if (!a.aula) return false;
-      var m = a.aula.match(/(\d+)/);
-      return m && parseInt(m[1], 10) === numAula;
-    });
-    if (!aula) {
-      return (
-        'Aula ' + numAula + ' não encontrada em ' + nomeDisc + '.\n\n' +
-        'Aulas disponíveis: ' +
-        conteudo.aulas.map(function (a) { return a.aula || '?'; }).join(', ')
-      );
-    }
-    const ideia     = aula.ideia_central || '(sem ideia central registrada)';
-    const numSecoes = Array.isArray(aula.secoes) ? aula.secoes.length : 0;
-    const titulosSecoes = numSecoes > 0
-      ? aula.secoes.map(function (s) { return '  • ' + (s.titulo || '—'); }).join('\n')
-      : '  (nenhuma seção registrada)';
-    return (
-      '📖 ' + aula.aula + '\n─────────────────────\n' +
-      ideia + '\n\nSeções (' + numSecoes + '):\n' + titulosSecoes + '\n\n─── ' + nomeDisc
-    );
   }
 
   function _detectarBuscaGlobal(texto) {
@@ -635,38 +457,6 @@
       if (PADROES[i].test(norm)) return true;
     }
     return false;
-  }
-
-  function _montarContextoGlobal(conteudo) {
-    if (!conteudo || !Array.isArray(conteudo.aulas)) return [];
-    var resultados = [];
-    conteudo.aulas.forEach(function (aula) {
-      var nomeAula = aula.aula || 'Aula';
-      var ideia = aula.ideia_central ? aula.ideia_central.trim() : '';
-      var titulosSecoes = '';
-      if (Array.isArray(aula.secoes) && aula.secoes.length > 0) {
-        titulosSecoes = aula.secoes.map(function (s) { return s.titulo || ''; }).filter(Boolean).join(' · ');
-      }
-      var textoAula = ideia;
-      if (titulosSecoes) textoAula += (textoAula ? ' | Seções: ' : 'Seções: ') + titulosSecoes;
-      if (!textoAula) return;
-      resultados.push({ score: 100, texto: textoAula, aula: nomeAula, secao: 'Visão Geral' });
-    });
-    return resultados;
-  }
-
-  function _montarMapaDisc(conteudo) {
-    if (!conteudo || !Array.isArray(conteudo.aulas)) return [];
-    return conteudo.aulas.map(function (aula, i) {
-      var secoes = '';
-      if (Array.isArray(aula.secoes) && aula.secoes.length > 0) {
-        secoes = aula.secoes.map(function (s) { return s.titulo || ''; }).filter(Boolean).join(', ');
-      }
-      var texto = 'Aula ' + (i + 1);
-      if (aula.aula) texto += ' — ' + aula.aula;
-      if (secoes) texto += ' | Seções: ' + secoes;
-      return { score: 100, texto: texto, aula: aula.aula || ('Aula ' + (i + 1)), secao: 'Mapa' };
-    });
   }
 
   function _detectarPerguntaNavegacao(texto) {
@@ -719,9 +509,40 @@
     return null;
   }
 
+  /* ══════════════════════════════════════════════════════════
+     RESPOSTAS LOCAIS (sem IA)
+  ══════════════════════════════════════════════════════════ */
+
+  function _responderResumoAula(numAula, nomeDisc) {
+    const conteudo = state.conteudoAtual;
+    if (!conteudo || !Array.isArray(conteudo.aulas)) {
+      return 'Conteúdo não carregado. Selecione uma disciplina primeiro.';
+    }
+    const aula = conteudo.aulas.find(function (a) {
+      if (!a.aula) return false;
+      var m = a.aula.match(/(\d+)/);
+      return m && parseInt(m[1], 10) === numAula;
+    });
+    if (!aula) {
+      return (
+        'Aula ' + numAula + ' não encontrada em ' + nomeDisc + '.\n\n' +
+        'Aulas disponíveis: ' +
+        conteudo.aulas.map(function (a) { return a.aula || '?'; }).join(', ')
+      );
+    }
+    const ideia     = aula.ideia_central || '(sem ideia central registrada)';
+    const numSecoes = Array.isArray(aula.secoes) ? aula.secoes.length : 0;
+    const titulosSecoes = numSecoes > 0
+      ? aula.secoes.map(function (s) { return '  • ' + (s.titulo || '—'); }).join('\n')
+      : '  (nenhuma seção registrada)';
+    return (
+      '📖 ' + aula.aula + '\n─────────────────────\n' +
+      ideia + '\n\nSeções (' + numSecoes + '):\n' + titulosSecoes + '\n\n─── ' + nomeDisc
+    );
+  }
+
   function _responderLocalizacao(termoLocalizar, nomeDisc) {
-    // buscar() usa apenas _indiceResumo — seguro
-    var resultados = NexusSearch.buscar(termoLocalizar, { topK: 8, minScore: MIN_SCORE });
+    var resultados = NexusResumoSearch.buscar(termoLocalizar, { topK: 8, minScore: MIN_SCORE });
     if (!resultados.length) {
       return (
         'Não encontrei "' + termoLocalizar + '" em nenhuma aula de ' + nomeDisc + '.\n\n' +
@@ -756,134 +577,29 @@
     return linhas.join('\n').trim();
   }
 
-  /**
-   * QUIZ-ISOLATION: _carregarDiscParaBuscaGlobal carrega APENAS resumo (res_*.js).
-   * Nunca carrega ques_*.js nem acessa window.questoes.
-   */
-  async function _carregarDiscParaBuscaGlobal(disc) {
-    if (state.discsCacheadas[disc.id]) return state.discsCacheadas[disc.id];
-
-    // Força fonte=resumo explicitamente — ignora contexto de quiz
-    const ctx = _getCtxBridge();
-    if (!ctx) return [];
-    const sem    = ctx.getSemestre();
-    const parsed = ctx.parseSemestre(sem);
-    const prefixo   = (ctx.getPrefixo && ctx.getPrefixo()) || 'res_';
-    const varGlobal = (ctx.getVarGlobal && ctx.getVarGlobal()) || '__nexusConteudo';
-    const loaderCtxResumo = {
-      ano: parsed.ano, periodo: parsed.periodo, ap: parsed.ap,
-      arquivo: disc.arquivo, fonte: 'resumo', prefixo, varGlobal,
-    };
-
-    const conteudo = await NexusLoader.carregar(loaderCtxResumo);
-    if (!conteudo || !Array.isArray(conteudo.aulas)) return [];
-
-    const trechos = [];
-    conteudo.aulas.forEach(function (aula) {
-      const nomeAula = aula.aula || '';
-      if (aula.ideia_central) trechos.push({ texto: aula.ideia_central, aula: nomeAula, secao: 'Ideia Central', disc: disc.apelido });
-      if (Array.isArray(aula.secoes)) {
-        aula.secoes.forEach(function (secao) {
-          if (secao.titulo) trechos.push({ texto: secao.titulo, aula: nomeAula, secao: secao.titulo, disc: disc.apelido });
-          if (Array.isArray(secao.blocos)) {
-            secao.blocos.forEach(function (bloco) {
-              _extrairTextosBloco(bloco).forEach(function (t) {
-                trechos.push({ texto: t, aula: nomeAula, secao: secao.titulo || '', disc: disc.apelido });
-              });
-            });
-          }
-        });
-      }
-    });
-    state.discsCacheadas[disc.id] = trechos;
-    return trechos;
+  function _responderAjuda(discAtual) {
+    const discs = _getDisciplinas() || [];
+    const exemplosDiscs = discs.map(function (d) { return '  /disc ' + d.id + '   — ' + d.apelido; }).join('\n');
+    const discAtualLinha = discAtual
+      ? 'Disciplina atual: ' + discAtual.apelido + ' (' + discAtual.nome + ')'
+      : 'Nenhuma disciplina selecionada.';
+    _renderBot(
+      discAtualLinha + '\n\n' +
+      'Comandos:\n' +
+      '  /disc <nome>   — selecionar ou trocar disciplina\n' +
+      '  resumo aula N  — ideia central da aula N\n' +
+      '  buscar em tudo: <termo>  — buscar em todas as disciplinas\n' +
+      '  ajuda / ?      — exibir esta mensagem\n\n' +
+      'Dica: use /disc em qualquer ponto da mensagem:\n' +
+      '  "oq é tcp em /disc redes?" → seleciona Redes e já responde\n\n' +
+      'Disciplinas disponíveis:\n' + exemplosDiscs + '\n\n' +
+      'Qualquer outra mensagem é tratada como busca na disciplina atual.'
+    );
   }
 
-  function _extrairTextosBloco(bloco) {
-    if (!bloco || !bloco.tipo) return [];
-    var textos = [];
-    switch (bloco.tipo) {
-      case 'texto': case 'destaque': case 'subtitulo':
-        if (bloco.texto) textos.push(bloco.texto); break;
-      case 'topico':
-        if (bloco.titulo) textos.push(bloco.titulo);
-        if (bloco.texto)  textos.push(bloco.texto);
-        if (Array.isArray(bloco.lista)) textos.push(bloco.lista.join(' ')); break;
-      case 'lista':
-        if (bloco.titulo) textos.push(bloco.titulo);
-        if (Array.isArray(bloco.itens)) textos.push(bloco.itens.join(' ')); break;
-      case 'exemplo':
-        if (bloco.titulo) textos.push(bloco.titulo);
-        if (bloco.texto)  textos.push(bloco.texto);
-        if (typeof bloco.detalhe === 'string') textos.push(bloco.detalhe); break;
-    }
-    return textos;
-  }
-
-  function _scoreBuscaGlobal(queryNorm, textoNorm) {
-    if (!queryNorm || !textoNorm) return 0;
-    var termos = queryNorm.split(' ').filter(Boolean);
-    if (!termos.length) return 0;
-    var acertos = 0;
-    termos.forEach(function (t) { if (textoNorm.includes(t)) acertos++; });
-    var bonus = textoNorm.includes(queryNorm) ? 0.3 : 0;
-    return Math.min(100, Math.round((acertos / termos.length + bonus) * 100));
-  }
-
-  async function _executarBuscaGlobal(termoBusca) {
-    const discs = _getDisciplinas();
-    if (!discs || !discs.length) return 'Nenhuma disciplina encontrada para este semestre.';
-    const queryNorm      = _normalizar(termoBusca);
-    const todosResultados = [];
-    const discAtual      = _resolverDisc();
-    for (var i = 0; i < discs.length; i++) {
-      var disc = discs[i];
-      // Usa o índice de resumo se disponível para a disc ativa; nunca usa índice de quiz
-      if (discAtual && disc.id === discAtual.id &&
-          NexusSearch.estaIndexado() &&
-          state.discIndexadaId === discAtual.id &&
-          state.fonteIndexada  === 'resumo') {
-        var res = NexusSearch.buscar(termoBusca, { topK: 3, minScore: MIN_SCORE });
-        res.forEach(function (r) { todosResultados.push(Object.assign({}, r, { disc: disc.apelido })); });
-      } else {
-        var trechos = await _carregarDiscParaBuscaGlobal(disc);
-        trechos.forEach(function (t) {
-          var sc = _scoreBuscaGlobal(queryNorm, _normalizar(t.texto));
-          if (sc >= MIN_SCORE) todosResultados.push({ score: sc, texto: t.texto, aula: t.aula, secao: t.secao, disc: t.disc });
-        });
-      }
-    }
-    if (!todosResultados.length) return 'Nenhum resultado para "' + termoBusca + '" em nenhuma disciplina.';
-    todosResultados.sort(function (a, b) { return b.score - a.score; });
-    const top    = todosResultados.slice(0, 6);
-    const linhas = ['🔍 Busca global: "' + termoBusca + '"\n'];
-    const porDisc = {};
-    top.forEach(function (r) {
-      var d = r.disc || 'Desconhecida';
-      if (!porDisc[d]) porDisc[d] = [];
-      porDisc[d].push(r);
-    });
-    Object.keys(porDisc).forEach(function (nomeDisc) {
-      linhas.push('📚 ' + nomeDisc);
-      porDisc[nomeDisc].forEach(function (r) {
-        var trecho    = _truncarNaPalavra(r.texto, 160);
-        var secaoLabel = r.secao ? ' [' + r.secao + ']' : '';
-        linhas.push('  📖 ' + (r.aula || 'Geral') + secaoLabel);
-        linhas.push('  ' + trecho);
-      });
-      linhas.push('');
-    });
-    return linhas.join('\n').trim();
-  }
-
-  function _gerarSugestoes(_conteudo) { return []; }
-
-  function _truncarNaPalavra(texto, limite) {
-    if (texto.length <= limite) return texto;
-    const cortado      = texto.slice(0, limite);
-    const ultimoEspaco = cortado.lastIndexOf(' ');
-    return (ultimoEspaco > 0 ? cortado.slice(0, ultimoEspaco) : cortado) + '…';
-  }
+  /* ══════════════════════════════════════════════════════════
+     FORMATAÇÃO DE RESPOSTA LOCAL (fallback sem IA)
+  ══════════════════════════════════════════════════════════ */
 
   function _extrairSentencas(texto) {
     var tokens = texto.split(' ');
@@ -913,6 +629,13 @@
       resultado = resultado.replace(regex, function (match) { return match.toUpperCase(); });
     });
     return resultado;
+  }
+
+  function _truncarNaPalavra(texto, limite) {
+    if (texto.length <= limite) return texto;
+    const cortado      = texto.slice(0, limite);
+    const ultimoEspaco = cortado.lastIndexOf(' ');
+    return (ultimoEspaco > 0 ? cortado.slice(0, ultimoEspaco) : cortado) + '…';
   }
 
   function _formatarResposta(pergunta, resultados, nomeDisc) {
@@ -967,7 +690,163 @@
     return linhas.join('\n').trim();
   }
 
-  /* ── LIVE CHIPS ────────────────────────────────────────── */
+  /* ══════════════════════════════════════════════════════════
+     CONTEXTO GLOBAL E MAPA
+  ══════════════════════════════════════════════════════════ */
+
+  function _montarContextoGlobal(conteudo) {
+    if (!conteudo || !Array.isArray(conteudo.aulas)) return [];
+    var resultados = [];
+    conteudo.aulas.forEach(function (aula) {
+      var nomeAula = aula.aula || 'Aula';
+      var ideia = aula.ideia_central ? aula.ideia_central.trim() : '';
+      var titulosSecoes = '';
+      if (Array.isArray(aula.secoes) && aula.secoes.length > 0) {
+        titulosSecoes = aula.secoes.map(function (s) { return s.titulo || ''; }).filter(Boolean).join(' · ');
+      }
+      var textoAula = ideia;
+      if (titulosSecoes) textoAula += (textoAula ? ' | Seções: ' : 'Seções: ') + titulosSecoes;
+      if (!textoAula) return;
+      resultados.push({ score: 100, texto: textoAula, aula: nomeAula, secao: 'Visão Geral' });
+    });
+    return resultados;
+  }
+
+  function _montarMapaDisc(conteudo) {
+    if (!conteudo || !Array.isArray(conteudo.aulas)) return [];
+    return conteudo.aulas.map(function (aula, i) {
+      var secoes = '';
+      if (Array.isArray(aula.secoes) && aula.secoes.length > 0) {
+        secoes = aula.secoes.map(function (s) { return s.titulo || ''; }).filter(Boolean).join(', ');
+      }
+      var texto = 'Aula ' + (i + 1);
+      if (aula.aula) texto += ' — ' + aula.aula;
+      if (secoes) texto += ' | Seções: ' + secoes;
+      return { score: 100, texto: texto, aula: aula.aula || ('Aula ' + (i + 1)), secao: 'Mapa' };
+    });
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     BUSCA GLOBAL (todas as disciplinas)
+  ══════════════════════════════════════════════════════════ */
+
+  function _extrairTextosBloco(bloco) {
+    if (!bloco || !bloco.tipo) return [];
+    var textos = [];
+    switch (bloco.tipo) {
+      case 'texto': case 'destaque': case 'subtitulo':
+        if (bloco.texto) textos.push(bloco.texto); break;
+      case 'topico':
+        if (bloco.titulo) textos.push(bloco.titulo);
+        if (bloco.texto)  textos.push(bloco.texto);
+        if (Array.isArray(bloco.lista)) textos.push(bloco.lista.join(' ')); break;
+      case 'lista':
+        if (bloco.titulo) textos.push(bloco.titulo);
+        if (Array.isArray(bloco.itens)) textos.push(bloco.itens.join(' ')); break;
+      case 'exemplo':
+        if (bloco.titulo) textos.push(bloco.titulo);
+        if (bloco.texto)  textos.push(bloco.texto);
+        if (typeof bloco.detalhe === 'string') textos.push(bloco.detalhe); break;
+    }
+    return textos;
+  }
+
+  async function _carregarDiscParaBuscaGlobal(disc) {
+    if (state.discsCacheadas[disc.id]) return state.discsCacheadas[disc.id];
+
+    const ctx = _getCtxBridge();
+    if (!ctx) return [];
+    const sem    = ctx.getSemestre();
+    const parsed = ctx.parseSemestre(sem);
+    const prefixo   = (ctx.getPrefixo   && ctx.getPrefixo())   || 'res_';
+    const varGlobal = (ctx.getVarGlobal && ctx.getVarGlobal()) || '__nexusConteudo';
+    const loaderCtxResumo = {
+      ano: parsed.ano, periodo: parsed.periodo, ap: parsed.ap,
+      arquivo: disc.arquivo, fonte: 'resumo', prefixo, varGlobal,
+    };
+
+    const conteudo = await NexusLoader.carregar(loaderCtxResumo);
+    if (!conteudo || !Array.isArray(conteudo.aulas)) return [];
+
+    const trechos = [];
+    conteudo.aulas.forEach(function (aula) {
+      const nomeAula = aula.aula || '';
+      if (aula.ideia_central) trechos.push({ texto: aula.ideia_central, aula: nomeAula, secao: 'Ideia Central', disc: disc.apelido });
+      if (Array.isArray(aula.secoes)) {
+        aula.secoes.forEach(function (secao) {
+          if (secao.titulo) trechos.push({ texto: secao.titulo, aula: nomeAula, secao: secao.titulo, disc: disc.apelido });
+          if (Array.isArray(secao.blocos)) {
+            secao.blocos.forEach(function (bloco) {
+              _extrairTextosBloco(bloco).forEach(function (t) {
+                trechos.push({ texto: t, aula: nomeAula, secao: secao.titulo || '', disc: disc.apelido });
+              });
+            });
+          }
+        });
+      }
+    });
+    state.discsCacheadas[disc.id] = trechos;
+    return trechos;
+  }
+
+  function _scoreBuscaGlobal(queryNorm, textoNorm) {
+    if (!queryNorm || !textoNorm) return 0;
+    var termos = queryNorm.split(' ').filter(Boolean);
+    if (!termos.length) return 0;
+    var acertos = 0;
+    termos.forEach(function (t) { if (textoNorm.includes(t)) acertos++; });
+    var bonus = textoNorm.includes(queryNorm) ? 0.3 : 0;
+    return Math.min(100, Math.round((acertos / termos.length + bonus) * 100));
+  }
+
+  async function _executarBuscaGlobal(termoBusca) {
+    const discs = _getDisciplinas();
+    if (!discs || !discs.length) return 'Nenhuma disciplina encontrada para este semestre.';
+    const queryNorm       = _normalizar(termoBusca);
+    const todosResultados = [];
+    const discAtual       = _resolverDisc();
+    for (var i = 0; i < discs.length; i++) {
+      var disc = discs[i];
+      if (discAtual && disc.id === discAtual.id &&
+          NexusResumoSearch.estaIndexado() &&
+          state.discIndexadaId === discAtual.id) {
+        var res = NexusResumoSearch.buscar(termoBusca, { topK: 3, minScore: MIN_SCORE });
+        res.forEach(function (r) { todosResultados.push(Object.assign({}, r, { disc: disc.apelido })); });
+      } else {
+        var trechos = await _carregarDiscParaBuscaGlobal(disc);
+        trechos.forEach(function (t) {
+          var sc = _scoreBuscaGlobal(queryNorm, _normalizar(t.texto));
+          if (sc >= MIN_SCORE) todosResultados.push({ score: sc, texto: t.texto, aula: t.aula, secao: t.secao, disc: t.disc });
+        });
+      }
+    }
+    if (!todosResultados.length) return 'Nenhum resultado para "' + termoBusca + '" em nenhuma disciplina.';
+    todosResultados.sort(function (a, b) { return b.score - a.score; });
+    const top    = todosResultados.slice(0, 6);
+    const linhas = ['🔍 Busca global: "' + termoBusca + '"\n'];
+    const porDisc = {};
+    top.forEach(function (r) {
+      var d = r.disc || 'Desconhecida';
+      if (!porDisc[d]) porDisc[d] = [];
+      porDisc[d].push(r);
+    });
+    Object.keys(porDisc).forEach(function (nomeDisc) {
+      linhas.push('📚 ' + nomeDisc);
+      porDisc[nomeDisc].forEach(function (r) {
+        var trecho     = _truncarNaPalavra(r.texto, 160);
+        var secaoLabel = r.secao ? ' [' + r.secao + ']' : '';
+        linhas.push('  📖 ' + (r.aula || 'Geral') + secaoLabel);
+        linhas.push('  ' + trecho);
+      });
+      linhas.push('');
+    });
+    return linhas.join('\n').trim();
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     LIVE CHIPS
+  ══════════════════════════════════════════════════════════ */
+
   var _liveChipsContainer = null;
 
   function _ehPrefixoDisc(val) {
@@ -1119,14 +998,10 @@
 
   async function _executarSemDisc(texto) {
     if (_ehPerguntaSobreGabarito(texto)) {
-      const discs = _getDisciplinas() || [];
-      const lista = discs.map(function (d) { return '  /disc ' + d.id; }).join('  ');
       _renderBot(
-        'Perguntas sobre gabarito e respostas só estão disponíveis dentro do quiz. 📝\n\n' +
-        'Acesse o quiz de uma das disciplinas para fazer esse tipo de pergunta:\n' + lista
+        'Perguntas sobre gabarito e respostas só podem ser respondidas dentro do quiz da disciplina. 📝\n\n' +
+        'Abra o quiz correspondente e faça a pergunta por lá.'
       );
-      const chips = discs.map(function (d) { return { label: '/disc ' + d.id, cmd: '/disc ' + d.id, tipo: 'disc' }; });
-      NexusUI.mostrarSugestoes(chips, _onSugestaoClick);
       return;
     }
 
@@ -1157,13 +1032,11 @@
         .replace(/\s+/g, ' ').trim();
 
       var discsOndeAprende = _getDisciplinas() || [];
-
       await Promise.all(discsOndeAprende.map(function (d) {
         return _carregarDiscParaBuscaGlobal(d);
       }));
 
       var matchDiscs = [];
-
       if (termoRaw.length >= 2) {
         discsOndeAprende.forEach(function (d) {
           var trechos = state.discsCacheadas[d.id] || [];
@@ -1222,109 +1095,6 @@
     }
   }
 
-  /* ══════════════════════════════════════════════════════════
-     QUIZ — funções auxiliares
-  ══════════════════════════════════════════════════════════ */
-
-  function _detectarNumeroQuestao(texto) {
-    var norm = NexusSearch.normalizarTexto(texto.trim());
-    var padroes = [
-      /\bquest(?:ao|oes?)?\s*n?[o°]?\s*(\d+)\b/,
-      /\bq\s*(\d+)\b/,
-      /#(\d+)\b/,
-      /\bnumero\s+(\d+)\b/,
-      /\b(\d+)[aª]\s*quest/,
-    ];
-    for (var i = 0; i < padroes.length; i++) {
-      var m = norm.match(padroes[i]);
-      if (m) return parseInt(m[1], 10);
-    }
-    return null;
-  }
-
-  /**
-   * Serializa a questão para o worker.
-   *
-   * QUIZ-ISOLATION:
-   *   Gabarito e feedback são incluídos SOMENTE quando o contexto de quiz
-   *   estiver ativo com token válido.
-   *   Fora do template_init nunca expõe q.answer nem q.feedback.
-   *
-   * @param {number} numero
-   * @param {object} q
-   * @returns {string}
-   */
-  function _serializarQuestao(numero, q) {
-    var linhas = ['Questão ' + numero + (q.aula ? ' (' + q.aula + ')' : '') + ':'];
-    if (q.texto)    linhas.push('Contexto: ' + q.texto);
-    if (q.question) linhas.push('Enunciado: ' + q.question);
-    if (Array.isArray(q.assertions)) {
-      linhas.push('Afirmativas:');
-      q.assertions.forEach(function (a) { linhas.push('  ' + a); });
-    }
-    if (Array.isArray(q.options)) {
-      linhas.push('Alternativas:');
-      q.options.forEach(function (opt, i) {
-        var letra = String.fromCharCode(65 + i);
-        linhas.push('  ' + letra + ') ' + opt);
-      });
-    }
-
-    // Gabarito e feedback: SOMENTE dentro do template de quiz com token válido
-    if (_contextoQuizAtivo()) {
-      if (typeof q.answer === 'number') {
-        var gabarito = String.fromCharCode(65 + q.answer);
-        linhas.push('Gabarito: ' + gabarito);
-      }
-      if (q.feedback) linhas.push('Feedback oficial: ' + q.feedback);
-    }
-
-    return linhas.join('\n');
-  }
-
-  /**
-   * Responde sobre uma questão específica via worker.
-   *
-   * QUIZ-ISOLATION:
-   *   Abortado silenciosamente se o contexto de quiz não estiver ativo.
-   *   O worker nunca recebe dados de questão fora do template.
-   */
-  async function _responderSobreQuestao(pergunta, ctxQuestao, disc) {
-    if (!_contextoQuizAtivo()) {
-      _renderBot('Esta função está disponível apenas dentro do quiz. 📝');
-      return;
-    }
-
-    if (typeof window.NexusWorker !== 'undefined') {
-      const resultadoFake = [{ score: 100, texto: ctxQuestao, aula: '', secao: 'Quiz' }];
-      let respostaIA = null;
-      try {
-        respostaIA = await NexusWorker.perguntar({
-          pergunta:     pergunta,
-          resultados:   resultadoFake,
-          disciplina:   disc.id,
-          tipoContexto: 'conteudo',
-          semContexto:  false,
-        });
-      } catch (e) {
-        console.warn('[NexusAssistant] _responderSobreQuestao erro worker:', e);
-      }
-      if (respostaIA) {
-        const rodape = (respostaIA.fonte || respostaIA.modelo) ? {
-          linha1: ['IA: ' + (respostaIA.fonte || ''), respostaIA.modelo || ''].filter(Boolean).join(' · '),
-          linha2: 'fonte: questões do quiz',
-        } : null;
-        _renderBot(respostaIA.texto, rodape);
-        return;
-      }
-    }
-    // Fallback: exibe a questão sem gabarito se estiver no template mas o worker falhou
-    _renderBot(ctxQuestao);
-  }
-
-  /* ══════════════════════════════════════════════════════════
-     _executarBuscaNaDisc()
-  ══════════════════════════════════════════════════════════ */
   async function _executarBuscaNaDisc(texto, disc) {
 
     if (_ehSaudacao(texto)) {
@@ -1340,32 +1110,24 @@
       return;
     }
 
-    /* Gabarito/resposta — bloqueia fora do template de quiz */
-    if (!_contextoQuizAtivo() && _ehPerguntaSobreGabarito(texto)) {
-      _renderBot(
-        'Perguntas sobre gabarito e respostas só estão disponíveis dentro do quiz. 📝\n\n' +
-        'Abra o quiz de ' + disc.apelido + ' e faça a pergunta por lá!'
-      );
-      return;
+    /* ── Interceptação de quiz ────────────────────────────────
+       Se NexusQuizAssistant estiver carregado e o contexto de quiz
+       estiver ativo, delega primeiro para ele.
+       Se ele tratar (retorna true), encerra aqui.
+       Se não tratar (retorna false), segue o fluxo normal de resumo.
+    ── */
+    if (typeof window.NexusQuizAssistant !== 'undefined' &&
+        NexusQuizAssistant.contextoAtivo()) {
+      const tratado = await NexusQuizAssistant.interceptar(texto, disc, _renderBot.bind(null));
+      if (tratado) return;
     }
 
-    /* Quiz: lookup de questão por número */
-    if (_contextoQuizAtivo()) {
-      const numQ = _detectarNumeroQuestao(texto);
-      if (numQ !== null) {
-        const conteudoQ = await _garantirConteudo(disc);
-        if (!conteudoQ) { _renderBot('Não consegui carregar as questões. Tente novamente.'); return; }
-
-        const token = _quizToken();
-        const q     = NexusSearch.buscarQuestaoPorNumero(numQ, token);
-        if (!q) {
-          _renderBot('Questão ' + numQ + ' não encontrada no modo atual.');
-          return;
-        }
-        const ctxQuestao = _serializarQuestao(numQ, q);
-        await _responderSobreQuestao(texto, ctxQuestao, disc);
-        return;
-      }
+    if (_ehPerguntaSobreGabarito(texto)) {
+      _renderBot(
+        'Perguntas sobre gabarito e respostas só podem ser respondidas dentro do quiz da disciplina. 📝\n\n' +
+        'Abra o quiz de ' + disc.apelido + ' e faça a pergunta por lá.'
+      );
+      return;
     }
 
     /* Resumo de aula */
@@ -1416,25 +1178,11 @@
       resultados   = _montarContextoGlobal(conteudoDisc);
     } else {
       tipoContexto = 'conteudo';
-
-      if (_contextoQuizAtivo()) {
-        // Dentro do quiz: usa buscarQuiz() que acessa _indiceQuiz — exige token
-        const token = _quizToken();
-        resultados  = NexusSearch.buscarQuiz(texto, { topK: TOP_K, minScore: MIN_SCORE }, token);
-        if (!resultados.length) {
-          const normLen = _normalizar(texto.trim()).split(' ').length;
-          if (normLen <= 4) {
-            resultados = NexusSearch.buscarQuiz(texto, { topK: TOP_K, minScore: 5 }, token);
-          }
-        }
-      } else {
-        // Fora do quiz: buscar() usa apenas _indiceResumo
-        resultados = NexusSearch.buscar(texto, { topK: TOP_K, minScore: MIN_SCORE });
-        if (!resultados.length) {
-          const normLen = _normalizar(texto.trim()).split(' ').length;
-          if (normLen <= 4) {
-            resultados = NexusSearch.buscar(texto, { topK: TOP_K, minScore: 5 });
-          }
+      resultados   = NexusResumoSearch.buscar(texto, { topK: TOP_K, minScore: MIN_SCORE });
+      if (!resultados.length) {
+        const normLen = _normalizar(texto.trim()).split(' ').length;
+        if (normLen <= 4) {
+          resultados = NexusResumoSearch.buscar(texto, { topK: TOP_K, minScore: 5 });
         }
       }
     }
@@ -1470,13 +1218,70 @@
     _renderBot(_formatarResposta(texto, resultados, disc.apelido));
   }
 
-  /* ── EVENTO: semestre mudou ── */
-  document.addEventListener('nexus:semestreChanged', function () {
-    _limparContexto();
-    _limparHistoricoStorage();
-    state.discsCacheadas = {};
-    _removerLiveChips();
-  });
+  /* ══════════════════════════════════════════════════════════
+     CONFIRMAR DISCIPLINA
+  ══════════════════════════════════════════════════════════ */
+
+  function _pedirDisc() {
+    const discs = _getDisciplinas();
+    if (!discs || !discs.length) {
+      _renderBot('Não encontrei disciplinas para o semestre atual.');
+      return;
+    }
+    const lista = discs.map(function (d) { return '  /disc ' + d.id + '   — ' + d.nome; }).join('\n');
+    _renderBot(
+      'Disciplinas disponíveis:\n\n' + lista + '\n\n' +
+      'Digite o nome da disciplina ou use /disc <nome> para selecionar.'
+    );
+    const chips = discs.map(function (d) { return { label: '/disc ' + d.id, cmd: '/disc ' + d.id, tipo: 'disc' }; });
+    NexusUI.mostrarSugestoes(chips, _onSugestaoClick);
+    state.aguardandoDisc = true;
+  }
+
+  async function _confirmarDisc(disc) {
+    NexusResumoSearch.limparIndice();
+    NexusLoader.limpar();
+    state.discIndexadaId = null;
+    state.discEscolhida  = disc;
+    state.aguardandoDisc = false;
+    _salvarDiscAtiva();
+
+    if (typeof window.NexusWorker !== 'undefined') NexusWorker.limparHistorico();
+
+    const loaderCtx = _montarCtx(disc);
+    if (!loaderCtx) {
+      state.discEscolhida = null;
+      _salvarDiscAtiva();
+      _renderBot('Não consegui montar o contexto de ' + disc.apelido + '. Tente novamente.');
+      return false;
+    }
+    const conteudo = await NexusLoader.carregar(loaderCtx);
+    if (!conteudo) {
+      state.discEscolhida = null;
+      _salvarDiscAtiva();
+      _renderBot('Não consegui carregar o conteúdo de ' + disc.apelido + '. Tente novamente.');
+      return false;
+    }
+
+    NexusResumoSearch.indexarConteudo(conteudo);
+    state.discIndexadaId = disc.id;
+
+    NexusUI.atualizarDiscAtiva(disc.apelido);
+    const sugestoes = _gerarSugestoes(conteudo);
+    _renderBot(
+      '✓ Disciplina carregada: ' + disc.apelido + '\n\n' +
+      'Pode fazer perguntas sobre ' + disc.nome + '.\n' +
+      'Para trocar: /disc <nome>  ·  Ajuda: ?'
+    );
+    if (sugestoes.length > 0) NexusUI.mostrarSugestoes(sugestoes, _onSugestaoClick);
+    return true;
+  }
+
+  function _gerarSugestoes(_conteudo) { return []; }
+
+  /* ══════════════════════════════════════════════════════════
+     INICIALIZAÇÃO
+  ══════════════════════════════════════════════════════════ */
 
   function _mostrarBoasVindas() {
     var discs = _getDisciplinas();
@@ -1551,11 +1356,12 @@
   }
 
   function _depsOk() {
-    if (typeof window.NexusUI     === 'undefined') { console.error('[NexusAssistant] NexusUI não encontrado.');    return false; }
-    if (typeof window.NexusSearch === 'undefined') { console.error('[NexusAssistant] NexusSearch não encontrado.'); return false; }
-    if (typeof window.NexusLoader === 'undefined') { console.error('[NexusAssistant] NexusLoader não encontrado.'); return false; }
-    if (typeof window.__nexusCtx  === 'undefined') { console.error('[NexusAssistant] __nexusCtx não encontrado.');  return false; }
-    if (typeof window.NexusWorker === 'undefined') { console.warn('[NexusAssistant] NexusWorker não encontrado. Modo somente-busca.'); }
+    if (typeof window.NexusUI          === 'undefined') { console.error('[NexusAssistant] NexusUI não encontrado.');          return false; }
+    if (typeof window.NexusResumoSearch === 'undefined') { console.error('[NexusAssistant] NexusResumoSearch não encontrado.'); return false; }
+    if (typeof window.NexusLoader      === 'undefined') { console.error('[NexusAssistant] NexusLoader não encontrado.');       return false; }
+    if (typeof window.NexusTextUtils   === 'undefined') { console.error('[NexusAssistant] NexusTextUtils não encontrado.');    return false; }
+    if (typeof window.__nexusCtx       === 'undefined') { console.error('[NexusAssistant] __nexusCtx não encontrado.');        return false; }
+    if (typeof window.NexusWorker      === 'undefined') { console.warn('[NexusAssistant] NexusWorker não encontrado. Modo somente-busca.'); }
     return true;
   }
 
@@ -1604,10 +1410,8 @@
         if (loaderCtx) {
           NexusLoader.carregar(loaderCtx).then(function (conteudo) {
             if (conteudo) {
-              // Sempre indexa resumo no init — nunca quiz
-              NexusSearch.indexarConteudo(conteudo);
+              NexusResumoSearch.indexarConteudo(conteudo);
               state.discIndexadaId = discInicial.id;
-              state.fonteIndexada  = 'resumo';
               state.discEscolhida  = discInicial;
               _salvarDiscAtiva();
               NexusUI.atualizarDiscAtiva(discInicial.apelido);
@@ -1617,6 +1421,18 @@
       }
     }
   }
+
+  /* ── Evento: semestre mudou ── */
+  document.addEventListener('nexus:semestreChanged', function () {
+    _limparContexto();
+    _limparHistoricoStorage();
+    state.discsCacheadas = {};
+    _removerLiveChips();
+  });
+
+  /* ══════════════════════════════════════════════════════════
+     REGISTRO GLOBAL
+  ══════════════════════════════════════════════════════════ */
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
@@ -1628,6 +1444,49 @@
     open:   function () { NexusUI.open();   },
     close:  function () { NexusUI.close();  },
     toggle: function () { NexusUI.toggle(); },
+
+    /**
+     * Seleciona disciplina pelo id sem exibir mensagem no chat.
+     * Usado por NexusQuizAssistant.notificarEntradaNoQuiz() para
+     * sincronizar automaticamente o estado visual ao entrar no quiz.
+     *
+     * @param {string}  discId
+     * @param {{ silencioso?: boolean }} [opts]
+     */
+    selecionarDiscPorId: function (discId, opts) {
+      if (!discId) return;
+      var silencioso = opts && opts.silencioso;
+      var discs = _getDisciplinas();
+      if (!discs) return;
+      var disc = discs.find(function (d) { return d.id === discId; });
+      if (!disc) {
+        console.warn('[NexusAssistant] selecionarDiscPorId: disciplina não encontrada:', discId);
+        return;
+      }
+      state.discEscolhida  = disc;
+      state.aguardandoDisc = false;
+      _salvarDiscAtiva();
+      NexusUI.atualizarDiscAtiva(disc.apelido);
+      if (!silencioso) {
+        _renderBot('✓ Disciplina selecionada: ' + disc.apelido);
+      }
+      // Garante que o conteúdo de resumo é indexado em background
+      _garantirConteudo(disc).then(function () {
+        console.log('[NexusAssistant] conteúdo de ' + disc.apelido + ' indexado via selecionarDiscPorId.');
+      });
+    },
+
+    /**
+     * Remove a disciplina ativa do estado e do visual do chat.
+     * Usado por NexusQuizAssistant ao sair do quiz para limpar o contexto.
+     */
+    limparDisc: function () {
+      state.discEscolhida  = null;
+      state.aguardandoDisc = false;
+      _salvarDiscAtiva();
+      NexusUI.atualizarDiscAtiva(null);
+      console.log('[NexusAssistant] disciplina removida via limparDisc.');
+    },
   };
 
 }());
