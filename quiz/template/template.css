@@ -922,6 +922,15 @@ a { text-decoration: none; color: inherit; }
   color: #fff;
 }
 
+.restart-button:hover .restart-icon {
+  animation: spin-once 0.55s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes spin-once {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(-360deg); }
+}
+
 .reveal-button {
   background: rgba(var(--cor-warn-rgb), 0.07);
   border-color: rgba(var(--cor-warn-rgb), 0.25);
@@ -1062,6 +1071,45 @@ a { text-decoration: none; color: inherit; }
   border-color: rgba(var(--accent-rgb), 0.35);
   color: var(--accent);
   transform: scale(1.08);
+}
+
+/* ── TOOLTIP DOS NAV-BTN ────────────────────────────────────
+   Mesmo DNA visual dos labels "efeitos" / "música" em
+   audio-btns.css: pill escuro, borda sutil, slide lateral.
+   Usa o atributo [title] nativo dos botões.
+────────────────────────────────────────────────────────────── */
+.nav-btn[title] {
+  position: relative;
+}
+
+.nav-btn[title]::after {
+  content: attr(title);
+  position: absolute;
+  right: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%) translateX(4px);
+  background: rgba(0, 16, 28, 0.92);
+  border: 1px solid rgba(var(--accent-rgb), 0.28);
+  border-radius: 6px;
+  padding: 4px 9px;
+  font-size: 10px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  color: color-mix(in srgb, var(--accent) 90%, white);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  letter-spacing: 0.04em;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  z-index: 200;
+}
+
+.nav-btn[title]:hover::after {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
 }
 
 .btn-toggle-modo {

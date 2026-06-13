@@ -370,7 +370,16 @@ function _injetarNavFloat() {
     _criarBotaoNav('btn-left',      'Voltar',            'fas fa-rotate-left') +
     _criarBotaoNav('btn-down',      'Ir ao final',       'fas fa-arrow-down')  +
     '<div class="nav-divider" aria-hidden="true"></div>'                        +
-    _criarBotaoNav('restartButton', 'Reiniciar',         'fas fa-rotate-right')+
+    '<button id="restartButton" class="nav-btn" title="Reiniciar" type="button">' +
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"' +
+        ' stroke="currentColor" stroke-width="3" stroke-linecap="round"' +
+        ' stroke-linejoin="round" aria-hidden="true">' +
+        '<path d="M21 9a9.01 9.01 0 0 0-16.95 1"/>' +
+        '<polyline points="21 3 21 9 15 9"/>' +
+        '<path d="M3 15a9.01 9.01 0 0 0 16.95-1"/>' +
+        '<polyline points="3 21 3 15 9 15"/>' +
+      '</svg>' +
+    '</button>'                                                                 +
     _criarBotaoNav('revealButton',  'Revelar respostas', 'fas fa-eye')         +
     '<div class="nav-divider" aria-hidden="true"></div>'                        +
     '<button id="btn-toggle-modo" class="nav-btn btn-toggle-modo" title="Modo Step" type="button">' +
