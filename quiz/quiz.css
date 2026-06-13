@@ -473,3 +473,283 @@ a { text-decoration: none; color: inherit; }
   .logo-title { font-size: 1rem; }
   .semestre-select { font-size: 0.72rem; padding: 0.35rem 1.8rem 0.35rem 0.6rem; }
 }
+
+/* ═══════════════════════════════════════════════
+   BOTÃO DE CONFIG DO QUIZ (header__right)
+═══════════════════════════════════════════════ */
+.quiz-cfg-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--border-glow);
+  background: rgba(255,255,255,0.03);
+  color: var(--text-2);
+  cursor: pointer;
+  transition:
+    color         0.2s ease,
+    background    0.2s ease,
+    border-color  0.2s ease,
+    transform     0.2s ease;
+  flex-shrink: 0;
+}
+
+.quiz-cfg-btn:hover {
+  color: var(--rose);
+  background: rgba(232,122,154,0.07);
+  border-color: rgba(232,122,154,0.3);
+  transform: rotate(30deg);
+}
+
+/* ═══════════════════════════════════════════════
+   MODAL — base reutilizada do index (self-contained)
+   Adiciona apenas o que não está no CSS global.
+═══════════════════════════════════════════════ */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease;
+}
+
+.modal--open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+}
+
+.modal__box {
+  position: relative;
+  z-index: 1;
+  width: min(460px, calc(100vw - 2rem));
+  max-height: min(680px, calc(100dvh - 2rem));
+  display: flex;
+  flex-direction: column;
+  border-radius: 18px;
+  border: 1px solid var(--border-glow);
+  background: var(--surface);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.55);
+  overflow: hidden;
+  transform: translateY(0);
+  transition: transform 0.22s ease;
+}
+
+.modal__box--sm {
+  width: min(400px, calc(100vw - 2rem));
+}
+
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem 1rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.modal__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.modal__close {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.modal__close:hover {
+  background: rgba(255,255,255,0.06);
+  color: var(--text-1);
+}
+
+.modal__body-scroll {
+  overflow-y: auto;
+  flex: 1;
+  padding: 0.5rem 0;
+}
+
+.modal__section {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal__section:last-child { border-bottom: none; }
+
+.modal__section-title {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--rose);
+  margin-bottom: 0.9rem;
+}
+
+.modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* config-row */
+.config-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.55rem 0;
+  font-size: 0.85rem;
+  color: var(--text-1);
+}
+
+.config-row + .config-row {
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+
+.config-row label:first-child {
+  flex: 1;
+  line-height: 1.4;
+  color: var(--text-1);
+}
+
+/* Toggle switch */
+.toggle {
+  position: relative;
+  width: 38px;
+  height: 22px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.toggle input { opacity: 0; width: 0; height: 0; }
+
+.toggle__track {
+  position: absolute;
+  inset: 0;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid var(--border-glow);
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.toggle__track::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--text-3);
+  transition: transform 0.2s ease, background 0.2s;
+}
+
+.toggle input:checked + .toggle__track {
+  background: rgba(232,122,154,0.25);
+  border-color: var(--rose);
+}
+
+.toggle input:checked + .toggle__track::after {
+  transform: translateX(16px);
+  background: var(--rose);
+}
+
+.toggle input:disabled + .toggle__track { opacity: 0.35; cursor: not-allowed; }
+
+/* Botões do modal */
+.modal-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.18s, border-color 0.18s, color 0.18s, opacity 0.18s;
+}
+
+.modal-btn--primary {
+  background: var(--rose);
+  color: #0e1420;
+  border-color: var(--rose);
+}
+
+.modal-btn--primary:hover { opacity: 0.85; }
+
+.modal-btn--ghost {
+  background: rgba(255,255,255,0.04);
+  color: var(--text-2);
+  border-color: var(--border-glow);
+}
+
+.modal-btn--ghost:hover {
+  background: rgba(255,255,255,0.08);
+  color: var(--text-1);
+}
+
+.modal-btn--danger {
+  background: rgba(232,80,80,0.12);
+  color: #e85050;
+  border-color: rgba(232,80,80,0.3);
+}
+
+.modal-btn--danger:hover { background: rgba(232,80,80,0.22); }
+
+/* Toast */
+.nexus-toast {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  background: var(--surface-2);
+  border: 1px solid var(--border-glow);
+  color: var(--text-1);
+  font-size: 0.82rem;
+  font-family: var(--font-body);
+  padding: 0.55rem 1.2rem;
+  border-radius: 99px;
+  white-space: nowrap;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9999;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.nexus-toast--show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}

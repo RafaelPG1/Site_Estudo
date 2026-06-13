@@ -608,50 +608,6 @@ function _abrirModalConfig() {
         </div>
 
         <div class="modal__section">
-          <div class="modal__section-title">Quiz</div>
-
-          <div class="config-row">
-            <label for="cfg-salvar-parcial">
-              Salvar progresso
-              <small style="display:block;font-weight:400;opacity:0.6;font-size:0.72em;margin-top:2px;">
-                Quando ativado, o progresso parcial é salvo enquanto você responde.
-                Desativado, apaga 10&nbsp;min após sair da aba.
-              </small>
-            </label>
-            <label class="toggle">
-              <input type="checkbox" id="cfg-salvar-parcial"
-                ${cfg.salvarProgressoParcial !== false ? 'checked' : ''} />
-              <span class="toggle__track"></span>
-            </label>
-          </div>
-
-          <div class="config-row">
-            <label for="cfg-salvar-progresso">
-              Salvar ao concluir
-              <small style="display:block;font-weight:400;opacity:0.6;font-size:0.72em;margin-top:2px;">
-                Quando ativado, o resultado fica salvo permanentemente.
-                Desativado, apaga 20&nbsp;s após sair da aba.
-              </small>
-            </label>
-            <label class="toggle">
-              <input type="checkbox" id="cfg-salvar-progresso"
-                ${cfg.salvarProgresso !== false ? 'checked' : ''} />
-              <span class="toggle__track"></span>
-            </label>
-          </div>
-
-          <div class="config-row">
-            <label>
-              Limpar dados do quiz
-              <small style="display:block;font-weight:400;opacity:0.6;font-size:0.72em;margin-top:2px;">
-                Remove todo progresso salvo de todos os quizzes.
-              </small>
-            </label>
-            <button class="modal-btn modal-btn--danger" id="btn-limpar-quiz">Limpar</button>
-          </div>
-        </div>
-
-        <div class="modal__section">
           <div class="modal__section-title">Flashcard</div>
 
           <div class="config-row">
@@ -724,13 +680,11 @@ function _abrirModalConfig() {
   /* ── Leitura dos campos ── */
   function _lerConfigs() {
     return {
-      tema:                   document.getElementById('cfg-tema').value,
-      animacoes:              document.getElementById('cfg-anim').checked,
-      notificacoes:           document.getElementById('cfg-notif').checked,
-      salvarProgressoParcial: document.getElementById('cfg-salvar-parcial').checked,
-      salvarProgresso:        document.getElementById('cfg-salvar-progresso').checked,
-      sfxBtnEnabled:          document.getElementById('cfg-sfx-enabled').checked,
-      musicBtnEnabled:        document.getElementById('cfg-music-enabled').checked,
+      tema:           document.getElementById('cfg-tema').value,
+      animacoes:      document.getElementById('cfg-anim').checked,
+      notificacoes:   document.getElementById('cfg-notif').checked,
+      sfxBtnEnabled:  document.getElementById('cfg-sfx-enabled').checked,
+      musicBtnEnabled:document.getElementById('cfg-music-enabled').checked,
     };
   }
 
@@ -740,9 +694,7 @@ function _abrirModalConfig() {
   document.getElementById('cfg-tema').addEventListener('change', _autoSave);
   document.getElementById('cfg-anim').addEventListener('change', _autoSave);
   document.getElementById('cfg-notif').addEventListener('change', _autoSave);
-  document.getElementById('cfg-salvar-progresso').addEventListener('change', _autoSave);
-
-  document.getElementById('cfg-sfx-enabled').addEventListener('change', function () {
+  /* ── Quiz: salvar progresso ── (movido para quiz/quiz.js → _abrirModalConfigQuiz) */('change', function () {
     setSfxBtnEnabled(this.checked);
     setConfigs({ sfxBtnEnabled: this.checked });
     if (this.checked) playSound('click', 'inicial');
@@ -754,23 +706,7 @@ function _abrirModalConfig() {
     playSound('click', 'inicial');
   });
 
-  document.getElementById('cfg-salvar-parcial').addEventListener('change', function () {
-    const concluir = document.getElementById('cfg-salvar-progresso');
-    if (!this.checked) {
-      concluir.checked  = false;
-      concluir.disabled = true;
-    } else {
-      concluir.disabled = false;
-    }
-    _autoSave();
-  });
-
-  if (cfg.salvarProgressoParcial === false) {
-    const concluir = document.getElementById('cfg-salvar-progresso');
-    if (concluir) { concluir.checked = false; concluir.disabled = true; }
-  }
-
-  /* ── Fechar ── */
+  document.getElementById('cfg-sfx-enabled').addEventListener
   function _fecharComToast() {
     playSound('closeModal', 'inicial');
     _fecharModal(modal);
@@ -802,15 +738,7 @@ function _abrirModalConfig() {
     Sound.openModal();
   });
 
-  /* ── Quiz: limpar ── */
-  document.getElementById('btn-limpar-quiz').addEventListener('click', function () {
-    _confirmar(this, () => {
-      limparDadosQuiz();
-      console.log('[Quiz] dados do quiz apagados via configurações');
-      window.__nexusQuizNotifyCleared?.();
-      mostrarToast('Dados do quiz apagados.');
-    });
-  });
+  /* ── Quiz: limpar ── (movido para quiz/quiz.js → _abrirModalConfigQuiz) */
 
   /* ── Logout ── */
   if (estaLogado()) {
