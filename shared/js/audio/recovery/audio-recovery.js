@@ -2,86 +2,31 @@
 /* =============================================
    NEXUS STUDY — shared/js/audio/recovery/audio-recovery.js
    Recuperação automática do AudioContext entre páginas
-   Versão 2.1 — remove parâmetro `full` inerte de _tryResume
+   Versão 3.0
 
-   BUGS CORRIGIDOS v1.0 → v2.0
+   MUDANÇA v2.x → v3.0
    ─────────────────────────────────────────────
-   1. FLOOD DE ERROS: pointermove disparava _tryResume() a cada pixel
-      movido (dezenas/segundo), cada um gerando "AudioContext was not
-      allowed to start" no console — centenas de erros acumulados.
+   Removida toda tentativa de chamar ctx.resume() fora de gestos
+   válidos (click, pointerdown, touchstart, keydown).
 
-      Fix: _inflight lock — apenas UMA tentativa de resume por vez.
-      Enquanto a Promise está pendente, novos eventos são descartados.
+   Anteriormente, _tryResume() era chamado em:
+   - pointermove (hover fallback) → NÃO é gesto válido para o Chrome
+   - visibilitychange              → NÃO é gesto válido
+   - popstate                      → NÃO é gesto válido
+   - focus                         → NÃO é gesto válido
 
-   2. _hoverFallbackInstalled não protegia contra re-entradas async:
-      o flag era setado mas a Promise de 200ms permitia overlap.
+   Essas chamadas geravam "AudioContext was not allowed to start"
+   no console porque o browser rejeita resume() fora de gestos reais.
 
-      Fix: _inflight flag separado do _hoverFallbackInstalled.
-
-   MUDANÇA v2.0 → v2.1
-   ─────────────────────────────────────────────
-   Removido o parâmetro `full` de _tryResume(). Uma versão anterior
-   documentava dois caminhos distintos (full/light) referenciando
-   audio.getCtxForRecovery(), mas esse método nunca existiu em sfx.js.
-   Ambos os ramos sempre chamavam audio.resumeCtx(). O parâmetro era
-   inerte e gerava confusão. _tryResume() agora recebe apenas `audio`.
+   Novo comportamento:
+   - Nenhum desses eventos tenta mais chamar ctx.resume().
+   - Todos chamam apenas audio.resumeCtx(), que reinstala o listener
+     de gesto válido em sfx-core.js (click/pointerdown/touchstart/keydown).
+   - O resume efetivo acontece apenas no próximo gesto real do usuário.
    ============================================= */
 
 /** Flag de instalação por instância de módulo (uma por página). */
 let _installed = false;
-
-/**
- * Lock de inflight — impede que múltiplas tentativas de resume rodem
- * simultaneamente. Um único resume em andamento é suficiente.
- */
-let _resumeInflight = false;
-
-/**
- * Timestamp da última tentativa de resume — throttle de 500 ms.
- * Evita flood mesmo se o lock fosse burlado de alguma forma.
- */
-let _lastResumeAttempt = 0;
-const _RESUME_THROTTLE_MS = 500;
-
-/**
- * Tenta resumir o AudioContext de forma silenciosa.
- * Possui lock de inflight e throttle para evitar flood de erros.
- * Retorna Promise<boolean> — true se ctx ficou running.
- *
- * Sempre chama audio.resumeCtx(), que é idempotente nos gain nodes:
- * recria-os apenas se estiverem null (o que ocorre após bfcache restore),
- * e reinstala o listener de gesto. O custo extra no hover fallback é
- * desprezível porque o throttle de 500 ms garante no máximo 2 chamadas/s.
- *
- * Nota: o parâmetro `full` foi removido. Uma versão anterior documentava
- * um caminho "leve" via audio.getCtxForRecovery() para o hover fallback,
- * mas esse método nunca existiu em sfx.js. Ambos os ramos chamavam
- * audio.resumeCtx() de qualquer forma, tornando o parâmetro inerte.
- * A API foi simplificada para refletir o comportamento real.
- *
- * @param {object} audio — instância exportada de sfx.js
- */
-async function _tryResume(audio) {
-  if (audio.isUnlocked()) return true;
-
-  const now = Date.now();
-  if (_resumeInflight)                              return false;
-  if (now - _lastResumeAttempt < _RESUME_THROTTLE_MS) return false;
-
-  _resumeInflight    = true;
-  _lastResumeAttempt = now;
-
-  try {
-    audio.resumeCtx();    // reset gains (se null) + ctx.resume() + reinstala listener de gesto
-    // Aguarda até 300 ms para o ctx sair de 'suspended'
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return audio.isUnlocked();
-  } catch (_) {
-    return false;
-  } finally {
-    _resumeInflight = false;
-  }
-}
 
 /**
  * Instala todos os listeners de recuperação de áudio para a página atual.
@@ -97,20 +42,62 @@ export function installAudioRecovery({ Sound, audio }) {
   /* ── 1. bfcache restore ──────────────────────────────────
      pageshow com persisted=true é o evento mais confiável para
      detectar restauração do cache. Reinit recria o botão flutuante
-     (que fica órfão no bfcache) e força um resume().
+     (que fica órfão no bfcache) e reinstala o listener de gesto.
   ────────────────────────────────────────────────────────── */
-window.addEventListener('pageshow', async (e) => {
-  if (!e.persisted) return;
-  Sound.reinit();
-  const ok = await _tryResume(audio);
-  if (ok) {
-    _resumeMusicAfterRestore();
-  } else {
-    _installHoverFallback(audio);
-  }
-});
+  window.addEventListener('pageshow', (e) => {
+    if (!e.persisted) return;
+    Sound.reinit();
+    // Reinstala o listener de gesto — o resume ocorrerá no próximo gesto real.
+    audio.resumeCtx();
+    // Agenda a retomada da música para depois do primeiro gesto.
+    _scheduleResumeMusicOnGesture(audio);
+  });
 
-function _resumeMusicAfterRestore() {
+  /* ── 2. Visibilidade — aba voltando ao foco ──────────────
+     Apenas reinstala o listener de gesto. Não tenta resume() diretamente.
+  ────────────────────────────────────────────────────────── */
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) return;
+    if (!audio.isUnlocked()) audio.resumeCtx();
+  });
+
+  /* ── 3. popstate — navegação por history API ─────────────
+     Apenas reinstala o listener de gesto.
+  ────────────────────────────────────────────────────────── */
+  window.addEventListener('popstate', () => {
+    if (!audio.isUnlocked()) audio.resumeCtx();
+  });
+
+  /* ── 4. Window focus ─────────────────────────────────────
+     Apenas reinstala o listener de gesto.
+  ────────────────────────────────────────────────────────── */
+  window.addEventListener('focus', () => {
+    if (!audio.isUnlocked()) audio.resumeCtx();
+  });
+
+  /* ── 5. Unlock via nexus:audioUnlocked ──────────────────
+     Quando o ctx finalmente desbloquear (pelo gesto real),
+     retoma a última música salva.
+  ────────────────────────────────────────────────────────── */
+  document.addEventListener('nexus:audioUnlocked', () => {
+    _resumeLastTrack(audio);
+  }, { once: true });
+}
+
+/**
+ * Agenda a retomada da música para o próximo evento nexus:audioUnlocked.
+ * Chamado após bfcache restore, onde o ctx ainda está suspended.
+ */
+function _scheduleResumeMusicOnGesture(audio) {
+  document.addEventListener('nexus:audioUnlocked', () => {
+    _resumeLastTrack(audio);
+  }, { once: true });
+}
+
+/**
+ * Retoma a última faixa salva no localStorage, se houver.
+ */
+function _resumeLastTrack(audio) {
   try {
     const track = localStorage.getItem('nexus_last_track');
     const mode  = localStorage.getItem('nexus_music_mode') || 'normal';
@@ -118,87 +105,4 @@ function _resumeMusicAfterRestore() {
       audio.music[track]?.();
     }
   } catch (_) {}
-}
-  /* ── 2. Visibilidade — aba voltando ao foco ──────────────
-     Browsers suspendem AudioContext de tabs em segundo plano.
-  ────────────────────────────────────────────────────────── */
-  document.addEventListener('visibilitychange', async () => {
-    if (document.hidden) return;
-    const ok = await _tryResume(audio);
-    if (!ok) _installHoverFallback(audio);
-  });
-
-  /* ── 3. popstate — navegação por history API ─────────────
-     Captura history.back() / history.forward() sem bfcache.
-  ────────────────────────────────────────────────────────── */
-  window.addEventListener('popstate', async () => {
-    const ok = await _tryResume(audio);
-    if (!ok) _installHoverFallback(audio);
-  });
-
-  /* ── 4. Window focus ─────────────────────────────────────
-     Alt+Tab de volta ao browser ou toque na aba.
-  ────────────────────────────────────────────────────────── */
-  window.addEventListener('focus', async () => {
-    if (audio.isUnlocked()) return;
-    const ok = await _tryResume(audio);
-    if (!ok) _installHoverFallback(audio);
-  });
-
-  /* ── Verificação inicial ─────────────────────────────────
-     Página carregou com ctx suspended — instala hover fallback.
-  ────────────────────────────────────────────────────────── */
-  if (!audio.isUnlocked()) {
-    _installHoverFallback(audio);
-  }
-}
-
-/* ── Hover fallback (hover-only pages) ──────────────────────
-   Aguarda o primeiro pointermove para tentar resume().
-   O lock _resumeInflight + throttle _RESUME_THROTTLE_MS garantem
-   que não importa quantos pixels o mouse percorra — apenas uma
-   tentativa por 500 ms chega até o AudioContext.
-
-   Comportamento:
-   - Instala-se apenas uma vez (_hoverFallbackInstalled).
-   - Remove-se sozinho no primeiro resume() bem-sucedido.
-   - Remove-se sozinho após 30 s (touch devices: o click do sfx.js
-     cuida do resume, não precisa de pointermove).
-─────────────────────────────────────────────────────────── */
-
-let _hoverFallbackInstalled = false;
-let _hoverFallbackTimer     = null;
-
-function _installHoverFallback(audio) {
-  if (_hoverFallbackInstalled) return;
-  if (audio.isUnlocked())      return;
-
-  _hoverFallbackInstalled = true;
-
-  async function _onMove() {
-    if (audio.isUnlocked()) {
-      // ctx já está running (provavelmente unlock veio de outro evento)
-      _cleanup();
-      return;
-    }
-    // _tryResume tem throttle interno — chamadas em excesso são no-ops baratos
-    const ok = await _tryResume(audio);
-    if (ok) {
-      _cleanup();
-    }
-  }
-
-  function _cleanup() {
-    document.removeEventListener('pointermove', _onMove, { capture: true });
-    if (_hoverFallbackTimer) {
-      clearTimeout(_hoverFallbackTimer);
-      _hoverFallbackTimer = null;
-    }
-    _hoverFallbackInstalled = false;
-  }
-
-  document.addEventListener('pointermove', _onMove, { capture: true, passive: true });
-
-  // Timeout de segurança: remove após 30 s (touch devices)
-  _hoverFallbackTimer = setTimeout(_cleanup, 30_000);
 }

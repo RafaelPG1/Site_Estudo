@@ -47,27 +47,28 @@ function _isCtxReady() {
   return !!_ctx && _ctx.state === 'running';
 }
 
+// Lista de eventos considerados gestos válidos pelo browser
+const _VALID_GESTURE_EVENTS = ['click', 'pointerdown', 'touchstart', 'keydown'];
+
 function _resumeCtx() {
   if (!_ctx || _ctx.state !== 'suspended') return;
   _ctx.resume().then(() => {
     _getGains();
     _syncGains();
     _warmup();
-    document.dispatchEvent(new CustomEvent('nexus:audioUnlocked')); // ← add
+    document.dispatchEvent(new CustomEvent('nexus:audioUnlocked'));
   }).catch(() => {});
 }
 
 function _installResumeListener() {
-  const EVENTS = ['click', 'pointerdown', 'touchstart', 'keydown'];
-
   function _onGesture() {
     _resumeCtx();
-    EVENTS.forEach(ev =>
+    _VALID_GESTURE_EVENTS.forEach(ev =>
       document.removeEventListener(ev, _onGesture, { capture: true })
     );
   }
 
-  EVENTS.forEach(ev =>
+  _VALID_GESTURE_EVENTS.forEach(ev =>
     document.addEventListener(ev, _onGesture, { capture: true, passive: true })
   );
 }
@@ -364,8 +365,6 @@ const audio = {
   setMusicVolume(val) {
     _state.musicVolume = Math.min(1.5, Math.max(0, Number(val) || 0));
     _syncGains();
-    // Atualiza volume do elemento <Audio> ativo (bgmEngine.playUrl),
-    // que não passa pelo _musicGain e precisa ser sincronizado manualmente.
     if (_currentBgm?._el) {
       _currentBgm._el.volume = Math.min(1, _state.musicVolume * _state.masterVolume);
     }
@@ -424,12 +423,14 @@ const audio = {
   /**
    * Tenta resumir o AudioContext suspenso e reinstala o listener de gesto.
    * Chamado pelo audio-recovery.js após restauração do bfcache (pageshow persisted).
+   * Não chama ctx.resume() diretamente — apenas recria os gain nodes (se null)
+   * e reinstala o listener de gesto válido para que o próximo click/keydown
+   * dispare o resume.
    */
   resumeCtx() {
     _masterGain = null;
     _sfxGain    = null;
     _musicGain  = null;
-    _resumeCtx();
     _installResumeListener();
   },
 
