@@ -1459,9 +1459,14 @@
         var aulas = _todasAsAulas();
         if (aulas.length <= 1) return; // sem sentido filtrar com 1 aula
 
+        var totalAulas = aulas.length;
+        var marcadas   = aulasFiltradas === null ? new Set(aulas) : new Set(aulasFiltradas);
+
         painel.innerHTML =
           '<div class="filtro-header">' +
-            '<span class="filtro-titulo"><i class="fas fa-filter" aria-hidden="true"></i> Filtrar aulas</span>' +
+            '<div class="filtro-eyebrow"><i class="fas fa-filter" aria-hidden="true"></i> Filtrar Aulas</div>' +
+            '<h2 class="filtro-titulo">Selecionar Aulas</h2>' +
+            '<p class="filtro-subtitulo">Escolha quais aulas deseja estudar</p>' +
             '<button class="filtro-close" id="filtro-close-btn" type="button" aria-label="Fechar">×</button>' +
           '</div>' +
           '<div class="filtro-body">' +
@@ -1469,43 +1474,88 @@
               '<button class="filtro-acao-btn" id="filtro-todas"   type="button">Todas</button>' +
               '<button class="filtro-acao-btn" id="filtro-nenhuma" type="button">Nenhuma</button>' +
             '</div>' +
-            '<ul class="filtro-lista" id="filtro-lista"></ul>' +
+            '<ul class="filtro-lista" id="filtro-lista" role="group" aria-label="Aulas disponíveis"></ul>' +
           '</div>' +
           '<div class="filtro-footer">' +
-            '<button class="filtro-aplicar" id="filtro-aplicar-btn" type="button">Aplicar</button>' +
+            '<div class="filtro-contador" id="filtro-contador"></div>' +
+            '<button class="filtro-aplicar" id="filtro-aplicar-btn" type="button">' +
+              '<i class="fas fa-check" aria-hidden="true"></i> Aplicar' +
+            '</button>' +
           '</div>';
 
-        var lista = painel.querySelector('#filtro-lista');
+        var lista    = painel.querySelector('#filtro-lista');
+        var contador = painel.querySelector('#filtro-contador');
+        var itens    = [];
+
         aulas.forEach(function (aula) {
+          var checked = marcadas.has(aula);
+
           var li = document.createElement('li');
-          li.className = 'filtro-item';
-          var checked = aulasFiltradas === null || aulasFiltradas.has(aula);
+          li.className = 'filtro-item' + (checked ? ' filtro-marcado' : '');
+          li.setAttribute('role', 'checkbox');
+          li.setAttribute('aria-checked', checked ? 'true' : 'false');
+          li.setAttribute('tabindex', '0');
           li.innerHTML =
-            '<label class="filtro-label">' +
-              '<input type="checkbox" class="filtro-chk" value="' + aula.replace(/"/g, '&quot;') + '"' +
-                (checked ? ' checked' : '') + '>' +
-              '<span>' + aula + '</span>' +
-            '</label>';
+            '<div class="filtro-chk-box" aria-hidden="true">' +
+              '<svg class="filtro-chk-icon" viewBox="0 0 12 12" aria-hidden="true">' +
+                '<polyline points="1.5 6 4.5 9.5 10.5 2.5"/>' +
+              '</svg>' +
+            '</div>' +
+            '<span class="filtro-aula-txt"></span>';
+          li.querySelector('.filtro-aula-txt').textContent = aula;
           lista.appendChild(li);
+          itens.push({ el: li, aula: aula });
+
+          function _toggle() {
+            if (marcadas.has(aula)) {
+              marcadas.delete(aula);
+              li.classList.remove('filtro-marcado');
+              li.setAttribute('aria-checked', 'false');
+            } else {
+              marcadas.add(aula);
+              li.classList.add('filtro-marcado');
+              li.setAttribute('aria-checked', 'true');
+            }
+            _atualizarContador();
+          }
+
+          li.addEventListener('click', _toggle);
+          li.addEventListener('keydown', function (e) {
+            if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); _toggle(); }
+          });
         });
 
+        function _atualizarContador() {
+          var n = marcadas.size;
+          contador.innerHTML =
+            '<strong>' + n + '</strong> de ' + totalAulas +
+            ' aula' + (totalAulas !== 1 ? 's' : '') +
+            ' selecionada' + (totalAulas !== 1 ? 's' : '');
+        }
+        _atualizarContador();
+
         painel.querySelector('#filtro-todas').addEventListener('click', function () {
-          painel.querySelectorAll('.filtro-chk').forEach(function (c) { c.checked = true; });
+          itens.forEach(function (it) {
+            marcadas.add(it.aula);
+            it.el.classList.add('filtro-marcado');
+            it.el.setAttribute('aria-checked', 'true');
+          });
+          _atualizarContador();
         });
 
         painel.querySelector('#filtro-nenhuma').addEventListener('click', function () {
-          painel.querySelectorAll('.filtro-chk').forEach(function (c) { c.checked = false; });
+          marcadas.clear();
+          itens.forEach(function (it) {
+            it.el.classList.remove('filtro-marcado');
+            it.el.setAttribute('aria-checked', 'false');
+          });
+          _atualizarContador();
         });
 
         painel.querySelector('#filtro-close-btn').addEventListener('click', _fecharPainel);
 
         painel.querySelector('#filtro-aplicar-btn').addEventListener('click', function () {
-          var marcadas = [];
-          painel.querySelectorAll('.filtro-chk:checked').forEach(function (c) {
-            marcadas.push(c.value);
-          });
-
-          if (marcadas.length === 0 || marcadas.length === aulas.length) {
+          if (marcadas.size === 0 || marcadas.size === totalAulas) {
             aulasFiltradas = null;
           } else {
             aulasFiltradas = new Set(marcadas);
@@ -1535,22 +1585,57 @@
       document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && painel.classList.contains('filtro-show')) _fecharPainel();
       });
+
+      /* Expõe o painel para uso externo (ex: quiz_starter_modal) */
+      window.NexusFiltroAulas = {
+        abrir:   _abrirPainel,
+        fechar:  _fecharPainel,
+      };
     }
 
     _iniciarFiltroAulas();
 
-    renderizar();
+    /* ── Expõe interface para o starter modal ─────────────────
+       listarAulas()         → string[]  — aulas disponíveis
+       iniciar(aulasSel)     → void      — aplica filtro e renderiza
+       Se window.__NSM_AGUARDANDO__ não estiver definido (modal
+       ausente), renderiza imediatamente como sempre.
+    ────────────────────────────────────────────────────────── */
+    window.NexusFiltroAulas.listarAulas = _todasAsAulas;
 
-    if (_Storage) {
-      var _stepSalvo = _Storage.get(_stepStateKey(), null);
-      if (_stepSalvo && _stepSalvo.ativo) {
-        stepAtual = _stepSalvo.atual || 0;
-        _entrarModoStep();
+    window.NexusFiltroAulas.iniciar = function (aulasSelecionadas) {
+      aulasFiltradas = aulasSelecionadas; /* null = todas, Set<string> = filtradas */
+
+      if (aulasSelecionadas === null) {
+        /* Sem filtro — renderiza restaurando o progresso salvo.
+           Usado pelo modal ao "entrar direto" ou ao escolher "Todas as aulas". */
+        _renderizarERestaurar();
+      } else {
+        /* Com filtro — reconstrói o quiz a partir da seleção de aulas.
+           Descarta progresso atual (comportamento intencional: o usuário
+           está escolhendo um subconjunto diferente de questões). */
+        _aplicarFiltro();
       }
+    };
+
+    if (!window.__NSM_AGUARDANDO__) {
+      _renderizarERestaurar();
     }
 
-    if (Object.keys(respostas).length === questoes.length) {
-      atualizarResultados();
+    function _renderizarERestaurar() {
+      renderizar();
+
+      if (_Storage) {
+        var _stepSalvo = _Storage.get(_stepStateKey(), null);
+        if (_stepSalvo && _stepSalvo.ativo) {
+          stepAtual = _stepSalvo.atual || 0;
+          _entrarModoStep();
+        }
+      }
+
+      if (Object.keys(respostas).length === questoes.length) {
+        atualizarResultados();
+      }
     }
 
   } /* fim initQuiz */

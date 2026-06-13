@@ -1,7 +1,14 @@
 <!--
-  NEXUS STUDY — quiz/template/template.html
+  NEXUS STUDY — quiz/template/template.html  v10.1
   Template unificado para todos os modos (ava, questoes, enade, etc.)
   Lógica compartilhada → template_init.js
+
+  v10.1 — STARTER MODAL:
+    + ../js/quiz_starter_modal.js   → modal de boas-vindas
+
+    IMPORTANTE: os arquivos ficam em quiz/js/ (mesma pasta de
+    quiz_engine.js e quiz_ui.js). O template está em quiz/template/,
+    então os paths são relativos com ../js/.
 -->
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -38,6 +45,7 @@
        ESTILOS DA PÁGINA
   ═══════════════════════════════════════════ -->
   <link rel="stylesheet" href="./template.css" />
+
 
   <!--
     [INLINE SCRIPT] Roda ANTES do módulo template_init.js.
@@ -146,8 +154,19 @@
 
   <!-- ═══════════════════════════════════════════
        SCRIPTS
+
+       Ordem:
+         1. template_init.js (módulo ES) — orquestra o quiz,
+            expõe __NEXUS_QUIZ_DISC__, __NEXUS_QUIZ_MODO__ etc.
+         2. quiz_starter_modal.js (clássico, defer) — modal de início.
+            defer garante que roda após o HTML ser parseado.
+            Aguarda internamente as vars do template_init via polling.
+
+       quiz_ui.js e quiz_engine.js são injetados dinamicamente
+       por template_init._carregarQuiz() — não precisam de <script> aqui.
   ═══════════════════════════════════════════ -->
   <script type="module" src="template_init.js"></script>
+  <script src="../js/quiz_starter_modal.js" defer></script>
 
 </body>
 </html>
