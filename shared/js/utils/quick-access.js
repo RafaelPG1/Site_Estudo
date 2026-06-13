@@ -44,21 +44,28 @@
   const KNOWN_FOLDERS = ['resumo', 'quiz', 'games', 'pessoal'];
 
   function detectBasePath() {
-    const path = window.location.pathname; // ex: /nexus-study/resumo/resumo.html
+    const path = window.location.pathname; // ex: /Site_Estudo/resumo/resumo.html
 
     for (const folder of KNOWN_FOLDERS) {
       const marker = `/${folder}/`;
       const idx = path.indexOf(marker);
       if (idx !== -1) {
-        return path.slice(0, idx); // tudo antes de "/resumo/" etc.
+        return path.slice(0, idx); // tudo antes de "/resumo/" etc. (ex: "/Site_Estudo")
       }
     }
 
-    // Está na raiz (index.html ou "/"): remove o nome do arquivo final
-    const lastSlash = path.lastIndexOf('/');
-    const dir = path.slice(0, lastSlash); // ex: "/nexus-study" ou ""
+    // Está na raiz (index.html ou "/"): remove o nome do arquivo final.
+    // Trata tanto "/Site_Estudo/" quanto "/Site_Estudo" (sem barra final)
+    // quanto "/Site_Estudo/index.html".
+    const segments = path.split('/').filter(Boolean); // remove vazios
 
-    return dir;
+    // Se o último segmento parece um arquivo (tem ponto, ex: "index.html"),
+    // descarta. Caso contrário, mantém todos os segmentos (é uma pasta).
+    if (segments.length && segments[segments.length - 1].includes('.')) {
+      segments.pop();
+    }
+
+    return segments.length ? `/${segments.join('/')}` : '';
   }
 
   const BASE_PATH = detectBasePath();
