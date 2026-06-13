@@ -123,23 +123,16 @@
    *   "me explica a questão 1", "qual assunto essa questão aborda?",
    *   "por que essa alternativa está errada?", "questão 3", "essa questão fala sobre TCP?"
    */
-  function _ehQuestao(pergunta) {
-    // Pedido explícito de gabarito ou resposta correta
-    if (/\b(gabarito|resposta\s+certa|resposta\s+correta)\b/i.test(pergunta)) return true;
-
-    // "qual (é) a resposta", "qual alternativa correta/certa", "qual é a letra"
-    if (/qual\s+(é\s+)?a?\s*(resposta|alternativa\s+(certa|correta)|letra)\b/i.test(pergunta)) return true;
-
-    // "me dá a resposta", "me passa a resposta", "me fala a resposta"
-    if (/me\s+(d[aá]|pass[ae]|fal[ae])\s+(a\s+)?resposta\b/i.test(pergunta)) return true;
-
-    // Letra isolada seguida de parêntese/ponto indicando tentativa de confirmar alternativa
-    // ex: "é a A)?", "é a B)?" — mas NÃO "A) conceito de TCP"
-    if (/^[éeÉ]\s+[aAoO]\s+[A-Ea-e]\s*[\)\.]/.test(pergunta.trim())) return true;
-
-    return false;
-  }
-
+// No worker.js, substituir a função _ehQuestao() por:
+function _ehQuestao(pergunta) {
+  const norm = NexusTextUtils.normalizarTexto(pergunta);
+  return NexusTextUtils.contemAlgum(norm, NexusTextUtils.PALAVRAS_GABARITO);
+}
+// Nos assistentes, detectar intenção completa:
+const intencao = NexusTextUtils.detectarIntencao(NexusTextUtils.normalizarTexto(pergunta));
+if (intencao.saudacao && !intencao.gabarito && !intencao.quizRef) {
+  // responder como saudação sem buscar no índice
+}
   /* ══════════════════════════════════════════════════════════
      FORMATAÇÃO DE MARKDOWN
   ══════════════════════════════════════════════════════════ */
