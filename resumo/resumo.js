@@ -77,22 +77,18 @@ function _loadScript(src) {
 }
 
 function _carregarIA() {
-  // Todos os 5 scripts são baixados em paralelo; ia.js só executa
-  // depois que as 4 deps terminaram — mas o download já ocorreu.
-  // Os <link rel="modulepreload"> no <head> adiantam ainda mais:
-  // o browser inicia o fetch antes mesmo deste código rodar.
+  const BASE = '../shared/js/ia/';
   const deps = [
-    '../shared/js/ia/ia-ui.js',
-    '../shared/js/ia/ia-search.js',
-    '../shared/js/ia/ia-loader.js',
-    '../shared/js/ia/ia-worker.js',
+    BASE + 'core/text-utils.js',
+    BASE + 'core/loader.js',
+    BASE + 'core/worker.js',
+    BASE + 'core/ui.js',
+    BASE + 'resumo/search.js',
   ];
 
-  const depPromises = deps.map(_loadScript);
-  const iaPromise   = _loadScript('../shared/js/ia/ia.js'); // download inicia já
-
-  Promise.all(depPromises)
-    .then(() => iaPromise)            // execução de ia.js aguarda as deps
+  Promise.all(deps.map(_loadScript))
+    .then(() => _loadScript(BASE + 'resumo/assistant.js'))
+    .then(() => _loadScript(BASE + 'init.js'))
     .catch(err => console.error(err));
 }
 

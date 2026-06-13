@@ -123,15 +123,11 @@
    *   "me explica a questão 1", "qual assunto essa questão aborda?",
    *   "por que essa alternativa está errada?", "questão 3", "essa questão fala sobre TCP?"
    */
-// No worker.js, substituir a função _ehQuestao() por:
 function _ehQuestao(pergunta) {
-  const norm = NexusTextUtils.normalizarTexto(pergunta);
-  return NexusTextUtils.contemAlgum(norm, NexusTextUtils.PALAVRAS_GABARITO);
-}
-// Nos assistentes, detectar intenção completa:
-const intencao = NexusTextUtils.detectarIntencao(NexusTextUtils.normalizarTexto(pergunta));
-if (intencao.saudacao && !intencao.gabarito && !intencao.quizRef) {
-  // responder como saudação sem buscar no índice
+  const u = window.NexusTextUtils;
+  if (!u) return false;
+  const norm = u.normalizarTexto(pergunta);
+  return u.contemAlgum(norm, u.PALAVRAS_GABARITO);
 }
   /* ══════════════════════════════════════════════════════════
      FORMATAÇÃO DE MARKDOWN
