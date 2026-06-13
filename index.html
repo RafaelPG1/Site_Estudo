@@ -5,53 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nexus Study — Seu espaço de aprendizado</title>
 
-  <!-- ═══════════════════════════════════════════
-       FONTES
-  ═══════════════════════════════════════════ -->
+  <!-- Fontes -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
-  <!-- ═══════════════════════════════════════════
-       ESTILOS BASE
-  ═══════════════════════════════════════════ -->
+  <!-- Base -->
   <link rel="stylesheet" href="shared/css/themes/fundo.css" />
   <link rel="stylesheet" href="shared/css/themes/logo.css" />
 
-  <!-- ═══════════════════════════════════════════
-       ESTILOS DE ÁUDIO (sound antes de audio-btns)
-  ═══════════════════════════════════════════ -->
+  <!-- Áudio -->
   <link rel="stylesheet" href="shared/css/audio/sound.css" />
   <link rel="stylesheet" href="shared/css/audio/audio-btns.css" />
   <link rel="stylesheet" href="shared/css/audio/vol-slider.css" />
 
-  <!-- ═══════════════════════════════════════════
-       ESTILOS DE COMPONENTES
-  ═══════════════════════════════════════════ -->
+  <!-- Componentes -->
   <link rel="stylesheet" href="shared/css/ia/ia.css" />
   <link rel="stylesheet" href="shared/css/themes/semestre-picker.css" />
 
-  <!-- ═══════════════════════════════════════════
-       ESTILOS DA PÁGINA
-  ═══════════════════════════════════════════ -->
+  <!-- Página -->
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
 
-  <!-- ═══════════════════════════════════════════
-       FUNDO DECORATIVO
-  ═══════════════════════════════════════════ -->
+  <!-- Fundo decorativo -->
   <div class="bg-orb bg-orb--1" aria-hidden="true"></div>
   <div class="bg-orb bg-orb--2" aria-hidden="true"></div>
   <div class="bg-orb bg-orb--3" aria-hidden="true"></div>
   <div class="bg-grid"          aria-hidden="true"></div>
 
-  <!-- ═══════════════════════════════════════════
-       HEADER
-       Logo injetada via injetarLogo() em index.js.
-       Nav reconstruída via _renderHeader() em index.js.
-  ═══════════════════════════════════════════ -->
+  <!--
+    Header
+    Logo injetada via injetarLogo() — index.js
+    Nav reconstruída via _renderHeader() — index.js
+  -->
   <header class="header">
     <div class="header__inner">
       <div class="header__logo" id="header-logo-wrap"></div>
@@ -59,9 +47,7 @@
     </div>
   </header>
 
-  <!-- ═══════════════════════════════════════════
-       MAIN — Hero + Cards
-  ═══════════════════════════════════════════ -->
+  <!-- Conteúdo principal -->
   <main class="main">
     <section class="hero" aria-labelledby="hero-title">
 
@@ -69,11 +55,10 @@
       <p  class="hero__tagline">Ambiente de estudos</p>
 
       <!-- Cards de navegação -->
-      <div class="cards-grid" role="list">
+      <div class="cards-grid">
 
-        <a href="./pessoal/pessoal.html" class="card card--personal"
-           id="card-pessoal" role="listitem">
-          <div class="card__glow"      aria-hidden="true"></div>
+        <a href="./pessoal/pessoal.html" class="card card--personal" id="card-pessoal">
+          <div class="card__glow" aria-hidden="true"></div>
           <div class="card__icon-wrap" aria-hidden="true">
             <span class="card__icon">📚</span>
           </div>
@@ -86,7 +71,7 @@
             <div class="card__arrow">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                    stroke="currentColor" stroke-width="2"
-                   stroke-linecap="round" stroke-linejoin="round">
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
               </svg>
             </div>
@@ -94,9 +79,8 @@
           </div>
         </a>
 
-        <a href="./resumo/resumo.html" class="card card--summaries"
-           id="card-resumos" role="listitem">
-          <div class="card__glow"      aria-hidden="true"></div>
+        <a href="./resumo/resumo.html" class="card card--summaries" id="card-resumos">
+          <div class="card__glow" aria-hidden="true"></div>
           <div class="card__icon-wrap" aria-hidden="true">
             <span class="card__icon">🧠</span>
           </div>
@@ -109,7 +93,7 @@
             <div class="card__arrow">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                    stroke="currentColor" stroke-width="2"
-                   stroke-linecap="round" stroke-linejoin="round">
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
               </svg>
             </div>
@@ -117,9 +101,8 @@
           </div>
         </a>
 
-        <a href="./quiz/quiz.html" class="card card--quiz"
-           id="card-quiz" role="listitem">
-          <div class="card__glow"      aria-hidden="true"></div>
+        <a href="./quiz/quiz.html" class="card card--quiz" id="card-quiz">
+          <div class="card__glow" aria-hidden="true"></div>
           <div class="card__icon-wrap" aria-hidden="true">
             <span class="card__icon">❓</span>
           </div>
@@ -132,7 +115,7 @@
             <div class="card__arrow">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                    stroke="currentColor" stroke-width="2"
-                   stroke-linecap="round" stroke-linejoin="round">
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
               </svg>
             </div>
@@ -140,9 +123,8 @@
           </div>
         </a>
 
-        <a href="./games/jogo.html" class="card card--games"
-           id="card-jogos" role="listitem">
-          <div class="card__glow"      aria-hidden="true"></div>
+        <a href="./games/jogo.html" class="card card--games" id="card-jogos">
+          <div class="card__glow" aria-hidden="true"></div>
           <div class="card__icon-wrap" aria-hidden="true">
             <span class="card__icon">🎮</span>
           </div>
@@ -155,7 +137,7 @@
             <div class="card__arrow">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                    stroke="currentColor" stroke-width="2"
-                   stroke-linecap="round" stroke-linejoin="round">
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
               </svg>
             </div>
@@ -163,23 +145,15 @@
           </div>
         </a>
 
-      </div><!-- /cards-grid -->
+      </div>
     </section>
   </main>
 
-  <!-- ═══════════════════════════════════════════
-       FOOTER
-  ═══════════════════════════════════════════ -->
   <footer class="footer">
     <p>© <span id="footer-year"></span> Nexus Study · Desenvolvido para facilitar seus estudos</p>
   </footer>
 
-  
-<script src="/shared/js/utils/quick-access.js"></script>
-
-  <!-- ═══════════════════════════════════════════
-       SCRIPTS
-  ═══════════════════════════════════════════ -->
+  <script src="/shared/js/utils/quick-access.js"></script>
   <script type="module" src="index.js"></script>
 
 </body>

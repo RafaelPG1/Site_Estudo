@@ -5,13 +5,14 @@
    ESTRUTURA
    ─────────────────────────────────────────────
    SEÇÃO 1 — IMPORTS
-   SEÇÃO 2 — INICIALIZAÇÃO
-   SEÇÃO 3 — HEADER
-   SEÇÃO 4 — CARDS
-   SEÇÃO 5 — MODAL LOGIN
-   SEÇÃO 6 — MODAL CONFIG
-   SEÇÃO 7 — MODAL PERFIL
-   SEÇÃO 8 — UTILITÁRIOS (modais + toast)
+   SEÇÃO 2 — ASSISTENTE IA (carregamento antecipado)
+   SEÇÃO 3 — INICIALIZAÇÃO
+   SEÇÃO 4 — HEADER
+   SEÇÃO 5 — CARDS
+   SEÇÃO 6 — MODAL LOGIN
+   SEÇÃO 7 — MODAL CONFIG
+   SEÇÃO 8 — MODAL PERFIL
+   SEÇÃO 9 — UTILITÁRIOS (modais + toast)
    ============================================= */
 
 
@@ -27,11 +28,11 @@ import {
   limparDadosQuiz,
   getSemestreAtual, getDisciplinasDeSemestre,
 } from './src/global.js';
- 
-import { injetarLogo }                        from './shared/js/utils/logo.js';
-import { login, logout, carregarConfigs }      from './src/firebase.js';
-import { iniciarSessao, encerrarSessao }        from './shared/js/utils/session-tracker.js';
-import { criarSemestreSelect, preencherAnos }  from './shared/js/utils/dom.js';
+
+import { injetarLogo }                       from './shared/js/utils/logo.js';
+import { login, logout, carregarConfigs }     from './src/firebase.js';
+import { iniciarSessao, encerrarSessao }      from './shared/js/utils/session-tracker.js';
+import { criarSemestreSelect, preencherAnos } from './shared/js/utils/dom.js';
 import {
   Sound,
   audio,
@@ -45,18 +46,18 @@ import {
   setMusicBtnEnabled,
 } from './shared/js/audio/audio-api.js';
 
-/* ═══════════════════════════════════════════════
-   SEÇÃO 2 — INICIALIZAÇÃO
-═══════════════════════════════════════════════ */
 
-// ── Assistente Nexus ─────────────────────────────────────────
-// Carregado o quanto antes — sem esperar Sound nem nada mais.
-// Isso garante que o FAB da IA apareça junto com os botões de áudio.
+/* ═══════════════════════════════════════════════
+   SEÇÃO 2 — ASSISTENTE IA
+   Carregado antes de qualquer outra coisa para
+   garantir que o FAB da IA apareça junto com os
+   botões de áudio.
+═══════════════════════════════════════════════ */
 
 function _loadScript(src) {
   return new Promise((resolve, reject) => {
     const s = document.createElement('script');
-    s.src = src;
+    s.src    = src;
     s.onload = resolve;
     s.onerror = () => reject(new Error(`[Nexus IA] Falha ao carregar: ${src}`));
     document.body.appendChild(s);
@@ -72,6 +73,7 @@ function _carregarIA() {
     BASE + 'core/ui.js',
     BASE + 'resumo/search.js',
   ];
+
   Promise.all(deps.map(_loadScript))
     .then(() => _loadScript(BASE + 'resumo/assistant.js'))
     .then(() => _loadScript(BASE + 'init.js'))
@@ -79,70 +81,68 @@ function _carregarIA() {
 }
 
 _carregarIA();
-// ─────────────────────────────────────────────────────────────
 
+
+/* ═══════════════════════════════════════════════
+   SEÇÃO 3 — INICIALIZAÇÃO
+═══════════════════════════════════════════════ */
 
 async function init() {
   try {
+    // Redireciona admin imediatamente
     if (estaLogado() && getUsuario()?.admin) {
       window.location.replace('./admin/admin.html');
       return;
     }
- 
+
     Sound.init();
     mountMusicBtn();
- 
     installAudioRecovery({ Sound, audio });
- 
+
     injetarLogo('#header-logo-wrap');
- 
+
     setPagina('HOME');
     _refreshHeader();
 
-    // ── Sessões ─────────────────────────────────────────────
+    // Rastreamento de sessão
     document.addEventListener('nexus:loginSuccess', () => iniciarSessao());
-    document.addEventListener('nexus:logout', () => encerrarSessao());
-    // ────────────────────────────────────────────────────────
- 
+    document.addEventListener('nexus:logout',       () => encerrarSessao());
+
     await Sound.waitUntilReady();
- 
+
     _bindCardLinks();
     preencherAnos(['footer-year']);
- 
-    // BGM da página inicial
-    async function _tryStartMenuMusic() {
-      if (!audio.isUnlocked()) return;
-      if (audio.music.currentId() === 'music-menu') return;
 
-      const mode = getMusicMode?.() ?? 'normal';
-      if (mode === 'mute') return;
+    _iniciarMusicaMenu();
 
-      audio.music['menu']();
-    }
- 
-    // Tenta imediatamente (já desbloqueado por login anterior na sessão)
-    _tryStartMenuMusic();
- 
-    document.addEventListener('nexus:audioUnlocked', _tryStartMenuMusic, { once: true });
- 
-    const _watchdog = setInterval(() => {
-      if (!document.hidden && audio.isUnlocked()) {
-        if (audio.music.currentId() !== 'music-menu') {
-          const mode = getMusicMode?.() ?? 'normal';
-          if (mode !== 'mute') audio.music['menu']();
-        }
-      }
-    }, 30_000);
- 
-    window.addEventListener('pagehide', () => clearInterval(_watchdog), { once: true });
- 
   } catch (err) {
     console.error('[init] Erro crítico na inicialização:', err);
     try { _refreshHeader(); } catch (_) {}
   }
 }
- 
- 
+
+/* Inicia a BGM da página inicial e mantém um watchdog para retomá-la */
+function _iniciarMusicaMenu() {
+  function _tryStart() {
+    if (!audio.isUnlocked()) return;
+    if (audio.music.currentId() === 'music-menu') return;
+    if ((getMusicMode() ?? 'normal') === 'mute') return;
+    audio.music.menu();
+  }
+
+  _tryStart();
+  document.addEventListener('nexus:audioUnlocked', _tryStart, { once: true });
+
+  const watchdog = setInterval(() => {
+    if (document.hidden || !audio.isUnlocked()) return;
+    if (audio.music.currentId() !== 'music-menu' && (getMusicMode() ?? 'normal') !== 'mute') {
+      audio.music.menu();
+    }
+  }, 30_000);
+
+  window.addEventListener('pagehide', () => clearInterval(watchdog), { once: true });
+}
+
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);
 } else {
@@ -151,7 +151,7 @@ if (document.readyState === 'loading') {
 
 
 /* ═══════════════════════════════════════════════
-   SEÇÃO 3 — HEADER
+   SEÇÃO 4 — HEADER
    Ponto único de reconstrução do header-nav.
    Chamado na inicialização e após login/logout.
 ═══════════════════════════════════════════════ */
@@ -191,17 +191,17 @@ function _renderHeader() {
   }
   nav.innerHTML = '';
 
-  // Semestre select
+  // Seletor de semestre
   const semestreWrap = document.createElement('div');
   semestreWrap.id = 'semestre-wrap';
   nav.appendChild(semestreWrap);
 
   // Avatar (logado) ou botão Entrar (visitante)
   if (estaLogado()) {
-    const u         = getUsuario();
-    const avatarVal = u.avatar ?? u.nome.charAt(0).toUpperCase();
+    const u          = getUsuario();
+    const avatarVal  = u.avatar ?? u.nome.charAt(0).toUpperCase();
+    const btnPerfil  = document.createElement('button');
 
-    const btnPerfil = document.createElement('button');
     btnPerfil.className = 'nav-btn--avatar';
     btnPerfil.id        = 'btn-perfil';
     btnPerfil.title     = u.nome;
@@ -220,6 +220,7 @@ function _renderHeader() {
     btnEntrar.className   = 'nav-btn';
     btnEntrar.id          = 'btn-entrar';
     btnEntrar.textContent = 'Entrar';
+
     btnEntrar.addEventListener('mouseenter', () => playSound('hover', 'inicial'));
     btnEntrar.addEventListener('click', () => {
       playSound('click', 'inicial');
@@ -228,7 +229,7 @@ function _renderHeader() {
     nav.appendChild(btnEntrar);
   }
 
-  // Botão configurações
+  // Botão de configurações
   const btnConfig = document.createElement('button');
   btnConfig.className = 'nav-btn nav-btn--icon';
   btnConfig.id        = 'btn-config';
@@ -247,6 +248,7 @@ function _renderHeader() {
                l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09
                a1.65 1.65 0 0 0-1.51 1z"/>
     </svg>`;
+
   btnConfig.addEventListener('click', () => {
     playSound('click', 'inicial');
     _abrirModalConfig();
@@ -256,24 +258,23 @@ function _renderHeader() {
 
 
 /* ═══════════════════════════════════════════════
-   SEÇÃO 4 — CARDS
-   Cada card tem hover com área 'inicial' (usuário
-   ainda está na home) e click com a área de destino.
+   SEÇÃO 5 — CARDS
+   Hover usa área 'inicial'; click usa a área de destino.
 ═══════════════════════════════════════════════ */
 
 function _bindCardLinks() {
   const rotas = {
     'card-pessoal': { path: './pessoal/pessoal.html', area: 'perfil'  },
-    'card-resumos': { path: './resumo/resumo.html',        area: 'resumos' },
-    'card-quiz':    { path: './quiz/quiz.html',            area: 'quiz'    },
-    'card-jogos':   { path: './games/jogo.html',           area: 'game'    },
+    'card-resumos': { path: './resumo/resumo.html',   area: 'resumos' },
+    'card-quiz':    { path: './quiz/quiz.html',        area: 'quiz'    },
+    'card-jogos':   { path: './games/jogo.html',       area: 'game'    },
   };
 
   Object.entries(rotas).forEach(([id, { path, area }]) => {
     const card = document.getElementById(id);
     if (!card) return;
     card.addEventListener('mouseenter', () => playSound('hover', 'inicial'));
-    card.addEventListener('click', () => {
+    card.addEventListener('click',      () => {
       playSound('click', area);
       window.location.href = path;
     });
@@ -282,7 +283,7 @@ function _bindCardLinks() {
 
 
 /* ═══════════════════════════════════════════════
-   SEÇÃO 5 — MODAL LOGIN
+   SEÇÃO 6 — MODAL LOGIN
    Fluxo: nome + PIN → login() → loginSuccess event
    Modo admin detectado pelo nome 'admin'.
 ═══════════════════════════════════════════════ */
@@ -364,24 +365,29 @@ function _abrirModalLogin() {
   document.body.appendChild(modal);
   requestAnimationFrame(() => modal.classList.add('modal--open'));
 
-  /* ── Detecta modo admin pelo nome ── */
-  const box = modal.querySelector('.modal__box');
-  document.getElementById('login-nome').addEventListener('input', function () {
+  // Refs de DOM (cacheadas uma vez)
+  const inputNome = modal.querySelector('#login-nome');
+  const inputPin  = modal.querySelector('#login-pin');
+  const erroEl    = modal.querySelector('#login-erro');
+  const btnEntrar = modal.querySelector('#btn-login-entrar');
+  const pinEyeBtn = modal.querySelector('#btn-pin-eye');
+  const pinEyeIcon = modal.querySelector('#pin-eye-icon');
+  const box       = modal.querySelector('.modal__box');
+
+  /* Detecta modo admin pelo nome */
+  inputNome.addEventListener('input', function () {
     const isAdmin = this.value.trim().toLowerCase() === 'admin';
-    const pin = document.getElementById('login-pin');
-    pin.setAttribute('maxlength', isAdmin ? '9' : '3');
-    if (!isAdmin && pin.value.length > 3) pin.value = pin.value.slice(0, 3);
+    inputPin.setAttribute('maxlength', isAdmin ? '9' : '3');
+    if (!isAdmin && inputPin.value.length > 3) inputPin.value = inputPin.value.slice(0, 3);
     box.classList.toggle('modal__box--admin', isAdmin);
     cards?.classList.toggle('cards-hidden', isAdmin);
   });
 
-  /* ── Toggle visibilidade do PIN ── */
-  document.getElementById('btn-pin-eye').addEventListener('click', function () {
-    const pin  = document.getElementById('login-pin');
-    const icon = document.getElementById('pin-eye-icon');
-    const show = pin.type === 'password';
-    pin.type = show ? 'text' : 'password';
-    icon.innerHTML = show
+  /* Toggle visibilidade do PIN */
+  pinEyeBtn.addEventListener('click', () => {
+    const show    = inputPin.type === 'password';
+    inputPin.type = show ? 'text' : 'password';
+    pinEyeIcon.innerHTML = show
       ? `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
          <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
          <line x1="1" y1="1" x2="23" y2="23"/>`
@@ -389,50 +395,48 @@ function _abrirModalLogin() {
          <circle cx="12" cy="12" r="3"/>`;
   });
 
-  /* ── Atalhos de teclado ── */
-  document.getElementById('login-nome').addEventListener('keydown', e => {
-    if (e.key === 'Enter') document.getElementById('login-pin').focus();
+  /* Atalhos de teclado */
+  inputNome.addEventListener('keydown', e => {
+    if (e.key === 'Enter') inputPin.focus();
   });
-  document.getElementById('login-pin').addEventListener('keydown', e => {
+  inputPin.addEventListener('keydown', e => {
     if (e.key === 'Enter') _tentarLogin();
   });
 
-  /* ── Fechar ── */
+  /* Fechar */
   function _fecharLogin() {
     cards?.classList.remove('cards-hidden');
     playSound('closeModal', 'inicial');
     _fecharModal(modal);
   }
-  document.getElementById('modal-overlay-login').addEventListener('click', _fecharLogin);
-  document.getElementById('modal-close-login').addEventListener('click',   _fecharLogin);
+  modal.querySelector('#modal-overlay-login').addEventListener('click', _fecharLogin);
+  modal.querySelector('#modal-close-login').addEventListener('click',   _fecharLogin);
 
-  /* ── Submit ── */
-  document.getElementById('btn-login-entrar').addEventListener('click', () => {
+  /* Submit */
+  btnEntrar.addEventListener('click', () => {
     playSound('click', 'inicial');
     _tentarLogin();
   });
 
   async function _tentarLogin() {
-    const nome = document.getElementById('login-nome').value.trim();
-    const pin  = document.getElementById('login-pin').value.trim();
-    const erro = document.getElementById('login-erro');
-    const btn  = document.getElementById('btn-login-entrar');
+    const nome = inputNome.value.trim();
+    const pin  = inputPin.value.trim();
 
-    erro.style.display = 'none';
+    erroEl.style.display = 'none';
 
     if (!nome || !pin) {
-      erro.textContent   = 'Selecione seu nome e digite o PIN.';
-      erro.style.display = 'block';
+      erroEl.textContent   = 'Selecione seu nome e digite o PIN.';
+      erroEl.style.display = 'block';
       return;
     }
 
-    btn.textContent = 'Entrando…';
-    btn.disabled    = true;
+    btnEntrar.textContent = 'Entrando…';
+    btnEntrar.disabled    = true;
 
     const resultado = await login(nome, pin);
 
-    btn.textContent = 'Entrar';
-    btn.disabled    = false;
+    btnEntrar.textContent = 'Entrar';
+    btnEntrar.disabled    = false;
 
     if (resultado.ok) {
       if (resultado.usuario.admin) {
@@ -463,18 +467,18 @@ function _abrirModalLogin() {
       mostrarToast(`Bem-vindo, ${resultado.usuario.nome}! ${resultado.usuario.avatar}`);
 
     } else {
-      erro.textContent   = resultado.erro;
-      erro.style.display = 'block';
-      document.getElementById('login-pin').value = '';
-      document.getElementById('login-pin').focus();
+      erroEl.textContent   = resultado.erro;
+      erroEl.style.display = 'block';
+      inputPin.value = '';
+      inputPin.focus();
     }
   }
 }
 
 
 /* ═══════════════════════════════════════════════
-   SEÇÃO 6 — MODAL CONFIG
-   Aparência, sistema, áudio, quiz, flashcard e área pessoal.
+   SEÇÃO 7 — MODAL CONFIG
+   Aparência, sistema, áudio, flashcard e área pessoal.
 ═══════════════════════════════════════════════ */
 
 function _abrirModalConfig() {
@@ -521,7 +525,7 @@ function _abrirModalConfig() {
             </div>
             <div class="config-perfil__info">
               <strong>${getUsuario().nome}</strong>
-              <span style="color:var(--text-2,#a8a49c);font-size:.8rem">${getUsuario().uid}</span>
+              <span class="config-perfil__uid">${getUsuario().uid}</span>
             </div>
             <button class="config-perfil__logout" id="btn-logout">Sair</button>
           </div>
@@ -562,7 +566,7 @@ function _abrirModalConfig() {
           <div class="config-row">
             <label for="cfg-sfx-enabled">
               Efeitos sonoros
-              <small style="display:block;font-weight:400;opacity:0.6;font-size:0.72em;margin-top:2px;">
+              <small class="config-label-hint">
                 Sons de clique, hover e outras interações. Quando desativado,
                 o botão flutuante de SFX é ocultado.
               </small>
@@ -576,7 +580,7 @@ function _abrirModalConfig() {
           <div class="config-row">
             <label for="cfg-music-enabled">
               Música de fundo
-              <small style="display:block;font-weight:400;opacity:0.6;font-size:0.72em;margin-top:2px;">
+              <small class="config-label-hint">
                 Trilhas sonoras ambiente. Quando desativado, a música para
                 e o botão flutuante de música é ocultado.
               </small>
@@ -590,14 +594,13 @@ function _abrirModalConfig() {
           <div class="config-row">
             <label>
               Configurações de Som
-              <small style="display:block;font-weight:400;opacity:0.6;font-size:0.72em;margin-top:2px;">
+              <small class="config-label-hint">
                 Ajuste volumes, variantes de SFX e trilhas sonoras.
               </small>
             </label>
             <button class="modal-btn modal-btn--ghost" id="btn-abrir-audio">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                   style="display:inline-block;vertical-align:middle;margin-right:5px;">
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
                 <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
                 <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
@@ -613,7 +616,7 @@ function _abrirModalConfig() {
           <div class="config-row">
             <label>
               Limpar disciplina
-              <small style="display:block;font-weight:400;opacity:0.6;font-size:0.72em;margin-top:2px;">
+              <small class="config-label-hint">
                 Zera o progresso de repetição espaçada de uma disciplina específica.
               </small>
             </label>
@@ -623,7 +626,7 @@ function _abrirModalConfig() {
           <div class="config-row">
             <label>
               Limpar tudo
-              <small style="display:block;font-weight:400;opacity:0.6;font-size:0.72em;margin-top:2px;">
+              <small class="config-label-hint">
                 Zera o SRS de todas as disciplinas do semestre atual.
               </small>
             </label>
@@ -637,7 +640,7 @@ function _abrirModalConfig() {
           <div class="config-row">
             <label>
               Limpar checklist
-              <small style="display:block;font-weight:400;opacity:0.6;font-size:0.72em;margin-top:2px;">
+              <small class="config-label-hint">
                 Desmarca todos os itens do checklist de uma disciplina específica.
               </small>
             </label>
@@ -647,7 +650,7 @@ function _abrirModalConfig() {
           <div class="config-row">
             <label>
               Limpar tarefas
-              <small style="display:block;font-weight:400;opacity:0.6;font-size:0.72em;margin-top:2px;">
+              <small class="config-label-hint">
                 Remove todas as categorias e tarefas de uma disciplina específica.
               </small>
             </label>
@@ -657,7 +660,7 @@ function _abrirModalConfig() {
           <div class="config-row">
             <label>
               Limpar tudo
-              <small style="display:block;font-weight:400;opacity:0.6;font-size:0.72em;margin-top:2px;">
+              <small class="config-label-hint">
                 Limpa checklist e tarefas de todas as disciplinas do semestre atual.
               </small>
             </label>
@@ -677,54 +680,60 @@ function _abrirModalConfig() {
   document.body.appendChild(modal);
   requestAnimationFrame(() => modal.classList.add('modal--open'));
 
-  /* ── Leitura dos campos ── */
+  /* Leitura dos campos de configuração */
   function _lerConfigs() {
     return {
-      tema:           document.getElementById('cfg-tema').value,
-      animacoes:      document.getElementById('cfg-anim').checked,
-      notificacoes:   document.getElementById('cfg-notif').checked,
-      sfxBtnEnabled:  document.getElementById('cfg-sfx-enabled').checked,
-      musicBtnEnabled:document.getElementById('cfg-music-enabled').checked,
+      tema:            modal.querySelector('#cfg-tema').value,
+      animacoes:       modal.querySelector('#cfg-anim').checked,
+      notificacoes:    modal.querySelector('#cfg-notif').checked,
+      sfxBtnEnabled:   modal.querySelector('#cfg-sfx-enabled').checked,
+      musicBtnEnabled: modal.querySelector('#cfg-music-enabled').checked,
     };
   }
 
   let _configsAlteradas = false;
-  function _autoSave() { _configsAlteradas = true; setConfigs(_lerConfigs()); }
+  function _autoSave() {
+    _configsAlteradas = true;
+    setConfigs(_lerConfigs());
+  }
 
-  document.getElementById('cfg-tema').addEventListener('change', _autoSave);
-  document.getElementById('cfg-anim').addEventListener('change', _autoSave);
-  document.getElementById('cfg-notif').addEventListener('change', _autoSave);
-  /* ── Quiz: salvar progresso ── (movido para quiz/quiz.js → _abrirModalConfigQuiz) */('change', function () {
+  modal.querySelector('#cfg-tema').addEventListener('change',  _autoSave);
+  modal.querySelector('#cfg-anim').addEventListener('change',  _autoSave);
+  modal.querySelector('#cfg-notif').addEventListener('change', _autoSave);
+
+  /* SFX — controla visibilidade do botão flutuante */
+  modal.querySelector('#cfg-sfx-enabled').addEventListener('change', function () {
     setSfxBtnEnabled(this.checked);
     setConfigs({ sfxBtnEnabled: this.checked });
     if (this.checked) playSound('click', 'inicial');
   });
 
-  document.getElementById('cfg-music-enabled').addEventListener('change', function () {
+  /* Música — controla visibilidade do botão flutuante */
+  modal.querySelector('#cfg-music-enabled').addEventListener('change', function () {
     setMusicBtnEnabled(this.checked);
     setConfigs({ musicBtnEnabled: this.checked });
     playSound('click', 'inicial');
   });
 
-  document.getElementById('cfg-sfx-enabled').addEventListener
+  /* Fechar com toast se houve alterações */
   function _fecharComToast() {
     playSound('closeModal', 'inicial');
     _fecharModal(modal);
     if (_configsAlteradas) mostrarToast('Configurações salvas!');
   }
 
-  document.getElementById('modal-overlay-config').addEventListener('click', _fecharComToast);
-  document.getElementById('modal-close-config').addEventListener('click',   _fecharComToast);
+  modal.querySelector('#modal-overlay-config').addEventListener('click', _fecharComToast);
+  modal.querySelector('#modal-close-config').addEventListener('click',   _fecharComToast);
 
-  /* ── Footer actions ── */
-  document.getElementById('btn-salvar-configs').addEventListener('click', () => {
+  /* Ações do rodapé */
+  modal.querySelector('#btn-salvar-configs').addEventListener('click', () => {
     playSound('click', 'inicial');
     setConfigs(_lerConfigs());
     _configsAlteradas = true;
     _fecharComToast();
   });
 
-  document.getElementById('btn-reset-configs').addEventListener('click', () => {
+  modal.querySelector('#btn-reset-configs').addEventListener('click', () => {
     playSound('click', 'inicial');
     resetConfigs();
     Sound.resetAudio();
@@ -733,16 +742,14 @@ function _abrirModalConfig() {
     setTimeout(_abrirModalConfig, 300);
   });
 
-  document.getElementById('btn-abrir-audio').addEventListener('click', () => {
+  modal.querySelector('#btn-abrir-audio').addEventListener('click', () => {
     playSound('click', 'inicial');
     Sound.openModal();
   });
 
-  /* ── Quiz: limpar ── (movido para quiz/quiz.js → _abrirModalConfigQuiz) */
-
-  /* ── Logout ── */
+  /* Logout (quando logado) */
   if (estaLogado()) {
-    document.getElementById('btn-logout')?.addEventListener('click', () => {
+    modal.querySelector('#btn-logout')?.addEventListener('click', () => {
       playSound('click', 'inicial');
       limparDadosQuiz();
       logout();
@@ -752,7 +759,7 @@ function _abrirModalConfig() {
     });
   }
 
-  /* ── Flashcard SRS ── */
+  /* Flashcard SRS */
   const sem         = getSemestreAtual();
   const disciplinas = getDisciplinasDeSemestre(sem);
 
@@ -766,7 +773,7 @@ function _abrirModalConfig() {
     }
   }
 
-  const discBtns = document.getElementById('flashcard-disc-btns');
+  const discBtns = modal.querySelector('#flashcard-disc-btns');
   if (discBtns) {
     disciplinas.forEach(disc => {
       const btn = document.createElement('button');
@@ -783,16 +790,16 @@ function _abrirModalConfig() {
     });
   }
 
-  document.getElementById('btn-limpar-srs-tudo')?.addEventListener('click', function () {
+  modal.querySelector('#btn-limpar-srs-tudo')?.addEventListener('click', function () {
     _confirmar(this, async () => {
       await _resetarSRS(null);
       mostrarToast('SRS de todas as disciplinas apagado.');
     });
   });
 
-  /* ── Área Pessoal ── */
-  const clBtns   = document.getElementById('pessoal-cl-btns');
-  const taskBtns = document.getElementById('pessoal-task-btns');
+  /* Área Pessoal */
+  const clBtns   = modal.querySelector('#pessoal-cl-btns');
+  const taskBtns = modal.querySelector('#pessoal-task-btns');
 
   if (clBtns && taskBtns) {
     disciplinas.forEach(disc => {
@@ -824,7 +831,7 @@ function _abrirModalConfig() {
     });
   }
 
-  document.getElementById('btn-limpar-pessoal-tudo')?.addEventListener('click', function () {
+  modal.querySelector('#btn-limpar-pessoal-tudo')?.addEventListener('click', function () {
     _confirmar(this, async () => {
       const { saveCheckedIds, setCategorias } = await import('./pessoal/pessoal_sync.js');
       for (const disc of disciplinas) {
@@ -838,8 +845,8 @@ function _abrirModalConfig() {
 
 
 /* ═══════════════════════════════════════════════
-   SEÇÃO 7 — MODAL PERFIL
-   Avatar picker (emoji) + logout.
+   SEÇÃO 8 — MODAL PERFIL
+   Avatar picker (emoji) + salvar + logout.
 ═══════════════════════════════════════════════ */
 
 const _EMOJIS_PERFIL = [
@@ -856,11 +863,11 @@ function _abrirPerfilModal() {
   const u = getUsuario();
   if (!u) return;
 
-  const avatarAtual  = u.foto ? null : (u.avatar ?? u.nome.charAt(0).toUpperCase());
-  const avatarHTML   = u.foto
+  const avatarAtual   = u.foto ? null : (u.avatar ?? u.nome.charAt(0).toUpperCase());
+  const avatarHTML    = u.foto
     ? `<img src="${u.foto}" alt="${u.nome}" class="pm-avatar__img" />`
     : `<span class="pm-avatar__emoji" id="pm-avatar-emoji">${avatarAtual}</span>`;
-  const badgeHTML    = u.admin
+  const badgeHTML     = u.admin
     ? `<div class="pm-data-badge pm-data-badge--admin">admin</div>`
     : `<div class="pm-data-badge pm-data-badge--locked">verificado</div>`;
   const changeBtnHTML = u.foto ? '' : `
@@ -1001,62 +1008,62 @@ function _abrirPerfilModal() {
   let avatarSelecionado = avatarAtual;
   let pickerAberto      = false;
 
-  /* ── Helpers do picker ── */
-  function _setPreview(e) {
-    const el = document.getElementById('pm-picker-preview-emoji');
-    const vl = document.getElementById('pm-picker-preview-val');
-    if (el) el.textContent = e;
-    if (vl) vl.textContent = e;
+  /* Helpers do picker */
+  function _setPreview(emoji) {
+    const elEmoji = modal.querySelector('#pm-picker-preview-emoji');
+    const elVal   = modal.querySelector('#pm-picker-preview-val');
+    if (elEmoji) elEmoji.textContent = emoji;
+    if (elVal)   elVal.textContent   = emoji;
   }
 
   function _abrirPicker() {
     pickerAberto = true;
-    document.getElementById('pm-picker-panel')?.classList.add('pm-picker-panel--open');
-    document.getElementById('pm-toggle-picker')?.classList.add('pm-change-btn--active');
+    modal.querySelector('#pm-picker-panel')?.classList.add('pm-picker-panel--open');
+    modal.querySelector('#pm-toggle-picker')?.classList.add('pm-change-btn--active');
   }
 
   function _fecharPicker() {
     pickerAberto = false;
-    document.getElementById('pm-picker-panel')?.classList.remove('pm-picker-panel--open');
-    document.getElementById('pm-toggle-picker')?.classList.remove('pm-change-btn--active');
+    modal.querySelector('#pm-picker-panel')?.classList.remove('pm-picker-panel--open');
+    modal.querySelector('#pm-toggle-picker')?.classList.remove('pm-change-btn--active');
   }
 
   function _aplicarAvatar(emoji) {
-    const display = document.getElementById('pm-avatar-emoji');
+    const display = modal.querySelector('#pm-avatar-emoji');
     if (display) display.textContent = emoji;
     avatarSelecionado = emoji;
   }
 
-  /* ── Eventos do picker ── */
-  document.getElementById('pm-picker-grid')?.addEventListener('click', e => {
+  /* Eventos do picker */
+  modal.querySelector('#pm-picker-grid')?.addEventListener('click', e => {
     const btn = e.target.closest('.ej');
     if (!btn) return;
     playSound('click', 'inicial');
     avatarSelecionado = btn.dataset.emoji;
     _setPreview(avatarSelecionado);
-    document.querySelectorAll('#pm-picker-grid .ej').forEach(b =>
+    modal.querySelectorAll('#pm-picker-grid .ej').forEach(b =>
       b.classList.toggle('on', b.dataset.emoji === avatarSelecionado)
     );
   });
 
-  document.getElementById('pm-toggle-picker')?.addEventListener('click', () => {
+  modal.querySelector('#pm-toggle-picker')?.addEventListener('click', () => {
     playSound('click', 'inicial');
     pickerAberto ? _fecharPicker() : _abrirPicker();
   });
 
-  document.getElementById('pm-picker-close')?.addEventListener('click',  _fecharPicker);
-  document.getElementById('pm-picker-cancel')?.addEventListener('click', () => {
+  modal.querySelector('#pm-picker-close')?.addEventListener('click',  _fecharPicker);
+  modal.querySelector('#pm-picker-cancel')?.addEventListener('click', () => {
     playSound('click', 'inicial');
     _fecharPicker();
   });
-  document.getElementById('pm-picker-ok')?.addEventListener('click', () => {
+  modal.querySelector('#pm-picker-ok')?.addEventListener('click', () => {
     playSound('click', 'inicial');
     _aplicarAvatar(avatarSelecionado);
     _fecharPicker();
   });
 
-  /* ── Salvar perfil ── */
-  document.getElementById('pm-btn-salvar')?.addEventListener('click', async () => {
+  /* Salvar perfil */
+  modal.querySelector('#pm-btn-salvar')?.addEventListener('click', async () => {
     playSound('click', 'inicial');
     _aplicarAvatar(avatarSelecionado);
 
@@ -1077,8 +1084,8 @@ function _abrirPerfilModal() {
     mostrarToast('Perfil atualizado!');
   });
 
-  /* ── Logout ── */
-  document.getElementById('pm-btn-logout')?.addEventListener('click', () => {
+  /* Logout */
+  modal.querySelector('#pm-btn-logout')?.addEventListener('click', () => {
     playSound('click', 'inicial');
     limparDadosQuiz();
     logout();
@@ -1087,27 +1094,30 @@ function _abrirPerfilModal() {
     mostrarToast('Sessão encerrada.');
   });
 
-  /* ── Fechar ── */
-  function _fecharPerfil() { playSound('closeModal', 'inicial'); _fecharModal(modal); }
-  document.getElementById('pm-close-btn')?.addEventListener('click',         _fecharPerfil);
-  document.getElementById('modal-overlay-perfil')?.addEventListener('click', _fecharPerfil);
+  /* Fechar */
+  function _fecharPerfil() {
+    playSound('closeModal', 'inicial');
+    _fecharModal(modal);
+  }
+  modal.querySelector('#pm-close-btn')?.addEventListener('click',         _fecharPerfil);
+  modal.querySelector('#modal-overlay-perfil')?.addEventListener('click', _fecharPerfil);
 }
 
 
 /* ═══════════════════════════════════════════════
-   SEÇÃO 8 — UTILITÁRIOS
+   SEÇÃO 9 — UTILITÁRIOS
    ─────────────────────────────────────────────
-   8a. Modais — criar, fechar, fechar todos
-   8b. Confirmar ação destrutiva (dois cliques)
-   8c. Toast — empilhamento + reposicionamento
+   9a. Modais — criar, fechar, fechar todos
+   9b. Confirmação de ação destrutiva (dois cliques)
+   9c. Toast — empilhamento + reposicionamento
 ═══════════════════════════════════════════════ */
 
-/* ── 8a. Modais ── */
+/* ── 9a. Modais ── */
 
 function _criarModal(id) {
   const el = document.createElement('div');
   el.className = 'modal';
-  el.id = `modal-${id}`;
+  el.id        = `modal-${id}`;
   return el;
 }
 
@@ -1120,7 +1130,7 @@ function _fecharTodosModais() {
   document.querySelectorAll('.modal').forEach(m => m.remove());
 }
 
-/* ── 8b. Confirmação de ação destrutiva ──
+/* ── 9b. Confirmação de ação destrutiva ──
    Primeiro clique: transforma o botão em "Tem certeza?" (3 s).
    Segundo clique:  executa o callback.                          */
 
@@ -1148,17 +1158,17 @@ function _confirmar(btn, callback) {
   }, 3000);
 }
 
-/* ── 8c. Toast ── */
+/* ── 9c. Toast ── */
+
+const TOAST_OFFSET   = 12;
+const TOAST_DURATION = 2800;
 
 function mostrarToast(msg) {
-  const OFFSET   = 12;
-  const DURATION = 2800;
-
   const existentes = document.querySelectorAll('.nexus-toast');
   let nextBottom   = 32;
-  existentes.forEach(t => { nextBottom += t.offsetHeight + OFFSET; });
+  existentes.forEach(t => { nextBottom += t.offsetHeight + TOAST_OFFSET; });
 
-  const t = document.createElement('div');
+  const t       = document.createElement('div');
   t.className   = 'nexus-toast';
   t.textContent = msg;
   t.style.bottom = `${nextBottom}px`;
@@ -1172,14 +1182,13 @@ function mostrarToast(msg) {
       t.remove();
       _reposicionarToasts();
     }, { once: true });
-  }, DURATION);
+  }, TOAST_DURATION);
 }
 
 function _reposicionarToasts() {
-  const OFFSET = 12;
-  let bottom   = 32;
+  let bottom = 32;
   document.querySelectorAll('.nexus-toast').forEach(t => {
     t.style.bottom = `${bottom}px`;
-    bottom += t.offsetHeight + OFFSET;
+    bottom += t.offsetHeight + TOAST_OFFSET;
   });
 }
