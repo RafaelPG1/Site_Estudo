@@ -3,15 +3,25 @@
  * ============================================================
  * Cria e controla a barra de acesso rápido sem modificar o HTML.
  *
- * NAVEGAÇÃO — Por que caminhos absolutos com origin?
+ * NAVEGAÇÃO — Por que detectar o BASE_PATH automaticamente?
  * --------------------------------------------------
- * Usar `window.location.origin + '/caminho'` garante que todos os
- * links partem sempre da raiz do servidor, independente de qual
- * subpasta a página atual esteja. Isso elimina a necessidade de
- * caminhos relativos (../../) que quebram ao mover arquivos.
+ * No GitHub Pages, quando o site não está na raiz do domínio
+ * (ex: https://usuario.github.io/NOME-DO-REPO/), um caminho
+ * absoluto começando com "/" (ex: "/index.html") aponta para
+ * "https://usuario.github.io/index.html" — fora do repositório,
+ * causando 404.
  *
- * Ativação  : tecla T (quando não está digitando em input/textarea)
- * Fechar    : ESC · clique fora · tecla T novamente
+ * Para resolver isso sem precisar editar o código a cada deploy,
+ * detectamos o "prefixo base" da página atual a partir do
+ * pathname, olhando para as pastas conhecidas do projeto
+ * (resumo, quiz, games, pessoal). Tudo o que vem ANTES dessas
+ * pastas (ou antes de index.html na raiz) é o BASE_PATH.
+ *
+ * Em localhost (servidor na raiz), BASE_PATH fica "" e tudo
+ * continua funcionando como antes.
+ *
+ * Ativação  : tecla Tab (quando não está digitando em input/textarea)
+ * Fechar    : ESC · clique fora · tecla Tab novamente
  * ============================================================
  */
 
@@ -25,11 +35,39 @@
   /* ── Configuração dos botões ──────────────────────────────── */
 
   /**
-   * BASE_URL: raiz absoluta do site.
-   * window.location.origin retorna ex: "http://localhost:5500"
-   * Funciona tanto em servidor local quanto em produção.
+   * BASE_PATH: prefixo do projeto dentro do domínio.
+   * Ex.: em "https://rafaelpg1.github.io/nexus-study/resumo/resumo.html"
+   *      BASE_PATH = "/nexus-study"
+   * Em "http://localhost:5500/index.html"
+   *      BASE_PATH = ""
    */
-  const BASE_URL = window.location.origin;
+  const KNOWN_FOLDERS = ['resumo', 'quiz', 'games', 'pessoal'];
+
+  function detectBasePath() {
+    const path = window.location.pathname; // ex: /nexus-study/resumo/resumo.html
+
+    for (const folder of KNOWN_FOLDERS) {
+      const marker = `/${folder}/`;
+      const idx = path.indexOf(marker);
+      if (idx !== -1) {
+        return path.slice(0, idx); // tudo antes de "/resumo/" etc.
+      }
+    }
+
+    // Está na raiz (index.html ou "/"): remove o nome do arquivo final
+    const lastSlash = path.lastIndexOf('/');
+    const dir = path.slice(0, lastSlash); // ex: "/nexus-study" ou ""
+
+    return dir;
+  }
+
+  const BASE_PATH = detectBasePath();
+
+  /**
+   * BASE_URL: raiz absoluta do projeto (origin + BASE_PATH).
+   * Funciona tanto em servidor local quanto em produção / subpasta.
+   */
+  const BASE_URL = window.location.origin + BASE_PATH;
 
   const QA_ITEMS = [
     {
@@ -38,7 +76,7 @@
       label: 'Home',
       title: 'Página inicial',
       href:  `${BASE_URL}/index.html`,
-      match: /^\/?(?:index\.html)?$/,
+      match: /^\/?(?:[^/]*\/)?index\.html$|\/$/,
     },
     {
       id:    'resumos',
