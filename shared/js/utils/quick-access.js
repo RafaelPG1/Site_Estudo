@@ -106,7 +106,7 @@
       icon:  '🎮',
       label: 'Jogos',
       title: 'Jogos',
-      href:  `${BASE_URL}/games/jogos.html`,
+      href:  `${BASE_URL}/games/jogo.html`,
       match: /\/games\//,
     },
     {
