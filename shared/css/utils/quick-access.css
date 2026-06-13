@@ -1,0 +1,264 @@
+/* ============================================================
+   Quick Access Bar — quick-access.css
+   Glassmorphism · Premium · Modular
+   Ativação: tecla T | Fechar: ESC ou clique fora
+   ============================================================ */
+
+/* ── Custom Properties ─────────────────────────────────────── */
+:root {
+  --qa-glass-bg:        rgba(15, 15, 20, 0.72);
+  --qa-glass-border:    rgba(255, 255, 255, 0.08);
+  --qa-glass-border-h:  rgba(255, 255, 255, 0.18);
+  --qa-blur:            24px;
+  --qa-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.55),
+    0 2px 8px  rgba(0, 0, 0, 0.40),
+    0 0 0 1px rgba(255, 255, 255, 0.04);
+  --qa-glow:            0 0 40px rgba(120, 80, 255, 0.18);
+  --qa-radius-bar:      20px;
+  --qa-radius-btn:      14px;
+  --qa-accent:          #7c5cfc;
+  --qa-accent-rgb:      124, 92, 252;
+  --qa-text-primary:    rgba(255, 255, 255, 0.90);
+  --qa-text-secondary:  rgba(255, 255, 255, 0.45);
+  --qa-transition:      cubic-bezier(0.34, 1.56, 0.64, 1);
+  --qa-transition-out:  cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Overlay ────────────────────────────────────────────────── */
+#qa-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99998;
+  background: transparent;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+#qa-overlay.qa-visible {
+  pointer-events: all;
+  opacity: 1;
+}
+
+/* ── Bar wrapper ─────────────────────────────────────────────── */
+#qa-bar {
+  position: fixed;
+  bottom: 36px;
+  left: 50%;
+  z-index: 99999;
+
+  /* Layout */
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 10px;
+
+  /* Glass */
+  background: var(--qa-glass-bg);
+  backdrop-filter: blur(var(--qa-blur)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--qa-blur)) saturate(160%);
+  border: 1px solid var(--qa-glass-border);
+  border-radius: var(--qa-radius-bar);
+  box-shadow: var(--qa-shadow), var(--qa-glow);
+
+  /* Entrada / saída */
+  transform: translateX(-50%) translateY(20px) scale(0.92);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 0.38s var(--qa-transition),
+    opacity   0.28s ease;
+}
+
+#qa-bar.qa-open {
+  transform: translateX(-50%) translateY(0) scale(1);
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Linha decorativa no topo da barra */
+#qa-bar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(var(--qa-accent-rgb), 0.6) 40%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(var(--qa-accent-rgb), 0.6) 60%,
+    transparent
+  );
+  border-radius: 999px;
+}
+
+/* ── Separador vertical ─────────────────────────────────────── */
+.qa-separator {
+  width: 1px;
+  height: 28px;
+  background: var(--qa-glass-border-h);
+  border-radius: 999px;
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+
+/* ── Botão individual ──────────────────────────────────────── */
+.qa-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 68px;
+  height: 64px;
+  border: none;
+  background: transparent;
+  border-radius: var(--qa-radius-btn);
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--qa-text-secondary);
+  outline: none;
+  transition:
+    color      0.2s ease,
+    background 0.2s ease,
+    transform  0.22s var(--qa-transition),
+    box-shadow 0.2s ease;
+
+  /* stagger de entrada via JS */
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+/* Estado de entrada quando barra abre */
+#qa-bar.qa-open .qa-btn {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Hover */
+.qa-btn:hover {
+  color: var(--qa-text-primary);
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px) scale(1.04);
+}
+
+/* Active press */
+.qa-btn:active {
+  transform: translateY(0) scale(0.97);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Botão ativo (página atual) */
+.qa-btn.qa-active {
+  color: var(--qa-text-primary);
+  background: rgba(var(--qa-accent-rgb), 0.15);
+  box-shadow:
+    0 0 0 1px rgba(var(--qa-accent-rgb), 0.35),
+    0 0 16px rgba(var(--qa-accent-rgb), 0.12);
+}
+
+.qa-btn.qa-active .qa-icon {
+  filter: drop-shadow(0 0 6px rgba(var(--qa-accent-rgb), 0.7));
+}
+
+/* Focus visível (acessibilidade) */
+.qa-btn:focus-visible {
+  outline: 2px solid rgba(var(--qa-accent-rgb), 0.7);
+  outline-offset: 2px;
+}
+
+/* Tooltip no hover (data-label) */
+.qa-btn::after {
+  content: attr(data-label);
+  position: absolute;
+  top: -36px;
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  padding: 4px 10px;
+  background: rgba(10, 10, 15, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  color: var(--qa-text-primary);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition:
+    opacity   0.18s ease,
+    transform 0.18s ease;
+}
+
+.qa-btn:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ── Ícone ─────────────────────────────────────────────────── */
+.qa-icon {
+  font-size: 22px;
+  line-height: 1;
+  transition:
+    transform  0.25s var(--qa-transition),
+    filter     0.2s ease;
+  user-select: none;
+}
+
+.qa-btn:hover .qa-icon {
+  transform: scale(1.18) translateY(-1px);
+}
+
+/* ── Label do botão ────────────────────────────────────────── */
+.qa-label {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text',
+               'Segoe UI', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  line-height: 1;
+  color: inherit;
+  transition: color 0.2s ease;
+}
+
+
+
+/* ── Animação de entrada dos botões (stagger via CSS vars) ──── */
+.qa-btn:nth-child(1)  { transition-delay: 0.00s; }
+.qa-btn:nth-child(2)  { transition-delay: 0.04s; }
+.qa-btn:nth-child(3)  { transition-delay: 0.08s; }
+.qa-btn:nth-child(4)  { transition-delay: 0.12s; }
+.qa-btn:nth-child(5)  { transition-delay: 0.16s; }
+
+/* transições de opacidade/transform para os botões */
+.qa-btn {
+  transition:
+    opacity    0.3s ease,
+    transform  0.3s var(--qa-transition),
+    color      0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+/* Ao fechar, zera o stagger */
+#qa-bar:not(.qa-open) .qa-btn {
+  transition-delay: 0s !important;
+}
+
+/* ── Reduzir movimento (acessibilidade) ─────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  #qa-bar,
+  .qa-btn,
+  .qa-icon,
+  #qa-hint {
+    transition: none !important;
+    animation: none !important;
+  }
+}
