@@ -1,5 +1,4 @@
-<!-- games/jogos.html -->
-
+<!-- games/jogo.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -8,10 +7,11 @@
   <title>Nexus Study — Jogos</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../shared/css/themes/fundo.css">
+  <link rel="stylesheet" href="../shared/css/themes/semestre-picker.css">
   <link rel="stylesheet" href="jogo.css" />
-    <link rel="stylesheet" href="../shared/css/audio/audio-btns.css" />
+  <link rel="stylesheet" href="../shared/css/audio/audio-btns.css" />
 </head>
 <body>
 
@@ -55,88 +55,77 @@
   <!-- MAIN -->
   <main class="main" id="main">
 
-    <!-- TOP BAR — igual ao header do quiz.html -->
+    <!-- TOPBAR -->
     <div class="topbar">
       <a href="../index.html" class="back-btn" aria-label="Voltar ao início">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <polyline points="15 18 9 12 15 6"/>
         </svg>
         <span>Início</span>
       </a>
-
       <div class="topbar__right">
-        <!-- Options populadas por jogo.js via SEMESTRES do global.js -->
-        <select id="jogos-semestre-select" class="semestre-select"
-                title="Selecionar semestre" aria-label="Semestre"></select>
-
-        <nav class="breadcrumb" aria-label="Localização">
-          <span class="breadcrumb__item">Jogos</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
-          <span class="breadcrumb__item breadcrumb__item--active">Selecionar</span>
-        </nav>
+        <div id="semestre-wrap"></div>
       </div>
     </div>
 
-    <!-- PAGE HEADER -->
-    <header class="page-header">
-      <div class="page-header__left">
-        <div class="page-header__eyebrow">
-          <span aria-hidden="true">🎮</span>
-          <span>Modo Jogo</span>
-        </div>
-        <h1 class="page-header__title">
-          Escolha o <em>jogo</em>
-          <span class="title-tag">BETA</span>
-        </h1>
-        <p class="page-header__subtitle">Aprenda jogando. Avance mais rápido.</p>
-      </div>
-      <div class="page-header__right">
-        <div class="stats-bar">
-          <div class="stat-chip">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            <div>
-              <span id="stat-available">0</span>
-              <label>disponíveis</label>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero__bg" aria-hidden="true"></div>
+      <div class="hero__content">
+        <div class="hero__left">
+          <div class="hero__eyebrow">
+            <span aria-hidden="true">🎮</span> Modo Jogo <span class="title-tag">BETA</span>
+          </div>
+          <h1 class="hero__title">
+            <span class="hero__title--top">escolha seu</span>
+            <span class="hero__title--main">Game</span><span class="hero__title--accent">de Estudo</span>
+          </h1>
+          <p class="hero__sub">Aprenda jogando. Cada partida fixa um conceito. Avance mais rápido do que com qualquer revisão comum.</p>
+          <div class="hero__stats">
+            <div class="hero__stat">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <div>
+                <span class="hero__stat-val" id="stat-available">0</span>
+                <span class="hero__stat-lbl">disponíveis</span>
+              </div>
+            </div>
+            <div class="hero__stat">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              <div>
+                <span class="hero__stat-val" id="stat-done">0</span>
+                <span class="hero__stat-lbl">concluídos</span>
+              </div>
             </div>
           </div>
-          <div class="stat-chip">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-            <div>
-              <span id="stat-done">0</span>
-              <label>concluídos</label>
-            </div>
-          </div>
         </div>
-      </div>
-    </header>
 
-    <!-- FILTERS — tipo apenas -->
-    <section class="filters" id="filters" aria-label="Filtros">
-      <div class="filters__group">
-        <span class="filters__label">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M9 10v4M15 10v4"/></svg>
-          Tipo
-        </span>
-        <div class="filters__pills" id="filter-type" role="group" aria-label="Filtrar por tipo">
-          <button class="pill pill--active" data-value="all">Todos</button>
-          <button class="pill pill--type-pergunta"    data-value="Pergunta">Pergunta</button>
-          <button class="pill pill--type-memorizacao" data-value="Memorização">Memorização</button>
-          <button class="pill pill--type-dinamica"    data-value="Dinâmica">Dinâmica</button>
-          <button class="pill pill--type-palavra"     data-value="Palavra">Palavra</button>
-          <button class="pill pill--type-associacao"  data-value="Associação">Associação</button>
+        <!-- MASCOTE — substitui o disco/controle -->
+        <div class="hero__mascot" aria-hidden="true">
+          <div class="hero__mascot-glow"></div>
+          <div class="hero__mascot-particles">
+            <span></span><span></span><span></span><span></span>
+          </div>
+          <img class="hero__mascot-img" src="../shared/img/games.png" alt="" />
         </div>
       </div>
     </section>
 
-    <!-- RESULTS BAR -->
-    <div class="results-bar">
-      <p class="results-bar__text">
-        Mostrando <span id="results-count">0</span> jogos
-      </p>
-      <div class="results-bar__sort">
-        <select id="sort-select" aria-label="Ordenar por">
+    <!-- FILTER STRIP -->
+    <div class="filter-strip">
+      <div class="filters__pills filter-strip__pills" id="filter-type" role="group" aria-label="Filtrar por tipo">
+        <button class="pill pill--active" data-value="all">Todos</button>
+        <button class="pill pill--type-pergunta"    data-value="Pergunta">Pergunta</button>
+        <button class="pill pill--type-memorizacao" data-value="Memorização">Memorização</button>
+        <button class="pill pill--type-dinamica"    data-value="Dinâmica">Dinâmica</button>
+        <button class="pill pill--type-palavra"     data-value="Palavra">Palavra</button>
+        <button class="pill pill--type-associacao"  data-value="Associação">Associação</button>
+      </div>
+      <div class="filter-strip__right">
+        <p class="filter-strip__count">
+          <strong id="results-count">0</strong> jogos
+        </p>
+        <select id="sort-select" class="sort-select" aria-label="Ordenar por">
           <option value="name">Nome A–Z</option>
           <option value="type">Tipo</option>
           <option value="status">Status</option>
@@ -144,16 +133,16 @@
       </div>
     </div>
 
-    <!-- GAME GRID -->
-    <section class="game-grid" id="game-grid" aria-live="polite" aria-label="Jogos disponíveis">
-      <!-- Cards renderizados por JS -->
-    </section>
-
-    <!-- EMPTY STATE -->
-    <div class="empty-state hidden" id="empty-state" role="status">
-      <div class="empty-state__icon">🎮</div>
-      <h3>Nenhum jogo encontrado</h3>
-      <p>Tente ajustar os filtros para ver mais jogos.</p>
+    <!-- GAME VAULT -->
+    <div class="game-vault">
+      <section class="game-grid" id="game-grid" aria-live="polite" aria-label="Jogos disponíveis">
+        <!-- Cards rendered by JS -->
+      </section>
+      <div class="empty-state hidden" id="empty-state" role="status">
+        <div class="empty-state__icon">🎮</div>
+        <h3>Nenhum jogo encontrado</h3>
+        <p>Tente ajustar os filtros para ver mais jogos.</p>
+      </div>
     </div>
 
   </main>
@@ -162,36 +151,50 @@
   <div class="modal-overlay hidden" id="modal-overlay"
        role="dialog" aria-modal="true" aria-labelledby="modal-title">
     <div class="modal" id="modal">
-      <button class="modal__close" id="modal-close" aria-label="Fechar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
-      <div class="modal__icon"      id="modal-icon"></div>
-      <div class="modal__badge-row" id="modal-badges"></div>
-      <h2 class="modal__title"      id="modal-title"></h2>
-      <p  class="modal__desc"       id="modal-desc"></p>
-      <div class="modal__meta"      id="modal-meta"></div>
 
-      <!-- Seletor de disciplina — populado com base no semestre ativo -->
-      <div class="modal__disc-wrap" id="modal-disc-wrap">
-        <label class="modal__disc-label" for="modal-disc-select">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
-          Escolha a disciplina
-        </label>
-        <select class="modal__disc-select" id="modal-disc-select" aria-label="Selecionar disciplina">
-          <option value="">— selecione —</option>
-        </select>
+      <!-- Splash panel -->
+      <div class="modal__splash">
+        <div class="modal__splash-icon" id="modal-icon"></div>
+        <button class="modal__close" id="modal-close" aria-label="Fechar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
       </div>
 
-      <button class="modal__play-btn" id="modal-play-btn">
-        <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-        Iniciar Jogo
-      </button>
+      <!-- Body -->
+      <div class="modal__body">
+        <div class="modal__header">
+          <div class="modal__badge-row" id="modal-badges"></div>
+          <h2 class="modal__title" id="modal-title"></h2>
+          <p  class="modal__desc"  id="modal-desc"></p>
+        </div>
+
+        <!-- meta — hidden via CSS, kept for JS compat -->
+        <div class="modal__meta" id="modal-meta" aria-hidden="true"></div>
+
+        <!-- Discipline selector -->
+        <div class="modal__disc-wrap" id="modal-disc-wrap">
+          <label class="modal__disc-label" for="modal-disc-select">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+            </svg>
+            Escolha a disciplina
+          </label>
+          <select class="modal__disc-select" id="modal-disc-select" aria-label="Selecionar disciplina">
+            <option value="">— selecione —</option>
+          </select>
+        </div>
+
+        <button class="modal__play-btn" id="modal-play-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Iniciar Jogo
+        </button>
+      </div>
     </div>
   </div>
 
   <script type="module" src="jogo.js"></script>
-    <script src="../shared/js/utils/quick-access.js"></script>
+  <script src="../shared/js/utils/quick-access.js"></script>
 </body>
 </html>

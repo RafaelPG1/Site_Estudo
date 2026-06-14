@@ -11,7 +11,7 @@ import {
 } from '../src/global.js';
 
 import { sincronizarSemNaURL } from '../shared/js/utils/url.js';
-import { preencherAnos }       from '../shared/js/utils/dom.js';
+import { preencherAnos, criarSemestreSelect } from '../shared/js/utils/dom.js';
 import { injetarLogo }         from '../shared/js/utils/logo.js';
 import {
   Sound,
@@ -125,7 +125,6 @@ const DOM = {
   resultsCount:  () => document.getElementById('results-count'),
   statAvailable: () => document.getElementById('stat-available'),
   sortSelect:    () => document.getElementById('sort-select'),
-  semSelect:     () => document.getElementById('jogos-semestre-select'),
   modalOverlay:  () => document.getElementById('modal-overlay'),
   modal:         () => document.getElementById('modal'),
   modalClose:    () => document.getElementById('modal-close'),
@@ -203,28 +202,26 @@ function buildCard(game) {
   card.style.setProperty('--c',  cores.cor);
   card.style.setProperty('--cr', cores.rgb);
 
+  const playLabel = isDisabled ? 'Em breve' : `Jogar ${game.nome}`;
+
   card.innerHTML = `
-    <div class="card__header">
-      <div class="card__icon">${game.icon}</div>
-      <span class="card__status-badge ${statusCls}">${statusLabel}</span>
+    <div class="card__art">
+      <div class="card__art-icon">${game.icon}</div>
+      <span class="card__type-pill">${game.tipo}</span>
+      <span class="card__status ${statusCls}">${statusLabel}</span>
     </div>
-    <div class="card__name">${game.nome}</div>
-    <div class="card__badges">
-      <span class="badge ${typeBadgeClass(game.tipo)}">${game.tipo}</span>
+    <div class="card__body">
+      <div class="card__name">${game.nome}</div>
+      <p class="card__desc">${game.descricao}</p>
     </div>
     <div class="card__footer">
       <button class="card__play-btn ${isDisabled ? 'card__play-btn--disabled' : ''}"
-              aria-label="${isDisabled ? 'Em breve' : `Jogar ${game.nome}`}"
+              aria-label="${playLabel}"
               ${isDisabled ? 'disabled aria-disabled="true"' : ''}>
         <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
         ${isDisabled ? 'Em breve' : 'Jogar'}
       </button>
-      <span class="card__time">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-        </svg>
-        ${game.duracao}
-      </span>
+      <span class="card__badge badge ${typeBadgeClass(game.tipo)}">${game.tipo}</span>
     </div>
   `;
 
@@ -291,16 +288,7 @@ function openModal(game) {
     <span class="card__status-badge ${statusCls}" style="font-size:9px">${statusLabel}</span>
   `;
 
-  DOM.modalMeta().innerHTML = `
-    <div class="modal__meta-item">
-      <span>${game.duracao}</span>
-      <label>Duração</label>
-    </div>
-    <div class="modal__meta-item">
-      <span>${game.dificuldade}</span>
-      <label>Dificuldade</label>
-    </div>
-  `;
+  // modal__meta: hidden by CSS — duration and difficulty removed
 
   // Popula disciplinas do semestre ativo via global.js
   const sel  = DOM.modalDiscSel();
@@ -364,8 +352,16 @@ function openModal(game) {
 
 function closeModal() {
   playSound('closeModal', 'jogo');
-  DOM.modalOverlay().classList.add('hidden');
-  document.body.style.overflow = '';
+  const overlay = DOM.modalOverlay();
+  const modal   = DOM.modal();
+  overlay.classList.add('is-closing');
+  modal.classList.add('is-closing');
+  setTimeout(() => {
+    overlay.classList.remove('is-closing');
+    modal.classList.remove('is-closing');
+    overlay.classList.add('hidden');
+    document.body.style.overflow = '';
+  }, 220);
 }
 
 /**
@@ -387,33 +383,23 @@ function handlePlay(game, disciplinaArquivo, semestre) {
 ═══════════════════════════════════════════ */
 
 function setupSemestreSelect() {
-  const sel = DOM.semSelect();
-  if (!sel) return;
-
   // Lê ?sem= da URL, com fallback ao global.js
   const semParam = new URLSearchParams(location.search).get('sem');
   if (semParam && SEMESTRES.includes(semParam)) setSemestre(semParam);
 
-  let semAtual = getSemestreAtual();
+  sincronizarSemNaURL(getSemestreAtual());
 
-  // Popula options
-  SEMESTRES.forEach(s => {
-    const opt       = document.createElement('option');
-    opt.value       = s;
-    opt.textContent = s;
-    if (s === semAtual) opt.selected = true;
-    sel.appendChild(opt);
+  criarSemestreSelect('semestre-wrap', sem => {
+    playSound('select', 'jogo');
+    setSemestre(sem);
+    sincronizarSemNaURL(sem, 'push');
+    // O modal já lê getSemestreAtual() na abertura — nada mais a fazer aqui
   });
 
-  sincronizarSemNaURL(semAtual);
-
-  sel.addEventListener('mousedown', () => playSound('click', 'jogo'));
-  sel.addEventListener('change', () => {
-    playSound('select', 'jogo');
-    semAtual = sel.value;
-    setSemestre(semAtual);
-    sincronizarSemNaURL(semAtual, 'push');
-    // O modal já lê getSemestreAtual() na abertura — nada mais a fazer aqui
+  // Som no mousedown do select gerado
+  requestAnimationFrame(() => {
+    const sel = document.querySelector('#semestre-wrap select');
+    if (sel) sel.addEventListener('mousedown', () => playSound('click', 'jogo'));
   });
 }
 
@@ -471,7 +457,212 @@ function setupBtnVoltar() {
 }
 
 /* ═══════════════════════════════════════════
-   14. INIT
+   14. MODAL CONFIG — Jogos (Flashcard SRS)
+═══════════════════════════════════════════ */
+
+function _mostrarToastJogos(msg) {
+  const OFFSET   = 12;
+  const DURATION = 2800;
+  const existentes = document.querySelectorAll('.nexus-toast');
+  let nextBottom   = 32;
+  existentes.forEach(t => { nextBottom += t.offsetHeight + OFFSET; });
+
+  const t = document.createElement('div');
+  t.className   = 'nexus-toast';
+  t.textContent = msg;
+  t.style.bottom = `${nextBottom}px`;
+  document.body.appendChild(t);
+
+  requestAnimationFrame(() => t.classList.add('nexus-toast--show'));
+  setTimeout(() => {
+    t.classList.remove('nexus-toast--show');
+    t.addEventListener('transitionend', () => t.remove(), { once: true });
+  }, DURATION);
+}
+
+function _confirmarJogos(btn, callback) {
+  if (btn.dataset.confirmando === 'true') {
+    btn.dataset.confirmando = 'false';
+    btn.textContent = btn.dataset.textoOriginal;
+    btn.classList.remove('modal-btn--danger');
+    callback();
+    return;
+  }
+  btn.dataset.textoOriginal = btn.textContent;
+  btn.dataset.confirmando   = 'true';
+  btn.textContent = 'Tem certeza?';
+  btn.classList.add('modal-btn--danger');
+
+  setTimeout(() => {
+    if (!document.body.contains(btn)) return;
+    if (btn.dataset.confirmando === 'true') {
+      btn.dataset.confirmando = 'false';
+      btn.textContent = btn.dataset.textoOriginal;
+      btn.classList.remove('modal-btn--danger');
+    }
+  }, 3000);
+}
+
+function _abrirModalConfigJogos() {
+  playSound('openModal', 'jogo');
+  document.querySelector('#jcfg-overlay')?.remove();
+
+  const sem         = getSemestreAtual();
+  const disciplinas = getDisciplinasDeSemestre(sem);
+
+  const overlay = document.createElement('div');
+  overlay.id        = 'jcfg-overlay';
+  overlay.className = 'jcfg-overlay';
+
+  overlay.innerHTML = `
+    <div class="jcfg-box" role="dialog" aria-modal="true" aria-labelledby="jcfg-title">
+
+      <div class="jcfg-header">
+        <h2 class="jcfg-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06
+                     a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09
+                     A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83
+                     l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09
+                     A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83
+                     l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09
+                     a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83
+                     l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09
+                     a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          Jogos — Configurações
+        </h2>
+        <button class="jcfg-close" id="jcfg-close" aria-label="Fechar">✕</button>
+      </div>
+
+      <div class="jcfg-body">
+
+        <div class="jcfg-section">
+          <p class="jcfg-section-title">Flashcard</p>
+
+          <div class="jcfg-row">
+            <div class="jcfg-row__label">
+              Limpar disciplina
+              <small class="jcfg-row__hint">
+                Zera o progresso de repetição espaçada de uma disciplina específica.
+              </small>
+            </div>
+            <div class="jcfg-disc-btns" id="jcfg-disc-btns"></div>
+          </div>
+
+          <div class="jcfg-row">
+            <div class="jcfg-row__label">
+              Limpar tudo
+              <small class="jcfg-row__hint">
+                Zera o SRS de todas as disciplinas do semestre atual.
+              </small>
+            </div>
+            <button class="jcfg-btn jcfg-btn--danger" id="jcfg-btn-limpar-tudo">Limpar tudo</button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="jcfg-footer">
+        <button class="jcfg-btn jcfg-btn--ghost" id="jcfg-btn-fechar">Fechar</button>
+      </div>
+
+    </div>`;
+
+  document.body.appendChild(overlay);
+  requestAnimationFrame(() => overlay.classList.add('jcfg--open'));
+
+  /* ── Resetar SRS ── */
+  async function _resetarSRS(discId) {
+    try {
+      const mod = await import('./jogos/flashcard/flashcard.js');
+      mod?.invalidarCacheSRS?.(discId ?? null);
+    } catch (err) {
+      console.warn('[SRS] flashcard.js não encontrado:', err?.message);
+    }
+  }
+
+  /* ── Botões por disciplina ── */
+  const discBtns = overlay.querySelector('#jcfg-disc-btns');
+  disciplinas.forEach(disc => {
+    const btn = document.createElement('button');
+    btn.className   = 'jcfg-btn jcfg-btn--ghost';
+    btn.textContent = disc.apelido;
+    btn.title       = `Limpar SRS de ${disc.nome}`;
+    btn.addEventListener('click', () => {
+      _confirmarJogos(btn, async () => {
+        await _resetarSRS(disc.id);
+        _mostrarToastJogos(`SRS de ${disc.apelido} apagado.`);
+      });
+    });
+    discBtns?.appendChild(btn);
+  });
+
+  /* ── Limpar tudo ── */
+  overlay.querySelector('#jcfg-btn-limpar-tudo')?.addEventListener('click', function () {
+    _confirmarJogos(this, async () => {
+      await _resetarSRS(null);
+      _mostrarToastJogos('SRS de todas as disciplinas apagado.');
+    });
+  });
+
+  /* ── Fechar ── */
+  function _fechar() {
+    playSound('closeModal', 'jogo');
+    overlay.classList.add('jcfg--closing');
+    overlay.classList.remove('jcfg--open');
+    setTimeout(() => overlay.remove(), 220);
+  }
+
+  overlay.querySelector('#jcfg-close')?.addEventListener('click', _fechar);
+  overlay.querySelector('#jcfg-btn-fechar')?.addEventListener('click', () => {
+    playSound('click', 'jogo'); _fechar();
+  });
+  overlay.addEventListener('click', e => { if (e.target === overlay) _fechar(); });
+  document.addEventListener('keydown', function _esc(e) {
+    if (e.key === 'Escape') { _fechar(); document.removeEventListener('keydown', _esc); }
+  }, { once: true });
+}
+
+function _injetarBtnConfigJogos() {
+  // Injeta na topbar, ao lado do semestre-wrap
+  const topbarRight = document.querySelector('.topbar__right');
+  if (!topbarRight) return;
+
+  const btn = document.createElement('button');
+  btn.className = 'jogo-cfg-btn';
+  btn.id        = 'btn-jogos-config';
+  btn.title     = 'Configurações dos Jogos';
+  btn.setAttribute('aria-label', 'Configurações dos Jogos');
+  btn.innerHTML = `
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06
+               a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09
+               A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83
+               l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09
+               A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83
+               l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09
+               a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83
+               l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09
+               a1.65 1.65 0 0 0-1.51 1z"/>
+    </svg>`;
+
+  btn.addEventListener('mouseenter', () => playSound('hover', 'jogo'));
+  btn.addEventListener('click', () => {
+    playSound('click', 'jogo');
+    _abrirModalConfigJogos();
+  });
+
+  topbarRight.appendChild(btn);
+}
+
+/* ═══════════════════════════════════════════
+   15. INIT
 ═══════════════════════════════════════════ */
 
 function init() {
@@ -494,13 +685,14 @@ function init() {
   setupSort();
   setupModal();
   setupBtnVoltar();
+  _injetarBtnConfigJogos();
   preencherAnos(); // preenche footer-year se existir
 }
 
 init();
 
 /* ═══════════════════════════════════════════
-   15. PUBLIC API
+   16. PUBLIC API
 ═══════════════════════════════════════════ */
 
 window.NexusStudy = window.NexusStudy || {};

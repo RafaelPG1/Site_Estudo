@@ -611,30 +611,6 @@ function _abrirModalConfig() {
         </div>
 
         <div class="modal__section">
-          <div class="modal__section-title">Flashcard</div>
-
-          <div class="config-row">
-            <label>
-              Limpar disciplina
-              <small class="config-label-hint">
-                Zera o progresso de repetição espaçada de uma disciplina específica.
-              </small>
-            </label>
-            <div class="flashcard-disc-btns" id="flashcard-disc-btns"></div>
-          </div>
-
-          <div class="config-row">
-            <label>
-              Limpar tudo
-              <small class="config-label-hint">
-                Zera o SRS de todas as disciplinas do semestre atual.
-              </small>
-            </label>
-            <button class="modal-btn modal-btn--danger" id="btn-limpar-srs-tudo">Limpar tudo</button>
-          </div>
-        </div>
-
-        <div class="modal__section">
           <div class="modal__section-title">Área Pessoal</div>
 
           <div class="config-row">
@@ -759,45 +735,9 @@ function _abrirModalConfig() {
     });
   }
 
-  /* Flashcard SRS */
+  /* Área Pessoal */
   const sem         = getSemestreAtual();
   const disciplinas = getDisciplinasDeSemestre(sem);
-
-  async function _resetarSRS(discId) {
-    try {
-      const mod = await import('./games/jogos/flashcard/flashcard.js');
-      mod?.invalidarCacheSRS?.(discId ?? null);
-      console.log(`[SRS] cache invalidado: disc="${discId ?? 'todas'}"`);
-    } catch (err) {
-      console.warn('[SRS] flashcard.js não encontrado (não crítico):', err?.message);
-    }
-  }
-
-  const discBtns = modal.querySelector('#flashcard-disc-btns');
-  if (discBtns) {
-    disciplinas.forEach(disc => {
-      const btn = document.createElement('button');
-      btn.className   = 'modal-btn modal-btn--ghost';
-      btn.textContent = disc.apelido;
-      btn.title       = `Limpar SRS de ${disc.nome}`;
-      btn.addEventListener('click', () => {
-        _confirmar(btn, async () => {
-          await _resetarSRS(disc.id);
-          mostrarToast(`SRS de ${disc.apelido} apagado.`);
-        });
-      });
-      discBtns.appendChild(btn);
-    });
-  }
-
-  modal.querySelector('#btn-limpar-srs-tudo')?.addEventListener('click', function () {
-    _confirmar(this, async () => {
-      await _resetarSRS(null);
-      mostrarToast('SRS de todas as disciplinas apagado.');
-    });
-  });
-
-  /* Área Pessoal */
   const clBtns   = modal.querySelector('#pessoal-cl-btns');
   const taskBtns = modal.querySelector('#pessoal-task-btns');
 
