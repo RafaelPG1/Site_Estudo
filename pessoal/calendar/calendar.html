@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nexus Study</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="calendar.css" />
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-inner">
+    <div class="header-brand">
+      <div class="brand-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+          <path d="M2 17l10 5 10-5" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+          <path d="M2 12l10 5 10-5" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="brand-name">Nexus Study</span>
+    </div>
+
+    <div class="header-nav">
+      <button class="btn-nav" id="btn-prev">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="nav-label">Semana anterior</span>
+      </button>
+
+      <div class="header-week">
+        <h1 class="week-title" id="week-title">Semana atual</h1>
+        <span class="week-range" id="week-range"></span>
+      </div>
+
+      <button class="btn-nav" id="btn-next">
+        <span class="nav-label">Próxima semana</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn-action" id="btn-today">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        Ir para hoje
+      </button>
+      <button class="btn-action" id="btn-copy-prev">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="currentColor" stroke-width="1.8"/></svg>
+        Copiar semana anterior
+      </button>
+      <button class="btn-default-plan" id="btn-default-plan">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        Plano padrão
+      </button>
+    </div>
+    </div>
+  </header>
+
+  <!-- CALENDAR GRID -->
+  <main class="calendar-main">
+    <div class="calendar-grid" id="calendar-grid">
+      <!-- Days rendered by JS -->
+    </div>
+  </main>
+
+  <!-- MODAL: Add / Edit Session -->
+  <div class="modal-overlay" id="modal-session" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modal-title">Novo estudo</h2>
+        <button class="modal-close" id="modal-close" aria-label="Fechar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="input-time">Hora inicial</label>
+            <input class="form-input" type="time" id="input-time" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="input-time-end">Hora final</label>
+            <input class="form-input" type="time" id="input-time-end" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="input-subject">Matéria</label>
+          <div class="subject-select-wrap">
+            <input class="form-input" type="text" id="input-subject" placeholder="Ex: Matemática, Física…" autocomplete="off" />
+            <div class="subject-suggestions" id="subject-suggestions"></div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="input-note">Observação <span class="optional">(opcional)</span></label>
+          <textarea class="form-input form-textarea" id="input-note" rows="3" placeholder="Capítulo, exercícios, revisão…"></textarea>
+        </div>
+
+        <div class="color-picker-group">
+          <label class="form-label">Cor do cartão</label>
+          <div class="color-options" id="color-options">
+            <button class="color-dot active" data-color="blue" style="--c:#3B6FD4" aria-label="Azul"></button>
+            <button class="color-dot" data-color="purple" style="--c:#7C3AED" aria-label="Roxo"></button>
+            <button class="color-dot" data-color="green" style="--c:#1A7A4A" aria-label="Verde"></button>
+            <button class="color-dot" data-color="amber" style="--c:#92620A" aria-label="Âmbar"></button>
+            <button class="color-dot" data-color="rose" style="--c:#9B2034" aria-label="Rosa"></button>
+            <button class="color-dot" data-color="teal" style="--c:#0F766E" aria-label="Teal"></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-danger" id="btn-delete" style="display:none">Excluir</button>
+        <div class="modal-footer-right">
+          <button class="btn-cancel" id="btn-cancel">Cancelar</button>
+          <button class="btn-save" id="btn-save">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Default Plan -->
+  <div class="modal-overlay" id="modal-plan" aria-hidden="true">
+    <div class="modal modal-wide" role="dialog" aria-modal="true" aria-labelledby="modal-plan-title">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" id="modal-plan-title">Plano padrão</h2>
+          <p class="modal-subtitle">Aplicado automaticamente a semanas sem edições</p>
+        </div>
+        <button class="modal-close" id="modal-plan-close" aria-label="Fechar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="plan-grid" id="plan-grid">
+          <!-- rendered by JS -->
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-danger" id="btn-clear-plan">Limpar plano</button>
+        <div class="modal-footer-right">
+          <button class="btn-cancel" id="btn-plan-cancel">Fechar</button>
+          <button class="btn-save" id="btn-apply-plan">Aplicar à semana atual</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Add session to plan -->
+  <div class="modal-overlay" id="modal-plan-session" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modal-plan-session-title">Adicionar ao plano</h2>
+        <button class="modal-close" id="modal-plan-session-close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="ps-time">Hora inicial</label>
+            <input class="form-input" type="time" id="ps-time" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="ps-time-end">Hora final</label>
+            <input class="form-input" type="time" id="ps-time-end" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="ps-subject">Matéria</label>
+          <div class="subject-select-wrap">
+            <input class="form-input" type="text" id="ps-subject" placeholder="Ex: Matemática, Física…" autocomplete="off" />
+            <div class="subject-suggestions" id="ps-suggestions"></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="ps-note">Observação <span class="optional">(opcional)</span></label>
+          <textarea class="form-input form-textarea" id="ps-note" rows="2" placeholder="Opcional…"></textarea>
+        </div>
+        <div class="color-picker-group">
+          <label class="form-label">Cor</label>
+          <div class="color-options" id="ps-color-options">
+            <button class="color-dot active" data-color="blue" style="--c:#3B6FD4"></button>
+            <button class="color-dot" data-color="purple" style="--c:#7C3AED"></button>
+            <button class="color-dot" data-color="green" style="--c:#1A7A4A"></button>
+            <button class="color-dot" data-color="amber" style="--c:#92620A"></button>
+            <button class="color-dot" data-color="rose" style="--c:#9B2034"></button>
+            <button class="color-dot" data-color="teal" style="--c:#0F766E"></button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-danger" id="btn-ps-delete" style="display:none">Excluir</button>
+        <div class="modal-footer-right">
+          <button class="btn-cancel" id="btn-ps-cancel">Cancelar</button>
+          <button class="btn-save" id="btn-ps-save">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <script src="calendar.js"></script>
+</body>
+</html>
