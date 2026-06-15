@@ -24,6 +24,8 @@
      • Controle de fluxo
    ============================================================ */
 
+import { playSound } from '../../../shared/js/audio/audio-api.js';
+
 /* ══════════════════════════════════════════════════════════
    CONSTANTES LOCAIS
 ══════════════════════════════════════════════════════════ */
@@ -63,12 +65,21 @@ export function uiInit({ onResponder, onIrAnterior, onIrProxima }) {
     timerBar:       document.querySelector('.game-timer-bar'),
   });
 
-  el.btnAnterior?.addEventListener('click', onIrAnterior);
-  el.btnProxima?.addEventListener('click', onIrProxima);
+  el.btnAnterior?.addEventListener('click', () => {
+    playSound('click', 'sm');
+    onIrAnterior();
+  });
+  el.btnProxima?.addEventListener('click', () => {
+    playSound('click', 'sm');
+    onIrProxima();
+  });
 
   $('alternativas')?.addEventListener('click', e => {
     const btn = e.target.closest('.alt-btn');
-    if (btn && !btn.disabled) onResponder(btn.dataset.letra);
+    if (btn && !btn.disabled) {
+      playSound('select', 'sm');
+      onResponder(btn.dataset.letra);
+    }
   });
 }
 
@@ -138,7 +149,10 @@ export function uiMostrarTelaVazia({ semDisp, sem, disc }) {
   const emptyTitle = $('empty-title');
   const emptyDesc  = $('empty-desc');
 
-  if (btnBack) btnBack.href = `../../jogo.html${sem ? `?sem=${sem}` : ''}`;
+  if (btnBack) {
+    btnBack.href = `../../jogo.html${sem ? `?sem=${sem}` : ''}`;
+    btnBack.addEventListener('click', () => playSound('click', 'sm'));
+  }
 
   if (!semDisp || Object.keys(semDisp).length === 0) {
     if (emptyTitle) emptyTitle.textContent = 'Indisponível neste semestre';
@@ -191,7 +205,10 @@ export function uiRenderDots(perguntas, respostas, indice, onNavegar) {
       !respondida ? 'sm-dot--pending' :
       correto     ? 'sm-dot--correct' : 'sm-dot--wrong'
     );
-    dot.addEventListener('click', () => onNavegar(i));
+    dot.addEventListener('click', () => {
+      playSound('click', 'sm');
+      onNavegar(i);
+    });
     container.appendChild(dot);
   });
 }
@@ -266,7 +283,14 @@ export function uiAtualizarTimerUI(restante, total) {
   uiAplicarCorBarra(pct);
 
   const timerContainer = document.querySelector('.timer-container');
-  timerContainer?.classList.toggle('timer-urgente', restante <= 5);
+  const eraUrgente = timerContainer?.classList.contains('timer-urgente');
+  const ficaUrgente = restante <= 5;
+  timerContainer?.classList.toggle('timer-urgente', ficaUrgente);
+
+  // Dispara som de aviso uma única vez ao entrar na zona de urgência
+  if (ficaUrgente && !eraUrgente && restante > 0) {
+    playSound('timerWarning', 'sm');
+  }
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -348,11 +372,13 @@ function _mostrarFeedback({ correto, tempoAcabou, pergunta, acertos, indice, tot
   const isUltima = indice >= total - 1;
 
   if (tempoAcabou) {
+    playSound('timeout', 'sm');
     if (icone) icone.textContent = '⏰';
     if (msg)   { msg.textContent = 'Tempo Esgotado!'; msg.style.color = '#ff9800'; }
     if (resp)  resp.textContent  = `A resposta correta era: ${pergunta.correta} — ${pergunta.alternativas[pergunta.correta]}`;
 
   } else if (correto) {
+    playSound('correct', 'sm');
     if (icone) icone.textContent = isUltima ? '🏆' : '✅';
     if (msg) {
       msg.textContent = isUltima ? '🏆 Você é o Milionário!' : 'Correto! Excelente!';
@@ -361,6 +387,7 @@ function _mostrarFeedback({ correto, tempoAcabou, pergunta, acertos, indice, tot
     if (resp) resp.textContent = `Você ganhou: ${PREMIOS[acertos - 1]?.valor || 'R$ 0'}`;
 
   } else {
+    playSound('wrong', 'sm');
     if (icone) icone.textContent = '❌';
     if (msg)   { msg.textContent = 'Resposta Errada! Prêmio travado 🔴'; msg.style.color = '#ff1744'; }
     if (resp)  resp.textContent  = `A correta era: ${pergunta.correta} — ${pergunta.alternativas[pergunta.correta]} · Acerte a próxima para ganhar ${PREMIOS[indice]?.valor}`;
@@ -399,6 +426,8 @@ export function uiRenderizarQuestao({
       btn.className = 'alt-btn';
       btn.disabled  = jaRespondeu;
       btn.style.opacity = '1';
+      // Hover sound — recria listener a cada render para evitar duplicatas
+      btn.onmouseenter = () => { if (!btn.disabled) playSound('hover', 'sm'); };
     }
     if (txt) txt.textContent = pergunta.alternativas[l.toUpperCase()] ?? '';
   });
@@ -465,7 +494,7 @@ export function uiAtualizarBtnRevisarErros(erradas, onIniciarRevisao) {
     const novo = btn.cloneNode(true);
     btn.parentNode.replaceChild(novo, btn);
     novo.classList.remove('hidden');
-    novo.addEventListener('click', () => onIniciarRevisao(erradas));
+    novo.addEventListener('click', () => { playSound('click', 'sm'); onIniciarRevisao(erradas); });
   }
 }
 
@@ -504,7 +533,7 @@ export function uiConfigurarBtnContinuar(sessao, onContinuar) {
   // Substitui o nó para limpar listeners anteriores
   const novo = btn.cloneNode(true);
   btn.parentNode.replaceChild(novo, btn);
-  novo.addEventListener('click', () => onContinuar(sessao));
+  novo.addEventListener('click', () => { playSound('click', 'sm'); onContinuar(sessao); });
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -587,7 +616,7 @@ export function uiRenderizarResultado(dados) {
     elSair.removeAttribute('href');
     const novoSair = elSair.cloneNode(true);
     elSair.parentNode.replaceChild(novoSair, elSair);
-    novoSair.addEventListener('click', e => { e.preventDefault(); onSair(); });
+    novoSair.addEventListener('click', e => { e.preventDefault(); playSound('click', 'sm'); onSair(); });
   }
 
   // Botão "Jogar novamente / Repetir revisão"
@@ -610,7 +639,7 @@ export function uiRenderizarResultado(dados) {
       novoRejogo.appendChild(document.createTextNode(' Repetir revisão'));
     }
 
-    novoRejogo.addEventListener('click', onRejogo);
+    novoRejogo.addEventListener('click', () => { playSound('click', 'sm'); onRejogo(); });
   }
 
   // Botão "Revisar erros" no resultado
@@ -729,7 +758,7 @@ export function uiMostrarTelaRevisaoConcluida(onVoltar) {
   `;
 
   uiMostrarTela('result', false, 0);
-  $('revisao-concluida-voltar')?.addEventListener('click', onVoltar);
+  $('revisao-concluida-voltar')?.addEventListener('click', () => { playSound('click', 'sm'); onVoltar(); });
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -798,6 +827,7 @@ export function uiSetupPausa({ onTogglePausa, onVoltarIntro, isPausado, isQuesta
     // Não pausa se a questão já foi respondida
     if (!isQuestaoAtiva()) return;
     const novoPausado = onTogglePausa();
+    playSound('pause', 'sm');
     _aplicarEstadoPausa(novoPausado);
   }
 
@@ -807,6 +837,7 @@ export function uiSetupPausa({ onTogglePausa, onVoltarIntro, isPausado, isQuesta
   });
 
   btnVoltarIntro?.addEventListener('click', async () => {
+    playSound('click', 'sm');
     // Garante que o overlay está fechado antes de voltar
     _aplicarEstadoPausa(false);
     uiAtualizarTimerUI(30, 30);
