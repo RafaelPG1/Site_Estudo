@@ -17,14 +17,7 @@ const SUBJECTS = [
   'Intervalo', 'Exercícios', 'Leitura', 'Projetos'
 ];
 
-const COLOR_ICON = {
-  blue:   `<svg class="card-icon" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 12h8M8 8h8M8 16h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-  purple: `<svg class="card-icon" viewBox="0 0 24 24" fill="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>`,
-  green:  `<svg class="card-icon" viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3L22 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-  amber:  `<svg class="card-icon" viewBox="0 0 24 24" fill="none"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2z" stroke="currentColor" stroke-width="1.8"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-  rose:   `<svg class="card-icon" viewBox="0 0 24 24" fill="none"><path d="M4.9 4.9C6.5 3.3 9.1 2 12 2s5.5 1.3 7.1 2.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M20.4 7.5A10 10 0 1112 22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M12 8v4l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-  teal:   `<svg class="card-icon" viewBox="0 0 24 24" fill="none"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>`,
-};
+// Ícones removidos — a barra de cor no topo dos cards é suficiente para identificação visual.
 
 const STORAGE_KEYS = {
   defaultPlan: 'nexus_default_plan',
@@ -127,15 +120,52 @@ function timeToMinutes(t) {
   return h * 60 + (m || 0);
 }
 
-// Convert a time string to a vertical pixel offset within the timeline
+// Convert a time string to a vertical pixel offset within the timeline.
+// The timeline reserves top padding equal to half an hour-row height
+// (see getTopPadding) so that the first label (06:00), which is centered
+// on its line via translateY(-50%), is never clipped by the scrolling
+// container. Every absolutely-positioned element inside .timeline-inner
+// must add this padding to its computed offset.
 function timeToOffset(t) {
   const minutes = timeToMinutes(t) - TIMELINE_START_HOUR * 60;
-  return (minutes / 60) * getHourHeight();
+  return (minutes / 60) * getHourHeight() + getTopPadding();
 }
 
 function getHourHeight() {
   const val = getComputedStyle(document.documentElement).getPropertyValue('--hour-h').trim();
   return parseFloat(val) || 56;
+}
+
+// Extra space reserved at the top of the timeline so the first hour
+// label/line (centered via translateY(-50%)) sits fully inside the
+// scrollable area instead of being clipped.
+function getTopPadding() {
+  return getHourHeight() / 2;
+}
+
+// Measures the real width of a vertical scrollbar in this browser/OS.
+// Modern browsers with overlay scrollbars (macOS default, mobile) return 0,
+// which is correct: those scrollbars don't take up layout space.
+let _scrollbarWidthCache = null;
+function getScrollbarWidth() {
+  if (_scrollbarWidthCache !== null) return _scrollbarWidthCache;
+
+  const outer = document.createElement('div');
+  outer.style.visibility = 'hidden';
+  outer.style.position = 'absolute';
+  outer.style.overflow = 'scroll';
+  outer.style.width = '100px';
+  outer.style.height = '100px';
+  document.body.appendChild(outer);
+
+  const inner = document.createElement('div');
+  inner.style.width = '100%';
+  inner.style.height = '100%';
+  outer.appendChild(inner);
+
+  _scrollbarWidthCache = outer.offsetWidth - inner.offsetWidth;
+  outer.parentNode.removeChild(outer);
+  return _scrollbarWidthCache;
 }
 
 // ─── WEEK DATA ────────────────────────────────────────────────────────────────
@@ -183,6 +213,11 @@ function renderCalendar() {
   // Set CSS var for total hours in the timeline
   grid.style.setProperty('--hours-count', TIMELINE_HOURS);
 
+  // Set CSS var for the real scrollbar width, so the header row can
+  // reserve an equivalent phantom column and stay aligned with the
+  // (narrower) scrollable grid-body columns.
+  grid.style.setProperty('--scrollbar-w', `${getScrollbarWidth()}px`);
+
   // ── Scroll wrapper ──
   const scrollWrap = document.createElement('div');
   scrollWrap.className = 'grid-scroll';
@@ -222,7 +257,7 @@ function renderCalendar() {
   const rulerInner = document.createElement('div');
   rulerInner.className = 'timeline-inner';
   for (let h = TIMELINE_START_HOUR; h <= TIMELINE_END_HOUR; h++) {
-    const offset = (h - TIMELINE_START_HOUR) * getHourHeight();
+    const offset = (h - TIMELINE_START_HOUR) * getHourHeight() + getTopPadding();
     const label = document.createElement('div');
     label.className = 'time-ruler-label';
     label.style.top = `${offset}px`;
@@ -247,13 +282,21 @@ function renderCalendar() {
     const inner = document.createElement('div');
     inner.className = 'timeline-inner';
 
-    // Hour lines
+    // Hour lines — major (solid) nas horas cheias, minor (tracejado) nas meias horas
     for (let h = TIMELINE_START_HOUR; h <= TIMELINE_END_HOUR; h++) {
-      const offset = (h - TIMELINE_START_HOUR) * getHourHeight();
+      const offset = (h - TIMELINE_START_HOUR) * getHourHeight() + getTopPadding();
       const line = document.createElement('div');
-      line.className = 'hour-line';
+      line.className = 'hour-line major';
       line.style.top = `${offset}px`;
       inner.appendChild(line);
+
+      // Linha de meia hora
+      if (h < TIMELINE_END_HOUR) {
+        const halfLine = document.createElement('div');
+        halfLine.className = 'hour-line';
+        halfLine.style.top = `${offset + getHourHeight() / 2}px`;
+        inner.appendChild(halfLine);
+      }
     }
 
     // Session cards (with overlap-aware horizontal layout)
@@ -346,7 +389,6 @@ function formatWeekLabel(monday) {
 
 function createSessionCard(session, col = 0, cols = 1) {
   const color = session.color || 'blue';
-  const icon  = COLOR_ICON[color] || COLOR_ICON.blue;
   const card  = document.createElement('div');
   card.className     = 'session-card';
   card.dataset.color = color;
@@ -354,32 +396,39 @@ function createSessionCard(session, col = 0, cols = 1) {
 
   const start = session.timeStart || session.time || '';
   const end   = session.timeEnd || '';
-  const timeLabel = end ? `${start} <span class="time-sep">→</span> ${end}` : start;
 
-  // Position and size based on time
+  // Intervalo completo: "07:00 – 08:00" ou só a hora inicial se não houver fim
+  const timeLabel = end ? `${start} – ${end}` : start;
+
+  // Posição e altura baseadas no tempo
   const hourH = getHourHeight();
   const top = timeToOffset(start);
   let durationMin = end ? (timeToMinutes(end) - timeToMinutes(start)) : 60;
   if (durationMin <= 0) durationMin = 60;
-  const height = Math.max((durationMin / 60) * hourH, 30);
+  const height = Math.max((durationMin / 60) * hourH, 28);
 
-  card.style.top = `${top}px`;
+  card.style.top    = `${top}px`;
   card.style.height = `${height}px`;
 
-  // Horizontal slot when sessions overlap
+  // Posição horizontal quando sessões se sobrepõem
   if (cols > 1) {
-    const gap = 4;
-    card.style.left = `calc(6px + (100% - 12px) * ${col} / ${cols} + ${col > 0 ? gap/2 : 0}px)`;
-    card.style.width = `calc((100% - 12px) / ${cols} - ${cols > 1 ? gap/2 : 0}px)`;
+    const gap = 3;
+    card.style.left  = `calc(5px + (100% - 10px) * ${col} / ${cols} + ${col > 0 ? gap/2 : 0}px)`;
+    card.style.width = `calc((100% - 10px) / ${cols} - ${cols > 1 ? gap/2 : 0}px)`;
     card.style.right = 'auto';
   }
 
-  // Hide subject/note text if card is too short to fit comfortably
-  const compact = height < 44;
+  // Card muito pequeno: só a barra de topo (via ::before) + hora, sem título
+  const compact  = height < 36;
+  // Card médio: hora + título, sem nota
+  const showNote = height >= 70 && session.note;
 
   card.innerHTML = `
-    <div class="card-time">${icon}${timeLabel}</div>
-    ${compact ? '' : `<div class="card-subject">${escHtml(session.subject)}</div>`}
+    <div class="card-body">
+      <div class="card-time">${timeLabel}</div>
+      ${compact ? '' : `<div class="card-subject">${escHtml(session.subject)}</div>`}
+      ${showNote  ? `<div class="card-note">${escHtml(session.note)}</div>` : ''}
+    </div>
   `;
   return card;
 }
@@ -590,10 +639,12 @@ function renderPlanGrid() {
       card.dataset.color = s.color || 'blue';
       const start = s.timeStart || s.time || '';
       const end   = s.timeEnd || '';
-      const timeLabel = end ? `${start} → ${end}` : start;
+      const timeLabel = end ? `${start} – ${end}` : start;
       card.innerHTML = `
-        <div class="plan-card-time">${timeLabel}</div>
-        <div class="plan-card-subject">${escHtml(s.subject)}</div>
+        <div class="plan-card-inner">
+          <div class="plan-card-time">${timeLabel}</div>
+          <div class="plan-card-subject">${escHtml(s.subject)}</div>
+        </div>
       `;
       card.addEventListener('click', () => openPlanSessionModal({ dayIdx: i, sessionId: s.id }));
       col.appendChild(card);

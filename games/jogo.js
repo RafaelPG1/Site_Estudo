@@ -22,6 +22,34 @@ import {
   getMusicMode,
 } from '../shared/js/audio/audio-api.js';
 
+// ── Assistente Nexus ──────────────────────────────────────────
+function _loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error(`[Nexus IA] Falha ao carregar: ${src}`));
+    document.body.appendChild(s);
+  });
+}
+function _carregarIA() {
+  const raiz = new URL('../', import.meta.url).href.replace(/\/$/, '');
+  const BASE = raiz + '/shared/js/ia/';
+  const deps = [
+    BASE + 'core/text-utils.js',
+    BASE + 'core/loader.js',
+    BASE + 'core/worker.js',
+    BASE + 'core/ui.js',
+    BASE + 'resumo/search.js',
+  ];
+  Promise.all(deps.map(_loadScript))
+    .then(() => _loadScript(BASE + 'resumo/assistant.js'))
+    .then(() => _loadScript(BASE + 'init.js'))
+    .catch(err => console.error(err));
+}
+_carregarIA();
+// ─────────────────────────────────────────────────────────────
+
 'use strict';
 
 /* ═══════════════════════════════════════════

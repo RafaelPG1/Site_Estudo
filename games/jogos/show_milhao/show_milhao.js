@@ -678,7 +678,7 @@ async function init() {
 
   if (ano) {
     try {
-      const modulo = await import(`../../../content/game/show_milhao/${ano}/show_milhao_data.js`);
+      const modulo = await import(`../../../content/games/show_milhao/${ano}/show_milhao_data.js`);
       semDisp = modulo.SHOW_MILHAO_DATA?.[sem] ?? null;
       banco   = semDisp?.[disc] ?? [];
     } catch (err) {
