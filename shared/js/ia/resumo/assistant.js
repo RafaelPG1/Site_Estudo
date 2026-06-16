@@ -608,14 +608,16 @@
     if (_ehAgradecimento(texto)) { _renderBot('De nada! 😊 Se tiver mais dúvidas, é só perguntar.'); return; }
 
     var respostaIA = null;
+    const turnosAntesDePerguntar = NexusWorker.status().turnosNoHistorico;
     try {
       respostaIA = await NexusWorker.perguntar({ pergunta: texto, resultados: [], disciplina: '', tipoContexto: 'livre' });
     } catch (e) { console.warn('[NexusAssistant] _responderModoLivre erro:', e); }
 
     if (respostaIA) {
+      const temHistorico = turnosAntesDePerguntar > 0;
       const rodape = (respostaIA.fonte || respostaIA.modelo) ? {
         linha1: ['IA: ' + (respostaIA.fonte || ''), respostaIA.modelo || ''].filter(Boolean).join(' · '),
-        linha2: 'fonte: conhecimento próprio',
+        linha2: temHistorico ? 'fonte: histórico da conversa' : 'fonte: conhecimento próprio',
       } : null;
       _renderBot(respostaIA.texto, rodape);
     } else {
@@ -663,10 +665,12 @@
     }
 
     NexusUI.showTyping();
+    const turnosAntesDePerguntar = NexusWorker.status().turnosNoHistorico;
     try {
       const respostaIA = await NexusWorker.perguntar({ pergunta: texto, resultados: [], disciplina: null, tipoContexto: 'livre' });
       if (respostaIA) {
-        _renderBot(respostaIA.texto, (respostaIA.fonte || respostaIA.modelo) ? { linha1: ['IA: ' + (respostaIA.fonte || ''), respostaIA.modelo || ''].filter(Boolean).join(' · '), linha2: 'fonte: conhecimento próprio' } : null);
+        const temHistorico = turnosAntesDePerguntar > 0;
+        _renderBot(respostaIA.texto, (respostaIA.fonte || respostaIA.modelo) ? { linha1: ['IA: ' + (respostaIA.fonte || ''), respostaIA.modelo || ''].filter(Boolean).join(' · '), linha2: temHistorico ? 'fonte: histórico da conversa' : 'fonte: conhecimento próprio' } : null);
       } else { _renderBot('Nao consegui processar sua pergunta. Tente novamente.'); }
     } catch (e) { console.error('[NexusAssistant] _executarSemDisc erro:', e); _renderBot('Ocorreu um erro ao processar sua pergunta. Tente novamente.'); }
     finally { NexusUI.hideTyping(); }
@@ -714,12 +718,13 @@
     }
 
     if (typeof window.NexusWorker !== 'undefined') {
-      const temCtx      = tipoContexto === 'conteudo' ? (resultados && resultados.length > 0) : (tipoContexto === 'global' || tipoContexto === 'estrutura');
-      const temHistorico = NexusWorker.status().turnosNoHistorico > 0;
+      const temCtx                = tipoContexto === 'conteudo' ? (resultados && resultados.length > 0) : (tipoContexto === 'global' || tipoContexto === 'estrutura');
+      const turnosAntesDePerguntar = NexusWorker.status().turnosNoHistorico;
       let respostaIA = null;
       try { respostaIA = await NexusWorker.perguntar({ pergunta: texto, resultados: resultados, disciplina: disc.id, tipoContexto: tipoContexto, semContexto: !temCtx }); }
       catch (errIA) { console.warn('[NexusAssistant] NexusWorker.perguntar() lançou exceção:', errIA); }
       if (respostaIA) {
+        const temHistorico = turnosAntesDePerguntar > 0;
         var labelFonte;
         if (temCtx && temHistorico)  labelFonte = 'fonte: conteúdo do site (via histórico)';
         else if (temCtx)             labelFonte = 'fonte: conteúdo do site';
