@@ -1,136 +1,230 @@
 /**
- * NEXUS — shared/js/ia/init.js
+ * NEXUS — shared/js/ia/games/assistant.js
  *
- * Ponto de entrada único do sistema de IA.
+ * Camada de sessão/orquestração do domínio "games".
  *
- * Responsabilidade exclusiva:
- *   Identificar o contexto da página e carregar os módulos corretos.
- *
- * Decisão:
- *   - Páginas normais (resumo)  → carrega apenas o sistema de resumo
- *   - Páginas de quiz           → carrega sistema de quiz + resumo (fallback)
- *
- * A detecção é simples e direta:
- *   window.__NEXUS_QUIZ_TOKEN__ presente e válido → contexto de quiz
- *   Qualquer outra situação → contexto de resumo
- *
- * Quem define __NEXUS_QUIZ_TOKEN__ é o template_init.js das páginas
- * de quiz, ANTES que init.js seja executado.
- *
- * Ordem de carregamento garantida pelo HTML:
- *   1. core/text-utils.js
- *   2. core/loader.js
- *   3. core/worker.js
- *   4. core/ui.js
- *   5. resumo/search.js
- *   6. quiz/search.js       (apenas em páginas de quiz)
- *   7. resumo/assistant.js
- *   8. quiz/assistant.js    (apenas em páginas de quiz)
- *   9. init.js              ← este arquivo
- *
- * Não faz import dinâmico — apenas verifica o estado global e
- * garante que os módulos necessários foram carregados pelo HTML.
+ * Responsabilidades:
+ *   - Sortear um subconjunto aleatório de itens de uma lista, sem
+ *     alterar a lista original (banco carregado por games/search.js)
+ *   - Gerenciar o ciclo de vida da partida atual (deck ativo,
+ *     reinício, encerramento)
+ *   - Orquestrar o fluxo "carregar conteúdo → iniciar partida" usando
+ *     games/search.js, sem conhecer o formato interno dos dados
  *
  * NÃO conhece:
- *   - Detalhes de disciplina, semestre, conteúdo
- *   - Lógica de busca ou chat
+ *   - Como os dados são carregados ou de onde vêm (delega
+ *     integralmente a games/search.js)
+ *   - O formato interno do conteúdo de cada jogo (se é
+ *     "cartas", "questoes", "afirmacoes", etc.)
+ *   - Regras de pontuação, renderização ou interação — isso é
+ *     responsabilidade exclusiva do código de cada jogo
+ *   - Estrutura de resumo ou quiz
+ *   - DOM
  *
- * Dependências obrigatórias (sempre):
- *   window.NexusTextUtils, window.NexusLoader, window.NexusWorker,
- *   window.NexusUI, window.NexusResumoSearch, window.NexusAssistant
+ * Papel no domínio games (equivalente a resumo/assistant.js e
+ * quiz/assistant.js): camada de orquestração acima da camada de
+ * dados. Assim como o assistant de resumo/quiz coordena busca +
+ * worker sem reimplementar nenhum dos dois, este módulo coordena
+ * carregamento (games/search.js) + sorteio/sessão, sem reimplementar
+ * a lógica de cada jogo.
  *
- * Dependências de quiz (apenas em páginas de quiz):
- *   window.NexusQuizSearch, window.NexusQuizAssistant
+ * GENERICIDADE ENTRE JOGOS
+ * ────────────────────────
+ * Este módulo opera sobre ARRAYS GENÉRICOS. Ele não sabe (nem precisa
+ * saber) se os itens são cartas de flashcard, perguntas de show do
+ * milhão ou afirmações de verdadeiro/falso. O código de cada jogo é
+ * responsável por:
+ *   1. Chamar iniciarPartida(lista, qtd) passando a lista correta
+ *      (extraída via NexusGamesSearch.obterCampo('campo_do_jogo')).
+ *   2. Interpretar os itens do deck retornado da forma que seu próprio
+ *      jogo exige.
+ *
+ * Nenhuma alteração neste arquivo é necessária para adicionar um novo
+ * jogo — apenas o próprio jogo precisa saber qual campo ler.
+ *
+ * Depende de: games/search.js (window.NexusGamesSearch)
+ *
+ * API pública: window.NexusGamesAssistant
  */
 
 (function () {
   'use strict';
 
   /* ══════════════════════════════════════════════════════════
-     DETECÇÃO DE CONTEXTO
+     DEPENDÊNCIA: NexusGamesSearch
+  ══════════════════════════════════════════════════════════ */
+
+  function _search() {
+    if (typeof window.NexusGamesSearch === 'undefined') {
+      throw new Error('[NexusGamesAssistant] NexusGamesSearch não encontrado. Carregue games/search.js antes.');
+    }
+    return window.NexusGamesSearch;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     CONFIGURAÇÃO
+  ══════════════════════════════════════════════════════════ */
+
+  // Quantidade padrão de itens sorteados por partida, quando a
+  // chamada não especifica `qtd`.
+  const QTD_PADRAO_PARTIDA = 10;
+
+  /* ══════════════════════════════════════════════════════════
+     ESTADO INTERNO
+  ══════════════════════════════════════════════════════════ */
+
+  // Deck da partida em andamento: nova array com a seleção/ordem
+  // sorteada para esta partida. NUNCA é a mesma referência da lista
+  // de origem — sempre uma cópia independente.
+  let _deckAtual = null;
+
+  /* ══════════════════════════════════════════════════════════
+     SELEÇÃO ALEATÓRIA (FISHER–YATES)
   ══════════════════════════════════════════════════════════ */
 
   /**
-   * Retorna true se a página atual é uma página de quiz com
-   * token de sessão válido.
+   * Embaralha uma cópia do array recebido usando Fisher–Yates.
+   * NÃO modifica o array original — sempre opera sobre uma cópia.
    *
-   * @returns {boolean}
+   * @param {Array} arr
+   * @returns {Array} nova array embaralhada
    */
-  function _ehContextoQuiz() {
-    var t = window.__NEXUS_QUIZ_TOKEN__;
-    if (!t || typeof t !== 'string') return false;
-    return window.__NEXUS_QUIZ_MODO__ !== undefined;
+  function _embaralhar(arr) {
+    const copia = arr.slice();
+    for (let i = copia.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const tmp = copia[i];
+      copia[i] = copia[j];
+      copia[j] = tmp;
+    }
+    return copia;
+  }
+
+  /**
+   * Sorteia um subconjunto de `qtd` itens a partir de `lista`, sem
+   * repetição e sem alterar `lista`.
+   *
+   * Se `qtd` for maior ou igual ao tamanho da lista, retorna a lista
+   * inteira embaralhada (todos os itens participam, em ordem
+   * aleatória).
+   *
+   * @param {Array} lista
+   * @param {number} qtd
+   * @returns {Array} nova array com os itens sorteados
+   */
+  function _sortearSubset(lista, qtd) {
+    const embaralhada = _embaralhar(lista);
+    if (qtd >= embaralhada.length) return embaralhada;
+    return embaralhada.slice(0, qtd);
   }
 
   /* ══════════════════════════════════════════════════════════
-     VERIFICAÇÃO DE DEPENDÊNCIAS
+     CICLO DE VIDA DA PARTIDA
   ══════════════════════════════════════════════════════════ */
 
-  function _depsBaseOk() {
-    var ok = true;
-    if (typeof window.NexusTextUtils    === 'undefined') { console.error('[NexusInit] NexusTextUtils não encontrado.');    ok = false; }
-    if (typeof window.NexusLoader       === 'undefined') { console.error('[NexusInit] NexusLoader não encontrado.');       ok = false; }
-    if (typeof window.NexusWorker       === 'undefined') { console.warn ('[NexusInit] NexusWorker não encontrado. Modo somente-busca.'); }
-    if (typeof window.NexusUI           === 'undefined') { console.error('[NexusInit] NexusUI não encontrado.');           ok = false; }
-    if (typeof window.NexusResumoSearch === 'undefined') { console.error('[NexusInit] NexusResumoSearch não encontrado.'); ok = false; }
-    if (typeof window.NexusAssistant    === 'undefined') { console.error('[NexusInit] NexusAssistant não encontrado.');    ok = false; }
-    return ok;
+  /**
+   * Inicia uma nova partida: sorteia `qtd` itens de `lista`, em ordem
+   * embaralhada, e armazena como deck da partida atual.
+   *
+   * A `lista` de origem (gerenciada por quem chama — tipicamente um
+   * array extraído do banco de games/search.js) permanece intacta.
+   * Chamadas sucessivas de iniciarPartida() com a mesma `lista` sempre
+   * sorteiam a partir dela, nunca do deck anterior — permitindo
+   * "jogar novamente" com uma nova seleção aleatória.
+   *
+   * @param {Array} lista — lista de itens "jogáveis" do conteúdo
+   *   carregado (cartas, perguntas, afirmações, etc. — interpretação
+   *   é responsabilidade do jogo).
+   * @param {number} [qtd] — quantidade de itens da partida.
+   *   Padrão: 10 (ou o tamanho da lista, se for menor).
+   * @returns {Array|null} deck da partida (nova array), ou null se
+   *   `lista` for inválida/vazia
+   */
+  function iniciarPartida(lista, qtd) {
+    if (!Array.isArray(lista) || !lista.length) {
+      console.warn('[NexusGamesAssistant] iniciarPartida: lista inválida ou vazia.');
+      _deckAtual = null;
+      return null;
+    }
+
+    const quantidade = qtd != null ? qtd : Math.min(QTD_PADRAO_PARTIDA, lista.length);
+
+    _deckAtual = _sortearSubset(lista, quantidade);
+
+    console.log('[NexusGamesAssistant] partida iniciada:', _deckAtual.length, 'de', lista.length, 'itens.');
+
+    return _deckAtual;
   }
 
-  function _depsQuizOk() {
-    var ok = true;
-    if (typeof window.NexusQuizSearch    === 'undefined') { console.error('[NexusInit] NexusQuizSearch não encontrado.');    ok = false; }
-    if (typeof window.NexusQuizAssistant === 'undefined') { console.error('[NexusInit] NexusQuizAssistant não encontrado.'); ok = false; }
-    return ok;
+  /**
+   * Atalho que combina o carregamento de conteúdo (via
+   * games/search.js) com o início de partida.
+   *
+   * Útil para o fluxo de inicialização padrão: carregar o conteúdo
+   * do jogo/ano/conteúdo atuais e já sortear o primeiro deck.
+   *
+   * @param {{ jogo: string, ano: string, conteudo: string, prefixo?: string, arquivo?: string }} ctx
+   *   — mesmo contrato de NexusGamesSearch.carregarConteudo().
+   * @param {string} campoLista — nome do campo do banco que contém a
+   *   lista de itens jogáveis (ex: 'cartas', 'questoes', 'afirmacoes').
+   *   Definido por cada jogo — este módulo não assume nenhum nome fixo.
+   * @param {number} [qtd] — quantidade de itens da partida (ver
+   *   iniciarPartida()).
+   *
+   * @returns {Promise<Array|null>} deck da partida, ou null em caso
+   *   de falha no carregamento ou campo ausente/vazio
+   */
+  async function carregarEIniciar(ctx, campoLista, qtd) {
+    const banco = await _search().carregarConteudo(ctx);
+
+    if (!banco) {
+      _deckAtual = null;
+      return null;
+    }
+
+    const lista = _search().obterCampo(campoLista);
+
+    if (!Array.isArray(lista)) {
+      console.warn('[NexusGamesAssistant] carregarEIniciar: campo "' + campoLista +
+        '" não é uma lista válida no conteúdo de', ctx.jogo, '/', ctx.conteudo);
+      _deckAtual = null;
+      return null;
+    }
+
+    return iniciarPartida(lista, qtd);
+  }
+
+  /**
+   * Retorna o deck da partida em andamento, ou null se nenhuma
+   * partida foi iniciada.
+   *
+   * @returns {Array|null}
+   */
+  function deckAtual() {
+    return _deckAtual;
+  }
+
+  /**
+   * Encerra a partida atual, limpando o deck.
+   *
+   * O banco carregado em games/search.js NÃO é afetado — uma nova
+   * partida pode ser iniciada imediatamente via iniciarPartida() ou
+   * carregarEIniciar().
+   */
+  function encerrarPartida() {
+    _deckAtual = null;
+    console.log('[NexusGamesAssistant] partida encerrada.');
   }
 
   /* ══════════════════════════════════════════════════════════
-     INICIALIZAÇÃO
+     REGISTRO GLOBAL
   ══════════════════════════════════════════════════════════ */
 
-  function _init() {
-    if (!_depsBaseOk()) {
-      console.error('[NexusInit] dependências base ausentes — abortando inicialização.');
-      return;
-    }
-
-    var isQuiz = _ehContextoQuiz();
-
-    if (isQuiz) {
-      if (!_depsQuizOk()) {
-        console.warn('[NexusInit] dependências de quiz ausentes — iniciando apenas resumo.');
-        isQuiz = false;
-      }
-    }
-
-    if (isQuiz) {
-      console.log('[NexusInit] contexto: quiz + resumo (fallback)');
-
-      // Autoriza o NexusQuizSearch com o token de sessão
-      NexusQuizSearch.autorizarQuiz(window.__NEXUS_QUIZ_TOKEN__);
-
-      // O resumo/assistant.js já se auto-inicializa via DOMContentLoaded.
-      // quiz/assistant.js também se registra automaticamente e intercepta
-      // perguntas quando _contextoQuizAtivo() retornar true.
-      // Nada mais é necessário aqui além do autorizar acima.
-
-      console.log('[NexusInit] quiz autorizado para modo:', window.__NEXUS_QUIZ_MODO__);
-
-    } else {
-      console.log('[NexusInit] contexto: resumo');
-      // resumo/assistant.js se auto-inicializa via DOMContentLoaded.
-      // Nenhuma ação adicional necessária.
-    }
-  }
-
-  /* ══════════════════════════════════════════════════════════
-     DISPARO
-  ══════════════════════════════════════════════════════════ */
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', _init);
-  } else {
-    _init();
-  }
+  window.NexusGamesAssistant = {
+    iniciarPartida,
+    carregarEIniciar,
+    deckAtual,
+    encerrarPartida,
+  };
 
 }());
