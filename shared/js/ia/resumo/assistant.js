@@ -1110,15 +1110,38 @@
       return;
     }
 
-    /* ── Interceptação de quiz ────────────────────────────────
-       Se NexusQuizAssistant estiver carregado e o contexto de quiz
-       estiver ativo, delega primeiro para ele.
-       Se ele tratar (retorna true), encerra aqui.
-       Se não tratar (retorna false), segue o fluxo normal de resumo.
+    /* ── Interceptação por tipo de contexto ──────────────────
+       Ordem de prioridade: quiz → games → resumo (padrão).
+       NexusContext.temTipo() usa __NEXUS_CONTEXT__ quando declarado
+       pela página; caso contrário faz detecção legada automaticamente.
+       Cada assistant intercept() retorna true se tratou a mensagem.
     ── */
-    if (typeof window.NexusQuizAssistant !== 'undefined' &&
+
+    // quiz
+    if (typeof window.NexusContext !== 'undefined' && NexusContext.temTipo('quiz') &&
+        typeof window.NexusQuizAssistant !== 'undefined' &&
         NexusQuizAssistant.contextoAtivo()) {
       const tratado = await NexusQuizAssistant.interceptar(texto, disc, _renderBot.bind(null));
+      if (tratado) return;
+    } else if (typeof window.NexusContext === 'undefined' &&
+               typeof window.NexusQuizAssistant !== 'undefined' &&
+               NexusQuizAssistant.contextoAtivo()) {
+      // fallback: NexusContext ainda não carregado (compatibilidade)
+      const tratado = await NexusQuizAssistant.interceptar(texto, disc, _renderBot.bind(null));
+      if (tratado) return;
+    }
+
+    // games
+    if (typeof window.NexusContext !== 'undefined' && NexusContext.temTipo('games') &&
+        typeof window.NexusGamesAssistant !== 'undefined' &&
+        NexusGamesAssistant.contextoAtivo()) {
+      const tratado = await NexusGamesAssistant.interceptar(texto, disc, _renderBot.bind(null));
+      if (tratado) return;
+    } else if (typeof window.NexusContext === 'undefined' &&
+               typeof window.NexusGamesAssistant !== 'undefined' &&
+               NexusGamesAssistant.contextoAtivo()) {
+      // fallback: NexusContext ainda não carregado (compatibilidade)
+      const tratado = await NexusGamesAssistant.interceptar(texto, disc, _renderBot.bind(null));
       if (tratado) return;
     }
 
@@ -1362,6 +1385,7 @@
     if (typeof window.NexusTextUtils   === 'undefined') { console.error('[NexusAssistant] NexusTextUtils não encontrado.');    return false; }
     if (typeof window.__nexusCtx       === 'undefined') { console.error('[NexusAssistant] __nexusCtx não encontrado.');        return false; }
     if (typeof window.NexusWorker      === 'undefined') { console.warn('[NexusAssistant] NexusWorker não encontrado. Modo somente-busca.'); }
+    if (typeof window.NexusContext     === 'undefined') { console.warn('[NexusAssistant] NexusContext não encontrado. Usando detecção legada de contexto.'); }
     return true;
   }
 

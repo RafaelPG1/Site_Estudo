@@ -26,6 +26,15 @@
  *   NexusQuizSearch.revogarQuiz() para zerar token e índice.
  *
  * API pública: window.NexusQuizSearch
+ *   contextoAtivo()          — true se tipo 'quiz' está ativo (usa NexusContext)
+ *   autorizarQuiz(token)     — registra token de sessão
+ *   revogarQuiz()            — invalida token e zera índice
+ *   indexarQuestoes(q, m, t) — indexa questões (exige token)
+ *   buscarQuiz(p, opts, t)   — busca por texto (exige token)
+ *   buscarQuestaoPorNumero(n, t)
+ *   estaIndexadoQuiz(t)
+ *   limparIndiceQuiz(t)
+ *
  * Alias compatível: as funções de quiz são mescladas em window.NexusSearch
  *   para manter compatibilidade com código existente que usa NexusSearch.buscarQuiz(),
  *   NexusSearch.indexarQuestoes(), etc.
@@ -92,6 +101,25 @@
     _tokenAtivo = null;
     _indice     = [];
     console.log('[NexusQuizSearch] sessão de quiz revogada — índice zerado.');
+  }
+
+  /**
+   * Retorna true se o contexto de quiz está ativo nesta página.
+   *
+   * Usa NexusContext.temTipo('quiz') quando disponível (novo contrato).
+   * Fallback: verifica se há token ativo (legado).
+   *
+   * Não exige token para ser chamada — é uma verificação de presença,
+   * não uma operação privilegiada sobre o índice.
+   *
+   * @returns {boolean}
+   */
+  function contextoAtivo() {
+    if (typeof window.NexusContext !== 'undefined') {
+      return window.NexusContext.temTipo('quiz');
+    }
+    // fallback legado: token ativo implica que autorizarQuiz() foi chamado
+    return _tokenAtivo !== null;
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -328,6 +356,7 @@
   const api = {
     autorizarQuiz,
     revogarQuiz,
+    contextoAtivo,
     indexarQuestoes,
     buscarQuiz,
     buscarQuestaoPorNumero,

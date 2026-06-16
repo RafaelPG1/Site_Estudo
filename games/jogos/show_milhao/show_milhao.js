@@ -1,24 +1,16 @@
 /* ============================================================
-   NEXUS STUDY — games/jogos/show_milhao/show_milhao.js  (v4.0)
+   NEXUS STUDY — games/jogos/show_milhao/show_milhao.js  (v4.1)
 
-   REFATORAÇÃO v4.0 — Separação Lógica / UI
-   ──────────────────────────────────────────
-   Este arquivo é responsável por:
-     • Estado global (fonte única de verdade)
-     • Regras e lógica do jogo
-     • Progressão e pontuação
-     • Persistência (SessionNav + storage_sm.js)
-     • Navegação entre questões
-     • Fluxo principal (iniciar / responder / finalizar / continuar)
-     • Comunicação com show_milhao.ui.js via callbacks/eventos
-     • Inicialização e setup de eventos
+   PATCH v4.1 — Integração IA (games + resumo)
+   ─────────────────────────────────────────────
+   Registra window.__NEXUS_GAMES_CTX__ com o banco de questões
+   após o carregamento, permitindo que NexusGamesAssistant
+   intercepte perguntas do chat sobre o conteúdo do jogo.
 
-   show_milhao.ui.js é responsável por:
-     • Renderização e manipulação do DOM
-     • Animações e feedback visual
-     • Overlays e componentes visuais
-     • Atalhos de teclado
-     • Atualizações de interface
+   Alterações em relação à v4.0:
+     • _registrarContextoIA(banco, disc, disciplina) — novo helper
+     • init(): chama _registrarContextoIA após carregar o banco
+     • _aoSair() e _aoRejogo(): limpam o ctx ao sair definitivamente
    ============================================================ */
 
 import { Shell, Timer, shuffle }               from '../../template/game-shell.js';
@@ -57,6 +49,46 @@ import {
 } from './show_milhao.ui.js';
 
 /* ══════════════════════════════════════════════════════════
+   INTEGRAÇÃO IA — carregamento dinâmico dos scripts
+   (mesmo padrão de jogo.js/_carregarIA)
+══════════════════════════════════════════════════════════ */
+
+function _loadScript(src) {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+    const s   = document.createElement('script');
+    s.src     = src;
+    s.onload  = resolve;
+    s.onerror = () => reject(new Error(`[SM IA] Falha ao carregar: ${src}`));
+    document.body.appendChild(s);
+  });
+}
+
+function _carregarIA() {
+  // Resolve raiz do projeto a partir da URL do módulo atual.
+  // show_milhao.js está em: games/jogos/show_milhao/show_milhao.js
+  // Precisamos subir 3 níveis para chegar à raiz.
+  const raiz = new URL('../../../', import.meta.url).href.replace(/\/$/, '');
+  const BASE = raiz + '/shared/js/ia/';
+
+  const deps = [
+    BASE + 'core/text-utils.js',
+    BASE + 'core/loader.js',
+    BASE + 'core/worker.js',
+    BASE + 'core/ui.js',
+    BASE + 'resumo/search.js',
+  ];
+
+  Promise.all(deps.map(_loadScript))
+    .then(() => _loadScript(BASE + 'resumo/assistant.js'))
+    .then(() => _loadScript(BASE + 'games/assistant.js'))
+    .then(() => _loadScript(BASE + 'init.js'))
+    .catch(err => console.warn('[SM IA]', err.message));
+}
+
+_carregarIA();
+
+/* ══════════════════════════════════════════════════════════
    CONFIGURAÇÃO
 ══════════════════════════════════════════════════════════ */
 
@@ -66,7 +98,7 @@ export const CONFIG = Object.freeze({
   PESO_NUNCA_VISTO:    3,
   PESO_MIN:            1,
   PESO_MAX:           10,
-  SESSAO_TTL_MS:      24 * 60 * 60 * 1000,  // 24 h
+  SESSAO_TTL_MS:      24 * 60 * 60 * 1000,
   SESSAO_THROTTLE_MS: 500,
 });
 
@@ -107,8 +139,62 @@ export const estado = {
   temErro:        false,
   indicePendente: null,
   premioPendente: null,
-  _nav:           null,   // instância do SessionNav
+  _nav:           null,
 };
+
+/* ══════════════════════════════════════════════════════════
+   INTEGRAÇÃO IA — games/assistant.js
+══════════════════════════════════════════════════════════ */
+
+/**
+ * Registra o contexto do jogo para o NexusGamesAssistant.
+ *
+ * Chamado após o banco ser carregado com sucesso.
+ * O campo `banco` expõe as questões diretamente no ctx, permitindo
+ * que games/assistant.js monte o contexto textual sem depender do
+ * NexusGamesSearch (o Show do Milhão usa import dinâmico próprio).
+ *
+ * @param {Array}  banco      — array de questões carregado
+ * @param {string} disc       — id da disciplina (ex: 'banco_de_dados')
+ * @param {object} disciplina — objeto completo da disciplina (para nome legível)
+ */
+function _registrarContextoIA(banco, disc, disciplina) {
+  window.__NEXUS_GAMES_CTX__ = {
+    jogo:     'show_milhao',
+    discId:   disc,
+    nomeJogo: 'Show do Milhão',
+    banco:    banco,
+  };
+
+  smLog('Contexto IA registrado: show_milhao / disc=' + disc + ' / banco=' + banco.length + 'q');
+
+  // Aguarda NexusGamesAssistant (carregado dinamicamente por _carregarIA).
+  // Limite de 60 tentativas × 100 ms = até 6 s para os scripts carregarem.
+  var tentativas = 0;
+  var intervalo  = setInterval(function () {
+    tentativas++;
+    if (typeof window.NexusGamesAssistant !== 'undefined') {
+      clearInterval(intervalo);
+      window.NexusGamesAssistant.notificarEntradaNoJogo(disc);
+      smLog('NexusGamesAssistant pronto — disciplina "' + disc + '" notificada.');
+    } else if (tentativas >= 60) {
+      clearInterval(intervalo);
+      smWarn('NexusGamesAssistant não encontrado após 6 s — integração IA não ativada.');
+    }
+  }, 100);
+}
+
+/**
+ * Limpa o contexto de jogo da IA.
+ * Chamado ao sair definitivamente do jogo (não em pausas).
+ */
+function _limparContextoIA() {
+  if (typeof window.NexusGamesAssistant !== 'undefined') {
+    window.NexusGamesAssistant.purgar();
+  } else {
+    try { delete window.__NEXUS_GAMES_CTX__; } catch (_) {}
+  }
+}
 
 /* ══════════════════════════════════════════════════════════
    HELPERS DE SESSÃO (delegam ao SessionNav)
@@ -209,7 +295,6 @@ function _iniciarTimerQuestao() {
     estado.timer = criarTimer(tempoRestante);
     estado.timer.start();
   } catch (_) {
-    // Fallback setInterval quando Timer.criar não estiver disponível
     let t = tempoRestante;
     estado._fallback = setInterval(() => {
       t--;
@@ -276,7 +361,6 @@ function _renderizarQuestaoAtual() {
     `| modoRevisao: ${estado.modoRevisao}`,
   );
 
-  // Dados computados para a UI
   const correto     = jaRespondeu && resp === pergunta.correta;
   const histDados   = estado.historicoSM[pergunta.id] ?? null;
   const isUltima    = estado.indice >= estado.perguntas.length - 1;
@@ -306,7 +390,6 @@ function _renderizarQuestaoAtual() {
 
   if (jaRespondeu) {
     pararTimers();
-    // Não reinicia o timer em questões já respondidas
     uiAtualizarTimerUI(estado.tempos[estado.indice] ?? 0, CONFIG.TEMPO_POR_QUESTAO);
     uiAplicarCorBarra(0);
   } else {
@@ -335,7 +418,6 @@ function registrarResposta(resp) {
 
   if (resp === null) {
     smLog(`Q${estado.indice + 1}: TIMEOUT — neutro.`);
-
   } else if (correto) {
     if (estado.temErro) {
       smLog(`Q${estado.indice + 1}: ACERTO → resolve erro pendente.`);
@@ -345,7 +427,6 @@ function registrarResposta(resp) {
     }
     estado.acertos++;
     smLog(`Q${estado.indice + 1}: ACERTO ✓ | acertos: ${estado.acertos} → ${PREMIOS[estado.acertos - 1]?.valor}`);
-
   } else {
     if (!estado.temErro) {
       estado.indicePendente = estado.indice;
@@ -355,7 +436,6 @@ function registrarResposta(resp) {
     smLog(`Q${estado.indice + 1}: ERRO ✗ | prêmio travado`);
   }
 
-  // Atualiza cache em memória de forma síncrona (o save real ocorre em finalizarJogo)
   if (resp !== null) {
     const entrada = estado.historicoSM[pergunta.id] ?? {
       tentativas: 0, acertos: 0, erros: 0, ultimaVez: 0, acertosConsecutivos: 0,
@@ -434,13 +514,16 @@ async function finalizarJogo() {
     const valorStr    = estado.acertos > 0 ? PREMIOS[estado.acertos - 1].valor : 'R$ 0';
     const valorNum    = parseInt(valorStr.replace(/\D/g, ''), 10) || 0;
 
-    dadosPontuacao = { valor: valorStr, valorNum, acertos: estado.acertos, erros: respondidos - estado.acertos, precisao: pct, tempo: `${mm}:${ss}`, data: Date.now() };
+    dadosPontuacao = {
+      valor: valorStr, valorNum, acertos: estado.acertos,
+      erros: respondidos - estado.acertos, precisao: pct,
+      tempo: `${mm}:${ss}`, data: Date.now(),
+    };
 
     await salvarPontuacaoSM(estado.usuario, estado.discId, estado.sem, dadosPontuacao);
     smLog(`Pontuação registrada: ${valorStr} | ${estado.acertos} acertos | ${pct}%`);
   }
 
-  // Dados calculados para a UI
   const respondidas   = estado.respostas.filter(r => r !== null && r !== undefined).length;
   const pct           = respondidas > 0 ? Math.round((estado.acertos / respondidas) * 100) : 0;
   const valorFinal    = estado.acertos > 0 ? PREMIOS[estado.acertos - 1].valor : 'R$ 0';
@@ -453,22 +536,22 @@ async function finalizarJogo() {
     : null;
 
   uiRenderizarResultado({
-    acertos:      estado.acertos,
+    acertos:       estado.acertos,
     respondidas,
     pct,
     valorFinal,
-    totalSeg:     totalSegFinal,
-    modoRevisao:  estado.modoRevisao,
+    totalSeg:      totalSegFinal,
+    modoRevisao:   estado.modoRevisao,
     todosCorretos: estado.acertos === estado.perguntas.length,
     melhor,
     acumDados,
-    perguntas:    estado.perguntas,
-    respostas:    estado.respostas,
-    historicoSM:  estado.historicoSM,
-    onSair:       _aoSair,
-    onRejogo:     _aoRejogo,
+    perguntas:     estado.perguntas,
+    respostas:     estado.respostas,
+    historicoSM:   estado.historicoSM,
+    onSair:        _aoSair,
+    onRejogo:      _aoRejogo,
     onRevisarErros: _iniciarRevisaoErros,
-    erradas:      questoesComErro(estado.banco, estado.historicoSM),
+    erradas:       questoesComErro(estado.banco, estado.historicoSM),
   });
 
   uiMostrarTela('result', false, estado.perguntas.length);
@@ -485,6 +568,7 @@ function _iniciarRevisaoErros(erradas) {
 
 async function _aoSair() {
   limparSessao();
+  _limparContextoIA();   // ← limpa contexto IA ao sair definitivamente
 
   estado.modoRevisao  = false;
   estado.cardsRevisao = null;
@@ -549,11 +633,10 @@ async function _voltarParaIntro() {
     questoesComErro(estado.banco, estado.historicoSM),
     _iniciarRevisaoErros,
   );
-  uiConfigurarBtnContinuar(null, null);  // limpa botão continuar
+  uiConfigurarBtnContinuar(null, null);
   uiMostrarTela('intro', false, estado.perguntas.length);
 }
 
-/* Volta ao início a partir da pausa — preserva sessão */
 export async function aoVoltarIntroViaPausa() {
   pararTimers();
   estado.pausado = false;
@@ -614,7 +697,6 @@ function continuarSessao(sessao) {
   estado.tempoInicio    = Date.now();
   estado.pausado        = false;
 
-  // Restaura tempos — mantém o tempo restante salvo para a questão ativa
   estado.tempos = sessao.tempos
     ? [...sessao.tempos]
     : new Array(sessao.perguntas.length).fill(CONFIG.TEMPO_POR_QUESTAO);
@@ -630,9 +712,8 @@ function continuarSessao(sessao) {
 ══════════════════════════════════════════════════════════ */
 
 async function init() {
-  smLog('Inicializando Show do Milhão v4.0...');
+  smLog('Inicializando Show do Milhão v4.1...');
 
-  // Inicializa referências de DOM e callbacks básicos na UI
   uiInit({
     onResponder:  responder,
     onIrAnterior: irAnterior,
@@ -641,16 +722,13 @@ async function init() {
 
   const { disc, sem } = Shell.init({ icon: '🃏', nome: 'Show do Milhão' });
 
-  // Garante que Pausar/Menu ficam ocultos até a tela de questões
   document.getElementById('header-controls')?.classList.remove('game-header__controls--visible');
 
-  // Disciplina
   const _listaDisciplinas = getDisciplinasDeSemestre(sem);
   const disciplina = _listaDisciplinas.find(d => d.id === disc || d.arquivo === disc) ?? null;
 
   try { aplicarCoresDisciplina(disc, DISC_CORES); } catch (_) {}
 
-  // Atualiza header e intro com metadados da disciplina
   const shellDiscEl = document.getElementById('shell-disc-name');
   if (shellDiscEl && disciplina) shellDiscEl.textContent = disciplina.apelido ?? disciplina.nome ?? disc;
 
@@ -659,7 +737,6 @@ async function init() {
   if (introDiscName) introDiscName.textContent = disciplina?.apelido ?? disciplina?.nome ?? disc ?? '—';
   if (introSemLabel) introSemLabel.textContent = sem || '—';
 
-  // Substitui ícone SVG do chip pela emoji da disciplina, se disponível
   const introDiscChip = document.querySelector('.sm-chip--disc');
   if (introDiscChip && disciplina?.emoji) {
     const chipSvg = introDiscChip.querySelector('svg');
@@ -694,6 +771,11 @@ async function init() {
     return;
   }
 
+  // ── Registra contexto para a IA ──
+  // Feito antes de qualquer interação, para que o chat já esteja pronto
+  // quando o usuário abrir o assistente.
+  _registrarContextoIA(banco, disc, disciplina);
+
   // ── Usuário e SessionNav ──
   const usuarioObj = getUsuario();
   estado.usuario   = usuarioObj?.uid ?? 'visitante';
@@ -718,10 +800,10 @@ async function init() {
 
   // ── Setup UI de eventos ──
   uiSetupPausa({
-    onTogglePausa:     togglePausa,
-    onVoltarIntro:     aoVoltarIntroViaPausa,
-    isPausado:         () => estado.pausado,
-    isQuestaoAtiva:    () => estado.respostas[estado.indice] === undefined,
+    onTogglePausa:   togglePausa,
+    onVoltarIntro:   aoVoltarIntroViaPausa,
+    isPausado:       () => estado.pausado,
+    isQuestaoAtiva:  () => estado.respostas[estado.indice] === undefined,
   });
 
   uiRegistrarAtalhos({
@@ -741,14 +823,12 @@ async function init() {
     uiAtualizarBtnRevisarErros(erradasInit, _iniciarRevisaoErros);
   }
 
-  // Botão "Nova partida"
   document.getElementById('btn-start')?.addEventListener('click', () => {
     limparSessao();
     uiConfigurarBtnContinuar(null, null);
     iniciarJogo(false);
   });
 
-  // Botão Voltar do header
   document.getElementById('shell-back-btn')?.addEventListener('click', () => {
     salvarSessao('intro');
     nav.sairParaRota();
@@ -758,11 +838,9 @@ async function init() {
   const sessaoRestauravel = nav.pegarRestauravel();
 
   if (sessaoRestauravel) {
-    // F5 durante o jogo → restaura direto na questão
     continuarSessao(sessaoRestauravel);
     nav.pronto();
   } else {
-    // Navegação nova → intro (com botão continuar se houver save)
     const sessaoSalva = nav.lerSessao();
     if (sessaoSalva?.perguntas?.length > 0) {
       uiConfigurarBtnContinuar(sessaoSalva, continuarSessao);
@@ -786,7 +864,7 @@ const _headerControls = document.getElementById('header-controls');
 function _syncControls() {
   if (window.innerWidth > 600) return;
   const naTela = !document.getElementById('screen-question')?.classList.contains('hidden');
-  const noTopo = window.scrollY <= 1;   // threshold mínimo: some no primeiro pixel
+  const noTopo = window.scrollY <= 1;
 
   if (naTela && noTopo) {
     _headerControls?.style.setProperty('display', 'flex', 'important');

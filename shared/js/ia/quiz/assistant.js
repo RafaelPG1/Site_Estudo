@@ -642,7 +642,12 @@
    */
   async function interceptar(pergunta, disc, renderBot) {
     if (!_contextoQuizAtivo()) {
-      if (_ehPedidoDeGabarito(pergunta)) {
+      // Se há contexto de jogo ativo (ex: Show do Milhão), NÃO bloqueia — o
+      // NexusGamesAssistant tratará a pergunta no fluxo normal de resumo/assistant.js.
+      var gamesAtivo = typeof window.NexusGamesAssistant !== 'undefined' &&
+                       window.NexusGamesAssistant.contextoAtivo();
+
+      if (_ehPedidoDeGabarito(pergunta) && !gamesAtivo) {
         renderBot(
           'Perguntas sobre gabarito e respostas só podem ser respondidas dentro do Quiz da disciplina.\n\n' +
           'Abra o Quiz correspondente e faça a pergunta novamente. 📝'

@@ -404,3 +404,26 @@ window.__nexusCtx = {
   parseSemestre:      parseSemestre,
   getDisciplinaAtual: getDisciplinaAtual,  // null na home, id nas páginas de conteúdo
 };
+
+/* ─────────────────────────────────────────────────────────────
+   __NEXUS_CONTEXT__ — contrato explícito de tipo de página
+   ─────────────────────────────────────────────────────────────
+   Definido aqui apenas como valor padrão (array vazio = nenhum
+   domínio de IA ativo). Cada página de conteúdo sobrescreve com
+   os tipos corretos ANTES de carregar os módulos de IA:
+
+     window.__NEXUS_CONTEXT__ = { tipos: ['resumo'] };
+     window.__NEXUS_CONTEXT__ = { tipos: ['quiz'] };
+     window.__NEXUS_CONTEXT__ = { tipos: ['resumo', 'quiz'] };
+     window.__NEXUS_CONTEXT__ = { tipos: ['games'] };
+     // etc.
+
+   NÃO inclui disciplina, semestre, ano ou qualquer estado
+   dinâmico — esses continuam em suas próprias fontes de verdade.
+   ─────────────────────────────────────────────────────────────
+   Páginas que ainda não declararam __NEXUS_CONTEXT__ são tratadas
+   com fallback automático em core/context.js (detecção legada).
+──────────────────────────────────────────────────────────── */
+if (typeof window.__NEXUS_CONTEXT__ === 'undefined') {
+  window.__NEXUS_CONTEXT__ = { tipos: [] };
+}
