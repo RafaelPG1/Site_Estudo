@@ -766,13 +766,23 @@
   function _gerarSugestoes(_conteudo) { return []; }
 
   function _mostrarBoasVindas() {
-    var discs = _getDisciplinas(); if (!discs || !discs.length) return;
-    _renderBot('Disciplinas disponíveis:\n\n' + discs.map(function (d) { return '  /disc ' + d.id + '   — ' + d.nome; }).join('\n') + '\n\nSelecione uma disciplina para eu buscar no conteúdo do site, ou pergunte qualquer coisa e respondo com conhecimento geral.');
+    var discs = _getDisciplinas();
+    if (!discs || !discs.length) {
+      setTimeout(function () { var d = _getDisciplinas(); if (d && d.length) { _renderBot('Olá! 👋 Pode me perguntar qualquer coisa — estou aqui para ajudar!\n\nDisciplinas disponíveis:\n\n' + d.map(function (x) { return '  /disc ' + x.id + '   — ' + x.nome; }).join('\n') + '\n\nSelecione uma disciplina para eu buscar no conteúdo do site, ou pergunte qualquer coisa e respondo com conhecimento geral.'); NexusUI.mostrarSugestoes(d.map(function (x) { return { label: '/disc ' + x.id, cmd: '/disc ' + x.id, tipo: 'disc' }; }), _onSugestaoClick); } }, 300);
+      return;
+    }
+    _renderBot('Olá! 👋 Pode me perguntar qualquer coisa — estou aqui para ajudar!\n\nDisciplinas disponíveis:\n\n' + discs.map(function (d) { return '  /disc ' + d.id + '   — ' + d.nome; }).join('\n') + '\n\nSelecione uma disciplina para eu buscar no conteúdo do site, ou pergunte qualquer coisa e respondo com conhecimento geral.');
     NexusUI.mostrarSugestoes(discs.map(function (d) { return { label: '/disc ' + d.id, cmd: '/disc ' + d.id, tipo: 'disc' }; }), _onSugestaoClick);
   }
 
   function _mostrarBoasVindasLivre() {
-    _renderBot('Olá! 👋 Pode me perguntar qualquer coisa — estou aqui para ajudar!');
+    var discs = _getDisciplinas();
+    if (discs && discs.length) {
+      _renderBot('Olá! 👋 Pode me perguntar qualquer coisa — estou aqui para ajudar!\n\nDisciplinas disponíveis:\n\n' + discs.map(function (d) { return '  /disc ' + d.id + '   — ' + d.nome; }).join('\n') + '\n\nSelecione uma disciplina para eu buscar no conteúdo do site, ou pergunte qualquer coisa e respondo com conhecimento geral.');
+      NexusUI.mostrarSugestoes(discs.map(function (d) { return { label: '/disc ' + d.id, cmd: '/disc ' + d.id, tipo: 'disc' }; }), _onSugestaoClick);
+    } else {
+      _renderBot('Olá! 👋 Pode me perguntar qualquer coisa — estou aqui para ajudar!');
+    }
   }
 
   function _addWelcomeMessage() {
@@ -801,7 +811,7 @@
 
   function _resetarChat() {
     _limparContexto(); _limparHistoricoStorage(); _removerLiveChips();
-    state.messages = {}; state.discsCacheadas = {}; state.processando = false;
+    state.messages = []; state.discsCacheadas = {}; state.processando = false;
     if (state.typingTimer) { clearTimeout(state.typingTimer); state.typingTimer = null; }
     const msgsEl = document.getElementById('nexus-messages'); if (msgsEl) msgsEl.innerHTML = '';
     NexusUI.hideTyping(); _setInputBloqueado(false);
@@ -885,7 +895,11 @@
         const loaderCtx = _montarCtx(discInicial);
         if (loaderCtx) {
           NexusLoader.carregar(loaderCtx).then(function (conteudo) {
-            if (conteudo) { NexusResumoSearch.indexarConteudo(conteudo); state.discIndexadaId = discInicial.id; state.discEscolhida = discInicial; _salvarDiscAtiva(); NexusUI.atualizarDiscAtiva(discInicial.apelido); }
+            if (conteudo) {
+              NexusResumoSearch.indexarConteudo(conteudo); state.discIndexadaId = discInicial.id; state.discEscolhida = discInicial; _salvarDiscAtiva(); NexusUI.atualizarDiscAtiva(discInicial.apelido);
+            }
+            var discsReexibir = _getDisciplinas();
+            if (discsReexibir && discsReexibir.length) NexusUI.mostrarSugestoes(discsReexibir.map(function (d) { return { label: '/disc ' + d.id, cmd: '/disc ' + d.id, tipo: 'disc' }; }), _onSugestaoClick);
           });
         }
       }
