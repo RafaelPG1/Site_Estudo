@@ -1,230 +1,227 @@
 /**
- * NEXUS — shared/js/ia/games/assistant.js
+ * NEXUS — shared/js/ia/init.js
  *
- * Camada de sessão/orquestração do domínio "games".
+ * Portão único do pipeline de IA.
  *
- * Responsabilidades:
- *   - Sortear um subconjunto aleatório de itens de uma lista, sem
- *     alterar a lista original (banco carregado por games/search.js)
- *   - Gerenciar o ciclo de vida da partida atual (deck ativo,
- *     reinício, encerramento)
- *   - Orquestrar o fluxo "carregar conteúdo → iniciar partida" usando
- *     games/search.js, sem conhecer o formato interno dos dados
+ * Responsabilidade exclusiva:
+ *   Ler NexusContext e disparar a inicialização dos domínios
+ *   declarados pela página. Sem contexto declarado, absolutamente
+ *   nada é carregado, indexado ou disponibilizado à IA.
+ *
+ * Fluxo:
+ *
+ *   window.__NEXUS_CONTEXT__
+ *          │
+ *          ▼
+ *        init.js  ◄── único portão
+ *          │
+ *          ├── sem tipos declarados → encerra aqui, pipeline não inicia
+ *          │
+ *          ├── tipos: ['resumo'] → _initResumo()
+ *          ├── tipos: ['quiz']   → _initResumo() + _initQuiz()
+ *          ├── tipos: ['games']  → _initGames()
+ *          └── combinações válidas
+ *
+ * Contrato com os assistants:
+ *   Os assistants NÃO se auto-inicializam via DOMContentLoaded.
+ *   Eles expõem uma função init() que este módulo chama
+ *   explicitamente após verificar o contexto:
+ *
+ *     window.NexusAssistant.init()       — resumo
+ *     window.NexusQuizAssistant.init()   — quiz (após resumo)
+ *     window.NexusGamesAssistant.init()  — games
+ *
+ * Ordem de carregamento garantida pelo HTML antes deste script:
+ *
+ *   Páginas de resumo / quiz:
+ *     core/context.js, core/text-utils.js, core/loader.js,
+ *     core/worker.js, core/ui.js, resumo/search.js,
+ *     resumo/assistant.js
+ *     quiz/search.js, quiz/assistant.js  (apenas em páginas de quiz)
+ *
+ *   Páginas de games:
+ *     core/context.js, core/loader.js,
+ *     games/search.js, games/assistant.js, games/engine.js
  *
  * NÃO conhece:
- *   - Como os dados são carregados ou de onde vêm (delega
- *     integralmente a games/search.js)
- *   - O formato interno do conteúdo de cada jogo (se é
- *     "cartas", "questoes", "afirmacoes", etc.)
- *   - Regras de pontuação, renderização ou interação — isso é
- *     responsabilidade exclusiva do código de cada jogo
- *   - Estrutura de resumo ou quiz
- *   - DOM
+ *   - Detalhes de disciplina, semestre, conteúdo
+ *   - Lógica de busca, indexação ou chat
+ *   - Regras internas de cada jogo
  *
- * Papel no domínio games (equivalente a resumo/assistant.js e
- * quiz/assistant.js): camada de orquestração acima da camada de
- * dados. Assim como o assistant de resumo/quiz coordena busca +
- * worker sem reimplementar nenhum dos dois, este módulo coordena
- * carregamento (games/search.js) + sorteio/sessão, sem reimplementar
- * a lógica de cada jogo.
- *
- * GENERICIDADE ENTRE JOGOS
- * ────────────────────────
- * Este módulo opera sobre ARRAYS GENÉRICOS. Ele não sabe (nem precisa
- * saber) se os itens são cartas de flashcard, perguntas de show do
- * milhão ou afirmações de verdadeiro/falso. O código de cada jogo é
- * responsável por:
- *   1. Chamar iniciarPartida(lista, qtd) passando a lista correta
- *      (extraída via NexusGamesSearch.obterCampo('campo_do_jogo')).
- *   2. Interpretar os itens do deck retornado da forma que seu próprio
- *      jogo exige.
- *
- * Nenhuma alteração neste arquivo é necessária para adicionar um novo
- * jogo — apenas o próprio jogo precisa saber qual campo ler.
- *
- * Depende de: games/search.js (window.NexusGamesSearch)
- *
- * API pública: window.NexusGamesAssistant
+ * Depende de: core/context.js (window.NexusContext) — obrigatório.
  */
 
 (function () {
   'use strict';
 
   /* ══════════════════════════════════════════════════════════
-     DEPENDÊNCIA: NexusGamesSearch
+     PORTÃO: verificação de contexto
   ══════════════════════════════════════════════════════════ */
 
-  function _search() {
-    if (typeof window.NexusGamesSearch === 'undefined') {
-      throw new Error('[NexusGamesAssistant] NexusGamesSearch não encontrado. Carregue games/search.js antes.');
-    }
-    return window.NexusGamesSearch;
-  }
-
-  /* ══════════════════════════════════════════════════════════
-     CONFIGURAÇÃO
-  ══════════════════════════════════════════════════════════ */
-
-  // Quantidade padrão de itens sorteados por partida, quando a
-  // chamada não especifica `qtd`.
-  const QTD_PADRAO_PARTIDA = 10;
-
-  /* ══════════════════════════════════════════════════════════
-     ESTADO INTERNO
-  ══════════════════════════════════════════════════════════ */
-
-  // Deck da partida em andamento: nova array com a seleção/ordem
-  // sorteada para esta partida. NUNCA é a mesma referência da lista
-  // de origem — sempre uma cópia independente.
-  let _deckAtual = null;
-
-  /* ══════════════════════════════════════════════════════════
-     SELEÇÃO ALEATÓRIA (FISHER–YATES)
-  ══════════════════════════════════════════════════════════ */
-
-  /**
-   * Embaralha uma cópia do array recebido usando Fisher–Yates.
-   * NÃO modifica o array original — sempre opera sobre uma cópia.
-   *
-   * @param {Array} arr
-   * @returns {Array} nova array embaralhada
-   */
-  function _embaralhar(arr) {
-    const copia = arr.slice();
-    for (let i = copia.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      const tmp = copia[i];
-      copia[i] = copia[j];
-      copia[j] = tmp;
-    }
-    return copia;
-  }
-
-  /**
-   * Sorteia um subconjunto de `qtd` itens a partir de `lista`, sem
-   * repetição e sem alterar `lista`.
-   *
-   * Se `qtd` for maior ou igual ao tamanho da lista, retorna a lista
-   * inteira embaralhada (todos os itens participam, em ordem
-   * aleatória).
-   *
-   * @param {Array} lista
-   * @param {number} qtd
-   * @returns {Array} nova array com os itens sorteados
-   */
-  function _sortearSubset(lista, qtd) {
-    const embaralhada = _embaralhar(lista);
-    if (qtd >= embaralhada.length) return embaralhada;
-    return embaralhada.slice(0, qtd);
-  }
-
-  /* ══════════════════════════════════════════════════════════
-     CICLO DE VIDA DA PARTIDA
-  ══════════════════════════════════════════════════════════ */
-
-  /**
-   * Inicia uma nova partida: sorteia `qtd` itens de `lista`, em ordem
-   * embaralhada, e armazena como deck da partida atual.
-   *
-   * A `lista` de origem (gerenciada por quem chama — tipicamente um
-   * array extraído do banco de games/search.js) permanece intacta.
-   * Chamadas sucessivas de iniciarPartida() com a mesma `lista` sempre
-   * sorteiam a partir dela, nunca do deck anterior — permitindo
-   * "jogar novamente" com uma nova seleção aleatória.
-   *
-   * @param {Array} lista — lista de itens "jogáveis" do conteúdo
-   *   carregado (cartas, perguntas, afirmações, etc. — interpretação
-   *   é responsabilidade do jogo).
-   * @param {number} [qtd] — quantidade de itens da partida.
-   *   Padrão: 10 (ou o tamanho da lista, se for menor).
-   * @returns {Array|null} deck da partida (nova array), ou null se
-   *   `lista` for inválida/vazia
-   */
-  function iniciarPartida(lista, qtd) {
-    if (!Array.isArray(lista) || !lista.length) {
-      console.warn('[NexusGamesAssistant] iniciarPartida: lista inválida ou vazia.');
-      _deckAtual = null;
+  function _contexto() {
+    if (typeof window.NexusContext === 'undefined') {
+      console.warn('[NexusInit] NexusContext não encontrado — pipeline não será iniciado.');
       return null;
     }
-
-    const quantidade = qtd != null ? qtd : Math.min(QTD_PADRAO_PARTIDA, lista.length);
-
-    _deckAtual = _sortearSubset(lista, quantidade);
-
-    console.log('[NexusGamesAssistant] partida iniciada:', _deckAtual.length, 'de', lista.length, 'itens.');
-
-    return _deckAtual;
-  }
-
-  /**
-   * Atalho que combina o carregamento de conteúdo (via
-   * games/search.js) com o início de partida.
-   *
-   * Útil para o fluxo de inicialização padrão: carregar o conteúdo
-   * do jogo/ano/conteúdo atuais e já sortear o primeiro deck.
-   *
-   * @param {{ jogo: string, ano: string, conteudo: string, prefixo?: string, arquivo?: string }} ctx
-   *   — mesmo contrato de NexusGamesSearch.carregarConteudo().
-   * @param {string} campoLista — nome do campo do banco que contém a
-   *   lista de itens jogáveis (ex: 'cartas', 'questoes', 'afirmacoes').
-   *   Definido por cada jogo — este módulo não assume nenhum nome fixo.
-   * @param {number} [qtd] — quantidade de itens da partida (ver
-   *   iniciarPartida()).
-   *
-   * @returns {Promise<Array|null>} deck da partida, ou null em caso
-   *   de falha no carregamento ou campo ausente/vazio
-   */
-  async function carregarEIniciar(ctx, campoLista, qtd) {
-    const banco = await _search().carregarConteudo(ctx);
-
-    if (!banco) {
-      _deckAtual = null;
-      return null;
-    }
-
-    const lista = _search().obterCampo(campoLista);
-
-    if (!Array.isArray(lista)) {
-      console.warn('[NexusGamesAssistant] carregarEIniciar: campo "' + campoLista +
-        '" não é uma lista válida no conteúdo de', ctx.jogo, '/', ctx.conteudo);
-      _deckAtual = null;
-      return null;
-    }
-
-    return iniciarPartida(lista, qtd);
-  }
-
-  /**
-   * Retorna o deck da partida em andamento, ou null se nenhuma
-   * partida foi iniciada.
-   *
-   * @returns {Array|null}
-   */
-  function deckAtual() {
-    return _deckAtual;
-  }
-
-  /**
-   * Encerra a partida atual, limpando o deck.
-   *
-   * O banco carregado em games/search.js NÃO é afetado — uma nova
-   * partida pode ser iniciada imediatamente via iniciarPartida() ou
-   * carregarEIniciar().
-   */
-  function encerrarPartida() {
-    _deckAtual = null;
-    console.log('[NexusGamesAssistant] partida encerrada.');
+    return window.NexusContext;
   }
 
   /* ══════════════════════════════════════════════════════════
-     REGISTRO GLOBAL
+     VERIFICAÇÃO DE DEPENDÊNCIAS
   ══════════════════════════════════════════════════════════ */
 
-  window.NexusGamesAssistant = {
-    iniciarPartida,
-    carregarEIniciar,
-    deckAtual,
-    encerrarPartida,
-  };
+  function _depsResumoOk() {
+    var ok = true;
+    if (typeof window.NexusTextUtils    === 'undefined') { console.error('[NexusInit] NexusTextUtils não encontrado.');    ok = false; }
+    if (typeof window.NexusLoader       === 'undefined') { console.error('[NexusInit] NexusLoader não encontrado.');       ok = false; }
+    if (typeof window.NexusUI           === 'undefined') { console.error('[NexusInit] NexusUI não encontrado.');           ok = false; }
+    if (typeof window.NexusResumoSearch === 'undefined') { console.error('[NexusInit] NexusResumoSearch não encontrado.'); ok = false; }
+    if (typeof window.NexusAssistant    === 'undefined') { console.error('[NexusInit] NexusAssistant não encontrado.');    ok = false; }
+    if (typeof window.NexusWorker       === 'undefined') { console.warn ('[NexusInit] NexusWorker não encontrado. Modo somente-busca.'); }
+    return ok;
+  }
+
+  function _depsQuizOk() {
+    var ok = true;
+    if (typeof window.NexusQuizSearch    === 'undefined') { console.error('[NexusInit] NexusQuizSearch não encontrado.');    ok = false; }
+    if (typeof window.NexusQuizAssistant === 'undefined') { console.error('[NexusInit] NexusQuizAssistant não encontrado.'); ok = false; }
+    return ok;
+  }
+
+  function _depsGamesOk() {
+    var ok = true;
+    if (typeof window.NexusLoader         === 'undefined') { console.error('[NexusInit] NexusLoader não encontrado.');         ok = false; }
+    if (typeof window.NexusGamesSearch    === 'undefined') { console.error('[NexusInit] NexusGamesSearch não encontrado.');    ok = false; }
+    if (typeof window.NexusGamesAssistant === 'undefined') { console.error('[NexusInit] NexusGamesAssistant não encontrado.'); ok = false; }
+    if (typeof window.NexusGamesEngine    === 'undefined') { console.error('[NexusInit] NexusGamesEngine não encontrado.');    ok = false; }
+    return ok;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     INICIALIZAÇÃO POR DOMÍNIO
+  ══════════════════════════════════════════════════════════ */
+
+  /**
+   * Inicia o pipeline de resumo.
+   * NexusAssistant.init() é o único ponto de entrada — ele é quem
+   * coordena carregamento, indexação e UI. Nenhum outro módulo
+   * inicia o pipeline por conta própria.
+   */
+  function _initResumo() {
+    if (!_depsResumoOk()) {
+      console.error('[NexusInit] dependências de resumo ausentes — pipeline de resumo abortado.');
+      return false;
+    }
+
+    if (typeof window.NexusAssistant.init !== 'function') {
+      console.error('[NexusInit] NexusAssistant.init() não encontrado. ' +
+        'resumo/assistant.js deve expor init() em vez de se auto-inicializar.');
+      return false;
+    }
+
+    console.log('[NexusInit] iniciando domínio: resumo');
+    window.NexusAssistant.init();
+    return true;
+  }
+
+  /**
+   * Inicia o pipeline de quiz.
+   * Depende de resumo já estar ativo (usa NexusAssistant internamente
+   * para selecionar disciplina no chat).
+   * Autoriza NexusQuizSearch com o token de sessão e dispara
+   * NexusQuizAssistant.init().
+   */
+  function _initQuiz() {
+    if (!_depsQuizOk()) {
+      console.warn('[NexusInit] dependências de quiz ausentes — domínio quiz ignorado.');
+      return;
+    }
+
+    if (typeof window.NexusQuizAssistant.init !== 'function') {
+      console.error('[NexusInit] NexusQuizAssistant.init() não encontrado. ' +
+        'quiz/assistant.js deve expor init().');
+      return;
+    }
+
+    // O token e o modo continuam sendo responsabilidade do template_init.js
+    // da página de quiz. init.js apenas verifica sua presença e autoriza.
+    var token = window.__NEXUS_QUIZ_TOKEN__;
+    var modo  = window.__NEXUS_QUIZ_MODO__;
+
+    if (!token || typeof token !== 'string') {
+      console.error('[NexusInit] quiz: __NEXUS_QUIZ_TOKEN__ ausente ou inválido — ' +
+        'quiz não pode ser iniciado sem token de sessão.');
+      return;
+    }
+
+    if (modo === undefined) {
+      console.error('[NexusInit] quiz: __NEXUS_QUIZ_MODO__ ausente — ' +
+        'quiz não pode ser iniciado sem modo definido.');
+      return;
+    }
+
+    NexusQuizSearch.autorizarQuiz(token);
+
+    console.log('[NexusInit] iniciando domínio: quiz — modo:', modo);
+    window.NexusQuizAssistant.init();
+  }
+
+  /**
+   * Inicia o pipeline de games.
+   * Games é um domínio independente — não depende de resumo/quiz.
+   */
+  function _initGames() {
+    if (!_depsGamesOk()) {
+      console.error('[NexusInit] dependências de games ausentes — pipeline de games abortado.');
+      return;
+    }
+
+    if (typeof window.NexusGamesAssistant.init !== 'function') {
+      console.error('[NexusInit] NexusGamesAssistant.init() não encontrado. ' +
+        'games/assistant.js deve expor init().');
+      return;
+    }
+
+    console.log('[NexusInit] iniciando domínio: games');
+    window.NexusGamesAssistant.init();
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     DISPARO
+  ══════════════════════════════════════════════════════════ */
+
+  function _init() {
+  var ctx   = _contexto();
+  var tipos = ctx ? ctx.getTipos() : [];
+
+  if (tipos.length) {
+    console.log('[NexusInit] contexto declarado:', tipos);
+  } else {
+    console.log('[NexusInit] nenhum contexto declarado — IA em modo livre (sem conteúdo interno).');
+  }
+
+  var temQuiz  = tipos.indexOf('quiz')  !== -1;
+  var temGames = tipos.indexOf('games') !== -1;
+
+  // O chat/UI nasce sempre. Quem decide se carrega conteúdo interno
+  // (content/resumo) é o próprio NexusAssistant, consultando
+  // NexusContext.temTipo('resumo') internamente — init.js não gateia
+  // mais a existência da UI, só a ativação dos subdomínios quiz/games.
+  var chatOk = _initResumo();
+
+  if (temGames) _initGames();
+
+  if (temQuiz && chatOk) {
+    _initQuiz();
+  } else if (temQuiz && !chatOk) {
+    console.warn('[NexusInit] quiz ignorado pois o pipeline de chat falhou.');
+  }
+}
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', _init);
+  } else {
+    _init();
+  }
 
 }());

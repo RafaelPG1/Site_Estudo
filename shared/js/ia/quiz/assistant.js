@@ -33,6 +33,8 @@
  *   - window.__NEXUS_QUESTOES_VISUAIS__ (ordem visual das questões, opcional)
  *
  * API pública: window.NexusQuizAssistant
+ *   - init()  — ponto de entrada explícito, chamado exclusivamente por init.js.
+ *     NÃO se auto-inicializa via DOMContentLoaded.
  *   - interceptar(pergunta, disc, renderBot, workerPerguntar) → Promise<boolean>
  *     Retorna true se tratou a pergunta; false se deve seguir para o resumo.
  *
@@ -749,7 +751,29 @@
      REGISTRO GLOBAL
   ══════════════════════════════════════════════════════════ */
 
+  /**
+   * Ponto de entrada explícito — chamado exclusivamente por init.js
+   * após confirmar que NexusContext.temTipo('quiz') é true e que o
+   * token de sessão foi autorizado via NexusQuizSearch.autorizarQuiz().
+   *
+   * O quiz assistant não se auto-inicializa. Todo carregamento e
+   * indexação de questões ocorre de forma lazy em _garantirIndexacaoQuiz(),
+   * disparado apenas quando o usuário faz uma pergunta no chat.
+   *
+   * Esta função serve como ponto de confirmação de que o domínio quiz
+   * foi ativado com contexto válido, e é onde efeitos colaterais de
+   * inicialização (ex: notificações de UI) podem ser centralizados.
+   */
+  function init() {
+    if (!_contextoQuizAtivo()) {
+      console.warn('[NexusQuizAssistant] init() chamado sem contexto de quiz ativo — ignorado.');
+      return;
+    }
+    console.log('[NexusQuizAssistant] domínio quiz ativo — modo:', window.__NEXUS_QUIZ_MODO__);
+  }
+
   window.NexusQuizAssistant = {
+    init,
     interceptar,
     sanitizarResultados,
     contextoAtivo:         _contextoQuizAtivo,

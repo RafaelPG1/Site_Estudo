@@ -21,12 +21,16 @@
  *   - Contexto de quiz
  *
  * Depende de:
+ *   - core/context.js     (window.NexusContext)     — obrigatório
  *   - core/ui.js          (window.NexusUI)
  *   - core/loader.js      (window.NexusLoader)
  *   - core/worker.js      (window.NexusWorker)
  *   - core/text-utils.js  (window.NexusTextUtils)
  *   - resumo/search.js    (window.NexusResumoSearch)
  *   - window.__nexusCtx   (bridge de contexto)
+ *
+ * NÃO se auto-inicializa. init.js chama NexusAssistant.init()
+ * somente quando NexusContext.temTipo('resumo') for true.
  *
  * API pública: window.NexusAssistant
  */
@@ -169,13 +173,6 @@
      MONTAGEM DE CONTEXTO DE CARREGAMENTO
   ══════════════════════════════════════════════════════════ */
 
-  /**
-   * Monta o contexto para NexusLoader.carregar().
-   * Sempre com fonte='resumo' — este módulo nunca carrega quiz.
-   *
-   * @param {object} disc
-   * @returns {object|null}
-   */
   function _montarCtx(disc) {
     const ctx = _getCtxBridge();
     if (!ctx || !disc) return null;
@@ -215,13 +212,6 @@
      CARREGAMENTO E INDEXAÇÃO
   ══════════════════════════════════════════════════════════ */
 
-  /**
-   * Garante que o conteúdo de resumo está carregado e indexado.
-   * Sempre usa fonte='resumo', nunca toca em quiz.
-   *
-   * @param {object} disc
-   * @returns {Promise<object|null>}
-   */
   async function _garantirConteudo(disc) {
     const loaderCtx = _montarCtx(disc);
     if (!loaderCtx) return null;
@@ -382,19 +372,6 @@
     });
   }
 
-  /**
-   * Detecta pedidos EXPLÍCITOS de gabarito/resposta correta.
-   *
-   * Retorna true SOMENTE para pedidos diretos de resposta — nunca para
-   * perguntas de explicação, análise ou estudo da questão.
-   *
-   * TRUE:  "qual o gabarito?", "qual é a resposta?", "qual a letra correta?",
-   *        "me dá a resposta", "resposta correta", "gabarito da 3"
-   *
-   * FALSE: "me explica a questão 1", "qual assunto essa questão aborda?",
-   *        "por que essa alternativa está errada?", "questão 3",
-   *        "essa questão fala sobre TCP?", "explique a questão 5"
-   */
   function _ehPerguntaSobreGabarito(texto) {
     var norm = _normalizar(texto.trim());
     if (/\bgabarito\b/.test(norm))                                                             return true;
@@ -1112,35 +1089,22 @@
 
     /* ── Interceptação por tipo de contexto ──────────────────
        Ordem de prioridade: quiz → games → resumo (padrão).
-       NexusContext.temTipo() usa __NEXUS_CONTEXT__ quando declarado
-       pela página; caso contrário faz detecção legada automaticamente.
-       Cada assistant intercept() retorna true se tratou a mensagem.
+       NexusContext é a única fonte de verdade para tipo de contexto.
+       Cada assistant.interceptar() retorna true se tratou a mensagem.
     ── */
 
     // quiz
-    if (typeof window.NexusContext !== 'undefined' && NexusContext.temTipo('quiz') &&
+    if (NexusContext.temTipo('quiz') &&
         typeof window.NexusQuizAssistant !== 'undefined' &&
         NexusQuizAssistant.contextoAtivo()) {
-      const tratado = await NexusQuizAssistant.interceptar(texto, disc, _renderBot.bind(null));
-      if (tratado) return;
-    } else if (typeof window.NexusContext === 'undefined' &&
-               typeof window.NexusQuizAssistant !== 'undefined' &&
-               NexusQuizAssistant.contextoAtivo()) {
-      // fallback: NexusContext ainda não carregado (compatibilidade)
       const tratado = await NexusQuizAssistant.interceptar(texto, disc, _renderBot.bind(null));
       if (tratado) return;
     }
 
     // games
-    if (typeof window.NexusContext !== 'undefined' && NexusContext.temTipo('games') &&
+    if (NexusContext.temTipo('games') &&
         typeof window.NexusGamesAssistant !== 'undefined' &&
         NexusGamesAssistant.contextoAtivo()) {
-      const tratado = await NexusGamesAssistant.interceptar(texto, disc, _renderBot.bind(null));
-      if (tratado) return;
-    } else if (typeof window.NexusContext === 'undefined' &&
-               typeof window.NexusGamesAssistant !== 'undefined' &&
-               NexusGamesAssistant.contextoAtivo()) {
-      // fallback: NexusContext ainda não carregado (compatibilidade)
       const tratado = await NexusGamesAssistant.interceptar(texto, disc, _renderBot.bind(null));
       if (tratado) return;
     }
@@ -1379,16 +1343,21 @@
   }
 
   function _depsOk() {
+    if (typeof window.NexusContext     === 'undefined') { console.error('[NexusAssistant] NexusContext não encontrado. Carregue core/context.js antes.');     return false; }
     if (typeof window.NexusUI          === 'undefined') { console.error('[NexusAssistant] NexusUI não encontrado.');          return false; }
     if (typeof window.NexusResumoSearch === 'undefined') { console.error('[NexusAssistant] NexusResumoSearch não encontrado.'); return false; }
     if (typeof window.NexusLoader      === 'undefined') { console.error('[NexusAssistant] NexusLoader não encontrado.');       return false; }
     if (typeof window.NexusTextUtils   === 'undefined') { console.error('[NexusAssistant] NexusTextUtils não encontrado.');    return false; }
     if (typeof window.__nexusCtx       === 'undefined') { console.error('[NexusAssistant] __nexusCtx não encontrado.');        return false; }
     if (typeof window.NexusWorker      === 'undefined') { console.warn('[NexusAssistant] NexusWorker não encontrado. Modo somente-busca.'); }
-    if (typeof window.NexusContext     === 'undefined') { console.warn('[NexusAssistant] NexusContext não encontrado. Usando detecção legada de contexto.'); }
     return true;
   }
 
+  /**
+   * Ponto de entrada do assistant de resumo.
+   * Chamado exclusivamente por init.js após NexusContext.temTipo('resumo') === true.
+   * NÃO se registra em DOMContentLoaded — o disparo é sempre externo e explícito.
+   */
   function init() {
     if (!_depsOk()) return;
     if (document.getElementById('nexus-fab')) return;
@@ -1458,13 +1427,9 @@
      REGISTRO GLOBAL
   ══════════════════════════════════════════════════════════ */
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-
   window.NexusAssistant = {
+    init,
+
     open:   function () { NexusUI.open();   },
     close:  function () { NexusUI.close();  },
     toggle: function () { NexusUI.toggle(); },
@@ -1494,7 +1459,6 @@
       if (!silencioso) {
         _renderBot('✓ Disciplina selecionada: ' + disc.apelido);
       }
-      // Garante que o conteúdo de resumo é indexado em background
       _garantirConteudo(disc).then(function () {
         console.log('[NexusAssistant] conteúdo de ' + disc.apelido + ' indexado via selecionarDiscPorId.');
       });
