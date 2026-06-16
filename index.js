@@ -54,12 +54,6 @@ import {
    botões de áudio.
 ═══════════════════════════════════════════════ */
 
-// Declara explicitamente o tipo de contexto desta página.
-// core/context.js usa este valor para identificar quais domínios de IA estão ativos.
-// NÃO inclui disciplina, semestre ou outros estados dinâmicos — esses ficam em suas
-// próprias fontes de verdade (global.js, dom.js, search, estados internos, etc.).
-window.__NEXUS_CONTEXT__ = { tipos: ['resumo'] };
-
 
 function _loadScript(src) {
   return new Promise((resolve, reject) => {

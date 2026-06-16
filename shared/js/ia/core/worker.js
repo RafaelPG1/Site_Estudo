@@ -8,6 +8,12 @@
  *   - Fallback em caso de falha
  *   - Converter markdown da resposta em texto formatado para NexusUI
  *
+ * MODO LIVRE (sem contexto interno):
+ *   Quando resultados = [] e tipoContexto = 'livre', o worker
+ *   responde usando apenas seu conhecimento próprio.
+ *   Nenhuma lógica adicional é necessária aqui — a ausência de
+ *   contexto serializado já produz esse comportamento.
+ *
  * NÃO conhece:
  *   - Quiz, gabarito, feedback, tokens de sessão
  *   - Disciplinas, semestres ou o índice de busca
@@ -20,8 +26,12 @@
  * API pública: window.NexusWorker
  *
  * ── CONTRATO COM O WORKER ────────────────────────────────────
- * POST { pergunta, contexto, historico, disciplina, ehQuestao }
+ * POST { pergunta, contexto, historico, disciplina, ehQuestao, tipoContexto }
  * ← { resposta: string, fonte: string, modelo: string }
+ *
+ * tipoContexto:
+ *   'conteudo' — resposta ancorada no conteúdo interno enviado
+ *   'livre'    — IA responde com conhecimento próprio (sem contexto interno)
  *
  * ── HISTÓRICO DE SESSÃO ──────────────────────────────────────
  * Mantém apenas as últimas MAX_TURNS interações (user + assistant).
@@ -41,6 +51,7 @@
   const MAX_TURNS      = 5;
   const SESSION_TTL_MS = 2 * 60 * 60 * 1000;
   const CONTEXTO_MAX   = 3000;
+  const SESSION_KEY_H  = 'nexus_worker_history';
 
   /* ══════════════════════════════════════════════════════════
      ESTADO INTERNO
@@ -49,6 +60,23 @@
   let _historico       = [];
   let _ultimaAtividade = 0;
   let _habilitado      = true;
+
+  // Restaurar histórico do worker persistido na sessão anterior
+  (function () {
+    try {
+      const raw = sessionStorage.getItem(SESSION_KEY_H);
+      if (!raw) return;
+      const salvo = JSON.parse(raw);
+      if (!salvo || !Array.isArray(salvo.historico)) return;
+      if (Date.now() - salvo.ultimaAtividade > SESSION_TTL_MS) {
+        sessionStorage.removeItem(SESSION_KEY_H);
+        return;
+      }
+      _historico       = salvo.historico;
+      _ultimaAtividade = salvo.ultimaAtividade;
+      console.log('[NexusWorker] histórico restaurado:', _historico.length / 2, 'turnos.');
+    } catch (e) {}
+  }());
 
   /* ══════════════════════════════════════════════════════════
      HISTÓRICO DE SESSÃO
@@ -71,6 +99,13 @@
     }
 
     _ultimaAtividade = Date.now();
+
+    try {
+      sessionStorage.setItem(SESSION_KEY_H, JSON.stringify({
+        historico:       _historico,
+        ultimaAtividade: _ultimaAtividade,
+      }));
+    } catch (e) {}
   }
 
   function _getHistoricoParaEnvio() {
@@ -83,7 +118,8 @@
 
   /**
    * Converte resultados em string de contexto para o worker.
-   * Não filtra nem interpreta o conteúdo — serializa o que recebe.
+   * Retorna string vazia quando resultados é vazio ou nulo —
+   * isso é o comportamento correto para o modo livre.
    *
    * @param {{ score, texto, aula, secao }[]} resultados
    * @returns {string}
@@ -111,24 +147,14 @@
 
   /**
    * Detecta pedidos EXPLÍCITOS de gabarito/resposta.
-   *
-   * Retorna true apenas quando o usuário claramente quer saber a resposta
-   * correta — NÃO quando quer entender, explicar ou analisar a questão.
-   *
-   * Exemplos que retornam TRUE (pedido de gabarito):
-   *   "qual é a resposta?", "qual o gabarito?", "qual alternativa correta?",
-   *   "qual é a letra?", "me dá a resposta", "resposta da 3", "gabarito da 2"
-   *
-   * Exemplos que retornam FALSE (explicação/análise):
-   *   "me explica a questão 1", "qual assunto essa questão aborda?",
-   *   "por que essa alternativa está errada?", "questão 3", "essa questão fala sobre TCP?"
    */
-function _ehQuestao(pergunta) {
-  const u = window.NexusTextUtils;
-  if (!u) return false;
-  const norm = u.normalizarTexto(pergunta);
-  return u.contemAlgum(norm, u.PALAVRAS_GABARITO);
-}
+  function _ehQuestao(pergunta) {
+    const u = window.NexusTextUtils;
+    if (!u) return false;
+    const norm = u.normalizarTexto(pergunta);
+    return u.contemAlgum(norm, u.PALAVRAS_GABARITO);
+  }
+
   /* ══════════════════════════════════════════════════════════
      FORMATAÇÃO DE MARKDOWN
   ══════════════════════════════════════════════════════════ */
@@ -211,15 +237,17 @@ function _ehQuestao(pergunta) {
    * Ponto de entrada principal.
    * Serializa os resultados passados e envia ao worker remoto.
    *
-   * Quem chama é responsável por passar apenas os resultados
-   * adequados ao contexto atual. Este módulo não filtra por domínio.
+   * Quando resultados = [] e tipoContexto = 'livre', o worker
+   * responde com conhecimento próprio — sem nenhuma lógica adicional
+   * aqui. A ausência de contexto serializado já produz esse
+   * comportamento naturalmente.
    *
    * @param {{
    *   pergunta:              string,
    *   resultados:            { score, texto, aula, secao }[],
    *   disciplina:            string,
-   *   tipoContexto:          string,
-   *   semContexto?:          boolean,
+   *   tipoContexto:          'conteudo' | 'livre' | string,
+   *   semContexto?:          boolean,       — legado, preferir tipoContexto: 'livre'
    *   registrarNoHistorico?: boolean,
    * }} opcoes
    *
@@ -241,9 +269,16 @@ function _ehQuestao(pergunta) {
 
     _verificarExpiracao();
 
+    // tipoContexto 'livre' ou semContexto:true → contexto vazio,
+    // IA responde com conhecimento próprio. Nenhuma serialização necessária.
     const contexto  = _serializarContexto(resultados || []);
     const historico = _getHistoricoParaEnvio();
     const ehQuestao = _ehQuestao(pergunta);
+
+    // Normaliza tipoContexto: semContexto legado → 'livre'
+    const tipoFinal = (semContexto === true && !tipoContexto)
+      ? 'livre'
+      : (tipoContexto || 'conteudo');
 
     const resultado = await _chamarWorker({
       pergunta:     pergunta.trim(),
@@ -251,7 +286,7 @@ function _ehQuestao(pergunta) {
       historico:    historico,
       disciplina:   disciplina || '',
       ehQuestao:    ehQuestao,
-      tipoContexto: tipoContexto || 'conteudo',
+      tipoContexto: tipoFinal,
     });
 
     if (!resultado) {
@@ -263,7 +298,8 @@ function _ehQuestao(pergunta) {
 
     if (resultado.fonte) {
       console.log('[NexusWorker] usando ' + resultado.fonte +
-        (resultado.modelo ? ' · modelo: ' + resultado.modelo : ''));
+        (resultado.modelo ? ' · modelo: ' + resultado.modelo : '') +
+        (tipoFinal === 'livre' ? ' · modo livre' : ''));
     }
 
     const deveRegistrar = registrarNoHistorico !== false;
@@ -277,6 +313,7 @@ function _ehQuestao(pergunta) {
   function limparHistorico() {
     _historico       = [];
     _ultimaAtividade = 0;
+    try { sessionStorage.removeItem(SESSION_KEY_H); } catch (e) {}
     console.log('[NexusWorker] histórico de sessão limpo.');
   }
 

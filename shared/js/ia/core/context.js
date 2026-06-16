@@ -1,9 +1,10 @@
 /**
  * NEXUS — shared/js/ia/core/context.js
  *
- * Fonte de verdade para o tipo de contexto da página atual.
+ * Fonte de verdade para os TIPOS DE CONTEÚDO habilitados na página.
  *
- * Cada página declara explicitamente em qual(is) domínio(s) opera:
+ * Cada página declara explicitamente quais domínios de conteúdo interno
+ * ela disponibiliza para a IA:
  *
  *   window.__NEXUS_CONTEXT__ = { tipos: ['resumo'] };
  *   window.__NEXUS_CONTEXT__ = { tipos: ['quiz'] };
@@ -11,18 +12,39 @@
  *   window.__NEXUS_CONTEXT__ = { tipos: ['resumo', 'quiz'] };
  *   window.__NEXUS_CONTEXT__ = { tipos: ['resumo', 'games'] };
  *
- * Este módulo APENAS lê e expõe esse contrato. NÃO armazena disciplina,
- * semestre, ano, conteúdo ou qualquer outro estado dinâmico — esses
- * continuam em suas próprias fontes de verdade (global.js, search.js, etc.).
+ * ── PRINCÍPIO CENTRAL ────────────────────────────────────────
  *
- * Contrato obrigatório
- * ─────────────────────
- * window.__NEXUS_CONTEXT__ é a ÚNICA fonte de verdade para o tipo de
- * contexto. Se não estiver definido, estiver inválido ou possuir tipos
- * vazio, o sistema opera sem contexto — nenhuma detecção automática,
- * nenhum fallback, nenhum carregamento implícito de conteúdo.
+ *   __NEXUS_CONTEXT__ NÃO controla a existência da IA.
+ *   __NEXUS_CONTEXT__ NÃO controla a existência do chat.
+ *   __NEXUS_CONTEXT__ controla APENAS quais pipelines de
+ *   conteúdo interno ficam disponíveis.
  *
- * Depende de: (nenhuma dependência — carregado antes de todos os módulos de IA)
+ *   Sem __NEXUS_CONTEXT__:
+ *     - Chat: funciona normalmente
+ *     - IA: responde com conhecimento próprio
+ *     - Conteúdo interno: nenhum é carregado ou indexado
+ *
+ *   Com __NEXUS_CONTEXT__:
+ *     - Chat: funciona normalmente
+ *     - IA: responde com conhecimento próprio + conteúdo interno
+ *     - Conteúdo interno: carregado e indexado conforme os tipos
+ *
+ * ── NÃO ARMAZENA ─────────────────────────────────────────────
+ *
+ *   Este módulo NÃO armazena disciplina, semestre, ano, AP,
+ *   conteúdo, jogo ativo ou qualquer estado dinâmico — esses
+ *   continuam em suas próprias fontes de verdade
+ *   (global.js, search.js, __nexusCtx, etc.).
+ *
+ * ── CONTRATO OBRIGATÓRIO ─────────────────────────────────────
+ *
+ *   window.__NEXUS_CONTEXT__ é a ÚNICA fonte de verdade para
+ *   os tipos de conteúdo habilitados. Se não estiver definido,
+ *   for inválido ou tiver tipos vazio, nenhum conteúdo interno
+ *   é carregado — sem detecção automática, sem fallback, sem
+ *   carregamento implícito.
+ *
+ * Depende de: (nenhuma — carregado antes de todos os módulos de IA)
  *
  * API pública: window.NexusContext
  */
@@ -51,9 +73,11 @@
   ══════════════════════════════════════════════════════════ */
 
   /**
-   * Retorna todos os tipos de contexto ativos na página atual.
+   * Retorna todos os tipos de conteúdo habilitados na página atual.
    * Retorna [] se __NEXUS_CONTEXT__ não estiver definido ou for inválido.
-   * Nenhuma detecção automática — ausência de declaração = sem contexto.
+   *
+   * [] não significa "IA desabilitada" — significa "sem conteúdo interno".
+   * O chat e a IA existem independente deste retorno.
    *
    * @returns {string[]} ex: ['resumo'], ['quiz'], ['resumo', 'games'], []
    */
@@ -62,7 +86,7 @@
   }
 
   /**
-   * Retorna true se o tipo informado estiver declarado em __NEXUS_CONTEXT__.
+   * Retorna true se o tipo informado estiver habilitado nesta página.
    *
    * @param {string} tipo — 'resumo' | 'quiz' | 'games'
    * @returns {boolean}

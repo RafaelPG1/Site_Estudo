@@ -3,47 +3,50 @@
  *
  * Portão único do pipeline de IA.
  *
- * Responsabilidade exclusiva:
- *   Ler NexusContext e disparar a inicialização dos domínios
- *   declarados pela página. Sem contexto declarado, absolutamente
- *   nada é carregado, indexado ou disponibilizado à IA.
+ * ── PRINCÍPIO CENTRAL ────────────────────────────────────────
  *
- * Fluxo:
+ *   A IA SEMPRE existe. A UI SEMPRE existe.
+ *   O conteúdo interno do Nexus é apenas uma fonte adicional.
+ *
+ *   IA + conteúdo interno (opcional)
+ *   ≠
+ *   IA = conteúdo interno
+ *
+ * ── RESPONSABILIDADE EXCLUSIVA ───────────────────────────────
+ *
+ *   1. Inicializar o chat/UI sempre (NexusAssistant.initUI)
+ *   2. Ativar pipelines de conteúdo SOMENTE se a página declarar
+ *      window.__NEXUS_CONTEXT__ com os tipos correspondentes.
+ *
+ * ── FLUXO ────────────────────────────────────────────────────
  *
  *   window.__NEXUS_CONTEXT__
  *          │
  *          ▼
  *        init.js  ◄── único portão
  *          │
- *          ├── sem tipos declarados → encerra aqui, pipeline não inicia
+ *          ├── [sempre] → _initUI()           ← chat existe sempre
  *          │
- *          ├── tipos: ['resumo'] → _initResumo()
- *          ├── tipos: ['quiz']   → _initResumo() + _initQuiz()
- *          ├── tipos: ['games']  → _initGames()
- *          └── combinações válidas
+ *          ├── tipos inclui 'resumo' → _initResumo()
+ *          ├── tipos inclui 'quiz'   → _initQuiz()  (exige resumo ok)
+ *          └── tipos inclui 'games'  → _initGames()
  *
- * Contrato com os assistants:
+ *   Sem __NEXUS_CONTEXT__ (ou tipos vazio):
+ *     - Chat funciona normalmente
+ *     - IA responde com conhecimento próprio
+ *     - NADA é carregado, indexado ou preparado internamente
+ *
+ * ── CONTRATO COM OS ASSISTANTS ───────────────────────────────
+ *
  *   Os assistants NÃO se auto-inicializam via DOMContentLoaded.
- *   Eles expõem uma função init() que este módulo chama
- *   explicitamente após verificar o contexto:
+ *   Expõem funções explícitas que este módulo chama:
  *
- *     window.NexusAssistant.init()       — resumo
- *     window.NexusQuizAssistant.init()   — quiz (após resumo)
- *     window.NexusGamesAssistant.init()  — games
+ *     NexusAssistant.initUI()      — inicializa chat/UI (sempre)
+ *     NexusAssistant.init()        — ativa pipeline de conteúdo resumo
+ *     NexusQuizAssistant.init()    — ativa pipeline de conteúdo quiz
+ *     NexusGamesAssistant.init()   — ativa pipeline de conteúdo games
  *
- * Ordem de carregamento garantida pelo HTML antes deste script:
- *
- *   Páginas de resumo / quiz:
- *     core/context.js, core/text-utils.js, core/loader.js,
- *     core/worker.js, core/ui.js, resumo/search.js,
- *     resumo/assistant.js
- *     quiz/search.js, quiz/assistant.js  (apenas em páginas de quiz)
- *
- *   Páginas de games:
- *     core/context.js, core/loader.js,
- *     games/search.js, games/assistant.js, games/engine.js
- *
- * NÃO conhece:
+ * ── NÃO CONHECE ──────────────────────────────────────────────
  *   - Detalhes de disciplina, semestre, conteúdo
  *   - Lógica de busca, indexação ou chat
  *   - Regras internas de cada jogo
@@ -60,7 +63,7 @@
 
   function _contexto() {
     if (typeof window.NexusContext === 'undefined') {
-      console.warn('[NexusInit] NexusContext não encontrado — pipeline não será iniciado.');
+      console.warn('[NexusInit] NexusContext não encontrado — usando contexto vazio.');
       return null;
     }
     return window.NexusContext;
@@ -69,6 +72,19 @@
   /* ══════════════════════════════════════════════════════════
      VERIFICAÇÃO DE DEPENDÊNCIAS
   ══════════════════════════════════════════════════════════ */
+
+  function _depsUIok() {
+    var ok = true;
+    if (typeof window.NexusAssistant === 'undefined') {
+      console.error('[NexusInit] NexusAssistant não encontrado.');
+      ok = false;
+    } else if (typeof window.NexusAssistant.initUI !== 'function') {
+      console.error('[NexusInit] NexusAssistant.initUI() não encontrado. ' +
+        'resumo/assistant.js deve expor initUI() separadamente de init().');
+      ok = false;
+    }
+    return ok;
+  }
 
   function _depsResumoOk() {
     var ok = true;
@@ -98,14 +114,41 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     INICIALIZAÇÃO POR DOMÍNIO
+     INICIALIZAÇÃO DA UI — SEMPRE, INDEPENDENTE DE CONTEXTO
   ══════════════════════════════════════════════════════════ */
 
   /**
-   * Inicia o pipeline de resumo.
-   * NexusAssistant.init() é o único ponto de entrada — ele é quem
-   * coordena carregamento, indexação e UI. Nenhum outro módulo
-   * inicia o pipeline por conta própria.
+   * Inicializa o chat e a UI.
+   *
+   * Chamado sempre — com ou sem __NEXUS_CONTEXT__.
+   * NexusAssistant.initUI() configura o painel, os callbacks de envio
+   * e o worker, mas NÃO carrega nem indexa nenhum conteúdo interno.
+   *
+   * @returns {boolean} true se a UI foi inicializada com sucesso
+   */
+  function _initUI() {
+    if (!_depsUIok()) {
+      console.error('[NexusInit] dependências de UI ausentes — chat não será inicializado.');
+      return false;
+    }
+    console.log('[NexusInit] inicializando UI do chat.');
+    window.NexusAssistant.initUI();
+    return true;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     INICIALIZAÇÃO POR DOMÍNIO DE CONTEÚDO
+     Só chamados quando __NEXUS_CONTEXT__ declara o tipo.
+  ══════════════════════════════════════════════════════════ */
+
+  /**
+   * Ativa o pipeline de conteúdo de resumo.
+   *
+   * Apenas conecta o carregamento/indexação ao chat já inicializado.
+   * NexusAssistant.init() é o ponto de entrada — ele coordena
+   * NexusLoader, NexusResumoSearch e o worker para conteúdo interno.
+   *
+   * @returns {boolean}
    */
   function _initResumo() {
     if (!_depsResumoOk()) {
@@ -115,21 +158,20 @@
 
     if (typeof window.NexusAssistant.init !== 'function') {
       console.error('[NexusInit] NexusAssistant.init() não encontrado. ' +
-        'resumo/assistant.js deve expor init() em vez de se auto-inicializar.');
+        'resumo/assistant.js deve expor init() para o pipeline de conteúdo.');
       return false;
     }
 
-    console.log('[NexusInit] iniciando domínio: resumo');
+    console.log('[NexusInit] ativando pipeline de conteúdo: resumo');
     window.NexusAssistant.init();
     return true;
   }
 
   /**
-   * Inicia o pipeline de quiz.
-   * Depende de resumo já estar ativo (usa NexusAssistant internamente
-   * para selecionar disciplina no chat).
-   * Autoriza NexusQuizSearch com o token de sessão e dispara
-   * NexusQuizAssistant.init().
+   * Ativa o pipeline de conteúdo de quiz.
+   *
+   * Depende de resumo já estar ativo (compartilha o chat/worker do resumo).
+   * Autoriza NexusQuizSearch e dispara NexusQuizAssistant.init().
    */
   function _initQuiz() {
     if (!_depsQuizOk()) {
@@ -143,8 +185,6 @@
       return;
     }
 
-    // O token e o modo continuam sendo responsabilidade do template_init.js
-    // da página de quiz. init.js apenas verifica sua presença e autoriza.
     var token = window.__NEXUS_QUIZ_TOKEN__;
     var modo  = window.__NEXUS_QUIZ_MODO__;
 
@@ -162,13 +202,14 @@
 
     NexusQuizSearch.autorizarQuiz(token);
 
-    console.log('[NexusInit] iniciando domínio: quiz — modo:', modo);
+    console.log('[NexusInit] ativando pipeline de conteúdo: quiz — modo:', modo);
     window.NexusQuizAssistant.init();
   }
 
   /**
-   * Inicia o pipeline de games.
-   * Games é um domínio independente — não depende de resumo/quiz.
+   * Ativa o pipeline de conteúdo de games.
+   *
+   * Games é independente de resumo/quiz — não depende deles.
    */
   function _initGames() {
     if (!_depsGamesOk()) {
@@ -182,7 +223,7 @@
       return;
     }
 
-    console.log('[NexusInit] iniciando domínio: games');
+    console.log('[NexusInit] ativando pipeline de conteúdo: games');
     window.NexusGamesAssistant.init();
   }
 
@@ -191,32 +232,49 @@
   ══════════════════════════════════════════════════════════ */
 
   function _init() {
-  var ctx   = _contexto();
-  var tipos = ctx ? ctx.getTipos() : [];
+    var ctx   = _contexto();
+    var tipos = ctx ? ctx.getTipos() : [];
 
-  if (tipos.length) {
-    console.log('[NexusInit] contexto declarado:', tipos);
-  } else {
-    console.log('[NexusInit] nenhum contexto declarado — IA em modo livre (sem conteúdo interno).');
+    // ── 1. UI nasce sempre ──────────────────────────────────
+    // O chat existe independente de qualquer contexto declarado.
+    // Sem UI, nada adianta — abortamos se ela falhar.
+    var uiOk = _initUI();
+    if (!uiOk) return;
+
+    // ── 2. Sem tipos declarados: IA no modo livre ───────────
+    // Nenhum conteúdo interno é carregado ou indexado.
+    // O worker responde usando apenas seu conhecimento próprio.
+    if (!tipos.length) {
+      console.log('[NexusInit] nenhum contexto de conteúdo declarado — ' +
+        'IA em modo livre (conhecimento próprio, sem conteúdo interno).');
+      return;
+    }
+
+    console.log('[NexusInit] contextos de conteúdo declarados:', tipos);
+
+    var temResumo = tipos.indexOf('resumo') !== -1;
+    var temQuiz   = tipos.indexOf('quiz')   !== -1;
+    var temGames  = tipos.indexOf('games')  !== -1;
+
+    // ── 3. Pipeline de conteúdo: resumo ────────────────────
+    // Quiz também depende do pipeline de resumo (compartilha worker/chat).
+    var resumoOk = false;
+    if (temResumo || temQuiz) {
+      resumoOk = _initResumo();
+    }
+
+    // ── 4. Pipeline de conteúdo: quiz ──────────────────────
+    if (temQuiz && resumoOk) {
+      _initQuiz();
+    } else if (temQuiz && !resumoOk) {
+      console.warn('[NexusInit] quiz ignorado pois o pipeline de resumo falhou.');
+    }
+
+    // ── 5. Pipeline de conteúdo: games ─────────────────────
+    if (temGames) {
+      _initGames();
+    }
   }
-
-  var temQuiz  = tipos.indexOf('quiz')  !== -1;
-  var temGames = tipos.indexOf('games') !== -1;
-
-  // O chat/UI nasce sempre. Quem decide se carrega conteúdo interno
-  // (content/resumo) é o próprio NexusAssistant, consultando
-  // NexusContext.temTipo('resumo') internamente — init.js não gateia
-  // mais a existência da UI, só a ativação dos subdomínios quiz/games.
-  var chatOk = _initResumo();
-
-  if (temGames) _initGames();
-
-  if (temQuiz && chatOk) {
-    _initQuiz();
-  } else if (temQuiz && !chatOk) {
-    console.warn('[NexusInit] quiz ignorado pois o pipeline de chat falhou.');
-  }
-}
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', _init);
