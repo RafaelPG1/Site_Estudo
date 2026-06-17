@@ -69,7 +69,13 @@ import { carregarRespostasQuiz, salvarRespostasQuiz, limparRespostasQuiz } from 
   }
 
   // Etapa 1: deps base sem dependências entre si — carregam em paralelo
+  // core/context.js estava ausente desta lista. init.js, quiz/search.js
+  // e quiz/assistant.js exigem window.NexusContext como obrigatório, mas
+  // ele nunca era carregado — por isso init.js sempre tratava a página
+  // como "sem contexto declarado" e quiz/assistant.js purgava o token
+  // a cada mudança de visibilidade da aba.
   Promise.all([
+    _load(BASE + 'core/context.js'),
     _load(BASE + 'core/text-utils.js'),
     _load(BASE + 'core/loader.js'),
     _load(BASE + 'core/worker.js'),
@@ -90,7 +96,6 @@ import { carregarRespostasQuiz, salvarRespostasQuiz, limparRespostasQuiz } from 
     .then(function () { return _load(BASE + 'init.js'); })
     .catch(function (err) { console.error(err); });
 }());
-
 
 /* ══════════════════════════════════════════════════════════
    CONFIGURAÇÃO DE MODOS
@@ -570,9 +575,10 @@ function _atualizarEstadoGlobal(params) {
        1. Lê parâmetros da URL
        2. Resolve disciplina
        3. Aplica tema (evita FOUC)
-       4. Gera token de sessão de quiz          ← NOVO v9.0
-       5. Expõe globais e contexto do quiz
-       6. Atualiza estado global
+       4. Declara domínio quiz em __NEXUS_CONTEXT__ (merge seguro)
+       5. Gera token de sessão de quiz          ← NOVO v9.0
+       6. Expõe globais e contexto do quiz
+       7. Atualiza estado global
 
      [assíncrono, após DOMContentLoaded]
        7. Monta componentes visuais
@@ -591,6 +597,26 @@ var _info       = _resolverDisciplina(_params.disc, _params.semestre);
 var _modoConfig = MODOS_CONFIG[_params.modo] || MODOS_CONFIG.questoes;
 
 _aplicarTema(_info.arquivo);
+
+/* ── Declara domínio de IA: quiz ───────────────────────────────────────
+   Informa ao pipeline de IA (init.js / NexusContext) que esta página
+   pertence ao domínio quiz.
+   Apenas sinaliza o tipo — disciplina, semestre, modo e demais dados
+   operacionais permanecem em suas próprias fontes de verdade.
+   Merge seguro: nunca sobrescreve um __NEXUS_CONTEXT__ já declarado
+   pela página (ex: { tipos: ['resumo'] }) — apenas adiciona 'quiz' ao
+   array existente se ainda não estiver presente.
+   Deve ser executado ANTES do carregamento assíncrono dos módulos de IA
+   para que init.js leia o valor correto ao inicializar.              */
+if (typeof window.__NEXUS_CONTEXT__ === 'undefined') {
+  window.__NEXUS_CONTEXT__ = { tipos: [] };
+}
+if (!Array.isArray(window.__NEXUS_CONTEXT__.tipos)) {
+  window.__NEXUS_CONTEXT__.tipos = [];
+}
+if (window.__NEXUS_CONTEXT__.tipos.indexOf('quiz') === -1) {
+  window.__NEXUS_CONTEXT__.tipos.push('quiz');
+}
 
 /* QUIZ-ISOLATION: gera o token ANTES de expor qualquer contexto de quiz */
 var _quizToken = _gerarTokenQuiz();

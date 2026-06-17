@@ -48,9 +48,25 @@
      EXTRAÇÃO DE BLOCOS
   ══════════════════════════════════════════════════════════ */
 
-  /**
+/**
    * Extrai textos buscáveis de um bloco de conteúdo de resumo.
    * Suporta tipos: texto, destaque, subtitulo, topico, lista, exemplo.
+   *
+   * CONTRATO — duplicação intencional com _extrairTextosBloco()
+   * (resumo/assistant.js):
+   *   Esta versão alimenta o ÍNDICE PERSISTENTE e ponderado
+   *   (NexusResumoSearch.indexarConteudo → NexusTextUtils.prepararEntrada),
+   *   usado pelo motor de busca local de UMA disciplina por vez.
+   *   Por isso ignora listas/itens vazios (_joinLista retorna null),
+   *   evitando entradas vazias no índice.
+   *
+   *   _extrairTextosBloco() alimenta um cache EFÊMERO e não-ponderado,
+   *   usado só pela busca global entre disciplinas
+   *   (_executarBuscaGlobal/_scoreBuscaGlobal), que tem scorer próprio
+   *   e já ignora textos vazios.
+   *
+   *   Consumidores diferentes — não unificar. Qualquer novo `tipo`
+   *   de bloco suportado aqui deve ser replicado lá, e vice-versa.
    *
    * @param {object} bloco
    * @returns {string[]}

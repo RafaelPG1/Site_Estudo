@@ -21,6 +21,7 @@
  *   - Comandos /disc
  *
  * Depende de:
+ *   - core/context.js          (window.NexusContext)           — OBRIGATÓRIO
  *   - core/text-utils.js       (window.NexusTextUtils)
  *   - core/loader.js           (window.NexusLoader)
  *   - core/worker.js           (window.NexusWorker)
@@ -37,6 +38,8 @@
  *     NÃO se auto-inicializa via DOMContentLoaded.
  *   - interceptar(pergunta, disc, renderBot, workerPerguntar) → Promise<boolean>
  *     Retorna true se tratou a pergunta; false se deve seguir para o resumo.
+ *   - contextoAtivo() — verificação OPERACIONAL (NexusContext + token + modo).
+ *     Distinto de NexusQuizSearch.contextoAtivo() — ver comentário no export.
  *
  * INVARIANTE:
  *   Fora do template_init (sem __NEXUS_QUIZ_TOKEN__ válido):
@@ -51,6 +54,23 @@
 
   /* ══════════════════════════════════════════════════════════
      TOKEN E CONTEXTO DE QUIZ
+
+     Dois níveis de verificação, com papéis distintos:
+
+     _quizToken()
+       Requisito operacional de sessão. Retorna o token ativo
+       ou null. Não consulta NexusContext — é uma leitura direta
+       de window.__NEXUS_QUIZ_TOKEN__.
+
+     _contextoQuizAtivo()
+       Portão completo. Reúne os três requisitos:
+         1. NexusContext.temTipo('quiz') — domínio declarado na página
+         2. _quizToken() !== null        — sessão autorizada pelo template
+         3. __NEXUS_QUIZ_MODO__ definido — modo de avaliação ativo
+       Todos devem ser true. Falha em qualquer um retorna false.
+
+     NexusContext é tratado como dependência obrigatória: se não existir,
+     _contextoQuizAtivo() loga erro e retorna false — não há fallback.
   ══════════════════════════════════════════════════════════ */
 
   function _quizToken() {
@@ -60,6 +80,14 @@
   }
 
   function _contextoQuizAtivo() {
+    // NexusContext é dependência obrigatória (carregado por core/context.js
+    // antes de qualquer módulo de IA). Se ausente, algo falhou no boot —
+    // não tentamos operar sem ele.
+    if (typeof window.NexusContext === 'undefined') {
+      console.error('[NexusQuizAssistant] NexusContext não encontrado — contexto de quiz inativo.');
+      return false;
+    }
+    if (!window.NexusContext.temTipo('quiz')) return false;
     return _quizToken() !== null && window.__NEXUS_QUIZ_MODO__ !== undefined;
   }
 
@@ -73,15 +101,19 @@
 
     try { delete window.__NEXUS_QUIZ_MODO__; } catch (e) {}
 
+    // NexusSearch é um alias de compatibilidade que aponta para as mesmas
+    // funções de NexusQuizSearch (Object.assign em quiz/search.js).
+    // Chamar os dois seria invocar revogarQuiz() duas vezes na mesma sessão.
+    // Mantemos apenas NexusQuizSearch — fonte canônica do domínio quiz.
     if (typeof window.NexusQuizSearch !== 'undefined') {
       NexusQuizSearch.revogarQuiz();
     }
 
-    if (typeof window.NexusSearch !== 'undefined' &&
-        typeof window.NexusSearch.revogarQuiz === 'function') {
-      window.NexusSearch.revogarQuiz();
-    }
-
+    // NOTA: __NEXUS_CONTEXT__ não é alterado aqui intencionalmente.
+    // Ele pertence à página, não à sessão de quiz. Após o purge,
+    // NexusContext.temTipo('quiz') ainda retorna true, mas
+    // _contextoQuizAtivo() retorna false porque token e modo foram
+    // deletados — portanto a guarda operacional funciona corretamente.
     try { delete window.__NEXUS_QUIZ_TOKEN__; } catch (e) {}
 
     _limparDiscNaUI();
@@ -760,9 +792,12 @@
    * indexação de questões ocorre de forma lazy em _garantirIndexacaoQuiz(),
    * disparado apenas quando o usuário faz uma pergunta no chat.
    *
-   * Esta função serve como ponto de confirmação de que o domínio quiz
-   * foi ativado com contexto válido, e é onde efeitos colaterais de
-   * inicialização (ex: notificações de UI) podem ser centralizados.
+   * A guarda _contextoQuizAtivo() abaixo é MANTIDA intencionalmente,
+   * mesmo que init.js já faça verificação equivalente antes de chamar
+   * esta função. Razão: init() faz parte da API pública de
+   * NexusQuizAssistant e pode ser invocado diretamente por qualquer
+   * código externo — a guarda interna é a única defesa nesse caso.
+   * Redundância com init.js é aceitável; ausência da guarda não é.
    */
   function init() {
     if (!_contextoQuizAtivo()) {
@@ -776,6 +811,21 @@
     init,
     interceptar,
     sanitizarResultados,
+    /**
+     * contextoAtivo() — verificação OPERACIONAL.
+     *
+     * Retorna true somente se TODOS os requisitos estiverem satisfeitos:
+     *   1. NexusContext.temTipo('quiz') → domínio declarado na página
+     *   2. __NEXUS_QUIZ_TOKEN__ válido  → sessão autorizada
+     *   3. __NEXUS_QUIZ_MODO__ definido → modo de avaliação ativo
+     *
+     * ⚠ NÃO confundir com NexusQuizSearch.contextoAtivo(), que é uma
+     *   verificação ESTRUTURAL: responde apenas "o tipo quiz está declarado
+     *   em __NEXUS_CONTEXT__?" — sem exigir token ou modo.
+     *   Use NexusQuizSearch.contextoAtivo() para saber se a página suporta
+     *   quiz; use NexusQuizAssistant.contextoAtivo() para saber se o quiz
+     *   está atualmente em sessão operacional.
+     */
     contextoAtivo:         _contextoQuizAtivo,
     purgar:                _purgarContextoQuiz,
     notificarEntradaNoQuiz,

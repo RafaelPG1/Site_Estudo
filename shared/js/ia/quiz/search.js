@@ -15,7 +15,9 @@
  *   - DOM
  *   - Estado do assistente
  *
- * Depende de: core/text-utils.js (window.NexusTextUtils)
+ * Depende de:
+ *   - core/context.js    (window.NexusContext)  — OBRIGATÓRIO
+ *   - core/text-utils.js (window.NexusTextUtils)
  *
  * TOKEN DE SESSÃO:
  *   template_init.js deve chamar NexusQuizSearch.autorizarQuiz(token) ANTES
@@ -26,7 +28,10 @@
  *   NexusQuizSearch.revogarQuiz() para zerar token e índice.
  *
  * API pública: window.NexusQuizSearch
- *   contextoAtivo()          — true se tipo 'quiz' está ativo (usa NexusContext)
+ *   contextoAtivo()          — verificação ESTRUTURAL: true se tipo 'quiz'
+ *                              está em __NEXUS_CONTEXT__ (não exige token).
+ *                              Distinto de NexusQuizAssistant.contextoAtivo()
+ *                              que é operacional (exige token + modo).
  *   autorizarQuiz(token)     — registra token de sessão
  *   revogarQuiz()            — invalida token e zera índice
  *   indexarQuestoes(q, m, t) — indexa questões (exige token)
@@ -104,22 +109,27 @@
   }
 
   /**
-   * Retorna true se o contexto de quiz está ativo nesta página.
+   * Retorna true se o tipo 'quiz' está declarado em __NEXUS_CONTEXT__ para
+   * esta página — verificação ESTRUTURAL de presença do domínio.
    *
-   * Usa NexusContext.temTipo('quiz') quando disponível (novo contrato).
-   * Fallback: verifica se há token ativo (legado).
+   * ⚠ NÃO confundir com NexusQuizAssistant.contextoAtivo(), que é uma
+   *   verificação OPERACIONAL: exige também token de sessão válido e modo
+   *   ativo. Use esta função para saber se a página suporta quiz; use
+   *   NexusQuizAssistant.contextoAtivo() para saber se o quiz está em
+   *   sessão operacional.
    *
-   * Não exige token para ser chamada — é uma verificação de presença,
-   * não uma operação privilegiada sobre o índice.
+   * Não exige token — é uma verificação de presença, não uma operação
+   * privilegiada sobre o índice.
    *
    * @returns {boolean}
    */
   function contextoAtivo() {
-    if (typeof window.NexusContext !== 'undefined') {
-      return window.NexusContext.temTipo('quiz');
+    if (typeof window.NexusContext === 'undefined') {
+      console.error('[NexusQuizSearch] NexusContext não encontrado — ' +
+        'verifique se core/context.js está carregado antes de quiz/search.js.');
+      return false;
     }
-    // fallback legado: token ativo implica que autorizarQuiz() foi chamado
-    return _tokenAtivo !== null;
+    return window.NexusContext.temTipo('quiz');
   }
 
   /* ══════════════════════════════════════════════════════════

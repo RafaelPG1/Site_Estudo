@@ -63,7 +63,17 @@
 
   function _contexto() {
     if (typeof window.NexusContext === 'undefined') {
-      console.warn('[NexusInit] NexusContext não encontrado — usando contexto vazio.');
+      // Se a página declarou __NEXUS_CONTEXT__ mas core/context.js não foi
+      // carregado, é uma falha de dependência — pipelines de conteúdo não
+      // poderão ser ativados.
+      if (window.__NEXUS_CONTEXT__ && Array.isArray(window.__NEXUS_CONTEXT__.tipos)
+          && window.__NEXUS_CONTEXT__.tipos.length) {
+        console.error('[NexusInit] NexusContext não encontrado mas __NEXUS_CONTEXT__ foi declarado. ' +
+          'Verifique se core/context.js está carregado antes de init.js.');
+      } else {
+        // Sem declaração alguma: modo livre esperado — warn apenas.
+        console.warn('[NexusInit] NexusContext não encontrado — usando contexto vazio.');
+      }
       return null;
     }
     return window.NexusContext;

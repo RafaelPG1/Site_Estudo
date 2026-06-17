@@ -53,6 +53,7 @@ import {
       });
     }
     Promise.all([
+      _load(BASE + 'core/context.js'),
       _load(BASE + 'core/text-utils.js'),
       _load(BASE + 'core/loader.js'),
       _load(BASE + 'core/worker.js'),
@@ -66,7 +67,6 @@ import {
       });
   } catch (_) { /* IA não é essencial */ }
 }());
-
 
 /* ══════════════════════════════════════════════════════════
    PASSO 1 — Resolver ID da disciplina a partir da URL
