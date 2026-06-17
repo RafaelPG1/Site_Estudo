@@ -1,24 +1,32 @@
 // @ts-nocheck
 /* ============================================================
-   NEXUS STUDY — quiz/template/template_init.js  v9.0
+   NEXUS STUDY — quiz/template/template_init.js  v9.1
 
    RESPONSABILIDADES (e apenas estas):
-     1. Ler e validar parâmetros da URL           _lerParams()
-     2. Resolver disciplina e modo               _resolverContexto()
-     3. Aplicar tema visual                      _aplicarTema()
-     4. Montar componentes visuais do template   _montarVisual()
-     5. Injetar nav-float                        _injetarNavFloat()
-     6. Inicializar áudio                        _inicializarAudio()
-     7. Montar caminho do conteúdo               _resolverCaminhoConteudo()
-     8. Aguardar Firebase (fire-and-forget)      _aguardarFirebase()
-     9. Carregar conteúdo + UI + engine          _carregarQuiz()
+     1. Declarar contexto de IA antes de carregar módulos  (NOVO v9.1)
+     2. Ler e validar parâmetros da URL           _lerParams()
+     3. Resolver disciplina e modo               _resolverContexto()
+     4. Aplicar tema visual                      _aplicarTema()
+     5. Montar componentes visuais do template   _montarVisual()
+     6. Injetar nav-float                        _injetarNavFloat()
+     7. Inicializar áudio                        _inicializarAudio()
+     8. Montar caminho do conteúdo               _resolverCaminhoConteudo()
+     9. Aguardar Firebase (fire-and-forget)      _aguardarFirebase()
+    10. Carregar conteúdo + UI + engine          _carregarQuiz()
 
-   v9.0 — QUIZ-ISOLATION:
+   MUDANÇAS v9.1 — RESET DE CONTEXTO:
+     + _declararContexto() grava nexus_ctx + nexus_ctx_dirty antes
+       de _carregarIA(), usando disc + modo + sem da URL.
+     + Removido: gravação de nexus_worker_ctx em _revogarTokenQuiz().
+       NexusCtx substitui esse papel de forma centralizada.
+     + Removido: chamada avulsa NexusWorker.limparHistorico() no
+       beforeunload (worker limpa via dirty no próximo boot).
+     + worker.js e assistant.js cuidam do próprio reset via NexusCtx.
+
+   QUIZ-ISOLATION (mantido integralmente do v9.0):
      + Gera token de sessão de quiz              _gerarTokenQuiz()
      + Registra token em NexusSearch             _autorizarQuizNoSearch()
      + Revoga token ao sair da página            _instalarRevogacao()
-     Sem token ativo: NexusSearch, ia.js e ia-worker.js recusam
-     qualquer acesso a questões, gabaritos, feedbacks e alternativas.
 
    PROIBIÇÕES ABSOLUTAS:
      ✗ Lógica de negócio do quiz
@@ -26,6 +34,7 @@
      ✗ Correção de respostas
      ✗ Conhecer catalog.json
      ✗ Conhecer HTMLs de disciplinas
+     ✗ Chamar NexusWorker.limparHistorico() diretamente
    ============================================================ */
 
 
@@ -50,6 +59,52 @@ import { carregarRespostasQuiz, salvarRespostasQuiz, limparRespostasQuiz } from 
 
 
 /* ══════════════════════════════════════════════════════════
+   PASSO 0 — Declarar contexto de IA ANTES de _carregarIA()
+
+   Grava nexus_ctx e nexus_ctx_dirty no sessionStorage de forma
+   síncrona, usando os parâmetros da URL (disc, modo, sem).
+
+   worker.js lê dirty no boot síncrono → descarta ou restaura.
+   assistant.js lê dirty em initUI()   → limpa DOM ou restaura.
+
+   Não depende de window.NexusCtx estar carregado: usa
+   sessionStorage diretamente com a mesma lógica de ctx.js,
+   garantindo execução 100% síncrona antes de qualquer _load.
+   ══════════════════════════════════════════════════════════ */
+(function _declararContexto() {
+  try {
+    var STORAGE_KEY = 'nexus_ctx';
+    var DIRTY_KEY   = 'nexus_ctx_dirty';
+
+    var p    = new URLSearchParams(location.search);
+    var disc = p.get('disc') || 'poo';
+    var modo = p.get('modo') || 'questoes';
+    var sem  = (p.get('sem') || SEMESTRES[0] || '')
+      .replace(/-(.+)$/, function (_, ap) { return '-' + ap.toUpperCase(); });
+
+    var novoCtx = { disc: disc, modo: modo, sem: sem, pagina: 'quiz' };
+
+    function _hash(ctx) {
+      return [
+        (ctx.disc   || '').toLowerCase(),
+        (ctx.modo   || '').toLowerCase(),
+        (ctx.sem    || '').toLowerCase(),
+        (ctx.pagina || '').toLowerCase(),
+      ].join('|');
+    }
+
+    var salvoRaw = sessionStorage.getItem(STORAGE_KEY);
+    var salvo    = salvoRaw ? JSON.parse(salvoRaw) : null;
+
+    if (!salvo || _hash(novoCtx) !== _hash(salvo)) {
+      sessionStorage.setItem(DIRTY_KEY,   '1');
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(novoCtx));
+    }
+  } catch (_) { /* ctx não é essencial para o fluxo do quiz */ }
+}());
+
+
+/* ══════════════════════════════════════════════════════════
    ASSISTENTE NEXUS
    Carregamento em background — sem impacto no fluxo principal
    ══════════════════════════════════════════════════════════ */
@@ -68,34 +123,34 @@ import { carregarRespostasQuiz, salvarRespostasQuiz, limparRespostasQuiz } from 
     });
   }
 
-  // Etapa 1: deps base sem dependências entre si — carregam em paralelo
-  // core/context.js estava ausente desta lista. init.js, quiz/search.js
-  // e quiz/assistant.js exigem window.NexusContext como obrigatório, mas
-  // ele nunca era carregado — por isso init.js sempre tratava a página
-  // como "sem contexto declarado" e quiz/assistant.js purgava o token
-  // a cada mudança de visibilidade da aba.
-  Promise.all([
-    _load(BASE + 'core/context.js'),
-    _load(BASE + 'core/text-utils.js'),
-    _load(BASE + 'core/loader.js'),
-    _load(BASE + 'core/worker.js'),
-    _load(BASE + 'core/ui.js'),
-  ])
-    // Etapa 2: os dois módulos de search podem carregar em paralelo
+  /* Etapa 1: ctx.js primeiro — deve estar pronto quando worker.js bootar */
+  _load(BASE + 'core/ctx.js')
+    // Etapa 2: deps base sem dependências entre si — carregam em paralelo
+    .then(function () {
+      return Promise.all([
+        _load(BASE + 'core/context.js'),
+        _load(BASE + 'core/text-utils.js'),
+        _load(BASE + 'core/loader.js'),
+        _load(BASE + 'core/worker.js'),   // lê dirty no boot síncrono
+        _load(BASE + 'core/ui.js'),
+      ]);
+    })
+    // Etapa 3: os dois módulos de search podem carregar em paralelo
     .then(function () {
       return Promise.all([
         _load(BASE + 'resumo/search.js'),
         _load(BASE + 'quiz/search.js'),
       ]);
     })
-    // Etapa 3: assistant de resumo — precisa dos dois search prontos
+    // Etapa 4: assistant de resumo — precisa dos dois search prontos
     .then(function () { return _load(BASE + 'resumo/assistant.js'); })
-    // Etapa 4: assistant de quiz — intercepta perguntas quando token ativo
+    // Etapa 5: assistant de quiz — intercepta perguntas quando token ativo
     .then(function () { return _load(BASE + 'quiz/assistant.js'); })
-    // Etapa 5: init — detecta contexto e autoriza NexusQuizSearch
+    // Etapa 6: init — detecta contexto e autoriza NexusQuizSearch
     .then(function () { return _load(BASE + 'init.js'); })
     .catch(function (err) { console.error(err); });
 }());
+
 
 /* ══════════════════════════════════════════════════════════
    CONFIGURAÇÃO DE MODOS
@@ -117,18 +172,12 @@ var MODOS_CONFIG = {
 /**
  * Gera um token criptograficamente aleatório para a sessão de quiz.
  * Usa crypto.randomUUID() quando disponível; cai em Math.random() como fallback.
- *
- * O token é armazenado em window.__NEXUS_QUIZ_TOKEN__ e lido por
- * NexusSearch, ia.js e ia-worker.js para autorizar operações de quiz.
- *
- * @returns {string} token gerado
  */
 function _gerarTokenQuiz() {
   var token;
   try {
     token = crypto.randomUUID();
   } catch (e) {
-    // Fallback para ambientes sem crypto.randomUUID (Safari < 15.4)
     token = 'nxq-' +
       Math.random().toString(36).slice(2) +
       Math.random().toString(36).slice(2) +
@@ -140,14 +189,8 @@ function _gerarTokenQuiz() {
 }
 
 /**
- * Aguarda NexusQuizSearch (nova arquitetura) ou NexusSearch (alias de
- * compatibilidade) ficarem disponíveis e autoriza o token de quiz.
- *
- * Na nova arquitetura, init.js também chama NexusQuizSearch.autorizarQuiz()
- * quando detecta o token — este polling é uma segunda camada de segurança
- * para garantir que a autorização ocorra mesmo se init.js já tiver rodado.
- *
- * @param {string} token
+ * Aguarda NexusQuizSearch (ou NexusSearch como fallback) ficarem
+ * disponíveis e autoriza o token de quiz.
  */
 function _autorizarQuizNoSearch(token) {
   var tentativas     = 0;
@@ -156,7 +199,6 @@ function _autorizarQuizNoSearch(token) {
   var intervalo = setInterval(function () {
     tentativas++;
 
-    // Prefere NexusQuizSearch (nova arquitetura)
     if (typeof window.NexusQuizSearch !== 'undefined' && window.NexusQuizSearch.autorizarQuiz) {
       clearInterval(intervalo);
       window.NexusQuizSearch.autorizarQuiz(token);
@@ -164,7 +206,6 @@ function _autorizarQuizNoSearch(token) {
       return;
     }
 
-    // Fallback: NexusSearch (alias de compatibilidade em quiz/search.js)
     if (typeof window.NexusSearch !== 'undefined' && window.NexusSearch.autorizarQuiz) {
       clearInterval(intervalo);
       window.NexusSearch.autorizarQuiz(token);
@@ -174,7 +215,7 @@ function _autorizarQuizNoSearch(token) {
 
     if (tentativas >= MAX_TENTATIVAS) {
       clearInterval(intervalo);
-      console.warn('[template_init] NexusQuizSearch não disponível após ' + MAX_TENTATIVAS + ' tentativas — quiz não autorizado.');
+      console.warn('[template_init] NexusQuizSearch não disponível após ' + MAX_TENTATIVAS + ' tentativas.');
     }
   }, 100);
 }
@@ -182,18 +223,12 @@ function _autorizarQuizNoSearch(token) {
 /**
  * Notifica o assistente de resumo que entramos em contexto de quiz,
  * selecionando automaticamente a disciplina no chat.
- *
- * Aguarda NexusQuizAssistant estar disponível (carregado em background).
- * Chamado após a autorização do token — garante que o chat já sabe
- * qual disciplina está ativa sem que o usuário precise digitar /disc.
- *
- * @param {string} discId — id da disciplina (ex: 'design', 'poo')
  */
 function _notificarDiscNoChat(discId) {
   if (!discId) return;
 
   var tentativas     = 0;
-  var MAX_TENTATIVAS = 50; // 5s — IA carrega em background
+  var MAX_TENTATIVAS = 50;
 
   var intervalo = setInterval(function () {
     tentativas++;
@@ -207,49 +242,47 @@ function _notificarDiscNoChat(discId) {
 
     if (tentativas >= MAX_TENTATIVAS) {
       clearInterval(intervalo);
-      console.warn('[template_init] NexusQuizAssistant não disponível — notificação de disciplina falhou.');
+      console.warn('[template_init] NexusQuizAssistant não disponível — notificação falhou.');
     }
   }, 100);
 }
 
-
- /*
- * Usa beforeunload + pagehide (Mobile Safari não dispara beforeunload
- * de forma confiável). Ambos chamam _revogarTokenQuiz() que zera
- * window.__NEXUS_QUIZ_TOKEN__ e limpa o índice de quiz no NexusSearch.
+/**
+ * Instala revogação do token de quiz em beforeunload / pagehide.
+ *
+ * v9.1: não grava mais nexus_worker_ctx — NexusCtx (_declararContexto)
+ * já faz a comunicação de contexto de forma mais robusta e centralizada.
+ * Não chama mais NexusWorker.limparHistorico() — worker.js limpa via dirty.
  */
 function _instalarRevogacao() {
 
   function _revogarTokenQuiz() {
     console.log('[template_init] revogando token de quiz...');
 
-    // Remove a flag de modo (impede que ia.js reutilize o contexto)
+    /* Remove flags de modo */
     try { delete window.__NEXUS_QUIZ_MODO__; } catch (e) {}
     try { delete window.__NEXUS_QUIZ_SEMESTRE__; } catch (e) {}
     try { delete window.__NEXUS_QUIZ_DISC__; } catch (e) {}
     try { delete window.__NEXUS_QUESTOES_VISUAIS__; } catch (e) {}
 
-    // Revoga o token no NexusQuizSearch (nova arquitetura)
+    /* Revoga token no NexusQuizSearch */
     if (typeof window.NexusQuizSearch !== 'undefined' && window.NexusQuizSearch.revogarQuiz) {
       window.NexusQuizSearch.revogarQuiz();
     }
-    // Fallback: NexusSearch (alias de compatibilidade)
     if (typeof window.NexusSearch !== 'undefined' && window.NexusSearch.revogarQuiz) {
       window.NexusSearch.revogarQuiz();
     }
 
-    // Remove o token do window — qualquer verificação posterior retorna null
+    /* Remove token do window */
     try { delete window.__NEXUS_QUIZ_TOKEN__; } catch (e) {}
 
-    // Limpa o histórico do worker para não vazar contexto de quiz em
-    // perguntas feitas logo após a saída do template
-    if (typeof window.NexusWorker !== 'undefined' && window.NexusWorker.limparHistorico) {
-      window.NexusWorker.limparHistorico();
-    }
-
-    // Zera window.questoes (dados do ques_*.js) para não deixar rastro
-    // acessível via console ou outros scripts que leiam window diretamente
+    /* Zera questoes */
     try { window.questoes = null; } catch (e) {}
+
+    /* NOTA v9.1: NexusWorker.limparHistorico() foi REMOVIDO daqui.
+       O próximo boot de qualquer página chama _declararContexto(),
+       que detecta a mudança de contexto e grava dirty='1'.
+       worker.js descarta o histórico no próprio boot síncrono. */
   }
 
   window.addEventListener('beforeunload', _revogarTokenQuiz);
@@ -265,7 +298,6 @@ function _lerParams() {
   var params   = new URLSearchParams(location.search);
   var disc     = params.get('disc') || 'poo';
   var modo     = params.get('modo') || 'questoes';
-  /* Normaliza casing do AP: "2026.1-ap2" → "2026.1-AP2" */
   var semestre = (params.get('sem') || SEMESTRES[0])
     .replace(/-(.+)$/, function (_, ap) { return '-' + ap.toUpperCase(); });
 
@@ -347,7 +379,6 @@ function _montarVisual(params, info, modoConfig) {
   window.NEXUS_URL_BACK = urlBack;
   _atualizarBackBtn(urlBack);
 
-  /* data-* no body para quiz_ui.js */
   document.body.dataset.disciplina = info.arquivo;
   document.body.dataset.modo       = params.modo;
 
@@ -393,9 +424,9 @@ function _injetarNavFloat() {
     '<button id="btn-filtro-aulas" class="nav-btn btn-filtro-aulas" title="Filtrar aulas" type="button">' +
       '<i class="fas fa-filter" aria-hidden="true"></i></button>'               +
     '<div class="nav-divider" aria-hidden="true"></div>'                        +
-'<button id="btn-legenda" class="nav-btn btn-legenda" title="Informações" type="button">' +
-      '<i class="fas fa-circle-info" aria-hidden="true"></i></button>'  +
-    '<div class="nav-divider nav-divider--externo" aria-hidden="true"></div>'; // ← adiciona aqui
+    '<button id="btn-legenda" class="nav-btn btn-legenda" title="Informações" type="button">' +
+      '<i class="fas fa-circle-info" aria-hidden="true"></i></button>'          +
+    '<div class="nav-divider nav-divider--externo" aria-hidden="true"></div>';
 
   document.body.appendChild(nav);
 
@@ -419,7 +450,6 @@ function _injetarNavFloat() {
 
   observer.observe(document.body, { childList: true, subtree: true });
 }
-
 
 
 /* ══════════════════════════════════════════════════════════
@@ -514,11 +544,9 @@ function _carregarQuiz(params, info) {
   var uiSrc      = '../js/quiz_ui.js';
   var engineSrc  = '../js/quiz_engine.js';
 
-  /* Conteúdo e UI em paralelo — engine só após ambos */
   Promise.all([
     _loadScript(contentSrc, document.head).catch(function () {
       console.warn('[template_init] Conteúdo não encontrado:', contentSrc);
-      /* Fornece estrutura vazia — engine exibe mensagem de "sem conteúdo" */
       window.questoes = window.questoes || { ava: [], questoes: [], fixacao: [], enade: [] };
     }),
     _loadScript(uiSrc, document.head),
@@ -532,8 +560,6 @@ function _carregarQuiz(params, info) {
 
 /* ══════════════════════════════════════════════════════════
    EXPOSIÇÃO PARA SCRIPTS CLÁSSICOS
-   quiz_engine.js e quiz_ui.js são scripts não-módulo —
-   precisam acessar Storage, Firebase e playSound via window
    ══════════════════════════════════════════════════════════ */
 
 function _exponerGlobais() {
@@ -545,8 +571,6 @@ function _exponerGlobais() {
 
 /* ══════════════════════════════════════════════════════════
    EXPOSIÇÃO DE CONTEXTO PARA O ENGINE
-   quiz_engine.js lê esses valores via window no momento
-   em que é carregado — devem estar prontos antes disso
    ══════════════════════════════════════════════════════════ */
 
 function _exponerContextoQuiz(params) {
@@ -572,24 +596,26 @@ function _atualizarEstadoGlobal(params) {
 
    Ordem de execução:
      [síncrono, imediato]
+       0. Declara contexto de IA (nexus_ctx + dirty) ← NOVO v9.1
        1. Lê parâmetros da URL
        2. Resolve disciplina
        3. Aplica tema (evita FOUC)
        4. Declara domínio quiz em __NEXUS_CONTEXT__ (merge seguro)
-       5. Gera token de sessão de quiz          ← NOVO v9.0
+       5. Gera token de sessão de quiz
        6. Expõe globais e contexto do quiz
        7. Atualiza estado global
 
      [assíncrono, após DOMContentLoaded]
-       7. Monta componentes visuais
-       8. Injeta nav-float
-       9. Inicializa áudio
+       8.  Monta componentes visuais
+       9.  Injeta nav-float
+       10. Inicializa áudio
 
      [assíncrono, paralelo, sem bloquear DOM]
-      10. Autoriza NexusSearch (polling até modulo estar pronto) ← NOVO v9.0
-      11. Instala revogação do token em beforeunload / pagehide  ← NOVO v9.0
-      12. Aguarda Firebase (máx 3s)
-      13. Carrega conteúdo + UI + engine
+       11. Autoriza NexusSearch (polling até módulo estar pronto)
+       12. Notifica disciplina no chat
+       13. Instala revogação do token em beforeunload / pagehide
+       14. Aguarda Firebase (máx 3s)
+       15. Carrega conteúdo + UI + engine
    ══════════════════════════════════════════════════════════ */
 
 var _params     = _lerParams();
@@ -598,16 +624,7 @@ var _modoConfig = MODOS_CONFIG[_params.modo] || MODOS_CONFIG.questoes;
 
 _aplicarTema(_info.arquivo);
 
-/* ── Declara domínio de IA: quiz ───────────────────────────────────────
-   Informa ao pipeline de IA (init.js / NexusContext) que esta página
-   pertence ao domínio quiz.
-   Apenas sinaliza o tipo — disciplina, semestre, modo e demais dados
-   operacionais permanecem em suas próprias fontes de verdade.
-   Merge seguro: nunca sobrescreve um __NEXUS_CONTEXT__ já declarado
-   pela página (ex: { tipos: ['resumo'] }) — apenas adiciona 'quiz' ao
-   array existente se ainda não estiver presente.
-   Deve ser executado ANTES do carregamento assíncrono dos módulos de IA
-   para que init.js leia o valor correto ao inicializar.              */
+/* Declara domínio de IA: quiz */
 if (typeof window.__NEXUS_CONTEXT__ === 'undefined') {
   window.__NEXUS_CONTEXT__ = { tipos: [] };
 }

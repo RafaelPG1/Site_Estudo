@@ -217,6 +217,26 @@
     return panel;
   }
 
+
+  // Adicionar a função:
+function limparMensagens() {
+  var container = document.getElementById('nexus-messages');
+  if (container) container.innerHTML = '';
+}
+
+// E expor na API pública:
+window.NexusUI = {
+  init,
+  open,
+  close,
+  toggle,
+  renderMessage,
+  showTyping,
+  hideTyping,
+  mostrarSugestoes,
+  atualizarDiscAtiva,
+  limparMensagens,   // ← adicionar
+};
   /* ══════════════════════════════════════════════════════════
      RENDERIZAÇÃO DE MENSAGENS
   ══════════════════════════════════════════════════════════ */

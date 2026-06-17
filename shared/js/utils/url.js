@@ -1,5 +1,5 @@
 /* ============================================================
-   NEXUS STUDY — shared/js/url.js
+   NEXUS STUDY — shared/js/utils/url.js
    Utilitários de URL e semestre compartilhados entre páginas.
 
    Funções:

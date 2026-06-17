@@ -98,6 +98,8 @@
   function _purgarContextoQuiz() {
     _ultimoContexto           = null;
     _ultimoMapaVisualRastreio = null;
+    _modoAtivo                = null;
+    _discAtivo                = null;
 
     try { delete window.__NEXUS_QUIZ_MODO__; } catch (e) {}
 
@@ -259,6 +261,18 @@
   var _ultimoContexto           = null;
   var _ultimoMapaVisualRastreio = null;
 
+  /* ══════════════════════════════════════════════════════════
+     RASTREAMENTO DE MODO E DISCIPLINA ATIVOS
+
+     Quando modo ou disciplina mudam dentro da mesma sessão
+     (sem reload de página), o histórico do worker e o contexto
+     da última questão discutida são zerados para que o chat
+     não carregue contexto obsoleto do modo/disciplina anterior.
+  ══════════════════════════════════════════════════════════ */
+
+  var _modoAtivo = null;
+  var _discAtivo = null;
+
   /**
    * Registra a questão visual atualmente em discussão.
    * @param {number} numeroVisual
@@ -292,6 +306,51 @@
     var atual = window.__NEXUS_QUESTOES_VISUAIS__;
     if (!atual || !atual.length) return false;
     return atual !== _ultimoMapaVisual;
+  }
+
+  /**
+   * Detecta mudança de modo ou disciplina e reseta o chat se necessário.
+   * Chamado no início de cada interceptar() para garantir que o histórico
+   * do worker não carregue contexto de um modo/disciplina anterior.
+   *
+   * Cobre dois casos:
+   *   - __NEXUS_QUIZ_MODO__ mudou  (ex: AP1 → AP2 dentro da mesma sessão)
+   *   - __NEXUS_QUIZ_DISC__ mudou  (disciplina trocada sem reload)
+   *
+   * O mapa visual (__NEXUS_QUESTOES_VISUAIS__) já dispara reindexação
+   * via _mapaVisualMudou(); aqui cuidamos apenas do histórico de chat
+   * e do contexto de última questão discutida.
+   */
+  function _resetarChatSeContextoMudou() {
+    var modoAtual = window.__NEXUS_QUIZ_MODO__;
+    var discAtual = window.__NEXUS_QUIZ_DISC__;
+
+    var modoMudou = _modoAtivo !== null && _modoAtivo !== modoAtual;
+    var discMudou = _discAtivo !== null && _discAtivo !== discAtual;
+
+    if (modoMudou || discMudou) {
+      console.log(
+        '[NexusQuizAssistant] contexto mudou (' +
+        (modoMudou ? 'modo: ' + _modoAtivo + ' → ' + modoAtual : '') +
+        (modoMudou && discMudou ? ', ' : '') +
+        (discMudou ? 'disc: ' + _discAtivo + ' → ' + discAtual : '') +
+        ') — resetando chat.'
+      );
+
+      // Zera o contexto da última questão discutida
+      _ultimoContexto           = null;
+      _ultimoMapaVisualRastreio = null;
+
+      // Limpa histórico do worker para não vazar contexto do modo/disc anterior
+      if (typeof window.NexusWorker !== 'undefined' &&
+          typeof window.NexusWorker.limparHistorico === 'function') {
+        window.NexusWorker.limparHistorico();
+      }
+    }
+
+    // Atualiza referências para a próxima comparação
+    _modoAtivo = modoAtual || _modoAtivo;
+    _discAtivo = discAtual || _discAtivo;
   }
 
   function _getCtxBridge() {
@@ -675,6 +734,9 @@
    * garantindo que a IA veja exatamente o mesmo estado que o usuário.
    */
   async function interceptar(pergunta, disc, renderBot) {
+    // Detecta mudança de modo/disc e reseta o chat se necessário
+    _resetarChatSeContextoMudou();
+
     if (!_contextoQuizAtivo()) {
       // Se há contexto de jogo ativo (ex: Show do Milhão), NÃO bloqueia — o
       // NexusGamesAssistant tratará a pergunta no fluxo normal de resumo/assistant.js.
@@ -799,13 +861,26 @@
    * código externo — a guarda interna é a única defesa nesse caso.
    * Redundância com init.js é aceitável; ausência da guarda não é.
    */
-  function init() {
-    if (!_contextoQuizAtivo()) {
-      console.warn('[NexusQuizAssistant] init() chamado sem contexto de quiz ativo — ignorado.');
-      return;
-    }
-    console.log('[NexusQuizAssistant] domínio quiz ativo — modo:', window.__NEXUS_QUIZ_MODO__);
+function init() {
+  if (!_contextoQuizAtivo()) {
+    console.warn('[NexusQuizAssistant] init() chamado sem contexto de quiz ativo — ignorado.');
+    return;
   }
+
+  if (typeof window.NexusWorker !== 'undefined' &&
+      typeof window.NexusWorker.limparHistorico === 'function') {
+    window.NexusWorker.limparHistorico();
+  }
+
+  // Limpa também as mensagens visíveis do chat — o histórico lógico
+  // e a UI precisam estar em sincronia ao entrar em nova sessão de quiz.
+  if (typeof window.NexusUI !== 'undefined' &&
+      typeof window.NexusUI.limparMensagens === 'function') {
+    window.NexusUI.limparMensagens();
+  }
+
+  console.log('[NexusQuizAssistant] domínio quiz ativo — modo:', window.__NEXUS_QUIZ_MODO__);
+}
 
   window.NexusQuizAssistant = {
     init,

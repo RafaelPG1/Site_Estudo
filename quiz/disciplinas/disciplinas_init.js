@@ -1,25 +1,35 @@
 // @ts-nocheck
 /* ============================================================
-   NEXUS STUDY — quiz/disciplinas/disciplinas_init.js  v6.1
+   NEXUS STUDY — quiz/disciplinas/disciplinas_init.js  v6.2
 
    RESPONSABILIDADES (e apenas estas):
-     1. Resolver o semestre da URL                  (navegação)
-     2. Propagar ?sem= nos hrefs dos cards          (navegação)
-     3. Exibir badge de semestre no header          (visual)
-     4. Aplicar cores da disciplina                 (visual)
-     5. Injetar logo                                (visual)
-     6. Inicializar áudio e eventos nos cards       (UX)
-     7. Buscar catalog.json e marcar cards          (UX)
+     1. Declarar contexto ativo antes de carregar a IA  (NOVO v6.2)
+     2. Resolver o semestre da URL                      (navegação)
+     3. Propagar ?sem= nos hrefs dos cards              (navegação)
+     4. Exibir badge de semestre no header              (visual)
+     5. Aplicar cores da disciplina                     (visual)
+     6. Injetar logo                                    (visual)
+     7. Inicializar áudio e eventos nos cards           (UX)
+     8. Buscar catalog.json e marcar cards              (UX)
         sem conteúdo como disc-card--vazio
+
+   MUDANÇAS v6.2 — RESET DE CONTEXTO:
+     + _declararContexto() grava nexus_ctx + nexus_ctx_dirty antes
+       de qualquer módulo de IA carregar.
+     + Removido: setInterval de limpeza de UI (era race condition).
+     + Removido: chamada avulsa NexusWorker.limparHistorico() no .then().
+     + worker.js e assistant.js cuidam do próprio reset via NexusCtx.
 
    PROIBIÇÕES ABSOLUTAS:
      ✗ Carregar ques_*.js
-     ✗ Criar elementos <script> dinamicamente
+     ✗ Criar elementos <script> dinamicamente (exceto via _load interno)
      ✗ Ler window.questoes
      ✗ Montar caminhos de conteúdo de quiz
      ✗ Conhecer template_init.js ou quiz_engine.js
      ✗ Verificar arrays de questões
      ✗ Decidir o que o template deve fazer
+     ✗ Chamar NexusWorker.limparHistorico() diretamente
+     ✗ Fazer polling de NexusUI para limpeza
    ============================================================ */
 
 import { DISC_CORES }          from '../../shared/js/themes/cores.js';
@@ -38,11 +48,60 @@ import {
 } from '../../shared/js/audio/audio-api.js';
 
 
-/* ── Assistente Nexus (background, sem impacto no fluxo) ─── */
+/* ══════════════════════════════════════════════════════════
+   PASSO 0 — Declarar contexto de IA ANTES de _carregarIA()
+
+   Grava nexus_ctx e nexus_ctx_dirty no sessionStorage de forma
+   síncrona. worker.js e assistant.js leem essa flag no próprio
+   boot para decidir se restauram ou descartam o histórico.
+
+   Não depende de window.NexusCtx estar carregado: usa
+   sessionStorage diretamente com a mesma lógica de ctx.js,
+   para garantir execução 100% síncrona antes de qualquer _load.
+   ══════════════════════════════════════════════════════════ */
+(function _declararContexto() {
+  try {
+    var STORAGE_KEY = 'nexus_ctx';
+    var DIRTY_KEY   = 'nexus_ctx_dirty';
+
+    /* Disciplina = nome do arquivo HTML sem extensão */
+    var disc = '';
+    try { disc = location.pathname.split('/').pop().replace('.html', '') || ''; } catch (_) {}
+
+    /* Semestre da URL */
+    var sem = '';
+    try { sem = (new URLSearchParams(location.search).get('sem') || '').toUpperCase(); } catch (_) {}
+
+    var novoCtx = { disc: disc, modo: '', sem: sem, pagina: 'disciplinas' };
+
+    function _hash(ctx) {
+      return [
+        (ctx.disc   || '').toLowerCase(),
+        (ctx.modo   || '').toLowerCase(),
+        (ctx.sem    || '').toLowerCase(),
+        (ctx.pagina || '').toLowerCase(),
+      ].join('|');
+    }
+
+    var salvoRaw = sessionStorage.getItem(STORAGE_KEY);
+    var salvo    = salvoRaw ? JSON.parse(salvoRaw) : null;
+
+    if (!salvo || _hash(novoCtx) !== _hash(salvo)) {
+      sessionStorage.setItem(DIRTY_KEY,   '1');
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(novoCtx));
+    }
+  } catch (_) { /* ctx não é essencial para o fluxo visual */ }
+}());
+
+
+/* ══════════════════════════════════════════════════════════
+   ASSISTENTE NEXUS — carregamento em background
+   ══════════════════════════════════════════════════════════ */
 (function _carregarIA() {
   try {
     var raiz = new URL('../../', import.meta.url).href.replace(/\/$/, '');
     var BASE = raiz + '/shared/js/ia/';
+
     function _load(src) {
       return new Promise(function (res, rej) {
         var s = document.createElement('script');
@@ -52,21 +111,28 @@ import {
         document.body.appendChild(s);
       });
     }
+
     Promise.all([
+      _load(BASE + 'core/ctx.js'),        // ← NOVO: deve ser o primeiro
       _load(BASE + 'core/context.js'),
       _load(BASE + 'core/text-utils.js'),
       _load(BASE + 'core/loader.js'),
-      _load(BASE + 'core/worker.js'),
+      _load(BASE + 'core/worker.js'),     // lê dirty no boot síncrono
       _load(BASE + 'core/ui.js'),
       _load(BASE + 'resumo/search.js'),
     ])
-      .then(function () { return _load(BASE + 'resumo/assistant.js'); })
-      .then(function () { return _load(BASE + 'init.js'); })
-      .catch(function (err) {
-        console.warn('[disciplinas_init] IA não carregada:', err.message);
-      });
+    .then(function () {
+      /* ctx.js e worker.js já agiram.
+         assistant.js vai ler dirty em initUI() e confirmar reset. */
+      return _load(BASE + 'resumo/assistant.js');
+    })
+    .then(function () { return _load(BASE + 'init.js'); })
+    .catch(function (err) {
+      console.warn('[disciplinas_init] IA não carregada:', err.message);
+    });
   } catch (_) { /* IA não é essencial */ }
 }());
+
 
 /* ══════════════════════════════════════════════════════════
    PASSO 1 — Resolver ID da disciplina a partir da URL
@@ -224,7 +290,6 @@ document.addEventListener('DOMContentLoaded', function () {
     .then(function (catalog) {
       var semesterEntry = catalog[_sem];
       if (!semesterEntry) {
-        /* Semestre não declarado no catalog — não desabilita nada */
         console.info(
           '[disciplinas_init] Semestre "' + _sem + '" não encontrado no catalog.json.' +
           ' Nenhum card será desabilitado.'
@@ -235,7 +300,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
       var discEntry = semesterEntry[_discId];
       if (!discEntry) {
-        /* Disciplina não declarada para este semestre — não desabilita nada */
         console.info(
           '[disciplinas_init] Disciplina "' + _discId + '" não encontrada em "' + _sem + '"' +
           ' no catalog.json. Nenhum card será desabilitado.'
@@ -256,11 +320,9 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     })
     .catch(function (err) {
-      /* Falha no fetch: mantém todos os cards habilitados */
       console.warn('[disciplinas_init] Falha ao carregar catalog.json:', err.message);
     })
     .finally(function () {
-      /* Sempre revela os cards ao terminar, com ou sem erro */
       try { document.documentElement.removeAttribute('data-catalog-loading'); } catch (_) {}
     });
 }());

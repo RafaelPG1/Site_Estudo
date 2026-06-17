@@ -1,5 +1,5 @@
 /**
- * NEXUS — shared/js/ia/resumo/assistant.js
+ * NEXUS — shared/js/ia/resumo/assistant.js  v2.0
  *
  * Orquestrador do sistema de IA para Resumos.
  *
@@ -13,6 +13,13 @@
  *   - Histórico de conversa e persistência de sessão
  *   - Integração com NexusWorker para respostas da IA
  *
+ * MUDANÇAS v2.0 — RESET DE CONTEXTO:
+ *   initUI() agora usa NexusCtx.deveResetar() para decidir entre
+ *   reset completo (contexto mudou) ou restauração normal.
+ *   Removido: setInterval de polling de UI (era race condition).
+ *   Removido: limpeza duplicada no .then() do Promise.all externo.
+ *   NexusCtx.confirmarReset() é chamado UMA VEZ, dentro de initUI().
+ *
  * NÃO conhece:
  *   - Token de quiz
  *   - Gabarito, feedback, questões
@@ -21,7 +28,8 @@
  *   - Contexto de quiz
  *
  * Depende de:
- *   - core/context.js     (window.NexusContext)     — obrigatório
+ *   - core/ctx.js         (window.NexusCtx)          — para reset
+ *   - core/context.js     (window.NexusContext)       — obrigatório
  *   - core/ui.js          (window.NexusUI)
  *   - core/loader.js      (window.NexusLoader)
  *   - core/worker.js      (window.NexusWorker)
@@ -30,7 +38,7 @@
  *   - window.__nexusCtx   (bridge de contexto)
  *
  * NÃO se auto-inicializa. init.js chama:
- *   - NexusAssistant.initUI() — SEMPRE (chat existe independente de contexto)
+ *   - NexusAssistant.initUI() — SEMPRE
  *   - NexusAssistant.init()   — SOMENTE quando NexusContext.temTipo('resumo')
  *
  * API pública: window.NexusAssistant
@@ -57,14 +65,6 @@
     conteudoAtual:  null,
   };
 
-  /* ── PATCH 1 ─────────────────────────────────────────────────
-     Flag de pipeline de conteúdo interno.
-     false (padrão): sem __NEXUS_CONTEXT__ ou sem 'resumo' nos tipos.
-       NexusLoader e NexusResumoSearch nunca são tocados.
-       IA responde com conhecimento próprio via _responderModoLivre().
-     true: init.js chamou init() porque tipos inclui 'resumo'.
-       Carregamento, indexação e busca funcionam normalmente.
-  ─────────────────────────────────────────────────────────── */
   var _pipelineConteudoAtivo = false;
 
   function _normalizar(str) { return window.NexusTextUtils.normalizarTexto(str); }
@@ -541,12 +541,6 @@
     try {
       if (_ehPedidoAjuda(texto)) { _responderAjuda(_resolverDisc()); return; }
 
-      /* ── PATCH 2 — Modo livre ────────────────────────────────
-         Sem pipeline de conteúdo ativo (página sem __NEXUS_CONTEXT__
-         ou sem 'resumo' nos tipos), não há disciplinas nem conteúdo
-         interno disponível. Comandos /disc não fazem sentido aqui.
-         A pergunta vai direto ao worker com conhecimento próprio.
-      ─────────────────────────────────────────────────────── */
       if (!_pipelineConteudoAtivo) {
         await _responderModoLivre(texto);
         return;
@@ -595,11 +589,6 @@
     }
   }
 
-  /* ── PATCH 3 — Resposta em modo livre (sem conteúdo interno) ──
-     Chamado quando _pipelineConteudoAtivo === false.
-     Envia a pergunta ao worker sem nenhum contexto interno.
-     NexusLoader e NexusResumoSearch não são tocados.
-  ─────────────────────────────────────────────────────────── */
   async function _responderModoLivre(texto) {
     if (typeof window.NexusWorker === 'undefined') {
       _renderBot('Assistente de IA não disponível no momento.'); return;
@@ -680,11 +669,9 @@
     if (_ehSaudacao(texto)) { _renderBot('Olá! 👋 Estou aqui para ajudar com ' + disc.apelido + '.\n\nPode me fazer uma pergunta sobre a disciplina ou digitar "ajuda" para ver os comandos disponíveis.'); return; }
     if (_ehAgradecimento(texto)) { _renderBot('De nada! 😊 Se tiver mais dúvidas sobre ' + disc.apelido + ', é só perguntar.'); return; }
 
-    // quiz
     if (NexusContext.temTipo('quiz') && typeof window.NexusQuizAssistant !== 'undefined' && NexusQuizAssistant.contextoAtivo()) {
       if (await NexusQuizAssistant.interceptar(texto, disc, _renderBot.bind(null))) return;
     }
-    // games
     if (NexusContext.temTipo('games') && typeof window.NexusGamesAssistant !== 'undefined' && NexusGamesAssistant.contextoAtivo()) {
       if (await NexusGamesAssistant.interceptar(texto, disc, _renderBot.bind(null))) return;
     }
@@ -834,11 +821,24 @@
     return true;
   }
 
-  /* ── PATCH 4 — initUI(): inicializa chat/UI sempre ──────────
-     Chamado por init.js SEMPRE, com ou sem __NEXUS_CONTEXT__.
-     Monta o painel, registra callbacks, restaura histórico.
-     NÃO ativa pipeline de conteúdo. NÃO carrega nada.
-  ─────────────────────────────────────────────────────────── */
+  /* ══════════════════════════════════════════════════════════
+     initUI() — v2.0: decisão centralizada de reset vs restauração
+
+     Lê NexusCtx.deveResetar() para decidir:
+
+     SE dirty=1 (contexto mudou):
+       1. Limpa sessionStorage (nexus_chat_history + nexus_disc_ativa)
+       2. Zera state em memória
+       3. Limpa DOM do chat (NexusUI.limparMensagens)
+       4. Limpa worker (NexusWorker.limparHistorico) como garantia extra
+       5. Confirma reset (remove nexus_ctx_dirty)
+       6. Mostra boas-vindas normais
+
+     SE dirty não está ativo (mesmo contexto):
+       → _restaurarHistorico() normalmente
+
+     Sem polling. Sem timer. Sem dependência de quem chama quem.
+   ══════════════════════════════════════════════════════════ */
   function initUI() {
     if (!_depsUIok()) return;
     if (document.getElementById('nexus-fab')) return;
@@ -849,7 +849,6 @@
       var inputEl = document.getElementById('nexus-input'); if (!inputEl) return;
       inputEl.addEventListener('input', function () {
         var val = inputEl.value;
-        // live chips de /disc só fazem sentido quando há conteúdo disponível
         if (!_pipelineConteudoAtivo) return;
         var ehCmd = _ehPrefixoDisc(val);
         inputEl.classList.toggle('nexus-input--cmd', ehCmd);
@@ -858,12 +857,46 @@
       inputEl.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) inputEl.classList.remove('nexus-input--cmd'); });
     }());
 
-    const restaurado = _restaurarHistorico();
-    if (!restaurado) {
+    /* ── Decisão de reset vs restauração ─────────────────────
+       deveResetar() lê nexus_ctx_dirty do sessionStorage.
+       worker.js já processou essa flag no boot síncrono.
+       Aqui fazemos a parte da UI e confirmamos o reset.       */
+    var resetando = (typeof window.NexusCtx !== 'undefined') && window.NexusCtx.deveResetar();
+
+    if (resetando) {
+      /* 1. Limpa storage */
+      _limparHistoricoStorage();
+
+      /* 2. Zera estado em memória */
+      state.messages      = [];
+      state.discEscolhida = null;
+      state.processando   = false;
+      state.discsCacheadas = {};
+
+      /* 3. Limpa DOM do chat (painel já foi criado por NexusUI.init acima) */
+      NexusUI.limparMensagens();
+
+      /* 4. Garante que worker também está limpo (defesa em profundidade) */
+      if (typeof window.NexusWorker !== 'undefined') {
+        NexusWorker.limparHistorico();
+      }
+
+      /* 5. Confirma reset — remove dirty do sessionStorage, UMA VEZ */
+      window.NexusCtx.confirmarReset();
+
+      console.log('[NexusAssistant] reset de contexto aplicado.');
+
+      /* 6. Boas-vindas normais — sem restaurar nada */
       _addWelcomeMessage();
-      // Boas-vindas simples enquanto pipeline não está ativo.
-      // init() (abaixo) substituirá por _mostrarBoasVindas() se tipos incluir 'resumo'.
       if (!_pipelineConteudoAtivo) _mostrarBoasVindasLivre();
+
+    } else {
+      /* Mesmo contexto — restauração normal */
+      const restaurado = _restaurarHistorico();
+      if (!restaurado) {
+        _addWelcomeMessage();
+        if (!_pipelineConteudoAtivo) _mostrarBoasVindasLivre();
+      }
     }
   }
 
@@ -911,8 +944,8 @@
   });
 
   window.NexusAssistant = {
-    initUI, // ← NOVO: sempre chamado por init.js
-    init,   // pipeline de conteúdo — só quando tipos inclui 'resumo'
+    initUI,
+    init,
 
     open:   function () { NexusUI.open();   },
     close:  function () { NexusUI.close();  },
