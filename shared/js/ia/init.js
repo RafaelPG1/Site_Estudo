@@ -1,5 +1,5 @@
 /**
- * NEXUS — shared/js/ia/init.js
+ * NEXUS — shared/js/ia/init.js  v1.1 (auditoria)
  *
  * Portão único do pipeline de IA.
  *
@@ -45,6 +45,28 @@
  *     NexusAssistant.init()        — ativa pipeline de conteúdo resumo
  *     NexusQuizAssistant.init()    — ativa pipeline de conteúdo quiz
  *     NexusGamesAssistant.init()   — ativa pipeline de conteúdo games
+ *
+ * ── MUDANÇAS v1.1 (auditoria — Requisito 1) ──────────────────
+ *
+ *   _initQuiz() agora chama NexusQuizAssistant.notificarEntradaNoQuiz()
+ *   diretamente, APÓS NexusAssistant.init() ter ligado o pipeline de
+ *   conteúdo. Isso elimina a corrida que existia quando apenas
+ *   template_init.js disparava a notificação via polling:
+ *
+ *     Antes: template_init.js → polling (100ms) → encontrava
+ *     NexusAssistant.selecionarDiscPorId() disponível, mas
+ *     _pipelineConteudoAtivo ainda era false → chamada descartada
+ *     silenciosamente.
+ *
+ *     Agora: init.js garante que _initResumo() (que liga
+ *     _pipelineConteudoAtivo via NexusAssistant.init()) roda
+ *     ANTES de _initQuiz() chamar notificarEntradaNoQuiz(). O
+ *     polling em template_init.js permanece como fallback para
+ *     cobrir casos de carregamento assíncrono tardio, mas agora
+ *     notificarEntradaNoQuiz() em quiz/assistant.js v1.1 exige
+ *     que pipelineAtivo() seja true antes de disparar
+ *     selecionarDiscPorId(), eliminando o descarte silencioso
+ *     mesmo nesse fallback.
  *
  * ── NÃO CONHECE ──────────────────────────────────────────────
  *   - Detalhes de disciplina, semestre, conteúdo
@@ -182,6 +204,20 @@
    *
    * Depende de resumo já estar ativo (compartilha o chat/worker do resumo).
    * Autoriza NexusQuizSearch e dispara NexusQuizAssistant.init().
+   *
+   * v1.1 (auditoria — Requisito 1): após NexusQuizAssistant.init(),
+   * chama notificarEntradaNoQuiz() diretamente aqui, DEPOIS de
+   * _initResumo() ter garantido que _pipelineConteudoAtivo é true
+   * (via NexusAssistant.init()). Isso elimina a corrida original
+   * em que o polling de template_init.js encontrava
+   * selecionarDiscPorId() disponível mas o pipeline ainda não ativo,
+   * resultando em descarte silencioso da chamada.
+   *
+   * O polling em template_init.js (_notificarDiscNoChat) é mantido
+   * como mecanismo de fallback para casos de carregamento tardio,
+   * e agora é inofensivo porque notificarEntradaNoQuiz() (v1.1) só
+   * dispara selecionarDiscPorId() quando pipelineAtivo() confirma
+   * que o pipeline está de fato ativo.
    */
   function _initQuiz() {
     if (!_depsQuizOk()) {
@@ -214,6 +250,17 @@
 
     console.log('[NexusInit] ativando pipeline de conteúdo: quiz — modo:', modo);
     window.NexusQuizAssistant.init();
+
+    // v1.1 (auditoria — Requisito 1): seleciona a disciplina do quiz no
+    // chat diretamente após init(), agora que _pipelineConteudoAtivo é
+    // true (ligado por _initResumo() → NexusAssistant.init() antes deste
+    // ponto). notificarEntradaNoQuiz() em quiz/assistant.js v1.1 valida
+    // pipelineAtivo() internamente — se por algum motivo assíncrono ainda
+    // não estiver pronto, vai continuar tentando via polling interno.
+    var discQuiz = window.__NEXUS_QUIZ_DISC__;
+    if (discQuiz && typeof window.NexusQuizAssistant.notificarEntradaNoQuiz === 'function') {
+      window.NexusQuizAssistant.notificarEntradaNoQuiz(discQuiz);
+    }
   }
 
   /**
@@ -268,12 +315,18 @@
 
     // ── 3. Pipeline de conteúdo: resumo ────────────────────
     // Quiz também depende do pipeline de resumo (compartilha worker/chat).
+    // _initResumo() chama NexusAssistant.init(), que liga
+    // _pipelineConteudoAtivo — necessário para que
+    // selecionarDiscPorId() não descarte a chamada de
+    // notificarEntradaNoQuiz() em _initQuiz() (v1.1).
     var resumoOk = false;
     if (temResumo || temQuiz) {
       resumoOk = _initResumo();
     }
 
     // ── 4. Pipeline de conteúdo: quiz ──────────────────────
+    // Roda DEPOIS de _initResumo() — garante que _pipelineConteudoAtivo
+    // já é true quando _initQuiz() chama notificarEntradaNoQuiz().
     if (temQuiz && resumoOk) {
       _initQuiz();
     } else if (temQuiz && !resumoOk) {

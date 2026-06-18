@@ -1,5 +1,5 @@
 /**
- * NEXUS — shared/js/ia/quiz/assistant.js
+ * NEXUS — shared/js/ia/quiz/assistant.js  v1.1 (auditoria)
  *
  * Extensão do sistema de IA para o contexto de Quiz.
  *
@@ -12,6 +12,24 @@
  *   - Resposta sobre questões específicas via NexusWorker
  *   - Interceptação do fluxo de chat quando contexto de quiz está ativo
  *   - Sanitização de resultados (impede quiz de vazar fora do template)
+ *   - Mensagem de boas-vindas própria do Quiz (NOVO v1.1 — Requisito 2)
+ *
+ * MUDANÇAS v1.1 (auditoria):
+ *   + _mensagemBoasVindasQuiz(): mensagem de boas-vindas própria do
+ *     Quiz, nunca reaproveitando o texto genérico do Resumo. Chamada
+ *     de dentro de init() via window.NexusAssistant.renderBotMessage,
+ *     para manter state.messages/sessionStorage sincronizados com o
+ *     que é exibido na tela. Também exposta publicamente como
+ *     NexusQuizAssistant.mensagemBoasVindas() para que
+ *     resumo/assistant.js a use no reset de chat (botão "nova
+ *     conversa") dentro do Quiz, preservando o Requisito 2 mesmo
+ *     após um reset.
+ *   + notificarEntradaNoQuiz(): agora só dispara
+ *     selecionarDiscPorId() quando window.NexusAssistant.pipelineAtivo()
+ *     confirma que o pipeline de conteúdo do Resumo já está ativo.
+ *     Antes, bastava a função existir — o que podia ser verdade
+ *     ANTES de init.js rodar NexusAssistant.init(), fazendo a chamada
+ *     ser descartada silenciosamente (Requisito 1).
  *
  * NÃO conhece:
  *   - Fluxo de chat de resumo
@@ -27,7 +45,8 @@
  *   - core/worker.js           (window.NexusWorker)
  *   - core/ui.js               (window.NexusUI)
  *   - quiz/search.js           (window.NexusQuizSearch)
- *   - resumo/assistant.js      (window.NexusAssistant — para interceptação)
+ *   - resumo/assistant.js      (window.NexusAssistant — para interceptação,
+ *                                renderBotMessage e pipelineAtivo)
  *   - window.__nexusCtx        (bridge de contexto)
  *   - window.__NEXUS_QUIZ_TOKEN__   (token de sessão, gerado por template_init.js)
  *   - window.__NEXUS_QUIZ_MODO__    (modo ativo: 'AP1', 'AP2', etc.)
@@ -40,6 +59,8 @@
  *     Retorna true se tratou a pergunta; false se deve seguir para o resumo.
  *   - contextoAtivo() — verificação OPERACIONAL (NexusContext + token + modo).
  *     Distinto de NexusQuizSearch.contextoAtivo() — ver comentário no export.
+ *   - mensagemBoasVindas(renderBotFn) — NOVO: renderiza a mensagem de
+ *     boas-vindas própria do Quiz usando a função de render recebida.
  *
  * INVARIANTE:
  *   Fora do template_init (sem __NEXUS_QUIZ_TOKEN__ válido):
@@ -118,6 +139,13 @@
     // deletados — portanto a guarda operacional funciona corretamente.
     try { delete window.__NEXUS_QUIZ_TOKEN__; } catch (e) {}
 
+    // NOTA (auditoria): a limpeza do histórico de chat (nexus_chat_history,
+    // worker) NÃO é feita aqui de propósito — é responsabilidade do boot da
+    // PRÓXIMA página, via NexusCtx (declarar()/deveResetar()), que já detecta
+    // a troca de contexto e descarta o histórico de forma centralizada.
+    // Duplicar essa limpeza aqui não é necessário e foi intencionalmente
+    // removido em template_init.js v9.1 pelo mesmo motivo.
+
     _limparDiscNaUI();
 
     console.log('[NexusQuizAssistant] contexto de quiz purgado.');
@@ -146,19 +174,38 @@
    * Usa selecionarDiscPorId (exposto por resumo/assistant.js) com
    * { silencioso: true } — atualiza só o badge sem mensagem no chat.
    *
+   * v1.1 (auditoria — Requisito 1): além de existir, exigimos que
+   * window.NexusAssistant.pipelineAtivo() seja true antes de chamar
+   * selecionarDiscPorId(). Antes, bastava a função existir no objeto
+   * NexusAssistant — o que é verdade desde que resumo/assistant.js
+   * termina de carregar, MAS ANTES de init.js executar
+   * NexusAssistant.init() (que é quem liga o pipeline). Como
+   * resumo/assistant.js carrega antes de quiz/assistant.js e de
+   * init.js na cadeia de _carregarIA() do template_init.js, existia
+   * uma janela real em que esse polling encontrava a função "pronta"
+   * e a chamava — mas selecionarDiscPorId() descartava a chamada
+   * silenciosamente porque _pipelineConteudoAtivo ainda era false.
+   * Com essa checagem extra, o polling só dispara quando a chamada
+   * de fato terá efeito.
+   *
    * @param {string} discId — id da disciplina (ex: 'design', 'poo')
    */
   function notificarEntradaNoQuiz(discId) {
     if (!discId) return;
 
     var tentativas     = 0;
-    var MAX_TENTATIVAS = 30; // 3s no total
+    var MAX_TENTATIVAS = 50; // 5s no total
 
     var intervalo = setInterval(function () {
       tentativas++;
 
       var assistente = window.NexusAssistant;
-      if (assistente && typeof assistente.selecionarDiscPorId === 'function') {
+      var pronto = assistente &&
+                   typeof assistente.selecionarDiscPorId === 'function' &&
+                   typeof assistente.pipelineAtivo === 'function' &&
+                   assistente.pipelineAtivo();
+
+      if (pronto) {
         clearInterval(intervalo);
         assistente.selecionarDiscPorId(discId, { silencioso: true });
         console.log('[NexusQuizAssistant] disciplina "' + discId + '" selecionada automaticamente no chat.');
@@ -167,7 +214,7 @@
 
       if (tentativas >= MAX_TENTATIVAS) {
         clearInterval(intervalo);
-        console.warn('[NexusQuizAssistant] NexusAssistant não disponível — seleção automática falhou.');
+        console.warn('[NexusQuizAssistant] NexusAssistant não disponível/pronto — notificação falhou.');
       }
     }, 100);
   }
@@ -179,6 +226,35 @@
     } else if (typeof window.NexusUI !== 'undefined') {
       NexusUI.atualizarDiscAtiva(null);
     }
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     MENSAGEM DE BOAS-VINDAS PRÓPRIA DO QUIZ (Requisito 2)
+  ══════════════════════════════════════════════════════════ */
+
+  /**
+   * Renderiza a mensagem de boas-vindas específica do Quiz.
+   *
+   * NUNCA reaproveita o texto genérico de boas-vindas do Resumo
+   * (_mostrarBoasVindas / _mostrarBoasVindasLivre em resumo/assistant.js).
+   *
+   * @param {Function} renderBotFn — função de render que mantém
+   *   state.messages/sessionStorage sincronizados (normalmente
+   *   window.NexusAssistant.renderBotMessage).
+   */
+  function _mensagemBoasVindasQuiz(renderBotFn) {
+    if (typeof renderBotFn !== 'function') return;
+
+    var modo = window.__NEXUS_QUIZ_MODO__ || '';
+    var rotuloModo = modo ? ' — ' + modo.toUpperCase() : '';
+
+    renderBotFn(
+      '📝 Modo Quiz' + rotuloModo + '\n\n' +
+      'Pode me perguntar sobre qualquer questão deste quiz — por exemplo:\n' +
+      '  "explica a questão 3"\n' +
+      '  "por que a alternativa B está errada?"\n\n' +
+      'Pedidos de gabarito só são respondidos aqui, dentro do quiz.'
+    );
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -860,27 +936,45 @@
    * NexusQuizAssistant e pode ser invocado diretamente por qualquer
    * código externo — a guarda interna é a única defesa nesse caso.
    * Redundância com init.js é aceitável; ausência da guarda não é.
+   *
+   * v1.1 (auditoria — Requisito 2): agora renderiza a mensagem de
+   * boas-vindas própria do Quiz (_mensagemBoasVindasQuiz) através de
+   * window.NexusAssistant.renderBotMessage, em vez de só limpar a UI
+   * e deixá-la vazia. Isso evita que a mensagem genérica do Resumo
+   * (mostrada por initUI()/init() antes deste ponto) fique sendo a
+   * última coisa visível — ou que o chat fique sem nenhuma mensagem.
    */
-function init() {
-  if (!_contextoQuizAtivo()) {
-    console.warn('[NexusQuizAssistant] init() chamado sem contexto de quiz ativo — ignorado.');
-    return;
-  }
+  function init() {
+    if (!_contextoQuizAtivo()) {
+      console.warn('[NexusQuizAssistant] init() chamado sem contexto de quiz ativo — ignorado.');
+      return;
+    }
 
-  if (typeof window.NexusWorker !== 'undefined' &&
-      typeof window.NexusWorker.limparHistorico === 'function') {
-    window.NexusWorker.limparHistorico();
-  }
+    if (typeof window.NexusWorker !== 'undefined' &&
+        typeof window.NexusWorker.limparHistorico === 'function') {
+      window.NexusWorker.limparHistorico();
+    }
 
-  // Limpa também as mensagens visíveis do chat — o histórico lógico
-  // e a UI precisam estar em sincronia ao entrar em nova sessão de quiz.
-  if (typeof window.NexusUI !== 'undefined' &&
-      typeof window.NexusUI.limparMensagens === 'function') {
-    window.NexusUI.limparMensagens();
-  }
+    // Limpa também as mensagens visíveis do chat — o histórico lógico
+    // e a UI precisam estar em sincronia ao entrar em nova sessão de quiz.
+    if (typeof window.NexusUI !== 'undefined' &&
+        typeof window.NexusUI.limparMensagens === 'function') {
+      window.NexusUI.limparMensagens();
+    }
 
-  console.log('[NexusQuizAssistant] domínio quiz ativo — modo:', window.__NEXUS_QUIZ_MODO__);
-}
+    // Mensagem própria do Quiz (Requisito 2) — usa o hook do
+    // NexusAssistant para manter state.messages/sessionStorage em
+    // sincronia com o que é exibido.
+    if (typeof window.NexusAssistant !== 'undefined' &&
+        typeof window.NexusAssistant.renderBotMessage === 'function') {
+      _mensagemBoasVindasQuiz(window.NexusAssistant.renderBotMessage);
+    } else {
+      console.warn('[NexusQuizAssistant] NexusAssistant.renderBotMessage não disponível — ' +
+        'mensagem de boas-vindas do Quiz não pôde ser exibida.');
+    }
+
+    console.log('[NexusQuizAssistant] domínio quiz ativo — modo:', window.__NEXUS_QUIZ_MODO__);
+  }
 
   window.NexusQuizAssistant = {
     init,
@@ -904,6 +998,10 @@ function init() {
     contextoAtivo:         _contextoQuizAtivo,
     purgar:                _purgarContextoQuiz,
     notificarEntradaNoQuiz,
+    // NOVO (Requisito 2) — permite que resumo/assistant.js reexiba a
+    // mensagem própria do Quiz após um reset de chat (_resetarChat),
+    // em vez de cair na mensagem genérica do Resumo.
+    mensagemBoasVindas:    _mensagemBoasVindasQuiz,
   };
 
 }());

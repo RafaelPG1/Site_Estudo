@@ -1,5 +1,5 @@
 /**
- * NEXUS — shared/js/ia/resumo/assistant.js  v2.0
+ * NEXUS — shared/js/ia/resumo/assistant.js  v2.1
  *
  * Orquestrador do sistema de IA para Resumos.
  *
@@ -13,6 +13,29 @@
  *   - Histórico de conversa e persistência de sessão
  *   - Integração com NexusWorker para respostas da IA
  *
+ * MUDANÇAS v2.1 — NÃO INTERFERIR NO QUIZ (auditoria):
+ *   - _resolverDisc() nunca usa o fallback genérico de disciplina
+ *     quando o contexto de Quiz está ativo; resolve direto via
+ *     window.__NEXUS_QUIZ_DISC__ ou retorna null.
+ *   - _processar() não cai em _executarSemDisc() (fluxo de "nenhuma
+ *     disciplina selecionada") quando estamos dentro do Quiz.
+ *   - init() e initUI() não mostram as boas-vindas genéricas do
+ *     Resumo quando a página é de Quiz — quem fala primeiro lá é
+ *     NexusQuizAssistant.
+ *   - _resetarChat() preserva a disciplina ativa quando o reset
+ *     de chat ocorre dentro de uma sessão de Quiz (só reseta o
+ *     histórico, não o contexto de disciplina).
+ *   - nexus:semestreChanged não limpa o contexto se o Quiz estiver
+ *     ativo (evita apagar a disciplina por um evento global).
+ *   - Exposto window.NexusAssistant.renderBotMessage — hook para
+ *     módulos de domínio (quiz/games) injetarem mensagens mantendo
+ *     state.messages/sessionStorage sincronizados.
+ *   - Exposto window.NexusAssistant.pipelineAtivo() — permite que
+ *     chamadores externos (ex.: NexusQuizAssistant.notificarEntradaNoQuiz)
+ *     confirmem que o pipeline de conteúdo já está pronto antes de
+ *     chamar selecionarDiscPorId(), evitando que a chamada seja
+ *     descartada silenciosamente por corrida de carregamento.
+ *
  * MUDANÇAS v2.0 — RESET DE CONTEXTO:
  *   initUI() agora usa NexusCtx.deveResetar() para decidir entre
  *   reset completo (contexto mudou) ou restauração normal.
@@ -25,7 +48,9 @@
  *   - Gabarito, feedback, questões
  *   - Purge de sessão de quiz
  *   - Serialização de questões
- *   - Contexto de quiz
+ *   - Contexto de quiz (exceto a checagem operacional mínima via
+ *     window.NexusQuizAssistant.contextoAtivo(), usada apenas para
+ *     NÃO interferir — nunca para decidir lógica de quiz)
  *
  * Depende de:
  *   - core/ctx.js         (window.NexusCtx)          — para reset
@@ -81,6 +106,17 @@
     if (!ctx) return null;
     const sem = ctx.getSemestre();
     return ctx.getDisciplinas(sem) || null;
+  }
+
+  /**
+   * Verifica se há uma sessão de Quiz operacionalmente ativa.
+   * Usada exclusivamente para EVITAR que o Resumo interfira no Quiz
+   * (REQUISITO 4) — nunca para implementar lógica de quiz aqui.
+   */
+  function _quizAtivo() {
+    return typeof window.NexusQuizAssistant !== 'undefined' &&
+           typeof window.NexusQuizAssistant.contextoAtivo === 'function' &&
+           window.NexusQuizAssistant.contextoAtivo();
   }
 
   function _push(msg) {
@@ -161,8 +197,31 @@
     return { ano: parsed.ano, periodo: parsed.periodo, ap: parsed.ap, arquivo: disc.arquivo, fonte: 'resumo', prefixo, varGlobal };
   }
 
+  /**
+   * Resolve a disciplina ativa para o chat.
+   *
+   * REGRA CRÍTICA (Requisito 1 / Requisito 4): dentro de uma sessão de
+   * Quiz operacionalmente ativa, NUNCA usamos o fallback genérico do
+   * Resumo (ctx.getDisciplinaAtual()) — a disciplina do Quiz é fixa,
+   * definida pela própria página (window.__NEXUS_QUIZ_DISC__). Se ela
+   * ainda não puder ser resolvida (ex.: catálogo de disciplinas ainda
+   * carregando), retornamos null em vez de adivinhar — quem chama
+   * _resolverDisc() trata esse null bloqueando o envio, nunca caindo
+   * no fluxo genérico de "selecione uma disciplina".
+   */
   function _resolverDisc() {
     if (state.discEscolhida) return state.discEscolhida;
+
+    if (_quizAtivo()) {
+      var discIdQuiz = window.__NEXUS_QUIZ_DISC__;
+      var discsQuiz  = _getDisciplinas();
+      if (discIdQuiz && discsQuiz) {
+        var foundQuiz = discsQuiz.find(function (d) { return d.id === discIdQuiz; });
+        if (foundQuiz) return foundQuiz;
+      }
+      return null;
+    }
+
     const ctx = _getCtxBridge();
     if (!ctx) return null;
     const idAtivo = ctx.getDisciplinaAtual ? ctx.getDisciplinaAtual() : null;
@@ -578,7 +637,17 @@
       }
 
       const disc = _resolverDisc();
-      if (!disc) { await _executarSemDisc(texto); return; }
+      if (!disc) {
+        if (_quizAtivo()) {
+          // Requisito 1/4: dentro do Quiz, nunca caímos no fluxo genérico
+          // de "nenhuma disciplina selecionada" — a disciplina é obrigatória
+          // e fixa pela própria página. Se ainda não resolveu, bloqueamos
+          // o envio em vez de oferecer /disc de outras disciplinas.
+          _renderBot('Carregando a disciplina do quiz… tente novamente em um instante. 📝');
+          return;
+        }
+        await _executarSemDisc(texto); return;
+      }
       await _executarBuscaNaDisc(texto, disc);
 
     } catch (err) {
@@ -796,14 +865,58 @@
     return true;
   }
 
+  /**
+   * Reset de chat acionado pelo botão da UI ("nova conversa").
+   *
+   * REGRA CRÍTICA (Requisito 1): dentro de uma sessão de Quiz, este
+   * reset deve apagar o HISTÓRICO (mensagens, worker) mas NUNCA a
+   * disciplina ativa nem o índice de conteúdo já carregado — a
+   * disciplina só pode ser removida por uma troca real de contexto
+   * (modo/disciplina/semestre/saída do quiz), nunca por este botão.
+   */
   function _resetarChat() {
-    _limparContexto(); _limparHistoricoStorage(); _removerLiveChips();
-    state.messages = []; state.discsCacheadas = {}; state.processando = false;
+    var quizAtivo = _quizAtivo();
+
+    _limparHistoricoStorage();
+    _removerLiveChips();
+
+    state.messages    = [];
+    state.processando = false;
     if (state.typingTimer) { clearTimeout(state.typingTimer); state.typingTimer = null; }
+
+    if (typeof window.NexusWorker !== 'undefined') NexusWorker.limparHistorico();
+
+    if (!quizAtivo) {
+      // Fora do Quiz: comportamento original — reset de chat também
+      // reseta o contexto de disciplina.
+      NexusResumoSearch.limparIndice();
+      NexusLoader.limpar();
+      state.discEscolhida  = null;
+      state.discIndexadaId = null;
+      state.conteudoAtual  = null;
+      state.discsCacheadas = {};
+      _salvarDiscAtiva();
+      NexusUI.atualizarDiscAtiva(null);
+    }
+    // Dentro do Quiz: state.discEscolhida, discIndexadaId, conteudoAtual
+    // e o badge de disciplina ativa são preservados — só o histórico de
+    // conversa é apagado.
+
     const msgsEl = document.getElementById('nexus-messages'); if (msgsEl) msgsEl.innerHTML = '';
     NexusUI.hideTyping(); _setInputBloqueado(false);
+
     _addWelcomeMessage();
-    if (_pipelineConteudoAtivo) { _mostrarBoasVindas(); } else { _mostrarBoasVindasLivre(); }
+
+    if (quizAtivo && typeof window.NexusQuizAssistant !== 'undefined' &&
+        typeof window.NexusQuizAssistant.mensagemBoasVindas === 'function') {
+      // Requisito 2: dentro do Quiz, a mensagem de boas-vindas é
+      // responsabilidade do NexusQuizAssistant, não do Resumo.
+      window.NexusQuizAssistant.mensagemBoasVindas(_renderBot);
+    } else if (_pipelineConteudoAtivo) {
+      _mostrarBoasVindas();
+    } else {
+      _mostrarBoasVindasLivre();
+    }
   }
 
   function _depsUIok() {
@@ -822,7 +935,8 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     initUI() — v2.0: decisão centralizada de reset vs restauração
+     initUI() — v2.1: decisão centralizada de reset vs restauração,
+     e nunca exibe as boas-vindas genéricas do Resumo dentro do Quiz.
 
      Lê NexusCtx.deveResetar() para decidir:
 
@@ -832,12 +946,12 @@
        3. Limpa DOM do chat (NexusUI.limparMensagens)
        4. Limpa worker (NexusWorker.limparHistorico) como garantia extra
        5. Confirma reset (remove nexus_ctx_dirty)
-       6. Mostra boas-vindas normais
+       6. Mostra boas-vindas normais — EXCETO se a página for de Quiz,
+          caso em que NexusQuizAssistant.init() (chamado depois por
+          init.js) é quem fala primeiro.
 
      SE dirty não está ativo (mesmo contexto):
        → _restaurarHistorico() normalmente
-
-     Sem polling. Sem timer. Sem dependência de quem chama quem.
    ══════════════════════════════════════════════════════════ */
   function initUI() {
     if (!_depsUIok()) return;
@@ -857,52 +971,48 @@
       inputEl.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) inputEl.classList.remove('nexus-input--cmd'); });
     }());
 
-    /* ── Decisão de reset vs restauração ─────────────────────
-       deveResetar() lê nexus_ctx_dirty do sessionStorage.
-       worker.js já processou essa flag no boot síncrono.
-       Aqui fazemos a parte da UI e confirmamos o reset.       */
-    var resetando = (typeof window.NexusCtx !== 'undefined') && window.NexusCtx.deveResetar();
+    var resetando   = (typeof window.NexusCtx !== 'undefined') && window.NexusCtx.deveResetar();
+    var paginaEhQuiz = (typeof window.NexusContext !== 'undefined') && window.NexusContext.temTipo('quiz');
 
     if (resetando) {
-      /* 1. Limpa storage */
       _limparHistoricoStorage();
 
-      /* 2. Zera estado em memória */
       state.messages      = [];
       state.discEscolhida = null;
       state.processando   = false;
       state.discsCacheadas = {};
 
-      /* 3. Limpa DOM do chat (painel já foi criado por NexusUI.init acima) */
       NexusUI.limparMensagens();
 
-      /* 4. Garante que worker também está limpo (defesa em profundidade) */
       if (typeof window.NexusWorker !== 'undefined') {
         NexusWorker.limparHistorico();
       }
 
-      /* 5. Confirma reset — remove dirty do sessionStorage, UMA VEZ */
       window.NexusCtx.confirmarReset();
 
       console.log('[NexusAssistant] reset de contexto aplicado.');
 
-      /* 6. Boas-vindas normais — sem restaurar nada */
       _addWelcomeMessage();
-      if (!_pipelineConteudoAtivo) _mostrarBoasVindasLivre();
+      // Requisito 2: boas-vindas genéricas do Resumo NUNCA na página de Quiz.
+      if (!_pipelineConteudoAtivo && !paginaEhQuiz) _mostrarBoasVindasLivre();
 
     } else {
-      /* Mesmo contexto — restauração normal */
       const restaurado = _restaurarHistorico();
       if (!restaurado) {
         _addWelcomeMessage();
-        if (!_pipelineConteudoAtivo) _mostrarBoasVindasLivre();
+        if (!_pipelineConteudoAtivo && !paginaEhQuiz) _mostrarBoasVindasLivre();
       }
     }
   }
 
   /* ── init(): ativa pipeline de conteúdo de resumo ───────────
-     Chamado por init.js SOMENTE quando tipos inclui 'resumo'.
+     Chamado por init.js SOMENTE quando tipos inclui 'resumo'
+     (incluindo quando o Quiz depende do pipeline de resumo).
      Assume que initUI() já foi chamado antes.
+
+     v2.1: nunca mostra as boas-vindas genéricas nem resolve uma
+     disciplina "padrão" quando a página é de Quiz — isso é papel
+     do NexusQuizAssistant.
   ─────────────────────────────────────────────────────────── */
   function init() {
     if (!_depsConteudoOk()) return;
@@ -910,18 +1020,24 @@
     _pipelineConteudoAtivo = true;
     console.log('[NexusAssistant] pipeline de conteúdo de resumo ativo.');
 
+    var paginaEhQuiz = (typeof window.NexusContext !== 'undefined') && window.NexusContext.temTipo('quiz');
+
     NexusUI.atualizarDiscAtiva(state.discEscolhida ? state.discEscolhida.apelido : null);
 
     const restaurado = state.messages.length > 1;
 
     if (state.discEscolhida) {
       _garantirConteudo(state.discEscolhida).then(function (conteudo) {
-        if (conteudo && !restaurado) {
+        if (conteudo && !restaurado && !paginaEhQuiz) {
           const loaderCtx = _montarCtx(state.discEscolhida);
           if (loaderCtx) { NexusLoader.carregar(loaderCtx).then(function (c) { const sugestoes = _gerarSugestoes(c); if (sugestoes.length > 0) NexusUI.mostrarSugestoes(sugestoes, _onSugestaoClick); }); }
         }
       });
-    } else if (!restaurado) {
+    } else if (!restaurado && !paginaEhQuiz) {
+      // Requisito 1/2: fora do Quiz, mantém o comportamento original
+      // (boas-vindas + resolução de disciplina inicial via contexto).
+      // Dentro do Quiz, NÃO mostramos boas-vindas genéricas nem
+      // resolvemos uma disciplina "padrão" por aqui.
       _mostrarBoasVindas();
       const discInicial = _resolverDisc();
       if (discInicial) {
@@ -940,12 +1056,25 @@
   }
 
   document.addEventListener('nexus:semestreChanged', function () {
+    // Requisito 4: não interfere com o Quiz. Troca de semestre dentro
+    // de uma sessão de Quiz é tratada pelo próprio template_init.js
+    // (via _declararContexto + dirty flag), não por este listener global.
+    if (_quizAtivo()) return;
     _limparContexto(); _limparHistoricoStorage(); state.discsCacheadas = {}; _removerLiveChips();
   });
 
   window.NexusAssistant = {
     initUI,
     init,
+
+    // NOVO — hook para módulos de domínio (quiz/games) injetarem
+    // mensagens mantendo state.messages/sessionStorage sincronizados.
+    renderBotMessage: _renderBot,
+
+    // NOVO — permite que chamadores externos (ex.: NexusQuizAssistant)
+    // confirmem que o pipeline de conteúdo já está pronto antes de
+    // chamar selecionarDiscPorId(), evitando descarte silencioso.
+    pipelineAtivo: function () { return _pipelineConteudoAtivo; },
 
     open:   function () { NexusUI.open();   },
     close:  function () { NexusUI.close();  },
