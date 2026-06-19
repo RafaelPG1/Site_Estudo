@@ -12,6 +12,7 @@
      7. Montar caminho do conteúdo               _resolverCaminhoConteudo()
      8. Aguardar Firebase (fire-and-forget)      _aguardarFirebase()
      9. Carregar conteúdo + UI + engine          _carregarQuiz()
+    10. Inicializar Quiz-Assistant               _inicializarAssistant()
 
    PROIBIÇÕES ABSOLUTAS:
      ✗ Lógica de negócio do quiz
@@ -195,7 +196,7 @@ function _injetarNavFloat() {
 
   document.body.appendChild(nav);
 
-  var moved = { music: false, sfx: false };
+  var moved = { music: false, sfx: false, ia: false };
 
   var observer = new MutationObserver(function () {
     if (!moved.music) {
@@ -206,12 +207,15 @@ function _injetarNavFloat() {
       var sfx = document.querySelector('.abtn');
       if (sfx) { nav.appendChild(sfx); moved.sfx = true; }
     }
-    if (moved.music && moved.sfx) observer.disconnect();
+    if (!moved.ia) {
+      var ia = document.getElementById('nexus-fab');
+      if (ia) { nav.appendChild(ia); moved.ia = true; }
+    }
+    if (moved.music && moved.sfx && moved.ia) observer.disconnect();
   });
 
   observer.observe(document.body, { childList: true, subtree: true });
 }
-
 
 /* ══════════════════════════════════════════════════════════
    PASSO 6 — Inicializar áudio
@@ -320,6 +324,62 @@ function _carregarQuiz(params, info) {
 
 
 /* ══════════════════════════════════════════════════════════
+   PASSO 10 — Inicializar Quiz-Assistant
+
+   Aguarda o engine terminar de montar __NEXUS_QUESTOES_VISUAIS__
+   antes de iniciar o assistente, com polling leve (máx 3s).
+
+   Ordem de dependências exigidas:
+     - window.NexusUI         (core/ui.js)
+     - window.NexusHistory    (core/history.js)
+     - window.NexusWorker     (core/worker.js)
+     - window.NexusTextUtils  (core/text-utils.js)
+     - window.NexusQuizAssistant (quiz/quiz_assistant.js)
+     - window.__NEXUS_QUIZ_DISC__
+     - window.__NEXUS_QUIZ_MODO__
+   ══════════════════════════════════════════════════════════ */
+
+function _depsAssistantPresentes() {
+  return (
+    typeof window.NexusUI             !== 'undefined' &&
+    typeof window.NexusHistory        !== 'undefined' &&
+    typeof window.NexusWorker         !== 'undefined' &&
+    typeof window.NexusQuizAssistant  !== 'undefined' &&
+    window.__NEXUS_QUIZ_DISC__ &&
+    window.__NEXUS_QUIZ_MODO__
+  );
+}
+
+function _inicializarAssistant() {
+  if (!_depsAssistantPresentes()) {
+    console.warn('[template_init] Quiz-Assistant: dependências ausentes — não inicializado.');
+    return;
+  }
+
+  // Aguarda __NEXUS_QUESTOES_VISUAIS__ (populado pelo engine após renderizar)
+  var tentativas = 0;
+  var MAX        = 60;  // 60 × 50ms = 3s
+
+  var timer = setInterval(function () {
+    tentativas++;
+
+    var visuais = window.__NEXUS_QUESTOES_VISUAIS__;
+    var prontas = Array.isArray(visuais) && visuais.length > 0;
+
+    if (prontas || tentativas >= MAX) {
+      clearInterval(timer);
+
+      if (!prontas) {
+        console.warn('[template_init] Quiz-Assistant: __NEXUS_QUESTOES_VISUAIS__ não disponível após 3s — iniciando sem mapa visual.');
+      }
+
+      window.NexusQuizAssistant.init();
+    }
+  }, 50);
+}
+
+
+/* ══════════════════════════════════════════════════════════
    EXPOSIÇÃO PARA SCRIPTS CLÁSSICOS
    ══════════════════════════════════════════════════════════ */
 
@@ -331,13 +391,29 @@ function _exponerGlobais() {
 
 
 /* ══════════════════════════════════════════════════════════
-   EXPOSIÇÃO DE CONTEXTO PARA O ENGINE
+   EXPOSIÇÃO DE CONTEXTO PARA O ENGINE E ASSISTANT
    ══════════════════════════════════════════════════════════ */
 
 function _exponerContextoQuiz(params) {
   window.__NEXUS_QUIZ_DISC__     = params.disc;
   window.__NEXUS_QUIZ_MODO__     = params.modo;
   window.__NEXUS_QUIZ_SEMESTRE__ = params.semestre;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   DECLARAÇÃO DE CONTEXTO PARA O SISTEMA DE RESET
+   ══════════════════════════════════════════════════════════ */
+
+function _declararContextoIA(params) {
+  if (typeof window.NexusCtx !== 'undefined') {
+    window.NexusCtx.declarar({
+      disc:   params.disc,
+      modo:   params.modo,
+      sem:    params.semestre,
+      pagina: 'QUIZ',
+    });
+  }
 }
 
 
@@ -362,15 +438,17 @@ function _atualizarEstadoGlobal(params) {
        3. Aplica tema (evita FOUC)
        4. Expõe globais e contexto do quiz
        5. Atualiza estado global
+       6. Declara contexto para o sistema de reset
 
      [assíncrono, após DOMContentLoaded]
-       6. Monta componentes visuais
-       7. Injeta nav-float
-       8. Inicializa áudio
+       7. Monta componentes visuais
+       8. Injeta nav-float
+       9. Inicializa áudio
 
      [assíncrono, paralelo, sem bloquear DOM]
-       9.  Aguarda Firebase (máx 3s)
-       10. Carrega conteúdo + UI + engine
+       10. Aguarda Firebase (máx 3s)
+       11. Carrega conteúdo + UI + engine
+       12. Inicializa Quiz-Assistant (após engine montar questões)
    ══════════════════════════════════════════════════════════ */
 
 var _params     = _lerParams();
@@ -382,11 +460,13 @@ _aplicarTema(_info.arquivo);
 _exponerGlobais();
 _exponerContextoQuiz(_params);
 _atualizarEstadoGlobal(_params);
+_declararContextoIA(_params);
 
 document.addEventListener('DOMContentLoaded', function () {
   _montarVisual(_params, _info, _modoConfig);
   _injetarNavFloat();
   _inicializarAudio();
+  _inicializarAssistant();   // ← chamado aqui, de cara
 });
 
 _aguardarFirebase(_params);

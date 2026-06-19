@@ -1,53 +1,39 @@
 /**
- * NEXUS — shared/js/ia/quiz/assistant.js  v3.0
+ * NEXUS — quiz/js/quiz_assistant.js  v2.0
  *
- * Orquestrador do sistema de IA para Quiz.
+ * Quiz-Assistant: tutor de IA dentro do ambiente de quiz.
  *
- * Completamente independente de resumo/assistant.js.
- * Possui: UI própria, histórico próprio, contexto próprio, mensagem inicial própria.
+ * ARQUITETURA v2.0 — inicialização por evento:
+ *   O Assistant NÃO depende de chamada externa (template_init não chama init()).
+ *   Ele escuta o evento 'nexus:quizPronto' disparado pelo engine após a primeira
+ *   renderização. Isso garante:
+ *     - Ordem de carregamento não importa (script pode ser carregado antes ou depois do engine)
+ *     - Sem polling (zero setInterval/setTimeout de espera)
+ *     - Snapshot visual sempre consistente (engine atualiza, assistant apenas lê)
+ *     - Sem crash por dependência ausente (modo seguro com logs claros)
  *
  * Responsabilidades:
- *   - Fluxo completo do chat de quiz
- *   - Exigir disciplina configurada (via __NEXUS_QUIZ_DISC__)
- *   - Responder dúvidas sobre questões
- *   - Histórico isolado por (quiz + disciplina + semestre + modo)
- *   - Purge ao sair do quiz
+ *   - Atuar como tutor de conteúdo da disciplina ativa
+ *   - Explicar questões na ordem visual que o usuário está vendo
+ *   - Manter histórico isolado por (disciplina + modo + semestre)
+ *   - Usar NexusWorker para respostas via IA
+ *   - Nunca interferir na lógica de pontuação ou estado do quiz engine
  *
- * NÃO conhece:
- *   - resumo/assistant.js ou qualquer estado do Resumo
- *   - Seleção de disciplina pelo usuário (disciplina vem da página)
- *   - /disc commands
- *   - Busca de resumo
+ * NÃO faz:
+ *   - Gerar listas de questões ou simular provas
+ *   - Acessar estado interno do engine (lê apenas __NEXUS_QUESTOES_VISUAIS__)
+ *   - Misturar histórico entre contextos
+ *   - Usar polling de qualquer tipo
  *
- * Disciplina:
- *   - OBRIGATÓRIA — definida pela página via window.__NEXUS_QUIZ_DISC__
- *   - SEM fallback, SEM automático, SEM detecção
- *   - Se ausente, o quiz não inicializa
- *
- * Histórico:
- *   - Isolado por chave: quiz|discId|semestre|modo
- *   - Reset do chat: limpa histórico, mantém disciplina ativa
- *   - Troca de disciplina, semestre ou modo: limpa histórico
- *   - Ao sair: limpa todo o domínio quiz no storage
- *
- * Depende de:
- *   - core/context.js    (window.NexusContext)
- *   - core/history.js    (window.NexusHistory)
- *   - core/ui.js         (window.NexusUI)
- *   - core/loader.js     (window.NexusLoader)
- *   - core/worker.js     (window.NexusWorker)
- *   - core/text-utils.js (window.NexusTextUtils)
- *   - quiz/search.js     (window.NexusQuizSearch)
- *   - window.__nexusCtx  (bridge de contexto)
- *   - window.__NEXUS_QUIZ_TOKEN__    (token da sessão — gerado por template_init.js)
- *   - window.__NEXUS_QUIZ_MODO__     (modo ativo: 'AP1', 'AP2', etc.)
- *   - window.__NEXUS_QUIZ_DISC__     (id da disciplina — definido pela página)
- *   - window.__NEXUS_QUESTOES_VISUAIS__ (ordem visual das questões)
- *
- * Inicialização:
- *   - NexusQuizAssistant.init() — chamado por init.js após autorizar o token
+ * Contrato com quiz_engine.js:
+ *   Engine dispara: window.dispatchEvent(new CustomEvent('nexus:quizPronto'))
+ *   Assistant escuta: window.addEventListener('nexus:quizPronto', ...)
+ *   Engine atualiza: window.__NEXUS_QUESTOES_VISUAIS__ = [...] (snapshot imutável por render)
+ *   Assistant lê: window.__NEXUS_QUESTOES_VISUAIS__ (somente leitura)
  *
  * API pública: window.NexusQuizAssistant
+ *   init()          — inicialização manual (fallback, normalmente chamada pelo evento)
+ *   contextoAtivo() — verifica se o assistente pode operar
  */
 
 (function () {
@@ -59,6 +45,8 @@
      ESTADO INTERNO
   ══════════════════════════════════════════════════════════ */
 
+  var _iniciado = false;  // garante init() idempotente
+
   var state = {
     messages:       [],
     typingTimer:    null,
@@ -69,6 +57,38 @@
   };
 
   /* ══════════════════════════════════════════════════════════
+     VERIFICAÇÃO DE DEPENDÊNCIAS
+     Sem exceção, sem crash — apenas log + retorno falso.
+  ══════════════════════════════════════════════════════════ */
+
+  function _verificarDeps() {
+    var ok = true;
+
+    if (typeof window.NexusUI === 'undefined') {
+      console.error('[NexusQuizAssistant] NexusUI não encontrado — core/ui.js deve ser carregado antes.');
+      ok = false;
+    }
+    if (typeof window.NexusHistory === 'undefined') {
+      console.error('[NexusQuizAssistant] NexusHistory não encontrado — core/history.js deve ser carregado antes.');
+      ok = false;
+    }
+    if (typeof window.NexusWorker === 'undefined') {
+      // Worker é recomendado mas não bloqueia — opera sem IA (só fallback)
+      console.warn('[NexusQuizAssistant] NexusWorker não encontrado — respostas de IA indisponíveis.');
+    }
+    if (!window.__NEXUS_QUIZ_DISC__) {
+      console.error('[NexusQuizAssistant] __NEXUS_QUIZ_DISC__ não definido — disciplina obrigatória.');
+      ok = false;
+    }
+    if (!window.__NEXUS_QUIZ_MODO__) {
+      console.error('[NexusQuizAssistant] __NEXUS_QUIZ_MODO__ não definido — modo obrigatório.');
+      ok = false;
+    }
+
+    return ok;
+  }
+
+  /* ══════════════════════════════════════════════════════════
      UTILITÁRIOS
   ══════════════════════════════════════════════════════════ */
 
@@ -77,59 +97,71 @@
   }
 
   function _normalizar(str) {
-    return window.NexusTextUtils.normalizarTexto(str);
+    if (typeof window.NexusTextUtils !== 'undefined') {
+      return window.NexusTextUtils.normalizarTexto(str);
+    }
+    // Fallback robusto — não depende de NexusTextUtils
+    return (str || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9 ]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 
-  function _getCtxBridge() {
-    return window.__nexusCtx || null;
-  }
+  function _getDisc()     { return window.__NEXUS_QUIZ_DISC__     || null; }
+  function _getModo()     { return window.__NEXUS_QUIZ_MODO__     || null; }
+  function _getSemestre() { return window.__NEXUS_QUIZ_SEMESTRE__ || ''; }
 
-  function _getSemestre() {
-    var ctx = _getCtxBridge();
-    return ctx ? ctx.getSemestre() : '';
+  // Lê o snapshot visual criado pelo engine — NUNCA escreve nele
+  function _getSnapshot() {
+    var v = window.__NEXUS_QUESTOES_VISUAIS__;
+    return Array.isArray(v) ? v : [];
   }
 
   /* ══════════════════════════════════════════════════════════
-     TOKEN E CONTEXTO DE QUIZ
+     VERIFICAÇÃO OPERACIONAL (runtime)
+     Distinta de _verificarDeps() — verifica estado de execução.
   ══════════════════════════════════════════════════════════ */
 
-  function _quizToken() {
-    var t = window.__NEXUS_QUIZ_TOKEN__;
-    return (t && typeof t === 'string') ? t : null;
-  }
-
-  /**
-   * Verificação operacional completa.
-   * Exige: NexusContext com tipo 'quiz' + token + modo + disc.
-   */
   function _contextoAtivo() {
-    if (typeof window.NexusContext === 'undefined') return false;
-    if (!window.NexusContext.temTipo('quiz')) return false;
-    if (!_quizToken()) return false;
-    if (!window.__NEXUS_QUIZ_MODO__) return false;
-    if (!window.__NEXUS_QUIZ_DISC__) return false;
-    return true;
+    return !!(
+      _iniciado &&
+      _getDisc() &&
+      _getModo() &&
+      typeof window.NexusUI !== 'undefined'
+    );
   }
 
   /* ══════════════════════════════════════════════════════════
      CHAVE DE HISTÓRICO
-     Isolada por: quiz + discId + semestre + modo
+     Isolada por: quiz + disc + semestre + modo
   ══════════════════════════════════════════════════════════ */
 
-  function _montarChaveHistorico(discId, modo) {
-    var sem = _getSemestre();
-    var base = window.NexusHistory.montarChave('quiz', discId, sem);
-    return base + '|' + (modo || '').toLowerCase();
+  function _montarChaveHistorico(discId, modo, sem) {
+    if (typeof window.NexusHistory !== 'undefined') {
+      var base = window.NexusHistory.montarChave('quiz', discId, sem);
+      return base + '|' + (modo || '').toLowerCase();
+    }
+    // Fallback determinístico se NexusHistory não estiver disponível ainda
+    return 'quiz|' + (discId || '').toLowerCase() +
+           '|' + (sem || '').toLowerCase() +
+           '|' + (modo || '').toLowerCase();
   }
 
   function _salvarHistorico() {
-    if (!state.chaveHistorico) return;
-    window.NexusHistory.salvar(state.chaveHistorico, state.messages);
+    if (!state.chaveHistorico || typeof window.NexusHistory === 'undefined') return;
+    try {
+      window.NexusHistory.salvar(state.chaveHistorico, state.messages);
+    } catch (e) {
+      console.warn('[NexusQuizAssistant] erro ao salvar histórico:', e);
+    }
   }
 
   function _limparHistoricoAtivo() {
-    if (state.chaveHistorico) {
-      window.NexusHistory.limpar(state.chaveHistorico);
+    if (state.chaveHistorico && typeof window.NexusHistory !== 'undefined') {
+      try { window.NexusHistory.limpar(state.chaveHistorico); } catch (e) {}
     }
     state.messages = [];
   }
@@ -145,88 +177,74 @@
   }
 
   function _renderBot(text, rodape) {
+    if (typeof window.NexusUI === 'undefined') return;
     var msg = _push({ role: 'bot', text: text, time: _getTime(), rodape: rodape || null });
-    NexusUI.renderMessage(msg);
+    window.NexusUI.renderMessage(msg);
   }
 
   function _setInputBloqueado(bloqueado) {
     var input   = document.getElementById('nexus-input');
     var sendBtn = document.getElementById('nexus-send');
-    if (input)   input.disabled   = bloqueado;
-    if (sendBtn) sendBtn.disabled = bloqueado;
-    if (input) input.placeholder = bloqueado ? 'Aguarde…' : 'Digite sua mensagem…';
+    if (input)   { input.disabled   = bloqueado; }
+    if (sendBtn) { sendBtn.disabled = bloqueado; }
+    if (input)   { input.placeholder = bloqueado ? 'Aguarde…' : 'Digite sua mensagem…'; }
   }
 
   /* ══════════════════════════════════════════════════════════
-     BOAS-VINDAS
+     DETECÇÃO DE MUDANÇA DE CONTEXTO
   ══════════════════════════════════════════════════════════ */
 
-  function _mostrarBoasVindas() {
-    var modo = window.__NEXUS_QUIZ_MODO__ || '';
-    var rotuloModo = modo ? ' — ' + modo.toUpperCase() : '';
-    _renderBot(
-      '📝 Modo Quiz' + rotuloModo + '\n\n' +
-      'Pode me perguntar sobre qualquer questão deste quiz:\n' +
-      '  "explica a questão 3"\n' +
-      '  "por que a alternativa B está errada?"\n\n' +
-      'Gabaritos só são respondidos aqui, dentro do quiz.'
-    );
-  }
+  function _resetarSeContextoMudou() {
+    var discAtual = _getDisc();
+    var modoAtual = _getModo();
 
-  /* ══════════════════════════════════════════════════════════
-     DETECÇÃO DE INTENÇÃO
-  ══════════════════════════════════════════════════════════ */
+    var discMudou = state.discAtivo !== null && state.discAtivo !== discAtual;
+    var modoMudou = state.modoAtivo !== null && state.modoAtivo !== modoAtual;
 
-  function _ehPedidoDeGabarito(pergunta) {
-    if (/\b(gabarito|resposta\s+certa|resposta\s+correta)\b/i.test(pergunta)) return true;
-    if (/qual\s+(é\s+)?a?\s*(resposta|alternativa\s+(certa|correta)|letra)\b/i.test(pergunta)) return true;
-    if (/me\s+(d[aá]|pass[ae]|fal[ae])\s+(a\s+)?resposta\b/i.test(pergunta)) return true;
-    if (/^[éeÉ]\s+[aAoO]\s+[A-Ea-e]\s*[\)\.]/.test(pergunta.trim())) return true;
-    return false;
-  }
+    if (discMudou || modoMudou) {
+      console.log('[NexusQuizAssistant] contexto mudou — limpando histórico.');
+      _limparHistoricoAtivo();
+      state.chaveHistorico = _montarChaveHistorico(discAtual, modoAtual, _getSemestre());
+      if (typeof window.NexusWorker !== 'undefined') {
+        window.NexusWorker.limparHistorico();
+      }
+    }
 
-  /* ══════════════════════════════════════════════════════════
-     PALAVRAS NEUTRAS DE REFERÊNCIA
-  ══════════════════════════════════════════════════════════ */
-
-  var PALAVRAS_REFERENCIA_EXTRA = new Set([
-    'a','o','as','os','e','ou','que','se','com','sobre',
-    'da','do','na','no','em','pra','pro','para','por',
-    'ela','ele','isto',
-    'questao','questoes','pergunta','perguntas',
-    'alternativa','alternativas','opcao','opcoes',
-    'letra','letras','item','itens',
-    'resposta','respostas','gabarito',
-    'correta','correto','certa','certo',
-    'errada','errado','incorreta','incorreto',
-    'assunto','assuntos','significa','significado',
-    'trata','tratando','aborda','abordar',
-    'conta','conte','contar',
-    'descreve','descreva','descrever',
-    'analisa','analise','analisar',
-    'comenta','comente','comentar',
-    'responde','responda','responder',
-    'entendi','entender','compreendi','compreender',
-  ]);
-
-  function _ehPalavraDeReferencia(palavra) {
-    if (!palavra) return true;
-    var u = window.NexusTextUtils;
-    return u.STOPWORDS.has(palavra) ||
-           PALAVRAS_REFERENCIA_EXTRA.has(palavra) ||
-           /^[a-e]$/.test(palavra);
-  }
-
-  function _restanteEhReferencia(normSemNumero) {
-    return normSemNumero.split(' ').filter(Boolean).every(_ehPalavraDeReferencia);
+    if (discAtual) state.discAtivo = discAtual;
+    if (modoAtual) state.modoAtivo = modoAtual;
   }
 
   /* ══════════════════════════════════════════════════════════
      DETECÇÃO DE NÚMERO DE QUESTÃO
   ══════════════════════════════════════════════════════════ */
 
+  var _PALAVRAS_NEUTRAS = new Set([
+    'a','o','as','os','e','ou','que','se','com','sobre','da','do','na','no',
+    'em','pra','pro','para','por','ela','ele','isto',
+    'questao','questoes','pergunta','perguntas',
+    'alternativa','alternativas','opcao','opcoes',
+    'letra','letras','item','itens',
+    'resposta','respostas','gabarito',
+    'correta','correto','certa','certo',
+    'errada','errado','incorreta','incorreto',
+    'explica','explique','me','fala','diga','descreve','qual','quais',
+  ]);
+
+  function _ehPalavraNeutra(palavra) {
+    if (!palavra) return true;
+    if (_PALAVRAS_NEUTRAS.has(palavra)) return true;
+    if (/^[a-e]$/.test(palavra)) return true;
+    if (typeof window.NexusTextUtils !== 'undefined' &&
+        window.NexusTextUtils.STOPWORDS &&
+        window.NexusTextUtils.STOPWORDS.has(palavra)) return true;
+    return false;
+  }
+
   function _detectarNumeroQuestao(texto) {
-    var norm = _normalizar(texto.trim());
+    var norm    = _normalizar(texto);
+    var snapshot = _getSnapshot();
+
+    // Padrões explícitos com menção a "questão"
     var padroes = [
       /\bquest(?:ao|oes?)?\s*n?[o°]?\s*(\d+)\b/,
       /\bq\s*(\d+)\b/,
@@ -235,19 +253,20 @@
       /\b(\d+)[aª]\s*quest/,
       /\b(?:da|do|na|no|pra|pro|essa|esta|aquela)\s+(\d+)\b/,
     ];
+
     for (var i = 0; i < padroes.length; i++) {
       var m = norm.match(padroes[i]);
       if (m) return parseInt(m[1], 10);
     }
 
+    // Número isolado: só interpreta como questão se o resto for tudo palavras neutras
     var bare = norm.match(/\b(\d+)\b/);
     if (bare) {
-      var n = parseInt(bare[1], 10);
-      var visuais = window.__NEXUS_QUESTOES_VISUAIS__;
-      var dentroDoIntervalo = !visuais || !visuais.length || (n >= 1 && n <= visuais.length);
-      if (dentroDoIntervalo) {
-        var semNumero = (norm.slice(0, bare.index) + ' ' + norm.slice(bare.index + bare[0].length)).trim();
-        if (_restanteEhReferencia(semNumero)) return n;
+      var n     = parseInt(bare[1], 10);
+      var total = snapshot.length || 999;
+      if (n >= 1 && n <= total) {
+        var semNum = (norm.slice(0, bare.index) + ' ' + norm.slice(bare.index + bare[0].length)).trim();
+        if (semNum.split(' ').filter(Boolean).every(_ehPalavraNeutra)) return n;
       }
     }
 
@@ -255,254 +274,139 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     CONTEXTO DA ÚLTIMA QUESTÃO DISCUTIDA
+     RASTREIO DA ÚLTIMA QUESTÃO DISCUTIDA
   ══════════════════════════════════════════════════════════ */
 
-  var _ultimoContexto           = null;
-  var _ultimoMapaVisualRastreio = null;
-  var _ultimoMapaVisual         = null;
-
-  function _registrarContexto(numeroVisual, q) {
-    _ultimoContexto = {
-      tipo:     'questao',
-      visual:   numeroVisual,
-      original: (q && typeof q.__qiOriginal__ === 'number') ? q.__qiOriginal__ : null,
-    };
-  }
-
-  function _resetRastreioSeMapaMudou() {
-    var atual = window.__NEXUS_QUESTOES_VISUAIS__;
-    if (atual && atual.length && atual !== _ultimoMapaVisualRastreio) {
-      _ultimoContexto           = null;
-      _ultimoMapaVisualRastreio = atual;
-    }
-  }
-
-  function _mapaVisualMudou() {
-    var atual = window.__NEXUS_QUESTOES_VISUAIS__;
-    if (!atual || !atual.length) return false;
-    return atual !== _ultimoMapaVisual;
-  }
-
-  /**
-   * Detecta mudança de modo, disc ou semestre e reseta o histórico se necessário.
-   */
-  function _resetarChatSeContextoMudou() {
-    var modoAtual = window.__NEXUS_QUIZ_MODO__;
-    var discAtual = window.__NEXUS_QUIZ_DISC__;
-    var semAtual  = _getSemestre();
-
-    var modoMudou = state.modoAtivo !== null && state.modoAtivo !== modoAtual;
-    var discMudou = state.discAtivo !== null && state.discAtivo !== discAtual;
-
-    if (modoMudou || discMudou) {
-      console.log('[NexusQuizAssistant] contexto mudou — limpando histórico do quiz.');
-      _limparHistoricoAtivo();
-      _ultimoContexto           = null;
-      _ultimoMapaVisualRastreio = null;
-
-      // Recalcula chave com novos valores
-      state.chaveHistorico = _montarChaveHistorico(discAtual, modoAtual);
-
-      if (typeof window.NexusWorker !== 'undefined' &&
-          typeof window.NexusWorker.limparHistorico === 'function') {
-        window.NexusWorker.limparHistorico();
-      }
-    }
-
-    state.modoAtivo = modoAtual || state.modoAtivo;
-    state.discAtivo = discAtual || state.discAtivo;
-  }
-
-  /* ══════════════════════════════════════════════════════════
-     REFERÊNCIA IMPLÍCITA À ÚLTIMA QUESTÃO
-  ══════════════════════════════════════════════════════════ */
+  var _ultimaQuestaoVisual = null;
 
   function _referenciaImplicita(texto) {
     var norm = _normalizar(texto);
     if (/\b(alternativa|opcao|letra|item)\s*[a-e]\b/.test(norm)) return true;
-    if (/^e\s+[ao]\s*[a-e]\b/.test(norm)) return true;
-    if (/\b(essa|esta|nessa|nesta|dessa|desta|aquela)\s+(questao|pergunta|alternativa|opcao)\b/.test(norm)) return true;
+    if (/\b(essa|esta|nessa|nesta|dessa|desta)\s+(questao|pergunta|alternativa)\b/.test(norm)) return true;
     if (/\b(certa|certo|errada|errado|correta|correto|incorreta|incorreto)\b/.test(norm)) return true;
     if (/\b(resposta|gabarito)\b/.test(norm)) return true;
-    if (/\b(assunto|significa|significado|aborda|abordar|trata|tratando)\b/.test(norm)) return true;
+    if (/\b(assunto|significa|significado|aborda|trata)\b/.test(norm)) return true;
     return false;
   }
 
   /* ══════════════════════════════════════════════════════════
-     INDEXAÇÃO DE QUESTÕES
+     SERIALIZAÇÃO DA QUESTÃO VISUAL
+     Usa SOMENTE o snapshot de __NEXUS_QUESTOES_VISUAIS__.
+     Alternativas já estão embaralhadas na ordem que o usuário vê.
   ══════════════════════════════════════════════════════════ */
 
-  function _montarCtxQuiz(discId) {
-    var ctx = _getCtxBridge();
-    if (!ctx || !discId) return null;
-    var sem    = ctx.getSemestre();
-    var parsed = ctx.parseSemestre(sem);
-
-    var prefixo   = (ctx.getPrefixoQuiz   && ctx.getPrefixoQuiz())   || 'ques_';
-    var varGlobal = (ctx.getVarGlobalQuiz && ctx.getVarGlobalQuiz()) || 'questoes';
-
-    // Precisamos do arquivo da disciplina
-    var discs = ctx.getDisciplinas(sem);
-    if (!discs) return null;
-    var disc = discs.find(function (d) { return d.id === discId; });
-    if (!disc) return null;
-
-    return {
-      ano: parsed.ano, periodo: parsed.periodo, ap: parsed.ap,
-      arquivo: disc.arquivo, fonte: 'quiz', prefixo, varGlobal,
-    };
-  }
-
-  async function _garantirIndexacaoQuiz() {
-    if (!_contextoAtivo()) return null;
-
-    var token = _quizToken();
-    var modo  = window.__NEXUS_QUIZ_MODO__;
-    var discId = window.__NEXUS_QUIZ_DISC__;
-
-    if (_mapaVisualMudou()) {
-      console.log('[NexusQuizAssistant] mapa visual mudou — reindexando.');
-      NexusQuizSearch.limparIndiceQuiz(token);
-    }
-
-    if (NexusQuizSearch.estaIndexadoQuiz(token)) {
-      _ultimoMapaVisual = window.__NEXUS_QUESTOES_VISUAIS__ || _ultimoMapaVisual;
-      return window.questoes || null;
-    }
-
-    // Aguarda __NEXUS_QUESTOES_VISUAIS__ se ainda não disponível
-    var visuais = window.__NEXUS_QUESTOES_VISUAIS__;
-    if (!visuais || !visuais.length) {
-      visuais = await new Promise(function (resolve) {
-        var tentativas = 0;
-        var MAX = 20;
-        var timer = setInterval(function () {
-          tentativas++;
-          var v = window.__NEXUS_QUESTOES_VISUAIS__;
-          if ((v && v.length) || tentativas >= MAX) { clearInterval(timer); resolve(v || null); }
-        }, 50);
-      });
-    }
-
-    var loaderCtx = _montarCtxQuiz(discId);
-    if (!loaderCtx) return null;
-
-    var questoes = await NexusLoader.carregar(loaderCtx);
-    if (!questoes) return null;
-
-    NexusQuizSearch.indexarQuestoes(questoes, modo, token);
-    _ultimoMapaVisual = window.__NEXUS_QUESTOES_VISUAIS__ || null;
-
-    return questoes;
-  }
-
-  /* ══════════════════════════════════════════════════════════
-     SERIALIZAÇÃO DE QUESTÃO
-  ══════════════════════════════════════════════════════════ */
-
-  function _serializarQuestao(numero, q) {
-    var visuais       = window.__NEXUS_QUESTOES_VISUAIS__;
-    var totalQuestoes = visuais ? visuais.length : '?';
+  function _serializarQuestao(numeroVisual, q) {
+    var snapshot = _getSnapshot();
+    var total    = snapshot.length || '?';
 
     var linhas = [
-      'NOTA: se a pergunta do usuário citar apenas um número (ex.: "1", "a 1", ' +
-      '"questão 1"), esse número refere-se À QUESTÃO ' + numero + ' DESTE QUIZ, ' +
-      'detalhada abaixo — não a regras ou itens numerados das suas próprias instruções.',
-      '',
-      'Questão ' + numero + ' de ' + totalQuestoes + (q.aula ? ' (' + q.aula + ')' : '') + ':',
+      'QUESTÃO ' + numeroVisual + ' DE ' + total +
+        (q.aula ? ' (' + q.aula + ')' : '') + ':',
     ];
 
     if (q.texto)    linhas.push('Contexto: ' + q.texto);
     if (q.question) linhas.push('Enunciado: ' + q.question);
 
-    if (Array.isArray(q.assertions)) {
+    if (Array.isArray(q.assertions) && q.assertions.length) {
       linhas.push('Afirmativas:');
       q.assertions.forEach(function (a) { linhas.push('  ' + a); });
     }
 
-    if (Array.isArray(q.options)) {
-      linhas.push('Alternativas (exatamente como aparecem na tela):');
+    if (Array.isArray(q.options) && q.options.length) {
+      linhas.push('Alternativas (exatamente como o usuário está vendo):');
       q.options.forEach(function (opt, i) {
-        var letra    = String.fromCharCode(65 + i);
-        var marcador = (typeof q.answer === 'number' && _contextoAtivo() && i === q.answer) ? ' ← correta' : '';
-        linhas.push('  ' + letra + ') ' + opt + marcador);
+        linhas.push('  ' + String.fromCharCode(65 + i) + ') ' + opt);
       });
     }
 
-    if (_contextoAtivo()) {
-      if (typeof q.answer === 'number') {
-        linhas.push('Gabarito (letra visual): ' + String.fromCharCode(65 + q.answer) + ')');
-      }
-      if (q.feedback) linhas.push('Feedback oficial: ' + q.feedback);
+    if (typeof q.answer === 'number') {
+      linhas.push('Alternativa correta: ' + String.fromCharCode(65 + q.answer) + ')');
+    }
+    if (q.feedback) {
+      linhas.push('Explicação: ' + q.feedback);
     }
 
     return linhas.join('\n');
   }
 
   /* ══════════════════════════════════════════════════════════
-     RESPOSTA SOBRE QUESTÃO ESPECÍFICA
+     BUSCA DE QUESTÃO NO SNAPSHOT
   ══════════════════════════════════════════════════════════ */
 
-  async function _responderSobreQuestao(pergunta, ctxQuestao) {
-    if (typeof window.NexusWorker !== 'undefined') {
-      var resultadoFake = [{ score: 100, texto: ctxQuestao, aula: '', secao: 'Quiz' }];
-      var respostaIA = null;
-      try {
-        respostaIA = await NexusWorker.perguntar({
-          pergunta:     pergunta,
-          resultados:   resultadoFake,
-          disciplina:   window.__NEXUS_QUIZ_DISC__ || '',
-          tipoContexto: 'conteudo',
-          semContexto:  false,
-        });
-      } catch (e) { console.warn('[NexusQuizAssistant] erro worker:', e); }
-
-      if (respostaIA) {
-        _renderBot(respostaIA.texto, (respostaIA.fonte || respostaIA.modelo) ? {
-          linha1: ['IA: ' + (respostaIA.fonte || ''), respostaIA.modelo || ''].filter(Boolean).join(' · '),
-          linha2: 'fonte: questões do quiz',
-        } : null);
-        return;
-      }
-    }
-    // Fallback: exibe contexto diretamente
-    _renderBot(ctxQuestao);
+  function _buscarQuestaoPorNumero(numero) {
+    var snapshot = _getSnapshot();
+    if (!snapshot.length) return null;
+    var idx = numero - 1;   // base-1 → base-0
+    if (idx < 0 || idx >= snapshot.length) return null;
+    return snapshot[idx] || null;
   }
 
   /* ══════════════════════════════════════════════════════════
-     BUSCA POR TEXTO NO ÍNDICE
+     COMUNICAÇÃO COM A IA (NexusWorker)
+     Modo seguro: se Worker ausente, usa fallback textual.
   ══════════════════════════════════════════════════════════ */
 
-  async function _buscarPorTexto(pergunta) {
-    var token    = _quizToken();
-    var questoes = await _garantirIndexacaoQuiz();
-    if (!questoes) return false;
-
-    var resultados = NexusQuizSearch.buscarQuiz(pergunta, { topK: 8, minScore: 15 }, token);
-    if (!resultados || !resultados.length) return false;
-
-    if (typeof window.NexusWorker !== 'undefined') {
-      var respostaIA = null;
-      try {
-        respostaIA = await NexusWorker.perguntar({
-          pergunta:     pergunta,
-          resultados:   resultados,
-          disciplina:   window.__NEXUS_QUIZ_DISC__ || '',
-          tipoContexto: 'conteudo',
-          semContexto:  false,
-        });
-      } catch (e) { console.warn('[NexusQuizAssistant] _buscarPorTexto erro:', e); }
-
-      if (respostaIA) {
-        _renderBot(respostaIA.texto, (respostaIA.fonte || respostaIA.modelo) ? {
-          linha1: ['IA: ' + (respostaIA.fonte || ''), respostaIA.modelo || ''].filter(Boolean).join(' · '),
-          linha2: 'fonte: questões do quiz',
-        } : null);
-        return true;
-      }
+  async function _perguntarIA(pergunta, resultados, tipoContexto) {
+    if (typeof window.NexusWorker === 'undefined') return null;
+    try {
+      return await window.NexusWorker.perguntar({
+        pergunta:     pergunta,
+        resultados:   resultados || [],
+        disciplina:   _getDisc() || '',
+        tipoContexto: tipoContexto || 'conteudo',
+        semContexto:  !resultados || !resultados.length,
+      });
+    } catch (e) {
+      console.warn('[NexusQuizAssistant] NexusWorker.perguntar erro:', e);
+      return null;
     }
-    return false;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     RESPOSTAS
+  ══════════════════════════════════════════════════════════ */
+
+  async function _responderSobreQuestao(pergunta, numeroVisual, q) {
+    _ultimaQuestaoVisual = numeroVisual;
+
+    var ctxTexto  = _serializarQuestao(numeroVisual, q);
+    var resultados = [{ score: 100, texto: ctxTexto, aula: q.aula || '', secao: 'Quiz' }];
+
+    var resp = await _perguntarIA(pergunta, resultados, 'conteudo');
+    if (resp) {
+      _renderBot(resp.texto, _montarRodape(resp, 'questão ' + numeroVisual));
+      return;
+    }
+
+    // Fallback: exibe os dados da questão diretamente
+    var fb = 'Questão ' + numeroVisual;
+    if (q.question) fb += '\n\n' + q.question;
+    if (typeof q.answer === 'number' && Array.isArray(q.options)) {
+      fb += '\n\nResposta correta: ' +
+            String.fromCharCode(65 + q.answer) + ') ' + q.options[q.answer];
+    }
+    if (q.feedback) fb += '\n\n' + q.feedback;
+    _renderBot(fb);
+  }
+
+  async function _responderGeral(texto) {
+    var resp = await _perguntarIA(texto, [], 'livre');
+    if (resp) {
+      _renderBot(resp.texto, _montarRodape(resp, 'conhecimento próprio'));
+    } else {
+      _renderBot(
+        'Não consegui processar sua pergunta.\n\n' +
+        'Tente mencionar o número de uma questão para que eu possa explicá-la diretamente.'
+      );
+    }
+  }
+
+  function _montarRodape(resp, fonte) {
+    if (!resp || (!resp.fonte && !resp.modelo)) return null;
+    return {
+      linha1: ['IA: ' + (resp.fonte || ''), resp.modelo || ''].filter(Boolean).join(' · '),
+      linha2: 'fonte: ' + fonte,
+    };
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -511,282 +415,226 @@
 
   function _onUserSend(text) {
     if (state.processando) return;
+    if (!text || !text.trim()) return;
     if (state.typingTimer) clearTimeout(state.typingTimer);
-    NexusUI.renderMessage(_push({ role: 'user', text: text, time: _getTime() }));
-    NexusUI.showTyping();
+
+    if (typeof window.NexusUI === 'undefined') return;
+
+    window.NexusUI.renderMessage(_push({ role: 'user', text: text, time: _getTime() }));
+    window.NexusUI.showTyping();
     state.processando = true;
     _setInputBloqueado(true);
+
     state.typingTimer = setTimeout(function () { _processar(text); }, REPLY_DELAY_MS);
   }
 
   async function _processar(texto) {
     try {
       if (!_contextoAtivo()) {
-        _renderBot('Sessão de quiz inativa. Recarregue a página para continuar.');
+        _renderBot('Assistente indisponível. Recarregue a página.');
         return;
       }
 
-      // Detecta mudança de modo/disc e reseta se necessário
-      _resetarChatSeContextoMudou();
+      _resetarSeContextoMudou();
 
+      // 1. Número de questão explícito
       var numQ = _detectarNumeroQuestao(texto);
 
-      // Detecta substituição do mapa visual
-      _resetRastreioSeMapaMudou();
-
-      // Resolve referência implícita à última questão
-      var numQResolvido = numQ;
-      if (numQResolvido === null && _ultimoContexto !== null && _referenciaImplicita(texto)) {
-        numQResolvido = _ultimoContexto.visual;
+      // 2. Referência implícita à última questão discutida
+      if (numQ === null && _ultimaQuestaoVisual !== null && _referenciaImplicita(texto)) {
+        numQ = _ultimaQuestaoVisual;
       }
 
-      // Busca por número: usa __NEXUS_QUESTOES_VISUAIS__ diretamente
-      if (numQResolvido !== null) {
-        var token = _quizToken();
-        var q     = NexusQuizSearch.buscarQuestaoPorNumero(numQResolvido, token);
+      if (numQ !== null) {
+        var q = _buscarQuestaoPorNumero(numQ);
         if (!q) {
-          var visuais = window.__NEXUS_QUESTOES_VISUAIS__;
-          var total   = visuais ? visuais.length : '?';
-          _renderBot('Questão ' + numQResolvido + ' não encontrada. O quiz atual tem ' + total + ' questões.');
+          var total = _getSnapshot().length;
+          _renderBot(
+            'Questão ' + numQ + ' não encontrada.' +
+            (total > 0 ? ' O quiz atual tem ' + total + ' questões.' : '')
+          );
           return;
         }
-        _registrarContexto(numQResolvido, q);
-        var ctxQuestao = _serializarQuestao(numQResolvido, q);
-        await _responderSobreQuestao(texto, ctxQuestao);
+        await _responderSobreQuestao(texto, numQ, q);
         return;
       }
 
-      // Busca por texto no índice
-      var tratou = await _buscarPorTexto(texto);
-      if (!tratou) {
-        // Pergunta geral sem match — responde com conhecimento do worker
-        if (typeof window.NexusWorker !== 'undefined') {
-          var respostaIA = null;
-          try {
-            respostaIA = await NexusWorker.perguntar({
-              pergunta: texto, resultados: [], disciplina: window.__NEXUS_QUIZ_DISC__ || '',
-              tipoContexto: 'livre', semContexto: true,
-            });
-          } catch (e) { console.warn('[NexusQuizAssistant] resposta livre erro:', e); }
-          if (respostaIA) {
-            _renderBot(respostaIA.texto, null);
-            return;
-          }
-        }
-        _renderBot('Não encontrei essa questão no quiz atual. Você pode mencionar o número da questão (ex: "questão 3") ou descrever o tema.');
-      }
+      // 3. Pergunta geral de conteúdo
+      await _responderGeral(texto);
 
     } catch (err) {
       console.error('[NexusQuizAssistant] erro ao processar:', err);
-      _renderBot('Ocorreu um erro ao processar sua pergunta. Tente novamente.');
+      _renderBot('Ocorreu um erro. Tente novamente.');
     } finally {
-      NexusUI.hideTyping();
+      if (typeof window.NexusUI !== 'undefined') window.NexusUI.hideTyping();
       state.processando = false;
       _setInputBloqueado(false);
     }
   }
 
   /* ══════════════════════════════════════════════════════════
-     RESET DE CHAT
-     Limpa histórico, mantém disciplina ativa.
+     RESET DO CHAT
   ══════════════════════════════════════════════════════════ */
 
   function _resetarChat() {
     _limparHistoricoAtivo();
-    _ultimoContexto           = null;
-    _ultimoMapaVisualRastreio = null;
+    _ultimaQuestaoVisual = null;
+    state.processando    = false;
 
-    state.processando = false;
     if (state.typingTimer) { clearTimeout(state.typingTimer); state.typingTimer = null; }
+    if (typeof window.NexusWorker !== 'undefined') window.NexusWorker.limparHistorico();
+    if (typeof window.NexusUI     === 'undefined') return;
 
-    if (typeof window.NexusWorker !== 'undefined' &&
-        typeof window.NexusWorker.limparHistorico === 'function') {
-      window.NexusWorker.limparHistorico();
-    }
-
-    NexusUI.limparMensagens();
-    NexusUI.hideTyping();
+    window.NexusUI.limparMensagens();
+    window.NexusUI.hideTyping();
     _setInputBloqueado(false);
 
-    // Recria mensagem de sistema e boas-vindas
     var sysMsg = { role: 'system', text: '⬡  Nexus IA', time: _getTime() };
     _push(sysMsg);
-    NexusUI.renderMessage(sysMsg);
+    window.NexusUI.renderMessage(sysMsg);
     _mostrarBoasVindas();
   }
 
   /* ══════════════════════════════════════════════════════════
-     PURGE — ao sair do quiz
+     BOAS-VINDAS
   ══════════════════════════════════════════════════════════ */
 
-  function _purgar() {
-    // Limpa todo o domínio quiz no storage
-    if (typeof window.NexusHistory !== 'undefined') {
-      window.NexusHistory.limparDominio('quiz');
-    }
+  function _mostrarBoasVindas() {
+    var modo  = _getModo() || '';
+    var disc  = _getDisc() || '';
+    var label = modo ? modo.toUpperCase() : 'Quiz';
 
-    state.messages       = [];
-    state.chaveHistorico = null;
-    state.modoAtivo      = null;
-    state.discAtivo      = null;
-    _ultimoContexto           = null;
-    _ultimoMapaVisualRastreio = null;
-    _ultimoMapaVisual         = null;
-
-    try { delete window.__NEXUS_QUIZ_MODO__; } catch (e) {}
-
-    if (typeof window.NexusQuizSearch !== 'undefined') {
-      NexusQuizSearch.revogarQuiz();
-    }
-
-    try { delete window.__NEXUS_QUIZ_TOKEN__; } catch (e) {}
-
-    // Limpa badge da UI
-    if (typeof window.NexusUI !== 'undefined') {
-      NexusUI.atualizarDiscAtiva(null);
-    }
-
-    console.log('[NexusQuizAssistant] quiz purgado.');
-  }
-
-  (function _instalarListenersPurge() {
-    window.addEventListener('beforeunload', _purgar);
-    window.addEventListener('pagehide',     _purgar);
-    document.addEventListener('visibilitychange', function () {
-      if (document.visibilityState === 'visible' && !_contextoAtivo()) {
-        _purgar();
-      }
-    });
-  }());
-
-  /* ══════════════════════════════════════════════════════════
-     VERIFICAÇÃO DE DEPENDÊNCIAS
-  ══════════════════════════════════════════════════════════ */
-
-  function _depsOk() {
-    var ok = true;
-    if (typeof window.NexusContext    === 'undefined') { console.error('[NexusQuizAssistant] NexusContext não encontrado.');    ok = false; }
-    if (typeof window.NexusHistory    === 'undefined') { console.error('[NexusQuizAssistant] NexusHistory não encontrado.');    ok = false; }
-    if (typeof window.NexusUI         === 'undefined') { console.error('[NexusQuizAssistant] NexusUI não encontrado.');         ok = false; }
-    if (typeof window.NexusTextUtils  === 'undefined') { console.error('[NexusQuizAssistant] NexusTextUtils não encontrado.');  ok = false; }
-    if (typeof window.NexusQuizSearch === 'undefined') { console.error('[NexusQuizAssistant] NexusQuizSearch não encontrado.'); ok = false; }
-    if (typeof window.NexusLoader     === 'undefined') { console.error('[NexusQuizAssistant] NexusLoader não encontrado.');     ok = false; }
-    if (typeof window.__nexusCtx      === 'undefined') { console.error('[NexusQuizAssistant] __nexusCtx não encontrado.');      ok = false; }
-    return ok;
+    _renderBot(
+      '📝 Quiz-Assistant — ' + label + (disc ? ' · ' + disc : '') + '\n\n' +
+      'Posso ajudar com:\n' +
+      '  • Explicar qualquer questão: "explica a questão 3"\n' +
+      '  • Dúvidas sobre alternativas: "por que a letra B está errada?"\n' +
+      '  • Conteúdo da disciplina: "o que é herança em POO?"\n\n' +
+      'Sobre o que você tem dúvida?'
+    );
   }
 
   /* ══════════════════════════════════════════════════════════
-     SANITIZAÇÃO DE RESULTADOS
-     (usada por outros módulos que precisam filtrar conteúdo de quiz)
+     INIT — inicialização do assistant
+     Chamado internamente ao receber 'nexus:quizPronto',
+     ou externamente como fallback manual.
+     Idempotente: segunda chamada é ignorada com segurança.
   ══════════════════════════════════════════════════════════ */
 
-  function sanitizarResultados(resultados) {
-    if (!resultados || !resultados.length) return resultados;
-    if (_contextoAtivo()) return resultados;
-    return resultados.filter(function (r) {
-      if (r.secao === 'Quiz') return false;
-      if (typeof r.secao === 'string' && r.secao.includes('/feedback')) return false;
-      if (typeof r.texto === 'string') {
-        if (/^Gabarito:\s*[A-E]\b/m.test(r.texto))          return false;
-        if (/^Feedback oficial:/m.test(r.texto))             return false;
-        if (/^Alternativas:\s*\n\s*[A-E]\)/m.test(r.texto)) return false;
-      }
-      return true;
-    });
-  }
-
-  /* ══════════════════════════════════════════════════════════
-     INIT — ponto de entrada, chamado por init.js
-  ══════════════════════════════════════════════════════════ */
-
-  /**
-   * Inicializa o chat de Quiz de forma completamente independente.
-   *
-   * Exige:
-   *   - __NEXUS_QUIZ_TOKEN__ autorizado
-   *   - __NEXUS_QUIZ_MODO__ definido
-   *   - __NEXUS_QUIZ_DISC__ definido (disciplina obrigatória, sem fallback)
-   *
-   * Se qualquer pré-requisito falhar, init() aborta com erro — não há
-   * fallback silencioso, não há detecção automática de disciplina.
-   */
   function init() {
-    if (!_depsOk()) {
-      console.error('[NexusQuizAssistant] init() abortado: dependências ausentes.');
+    if (_iniciado) {
+      console.log('[NexusQuizAssistant] init() ignorado — já iniciado.');
       return;
     }
 
-    if (!_contextoAtivo()) {
-      console.error('[NexusQuizAssistant] init() abortado: contexto de quiz inativo.' +
-        ' Verifique __NEXUS_QUIZ_TOKEN__, __NEXUS_QUIZ_MODO__ e __NEXUS_QUIZ_DISC__.');
+    if (!_verificarDeps()) {
+      console.error('[NexusQuizAssistant] init() abortado — dependências obrigatórias ausentes.');
       return;
     }
 
-    // Monta chave de histórico para este contexto específico
-    var discId = window.__NEXUS_QUIZ_DISC__;
-    var modo   = window.__NEXUS_QUIZ_MODO__;
+    _iniciado = true;
 
-    state.modoAtivo      = modo;
+    var discId = _getDisc();
+    var modo   = _getModo();
+    var sem    = _getSemestre();
+
     state.discAtivo      = discId;
-    state.chaveHistorico = _montarChaveHistorico(discId, modo);
+    state.modoAtivo      = modo;
+    state.chaveHistorico = _montarChaveHistorico(discId, modo, sem);
 
-    // Inicializa a UI do quiz (separada da UI do Resumo)
-    if (!document.getElementById('nexus-fab')) {
-      NexusUI.init({ onSend: _onUserSend, onReset: _resetarChat });
-    } else {
-      // FAB já existe (ex: Resumo também está carregado na mesma página)
-      // Reassocia os callbacks para o Quiz
-      NexusUI.init({ onSend: _onUserSend, onReset: _resetarChat });
-    }
+    // Conecta callbacks à UI
+    window.NexusUI.init({ onSend: _onUserSend, onReset: _resetarChat });
 
     // Limpa histórico do worker (contexto anterior)
-    if (typeof window.NexusWorker !== 'undefined' &&
-        typeof window.NexusWorker.limparHistorico === 'function') {
+    if (typeof window.NexusWorker !== 'undefined') {
       window.NexusWorker.limparHistorico();
     }
 
-    // Atualiza badge de disciplina
-    var ctx   = _getCtxBridge();
-    var sem   = ctx ? ctx.getSemestre() : '';
-    var discs = ctx ? ctx.getDisciplinas(sem) : null;
-    var disc  = discs ? discs.find(function (d) { return d.id === discId; }) : null;
-    NexusUI.atualizarDiscAtiva(disc ? disc.apelido : discId);
+    // Badge de disciplina
+    window.NexusUI.atualizarDiscAtiva(discId || null);
 
-    // Tenta restaurar histórico existente para este contexto
-    var histSalvo = window.NexusHistory.carregar(state.chaveHistorico);
-    var sysMsg = { role: 'system', text: '⬡  Nexus IA', time: _getTime() };
+    // Tenta restaurar sessão anterior
+    var histSalvo = [];
+    if (typeof window.NexusHistory !== 'undefined') {
+      try {
+        histSalvo = window.NexusHistory.carregar(state.chaveHistorico) || [];
+      } catch (e) { histSalvo = []; }
+    }
 
-    NexusUI.limparMensagens();
+    window.NexusUI.limparMensagens();
 
-    if (histSalvo && histSalvo.length > 0) {
+    if (histSalvo.length > 0) {
       state.messages = histSalvo;
-      histSalvo.forEach(function (msg) { NexusUI.renderMessage(msg); });
+      histSalvo.forEach(function (msg) { window.NexusUI.renderMessage(msg); });
+
+      // Sincroniza worker com histórico visual restaurado
+      if (typeof window.NexusWorker !== 'undefined' &&
+          typeof window.NexusWorker.restaurarHistorico === 'function') {
+        window.NexusWorker.restaurarHistorico(histSalvo);
+      }
+
       var msgsEl = document.getElementById('nexus-messages');
       if (msgsEl) {
-        var el = document.createElement('div');
-        el.className = 'nexus-msg nexus-system nexus-restore-banner';
-        el.innerHTML = '<div class="nexus-msg-bubble">↩ Histórico restaurado</div>';
-        msgsEl.appendChild(el);
+        var banner = document.createElement('div');
+        banner.className = 'nexus-msg nexus-system nexus-restore-banner';
+        banner.innerHTML = '<div class="nexus-msg-bubble">↩ Histórico restaurado</div>';
+        msgsEl.appendChild(banner);
       }
     } else {
-      // Novo contexto: exibe mensagem de sistema e boas-vindas
+      var sysMsg = { role: 'system', text: '⬡  Nexus IA', time: _getTime() };
       _push(sysMsg);
-      NexusUI.renderMessage(sysMsg);
+      window.NexusUI.renderMessage(sysMsg);
       _mostrarBoasVindas();
     }
 
-    console.log('[NexusQuizAssistant] quiz ativo — disc:', discId, '| modo:', modo);
+    console.log('[NexusQuizAssistant] iniciado — disc:', discId, '| modo:', modo,
+                '| questões no snapshot:', _getSnapshot().length);
   }
+
+  /* ══════════════════════════════════════════════════════════
+     LISTENER DO EVENTO DE BOOT DO ENGINE
+     O engine dispara 'nexus:quizPronto' após a primeira
+     _atualizarMapaVisual(). Isso garante:
+       - Snapshot visual já está populado
+       - Sem polling, sem corrida de ordem de carregamento
+       - Se o script for carregado DEPOIS do evento, o flag
+         window.__NEXUS_QUIZ_PRONTO__ serve de fallback
+  ══════════════════════════════════════════════════════════ */
+
+  function _onQuizPronto() {
+    if (_iniciado) return;   // idempotente
+    console.log('[NexusQuizAssistant] recebeu nexus:quizPronto — inicializando.');
+    init();
+  }
+
+  // Escuta o evento (caso script carregue ANTES do engine terminar)
+  window.addEventListener('nexus:quizPronto', _onQuizPronto);
+
+  // Fallback: se o evento já disparou antes deste script ser carregado,
+  // o engine deixa o flag window.__NEXUS_QUIZ_PRONTO__ = true
+  if (window.__NEXUS_QUIZ_PRONTO__ === true) {
+    console.log('[NexusQuizAssistant] quiz já estava pronto — inicializando diretamente.');
+    // Usa requestAnimationFrame para garantir que o DOM está pintado
+    (window.requestAnimationFrame || setTimeout)(function () { _onQuizPronto(); }, 0);
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     LIMPEZA AO SAIR
+  ══════════════════════════════════════════════════════════ */
+
+  window.addEventListener('pagehide', function () {
+    if (typeof window.NexusHistory !== 'undefined') {
+      try { window.NexusHistory.limparDominio('quiz'); } catch (e) {}
+    }
+  });
 
   /* ══════════════════════════════════════════════════════════
      API PÚBLICA
   ══════════════════════════════════════════════════════════ */
 
   window.NexusQuizAssistant = {
-    init,
-    contextoAtivo:      _contextoAtivo,
-    purgar:             _purgar,
-    sanitizarResultados,
+    init:          init,           // fallback de inicialização manual
+    contextoAtivo: _contextoAtivo, // verifica se está operacional
   };
 
 }());

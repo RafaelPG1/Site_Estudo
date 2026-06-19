@@ -165,8 +165,16 @@
        quiz_ui.js e quiz_engine.js são injetados dinamicamente
        por template_init._carregarQuiz() — não precisam de <script> aqui.
   ═══════════════════════════════════════════ -->
-  <script type="module" src="template_init.js"></script>
-  <script src="../js/quiz_starter_modal.js" defer></script>
-  <script src="../../shared/js/utils/quick-access.js"></script>
+<script type="module" src="template_init.js"></script>
+
+<!-- Dependências do Quiz-Assistant -->
+<script src="../../shared/js/ia/core/ui.js" defer></script>
+<script src="../../shared/js/ia/core/history.js" defer></script>
+<script src="../../shared/js/ia/core/worker.js" defer></script>
+<script src="../../shared/js/ia/quiz/assistant.js" defer></script>
+
+<script src="../js/quiz_starter_modal.js" defer></script>
+<script src="../../shared/js/utils/quick-access.js"></script>
+<script src="../../shared/js/ia/core/fab.js"></script>
 </body>
 </html>

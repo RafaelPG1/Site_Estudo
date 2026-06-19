@@ -27,6 +27,17 @@
      a ordem das aulas. Isso garante que subject-title e
      subject-result apareçam corretamente para todas as aulas,
      independente de quantas aulas a disciplina tiver.
+
+   INTEGRAÇÃO COM O QUIZ-ASSISTANT:
+     Após cada renderização, o engine:
+       1. Grava window.__NEXUS_QUESTOES_VISUAIS__ com o snapshot imutável
+          da lista atual de questões (alternativas já embaralhadas).
+       2. Na primeira inicialização, dispara o evento 'nexus:quizPronto'
+          e seta window.__NEXUS_QUIZ_PRONTO__ = true como flag de fallback.
+
+     O Quiz-Assistant lê o snapshot e escuta o evento.
+     O engine NUNCA chama diretamente funções do assistant.
+     Sem polling, sem dependência cruzada de módulos.
    ============================================================ */
 
 (function () {
@@ -37,6 +48,34 @@
   var smoothScrollToTop = window.QuizUI.smoothScrollToTop;
   var renderMarkup      = window.QuizUI.renderMarkup;
   var renderCodeBlock   = window.QuizUI.renderCodeBlock;
+
+  /* ══════════════════════════════════════════════════════════
+     SNAPSHOT VISUAL
+     Único ponto de escrita de __NEXUS_QUESTOES_VISUAIS__.
+     Chamado APENAS pelo engine, em eventos bem definidos.
+     Dispara nexus:quizPronto na primeira vez.
+  ══════════════════════════════════════════════════════════ */
+
+  var _snapshotDisparado = false;
+
+  function _publicarSnapshot(lista) {
+    // Snapshot imutável: cópia rasa da lista atual
+    window.__NEXUS_QUESTOES_VISUAIS__ = (lista || []).slice();
+
+    if (!_snapshotDisparado) {
+      _snapshotDisparado = true;
+      // Flag de fallback: se o assistant carregar DEPOIS do evento, usa este flag
+      window.__NEXUS_QUIZ_PRONTO__ = true;
+      // Evento principal: assistant escuta e inicializa
+      try {
+        window.dispatchEvent(new CustomEvent('nexus:quizPronto'));
+      } catch (e) {
+        console.warn('[quiz_engine] falha ao disparar nexus:quizPronto:', e);
+      }
+      console.log('[quiz_engine] nexus:quizPronto disparado —',
+                  window.__NEXUS_QUESTOES_VISUAIS__.length, 'questões no snapshot.');
+    }
+  }
 
   /* ══════════════════════════════════════════════════════════
      INIT QUIZ
@@ -83,14 +122,6 @@
       _Storage.remove(_stepStateKey());
     }
 
-    function _salvarFinalizadoAtivo() {
-      if (!_Storage) return false;
-      try {
-        var configs = _Storage.get('configs', {});
-        return configs.salvarProgresso !== false;
-      } catch (e) { return false; }
-    }
-
     /* ── Converte respostas {qi: ai} → string compacta ── */
     function _respostasParaStr(resps, total) {
       var arr = [];
@@ -123,112 +154,58 @@
 
     /* ══════════════════════════════════════════════════════════
        2. EXPIRAÇÃO (20s)
-
-       Regra: o timer conta apenas o tempo FORA da página.
-
-       Fluxo:
-         SAÍDA  → salva timestamp no localStorage
-         VOLTA  → calcula tempoFora, remove timestamp SEMPRE
-                  se >= 20s → limpa progresso e reinicia
-                  se <  20s → não faz nada
-
-       Isso garante:
-         - Sem acúmulo entre saídas
-         - F5 é tratado via pagehide + verificação no boot
-         - Sem setTimeout/setInterval
        ══════════════════════════════════════════════════════════ */
 
-    var EXPIRY_FINALIZADO_MS = 20000;    // 20s  — salvarProgresso OFF
-    var EXPIRY_PARCIAL_MS = 600000;   // 10min — conforme descrito na UI
+    var EXPIRY_FINALIZADO_MS = 20000;
+    var EXPIRY_PARCIAL_MS    = 600000;
 
     function _leftAtKey() {
       return 'quiz_leftat_' + _uid() + '_' + _disc + '_' + _modo + '_' + _semestre;
     }
 
     function _registrarSaida() {
-      if (!_disc || !_Storage) {
-        console.log('[quiz_engine] _registrarSaida: abortou — _disc:', _disc, '_Storage:', !!_Storage);
-        return;
-      }
-
+      if (!_disc || !_Storage) return;
       var salvo = _Storage.loadProgress(_discUid(), _modo, _semestre);
-      if (!salvo) {
-        console.log('[quiz_engine] _registrarSaida: sem progresso salvo, nada a fazer');
-        return;
-      }
-
+      if (!salvo) return;
       var configs = _Storage.get('configs', {});
-      console.log('[quiz_engine] _registrarSaida: finalizado?', salvo.finalizado,
-                  '| salvarProgresso:', configs.salvarProgresso,
-                  '| salvarProgressoParcial:', configs.salvarProgressoParcial);
 
       if (salvo.finalizado && configs.salvarProgresso === false) {
         _Storage.set(_leftAtKey(), JSON.stringify({ ts: Date.now(), tipo: 'finalizado' }));
-        console.log('[quiz_engine] _registrarSaida: gravou timestamp FINALIZADO');
         return;
       }
-
       if (!salvo.finalizado && configs.salvarProgressoParcial === false) {
         _Storage.set(_leftAtKey(), JSON.stringify({ ts: Date.now(), tipo: 'parcial' }));
-        console.log('[quiz_engine] _registrarSaida: gravou timestamp PARCIAL');
-        return;
       }
-
-      console.log('[quiz_engine] _registrarSaida: nenhuma regra de expiração ativa, timestamp não gravado');
     }
 
     function _verificarRetorno(aoExpirar) {
-      if (!_disc || !_Storage) {
-        console.log('[quiz_engine] _verificarRetorno: abortou — _disc:', _disc, '_Storage:', !!_Storage);
-        return;
-      }
-
+      if (!_disc || !_Storage) return;
       var raw = _Storage.get(_leftAtKey(), null);
-      console.log('[quiz_engine] _verificarRetorno: raw:', raw, '| typeof:', typeof raw);
-
-      if (raw === null) {
-        console.log('[quiz_engine] _verificarRetorno: nenhum timestamp encontrado');
-        return;
-      }
+      if (raw === null) return;
 
       _Storage.remove(_leftAtKey());
 
-      // Storage pode retornar string ou objeto — normaliza os dois casos
       var payload;
       try {
         payload = typeof raw === 'string' ? JSON.parse(raw) : raw;
-      } catch (e) {
-        console.warn('[quiz_engine] _verificarRetorno: falha ao parsear payload:', raw);
-        return;
-      }
+      } catch (e) { return; }
 
       var tempoFora = Date.now() - payload.ts;
       var limite    = payload.tipo === 'parcial' ? EXPIRY_PARCIAL_MS : EXPIRY_FINALIZADO_MS;
 
-      console.log('[quiz_engine] _verificarRetorno: tipo:', payload.tipo,
-                  '| ts:', payload.ts,
-                  '| tempoFora:', Math.round(tempoFora / 1000) + 's',
-                  '| limite:', Math.round(limite / 1000) + 's',
-                  '| expirou?', tempoFora >= limite);
-
       if (tempoFora >= limite) {
         _Storage.clearProgress(_discUid(), _modo, _semestre);
         _Storage.remove(_smapKey());
-        console.info('[quiz_engine] Progresso APAGADO. Tipo:', payload.tipo, '| tempo fora:', Math.round(tempoFora / 1000) + 's');
+        console.info('[quiz_engine] Progresso expirado. Tipo:', payload.tipo,
+                     '| tempo fora:', Math.round(tempoFora / 1000) + 's');
         if (typeof aoExpirar === 'function') aoExpirar();
       }
     }
 
-    /* ── Listeners ─────────────────────────────────────────── */
-
-    /* pagehide: cobre F5, fechar aba e navegação para outra página */
+    /* ── Listeners de saída ─────────────────────────────────── */
     window.addEventListener('pagehide', _registrarSaida);
-
     document.addEventListener('visibilitychange', function () {
-      if (document.hidden) {
-        _registrarSaida(); // continua gravando o timestamp ao sair
-      }
-      // Ao voltar: NÃO verifica aqui. A verificação acontece só no boot (pagehide → F5/renavegar)
+      if (document.hidden) _registrarSaida();
     });
 
     /* ── Questões ─────────────────────────────────────────── */
@@ -247,7 +224,9 @@
         container.innerHTML =
           '<div style="padding:3rem 2rem;text-align:center;color:var(--text-2,#a8a49c);">' +
           '<div style="font-size:2.5rem;margin-bottom:1rem;">📭</div>' +
-          '<p style="font-size:1rem;margin-bottom:0.5rem;">Nenhum conteúdo disponível para <strong style="color:var(--text-1,#f0ede6);">' + tipo.toUpperCase() + '</strong> neste semestre.</p>' +
+          '<p style="font-size:1rem;margin-bottom:0.5rem;">Nenhum conteúdo disponível para ' +
+          '<strong style="color:var(--text-1,#f0ede6);">' + tipo.toUpperCase() + '</strong>' +
+          ' neste semestre.</p>' +
           '<p style="font-size:0.85rem;opacity:0.6;">As questões serão adicionadas em breve.</p>' +
           '</div>';
       }
@@ -257,11 +236,7 @@
     var questoesBase = listaQuestoes;
 
     /* ══════════════════════════════════════════════════════════
-       3. EMBARALHAMENTO
-
-       v8: embaralha DENTRO de cada grupo de aula, preservando
-       a ordem das aulas. Assim subject-title e subject-result
-       aparecem corretamente para todas as aulas da disciplina.
+       3. EMBARALHAMENTO (v8 — por grupo de aula)
        ══════════════════════════════════════════════════════════ */
 
     function shuffleArray(arr) {
@@ -278,9 +253,8 @@
     function criarCopiaEmbaralhada(base, mapaFixo) {
       var novoMapa = {};
 
-      /* ── Agrupa índices por aula, preservando ordem de aparição ── */
-      var gruposAula   = [];   // [{ aula, indices[] }, ...]
-      var aulaParaGrupo = {};  // aula → índice em gruposAula
+      var gruposAula    = [];
+      var aulaParaGrupo = {};
 
       base.forEach(function (q, qi) {
         var aula = q.aula !== undefined ? q.aula : '__sem_aula__';
@@ -291,28 +265,22 @@
         gruposAula[aulaParaGrupo[aula]].indices.push(qi);
       });
 
-      /* ── Embaralha os índices DENTRO de cada aula ── */
       var ordemFinal = [];
       gruposAula.forEach(function (grupo) {
-        var indicesOriginais = grupo.indices;
-
-        /* Se há mapa fixo salvo, usa os índices de embaralhamento já definidos */
+        var indicesOriginais   = grupo.indices;
         var indicesEmbaralhados;
         if (mapaFixo && mapaFixo['__grupo__' + grupo.aula]) {
           indicesEmbaralhados = mapaFixo['__grupo__' + grupo.aula];
         } else {
           indicesEmbaralhados = shuffleArray(indicesOriginais);
         }
-
         novoMapa['__grupo__' + grupo.aula] = indicesEmbaralhados;
         indicesEmbaralhados.forEach(function (qi) { ordemFinal.push(qi); });
       });
 
-      /* ── Monta cópia embaralhada respeitando a nova ordem ── */
       var result = ordemFinal.map(function (qi) {
         var q = base[qi];
 
-        /* Embaralha opções da questão */
         var indices = (mapaFixo && mapaFixo[qi])
           ? mapaFixo[qi]
           : shuffleArray(q.options.map(function (_, i) { return i; }));
@@ -329,10 +297,10 @@
           (feedbackBase ? '\n\nPor que está certa: ' + feedbackBase : '');
 
         return Object.assign({}, q, {
-          options:  newOptions,
-          answer:   newAnswer,
-          feedback: newFeedback,
-          __qiOriginal__: qi,   // guarda índice original para saveProgress
+          options:       newOptions,
+          answer:        newAnswer,
+          feedback:      newFeedback,
+          __qiOriginal__: qi,
         });
       });
 
@@ -348,7 +316,6 @@
 
     /* ── FILTRO DE AULAS — helpers ────────────────────────── */
 
-    /* Retorna lista de aulas únicas de questoesBase, em ordem de aparição */
     function _todasAsAulas() {
       var vistas = {};
       var lista  = [];
@@ -362,18 +329,14 @@
       return lista;
     }
 
-    /* Atualiza o badge numérico no botão quando há filtro ativo */
     function _atualizarBadgeFiltro() {
       var btn = document.getElementById('btn-filtro-aulas');
       if (!btn) return;
-
       var todasAulas = _todasAsAulas();
       var ativo = aulasFiltradas !== null && aulasFiltradas.size < todasAulas.length;
       btn.classList.toggle('filtro-ativo', ativo);
-
       var badge = btn.querySelector('.filtro-badge');
       if (badge) badge.remove();
-
       if (ativo) {
         var b = document.createElement('span');
         b.className   = 'filtro-badge';
@@ -382,7 +345,6 @@
       }
     }
 
-    /* Aplica o filtro atual: reconstrói questoes e re-renderiza */
     function _aplicarFiltro() {
       var base = aulasFiltradas === null
         ? questoesBase
@@ -391,7 +353,7 @@
             return aulasFiltradas.has(aula);
           });
 
-      if (base.length === 0) base = questoesBase; // fallback: se filtro excluiu tudo
+      if (base.length === 0) base = questoesBase;
 
       respostas        = {};
       revelado         = false;
@@ -399,6 +361,9 @@
       stepAtual        = 0;
 
       questoes = criarCopiaEmbaralhada(base, null);
+
+      // Atualiza snapshot após filtro
+      _publicarSnapshot(questoes);
 
       var resultsEl = document.getElementById('results');
       if (resultsEl) { resultsEl.style.display = 'none'; resultsEl.innerHTML = ''; }
@@ -410,7 +375,6 @@
       _atualizarBadgeFiltro();
     }
 
-
     /* ── 4. ESTADO E RESTAURAÇÃO ──────────────────────────── */
 
     var respostas        = {};
@@ -421,25 +385,20 @@
     var mostrandoSoErros = false;
     var aulaGrupos           = [];
     var _stepAulaBannerTimer = null;
-    var aulasFiltradas        = null; // null = todas; Set<string> = aulas selecionadas
+    var aulasFiltradas        = null;
 
     function _restaurar() {
       if (!_disc || !_Storage) return null;
 
       var salvoLocal = _Storage.loadProgress(_discUid(), _modo, _semestre);
       var fbDados    = window.__NEXUS_FIREBASE_RESPOSTAS__ || null;
-
-      // Determina qual fonte usar: Firebase ganha se savedAt for maior
-      var salvo = salvoLocal;
+      var salvo      = salvoLocal;
 
       if (fbDados) {
         var tsLocal = salvoLocal ? (salvoLocal.savedAt || 0) : 0;
         var tsFB    = fbDados.savedAt || 0;
 
-        console.log('[quiz_engine] _restaurar — local savedAt:', tsLocal, '| firebase savedAt:', tsFB);
-
         if (tsFB > tsLocal) {
-          console.log('[quiz_engine] _restaurar — usando Firebase (mais recente)');
           var fbRespostas = _strParaRespostas(fbDados.respostas || '');
           salvo = {
             respostas:  fbRespostas,
@@ -447,10 +406,8 @@
             finalizado: fbDados.finalizado || false,
             savedAt:    tsFB,
           };
-          // Sincroniza de volta pro localStorage
-          _Storage.saveProgress(_discUid(), _modo, _semestre, fbRespostas, salvo.revelado, salvo.finalizado);
-        } else {
-          console.log('[quiz_engine] _restaurar — usando localStorage (mais recente ou igual)');
+          _Storage.saveProgress(_discUid(), _modo, _semestre,
+                                fbRespostas, salvo.revelado, salvo.finalizado);
         }
       }
 
@@ -461,7 +418,6 @@
       });
       if (salvo.revelado) revelado = true;
 
-      console.info('[quiz_engine] Progresso restaurado:', Object.keys(respostas).length, 'respostas');
       return _Storage.get(_smapKey(), null);
     }
 
@@ -494,7 +450,8 @@
           return '<strong>' + renderMarkup(line) + '</strong>';
         }
         if (line.indexOf('Por que está certa:') === 0) {
-          return '<strong>Por que está certa:</strong> ' + renderMarkup(line.replace('Por que está certa:', '').trim());
+          return '<strong>Por que está certa:</strong> ' +
+                 renderMarkup(line.replace('Por que está certa:', '').trim());
         }
         return renderMarkup(line);
       }).join('<br>');
@@ -503,9 +460,7 @@
     function renderAssertions(assertions, tipo) {
       if (!assertions || assertions.length === 0) return '';
       var romanos = ['I', 'II', 'III', 'IV', 'V', 'VI'];
-
-      /* Checklist em qualquer questão com assertions, exceto Asserção + Justificativa */
-      var comChk = tipo !== 'Asserção + Justificativa' && tipo !== 'Asserção';
+      var comChk  = tipo !== 'Asserção + Justificativa' && tipo !== 'Asserção';
 
       var items = assertions.map(function (text, idx) {
         var isPorque  = text.indexOf('[PORQUE]') === 0;
@@ -514,16 +469,17 @@
         var rendered  = renderMarkup(cleanText);
 
         var chkBtn = (comChk && !isPorque)
-          ? '<button class="assertion-chk" data-chk="0" aria-label="Marcar assertiva ' + num + '" type="button"></button>'
+          ? '<button class="assertion-chk" data-chk="0" aria-label="Marcar assertiva ' +
+            num + '" type="button"></button>'
           : '';
 
         if (isPorque) {
-          return (
-            '<div class="assertion-connector"><span class="connector-label">PORQUE</span></div>' +
-            '<div class="assertion"><span class="assertion-num">' + num + '.</span><span>' + rendered + '</span></div>'
-          );
+          return '<div class="assertion-connector"><span class="connector-label">PORQUE</span></div>' +
+                 '<div class="assertion"><span class="assertion-num">' + num + '.</span>' +
+                 '<span>' + rendered + '</span></div>';
         }
-        return '<div class="assertion"><span class="assertion-num">' + num + '.</span><span>' + rendered + '</span>' + chkBtn + '</div>';
+        return '<div class="assertion"><span class="assertion-num">' + num + '.</span>' +
+               '<span>' + rendered + '</span>' + chkBtn + '</div>';
       }).join('');
 
       return '<div class="assertions">' + items + '</div>';
@@ -534,9 +490,9 @@
       if (q.tipo) {
         html += '<div class="question-type-eyebrow">' +
           q.tipo.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') +
-        '</div>';
+          '</div>';
       }
-      if (q.texto)                html += '<div class="question-texto">'         + renderMarkup(q.texto)                + '</div>';
+      if (q.texto)                html += '<div class="question-texto">'          + renderMarkup(q.texto)                + '</div>';
       if (q.miniEnunciado)        html += '<div class="question-mini-enunciado">' + renderMarkup(q.miniEnunciado)        + '</div>';
       if (q.code)                 html += renderCodeBlock(q.code);
       if (q.assertions && q.assertions.length > 0) html += renderAssertions(q.assertions, q.tipo);
@@ -548,13 +504,9 @@
 
     /* ── 6. RESULTADO POR AULA ────────────────────────────── */
 
-    /* Paleta azul fixa — independente da disciplina ou modo */
     var _AZUL_BG       = '#183a5c';
-    var _AZUL_BORDER   = '#2a5a8a';
-    var _AZUL_ICON_BG  = '#1e4f80';
     var _AZUL_ICON_BD  = '#3370aa';
     var _AZUL_EYEBROW  = '#7ab8f0';
-    var _AZUL_SCORE    = '#a8cef0';
     var _AZUL_PCT      = '#7ab8f0';
     var _AZUL_BAR_FROM = '#4a90d9';
     var _AZUL_BAR_TO   = '#7ab8f0';
@@ -580,55 +532,36 @@
       var pct = r.total > 0 ? Math.round((r.respondidas / r.total) * 100) : 0;
 
       if (r.respondidas < r.total) {
-        /* ── Card de PROGRESSO ── */
         el.className = 'subject-result subject-result--progress';
         el.innerHTML =
-          '<div style="width:42px; height:42px; border-radius:12px; flex-shrink:0;' +
-          '            background:' + _AZUL_BG + '; border: 1px solid ' + _AZUL_ICON_BD + ';' +
-          '            display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow: inset 0 0 10px rgba(0,0,0,0.1);">' +
-          '  📋' +
-          '</div>' +
-          '<div style="flex:1; display:flex; flex-direction:column; gap:0.5rem;">' +
-          '  <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:' + _AZUL_EYEBROW + '; opacity:0.8;">' +
-          '    Progresso da aula' +
-          '  </div>' +
-          '  <div class="sr-progress-bar">' +
-          '    <div class="sr-progress-fill" style="width:' + pct + '%; background: linear-gradient(90deg, ' + _AZUL_BAR_FROM + ', ' + _AZUL_BAR_TO + '); height:100%;"></div>' +
-          '  </div>' +
-          '  <div style="font-size:0.75rem; color: #fff; opacity: 0.7;">' +
-          '    <strong>' + r.respondidas + '</strong> de ' + r.total + ' questões respondidas' +
-          '  </div>' +
-          '</div>' +
-          '<div style="text-align: right; min-width: 60px;">' +
-          '  <div style="font-size:1.5rem; font-weight:800; color:' + _AZUL_PCT + '; font-variant-numeric: tabular-nums;">' +
-          '    ' + pct + '<span style="font-size: 0.9rem; margin-left: 2px;">%</span>' +
-          '  </div>' +
-          '</div>';
+          '<div style="width:42px;height:42px;border-radius:12px;flex-shrink:0;' +
+          'background:' + _AZUL_BG + ';border:1px solid ' + _AZUL_ICON_BD + ';' +
+          'display:flex;align-items:center;justify-content:center;font-size:18px;' +
+          'box-shadow:inset 0 0 10px rgba(0,0,0,0.1);">📋</div>' +
+          '<div style="flex:1;display:flex;flex-direction:column;gap:0.5rem;">' +
+          '<div style="font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;' +
+          'color:' + _AZUL_EYEBROW + ';opacity:0.8;">Progresso da aula</div>' +
+          '<div class="sr-progress-bar"><div class="sr-progress-fill" style="width:' + pct +
+          '%;background:linear-gradient(90deg,' + _AZUL_BAR_FROM + ',' + _AZUL_BAR_TO + ');height:100%;"></div></div>' +
+          '<div style="font-size:0.75rem;color:#fff;opacity:0.7;">' +
+          '<strong>' + r.respondidas + '</strong> de ' + r.total + ' questões respondidas</div></div>' +
+          '<div style="text-align:right;min-width:60px;">' +
+          '<div style="font-size:1.5rem;font-weight:800;color:' + _AZUL_PCT + ';font-variant-numeric:tabular-nums;">' +
+          pct + '<span style="font-size:0.9rem;margin-left:2px;">%</span></div></div>';
       } else {
-        /* ── Card de RESULTADO (Concluído) ── */
-        var pctA       = r.total > 0 ? Math.round((r.acertos / r.total) * 100) : 0;
+        var pctA        = r.total > 0 ? Math.round((r.acertos / r.total) * 100) : 0;
         var successColor = pctA >= 70 ? '#4ADE80' : '#FACC15';
 
         el.className = 'subject-result subject-result--progress';
         el.innerHTML =
-          '<div style="width:42px; height:42px; border-radius:12px; flex-shrink:0;' +
-          '            background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.2);' +
-          '            display:flex; align-items:center; justify-content:center; font-size:18px;">' +
-          '  🎯' +
-          '</div>' +
-          '<div style="flex:1; display:flex; flex-direction:column; gap:0.2rem;">' +
-          '  <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color: #4ADE80;">' +
-          '    Concluído' +
-          '  </div>' +
-          '  <div style="font-size:0.85rem; color: #fff;">' +
-          '    Você acertou <strong>' + r.acertos + '</strong> de ' + r.total +
-          '  </div>' +
-          '</div>' +
-          '<div style="text-align: right;">' +
-          '  <div style="font-size:1.75rem; font-weight:800; color: ' + successColor + ';">' +
-          '    ' + pctA + '%' +
-          '  </div>' +
-          '</div>';
+          '<div style="width:42px;height:42px;border-radius:12px;flex-shrink:0;' +
+          'background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.2);' +
+          'display:flex;align-items:center;justify-content:center;font-size:18px;">🎯</div>' +
+          '<div style="flex:1;display:flex;flex-direction:column;gap:0.2rem;">' +
+          '<div style="font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#4ADE80;">Concluído</div>' +
+          '<div style="font-size:0.85rem;color:#fff;">Você acertou <strong>' + r.acertos + '</strong> de ' + r.total + '</div></div>' +
+          '<div style="text-align:right;">' +
+          '<div style="font-size:1.75rem;font-weight:800;color:' + successColor + ';">' + pctA + '%</div></div>';
       }
     }
 
@@ -651,23 +584,17 @@
       mostrandoSoErros = false;
       aulaGrupos = [];
 
-      /* ── CORREÇÃO: usa null para questões sem aula,
-         permitindo detecção correta de mudança de grupo ── */
-      var ultimaAula = undefined; // undefined ≠ null, garante que o primeiro grupo sempre é criado
+      var ultimaAula = undefined;
 
       questoes.forEach(function (q, qi) {
-
-        /* Normaliza: undefined → null para questões sem campo aula */
         var aulaAtual = q.aula !== undefined ? q.aula : null;
 
         if (aulaAtual !== ultimaAula) {
           ultimaAula = aulaAtual;
           aulaGrupos.push({ aula: aulaAtual, indices: [] });
-
-          /* Só renderiza o título se a aula tem nome */
           if (aulaAtual !== null) {
             var titleEl = document.createElement('div');
-            titleEl.className = 'subject-title';
+            titleEl.className   = 'subject-title';
             titleEl.textContent = aulaAtual.toUpperCase();
             container.appendChild(titleEl);
           }
@@ -682,7 +609,7 @@
         card.id = 'q-' + qi;
 
         var num = document.createElement('div');
-        num.className = 'question-number';
+        num.className   = 'question-number';
         num.textContent = 'Questão ' + (qi + 1);
         card.appendChild(num);
 
@@ -696,7 +623,7 @@
         q.options.forEach(function (alt, ai) {
           var btn = document.createElement('button');
           btn.className = 'option';
-          btn.type = 'button';
+          btn.type      = 'button';
           btn.innerHTML = String.fromCharCode(65 + ai) + ') ' + renderMarkup(alt);
           btn.dataset.qi = qi;
           btn.dataset.ai = ai;
@@ -709,7 +636,6 @@
         if (respostas[qi] !== undefined) card.appendChild(_criarFeedbackEl(qi));
         container.appendChild(card);
 
-        /* ── CORREÇÃO: normaliza aula da próxima questão também ── */
         var proxQ    = questoes[qi + 1];
         var aulaProx = proxQ ? (proxQ.aula !== undefined ? proxQ.aula : null) : null;
         var isUltimoDoGrupo = !proxQ || aulaProx !== aulaAtual;
@@ -724,7 +650,6 @@
         }
       });
 
-      /* Fallback: lista vazia ou nenhum grupo criado */
       if (aulaGrupos.length === 0 && questoes.length > 0) {
         aulaGrupos.push({ aula: null, indices: questoes.map(function (_, i) { return i; }) });
         var resultEl2 = document.createElement('div');
@@ -734,16 +659,19 @@
         if (!modoStep) _atualizarResultadoAula(0);
       }
 
-      /* ── CHECKLIST ENADE — bind nos botões de assertiva ── */
       container.querySelectorAll('.assertion-chk').forEach(function (btn) {
         btn.addEventListener('click', function (e) {
           e.stopPropagation();
           var s = (parseInt(btn.dataset.chk) + 1) % 3;
           btn.dataset.chk = s;
-          btn.className = 'assertion-chk' + (s === 1 ? ' chk-wrong' : s === 2 ? ' chk-right' : '');
+          btn.className   = 'assertion-chk' + (s === 1 ? ' chk-wrong' : s === 2 ? ' chk-right' : '');
           btn.textContent = s === 1 ? '✕' : s === 2 ? '✓' : '';
         });
       });
+
+      // Publica snapshot APÓS renderização completa
+      // Na primeira chamada, dispara nexus:quizPronto
+      _publicarSnapshot(questoes);
     }
 
     function _aplicarEstadoOpcao(btn, qi, ai) {
@@ -775,11 +703,9 @@
       if (revelado || respostas[qi] !== undefined) return;
       respostas[qi] = oi;
 
-      /* ── SOM DE ACERTO / ERRO ── */
       var _playSound = window.__nexusPlaySound;
       if (typeof _playSound === 'function') {
-        var acertou = oi === questoes[qi].answer;
-        _playSound(acertou ? 'correct' : 'wrong', 'quiz');
+        _playSound(oi === questoes[qi].answer ? 'correct' : 'wrong', 'quiz');
       }
 
       _atualizarOpcoes(qi);
@@ -839,11 +765,12 @@
         _Storage.remove(_smapKey());
       }
 
-      // Limpa no Firebase também
       if (window.NexusFirebase && _disc) {
         var usuario = _Storage ? _Storage.get('usuario', null) : null;
         if (usuario && usuario.uid) {
-          window.NexusFirebase.limparRespostasQuiz(usuario.uid, _semestre, _modo, _disc).catch(function () {});
+          window.NexusFirebase.limparRespostasQuiz(
+            usuario.uid, _semestre, _modo, _disc
+          ).catch(function () {});
         }
       }
 
@@ -854,7 +781,7 @@
       if (resultsEl) { resultsEl.style.display = 'none'; resultsEl.innerHTML = ''; }
 
       _resetarBotaoErros();
-      renderizar();
+      renderizar();   // _publicarSnapshot é chamado dentro de renderizar()
       smoothScrollToTop();
     }
 
@@ -904,16 +831,13 @@
     function _atualizarBotaoErros() {
       var errorsBtn = document.getElementById('errors');
       if (!errorsBtn) return;
-
       var respondidas = Object.keys(respostas).length;
       if (respondidas < questoes.length) {
         errorsBtn.classList.remove('visible', 'active');
         return;
       }
-
       var erros = _contarErros();
       errorsBtn.classList.add('visible');
-
       if (erros === 0) {
         var s = errorsBtn.querySelector('span');
         if (s) s.textContent = 'Sem erros!';
@@ -942,7 +866,6 @@
       });
 
       var errorsBtn = document.getElementById('errors');
-
       if (erros.length === 0) {
         if (errorsBtn) {
           var s = errorsBtn.querySelector('span');
@@ -957,7 +880,6 @@
       if (!errorsBtn) return;
 
       if (errorsBtn.classList.contains('active')) {
-        /* ── Restaurar visualização completa ── */
         mostrandoSoErros = false;
         errorsBtn.classList.remove('active');
         var s2 = errorsBtn.querySelector('span');
@@ -966,31 +888,26 @@
         document.querySelectorAll('[id^="aula-result-"]').forEach(function (el) { el.style.display = ''; });
         document.querySelectorAll('.subject-title').forEach(function (el) { el.style.display = ''; });
       } else {
-        /* ── Mostrar só erros ── */
         mostrandoSoErros = true;
         errorsBtn.classList.add('active');
         var s3 = errorsBtn.querySelector('span');
         if (s3) s3.textContent = 'Ver completo';
 
-        /* Descobre quais grupos (aulas) têm pelo menos um erro */
         var gruposComErro = {};
         erros.forEach(function (qi) {
           var gi = _grupoDeQuestao(qi);
           if (gi !== -1) gruposComErro[gi] = true;
         });
 
-        /* Mostra/esconde cards de questão */
         questoes.forEach(function (q, qi) {
           var card = document.getElementById('q-' + qi);
           if (card) card.style.display = erros.indexOf(qi) !== -1 ? '' : 'none';
         });
 
-        /* Esconde aula-result de todos os grupos */
         document.querySelectorAll('[id^="aula-result-"]').forEach(function (el) {
           el.style.display = 'none';
         });
 
-        /* Mostra/esconde subject-title por grupo */
         var titleEls = document.querySelectorAll('.subject-title');
         titleEls.forEach(function (el, idx) {
           el.style.display = gruposComErro[idx] ? '' : 'none';
@@ -1060,13 +977,17 @@
           if (idx === gi) {
             cls += ' step-dot-active';
           } else if (respostas[idx] !== undefined) {
-            cls += parseInt(respostas[idx]) === questoes[idx].answer ? ' step-dot-correct' : ' step-dot-wrong';
+            cls += parseInt(respostas[idx]) === questoes[idx].answer
+              ? ' step-dot-correct' : ' step-dot-wrong';
           }
-          return '<button class="' + cls + '" data-goto="' + idx + '" title="Questão ' + (idx + 1) + '"></button>';
+          return '<button class="' + cls + '" data-goto="' + idx +
+                 '" title="Questão ' + (idx + 1) + '"></button>';
         }).join('');
 
         dotsEl.querySelectorAll('.step-dot').forEach(function (dot) {
-          dot.addEventListener('click', function () { irParaQuestao(parseInt(dot.dataset.goto)); });
+          dot.addEventListener('click', function () {
+            irParaQuestao(parseInt(dot.dataset.goto));
+          });
         });
       }
 
@@ -1076,26 +997,26 @@
       var nextBtn = document.getElementById('step-next');
       if (nextBtn) {
         var isLast = gi === total - 1;
-        nextBtn.innerHTML = isLast
+        nextBtn.innerHTML    = isLast
           ? '<i class="fas fa-flag-checkered"></i> Finalizar'
           : 'Avançar <i class="fas fa-arrow-right"></i>';
         nextBtn.dataset.finalize = isLast ? '1' : '0';
-        nextBtn.disabled = false;
+        nextBtn.disabled         = false;
       }
     }
 
     function _aplicarModoStep(direcao) {
       if (!stepWrapper) return;
       var cards = stepWrapper.querySelectorAll('.question-container');
-      cards.forEach(function (c) { c.classList.remove('step-active', 'step-slide-left', 'step-slide-right'); });
-
+      cards.forEach(function (c) {
+        c.classList.remove('step-active', 'step-slide-left', 'step-slide-right');
+      });
       var card = cards[stepAtual];
       if (card) {
         card.classList.add('step-active');
-        if (direcao === 'back')        card.classList.add('step-slide-left');
-        else if (direcao !== 'none')   card.classList.add('step-slide-right');
+        if (direcao === 'back')      card.classList.add('step-slide-left');
+        else if (direcao !== 'none') card.classList.add('step-slide-right');
       }
-
       _atualizarControlesStep();
       setTimeout(_sincronizarAlturaStep, 50);
     }
@@ -1109,23 +1030,22 @@
       var header = document.createElement('div');
       header.id = 'step-shell-header';
       header.innerHTML =
-        '<div class="step-header">' +
-          '<div class="step-progress-wrapper">' +
-            '<div class="step-counter" id="step-counter"></div>' +
-            '<div class="step-progress-bar"><div class="step-progress-fill" id="step-progress-fill"></div></div>' +
-            '<div class="step-score-badges" id="step-score-badges"></div>' +
-          '</div>' +
-        '</div>';
+        '<div class="step-header"><div class="step-progress-wrapper">' +
+        '<div class="step-counter" id="step-counter"></div>' +
+        '<div class="step-progress-bar"><div class="step-progress-fill" id="step-progress-fill"></div></div>' +
+        '<div class="step-score-badges" id="step-score-badges"></div>' +
+        '</div></div>';
       container.parentNode.insertBefore(header, container);
 
       var footer = document.createElement('div');
       footer.id = 'step-shell-footer';
       footer.innerHTML =
         '<div class="step-footer">' +
-          '<button class="step-btn step-btn-secondary" id="step-prev"><i class="fas fa-arrow-left"></i> Voltar</button>' +
-          '<div class="step-dots" id="step-dots"></div>' +
-          '<button class="step-btn step-btn-primary" id="step-next">Avançar <i class="fas fa-arrow-right"></i></button>' +
-        '</div>';
+        '<button class="step-btn step-btn-secondary" id="step-prev">' +
+        '<i class="fas fa-arrow-left"></i> Voltar</button>' +
+        '<div class="step-dots" id="step-dots"></div>' +
+        '<button class="step-btn step-btn-primary" id="step-next">' +
+        'Avançar <i class="fas fa-arrow-right"></i></button></div>';
       container.parentNode.insertBefore(footer, container.nextSibling);
 
       document.getElementById('step-prev').addEventListener('click', questaoAnterior);
@@ -1164,13 +1084,11 @@
         var wrapper = document.createElement('div');
         wrapper.className = 'step-quiz-wrapper';
 
-        container.querySelectorAll('.subject-title, .subject-result, [id^="aula-result-"]').forEach(function (el) {
-          el.classList.add('step-structural-hidden');
-        });
+        container.querySelectorAll('.subject-title, .subject-result, [id^="aula-result-"]')
+          .forEach(function (el) { el.classList.add('step-structural-hidden'); });
 
-        Array.from(container.querySelectorAll('.question-container')).forEach(function (q) {
-          wrapper.appendChild(q);
-        });
+        Array.from(container.querySelectorAll('.question-container'))
+          .forEach(function (q) { wrapper.appendChild(q); });
 
         container.insertBefore(wrapper, container.firstChild);
         stepWrapper = wrapper;
@@ -1193,7 +1111,7 @@
       if (toggle) {
         toggle.classList.add('modo-step-active');
         toggle.title = 'Ver lista completa';
-        var iToggle = toggle.querySelector('i');
+        var iToggle  = toggle.querySelector('i');
         if (iToggle) iToggle.className = 'fas fa-list';
       }
 
@@ -1204,7 +1122,6 @@
     function _sairModoStep() {
       modoStep = false;
 
-      /* Limpa banner de aula pendente */
       if (_stepAulaBannerTimer) { clearTimeout(_stepAulaBannerTimer); _stepAulaBannerTimer = null; }
 
       if (stepWrapper && stepWrapper.parentNode === container) {
@@ -1238,7 +1155,7 @@
       if (toggle) {
         toggle.classList.remove('modo-step-active');
         toggle.title = 'Modo Step (uma questão por vez)';
-        var iToggle = toggle.querySelector('i');
+        var iToggle  = toggle.querySelector('i');
         if (iToggle) iToggle.className = 'fas fa-layer-group';
       }
       _limparEstadoStep();
@@ -1256,11 +1173,8 @@
 
     function _mostrarBannerAula(nomeAula) {
       if (!nomeAula) return;
-
       var headerEl = document.getElementById('step-shell-header');
       if (!headerEl) return;
-
-      /* Remove banner anterior imediatamente */
       var antigo = headerEl.querySelector('.step-aula-banner');
       if (antigo) antigo.remove();
 
@@ -1272,9 +1186,7 @@
         '<span class="step-aula-banner__label">Nova aula</span>' +
         '<span class="step-aula-banner__nome">' + nomeAula + '</span>' +
         '<span class="step-aula-banner__pill">▸</span>';
-
       headerEl.appendChild(banner);
-      /* Banner fica visível até a próxima navegação — sem auto-dismiss */
     }
 
     function _removerBannerAula() {
@@ -1290,17 +1202,13 @@
       if (index < 0 || index >= questoes.length) return;
       var direcao = index > stepAtual ? 'forward' : 'back';
 
-      /* Ao avançar: detecta mudança de aula */
       if (direcao === 'forward' && aulaGrupos.length > 1) {
         var aulaAtual = _aulaDeQuestao(stepAtual);
         var aulaNova  = _aulaDeQuestao(index);
-        if (aulaNova && aulaNova !== aulaAtual) {
-          _mostrarBannerAula(aulaNova);
-        } else {
-          _removerBannerAula(); /* mesma aula — remove banner se havia um */
-        }
+        if (aulaNova && aulaNova !== aulaAtual) { _mostrarBannerAula(aulaNova); }
+        else                                    { _removerBannerAula(); }
       } else {
-        _removerBannerAula(); /* voltando — remove sempre */
+        _removerBannerAula();
       }
 
       stepAtual = index;
@@ -1317,7 +1225,9 @@
     var btnUp   = document.getElementById('btn-up');
     var btnDown = document.getElementById('btn-down');
     if (btnUp)   btnUp.addEventListener('click', function () { smoothScrollToTop(); });
-    if (btnDown) btnDown.addEventListener('click', function () { smoothScrollTo(document.body.scrollHeight, 1000); });
+    if (btnDown) btnDown.addEventListener('click', function () {
+      smoothScrollTo(document.body.scrollHeight, 1000);
+    });
 
     ['restart', 'restartButton'].forEach(function (id) {
       var el = document.getElementById(id);
@@ -1335,21 +1245,12 @@
     var btnToggle = document.getElementById('btn-toggle-modo');
     if (btnToggle) btnToggle.addEventListener('click', toggleModo);
 
-    /* ── NAVEGAÇÃO POR SETAS DO TECLADO (apenas no modo step) ── */
     document.addEventListener('keydown', function (e) {
       if (!modoStep) return;
-
-      /* Ignora se o foco estiver num input/textarea para não interferir com digitação */
       var tag = document.activeElement && document.activeElement.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-
-      if (e.key === 'ArrowRight') {
-        e.preventDefault();
-        proximaQuestao();
-      } else if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        questaoAnterior();
-      }
+      if (e.key === 'ArrowRight') { e.preventDefault(); proximaQuestao(); }
+      else if (e.key === 'ArrowLeft')  { e.preventDefault(); questaoAnterior(); }
     });
 
     var btnLeft = document.getElementById('btn-left');
@@ -1362,19 +1263,17 @@
       }
     }
 
-    /* ── 13. FILTRO DE AULAS — painel lateral ─────────────── */
+    /* ── 13. FILTRO DE AULAS ──────────────────────────────── */
 
     function _iniciarFiltroAulas() {
       var btnFiltro = document.getElementById('btn-filtro-aulas');
       if (!btnFiltro) return;
 
-      /* Overlay */
       var overlay = document.createElement('div');
       overlay.id        = 'filtro-overlay';
       overlay.className = 'filtro-overlay';
       document.body.appendChild(overlay);
 
-      /* Painel */
       var painel = document.createElement('div');
       painel.id        = 'filtro-painel';
       painel.className = 'filtro-painel';
@@ -1384,30 +1283,29 @@
 
       function _abrirPainel() {
         var aulas = _todasAsAulas();
-        if (aulas.length <= 1) return; // sem sentido filtrar com 1 aula
+        if (aulas.length <= 1) return;
 
         var totalAulas = aulas.length;
         var marcadas   = aulasFiltradas === null ? new Set(aulas) : new Set(aulasFiltradas);
 
         painel.innerHTML =
           '<div class="filtro-header">' +
-            '<div class="filtro-eyebrow"><i class="fas fa-filter" aria-hidden="true"></i> Filtrar Aulas</div>' +
-            '<h2 class="filtro-titulo">Selecionar Aulas</h2>' +
-            '<p class="filtro-subtitulo">Escolha quais aulas deseja estudar</p>' +
-            '<button class="filtro-close" id="filtro-close-btn" type="button" aria-label="Fechar">×</button>' +
+          '<div class="filtro-eyebrow"><i class="fas fa-filter" aria-hidden="true"></i> Filtrar Aulas</div>' +
+          '<h2 class="filtro-titulo">Selecionar Aulas</h2>' +
+          '<p class="filtro-subtitulo">Escolha quais aulas deseja estudar</p>' +
+          '<button class="filtro-close" id="filtro-close-btn" type="button" aria-label="Fechar">×</button>' +
           '</div>' +
           '<div class="filtro-body">' +
-            '<div class="filtro-acoes">' +
-              '<button class="filtro-acao-btn" id="filtro-todas"   type="button">Todas</button>' +
-              '<button class="filtro-acao-btn" id="filtro-nenhuma" type="button">Nenhuma</button>' +
-            '</div>' +
-            '<ul class="filtro-lista" id="filtro-lista" role="group" aria-label="Aulas disponíveis"></ul>' +
+          '<div class="filtro-acoes">' +
+          '<button class="filtro-acao-btn" id="filtro-todas"   type="button">Todas</button>' +
+          '<button class="filtro-acao-btn" id="filtro-nenhuma" type="button">Nenhuma</button>' +
+          '</div>' +
+          '<ul class="filtro-lista" id="filtro-lista" role="group" aria-label="Aulas disponíveis"></ul>' +
           '</div>' +
           '<div class="filtro-footer">' +
-            '<div class="filtro-contador" id="filtro-contador"></div>' +
-            '<button class="filtro-aplicar" id="filtro-aplicar-btn" type="button">' +
-              '<i class="fas fa-check" aria-hidden="true"></i> Aplicar' +
-            '</button>' +
+          '<div class="filtro-contador" id="filtro-contador"></div>' +
+          '<button class="filtro-aplicar" id="filtro-aplicar-btn" type="button">' +
+          '<i class="fas fa-check" aria-hidden="true"></i> Aplicar</button>' +
           '</div>';
 
         var lista    = painel.querySelector('#filtro-lista');
@@ -1416,7 +1314,6 @@
 
         aulas.forEach(function (aula) {
           var checked = marcadas.has(aula);
-
           var li = document.createElement('li');
           li.className = 'filtro-item' + (checked ? ' filtro-marcado' : '');
           li.setAttribute('role', 'checkbox');
@@ -1424,10 +1321,8 @@
           li.setAttribute('tabindex', '0');
           li.innerHTML =
             '<div class="filtro-chk-box" aria-hidden="true">' +
-              '<svg class="filtro-chk-icon" viewBox="0 0 12 12" aria-hidden="true">' +
-                '<polyline points="1.5 6 4.5 9.5 10.5 2.5"/>' +
-              '</svg>' +
-            '</div>' +
+            '<svg class="filtro-chk-icon" viewBox="0 0 12 12" aria-hidden="true">' +
+            '<polyline points="1.5 6 4.5 9.5 10.5 2.5"/></svg></div>' +
             '<span class="filtro-aula-txt"></span>';
           li.querySelector('.filtro-aula-txt').textContent = aula;
           lista.appendChild(li);
@@ -1445,7 +1340,6 @@
             }
             _atualizarContador();
           }
-
           li.addEventListener('click', _toggle);
           li.addEventListener('keydown', function (e) {
             if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); _toggle(); }
@@ -1482,12 +1376,8 @@
         painel.querySelector('#filtro-close-btn').addEventListener('click', _fecharPainel);
 
         painel.querySelector('#filtro-aplicar-btn').addEventListener('click', function () {
-          if (marcadas.size === 0 || marcadas.size === totalAulas) {
-            aulasFiltradas = null;
-          } else {
-            aulasFiltradas = new Set(marcadas);
-          }
-
+          aulasFiltradas = (marcadas.size === 0 || marcadas.size === totalAulas)
+            ? null : new Set(marcadas);
           _fecharPainel();
           _aplicarFiltro();
         });
@@ -1506,43 +1396,22 @@
       btnFiltro.addEventListener('click', function () {
         painel.classList.contains('filtro-show') ? _fecharPainel() : _abrirPainel();
       });
-
       overlay.addEventListener('click', _fecharPainel);
-
       document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && painel.classList.contains('filtro-show')) _fecharPainel();
       });
 
-      /* Expõe o painel para uso externo (ex: quiz_starter_modal) */
-      window.NexusFiltroAulas = {
-        abrir:   _abrirPainel,
-        fechar:  _fecharPainel,
-      };
+      window.NexusFiltroAulas = { abrir: _abrirPainel, fechar: _fecharPainel };
     }
 
     _iniciarFiltroAulas();
 
-    /* ── Expõe interface para o starter modal ─────────────────
-       listarAulas()         → string[]  — aulas disponíveis
-       iniciar(aulasSel)     → void      — aplica filtro e renderiza
-       Se window.__NSM_AGUARDANDO__ não estiver definido (modal
-       ausente), renderiza imediatamente como sempre.
-    ────────────────────────────────────────────────────────── */
     window.NexusFiltroAulas.listarAulas = _todasAsAulas;
 
     window.NexusFiltroAulas.iniciar = function (aulasSelecionadas) {
-      aulasFiltradas = aulasSelecionadas; /* null = todas, Set<string> = filtradas */
-
-      if (aulasSelecionadas === null) {
-        /* Sem filtro — renderiza restaurando o progresso salvo.
-           Usado pelo modal ao "entrar direto" ou ao escolher "Todas as aulas". */
-        _renderizarERestaurar();
-      } else {
-        /* Com filtro — reconstrói o quiz a partir da seleção de aulas.
-           Descarta progresso atual (comportamento intencional: o usuário
-           está escolhendo um subconjunto diferente de questões). */
-        _aplicarFiltro();
-      }
+      aulasFiltradas = aulasSelecionadas;
+      if (aulasSelecionadas === null) { _renderizarERestaurar(); }
+      else                            { _aplicarFiltro(); }
     };
 
     if (!window.__NSM_AGUARDANDO__) {
@@ -1550,7 +1419,7 @@
     }
 
     function _renderizarERestaurar() {
-      renderizar();
+      renderizar();   // → chama _publicarSnapshot → dispara nexus:quizPronto na 1ª vez
 
       if (_Storage) {
         var _stepSalvo = _Storage.get(_stepStateKey(), null);
