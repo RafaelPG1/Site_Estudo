@@ -49,9 +49,10 @@ import {
 
 /* ═══════════════════════════════════════════════
    SEÇÃO 2 — ASSISTENTE IA
-   Carregado antes de qualquer outra coisa para
-   garantir que o FAB da IA apareça junto com os
-   botões de áudio.
+   O botão flutuante (#nexus-fab) é injetado por
+   fab.js antes mesmo deste módulo carregar.
+   Aqui carregamos o restante da IA (painel, lógica,
+   contexto) de forma assíncrona, sem bloquear a UI.
 ═══════════════════════════════════════════════ */
 
 // Declara explicitamente o tipo de contexto desta página.

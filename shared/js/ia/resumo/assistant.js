@@ -1250,7 +1250,7 @@
 
   function initUI() {
     if (!_depsUIok()) return;
-    if (document.getElementById('nexus-fab')) return;
+    if (document.getElementById('nexus-panel')) return;
 
     NexusUI.init({ onSend: _onUserSend, onReset: _resetarChat });
 

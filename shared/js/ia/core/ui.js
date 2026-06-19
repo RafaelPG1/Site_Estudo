@@ -501,19 +501,28 @@
     _onSend  = opts.onSend  || null;
     _onReset = opts.onReset || null;
 
-    if (document.getElementById('nexus-fab')) return;
+    // Reutiliza o botão se fab.js já o injetou; cria apenas se ausente
+    var fab = document.getElementById('nexus-fab') || _criarFAB();
+    if (!fab.parentNode) document.body.appendChild(fab);
 
-    var fab   = _criarFAB();
-    var panel = _criarPainel();
-    document.body.appendChild(fab);
-    document.body.appendChild(panel);
+    // Evita registrar o listener de toggle duas vezes
+    if (!fab.dataset.nexusBound) {
+      fab.addEventListener('click', toggle);
+      fab.dataset.nexusBound = '1';
+    }
 
-    fab.addEventListener('click', toggle);
-    document.getElementById('nexus-close').addEventListener('click', close);
+    // Evita recriar o painel se init() for chamado mais de uma vez
+    if (!document.getElementById('nexus-panel')) {
+      var panel = _criarPainel();
+      document.body.appendChild(panel);
+      document.getElementById('nexus-close').addEventListener('click', close);
+    }
 
     _bindInput();
     _bindReset();
-    _bindScrollIsolado(panel);
+
+    var panel = document.getElementById('nexus-panel');
+    if (panel) _bindScrollIsolado(panel);
   }
 
   /* ══════════════════════════════════════════════════════════

@@ -28,6 +28,14 @@
 </head>
 
 <body>
+  <!--
+    fab.js: primeira instrução do <body>.
+    Executa de forma síncrona — document.body já existe neste ponto,
+    então o botão é injetado imediatamente, antes de qualquer outro elemento
+    ser pintado. Nenhum evento é registrado aqui; isso é responsabilidade
+    exclusiva de NexusUI.init() em ui.js.
+  -->
+  <script src="shared/js/ia/core/fab.js"></script>
 
   <!-- Fundo decorativo -->
   <div class="bg-orb bg-orb--1" aria-hidden="true"></div>
@@ -154,10 +162,11 @@
   </footer>
 
   <link rel="modulepreload" href="shared/js/ia/core/text-utils.js">
-<link rel="modulepreload" href="shared/js/ia/core/loader.js">
-<link rel="modulepreload" href="shared/js/ia/core/worker.js">
-<link rel="modulepreload" href="shared/js/ia/core/ui.js">
-<link rel="modulepreload" href="shared/js/ia/resumo/search.js">
+  <link rel="modulepreload" href="shared/js/ia/core/loader.js">
+  <link rel="modulepreload" href="shared/js/ia/core/worker.js">
+  <link rel="modulepreload" href="shared/js/ia/core/ui.js">
+  <link rel="modulepreload" href="shared/js/ia/resumo/search.js">
+
   <script src="shared/js/utils/quick-access.js"></script>
   <script type="module" src="index.js"></script>
 
