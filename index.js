@@ -76,6 +76,7 @@ function _carregarIA() {
   const deps = [
     BASE + 'core/context.js',    // lê __NEXUS_CONTEXT__ → expõe NexusContext
     BASE + 'core/text-utils.js',
+    BASE + 'core/history.js',    // histórico isolado por contexto — requerido por resumo/assistant.js
     BASE + 'core/loader.js',
     BASE + 'core/worker.js',
     BASE + 'core/ui.js',

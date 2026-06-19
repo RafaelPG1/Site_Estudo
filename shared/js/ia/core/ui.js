@@ -1,14 +1,6 @@
 /**
  * NEXUS — shared/js/ia/core/ui.js
  *
- * PATCH scroll-isolado:
- *   O painel #nexus-panel captura wheel e touchmove, impedindo
- *   que o scroll vaze para a página quando o mouse está sobre o modal.
- *
- * PATCH fechar-só-pelo-botão:
- *   Remove o listener de "clicar fora para fechar".
- *   O painel só fecha via FAB (toggle) ou botão X interno.
- *
  * Responsabilidade exclusiva: renderização do painel de chat.
  * NÃO conhece resumo, quiz, disciplinas ou lógica de domínio.
  *
@@ -22,14 +14,10 @@
   let _onReset   = null;
   let _playSound = null;
 
-  /* Resolve o caminho do audio-api.js relativo a este script,
-     igual ao que logo.js faz com import.meta.url — mas via
-     document.currentScript, que funciona em scripts não-module. */
   (function _carregarPlaySound() {
     var script = document.currentScript ||
       (function () {
         var scripts = document.querySelectorAll('script[src*="ui.js"]');
-        // Filtra para garantir que é o arquivo correto
         for (var i = scripts.length - 1; i >= 0; i--) {
           if (scripts[i].src.includes('/ia/core/ui.js')) return scripts[i];
         }
@@ -40,9 +28,6 @@
 
     var base   = new URL(script.src);
     var partes = base.pathname.split('/');
-    // ui.js está em:        <raiz>/shared/js/ia/core/ui.js
-    // audio-api.js está em: <raiz>/shared/js/audio/audio-api.js
-    // Sobe 3 níveis (ui.js, core, ia) e entra em js/audio/audio-api.js
     partes.splice(partes.length - 3, 3, 'audio', 'audio-api.js');
     var audioUrl = base.origin + partes.join('/');
 
@@ -217,26 +202,6 @@
     return panel;
   }
 
-
-  // Adicionar a função:
-function limparMensagens() {
-  var container = document.getElementById('nexus-messages');
-  if (container) container.innerHTML = '';
-}
-
-// E expor na API pública:
-window.NexusUI = {
-  init,
-  open,
-  close,
-  toggle,
-  renderMessage,
-  showTyping,
-  hideTyping,
-  mostrarSugestoes,
-  atualizarDiscAtiva,
-  limparMensagens,   // ← adicionar
-};
   /* ══════════════════════════════════════════════════════════
      RENDERIZAÇÃO DE MENSAGENS
   ══════════════════════════════════════════════════════════ */
@@ -397,6 +362,15 @@ window.NexusUI = {
   }
 
   /* ══════════════════════════════════════════════════════════
+     LIMPAR MENSAGENS
+  ══════════════════════════════════════════════════════════ */
+
+  function limparMensagens() {
+    var container = document.getElementById('nexus-messages');
+    if (container) container.innerHTML = '';
+  }
+
+  /* ══════════════════════════════════════════════════════════
      CONTROLE DO PAINEL (abrir / fechar / toggle)
   ══════════════════════════════════════════════════════════ */
 
@@ -431,10 +405,9 @@ window.NexusUI = {
   }
 
   /* ══════════════════════════════════════════════════════════
-     PATCH scroll-isolado
-     Captura wheel e touchmove no painel para impedir que o
-     scroll vaze para a página quando o mouse está sobre o modal.
+     SCROLL ISOLADO
   ══════════════════════════════════════════════════════════ */
+
   function _bindScrollIsolado(panel) {
     panel.addEventListener('wheel', function (e) {
       var messages = document.getElementById('nexus-messages');
@@ -442,14 +415,12 @@ window.NexusUI = {
 
       var atTop    = messages.scrollTop === 0;
       var atBottom = messages.scrollTop + messages.clientHeight >= messages.scrollHeight - 1;
-
       var scrollingUp   = e.deltaY < 0;
       var scrollingDown = e.deltaY > 0;
 
       if ((scrollingUp && atTop) || (scrollingDown && atBottom)) {
         e.preventDefault();
       }
-
       e.stopPropagation();
     }, { passive: false });
 
@@ -522,9 +493,7 @@ window.NexusUI = {
   }
 
   /* ══════════════════════════════════════════════════════════
-     INICIALIZAÇÃO PÚBLICA — NexusUI.init()
-     PATCH fechar-só-pelo-botão: _bindClickFora() removido.
-     O painel só fecha via FAB (toggle) ou botão #nexus-close.
+     INICIALIZAÇÃO
   ══════════════════════════════════════════════════════════ */
 
   function init(opts) {
@@ -561,6 +530,7 @@ window.NexusUI = {
     hideTyping,
     mostrarSugestoes,
     atualizarDiscAtiva,
+    limparMensagens,
   };
 
 }());
