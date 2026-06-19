@@ -1,5 +1,5 @@
 /**
- * NEXUS — shared/js/ia/resumo/assistant.js  v3.0
+ * NEXUS — shared/js/ia/resumo/assistant.js  v3.1
  *
  * Orquestrador do sistema de IA para Resumos.
  *
@@ -14,6 +14,20 @@
  *   - Quiz, questões, gabarito, feedback, token de sessão
  *   - Games
  *   - Qualquer estado externo de outros domínios
+ *
+ * MUDANÇAS v3.1:
+ *   - Persistência da disciplina ativa (SESSION_DISC) restaurada.
+ *     Sem isso, F5 / reabrir aba / fechar e abrir não conseguia saber
+ *     qual chave de histórico (NexusHistory) carregar, e o chat sempre
+ *     voltava para as boas-vindas mesmo com histórico salvo.
+ *   - initUI() / init() agora restauram disciplina + histórico reais
+ *     quando o contexto não mudou (NexusCtx.deveResetar() === false).
+ *     Histórico só é apagado por: reset manual (botão), troca de
+ *     disciplina, troca de semestre, troca de modo — nunca por reload
+ *     simples da mesma sessão.
+ *   - Guarda de tamanho de mensagem em _onUserSend(): mensagens
+ *     anormalmente grandes (> MENSAGEM_MAX_CHARS) são bloqueadas antes
+ *     de qualquer busca ou chamada ao worker, com aviso amigável.
  *
  * Depende de:
  *   - core/ctx.js         (window.NexusCtx)
@@ -36,9 +50,11 @@
 (function () {
   'use strict';
 
-  var REPLY_DELAY_MS = 900;
-  var TOP_K          = 8;
-  var MIN_SCORE      = 15;
+  var REPLY_DELAY_MS     = 900;
+  var TOP_K              = 8;
+  var MIN_SCORE          = 15;
+  var SESSION_DISC_KEY   = 'nexus_resumo_disc_ativa';
+  var MENSAGEM_MAX_CHARS = 4000; // limiar generoso — só barra entradas claramente anormais
 
   /* ══════════════════════════════════════════════════════════
      ESTADO INTERNO
@@ -83,6 +99,41 @@
   function _getSemestre() {
     var ctx = _getCtxBridge();
     return ctx ? ctx.getSemestre() : '';
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     PERSISTÊNCIA DA DISCIPLINA ATIVA
+     Necessária para saber, no boot da página, qual chave de
+     histórico restaurar. Isolada do histórico de mensagens em si
+     (NexusHistory) — aqui só guardamos QUAL disciplina estava ativa.
+  ══════════════════════════════════════════════════════════ */
+
+  function _salvarDiscAtiva() {
+    try {
+      if (state.discEscolhida) {
+        sessionStorage.setItem(SESSION_DISC_KEY, JSON.stringify({
+          id: state.discEscolhida.id,
+        }));
+      } else {
+        sessionStorage.removeItem(SESSION_DISC_KEY);
+      }
+    } catch (e) {}
+  }
+
+  function _carregarDiscSalva() {
+    try {
+      var raw = sessionStorage.getItem(SESSION_DISC_KEY);
+      if (!raw) return null;
+      var saved = JSON.parse(raw);
+      if (!saved || !saved.id) return null;
+      var discs = _getDisciplinas();
+      if (!discs) return null;
+      return discs.find(function (d) { return d.id === saved.id; }) || null;
+    } catch (e) { return null; }
+  }
+
+  function _limparDiscSalva() {
+    try { sessionStorage.removeItem(SESSION_DISC_KEY); } catch (e) {}
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -712,11 +763,36 @@
   }
 
   /* ══════════════════════════════════════════════════════════
+     GUARDA DE TAMANHO DE MENSAGEM
+
+     Bloqueia entradas claramente anormais (texto enorme, histórico
+     colado, etc.) ANTES de qualquer busca local ou chamada ao
+     NexusWorker. Não é um limite arbitrário pequeno — é só uma
+     rede de segurança para entradas fora do uso normal de chat.
+  ══════════════════════════════════════════════════════════ */
+
+  function _mensagemExcedeLimite(texto) {
+    return typeof texto === 'string' && texto.length > MENSAGEM_MAX_CHARS;
+  }
+
+  /* ══════════════════════════════════════════════════════════
      FLUXO DE CHAT
   ══════════════════════════════════════════════════════════ */
 
   function _onUserSend(text) {
     if (state.processando) return;
+
+    // Guarda de tamanho — antes de qualquer busca, render de mensagem
+    // do usuário no histórico, ou chamada ao worker.
+    if (_mensagemExcedeLimite(text)) {
+      NexusUI.renderMessage({
+        role: 'system',
+        text: 'Mensagem muito grande. Resuma sua pergunta e tente novamente.',
+        time: _getTime(),
+      });
+      return;
+    }
+
     if (state.typingTimer) clearTimeout(state.typingTimer);
     _removerLiveChips();
     NexusUI.renderMessage(_push({ role: 'user', text: text, time: _getTime() }));
@@ -770,7 +846,7 @@
         var discJaAtiva      = state.discEscolhida && discExata.id === state.discEscolhida.id;
 
         if (!discJaAtiva) {
-          // Limpa histórico da disciplina anterior antes de trocar
+          // Troca de disciplina limpa o histórico (regra de negócio mantida)
           _limparHistoricoAtivo();
           _limparContexto();
           var carregou = await _confirmarDisc(discExata);
@@ -948,6 +1024,9 @@
     state.discEscolhida  = disc;
     state.aguardandoDisc = false;
 
+    // Persiste qual disciplina está ativa (sobrevive a F5 / reabrir aba)
+    _salvarDiscAtiva();
+
     // Ativa histórico isolado para esta disciplina
     state.chaveHistorico = _montarChaveHistorico(disc.id);
 
@@ -956,12 +1035,14 @@
     var loaderCtx = _montarCtx(disc);
     if (!loaderCtx) {
       state.discEscolhida = null; state.chaveHistorico = null;
+      _limparDiscSalva();
       _renderBot('Não consegui montar o contexto de ' + disc.apelido + '. Tente novamente.');
       return false;
     }
     var conteudo = await NexusLoader.carregar(loaderCtx);
     if (!conteudo) {
       state.discEscolhida = null; state.chaveHistorico = null;
+      _limparDiscSalva();
       _renderBot('Não consegui carregar o conteúdo de ' + disc.apelido + '. Tente novamente.');
       return false;
     }
@@ -1019,6 +1100,8 @@
 
   /* ══════════════════════════════════════════════════════════
      RESET DE CHAT
+     Único ponto (além de troca de disciplina/semestre/modo) onde
+     o histórico é de fato apagado.
   ══════════════════════════════════════════════════════════ */
 
   function _resetarChat() {
@@ -1039,6 +1122,7 @@
     state.conteudoAtual  = null;
     state.discsCacheadas = {};
     state.chaveHistorico = null;
+    _limparDiscSalva();
     NexusUI.atualizarDiscAtiva(null);
 
     NexusUI.limparMensagens();
@@ -1055,15 +1139,34 @@
 
   /* ══════════════════════════════════════════════════════════
      RESTAURAÇÃO DE HISTÓRICO
+
+     Restaura a disciplina ativa (sessionStorage) e o histórico de
+     mensagens correspondente (NexusHistory) — usado em F5, reload
+     de aba ou reabertura da mesma sessão. Não é chamado quando o
+     contexto mudou (NexusCtx.deveResetar() === true) nem após reset
+     manual.
   ══════════════════════════════════════════════════════════ */
 
-  function _restaurarHistorico() {
-    // Sem disciplina ativa → sem histórico para restaurar
-    if (!state.discEscolhida || !state.chaveHistorico) return false;
-    var msgs = window.NexusHistory.carregar(state.chaveHistorico);
-    if (!msgs || !msgs.length) return false;
-    state.messages = msgs;
+  function _restaurarSessao() {
+    var discSalva = _carregarDiscSalva();
+    if (!discSalva) return false;
+
+    var chave = _montarChaveHistorico(discSalva.id);
+    var msgs  = chave ? window.NexusHistory.carregar(chave) : [];
+    if (!msgs || !msgs.length) {
+      // Disciplina estava salva mas sem histórico (ex: trocou sem mandar
+      // mensagem) — ainda assim restauramos a disciplina ativa.
+      state.discEscolhida  = discSalva;
+      state.chaveHistorico = chave;
+      return false;
+    }
+
+    state.discEscolhida  = discSalva;
+    state.chaveHistorico = chave;
+    state.messages       = msgs;
+
     msgs.forEach(function (msg) { NexusUI.renderMessage(msg); });
+
     var msgsEl = document.getElementById('nexus-messages');
     if (msgsEl) {
       var el = document.createElement('div');
@@ -1095,6 +1198,10 @@
 
   /* ══════════════════════════════════════════════════════════
      initUI() — configura o chat, sempre chamado
+
+     Decide entre RESET (contexto mudou de verdade — outra
+     disciplina/semestre/modo declarado via NexusCtx.declarar())
+     e RESTAURAÇÃO (mesma sessão — F5, reabrir aba, fechar e abrir).
   ══════════════════════════════════════════════════════════ */
 
   function initUI() {
@@ -1119,17 +1226,20 @@
       });
     }());
 
-    // Decide reset vs restauração usando NexusCtx
+    // Decide reset vs restauração usando NexusCtx.
+    // dirty=true  → contexto realmente mudou (disc/sem/modo) → reset completo.
+    // dirty=false → mesma sessão (F5, reabrir aba) → restaura disciplina + histórico.
     var resetando = (typeof window.NexusCtx !== 'undefined') && window.NexusCtx.deveResetar();
 
     if (resetando) {
-      // Limpa todos os históricos do domínio resumo
       if (typeof window.NexusHistory !== 'undefined') {
         window.NexusHistory.limparDominio('resumo');
       }
-      state.messages      = [];
-      state.discEscolhida = null;
-      state.processando   = false;
+      _limparDiscSalva();
+
+      state.messages       = [];
+      state.discEscolhida  = null;
+      state.processando    = false;
       state.discsCacheadas = {};
       state.chaveHistorico = null;
 
@@ -1141,13 +1251,23 @@
       _addWelcomeMessage();
       // Boas-vindas serão adicionadas por init() após pipeline estar ativo
     } else {
-      // Sem reset: exibe welcome e aguarda init() restaurar o histórico se houver disciplina
-      _addWelcomeMessage();
+      // Mesma sessão: tenta restaurar disciplina + histórico reais.
+      // _addWelcomeMessage() só roda se NÃO houver histórico restaurado,
+      // para não duplicar a mensagem de sistema "⬡ Nexus IA" acima de
+      // mensagens já existentes.
+      var restaurado = _restaurarSessao();
+      if (!restaurado) {
+        _addWelcomeMessage();
+      }
     }
   }
 
   /* ══════════════════════════════════════════════════════════
      init() — ativa pipeline de conteúdo de resumo
+
+     Só mostra boas-vindas quando NÃO havia histórico restaurado em
+     initUI() — caso contrário a conversa restaurada já é suficiente
+     e boas-vindas duplicadas seriam ruído.
   ══════════════════════════════════════════════════════════ */
 
   function init() {
@@ -1156,12 +1276,17 @@
     _pipelineConteudoAtivo = true;
     console.log('[NexusAssistant] pipeline de conteúdo de resumo ativo.');
 
-    NexusUI.atualizarDiscAtiva(null);
-
-    // Restauração: não há disciplina persistida entre páginas nesta arquitetura;
-    // a disciplina é sempre selecionada pelo usuário na sessão atual.
-    // Mostra boas-vindas normais.
-    _mostrarBoasVindas();
+    if (state.discEscolhida) {
+      // Disciplina restaurada por initUI() — garante índice/conteúdo
+      // carregados, sem mostrar boas-vindas (histórico já cobre isso).
+      NexusUI.atualizarDiscAtiva(state.discEscolhida.apelido);
+      _garantirConteudo(state.discEscolhida).catch(function (err) {
+        console.warn('[NexusAssistant] falha ao recarregar conteúdo restaurado:', err);
+      });
+    } else {
+      NexusUI.atualizarDiscAtiva(null);
+      _mostrarBoasVindas();
+    }
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -1171,6 +1296,7 @@
   document.addEventListener('nexus:semestreChanged', function () {
     _limparHistoricoAtivo();
     _limparContexto();
+    _limparDiscSalva();
     state.discsCacheadas = {};
     _removerLiveChips();
   });
