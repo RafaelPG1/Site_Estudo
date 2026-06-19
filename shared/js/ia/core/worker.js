@@ -29,12 +29,23 @@
  * Somente texto limpo — sem role 'system', metadados ou HTML.
  * Expira automaticamente após SESSION_TTL_MS de inatividade.
  * Reset explícito disponível via NexusWorker.limparHistorico().
+ * Restauração após F5 via NexusWorker.restaurarHistorico(msgs).
+ *
+ * ── RETORNO DE perguntar() ───────────────────────────────────
+ * { texto, fonte, modelo, turnosAoEnviar }
+ *
+ * turnosAoEnviar: número de turnos que existiam no histórico NO
+ * MOMENTO DO ENVIO ao Cloudflare Worker (antes de _registrarTurno).
+ * Permite que assistant.js classifique corretamente a origem da
+ * resposta sem depender de status() fora de hora (que já refletiria
+ * o turno recém-adicionado e produziria falso positivo).
  *
  * API pública: window.NexusWorker
- *   perguntar(opcoes)   → Promise<{ texto, fonte, modelo } | null>
+ *   perguntar(opcoes)         → Promise<{ texto, fonte, modelo, turnosAoEnviar } | null>
  *   limparHistorico()
+ *   restaurarHistorico(msgs)  → restaura _historico a partir de msgs visuais
  *   setHabilitado(valor)
- *   status()            → { habilitado, turnosNoHistorico }
+ *   status()                  → { habilitado, turnosNoHistorico }
  */
 
 (function () {
@@ -209,7 +220,12 @@
    *   registrarNoHistorico?: boolean,
    * }} opcoes
    *
-   * @returns {Promise<{ texto, fonte, modelo }|null>}
+   * @returns {Promise<{ texto, fonte, modelo, turnosAoEnviar }|null>}
+   *
+   * turnosAoEnviar — número de turnos presentes no histórico NO
+   * MOMENTO DO ENVIO, antes de _registrarTurno() acrescentar o turno
+   * atual. Permite ao chamador saber se a resposta foi gerada com
+   * contexto de conversa anterior ou apenas com conhecimento próprio.
    */
   async function perguntar(opcoes) {
     if (!_habilitado) return null;
@@ -228,13 +244,18 @@
     var contexto  = _serializarContexto(resultados || []);
     var historico = _getHistoricoParaEnvio();
 
+    // Captura ANTES do envio e ANTES de _registrarTurno().
+    // Após o retorno do fetch, _registrarTurno() incrementa o contador,
+    // tornando status().turnosNoHistorico inapropriado para esta decisão.
+    var turnosAoEnviar = historico.length / 2;
+
     var resultado = await _chamarWorker({
       pergunta:     pergunta.trim(),
       contexto:     contexto,
       historico:    historico,
       disciplina:   disciplina || '',
       tipoContexto: tipoContexto || 'conteudo',
-      ehQuestao:    false, // classificação de domínio não é responsabilidade do worker client-side
+      ehQuestao:    false,
     });
 
     if (!resultado) {
@@ -254,13 +275,60 @@
       _registrarTurno(pergunta.trim(), textoFormatado);
     }
 
-    return { texto: textoFormatado, fonte: resultado.fonte, modelo: resultado.modelo };
+    return {
+      texto:          textoFormatado,
+      fonte:          resultado.fonte,
+      modelo:         resultado.modelo,
+      turnosAoEnviar: turnosAoEnviar,
+    };
   }
 
   function limparHistorico() {
     _historico       = [];
     _ultimaAtividade = 0;
     console.log('[NexusWorker] histórico de sessão limpo.');
+  }
+
+  /**
+   * restaurarHistorico(mensagens)
+   *
+   * Reconstrói _historico a partir do array de mensagens visuais
+   * salvas pelo NexusHistory. Chamado por assistant.js em
+   * _restaurarSessao() quando o histórico visual é recarregado após F5.
+   *
+   * Regras:
+   *   - Ignora mensagens role:'system' (banner de boas-vindas etc.)
+   *   - Converte role:'bot' → role:'assistant' (contrato do worker remoto)
+   *   - Aplica o mesmo limite MAX_TURNS que _registrarTurno()
+   *   - Atualiza _ultimaAtividade para evitar expiração imediata
+   *
+   * @param {Array<{ role: string, text: string }>} mensagens
+   */
+  function restaurarHistorico(mensagens) {
+    if (!Array.isArray(mensagens) || !mensagens.length) return;
+
+    var pares = [];
+    for (var i = 0; i < mensagens.length - 1; i++) {
+      if (mensagens[i].role === 'user' && mensagens[i + 1].role === 'bot') {
+        pares.push(
+          { role: 'user',      content: mensagens[i].text     || '' },
+          { role: 'assistant', content: mensagens[i + 1].text || '' }
+        );
+        i++;
+      }
+    }
+
+    if (!pares.length) return;
+
+    var maxMensagens = MAX_TURNS * 2;
+    if (pares.length > maxMensagens) {
+      pares = pares.slice(pares.length - maxMensagens);
+    }
+
+    _historico       = pares;
+    _ultimaAtividade = Date.now();
+
+    console.log('[NexusWorker] histórico restaurado — ' + (_historico.length / 2) + ' turno(s).');
   }
 
   function setHabilitado(valor) {
@@ -282,6 +350,7 @@
   window.NexusWorker = {
     perguntar,
     limparHistorico,
+    restaurarHistorico,
     setHabilitado,
     status,
   };

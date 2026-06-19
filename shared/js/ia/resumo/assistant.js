@@ -1,5 +1,5 @@
 /**
- * NEXUS — shared/js/ia/resumo/assistant.js  v3.1
+ * NEXUS — shared/js/ia/resumo/assistant.js  v3.2
  *
  * Orquestrador do sistema de IA para Resumos.
  *
@@ -15,19 +15,18 @@
  *   - Games
  *   - Qualquer estado externo de outros domínios
  *
+ * MUDANÇAS v3.2:
+ *   - _restaurarSessao() agora chama NexusWorker.restaurarHistorico()
+ *     com as mensagens visuais recarregadas. Isso sincroniza o histórico
+ *     em memória do worker com o histórico visual do NexusHistory após
+ *     F5 / reabrir aba, eliminando a dessincronização que fazia a IA
+ *     responder como se não houvesse conversa anterior.
+ *
  * MUDANÇAS v3.1:
  *   - Persistência da disciplina ativa (SESSION_DISC) restaurada.
- *     Sem isso, F5 / reabrir aba / fechar e abrir não conseguia saber
- *     qual chave de histórico (NexusHistory) carregar, e o chat sempre
- *     voltava para as boas-vindas mesmo com histórico salvo.
  *   - initUI() / init() agora restauram disciplina + histórico reais
  *     quando o contexto não mudou (NexusCtx.deveResetar() === false).
- *     Histórico só é apagado por: reset manual (botão), troca de
- *     disciplina, troca de semestre, troca de modo — nunca por reload
- *     simples da mesma sessão.
- *   - Guarda de tamanho de mensagem em _onUserSend(): mensagens
- *     anormalmente grandes (> MENSAGEM_MAX_CHARS) são bloqueadas antes
- *     de qualquer busca ou chamada ao worker, com aviso amigável.
+ *   - Guarda de tamanho de mensagem em _onUserSend().
  *
  * Depende de:
  *   - core/ctx.js         (window.NexusCtx)
@@ -103,9 +102,6 @@
 
   /* ══════════════════════════════════════════════════════════
      PERSISTÊNCIA DA DISCIPLINA ATIVA
-     Necessária para saber, no boot da página, qual chave de
-     histórico restaurar. Isolada do histórico de mensagens em si
-     (NexusHistory) — aqui só guardamos QUAL disciplina estava ativa.
   ══════════════════════════════════════════════════════════ */
 
   function _salvarDiscAtiva() {
@@ -138,9 +134,6 @@
 
   /* ══════════════════════════════════════════════════════════
      CHAVE DE HISTÓRICO
-     Isolada por domínio + disciplina + semestre.
-     Enquanto a disciplina não está selecionada, histórico é nulo
-     (não persiste conversa sem disciplina).
   ══════════════════════════════════════════════════════════ */
 
   function _montarChaveHistorico(discId) {
@@ -764,11 +757,6 @@
 
   /* ══════════════════════════════════════════════════════════
      GUARDA DE TAMANHO DE MENSAGEM
-
-     Bloqueia entradas claramente anormais (texto enorme, histórico
-     colado, etc.) ANTES de qualquer busca local ou chamada ao
-     NexusWorker. Não é um limite arbitrário pequeno — é só uma
-     rede de segurança para entradas fora do uso normal de chat.
   ══════════════════════════════════════════════════════════ */
 
   function _mensagemExcedeLimite(texto) {
@@ -782,8 +770,6 @@
   function _onUserSend(text) {
     if (state.processando) return;
 
-    // Guarda de tamanho — antes de qualquer busca, render de mensagem
-    // do usuário no histórico, ou chamada ao worker.
     if (_mensagemExcedeLimite(text)) {
       NexusUI.renderMessage({
         role: 'system',
@@ -846,7 +832,6 @@
         var discJaAtiva      = state.discEscolhida && discExata.id === state.discEscolhida.id;
 
         if (!discJaAtiva) {
-          // Troca de disciplina limpa o histórico (regra de negócio mantida)
           _limparHistoricoAtivo();
           _limparContexto();
           var carregou = await _confirmarDisc(discExata);
@@ -1006,7 +991,14 @@
         });
       } catch (errIA) { console.warn('[NexusAssistant] NexusWorker.perguntar() erro:', errIA); }
       if (respostaIA) {
-        var labelFonte = temCtx ? 'fonte: conteúdo do site' : 'fonte: conhecimento próprio';
+        // turnosAoEnviar: capturado pelo worker ANTES de _registrarTurno().
+        // status().turnosNoHistorico seria lido DEPOIS e já incluiria o turno
+        // recém-adicionado — produzindo falso positivo na primeira pergunta.
+        var labelFonte = temCtx
+          ? 'fonte: conteúdo do site'
+          : (respostaIA.turnosAoEnviar > 0)
+            ? 'fonte: histórico da conversa'
+            : 'fonte: conhecimento próprio';
         _renderBot(respostaIA.texto, (respostaIA.fonte || respostaIA.modelo) ? {
           linha1: ['IA: ' + (respostaIA.fonte || ''), respostaIA.modelo || ''].filter(Boolean).join(' · '),
           linha2: labelFonte,
@@ -1024,10 +1016,7 @@
     state.discEscolhida  = disc;
     state.aguardandoDisc = false;
 
-    // Persiste qual disciplina está ativa (sobrevive a F5 / reabrir aba)
     _salvarDiscAtiva();
-
-    // Ativa histórico isolado para esta disciplina
     state.chaveHistorico = _montarChaveHistorico(disc.id);
 
     if (typeof window.NexusWorker !== 'undefined') NexusWorker.limparHistorico();
@@ -1100,12 +1089,9 @@
 
   /* ══════════════════════════════════════════════════════════
      RESET DE CHAT
-     Único ponto (além de troca de disciplina/semestre/modo) onde
-     o histórico é de fato apagado.
   ══════════════════════════════════════════════════════════ */
 
   function _resetarChat() {
-    // Limpa histórico persistido da disciplina ativa
     _limparHistoricoAtivo();
     _removerLiveChips();
 
@@ -1114,7 +1100,6 @@
 
     if (typeof window.NexusWorker !== 'undefined') NexusWorker.limparHistorico();
 
-    // Reset completo de contexto (disciplina incluída)
     NexusResumoSearch.limparIndice();
     NexusLoader.limpar();
     state.discEscolhida  = null;
@@ -1140,11 +1125,10 @@
   /* ══════════════════════════════════════════════════════════
      RESTAURAÇÃO DE HISTÓRICO
 
-     Restaura a disciplina ativa (sessionStorage) e o histórico de
-     mensagens correspondente (NexusHistory) — usado em F5, reload
-     de aba ou reabertura da mesma sessão. Não é chamado quando o
-     contexto mudou (NexusCtx.deveResetar() === true) nem após reset
-     manual.
+     Restaura a disciplina ativa (sessionStorage), o histórico visual
+     (NexusHistory) e — novidade v3.2 — o histórico em memória do
+     NexusWorker, para que a IA reconheça mensagens anteriores após
+     F5 / reabrir aba / fechar e abrir.
   ══════════════════════════════════════════════════════════ */
 
   function _restaurarSessao() {
@@ -1154,8 +1138,6 @@
     var chave = _montarChaveHistorico(discSalva.id);
     var msgs  = chave ? window.NexusHistory.carregar(chave) : [];
     if (!msgs || !msgs.length) {
-      // Disciplina estava salva mas sem histórico (ex: trocou sem mandar
-      // mensagem) — ainda assim restauramos a disciplina ativa.
       state.discEscolhida  = discSalva;
       state.chaveHistorico = chave;
       return false;
@@ -1166,6 +1148,15 @@
     state.messages       = msgs;
 
     msgs.forEach(function (msg) { NexusUI.renderMessage(msg); });
+
+    // ── NOVIDADE v3.2 ────────────────────────────────────────
+    // Sincroniza o NexusWorker com o histórico visual restaurado.
+    // Sem isso, o worker recebia historico=[] e não reconhecia a
+    // conversa anterior (ex: "resuma por favor" sem contexto).
+    if (typeof window.NexusWorker !== 'undefined') {
+      NexusWorker.restaurarHistorico(msgs);
+    }
+    // ─────────────────────────────────────────────────────────
 
     var msgsEl = document.getElementById('nexus-messages');
     if (msgsEl) {
@@ -1197,11 +1188,7 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     initUI() — configura o chat, sempre chamado
-
-     Decide entre RESET (contexto mudou de verdade — outra
-     disciplina/semestre/modo declarado via NexusCtx.declarar())
-     e RESTAURAÇÃO (mesma sessão — F5, reabrir aba, fechar e abrir).
+     initUI()
   ══════════════════════════════════════════════════════════ */
 
   function initUI() {
@@ -1210,7 +1197,6 @@
 
     NexusUI.init({ onSend: _onUserSend, onReset: _resetarChat });
 
-    // Live chips no input
     (function () {
       var inputEl = document.getElementById('nexus-input');
       if (!inputEl) return;
@@ -1226,9 +1212,6 @@
       });
     }());
 
-    // Decide reset vs restauração usando NexusCtx.
-    // dirty=true  → contexto realmente mudou (disc/sem/modo) → reset completo.
-    // dirty=false → mesma sessão (F5, reabrir aba) → restaura disciplina + histórico.
     var resetando = (typeof window.NexusCtx !== 'undefined') && window.NexusCtx.deveResetar();
 
     if (resetando) {
@@ -1249,12 +1232,7 @@
 
       console.log('[NexusAssistant] reset de contexto aplicado.');
       _addWelcomeMessage();
-      // Boas-vindas serão adicionadas por init() após pipeline estar ativo
     } else {
-      // Mesma sessão: tenta restaurar disciplina + histórico reais.
-      // _addWelcomeMessage() só roda se NÃO houver histórico restaurado,
-      // para não duplicar a mensagem de sistema "⬡ Nexus IA" acima de
-      // mensagens já existentes.
       var restaurado = _restaurarSessao();
       if (!restaurado) {
         _addWelcomeMessage();
@@ -1263,11 +1241,7 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     init() — ativa pipeline de conteúdo de resumo
-
-     Só mostra boas-vindas quando NÃO havia histórico restaurado em
-     initUI() — caso contrário a conversa restaurada já é suficiente
-     e boas-vindas duplicadas seriam ruído.
+     init()
   ══════════════════════════════════════════════════════════ */
 
   function init() {
@@ -1277,8 +1251,6 @@
     console.log('[NexusAssistant] pipeline de conteúdo de resumo ativo.');
 
     if (state.discEscolhida) {
-      // Disciplina restaurada por initUI() — garante índice/conteúdo
-      // carregados, sem mostrar boas-vindas (histórico já cobre isso).
       NexusUI.atualizarDiscAtiva(state.discEscolhida.apelido);
       _garantirConteudo(state.discEscolhida).catch(function (err) {
         console.warn('[NexusAssistant] falha ao recarregar conteúdo restaurado:', err);
