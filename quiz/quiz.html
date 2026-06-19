@@ -1,6 +1,16 @@
 <!--
   NEXUS STUDY — quiz/quiz.html
   Página de seleção de disciplinas.
+
+  ALTERAÇÕES — Integração da IA do Index (Resumo) v1.0:
+    - Adicionado shared/css/ia/ia.css (estilos do painel/FAB, igual ao Index)
+    - Adicionado <script src="../shared/js/ia/core/fab.js"> ANTES do <main>,
+      mesmo padrão do index.html: injeta o botão flutuante antecipadamente,
+      antes do restante da página ser pintado.
+    - Adicionados <link rel="modulepreload"> para os módulos de IA, mesmo
+      padrão do index.html — apenas otimização de carregamento, não afeta
+      comportamento.
+    - Nenhum elemento de UI do quiz foi removido ou alterado.
 -->
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -28,9 +38,14 @@
   <link rel="stylesheet" href="../shared/css/audio/audio-btns.css" />
 
   <!-- ═══════════════════════════════════════════
-       ESTILOS DE COMPONENTES
+       ESTILOS DE IA (Resumo) — mesmo CSS do Index
+       NÃO ALTERAR: igual a index.html, já está correto.
   ═══════════════════════════════════════════ -->
   <link rel="stylesheet" href="../shared/css/ia/ia.css" />
+
+  <!-- ═══════════════════════════════════════════
+       ESTILOS DE COMPONENTES
+  ═══════════════════════════════════════════ -->
 
   <!-- Picker de semestre (mesmo CSS do index) -->
   <link rel="stylesheet" href="../shared/css/themes/semestre-picker.css" />
@@ -42,6 +57,15 @@
 </head>
 
 <body>
+
+  <!--
+    fab.js: primeira instrução do <body>, mesmo padrão do index.html.
+    Executa de forma síncrona — document.body já existe neste ponto,
+    então o botão é injetado imediatamente, antes de qualquer outro
+    elemento ser pintado. Nenhum evento é registrado aqui; isso é
+    responsabilidade exclusiva de NexusUI.init() em quiz.js.
+  -->
+  <script src="../shared/js/ia/core/fab.js"></script>
 
   <div class="bg-orb bg-orb--1" aria-hidden="true"></div>
   <div class="bg-orb bg-orb--2" aria-hidden="true"></div>
@@ -98,6 +122,20 @@
   <footer class="footer">
     <p>© <span id="footer-year"></span> Nexus Study · Desenvolvido para facilitar seus estudos</p>
   </footer>
+
+  <!-- ═══════════════════════════════════════════
+       PRELOAD — IA (Resumo)
+       Mesmo padrão do index.html. Apenas otimização de
+       carregamento (hint ao navegador); quem efetivamente
+       injeta os <script> é quiz.js → _carregarIA().
+  ═══════════════════════════════════════════ -->
+  <link rel="modulepreload" href="../shared/js/ia/core/context.js">
+  <link rel="modulepreload" href="../shared/js/ia/core/text-utils.js">
+  <link rel="modulepreload" href="../shared/js/ia/core/history.js">
+  <link rel="modulepreload" href="../shared/js/ia/core/loader.js">
+  <link rel="modulepreload" href="../shared/js/ia/core/worker.js">
+  <link rel="modulepreload" href="../shared/js/ia/core/ui.js">
+  <link rel="modulepreload" href="../shared/js/ia/resumo/search.js">
 
   <!-- ═══════════════════════════════════════════
        SCRIPTS

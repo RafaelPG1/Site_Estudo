@@ -1,35 +1,48 @@
 // @ts-nocheck
 /* ============================================================
-   NEXUS STUDY — quiz/disciplinas/disciplinas_init.js  v6.2
+   NEXUS STUDY — quiz/disciplinas/disciplinas_init.js  v7.1
 
    RESPONSABILIDADES (e apenas estas):
-     1. Declarar contexto ativo antes de carregar a IA  (NOVO v6.2)
-     2. Resolver o semestre da URL                      (navegação)
-     3. Propagar ?sem= nos hrefs dos cards              (navegação)
-     4. Exibir badge de semestre no header              (visual)
-     5. Aplicar cores da disciplina                     (visual)
-     6. Injetar logo                                    (visual)
-     7. Inicializar áudio e eventos nos cards           (UX)
-     8. Buscar catalog.json e marcar cards              (UX)
+     1. Resolver o semestre da URL                      (navegação)
+     2. Propagar ?sem= nos hrefs dos cards              (navegação)
+     3. Exibir badge de semestre no header              (visual)
+     4. Aplicar cores da disciplina                     (visual)
+     5. Injetar logo                                    (visual)
+     6. Inicializar áudio e eventos nos cards           (UX)
+     7. Buscar catalog.json e marcar cards              (UX)
         sem conteúdo como disc-card--vazio
+     8. Expor contexto de leitura (disciplina/semestre/
+        catalog) em window, para a IA do Index consumir
+        QUANDO ela for carregada por outro script        (contexto)
 
-   MUDANÇAS v6.2 — RESET DE CONTEXTO:
-     + _declararContexto() grava nexus_ctx + nexus_ctx_dirty antes
-       de qualquer módulo de IA carregar.
-     + Removido: setInterval de limpeza de UI (era race condition).
-     + Removido: chamada avulsa NexusWorker.limparHistorico() no .then().
-     + worker.js e assistant.js cuidam do próprio reset via NexusCtx.
+   MUDANÇAS v7.0 — REMOÇÃO DO ASSISTENTE NEXUS IA:
+     - Removido por completo o bootstrap do assistente de chat
+       (ctx.js, context.js, text-utils.js, loader.js, worker.js,
+       ui.js, resumo/search.js, resumo/assistant.js, init.js).
+     - Removida a declaração de contexto em sessionStorage
+       (nexus_ctx / nexus_ctx_dirty), que existia exclusivamente
+       para o assistente restaurar/descartar histórico de chat.
 
-   PROIBIÇÕES ABSOLUTAS:
+   PATCH v7.1 — EXPOSIÇÃO DE CONTEXTO (SEM CARREGAR IA):
+     - Reintroduzido window.__NEXUS_CONTEXT__ e três funções de
+       leitura (getDisciplinaAtual, getSemestreAtual,
+       getConteudoIndex), todas retornando dados que este
+       arquivo já calculava (_discId, _sem, discEntry do
+       catalog.json). Nenhum script novo é carregado, nenhum
+       elemento <script> é criado dinamicamente, nenhuma
+       inicialização de IA acontece aqui.
+
+   PROIBIÇÕES ABSOLUTAS (mantidas):
      ✗ Carregar ques_*.js
-     ✗ Criar elementos <script> dinamicamente (exceto via _load interno)
+     ✗ Criar elementos <script> dinamicamente
      ✗ Ler window.questoes
      ✗ Montar caminhos de conteúdo de quiz
      ✗ Conhecer template_init.js ou quiz_engine.js
      ✗ Verificar arrays de questões
      ✗ Decidir o que o template deve fazer
-     ✗ Chamar NexusWorker.limparHistorico() diretamente
-     ✗ Fazer polling de NexusUI para limpeza
+     ✗ Carregar ou inicializar qualquer módulo de IA
+       (este arquivo só EXPÕE contexto — quem decide ler ou
+       não é o bootstrap da IA, definido fora daqui)
    ============================================================ */
 
 import { DISC_CORES }          from '../../shared/js/themes/cores.js';
@@ -46,92 +59,6 @@ import {
   installAudioRecovery,
   playSound,
 } from '../../shared/js/audio/audio-api.js';
-
-
-/* ══════════════════════════════════════════════════════════
-   PASSO 0 — Declarar contexto de IA ANTES de _carregarIA()
-
-   Grava nexus_ctx e nexus_ctx_dirty no sessionStorage de forma
-   síncrona. worker.js e assistant.js leem essa flag no próprio
-   boot para decidir se restauram ou descartam o histórico.
-
-   Não depende de window.NexusCtx estar carregado: usa
-   sessionStorage diretamente com a mesma lógica de ctx.js,
-   para garantir execução 100% síncrona antes de qualquer _load.
-   ══════════════════════════════════════════════════════════ */
-(function _declararContexto() {
-  try {
-    var STORAGE_KEY = 'nexus_ctx';
-    var DIRTY_KEY   = 'nexus_ctx_dirty';
-
-    /* Disciplina = nome do arquivo HTML sem extensão */
-    var disc = '';
-    try { disc = location.pathname.split('/').pop().replace('.html', '') || ''; } catch (_) {}
-
-    /* Semestre da URL */
-    var sem = '';
-    try { sem = (new URLSearchParams(location.search).get('sem') || '').toUpperCase(); } catch (_) {}
-
-    var novoCtx = { disc: disc, modo: '', sem: sem, pagina: 'disciplinas' };
-
-    function _hash(ctx) {
-      return [
-        (ctx.disc   || '').toLowerCase(),
-        (ctx.modo   || '').toLowerCase(),
-        (ctx.sem    || '').toLowerCase(),
-        (ctx.pagina || '').toLowerCase(),
-      ].join('|');
-    }
-
-    var salvoRaw = sessionStorage.getItem(STORAGE_KEY);
-    var salvo    = salvoRaw ? JSON.parse(salvoRaw) : null;
-
-    if (!salvo || _hash(novoCtx) !== _hash(salvo)) {
-      sessionStorage.setItem(DIRTY_KEY,   '1');
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(novoCtx));
-    }
-  } catch (_) { /* ctx não é essencial para o fluxo visual */ }
-}());
-
-
-/* ══════════════════════════════════════════════════════════
-   ASSISTENTE NEXUS — carregamento em background
-   ══════════════════════════════════════════════════════════ */
-(function _carregarIA() {
-  try {
-    var raiz = new URL('../../', import.meta.url).href.replace(/\/$/, '');
-    var BASE = raiz + '/shared/js/ia/';
-
-    function _load(src) {
-      return new Promise(function (res, rej) {
-        var s = document.createElement('script');
-        s.src = src;
-        s.onload = res;
-        s.onerror = function () { rej(new Error(src)); };
-        document.body.appendChild(s);
-      });
-    }
-
-    Promise.all([
-      _load(BASE + 'core/ctx.js'),        // ← NOVO: deve ser o primeiro
-      _load(BASE + 'core/context.js'),
-      _load(BASE + 'core/text-utils.js'),
-      _load(BASE + 'core/loader.js'),
-      _load(BASE + 'core/worker.js'),     // lê dirty no boot síncrono
-      _load(BASE + 'core/ui.js'),
-      _load(BASE + 'resumo/search.js'),
-    ])
-    .then(function () {
-      /* ctx.js e worker.js já agiram.
-         assistant.js vai ler dirty em initUI() e confirmar reset. */
-      return _load(BASE + 'resumo/assistant.js');
-    })
-    .then(function () { return _load(BASE + 'init.js'); })
-    .catch(function (err) {
-      console.warn('[disciplinas_init] IA não carregada:', err.message);
-    });
-  } catch (_) { /* IA não é essencial */ }
-}());
 
 
 /* ══════════════════════════════════════════════════════════
@@ -210,6 +137,35 @@ try {
 
 
 /* ══════════════════════════════════════════════════════════
+   PASSO 4.5 — Contexto para a IA do Index (Resumo)        [NOVO]
+
+   Apenas EXPÕE leitura de dados já calculados nos passos
+   anteriores (_discId, _sem). Não carrega nenhum script, não
+   instancia nenhum assistente, não cria <script> dinâmico.
+
+   _catalogDiscEntry começa null e é preenchido (se existir)
+   pelo Passo 6, quando o catalog.json responder — getConteudoIndex()
+   reflete esse valor por closure, sem necessidade de re-sincronizar
+   window.__NEXUS_CONTEXT__ manualmente.
+   ══════════════════════════════════════════════════════════ */
+var _catalogDiscEntry = null;
+
+window.__NEXUS_CONTEXT__ = {
+  tipos: ['resumo'],
+  disciplinaAtiva: _discId,
+  semestre: _sem,
+};
+
+function getDisciplinaAtual() { return _discId; }
+function getSemestreAtual()   { return _sem; }
+function getConteudoIndex()   { return _catalogDiscEntry; }
+
+window.getDisciplinaAtual = getDisciplinaAtual;
+window.getSemestreAtual   = getSemestreAtual;
+window.getConteudoIndex   = getConteudoIndex;
+
+
+/* ══════════════════════════════════════════════════════════
    PASSO 5 — Logo, áudio e eventos (após DOMContentLoaded)
    ══════════════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', function () {
@@ -268,6 +224,8 @@ document.addEventListener('DOMContentLoaded', function () {
      3. Lê catalog[_sem][discId]
      4. Para cada card com data-modo, aplica disc-card--vazio
         se o modo estiver ausente ou false no catalog
+     5. [NOVO] Guarda o discEntry em _catalogDiscEntry, para que
+        getConteudoIndex() possa retorná-lo
 
    Garantias:
      - Nunca remove cards do DOM
@@ -307,6 +265,9 @@ document.addEventListener('DOMContentLoaded', function () {
         try { document.documentElement.removeAttribute('data-catalog-loading'); } catch (_) {}
         return;
       }
+
+      /* [NOVO] Disponibiliza o discEntry para getConteudoIndex() */
+      _catalogDiscEntry = discEntry;
 
       document.querySelectorAll('.disc-card[data-modo]').forEach(function (card) {
         var modo = card.dataset.modo;

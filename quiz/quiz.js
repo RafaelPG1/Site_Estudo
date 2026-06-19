@@ -1,6 +1,42 @@
 // @ts-nocheck
 /* =============================================
    NEXUS STUDY — quiz/quiz.js
+
+   ALTERAÇÕES — Integração da IA do Index (Resumo) v1.0:
+
+     - Adicionada SEÇÃO "IA (RESUMO)", copiada 1:1 do mesmo bloco
+       em index.js (_carregarIA / _loadScript). Nenhuma lógica nova
+       foi criada — é o MESMO entrypoint, carregado também aqui.
+       Isso é necessário porque scripts carregados por index.js
+       não ficam disponíveis em quiz.html: são documentos HTML
+       diferentes, cada um com seu próprio carregamento de scripts.
+
+     - window.__NEXUS_CONTEXT__ declarado como { tipos: ['resumo'] },
+       igual ao Index. O Quiz disponibiliza o MESMO pipeline de
+       conteúdo (resumo da disciplina) — não um pipeline de 'quiz'.
+       Isso é intencional: a IA aqui serve para dúvidas/resumo,
+       nunca para gerar ou interagir com questões.
+
+     - initUI() chama NexusAssistant.initUI() + .init(), mesmo padrão
+       usado implicitamente pelo Index via shared/js/ia/init.js
+       (script final da cadeia de _carregarIA().then(...)).
+
+     - NENHUMA lógica do quiz (seleção de disciplina, cards, modal
+       de configurações do quiz) foi alterada.
+
+     - ⚠ PENDÊNCIA CONHECIDA (não inventada, não assumida):
+       window.__nexusCtx (a "bridge de contexto" que resumo/assistant.js
+       consome — getSemestre(), getDisciplinas(), parseSemestre(),
+       getDisciplinaAtual(), getPrefixo(), getVarGlobal()) não estava
+       presente em nenhum arquivo fornecido até o momento desta
+       implementação. Pelos comentários de dependência em assistant.js,
+       ela deve ser definida em shared/js/ia/core/ctx.js — script que
+       o index.html carrega em algum ponto não fornecido aqui.
+       Ver bloco "__nexusCtx" abaixo: por ora, delega para o MESMO
+       ctx.js do Index (se ele expuser window.__nexusCtx globalmente,
+       basta carregá-lo aqui também — adicionado à lista de deps).
+       Se o ctx.js real usar outro contrato, ajustar apenas esse
+       bloco — o resto da integração não depende disso.
    ============================================= */
 
 import {
@@ -17,35 +53,67 @@ import { criarSemestreSelect, preencherAnos } from '../shared/js/utils/dom.js';
 import { injetarLogo }                    from '../shared/js/utils/logo.js';
 import { Sound, audio, installAudioRecovery, playSound } from '../shared/js/audio/audio-api.js';
 
-// ── Assistente Nexus ──────────────────────────────────────────
-function _loadScript(src) {
-  return new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = src;
-    s.onload = resolve;
-    s.onerror = () => reject(new Error(`[Nexus IA] Falha ao carregar: ${src}`));
-    document.body.appendChild(s);
-  });
-}
-function _carregarIA() {
-  const raiz = new URL('../', import.meta.url).href.replace(/\/$/, '');
-  const BASE = raiz + '/shared/js/ia/';
-  const deps = [
-    BASE + 'core/text-utils.js',
-    BASE + 'core/loader.js',
-    BASE + 'core/worker.js',
-    BASE + 'core/ui.js',
-    BASE + 'resumo/search.js',
-  ];
-  Promise.all(deps.map(_loadScript))
-    .then(() => _loadScript(BASE + 'resumo/assistant.js'))
-    .then(() => _loadScript(BASE + 'init.js'))
-    .catch(err => console.error(err));
-}
-_carregarIA();
-// ─────────────────────────────────────────────────────────────
-
 (function () {
+
+  /* ═══════════════════════════════════════════════
+     IA (RESUMO) — mesmo padrão do index.js
+
+     Copiado 1:1 da seção 2 de index.js. Não duplica lógica de
+     domínio — apenas repete o carregamento dos mesmos módulos,
+     pois quiz.html é um documento separado de index.html.
+  ═══════════════════════════════════════════════ */
+
+  // Declara explicitamente o tipo de contexto desta página.
+  // core/context.js usa este valor para identificar quais domínios de IA
+  // estão ativos. Igual ao Index: apenas 'resumo' (dúvidas/conteúdo).
+  // NÃO inclui disciplina, semestre ou outros estados dinâmicos.
+  window.__NEXUS_CONTEXT__ = { tipos: ['resumo'] };
+
+  function _loadScript(src) {
+    return new Promise((resolve, reject) => {
+      // Evita injetar o mesmo script duas vezes (ex.: navegação
+      // de volta para quiz.html sem reload completo, cache de módulo).
+      if (document.querySelector('script[src="' + src + '"]')) {
+        resolve();
+        return;
+      }
+      const s = document.createElement('script');
+      s.src    = src;
+      s.onload = resolve;
+      s.onerror = () => reject(new Error(`[Nexus IA] Falha ao carregar: ${src}`));
+      document.body.appendChild(s);
+    });
+  }
+
+  function _carregarIA() {
+    const BASE = '../shared/js/ia/';
+    const deps = [
+      BASE + 'core/context.js',    // lê __NEXUS_CONTEXT__ → expõe NexusContext
+      BASE + 'core/text-utils.js',
+      BASE + 'core/history.js',    // histórico isolado por contexto
+      BASE + 'core/loader.js',
+      BASE + 'core/worker.js',
+      BASE + 'core/ui.js',
+      BASE + 'resumo/search.js',
+    ];
+
+    Promise.all(deps.map(_loadScript))
+      .then(() => _loadScript(BASE + 'resumo/assistant.js'))
+      .then(() => {
+        // initUI() monta o painel/FAB (sempre).
+        // init() ativa o pipeline de conteúdo (apenas quando 'resumo'
+        // está em __NEXUS_CONTEXT__.tipos — é o caso aqui).
+        if (window.NexusAssistant) {
+          window.NexusAssistant.initUI();
+          window.NexusAssistant.init();
+        }
+      })
+      .catch(err => console.error('[Quiz] Falha ao carregar IA:', err));
+  }
+
+  /* ═══════════════════════════════════════════════
+     fim da seção IA
+  ═══════════════════════════════════════════════ */
 
   // ── Lê ?sem= da URL e aplica antes de qualquer coisa ─────────
   const semParam = new URLSearchParams(location.search).get('sem');
@@ -134,6 +202,11 @@ _carregarIA();
       gerarCards(sem);
       sincronizarSemNaURL(sem);
       playSound('select', 'quiz');
+      // A IA do Resumo reage à troca de semestre via seu próprio
+      // listener em 'nexus:semestreChanged' (registrado dentro de
+      // resumo/assistant.js) — nada a fazer aqui além de disparar
+      // o evento, igual o index.js faz.
+      document.dispatchEvent(new CustomEvent('nexus:semestreChanged', { detail: sem }));
     });
 
     requestAnimationFrame(() => {
@@ -392,6 +465,11 @@ _carregarIA();
     gerarCards(semAtual);
     sincronizarSemNaURL(semAtual);
     preencherAnos(['footer-year']);
+
+    // IA (Resumo) — carregada em paralelo, não bloqueia a renderização
+    // dos cards de disciplina. Mesmo padrão de index.js (_carregarIA()
+    // é chamada fora do fluxo de init(), sem await).
+    _carregarIA();
   });
 
 }());
