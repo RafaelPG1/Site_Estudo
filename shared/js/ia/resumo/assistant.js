@@ -56,6 +56,24 @@
   var MENSAGEM_MAX_CHARS = 4000; // limiar generoso — só barra entradas claramente anormais
 
   /* ══════════════════════════════════════════════════════════
+     APs QUE COMPÕEM CADA PERÍODO (Resumo) — v3.3
+
+     O Resumo deixou de tratar AP1/AP2 como conjuntos de conteúdo
+     independentes: a partir desta versão, a IA enxerga o semestre
+     completo, não apenas o AP selecionado.
+
+     Esta lista é a fonte única de verdade de "quais APs existem
+     dentro de um período" para fins de carregamento/indexação do
+     Resumo. Ela não afeta o Quiz (que continua usando o AP único
+     do semestre ativo) nem a navegação/URLs do site — afeta somente
+     o que é passado a NexusLoader.carregar() em _montarCtx().
+   ══════════════════════════════════════════════════════════ */
+  var APS_POR_PERIODO = {
+    '2026.1': ['AP1', 'AP2'],
+    '2026.2': ['AP1', 'AP2'],
+  };
+
+  /* ══════════════════════════════════════════════════════════
      ESTADO INTERNO
   ══════════════════════════════════════════════════════════ */
 
@@ -98,6 +116,28 @@
   function _getSemestre() {
     var ctx = _getCtxBridge();
     return ctx ? ctx.getSemestre() : '';
+  }
+
+  /**
+   * Resolve a lista de APs a carregar para o período informado.
+   *
+   * Se o período estiver mapeado em APS_POR_PERIODO, retorna a lista
+   * completa (ex: ['AP1','AP2']) — o Resumo passa a indexar todo o
+   * semestre, independente de qual AP está selecionado na URL/estado.
+   *
+   * Se o período não estiver mapeado (ex: semestres futuros ainda não
+   * cadastrados aqui), cai no comportamento original: usa apenas o
+   * `ap` único já resolvido por parseSemestre(), preservando
+   * compatibilidade sem quebrar nada que ainda não foi migrado.
+   *
+   * @param {string} periodo — ex: '2026.1'
+   * @param {string|null} apUnico — AP do semestre ativo, ex: 'AP2'
+   * @returns {string[]|string|null}
+   */
+  function _resolverApsParaCarregamento(periodo, apUnico) {
+    var lista = APS_POR_PERIODO[periodo];
+    if (Array.isArray(lista) && lista.length) return lista;
+    return apUnico;
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -181,6 +221,19 @@
      CONTEXTO E LOADER
   ══════════════════════════════════════════════════════════ */
 
+  /**
+   * Monta o contexto de carregamento para uma disciplina.
+   *
+   * v3.3 — ctx.ap passa a poder ser um array de APs (ex: ['AP1','AP2'])
+   * quando o período da disciplina estiver mapeado em APS_POR_PERIODO.
+   * Isso faz NexusLoader.carregar() carregar e mesclar TODOS os arquivos
+   * do semestre, em vez de apenas o AP selecionado — sem qualquer filtro
+   * por AP na busca/indexação, conforme exigido para o Resumo.
+   *
+   * O Quiz não usa esta função (tem seu próprio _montarCtx em
+   * quiz/assistant.js, fora do escopo desta mudança) e continua
+   * resolvendo um único AP por vez normalmente.
+   */
   function _montarCtx(disc) {
     var ctx = _getCtxBridge();
     if (!ctx || !disc) return null;
@@ -188,8 +241,9 @@
     var parsed  = ctx.parseSemestre(sem);
     var prefixo   = (ctx.getPrefixo   && ctx.getPrefixo())   || 'res_';
     var varGlobal = (ctx.getVarGlobal && ctx.getVarGlobal()) || '__nexusConteudo';
+    var apsParaCarregar = _resolverApsParaCarregamento(parsed.periodo, parsed.ap);
     return {
-      ano: parsed.ano, periodo: parsed.periodo, ap: parsed.ap,
+      ano: parsed.ano, periodo: parsed.periodo, ap: apsParaCarregar,
       arquivo: disc.arquivo, fonte: 'resumo', prefixo, varGlobal,
     };
   }
@@ -601,16 +655,19 @@
     return textos;
   }
 
+  /**
+   * Carrega o conteúdo de uma disciplina para a busca global.
+   *
+   * v3.3 — usa _montarCtx(disc) em vez de montar o contexto manualmente
+   * com um único AP. Isso garante que a busca global também enxergue o
+   * semestre completo (AP1+AP2) para cada disciplina, igual à busca
+   * normal — mantendo consistência entre os dois modos de busca.
+   */
   async function _carregarDiscParaBuscaGlobal(disc) {
     if (state.discsCacheadas[disc.id]) return state.discsCacheadas[disc.id];
-    var ctx = _getCtxBridge(); if (!ctx) return [];
-    var sem = ctx.getSemestre(); var parsed = ctx.parseSemestre(sem);
-    var prefixo   = (ctx.getPrefixo   && ctx.getPrefixo())   || 'res_';
-    var varGlobal = (ctx.getVarGlobal && ctx.getVarGlobal()) || '__nexusConteudo';
-    var conteudo = await NexusLoader.carregar({
-      ano: parsed.ano, periodo: parsed.periodo, ap: parsed.ap,
-      arquivo: disc.arquivo, fonte: 'resumo', prefixo, varGlobal,
-    });
+    var loaderCtx = _montarCtx(disc);
+    if (!loaderCtx) return [];
+    var conteudo = await NexusLoader.carregar(loaderCtx);
     if (!conteudo || !Array.isArray(conteudo.aulas)) return [];
     var trechos = [];
     conteudo.aulas.forEach(function (aula) {

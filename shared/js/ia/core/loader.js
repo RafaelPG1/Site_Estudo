@@ -79,6 +79,11 @@
    * dentro do próprio arquivo (ex: "2026.1-AP1"). Por isso usa uma
    * montagem de path dedicada, ativada quando ctx.fonte === 'games'.
    *
+   * NOTA — ctx.ap aqui é sempre uma string única ('AP1') ou null/undefined.
+   *   Suporte a múltiplos APs (ctx.ap como array) é resolvido ANTES desta
+   *   função, em carregar() — _montarPath() nunca vê um array; ela só
+   *   sabe montar o path de UM arquivo por vez.
+   *
    * @param {{ fonte?: string, prefixo?: string, ano: string, periodo: string, ap: string|null, arquivo: string, jogo?: string }} ctx
    * @returns {string}
    */
@@ -168,6 +173,79 @@
   }
 
   /* ══════════════════════════════════════════════════════════
+     MESCLAGEM DE MÚLTIPLOS APs (v2.1)
+
+     Quando ctx.ap é um array (ex: ['AP1','AP2']), o Resumo passa a
+     enxergar o semestre completo: todos os arquivos de cada AP são
+     carregados e suas `aulas` são concatenadas em um único objeto
+     { aulas: [...] }, preservando o mesmo contrato de retorno que
+     search.js e assistant.js já consomem (conteudo.aulas).
+
+     Cada aula recebe um campo interno `_ap` indicando de qual AP
+     ela veio — não é usado para filtrar (não há "modo somente AP"),
+     serve apenas como metadado de origem caso seja útil para debug
+     ou exibição futura.
+  ══════════════════════════════════════════════════════════ */
+
+  /**
+   * Mescla múltiplos conteúdos { aulas: [...] } em um único objeto,
+   * concatenando as aulas na ordem em que os APs foram informados.
+   *
+   * Conteúdos nulos/inválidos (arquivo ausente para aquele AP) são
+   * ignorados silenciosamente — o semestre é indexado com o que
+   * estiver disponível, sem travar por um AP faltante.
+   *
+   * @param {Array<{ap: string, conteudo: object|null}>} itens
+   * @returns {object|null} { aulas: [...] } ou null se nada carregou
+   */
+  function _mesclarConteudos(itens) {
+    const aulas = [];
+
+    itens.forEach(function (item) {
+      const c = item.conteudo;
+      if (!c || !Array.isArray(c.aulas)) {
+        console.warn('[NexusLoader] AP "' + item.ap + '" sem conteúdo válido — ignorado na mesclagem.');
+        return;
+      }
+      c.aulas.forEach(function (aula) {
+        aulas.push(Object.assign({}, aula, { _ap: item.ap }));
+      });
+    });
+
+    if (!aulas.length) return null;
+    return { aulas: aulas };
+  }
+
+  /**
+   * Carrega e mescla os arquivos de todos os APs listados em ctx.ap
+   * (array). Cada AP usa o mesmo varGlobal — o conteúdo de cada
+   * injeção é capturado antes da próxima sobrescrever a variável
+   * global (carregamento sequencial, não paralelo).
+   *
+   * @param {object} ctx — mesmo ctx de carregar(), com ctx.ap = array
+   * @param {string} varGlobal
+   * @returns {Promise<object|null>}
+   */
+  async function _carregarMultiplosAps(ctx, varGlobal) {
+    const itens = [];
+
+    for (var i = 0; i < ctx.ap.length; i++) {
+      var ap = ctx.ap[i];
+      var ctxUnico = Object.assign({}, ctx, { ap: ap });
+      var path = _montarPath(ctxUnico);
+      if (!path) {
+        itens.push({ ap: ap, conteudo: null });
+        continue;
+      }
+      console.log('[NexusLoader] carregando (multi-AP):', path);
+      var conteudo = await _injetarScript(path, varGlobal);
+      itens.push({ ap: ap, conteudo: conteudo });
+    }
+
+    return _mesclarConteudos(itens);
+  }
+
+  /* ══════════════════════════════════════════════════════════
      API PÚBLICA
   ══════════════════════════════════════════════════════════ */
 
@@ -183,11 +261,19 @@
    * Para ctx.fonte === 'games', use ctx.jogo (pasta do jogo) e ctx.ano —
    * ctx.periodo/ctx.ap não se aplicam a games (ver _montarPathGame).
    *
-   * Cache: se o path resultante for idêntico ao último carregado
-   * com sucesso E a variável global ainda existir, retorna
-   * o conteúdo em memória sem nova injeção de script.
+   * ctx.ap — pode ser:
+   *   - string  ('AP1')              → comportamento original, 1 arquivo.
+   *   - array   (['AP1', 'AP2'])     → carrega TODOS os arquivos listados
+   *     e mescla suas `aulas` em um único objeto { aulas: [...] } (v2.1).
+   *     Usado pelo Resumo para indexar o semestre completo independente
+   *     de qual AP está selecionado. Quiz não usa este formato.
    *
-   * @param {{ fonte?: string, prefixo?: string, varGlobal?: string, ano: string, periodo?: string, ap?: string|null, arquivo: string, jogo?: string }} ctx
+   * Cache: se a chave resultante (path único, ou lista de APs no caso
+   * multi-AP) for idêntica à última carga com sucesso E a variável
+   * global ainda existir, retorna o conteúdo em memória sem nova
+   * injeção de script.
+   *
+   * @param {{ fonte?: string, prefixo?: string, varGlobal?: string, ano: string, periodo?: string, ap?: string|string[]|null, arquivo: string, jogo?: string }} ctx
    * @returns {Promise<object|null>} conteúdo ou null
    */
   async function carregar(ctx) {
@@ -197,6 +283,32 @@
     }
 
     const varGlobal = ctx.varGlobal || '__nexusConteudo';
+
+    // ── Caminho multi-AP (Resumo, semestre completo) ──────────
+    if (Array.isArray(ctx.ap)) {
+      const chaveMulti = '[multi]' + ctx.fonte + '/' + ctx.ano + '/' + ctx.periodo +
+        '/' + ctx.ap.join('+') + '/' + (ctx.prefixo || 'res_') + ctx.arquivo;
+
+      if (_pathCarregado === chaveMulti && window[varGlobal]) {
+        console.log('[NexusLoader] cache hit (multi-AP):', chaveMulti);
+        return window[varGlobal];
+      }
+
+      const conteudoMesclado = await _carregarMultiplosAps(ctx, varGlobal);
+
+      if (conteudoMesclado) {
+        window[varGlobal]  = conteudoMesclado;
+        _pathCarregado      = chaveMulti;
+        console.log('[NexusLoader] multi-AP carregado e mesclado com sucesso:', chaveMulti,
+          '| aulas:', conteudoMesclado.aulas.length);
+      } else {
+        _pathCarregado = null;
+      }
+
+      return conteudoMesclado;
+    }
+
+    // ── Caminho original: um único AP (ou nenhum) ─────────────
     const path = _montarPath(ctx);
 
     if (!path) {
