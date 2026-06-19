@@ -1,9 +1,8 @@
 /* ============================================================
-   NEXUS STUDY — quiz/quiz_engine.js  (v10 — QUIZ-ISOLATION)
+   NEXUS STUDY — quiz/quiz_engine.js
    Lógica de estado do quiz — depende de quiz_ui.js
 
    ÍNDICE:
-     0. QUIZ-ISOLATION — guarda de token .... L.35
      1. Contexto e configuração ........... L.95
      2. Expiração (20s) ................... L.140
      3. Embaralhamento ..................... L.190
@@ -17,19 +16,6 @@
     11. Modo Step ......................... L.720
     12. Binds e boot ...................... L.930
     13. Filtro de aulas ................... L.980
-
-   v10 — QUIZ-ISOLATION:
-     + Guarda de token: initQuiz() só executa se
-       window.__NEXUS_QUIZ_TOKEN__ estiver definido
-       e window.__NEXUS_QUIZ_MODO__ corresponder ao
-       token autorizado por NexusSearch.
-     + Purge no unload: pagehide/beforeunload zeram
-       window.questoes e window.__NEXUS_QUESTOES_VISUAIS__
-       APÓS o template_init (que já revogou o token).
-       Garante que não haja rastro de questões no window
-       após a saída da página de quiz.
-     + window.questoes é lido mas nunca reexportado para
-       fora do escopo da IIFE.
 
    v9 — filtro de aulas:
      Novo botão na nav-float para o usuário escolher
@@ -53,66 +39,10 @@
   var renderCodeBlock   = window.QuizUI.renderCodeBlock;
 
   /* ══════════════════════════════════════════════════════════
-     0. QUIZ-ISOLATION — GUARDA DE TOKEN
-
-     Princípio: quiz_engine.js SÓ inicializa se o token de
-     sessão de quiz estiver presente e válido. Se alguém carregar
-     este script manualmente fora do template_init (sem token),
-     o initQuiz() retorna imediatamente sem renderizar nada.
-
-     Além disso, os listeners de pagehide/beforeunload garantem
-     que window.questoes e window.__NEXUS_QUESTOES_VISUAIS__
-     sejam zerados ao sair, fechando qualquer janela de acesso
-     via console ou scripts injetados após o unload.
-     ══════════════════════════════════════════════════════════ */
-
-  /**
-   * Retorna true se o token de quiz estiver ativo.
-   * Cópia local — não depende de ia.js nem ia-search.js.
-   *
-   * @returns {boolean}
-   */
-  function _quizTokenValido() {
-    var t = window.__NEXUS_QUIZ_TOKEN__;
-    if (!t || typeof t !== 'string') return false;
-    return window.__NEXUS_QUIZ_MODO__ !== undefined;
-  }
-
-  /**
-   * Purga todos os dados de quiz do window.
-   * Chamado em beforeunload / pagehide.
-   * template_init já revogou o token; este purge remove os dados.
-   */
-  function _purgarDadosQuiz() {
-    try { window.questoes = null;                    } catch (e) {}
-    try { window.__NEXUS_QUESTOES_VISUAIS__ = null;  } catch (e) {}
-    // __NEXUS_QUIZ_TOKEN__, __NEXUS_QUIZ_MODO__ etc.
-    // já foram removidos pelo template_init._revogarTokenQuiz()
-  }
-
-  window.addEventListener('beforeunload', _purgarDadosQuiz);
-  window.addEventListener('pagehide',     _purgarDadosQuiz);
-
-  /* ══════════════════════════════════════════════════════════
      INIT QUIZ
      ══════════════════════════════════════════════════════════ */
 
   function initQuiz() {
-
-    /* ── GUARDA DE TOKEN — bloqueia execução sem token válido ── */
-    if (!_quizTokenValido()) {
-      console.warn('[quiz_engine] initQuiz bloqueado: token de quiz não encontrado ou inválido.');
-      var container = document.getElementById('quiz-container');
-      if (container) {
-        container.innerHTML =
-          '<div style="padding:3rem 2rem;text-align:center;color:var(--text-2,#a8a49c);">' +
-          '<div style="font-size:2.5rem;margin-bottom:1rem;">🔒</div>' +
-          '<p style="font-size:1rem;margin-bottom:0.5rem;">Sessão de quiz expirada ou inválida.</p>' +
-          '<p style="font-size:0.85rem;opacity:0.6;">Recarregue a página para iniciar uma nova sessão.</p>' +
-          '</div>';
-      }
-      return;
-    }
 
     /* ── 1. CONTEXTO E CONFIGURAÇÃO ───────────────────────── */
 
@@ -469,7 +399,6 @@
       stepAtual        = 0;
 
       questoes = criarCopiaEmbaralhada(base, null);
-      window.__NEXUS_QUESTOES_VISUAIS__ = questoes;
 
       var resultsEl = document.getElementById('results');
       if (resultsEl) { resultsEl.style.display = 'none'; resultsEl.innerHTML = ''; }
@@ -544,7 +473,6 @@
     _verificarRetorno(null);
     var savedShuffleMap = _restaurar();
     var questoes = criarCopiaEmbaralhada(questoesBase, savedShuffleMap);
-    window.__NEXUS_QUESTOES_VISUAIS__ = questoes;
 
     if (savedShuffleMap === null && _disc && _Storage) {
       _salvarShuffleMap();
@@ -920,7 +848,6 @@
       }
 
       questoes = criarCopiaEmbaralhada(questoesBase);
-      window.__NEXUS_QUESTOES_VISUAIS__ = questoes;
       if (_disc && _Storage) _salvarShuffleMap();
 
       var resultsEl = document.getElementById('results');
