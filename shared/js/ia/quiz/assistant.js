@@ -1,49 +1,50 @@
 /**
- * NEXUS — quiz/js/assistant.js  v2.4
+ * NEXUS — quiz/js/assistant.js  v2.5
  *
  * Quiz-Assistant: tutor de IA dentro do ambiente de quiz.
  *
+ * ── MUDANÇAS v2.5 ─────────────────────────────────────────
+ *
+ *   CORREÇÃO DO BUG DE VERSIONAMENTO (regressão em v2.4)
+ *
+ *   Problema observado: ao editar uma mensagem múltiplas vezes
+ *   (3+ versões) ou ao restaurar do localStorage, versões anteriores
+ *   exibiam a resposta da versão mais recente.
+ *
+ *   Causas raiz identificadas:
+ *
+ *   1. SHALLOW COPY do rodapé em _onEditarMensagem:
+ *      versions[0].rodape = botExistente.rodape
+ *      Como rodape é um objeto { linha1, linha2 }, versão 0 e o objeto
+ *      bot em state.messages compartilhavam a mesma referência.
+ *      Se _onTrocarVersao depois reutilizasse o rodape de outra versão,
+ *      a mutação vazava para versão 0.
+ *      CORREÇÃO: deep copy via _clonarRodape() em toda atribuição de rodape.
+ *
+ *   2. AUSÊNCIA DE TIME por versão:
+ *      _onTrocarVersao usava botAtual.time (tempo do bot atual na tela)
+ *      para montar o objeto de substituição. Após múltiplas trocas,
+ *      o time exibido era sempre o da última versão gerada.
+ *      CORREÇÃO: cada versão agora armazena { texto, resposta, rodape, time }.
+ *      _renderBot salva resp.time na versão. _onTrocarVersao usa versao.time.
+ *
+ *   3. _rerenderTudo não recalculava __idx após splices:
+ *      Mensagens removidas por splice deixavam buracos no __idx esperado
+ *      pelos botões de editar/versão. Se duas mensagens user estivessem
+ *      presentes e a primeira fosse editada, os botões da segunda apontavam
+ *      para o índice errado.
+ *      CORREÇÃO: _rerenderTudo recalcula msg.__idx = i em todo rerender.
+ *      (já estava assim em v2.4 — mantido).
+ *
+ *   4. _onTrocarVersao não tratava ausência de bot corrente:
+ *      Se state.messages[msgIndex+1] não existia (race condition durante
+ *      geração) ou tinha role diferente de 'bot', a substituição era
+ *      silenciosamente ignorada e o display ficava inconsistente.
+ *      CORREÇÃO: se não há bot atual mas a versão tem resposta salva,
+ *      insere um novo objeto bot em state.messages[msgIndex+1].
+ *
  * ── MUDANÇAS v2.4 ─────────────────────────────────────────
- *
- *   CORREÇÃO DO BUG DE VERSIONAMENTO
- *     Bug: ao navegar entre versões de uma mensagem editada, todas
- *     as versões exibiam a resposta da última edição.
- *
- *     Causa raiz: _onTrocarVersao mutava o objeto bot diretamente
- *     em state.messages (botMsg.text = respostaVersao), corrompendo
- *     a referência compartilhada. Na próxima troca, o objeto já havia
- *     sido sobrescrito — e _salvarHistorico() persistia o estado
- *     corrompido no localStorage.
- *
- *     Correção: cada versão agora armazena { texto, resposta, rodape }
- *     como snapshot completo e independente. _onTrocarVersao substitui
- *     state.messages[msgIndex+1] por um NOVO objeto em vez de mutar o
- *     existente. _renderBot salva textoLimpo+rodape na versão correta
- *     via _versaoEditando. _onEditarMensagem captura resposta+rodape
- *     do bot atual ao criar versions[0].
- *
- * ── MUDANÇAS v2.3 ─────────────────────────────────────────
- *
- *   EDIÇÃO DE MENSAGEM COM VERSIONAMENTO
- *     O botão "Editar" da UI agora dispara _onEditarMensagem(), que
- *     ATUALIZA a mensagem do usuário existente (em vez de criar uma
- *     nova), remove a resposta do bot vinculada a ela e regenera essa
- *     resposta a partir do texto editado. Histórico de versões da
- *     pergunta é mantido em msg.versions / msg.versionIndex e exibido
- *     na UI como um controle "< i/N >" (_onTrocarVersao alterna entre
- *     versões sem precisar reprocessar a IA).
- *
- * ── MUDANÇAS v2.2 ─────────────────────────────────────────
- *
- *   PERSISTÊNCIA CORRETA NO F5
- *     Removido o listener de 'pagehide' que limpava o histórico do
- *     domínio 'quiz' inteiro.
- *
- * ── ARQUITETURA (inalterada) ─────────────────────────────────
- *
- *   Escuta 'nexus:quizPronto' disparado pelo engine.
- *   Lê window.__NEXUS_QUESTOES_VISUAIS__ (somente leitura).
- *   Nunca interfere no engine ou na pontuação.
+ *   (ver cabeçalho da versão anterior)
  *
  * API pública: window.NexusQuizAssistant
  *   init()          — inicialização manual (fallback)
@@ -70,10 +71,17 @@
     discAtivo:      null,
   };
 
-  // Rastreia qual (msgIndex, versionIndex) está sendo gerado após uma
-  // edição, para que _renderBot possa armazenar textoLimpo+rodape na
-  // versão correta assim que a IA responder.
   var _versaoEditando = null; // { msgIndex, versionIndex } | null
+
+  /* ══════════════════════════════════════════════════════════
+     UTILITÁRIO: DEEP COPY DE RODAPÉ
+     Garante que nenhuma versão compartilhe referência com outra.
+  ══════════════════════════════════════════════════════════ */
+
+  function _clonarRodape(rodape) {
+    if (!rodape) return null;
+    return { linha1: rodape.linha1 || null, linha2: rodape.linha2 || null };
+  }
 
   /* ══════════════════════════════════════════════════════════
      VERIFICAÇÃO DE DEPENDÊNCIAS
@@ -81,7 +89,6 @@
 
   function _verificarDeps() {
     var ok = true;
-
     if (typeof window.NexusUI === 'undefined') {
       console.error('[NexusQuizAssistant] NexusUI não encontrado — core/ui.js deve ser carregado antes.');
       ok = false;
@@ -101,7 +108,6 @@
       console.error('[NexusQuizAssistant] __NEXUS_QUIZ_MODO__ não definido — modo obrigatório.');
       ok = false;
     }
-
     return ok;
   }
 
@@ -179,7 +185,7 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     PERSISTÊNCIA INTELIGENTE ENTRE CARGAS DE PÁGINA (v2.2)
+     PERSISTÊNCIA INTELIGENTE ENTRE CARGAS DE PÁGINA
   ══════════════════════════════════════════════════════════ */
 
   var _CHAVE_ULTIMO_CONTEXTO = 'nexus_chat_ultimo_contexto_quiz';
@@ -250,29 +256,33 @@
   }
 
   /**
-   * Renderiza uma mensagem do bot e, se estivermos no meio de uma
-   * edição (_versaoEditando !== null), armazena textoLimpo+rodape
-   * como snapshot completo na versão correspondente.
+   * Renderiza mensagem do bot e persiste snapshot independente na versão.
    *
-   * IMPORTANTE: não muta nenhum objeto bot já existente em
-   * state.messages — apenas preenche o campo na versão salva em
-   * msg.versions[versionIndex].
+   * v2.5 — rodape é sempre deep-clonado via _clonarRodape() antes de
+   * ser armazenado na versão. Isso garante que nenhuma versão compartilhe
+   * referência de objeto com outra. O time do bot é armazenado na versão
+   * para que _onTrocarVersao possa restaurá-lo corretamente.
    */
   function _renderBot(text, rodape) {
     if (typeof window.NexusUI === 'undefined') return;
-    var textoLimpo = _limparMarcadoresChips(text);
-    var msg = _push({ role: 'bot', text: textoLimpo, time: _getTime(), rodape: rodape || null });
+    var textoLimpo   = _limparMarcadoresChips(text);
+    var rodapeClone  = _clonarRodape(rodape);
+    var horario      = _getTime();
+
+    var msg = _push({ role: 'bot', text: textoLimpo, time: horario, rodape: rodapeClone });
     msg.__idx = state.messages.length - 1;
     window.NexusUI.renderMessage(msg);
 
     if (_versaoEditando !== null) {
       var userMsg = state.messages[_versaoEditando.msgIndex];
       if (userMsg && userMsg.versions && userMsg.versions[_versaoEditando.versionIndex]) {
-        userMsg.versions[_versaoEditando.versionIndex].resposta = textoLimpo;
-        userMsg.versions[_versaoEditando.versionIndex].rodape   = rodape || null;
+        var ver = userMsg.versions[_versaoEditando.versionIndex];
+        ver.resposta = textoLimpo;
+        ver.rodape   = _clonarRodape(rodapeClone); // clone do clone — snapshot isolado
+        ver.time     = horario;
       }
       _versaoEditando = null;
-      _salvarHistorico();
+      _salvarHistorico(); // persiste com a versão preenchida
     }
   }
 
@@ -321,7 +331,6 @@
   function _classificarIntencao(textoNormalizado) {
     var pedeResposta   = _PEDE_RESPOSTA_RE.test(textoNormalizado);
     var pedeExplicacao = _PEDE_EXPLICACAO_RE.test(textoNormalizado);
-
     if (pedeResposta && pedeExplicacao) return 'hibrido';
     if (pedeResposta)                   return 'gabarito';
     return 'explicacao';
@@ -401,47 +410,40 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     SERIALIZAÇÃO DA QUESTÃO — DOIS NÍVEIS
+     SERIALIZAÇÃO DA QUESTÃO
   ══════════════════════════════════════════════════════════ */
 
   function _serializarQuestaoSemGabarito(numeroVisual, q) {
     var snapshot = _getSnapshot();
     var total    = snapshot.length || '?';
-
     var linhas = [
       'QUESTÃO ' + numeroVisual + ' DE ' + total +
         (q.aula ? ' (' + q.aula + ')' : '') + ':',
     ];
-
     if (q.texto)    linhas.push('Contexto: ' + q.texto);
     if (q.question) linhas.push('Enunciado: ' + q.question);
-
     if (Array.isArray(q.assertions) && q.assertions.length) {
       linhas.push('Afirmativas:');
       q.assertions.forEach(function (a) { linhas.push('  ' + a); });
     }
-
     if (Array.isArray(q.options) && q.options.length) {
       linhas.push('Alternativas (exatamente como o usuário está vendo):');
       q.options.forEach(function (opt, i) {
         linhas.push('  ' + String.fromCharCode(65 + i) + ') ' + opt);
       });
     }
-
     return linhas.join('\n');
   }
 
   function _serializarQuestaoComGabarito(numeroVisual, q) {
     var base   = _serializarQuestaoSemGabarito(numeroVisual, q);
     var linhas = [base];
-
     if (typeof q.answer === 'number') {
       linhas.push('Alternativa correta: ' + String.fromCharCode(65 + q.answer) + ')');
     }
     if (q.feedback) {
       linhas.push('Explicação: ' + q.feedback);
     }
-
     return linhas.join('\n');
   }
 
@@ -492,10 +494,8 @@
 
   async function _perguntarIA(pergunta, resultados, tipoContexto) {
     if (typeof window.NexusWorker === 'undefined') return null;
-
     var instrucao = _INSTRUCOES_IA[tipoContexto] || '';
     var perguntaComInstrucao = instrucao ? instrucao + pergunta : pergunta;
-
     try {
       return await window.NexusWorker.perguntar({
         pergunta:     perguntaComInstrucao,
@@ -516,49 +516,40 @@
 
   async function _responderSobreQuestao(pergunta, numeroVisual, q) {
     _ultimaQuestaoVisual = numeroVisual;
-
-    var norm    = _normalizar(pergunta);
+    var norm     = _normalizar(pergunta);
     var intencao = _classificarIntencao(norm);
-
     var usarGabarito = intencao === 'gabarito' || intencao === 'hibrido';
     var ctxTexto = usarGabarito
       ? _serializarQuestaoComGabarito(numeroVisual, q)
       : _serializarQuestaoSemGabarito(numeroVisual, q);
-
     var resultados = [{ score: 100, texto: ctxTexto, aula: q.aula || '', secao: 'Quiz' }];
-
     var resp = await _perguntarIA(pergunta, resultados, intencao);
     if (resp) {
       _renderBot(resp.texto, _montarRodape(resp, 'questão ' + numeroVisual));
       return;
     }
-
     // Fallback offline
     if (intencao === 'gabarito') {
       var fb = 'Questão ' + numeroVisual;
       if (q.question) fb += '\n\n' + q.question;
       if (typeof q.answer === 'number' && Array.isArray(q.options)) {
-        fb += '\n\nRESPOSTA: ' +
-              String.fromCharCode(65 + q.answer) + ') ' + q.options[q.answer];
+        fb += '\n\nRESPOSTA: ' + String.fromCharCode(65 + q.answer) + ') ' + q.options[q.answer];
         if (q.feedback) fb += '\n\n' + q.feedback;
       }
       _renderBot(fb);
       return;
     }
-
     if (intencao === 'hibrido') {
       var fbH = 'Questão ' + numeroVisual;
       if (q.question) fbH += '\n\n' + q.question;
       fbH += '\n\n(IA indisponível — não consigo gerar uma explicação completa agora.)';
       if (typeof q.answer === 'number' && Array.isArray(q.options)) {
-        fbH += '\n\nRESPOSTA: ' +
-               String.fromCharCode(65 + q.answer) + ') ' + q.options[q.answer];
+        fbH += '\n\nRESPOSTA: ' + String.fromCharCode(65 + q.answer) + ') ' + q.options[q.answer];
         if (q.feedback) fbH += '\n\n' + q.feedback;
       }
       _renderBot(fbH);
       return;
     }
-
     var fbE = 'Questão ' + numeroVisual;
     if (q.question) fbE += '\n\n' + q.question;
     if (Array.isArray(q.options) && q.options.length) {
@@ -599,26 +590,23 @@
     if (state.processando) return;
     if (!text || !text.trim()) return;
     if (state.typingTimer) clearTimeout(state.typingTimer);
-
     if (typeof window.NexusUI === 'undefined') return;
-
     var msgUser = _push({ role: 'user', text: text, time: _getTime() });
     msgUser.__idx = state.messages.length - 1;
     window.NexusUI.renderMessage(msgUser);
     window.NexusUI.showTyping();
     state.processando = true;
     _setInputBloqueado(true);
-
     state.typingTimer = setTimeout(function () { _processar(text); }, REPLY_DELAY_MS);
   }
 
   /**
    * Disparado pela UI quando o usuário confirma a edição de uma mensagem.
    *
-   * v2.4 — Captura resposta+rodape do bot atual como snapshot completo
-   * em versions[0] antes de qualquer mutação. A nova versão recebe
-   * resposta=null/rodape=null, que serão preenchidos por _renderBot
-   * via _versaoEditando quando a IA responder.
+   * v2.5 — versions[0].rodape é deep-clonado via _clonarRodape() para
+   * garantir que a versão inicial não compartilhe referência com o objeto
+   * bot em state.messages. O time do bot existente é capturado e armazenado
+   * na versão para restauração correta por _onTrocarVersao.
    */
   function _onEditarMensagem(msgIndex, novoTexto) {
     if (state.processando) return;
@@ -627,30 +615,30 @@
     var msg = state.messages[msgIndex];
     if (!msg || msg.role !== 'user') return;
 
-    // Na primeira edição: inicializa versions[0] com snapshot completo
-    // da resposta atual (texto + rodape) antes de qualquer alteração.
+    // Na primeira edição: inicializa versions[0] com snapshot completo e independente.
     if (!msg.versions) {
       var botExistente = (state.messages[msgIndex + 1] && state.messages[msgIndex + 1].role === 'bot')
         ? state.messages[msgIndex + 1]
         : null;
       msg.versions = [{
         texto:    msg.text,
-        resposta: botExistente ? botExistente.text             : null,
-        rodape:   botExistente ? (botExistente.rodape || null) : null,
+        resposta: botExistente ? botExistente.text                    : null,
+        rodape:   botExistente ? _clonarRodape(botExistente.rodape)   : null,
+        time:     botExistente ? (botExistente.time || null)           : null,
       }];
       msg.versionIndex = 0;
     }
 
-    // Nova versão: resposta e rodape serão preenchidos por _renderBot
-    msg.versions.push({ texto: novoTexto, resposta: null, rodape: null });
+    // Nova versão: todos os campos iniciam como null — preenchidos por _renderBot.
+    msg.versions.push({ texto: novoTexto, resposta: null, rodape: null, time: null });
     var novoVersionIndex = msg.versions.length - 1;
     msg.versionIndex = novoVersionIndex;
     msg.text = novoTexto;
 
-    // Sinaliza para _renderBot onde salvar textoLimpo+rodape da IA
+    // Sinaliza para _renderBot onde salvar o snapshot da resposta da IA.
     _versaoEditando = { msgIndex: msgIndex, versionIndex: novoVersionIndex };
 
-    // Remove o objeto bot do array — será recriado via _push/_renderBot
+    // Remove o objeto bot do array — será recriado via _push/_renderBot.
     if (state.messages[msgIndex + 1] && state.messages[msgIndex + 1].role === 'bot') {
       state.messages.splice(msgIndex + 1, 1);
     }
@@ -667,10 +655,11 @@
   /**
    * Disparado pela UI ao clicar em "<" ou ">" no controle de versão.
    *
-   * v2.4 — Substitui state.messages[msgIndex+1] por um NOVO objeto
-   * independente com os dados da versão escolhida, em vez de mutar
-   * o objeto existente. Isso garante que versões anteriores não sejam
-   * corrompidas e que _salvarHistorico() persista o estado correto.
+   * v2.5 — Substitui state.messages[msgIndex+1] por um NOVO objeto
+   * independente usando dados da versão escolhida. Usa versao.time para
+   * restaurar o horário correto. Se não há bot atual mas a versão tem
+   * resposta salva, insere um novo objeto bot em vez de ignorar silenciosamente.
+   * rodape é sempre deep-clonado para evitar compartilhamento de referência.
    */
   function _onTrocarVersao(msgIndex, delta) {
     var msg = state.messages[msgIndex];
@@ -684,15 +673,21 @@
     var versao   = msg.versions[novoIdx];
     var botAtual = state.messages[msgIndex + 1];
 
-    if (botAtual && botAtual.role === 'bot' &&
-        versao.resposta !== null && versao.resposta !== undefined) {
-      // Substitui por um novo objeto — NUNCA muta o existente
-      state.messages[msgIndex + 1] = {
+    if (versao.resposta !== null && versao.resposta !== undefined) {
+      var novoBot = {
         role:   'bot',
         text:   versao.resposta,
-        time:   botAtual.time,
-        rodape: versao.rodape || null,
+        time:   versao.time || (botAtual ? botAtual.time : _getTime()),
+        rodape: _clonarRodape(versao.rodape),
       };
+
+      if (botAtual && botAtual.role === 'bot') {
+        // Substitui o objeto existente por um novo — nunca muta o existente.
+        state.messages[msgIndex + 1] = novoBot;
+      } else {
+        // Não havia bot: insere um novo na posição correta.
+        state.messages.splice(msgIndex + 1, 0, novoBot);
+      }
     }
 
     _salvarHistorico();
@@ -705,15 +700,11 @@
         _renderBot('Assistente indisponível. Recarregue a página.');
         return;
       }
-
       _resetarSeContextoMudou();
-
       var numQ = _detectarNumeroQuestao(texto);
-
       if (numQ === null && _ultimaQuestaoVisual !== null && _referenciaImplicita(texto)) {
         numQ = _ultimaQuestaoVisual;
       }
-
       if (numQ !== null) {
         var q = _buscarQuestaoPorNumero(numQ);
         if (!q) {
@@ -727,9 +718,7 @@
         await _responderSobreQuestao(texto, numQ, q);
         return;
       }
-
       await _responderGeral(texto);
-
     } catch (err) {
       console.error('[NexusQuizAssistant] erro ao processar:', err);
       _renderBot('Ocorreu um erro. Tente novamente.');
@@ -749,15 +738,12 @@
     _ultimaQuestaoVisual = null;
     _versaoEditando      = null;
     state.processando    = false;
-
     if (state.typingTimer) { clearTimeout(state.typingTimer); state.typingTimer = null; }
     if (typeof window.NexusWorker !== 'undefined') window.NexusWorker.limparHistorico();
     if (typeof window.NexusUI     === 'undefined') return;
-
     window.NexusUI.limparMensagens();
     window.NexusUI.hideTyping();
     _setInputBloqueado(false);
-
     var sysMsg = { role: 'system', text: '⬡  Nexus IA', time: _getTime() };
     _push(sysMsg);
     sysMsg.__idx = state.messages.length - 1;
@@ -773,7 +759,6 @@
     var modo  = _getModo() || '';
     var disc  = _getDisc() || '';
     var label = modo ? modo.toUpperCase() : 'Quiz';
-
     _renderBot(
       '📝 Quiz-Assistant — ' + label + (disc ? ' · ' + disc : '') + '\n\n' +
       'Posso ajudar com:\n' +
@@ -795,58 +780,45 @@
       console.log('[NexusQuizAssistant] init() ignorado — já iniciado.');
       return;
     }
-
     if (!_verificarDeps()) {
       console.error('[NexusQuizAssistant] init() abortado — dependências obrigatórias ausentes.');
       return;
     }
-
     _iniciado = true;
-
     var discId = _getDisc();
     var modo   = _getModo();
     var sem    = _getSemestre();
-
     _aplicarPersistenciaContexto(discId, modo, sem);
-
     state.discAtivo      = discId;
     state.modoAtivo      = modo;
     state.chaveHistorico = _montarChaveHistorico(discId, modo, sem);
-
     window.NexusUI.init({
       onSend:          _onUserSend,
       onReset:         _resetarChat,
       onEdit:          _onEditarMensagem,
       onVersionSwitch: _onTrocarVersao,
     });
-
     if (typeof window.NexusWorker !== 'undefined') {
       window.NexusWorker.limparHistorico();
     }
-
     window.NexusUI.atualizarDiscAtiva(discId || null);
-
     var histSalvo = [];
     if (typeof window.NexusHistory !== 'undefined') {
       try {
         histSalvo = window.NexusHistory.carregar(state.chaveHistorico) || [];
       } catch (e) { histSalvo = []; }
     }
-
     window.NexusUI.limparMensagens();
-
     if (histSalvo.length > 0) {
       state.messages = histSalvo;
       histSalvo.forEach(function (msg, i) {
         msg.__idx = i;
         window.NexusUI.renderMessage(msg);
       });
-
       if (typeof window.NexusWorker !== 'undefined' &&
           typeof window.NexusWorker.restaurarHistorico === 'function') {
         window.NexusWorker.restaurarHistorico(histSalvo);
       }
-
       var msgsEl = document.getElementById('nexus-messages');
       if (msgsEl) {
         var banner = document.createElement('div');
@@ -861,8 +833,7 @@
       window.NexusUI.renderMessage(sysMsg);
       _mostrarBoasVindas();
     }
-
-    console.log('[NexusQuizAssistant] iniciado v2.4 — disc:', discId, '| modo:', modo,
+    console.log('[NexusQuizAssistant] iniciado v2.5 — disc:', discId, '| modo:', modo,
                 '| questões no snapshot:', _getSnapshot().length);
   }
 

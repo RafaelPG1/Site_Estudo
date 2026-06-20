@@ -1,58 +1,47 @@
 /**
- * NEXUS — shared/js/ia/resumo/assistant.js  v3.4
+ * NEXUS — shared/js/ia/resumo/assistant.js  v3.5
  *
  * Orquestrador do sistema de IA para Resumos.
  *
- * MUDANÇAS v3.4 (correção de versionamento):
- *   Bug corrigido: ao navegar entre versões de uma mensagem editada,
- *   todas as versões exibiam a resposta da última edição.
+ * ── MUDANÇAS v3.5 (correção de versionamento) ─────────────────
  *
- *   Causa raiz: _onTrocarVersao mutava o objeto bot diretamente em
- *   state.messages (botMsg.text = respostaVersao), corrompendo a
- *   referência compartilhada. Na próxima troca, o objeto já havia sido
- *   sobrescrito — e _salvarHistorico() persistia o estado corrompido
- *   no localStorage.
+ *   Problema observado: ao editar uma mensagem múltiplas vezes
+ *   (3+ versões) ou ao restaurar do localStorage, versões anteriores
+ *   exibiam a resposta da versão mais recente.
  *
- *   Correção: cada versão agora armazena { texto, resposta, rodape }
- *   como snapshot completo e independente. _onTrocarVersao substitui
- *   state.messages[msgIndex+1] por um NOVO objeto em vez de mutar o
- *   existente. _renderBot salva resposta+rodape na versão correta via
- *   _versaoEditando. _onEditarMensagem captura resposta+rodape do bot
- *   atual ao criar versions[0].
+ *   Causas raiz identificadas e corrigidas:
  *
- * MUDANÇAS v3.3 (edição de mensagem):
- *   - O botão "Editar" da UI agora dispara _onEditarMensagem(), que
- *     ATUALIZA a mensagem do usuário existente em vez de criar uma
- *     nova. A resposta do bot vinculada é removida e regenerada a
- *     partir do texto editado. Versões anteriores da pergunta ficam
- *     em msg.versions / msg.versionIndex, navegáveis via o controle
- *     "< i/N >" da UI (_onTrocarVersao só troca o texto exibido, sem
- *     reprocessar a IA).
+ *   1. SHALLOW COPY do rodapé em _onEditarMensagem:
+ *      versions[0].rodape = botExistente.rodape
+ *      Como rodape é um objeto { linha1, linha2 }, versão 0 e o objeto
+ *      bot em state.messages compartilhavam a mesma referência.
+ *      CORREÇÃO: deep copy via _clonarRodape() em toda atribuição de rodape.
  *
- * MUDANÇAS v3.2:
- *   - _restaurarSessao() agora chama NexusWorker.restaurarHistorico()
- *     com as mensagens visuais recarregadas.
+ *   2. AUSÊNCIA DE TIME por versão:
+ *      _onTrocarVersao usava botAtual.time (tempo do bot atual na tela),
+ *      e após múltiplas trocas o time exibido era sempre o da última versão.
+ *      CORREÇÃO: cada versão armazena { texto, resposta, rodape, time }.
+ *      _renderBot salva o horário da resposta na versão correspondente.
+ *      _onTrocarVersao usa versao.time para restaurar corretamente.
  *
- * MUDANÇAS v3.1:
- *   - Persistência da disciplina ativa (SESSION_DISC) restaurada.
- *   - initUI() / init() agora restauram disciplina + histórico reais
- *     quando o contexto não mudou (NexusCtx.deveResetar() === false).
- *   - Guarda de tamanho de mensagem em _onUserSend().
+ *   3. _onTrocarVersao não tratava ausência de bot corrente:
+ *      Se state.messages[msgIndex+1] não existia ou tinha role diferente
+ *      de 'bot', a substituição era ignorada silenciosamente.
+ *      CORREÇÃO: se não há bot atual mas a versão tem resposta salva,
+ *      insere um novo objeto bot em state.messages na posição correta.
+ *
+ *   4. rodape em _onTrocarVersao era reutilizado sem clonar:
+ *      versao.rodape era atribuído diretamente ao novo objeto bot.
+ *      Se alguém mutasse esse objeto, a versão salva seria corrompida.
+ *      CORREÇÃO: _clonarRodape() em toda construção de objeto bot novo.
+ *
+ * ── MUDANÇAS v3.4 ─────────────────────────────────────────────
+ *   (ver cabeçalho da versão anterior)
  *
  * Depende de:
- *   - core/ctx.js         (window.NexusCtx)
- *   - core/context.js     (window.NexusContext)
- *   - core/history.js     (window.NexusHistory)
- *   - core/ui.js          (window.NexusUI)
- *   - core/loader.js      (window.NexusLoader)
- *   - core/worker.js      (window.NexusWorker)
- *   - core/text-utils.js  (window.NexusTextUtils)
- *   - resumo/search.js    (window.NexusResumoSearch)
- *   - window.__nexusCtx   (bridge de contexto)
- *
- * Inicialização:
- *   - NexusAssistant.initUI() — sempre (configura o chat/UI)
- *   - NexusAssistant.init()   — apenas quando tipos inclui 'resumo'
+ *   - core/ctx.js, core/context.js, core/history.js, core/ui.js
+ *   - core/loader.js, core/worker.js, core/text-utils.js
+ *   - resumo/search.js, window.__nexusCtx
  *
  * API pública: window.NexusAssistant
  */
@@ -66,9 +55,6 @@
   var SESSION_DISC_KEY   = 'nexus_resumo_disc_ativa';
   var MENSAGEM_MAX_CHARS = 4000;
 
-  /* ══════════════════════════════════════════════════════════
-     APs QUE COMPÕEM CADA PERÍODO (Resumo)
-  ══════════════════════════════════════════════════════════ */
   var APS_POR_PERIODO = {
     '2026.1': ['AP1', 'AP2'],
     '2026.2': ['AP1', 'AP2'],
@@ -90,12 +76,19 @@
     chaveHistorico:  null,
   };
 
-  // Rastreia qual (msgIndex, versionIndex) está sendo gerado após uma
-  // edição, para que _renderBot possa armazenar resposta+rodape na
-  // versão correta assim que a IA responder.
   var _versaoEditando = null; // { msgIndex, versionIndex } | null
 
   var _pipelineConteudoAtivo = false;
+
+  /* ══════════════════════════════════════════════════════════
+     UTILITÁRIO: DEEP COPY DE RODAPÉ
+     Garante que nenhuma versão compartilhe referência com outra.
+  ══════════════════════════════════════════════════════════ */
+
+  function _clonarRodape(rodape) {
+    if (!rodape) return null;
+    return { linha1: rodape.linha1 || null, linha2: rodape.linha2 || null };
+  }
 
   /* ══════════════════════════════════════════════════════════
      UTILITÁRIOS
@@ -137,9 +130,7 @@
   function _salvarDiscAtiva() {
     try {
       if (state.discEscolhida) {
-        sessionStorage.setItem(SESSION_DISC_KEY, JSON.stringify({
-          id: state.discEscolhida.id,
-        }));
+        sessionStorage.setItem(SESSION_DISC_KEY, JSON.stringify({ id: state.discEscolhida.id }));
       } else {
         sessionStorage.removeItem(SESSION_DISC_KEY);
       }
@@ -203,27 +194,30 @@
   }
 
   /**
-   * Renderiza uma mensagem do bot e, se estivermos no meio de uma
-   * edição (_versaoEditando !== null), armazena resposta+rodape como
-   * snapshot completo na versão correspondente.
+   * Renderiza mensagem do bot e persiste snapshot independente na versão.
    *
-   * IMPORTANTE: não muta nenhum objeto bot já existente em
-   * state.messages — apenas preenche o campo na versão salva em
-   * msg.versions[versionIndex].
+   * v3.5 — rodape é sempre deep-clonado via _clonarRodape() antes de
+   * ser armazenado na versão. O time da resposta é armazenado na versão
+   * para restauração correta por _onTrocarVersao.
    */
   function _renderBot(text, rodape) {
-    var msg = _push({ role: 'bot', text: text, time: _getTime(), rodape: rodape || null });
+    var rodapeClone = _clonarRodape(rodape);
+    var horario     = _getTime();
+
+    var msg = _push({ role: 'bot', text: text, time: horario, rodape: rodapeClone });
     msg.__idx = state.messages.length - 1;
     NexusUI.renderMessage(msg);
 
     if (_versaoEditando !== null) {
       var userMsg = state.messages[_versaoEditando.msgIndex];
       if (userMsg && userMsg.versions && userMsg.versions[_versaoEditando.versionIndex]) {
-        userMsg.versions[_versaoEditando.versionIndex].resposta = text;
-        userMsg.versions[_versaoEditando.versionIndex].rodape   = rodape || null;
+        var ver = userMsg.versions[_versaoEditando.versionIndex];
+        ver.resposta = text;
+        ver.rodape   = _clonarRodape(rodapeClone); // clone do clone — snapshot isolado
+        ver.time     = horario;
       }
       _versaoEditando = null;
-      _salvarHistorico();
+      _salvarHistorico(); // persiste com a versão preenchida
     }
   }
 
@@ -823,16 +817,10 @@
 
   function _onUserSend(text) {
     if (state.processando) return;
-
     if (_mensagemExcedeLimite(text)) {
-      NexusUI.renderMessage({
-        role: 'system',
-        text: 'Mensagem muito grande. Resuma sua pergunta e tente novamente.',
-        time: _getTime(),
-      });
+      NexusUI.renderMessage({ role: 'system', text: 'Mensagem muito grande. Resuma sua pergunta e tente novamente.', time: _getTime() });
       return;
     }
-
     if (state.typingTimer) clearTimeout(state.typingTimer);
     _removerLiveChips();
     var msgUser = _push({ role: 'user', text: text, time: _getTime() });
@@ -849,50 +837,45 @@
   /**
    * Disparado pela UI quando o usuário confirma a edição de uma mensagem.
    *
-   * v3.4 — Captura resposta+rodape do bot atual como snapshot completo
-   * em versions[0] antes de qualquer mutação. A nova versão recebe
-   * resposta=null/rodape=null, que serão preenchidos por _renderBot
-   * via _versaoEditando quando a IA responder.
+   * v3.5 — versions[0].rodape é deep-clonado via _clonarRodape() para
+   * garantir que a versão inicial não compartilhe referência com o objeto
+   * bot em state.messages. O time do bot existente é capturado e armazenado
+   * na versão para restauração correta por _onTrocarVersao.
    */
   function _onEditarMensagem(msgIndex, novoTexto) {
     if (state.processando) return;
-
     if (_mensagemExcedeLimite(novoTexto)) {
-      NexusUI.renderMessage({
-        role: 'system',
-        text: 'Mensagem muito grande. Resuma sua pergunta e tente novamente.',
-        time: _getTime(),
-      });
+      NexusUI.renderMessage({ role: 'system', text: 'Mensagem muito grande. Resuma sua pergunta e tente novamente.', time: _getTime() });
       return;
     }
 
     var msg = state.messages[msgIndex];
     if (!msg || msg.role !== 'user') return;
 
-    // Na primeira edição: inicializa versions[0] com snapshot completo
-    // da resposta atual (texto + rodape) antes de qualquer alteração.
+    // Na primeira edição: inicializa versions[0] com snapshot completo e independente.
     if (!msg.versions) {
       var botExistente = (state.messages[msgIndex + 1] && state.messages[msgIndex + 1].role === 'bot')
         ? state.messages[msgIndex + 1]
         : null;
       msg.versions = [{
-        texto:   msg.text,
-        resposta: botExistente ? botExistente.text        : null,
-        rodape:   botExistente ? (botExistente.rodape || null) : null,
+        texto:    msg.text,
+        resposta: botExistente ? botExistente.text                   : null,
+        rodape:   botExistente ? _clonarRodape(botExistente.rodape)  : null,
+        time:     botExistente ? (botExistente.time || null)          : null,
       }];
       msg.versionIndex = 0;
     }
 
-    // Nova versão: resposta e rodape serão preenchidos por _renderBot
-    msg.versions.push({ texto: novoTexto, resposta: null, rodape: null });
+    // Nova versão: todos os campos iniciam como null — preenchidos por _renderBot.
+    msg.versions.push({ texto: novoTexto, resposta: null, rodape: null, time: null });
     var novoVersionIndex = msg.versions.length - 1;
     msg.versionIndex = novoVersionIndex;
     msg.text = novoTexto;
 
-    // Sinaliza para _renderBot onde salvar resposta+rodape da IA
+    // Sinaliza para _renderBot onde salvar o snapshot da resposta da IA.
     _versaoEditando = { msgIndex: msgIndex, versionIndex: novoVersionIndex };
 
-    // Remove o objeto bot do array — será recriado via _push/_renderBot
+    // Remove o objeto bot do array — será recriado via _push/_renderBot.
     if (state.messages[msgIndex + 1] && state.messages[msgIndex + 1].role === 'bot') {
       state.messages.splice(msgIndex + 1, 1);
     }
@@ -910,10 +893,11 @@
   /**
    * Disparado pela UI ao clicar em "<" ou ">" no controle de versão.
    *
-   * v3.4 — Substitui state.messages[msgIndex+1] por um NOVO objeto
-   * independente com os dados da versão escolhida, em vez de mutar
-   * o objeto existente. Isso garante que versões anteriores não sejam
-   * corrompidas e que _salvarHistorico() persista o estado correto.
+   * v3.5 — Substitui state.messages[msgIndex+1] por um NOVO objeto
+   * independente usando dados da versão escolhida. Usa versao.time para
+   * restaurar o horário correto. Se não há bot atual mas a versão tem
+   * resposta salva, insere um novo objeto bot na posição correta.
+   * rodape é sempre deep-clonado para evitar compartilhamento de referência.
    */
   function _onTrocarVersao(msgIndex, delta) {
     var msg = state.messages[msgIndex];
@@ -924,18 +908,24 @@
     msg.versionIndex = novoIdx;
     msg.text = msg.versions[novoIdx].texto;
 
-    var versao  = msg.versions[novoIdx];
+    var versao   = msg.versions[novoIdx];
     var botAtual = state.messages[msgIndex + 1];
 
-    if (botAtual && botAtual.role === 'bot' &&
-        versao.resposta !== null && versao.resposta !== undefined) {
-      // Substitui por um novo objeto — NUNCA muta o existente
-      state.messages[msgIndex + 1] = {
+    if (versao.resposta !== null && versao.resposta !== undefined) {
+      var novoBot = {
         role:   'bot',
         text:   versao.resposta,
-        time:   botAtual.time,
-        rodape: versao.rodape || null,
+        time:   versao.time || (botAtual ? botAtual.time : _getTime()),
+        rodape: _clonarRodape(versao.rodape),
       };
+
+      if (botAtual && botAtual.role === 'bot') {
+        // Substitui o objeto existente por um novo — nunca muta o existente.
+        state.messages[msgIndex + 1] = novoBot;
+      } else {
+        // Não havia bot: insere um novo na posição correta.
+        state.messages.splice(msgIndex + 1, 0, novoBot);
+      }
     }
 
     _salvarHistorico();
@@ -945,11 +935,7 @@
   async function _processar(texto) {
     try {
       if (_ehPedidoAjuda(texto)) { _responderAjuda(_resolverDisc()); return; }
-
-      if (!_pipelineConteudoAtivo) {
-        await _responderModoLivre(texto);
-        return;
-      }
+      if (!_pipelineConteudoAtivo) { await _responderModoLivre(texto); return; }
 
       var resultadoCmd = _detectarComandoTroca(texto);
       if (resultadoCmd !== null) {
@@ -978,11 +964,9 @@
           NexusUI.mostrarSugestoes(_chipsDiscs(resultadoCmd.candidatos), _onSugestaoClick);
           return;
         }
-
         var discExata        = resultadoCmd.disc;
         var perguntaResidual = resultadoCmd.perguntaResidual || '';
         var discJaAtiva      = state.discEscolhida && discExata.id === state.discEscolhida.id;
-
         if (!discJaAtiva) {
           _limparHistoricoAtivo();
           _limparContexto();
@@ -991,7 +975,6 @@
         } else {
           if (typeof window.NexusWorker !== 'undefined') NexusWorker.limparHistorico();
         }
-
         if (perguntaResidual.length >= 2) {
           await _executarBuscaNaDisc(perguntaResidual, discExata);
         } else if (discJaAtiva) {
@@ -1007,10 +990,7 @@
       }
 
       var discAtiva = _resolverDisc();
-      if (!discAtiva) {
-        await _executarSemDisc(texto);
-        return;
-      }
+      if (!discAtiva) { await _executarSemDisc(texto); return; }
       await _executarBuscaNaDisc(texto, discAtiva);
 
     } catch (err) {
@@ -1024,17 +1004,13 @@
   }
 
   async function _responderModoLivre(texto) {
-    if (typeof window.NexusWorker === 'undefined') {
-      _renderBot('Assistente de IA não disponível no momento.'); return;
-    }
+    if (typeof window.NexusWorker === 'undefined') { _renderBot('Assistente de IA não disponível no momento.'); return; }
     if (_ehSaudacao(texto)) { _renderBot('Olá! 👋 Pode me perguntar qualquer coisa — estou aqui para ajudar!'); return; }
     if (_ehAgradecimento(texto)) { _renderBot('De nada! 😊 Se tiver mais dúvidas, é só perguntar.'); return; }
-
     var respostaIA = null;
     try {
       respostaIA = await NexusWorker.perguntar({ pergunta: texto, resultados: [], disciplina: '', tipoContexto: 'livre' });
     } catch (e) { console.warn('[NexusAssistant] _responderModoLivre erro:', e); }
-
     if (respostaIA) {
       _renderBot(respostaIA.texto, (respostaIA.fonte || respostaIA.modelo) ? {
         linha1: ['IA: ' + (respostaIA.fonte || ''), respostaIA.modelo || ''].filter(Boolean).join(' · '),
@@ -1055,7 +1031,6 @@
       }), _onSugestaoClick);
       return;
     }
-
     if (typeof window.NexusWorker !== 'undefined') {
       NexusUI.showTyping();
       try {
@@ -1084,14 +1059,8 @@
   }
 
   async function _executarBuscaNaDisc(texto, disc) {
-    if (_ehSaudacao(texto)) {
-      _renderBot('Olá! 👋 Pode me fazer uma pergunta sobre ' + disc.apelido + '.');
-      return;
-    }
-    if (_ehAgradecimento(texto)) {
-      _renderBot('De nada! 😊 Se tiver mais dúvidas sobre ' + disc.apelido + ', é só perguntar.');
-      return;
-    }
+    if (_ehSaudacao(texto)) { _renderBot('Olá! 👋 Pode me fazer uma pergunta sobre ' + disc.apelido + '.'); return; }
+    if (_ehAgradecimento(texto)) { _renderBot('De nada! 😊 Se tiver mais dúvidas sobre ' + disc.apelido + ', é só perguntar.'); return; }
 
     var numAula = _detectarResumoAula(texto);
     if (numAula !== null) {
@@ -1102,10 +1071,7 @@
     }
 
     var termoBuscaGlobal = _detectarBuscaGlobal(texto);
-    if (termoBuscaGlobal !== null) {
-      _renderBot(await _executarBuscaGlobal(termoBuscaGlobal));
-      return;
-    }
+    if (termoBuscaGlobal !== null) { _renderBot(await _executarBuscaGlobal(termoBuscaGlobal)); return; }
 
     var termoLocalizar = _detectarLocalizacao(texto);
     if (termoLocalizar !== null) {
@@ -1123,8 +1089,8 @@
     NexusUI.atualizarDiscAtiva(disc.apelido);
 
     var tipoContexto, resultados;
-    if (ehNavegacao)      { tipoContexto = 'estrutura'; resultados = _montarMapaDisc(conteudoDisc); }
-    else if (ehGlobal)    { tipoContexto = 'global';    resultados = _montarContextoGlobal(conteudoDisc); }
+    if (ehNavegacao)   { tipoContexto = 'estrutura'; resultados = _montarMapaDisc(conteudoDisc); }
+    else if (ehGlobal) { tipoContexto = 'global';    resultados = _montarContextoGlobal(conteudoDisc); }
     else {
       tipoContexto = 'conteudo';
       resultados = NexusResumoSearch.buscar(texto, { topK: TOP_K, minScore: MIN_SCORE });
@@ -1134,7 +1100,7 @@
     }
 
     if (typeof window.NexusWorker !== 'undefined') {
-      var temCtx  = tipoContexto === 'conteudo' ? (resultados && resultados.length > 0) : true;
+      var temCtx = tipoContexto === 'conteudo' ? (resultados && resultados.length > 0) : true;
       var respostaIA = null;
       try {
         respostaIA = await NexusWorker.perguntar({
@@ -1164,12 +1130,9 @@
     state.discIndexadaId = null;
     state.discEscolhida  = disc;
     state.aguardandoDisc = false;
-
     _salvarDiscAtiva();
     state.chaveHistorico = _montarChaveHistorico(disc.id);
-
     if (typeof window.NexusWorker !== 'undefined') NexusWorker.limparHistorico();
-
     var loaderCtx = _montarCtx(disc);
     if (!loaderCtx) {
       state.discEscolhida = null; state.chaveHistorico = null;
@@ -1244,12 +1207,9 @@
   function _resetarChat() {
     _limparHistoricoAtivo();
     _removerLiveChips();
-
     state.processando = false;
     if (state.typingTimer) { clearTimeout(state.typingTimer); state.typingTimer = null; }
-
     if (typeof window.NexusWorker !== 'undefined') NexusWorker.limparHistorico();
-
     NexusResumoSearch.limparIndice();
     NexusLoader.limpar();
     state.discEscolhida  = null;
@@ -1260,17 +1220,11 @@
     _versaoEditando      = null;
     _limparDiscSalva();
     NexusUI.atualizarDiscAtiva(null);
-
     NexusUI.limparMensagens();
     NexusUI.hideTyping();
     _setInputBloqueado(false);
-
     _addWelcomeMessage();
-    if (_pipelineConteudoAtivo) {
-      _mostrarBoasVindas();
-    } else {
-      _mostrarBoasVindasLivre();
-    }
+    if (_pipelineConteudoAtivo) { _mostrarBoasVindas(); } else { _mostrarBoasVindasLivre(); }
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -1280,7 +1234,6 @@
   function _restaurarSessao() {
     var discSalva = _carregarDiscSalva();
     if (!discSalva) return false;
-
     var chave = _montarChaveHistorico(discSalva.id);
     var msgs  = chave ? window.NexusHistory.carregar(chave) : [];
     if (!msgs || !msgs.length) {
@@ -1288,20 +1241,16 @@
       state.chaveHistorico = chave;
       return false;
     }
-
     state.discEscolhida  = discSalva;
     state.chaveHistorico = chave;
     state.messages       = msgs;
-
     msgs.forEach(function (msg, i) {
       msg.__idx = i;
       NexusUI.renderMessage(msg);
     });
-
     if (typeof window.NexusWorker !== 'undefined') {
       NexusWorker.restaurarHistorico(msgs);
     }
-
     var msgsEl = document.getElementById('nexus-messages');
     if (msgsEl) {
       var el = document.createElement('div');
@@ -1338,14 +1287,12 @@
   function initUI() {
     if (!_depsUIok()) return;
     if (document.getElementById('nexus-panel')) return;
-
     NexusUI.init({
       onSend:          _onUserSend,
       onReset:         _resetarChat,
       onEdit:          _onEditarMensagem,
       onVersionSwitch: _onTrocarVersao,
     });
-
     (function () {
       var inputEl = document.getElementById('nexus-input');
       if (!inputEl) return;
@@ -1362,31 +1309,23 @@
     }());
 
     var resetando = (typeof window.NexusCtx !== 'undefined') && window.NexusCtx.deveResetar();
-
     if (resetando) {
-      if (typeof window.NexusHistory !== 'undefined') {
-        window.NexusHistory.limparDominio('resumo');
-      }
+      if (typeof window.NexusHistory !== 'undefined') window.NexusHistory.limparDominio('resumo');
       _limparDiscSalva();
-
       state.messages       = [];
       state.discEscolhida  = null;
       state.processando    = false;
       state.discsCacheadas = {};
       state.chaveHistorico = null;
       _versaoEditando      = null;
-
       NexusUI.limparMensagens();
       if (typeof window.NexusWorker !== 'undefined') NexusWorker.limparHistorico();
       if (typeof window.NexusCtx !== 'undefined') window.NexusCtx.confirmarReset();
-
       console.log('[NexusAssistant] reset de contexto aplicado.');
       _addWelcomeMessage();
     } else {
       var restaurado = _restaurarSessao();
-      if (!restaurado) {
-        _addWelcomeMessage();
-      }
+      if (!restaurado) { _addWelcomeMessage(); }
     }
   }
 
@@ -1396,10 +1335,8 @@
 
   function init() {
     if (!_depsConteudoOk()) return;
-
     _pipelineConteudoAtivo = true;
     console.log('[NexusAssistant] pipeline de conteúdo de resumo ativo.');
-
     if (state.discEscolhida) {
       NexusUI.atualizarDiscAtiva(state.discEscolhida.apelido);
       _garantirConteudo(state.discEscolhida).catch(function (err) {
@@ -1431,9 +1368,9 @@
   window.NexusAssistant = {
     initUI,
     init,
-    open:   function () { NexusUI.open();   },
-    close:  function () { NexusUI.close();  },
-    toggle: function () { NexusUI.toggle(); },
+    open:          function () { NexusUI.open();   },
+    close:         function () { NexusUI.close();  },
+    toggle:        function () { NexusUI.toggle(); },
     pipelineAtivo: function () { return _pipelineConteudoAtivo; },
   };
 
