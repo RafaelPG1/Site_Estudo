@@ -1,38 +1,26 @@
 /**
- * NEXUS — quiz/js/assistant.js  v2.1
+ * NEXUS — quiz/js/assistant.js  v2.2
  *
  * Quiz-Assistant: tutor de IA dentro do ambiente de quiz.
  *
- * ── MUDANÇAS v2.1 ─────────────────────────────────────────
+ * ── MUDANÇAS v2.2 ─────────────────────────────────────────
  *
- *   COMPORTAMENTO PADRÃO = EXPLICAÇÃO
- *     Qualquer pergunta sobre uma questão é tratada como pedido
- *     de explicação/contexto. Gabarito NUNCA é inferido.
+ *   PERSISTÊNCIA CORRETA NO F5
+ *     Removido o listener de 'pagehide' que limpava o histórico do
+ *     domínio 'quiz' inteiro. 'pagehide' dispara tanto ao fechar a
+ *     aba quanto durante um reload — então todo F5 apagava o chat
+ *     antes mesmo da página recarregar. O histórico agora vive em
+ *     localStorage (ver history.js v1.1) e só é limpo quando o
+ *     CONTEXTO realmente muda (disciplina ou modo diferentes do
+ *     que estava salvo da última vez que o assistant rodou) —
+ *     verificado de forma intencional em _aplicarPersistenciaContexto(),
+ *     não como efeito colateral de um evento de ciclo de vida.
  *
- *   GABARITO SOMENTE COM PEDIDO EXPLÍCITO
- *     Detectado por _PEDE_RESPOSTA_RE (ampliada e robusta).
- *     Inclui variantes como "qual a certa", "me diz a resposta", etc.
+ *   Resto do comportamento (v2.1) inalterado — classificação de
+ *   intenção de gabarito, serialização em dois níveis, fallback
+ *   offline seguro, etc.
  *
- *   MODO HÍBRIDO
- *     Se o usuário pedir explicação E resposta simultaneamente
- *     (detectado por _PEDE_EXPLICACAO_E_RESPOSTA_RE), o assistente
- *     explica primeiro e depois revela o gabarito.
- *
- *   SERIALIZAÇÃO COM DOIS NÍVEIS
- *     _serializarQuestaoSemGabarito()  → contexto padrão (sem answer/feedback)
- *     _serializarQuestaoComGabarito()  → contexto completo (com answer/feedback)
- *     O gabarito só entra no payload da IA quando pedido explicitamente.
- *
- *   FALLBACK OFFLINE SEGURO
- *     Nunca vaza gabarito em erro de rede sem pedido explícito.
- *
- *   PROMPT INTERNO REFORÇADO
- *     tipoContexto='conteudo'        → IA explica sem revelar resposta
- *     tipoContexto='gabarito'        → IA pode revelar resposta
- *     tipoContexto='hibrido'         → IA explica e depois revela
- *     tipoContexto='livre'           → pergunta geral, sem questão
- *
- * ── ARQUITETURA (inalterada do v2.0) ─────────────────────
+ * ── ARQUITETURA (inalterada) ─────────────────────────────────
  *
  *   Escuta 'nexus:quizPronto' disparado pelo engine.
  *   Lê window.__NEXUS_QUESTOES_VISUAIS__ (somente leitura).
@@ -167,6 +155,86 @@
   }
 
   /* ══════════════════════════════════════════════════════════
+     PERSISTÊNCIA INTELIGENTE ENTRE CARGAS DE PÁGINA (v2.2)
+
+     Problema que isto resolve:
+       O chat precisa SOBREVIVER a um F5 simples (mesma disciplina,
+       mesmo modo), mas precisa ser LIMPO quando o aluno navega para
+       outra disciplina ou outro modo.
+
+       Como cada F5 reinicia totalmente o JS (state.discAtivo/modoAtivo
+       nascem null de novo), não dá pra comparar "contexto anterior"
+       usando apenas memória — precisamos de um marcador persistido
+       (localStorage) que sobrevive ao reload e registra qual foi o
+       ÚLTIMO contexto (disciplina+modo+semestre) em que o assistant
+       rodou.
+
+     Fluxo:
+       • Lê o marcador salvo da visita anterior.
+       • Se disciplina OU modo mudaram → limpa todo o domínio 'quiz'
+         (todas as chaves antigas), garantindo que nenhum resquício
+         de outra disciplina/modo apareça.
+       • Se for a mesma disciplina+modo (ou não havia marcador ainda,
+         ou seja, primeira visita) → não limpa nada; o histórico
+         daquele contexto específico será restaurado normalmente
+         pelo fluxo de init() (NexusHistory.carregar).
+       • Sempre regrava o marcador com o contexto atual ao final.
+
+     Isto substitui o antigo listener de 'pagehide' que limpava o
+     histórico em TODO reload — inclusive nos que deveriam apenas
+     restaurar a conversa.
+  ══════════════════════════════════════════════════════════ */
+
+  var _CHAVE_ULTIMO_CONTEXTO = 'nexus_chat_ultimo_contexto_quiz';
+
+  function _lerUltimoContexto() {
+    try {
+      var raw = window.localStorage && window.localStorage.getItem(_CHAVE_ULTIMO_CONTEXTO);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function _salvarUltimoContexto(discId, modo, sem) {
+    try {
+      if (!window.localStorage) return;
+      window.localStorage.setItem(
+        _CHAVE_ULTIMO_CONTEXTO,
+        JSON.stringify({ disc: discId, modo: modo, sem: sem })
+      );
+    } catch (e) {}
+  }
+
+  /**
+   * Decide, no boot do assistant, se o contexto persistido em
+   * localStorage de uma visita anterior ainda é válido para esta
+   * visita. Só limpa o domínio inteiro quando disciplina ou modo
+   * realmente mudaram — um F5 puro na mesma questão nunca aciona isto.
+   */
+  function _aplicarPersistenciaContexto(discId, modo, sem) {
+    var anterior = _lerUltimoContexto();
+    var mudouContexto = !!anterior &&
+      (anterior.disc !== discId || anterior.modo !== modo);
+
+    if (mudouContexto) {
+      console.log(
+        '[NexusQuizAssistant] disciplina ou modo mudou (' +
+        anterior.disc + '/' + anterior.modo + ' → ' + discId + '/' + modo +
+        ') — limpando histórico salvo do quiz.'
+      );
+      if (typeof window.NexusHistory !== 'undefined') {
+        try { window.NexusHistory.limparDominio('quiz'); } catch (e) {}
+      }
+      if (typeof window.NexusWorker !== 'undefined') {
+        window.NexusWorker.limparHistorico();
+      }
+    }
+
+    _salvarUltimoContexto(discId, modo, sem);
+  }
+
+  /* ══════════════════════════════════════════════════════════
      PUSH / RENDER
   ══════════════════════════════════════════════════════════ */
 
@@ -212,7 +280,11 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     DETECÇÃO DE MUDANÇA DE CONTEXTO
+     DETECÇÃO DE MUDANÇA DE CONTEXTO DENTRO DA MESMA SESSÃO
+
+     (cenário diferente do _aplicarPersistenciaContexto acima: aqui é
+     uma mudança detectada SEM reload de página, caso o host troque
+     disciplina/modo dinamicamente sem recarregar o script.)
   ══════════════════════════════════════════════════════════ */
 
   function _resetarSeContextoMudou() {
@@ -226,6 +298,7 @@
       console.log('[NexusQuizAssistant] contexto mudou — limpando histórico.');
       _limparHistoricoAtivo();
       state.chaveHistorico = _montarChaveHistorico(discAtual, modoAtual, _getSemestre());
+      _salvarUltimoContexto(discAtual, modoAtual, _getSemestre());
       if (typeof window.NexusWorker !== 'undefined') {
         window.NexusWorker.limparHistorico();
       }
@@ -650,7 +723,7 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     RESET DO CHAT
+     RESET DO CHAT (manual — botão de reset na UI)
   ══════════════════════════════════════════════════════════ */
 
   function _resetarChat() {
@@ -714,6 +787,11 @@
     var modo   = _getModo();
     var sem    = _getSemestre();
 
+    // v2.2 — decide ANTES de carregar o histórico se o contexto desta
+    // visita é o mesmo da última (mantém) ou mudou (limpa o domínio
+    // inteiro). Substitui o antigo listener de 'pagehide'.
+    _aplicarPersistenciaContexto(discId, modo, sem);
+
     state.discAtivo      = discId;
     state.modoAtivo      = modo;
     state.chaveHistorico = _montarChaveHistorico(discId, modo, sem);
@@ -758,7 +836,7 @@
       _mostrarBoasVindas();
     }
 
-    console.log('[NexusQuizAssistant] iniciado v2.1 — disc:', discId, '| modo:', modo,
+    console.log('[NexusQuizAssistant] iniciado v2.2 — disc:', discId, '| modo:', modo,
                 '| questões no snapshot:', _getSnapshot().length);
   }
 
@@ -778,16 +856,6 @@
     console.log('[NexusQuizAssistant] quiz já estava pronto — inicializando diretamente.');
     (window.requestAnimationFrame || setTimeout)(function () { _onQuizPronto(); }, 0);
   }
-
-  /* ══════════════════════════════════════════════════════════
-     LIMPEZA AO SAIR
-  ══════════════════════════════════════════════════════════ */
-
-  window.addEventListener('pagehide', function () {
-    if (typeof window.NexusHistory !== 'undefined') {
-      try { window.NexusHistory.limparDominio('quiz'); } catch (e) {}
-    }
-  });
 
   /* ══════════════════════════════════════════════════════════
      API PÚBLICA

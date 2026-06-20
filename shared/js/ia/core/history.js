@@ -3,8 +3,23 @@
  *
  * Gerenciador de histórico de chat isolado por chave de contexto.
  *
- * Cada combinação de (domínio + disciplina + semestre) produz uma
+ * Cada combinação de (domínio + disciplina + semestre + modo) produz uma
  * chave única. Históricos de contextos diferentes nunca se misturam.
+ *
+ * ── v1.1 — PERSISTÊNCIA REAL NO F5 ───────────────────────────
+ *   Antes usava sessionStorage. sessionStorage por si só já sobrevive
+ *   a F5, mas o quiz/js/assistant.js limpava o domínio inteiro no
+ *   evento 'pagehide' — e 'pagehide' também dispara em reload, não
+ *   apenas ao fechar a aba. Resultado: o histórico era apagado bem
+ *   antes do reload terminar, parecendo "resetar no F5".
+ *
+ *   Trocado para localStorage, que é mais explícito sobre a intenção
+ *   (persistir entre sessões da aba) e não depende de nenhum
+ *   comportamento de ciclo de vida de página para "sobreviver".
+ *   A responsabilidade de LIMPAR ao trocar de disciplina/modo agora
+ *   é tratada de forma intencional pelo assistant.js (comparando o
+ *   contexto salvo vs. o contexto atual), não por um listener de
+ *   ciclo de vida que dispara em momentos imprevisíveis.
  *
  * API pública: window.NexusHistory
  *
@@ -14,8 +29,8 @@
 (function () {
   'use strict';
 
-  var MAX_MESSAGES  = 20;
-  var STORAGE_PREFIX = 'nexus_hist_';
+  var MAX_MESSAGES   = 20;
+  var STORAGE_PREFIX = 'nexus_chat_';
 
   /* ══════════════════════════════════════════════════════════
      CHAVE DE CONTEXTO
@@ -44,6 +59,22 @@
   }
 
   /* ══════════════════════════════════════════════════════════
+     ACESSO SEGURO AO localStorage
+
+     Algumas situações (modo privado restrito, cota excedida,
+     ambiente sem storage) podem lançar exceção. Todas as operações
+     já eram protegidas por try/catch — mantido igual.
+  ══════════════════════════════════════════════════════════ */
+
+  function _store() {
+    try {
+      return window.localStorage || null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════
      LEITURA / ESCRITA
   ══════════════════════════════════════════════════════════ */
 
@@ -56,8 +87,10 @@
    */
   function carregar(chave) {
     if (!chave) return [];
+    var store = _store();
+    if (!store) return [];
     try {
-      var raw = sessionStorage.getItem(_storageKey(chave));
+      var raw = store.getItem(_storageKey(chave));
       if (!raw) return [];
       var msgs = JSON.parse(raw);
       return Array.isArray(msgs) ? msgs : [];
@@ -73,6 +106,8 @@
    */
   function salvar(chave, mensagens) {
     if (!chave || !Array.isArray(mensagens)) return;
+    var store = _store();
+    if (!store) return;
     try {
       var sistemaIdx = mensagens.findIndex(function (m) { return m.role === 'system'; });
       var sistema    = sistemaIdx !== -1 ? mensagens[sistemaIdx] : null;
@@ -83,7 +118,7 @@
       }
 
       var final = sistema ? [sistema].concat(resto) : resto;
-      sessionStorage.setItem(_storageKey(chave), JSON.stringify(final));
+      store.setItem(_storageKey(chave), JSON.stringify(final));
     } catch (_) {}
   }
 
@@ -94,25 +129,30 @@
    */
   function limpar(chave) {
     if (!chave) return;
-    try { sessionStorage.removeItem(_storageKey(chave)); } catch (_) {}
+    var store = _store();
+    if (!store) return;
+    try { store.removeItem(_storageKey(chave)); } catch (_) {}
   }
 
   /**
    * Apaga todos os históricos cujo domínio corresponda ao prefixo.
-   * Útil para limpar tudo de um domínio ao sair (ex: sair do quiz).
+   * Útil para limpar tudo de um domínio quando o contexto muda de
+   * verdade (ex: trocou de disciplina ou de modo no quiz).
    *
    * @param {string} dominio — 'resumo' | 'quiz' | 'games'
    */
   function limparDominio(dominio) {
     if (!dominio) return;
+    var store = _store();
+    if (!store) return;
     try {
       var prefix = STORAGE_PREFIX + dominio.toLowerCase() + '|';
       var keys = [];
-      for (var i = 0; i < sessionStorage.length; i++) {
-        var k = sessionStorage.key(i);
-        if (k && k.startsWith(prefix)) keys.push(k);
+      for (var i = 0; i < store.length; i++) {
+        var k = store.key(i);
+        if (k && k.indexOf(prefix) === 0) keys.push(k);
       }
-      keys.forEach(function (k) { sessionStorage.removeItem(k); });
+      keys.forEach(function (k) { store.removeItem(k); });
     } catch (_) {}
   }
 

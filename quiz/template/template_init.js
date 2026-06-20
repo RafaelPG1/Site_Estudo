@@ -341,7 +341,10 @@ function _carregarQuiz(params, info) {
    PASSO 10 — Inicializar Quiz-Assistant
 
    Aguarda o engine terminar de montar __NEXUS_QUESTOES_VISUAIS__
-   antes de iniciar o assistente, com polling leve (máx 3s).
+   antes de iniciar o assistente, de forma reativa: escuta o evento
+   'nexus:quizPronto' (disparado pelo engine) e, em paralelo, faz um
+   loop leve via requestAnimationFrame como rede de segurança contra
+   corrida de inicialização. Só desiste após 12s reais.
 
    Ordem de dependências exigidas:
      - window.NexusUI         (core/ui.js)
@@ -390,27 +393,70 @@ function _inicializarAssistant() {
   }, 50);
 }
 
-// Aguarda __NEXUS_QUESTOES_VISUAIS__ (populado pelo engine após renderizar)
+// Aguarda __NEXUS_QUESTOES_VISUAIS__ (populado pelo engine após renderizar).
+//
+// Estratégia reativa (sem timeout fixo de 3s):
+//   1. Escuta 'nexus:quizPronto' — evento que o engine já dispara assim que
+//      publica o snapshot (ver quiz_engine.js → _publicarSnapshot). Esse é
+//      o caminho normal e dispara o init() no instante exato em que os
+//      dados existem, sem qualquer espera artificial.
+//   2. Em paralelo, faz um loop leve via requestAnimationFrame checando o
+//      snapshot diretamente — cobre o caso em que o evento já foi disparado
+//      antes deste listener ser registrado (corrida entre engine e template).
+//   3. Só desiste após um timeout de segurança bem mais generoso (12s) e,
+//      mesmo assim, registra o aviso apenas nesse cenário realmente
+//      excepcional — nunca como decisão precoce.
 function _aguardarSnapshotEIniciar() {
-  var tentativas = 0;
-  var MAX        = 60;  // 60 × 50ms = 3s
+  var TIMEOUT_MS  = 12000; // timeout de segurança real, não decisão padrão
+  var finalizado  = false;
+  var inicio      = (window.performance && performance.now)
+    ? performance.now()
+    : Date.now();
 
-  var timer = setInterval(function () {
-    tentativas++;
+  function _agora() {
+    return (window.performance && performance.now) ? performance.now() : Date.now();
+  }
 
+  function _snapshotPronto() {
     var visuais = window.__NEXUS_QUESTOES_VISUAIS__;
-    var prontas = Array.isArray(visuais) && visuais.length > 0;
+    return window.__NEXUS_QUIZ_PRONTO__ === true ||
+           (Array.isArray(visuais) && visuais.length > 0);
+  }
 
-    if (prontas || tentativas >= MAX) {
-      clearInterval(timer);
+  function _iniciar() {
+    if (finalizado) return;
+    finalizado = true;
+    window.removeEventListener('nexus:quizPronto', _onEvento);
+    window.NexusQuizAssistant.init();
+  }
 
-      if (!prontas) {
-        console.warn('[template_init] Quiz-Assistant: __NEXUS_QUESTOES_VISUAIS__ não disponível após 3s — iniciando sem mapa visual.');
-      }
+  function _onEvento() {
+    _iniciar();
+  }
 
-      window.NexusQuizAssistant.init();
+  window.addEventListener('nexus:quizPronto', _onEvento);
+
+  function _loop() {
+    if (finalizado) return;
+
+    if (_snapshotPronto()) {
+      _iniciar();
+      return;
     }
-  }, 50);
+
+    if (_agora() - inicio >= TIMEOUT_MS) {
+      console.warn(
+        '[template_init] Quiz-Assistant: __NEXUS_QUESTOES_VISUAIS__ não disponível após ' +
+        (TIMEOUT_MS / 1000) + 's — iniciando sem mapa visual.'
+      );
+      _iniciar();
+      return;
+    }
+
+    (window.requestAnimationFrame || function (cb) { setTimeout(cb, 100); })(_loop);
+  }
+
+  _loop();
 }
 
 
