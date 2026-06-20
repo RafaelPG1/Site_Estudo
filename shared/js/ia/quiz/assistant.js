@@ -176,9 +176,30 @@
     return msg;
   }
 
+  /**
+   * Remove marcadores de chip do quiz (==cat==texto==) do texto de saída.
+   * Esses marcadores são usados internamente no quiz_ui para estilizar
+   * chips nas questões — não devem aparecer no chat da IA.
+   *
+   * Ex: ==key==PRIMARY KEY== → PRIMARY KEY
+   * Ex: ==type==VARCHAR==    → VARCHAR
+   *
+   * Não afeta negrito (**), quebras de linha, markdown ou qualquer
+   * outra formatação — filtro exclusivo dos delimitadores == .
+   *
+   * @param {string} texto
+   * @returns {string}
+   */
+  function _limparMarcadoresChips(texto) {
+    if (!texto) return texto;
+    // Padrão: ==categoria==conteúdo== → conteúdo
+    return texto.replace(/==[^=]+==([^=]+)==/g, '$1');
+  }
+
   function _renderBot(text, rodape) {
     if (typeof window.NexusUI === 'undefined') return;
-    var msg = _push({ role: 'bot', text: text, time: _getTime(), rodape: rodape || null });
+    var textoLimpo = _limparMarcadoresChips(text);
+    var msg = _push({ role: 'bot', text: textoLimpo, time: _getTime(), rodape: rodape || null });
     window.NexusUI.renderMessage(msg);
   }
 
