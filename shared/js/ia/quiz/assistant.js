@@ -1,38 +1,45 @@
 /**
- * NEXUS — quiz/js/quiz_assistant.js  v2.0
+ * NEXUS — quiz/js/assistant.js  v2.1
  *
  * Quiz-Assistant: tutor de IA dentro do ambiente de quiz.
  *
- * ARQUITETURA v2.0 — inicialização por evento:
- *   O Assistant NÃO depende de chamada externa (template_init não chama init()).
- *   Ele escuta o evento 'nexus:quizPronto' disparado pelo engine após a primeira
- *   renderização. Isso garante:
- *     - Ordem de carregamento não importa (script pode ser carregado antes ou depois do engine)
- *     - Sem polling (zero setInterval/setTimeout de espera)
- *     - Snapshot visual sempre consistente (engine atualiza, assistant apenas lê)
- *     - Sem crash por dependência ausente (modo seguro com logs claros)
+ * ── MUDANÇAS v2.1 ─────────────────────────────────────────
  *
- * Responsabilidades:
- *   - Atuar como tutor de conteúdo da disciplina ativa
- *   - Explicar questões na ordem visual que o usuário está vendo
- *   - Manter histórico isolado por (disciplina + modo + semestre)
- *   - Usar NexusWorker para respostas via IA
- *   - Nunca interferir na lógica de pontuação ou estado do quiz engine
+ *   COMPORTAMENTO PADRÃO = EXPLICAÇÃO
+ *     Qualquer pergunta sobre uma questão é tratada como pedido
+ *     de explicação/contexto. Gabarito NUNCA é inferido.
  *
- * NÃO faz:
- *   - Gerar listas de questões ou simular provas
- *   - Acessar estado interno do engine (lê apenas __NEXUS_QUESTOES_VISUAIS__)
- *   - Misturar histórico entre contextos
- *   - Usar polling de qualquer tipo
+ *   GABARITO SOMENTE COM PEDIDO EXPLÍCITO
+ *     Detectado por _PEDE_RESPOSTA_RE (ampliada e robusta).
+ *     Inclui variantes como "qual a certa", "me diz a resposta", etc.
  *
- * Contrato com quiz_engine.js:
- *   Engine dispara: window.dispatchEvent(new CustomEvent('nexus:quizPronto'))
- *   Assistant escuta: window.addEventListener('nexus:quizPronto', ...)
- *   Engine atualiza: window.__NEXUS_QUESTOES_VISUAIS__ = [...] (snapshot imutável por render)
- *   Assistant lê: window.__NEXUS_QUESTOES_VISUAIS__ (somente leitura)
+ *   MODO HÍBRIDO
+ *     Se o usuário pedir explicação E resposta simultaneamente
+ *     (detectado por _PEDE_EXPLICACAO_E_RESPOSTA_RE), o assistente
+ *     explica primeiro e depois revela o gabarito.
+ *
+ *   SERIALIZAÇÃO COM DOIS NÍVEIS
+ *     _serializarQuestaoSemGabarito()  → contexto padrão (sem answer/feedback)
+ *     _serializarQuestaoComGabarito()  → contexto completo (com answer/feedback)
+ *     O gabarito só entra no payload da IA quando pedido explicitamente.
+ *
+ *   FALLBACK OFFLINE SEGURO
+ *     Nunca vaza gabarito em erro de rede sem pedido explícito.
+ *
+ *   PROMPT INTERNO REFORÇADO
+ *     tipoContexto='conteudo'        → IA explica sem revelar resposta
+ *     tipoContexto='gabarito'        → IA pode revelar resposta
+ *     tipoContexto='hibrido'         → IA explica e depois revela
+ *     tipoContexto='livre'           → pergunta geral, sem questão
+ *
+ * ── ARQUITETURA (inalterada do v2.0) ─────────────────────
+ *
+ *   Escuta 'nexus:quizPronto' disparado pelo engine.
+ *   Lê window.__NEXUS_QUESTOES_VISUAIS__ (somente leitura).
+ *   Nunca interfere no engine ou na pontuação.
  *
  * API pública: window.NexusQuizAssistant
- *   init()          — inicialização manual (fallback, normalmente chamada pelo evento)
+ *   init()          — inicialização manual (fallback)
  *   contextoAtivo() — verifica se o assistente pode operar
  */
 
@@ -45,7 +52,7 @@
      ESTADO INTERNO
   ══════════════════════════════════════════════════════════ */
 
-  var _iniciado = false;  // garante init() idempotente
+  var _iniciado = false;
 
   var state = {
     messages:       [],
@@ -58,7 +65,6 @@
 
   /* ══════════════════════════════════════════════════════════
      VERIFICAÇÃO DE DEPENDÊNCIAS
-     Sem exceção, sem crash — apenas log + retorno falso.
   ══════════════════════════════════════════════════════════ */
 
   function _verificarDeps() {
@@ -73,7 +79,6 @@
       ok = false;
     }
     if (typeof window.NexusWorker === 'undefined') {
-      // Worker é recomendado mas não bloqueia — opera sem IA (só fallback)
       console.warn('[NexusQuizAssistant] NexusWorker não encontrado — respostas de IA indisponíveis.');
     }
     if (!window.__NEXUS_QUIZ_DISC__) {
@@ -100,7 +105,6 @@
     if (typeof window.NexusTextUtils !== 'undefined') {
       return window.NexusTextUtils.normalizarTexto(str);
     }
-    // Fallback robusto — não depende de NexusTextUtils
     return (str || '')
       .toLowerCase()
       .normalize('NFD')
@@ -114,15 +118,13 @@
   function _getModo()     { return window.__NEXUS_QUIZ_MODO__     || null; }
   function _getSemestre() { return window.__NEXUS_QUIZ_SEMESTRE__ || ''; }
 
-  // Lê o snapshot visual criado pelo engine — NUNCA escreve nele
   function _getSnapshot() {
     var v = window.__NEXUS_QUESTOES_VISUAIS__;
     return Array.isArray(v) ? v : [];
   }
 
   /* ══════════════════════════════════════════════════════════
-     VERIFICAÇÃO OPERACIONAL (runtime)
-     Distinta de _verificarDeps() — verifica estado de execução.
+     VERIFICAÇÃO OPERACIONAL
   ══════════════════════════════════════════════════════════ */
 
   function _contextoAtivo() {
@@ -136,7 +138,6 @@
 
   /* ══════════════════════════════════════════════════════════
      CHAVE DE HISTÓRICO
-     Isolada por: quiz + disc + semestre + modo
   ══════════════════════════════════════════════════════════ */
 
   function _montarChaveHistorico(discId, modo, sem) {
@@ -144,7 +145,6 @@
       var base = window.NexusHistory.montarChave('quiz', discId, sem);
       return base + '|' + (modo || '').toLowerCase();
     }
-    // Fallback determinístico se NexusHistory não estiver disponível ainda
     return 'quiz|' + (discId || '').toLowerCase() +
            '|' + (sem || '').toLowerCase() +
            '|' + (modo || '').toLowerCase();
@@ -215,6 +215,47 @@
   }
 
   /* ══════════════════════════════════════════════════════════
+     CLASSIFICAÇÃO DE INTENÇÃO — NÚCLEO DA v2.1
+
+     Três estados possíveis para qualquer mensagem sobre uma questão:
+       'explicacao'  → padrão absoluto (não pede resposta)
+       'gabarito'    → pedido explícito de resposta/gabarito
+       'hibrido'     → pede explicação E resposta ao mesmo tempo
+
+     REGRA DE SEGURANÇA:
+       Em caso de dúvida → 'explicacao'
+       Gabarito só com evidência clara e inequívoca na mensagem
+  ══════════════════════════════════════════════════════════ */
+
+  /**
+   * Detecta pedido EXPLÍCITO de gabarito/resposta.
+   * Cobre variantes coloquiais mas exige sinal semântico claro de
+   * "quero saber qual é a certa" — em caso de dúvida, não dispara.
+   */
+  var _PEDE_RESPOSTA_RE = /\b(?:qual\s+(?:e|eh|é)\s+(?:a\s+)?(?:resposta|alternativa|letra|opcao|gabarito|certa?|correta?)|qual\s+(?:resposta|alternativa|letra|opcao|gabarito)|(?:me\s+)?(?:da|fala|diz|mostra|revela|mostre)\s+(?:a\s+)?(?:resposta|alternativa|letra|opcao|gabarito|certa?|correta?)|(?:resposta|gabarito)\s*(?:correta?|certa?)?|qual\s+alternativa\s+(?:esta|e|eh|e)\s+(?:certa?|correta?)|me\s+d[aa]\s+o\s+gabarito|qual\s+(?:e\s+)?a?\s*certa|qual\s+acertei|acertei\s+ou\s+errei)\b/;
+
+  /**
+   * Detecta pedido de EXPLICAÇÃO explícita (além do padrão).
+   * Usado para identificar modo híbrido quando combinado com pedido de resposta.
+   */
+  var _PEDE_EXPLICACAO_RE = /\b(?:explica(?:r)?|explicar?|por\s+que|porque|como\s+(?:funciona|resolver?|chegar)|o\s+que\s+(?:significa|e|eh|é|aborda)|entender?|entend[ae]|me\s+(?:explica|ajuda|ensina)|racioc[ií]nio|racion[aá]l|log[ií]ca|conceito|teoria)\b/;
+
+  /**
+   * Determina a intenção da mensagem em relação a uma questão.
+   *
+   * @param {string} textoNormalizado
+   * @returns {'explicacao'|'gabarito'|'hibrido'}
+   */
+  function _classificarIntencao(textoNormalizado) {
+    var pedeResposta   = _PEDE_RESPOSTA_RE.test(textoNormalizado);
+    var pedeExplicacao = _PEDE_EXPLICACAO_RE.test(textoNormalizado);
+
+    if (pedeResposta && pedeExplicacao) return 'hibrido';
+    if (pedeResposta)                   return 'gabarito';
+    return 'explicacao';   // PADRÃO ABSOLUTO
+  }
+
+  /* ══════════════════════════════════════════════════════════
      DETECÇÃO DE NÚMERO DE QUESTÃO
   ══════════════════════════════════════════════════════════ */
 
@@ -241,10 +282,9 @@
   }
 
   function _detectarNumeroQuestao(texto) {
-    var norm    = _normalizar(texto);
+    var norm     = _normalizar(texto);
     var snapshot = _getSnapshot();
 
-    // Padrões explícitos com menção a "questão"
     var padroes = [
       /\bquest(?:ao|oes?)?\s*n?[o°]?\s*(\d+)\b/,
       /\bq\s*(\d+)\b/,
@@ -259,7 +299,6 @@
       if (m) return parseInt(m[1], 10);
     }
 
-    // Número isolado: só interpreta como questão se o resto for tudo palavras neutras
     var bare = norm.match(/\b(\d+)\b/);
     if (bare) {
       var n     = parseInt(bare[1], 10);
@@ -290,12 +329,20 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     SERIALIZAÇÃO DA QUESTÃO VISUAL
-     Usa SOMENTE o snapshot de __NEXUS_QUESTOES_VISUAIS__.
-     Alternativas já estão embaralhadas na ordem que o usuário vê.
+     SERIALIZAÇÃO DA QUESTÃO — DOIS NÍVEIS (v2.1)
+
+     _serializarQuestaoSemGabarito()
+       Contexto enviado por padrão.
+       Inclui enunciado, alternativas embaralhadas, afirmativas, código.
+       NÃO inclui answer nem feedback.
+       A IA pode explicar o conteúdo mas não sabe qual é a correta.
+
+     _serializarQuestaoComGabarito()
+       Contexto enviado apenas quando pedido explícito de gabarito.
+       Inclui tudo, incluindo answer e feedback.
   ══════════════════════════════════════════════════════════ */
 
-  function _serializarQuestao(numeroVisual, q) {
+  function _serializarQuestaoSemGabarito(numeroVisual, q) {
     var snapshot = _getSnapshot();
     var total    = snapshot.length || '?';
 
@@ -319,6 +366,16 @@
       });
     }
 
+    // answer e feedback INTENCIONALMENTE OMITIDOS neste nível
+
+    return linhas.join('\n');
+  }
+
+  function _serializarQuestaoComGabarito(numeroVisual, q) {
+    // Começa com o contexto sem gabarito e adiciona as informações extras
+    var base   = _serializarQuestaoSemGabarito(numeroVisual, q);
+    var linhas = [base];
+
     if (typeof q.answer === 'number') {
       linhas.push('Alternativa correta: ' + String.fromCharCode(65 + q.answer) + ')');
     }
@@ -330,27 +387,82 @@
   }
 
   /* ══════════════════════════════════════════════════════════
+     INSTRUÇÕES DE SISTEMA PARA A IA — POR TIPO DE CONTEXTO
+
+     Enviadas como prefixo da pergunta para orientar o worker
+     sem alterar a arquitetura do worker.js.
+  ══════════════════════════════════════════════════════════ */
+
+  var _INSTRUCOES_IA = {
+    /**
+     * Modo padrão: IA deve EXPLICAR sem revelar gabarito.
+     * O contexto não contém a resposta correta — mas caso
+     * a IA infira por outros meios, esta instrução impede a revelação.
+     */
+    conteudo: (
+      'INSTRUÇÃO PARA O TUTOR: O aluno quer entender o conteúdo desta questão, ' +
+      'NÃO quer saber a resposta correta. ' +
+      'Explique os conceitos, contextualize o tema, analise as alternativas do ponto de vista conceitual. ' +
+      'NÃO revele qual alternativa é a correta. ' +
+      'Se o aluno quiser o gabarito, ele pedirá explicitamente. ' +
+      'Pergunta do aluno: '
+    ),
+
+    /**
+     * Modo gabarito: IA pode revelar a resposta.
+     * O contexto inclui answer e feedback.
+     */
+    gabarito: (
+      'INSTRUÇÃO PARA O TUTOR: O aluno pediu explicitamente o gabarito desta questão. ' +
+      'Informe qual alternativa é a correta e explique brevemente por que está certa, ' +
+      'usando o feedback fornecido no contexto. ' +
+      'Pergunta do aluno: '
+    ),
+
+    /**
+     * Modo híbrido: IA deve explicar primeiro, depois revelar.
+     * O contexto inclui answer e feedback.
+     */
+    hibrido: (
+      'INSTRUÇÃO PARA O TUTOR: O aluno quer tanto uma explicação quanto saber a resposta. ' +
+      'Estruture sua resposta assim: ' +
+      '1) Explique o conteúdo e analise as alternativas conceitualmente. ' +
+      '2) Ao final, revele a alternativa correta e por que ela está certa. ' +
+      'Pergunta do aluno: '
+    ),
+
+    /**
+     * Modo livre: pergunta geral, sem questão específica.
+     */
+    livre: '',
+  };
+
+  /* ══════════════════════════════════════════════════════════
      BUSCA DE QUESTÃO NO SNAPSHOT
   ══════════════════════════════════════════════════════════ */
 
   function _buscarQuestaoPorNumero(numero) {
     var snapshot = _getSnapshot();
     if (!snapshot.length) return null;
-    var idx = numero - 1;   // base-1 → base-0
+    var idx = numero - 1;
     if (idx < 0 || idx >= snapshot.length) return null;
     return snapshot[idx] || null;
   }
 
   /* ══════════════════════════════════════════════════════════
      COMUNICAÇÃO COM A IA (NexusWorker)
-     Modo seguro: se Worker ausente, usa fallback textual.
   ══════════════════════════════════════════════════════════ */
 
   async function _perguntarIA(pergunta, resultados, tipoContexto) {
     if (typeof window.NexusWorker === 'undefined') return null;
+
+    // Prefixa a instrução de sistema à pergunta do aluno
+    var instrucao = _INSTRUCOES_IA[tipoContexto] || '';
+    var perguntaComInstrucao = instrucao ? instrucao + pergunta : pergunta;
+
     try {
       return await window.NexusWorker.perguntar({
-        pergunta:     pergunta,
+        pergunta:     perguntaComInstrucao,
         resultados:   resultados || [],
         disciplina:   _getDisc() || '',
         tipoContexto: tipoContexto || 'conteudo',
@@ -363,30 +475,74 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     RESPOSTAS
+     RESPOSTAS — v2.1
+
+     _responderSobreQuestao() agora:
+       1. Classifica a intenção do usuário
+       2. Serializa o contexto no nível adequado (sem/com gabarito)
+       3. Envia a instrução correta à IA
+       4. No fallback offline, aplica a mesma lógica sem vazar resposta
   ══════════════════════════════════════════════════════════ */
 
   async function _responderSobreQuestao(pergunta, numeroVisual, q) {
     _ultimaQuestaoVisual = numeroVisual;
 
-    var ctxTexto  = _serializarQuestao(numeroVisual, q);
+    var norm    = _normalizar(pergunta);
+    var intencao = _classificarIntencao(norm);
+
+    // Escolhe o nível de serialização baseado na intenção
+    var usarGabarito = intencao === 'gabarito' || intencao === 'hibrido';
+    var ctxTexto = usarGabarito
+      ? _serializarQuestaoComGabarito(numeroVisual, q)
+      : _serializarQuestaoSemGabarito(numeroVisual, q);
+
     var resultados = [{ score: 100, texto: ctxTexto, aula: q.aula || '', secao: 'Quiz' }];
 
-    var resp = await _perguntarIA(pergunta, resultados, 'conteudo');
+    var resp = await _perguntarIA(pergunta, resultados, intencao);
     if (resp) {
       _renderBot(resp.texto, _montarRodape(resp, 'questão ' + numeroVisual));
       return;
     }
 
-    // Fallback: exibe os dados da questão diretamente
-    var fb = 'Questão ' + numeroVisual;
-    if (q.question) fb += '\n\n' + q.question;
-    if (typeof q.answer === 'number' && Array.isArray(q.options)) {
-      fb += '\n\nResposta correta: ' +
-            String.fromCharCode(65 + q.answer) + ') ' + q.options[q.answer];
+    // ── FALLBACK OFFLINE (sem IA) ────────────────────────────
+    // Mesma lógica de intenção: só mostra gabarito se pedido explicitamente
+
+    if (intencao === 'gabarito') {
+      var fb = 'Questão ' + numeroVisual;
+      if (q.question) fb += '\n\n' + q.question;
+      if (typeof q.answer === 'number' && Array.isArray(q.options)) {
+        fb += '\n\nRESPOSTA: ' +
+              String.fromCharCode(65 + q.answer) + ') ' + q.options[q.answer];
+        if (q.feedback) fb += '\n\n' + q.feedback;
+      }
+      _renderBot(fb);
+      return;
     }
-    if (q.feedback) fb += '\n\n' + q.feedback;
-    _renderBot(fb);
+
+    if (intencao === 'hibrido') {
+      var fbH = 'Questão ' + numeroVisual;
+      if (q.question) fbH += '\n\n' + q.question;
+      fbH += '\n\n(IA indisponível — não consigo gerar uma explicação completa agora.)';
+      if (typeof q.answer === 'number' && Array.isArray(q.options)) {
+        fbH += '\n\nRESPOSTA: ' +
+               String.fromCharCode(65 + q.answer) + ') ' + q.options[q.answer];
+        if (q.feedback) fbH += '\n\n' + q.feedback;
+      }
+      _renderBot(fbH);
+      return;
+    }
+
+    // intencao === 'explicacao': NÃO revelar resposta no fallback
+    var fbE = 'Questão ' + numeroVisual;
+    if (q.question) fbE += '\n\n' + q.question;
+    if (Array.isArray(q.options) && q.options.length) {
+      fbE += '\n\nAlternativas:\n' + q.options.map(function (opt, i) {
+        return String.fromCharCode(65 + i) + ') ' + opt;
+      }).join('\n');
+    }
+    fbE += '\n\n(IA indisponível agora — não consigo gerar uma explicação completa. ' +
+           'Se quiser ver o gabarito, pergunte "qual a resposta da questão ' + numeroVisual + '".)';
+    _renderBot(fbE);
   }
 
   async function _responderGeral(texto) {
@@ -509,16 +665,15 @@
       'Posso ajudar com:\n' +
       '  • Explicar qualquer questão: "explica a questão 3"\n' +
       '  • Dúvidas sobre alternativas: "por que a letra B está errada?"\n' +
-      '  • Conteúdo da disciplina: "o que é herança em POO?"\n\n' +
-      'Sobre o que você tem dúvida?'
+      '  • Conteúdo da disciplina: "o que é herança em POO?"\n' +
+      '  • Ver gabarito: "qual a resposta da questão 5"\n\n' +
+      'Por padrão, sempre explico o conteúdo sem revelar a resposta.\n' +
+      'Peça o gabarito explicitamente quando quiser! 😊'
     );
   }
 
   /* ══════════════════════════════════════════════════════════
-     INIT — inicialização do assistant
-     Chamado internamente ao receber 'nexus:quizPronto',
-     ou externamente como fallback manual.
-     Idempotente: segunda chamada é ignorada com segurança.
+     INIT
   ══════════════════════════════════════════════════════════ */
 
   function init() {
@@ -542,18 +697,14 @@
     state.modoAtivo      = modo;
     state.chaveHistorico = _montarChaveHistorico(discId, modo, sem);
 
-    // Conecta callbacks à UI
     window.NexusUI.init({ onSend: _onUserSend, onReset: _resetarChat });
 
-    // Limpa histórico do worker (contexto anterior)
     if (typeof window.NexusWorker !== 'undefined') {
       window.NexusWorker.limparHistorico();
     }
 
-    // Badge de disciplina
     window.NexusUI.atualizarDiscAtiva(discId || null);
 
-    // Tenta restaurar sessão anterior
     var histSalvo = [];
     if (typeof window.NexusHistory !== 'undefined') {
       try {
@@ -567,7 +718,6 @@
       state.messages = histSalvo;
       histSalvo.forEach(function (msg) { window.NexusUI.renderMessage(msg); });
 
-      // Sincroniza worker com histórico visual restaurado
       if (typeof window.NexusWorker !== 'undefined' &&
           typeof window.NexusWorker.restaurarHistorico === 'function') {
         window.NexusWorker.restaurarHistorico(histSalvo);
@@ -587,34 +737,24 @@
       _mostrarBoasVindas();
     }
 
-    console.log('[NexusQuizAssistant] iniciado — disc:', discId, '| modo:', modo,
+    console.log('[NexusQuizAssistant] iniciado v2.1 — disc:', discId, '| modo:', modo,
                 '| questões no snapshot:', _getSnapshot().length);
   }
 
   /* ══════════════════════════════════════════════════════════
      LISTENER DO EVENTO DE BOOT DO ENGINE
-     O engine dispara 'nexus:quizPronto' após a primeira
-     _atualizarMapaVisual(). Isso garante:
-       - Snapshot visual já está populado
-       - Sem polling, sem corrida de ordem de carregamento
-       - Se o script for carregado DEPOIS do evento, o flag
-         window.__NEXUS_QUIZ_PRONTO__ serve de fallback
   ══════════════════════════════════════════════════════════ */
 
   function _onQuizPronto() {
-    if (_iniciado) return;   // idempotente
+    if (_iniciado) return;
     console.log('[NexusQuizAssistant] recebeu nexus:quizPronto — inicializando.');
     init();
   }
 
-  // Escuta o evento (caso script carregue ANTES do engine terminar)
   window.addEventListener('nexus:quizPronto', _onQuizPronto);
 
-  // Fallback: se o evento já disparou antes deste script ser carregado,
-  // o engine deixa o flag window.__NEXUS_QUIZ_PRONTO__ = true
   if (window.__NEXUS_QUIZ_PRONTO__ === true) {
     console.log('[NexusQuizAssistant] quiz já estava pronto — inicializando diretamente.');
-    // Usa requestAnimationFrame para garantir que o DOM está pintado
     (window.requestAnimationFrame || setTimeout)(function () { _onQuizPronto(); }, 0);
   }
 
@@ -633,8 +773,8 @@
   ══════════════════════════════════════════════════════════ */
 
   window.NexusQuizAssistant = {
-    init:          init,           // fallback de inicialização manual
-    contextoAtivo: _contextoAtivo, // verifica se está operacional
+    init:          init,
+    contextoAtivo: _contextoAtivo,
   };
 
 }());
