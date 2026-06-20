@@ -1,54 +1,65 @@
 /* ============================================================
-   NEXUS STUDY — quiz/js/quiz_starter_modal.js  v5.0
+   NEXUS STUDY — quiz/js/quiz_starter_modal.js  v6.3
 
    REGRA ÚNICA:
      Tem progresso salvo (≥ 1 resposta)? → entra direto no quiz.
      Não tem?                             → exibe modal.
 
-   ESTA REGRA COBRE TODOS OS CASOS:
-     • F5 sem respostas       → sem progresso → exibe modal.
-     • F5 com respostas       → tem progresso → entra direto.
-     • Voltar com progresso   → tem progresso → entra direto.
-     • Reiniciou (limpou)     → sem progresso → exibe modal.
-   Não é necessário sessionStorage nem nenhum estado adicional.
+   CONTROLE DE FLUXO (v6.3):
+     Este script é o ÚNICO ponto que dispara o carregamento
+     do quiz. O template_init.js deliberadamente NÃO chama
+     _carregarQuiz() — ele expõe window.__nexusCarregarQuiz
+     e aguarda este modal chamar quando pronto.
 
-   TIMING — por que não há polling de contexto:
-     template_init.js é um módulo ES carregado com <script type="module">.
-     Módulos ES sempre executam seu top-level de forma síncrona antes
-     de qualquer script com defer. Portanto, quando este arquivo executa,
-     __NEXUS_QUIZ_DISC__, __NEXUS_QUIZ_MODO__, __NEXUS_QUIZ_SEMESTRE__
-     e NexusStorage já estão disponíveis em window — garantia de spec.
+     window.__NSM_AGUARDANDO__ é sinalizado como `true` num
+     script inline no <head> do template.html — ANTES de
+     qualquer script defer. Isso é necessário porque este
+     próprio modal também é defer, assim como o engine; sem
+     a sinalização antecipada e síncrona no head, a ordem real
+     de execução entre os defers não teria garantia absoluta,
+     e o engine poderia (em certos cenários de cache/reload)
+     renderizar antes deste modal decidir o fluxo.
 
-   INTEGRAÇÃO COM O ENGINE:
-     window.__NSM_AGUARDANDO__ = true    → engine posterga renderizar().
-     window.__NSM_AGUARDANDO__ = false   → engine recebe sinal para renderizar.
-     NexusFiltroAulas.iniciar(sel)       → engine aplica filtro e renderiza.
-     O engine faz polling para NexusFiltroAulas — esse polling é necessário
-     e correto, pois o engine é carregado dinamicamente após o modal.
+     Fluxo garantido:
+       1. Página carrega → <head> sinaliza __NSM_AGUARDANDO__ = true
+          → template_init monta visual leve (header, tema, nav)
+          mas NÃO carrega engine/conteúdo
+       2. Este modal roda (defer, mas a flag já estava true antes
+          dele mesmo existir)
+       3. Modal detecta progresso:
+          - Tem progresso → _pularModal() → chama _completarBoot()
+          - Sem progresso → exibe modal → usuário confirma → _completarBoot()
+       4. _completarBoot():
+          → seta __NSM_AGUARDANDO__ = false
+          → chama window.__nexusCarregarQuiz() (Firebase + engine)
+          → remove .quiz-aguardando do container
+
+     Resultado: engine NUNCA carrega antes do modal decidir.
+     Não existe janela onde questões possam aparecer antes do modal.
 
    DEPENDÊNCIAS:
      window.__NEXUS_QUIZ_DISC__      — definido por template_init.js
      window.__NEXUS_QUIZ_MODO__      — definido por template_init.js
      window.__NEXUS_QUIZ_SEMESTRE__  — definido por template_init.js
      window.NexusStorage             — definido por template_init.js
+     window.__nexusCarregarQuiz      — definido por template_init.js
      window.NexusFiltroAulas         — definido por quiz_engine.js
+     window.__NSM_AGUARDANDO__       — definido por template.html (inline, no head)
    ============================================================ */
 
 (function () {
   'use strict';
 
-  /* ── Sinaliza ao engine que o render deve aguardar ────────
-     Deve ser definido ANTES do engine executar initQuiz().
-     Como este script tem defer e o engine é carregado
-     dinamicamente por template_init após DOMContentLoaded,
-     a janela de tempo é segura.
-  ────────────────────────────────────────────────────────── */
-  window.__NSM_AGUARDANDO__ = true;
+  /* ── window.__NSM_AGUARDANDO__ já foi sinalizado como true
+     pelo script inline no <head> do template.html, antes de
+     qualquer script defer (incluindo este e o engine). Isso
+     garante que o engine NUNCA vê a flag indefinida na sua
+     primeira checagem, independente da ordem de resolução dos
+     defers. Este script é responsável apenas por setá-la de
+     volta para false quando o fluxo for decidido. ──────────── */
 
   /* ══════════════════════════════════════════════════════════
      DETECÇÃO DE PROGRESSO
-     Usa NexusStorage.loadProgress — a mesma função que o engine
-     usa para restaurar respostas. Nenhuma duplicação de chave.
   ══════════════════════════════════════════════════════════ */
 
   function _temProgresso() {
@@ -61,7 +72,6 @@
       var S = window.NexusStorage;
       if (!S || typeof S.loadProgress !== 'function') return false;
 
-      /* uid — mesmo fallback do engine */
       var uid = 'guest';
       try {
         var u = S.get('usuario', null);
@@ -80,21 +90,55 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     PULAR MODAL — entra direto no quiz
+     PULAR MODAL — entra direto no quiz (tem progresso salvo)
   ══════════════════════════════════════════════════════════ */
 
-  function _pularModal(aoEngineDisponivel) {
+  function _pularModal() {
     window.__NSM_AGUARDANDO__ = false;
+    /* Dispara o carregamento ANTES de aguardar o engine,
+       pois agora o engine só existe após __nexusCarregarQuiz.
+       _aguardarEngine faz polling e chama cb quando pronto. */
+    _completarBoot();
     _aguardarEngine(function () {
       window.NexusFiltroAulas.iniciar(null);
-      if (typeof aoEngineDisponivel === 'function') aoEngineDisponivel();
     });
   }
 
   /* ══════════════════════════════════════════════════════════
+     COMPLETAR BOOT — ponto único de decisão concluída.
+
+     Responsabilidades (nesta ordem):
+       1. Dispara o carregamento do quiz (conteúdo + UI + engine)
+          que o template_init.js deliberadamente segurou.
+       2. Revela o <main> (remove quiz-aguardando).
+
+     Idempotente: chamadas subsequentes são ignoradas.
+     O carregamento em (1) é assíncrono — o engine só vai
+     renderizar depois de carregar. A revelação em (2) acontece
+     junto, mas o container ainda estará vazio nesse momento,
+     então não há flash de conteúdo parcial.
+  ══════════════════════════════════════════════════════════ */
+
+  var _bootConcluido = false;
+
+  function _completarBoot() {
+    if (_bootConcluido) return;
+    _bootConcluido = true;
+
+    /* 1. Dispara carga do quiz (Firebase + conteúdo + UI + engine) */
+    if (typeof window.__nexusCarregarQuiz === 'function') {
+      window.__nexusCarregarQuiz();
+    }
+
+    /* 2. Revela o main — ainda sem questões, sem flash */
+    var main = document.getElementById('main-content');
+    if (main) {
+      main.classList.remove('quiz-aguardando');
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════
      AGUARDAR ENGINE
-     Espera NexusFiltroAulas.iniciar estar disponível.
-     Sem polling desnecessário — usa checagem simples.
   ══════════════════════════════════════════════════════════ */
 
   function _aguardarEngine(cb) {
@@ -110,12 +154,13 @@
       if (elapsed >= 8000) {
         clearInterval(id);
         console.warn('[NexusStarterModal] Engine não disponível após 8s.');
+        _completarBoot(); /* Libera a UI mesmo assim */
       }
     }, 50);
   }
 
   /* ══════════════════════════════════════════════════════════
-     CSS — injetado inline, sem arquivo externo adicional
+     CSS — injetado inline
   ══════════════════════════════════════════════════════════ */
 
   function _injetarCSS() {
@@ -365,13 +410,10 @@
   ══════════════════════════════════════════════════════════ */
 
   function _construirModal() {
-    /* ── Backdrop ── */
     var bd = _el('div', { id: 'nsm-backdrop' });
 
-    /* ── Card ── */
     var card = _el('div', { id: 'nsm-card' });
 
-    /* ── Header ── */
     var head      = _el('div', { id: 'nsm-head' });
     var eyebrow   = _el('div', { id: 'nsm-eyebrow' });
     eyebrow.innerHTML = '<i class="fas fa-rocket" aria-hidden="true"></i> Preparar Quiz';
@@ -383,10 +425,9 @@
     head.appendChild(subtitulo);
     card.appendChild(head);
 
-    /* ── Tela 1 — opções principais ── */
-    var tela1 = _el('div', { id: 'nsm-tela1', class: 'nsm-tela nsm-tela--entrando' });
-
-    var t1Btns = _el('div', { id: 'nsm-tela1-btns' });
+    /* Tela 1 */
+    var tela1   = _el('div', { id: 'nsm-tela1', class: 'nsm-tela nsm-tela--entrando' });
+    var t1Btns  = _el('div', { id: 'nsm-tela1-btns' });
 
     var btnContinuar = _el('button', { type: 'button', class: 'nsm-option' });
     btnContinuar.innerHTML =
@@ -417,7 +458,7 @@
     tela1.appendChild(t1Footer);
     card.appendChild(tela1);
 
-    /* ── Tela 2 — lista de aulas ── */
+    /* Tela 2 */
     var tela2 = _el('div', { id: 'nsm-tela2', class: 'nsm-tela nsm-tela--entrando' });
     tela2.style.display = 'none';
 
@@ -455,7 +496,7 @@
     bd.appendChild(card);
     document.body.appendChild(bd);
 
-    /* ── Animação de entrada ── */
+    /* Animação de entrada */
     requestAnimationFrame(function () {
       requestAnimationFrame(function () {
         bd.classList.add('nsm-visivel');
@@ -464,7 +505,7 @@
       });
     });
 
-    /* ── Navegação Tela1 ↔ Tela2 ── */
+    /* Navegação Tela1 ↔ Tela2 */
     function _irTela2() {
       tela1.classList.add('nsm-tela--saindo');
       setTimeout(function () {
@@ -511,17 +552,15 @@
     if (loading.parentNode) loading.parentNode.removeChild(loading);
 
     var totalAulas = aulas.length;
-    var marcadas   = new Set(aulas); /* começa com todas marcadas */
+    var marcadas   = new Set(aulas);
 
-    /* Ações rápidas */
-    var acoes    = _el('div', { id: 'nsm-acoes' });
+    var acoes      = _el('div', { id: 'nsm-acoes' });
     var btnTodas   = _el('button', { class: 'nsm-acao-btn', type: 'button' }, 'Todas');
     var btnNenhuma = _el('button', { class: 'nsm-acao-btn', type: 'button' }, 'Nenhuma');
     acoes.appendChild(btnTodas);
     acoes.appendChild(btnNenhuma);
     body.appendChild(acoes);
 
-    /* Lista */
     var lista = _el('ul', { id: 'nsm-lista', role: 'group', 'aria-label': 'Aulas disponíveis' });
     var itens  = [];
 
@@ -595,24 +634,24 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     EXIBIR MODAL E AGUARDAR AÇÃO DO USUÁRIO
+     EXIBIR MODAL
   ══════════════════════════════════════════════════════════ */
 
   function _exibirModal() {
-    var ui         = _construirModal();
+    var ui          = _construirModal();
     var getMarcadas = null;
 
-    /* Aguarda engine expor listarAulas para preencher a tela 2 */
     _aguardarEngine(function () {
       var aulas = window.NexusFiltroAulas.listarAulas
         ? window.NexusFiltroAulas.listarAulas()
         : [];
 
       if (aulas.length <= 1) {
-        /* Com 0 ou 1 aula não faz sentido exibir tela 2 — esconde o botão */
-        ui.btnContinuar.parentNode && ui.btnContinuar.parentNode.querySelector &&
-          ui.btnContinuar.parentNode.querySelector('.nsm-option:last-child') &&
-          (ui.btnContinuar.parentNode.lastElementChild.style.display = 'none');
+        var ultimoBtn = ui.btnContinuar.parentNode &&
+          ui.btnContinuar.parentNode.lastElementChild;
+        if (ultimoBtn && ultimoBtn !== ui.btnContinuar) {
+          ultimoBtn.style.display = 'none';
+        }
       }
 
       getMarcadas = _preencherLista(
@@ -620,12 +659,12 @@
       );
     });
 
-    /* Botão "Todas as aulas" — inicia sem filtro */
+    /* "Todas as aulas" — sem filtro */
     ui.btnContinuar.addEventListener('click', function () {
       _concluir(ui.bd, null);
     });
 
-    /* Botão "Iniciar Quiz" (tela 2) — inicia com seleção */
+    /* "Iniciar Quiz" (tela 2) */
     ui.btnIniciar.addEventListener('click', function () {
       var sel = getMarcadas ? getMarcadas() : null;
       _concluir(ui.bd, sel);
@@ -633,49 +672,44 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     CONCLUIR — fecha modal e entrega controle ao engine
+     CONCLUIR — fecha modal, dispara carregamento e aplica filtro
   ══════════════════════════════════════════════════════════ */
 
   function _concluir(bd, aulasSelecionadas) {
     window.__NSM_AGUARDANDO__ = false;
 
     _fechar(bd, function () {
-      if (window.NexusFiltroAulas &&
-          typeof window.NexusFiltroAulas.iniciar === 'function') {
-        window.NexusFiltroAulas.iniciar(aulasSelecionadas);
+      /* Dispara carregamento do quiz e revela container.
+         Quando o engine carregar, verá __NSM_AGUARDANDO__ = false
+         e renderizará automaticamente — EXCETO se houver filtro
+         de aulas específico, que precisa ser aplicado via iniciar(). */
+      _completarBoot();
+
+      if (aulasSelecionadas !== null) {
+        /* Com filtro: aguarda engine e aplica seleção */
+        _aguardarEngine(function () {
+          if (window.NexusFiltroAulas &&
+              typeof window.NexusFiltroAulas.iniciar === 'function') {
+            window.NexusFiltroAulas.iniciar(aulasSelecionadas);
+          }
+        });
       }
+      /* Sem filtro (null): engine renderiza tudo sozinho */
     });
   }
 
   /* ══════════════════════════════════════════════════════════
      BOOT — ponto de entrada
-
-     Aplica a regra única de forma síncrona:
-
-       Tem progresso? → entra direto (pula modal).
-       Não tem?       → exibe modal.
-
-     Não há polling de contexto porque template_init.js é um
-     módulo ES: seu top-level executa de forma síncrona antes
-     de qualquer <script defer>. Logo, quando _boot() roda,
-     __NEXUS_QUIZ_DISC__, __NEXUS_QUIZ_MODO__, __NEXUS_QUIZ_SEMESTRE__
-     e NexusStorage já estão disponíveis em window — garantia
-     da especificação ES Modules / HTML parsing.
-
-     O polling em _aguardarEngine() (para NexusFiltroAulas) ainda
-     é necessário porque o engine é injetado dinamicamente por
-     template_init após DOMContentLoaded.
   ══════════════════════════════════════════════════════════ */
 
   function _boot() {
     _injetarCSS();
 
-    /* Contexto já disponível — decisão síncrona */
     if (_temProgresso()) {
-      /* Tem progresso → entra direto, sem modal */
+      /* Tem progresso → entra direto */
       _pularModal();
     } else {
-      /* Sem progresso → exibe modal de boas-vindas */
+      /* Sem progresso → exibe modal */
       _exibirModal();
     }
   }

@@ -1,14 +1,12 @@
 <!--
-  NEXUS STUDY — quiz/template/template.html  v10.1
+  NEXUS STUDY — quiz/template/template.html  v11.2
   Template unificado para todos os modos (ava, questoes, enade, etc.)
-  Lógica compartilhada → template_init.js
 
-  v10.1 — STARTER MODAL:
-    + ../js/quiz_starter_modal.js   → modal de boas-vindas
-
-    IMPORTANTE: os arquivos ficam em quiz/js/ (mesma pasta de
-    quiz_engine.js e quiz_ui.js). O template está em quiz/template/,
-    então os paths são relativos com ../js/.
+  v11.2 — REMOÇÃO DO BOOT SYSTEM:
+    - Removidos: nexus_boot.js, nexus_boot.css, splash screen, data-booting
+    - Controle de visibilidade local: .main.quiz-aguardando (esconde o main inteiro)
+    - quiz_starter_modal.js remove a classe quando o fluxo é decidido
+    - Zero bloqueio global de UI, zero arquitetura de boot
 -->
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -16,6 +14,26 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nexus Study</title>
+
+  <!-- ═══════════════════════════════════════════
+       MAIN — oculto até o modal decidir o fluxo.
+       quiz_starter_modal.js remove a classe quando pronto.
+       Esconde o main inteiro: questões, botões e header da página,
+       evitando qualquer flash antes do modal aparecer.
+       O header (logo, voltar, semestre) fica visível — é leve e
+       não causa confusão ao usuário.
+  ═══════════════════════════════════════════ -->
+  <style>
+    /* main invisível enquanto o modal não decidiu */
+    .main.quiz-aguardando {
+      visibility: hidden;
+      opacity: 0;
+    }
+    /* Fade-in suave quando quiz-aguardando é removida */
+    .main {
+      transition: opacity 0.2s ease;
+    }
+  </style>
 
   <!-- ═══════════════════════════════════════════
        FONTES
@@ -29,47 +47,43 @@
        ESTILOS BASE
   ═══════════════════════════════════════════ -->
   <link rel="stylesheet" href="../../shared/css/themes/fundo.css" />
-
-  <!-- ═══════════════════════════════════════════
-       ESTILOS DE ÁUDIO (sound antes de audio-btns)
-  ═══════════════════════════════════════════ -->
   <link rel="stylesheet" href="../../shared/css/audio/sound.css" />
   <link rel="stylesheet" href="../../shared/css/audio/audio-btns.css" />
-
-  <!-- ═══════════════════════════════════════════
-       ESTILOS DE COMPONENTES
-  ═══════════════════════════════════════════ -->
   <link rel="stylesheet" href="../../shared/css/ia/ia.css" />
-
-  <!-- ═══════════════════════════════════════════
-       ESTILOS DA PÁGINA
-  ═══════════════════════════════════════════ -->
   <link rel="stylesheet" href="./template.css" />
 
-
   <!--
-    [INLINE SCRIPT] Roda ANTES do módulo template_init.js.
-    Lê ?disc= e ?sem= da URL e já corrige o href do back-btn
-    de forma síncrona — sem esperar o módulo carregar.
+    Script inline de URL — sem tocar em body ou classList.
+    Apenas lê parâmetros e salva numa variável global.
+
+    Também sinaliza __NSM_AGUARDANDO__ = true ANTES de qualquer
+    script defer (engine, modal, etc). Isso é necessário porque
+    quiz_starter_modal.js também é defer — se a flag só fosse
+    setada no corpo dele, a ordem real de execução entre os
+    defers (engine vs modal) não teria garantia absoluta, e o
+    engine poderia, em tese, renderizar antes do modal decidir
+    o fluxo. Setando aqui, de forma síncrona e antecipada, o
+    engine sempre vê a flag = true em sua primeira checagem,
+    independente da ordem de resolução dos demais scripts.
+    O próprio quiz_starter_modal.js é quem depois define false.
   -->
   <script>
     (function () {
+      window.__NSM_AGUARDANDO__ = true;
+
       var params = new URLSearchParams(location.search);
       var disc   = params.get('disc') || 'poo';
       var sem    = params.get('sem')  || '2026.2';
       var ano    = sem.split('.')[0];
-      var href   = '../disciplinas/' + ano + '/' + disc + '.html?sem=' + sem;
-
-      document.addEventListener('DOMContentLoaded', function () {
-        var btn = document.querySelector('.back-btn');
-        if (btn) btn.href = href;
-      });
-
-      window.__NEXUS_BACK_HREF_EARLY__ = href;
+      window.__NEXUS_BACK_HREF_EARLY__ =
+        '../disciplinas/' + ano + '/' + disc + '.html?sem=' + sem;
     })();
   </script>
 </head>
 
+<!--
+  data-disciplina e data-modo são preenchidos por template_init.js.
+-->
 <body data-disciplina="" data-modo="">
 
   <div class="bg-orb bg-orb--1" aria-hidden="true"></div>
@@ -83,9 +97,7 @@
   <header class="header">
     <div class="header__inner">
 
-      <a href="../disciplinas/2026/poo.html?sem=2026.2"
-         class="back-btn"
-         aria-label="Voltar para a disciplina">
+      <a href="#" class="back-btn" aria-label="Voltar para a disciplina">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <polyline points="15 18 9 12 15 6"/>
@@ -94,7 +106,6 @@
       </a>
 
       <div id="header-logo-wrap" class="header__logo"></div>
-
       <div id="header-sem-badge" class="header__sem-badge"></div>
 
     </div>
@@ -103,7 +114,7 @@
   <!-- ═══════════════════════════════════════════
        MAIN
   ═══════════════════════════════════════════ -->
-  <main class="main" id="main-content">
+  <main class="main quiz-aguardando" id="main-content">
 
     <div class="page-header">
       <div class="page-header__eyebrow">
@@ -145,36 +156,24 @@
 
   </main>
 
-  <!-- ═══════════════════════════════════════════
-       FOOTER
-  ═══════════════════════════════════════════ -->
-  <footer class="page-footer" id="page-footer">
-    Nexus Study
-  </footer>
+  <footer class="page-footer" id="page-footer">Nexus Study</footer>
 
   <!-- ═══════════════════════════════════════════
        SCRIPTS
-
-       Ordem:
-         1. template_init.js (módulo ES) — orquestra o quiz,
-            expõe __NEXUS_QUIZ_DISC__, __NEXUS_QUIZ_MODO__ etc.
-         2. quiz_starter_modal.js (clássico, defer) — modal de início.
-            defer garante que roda após o HTML ser parseado.
-            Aguarda internamente as vars do template_init via polling.
-
-       quiz_ui.js e quiz_engine.js são injetados dinamicamente
-       por template_init._carregarQuiz() — não precisam de <script> aqui.
   ═══════════════════════════════════════════ -->
-<script type="module" src="template_init.js"></script>
+  <script type="module" src="template_init.js"></script>
 
-<!-- Dependências do Quiz-Assistant -->
-<script src="../../shared/js/ia/core/ui.js" defer></script>
-<script src="../../shared/js/ia/core/history.js" defer></script>
-<script src="../../shared/js/ia/core/worker.js" defer></script>
-<script src="../../shared/js/ia/quiz/assistant.js" defer></script>
+  <script src="../../shared/js/ia/core/ui.js" defer></script>
+  <script src="../../shared/js/ia/core/history.js" defer></script>
+  <script src="../../shared/js/ia/core/worker.js" defer></script>
+  <script src="../../shared/js/ia/quiz/assistant.js" defer></script>
 
-<script src="../js/quiz_starter_modal.js" defer></script>
-<script src="../../shared/js/utils/quick-access.js"></script>
-<script src="../../shared/js/ia/core/fab.js"></script>
+  <!-- quiz_starter_modal decide o fluxo e revela o #quiz-container -->
+  <script src="../js/quiz_starter_modal.js" defer></script>
+
+  <!-- defer: só carregam após o boot estar encaminhado -->
+  <script src="../../shared/js/utils/quick-access.js" defer></script>
+  <script src="../../shared/js/ia/core/fab.js" defer></script>
+
 </body>
 </html>

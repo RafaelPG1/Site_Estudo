@@ -445,10 +445,15 @@ function _atualizarEstadoGlobal(params) {
        8. Injeta nav-float
        9. Inicializa áudio
 
-     [assíncrono, paralelo, sem bloquear DOM]
+     [controlado pelo modal — não automático]
        10. Aguarda Firebase (máx 3s)
-       11. Carrega conteúdo + UI + engine
+       11. Carrega conteúdo + UI + engine   ← só após modal decidir
        12. Inicializa Quiz-Assistant (após engine montar questões)
+
+   IMPORTANTE: _carregarQuiz NÃO é chamado aqui.
+   É exposto via window.__nexusCarregarQuiz e chamado
+   pelo quiz_starter_modal.js após a decisão do fluxo.
+   Isso garante que o engine nunca carrega antes do modal.
    ══════════════════════════════════════════════════════════ */
 
 var _params     = _lerParams();
@@ -466,8 +471,13 @@ document.addEventListener('DOMContentLoaded', function () {
   _montarVisual(_params, _info, _modoConfig);
   _injetarNavFloat();
   _inicializarAudio();
-  _inicializarAssistant();   // ← chamado aqui, de cara
+  _inicializarAssistant();
 });
 
-_aguardarFirebase(_params);
-_carregarQuiz(_params, _info);
+/* Expõe o carregador para o modal chamar no momento certo.
+   O modal detecta progresso, decide o fluxo, e só então
+   chama esta função — evitando qualquer render antecipado. */
+window.__nexusCarregarQuiz = function () {
+  _aguardarFirebase(_params);
+  _carregarQuiz(_params, _info);
+};
