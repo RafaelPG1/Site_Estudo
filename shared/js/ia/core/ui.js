@@ -12,6 +12,7 @@
 
   let _onSend    = null;
   let _onReset   = null;
+  let _onEdit    = null;
   let _playSound = null;
 
   (function _carregarPlaySound() {
@@ -44,12 +45,19 @@
     size = size || 18;
     return (
       '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24"' +
-      ' fill="none" stroke="currentColor"' +
-      ' stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"' +
-      ' aria-hidden="true">' +
-      '<path d="M12 2 L13.5 8.5 L20 10 L13.5 11.5 L12 18 L10.5 11.5 L4 10 L10.5 8.5 Z"/>' +
-      '<circle cx="19" cy="5"  r="1.1" fill="#00c8ff" stroke="none"/>' +
-      '<circle cx="5"  cy="19" r="0.8" fill="#00c8ff" stroke="none"/>' +
+      ' fill="none" aria-hidden="true">' +
+      '<path d="M12 2' +
+        ' C12 6.5 13 9.5 15 11.5' +
+        ' C17 13.5 20 14.5 22 14.5' +
+        ' C20 14.5 17 15.5 15 17.5' +
+        ' C13 19.5 12 22.5 12 27' +
+        ' C12 22.5 11 19.5 9 17.5' +
+        ' C7 15.5 4 14.5 2 14.5' +
+        ' C4 14.5 7 13.5 9 11.5' +
+        ' C11 9.5 12 6.5 12 2 Z"' +
+        ' transform="translate(0,-2.5) scale(0.86)"' +
+        ' fill="currentColor"/>' +
+      '<circle cx="18.5" cy="5.5" r="1.2" fill="#00c8ff"/>' +
       '</svg>'
     );
   }
@@ -80,6 +88,48 @@
       ' stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
       '<line x1="22" y1="2" x2="11" y2="13"/>' +
       '<polygon points="22 2 15 22 11 13 2 9 22 2"/>' +
+      '</svg>'
+    );
+  }
+
+  function _iconCopy() {
+    return (
+      '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"' +
+      ' stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>' +
+      '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>' +
+      '</svg>'
+    );
+  }
+
+  function _iconCheck() {
+    return (
+      '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"' +
+      ' stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<polyline points="20 6 9 17 4 12"/>' +
+      '</svg>'
+    );
+  }
+
+  function _iconEdit() {
+    return (
+      '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"' +
+      ' stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>' +
+      '</svg>'
+    );
+  }
+
+  function _iconMove() {
+    return (
+      '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"' +
+      ' stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<polyline points="5 9 2 12 5 15"/>' +
+      '<polyline points="9 5 12 2 15 5"/>' +
+      '<polyline points="15 19 12 22 9 19"/>' +
+      '<polyline points="19 9 22 12 19 15"/>' +
+      '<line x1="2" y1="12" x2="22" y2="12"/>' +
+      '<line x1="12" y1="2" x2="12" y2="22"/>' +
       '</svg>'
     );
   }
@@ -164,6 +214,9 @@
         '<button id="nexus-reset" type="button" aria-label="Reiniciar conversa">' +
           _iconReset() +
         '</button>' +
+        '<button id="nexus-drag-toggle" type="button" aria-label="Ativar modo arrastar" aria-pressed="false">' +
+          _iconMove() +
+        '</button>' +
         '<button id="nexus-close" type="button" aria-label="Fechar assistente">' +
           _iconClose() +
         '</button>' +
@@ -214,12 +267,51 @@
       .replace(/"/g, '&quot;');
   }
 
+  /**
+   * Converte markdown leve (negrito, itálico, código inline) em HTML,
+   * com escaping prévio para evitar injeção.
+   *
+   * Ordem de processamento (importa):
+   *   1. `código`     — extraído primeiro e protegido via placeholder,
+   *                      para que `*` dentro de trechos de código nunca
+   *                      seja interpretado como ênfase.
+   *   2. **negrito**   — usa classe de caractere [^*] dentro do grupo
+   *                      em vez de '.', então um asterisco solto no meio
+   *                      do texto não "vaza" e captura conteúdo indevido.
+   *   3. *itálico*     — mesma lógica de classe de caractere; roda DEPOIS
+   *                      do negrito para não interpretar metade de um
+   *                      "**" como abertura de itálico.
+   *   4. placeholders de código são restaurados por último.
+   *
+   * Isso resolve o caso em que um único '*' solto no texto (comum em
+   * respostas com conteúdo matemático/técnico) fazia o regex de itálico
+   * antigo (.+?) capturar até o próximo '*' distante, produzindo um
+   * bloco de itálico indevido e fazendo o negrito parecer "não funcionar".
+   */
   function _formatarTexto(texto) {
-    var escaped = _escapeHtml(texto);
-    escaped = escaped
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.+?)\*/g,     '<em>$1</em>')
-      .replace(/`(.+?)`/g,       '<code style="font-family:\'JetBrains Mono\',monospace;font-size:11px;background:rgba(0,200,255,0.08);padding:1px 4px;border-radius:3px;">$1</code>');
+    var blocosCodigo = [];
+
+    // 1. Protege `código` antes de qualquer outro processamento
+    var semCodigo = texto.replace(/`([^`\n]+)`/g, function (_, conteudo) {
+      var idx = blocosCodigo.push(conteudo) - 1;
+      return '\u0000CODE' + idx + '\u0000';
+    });
+
+    var escaped = _escapeHtml(semCodigo);
+
+    // 2. Negrito — grupo não-greedy que não atravessa outro '**'
+    escaped = escaped.replace(/\*\*([^*]+?)\*\*/g, '<strong>$1</strong>');
+
+    // 3. Itálico — apenas asteriscos isolados (não duplicados), e o
+    //    grupo também não atravessa outro '*' sozinho
+    escaped = escaped.replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, '$1<em>$2</em>');
+
+    // 4. Restaura os blocos de código, agora com escaping próprio
+    escaped = escaped.replace(/\u0000CODE(\d+)\u0000/g, function (_, idx) {
+      var original = _escapeHtml(blocosCodigo[Number(idx)]);
+      return '<code class="nexus-inline-code">' + original + '</code>';
+    });
+
     escaped = escaped.replace(/\n/g, '<br>');
     return escaped;
   }
@@ -234,6 +326,116 @@
     );
   }
 
+  /**
+   * Bloco de ações da mensagem.
+   * - copiar: presente em todas as mensagens (usuário e bot).
+   * - editar: presente SOMENTE na mensagem do usuário (comEditar=true).
+   *
+   * O texto original (sem formatação HTML) é repassado para
+   * _bindAcoesMensagem() via parâmetro — não é lido de volta do DOM,
+   * o que evita ter que reconstruir \n e outros detalhes perdidos
+   * na conversão para HTML.
+   */
+  function _renderAcoes(comEditar) {
+    return (
+      '<div class="nexus-msg-actions">' +
+        (comEditar
+          ? '<button type="button" class="nexus-msg-action-btn nexus-action-edit"' +
+            ' aria-label="Editar mensagem" title="Editar">' +
+              _iconEdit() +
+            '</button>'
+          : '') +
+        '<button type="button" class="nexus-msg-action-btn nexus-action-copy"' +
+        ' aria-label="Copiar mensagem" title="Copiar">' +
+          _iconCopy() +
+        '</button>' +
+      '</div>'
+    );
+  }
+
+  function _copiarTexto(texto, btn) {
+    function _sucesso() {
+      if (!btn) return;
+      var originalHTML = btn.innerHTML;
+      btn.innerHTML = _iconCheck();
+      btn.classList.add('nexus-action-copiado');
+      btn.setAttribute('aria-label', 'Copiado');
+      setTimeout(function () {
+        btn.innerHTML = originalHTML;
+        btn.classList.remove('nexus-action-copiado');
+        btn.setAttribute('aria-label', 'Copiar mensagem');
+      }, 1400);
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(texto).then(_sucesso).catch(function () {
+        _copiarFallback(texto, _sucesso);
+      });
+    } else {
+      _copiarFallback(texto, _sucesso);
+    }
+  }
+
+  function _copiarFallback(texto, onSucesso) {
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = texto;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      if (typeof onSucesso === 'function') onSucesso();
+    } catch (e) {
+      console.warn('[NexusUI] não foi possível copiar:', e);
+    }
+  }
+
+  /**
+   * Coloca o texto da mensagem do usuário de volta no campo de input,
+   * focado e com o cursor no final, pronto para edição.
+   *
+   * ui.js só cuida do aspecto visual (preencher e focar o input).
+   * Se quem chamou init() passou um onEdit(texto), ele é notificado
+   * para tratar a parte de domínio (ex: remover a mensagem antiga e
+   * a resposta da IA que veio depois do histórico em core/history.js),
+   * já que essa lógica não pertence à camada de renderização.
+   */
+  function _editarMensagem(texto) {
+    var input = document.getElementById('nexus-input');
+    if (!input) return;
+
+    input.value = texto;
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 100) + 'px';
+    input.focus();
+
+    var len = input.value.length;
+    input.setSelectionRange(len, len);
+
+    if (typeof _onEdit === 'function') _onEdit(texto);
+  }
+
+  function _bindAcoesMensagem(el, textoOriginal) {
+    var copyBtn = el.querySelector('.nexus-action-copy');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        _copiarTexto(textoOriginal, copyBtn);
+      });
+    }
+
+    var editBtn = el.querySelector('.nexus-action-edit');
+    if (editBtn) {
+      editBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        _editarMensagem(textoOriginal);
+      });
+    }
+  }
+
   function renderMessage(msg) {
     var container = document.getElementById('nexus-messages');
     if (!container) return;
@@ -246,8 +448,9 @@
         '<div class="nexus-msg-avatar" aria-hidden="true">' + _iconUser() + '</div>' +
         '<div class="nexus-msg-wrap">' +
           '<div class="nexus-msg-bubble">' + _formatarTexto(msg.text) + '</div>' +
-          (msg.time ? '<div class="nexus-msg-time">' + _escapeHtml(msg.time) + '</div>' : '') +
+          _renderAcoes(true) +
         '</div>';
+      _bindAcoesMensagem(el, msg.text);
 
     } else if (msg.role === 'bot') {
       el.className = 'nexus-msg nexus-bot';
@@ -258,8 +461,9 @@
             _formatarTexto(msg.text) +
             _renderRodape(msg.rodape) +
           '</div>' +
-          (msg.time ? '<div class="nexus-msg-time">' + _escapeHtml(msg.time) + '</div>' : '') +
+          _renderAcoes(false) +
         '</div>';
+      _bindAcoesMensagem(el, msg.text);
 
     } else {
       el.className = 'nexus-msg nexus-system';
@@ -493,6 +697,241 @@
   }
 
   /* ══════════════════════════════════════════════════════════
+     MODO ARRASTAR (DRAGGABLE)
+
+     Quando ativado via #nexus-drag-toggle:
+       - o painel ganha a classe .nexus-panel--draggable, que zera
+         as âncoras bottom/right do CSS padrão;
+       - arrastar pelo header (#nexus-header) reposiciona o painel
+         via top/left inline, em coordenadas fixas de viewport;
+       - a posição é persistida em localStorage e restaurada no
+         próximo carregamento, enquanto o modo continuar ativo;
+       - desativar o modo remove o estilo inline e a classe,
+         devolvendo o controle ao CSS (posição padrão: à esquerda
+         do FAB).
+  ══════════════════════════════════════════════════════════ */
+
+  var DRAG_ATIVO_KEY = 'nexus_chat_drag_ativo';
+  var DRAG_POS_KEY   = 'nexus_chat_drag_pos';
+
+  var _dragState = {
+    ativo:      false,
+    arrastando: false,
+    offsetX:    0,
+    offsetY:    0,
+  };
+
+  function _lerDragAtivo() {
+    try { return localStorage.getItem(DRAG_ATIVO_KEY) === '1'; }
+    catch (e) { return false; }
+  }
+
+  function _salvarDragAtivo(ativo) {
+    try {
+      if (ativo) localStorage.setItem(DRAG_ATIVO_KEY, '1');
+      else       localStorage.removeItem(DRAG_ATIVO_KEY);
+    } catch (e) {}
+  }
+
+  function _lerDragPos() {
+    try {
+      var raw = localStorage.getItem(DRAG_POS_KEY);
+      if (!raw) return null;
+      var pos = JSON.parse(raw);
+      if (typeof pos.top !== 'number' || typeof pos.left !== 'number') return null;
+      return pos;
+    } catch (e) { return null; }
+  }
+
+  function _salvarDragPos(top, left) {
+    try { localStorage.setItem(DRAG_POS_KEY, JSON.stringify({ top: top, left: left })); }
+    catch (e) {}
+  }
+
+  function _limparDragPos() {
+    try { localStorage.removeItem(DRAG_POS_KEY); } catch (e) {}
+  }
+
+  /** Mantém o painel dentro dos limites visíveis da viewport. */
+  function _clampPos(top, left, panel) {
+    var margem = 8;
+    var maxLeft = window.innerWidth  - panel.offsetWidth  - margem;
+    var maxTop  = window.innerHeight - panel.offsetHeight - margem;
+    left = Math.min(Math.max(left, margem), Math.max(maxLeft, margem));
+    top  = Math.min(Math.max(top,  margem), Math.max(maxTop,  margem));
+    return { top: top, left: left };
+  }
+
+  function _aplicarPosicaoSalva() {
+    var panel = document.getElementById('nexus-panel');
+    if (!panel) return;
+    var pos = _lerDragPos();
+    if (!pos) return;
+    var clamped = _clampPos(pos.top, pos.left, panel);
+    panel.style.top  = clamped.top  + 'px';
+    panel.style.left = clamped.left + 'px';
+  }
+
+  function _ativarModoDrag() {
+    var panel  = document.getElementById('nexus-panel');
+    var header = document.getElementById('nexus-header');
+    var toggle = document.getElementById('nexus-drag-toggle');
+    if (!panel || !header) return;
+
+    _dragState.ativo = true;
+    panel.classList.add('nexus-panel--draggable');
+    header.classList.add('nexus-drag-enabled');
+    if (toggle) {
+      toggle.classList.add('nexus-drag-ativo');
+      toggle.setAttribute('aria-pressed', 'true');
+      toggle.setAttribute('aria-label', 'Desativar modo arrastar');
+      toggle.title = 'Desativar modo arrastar';
+    }
+
+    var posSalva = _lerDragPos();
+    if (posSalva) {
+      _aplicarPosicaoSalva();
+    } else {
+      // Primeira ativação: parte da posição visual atual do painel
+      // (calculada a partir do layout CSS padrão) para não "pular".
+      var rect = panel.getBoundingClientRect();
+      panel.style.top  = rect.top  + 'px';
+      panel.style.left = rect.left + 'px';
+      _salvarDragPos(rect.top, rect.left);
+    }
+
+    _salvarDragAtivo(true);
+  }
+
+  function _desativarModoDrag() {
+    var panel  = document.getElementById('nexus-panel');
+    var header = document.getElementById('nexus-header');
+    var toggle = document.getElementById('nexus-drag-toggle');
+    if (!panel || !header) return;
+
+    _dragState.ativo = false;
+    panel.classList.remove('nexus-panel--draggable');
+    panel.style.top  = '';
+    panel.style.left = '';
+    header.classList.remove('nexus-drag-enabled');
+    if (toggle) {
+      toggle.classList.remove('nexus-drag-ativo');
+      toggle.setAttribute('aria-pressed', 'false');
+      toggle.setAttribute('aria-label', 'Ativar modo arrastar');
+      toggle.title = 'Ativar modo arrastar';
+    }
+
+    _salvarDragAtivo(false);
+    _limparDragPos();
+  }
+
+  function _onDragStart(clientX, clientY) {
+    var panel = document.getElementById('nexus-panel');
+    if (!panel || !_dragState.ativo) return;
+    var rect = panel.getBoundingClientRect();
+    _dragState.arrastando = true;
+    _dragState.offsetX = clientX - rect.left;
+    _dragState.offsetY = clientY - rect.top;
+    panel.classList.add('nexus-dragging');
+  }
+
+  function _onDragMove(clientX, clientY) {
+    if (!_dragState.arrastando) return;
+    var panel = document.getElementById('nexus-panel');
+    if (!panel) return;
+    var novoTop  = clientY - _dragState.offsetY;
+    var novoLeft = clientX - _dragState.offsetX;
+    var clamped  = _clampPos(novoTop, novoLeft, panel);
+    panel.style.top  = clamped.top  + 'px';
+    panel.style.left = clamped.left + 'px';
+  }
+
+  function _onDragEnd() {
+    if (!_dragState.arrastando) return;
+    _dragState.arrastando = false;
+    var panel = document.getElementById('nexus-panel');
+    if (!panel) return;
+    panel.classList.remove('nexus-dragging');
+    var top  = parseFloat(panel.style.top)  || 0;
+    var left = parseFloat(panel.style.left) || 0;
+    _salvarDragPos(top, left);
+  }
+
+  function _bindDrag() {
+    var header = document.getElementById('nexus-header');
+    var toggle = document.getElementById('nexus-drag-toggle');
+    if (!header || !toggle) return;
+
+    // init() pode ser chamado mais de uma vez pelos assistants de
+    // domínio (resumo/quiz) — sem esta guarda, os listeners em
+    // document/window (mousemove, mouseup, resize) se acumulariam
+    // a cada chamada, causando comportamento errático no drag.
+    if (header.dataset.nexusDragBound) return;
+    header.dataset.nexusDragBound = '1';
+
+    toggle.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (typeof _playSound === 'function') _playSound('click', 'inicial');
+      if (_dragState.ativo) _desativarModoDrag();
+      else _ativarModoDrag();
+    });
+
+    // Mouse
+    header.addEventListener('mousedown', function (e) {
+      if (!_dragState.ativo) return;
+      // Não inicia drag se o clique foi em um dos botões do header
+      if (e.target.closest('button')) return;
+      e.preventDefault();
+      _onDragStart(e.clientX, e.clientY);
+    });
+
+    document.addEventListener('mousemove', function (e) {
+      if (!_dragState.arrastando) return;
+      _onDragMove(e.clientX, e.clientY);
+    });
+
+    document.addEventListener('mouseup', _onDragEnd);
+
+    // Touch
+    header.addEventListener('touchstart', function (e) {
+      if (!_dragState.ativo) return;
+      if (e.target.closest('button')) return;
+      var t = e.touches[0];
+      _onDragStart(t.clientX, t.clientY);
+    }, { passive: true });
+
+    header.addEventListener('touchmove', function (e) {
+      if (!_dragState.arrastando) return;
+      var t = e.touches[0];
+      _onDragMove(t.clientX, t.clientY);
+      e.preventDefault();
+      // Impede que o evento suba até o listener de scroll isolado
+      // do painel (_bindScrollIsolado), que também trata touchmove
+      // e poderia interferir durante o arraste pelo header.
+      e.stopPropagation();
+    }, { passive: false });
+
+    header.addEventListener('touchend', _onDragEnd);
+
+    // Reposiciona dentro da viewport se a janela for redimensionada
+    window.addEventListener('resize', function () {
+      if (!_dragState.ativo) return;
+      var panel = document.getElementById('nexus-panel');
+      if (!panel || !panel.style.top) return;
+      var clamped = _clampPos(parseFloat(panel.style.top), parseFloat(panel.style.left), panel);
+      panel.style.top  = clamped.top  + 'px';
+      panel.style.left = clamped.left + 'px';
+      _salvarDragPos(clamped.top, clamped.left);
+    });
+
+    // Restaura o modo drag (se estava ativo antes de F5)
+    if (_lerDragAtivo()) {
+      // Espera o layout estabilizar antes de medir/posicionar
+      requestAnimationFrame(function () { _ativarModoDrag(); });
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════
      INICIALIZAÇÃO
   ══════════════════════════════════════════════════════════ */
 
@@ -500,6 +939,7 @@
     opts     = opts    || {};
     _onSend  = opts.onSend  || null;
     _onReset = opts.onReset || null;
+    _onEdit  = opts.onEdit  || null;
 
     // Reutiliza o botão se fab.js já o injetou; cria apenas se ausente
     var fab = document.getElementById('nexus-fab') || _criarFAB();
@@ -520,6 +960,7 @@
 
     _bindInput();
     _bindReset();
+    _bindDrag();
 
     var panel = document.getElementById('nexus-panel');
     if (panel) _bindScrollIsolado(panel);

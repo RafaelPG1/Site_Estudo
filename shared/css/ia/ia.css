@@ -1,48 +1,72 @@
 /* shared/css/ia/ia.css */
 
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 /* ── VARIÁVEIS ─────────────────────────────────────────────── */
 :root {
   --nx-bg:           #080c14;
   --nx-surface:      #0d1320;
   --nx-surface-2:    #111927;
-  --nx-border:       rgba(0, 200, 255, 0.12);
-  --nx-border-hover: rgba(0, 200, 255, 0.35);
+  --nx-border:       rgba(0, 200, 255, 0.10);
+  --nx-border-hover: rgba(0, 200, 255, 0.30);
   --nx-accent:       #00c8ff;
-  --nx-accent-dim:   rgba(0, 200, 255, 0.08);
-  --nx-accent-glow:  rgba(0, 200, 255, 0.25);
-  --nx-text:         #d4e8f0;
-  --nx-text-dim:     #5a7a8a;
-  --nx-user-bg:      rgba(0, 200, 255, 0.10);
-  --nx-bot-bg:       rgba(255, 255, 255, 0.04);
-  --nx-radius:       14px;
-  --nx-radius-msg:   10px;
-  --nx-shadow:       0 8px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--nx-border);
-  --nx-font-ui:      'Syne', sans-serif;
-  --nx-font-mono:    'JetBrains Mono', monospace;
+  --nx-accent-dim:   rgba(0, 200, 255, 0.07);
+  --nx-accent-glow:  rgba(0, 200, 255, 0.18);
+
+  /* ── Hierarquia de texto (3 níveis) ──────────────────────────
+     titulo: nome do assistente, cabeçalhos — o mais forte
+     corpo:  texto das mensagens — confortável p/ leitura longa,
+             nunca branco puro
+     dim:    timestamps, fontes, status — discreto, baixo contraste
+     Todos os três mantêm contraste AA (>=4.5:1) sobre --nx-bg. */
+  --nx-text-titulo:  #f1f5f8;
+  --nx-text:         #c7cfd6;
+  --nx-text-dim:     #6b7f8e;
+
+  --nx-user-bg:      rgba(0, 200, 255, 0.07);
+  --nx-bot-bg:       rgba(255, 255, 255, 0.03);
+  --nx-radius:       16px;
+  --nx-radius-msg:   14px;
+  --nx-shadow:       0 12px 32px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--nx-border);
+  --nx-font-ui:      'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --nx-font-mono:    'JetBrains Mono', 'SF Mono', monospace;
   --nx-z-btn:        9998;
   --nx-z-panel:      9999;
-  --nx-transition:   0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  --nx-transition:   0.18s cubic-bezier(0.4, 0, 0.2, 1);
 
-  --nx-disc-active-bg:   rgba(0, 200, 255, 0.06);
-  --nx-disc-active-text: var(--nx-accent);
+  --nx-disc-active-bg:   rgba(0, 200, 255, 0.045);
+  --nx-disc-active-text: #6fd4f0;
   --nx-chip-border:      var(--nx-border-hover);
-  --nx-chip-text:        var(--nx-accent);
-  --nx-chip-hover-bg:    rgba(0, 200, 255, 0.14);
-  --nx-feedback-hover:   rgba(255, 255, 255, 0.06);
+  --nx-chip-text:        #5cc3e8;
+  --nx-chip-hover-bg:    rgba(0, 200, 255, 0.10);
+  --nx-feedback-hover:   rgba(255, 255, 255, 0.05);
 
-  --nx-cmd-color:        #ffb347;
-  --nx-cmd-color-dim:    rgba(255, 179, 71, 0.10);
-  --nx-cmd-color-border: rgba(255, 179, 71, 0.40);
-  --nx-cmd-color-hover:  rgba(255, 179, 71, 0.18);
-  --nx-cmd-color-glow:   rgba(255, 179, 71, 0.25);
+  --nx-cmd-color:        #e6a85c;
+  --nx-cmd-color-dim:    rgba(255, 179, 71, 0.08);
+  --nx-cmd-color-border: rgba(255, 179, 71, 0.32);
+  --nx-cmd-color-hover:  rgba(255, 179, 71, 0.14);
+  --nx-cmd-color-glow:   rgba(255, 179, 71, 0.18);
+
+  /* Alça de arrastar (drag handle) */
+  --nx-drag-color:        #b18cf0;
+  --nx-drag-color-dim:    rgba(192, 132, 252, 0.08);
+  --nx-drag-color-border: rgba(192, 132, 252, 0.32);
+  --nx-drag-color-hover:  rgba(192, 132, 252, 0.14);
+}
+
+/* Números tabulares + antialiasing — corrige o desalinhamento numérico
+   e melhora a nitidez geral do texto renderizado no painel */
+#nexus-panel,
+#nexus-fab {
+  font-feature-settings: 'tnum' 1, 'cv11' 1;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   BOTÃO FLUTUANTE DA IA — redesenhado para parear com .abtn
-   Mesmo tamanho 44×44, mesmo right 28px, posição base 24px.
-   Visual: hexágono/círculo minimalista dark com acento ciano.
+   BOTÃO FLUTUANTE DA IA — sólido, premium, sem animações de idle.
+   Tamanho 44×44, mesma posição base dos demais controles do site.
    ══════════════════════════════════════════════════════════════ */
 
 #nexus-fab {
@@ -50,13 +74,9 @@
   bottom: 24px;
   right: 28px;
   z-index: var(--nx-z-btn);
-
-  /* TAMANHO IGUAL AOS BOTÕES DE ÁUDIO */
   width: 44px;
   height: 44px;
   border-radius: 50%;
-
-  /* Sem border aqui — a borda é feita via ::before e .body para consistência */
   border: none;
   background: none;
   cursor: pointer;
@@ -66,29 +86,15 @@
   outline: none;
   flex-shrink: 0;
   -webkit-tap-highlight-color: transparent;
-
-  /* Sem animation padrão — os efeitos são todos via pseudo-elementos abaixo */
 }
-
-/* Anel externo — eco visual */
+/* Anel externo — discreto, estático (sem pulse) */
 #nexus-fab::before {
   content: '';
   position: absolute;
-  inset: -5px;
+  inset: -4px;
   border-radius: 50%;
-  border: 1px solid rgba(0, 200, 255, 0.13);
-  transition: border-color 0.5s, transform 0.4s;
-  pointer-events: none;
-}
-
-/* Anel médio */
-#nexus-fab::after {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: 50%;
-  border: 1px solid rgba(0, 200, 255, 0.20);
-  transition: border-color 0.5s;
+  border: 1px solid rgba(0, 200, 255, 0.14);
+  transition: border-color 0.25s ease, transform 0.25s ease;
   pointer-events: none;
 }
 
@@ -97,105 +103,77 @@
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: rgba(6, 18, 36, 0.88);
-  border: 1px solid rgba(0, 200, 255, 0.25);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: linear-gradient(160deg, rgba(10, 24, 42, 0.96), rgba(6, 14, 26, 0.96));
+  border: 1px solid rgba(0, 200, 255, 0.28);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: border-color 0.5s, background 0.5s, transform 0.12s;
+  transition: border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
 }
 
-/* Linha de reflexo no topo — igual ao .abtn .body::before */
+/* Linha de reflexo no topo */
 #nexus-fab-body::before {
   content: '';
   position: absolute;
   top: 0;
-  left: 12%;
-  right: 12%;
+  left: 14%;
+  right: 14%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(180, 240, 255, 0.28), transparent);
+  background: linear-gradient(90deg, transparent, rgba(180, 240, 255, 0.30), transparent);
 }
 
 /* Ícone IA — wrap */
 #nexus-fab-icon-wrap {
   position: relative;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* SVG do ícone */
+/* SVG do ícone — sem animação própria; só reage ao estado do botão.
+   O ícone atual é desenhado via fill (não stroke). */
 #nexus-fab-icon {
-  width: 18px;
-  height: 18px;
-  color: #00c8ff;
-  stroke: #00c8ff;
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s;
+  width: 19px;
+  height: 19px;
+  color: var(--nx-accent);
+  display: flex;
+  transition: opacity 0.15s ease;
 }
 
-/* Estados */
+/* Hover — apenas leve elevação, sem girar nada */
 #nexus-fab:hover::before {
-  border-color: rgba(0, 200, 255, 0.35);
-  transform: scale(1.07);
-}
-
-#nexus-fab:hover::after {
-  border-color: rgba(0, 200, 255, 0.42);
+  border-color: rgba(0, 200, 255, 0.32);
 }
 
 #nexus-fab:hover #nexus-fab-body {
-  border-color: rgba(0, 200, 255, 0.42);
-  background: rgba(6, 18, 36, 0.94);
-}
-
-#nexus-fab:hover #nexus-fab-icon {
-  transform: scale(1.12);
+  border-color: rgba(0, 200, 255, 0.45);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 14px var(--nx-accent-glow);
 }
 
 #nexus-fab:active #nexus-fab-body {
-  transform: scale(0.92);
+  transform: scale(0.94);
 }
 
-/* Estado aberto: ícone gira para X */
+/* Estado aberto: ícone só perde opacidade — sem girar 45° */
 #nexus-fab.nexus-active #nexus-fab-icon {
-  transform: rotate(45deg) scale(0.88);
-  opacity: 0.65;
+  opacity: 0.55;
 }
 
-/* Pulse sutil quando fechado — mesmo estilo do .abtn */
-@keyframes nexus-fab-idle {
-  0%, 100% { opacity: 0.85; }
-  50%       { opacity: 1; }
+#nexus-fab.nexus-active #nexus-fab-body {
+  border-color: rgba(0, 200, 255, 0.45);
 }
 
-#nexus-fab:not(.nexus-active) #nexus-fab-body {
-  animation: nexus-fab-idle 3s ease-in-out infinite;
-}
-
-/* Ripple ao abrir */
+/* Ripple foi removido (efeito de "explosão" exagerado).
+   #nexus-fab-ripple permanece no DOM por compatibilidade com ui.js,
+   mas é mantido invisível e inerte. */
 #nexus-fab-ripple {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 2px solid rgba(0, 200, 255, 0.5);
-  opacity: 0;
-  pointer-events: none;
+  display: none;
 }
 
-@keyframes nexus-fab-pulse {
-  0%   { transform: scale(0.88); opacity: 0.75; }
-  100% { transform: scale(1.65); opacity: 0; }
-}
-
-#nexus-fab.nexus-active #nexus-fab-ripple {
-  animation: nexus-fab-pulse 0.55s ease-out forwards;
-}
-
-/* Tooltip "IA" ao hover — igual ao ::after dos botões de música */
+/* Tooltip "nexus ia" ao hover */
 #nexus-fab .nexus-fab-label {
   position: absolute;
   right: calc(100% + 10px);
@@ -207,11 +185,12 @@
   padding: 4px 8px;
   font-size: 10px;
   font-family: var(--nx-font-mono);
+  font-weight: 500;
   color: rgba(0, 210, 255, 0.85);
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity 0.15s ease, transform 0.15s ease;
   letter-spacing: 0.04em;
 }
 
@@ -221,14 +200,15 @@
 }
 
 /* ── PAINEL DO CHAT ─────────────────────────────────────────── */
+/* bottom/right definitivos ficam no bloco "POSICIONAMENTO" ao final
+   deste arquivo — é a fonte única de verdade para a posição padrão
+   (painel ancorado à esquerda do FAB). Não duplicar aqui. */
 #nexus-panel {
   position: fixed;
-  bottom: 96px;
-  right: 28px;
   z-index: var(--nx-z-panel);
-  width: 380px;
+  width: 384px;
   max-width: calc(100vw - 32px);
-  height: 540px;
+  height: 560px;
   max-height: calc(100vh - 120px);
   background: var(--nx-surface);
   border: 1px solid var(--nx-border);
@@ -240,17 +220,23 @@
   font-family: var(--nx-font-ui);
 
   opacity: 0;
-  transform: translateY(18px) scale(0.97);
+  transform: translateY(14px) scale(0.98);
   pointer-events: none;
   transition:
-    opacity 0.26s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.26s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #nexus-panel.nexus-open {
   opacity: 1;
   transform: translateY(0) scale(1);
   pointer-events: all;
+}
+
+/* Painel arrastado perde a transição de transform para não "deslizar"
+   atrás do cursor durante o drag — ver regra .nexus-dragging abaixo */
+#nexus-panel.nexus-dragging {
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #nexus-panel::before {
@@ -268,15 +254,25 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 14px 16px;
+  padding: 13px 14px;
   border-bottom: 1px solid var(--nx-border);
   background: var(--nx-bg);
   flex-shrink: 0;
+  user-select: none;
+}
+
+#nexus-header.nexus-drag-enabled {
+  cursor: grab;
+}
+
+#nexus-header.nexus-drag-enabled:active,
+#nexus-panel.nexus-dragging #nexus-header {
+  cursor: grabbing;
 }
 
 #nexus-header-icon {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: 8px;
   background: var(--nx-accent-dim);
   border: 1px solid var(--nx-border-hover);
@@ -287,8 +283,8 @@
 }
 
 #nexus-header-icon svg {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
 }
 
 #nexus-header-info {
@@ -297,22 +293,24 @@
 }
 
 #nexus-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--nx-text);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  line-height: 1;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--nx-text-titulo);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  font-family: var(--nx-font-ui);
 }
 
 #nexus-subtitle {
-  font-size: 10px;
+  font-size: 10.5px;
   color: var(--nx-text-dim);
-  font-family: var(--nx-font-mono);
-  margin-top: 3px;
+  font-family: var(--nx-font-ui);
+  font-weight: 500;
+  margin-top: 2px;
   display: flex;
   align-items: center;
   gap: 5px;
+  letter-spacing: 0.01em;
 }
 
 .nexus-status-dot {
@@ -334,8 +332,8 @@
 }
 
 #nexus-close {
-  width: 28px;
-  height: 28px;
+  width: 27px;
+  height: 27px;
   border-radius: 7px;
   border: 1px solid var(--nx-border);
   background: transparent;
@@ -360,84 +358,102 @@
   height: 12px;
 }
 
-/* ── BARRA DE DISCIPLINA ATIVA ──────────────────────────────── */
+/* ── BARRA DE DISCIPLINA ATIVA ───────────────────────────────
+   Convertida em badge/pill compacto (não ocupa a largura toda),
+   para não competir visualmente com o header como uma segunda
+   barra de título. */
 #nexus-disc-bar {
   display: flex;
   align-items: center;
-  padding: 5px 14px;
-  background: var(--nx-bg);
+  padding: 7px 14px 6px;
+  background: transparent;
   border-bottom: 1px solid var(--nx-border);
-  min-height: 26px;
+  min-height: 0;
   flex-shrink: 0;
-  transition: background var(--nx-transition);
 }
 
 #nexus-disc-label {
-  font-family: var(--nx-font-mono);
-  font-size: 10px;
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--nx-font-ui);
+  font-size: 10.5px;
   font-weight: 500;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.01em;
   color: var(--nx-text-dim);
-  transition: color var(--nx-transition);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  padding: 3px 10px;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-#nexus-disc-bar.nexus-disc-ativa {
-  background: var(--nx-disc-active-bg);
+  max-width: 100%;
 }
 
 #nexus-disc-bar.nexus-disc-ativa #nexus-disc-label {
   color: var(--nx-disc-active-text);
+  background: var(--nx-disc-active-bg);
+  border-color: rgba(0, 200, 255, 0.16);
 }
 
-#nexus-disc-bar.nexus-disc-ativa::before {
-  content: '📚';
+#nexus-disc-bar.nexus-disc-ativa #nexus-disc-label::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
   margin-right: 6px;
-  font-size: 11px;
   flex-shrink: 0;
-  line-height: 1;
+  opacity: 0.8;
 }
 
 /* ── ÁREA DE MENSAGENS ──────────────────────────────────────── */
 #nexus-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 20px 18px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 16px;
   scroll-behavior: smooth;
 }
 
-#nexus-messages::-webkit-scrollbar       { width: 4px; }
+/* Scrollbar fina e discreta — Firefox */
+#nexus-messages {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 200, 255, 0.18) transparent;
+}
+
+/* Scrollbar fina e discreta — WebKit */
+#nexus-messages::-webkit-scrollbar       { width: 5px; }
 #nexus-messages::-webkit-scrollbar-track { background: transparent; }
 #nexus-messages::-webkit-scrollbar-thumb {
-  background: var(--nx-border);
-  border-radius: 4px;
+  background: rgba(0, 200, 255, 0.16);
+  border-radius: 10px;
+  transition: background 0.15s ease;
 }
 #nexus-messages::-webkit-scrollbar-thumb:hover {
-  background: var(--nx-border-hover);
+  background: rgba(0, 200, 255, 0.32);
 }
 
 /* ── MENSAGEM BASE ──────────────────────────────────────────── */
 .nexus-msg {
   display: flex;
-  gap: 8px;
+  gap: 9px;
   align-items: flex-end;
-  animation: nexus-msg-in 0.22s cubic-bezier(0.4, 0, 0.2, 1) both;
-  max-width: 92%;
+  animation: nexus-msg-in 0.18s ease-out both;
+  max-width: 94%;
 }
 
 @keyframes nexus-msg-in {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
 .nexus-msg-avatar {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: 8px;
   flex-shrink: 0;
   display: flex;
@@ -447,21 +463,43 @@
   align-self: flex-start;
 }
 
+.nexus-msg-wrap {
+  min-width: 0;
+  max-width: 100%;
+}
+
 .nexus-msg-bubble {
-  padding: 9px 13px;
+  padding: 11px 15px;
   border-radius: var(--nx-radius-msg);
-  font-size: 13px;
-  line-height: 1.55;
+  font-family: var(--nx-font-ui);
+  font-size: 13.5px;
+  font-weight: 400;
+  line-height: 1.65;
+  letter-spacing: 0;
   word-break: break-word;
   position: relative;
 }
 
-.nexus-msg-time {
+.nexus-msg-bubble strong {
+  font-weight: 600;
+  color: var(--nx-text-titulo);
+}
+
+.nexus-msg-bubble em {
+  font-style: italic;
+  color: inherit;
+}
+
+.nexus-inline-code {
   font-family: var(--nx-font-mono);
-  font-size: 9px;
-  color: var(--nx-text-dim);
-  margin-top: 4px;
-  padding: 0 2px;
+  font-size: 0.86em;
+  font-feature-settings: 'tnum' 1;
+  background: rgba(0, 200, 255, 0.07);
+  border: 1px solid rgba(0, 200, 255, 0.10);
+  color: var(--nx-text);
+  padding: 1px 5px;
+  border-radius: 4px;
+  white-space: pre-wrap;
 }
 
 /* ── MENSAGEM USUÁRIO ───────────────────────────────────────── */
@@ -478,13 +516,16 @@
 
 .nexus-msg.nexus-user .nexus-msg-bubble {
   background: var(--nx-user-bg);
-  border: 1px solid rgba(0, 200, 255, 0.18);
+  border: 1px solid rgba(0, 200, 255, 0.12);
   color: var(--nx-text);
-  border-bottom-right-radius: 3px;
+  border-bottom-right-radius: 4px;
 }
 
-.nexus-msg.nexus-user .nexus-msg-time {
-  text-align: right;
+/* Ações da mensagem do usuário (editar + copiar) — alinhadas à
+   direita da bolha; só aparecem no hover (ver regra genérica
+   .nexus-msg:hover .nexus-msg-actions abaixo) */
+.nexus-msg.nexus-user .nexus-msg-actions {
+  justify-content: flex-end;
 }
 
 /* ── MENSAGEM BOT ───────────────────────────────────────────── */
@@ -501,10 +542,17 @@
 .nexus-msg.nexus-bot .nexus-msg-bubble {
   background: var(--nx-bot-bg);
   border: 1px solid var(--nx-border);
-  color: var(--nx-text-dim);
-  font-family: var(--nx-font-mono);
-  font-size: 12px;
-  border-bottom-left-radius: 3px;
+  color: var(--nx-text);
+  font-family: var(--nx-font-ui);
+  font-size: 13.5px;
+  font-weight: 400;
+  border-bottom-left-radius: 4px;
+}
+
+/* Ações da mensagem do bot (copiar) — alinhadas à direita da bolha;
+   só aparecem no hover, mesmo comportamento da mensagem do usuário */
+.nexus-msg.nexus-bot .nexus-msg-actions {
+  justify-content: flex-end;
 }
 
 /* ── MENSAGEM SISTEMA ───────────────────────────────────────── */
@@ -515,13 +563,15 @@
 
 .nexus-msg.nexus-system .nexus-msg-bubble {
   background: transparent;
-  border: 1px dashed var(--nx-border);
+  border: 1px dashed rgba(120, 145, 160, 0.18);
   color: var(--nx-text-dim);
-  font-size: 11px;
+  font-size: 10.5px;
+  font-weight: 400;
   font-family: var(--nx-font-mono);
   text-align: center;
   border-radius: 8px;
-  padding: 7px 14px;
+  padding: 6px 14px;
+  letter-spacing: 0.01em;
 }
 
 /* ── BANNER RESTAURAÇÃO ─────────────────────────────────────── */
@@ -530,6 +580,58 @@
   color: var(--nx-text-dim);
   border-style: dashed;
   padding: 4px 10px;
+}
+
+/* ── AÇÕES DE MENSAGEM (editar / copiar) ──────────────────────
+   Ocultas por padrão; só aparecem no hover da mensagem (usuário
+   e bot têm o mesmo comportamento). O botão de editar só existe
+   na mensagem do usuário — ver _renderAcoes() em ui.js.
+   Em telas touch (sem hover confiável), ficam levemente visíveis
+   o tempo todo para permanecerem acessíveis. */
+.nexus-msg-actions {
+  display: flex;
+  gap: 4px;
+  margin-top: 3px;
+  padding: 0 2px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.nexus-msg:hover .nexus-msg-actions {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .nexus-msg-actions { opacity: 0.55; }
+}
+
+.nexus-msg-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--nx-text-dim);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  outline: none;
+  flex-shrink: 0;
+}
+
+.nexus-msg-action-btn:hover {
+  background: var(--nx-feedback-hover);
+  border-color: var(--nx-border);
+  color: var(--nx-text);
+}
+
+.nexus-msg-action-btn svg { width: 12px; height: 12px; }
+
+.nexus-msg-action-btn.nexus-action-copiado {
+  color: #6dbf96;
+  border-color: rgba(109, 191, 150, 0.35);
 }
 
 /* ── TYPING INDICATOR ───────────────────────────────────────── */
@@ -543,8 +645,8 @@
 #nexus-typing.nexus-visible { display: flex; }
 
 #nexus-typing .nexus-msg-avatar {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: 8px;
   background: rgba(255, 179, 71, 0.08);
   border: 1px solid rgba(255, 179, 71, 0.20);
@@ -559,11 +661,11 @@
 .nexus-typing-dots {
   display: flex;
   gap: 4px;
-  padding: 11px 14px;
+  padding: 12px 14px;
   background: var(--nx-bot-bg);
   border: 1px solid var(--nx-border);
   border-radius: var(--nx-radius-msg);
-  border-bottom-left-radius: 3px;
+  border-bottom-left-radius: 4px;
 }
 
 .nexus-typing-dots span {
@@ -583,7 +685,7 @@
 
 /* ── INPUT AREA ─────────────────────────────────────────────── */
 #nexus-footer {
-  padding: 12px 14px;
+  padding: 12px 14px 13px;
   border-top: 1px solid var(--nx-border);
   background: var(--nx-bg);
   flex-shrink: 0;
@@ -599,29 +701,40 @@
   flex: 1;
   background: var(--nx-surface-2);
   border: 1px solid var(--nx-border);
-  border-radius: 10px;
-  padding: 10px 13px;
+  border-radius: 12px;
+  padding: 11px 14px;
   font-family: var(--nx-font-ui);
-  font-size: 13px;
+  font-size: 13.5px;
+  font-weight: 400;
   color: var(--nx-text);
   outline: none;
   resize: none;
-  min-height: 40px;
-  max-height: 100px;
+  min-height: 42px;
+  max-height: 120px;
   transition: border-color var(--nx-transition), box-shadow var(--nx-transition),
               color var(--nx-transition), caret-color var(--nx-transition);
-  line-height: 1.4;
+  line-height: 1.45;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 200, 255, 0.18) transparent;
+}
+
+#nexus-input::-webkit-scrollbar       { width: 5px; }
+#nexus-input::-webkit-scrollbar-track { background: transparent; }
+#nexus-input::-webkit-scrollbar-thumb {
+  background: rgba(0, 200, 255, 0.16);
+  border-radius: 10px;
 }
 
 #nexus-input::placeholder {
   color: var(--nx-text-dim);
-  font-size: 12px;
+  opacity: 0.85;
+  font-size: 13px;
 }
 
 #nexus-input:focus {
   border-color: var(--nx-border-hover);
-  box-shadow: 0 0 0 3px var(--nx-accent-dim);
+  box-shadow: 0 0 0 2.5px var(--nx-accent-dim);
 }
 
 #nexus-input:disabled {
@@ -646,9 +759,9 @@
 }
 
 #nexus-send {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
   border: 1px solid var(--nx-border-hover);
   background: var(--nx-accent-dim);
   cursor: pointer;
@@ -664,12 +777,11 @@
 }
 
 #nexus-send:hover {
-  background: rgba(0, 200, 255, 0.18);
-  box-shadow: 0 0 12px var(--nx-accent-glow);
-  transform: translateY(-1px);
+  background: rgba(0, 200, 255, 0.13);
+  box-shadow: 0 0 10px var(--nx-accent-glow);
 }
 
-#nexus-send:active { transform: translateY(0) scale(0.95); }
+#nexus-send:active { transform: scale(0.94); }
 
 #nexus-send:disabled {
   opacity: 0.4;
@@ -693,12 +805,14 @@
 }
 
 #nexus-hint {
-  font-size: 10px;
+  font-size: 10.5px;
   color: var(--nx-text-dim);
-  font-family: var(--nx-font-mono);
+  font-family: var(--nx-font-ui);
+  font-weight: 500;
+  opacity: 0.8;
   margin-top: 7px;
   text-align: center;
-  letter-spacing: 0.03em;
+  letter-spacing: 0;
   transition: color var(--nx-transition);
 }
 
@@ -720,9 +834,10 @@
   background: transparent;
   color: var(--nx-chip-text);
   border-radius: 16px;
-  padding: 4px 12px;
+  padding: 5px 12px;
   font-family: var(--nx-font-mono);
   font-size: 11px;
+  font-weight: 500;
   line-height: 1.4;
   transition: background var(--nx-transition), color var(--nx-transition), border-color var(--nx-transition);
   text-align: left;
@@ -854,8 +969,8 @@
 
 /* ── BOTÃO RESET ────────────────────────────────────────────── */
 #nexus-reset {
-  width: 28px;
-  height: 28px;
+  width: 27px;
+  height: 27px;
   border-radius: 7px;
   border: 1px solid var(--nx-border);
   background: transparent;
@@ -865,7 +980,7 @@
   justify-content: center;
   color: var(--nx-text-dim);
   transition: background var(--nx-transition), color var(--nx-transition),
-              border-color var(--nx-transition), transform var(--nx-transition);
+              border-color var(--nx-transition);
   flex-shrink: 0;
   outline: none;
 }
@@ -874,11 +989,45 @@
   background: rgba(0, 200, 255, 0.08);
   border-color: var(--nx-border-hover);
   color: var(--nx-accent);
-  transform: rotate(-45deg);
 }
 
-#nexus-reset:active { transform: rotate(-180deg); }
+#nexus-reset:active {
+  background: rgba(0, 200, 255, 0.14);
+}
+
 #nexus-reset svg { width: 12px; height: 12px; }
+
+/* ── BOTÃO DRAG (mover painel livremente) ───────────────────── */
+#nexus-drag-toggle {
+  width: 27px;
+  height: 27px;
+  border-radius: 7px;
+  border: 1px solid var(--nx-border);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--nx-text-dim);
+  transition: background var(--nx-transition), color var(--nx-transition),
+              border-color var(--nx-transition);
+  flex-shrink: 0;
+  outline: none;
+}
+
+#nexus-drag-toggle:hover {
+  background: var(--nx-drag-color-dim);
+  border-color: var(--nx-drag-color-border);
+  color: var(--nx-drag-color);
+}
+
+#nexus-drag-toggle.nexus-drag-ativo {
+  background: var(--nx-drag-color-dim);
+  border-color: var(--nx-drag-color-border);
+  color: var(--nx-drag-color);
+}
+
+#nexus-drag-toggle svg { width: 12px; height: 12px; }
 
 /* ── RODAPÉ RESPOSTA IA ─────────────────────────────────────── */
 .nexus-rodape-ia {
@@ -887,35 +1036,47 @@
   align-items: flex-end;
   margin-top: 8px;
   padding-top: 6px;
-  border-top: 1px solid rgb(75, 78, 78);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   gap: 2px;
 }
 
 .nexus-rodape-ia-linha1 {
   font-family: var(--nx-font-mono);
-  font-size: 10px;
-  color: #6dbf96;
+  font-size: 9.5px;
+  font-weight: 400;
+  color: #6fae8c;
   line-height: 1.3;
+  opacity: 0.85;
 }
 
 .nexus-rodape-ia-linha2 {
   font-family: var(--nx-font-mono);
-  font-size: 9.5px;
-  color: #5aaa80;
+  font-size: 9px;
+  color: var(--nx-text-dim);
   line-height: 1.3;
 }
 
 /* =============================================
-   PATCH POSICIONAMENTO — sobrescreve abaixo
+   POSICIONAMENTO DO PAINEL — ancorado ao lado
+   ESQUERDO do FAB, alinhado na mesma base.
+   (#nexus-fab já tem sua posição definida na
+   declaração base acima; não duplicada aqui.)
    ============================================= */
-#nexus-fab {
+
+/* Painel no modo padrão (não-draggable): fica à esquerda do FAB,
+   alinhado pela base — FAB ocupa 44px + right:28px = 72px da borda
+   direita; o painel começa após essa faixa com respiro de 12px. */
+#nexus-panel {
   bottom: 24px;
-  right: 28px;
+  right: 84px;
 }
 
-#nexus-panel {
-  bottom: 92px;
-  right: 28px;
+/* Quando o modo "arrastar" está ativo, a posição passa a ser
+   controlada inteiramente via JS (top/left inline, position fixed),
+   então as âncoras bottom/right padrão são neutralizadas aqui. */
+#nexus-panel.nexus-panel--draggable {
+  bottom: auto;
+  right: auto;
 }
 
 @media (max-width: 480px) {
@@ -927,5 +1088,20 @@
   #nexus-panel {
     bottom: 0;
     right: 0;
+  }
+
+  #nexus-panel.nexus-panel--draggable {
+    bottom: 0;
+    right: 0;
+    top: auto !important;
+    left: auto !important;
+  }
+
+  /* Em telas pequenas o painel ocupa a largura toda — drag livre
+     não faz sentido aqui, então o controle fica oculto. Esta regra
+     precisa vir DEPOIS da declaração base de #nexus-drag-toggle
+     (display: flex) no arquivo para vencer a cascata corretamente. */
+  #nexus-drag-toggle {
+    display: none;
   }
 }
