@@ -198,7 +198,7 @@ function _injetarNavFloat() {
 
   var moved = { music: false, sfx: false, ia: false };
 
-  var observer = new MutationObserver(function () {
+  function _tentarMover() {
     if (!moved.music) {
       var music = document.getElementById('music-btn-global');
       if (music) { nav.appendChild(music); moved.music = true; }
@@ -211,7 +211,21 @@ function _injetarNavFloat() {
       var ia = document.getElementById('nexus-fab');
       if (ia) { nav.appendChild(ia); moved.ia = true; }
     }
-    if (moved.music && moved.sfx && moved.ia) observer.disconnect();
+    return moved.music && moved.sfx && moved.ia;
+  }
+
+  /* Checagem síncrona imediata: cobre o caso em que algum desses
+     elementos (em especial #nexus-fab, criado por fab.js — um
+     script defer cuja execução pode já ter terminado antes deste
+     ponto) já existe no DOM ANTES do observer ser configurado.
+     MutationObserver só reage a mutações futuras; se o elemento
+     já existia, a mutação que o criou já passou e nunca seria
+     observada — o botão ficaria escondido para sempre, já que o
+     CSS oculta esses botões até serem movidos para dentro do nav. */
+  if (_tentarMover()) return;
+
+  var observer = new MutationObserver(function () {
+    if (_tentarMover()) observer.disconnect();
   });
 
   observer.observe(document.body, { childList: true, subtree: true });
@@ -351,12 +365,33 @@ function _depsAssistantPresentes() {
 }
 
 function _inicializarAssistant() {
-  if (!_depsAssistantPresentes()) {
-    console.warn('[template_init] Quiz-Assistant: dependências ausentes — não inicializado.');
-    return;
-  }
+  // Aguarda as dependências do Quiz-Assistant carregarem.
+  // Necessário porque ui.js/history.js/worker.js/assistant.js
+  // agora carregam de propósito por último (prioridade visual:
+  // modal, fab, quick-access vêm antes) — então no instante do
+  // DOMContentLoaded elas podem ainda não existir. Sem esperar,
+  // o assistant simplesmente não iniciaria.
+  var tentativasDeps = 0;
+  var MAX_DEPS        = 100; // 100 × 50ms = 5s
 
-  // Aguarda __NEXUS_QUESTOES_VISUAIS__ (populado pelo engine após renderizar)
+  var timerDeps = setInterval(function () {
+    tentativasDeps++;
+
+    if (_depsAssistantPresentes()) {
+      clearInterval(timerDeps);
+      _aguardarSnapshotEIniciar();
+      return;
+    }
+
+    if (tentativasDeps >= MAX_DEPS) {
+      clearInterval(timerDeps);
+      console.warn('[template_init] Quiz-Assistant: dependências ausentes após 5s — não inicializado.');
+    }
+  }, 50);
+}
+
+// Aguarda __NEXUS_QUESTOES_VISUAIS__ (populado pelo engine após renderizar)
+function _aguardarSnapshotEIniciar() {
   var tentativas = 0;
   var MAX        = 60;  // 60 × 50ms = 3s
 

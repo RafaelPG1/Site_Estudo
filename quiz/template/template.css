@@ -978,12 +978,36 @@ a { text-decoration: none; color: inherit; }
 
 /* ── BOTÕES FLUTUANTES MENORES (só no template) ──────────── */
 
-/* ── BOTÃO IA MENOR (só no template) ── */
-#nexus-fab {
+/* ── BOTÃO IA MENOR (só no template) ──
+   !important necessário: os CSS base (ia.css) definem este
+   botão com `left` fixo (posição padrão à esquerda).
+
+   :not(.nav-float *) garante que esta regra (posição solta,
+   fixa, no canto) só vale enquanto o elemento ainda NÃO foi
+   movido para dentro do .nav-float pelo MutationObserver.
+   Sem essa restrição, esta regra e a equivalente em
+   ".nav-float #nexus-fab" (mais abaixo) competem pelo mesmo
+   elemento com a mesma especificidade + !important, e quem
+   "ganha" passa a depender só da ordem do arquivo — fazendo
+   o botão nascer com a posição errada por um instante, até o
+   observer mover o elemento e a outra regra assumir. Com o
+   :not(), as duas regras nunca se aplicam ao mesmo tempo. */
+#nexus-fab:not(.nav-float *) {
+  position: fixed !important;
+  left: auto !important;
+  right: 20px !important;
+  bottom: 18px !important;
   width: 36px;      /* era 32 */
   height: 36px;     /* era 32 */
-  bottom: 18px;
-  right: 20px;
+  /* Invisível até ser movido para dentro do nav-float.
+     Substitui o "salto" (aparece solto → pula para o nav)
+     por "some → aparece direto na posição final". O botão
+     ainda existe e é funcional (clique/eventos não são
+     afetados por opacity/visibility), só não é pintado
+     enquanto está fora do nav. */
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 #nexus-fab::before {
@@ -1008,12 +1032,29 @@ a { text-decoration: none; color: inherit; }
   height: 16px;     /* era 14 */
 }
 
-/* SFX e Música — reposiciona a pilha toda */
-.abtn {
+/* SFX e Música — reposiciona a pilha toda
+   Mesmo motivo do #nexus-fab acima: sound.css/audio-btns.css
+   ancoram este botão à esquerda por padrão. Mesma técnica de
+   :not(.nav-float *) e ocultação até ser movido. */
+.abtn:not(.nav-float *) {
+  position: fixed !important;
+  left: auto !important;
+  right: 20px !important;
+  bottom: 70px !important;     /* era 60 → 18 + 36 + 16 gap */
   width: 36px;      /* era 32 */
   height: 36px;     /* era 32 */
-  bottom: 70px;     /* era 60 → 18 + 36 + 16 gap */
-  right: 20px;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+#music-btn-global:not(.nav-float *) {
+  position: fixed !important;
+  left: auto !important;
+  right: 20px !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 
@@ -1037,9 +1078,9 @@ a { text-decoration: none; color: inherit; }
 
 /* Mobile */
 @media (max-width: 680px) {
-  .abtn            { bottom: 64px;  right: 14px; width: 34px; height: 34px; }
-  #music-btn-global{ bottom: 110px; right: 14px; width: 34px; height: 34px; }
-  #nexus-fab       { bottom: 14px;  right: 14px; width: 34px; height: 34px; }
+  .abtn:not(.nav-float *)            { bottom: 64px;  right: 14px; width: 34px; height: 34px; }
+  #music-btn-global:not(.nav-float *){ bottom: 110px; right: 14px; width: 34px; height: 34px; }
+  #nexus-fab:not(.nav-float *)       { bottom: 14px;  right: 14px; width: 34px; height: 34px; }
   #nexus-panel     { right: 14px; }
   .nav-float       { right: 14px; left: auto; }
   .nav-btn         { width: 26px; height: 26px; }
@@ -2575,10 +2616,18 @@ button,
 
 
 
-/* ── Botões externos integrados na nav-float ── */
-#nexus-fab,
-.abtn,
-#music-btn-global {
+/* ── Botões externos integrados na nav-float ──
+   Seletor de descendência (.nav-float #nexus-fab, em vez de
+   só #nexus-fab) para deixar explícito que esta regra só se
+   aplica DEPOIS que o elemento foi movido para dentro do nav
+   — complementando o :not(.nav-float *) usado nas regras de
+   posição solta, lá no topo do arquivo. Também reverte
+   opacity/visibility/pointer-events para visível, já que as
+   regras de fora do nav começam ocultando o elemento até ele
+   ser movido. */
+.nav-float #nexus-fab,
+.nav-float .abtn,
+.nav-float #music-btn-global {
   position: relative !important;
   bottom: auto !important;
   right: auto !important;
@@ -2587,6 +2636,9 @@ button,
   flex-shrink: 0 !important;
   width: 36px !important;
   height: 36px !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
 }
 
 /* Quadrado igual aos nav-btn */

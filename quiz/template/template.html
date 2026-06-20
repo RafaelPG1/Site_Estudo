@@ -160,20 +160,45 @@
 
   <!-- ═══════════════════════════════════════════
        SCRIPTS
+
+       ORDEM DELIBERADA (prioridade visual primeiro,
+       Quiz-Assistant por último — ele só precisa
+       funcionar depois, não bloquear nada antes):
+
+         1. template_init.js   → tema, header, nav-float, áudio
+         2. quiz_starter_modal.js → decide o fluxo, mostra o modal
+         3. fab.js              → cria #nexus-fab (botão visual da IA,
+                                    independente do Quiz-Assistant em si)
+         4. quick-access.js     → botões de acesso rápido
+         5. ui.js/history.js/worker.js/assistant.js → Quiz-Assistant
+                                    completo, por último: é o item menos
+                                    prioritário visualmente e o que mais
+                                    demora (inclui o polling de 3s por
+                                    __NEXUS_QUESTOES_VISUAIS__)
   ═══════════════════════════════════════════ -->
   <script type="module" src="template_init.js"></script>
 
+  <!-- quiz_starter_modal decide o fluxo e revela o #quiz-container.
+       Não depende de nenhum script abaixo — só de template_init.js
+       e do engine, que ele mesmo aguarda via polling. -->
+  <script src="../js/quiz_starter_modal.js" defer></script>
+
+  <!-- fab.js cria o botão flutuante de IA (#nexus-fab) sozinho,
+       sem depender do bloco do Quiz-Assistant abaixo. Colocado
+       aqui para que o nav-float possa movê-lo para a pilha da
+       direita o quanto antes, em vez de esperar todo o bloco
+       de IA carregar primeiro. -->
+  <script src="../../shared/js/ia/core/fab.js" defer></script>
+
+  <script src="../../shared/js/utils/quick-access.js" defer></script>
+
+  <!-- Bloco do Quiz-Assistant — por último, de propósito.
+       Não é prioridade visual: o assistant só precisa estar
+       funcional depois que o resto da página já carregou. -->
   <script src="../../shared/js/ia/core/ui.js" defer></script>
   <script src="../../shared/js/ia/core/history.js" defer></script>
   <script src="../../shared/js/ia/core/worker.js" defer></script>
   <script src="../../shared/js/ia/quiz/assistant.js" defer></script>
-
-  <!-- quiz_starter_modal decide o fluxo e revela o #quiz-container -->
-  <script src="../js/quiz_starter_modal.js" defer></script>
-
-  <!-- defer: só carregam após o boot estar encaminhado -->
-  <script src="../../shared/js/utils/quick-access.js" defer></script>
-  <script src="../../shared/js/ia/core/fab.js" defer></script>
 
 </body>
 </html>
