@@ -1,11 +1,11 @@
 /* ============================================================
-   NEXUS STUDY — quiz/js/quiz_starter_modal.js  v6.3
+   NEXUS STUDY — quiz/js/quiz_starter_modal.js  v6.4
 
    REGRA ÚNICA:
      Tem progresso salvo (≥ 1 resposta)? → entra direto no quiz.
      Não tem?                             → exibe modal.
 
-   CONTROLE DE FLUXO (v6.3):
+   CONTROLE DE FLUXO (v6.4):
      Este script é o ÚNICO ponto que dispara o carregamento
      do quiz. O template_init.js deliberadamente NÃO chama
      _carregarQuiz() — ele expõe window.__nexusCarregarQuiz
@@ -20,6 +20,24 @@
      e o engine poderia (em certos cenários de cache/reload)
      renderizar antes deste modal decidir o fluxo.
 
+     SEM TIMEOUT DE DESISTÊNCIA (v6.4): _aguardarEngine() espera
+     indefinidamente, sem prazo. O usuário pode demorar qualquer
+     tempo para decidir algo no modal — quando decidir, o quiz
+     precisa aparecer, sempre. Versões anteriores tinham um
+     timeout de 8s que, ao expirar, chamava _completarBoot()
+     sozinho (mesmo sem decisão do usuário); como _completarBoot
+     é idempotente, isso "consumia" a única chamada válida e a
+     decisão real do usuário, momentos depois, não tinha efeito
+     nenhum — o quiz simplesmente não aparecia mais.
+
+     CARREGAMENTO ADIANTADO DA LISTA DE AULAS (v6.4): ao clicar
+     em "Filtrar aulas" (tela 2), o engine começa a carregar
+     nesse momento — não no boot do modal inteiro. É nesse clique
+     que a lista de aulas passa a ser necessária; antes disso,
+     esperar pelo engine não tinha propósito (ele estruturalmente
+     não pode existir antes da decisão do usuário) e só gerava
+     polling e avisos de timeout inúteis.
+
      Fluxo garantido:
        1. Página carrega → <head> sinaliza __NSM_AGUARDANDO__ = true
           → template_init monta visual leve (header, tema, nav)
@@ -28,14 +46,23 @@
           dele mesmo existir)
        3. Modal detecta progresso:
           - Tem progresso → _pularModal() → chama _completarBoot()
-          - Sem progresso → exibe modal → usuário confirma → _completarBoot()
+          - Sem progresso → exibe modal:
+            - Clique em "Filtrar aulas" → carrega o engine adiantado
+              (só para listar aulas; ainda não decide o fluxo)
+            - Clique em "Todas as aulas" ou "Iniciar Quiz" → usuário
+              confirma → _completarBoot()
        4. _completarBoot():
           → seta __NSM_AGUARDANDO__ = false
-          → chama window.__nexusCarregarQuiz() (Firebase + engine)
+          → chama _carregarEngine() (idempotente — reaproveita
+            se já tinha sido disparado adiantado)
           → remove .quiz-aguardando do container
 
-     Resultado: engine NUNCA carrega antes do modal decidir.
-     Não existe janela onde questões possam aparecer antes do modal.
+     Resultado: engine NUNCA carrega antes do modal decidir
+     (exceto o carregamento adiantado explícito de "Filtrar
+     aulas", que é sempre seguido da decisão real do usuário).
+     Não existe janela onde questões possam aparecer antes do
+     modal, e não existe cenário em que a decisão do usuário
+     "chegue tarde demais" e não tenha efeito.
 
    DEPENDÊNCIAS:
      window.__NEXUS_QUIZ_DISC__      — definido por template_init.js
@@ -97,7 +124,8 @@
     window.__NSM_AGUARDANDO__ = false;
     /* Dispara o carregamento ANTES de aguardar o engine,
        pois agora o engine só existe após __nexusCarregarQuiz.
-       _aguardarEngine faz polling e chama cb quando pronto. */
+       _aguardarEngine faz polling sem prazo e chama cb quando
+       pronto — não desiste, por mais que demore. */
     _completarBoot();
     _aguardarEngine(function () {
       window.NexusFiltroAulas.iniciar(null);
@@ -105,11 +133,36 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     COMPLETAR BOOT — ponto único de decisão concluída.
+     CARREGAR ENGINE — ponto único de disparo do carregamento.
+
+     Idempotente: chamadas subsequentes são ignoradas. Pode ser
+     chamado ANTES da decisão final do usuário (ex.: ao clicar
+     em "Filtrar aulas", quando a lista de aulas passa a ser
+     necessária) ou DEPOIS (quando o usuário confirma o fluxo).
+     Em ambos os casos, dispara window.__nexusCarregarQuiz()
+     uma única vez — não revela o <main> nem fecha o modal,
+     isso é responsabilidade de quem decidiu o fluxo.
+  ══════════════════════════════════════════════════════════ */
+
+  var _engineCarregando = false;
+
+  function _carregarEngine() {
+    if (_engineCarregando) return;
+    _engineCarregando = true;
+
+    if (typeof window.__nexusCarregarQuiz === 'function') {
+      window.__nexusCarregarQuiz();
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     COMPLETAR BOOT — ponto único de decisão concluída pelo
+     usuário (ou progresso já salvo).
 
      Responsabilidades (nesta ordem):
-       1. Dispara o carregamento do quiz (conteúdo + UI + engine)
-          que o template_init.js deliberadamente segurou.
+       1. Garante que o carregamento do quiz foi disparado
+          (idempotente — se já tinha sido disparado adiantado
+          via _carregarEngine(), apenas reaproveita).
        2. Revela o <main> (remove quiz-aguardando).
 
      Idempotente: chamadas subsequentes são ignoradas.
@@ -125,10 +178,8 @@
     if (_bootConcluido) return;
     _bootConcluido = true;
 
-    /* 1. Dispara carga do quiz (Firebase + conteúdo + UI + engine) */
-    if (typeof window.__nexusCarregarQuiz === 'function') {
-      window.__nexusCarregarQuiz();
-    }
+    /* 1. Garante o carregamento do quiz (idempotente) */
+    _carregarEngine();
 
     /* 2. Revela o main — ainda sem questões, sem flash */
     var main = document.getElementById('main-content');
@@ -139,22 +190,22 @@
 
   /* ══════════════════════════════════════════════════════════
      AGUARDAR ENGINE
+
+     Espera SEM PRAZO até window.NexusFiltroAulas existir.
+     Não há timeout/desistência: o usuário pode demorar
+     qualquer tempo para decidir algo no modal, e quando ele
+     decidir, o engine (se ainda não tiver carregado) é que
+     precisa simplesmente continuar carregando — não existe
+     cenário correto em que esperar "desiste" e segue sem o
+     engine, porque isso impediria as questões de aparecerem.
   ══════════════════════════════════════════════════════════ */
 
   function _aguardarEngine(cb) {
-    var elapsed = 0;
     var id = setInterval(function () {
-      elapsed += 50;
       if (window.NexusFiltroAulas &&
           typeof window.NexusFiltroAulas.iniciar === 'function') {
         clearInterval(id);
         cb();
-        return;
-      }
-      if (elapsed >= 8000) {
-        clearInterval(id);
-        console.warn('[NexusStarterModal] Engine não disponível após 8s.');
-        _completarBoot(); /* Libera a UI mesmo assim */
       }
     }, 50);
   }
@@ -541,7 +592,7 @@
     btnFiltrar.addEventListener('click', _irTela2);
     btnVoltar.addEventListener('click',  _irTela1);
 
-    return { bd: bd, body: body, loading: loading, contador: contador, btnIniciar: btnIniciar, btnContinuar: btnContinuar };
+    return { bd: bd, body: body, loading: loading, contador: contador, btnIniciar: btnIniciar, btnContinuar: btnContinuar, btnFiltrar: btnFiltrar };
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -640,24 +691,42 @@
   function _exibirModal() {
     var ui          = _construirModal();
     var getMarcadas = null;
+    var _listaCarregada = false;
 
-    _aguardarEngine(function () {
-      var aulas = window.NexusFiltroAulas.listarAulas
-        ? window.NexusFiltroAulas.listarAulas()
-        : [];
+    function _carregarListaDeAulas() {
+      if (_listaCarregada) return;
+      _listaCarregada = true;
 
-      if (aulas.length <= 1) {
-        var ultimoBtn = ui.btnContinuar.parentNode &&
-          ui.btnContinuar.parentNode.lastElementChild;
-        if (ultimoBtn && ultimoBtn !== ui.btnContinuar) {
-          ultimoBtn.style.display = 'none';
+      /* Dispara o carregamento do engine agora — é o momento em
+         que a lista de aulas passa a ser necessária. Sem prazo:
+         a tela 2 mostra o loading (#nsm-loading) até o engine
+         responder, por quanto tempo for preciso. */
+      _carregarEngine();
+
+      _aguardarEngine(function () {
+        var aulas = window.NexusFiltroAulas.listarAulas
+          ? window.NexusFiltroAulas.listarAulas()
+          : [];
+
+        if (aulas.length <= 1) {
+          var ultimoBtn = ui.btnContinuar.parentNode &&
+            ui.btnContinuar.parentNode.lastElementChild;
+          if (ultimoBtn && ultimoBtn !== ui.btnContinuar) {
+            ultimoBtn.style.display = 'none';
+          }
         }
-      }
 
-      getMarcadas = _preencherLista(
-        ui.body, ui.loading, ui.contador, ui.btnIniciar, aulas
-      );
-    });
+        getMarcadas = _preencherLista(
+          ui.body, ui.loading, ui.contador, ui.btnIniciar, aulas
+        );
+      });
+    }
+
+    /* "Filtrar aulas" — é aqui que a lista passa a ser
+       necessária, então é aqui que o engine começa a carregar
+       (em paralelo com a transição de tela 1 → 2, que já tem
+       sua própria animação interna em _construirModal). */
+    ui.btnFiltrar.addEventListener('click', _carregarListaDeAulas);
 
     /* "Todas as aulas" — sem filtro */
     ui.btnContinuar.addEventListener('click', function () {
