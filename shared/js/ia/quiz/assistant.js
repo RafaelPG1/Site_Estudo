@@ -1,24 +1,43 @@
 /**
- * NEXUS — quiz/js/assistant.js  v2.2
+ * NEXUS — quiz/js/assistant.js  v2.4
  *
  * Quiz-Assistant: tutor de IA dentro do ambiente de quiz.
+ *
+ * ── MUDANÇAS v2.4 ─────────────────────────────────────────
+ *
+ *   CORREÇÃO DO BUG DE VERSIONAMENTO
+ *     Bug: ao navegar entre versões de uma mensagem editada, todas
+ *     as versões exibiam a resposta da última edição.
+ *
+ *     Causa raiz: _onTrocarVersao mutava o objeto bot diretamente
+ *     em state.messages (botMsg.text = respostaVersao), corrompendo
+ *     a referência compartilhada. Na próxima troca, o objeto já havia
+ *     sido sobrescrito — e _salvarHistorico() persistia o estado
+ *     corrompido no localStorage.
+ *
+ *     Correção: cada versão agora armazena { texto, resposta, rodape }
+ *     como snapshot completo e independente. _onTrocarVersao substitui
+ *     state.messages[msgIndex+1] por um NOVO objeto em vez de mutar o
+ *     existente. _renderBot salva textoLimpo+rodape na versão correta
+ *     via _versaoEditando. _onEditarMensagem captura resposta+rodape
+ *     do bot atual ao criar versions[0].
+ *
+ * ── MUDANÇAS v2.3 ─────────────────────────────────────────
+ *
+ *   EDIÇÃO DE MENSAGEM COM VERSIONAMENTO
+ *     O botão "Editar" da UI agora dispara _onEditarMensagem(), que
+ *     ATUALIZA a mensagem do usuário existente (em vez de criar uma
+ *     nova), remove a resposta do bot vinculada a ela e regenera essa
+ *     resposta a partir do texto editado. Histórico de versões da
+ *     pergunta é mantido em msg.versions / msg.versionIndex e exibido
+ *     na UI como um controle "< i/N >" (_onTrocarVersao alterna entre
+ *     versões sem precisar reprocessar a IA).
  *
  * ── MUDANÇAS v2.2 ─────────────────────────────────────────
  *
  *   PERSISTÊNCIA CORRETA NO F5
  *     Removido o listener de 'pagehide' que limpava o histórico do
- *     domínio 'quiz' inteiro. 'pagehide' dispara tanto ao fechar a
- *     aba quanto durante um reload — então todo F5 apagava o chat
- *     antes mesmo da página recarregar. O histórico agora vive em
- *     localStorage (ver history.js v1.1) e só é limpo quando o
- *     CONTEXTO realmente muda (disciplina ou modo diferentes do
- *     que estava salvo da última vez que o assistant rodou) —
- *     verificado de forma intencional em _aplicarPersistenciaContexto(),
- *     não como efeito colateral de um evento de ciclo de vida.
- *
- *   Resto do comportamento (v2.1) inalterado — classificação de
- *   intenção de gabarito, serialização em dois níveis, fallback
- *   offline seguro, etc.
+ *     domínio 'quiz' inteiro.
  *
  * ── ARQUITETURA (inalterada) ─────────────────────────────────
  *
@@ -50,6 +69,11 @@
     modoAtivo:      null,
     discAtivo:      null,
   };
+
+  // Rastreia qual (msgIndex, versionIndex) está sendo gerado após uma
+  // edição, para que _renderBot possa armazenar textoLimpo+rodape na
+  // versão correta assim que a IA responder.
+  var _versaoEditando = null; // { msgIndex, versionIndex } | null
 
   /* ══════════════════════════════════════════════════════════
      VERIFICAÇÃO DE DEPENDÊNCIAS
@@ -156,33 +180,6 @@
 
   /* ══════════════════════════════════════════════════════════
      PERSISTÊNCIA INTELIGENTE ENTRE CARGAS DE PÁGINA (v2.2)
-
-     Problema que isto resolve:
-       O chat precisa SOBREVIVER a um F5 simples (mesma disciplina,
-       mesmo modo), mas precisa ser LIMPO quando o aluno navega para
-       outra disciplina ou outro modo.
-
-       Como cada F5 reinicia totalmente o JS (state.discAtivo/modoAtivo
-       nascem null de novo), não dá pra comparar "contexto anterior"
-       usando apenas memória — precisamos de um marcador persistido
-       (localStorage) que sobrevive ao reload e registra qual foi o
-       ÚLTIMO contexto (disciplina+modo+semestre) em que o assistant
-       rodou.
-
-     Fluxo:
-       • Lê o marcador salvo da visita anterior.
-       • Se disciplina OU modo mudaram → limpa todo o domínio 'quiz'
-         (todas as chaves antigas), garantindo que nenhum resquício
-         de outra disciplina/modo apareça.
-       • Se for a mesma disciplina+modo (ou não havia marcador ainda,
-         ou seja, primeira visita) → não limpa nada; o histórico
-         daquele contexto específico será restaurado normalmente
-         pelo fluxo de init() (NexusHistory.carregar).
-       • Sempre regrava o marcador com o contexto atual ao final.
-
-     Isto substitui o antigo listener de 'pagehide' que limpava o
-     histórico em TODO reload — inclusive nos que deveriam apenas
-     restaurar a conversa.
   ══════════════════════════════════════════════════════════ */
 
   var _CHAVE_ULTIMO_CONTEXTO = 'nexus_chat_ultimo_contexto_quiz';
@@ -206,12 +203,6 @@
     } catch (e) {}
   }
 
-  /**
-   * Decide, no boot do assistant, se o contexto persistido em
-   * localStorage de uma visita anterior ainda é válido para esta
-   * visita. Só limpa o domínio inteiro quando disciplina ou modo
-   * realmente mudaram — um F5 puro na mesma questão nunca aciona isto.
-   */
   function _aplicarPersistenciaContexto(discId, modo, sem) {
     var anterior = _lerUltimoContexto();
     var mudouContexto = !!anterior &&
@@ -244,31 +235,45 @@
     return msg;
   }
 
-  /**
-   * Remove marcadores de chip do quiz (==cat==texto==) do texto de saída.
-   * Esses marcadores são usados internamente no quiz_ui para estilizar
-   * chips nas questões — não devem aparecer no chat da IA.
-   *
-   * Ex: ==key==PRIMARY KEY== → PRIMARY KEY
-   * Ex: ==type==VARCHAR==    → VARCHAR
-   *
-   * Não afeta negrito (**), quebras de linha, markdown ou qualquer
-   * outra formatação — filtro exclusivo dos delimitadores == .
-   *
-   * @param {string} texto
-   * @returns {string}
-   */
+  function _rerenderTudo() {
+    if (typeof window.NexusUI === 'undefined') return;
+    window.NexusUI.limparMensagens();
+    state.messages.forEach(function (m, i) {
+      m.__idx = i;
+      window.NexusUI.renderMessage(m);
+    });
+  }
+
   function _limparMarcadoresChips(texto) {
     if (!texto) return texto;
-    // Padrão: ==categoria==conteúdo== → conteúdo
     return texto.replace(/==[^=]+==([^=]+)==/g, '$1');
   }
 
+  /**
+   * Renderiza uma mensagem do bot e, se estivermos no meio de uma
+   * edição (_versaoEditando !== null), armazena textoLimpo+rodape
+   * como snapshot completo na versão correspondente.
+   *
+   * IMPORTANTE: não muta nenhum objeto bot já existente em
+   * state.messages — apenas preenche o campo na versão salva em
+   * msg.versions[versionIndex].
+   */
   function _renderBot(text, rodape) {
     if (typeof window.NexusUI === 'undefined') return;
     var textoLimpo = _limparMarcadoresChips(text);
     var msg = _push({ role: 'bot', text: textoLimpo, time: _getTime(), rodape: rodape || null });
+    msg.__idx = state.messages.length - 1;
     window.NexusUI.renderMessage(msg);
+
+    if (_versaoEditando !== null) {
+      var userMsg = state.messages[_versaoEditando.msgIndex];
+      if (userMsg && userMsg.versions && userMsg.versions[_versaoEditando.versionIndex]) {
+        userMsg.versions[_versaoEditando.versionIndex].resposta = textoLimpo;
+        userMsg.versions[_versaoEditando.versionIndex].rodape   = rodape || null;
+      }
+      _versaoEditando = null;
+      _salvarHistorico();
+    }
   }
 
   function _setInputBloqueado(bloqueado) {
@@ -281,10 +286,6 @@
 
   /* ══════════════════════════════════════════════════════════
      DETECÇÃO DE MUDANÇA DE CONTEXTO DENTRO DA MESMA SESSÃO
-
-     (cenário diferente do _aplicarPersistenciaContexto acima: aqui é
-     uma mudança detectada SEM reload de página, caso o host troque
-     disciplina/modo dinamicamente sem recarregar o script.)
   ══════════════════════════════════════════════════════════ */
 
   function _resetarSeContextoMudou() {
@@ -299,6 +300,7 @@
       _limparHistoricoAtivo();
       state.chaveHistorico = _montarChaveHistorico(discAtual, modoAtual, _getSemestre());
       _salvarUltimoContexto(discAtual, modoAtual, _getSemestre());
+      _versaoEditando = null;
       if (typeof window.NexusWorker !== 'undefined') {
         window.NexusWorker.limparHistorico();
       }
@@ -309,44 +311,20 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     CLASSIFICAÇÃO DE INTENÇÃO — NÚCLEO DA v2.1
-
-     Três estados possíveis para qualquer mensagem sobre uma questão:
-       'explicacao'  → padrão absoluto (não pede resposta)
-       'gabarito'    → pedido explícito de resposta/gabarito
-       'hibrido'     → pede explicação E resposta ao mesmo tempo
-
-     REGRA DE SEGURANÇA:
-       Em caso de dúvida → 'explicacao'
-       Gabarito só com evidência clara e inequívoca na mensagem
+     CLASSIFICAÇÃO DE INTENÇÃO
   ══════════════════════════════════════════════════════════ */
 
-  /**
-   * Detecta pedido EXPLÍCITO de gabarito/resposta.
-   * Cobre variantes coloquiais mas exige sinal semântico claro de
-   * "quero saber qual é a certa" — em caso de dúvida, não dispara.
-   */
   var _PEDE_RESPOSTA_RE = /\b(?:qual\s+(?:e|eh|é)\s+(?:a\s+)?(?:resposta|alternativa|letra|opcao|gabarito|certa?|correta?)|qual\s+(?:resposta|alternativa|letra|opcao|gabarito)|(?:me\s+)?(?:da|fala|diz|mostra|revela|mostre)\s+(?:a\s+)?(?:resposta|alternativa|letra|opcao|gabarito|certa?|correta?)|(?:resposta|gabarito)\s*(?:correta?|certa?)?|qual\s+alternativa\s+(?:esta|e|eh|e)\s+(?:certa?|correta?)|me\s+d[aa]\s+o\s+gabarito|qual\s+(?:e\s+)?a?\s*certa|qual\s+acertei|acertei\s+ou\s+errei)\b/;
 
-  /**
-   * Detecta pedido de EXPLICAÇÃO explícita (além do padrão).
-   * Usado para identificar modo híbrido quando combinado com pedido de resposta.
-   */
   var _PEDE_EXPLICACAO_RE = /\b(?:explica(?:r)?|explicar?|por\s+que|porque|como\s+(?:funciona|resolver?|chegar)|o\s+que\s+(?:significa|e|eh|é|aborda)|entender?|entend[ae]|me\s+(?:explica|ajuda|ensina)|racioc[ií]nio|racion[aá]l|log[ií]ca|conceito|teoria)\b/;
 
-  /**
-   * Determina a intenção da mensagem em relação a uma questão.
-   *
-   * @param {string} textoNormalizado
-   * @returns {'explicacao'|'gabarito'|'hibrido'}
-   */
   function _classificarIntencao(textoNormalizado) {
     var pedeResposta   = _PEDE_RESPOSTA_RE.test(textoNormalizado);
     var pedeExplicacao = _PEDE_EXPLICACAO_RE.test(textoNormalizado);
 
     if (pedeResposta && pedeExplicacao) return 'hibrido';
     if (pedeResposta)                   return 'gabarito';
-    return 'explicacao';   // PADRÃO ABSOLUTO
+    return 'explicacao';
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -423,17 +401,7 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     SERIALIZAÇÃO DA QUESTÃO — DOIS NÍVEIS (v2.1)
-
-     _serializarQuestaoSemGabarito()
-       Contexto enviado por padrão.
-       Inclui enunciado, alternativas embaralhadas, afirmativas, código.
-       NÃO inclui answer nem feedback.
-       A IA pode explicar o conteúdo mas não sabe qual é a correta.
-
-     _serializarQuestaoComGabarito()
-       Contexto enviado apenas quando pedido explícito de gabarito.
-       Inclui tudo, incluindo answer e feedback.
+     SERIALIZAÇÃO DA QUESTÃO — DOIS NÍVEIS
   ══════════════════════════════════════════════════════════ */
 
   function _serializarQuestaoSemGabarito(numeroVisual, q) {
@@ -460,13 +428,10 @@
       });
     }
 
-    // answer e feedback INTENCIONALMENTE OMITIDOS neste nível
-
     return linhas.join('\n');
   }
 
   function _serializarQuestaoComGabarito(numeroVisual, q) {
-    // Começa com o contexto sem gabarito e adiciona as informações extras
     var base   = _serializarQuestaoSemGabarito(numeroVisual, q);
     var linhas = [base];
 
@@ -481,18 +446,10 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     INSTRUÇÕES DE SISTEMA PARA A IA — POR TIPO DE CONTEXTO
-
-     Enviadas como prefixo da pergunta para orientar o worker
-     sem alterar a arquitetura do worker.js.
+     INSTRUÇÕES DE SISTEMA PARA A IA
   ══════════════════════════════════════════════════════════ */
 
   var _INSTRUCOES_IA = {
-    /**
-     * Modo padrão: IA deve EXPLICAR sem revelar gabarito.
-     * O contexto não contém a resposta correta — mas caso
-     * a IA infira por outros meios, esta instrução impede a revelação.
-     */
     conteudo: (
       'INSTRUÇÃO PARA O TUTOR: O aluno quer entender o conteúdo desta questão, ' +
       'NÃO quer saber a resposta correta. ' +
@@ -501,22 +458,12 @@
       'Se o aluno quiser o gabarito, ele pedirá explicitamente. ' +
       'Pergunta do aluno: '
     ),
-
-    /**
-     * Modo gabarito: IA pode revelar a resposta.
-     * O contexto inclui answer e feedback.
-     */
     gabarito: (
       'INSTRUÇÃO PARA O TUTOR: O aluno pediu explicitamente o gabarito desta questão. ' +
       'Informe qual alternativa é a correta e explique brevemente por que está certa, ' +
       'usando o feedback fornecido no contexto. ' +
       'Pergunta do aluno: '
     ),
-
-    /**
-     * Modo híbrido: IA deve explicar primeiro, depois revelar.
-     * O contexto inclui answer e feedback.
-     */
     hibrido: (
       'INSTRUÇÃO PARA O TUTOR: O aluno quer tanto uma explicação quanto saber a resposta. ' +
       'Estruture sua resposta assim: ' +
@@ -524,10 +471,6 @@
       '2) Ao final, revele a alternativa correta e por que ela está certa. ' +
       'Pergunta do aluno: '
     ),
-
-    /**
-     * Modo livre: pergunta geral, sem questão específica.
-     */
     livre: '',
   };
 
@@ -550,7 +493,6 @@
   async function _perguntarIA(pergunta, resultados, tipoContexto) {
     if (typeof window.NexusWorker === 'undefined') return null;
 
-    // Prefixa a instrução de sistema à pergunta do aluno
     var instrucao = _INSTRUCOES_IA[tipoContexto] || '';
     var perguntaComInstrucao = instrucao ? instrucao + pergunta : pergunta;
 
@@ -569,13 +511,7 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     RESPOSTAS — v2.1
-
-     _responderSobreQuestao() agora:
-       1. Classifica a intenção do usuário
-       2. Serializa o contexto no nível adequado (sem/com gabarito)
-       3. Envia a instrução correta à IA
-       4. No fallback offline, aplica a mesma lógica sem vazar resposta
+     RESPOSTAS
   ══════════════════════════════════════════════════════════ */
 
   async function _responderSobreQuestao(pergunta, numeroVisual, q) {
@@ -584,7 +520,6 @@
     var norm    = _normalizar(pergunta);
     var intencao = _classificarIntencao(norm);
 
-    // Escolhe o nível de serialização baseado na intenção
     var usarGabarito = intencao === 'gabarito' || intencao === 'hibrido';
     var ctxTexto = usarGabarito
       ? _serializarQuestaoComGabarito(numeroVisual, q)
@@ -598,9 +533,7 @@
       return;
     }
 
-    // ── FALLBACK OFFLINE (sem IA) ────────────────────────────
-    // Mesma lógica de intenção: só mostra gabarito se pedido explicitamente
-
+    // Fallback offline
     if (intencao === 'gabarito') {
       var fb = 'Questão ' + numeroVisual;
       if (q.question) fb += '\n\n' + q.question;
@@ -626,7 +559,6 @@
       return;
     }
 
-    // intencao === 'explicacao': NÃO revelar resposta no fallback
     var fbE = 'Questão ' + numeroVisual;
     if (q.question) fbE += '\n\n' + q.question;
     if (Array.isArray(q.options) && q.options.length) {
@@ -670,12 +602,101 @@
 
     if (typeof window.NexusUI === 'undefined') return;
 
-    window.NexusUI.renderMessage(_push({ role: 'user', text: text, time: _getTime() }));
+    var msgUser = _push({ role: 'user', text: text, time: _getTime() });
+    msgUser.__idx = state.messages.length - 1;
+    window.NexusUI.renderMessage(msgUser);
     window.NexusUI.showTyping();
     state.processando = true;
     _setInputBloqueado(true);
 
     state.typingTimer = setTimeout(function () { _processar(text); }, REPLY_DELAY_MS);
+  }
+
+  /**
+   * Disparado pela UI quando o usuário confirma a edição de uma mensagem.
+   *
+   * v2.4 — Captura resposta+rodape do bot atual como snapshot completo
+   * em versions[0] antes de qualquer mutação. A nova versão recebe
+   * resposta=null/rodape=null, que serão preenchidos por _renderBot
+   * via _versaoEditando quando a IA responder.
+   */
+  function _onEditarMensagem(msgIndex, novoTexto) {
+    if (state.processando) return;
+    if (typeof window.NexusUI === 'undefined') return;
+
+    var msg = state.messages[msgIndex];
+    if (!msg || msg.role !== 'user') return;
+
+    // Na primeira edição: inicializa versions[0] com snapshot completo
+    // da resposta atual (texto + rodape) antes de qualquer alteração.
+    if (!msg.versions) {
+      var botExistente = (state.messages[msgIndex + 1] && state.messages[msgIndex + 1].role === 'bot')
+        ? state.messages[msgIndex + 1]
+        : null;
+      msg.versions = [{
+        texto:    msg.text,
+        resposta: botExistente ? botExistente.text             : null,
+        rodape:   botExistente ? (botExistente.rodape || null) : null,
+      }];
+      msg.versionIndex = 0;
+    }
+
+    // Nova versão: resposta e rodape serão preenchidos por _renderBot
+    msg.versions.push({ texto: novoTexto, resposta: null, rodape: null });
+    var novoVersionIndex = msg.versions.length - 1;
+    msg.versionIndex = novoVersionIndex;
+    msg.text = novoTexto;
+
+    // Sinaliza para _renderBot onde salvar textoLimpo+rodape da IA
+    _versaoEditando = { msgIndex: msgIndex, versionIndex: novoVersionIndex };
+
+    // Remove o objeto bot do array — será recriado via _push/_renderBot
+    if (state.messages[msgIndex + 1] && state.messages[msgIndex + 1].role === 'bot') {
+      state.messages.splice(msgIndex + 1, 1);
+    }
+
+    _salvarHistorico();
+    _rerenderTudo();
+
+    window.NexusUI.showTyping();
+    state.processando = true;
+    _setInputBloqueado(true);
+    state.typingTimer = setTimeout(function () { _processar(novoTexto); }, REPLY_DELAY_MS);
+  }
+
+  /**
+   * Disparado pela UI ao clicar em "<" ou ">" no controle de versão.
+   *
+   * v2.4 — Substitui state.messages[msgIndex+1] por um NOVO objeto
+   * independente com os dados da versão escolhida, em vez de mutar
+   * o objeto existente. Isso garante que versões anteriores não sejam
+   * corrompidas e que _salvarHistorico() persista o estado correto.
+   */
+  function _onTrocarVersao(msgIndex, delta) {
+    var msg = state.messages[msgIndex];
+    if (!msg || !msg.versions) return;
+    var novoIdx = msg.versionIndex + delta;
+    if (novoIdx < 0 || novoIdx >= msg.versions.length) return;
+
+    msg.versionIndex = novoIdx;
+    msg.text = msg.versions[novoIdx].texto;
+
+    var versao   = msg.versions[novoIdx];
+    var botAtual = state.messages[msgIndex + 1];
+
+    if (botAtual && botAtual.role === 'bot' &&
+        versao.resposta !== null && versao.resposta !== undefined) {
+      // Substitui por um novo objeto — NUNCA muta o existente
+      state.messages[msgIndex + 1] = {
+        role:   'bot',
+        text:   versao.resposta,
+        time:   botAtual.time,
+        rodape: versao.rodape || null,
+      };
+    }
+
+    _salvarHistorico();
+    _rerenderTudo();
   }
 
   async function _processar(texto) {
@@ -687,10 +708,8 @@
 
       _resetarSeContextoMudou();
 
-      // 1. Número de questão explícito
       var numQ = _detectarNumeroQuestao(texto);
 
-      // 2. Referência implícita à última questão discutida
       if (numQ === null && _ultimaQuestaoVisual !== null && _referenciaImplicita(texto)) {
         numQ = _ultimaQuestaoVisual;
       }
@@ -709,7 +728,6 @@
         return;
       }
 
-      // 3. Pergunta geral de conteúdo
       await _responderGeral(texto);
 
     } catch (err) {
@@ -723,12 +741,13 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     RESET DO CHAT (manual — botão de reset na UI)
+     RESET DO CHAT
   ══════════════════════════════════════════════════════════ */
 
   function _resetarChat() {
     _limparHistoricoAtivo();
     _ultimaQuestaoVisual = null;
+    _versaoEditando      = null;
     state.processando    = false;
 
     if (state.typingTimer) { clearTimeout(state.typingTimer); state.typingTimer = null; }
@@ -741,6 +760,7 @@
 
     var sysMsg = { role: 'system', text: '⬡  Nexus IA', time: _getTime() };
     _push(sysMsg);
+    sysMsg.__idx = state.messages.length - 1;
     window.NexusUI.renderMessage(sysMsg);
     _mostrarBoasVindas();
   }
@@ -787,16 +807,18 @@
     var modo   = _getModo();
     var sem    = _getSemestre();
 
-    // v2.2 — decide ANTES de carregar o histórico se o contexto desta
-    // visita é o mesmo da última (mantém) ou mudou (limpa o domínio
-    // inteiro). Substitui o antigo listener de 'pagehide'.
     _aplicarPersistenciaContexto(discId, modo, sem);
 
     state.discAtivo      = discId;
     state.modoAtivo      = modo;
     state.chaveHistorico = _montarChaveHistorico(discId, modo, sem);
 
-    window.NexusUI.init({ onSend: _onUserSend, onReset: _resetarChat });
+    window.NexusUI.init({
+      onSend:          _onUserSend,
+      onReset:         _resetarChat,
+      onEdit:          _onEditarMensagem,
+      onVersionSwitch: _onTrocarVersao,
+    });
 
     if (typeof window.NexusWorker !== 'undefined') {
       window.NexusWorker.limparHistorico();
@@ -815,7 +837,10 @@
 
     if (histSalvo.length > 0) {
       state.messages = histSalvo;
-      histSalvo.forEach(function (msg) { window.NexusUI.renderMessage(msg); });
+      histSalvo.forEach(function (msg, i) {
+        msg.__idx = i;
+        window.NexusUI.renderMessage(msg);
+      });
 
       if (typeof window.NexusWorker !== 'undefined' &&
           typeof window.NexusWorker.restaurarHistorico === 'function') {
@@ -832,11 +857,12 @@
     } else {
       var sysMsg = { role: 'system', text: '⬡  Nexus IA', time: _getTime() };
       _push(sysMsg);
+      sysMsg.__idx = state.messages.length - 1;
       window.NexusUI.renderMessage(sysMsg);
       _mostrarBoasVindas();
     }
 
-    console.log('[NexusQuizAssistant] iniciado v2.2 — disc:', discId, '| modo:', modo,
+    console.log('[NexusQuizAssistant] iniciado v2.4 — disc:', discId, '| modo:', modo,
                 '| questões no snapshot:', _getSnapshot().length);
   }
 

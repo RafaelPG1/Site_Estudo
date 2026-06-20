@@ -1105,3 +1105,12 @@
     display: none;
   }
 }
+
+.nexus-edit-inline {
+  width: 100%; background: var(--nx-surface-2); border: 1px solid var(--nx-border-hover);
+  border-radius: var(--nx-radius-msg); color: var(--nx-text); font-family: var(--nx-font-ui);
+  font-size: 13.5px; padding: 11px 15px; resize: none; outline: none;
+}
+.nexus-msg-versions { display: flex; align-items: center; gap: 6px; justify-content: flex-end; margin-top: 3px; font-size: 10px; color: var(--nx-text-dim); font-family: var(--nx-font-mono); }
+.nexus-msg-versions button { background: transparent; border: 1px solid var(--nx-border); color: var(--nx-text-dim); border-radius: 4px; cursor: pointer; padding: 1px 5px; }
+.nexus-msg-versions button:hover { color: var(--nx-text); border-color: var(--nx-border-hover); }

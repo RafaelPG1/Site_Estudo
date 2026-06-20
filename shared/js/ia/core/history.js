@@ -118,7 +118,18 @@
       }
 
       var final = sistema ? [sistema].concat(resto) : resto;
-      store.setItem(_storageKey(chave), JSON.stringify(final));
+
+      // __idx é um campo de runtime (posição no array, usado pela UI
+      // para os botões de editar/versão) — recalculado a cada render,
+      // nunca precisa ir para o storage.
+      var paraSalvar = final.map(function (m) {
+        if (!('__idx' in m)) return m;
+        var copia = Object.assign({}, m);
+        delete copia.__idx;
+        return copia;
+      });
+
+      store.setItem(_storageKey(chave), JSON.stringify(paraSalvar));
     } catch (_) {}
   }
 

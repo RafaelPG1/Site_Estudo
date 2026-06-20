@@ -347,12 +347,16 @@
      REGISTRO GLOBAL
   ══════════════════════════════════════════════════════════ */
 
-  window.NexusWorker = {
-    perguntar,
-    limparHistorico,
-    restaurarHistorico,
-    setHabilitado,
-    status,
-  };
+function exportarHistorico() {
+  return _historico.slice();
+}
 
+window.NexusWorker = {
+  perguntar,
+  limparHistorico,
+  restaurarHistorico,
+  exportarHistorico,   // ← nova linha
+  setHabilitado,
+  status,
+};
 }());

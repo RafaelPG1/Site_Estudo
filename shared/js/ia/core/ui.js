@@ -10,10 +10,11 @@
 (function () {
   'use strict';
 
-  let _onSend    = null;
-  let _onReset   = null;
-  let _onEdit    = null;
-  let _playSound = null;
+  let _onSend          = null;
+  let _onReset         = null;
+  let _onEdit          = null;
+  let _playSound       = null;
+  let _onVersionSwitch = null;
 
   (function _carregarPlaySound() {
     var script = document.currentScript ||
@@ -353,6 +354,25 @@
     );
   }
 
+  /**
+   * Controle de versão "< i/N >" — só é renderizado quando a mensagem
+   * do usuário possui múltiplas versões (msg.versions.length >= 2).
+   * Mensagens antigas/sem versionamento simplesmente não geram nada
+   * aqui, preservando compatibilidade total com o histórico atual.
+   */
+  function _renderVersionSwitch(msg) {
+    if (!msg.versions || msg.versions.length < 2) return '';
+    var atual = (msg.versionIndex || 0) + 1;
+    var total = msg.versions.length;
+    return (
+      '<div class="nexus-msg-versions">' +
+        '<button type="button" class="nexus-version-prev" aria-label="Versão anterior">&lt;</button>' +
+        '<span class="nexus-version-label">' + atual + '/' + total + '</span>' +
+        '<button type="button" class="nexus-version-next" aria-label="Próxima versão">&gt;</button>' +
+      '</div>'
+    );
+  }
+
   function _copiarTexto(texto, btn) {
     function _sucesso() {
       if (!btn) return;
@@ -394,31 +414,61 @@
   }
 
   /**
-   * Coloca o texto da mensagem do usuário de volta no campo de input,
-   * focado e com o cursor no final, pronto para edição.
+   * Edição inline: troca a bolha do usuário por um textarea inline,
+   * dentro do próprio elemento da mensagem (não usa o input do rodapé).
    *
-   * ui.js só cuida do aspecto visual (preencher e focar o input).
-   * Se quem chamou init() passou um onEdit(texto), ele é notificado
-   * para tratar a parte de domínio (ex: remover a mensagem antiga e
-   * a resposta da IA que veio depois do histórico em core/history.js),
-   * já que essa lógica não pertence à camada de renderização.
+   * Ao confirmar (Enter sem Shift, ou blur com texto alterado), chama
+   * _onEdit(msgIndex, textoNovo) — quem decide o que fazer com a nova
+   * versão (atualizar mensagem existente, regenerar resposta, etc.)
+   * é o assistant de domínio, não esta camada de UI.
+   *
+   * Esc ou confirmar sem alteração restaura a bolha original sem
+   * disparar nada.
    */
-  function _editarMensagem(texto) {
-    var input = document.getElementById('nexus-input');
-    if (!input) return;
+  function _editarMensagem(el, textoOriginal, msgIndex) {
+    var bubble = el.querySelector('.nexus-msg-bubble');
+    if (!bubble) return;
 
-    input.value = texto;
-    input.style.height = 'auto';
-    input.style.height = Math.min(input.scrollHeight, 100) + 'px';
-    input.focus();
+    var ta = document.createElement('textarea');
+    ta.className = 'nexus-edit-inline';
+    ta.value = textoOriginal;
+    bubble.replaceWith(ta);
+    ta.focus();
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(ta.scrollHeight, 160) + 'px';
+    ta.setSelectionRange(ta.value.length, ta.value.length);
 
-    var len = input.value.length;
-    input.setSelectionRange(len, len);
+    function _confirmar() {
+      var novo = ta.value.trim();
+      ta.removeEventListener('keydown', _onKey);
+      ta.removeEventListener('blur', _confirmar);
+      if (!novo || novo === textoOriginal) {
+        ta.replaceWith(bubble);
+        return;
+      }
+      if (typeof _onEdit === 'function') _onEdit(msgIndex, novo);
+    }
 
-    if (typeof _onEdit === 'function') _onEdit(texto);
+    function _onKey(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        _confirmar();
+      }
+      if (e.key === 'Escape') {
+        ta.removeEventListener('blur', _confirmar);
+        ta.replaceWith(bubble);
+      }
+    }
+
+    ta.addEventListener('keydown', _onKey);
+    ta.addEventListener('blur', _confirmar);
+    ta.addEventListener('input', function () {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 160) + 'px';
+    });
   }
 
-  function _bindAcoesMensagem(el, textoOriginal) {
+  function _bindAcoesMensagem(el, textoOriginal, msgIndex) {
     var copyBtn = el.querySelector('.nexus-action-copy');
     if (copyBtn) {
       copyBtn.addEventListener('click', function (e) {
@@ -431,16 +481,44 @@
     if (editBtn) {
       editBtn.addEventListener('click', function (e) {
         e.stopPropagation();
-        _editarMensagem(textoOriginal);
+        _editarMensagem(el, textoOriginal, msgIndex);
       });
     }
   }
 
+  function _bindVersionSwitch(el, msgIndex) {
+    var prevBtn = el.querySelector('.nexus-version-prev');
+    var nextBtn = el.querySelector('.nexus-version-next');
+    if (prevBtn) {
+      prevBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (typeof _onVersionSwitch === 'function') _onVersionSwitch(msgIndex, -1);
+      });
+    }
+    if (nextBtn) {
+      nextBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (typeof _onVersionSwitch === 'function') _onVersionSwitch(msgIndex, 1);
+      });
+    }
+  }
+
+  /**
+   * Renderiza uma mensagem.
+   *
+   * msg.__idx (opcional): índice da mensagem dentro do array de
+   * histórico do assistant de domínio. É repassado para os botões de
+   * editar/versão para que o assistant saiba qual mensagem alterar.
+   * Quando ausente (compatibilidade com chamadas antigas), os botões
+   * de editar/versão simplesmente não conseguem notificar o assistant
+   * — mas a renderização continua funcionando normalmente.
+   */
   function renderMessage(msg) {
     var container = document.getElementById('nexus-messages');
     if (!container) return;
 
     var el = document.createElement('div');
+    var msgIndex = msg.__idx;
 
     if (msg.role === 'user') {
       el.className = 'nexus-msg nexus-user';
@@ -449,8 +527,10 @@
         '<div class="nexus-msg-wrap">' +
           '<div class="nexus-msg-bubble">' + _formatarTexto(msg.text) + '</div>' +
           _renderAcoes(true) +
+          _renderVersionSwitch(msg) +
         '</div>';
-      _bindAcoesMensagem(el, msg.text);
+      _bindAcoesMensagem(el, msg.text, msgIndex);
+      _bindVersionSwitch(el, msgIndex);
 
     } else if (msg.role === 'bot') {
       el.className = 'nexus-msg nexus-bot';
@@ -463,7 +543,7 @@
           '</div>' +
           _renderAcoes(false) +
         '</div>';
-      _bindAcoesMensagem(el, msg.text);
+      _bindAcoesMensagem(el, msg.text, msgIndex);
 
     } else {
       el.className = 'nexus-msg nexus-system';
@@ -936,10 +1016,11 @@
   ══════════════════════════════════════════════════════════ */
 
   function init(opts) {
-    opts     = opts    || {};
-    _onSend  = opts.onSend  || null;
-    _onReset = opts.onReset || null;
-    _onEdit  = opts.onEdit  || null;
+    opts              = opts || {};
+    _onSend           = opts.onSend  || null;
+    _onReset          = opts.onReset || null;
+    _onEdit           = opts.onEdit  || null;
+    _onVersionSwitch  = opts.onVersionSwitch || null;
 
     // Reutiliza o botão se fab.js já o injetou; cria apenas se ausente
     var fab = document.getElementById('nexus-fab') || _criarFAB();

@@ -1,26 +1,37 @@
 /**
- * NEXUS — shared/js/ia/resumo/assistant.js  v3.2
+ * NEXUS — shared/js/ia/resumo/assistant.js  v3.4
  *
  * Orquestrador do sistema de IA para Resumos.
  *
- * Responsabilidades:
- *   - Fluxo completo do chat de resumo
- *   - Seleção e troca de disciplina
- *   - Busca no conteúdo de resumo
- *   - Histórico isolado por (domínio + disciplina + semestre)
- *   - Integração com NexusWorker para respostas da IA
+ * MUDANÇAS v3.4 (correção de versionamento):
+ *   Bug corrigido: ao navegar entre versões de uma mensagem editada,
+ *   todas as versões exibiam a resposta da última edição.
  *
- * NÃO conhece:
- *   - Quiz, questões, gabarito, feedback, token de sessão
- *   - Games
- *   - Qualquer estado externo de outros domínios
+ *   Causa raiz: _onTrocarVersao mutava o objeto bot diretamente em
+ *   state.messages (botMsg.text = respostaVersao), corrompendo a
+ *   referência compartilhada. Na próxima troca, o objeto já havia sido
+ *   sobrescrito — e _salvarHistorico() persistia o estado corrompido
+ *   no localStorage.
+ *
+ *   Correção: cada versão agora armazena { texto, resposta, rodape }
+ *   como snapshot completo e independente. _onTrocarVersao substitui
+ *   state.messages[msgIndex+1] por um NOVO objeto em vez de mutar o
+ *   existente. _renderBot salva resposta+rodape na versão correta via
+ *   _versaoEditando. _onEditarMensagem captura resposta+rodape do bot
+ *   atual ao criar versions[0].
+ *
+ * MUDANÇAS v3.3 (edição de mensagem):
+ *   - O botão "Editar" da UI agora dispara _onEditarMensagem(), que
+ *     ATUALIZA a mensagem do usuário existente em vez de criar uma
+ *     nova. A resposta do bot vinculada é removida e regenerada a
+ *     partir do texto editado. Versões anteriores da pergunta ficam
+ *     em msg.versions / msg.versionIndex, navegáveis via o controle
+ *     "< i/N >" da UI (_onTrocarVersao só troca o texto exibido, sem
+ *     reprocessar a IA).
  *
  * MUDANÇAS v3.2:
  *   - _restaurarSessao() agora chama NexusWorker.restaurarHistorico()
- *     com as mensagens visuais recarregadas. Isso sincroniza o histórico
- *     em memória do worker com o histórico visual do NexusHistory após
- *     F5 / reabrir aba, eliminando a dessincronização que fazia a IA
- *     responder como se não houvesse conversa anterior.
+ *     com as mensagens visuais recarregadas.
  *
  * MUDANÇAS v3.1:
  *   - Persistência da disciplina ativa (SESSION_DISC) restaurada.
@@ -53,21 +64,11 @@
   var TOP_K              = 8;
   var MIN_SCORE          = 15;
   var SESSION_DISC_KEY   = 'nexus_resumo_disc_ativa';
-  var MENSAGEM_MAX_CHARS = 4000; // limiar generoso — só barra entradas claramente anormais
+  var MENSAGEM_MAX_CHARS = 4000;
 
   /* ══════════════════════════════════════════════════════════
-     APs QUE COMPÕEM CADA PERÍODO (Resumo) — v3.3
-
-     O Resumo deixou de tratar AP1/AP2 como conjuntos de conteúdo
-     independentes: a partir desta versão, a IA enxerga o semestre
-     completo, não apenas o AP selecionado.
-
-     Esta lista é a fonte única de verdade de "quais APs existem
-     dentro de um período" para fins de carregamento/indexação do
-     Resumo. Ela não afeta o Quiz (que continua usando o AP único
-     do semestre ativo) nem a navegação/URLs do site — afeta somente
-     o que é passado a NexusLoader.carregar() em _montarCtx().
-   ══════════════════════════════════════════════════════════ */
+     APs QUE COMPÕEM CADA PERÍODO (Resumo)
+  ══════════════════════════════════════════════════════════ */
   var APS_POR_PERIODO = {
     '2026.1': ['AP1', 'AP2'],
     '2026.2': ['AP1', 'AP2'],
@@ -86,8 +87,13 @@
     discsCacheadas:  {},
     discIndexadaId:  null,
     conteudoAtual:   null,
-    chaveHistorico:  null,   // NexusHistory key ativa
+    chaveHistorico:  null,
   };
+
+  // Rastreia qual (msgIndex, versionIndex) está sendo gerado após uma
+  // edição, para que _renderBot possa armazenar resposta+rodape na
+  // versão correta assim que a IA responder.
+  var _versaoEditando = null; // { msgIndex, versionIndex } | null
 
   var _pipelineConteudoAtivo = false;
 
@@ -118,22 +124,6 @@
     return ctx ? ctx.getSemestre() : '';
   }
 
-  /**
-   * Resolve a lista de APs a carregar para o período informado.
-   *
-   * Se o período estiver mapeado em APS_POR_PERIODO, retorna a lista
-   * completa (ex: ['AP1','AP2']) — o Resumo passa a indexar todo o
-   * semestre, independente de qual AP está selecionado na URL/estado.
-   *
-   * Se o período não estiver mapeado (ex: semestres futuros ainda não
-   * cadastrados aqui), cai no comportamento original: usa apenas o
-   * `ap` único já resolvido por parseSemestre(), preservando
-   * compatibilidade sem quebrar nada que ainda não foi migrado.
-   *
-   * @param {string} periodo — ex: '2026.1'
-   * @param {string|null} apUnico — AP do semestre ativo, ex: 'AP2'
-   * @returns {string[]|string|null}
-   */
   function _resolverApsParaCarregamento(periodo, apUnico) {
     var lista = APS_POR_PERIODO[periodo];
     if (Array.isArray(lista) && lista.length) return lista;
@@ -204,9 +194,37 @@
     return msg;
   }
 
+  function _rerenderTudo() {
+    NexusUI.limparMensagens();
+    state.messages.forEach(function (m, i) {
+      m.__idx = i;
+      NexusUI.renderMessage(m);
+    });
+  }
+
+  /**
+   * Renderiza uma mensagem do bot e, se estivermos no meio de uma
+   * edição (_versaoEditando !== null), armazena resposta+rodape como
+   * snapshot completo na versão correspondente.
+   *
+   * IMPORTANTE: não muta nenhum objeto bot já existente em
+   * state.messages — apenas preenche o campo na versão salva em
+   * msg.versions[versionIndex].
+   */
   function _renderBot(text, rodape) {
     var msg = _push({ role: 'bot', text: text, time: _getTime(), rodape: rodape || null });
+    msg.__idx = state.messages.length - 1;
     NexusUI.renderMessage(msg);
+
+    if (_versaoEditando !== null) {
+      var userMsg = state.messages[_versaoEditando.msgIndex];
+      if (userMsg && userMsg.versions && userMsg.versions[_versaoEditando.versionIndex]) {
+        userMsg.versions[_versaoEditando.versionIndex].resposta = text;
+        userMsg.versions[_versaoEditando.versionIndex].rodape   = rodape || null;
+      }
+      _versaoEditando = null;
+      _salvarHistorico();
+    }
   }
 
   function _setInputBloqueado(bloqueado) {
@@ -221,19 +239,6 @@
      CONTEXTO E LOADER
   ══════════════════════════════════════════════════════════ */
 
-  /**
-   * Monta o contexto de carregamento para uma disciplina.
-   *
-   * v3.3 — ctx.ap passa a poder ser um array de APs (ex: ['AP1','AP2'])
-   * quando o período da disciplina estiver mapeado em APS_POR_PERIODO.
-   * Isso faz NexusLoader.carregar() carregar e mesclar TODOS os arquivos
-   * do semestre, em vez de apenas o AP selecionado — sem qualquer filtro
-   * por AP na busca/indexação, conforme exigido para o Resumo.
-   *
-   * O Quiz não usa esta função (tem seu próprio _montarCtx em
-   * quiz/assistant.js, fora do escopo desta mudança) e continua
-   * resolvendo um único AP por vez normalmente.
-   */
   function _montarCtx(disc) {
     var ctx = _getCtxBridge();
     if (!ctx || !disc) return null;
@@ -655,14 +660,6 @@
     return textos;
   }
 
-  /**
-   * Carrega o conteúdo de uma disciplina para a busca global.
-   *
-   * v3.3 — usa _montarCtx(disc) em vez de montar o contexto manualmente
-   * com um único AP. Isso garante que a busca global também enxergue o
-   * semestre completo (AP1+AP2) para cada disciplina, igual à busca
-   * normal — mantendo consistência entre os dois modos de busca.
-   */
   async function _carregarDiscParaBuscaGlobal(disc) {
     if (state.discsCacheadas[disc.id]) return state.discsCacheadas[disc.id];
     var loaderCtx = _montarCtx(disc);
@@ -838,7 +835,9 @@
 
     if (state.typingTimer) clearTimeout(state.typingTimer);
     _removerLiveChips();
-    NexusUI.renderMessage(_push({ role: 'user', text: text, time: _getTime() }));
+    var msgUser = _push({ role: 'user', text: text, time: _getTime() });
+    msgUser.__idx = state.messages.length - 1;
+    NexusUI.renderMessage(msgUser);
     NexusUI.showTyping();
     state.processando = true;
     _setInputBloqueado(true);
@@ -846,6 +845,102 @@
   }
 
   function _onSugestaoClick(texto) { _onUserSend(texto); }
+
+  /**
+   * Disparado pela UI quando o usuário confirma a edição de uma mensagem.
+   *
+   * v3.4 — Captura resposta+rodape do bot atual como snapshot completo
+   * em versions[0] antes de qualquer mutação. A nova versão recebe
+   * resposta=null/rodape=null, que serão preenchidos por _renderBot
+   * via _versaoEditando quando a IA responder.
+   */
+  function _onEditarMensagem(msgIndex, novoTexto) {
+    if (state.processando) return;
+
+    if (_mensagemExcedeLimite(novoTexto)) {
+      NexusUI.renderMessage({
+        role: 'system',
+        text: 'Mensagem muito grande. Resuma sua pergunta e tente novamente.',
+        time: _getTime(),
+      });
+      return;
+    }
+
+    var msg = state.messages[msgIndex];
+    if (!msg || msg.role !== 'user') return;
+
+    // Na primeira edição: inicializa versions[0] com snapshot completo
+    // da resposta atual (texto + rodape) antes de qualquer alteração.
+    if (!msg.versions) {
+      var botExistente = (state.messages[msgIndex + 1] && state.messages[msgIndex + 1].role === 'bot')
+        ? state.messages[msgIndex + 1]
+        : null;
+      msg.versions = [{
+        texto:   msg.text,
+        resposta: botExistente ? botExistente.text        : null,
+        rodape:   botExistente ? (botExistente.rodape || null) : null,
+      }];
+      msg.versionIndex = 0;
+    }
+
+    // Nova versão: resposta e rodape serão preenchidos por _renderBot
+    msg.versions.push({ texto: novoTexto, resposta: null, rodape: null });
+    var novoVersionIndex = msg.versions.length - 1;
+    msg.versionIndex = novoVersionIndex;
+    msg.text = novoTexto;
+
+    // Sinaliza para _renderBot onde salvar resposta+rodape da IA
+    _versaoEditando = { msgIndex: msgIndex, versionIndex: novoVersionIndex };
+
+    // Remove o objeto bot do array — será recriado via _push/_renderBot
+    if (state.messages[msgIndex + 1] && state.messages[msgIndex + 1].role === 'bot') {
+      state.messages.splice(msgIndex + 1, 1);
+    }
+
+    _removerLiveChips();
+    _salvarHistorico();
+    _rerenderTudo();
+
+    NexusUI.showTyping();
+    state.processando = true;
+    _setInputBloqueado(true);
+    state.typingTimer = setTimeout(function () { _processar(novoTexto); }, REPLY_DELAY_MS);
+  }
+
+  /**
+   * Disparado pela UI ao clicar em "<" ou ">" no controle de versão.
+   *
+   * v3.4 — Substitui state.messages[msgIndex+1] por um NOVO objeto
+   * independente com os dados da versão escolhida, em vez de mutar
+   * o objeto existente. Isso garante que versões anteriores não sejam
+   * corrompidas e que _salvarHistorico() persista o estado correto.
+   */
+  function _onTrocarVersao(msgIndex, delta) {
+    var msg = state.messages[msgIndex];
+    if (!msg || !msg.versions) return;
+    var novoIdx = msg.versionIndex + delta;
+    if (novoIdx < 0 || novoIdx >= msg.versions.length) return;
+
+    msg.versionIndex = novoIdx;
+    msg.text = msg.versions[novoIdx].texto;
+
+    var versao  = msg.versions[novoIdx];
+    var botAtual = state.messages[msgIndex + 1];
+
+    if (botAtual && botAtual.role === 'bot' &&
+        versao.resposta !== null && versao.resposta !== undefined) {
+      // Substitui por um novo objeto — NUNCA muta o existente
+      state.messages[msgIndex + 1] = {
+        role:   'bot',
+        text:   versao.resposta,
+        time:   botAtual.time,
+        rodape: versao.rodape || null,
+      };
+    }
+
+    _salvarHistorico();
+    _rerenderTudo();
+  }
 
   async function _processar(texto) {
     try {
@@ -1048,9 +1143,6 @@
         });
       } catch (errIA) { console.warn('[NexusAssistant] NexusWorker.perguntar() erro:', errIA); }
       if (respostaIA) {
-        // turnosAoEnviar: capturado pelo worker ANTES de _registrarTurno().
-        // status().turnosNoHistorico seria lido DEPOIS e já incluiria o turno
-        // recém-adicionado — produzindo falso positivo na primeira pergunta.
         var labelFonte = temCtx
           ? 'fonte: conteúdo do site'
           : (respostaIA.turnosAoEnviar > 0)
@@ -1106,6 +1198,7 @@
   function _addWelcomeMessage() {
     var msg = { role: 'system', text: '⬡  Nexus IA', time: _getTime() };
     _push(msg);
+    msg.__idx = state.messages.length - 1;
     NexusUI.renderMessage(msg);
   }
 
@@ -1164,6 +1257,7 @@
     state.conteudoAtual  = null;
     state.discsCacheadas = {};
     state.chaveHistorico = null;
+    _versaoEditando      = null;
     _limparDiscSalva();
     NexusUI.atualizarDiscAtiva(null);
 
@@ -1181,11 +1275,6 @@
 
   /* ══════════════════════════════════════════════════════════
      RESTAURAÇÃO DE HISTÓRICO
-
-     Restaura a disciplina ativa (sessionStorage), o histórico visual
-     (NexusHistory) e — novidade v3.2 — o histórico em memória do
-     NexusWorker, para que a IA reconheça mensagens anteriores após
-     F5 / reabrir aba / fechar e abrir.
   ══════════════════════════════════════════════════════════ */
 
   function _restaurarSessao() {
@@ -1204,16 +1293,14 @@
     state.chaveHistorico = chave;
     state.messages       = msgs;
 
-    msgs.forEach(function (msg) { NexusUI.renderMessage(msg); });
+    msgs.forEach(function (msg, i) {
+      msg.__idx = i;
+      NexusUI.renderMessage(msg);
+    });
 
-    // ── NOVIDADE v3.2 ────────────────────────────────────────
-    // Sincroniza o NexusWorker com o histórico visual restaurado.
-    // Sem isso, o worker recebia historico=[] e não reconhecia a
-    // conversa anterior (ex: "resuma por favor" sem contexto).
     if (typeof window.NexusWorker !== 'undefined') {
       NexusWorker.restaurarHistorico(msgs);
     }
-    // ─────────────────────────────────────────────────────────
 
     var msgsEl = document.getElementById('nexus-messages');
     if (msgsEl) {
@@ -1252,7 +1339,12 @@
     if (!_depsUIok()) return;
     if (document.getElementById('nexus-panel')) return;
 
-    NexusUI.init({ onSend: _onUserSend, onReset: _resetarChat });
+    NexusUI.init({
+      onSend:          _onUserSend,
+      onReset:         _resetarChat,
+      onEdit:          _onEditarMensagem,
+      onVersionSwitch: _onTrocarVersao,
+    });
 
     (function () {
       var inputEl = document.getElementById('nexus-input');
@@ -1282,6 +1374,7 @@
       state.processando    = false;
       state.discsCacheadas = {};
       state.chaveHistorico = null;
+      _versaoEditando      = null;
 
       NexusUI.limparMensagens();
       if (typeof window.NexusWorker !== 'undefined') NexusWorker.limparHistorico();
@@ -1327,6 +1420,7 @@
     _limparContexto();
     _limparDiscSalva();
     state.discsCacheadas = {};
+    _versaoEditando      = null;
     _removerLiveChips();
   });
 
