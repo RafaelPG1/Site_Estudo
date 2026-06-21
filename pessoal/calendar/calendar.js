@@ -1,5 +1,5 @@
 /* ===========================
-   NEXUS STUDY — calendar.js
+   NEXUS STUDY — pessoal/calendar/calendar.js
    =========================== */
 
 'use strict';
