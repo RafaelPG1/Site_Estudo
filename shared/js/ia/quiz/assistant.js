@@ -46,6 +46,42 @@
  * ── MUDANÇAS v2.4 ─────────────────────────────────────────
  *   (ver cabeçalho da versão anterior)
  *
+ * ── MUDANÇAS v2.6 (árvore de conversa) ──────────────────────
+ *
+ *   Problema observado: o sistema de versões era uma LISTA linear de
+ *   snapshots. Cada versão guardava apenas sua própria pergunta+resposta,
+ *   mas não isolava mensagens de acompanhamento enviadas depois dela —
+ *   se o usuário voltasse a uma versão antiga e mandasse uma mensagem
+ *   nova (ex.: "resuma por favor"), ela acabava aparecendo em TODAS as
+ *   versões, porque o array linear de state.messages não sabia a qual
+ *   versão ela pertencia.
+ *
+ *   CORREÇÃO: cada mensagem editável agora tem uma ÁRVORE de versões
+ *   (msg.tree). tree.rootId é um nó sentinela interno (nunca exibido)
+ *   cujos filhos diretos são as versões reais (V1, V2, V3...) — sempre
+ *   irmãs entre si, preservando a navegação plana "< i/N >" que a UI
+ *   já exibia. Cada nó de versão guarda, além do snapshot de sempre
+ *   (texto/resposta/rodape/time), seu PRÓPRIO sub-histórico de conversa
+ *   (node.ramo) — mensagens criadas enquanto aquele nó estava ativo.
+ *
+ *   Trocar de versão agora:
+ *     1. Fecha o ramo do nó que está deixando de ser ativo
+ *        (_fecharRamoAtivo): tudo que está em state.messages depois da
+ *        mensagem editável é cortado (deep clone) e guardado dentro dele.
+ *     2. Abre o ramo do nó de destino (_abrirRamoNode): o sub-histórico
+ *        salvo nele é expandido de volta para state.messages.
+ *     3. Rerenderiza tudo.
+ *
+ *   Isso garante que mensagens de acompanhamento pertencem exclusivamente
+ *   ao ramo (versão) onde foram criadas, e nunca aparecem em outro ramo.
+ *
+ *   MIGRAÇÃO: históricos antigos salvos como msg.versions[] (lista linear)
+ *   são convertidos para msg.tree na primeira leitura, via
+ *   _migrarVersionsParaTree() — cada versão antiga se torna filha direta
+ *   do sentinela (irmãs entre si), preservando 100% o que era exibido
+ *   antes. Depois da migração, msg.versions é removido e msg.tree passa
+ *   a ser a única fonte de verdade.
+ *
  * API pública: window.NexusQuizAssistant
  *   init()          — inicialização manual (fallback)
  *   contextoAtivo() — verifica se o assistente pode operar
@@ -71,7 +107,7 @@
     discAtivo:      null,
   };
 
-  var _versaoEditando = null; // { msgIndex, versionIndex } | null
+  var _versaoEditando = null; // { msgIndex, nodeId } | null
 
   /* ══════════════════════════════════════════════════════════
      UTILITÁRIO: DEEP COPY DE RODAPÉ
@@ -81,6 +117,169 @@
   function _clonarRodape(rodape) {
     if (!rodape) return null;
     return { linha1: rodape.linha1 || null, linha2: rodape.linha2 || null };
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     ÁRVORE DE CONVERSA (sistema de versões)
+     ──────────────────────────────────────────────────────────
+     Ver cabeçalho do arquivo (v2.6) para a descrição completa.
+     Estrutura idêntica à usada em shared/js/ia/resumo/assistant.js,
+     por mensagem editável (msg.tree):
+
+       msg.tree = {
+         nodes:    { [nodeId]: NodeVersao },
+         rootId:   string,   // nó sentinela, nunca exibido
+         activeId: string,
+       }
+
+       NodeVersao = {
+         id, parentId, childrenIds: string[],
+         texto, resposta, rodape, time,
+         ramo: object[],   // sub-histórico exclusivo deste nó
+       }
+  ══════════════════════════════════════════════════════════ */
+
+  var _seqNodeId = 0;
+  function _novoNodeId() {
+    _seqNodeId += 1;
+    return 'v' + Date.now().toString(36) + '_' + _seqNodeId;
+  }
+
+  function _clonarMensagensProfundo(msgs) {
+    if (!Array.isArray(msgs)) return [];
+    try {
+      return JSON.parse(JSON.stringify(msgs));
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function _criarNode(parentId, texto, resposta, rodape, time) {
+    return {
+      id: _novoNodeId(),
+      parentId: parentId,
+      childrenIds: [],
+      texto: texto,
+      resposta: (resposta === undefined) ? null : resposta,
+      rodape: _clonarRodape(rodape),
+      time: time || null,
+      ramo: [],
+    };
+  }
+
+  /**
+   * Garante que msg.tree exista. tree.rootId é um nó SENTINELA interno
+   * (nunca exibido, nunca tem resposta própria) cujo único papel é ser
+   * o pai comum de todas as versões reais (V1, V2, V3...) — garantindo
+   * que toda nova edição nasça como irmã das demais, navegação plana
+   * "i/N", mesmo que o usuário tenha aprofundado um sub-ramo de conversa
+   * dentro de uma delas antes de editar de novo.
+   *
+   * Casos:
+   *  - msg já tem msg.tree → não faz nada.
+   *  - msg tem msg.versions (formato pré-v2.6) → migra para árvore com
+   *    sentinela na raiz e cada versão antiga como filha direta dela.
+   *  - msg não tem nem tree nem versions → cria sentinela + V1 com o
+   *    estado atual da própria mensagem (texto + bot seguinte, se houver).
+   */
+  function _garantirTree(msg, msgIndex) {
+    if (msg.tree && msg.tree.nodes && msg.tree.activeId) return msg.tree;
+
+    if (Array.isArray(msg.versions) && msg.versions.length) {
+      msg.tree = _migrarVersionsParaTree(msg, msgIndex);
+      delete msg.versions;
+      delete msg.versionIndex;
+      return msg.tree;
+    }
+
+    var botExistente = (state.messages[msgIndex + 1] && state.messages[msgIndex + 1].role === 'bot')
+      ? state.messages[msgIndex + 1]
+      : null;
+
+    var sentinela = _criarNode(null, null, null, null, null);
+    var v1 = _criarNode(
+      sentinela.id,
+      msg.text,
+      botExistente ? botExistente.text : null,
+      botExistente ? botExistente.rodape : null,
+      botExistente ? (botExistente.time || null) : null
+    );
+    sentinela.childrenIds.push(v1.id);
+
+    var nodes = {};
+    nodes[sentinela.id] = sentinela;
+    nodes[v1.id] = v1;
+    msg.tree = { nodes: nodes, rootId: sentinela.id, activeId: v1.id };
+    return msg.tree;
+  }
+
+  /**
+   * Migração de msg.versions[] (lista linear pré-v2.6) para msg.tree.
+   * Cada versão antiga se torna filha direta do nó sentinela — todas
+   * irmãs entre si, replicando exatamente a navegação plana "i/N" que
+   * já existia, sem ramos alternativos (o formato antigo não tinha
+   * esse conceito, então nenhum dado é perdido ou inventado).
+   */
+  function _migrarVersionsParaTree(msg, msgIndex) {
+    var versions = msg.versions;
+    var versionIndex = (typeof msg.versionIndex === 'number') ? msg.versionIndex : versions.length - 1;
+    var sentinela = _criarNode(null, null, null, null, null);
+    var nodes = {};
+    nodes[sentinela.id] = sentinela;
+    var ids = [];
+
+    versions.forEach(function (v) {
+      var node = _criarNode(sentinela.id, v.texto, v.resposta, v.rodape, v.time);
+      nodes[node.id] = node;
+      sentinela.childrenIds.push(node.id);
+      ids.push(node.id);
+    });
+
+    var activeId = ids[Math.max(0, Math.min(versionIndex, ids.length - 1))];
+
+    return { nodes: nodes, rootId: sentinela.id, activeId: activeId };
+  }
+
+  /**
+   * Fecha o ramo atualmente ativo de uma mensagem: corta de
+   * state.messages tudo que vem depois dela e guarda esse trecho
+   * (deep clone) dentro do nó ativo, como node.ramo.
+   *
+   * IMPORTANTE: a posição msgIndex+1 normalmente contém a RESPOSTA da
+   * própria versão (já guardada em node.resposta/node.rodape/node.time)
+   * — ela não faz parte do "ramo de acompanhamento" e não deve ser
+   * duplicada dentro de node.ramo. O corte do ramo começa, portanto,
+   * em msgIndex+2 quando a versão tem resposta própria, ou msgIndex+1
+   * quando ainda não tem.
+   *
+   * @returns {number} quantidade de mensagens removidas de state.messages
+   */
+  function _fecharRamoAtivo(msgIndex) {
+    var msg = state.messages[msgIndex];
+    if (!msg || !msg.tree) return 0;
+    var node = msg.tree.nodes[msg.tree.activeId];
+    if (!node) return 0;
+
+    var temRespostaPropria = node.resposta !== null && node.resposta !== undefined;
+    var inicioRamo = msgIndex + 1 + (temRespostaPropria ? 1 : 0);
+
+    var resto = state.messages.slice(inicioRamo);
+    node.ramo = _clonarMensagensProfundo(resto);
+    state.messages.length = msgIndex + 1;
+    return resto.length;
+  }
+
+  /**
+   * Abre o ramo de um nó (que se torna o ativo): expande node.ramo
+   * (deep clone) de volta para state.messages, a partir da posição
+   * `posInsercao` (índice ABSOLUTO em state.messages onde a primeira
+   * mensagem do ramo deve entrar).
+   */
+  function _abrirRamoNode(posInsercao, node) {
+    var expandido = _clonarMensagensProfundo(node.ramo || []);
+    for (var i = 0; i < expandido.length; i++) {
+      state.messages.splice(posInsercao + i, 0, expandido[i]);
+    }
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -258,10 +457,10 @@
   /**
    * Renderiza mensagem do bot e persiste snapshot independente na versão.
    *
-   * v2.5 — rodape é sempre deep-clonado via _clonarRodape() antes de
-   * ser armazenado na versão. Isso garante que nenhuma versão compartilhe
-   * referência de objeto com outra. O time do bot é armazenado na versão
-   * para que _onTrocarVersao possa restaurá-lo corretamente.
+   * v2.6 — quando a resposta é consequência de uma edição
+   * (_versaoEditando !== null), o snapshot é salvo no NÓ da árvore
+   * (msg.tree.nodes[nodeId]), não mais num array linear de versões.
+   * rodape é sempre deep-clonado via _clonarRodape().
    */
   function _renderBot(text, rodape) {
     if (typeof window.NexusUI === 'undefined') return;
@@ -275,11 +474,11 @@
 
     if (_versaoEditando !== null) {
       var userMsg = state.messages[_versaoEditando.msgIndex];
-      if (userMsg && userMsg.versions && userMsg.versions[_versaoEditando.versionIndex]) {
-        var ver = userMsg.versions[_versaoEditando.versionIndex];
-        ver.resposta = textoLimpo;
-        ver.rodape   = _clonarRodape(rodapeClone); // clone do clone — snapshot isolado
-        ver.time     = horario;
+      if (userMsg && userMsg.tree && userMsg.tree.nodes[_versaoEditando.nodeId]) {
+        var node = userMsg.tree.nodes[_versaoEditando.nodeId];
+        node.resposta = textoLimpo;
+        node.rodape   = _clonarRodape(rodapeClone); // clone do clone — snapshot isolado
+        node.time     = horario;
       }
       _versaoEditando = null;
       _salvarHistorico(); // persiste com a versão preenchida
@@ -603,10 +802,13 @@
   /**
    * Disparado pela UI quando o usuário confirma a edição de uma mensagem.
    *
-   * v2.5 — versions[0].rodape é deep-clonado via _clonarRodape() para
-   * garantir que a versão inicial não compartilhe referência com o objeto
-   * bot em state.messages. O time do bot existente é capturado e armazenado
-   * na versão para restauração correta por _onTrocarVersao.
+   * v2.6 — Editar uma mensagem cria um NOVO NÓ na árvore de versões,
+   * sempre filho do nó SENTINELA (irmão de todas as outras versões já
+   * existentes). Antes de criar o nó, o ramo ativo é fechado
+   * (_fecharRamoAtivo): tudo que está depois desta mensagem em
+   * state.messages é cortado e guardado dentro do nó que está deixando
+   * de ser ativo, garantindo que mensagens de acompanhamento (ex.:
+   * "resuma por favor") fiquem isoladas dentro do ramo onde nasceram.
    */
   function _onEditarMensagem(msgIndex, novoTexto) {
     if (state.processando) return;
@@ -615,33 +817,30 @@
     var msg = state.messages[msgIndex];
     if (!msg || msg.role !== 'user') return;
 
-    // Na primeira edição: inicializa versions[0] com snapshot completo e independente.
-    if (!msg.versions) {
-      var botExistente = (state.messages[msgIndex + 1] && state.messages[msgIndex + 1].role === 'bot')
-        ? state.messages[msgIndex + 1]
-        : null;
-      msg.versions = [{
-        texto:    msg.text,
-        resposta: botExistente ? botExistente.text                    : null,
-        rodape:   botExistente ? _clonarRodape(botExistente.rodape)   : null,
-        time:     botExistente ? (botExistente.time || null)           : null,
-      }];
-      msg.versionIndex = 0;
-    }
+    var tree = _garantirTree(msg, msgIndex);
 
-    // Nova versão: todos os campos iniciam como null — preenchidos por _renderBot.
-    msg.versions.push({ texto: novoTexto, resposta: null, rodape: null, time: null });
-    var novoVersionIndex = msg.versions.length - 1;
-    msg.versionIndex = novoVersionIndex;
+    // Fecha o ramo do nó ativo atual — captura qualquer mensagem de
+    // acompanhamento criada enquanto esse nó estava ativo, isolando-a
+    // dentro dele antes de criarmos a nova versão.
+    _fecharRamoAtivo(msgIndex);
+
+    // A nova versão é sempre filha do SENTINELA (irmã de todas as outras
+    // versões já existentes) — preserva a navegação "i/N" plana exibida
+    // pela UI, independentemente de quão profundo o usuário tenha
+    // navegado um sub-ramo antes de editar.
+    var raizId   = tree.rootId;
+    var novoNode = _criarNode(raizId, novoTexto, null, null, null);
+    tree.nodes[novoNode.id] = novoNode;
+    tree.nodes[raizId].childrenIds.push(novoNode.id);
+    tree.activeId = novoNode.id;
+
     msg.text = novoTexto;
 
     // Sinaliza para _renderBot onde salvar o snapshot da resposta da IA.
-    _versaoEditando = { msgIndex: msgIndex, versionIndex: novoVersionIndex };
+    _versaoEditando = { msgIndex: msgIndex, nodeId: novoNode.id };
 
-    // Remove o objeto bot do array — será recriado via _push/_renderBot.
-    if (state.messages[msgIndex + 1] && state.messages[msgIndex + 1].role === 'bot') {
-      state.messages.splice(msgIndex + 1, 1);
-    }
+    // state.messages já está truncado em msgIndex+1 por _fecharRamoAtivo;
+    // a resposta nova será inserida via _push/_renderBot normalmente.
 
     _salvarHistorico();
     _rerenderTudo();
@@ -655,40 +854,55 @@
   /**
    * Disparado pela UI ao clicar em "<" ou ">" no controle de versão.
    *
-   * v2.5 — Substitui state.messages[msgIndex+1] por um NOVO objeto
-   * independente usando dados da versão escolhida. Usa versao.time para
-   * restaurar o horário correto. Se não há bot atual mas a versão tem
-   * resposta salva, insere um novo objeto bot em vez de ignorar silenciosamente.
-   * rodape é sempre deep-clonado para evitar compartilhamento de referência.
+   * v2.6 — Navega entre irmãos (filhos do sentinela) em vez de uma
+   * lista linear de versões. Ao trocar de nó ativo:
+   *   1. Fecha o ramo do nó que está saindo (_fecharRamoAtivo) — guarda
+   *      o sub-histórico atual dentro dele.
+   *   2. Atualiza tree.activeId para o nó de destino.
+   *   3. Reconstrói o bot da própria versão (pergunta+resposta) a partir
+   *      do snapshot do nó.
+   *   4. Abre o ramo do nó de destino (_abrirRamoNode) — expande o
+   *      sub-histórico que pertence exclusivamente a essa versão.
    */
   function _onTrocarVersao(msgIndex, delta) {
     var msg = state.messages[msgIndex];
-    if (!msg || !msg.versions) return;
-    var novoIdx = msg.versionIndex + delta;
-    if (novoIdx < 0 || novoIdx >= msg.versions.length) return;
+    if (!msg || !msg.tree) return;
+    var tree = _garantirTree(msg, msgIndex);
 
-    msg.versionIndex = novoIdx;
-    msg.text = msg.versions[novoIdx].texto;
+    var nodeAtivo = tree.nodes[tree.activeId];
+    if (!nodeAtivo || !nodeAtivo.parentId) return;
 
-    var versao   = msg.versions[novoIdx];
-    var botAtual = state.messages[msgIndex + 1];
+    var irmaos   = tree.nodes[nodeAtivo.parentId].childrenIds;
+    var posAtual = irmaos.indexOf(nodeAtivo.id);
+    var posNova  = posAtual + delta;
+    if (posNova < 0 || posNova >= irmaos.length) return;
 
-    if (versao.resposta !== null && versao.resposta !== undefined) {
+    var nodeDestino = tree.nodes[irmaos[posNova]];
+    if (!nodeDestino) return;
+
+    // 1. Fecha o ramo do nó atual (guarda mensagens de acompanhamento nele).
+    _fecharRamoAtivo(msgIndex);
+
+    // 2. Troca o nó ativo.
+    tree.activeId = nodeDestino.id;
+    msg.text = nodeDestino.texto;
+
+    // 3. Reconstrói pergunta + resposta da versão de destino.
+    var temResposta = nodeDestino.resposta !== null && nodeDestino.resposta !== undefined;
+    if (temResposta) {
       var novoBot = {
         role:   'bot',
-        text:   versao.resposta,
-        time:   versao.time || (botAtual ? botAtual.time : _getTime()),
-        rodape: _clonarRodape(versao.rodape),
+        text:   nodeDestino.resposta,
+        time:   nodeDestino.time || _getTime(),
+        rodape: _clonarRodape(nodeDestino.rodape),
       };
-
-      if (botAtual && botAtual.role === 'bot') {
-        // Substitui o objeto existente por um novo — nunca muta o existente.
-        state.messages[msgIndex + 1] = novoBot;
-      } else {
-        // Não havia bot: insere um novo na posição correta.
-        state.messages.splice(msgIndex + 1, 0, novoBot);
-      }
+      state.messages.splice(msgIndex + 1, 0, novoBot);
     }
+
+    // 4. Abre o ramo do nó de destino, logo após a resposta (se houver)
+    //    ou logo após a pergunta (se a versão ainda não tiver resposta).
+    var posInsercaoRamo = msgIndex + 1 + (temResposta ? 1 : 0);
+    _abrirRamoNode(posInsercaoRamo, nodeDestino);
 
     _salvarHistorico();
     _rerenderTudo();
@@ -833,7 +1047,7 @@
       window.NexusUI.renderMessage(sysMsg);
       _mostrarBoasVindas();
     }
-    console.log('[NexusQuizAssistant] iniciado v2.5 — disc:', discId, '| modo:', modo,
+    console.log('[NexusQuizAssistant] iniciado v2.6 — disc:', discId, '| modo:', modo,
                 '| questões no snapshot:', _getSnapshot().length);
   }
 

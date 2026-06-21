@@ -21,6 +21,25 @@
  *   contexto salvo vs. o contexto atual), não por um listener de
  *   ciclo de vida que dispara em momentos imprevisíveis.
  *
+ * ── v1.2 — ÁRVORE DE CONVERSA ─────────────────────────────────
+ *   Mensagens de usuário editáveis agora podem trazer msg.tree, uma
+ *   árvore de versões (ver assistant.js). Cada nó da árvore tem um
+ *   campo node.ramo[] com mensagens completas (clones), que por sua
+ *   vez também podem conter mensagens de usuário com seu próprio
+ *   msg.tree — a estrutura é recursiva.
+ *
+ *   __idx é um campo de runtime (recalculado a cada render) que NÃO
+ *   deve ir para o storage. Antes disso só precisava ser removido no
+ *   nível superior de `mensagens`; agora _removerIdxRecursivo() varre
+ *   também dentro de qualquer node.ramo[] encontrado, em qualquer
+ *   profundidade, para manter o JSON persistido limpo.
+ *
+ *   O FORMATO de storage não mudou: continua sendo o array de
+ *   mensagens (state.messages) serializado como JSON. msg.tree viaja
+ *   dentro do objeto da própria mensagem, então históricos antigos
+ *   (sem tree, com versions[]) continuam sendo lidos normalmente —
+ *   a migração para tree acontece no assistant.js, não aqui.
+ *
  * API pública: window.NexusHistory
  *
  * Depende de: (nenhuma)
@@ -75,6 +94,36 @@
   }
 
   /* ══════════════════════════════════════════════════════════
+     LIMPEZA RECURSIVA DE __idx
+
+     __idx só faz sentido para a UI no instante da renderização do
+     array visível (state.messages). Dentro de msg.tree.nodes[*].ramo[*]
+     ele é apenas lixo herdado do clone — removido recursivamente para
+     manter o JSON persistido limpo e previsível.
+  ══════════════════════════════════════════════════════════ */
+
+  function _removerIdxRecursivo(msg) {
+    if (!msg || typeof msg !== 'object') return msg;
+    var copia = Object.assign({}, msg);
+    if ('__idx' in copia) delete copia.__idx;
+
+    if (copia.tree && copia.tree.nodes) {
+      var nodesCopia = {};
+      Object.keys(copia.tree.nodes).forEach(function (nodeId) {
+        var node = copia.tree.nodes[nodeId];
+        var nodeCopia = Object.assign({}, node);
+        if (Array.isArray(node.ramo)) {
+          nodeCopia.ramo = node.ramo.map(_removerIdxRecursivo);
+        }
+        nodesCopia[nodeId] = nodeCopia;
+      });
+      copia.tree = Object.assign({}, copia.tree, { nodes: nodesCopia });
+    }
+
+    return copia;
+  }
+
+  /* ══════════════════════════════════════════════════════════
      LEITURA / ESCRITA
   ══════════════════════════════════════════════════════════ */
 
@@ -121,13 +170,9 @@
 
       // __idx é um campo de runtime (posição no array, usado pela UI
       // para os botões de editar/versão) — recalculado a cada render,
-      // nunca precisa ir para o storage.
-      var paraSalvar = final.map(function (m) {
-        if (!('__idx' in m)) return m;
-        var copia = Object.assign({}, m);
-        delete copia.__idx;
-        return copia;
-      });
+      // nunca precisa ir para o storage. Removido recursivamente para
+      // também limpar dentro de qualquer msg.tree.nodes[*].ramo[*].
+      var paraSalvar = final.map(_removerIdxRecursivo);
 
       store.setItem(_storageKey(chave), JSON.stringify(paraSalvar));
     } catch (_) {}

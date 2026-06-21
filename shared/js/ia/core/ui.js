@@ -4,6 +4,27 @@
  * Responsabilidade exclusiva: renderização do painel de chat.
  * NÃO conhece resumo, quiz, disciplinas ou lógica de domínio.
  *
+ * ── MUDANÇAS v-árvore-de-conversa ───────────────────────────
+ *   _renderVersionSwitch passou a entender DOIS formatos de
+ *   versionamento de uma mensagem de usuário:
+ *
+ *     1. msg.tree  (novo formato — árvore de conversa)
+ *        { nodes, rootId, activeId }. O "rootId" é um nó sentinela
+ *        interno (nunca exibido); o total de versões e a posição
+ *        atual são calculados a partir dos filhos do sentinela.
+ *
+ *     2. msg.versions[] (formato legado, lista linear)
+ *        ainda suportado para o instante entre "histórico acabou
+ *        de ser restaurado do localStorage" e "o assistant de
+ *        domínio normalizou a mensagem para msg.tree na primeira
+ *        interação" — a normalização em si é responsabilidade do
+ *        assistant (_garantirTree), não desta camada de UI.
+ *
+ *   Em ambos os casos a UI continua exibindo apenas "< i/N >" e
+ *   delegando a troca de versão via onVersionSwitch(msgIndex, delta)
+ *   — esta camada nunca decide QUAL é a versão seguinte, apenas
+ *   informa a intenção (-1 ou +1) para quem mantém o estado de domínio.
+ *
  * API pública: window.NexusUI
  */
 
@@ -355,19 +376,53 @@
   }
 
   /**
+   * Calcula { atual, total } de versões de uma mensagem de usuário,
+   * suportando os dois formatos de versionamento:
+   *
+   *   - msg.tree  (árvore de conversa): total/posição são contados
+   *     entre os FILHOS DO SENTINELA (tree.nodes[tree.rootId]), que
+   *     são todas as versões reais da mensagem (V1, V2, V3...) — o
+   *     sentinela em si nunca é exibido nem contado.
+   *
+   *   - msg.versions[] (formato legado): total = versions.length,
+   *     posição = (versionIndex||0) + 1. Mantido apenas para o
+   *     instante entre restaurar do storage e a primeira normalização
+   *     feita pelo assistant de domínio.
+   *
+   * Retorna null se a mensagem não tem múltiplas versões (não exibir
+   * o controle nesse caso — comportamento idêntico ao anterior).
+   */
+  function _calcularVersaoAtual(msg) {
+    if (msg.tree && msg.tree.nodes && msg.tree.rootId && msg.tree.activeId) {
+      var sentinela = msg.tree.nodes[msg.tree.rootId];
+      if (!sentinela || !Array.isArray(sentinela.childrenIds)) return null;
+      var irmaos = sentinela.childrenIds;
+      if (irmaos.length < 2) return null;
+      var pos = irmaos.indexOf(msg.tree.activeId);
+      if (pos === -1) return null;
+      return { atual: pos + 1, total: irmaos.length };
+    }
+
+    if (Array.isArray(msg.versions) && msg.versions.length >= 2) {
+      return { atual: (msg.versionIndex || 0) + 1, total: msg.versions.length };
+    }
+
+    return null;
+  }
+
+  /**
    * Controle de versão "< i/N >" — só é renderizado quando a mensagem
-   * do usuário possui múltiplas versões (msg.versions.length >= 2).
-   * Mensagens antigas/sem versionamento simplesmente não geram nada
-   * aqui, preservando compatibilidade total com o histórico atual.
+   * do usuário possui múltiplas versões. Mensagens antigas/sem
+   * versionamento simplesmente não geram nada aqui, preservando
+   * compatibilidade total com o histórico atual.
    */
   function _renderVersionSwitch(msg) {
-    if (!msg.versions || msg.versions.length < 2) return '';
-    var atual = (msg.versionIndex || 0) + 1;
-    var total = msg.versions.length;
+    var info = _calcularVersaoAtual(msg);
+    if (!info) return '';
     return (
       '<div class="nexus-msg-versions">' +
         '<button type="button" class="nexus-version-prev" aria-label="Versão anterior">&lt;</button>' +
-        '<span class="nexus-version-label">' + atual + '/' + total + '</span>' +
+        '<span class="nexus-version-label">' + info.atual + '/' + info.total + '</span>' +
         '<button type="button" class="nexus-version-next" aria-label="Próxima versão">&gt;</button>' +
       '</div>'
     );
