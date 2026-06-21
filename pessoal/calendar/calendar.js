@@ -24,7 +24,7 @@ const STORAGE_KEYS = {
 
 const MIN_WEEKS_BACK = 1; // allow current week + 1 week in the past
 const SNAP_MINUTES = 15;  // grid snap for drag & resize
-
+const MIN_SESSION_MINUTES = 30; // duração mínima de qualquer sessão agendada
 // Rotina padrão usada caso o usuário nunca tenha configurado uma.
 const DEFAULT_ROUTINE = {
   activeDays: [0, 1, 2, 3, 4], // Segunda a Sexta
@@ -239,6 +239,13 @@ function renderCalendar() {
   // ── Single grid container (header row + body rows, same columns) ──
   const scrollWrap = document.createElement('div');
   scrollWrap.className = 'grid-scroll';
+
+  // Gera grid-template-columns dinâmico: dias inativos com 0.5fr (metade da largura)
+  const colDefs = [
+    `var(--ruler-w)`,
+    ...[0,1,2,3,4,5,6].map(i => activeDays.has(i) ? '1fr' : '0.5fr')
+  ].join(' ');
+  scrollWrap.style.gridTemplateColumns = colDefs;
 
   // Row 1, col 1: corner (sticky, aligns with time ruler column)
   const corner = document.createElement('div');
@@ -479,14 +486,33 @@ function createSessionCard(session, col, cols, weekKey, dayIdx) {
     card.style.right = 'auto';
   }
 
-  const compact  = height < 36;
-  const showNote = height >= 70 && session.note;
+  const compact  = height < 36;   // cards muito curtos (< ~27min)
+  const showNote = height >= 68 && session.note;
+  const showTime = height >= 28;
+  const showIndicators = height >= 52 && (session.note);
+
+  if (compact) card.classList.add('is-compact');
+
+  // Disciplina sempre como elemento principal; horário abaixo
+  const subjectLine = `<div class="card-subject">${escHtml(session.subject)}</div>`;
+  const timeLine = showTime
+    ? `<div class="card-time">${timeLabel}</div>`
+    : '';
+  const noteLine = showNote
+    ? `<div class="card-note">${escHtml(session.note)}</div>`
+    : '';
+
+  // Indicadores discretos (nota e/ou status) — aparecem em cards médios+
+  let indicatorsHtml = '';
+  if (showIndicators) {
+    const badges = [];
+    if (session.note) badges.push(`<span class="card-badge">📝 Obs.</span>`);
+    if (badges.length) indicatorsHtml = `<div class="card-indicators">${badges.join('')}</div>`;
+  }
 
   card.innerHTML = `
     <div class="card-body">
-      <div class="card-time">${session.note ? '<span class="card-note-icon">📝</span>' : ''}${timeLabel}</div>
-      ${compact ? '' : `<div class="card-subject">${escHtml(session.subject)}</div>`}
-      ${showNote  ? `<div class="card-note">${escHtml(session.note)}</div>` : ''}
+      ${compact ? timeLine : subjectLine + timeLine + noteLine + indicatorsHtml}
     </div>
     <button type="button" class="card-check" title="${session.status === 'done' ? 'Marcar como pendente' : 'Marcar como concluído'}">${session.status === 'done' ? '✓' : ''}</button>
     <div class="card-resize-handle"></div>
@@ -631,7 +657,7 @@ function initCardResize(handle, card, weekKey, dayIdx, sessionId) {
     const startY = e.clientY;
     const startHeight = parseFloat(card.style.height) || 28;
     const startMin = timeToMinutes(session.timeStart || session.time);
-    const minDuration = SNAP_MINUTES;
+    const minDuration = MIN_SESSION_MINUTES; // mínimo de 30 min — não permite menos
     let moved = false;
 
     function onMove(ev) {
@@ -682,6 +708,24 @@ function initCardResize(handle, card, weekKey, dayIdx, sessionId) {
 
 // ─── SESSION MODAL (Novo estudo / editar) ────────────────────────────────────
 
+// Preenche o select "Dia da semana" do modal apenas com os dias ativos
+// da rotina configurada. Se o estudo (em edição) estiver em um dia que
+// não é mais ativo, esse dia é incluído também, para não impedir a edição.
+function populateDayOptions(currentDayIdx) {
+  const select = document.getElementById('input-day');
+  const activeDays = state.routine.activeDays || [];
+  let days = [...activeDays].sort((a, b) => a - b);
+
+  if (currentDayIdx !== null && currentDayIdx !== undefined && !days.includes(currentDayIdx)) {
+    days.push(currentDayIdx);
+    days.sort((a, b) => a - b);
+  }
+
+  if (!days.length) days = [0, 1, 2, 3, 4, 5, 6];
+
+  select.innerHTML = days.map(d => `<option value="${d}">${DAY_NAMES[d]}</option>`).join('');
+}
+
 function openSessionModal({ weekKey, dayIdx, sessionId }) {
   const overlay = document.getElementById('modal-session');
   const isEdit  = sessionId !== null && sessionId !== undefined;
@@ -690,6 +734,7 @@ function openSessionModal({ weekKey, dayIdx, sessionId }) {
   state.modal.mode    = isEdit ? 'edit' : 'new';
 
   document.getElementById('modal-title').textContent = isEdit ? 'Editar estudo' : 'Novo estudo';
+  populateDayOptions(dayIdx);
   document.getElementById('input-day').value = String(dayIdx ?? 0);
   hideDurationHint();
 
@@ -760,12 +805,25 @@ function formatDurationLabel(mins) {
 }
 
 function saveSession() {
-  const dayIdx    = Number(document.getElementById('input-day').value);
-  const timeStart = document.getElementById('input-time').value.trim();
-  const timeEnd   = document.getElementById('input-time-end').value.trim();
-  const subject   = document.getElementById('input-subject').value.trim();
-  const note      = document.getElementById('input-note').value.trim();
-  const color     = state.modal.color;
+  const dayIdx     = Number(document.getElementById('input-day').value);
+  const timeInput    = document.getElementById('input-time');
+  const timeEndInput  = document.getElementById('input-time-end');
+  const timeStart   = timeInput.value.trim();
+  const timeEnd     = timeEndInput.value.trim();
+  const subject     = document.getElementById('input-subject').value.trim();
+  const note        = document.getElementById('input-note').value.trim();
+  const color       = state.modal.color;
+
+  // Detecta hora parcialmente preenchida (ex: "13:--", onde o usuário
+  // digitou a hora mas deixou os minutos em branco). Nesses casos o
+  // navegador reporta value vazio, mas validity.badInput fica true —
+  // sem essa checagem o salvamento falhava silenciosamente.
+  if (timeInput.validity && timeInput.validity.badInput) {
+    return showToast('Hora inicial incompleta. Preencha os minutos (ex: 13:00) ou limpe o campo.');
+  }
+  if (timeEndInput.validity && timeEndInput.validity.badInput) {
+    return showToast('Hora final incompleta. Preencha os minutos (ex: 14:00) ou limpe o campo.');
+  }
 
   if (!subject) return showToast('Por favor, informe o conteúdo.');
 
@@ -774,9 +832,17 @@ function saveSession() {
   if ((timeStart && !timeEnd) || (!timeStart && timeEnd)) {
     return showToast('Preencha as duas horas, ou deixe ambas em branco para um estudo planejado.');
   }
-  if (timeStart && timeEnd && timeEnd <= timeStart) {
-    return showToast('A hora final deve ser depois da inicial.');
+if (timeStart && timeEnd && timeEnd <= timeStart) {
+  return showToast('A hora final deve ser depois da inicial.');
+}
+
+// ← ADICIONAR AQUI:
+if (timeStart && timeEnd) {
+  const duration = timeToMinutes(timeEnd) - timeToMinutes(timeStart);
+  if (duration < MIN_SESSION_MINUTES) {
+    return showToast(`A sessão deve ter no mínimo ${MIN_SESSION_MINUTES} minutos.`);
   }
+}
 
   const { weekKey, sessionId } = state.modal.context;
   const isEdit = state.modal.mode === 'edit';
