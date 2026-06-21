@@ -17,55 +17,76 @@ const SUBJECTS = [
   'Intervalo', 'Exercícios', 'Leitura', 'Projetos'
 ];
 
-// Ícones removidos — a barra de cor no topo dos cards é suficiente para identificação visual.
-
 const STORAGE_KEYS = {
-  defaultPlan: 'nexus_default_plan',
-  weeks:       'nexus_weeks',
+  weeks:   'nexus_weeks',
+  routine: 'nexus_routine',
 };
 
 const MIN_WEEKS_BACK = 1; // allow current week + 1 week in the past
+const SNAP_MINUTES = 15;  // grid snap for drag & resize
 
-// Time-grid configuration
-const TIMELINE_START_HOUR = 6;  // 06:00
-const TIMELINE_END_HOUR   = 23; // 23:00
-const TIMELINE_HOURS = TIMELINE_END_HOUR - TIMELINE_START_HOUR;
+// Rotina padrão usada caso o usuário nunca tenha configurado uma.
+const DEFAULT_ROUTINE = {
+  activeDays: [0, 1, 2, 3, 4], // Segunda a Sexta
+  startHour: '06:00',
+  endHour:   '22:00',
+  minSessionMinutes: 60,
+};
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
 
 let state = {
   currentWeekStart: null,   // Monday of displayed week (Date)
-  defaultPlan: null,        // { mon:[], tue:[], ... }
-  weeks: {},                // { 'YYYY-MM-DD': { mon:[], ... } } keyed by monday ISO
+  weeks: {},                // { 'YYYY-MM-DD': { 0:[], 1:[], ... } } keyed by monday ISO
+  routine: null,            // { activeDays:[...], startHour, endHour, minSessionMinutes }
   modal: {
     context: null,          // { weekKey, dayIdx, sessionId } | null
     mode: 'new',            // 'new' | 'edit'
     color: 'blue',
   },
-  planModal: {
-    context: null,          // { dayIdx, sessionId } | null
-    mode: 'new',
-    color: 'blue',
-  }
+  drag: null,               // active drag/resize operation, or null
 };
+
+// Derived from state.routine — recalculated whenever the routine changes.
+let TIMELINE_START_HOUR = 6;
+let TIMELINE_END_HOUR   = 22;
+let TIMELINE_HOURS      = TIMELINE_END_HOUR - TIMELINE_START_HOUR;
+
+function recalcTimelineBounds() {
+  const [sh] = state.routine.startHour.split(':').map(Number);
+  const [eh] = state.routine.endHour.split(':').map(Number);
+  TIMELINE_START_HOUR = Number.isFinite(sh) ? sh : 6;
+  TIMELINE_END_HOUR   = Number.isFinite(eh) ? eh : 22;
+  if (TIMELINE_END_HOUR <= TIMELINE_START_HOUR) TIMELINE_END_HOUR = TIMELINE_START_HOUR + 1;
+  TIMELINE_HOURS = TIMELINE_END_HOUR - TIMELINE_START_HOUR;
+}
 
 // ─── STORAGE ─────────────────────────────────────────────────────────────────
 
 function loadStorage() {
   try {
-    const plan = localStorage.getItem(STORAGE_KEYS.defaultPlan);
-    state.defaultPlan = plan ? JSON.parse(plan) : buildEmptyWeek();
     const weeks = localStorage.getItem(STORAGE_KEYS.weeks);
     state.weeks = weeks ? JSON.parse(weeks) : {};
   } catch (e) {
-    state.defaultPlan = buildEmptyWeek();
     state.weeks = {};
   }
+
+  try {
+    const routine = localStorage.getItem(STORAGE_KEYS.routine);
+    state.routine = routine ? { ...DEFAULT_ROUTINE, ...JSON.parse(routine) } : { ...DEFAULT_ROUTINE };
+  } catch (e) {
+    state.routine = { ...DEFAULT_ROUTINE };
+  }
+
+  recalcTimelineBounds();
 }
 
 function saveStorage() {
-  localStorage.setItem(STORAGE_KEYS.defaultPlan, JSON.stringify(state.defaultPlan));
   localStorage.setItem(STORAGE_KEYS.weeks, JSON.stringify(state.weeks));
+}
+
+function saveRoutine() {
+  localStorage.setItem(STORAGE_KEYS.routine, JSON.stringify(state.routine));
 }
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
@@ -110,6 +131,11 @@ function isCurrentWeek(monday) {
   return toISO(monday) === todayMonday;
 }
 
+// Estudo "agendado" possui hora inicial e final. Estudo "planejado" não tem horário.
+function isPlanned(session) {
+  return !(session.timeStart || session.time);
+}
+
 function sortSessions(sessions) {
   return [...sessions].sort((a, b) => (a.timeStart || a.time || '').localeCompare(b.timeStart || b.time || ''));
 }
@@ -120,15 +146,26 @@ function timeToMinutes(t) {
   return h * 60 + (m || 0);
 }
 
+function minutesToTime(mins) {
+  mins = Math.max(0, Math.round(mins));
+  const h = Math.floor(mins / 60) % 24;
+  const m = mins % 60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+
+function snapMinutes(mins) {
+  return Math.round(mins / SNAP_MINUTES) * SNAP_MINUTES;
+}
+
 // Convert a time string to a vertical pixel offset within the timeline.
-// The timeline reserves top padding equal to half an hour-row height
-// (see getTopPadding) so that the first label (06:00), which is centered
-// on its line via translateY(-50%), is never clipped by the scrolling
-// container. Every absolutely-positioned element inside .timeline-inner
-// must add this padding to its computed offset.
 function timeToOffset(t) {
   const minutes = timeToMinutes(t) - TIMELINE_START_HOUR * 60;
   return (minutes / 60) * getHourHeight() + getTopPadding();
+}
+
+function offsetToMinutes(offsetPx) {
+  const raw = ((offsetPx - getTopPadding()) / getHourHeight()) * 60 + TIMELINE_START_HOUR * 60;
+  return raw;
 }
 
 function getHourHeight() {
@@ -136,36 +173,8 @@ function getHourHeight() {
   return parseFloat(val) || 56;
 }
 
-// Extra space reserved at the top of the timeline so the first hour
-// label/line (centered via translateY(-50%)) sits fully inside the
-// scrollable area instead of being clipped.
 function getTopPadding() {
   return getHourHeight() / 2;
-}
-
-// Measures the real width of a vertical scrollbar in this browser/OS.
-// Modern browsers with overlay scrollbars (macOS default, mobile) return 0,
-// which is correct: those scrollbars don't take up layout space.
-let _scrollbarWidthCache = null;
-function getScrollbarWidth() {
-  if (_scrollbarWidthCache !== null) return _scrollbarWidthCache;
-
-  const outer = document.createElement('div');
-  outer.style.visibility = 'hidden';
-  outer.style.position = 'absolute';
-  outer.style.overflow = 'scroll';
-  outer.style.width = '100px';
-  outer.style.height = '100px';
-  document.body.appendChild(outer);
-
-  const inner = document.createElement('div');
-  inner.style.width = '100%';
-  inner.style.height = '100%';
-  outer.appendChild(inner);
-
-  _scrollbarWidthCache = outer.offsetWidth - inner.offsetWidth;
-  outer.parentNode.removeChild(outer);
-  return _scrollbarWidthCache;
 }
 
 // ─── WEEK DATA ────────────────────────────────────────────────────────────────
@@ -173,13 +182,7 @@ function getScrollbarWidth() {
 function getWeekData(monday) {
   const key = toISO(monday);
   if (!state.weeks[key]) {
-    // Deep clone default plan for this week
-    const plan = state.defaultPlan;
-    const week = {};
-    for (let i = 0; i < 7; i++) {
-      week[i] = (plan[i] || []).map(s => ({ ...s, id: uid() }));
-    }
-    state.weeks[key] = week;
+    state.weeks[key] = buildEmptyWeek();
     saveStorage();
   }
   return state.weeks[key];
@@ -187,6 +190,24 @@ function getWeekData(monday) {
 
 function getWeekKey() {
   return toISO(state.currentWeekStart);
+}
+
+// ─── CONFLITOS DE HORÁRIO ───────────────────────────────────────────────────
+
+// Verifica se um intervalo [timeStart, timeEnd) conflita com algum outro
+// estudo agendado no mesmo dia (ignorando estudos planejados, que não têm
+// horário, e o próprio estudo sendo editado).
+function findConflicts(weekKey, dayIdx, timeStart, timeEnd, excludeId) {
+  const dayArr = (state.weeks[weekKey] && state.weeks[weekKey][dayIdx]) || [];
+  const start = timeToMinutes(timeStart);
+  const end = timeToMinutes(timeEnd);
+  return dayArr.filter(s => {
+    if (s.id === excludeId) return false;
+    if (isPlanned(s)) return false;
+    const sStart = timeToMinutes(s.timeStart || s.time);
+    const sEnd = timeToMinutes(s.timeEnd) || sStart + 60;
+    return start < sEnd && end > sStart;
+  });
 }
 
 // ─── RENDER CALENDAR ─────────────────────────────────────────────────────────
@@ -210,48 +231,99 @@ function renderCalendar() {
   const weeksBack = Math.round((todayMonday - monday) / (7 * 86400000));
   document.getElementById('btn-prev').disabled = weeksBack >= MIN_WEEKS_BACK;
 
-  // Set CSS var for total hours in the timeline
+  // Set CSS var for total hours in the timeline (derived from the routine)
   grid.style.setProperty('--hours-count', TIMELINE_HOURS);
 
-  // Set CSS var for the real scrollbar width, so the header row can
-  // reserve an equivalent phantom column and stay aligned with the
-  // (narrower) scrollable grid-body columns.
-  grid.style.setProperty('--scrollbar-w', `${getScrollbarWidth()}px`);
+  const activeDays = new Set(state.routine.activeDays);
 
-  // ── Scroll wrapper ──
+  // ── Single grid container (header row + body rows, same columns) ──
   const scrollWrap = document.createElement('div');
   scrollWrap.className = 'grid-scroll';
 
-  // ── Header row: corner + 7 day headers ──
-  const headerRow = document.createElement('div');
-  headerRow.className = 'grid-header-row';
-
+  // Row 1, col 1: corner (sticky, aligns with time ruler column)
   const corner = document.createElement('div');
   corner.className = 'grid-corner';
-  headerRow.appendChild(corner);
+  scrollWrap.appendChild(corner);
 
+  // Row 1, cols 2-8: day headers (sticky, same grid as everything else)
   for (let i = 0; i < 7; i++) {
     const dayDate = new Date(monday);
     dayDate.setDate(dayDate.getDate() + i);
     const dateStr = toISO(dayDate);
     const isToday = dateStr === todayStr;
+    const isInactive = !activeDays.has(i);
 
     const cell = document.createElement('div');
-    cell.className = 'day-header-cell' + (isToday ? ' is-today' : '');
+    cell.className = 'day-header-cell' + (isToday ? ' is-today' : '') + (isInactive ? ' is-inactive' : '');
     cell.innerHTML = `
       <div class="day-name">${DAY_NAMES[i]}</div>
       <div class="day-date">${dayDate.getDate()}</div>
     `;
-    headerRow.appendChild(cell);
+
+    scrollWrap.appendChild(cell);
   }
 
-  scrollWrap.appendChild(headerRow);
+  // ── Linha "Planejados" (apenas se houver ao menos um estudo sem horário
+  // em algum dia da semana). Fica entre o cabeçalho e a régua/timeline,
+  // sem ocupar espaço dentro da grade de horários. ──
+  const plannedByDay = {};
+  let hasAnyPlanned = false;
+  for (let i = 0; i < 7; i++) {
+    plannedByDay[i] = (weekData[i] || []).filter(isPlanned);
+    if (plannedByDay[i].length) hasAnyPlanned = true;
+  }
 
-  // ── Body row: time ruler + 7 timelines ──
-  const gridBody = document.createElement('div');
-  gridBody.className = 'grid-body';
+  if (hasAnyPlanned) {
+    const plannedCorner = document.createElement('div');
+    plannedCorner.className = 'planned-row-corner';
+    scrollWrap.appendChild(plannedCorner);
 
-  // Time ruler
+    for (let i = 0; i < 7; i++) {
+      const dayDate = new Date(monday);
+      dayDate.setDate(dayDate.getDate() + i);
+      const dateStr = toISO(dayDate);
+      const isToday = dateStr === todayStr;
+      const isInactive = !activeDays.has(i);
+      const plannedItems = plannedByDay[i];
+
+      const cell = document.createElement('div');
+      cell.className = 'planned-row-cell' + (isToday ? ' is-today' : '') + (isInactive ? ' is-inactive' : '');
+
+      if (plannedItems.length) {
+        const section = document.createElement('div');
+        section.className = 'planned-section';
+
+        const label = document.createElement('div');
+        label.className = 'planned-section-label';
+        label.textContent = 'Planejados';
+        section.appendChild(label);
+
+        const list = document.createElement('div');
+        list.className = 'planned-chips';
+
+        plannedItems.forEach(session => {
+          const chip = document.createElement('button');
+          chip.type = 'button';
+          chip.className = 'planned-chip' + (session.status === 'done' ? ' is-done' : '');
+          chip.dataset.color = session.color || 'blue';
+          chip.title = session.subject + (session.note ? ` — ${session.note}` : '');
+          chip.innerHTML = `<span class="planned-chip-icon">📌</span><span class="planned-chip-label">${escHtml(session.subject)}</span>`;
+          chip.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openSessionModal({ weekKey, dayIdx: i, sessionId: session.id });
+          });
+          list.appendChild(chip);
+        });
+
+        section.appendChild(list);
+        cell.appendChild(section);
+      }
+
+      scrollWrap.appendChild(cell);
+    }
+  }
+
+  // Row 2, col 1: time ruler
   const ruler = document.createElement('div');
   ruler.className = 'time-ruler';
   const rulerInner = document.createElement('div');
@@ -265,18 +337,24 @@ function renderCalendar() {
     rulerInner.appendChild(label);
   }
   ruler.appendChild(rulerInner);
-  gridBody.appendChild(ruler);
+  scrollWrap.appendChild(ruler);
 
-  // Day timelines
+  // Row 2, cols 2-8: day timelines — same grid, same columns as the headers above
   for (let i = 0; i < 7; i++) {
     const dayDate = new Date(monday);
     dayDate.setDate(dayDate.getDate() + i);
     const dateStr = toISO(dayDate);
     const isToday = dateStr === todayStr;
-    const sessions = sortSessions(weekData[i] || []);
+    const isInactive = !activeDays.has(i);
+    // Apenas estudos AGENDADOS (com horário) aparecem na timeline; os
+    // planejados ficam nos chips do cabeçalho (renderizados acima).
+    const sessions = sortSessions((weekData[i] || []).filter(s => !isPlanned(s))).filter(s => {
+      const start = timeToMinutes(s.timeStart || s.time || '00:00');
+      return start >= TIMELINE_START_HOUR * 60 && start < TIMELINE_END_HOUR * 60;
+    });
 
     const timeline = document.createElement('div');
-    timeline.className = 'day-timeline' + (isToday ? ' is-today' : '');
+    timeline.className = 'day-timeline' + (isToday ? ' is-today' : '') + (isInactive ? ' is-inactive' : '');
     timeline.dataset.dayIdx = i;
 
     const inner = document.createElement('div');
@@ -290,7 +368,6 @@ function renderCalendar() {
       line.style.top = `${offset}px`;
       inner.appendChild(line);
 
-      // Linha de meia hora
       if (h < TIMELINE_END_HOUR) {
         const halfLine = document.createElement('div');
         halfLine.className = 'hour-line';
@@ -302,25 +379,14 @@ function renderCalendar() {
     // Session cards (with overlap-aware horizontal layout)
     const positioned = layoutSessions(sessions);
     positioned.forEach(({ session, col, cols }) => {
-      const card = createSessionCard(session, col, cols);
-      card.addEventListener('click', () => openSessionModal({ weekKey, dayIdx: i, sessionId: session.id }));
+      const card = createSessionCard(session, col, cols, weekKey, i);
       inner.appendChild(card);
     });
 
     timeline.appendChild(inner);
-
-    // Add button
-    const addBtn = document.createElement('button');
-    addBtn.className = 'day-add-btn';
-    addBtn.textContent = '+';
-    addBtn.setAttribute('aria-label', `Adicionar estudo em ${DAY_NAMES[i]}`);
-    addBtn.addEventListener('click', () => openSessionModal({ weekKey, dayIdx: i, sessionId: null }));
-    timeline.appendChild(addBtn);
-
-    gridBody.appendChild(timeline);
+    scrollWrap.appendChild(timeline);
   }
 
-  scrollWrap.appendChild(gridBody);
   grid.appendChild(scrollWrap);
 }
 
@@ -332,7 +398,6 @@ function layoutSessions(sessions) {
     end: timeToMinutes(s.timeEnd) || (timeToMinutes(s.timeStart || s.time || '00:00') + 60),
   }));
 
-  // Group overlapping items into clusters
   items.sort((a, b) => a.start - b.start);
   const result = [];
   let cluster = [];
@@ -340,7 +405,6 @@ function layoutSessions(sessions) {
 
   function flushCluster() {
     if (!cluster.length) return;
-    // Assign columns within the cluster (simple greedy)
     const cols = [];
     cluster.forEach(item => {
       let placed = false;
@@ -387,20 +451,18 @@ function formatWeekLabel(monday) {
   return `${diff} semanas à frente`;
 }
 
-function createSessionCard(session, col = 0, cols = 1) {
+function createSessionCard(session, col, cols, weekKey, dayIdx) {
   const color = session.color || 'blue';
   const card  = document.createElement('div');
-  card.className     = 'session-card';
+  card.className     = 'session-card' + (session.status === 'done' ? ' is-done' : '');
   card.dataset.color = color;
   card.dataset.id    = session.id;
 
   const start = session.timeStart || session.time || '';
   const end   = session.timeEnd || '';
 
-  // Intervalo completo: "07:00 – 08:00" ou só a hora inicial se não houver fim
   const timeLabel = end ? `${start} – ${end}` : start;
 
-  // Posição e altura baseadas no tempo
   const hourH = getHourHeight();
   const top = timeToOffset(start);
   let durationMin = end ? (timeToMinutes(end) - timeToMinutes(start)) : 60;
@@ -410,7 +472,6 @@ function createSessionCard(session, col = 0, cols = 1) {
   card.style.top    = `${top}px`;
   card.style.height = `${height}px`;
 
-  // Posição horizontal quando sessões se sobrepõem
   if (cols > 1) {
     const gap = 3;
     card.style.left  = `calc(5px + (100% - 10px) * ${col} / ${cols} + ${col > 0 ? gap/2 : 0}px)`;
@@ -418,18 +479,39 @@ function createSessionCard(session, col = 0, cols = 1) {
     card.style.right = 'auto';
   }
 
-  // Card muito pequeno: só a barra de topo (via ::before) + hora, sem título
   const compact  = height < 36;
-  // Card médio: hora + título, sem nota
   const showNote = height >= 70 && session.note;
 
   card.innerHTML = `
     <div class="card-body">
-      <div class="card-time">${timeLabel}</div>
+      <div class="card-time">${session.note ? '<span class="card-note-icon">📝</span>' : ''}${timeLabel}</div>
       ${compact ? '' : `<div class="card-subject">${escHtml(session.subject)}</div>`}
       ${showNote  ? `<div class="card-note">${escHtml(session.note)}</div>` : ''}
     </div>
+    <button type="button" class="card-check" title="${session.status === 'done' ? 'Marcar como pendente' : 'Marcar como concluído'}">${session.status === 'done' ? '✓' : ''}</button>
+    <div class="card-resize-handle"></div>
   `;
+
+  // Clique no card abre o modal de edição (a menos que tenha havido drag/resize)
+  card.addEventListener('click', (e) => {
+    if (card.dataset.suppressClick === '1') {
+      card.dataset.suppressClick = '0';
+      return;
+    }
+    openSessionModal({ weekKey, dayIdx, sessionId: session.id });
+  });
+
+  // Botão de concluir
+  const checkBtn = card.querySelector('.card-check');
+  checkBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleSessionStatus(weekKey, dayIdx, session.id);
+  });
+
+  // Drag vertical (mover horário) e resize (alterar duração)
+  initCardDrag(card, weekKey, dayIdx, session.id);
+  initCardResize(card.querySelector('.card-resize-handle'), card, weekKey, dayIdx, session.id);
+
   return card;
 }
 
@@ -441,20 +523,176 @@ function escHtml(str) {
     .replace(/"/g,'&quot;');
 }
 
-// ─── SESSION MODAL ────────────────────────────────────────────────────────────
+// ─── CONCLUIR ESTUDO ──────────────────────────────────────────────────────────
+
+function toggleSessionStatus(weekKey, dayIdx, sessionId) {
+  const dayArr = (state.weeks[weekKey] && state.weeks[weekKey][dayIdx]) || [];
+  const session = dayArr.find(s => s.id === sessionId);
+  if (!session) return;
+  session.status = session.status === 'done' ? 'pending' : 'done';
+  saveStorage();
+  renderCalendar();
+}
+
+// Estrutura simples para futuras estatísticas (ex: "31 de 35 concluídos — 89%").
+// Não é exibida em nenhuma UI ainda, apenas preparada para uso futuro.
+function getWeekStats(weekKey) {
+  const weekData = state.weeks[weekKey];
+  if (!weekData) return { total: 0, done: 0, percent: 0 };
+  let total = 0, done = 0;
+  Object.values(weekData).forEach(dayArr => {
+    dayArr.forEach(s => {
+      total++;
+      if (s.status === 'done') done++;
+    });
+  });
+  return { total, done, percent: total ? Math.round((done / total) * 100) : 0 };
+}
+
+// ─── DRAG (mover horário verticalmente) ──────────────────────────────────────
+
+function initCardDrag(card, weekKey, dayIdx, sessionId) {
+  card.addEventListener('mousedown', (e) => {
+    if (e.target.closest('.card-check') || e.target.closest('.card-resize-handle')) return;
+    if (e.button !== 0) return;
+
+    const session = getSession(weekKey, dayIdx, sessionId);
+    if (!session || isPlanned(session)) return;
+
+    const startY = e.clientY;
+    const startTop = parseFloat(card.style.top) || 0;
+    const startMin = timeToMinutes(session.timeStart || session.time);
+    const endMin = timeToMinutes(session.timeEnd) || startMin + 60;
+    const duration = endMin - startMin;
+    let moved = false;
+
+    card.classList.add('is-dragging');
+
+    function onMove(ev) {
+      const dy = ev.clientY - startY;
+      if (Math.abs(dy) > 3) moved = true;
+      let newTop = startTop + dy;
+      // snap to grid
+      let newStartMin = offsetToMinutes(newTop);
+      newStartMin = snapMinutes(newStartMin);
+      newStartMin = Math.max(TIMELINE_START_HOUR * 60, Math.min(newStartMin, TIMELINE_END_HOUR * 60 - duration));
+      newTop = timeToOffset(minutesToTime(newStartMin));
+      card.style.top = `${newTop}px`;
+      card._dragNewStartMin = newStartMin;
+    }
+
+    function onUp() {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      card.classList.remove('is-dragging');
+
+      if (moved && card._dragNewStartMin !== undefined) {
+        const newStartMin = card._dragNewStartMin;
+        const newEndMin = newStartMin + duration;
+        const newStart = minutesToTime(newStartMin);
+        const newEnd = minutesToTime(newEndMin);
+
+        const conflicts = findConflicts(weekKey, dayIdx, newStart, newEnd, sessionId);
+        if (conflicts.length && !window.confirm(
+          `Esse novo horário conflita com "${conflicts[0].subject}" (${conflicts[0].timeStart}–${conflicts[0].timeEnd}). Mover mesmo assim?`
+        )) {
+          renderCalendar();
+          card.dataset.suppressClick = '1';
+          return;
+        }
+
+        session.timeStart = newStart;
+        session.timeEnd = newEnd;
+        delete session.time;
+        saveStorage();
+        showToast('Horário atualizado.');
+        renderCalendar();
+        card.dataset.suppressClick = '1';
+      }
+      delete card._dragNewStartMin;
+    }
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+}
+
+// ─── RESIZE (alterar duração arrastando a borda inferior) ───────────────────
+
+function initCardResize(handle, card, weekKey, dayIdx, sessionId) {
+  if (!handle) return;
+  handle.addEventListener('mousedown', (e) => {
+    e.stopPropagation();
+    if (e.button !== 0) return;
+
+    const session = getSession(weekKey, dayIdx, sessionId);
+    if (!session || isPlanned(session)) return;
+
+    const startY = e.clientY;
+    const startHeight = parseFloat(card.style.height) || 28;
+    const startMin = timeToMinutes(session.timeStart || session.time);
+    const minDuration = SNAP_MINUTES;
+    let moved = false;
+
+    function onMove(ev) {
+      const dy = ev.clientY - startY;
+      if (Math.abs(dy) > 3) moved = true;
+      const hourH = getHourHeight();
+      let newHeight = startHeight + dy;
+      let newDurationMin = (newHeight / hourH) * 60;
+      newDurationMin = snapMinutes(newDurationMin);
+      newDurationMin = Math.max(minDuration, newDurationMin);
+      // não ultrapassar o fim da rotina
+      newDurationMin = Math.min(newDurationMin, TIMELINE_END_HOUR * 60 - startMin);
+      newHeight = Math.max((newDurationMin / 60) * hourH, 28);
+      card.style.height = `${newHeight}px`;
+      card._resizeNewDuration = newDurationMin;
+    }
+
+    function onUp() {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+
+      if (moved && card._resizeNewDuration !== undefined) {
+        const newEndMin = startMin + card._resizeNewDuration;
+        const newEnd = minutesToTime(newEndMin);
+
+        const conflicts = findConflicts(weekKey, dayIdx, session.timeStart || session.time, newEnd, sessionId);
+        if (conflicts.length && !window.confirm(
+          `Essa duração conflita com "${conflicts[0].subject}" (${conflicts[0].timeStart}–${conflicts[0].timeEnd}). Continuar mesmo assim?`
+        )) {
+          renderCalendar();
+          card.dataset.suppressClick = '1';
+          return;
+        }
+
+        session.timeEnd = newEnd;
+        saveStorage();
+        showToast('Duração atualizada.');
+        renderCalendar();
+        card.dataset.suppressClick = '1';
+      }
+      delete card._resizeNewDuration;
+    }
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+}
+
+// ─── SESSION MODAL (Novo estudo / editar) ────────────────────────────────────
 
 function openSessionModal({ weekKey, dayIdx, sessionId }) {
   const overlay = document.getElementById('modal-session');
-  const isEdit  = sessionId !== null;
+  const isEdit  = sessionId !== null && sessionId !== undefined;
 
   state.modal.context = { weekKey, dayIdx, sessionId };
   state.modal.mode    = isEdit ? 'edit' : 'new';
 
-  // Set title
-  document.getElementById('modal-title').textContent =
-    isEdit ? 'Editar estudo' : `Novo estudo — ${DAY_NAMES[dayIdx]}`;
+  document.getElementById('modal-title').textContent = isEdit ? 'Editar estudo' : 'Novo estudo';
+  document.getElementById('input-day').value = String(dayIdx ?? 0);
+  hideDurationHint();
 
-  // Populate or reset
   if (isEdit) {
     const session = getSession(weekKey, dayIdx, sessionId);
     document.getElementById('input-time').value     = session.timeStart || session.time || '';
@@ -484,40 +722,106 @@ function closeSessionModal() {
   overlay.classList.remove('open');
   overlay.setAttribute('aria-hidden', 'true');
   document.getElementById('subject-suggestions').classList.remove('visible');
+  hideDurationHint();
+}
+
+// Sugestão automática de duração: quando há rotina configurada e o usuário
+// preenche a hora inicial sem preencher a final, sugerimos (sem obrigar)
+// uma hora final com base no tempo mínimo por sessão da rotina.
+function hideDurationHint() {
+  const hint = document.getElementById('duration-hint');
+  hint.style.display = 'none';
+  hint.classList.remove('is-active');
+}
+
+function updateDurationSuggestion() {
+  const startVal = document.getElementById('input-time').value.trim();
+  const endInput = document.getElementById('input-time-end');
+  const hint = document.getElementById('duration-hint');
+  const minSession = Number(state.routine.minSessionMinutes) || 60;
+
+  if (!startVal) { hideDurationHint(); return; }
+
+  if (!endInput.value.trim()) {
+    const suggestedEnd = minutesToTime(timeToMinutes(startVal) + minSession);
+    endInput.value = suggestedEnd;
+    endInput.dataset.autofilled = '1';
+    hint.textContent = `Duração sugerida com base na sua rotina: ${formatDurationLabel(minSession)} (até ${suggestedEnd}). Você pode ajustar livremente.`;
+    hint.style.display = 'block';
+    hint.classList.add('is-active');
+  } else {
+    hideDurationHint();
+  }
+}
+
+function formatDurationLabel(mins) {
+  if (mins % 60 === 0) return `${mins / 60} hora${mins / 60 > 1 ? 's' : ''}`;
+  return `${mins} minutos`;
 }
 
 function saveSession() {
+  const dayIdx    = Number(document.getElementById('input-day').value);
   const timeStart = document.getElementById('input-time').value.trim();
   const timeEnd   = document.getElementById('input-time-end').value.trim();
   const subject   = document.getElementById('input-subject').value.trim();
   const note      = document.getElementById('input-note').value.trim();
   const color     = state.modal.color;
 
-  if (!timeStart) return showToast('Por favor, defina a hora inicial.');
-  if (!timeEnd)   return showToast('Por favor, defina a hora final.');
-  if (timeEnd <= timeStart) return showToast('A hora final deve ser depois da inicial.');
-  if (!subject) return showToast('Por favor, informe a matéria.');
+  if (!subject) return showToast('Por favor, informe o conteúdo.');
 
-  const { weekKey, dayIdx, sessionId } = state.modal.context;
+  // Horário agora é opcional: ambos em branco = estudo planejado.
+  // Apenas um preenchido = dado incompleto.
+  if ((timeStart && !timeEnd) || (!timeStart && timeEnd)) {
+    return showToast('Preencha as duas horas, ou deixe ambas em branco para um estudo planejado.');
+  }
+  if (timeStart && timeEnd && timeEnd <= timeStart) {
+    return showToast('A hora final deve ser depois da inicial.');
+  }
+
+  const { weekKey, sessionId } = state.modal.context;
+  const isEdit = state.modal.mode === 'edit';
+
+  // Conflito de horário: só se aplica a estudos agendados.
+  if (timeStart && timeEnd) {
+    const conflicts = findConflicts(weekKey, dayIdx, timeStart, timeEnd, isEdit ? sessionId : null);
+    if (conflicts.length) {
+      const c = conflicts[0];
+      const proceed = window.confirm(
+        `Conflito de horário com "${c.subject}" (${c.timeStart}–${c.timeEnd}). Deseja salvar mesmo assim?`
+      );
+      if (!proceed) return;
+    }
+  }
 
   if (!state.weeks[weekKey]) state.weeks[weekKey] = buildEmptyWeek();
-  const dayArr = state.weeks[weekKey][dayIdx] || [];
 
-  if (state.modal.mode === 'edit') {
+  const prevDayIdx = state.modal.context.dayIdx;
+
+  if (isEdit && prevDayIdx !== dayIdx) {
+    const fromArr = state.weeks[weekKey][prevDayIdx] || [];
+    const idx = fromArr.findIndex(s => s.id === sessionId);
+    let existing = {};
+    if (idx >= 0) { existing = fromArr[idx]; fromArr.splice(idx, 1); }
+    const toArr = state.weeks[weekKey][dayIdx] || [];
+    toArr.push({ id: sessionId, timeStart, timeEnd, subject, note, color, status: existing.status || 'pending' });
+    state.weeks[weekKey][dayIdx] = toArr;
+  } else if (isEdit) {
+    const dayArr = state.weeks[weekKey][dayIdx] || [];
     const idx = dayArr.findIndex(s => s.id === sessionId);
     if (idx >= 0) {
       dayArr[idx] = { ...dayArr[idx], timeStart, timeEnd, subject, note, color };
       delete dayArr[idx].time;
     }
   } else {
-    dayArr.push({ id: uid(), timeStart, timeEnd, subject, note, color });
+    const dayArr = state.weeks[weekKey][dayIdx] || [];
+    dayArr.push({ id: uid(), timeStart, timeEnd, subject, note, color, status: 'pending' });
     state.weeks[weekKey][dayIdx] = dayArr;
   }
 
   saveStorage();
   renderCalendar();
   closeSessionModal();
-  showToast(state.modal.mode === 'edit' ? 'Estudo atualizado.' : 'Estudo adicionado.');
+  showToast(isEdit ? 'Estudo atualizado.' : 'Estudo adicionado.');
 }
 
 function deleteSession() {
@@ -548,15 +852,14 @@ function initColorPicker(containerId, stateKey) {
     const dot = e.target.closest('.color-dot');
     if (!dot) return;
     const color = dot.dataset.color;
-    if (stateKey === 'modal')     state.modal.color = color;
-    if (stateKey === 'planModal') state.planModal.color = color;
+    if (stateKey === 'modal') state.modal.color = color;
     setColorPicker(containerId, color);
   });
 }
 
 // ─── SUBJECT AUTOCOMPLETE ─────────────────────────────────────────────────────
 
-function initAutocomplete(inputId, suggestionsId, stateKey) {
+function initAutocomplete(inputId, suggestionsId) {
   const input  = document.getElementById(inputId);
   const box    = document.getElementById(suggestionsId);
   let focusIdx = -1;
@@ -610,159 +913,48 @@ function initAutocomplete(inputId, suggestionsId, stateKey) {
   });
 }
 
-// ─── DEFAULT PLAN MODAL ───────────────────────────────────────────────────────
+// ─── ROTINA DE ESTUDOS ────────────────────────────────────────────────────────
 
-function openPlanModal() {
-  renderPlanGrid();
-  document.getElementById('modal-plan').classList.add('open');
-  document.getElementById('modal-plan').setAttribute('aria-hidden', 'false');
-}
+function openRoutineModal() {
+  const overlay = document.getElementById('modal-routine');
 
-function closePlanModal() {
-  document.getElementById('modal-plan').classList.remove('open');
-  document.getElementById('modal-plan').setAttribute('aria-hidden', 'true');
-}
-
-function renderPlanGrid() {
-  const grid = document.getElementById('plan-grid');
-  grid.innerHTML = '';
-
-  for (let i = 0; i < 7; i++) {
-    const col = document.createElement('div');
-    col.className = 'plan-day-col';
-    col.innerHTML = `<div class="plan-day-name">${DAY_SHORT[i]}</div>`;
-
-    const sessions = sortSessions(state.defaultPlan[i] || []);
-    sessions.forEach(s => {
-      const card = document.createElement('div');
-      card.className = 'plan-session-card';
-      card.dataset.color = s.color || 'blue';
-      const start = s.timeStart || s.time || '';
-      const end   = s.timeEnd || '';
-      const timeLabel = end ? `${start} – ${end}` : start;
-      card.innerHTML = `
-        <div class="plan-card-inner">
-          <div class="plan-card-time">${timeLabel}</div>
-          <div class="plan-card-subject">${escHtml(s.subject)}</div>
-        </div>
-      `;
-      card.addEventListener('click', () => openPlanSessionModal({ dayIdx: i, sessionId: s.id }));
-      col.appendChild(card);
-    });
-
-    const addBtn = document.createElement('button');
-    addBtn.className = 'plan-add-btn';
-    addBtn.textContent = '+';
-    addBtn.addEventListener('click', () => openPlanSessionModal({ dayIdx: i, sessionId: null }));
-    col.appendChild(addBtn);
-
-    grid.appendChild(col);
-  }
-}
-
-function applyPlanToCurrentWeek() {
-  const key = getWeekKey();
-  const week = {};
-  for (let i = 0; i < 7; i++) {
-    week[i] = (state.defaultPlan[i] || []).map(s => ({ ...s, id: uid() }));
-  }
-  state.weeks[key] = week;
-  saveStorage();
-  renderCalendar();
-  closePlanModal();
-  showToast('Plano padrão aplicado à semana atual.');
-}
-
-function clearDefaultPlan() {
-  if (!confirm('Limpar todo o plano padrão?')) return;
-  state.defaultPlan = buildEmptyWeek();
-  saveStorage();
-  renderPlanGrid();
-  showToast('Plano padrão limpo.');
-}
-
-// ─── PLAN SESSION MODAL ───────────────────────────────────────────────────────
-
-function openPlanSessionModal({ dayIdx, sessionId }) {
-  const overlay = document.getElementById('modal-plan-session');
-  const isEdit  = sessionId !== null;
-
-  state.planModal.context = { dayIdx, sessionId };
-  state.planModal.mode    = isEdit ? 'edit' : 'new';
-
-  document.getElementById('modal-plan-session-title').textContent =
-    isEdit ? `Editar — ${DAY_NAMES[dayIdx]}` : `Adicionar — ${DAY_NAMES[dayIdx]}`;
-
-  if (isEdit) {
-    const session = (state.defaultPlan[dayIdx] || []).find(s => s.id === sessionId) || {};
-    document.getElementById('ps-time').value     = session.timeStart || session.time || '';
-    document.getElementById('ps-time-end').value = session.timeEnd || '';
-    document.getElementById('ps-subject').value  = session.subject || '';
-    document.getElementById('ps-note').value     = session.note || '';
-    setColorPicker('ps-color-options', session.color || 'blue');
-    state.planModal.color = session.color || 'blue';
-    document.getElementById('btn-ps-delete').style.display = 'inline-flex';
-  } else {
-    document.getElementById('ps-time').value     = '';
-    document.getElementById('ps-time-end').value = '';
-    document.getElementById('ps-subject').value  = '';
-    document.getElementById('ps-note').value     = '';
-    setColorPicker('ps-color-options', 'blue');
-    state.planModal.color = 'blue';
-    document.getElementById('btn-ps-delete').style.display = 'none';
-  }
+  document.querySelectorAll('#routine-days input[type="checkbox"]').forEach(cb => {
+    const day = Number(cb.dataset.day);
+    cb.checked = state.routine.activeDays.includes(day);
+  });
+  document.getElementById('routine-start').value = state.routine.startHour;
+  document.getElementById('routine-end').value   = state.routine.endHour;
+  document.getElementById('routine-min-session').value = String(state.routine.minSessionMinutes || 60);
 
   overlay.classList.add('open');
   overlay.setAttribute('aria-hidden', 'false');
-  setTimeout(() => document.getElementById('ps-time').focus(), 100);
 }
 
-function closePlanSessionModal() {
-  document.getElementById('modal-plan-session').classList.remove('open');
-  document.getElementById('modal-plan-session').setAttribute('aria-hidden', 'true');
-  document.getElementById('ps-suggestions').classList.remove('visible');
+function closeRoutineModal() {
+  const overlay = document.getElementById('modal-routine');
+  overlay.classList.remove('open');
+  overlay.setAttribute('aria-hidden', 'true');
 }
 
-function savePlanSession() {
-  const timeStart = document.getElementById('ps-time').value.trim();
-  const timeEnd   = document.getElementById('ps-time-end').value.trim();
-  const subject   = document.getElementById('ps-subject').value.trim();
-  const note      = document.getElementById('ps-note').value.trim();
-  const color     = state.planModal.color;
+function saveRoutineModal() {
+  const activeDays = [...document.querySelectorAll('#routine-days input[type="checkbox"]')]
+    .filter(cb => cb.checked)
+    .map(cb => Number(cb.dataset.day));
 
-  if (!timeStart) return showToast('Por favor, defina a hora inicial.');
-  if (!timeEnd)   return showToast('Por favor, defina a hora final.');
-  if (timeEnd <= timeStart) return showToast('A hora final deve ser depois da inicial.');
-  if (!subject) return showToast('Por favor, informe a matéria.');
+  const startHour = document.getElementById('routine-start').value.trim();
+  const endHour   = document.getElementById('routine-end').value.trim();
+  const minSessionMinutes = Number(document.getElementById('routine-min-session').value);
 
-  const { dayIdx, sessionId } = state.planModal.context;
-  const dayArr = state.defaultPlan[dayIdx] || [];
+  if (!startHour || !endHour) return showToast('Defina o horário inicial e final do dia.');
+  if (endHour <= startHour) return showToast('O horário final deve ser depois do inicial.');
+  if (!activeDays.length) return showToast('Selecione ao menos um dia ativo.');
 
-  if (state.planModal.mode === 'edit') {
-    const idx = dayArr.findIndex(s => s.id === sessionId);
-    if (idx >= 0) {
-      dayArr[idx] = { ...dayArr[idx], timeStart, timeEnd, subject, note, color };
-      delete dayArr[idx].time;
-    }
-  } else {
-    dayArr.push({ id: uid(), timeStart, timeEnd, subject, note, color });
-    state.defaultPlan[dayIdx] = dayArr;
-  }
-
-  saveStorage();
-  closePlanSessionModal();
-  renderPlanGrid();
-  showToast(state.planModal.mode === 'edit' ? 'Atualizado no plano.' : 'Adicionado ao plano.');
-}
-
-function deletePlanSession() {
-  const { dayIdx, sessionId } = state.planModal.context;
-  state.defaultPlan[dayIdx] = (state.defaultPlan[dayIdx] || [])
-    .filter(s => s.id !== sessionId);
-  saveStorage();
-  closePlanSessionModal();
-  renderPlanGrid();
-  showToast('Removido do plano.');
+  state.routine = { activeDays, startHour, endHour, minSessionMinutes };
+  saveRoutine();
+  recalcTimelineBounds();
+  renderCalendar();
+  closeRoutineModal();
+  showToast('Rotina de estudos atualizada.');
 }
 
 // ─── WEEK NAVIGATION ──────────────────────────────────────────────────────────
@@ -786,30 +978,76 @@ function goToToday() {
   renderCalendar();
 }
 
+// ─── AÇÕES DA SEMANA (menu ⋮) ─────────────────────────────────────────────────
+
+function toggleWeekMenu(forceClose) {
+  const menu = document.getElementById('week-menu');
+  if (forceClose) { menu.classList.remove('open'); return; }
+  menu.classList.toggle('open');
+}
+
 function copyPreviousWeek() {
+  toggleWeekMenu(true);
+
   const currentMonday = state.currentWeekStart;
   const prevMonday = new Date(currentMonday);
   prevMonday.setDate(prevMonday.getDate() - 7);
+  const prevKey = toISO(prevMonday);
+  const currentKey = getWeekKey();
 
-  const currentKey = toISO(currentMonday);
-  const hasExisting = Object.values(getWeekData(currentMonday) || {})
-    .some(arr => Array.isArray(arr) && arr.length > 0);
-
-  if (hasExisting) {
-    if (!confirm('Isso vai substituir os horários já definidos para esta semana pelos da semana anterior. Continuar?')) {
-      return;
-    }
+  const prevData = state.weeks[prevKey];
+  if (!prevData || Object.values(prevData).every(arr => !arr.length)) {
+    showToast('A semana anterior está vazia.');
+    return;
   }
 
-  const prevData = getWeekData(prevMonday);
-  const week = {};
-  for (let i = 0; i < 7; i++) {
-    week[i] = (prevData[i] || []).map(s => ({ ...s, id: uid() }));
+  const currentData = state.weeks[currentKey];
+  const hasCurrentData = currentData && Object.values(currentData).some(arr => arr.length);
+  if (hasCurrentData) {
+    const proceed = window.confirm('A semana atual já possui estudos. Copiar a semana anterior vai substituir os dados existentes. Continuar?');
+    if (!proceed) return;
+  } else {
+    const proceed = window.confirm('Copiar todos os estudos da semana anterior para a semana atual?');
+    if (!proceed) return;
   }
-  state.weeks[currentKey] = week;
+
+  const newWeek = buildEmptyWeek();
+  Object.keys(prevData).forEach(dayIdx => {
+    newWeek[dayIdx] = (prevData[dayIdx] || []).map(s => ({
+      ...s,
+      id: uid(),
+      status: 'pending',
+    }));
+  });
+
+  state.weeks[currentKey] = newWeek;
   saveStorage();
   renderCalendar();
   showToast('Semana anterior copiada.');
+}
+
+function clearCurrentWeek() {
+  toggleWeekMenu(true);
+
+  const currentKey = getWeekKey();
+  const currentData = state.weeks[currentKey];
+  const hasData = currentData && Object.values(currentData).some(arr => arr.length);
+
+  if (!hasData) {
+    showToast('Esta semana já está vazia.');
+    return;
+  }
+
+  const proceed = window.confirm('Tem certeza que deseja apagar todos os estudos desta semana? Esta ação não pode ser desfeita.');
+  if (!proceed) return;
+
+  // Remove apenas os estudos da semana atual (agendados, planejados,
+  // observações e status). Rotina, semanas anteriores/futuras e demais
+  // configurações permanecem intactas.
+  state.weeks[currentKey] = buildEmptyWeek();
+  saveStorage();
+  renderCalendar();
+  showToast('Semana limpa.');
 }
 
 // ─── TOAST ────────────────────────────────────────────────────────────────────
@@ -824,82 +1062,11 @@ function showToast(msg) {
   toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
 }
 
-// ─── SEED DEFAULT PLAN ────────────────────────────────────────────────────────
-
-function seedDefaultPlan() {
-  // Only seed if plan is completely empty
-  const isEmpty = Object.values(state.defaultPlan).every(d => d.length === 0);
-  if (!isEmpty) return;
-
-  const seed = {
-    0: [ // Segunda
-      { id: uid(), timeStart:'07:00', timeEnd:'08:00', subject:'Matemática', note:'', color:'blue' },
-      { id: uid(), timeStart:'08:30', timeEnd:'09:30', subject:'Física',     note:'', color:'purple' },
-      { id: uid(), timeStart:'10:00', timeEnd:'11:00', subject:'Intervalo',  note:'', color:'amber' },
-      { id: uid(), timeStart:'13:30', timeEnd:'14:30', subject:'Programação',note:'', color:'green' },
-      { id: uid(), timeStart:'15:00', timeEnd:'16:00', subject:'Inglês',     note:'', color:'teal' },
-      { id: uid(), timeStart:'19:00', timeEnd:'20:00', subject:'Revisão',    note:'', color:'rose' },
-    ],
-    1: [ // Terça
-      { id: uid(), timeStart:'07:30', timeEnd:'08:30', subject:'Inglês',     note:'', color:'teal' },
-      { id: uid(), timeStart:'09:00', timeEnd:'10:00', subject:'Matemática', note:'', color:'blue' },
-      { id: uid(), timeStart:'10:30', timeEnd:'11:30', subject:'Intervalo',  note:'', color:'amber' },
-      { id: uid(), timeStart:'14:00', timeEnd:'15:00', subject:'Física',     note:'', color:'purple' },
-      { id: uid(), timeStart:'16:00', timeEnd:'17:00', subject:'Programação',note:'', color:'green' },
-      { id: uid(), timeStart:'19:30', timeEnd:'20:30', subject:'Revisão',    note:'', color:'rose' },
-    ],
-    2: [ // Quarta
-      { id: uid(), timeStart:'07:00', timeEnd:'08:00', subject:'Matemática', note:'', color:'blue' },
-      { id: uid(), timeStart:'09:30', timeEnd:'10:30', subject:'Física',     note:'', color:'purple' },
-      { id: uid(), timeStart:'10:00', timeEnd:'11:00', subject:'Intervalo',  note:'', color:'amber' },
-      { id: uid(), timeStart:'13:30', timeEnd:'14:30', subject:'Programação',note:'', color:'green' },
-      { id: uid(), timeStart:'15:00', timeEnd:'16:00', subject:'Inglês',     note:'', color:'teal' },
-      { id: uid(), timeStart:'19:00', timeEnd:'20:00', subject:'Revisão',    note:'', color:'rose' },
-    ],
-    3: [ // Quinta
-      { id: uid(), timeStart:'07:30', timeEnd:'08:30', subject:'Programação',note:'', color:'green' },
-      { id: uid(), timeStart:'09:30', timeEnd:'10:30', subject:'Matemática', note:'', color:'blue' },
-      { id: uid(), timeStart:'11:00', timeEnd:'12:00', subject:'Intervalo',  note:'', color:'amber' },
-      { id: uid(), timeStart:'14:00', timeEnd:'15:00', subject:'Física',     note:'', color:'purple' },
-      { id: uid(), timeStart:'16:00', timeEnd:'17:00', subject:'Inglês',     note:'', color:'teal' },
-      { id: uid(), timeStart:'19:30', timeEnd:'20:30', subject:'Revisão',    note:'', color:'rose' },
-    ],
-    4: [ // Sexta
-      { id: uid(), timeStart:'07:00', timeEnd:'08:00', subject:'Matemática', note:'', color:'blue' },
-      { id: uid(), timeStart:'08:30', timeEnd:'09:30', subject:'Física',     note:'', color:'purple' },
-      { id: uid(), timeStart:'10:00', timeEnd:'11:00', subject:'Intervalo',  note:'', color:'amber' },
-      { id: uid(), timeStart:'13:30', timeEnd:'14:30', subject:'Programação',note:'', color:'green' },
-      { id: uid(), timeStart:'15:00', timeEnd:'16:00', subject:'Inglês',     note:'', color:'teal' },
-      { id: uid(), timeStart:'19:00', timeEnd:'20:00', subject:'Revisão',    note:'', color:'rose' },
-    ],
-    5: [ // Sábado
-      { id: uid(), timeStart:'08:00', timeEnd:'09:00', subject:'Matemática', note:'', color:'blue' },
-      { id: uid(), timeStart:'10:00', timeEnd:'11:00', subject:'Física',     note:'', color:'purple' },
-      { id: uid(), timeStart:'12:00', timeEnd:'13:00', subject:'Intervalo',  note:'', color:'amber' },
-      { id: uid(), timeStart:'14:00', timeEnd:'15:00', subject:'Programação',note:'', color:'green' },
-      { id: uid(), timeStart:'16:00', timeEnd:'17:00', subject:'Inglês',     note:'', color:'teal' },
-      { id: uid(), timeStart:'18:00', timeEnd:'19:00', subject:'Revisão',    note:'', color:'rose' },
-    ],
-    6: [ // Domingo
-      { id: uid(), timeStart:'09:00', timeEnd:'10:00', subject:'Programação',note:'', color:'green' },
-      { id: uid(), timeStart:'11:00', timeEnd:'12:00', subject:'Matemática', note:'', color:'blue' },
-      { id: uid(), timeStart:'13:00', timeEnd:'14:00', subject:'Intervalo',  note:'', color:'amber' },
-      { id: uid(), timeStart:'15:00', timeEnd:'16:00', subject:'Física',     note:'', color:'purple' },
-      { id: uid(), timeStart:'17:00', timeEnd:'18:00', subject:'Inglês',     note:'', color:'teal' },
-      { id: uid(), timeStart:'19:00', timeEnd:'20:00', subject:'Revisão',    note:'', color:'rose' },
-    ],
-  };
-
-  state.defaultPlan = seed;
-  saveStorage();
-}
-
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 
 function init() {
   // Load data
   loadStorage();
-  seedDefaultPlan();
 
   // Set current week
   state.currentWeekStart = getMondayOf(new Date());
@@ -907,60 +1074,74 @@ function init() {
   // Render
   renderCalendar();
 
-  // ── Header buttons
+  // ── Week navigation (compact, title-like) ──
   document.getElementById('btn-prev').addEventListener('click', () => navigateWeek(-1));
   document.getElementById('btn-next').addEventListener('click', () => navigateWeek(1));
-  document.getElementById('btn-today').addEventListener('click', goToToday);
-  document.getElementById('btn-copy-prev').addEventListener('click', copyPreviousWeek);
-  document.getElementById('btn-default-plan').addEventListener('click', openPlanModal);
+  document.getElementById('week-nav-title').addEventListener('click', goToToday);
 
-  // ── Session modal buttons
+  // ── Week menu (ações da semana) ──
+  document.getElementById('week-menu-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleWeekMenu();
+  });
+  document.getElementById('action-copy-prev-week').addEventListener('click', copyPreviousWeek);
+  document.getElementById('action-clear-week').addEventListener('click', clearCurrentWeek);
+  document.addEventListener('click', (e) => {
+    const wrap = document.querySelector('.week-menu-wrap');
+    if (wrap && !wrap.contains(e.target)) toggleWeekMenu(true);
+  });
+
+  // ── Sidebar ──
+  document.getElementById('nav-agenda').addEventListener('click', () => {
+    setActiveSidebarItem('nav-agenda');
+  });
+  document.getElementById('nav-new-study').addEventListener('click', () => {
+    openSessionModal({ weekKey: getWeekKey(), dayIdx: state.currentWeekStart.getDay() === 0 ? 6 : state.currentWeekStart.getDay() - 1, sessionId: null });
+  });
+  document.getElementById('nav-routine').addEventListener('click', openRoutineModal);
+
+  // ── Session modal buttons ──
   document.getElementById('modal-close').addEventListener('click', closeSessionModal);
   document.getElementById('btn-cancel').addEventListener('click', closeSessionModal);
   document.getElementById('btn-save').addEventListener('click', saveSession);
   document.getElementById('btn-delete').addEventListener('click', deleteSession);
 
-  // ── Plan modal buttons
-  document.getElementById('modal-plan-close').addEventListener('click', closePlanModal);
-  document.getElementById('btn-plan-cancel').addEventListener('click', closePlanModal);
-  document.getElementById('btn-apply-plan').addEventListener('click', applyPlanToCurrentWeek);
-  document.getElementById('btn-clear-plan').addEventListener('click', clearDefaultPlan);
+  // ── Sugestão automática de duração ──
+  document.getElementById('input-time').addEventListener('change', updateDurationSuggestion);
+  document.getElementById('input-time-end').addEventListener('input', () => {
+    document.getElementById('input-time-end').dataset.autofilled = '0';
+    hideDurationHint();
+  });
 
-  // ── Plan session modal buttons
-  document.getElementById('modal-plan-session-close').addEventListener('click', closePlanSessionModal);
-  document.getElementById('btn-ps-cancel').addEventListener('click', closePlanSessionModal);
-  document.getElementById('btn-ps-save').addEventListener('click', savePlanSession);
-  document.getElementById('btn-ps-delete').addEventListener('click', deletePlanSession);
+  // ── Routine modal buttons ──
+  document.getElementById('modal-routine-close').addEventListener('click', closeRoutineModal);
+  document.getElementById('btn-routine-cancel').addEventListener('click', closeRoutineModal);
+  document.getElementById('btn-routine-save').addEventListener('click', saveRoutineModal);
 
-  // ── Overlays: click outside to close
+  // ── Overlays: click outside to close ──
   document.getElementById('modal-session').addEventListener('click', e => {
     if (e.target === e.currentTarget) closeSessionModal();
   });
-  document.getElementById('modal-plan').addEventListener('click', e => {
-    if (e.target === e.currentTarget) closePlanModal();
-  });
-  document.getElementById('modal-plan-session').addEventListener('click', e => {
-    if (e.target === e.currentTarget) closePlanSessionModal();
+  document.getElementById('modal-routine').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeRoutineModal();
   });
 
-  // ── ESC key
+  // ── ESC key ──
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
-      if (document.getElementById('modal-plan-session').classList.contains('open')) closePlanSessionModal();
-      else if (document.getElementById('modal-plan').classList.contains('open'))    closePlanModal();
+      if (document.getElementById('modal-routine').classList.contains('open')) closeRoutineModal();
       else if (document.getElementById('modal-session').classList.contains('open')) closeSessionModal();
+      else toggleWeekMenu(true);
     }
   });
 
-  // ── Color pickers
+  // ── Color picker ──
   initColorPicker('color-options', 'modal');
-  initColorPicker('ps-color-options', 'planModal');
 
-  // ── Autocomplete
-  initAutocomplete('input-subject', 'subject-suggestions', 'modal');
-  initAutocomplete('ps-subject',    'ps-suggestions',       'planModal');
+  // ── Autocomplete ──
+  initAutocomplete('input-subject', 'subject-suggestions');
 
-  // ── Save on Enter in session modal inputs (except textarea)
+  // ── Save on Enter in session modal inputs (except textarea) ──
   ['input-time','input-time-end','input-subject'].forEach(id => {
     document.getElementById(id).addEventListener('keydown', e => {
       if (e.key === 'Enter') {
@@ -969,14 +1150,15 @@ function init() {
       }
     });
   });
-  ['ps-time','ps-time-end','ps-subject'].forEach(id => {
-    document.getElementById(id).addEventListener('keydown', e => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        savePlanSession();
-      }
-    });
-  });
+
+  // ── Recalculate label offsets on resize, in case --hour-h changes
+  // via a responsive media query (keeps ruler/hour-line positions in sync)
+  window.addEventListener('resize', () => renderCalendar());
+}
+
+function setActiveSidebarItem(id) {
+  document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
 }
 
 document.addEventListener('DOMContentLoaded', init);

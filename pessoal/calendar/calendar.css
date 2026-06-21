@@ -68,11 +68,13 @@
 
   /* Sizing */
   --header-h:      68px;
-  --content-max:   1320px;
+  --sidebar-w:     220px;
+  --content-max:   1180px;
   --content-pad:   32px;
   --day-col-h:     900px;
   --ruler-w:       58px;
   --hour-h:        60px;
+  --header-row-h:  64px;
   --radius-sm:     8px;
   --radius-md:     12px;
   --radius-lg:     16px;
@@ -111,39 +113,40 @@ textarea, input {
   outline: none;
 }
 
-/* ---------- HEADER ---------- */
-.header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: rgba(13, 15, 20, 0.82);
+/* ===========================================================
+   APP SHELL — sidebar fixa + área principal
+   =========================================================== */
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ---------- SIDEBAR ---------- */
+.sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: 24px 16px;
+  background: rgba(19, 22, 30, 0.6);
+  border-right: 1px solid var(--border);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
 }
 
-.header-inner {
-  max-width: var(--content-max);
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 16px;
-  padding: 18px var(--content-pad);
-}
-
-/* Brand */
-.header-brand {
+.sidebar-brand {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-shrink: 0;
+  padding: 0 8px;
 }
 
 .brand-icon {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
   background: linear-gradient(135deg, #1E3A8A 0%, #3B6FD4 100%);
   border-radius: var(--radius-sm);
   display: flex;
@@ -153,127 +156,209 @@ textarea, input {
   box-shadow: 0 0 14px rgba(59,111,212,0.35);
 }
 
-.brand-name {
+.sidebar-brand-name {
   font-family: var(--font-ui);
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text-primary);
-  letter-spacing: -0.3px;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
 }
 
-/* Nav center */
-.header-nav {
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar-item {
   display: flex;
   align-items: center;
-  gap: 16px;
-  flex: 1;
-  justify-content: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 13.5px;
+  font-weight: 500;
+  text-align: left;
+  transition: all 0.16s var(--ease-out);
+  white-space: nowrap;
 }
 
-.header-week {
+.sidebar-item-icon {
+  font-size: 15px;
+  width: 18px;
   text-align: center;
-  min-width: 200px;
+  flex-shrink: 0;
+  filter: saturate(0.7);
+}
+
+.sidebar-item:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.sidebar-item.active {
+  background: rgba(59,111,212,0.14);
+  color: var(--text-accent);
+}
+
+.sidebar-item.active .sidebar-item-icon {
+  filter: none;
+}
+
+/* ---------- APP MAIN ---------- */
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ---------- WEEK NAV (compact, title-like, no toolbar look) ---------- */
+.week-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 30px var(--content-pad) 10px;
+  position: relative;
+}
+
+.week-nav-arrow {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--text-muted);
+  transition: all 0.16s var(--ease-out);
+  flex-shrink: 0;
+}
+
+.week-nav-arrow:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.week-nav-arrow:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.week-nav-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 18px;
+  border-radius: var(--radius-md);
+  transition: background 0.16s ease;
+  min-width: 240px;
+}
+
+.week-nav-title:hover {
+  background: var(--bg-elevated);
 }
 
 .week-title {
   font-family: var(--font-ui);
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 600;
   color: var(--text-primary);
   line-height: 1.2;
 }
 
 .week-range {
-  font-size: 12px;
+  font-size: 12.5px;
   color: var(--text-secondary);
   letter-spacing: 0.2px;
 }
 
-.btn-nav {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border-radius: var(--radius-sm);
+/* ---------- WEEK MENU (ações da semana) ---------- */
+.week-menu-wrap {
+  position: absolute;
+  right: var(--content-pad);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.week-menu {
+  position: absolute;
+  top: -8px;
+  right: 0;
+  min-width: 200px;
   background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 500;
-  transition: all 0.18s ease;
-  white-space: nowrap;
-}
-
-.btn-nav:hover {
-  background: var(--bg-card-hover);
-  border-color: var(--border-active);
-  color: var(--text-primary);
-  transform: translateY(-1px);
-}
-
-.btn-nav:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
+  border: 1px solid var(--border-active);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+  overflow: hidden;
+  z-index: 50;
+  opacity: 0;
+  transform: translateY(-50%) translateY(-4px);
   pointer-events: none;
-  transform: none;
+  transition: all 0.16s var(--ease-out);
 }
 
-/* Header actions */
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
+.week-menu.open {
+  opacity: 1;
+  transform: translateY(-50%) translateY(0);
+  pointer-events: all;
 }
 
-.btn-action {
+.week-menu-btn {
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
+  justify-content: center;
+  border-radius: 50%;
   color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 500;
-  transition: all 0.18s ease;
+  font-size: 20px;
+  font-weight: 700;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  transition: all 0.16s var(--ease-out);
 }
 
-.btn-action:hover {
-  background: var(--bg-card-hover);
+.week-menu-btn:hover {
+  background: var(--bg-elevated);
   border-color: var(--border-active);
   color: var(--text-primary);
-  transform: translateY(-1px);
 }
 
-.btn-default-plan {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border-radius: var(--radius-sm);
-  background: rgba(59,111,212,0.12);
-  border: 1px solid rgba(59,111,212,0.28);
-  color: var(--text-accent);
+.week-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 14px;
   font-size: 13px;
-  font-weight: 500;
-  transition: all 0.18s ease;
+  color: var(--text-secondary);
+  transition: background 0.12s;
 }
 
-.btn-default-plan:hover {
-  background: rgba(59,111,212,0.2);
-  border-color: rgba(59,111,212,0.5);
-  transform: translateY(-1px);
-  box-shadow: 0 0 20px rgba(59,111,212,0.18);
+.week-menu-item:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
 }
 
-/* ---------- CALENDAR MAIN ---------- */
+.week-menu-item-danger {
+  color: #F87171;
+}
+
+.week-menu-item-danger:hover {
+  background: rgba(220,38,38,0.14);
+  color: #FCA5A5;
+}
+
+/* ---------- CALENDAR MAIN — premium centered container ---------- */
 .calendar-main {
-  min-height: calc(100vh - var(--header-h));
+  flex: 1;
   display: flex;
   justify-content: center;
-  padding: 28px var(--content-pad) 64px;
+  padding: 18px var(--content-pad) 56px;
 }
 
 .calendar-grid {
@@ -281,48 +366,63 @@ textarea, input {
   max-width: var(--content-max);
   background: var(--bg-surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.32), 0 1px 0 rgba(255,255,255,0.03) inset;
   overflow: hidden;
 }
 
-.grid-scroll {
-  display: flex;
-  flex-direction: column;
-}
+/* ===========================================================
+   GRID ÚNICA E CONTÍNUA
+   =========================================================== */
 
-/* ---------- HEADER ROW ---------- */
-/* A coluna extra (--scrollbar-w) replica o espaço que a barra de
-   rolagem vertical do .grid-body ocupa, garantindo que as 7 colunas
-   de dia do cabeçalho tenham exatamente a mesma largura das colunas
-   do corpo da grade. --scrollbar-w é definida via JS (largura real
-   medida da scrollbar) e vale 0px em telas onde a scrollbar não
-   ocupa espaço (overlay scrollbars). */
-.grid-header-row {
+.grid-scroll {
   display: grid;
   grid-template-columns: var(--ruler-w) repeat(7, 1fr);
-  flex-shrink: 0;
-  /* Compensate for the scrollbar width so columns align with grid-body */
-  padding-right: var(--scrollbar-w, 0px);
+  grid-auto-rows: min-content;
+  max-height: var(--day-col-h);
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bg-elevated) transparent;
+}
+
+.grid-scroll::-webkit-scrollbar { width: 5px; }
+.grid-scroll::-webkit-scrollbar-track { background: transparent; }
+.grid-scroll::-webkit-scrollbar-thumb {
+  background: var(--bg-elevated);
+  border-radius: 3px;
+}
+
+/* ---------- HEADER ROW (linha 1 da grid, sticky) ---------- */
+.grid-corner,
+.day-header-cell {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  background: var(--bg-surface);
 }
 
 .grid-corner {
   border-right: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
+  min-height: var(--header-row-h);
 }
 
 .day-header-cell {
-  padding: 14px 12px 12px;
+  padding: 14px 8px 10px;
   border-bottom: 1px solid var(--border);
   border-right: 1px solid var(--border);
   text-align: center;
   transition: background 0.2s, border-color 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: var(--header-row-h);
+  box-sizing: border-box;
 }
 
-.day-header-cell:last-child { border-right: none; }
-
 .day-header-cell.is-today {
-  background: linear-gradient(180deg, var(--today-tint-strong) 0%, var(--today-tint) 100%);
+  background: linear-gradient(180deg, var(--today-tint-strong) 0%, var(--today-tint) 100%), var(--bg-surface);
   border-bottom-color: var(--today-border);
 }
 
@@ -354,8 +454,6 @@ textarea, input {
   transition: background 0.2s, border-color 0.2s, box-shadow 0.2s, color 0.2s;
 }
 
-/* Destaque do dia atual: fundo quase translúcido com leve gradiente,
-   borda fina e glow muito discreto — sem cor sólida saturada. */
 .day-header-cell.is-today .day-date {
   background: linear-gradient(135deg, var(--today-date-bg) 0%, rgba(124,158,255,0.06) 100%);
   border: 1px solid var(--today-date-border);
@@ -363,7 +461,105 @@ textarea, input {
   box-shadow: 0 0 12px var(--today-date-glow);
 }
 
-/* ---------- TIME RULER & DAY TIMELINE COLUMNS ---------- */
+/* ---------- LINHA "PLANEJADOS" ----------
+   Linha própria do grid, fixada logo abaixo do cabeçalho (sticky, com
+   `top` igual à altura do cabeçalho) e acima da régua/timeline. Só é
+   inserida no DOM quando existe ao menos um estudo planejado na semana;
+   cada célula só ganha conteúdo (e altura) se aquele dia tiver itens —
+   a linha cresce automaticamente conforme a quantidade. Não ocupa
+   espaço dentro da grade de horários, pois é uma linha separada. */
+.planned-row-corner,
+.planned-row-cell {
+  position: sticky;
+  top: var(--header-row-h);
+  z-index: 5;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+
+.planned-row-corner { }
+
+.planned-row-cell {
+  padding: 0;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.planned-row-cell.is-today {
+  background: linear-gradient(180deg, var(--today-tint-strong) 0%, var(--today-tint) 100%), var(--bg-surface);
+}
+
+.planned-row-cell.is-inactive {
+  opacity: 0.45;
+}
+
+.planned-section {
+  padding: 8px 8px 9px;
+}
+
+/* Ajuste 1: o título "Planejados" deve ficar alinhado à esquerda,
+   na mesma referência horizontal usada pelos horários da timeline
+   (texto alinhado ao início da célula, não centralizado). Apenas
+   reposiciona o texto existente — nenhum elemento novo é criado. */
+.planned-section-label {
+  font-family: var(--font-ui);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+  padding: 0 1px;
+  text-align: left;
+}
+
+.planned-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+}
+
+.planned-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: var(--card-blue);
+  border-left: 2px solid var(--card-accent, var(--accent-blue));
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+  cursor: pointer;
+  transition: filter 0.15s, transform 0.15s;
+}
+
+.planned-chip[data-color="blue"]   { background: var(--card-blue);   --card-accent: var(--card-blue-b); }
+.planned-chip[data-color="purple"] { background: var(--card-purple); --card-accent: var(--card-purple-b); }
+.planned-chip[data-color="green"]  { background: var(--card-green);  --card-accent: var(--card-green-b); }
+.planned-chip[data-color="amber"]  { background: var(--card-amber);  --card-accent: var(--card-amber-b); }
+.planned-chip[data-color="rose"]   { background: var(--card-rose);   --card-accent: var(--card-rose-b); }
+.planned-chip[data-color="teal"]   { background: var(--card-teal);   --card-accent: var(--card-teal-b); }
+
+.planned-chip:hover {
+  filter: brightness(1.25);
+  transform: translateY(-1px);
+}
+
+.planned-chip.is-done {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.planned-chip-icon { font-size: 9px; opacity: 0.8; flex-shrink: 0; }
+.planned-chip-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- TIME RULER & DAY TIMELINE COLUMNS (linha 2 da grid) ---------- */
 .time-ruler {
   position: relative;
   border-right: 1px solid var(--border);
@@ -380,35 +576,24 @@ textarea, input {
   background: linear-gradient(180deg, var(--today-tint-strong) 0%, var(--today-tint) 40%, transparent 100%);
 }
 
-/* ---------- GRID BODY (scrolls together) ---------- */
-.grid-body {
-  display: grid;
-  grid-template-columns: var(--ruler-w) repeat(7, 1fr);
-  height: var(--day-col-h);
-  overflow-y: auto;
-  scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: var(--bg-elevated) transparent;
+.day-timeline.is-inactive {
+  opacity: 0.45;
 }
 
-.grid-body::-webkit-scrollbar { width: 5px; }
-.grid-body::-webkit-scrollbar-track { background: transparent; }
-.grid-body::-webkit-scrollbar-thumb {
-  background: var(--bg-elevated);
-  border-radius: 3px;
+.day-header-cell.is-inactive {
+  opacity: 0.45;
+}
+
+.day-timeline.is-drop-target {
+  background: linear-gradient(180deg, rgba(124,158,255,0.10) 0%, rgba(124,158,255,0.04) 40%, transparent 100%);
 }
 
 .timeline-inner {
   position: relative;
   width: 100%;
-  /* +1 hour-row: half reserved at the top so the first label (06:00),
-     centered via translateY(-50%), is fully visible inside the
-     scrollable area; half reserved at the bottom so the last label
-     (23:00) is equally fully visible. */
   height: calc(var(--hour-h) * (var(--hours-count, 17) + 1));
 }
 
-/* ── Linhas de hora mais suaves: tracejadas e menos opacas ── */
 .hour-line {
   position: absolute;
   left: 0; right: 0;
@@ -417,7 +602,6 @@ textarea, input {
   border-top: 1px dashed rgba(255,255,255,0.04);
 }
 
-/* Linha cheia apenas nas horas cheias principais */
 .hour-line.major {
   border-top-style: solid;
   border-top-color: rgba(255,255,255,0.06);
@@ -436,35 +620,12 @@ textarea, input {
   letter-spacing: 0.2px;
 }
 
-/* Add button (floats at bottom of each timeline) */
-.day-add-btn {
-  position: absolute;
-  left: 8px; right: 8px;
-  bottom: 10px;
-  padding: 10px;
-  border-radius: var(--radius-sm);
-  border: 1px dashed rgba(255,255,255,0.07);
-  color: var(--text-muted);
-  font-size: 20px;
-  font-weight: 300;
-  line-height: 1;
-  transition: all 0.2s var(--ease-out);
-  background: rgba(13,15,20,0.3);
-}
-
-.day-add-btn:hover {
-  border-color: var(--border-active);
-  color: var(--text-secondary);
-  background: var(--bg-elevated);
-}
-
-/* ---------- SESSION CARD — redesign completo ---------- */
+/* ---------- SESSION CARD ---------- */
 .session-card {
   position: absolute;
   left: 5px; right: 5px;
   box-sizing: border-box;
   border-radius: 6px;
-  /* Sem borda lateral — apenas barra de topo */
   border: none;
   padding: 0;
   cursor: pointer;
@@ -472,8 +633,25 @@ textarea, input {
   display: flex;
   flex-direction: column;
   z-index: 2;
-  transition: filter 0.18s var(--ease-out), transform 0.18s var(--ease-out);
+  transition: filter 0.18s var(--ease-out), transform 0.18s var(--ease-out), box-shadow 0.18s var(--ease-out);
   animation: cardIn 0.24s var(--ease-out);
+}
+
+.session-card.is-dragging {
+  z-index: 20;
+  cursor: grabbing;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.45);
+  transition: none;
+  animation: none;
+}
+
+.session-card.is-done {
+  opacity: 0.55;
+}
+
+.session-card.is-done .card-subject {
+  text-decoration: line-through;
+  color: var(--text-secondary);
 }
 
 @keyframes cardIn {
@@ -481,7 +659,6 @@ textarea, input {
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* Barra de cor no TOPO — 3px, elemento principal de identidade */
 .session-card::before {
   content: '';
   display: block;
@@ -491,7 +668,6 @@ textarea, input {
   background: var(--card-accent, var(--accent-blue));
 }
 
-/* Conteúdo do card abaixo da barra */
 .card-body {
   flex: 1;
   padding: 7px 10px 8px;
@@ -507,7 +683,6 @@ textarea, input {
   z-index: 3;
 }
 
-/* ── Variantes de cor ── */
 .session-card[data-color="blue"] {
   background: var(--card-blue);
   --card-accent: var(--card-blue-b);
@@ -539,7 +714,6 @@ textarea, input {
   --card-icon-color: var(--card-teal-ic);
 }
 
-/* Hora: discreta, acima do título */
 .card-time {
   font-family: var(--font-ui);
   font-size: 10px;
@@ -550,9 +724,13 @@ textarea, input {
   overflow: hidden;
   text-overflow: ellipsis;
   opacity: 0.85;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-/* Título: destaque principal */
+.card-note-icon { font-size: 9px; opacity: 0.85; flex-shrink: 0; }
+
 .card-subject {
   font-family: var(--font-ui);
   font-size: 12px;
@@ -564,7 +742,6 @@ textarea, input {
   text-overflow: ellipsis;
 }
 
-/* Nota: opcional, aparece só quando há espaço */
 .card-note {
   font-size: 10px;
   color: var(--text-secondary);
@@ -574,6 +751,52 @@ textarea, input {
   overflow: hidden;
   text-overflow: ellipsis;
   opacity: 0.7;
+}
+
+/* Indicador de conclusão — discreto, alinhado verticalmente ao centro
+   do card e seguindo a cor do próprio cartão (sem destaque excessivo). */
+.card-check {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1.4px solid var(--card-accent, rgba(255,255,255,0.3));
+  opacity: 0.55;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  line-height: 1;
+  color: var(--card-accent, var(--text-secondary));
+  z-index: 4;
+  transition: opacity 0.15s, background 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+
+.card-check:hover {
+  opacity: 1;
+  background: rgba(255,255,255,0.08);
+}
+
+.session-card.is-done .card-check {
+  background: var(--card-accent, rgba(74,222,128,0.5));
+  border-color: var(--card-accent, #4ADE80);
+  color: var(--bg-surface);
+  opacity: 0.9;
+}
+
+/* Alça de redimensionamento na borda inferior */
+.card-resize-handle {
+  position: absolute;
+  left: 0; right: 0;
+  bottom: 0;
+  height: 7px;
+  cursor: ns-resize;
+  z-index: 5;
 }
 
 /* ---------- EMPTY DAY ---------- */
@@ -719,6 +942,17 @@ textarea, input {
   font-size: 11px;
 }
 
+.field-hint {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-top: -6px;
+}
+
+.field-hint.is-active {
+  color: var(--text-accent);
+}
+
 .form-input {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
@@ -739,6 +973,22 @@ textarea, input {
 
 input[type="time"].form-input {
   color-scheme: dark;
+}
+
+.form-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238A8FA8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 38px;
+  cursor: pointer;
+}
+
+.form-select option {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
 }
 
 .form-textarea {
@@ -813,6 +1063,50 @@ input[type="time"].form-input {
   box-shadow: 0 0 0 2px rgba(255,255,255,0.18), 0 0 10px var(--c);
 }
 
+/* ---------- DAY TOGGLE (Rotina de estudos) ---------- */
+.day-toggle-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.day-toggle {
+  position: relative;
+  cursor: pointer;
+}
+
+.day-toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.day-toggle span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  font-weight: 600;
+  transition: all 0.16s var(--ease-out);
+}
+
+.day-toggle input:checked + span {
+  background: rgba(59,111,212,0.16);
+  border-color: rgba(59,111,212,0.45);
+  color: var(--text-accent);
+}
+
+.day-toggle:hover span {
+  border-color: var(--border-active);
+}
+
 /* Buttons */
 .btn-save {
   padding: 9px 22px;
@@ -863,99 +1157,6 @@ input[type="time"].form-input {
   border-color: rgba(220,38,38,0.45);
 }
 
-/* ---------- PLAN GRID ---------- */
-.plan-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 12px;
-}
-
-.plan-day-col {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.plan-day-name {
-  font-family: var(--font-ui);
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-secondary);
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
-  padding-bottom: 6px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 2px;
-}
-
-.plan-session-card {
-  background: var(--bg-elevated);
-  border: none;
-  border-radius: 6px;
-  padding: 0;
-  cursor: pointer;
-  transition: filter 0.15s, transform 0.15s;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Barra de topo nos cards do plano também */
-.plan-session-card::before {
-  content: '';
-  display: block;
-  height: 3px;
-  background: var(--card-accent, var(--accent-blue));
-}
-
-.plan-session-card .plan-card-inner {
-  padding: 6px 8px 7px;
-}
-
-.plan-session-card:hover {
-  filter: brightness(1.15);
-  transform: translateY(-1px);
-}
-
-.plan-session-card[data-color="blue"]   { --card-accent: var(--card-blue-b); }
-.plan-session-card[data-color="purple"] { --card-accent: var(--card-purple-b); }
-.plan-session-card[data-color="green"]  { --card-accent: var(--card-green-b); }
-.plan-session-card[data-color="amber"]  { --card-accent: var(--card-amber-b); }
-.plan-session-card[data-color="rose"]   { --card-accent: var(--card-rose-b); }
-.plan-session-card[data-color="teal"]   { --card-accent: var(--card-teal-b); }
-
-.plan-card-time {
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--text-muted);
-  letter-spacing: 0.2px;
-}
-
-.plan-card-subject {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  line-height: 1.3;
-  margin-top: 1px;
-}
-
-.plan-add-btn {
-  width: 100%;
-  padding: 7px;
-  border: 1px dashed rgba(255,255,255,0.07);
-  border-radius: 6px;
-  color: var(--text-muted);
-  font-size: 16px;
-  line-height: 1;
-  transition: all 0.15s;
-  background: transparent;
-}
-
-.plan-add-btn:hover {
-  border-color: var(--border-active);
-  color: var(--text-secondary);
-  background: var(--bg-elevated);
-}
-
 /* ---------- TOAST ---------- */
 .toast {
   position: fixed;
@@ -984,19 +1185,29 @@ input[type="time"].form-input {
 
 /* ---------- RESPONSIVE ---------- */
 @media (max-width: 1100px) {
-  .header-inner { padding: 16px 20px; }
-  .header-nav { gap: 8px; }
-  .btn-nav { padding: 7px 12px; font-size: 12px; }
-  .header-actions { gap: 6px; }
-  .btn-action, .btn-default-plan { padding: 7px 12px; font-size: 12px; }
-  .plan-grid { grid-template-columns: repeat(4, 1fr); }
-  .calendar-main { padding: 20px 20px 48px; }
+  :root { --sidebar-w: 188px; }
+  .sidebar { padding: 20px 12px; }
+  .calendar-main { padding: 16px 20px 48px; }
+  .week-nav { padding: 24px 20px 8px; }
 }
 
 @media (max-width: 900px) {
-  .header-inner { justify-content: center; }
-  .header-nav { order: 3; width: 100%; justify-content: space-between; }
-  .header-week { order: 2; }
+  .app-shell { flex-direction: column; }
+
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    gap: 18px;
+    padding: 12px 16px;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-nav { flex-direction: row; gap: 6px; }
+
+  .sidebar-item-label { display: none; }
+  .sidebar-item { padding: 9px; }
 
   .calendar-main { padding: 16px 0 40px; }
   .calendar-grid { border-radius: 0; border-left: none; border-right: none; max-width: 100%; }
@@ -1004,18 +1215,15 @@ input[type="time"].form-input {
   .grid-scroll {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-  }
-  .grid-header-row,
-  .grid-body {
-    min-width: 900px;
+    grid-template-columns: var(--ruler-w) repeat(7, 130px);
   }
 }
 
 @media (max-width: 560px) {
-  .header-inner { padding: 14px 16px; gap: 10px; }
-  .brand-name { display: none; }
-  .btn-nav span.nav-label { display: none; }
-  .header-actions { width: 100%; justify-content: center; flex-wrap: wrap; }
+  .sidebar-brand-name { display: none; }
+  .week-nav { gap: 8px; padding: 18px 12px 6px; }
+  .week-nav-title { min-width: 0; padding: 4px 10px; }
+  .week-menu-wrap { right: 12px; }
   .form-row { grid-template-columns: 1fr; }
   .calendar-grid { --day-col-h: 560px; }
 }
