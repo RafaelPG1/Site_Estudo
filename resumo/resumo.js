@@ -737,6 +737,8 @@ function _abrirModalResumao(res) {
   document.getElementById('read-modal').classList.add('read-modal--open');
   document.body.style.overflow = 'hidden';
   document.getElementById('read-modal-panel')?.focus();
+  // Exibe botões flutuantes no modo leitura
+  document.querySelector('.float-actions')?.classList.add('float-actions--visible');
 
   if (_progressCleanup) _progressCleanup();
   const scrollEl = document.getElementById('rm-body-wrapper');
@@ -793,6 +795,8 @@ function _abrirModal(aula) {
   document.getElementById('read-modal').classList.add('read-modal--open');
   document.body.style.overflow = 'hidden';
   document.getElementById('read-modal-panel')?.focus();
+  // Exibe botões flutuantes no modo leitura
+  document.querySelector('.float-actions')?.classList.add('float-actions--visible');
 
   // Barra de progresso
   if (_progressCleanup) _progressCleanup();
@@ -919,6 +923,8 @@ function _buildReaderBody(aula) {
 function _fecharModal() {
   document.getElementById('read-modal')?.classList.remove('read-modal--open');
   document.body.style.overflow = '';
+  // Oculta botões flutuantes ao sair da leitura
+  document.querySelector('.float-actions')?.classList.remove('float-actions--visible');
   if (State._tocObserver) {
     State._tocObserver.disconnect();
     State._tocObserver = null;
