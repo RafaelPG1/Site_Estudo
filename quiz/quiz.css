@@ -14,11 +14,14 @@
   --border-hi:    rgba(255,255,255,0.18);
 
   --violet:       #6c63ff;
+  --violet-rgb:   108,99,255;
   --violet-dim:   rgba(108,99,255,0.15);
   --violet-glow:  rgba(108,99,255,0.35);
   --amber:        #f7c948;
+  --amber-rgb:    247,201,72;
   --amber-dim:    rgba(247,201,72,0.12);
   --cyan:         #3dd9c2;
+  --cyan-rgb:     61,217,194;
   --rose:         #ff6b8a;
   --sage:         #5de8a0;
 
@@ -72,7 +75,7 @@ a { text-decoration: none; color: inherit; }
   height: 55vw;
   top: -20vw;
   left: -15vw;
-  background: radial-gradient(circle, rgba(108,99,255,0.18) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(var(--violet-rgb),0.18) 0%, transparent 70%);
   /* Sem animação: filter:blur + transform juntos causam repaint/flicker contínuo */
 }
 
@@ -81,7 +84,7 @@ a { text-decoration: none; color: inherit; }
   height: 45vw;
   bottom: -15vw;
   right: -10vw;
-  background: radial-gradient(circle, rgba(61,217,194,0.12) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(var(--cyan-rgb),0.12) 0%, transparent 70%);
   /* Sem animação: estático e estável */
 }
 
@@ -132,7 +135,7 @@ a { text-decoration: none; color: inherit; }
 }
 
 .nav-back:hover {
-  background: rgba(108,99,255,0.1);
+  background: rgba(var(--violet-rgb),0.1);
   border-color: var(--violet);
   box-shadow: 0 0 14px var(--violet-glow);
 }
@@ -159,7 +162,7 @@ a { text-decoration: none; color: inherit; }
 }
 
 #header-logo-wrap .nexus-logo__link:hover .nexus-logo__img {
-  filter: drop-shadow(0 0 6px rgba(108,99,255,0.6));
+  filter: drop-shadow(0 0 6px rgba(var(--violet-rgb),0.6));
   transform: scale(1.06);
 }
 
@@ -223,7 +226,7 @@ a { text-decoration: none; color: inherit; }
 .semestre-select:hover,
 #semestre-wrap .semestre-select:focus,
 .semestre-select:focus {
-  border-color: rgba(108,99,255,0.4);
+  border-color: rgba(var(--violet-rgb),0.4);
   color: var(--text-1);
   background-color: var(--surface-hi);
 }
@@ -252,7 +255,7 @@ a { text-decoration: none; color: inherit; }
 .cfg-btn:hover {
   color: var(--amber);
   background: var(--amber-dim);
-  border-color: rgba(247,201,72,0.3);
+  border-color: rgba(var(--amber-rgb),0.3);
   transform: rotate(60deg);
 }
 
@@ -282,8 +285,8 @@ a { text-decoration: none; color: inherit; }
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--violet);
-  background: rgba(108,99,255,0.1);
-  border: 1px solid rgba(108,99,255,0.25);
+  background: rgba(var(--violet-rgb),0.1);
+  border: 1px solid rgba(var(--violet-rgb),0.25);
   padding: 0.35rem 1rem;
   border-radius: 99px;
   margin-bottom: 1.5rem;
@@ -364,9 +367,10 @@ a { text-decoration: none; color: inherit; }
    Efeito: painel de vidro com borda de luz + scan reveal
 ══════════════════════════════════════════════ */
 .disc-card {
-  --card-accent:   #6c63ff;
-  --card-accent-d: rgba(108,99,255,0.15);
-  --card-glow:     rgba(108,99,255,0.25);
+  --card-accent:     #6c63ff;
+  --card-accent-rgb: 108,99,255;
+  --card-accent-d:   rgba(var(--card-accent-rgb),0.12);
+  --card-glow:       rgba(var(--card-accent-rgb),0.22);
 
   position: relative;
   display: flex;
@@ -567,36 +571,11 @@ a { text-decoration: none; color: inherit; }
   box-shadow: 0 0 12px var(--card-glow);
 }
 
-/* ── TEMAS POR DISCIPLINA ── */
-.disc-card--violet {
-  --card-accent:   #6c63ff;
-  --card-accent-d: rgba(108,99,255,0.12);
-  --card-glow:     rgba(108,99,255,0.22);
-}
-
-.disc-card--cyan {
-  --card-accent:   #3dd9c2;
-  --card-accent-d: rgba(61,217,194,0.1);
-  --card-glow:     rgba(61,217,194,0.20);
-}
-
-.disc-card--amber {
-  --card-accent:   #f7c948;
-  --card-accent-d: rgba(247,201,72,0.10);
-  --card-glow:     rgba(247,201,72,0.20);
-}
-
-.disc-card--rose {
-  --card-accent:   #ff6b8a;
-  --card-accent-d: rgba(255,107,138,0.10);
-  --card-glow:     rgba(255,107,138,0.20);
-}
-
-.disc-card--sage {
-  --card-accent:   #5de8a0;
-  --card-accent-d: rgba(93,232,160,0.10);
-  --card-glow:     rgba(93,232,160,0.20);
-}
+/* ── TEMAS POR DISCIPLINA ──
+   Cores aplicadas via inline style em quiz.js a partir de cores.js.
+   Os tokens --card-accent, --card-accent-rgb, --card-accent-d e --card-glow
+   são definidos por elemento; o CSS apenas os consome via var().
+   Os defaults acima servem de fallback caso o JS ainda não tenha rodado. */
 
 /* ══════════════════════════════════════════════
    MODAL (configurações do quiz)
@@ -632,7 +611,7 @@ a { text-decoration: none; color: inherit; }
   border-radius: 18px;
   border: 1px solid var(--border-hi);
   background: var(--ink-2);
-  box-shadow: 0 28px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(108,99,255,0.1);
+  box-shadow: 0 28px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(var(--violet-rgb),0.1);
   overflow: hidden;
   transform: translateY(0) scale(1);
   animation: modal-pop 0.3s var(--ease-spring) both;
@@ -748,7 +727,7 @@ a { text-decoration: none; color: inherit; }
 }
 
 .toggle input:checked + .toggle__track {
-  background: rgba(108,99,255,0.25);
+  background: rgba(var(--violet-rgb),0.25);
   border-color: var(--violet);
 }
 
@@ -814,7 +793,7 @@ a { text-decoration: none; color: inherit; }
   padding: 0.55rem 1.2rem;
   border-radius: 99px;
   white-space: nowrap;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(108,99,255,0.15);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(var(--violet-rgb),0.15);
   opacity: 0;
   pointer-events: none;
   z-index: 9999;

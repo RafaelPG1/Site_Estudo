@@ -13,6 +13,7 @@ import {
   limparDadosQuiz,
 } from '../src/global.js';
 
+import { DISC_CORES }                       from '../shared/js/themes/cores.js';
 import { sincronizarSemNaURL }              from '../shared/js/utils/url.js';
 import { criarSemestreSelect, preencherAnos } from '../shared/js/utils/dom.js';
 import { injetarLogo }                      from '../shared/js/utils/logo.js';
@@ -146,22 +147,27 @@ import { Sound, audio, installAudioRecovery, playSound } from '../shared/js/audi
      CARDS
   ══════════════════════════════════════════════ */
 
-  // Cor do tema de cada disciplina (por id)
-  const DISC_THEME = {
-    poo:         'disc-card--violet',
-    redes:       'disc-card--cyan',
-    design:      'disc-card--amber',
-    banco_dados: 'disc-card--rose',
-  };
-
-  // Fallback sequencial para disciplinas não mapeadas
-  const THEME_FALLBACK = [
-    'disc-card--violet',
-    'disc-card--cyan',
-    'disc-card--amber',
-    'disc-card--rose',
-    'disc-card--sage',
+  // Cores de fallback sequenciais para disciplinas sem entrada em cores.js
+  // Valores espelham os tokens globais da página (--violet, --cyan, --amber, --rose, --sage)
+  const FALLBACK_CORES = [
+    { hex: '#6c63ff', rgb: '108,99,255'  },
+    { hex: '#3dd9c2', rgb: '61,217,194'  },
+    { hex: '#f7c948', rgb: '247,201,72'  },
+    { hex: '#ff6b8a', rgb: '255,107,138' },
+    { hex: '#5de8a0', rgb: '93,232,160'  },
   ];
+
+  /**
+   * Retorna { hex, rgb } para a cor principal de uma disciplina.
+   * Prioridade: cores.js (corTema / corTemaRgb) → fallback sequencial.
+   */
+  function _resolverCorCard(discArquivo, idx) {
+    const cores = DISC_CORES?.[discArquivo];
+    if (cores?.corTema && cores?.corTemaRgb) {
+      return { hex: cores.corTema, rgb: cores.corTemaRgb };
+    }
+    return FALLBACK_CORES[idx % FALLBACK_CORES.length];
+  }
 
   function _resolverPeriodo(sem) {
     return sem.includes('-') ? sem.split('-')[0] : sem;
@@ -187,13 +193,18 @@ import { Sound, audio, installAudioRecovery, playSound } from '../shared/js/audi
 
     discs.forEach((disc, idx) => {
       const href  = `disciplinas/${ano}/${periodo}/${disc.arquivo}.html?sem=${sem}`;
-      const theme = DISC_THEME[disc.id] ?? THEME_FALLBACK[idx % THEME_FALLBACK.length];
+      const cor   = _resolverCorCard(disc.arquivo, idx);
       const label = disc.apelido ?? disc.nome;
       const num   = String(idx + 1).padStart(2, '0');
 
       const a = document.createElement('a');
       a.href      = href;
-      a.className = `disc-card ${theme}`;
+      a.className = 'disc-card';
+      // Aplica as variáveis de cor do card via inline style — fonte única: cores.js
+      a.style.setProperty('--card-accent',     cor.hex);
+      a.style.setProperty('--card-accent-rgb', cor.rgb);
+      a.style.setProperty('--card-accent-d',   `rgba(${cor.rgb},0.12)`);
+      a.style.setProperty('--card-glow',       `rgba(${cor.rgb},0.22)`);
       a.setAttribute('role', 'listitem');
       a.setAttribute('aria-label', disc.nome);
 
