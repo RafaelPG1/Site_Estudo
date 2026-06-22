@@ -968,7 +968,7 @@ img { display: block; max-width: 100%; }
   padding: 0;
 }
 .reader__content {
-  max-width: 880px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 3rem 3rem 6rem;
 }
@@ -1634,4 +1634,13 @@ img { display: block; max-width: 100%; }
   text-transform: uppercase;
   color: #4ade80;
   line-height: 1;
+}
+/* ══════════════════════════════════════════
+   SEMESTRE PICKER — corrige dropdown saindo
+   da tela pela direita
+══════════════════════════════════════════ */
+
+#semestre-wrap-resumo > div > div:not(:first-child) {
+  right: -20px !important; /* Ajuste esse valor (ex: -10px, -15px) até dar o ponto */
+  left: auto !important;
 }
