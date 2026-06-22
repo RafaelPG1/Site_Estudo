@@ -1,17 +1,3 @@
-<!--
-  NEXUS STUDY — quiz/quiz.html
-  Página de seleção de disciplinas.
-
-  ALTERAÇÕES — Integração da IA do Index (Resumo) v1.0:
-    - Adicionado shared/css/ia/ia.css (estilos do painel/FAB, igual ao Index)
-    - Adicionado <script src="../shared/js/ia/core/fab.js"> ANTES do <main>,
-      mesmo padrão do index.html: injeta o botão flutuante antecipadamente,
-      antes do restante da página ser pintado.
-    - Adicionados <link rel="modulepreload"> para os módulos de IA, mesmo
-      padrão do index.html — apenas otimização de carregamento, não afeta
-      comportamento.
-    - Nenhum elemento de UI do quiz foi removido ou alterado.
--->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -24,12 +10,7 @@
   ═══════════════════════════════════════════ -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-
-  <!-- ═══════════════════════════════════════════
-       ESTILOS BASE
-  ═══════════════════════════════════════════ -->
-  <link rel="stylesheet" href="../shared/css/themes/fundo.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
 
   <!-- ═══════════════════════════════════════════
        ESTILOS DE ÁUDIO (sound antes de audio-btns)
@@ -39,7 +20,7 @@
 
   <!-- ═══════════════════════════════════════════
        ESTILOS DE IA (Resumo) — mesmo CSS do Index
-       NÃO ALTERAR: igual a index.html, já está correto.
+       NÃO ALTERAR: já está correto.
   ═══════════════════════════════════════════ -->
   <link rel="stylesheet" href="../shared/css/ia/ia.css" />
 
@@ -54,80 +35,9 @@
        ESTILOS DA PÁGINA
   ═══════════════════════════════════════════ -->
   <link rel="stylesheet" href="quiz.css" />
-</head>
-
-<body>
-
-  <!--
-    fab.js: primeira instrução do <body>, mesmo padrão do index.html.
-    Executa de forma síncrona — document.body já existe neste ponto,
-    então o botão é injetado imediatamente, antes de qualquer outro
-    elemento ser pintado. Nenhum evento é registrado aqui; isso é
-    responsabilidade exclusiva de NexusUI.init() em quiz.js.
-  -->
-  <script src="../shared/js/ia/core/fab.js"></script>
-
-  <div class="bg-orb bg-orb--1" aria-hidden="true"></div>
-  <div class="bg-orb bg-orb--2" aria-hidden="true"></div>
-  <div class="bg-orb bg-orb--3" aria-hidden="true"></div>
-  <div class="bg-grid"          aria-hidden="true"></div>
-
-  <!-- ═══════════════════════════════════════════
-       HEADER
-  ═══════════════════════════════════════════ -->
-  <header class="header">
-    <div class="header__inner">
-
-      <a href="../index.html" class="back-btn" aria-label="Voltar ao início">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <polyline points="15 18 9 12 15 6"/>
-        </svg>
-        <span>Início</span>
-      </a>
-
-      <div id="header-logo-wrap" class="header__logo"></div>
-
-      <!-- Igual ao index: div vazia que o JS preenche via criarSemestreSelect() -->
-      <div class="header__right">
-        <div id="semestre-wrap"></div>
-      </div>
-
-    </div>
-  </header>
-
-  <!-- ═══════════════════════════════════════════
-       MAIN
-  ═══════════════════════════════════════════ -->
-  <main class="main">
-
-    <div class="page-header">
-      <div class="page-header__eyebrow">
-        <span aria-hidden="true">❓</span>
-        <span>Modo Quiz</span>
-      </div>
-      <h1 class="page-header__title">Escolha a <em>disciplina</em></h1>
-      <p class="page-header__desc">Selecione a matéria para iniciar sua sessão de estudos</p>
-    </div>
-
-    <div class="disciplines" id="disciplines-grid" role="list">
-      <p class="disciplines-empty" id="disciplines-empty" aria-live="polite"></p>
-    </div>
-
-  </main>
-
-  <!-- ═══════════════════════════════════════════
-       FOOTER
-  ═══════════════════════════════════════════ -->
-  <footer class="footer">
-    <p>© <span id="footer-year"></span> Nexus Study · Desenvolvido para facilitar seus estudos</p>
-  </footer>
 
   <!-- ═══════════════════════════════════════════
        PRELOAD — IA (Resumo)
-       Mesmo padrão do index.html. Apenas otimização de
-       carregamento (hint ao navegador); quem efetivamente
-       injeta os <script> é quiz.js → _carregarIA().
   ═══════════════════════════════════════════ -->
   <link rel="modulepreload" href="../shared/js/ia/core/context.js">
   <link rel="modulepreload" href="../shared/js/ia/core/text-utils.js">
@@ -137,9 +47,89 @@
   <link rel="modulepreload" href="../shared/js/ia/core/ui.js">
   <link rel="modulepreload" href="../shared/js/ia/resumo/search.js">
 
-  <!-- ═══════════════════════════════════════════
-       SCRIPTS
-  ═══════════════════════════════════════════ -->
+</head>
+
+<body>
+
+  <!--
+    fab.js: primeira instrução do <body>, mesmo padrão do index.html.
+    Injeta o botão flutuante antes de qualquer outro elemento ser pintado.
+  -->
+  <script src="../shared/js/ia/core/fab.js"></script>
+
+  <!-- ══ CANVAS DE FUNDO ══ -->
+  <canvas id="bg-canvas" aria-hidden="true"></canvas>
+
+  <!-- ══ CAMADAS ATMOSFÉRICAS ══ -->
+  <div class="atmo atmo--1" aria-hidden="true"></div>
+  <div class="atmo atmo--2" aria-hidden="true"></div>
+
+  <!-- ══ HEADER ══ -->
+  <header class="site-header">
+    <div class="site-header__inner">
+
+      <a href="../index.html" class="nav-back" aria-label="Voltar ao início">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        <span>Início</span>
+      </a>
+
+      <div id="header-logo-wrap" class="site-header__brand"></div>
+
+      <div class="header-controls" id="header-controls">
+        <div id="semestre-wrap"></div>
+        <button class="cfg-btn" id="btn-quiz-config" aria-label="Configurações do Quiz" title="Configurações">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06
+                     a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09
+                     A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83
+                     l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09
+                     A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83
+                     l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09
+                     a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83
+                     l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09
+                     a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ══ HERO ══ -->
+  <section class="hero">
+    <div class="hero__inner">
+      <div class="hero__kicker">
+        <span class="kicker-dot" aria-hidden="true"></span>
+        Selecione a disciplina
+      </div>
+      <h1 class="hero__title">
+
+        <span class="hero__title-line hero__title-line--accent">QUIZ</span>
+      </h1>
+      <p class="hero__sub">Escolha a matéria e inicie sua sessão de perguntas</p>
+    </div>
+  </section>
+
+  <!-- ══ CARDS GRID ══ -->
+  <main class="arena">
+    <div class="arena__grid" id="disciplines-grid" role="list">
+      <p class="arena__empty" id="disciplines-empty" aria-live="polite" style="display:none"></p>
+    </div>
+  </main>
+
+  <!-- ══ FOOTER ══ -->
+  <footer class="site-footer">
+    <span>© <span id="footer-year"></span> Nexus Study</span>
+    <span class="site-footer__sep" aria-hidden="true">·</span>
+    <span>Desenvolvido para facilitar seus estudos</span>
+  </footer>
+
+  <!-- ══ SCRIPTS ══ -->
   <script type="module" src="quiz.js"></script>
   <script src="../shared/js/utils/quick-access.js"></script>
 

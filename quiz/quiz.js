@@ -1,43 +1,8 @@
 // @ts-nocheck
-/* =============================================
-   NEXUS STUDY — quiz/quiz.js
-
-   ALTERAÇÕES — Integração da IA do Index (Resumo) v1.0:
-
-     - Adicionada SEÇÃO "IA (RESUMO)", copiada 1:1 do mesmo bloco
-       em index.js (_carregarIA / _loadScript). Nenhuma lógica nova
-       foi criada — é o MESMO entrypoint, carregado também aqui.
-       Isso é necessário porque scripts carregados por index.js
-       não ficam disponíveis em quiz.html: são documentos HTML
-       diferentes, cada um com seu próprio carregamento de scripts.
-
-     - window.__NEXUS_CONTEXT__ declarado como { tipos: ['resumo'] },
-       igual ao Index. O Quiz disponibiliza o MESMO pipeline de
-       conteúdo (resumo da disciplina) — não um pipeline de 'quiz'.
-       Isso é intencional: a IA aqui serve para dúvidas/resumo,
-       nunca para gerar ou interagir com questões.
-
-     - initUI() chama NexusAssistant.initUI() + .init(), mesmo padrão
-       usado implicitamente pelo Index via shared/js/ia/init.js
-       (script final da cadeia de _carregarIA().then(...)).
-
-     - NENHUMA lógica do quiz (seleção de disciplina, cards, modal
-       de configurações do quiz) foi alterada.
-
-     - ⚠ PENDÊNCIA CONHECIDA (não inventada, não assumida):
-       window.__nexusCtx (a "bridge de contexto" que resumo/assistant.js
-       consome — getSemestre(), getDisciplinas(), parseSemestre(),
-       getDisciplinaAtual(), getPrefixo(), getVarGlobal()) não estava
-       presente em nenhum arquivo fornecido até o momento desta
-       implementação. Pelos comentários de dependência em assistant.js,
-       ela deve ser definida em shared/js/ia/core/ctx.js — script que
-       o index.html carrega em algum ponto não fornecido aqui.
-       Ver bloco "__nexusCtx" abaixo: por ora, delega para o MESMO
-       ctx.js do Index (se ele expuser window.__nexusCtx globalmente,
-       basta carregá-lo aqui também — adicionado à lista de deps).
-       Se o ctx.js real usar outro contrato, ajustar apenas esse
-       bloco — o resto da integração não depende disso.
-   ============================================= */
+/* ═══════════════════════════════════════════════════════════
+   NEXUS STUDY — quiz/quiz.js  (redesign completo)
+   Lógica de interação da tela de seleção de disciplinas.
+   ═══════════════════════════════════════════════════════════ */
 
 import {
   getSemestreAtual,
@@ -48,39 +13,25 @@ import {
   limparDadosQuiz,
 } from '../src/global.js';
 
-import { sincronizarSemNaURL }            from '../shared/js/utils/url.js';
+import { sincronizarSemNaURL }              from '../shared/js/utils/url.js';
 import { criarSemestreSelect, preencherAnos } from '../shared/js/utils/dom.js';
-import { injetarLogo }                    from '../shared/js/utils/logo.js';
+import { injetarLogo }                      from '../shared/js/utils/logo.js';
 import { Sound, audio, installAudioRecovery, playSound } from '../shared/js/audio/audio-api.js';
 
 (function () {
 
-  /* ═══════════════════════════════════════════════
+  /* ══════════════════════════════════════════════
      IA (RESUMO) — mesmo padrão do index.js
-
-     Copiado 1:1 da seção 2 de index.js. Não duplica lógica de
-     domínio — apenas repete o carregamento dos mesmos módulos,
-     pois quiz.html é um documento separado de index.html.
-  ═══════════════════════════════════════════════ */
-
-  // Declara explicitamente o tipo de contexto desta página.
-  // core/context.js usa este valor para identificar quais domínios de IA
-  // estão ativos. Igual ao Index: apenas 'resumo' (dúvidas/conteúdo).
-  // NÃO inclui disciplina, semestre ou outros estados dinâmicos.
+  ══════════════════════════════════════════════ */
   window.__NEXUS_CONTEXT__ = { tipos: ['resumo'] };
 
   function _loadScript(src) {
     return new Promise((resolve, reject) => {
-      // Evita injetar o mesmo script duas vezes (ex.: navegação
-      // de volta para quiz.html sem reload completo, cache de módulo).
-      if (document.querySelector('script[src="' + src + '"]')) {
-        resolve();
-        return;
-      }
+      if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
       const s = document.createElement('script');
-      s.src    = src;
+      s.src = src;
       s.onload = resolve;
-      s.onerror = () => reject(new Error(`[Nexus IA] Falha ao carregar: ${src}`));
+      s.onerror = () => reject(new Error(`[Nexus IA] Falha: ${src}`));
       document.body.appendChild(s);
     });
   }
@@ -88,21 +39,17 @@ import { Sound, audio, installAudioRecovery, playSound } from '../shared/js/audi
   function _carregarIA() {
     const BASE = '../shared/js/ia/';
     const deps = [
-      BASE + 'core/context.js',    // lê __NEXUS_CONTEXT__ → expõe NexusContext
+      BASE + 'core/context.js',
       BASE + 'core/text-utils.js',
-      BASE + 'core/history.js',    // histórico isolado por contexto
+      BASE + 'core/history.js',
       BASE + 'core/loader.js',
       BASE + 'core/worker.js',
       BASE + 'core/ui.js',
       BASE + 'resumo/search.js',
     ];
-
     Promise.all(deps.map(_loadScript))
       .then(() => _loadScript(BASE + 'resumo/assistant.js'))
       .then(() => {
-        // initUI() monta o painel/FAB (sempre).
-        // init() ativa o pipeline de conteúdo (apenas quando 'resumo'
-        // está em __NEXUS_CONTEXT__.tipos — é o caso aqui).
         if (window.NexusAssistant) {
           window.NexusAssistant.initUI();
           window.NexusAssistant.init();
@@ -111,26 +58,112 @@ import { Sound, audio, installAudioRecovery, playSound } from '../shared/js/audi
       .catch(err => console.error('[Quiz] Falha ao carregar IA:', err));
   }
 
-  /* ═══════════════════════════════════════════════
-     fim da seção IA
-  ═══════════════════════════════════════════════ */
+  /* ══════════════════════════════════════════════
+     CANVAS DE FUNDO — partículas geométricas
+  ══════════════════════════════════════════════ */
+  function _initCanvas() {
+    const canvas = document.getElementById('bg-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
 
-  // ── Lê ?sem= da URL e aplica antes de qualquer coisa ─────────
-  const semParam = new URLSearchParams(location.search).get('sem');
-  if (semParam) setSemestre(semParam);
+    let W, H, particles = [], animId;
 
-  let semAtual = getSemestreAtual();
+    const PARTICLE_COUNT = window.innerWidth < 600 ? 40 : 70;
+    const COLORS = ['rgba(108,99,255,', 'rgba(61,217,194,', 'rgba(247,201,72,', 'rgba(255,107,138,'];
 
-  // ── Disciplinas ───────────────────────────────────────────────
-  const DISC_CLASS = {
-    poo:         'disc-card--blue',
-    redes:       'disc-card--teal',
-    design:      'disc-card--gold',
+    function resize() {
+      W = canvas.width  = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    }
+
+    function createParticle() {
+      const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+      return {
+        x:     Math.random() * W,
+        y:     Math.random() * H,
+        // Partículas menores e mais lentas — menos flickering visual
+        size:  Math.random() * 1.2 + 0.3,
+        vx:    (Math.random() - 0.5) * 0.15,
+        vy:    (Math.random() - 0.5) * 0.15,
+        // Alpha fixo por partícula — sem variação dinâmica que cause shimmer
+        alpha: Math.random() * 0.3 + 0.08,
+        color,
+      };
+    }
+
+    function init() {
+      resize();
+      particles = Array.from({ length: PARTICLE_COUNT }, createParticle);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+
+      // Grid de linhas sutis
+      ctx.strokeStyle = 'rgba(255,255,255,0.018)';
+      ctx.lineWidth = 0.5;
+      const GRID = 80;
+      for (let x = 0; x < W; x += GRID) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+      }
+      for (let y = 0; y < H; y += GRID) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+      }
+
+      // Partículas — simples pontos com alpha fixo, sem variação por frame
+      for (const p of particles) {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = p.color + p.alpha + ')';
+        ctx.fill();
+
+        p.x += p.vx;
+        p.y += p.vy;
+
+        // Wraparound
+        if (p.x < -5) p.x = W + 5;
+        if (p.x > W + 5) p.x = -5;
+        if (p.y < -5) p.y = H + 5;
+        if (p.y > H + 5) p.y = -5;
+      }
+
+      animId = requestAnimationFrame(draw);
+    }
+
+    init();
+    draw();
+
+    window.addEventListener('resize', () => { resize(); });
+
+    // Pausa quando aba não é visível (economiza CPU)
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) { cancelAnimationFrame(animId); }
+      else { draw(); }
+    });
+  }
+
+  /* ══════════════════════════════════════════════
+     CARDS
+  ══════════════════════════════════════════════ */
+
+  // Cor do tema de cada disciplina (por id)
+  const DISC_THEME = {
+    poo:         'disc-card--violet',
+    redes:       'disc-card--cyan',
+    design:      'disc-card--amber',
     banco_dados: 'disc-card--rose',
   };
 
+  // Fallback sequencial para disciplinas não mapeadas
+  const THEME_FALLBACK = [
+    'disc-card--violet',
+    'disc-card--cyan',
+    'disc-card--amber',
+    'disc-card--rose',
+    'disc-card--sage',
+  ];
+
   function _resolverPeriodo(sem) {
-    /* "2026.1-AP2" → "2026.1" · "2026.1" → "2026.1" */
     return sem.includes('-') ? sem.split('-')[0] : sem;
   }
 
@@ -141,44 +174,47 @@ import { Sound, audio, installAudioRecovery, playSound } from '../shared/js/audi
     const msgEl   = document.getElementById('disciplines-empty');
     const discs   = getDisciplinasDeSemestre(sem);
 
+    // Remove cards antigos
     grid.querySelectorAll('.disc-card').forEach(c => c.remove());
 
     if (!discs.length) {
-      msgEl.textContent   = `Nenhuma disciplina cadastrada para ${sem}.`;
+      msgEl.textContent  = `Nenhuma disciplina cadastrada para o período ${sem}.`;
       msgEl.style.display = 'block';
       return;
     }
 
     msgEl.style.display = 'none';
 
-    discs.forEach(disc => {
+    discs.forEach((disc, idx) => {
       const href  = `disciplinas/${ano}/${periodo}/${disc.arquivo}.html?sem=${sem}`;
-      const cls   = DISC_CLASS[disc.id] ?? 'disc-card--blue';
+      const theme = DISC_THEME[disc.id] ?? THEME_FALLBACK[idx % THEME_FALLBACK.length];
       const label = disc.apelido ?? disc.nome;
+      const num   = String(idx + 1).padStart(2, '0');
 
       const a = document.createElement('a');
       a.href      = href;
-      a.className = `disc-card ${cls}`;
+      a.className = `disc-card ${theme}`;
       a.setAttribute('role', 'listitem');
       a.setAttribute('aria-label', disc.nome);
+
       a.innerHTML = `
-        <div class="disc-card__icon-col">
-          <div class="disc-card__icon-wrap"><span>${disc.emoji}</span></div>
-        </div>
-        <div class="disc-card__body">
-          <h2 class="disc-card__title">${label}</h2>
-          <p class="disc-card__desc">${disc.nome}</p>
-        </div>
-        <div class="disc-card__cta">
-          <div class="disc-card__arrow">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
-            </svg>
+        <div class="disc-card__inner">
+          <span class="disc-card__num">${num}</span>
+          <div class="disc-card__icon" aria-hidden="true">${disc.emoji}</div>
+          <div class="disc-card__body">
+            <h2 class="disc-card__title">${label}</h2>
+            <p class="disc-card__desc">${disc.nome}</p>
           </div>
-          <span class="disc-card__cta-label">Iniciar</span>
+          <div class="disc-card__footer">
+            <span class="disc-card__tag">Iniciar quiz</span>
+            <div class="disc-card__arrow-wrap" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
+              </svg>
+            </div>
+          </div>
         </div>
-        <div class="disc-card__glow"></div>
       `;
 
       a.addEventListener('mouseenter', () => playSound('hover', 'quiz'));
@@ -188,24 +224,18 @@ import { Sound, audio, installAudioRecovery, playSound } from '../shared/js/audi
     });
   }
 
-  // ── Monta o select de semestre igual ao index.js ──────────────
+  /* ══════════════════════════════════════════════
+     SELECT DE SEMESTRE
+  ══════════════════════════════════════════════ */
   function _montarSelect() {
     const wrap = document.getElementById('semestre-wrap');
-    if (!wrap) {
-      console.warn('[Quiz] #semestre-wrap não encontrado.');
-      return;
-    }
+    if (!wrap) return;
 
     criarSemestreSelect('semestre-wrap', sem => {
-      semAtual = sem;
       setSemestre(sem);
       gerarCards(sem);
       sincronizarSemNaURL(sem);
       playSound('select', 'quiz');
-      // A IA do Resumo reage à troca de semestre via seu próprio
-      // listener em 'nexus:semestreChanged' (registrado dentro de
-      // resumo/assistant.js) — nada a fazer aqui além de disparar
-      // o evento, igual o index.js faz.
       document.dispatchEvent(new CustomEvent('nexus:semestreChanged', { detail: sem }));
     });
 
@@ -215,24 +245,25 @@ import { Sound, audio, installAudioRecovery, playSound } from '../shared/js/audi
     });
   }
 
-  // ── Utilitários de modal (self-contained no quiz) ─────────────
-  function _criarModalQuiz(id) {
+  /* ══════════════════════════════════════════════
+     UTILITÁRIOS DE MODAL / TOAST
+  ══════════════════════════════════════════════ */
+  function _criarModal(id) {
     const el = document.createElement('div');
     el.className = 'modal';
     el.id = `modal-${id}`;
     return el;
   }
 
-  function _fecharModalQuiz(modal) {
+  function _fecharModal(modal) {
     modal.classList.remove('modal--open');
     modal.addEventListener('transitionend', () => modal.remove(), { once: true });
   }
 
-  function _mostrarToastQuiz(msg) {
-    const OFFSET   = 12;
-    const DURATION = 2800;
+  function _toast(msg) {
+    const OFFSET = 12, DURATION = 2800;
     const existentes = document.querySelectorAll('.nexus-toast');
-    let nextBottom   = 32;
+    let nextBottom = 32;
     existentes.forEach(t => { nextBottom += t.offsetHeight + OFFSET; });
 
     const t = document.createElement('div');
@@ -248,7 +279,7 @@ import { Sound, audio, installAudioRecovery, playSound } from '../shared/js/audi
     }, DURATION);
   }
 
-  function _confirmarQuiz(btn, callback) {
+  function _confirmar(btn, callback) {
     if (btn.dataset.confirmando === 'true') {
       btn.dataset.confirmando = 'false';
       btn.textContent = btn.dataset.textoOriginal;
@@ -271,20 +302,21 @@ import { Sound, audio, installAudioRecovery, playSound } from '../shared/js/audi
     }, 3000);
   }
 
-  // ── Modal de configurações exclusivas do Quiz ─────────────────
-  function _abrirModalConfigQuiz() {
+  /* ══════════════════════════════════════════════
+     MODAL DE CONFIGURAÇÕES
+  ══════════════════════════════════════════════ */
+  function _abrirModalConfig() {
     playSound('openModal', 'quiz');
-
     const cfg   = getConfigs();
-    const modal = _criarModalQuiz('config-quiz');
+    const modal = _criarModal('config-quiz');
 
     modal.innerHTML = `
-      <div class="modal__overlay" id="modal-overlay-config-quiz"></div>
-      <div class="modal__box modal__box--sm" role="dialog" aria-modal="true" aria-label="Configurações do Quiz">
+      <div class="modal__overlay" id="modal-overlay-cfg"></div>
+      <div class="modal__box" role="dialog" aria-modal="true" aria-label="Configurações do Quiz">
 
         <div class="modal__header">
           <h2 class="modal__title">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="3"/>
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06
@@ -297,41 +329,36 @@ import { Sound, audio, installAudioRecovery, playSound } from '../shared/js/audi
                        l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09
                        a1.65 1.65 0 0 0-1.51 1z"/>
             </svg>
-            Quiz — Configurações
+            Configurações do Quiz
           </h2>
-          <button class="modal__close" id="qcfg-close" aria-label="Fechar">✕</button>
+          <button class="modal__close" id="cfg-close" aria-label="Fechar">✕</button>
         </div>
 
         <div class="modal__body-scroll">
-
           <div class="modal__section">
             <div class="modal__section-title">Progresso</div>
-
             <div class="config-row">
-              <label for="qcfg-salvar-parcial">
+              <label for="cfg-parcial">
                 Salvar progresso
-                <small style="display:block;font-weight:400;opacity:0.6;font-size:0.72em;margin-top:2px;">
-                  Quando ativado, o progresso parcial é salvo enquanto você responde.
-                  Desativado, apaga 10&nbsp;min após sair da aba.
+                <small style="display:block;font-weight:400;opacity:0.55;font-size:0.7em;margin-top:3px;">
+                  Salva seu progresso parcial enquanto responde.
                 </small>
               </label>
               <label class="toggle">
-                <input type="checkbox" id="qcfg-salvar-parcial"
+                <input type="checkbox" id="cfg-parcial"
                   ${cfg.salvarProgressoParcial !== false ? 'checked' : ''} />
                 <span class="toggle__track"></span>
               </label>
             </div>
-
             <div class="config-row">
-              <label for="qcfg-salvar-concluir">
+              <label for="cfg-concluir">
                 Salvar ao concluir
-                <small style="display:block;font-weight:400;opacity:0.6;font-size:0.72em;margin-top:2px;">
-                  Quando ativado, o resultado fica salvo permanentemente.
-                  Desativado, apaga 20&nbsp;s após sair da aba.
+                <small style="display:block;font-weight:400;opacity:0.55;font-size:0.7em;margin-top:3px;">
+                  Guarda o resultado permanentemente ao terminar.
                 </small>
               </label>
               <label class="toggle">
-                <input type="checkbox" id="qcfg-salvar-concluir"
+                <input type="checkbox" id="cfg-concluir"
                   ${cfg.salvarProgresso !== false ? 'checked' : ''} />
                 <span class="toggle__track"></span>
               </label>
@@ -340,35 +367,31 @@ import { Sound, audio, installAudioRecovery, playSound } from '../shared/js/audi
 
           <div class="modal__section">
             <div class="modal__section-title">Dados</div>
-
             <div class="config-row">
               <label>
-                Limpar dados do quiz
-                <small style="display:block;font-weight:400;opacity:0.6;font-size:0.72em;margin-top:2px;">
+                Limpar dados
+                <small style="display:block;font-weight:400;opacity:0.55;font-size:0.7em;margin-top:3px;">
                   Remove todo progresso salvo de todos os quizzes.
                 </small>
               </label>
-              <button class="modal-btn modal-btn--danger" id="qcfg-btn-limpar">Limpar</button>
+              <button class="modal-btn modal-btn--danger" id="cfg-btn-limpar">Limpar</button>
             </div>
           </div>
-
         </div>
 
         <div class="modal__footer">
-          <button class="modal-btn modal-btn--ghost"   id="qcfg-btn-cancelar">Cancelar</button>
-          <button class="modal-btn modal-btn--primary" id="qcfg-btn-salvar">Salvar</button>
+          <button class="modal-btn modal-btn--ghost" id="cfg-btn-cancelar">Cancelar</button>
+          <button class="modal-btn modal-btn--primary" id="cfg-btn-salvar">Salvar</button>
         </div>
-
       </div>`;
 
     document.body.appendChild(modal);
     requestAnimationFrame(() => modal.classList.add('modal--open'));
 
-    // Dependência: "Salvar ao concluir" exige "Salvar progresso" ativo
-    const chkParcial  = document.getElementById('qcfg-salvar-parcial');
-    const chkConcluir = document.getElementById('qcfg-salvar-concluir');
+    const chkParcial  = document.getElementById('cfg-parcial');
+    const chkConcluir = document.getElementById('cfg-concluir');
 
-    function _syncDependencia() {
+    function _sync() {
       if (!chkParcial.checked) {
         chkConcluir.checked  = false;
         chkConcluir.disabled = true;
@@ -377,99 +400,84 @@ import { Sound, audio, installAudioRecovery, playSound } from '../shared/js/audi
       }
     }
 
-    _syncDependencia();
-    chkParcial.addEventListener('change', _syncDependencia);
+    _sync();
+    chkParcial.addEventListener('change', _sync);
 
-    // Limpar
-    document.getElementById('qcfg-btn-limpar')?.addEventListener('click', function () {
-      _confirmarQuiz(this, () => {
+    document.getElementById('cfg-btn-limpar')?.addEventListener('click', function () {
+      _confirmar(this, () => {
         limparDadosQuiz();
         window.__nexusQuizNotifyCleared?.();
-        _mostrarToastQuiz('Dados do quiz apagados.');
+        _toast('Dados do quiz apagados.');
       });
     });
 
-    // Fechar
     function _fechar() {
       playSound('closeModal', 'quiz');
-      _fecharModalQuiz(modal);
+      _fecharModal(modal);
     }
 
-    document.getElementById('modal-overlay-config-quiz')?.addEventListener('click', _fechar);
-    document.getElementById('qcfg-close')?.addEventListener('click', _fechar);
-    document.getElementById('qcfg-btn-cancelar')?.addEventListener('click', () => {
+    document.getElementById('modal-overlay-cfg')?.addEventListener('click', _fechar);
+    document.getElementById('cfg-close')?.addEventListener('click', _fechar);
+    document.getElementById('cfg-btn-cancelar')?.addEventListener('click', () => {
       playSound('click', 'quiz');
       _fechar();
     });
 
-    // Salvar
-    document.getElementById('qcfg-btn-salvar')?.addEventListener('click', () => {
+    document.getElementById('cfg-btn-salvar')?.addEventListener('click', () => {
       playSound('click', 'quiz');
       setConfigs({
         salvarProgressoParcial: chkParcial.checked,
         salvarProgresso:        chkConcluir.checked,
       });
-      _fecharModalQuiz(modal);
-      _mostrarToastQuiz('Configurações salvas!');
+      _fecharModal(modal);
+      _toast('Configurações salvas!');
     });
   }
 
-  // ── Injeta botão ⚙ no header__right ─────────────────────────
-  function _injetarBtnConfig() {
-    const right = document.querySelector('.header__right');
-    if (!right) return;
+  /* ══════════════════════════════════════════════
+     INICIALIZAÇÃO
+  ══════════════════════════════════════════════ */
 
-    const btn = document.createElement('button');
-    btn.className = 'quiz-cfg-btn';
-    btn.id        = 'btn-quiz-config';
-    btn.title     = 'Configurações do Quiz';
-    btn.setAttribute('aria-label', 'Configurações do Quiz');
-    btn.innerHTML = `
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
-           stroke="currentColor" stroke-width="2"
-           stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="3"/>
-        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06
-                 a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09
-                 A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83
-                 l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09
-                 A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83
-                 l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09
-                 a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83
-                 l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09
-                 a1.65 1.65 0 0 0-1.51 1z"/>
-      </svg>`;
+  // Lê ?sem= da URL antes do DOMContentLoaded
+  const semParam = new URLSearchParams(location.search).get('sem');
+  if (semParam) setSemestre(semParam);
 
-    btn.addEventListener('mouseenter', () => playSound('hover', 'quiz'));
-    btn.addEventListener('click', () => {
-      playSound('click', 'quiz');
-      _abrirModalConfigQuiz();
-    });
+  let semAtual = getSemestreAtual();
 
-    right.appendChild(btn);
-  }
-
-  // ── Inicialização ─────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', async () => {
+
+    // Áudio
     Sound.init();
     installAudioRecovery({ Sound, audio });
     await Sound.waitUntilReady();
 
+    // Logo
     injetarLogo('#header-logo-wrap');
 
-    document.querySelector('.back-btn')
+    // Botão voltar
+    document.querySelector('.nav-back')
       ?.addEventListener('click', () => playSound('click', 'quiz'));
 
+    // Select de semestre
     _montarSelect();
-    _injetarBtnConfig();
+
+    // Botão de config
+    document.getElementById('btn-quiz-config')
+      ?.addEventListener('click', _abrirModalConfig);
+
+    // Cards
     gerarCards(semAtual);
     sincronizarSemNaURL(semAtual);
+
+    // Footer
     preencherAnos(['footer-year']);
 
-    // IA (Resumo) — carregada em paralelo, não bloqueia a renderização
-    // dos cards de disciplina. Mesmo padrão de index.js (_carregarIA()
-    // é chamada fora do fluxo de init(), sem await).
+    // Canvas de fundo
+    _initCanvas();
+
+    // IA (não bloqueia renderização)
     _carregarIA();
+
   });
 
 }());
