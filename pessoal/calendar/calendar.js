@@ -20,6 +20,7 @@ const SUBJECTS = [
 const STORAGE_KEYS = {
   weeks:   'nexus_weeks',
   routine: 'nexus_routine',
+  goals:   'nexus_goals',
 };
 
 const MIN_WEEKS_BACK = 1; // allow current week + 1 week in the past
@@ -39,12 +40,20 @@ let state = {
   currentWeekStart: null,   // Monday of displayed week (Date)
   weeks: {},                // { 'YYYY-MM-DD': { 0:[], 1:[], ... } } keyed by monday ISO
   routine: null,            // { activeDays:[...], startHour, endHour, minSessionMinutes }
+  goals: [],                // [{ id, title, description, period, deadline, weekKey, linkMode, subject, sessionRefs, manualProgress, color, status, createdAt }]
   modal: {
     context: null,          // { weekKey, dayIdx, sessionId } | null
     mode: 'new',            // 'new' | 'edit'
     color: 'blue',
   },
+  goalModal: {
+    goalId: null,           // id of goal being edited, or null when creating
+    linkMode: 'subject',    // 'subject' | 'manual' | 'none'
+    color: 'blue',
+    sessionRefs: [],        // [{ weekKey, dayIdx, sessionId }] when linkMode === 'manual'
+  },
   drag: null,               // active drag/resize operation, or null
+  plannedDrag: null,        // active planned-chip drag (planned<->scheduled, reorder)
 };
 
 // Derived from state.routine — recalculated whenever the routine changes.
@@ -78,6 +87,13 @@ function loadStorage() {
     state.routine = { ...DEFAULT_ROUTINE };
   }
 
+  try {
+    const goals = localStorage.getItem(STORAGE_KEYS.goals);
+    state.goals = goals ? JSON.parse(goals) : [];
+  } catch (e) {
+    state.goals = [];
+  }
+
   recalcTimelineBounds();
 }
 
@@ -87,6 +103,10 @@ function saveStorage() {
 
 function saveRoutine() {
   localStorage.setItem(STORAGE_KEYS.routine, JSON.stringify(state.routine));
+}
+
+function saveGoals() {
+  localStorage.setItem(STORAGE_KEYS.goals, JSON.stringify(state.goals));
 }
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
@@ -138,6 +158,43 @@ function isPlanned(session) {
 
 function sortSessions(sessions) {
   return [...sessions].sort((a, b) => (a.timeStart || a.time || '').localeCompare(b.timeStart || b.time || ''));
+}
+
+// Ordena estudos planejados pelo campo `order` (definido pelo usuário via
+// drag and drop); itens sem `order` (ex: criados antes dessa funcionalidade)
+// vão para o final, na ordem em que aparecem.
+function sortPlanned(sessions) {
+  return [...sessions].sort((a, b) => {
+    const ao = Number.isFinite(a.order) ? a.order : Infinity;
+    const bo = Number.isFinite(b.order) ? b.order : Infinity;
+    return ao - bo;
+  });
+}
+
+// ─── ITERAÇÃO GLOBAL DE SESSÕES (usado por Metas e Estatísticas) ───────────
+
+// Percorre todas as sessões de todas as semanas conhecidas, chamando
+// callback(session, weekKey, dayIdx) para cada uma. Não modifica nada.
+function forEachSession(callback) {
+  Object.keys(state.weeks).forEach(weekKey => {
+    const weekData = state.weeks[weekKey];
+    Object.keys(weekData).forEach(dayIdx => {
+      (weekData[dayIdx] || []).forEach(session => {
+        callback(session, weekKey, Number(dayIdx));
+      });
+    });
+  });
+}
+
+function getAllSessionsFlat() {
+  const out = [];
+  forEachSession((session, weekKey, dayIdx) => out.push({ session, weekKey, dayIdx }));
+  return out;
+}
+
+function findSessionRef(weekKey, dayIdx, sessionId) {
+  const dayArr = (state.weeks[weekKey] && state.weeks[weekKey][dayIdx]) || [];
+  return dayArr.find(s => s.id === sessionId) || null;
 }
 
 function timeToMinutes(t) {
@@ -270,19 +327,22 @@ function renderCalendar() {
     scrollWrap.appendChild(cell);
   }
 
-  // ── Linha "Planejados" (apenas se houver ao menos um estudo sem horário
-  // em algum dia da semana). Fica entre o cabeçalho e a régua/timeline,
-  // sem ocupar espaço dentro da grade de horários. ──
+  // ── Linha "Planejados". Fica entre o cabeçalho e a régua/timeline, sem
+  // ocupar espaço dentro da grade de horários. É sempre renderizada no DOM
+  // (estrutura), mas só ganha altura/padding visíveis quando há ao menos
+  // um planejado na semana — isso preserva a zona de drop em todos os dias,
+  // mesmo vazios, permitindo devolver um estudo agendado para "Planejados"
+  // mesmo quando a lista está completamente vazia. ──
   const plannedByDay = {};
   let hasAnyPlanned = false;
   for (let i = 0; i < 7; i++) {
-    plannedByDay[i] = (weekData[i] || []).filter(isPlanned);
+    plannedByDay[i] = sortPlanned((weekData[i] || []).filter(isPlanned));
     if (plannedByDay[i].length) hasAnyPlanned = true;
   }
 
-  if (hasAnyPlanned) {
+  {
     const plannedCorner = document.createElement('div');
-    plannedCorner.className = 'planned-row-corner';
+    plannedCorner.className = 'planned-row-corner' + (hasAnyPlanned ? '' : ' is-collapsed');
     scrollWrap.appendChild(plannedCorner);
 
     for (let i = 0; i < 7; i++) {
@@ -294,38 +354,53 @@ function renderCalendar() {
       const plannedItems = plannedByDay[i];
 
       const cell = document.createElement('div');
-      cell.className = 'planned-row-cell' + (isToday ? ' is-today' : '') + (isInactive ? ' is-inactive' : '');
+      cell.className = 'planned-row-cell'
+        + (isToday ? ' is-today' : '')
+        + (isInactive ? ' is-inactive' : '')
+        + (hasAnyPlanned ? '' : ' is-collapsed');
+      cell.dataset.dayIdx = i;
+
+      const section = document.createElement('div');
+      section.className = 'planned-section';
+
+      const label = document.createElement('div');
+      label.className = 'planned-section-label';
+      label.textContent = 'Planejados';
+      section.appendChild(label);
+
+      const list = document.createElement('div');
+      list.className = 'planned-chips';
+      list.dataset.dayIdx = i;
 
       if (plannedItems.length) {
-        const section = document.createElement('div');
-        section.className = 'planned-section';
-
-        const label = document.createElement('div');
-        label.className = 'planned-section-label';
-        label.textContent = 'Planejados';
-        section.appendChild(label);
-
-        const list = document.createElement('div');
-        list.className = 'planned-chips';
-
         plannedItems.forEach(session => {
           const chip = document.createElement('button');
           chip.type = 'button';
+          chip.draggable = true;
           chip.className = 'planned-chip' + (session.status === 'done' ? ' is-done' : '');
           chip.dataset.color = session.color || 'blue';
-          chip.title = session.subject + (session.note ? ` — ${session.note}` : '');
+          chip.dataset.sessionId = session.id;
+          chip.dataset.dayIdx = i;
+          chip.title = session.subject + (session.note ? ` — ${session.note}` : '') + ' · arraste para um horário ou para reordenar';
           chip.innerHTML = `<span class="planned-chip-icon">📌</span><span class="planned-chip-label">${escHtml(session.subject)}</span>`;
           chip.addEventListener('click', (e) => {
+            if (chip.dataset.suppressClick === '1') {
+              chip.dataset.suppressClick = '0';
+              return;
+            }
             e.stopPropagation();
             openSessionModal({ weekKey, dayIdx: i, sessionId: session.id });
           });
+          initPlannedChipDrag(chip, weekKey, i, session.id);
           list.appendChild(chip);
         });
-
-        section.appendChild(list);
-        cell.appendChild(section);
+      } else {
+        list.classList.add('is-empty');
       }
 
+      section.appendChild(list);
+      cell.appendChild(section);
+      initPlannedDropZone(cell, weekKey, i);
       scrollWrap.appendChild(cell);
     }
   }
@@ -391,6 +466,7 @@ function renderCalendar() {
     });
 
     timeline.appendChild(inner);
+    initTimelineDropZone(timeline, inner, weekKey, i);
     scrollWrap.appendChild(timeline);
   }
 
@@ -515,11 +591,13 @@ function createSessionCard(session, col, cols, weekKey, dayIdx) {
       ${compact ? timeLine : subjectLine + timeLine + noteLine + indicatorsHtml}
     </div>
     <button type="button" class="card-check" title="${session.status === 'done' ? 'Marcar como pendente' : 'Marcar como concluído'}">${session.status === 'done' ? '✓' : ''}</button>
+    <div class="card-move-handle" draggable="true" title="Arraste até 'Planejados' para remover o horário">⠿</div>
     <div class="card-resize-handle"></div>
   `;
 
   // Clique no card abre o modal de edição (a menos que tenha havido drag/resize)
   card.addEventListener('click', (e) => {
+    if (e.target.closest('.card-move-handle')) return;
     if (card.dataset.suppressClick === '1') {
       card.dataset.suppressClick = '0';
       return;
@@ -537,6 +615,8 @@ function createSessionCard(session, col, cols, weekKey, dayIdx) {
   // Drag vertical (mover horário) e resize (alterar duração)
   initCardDrag(card, weekKey, dayIdx, session.id);
   initCardResize(card.querySelector('.card-resize-handle'), card, weekKey, dayIdx, session.id);
+  // Drag para a área "Planejados" (remove o horário, mantém o restante)
+  initScheduledToPlannedDrag(card, weekKey, dayIdx, session.id);
 
   return card;
 }
@@ -579,7 +659,7 @@ function getWeekStats(weekKey) {
 
 function initCardDrag(card, weekKey, dayIdx, sessionId) {
   card.addEventListener('mousedown', (e) => {
-    if (e.target.closest('.card-check') || e.target.closest('.card-resize-handle')) return;
+    if (e.target.closest('.card-check') || e.target.closest('.card-resize-handle') || e.target.closest('.card-move-handle')) return;
     if (e.button !== 0) return;
 
     const session = getSession(weekKey, dayIdx, sessionId);
@@ -607,7 +687,7 @@ function initCardDrag(card, weekKey, dayIdx, sessionId) {
       card._dragNewStartMin = newStartMin;
     }
 
-    function onUp() {
+    async function onUp() {
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
       card.classList.remove('is-dragging');
@@ -617,14 +697,19 @@ function initCardDrag(card, weekKey, dayIdx, sessionId) {
         const newEndMin = newStartMin + duration;
         const newStart = minutesToTime(newStartMin);
         const newEnd = minutesToTime(newEndMin);
+        card.dataset.suppressClick = '1';
 
         const conflicts = findConflicts(weekKey, dayIdx, newStart, newEnd, sessionId);
-        if (conflicts.length && !window.confirm(
-          `Esse novo horário conflita com "${conflicts[0].subject}" (${conflicts[0].timeStart}–${conflicts[0].timeEnd}). Mover mesmo assim?`
-        )) {
-          renderCalendar();
-          card.dataset.suppressClick = '1';
-          return;
+        if (conflicts.length) {
+          const c = conflicts[0];
+          const proceed = await confirmDialog(
+            `Esse novo horário conflita com "${c.subject}" (${c.timeStart}–${c.timeEnd}). Mover mesmo assim?`,
+            { title: 'Conflito de horário', confirmLabel: 'Mover mesmo assim' }
+          );
+          if (!proceed) {
+            renderCalendar();
+            return;
+          }
         }
 
         session.timeStart = newStart;
@@ -633,7 +718,6 @@ function initCardDrag(card, weekKey, dayIdx, sessionId) {
         saveStorage();
         showToast('Horário atualizado.');
         renderCalendar();
-        card.dataset.suppressClick = '1';
       }
       delete card._dragNewStartMin;
     }
@@ -675,34 +759,264 @@ function initCardResize(handle, card, weekKey, dayIdx, sessionId) {
       card._resizeNewDuration = newDurationMin;
     }
 
-    function onUp() {
+    async function onUp() {
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
 
       if (moved && card._resizeNewDuration !== undefined) {
         const newEndMin = startMin + card._resizeNewDuration;
         const newEnd = minutesToTime(newEndMin);
+        card.dataset.suppressClick = '1';
 
         const conflicts = findConflicts(weekKey, dayIdx, session.timeStart || session.time, newEnd, sessionId);
-        if (conflicts.length && !window.confirm(
-          `Essa duração conflita com "${conflicts[0].subject}" (${conflicts[0].timeStart}–${conflicts[0].timeEnd}). Continuar mesmo assim?`
-        )) {
-          renderCalendar();
-          card.dataset.suppressClick = '1';
-          return;
+        if (conflicts.length) {
+          const c = conflicts[0];
+          const proceed = await confirmDialog(
+            `Essa duração conflita com "${c.subject}" (${c.timeStart}–${c.timeEnd}). Continuar mesmo assim?`,
+            { title: 'Conflito de horário', confirmLabel: 'Continuar mesmo assim' }
+          );
+          if (!proceed) {
+            renderCalendar();
+            return;
+          }
         }
 
         session.timeEnd = newEnd;
         saveStorage();
         showToast('Duração atualizada.');
         renderCalendar();
-        card.dataset.suppressClick = '1';
       }
       delete card._resizeNewDuration;
     }
 
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
+  });
+}
+
+// ─── DRAG AND DROP: PLANEJADO ↔ AGENDADO ─────────────────────────────────────
+//
+// Usa a API nativa de Drag and Drop do HTML5 (draggable + dragstart/dragover/
+// drop), pois a interação atravessa zonas distintas do grid (chips de
+// planejados <-> colunas de horário <-> outros chips para reordenar), o que
+// é mais robusto com eventos nativos do que com mousemove manual.
+
+// Estudo planejado arrastado para fora da lista de chips (para um horário,
+// ou para reordenar dentro da própria lista).
+function initPlannedChipDrag(chip, weekKey, dayIdx, sessionId) {
+  chip.addEventListener('dragstart', (e) => {
+    state.plannedDrag = { kind: 'planned', weekKey, dayIdx, sessionId };
+    chip.classList.add('is-dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    // Necessário em alguns navegadores para que o drag funcione
+    try { e.dataTransfer.setData('text/plain', sessionId); } catch (_) {}
+  });
+  chip.addEventListener('dragend', () => {
+    chip.classList.remove('is-dragging');
+    document.querySelectorAll('.is-drop-target').forEach(el => el.classList.remove('is-drop-target'));
+    state.plannedDrag = null;
+  });
+
+  // Permite também reordenar: soltar um chip sobre outro chip da mesma lista
+  chip.addEventListener('dragover', (e) => {
+    if (!state.plannedDrag || state.plannedDrag.kind !== 'planned') return;
+    e.preventDefault();
+    chip.classList.add('is-drop-hover');
+  });
+  chip.addEventListener('dragleave', () => chip.classList.remove('is-drop-hover'));
+  chip.addEventListener('drop', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    chip.classList.remove('is-drop-hover');
+    const drag = state.plannedDrag;
+    if (!drag || drag.kind !== 'planned') return;
+    if (drag.sessionId === sessionId) return; // soltou sobre si mesmo
+
+    reorderPlanned(drag.weekKey, drag.dayIdx, drag.sessionId, weekKey, dayIdx, sessionId);
+  });
+}
+
+// Reordena (ou move entre dias, se aplicável) um estudo planejado, soltando-o
+// na posição de outro estudo planejado de referência.
+function reorderPlanned(fromWeekKey, fromDayIdx, sessionId, toWeekKey, toDayIdx, beforeSessionId) {
+  if (fromWeekKey !== toWeekKey) return; // reordenação é sempre dentro da mesma semana
+
+  const dayArr = state.weeks[toWeekKey] && state.weeks[toWeekKey][toDayIdx];
+  if (!dayArr) return;
+
+  // Move o estudo de dia, se necessário (mantendo-o planejado)
+  let moving = null;
+  if (fromDayIdx !== toDayIdx) {
+    const fromArr = state.weeks[fromWeekKey][fromDayIdx] || [];
+    const idx = fromArr.findIndex(s => s.id === sessionId);
+    if (idx < 0) return;
+    moving = fromArr.splice(idx, 1)[0];
+  } else {
+    moving = dayArr.find(s => s.id === sessionId);
+    if (!moving) return;
+  }
+
+  // Reconstroi a ordem da lista de planejados do dia de destino, inserindo
+  // o item movido imediatamente antes do item de referência.
+  const targetDayArr = state.weeks[toWeekKey][toDayIdx] || [];
+  let planned = sortPlanned(targetDayArr.filter(isPlanned).filter(s => s.id !== sessionId));
+  const refIdx = planned.findIndex(s => s.id === beforeSessionId);
+  if (fromDayIdx !== toDayIdx) {
+    if (refIdx < 0) planned.push(moving); else planned.splice(refIdx, 0, moving);
+    targetDayArr.push(moving);
+  } else {
+    if (refIdx < 0) planned.push(moving); else planned.splice(refIdx, 0, moving);
+  }
+
+  planned.forEach((s, idx) => { s.order = idx; });
+
+  saveStorage();
+  renderCalendar();
+  showToast('Ordem dos planejados atualizada.');
+}
+
+// Zona de drop para a área "Planejados" de um dia — recebe tanto chips de
+// outros dias (reordenação/realocação) quanto estudos agendados arrastados
+// da timeline (que perdem o horário e se tornam planejados).
+function initPlannedDropZone(cellEl, weekKey, dayIdx) {
+  cellEl.addEventListener('dragover', (e) => {
+    if (!state.plannedDrag) return;
+    e.preventDefault();
+    cellEl.classList.add('is-drop-target');
+  });
+  cellEl.addEventListener('dragleave', (e) => {
+    if (!cellEl.contains(e.relatedTarget)) cellEl.classList.remove('is-drop-target');
+  });
+  cellEl.addEventListener('drop', (e) => {
+    e.preventDefault();
+    cellEl.classList.remove('is-drop-target');
+    const drag = state.plannedDrag;
+    if (!drag) return;
+
+    if (drag.kind === 'scheduled') {
+      scheduledToPlanned(drag.weekKey, drag.dayIdx, drag.sessionId, weekKey, dayIdx);
+    } else if (drag.kind === 'planned' && (drag.weekKey !== weekKey || drag.dayIdx !== dayIdx)) {
+      // Soltou em uma lista vazia ou fora de qualquer chip específico: vai para o final
+      reorderPlanned(drag.weekKey, drag.dayIdx, drag.sessionId, weekKey, dayIdx, null);
+    }
+  });
+}
+
+// Zona de drop nas colunas de horário — recebe um chip "Planejado" e o
+// transforma em estudo agendado, usando a duração mínima configurada na
+// rotina, no horário correspondente à posição vertical do drop.
+function initTimelineDropZone(timelineEl, innerEl, weekKey, dayIdx) {
+  timelineEl.addEventListener('dragover', (e) => {
+    if (!state.plannedDrag || state.plannedDrag.kind !== 'planned') return;
+    e.preventDefault();
+    timelineEl.classList.add('is-drop-target');
+  });
+  timelineEl.addEventListener('dragleave', (e) => {
+    if (!timelineEl.contains(e.relatedTarget)) timelineEl.classList.remove('is-drop-target');
+  });
+  timelineEl.addEventListener('drop', async (e) => {
+    e.preventDefault();
+    timelineEl.classList.remove('is-drop-target');
+    const drag = state.plannedDrag;
+    if (!drag || drag.kind !== 'planned') return;
+
+    const rect = innerEl.getBoundingClientRect();
+    const offsetY = e.clientY - rect.top;
+    let startMin = offsetToMinutes(offsetY);
+    startMin = snapMinutes(startMin);
+
+    const durationMin = Number(state.routine.minSessionMinutes) || 60;
+    startMin = Math.max(TIMELINE_START_HOUR * 60, Math.min(startMin, TIMELINE_END_HOUR * 60 - durationMin));
+
+    await plannedToScheduled(drag.weekKey, drag.dayIdx, drag.sessionId, weekKey, dayIdx, minutesToTime(startMin), durationMin);
+  });
+}
+
+// Converte um estudo planejado em agendado: aplica timeStart/timeEnd
+// (duração padrão da rotina) e remove o campo `order` (não é mais relevante
+// fora da lista de planejados). Mantém conteúdo, observação, status e cor.
+async function plannedToScheduled(fromWeekKey, fromDayIdx, sessionId, toWeekKey, toDayIdx, timeStart, durationMin) {
+  const fromArr = state.weeks[fromWeekKey] && state.weeks[fromWeekKey][fromDayIdx];
+  if (!fromArr) return;
+  const idx = fromArr.findIndex(s => s.id === sessionId);
+  if (idx < 0) return;
+
+  const session = fromArr[idx];
+  const timeEnd = minutesToTime(timeToMinutes(timeStart) + durationMin);
+
+  const conflicts = findConflicts(toWeekKey, toDayIdx, timeStart, timeEnd, sessionId);
+  if (conflicts.length) {
+    const c = conflicts[0];
+    const proceed = await confirmDialog(
+      `Esse horário conflita com "${c.subject}" (${c.timeStart}–${c.timeEnd}). Agendar mesmo assim?`,
+      { title: 'Conflito de horário', confirmLabel: 'Agendar mesmo assim' }
+    );
+    if (!proceed) return;
+  }
+
+  fromArr.splice(idx, 1);
+  delete session.order;
+  session.timeStart = timeStart;
+  session.timeEnd = timeEnd;
+  delete session.time;
+
+  if (!state.weeks[toWeekKey]) state.weeks[toWeekKey] = buildEmptyWeek();
+  if (!state.weeks[toWeekKey][toDayIdx]) state.weeks[toWeekKey][toDayIdx] = [];
+  state.weeks[toWeekKey][toDayIdx].push(session);
+
+  saveStorage();
+  renderCalendar();
+  showToast(`Agendado para ${timeStart} – ${timeEnd}, com base na duração padrão da rotina.`);
+}
+
+// Converte um estudo agendado em planejado: remove apenas timeStart/timeEnd,
+// mantendo conteúdo, observação, status e demais informações.
+function scheduledToPlanned(fromWeekKey, fromDayIdx, sessionId, toWeekKey, toDayIdx) {
+  const fromArr = state.weeks[fromWeekKey] && state.weeks[fromWeekKey][fromDayIdx];
+  if (!fromArr) return;
+  const idx = fromArr.findIndex(s => s.id === sessionId);
+  if (idx < 0) return;
+
+  const session = fromArr[idx];
+  fromArr.splice(idx, 1);
+  delete session.timeStart;
+  delete session.timeEnd;
+  delete session.time;
+
+  if (!state.weeks[toWeekKey]) state.weeks[toWeekKey] = buildEmptyWeek();
+  if (!state.weeks[toWeekKey][toDayIdx]) state.weeks[toWeekKey][toDayIdx] = [];
+  const targetArr = state.weeks[toWeekKey][toDayIdx];
+  const existingPlanned = sortPlanned(targetArr.filter(isPlanned));
+  session.order = existingPlanned.length ? existingPlanned[existingPlanned.length - 1].order + 1 : 0;
+  targetArr.push(session);
+
+  saveStorage();
+  renderCalendar();
+  showToast('Estudo movido para Planejados, sem horário.');
+}
+
+// Estudo agendado (session-card) arrastado para a área de planejados, via
+// um handle dedicado (para não competir com o reposicionamento vertical
+// manual, que usa mousedown/mousemove na área principal do card).
+function initScheduledToPlannedDrag(card, weekKey, dayIdx, sessionId) {
+  const handle = card.querySelector('.card-move-handle');
+  if (!handle) return;
+
+  handle.addEventListener('mousedown', (e) => e.stopPropagation());
+
+  handle.addEventListener('dragstart', (e) => {
+    e.stopPropagation();
+    state.plannedDrag = { kind: 'scheduled', weekKey, dayIdx, sessionId };
+    card.classList.add('is-dragging');
+    document.body.classList.add('is-dragging-scheduled');
+    e.dataTransfer.effectAllowed = 'move';
+    try { e.dataTransfer.setData('text/plain', sessionId); } catch (_) {}
+  });
+  handle.addEventListener('dragend', () => {
+    card.classList.remove('is-dragging');
+    document.body.classList.remove('is-dragging-scheduled');
+    document.querySelectorAll('.is-drop-target').forEach(el => el.classList.remove('is-drop-target'));
+    state.plannedDrag = null;
   });
 }
 
@@ -804,7 +1118,7 @@ function formatDurationLabel(mins) {
   return `${mins} minutos`;
 }
 
-function saveSession() {
+async function saveSession() {
   const dayIdx     = Number(document.getElementById('input-day').value);
   const timeInput    = document.getElementById('input-time');
   const timeEndInput  = document.getElementById('input-time-end');
@@ -852,8 +1166,9 @@ if (timeStart && timeEnd) {
     const conflicts = findConflicts(weekKey, dayIdx, timeStart, timeEnd, isEdit ? sessionId : null);
     if (conflicts.length) {
       const c = conflicts[0];
-      const proceed = window.confirm(
-        `Conflito de horário com "${c.subject}" (${c.timeStart}–${c.timeEnd}). Deseja salvar mesmo assim?`
+      const proceed = await confirmDialog(
+        `Conflito de horário com "${c.subject}" (${c.timeStart}–${c.timeEnd}). Deseja salvar mesmo assim?`,
+        { title: 'Conflito de horário', confirmLabel: 'Salvar mesmo assim' }
       );
       if (!proceed) return;
     }
@@ -862,6 +1177,7 @@ if (timeStart && timeEnd) {
   if (!state.weeks[weekKey]) state.weeks[weekKey] = buildEmptyWeek();
 
   const prevDayIdx = state.modal.context.dayIdx;
+  const becamePlanned = !timeStart && !timeEnd;
 
   if (isEdit && prevDayIdx !== dayIdx) {
     const fromArr = state.weeks[weekKey][prevDayIdx] || [];
@@ -869,18 +1185,28 @@ if (timeStart && timeEnd) {
     let existing = {};
     if (idx >= 0) { existing = fromArr[idx]; fromArr.splice(idx, 1); }
     const toArr = state.weeks[weekKey][dayIdx] || [];
-    toArr.push({ id: sessionId, timeStart, timeEnd, subject, note, color, status: existing.status || 'pending' });
+    const newSession = { id: sessionId, timeStart, timeEnd, subject, note, color, status: existing.status || 'pending' };
+    if (becamePlanned) newSession.order = nextPlannedOrder(weekKey, dayIdx);
+    toArr.push(newSession);
     state.weeks[weekKey][dayIdx] = toArr;
   } else if (isEdit) {
     const dayArr = state.weeks[weekKey][dayIdx] || [];
     const idx = dayArr.findIndex(s => s.id === sessionId);
     if (idx >= 0) {
+      const wasPlanned = isPlanned(dayArr[idx]);
       dayArr[idx] = { ...dayArr[idx], timeStart, timeEnd, subject, note, color };
       delete dayArr[idx].time;
+      if (becamePlanned && !wasPlanned) {
+        dayArr[idx].order = nextPlannedOrder(weekKey, dayIdx, sessionId);
+      } else if (!becamePlanned) {
+        delete dayArr[idx].order;
+      }
     }
   } else {
     const dayArr = state.weeks[weekKey][dayIdx] || [];
-    dayArr.push({ id: uid(), timeStart, timeEnd, subject, note, color, status: 'pending' });
+    const newSession = { id: uid(), timeStart, timeEnd, subject, note, color, status: 'pending' };
+    if (becamePlanned) newSession.order = nextPlannedOrder(weekKey, dayIdx);
+    dayArr.push(newSession);
     state.weeks[weekKey][dayIdx] = dayArr;
   }
 
@@ -890,11 +1216,23 @@ if (timeStart && timeEnd) {
   showToast(isEdit ? 'Estudo atualizado.' : 'Estudo adicionado.');
 }
 
+// Calcula o próximo índice de ordem para um novo estudo planejado em um dia
+// (vai para o final da lista de planejados existente). `excludeId` evita
+// contar o próprio estudo (em edições) se ele já estiver no array.
+function nextPlannedOrder(weekKey, dayIdx, excludeId) {
+  const dayArr = (state.weeks[weekKey] && state.weeks[weekKey][dayIdx]) || [];
+  const planned = sortPlanned(dayArr.filter(s => isPlanned(s) && s.id !== excludeId));
+  if (!planned.length) return 0;
+  const last = planned[planned.length - 1];
+  return Number.isFinite(last.order) ? last.order + 1 : planned.length;
+}
+
 function deleteSession() {
   const { weekKey, dayIdx, sessionId } = state.modal.context;
   if (!state.weeks[weekKey]) return;
   state.weeks[weekKey][dayIdx] = (state.weeks[weekKey][dayIdx] || [])
     .filter(s => s.id !== sessionId);
+  unlinkSessionFromGoals(weekKey, dayIdx, sessionId);
   saveStorage();
   renderCalendar();
   closeSessionModal();
@@ -919,6 +1257,7 @@ function initColorPicker(containerId, stateKey) {
     if (!dot) return;
     const color = dot.dataset.color;
     if (stateKey === 'modal') state.modal.color = color;
+    else if (stateKey === 'goalModal') state.goalModal.color = color;
     setColorPicker(containerId, color);
   });
 }
@@ -1023,6 +1362,515 @@ function saveRoutineModal() {
   showToast('Rotina de estudos atualizada.');
 }
 
+// ─── METAS ────────────────────────────────────────────────────────────────────
+//
+// Uma meta representa um objetivo maior que um único estudo (ex: "Finalizar
+// módulo de Java"). O progresso pode vir de três formas (vínculo híbrido):
+//   - 'subject': conta automaticamente estudos concluídos cujo conteúdo
+//      corresponde ao texto definido na meta (mesmo critério usado no
+//      autocomplete de conteúdo do estudo).
+//   - 'manual': a meta lista referências explícitas a estudos específicos
+//      (de qualquer dia/semana, planejados ou agendados); o progresso é a
+//      proporção desses estudos já concluídos.
+//   - 'none': progresso é um número (0-100) definido livremente pelo
+//      usuário, sem nenhum vínculo com estudos.
+// Em qualquer modo, o usuário pode também sobrescrever o progresso
+// manualmente (campo `manualOverride`), o que tem prioridade sobre o
+// cálculo automático — sem perder o vínculo (ex: pode "destravar" depois).
+
+function createEmptyGoalDraft() {
+  return {
+    id: null,
+    title: '',
+    description: '',
+    period: 'week',       // 'week' | 'custom' | 'open'
+    deadline: '',         // ISO date, usado quando period === 'custom'
+    weekKey: getWeekKey(),// semana de referência quando period === 'week'
+    linkMode: 'subject',  // 'subject' | 'manual' | 'none'
+    subject: '',
+    sessionRefs: [],      // [{ weekKey, dayIdx, sessionId }]
+    manualProgress: 0,
+    color: 'blue',
+    status: 'active',     // 'active' | 'done' | 'archived'
+    createdAt: toISO(new Date()),
+  };
+}
+
+// Verifica se um estudo corresponde ao conteúdo vinculado de uma meta
+// (comparação case-insensitive, por igualdade — mesmo padrão usado nos
+// chips de Conteúdo já existentes no sistema).
+function sessionMatchesSubject(session, subject) {
+  if (!subject) return false;
+  return (session.subject || '').trim().toLowerCase() === subject.trim().toLowerCase();
+}
+
+// Calcula o progresso (0-100) e contadores de uma meta a partir dos dados
+// reais do sistema (estudos), respeitando o modo de vínculo escolhido.
+function computeGoalProgress(goal) {
+  if (goal.linkMode === 'none') {
+    return { percent: Math.max(0, Math.min(100, Number(goal.manualProgress) || 0)), total: 0, done: 0 };
+  }
+
+  if (goal.linkMode === 'subject') {
+    let total = 0, done = 0;
+    // Metas com vínculo automático por conteúdo somam o histórico completo
+    // de estudos com aquele conteúdo (não apenas a semana atual), já que o
+    // objetivo (ex: "Finalizar módulo de Java") geralmente atravessa
+    // várias semanas.
+    forEachSession((session) => {
+      if (!sessionMatchesSubject(session, goal.subject)) return;
+      total++;
+      if (session.status === 'done') done++;
+    });
+    if (!total) return { percent: 0, total: 0, done: 0 };
+    return { percent: Math.round((done / total) * 100), total, done };
+  }
+
+  // linkMode === 'manual'
+  const refs = goal.sessionRefs || [];
+  let total = 0, done = 0;
+  refs.forEach(ref => {
+    const session = findSessionRef(ref.weekKey, ref.dayIdx, ref.sessionId);
+    if (!session) return; // referência órfã (estudo removido) — ignorada silenciosamente
+    total++;
+    if (session.status === 'done') done++;
+  });
+  if (!total) return { percent: 0, total: 0, done: 0 };
+  return { percent: Math.round((done / total) * 100), total, done };
+}
+
+// Remove referências a um estudo excluído de todas as metas que o
+// vinculam manualmente, para não acumular referências órfãs.
+function unlinkSessionFromGoals(weekKey, dayIdx, sessionId) {
+  let changed = false;
+  state.goals.forEach(goal => {
+    if (goal.linkMode !== 'manual' || !goal.sessionRefs) return;
+    const before = goal.sessionRefs.length;
+    goal.sessionRefs = goal.sessionRefs.filter(r =>
+      !(r.weekKey === weekKey && r.dayIdx === dayIdx && r.sessionId === sessionId)
+    );
+    if (goal.sessionRefs.length !== before) changed = true;
+  });
+  if (changed) saveGoals();
+}
+
+// ─── NAVEGAÇÃO ENTRE VIEWS (Agenda / Metas / Estatísticas) ───────────────────
+//
+// As três seções funcionam como "páginas" dentro do mesmo app-shell: a
+// sidebar permanece fixa e apenas o conteúdo principal é substituído,
+// com o item correspondente marcado como ativo — sem usar modais.
+function switchView(viewId, navId) {
+  document.querySelectorAll('.app-view').forEach(el => {
+    el.classList.toggle('active', el.id === viewId);
+  });
+  setActiveSidebarItem(navId);
+}
+
+function openAgendaView() {
+  switchView('view-agenda', 'nav-agenda');
+}
+
+function openGoalsView() {
+  switchView('view-goals', 'nav-goals');
+  renderGoalsList();
+  closeGoalEditor();
+}
+
+function renderGoalsList() {
+  const list = document.getElementById('goals-list');
+  list.innerHTML = '';
+
+  if (!state.goals.length) {
+    const empty = document.createElement('p');
+    empty.className = 'goals-empty';
+    empty.textContent = 'Nenhuma meta ainda. Crie a primeira para acompanhar um objetivo maior, como finalizar um módulo ou revisar um tema durante a semana.';
+    list.appendChild(empty);
+    return;
+  }
+
+  // Ativas primeiro, depois concluídas; dentro de cada grupo, mais recentes primeiro.
+  const sorted = [...state.goals].sort((a, b) => {
+    if (a.status !== b.status) return a.status === 'done' ? 1 : -1;
+    return (b.createdAt || '').localeCompare(a.createdAt || '');
+  });
+
+  sorted.forEach(goal => {
+    const { percent, total, done } = computeGoalProgress(goal);
+    const card = document.createElement('div');
+    card.className = 'goal-card' + (goal.status === 'done' ? ' is-done' : '');
+    card.dataset.color = goal.color || 'blue';
+
+    const periodLabel = goal.period === 'week'
+      ? 'Esta semana'
+      : goal.period === 'custom'
+        ? (goal.deadline ? `Até ${formatGoalDate(goal.deadline)}` : 'Período personalizado')
+        : 'Sem prazo definido';
+
+    const linkLabel = goal.linkMode === 'subject'
+      ? `Automático · conteúdo "${escHtml(goal.subject || '—')}"`
+      : goal.linkMode === 'manual'
+        ? `${total} estudo${total === 1 ? '' : 's'} vinculado${total === 1 ? '' : 's'}`
+        : 'Progresso manual';
+
+    card.innerHTML = `
+      <div class="goal-card-top">
+        <div class="goal-card-title-wrap">
+          <h3 class="goal-card-title">${escHtml(goal.title)}</h3>
+          <span class="goal-card-meta">${escHtml(periodLabel)} · ${escHtml(linkLabel)}</span>
+        </div>
+        <button type="button" class="goal-card-done-btn" title="${goal.status === 'done' ? 'Reabrir meta' : 'Marcar como concluída'}">${goal.status === 'done' ? '✓' : ''}</button>
+      </div>
+      ${goal.description ? `<p class="goal-card-desc">${escHtml(goal.description)}</p>` : ''}
+      <div class="goal-progress-bar"><div class="goal-progress-fill" style="width:${percent}%"></div></div>
+      <div class="goal-progress-label">${percent}%${goal.linkMode !== 'none' ? (total ? ` · ${done}/${total} concluído${total === 1 ? '' : 's'}` : ' · nenhum estudo vinculado ainda') : ''}</div>
+    `;
+
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.goal-card-done-btn')) return;
+      openGoalEditor(goal.id);
+    });
+
+    card.querySelector('.goal-card-done-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      goal.status = goal.status === 'done' ? 'active' : 'done';
+      saveGoals();
+      renderGoalsList();
+      showToast(goal.status === 'done' ? 'Meta concluída.' : 'Meta reaberta.');
+    });
+
+    list.appendChild(card);
+  });
+}
+
+function formatGoalDate(iso) {
+  const [y, m, d] = iso.split('-').map(Number);
+  if (!y) return iso;
+  return `${d} de ${MONTH_NAMES[m - 1]}`;
+}
+
+// ─── EDITOR DE META (criar/editar) ───────────────────────────────────────────
+
+function openGoalEditor(goalId) {
+  const isEdit = !!goalId;
+  const goal = isEdit ? state.goals.find(g => g.id === goalId) : createEmptyGoalDraft();
+  if (isEdit && !goal) return;
+
+  state.goalModal = {
+    goalId: isEdit ? goalId : null,
+    linkMode: goal.linkMode,
+    color: goal.color,
+    sessionRefs: isEdit ? [...(goal.sessionRefs || [])] : [],
+  };
+
+  document.getElementById('goal-title').value = goal.title || '';
+  document.getElementById('goal-description').value = goal.description || '';
+  document.getElementById('goal-period').value = goal.period || 'week';
+  document.getElementById('goal-deadline').value = goal.deadline || '';
+  document.getElementById('goal-deadline-group').style.display = goal.period === 'custom' ? '' : 'none';
+  document.getElementById('goal-subject').value = goal.subject || '';
+  document.getElementById('goal-manual-progress').value = String(goal.manualProgress || 0);
+  document.getElementById('goal-manual-progress-value').textContent = `${goal.manualProgress || 0}%`;
+
+  setColorPicker('goal-color-options', goal.color || 'blue');
+  state.goalModal.color = goal.color || 'blue';
+  setGoalLinkMode(goal.linkMode || 'subject');
+  renderGoalSessionPicker();
+
+  document.getElementById('btn-goal-delete').style.display = isEdit ? 'inline-flex' : 'none';
+  document.getElementById('goal-editor').style.display = 'flex';
+  document.getElementById('btn-new-goal').style.display = 'none';
+  document.getElementById('goals-list').style.display = 'none';
+
+  setTimeout(() => document.getElementById('goal-title').focus(), 50);
+}
+
+function closeGoalEditor() {
+  document.getElementById('goal-editor').style.display = 'none';
+  document.getElementById('btn-new-goal').style.display = '';
+  document.getElementById('goals-list').style.display = '';
+  document.getElementById('goal-subject-suggestions').classList.remove('visible');
+}
+
+function setGoalLinkMode(mode) {
+  state.goalModal.linkMode = mode;
+  document.querySelectorAll('#goal-link-options .goal-link-opt').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mode === mode);
+  });
+  document.getElementById('goal-subject-group').style.display = mode === 'subject' ? '' : 'none';
+  document.getElementById('goal-sessions-group').style.display = mode === 'manual' ? '' : 'none';
+  document.getElementById('goal-manual-group').style.display = mode === 'none' ? '' : 'none';
+  if (mode === 'manual') renderGoalSessionPicker();
+}
+
+// Lista candidatos para vínculo manual: estudos planejados ou agendados das
+// semanas conhecidas (atual ± próximas/anteriores já visitadas), permitindo
+// ao usuário escolher quais compõem a meta. Estudos já selecionados ficam
+// marcados; o sistema também sugere automaticamente estudos cujo conteúdo
+// seja igual ao título da meta, como ponto de partida.
+function renderGoalSessionPicker() {
+  const picker = document.getElementById('goal-session-picker');
+  picker.innerHTML = '';
+
+  const allSessions = getAllSessionsFlat()
+    .sort((a, b) => (b.weekKey + (a.session.timeStart || a.session.time || '')).localeCompare(a.weekKey + (b.session.timeStart || b.session.time || '')));
+
+  if (!allSessions.length) {
+    picker.innerHTML = '<p class="field-hint">Nenhum estudo criado ainda. Crie estudos na agenda para vinculá-los aqui.</p>';
+    return;
+  }
+
+  const selectedIds = new Set(state.goalModal.sessionRefs.map(r => r.sessionId));
+
+  allSessions.slice(0, 60).forEach(({ session, weekKey, dayIdx }) => {
+    const row = document.createElement('label');
+    row.className = 'goal-session-row';
+    const isChecked = selectedIds.has(session.id);
+    const timeLabel = isPlanned(session) ? 'Planejado' : (session.timeStart || session.time || '');
+    row.innerHTML = `
+      <input type="checkbox" ${isChecked ? 'checked' : ''} />
+      <span class="goal-session-row-subject">${escHtml(session.subject)}</span>
+      <span class="goal-session-row-meta">${DAY_SHORT[dayIdx]} · ${escHtml(timeLabel)}${session.status === 'done' ? ' · ✓' : ''}</span>
+    `;
+    row.querySelector('input').addEventListener('change', (e) => {
+      const refs = state.goalModal.sessionRefs;
+      const idx = refs.findIndex(r => r.sessionId === session.id);
+      if (e.target.checked && idx < 0) {
+        refs.push({ weekKey, dayIdx, sessionId: session.id });
+      } else if (!e.target.checked && idx >= 0) {
+        refs.splice(idx, 1);
+      }
+    });
+    picker.appendChild(row);
+  });
+}
+
+function saveGoalFromEditor() {
+  const title = document.getElementById('goal-title').value.trim();
+  if (!title) return showToast('Dê um título para a meta.');
+
+  const description = document.getElementById('goal-description').value.trim();
+  const period = document.getElementById('goal-period').value;
+  const deadline = document.getElementById('goal-deadline').value;
+  const linkMode = state.goalModal.linkMode;
+  const subject = document.getElementById('goal-subject').value.trim();
+  const manualProgress = Number(document.getElementById('goal-manual-progress').value) || 0;
+  const color = state.goalModal.color;
+
+  if (period === 'custom' && !deadline) {
+    return showToast('Defina uma data ou escolha outro período.');
+  }
+  if (linkMode === 'subject' && !subject) {
+    return showToast('Informe o conteúdo a ser acompanhado, ou escolha outro modo de progresso.');
+  }
+
+  const { goalId } = state.goalModal;
+  const isEdit = !!goalId;
+  const goal = isEdit ? state.goals.find(g => g.id === goalId) : createEmptyGoalDraft();
+
+  goal.title = title;
+  goal.description = description;
+  goal.period = period;
+  goal.deadline = period === 'custom' ? deadline : '';
+  goal.weekKey = period === 'week' ? getWeekKey() : goal.weekKey;
+  goal.linkMode = linkMode;
+  goal.subject = subject;
+  goal.sessionRefs = [...state.goalModal.sessionRefs];
+  goal.manualProgress = manualProgress;
+  goal.color = color;
+  if (!goal.status) goal.status = 'active';
+
+  if (!isEdit) {
+    goal.id = uid();
+    state.goals.push(goal);
+  }
+
+  saveGoals();
+  renderGoalsList();
+  closeGoalEditor();
+  showToast(isEdit ? 'Meta atualizada.' : 'Meta criada.');
+}
+
+async function deleteGoalFromEditor() {
+  const { goalId } = state.goalModal;
+  if (!goalId) return;
+  const proceed = await confirmDialog(
+    'Excluir esta meta? Os estudos vinculados não serão afetados.',
+    { title: 'Excluir meta', confirmLabel: 'Excluir', danger: true }
+  );
+  if (!proceed) return;
+  state.goals = state.goals.filter(g => g.id !== goalId);
+  saveGoals();
+  renderGoalsList();
+  closeGoalEditor();
+  showToast('Meta excluída.');
+}
+
+// ─── ESTATÍSTICAS ─────────────────────────────────────────────────────────────
+//
+// Calculadas sob demanda a partir dos dados reais (não há persistência
+// própria) — sempre refletem o estado atual de semanas, rotina e metas.
+
+function computeGlobalStats() {
+  let totalSessions = 0, doneSessions = 0, plannedCount = 0, scheduledCount = 0;
+  let totalMinutesDone = 0;
+  const bySubject = {};       // { subject: { total, done } }
+  const weekTotals = {};      // { weekKey: { total, done } }
+
+  forEachSession((session, weekKey) => {
+    totalSessions++;
+    const planned = isPlanned(session);
+    if (planned) plannedCount++; else scheduledCount++;
+
+    const subj = session.subject || '—';
+    if (!bySubject[subj]) bySubject[subj] = { total: 0, done: 0 };
+    bySubject[subj].total++;
+
+    if (!weekTotals[weekKey]) weekTotals[weekKey] = { total: 0, done: 0 };
+    weekTotals[weekKey].total++;
+
+    if (session.status === 'done') {
+      doneSessions++;
+      bySubject[subj].done++;
+      weekTotals[weekKey].done++;
+      if (!planned) {
+        const start = timeToMinutes(session.timeStart || session.time || '00:00');
+        const end = timeToMinutes(session.timeEnd) || start + 60;
+        totalMinutesDone += Math.max(0, end - start);
+      }
+    }
+  });
+
+  const completionPercent = totalSessions ? Math.round((doneSessions / totalSessions) * 100) : 0;
+
+  // Semana mais produtiva (mais estudos concluídos)
+  let bestWeek = null;
+  Object.keys(weekTotals).forEach(wk => {
+    const w = weekTotals[wk];
+    if (!bestWeek || w.done > weekTotals[bestWeek].done) bestWeek = wk;
+  });
+
+  // Top conteúdos por volume de estudos concluídos
+  const topSubjects = Object.entries(bySubject)
+    .map(([subject, v]) => ({ subject, ...v, percent: v.total ? Math.round((v.done / v.total) * 100) : 0 }))
+    .sort((a, b) => b.done - a.done)
+    .slice(0, 5);
+
+  // Sequência de conclusão: dias consecutivos (até hoje, olhando para trás)
+  // com pelo menos um estudo concluído.
+  const streak = computeCompletionStreak();
+
+  // Progresso de metas
+  const goalsActive = state.goals.filter(g => g.status === 'active');
+  const goalsDone = state.goals.filter(g => g.status === 'done');
+  const goalsAvgPercent = goalsActive.length
+    ? Math.round(goalsActive.reduce((sum, g) => sum + computeGoalProgress(g).percent, 0) / goalsActive.length)
+    : 0;
+
+  return {
+    totalSessions, doneSessions, plannedCount, scheduledCount,
+    completionPercent, totalMinutesDone,
+    bestWeek, bestWeekDone: bestWeek ? weekTotals[bestWeek].done : 0,
+    topSubjects, streak,
+    goalsActiveCount: goalsActive.length,
+    goalsDoneCount: goalsDone.length,
+    goalsAvgPercent,
+  };
+}
+
+// Conta quantos dias consecutivos (terminando hoje ou no último dia com
+// dados) tiveram ao menos um estudo concluído, com base no campo `status`
+// dos estudos agendados (estudos planejados não têm data fixa, então não
+// participam da sequência diária).
+function computeCompletionStreak() {
+  const doneDates = new Set();
+  Object.keys(state.weeks).forEach(weekKey => {
+    const monday = new Date(weekKey + 'T00:00:00');
+    const weekData = state.weeks[weekKey];
+    Object.keys(weekData).forEach(dayIdx => {
+      (weekData[dayIdx] || []).forEach(session => {
+        if (session.status === 'done' && !isPlanned(session)) {
+          const d = new Date(monday);
+          d.setDate(d.getDate() + Number(dayIdx));
+          doneDates.add(toISO(d));
+        }
+      });
+    });
+  });
+
+  if (!doneDates.has(toISO(new Date())) && !doneDates.size) return 0;
+
+  let streak = 0;
+  let cursor = new Date();
+  // Se hoje ainda não tem nada concluído, começa a contar a partir de ontem
+  // (não zera a sequência só porque o dia ainda não terminou).
+  if (!doneDates.has(toISO(cursor))) cursor.setDate(cursor.getDate() - 1);
+
+  while (doneDates.has(toISO(cursor))) {
+    streak++;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
+}
+
+function openStatsView() {
+  switchView('view-stats', 'nav-stats');
+  renderStats();
+}
+
+function formatHoursLabel(totalMinutes) {
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+  if (!h) return `${m} min`;
+  if (!m) return `${h}h`;
+  return `${h}h ${m}min`;
+}
+
+function renderStats() {
+  const body = document.getElementById('stats-body');
+  const s = computeGlobalStats();
+
+  if (!s.totalSessions) {
+    body.innerHTML = `<p class="goals-empty">Ainda não há estudos suficientes para gerar estatísticas. Adicione estudos na agenda e volte aqui para acompanhar sua evolução.</p>`;
+    return;
+  }
+
+  const metricCard = (label, value, sub) => `
+    <div class="stat-card">
+      <div class="stat-card-value">${value}</div>
+      <div class="stat-card-label">${label}</div>
+      ${sub ? `<div class="stat-card-sub">${sub}</div>` : ''}
+    </div>
+  `;
+
+  const bestWeekLabel = s.bestWeek
+    ? (isCurrentWeek(new Date(s.bestWeek + 'T00:00:00')) ? 'Esta semana' : formatRange(new Date(s.bestWeek + 'T00:00:00')))
+    : '—';
+
+  body.innerHTML = `
+    <div class="stats-grid">
+      ${metricCard('Estudos concluídos', `${s.doneSessions}`, `de ${s.totalSessions} criados`)}
+      ${metricCard('Conclusão geral', `${s.completionPercent}%`, `${s.plannedCount} planejados · ${s.scheduledCount} agendados`)}
+      ${metricCard('Tempo estudado', formatHoursLabel(s.totalMinutesDone), 'estudos agendados concluídos')}
+      ${metricCard('Sequência atual', `${s.streak} dia${s.streak === 1 ? '' : 's'}`, 'com estudos concluídos')}
+      ${metricCard('Semana mais produtiva', bestWeekLabel, s.bestWeek ? `${s.bestWeekDone} concluído${s.bestWeekDone === 1 ? '' : 's'}` : '')}
+      ${metricCard('Metas', `${s.goalsAvgPercent}%`, `${s.goalsActiveCount} ativa${s.goalsActiveCount === 1 ? '' : 's'} · ${s.goalsDoneCount} concluída${s.goalsDoneCount === 1 ? '' : 's'}`)}
+    </div>
+
+    <div class="stats-section">
+      <h3 class="stats-section-title">Conteúdos com mais estudos concluídos</h3>
+      <div class="stats-subject-list">
+        ${s.topSubjects.length ? s.topSubjects.map(t => `
+          <div class="stats-subject-row">
+            <span class="stats-subject-name">${escHtml(t.subject)}</span>
+            <div class="stats-subject-bar"><div class="stats-subject-fill" style="width:${t.percent}%"></div></div>
+            <span class="stats-subject-count">${t.done}/${t.total}</span>
+          </div>
+        `).join('') : '<p class="field-hint">Sem dados suficientes ainda.</p>'}
+      </div>
+    </div>
+  `;
+}
+
 // ─── WEEK NAVIGATION ──────────────────────────────────────────────────────────
 
 function navigateWeek(delta) {
@@ -1052,7 +1900,7 @@ function toggleWeekMenu(forceClose) {
   menu.classList.toggle('open');
 }
 
-function copyPreviousWeek() {
+async function copyPreviousWeek() {
   toggleWeekMenu(true);
 
   const currentMonday = state.currentWeekStart;
@@ -1069,13 +1917,16 @@ function copyPreviousWeek() {
 
   const currentData = state.weeks[currentKey];
   const hasCurrentData = currentData && Object.values(currentData).some(arr => arr.length);
-  if (hasCurrentData) {
-    const proceed = window.confirm('A semana atual já possui estudos. Copiar a semana anterior vai substituir os dados existentes. Continuar?');
-    if (!proceed) return;
-  } else {
-    const proceed = window.confirm('Copiar todos os estudos da semana anterior para a semana atual?');
-    if (!proceed) return;
-  }
+  const proceed = hasCurrentData
+    ? await confirmDialog(
+        'A semana atual já possui estudos. Copiar a semana anterior vai substituir os dados existentes. Continuar?',
+        { title: 'Copiar semana anterior', confirmLabel: 'Substituir e copiar', danger: true }
+      )
+    : await confirmDialog(
+        'Copiar todos os estudos da semana anterior para a semana atual?',
+        { title: 'Copiar semana anterior', confirmLabel: 'Copiar' }
+      );
+  if (!proceed) return;
 
   const newWeek = buildEmptyWeek();
   Object.keys(prevData).forEach(dayIdx => {
@@ -1092,7 +1943,7 @@ function copyPreviousWeek() {
   showToast('Semana anterior copiada.');
 }
 
-function clearCurrentWeek() {
+async function clearCurrentWeek() {
   toggleWeekMenu(true);
 
   const currentKey = getWeekKey();
@@ -1104,7 +1955,10 @@ function clearCurrentWeek() {
     return;
   }
 
-  const proceed = window.confirm('Tem certeza que deseja apagar todos os estudos desta semana? Esta ação não pode ser desfeita.');
+  const proceed = await confirmDialog(
+    'Tem certeza que deseja apagar todos os estudos desta semana? Esta ação não pode ser desfeita.',
+    { title: 'Limpar semana', confirmLabel: 'Apagar tudo', danger: true }
+  );
   if (!proceed) return;
 
   // Remove apenas os estudos da semana atual (agendados, planejados,
@@ -1126,6 +1980,45 @@ function showToast(msg) {
   el.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+// ─── CONFIRMAÇÃO (modal) ──────────────────────────────────────────────────────
+//
+// Substitui window.confirm em todo o sistema por um modal consistente com o
+// restante da interface. Como um modal real não bloqueia a thread (ao
+// contrário de window.confirm), a função retorna uma Promise<boolean> —
+// resolvida com `true` se o usuário confirmar, `false` se cancelar ou fechar
+// de qualquer forma (ESC, clique fora, botão Cancelar).
+let confirmResolver = null;
+
+function confirmDialog(message, opts = {}) {
+  const { title = 'Confirmar ação', confirmLabel = 'Confirmar', danger = false } = opts;
+
+  return new Promise((resolve) => {
+    confirmResolver = resolve;
+
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-message').textContent = message;
+    const okBtn = document.getElementById('confirm-btn-ok');
+    okBtn.textContent = confirmLabel;
+    okBtn.classList.toggle('btn-danger', danger);
+    okBtn.classList.toggle('btn-save', !danger);
+
+    const overlay = document.getElementById('modal-confirm');
+    overlay.classList.add('open');
+    overlay.setAttribute('aria-hidden', 'false');
+    setTimeout(() => okBtn.focus(), 50);
+  });
+}
+
+function resolveConfirm(result) {
+  const overlay = document.getElementById('modal-confirm');
+  overlay.classList.remove('open');
+  overlay.setAttribute('aria-hidden', 'true');
+  if (confirmResolver) {
+    confirmResolver(result);
+    confirmResolver = null;
+  }
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
@@ -1158,13 +2051,13 @@ function init() {
   });
 
   // ── Sidebar ──
-  document.getElementById('nav-agenda').addEventListener('click', () => {
-    setActiveSidebarItem('nav-agenda');
-  });
+  document.getElementById('nav-agenda').addEventListener('click', openAgendaView);
   document.getElementById('nav-new-study').addEventListener('click', () => {
     openSessionModal({ weekKey: getWeekKey(), dayIdx: state.currentWeekStart.getDay() === 0 ? 6 : state.currentWeekStart.getDay() - 1, sessionId: null });
   });
   document.getElementById('nav-routine').addEventListener('click', openRoutineModal);
+  document.getElementById('nav-goals').addEventListener('click', openGoalsView);
+  document.getElementById('nav-stats').addEventListener('click', openStatsView);
 
   // ── Session modal buttons ──
   document.getElementById('modal-close').addEventListener('click', closeSessionModal);
@@ -1184,18 +2077,50 @@ function init() {
   document.getElementById('btn-routine-cancel').addEventListener('click', closeRoutineModal);
   document.getElementById('btn-routine-save').addEventListener('click', saveRoutineModal);
 
-  // ── Overlays: click outside to close ──
+  // ── Goals (view) buttons ──
+  document.getElementById('btn-new-goal').addEventListener('click', () => openGoalEditor(null));
+  document.getElementById('btn-goal-cancel').addEventListener('click', closeGoalEditor);
+  document.getElementById('btn-goal-save').addEventListener('click', saveGoalFromEditor);
+  document.getElementById('btn-goal-delete').addEventListener('click', deleteGoalFromEditor);
+
+  document.getElementById('goal-period').addEventListener('change', (e) => {
+    document.getElementById('goal-deadline-group').style.display = e.target.value === 'custom' ? '' : 'none';
+  });
+
+  document.getElementById('goal-link-options').addEventListener('click', (e) => {
+    const btn = e.target.closest('.goal-link-opt');
+    if (!btn) return;
+    setGoalLinkMode(btn.dataset.mode);
+  });
+
+  document.getElementById('goal-manual-progress').addEventListener('input', (e) => {
+    document.getElementById('goal-manual-progress-value').textContent = `${e.target.value}%`;
+  });
+
+  initColorPicker('goal-color-options', 'goalModal');
+  initAutocomplete('goal-subject', 'goal-subject-suggestions');
+
+  // ── Confirm modal buttons ──
+  document.getElementById('confirm-btn-ok').addEventListener('click', () => resolveConfirm(true));
+  document.getElementById('confirm-btn-cancel').addEventListener('click', () => resolveConfirm(false));
+
+  // ── Overlays: click outside to close (apenas modais reais — Metas e
+  // Estatísticas agora são views de página, sem overlay) ──
   document.getElementById('modal-session').addEventListener('click', e => {
     if (e.target === e.currentTarget) closeSessionModal();
   });
   document.getElementById('modal-routine').addEventListener('click', e => {
     if (e.target === e.currentTarget) closeRoutineModal();
   });
+  document.getElementById('modal-confirm').addEventListener('click', e => {
+    if (e.target === e.currentTarget) resolveConfirm(false);
+  });
 
   // ── ESC key ──
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
-      if (document.getElementById('modal-routine').classList.contains('open')) closeRoutineModal();
+      if (document.getElementById('modal-confirm').classList.contains('open')) resolveConfirm(false);
+      else if (document.getElementById('modal-routine').classList.contains('open')) closeRoutineModal();
       else if (document.getElementById('modal-session').classList.contains('open')) closeSessionModal();
       else toggleWeekMenu(true);
     }

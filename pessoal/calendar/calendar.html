@@ -40,42 +40,169 @@
           <span class="sidebar-item-icon">⚙</span>
           <span class="sidebar-item-label">Rotina de estudos</span>
         </button>
+        <button class="sidebar-item" id="nav-goals">
+          <span class="sidebar-item-icon">🎯</span>
+          <span class="sidebar-item-label">Metas</span>
+        </button>
+        <button class="sidebar-item" id="nav-stats">
+          <span class="sidebar-item-icon">📊</span>
+          <span class="sidebar-item-label">Estatísticas</span>
+        </button>
       </nav>
     </aside>
 
     <!-- MAIN -->
     <div class="app-main">
 
-      <!-- HEADER: minimal week navigation, part of the title -->
-      <header class="week-nav">
-        <button class="week-nav-arrow" id="btn-prev" aria-label="Semana anterior">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
+      <!-- VIEW: Agenda -->
+      <div class="app-view active" id="view-agenda">
 
-        <button class="week-nav-title" id="week-nav-title">
-          <h1 class="week-title" id="week-title">Semana atual</h1>
-          <span class="week-range" id="week-range"></span>
-        </button>
+        <!-- HEADER: minimal week navigation, part of the title -->
+        <header class="week-nav">
+          <button class="week-nav-arrow" id="btn-prev" aria-label="Semana anterior">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
 
-        <button class="week-nav-arrow" id="btn-next" aria-label="Próxima semana">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
+          <button class="week-nav-title" id="week-nav-title">
+            <h1 class="week-title" id="week-title">Semana atual</h1>
+            <span class="week-range" id="week-range"></span>
+          </button>
 
-        <div class="week-menu-wrap">
-          <button class="week-menu-btn" id="week-menu-btn" aria-label="Ações da semana">⋮</button>
-          <div class="week-menu" id="week-menu">
-            <button class="week-menu-item" id="action-copy-prev-week">Copiar semana anterior</button>
-            <button class="week-menu-item week-menu-item-danger" id="action-clear-week">Limpar semana</button>
+          <button class="week-nav-arrow" id="btn-next" aria-label="Próxima semana">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+
+          <div class="week-menu-wrap">
+            <button class="week-menu-btn" id="week-menu-btn" aria-label="Ações da semana">⋮</button>
+            <div class="week-menu" id="week-menu">
+              <button class="week-menu-item" id="action-copy-prev-week">Copiar semana anterior</button>
+              <button class="week-menu-item week-menu-item-danger" id="action-clear-week">Limpar semana</button>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <!-- CALENDAR CONTAINER (premium, centered, max-width) -->
-      <main class="calendar-main">
-        <div class="calendar-grid" id="calendar-grid">
-          <!-- Days rendered by JS -->
-        </div>
-      </main>
+        <!-- CALENDAR CONTAINER (premium, centered, max-width) -->
+        <main class="calendar-main">
+          <div class="calendar-grid" id="calendar-grid">
+            <!-- Days rendered by JS -->
+          </div>
+        </main>
+
+      </div>
+
+      <!-- VIEW: Metas -->
+      <div class="app-view" id="view-goals">
+        <header class="page-nav">
+          <div class="page-nav-title-wrap">
+            <h1 class="page-title">Metas</h1>
+            <span class="page-subtitle">Objetivos além dos estudos individuais — vincule a estudos ou acompanhe manualmente</span>
+          </div>
+        </header>
+
+        <main class="page-main">
+          <div class="page-content goals-page-content">
+            <div class="goals-list" id="goals-list"></div>
+
+            <button class="btn-add-goal" id="btn-new-goal">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Nova meta
+            </button>
+
+            <!-- Goal editor (inline, shown when creating/editing) -->
+            <div class="goal-editor" id="goal-editor" style="display:none">
+              <div class="form-group">
+                <label class="form-label" for="goal-title">Título</label>
+                <input class="form-input" type="text" id="goal-title" placeholder="Ex: Finalizar módulo de Java" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="goal-description">Descrição <span class="optional">(opcional)</span></label>
+                <textarea class="form-input form-textarea" id="goal-description" rows="2" placeholder="Detalhes da meta…"></textarea>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="goal-period">Período</label>
+                  <select class="form-input form-select" id="goal-period">
+                    <option value="week">Esta semana</option>
+                    <option value="custom">Período personalizado</option>
+                    <option value="open">Sem prazo definido</option>
+                  </select>
+                </div>
+                <div class="form-group" id="goal-deadline-group" style="display:none">
+                  <label class="form-label" for="goal-deadline">Concluir até</label>
+                  <input class="form-input" type="date" id="goal-deadline" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Acompanhamento de progresso</label>
+                <div class="goal-link-options" id="goal-link-options">
+                  <button type="button" class="goal-link-opt active" data-mode="subject">Automático por conteúdo</button>
+                  <button type="button" class="goal-link-opt" data-mode="manual">Estudos específicos</button>
+                  <button type="button" class="goal-link-opt" data-mode="none">Progresso manual</button>
+                </div>
+              </div>
+
+              <div class="form-group" id="goal-subject-group">
+                <label class="form-label" for="goal-subject">Conteúdo vinculado</label>
+                <div class="subject-select-wrap">
+                  <input class="form-input" type="text" id="goal-subject" placeholder="Ex: Java, SQL, Git…" autocomplete="off" />
+                  <div class="subject-suggestions" id="goal-subject-suggestions"></div>
+                </div>
+                <p class="field-hint">O progresso conta estudos concluídos com esse conteúdo (planejados e agendados).</p>
+              </div>
+
+              <div class="form-group" id="goal-sessions-group" style="display:none">
+                <label class="form-label">Estudos vinculados</label>
+                <div class="goal-session-picker" id="goal-session-picker"></div>
+                <p class="field-hint">Selecione os estudos (planejados ou agendados) que compõem esta meta.</p>
+              </div>
+
+              <div class="form-group" id="goal-manual-group" style="display:none">
+                <label class="form-label" for="goal-manual-progress">Progresso manual: <span id="goal-manual-progress-value">0%</span></label>
+                <input type="range" id="goal-manual-progress" min="0" max="100" step="5" value="0" class="goal-progress-slider" />
+              </div>
+
+              <div class="color-picker-group">
+                <label class="form-label">Cor</label>
+                <div class="color-options" id="goal-color-options">
+                  <button class="color-dot active" data-color="blue" style="--c:#3B6FD4" aria-label="Azul"></button>
+                  <button class="color-dot" data-color="purple" style="--c:#7C3AED" aria-label="Roxo"></button>
+                  <button class="color-dot" data-color="green" style="--c:#1A7A4A" aria-label="Verde"></button>
+                  <button class="color-dot" data-color="amber" style="--c:#92620A" aria-label="Âmbar"></button>
+                  <button class="color-dot" data-color="rose" style="--c:#9B2034" aria-label="Rosa"></button>
+                  <button class="color-dot" data-color="teal" style="--c:#0F766E" aria-label="Teal"></button>
+                </div>
+              </div>
+
+              <div class="goal-editor-actions">
+                <button class="btn-danger" id="btn-goal-delete" style="display:none">Excluir meta</button>
+                <div class="modal-footer-right">
+                  <button class="btn-cancel" id="btn-goal-cancel">Cancelar</button>
+                  <button class="btn-save" id="btn-goal-save">Salvar meta</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+
+      <!-- VIEW: Estatísticas -->
+      <div class="app-view" id="view-stats">
+        <header class="page-nav">
+          <div class="page-nav-title-wrap">
+            <h1 class="page-title">Estatísticas</h1>
+            <span class="page-subtitle">Sua evolução com base nos estudos reais do Nexus Study</span>
+          </div>
+        </header>
+
+        <main class="page-main">
+          <div class="page-content" id="stats-body">
+            <!-- Rendered by JS -->
+          </div>
+        </main>
+      </div>
 
     </div>
   </div>
@@ -206,6 +333,22 @@
         <div class="modal-footer-right">
           <button class="btn-cancel" id="btn-routine-cancel">Cancelar</button>
           <button class="btn-save" id="btn-routine-save">Salvar rotina</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Confirmação (substitui window.confirm em todo o sistema) -->
+  <div class="modal-overlay" id="modal-confirm" aria-hidden="true">
+    <div class="modal modal-confirm" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-message">
+      <div class="modal-body confirm-body">
+        <h2 class="confirm-title" id="confirm-title">Confirmar ação</h2>
+        <p class="confirm-message" id="confirm-message"></p>
+      </div>
+      <div class="modal-footer">
+        <div class="modal-footer-right">
+          <button class="btn-cancel" id="confirm-btn-cancel">Cancelar</button>
+          <button class="btn-save" id="confirm-btn-ok">Confirmar</button>
         </div>
       </div>
     </div>

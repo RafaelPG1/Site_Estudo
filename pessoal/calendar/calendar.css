@@ -215,6 +215,62 @@ textarea, input {
   min-width: 0;
 }
 
+/* ---------- APP VIEWS ----------
+   Cada seção (Agenda, Metas, Estatísticas) ocupa o mesmo espaço dentro de
+   .app-main; apenas a view com .active fica visível. A troca é só de
+   display (sem animação de entrada/saída do conteúdo), mantendo a sidebar
+   sempre fixa — como trocar de aba/rota dentro do mesmo app. */
+.app-view {
+  display: none;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.app-view.active {
+  display: flex;
+}
+
+/* ---------- PAGE HEADER (Metas / Estatísticas) ----------
+   Equivalente ao week-nav da Agenda, mas para páginas de conteúdo simples:
+   título + subtítulo, sem navegação de semana. */
+.page-nav {
+  padding: 30px var(--content-pad) 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.page-nav-title-wrap {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.page-title {
+  font-family: var(--font-ui);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.3px;
+}
+
+.page-subtitle {
+  display: block;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.page-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px var(--content-pad) 48px;
+}
+
+.page-content {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
 /* ---------- WEEK NAV (compact, title-like, no toolbar look) ---------- */
 .week-nav {
   display: flex;
@@ -465,11 +521,16 @@ textarea, input {
 
 /* ---------- LINHA "PLANEJADOS" ----------
    Linha própria do grid, fixada logo abaixo do cabeçalho (sticky, com
-   `top` igual à altura do cabeçalho) e acima da régua/timeline. Só é
-   inserida no DOM quando existe ao menos um estudo planejado na semana;
-   cada célula só ganha conteúdo (e altura) se aquele dia tiver itens —
-   a linha cresce automaticamente conforme a quantidade. Não ocupa
-   espaço dentro da grade de horários, pois é uma linha separada. */
+   `top` igual à altura do cabeçalho) e acima da régua/timeline. Está
+   sempre presente no DOM (mesmo sem nenhum planejado) para que toda
+   coluna funcione como zona de drop ao devolver um estudo agendado —
+   mas fica "colapsada" (altura e bordas quase nulas, sem ocupar espaço
+   visual perceptível) quando vazia. Ao soltar algo sobre ela ou ao
+   iniciar o arraste de um estudo agendado, ela se expande temporariamente
+   para indicar claramente a zona de destino. Cada célula só ganha altura
+   de conteúdo de fato se aquele dia tiver itens — a linha cresce
+   automaticamente conforme a quantidade. Não ocupa espaço dentro da
+   grade de horários, pois é uma linha separada. */
 .planned-row-corner,
 .planned-row-cell {
   position: sticky;
@@ -478,6 +539,7 @@ textarea, input {
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border);
   border-right: 1px solid var(--border);
+  transition: max-height 0.18s var(--ease-out), opacity 0.18s var(--ease-out);
 }
 
 .planned-row-cell {
@@ -491,6 +553,32 @@ textarea, input {
 
 .planned-row-cell.is-inactive {
   opacity: 0.45;
+}
+
+/* Colapsada: nenhum planejado na semana. Mantém-se no DOM com altura
+   quase nula (em vez de display:none) para continuar funcionando como
+   zona de drop; expande-se temporariamente enquanto há um arraste em
+   curso, dando um destino visível para "devolver" um estudo agendado. */
+.planned-row-corner.is-collapsed,
+.planned-row-cell.is-collapsed {
+  max-height: 1px;
+  border-bottom-color: transparent;
+  overflow: hidden;
+}
+
+body.is-dragging-scheduled .planned-row-corner.is-collapsed,
+body.is-dragging-scheduled .planned-row-cell.is-collapsed {
+  max-height: 56px;
+  border-bottom-color: var(--border);
+  overflow: visible;
+}
+
+.planned-row-cell.is-collapsed .planned-section-label {
+  opacity: 0;
+}
+
+body.is-dragging-scheduled .planned-row-cell.is-collapsed .planned-section-label {
+  opacity: 1;
 }
 
 .planned-section {
@@ -1227,6 +1315,458 @@ input[type="time"].form-input {
   border-color: rgba(220,38,38,0.45);
 }
 
+/* ===========================================================
+   DRAG AND DROP — Planejado ↔ Agendado, reordenação
+   =========================================================== */
+
+/* Chip de planejado sendo arrastado */
+.planned-chip.is-dragging {
+  opacity: 0.4;
+}
+
+.planned-chip.is-drop-hover {
+  outline: 2px solid var(--card-accent, var(--accent-blue));
+  outline-offset: 1px;
+}
+
+/* Lista de planejados vazia ainda funciona como zona de destino — fica com
+   uma altura mínima discreta para poder receber um drop, sem ocupar
+   espaço visual perceptível quando não há nada sendo arrastado. */
+.planned-chips.is-empty {
+  min-height: 4px;
+}
+
+/* Coluna de horário (timeline) e linha de planejados como destino de drop —
+   reaproveita o mesmo realce já usado para "hoje", com um tom de destaque. */
+.planned-row-cell.is-drop-target {
+  background: linear-gradient(180deg, rgba(124,158,255,0.14) 0%, rgba(124,158,255,0.05) 100%), var(--bg-surface);
+}
+
+.planned-row-cell.is-drop-target .planned-section-label {
+  color: var(--text-accent);
+}
+
+/* Card agendado sendo arrastado (via handle dedicado) */
+.session-card.is-dragging {
+  opacity: 0.5;
+}
+
+/* Handle dedicado para arrastar um agendado até "Planejados" — discreto,
+   aparece apenas no hover do card, ao lado do botão de concluir. */
+.card-move-handle {
+  position: absolute;
+  top: 5px;
+  right: 23px;
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  line-height: 1;
+  color: var(--text-secondary);
+  opacity: 0;
+  cursor: grab;
+  z-index: 4;
+  transition: opacity 0.15s;
+}
+
+.session-card:hover .card-move-handle {
+  opacity: 0.55;
+}
+
+.card-move-handle:hover {
+  opacity: 1 !important;
+  color: var(--text-primary);
+}
+
+.card-move-handle:active {
+  cursor: grabbing;
+}
+
+/* ===========================================================
+   SIDEBAR — itens extras (Metas / Estatísticas) usam o padrão
+   já existente de .sidebar-item; nenhum estilo novo necessário.
+   =========================================================== */
+
+/* ===========================================================
+   METAS
+   =========================================================== */
+
+.goals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.goals-empty {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  padding: 12px 2px 4px;
+}
+
+.btn-add-goal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 11px;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border-active);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+
+.btn-add-goal:hover {
+  border-color: rgba(59,111,212,0.5);
+  color: var(--text-accent);
+  background: rgba(59,111,212,0.06);
+}
+
+.goal-card {
+  position: relative;
+  padding: 14px 16px 14px 18px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.goal-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 10px; bottom: 10px;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--card-accent, var(--accent-blue));
+}
+
+.goal-card[data-color="blue"]   { --card-accent: var(--card-blue-b); }
+.goal-card[data-color="purple"] { --card-accent: var(--card-purple-b); }
+.goal-card[data-color="green"]  { --card-accent: var(--card-green-b); }
+.goal-card[data-color="amber"]  { --card-accent: var(--card-amber-b); }
+.goal-card[data-color="rose"]   { --card-accent: var(--card-rose-b); }
+.goal-card[data-color="teal"]   { --card-accent: var(--card-teal-b); }
+
+.goal-card:hover {
+  border-color: var(--border-active);
+  transform: translateY(-1px);
+}
+
+.goal-card.is-done {
+  opacity: 0.6;
+}
+
+.goal-card.is-done .goal-card-title {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.goal-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.goal-card-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.goal-card-title {
+  font-family: var(--font-ui);
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.goal-card-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.goal-card-desc {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+.goal-card-done-btn {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-active);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #fff;
+  transition: all 0.15s;
+}
+
+.goal-card-done-btn:hover {
+  border-color: var(--card-accent, var(--accent-blue));
+  background: rgba(59,111,212,0.1);
+}
+
+.goal-card.is-done .goal-card-done-btn {
+  background: var(--card-accent, var(--accent-blue));
+  border-color: var(--card-accent, var(--accent-blue));
+}
+
+.goal-progress-bar {
+  margin-top: 12px;
+  height: 6px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.06);
+  overflow: hidden;
+}
+
+.goal-progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--card-accent, var(--accent-blue));
+  transition: width 0.3s var(--ease-out);
+}
+
+.goal-progress-label {
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* ---------- Editor de meta ---------- */
+.goal-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
+
+.goal-link-options {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.goal-link-opt {
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+
+.goal-link-opt:hover {
+  border-color: var(--border-active);
+  color: var(--text-primary);
+}
+
+.goal-link-opt.active {
+  background: rgba(59,111,212,0.14);
+  border-color: rgba(59,111,212,0.45);
+  color: var(--text-accent);
+}
+
+.goal-progress-slider {
+  width: 100%;
+  accent-color: var(--accent-blue);
+}
+
+.goal-session-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px;
+}
+
+.goal-session-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.goal-session-row:hover {
+  background: var(--bg-card-hover);
+}
+
+.goal-session-row input {
+  flex-shrink: 0;
+  accent-color: var(--accent-blue);
+}
+
+.goal-session-row-subject {
+  font-weight: 600;
+  color: var(--text-primary);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.goal-session-row-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.goal-editor-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 6px;
+}
+
+/* ===========================================================
+   ESTATÍSTICAS
+   =========================================================== */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.stat-card {
+  padding: 16px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+}
+
+.stat-card-value {
+  font-family: var(--font-ui);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.3px;
+}
+
+.stat-card-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.stat-card-sub {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.stats-section {
+  margin-top: 22px;
+}
+
+.stats-section-title {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.stats-subject-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.stats-subject-row {
+  display: grid;
+  grid-template-columns: 110px 1fr 50px;
+  align-items: center;
+  gap: 10px;
+}
+
+.stats-subject-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stats-subject-bar {
+  height: 6px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.06);
+  overflow: hidden;
+}
+
+.stats-subject-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--accent-blue);
+}
+
+.stats-subject-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+/* ===========================================================
+   MODAL DE CONFIRMAÇÃO
+   Substitui window.confirm por um modal consistente com o resto do
+   sistema — mais estreito que os modais de formulário, sem botão de
+   fechar no canto (a decisão é sempre explícita: Cancelar ou Confirmar).
+   =========================================================== */
+
+.modal-confirm {
+  width: 380px;
+}
+
+.confirm-body {
+  padding: 26px 24px 22px;
+}
+
+.confirm-title {
+  font-family: var(--font-ui);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.confirm-message {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
 /* ---------- TOAST ---------- */
 .toast {
   position: fixed;
@@ -1296,6 +1836,12 @@ input[type="time"].form-input {
   .week-menu-wrap { right: 12px; }
   .form-row { grid-template-columns: 1fr; }
   .calendar-grid { --day-col-h: 560px; }
+
+  .modal-wide { width: calc(100vw - 24px); max-height: 86vh; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .stats-subject-row { grid-template-columns: 80px 1fr 42px; gap: 6px; }
+  .goal-link-options { gap: 6px; }
+  .goal-link-opt { font-size: 11px; padding: 7px 10px; }
 }
 
 /* ---------- ANIMATIONS ---------- */
