@@ -1,51 +1,53 @@
 /* =============================================
-   NEXUS STUDY — disciplinas_global.css  v5.0
+   NEXUS STUDY — disciplinas_global.css  v8.0
 
-   PRINCÍPIOS DESTA VERSÃO:
-   ─────────────────────────────────────────────
-   1. Cards são SEMPRE visíveis. display:flex é
-      o estado permanente — nenhum CSS o cancela.
+   Visual: Arena Mental — idêntico ao quiz.css
+   Design: Space Grotesk + Inter · Violeta elétrico + Âmbar
 
-   2. Animações são ENFEITES, nunca gates.
-      Nenhuma animação usa fill-mode:both nem
-      fill-mode:backwards — essas palavras-chave
-      mantêm o estado "from" (opacity:0) antes
-      de a animação disparar, deixando os cards
-      invisíveis se a animação travar.
-
-   3. @media (prefers-reduced-motion) zera todas
-      as animações de forma limpa.
-
-   4. display:none, visibility:hidden, opacity:0
-      e height:0 NÃO aparecem como estado padrão
-      de nenhum card.
+   PRINCÍPIOS MANTIDOS:
+   1. Cards são SEMPRE visíveis. display:flex permanente.
+   2. Animações são enfeites, nunca gates.
+   3. @media (prefers-reduced-motion) zera tudo limpo.
+   4. display:none / opacity:0 NÃO como estado padrão de card.
    ============================================= */
 
 /* ══════════════════════════════════════════════
-   TOKENS
+   TOKENS — idênticos ao quiz.css
    ══════════════════════════════════════════════ */
 :root {
-  --bg:          #070b14;
-  --surface:     #0e1420;
-  --border:      rgba(255, 255, 255, 0.07);
-  --border-glow: rgba(255, 255, 255, 0.14);
+  --ink:          #060a17;
+  --ink-2:        #0c1228;
+  --surface:      rgba(255,255,255,0.035);
+  --surface-hi:   rgba(255,255,255,0.07);
+  --border:       rgba(255,255,255,0.08);
+  --border-hi:    rgba(255,255,255,0.18);
 
-  --text-1: #f0ede6;
-  --text-2: #a8a49c;
-  --text-3: #6e6a62;
+  --violet:       #6c63ff;
+  --violet-dim:   rgba(108,99,255,0.15);
+  --violet-glow:  rgba(108,99,255,0.35);
+  --amber:        #f7c948;
+  --amber-dim:    rgba(247,201,72,0.12);
+  --cyan:         #3dd9c2;
+  --rose:         #ff6b8a;
+  --sage:         #5de8a0;
 
-  --font-display: 'Cormorant Garamond', Georgia, serif;
-  --font-body:    'DM Sans', system-ui, sans-serif;
+  --text-1: #e8e6f0;
+  --text-2: #8e8ba8;
+  --text-3: #5a5775;
+
+  --f-display: 'Space Grotesk', system-ui, sans-serif;
+  --f-body:    'Inter', system-ui, sans-serif;
+
+  --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
   --max-w: 860px;
 
-  --cor-logo:      #22c55e;
-  --cor-logo-dark: #16a34a;
-
-  --cor-tema:       #7aa8e8;
-  --cor-tema-rgb:   122, 168, 232;
-  --cor-tema-2:     #4dd9b4;
-  --cor-tema-2-rgb: 77, 217, 180;
+  /* Aliases de compatibilidade — cores de tema por disciplina */
+  --cor-tema:       #6c63ff;
+  --cor-tema-rgb:   108, 99, 255;
+  --cor-tema-2:     #3dd9c2;
+  --cor-tema-2-rgb: 61, 217, 194;
 }
 
 /* ══════════════════════════════════════════════
@@ -57,23 +59,65 @@
   padding: 0;
 }
 
-html { scroll-behavior: smooth; }
-a    { text-decoration: none; color: inherit; }
+html { scroll-behavior: smooth; font-size: 16px; }
+
+body {
+  font-family: var(--f-body);
+  background: var(--ink);
+  color: var(--text-1);
+  min-height: 100dvh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+a { text-decoration: none; color: inherit; }
 
 /* ══════════════════════════════════════════════
-   HEADER
+   FUNDO — camadas atmosféricas (idêntico ao quiz)
+   ══════════════════════════════════════════════ */
+.atmo {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.atmo--1 {
+  width: 55vw;
+  height: 55vw;
+  top: -20vw;
+  left: -15vw;
+  background: radial-gradient(circle, rgba(108,99,255,0.18) 0%, transparent 70%);
+}
+
+.atmo--2 {
+  width: 45vw;
+  height: 45vw;
+  bottom: -15vw;
+  right: -10vw;
+  background: radial-gradient(circle, rgba(61,217,194,0.12) 0%, transparent 70%);
+}
+
+/* ══════════════════════════════════════════════
+   HEADER — idêntico ao quiz.css (.site-header)
    ══════════════════════════════════════════════ */
 .header {
   position: sticky;
   top: 0;
-  z-index: 10;
-  padding: 1.1rem 2rem;
+  z-index: 100;
+  padding: 1.25rem 2rem;
+  display: flex;
+  align-items: center;
+  background: rgba(6,10,23,0.8);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid var(--border);
-  background: var(--bg);
 }
 
 .header__inner {
-  max-width: var(--max-w);
+  width: 100%;
+  max-width: 1100px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -81,39 +125,44 @@ a    { text-decoration: none; color: inherit; }
   gap: 1rem;
 }
 
-#header-logo-wrap {
-  display: flex;
-  justify-content: center;
-}
-
-/* ── BOTÃO VOLTAR ── */
+/* ── BOTÃO VOLTAR — idêntico ao .nav-back do quiz ── */
 .back-btn {
   justify-self: start;
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
+  font-family: var(--f-display);
   font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--text-2);
-  padding: 0.38rem 0.85rem;
-  border-radius: 10px;
-  border: 1px solid var(--border-glow);
-  background: rgba(255, 255, 255, 0.03);
-  transition: color 0.2s, background 0.2s, border-color 0.2s;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-1);
+  padding: 0.45rem 1.1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-hi);
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(6px);
   white-space: nowrap;
+  transition: color 0.2s, background 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 
 .back-btn:hover {
-  color: var(--cor-tema);
-  background: rgba(var(--cor-tema-rgb), 0.07);
-  border-color: rgba(var(--cor-tema-rgb), 0.3);
+  background: rgba(108,99,255,0.1);
+  border-color: var(--violet);
+  box-shadow: 0 0 14px var(--violet-glow);
 }
 
 /* ── LOGO ── */
 .header__logo {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  justify-content: center;
+}
+
+#header-logo-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 #header-logo-wrap .nexus-logo__link {
@@ -125,20 +174,13 @@ a    { text-decoration: none; color: inherit; }
 
 #header-logo-wrap .nexus-logo__img {
   border-radius: 22%;
-  box-shadow:
-    0 2px 8px  rgba(0, 0, 0, 0.45),
-    0 0 12px   rgba(77, 217, 180, 0.35),
-    0 0 28px   rgba(77, 217, 180, 0.15);
-  transition: filter 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+  border: 1px solid rgba(255,255,255,0.12);
+  transition: filter 0.25s ease, transform 0.25s ease;
 }
 
 #header-logo-wrap .nexus-logo__link:hover .nexus-logo__img {
-  filter: drop-shadow(0 0 6px rgba(77, 217, 180, 0.7));
+  filter: drop-shadow(0 0 6px rgba(108,99,255,0.6));
   transform: scale(1.06);
-  box-shadow:
-    0 2px 12px rgba(0, 0, 0, 0.50),
-    0 0  18px  rgba(77, 217, 180, 0.55),
-    0 0  40px  rgba(77, 217, 180, 0.25);
 }
 
 #header-logo-wrap .nexus-logo__texto--stacked {
@@ -149,7 +191,7 @@ a    { text-decoration: none; color: inherit; }
 }
 
 #header-logo-wrap .nexus-logo__titulo {
-  font-family: var(--font-body);
+  font-family: var(--f-display);
   font-size: 0.92rem;
   font-weight: 500;
   color: var(--text-1);
@@ -158,28 +200,30 @@ a    { text-decoration: none; color: inherit; }
 }
 
 #header-logo-wrap .nexus-logo__sub {
-  font-family: var(--font-body);
+  font-family: var(--f-display);
   font-size: 0.56rem;
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #4dd9b4;
+  color: var(--violet);
   line-height: 1;
 }
 
 /* ── BADGE DE SEMESTRE ── */
 .header__sem-badge {
-  font-family: var(--font-body);
-  font-size: 0.78rem;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  color: var(--text-2);
-  background-color: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border-glow);
-  border-radius: 8px;
-  padding: 0.4rem 0.75rem;
   justify-self: end;
+  font-family: var(--f-display);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  background: rgba(61,217,194,0.08);
+  border: 1px solid rgba(61,217,194,0.28);
+  border-radius: 7px;
+  padding: 0.32rem 0.9rem;
   white-space: nowrap;
+  box-shadow: 0 0 12px rgba(61,217,194,0.1);
 }
 
 /* ── BREADCRUMB ── */
@@ -195,7 +239,7 @@ a    { text-decoration: none; color: inherit; }
 .breadcrumb svg { opacity: 0.4; }
 
 .breadcrumb__item--active {
-  color: var(--cor-tema);
+  color: var(--violet);
   font-weight: 500;
 }
 
@@ -214,50 +258,48 @@ a    { text-decoration: none; color: inherit; }
 .page-header {
   margin-bottom: 2.5rem;
   text-align: center;
-  /* Animação SEGURA: forwards apenas — não mantém estado "from" */
-  animation: ns-fade-up 0.55s ease forwards;
+  animation: ns-fade-up 0.55s var(--ease-out) forwards;
 }
 
 .page-header__eyebrow {
   display: inline-flex;
-  margin-left: auto;
-  margin-right: auto;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.72rem;
+  gap: 0.55rem;
+  font-family: var(--f-display);
+  font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--cor-tema);
-  background: rgba(var(--cor-tema-rgb), 0.08);
-  border: 1px solid rgba(var(--cor-tema-rgb), 0.2);
-  padding: 0.35rem 0.9rem;
+  color: var(--violet);
+  background: rgba(108,99,255,0.1);
+  border: 1px solid rgba(108,99,255,0.25);
+  padding: 0.35rem 1rem;
   border-radius: 99px;
   margin-bottom: 1.25rem;
 }
 
 .page-header__title {
-  font-family: var(--font-display);
+  font-family: var(--f-display);
   font-size: clamp(2.4rem, 6vw, 3.8rem);
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.05;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   color: var(--text-1);
   margin-bottom: 0.6rem;
 }
 
 .page-header__title em {
   font-style: italic;
-  color: var(--text-1);
-  background: none;
-  -webkit-background-clip: unset;
-  background-clip: unset;
+  color: transparent;
+  background: linear-gradient(110deg, var(--violet) 20%, var(--cyan) 80%);
+  -webkit-background-clip: text;
+  background-clip: text;
 }
 
 .page-header__desc {
   font-size: 0.9rem;
   color: var(--text-2);
-  font-weight: 300;
+  font-weight: 400;
   max-width: 440px;
   line-height: 1.65;
   margin: 0 auto;
@@ -274,34 +316,11 @@ a    { text-decoration: none; color: inherit; }
 
 /* ══════════════════════════════════════════════
    CARD BASE
-   ──────────────────────────────────────────────
-   REGRA ABSOLUTA:
-     display:flex é o estado fixo e permanente.
-     Nenhuma outra propriedade deste arquivo
-     cancela ou atrasa essa visibilidade.
-
-   ANIMAÇÃO:
-     Usamos animation-fill-mode:forwards (não
-     "both" e não "backwards").
-     "forwards" só mantém o estado FINAL após a
-     animação terminar — nunca esconde o elemento
-     antes de começar.
-     O elemento já nasce com opacity:1 implícita
-     (sem override pelo fill-mode).
-
-   SOLUÇÃO PARA O EFEITO VISUAL:
-     Em vez de animar opacity de 0→1 com fill-mode
-     que esconde o card, usamos uma animação que
-     começa em opacity:0.01 (praticamente invisível
-     mas nunca "sumiço permanente") e vai para 1.
-     Mesmo se a animação travar, o card não some —
-     fica com opacity:0.01 no pior caso.
    ══════════════════════════════════════════════ */
 .disc-card {
-  /* Visibilidade garantida por propriedades diretas */
   display: flex;
-  opacity: 1;          /* fallback explícito — sempre visível */
-  visibility: visible; /* garantia extra */
+  opacity: 1;
+  visibility: visible;
 
   position: relative;
   flex-direction: column;
@@ -316,22 +335,13 @@ a    { text-decoration: none; color: inherit; }
   text-decoration: none;
 
   transition:
-    transform 0.3s cubic-bezier(.25, .8, .25, 1),
-    box-shadow 0.3s ease,
+    transform    0.3s cubic-bezier(.25, .8, .25, 1),
+    box-shadow   0.3s ease,
     border-color 0.3s ease;
 
-  /* Animação decorativa — forwards nunca esconde antes de começar */
-  animation: ns-card-enter 0.45s ease forwards;
+  animation: ns-card-enter 0.45s var(--ease-out) forwards;
 }
 
-/*
-   Delays escalonados por nth-child.
-   Importante: o card JÁ ESTÁ com opacity:1 declarado acima.
-   A animação é sobreposta via @keyframes que começa em
-   opacity:0.01 — se travar/cancelar, o valor declarado (1)
-   prevalece porque fill-mode:forwards só age APÓS o fim.
-   Antes de começar: opacity:1 (o valor da propriedade direta).
-*/
 .disciplines .disc-card:nth-child(1) { animation-delay: 0.04s; }
 .disciplines .disc-card:nth-child(2) { animation-delay: 0.12s; }
 .disciplines .disc-card:nth-child(3) { animation-delay: 0.20s; }
@@ -342,14 +352,9 @@ a    { text-decoration: none; color: inherit; }
 }
 
 /* ── Subcomponentes do card ── */
-.disc-card__glow {
-  /* Elemento decorativo — intencionalmente oculto por padrão */
-  display: none;
-}
+.disc-card__glow { display: none; }
 
-.disc-card__icon-col {
-  flex-shrink: 0;
-}
+.disc-card__icon-col { flex-shrink: 0; }
 
 .disc-card__icon-wrap {
   width: 52px;
@@ -360,6 +365,7 @@ a    { text-decoration: none; color: inherit; }
   justify-content: center;
   font-size: 1.5rem;
   flex-shrink: 0;
+  background: var(--surface-hi);
   transition: transform 0.3s ease;
 }
 
@@ -375,17 +381,18 @@ a    { text-decoration: none; color: inherit; }
 }
 
 .disc-card__title {
-  font-family: var(--font-display);
-  font-size: 1.55rem;
+  font-family: var(--f-display);
+  font-size: 1.45rem;
   font-weight: 600;
   letter-spacing: -0.01em;
   line-height: 1.2;
   margin-bottom: 0.35rem;
+  color: var(--text-1);
 }
 
 .disc-card__desc {
   font-size: 0.84rem;
-  font-weight: 300;
+  font-weight: 400;
   color: var(--text-2);
   line-height: 1.6;
 }
@@ -404,17 +411,17 @@ a    { text-decoration: none; color: inherit; }
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 1px solid var(--border-glow);
+  border: 1px solid var(--border-hi);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-3);
   transition:
-    transform 0.3s ease,
-    border-color 0.3s ease,
-    color 0.3s ease,
-    background 0.3s ease,
-    box-shadow 0.3s ease;
+    transform      0.3s ease,
+    border-color   0.3s ease,
+    color          0.3s ease,
+    background     0.3s ease,
+    box-shadow     0.3s ease;
 }
 
 .disc-card:hover .disc-card__arrow {
@@ -438,172 +445,148 @@ a    { text-decoration: none; color: inherit; }
 }
 
 /* ══════════════════════════════════════════════
-   TEMAS DOS CARDS
+   TEMAS DOS CARDS — paleta do quiz
    ══════════════════════════════════════════════ */
 
-/* ── AVA (azul) ── */
+/* ── AVA (violeta) ── */
 .disc-card--ava {
-  background: linear-gradient(145deg, #0e1420, rgba(122, 168, 232, 0.07));
-  border-color: rgba(122, 168, 232, 0.18);
-  box-shadow: 0 0 30px rgba(122, 168, 232, 0.05);
+  background: linear-gradient(145deg, var(--ink-2), rgba(108,99,255,0.08));
+  border-color: rgba(108,99,255,0.2);
+  box-shadow: 0 0 30px rgba(108,99,255,0.06);
 }
 .disc-card--ava:hover {
-  border-color: rgba(122, 168, 232, 0.4);
-  box-shadow: 0 12px 40px rgba(122, 168, 232, 0.15);
+  border-color: rgba(108,99,255,0.45);
+  box-shadow: 0 12px 40px rgba(108,99,255,0.18);
 }
-.disc-card--ava .disc-card__icon-wrap    { background: rgba(122, 168, 232, 0.12); }
-.disc-card--ava .disc-card__title        { color: var(--text-1); }
+.disc-card--ava .disc-card__icon-wrap    { background: rgba(108,99,255,0.12); }
 .disc-card--ava:hover .disc-card__arrow  {
-  border-color: #7aa8e8;
-  color: #7aa8e8;
-  background: rgba(122, 168, 232, 0.1);
-  box-shadow: 0 0 14px rgba(122, 168, 232, 0.25);
+  border-color: var(--violet);
+  color: var(--violet);
+  background: var(--violet-dim);
+  box-shadow: 0 0 12px var(--violet-glow);
 }
-.disc-card--ava:hover .disc-card__cta-label { color: #7aa8e8; }
+.disc-card--ava:hover .disc-card__cta-label { color: var(--violet); }
 
-/* ── QUIZ / QUESTÕES (teal) ── */
+/* ── QUESTÕES (cyan) ── */
 .disc-card--quiz {
-  background: linear-gradient(145deg, #0e1420, rgba(77, 217, 180, 0.07));
-  border-color: rgba(77, 217, 180, 0.18);
-  box-shadow: 0 0 30px rgba(77, 217, 180, 0.05);
+  background: linear-gradient(145deg, var(--ink-2), rgba(61,217,194,0.07));
+  border-color: rgba(61,217,194,0.18);
+  box-shadow: 0 0 30px rgba(61,217,194,0.05);
 }
 .disc-card--quiz:hover {
-  border-color: rgba(77, 217, 180, 0.4);
-  box-shadow: 0 12px 40px rgba(77, 217, 180, 0.15);
+  border-color: rgba(61,217,194,0.4);
+  box-shadow: 0 12px 40px rgba(61,217,194,0.15);
 }
-.disc-card--quiz .disc-card__icon-wrap    { background: rgba(77, 217, 180, 0.12); }
-.disc-card--quiz .disc-card__title        { color: var(--text-1); }
+.disc-card--quiz .disc-card__icon-wrap    { background: rgba(61,217,194,0.12); }
 .disc-card--quiz:hover .disc-card__arrow  {
-  border-color: #4dd9b4;
-  color: #4dd9b4;
-  background: rgba(77, 217, 180, 0.1);
-  box-shadow: 0 0 14px rgba(77, 217, 180, 0.25);
+  border-color: var(--cyan);
+  color: var(--cyan);
+  background: rgba(61,217,194,0.1);
+  box-shadow: 0 0 12px rgba(61,217,194,0.3);
 }
-.disc-card--quiz:hover .disc-card__cta-label { color: #4dd9b4; }
+.disc-card--quiz:hover .disc-card__cta-label { color: var(--cyan); }
 
-/* ── ENADE (laranja) ── */
+/* ── ENADE (âmbar) ── */
 .disc-card--enade {
-  background: linear-gradient(145deg, #0e1420, rgba(249, 115, 22, 0.07));
-  border-color: rgba(249, 115, 22, 0.18);
-  box-shadow: 0 0 30px rgba(249, 115, 22, 0.05);
+  background: linear-gradient(145deg, var(--ink-2), rgba(247,201,72,0.07));
+  border-color: rgba(247,201,72,0.18);
+  box-shadow: 0 0 30px rgba(247,201,72,0.05);
 }
 .disc-card--enade:hover {
-  border-color: rgba(249, 115, 22, 0.4);
-  box-shadow: 0 12px 40px rgba(249, 115, 22, 0.15);
+  border-color: rgba(247,201,72,0.4);
+  box-shadow: 0 12px 40px rgba(247,201,72,0.15);
 }
-.disc-card--enade .disc-card__icon-wrap    {
-  background: rgba(249, 115, 22, 0.15);
-  border-radius: 14px;
-}
-.disc-card--enade .disc-card__title        { color: var(--text-1); }
+.disc-card--enade .disc-card__icon-wrap    { background: var(--amber-dim); }
 .disc-card--enade:hover .disc-card__arrow  {
-  border-color: #f97316;
-  color: #f97316;
-  background: rgba(249, 115, 22, 0.1);
-  box-shadow: 0 0 14px rgba(249, 115, 22, 0.3);
+  border-color: var(--amber);
+  color: var(--amber);
+  background: var(--amber-dim);
+  box-shadow: 0 0 12px rgba(247,201,72,0.3);
 }
-.disc-card--enade:hover .disc-card__cta-label { color: #f97316; }
+.disc-card--enade:hover .disc-card__cta-label { color: var(--amber); }
 
-/* ── FIXAÇÃO (roxo) ── */
+/* ── FIXAÇÃO (rose) ── */
 .disc-card--fixacao {
-  background: linear-gradient(145deg, #0e1420, rgba(168, 85, 247, 0.07));
-  border-color: rgba(168, 85, 247, 0.18);
-  box-shadow: 0 0 30px rgba(168, 85, 247, 0.05);
+  background: linear-gradient(145deg, var(--ink-2), rgba(255,107,138,0.07));
+  border-color: rgba(255,107,138,0.18);
+  box-shadow: 0 0 30px rgba(255,107,138,0.05);
 }
 .disc-card--fixacao:hover {
-  border-color: rgba(168, 85, 247, 0.4);
-  box-shadow: 0 12px 40px rgba(168, 85, 247, 0.15);
+  border-color: rgba(255,107,138,0.4);
+  box-shadow: 0 12px 40px rgba(255,107,138,0.15);
 }
-.disc-card--fixacao .disc-card__icon-wrap    {
-  background: rgba(168, 85, 247, 0.15);
-  border-radius: 14px;
-}
-.disc-card--fixacao .disc-card__title        { color: var(--text-1); }
+.disc-card--fixacao .disc-card__icon-wrap    { background: rgba(255,107,138,0.12); }
 .disc-card--fixacao:hover .disc-card__arrow  {
-  border-color: #a855f7;
-  color: #a855f7;
-  background: rgba(168, 85, 247, 0.1);
-  box-shadow: 0 0 14px rgba(168, 85, 247, 0.3);
+  border-color: var(--rose);
+  color: var(--rose);
+  background: rgba(255,107,138,0.1);
+  box-shadow: 0 0 12px rgba(255,107,138,0.3);
 }
-.disc-card--fixacao:hover .disc-card__cta-label { color: #a855f7; }
+.disc-card--fixacao:hover .disc-card__cta-label { color: var(--rose); }
 
-/* ── Aliases de cor para compatibilidade com quiz.html ── */
-/* (quiz.html usa --blue, --teal, --gold, --rose) */
-.disc-card--blue {
-  background: linear-gradient(145deg, #0e1420, rgba(96, 165, 250, 0.07));
-  border-color: rgba(96, 165, 250, 0.18);
-  box-shadow: 0 0 30px rgba(96, 165, 250, 0.05);
+/* ── Aliases extras (sage, cyan, amber, violet) ── */
+.disc-card--sage {
+  background: linear-gradient(145deg, var(--ink-2), rgba(93,232,160,0.07));
+  border-color: rgba(93,232,160,0.18);
+  box-shadow: 0 0 30px rgba(93,232,160,0.05);
 }
-.disc-card--blue:hover {
-  border-color: rgba(96, 165, 250, 0.4);
-  box-shadow: 0 12px 40px rgba(96, 165, 250, 0.15);
+.disc-card--sage:hover {
+  border-color: rgba(93,232,160,0.4);
+  box-shadow: 0 12px 40px rgba(93,232,160,0.15);
 }
-.disc-card--blue .disc-card__icon-wrap    { background: rgba(96, 165, 250, 0.12); }
-.disc-card--blue .disc-card__title        { color: var(--text-1); }
-.disc-card--blue:hover .disc-card__arrow  {
-  border-color: #60a5fa;
-  color: #60a5fa;
-  background: rgba(96, 165, 250, 0.1);
-  box-shadow: 0 0 14px rgba(96, 165, 250, 0.25);
+.disc-card--sage .disc-card__icon-wrap    { background: rgba(93,232,160,0.12); }
+.disc-card--sage:hover .disc-card__arrow  {
+  border-color: var(--sage);
+  color: var(--sage);
+  background: rgba(93,232,160,0.1);
+  box-shadow: 0 0 12px rgba(93,232,160,0.3);
 }
-.disc-card--blue:hover .disc-card__cta-label { color: #60a5fa; }
+.disc-card--sage:hover .disc-card__cta-label { color: var(--sage); }
 
-.disc-card--teal {
-  background: linear-gradient(145deg, #0e1420, rgba(45, 212, 191, 0.07));
-  border-color: rgba(45, 212, 191, 0.18);
-  box-shadow: 0 0 30px rgba(45, 212, 191, 0.05);
+.disc-card--violet {
+  background: linear-gradient(145deg, var(--ink-2), rgba(108,99,255,0.08));
+  border-color: rgba(108,99,255,0.2);
 }
-.disc-card--teal:hover {
-  border-color: rgba(45, 212, 191, 0.4);
-  box-shadow: 0 12px 40px rgba(45, 212, 191, 0.15);
+.disc-card--violet:hover {
+  border-color: rgba(108,99,255,0.45);
+  box-shadow: 0 12px 40px rgba(108,99,255,0.18);
 }
-.disc-card--teal .disc-card__icon-wrap    { background: rgba(45, 212, 191, 0.12); }
-.disc-card--teal .disc-card__title        { color: var(--text-1); }
-.disc-card--teal:hover .disc-card__arrow  {
-  border-color: #2dd4bf;
-  color: #2dd4bf;
-  background: rgba(45, 212, 191, 0.1);
-  box-shadow: 0 0 14px rgba(45, 212, 191, 0.25);
+.disc-card--violet .disc-card__icon-wrap    { background: var(--violet-dim); }
+.disc-card--violet:hover .disc-card__arrow  {
+  border-color: var(--violet); color: var(--violet);
+  background: var(--violet-dim); box-shadow: 0 0 12px var(--violet-glow);
 }
-.disc-card--teal:hover .disc-card__cta-label { color: #2dd4bf; }
+.disc-card--violet:hover .disc-card__cta-label { color: var(--violet); }
 
-.disc-card--gold {
-  background: linear-gradient(145deg, #0e1420, rgba(251, 191, 36, 0.07));
-  border-color: rgba(251, 191, 36, 0.18);
-  box-shadow: 0 0 30px rgba(251, 191, 36, 0.05);
+.disc-card--cyan {
+  background: linear-gradient(145deg, var(--ink-2), rgba(61,217,194,0.07));
+  border-color: rgba(61,217,194,0.18);
 }
-.disc-card--gold:hover {
-  border-color: rgba(251, 191, 36, 0.4);
-  box-shadow: 0 12px 40px rgba(251, 191, 36, 0.15);
+.disc-card--cyan:hover {
+  border-color: rgba(61,217,194,0.4);
+  box-shadow: 0 12px 40px rgba(61,217,194,0.15);
 }
-.disc-card--gold .disc-card__icon-wrap    { background: rgba(251, 191, 36, 0.12); }
-.disc-card--gold .disc-card__title        { color: var(--text-1); }
-.disc-card--gold:hover .disc-card__arrow  {
-  border-color: #fbbf24;
-  color: #fbbf24;
-  background: rgba(251, 191, 36, 0.1);
-  box-shadow: 0 0 14px rgba(251, 191, 36, 0.25);
+.disc-card--cyan .disc-card__icon-wrap    { background: rgba(61,217,194,0.12); }
+.disc-card--cyan:hover .disc-card__arrow  {
+  border-color: var(--cyan); color: var(--cyan);
+  background: rgba(61,217,194,0.1); box-shadow: 0 0 12px rgba(61,217,194,0.3);
 }
-.disc-card--gold:hover .disc-card__cta-label { color: #fbbf24; }
+.disc-card--cyan:hover .disc-card__cta-label { color: var(--cyan); }
 
-.disc-card--rose {
-  background: linear-gradient(145deg, #0e1420, rgba(251, 113, 133, 0.07));
-  border-color: rgba(251, 113, 133, 0.18);
-  box-shadow: 0 0 30px rgba(251, 113, 133, 0.05);
+.disc-card--amber {
+  background: linear-gradient(145deg, var(--ink-2), rgba(247,201,72,0.07));
+  border-color: rgba(247,201,72,0.18);
 }
-.disc-card--rose:hover {
-  border-color: rgba(251, 113, 133, 0.4);
-  box-shadow: 0 12px 40px rgba(251, 113, 133, 0.15);
+.disc-card--amber:hover {
+  border-color: rgba(247,201,72,0.4);
+  box-shadow: 0 12px 40px rgba(247,201,72,0.15);
 }
-.disc-card--rose .disc-card__icon-wrap    { background: rgba(251, 113, 133, 0.12); }
-.disc-card--rose .disc-card__title        { color: var(--text-1); }
-.disc-card--rose:hover .disc-card__arrow  {
-  border-color: #fb7185;
-  color: #fb7185;
-  background: rgba(251, 113, 133, 0.1);
-  box-shadow: 0 0 14px rgba(251, 113, 133, 0.25);
+.disc-card--amber .disc-card__icon-wrap    { background: var(--amber-dim); }
+.disc-card--amber:hover .disc-card__arrow  {
+  border-color: var(--amber); color: var(--amber);
+  background: var(--amber-dim); box-shadow: 0 0 12px rgba(247,201,72,0.3);
 }
-.disc-card--rose:hover .disc-card__cta-label { color: #fb7185; }
+.disc-card--amber:hover .disc-card__cta-label { color: var(--amber); }
 
 /* ══════════════════════════════════════════════
    FOOTER
@@ -612,23 +595,20 @@ a    { text-decoration: none; color: inherit; }
   position: relative;
   z-index: 2;
   text-align: center;
-  padding: 1.75rem 2rem;
-  font-size: 0.76rem;
+  padding: 1.5rem 2rem;
+  font-size: 0.72rem;
   color: var(--text-3);
   letter-spacing: 0.04em;
   border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   margin-top: 2rem;
 }
 
 /* ══════════════════════════════════════════════
    ANIMAÇÕES
-   ──────────────────────────────────────────────
-   REGRA CRÍTICA:
-     ns-card-enter usa opacity:0.01 (não 0).
-     Se a animação cancelar/travar antes de rodar,
-     o valor declarado inline (opacity:1 no .disc-card)
-     prevalece — o card fica visível.
-     0.01 é imperceptível ao olho mas não é "sumiço".
    ══════════════════════════════════════════════ */
 @keyframes ns-fade-up {
   from { opacity: 0.01; transform: translateY(16px); }
@@ -642,21 +622,14 @@ a    { text-decoration: none; color: inherit; }
 
 /* ══════════════════════════════════════════════
    MOTION SAFETY
-   ──────────────────────────────────────────────
-   Respeita prefers-reduced-motion e garante que
-   todos os elementos fiquem visíveis mesmo sem
-   animação.
    ══════════════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration:        0.01ms !important;
     animation-iteration-count: 1      !important;
     transition-duration:       0.01ms !important;
   }
 
-  /* Garante estado final visível para todos os animados */
   .disc-card,
   .page-header,
   .page-header__title {
@@ -668,10 +641,10 @@ a    { text-decoration: none; color: inherit; }
 /* ══════════════════════════════════════════════
    RESPONSIVIDADE
    ══════════════════════════════════════════════ */
-@media (max-width: 680px) {
-  .header          { padding: 0.9rem 1.25rem; }
-  .breadcrumb      { display: none; }
-  .main            { padding: 2rem 1.25rem 2rem; }
+@media (max-width: 720px) {
+  .header       { padding: 1rem 1.25rem; }
+  .main         { padding: 2rem 1.25rem 2rem; }
+  .breadcrumb   { display: none; }
 
   .page-header__title { font-size: 2rem; }
 
@@ -689,13 +662,9 @@ a    { text-decoration: none; color: inherit; }
 @media (max-width: 380px) {
   .page-header__title { font-size: 1.75rem; }
 }
+
 /* ══════════════════════════════════════════════
    CARD VAZIO — modo sem conteúdo disponível
-   ──────────────────────────────────────────────
-   Regra: cards sem conteúdo são ocultados do DOM
-   visualmente. Não exibimos badge "Em breve" —
-   se não há conteúdo, o card simplesmente não
-   aparece para o usuário.
    ══════════════════════════════════════════════ */
 .disc-card--vazio {
   display: none !important;
@@ -703,13 +672,6 @@ a    { text-decoration: none; color: inherit; }
 
 /* ══════════════════════════════════════════════
    ANTI-FLASH — catalog ainda não resolvido
-   ──────────────────────────────────────────────
-   Enquanto o catalog.json não terminou de
-   carregar, todos os cards ficam invisíveis
-   (mas ocupam espaço para não causar reflow).
-   O JS remove data-catalog-loading do <html>
-   assim que o fetch terminar (sucesso ou erro),
-   revelando os cards com uma transição suave.
    ══════════════════════════════════════════════ */
 :root[data-catalog-loading] .disc-card {
   visibility: hidden;

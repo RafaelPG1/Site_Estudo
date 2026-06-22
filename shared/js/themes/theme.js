@@ -1,5 +1,5 @@
 /* ============================================================
-   NEXUS STUDY — shared/js/theme.js
+   NEXUS STUDY — shared/js/themes/theme.js
 
    ÚNICA fonte de escrita de CSS custom properties de disciplina.
    Todos os CSS do projeto consomem variáveis daqui — nenhum

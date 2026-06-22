@@ -14,21 +14,27 @@
 
 /* ── TOKENS BASE ─────────────────────────────────────────── */
 :root {
-  /* Superfícies */
-  --bg:           #070b14;
-  --surface:      #0e1420;
-  --surface-2:    #121929;
-  --border:       rgba(255, 255, 255, 0.07);
-  --border-mid:   rgba(255, 255, 255, 0.12);
+  /* Superfícies — paleta do quiz */
+  --bg:           #060a17;
+  --ink:          #060a17;
+  --ink-2:        #0c1228;
+  --surface:      rgba(255,255,255,0.035);
+  --surface-hi:   rgba(255,255,255,0.07);
+  --surface-2:    #0c1228;
+  --border:       rgba(255,255,255,0.08);
+  --border-mid:   rgba(255,255,255,0.18);
+  --border-hi:    rgba(255,255,255,0.18);
 
   /* Tipografia */
-  --text-1:  #f0ede6;
-  --text-2:  #a8a49c;
-  --text-3:  #6e6a62;
+  --text-1:  #e8e6f0;
+  --text-2:  #8e8ba8;
+  --text-3:  #5a5775;
 
-  /* Fontes */
-  --font-display: 'Cormorant Garamond', Georgia, serif;
-  --font-body:    'DM Sans', system-ui, sans-serif;
+  /* Fontes — Space Grotesk + Inter (quiz) */
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-body:    'Inter', system-ui, sans-serif;
+  --f-display:    'Space Grotesk', system-ui, sans-serif;
+  --f-body:       'Inter', system-ui, sans-serif;
   --font-mono:    'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
 
   /* Layout */
@@ -36,7 +42,21 @@
   --radius-card:  18px;
   --radius-btn:   10px;
 
-  /* Logo — cor fixa, nunca muda por disciplina */
+  /* Ease curves do quiz */
+  --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Cores do quiz */
+  --violet:       #6c63ff;
+  --violet-dim:   rgba(108,99,255,0.15);
+  --violet-glow:  rgba(108,99,255,0.35);
+  --amber:        #f7c948;
+  --amber-dim:    rgba(247,201,72,0.12);
+  --cyan:         #3dd9c2;
+  --rose:         #ff6b8a;
+  --sage:         #5de8a0;
+
+  /* Logo — cor fixa */
   --cor-logo:     #22c55e;
   --cor-logo-dim: rgba(34, 197, 94, 0.12);
 
@@ -49,10 +69,10 @@
   --cor-warn-rgb:    251, 191, 36;
 
   /* Tema (sobrescrito por cada disciplina via template_init.js) */
-  --cor-tema:       #7aa8e8;
-  --cor-tema-rgb:   122, 168, 232;
-  --cor-tema-2:     #4dd9b4;
-  --cor-tema-2-rgb: 77, 217, 180;
+  --cor-tema:       #6c63ff;
+  --cor-tema-rgb:   108, 99, 255;
+  --cor-tema-2:     #3dd9c2;
+  --cor-tema-2-rgb: 61, 217, 194;
 
   /* Acento do modo (sobrescrito pelo template_init.js) */
   --accent:     var(--cor-tema);
@@ -101,51 +121,94 @@
 }
 
 /* ── BASE ────────────────────────────────────────────────── */
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; font-size: 16px; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text-1);
+  min-height: 100dvh;
+  overflow-x: hidden;
+  position: relative;
+}
 
 a { text-decoration: none; color: inherit; }
+
+/* ── FUNDO ATMOSFÉRICO — idêntico ao quiz ────────────────── */
+.atmo {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.atmo--1 {
+  width: 55vw;
+  height: 55vw;
+  top: -20vw;
+  left: -15vw;
+  background: radial-gradient(circle, rgba(108,99,255,0.18) 0%, transparent 70%);
+}
+
+.atmo--2 {
+  width: 45vw;
+  height: 45vw;
+  bottom: -15vw;
+  right: -10vw;
+  background: radial-gradient(circle, rgba(61,217,194,0.12) 0%, transparent 70%);
+}
 
 
 /* ── HEADER ──────────────────────────────────────────────── */
 .header {
   position: sticky;
   top: 0;
-  z-index: 20;
-  padding: 0.9rem 2rem;
+  z-index: 100;
+  padding: 1.25rem 2rem;
+  display: flex;
+  align-items: center;
+  background: rgba(6,10,23,0.8);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid var(--border);
-  background: var(--bg);
 }
 
 .header__inner {
+  width: 100%;
   max-width: var(--max-w);
   margin: 0 auto;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   gap: 1rem;
 }
 
 /* Botão voltar */
 .back-btn {
+  justify-self: start;
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.78rem;
-  font-weight: 500;
-  color: var(--text-2);
-  padding: 0.38rem 0.85rem;
+  gap: 0.5rem;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-1);
+  padding: 0.45rem 1.1rem;
   border-radius: 8px;
-  border: 1px solid var(--border-mid);
-  background: rgba(255, 255, 255, 0.03);
-  transition: color 0.2s, background 0.2s, border-color 0.2s, transform 0.2s;
+  border: 1px solid var(--border-hi);
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(6px);
   white-space: nowrap;
+  transition: color 0.2s, background 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 
 .back-btn:hover {
-  color: var(--cor-tema);
-  background: rgba(var(--cor-tema-rgb), 0.07);
-  border-color: rgba(var(--cor-tema-rgb), 0.3);
-  transform: translateX(-2px);
+  background: rgba(108,99,255,0.1);
+  border-color: var(--violet);
+  box-shadow: 0 0 14px var(--violet-glow);
 }
 
 .back-btn svg { flex-shrink: 0; }
@@ -154,7 +217,7 @@ a { text-decoration: none; color: inherit; }
 .header__logo {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
+  justify-content: center;
 }
 
 /* ── LOGO (injetada via logo.js) ── */
@@ -167,23 +230,13 @@ a { text-decoration: none; color: inherit; }
 
 #header-logo-wrap .nexus-logo__img {
   border-radius: 22%;
-  box-shadow:
-    0 2px 8px  rgba(0, 0, 0, 0.45),
-    0 0 12px   rgba(77, 217, 180, 0.35),
-    0 0 28px   rgba(77, 217, 180, 0.15);
-  transition:
-    filter     0.25s ease,
-    transform  0.25s ease,
-    box-shadow 0.25s ease;
+  border: 1px solid rgba(255,255,255,0.12);
+  transition: filter 0.25s ease, transform 0.25s ease;
 }
 
 #header-logo-wrap .nexus-logo__link:hover .nexus-logo__img {
-  filter: drop-shadow(0 0 6px rgba(77, 217, 180, 0.7));
+  filter: drop-shadow(0 0 6px rgba(108,99,255,0.6));
   transform: scale(1.06);
-  box-shadow:
-    0 2px 12px rgba(0, 0, 0, 0.50),
-    0 0  18px  rgba(77, 217, 180, 0.55),
-    0 0  40px  rgba(77, 217, 180, 0.25);
 }
 
 #header-logo-wrap .nexus-logo__texto--stacked {
@@ -194,7 +247,7 @@ a { text-decoration: none; color: inherit; }
 }
 
 #header-logo-wrap .nexus-logo__titulo {
-  font-family: var(--font-body);
+  font-family: var(--font-display);
   font-size: 0.92rem;
   font-weight: 500;
   color: var(--text-1);
@@ -203,27 +256,30 @@ a { text-decoration: none; color: inherit; }
 }
 
 #header-logo-wrap .nexus-logo__sub {
-  font-family: var(--font-body);
+  font-family: var(--font-display);
   font-size: 0.56rem;
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #4dd9b4;
+  color: var(--violet);
   line-height: 1;
 }
 
 /* Badge de semestre */
 .header__sem-badge {
-  font-family: var(--font-body);
-  font-size: 0.78rem;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  color: var(--text-2);
-  background-color: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 8px;
-  padding: 0.4rem 0.75rem;
+  justify-self: end;
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  background: rgba(61,217,194,0.08);
+  border: 1px solid rgba(61,217,194,0.28);
+  border-radius: 99px;
+  padding: 0.32rem 0.9rem;
   white-space: nowrap;
+  box-shadow: 0 0 12px rgba(61,217,194,0.1);
 }
 
 /* ── MAIN ────────────────────────────────────────────────── */
@@ -252,15 +308,16 @@ a { text-decoration: none; color: inherit; }
 .page-header__eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.55rem;
+  font-family: var(--font-display);
   font-size: 0.68rem;
   font-weight: 600;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--cor-tema);
-  background: rgba(var(--cor-tema-rgb), 0.08);
-  border: 1px solid rgba(var(--cor-tema-rgb), 0.2);
-  padding: 0.3rem 0.85rem;
+  color: var(--violet);
+  background: rgba(108,99,255,0.1);
+  border: 1px solid rgba(108,99,255,0.25);
+  padding: 0.35rem 1rem;
   border-radius: 99px;
   margin-bottom: 0.9rem;
 }
@@ -268,20 +325,23 @@ a { text-decoration: none; color: inherit; }
 .page-header__title {
   font-family: var(--font-display);
   font-size: 3.5rem;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.15;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   color: var(--text-1);
   margin-bottom: 0.6rem;
+  overflow: visible;
   animation: fade-up 0.6s 0.1s ease both;
 }
 
 .page-header__title em {
   font-style: italic;
-  color: var(--text-1);
-  background: none;
-  -webkit-background-clip: unset;
-  background-clip: unset;
+  color: transparent;
+  background: linear-gradient(110deg, var(--violet) 20%, var(--cyan) 80%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  padding-bottom: 0.08em;
+  display: inline-block;
 }
 
 .page-header__meta {
@@ -2549,21 +2609,15 @@ body {
 
 
 /* ══════════════════════════════════════════════════════════
-   24. ORBS DE FUNDO — performance mobile
+   24. FUNDO ATMOSFÉRICO — performance mobile
    ══════════════════════════════════════════════════════════ */
 
 @media (max-width: 768px) {
-  .bg-orb { opacity: 0.4; filter: blur(60px); }
-  .bg-orb--1 { width: 300px; height: 300px; }
-  .bg-orb--2 { width: 250px; height: 250px; }
-  .bg-orb--3 { width: 200px; height: 200px; }
+  .atmo { opacity: 0.6; }
 }
 
 @media (max-width: 428px) {
-  .bg-orb { opacity: 0.3; filter: blur(50px); }
-  .bg-orb--1 { width: 220px; height: 220px; }
-  .bg-orb--2 { width: 180px; height: 180px; }
-  .bg-orb--3 { width: 140px; height: 140px; }
+  .atmo { opacity: 0.4; }
 }
 
 
