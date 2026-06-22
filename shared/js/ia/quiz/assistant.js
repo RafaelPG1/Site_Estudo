@@ -1,7 +1,77 @@
 /**
- * NEXUS — quiz/js/assistant.js  v2.5
+ * NEXUS — quiz/js/assistant.js  v2.7
  *
  * Quiz-Assistant: tutor de IA dentro do ambiente de quiz.
+ *
+ * ── MUDANÇAS v2.7 (correção de bugs da árvore de versões) ──────
+ *
+ *   Bug 1 — troca de versão durante geração da IA
+ *     _onTrocarVersao() não verificava state.processando. Era possível
+ *     trocar de ramo enquanto uma resposta da IA ainda estava a
+ *     caminho (resposta a uma mensagem normal OU a uma edição). Quando
+ *     a resposta chegava, _renderBot()/_push() a anexava ao FINAL do
+ *     state.messages atual — que podia já ser um ramo diferente do que
+ *     originou a pergunta — produzindo perguntas sem resposta, respostas
+ *     sem pergunta e, em casos repetidos, ramos corrompidos.
+ *     CORREÇÃO: adicionado `if (state.processando) return;` no início
+ *     de _onTrocarVersao(), espelhando a guarda já existente em
+ *     _onUserSend() e _onEditarMensagem().
+ *
+ *   Bug 2 — histórico interno do NexusWorker não acompanhava a árvore
+ *     core/worker.js mantém seu próprio histórico de turnos (_historico),
+ *     independente de state.messages/msg.tree, usado para montar o
+ *     contexto multi-turno enviado à IA. Nem _onTrocarVersao() nem
+ *     _onEditarMensagem() chamavam NexusWorker.limparHistorico() /
+ *     restaurarHistorico() — então, ao voltar para uma versão antiga e
+ *     perguntar algo novo, a IA recebia contexto de turnos pertencentes
+ *     a um ramo que não estava mais ativo/visível (vazamento de
+ *     contexto entre ramos).
+ *     CORREÇÃO: depois que state.messages é reconstruído para refletir
+ *     o ramo ativo (em _onTrocarVersao()) ou a linha cortada pela
+ *     edição (em _onEditarMensagem(), antes de processar a nova
+ *     pergunta), chama-se NexusWorker.limparHistorico() seguido de
+ *     NexusWorker.restaurarHistorico(state.messages) — mesmo padrão já
+ *     usado no carregamento de página (init()/histSalvo).
+ *
+ *   Nenhuma mudança em UI, layout, estilos ou na estrutura/algoritmo
+ *   da árvore de versões em si (msg.tree, _criarNode, _garantirTree,
+ *   _fecharRamoAtivo, _abrirRamoNode permanecem inalterados).
+ *
+ * ── MUDANÇAS v2.6 (árvore de conversa) ──────────────────────
+ *
+ *   Problema observado: o sistema de versões era uma LISTA linear de
+ *   snapshots. Cada versão guardava apenas sua própria pergunta+resposta,
+ *   mas não isolava mensagens de acompanhamento enviadas depois dela —
+ *   se o usuário voltasse a uma versão antiga e mandasse uma mensagem
+ *   nova (ex.: "resuma por favor"), ela acabava aparecendo em TODAS as
+ *   versões, porque o array linear de state.messages não sabia a qual
+ *   versão ela pertencia.
+ *
+ *   CORREÇÃO: cada mensagem editável agora tem uma ÁRVORE de versões
+ *   (msg.tree). tree.rootId é um nó sentinela interno (nunca exibido)
+ *   cujos filhos diretos são as versões reais (V1, V2, V3...) — sempre
+ *   irmãs entre si, preservando a navegação plana "< i/N >" que a UI
+ *   já exibia. Cada nó de versão guarda, além do snapshot de sempre
+ *   (texto/resposta/rodape/time), seu PRÓPRIO sub-histórico de conversa
+ *   (node.ramo) — mensagens criadas enquanto aquele nó estava ativo.
+ *
+ *   Trocar de versão agora:
+ *     1. Fecha o ramo do nó que está deixando de ser ativo
+ *        (_fecharRamoAtivo): tudo que está em state.messages depois da
+ *        mensagem editável é cortado (deep clone) e guardado dentro dele.
+ *     2. Abre o ramo do nó de destino (_abrirRamoNode): o sub-histórico
+ *        salvo nele é expandido de volta para state.messages.
+ *     3. Rerenderiza tudo.
+ *
+ *   Isso garante que mensagens de acompanhamento pertencem exclusivamente
+ *   ao ramo (versão) onde foram criadas, e nunca aparecem em outro ramo.
+ *
+ *   MIGRAÇÃO: históricos antigos salvos como msg.versions[] (lista linear)
+ *   são convertidos para msg.tree na primeira leitura, via
+ *   _migrarVersionsParaTree() — cada versão antiga se torna filha direta
+ *   do sentinela (irmãs entre si), preservando 100% o que era exibido
+ *   antes. Depois da migração, msg.versions é removido e msg.tree passa
+ *   a ser a única fonte de verdade.
  *
  * ── MUDANÇAS v2.5 ─────────────────────────────────────────
  *
@@ -45,42 +115,6 @@
  *
  * ── MUDANÇAS v2.4 ─────────────────────────────────────────
  *   (ver cabeçalho da versão anterior)
- *
- * ── MUDANÇAS v2.6 (árvore de conversa) ──────────────────────
- *
- *   Problema observado: o sistema de versões era uma LISTA linear de
- *   snapshots. Cada versão guardava apenas sua própria pergunta+resposta,
- *   mas não isolava mensagens de acompanhamento enviadas depois dela —
- *   se o usuário voltasse a uma versão antiga e mandasse uma mensagem
- *   nova (ex.: "resuma por favor"), ela acabava aparecendo em TODAS as
- *   versões, porque o array linear de state.messages não sabia a qual
- *   versão ela pertencia.
- *
- *   CORREÇÃO: cada mensagem editável agora tem uma ÁRVORE de versões
- *   (msg.tree). tree.rootId é um nó sentinela interno (nunca exibido)
- *   cujos filhos diretos são as versões reais (V1, V2, V3...) — sempre
- *   irmãs entre si, preservando a navegação plana "< i/N >" que a UI
- *   já exibia. Cada nó de versão guarda, além do snapshot de sempre
- *   (texto/resposta/rodape/time), seu PRÓPRIO sub-histórico de conversa
- *   (node.ramo) — mensagens criadas enquanto aquele nó estava ativo.
- *
- *   Trocar de versão agora:
- *     1. Fecha o ramo do nó que está deixando de ser ativo
- *        (_fecharRamoAtivo): tudo que está em state.messages depois da
- *        mensagem editável é cortado (deep clone) e guardado dentro dele.
- *     2. Abre o ramo do nó de destino (_abrirRamoNode): o sub-histórico
- *        salvo nele é expandido de volta para state.messages.
- *     3. Rerenderiza tudo.
- *
- *   Isso garante que mensagens de acompanhamento pertencem exclusivamente
- *   ao ramo (versão) onde foram criadas, e nunca aparecem em outro ramo.
- *
- *   MIGRAÇÃO: históricos antigos salvos como msg.versions[] (lista linear)
- *   são convertidos para msg.tree na primeira leitura, via
- *   _migrarVersionsParaTree() — cada versão antiga se torna filha direta
- *   do sentinela (irmãs entre si), preservando 100% o que era exibido
- *   antes. Depois da migração, msg.versions é removido e msg.tree passa
- *   a ser a única fonte de verdade.
  *
  * API pública: window.NexusQuizAssistant
  *   init()          — inicialização manual (fallback)
@@ -809,6 +843,12 @@
    * state.messages é cortado e guardado dentro do nó que está deixando
    * de ser ativo, garantindo que mensagens de acompanhamento (ex.:
    * "resuma por favor") fiquem isoladas dentro do ramo onde nasceram.
+   *
+   * v2.7 — depois de reconstruir state.messages (que agora reflete só
+   * a linha do tempo até a mensagem editada), o histórico interno do
+   * NexusWorker é ressincronizado ANTES de agendar a nova pergunta —
+   * sem isso, a IA responderia usando turnos de uma linha do tempo que
+   * não existe mais a partir deste ponto (bug 2, vazamento de contexto).
    */
   function _onEditarMensagem(msgIndex, novoTexto) {
     if (state.processando) return;
@@ -845,6 +885,17 @@
     _salvarHistorico();
     _rerenderTudo();
 
+    // v2.7 — bug 2: realinha o histórico interno do NexusWorker com a
+    // linha do tempo atual (state.messages), que acabou de ser cortada
+    // por _fecharRamoAtivo. Sem isto, a próxima chamada a
+    // NexusWorker.perguntar() (dentro de _processar, logo abaixo)
+    // ainda enxergaria turnos de mensagens que já não existem mais
+    // a partir deste ponto da conversa.
+    if (typeof window.NexusWorker !== 'undefined') {
+      window.NexusWorker.limparHistorico();
+      window.NexusWorker.restaurarHistorico(state.messages);
+    }
+
     window.NexusUI.showTyping();
     state.processando = true;
     _setInputBloqueado(true);
@@ -863,8 +914,22 @@
    *      do snapshot do nó.
    *   4. Abre o ramo do nó de destino (_abrirRamoNode) — expande o
    *      sub-histórico que pertence exclusivamente a essa versão.
+   *
+   * v2.7 — bug 1: a função agora retorna imediatamente se
+   * state.processando for true. Antes, era possível trocar de ramo
+   * enquanto uma resposta da IA ainda estava a caminho (de um envio
+   * normal ou de uma edição); quando a resposta chegava, ela era
+   * anexada ao FINAL do state.messages já mutado pela troca de versão
+   * — ou seja, no ramo errado — deixando a pergunta original sem
+   * resposta (órfã) e corrompendo a estrutura esperada pela próxima
+   * chamada a _garantirTree/_fecharRamoAtivo para essa mensagem.
+   *
+   * v2.7 — bug 2: ao final, o histórico interno do NexusWorker é
+   * ressincronizado com o ramo que acabou de se tornar ativo.
    */
   function _onTrocarVersao(msgIndex, delta) {
+    if (state.processando) return;
+
     var msg = state.messages[msgIndex];
     if (!msg || !msg.tree) return;
     var tree = _garantirTree(msg, msgIndex);
@@ -906,6 +971,15 @@
 
     _salvarHistorico();
     _rerenderTudo();
+
+    // v2.7 — bug 2: realinha o histórico interno do NexusWorker com o
+    // ramo que acabou de se tornar ativo. Sem isto, a IA continuaria
+    // "lembrando" de turnos pertencentes ao ramo anterior (vazamento
+    // de contexto entre ramos).
+    if (typeof window.NexusWorker !== 'undefined') {
+      window.NexusWorker.limparHistorico();
+      window.NexusWorker.restaurarHistorico(state.messages);
+    }
   }
 
   async function _processar(texto) {
@@ -1047,7 +1121,7 @@
       window.NexusUI.renderMessage(sysMsg);
       _mostrarBoasVindas();
     }
-    console.log('[NexusQuizAssistant] iniciado v2.6 — disc:', discId, '| modo:', modo,
+    console.log('[NexusQuizAssistant] iniciado v2.7 — disc:', discId, '| modo:', modo,
                 '| questões no snapshot:', _getSnapshot().length);
   }
 

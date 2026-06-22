@@ -25,6 +25,15 @@
  *   — esta camada nunca decide QUAL é a versão seguinte, apenas
  *   informa a intenção (-1 ou +1) para quem mantém o estado de domínio.
  *
+ * ── NOTA (v3.7 / v2.7 dos assistants) ────────────────────────
+ *   Este arquivo NÃO foi alterado na correção dos bugs da árvore de
+ *   versões (guarda de state.processando em _onTrocarVersao e
+ *   sincronização do NexusWorker). Essas correções vivem inteiramente
+ *   em resumo/assistant.js e quiz/js/assistant.js — esta camada de UI
+ *   apenas dispara onVersionSwitch(msgIndex, delta) e onEdit(msgIndex,
+ *   texto) e não precisa saber nada sobre state.processando ou sobre
+ *   o histórico do worker.
+ *
  * API pública: window.NexusUI
  */
 

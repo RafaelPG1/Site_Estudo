@@ -40,6 +40,21 @@
  *   (sem tree, com versions[]) continuam sendo lidos normalmente —
  *   a migração para tree acontece no assistant.js, não aqui.
  *
+ * ── v1.3 — FALHA DE PERSISTÊNCIA NÃO É MAIS SILENCIOSA ─────────
+ *   Bug confirmado: quando store.setItem() estourava a cota do
+ *   localStorage (ex.: árvore de versões muito profunda acumulando
+ *   ramos), o erro era engolido por um catch (_) {} vazio. O usuário
+ *   podia perder parte do histórico/árvore entre uma sessão e outra
+ *   sem nenhum indício de que algo deu errado.
+ *
+ *   CORREÇÃO: o catch de salvar() agora registra um console.warn com
+ *   a chave do histórico e a quantidade de mensagens envolvidas, para
+ *   que a falha apareça no console em vez de desaparecer em silêncio.
+ *   O comportamento de não travar a aplicação foi mantido — a falha
+ *   continua não-fatal, só deixou de ser muda. Os demais catches deste
+ *   arquivo (carregar/limpar/limparDominio/_store) não foram alterados
+ *   — não fazem parte do bug confirmado.
+ *
  * API pública: window.NexusHistory
  *
  * Depende de: (nenhuma)
@@ -175,7 +190,17 @@
       var paraSalvar = final.map(_removerIdxRecursivo);
 
       store.setItem(_storageKey(chave), JSON.stringify(paraSalvar));
-    } catch (_) {}
+    } catch (err) {
+      // v1.3 — antes a falha (ex.: QuotaExceededError ao estourar a
+      // cota do localStorage) era engolida em silêncio, e o usuário
+      // podia perder parte da árvore sem nenhum indício. O
+      // comportamento de não quebrar a aplicação foi mantido — a
+      // falha só deixou de ser muda.
+      console.warn(
+        '[NexusHistory] falha ao salvar histórico (chave: ' + chave +
+        ', mensagens: ' + mensagens.length + '):', err
+      );
+    }
   }
 
   /**

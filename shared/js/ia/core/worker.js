@@ -31,6 +31,15 @@
  * Reset explícito disponível via NexusWorker.limparHistorico().
  * Restauração após F5 via NexusWorker.restaurarHistorico(msgs).
  *
+ * ── NOTA (não-alteração) ─────────────────────────────────────
+ * Este histórico (_historico) é independente da árvore de versões
+ * mantida em resumo/assistant.js e quiz/js/assistant.js. A API
+ * pública já suportava sincronização (limparHistorico +
+ * restaurarHistorico); o bug de vazamento de contexto entre ramos
+ * estava na ausência da CHAMADA a essas funções nos assistants ao
+ * trocar de versão / editar mensagem — corrigido nos assistants,
+ * não aqui. Este arquivo não foi modificado.
+ *
  * ── RETORNO DE perguntar() ───────────────────────────────────
  * { texto, fonte, modelo, turnosAoEnviar }
  *
@@ -294,7 +303,11 @@
    *
    * Reconstrói _historico a partir do array de mensagens visuais
    * salvas pelo NexusHistory. Chamado por assistant.js em
-   * _restaurarSessao() quando o histórico visual é recarregado após F5.
+   * _restaurarSessao() quando o histórico visual é recarregado após F5,
+   * e também — a partir da correção do bug de vazamento de contexto —
+   * em _onTrocarVersao() e _onEditarMensagem(), para realinhar este
+   * histórico interno com o ramo atualmente ativo da árvore de
+   * versões.
    *
    * Regras:
    *   - Ignora mensagens role:'system' (banner de boas-vindas etc.)

@@ -1,39 +1,41 @@
 /**
- * NEXUS — shared/js/ia/resumo/assistant.js  v3.5
+ * NEXUS — shared/js/ia/resumo/assistant.js  v3.7
  *
  * Orquestrador do sistema de IA para Resumos.
  *
- * ── MUDANÇAS v3.5 (correção de versionamento) ─────────────────
+ * ── MUDANÇAS v3.7 (correção de bugs da árvore de versões) ──────
  *
- *   Problema observado: ao editar uma mensagem múltiplas vezes
- *   (3+ versões) ou ao restaurar do localStorage, versões anteriores
- *   exibiam a resposta da versão mais recente.
+ *   Bug 1 — troca de versão durante geração da IA
+ *     _onTrocarVersao() não verificava state.processando. Era possível
+ *     trocar de ramo enquanto uma resposta da IA ainda estava a
+ *     caminho (resposta a uma mensagem normal OU a uma edição). Quando
+ *     a resposta chegava, _renderBot()/_push() a anexava ao FINAL do
+ *     state.messages atual — que podia já ser um ramo diferente do que
+ *     originou a pergunta — produzindo perguntas sem resposta, respostas
+ *     sem pergunta e, em casos repetidos, ramos corrompidos.
+ *     CORREÇÃO: adicionado `if (state.processando) return;` no início
+ *     de _onTrocarVersao(), espelhando a guarda já existente em
+ *     _onUserSend() e _onEditarMensagem().
  *
- *   Causas raiz identificadas e corrigidas:
+ *   Bug 2 — histórico interno do NexusWorker não acompanhava a árvore
+ *     core/worker.js mantém seu próprio histórico de turnos (_historico),
+ *     independente de state.messages/msg.tree, usado para montar o
+ *     contexto multi-turno enviado à IA. Nem _onTrocarVersao() nem
+ *     _onEditarMensagem() chamavam NexusWorker.limparHistorico() /
+ *     restaurarHistorico() — então, ao voltar para uma versão antiga e
+ *     perguntar algo novo, a IA recebia contexto de turnos pertencentes
+ *     a um ramo que não estava mais ativo/visível (vazamento de
+ *     contexto entre ramos).
+ *     CORREÇÃO: depois que state.messages é reconstruído para refletir
+ *     o ramo ativo (em _onTrocarVersao()) ou a linha cortada pela
+ *     edição (em _onEditarMensagem(), antes de processar a nova
+ *     pergunta), chama-se NexusWorker.limparHistorico() seguido de
+ *     NexusWorker.restaurarHistorico(state.messages) — mesmo padrão já
+ *     usado em _restaurarSessao()/init() ao recarregar a página.
  *
- *   1. SHALLOW COPY do rodapé em _onEditarMensagem:
- *      versions[0].rodape = botExistente.rodape
- *      Como rodape é um objeto { linha1, linha2 }, versão 0 e o objeto
- *      bot em state.messages compartilhavam a mesma referência.
- *      CORREÇÃO: deep copy via _clonarRodape() em toda atribuição de rodape.
- *
- *   2. AUSÊNCIA DE TIME por versão:
- *      _onTrocarVersao usava botAtual.time (tempo do bot atual na tela),
- *      e após múltiplas trocas o time exibido era sempre o da última versão.
- *      CORREÇÃO: cada versão armazena { texto, resposta, rodape, time }.
- *      _renderBot salva o horário da resposta na versão correspondente.
- *      _onTrocarVersao usa versao.time para restaurar corretamente.
- *
- *   3. _onTrocarVersao não tratava ausência de bot corrente:
- *      Se state.messages[msgIndex+1] não existia ou tinha role diferente
- *      de 'bot', a substituição era ignorada silenciosamente.
- *      CORREÇÃO: se não há bot atual mas a versão tem resposta salva,
- *      insere um novo objeto bot em state.messages na posição correta.
- *
- *   4. rodape em _onTrocarVersao era reutilizado sem clonar:
- *      versao.rodape era atribuído diretamente ao novo objeto bot.
- *      Se alguém mutasse esse objeto, a versão salva seria corrompida.
- *      CORREÇÃO: _clonarRodape() em toda construção de objeto bot novo.
+ *   Nenhuma mudança em UI, layout, estilos ou na estrutura/algoritmo
+ *   da árvore de versões em si (msg.tree, _criarNode, _garantirTree,
+ *   _fecharRamoAtivo, _abrirRamoNode permanecem inalterados).
  *
  * ── MUDANÇAS v3.6 (árvore de conversa) ─────────────────────────
  *
@@ -72,6 +74,38 @@
  *   a ser a única fonte de verdade; tudo é persistido por _salvarHistorico
  *   como antes (window.NexusHistory.salvar), sem mudança de formato de
  *   storage (continua sendo o array state.messages serializado).
+ *
+ * ── MUDANÇAS v3.5 (correção de versionamento) ─────────────────
+ *
+ *   Problema observado: ao editar uma mensagem múltiplas vezes
+ *   (3+ versões) ou ao restaurar do localStorage, versões anteriores
+ *   exibiam a resposta da versão mais recente.
+ *
+ *   Causas raiz identificadas e corrigidas:
+ *
+ *   1. SHALLOW COPY do rodapé em _onEditarMensagem:
+ *      versions[0].rodape = botExistente.rodape
+ *      Como rodape é um objeto { linha1, linha2 }, versão 0 e o objeto
+ *      bot em state.messages compartilhavam a mesma referência.
+ *      CORREÇÃO: deep copy via _clonarRodape() em toda atribuição de rodape.
+ *
+ *   2. AUSÊNCIA DE TIME por versão:
+ *      _onTrocarVersao usava botAtual.time (tempo do bot atual na tela),
+ *      e após múltiplas trocas o time exibido era sempre o da última versão.
+ *      CORREÇÃO: cada versão armazena { texto, resposta, rodape, time }.
+ *      _renderBot salva o horário da resposta na versão correspondente.
+ *      _onTrocarVersao usa versao.time para restaurar corretamente.
+ *
+ *   3. _onTrocarVersao não tratava ausência de bot corrente:
+ *      Se state.messages[msgIndex+1] não existia ou tinha role diferente
+ *      de 'bot', a substituição era ignorada silenciosamente.
+ *      CORREÇÃO: se não há bot atual mas a versão tem resposta salva,
+ *      insere um novo objeto bot em state.messages na posição correta.
+ *
+ *   4. rodape em _onTrocarVersao era reutilizado sem clonar:
+ *      versao.rodape era atribuído diretamente ao novo objeto bot.
+ *      Se alguém mutasse esse objeto, a versão salva seria corrompida.
+ *      CORREÇÃO: _clonarRodape() em toda construção de objeto bot novo.
  *
  * ── MUDANÇAS v3.4 ─────────────────────────────────────────────
  *   (ver cabeçalho da versão anterior)
@@ -1060,6 +1094,12 @@
    * state.messages é cortado e guardado dentro do nó que está deixando
    * de ser ativo, garantindo que mensagens de acompanhamento (ex.:
    * "resuma por favor") fiquem isoladas dentro do ramo onde nasceram.
+   *
+   * v3.7 — depois de reconstruir state.messages (que agora reflete só
+   * a linha do tempo até a mensagem editada), o histórico interno do
+   * NexusWorker é ressincronizado ANTES de agendar a nova pergunta —
+   * sem isso, a IA responderia usando turnos de uma linha do tempo que
+   * não existe mais a partir deste ponto (bug 2, vazamento de contexto).
    */
   function _onEditarMensagem(msgIndex, novoTexto) {
     if (state.processando) return;
@@ -1102,6 +1142,17 @@
     _salvarHistorico();
     _rerenderTudo();
 
+    // v3.7 — bug 2: realinha o histórico interno do NexusWorker com a
+    // linha do tempo atual (state.messages), que acabou de ser cortada
+    // por _fecharRamoAtivo. Sem isto, a próxima chamada a
+    // NexusWorker.perguntar() (dentro de _processar, logo abaixo)
+    // ainda enxergaria turnos de mensagens que já não existem mais
+    // a partir deste ponto da conversa.
+    if (typeof window.NexusWorker !== 'undefined') {
+      NexusWorker.limparHistorico();
+      NexusWorker.restaurarHistorico(state.messages);
+    }
+
     NexusUI.showTyping();
     state.processando = true;
     _setInputBloqueado(true);
@@ -1124,8 +1175,22 @@
    *      do snapshot do nó.
    *   4. Abre o ramo do nó de destino (_abrirRamoNode) — expande o
    *      sub-histórico que pertence exclusivamente a essa versão.
+   *
+   * v3.7 — bug 1: a função agora retorna imediatamente se
+   * state.processando for true. Antes, era possível trocar de ramo
+   * enquanto uma resposta da IA ainda estava a caminho (de um envio
+   * normal ou de uma edição); quando a resposta chegava, ela era
+   * anexada ao FINAL do state.messages já mutado pela troca de versão
+   * — ou seja, no ramo errado — deixando a pergunta original sem
+   * resposta (órfã) e corrompendo a estrutura esperada pela próxima
+   * chamada a _garantirTree/_fecharRamoAtivo para essa mensagem.
+   *
+   * v3.7 — bug 2: ao final, o histórico interno do NexusWorker é
+   * ressincronizado com o ramo que acabou de se tornar ativo.
    */
   function _onTrocarVersao(msgIndex, delta) {
+    if (state.processando) return;
+
     var msg = state.messages[msgIndex];
     if (!msg) return;
     var tree = _garantirTree(msg, msgIndex);
@@ -1167,6 +1232,15 @@
 
     _salvarHistorico();
     _rerenderTudo();
+
+    // v3.7 — bug 2: realinha o histórico interno do NexusWorker com o
+    // ramo que acabou de se tornar ativo. Sem isto, a IA continuaria
+    // "lembrando" de turnos pertencentes ao ramo anterior (vazamento
+    // de contexto entre ramos).
+    if (typeof window.NexusWorker !== 'undefined') {
+      NexusWorker.limparHistorico();
+      NexusWorker.restaurarHistorico(state.messages);
+    }
   }
 
   async function _processar(texto) {
