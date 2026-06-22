@@ -27,7 +27,7 @@
 
   /* Tipografia */
   --text-1:  #e8e6f0;
-  --text-2:  #8e8ba8;
+  --text-2:  #acaac2;
   --text-3:  #5a5775;
 
   /* Fontes — Space Grotesk + Inter (quiz) */
@@ -276,7 +276,7 @@ a { text-decoration: none; color: inherit; }
   color: var(--cyan);
   background: rgba(61,217,194,0.08);
   border: 1px solid rgba(61,217,194,0.28);
-  border-radius: 99px;
+  border-radius: 7px;
   padding: 0.32rem 0.9rem;
   white-space: nowrap;
   box-shadow: 0 0 12px rgba(61,217,194,0.1);
@@ -314,9 +314,9 @@ a { text-decoration: none; color: inherit; }
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--violet);
-  background: rgba(108,99,255,0.1);
-  border: 1px solid rgba(108,99,255,0.25);
+  color: var(--accent);
+  background: rgba(var(--accent-rgb),0.1);
+  border: 1px solid rgba(var(--accent-rgb),0.25);
   padding: 0.35rem 1rem;
   border-radius: 99px;
   margin-bottom: 0.9rem;

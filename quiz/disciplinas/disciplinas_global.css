@@ -270,9 +270,9 @@ a { text-decoration: none; color: inherit; }
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--violet);
-  background: rgba(108,99,255,0.1);
-  border: 1px solid rgba(108,99,255,0.25);
+  color: var(--cor-tema);
+  background: rgba(var(--cor-tema-rgb), 0.1);
+  border: 1px solid rgba(var(--cor-tema-rgb), 0.25);
   padding: 0.35rem 1rem;
   border-radius: 99px;
   margin-bottom: 1.25rem;
