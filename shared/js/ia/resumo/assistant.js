@@ -37,6 +37,55 @@
  *   da árvore de versões em si (msg.tree, _criarNode, _garantirTree,
  *   _fecharRamoAtivo, _abrirRamoNode permanecem inalterados).
  *
+ * ── MUDANÇAS v3.8 (correção do bug crítico de F5 — restore) ─────
+ *
+ *   Bug 3 — restore abortava silenciosamente por timing de __nexusCtx
+ *     _restaurarSessao() era chamada dentro de initUI(), mas dependia
+ *     de window.__nexusCtx (via _carregarDiscSalva() → _getDisciplinas()
+ *     → _getCtxBridge()) para resolver a disciplina salva em
+ *     sessionStorage. Como __nexusCtx só é garantido a partir de
+ *     _depsConteudoOk() (verificado em init(), chamado separadamente e
+ *     mais tarde que initUI()), era possível initUI() rodar ANTES de
+ *     __nexusCtx existir. Nesse caso _carregarDiscSalva() retornava
+ *     null, _restaurarSessao() abortava sem nunca chamar
+ *     NexusHistory.carregar() — e como não havia retry, o histórico
+ *     salvo (com toda a árvore de versões) nunca era lido de volta,
+ *     mesmo estando intacto no localStorage.
+ *     CORREÇÃO: _restaurarSessao() agora verifica explicitamente se
+ *     __nexusCtx está disponível ANTES de tentar resolver a disciplina
+ *     salva. Se não estiver, marca state.pendingRestore = true e loga
+ *     um warning (em vez de abortar silenciosamente). init() — que já
+ *     garante __nexusCtx disponível via _depsConteudoOk() — verifica
+ *     state.pendingRestore e, se true, chama _tentarRestaurarPendente()
+ *     para repetir a tentativa de restauração antes de decidir entre
+ *     carregar o conteúdo da disciplina restaurada ou mostrar as
+ *     boas-vindas.
+ *
+ *   Bug 4 — chaveHistorico nunca definida no fluxo automático
+ *     _resolverDisc() resolvia a disciplina ativa via
+ *     ctx.getDisciplinaAtual() (fallback automático, sem o usuário
+ *     digitar /disc) e retornava o objeto encontrado, mas NUNCA
+ *     atribuía state.discEscolhida nem state.chaveHistorico. Como
+ *     _salvarHistorico() é um no-op quando state.chaveHistorico é
+ *     null, toda mensagem trocada nesse fluxo — incluindo árvores de
+ *     versão criadas por edição — nunca era persistida no
+ *     localStorage. Não havia nada para restaurar no F5 seguinte
+ *     porque nada tinha sido salvo.
+ *     CORREÇÃO: ao resolver a disciplina automaticamente,
+ *     _resolverDisc() agora persiste a escolha exatamente como
+ *     _confirmarDisc() faz no fluxo manual: define
+ *     state.discEscolhida, monta e define state.chaveHistorico, e
+ *     grava a disciplina ativa em sessionStorage via
+ *     _salvarDiscAtiva() — garantindo que a própria sessionStorage
+ *     (usada por _carregarDiscSalva() no próximo F5) também reflita a
+ *     disciplina resolvida automaticamente.
+ *
+ *   Escopo desta correção: exclusivamente inicialização, restauração
+ *   de sessão e definição da chave de histórico. Nenhuma mudança na
+ *   estrutura/algoritmo da árvore de versões (msg.tree, _criarNode,
+ *   _garantirTree, _fecharRamoAtivo, _abrirRamoNode), na renderização
+ *   da UI (core/ui.js não foi tocado) ou no NexusWorker.
+ *
  * ── MUDANÇAS v3.6 (árvore de conversa) ─────────────────────────
  *
  *   Problema observado: o sistema de versões era uma LISTA linear de
@@ -146,6 +195,11 @@
     discIndexadaId:  null,
     conteudoAtual:   null,
     chaveHistorico:  null,
+    // v3.8 — true quando _restaurarSessao() não conseguiu rodar por
+    // falta de window.__nexusCtx no momento em que initUI() foi chamada.
+    // init() verifica esta flag e tenta novamente assim que o contexto
+    // estiver garantido (_depsConteudoOk()). Ver _tentarRestaurarPendente().
+    pendingRestore:  false,
   };
 
   var _versaoEditando = null; // { msgIndex, nodeId } | null
@@ -507,7 +561,22 @@
       var discs = _getDisciplinas();
       if (discs) {
         var found = discs.find(function (d) { return d.id === idAtivo; });
-        if (found) return found;
+        if (found) {
+          // v3.8 — bug 4: antes, esta função apenas RETORNAVA `found`,
+          // sem nunca atribuir state.discEscolhida/state.chaveHistorico.
+          // Como _salvarHistorico() é um no-op enquanto chaveHistorico
+          // for null, qualquer conversa que dependesse exclusivamente
+          // deste fallback automático (sem o usuário digitar /disc)
+          // nunca era persistida — nada para restaurar no F5 seguinte.
+          // Persistimos a escolha aqui exatamente como _confirmarDisc()
+          // faz no fluxo manual, incluindo a gravação em sessionStorage
+          // (_salvarDiscAtiva()) para que _carregarDiscSalva() também
+          // encontre esta disciplina em um próximo reload.
+          state.discEscolhida  = found;
+          state.chaveHistorico = _montarChaveHistorico(found.id);
+          _salvarDiscAtiva();
+          return found;
+        }
       }
     }
     return null;
