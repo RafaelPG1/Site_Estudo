@@ -119,39 +119,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   _resolverContexto();
 
-  criarSemestreSelect('semestre-wrap-resumo', sem => {
-    // Som de select ao trocar semestre — igual ao index.js
-    playSound('select', 'resumos');
+  // Badge de semestre — somente visual (sem dropdown, sem interação)
+  _renderSemestreBadge();
 
-    State.semestre     = sem;
-    State.disciplinas  = getDisciplinasDeSemestre(sem);
-    State.temConteudo  = null;
-    State.aulas        = [];
-    State.simplificado = [];
-    State.resumao      = [];
-    State.modo         = 'completo';
-    State.disciplina   = State.disciplinas[0] ?? null;
-    if (State.disciplina) {
-      setDisciplina(State.disciplina.id);
-      aplicarCoresDisciplina(State.disciplina.arquivo, State.DISC_CORES);
-    } else {
-      setDisciplina(null);
-    }
-    _renderSidebar();
-    _renderHeader();
-    _carregarConteudo();
-  }, State.semestre);
-
-  // Hover no select de semestre — vinculado após o select ser criado pelo criarSemestreSelect
-  requestAnimationFrame(() => {
-    const wrap = document.getElementById('semestre-wrap-resumo');
-    if (wrap) {
-      const sel = wrap.querySelector('select');
-      if (sel) {
-        sel.addEventListener('mousedown', () => playSound('click', 'resumos'));
-      }
-    }
-  });
+  // Listener para mudança de semestre via outro mecanismo (compatibilidade)
+  // Não usa criarSemestreSelect pois o badge é somente exibição nesta tela
 
   _renderSidebar();
   _renderHeader();
@@ -237,6 +209,34 @@ function _atualizarStatusBadge() {
     statusBadge.style.display = 'none';
     statusBadge.innerHTML     = '';
   }
+}
+
+/* ══════════════════════════════════════════════
+   SELETOR DE SEMESTRE — funcional (igual ao Quiz)
+══════════════════════════════════════════════ */
+function _renderSemestreBadge() {
+  const wrap = document.getElementById('semestre-wrap-resumo');
+  if (!wrap) return;
+
+  criarSemestreSelect('semestre-wrap-resumo', sem => {
+    setSemestre(sem);
+    sincronizarSemNaURL(sem);
+
+    // Recarrega disciplinas e conteúdo do novo semestre
+    const lista       = getDisciplinasDeSemestre(sem);
+    State.semestre    = sem;
+    State.disciplinas = lista;
+    State.disciplina  = lista[0] ?? null;
+    if (State.disciplina) setDisciplina(State.disciplina.id);
+    if (State.disciplina) aplicarCoresDisciplina(State.disciplina.arquivo, State.DISC_CORES);
+
+    _renderSidebar();
+    _renderHeader();
+    _carregarConteudo();
+
+    playSound('select', 'resumos');
+    document.dispatchEvent(new CustomEvent('nexus:semestreChanged', { detail: sem }));
+  });
 }
 
 /* ══════════════════════════════════════════════
@@ -566,57 +566,60 @@ function _bindCardHover(card) {
 }
 
 /* ══════════════════════════════════════════════
-   CARDS — versão premium
+   CARDS — Literary Atlas (chapter-mark design)
+   Estrutura: stripe superior + header (nº/seta) +
+   corpo (aula/título/descrição/meta).
 ══════════════════════════════════════════════ */
+const _ARROW_SVG = `
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
+  </svg>`;
+
 function _criarCard(aula, idx) {
   const secoes  = aula.secoes ?? [];
   const aulaStr = _esc(aula.aula ?? '');
   const m       = aulaStr.match(/^(Aula\s*[\d\/]+)\s*[—–-]\s*(.+)$/i);
   const aulaNum = m ? m[1] : aulaStr;
   const aulaTit = m ? m[2] : '';
-  const nivel   = _nivelAula(secoes.length);
-  const tempo   = _estimarTempo(aula);
+  const numPad  = String(idx + 1).padStart(2, '0');
 
   const card = document.createElement('article');
-  card.className = 'resumo-card resumo-card--nota';
-  card.style.animationDelay = `${idx * 0.055}s`;
+  card.className = 'resumo-card';
+  card.dataset.tipo = 'completo';
   card.setAttribute('tabindex', '0');
   card.setAttribute('role', 'button');
   card.setAttribute('aria-label', `Abrir: ${aula.aula}`);
   card.innerHTML = `
-    <div class="card-inner">
-      <div class="card-num-row">
-        <div class="card-num">${aulaNum}</div>
-        ${_profChip(aula.professor)}
-      </div>
-      <div class="card-title">${aulaTit || aulaStr}</div>
-      <div class="card-divider"></div>
-      ${aula.ideia_central ? `<p class="card-desc">${_parseInline(aula.ideia_central)}</p>` : ''}
-      <div class="card-bottom">
-        </div>
-        <div class="card-progress__track"><div class="card-progress__fill"></div></div>
-        <div class="card-meta">
-          <span class="card-meta__count">${secoes.length} seç${secoes.length !== 1 ? 'ões' : 'ão'}</span>
-          <span class="card-meta__cta">
-            Ver resumo
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
-            </svg>
-          </span>
-        </div>
+    <div class="resumo-card__stripe"></div>
+    <div class="resumo-card__head">
+      <span class="resumo-card__num">${numPad}</span>
+      <span class="resumo-card__arrow">${_ARROW_SVG}</span>
+    </div>
+    <div class="resumo-card__body">
+      <div class="resumo-card__aula">${aulaNum}</div>
+      <div class="resumo-card__titulo">${aulaTit || aulaStr}</div>
+      ${aula.ideia_central
+        ? `<div class="resumo-card__desc">${_parseInline(aula.ideia_central)}</div>`
+        : ''}
+      <div class="resumo-card__meta">
+        <span class="resumo-card__tag">
+          <span class="resumo-card__tag-dot"></span>
+          ${secoes.length} seç${secoes.length !== 1 ? 'ões' : 'ão'}
+        </span>
+        ${aula.professor ? `<span class="resumo-card__tag" style="opacity:.6">👤 ${_esc(aula.professor)}</span>` : ''}
       </div>
     </div>`;
 
   _bindCardHover(card);
-
   card.addEventListener('click', () => _abrirModal(aula));
-  card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _abrirModal(aula); } });
+  card.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _abrirModal(aula); }
+  });
   return card;
 }
 
 function _criarCardSintese(aula, idx) {
-  const secoes  = aula.secoes ?? [];
   const aulaStr = _esc(aula.aula ?? '');
   const m       = aulaStr.match(/^(Aula\s*[\d\/]+)\s*[—–-]\s*(.+)$/i);
   const aulaNum = m ? m[1] : aulaStr;
@@ -625,45 +628,39 @@ function _criarCardSintese(aula, idx) {
   const temSint = !!(sint && (sint.ideia_central || (sint.secoes ?? []).length > 0));
   const preview = sint?.ideia_central ?? null;
   const numSec  = (sint?.secoes ?? []).length;
+  const numPad  = String(idx + 1).padStart(2, '0');
 
   const card = document.createElement('article');
-  card.className = 'resumo-card resumo-card--nota resumo-card--sintese';
-  card.style.animationDelay = `${idx * 0.055}s`;
+  card.className = 'resumo-card';
+  card.dataset.tipo = 'sintese';
   card.setAttribute('tabindex', '0');
   card.setAttribute('role', 'button');
   card.setAttribute('aria-label', `Síntese: ${aula.aula}`);
   card.innerHTML = `
-    <div class="card-inner">
-      <div class="card-num-row">
-        <div class="card-num">${aulaNum}</div>
-        ${_profChip(aula.professor)}
-        <span class="sint-badge">${temSint ? 'Síntese' : 'Sem síntese'}</span>
-      </div>
-      <div class="card-title">${aulaTit || aulaStr}</div>
-      <div class="card-divider"></div>
+    <div class="resumo-card__stripe"></div>
+    <div class="resumo-card__head">
+      <span class="resumo-card__num">${numPad}</span>
+      <span class="resumo-card__arrow">${_ARROW_SVG}</span>
+    </div>
+    <div class="resumo-card__body">
+      <div class="resumo-card__aula">${aulaNum} · Síntese</div>
+      <div class="resumo-card__titulo">${aulaTit || aulaStr}</div>
       ${preview
-        ? `<p class="card-desc">${_parseInline(preview)}</p>`
-        : `<p class="card-desc" style="font-style:italic;opacity:0.5">Síntese não disponível ainda.</p>`}
-      <div class="card-bottom">
-  <div class="card-progress__track"><div class="card-progress__fill"></div></div>
-  <div class="card-meta">
-    <span class="card-meta__count">${numSec} seç${numSec !== 1 ? 'ões' : 'ão'}</span>
-    <span class="card-meta__cta">
-      Ver síntese
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-           stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
-      </svg>
-    </span>
-  </div>
-</div>
+        ? `<div class="resumo-card__desc">${_parseInline(preview)}</div>`
+        : `<div class="resumo-card__desc" style="font-style:italic;opacity:0.5">Síntese não disponível ainda.</div>`}
+      <div class="resumo-card__meta">
+        <span class="resumo-card__tag">
+          <span class="resumo-card__tag-dot"></span>
+          ${numSec} seç${numSec !== 1 ? 'ões' : 'ão'}
+        </span>
       </div>
     </div>`;
 
   _bindCardHover(card);
-
   card.addEventListener('click', () => { if (temSint) _abrirModal(sint); });
-  card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (temSint) _abrirModal(sint); } });
+  card.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (temSint) _abrirModal(sint); }
+  });
   return card;
 }
 
@@ -671,48 +668,41 @@ function _criarCardSintese(aula, idx) {
    CARD — Resumão
 ══════════════════════════════════════════════ */
 function _criarCardResumao(res, idx) {
-  // res tem o mesmo formato de uma aula: { aula, ideia_central, secoes }
   const aulaStr = _esc(res.aula ?? '');
   const m       = aulaStr.match(/^(Aula\s*[\d\/]+)\s*[—–-]\s*(.+)$/i);
   const aulaNum = m ? m[1] : aulaStr;
   const aulaTit = m ? m[2] : '';
   const preview = res.ideia_central ?? null;
   const numSec  = (res.secoes ?? []).length;
+  const numPad  = String(idx + 1).padStart(2, '0');
 
   const card = document.createElement('article');
-  card.className = 'resumo-card resumo-card--nota resumo-card--resumao';
-  card.style.animationDelay = `${idx * 0.055}s`;
+  card.className = 'resumo-card';
+  card.dataset.tipo = 'resumao';
   card.setAttribute('tabindex', '0');
   card.setAttribute('role', 'button');
   card.setAttribute('aria-label', `Resumão: ${res.aula}`);
   card.innerHTML = `
-    <div class="card-inner">
-      <div class="card-num-row">
-        <div class="card-num">${aulaNum}</div>
-        <span class="resumao-badge">Resumão</span>
-      </div>
-      <div class="card-title">${aulaTit || aulaStr}</div>
-      <div class="card-divider"></div>
+    <div class="resumo-card__stripe"></div>
+    <div class="resumo-card__head">
+      <span class="resumo-card__num">${numPad}</span>
+      <span class="resumo-card__arrow">${_ARROW_SVG}</span>
+    </div>
+    <div class="resumo-card__body">
+      <div class="resumo-card__aula">${aulaNum} · Resumão</div>
+      <div class="resumo-card__titulo">${aulaTit || aulaStr}</div>
       ${preview
-        ? `<p class="card-desc">${_parseInline(preview)}</p>`
-        : `<p class="card-desc" style="font-style:italic;opacity:0.5">Resumão não disponível ainda.</p>`}
-      <div class="card-bottom">
-        <div class="card-progress__track"><div class="card-progress__fill"></div></div>
-        <div class="card-meta">
-          <span class="card-meta__count">${numSec} seç${numSec !== 1 ? 'ões' : 'ão'}</span>
-          <span class="card-meta__cta">
-            Ver resumão
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
-            </svg>
-          </span>
-        </div>
+        ? `<div class="resumo-card__desc">${_parseInline(preview)}</div>`
+        : `<div class="resumo-card__desc" style="font-style:italic;opacity:0.5">Resumão não disponível ainda.</div>`}
+      <div class="resumo-card__meta">
+        <span class="resumo-card__tag">
+          <span class="resumo-card__tag-dot"></span>
+          ${numSec} seç${numSec !== 1 ? 'ões' : 'ão'}
+        </span>
       </div>
     </div>`;
 
   _bindCardHover(card);
-
   card.addEventListener('click', () => _abrirModalResumao(res));
   card.addEventListener('keydown', e => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _abrirModalResumao(res); }
