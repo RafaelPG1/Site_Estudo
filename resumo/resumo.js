@@ -76,10 +76,18 @@ function _loadScript(src) {
   });
 }
 
+// Declara o contexto de conteúdo da página ANTES de carregar os scripts da IA.
+// core/context.js lê window.__NEXUS_CONTEXT__ ao ser carregado — se essa
+// variável não existir nesse momento, a IA cai no fallback de "contexto
+// vazio" e nunca inicializa (mesmo padrão usado em quiz.js).
+window.__NEXUS_CONTEXT__ = { tipos: ['resumo'] };
+
 function _carregarIA() {
   const BASE = '../shared/js/ia/';
   const deps = [
+    BASE + 'core/context.js',
     BASE + 'core/text-utils.js',
+    BASE + 'core/history.js',
     BASE + 'core/loader.js',
     BASE + 'core/worker.js',
     BASE + 'core/ui.js',
@@ -88,8 +96,13 @@ function _carregarIA() {
 
   Promise.all(deps.map(_loadScript))
     .then(() => _loadScript(BASE + 'resumo/assistant.js'))
-    .then(() => _loadScript(BASE + 'init.js'))
-    .catch(err => console.error(err));
+    .then(() => {
+      if (window.NexusAssistant) {
+        window.NexusAssistant.initUI();
+        window.NexusAssistant.init();
+      }
+    })
+    .catch(err => console.error('[Resumo] Falha ao carregar IA:', err));
 }
 
 _carregarIA();
