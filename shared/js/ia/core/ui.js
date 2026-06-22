@@ -34,6 +34,18 @@
  *   texto) e não precisa saber nada sobre state.processando ou sobre
  *   o histórico do worker.
  *
+ * ── BUGFIX — botão de arrastar pulava para o canto ao ativar ───
+ *   Em _ativarModoDrag(), panel.getBoundingClientRect() era chamado
+ *   DEPOIS de panel.classList.add('nexus-panel--draggable') — classe
+ *   que remove as âncoras bottom/right do CSS padrão do painel. Ou
+ *   seja, a "posição atual" capturada já era a posição SEM âncoras
+ *   (caindo para perto do canto superior esquerdo), não a posição que
+ *   o usuário via na tela. Isso fazia o painel pular para esse canto
+ *   já no primeiro clique no botão de arrastar (parecendo sumir), e
+ *   essa posição ruim ficava salva no localStorage, reaparecendo no
+ *   canto esquerdo mesmo depois de um F5. CORREÇÃO: a posição agora é
+ *   capturada ANTES de adicionar a classe que remove as âncoras.
+ *
  * API pública: window.NexusUI
  */
 
@@ -923,6 +935,23 @@
     if (!panel || !header) return;
 
     _dragState.ativo = true;
+
+    var posSalva = _lerDragPos();
+
+    // BUG CORRIGIDO: a posição visual do painel precisa ser capturada
+    // ANTES de adicionar a classe 'nexus-panel--draggable' — essa
+    // classe é o que remove as âncoras bottom/right do CSS padrão
+    // (ver comentário no cabeçalho do arquivo). Antes, o
+    // getBoundingClientRect() rodava DEPOIS do classList.add(), ou
+    // seja, já media o painel sem âncoras (caindo para o layout
+    // estático padrão, perto do canto superior esquerdo) em vez da
+    // posição real que o usuário estava vendo. Resultado: ao clicar
+    // no botão de arrastar pela primeira vez, o painel "pulava" para
+    // esse canto errado (parecendo sumir) e essa posição ruim ainda
+    // era salva no localStorage, reaparecendo no canto esquerdo até
+    // depois de um F5.
+    var rectAntes = !posSalva ? panel.getBoundingClientRect() : null;
+
     panel.classList.add('nexus-panel--draggable');
     header.classList.add('nexus-drag-enabled');
     if (toggle) {
@@ -932,16 +961,15 @@
       toggle.title = 'Desativar modo arrastar';
     }
 
-    var posSalva = _lerDragPos();
     if (posSalva) {
       _aplicarPosicaoSalva();
     } else {
-      // Primeira ativação: parte da posição visual atual do painel
-      // (calculada a partir do layout CSS padrão) para não "pular".
-      var rect = panel.getBoundingClientRect();
-      panel.style.top  = rect.top  + 'px';
-      panel.style.left = rect.left + 'px';
-      _salvarDragPos(rect.top, rect.left);
+      // Primeira ativação: usa a posição capturada ANTES das âncoras
+      // CSS serem removidas, para que o painel não pule do lugar —
+      // ele só vai sair do canto quando o usuário de fato arrastar.
+      panel.style.top  = rectAntes.top  + 'px';
+      panel.style.left = rectAntes.left + 'px';
+      _salvarDragPos(rectAntes.top, rectAntes.left);
     }
 
     _salvarDragAtivo(true);
