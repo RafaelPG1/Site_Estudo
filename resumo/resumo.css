@@ -93,8 +93,6 @@ img { display: block; max-width: 100%; }
 
 /* ══════════════════════════════════════════
    FUNDO — AURORA LITERÁRIA
-   Camadas: deep indigo base + 3 nebulosas suaves
-   Diferente do Quiz (que usa azul frio / cyan)
 ══════════════════════════════════════════ */
 .bg-canvas {
   position: fixed;
@@ -193,7 +191,7 @@ img { display: block; max-width: 100%; }
   pointer-events: none;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding: 0 200px; /* espaço para left/right não sobrepor os controles */
+  padding: 0 200px;
 }
 .header__center span { color: var(--disc-tema); }
 .header__right {
@@ -208,14 +206,11 @@ img { display: block; max-width: 100%; }
   flex-shrink: 0;
 }
 
-/* Área logo — composição compacta e equilibrada */
 .header__logo {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
-
-/* Wrapper do logo SVG/IMG injetado pelo JS */
 .header__logo img,
 .header__logo svg {
   width: 26px;
@@ -223,8 +218,6 @@ img { display: block; max-width: 100%; }
   flex-shrink: 0;
   display: block;
 }
-
-/* Texto ao lado da logo — injetado por injetarLogo() */
 .header__logo-text {
   display: flex;
   flex-direction: column;
@@ -247,7 +240,6 @@ img { display: block; max-width: 100%; }
   white-space: nowrap;
 }
 
-/* Botão voltar */
 .btn-back {
   display: inline-flex;
   align-items: center;
@@ -271,7 +263,6 @@ img { display: block; max-width: 100%; }
 }
 .btn-back__label { font-weight: 600; }
 
-/* Badge de semestre — mantido como fallback de CSS, mas agora o select é funcional */
 .header__sem-badge {
   justify-self: end;
   font-family: var(--font-display);
@@ -290,7 +281,6 @@ img { display: block; max-width: 100%; }
   user-select: none;
 }
 
-/* Disc badge no header */
 .disc-badge {
   display: inline-flex;
   align-items: center;
@@ -375,7 +365,6 @@ img { display: block; max-width: 100%; }
   box-shadow: 0 0 10px rgba(var(--disc-tema-rgb), 0.08);
   transition: color 0.3s, background 0.3s, border-color 0.3s;
 }
-
 
 .disc-list {
   flex: 1;
@@ -551,11 +540,10 @@ img { display: block; max-width: 100%; }
    MAIN / GRID
 ══════════════════════════════════════════ */
 .main {
-  padding: 2rem 3rem 4rem;
-  max-width: calc(var(--content-max) + 6rem);
+  padding: 2rem 2.5rem 4rem;
+  max-width: 100%;
 }
 
-/* Toggle de modo */
 .mode-toggle {
   display: inline-flex;
   align-items: center;
@@ -622,7 +610,6 @@ img { display: block; max-width: 100%; }
   50%      { opacity:0.5; transform:scale(0.75); }
 }
 
-/* Spinner */
 .spinner {
   width: 28px; height: 28px;
   border-radius: 50%;
@@ -633,9 +620,7 @@ img { display: block; max-width: 100%; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ══════════════════════════════════════════
-   GRID DE RESUMOS — CARDS INDEPENDENTES
-   Grid responsivo real: várias colunas,
-   cards compactos, largura/altura equilibradas.
+   GRID DE RESUMOS
 ══════════════════════════════════════════ */
 .resumos-grid {
   display: grid;
@@ -648,7 +633,6 @@ img { display: block; max-width: 100%; }
   align-items: stretch;
 }
 
-/* Card individual — bloco independente, compacto */
 .resumo-card {
   display: flex;
   flex-direction: column;
@@ -673,18 +657,10 @@ img { display: block; max-width: 100%; }
   box-shadow: 0 10px 28px rgba(0,0,0,0.35),
               0 0 0 1px rgba(var(--disc-tema-rgb), 0.08);
 }
-.resumo-card:hover .resumo-card__stripe {
-  opacity: 1;
-}
-.resumo-card:hover .resumo-card__num {
-  color: var(--disc-tema);
-}
-.resumo-card:hover .resumo-card__arrow {
-  opacity: 1;
-  transform: translateX(0);
-}
+.resumo-card:hover .resumo-card__stripe { opacity: 1; }
+.resumo-card:hover .resumo-card__num    { color: var(--disc-tema); }
+.resumo-card:hover .resumo-card__arrow  { opacity: 1; transform: translateX(0); }
 
-/* Stripe superior — chapter mark (linha fina no topo do card) */
 .resumo-card__stripe {
   width: 100%;
   height: 2px;
@@ -693,8 +669,6 @@ img { display: block; max-width: 100%; }
   flex-shrink: 0;
   transition: opacity 0.22s var(--ease);
 }
-
-/* Cabeçalho: número do capítulo + seta, lado a lado */
 .resumo-card__head {
   display: flex;
   align-items: center;
@@ -702,8 +676,6 @@ img { display: block; max-width: 100%; }
   padding: 0.85rem 1.1rem 0;
   flex-shrink: 0;
 }
-
-/* Número do capítulo */
 .resumo-card__num {
   font-family: var(--font-mono);
   font-size: 0.66rem;
@@ -712,8 +684,6 @@ img { display: block; max-width: 100%; }
   letter-spacing: 0.04em;
   transition: color 0.2s;
 }
-
-/* Corpo do card */
 .resumo-card__body {
   padding: 0.65rem 1.1rem 1.1rem;
   min-width: 0;
@@ -781,8 +751,6 @@ img { display: block; max-width: 100%; }
   background: var(--disc-tema);
   opacity: 0.5;
 }
-
-/* Seta de navegação — agora junto ao número, no header do card */
 .resumo-card__arrow {
   display: flex;
   align-items: center;
@@ -793,7 +761,6 @@ img { display: block; max-width: 100%; }
   flex-shrink: 0;
 }
 
-/* Variações de tipo */
 .resumo-card[data-tipo="sintese"] .resumo-card__stripe { background: var(--amber); }
 .resumo-card[data-tipo="sintese"] .resumo-card__aula   { color: var(--amber); }
 .resumo-card[data-tipo="sintese"] .resumo-card__tag-dot { background: var(--amber); }
@@ -848,9 +815,7 @@ img { display: block; max-width: 100%; }
   font-size: 0.68rem;
   background: rgba(255,255,255,0.02);
 }
-.videos-strip__chevron {
-  transition: transform 0.2s var(--ease);
-}
+.videos-strip__chevron { transition: transform 0.2s var(--ease); }
 .videos-strip--open .videos-strip__chevron { transform: rotate(180deg); }
 .videos-strip__body {
   max-height: 0;
@@ -913,8 +878,11 @@ img { display: block; max-width: 100%; }
 }
 .reader.read-modal--open { transform: translateX(0); }
 
+/* ── BARRA DO READER ── */
+/* ✦ AJUSTE 2 & 3: título e badge centralizados
+   position: relative permite o absolute do .reader__bar-meta */
 .reader__bar {
-  position: sticky;
+  position: relative;
   top: 0;
   height: var(--header-h);
   background: rgba(7,9,26,0.88);
@@ -927,27 +895,51 @@ img { display: block; max-width: 100%; }
   flex-shrink: 0;
   z-index: 10;
 }
+
 .reader__back {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  padding: 0.32rem 0.75rem 0.32rem 0.55rem;
-  border-radius: var(--r-md);
+  gap: 0.5rem;
+  padding: 0.45rem 0.8rem;
+  border-radius: 8px;
   border: 1px solid var(--border-2);
-  background: rgba(255,255,255,0.03);
   color: var(--text-2);
-  font-size: 0.75rem;
-  font-weight: 500;
-  transition: color 0.18s, background 0.18s;
+  background: rgba(255,255,255,0.05);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+  white-space: nowrap;
+  /* garante z-index acima do meta absoluto */
+  position: relative;
+  z-index: 2;
 }
-.reader__back:hover { color: var(--text-1); background: rgba(255,255,255,0.06); }
+.reader__back:hover {
+  color: var(--text-1);
+  border-color: var(--border-3);
+  background: rgba(255,255,255,0.08);
+}
+
+/* ✦ AJUSTE 2 & 3: meta (título + badge) centralizado absolutamente */
 .reader__bar-meta {
-  flex: 1;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.65rem;
-  min-width: 0;
+  /* não bloqueia cliques nos botões atrás */
+  pointer-events: none;
+  /* espaço lateral para não colidir com Voltar (esq) e progresso (dir) */
+  padding: 0 160px;
+  overflow: hidden;
+  z-index: 1;
 }
+
 .reader__bar-aula {
   font-size: 0.72rem;
   font-weight: 600;
@@ -957,7 +949,10 @@ img { display: block; max-width: 100%; }
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex-shrink: 1;
+  min-width: 0;
 }
+
 .reader__bar-badge {
   padding: 0.2rem 0.6rem;
   border-radius: var(--r-sm);
@@ -969,14 +964,20 @@ img { display: block; max-width: 100%; }
   color: var(--disc-tema);
   border: 1px solid rgba(var(--disc-tema-rgb),0.22);
   white-space: nowrap;
+  flex-shrink: 0;
 }
+
+/* Progresso: fixo à direita, z-index acima do meta */
 .reader__bar-progress {
+  margin-left: auto;
   width: 100px;
   height: 3px;
   background: var(--border-2);
   border-radius: 99px;
   overflow: hidden;
   flex-shrink: 0;
+  position: relative;
+  z-index: 2;
 }
 .reader__bar-progress-fill {
   height: 100%;
@@ -998,7 +999,7 @@ img { display: block; max-width: 100%; }
 }
 
 /* ══════════════════════════════════════════
-   CONTENT RENDERING (dentro do reader)
+   CONTENT RENDERING
 ══════════════════════════════════════════ */
 .reader__content h1,
 .reader__content h2,
@@ -1086,7 +1087,6 @@ img { display: block; max-width: 100%; }
 }
 .rm-collapse__inner p { font-size: 0.88rem; }
 
-/* Listas de tópicos */
 .tópico-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
 .tópico-item {
   display: flex; gap: 0.65rem; align-items: flex-start;
@@ -1104,7 +1104,6 @@ img { display: block; max-width: 100%; }
 }
 .tópico-item p { font-size: 0.85rem; color: var(--text-2); margin: 0; }
 
-/* Destaque / callout */
 .callout {
   padding: 1rem 1.25rem;
   border-radius: var(--r-md);
@@ -1150,9 +1149,7 @@ img { display: block; max-width: 100%; }
   transform: translateY(100%);
   transition: transform 0.28s var(--ease);
 }
-.mobile-dropdown--open .mobile-dropdown__sheet {
-  transform: translateY(0);
-}
+.mobile-dropdown--open .mobile-dropdown__sheet { transform: translateY(0); }
 .mobile-dropdown__handle {
   width: 36px; height: 4px;
   border-radius: 99px;
@@ -1178,15 +1175,23 @@ img { display: block; max-width: 100%; }
 
 /* ══════════════════════════════════════════
    BOTÕES FLUTUANTES
+   ✦ AJUSTE 1: integrados visualmente ao card
+   de leitura — alinhados à direita do
+   reader__content (max-width 720px, centrado).
+   Em desktop: left: calc(50% + 380px) coloca
+   os botões logo após o limite direito do card.
+   Em mobile: fallback para borda direita.
 ══════════════════════════════════════════ */
 .float-actions {
   position: fixed;
-  right: 1.25rem;
-  bottom: 2rem;
-  z-index: 300;
+  /* Posiciona à direita do reader__content centrado (720px max-width + 2rem padding) */
+  left: calc(50% + 380px);
+  bottom: 3rem;
+  z-index: 450;
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 0;
 }
 .float-btn {
   width: 36px; height: 36px;
@@ -1204,6 +1209,7 @@ img { display: block; max-width: 100%; }
   border-color: rgba(var(--disc-tema-rgb),0.35);
   background: rgba(var(--disc-tema-rgb),0.07);
 }
+/* Tooltip à esquerda dos botões (aponta para o card) */
 .float-btn::after {
   content: attr(data-tip);
   position: absolute;
@@ -1224,6 +1230,22 @@ img { display: block; max-width: 100%; }
 .float-btn:hover::after { opacity: 1; }
 .float-btn--hidden { display: none; }
 
+/* Quando o viewport não comporta os botões fora do card,
+   volta para a borda direita com margem */
+@media (max-width: 1160px) {
+  .float-actions {
+    left: auto;
+    right: 1.25rem;
+    bottom: 2rem;
+  }
+}
+@media (max-width: 600px) {
+  .float-actions {
+    right: 0.75rem;
+    bottom: 1.5rem;
+  }
+}
+
 /* ══════════════════════════════════════════
    RESPONSIVO
 ══════════════════════════════════════════ */
@@ -1240,6 +1262,8 @@ img { display: block; max-width: 100%; }
   #videos-section { padding: 0 1.5rem; }
   .header__center { display: none; }
   .resumos-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.85rem; }
+  /* reader bar: padding menor para o título ter mais espaço */
+  .reader__bar-meta { padding: 0 120px; }
 }
 
 @media (max-width: 600px) {
@@ -1251,6 +1275,9 @@ img { display: block; max-width: 100%; }
   .header__right { gap: 0.4rem; }
   .header__sem-badge { display: none; }
   .resumos-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.65rem; }
+  /* em telas pequenas, esconde progresso para dar espaço ao título */
+  .reader__bar-progress { display: none; }
+  .reader__bar-meta { padding: 0 90px; }
 }
 
 /* ── Reduced motion ── */
@@ -1259,7 +1286,7 @@ img { display: block; max-width: 100%; }
 }
 
 /* ══════════════════════════════════════════════
-   READER — HERO INTERNO (produzido por _buildReaderBody)
+   READER — HERO INTERNO
 ══════════════════════════════════════════════ */
 .reader__hero {
   margin-bottom: 2.5rem;
@@ -1320,7 +1347,6 @@ img { display: block; max-width: 100%; }
   border-radius: 99px;
 }
 
-/* Ideia central */
 .reader__ideia {
   display: flex;
   align-items: flex-start;
@@ -1336,11 +1362,9 @@ img { display: block; max-width: 100%; }
 }
 .rm-ideia-icon { font-size: 1rem; flex-shrink: 0; line-height: 1.5; }
 
-/* Accordion inner content area */
 .rm-collapse__body-inner { padding: 1.25rem; }
 .rm-collapse__body-content { display: flex; flex-direction: column; gap: 0.75rem; }
 
-/* Tópicos */
 .rm-topico {
   padding: 0.75rem 0;
   border-bottom: 1px solid var(--border-1);
@@ -1371,7 +1395,6 @@ img { display: block; max-width: 100%; }
   font-style: italic;
 }
 
-/* Listas */
 .rm-lista {
   list-style: none;
   padding: 0;
@@ -1404,7 +1427,6 @@ img { display: block; max-width: 100%; }
   margin-bottom: 0.35rem;
 }
 
-/* Subtítulos */
 .rm-subtitulo {
   font-family: var(--font-display);
   font-size: 1.1rem;
@@ -1413,7 +1435,6 @@ img { display: block; max-width: 100%; }
   margin: 0.5rem 0 0.25rem;
 }
 
-/* Exemplos */
 .rm-exemplo {
   padding: 0.75rem 1rem;
   background: rgba(232,184,109,0.05);
@@ -1441,7 +1462,6 @@ img { display: block; max-width: 100%; }
   font-style: italic;
 }
 
-/* Destaques */
 .rm-destaque {
   padding: 0.85rem 1.1rem;
   background: rgba(var(--disc-tema-rgb), 0.05);
@@ -1453,7 +1473,6 @@ img { display: block; max-width: 100%; }
   font-style: italic;
 }
 
-/* Tabelas */
 .rm-tabela-wrap {
   overflow-x: auto;
   border-radius: var(--r-md);
@@ -1485,7 +1504,6 @@ img { display: block; max-width: 100%; }
 .rm-tabela tr:last-child td { border-bottom: none; }
 .rm-tabela tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 
-/* Figuras */
 .rm-fig { margin: 1rem 0; }
 .rm-fig__img {
   max-width: 100%;
@@ -1509,7 +1527,6 @@ img { display: block; max-width: 100%; }
   letter-spacing: 0.07em;
 }
 
-/* Código */
 .rm-codigo {
   background: rgba(255,255,255,0.03);
   border: 1px solid var(--border-2);
@@ -1524,7 +1541,6 @@ img { display: block; max-width: 100%; }
   color: var(--disc-tema);
 }
 
-/* Sidebar chevron SVG */
 .disc-item__chevron {
   width: 12px; height: 12px;
   color: var(--text-3);
@@ -1535,7 +1551,6 @@ img { display: block; max-width: 100%; }
 .disc-item:hover .disc-item__chevron { opacity: 0.7; }
 .disc-item--active .disc-item__chevron { opacity: 1; color: var(--disc-tema); }
 
-/* Badges de tipo no reader */
 .badge--conceito {
   background: rgba(var(--disc-tema-rgb), 0.10);
   color: var(--disc-tema);
@@ -1549,19 +1564,13 @@ img { display: block; max-width: 100%; }
 
 /* ══════════════════════════════════════════
    LOGO — regras defensivas para injetarLogo()
-   Cobre os formatos: só img, img + texto,
-   wrapper com filhos variados.
 ══════════════════════════════════════════ */
-
-/* Tudo dentro do wrapper de logo fica alinhado */
 #header-logo-wrap {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   min-width: 0;
 }
-
-/* Qualquer imagem/svg injetada */
 #header-logo-wrap img,
 #header-logo-wrap svg {
   width: 26px;
@@ -1570,8 +1579,6 @@ img { display: block; max-width: 100%; }
   display: block;
   object-fit: contain;
 }
-
-/* Bloco de texto ao lado da logo (nome + subtítulo) */
 #header-logo-wrap > span,
 #header-logo-wrap > div,
 #header-logo-wrap > p {
@@ -1581,8 +1588,6 @@ img { display: block; max-width: 100%; }
   min-width: 0;
   line-height: 1;
 }
-
-/* Primeira linha de texto — nome do sistema */
 #header-logo-wrap > span:first-of-type,
 #header-logo-wrap .logo-name,
 #header-logo-wrap strong,
@@ -1594,8 +1599,6 @@ img { display: block; max-width: 100%; }
   letter-spacing: 0.01em;
   white-space: nowrap;
 }
-
-/* Segunda linha — subtítulo */
 #header-logo-wrap .logo-sub,
 #header-logo-wrap small,
 #header-logo-wrap em {
@@ -1606,8 +1609,6 @@ img { display: block; max-width: 100%; }
   white-space: nowrap;
   font-style: normal;
 }
-
-/* Se o wrapper inteiro for um <a> */
 #header-logo-wrap a {
   display: flex;
   align-items: center;
@@ -1615,23 +1616,17 @@ img { display: block; max-width: 100%; }
   text-decoration: none;
   color: inherit;
 }
-
-/* ── Classes injetadas por logo.js (nexus-logo__*) ── */
-
-/* Ícone: maior, borda branca fixa (não segue tema) */
 #header-logo-wrap .nexus-logo__img {
   width: 34px !important;
   height: 34px !important;
   border-radius: 22%;
-  border: 1px solid rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.12);
   transition: filter 0.25s ease, transform 0.25s ease;
 }
 #header-logo-wrap .nexus-logo__link:hover .nexus-logo__img {
   filter: drop-shadow(0 0 6px rgba(255,255,255,0.15));
   transform: scale(1.05);
 }
-
-/* Link da logo */
 #header-logo-wrap .nexus-logo__link {
   display: flex;
   align-items: center;
@@ -1639,16 +1634,12 @@ img { display: block; max-width: 100%; }
   text-decoration: none;
   color: inherit;
 }
-
-/* Texto em duas linhas: Nexus / STUDY */
 #header-logo-wrap .nexus-logo__texto--stacked {
   display: flex;
   flex-direction: column;
   line-height: 1;
   gap: 0.18rem;
 }
-
-/* "Nexus" — branco, peso médio */
 #header-logo-wrap .nexus-logo__titulo {
   font-family: var(--font-body);
   font-size: 0.92rem;
@@ -1657,8 +1648,6 @@ img { display: block; max-width: 100%; }
   letter-spacing: 0.01em;
   line-height: 1;
 }
-
-/* "STUDY" — verde moderno, uppercase, espaçado */
 #header-logo-wrap .nexus-logo__sub {
   font-family: var(--font-body);
   font-size: 0.56rem;
@@ -1667,11 +1656,4 @@ img { display: block; max-width: 100%; }
   text-transform: uppercase;
   color: #4ade80;
   line-height: 1;
-}
-
-/* ── Ajuste de padding do main para separação
-   adequada acima dos cards ── */
-.main {
-  padding: 2rem 2.5rem 4rem;
-  max-width: 100%;
 }
