@@ -46,6 +46,9 @@ import {
 } from './shared/js/audio/audio-api.js';
 
 
+/* ── IDs de cards que exigem login — declarado no topo para evitar TDZ ── */
+const CARDS_RESTRITOS = ['card-pessoal'];
+
 /* ═══════════════════════════════════════════════
    SEÇÃO 2 — ASSISTENTE IA
    O botão flutuante (#nexus-fab) é injetado por
@@ -112,14 +115,21 @@ async function init() {
 
     setPagina('HOME');
     _refreshHeader();
+    _aplicarBloqueioCards();
+    _bindCardLinks(); // registra listeners imediatamente — não depende do áudio
 
     // Rastreamento de sessão
-    document.addEventListener('nexus:loginSuccess', () => iniciarSessao());
-    document.addEventListener('nexus:logout',       () => encerrarSessao());
+    document.addEventListener('nexus:loginSuccess', () => {
+      iniciarSessao();
+      _aplicarBloqueioCards();
+    });
+    document.addEventListener('nexus:logout', () => {
+      encerrarSessao();
+      _aplicarBloqueioCards();
+    });
 
     await Sound.waitUntilReady();
 
-    _bindCardLinks();
     preencherAnos(['footer-year']);
 
     _iniciarMusicaMenu();
@@ -269,6 +279,7 @@ function _renderHeader() {
 /* ═══════════════════════════════════════════════
    SEÇÃO 5 — CARDS
    Hover usa área 'inicial'; click usa a área de destino.
+   Card "Pessoal" é bloqueado para visitantes (sem login).
 ═══════════════════════════════════════════════ */
 
 function _bindCardLinks() {
@@ -282,12 +293,64 @@ function _bindCardLinks() {
   Object.entries(rotas).forEach(([id, { path, area }]) => {
     const card = document.getElementById(id);
     if (!card) return;
-    card.addEventListener('mouseenter', () => playSound('hover', 'inicial'));
-    card.addEventListener('click',      () => {
+
+    const restrito = CARDS_RESTRITOS.includes(id);
+
+    card.addEventListener('mouseenter', () => {
+      playSound('hover', 'inicial');
+    });
+
+    card.addEventListener('click', (e) => {
+      if (restrito && !estaLogado()) {
+        e.preventDefault();
+        _dispararBloqueio(card);
+        return;
+      }
       playSound('click', area);
       window.location.href = path;
     });
   });
+}
+
+/* Aplica/remove o estado visual de bloqueio nos cards restritos,
+   de acordo com o status de login atual. Chamado na init e
+   sempre que login/logout acontece. */
+function _aplicarBloqueioCards() {
+  CARDS_RESTRITOS.forEach(id => {
+    const card = document.getElementById(id);
+    if (!card) return;
+
+    const bloqueado = !estaLogado();
+    card.classList.toggle('card--locked', bloqueado);
+    card.setAttribute('aria-disabled', bloqueado ? 'true' : 'false');
+
+    // Badge de cadeado — injeta uma vez, reaproveita depois
+    let badge = card.querySelector('.card__lock-badge');
+    if (bloqueado && !badge) {
+      badge = document.createElement('div');
+      badge.className = 'card__lock-badge';
+      badge.innerHTML = `
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="5" y="11" width="14" height="9" rx="2"/>
+          <path d="M8 11V8a4 4 0 0 1 8 0v3"/>
+        </svg>
+        <span>Entrar para acessar</span>
+      `;
+      card.appendChild(badge);
+    } else if (!bloqueado && badge) {
+      badge.remove();
+    }
+  });
+}
+
+/* Feedback de "tentou acessar, mas está bloqueado":
+   shake rápido no card — sem toast, sem modal. */
+function _dispararBloqueio(card) {
+  card.classList.remove('card--shake');
+  void card.offsetWidth;
+  card.classList.add('card--shake');
+  card.addEventListener('animationend', () => card.classList.remove('card--shake'), { once: true });
 }
 
 
