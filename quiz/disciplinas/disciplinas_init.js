@@ -1,6 +1,6 @@
 // @ts-nocheck
 /* ============================================================
-   NEXUS STUDY — quiz/disciplinas/disciplinas_init.js  v7.1
+   NEXUS STUDY — quiz/disciplinas/disciplinas_init.js  v7.2
 
    RESPONSABILIDADES (e apenas estas):
      1. Resolver o semestre da URL                      (navegação)
@@ -12,8 +12,21 @@
      7. Buscar catalog.json e marcar cards              (UX)
         sem conteúdo como disc-card--vazio
      8. Expor contexto de leitura (disciplina/semestre/
-        catalog) em window, para a IA do Index consumir
-        QUANDO ela for carregada por outro script        (contexto)
+        catalog) em window, para a IA consumir          (contexto)
+     9. Inicializar a IA (Nexus Assistente)             (IA)
+
+   MUDANÇAS v7.2 — INICIALIZAÇÃO DA IA:
+     - Adicionado _inicializarIA() no Passo 9.
+     - Mesmo padrão de quiz.js/_carregarIA(): carrega as
+       dependências via <script> em sequência e chama
+       NexusAssistant.initUI() + NexusAssistant.init().
+     - Os HTMLs das disciplinas NÃO devem mais carregar
+       fab.js diretamente — esta função assume essa
+       responsabilidade. ui.js faz getElementById('nexus-fab')
+       || _criarFAB(), portanto o FAB aparece no momento certo
+       independentemente de quem chega primeiro.
+     - O contexto da disciplina já está disponível em
+       window.__NEXUS_CONTEXT__ (Passo 4.5) quando a IA inicia.
 
    MUDANÇAS v7.0 — REMOÇÃO DO ASSISTENTE NEXUS IA:
      - Removido por completo o bootstrap do assistente de chat
@@ -35,21 +48,18 @@
    REVERSÃO (este arquivo NÃO bloqueia .disc-card):
      - Nenhuma lógica de login/bloqueio visual é aplicada aos
        cards de disciplina. Este arquivo permanece restrito às
-       8 responsabilidades listadas acima. O bloqueio por login
+       responsabilidades listadas acima. O bloqueio por login
        é exclusivo do botão da IA (ui.js / ia.css) e não deve
        ser estendido a nenhum outro componente desta página.
 
    PROIBIÇÕES ABSOLUTAS (mantidas):
      ✗ Carregar ques_*.js
-     ✗ Criar elementos <script> dinamicamente
+     ✗ Criar elementos <script> dinamicamente fora do Passo 9
      ✗ Ler window.questoes
      ✗ Montar caminhos de conteúdo de quiz
      ✗ Conhecer template_init.js ou quiz_engine.js
      ✗ Verificar arrays de questões
      ✗ Decidir o que o template deve fazer
-     ✗ Carregar ou inicializar qualquer módulo de IA
-       (este arquivo só EXPÕE contexto — quem decide ler ou
-       não é o bootstrap da IA, definido fora daqui)
      ✗ Aplicar qualquer classe de bloqueio (login) nos
        .disc-card — isso NÃO é responsabilidade deste arquivo
    ============================================================ */
@@ -146,7 +156,7 @@ try {
 
 
 /* ══════════════════════════════════════════════════════════
-   PASSO 4.5 — Contexto para a IA do Index (Resumo)
+   PASSO 4.5 — Contexto para a IA (Resumo)
 
    Apenas EXPÕE leitura de dados já calculados nos passos
    anteriores (_discId, _sem). Não carrega nenhum script, não
@@ -295,4 +305,73 @@ document.addEventListener('DOMContentLoaded', function () {
     .finally(function () {
       try { document.documentElement.removeAttribute('data-catalog-loading'); } catch (_) {}
     });
+
+}());
+
+
+/* ══════════════════════════════════════════════════════════
+   PASSO 9 — Inicializar a IA (Nexus Assistente)
+
+   Mesmo padrão de quiz.js/_carregarIA():
+     • Carrega dependências em sequência via <script>
+     • NexusAssistant.initUI() cria o painel/FAB se ainda não existir
+     • NexusAssistant.init() registra o contexto da disciplina atual
+       usando window.__NEXUS_CONTEXT__ já exposto no Passo 4.5
+
+   Integração com fab.js:
+     • Os HTMLs das disciplinas NÃO devem mais carregar fab.js.
+     • ui.js faz getElementById('nexus-fab') || _criarFAB(),
+       portanto o FAB aparece no momento certo independentemente
+       de quem chega primeiro.
+
+   Garantias:
+     • Não bloqueia renderização (aguarda DOMContentLoaded)
+     • Se algum script falhar, apenas loga — não quebra a página
+     • Não cria nenhum sistema paralelo — reutiliza integralmente
+       a cadeia ui.js → NexusAssistant já usada pelo quiz.js
+   ══════════════════════════════════════════════════════════ */
+(function _inicializarIA() {
+
+  function _loadScript(src) {
+    return new Promise(function (resolve, reject) {
+      if (document.querySelector('script[src="' + src + '"]')) { resolve(); return; }
+      var s = document.createElement('script');
+      s.src     = src;
+      s.onload  = resolve;
+      s.onerror = function () { reject(new Error('[Nexus IA] Falha: ' + src)); };
+      document.body.appendChild(s);
+    });
+  }
+
+  /* Caminho relativo ao próprio disciplinas_init.js:
+       quiz/disciplinas/disciplinas_init.js
+       → ../../shared/js/ia/
+       → shared/js/ia/
+     Idêntico ao BASE usado em quiz.js ('../../shared/js/ia/' a partir de quiz/). */
+  var BASE = new URL('../../shared/js/ia/', import.meta.url).href;
+
+  var deps = [
+    BASE + 'core/context.js',
+    BASE + 'core/text-utils.js',
+    BASE + 'core/history.js',
+    BASE + 'core/loader.js',
+    BASE + 'core/worker.js',
+    BASE + 'core/ui.js',
+    BASE + 'resumo/search.js',
+  ];
+
+  document.addEventListener('DOMContentLoaded', function () {
+    Promise.all(deps.map(_loadScript))
+      .then(function () { return _loadScript(BASE + 'resumo/assistant.js'); })
+      .then(function () {
+        if (window.NexusAssistant) {
+          window.NexusAssistant.initUI();
+          window.NexusAssistant.init();
+        }
+      })
+      .catch(function (err) {
+        console.error('[disciplinas_init] Falha ao carregar IA:', err);
+      });
+  }, { once: true });
+
 }());
