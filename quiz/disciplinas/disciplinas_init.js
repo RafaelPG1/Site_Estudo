@@ -32,6 +32,13 @@
        elemento <script> é criado dinamicamente, nenhuma
        inicialização de IA acontece aqui.
 
+   REVERSÃO (este arquivo NÃO bloqueia .disc-card):
+     - Nenhuma lógica de login/bloqueio visual é aplicada aos
+       cards de disciplina. Este arquivo permanece restrito às
+       8 responsabilidades listadas acima. O bloqueio por login
+       é exclusivo do botão da IA (ui.js / ia.css) e não deve
+       ser estendido a nenhum outro componente desta página.
+
    PROIBIÇÕES ABSOLUTAS (mantidas):
      ✗ Carregar ques_*.js
      ✗ Criar elementos <script> dinamicamente
@@ -43,6 +50,8 @@
      ✗ Carregar ou inicializar qualquer módulo de IA
        (este arquivo só EXPÕE contexto — quem decide ler ou
        não é o bootstrap da IA, definido fora daqui)
+     ✗ Aplicar qualquer classe de bloqueio (login) nos
+       .disc-card — isso NÃO é responsabilidade deste arquivo
    ============================================================ */
 
 import { DISC_CORES }          from '../../shared/js/themes/cores.js';
@@ -137,7 +146,7 @@ try {
 
 
 /* ══════════════════════════════════════════════════════════
-   PASSO 4.5 — Contexto para a IA do Index (Resumo)        [NOVO]
+   PASSO 4.5 — Contexto para a IA do Index (Resumo)
 
    Apenas EXPÕE leitura de dados já calculados nos passos
    anteriores (_discId, _sem). Não carrega nenhum script, não
@@ -224,7 +233,7 @@ document.addEventListener('DOMContentLoaded', function () {
      3. Lê catalog[_sem][discId]
      4. Para cada card com data-modo, aplica disc-card--vazio
         se o modo estiver ausente ou false no catalog
-     5. [NOVO] Guarda o discEntry em _catalogDiscEntry, para que
+     5. Guarda o discEntry em _catalogDiscEntry, para que
         getConteudoIndex() possa retorná-lo
 
    Garantias:
@@ -266,7 +275,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
-      /* [NOVO] Disponibiliza o discEntry para getConteudoIndex() */
+      /* Disponibiliza o discEntry para getConteudoIndex() */
       _catalogDiscEntry = discEntry;
 
       document.querySelectorAll('.disc-card[data-modo]').forEach(function (card) {

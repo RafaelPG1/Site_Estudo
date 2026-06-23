@@ -106,9 +106,12 @@ var partesGlobal = base.pathname.split('/');
 partesGlobal.splice(partesGlobal.length - 5, 5, 'src', 'global.js');
 var globalUrl = base.origin + partesGlobal.join('/');
 
-    import(globalUrl)
-      .then(function (mod) { _estaLogado = mod.estaLogado || null; })
-      .catch(function (err) { console.warn('[NexusUI] global.js não carregado — guard desativado:', err); });
+import(globalUrl)
+  .then(function (mod) {
+    _estaLogado = mod.estaLogado || null;
+    _guardVerificar(); // reavalia agora que sabemos o estado real de login
+  })
+  .catch(function (err) { console.warn('[NexusUI] global.js não carregado — guard desativado:', err); });
   }());
 
   /* ══════════════════════════════════════════════════════════

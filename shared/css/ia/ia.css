@@ -1115,18 +1115,24 @@
 .nexus-msg-versions button { background: transparent; border: 1px solid var(--nx-border); color: var(--nx-text-dim); border-radius: 4px; cursor: pointer; padding: 1px 5px; }
 .nexus-msg-versions button:hover { color: var(--nx-text); border-color: var(--nx-border-hover); }
 
+
 /* ══════════════════════════════════════════════════════════
    FAB BLOQUEADO (visitante sem login)
    Mesmo padrão visual de .card--locked em style.css —
    acinzenta via filter, mantendo a estrutura intacta.
+
+   Seletor generalizado (sem amarração ao #nexus-fab) para que
+   o MESMO sistema visual possa ser reaproveitado por qualquer
+   elemento bloqueado por login — ex: os modos de Quiz em
+   disciplinas_init.js — sem criar um sistema paralelo.
    ══════════════════════════════════════════════════════════ */
 
-#nexus-fab.nexus-fab--locked {
+.nexus-fab--locked {
   cursor: not-allowed;
   filter: grayscale(0.85) brightness(0.62);
 }
 
-#nexus-fab.nexus-fab--locked:hover {
+.nexus-fab--locked:hover {
   filter: grayscale(0.7) brightness(0.7);
 }
 
@@ -1148,7 +1154,7 @@
   pointer-events: none;
 }
 
-/* Shake de feedback ao clicar no FAB bloqueado — keyframe idêntica a card-shake */
+/* Shake de feedback ao clicar em algo bloqueado — keyframe idêntica a card-shake */
 @keyframes nexus-fab-shake {
   0%, 100% { transform: translateX(0); }
   20%      { transform: translateX(-6px); }
@@ -1157,6 +1163,6 @@
   80%      { transform: translateX(2px); }
 }
 
-#nexus-fab.nexus-fab--shake {
+.nexus-fab--shake {
   animation: nexus-fab-shake 0.4s ease;
 }
