@@ -256,7 +256,7 @@ a { text-decoration: none; color: inherit; }
   color: var(--amber);
   background: var(--amber-dim);
   border-color: rgba(var(--amber-rgb),0.3);
-  transform: rotate(60deg);
+
 }
 
 /* ══════════════════════════════════════════════

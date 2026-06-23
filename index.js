@@ -309,19 +309,21 @@ function _abrirModalLogin() {
     <div class="modal__overlay" id="modal-overlay-login"></div>
     <div class="modal__box modal__box--sm" role="dialog" aria-modal="true" aria-label="Entrar">
 
-      <div class="modal__header modal__header--normal">
-        <h2 class="modal__title" id="login-title">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      <div class="modal__header modal__header--normal login-hero">
+        <button class="modal__close login-hero__close" id="modal-close-login" aria-label="Fechar">✕</button>
+        <div class="login-hero__icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
             <circle cx="12" cy="7" r="4"/>
           </svg>
-          Entrar no Nexus
-        </h2>
-        <button class="modal__close" id="modal-close-login" aria-label="Fechar">✕</button>
+        </div>
+        <span class="login-hero__eyebrow">Acesso à plataforma</span>
+        <h2 class="modal__title login-hero__title" id="login-title">Entrar no Nexus</h2>
+        <p class="login-hero__sub">Seu progresso, salvo e sincronizado</p>
       </div>
 
-      <div class="modal__header modal__header--admin-view">
+      <div class="modal__header modal__header--admin-view login-hero login-hero--admin">
         <div class="admin-badge">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -334,20 +336,20 @@ function _abrirModalLogin() {
         <p class="admin-subtitle">Painel de Controle</p>
       </div>
 
-      <div class="modal__body-scroll">
-        <div class="modal__section">
+      <div class="modal__body-scroll login-body">
+        <div class="modal__section login-section">
 
-          <div class="config-row config-row--col">
-            <label for="login-nome">Nome</label>
-            <input type="text" id="login-nome" class="config-input"
-              placeholder="seu nome" maxlength="30"
+          <div class="config-row config-row--col login-field">
+            <label for="login-nome" class="login-field__label">Nome</label>
+            <input type="text" id="login-nome" class="config-input login-field__input"
+              placeholder="Como podemos te chamar?" maxlength="30"
               autocomplete="off" autocapitalize="off" />
           </div>
 
-          <div class="config-row config-row--col">
-            <label for="login-pin">PIN</label>
+          <div class="config-row config-row--col login-field">
+            <label for="login-pin" class="login-field__label">PIN</label>
             <div class="pin-wrap">
-              <input type="password" id="login-pin" class="config-input"
+              <input type="password" id="login-pin" class="config-input login-field__input"
                 placeholder="• • •" maxlength="3"
                 inputmode="numeric" autocomplete="off" />
               <button type="button" class="pin-eye" id="btn-pin-eye"
@@ -366,8 +368,8 @@ function _abrirModalLogin() {
         </div>
       </div>
 
-      <div class="modal__footer">
-        <button class="modal-btn modal-btn--primary" id="btn-login-entrar">Entrar</button>
+      <div class="modal__footer login-footer">
+        <button class="modal-btn modal-btn--primary login-submit" id="btn-login-entrar">Entrar</button>
       </div>
 
     </div>`;
@@ -500,33 +502,37 @@ function _abrirModalConfig() {
 
   modal.innerHTML = `
     <div class="modal__overlay" id="modal-overlay-config"></div>
-    <div class="modal__box" role="dialog" aria-modal="true" aria-label="Configurações">
+    <div class="modal__box modal__box--quiz" role="dialog" aria-modal="true" aria-label="Configurações">
 
-      <div class="modal__header">
-        <h2 class="modal__title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06
-                     a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09
-                     A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83
-                     l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09
-                     A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83
-                     l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09
-                     a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83
-                     l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09
-                     a1.65 1.65 0 0 0-1.51 1z"/>
-          </svg>
+      <div class="modal__header cfg-header">
+        <h2 class="modal__title cfg-header__title">
+          <span class="cfg-header__icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06
+                       a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09
+                       A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83
+                       l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09
+                       A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83
+                       l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09
+                       a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83
+                       l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09
+                       a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+          </span>
           Configurações
         </h2>
         <button class="modal__close" id="modal-close-config" aria-label="Fechar">✕</button>
       </div>
 
-      <div class="modal__body-scroll">
+      <div class="modal__body-scroll cfg-body">
 
         ${estaLogado() ? `
-        <div class="modal__section">
-          <div class="modal__section-title">Perfil</div>
+        <div class="modal__section cfg-section cfg-section--conta">
+          <div class="modal__section-title cfg-section-title">
+            <span class="cfg-section-title__dot cfg-dot--conta"></span>Conta
+          </div>
           <div class="config-perfil">
             <div class="config-perfil__avatar">
               ${getUsuario().foto
@@ -541,8 +547,10 @@ function _abrirModalConfig() {
           </div>
         </div>` : ''}
 
-        <div class="modal__section">
-          <div class="modal__section-title">Aparência</div>
+        <div class="modal__section cfg-section cfg-section--aparencia">
+          <div class="modal__section-title cfg-section-title">
+            <span class="cfg-section-title__dot cfg-dot--aparencia"></span>Aparência
+          </div>
           <div class="config-row">
             <label for="cfg-tema">Tema</label>
             <select id="cfg-tema" class="config-select">
@@ -559,8 +567,10 @@ function _abrirModalConfig() {
           </div>
         </div>
 
-        <div class="modal__section">
-          <div class="modal__section-title">Sistema</div>
+        <div class="modal__section cfg-section cfg-section--sistema">
+          <div class="modal__section-title cfg-section-title">
+            <span class="cfg-section-title__dot cfg-dot--sistema"></span>Sistema
+          </div>
           <div class="config-row">
             <label for="cfg-notif">Notificações</label>
             <label class="toggle">
@@ -570,8 +580,10 @@ function _abrirModalConfig() {
           </div>
         </div>
 
-        <div class="modal__section">
-          <div class="modal__section-title">Áudio</div>
+        <div class="modal__section cfg-section cfg-section--audio">
+          <div class="modal__section-title cfg-section-title">
+            <span class="cfg-section-title__dot cfg-dot--audio"></span>Áudio
+          </div>
 
           <div class="config-row">
             <label for="cfg-sfx-enabled">
@@ -620,8 +632,10 @@ function _abrirModalConfig() {
           </div>
         </div>
 
-        <div class="modal__section">
-          <div class="modal__section-title">Área Pessoal</div>
+        <div class="modal__section cfg-section cfg-section--pessoal">
+          <div class="modal__section-title cfg-section-title">
+            <span class="cfg-section-title__dot cfg-dot--pessoal"></span>Área Pessoal
+          </div>
 
           <div class="config-row">
             <label>
@@ -656,7 +670,7 @@ function _abrirModalConfig() {
 
       </div>
 
-      <div class="modal__footer">
+      <div class="modal__footer cfg-footer">
         <button class="modal-btn modal-btn--ghost"   id="btn-reset-configs">Resetar padrão</button>
         <button class="modal-btn modal-btn--primary" id="btn-salvar-configs">Salvar</button>
       </div>
@@ -853,11 +867,14 @@ function _abrirPerfilModal() {
             <div class="pm-avatar-inner" id="pm-avatar-display">${avatarHTML}</div>
           </div>
           <h3 class="pm-username">${u.nome}</h3>
+          <span class="pm-role-pill ${u.admin ? 'pm-role-pill--admin' : ''}">
+            ${u.admin ? 'Administrador' : 'Estudante'}
+          </span>
           ${changeBtnHTML}
         </div>
 
         <div class="modal__body-scroll">
-          <div class="pm-data">
+          <div class="pm-data pm-data--card">
 
             <div class="pm-data-row">
               <div class="pm-data-icon">
