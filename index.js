@@ -26,7 +26,6 @@ import {
   setConfigs, getConfigs, resetConfigs,
   hydrateConfigs,
   limparDadosQuiz,
-  getSemestreAtual, getDisciplinasDeSemestre,
 } from './src/global.js';
 
 import { injetarLogo }                       from './shared/js/utils/logo.js';
@@ -490,7 +489,7 @@ function _abrirModalLogin() {
 
 /* ═══════════════════════════════════════════════
    SEÇÃO 7 — MODAL CONFIG
-   Aparência, sistema, áudio, flashcard e área pessoal.
+   Aparência, sistema e áudio.
 ═══════════════════════════════════════════════ */
 
 function _abrirModalConfig() {
@@ -632,41 +631,6 @@ function _abrirModalConfig() {
           </div>
         </div>
 
-        <div class="modal__section cfg-section cfg-section--pessoal">
-          <div class="modal__section-title cfg-section-title">
-            <span class="cfg-section-title__dot cfg-dot--pessoal"></span>Área Pessoal
-          </div>
-
-          <div class="config-row">
-            <label>
-              Limpar checklist
-              <small class="config-label-hint">
-                Desmarca todos os itens do checklist de uma disciplina específica.
-              </small>
-            </label>
-            <div class="flashcard-disc-btns" id="pessoal-cl-btns"></div>
-          </div>
-
-          <div class="config-row">
-            <label>
-              Limpar tarefas
-              <small class="config-label-hint">
-                Remove todas as categorias e tarefas de uma disciplina específica.
-              </small>
-            </label>
-            <div class="flashcard-disc-btns" id="pessoal-task-btns"></div>
-          </div>
-
-          <div class="config-row">
-            <label>
-              Limpar tudo
-              <small class="config-label-hint">
-                Limpa checklist e tarefas de todas as disciplinas do semestre atual.
-              </small>
-            </label>
-            <button class="modal-btn modal-btn--danger" id="btn-limpar-pessoal-tudo">Limpar tudo</button>
-          </div>
-        </div>
 
       </div>
 
@@ -759,52 +723,6 @@ function _abrirModalConfig() {
     });
   }
 
-  /* Área Pessoal */
-  const sem         = getSemestreAtual();
-  const disciplinas = getDisciplinasDeSemestre(sem);
-  const clBtns   = modal.querySelector('#pessoal-cl-btns');
-  const taskBtns = modal.querySelector('#pessoal-task-btns');
-
-  if (clBtns && taskBtns) {
-    disciplinas.forEach(disc => {
-      const btnCl = document.createElement('button');
-      btnCl.className   = 'modal-btn modal-btn--ghost';
-      btnCl.textContent = disc.apelido;
-      btnCl.title       = `Limpar checklist de ${disc.nome}`;
-      btnCl.addEventListener('click', () => {
-        _confirmar(btnCl, async () => {
-          const { saveCheckedIds } = await import('./pessoal/pessoal_sync.js');
-          saveCheckedIds(sem, disc.id, new Set());
-          mostrarToast(`Checklist de ${disc.apelido} limpo.`);
-        });
-      });
-      clBtns.appendChild(btnCl);
-
-      const btnTask = document.createElement('button');
-      btnTask.className   = 'modal-btn modal-btn--ghost';
-      btnTask.textContent = disc.apelido;
-      btnTask.title       = `Limpar tarefas de ${disc.nome}`;
-      btnTask.addEventListener('click', () => {
-        _confirmar(btnTask, async () => {
-          const { setCategorias } = await import('./pessoal/pessoal_sync.js');
-          setCategorias(sem, disc.id, []);
-          mostrarToast(`Tarefas de ${disc.apelido} apagadas.`);
-        });
-      });
-      taskBtns.appendChild(btnTask);
-    });
-  }
-
-  modal.querySelector('#btn-limpar-pessoal-tudo')?.addEventListener('click', function () {
-    _confirmar(this, async () => {
-      const { saveCheckedIds, setCategorias } = await import('./pessoal/pessoal_sync.js');
-      for (const disc of disciplinas) {
-        saveCheckedIds(sem, disc.id, new Set());
-        setCategorias(sem, disc.id, []);
-      }
-      mostrarToast('Checklist e tarefas de todas as disciplinas apagados.');
-    });
-  });
 }
 
 

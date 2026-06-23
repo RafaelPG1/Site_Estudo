@@ -224,6 +224,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   _bindChecklist();
   _bindMobileDropdown();
   _bindFab();
+  _bindConfigBtn();
 
   /* ── Badge de sync ── */
   atualizarBadgeLogin();
@@ -1421,5 +1422,172 @@ function _bindFab() {
     playSound('click', 'perfil');
     document.querySelectorAll('.cl-group').forEach(g => g.classList.add('cl-group--collapsed'));
     document.querySelectorAll('.cl-section').forEach(s => s.classList.add('cl-section--collapsed'));
+  });
+}
+
+/* ══════════════════════════════════════════════
+   MODAL DE CONFIGURAÇÕES DA ÁREA PESSOAL
+══════════════════════════════════════════════ */
+
+/**
+ * Abre o modal de configurações da Área Pessoal.
+ * Porta as opções de "Área Pessoal" do modal de config do index.js
+ * diretamente para esta página, usando os mesmos imports de sync.
+ */
+function _abrirConfigPessoal() {
+  const modal   = document.getElementById('cfg-pessoal-modal');
+  const overlay = document.getElementById('cfg-pessoal-overlay');
+  const closeBtn = document.getElementById('cfg-pessoal-close');
+  if (!modal) return;
+
+  const sem         = State.semestre;
+  const disciplinas = State.disciplinas;
+
+  /* ── Popula os botões de disciplina para Checklist ── */
+  const clBtns   = document.getElementById('cfg-cl-btns');
+  const taskBtns = document.getElementById('cfg-task-btns');
+
+  if (clBtns) {
+    clBtns.innerHTML = '';
+    disciplinas.forEach(disc => {
+      const btn = document.createElement('button');
+      btn.className   = 'cfg-modal__btn cfg-modal__btn--ghost';
+      btn.textContent = disc.apelido ?? disc.nome;
+      btn.title       = `Limpar checklist de ${disc.nome}`;
+      btn.addEventListener('click', () => {
+        playSound('click', 'perfil');
+        _cfgConfirmar(btn, async () => {
+          saveCheckedIds(sem, disc.id, new Set());
+          _renderClPanel();
+          _updateHeroStat();
+          _renderSidebar();
+          _mostrarToastLocal(`Checklist de ${disc.apelido ?? disc.nome} limpo.`);
+        });
+      });
+      clBtns.appendChild(btn);
+    });
+  }
+
+  /* ── Popula os botões de disciplina para Tarefas ── */
+  if (taskBtns) {
+    taskBtns.innerHTML = '';
+    disciplinas.forEach(disc => {
+      const btn = document.createElement('button');
+      btn.className   = 'cfg-modal__btn cfg-modal__btn--ghost';
+      btn.textContent = disc.apelido ?? disc.nome;
+      btn.title       = `Limpar tarefas de ${disc.nome}`;
+      btn.addEventListener('click', () => {
+        playSound('click', 'perfil');
+        _cfgConfirmar(btn, () => {
+          setCategorias(sem, disc.id, []);
+          if (State.discAtiva?.id === disc.id) {
+            _renderTaskContainer();
+            _updateProgress();
+          }
+          _renderSidebar();
+          _mostrarToastLocal(`Tarefas de ${disc.apelido ?? disc.nome} apagadas.`);
+        });
+      });
+      taskBtns.appendChild(btn);
+    });
+  }
+
+  /* ── Limpar tudo ── */
+  const btnTudo = document.getElementById('cfg-btn-limpar-tudo');
+  if (btnTudo) {
+    /* Remove listener anterior para evitar duplicação */
+    const novoBtn = btnTudo.cloneNode(true);
+    btnTudo.parentNode.replaceChild(novoBtn, btnTudo);
+    novoBtn.addEventListener('click', () => {
+      playSound('click', 'perfil');
+      _cfgConfirmar(novoBtn, () => {
+        disciplinas.forEach(disc => {
+          saveCheckedIds(sem, disc.id, new Set());
+          setCategorias(sem, disc.id, []);
+        });
+        _renderClPanel();
+        _renderTaskContainer();
+        _updateProgress();
+        _renderSidebar();
+        _updateHeroStat();
+        _mostrarToastLocal('Checklist e tarefas de todas as disciplinas apagados.');
+      });
+    });
+  }
+
+  /* ── Abre o modal ── */
+  playSound('openModal', 'perfil');
+  modal.classList.add('cfg-modal--open');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+
+  /* ── Fecha ── */
+  function _fechar() {
+    playSound('closeModal', 'perfil');
+    modal.classList.remove('cfg-modal--open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  overlay?.addEventListener('click', _fechar, { once: true });
+  closeBtn?.addEventListener('click', _fechar, { once: true });
+
+  /* Fecha com Escape */
+  function _onEsc(e) {
+    if (e.key === 'Escape') { _fechar(); document.removeEventListener('keydown', _onEsc); }
+  }
+  document.addEventListener('keydown', _onEsc);
+}
+
+/**
+ * Botão de dupla confirmação para ações destrutivas no modal de config.
+ * Primeiro clique: "Tem certeza?" por 3s.
+ * Segundo clique: executa o callback.
+ */
+function _cfgConfirmar(btn, callback) {
+  if (btn.dataset.confirmando === 'true') {
+    btn.dataset.confirmando = 'false';
+    btn.textContent = btn.dataset.textoOriginal;
+    btn.classList.remove('cfg-modal__btn--confirmar');
+    callback();
+    return;
+  }
+  btn.dataset.textoOriginal = btn.textContent;
+  btn.dataset.confirmando   = 'true';
+  btn.textContent = 'Confirmar?';
+  btn.classList.add('cfg-modal__btn--confirmar');
+
+  setTimeout(() => {
+    if (btn.dataset.confirmando !== 'true') return;
+    btn.dataset.confirmando = 'false';
+    btn.textContent = btn.dataset.textoOriginal;
+    btn.classList.remove('cfg-modal__btn--confirmar');
+  }, 3000);
+}
+
+/** Toast simples local (sem depender do index.js) */
+function _mostrarToastLocal(msg) {
+  const existentes = document.querySelectorAll('.nexus-toast');
+  let bottom = 32;
+  existentes.forEach(t => { bottom += t.offsetHeight + 12; });
+
+  const t = document.createElement('div');
+  t.className   = 'nexus-toast';
+  t.textContent = msg;
+  t.style.bottom = `${bottom}px`;
+  document.body.appendChild(t);
+
+  requestAnimationFrame(() => t.classList.add('nexus-toast--show'));
+
+  setTimeout(() => {
+    t.classList.remove('nexus-toast--show');
+    t.addEventListener('transitionend', () => t.remove(), { once: true });
+  }, 2800);
+}
+
+/** Registra o botão de configurações no header */
+function _bindConfigBtn() {
+  document.getElementById('btn-config-pessoal')?.addEventListener('click', () => {
+    _abrirConfigPessoal();
   });
 }

@@ -1829,3 +1829,298 @@ a { text-decoration: none; color: inherit; }
   background: rgba(255,255,255,.07);
   margin: .05rem 0;
 }
+
+/* ══════════════════════════════════════════════
+   NAV-BTN ICON — idêntico ao index
+══════════════════════════════════════════════ */
+.nav-btn--icon {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-2);
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+  flex-shrink: 0;
+}
+.nav-btn--icon:hover {
+  color: var(--text-1);
+  border-color: var(--border-glow);
+  background: rgba(255,255,255,0.06);
+}
+
+/* ══════════════════════════════════════════════
+   MODAL DE CONFIGURAÇÕES — SISTEMA IGUAL AO INDEX
+   Reutiliza .modal, .modal__box--quiz, .cfg-* e
+   .modal-btn-* do mesmo design system.
+══════════════════════════════════════════════ */
+
+/* ── Base do modal (portado do style.css) ── */
+.cfg-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.cfg-modal.cfg-modal--open { pointer-events: all; }
+
+.cfg-modal__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(5,8,15,0.78);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.cfg-modal.cfg-modal--open .cfg-modal__overlay { opacity: 1; }
+
+/* ── Box principal: arena theme (= .modal__box--quiz) ── */
+.cfg-modal__box {
+  --q-ink:         #060a17;
+  --q-ink-2:       #0c1228;
+  --q-surface:     rgba(255,255,255,0.035);
+  --q-surface-hi:  rgba(255,255,255,0.07);
+  --q-border:      rgba(255,255,255,0.08);
+  --q-border-hi:   rgba(255,255,255,0.18);
+  --q-violet:      #3dd8af;
+  --q-violet-rgb:  61,216,175;
+  --q-violet-dim:  rgba(61,216,175,0.12);
+  --q-violet-glow: rgba(61,216,175,0.3);
+  --q-amber:       #f7c948;
+  --q-amber-rgb:   247,201,72;
+  --q-text-1:      #e8e6f0;
+  --q-text-2:      #8e8ba8;
+  --q-text-3:      #5a5775;
+  --q-f-display:   'Space Grotesk', system-ui, sans-serif;
+  --q-f-body:      'Inter', system-ui, sans-serif;
+  --q-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 480px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  font-family: var(--q-f-body);
+  background: var(--q-ink-2);
+  border: 1px solid var(--q-border-hi);
+  border-radius: 20px;
+  box-shadow: 0 28px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(var(--q-violet-rgb),0.1);
+
+  transform: translateY(24px) scale(0.97);
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(.25,.8,.25,1), opacity 0.25s ease;
+}
+.cfg-modal.cfg-modal--open .cfg-modal__box {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+/* ── Header ── */
+.cfg-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 1.75rem 1.15rem;
+  border-bottom: 1px solid var(--q-border);
+  flex-shrink: 0;
+}
+.cfg-modal__title {
+  font-family: var(--q-f-display);
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--q-text-1);
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+.cfg-modal__icon {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 9px;
+  background: var(--q-violet-dim);
+  border: 1px solid rgba(var(--q-violet-rgb),0.3);
+  color: var(--q-violet);
+  flex-shrink: 0;
+}
+.cfg-modal__close {
+  background: none;
+  border: 1px solid var(--q-border);
+  border-radius: 6px;
+  color: var(--q-text-2);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  transition: color 0.2s, background 0.2s;
+  line-height: 1;
+}
+.cfg-modal__close:hover {
+  background: var(--q-surface-hi);
+  color: var(--q-text-1);
+}
+
+/* ── Body scrollável ── */
+.cfg-modal__body {
+  overflow-y: auto;
+  flex: 1;
+  overscroll-behavior: contain;
+  background: rgba(0,0,0,0.08);
+}
+.cfg-modal__body::-webkit-scrollbar       { width: 3px; }
+.cfg-modal__body::-webkit-scrollbar-thumb { background: rgba(var(--q-violet-rgb),0.3); border-radius: 3px; }
+.cfg-modal__body::-webkit-scrollbar-track { background: transparent; }
+
+/* ── Seção interna ── */
+.cfg-modal__section {
+  padding: 1.35rem 1.75rem;
+  border-bottom: 1px solid var(--q-border);
+  background: var(--q-surface);
+  transition: background 0.15s;
+}
+.cfg-modal__section:last-of-type { border-bottom: none; }
+
+/* ── Título de seção ── */
+.cfg-modal__section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--q-f-display);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--q-amber);
+  margin-bottom: 1.1rem;
+}
+.cfg-modal__section-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--q-amber);
+  box-shadow: 0 0 6px rgba(var(--q-amber-rgb),0.5);
+  flex-shrink: 0;
+}
+
+/* ── Linha de config (= .config-row do index) ── */
+.cfg-modal__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.65rem 0;
+  font-size: 0.875rem;
+  color: var(--q-text-1);
+}
+.cfg-modal__row + .cfg-modal__row { border-top: 1px solid rgba(255,255,255,0.04); }
+.cfg-modal__row--top { align-items: flex-start; }
+
+.cfg-modal__row-label { color: var(--q-text-1); font-size: 0.875rem; }
+.cfg-modal__row-hint {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 300;
+  color: var(--q-text-3);
+  margin-top: 0.15rem;
+  line-height: 1.5;
+}
+
+/* ── Botões de disciplina (= .flashcard-disc-btns .modal-btn--ghost) ── */
+.cfg-modal__disc-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  max-width: 55%;
+}
+
+/* ── Botões (portados do .modal-btn--quiz do index) ── */
+.cfg-modal__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--q-f-display);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.cfg-modal__btn--ghost {
+  background: var(--q-surface);
+  color: var(--q-text-2);
+  border-color: var(--q-border);
+  /* tamanho menor para botões por disciplina */
+  padding: 0.3rem 0.75rem;
+  font-size: 0.78rem;
+  border-radius: 7px;
+}
+.cfg-modal__btn--ghost:hover {
+  background: var(--q-surface-hi);
+  color: var(--q-text-1);
+}
+.cfg-modal__btn--ghost.cfg-modal__btn--confirmar {
+  color: #ff6b8a;
+  background: rgba(255,107,138,0.1);
+  border-color: rgba(255,107,138,0.3);
+}
+.cfg-modal__btn--danger {
+  background: rgba(255,80,80,0.1);
+  color: #ff5050;
+  border-color: rgba(255,80,80,0.3);
+}
+.cfg-modal__btn--danger:hover {
+  background: rgba(255,80,80,0.2);
+  border-color: rgba(255,80,80,0.5);
+}
+.cfg-modal__btn--danger.cfg-modal__btn--confirmar {
+  background: rgba(255,80,80,0.22);
+  color: #ff5050;
+  border-color: rgba(255,80,80,0.55);
+}
+
+/* ── Toast ── */
+.nexus-toast {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  z-index: 999;
+  background: var(--surface-2);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 0.65rem 1.4rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-1);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  opacity: 0;
+  white-space: nowrap;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.nexus-toast--show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+@media (max-width: 480px) {
+  .cfg-modal__box { max-width: calc(100% - 2rem); border-radius: 16px; }
+  .cfg-modal__header,
+  .cfg-modal__section { padding-left: 1.25rem; padding-right: 1.25rem; }
+  .cfg-modal__disc-btns { max-width: 100%; justify-content: flex-start; }
+}
