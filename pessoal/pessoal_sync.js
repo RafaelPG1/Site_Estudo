@@ -4,12 +4,9 @@ import {
   carregarChecklistPessoal,
   salvarCategoriasPessoal,
   carregarCategoriasPessoal,
-  salvarNotaPessoal,
-  carregarNotaPessoal,
   carregarTudoPessoal,
 } from '../src/firebase.js';
 
-const KEY_NOTE         = (sem, discId) => `nexus_note_${sem}_${discId}`;
 const KEY_CHECKLIST    = (sem, discId) => `nexus_cl_${sem}_${discId}`;
 const KEY_CATS         = 'nexus_cats_v1';
 const KEY_CURRENT_USER = 'nexus_pessoal_uid'; // ← rastreia o usuário atual
@@ -31,7 +28,7 @@ function _clearAllPessoalLocal() {
   const toRemove = [];
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
-    if (k?.startsWith('nexus_note_') || k?.startsWith('nexus_cl_')) {
+    if (k?.startsWith('nexus_cl_')) {
       toRemove.push(k);
     }
   }
@@ -129,23 +126,6 @@ export function setCategorias(sem, discId, cats) {
   }, 1000);
 }
 
-export function getNota(sem, discId) {
-  return localStorage.getItem(KEY_NOTE(sem, discId)) ?? '';
-}
-
-export function setNota(sem, discId, texto) {
-  try { localStorage.setItem(KEY_NOTE(sem, discId), texto); } catch {}
-
-  const uid = _uid();
-  if (!uid) return;
-
-  setSyncStatus('syncing');
-  _debounce(`nota_${sem}_${discId}`, async () => {
-    const res = await salvarNotaPessoal(uid, sem, discId, texto);
-    setSyncStatus(res.ok ? 'synced' : 'offline');
-  }, 1800);
-}
-
 export async function syncDiscFromFirebase(sem, discId) {
   verificarTrocaDeUsuario(); // limpa localStorage se usuário trocou
 
@@ -153,10 +133,9 @@ export async function syncDiscFromFirebase(sem, discId) {
 
   const localChecklist  = getCheckedIds(sem, discId);
   const localCategorias = getCategorias(sem, discId);
-  const localNota       = getNota(sem, discId);
 
   if (!uid) {
-    return { checklist: localChecklist, categorias: localCategorias, nota: localNota };
+    return { checklist: localChecklist, categorias: localCategorias };
   }
 
   setSyncStatus('syncing');
@@ -165,16 +144,14 @@ export async function syncDiscFromFirebase(sem, discId) {
 
   if (!remote) {
     setSyncStatus('synced');
-    /* Só sobe dados locais se este usuário já era o dono deles */
     if (localStorage.getItem(KEY_CURRENT_USER) === uid) {
-      _uploadLocalToFirebase(uid, sem, discId, localChecklist, localCategorias, localNota);
+      _uploadLocalToFirebase(uid, sem, discId, localChecklist, localCategorias);
     }
-    return { checklist: localChecklist, categorias: localCategorias, nota: localNota };
+    return { checklist: localChecklist, categorias: localCategorias };
   }
 
   let checklist  = localChecklist;
   let categorias = localCategorias;
-  let nota       = localNota;
 
   if (remote.checklist !== null) {
     checklist = new Set(remote.checklist);
@@ -191,24 +168,16 @@ export async function syncDiscFromFirebase(sem, discId) {
     _saveAllCats(data);
   }
 
-  if (remote.nota !== null) {
-    nota = remote.nota;
-    try { localStorage.setItem(KEY_NOTE(sem, discId), nota); } catch {}
-  }
-
   setSyncStatus('synced');
-  return { checklist, categorias, nota };
+  return { checklist, categorias };
 }
 
-function _uploadLocalToFirebase(uid, sem, discId, checklist, categorias, nota) {
+function _uploadLocalToFirebase(uid, sem, discId, checklist, categorias) {
   if (checklist.size > 0) {
     salvarChecklistPessoal(uid, sem, discId, checklist).catch(() => {});
   }
   if (categorias.length > 0) {
     salvarCategoriasPessoal(uid, sem, discId, categorias).catch(() => {});
-  }
-  if (nota.trim()) {
-    salvarNotaPessoal(uid, sem, discId, nota).catch(() => {});
   }
 }
 

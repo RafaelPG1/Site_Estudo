@@ -37,8 +37,6 @@ import {
   saveCheckedIds,
   getCategorias,
   setCategorias,
-  getNota,
-  setNota,
   syncDiscFromFirebase,
   atualizarBadgeLogin,
   setSyncStatus,
@@ -64,8 +62,6 @@ const State = {
 
   checklistData:    {},
   checklistDiscId:  null,
-  notaDiscId:       null,
-  autosaveTimer:    null,
   abaAtiva:         'checklist',
 };
 
@@ -216,11 +212,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   _renderClPanel();
   _renderTaskContainer();
   _updateProgress();
-  _renderNotaAtual();
 
   _bindTabs();
   _bindAddTask();
-  _bindNotes();
   _bindChecklist();
   _bindMobileDropdown();
   _bindFab();
@@ -246,7 +240,6 @@ async function _syncAndRefresh(sem, discId) {
     _renderClPanel();
     _renderTaskContainer();
     _updateProgress();
-    _renderNotaAtual();
     _renderSidebar();
   } catch (err) {
     console.warn('[pessoal] _syncAndRefresh falhou:', err);
@@ -267,7 +260,6 @@ function _resolverContexto() {
   const disc   = (discId ? lista.find(d => d.id === discId) : null) ?? lista[0] ?? null;
 
   State.discAtiva       = disc;
-  State.notaDiscId      = disc?.id ?? null;
   State.checklistDiscId = disc?.id ?? null;
 
   if (disc) { setDisciplina(disc.id); aplicarCoresDisciplina(disc.arquivo, State.DISC_CORES); }
@@ -317,7 +309,6 @@ function _trocarSemestre(novoSemestre) {
 
   const primeiraDisc = State.disciplinas[0] ?? null;
   State.discAtiva       = primeiraDisc;
-  State.notaDiscId      = primeiraDisc?.id ?? null;
   State.checklistDiscId = primeiraDisc?.id ?? null;
 
   if (primeiraDisc) {
@@ -330,7 +321,6 @@ function _trocarSemestre(novoSemestre) {
   _renderClPanel();
   _renderTaskContainer();
   _updateProgress();
-  _renderNotaAtual();
 
   if (primeiraDisc) {
     _syncAndRefresh(novoSemestre, primeiraDisc.id);
@@ -374,20 +364,6 @@ function _renderHeader() {
   const sub = document.getElementById('header-breadcrumb-sub');
   if (sub) sub.textContent = disc ? `· ${disc.nome}` : '';
 
-  const badge = document.getElementById('disc-badge');
-  if (badge) {
-    if (disc) {
-      const label = disc.apelido ?? disc.nome;
-      badge.style.display = '';
-      badge.innerHTML = `
-        <span style="flex-shrink:0">${disc.emoji}</span>
-        <span style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;min-width:0">${label}</span>`;
-    } else {
-      badge.style.display = 'none';
-      badge.innerHTML = '';
-    }
-  }
-
   const ml = document.getElementById('mobile-disc-label');
   if (ml) ml.textContent = disc
     ? `${disc.emoji} ${disc.apelido ?? _nomeCurto(disc.nome, 20)}`
@@ -424,12 +400,7 @@ function _updateHeroStat() {
     text.textContent = `${done} / ${total} itens`;
 
   } else {
-    const discId = State.notaDiscId;
-    const nota   = discId ? getNota(State.semestre, discId) : '';
-    const words  = nota.trim() ? nota.trim().split(/\s+/).length : 0;
-    if (words === 0) { pill.style.display = 'none'; return; }
-    pill.style.display = '';
-    text.textContent = `${words} palavra${words !== 1 ? 's' : ''}`;
+    pill.style.display = 'none';
   }
 }
 
@@ -455,7 +426,6 @@ function _renderSidebar() {
 
   State.disciplinas.forEach(disc => {
     const isAtivo = disc.id === State.discAtiva?.id;
-    const hasNota = !!getNota(State.semestre, disc.id).trim();
 
     let total = 0, done = 0;
 
@@ -485,7 +455,7 @@ function _renderSidebar() {
       <span class="disc-item__info">
         <span class="disc-item__nome">${disc.nome}</span>
         <span class="disc-item__sub ${total > 0 ? 'disc-item__sub--ok' : 'disc-item__sub--empty'}">
-          ${total > 0 ? `${done}/${total} ✓` : hasNota ? '📝 nota' : 'sem dados'}
+          ${total > 0 ? `${done}/${total} ✓` : 'sem dados'}
         </span>
         <div class="disc-item__progress">
           <div class="disc-item__progress-fill" style="width:${pct}%"></div>
@@ -507,7 +477,6 @@ function _renderSidebar() {
 
 function _trocarDisciplina(disc) {
   State.discAtiva       = disc;
-  State.notaDiscId      = disc.id;
   State.checklistDiscId = disc.id;
   setDisciplina(disc.id);
   aplicarCoresDisciplina(disc.arquivo, State.DISC_CORES);
@@ -527,8 +496,6 @@ function _trocarDisciplina(disc) {
   } else if (State.abaAtiva === 'tarefa') {
     _renderTaskContainer();
     _updateProgress();
-  } else if (State.abaAtiva === 'notas') {
-    _renderNotaAtual();
   }
 
   /* Sync Firebase em background */
@@ -1048,10 +1015,6 @@ function _renderClPanel() {
       <div class="cl-empty">
         <span class="cl-empty__icon">📄</span>
         <p>Sem conteúdo para esta disciplina</p>
-        <small>
-          Adicione os itens em <code>checklist_data.js</code> dentro do semestre
-          <strong>${State.semestre ?? '—'}</strong> com o id <strong>${discId ?? '—'}</strong>.
-        </small>
       </div>`;
     _updateClProgress(0, 0);
     return;
@@ -1225,107 +1188,8 @@ function _bindChecklist() {
 }
 
 /* ══════════════════════════════════════════════
-   ANOTAÇÕES  — usa pessoal_sync
+   ANOTAÇÕES — painel removido; botão mantido na tab
 ══════════════════════════════════════════════ */
-function _renderNotaAtual() {
-  const textarea = document.getElementById('note-textarea');
-  const titleEl  = document.getElementById('note-box-title');
-  if (!textarea) return;
-
-  const discId = State.notaDiscId;
-  const disc   = State.disciplinas.find(d => d.id === discId);
-  const nota   = discId ? getNota(State.semestre, discId) : '';
-
-  textarea.value = nota;
-  if (titleEl) titleEl.textContent = disc ? `Anotações — ${disc.nome}` : 'Anotações';
-  _updateNoteStats();
-  _updateHeroStat();
-  _setAutosave('saved', _savedLabel(discId));
-}
-
-function _bindNotes() {
-  const textarea = document.getElementById('note-textarea');
-  if (!textarea) return;
-
-  textarea.addEventListener('input', () => {
-    _updateNoteStats();
-    _setAutosave('saving', 'Salvando…');
-    clearTimeout(State.autosaveTimer);
-    State.autosaveTimer = setTimeout(_salvarNotaAtual, 800);
-  });
-
-  textarea.addEventListener('keydown', e => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-      e.preventDefault();
-      _salvarNotaAtual();
-    }
-  });
-
-  document.getElementById('note-copy-btn')?.addEventListener('click', async () => {
-    const val = textarea.value;
-    if (!val.trim()) return;
-    playSound('click', 'perfil');
-    try {
-      await navigator.clipboard.writeText(val);
-      const btn = document.getElementById('note-copy-btn');
-      if (btn) {
-        const t = btn.textContent;
-        btn.textContent = 'Copiado!';
-        setTimeout(() => { btn.textContent = t; }, 1500);
-      }
-    } catch (_) {}
-  });
-
-  document.getElementById('note-clear-btn')?.addEventListener('click', async () => {
-    if (!textarea.value.trim()) return;
-    playSound('click', 'perfil');
-    const ok = await _confirmar('Limpar todas as anotações desta disciplina?');
-    if (!ok) return;
-    textarea.value = '';
-    _salvarNotaAtual();
-    _updateNoteStats();
-  });
-}
-
-function _salvarNotaAtual() {
-  const textarea = document.getElementById('note-textarea');
-  const discId   = State.notaDiscId;
-  if (!textarea || !discId) return;
-
-  /* Grava no localStorage + Firebase (via sync module) */
-  setNota(State.semestre, discId, textarea.value);
-
-  _setAutosave('saved', _savedLabel(discId));
-  _updateHeroStat();
-  _renderSidebar();
-}
-
-function _updateNoteStats() {
-  const textarea = document.getElementById('note-textarea');
-  if (!textarea) return;
-  const val   = textarea.value;
-  const words = val.trim() ? val.trim().split(/\s+/).length : 0;
-  const chars = val.length;
-  const wEl   = document.getElementById('note-words');
-  const cEl   = document.getElementById('note-chars');
-  if (wEl) wEl.textContent = words;
-  if (cEl) cEl.textContent = chars;
-}
-
-function _setAutosave(estado, label) {
-  const ind  = document.getElementById('autosave-indicator');
-  const text = document.getElementById('autosave-text');
-  if (!ind) return;
-  ind.className = `autosave-indicator autosave-indicator--${estado}`;
-  if (text) text.textContent = label;
-}
-
-function _savedLabel(discId) {
-  const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-  const el   = document.getElementById('note-saved-at');
-  if (el) el.textContent = hora;
-  return `Salvo às ${hora}`;
-}
 
 /* ══════════════════════════════════════════════
    MOBILE DROPDOWN
