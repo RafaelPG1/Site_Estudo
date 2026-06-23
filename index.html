@@ -10,10 +10,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
-  <!-- Base -->
-  <link rel="stylesheet" href="shared/css/themes/fundo.css" />
-  <link rel="stylesheet" href="shared/css/themes/logo.css" />
-
   <!-- Áudio -->
   <link rel="stylesheet" href="shared/css/audio/sound.css" />
   <link rel="stylesheet" href="shared/css/audio/audio-btns.css" />
@@ -28,26 +24,31 @@
 </head>
 
 <body>
-  <!--
-    fab.js: primeira instrução do <body>.
-    Executa de forma síncrona — document.body já existe neste ponto,
-    então o botão é injetado imediatamente, antes de qualquer outro elemento
-    ser pintado. Nenhum evento é registrado aqui; isso é responsabilidade
-    exclusiva de NexusUI.init() em ui.js.
-  -->
   <script src="shared/js/ia/core/fab.js"></script>
 
   <!-- Fundo decorativo -->
-  <div class="bg-orb bg-orb--1" aria-hidden="true"></div>
-  <div class="bg-orb bg-orb--2" aria-hidden="true"></div>
-  <div class="bg-orb bg-orb--3" aria-hidden="true"></div>
-  <div class="bg-grid"          aria-hidden="true"></div>
+<div class="bg-lines" aria-hidden="true">
+  <div class="bg-stripe" style="top:18%"></div>
+  <div class="bg-stripe" style="top:38%"></div>
+  <div class="bg-stripe" style="top:62%"></div>
+  <div class="bg-stripe" style="top:82%"></div>
 
-  <!--
-    Header
-    Logo injetada via injetarLogo() — index.js
-    Nav reconstruída via _renderHeader() — index.js
-  -->
+  <div class="bg-vline" style="left:12.5%"></div>
+  <div class="bg-vline" style="left:25%"></div>
+  <div class="bg-vline" style="left:37.5%"></div>
+  <div class="bg-vline" style="left:50%"></div>
+  <div class="bg-vline" style="left:62.5%"></div>
+  
+  <div class="bg-vline" style="left:75%"></div>
+    <div class="bg-vline" style="left:60%"></div>
+  <div class="bg-vline" style="left:87.5%"></div>
+
+  <div class="bg-glow bg-glow--teal"   aria-hidden="true"></div>
+  <div class="bg-glow bg-glow--blue"   aria-hidden="true"></div>
+  <div class="bg-glow bg-glow--violet" aria-hidden="true"></div>
+</div>
+
+  <!-- Header -->
   <header class="header">
     <div class="header__inner">
       <div class="header__logo" id="header-logo-wrap"></div>
@@ -59,97 +60,167 @@
   <main class="main">
     <section class="hero" aria-labelledby="hero-title">
 
+      <div class="hero__eyebrow" aria-hidden="true">
+        <span class="hero__eyebrow-line"></span>
+        Bem-vindo ao
+        <span class="hero__eyebrow-line"></span>
+      </div>
+
       <h1 class="hero__title" id="hero-title">Nexus Study</h1>
-      <p  class="hero__tagline">Ambiente de estudos</p>
+      <p class="hero__tagline">Ambiente de estudos</p>
 
       <!-- Cards de navegação -->
       <div class="cards-grid">
 
-        <a href="./pessoal/pessoal.html" class="card card--personal" id="card-pessoal">
-          <div class="card__glow" aria-hidden="true"></div>
-          <div class="card__icon-wrap" aria-hidden="true">
-            <span class="card__icon">📚</span>
+        <a href="./pessoal/pessoal.html" class="card card--pessoal" id="card-pessoal">
+          <div class="card__decorline" aria-hidden="true"></div>
+          <div class="card__top">
+            <div class="card__icon-wrap" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
+            <span class="card__tag">Perfil</span>
           </div>
           <div class="card__body">
-            <h2 class="card__title">Área Pessoal</h2>
-            <p  class="card__desc">Seu painel, histórico e progresso de estudos</p>
+            <h2 class="card__title">Pessoal</h2>
+            <p class="card__desc">Seu painel, progresso e atividades de estudo</p>
           </div>
-          <div class="card__tag" aria-hidden="true">Perfil</div>
-          <div class="card__cta" aria-hidden="true">
-            <div class="card__arrow">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                   stroke="currentColor" stroke-width="2"
-                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <div class="card__footer">
+            <div class="card__meta">
+              <span class="card__dot" aria-hidden="true"></span>
+              <span class="card__meta-label">Checklist · Tarefas</span>
+            </div>
+            <div class="card__arrow" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
               </svg>
             </div>
-            <span class="card__cta-label">Acessar</span>
+          </div>
+          <div class="card__accent" aria-hidden="true"></div>
+          <div class="card__deco" aria-hidden="true">
+            <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
+              <rect x="8" y="20" width="56" height="44" rx="6" stroke="currentColor" stroke-width="2.5"/>
+              <rect x="20" y="10" width="32" height="20" rx="4" stroke="currentColor" stroke-width="2.5"/>
+              <line x1="20" y1="38" x2="52" y2="38" stroke="currentColor" stroke-width="2"/>
+              <line x1="20" y1="46" x2="44" y2="46" stroke="currentColor" stroke-width="2"/>
+              <line x1="20" y1="54" x2="38" y2="54" stroke="currentColor" stroke-width="2"/>
+            </svg>
           </div>
         </a>
 
-        <a href="./resumo/resumo.html" class="card card--summaries" id="card-resumos">
-          <div class="card__glow" aria-hidden="true"></div>
-          <div class="card__icon-wrap" aria-hidden="true">
-            <span class="card__icon">🧠</span>
+        <a href="./resumo/resumo.html" class="card card--resumos" id="card-resumos">
+          <div class="card__decorline" aria-hidden="true"></div>
+          <div class="card__top">
+            <div class="card__icon-wrap" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+              </svg>
+            </div>
+            <span class="card__tag">Conteúdo</span>
           </div>
           <div class="card__body">
             <h2 class="card__title">Resumos</h2>
-            <p  class="card__desc">Resumos de aulas gerados e organizados por tema</p>
+            <p class="card__desc">Resumos organizados por disciplina e tema</p>
           </div>
-          <div class="card__tag" aria-hidden="true">Conteúdo</div>
-          <div class="card__cta" aria-hidden="true">
-            <div class="card__arrow">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                   stroke="currentColor" stroke-width="2"
-                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <div class="card__footer">
+            <div class="card__meta">
+              <span class="card__dot" aria-hidden="true"></span>
+              <span class="card__meta-label">Leitura · IA</span>
+            </div>
+            <div class="card__arrow" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
               </svg>
             </div>
-            <span class="card__cta-label">Acessar</span>
+          </div>
+          <div class="card__accent" aria-hidden="true"></div>
+          <div class="card__deco" aria-hidden="true">
+            <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
+              <rect x="10" y="8" width="38" height="52" rx="4" stroke="currentColor" stroke-width="2.5"/>
+              <rect x="20" y="8" width="38" height="52" rx="4" stroke="currentColor" stroke-width="2.5"/>
+              <line x1="26" y1="26" x2="46" y2="26" stroke="currentColor" stroke-width="2"/>
+              <line x1="26" y1="34" x2="46" y2="34" stroke="currentColor" stroke-width="2"/>
+              <line x1="26" y1="42" x2="38" y2="42" stroke="currentColor" stroke-width="2"/>
+            </svg>
           </div>
         </a>
 
         <a href="./quiz/quiz.html" class="card card--quiz" id="card-quiz">
-          <div class="card__glow" aria-hidden="true"></div>
-          <div class="card__icon-wrap" aria-hidden="true">
-            <span class="card__icon">❓</span>
+          <div class="card__decorline" aria-hidden="true"></div>
+          <div class="card__top">
+            <div class="card__icon-wrap" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </div>
+            <span class="card__tag">Praticar</span>
           </div>
           <div class="card__body">
             <h2 class="card__title">Quiz</h2>
-            <p  class="card__desc">Questões inteligentes geradas por IA para fixação</p>
+            <p class="card__desc">Questões inteligentes geradas por IA para fixação</p>
           </div>
-          <div class="card__tag" aria-hidden="true">Praticar</div>
-          <div class="card__cta" aria-hidden="true">
-            <div class="card__arrow">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                   stroke="currentColor" stroke-width="2"
-                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <div class="card__footer">
+            <div class="card__meta">
+              <span class="card__dot" aria-hidden="true"></span>
+              <span class="card__meta-label">Desafio · Fixação</span>
+            </div>
+            <div class="card__arrow" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
               </svg>
             </div>
-            <span class="card__cta-label">Acessar</span>
+          </div>
+          <div class="card__accent" aria-hidden="true"></div>
+          <div class="card__deco" aria-hidden="true">
+            <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
+              <circle cx="36" cy="36" r="26" stroke="currentColor" stroke-width="2.5"/>
+              <text x="36" y="44" text-anchor="middle" font-size="26" fill="currentColor" font-family="Georgia,serif" font-weight="600">?</text>
+            </svg>
           </div>
         </a>
 
         <a href="./games/jogo.html" class="card card--games" id="card-jogos">
-          <div class="card__glow" aria-hidden="true"></div>
-          <div class="card__icon-wrap" aria-hidden="true">
-            <span class="card__icon">🎮</span>
+          <div class="card__decorline" aria-hidden="true"></div>
+          <div class="card__top">
+            <div class="card__icon-wrap" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="6" width="20" height="12" rx="2"/>
+                <path d="M6 12h4"/><path d="M8 10v4"/>
+                <circle cx="15" cy="11" r="1.2" fill="currentColor"/>
+                <circle cx="18" cy="13" r="1.2" fill="currentColor"/>
+              </svg>
+            </div>
+            <span class="card__tag">Diversão</span>
           </div>
           <div class="card__body">
-            <h2 class="card__title">Jogos</h2>
-            <p  class="card__desc">Aprenda jogando — memória, associação e desafios</p>
+            <h2 class="card__title">Games</h2>
+            <p class="card__desc">Aprenda jogando — memória, associação e desafios</p>
           </div>
-          <div class="card__tag" aria-hidden="true">Diversão</div>
-          <div class="card__cta" aria-hidden="true">
-            <div class="card__arrow">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                   stroke="currentColor" stroke-width="2"
-                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <div class="card__footer">
+            <div class="card__meta">
+              <span class="card__dot" aria-hidden="true"></span>
+              <span class="card__meta-label">Memória · Conquistas</span>
+            </div>
+            <div class="card__arrow" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
               </svg>
             </div>
-            <span class="card__cta-label">Acessar</span>
+          </div>
+          <div class="card__accent" aria-hidden="true"></div>
+          <div class="card__deco" aria-hidden="true">
+            <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
+              <rect x="10" y="22" width="52" height="30" rx="8" stroke="currentColor" stroke-width="2.5"/>
+              <line x1="24" y1="37" x2="32" y2="37" stroke="currentColor" stroke-width="2"/>
+              <line x1="28" y1="33" x2="28" y2="41" stroke="currentColor" stroke-width="2"/>
+              <circle cx="44" cy="34" r="2.5" fill="currentColor"/>
+              <circle cx="51" cy="40" r="2.5" fill="currentColor"/>
+            </svg>
           </div>
         </a>
 
@@ -169,6 +240,5 @@
 
   <script src="shared/js/utils/quick-access.js"></script>
   <script type="module" src="index.js"></script>
-
 </body>
 </html>
