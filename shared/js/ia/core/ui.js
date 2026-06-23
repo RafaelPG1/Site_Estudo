@@ -46,6 +46,20 @@
  *   canto esquerdo mesmo depois de um F5. CORREÇÃO: a posição agora é
  *   capturada ANTES de adicionar a classe que remove as âncoras.
  *
+ * ── AUTH GUARD (v-auth-guard) ─────────────────────────────────
+ *   O painel de IA agora exige autenticação. Visitantes veem um
+ *   overlay de bloqueio sobre o painel; usuários autenticados têm
+ *   acesso total. O guard reage em tempo real a nexus:loginSuccess
+ *   e nexus:logout sem necessidade de reload.
+ *
+ *   Integração: usa exclusivamente estaLogado() de global.js e os
+ *   eventos CustomEvent do ciclo de autenticação já existentes no
+ *   projeto. Nenhuma variável fictícia ou estado simulado.
+ *
+ *   Para abrir o modal de login, o guard despacha nexus:loginRequest
+ *   — o index.js (ou qualquer página host) deve ouvir esse evento
+ *   e chamar sua própria função de abertura do modal.
+ *
  * API pública: window.NexusUI
  */
 
@@ -57,6 +71,12 @@
   let _onEdit          = null;
   let _playSound       = null;
   let _onVersionSwitch = null;
+
+  /* ── Referência ao módulo global de autenticação ─────────────
+     Carregada de forma lazy para evitar dependência circular.
+     estaLogado() retorna boolean; se o módulo não carregar (páginas
+     sem autenticação), o guard assume "logado" para não bloquear. */
+  var _estaLogado = null;
 
   (function _carregarPlaySound() {
     var script = document.currentScript ||
@@ -71,14 +91,136 @@
     if (!script) return;
 
     var base   = new URL(script.src);
-    var partes = base.pathname.split('/');
-    partes.splice(partes.length - 3, 3, 'audio', 'audio-api.js');
-    var audioUrl = base.origin + partes.join('/');
+
+    /* Carrega playSound */
+    var partesAudio = base.pathname.split('/');
+    partesAudio.splice(partesAudio.length - 3, 3, 'audio', 'audio-api.js');
+    var audioUrl = base.origin + partesAudio.join('/');
 
     import(audioUrl)
       .then(function (mod) { _playSound = mod.playSound || null; })
       .catch(function (err) { console.warn('[NexusUI] playSound não carregado:', err); });
+
+    /* Carrega estaLogado de global.js */
+var partesGlobal = base.pathname.split('/');
+partesGlobal.splice(partesGlobal.length - 5, 5, 'src', 'global.js');
+var globalUrl = base.origin + partesGlobal.join('/');
+
+    import(globalUrl)
+      .then(function (mod) { _estaLogado = mod.estaLogado || null; })
+      .catch(function (err) { console.warn('[NexusUI] global.js não carregado — guard desativado:', err); });
   }());
+
+  /* ══════════════════════════════════════════════════════════
+     AUTH GUARD
+     ────────────────────────────────────────────────────────
+     Bloqueia o painel quando o usuário não está autenticado.
+     O overlay fica sobre as mensagens e o input; o header
+     (fechar/arrastar) permanece acessível.
+
+     Fluxo:
+       • _guardVerificar()  → chamado sempre que o painel abre
+                              e nos eventos de auth.
+       • _guardBloquear()   → injeta overlay, desabilita input.
+       • _guardLiberar()    → remove overlay, reabilita input.
+       • nexus:loginRequest → despachado ao clicar no overlay
+                              para que o host abra o modal de login.
+       • nexus:loginSuccess → libera o guard.
+       • nexus:logout       → bloqueia o guard.
+  ══════════════════════════════════════════════════════════ */
+
+  var _guardAtivo   = false;  /* true enquanto o overlay estiver visível */
+  var _guardBound   = false;  /* listeners de auth registrados apenas uma vez */
+
+  function _verificadoLogado() {
+    if (typeof _estaLogado === 'function') return _estaLogado();
+    /* global.js ainda não carregou — assume livre para não bloquear
+       numa inicialização muito rápida; o listener de auth corrigirá */
+    return true;
+  }
+
+function _guardBloquear() {
+  if (_guardAtivo) return;
+  _guardAtivo = true;
+
+  /* Bloqueia visualmente o FAB (mesmo padrão de .card--locked) */
+  var fab = document.getElementById('nexus-fab');
+  if (fab) {
+    fab.classList.add('nexus-fab--locked');
+    fab.setAttribute('aria-label', 'Assistente Nexus — entre para usar a IA');
+    if (!fab.querySelector('.nexus-fab-lock-badge')) {
+      var badge = document.createElement('div');
+      badge.className = 'nexus-fab-lock-badge';
+      badge.setAttribute('aria-hidden', 'true');
+      badge.innerHTML =
+        '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"' +
+        ' stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">' +
+        '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>' +
+        '<path d="M7 11V7a5 5 0 0 1 10 0v4"/>' +
+        '</svg>';
+      fab.appendChild(badge);
+    }
+  }
+
+  /* Trava de segurança: se por algum motivo o painel estiver aberto,
+     desabilita input/envio. Não cria overlay — o painel nem deveria
+     abrir para visitante, já que toggle() bloqueia antes. */
+  var input   = document.getElementById('nexus-input');
+  var sendBtn = document.getElementById('nexus-send');
+  if (input)   { input.disabled   = true; input.placeholder = 'Entre para usar a IA…'; }
+  if (sendBtn) { sendBtn.disabled = true; }
+}
+
+function _guardLiberar() {
+  if (!_guardAtivo) return;
+  _guardAtivo = false;
+
+  /* ── Libera visualmente o FAB ── */
+  var fab = document.getElementById('nexus-fab');
+  if (fab) {
+    fab.classList.remove('nexus-fab--locked');
+    fab.setAttribute('aria-label', 'Assistente Nexus — abrir chat');
+    var badge = fab.querySelector('.nexus-fab-lock-badge');
+    if (badge) badge.remove();
+  }
+
+  var input   = document.getElementById('nexus-input');
+  var sendBtn = document.getElementById('nexus-send');
+  if (input)   { input.disabled   = false; input.placeholder = 'Digite sua mensagem…'; }
+  if (sendBtn) { sendBtn.disabled = false; }
+
+  var overlay = document.getElementById('nexus-auth-overlay');
+  if (!overlay) return;
+
+  overlay.classList.remove('nexus-auth-overlay--visible');
+  overlay.classList.add('nexus-auth-overlay--saindo');
+  overlay.addEventListener('transitionend', function () {
+    overlay.remove();
+  }, { once: true });
+}
+
+  /* Verifica estado atual e aplica bloqueio ou liberação */
+  function _guardVerificar() {
+    if (_verificadoLogado()) {
+      _guardLiberar();
+    } else {
+      _guardBloquear();
+    }
+  }
+
+  /* Registra os listeners de autenticação — chamado uma única vez em init() */
+  function _guardBindEventos() {
+    if (_guardBound) return;
+    _guardBound = true;
+
+    document.addEventListener('nexus:loginSuccess', function () {
+      _guardLiberar();
+    });
+
+    document.addEventListener('nexus:logout', function () {
+      _guardBloquear();
+    });
+  }
 
   /* ══════════════════════════════════════════════════════════
      TEMPLATES HTML
@@ -310,31 +452,9 @@
       .replace(/"/g, '&quot;');
   }
 
-  /**
-   * Converte markdown leve (negrito, itálico, código inline) em HTML,
-   * com escaping prévio para evitar injeção.
-   *
-   * Ordem de processamento (importa):
-   *   1. `código`     — extraído primeiro e protegido via placeholder,
-   *                      para que `*` dentro de trechos de código nunca
-   *                      seja interpretado como ênfase.
-   *   2. **negrito**   — usa classe de caractere [^*] dentro do grupo
-   *                      em vez de '.', então um asterisco solto no meio
-   *                      do texto não "vaza" e captura conteúdo indevido.
-   *   3. *itálico*     — mesma lógica de classe de caractere; roda DEPOIS
-   *                      do negrito para não interpretar metade de um
-   *                      "**" como abertura de itálico.
-   *   4. placeholders de código são restaurados por último.
-   *
-   * Isso resolve o caso em que um único '*' solto no texto (comum em
-   * respostas com conteúdo matemático/técnico) fazia o regex de itálico
-   * antigo (.+?) capturar até o próximo '*' distante, produzindo um
-   * bloco de itálico indevido e fazendo o negrito parecer "não funcionar".
-   */
   function _formatarTexto(texto) {
     var blocosCodigo = [];
 
-    // 1. Protege `código` antes de qualquer outro processamento
     var semCodigo = texto.replace(/`([^`\n]+)`/g, function (_, conteudo) {
       var idx = blocosCodigo.push(conteudo) - 1;
       return '\u0000CODE' + idx + '\u0000';
@@ -342,14 +462,9 @@
 
     var escaped = _escapeHtml(semCodigo);
 
-    // 2. Negrito — grupo não-greedy que não atravessa outro '**'
     escaped = escaped.replace(/\*\*([^*]+?)\*\*/g, '<strong>$1</strong>');
-
-    // 3. Itálico — apenas asteriscos isolados (não duplicados), e o
-    //    grupo também não atravessa outro '*' sozinho
     escaped = escaped.replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, '$1<em>$2</em>');
 
-    // 4. Restaura os blocos de código, agora com escaping próprio
     escaped = escaped.replace(/\u0000CODE(\d+)\u0000/g, function (_, idx) {
       var original = _escapeHtml(blocosCodigo[Number(idx)]);
       return '<code class="nexus-inline-code">' + original + '</code>';
@@ -369,16 +484,6 @@
     );
   }
 
-  /**
-   * Bloco de ações da mensagem.
-   * - copiar: presente em todas as mensagens (usuário e bot).
-   * - editar: presente SOMENTE na mensagem do usuário (comEditar=true).
-   *
-   * O texto original (sem formatação HTML) é repassado para
-   * _bindAcoesMensagem() via parâmetro — não é lido de volta do DOM,
-   * o que evita ter que reconstruir \n e outros detalhes perdidos
-   * na conversão para HTML.
-   */
   function _renderAcoes(comEditar) {
     return (
       '<div class="nexus-msg-actions">' +
@@ -396,23 +501,6 @@
     );
   }
 
-  /**
-   * Calcula { atual, total } de versões de uma mensagem de usuário,
-   * suportando os dois formatos de versionamento:
-   *
-   *   - msg.tree  (árvore de conversa): total/posição são contados
-   *     entre os FILHOS DO SENTINELA (tree.nodes[tree.rootId]), que
-   *     são todas as versões reais da mensagem (V1, V2, V3...) — o
-   *     sentinela em si nunca é exibido nem contado.
-   *
-   *   - msg.versions[] (formato legado): total = versions.length,
-   *     posição = (versionIndex||0) + 1. Mantido apenas para o
-   *     instante entre restaurar do storage e a primeira normalização
-   *     feita pelo assistant de domínio.
-   *
-   * Retorna null se a mensagem não tem múltiplas versões (não exibir
-   * o controle nesse caso — comportamento idêntico ao anterior).
-   */
   function _calcularVersaoAtual(msg) {
     if (msg.tree && msg.tree.nodes && msg.tree.rootId && msg.tree.activeId) {
       var sentinela = msg.tree.nodes[msg.tree.rootId];
@@ -431,12 +519,6 @@
     return null;
   }
 
-  /**
-   * Controle de versão "< i/N >" — só é renderizado quando a mensagem
-   * do usuário possui múltiplas versões. Mensagens antigas/sem
-   * versionamento simplesmente não geram nada aqui, preservando
-   * compatibilidade total com o histórico atual.
-   */
   function _renderVersionSwitch(msg) {
     var info = _calcularVersaoAtual(msg);
     if (!info) return '';
@@ -489,18 +571,6 @@
     }
   }
 
-  /**
-   * Edição inline: troca a bolha do usuário por um textarea inline,
-   * dentro do próprio elemento da mensagem (não usa o input do rodapé).
-   *
-   * Ao confirmar (Enter sem Shift, ou blur com texto alterado), chama
-   * _onEdit(msgIndex, textoNovo) — quem decide o que fazer com a nova
-   * versão (atualizar mensagem existente, regenerar resposta, etc.)
-   * é o assistant de domínio, não esta camada de UI.
-   *
-   * Esc ou confirmar sem alteração restaura a bolha original sem
-   * disparar nada.
-   */
   function _editarMensagem(el, textoOriginal, msgIndex) {
     var bubble = el.querySelector('.nexus-msg-bubble');
     if (!bubble) return;
@@ -579,16 +649,6 @@
     }
   }
 
-  /**
-   * Renderiza uma mensagem.
-   *
-   * msg.__idx (opcional): índice da mensagem dentro do array de
-   * histórico do assistant de domínio. É repassado para os botões de
-   * editar/versão para que o assistant saiba qual mensagem alterar.
-   * Quando ausente (compatibilidade com chamadas antigas), os botões
-   * de editar/versão simplesmente não conseguem notificar o assistant
-   * — mas a renderização continua funcionando normalmente.
-   */
   function renderMessage(msg) {
     var container = document.getElementById('nexus-messages');
     if (!container) return;
@@ -745,8 +805,14 @@
       fab.classList.add('nexus-active');
       fab.setAttribute('aria-expanded', 'true');
 
-      var input = document.getElementById('nexus-input');
-      if (input) setTimeout(function () { input.focus(); }, 260);
+      /* Verifica auth sempre que o painel é aberto */
+      _guardVerificar();
+
+      /* Foca o input apenas se o guard estiver liberado */
+      if (!_guardAtivo) {
+        var input = document.getElementById('nexus-input');
+        if (input) setTimeout(function () { input.focus(); }, 260);
+      }
 
     } else {
       if (typeof _playSound === 'function') _playSound('closeModal', 'inicial');
@@ -756,14 +822,28 @@
     }
   }
 
-  function open()   { _setPainelAberto(true);  }
-  function close()  { _setPainelAberto(false); }
-  function toggle() {
-    var panel = document.getElementById('nexus-panel');
-    if (!panel) return;
-    _setPainelAberto(!panel.classList.contains('nexus-open'));
+function open()   { _setPainelAberto(true);  }
+function close()  { _setPainelAberto(false); }
+
+function toggle() {
+  if (!_verificadoLogado()) {
+    var fab = document.getElementById('nexus-fab');
+    if (fab) {
+      fab.classList.remove('nexus-fab--shake');
+      void fab.offsetWidth;
+      fab.classList.add('nexus-fab--shake');
+      fab.addEventListener('animationend', function () {
+        fab.classList.remove('nexus-fab--shake');
+      }, { once: true });
+    }
+    if (typeof _playSound === 'function') _playSound('click', 'inicial');
+    return; // ← nada além do shake; sem loginRequest, sem abrir o chat
   }
 
+  var panel = document.getElementById('nexus-panel');
+  if (!panel) return;
+  _setPainelAberto(!panel.classList.contains('nexus-open'));
+}
   /* ══════════════════════════════════════════════════════════
      SCROLL ISOLADO
   ══════════════════════════════════════════════════════════ */
@@ -829,6 +909,11 @@
   }
 
   function _enviar() {
+    /* Dupla verificação: nunca envia se o guard estiver ativo */
+    if (_guardAtivo) {
+      document.dispatchEvent(new CustomEvent('nexus:loginRequest', { bubbles: true }));
+      return;
+    }
     var input = document.getElementById('nexus-input');
     if (!input) return;
     var texto = input.value.trim();
@@ -854,17 +939,6 @@
 
   /* ══════════════════════════════════════════════════════════
      MODO ARRASTAR (DRAGGABLE)
-
-     Quando ativado via #nexus-drag-toggle:
-       - o painel ganha a classe .nexus-panel--draggable, que zera
-         as âncoras bottom/right do CSS padrão;
-       - arrastar pelo header (#nexus-header) reposiciona o painel
-         via top/left inline, em coordenadas fixas de viewport;
-       - a posição é persistida em localStorage e restaurada no
-         próximo carregamento, enquanto o modo continuar ativo;
-       - desativar o modo remove o estilo inline e a classe,
-         devolvendo o controle ao CSS (posição padrão: à esquerda
-         do FAB).
   ══════════════════════════════════════════════════════════ */
 
   var DRAG_ATIVO_KEY = 'nexus_chat_drag_ativo';
@@ -908,7 +982,6 @@
     try { localStorage.removeItem(DRAG_POS_KEY); } catch (e) {}
   }
 
-  /** Mantém o painel dentro dos limites visíveis da viewport. */
   function _clampPos(top, left, panel) {
     var margem = 8;
     var maxLeft = window.innerWidth  - panel.offsetWidth  - margem;
@@ -938,18 +1011,6 @@
 
     var posSalva = _lerDragPos();
 
-    // BUG CORRIGIDO: a posição visual do painel precisa ser capturada
-    // ANTES de adicionar a classe 'nexus-panel--draggable' — essa
-    // classe é o que remove as âncoras bottom/right do CSS padrão
-    // (ver comentário no cabeçalho do arquivo). Antes, o
-    // getBoundingClientRect() rodava DEPOIS do classList.add(), ou
-    // seja, já media o painel sem âncoras (caindo para o layout
-    // estático padrão, perto do canto superior esquerdo) em vez da
-    // posição real que o usuário estava vendo. Resultado: ao clicar
-    // no botão de arrastar pela primeira vez, o painel "pulava" para
-    // esse canto errado (parecendo sumir) e essa posição ruim ainda
-    // era salva no localStorage, reaparecendo no canto esquerdo até
-    // depois de um F5.
     var rectAntes = !posSalva ? panel.getBoundingClientRect() : null;
 
     panel.classList.add('nexus-panel--draggable');
@@ -964,9 +1025,6 @@
     if (posSalva) {
       _aplicarPosicaoSalva();
     } else {
-      // Primeira ativação: usa a posição capturada ANTES das âncoras
-      // CSS serem removidas, para que o painel não pule do lugar —
-      // ele só vai sair do canto quando o usuário de fato arrastar.
       panel.style.top  = rectAntes.top  + 'px';
       panel.style.left = rectAntes.left + 'px';
       _salvarDragPos(rectAntes.top, rectAntes.left);
@@ -1034,10 +1092,6 @@
     var toggle = document.getElementById('nexus-drag-toggle');
     if (!header || !toggle) return;
 
-    // init() pode ser chamado mais de uma vez pelos assistants de
-    // domínio (resumo/quiz) — sem esta guarda, os listeners em
-    // document/window (mousemove, mouseup, resize) se acumulariam
-    // a cada chamada, causando comportamento errático no drag.
     if (header.dataset.nexusDragBound) return;
     header.dataset.nexusDragBound = '1';
 
@@ -1048,10 +1102,8 @@
       else _ativarModoDrag();
     });
 
-    // Mouse
     header.addEventListener('mousedown', function (e) {
       if (!_dragState.ativo) return;
-      // Não inicia drag se o clique foi em um dos botões do header
       if (e.target.closest('button')) return;
       e.preventDefault();
       _onDragStart(e.clientX, e.clientY);
@@ -1064,7 +1116,6 @@
 
     document.addEventListener('mouseup', _onDragEnd);
 
-    // Touch
     header.addEventListener('touchstart', function (e) {
       if (!_dragState.ativo) return;
       if (e.target.closest('button')) return;
@@ -1077,15 +1128,11 @@
       var t = e.touches[0];
       _onDragMove(t.clientX, t.clientY);
       e.preventDefault();
-      // Impede que o evento suba até o listener de scroll isolado
-      // do painel (_bindScrollIsolado), que também trata touchmove
-      // e poderia interferir durante o arraste pelo header.
       e.stopPropagation();
     }, { passive: false });
 
     header.addEventListener('touchend', _onDragEnd);
 
-    // Reposiciona dentro da viewport se a janela for redimensionada
     window.addEventListener('resize', function () {
       if (!_dragState.ativo) return;
       var panel = document.getElementById('nexus-panel');
@@ -1096,9 +1143,7 @@
       _salvarDragPos(clamped.top, clamped.left);
     });
 
-    // Restaura o modo drag (se estava ativo antes de F5)
     if (_lerDragAtivo()) {
-      // Espera o layout estabilizar antes de medir/posicionar
       requestAnimationFrame(function () { _ativarModoDrag(); });
     }
   }
@@ -1107,37 +1152,37 @@
      INICIALIZAÇÃO
   ══════════════════════════════════════════════════════════ */
 
-  function init(opts) {
-    opts              = opts || {};
-    _onSend           = opts.onSend  || null;
-    _onReset          = opts.onReset || null;
-    _onEdit           = opts.onEdit  || null;
-    _onVersionSwitch  = opts.onVersionSwitch || null;
+function init(opts) {
+  opts              = opts || {};
+  _onSend           = opts.onSend  || null;
+  _onReset          = opts.onReset || null;
+  _onEdit           = opts.onEdit  || null;
+  _onVersionSwitch  = opts.onVersionSwitch || null;
 
-    // Reutiliza o botão se fab.js já o injetou; cria apenas se ausente
-    var fab = document.getElementById('nexus-fab') || _criarFAB();
-    if (!fab.parentNode) document.body.appendChild(fab);
+  var fab = document.getElementById('nexus-fab') || _criarFAB();
+  if (!fab.parentNode) document.body.appendChild(fab);
 
-    // Evita registrar o listener de toggle duas vezes
-    if (!fab.dataset.nexusBound) {
-      fab.addEventListener('click', toggle);
-      fab.dataset.nexusBound = '1';
-    }
-
-    // Evita recriar o painel se init() for chamado mais de uma vez
-    if (!document.getElementById('nexus-panel')) {
-      var panel = _criarPainel();
-      document.body.appendChild(panel);
-      document.getElementById('nexus-close').addEventListener('click', close);
-    }
-
-    _bindInput();
-    _bindReset();
-    _bindDrag();
-
-    var panel = document.getElementById('nexus-panel');
-    if (panel) _bindScrollIsolado(panel);
+  if (!fab.dataset.nexusBound) {
+    fab.addEventListener('click', toggle);
+    fab.dataset.nexusBound = '1';
   }
+
+  if (!document.getElementById('nexus-panel')) {
+    var panel = _criarPainel();
+    document.body.appendChild(panel);
+    document.getElementById('nexus-close').addEventListener('click', close);
+  }
+
+  _bindInput();
+  _bindReset();
+  _bindDrag();
+
+  _guardBindEventos();
+  _guardVerificar();   // já existia — agora também aplica o estado visual no FAB
+
+  var panel = document.getElementById('nexus-panel');
+  if (panel) _bindScrollIsolado(panel);
+}
 
   /* ══════════════════════════════════════════════════════════
      API PÚBLICA

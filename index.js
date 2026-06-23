@@ -128,6 +128,12 @@ async function init() {
       _aplicarBloqueioCards();
     });
 
+    // Pedido de login disparado pela IA (e outros componentes protegidos)
+    // quando o usuário tenta interagir sem estar autenticado.
+    document.addEventListener('nexus:loginRequest', () => {
+      if (!estaLogado()) _abrirModalLogin();
+    });
+
     await Sound.waitUntilReady();
 
     preencherAnos(['footer-year']);

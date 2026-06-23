@@ -25,6 +25,8 @@ import {
   getDisciplinasDeSemestre,
   setPagina,
   SEMESTRES,
+  estaLogado,
+  getUsuario,
 } from '../src/global.js';
 
 import { resolverSemestreDeURL } from '../shared/js/utils/url.js';
@@ -50,6 +52,179 @@ import {
   installAudioRecovery,
   playSound,
 } from '../shared/js/audio/audio-api.js';
+
+/* ══════════════════════════════════════════════
+   ROUTE GUARD — Proteção de acesso autenticado
+   ─────────────────────────────────────────────
+   Impede acesso direto à página sem login válido.
+   Funciona de forma totalmente independente do
+   index.js — a página é auto-protegida.
+
+   Fluxo:
+   1. Antes do DOMContentLoaded: oculta o conteúdo
+      com a classe `rg-pending` no <body> (anti-FOUC).
+   2. No boot: verifica estaLogado().
+      ✗ Não logado → exibe overlay de bloqueio e
+        redireciona para index.html após 3 s (ou
+        imediatamente se o overlay for clicado).
+      ✓ Logado     → remove `rg-pending`, inicializa
+        a página normalmente.
+   3. Reage a eventos do ciclo de autenticação:
+      • nexus:logout       → bloqueia e redireciona.
+      • nexus:loginSuccess → libera e reinicializa.
+══════════════════════════════════════════════ */
+
+/* ── Oculta conteúdo imediatamente (anti-FOUC) ──
+   Executado de forma síncrona antes de qualquer
+   renderização para que o navegador nunca mostre
+   o conteúdo protegido durante a verificação.    */
+(function _routeGuardAntiFlash() {
+  document.documentElement.classList.add('rg-pending');
+})();
+
+/* ── Constantes ── */
+const RG_REDIRECT_URL  = '../index.html';
+const RG_REDIRECT_DELAY = 3000; // ms até o redirect automático
+
+/* ── Estado do guard ── */
+let _rgBloqueado    = false;
+let _rgInitializado = false;
+
+/**
+ * Bloqueia toda interação com a página.
+ * Injeta o overlay de acesso negado e agenda o redirect.
+ */
+function _rgBloquear() {
+  if (_rgBloqueado) return;
+  _rgBloqueado = true;
+
+  /* Remove conteúdo já renderizado para não vazar dados */
+  _rgLimparUI();
+
+  /* Garante que o body fique oculto */
+  document.documentElement.classList.add('rg-pending');
+
+  /* Remove overlay anterior, se existir */
+  document.getElementById('rg-overlay')?.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id        = 'rg-overlay';
+  overlay.className = 'rg-overlay';
+  overlay.innerHTML = `
+    <div class="rg-box">
+      <div class="rg-icon" aria-hidden="true">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <h2 class="rg-title">Acesso restrito</h2>
+      <p class="rg-msg">
+        Esta área exige login.<br>
+        Redirecionando para a página inicial…
+      </p>
+      <div class="rg-progress" aria-hidden="true">
+        <div class="rg-progress__fill" id="rg-progress-fill"></div>
+      </div>
+      <a href="${RG_REDIRECT_URL}" class="rg-btn">Ir agora</a>
+    </div>`;
+
+  document.body.appendChild(overlay);
+
+  /* Anima a barra de progresso junto com o countdown */
+  requestAnimationFrame(() => {
+    overlay.classList.add('rg-overlay--visible');
+    const fill = overlay.querySelector('#rg-progress-fill');
+    if (fill) {
+      fill.style.transition = `width ${RG_REDIRECT_DELAY}ms linear`;
+      requestAnimationFrame(() => { fill.style.width = '100%'; });
+    }
+  });
+
+  /* Redirect automático */
+  setTimeout(() => {
+    window.location.replace(RG_REDIRECT_URL);
+  }, RG_REDIRECT_DELAY);
+}
+
+/**
+ * Libera a página para o usuário autenticado.
+ * Remove o overlay e a classe de bloqueio.
+ */
+function _rgLiberar() {
+  _rgBloqueado = false;
+  document.getElementById('rg-overlay')?.remove();
+  document.documentElement.classList.remove('rg-pending');
+}
+
+/**
+ * Limpa toda a UI sensível da página
+ * (impede vazamento de dados ao deslogar).
+ */
+function _rgLimparUI() {
+  const ids = [
+    'cl-container',
+    'tasks-container',
+    'disc-list',
+    'mobile-dropdown-list',
+  ];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = '';
+  });
+
+  /* Zera contadores visíveis */
+  const counters = ['cl-progress-count', 'progress-count'];
+  counters.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = '0/0 itens';
+  });
+
+  const fills = ['cl-progress-fill', 'progress-fill'];
+  fills.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.width = '0%';
+  });
+}
+
+/**
+ * Verifica autenticação no boot.
+ * Retorna `true` se pode prosseguir, `false` se deve bloquear.
+ */
+function _rgVerificar() {
+  if (estaLogado()) {
+    _rgLiberar();
+    return true;
+  }
+  _rgBloquear();
+  return false;
+}
+
+/**
+ * Registra os listeners de autenticação.
+ * Chamado uma única vez no boot — independentemente do estado de login.
+ */
+function _rgBindEventos() {
+  /* Logout → bloqueia imediatamente */
+  document.addEventListener('nexus:logout', () => {
+    _rgBloqueado    = false; // reseta flag para permitir novo bloqueio
+    _rgInitializado = false;
+    _rgBloquear();
+  });
+
+  /* Login bem-sucedido → libera e reinicializa a página */
+  document.addEventListener('nexus:loginSuccess', async () => {
+    if (!estaLogado()) return; // sanidade extra
+    _rgLiberar();
+
+    /* Só reinicializa se ainda não foi inicializada nesta sessão */
+    if (!_rgInitializado) {
+      await _bootPagina();
+    }
+  });
+}
 
 /* ══════════════════════════════════════════════
    ESTADO
@@ -174,7 +349,16 @@ function _miniConfirmar(anchorEl) {
 /* ══════════════════════════════════════════════
    BOOT
 ══════════════════════════════════════════════ */
-document.addEventListener('DOMContentLoaded', async () => {
+
+/**
+ * Inicialização principal da página.
+ * Extraída do DOMContentLoaded para poder ser
+ * chamada também pelo route guard após login.
+ */
+async function _bootPagina() {
+  if (_rgInitializado) return; // idempotente — não inicializa duas vezes
+  _rgInitializado = true;
+
   setPagina('PESSOAL');
   Sound.init();
   installAudioRecovery({ Sound, audio });
@@ -199,11 +383,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     State.checklistData = mod.CHECKLIST_ITENS ?? {};
   } catch (_) {}
 
-  _resolverContexto();
-
   verificarTrocaDeUsuario(); // ← antes de tudo
 
-  _resolverContexto();       // ← só uma vez
+  _resolverContexto();
   _renderSemestreSelector();
   _renderSidebar();
   _renderHeader();
@@ -227,6 +409,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (State.discAtiva) {
     _syncAndRefresh(State.semestre, State.discAtiva.id);
   }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  /* ── Registra listeners de autenticação (logout / loginSuccess) ── */
+  _rgBindEventos();
+
+  /* ── Verifica login antes de qualquer renderização ── */
+  if (!_rgVerificar()) return; // ← bloqueado: não prossegue
+
+  /* ── Usuário autenticado: inicializa a página ── */
+  await _bootPagina();
 });
 
 /* ── Sync + re-render após retorno do Firebase ── */
