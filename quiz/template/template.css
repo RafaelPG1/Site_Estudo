@@ -1042,55 +1042,238 @@ a { text-decoration: none; color: inherit; }
    !important necessário: os CSS base (ia.css) definem este
    botão com `left` fixo (posição padrão à esquerda).
 
-   :not(.nav-float *) garante que esta regra (posição solta,
-   fixa, no canto) só vale enquanto o elemento ainda NÃO foi
-   movido para dentro do .nav-float pelo MutationObserver.
-   Sem essa restrição, esta regra e a equivalente em
-   ".nav-float #nexus-fab" (mais abaixo) competem pelo mesmo
-   elemento com a mesma especificidade + !important, e quem
-   "ganha" passa a depender só da ordem do arquivo — fazendo
-   o botão nascer com a posição errada por um instante, até o
-   observer mover o elemento e a outra regra assumir. Com o
-   :not(), as duas regras nunca se aplicam ao mesmo tempo. */
+/* ══════════════════════════════════════════════════════════════
+   NEXUS IA — integração com o template do quiz
+   Sincroniza btn-ia.css (v-atual) com o contexto da nav-float.
+
+   ESTRUTURA REAL DO FAB (referência):
+     #nexus-fab
+       #nexus-fab-ring-outer   ← div, era ::before (anel externo)
+       #nexus-fab-aura         ← div, era ::after (glow radial)
+       #nexus-fab-body         ← div, corpo principal
+         #nexus-fab-icon-wrap
+           #nexus-fab-icon     ← svg
+       .nexus-fab-badge        ← span
+       .nexus-fab-label        ← span (tooltip)
+
+   REMOVER dos overrides antigos:
+     #nexus-fab::before  ← não existe mais como anel
+     #nexus-fab::after   ← não existe mais como aura
+   Esses pseudo-elementos agora são divs nomeados.
+══════════════════════════════════════════════════════════════ */
+
+/* ── 1. ESCONDE FAB ATÉ SER MOVIDO PARA A NAV-FLOAT ───────── */
+/* Mantém o :not() para evitar conflito com as regras de dentro */
 #nexus-fab:not(.nav-float *) {
   position: fixed !important;
   left: auto !important;
   right: 20px !important;
   bottom: 18px !important;
-  width: 36px;      /* era 32 */
-  height: 36px;     /* era 32 */
-  /* Invisível até ser movido para dentro do nav-float.
-     Substitui o "salto" (aparece solto → pula para o nav)
-     por "some → aparece direto na posição final". O botão
-     ainda existe e é funcional (clique/eventos não são
-     afetados por opacity/visibility), só não é pintado
-     enquanto está fora do nav. */
+  width: 36px;
+  height: 36px;
   opacity: 0 !important;
   visibility: hidden !important;
   pointer-events: none !important;
 }
 
-#nexus-fab::before {
-  inset: -4px;
+/* ── 2. FAB DENTRO DA NAV-FLOAT — reseta posição e revela ─── */
+.nav-float #nexus-fab,
+.nav-float .abtn,
+.nav-float #music-btn-global {
+  position: relative !important;
+  bottom: auto !important;
+  right: auto !important;
+  top: auto !important;
+  left: auto !important;
+  flex-shrink: 0 !important;
+  width: 36px !important;
+  height: 36px !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
 }
 
-#nexus-fab::after {
-  inset: -1px;
+/* ── 3. FORMATO QUADRADO — FAB E TODOS OS FILHOS ────────────
+   Cobre a estrutura ATUAL do FAB:
+     #nexus-fab-ring-outer (div real, era ::before)
+     #nexus-fab-aura       (div real, era ::after)
+     #nexus-fab-body
+   Os pseudo-elementos ::before e ::after do #nexus-fab
+   não são mais anéis — são o shimmer interno do body
+   e o gradiente de fundo. Não recebem border-radius aqui. ── */
+.nav-float #nexus-fab,
+.nav-float #nexus-fab #nexus-fab-ring-outer,
+.nav-float #nexus-fab #nexus-fab-aura,
+.nav-float #nexus-fab #nexus-fab-body,
+.nav-float .abtn,
+.nav-float .abtn .ro,
+.nav-float .abtn .rm,
+.nav-float .abtn .body,
+.nav-float .abtn .pulse,
+.nav-float .abtn .ripple {
+  border-radius: 9px !important;
 }
 
-#nexus-fab-body {
-  inset: 0;
+/* ── 4. TAMANHO DO ÍCONE ─────────────────────────────────── */
+.nav-float #nexus-fab #nexus-fab-icon-wrap {
+  width: 18px !important;
+  height: 18px !important;
 }
 
-#nexus-fab-icon-wrap {
-  width: 18px;      /* era 16 */
-  height: 18px;     /* era 16 */
+.nav-float #nexus-fab #nexus-fab-icon {
+  width: 16px !important;
+  height: 16px !important;
 }
 
-#nexus-fab-icon {
-  width: 16px;      /* era 14 */
-  height: 16px;     /* era 14 */
+/* ── 5. REMOVE ANÉIS EXTERNOS NA NAV-FLOAT ─────────────────
+   ring-outer: div com border real → transparenta a borda.
+   aura: div com background radial → esconde completamente.
+   (Antes miravam ::before e ::after — seletores inválidos) ── */
+.nav-float #nexus-fab #nexus-fab-ring-outer {
+  border-color: transparent !important;
 }
+
+.nav-float #nexus-fab #nexus-fab-aura {
+  display: none !important;
+}
+
+/* Remove glow do áudio também */
+.nav-float .abtn .glow {
+  display: none !important;
+}
+
+/* ── 6. DESATIVA PULSE/RIPPLE DO ÁUDIO E IDLE DO FAB ────── */
+.abtn .pulse,
+.abtn .ripple {
+  animation: none !important;
+  opacity: 0 !important;
+}
+
+#nexus-fab:not(.nexus-active) #nexus-fab-body {
+  animation: none !important;
+}
+
+/* ── 7. HOVER — IGUAL AOS NAV-BTN ──────────────────────────
+   Aplica apenas no FAB dentro da nav-float E apenas
+   quando NÃO estiver bloqueado (.nexus-fab--locked).
+   O hover premium fica completamente desabilitado
+   no estado bloqueado (ver seção 9). ── */
+.nav-float #nexus-fab:not(.nexus-fab--locked),
+.nav-float .abtn {
+  transition: transform 0.22s ease, filter 0.22s ease !important;
+}
+
+.nav-float #nexus-fab:not(.nexus-fab--locked):hover,
+.nav-float .abtn:hover {
+  transform: scale(1.08) !important;
+  filter: brightness(1.35) saturate(1.15) !important;
+}
+
+/* Filhos não duplicam o scale */
+.nav-float #nexus-fab:not(.nexus-fab--locked):hover #nexus-fab-body,
+.nav-float .abtn:hover .body,
+.nav-float .abtn:hover .ro {
+  transform: none !important;
+}
+
+/* ── 8. TOOLTIP DO FAB NA NAV-FLOAT ────────────────────────
+   O .nexus-fab-label é o tooltip nativo do FAB.
+   Na nav-float ele conflita com o ::after dos nav-btn.
+   Escondemos o label nativo; o title="" do botão
+   já gera o tooltip via ::after do .nav-btn[title]. ── */
+.nav-float #nexus-fab .nexus-fab-label {
+  display: none !important;
+}
+
+/* Badge de nova mensagem: mantém funcional */
+.nav-float #nexus-fab .nexus-fab-badge {
+  top: 1px;
+  right: 1px;
+  border-radius: 50%;          /* badge continua circular */
+}
+
+/* ── 9. ESTADO BLOQUEADO — SEM LOGIN ────────────────────────
+   PROBLEMA ORIGINAL: .nexus-fab--locked só aplicava
+   grayscale + opacity no root, mas os seletores de hover
+   (#nexus-fab:hover #nexus-fab-body etc.) têm especificidade
+   maior e continuavam disparando normalmente.
+
+   SOLUÇÃO: neutralizar explicitamente todos os efeitos
+   interativos quando locked está presente — hover, glow,
+   scale, animações, cursor.
+
+   Cobre tanto o FAB solto (páginas sem nav-float)
+   quanto o FAB dentro da nav-float. ── */
+
+/* Aparência base bloqueada */
+#nexus-fab.nexus-fab--locked {
+  filter: grayscale(0.7) !important;
+  opacity: 0.55 !important;
+  cursor: not-allowed !important;
+  pointer-events: auto !important; /* mantém para o shake funcionar */
+}
+
+/* Neutraliza hover do body */
+#nexus-fab.nexus-fab--locked:hover #nexus-fab-body {
+  border-color: rgba(0, 200, 255, 0.22) !important; /* valor padrão, sem glow */
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(0, 200, 255, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+  transform: none !important;
+}
+
+/* Neutraliza hover do ícone */
+#nexus-fab.nexus-fab--locked:hover #nexus-fab-icon {
+  transform: none !important;
+}
+
+/* Neutraliza aura no hover */
+#nexus-fab.nexus-fab--locked:hover #nexus-fab-aura {
+  opacity: 0 !important;
+}
+
+/* Neutraliza anel externo no hover */
+#nexus-fab.nexus-fab--locked:hover #nexus-fab-ring-outer {
+  border-color: rgba(0, 200, 255, 0.12) !important; /* valor padrão */
+  transform: none !important;
+}
+
+/* Neutraliza tooltip — não faz sentido mostrar no bloqueado */
+#nexus-fab.nexus-fab--locked .nexus-fab-label {
+  display: none !important;
+}
+
+/* Neutraliza scale no :active */
+#nexus-fab.nexus-fab--locked:active #nexus-fab-body {
+  transform: none !important;
+}
+
+#nexus-fab.nexus-fab--locked:active #nexus-fab-icon {
+  transform: none !important;
+}
+
+/* Na nav-float, o hover via filter/scale também precisa ser zerado */
+.nav-float #nexus-fab.nexus-fab--locked:hover {
+  transform: none !important;
+  filter: grayscale(0.7) brightness(1) saturate(1) !important;
+  cursor: not-allowed !important;
+}
+
+/* ── 10. MARGEM DO FAB NA NAV-FLOAT ─────────────────────── */
+.nav-float #nexus-fab {
+  margin-top: 8px !important;
+}
+
+/* ── 11. DIVISOR EXTERNO (entre áudio e IA) ─────────────── */
+.nav-divider--externo {
+  height: 1px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: none !important;
+  margin: 3px 0 8px !important;
+}
+
+
 
 /* SFX e Música — reposiciona a pilha toda
    Mesmo motivo do #nexus-fab acima: sound.css/audio-btns.css
@@ -1137,15 +1320,24 @@ a { text-decoration: none; color: inherit; }
 }
 
 /* Mobile */
-@media (max-width: 680px) {
-  .abtn:not(.nav-float *)            { bottom: 64px;  right: 14px; width: 34px; height: 34px; }
-  #music-btn-global:not(.nav-float *){ bottom: 110px; right: 14px; width: 34px; height: 34px; }
-  #nexus-fab:not(.nav-float *)       { bottom: 14px;  right: 14px; width: 34px; height: 34px; }
-  #nexus-panel     { right: 14px; }
-  .nav-float       { right: 14px; left: auto; }
-  .nav-btn         { width: 26px; height: 26px; }
+/* ── 12. RESPONSIVO MOBILE ──────────────────────────────── */
+@media (max-width: 768px) {
+  #nexus-fab         { width: 40px; height: 40px; bottom: 16px; right: 16px; }
+  .abtn              { width: 38px; height: 38px; bottom: 68px; right: 16px; }
+  #music-btn-global  { width: 38px; height: 38px; bottom: 118px; right: 16px; }
 }
 
+@media (max-width: 428px) {
+  #nexus-fab         { width: 38px; height: 38px; bottom: 14px; right: 14px; }
+  .abtn              { width: 36px; height: 36px; bottom: 64px; right: 14px; }
+  #music-btn-global  { width: 36px; height: 36px; bottom: 112px; right: 14px; }
+}
+
+@media (max-width: 375px) {
+  #nexus-fab         { width: 36px; height: 36px; bottom: 12px; right: 12px; }
+  .abtn              { width: 34px; height: 34px; bottom: 60px; right: 12px; }
+  #music-btn-global  { width: 34px; height: 34px; bottom: 106px; right: 12px; }
+}
 
 .nav-divider {
   height: 1px;

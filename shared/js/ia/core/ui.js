@@ -33,19 +33,11 @@
  *
  *   Integração: usa exclusivamente estaLogado() de global.js.
  *
- * ── REDESIGN — ORB DE ENERGIA ───────────────────────────────────
- *   _criarFAB() passou a gerar o "orb de energia" (núcleo radial +
- *   anel orbital com partícula + textura hexagonal de fundo) no
- *   lugar do sparkle anterior. Estrutura idêntica à de fab.js — os
- *   dois pontos de criação do FAB continuam produzindo o mesmo
- *   HTML/SVG, para que o botão fique visualmente idêntico
- *   independentemente de qual arquivo o cria primeiro.
- *
- *   Dois novos estados visuais, expostos na API pública:
- *     • setThinking(bool)     → IA processando (anel de atividade,
- *       rotação acelerada do orb, partículas de energia).
- *     • notifyNewMessage()    → resposta chegou (flash + badge,
- *       autolimpa sozinho após a animação).
+ * ── PIN / FECHAR FORA / ESC ───────────────────────────────────
+ *   • Clicar fora do painel fecha (se não estiver fixado).
+ *   • ESC fecha (se não estiver fixado).
+ *   • Botão pin no header alterna o modo fixado.
+ *   • Estado do pin persiste via sessionStorage.
  *
  * API pública: window.NexusUI
  */
@@ -165,54 +157,46 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     TEMPLATES HTML
+     TEMPLATES HTML — ÍCONES
   ══════════════════════════════════════════════════════════ */
 
-  function _iconHex() {
+  function _iconFab() {
     return (
-      '<svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+      '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
         '<defs>' +
-          '<pattern id="nxHexPattern" width="9.6" height="16.6" patternUnits="userSpaceOnUse">' +
-            '<path d="M4.8 0 L9.6 2.77 L9.6 8.3 L4.8 11.07 L0 8.3 L0 2.77 Z" fill="none" stroke="currentColor" stroke-width="0.4"/>' +
-            '<path d="M4.8 8.3 L9.6 11.07 L9.6 16.6 L4.8 19.37 L0 16.6 L0 11.07 Z" fill="none" stroke="currentColor" stroke-width="0.4"/>' +
-          '</pattern>' +
-          '<radialGradient id="nxHexFade" cx="50%" cy="50%" r="50%">' +
-            '<stop offset="0%" stop-color="#fff" stop-opacity="1"/>' +
-            '<stop offset="75%" stop-color="#fff" stop-opacity="0.5"/>' +
-            '<stop offset="100%" stop-color="#fff" stop-opacity="0"/>' +
+          '<radialGradient id="nxFabGrad" cx="44%" cy="36%" r="62%">' +
+            '<stop offset="0%"   stop-color="#dff8ff"/>' +
+            '<stop offset="28%"  stop-color="#5ee4ff"/>' +
+            '<stop offset="65%"  stop-color="#00b8f0"/>' +
+            '<stop offset="100%" stop-color="#005f90"/>' +
           '</radialGradient>' +
-          '<mask id="nxHexMask"><rect width="56" height="56" fill="url(#nxHexFade)"/></mask>' +
-        '</defs>' +
-        '<rect width="56" height="56" fill="url(#nxHexPattern)" mask="url(#nxHexMask)"/>' +
-      '</svg>'
-    );
-  }
-
-  function _iconOrb() {
-    return (
-      '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
-        '<defs>' +
-          '<radialGradient id="nxOrbCore" cx="50%" cy="50%" r="50%">' +
-            '<stop offset="0%" stop-color="#cdf7ff"/>' +
-            '<stop offset="50%" stop-color="#00c8ff"/>' +
-            '<stop offset="100%" stop-color="#0086b3"/>' +
-          '</radialGradient>' +
-          '<linearGradient id="nxOrbRing" x1="0%" y1="50%" x2="100%" y2="50%">' +
-            '<stop offset="0%" stop-color="#00c8ff" stop-opacity="0"/>' +
-            '<stop offset="50%" stop-color="#7fe6ff" stop-opacity="0.95"/>' +
+          '<radialGradient id="nxFabHalo" cx="50%" cy="50%" r="50%">' +
+            '<stop offset="0%"   stop-color="#00c8ff" stop-opacity="0.18"/>' +
             '<stop offset="100%" stop-color="#00c8ff" stop-opacity="0"/>' +
-          '</linearGradient>' +
+          '</radialGradient>' +
+          '<radialGradient id="nxDotHalo" cx="50%" cy="50%" r="50%">' +
+            '<stop offset="0%"   stop-color="#7cf0ff" stop-opacity="0.5"/>' +
+            '<stop offset="100%" stop-color="#00c8ff" stop-opacity="0"/>' +
+          '</radialGradient>' +
         '</defs>' +
-        '<ellipse cx="12" cy="12" rx="10.2" ry="3.6" stroke="#00c8ff" stroke-opacity="0.18" stroke-width="0.7" fill="none" transform="rotate(12 12 12)"/>' +
-        '<g class="nx-orb-ring">' +
-          '<ellipse cx="12" cy="12" rx="9.6" ry="4.2" stroke="url(#nxOrbRing)" stroke-width="0.9" fill="none" transform="rotate(-16 12 12)"/>' +
-        '</g>' +
-        '<g class="nx-orb-particle">' +
-          '<circle cx="21.5" cy="11" r="2.2" fill="#00c8ff" opacity="0.25" transform="rotate(-16 12 12)"/>' +
-          '<circle cx="21.5" cy="11" r="1.05" fill="#eafdff" transform="rotate(-16 12 12)"/>' +
-        '</g>' +
-        '<circle class="nx-orb-core" cx="12" cy="12" r="4" fill="url(#nxOrbCore)"/>' +
-        '<circle cx="12" cy="12" r="4" fill="none" stroke="#eafdff" stroke-width="0.35" opacity="0.5"/>' +
+        '<circle cx="11.5" cy="13" r="5.5" fill="url(#nxFabHalo)"/>' +
+        '<path' +
+          ' d="M11.8 2.8' +
+          ' C11.8 6.1 12.7 8.3 14.4 10.0' +
+          ' C16.2 11.8 18.5 12.6 21.0 12.6' +
+          ' C18.5 12.6 16.2 13.5 14.4 15.3' +
+          ' C12.7 17.0 11.8 19.4 11.8 22.6' +
+          ' C11.8 19.4 10.9 17.0 9.1 15.3' +
+          ' C7.4 13.5 5.0 12.6 2.5 12.6' +
+          ' C5.0 12.6 7.4 11.8 9.1 10.0' +
+          ' C10.9 8.3 11.8 6.1 11.8 2.8 Z"' +
+          ' fill="url(#nxFabGrad)"/>' +
+        '<path' +
+          ' d="M11.8 4.5 C11.8 6.5 12.4 8.0 13.6 9.2 C12.4 8.0 11.8 6.5 11.8 4.5 Z"' +
+          ' fill="white" opacity="0.22"/>' +
+        '<circle cx="19.2" cy="5.8" r="2.4" fill="url(#nxDotHalo)"/>' +
+        '<circle cx="19.2" cy="5.8" r="1.3" fill="#00c8ff" opacity="0.75"/>' +
+        '<circle cx="19.2" cy="5.8" r="0.65" fill="#e8fbff"/>' +
       '</svg>'
     );
   }
@@ -289,6 +273,18 @@
     );
   }
 
+function _iconPin() {
+  return (
+    '<svg width="12" height="12" viewBox="0 0 256 256" fill="none" aria-hidden="true">' +
+    '<rect width="256" height="256" fill="none"/>' +
+    '<line x1="128" y1="176" x2="128" y2="240" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="22"/>' +
+    '<line x1="64" y1="40" x2="192" y2="40" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="22"/>' +
+    '<line x1="40" y1="176" x2="216" y2="176" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="22"/>' +
+    '<line x1="56" y1="176" x2="80" y2="40" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="22"/>' +
+    '<line x1="176" y1="40" x2="200" y2="176" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="22"/>' +
+    '</svg>'
+  );
+}
   function _iconHeaderIA() {
     return (
       '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c8ff"' +
@@ -330,49 +326,26 @@
      CRIAÇÃO DOS ELEMENTOS NO DOM
   ══════════════════════════════════════════════════════════ */
 
-// Substitui _iconSparkle / _iconFab (função de ícone do botão) em ui.js
-function _iconFab() {
-  return (
-    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
-      '<defs>' +
-        '<radialGradient id="nxFabGrad" cx="50%" cy="40%" r="60%">' +
-          '<stop offset="0%"   stop-color="#a8eeff"/>' +
-          '<stop offset="55%"  stop-color="#00c8ff"/>' +
-          '<stop offset="100%" stop-color="#006fa8"/>' +
-        '</radialGradient>' +
-      '</defs>' +
-      '<path d="M12 3.5 C12 7.2 13.1 9.6 15 11.5 C17 13.4 19.5 14.3 21.5 14.3' +
-        ' C19.5 14.3 17 15.2 15 17.1 C13.1 19 12 21.5 12 24.5' +
-        ' C12 21.5 10.9 19 9 17.1 C7 15.2 4.5 14.3 2.5 14.3' +
-        ' C4.5 14.3 7 13.4 9 11.5 C10.9 9.6 12 7.2 12 3.5 Z"' +
-        ' fill="url(#nxFabGrad)" transform="translate(0,-1.8) scale(0.85)"/>' +
-      '<circle cx="18.8" cy="5.5" r="1.35" fill="#00c8ff" opacity="0.85"/>' +
-      '<circle cx="18.8" cy="5.5" r="0.65" fill="#cdf7ff"/>' +
-    '</svg>'
-  );
-}
+  function _criarFAB() {
+    var fab = document.createElement('button');
+    fab.id   = 'nexus-fab';
+    fab.type = 'button';
+    fab.setAttribute('aria-label', 'Assistente Nexus — abrir chat');
+    fab.setAttribute('aria-expanded', 'false');
 
-// Substitui _criarFAB() em ui.js
-function _criarFAB() {
-  var fab = document.createElement('button');
-  fab.id   = 'nexus-fab';
-  fab.type = 'button';
-  fab.setAttribute('aria-label', 'Assistente Nexus — abrir chat');
-  fab.setAttribute('aria-expanded', 'false');
-
-  fab.innerHTML =
-    '<div id="nexus-fab-ring-outer" aria-hidden="true"></div>' +
-    '<div id="nexus-fab-aura" aria-hidden="true"></div>' +
-    '<div id="nexus-fab-body">' +
-      '<div id="nexus-fab-icon-wrap">' +
-        '<span id="nexus-fab-icon">' + _iconFab() + '</span>' +
+    fab.innerHTML =
+      '<div id="nexus-fab-ring-outer" aria-hidden="true"></div>' +
+      '<div id="nexus-fab-aura" aria-hidden="true"></div>' +
+      '<div id="nexus-fab-body">' +
+        '<div id="nexus-fab-icon-wrap">' +
+          '<span id="nexus-fab-icon">' + _iconFab() + '</span>' +
+        '</div>' +
       '</div>' +
-    '</div>' +
-    '<span class="nexus-fab-badge" aria-hidden="true"></span>' +
-    '<span class="nexus-fab-label" aria-hidden="true">nexus ia</span>';
+      '<span class="nexus-fab-badge" aria-hidden="true"></span>' +
+      '<span class="nexus-fab-label" aria-hidden="true">nexus ia</span>';
 
-  return fab;
-}
+    return fab;
+  }
 
   function _criarPainel() {
     var panel = document.createElement('div');
@@ -393,6 +366,9 @@ function _criarFAB() {
         '</div>' +
         '<button id="nexus-reset" type="button" aria-label="Reiniciar conversa">' +
           _iconReset() +
+        '</button>' +
+        '<button id="nexus-pin" type="button" aria-label="Fixar janela" aria-pressed="false">' +
+          _iconPin() +
         '</button>' +
         '<button id="nexus-drag-toggle" type="button" aria-label="Ativar modo arrastar" aria-pressed="false">' +
           _iconMove() +
@@ -812,12 +788,12 @@ function _criarFAB() {
     var panel = document.getElementById('nexus-panel');
     if (!fab) return;
 
-    // Painel já aberto: o usuário já vê a mensagem renderizada,
-    // o flash no FAB seria redundante/distrativo.
+    /* Painel já aberto: o usuário já vê a mensagem renderizada,
+       o flash no FAB seria redundante/distrativo. */
     if (panel && panel.classList.contains('nexus-open')) return;
 
     fab.classList.remove('nexus-fab--newmsg');
-    void fab.offsetWidth; // força reflow para permitir retrigger
+    void fab.offsetWidth; /* força reflow para permitir retrigger */
     fab.classList.add('nexus-fab--newmsg');
 
     if (_newMsgTimeout) clearTimeout(_newMsgTimeout);
@@ -852,8 +828,8 @@ function _criarFAB() {
     }
   }
 
-  function open()   { _setPainelAberto(true);  }
-  function close()  { _setPainelAberto(false); }
+  function open()  { _setPainelAberto(true);  }
+  function close() { _setPainelAberto(false); }
 
   /* ── SHAKE DO FAB ────────────────────────────────────────────
      Padrão clássico para reutilização em cliques consecutivos:
@@ -1047,8 +1023,7 @@ function _criarFAB() {
 
     _dragState.ativo = true;
 
-    var posSalva = _lerDragPos();
-
+    var posSalva  = _lerDragPos();
     var rectAntes = !posSalva ? panel.getBoundingClientRect() : null;
 
     panel.classList.add('nexus-panel--draggable');
@@ -1187,15 +1162,112 @@ function _criarFAB() {
   }
 
   /* ══════════════════════════════════════════════════════════
+     PIN — fixar janela
+     ────────────────────────────────────────────────────────
+     Quando ativo, bloqueia o fechamento por clique fora e ESC.
+     X e botão do FAB continuam fechando normalmente.
+     Estado persiste via sessionStorage durante a sessão.
+  ══════════════════════════════════════════════════════════ */
+
+  var PIN_KEY   = 'nexus_chat_pin';
+  var _pinAtivo = false;
+
+  function _lerPin() {
+    try { return sessionStorage.getItem(PIN_KEY) === '1'; }
+    catch (e) { return false; }
+  }
+
+  function _salvarPin(ativo) {
+    try {
+      if (ativo) sessionStorage.setItem(PIN_KEY, '1');
+      else       sessionStorage.removeItem(PIN_KEY);
+    } catch (e) {}
+  }
+
+  function _atualizarBotaoPin(btn, ativo) {
+    if (!btn) return;
+    btn.classList.toggle('nexus-pin--ativo', ativo);
+    btn.setAttribute('aria-pressed', String(ativo));
+    btn.setAttribute('aria-label', ativo ? 'Desafixar janela' : 'Fixar janela');
+    btn.title = ativo ? 'Desafixar janela' : 'Fixar janela';
+  }
+
+  function _bindPin() {
+    var btn = document.getElementById('nexus-pin');
+    if (!btn || btn.dataset.nexusPinBound) return;
+    btn.dataset.nexusPinBound = '1';
+
+    _pinAtivo = _lerPin();
+    _atualizarBotaoPin(btn, _pinAtivo);
+
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (typeof _playSound === 'function') _playSound('click', 'inicial');
+      _pinAtivo = !_pinAtivo;
+      _salvarPin(_pinAtivo);
+      _atualizarBotaoPin(btn, _pinAtivo);
+    });
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     FECHAR AO CLICAR FORA
+     ────────────────────────────────────────────────────────
+     Registrado uma única vez em document (mousedown).
+     Não age se: pin ativo, painel fechado, clique dentro do
+     painel ou no próprio FAB.
+  ══════════════════════════════════════════════════════════ */
+
+  function _bindFecharFora() {
+    document.addEventListener('mousedown', function (e) {
+      if (_pinAtivo) return;
+
+      var panel = document.getElementById('nexus-panel');
+      var fab   = document.getElementById('nexus-fab');
+      if (!panel || !panel.classList.contains('nexus-open')) return;
+
+      /* Clique dentro do painel ou no FAB → não fecha */
+      if (panel.contains(e.target)) return;
+      if (fab && fab.contains(e.target)) return;
+
+      close();
+    });
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     FECHAR COM ESC
+     ────────────────────────────────────────────────────────
+     Registrado uma única vez em document (keydown).
+     Não age se: pin ativo, painel fechado, ou foco em campo
+     de texto externo ao painel (não interfere com outros atalhos).
+  ══════════════════════════════════════════════════════════ */
+
+function _bindESC() {
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+
+    var panel = document.getElementById('nexus-panel');
+    if (!panel || !panel.classList.contains('nexus-open')) return;
+
+    var ativo = document.activeElement;
+    if (ativo && !panel.contains(ativo)) {
+      var tag = ativo.tagName;
+      if (tag === 'TEXTAREA' || tag === 'INPUT' || tag === 'SELECT') return;
+    }
+
+    close();
+  });
+}
+
+  /* ══════════════════════════════════════════════════════════
      INICIALIZAÇÃO
   ══════════════════════════════════════════════════════════ */
 
   function init(opts) {
-    opts              = opts || {};
-    _onSend           = opts.onSend  || null;
-    _onReset          = opts.onReset || null;
-    _onEdit           = opts.onEdit  || null;
-    _onVersionSwitch  = opts.onVersionSwitch || null;
+    opts             = opts || {};
+    _onSend          = opts.onSend          || null;
+    _onReset         = opts.onReset         || null;
+    _onEdit          = opts.onEdit          || null;
+    _onVersionSwitch = opts.onVersionSwitch || null;
 
     var fab = document.getElementById('nexus-fab') || _criarFAB();
     if (!fab.parentNode) document.body.appendChild(fab);
@@ -1214,6 +1286,9 @@ function _criarFAB() {
     _bindInput();
     _bindReset();
     _bindDrag();
+    _bindPin();
+    _bindFecharFora();
+    _bindESC();
 
     _guardBindEventos();
     _guardVerificar();

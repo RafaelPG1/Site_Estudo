@@ -889,9 +889,10 @@
 }
 
 #nexus-drag-toggle.nexus-drag-ativo {
-  background: var(--nx-drag-color-dim);
+  background: var(--nx-drag-color-hover);        /* era dim (0.08) → agora hover (0.14) */
   border-color: var(--nx-drag-color-border);
   color: var(--nx-drag-color);
+  box-shadow: 0 0 1px var(--nx-drag-color-glow); /* igual ao pin ativo */
 }
 
 #nexus-drag-toggle svg { width: 12px; height: 12px; }
@@ -951,3 +952,36 @@
     display: none;
   }
 }
+/* ── BOTÃO PIN (fixar janela) ───────────────────────────────── */
+
+#nexus-pin {
+  width: 27px;
+  height: 27px;
+  border-radius: 7px;
+  border: 1px solid var(--nx-border);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--nx-text-dim);
+  transition: background var(--nx-transition), color var(--nx-transition),
+              border-color var(--nx-transition), box-shadow var(--nx-transition);
+  flex-shrink: 0;
+  outline: none;
+}
+
+#nexus-pin:hover {
+  background: var(--nx-cmd-color-dim);
+  border-color: var(--nx-cmd-color-border);
+  color: var(--nx-cmd-color);
+}
+
+#nexus-pin.nexus-pin--ativo {
+  background: var(--nx-cmd-color-hover); /* Um pouco mais visível que o dim */
+  border-color: var(--nx-cmd-color-border);
+  color: var(--nx-cmd-color);
+  box-shadow: 0 0 1px var(--nx-cmd-color-glow);
+}
+
+#nexus-pin svg { width: 12px; height: 12px; }
