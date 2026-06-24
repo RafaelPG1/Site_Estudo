@@ -1,11 +1,11 @@
 /* ============================================================
-   NEXUS STUDY — quiz/js/quiz_starter_modal.js  v6.4
+   NEXUS STUDY — quiz/js/quiz_starter_modal.js  v7.0
 
    REGRA ÚNICA:
      Tem progresso salvo (≥ 1 resposta)? → entra direto no quiz.
      Não tem?                             → exibe modal.
 
-   CONTROLE DE FLUXO (v6.4):
+   CONTROLE DE FLUXO:
      Este script é o ÚNICO ponto que dispara o carregamento
      do quiz. O template_init.js deliberadamente NÃO chama
      _carregarQuiz() — ele expõe window.__nexusCarregarQuiz
@@ -20,23 +20,10 @@
      e o engine poderia (em certos cenários de cache/reload)
      renderizar antes deste modal decidir o fluxo.
 
-     SEM TIMEOUT DE DESISTÊNCIA (v6.4): _aguardarEngine() espera
+     SEM TIMEOUT DE DESISTÊNCIA: _aguardarEngine() espera
      indefinidamente, sem prazo. O usuário pode demorar qualquer
      tempo para decidir algo no modal — quando decidir, o quiz
-     precisa aparecer, sempre. Versões anteriores tinham um
-     timeout de 8s que, ao expirar, chamava _completarBoot()
-     sozinho (mesmo sem decisão do usuário); como _completarBoot
-     é idempotente, isso "consumia" a única chamada válida e a
-     decisão real do usuário, momentos depois, não tinha efeito
-     nenhum — o quiz simplesmente não aparecia mais.
-
-     CARREGAMENTO ADIANTADO DA LISTA DE AULAS (v6.4): ao clicar
-     em "Filtrar aulas" (tela 2), o engine começa a carregar
-     nesse momento — não no boot do modal inteiro. É nesse clique
-     que a lista de aulas passa a ser necessária; antes disso,
-     esperar pelo engine não tinha propósito (ele estruturalmente
-     não pode existir antes da decisão do usuário) e só gerava
-     polling e avisos de timeout inúteis.
+     precisa aparecer, sempre.
 
      Fluxo garantido:
        1. Página carrega → <head> sinaliza __NSM_AGUARDANDO__ = true
@@ -47,24 +34,23 @@
        3. Modal detecta progresso:
           - Tem progresso → _pularModal() → chama _completarBoot()
           - Sem progresso → exibe modal:
-            - Clique em "Filtrar aulas" → carrega o engine adiantado
-              (só para listar aulas; ainda não decide o fluxo)
-            - Clique em "Todas as aulas" → limpa filtro do storage
-              imediatamente (antes do engine carregar) e conclui
-            - Clique em "Iniciar Quiz" (tela 2) → usuário confirma
-              seleção → _completarBoot()
+            - Clique em "Filtrar aulas" → vai para a tela 2
+              (estrutura visual apenas — sem lógica de filtro)
+            - Clique em "Todas as aulas" → conclui direto
+            - Clique em "Iniciar Quiz" (tela 2) → conclui
        4. _completarBoot():
           → seta __NSM_AGUARDANDO__ = false
-          → chama _carregarEngine() (idempotente — reaproveita
-            se já tinha sido disparado adiantado)
+          → chama _carregarEngine() (idempotente)
           → remove .quiz-aguardando do container
 
-     Resultado: engine NUNCA carrega antes do modal decidir
-     (exceto o carregamento adiantado explícito de "Filtrar
-     aulas", que é sempre seguido da decisão real do usuário).
-     Não existe janela onde questões possam aparecer antes do
-     modal, e não existe cenário em que a decisão do usuário
-     "chegue tarde demais" e não tenha efeito.
+   NOTA — TELA 2 ("Filtrar aulas"):
+     A tela 2 deste modal preserva integralmente sua estrutura
+     visual (HTML, CSS, animações e navegação tela1↔tela2), mas
+     não contém mais nenhuma lógica de filtro. Não carrega lista
+     de aulas, não coleta seleção, não persiste nem comunica nada
+     a um engine de filtro. O corpo da tela 2 exibe um placeholder
+     estático. O botão "Iniciar Quiz" da tela 2 simplesmente conclui
+     o fluxo, da mesma forma que "Todas as aulas" na tela 1.
 
    DEPENDÊNCIAS:
      window.__NEXUS_QUIZ_DISC__      — definido por template_init.js
@@ -72,7 +58,6 @@
      window.__NEXUS_QUIZ_SEMESTRE__  — definido por template_init.js
      window.NexusStorage             — definido por template_init.js
      window.__nexusCarregarQuiz      — definido por template_init.js
-     window.NexusFiltroAulas         — definido por quiz_engine.js
      window.__NSM_AGUARDANDO__       — definido por template.html (inline, no head)
    ============================================================ */
 
@@ -124,26 +109,13 @@
 
   function _pularModal() {
     window.__NSM_AGUARDANDO__ = false;
-    /* Dispara o carregamento ANTES de aguardar o engine,
-       pois agora o engine só existe após __nexusCarregarQuiz.
-       _aguardarEngine faz polling sem prazo e chama cb quando
-       pronto — não desiste, por mais que demore. */
     _completarBoot();
-    _aguardarEngine(function () {
-      window.NexusFiltroAulas.iniciar(null);
-    });
   }
 
   /* ══════════════════════════════════════════════════════════
      CARREGAR ENGINE — ponto único de disparo do carregamento.
 
-     Idempotente: chamadas subsequentes são ignoradas. Pode ser
-     chamado ANTES da decisão final do usuário (ex.: ao clicar
-     em "Filtrar aulas", quando a lista de aulas passa a ser
-     necessária) ou DEPOIS (quando o usuário confirma o fluxo).
-     Em ambos os casos, dispara window.__nexusCarregarQuiz()
-     uma única vez — não revela o <main> nem fecha o modal,
-     isso é responsabilidade de quem decidiu o fluxo.
+     Idempotente: chamadas subsequentes são ignoradas.
   ══════════════════════════════════════════════════════════ */
 
   var _engineCarregando = false;
@@ -162,16 +134,10 @@
      usuário (ou progresso já salvo).
 
      Responsabilidades (nesta ordem):
-       1. Garante que o carregamento do quiz foi disparado
-          (idempotente — se já tinha sido disparado adiantado
-          via _carregarEngine(), apenas reaproveita).
+       1. Garante que o carregamento do quiz foi disparado.
        2. Revela o <main> (remove quiz-aguardando).
 
      Idempotente: chamadas subsequentes são ignoradas.
-     O carregamento em (1) é assíncrono — o engine só vai
-     renderizar depois de carregar. A revelação em (2) acontece
-     junto, mas o container ainda estará vazio nesse momento,
-     então não há flash de conteúdo parcial.
   ══════════════════════════════════════════════════════════ */
 
   var _bootConcluido = false;
@@ -188,60 +154,6 @@
     if (main) {
       main.classList.remove('quiz-aguardando');
     }
-  }
-
-  /* ══════════════════════════════════════════════════════════
-     AGUARDAR ENGINE
-
-     Espera SEM PRAZO até window.NexusFiltroAulas existir.
-     Não há timeout/desistência: o usuário pode demorar
-     qualquer tempo para decidir algo no modal, e quando ele
-     decidir, o engine (se ainda não tiver carregado) é que
-     precisa simplesmente continuar carregando — não existe
-     cenário correto em que esperar "desiste" e segue sem o
-     engine, porque isso impediria as questões de aparecerem.
-  ══════════════════════════════════════════════════════════ */
-
-  function _aguardarEngine(cb) {
-    var id = setInterval(function () {
-      if (window.NexusFiltroAulas &&
-          typeof window.NexusFiltroAulas.iniciar === 'function') {
-        clearInterval(id);
-        cb();
-      }
-    }, 50);
-  }
-
-  /* ══════════════════════════════════════════════════════════
-     LIMPAR FILTRO NO STORAGE
-
-     Remove a chave de filtro diretamente no storage, ANTES do
-     engine carregar. Usa a mesma convenção de chave do engine:
-       quiz_filtro_{uid}_{disc}_{modo}_{semestre}
-
-     Chamado apenas quando o usuário clica em "Todas as aulas"
-     no modal — é o único momento em que o filtro salvo deve
-     ser descartado explicitamente pelo modal.
-  ══════════════════════════════════════════════════════════ */
-
-  function _limparFiltroNoStorage() {
-    try {
-      var S = window.NexusStorage;
-      if (!S) return;
-
-      var disc = window.__NEXUS_QUIZ_DISC__     || '';
-      var modo = window.__NEXUS_QUIZ_MODO__     || '';
-      var sem  = window.__NEXUS_QUIZ_SEMESTRE__ || '';
-      if (!disc || !modo || !sem) return;
-
-      var uid = 'guest';
-      try {
-        var u = S.get('usuario', null);
-        if (u && u.uid) uid = u.uid;
-      } catch (e) {}
-
-      S.remove('quiz_filtro_' + uid + '_' + disc + '_' + modo + '_' + sem);
-    } catch (e) {}
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -359,7 +271,7 @@
       '#nsm-tela1-footer i{color:rgba(var(--accent-rgb,122,168,232),.5);}',
       '#nsm-tela1-footer strong{color:var(--text-2,#a8a49c);font-weight:600;}',
 
-      /* Tela 2 — lista de aulas */
+      /* Tela 2 — estrutura visual preservada */
       '#nsm-btn-voltar{',
         'display:inline-flex;align-items:center;gap:.4rem;',
         'background:none;border:none;',
@@ -371,78 +283,17 @@
 
       '#nsm-body{padding:.8rem 1.6rem 1rem;}',
 
-      '#nsm-loading{text-align:center;padding:2.5rem 0;color:var(--text-3,#6e6a62);font-size:.82rem;}',
-      '#nsm-loading-dot{',
-        'display:inline-block;width:6px;height:6px;border-radius:50%;',
-        'background:var(--accent,#7aa8e8);opacity:.5;',
-        'animation:nsm-pulse 1.2s ease-in-out infinite;margin-bottom:.7rem;',
-      '}',
-      '@keyframes nsm-pulse{0%,100%{opacity:.2;transform:scale(.8);}50%{opacity:.8;transform:scale(1.2);}}',
-
-      '#nsm-acoes{display:flex;gap:.55rem;margin-bottom:1rem;}',
-      '.nsm-acao-btn{',
-        'flex:1;padding:.48rem .5rem;',
-        'background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);',
-        'border-radius:10px;color:var(--text-2,#a8a49c);',
-        'font-size:.78rem;font-weight:600;letter-spacing:.03em;',
-        'cursor:pointer;transition:background .18s,border-color .18s,color .18s;',
-        'touch-action:manipulation;',
-      '}',
-      '.nsm-acao-btn:hover{',
-        'background:rgba(var(--accent-rgb,122,168,232),.1);',
-        'border-color:rgba(var(--accent-rgb,122,168,232),.25);',
-        'color:var(--accent,#7aa8e8);',
-      '}',
-
-      '#nsm-lista{',
-        'list-style:none;margin:0;padding:0;',
-        'display:flex;flex-direction:column;gap:.45rem;',
-        'max-height:38vh;overflow-y:auto;padding-right:2px;',
-      '}',
-      '#nsm-lista::-webkit-scrollbar{width:4px;}',
-      '#nsm-lista::-webkit-scrollbar-track{background:transparent;}',
-      '#nsm-lista::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px;}',
-
-      '.nsm-item{',
-        'display:flex;align-items:center;gap:.85rem;',
-        'padding:.75rem .95rem;',
-        'background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);',
-        'border-radius:12px;cursor:pointer;',
-        'transition:background .18s,border-color .18s,transform .16s;',
-        'touch-action:manipulation;user-select:none;',
-      '}',
-      '.nsm-item:hover{',
-        'background:rgba(var(--accent-rgb,122,168,232),.07);',
-        'border-color:rgba(var(--accent-rgb,122,168,232),.2);',
-        'transform:translateX(2px);',
-      '}',
-      '.nsm-chk-box{',
-        'width:20px;height:20px;flex-shrink:0;',
-        'border:2px solid rgba(255,255,255,.2);border-radius:6px;',
-        'display:flex;align-items:center;justify-content:center;',
-        'transition:background .18s,border-color .18s;',
-      '}',
-      '.nsm-item.nsm-marcado .nsm-chk-box{',
-        'background:var(--accent,#7aa8e8);border-color:var(--accent,#7aa8e8);',
-      '}',
-      '.nsm-chk-icon{',
-        'width:12px;height:12px;stroke:var(--bg,#070b14);',
-        'stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;',
-        'opacity:0;transition:opacity .15s;',
-      '}',
-      '.nsm-item.nsm-marcado .nsm-chk-icon{opacity:1;}',
-      '.nsm-aula-txt{font-size:.85rem;color:var(--text-1,#f0ede6);line-height:1.35;}',
-      '.nsm-item.nsm-marcado .nsm-aula-txt{color:var(--text-1,#f0ede6);}',
+      /* Placeholder estático da tela 2 (sem lógica de filtro) */
+      '#nsm-placeholder{text-align:center;padding:2.5rem 1rem;color:var(--text-3,#6e6a62);font-size:.82rem;line-height:1.6;}',
+      '#nsm-placeholder i{font-size:1.4rem;color:rgba(var(--accent-rgb,122,168,232),.5);margin-bottom:.6rem;display:block;}',
 
       /* Footer tela 2 */
       '#nsm-footer{',
-        'display:flex;align-items:center;justify-content:space-between;',
+        'display:flex;align-items:center;justify-content:flex-end;',
         'padding:1rem 1.6rem 1.4rem;',
         'border-top:1px solid rgba(255,255,255,.055);',
         'gap:1rem;',
       '}',
-      '#nsm-contador{font-size:.78rem;color:var(--text-2,#a8a49c);flex-shrink:0;}',
-      '#nsm-contador strong{color:var(--text-1,#f0ede6);}',
       '#nsm-btn-iniciar{',
         'display:inline-flex;align-items:center;gap:.55rem;',
         'padding:.65rem 1.4rem;',
@@ -543,7 +394,7 @@
     tela1.appendChild(t1Footer);
     card.appendChild(tela1);
 
-    /* Tela 2 */
+    /* Tela 2 — estrutura visual preservada, sem lógica de filtro */
     var tela2 = _el('div', { id: 'nsm-tela2', class: 'nsm-tela nsm-tela--entrando' });
     tela2.style.display = 'none';
 
@@ -556,24 +407,22 @@
     t2WrapVoltar.appendChild(btnVoltar);
     tela2.appendChild(t2WrapVoltar);
 
-    var body    = _el('div', { id: 'nsm-body' });
-    var loading = _el('div', { id: 'nsm-loading' });
-    loading.innerHTML = '<div id="nsm-loading-dot"></div><div>Carregando aulas...</div>';
-    body.appendChild(loading);
+    var body = _el('div', { id: 'nsm-body' });
+    var placeholder = _el('div', { id: 'nsm-placeholder' });
+    placeholder.innerHTML =
+      '<i class="fas fa-filter" aria-hidden="true"></i>' +
+      '<div>Seleção de aulas em breve.</div>';
+    body.appendChild(placeholder);
     tela2.appendChild(body);
 
-    var footer   = _el('div', { id: 'nsm-footer' });
-    var contador = _el('div', { id: 'nsm-contador' });
-    contador.innerHTML = '<strong>0</strong> de 0 aulas selecionadas';
+    var footer = _el('div', { id: 'nsm-footer' });
 
     var btnIniciar = _el('button', { id: 'nsm-btn-iniciar', type: 'button' });
-    btnIniciar.disabled = true;
     btnIniciar.innerHTML =
       '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"' +
       ' stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
       '<polygon points="5 3 19 12 5 21 5 3"/></svg> Iniciar Quiz';
 
-    footer.appendChild(contador);
     footer.appendChild(btnIniciar);
     tela2.appendChild(footer);
 
@@ -626,96 +475,7 @@
     btnFiltrar.addEventListener('click', _irTela2);
     btnVoltar.addEventListener('click',  _irTela1);
 
-    return { bd: bd, body: body, loading: loading, contador: contador, btnIniciar: btnIniciar, btnContinuar: btnContinuar, btnFiltrar: btnFiltrar };
-  }
-
-  /* ══════════════════════════════════════════════════════════
-     PREENCHER LISTA DE AULAS (tela 2)
-  ══════════════════════════════════════════════════════════ */
-
-  function _preencherLista(body, loading, contador, btnIniciar, aulas) {
-    if (loading.parentNode) loading.parentNode.removeChild(loading);
-
-    var totalAulas = aulas.length;
-    var marcadas   = new Set(aulas);
-
-    var acoes      = _el('div', { id: 'nsm-acoes' });
-    var btnTodas   = _el('button', { class: 'nsm-acao-btn', type: 'button' }, 'Todas');
-    var btnNenhuma = _el('button', { class: 'nsm-acao-btn', type: 'button' }, 'Nenhuma');
-    acoes.appendChild(btnTodas);
-    acoes.appendChild(btnNenhuma);
-    body.appendChild(acoes);
-
-    var lista = _el('ul', { id: 'nsm-lista', role: 'group', 'aria-label': 'Aulas disponíveis' });
-    var itens  = [];
-
-    aulas.forEach(function (aula) {
-      var li = _el('li', { class: 'nsm-item nsm-marcado', role: 'checkbox',
-                            'aria-checked': 'true', tabindex: '0' });
-      var chkBox = _el('div', { class: 'nsm-chk-box', 'aria-hidden': 'true' });
-      chkBox.innerHTML =
-        '<svg class="nsm-chk-icon" viewBox="0 0 12 12" aria-hidden="true">' +
-          '<polyline points="1.5 6 4.5 9.5 10.5 2.5"/>' +
-        '</svg>';
-      var txt = _el('span', { class: 'nsm-aula-txt' }, aula);
-      li.appendChild(chkBox);
-      li.appendChild(txt);
-      lista.appendChild(li);
-      itens.push({ el: li, aula: aula });
-
-      function _toggle() {
-        if (marcadas.has(aula)) {
-          marcadas.delete(aula);
-          li.classList.remove('nsm-marcado');
-          li.setAttribute('aria-checked', 'false');
-        } else {
-          marcadas.add(aula);
-          li.classList.add('nsm-marcado');
-          li.setAttribute('aria-checked', 'true');
-        }
-        _atualizarContador();
-      }
-
-      li.addEventListener('click', _toggle);
-      li.addEventListener('keydown', function (e) {
-        if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); _toggle(); }
-      });
-    });
-
-    body.appendChild(lista);
-
-    function _atualizarContador() {
-      var n = marcadas.size;
-      contador.innerHTML =
-        '<strong>' + n + '</strong> de ' + totalAulas +
-        ' aula' + (totalAulas !== 1 ? 's' : '') +
-        ' selecionada' + (totalAulas !== 1 ? 's' : '');
-      btnIniciar.disabled = (n === 0);
-    }
-    _atualizarContador();
-
-    btnTodas.addEventListener('click', function () {
-      itens.forEach(function (it) {
-        marcadas.add(it.aula);
-        it.el.classList.add('nsm-marcado');
-        it.el.setAttribute('aria-checked', 'true');
-      });
-      _atualizarContador();
-    });
-
-    btnNenhuma.addEventListener('click', function () {
-      marcadas.clear();
-      itens.forEach(function (it) {
-        it.el.classList.remove('nsm-marcado');
-        it.el.setAttribute('aria-checked', 'false');
-      });
-      _atualizarContador();
-    });
-
-    return function getMarcadas() {
-      if (marcadas.size === 0 || marcadas.size === totalAulas) return null;
-      return new Set(marcadas);
-    };
+    return { bd: bd, btnIniciar: btnIniciar, btnContinuar: btnContinuar, btnFiltrar: btnFiltrar };
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -723,85 +483,28 @@
   ══════════════════════════════════════════════════════════ */
 
   function _exibirModal() {
-    var ui          = _construirModal();
-    var getMarcadas = null;
-    var _listaCarregada = false;
+    var ui = _construirModal();
 
-    function _carregarListaDeAulas() {
-      if (_listaCarregada) return;
-      _listaCarregada = true;
-
-      /* Dispara o carregamento do engine agora — é o momento em
-         que a lista de aulas passa a ser necessária. Sem prazo:
-         a tela 2 mostra o loading (#nsm-loading) até o engine
-         responder, por quanto tempo for preciso. */
-      _carregarEngine();
-
-      _aguardarEngine(function () {
-        var aulas = window.NexusFiltroAulas.listarAulas
-          ? window.NexusFiltroAulas.listarAulas()
-          : [];
-
-        if (aulas.length <= 1) {
-          var ultimoBtn = ui.btnContinuar.parentNode &&
-            ui.btnContinuar.parentNode.lastElementChild;
-          if (ultimoBtn && ultimoBtn !== ui.btnContinuar) {
-            ultimoBtn.style.display = 'none';
-          }
-        }
-
-        getMarcadas = _preencherLista(
-          ui.body, ui.loading, ui.contador, ui.btnIniciar, aulas
-        );
-      });
-    }
-
-    /* "Filtrar aulas" — é aqui que a lista passa a ser
-       necessária, então é aqui que o engine começa a carregar
-       (em paralelo com a transição de tela 1 → 2, que já tem
-       sua própria animação interna em _construirModal). */
-    ui.btnFiltrar.addEventListener('click', _carregarListaDeAulas);
-
-    /* "Todas as aulas" — limpa filtro do storage imediatamente,
-       antes do engine carregar, para que _restaurarFiltro() não
-       encontre nada e renderize todas as questões sem restrição. */
+    /* "Todas as aulas" (tela 1) — conclui o fluxo */
     ui.btnContinuar.addEventListener('click', function () {
-      _limparFiltroNoStorage();
-      _concluir(ui.bd, null);
+      _concluir(ui.bd);
     });
 
-    /* "Iniciar Quiz" (tela 2) */
+    /* "Iniciar Quiz" (tela 2) — conclui o fluxo */
     ui.btnIniciar.addEventListener('click', function () {
-      var sel = getMarcadas ? getMarcadas() : null;
-      _concluir(ui.bd, sel);
+      _concluir(ui.bd);
     });
   }
 
   /* ══════════════════════════════════════════════════════════
-     CONCLUIR — fecha modal, dispara carregamento e aplica filtro
+     CONCLUIR — fecha modal e dispara carregamento
   ══════════════════════════════════════════════════════════ */
 
-  function _concluir(bd, aulasSelecionadas) {
+  function _concluir(bd) {
     window.__NSM_AGUARDANDO__ = false;
 
     _fechar(bd, function () {
-      /* Dispara carregamento do quiz e revela container.
-         Quando o engine carregar, verá __NSM_AGUARDANDO__ = false
-         e renderizará automaticamente — EXCETO se houver filtro
-         de aulas específico, que precisa ser aplicado via iniciar(). */
       _completarBoot();
-
-      if (aulasSelecionadas !== null) {
-        /* Com filtro: aguarda engine e aplica seleção */
-        _aguardarEngine(function () {
-          if (window.NexusFiltroAulas &&
-              typeof window.NexusFiltroAulas.iniciar === 'function') {
-            window.NexusFiltroAulas.iniciar(aulasSelecionadas);
-          }
-        });
-      }
-      /* null: storage já foi limpo antes de _concluir ser chamado,
-         engine restaura aulasFiltradas = null e renderiza tudo */
     });
   }
 

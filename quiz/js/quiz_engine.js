@@ -15,44 +15,12 @@
     10. Ver erros ......................... L.640
     11. Modo Step ......................... L.720
     12. Binds e boot ...................... L.930
-    13. Filtro de aulas ................... L.980
-
-   v9 — filtro de aulas:
-     Novo botão na nav-float para o usuário escolher
-     quais aulas exibir. Painel lateral com checkboxes.
-     aulasFiltradas=null → todas; Set<string> → filtradas.
 
    v8 — embaralhamento por grupo de aula:
      Questões são embaralhadas DENTRO de cada aula, preservando
      a ordem das aulas. Isso garante que subject-title e
      subject-result apareçam corretamente para todas as aulas,
      independente de quantas aulas a disciplina tiver.
-
-   v9.1 — persistência do filtro de aulas:
-     aulasFiltradas agora é salvo no NexusStorage e restaurado
-     automaticamente ao carregar a página, seguindo o mesmo
-     padrão de persistência do shuffleMap e do modoStep.
-
-   v9.2 — correção: restauração efetiva do filtro de aulas:
-     Antes, _restaurarFiltro() apenas preenchia a variável
-     aulasFiltradas a partir do storage, mas o filtro nunca era
-     de fato APLICADO à lista de questões renderizada após F5 —
-     _renderizarERestaurar() sempre embaralhava/renderizava
-     questoesBase por completo, ignorando aulasFiltradas. Agora,
-     quando há filtro salvo, a lista é filtrada antes de montar
-     `questoes` e o badge do botão de filtro é atualizado,
-     SEM resetar respostas/progresso (diferente de _aplicarFiltro,
-     que é usada apenas quando o usuário troca o filtro manualmente).
-
-   v9.3 — correção: filtro não apagado ao clicar "Todas as aulas":
-     Quando o modal aparece (sem progresso ou via navegação) e o
-     usuário clica "Todas as aulas", o quiz_starter_modal.js agora
-     limpa a chave do filtro no storage ANTES do engine carregar.
-     Assim _restaurarFiltro() encontra storage vazio → aulasFiltradas
-     = null → engine renderiza tudo, sem re-renderização posterior.
-     "Todas as aulas selecionadas no painel de filtro" também é
-     normalizado para null em _salvarFiltro(), evitando persistir
-     um Set completo que seria tratado como filtro ativo no boot.
 
    INTEGRAÇÃO COM O QUIZ-ASSISTANT:
      Após cada renderização, o engine:
@@ -146,51 +114,6 @@
     function _limparEstadoStep() {
       if (!_Storage) return;
       _Storage.remove(_stepStateKey());
-    }
-
-    /* ── Persistência do filtro de aulas ───────────────────────
-       Mesma convenção de chave das outras persistências do engine:
-       isolada por uid + disc + modo + semestre.
-       Set<string> não é JSON-serializável, por isso convertemos
-       para Array ao salvar e reconstruímos o Set ao restaurar.  */
-    function _filtroKey() {
-      return 'quiz_filtro_' + _uid() + '_' + _disc + '_' + _modo + '_' + _semestre;
-    }
-
-    function _salvarFiltro() {
-      if (!_Storage) return;
-      /* "Todas as aulas selecionadas" equivale a "sem filtro":
-         se aulasFiltradas contém todas as aulas disponíveis,
-         normaliza para null antes de persistir — evita salvar
-         um Set completo que, na restauração, seria tratado como
-         filtro ativo mesmo sem restringir conteúdo algum. */
-      if (aulasFiltradas !== null) {
-        var totalDisponiveis = _todasAsAulas().length;
-        if (totalDisponiveis > 0 && aulasFiltradas.size >= totalDisponiveis) {
-          aulasFiltradas = null;
-        }
-      }
-      if (aulasFiltradas === null) {
-        _Storage.remove(_filtroKey());
-      } else {
-        _Storage.set(_filtroKey(), Array.from(aulasFiltradas));
-      }
-    }
-
-    function _restaurarFiltro() {
-      if (!_Storage) return;
-      var raw = _Storage.get(_filtroKey(), null);
-      /* Dado ausente ou inválido → nenhum filtro salvo no momento.
-         Sincroniza aulasFiltradas para null nesse caso também (e não
-         apenas quando há dado válido), pois esta função agora roda
-         tanto no boot quanto ao reabrir o painel de filtro — precisa
-         refletir fielmente o storage nos dois sentidos. */
-      if (!raw || !Array.isArray(raw) || raw.length === 0) {
-        aulasFiltradas = null;
-        return;
-      }
-      /* Reconstrói o Set com as aulas da sessão salva */
-      aulasFiltradas = new Set(raw);
     }
 
     /* ── Converte respostas {qi: ai} → string compacta ── */
@@ -385,105 +308,6 @@
       return feedback.trim();
     }
 
-    /* ── FILTRO DE AULAS — helpers ────────────────────────── */
-
-    function _todasAsAulas() {
-      var vistas = {};
-      var lista  = [];
-      questoesBase.forEach(function (q) {
-        var aula = q.aula !== undefined ? q.aula : null;
-        if (aula !== null && !vistas[aula]) {
-          vistas[aula] = true;
-          lista.push(aula);
-        }
-      });
-      return lista;
-    }
-
-    function _atualizarBadgeFiltro() {
-      var btn = document.getElementById('btn-filtro-aulas');
-      if (!btn) return;
-      var todasAulas = _todasAsAulas();
-      var ativo = aulasFiltradas !== null && aulasFiltradas.size < todasAulas.length;
-      btn.classList.toggle('filtro-ativo', ativo);
-      var badge = btn.querySelector('.filtro-badge');
-      if (badge) badge.remove();
-      if (ativo) {
-        var b = document.createElement('span');
-        b.className   = 'filtro-badge';
-        b.textContent = aulasFiltradas.size;
-        btn.appendChild(b);
-      }
-    }
-
-    /* ── Base de questões considerando o filtro ativo ──────
-       Helper único usado tanto por _aplicarFiltro() (troca manual
-       do usuário) quanto pela restauração no boot (F5), evitando
-       duplicar a lógica de filtragem em dois lugares.
-
-       IMPORTANTE: se o filtro salvo contiver nomes de aula que não
-       existem mais no conteúdo atual (ex.: o conteúdo foi reorganizado
-       entre sessões), essa divergência não pode ficar "escondida"
-       apenas no resultado de questões — precisa ser corrigida na
-       própria aulasFiltradas, para que ela continue sendo a única
-       fonte de verdade usada também pelo modal de filtro. Por isso,
-       esta função sempre depura aulasFiltradas para conter apenas
-       aulas que de fato existem no conteúdo atual (interseção), e
-       reseta para null quando a interseção fica vazia. */
-    function _baseFiltrada() {
-      if (aulasFiltradas === null) return questoesBase;
-
-      var aulasReaisSet = new Set(_todasAsAulas());
-
-      /* Depura entradas obsoletas: mantém em aulasFiltradas apenas
-         o que de fato existe no conteúdo atual. */
-      var filtradoValido = new Set();
-      aulasFiltradas.forEach(function (a) {
-        if (aulasReaisSet.has(a)) filtradoValido.add(a);
-      });
-      aulasFiltradas = filtradoValido.size > 0 ? filtradoValido : null;
-
-      if (aulasFiltradas === null) return questoesBase;
-
-      var base = questoesBase.filter(function (q) {
-        var aula = q.aula !== undefined ? q.aula : null;
-        return aulasFiltradas.has(aula);
-      });
-
-      if (base.length === 0) {
-        aulasFiltradas = null;
-        return questoesBase;
-      }
-
-      return base;
-    }
-
-    function _aplicarFiltro() {
-      var base = _baseFiltrada();
-
-      respostas        = {};
-      revelado         = false;
-      mostrandoSoErros = false;
-      stepAtual        = 0;
-
-      questoes = criarCopiaEmbaralhada(base, null);
-
-      /* Persistir o estado atual do filtro para sobreviver a F5 */
-      _salvarFiltro();
-
-      // Atualiza snapshot após filtro
-      _publicarSnapshot(questoes);
-
-      var resultsEl = document.getElementById('results');
-      if (resultsEl) { resultsEl.style.display = 'none'; resultsEl.innerHTML = ''; }
-
-      _resetarBotaoErros();
-      renderizar();
-      atualizarResultados();
-      smoothScrollToTop();
-      _atualizarBadgeFiltro();
-    }
-
     /* ── 4. ESTADO E RESTAURAÇÃO ──────────────────────────── */
 
     var respostas        = {};
@@ -494,7 +318,6 @@
     var mostrandoSoErros = false;
     var aulaGrupos           = [];
     var _stepAulaBannerTimer = null;
-    var aulasFiltradas        = null;
 
     function _restaurar() {
       if (!_disc || !_Storage) return null;
@@ -535,32 +358,11 @@
     }
 
     /* ── Inicialização ── */
-    _verificarRetorno(function () {
-      /* Quando o progresso expira, limpar também o filtro salvo
-         para que o usuário comece com todas as aulas disponíveis. */
-      if (_Storage) _Storage.remove(_filtroKey());
-    });
-
-    /* Restaura o filtro de aulas persistido na sessão anterior.
-       Deve rodar ANTES de montar `questoes`, para que a base de
-       questões (e, por consequência, o shuffleMap) já reflita o
-       recorte correto desde o primeiro frame. */
-    _restaurarFiltro();
+    _verificarRetorno(function () {});
 
     var savedShuffleMap = _restaurar();
 
-    /* questoesBaseAtual = questoesBase já recortado pelo filtro
-       restaurado (ou questoesBase completo, se não houver filtro).
-       Isso corrige o bug em que o filtro salvo era ignorado na
-       montagem inicial de `questoes` após F5. */
-    var questoesBaseAtual = _baseFiltrada();
-    var questoes = criarCopiaEmbaralhada(questoesBaseAtual, savedShuffleMap);
-
-    /* _baseFiltrada() pode ter depurado aulasFiltradas (removendo
-       entradas que não existem mais no conteúdo atual). Persiste essa
-       correção imediatamente, para que o storage não continue
-       divergente do estado real em memória nas próximas sessões. */
-    _salvarFiltro();
+    var questoes = criarCopiaEmbaralhada(questoesBase, savedShuffleMap);
 
     if (savedShuffleMap === null && _disc && _Storage) {
       _salvarShuffleMap();
@@ -897,12 +699,6 @@
         _Storage.remove(_smapKey());
       }
 
-      /* Reiniciar também reseta o filtro de aulas — o usuário
-         volta a ver todas as aulas disponíveis. Sincroniza o
-         storage com o estado null já definido acima.           */
-      aulasFiltradas = null;
-      if (_disc && _Storage) _Storage.remove(_filtroKey());
-
       if (window.NexusFirebase && _disc) {
         var usuario = _Storage ? _Storage.get('usuario', null) : null;
         if (usuario && usuario.uid) {
@@ -921,7 +717,6 @@
       _resetarBotaoErros();
       renderizar();   // _publicarSnapshot é chamado dentro de renderizar()
       smoothScrollToTop();
-      _atualizarBadgeFiltro();
     }
 
     /* ── 9. RESULTADO GLOBAL ──────────────────────────────── */
@@ -1402,206 +1197,12 @@
       }
     }
 
-    /* ── 13. FILTRO DE AULAS ──────────────────────────────── */
-
-    function _iniciarFiltroAulas() {
-      var btnFiltro = document.getElementById('btn-filtro-aulas');
-      if (!btnFiltro) return;
-
-      var overlay = document.createElement('div');
-      overlay.id        = 'filtro-overlay';
-      overlay.className = 'filtro-overlay';
-      document.body.appendChild(overlay);
-
-      var painel = document.createElement('div');
-      painel.id        = 'filtro-painel';
-      painel.className = 'filtro-painel';
-      painel.setAttribute('role', 'dialog');
-      painel.setAttribute('aria-label', 'Filtrar aulas');
-      document.body.appendChild(painel);
-
-      function _abrirPainel() {
-        var aulas = _todasAsAulas();
-        if (aulas.length <= 1) return;
-
-        /* Garante que a UI do painel sempre reflita o estado de filtro
-           realmente salvo, e não apenas o que a variável de closure
-           `aulasFiltradas` contém no instante da chamada. Isso evita a
-           divergência relatada (filtro ativo internamente, mas o painel
-           abrindo com "todas as aulas" marcadas) em qualquer cenário em
-           que a leitura do storage no boot e a abertura do painel não
-           estejam perfeitamente sincronizadas — sem alterar o formato
-           de armazenamento nem a lógica de salvamento já existentes. */
-        _restaurarFiltro();
-        _atualizarBadgeFiltro();
-
-        var totalAulas = aulas.length;
-
-        /* `marcadas` é construída por INTERSECÇÃO entre o filtro salvo
-           (aulasFiltradas) e a lista real de aulas do conteúdo atual
-           (aulas) — nunca uma cópia direta de aulasFiltradas. Isso é
-           essencial porque aulasFiltradas pode conter nomes que não
-           existem mais como string idêntica no conteúdo (espaços,
-           reordenação, ou o próprio conteúdo tendo sido atualizado).
-           Normalizamos (trim) antes de comparar para blindar contra
-           divergências triviais de espaçamento, garantindo que o
-           .has() reflita a real correspondência semântica, e não uma
-           igualdade estrita acidentalmente quebrada. */
-        function _normalizada(v) { return String(v).trim(); }
-
-        var marcadas;
-        if (aulasFiltradas === null) {
-          marcadas = new Set(aulas);
-        } else {
-          var salvasNormalizadas = {};
-          aulasFiltradas.forEach(function (a) { salvasNormalizadas[_normalizada(a)] = true; });
-
-          marcadas = new Set(
-            aulas.filter(function (a) { return salvasNormalizadas[_normalizada(a)]; })
-          );
-        }
-
-        painel.innerHTML =
-          '<div class="filtro-header">' +
-          '<div class="filtro-eyebrow"><i class="fas fa-filter" aria-hidden="true"></i> Filtrar Aulas</div>' +
-          '<h2 class="filtro-titulo">Selecionar Aulas</h2>' +
-          '<p class="filtro-subtitulo">Escolha quais aulas deseja estudar</p>' +
-          '<button class="filtro-close" id="filtro-close-btn" type="button" aria-label="Fechar">×</button>' +
-          '</div>' +
-          '<div class="filtro-body">' +
-          '<div class="filtro-acoes">' +
-          '<button class="filtro-acao-btn" id="filtro-todas"   type="button">Todas</button>' +
-          '<button class="filtro-acao-btn" id="filtro-nenhuma" type="button">Nenhuma</button>' +
-          '</div>' +
-          '<ul class="filtro-lista" id="filtro-lista" role="group" aria-label="Aulas disponíveis"></ul>' +
-          '</div>' +
-          '<div class="filtro-footer">' +
-          '<div class="filtro-contador" id="filtro-contador"></div>' +
-          '<button class="filtro-aplicar" id="filtro-aplicar-btn" type="button">' +
-          '<i class="fas fa-check" aria-hidden="true"></i> Aplicar</button>' +
-          '</div>';
-
-        var lista    = painel.querySelector('#filtro-lista');
-        var contador = painel.querySelector('#filtro-contador');
-        var itens    = [];
-
-        aulas.forEach(function (aula) {
-          var checked = marcadas.has(aula);
-          var li = document.createElement('li');
-          li.className = 'filtro-item' + (checked ? ' filtro-marcado' : '');
-          li.setAttribute('role', 'checkbox');
-          li.setAttribute('aria-checked', checked ? 'true' : 'false');
-          li.setAttribute('tabindex', '0');
-          li.innerHTML =
-            '<div class="filtro-chk-box" aria-hidden="true">' +
-            '<svg class="filtro-chk-icon" viewBox="0 0 12 12" aria-hidden="true">' +
-            '<polyline points="1.5 6 4.5 9.5 10.5 2.5"/></svg></div>' +
-            '<span class="filtro-aula-txt"></span>';
-          li.querySelector('.filtro-aula-txt').textContent = aula;
-          lista.appendChild(li);
-          itens.push({ el: li, aula: aula });
-
-          function _toggle() {
-            if (marcadas.has(aula)) {
-              marcadas.delete(aula);
-              li.classList.remove('filtro-marcado');
-              li.setAttribute('aria-checked', 'false');
-            } else {
-              marcadas.add(aula);
-              li.classList.add('filtro-marcado');
-              li.setAttribute('aria-checked', 'true');
-            }
-            _atualizarContador();
-          }
-          li.addEventListener('click', _toggle);
-          li.addEventListener('keydown', function (e) {
-            if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); _toggle(); }
-          });
-        });
-
-        function _atualizarContador() {
-          var n = marcadas.size;
-          contador.innerHTML =
-            '<strong>' + n + '</strong> de ' + totalAulas +
-            ' aula' + (totalAulas !== 1 ? 's' : '') +
-            ' selecionada' + (totalAulas !== 1 ? 's' : '');
-        }
-        _atualizarContador();
-
-        painel.querySelector('#filtro-todas').addEventListener('click', function () {
-          itens.forEach(function (it) {
-            marcadas.add(it.aula);
-            it.el.classList.add('filtro-marcado');
-            it.el.setAttribute('aria-checked', 'true');
-          });
-          _atualizarContador();
-        });
-
-        painel.querySelector('#filtro-nenhuma').addEventListener('click', function () {
-          marcadas.clear();
-          itens.forEach(function (it) {
-            it.el.classList.remove('filtro-marcado');
-            it.el.setAttribute('aria-checked', 'false');
-          });
-          _atualizarContador();
-        });
-
-        painel.querySelector('#filtro-close-btn').addEventListener('click', _fecharPainel);
-
-        painel.querySelector('#filtro-aplicar-btn').addEventListener('click', function () {
-          aulasFiltradas = (marcadas.size === 0 || marcadas.size === totalAulas)
-            ? null : new Set(marcadas);
-          _fecharPainel();
-          _aplicarFiltro();
-        });
-
-        overlay.classList.add('filtro-show');
-        painel.classList.add('filtro-show');
-        btnFiltro.classList.add('nlg-active');
-      }
-
-      function _fecharPainel() {
-        overlay.classList.remove('filtro-show');
-        painel.classList.remove('filtro-show');
-        btnFiltro.classList.remove('nlg-active');
-      }
-
-      btnFiltro.addEventListener('click', function () {
-        painel.classList.contains('filtro-show') ? _fecharPainel() : _abrirPainel();
-      });
-      overlay.addEventListener('click', _fecharPainel);
-      document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && painel.classList.contains('filtro-show')) _fecharPainel();
-      });
-
-      window.NexusFiltroAulas = { abrir: _abrirPainel, fechar: _fecharPainel };
-    }
-
-    _iniciarFiltroAulas();
-
-    window.NexusFiltroAulas.listarAulas = _todasAsAulas;
-
-    window.NexusFiltroAulas.iniciar = function (aulasSelecionadas) {
-      aulasFiltradas = aulasSelecionadas;
-      /* Persiste imediatamente — cobre também o caso null (sem filtro),
-         que remove a chave do storage via _salvarFiltro.              */
-      _salvarFiltro();
-      if (aulasSelecionadas === null) { _renderizarERestaurar(); }
-      else                            { _aplicarFiltro(); }
-    };
-
     if (!window.__NSM_AGUARDANDO__) {
       _renderizarERestaurar();
     }
 
     function _renderizarERestaurar() {
       renderizar();   // → chama _publicarSnapshot → dispara nexus:quizPronto na 1ª vez
-
-      /* Garante que o badge do botão de filtro reflita o estado
-         restaurado (aulasFiltradas), já que renderizar() por si só
-         não toca na UI do botão — isso só acontecia antes dentro
-         de _aplicarFiltro(), nunca no caminho de restauração. */
-      _atualizarBadgeFiltro();
 
       if (_Storage) {
         var _stepSalvo = _Storage.get(_stepStateKey(), null);
