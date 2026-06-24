@@ -12,7 +12,26 @@
  *     → encontra o botão já existente e o reutiliza.
  *   • ui.js verifica: !fab.dataset.nexusBound
  *     → como fab.js nunca define essa flag, ui.js SEMPRE registra o listener.
- *   • fab.js nunca define nexusBound nem adiciona qualquer addEventListener.
+ *   • fab.js nunca define nexusBound nem adiciona qualquer addEventListener
+ *     de lógica funcional (open/close/toggle).
+ *
+ * ── SHAKE ANTECIPADO (visitante sem login) ────────────────────
+ *   O ui.js é carregado como módulo ES (via index.js), o que significa
+ *   que ele só executa após o HTML ser completamente parseado. O fab.js,
+ *   por outro lado, é síncrono e roda no topo do <body>.
+ *
+ *   Resultado: se o visitante clicar no FAB antes do ui.js terminar de
+ *   carregar, não há listener registrado e nada acontece — nem shake.
+ *
+ *   Solução: fab.js registra um listener ÚNICO e MÍNIMO que só executa
+ *   o shake quando o clique ocorre antes do ui.js assumir o controle.
+ *   Assim que ui.js chama NexusUI.init(), ele registra o toggle() e
+ *   marca nexusBound = '1'. O listener deste arquivo passa então a
+ *   verificar nexusBound antes de agir — se já estiver marcado, cede
+ *   o controle ao ui.js e não interfere.
+ *
+ *   O listener NÃO abre modal, NÃO dispara eventos de login, NÃO
+ *   redireciona. Apenas shake + return.
  *
  * ── AJUSTE (suporte ao shake nativo da IA) ────────────────────
  *   O ícone interno passou de stroke-based para fill-based, igual
@@ -24,12 +43,12 @@
  *   dois fluxos de inicialização antes de qualquer animação rodar.
  *
  *   Também adicionado will-change: transform no elemento raiz —
- *   o shake (.nexus-fab--shake, definido em ia.css) anima translateX
- *   + rotate; sem o hint de will-change, o navegador só descobre que
- *   precisa de uma camada de composição própria no primeiro disparo,
- *   o que pode causar um micro-engasgo (jank) bem no primeiro shake.
- *   Com o hint presente desde a criação do botão, a camada já existe
- *   antes do primeiro clique bloqueado.
+ *   o shake (.nexus-fab--shake, definido em ia.css) anima translateX;
+ *   sem o hint de will-change, o navegador só descobre que precisa de
+ *   uma camada de composição própria no primeiro disparo, o que pode
+ *   causar um micro-engasgo (jank) bem no primeiro shake. Com o hint
+ *   presente desde a criação do botão, a camada já existe antes do
+ *   primeiro clique bloqueado.
  */
 
 (function () {
@@ -66,7 +85,7 @@
     fab.setAttribute('aria-expanded', 'false');
 
     // will-change prepara a camada de composição com antecedência,
-    // para que o shake (translateX + rotate, ver ia.css) não tenha
+    // para que o shake (translateX, ver btn-ia.css) não tenha
     // um primeiro disparo com jank por falta de camada própria.
     fab.style.willChange = 'transform';
 
@@ -83,10 +102,34 @@
     return fab;
   }
 
+  /* ── SHAKE ANTECIPADO ─────────────────────────────────────────
+     Executado quando o clique chega ANTES de ui.js ter registrado
+     o toggle(). Assim que ui.js inicializa (nexusBound = '1'), este
+     handler se torna inerte — o clique segue direto para o toggle().
+
+     Não abre modal. Não dispara eventos. Não redireciona.           */
+  function _shakeAntecipado(fab) {
+    fab.addEventListener('click', function _handler() {
+      // ui.js já assumiu o controle — este handler não deve agir
+      if (fab.dataset.nexusBound) return;
+
+      fab.classList.remove('nexus-fab--shake');
+      void fab.offsetWidth;                        // força reflow
+      fab.classList.add('nexus-fab--shake');
+
+      fab.addEventListener('animationend', function () {
+        fab.classList.remove('nexus-fab--shake');
+      }, { once: true });
+    });
+  }
+
   function _injetar() {
     // Checa novamente dentro do callback — ui.js pode ter rodado primeiro
     if (document.getElementById('nexus-fab')) return;
-    document.body.appendChild(_criarFAB());
+
+    var fab = _criarFAB();
+    _shakeAntecipado(fab);
+    document.body.appendChild(fab);
   }
 
   // Se o <body> já existe (script no <head> após os CSS), injeta de forma síncrona.

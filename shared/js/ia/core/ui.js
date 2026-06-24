@@ -33,6 +33,20 @@
  *
  *   Integração: usa exclusivamente estaLogado() de global.js.
  *
+ * ── REDESIGN — ORB DE ENERGIA ───────────────────────────────────
+ *   _criarFAB() passou a gerar o "orb de energia" (núcleo radial +
+ *   anel orbital com partícula + textura hexagonal de fundo) no
+ *   lugar do sparkle anterior. Estrutura idêntica à de fab.js — os
+ *   dois pontos de criação do FAB continuam produzindo o mesmo
+ *   HTML/SVG, para que o botão fique visualmente idêntico
+ *   independentemente de qual arquivo o cria primeiro.
+ *
+ *   Dois novos estados visuais, expostos na API pública:
+ *     • setThinking(bool)     → IA processando (anel de atividade,
+ *       rotação acelerada do orb, partículas de energia).
+ *     • notifyNewMessage()    → resposta chegou (flash + badge,
+ *       autolimpa sozinho após a animação).
+ *
  * API pública: window.NexusUI
  */
 
@@ -154,23 +168,51 @@
      TEMPLATES HTML
   ══════════════════════════════════════════════════════════ */
 
-  function _iconSparkle(size) {
-    size = size || 18;
+  function _iconHex() {
     return (
-      '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24"' +
-      ' fill="none" aria-hidden="true">' +
-      '<path d="M12 2' +
-        ' C12 6.5 13 9.5 15 11.5' +
-        ' C17 13.5 20 14.5 22 14.5' +
-        ' C20 14.5 17 15.5 15 17.5' +
-        ' C13 19.5 12 22.5 12 27' +
-        ' C12 22.5 11 19.5 9 17.5' +
-        ' C7 15.5 4 14.5 2 14.5' +
-        ' C4 14.5 7 13.5 9 11.5' +
-        ' C11 9.5 12 6.5 12 2 Z"' +
-        ' transform="translate(0,-2.5) scale(0.86)"' +
-        ' fill="currentColor"/>' +
-      '<circle cx="18.5" cy="5.5" r="1.2" fill="#00c8ff"/>' +
+      '<svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+        '<defs>' +
+          '<pattern id="nxHexPattern" width="9.6" height="16.6" patternUnits="userSpaceOnUse">' +
+            '<path d="M4.8 0 L9.6 2.77 L9.6 8.3 L4.8 11.07 L0 8.3 L0 2.77 Z" fill="none" stroke="currentColor" stroke-width="0.4"/>' +
+            '<path d="M4.8 8.3 L9.6 11.07 L9.6 16.6 L4.8 19.37 L0 16.6 L0 11.07 Z" fill="none" stroke="currentColor" stroke-width="0.4"/>' +
+          '</pattern>' +
+          '<radialGradient id="nxHexFade" cx="50%" cy="50%" r="50%">' +
+            '<stop offset="0%" stop-color="#fff" stop-opacity="1"/>' +
+            '<stop offset="75%" stop-color="#fff" stop-opacity="0.5"/>' +
+            '<stop offset="100%" stop-color="#fff" stop-opacity="0"/>' +
+          '</radialGradient>' +
+          '<mask id="nxHexMask"><rect width="56" height="56" fill="url(#nxHexFade)"/></mask>' +
+        '</defs>' +
+        '<rect width="56" height="56" fill="url(#nxHexPattern)" mask="url(#nxHexMask)"/>' +
+      '</svg>'
+    );
+  }
+
+  function _iconOrb() {
+    return (
+      '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
+        '<defs>' +
+          '<radialGradient id="nxOrbCore" cx="50%" cy="50%" r="50%">' +
+            '<stop offset="0%" stop-color="#cdf7ff"/>' +
+            '<stop offset="50%" stop-color="#00c8ff"/>' +
+            '<stop offset="100%" stop-color="#0086b3"/>' +
+          '</radialGradient>' +
+          '<linearGradient id="nxOrbRing" x1="0%" y1="50%" x2="100%" y2="50%">' +
+            '<stop offset="0%" stop-color="#00c8ff" stop-opacity="0"/>' +
+            '<stop offset="50%" stop-color="#7fe6ff" stop-opacity="0.95"/>' +
+            '<stop offset="100%" stop-color="#00c8ff" stop-opacity="0"/>' +
+          '</linearGradient>' +
+        '</defs>' +
+        '<ellipse cx="12" cy="12" rx="10.2" ry="3.6" stroke="#00c8ff" stroke-opacity="0.18" stroke-width="0.7" fill="none" transform="rotate(12 12 12)"/>' +
+        '<g class="nx-orb-ring">' +
+          '<ellipse cx="12" cy="12" rx="9.6" ry="4.2" stroke="url(#nxOrbRing)" stroke-width="0.9" fill="none" transform="rotate(-16 12 12)"/>' +
+        '</g>' +
+        '<g class="nx-orb-particle">' +
+          '<circle cx="21.5" cy="11" r="2.2" fill="#00c8ff" opacity="0.25" transform="rotate(-16 12 12)"/>' +
+          '<circle cx="21.5" cy="11" r="1.05" fill="#eafdff" transform="rotate(-16 12 12)"/>' +
+        '</g>' +
+        '<circle class="nx-orb-core" cx="12" cy="12" r="4" fill="url(#nxOrbCore)"/>' +
+        '<circle cx="12" cy="12" r="4" fill="none" stroke="#eafdff" stroke-width="0.35" opacity="0.5"/>' +
       '</svg>'
     );
   }
@@ -295,14 +337,22 @@
     fab.setAttribute('aria-label', 'Assistente Nexus — abrir chat');
     fab.setAttribute('aria-expanded', 'false');
 
+    // HTML idêntico ao _criarFAB() de fab.js — nenhum desvio estrutural
     fab.innerHTML =
+      '<div id="nexus-fab-aura" aria-hidden="true"></div>' +
       '<div id="nexus-fab-body">' +
+        '<div id="nexus-fab-hex">' + _iconHex() + '</div>' +
         '<div id="nexus-fab-icon-wrap">' +
-          '<span id="nexus-fab-icon">' + _iconSparkle(18) + '</span>' +
+          '<span id="nexus-fab-icon">' + _iconOrb() + '</span>' +
         '</div>' +
       '</div>' +
-      '<div id="nexus-fab-ripple" aria-hidden="true"></div>' +
-      '<span class="nexus-fab-label" aria-hidden="true">nexus ia</span>';
+      '<div id="nexus-fab-ring" aria-hidden="true">' +
+        '<svg viewBox="0 0 56 56"><circle cx="28" cy="28" r="26"/></svg>' +
+      '</div>' +
+      '<span class="nx-fab-particle" aria-hidden="true"></span>' +
+      '<span class="nx-fab-particle" aria-hidden="true"></span>' +
+      '<span class="nx-fab-particle" aria-hidden="true"></span>' +
+      '<span class="nexus-fab-badge" aria-hidden="true"></span>';
 
     return fab;
   }
@@ -719,6 +769,47 @@
   }
 
   /* ══════════════════════════════════════════════════════════
+     ESTADOS VISUAIS DO FAB — pensando / nova mensagem
+     ────────────────────────────────────────────────────────
+     setThinking(bool)    → liga/desliga .nexus-fab--thinking.
+                             Chamado pelo domínio ao iniciar/concluir
+                             uma chamada ao modelo. Idempotente.
+     notifyNewMessage()   → dispara .nexus-fab--newmsg uma única vez
+                             (flash + badge) e remove a classe ao fim
+                             da animação, sem precisar de timer manual
+                             no chamador. Não faz nada se o painel já
+                             estiver aberto (o usuário já está vendo
+                             a mensagem chegar).
+  ══════════════════════════════════════════════════════════ */
+
+  var _newMsgTimeout = null;
+
+  function setThinking(ativo) {
+    var fab = document.getElementById('nexus-fab');
+    if (!fab) return;
+    fab.classList.toggle('nexus-fab--thinking', !!ativo);
+  }
+
+  function notifyNewMessage() {
+    var fab = document.getElementById('nexus-fab');
+    var panel = document.getElementById('nexus-panel');
+    if (!fab) return;
+
+    // Painel já aberto: o usuário já vê a mensagem renderizada,
+    // o flash no FAB seria redundante/distrativo.
+    if (panel && panel.classList.contains('nexus-open')) return;
+
+    fab.classList.remove('nexus-fab--newmsg');
+    void fab.offsetWidth; // força reflow para permitir retrigger
+    fab.classList.add('nexus-fab--newmsg');
+
+    if (_newMsgTimeout) clearTimeout(_newMsgTimeout);
+    _newMsgTimeout = setTimeout(function () {
+      fab.classList.remove('nexus-fab--newmsg');
+    }, 2500);
+  }
+
+  /* ══════════════════════════════════════════════════════════
      CONTROLE DO PAINEL (abrir / fechar / toggle)
   ══════════════════════════════════════════════════════════ */
 
@@ -1129,6 +1220,8 @@
     mostrarSugestoes,
     atualizarDiscAtiva,
     limparMensagens,
+    setThinking,
+    notifyNewMessage,
   };
 
 }());
