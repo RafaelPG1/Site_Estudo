@@ -32,7 +32,6 @@
  *   sem necessidade de reload.
  *
  *   Integração: usa exclusivamente estaLogado() de global.js.
- *   Para abrir o modal de login, o guard despacha nexus:loginRequest.
  *
  * API pública: window.NexusUI
  */
@@ -101,7 +100,6 @@
        • _guardVerificar()  → chamado no init e nos eventos de auth.
        • _guardBloquear()   → adiciona .nexus-fab--locked.
        • _guardLiberar()    → remove .nexus-fab--locked.
-       • nexus:loginRequest → despachado ao clicar no FAB bloqueado.
        • nexus:loginSuccess → libera o guard.
        • nexus:logout       → bloqueia o guard.
   ══════════════════════════════════════════════════════════ */
@@ -772,7 +770,6 @@
   function toggle() {
     if (!_guardCarregado || !_verificadoLogado()) {
       _dispararShakeFAB();
-      document.dispatchEvent(new CustomEvent('nexus:loginRequest', { bubbles: true }));
       if (typeof _playSound === 'function') _playSound('click', 'inicial');
       return;
     }
