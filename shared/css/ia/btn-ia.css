@@ -1,0 +1,196 @@
+/* shared/css/ia/btn-ia.css
+ *
+ * Responsabilidade exclusiva: botão flutuante da IA (#nexus-fab).
+ * Nenhum estilo do painel deve residir aqui.
+ *
+ * Cobre:
+ *   • posição e dimensões do FAB
+ *   • corpo, ícone, label-tooltip, ripple
+ *   • estados: hover, active, aberto (.nexus-active)
+ *   • estado bloqueado (.nexus-fab--locked)
+ *   • animação de shake (.nexus-fab--shake)
+ *   • responsivo mobile
+ *   • acessibilidade (prefers-reduced-motion)
+ */
+
+/* ── RENDERIZAÇÃO BASE (compartilhado com painel em ia.css) ─── */
+#nexus-fab {
+  font-feature-settings: 'tnum' 1, 'cv11' 1;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BOTÃO FLUTUANTE DA IA
+   ══════════════════════════════════════════════════════════════ */
+
+#nexus-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 28px;
+  z-index: var(--nx-z-btn);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#nexus-fab::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 200, 255, 0.14);
+  transition: border-color 0.25s ease, transform 0.25s ease;
+  pointer-events: none;
+}
+
+#nexus-fab-body {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(160deg, rgba(10, 24, 42, 0.96), rgba(6, 14, 26, 0.96));
+  border: 1px solid rgba(0, 200, 255, 0.28);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+#nexus-fab-body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 14%;
+  right: 14%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(180, 240, 255, 0.30), transparent);
+}
+
+#nexus-fab-icon-wrap {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#nexus-fab-icon {
+  width: 19px;
+  height: 19px;
+  color: var(--nx-accent);
+  display: flex;
+  transition: opacity 0.15s ease;
+}
+
+/* ── HOVER ──────────────────────────────────────────────────── */
+
+#nexus-fab:hover::before {
+  border-color: rgba(0, 200, 255, 0.32);
+}
+
+#nexus-fab:hover #nexus-fab-body {
+  border-color: rgba(0, 200, 255, 0.45);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 14px var(--nx-accent-glow);
+}
+
+/* ── ACTIVE ─────────────────────────────────────────────────── */
+
+#nexus-fab:active #nexus-fab-body {
+  transform: scale(0.94);
+}
+
+/* ── ESTADO ABERTO (.nexus-active) ─────────────────────────── */
+
+#nexus-fab.nexus-active #nexus-fab-icon {
+  opacity: 0.55;
+}
+
+#nexus-fab.nexus-active #nexus-fab-body {
+  border-color: rgba(0, 200, 255, 0.45);
+}
+
+/* ── RIPPLE (reservado) ─────────────────────────────────────── */
+
+#nexus-fab-ripple {
+  display: none;
+}
+
+/* ── LABEL TOOLTIP ──────────────────────────────────────────── */
+
+#nexus-fab .nexus-fab-label {
+  position: absolute;
+  right: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%) translateX(4px);
+  background: rgba(0, 16, 28, 0.92);
+  border: 1px solid rgba(0, 200, 255, 0.25);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 10px;
+  font-family: var(--nx-font-mono);
+  font-weight: 500;
+  color: rgba(0, 210, 255, 0.85);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  letter-spacing: 0.04em;
+}
+
+#nexus-fab:hover .nexus-fab-label {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FAB BLOQUEADO — visitante sem login
+   ══════════════════════════════════════════════════════════════ */
+
+.nexus-fab--locked {
+  filter: grayscale(1);
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SHAKE DO FAB — feedback de ação bloqueada
+   ══════════════════════════════════════════════════════════════ */
+
+@keyframes nexus-fab-shake {
+  0%,  100% { transform: translateX(0);    }
+  20%        { transform: translateX(-6px); }
+  40%        { transform: translateX(6px);  }
+  60%        { transform: translateX(-4px); }
+  80%        { transform: translateX(4px);  }
+}
+
+.nexus-fab--shake {
+  animation: nexus-fab-shake 0.4s ease;
+}
+
+/* ── RESPONSIVO MOBILE ──────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  #nexus-fab {
+    bottom: 16px;
+    right: 20px;
+  }
+}
+
+/* ── ACESSIBILIDADE ─────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .nexus-fab--shake { animation: none; }
+}

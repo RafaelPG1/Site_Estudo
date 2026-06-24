@@ -1,0 +1,952 @@
+/* shared/css/ia/painel-ia.css
+ *
+ * Responsabilidade exclusiva: painel de chat da IA (#nexus-panel).
+ * Nenhum estilo do FAB deve residir aqui.
+ *
+ * Cobre:
+ *   • painel (abertura, fechamento, drag, posicionamento)
+ *   • header, barra de disciplina
+ *   • área de mensagens e scrollbar
+ *   • mensagens (user, bot, system, restore-banner)
+ *   • ações de mensagem, edição inline, versões
+ *   • typing indicator
+ *   • input, botão enviar, hint, modo comando
+ *   • chips de sugestão (base, disc, disc-cmd)
+ *   • botões reset e drag-toggle
+ *   • rodapé de resposta IA
+ *   • feedback (👍/👎)
+ *   • responsivo mobile
+ */
+
+/* ── RENDERIZAÇÃO BASE (compartilhado com FAB em btn-ia.css) ── */
+#nexus-panel {
+  font-feature-settings: 'tnum' 1, 'cv11' 1;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PAINEL DO CHAT
+   ══════════════════════════════════════════════════════════════ */
+
+#nexus-panel {
+  position: fixed;
+  bottom: 24px;
+  right: 84px;
+  z-index: var(--nx-z-panel);
+  width: 384px;
+  max-width: calc(100vw - 32px);
+  height: 560px;
+  max-height: calc(100vh - 120px);
+  background: var(--nx-surface);
+  border: 1px solid var(--nx-border);
+  border-radius: var(--nx-radius);
+  box-shadow: var(--nx-shadow);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: var(--nx-font-ui);
+
+  opacity: 0;
+  transform: translateY(14px) scale(0.98);
+  pointer-events: none;
+  transition:
+    opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#nexus-panel.nexus-open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: all;
+}
+
+#nexus-panel.nexus-dragging {
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#nexus-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--nx-accent), transparent);
+}
+
+/* ── MODO DRAG — posicionamento ─────────────────────────────── */
+
+#nexus-panel.nexus-panel--draggable {
+  bottom: auto;
+  right: auto;
+}
+
+/* ── HEADER ─────────────────────────────────────────────────── */
+
+#nexus-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--nx-border);
+  background: var(--nx-bg);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+#nexus-header.nexus-drag-enabled {
+  cursor: grab;
+}
+
+#nexus-header.nexus-drag-enabled:active,
+#nexus-panel.nexus-dragging #nexus-header {
+  cursor: grabbing;
+}
+
+#nexus-header-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--nx-accent-dim);
+  border: 1px solid var(--nx-border-hover);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+#nexus-header-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+#nexus-header-info {
+  flex: 1;
+  min-width: 0;
+}
+
+#nexus-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--nx-text-titulo);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  font-family: var(--nx-font-ui);
+}
+
+#nexus-subtitle {
+  font-size: 10.5px;
+  color: var(--nx-text-dim);
+  font-family: var(--nx-font-ui);
+  font-weight: 500;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  letter-spacing: 0.01em;
+}
+
+.nexus-status-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ff5f5f;
+  flex-shrink: 0;
+}
+
+.nexus-status-dot.nexus-dev {
+  background: #ffb347;
+  animation: nexus-dot-blink 2s ease-in-out infinite;
+}
+
+@keyframes nexus-dot-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+/* ── BOTÃO FECHAR ───────────────────────────────────────────── */
+
+#nexus-close {
+  width: 27px;
+  height: 27px;
+  border-radius: 7px;
+  border: 1px solid var(--nx-border);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--nx-text-dim);
+  transition: background var(--nx-transition), color var(--nx-transition), border-color var(--nx-transition);
+  flex-shrink: 0;
+  outline: none;
+}
+
+#nexus-close:hover {
+  background: rgba(255, 95, 95, 0.10);
+  border-color: rgba(255, 95, 95, 0.30);
+  color: #ff5f5f;
+}
+
+#nexus-close svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* ── BARRA DE DISCIPLINA ATIVA ──────────────────────────────── */
+
+#nexus-disc-bar {
+  display: flex;
+  align-items: center;
+  padding: 7px 14px 6px;
+  background: transparent;
+  border-bottom: 1px solid var(--nx-border);
+  min-height: 0;
+  flex-shrink: 0;
+}
+
+#nexus-disc-label {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--nx-font-ui);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--nx-text-dim);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  padding: 3px 10px;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+#nexus-disc-bar.nexus-disc-ativa #nexus-disc-label {
+  color: var(--nx-disc-active-text);
+  background: var(--nx-disc-active-bg);
+  border-color: rgba(0, 200, 255, 0.16);
+}
+
+#nexus-disc-bar.nexus-disc-ativa #nexus-disc-label::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  margin-right: 6px;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+/* ── ÁREA DE MENSAGENS ──────────────────────────────────────── */
+
+#nexus-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  scroll-behavior: smooth;
+}
+
+#nexus-messages {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 200, 255, 0.18) transparent;
+}
+
+#nexus-messages::-webkit-scrollbar       { width: 5px; }
+#nexus-messages::-webkit-scrollbar-track { background: transparent; }
+#nexus-messages::-webkit-scrollbar-thumb {
+  background: rgba(0, 200, 255, 0.16);
+  border-radius: 10px;
+  transition: background 0.15s ease;
+}
+#nexus-messages::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 200, 255, 0.32);
+}
+
+/* ── MENSAGEM BASE ──────────────────────────────────────────── */
+
+.nexus-msg {
+  display: flex;
+  gap: 9px;
+  align-items: flex-end;
+  animation: nexus-msg-in 0.18s ease-out both;
+  max-width: 94%;
+}
+
+@keyframes nexus-msg-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.nexus-msg-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  align-self: flex-start;
+}
+
+.nexus-msg-wrap {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.nexus-msg-bubble {
+  padding: 11px 15px;
+  border-radius: var(--nx-radius-msg);
+  font-family: var(--nx-font-ui);
+  font-size: 13.5px;
+  font-weight: 400;
+  line-height: 1.65;
+  letter-spacing: 0;
+  word-break: break-word;
+  position: relative;
+}
+
+.nexus-msg-bubble strong {
+  font-weight: 600;
+  color: var(--nx-text-titulo);
+}
+
+.nexus-msg-bubble em {
+  font-style: italic;
+  color: inherit;
+}
+
+.nexus-inline-code {
+  font-family: var(--nx-font-mono);
+  font-size: 0.86em;
+  font-feature-settings: 'tnum' 1;
+  background: rgba(0, 200, 255, 0.07);
+  border: 1px solid rgba(0, 200, 255, 0.10);
+  color: var(--nx-text);
+  padding: 1px 5px;
+  border-radius: 4px;
+  white-space: pre-wrap;
+}
+
+/* ── MENSAGEM USUÁRIO ───────────────────────────────────────── */
+
+.nexus-msg.nexus-user {
+  flex-direction: row-reverse;
+  align-self: flex-end;
+}
+
+.nexus-msg.nexus-user .nexus-msg-avatar {
+  background: var(--nx-accent-dim);
+  border: 1px solid var(--nx-border-hover);
+  color: var(--nx-accent);
+}
+
+.nexus-msg.nexus-user .nexus-msg-bubble {
+  background: var(--nx-user-bg);
+  border: 1px solid rgba(0, 200, 255, 0.12);
+  color: var(--nx-text);
+  border-bottom-right-radius: 4px;
+}
+
+.nexus-msg.nexus-user .nexus-msg-actions {
+  justify-content: flex-end;
+}
+
+/* ── MENSAGEM BOT ───────────────────────────────────────────── */
+
+.nexus-msg.nexus-bot {
+  align-self: flex-start;
+}
+
+.nexus-msg.nexus-bot .nexus-msg-avatar {
+  background: rgba(255, 179, 71, 0.08);
+  border: 1px solid rgba(255, 179, 71, 0.20);
+  color: #ffb347;
+}
+
+.nexus-msg.nexus-bot .nexus-msg-bubble {
+  background: var(--nx-bot-bg);
+  border: 1px solid var(--nx-border);
+  color: var(--nx-text);
+  font-family: var(--nx-font-ui);
+  font-size: 13.5px;
+  font-weight: 400;
+  border-bottom-left-radius: 4px;
+}
+
+.nexus-msg.nexus-bot .nexus-msg-actions {
+  justify-content: flex-end;
+}
+
+/* ── MENSAGEM SISTEMA ───────────────────────────────────────── */
+
+.nexus-msg.nexus-system {
+  align-self: center;
+  max-width: 100%;
+}
+
+.nexus-msg.nexus-system .nexus-msg-bubble {
+  background: transparent;
+  border: 1px dashed rgba(120, 145, 160, 0.18);
+  color: var(--nx-text-dim);
+  font-size: 10.5px;
+  font-weight: 400;
+  font-family: var(--nx-font-mono);
+  text-align: center;
+  border-radius: 8px;
+  padding: 6px 14px;
+  letter-spacing: 0.01em;
+}
+
+/* ── BANNER RESTAURAÇÃO ─────────────────────────────────────── */
+
+.nexus-restore-banner .nexus-msg-bubble {
+  font-size: 10px;
+  color: var(--nx-text-dim);
+  border-style: dashed;
+  padding: 4px 10px;
+}
+
+/* ── AÇÕES DE MENSAGEM ──────────────────────────────────────── */
+
+.nexus-msg-actions {
+  display: flex;
+  gap: 4px;
+  margin-top: 3px;
+  padding: 0 2px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.nexus-msg:hover .nexus-msg-actions {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .nexus-msg-actions { opacity: 0.55; }
+}
+
+.nexus-msg-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--nx-text-dim);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  outline: none;
+  flex-shrink: 0;
+}
+
+.nexus-msg-action-btn:hover {
+  background: var(--nx-feedback-hover);
+  border-color: var(--nx-border);
+  color: var(--nx-text);
+}
+
+.nexus-msg-action-btn svg { width: 12px; height: 12px; }
+
+.nexus-msg-action-btn.nexus-action-copiado {
+  color: #6dbf96;
+  border-color: rgba(109, 191, 150, 0.35);
+}
+
+/* ── EDIÇÃO INLINE ──────────────────────────────────────────── */
+
+.nexus-edit-inline {
+  width: 100%;
+  background: var(--nx-surface-2);
+  border: 1px solid var(--nx-border-hover);
+  border-radius: var(--nx-radius-msg);
+  color: var(--nx-text);
+  font-family: var(--nx-font-ui);
+  font-size: 13.5px;
+  padding: 11px 15px;
+  resize: none;
+  outline: none;
+}
+
+/* ── NAVEGADOR DE VERSÕES ───────────────────────────────────── */
+
+.nexus-msg-versions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-end;
+  margin-top: 3px;
+  font-size: 10px;
+  color: var(--nx-text-dim);
+  font-family: var(--nx-font-mono);
+}
+
+.nexus-msg-versions button {
+  background: transparent;
+  border: 1px solid var(--nx-border);
+  color: var(--nx-text-dim);
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 1px 5px;
+}
+
+.nexus-msg-versions button:hover {
+  color: var(--nx-text);
+  border-color: var(--nx-border-hover);
+}
+
+/* ── TYPING INDICATOR ───────────────────────────────────────── */
+
+#nexus-typing {
+  display: none;
+  align-items: flex-end;
+  gap: 8px;
+  animation: nexus-msg-in 0.22s ease both;
+}
+
+#nexus-typing.nexus-visible { display: flex; }
+
+#nexus-typing .nexus-msg-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: rgba(255, 179, 71, 0.08);
+  border: 1px solid rgba(255, 179, 71, 0.20);
+  color: #ffb347;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.nexus-typing-dots {
+  display: flex;
+  gap: 4px;
+  padding: 12px 14px;
+  background: var(--nx-bot-bg);
+  border: 1px solid var(--nx-border);
+  border-radius: var(--nx-radius-msg);
+  border-bottom-left-radius: 4px;
+}
+
+.nexus-typing-dots span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--nx-text-dim);
+  animation: nexus-bounce 1.2s ease-in-out infinite;
+}
+
+.nexus-typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+.nexus-typing-dots span:nth-child(3) { animation-delay: 0.30s; }
+
+@keyframes nexus-bounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+  40%            { transform: translateY(-5px); opacity: 1; }
+}
+
+/* ── INPUT AREA ─────────────────────────────────────────────── */
+
+#nexus-footer {
+  padding: 12px 14px 13px;
+  border-top: 1px solid var(--nx-border);
+  background: var(--nx-bg);
+  flex-shrink: 0;
+}
+
+#nexus-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+#nexus-input {
+  flex: 1;
+  background: var(--nx-surface-2);
+  border: 1px solid var(--nx-border);
+  border-radius: 12px;
+  padding: 11px 14px;
+  font-family: var(--nx-font-ui);
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--nx-text);
+  outline: none;
+  resize: none;
+  min-height: 42px;
+  max-height: 120px;
+  transition: border-color var(--nx-transition), box-shadow var(--nx-transition),
+              color var(--nx-transition), caret-color var(--nx-transition);
+  line-height: 1.45;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 200, 255, 0.18) transparent;
+}
+
+#nexus-input::-webkit-scrollbar       { width: 5px; }
+#nexus-input::-webkit-scrollbar-track { background: transparent; }
+#nexus-input::-webkit-scrollbar-thumb {
+  background: rgba(0, 200, 255, 0.16);
+  border-radius: 10px;
+}
+
+#nexus-input::placeholder {
+  color: var(--nx-text-dim);
+  opacity: 0.85;
+  font-size: 13px;
+}
+
+#nexus-input:focus {
+  border-color: var(--nx-border-hover);
+  box-shadow: 0 0 0 2.5px var(--nx-accent-dim);
+}
+
+#nexus-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── INPUT MODO COMANDO ─────────────────────────────────────── */
+
+#nexus-input.nexus-input--cmd {
+  border-color: var(--nx-cmd-color-border);
+  box-shadow: 0 0 0 3px var(--nx-cmd-color-dim);
+  color: var(--nx-cmd-color);
+  caret-color: var(--nx-cmd-color);
+}
+
+#nexus-input.nexus-input--cmd::placeholder {
+  color: rgba(255, 179, 71, 0.45);
+}
+
+#nexus-input.nexus-input--cmd:focus {
+  border-color: var(--nx-cmd-color);
+  box-shadow: 0 0 0 3px var(--nx-cmd-color-dim);
+}
+
+/* ── BOTÃO ENVIAR ───────────────────────────────────────────── */
+
+#nexus-send {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid var(--nx-border-hover);
+  background: var(--nx-accent-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--nx-accent);
+  transition: background var(--nx-transition), transform var(--nx-transition),
+              box-shadow var(--nx-transition), border-color var(--nx-transition),
+              color var(--nx-transition);
+  outline: none;
+}
+
+#nexus-send:hover {
+  background: rgba(0, 200, 255, 0.13);
+  box-shadow: 0 0 10px var(--nx-accent-glow);
+}
+
+#nexus-send:active { transform: scale(0.94); }
+
+#nexus-send:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+#nexus-send svg { width: 16px; height: 16px; }
+
+/* ── SEND + HINT EM MODO COMANDO ────────────────────────────── */
+
+#nexus-input.nexus-input--cmd ~ #nexus-send,
+#nexus-footer:has(#nexus-input.nexus-input--cmd) #nexus-send {
+  border-color: var(--nx-cmd-color-border);
+  background: var(--nx-cmd-color-dim);
+  color: var(--nx-cmd-color);
+}
+
+#nexus-footer:has(#nexus-input.nexus-input--cmd) #nexus-send:hover {
+  background: var(--nx-cmd-color-hover);
+  box-shadow: 0 0 12px var(--nx-cmd-color-glow);
+}
+
+#nexus-hint {
+  font-size: 10.5px;
+  color: var(--nx-text-dim);
+  font-family: var(--nx-font-ui);
+  font-weight: 500;
+  opacity: 0.8;
+  margin-top: 7px;
+  text-align: center;
+  letter-spacing: 0;
+  transition: color var(--nx-transition);
+}
+
+#nexus-footer:has(#nexus-input.nexus-input--cmd) #nexus-hint {
+  color: rgba(255, 179, 71, 0.50);
+}
+
+/* ── CHIPS DE SUGESTÃO ──────────────────────────────────────── */
+
+.nexus-sugestoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px 2px 8px;
+}
+
+.nexus-sugestao-chip {
+  cursor: pointer;
+  border: 1px solid var(--nx-chip-border);
+  background: transparent;
+  color: var(--nx-chip-text);
+  border-radius: 16px;
+  padding: 5px 12px;
+  font-family: var(--nx-font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  transition: background var(--nx-transition), color var(--nx-transition), border-color var(--nx-transition);
+  text-align: left;
+  max-width: 100%;
+}
+
+.nexus-sugestao-chip:hover,
+.nexus-sugestao-chip:focus {
+  background: var(--nx-chip-hover-bg);
+  border-color: var(--nx-accent);
+  outline: none;
+}
+
+/* ── CHIPS /disc PADRÃO ─────────────────────────────────────── */
+
+.nexus-sugestao-chip--disc {
+  font-family: var(--nx-font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: var(--nx-accent);
+  border-color: var(--nx-border-hover);
+  background: var(--nx-accent-dim);
+  border-radius: 6px;
+  padding: 5px 10px;
+  position: relative;
+}
+
+.nexus-sugestao-chip--disc::before {
+  content: '⌘';
+  margin-right: 5px;
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.nexus-sugestao-chip--disc:hover,
+.nexus-sugestao-chip--disc:focus {
+  background: rgba(0, 200, 255, 0.18);
+  border-color: var(--nx-accent);
+  box-shadow: 0 0 8px var(--nx-accent-glow);
+  outline: none;
+}
+
+/* ── CHIPS /disc MODO COMANDO ───────────────────────────────── */
+
+.nexus-sugestao-chip--disc-cmd {
+  color: var(--nx-cmd-color);
+  border-color: var(--nx-cmd-color-border);
+  background: var(--nx-cmd-color-dim);
+}
+
+.nexus-sugestao-chip--disc-cmd::before {
+  content: '⌘';
+  margin-right: 5px;
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.nexus-sugestao-chip--disc-cmd:hover,
+.nexus-sugestao-chip--disc-cmd:focus {
+  background: var(--nx-cmd-color-hover);
+  border-color: var(--nx-cmd-color);
+  box-shadow: 0 0 8px var(--nx-cmd-color-glow);
+  outline: none;
+}
+
+/* ── FEEDBACK ───────────────────────────────────────────────── */
+
+.nexus-feedback {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 2px 6px 34px;
+  opacity: 0.65;
+  transition: opacity var(--nx-transition);
+}
+
+.nexus-feedback:hover { opacity: 1; }
+
+.nexus-feedback-btn {
+  cursor: pointer;
+  border: 1px solid var(--nx-border);
+  background: transparent;
+  font-size: 14px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  transition: background var(--nx-transition), transform var(--nx-transition), border-color var(--nx-transition);
+  line-height: 1;
+  color: var(--nx-text-dim);
+}
+
+.nexus-feedback-btn:hover {
+  background: var(--nx-feedback-hover);
+  border-color: var(--nx-border-hover);
+  transform: scale(1.15);
+}
+
+.nexus-feedback-btn.nexus-feedback-ativo {
+  opacity: 1;
+  background: var(--nx-accent-dim);
+  border-color: var(--nx-border-hover);
+}
+
+.nexus-feedback-btn:disabled { cursor: default; }
+
+.nexus-feedback-label {
+  font-family: var(--nx-font-mono);
+  font-size: 10px;
+  color: var(--nx-text-dim);
+}
+
+/* ── BOTÃO RESET ────────────────────────────────────────────── */
+
+#nexus-reset {
+  width: 27px;
+  height: 27px;
+  border-radius: 7px;
+  border: 1px solid var(--nx-border);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--nx-text-dim);
+  transition: background var(--nx-transition), color var(--nx-transition),
+              border-color var(--nx-transition);
+  flex-shrink: 0;
+  outline: none;
+}
+
+#nexus-reset:hover {
+  background: rgba(0, 200, 255, 0.08);
+  border-color: var(--nx-border-hover);
+  color: var(--nx-accent);
+}
+
+#nexus-reset:active {
+  background: rgba(0, 200, 255, 0.14);
+}
+
+#nexus-reset svg { width: 12px; height: 12px; }
+
+/* ── BOTÃO DRAG TOGGLE ──────────────────────────────────────── */
+
+#nexus-drag-toggle {
+  width: 27px;
+  height: 27px;
+  border-radius: 7px;
+  border: 1px solid var(--nx-border);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--nx-text-dim);
+  transition: background var(--nx-transition), color var(--nx-transition),
+              border-color var(--nx-transition);
+  flex-shrink: 0;
+  outline: none;
+}
+
+#nexus-drag-toggle:hover {
+  background: var(--nx-drag-color-dim);
+  border-color: var(--nx-drag-color-border);
+  color: var(--nx-drag-color);
+}
+
+#nexus-drag-toggle.nexus-drag-ativo {
+  background: var(--nx-drag-color-dim);
+  border-color: var(--nx-drag-color-border);
+  color: var(--nx-drag-color);
+}
+
+#nexus-drag-toggle svg { width: 12px; height: 12px; }
+
+/* ── RODAPÉ RESPOSTA IA ─────────────────────────────────────── */
+
+.nexus-rodape-ia {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 2px;
+}
+
+.nexus-rodape-ia-linha1 {
+  font-family: var(--nx-font-mono);
+  font-size: 9.5px;
+  font-weight: 400;
+  color: #6fae8c;
+  line-height: 1.3;
+  opacity: 0.85;
+}
+
+.nexus-rodape-ia-linha2 {
+  font-family: var(--nx-font-mono);
+  font-size: 9px;
+  color: var(--nx-text-dim);
+  line-height: 1.3;
+}
+
+/* ── RESPONSIVO MOBILE ──────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  #nexus-panel {
+    bottom: 0;
+    right: 0;
+    width: 100vw;
+    max-width: 100vw;
+    height: 75vh;
+    max-height: 75vh;
+    border-radius: var(--nx-radius) var(--nx-radius) 0 0;
+    transform: translateY(100%);
+  }
+
+  #nexus-panel.nexus-open { transform: translateY(0); }
+
+  #nexus-panel.nexus-panel--draggable {
+    bottom: 0;
+    right: 0;
+    top: auto !important;
+    left: auto !important;
+  }
+
+  #nexus-drag-toggle {
+    display: none;
+  }
+}
