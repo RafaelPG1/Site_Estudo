@@ -49,8 +49,10 @@
           - Sem progresso → exibe modal:
             - Clique em "Filtrar aulas" → carrega o engine adiantado
               (só para listar aulas; ainda não decide o fluxo)
-            - Clique em "Todas as aulas" ou "Iniciar Quiz" → usuário
-              confirma → _completarBoot()
+            - Clique em "Todas as aulas" → limpa filtro do storage
+              imediatamente (antes do engine carregar) e conclui
+            - Clique em "Iniciar Quiz" (tela 2) → usuário confirma
+              seleção → _completarBoot()
        4. _completarBoot():
           → seta __NSM_AGUARDANDO__ = false
           → chama _carregarEngine() (idempotente — reaproveita
@@ -208,6 +210,38 @@
         cb();
       }
     }, 50);
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     LIMPAR FILTRO NO STORAGE
+
+     Remove a chave de filtro diretamente no storage, ANTES do
+     engine carregar. Usa a mesma convenção de chave do engine:
+       quiz_filtro_{uid}_{disc}_{modo}_{semestre}
+
+     Chamado apenas quando o usuário clica em "Todas as aulas"
+     no modal — é o único momento em que o filtro salvo deve
+     ser descartado explicitamente pelo modal.
+  ══════════════════════════════════════════════════════════ */
+
+  function _limparFiltroNoStorage() {
+    try {
+      var S = window.NexusStorage;
+      if (!S) return;
+
+      var disc = window.__NEXUS_QUIZ_DISC__     || '';
+      var modo = window.__NEXUS_QUIZ_MODO__     || '';
+      var sem  = window.__NEXUS_QUIZ_SEMESTRE__ || '';
+      if (!disc || !modo || !sem) return;
+
+      var uid = 'guest';
+      try {
+        var u = S.get('usuario', null);
+        if (u && u.uid) uid = u.uid;
+      } catch (e) {}
+
+      S.remove('quiz_filtro_' + uid + '_' + disc + '_' + modo + '_' + sem);
+    } catch (e) {}
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -728,8 +762,11 @@
        sua própria animação interna em _construirModal). */
     ui.btnFiltrar.addEventListener('click', _carregarListaDeAulas);
 
-    /* "Todas as aulas" — sem filtro */
+    /* "Todas as aulas" — limpa filtro do storage imediatamente,
+       antes do engine carregar, para que _restaurarFiltro() não
+       encontre nada e renderize todas as questões sem restrição. */
     ui.btnContinuar.addEventListener('click', function () {
+      _limparFiltroNoStorage();
       _concluir(ui.bd, null);
     });
 
@@ -763,7 +800,8 @@
           }
         });
       }
-      /* Sem filtro (null): engine renderiza tudo sozinho */
+      /* null: storage já foi limpo antes de _concluir ser chamado,
+         engine restaura aulasFiltradas = null e renderiza tudo */
     });
   }
 

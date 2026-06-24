@@ -44,6 +44,16 @@
      SEM resetar respostas/progresso (diferente de _aplicarFiltro,
      que é usada apenas quando o usuário troca o filtro manualmente).
 
+   v9.3 — correção: filtro não apagado ao clicar "Todas as aulas":
+     Quando o modal aparece (sem progresso ou via navegação) e o
+     usuário clica "Todas as aulas", o quiz_starter_modal.js agora
+     limpa a chave do filtro no storage ANTES do engine carregar.
+     Assim _restaurarFiltro() encontra storage vazio → aulasFiltradas
+     = null → engine renderiza tudo, sem re-renderização posterior.
+     "Todas as aulas selecionadas no painel de filtro" também é
+     normalizado para null em _salvarFiltro(), evitando persistir
+     um Set completo que seria tratado como filtro ativo no boot.
+
    INTEGRAÇÃO COM O QUIZ-ASSISTANT:
      Após cada renderização, o engine:
        1. Grava window.__NEXUS_QUESTOES_VISUAIS__ com o snapshot imutável
@@ -147,25 +157,25 @@
       return 'quiz_filtro_' + _uid() + '_' + _disc + '_' + _modo + '_' + _semestre;
     }
 
-function _salvarFiltro() {
-  if (!_Storage) return;
-  /* "Todas as aulas selecionadas" equivale a "sem filtro":
-     se aulasFiltradas contém todas as aulas disponíveis,
-     normaliza para null antes de persistir — evita salvar
-     um Set completo que, na restauração, seria tratado como
-     filtro ativo mesmo sem restringir conteúdo algum. */
-  if (aulasFiltradas !== null) {
-    var totalDisponiveis = _todasAsAulas().length;
-    if (totalDisponiveis > 0 && aulasFiltradas.size >= totalDisponiveis) {
-      aulasFiltradas = null;
+    function _salvarFiltro() {
+      if (!_Storage) return;
+      /* "Todas as aulas selecionadas" equivale a "sem filtro":
+         se aulasFiltradas contém todas as aulas disponíveis,
+         normaliza para null antes de persistir — evita salvar
+         um Set completo que, na restauração, seria tratado como
+         filtro ativo mesmo sem restringir conteúdo algum. */
+      if (aulasFiltradas !== null) {
+        var totalDisponiveis = _todasAsAulas().length;
+        if (totalDisponiveis > 0 && aulasFiltradas.size >= totalDisponiveis) {
+          aulasFiltradas = null;
+        }
+      }
+      if (aulasFiltradas === null) {
+        _Storage.remove(_filtroKey());
+      } else {
+        _Storage.set(_filtroKey(), Array.from(aulasFiltradas));
+      }
     }
-  }
-  if (aulasFiltradas === null) {
-    _Storage.remove(_filtroKey());
-  } else {
-    _Storage.set(_filtroKey(), Array.from(aulasFiltradas));
-  }
-}
 
     function _restaurarFiltro() {
       if (!_Storage) return;
@@ -1579,7 +1589,6 @@ function _salvarFiltro() {
       if (aulasSelecionadas === null) { _renderizarERestaurar(); }
       else                            { _aplicarFiltro(); }
     };
-    
 
     if (!window.__NSM_AGUARDANDO__) {
       _renderizarERestaurar();
