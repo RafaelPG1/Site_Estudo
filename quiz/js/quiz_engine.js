@@ -28,6 +28,22 @@
      subject-result apareçam corretamente para todas as aulas,
      independente de quantas aulas a disciplina tiver.
 
+   v9.1 — persistência do filtro de aulas:
+     aulasFiltradas agora é salvo no NexusStorage e restaurado
+     automaticamente ao carregar a página, seguindo o mesmo
+     padrão de persistência do shuffleMap e do modoStep.
+
+   v9.2 — correção: restauração efetiva do filtro de aulas:
+     Antes, _restaurarFiltro() apenas preenchia a variável
+     aulasFiltradas a partir do storage, mas o filtro nunca era
+     de fato APLICADO à lista de questões renderizada após F5 —
+     _renderizarERestaurar() sempre embaralhava/renderizava
+     questoesBase por completo, ignorando aulasFiltradas. Agora,
+     quando há filtro salvo, a lista é filtrada antes de montar
+     `questoes` e o badge do botão de filtro é atualizado,
+     SEM resetar respostas/progresso (diferente de _aplicarFiltro,
+     que é usada apenas quando o usuário troca o filtro manualmente).
+
    INTEGRAÇÃO COM O QUIZ-ASSISTANT:
      Após cada renderização, o engine:
        1. Grava window.__NEXUS_QUESTOES_VISUAIS__ com o snapshot imutável
@@ -120,6 +136,51 @@
     function _limparEstadoStep() {
       if (!_Storage) return;
       _Storage.remove(_stepStateKey());
+    }
+
+    /* ── Persistência do filtro de aulas ───────────────────────
+       Mesma convenção de chave das outras persistências do engine:
+       isolada por uid + disc + modo + semestre.
+       Set<string> não é JSON-serializável, por isso convertemos
+       para Array ao salvar e reconstruímos o Set ao restaurar.  */
+    function _filtroKey() {
+      return 'quiz_filtro_' + _uid() + '_' + _disc + '_' + _modo + '_' + _semestre;
+    }
+
+function _salvarFiltro() {
+  if (!_Storage) return;
+  /* "Todas as aulas selecionadas" equivale a "sem filtro":
+     se aulasFiltradas contém todas as aulas disponíveis,
+     normaliza para null antes de persistir — evita salvar
+     um Set completo que, na restauração, seria tratado como
+     filtro ativo mesmo sem restringir conteúdo algum. */
+  if (aulasFiltradas !== null) {
+    var totalDisponiveis = _todasAsAulas().length;
+    if (totalDisponiveis > 0 && aulasFiltradas.size >= totalDisponiveis) {
+      aulasFiltradas = null;
+    }
+  }
+  if (aulasFiltradas === null) {
+    _Storage.remove(_filtroKey());
+  } else {
+    _Storage.set(_filtroKey(), Array.from(aulasFiltradas));
+  }
+}
+
+    function _restaurarFiltro() {
+      if (!_Storage) return;
+      var raw = _Storage.get(_filtroKey(), null);
+      /* Dado ausente ou inválido → nenhum filtro salvo no momento.
+         Sincroniza aulasFiltradas para null nesse caso também (e não
+         apenas quando há dado válido), pois esta função agora roda
+         tanto no boot quanto ao reabrir o painel de filtro — precisa
+         refletir fielmente o storage nos dois sentidos. */
+      if (!raw || !Array.isArray(raw) || raw.length === 0) {
+        aulasFiltradas = null;
+        return;
+      }
+      /* Reconstrói o Set com as aulas da sessão salva */
+      aulasFiltradas = new Set(raw);
     }
 
     /* ── Converte respostas {qi: ai} → string compacta ── */
@@ -345,15 +406,50 @@
       }
     }
 
-    function _aplicarFiltro() {
-      var base = aulasFiltradas === null
-        ? questoesBase
-        : questoesBase.filter(function (q) {
-            var aula = q.aula !== undefined ? q.aula : null;
-            return aulasFiltradas.has(aula);
-          });
+    /* ── Base de questões considerando o filtro ativo ──────
+       Helper único usado tanto por _aplicarFiltro() (troca manual
+       do usuário) quanto pela restauração no boot (F5), evitando
+       duplicar a lógica de filtragem em dois lugares.
 
-      if (base.length === 0) base = questoesBase;
+       IMPORTANTE: se o filtro salvo contiver nomes de aula que não
+       existem mais no conteúdo atual (ex.: o conteúdo foi reorganizado
+       entre sessões), essa divergência não pode ficar "escondida"
+       apenas no resultado de questões — precisa ser corrigida na
+       própria aulasFiltradas, para que ela continue sendo a única
+       fonte de verdade usada também pelo modal de filtro. Por isso,
+       esta função sempre depura aulasFiltradas para conter apenas
+       aulas que de fato existem no conteúdo atual (interseção), e
+       reseta para null quando a interseção fica vazia. */
+    function _baseFiltrada() {
+      if (aulasFiltradas === null) return questoesBase;
+
+      var aulasReaisSet = new Set(_todasAsAulas());
+
+      /* Depura entradas obsoletas: mantém em aulasFiltradas apenas
+         o que de fato existe no conteúdo atual. */
+      var filtradoValido = new Set();
+      aulasFiltradas.forEach(function (a) {
+        if (aulasReaisSet.has(a)) filtradoValido.add(a);
+      });
+      aulasFiltradas = filtradoValido.size > 0 ? filtradoValido : null;
+
+      if (aulasFiltradas === null) return questoesBase;
+
+      var base = questoesBase.filter(function (q) {
+        var aula = q.aula !== undefined ? q.aula : null;
+        return aulasFiltradas.has(aula);
+      });
+
+      if (base.length === 0) {
+        aulasFiltradas = null;
+        return questoesBase;
+      }
+
+      return base;
+    }
+
+    function _aplicarFiltro() {
+      var base = _baseFiltrada();
 
       respostas        = {};
       revelado         = false;
@@ -361,6 +457,9 @@
       stepAtual        = 0;
 
       questoes = criarCopiaEmbaralhada(base, null);
+
+      /* Persistir o estado atual do filtro para sobreviver a F5 */
+      _salvarFiltro();
 
       // Atualiza snapshot após filtro
       _publicarSnapshot(questoes);
@@ -426,9 +525,32 @@
     }
 
     /* ── Inicialização ── */
-    _verificarRetorno(null);
+    _verificarRetorno(function () {
+      /* Quando o progresso expira, limpar também o filtro salvo
+         para que o usuário comece com todas as aulas disponíveis. */
+      if (_Storage) _Storage.remove(_filtroKey());
+    });
+
+    /* Restaura o filtro de aulas persistido na sessão anterior.
+       Deve rodar ANTES de montar `questoes`, para que a base de
+       questões (e, por consequência, o shuffleMap) já reflita o
+       recorte correto desde o primeiro frame. */
+    _restaurarFiltro();
+
     var savedShuffleMap = _restaurar();
-    var questoes = criarCopiaEmbaralhada(questoesBase, savedShuffleMap);
+
+    /* questoesBaseAtual = questoesBase já recortado pelo filtro
+       restaurado (ou questoesBase completo, se não houver filtro).
+       Isso corrige o bug em que o filtro salvo era ignorado na
+       montagem inicial de `questoes` após F5. */
+    var questoesBaseAtual = _baseFiltrada();
+    var questoes = criarCopiaEmbaralhada(questoesBaseAtual, savedShuffleMap);
+
+    /* _baseFiltrada() pode ter depurado aulasFiltradas (removendo
+       entradas que não existem mais no conteúdo atual). Persiste essa
+       correção imediatamente, para que o storage não continue
+       divergente do estado real em memória nas próximas sessões. */
+    _salvarFiltro();
 
     if (savedShuffleMap === null && _disc && _Storage) {
       _salvarShuffleMap();
@@ -765,6 +887,12 @@
         _Storage.remove(_smapKey());
       }
 
+      /* Reiniciar também reseta o filtro de aulas — o usuário
+         volta a ver todas as aulas disponíveis. Sincroniza o
+         storage com o estado null já definido acima.           */
+      aulasFiltradas = null;
+      if (_disc && _Storage) _Storage.remove(_filtroKey());
+
       if (window.NexusFirebase && _disc) {
         var usuario = _Storage ? _Storage.get('usuario', null) : null;
         if (usuario && usuario.uid) {
@@ -783,6 +911,7 @@
       _resetarBotaoErros();
       renderizar();   // _publicarSnapshot é chamado dentro de renderizar()
       smoothScrollToTop();
+      _atualizarBadgeFiltro();
     }
 
     /* ── 9. RESULTADO GLOBAL ──────────────────────────────── */
@@ -1285,8 +1414,42 @@
         var aulas = _todasAsAulas();
         if (aulas.length <= 1) return;
 
+        /* Garante que a UI do painel sempre reflita o estado de filtro
+           realmente salvo, e não apenas o que a variável de closure
+           `aulasFiltradas` contém no instante da chamada. Isso evita a
+           divergência relatada (filtro ativo internamente, mas o painel
+           abrindo com "todas as aulas" marcadas) em qualquer cenário em
+           que a leitura do storage no boot e a abertura do painel não
+           estejam perfeitamente sincronizadas — sem alterar o formato
+           de armazenamento nem a lógica de salvamento já existentes. */
+        _restaurarFiltro();
+        _atualizarBadgeFiltro();
+
         var totalAulas = aulas.length;
-        var marcadas   = aulasFiltradas === null ? new Set(aulas) : new Set(aulasFiltradas);
+
+        /* `marcadas` é construída por INTERSECÇÃO entre o filtro salvo
+           (aulasFiltradas) e a lista real de aulas do conteúdo atual
+           (aulas) — nunca uma cópia direta de aulasFiltradas. Isso é
+           essencial porque aulasFiltradas pode conter nomes que não
+           existem mais como string idêntica no conteúdo (espaços,
+           reordenação, ou o próprio conteúdo tendo sido atualizado).
+           Normalizamos (trim) antes de comparar para blindar contra
+           divergências triviais de espaçamento, garantindo que o
+           .has() reflita a real correspondência semântica, e não uma
+           igualdade estrita acidentalmente quebrada. */
+        function _normalizada(v) { return String(v).trim(); }
+
+        var marcadas;
+        if (aulasFiltradas === null) {
+          marcadas = new Set(aulas);
+        } else {
+          var salvasNormalizadas = {};
+          aulasFiltradas.forEach(function (a) { salvasNormalizadas[_normalizada(a)] = true; });
+
+          marcadas = new Set(
+            aulas.filter(function (a) { return salvasNormalizadas[_normalizada(a)]; })
+          );
+        }
 
         painel.innerHTML =
           '<div class="filtro-header">' +
@@ -1410,9 +1573,13 @@
 
     window.NexusFiltroAulas.iniciar = function (aulasSelecionadas) {
       aulasFiltradas = aulasSelecionadas;
+      /* Persiste imediatamente — cobre também o caso null (sem filtro),
+         que remove a chave do storage via _salvarFiltro.              */
+      _salvarFiltro();
       if (aulasSelecionadas === null) { _renderizarERestaurar(); }
       else                            { _aplicarFiltro(); }
     };
+    
 
     if (!window.__NSM_AGUARDANDO__) {
       _renderizarERestaurar();
@@ -1420,6 +1587,12 @@
 
     function _renderizarERestaurar() {
       renderizar();   // → chama _publicarSnapshot → dispara nexus:quizPronto na 1ª vez
+
+      /* Garante que o badge do botão de filtro reflita o estado
+         restaurado (aulasFiltradas), já que renderizar() por si só
+         não toca na UI do botão — isso só acontecia antes dentro
+         de _aplicarFiltro(), nunca no caminho de restauração. */
+      _atualizarBadgeFiltro();
 
       if (_Storage) {
         var _stepSalvo = _Storage.get(_stepStateKey(), null);
