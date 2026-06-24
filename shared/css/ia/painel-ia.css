@@ -33,10 +33,11 @@
 #nexus-panel {
   position: fixed;
   bottom: 24px;
-  right: 84px;
+  right: 88px;          /* distância da borda direita = largura do FAB + gap */
   z-index: var(--nx-z-panel);
   width: 384px;
-  max-width: calc(100vw - 32px);
+  max-width: calc(100vw - 108px); /* garante que não saia da tela nem sobreponha o FAB */
+  
   height: 560px;
   max-height: calc(100vh - 120px);
   background: var(--nx-surface);

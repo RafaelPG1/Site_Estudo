@@ -410,7 +410,7 @@ function _abrirModalLogin() {
           <div class="config-row config-row--col login-field">
             <label for="login-nome" class="login-field__label">Nome</label>
             <input type="text" id="login-nome" class="config-input login-field__input"
-              placeholder="Como podemos te chamar?" maxlength="30"
+              placeholder="Nome" maxlength="30"
               autocomplete="off" autocapitalize="off" />
           </div>
 

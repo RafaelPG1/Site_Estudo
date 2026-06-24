@@ -330,32 +330,49 @@
      CRIAÇÃO DOS ELEMENTOS NO DOM
   ══════════════════════════════════════════════════════════ */
 
-  function _criarFAB() {
-    var fab = document.createElement('button');
-    fab.id   = 'nexus-fab';
-    fab.type = 'button';
-    fab.setAttribute('aria-label', 'Assistente Nexus — abrir chat');
-    fab.setAttribute('aria-expanded', 'false');
+// Substitui _iconSparkle / _iconFab (função de ícone do botão) em ui.js
+function _iconFab() {
+  return (
+    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
+      '<defs>' +
+        '<radialGradient id="nxFabGrad" cx="50%" cy="40%" r="60%">' +
+          '<stop offset="0%"   stop-color="#a8eeff"/>' +
+          '<stop offset="55%"  stop-color="#00c8ff"/>' +
+          '<stop offset="100%" stop-color="#006fa8"/>' +
+        '</radialGradient>' +
+      '</defs>' +
+      '<path d="M12 3.5 C12 7.2 13.1 9.6 15 11.5 C17 13.4 19.5 14.3 21.5 14.3' +
+        ' C19.5 14.3 17 15.2 15 17.1 C13.1 19 12 21.5 12 24.5' +
+        ' C12 21.5 10.9 19 9 17.1 C7 15.2 4.5 14.3 2.5 14.3' +
+        ' C4.5 14.3 7 13.4 9 11.5 C10.9 9.6 12 7.2 12 3.5 Z"' +
+        ' fill="url(#nxFabGrad)" transform="translate(0,-1.8) scale(0.85)"/>' +
+      '<circle cx="18.8" cy="5.5" r="1.35" fill="#00c8ff" opacity="0.85"/>' +
+      '<circle cx="18.8" cy="5.5" r="0.65" fill="#cdf7ff"/>' +
+    '</svg>'
+  );
+}
 
-    // HTML idêntico ao _criarFAB() de fab.js — nenhum desvio estrutural
-    fab.innerHTML =
-      '<div id="nexus-fab-aura" aria-hidden="true"></div>' +
-      '<div id="nexus-fab-body">' +
-        '<div id="nexus-fab-hex">' + _iconHex() + '</div>' +
-        '<div id="nexus-fab-icon-wrap">' +
-          '<span id="nexus-fab-icon">' + _iconOrb() + '</span>' +
-        '</div>' +
-      '</div>' +
-      '<div id="nexus-fab-ring" aria-hidden="true">' +
-        '<svg viewBox="0 0 56 56"><circle cx="28" cy="28" r="26"/></svg>' +
-      '</div>' +
-      '<span class="nx-fab-particle" aria-hidden="true"></span>' +
-      '<span class="nx-fab-particle" aria-hidden="true"></span>' +
-      '<span class="nx-fab-particle" aria-hidden="true"></span>' +
-      '<span class="nexus-fab-badge" aria-hidden="true"></span>';
+// Substitui _criarFAB() em ui.js
+function _criarFAB() {
+  var fab = document.createElement('button');
+  fab.id   = 'nexus-fab';
+  fab.type = 'button';
+  fab.setAttribute('aria-label', 'Assistente Nexus — abrir chat');
+  fab.setAttribute('aria-expanded', 'false');
 
-    return fab;
-  }
+  fab.innerHTML =
+    '<div id="nexus-fab-ring-outer" aria-hidden="true"></div>' +
+    '<div id="nexus-fab-aura" aria-hidden="true"></div>' +
+    '<div id="nexus-fab-body">' +
+      '<div id="nexus-fab-icon-wrap">' +
+        '<span id="nexus-fab-icon">' + _iconFab() + '</span>' +
+      '</div>' +
+    '</div>' +
+    '<span class="nexus-fab-badge" aria-hidden="true"></span>' +
+    '<span class="nexus-fab-label" aria-hidden="true">nexus ia</span>';
+
+  return fab;
+}
 
   function _criarPainel() {
     var panel = document.createElement('div');

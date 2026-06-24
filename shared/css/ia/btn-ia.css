@@ -1,37 +1,26 @@
 /* shared/css/ia/btn-ia.css
- *
  * Responsabilidade exclusiva: botão flutuante da IA (#nexus-fab).
- * Nenhum estilo do painel deve residir aqui.
- *
- * Cobre:
- *   • posição e dimensões do FAB
- *   • corpo, ícone, label-tooltip, ripple
- *   • estados: hover, active, aberto (.nexus-active)
- *   • estado bloqueado (.nexus-fab--locked)
- *   • animação de shake (.nexus-fab--shake)
- *   • responsivo mobile
- *   • acessibilidade (prefers-reduced-motion)
+ * Redesign v2 — visual premium com animações suaves.
  */
 
-/* ── RENDERIZAÇÃO BASE (compartilhado com painel em ia.css) ─── */
+/* ── RENDERIZAÇÃO BASE ─────────────────────────────────────── */
 #nexus-fab {
   font-feature-settings: 'tnum' 1, 'cv11' 1;
-  font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   BOTÃO FLUTUANTE DA IA
-   ══════════════════════════════════════════════════════════════ */
+   BOTÃO FLUTUANTE
+══════════════════════════════════════════════════════════════ */
 
 #nexus-fab {
   position: fixed;
   bottom: 24px;
   right: 28px;
   z-index: var(--nx-z-btn);
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   border: none;
   background: none;
@@ -41,112 +30,151 @@
   justify-content: center;
   outline: none;
   flex-shrink: 0;
+  will-change: transform;
   -webkit-tap-highlight-color: transparent;
 }
 
-#nexus-fab::before {
-  content: '';
+/* ── ANEL EXTERNO ──────────────────────────────────────────── */
+
+#nexus-fab-ring-outer {
   position: absolute;
-  inset: -4px;
+  inset: -5px;
   border-radius: 50%;
-  border: 1px solid rgba(0, 200, 255, 0.14);
-  transition: border-color 0.25s ease, transform 0.25s ease;
+  border: 1px solid rgba(0, 200, 255, 0.12);
   pointer-events: none;
+  transition: border-color 0.3s ease, transform 0.3s ease;
 }
+
+/* ── AURA (glow radial) ────────────────────────────────────── */
+
+#nexus-fab-aura {
+  position: absolute;
+  inset: -10px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 200, 255, 0.10) 0%, transparent 68%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+/* ── CORPO PRINCIPAL ───────────────────────────────────────── */
 
 #nexus-fab-body {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: linear-gradient(160deg, rgba(10, 24, 42, 0.96), rgba(6, 14, 26, 0.96));
-  border: 1px solid rgba(0, 200, 255, 0.28);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  background: radial-gradient(circle at 35% 30%, rgba(28, 52, 76, 0.92) 0%, rgba(8, 16, 30, 0.97) 65%);
+  border: 1px solid rgba(0, 200, 255, 0.22);
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(0, 200, 255, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+  overflow: hidden;
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.15s ease;
 }
 
+/* Linha de shimmer no topo */
 #nexus-fab-body::before {
   content: '';
   position: absolute;
   top: 0;
-  left: 14%;
-  right: 14%;
+  left: 18%;
+  right: 18%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(180, 240, 255, 0.30), transparent);
+  background: linear-gradient(90deg, transparent, rgba(180, 240, 255, 0.22), transparent);
+  pointer-events: none;
 }
+
+/* ── ÍCONE ─────────────────────────────────────────────────── */
 
 #nexus-fab-icon-wrap {
   position: relative;
-  width: 20px;
-  height: 20px;
+  z-index: 2;
+  width: 22px;
+  height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 #nexus-fab-icon {
-  width: 19px;
-  height: 19px;
+  width: 20px;
+  height: 20px;
   color: var(--nx-accent);
   display: flex;
-  transition: opacity 0.15s ease;
+  transition:
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.2s ease;
 }
 
-/* ── HOVER ──────────────────────────────────────────────────── */
+/* ── BADGE (nova mensagem) ─────────────────────────────────── */
 
-#nexus-fab:hover::before {
-  border-color: rgba(0, 200, 255, 0.32);
-}
-
-#nexus-fab:hover #nexus-fab-body {
-  border-color: rgba(0, 200, 255, 0.45);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 14px var(--nx-accent-glow);
-}
-
-/* ── ACTIVE ─────────────────────────────────────────────────── */
-
-#nexus-fab:active #nexus-fab-body {
-  transform: scale(0.94);
-}
-
-/* ── ESTADO ABERTO (.nexus-active) ─────────────────────────── */
-
-#nexus-fab.nexus-active #nexus-fab-icon {
-  opacity: 0.55;
-}
-
-#nexus-fab.nexus-active #nexus-fab-body {
-  border-color: rgba(0, 200, 255, 0.45);
-}
-
-/* ── RIPPLE (reservado) ─────────────────────────────────────── */
-
-#nexus-fab-ripple {
+.nexus-fab-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--nx-accent);
+  border: 2px solid var(--nx-bg, #080c14);
   display: none;
+  pointer-events: none;
 }
 
-/* ── LABEL TOOLTIP ──────────────────────────────────────────── */
+/* ── TOOLTIP ───────────────────────────────────────────────── */
 
-#nexus-fab .nexus-fab-label {
+.nexus-fab-label {
   position: absolute;
   right: calc(100% + 10px);
   top: 50%;
-  transform: translateY(-50%) translateX(4px);
-  background: rgba(0, 16, 28, 0.92);
-  border: 1px solid rgba(0, 200, 255, 0.25);
+  transform: translateY(-50%) translateX(6px);
+  background: rgba(4, 10, 22, 0.94);
+  border: 1px solid rgba(0, 200, 255, 0.20);
   border-radius: 6px;
-  padding: 4px 8px;
+  padding: 4px 9px;
   font-size: 10px;
   font-family: var(--nx-font-mono);
   font-weight: 500;
-  color: rgba(0, 210, 255, 0.85);
+  color: rgba(0, 210, 255, 0.80);
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.15s ease, transform 0.15s ease;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ESTADOS INTERATIVOS
+══════════════════════════════════════════════════════════════ */
+
+/* ── HOVER ─────────────────────────────────────────────────── */
+
+#nexus-fab:hover #nexus-fab-ring-outer {
+  border-color: rgba(0, 200, 255, 0.28);
+  transform: scale(1.07);
+}
+
+#nexus-fab:hover #nexus-fab-aura {
+  opacity: 1;
+}
+
+#nexus-fab:hover #nexus-fab-body {
+  border-color: rgba(0, 200, 255, 0.42);
+  box-shadow:
+    0 4px 18px rgba(0, 0, 0, 0.52),
+    0 0 22px rgba(0, 200, 255, 0.11),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+#nexus-fab:hover #nexus-fab-icon {
+  transform: scale(1.08);
 }
 
 #nexus-fab:hover .nexus-fab-label {
@@ -154,33 +182,118 @@
   transform: translateY(-50%) translateX(0);
 }
 
+/* ── ACTIVE ────────────────────────────────────────────────── */
+
+#nexus-fab:active #nexus-fab-body {
+  transform: scale(0.92);
+}
+
+#nexus-fab:active #nexus-fab-icon {
+  transform: scale(0.92);
+}
+
+/* ── PAINEL ABERTO (.nexus-active) ────────────────────────── */
+
+#nexus-fab.nexus-active #nexus-fab-icon {
+  opacity: 0.50;
+}
+
+#nexus-fab.nexus-active #nexus-fab-body {
+  border-color: rgba(0, 200, 255, 0.38);
+}
+
 /* ══════════════════════════════════════════════════════════════
-   FAB BLOQUEADO — visitante sem login
-   ══════════════════════════════════════════════════════════════ */
+   ESTADOS FUNCIONAIS
+══════════════════════════════════════════════════════════════ */
+
+/* ── THINKING (IA processando) ─────────────────────────────── */
+
+#nexus-fab.nexus-fab--thinking #nexus-fab-body {
+  border-color: rgba(0, 200, 255, 0.36);
+}
+
+#nexus-fab.nexus-fab--thinking #nexus-fab-aura {
+  opacity: 1;
+  animation: nexus-aura-pulse 2s ease-in-out infinite;
+}
+
+#nexus-fab.nexus-fab--thinking #nexus-fab-icon {
+  animation: nexus-icon-breathe 2s ease-in-out infinite;
+}
+
+#nexus-fab.nexus-fab--thinking #nexus-fab-ring-outer {
+  border-color: rgba(0, 200, 255, 0.20);
+  animation: nexus-ring-orbit 3.2s linear infinite;
+}
+
+/* ── NOVA MENSAGEM ─────────────────────────────────────────── */
+
+#nexus-fab.nexus-fab--newmsg #nexus-fab-body {
+  animation: nexus-newmsg-flash 0.55s ease forwards;
+}
+
+#nexus-fab.nexus-fab--newmsg .nexus-fab-badge {
+  display: block;
+  animation: nexus-badge-pop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── BLOQUEADO ─────────────────────────────────────────────── */
 
 .nexus-fab--locked {
-  filter: grayscale(1);
-  opacity: 0.7;
+  filter: grayscale(0.7);
+  opacity: 0.60;
   cursor: not-allowed;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   SHAKE DO FAB — feedback de ação bloqueada
-   ══════════════════════════════════════════════════════════════ */
+   SHAKE — feedback de ação bloqueada
+══════════════════════════════════════════════════════════════ */
 
 @keyframes nexus-fab-shake {
-  0%,  100% { transform: translateX(0);    }
-  20%        { transform: translateX(-6px); }
-  40%        { transform: translateX(6px);  }
-  60%        { transform: translateX(-4px); }
-  80%        { transform: translateX(4px);  }
+  0%,  100% { transform: translateX(0); }
+  20%        { transform: translateX(-5px); }
+  40%        { transform: translateX(5px); }
+  60%        { transform: translateX(-3px); }
+  80%        { transform: translateX(3px); }
 }
 
 .nexus-fab--shake {
-  animation: nexus-fab-shake 0.4s ease;
+  animation: nexus-fab-shake 0.38s ease;
 }
 
-/* ── RESPONSIVO MOBILE ──────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════
+   KEYFRAMES
+══════════════════════════════════════════════════════════════ */
+
+@keyframes nexus-aura-pulse {
+  0%, 100% { opacity: 0.55; transform: scale(1);    }
+  50%       { opacity: 1;    transform: scale(1.09); }
+}
+
+@keyframes nexus-icon-breathe {
+  0%, 100% { opacity: 1;    transform: scale(1);    }
+  50%       { opacity: 0.72; transform: scale(0.91); }
+}
+
+@keyframes nexus-ring-orbit {
+  from { transform: rotate(0deg)   scale(1.05); }
+  to   { transform: rotate(360deg) scale(1.05); }
+}
+
+@keyframes nexus-newmsg-flash {
+  0%   { box-shadow: 0 0 0 0 rgba(0, 200, 255, 0.55); }
+  55%  { box-shadow: 0 0 0 9px rgba(0, 200, 255, 0.12); }
+  100% { box-shadow: 0 2px 10px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06); }
+}
+
+@keyframes nexus-badge-pop {
+  from { transform: scale(0) rotate(-30deg); }
+  to   { transform: scale(1) rotate(0deg); }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RESPONSIVO MOBILE
+══════════════════════════════════════════════════════════════ */
 
 @media (max-width: 480px) {
   #nexus-fab {
@@ -189,8 +302,15 @@
   }
 }
 
-/* ── ACESSIBILIDADE ─────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════
+   ACESSIBILIDADE
+══════════════════════════════════════════════════════════════ */
 
 @media (prefers-reduced-motion: reduce) {
-  .nexus-fab--shake { animation: none; }
+  .nexus-fab--shake                               { animation: none; }
+  #nexus-fab.nexus-fab--thinking #nexus-fab-aura  { animation: none; }
+  #nexus-fab.nexus-fab--thinking #nexus-fab-icon  { animation: none; }
+  #nexus-fab.nexus-fab--thinking #nexus-fab-ring-outer { animation: none; }
+  #nexus-fab.nexus-fab--newmsg #nexus-fab-body    { animation: none; }
+  #nexus-fab.nexus-fab--newmsg .nexus-fab-badge   { animation: none; }
 }
