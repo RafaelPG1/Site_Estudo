@@ -35,7 +35,8 @@
   --rose-dim: rgba(232, 122, 154, 0.10);
   --blue:     #6aaee8;
   --blue-dim: rgba(106, 174, 232, 0.10);
-  --violet:   #a78bfa;
+  --violet:     #a78bfa;
+  --violet-dim: rgba(167, 139, 250, 0.10);
 
   /* Texto */
   --text-1: #eeeae2;
@@ -776,6 +777,19 @@ a { text-decoration: none; color: inherit; }
 .card--games .card__accent     { background: var(--blue); }
 .card--games .card__decorline  { background: linear-gradient(90deg, transparent, rgba(106,174,232,0.22), transparent); }
 .card--games .card__deco       { color: var(--blue); }
+
+/* ── Atlas — violet ── */
+.card--atlas {
+  background: linear-gradient(155deg, var(--surface) 60%, #100d18);
+  color: var(--violet);
+}
+.card--atlas:hover         { border-color: rgba(167, 139, 250, 0.32); box-shadow: 0 1px 0 rgba(255,255,255,0.05) inset, 0 26px 40px -20px rgba(0,0,0,0.65), 0 0 24px -8px rgba(167, 139, 250, 0.35); }
+.card--atlas .card__icon-wrap  { background: var(--violet-dim); }
+.card--atlas:hover .card__icon-wrap { border-color: rgba(167, 139, 250, 0.4); box-shadow: 0 0 14px rgba(167, 139, 250, 0.25); }
+.card--atlas .card__title      { color: var(--violet); }
+.card--atlas .card__accent     { background: var(--violet); }
+.card--atlas .card__decorline  { background: linear-gradient(90deg, transparent, rgba(167,139,250,0.22), transparent); }
+.card--atlas .card__deco       { color: var(--violet); }
 
 
 /* ─────────────────────────────────────────────

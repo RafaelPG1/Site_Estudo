@@ -3,15 +3,56 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Knowledge — Nexus Study</title>
+  <title>atlas — Nexus Study</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="knowledge.css" />
+  <!-- ═══════════════════════════════════════════
+       ESTILOS DE ÁUDIO (sound antes de audio-btns)
+       Mesmo padrão do Quiz — audio-api.js depende
+       destas classes para os controles de som.
+  ═══════════════════════════════════════════ -->
+  <link rel="stylesheet" href="../shared/css/audio/sound.css" />
+  <link rel="stylesheet" href="../shared/css/audio/audio-btns.css" />
+
+  <!-- ═══════════════════════════════════════════
+       ESTILOS DE IA (FAB) — mesmo CSS do Quiz/Index
+       NÃO ALTERAR: já está correto.
+  ═══════════════════════════════════════════ -->
+  <link rel="stylesheet" href="../shared/css/ia/ia.css" />
+
+  <!-- ═══════════════════════════════════════════
+       ESTILOS DA PÁGINA
+       Cada tela do Knowledge possui seu próprio CSS,
+       isolado das demais (sem dependência cruzada).
+       Tokens, fundo, header e animações são duplicados
+       de propósito em cada arquivo — ver css/*.css.
+  ═══════════════════════════════════════════ -->
+  <link rel="stylesheet" href="css/biblioteca.css" />
+  <link rel="stylesheet" href="css/disciplina.css" />
+  <link rel="stylesheet" href="css/leitura.css" />
+
+  <!-- ═══════════════════════════════════════════
+       PRELOAD — IA (core, sem o módulo de Resumo
+       acadêmico — o Atlas não usa resumo/search.js)
+  ═══════════════════════════════════════════ -->
+  <link rel="modulepreload" href="../shared/js/ia/core/context.js">
+  <link rel="modulepreload" href="../shared/js/ia/core/text-utils.js">
+  <link rel="modulepreload" href="../shared/js/ia/core/history.js">
+  <link rel="modulepreload" href="../shared/js/ia/core/loader.js">
+  <link rel="modulepreload" href="../shared/js/ia/core/worker.js">
+  <link rel="modulepreload" href="../shared/js/ia/core/ui.js">
+
 </head>
 <body>
+
+  <!--
+    fab.js: primeira instrução do <body>, mesmo padrão do quiz.html.
+    Injeta o botão flutuante antes de qualquer outro elemento ser pintado.
+  -->
+  <script src="../shared/js/ia/core/fab.js"></script>
 
   <!-- Canvas de fundo -->
   <div class="bg-canvas" aria-hidden="true">
@@ -23,37 +64,30 @@
 
   <!-- ═══════════════════════════════════════════
        HEADER
+       Mesma estrutura em 3 colunas do Quiz
+       (voltar | logo central | controles),
+       mantendo a identidade visual própria do Atlas.
   ═══════════════════════════════════════════ -->
   <header class="header" id="app-header">
     <div class="header__inner">
 
-      <div class="header__left">
-        <a href="../index.html" class="btn-back" id="btn-back" title="Voltar ao início">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
-          </svg>
-          <span>Início</span>
-        </a>
+      <a href="../index.html" class="btn-back" id="btn-back" title="Voltar ao início">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+        </svg>
+        <span>Início</span>
+      </a>
 
-        <div class="header__divider"></div>
-
+      <div class="header__brand">
         <div class="header__logo">
           <div class="header__logo-icon" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-            </svg>
           </div>
-          <span class="header__logo-name">Knowledge</span>
         </div>
+        <div id="header-logo-wrap"></div>
       </div>
 
-      <div class="header__center" id="header-breadcrumb">
-        <!-- JS preenche -->
-      </div>
-
-      <div class="header__right">
+      <div class="header-controls" id="header-controls">
         <div class="header__stats" id="header-stats">
           <!-- JS preenche -->
         </div>
@@ -81,7 +115,7 @@
           </div>
 
           <h1 class="hero__title">
-            <span class="hero__title-main">Knowledge</span>
+            <span class="hero__title-main">atlas</span>
             <span class="hero__title-sub">Base</span>
           </h1>
 
@@ -169,7 +203,7 @@
   <!-- ═══════════════════════════════════════════
        READER (Nível 3 — Leitura)
        Aberto a partir de um capítulo específico.
-       Carrega content/knowledge/{categoria}.js
+       Carrega content/atlas/{categoria}.js
   ═══════════════════════════════════════════ -->
   <div class="reader" id="reader" role="dialog" aria-modal="true" aria-label="Leitor de conteúdo" hidden>
 
@@ -239,7 +273,7 @@
             <!-- Divisor -->
             <div class="reader__divider"></div>
 
-            <!-- Corpo — preenchido a partir de content/knowledge/{categoria}.js -->
+            <!-- Corpo — preenchido a partir de content/atlas/{categoria}.js -->
             <div class="reader__body" id="reader-body">
               <!-- JS preenche -->
             </div>
@@ -254,6 +288,15 @@
     </div><!-- /reader-panel -->
   </div><!-- /reader -->
 
-  <script src="knowledge.js"></script>
+  <!-- ══ FOOTER ══ -->
+  <footer class="site-footer">
+    <span>© <span id="footer-year"></span> Nexus Study</span>
+    <span class="site-footer__sep" aria-hidden="true">·</span>
+    <span>Base de conhecimento do projeto</span>
+  </footer>
+
+  <!-- ══ SCRIPTS ══ -->
+  <script src="atlas.js" type="module"></script>
+  <script src="../shared/js/utils/quick-access.js"></script>
 </body>
 </html>

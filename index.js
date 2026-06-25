@@ -294,6 +294,7 @@ function _bindCardLinks() {
     'card-resumos': { path: './resumo/resumo.html',   area: 'resumos' },
     'card-quiz':    { path: './quiz/quiz.html',        area: 'quiz'    },
     'card-jogos':   { path: './games/jogo.html',       area: 'game'    },
+    'card-atlas':   { path: './atlas/atlas.html',      area: 'atlas'   },
   };
 
   Object.entries(rotas).forEach(([id, { path, area }]) => {

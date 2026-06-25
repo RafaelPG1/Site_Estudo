@@ -1,78 +1,119 @@
-/* =============================================
-   KNOWLEDGE BASE — knowledge.js
+// @ts-nocheck
+/* ═══════════════════════════════════════════════════════════
+   NEXUS STUDY — atlas/atlas.js
    Arquitetura em 3 níveis:
 
      Nível 1 — Biblioteca   (screen-home)
      Nível 2 — Disciplina   (screen-discipline)
      Nível 3 — Leitura      (reader, com sidebar fixa)
 
-   Descoberta de categorias (NÃO ALTERADO):
-     1. Carrega content/knowledge/manifest.js
+   Descoberta de categorias:
+     1. Carrega content/atlas/manifest.js
         (expõe window.__KB_MANIFEST__ = ['python','java',...])
      2. Para cada id no manifesto, injeta
-        content/knowledge/{id}.js como <script>
-     3. Lê window.__nexusKnowledge após o carregamento
+        content/atlas/{id}.js como <script>
+     3. Lê window.__nexusatlas após o carregamento
         para extrair title, icon, desc, time, type, secoes
      4. Monta os cards dinamicamente — sem lista fixa no JS
 
    Para adicionar uma nova categoria:
-     • Crie content/knowledge/linux.js com window.__nexusKnowledge = { ... }
-     • Adicione 'linux' em content/knowledge/manifest.js
+     • Crie content/atlas/linux.js com window.__nexusatlas = { ... }
+     • Adicione 'linux' em content/atlas/manifest.js
      • Pronto. Nenhuma outra mudança necessária aqui.
 
-   IMPORTANTE: a estrutura de dados `secoes: []` de cada
-   categoria não é alterada em nenhum momento. Os "capítulos"
-   do nível 2 e os "grupos visuais" (Fundamentos/Intermediário/
-   Avançado) são derivados em memória, na renderização,
-   a partir das mesmas seções já existentes.
-   ============================================= */
+   Infraestrutura compartilhada utilizada
+   (mesmo padrão do Quiz — não duplica nada):
+     • shared/js/utils/logo.js   → injetarLogo
+     • shared/js/utils/dom.js    → preencherAnos
+     • shared/js/audio/audio-api.js → Sound, audio, installAudioRecovery, playSound
+     • shared/js/ia/core/fab.js  → injetado via HTML (mesmo padrão do Quiz)
+     • shared/js/utils/quick-access.js → injetado via HTML
 
-'use strict';
+   NÃO utilizado (exclusivo do Quiz / sistema acadêmico):
+     • global.js (getSemestreAtual, getDisciplinasDeSemestre, etc.)
+     • shared/js/utils/url.js (sincronizarSemNaURL)
+     • shared/js/utils/dom.js → criarSemestreSelect, preencherAnos (só preencherAnos é usado)
+     • shared/js/themes/cores.js (DISC_CORES — cores por disciplina acadêmica)
+     • shared/css/themes/semestre-picker.css
+     • shared/js/ia/resumo/* (IA do sistema de Resumos)
+   ═══════════════════════════════════════════════════════════ */
 
 /* ══════════════════════════════════════════════
-   CAMINHO BASE
+   IMPORTS — infraestrutura compartilhada
+   Apenas o que faz sentido para o Atlas.
 ══════════════════════════════════════════════ */
-const KB_CONTENT_BASE = window.__KB_CONTENT_BASE__ ?? '../../content/knowledge/';
+import { injetarLogo }                                      from '../shared/js/utils/logo.js';
+import { preencherAnos }                                    from '../shared/js/utils/dom.js';
+import { Sound, audio, installAudioRecovery, playSound }   from '../shared/js/audio/audio-api.js';
+
+/* ══════════════════════════════════════════════
+   IA — contexto neutro (sem vínculo com Resumos)
+   Mesmo padrão de carregamento do Quiz, mas sem
+   o módulo resumo/search.js e resumo/assistant.js.
+   O FAB já foi injetado via fab.js no HTML.
+══════════════════════════════════════════════ */
+window.__NEXUS_CONTEXT__ = { tipos: ['atlas'] };
+
+function _loadScript(src) {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+    const s = document.createElement('script');
+    s.src    = src;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error(`[Nexus IA] Falha: ${src}`));
+    document.body.appendChild(s);
+  });
+}
+
+function _carregarIA() {
+  const BASE = '../shared/js/ia/';
+  // Apenas o core da IA — sem o sistema de Resumos acadêmicos
+  const deps = [
+    BASE + 'core/context.js',
+    BASE + 'core/text-utils.js',
+    BASE + 'core/history.js',
+    BASE + 'core/loader.js',
+    BASE + 'core/worker.js',
+    BASE + 'core/ui.js',
+  ];
+  Promise.all(deps.map(_loadScript))
+    .catch(err => console.warn('[atlas] Falha ao carregar IA (core):', err));
+}
+
+/* ══════════════════════════════════════════════
+   CAMINHO BASE DE CONTEÚDO
+══════════════════════════════════════════════ */
+const KB_CONTENT_BASE = window.__KB_CONTENT_BASE__ ?? '../../content/atlas/';
 
 /* ══════════════════════════════════════════════
    ESTADO GLOBAL DE CATEGORIAS
 ══════════════════════════════════════════════ */
-let CATEGORIES = []; // preenchido por _loadAllCategories()
+let CATEGORIES = [];
 
 /* ══════════════════════════════════════════════
    MAPEAMENTO MANUAL DE GRUPOS VISUAIS
 
    Define como as seções (secoes[i]) de cada disciplina
    são agrupadas visualmente em "Fundamentos / Intermediário /
-   Avançado" etc. Isso é PURAMENTE visual — não altera
-   nem lê nenhuma propriedade nova nos arquivos de conteúdo.
+   Avançado" etc. Puramente visual — não altera nenhum arquivo
+   de conteúdo.
 
-   Formato: { [categoryId]: [ { titulo, range: [iniInclusive, fimInclusive] }, ... ] }
-   range é o índice (0-based) das seções (secoes[]) cobertas por aquele grupo.
+   Formato: { [categoryId]: [ { titulo, range: [ini, fim] }, ... ] }
+   range é 0-based, inclusivo nos dois lados.
 
-   Se uma categoria não tiver mapeamento aqui, todas as suas
-   seções caem automaticamente em um único grupo "Conteúdo".
-   Edite/adicione entradas aqui livremente conforme novas
-   disciplinas forem chegando — não requer tocar em mais nada.
+   Categorias sem mapeamento caem automaticamente num único grupo "Conteúdo".
 ══════════════════════════════════════════════ */
 const CHAPTER_GROUPS_MAP = {
-  // Exemplo de uso — ajuste os índices conforme as seções REAIS de cada
-  // arquivo de conteúdo (veja a ordem em `secoes: []` dentro de python.js,
-  // java.js etc). `range` é inclusivo nos dois lados.
+  // Exemplo:
   // python: [
-  //   { titulo: 'Fundamentos',    range: [0, 2] },
-  //   { titulo: 'Intermediário',  range: [3, 5] },
-  //   { titulo: 'Avançado',       range: [6, 99] },
+  //   { titulo: 'Fundamentos',   range: [0, 2] },
+  //   { titulo: 'Intermediário', range: [3, 5] },
+  //   { titulo: 'Avançado',      range: [6, 99] },
   // ],
 };
 
 const DEFAULT_GROUP_LABEL = 'Conteúdo';
 
-/**
- * Recebe o array de seções de uma categoria e retorna os grupos
- * visuais já com as seções correspondentes anexadas.
- * Não modifica o array original.
- */
 function _buildChapterGroups(categoryId, secoes) {
   const mapping = CHAPTER_GROUPS_MAP[categoryId];
 
@@ -90,29 +131,27 @@ function _buildChapterGroups(categoryId, secoes) {
     return { titulo: g.titulo, secoes: items };
   }).filter(g => g.secoes.length);
 
-  // Qualquer seção fora do mapeamento cai num grupo "Outros" ao final,
-  // garantindo que nenhum conteúdo existente fique invisível.
   const leftovers = secoes
     .map((s, i) => ({ ...s, _index: i }))
     .filter(s => !used.has(s._index));
   if (leftovers.length) groups.push({ titulo: 'Outros', secoes: leftovers });
 
-  return groups.length ? groups : [{ titulo: DEFAULT_GROUP_LABEL, secoes: secoes.map((s, i) => ({ ...s, _index: i })) }];
+  return groups.length
+    ? groups
+    : [{ titulo: DEFAULT_GROUP_LABEL, secoes: secoes.map((s, i) => ({ ...s, _index: i })) }];
 }
 
 /* ══════════════════════════════════════════════
    ESTADO DA UI
-
-   view: 'home' | 'discipline' | 'reading'
 ══════════════════════════════════════════════ */
 const State = {
-  view:             'home',
-  currentCategory:  null,
-  currentChapter:   null, // índice da seção aberta no Reader
-  searchQuery:      '',
-  readerOpen:       false,
+  view:              'home',
+  currentCategory:   null,
+  currentChapter:    null,
+  searchQuery:       '',
+  readerOpen:        false,
   sidebarMobileOpen: false,
-  _progressCleanup: null,
+  _progressCleanup:  null,
 };
 
 /* ══════════════════════════════════════════════
@@ -121,75 +160,88 @@ const State = {
 const $ = (id) => document.getElementById(id);
 
 const EL = {
-  // Home
-  screenHome:         $('screen-home'),
-  catGrid:            $('categories-grid'),
-  categoriesCount:    $('categories-count'),
-  heroStats:          $('hero-stats'),
-  headerStats:        $('header-stats'),
-  headerBreadcrumb:   $('header-breadcrumb'),
-  searchInput:        $('search-input'),
+  screenHome:              $('screen-home'),
+  catGrid:                 $('categories-grid'),
+  categoriesCount:         $('categories-count'),
+  heroStats:               $('hero-stats'),
+  headerStats:             $('header-stats'),
+  searchInput:             $('search-input'),
 
-  // Disciplina (nível 2)
-  screenDiscipline:   $('screen-discipline'),
-  disciplineBack:     $('discipline-back'),
-  disciplineIcon:     $('discipline-icon'),
-  disciplineTitle:    $('discipline-title'),
-  disciplineDesc:     $('discipline-desc'),
-  disciplineMeta:     $('discipline-meta'),
-  disciplineBody:     $('discipline-body'),
+  screenDiscipline:        $('screen-discipline'),
+  disciplineBack:          $('discipline-back'),
+  disciplineIcon:          $('discipline-icon'),
+  disciplineTitle:         $('discipline-title'),
+  disciplineDesc:          $('discipline-desc'),
+  disciplineMeta:          $('discipline-meta'),
+  disciplineBody:          $('discipline-body'),
 
-  // Reader (nível 3)
-  reader:               $('reader'),
-  readerOverlay:        $('reader-overlay'),
-  readerPanel:          $('reader-panel'),
-  readerClose:          $('reader-close'),
-  readerLayout:         $('reader-layout'),
-  readerSidebar:        $('reader-sidebar'),
-  readerSidebarScrim:   $('reader-sidebar-scrim'),
-  readerSidebarToggle:  $('reader-sidebar-toggle'),
-  sidebarDisciplines:   $('sidebar-disciplines'),
-  sidebarCurrentLabel:  $('sidebar-current-discipline'),
-  sidebarChapters:      $('sidebar-chapters'),
-  readerBreadcrumbInline: $('reader-breadcrumb-inline'),
-  readerScroll:         $('reader-scroll'),
-  readerHeroCategory:   $('reader-hero-category'),
-  readerHeroTitle:      $('reader-hero-title'),
-  readerHeroDesc:       $('reader-hero-desc'),
-  readerHeroChips:      $('reader-hero-chips'),
-  readerBody:           $('reader-body'),
-  readerChapterNav:     $('reader-chapter-nav'),
-  readerTime:           $('reader-time'),
-  readerProgressFill:   $('reader-progress-fill'),
+  reader:                  $('reader'),
+  readerOverlay:           $('reader-overlay'),
+  readerPanel:             $('reader-panel'),
+  readerClose:             $('reader-close'),
+  readerLayout:            $('reader-layout'),
+  readerSidebar:           $('reader-sidebar'),
+  readerSidebarScrim:      $('reader-sidebar-scrim'),
+  readerSidebarToggle:     $('reader-sidebar-toggle'),
+  sidebarDisciplines:      $('sidebar-disciplines'),
+  sidebarCurrentLabel:     $('sidebar-current-discipline'),
+  sidebarChapters:         $('sidebar-chapters'),
+  readerBreadcrumbInline:  $('reader-breadcrumb-inline'),
+  readerScroll:            $('reader-scroll'),
+  readerHeroCategory:      $('reader-hero-category'),
+  readerHeroTitle:         $('reader-hero-title'),
+  readerHeroDesc:          $('reader-hero-desc'),
+  readerHeroChips:         $('reader-hero-chips'),
+  readerBody:              $('reader-body'),
+  readerChapterNav:        $('reader-chapter-nav'),
+  readerTime:              $('reader-time'),
+  readerProgressFill:      $('reader-progress-fill'),
 };
 
 /* ══════════════════════════════════════════════
-   ESCAPE
+   ESCAPE / HELPERS DE RENDERIZAÇÃO
 ══════════════════════════════════════════════ */
 function _esc(str) {
   return String(str ?? '')
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
 }
 
-/* ══════════════════════════════════════════════
-   ÍCONE — detecta se é SVG ou emoji/texto
-══════════════════════════════════════════════ */
 function _isSvgIcon(icon) {
   return typeof icon === 'string' && icon.trim().toLowerCase().startsWith('<svg');
 }
 
 function _renderIcon(icon, fallback = '📄') {
   const value = icon ?? fallback;
-  if (_isSvgIcon(value)) {
-    return value; // HTML confiável (vem do nosso próprio conteúdo, não de input externo)
-  }
-  return _esc(value);
+  return _isSvgIcon(value) ? value : _esc(value);
+}
+
+/* ══════════════════════════════════════════════
+   TOAST — mesmo padrão do Quiz
+   Reutiliza a classe .nexus-toast já existente
+   nos estilos globais do projeto.
+══════════════════════════════════════════════ */
+function _toast(msg) {
+  const OFFSET = 12, DURATION = 2800;
+  const existentes = document.querySelectorAll('.nexus-toast');
+  let nextBottom = 32;
+  existentes.forEach(t => { nextBottom += t.offsetHeight + OFFSET; });
+
+  const t = document.createElement('div');
+  t.className    = 'nexus-toast';
+  t.textContent  = msg;
+  t.style.bottom = `${nextBottom}px`;
+  document.body.appendChild(t);
+
+  requestAnimationFrame(() => t.classList.add('nexus-toast--show'));
+  setTimeout(() => {
+    t.classList.remove('nexus-toast--show');
+    t.addEventListener('transitionend', () => t.remove(), { once: true });
+  }, DURATION);
 }
 
 /* ══════════════════════════════════════════════
    DESCOBERTA AUTOMÁTICA DE CATEGORIAS
-   (lógica original — não alterada)
 ══════════════════════════════════════════════ */
 function _injectScript(src, dataAttr) {
   return new Promise((resolve, reject) => {
@@ -197,10 +249,10 @@ function _injectScript(src, dataAttr) {
     if (existing) { resolve(); return; }
 
     const s = document.createElement('script');
-    s.src           = src;
-    s.dataset.kb    = dataAttr;
-    s.onload        = () => resolve();
-    s.onerror       = () => reject(new Error(`Falha ao carregar: ${src}`));
+    s.src        = src;
+    s.dataset.kb = dataAttr;
+    s.onload     = () => resolve();
+    s.onerror    = () => reject(new Error(`Falha ao carregar: ${src}`));
     document.head.appendChild(s);
   });
 }
@@ -210,37 +262,37 @@ async function _loadManifest() {
     await _injectScript(`${KB_CONTENT_BASE}manifest.js`, 'manifest');
     const ids = window.__KB_MANIFEST__;
     if (!Array.isArray(ids)) {
-      console.warn('[Knowledge] manifest.js não expõe window.__KB_MANIFEST__ como array.');
+      console.warn('[atlas] manifest.js não expõe window.__KB_MANIFEST__ como array.');
       return [];
     }
     return ids;
   } catch (err) {
-    console.error('[Knowledge] Não foi possível carregar manifest.js:', err);
+    console.error('[atlas] Não foi possível carregar manifest.js:', err);
     return [];
   }
 }
 
 async function _loadCategoryMeta(id) {
-  delete window.__nexusKnowledge;
+  delete window.__nexusatlas;
 
   try {
     await _injectScript(`${KB_CONTENT_BASE}${id}.js`, `cat-${id}`);
   } catch {
-    console.warn(`[Knowledge] Arquivo não encontrado: ${KB_CONTENT_BASE}${id}.js — categoria '${id}' ignorada.`);
+    console.warn(`[atlas] Arquivo não encontrado: ${KB_CONTENT_BASE}${id}.js — categoria '${id}' ignorada.`);
     return null;
   }
 
-  const data = window.__nexusKnowledge;
+  const data = window.__nexusatlas;
   if (!data || typeof data !== 'object') {
-    console.warn(`[Knowledge] ${id}.js não expõe window.__nexusKnowledge — ignorado.`);
+    console.warn(`[atlas] ${id}.js não expõe window.__nexusatlas — ignorado.`);
     return null;
   }
 
   return {
     id,
-    name:  data.title ?? id,
-    icon:  data.icon  ?? '📄',
-    desc:  data.desc  ?? '',
+    name:     data.title    ?? id,
+    icon:     data.icon     ?? '📄',
+    desc:     data.desc     ?? '',
     color:    data.color    ?? '#6366f1',
     colorRgb: data.colorRgb ?? '99,102,241',
   };
@@ -255,52 +307,49 @@ async function _loadAllCategories() {
 }
 
 /* ══════════════════════════════════════════════
-   CARREGAMENTO DE CONTEÚDO (lógica original — não alterada)
+   CARREGAMENTO DE CONTEÚDO (com cache em memória)
 ══════════════════════════════════════════════ */
-async function loadCategory(categoryId) {
+async function _loadCategory(categoryId) {
   const alreadyInjected = document.querySelector(`script[data-kb="cat-${categoryId}"]`);
 
   if (!alreadyInjected) {
-    delete window.__nexusKnowledge;
+    delete window.__nexusatlas;
     try {
       await _injectScript(`${KB_CONTENT_BASE}${categoryId}.js`, `cat-${categoryId}`);
-      if (window.__nexusKnowledge) return window.__nexusKnowledge;
+      if (window.__nexusatlas) return window.__nexusatlas;
     } catch (err) {
-      console.warn(`[Knowledge] Falha ao carregar conteúdo de ${categoryId}:`, err);
+      console.warn(`[atlas] Falha ao carregar conteúdo de ${categoryId}:`, err);
     }
   } else {
     alreadyInjected.remove();
-    delete window.__nexusKnowledge;
+    delete window.__nexusatlas;
     try {
       await _injectScript(`${KB_CONTENT_BASE}${categoryId}.js`, `cat-${categoryId}`);
-      if (window.__nexusKnowledge) return window.__nexusKnowledge;
+      if (window.__nexusatlas) return window.__nexusatlas;
     } catch (err) {
-      console.warn(`[Knowledge] Falha ao carregar conteúdo de ${categoryId}:`, err);
+      console.warn(`[atlas] Falha ao carregar conteúdo de ${categoryId}:`, err);
     }
   }
 
   const cat = CATEGORIES.find(c => c.id === categoryId);
   return {
-    title: cat?.name ?? categoryId,
-    icon:  cat?.icon ?? '📄',
-    desc:  cat?.desc ?? '',
-    time:  0,
-    type:  'Documentação',
+    title:  cat?.name ?? categoryId,
+    icon:   cat?.icon ?? '📄',
+    desc:   cat?.desc ?? '',
+    time:   0,
+    type:   'Documentação',
     secoes: [{
       titulo: 'Em preparação',
-      blocos: [{ tipo: 'texto', texto: `O arquivo content/knowledge/${categoryId}.js ainda não foi criado ou não expõe window.__nexusKnowledge.` }]
-    }]
+      blocos: [{ tipo: 'texto', texto: `O arquivo content/atlas/${categoryId}.js ainda não foi criado ou não expõe window.__nexusatlas.` }],
+    }],
   };
 }
 
-/* Cache simples em memória do conteúdo completo de cada categoria já
-   carregada nesta sessão, para não precisar reinjetar o script toda
-   vez que o usuário troca entre disciplina ↔ leitura ↔ outra disciplina. */
 const _contentCache = new Map();
 
 async function _getCategoryContent(categoryId) {
   if (_contentCache.has(categoryId)) return _contentCache.get(categoryId);
-  const data = await loadCategory(categoryId);
+  const data = await _loadCategory(categoryId);
   _contentCache.set(categoryId, data);
   return data;
 }
@@ -320,12 +369,9 @@ function _renderStats() {
       </div>`;
   }
 
+  // Header stats — mesmo estilo do Quiz (texto compacto no canto direito)
   if (EL.headerStats) {
-    EL.headerStats.innerHTML = `
-      <div class="hstat">
-        <span class="hstat__num">${nCats}</span>
-        <span class="hstat__label">disciplinas</span>
-      </div>`;
+    EL.headerStats.textContent = `${nCats} disciplina${nCats !== 1 ? 's' : ''}`;
   }
 
   if (EL.categoriesCount) {
@@ -334,34 +380,18 @@ function _renderStats() {
 }
 
 /* ══════════════════════════════════════════════
-   HEADER BREADCRUMB (topo fixo da página)
+   HEADER BREADCRUMB
+   Mantido apenas para compatibilidade interna —
+   o centro do header agora é a logo, não o breadcrumb.
+   _renderBreadcrumb() é no-op para o header principal.
 ══════════════════════════════════════════════ */
 function _renderBreadcrumb() {
-  if (!EL.headerBreadcrumb) return;
-
-  if (State.view === 'home' || !State.currentCategory) {
-    EL.headerBreadcrumb.textContent = 'Knowledge Base';
-    return;
-  }
-
-  const cat = CATEGORIES.find(c => c.id === State.currentCategory);
-  const sep = '<span style="color:var(--t3);margin:0 0.3em">/</span>';
-
-  if (State.view === 'discipline') {
-    EL.headerBreadcrumb.innerHTML =
-      `Knowledge${sep}<span style="color:var(--t1)">${_esc(cat?.name ?? '')}</span>`;
-    return;
-  }
-
-  // view === 'reading'
-  const data = _contentCache.get(State.currentCategory);
-  const secao = data?.secoes?.[State.currentChapter];
-  EL.headerBreadcrumb.innerHTML =
-    `Knowledge${sep}<span style="color:var(--t2)">${_esc(cat?.name ?? '')}</span>${sep}<span style="color:var(--t1)">${_esc(secao?.titulo ?? '')}</span>`;
+  // O header usa a logo fixa no centro (sem breadcrumb de texto).
+  // Esta função existe para não quebrar chamadas internas existentes.
 }
 
 /* ══════════════════════════════════════════════
-   NÍVEL 1 — GRID DE DISCIPLINAS (Home)
+   NÍVEL 1 — GRID DE DISCIPLINAS
 ══════════════════════════════════════════════ */
 function _renderCategoriesGrid(cats) {
   if (!EL.catGrid) return;
@@ -402,7 +432,11 @@ function _renderCategoriesGrid(cats) {
 
   EL.catGrid.querySelectorAll('.cat-card').forEach(card => {
     const id = card.dataset.catId;
-    card.addEventListener('click',   ()  => _abrirDisciplina(id));
+    card.addEventListener('mouseenter', () => playSound('hover',  'atlas'));
+    card.addEventListener('click',      () => {
+      playSound('click', 'atlas');
+      _abrirDisciplina(id);
+    });
     card.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _abrirDisciplina(id); }
     });
@@ -410,7 +444,7 @@ function _renderCategoriesGrid(cats) {
 }
 
 /* ══════════════════════════════════════════════
-   NAVEGAÇÃO ENTRE TELAS (home / discipline / reading)
+   NAVEGAÇÃO ENTRE TELAS
 ══════════════════════════════════════════════ */
 function _showScreen(view) {
   State.view = view;
@@ -528,22 +562,22 @@ function _renderDisciplineScreen(cat, data) {
 
   EL.disciplineBody.querySelectorAll('.chapter-card').forEach(card => {
     const idx = parseInt(card.dataset.chapterIndex, 10);
-    card.addEventListener('click',   ()  => _abrirReader(cat.id, idx));
-    card.addEventListener('keydown', (e) => {
+    card.addEventListener('mouseenter', () => playSound('hover', 'atlas'));
+    card.addEventListener('click',      () => { playSound('click', 'atlas'); _abrirReader(cat.id, idx); });
+    card.addEventListener('keydown',    (e) => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _abrirReader(cat.id, idx); }
     });
   });
 }
 
 /* ══════════════════════════════════════════════
-   SIDEBAR DO READER (nível 3)
+   SIDEBAR DO READER
 ══════════════════════════════════════════════ */
 function _renderSidebar(categoryId, chapterIndex) {
-  const cat = CATEGORIES.find(c => c.id === categoryId);
-  const data = _contentCache.get(categoryId);
+  const cat    = CATEGORIES.find(c => c.id === categoryId);
+  const data   = _contentCache.get(categoryId);
   const secoes = Array.isArray(data?.secoes) ? data.secoes : [];
 
-  // Lista de disciplinas
   if (EL.sidebarDisciplines) {
     EL.sidebarDisciplines.innerHTML = CATEGORIES.map(c => `
       <div class="sidebar-discipline-link ${c.id === categoryId ? 'is-active' : ''}" data-cat-id="${_esc(c.id)}">
@@ -556,13 +590,12 @@ function _renderSidebar(categoryId, chapterIndex) {
       link.addEventListener('click', async () => {
         const id = link.dataset.catId;
         if (id === categoryId) return;
-        const newData = await _getCategoryContent(id);
+        playSound('click', 'atlas');
+        const newData   = await _getCategoryContent(id);
         const hasSecoes = Array.isArray(newData?.secoes) && newData.secoes.length;
         if (hasSecoes) {
-          // Permanece no Reader (painel já aberto), só troca de disciplina/capítulo
           _abrirReader(id, 0);
         } else {
-          // Sem conteúdo: fecha o reader e mostra a tela de disciplina (estado vazio)
           _fecharReader({ silent: true });
           _abrirDisciplina(id);
         }
@@ -574,7 +607,6 @@ function _renderSidebar(categoryId, chapterIndex) {
     EL.sidebarCurrentLabel.textContent = `Capítulos · ${cat.name}`;
   }
 
-  // Capítulos, agrupados visualmente igual à tela de disciplina
   if (EL.sidebarChapters) {
     const groups = _buildChapterGroups(categoryId, secoes);
     EL.sidebarChapters.innerHTML = groups.map(group => `
@@ -592,6 +624,7 @@ function _renderSidebar(categoryId, chapterIndex) {
       link.addEventListener('click', () => {
         const idx = parseInt(link.dataset.chapterIndex, 10);
         if (idx === chapterIndex) return;
+        playSound('click', 'atlas');
         _abrirReader(categoryId, idx, { fromSidebar: true });
       });
     });
@@ -599,12 +632,12 @@ function _renderSidebar(categoryId, chapterIndex) {
 }
 
 /* ══════════════════════════════════════════════
-   BREADCRUMB INLINE DO READER (dentro da barra superior)
+   BREADCRUMB INLINE DO READER
 ══════════════════════════════════════════════ */
 function _renderReaderBreadcrumb(cat, secao) {
   if (!EL.readerBreadcrumbInline) return;
   EL.readerBreadcrumbInline.innerHTML = `
-    <span class="crumb crumb--knowledge" data-crumb="home">Knowledge</span>
+    <span class="crumb crumb--atlas" data-crumb="home">atlas</span>
     <span class="crumb-sep">/</span>
     <span class="crumb crumb--cat" data-crumb="discipline">${_esc(cat.name)}</span>
     <span class="crumb-sep">/</span>
@@ -612,9 +645,11 @@ function _renderReaderBreadcrumb(cat, secao) {
   `;
 
   EL.readerBreadcrumbInline.querySelector('[data-crumb="discipline"]')?.addEventListener('click', () => {
+    playSound('click', 'atlas');
     _fecharReader({ toDiscipline: true });
   });
   EL.readerBreadcrumbInline.querySelector('[data-crumb="home"]')?.addEventListener('click', () => {
+    playSound('click', 'atlas');
     _fecharReader({ toHome: true });
   });
 }
@@ -633,8 +668,8 @@ async function _abrirReader(categoryId, chapterIndex, opts = {}) {
   if (EL.readerBody) EL.readerBody.innerHTML = _buildLoadingBody();
   if (EL.readerChapterNav) EL.readerChapterNav.innerHTML = '';
 
-  // Só anima a abertura do painel se ele ainda não estiver aberto
   if (!EL.reader.classList.contains('reader--open')) {
+    playSound('openModal', 'atlas');
     EL.reader.hidden = false;
     requestAnimationFrame(() => {
       EL.reader.classList.add('reader--open');
@@ -643,43 +678,39 @@ async function _abrirReader(categoryId, chapterIndex, opts = {}) {
     });
   }
 
-  const data = await _getCategoryContent(categoryId);
+  const data   = await _getCategoryContent(categoryId);
   if (State.currentCategory !== categoryId || State.currentChapter !== chapterIndex || !State.readerOpen) return;
 
   const secoes = Array.isArray(data?.secoes) ? data.secoes : [];
   const secao  = secoes[chapterIndex];
 
-  // Mantém a tela de disciplina (nível 2), por baixo do painel, sempre
-  // sincronizada com a disciplina atualmente aberta no Reader — assim,
-  // ao fechar o painel, o usuário cai no lugar certo (não na disciplina
-  // que estava aberta antes de navegar pela sidebar).
   _showScreen('discipline');
   _renderDisciplineScreen(cat, data);
 
   _renderSidebar(categoryId, chapterIndex);
   _renderReaderBreadcrumb(cat, secao);
-  _renderKnowledgeHero(cat, data, secao);
-  _renderKnowledgeBody(secao);
+  _renderAtlasHero(cat, data, secao);
+  _renderAtlasBody(secao);
   _renderChapterNav(cat, secoes, chapterIndex);
   _renderBreadcrumb();
 
   _closeMobileSidebar();
-
   _cleanupProgress();
   _setupProgress();
   if (EL.readerScroll) EL.readerScroll.scrollTop = 0;
 }
 
 function _fecharReader(opts = {}) {
-  State.readerOpen      = false;
-  const categoryId      = State.currentCategory;
+  State.readerOpen  = false;
+  const categoryId  = State.currentCategory;
 
+  playSound('closeModal', 'atlas');
   EL.reader.classList.remove('reader--open');
   document.body.style.overflow = '';
 
   setTimeout(() => {
     EL.reader.hidden = true;
-    if (EL.readerScroll)       EL.readerScroll.scrollTop = 0;
+    if (EL.readerScroll)       EL.readerScroll.scrollTop  = 0;
     if (EL.readerProgressFill) EL.readerProgressFill.style.width = '0%';
   }, 420);
 
@@ -694,17 +725,17 @@ function _fecharReader(opts = {}) {
     State.currentChapter = null;
     _showScreen('discipline');
   } else if (!opts.silent) {
-    // Fechamento padrão (botão X / overlay / ESC): volta para a disciplina atual
     State.currentChapter = null;
     _showScreen('discipline');
   }
-  // opts.silent: usado internamente quando já vamos abrir outra disciplina
-  // imediatamente a seguir — não navega para lugar nenhum aqui.
 
   _renderBreadcrumb();
 }
 
-function _renderKnowledgeHero(cat, data, secao) {
+/* ══════════════════════════════════════════════
+   HERO DO READER
+══════════════════════════════════════════════ */
+function _renderAtlasHero(cat, data, secao) {
   if (EL.readerHeroCategory) {
     EL.readerHeroCategory.innerHTML = `<span style="margin-right:0.4rem;opacity:0.8">${_renderIcon(cat.icon)}</span>${_esc(cat.name)}`;
   }
@@ -734,10 +765,8 @@ function _renderKnowledgeHero(cat, data, secao) {
     EL.readerHeroChips.innerHTML = chips.join('');
   }
 
-  if (EL.readerTime && data.time) {
-    EL.readerTime.textContent = `${data.time} min`;
-  } else if (EL.readerTime) {
-    EL.readerTime.textContent = '';
+  if (EL.readerTime) {
+    EL.readerTime.textContent = data.time ? `${data.time} min` : '';
   }
 }
 
@@ -752,13 +781,10 @@ function _buildLoadingBody() {
 
 /* ══════════════════════════════════════════════
    RENDERIZADOR DE CONTEÚDO
-
-   Agora renderiza UMA seção por vez (um capítulo =
-   uma página de leitura), não todas de uma vez.
-   Tipos de bloco suportados: texto, subtitulo, lista,
+   Tipos suportados: texto, subtitulo, lista,
    tabela, codigo, alerta, destaque
 ══════════════════════════════════════════════ */
-function _renderKnowledgeBody(secao) {
+function _renderAtlasBody(secao) {
   if (!EL.readerBody) return;
 
   if (!secao) {
@@ -771,6 +797,13 @@ function _renderKnowledgeBody(secao) {
       ${(secao.blocos ?? []).map(_renderBloco).join('')}
     </section>
   `;
+}
+
+function _escRich(str) {
+  let safe = _esc(str ?? '');
+  safe = safe.replace(/`([^`]+)`/g,     '<code>$1</code>');
+  safe = safe.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  return safe;
 }
 
 function _renderBloco(bloco) {
@@ -811,20 +844,14 @@ function _renderBloco(bloco) {
   }
 }
 
-function _escRich(str) {
-  let safe = _esc(str ?? '');
-  safe = safe.replace(/`([^`]+)`/g, '<code>$1</code>');
-  safe = safe.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-  return safe;
-}
-
-/* ── Navegação entre capítulos (Anterior / Próximo) ── */
+/* ══════════════════════════════════════════════
+   NAVEGAÇÃO ENTRE CAPÍTULOS (Anterior / Próximo)
+══════════════════════════════════════════════ */
 function _renderChapterNav(cat, secoes, currentIndex) {
   if (!EL.readerChapterNav) return;
 
-  const prev = secoes[currentIndex - 1];
-  const next = secoes[currentIndex + 1];
-
+  const prev  = secoes[currentIndex - 1];
+  const next  = secoes[currentIndex + 1];
   const parts = [];
 
   if (prev) {
@@ -851,13 +878,15 @@ function _renderChapterNav(cat, secoes, currentIndex) {
 
   EL.readerChapterNav.querySelectorAll('.chapter-nav-link').forEach(link => {
     link.addEventListener('click', () => {
-      const idx = parseInt(link.dataset.navIndex, 10);
-      _abrirReader(cat.id, idx);
+      playSound('click', 'atlas');
+      _abrirReader(cat.id, parseInt(link.dataset.navIndex, 10));
     });
   });
 }
 
-/* ── Barra de progresso de leitura ── */
+/* ══════════════════════════════════════════════
+   BARRA DE PROGRESSO DE LEITURA
+══════════════════════════════════════════════ */
 function _setupProgress() {
   const scrollEl = EL.readerScroll;
   const fill     = EL.readerProgressFill;
@@ -882,7 +911,9 @@ function _cleanupProgress() {
   }
 }
 
-/* ── Sidebar mobile (drawer) ── */
+/* ══════════════════════════════════════════════
+   SIDEBAR MOBILE (drawer)
+══════════════════════════════════════════════ */
 function _toggleMobileSidebar() {
   State.sidebarMobileOpen = !State.sidebarMobileOpen;
   EL.readerLayout?.classList.toggle('sidebar-open', State.sidebarMobileOpen);
@@ -893,7 +924,7 @@ function _closeMobileSidebar() {
 }
 
 /* ══════════════════════════════════════════════
-   BUSCA (nível 1 — biblioteca)
+   BUSCA (nível 1)
 ══════════════════════════════════════════════ */
 function _handleSearch(query) {
   State.searchQuery = query.trim().toLowerCase();
@@ -915,46 +946,6 @@ function _handleSearch(query) {
 }
 
 /* ══════════════════════════════════════════════
-   BINDINGS
-══════════════════════════════════════════════ */
-function _bindEvents() {
-  EL.readerClose?.addEventListener('click', () => _fecharReader());
-  EL.readerOverlay?.addEventListener('click', () => _fecharReader());
-  EL.disciplineBack?.addEventListener('click', () => {
-    State.currentCategory = null;
-    _showScreen('home');
-    _renderBreadcrumb();
-  });
-
-  EL.readerSidebarToggle?.addEventListener('click', _toggleMobileSidebar);
-  EL.readerSidebarScrim?.addEventListener('click', _closeMobileSidebar);
-
-  document.addEventListener('keydown', e => {
-    if (e.key !== 'Escape') return;
-    if (State.readerOpen) { _fecharReader(); return; }
-    if (State.view === 'discipline') {
-      State.currentCategory = null;
-      _showScreen('home');
-      _renderBreadcrumb();
-    }
-  });
-
-  let searchTimer;
-  EL.searchInput?.addEventListener('input', e => {
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => _handleSearch(e.target.value), 160);
-  });
-
-  document.addEventListener('keydown', e => {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-      e.preventDefault();
-      EL.searchInput?.focus();
-      EL.searchInput?.select();
-    }
-  });
-}
-
-/* ══════════════════════════════════════════════
    ESTADO DE CARREGAMENTO INICIAL
 ══════════════════════════════════════════════ */
 function _renderLoadingState() {
@@ -968,9 +959,76 @@ function _renderLoadingState() {
 }
 
 /* ══════════════════════════════════════════════
+   BINDINGS DE EVENTOS
+══════════════════════════════════════════════ */
+function _bindEvents() {
+  // Botão de voltar ao início
+  document.querySelector('.btn-back')
+    ?.addEventListener('click', () => playSound('click', 'atlas'));
+
+  // Reader
+  EL.readerClose?.addEventListener('click',   () => _fecharReader());
+  EL.readerOverlay?.addEventListener('click', () => _fecharReader());
+
+  // Disciplina nível 2
+  EL.disciplineBack?.addEventListener('click', () => {
+    playSound('click', 'atlas');
+    State.currentCategory = null;
+    _showScreen('home');
+    _renderBreadcrumb();
+  });
+
+  // Sidebar mobile
+  EL.readerSidebarToggle?.addEventListener('click', _toggleMobileSidebar);
+  EL.readerSidebarScrim?.addEventListener('click',  _closeMobileSidebar);
+
+  // Teclado: ESC fecha reader ou volta para home
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    if (State.readerOpen) { _fecharReader(); return; }
+    if (State.view === 'discipline') {
+      State.currentCategory = null;
+      _showScreen('home');
+      _renderBreadcrumb();
+    }
+  });
+
+  // Busca com debounce
+  let searchTimer;
+  EL.searchInput?.addEventListener('input', e => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => _handleSearch(e.target.value), 160);
+  });
+
+  // Atalho ⌘K / Ctrl+K
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      EL.searchInput?.focus();
+      EL.searchInput?.select();
+    }
+  });
+}
+
+/* ══════════════════════════════════════════════
    INICIALIZAÇÃO
 ══════════════════════════════════════════════ */
 async function init() {
+  // Áudio — mesmo padrão do Quiz
+  Sound.init();
+  installAudioRecovery({ Sound, audio });
+  await Sound.waitUntilReady();
+
+  // Logo — mesmo utilitário do Quiz
+  injetarLogo('#header-logo-wrap');
+
+  // Footer — mesmo utilitário do Quiz
+  preencherAnos(['footer-year']);
+
+  // IA (não bloqueia renderização)
+  _carregarIA();
+
+  // UI
   _renderBreadcrumb();
   _renderLoadingState();
   _bindEvents();
@@ -982,16 +1040,14 @@ async function init() {
   _renderCategoriesGrid(CATEGORIES);
 
   // Deep-links:
-  //   ?cat=python              → abre nível 2 (disciplina)
-  //   ?cat=python&chapter=2    → abre nível 3 (leitura) direto no capítulo
+  //   ?cat=python           → abre nível 2 (disciplina)
+  //   ?cat=python&chapter=2 → abre nível 3 (leitura) direto no capítulo
   const params     = new URLSearchParams(window.location.search);
   const catParam   = params.get('cat');
   const chapterRaw = params.get('chapter');
 
   if (catParam && CATEGORIES.some(c => c.id === catParam)) {
     if (chapterRaw !== null && !Number.isNaN(parseInt(chapterRaw, 10))) {
-      // Renderiza a disciplina como pano de fundo (para "voltar" funcionar
-      // corretamente) e então abre o Reader por cima, no capítulo pedido.
       const cat = CATEGORIES.find(c => c.id === catParam);
       State.currentCategory = catParam;
       _showScreen('discipline');

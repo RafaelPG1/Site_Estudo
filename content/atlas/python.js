@@ -1,12 +1,12 @@
 /* =============================================
-   CONTENT — content/knowledge/python.js
-   Documentação completa de Python para o Knowledge.
+   CONTENT — content/atlas/python.js
+   Documentação completa de Python para o atlas.
    Único arquivo da categoria — sem múltiplos documentos.
    ============================================= */
 
 'use strict';
 
-window.__nexusKnowledge = {
+window.__nexusatlas = {
   title: 'Python',
   desc:  'Documentação completa de Python: dos fundamentos básicos às estruturas de dados, controle de fluxo e funções.',
   time:  48,

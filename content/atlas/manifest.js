@@ -1,13 +1,13 @@
 /* =============================================
-   KNOWLEDGE BASE — manifest.js
-   Localização: content/knowledge/manifest.js
+   atlas BASE — manifest.js
+   Localização: content/atlas/manifest.js
 
    Lista apenas os IDs (nomes dos arquivos, sem extensão)
    das categorias disponíveis.
 
-   Ao criar um novo arquivo content/knowledge/linux.js,
+   Ao criar um novo arquivo content/atlas/linux.js,
    basta adicionar 'linux' aqui — nenhuma outra alteração
-   é necessária em knowledge.js ou knowledge.html.
+   é necessária em atlas.js ou atlas.html.
    ============================================= */
 
 window.__KB_MANIFEST__ = [
