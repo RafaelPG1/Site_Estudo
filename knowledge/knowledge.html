@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Knowledge — Nexus Study</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="knowledge.css" />
+</head>
+<body>
+
+  <!-- Canvas de fundo -->
+  <div class="bg-canvas" aria-hidden="true">
+    <div class="bg-grid"></div>
+    <div class="bg-glow bg-glow--1"></div>
+    <div class="bg-glow bg-glow--2"></div>
+    <div class="bg-glow bg-glow--3"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       HEADER
+  ═══════════════════════════════════════════ -->
+  <header class="header" id="app-header">
+    <div class="header__inner">
+
+      <div class="header__left">
+        <a href="../index.html" class="btn-back" id="btn-back" title="Voltar ao início">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+          </svg>
+          <span>Início</span>
+        </a>
+
+        <div class="header__divider"></div>
+
+        <div class="header__logo">
+          <div class="header__logo-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+            </svg>
+          </div>
+          <span class="header__logo-name">Knowledge</span>
+        </div>
+      </div>
+
+      <div class="header__center" id="header-breadcrumb">
+        <!-- JS preenche -->
+      </div>
+
+      <div class="header__right">
+        <div class="header__stats" id="header-stats">
+          <!-- JS preenche -->
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════
+       APP WRAPPER
+       Única tela: Home (Hero + Busca + Categorias).
+       Categorias abrem direto no Reader.
+  ═══════════════════════════════════════════ -->
+  <div class="app" id="app">
+
+    <div class="screen screen--home" id="screen-home">
+
+      <!-- Hero -->
+      <section class="hero" id="hero">
+        <div class="hero__inner">
+
+          <div class="hero__label">
+            <span class="hero__label-dot"></span>
+            <span>Base de Conhecimento</span>
+          </div>
+
+          <h1 class="hero__title">
+            <span class="hero__title-main">Knowledge</span>
+            <span class="hero__title-sub">Base</span>
+          </h1>
+
+          <p class="hero__desc">
+            Documentações, referências e tutoriais organizados.<br>
+            Tudo que você precisa, onde você precisa.
+          </p>
+
+          <!-- Search -->
+          <div class="search-wrap">
+            <div class="search-box" id="search-box" role="search">
+              <svg class="search-box__icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              </svg>
+              <input
+                class="search-box__input"
+                id="search-input"
+                type="search"
+                placeholder="Buscar categoria…"
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <kbd class="search-box__kbd">⌘K</kbd>
+            </div>
+          </div>
+
+          <!-- Stats -->
+          <div class="hero__stats" id="hero-stats">
+            <!-- JS preenche -->
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Grid de categorias -->
+      <section class="categories-section" id="categories-section">
+        <div class="section-header">
+          <h2 class="section-title">Disciplinas</h2>
+          <span class="section-count" id="categories-count"></span>
+        </div>
+        <div class="categories-grid" id="categories-grid">
+          <!-- JS preenche -->
+        </div>
+      </section>
+
+    </div><!-- /screen-home -->
+
+    <!-- ═══════════════════════════════════════════
+         NÍVEL 2 — DISCIPLINA
+         Mostra o "sumário" da disciplina: hero +
+         capítulos agrupados visualmente a partir
+         das mesmas `secoes` do arquivo de conteúdo.
+         Nenhum dado novo é criado — apenas exibido
+         de forma diferente.
+    ═══════════════════════════════════════════ -->
+    <div class="screen screen--discipline" id="screen-discipline" hidden>
+
+      <section class="discipline-hero" id="discipline-hero">
+        <button class="discipline-hero__back" id="discipline-back" type="button">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+          </svg>
+          <span>Biblioteca</span>
+        </button>
+
+        <div class="discipline-hero__row">
+          <div class="discipline-hero__icon" id="discipline-icon"></div>
+          <div class="discipline-hero__main">
+            <h1 class="discipline-hero__title" id="discipline-title"></h1>
+            <p class="discipline-hero__desc" id="discipline-desc"></p>
+            <div class="discipline-hero__meta" id="discipline-meta"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="discipline-body" id="discipline-body">
+        <!-- JS preenche: grupos de capítulos -->
+      </section>
+
+    </div><!-- /screen-discipline -->
+
+  </div><!-- /app -->
+
+  <!-- ═══════════════════════════════════════════
+       READER (Nível 3 — Leitura)
+       Aberto a partir de um capítulo específico.
+       Carrega content/knowledge/{categoria}.js
+  ═══════════════════════════════════════════ -->
+  <div class="reader" id="reader" role="dialog" aria-modal="true" aria-label="Leitor de conteúdo" hidden>
+
+    <!-- Overlay de fundo -->
+    <div class="reader__overlay" id="reader-overlay"></div>
+
+    <!-- Painel -->
+    <div class="reader__panel" id="reader-panel" tabindex="-1">
+
+      <!-- Barra superior -->
+      <header class="reader__bar">
+        <button class="reader__close" id="reader-close" aria-label="Fechar leitor">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+          </svg>
+        </button>
+
+        <div class="reader__bar-meta">
+          <nav class="reader__breadcrumb" id="reader-breadcrumb-inline"></nav>
+        </div>
+
+        <div class="reader__bar-actions">
+          <button class="reader__sidebar-toggle" id="reader-sidebar-toggle" aria-label="Mostrar índice" type="button">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="18" rx="1"/><path d="M14 3h7v18h-7z"/>
+            </svg>
+          </button>
+          <span class="reader__bar-time" id="reader-time"></span>
+        </div>
+      </header>
+
+      <!-- Barra de progresso -->
+      <div class="reader__progress">
+        <div class="reader__progress-fill" id="reader-progress-fill"></div>
+      </div>
+
+      <!-- Corpo: sidebar + conteúdo -->
+      <div class="reader__layout" id="reader-layout">
+
+        <!-- Sidebar fixa — navegação entre disciplinas e capítulos -->
+        <aside class="reader__sidebar" id="reader-sidebar">
+          <div class="reader__sidebar-section">
+            <span class="reader__sidebar-label">Disciplinas</span>
+            <div class="reader__sidebar-disciplines" id="sidebar-disciplines"></div>
+          </div>
+          <div class="reader__sidebar-divider"></div>
+          <div class="reader__sidebar-section">
+            <span class="reader__sidebar-label" id="sidebar-current-discipline">Capítulos</span>
+            <nav class="reader__sidebar-chapters" id="sidebar-chapters"></nav>
+          </div>
+        </aside>
+
+        <div class="reader__sidebar-scrim" id="reader-sidebar-scrim"></div>
+
+        <div class="reader__scroll" id="reader-scroll">
+          <div class="reader__content" id="reader-content">
+
+            <!-- Hero do reader -->
+            <div class="reader__hero" id="reader-hero">
+              <div class="reader__hero-category" id="reader-hero-category"></div>
+              <h1 class="reader__hero-title" id="reader-hero-title"></h1>
+              <p class="reader__hero-desc" id="reader-hero-desc"></p>
+              <div class="reader__hero-chips" id="reader-hero-chips"></div>
+            </div>
+
+            <!-- Divisor -->
+            <div class="reader__divider"></div>
+
+            <!-- Corpo — preenchido a partir de content/knowledge/{categoria}.js -->
+            <div class="reader__body" id="reader-body">
+              <!-- JS preenche -->
+            </div>
+
+            <!-- Navegação entre capítulos (anterior / próximo) -->
+            <nav class="reader__chapter-nav" id="reader-chapter-nav"></nav>
+
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /reader-panel -->
+  </div><!-- /reader -->
+
+  <script src="knowledge.js"></script>
+</body>
+</html>
