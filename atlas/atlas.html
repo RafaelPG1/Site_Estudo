@@ -9,49 +9,23 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
-  <!-- ═══════════════════════════════════════════
-       ESTILOS DE ÁUDIO (sound antes de audio-btns)
-       Mesmo padrão do Quiz — audio-api.js depende
-       destas classes para os controles de som.
-  ═══════════════════════════════════════════ -->
   <link rel="stylesheet" href="../shared/css/audio/sound.css" />
   <link rel="stylesheet" href="../shared/css/audio/audio-btns.css" />
-
-  <!-- ═══════════════════════════════════════════
-       ESTILOS DE IA (FAB) — mesmo CSS do Quiz/Index
-       NÃO ALTERAR: já está correto.
-  ═══════════════════════════════════════════ -->
   <link rel="stylesheet" href="../shared/css/ia/ia.css" />
 
-  <!-- ═══════════════════════════════════════════
-       ESTILOS DA PÁGINA
-       Cada tela do Knowledge possui seu próprio CSS,
-       isolado das demais (sem dependência cruzada).
-       Tokens, fundo, header e animações são duplicados
-       de propósito em cada arquivo — ver css/*.css.
-  ═══════════════════════════════════════════ -->
   <link rel="stylesheet" href="css/biblioteca.css" />
   <link rel="stylesheet" href="css/disciplina.css" />
   <link rel="stylesheet" href="css/leitura.css" />
 
-  <!-- ═══════════════════════════════════════════
-       PRELOAD — IA (core, sem o módulo de Resumo
-       acadêmico — o Atlas não usa resumo/search.js)
-  ═══════════════════════════════════════════ -->
   <link rel="modulepreload" href="../shared/js/ia/core/context.js">
   <link rel="modulepreload" href="../shared/js/ia/core/text-utils.js">
   <link rel="modulepreload" href="../shared/js/ia/core/history.js">
   <link rel="modulepreload" href="../shared/js/ia/core/loader.js">
   <link rel="modulepreload" href="../shared/js/ia/core/worker.js">
   <link rel="modulepreload" href="../shared/js/ia/core/ui.js">
-
 </head>
 <body>
 
-  <!--
-    fab.js: primeira instrução do <body>, mesmo padrão do quiz.html.
-    Injeta o botão flutuante antes de qualquer outro elemento ser pintado.
-  -->
   <script src="../shared/js/ia/core/fab.js"></script>
 
   <!-- Canvas de fundo -->
@@ -62,15 +36,74 @@
     <div class="bg-glow bg-glow--3"></div>
   </div>
 
-  <!-- ═══════════════════════════════════════════
-       HEADER
-       Mesma estrutura em 3 colunas do Quiz
-       (voltar | logo central | controles),
-       mantendo a identidade visual própria do Atlas.
-  ═══════════════════════════════════════════ -->
+  <!-- ══════════════════════════════════════════
+       SIDEBAR LATERAL — navegação geral do Knowledge
+       Ícones com tooltip. Sem itens de disciplina.
+  ══════════════════════════════════════════ -->
+  <aside class="kb-sidebar" id="kb-sidebar" aria-label="Navegação do Knowledge">
+    <nav class="kb-sidebar__nav">
+
+      <!-- Biblioteca (ativo) -->
+      <button class="kb-sidebar__item kb-sidebar__item--active" data-tip="Biblioteca" aria-label="Biblioteca">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+        <span class="kb-sidebar__tip">Biblioteca</span>
+      </button>
+
+      <!-- Favoritos -->
+      <button class="kb-sidebar__item" data-tip="Favoritos" aria-label="Favoritos">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+        </svg>
+        <span class="kb-sidebar__tip">Favoritos</span>
+      </button>
+
+      <!-- Histórico -->
+      <button class="kb-sidebar__item" data-tip="Histórico" aria-label="Histórico">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <span class="kb-sidebar__tip">Histórico</span>
+      </button>
+
+      <!-- Recursos -->
+      <button class="kb-sidebar__item" data-tip="Recursos" aria-label="Recursos">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+        </svg>
+        <span class="kb-sidebar__tip">Recursos</span>
+      </button>
+
+      <!-- Separador -->
+      <div class="kb-sidebar__sep" aria-hidden="true"></div>
+
+      <!-- Ferramentas -->
+      <button class="kb-sidebar__item" data-tip="Ferramentas" aria-label="Ferramentas">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+        </svg>
+        <span class="kb-sidebar__tip">Ferramentas</span>
+      </button>
+
+      <!-- Materiais -->
+      <button class="kb-sidebar__item" data-tip="Materiais" aria-label="Materiais extras">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+        </svg>
+        <span class="kb-sidebar__tip">Materiais</span>
+      </button>
+
+    </nav>
+  </aside>
+
+  <!-- ══════════════════════════════════════════
+       HEADER — 3 colunas: btn-back | logo | controles
+  ══════════════════════════════════════════ -->
   <header class="header" id="app-header">
     <div class="header__inner">
 
+      <!-- Coluna esquerda: botão voltar -->
       <a href="../index.html" class="btn-back" id="btn-back" title="Voltar ao início">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -79,141 +112,196 @@
         <span>Início</span>
       </a>
 
+      <!-- Coluna central: logo oficial do projeto -->
       <div class="header__brand">
-        <div class="header__logo">
-          <div class="header__logo-icon" aria-hidden="true">
-          </div>
-        </div>
         <div id="header-logo-wrap"></div>
       </div>
 
+      <!-- Coluna direita: controles (stats + áudio) -->
       <div class="header-controls" id="header-controls">
-        <div class="header__stats" id="header-stats">
-          <!-- JS preenche -->
-        </div>
+        <div class="header__stats" id="header-stats"></div>
       </div>
 
     </div>
   </header>
 
-  <!-- ═══════════════════════════════════════════
-       APP WRAPPER
-       Única tela: Home (Hero + Busca + Categorias).
-       Categorias abrem direto no Reader.
-  ═══════════════════════════════════════════ -->
-  <div class="app" id="app">
+  <!-- ══════════════════════════════════════════
+       LAYOUT PRINCIPAL (sidebar + conteúdo)
+  ══════════════════════════════════════════ -->
+  <div class="kb-layout">
 
-    <div class="screen screen--home" id="screen-home">
+    <!-- Espaçador da sidebar (ocupa a largura dela no fluxo) -->
+    <div class="kb-layout__sidebar-spacer" aria-hidden="true"></div>
 
-      <!-- Hero -->
-      <section class="hero" id="hero">
-        <div class="hero__inner">
+    <!-- Área de conteúdo principal -->
+    <div class="kb-layout__main">
 
-          <div class="hero__label">
-            <span class="hero__label-dot"></span>
-            <span>Base de Conhecimento</span>
-          </div>
+      <div class="app" id="app">
 
-          <h1 class="hero__title">
-            <span class="hero__title-main">atlas</span>
-            <span class="hero__title-sub">Base</span>
-          </h1>
+        <!-- ════════════════════════
+             TELA 1 — HOME / BIBLIOTECA
+        ════════════════════════ -->
+        <div class="screen screen--home" id="screen-home">
 
-          <p class="hero__desc">
-            Documentações, referências e tutoriais organizados.<br>
-            Tudo que você precisa, onde você precisa.
-          </p>
+          <!-- HERO -->
+          <section class="hero" id="hero">
+            <div class="hero__inner">
 
-          <!-- Search -->
-          <div class="search-wrap">
-            <div class="search-box" id="search-box" role="search">
-              <svg class="search-box__icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-              </svg>
-              <input
-                class="search-box__input"
-                id="search-input"
-                type="search"
-                placeholder="Buscar categoria…"
-                autocomplete="off"
-                spellcheck="false"
-              />
-              <kbd class="search-box__kbd">⌘K</kbd>
+              <!-- Bloco de texto limitado à esquerda -->
+              <div class="hero__text-block">
+
+              <!-- Badge eyebrow -->
+              <div class="hero__eyebrow">
+                <span class="hero__eyebrow-dot" aria-hidden="true"></span>
+                <span>Biblioteca</span>
+              </div>
+
+              <!-- Título principal -->
+              <h1 class="hero__title">
+                <span class="hero__title-main">Knowledge</span>
+              </h1>
+
+              <!-- Subtítulo -->
+              <p class="hero__desc">
+                Sua biblioteca de estudos organizada<br>
+                e otimizada para o aprendizado.
+              </p>
+
+              </div><!-- /hero__text-block -->
+
+              <!-- SEARCH BAR — elemento principal da página -->
+              <div class="search-wrap">
+                <div class="search-box" id="search-box" role="search">
+                  <svg class="search-box__icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                  </svg>
+                  <input
+                    class="search-box__input"
+                    id="search-input"
+                    type="search"
+                    placeholder="Buscar disciplina, tópico ou conteúdo…"
+                    autocomplete="off"
+                    spellcheck="false"
+                  />
+                  <div class="search-box__kbd-wrap">
+                    <kbd class="search-box__kbd">Ctrl</kbd>
+                    <kbd class="search-box__kbd">K</kbd>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Stats sumários -->
+              <div class="hero__stats" id="hero-stats"></div>
+
             </div>
-          </div>
 
-          <!-- Stats -->
-          <div class="hero__stats" id="hero-stats">
-            <!-- JS preenche -->
-          </div>
+            <!-- Ornamento decorativo — livro neon (canto direito) -->
+            <div class="hero__ornament" aria-hidden="true">
+              <svg class="hero__book" viewBox="0 0 220 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Livro aberto — linhas luminosas -->
+                <path d="M110 160 C110 160 30 140 20 60 L110 30 L200 60 C190 140 110 160 110 160Z"
+                      stroke="rgba(99,102,241,0.35)" stroke-width="1.5" fill="none"/>
+                <path d="M110 30 L110 160" stroke="rgba(99,102,241,0.5)" stroke-width="1.5"/>
+                <!-- Página esquerda — linhas de texto simuladas -->
+                <line x1="40" y1="75" x2="100" y2="65" stroke="rgba(99,102,241,0.18)" stroke-width="1"/>
+                <line x1="38" y1="87" x2="100" y2="77" stroke="rgba(99,102,241,0.14)" stroke-width="1"/>
+                <line x1="36" y1="99" x2="100" y2="89" stroke="rgba(99,102,241,0.10)" stroke-width="1"/>
+                <line x1="35" y1="111" x2="100" y2="101" stroke="rgba(99,102,241,0.07)" stroke-width="1"/>
+                <!-- Página direita — linhas de texto simuladas -->
+                <line x1="120" y1="65" x2="180" y2="75" stroke="rgba(99,102,241,0.18)" stroke-width="1"/>
+                <line x1="120" y1="77" x2="182" y2="87" stroke="rgba(99,102,241,0.14)" stroke-width="1"/>
+                <line x1="120" y1="89" x2="184" y2="99" stroke="rgba(99,102,241,0.10)" stroke-width="1"/>
+                <line x1="120" y1="101" x2="185" y2="111" stroke="rgba(99,102,241,0.07)" stroke-width="1"/>
+                <!-- Glow central — lombada do livro -->
+                <line x1="110" y1="28" x2="110" y2="162"
+                      stroke="rgba(99,102,241,0.9)" stroke-width="2.5"
+                      filter="url(#glow-spine)"/>
+                <!-- Pontos de luz acima -->
+                <circle cx="90" cy="18" r="1.5" fill="rgba(99,102,241,0.6)"/>
+                <circle cx="110" cy="12" r="2" fill="rgba(99,102,241,0.8)"/>
+                <circle cx="130" cy="18" r="1.5" fill="rgba(99,102,241,0.6)"/>
+                <circle cx="72" cy="24" r="1" fill="rgba(99,102,241,0.3)"/>
+                <circle cx="148" cy="24" r="1" fill="rgba(99,102,241,0.3)"/>
+                <!-- Estrelinhas dispersas -->
+                <circle cx="55" cy="45" r="1" fill="rgba(34,211,238,0.4)"/>
+                <circle cx="165" cy="40" r="1.2" fill="rgba(34,211,238,0.5)"/>
+                <circle cx="195" cy="70" r="0.8" fill="rgba(99,102,241,0.4)"/>
+                <defs>
+                  <filter id="glow-spine" x="-200%" y="-200%" width="500%" height="500%">
+                    <feGaussianBlur stdDeviation="4" result="blur"/>
+                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                  </filter>
+                </defs>
+              </svg>
+            </div>
 
-        </div>
-      </section>
+          </section>
 
-      <!-- Grid de categorias -->
-      <section class="categories-section" id="categories-section">
-        <div class="section-header">
-          <h2 class="section-title">Disciplinas</h2>
-          <span class="section-count" id="categories-count"></span>
-        </div>
-        <div class="categories-grid" id="categories-grid">
-          <!-- JS preenche -->
-        </div>
-      </section>
+          <!-- GRID DE DISCIPLINAS -->
+          <section class="categories-section" id="categories-section">
+            <div class="section-header">
+              <div class="section-header__left">
+                <!-- Ícone de camadas -->
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--indigo);opacity:0.8">
+                  <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                  <polyline points="2 17 12 22 22 17"/>
+                  <polyline points="2 12 12 17 22 12"/>
+                </svg>
+                <div>
+                  <h2 class="section-title">Disciplinas</h2>
+                  <p class="section-subtitle">Organize seus estudos por área</p>
+                </div>
+              </div>
+              <span class="section-count" id="categories-count"></span>
+            </div>
 
-    </div><!-- /screen-home -->
+            <div class="categories-grid" id="categories-grid">
+              <!-- JS preenche -->
+            </div>
+          </section>
 
-    <!-- ═══════════════════════════════════════════
-         NÍVEL 2 — DISCIPLINA
-         Mostra o "sumário" da disciplina: hero +
-         capítulos agrupados visualmente a partir
-         das mesmas `secoes` do arquivo de conteúdo.
-         Nenhum dado novo é criado — apenas exibido
-         de forma diferente.
-    ═══════════════════════════════════════════ -->
-    <div class="screen screen--discipline" id="screen-discipline" hidden>
+        </div><!-- /screen-home -->
 
-      <section class="discipline-hero" id="discipline-hero">
-        <button class="discipline-hero__back" id="discipline-back" type="button">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
-          </svg>
-          <span>Biblioteca</span>
-        </button>
+        <!-- ════════════════════════
+             TELA 2 — DISCIPLINA
+        ════════════════════════ -->
+        <div class="screen screen--discipline" id="screen-discipline" hidden>
 
-        <div class="discipline-hero__row">
-          <div class="discipline-hero__icon" id="discipline-icon"></div>
-          <div class="discipline-hero__main">
-            <h1 class="discipline-hero__title" id="discipline-title"></h1>
-            <p class="discipline-hero__desc" id="discipline-desc"></p>
-            <div class="discipline-hero__meta" id="discipline-meta"></div>
-          </div>
-        </div>
-      </section>
+          <section class="discipline-hero" id="discipline-hero">
+            <button class="discipline-hero__back" id="discipline-back" type="button">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+              </svg>
+              <span>Biblioteca</span>
+            </button>
 
-      <section class="discipline-body" id="discipline-body">
-        <!-- JS preenche: grupos de capítulos -->
-      </section>
+            <div class="discipline-hero__row">
+              <div class="discipline-hero__icon" id="discipline-icon"></div>
+              <div class="discipline-hero__main">
+                <h1 class="discipline-hero__title" id="discipline-title"></h1>
+                <p class="discipline-hero__desc" id="discipline-desc"></p>
+                <div class="discipline-hero__meta" id="discipline-meta"></div>
+              </div>
+            </div>
+          </section>
 
-    </div><!-- /screen-discipline -->
+          <section class="discipline-body" id="discipline-body"></section>
 
-  </div><!-- /app -->
+        </div><!-- /screen-discipline -->
 
-  <!-- ═══════════════════════════════════════════
+      </div><!-- /app -->
+
+    </div><!-- /kb-layout__main -->
+  </div><!-- /kb-layout -->
+
+  <!-- ══════════════════════════════════════════
        READER (Nível 3 — Leitura)
-       Aberto a partir de um capítulo específico.
-       Carrega content/atlas/{categoria}.js
-  ═══════════════════════════════════════════ -->
+  ══════════════════════════════════════════ -->
   <div class="reader" id="reader" role="dialog" aria-modal="true" aria-label="Leitor de conteúdo" hidden>
-
-    <!-- Overlay de fundo -->
     <div class="reader__overlay" id="reader-overlay"></div>
-
-    <!-- Painel -->
     <div class="reader__panel" id="reader-panel" tabindex="-1">
 
-      <!-- Barra superior -->
       <header class="reader__bar">
         <button class="reader__close" id="reader-close" aria-label="Fechar leitor">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
@@ -221,11 +309,9 @@
             <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
           </svg>
         </button>
-
         <div class="reader__bar-meta">
           <nav class="reader__breadcrumb" id="reader-breadcrumb-inline"></nav>
         </div>
-
         <div class="reader__bar-actions">
           <button class="reader__sidebar-toggle" id="reader-sidebar-toggle" aria-label="Mostrar índice" type="button">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -236,15 +322,11 @@
         </div>
       </header>
 
-      <!-- Barra de progresso -->
       <div class="reader__progress">
         <div class="reader__progress-fill" id="reader-progress-fill"></div>
       </div>
 
-      <!-- Corpo: sidebar + conteúdo -->
       <div class="reader__layout" id="reader-layout">
-
-        <!-- Sidebar fixa — navegação entre disciplinas e capítulos -->
         <aside class="reader__sidebar" id="reader-sidebar">
           <div class="reader__sidebar-section">
             <span class="reader__sidebar-label">Disciplinas</span>
@@ -256,46 +338,32 @@
             <nav class="reader__sidebar-chapters" id="sidebar-chapters"></nav>
           </div>
         </aside>
-
         <div class="reader__sidebar-scrim" id="reader-sidebar-scrim"></div>
-
         <div class="reader__scroll" id="reader-scroll">
           <div class="reader__content" id="reader-content">
-
-            <!-- Hero do reader -->
             <div class="reader__hero" id="reader-hero">
               <div class="reader__hero-category" id="reader-hero-category"></div>
               <h1 class="reader__hero-title" id="reader-hero-title"></h1>
               <p class="reader__hero-desc" id="reader-hero-desc"></p>
               <div class="reader__hero-chips" id="reader-hero-chips"></div>
             </div>
-
-            <!-- Divisor -->
             <div class="reader__divider"></div>
-
-            <!-- Corpo — preenchido a partir de content/atlas/{categoria}.js -->
-            <div class="reader__body" id="reader-body">
-              <!-- JS preenche -->
-            </div>
-
-            <!-- Navegação entre capítulos (anterior / próximo) -->
+            <div class="reader__body" id="reader-body"></div>
             <nav class="reader__chapter-nav" id="reader-chapter-nav"></nav>
-
           </div>
         </div>
       </div>
 
-    </div><!-- /reader-panel -->
-  </div><!-- /reader -->
+    </div>
+  </div>
 
-  <!-- ══ FOOTER ══ -->
+  <!-- FOOTER -->
   <footer class="site-footer">
     <span>© <span id="footer-year"></span> Nexus Study</span>
     <span class="site-footer__sep" aria-hidden="true">·</span>
     <span>Base de conhecimento do projeto</span>
   </footer>
 
-  <!-- ══ SCRIPTS ══ -->
   <script src="atlas.js" type="module"></script>
   <script src="../shared/js/utils/quick-access.js"></script>
 </body>

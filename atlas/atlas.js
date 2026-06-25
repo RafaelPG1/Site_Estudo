@@ -393,8 +393,13 @@ function _renderBreadcrumb() {
 /* ══════════════════════════════════════════════
    NÍVEL 1 — GRID DE DISCIPLINAS
 ══════════════════════════════════════════════ */
+// PATCH — _renderCategoriesGrid para o redesign v2
+// Cole este bloco no atlas.js substituindo a função _renderCategoriesGrid existente.
+// Nenhuma outra parte da lógica foi alterada.
+
 function _renderCategoriesGrid(cats) {
   if (!EL.catGrid) return;
+
   if (!cats.length) {
     EL.catGrid.innerHTML = `
       <div class="empty-state">
@@ -415,16 +420,43 @@ function _renderCategoriesGrid(cats) {
       aria-label="Abrir disciplina ${_esc(cat.name)}"
     >
       <div class="cat-card__glow"></div>
-      <span class="cat-card__icon" aria-hidden="true">${_renderIcon(cat.icon)}</span>
-      <div class="cat-card__name">${_esc(cat.name)}</div>
-      <div class="cat-card__desc">${_esc(cat.desc)}</div>
-      <div class="cat-card__footer">
-        <span class="cat-card__count">Documentação completa</span>
+
+      <!-- Corpo: ícone + texto + seta -->
+      <div class="cat-card__body-wrap">
+        <span class="cat-card__icon" aria-hidden="true">${_renderIcon(cat.icon)}</span>
+
+        <div class="cat-card__text">
+          <div class="cat-card__name">${_esc(cat.name)}</div>
+          <div class="cat-card__desc">${_esc(cat.desc)}</div>
+        </div>
+
         <span class="cat-card__arrow" aria-hidden="true">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
             <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
           </svg>
+        </span>
+      </div>
+
+      <!-- Footer: contadores (capítulos · blocos estimados) -->
+      <div class="cat-card__footer">
+        <span class="cat-card__stat">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          </svg>
+          <!-- Capítulos preenchidos dinamicamente -->
+          <span data-stat-chapters="${_esc(cat.id)}">— capítulos</span>
+        </span>
+
+        <span class="cat-card__stat-sep" aria-hidden="true"></span>
+
+        <span class="cat-card__stat">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+            <line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/>
+            <line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+          </svg>
+          Documentação completa
         </span>
       </div>
     </article>
@@ -440,6 +472,16 @@ function _renderCategoriesGrid(cats) {
     card.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _abrirDisciplina(id); }
     });
+  });
+
+  // Preenche contagem de capítulos de forma assíncrona após carregar o conteúdo
+  cats.forEach(async cat => {
+    try {
+      const data   = await _getCategoryContent(cat.id);
+      const nCaps  = Array.isArray(data?.secoes) ? data.secoes.length : 0;
+      const el     = EL.catGrid?.querySelector(`[data-stat-chapters="${cat.id}"]`);
+      if (el) el.textContent = `${nCaps} ${nCaps === 1 ? 'capítulo' : 'capítulos'}`;
+    } catch { /* silencioso */ }
   });
 }
 
