@@ -1,20 +1,15 @@
 /* =============================================
    CONTENT — content/atlas/python.js
-   Documentação completa de Python para o atlas.
-   Único arquivo da categoria — sem múltiplos documentos.
+   Localização: content/atlas/python.js
+
+   Contém APENAS o conteúdo da disciplina Python.
+   Todos os metadados (title, desc, type, time,
+   icon, theme) foram movidos para atlas/manifest.js.
    ============================================= */
 
 'use strict';
 
 window.__nexusatlas = {
-  title: 'Python',
-  desc:  'Documentação completa de Python: dos fundamentos básicos às estruturas de dados, controle de fluxo e funções.',
-  time:  48,
-  type:  'Documentação',
-  icon: `<svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
-    <path fill="#3776AB" d="M63.6 2.1c-31 0-29 13.4-29 13.4v14h29.5v4.2H22.5S2 31.4 2 63.4s17.8 30.4 17.8 30.4h10.6V79.4s-.6-17.8 17.5-17.8h28.5s16.9.3 16.9-16.4V18.8S95.3 2.1 63.6 2.1z"/>
-    <path fill="#FFD43B" d="M64.4 125.9c31 0 29-13.4 29-13.4v-14H63.9v-4.2h41.6S126 96.6 126 64.6s-17.8-30.4-17.8-30.4H97.6v14.4s.6 17.8-17.5 17.8H51.6s-16.9-.3-16.9 16.4v27.4s-2.6 16.7 29.7 16.7z"/>
-  </svg>`,
 
   secoes: [
 

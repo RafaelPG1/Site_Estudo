@@ -8,49 +8,46 @@
      Nível 3 — Leitura      (reader, com sidebar fixa)
 
    Descoberta de categorias:
-     1. Carrega content/atlas/manifest.js
-        (expõe window.__KB_MANIFEST__ = ['python','java',...])
-     2. Para cada id no manifesto, injeta
-        content/atlas/{id}.js como <script>
-     3. Lê window.__nexusatlas após o carregamento
-        para extrair title, icon, desc, time, type, secoes
-     4. Monta os cards dinamicamente — sem lista fixa no JS
+     1. Carrega atlas/manifest.js
+        (expõe window.__atlasManifest = [ { id, title, desc,
+         type, time, theme, icon, content }, ... ])
+     2. Para cada entrada do manifest, o atlas.js monta os
+        cards usando APENAS os metadados do manifest.
+     3. Quando o usuário abre uma disciplina, carrega o
+        arquivo indicado em disciplina.content via <script>.
+     4. Une os metadados do manifest com o conteúdo carregado
+        (window.__nexusatlas.secoes), mantendo o comportamento
+        visual e funcional atual.
 
-   Para adicionar uma nova categoria:
-     • Crie content/atlas/linux.js com window.__nexusatlas = { ... }
-     • Adicione 'linux' em content/atlas/manifest.js
+   Para adicionar uma nova disciplina:
+     • Crie content/atlas/linux.js com window.__nexusatlas = { secoes: [...] }
+     • Adicione a entrada completa (com metadados) em atlas/manifest.js
      • Pronto. Nenhuma outra mudança necessária aqui.
 
-   Infraestrutura compartilhada utilizada
-   (mesmo padrão do Quiz — não duplica nada):
+   Sistema de temas:
+     • O manifest define theme: "indigo" (identificador semântico)
+     • O atlas.js aplica data-theme="indigo" nos elementos relevantes
+     • Toda a aparência é responsabilidade exclusiva do CSS:
+         [data-theme="indigo"] { ... }
+         [data-theme="emerald"] { ... }
+
+   Infraestrutura compartilhada utilizada:
      • shared/js/utils/logo.js   → injetarLogo
      • shared/js/utils/dom.js    → preencherAnos
      • shared/js/audio/audio-api.js → Sound, audio, installAudioRecovery, playSound
-     • shared/js/ia/core/fab.js  → injetado via HTML (mesmo padrão do Quiz)
+     • shared/js/ia/core/fab.js  → injetado via HTML
      • shared/js/utils/quick-access.js → injetado via HTML
-
-   NÃO utilizado (exclusivo do Quiz / sistema acadêmico):
-     • global.js (getSemestreAtual, getDisciplinasDeSemestre, etc.)
-     • shared/js/utils/url.js (sincronizarSemNaURL)
-     • shared/js/utils/dom.js → criarSemestreSelect, preencherAnos (só preencherAnos é usado)
-     • shared/js/themes/cores.js (DISC_CORES — cores por disciplina acadêmica)
-     • shared/css/themes/semestre-picker.css
-     • shared/js/ia/resumo/* (IA do sistema de Resumos)
    ═══════════════════════════════════════════════════════════ */
 
 /* ══════════════════════════════════════════════
    IMPORTS — infraestrutura compartilhada
-   Apenas o que faz sentido para o Atlas.
 ══════════════════════════════════════════════ */
 import { injetarLogo }                                      from '../shared/js/utils/logo.js';
 import { preencherAnos }                                    from '../shared/js/utils/dom.js';
 import { Sound, audio, installAudioRecovery, playSound }   from '../shared/js/audio/audio-api.js';
 
 /* ══════════════════════════════════════════════
-   IA — contexto neutro (sem vínculo com Resumos)
-   Mesmo padrão de carregamento do Quiz, mas sem
-   o módulo resumo/search.js e resumo/assistant.js.
-   O FAB já foi injetado via fab.js no HTML.
+   IA — contexto neutro
 ══════════════════════════════════════════════ */
 window.__NEXUS_CONTEXT__ = { tipos: ['atlas'] };
 
@@ -67,7 +64,6 @@ function _loadScript(src) {
 
 function _carregarIA() {
   const BASE = '../shared/js/ia/';
-  // Apenas o core da IA — sem o sistema de Resumos acadêmicos
   const deps = [
     BASE + 'core/context.js',
     BASE + 'core/text-utils.js',
@@ -81,27 +77,24 @@ function _carregarIA() {
 }
 
 /* ══════════════════════════════════════════════
-   CAMINHO BASE DE CONTEÚDO
-══════════════════════════════════════════════ */
-const KB_CONTENT_BASE = window.__KB_CONTENT_BASE__ ?? '../../content/atlas/';
-
-/* ══════════════════════════════════════════════
    ESTADO GLOBAL DE CATEGORIAS
+   Cada entrada espelha exatamente o formato do manifest:
+   { id, title, desc, type, time, theme, icon, content }
+   O campo `name` é um alias de `title` para retrocompatibilidade
+   com as funções internas que usavam cat.name.
 ══════════════════════════════════════════════ */
 let CATEGORIES = [];
 
 /* ══════════════════════════════════════════════
-   MAPEAMENTO MANUAL DE GRUPOS VISUAIS
+   MAPEAMENTO DE GRUPOS VISUAIS DE CAPÍTULOS
 
    Define como as seções (secoes[i]) de cada disciplina
-   são agrupadas visualmente em "Fundamentos / Intermediário /
-   Avançado" etc. Puramente visual — não altera nenhum arquivo
-   de conteúdo.
+   são agrupadas em "Fundamentos / Intermediário / Avançado"
+   etc. Puramente visual — não altera nenhum arquivo de conteúdo.
 
    Formato: { [categoryId]: [ { titulo, range: [ini, fim] }, ... ] }
    range é 0-based, inclusivo nos dois lados.
-
-   Categorias sem mapeamento caem automaticamente num único grupo "Conteúdo".
+   Categorias sem mapeamento caem num único grupo "Conteúdo".
 ══════════════════════════════════════════════ */
 const CHAPTER_GROUPS_MAP = {
   // Exemplo:
@@ -217,9 +210,23 @@ function _renderIcon(icon, fallback = '📄') {
 }
 
 /* ══════════════════════════════════════════════
-   TOAST — mesmo padrão do Quiz
-   Reutiliza a classe .nexus-toast já existente
-   nos estilos globais do projeto.
+   TEMA — aplica data-theme a partir do manifest
+   O CSS é o único responsável pela aparência:
+     [data-theme="indigo"] { ... }
+     [data-theme="emerald"] { ... }
+══════════════════════════════════════════════ */
+function _themeFor(categoryId) {
+  const cat = CATEGORIES.find(c => c.id === categoryId);
+  return cat?.theme ?? 'indigo';
+}
+
+function _applyTheme(el, categoryId) {
+  if (!el) return;
+  el.setAttribute('data-theme', _themeFor(categoryId));
+}
+
+/* ══════════════════════════════════════════════
+   TOAST
 ══════════════════════════════════════════════ */
 function _toast(msg) {
   const OFFSET = 12, DURATION = 2800;
@@ -241,7 +248,7 @@ function _toast(msg) {
 }
 
 /* ══════════════════════════════════════════════
-   DESCOBERTA AUTOMÁTICA DE CATEGORIAS
+   INJEÇÃO DE SCRIPTS
 ══════════════════════════════════════════════ */
 function _injectScript(src, dataAttr) {
   return new Promise((resolve, reject) => {
@@ -257,96 +264,97 @@ function _injectScript(src, dataAttr) {
   });
 }
 
+/* ══════════════════════════════════════════════
+   CARREGAMENTO DO MANIFEST
+   O manifest.js agora fica em atlas/manifest.js
+   (mesma pasta que atlas.js) e expõe:
+     window.__atlasManifest = [ { id, title, desc,
+       type, time, theme, icon, content }, ... ]
+   Cada entrada contém todos os metadados da disciplina.
+   O caminho do arquivo de conteúdo vem de disciplina.content.
+══════════════════════════════════════════════ */
 async function _loadManifest() {
   try {
-    await _injectScript(`${KB_CONTENT_BASE}manifest.js`, 'manifest');
-    const ids = window.__KB_MANIFEST__;
-    if (!Array.isArray(ids)) {
-      console.warn('[atlas] manifest.js não expõe window.__KB_MANIFEST__ como array.');
+    await _injectScript('manifest.js', 'manifest');
+    const manifest = window.__atlasManifest;
+    if (!Array.isArray(manifest)) {
+      console.warn('[atlas] manifest.js não expõe window.__atlasManifest como array.');
       return [];
     }
-    return ids;
+    return manifest;
   } catch (err) {
     console.error('[atlas] Não foi possível carregar manifest.js:', err);
     return [];
   }
 }
 
-async function _loadCategoryMeta(id) {
-  delete window.__nexusatlas;
-
-  try {
-    await _injectScript(`${KB_CONTENT_BASE}${id}.js`, `cat-${id}`);
-  } catch {
-    console.warn(`[atlas] Arquivo não encontrado: ${KB_CONTENT_BASE}${id}.js — categoria '${id}' ignorada.`);
-    return null;
-  }
-
-  const data = window.__nexusatlas;
-  if (!data || typeof data !== 'object') {
-    console.warn(`[atlas] ${id}.js não expõe window.__nexusatlas — ignorado.`);
-    return null;
-  }
-
-  return {
-    id,
-    name: data.title ?? id,
-    icon: data.icon  ?? '📄',
-    desc: data.desc  ?? '',
-  };
-}
-
+/* ══════════════════════════════════════════════
+   CARREGAMENTO DE TODAS AS CATEGORIAS
+   Não é mais necessário carregar cada arquivo de conteúdo
+   para obter metadados — eles já vêm todos do manifest.
+   O campo `name` é um alias de `title` para retrocompatibilidade.
+══════════════════════════════════════════════ */
 async function _loadAllCategories() {
-  const ids = await _loadManifest();
-  if (!ids.length) return;
+  const manifest = await _loadManifest();
+  if (!manifest.length) return;
 
-  const results = await Promise.all(ids.map(_loadCategoryMeta));
-  CATEGORIES = results.filter(Boolean);
-}
-
-/* Índice cíclico (0–5) por posição da categoria — usado apenas
-   para o CSS resolver a cor via [data-color-index]. O app nunca
-   decide qual cor é; só informa a posição estrutural. */
-function _colorIndexFor(categoryId) {
-  const i = CATEGORIES.findIndex(c => c.id === categoryId);
-  return i < 0 ? 0 : i % 6;
+  CATEGORIES = manifest
+    .filter(entry => entry && entry.id && entry.content)
+    .map(entry => ({
+      id:      entry.id,
+      name:    entry.title ?? entry.id,   // alias retrocompat
+      title:   entry.title ?? entry.id,
+      desc:    entry.desc  ?? '',
+      type:    entry.type  ?? 'Documentação',
+      time:    entry.time  ?? 0,
+      theme:   entry.theme ?? 'indigo',
+      icon:    entry.icon  ?? '📄',
+      content: entry.content,
+    }));
 }
 
 /* ══════════════════════════════════════════════
    CARREGAMENTO DE CONTEÚDO (com cache em memória)
+   Usa disciplina.content (caminho do manifest) para
+   localizar o arquivo — nunca monta o caminho a partir do id.
+   Une os metadados do manifest com os secoes do arquivo.
 ══════════════════════════════════════════════ */
-async function _loadCategory(categoryId) {
-  const alreadyInjected = document.querySelector(`script[data-kb="cat-${categoryId}"]`);
+async function _loadCategoryContent(cat) {
+  const src      = cat.content;
+  const dataAttr = `cat-${cat.id}`;
 
-  if (!alreadyInjected) {
-    delete window.__nexusatlas;
-    try {
-      await _injectScript(`${KB_CONTENT_BASE}${categoryId}.js`, `cat-${categoryId}`);
-      if (window.__nexusatlas) return window.__nexusatlas;
-    } catch (err) {
-      console.warn(`[atlas] Falha ao carregar conteúdo de ${categoryId}:`, err);
-    }
-  } else {
-    alreadyInjected.remove();
-    delete window.__nexusatlas;
-    try {
-      await _injectScript(`${KB_CONTENT_BASE}${categoryId}.js`, `cat-${categoryId}`);
-      if (window.__nexusatlas) return window.__nexusatlas;
-    } catch (err) {
-      console.warn(`[atlas] Falha ao carregar conteúdo de ${categoryId}:`, err);
-    }
+  // Remove script anterior para forçar re-leitura se necessário
+  const existing = document.querySelector(`script[data-kb="${dataAttr}"]`);
+  if (existing) {
+    existing.remove();
   }
 
-  const cat = CATEGORIES.find(c => c.id === categoryId);
+  delete window.__nexusatlas;
+
+  try {
+    await _injectScript(src, dataAttr);
+  } catch (err) {
+    console.warn(`[atlas] Falha ao carregar conteúdo de ${cat.id} (${src}):`, err);
+  }
+
+  const raw = window.__nexusatlas;
+
+  // Une metadados do manifest com o conteúdo do arquivo.
+  // Os metadados do manifest têm precedência total;
+  // do arquivo aproveitamos apenas secoes.
   return {
-    title:  cat?.name ?? categoryId,
-    icon:   cat?.icon ?? '📄',
-    desc:   cat?.desc ?? '',
-    time:   0,
-    type:   'Documentação',
-    secoes: [{
+    title:  cat.title,
+    desc:   cat.desc,
+    type:   cat.type,
+    time:   cat.time,
+    icon:   cat.icon,
+    theme:  cat.theme,
+    secoes: Array.isArray(raw?.secoes) ? raw.secoes : [{
       titulo: 'Em preparação',
-      blocos: [{ tipo: 'texto', texto: `O arquivo content/atlas/${categoryId}.js ainda não foi criado ou não expõe window.__nexusatlas.` }],
+      blocos: [{
+        tipo:  'texto',
+        texto: `O arquivo ${src} ainda não foi criado ou não expõe window.__nexusatlas com o campo secoes.`,
+      }],
     }],
   };
 }
@@ -355,7 +363,9 @@ const _contentCache = new Map();
 
 async function _getCategoryContent(categoryId) {
   if (_contentCache.has(categoryId)) return _contentCache.get(categoryId);
-  const data = await _loadCategory(categoryId);
+  const cat  = CATEGORIES.find(c => c.id === categoryId);
+  if (!cat) return null;
+  const data = await _loadCategoryContent(cat);
   _contentCache.set(categoryId, data);
   return data;
 }
@@ -375,7 +385,6 @@ function _renderStats() {
       </div>`;
   }
 
-  // Header stats — mesmo estilo do Quiz (texto compacto no canto direito)
   if (EL.headerStats) {
     EL.headerStats.textContent = `${nCats} disciplina${nCats !== 1 ? 's' : ''}`;
   }
@@ -386,10 +395,7 @@ function _renderStats() {
 }
 
 /* ══════════════════════════════════════════════
-   HEADER BREADCRUMB
-   Mantido apenas para compatibilidade interna —
-   o centro do header agora é a logo, não o breadcrumb.
-   _renderBreadcrumb() é no-op para o header principal.
+   HEADER BREADCRUMB (mantido por retrocompatibilidade)
 ══════════════════════════════════════════════ */
 function _renderBreadcrumb() {
   // O header usa a logo fixa no centro (sem breadcrumb de texto).
@@ -399,10 +405,6 @@ function _renderBreadcrumb() {
 /* ══════════════════════════════════════════════
    NÍVEL 1 — GRID DE DISCIPLINAS
 ══════════════════════════════════════════════ */
-// PATCH — _renderCategoriesGrid para o redesign v2
-// Cole este bloco no atlas.js substituindo a função _renderCategoriesGrid existente.
-// Nenhuma outra parte da lógica foi alterada.
-
 function _renderCategoriesGrid(cats) {
   if (!EL.catGrid) return;
 
@@ -420,6 +422,7 @@ function _renderCategoriesGrid(cats) {
     <article
       class="library-cat-card"
       data-cat-id="${_esc(cat.id)}"
+      data-theme="${_esc(cat.theme)}"
       tabindex="0"
       role="button"
       aria-label="Abrir disciplina ${_esc(cat.name)}"
@@ -443,13 +446,12 @@ function _renderCategoriesGrid(cats) {
         </span>
       </div>
 
-      <!-- Footer: contadores (capítulos · blocos estimados) -->
+      <!-- Footer: contadores (capítulos · tipo) -->
       <div class="library-cat-card__footer">
         <span class="library-cat-card__stat">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
           </svg>
-          <!-- Capítulos preenchidos dinamicamente -->
           <span data-stat-chapters="${_esc(cat.id)}">— capítulos</span>
         </span>
 
@@ -461,7 +463,7 @@ function _renderCategoriesGrid(cats) {
             <line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/>
             <line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
           </svg>
-          Documentação completa
+          ${_esc(cat.type ?? 'Documentação')}
         </span>
       </div>
     </article>
@@ -479,12 +481,12 @@ function _renderCategoriesGrid(cats) {
     });
   });
 
-  // Preenche contagem de capítulos de forma assíncrona após carregar o conteúdo
+  // Preenche contagem de capítulos de forma assíncrona
   cats.forEach(async cat => {
     try {
-      const data   = await _getCategoryContent(cat.id);
-      const nCaps  = Array.isArray(data?.secoes) ? data.secoes.length : 0;
-      const el     = EL.catGrid?.querySelector(`[data-stat-chapters="${cat.id}"]`);
+      const data  = await _getCategoryContent(cat.id);
+      const nCaps = Array.isArray(data?.secoes) ? data.secoes.length : 0;
+      const el    = EL.catGrid?.querySelector(`[data-stat-chapters="${cat.id}"]`);
       if (el) el.textContent = `${nCaps} ${nCaps === 1 ? 'capítulo' : 'capítulos'}`;
     } catch { /* silencioso */ }
   });
@@ -522,8 +524,10 @@ async function _abrirDisciplina(categoryId) {
 }
 
 function _renderDisciplineLoading(cat) {
-  if (EL.disciplineIcon)  EL.disciplineIcon.innerHTML = _renderIcon(cat.icon);
-  if (EL.disciplineIcon)  EL.disciplineIcon.setAttribute('data-color-index', _colorIndexFor(cat.id));
+  if (EL.disciplineIcon) {
+    EL.disciplineIcon.innerHTML = _renderIcon(cat.icon);
+    _applyTheme(EL.disciplineIcon, cat.id);
+  }
   if (EL.disciplineTitle) EL.disciplineTitle.textContent = cat.name;
   if (EL.disciplineDesc)  EL.disciplineDesc.textContent  = cat.desc;
   if (EL.disciplineMeta)  EL.disciplineMeta.innerHTML    = '';
@@ -538,7 +542,9 @@ function _renderDisciplineLoading(cat) {
 function _renderDisciplineScreen(cat, data) {
   const secoes = Array.isArray(data?.secoes) ? data.secoes : [];
 
-  if (EL.disciplineIcon)  EL.disciplineIcon.setAttribute('data-color-index', _colorIndexFor(cat.id));
+  if (EL.disciplineIcon) {
+    _applyTheme(EL.disciplineIcon, cat.id);
+  }
   if (EL.disciplineTitle) EL.disciplineTitle.textContent = data.title ?? cat.name;
   if (EL.disciplineDesc)  EL.disciplineDesc.textContent  = data.desc  ?? cat.desc;
 
@@ -581,7 +587,7 @@ function _renderDisciplineScreen(cat, data) {
   const groups = _buildChapterGroups(cat.id, secoes);
 
   EL.disciplineBody.innerHTML = groups.map(group => `
-    <div class="subject-chapter-group" data-color-index="${_colorIndexFor(cat.id)}">
+    <div class="subject-chapter-group" data-theme="${_esc(_themeFor(cat.id))}">
       <div class="subject-chapter-group__header">
         <span class="subject-chapter-group__title">${_esc(group.titulo)}</span>
         <span class="subject-chapter-group__count">${group.secoes.length}</span>
@@ -656,6 +662,7 @@ function _renderSidebar(categoryId, chapterIndex) {
 
   if (EL.sidebarChapters) {
     const groups = _buildChapterGroups(categoryId, secoes);
+
     EL.sidebarChapters.innerHTML = groups.map(group => `
       <div class="reader-sidebar-chapter-group">
         ${groups.length > 1 ? `<div class="reader-sidebar-chapter-group__title">${_esc(group.titulo)}</div>` : ''}
@@ -1009,15 +1016,12 @@ function _renderLoadingState() {
    BINDINGS DE EVENTOS
 ══════════════════════════════════════════════ */
 function _bindEvents() {
-  // Botão de voltar ao início
   document.querySelector('.btn-back')
     ?.addEventListener('click', () => playSound('click', 'atlas'));
 
-  // Reader
   EL.readerClose?.addEventListener('click',   () => _fecharReader());
   EL.readerOverlay?.addEventListener('click', () => _fecharReader());
 
-  // Disciplina nível 2
   EL.disciplineBack?.addEventListener('click', () => {
     playSound('click', 'atlas');
     State.currentCategory = null;
@@ -1025,11 +1029,9 @@ function _bindEvents() {
     _renderBreadcrumb();
   });
 
-  // Sidebar mobile
   EL.readerSidebarToggle?.addEventListener('click', _toggleMobileSidebar);
   EL.readerSidebarScrim?.addEventListener('click',  _closeMobileSidebar);
 
-  // Teclado: ESC fecha reader ou volta para home
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
     if (State.readerOpen) { _fecharReader(); return; }
@@ -1040,14 +1042,12 @@ function _bindEvents() {
     }
   });
 
-  // Busca com debounce
   let searchTimer;
   EL.searchInput?.addEventListener('input', e => {
     clearTimeout(searchTimer);
     searchTimer = setTimeout(() => _handleSearch(e.target.value), 160);
   });
 
-  // Atalho ⌘K / Ctrl+K
   document.addEventListener('keydown', e => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
       e.preventDefault();
@@ -1061,21 +1061,15 @@ function _bindEvents() {
    INICIALIZAÇÃO
 ══════════════════════════════════════════════ */
 async function init() {
-  // Áudio — mesmo padrão do Quiz
   Sound.init();
   installAudioRecovery({ Sound, audio });
   await Sound.waitUntilReady();
 
-  // Logo — mesmo utilitário do Quiz
   injetarLogo('#header-logo-wrap');
-
-  // Footer — mesmo utilitário do Quiz
   preencherAnos(['footer-year']);
 
-  // IA (não bloqueia renderização)
   _carregarIA();
 
-  // UI
   _renderBreadcrumb();
   _renderLoadingState();
   _bindEvents();
