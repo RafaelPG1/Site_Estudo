@@ -521,3 +521,79 @@
   .library-header-controls { display: none; }
   .library-search-wrap     { max-width: 100%; }
 }
+
+/* Botão de favorito no card */
+.library-cat-card__fav {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  z-index: 2;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--b2);
+  color: var(--t3);
+  opacity: 0;
+  transform: scale(0.85);
+  transition:
+    opacity 0.18s,
+    transform 0.18s var(--ease),
+    color 0.18s,
+    background 0.18s,
+    border-color 0.18s;
+  cursor: pointer;
+}
+
+/* Aparece no hover do card */
+.library-cat-card:hover .library-cat-card__fav {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Sempre visível quando ativo */
+.library-cat-card__fav.is-active {
+  opacity: 1;
+  transform: scale(1);
+  color: #f59e0b;
+  background: rgba(245,158,11,0.12);
+  border-color: rgba(245,158,11,0.30);
+}
+
+.library-cat-card__fav:hover {
+  background: rgba(245,158,11,0.10);
+  border-color: rgba(245,158,11,0.25);
+  color: #f59e0b;
+}
+/* Estado vazio da sidebar */
+.atlas-sidebar__empty {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.74rem;
+  color: var(--t3);
+  font-style: italic;
+}
+.atlas-sidebar__empty svg { opacity: 0.4; flex-shrink: 0; }
+
+/* Remove .atlas-sidebar__see-all se ainda existir */
+.atlas-sidebar__see-all { display: none; }
+
+@keyframes fav-shake {
+  0%, 100% { transform: scale(1) translateX(0); }
+  20%       { transform: scale(1.15) translateX(-3px); }
+  40%       { transform: scale(1.15) translateX(3px); }
+  60%       { transform: scale(1.1) translateX(-2px); }
+  80%       { transform: scale(1.05) translateX(2px); }
+}
+
+.library-cat-card__fav.fav-limit {
+  animation: fav-shake 0.5s var(--ease) both;
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.40);
+  background: rgba(239, 68, 68, 0.10);
+}

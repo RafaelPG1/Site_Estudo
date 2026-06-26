@@ -127,6 +127,45 @@ const State = {
   _progressCleanup:  null,
 };
 
+// ── FAVORITOS ──
+const Favorites = {
+  _key:   'nexus_atlas_favorites',
+  _limit: 8,
+
+  load() {
+    try {
+      return new Set(JSON.parse(localStorage.getItem(this._key) ?? '[]'));
+    } catch { return new Set(); }
+  },
+
+  save(set) {
+    localStorage.setItem(this._key, JSON.stringify([...set]));
+  },
+
+  toggle(id) {
+    const favs = this.load();
+
+    if (favs.has(id)) {
+      // remover — sempre permitido
+      favs.delete(id);
+      this.save(favs);
+      return false;
+    }
+
+    // adicionar — verifica limite
+    if (favs.size >= this._limit) {
+      return null; // sinaliza limite atingido
+    }
+
+    favs.add(id);
+    this.save(favs);
+    return true;
+  },
+
+  has(id)   { return this.load().has(id); },
+  getAll()  { return this.load(); },
+  isFull()  { return this.load().size >= this._limit; },
+};
 /* ══════════════════════════════════════════════
    SELETORES
 ══════════════════════════════════════════════ */
@@ -431,6 +470,18 @@ function _renderCategoriesGrid(cats) {
     >
       <div class="library-cat-card__glow"></div>
 
+      <button
+        class="library-cat-card__fav ${Favorites.has(cat.id) ? 'is-active' : ''}"
+        data-fav-id="${_esc(cat.id)}"
+        aria-label="Favoritar ${_esc(cat.name)}"
+        title="Favoritar"
+        type="button"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>
+      </button>
+
       <div class="library-cat-card__body-wrap">
         <span class="library-cat-card__icon"${_iconStyleAttr(cat.color)} aria-hidden="true">${_renderIcon(cat.icon)}</span>
 
@@ -471,8 +522,29 @@ function _renderCategoriesGrid(cats) {
 
   EL.catGrid.querySelectorAll('.library-cat-card').forEach(card => {
     const id = card.dataset.catId;
-    card.addEventListener('mouseenter', () => playSound('hover',  'atlas'));
-    card.addEventListener('click',      () => {
+
+    // Botão de favorito
+card.querySelector('[data-fav-id]')?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const favId  = e.currentTarget.dataset.favId;
+  const result = Favorites.toggle(favId);
+
+  if (result === null) {
+    // limite atingido
+    _toast('Você pode ter no máximo 8 disciplinas favoritas.');
+    // feedback visual no botão: chacoalha e volta
+    e.currentTarget.classList.add('fav-limit');
+    setTimeout(() => e.currentTarget.classList.remove('fav-limit'), 600);
+    return;
+  }
+
+  e.currentTarget.classList.toggle('is-active', result);
+  _renderAtlasSidebar();
+  playSound(result ? 'click' : 'hover', 'atlas');
+});
+
+    card.addEventListener('mouseenter', () => playSound('hover', 'atlas'));
+    card.addEventListener('click', () => {
       playSound('click', 'atlas');
       _abrirDisciplina(id);
     });
@@ -490,7 +562,6 @@ function _renderCategoriesGrid(cats) {
     } catch { /* silencioso */ }
   });
 }
-
 /* ──────────────────────────────────────────────
    _renderHeaderBack
    Ajusta o botão do header (#btn-back) conforme a
@@ -755,19 +826,34 @@ function _buildAtlasSidebarNav(view) {
    activeCatId é null na Home.
 ────────────────────────────────────────────── */
 function _buildAtlasSidebar(activeCatId) {
-  const discLinks = CATEGORIES.map(c => {
-    const isActive  = c.id === activeCatId;
-    const colorAttr = _iconStyleAttr(c.color);
-    return `
-      <button class="atlas-sidebar__disc-link${isActive ? ' is-active' : ''}" data-disc-id="${_esc(c.id)}" type="button">
-        <span class="atlas-sidebar__disc-link__icon"${colorAttr}>${_renderIcon(c.icon)}</span>
-        <span class="atlas-sidebar__disc-link__name">${_esc(c.name)}</span>
-        ${isActive ? `<span class="atlas-sidebar__disc-link__close" aria-hidden="true">✕</span>` : ''}
-      </button>`;
-  }).join('');
+  const favIds  = Favorites.getAll();
+  const favCats = CATEGORIES.filter(c => favIds.has(c.id));
+
+  const discLinks = favCats.length
+    ? favCats.map(c => {
+        const isActive  = c.id === activeCatId;
+        const colorAttr = _iconStyleAttr(c.color);
+        return `
+          <button class="atlas-sidebar__disc-link${isActive ? ' is-active' : ''}"
+                  data-disc-id="${_esc(c.id)}" type="button">
+            <span class="atlas-sidebar__disc-link__icon"${colorAttr}>
+              ${_renderIcon(c.icon)}
+            </span>
+            <span class="atlas-sidebar__disc-link__name">${_esc(c.name)}</span>
+            ${isActive ? `<span class="atlas-sidebar__disc-link__close" aria-hidden="true">✕</span>` : ''}
+          </button>`;
+      }).join('')
+    : `<div class="atlas-sidebar__empty">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>
+        <span>Nenhuma favorita ainda</span>
+      </div>`;
 
   return `
     <aside class="atlas-sidebar" id="atlas-sidebar" aria-label="Navegação do Atlas">
+
       <div class="atlas-sidebar__section">
         <span class="atlas-sidebar__section-label">Biblioteca</span>
         ${_buildAtlasSidebarNav(State.view)}
@@ -778,10 +864,8 @@ function _buildAtlasSidebar(activeCatId) {
         ${discLinks}
       </div>
 
-      <button class="atlas-sidebar__see-all" type="button">Ver todas</button>
     </aside>`;
 }
-
 /* ──────────────────────────────────────────────
    _renderAtlasSidebar
    (Re)renderiza a sidebar única dentro do mount
