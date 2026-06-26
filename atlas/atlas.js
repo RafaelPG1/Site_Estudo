@@ -78,33 +78,13 @@ function _carregarIA() {
 
 /* ══════════════════════════════════════════════
    ESTADO GLOBAL DE CATEGORIAS
-   Cada entrada espelha exatamente o formato do manifest:
-   { id, title, desc, type, time, theme, icon, content }
-   O campo `name` é um alias de `title` para retrocompatibilidade
-   com as funções internas que usavam cat.name.
 ══════════════════════════════════════════════ */
 let CATEGORIES = [];
 
 /* ══════════════════════════════════════════════
    MAPEAMENTO DE GRUPOS VISUAIS DE CAPÍTULOS
-
-   Define como as seções (secoes[i]) de cada disciplina
-   são agrupadas em "Fundamentos / Intermediário / Avançado"
-   etc. Puramente visual — não altera nenhum arquivo de conteúdo.
-
-   Formato: { [categoryId]: [ { titulo, range: [ini, fim] }, ... ] }
-   range é 0-based, inclusivo nos dois lados.
-   Categorias sem mapeamento caem num único grupo "Conteúdo".
 ══════════════════════════════════════════════ */
-const CHAPTER_GROUPS_MAP = {
-  // Exemplo:
-  // python: [
-  //   { titulo: 'Fundamentos',   range: [0, 2] },
-  //   { titulo: 'Intermediário', range: [3, 5] },
-  //   { titulo: 'Avançado',      range: [6, 99] },
-  // ],
-};
-
+const CHAPTER_GROUPS_MAP = {};
 const DEFAULT_GROUP_LABEL = 'Conteúdo';
 
 function _buildChapterGroups(categoryId, secoes) {
@@ -210,10 +190,7 @@ function _renderIcon(icon, fallback = '📄') {
 }
 
 /* ══════════════════════════════════════════════
-   COR DO ÍCONE — manifest.color (hex) → --cat-rgb
-   Se a disciplina não definir `color`, não inserimos
-   a variável e o CSS aplica o ciclo padrão (nth-child
-   / data-color-index), como já fazia antes.
+   COR DO ÍCONE
 ══════════════════════════════════════════════ */
 function _hexToRgb(hex) {
   if (typeof hex !== 'string') return null;
@@ -233,10 +210,7 @@ function _iconStyleAttr(color) {
 }
 
 /* ══════════════════════════════════════════════
-   TEMA — aplica data-theme a partir do manifest
-   O CSS é o único responsável pela aparência:
-     [data-theme="indigo"] { ... }
-     [data-theme="emerald"] { ... }
+   TEMA
 ══════════════════════════════════════════════ */
 function _themeFor(categoryId) {
   const cat = CATEGORIES.find(c => c.id === categoryId);
@@ -300,12 +274,6 @@ function _injectScript(src, dataAttr) {
 
 /* ══════════════════════════════════════════════
    CARREGAMENTO DO MANIFEST
-   O manifest.js agora fica em atlas/manifest.js
-   (mesma pasta que atlas.js) e expõe:
-     window.__atlasManifest = [ { id, title, desc,
-       type, time, theme, icon, content }, ... ]
-   Cada entrada contém todos os metadados da disciplina.
-   O caminho do arquivo de conteúdo vem de disciplina.content.
 ══════════════════════════════════════════════ */
 async function _loadManifest() {
   try {
@@ -324,9 +292,6 @@ async function _loadManifest() {
 
 /* ══════════════════════════════════════════════
    CARREGAMENTO DE TODAS AS CATEGORIAS
-   Não é mais necessário carregar cada arquivo de conteúdo
-   para obter metadados — eles já vêm todos do manifest.
-   O campo `name` é um alias de `title` para retrocompatibilidade.
 ══════════════════════════════════════════════ */
 async function _loadAllCategories() {
   const manifest = await _loadManifest();
@@ -335,34 +300,29 @@ async function _loadAllCategories() {
   CATEGORIES = manifest
     .filter(entry => entry && entry.id && entry.content)
     .map(entry => ({
-      id:      entry.id,
-      name:    entry.title ?? entry.id,   // alias retrocompat
-      title:   entry.title ?? entry.id,
-      desc:    entry.desc  ?? '',
-      type:    entry.type  ?? 'Documentação',
-      time:    entry.time  ?? 0,
-      theme:   entry.theme ?? 'indigo',
-      color:   entry.color ?? null,
-      icon:    entry.icon  ?? '📄',
-      content: entry.content,
+      id:        entry.id,
+      name:      entry.title ?? entry.id,
+      title:     entry.title ?? entry.id,
+      desc:      entry.desc  ?? '',
+      type:      entry.type  ?? 'Documentação',
+      time:      entry.time  ?? 0,
+      theme:     entry.theme ?? 'indigo',
+      color:     entry.color ?? null,
+      icon:      entry.icon  ?? '📄',
+      content:   entry.content,
+      resources: entry.resources ?? [],
     }));
 }
 
 /* ══════════════════════════════════════════════
    CARREGAMENTO DE CONTEÚDO (com cache em memória)
-   Usa disciplina.content (caminho do manifest) para
-   localizar o arquivo — nunca monta o caminho a partir do id.
-   Une os metadados do manifest com os secoes do arquivo.
 ══════════════════════════════════════════════ */
 async function _loadCategoryContent(cat) {
   const src      = cat.content;
   const dataAttr = `cat-${cat.id}`;
 
-  // Remove script anterior para forçar re-leitura se necessário
   const existing = document.querySelector(`script[data-kb="${dataAttr}"]`);
-  if (existing) {
-    existing.remove();
-  }
+  if (existing) existing.remove();
 
   delete window.__nexusatlas;
 
@@ -374,17 +334,15 @@ async function _loadCategoryContent(cat) {
 
   const raw = window.__nexusatlas;
 
-  // Une metadados do manifest com o conteúdo do arquivo.
-  // Os metadados do manifest têm precedência total;
-  // do arquivo aproveitamos apenas secoes.
   return {
-    title:  cat.title,
-    desc:   cat.desc,
-    type:   cat.type,
-    time:   cat.time,
-    icon:   cat.icon,
-    theme:  cat.theme,
-    secoes: Array.isArray(raw?.secoes) ? raw.secoes : [{
+    title:     cat.title,
+    desc:      cat.desc,
+    type:      cat.type,
+    time:      cat.time,
+    icon:      cat.icon,
+    theme:     cat.theme,
+    resources: cat.resources ?? [],
+    secoes:    Array.isArray(raw?.secoes) ? raw.secoes : [{
       titulo: 'Em preparação',
       blocos: [{
         tipo:  'texto',
@@ -406,7 +364,7 @@ async function _getCategoryContent(categoryId) {
 }
 
 /* ══════════════════════════════════════════════
-   ESTATÍSTICAS (header + hero)
+   ESTATÍSTICAS
 ══════════════════════════════════════════════ */
 function _renderStats() {
   const nCats = CATEGORIES.length;
@@ -430,11 +388,10 @@ function _renderStats() {
 }
 
 /* ══════════════════════════════════════════════
-   HEADER BREADCRUMB (mantido por retrocompatibilidade)
+   HEADER BREADCRUMB
 ══════════════════════════════════════════════ */
 function _renderBreadcrumb() {
-  // O header usa a logo fixa no centro (sem breadcrumb de texto).
-  // Esta função existe para não quebrar chamadas internas existentes.
+  // O header usa a logo fixa no centro.
 }
 
 /* ══════════════════════════════════════════════
@@ -464,7 +421,6 @@ function _renderCategoriesGrid(cats) {
     >
       <div class="library-cat-card__glow"></div>
 
-      <!-- Corpo: ícone + texto + seta -->
       <div class="library-cat-card__body-wrap">
         <span class="library-cat-card__icon"${_iconStyleAttr(cat.color)} aria-hidden="true">${_renderIcon(cat.icon)}</span>
 
@@ -481,7 +437,6 @@ function _renderCategoriesGrid(cats) {
         </span>
       </div>
 
-      <!-- Footer: contadores (capítulos · tipo) -->
       <div class="library-cat-card__footer">
         <span class="library-cat-card__stat">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -516,7 +471,6 @@ function _renderCategoriesGrid(cats) {
     });
   });
 
-  // Preenche contagem de capítulos de forma assíncrona
   cats.forEach(async cat => {
     try {
       const data  = await _getCategoryContent(cat.id);
@@ -558,123 +512,360 @@ async function _abrirDisciplina(categoryId) {
   _renderDisciplineScreen(cat, data);
 }
 
-function _renderDisciplineLoading(cat) {
-  if (EL.disciplineIcon) {
-    EL.disciplineIcon.innerHTML = _renderIcon(cat.icon);
-    _applyTheme(EL.disciplineIcon, cat.id);
-    _applyIconColor(EL.disciplineIcon, cat.id);
-  }
-  if (EL.disciplineTitle) EL.disciplineTitle.textContent = cat.name;
-  if (EL.disciplineDesc)  EL.disciplineDesc.textContent  = cat.desc;
-  if (EL.disciplineMeta)  EL.disciplineMeta.innerHTML    = '';
-  if (EL.disciplineBody)  EL.disciplineBody.innerHTML    = `
-    <div class="library-empty-state">
-      <span class="library-empty-state__icon">⏳</span>
-      <h3>Carregando conteúdo…</h3>
-      <p>Buscando os capítulos desta disciplina.</p>
-    </div>`;
+/* ══════════════════════════════════════════════
+   ÍCONES DE MÓDULO — fallback por posição
+══════════════════════════════════════════════ */
+const _MODULE_ICONS = [
+  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 2 13 9 20 9"/><path d="M20 21H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9l7 7v11a2 2 0 0 1-2 2z"/></svg>`,
+  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
+  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>`,
+  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
+];
+
+function _moduleIcon(idx) {
+  return _MODULE_ICONS[idx % _MODULE_ICONS.length];
 }
 
+/* ──────────────────────────────────────────────
+   _renderDisciplineLoading
+   Monta o esqueleto de loading da tela de disciplina.
+   Gera o layout de 3 colunas com dados básicos do
+   manifest (sem secoes ainda) e um spinner na coluna central.
+────────────────────────────────────────────── */
+function _renderDisciplineLoading(cat) {
+  if (!EL.screenDiscipline) return;
+
+  const colorStyle = _iconStyleAttr(cat.color);
+
+  EL.screenDiscipline.innerHTML = `
+    ${_buildDisciplineLeftSidebar(cat)}
+    <main class="subject-main">
+      <div class="subject-hero-banner"${colorStyle}>
+        <div class="subject-hero-banner__icon"${colorStyle}>${_renderIcon(cat.icon)}</div>
+        <div class="subject-hero-banner__content">
+          <h1 class="subject-hero-banner__title">${_esc(cat.name)}</h1>
+          <p class="subject-hero-banner__desc">${_esc(cat.desc)}</p>
+          <div class="subject-hero-banner__chips"></div>
+        </div>
+      </div>
+      <h2 class="subject-content-header">Conteúdo da disciplina</h2>
+      <div class="subject-module-list">
+        <div class="subject-empty-state">
+          <span class="subject-empty-state__icon">⏳</span>
+          <h3>Carregando conteúdo…</h3>
+          <p>Buscando os módulos desta disciplina.</p>
+        </div>
+      </div>
+    </main>
+    ${_buildDisciplineRightSidebar(cat, [])}
+  `;
+
+  _bindDisciplineSidebarEvents(cat.id);
+}
+
+/* ──────────────────────────────────────────────
+   _renderDisciplineScreen
+   Renderiza a tela completa com dados carregados.
+   Substitui todo o conteúdo de #screen-discipline
+   com o layout de 3 colunas: sidebar esquerda +
+   área central + sidebar direita.
+────────────────────────────────────────────── */
 function _renderDisciplineScreen(cat, data) {
-  const secoes = Array.isArray(data?.secoes) ? data.secoes : [];
+  if (!EL.screenDiscipline) return;
 
-  if (EL.disciplineIcon) {
-    _applyTheme(EL.disciplineIcon, cat.id);
-    _applyIconColor(EL.disciplineIcon, cat.id);
-  }
-  if (EL.disciplineTitle) EL.disciplineTitle.textContent = data.title ?? cat.name;
-  if (EL.disciplineDesc)  EL.disciplineDesc.textContent  = data.desc  ?? cat.desc;
+  const secoes     = Array.isArray(data?.secoes) ? data.secoes : [];
+  const colorStyle = _iconStyleAttr(cat.color);
 
-  if (EL.disciplineMeta) {
-    const chips = [];
+  /* ── Chips do hero ── */
+  const chips = [];
+  chips.push(`
+    <span class="subject-chip">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+      </svg>
+      ${secoes.length} ${secoes.length === 1 ? 'módulo' : 'módulos'}
+    </span>`);
+  if (data?.time) {
     chips.push(`
       <span class="subject-chip">
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
         </svg>
-        ${secoes.length} ${secoes.length === 1 ? 'capítulo' : 'capítulos'}
+        ${data.time} min de leitura
       </span>`);
-    if (data.time) {
-      chips.push(`
-        <span class="subject-chip">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+  }
+  if (data?.type) {
+    chips.push(`<span class="subject-chip">${_esc(data.type)}</span>`);
+  }
+
+  /* ── Lista de módulos ── */
+  const moduleCards = secoes.length
+    ? secoes.map((s, i) => `
+      <article class="subject-module-card" data-chapter-index="${i}" tabindex="0" role="button" aria-label="Abrir ${_esc(s.titulo ?? '')}">
+        <span class="subject-module-card__icon">
+          ${s.icone && _isSvgIcon(s.icone) ? s.icone : _moduleIcon(i)}
+        </span>
+        <div class="subject-module-card__body">
+          <div class="subject-module-card__title">${_esc(s.titulo ?? `Módulo ${i + 1}`)}</div>
+          <div class="subject-module-card__desc">${_esc(s.desc ?? `${(s.blocos ?? []).length} blocos de conteúdo`)}</div>
+        </div>
+        <span class="subject-module-card__count">${(s.blocos ?? []).length} ${(s.blocos ?? []).length === 1 ? 'tópico' : 'tópicos'}</span>
+        <span class="subject-module-card__arrow" aria-hidden="true">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
           </svg>
-          ${data.time} min de leitura
-        </span>`);
-    }
-    if (data.type) {
-      chips.push(`<span class="subject-chip">${_esc(data.type)}</span>`);
-    }
-    EL.disciplineMeta.innerHTML = chips.join('');
-  }
-
-  if (!EL.disciplineBody) return;
-
-  if (!secoes.length) {
-    EL.disciplineBody.innerHTML = `
-      <div class="library-empty-state">
-        <span class="library-empty-state__icon">📭</span>
+        </span>
+      </article>`).join('')
+    : `<div class="subject-empty-state">
+        <span class="subject-empty-state__icon">📭</span>
         <h3>Nenhum conteúdo disponível ainda</h3>
-        <p>Esta disciplina ainda não tem capítulos publicados.</p>
+        <p>Esta disciplina ainda não tem módulos publicados.</p>
       </div>`;
-    return;
-  }
 
-  // SVG fallback usado quando a seção não define secao.icone
-  const _fallbackIcone = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`;
-
-  const groups = _buildChapterGroups(cat.id, secoes);
-
-  EL.disciplineBody.innerHTML = groups.map(group => `
-    <div class="subject-chapter-group" data-theme="${_esc(_themeFor(cat.id))}">
-      <div class="subject-chapter-group__header">
-        <span class="subject-chapter-group__title">${_esc(group.titulo)}</span>
-        <span class="subject-chapter-group__count">${group.secoes.length}</span>
-        <span class="subject-chapter-group__line"></span>
+  EL.screenDiscipline.innerHTML = `
+    ${_buildDisciplineLeftSidebar(cat)}
+    <main class="subject-main">
+      <div class="subject-hero-banner"${colorStyle}>
+        <div class="subject-hero-banner__icon"${colorStyle}>${_renderIcon(cat.icon)}</div>
+        <div class="subject-hero-banner__content">
+          <h1 class="subject-hero-banner__title">${_esc(data?.title ?? cat.name)}</h1>
+          <p class="subject-hero-banner__desc">${_esc(data?.desc ?? cat.desc)}</p>
+          <div class="subject-hero-banner__chips">${chips.join('')}</div>
+        </div>
       </div>
-      <div class="subject-chapter-grid">
-        ${group.secoes.map(secao => `
-          <article
-            class="subject-chapter-card"
-            data-chapter-index="${secao._index}"
-            tabindex="0"
-            role="button"
-            aria-label="Abrir ${_esc(secao.titulo ?? '')}"
-          >
-            <span class="subject-chapter-card__icon" aria-hidden="true">
-              ${secao.icone ?? _fallbackIcone}
-            </span>
-
-            <div class="subject-chapter-card__body">
-              <div class="subject-chapter-card__title">${_esc(secao.titulo ?? '')}</div>
-              ${secao.desc
-                ? `<div class="subject-chapter-card__desc">${_esc(secao.desc)}</div>`
-                : `<div class="subject-chapter-card__meta">${(secao.blocos ?? []).length} blocos</div>`
-              }
-            </div>
-
-            <span class="subject-chapter-card__meta-right" aria-hidden="false">
-              ${(secao.blocos ?? []).length} ${(secao.blocos ?? []).length === 1 ? 'bloco' : 'blocos'}
-            </span>
-
-            <span class="subject-chapter-card__arrow" aria-hidden="true">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
-              </svg>
-            </span>
-          </article>
-        `).join('')}
+      <h2 class="subject-content-header">Conteúdo da disciplina</h2>
+      <div class="subject-module-list" id="discipline-body">
+        ${moduleCards}
       </div>
-    </div>
-  `).join('');
+      <div class="subject-hint-bar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        Navegue pelos módulos ao lado para explorar todos os conteúdos desta disciplina.
+      </div>
+    </main>
+    ${_buildDisciplineRightSidebar(cat, secoes)}
+  `;
 
-  EL.disciplineBody.querySelectorAll('.subject-chapter-card').forEach(card => {
+  /* ── Bind: módulos abrem o reader ── */
+  EL.screenDiscipline.querySelectorAll('[data-chapter-index]').forEach(card => {
     const idx = parseInt(card.dataset.chapterIndex, 10);
     card.addEventListener('mouseenter', () => playSound('hover', 'atlas'));
     card.addEventListener('click',      () => { playSound('click', 'atlas'); _abrirReader(cat.id, idx); });
     card.addEventListener('keydown',    (e) => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _abrirReader(cat.id, idx); }
+    });
+  });
+
+  /* ── Bind: TOC scrolls até o card do módulo ── */
+  EL.screenDiscipline.querySelectorAll('[data-toc-index]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      EL.screenDiscipline.querySelectorAll('[data-toc-index]').forEach(b => b.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      const idx  = parseInt(btn.dataset.tocIndex, 10);
+      const card = EL.screenDiscipline.querySelector(`[data-chapter-index="${idx}"]`);
+      card?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  });
+
+  /* ── Bind: sidebar esquerda ── */
+  _bindDisciplineSidebarEvents(cat.id);
+}
+
+/* ──────────────────────────────────────────────
+   _buildDisciplineLeftSidebar
+   Gera o HTML da sidebar esquerda da tela de disciplina.
+   Inclui: voltar, nav biblioteca, lista de disciplinas, card PRO.
+────────────────────────────────────────────── */
+function _buildDisciplineLeftSidebar(activeCat) {
+  const navLinks = [
+    {
+      svg: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`,
+      label: 'Todas as disciplinas',
+      action: 'all',
+    },
+    {
+      svg: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`,
+      label: 'Favoritos',
+      action: 'favorites',
+    },
+    {
+      svg: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+      label: 'Recentes',
+      action: 'recent',
+    },
+  ];
+
+  const discLinks = CATEGORIES.map(c => {
+    const isActive = c.id === activeCat.id;
+    const colorAttr = _iconStyleAttr(c.color);
+    return `
+      <button class="subject-left-disc-link${isActive ? ' is-active' : ''}" data-disc-id="${_esc(c.id)}" type="button">
+        <span class="subject-left-disc-link__icon"${colorAttr}>${_renderIcon(c.icon)}</span>
+        <span class="subject-left-disc-link__name">${_esc(c.name)}</span>
+        ${isActive ? `<span class="subject-left-disc-link__close" aria-hidden="true">✕</span>` : ''}
+      </button>`;
+  }).join('');
+
+  return `
+    <aside class="subject-left-sidebar" aria-label="Navegação da disciplina">
+      <button class="subject-left-back" id="discipline-back" type="button">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+        </svg>
+        Voltar ao Atlas
+      </button>
+
+      <div class="subject-left-section">
+        <span class="subject-left-section-label">Biblioteca</span>
+        ${navLinks.map(l => `
+          <button class="subject-left-nav-link" data-nav-action="${_esc(l.action)}" type="button">
+            ${l.svg}
+            ${_esc(l.label)}
+          </button>`).join('')}
+      </div>
+
+      <div class="subject-left-section">
+        <span class="subject-left-section-label">Minhas disciplinas</span>
+        ${discLinks}
+      </div>
+
+      <button class="subject-left-see-all" type="button">Ver todas</button>
+
+      <div class="subject-left-spacer"></div>
+
+      <div class="subject-pro-card">
+        <div class="subject-pro-card__header">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          Nexus Pro
+        </div>
+        <div class="subject-pro-card__body">Conteúdos exclusivos, recursos avançados e muito mais.</div>
+        <button class="subject-pro-card__cta" type="button">
+          Conhecer planos
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </aside>`;
+}
+
+/* ──────────────────────────────────────────────
+   _buildDisciplineRightSidebar
+   Gera o HTML da sidebar direita: índice (TOC),
+   atalhos rápidos e recursos da disciplina.
+────────────────────────────────────────────── */
+function _buildDisciplineRightSidebar(cat, secoes) {
+  const tocItems = secoes.map((s, i) => `
+    <button class="subject-toc-item${i === 0 ? ' is-active' : ''}" data-toc-index="${i}" type="button">
+      ${_esc(s.titulo ?? `Módulo ${i + 1}`)}
+    </button>`).join('');
+
+  const quickItems = [
+    {
+      svg: `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+      title: 'Buscar na disciplina',
+      sub: 'Encontre tópicos e conteúdos',
+    },
+    {
+      svg: `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`,
+      title: 'Ver índice completo',
+      sub: 'Navegue por toda a estrutura',
+    },
+    {
+      svg: `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
+      title: 'Downloads',
+      sub: 'Materiais complementares',
+    },
+    {
+      svg: `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`,
+      title: 'Referências',
+      sub: 'Documentação oficial',
+    },
+  ].map(q => `
+    <div class="subject-quick-item">
+      <span class="subject-quick-item__icon">${q.svg}</span>
+      <span class="subject-quick-item__text">
+        <span class="subject-quick-item__title">${_esc(q.title)}</span>
+        <span class="subject-quick-item__sub">${_esc(q.sub)}</span>
+      </span>
+    </div>`).join('');
+
+  const catResources = Array.isArray(cat?.resources) && cat.resources.length
+    ? cat.resources
+    : [
+        { title: 'Documentação Oficial', url: '#', display: `docs.${cat.id ?? 'exemplo'}.org` },
+        { title: 'Exemplos de Código',   url: '#', display: 'github.com' },
+      ];
+
+  const resourceItems = catResources.map(r => `
+    <a class="subject-resource-item" href="${_esc(r.url ?? '#')}" target="_blank" rel="noopener">
+      <span class="subject-resource-item__icon">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+        </svg>
+      </span>
+      <span class="subject-resource-item__text">
+        <span class="subject-resource-item__title">${_esc(r.title)}</span>
+        <span class="subject-resource-item__url">${_esc(r.display ?? r.url ?? '')}</span>
+      </span>
+      <span class="subject-resource-item__ext" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+          <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+      </span>
+    </a>`).join('');
+
+  return `
+    <aside class="subject-right-sidebar" aria-label="Atalhos e recursos">
+      <div class="subject-right-panel">
+        <div class="subject-right-panel__header">Nesta página</div>
+        <div class="subject-toc-list">
+          ${tocItems || '<div style="padding:0.5rem 1rem;font-size:0.72rem;color:var(--t3)">Nenhum módulo ainda</div>'}
+        </div>
+      </div>
+      <div class="subject-right-panel">
+        <div class="subject-right-panel__header">Atalhos rápidos</div>
+        <div class="subject-quick-list">${quickItems}</div>
+      </div>
+      <div class="subject-right-panel">
+        <div class="subject-right-panel__header">Recursos da disciplina</div>
+        <div class="subject-resource-list">${resourceItems}</div>
+      </div>
+    </aside>`;
+}
+
+/* ──────────────────────────────────────────────
+   _bindDisciplineSidebarEvents
+   Bind dos eventos da sidebar esquerda após cada render.
+   Reutiliza _abrirDisciplina e _showScreen existentes.
+────────────────────────────────────────────── */
+function _bindDisciplineSidebarEvents(activeCatId) {
+  const screen = EL.screenDiscipline;
+  if (!screen) return;
+
+  /* Botão "Voltar ao Atlas" → volta para Home */
+  screen.querySelector('#discipline-back')?.addEventListener('click', () => {
+    playSound('click', 'atlas');
+    State.currentCategory = null;
+    _showScreen('home');
+    _renderBreadcrumb();
+  });
+
+  /* "Todas as disciplinas" → idem */
+  screen.querySelector('[data-nav-action="all"]')?.addEventListener('click', () => {
+    playSound('click', 'atlas');
+    State.currentCategory = null;
+    _showScreen('home');
+    _renderBreadcrumb();
+  });
+
+  /* Links de disciplinas na sidebar */
+  screen.querySelectorAll('[data-disc-id]').forEach(el => {
+    el.addEventListener('click', () => {
+      const id = el.dataset.discId;
+      if (id && id !== activeCatId) {
+        playSound('click', 'atlas');
+        _abrirDisciplina(id);
+      }
     });
   });
 }
@@ -794,6 +985,7 @@ async function _abrirReader(categoryId, chapterIndex, opts = {}) {
   const secoes = Array.isArray(data?.secoes) ? data.secoes : [];
   const secao  = secoes[chapterIndex];
 
+  /* Garante que a tela de disciplina esteja renderizada com os dados completos */
   _showScreen('discipline');
   _renderDisciplineScreen(cat, data);
 
@@ -891,8 +1083,6 @@ function _buildLoadingBody() {
 
 /* ══════════════════════════════════════════════
    RENDERIZADOR DE CONTEÚDO
-   Tipos suportados: texto, subtitulo, lista,
-   tabela, codigo, alerta, destaque
 ══════════════════════════════════════════════ */
 function _renderAtlasBody(secao, categoryId) {
   if (!EL.readerBody) return;
@@ -969,7 +1159,7 @@ function _renderBloco(bloco, categoryId) {
 }
 
 /* ══════════════════════════════════════════════
-   NAVEGAÇÃO ENTRE CAPÍTULOS (Anterior / Próximo)
+   NAVEGAÇÃO ENTRE CAPÍTULOS
 ══════════════════════════════════════════════ */
 function _renderChapterNav(cat, secoes, currentIndex) {
   if (!EL.readerChapterNav) return;
@@ -1083,7 +1273,11 @@ function _renderLoadingState() {
 }
 
 /* ══════════════════════════════════════════════
-   BINDINGS DE EVENTOS
+   BINDINGS DE EVENTOS GLOBAIS
+   Nota: discipline-back é gerado dinamicamente pelo
+   _buildDisciplineLeftSidebar e rebindado após cada
+   render via _bindDisciplineSidebarEvents.
+   Aqui ficam apenas os bindings de elementos fixos no HTML.
 ══════════════════════════════════════════════ */
 function _bindEvents() {
   document.querySelector('.btn-back')
@@ -1091,13 +1285,6 @@ function _bindEvents() {
 
   EL.readerClose?.addEventListener('click',   () => _fecharReader());
   EL.readerOverlay?.addEventListener('click', () => _fecharReader());
-
-  EL.disciplineBack?.addEventListener('click', () => {
-    playSound('click', 'atlas');
-    State.currentCategory = null;
-    _showScreen('home');
-    _renderBreadcrumb();
-  });
 
   EL.readerSidebarToggle?.addEventListener('click', _toggleMobileSidebar);
   EL.readerSidebarScrim?.addEventListener('click',  _closeMobileSidebar);
@@ -1150,9 +1337,6 @@ async function init() {
   _renderBreadcrumb();
   _renderCategoriesGrid(CATEGORIES);
 
-  // Deep-links:
-  //   ?cat=python           → abre nível 2 (disciplina)
-  //   ?cat=python&chapter=2 → abre nível 3 (leitura) direto no capítulo
   const params     = new URLSearchParams(window.location.search);
   const catParam   = params.get('cat');
   const chapterRaw = params.get('chapter');
