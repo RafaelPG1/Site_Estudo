@@ -16,11 +16,12 @@
     11. Modo Step ......................... L.720
     12. Binds e boot ...................... L.930
 
-   v9 — integração com FilterStore (filter.js):
-     • _buildBaseQuestoes() filtra window.questoes pelo FilterStore
-       antes de qualquer embaralhamento ou restauração.
-     • window.__nexusFiltroReiniciar é exposto para filter.js
-       acionar reiniciar() + remontagem da base filtrada.
+   v9 — integração com NexusFilter (filter.js):
+     • _buildBaseQuestoes() consulta window.NexusFilter (API pública)
+       para filtrar a lista de questões antes de qualquer embaralhamento.
+     • Engine escuta 'nexus:filtroAlterado' e chama reiniciarComFiltro().
+     • filter.js não conhece nenhuma função do engine — comunicação
+       exclusivamente por evento.
      • F5 restaura sessão normalmente — apenas mudança de filtro
        dispara reiniciar().
      • A primeira renderização já nasce com a base correta.
@@ -223,7 +224,7 @@
 
     /* ══════════════════════════════════════════════════════════
        FILTRO DE AULAS
-       Consulta FilterStore (filter.js) para montar a base
+       Consulta NexusFilter (API pública de filter.js) para montar a base
        correta ANTES de qualquer embaralhamento ou restauração.
        F5 → base filtrada idêntica à sessão anterior (shuffle
        map é restaurado normalmente).
@@ -231,23 +232,22 @@
 
     function _buildBaseQuestoes() {
       var NF = window.NexusFilter;
-      if (!NF) return _listaCompleta;
+      /* Sem filtro carregado ou sem filtro ativo → todas as questões */
+      if (!NF || !NF.hasFilter()) return _listaCompleta;
 
-      var selected = NF.store.getSelected();
-      if (selected === null) return _listaCompleta; /* sem filtro = todas */
+      var selected = NF.getSelectedLessons(); /* Set de nomes de aula */
+      if (!selected || selected.size === 0) return _listaCompleta;
 
-      return _listaCompleta.filter(function (q) {
+      var filtrada = _listaCompleta.filter(function (q) {
         var aula = q.aula !== undefined ? q.aula : null;
         return aula !== null && selected.has(aula);
       });
+
+      /* Segurança: se o filtro não bater com nenhuma questão, usa tudo */
+      return filtrada.length > 0 ? filtrada : _listaCompleta;
     }
 
     var questoesBase = _buildBaseQuestoes();
-
-    if (questoesBase.length === 0) {
-      /* Filtro selecionou aulas sem questões — usa tudo */
-      questoesBase = _listaCompleta;
-    }
 
     /* ══════════════════════════════════════════════════════════
        3. EMBARALHAMENTO (v8 — por grupo de aula)
@@ -739,7 +739,7 @@
 
     /* ══════════════════════════════════════════════════════════
        REINICIAR COM NOVA BASE (para mudança de filtro)
-       Reconstrói questoesBase pelo FilterStore atual,
+       Reconstrói questoesBase via NexusFilter (API pública),
        limpa a sessão e rerrenderiza.
     ══════════════════════════════════════════════════════════ */
 
@@ -782,8 +782,10 @@
       smoothScrollToTop();
     }
 
-    /* Expõe para filter.js disparar via nexus:filtroAlterado */
-    window.__nexusFiltroReiniciar = reiniciarComFiltro;
+    /* Engine escuta nexus:filtroAlterado e reinicia com nova base */
+    window.addEventListener('nexus:filtroAlterado', function () {
+      reiniciarComFiltro();
+    });
 
     /* ── 9. RESULTADO GLOBAL ──────────────────────────────── */
 

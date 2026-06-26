@@ -34,9 +34,8 @@
        3. Modal detecta progresso:
           - Tem progresso → _pularModal() → chama _completarBoot()
           - Sem progresso → exibe modal:
-            - Clique em "Filtrar aulas" → abre FilterPanel
-              (window.__nexusFiltroAbrir), que usa o mesmo estado
-              FilterStore. Ao aplicar → conclui o fluxo do modal.
+            - Clique em "Filtrar aulas" → chama NexusFilter.open();
+              escuta nexus:filtroAlterado e conclui ao aplicar.
             - Clique em "Todas as aulas" → conclui direto
        4. _completarBoot():
           → seta __NSM_AGUARDANDO__ = false
@@ -44,11 +43,11 @@
           → remove .quiz-aguardando do container
 
    INTEGRAÇÃO COM filter.js:
-     A tela 2 do modal NÃO tem estado próprio.
-     Ela delega completamente ao FilterPanel via window.__nexusFiltroAbrir.
-     FilterPanel usa FilterStore como única fonte de verdade.
-     Ao fechar o FilterPanel (Aplicar), o modal é também concluído
-     via window.__nexusModalConcluir — exposto internamente.
+     filter.js é carregado ANTES deste modal (ordem garantida pelo
+     template.html). Portanto window.NexusFilter já existe quando
+     qualquer interação do usuário ocorre. O modal chama apenas:
+       NexusFilter.open()
+     Sem polling. Sem espera. Sem dependência circular.
 
    DEPENDÊNCIAS:
      window.__NEXUS_QUIZ_DISC__      — definido por template_init.js
@@ -57,7 +56,7 @@
      window.NexusStorage             — definido por template_init.js
      window.__nexusCarregarQuiz      — definido por template_init.js
      window.__NSM_AGUARDANDO__       — definido por template.html (inline, no head)
-     window.__nexusFiltroAbrir       — definido por filter.js
+     window.NexusFilter              — definido por filter.js (carregado antes)
    ============================================================ */
 
 (function () {
@@ -353,49 +352,24 @@
   function _exibirModal() {
     var ui = _construirModal();
 
-    /* Expõe ponto de conclusão para o FilterPanel chamar após Aplicar */
-    window.__nexusModalConcluir = function () {
-      _concluir(ui.bd);
-      window.__nexusModalConcluir = null;
-    };
-
-    /* "Todas as aulas" — conclui direto */
+    /* "Todas as aulas" — remove qualquer filtro ativo e conclui */
     ui.btnContinuar.addEventListener('click', function () {
-      /* Garante que filtro fica limpo */
-      if (window.NexusFilter) window.NexusFilter.store.clear();
+      window.NexusFilter.clear();
       _concluir(ui.bd);
     });
 
-    /* "Filtrar aulas" — aguarda filter.js pronto e abre FilterPanel */
+    /* "Filtrar aulas" — NexusFilter já existe (filter.js carregado antes).
+       Escuta nexus:filtroAlterado (disparado quando o usuário aplica o filtro)
+       e conclui o modal. O listener é registrado antes de abrir o painel
+       para não perder o evento. */
     ui.btnFiltrar.addEventListener('click', function () {
-      _aguardarFilterEAbrir(ui.bd);
-    });
-  }
-
-  /* Aguarda window.__nexusFiltroAbrir existir (filter.js carregado),
-     registra listener para nexus:filtroAlterado e abre o painel.
-     Loop leve via rAF — sem timeout de desistência. */
-  function _aguardarFilterEAbrir(bd) {
-    function _tentar() {
-      if (typeof window.__nexusFiltroAbrir === 'function') {
-        /* Registra antes de abrir para não perder o evento */
-        _aguardarFiltroEConcluir(bd);
-        window.__nexusFiltroAbrir();
-      } else {
-        requestAnimationFrame(_tentar);
+      function _onFiltro() {
+        window.removeEventListener('nexus:filtroAlterado', _onFiltro);
+        setTimeout(function () { _concluir(ui.bd); }, 320);
       }
-    }
-    _tentar();
-  }
-
-  /* Aguarda o FilterPanel disparar nexus:filtroAlterado (ao Aplicar) e conclui */
-  function _aguardarFiltroEConcluir(bd) {
-    function _onFiltro() {
-      window.removeEventListener('nexus:filtroAlterado', _onFiltro);
-      /* Delay para o painel fechar visualmente antes do modal sumir */
-      setTimeout(function () { _concluir(bd); }, 320);
-    }
-    window.addEventListener('nexus:filtroAlterado', _onFiltro);
+      window.addEventListener('nexus:filtroAlterado', _onFiltro);
+      window.NexusFilter.open();
+    });
   }
 
   /* ══════════════════════════════════════════════════════════

@@ -295,16 +295,15 @@ function _aguardarFirebase(params) {
 
 
 /* ══════════════════════════════════════════════════════════
-   PASSO 9 — Carregar conteúdo + filter.js + UI + engine
+   PASSO 9 — Carregar conteúdo + UI + engine
 
    Ordem de carregamento:
-     1. Conteúdo (ques_*.js) e filter.js em paralelo
-     2. quiz_ui.js (também em paralelo com o passo 1)
-     3. quiz_engine.js (após todos acima estarem prontos)
+     1. Conteúdo (ques_*.js) e quiz_ui.js em paralelo
+     2. quiz_engine.js (após os dois acima estarem prontos)
 
-   filter.js precisa estar carregado ANTES do engine para que
-   FilterStore.load() seja chamado e o engine já encontre o
-   estado correto ao montar a base de questões.
+   filter.js é carregado pelo template.html como script defer,
+   antes de quiz_starter_modal.js e quiz_engine.js. Não é
+   responsabilidade deste módulo carregá-lo.
    ══════════════════════════════════════════════════════════ */
 
 function _loadScript(src, appendTo) {
@@ -322,8 +321,7 @@ function _carregarQuiz(params, info) {
   var uiSrc      = '../js/quiz_ui.js';
   var engineSrc  = '../js/quiz_engine.js';
 
-  /* filter.js já foi carregado antecipadamente no DOMContentLoaded —
-     não recarregar aqui para evitar execução dupla do boot. */
+  /* filter.js carregado pelo template.html antes deste módulo. */
   Promise.all([
     _loadScript(contentSrc, document.head).catch(function () {
       console.warn('[template_init] Conteúdo não encontrado:', contentSrc);
@@ -495,7 +493,7 @@ function _atualizarEstadoGlobal(params) {
 
      [controlado pelo modal — não automático]
        10. Aguarda Firebase (máx 3s)
-       11. Carrega conteúdo + filter.js + UI + engine
+       11. Carrega conteúdo + UI + engine
        12. Inicializa Quiz-Assistant (após engine montar questões)
 
    IMPORTANTE: _carregarQuiz NÃO é chamado aqui.
@@ -520,14 +518,6 @@ document.addEventListener('DOMContentLoaded', function () {
   _inicializarAudio();
   _inicializarAssistant();
 
-  /* Carrega filter.js imediatamente — antes do quiz, antes do engine.
-     O modal precisa de window.__nexusFiltroAbrir disponível quando o
-     usuário clicar "Filtrar aulas", e isso acontece ANTES do boot
-     do quiz ser concluído. Sem esse carregamento antecipado, o painel
-     não abre porque filter.js ainda não existe no momento do clique. */
-  _loadScript('../js/filter.js', document.head).catch(function (err) {
-    console.warn('[template_init] filter.js (antecipado) não encontrado:', err);
-  });
 });
 
 window.__nexusCarregarQuiz = function () {

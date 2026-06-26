@@ -1,6 +1,11 @@
 <!--
-  NEXUS STUDY — quiz/template/template.html  v11.2
+  NEXUS STUDY — quiz/template/template.html  v11.3
   Template unificado para todos os modos (ava, questoes, enade, etc.)
+
+  v11.3 — ORDEM DE CARREGAMENTO DOS SCRIPTS REFATORADA:
+    filter.js agora é carregado como defer ANTES de quiz_starter_modal.js.
+    Isso garante que window.NexusFilter existe quando o modal renderiza,
+    eliminando a dependência circular e qualquer forma de polling.
 
   v11.2 — REMOÇÃO DO BOOT SYSTEM:
     - Removidos: nexus_boot.js, nexus_boot.css, splash screen, data-booting
@@ -159,40 +164,36 @@
   <!-- ═══════════════════════════════════════════
        SCRIPTS
 
-       ORDEM DELIBERADA (prioridade visual primeiro,
-       Quiz-Assistant por último — ele só precisa
-       funcionar depois, não bloquear nada antes):
+       ORDEM DELIBERADA — garantia de dependências sem polling:
 
-         1. template_init.js   → tema, header, nav-float, áudio
-         2. quiz_starter_modal.js → decide o fluxo, mostra o modal
-         3. fab.js              → cria #nexus-fab (botão visual da IA,
-                                    independente do Quiz-Assistant em si)
-         4. quick-access.js     → botões de acesso rápido
-         5. ui.js/history.js/worker.js/assistant.js → Quiz-Assistant
-                                    completo, por último: é o item menos
-                                    prioritário visualmente e o que mais
-                                    demora (inclui o polling de 3s por
-                                    __NEXUS_QUESTOES_VISUAIS__)
+         1. template_init.js   → tema, header, nav-float, áudio (module)
+         2. filter.js          → FilterStore + FilterPanel + window.NexusFilter
+                                  DEVE vir antes do modal para que
+                                  NexusFilter.open() já exista quando o
+                                  usuário interagir com "Filtrar aulas".
+         3. quiz_starter_modal.js → decide o fluxo, chama NexusFilter.open()
+                                     diretamente (sem polling, sem espera)
+         4. fab.js              → cria #nexus-fab
+         5. quick-access.js     → botões de acesso rápido
+         6. ui/history/worker/assistant → Quiz-Assistant (menor prioridade visual)
+
+       Os scripts defer executam na ORDEM em que aparecem no HTML,
+       após o parsing completo — essa ordem é a garantia arquitetural.
   ═══════════════════════════════════════════ -->
   <script type="module" src="template_init.js"></script>
 
-  <!-- quiz_starter_modal decide o fluxo e revela o #quiz-container.
-       Não depende de nenhum script abaixo — só de template_init.js
-       e do engine, que ele mesmo aguarda via polling. -->
+  <!-- filter.js antes do modal: NexusFilter disponível sem polling -->
+  <script src="../js/filter.js" defer></script>
+
+  <!-- modal decide o fluxo; NexusFilter já existe -->
   <script src="../js/quiz_starter_modal.js" defer></script>
 
-  <!-- fab.js cria o botão flutuante de IA (#nexus-fab) sozinho,
-       sem depender do bloco do Quiz-Assistant abaixo. Colocado
-       aqui para que o nav-float possa movê-lo para a pilha da
-       direita o quanto antes, em vez de esperar todo o bloco
-       de IA carregar primeiro. -->
+  <!-- fab.js cria o botão flutuante de IA independentemente -->
   <script src="../../shared/js/ia/core/fab.js" defer></script>
 
   <script src="../../shared/js/utils/quick-access.js" defer></script>
 
-  <!-- Bloco do Quiz-Assistant — por último, de propósito.
-       Não é prioridade visual: o assistant só precisa estar
-       funcional depois que o resto da página já carregou. -->
+  <!-- Bloco do Quiz-Assistant — por último, de propósito -->
   <script src="../../shared/js/ia/core/ui.js" defer></script>
   <script src="../../shared/js/ia/core/history.js" defer></script>
   <script src="../../shared/js/ia/core/worker.js" defer></script>
