@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="../shared/css/audio/audio-btns.css" />
   <link rel="stylesheet" href="../shared/css/ia/ia.css" />
 
+  <link rel="stylesheet" href="css/atlas.css" />
   <link rel="stylesheet" href="css/biblioteca.css" />
   <link rel="stylesheet" href="css/disciplina.css" />
   <link rel="stylesheet" href="css/leitura.css" />
@@ -37,64 +38,11 @@
   </div>
 
   <!-- ══════════════════════════════════════════
-       SIDEBAR LATERAL — navegação geral do Atlas
+       SIDEBAR ÚNICA DO ATLAS
+       Gerada dinamicamente pelo atlas.js
+       (mesma sidebar para Biblioteca e Disciplina)
   ══════════════════════════════════════════ -->
-  <aside class="kb-sidebar" id="kb-sidebar" aria-label="Navegação do Atlas">
-    <nav class="kb-sidebar__nav">
-
-      <!-- Biblioteca (ativo) -->
-      <button class="kb-sidebar__item kb-sidebar__item--active" data-tip="Biblioteca" aria-label="Biblioteca">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-        </svg>
-        <span class="kb-sidebar__tip">Biblioteca</span>
-      </button>
-
-      <!-- Favoritos -->
-      <button class="kb-sidebar__item" data-tip="Favoritos" aria-label="Favoritos">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
-        </svg>
-        <span class="kb-sidebar__tip">Favoritos</span>
-      </button>
-
-      <!-- Histórico -->
-      <button class="kb-sidebar__item" data-tip="Histórico" aria-label="Histórico">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-        </svg>
-        <span class="kb-sidebar__tip">Histórico</span>
-      </button>
-
-      <!-- Recursos -->
-      <button class="kb-sidebar__item" data-tip="Recursos" aria-label="Recursos">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
-        </svg>
-        <span class="kb-sidebar__tip">Recursos</span>
-      </button>
-
-      <!-- Separador -->
-      <div class="kb-sidebar__sep" aria-hidden="true"></div>
-
-      <!-- Ferramentas -->
-      <button class="kb-sidebar__item" data-tip="Ferramentas" aria-label="Ferramentas">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
-        </svg>
-        <span class="kb-sidebar__tip">Ferramentas</span>
-      </button>
-
-      <!-- Materiais -->
-      <button class="kb-sidebar__item" data-tip="Materiais" aria-label="Materiais extras">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
-        </svg>
-        <span class="kb-sidebar__tip">Materiais</span>
-      </button>
-
-    </nav>
-  </aside>
+  <div id="atlas-sidebar-mount"></div>
 
   <!-- ══════════════════════════════════════════
        HEADER — 3 colunas: btn-back | logo | controles
@@ -103,8 +51,9 @@
   <header class="library-header" id="app-header">
     <div class="library-header__inner">
 
-      <!-- Coluna esquerda: botão voltar -->
-      <a href="../index.html" class="library-btn-back" id="btn-back" title="Voltar ao início">
+      <!-- Coluna esquerda: botão voltar — texto e ação dependem da tela ativa
+           (controlado por atlas.js via _renderHeaderBack) -->
+      <a href="../index.html" class="library-btn-back" id="btn-back" title="Início">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>

@@ -1,0 +1,518 @@
+/* =============================================
+   atlas — GLOBAL
+   css/atlas.css
+
+   Estilos COMPARTILHADOS entre Biblioteca e
+   Disciplina: tokens, base, fundo, sidebar única
+   do Atlas, header, layout raiz, footer, toast e
+   scrollbar.
+
+   biblioteca.css e disciplina.css contêm apenas
+   o que é exclusivo de cada tela. Nenhum seletor
+   de componente abaixo é duplicado nos outros
+   dois arquivos.
+   ============================================= */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ══════════════════════════════════════════
+   TOKENS — Atlas (compartilhados)
+══════════════════════════════════════════ */
+:root {
+  /* Backgrounds */
+  --bg-0:       #07091280;
+  --bg-0-solid: #070912;
+  --bg-1:       #0b0f1e;
+  --bg-2:       #101526;
+  --bg-3:       #141a2e;
+  --bg-4:       #1c2340;
+  --bg-hover:   #1f2845;
+
+  /* Borders */
+  --b1: rgba(255,255,255,0.04);
+  --b2: rgba(255,255,255,0.07);
+  --b3: rgba(255,255,255,0.11);
+  --b4: rgba(255,255,255,0.18);
+
+  /* Accent — índigo frio */
+  --indigo:      #6366f1;
+  --indigo-dim:  rgba(99,102,241,0.10);
+  --indigo-glow: rgba(99,102,241,0.22);
+  --indigo-rgb:  99,102,241;
+
+  /* Accent secundário — ciano */
+  --cyan:     #22d3ee;
+  --cyan-dim: rgba(34,211,238,0.08);
+  --cyan-rgb: 34,211,238;
+
+  /* Accent terciário — âmbar */
+  --amber:     #f59e0b;
+  --amber-dim: rgba(245,158,11,0.08);
+
+  /* Paleta cíclica por disciplina — controlada 100% pelo CSS.
+     O JS de conteúdo (content/atlas/*.js) NÃO define cor; apenas
+     o índice de posição é repassado pelo app via [data-color-index]. */
+  --cat-rgb-0: 99,102,241;   /* índigo  */
+  --cat-rgb-1: 34,211,238;   /* ciano   */
+  --cat-rgb-2: 245,158,11;   /* âmbar   */
+  --cat-rgb-3: 168,85,247;   /* roxo    */
+  --cat-rgb-4: 52,211,153;   /* verde   */
+  --cat-rgb-5: 244,114,182;  /* rosa    */
+
+  /* Texto */
+  --t1: #eaecf4;
+  --t2: #7b8398;
+  --t3: #3d4560;
+  --t4: #252d47;
+
+  /* Tipografia */
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-body:    'Inter', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Layout */
+  --header-h:    60px;
+  --sidebar-w:   220px;
+  --content-max: 1060px;
+
+  /* Raios */
+  --r-xl: 18px;
+  --r-lg: 14px;
+  --r-md: 10px;
+  --r-sm: 6px;
+
+  /* Ease */
+  --ease:    cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+}
+
+/* ══════════════════════════════════════════
+   BASE
+══════════════════════════════════════════ */
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  color: var(--t1);
+  background: var(--bg-1);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+a { text-decoration: none; color: inherit; }
+button { font-family: var(--font-body); cursor: pointer; border: none; background: none; color: inherit; }
+img { display: block; max-width: 100%; }
+input { font-family: var(--font-body); }
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(var(--indigo-rgb),0.18); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(var(--indigo-rgb),0.32); }
+
+/* ══════════════════════════════════════════
+   FUNDO — grade técnica discreta + glows
+══════════════════════════════════════════ */
+.bg-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse 100% 100% at 50% 40%, black 20%, transparent 85%);
+}
+
+.bg-canvas::after {
+  content: '';
+  position: absolute;
+  left: var(--sidebar-w);
+  right: 0;
+  top: var(--header-h);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(var(--indigo-rgb),0.12) 30%, rgba(var(--indigo-rgb),0.06) 70%, transparent);
+  pointer-events: none;
+}
+
+.bg-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  pointer-events: none;
+}
+.bg-glow--1 {
+  width: 700px; height: 500px;
+  top: -180px; left: calc(var(--sidebar-w) + 60px);
+  background: radial-gradient(circle, rgba(var(--indigo-rgb),0.22) 0%, transparent 70%);
+}
+.bg-glow--2 {
+  width: 500px; height: 400px;
+  top: 35%; right: -100px;
+  background: radial-gradient(circle, rgba(var(--cyan-rgb),0.10) 0%, transparent 70%);
+}
+.bg-glow--3 {
+  width: 400px; height: 350px;
+  bottom: 0; left: 35%;
+  background: radial-gradient(circle, rgba(var(--indigo-rgb),0.08) 0%, transparent 70%);
+}
+
+/* ══════════════════════════════════════════
+   SIDEBAR ÚNICA DO ATLAS
+   .atlas-sidebar — usada na Biblioteca e na Disciplina.
+   Substitui as antigas .kb-sidebar e .subject-left-sidebar.
+   Visual herdado da sidebar criada para Disciplina.
+══════════════════════════════════════════ */
+.atlas-sidebar {
+  position: fixed;
+  top: var(--header-h);
+  left: 0;
+  bottom: 0;
+  width: var(--sidebar-w);
+  z-index: 100;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--b1);
+  background: rgba(8,12,20,0.60);
+  backdrop-filter: blur(16px);
+  padding: 1.25rem 0 0;
+  scrollbar-width: none;
+}
+.atlas-sidebar::-webkit-scrollbar { display: none; }
+
+/* Seção genérica da sidebar */
+.atlas-sidebar__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  margin-bottom: 1.5rem;
+}
+
+.atlas-sidebar__section-label {
+  font-family: var(--font-mono);
+  font-size: 0.60rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--t3);
+  padding: 0 1rem 0.5rem;
+}
+
+/* Links de navegação genéricos (Biblioteca, Favoritos, Histórico, Recursos…) */
+.atlas-sidebar__nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.42rem 1rem;
+  font-size: 0.80rem;
+  color: var(--t2);
+  transition: color 0.14s, background 0.14s;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+.atlas-sidebar__nav-link svg { opacity: 0.55; flex-shrink: 0; }
+.atlas-sidebar__nav-link:hover { color: var(--t1); background: rgba(255,255,255,0.03); }
+.atlas-sidebar__nav-link--active {
+  color: var(--t1);
+  background: rgba(var(--indigo-rgb),0.14);
+}
+.atlas-sidebar__nav-link--active svg { opacity: 0.9; color: var(--indigo); }
+
+/* Links de disciplinas */
+.atlas-sidebar__disc-link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.38rem 0.75rem 0.38rem 0.85rem;
+  margin: 0 0.4rem;
+  border-radius: var(--r-sm);
+  font-size: 0.80rem;
+  color: var(--t2);
+  transition: color 0.14s, background 0.14s;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: calc(100% - 0.8rem);
+  text-align: left;
+}
+.atlas-sidebar__disc-link:hover { color: var(--t1); background: rgba(255,255,255,0.04); }
+.atlas-sidebar__disc-link.is-active {
+  color: var(--t1);
+  background: rgba(var(--indigo-rgb),0.14);
+}
+
+.atlas-sidebar__disc-link__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  overflow: hidden;
+  background: rgba(var(--cat-rgb, var(--indigo-rgb)),0.18);
+}
+.atlas-sidebar__disc-link__icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.atlas-sidebar__disc-link__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.79rem;
+}
+
+.atlas-sidebar__disc-link__close {
+  display: none;
+  width: 16px;
+  height: 16px;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.4;
+  flex-shrink: 0;
+  font-size: 0.65rem;
+}
+.atlas-sidebar__disc-link.is-active .atlas-sidebar__disc-link__close {
+  display: flex;
+}
+
+/* "Ver todas" link */
+.atlas-sidebar__see-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.85rem;
+  margin-top: 0.25rem;
+  font-size: 0.74rem;
+  color: var(--t3);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.14s;
+}
+.atlas-sidebar__see-all:hover { color: var(--t2); }
+
+/* ══════════════════════════════════════════
+   HEADER
+══════════════════════════════════════════ */
+.library-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  height: var(--header-h);
+  padding: 0 1.5rem 0 calc(var(--sidebar-w) + 1.5rem);
+  background: rgba(7,9,18,0.90);
+  backdrop-filter: blur(20px) saturate(1.4);
+  border-bottom: 1px solid var(--b1);
+}
+
+.library-header__inner {
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.library-btn-back {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.38rem 0.9rem;
+  border-radius: var(--r-md);
+  border: 1px solid var(--b2);
+  color: var(--t2);
+  background: rgba(255,255,255,0.02);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  transition: color 0.18s, border-color 0.18s, background 0.18s;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.library-btn-back:hover {
+  color: var(--t1);
+  border-color: var(--b3);
+  background: rgba(255,255,255,0.05);
+}
+
+.library-header__brand {
+  justify-self: center;
+  display: flex;
+  align-items: center;
+}
+
+.library-header-controls {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.library-header__stats {
+  display: none;
+}
+
+/* Logo injetada via injetarLogo() */
+#header-logo-wrap {
+  display: flex;
+  align-items: center;
+}
+#header-logo-wrap .nexus-logo__link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+#header-logo-wrap .nexus-logo__img {
+  border-radius: 22%;
+  border: 1px solid var(--b2);
+  transition: filter 0.25s ease, transform 0.25s ease;
+}
+#header-logo-wrap .nexus-logo__link:hover .nexus-logo__img {
+  filter: drop-shadow(0 0 6px rgba(var(--indigo-rgb),0.5));
+  transform: scale(1.05);
+}
+#header-logo-wrap .nexus-logo__texto--stacked {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+  gap: 0.15rem;
+}
+#header-logo-wrap .nexus-logo__titulo {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--t1);
+}
+#header-logo-wrap .nexus-logo__sub {
+  font-family: var(--font-display);
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--indigo);
+}
+
+/* ══════════════════════════════════════════
+   LAYOUT PRINCIPAL
+══════════════════════════════════════════ */
+.kb-layout {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+  z-index: 2;
+}
+
+.kb-layout__sidebar-spacer {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+}
+
+.kb-layout__main {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ══════════════════════════════════════════
+   APP
+══════════════════════════════════════════ */
+.app {
+  padding-top: var(--header-h);
+  min-height: 100vh;
+}
+
+.screen {
+  animation: atlas-screen-in 0.30s var(--ease) both;
+}
+.screen[hidden] { display: none !important; }
+
+@keyframes atlas-screen-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ══════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════ */
+.library-site-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2rem 1.5rem;
+  margin-top: auto;
+  font-size: 0.71rem;
+  color: var(--t3);
+  letter-spacing: 0.02em;
+}
+.library-site-footer__sep { opacity: 0.35; }
+
+/* ══════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════ */
+.nexus-toast {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 32px;
+  z-index: 9999;
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: rgba(20,26,46,0.97);
+  color: #e2e4f0;
+  border: 1px solid var(--b3);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.45);
+  backdrop-filter: blur(12px);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+  pointer-events: none;
+}
+.nexus-toast--show { opacity: 1; transform: translateY(0); }
+
+/* ══════════════════════════════════════════
+   COR POR DISCIPLINA — 100% CSS
+   Aplicado via [data-color-index], definido pelo
+   app apenas com a POSIÇÃO da categoria.
+══════════════════════════════════════════ */
+[data-color-index="0"] { --cat-rgb: var(--cat-rgb-0); }
+[data-color-index="1"] { --cat-rgb: var(--cat-rgb-1); }
+[data-color-index="2"] { --cat-rgb: var(--cat-rgb-2); }
+[data-color-index="3"] { --cat-rgb: var(--cat-rgb-3); }
+[data-color-index="4"] { --cat-rgb: var(--cat-rgb-4); }
+[data-color-index="5"] { --cat-rgb: var(--cat-rgb-5); }
+
+/* ══════════════════════════════════════════
+   RESPONSIVO — Atlas (compartilhado)
+══════════════════════════════════════════ */
+@media (max-width: 1100px) {
+  .atlas-sidebar { display: none; }
+  .kb-layout__sidebar-spacer { display: none; }
+  .library-header { padding-left: 1.5rem; }
+  .bg-canvas::after { left: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

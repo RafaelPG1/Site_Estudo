@@ -139,6 +139,7 @@ const EL = {
   heroStats:               $('hero-stats'),
   headerStats:             $('header-stats'),
   searchInput:             $('search-input'),
+  headerBtnBack:           $('btn-back'),
 
   screenDiscipline:        $('screen-discipline'),
   disciplineBack:          $('discipline-back'),
@@ -352,15 +353,24 @@ async function _loadCategoryContent(cat) {
   };
 }
 
-const _contentCache = new Map();
+const _contentCache  = new Map();
+const _inflightCache = new Map();  
 
 async function _getCategoryContent(categoryId) {
-  if (_contentCache.has(categoryId)) return _contentCache.get(categoryId);
-  const cat  = CATEGORIES.find(c => c.id === categoryId);
+  if (_contentCache.has(categoryId))  return _contentCache.get(categoryId);
+  if (_inflightCache.has(categoryId)) return _inflightCache.get(categoryId);
+
+  const cat = CATEGORIES.find(c => c.id === categoryId);
   if (!cat) return null;
-  const data = await _loadCategoryContent(cat);
-  _contentCache.set(categoryId, data);
-  return data;
+
+  const promise = _loadCategoryContent(cat).then(data => {
+    _contentCache.set(categoryId, data);
+    _inflightCache.delete(categoryId);
+    return data;
+  });
+
+  _inflightCache.set(categoryId, promise);
+  return promise;
 }
 
 /* ══════════════════════════════════════════════
@@ -481,6 +491,45 @@ function _renderCategoriesGrid(cats) {
   });
 }
 
+/* ──────────────────────────────────────────────
+   _renderHeaderBack
+   Ajusta o botão do header (#btn-back) conforme a
+   tela ativa. Mesma posição/estilo em ambos os casos
+   — só o texto, o destino e a ação mudam:
+
+     • Home (screen-home):
+         "← Início" → <a href="../index.html">,
+         sai do Atlas e volta para a página inicial
+         do site. Comportamento original, inalterado.
+
+     • Disciplina (screen-discipline):
+         "← Voltar ao Atlas" → não navega para fora;
+         apenas chama _showScreen('home'), reutilizando
+         a navegação interna já existente.
+────────────────────────────────────────────── */
+function _renderHeaderBack() {
+  const btn = EL.headerBtnBack;
+  if (!btn) return;
+
+  if (State.view === 'discipline') {
+    btn.removeAttribute('href');
+    btn.title = 'Voltar ao Atlas';
+    btn.querySelector('span').textContent = 'Voltar ao Atlas';
+    btn.onclick = (e) => {
+      e.preventDefault();
+      playSound('click', 'atlas');
+      State.currentCategory = null;
+      _showScreen('home');
+      _renderBreadcrumb();
+    };
+  } else {
+    btn.setAttribute('href', '../index.html');
+    btn.title = 'Início';
+    btn.querySelector('span').textContent = 'Início';
+    btn.onclick = null;
+  }
+}
+
 /* ══════════════════════════════════════════════
    NAVEGAÇÃO ENTRE TELAS
 ══════════════════════════════════════════════ */
@@ -488,6 +537,8 @@ function _showScreen(view) {
   State.view = view;
   if (EL.screenHome)       EL.screenHome.hidden       = view !== 'home';
   if (EL.screenDiscipline) EL.screenDiscipline.hidden = view !== 'discipline';
+  _renderAtlasSidebar();
+  _renderHeaderBack();
 }
 
 /* ══════════════════════════════════════════════
@@ -530,8 +581,8 @@ function _moduleIcon(idx) {
 /* ──────────────────────────────────────────────
    _renderDisciplineLoading
    Monta o esqueleto de loading da tela de disciplina.
-   Gera o layout de 3 colunas com dados básicos do
-   manifest (sem secoes ainda) e um spinner na coluna central.
+   Gera o layout com dados básicos do manifest
+   (sem secoes ainda) e um spinner na coluna central.
 ────────────────────────────────────────────── */
 function _renderDisciplineLoading(cat) {
   if (!EL.screenDiscipline) return;
@@ -539,7 +590,6 @@ function _renderDisciplineLoading(cat) {
   const colorStyle = _iconStyleAttr(cat.color);
 
   EL.screenDiscipline.innerHTML = `
-    ${_buildDisciplineLeftSidebar(cat)}
     <main class="subject-main">
       <div class="subject-hero-banner"${colorStyle}>
         <div class="subject-hero-banner__icon"${colorStyle}>${_renderIcon(cat.icon)}</div>
@@ -560,16 +610,15 @@ function _renderDisciplineLoading(cat) {
     </main>
     ${_buildDisciplineRightSidebar(cat, [])}
   `;
-
-  _bindDisciplineSidebarEvents(cat.id);
 }
 
 /* ──────────────────────────────────────────────
    _renderDisciplineScreen
    Renderiza a tela completa com dados carregados.
-   Substitui todo o conteúdo de #screen-discipline
-   com o layout de 3 colunas: sidebar esquerda +
-   área central + sidebar direita.
+   Substitui o conteúdo de #screen-discipline com o
+   layout de 2 colunas: área central + sidebar direita.
+   (a sidebar esquerda de navegação é a .atlas-sidebar
+   compartilhada, renderizada por _renderAtlasSidebar)
 ────────────────────────────────────────────── */
 function _renderDisciplineScreen(cat, data) {
   if (!EL.screenDiscipline) return;
@@ -586,15 +635,7 @@ function _renderDisciplineScreen(cat, data) {
       </svg>
       ${secoes.length} ${secoes.length === 1 ? 'módulo' : 'módulos'}
     </span>`);
-  if (data?.time) {
-    chips.push(`
-      <span class="subject-chip">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-        </svg>
-        ${data.time} min de leitura
-      </span>`);
-  }
+
   if (data?.type) {
     chips.push(`<span class="subject-chip">${_esc(data.type)}</span>`);
   }
@@ -624,7 +665,6 @@ function _renderDisciplineScreen(cat, data) {
       </div>`;
 
   EL.screenDiscipline.innerHTML = `
-    ${_buildDisciplineLeftSidebar(cat)}
     <main class="subject-main">
       <div class="subject-hero-banner"${colorStyle}>
         <div class="subject-hero-banner__icon"${colorStyle}>${_renderIcon(cat.icon)}</div>
@@ -666,21 +706,21 @@ function _renderDisciplineScreen(cat, data) {
       card?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
   });
-
-  /* ── Bind: sidebar esquerda ── */
-  _bindDisciplineSidebarEvents(cat.id);
 }
 
 /* ──────────────────────────────────────────────
-   _buildDisciplineLeftSidebar
-   Gera o HTML da sidebar esquerda da tela de disciplina.
-   Inclui: voltar, nav biblioteca, lista de disciplinas, card PRO.
+   _buildAtlasSidebarNav
+   Gera os links de navegação fixos do Atlas
+   (Biblioteca, Favoritos, Histórico, Recursos…).
+   Mesmos itens que hoje existem na sidebar de
+   ícones; aqui ganham o visual com texto da
+   sidebar criada para a Disciplina.
 ────────────────────────────────────────────── */
-function _buildDisciplineLeftSidebar(activeCat) {
+function _buildAtlasSidebarNav(view) {
   const navLinks = [
     {
       svg: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`,
-      label: 'Todas as disciplinas',
+      label: 'Biblioteca',
       action: 'all',
     },
     {
@@ -690,61 +730,100 @@ function _buildDisciplineLeftSidebar(activeCat) {
     },
     {
       svg: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
-      label: 'Recentes',
+      label: 'Histórico',
       action: 'recent',
+    },
+    {
+      svg: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
+      label: 'Recursos',
+      action: 'resources',
     },
   ];
 
+  return navLinks.map(l => `
+    <button class="atlas-sidebar__nav-link${view === 'home' && l.action === 'all' ? ' atlas-sidebar__nav-link--active' : ''}" data-nav-action="${_esc(l.action)}" type="button">
+      ${l.svg}
+      ${_esc(l.label)}
+    </button>`).join('');
+}
+
+/* ──────────────────────────────────────────────
+   _buildAtlasSidebar
+   Gera o HTML da sidebar única do Atlas: nav fixo
+   + lista de disciplinas. Usada tanto na Biblioteca
+   quanto na Disciplina (mesma estrutura nas duas).
+   activeCatId é null na Home.
+────────────────────────────────────────────── */
+function _buildAtlasSidebar(activeCatId) {
   const discLinks = CATEGORIES.map(c => {
-    const isActive = c.id === activeCat.id;
+    const isActive  = c.id === activeCatId;
     const colorAttr = _iconStyleAttr(c.color);
     return `
-      <button class="subject-left-disc-link${isActive ? ' is-active' : ''}" data-disc-id="${_esc(c.id)}" type="button">
-        <span class="subject-left-disc-link__icon"${colorAttr}>${_renderIcon(c.icon)}</span>
-        <span class="subject-left-disc-link__name">${_esc(c.name)}</span>
-        ${isActive ? `<span class="subject-left-disc-link__close" aria-hidden="true">✕</span>` : ''}
+      <button class="atlas-sidebar__disc-link${isActive ? ' is-active' : ''}" data-disc-id="${_esc(c.id)}" type="button">
+        <span class="atlas-sidebar__disc-link__icon"${colorAttr}>${_renderIcon(c.icon)}</span>
+        <span class="atlas-sidebar__disc-link__name">${_esc(c.name)}</span>
+        ${isActive ? `<span class="atlas-sidebar__disc-link__close" aria-hidden="true">✕</span>` : ''}
       </button>`;
   }).join('');
 
   return `
-    <aside class="subject-left-sidebar" aria-label="Navegação da disciplina">
-      <button class="subject-left-back" id="discipline-back" type="button">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
-        </svg>
-        Voltar ao Atlas
-      </button>
-
-      <div class="subject-left-section">
-        <span class="subject-left-section-label">Biblioteca</span>
-        ${navLinks.map(l => `
-          <button class="subject-left-nav-link" data-nav-action="${_esc(l.action)}" type="button">
-            ${l.svg}
-            ${_esc(l.label)}
-          </button>`).join('')}
+    <aside class="atlas-sidebar" id="atlas-sidebar" aria-label="Navegação do Atlas">
+      <div class="atlas-sidebar__section">
+        <span class="atlas-sidebar__section-label">Biblioteca</span>
+        ${_buildAtlasSidebarNav(State.view)}
       </div>
 
-      <div class="subject-left-section">
-        <span class="subject-left-section-label">Minhas disciplinas</span>
+      <div class="atlas-sidebar__section">
+        <span class="atlas-sidebar__section-label">Minhas disciplinas</span>
         ${discLinks}
       </div>
 
-      <button class="subject-left-see-all" type="button">Ver todas</button>
-
-      <div class="subject-left-spacer"></div>
-
-      <div class="subject-pro-card">
-        <div class="subject-pro-card__header">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          Nexus Pro
-        </div>
-        <div class="subject-pro-card__body">Conteúdos exclusivos, recursos avançados e muito mais.</div>
-        <button class="subject-pro-card__cta" type="button">
-          Conhecer planos
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
-        </button>
-      </div>
+      <button class="atlas-sidebar__see-all" type="button">Ver todas</button>
     </aside>`;
+}
+
+/* ──────────────────────────────────────────────
+   _renderAtlasSidebar
+   (Re)renderiza a sidebar única dentro do mount
+   fixo no HTML e faz o bind dos eventos. Chamada
+   sempre que a tela muda (_showScreen) ou a lista
+   de categorias é atualizada.
+────────────────────────────────────────────── */
+function _renderAtlasSidebar() {
+  const mount = $('atlas-sidebar-mount');
+  if (!mount) return;
+
+  mount.innerHTML = _buildAtlasSidebar(State.currentCategory);
+  _bindAtlasSidebarEvents();
+}
+
+/* ──────────────────────────────────────────────
+   _bindAtlasSidebarEvents
+   Bind dos eventos da sidebar única após cada render.
+   Reutiliza _abrirDisciplina e _showScreen existentes.
+────────────────────────────────────────────── */
+function _bindAtlasSidebarEvents() {
+  const mount = $('atlas-sidebar-mount');
+  if (!mount) return;
+
+  /* "Biblioteca" → volta para Home */
+  mount.querySelector('[data-nav-action="all"]')?.addEventListener('click', () => {
+    playSound('click', 'atlas');
+    State.currentCategory = null;
+    _showScreen('home');
+    _renderBreadcrumb();
+  });
+
+  /* Links de disciplinas na sidebar */
+  mount.querySelectorAll('[data-disc-id]').forEach(el => {
+    el.addEventListener('click', () => {
+      const id = el.dataset.discId;
+      if (id && id !== State.currentCategory) {
+        playSound('click', 'atlas');
+        _abrirDisciplina(id);
+      }
+    });
+  });
 }
 
 /* ──────────────────────────────────────────────
@@ -831,43 +910,6 @@ function _buildDisciplineRightSidebar(cat, secoes) {
         <div class="subject-resource-list">${resourceItems}</div>
       </div>
     </aside>`;
-}
-
-/* ──────────────────────────────────────────────
-   _bindDisciplineSidebarEvents
-   Bind dos eventos da sidebar esquerda após cada render.
-   Reutiliza _abrirDisciplina e _showScreen existentes.
-────────────────────────────────────────────── */
-function _bindDisciplineSidebarEvents(activeCatId) {
-  const screen = EL.screenDiscipline;
-  if (!screen) return;
-
-  /* Botão "Voltar ao Atlas" → volta para Home */
-  screen.querySelector('#discipline-back')?.addEventListener('click', () => {
-    playSound('click', 'atlas');
-    State.currentCategory = null;
-    _showScreen('home');
-    _renderBreadcrumb();
-  });
-
-  /* "Todas as disciplinas" → idem */
-  screen.querySelector('[data-nav-action="all"]')?.addEventListener('click', () => {
-    playSound('click', 'atlas');
-    State.currentCategory = null;
-    _showScreen('home');
-    _renderBreadcrumb();
-  });
-
-  /* Links de disciplinas na sidebar */
-  screen.querySelectorAll('[data-disc-id]').forEach(el => {
-    el.addEventListener('click', () => {
-      const id = el.dataset.discId;
-      if (id && id !== activeCatId) {
-        playSound('click', 'atlas');
-        _abrirDisciplina(id);
-      }
-    });
-  });
 }
 
 /* ══════════════════════════════════════════════
@@ -1274,9 +1316,9 @@ function _renderLoadingState() {
 
 /* ══════════════════════════════════════════════
    BINDINGS DE EVENTOS GLOBAIS
-   Nota: discipline-back é gerado dinamicamente pelo
-   _buildDisciplineLeftSidebar e rebindado após cada
-   render via _bindDisciplineSidebarEvents.
+   Nota: a sidebar única do Atlas (#atlas-sidebar-mount)
+   é gerada dinamicamente por _renderAtlasSidebar e
+   rebindada após cada render via _bindAtlasSidebarEvents.
    Aqui ficam apenas os bindings de elementos fixos no HTML.
 ══════════════════════════════════════════════ */
 function _bindEvents() {
@@ -1329,6 +1371,8 @@ async function init() {
 
   _renderBreadcrumb();
   _renderLoadingState();
+  _renderAtlasSidebar();
+  _renderHeaderBack();
   _bindEvents();
 
   await _loadAllCategories();
@@ -1336,6 +1380,7 @@ async function init() {
   _renderStats();
   _renderBreadcrumb();
   _renderCategoriesGrid(CATEGORIES);
+  _renderAtlasSidebar();
 
   const params     = new URLSearchParams(window.location.search);
   const catParam   = params.get('cat');

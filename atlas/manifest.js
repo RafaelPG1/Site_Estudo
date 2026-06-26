@@ -42,5 +42,32 @@ window.__atlasManifest = [
     </svg>`,
     content: '../content/atlas/python.js',
   },
+  {
+  id: 'javascript',
+  title: 'JavaScript',
+  desc: 'Documentação completa de JavaScript: fundamentos, DOM, ES6+, programação assíncrona, módulos e boas práticas.',
+  type: 'Documentação',
+  time: 54,
+  theme: 'yellow',
+  color: '#F7DF1E',
+  icon: `<svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+    <rect width="128" height="128" fill="#F7DF1E"/>
+    <path d="M76.5 100.6c2.6 4.2 6 7.3 12.1 7.3 5.1 0 8.4-2.5 8.4-6.1 0-4.2-3.3-5.7-8.9-8.1l-3-1.3c-8.7-3.7-14.4-8.3-14.4-18.1 0-9 6.9-15.9 17.7-15.9 7.7 0 13.2 2.7 17.2 9.7l-9.4 6c-2.1-3.7-4.3-5.1-7.8-5.1-3.5 0-5.8 2.2-5.8 5.1 0 3.6 2.2 5 7.3 7.2l3 1.3c10.2 4.4 15.9 8.8 15.9 18.8 0 10.8-8.5 16.7-19.9 16.7-11.2 0-18.5-5.3-22-12zM34.5 101.6c1.9 3.4 3.7 6.3 8 6.3 4.1 0 6.7-1.6 6.7-7.8V58.8h11.2v41.5c0 12.6-7.4 18.4-18.2 18.4-9.8 0-15.4-5.1-18.3-11.2z"/>
+  </svg>`,
+  content: '../content/atlas/javascript.js',
+},
+
+
+{
+  id: 'cpp',
+  title: 'C++',
+  desc: 'Documentação completa de C++: sintaxe, ponteiros, memória, STL, orientação a objetos e recursos modernos.',
+  type: 'Documentação',
+  time: 64,
+  theme: 'blue',
+  color: '#00599C',
+  icon: 'C++',
+  content: '../content/atlas/cpp.js',
+},
 
 ];
