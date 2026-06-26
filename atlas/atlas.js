@@ -9,27 +9,17 @@
 
    Descoberta de categorias:
      1. Carrega atlas/manifest.js
-        (expõe window.__atlasManifest = [ { id, title, desc,
-         type, time, theme, icon, content }, ... ])
      2. Para cada entrada do manifest, o atlas.js monta os
         cards usando APENAS os metadados do manifest.
      3. Quando o usuário abre uma disciplina, carrega o
         arquivo indicado em disciplina.content via <script>.
      4. Une os metadados do manifest com o conteúdo carregado
-        (window.__nexusatlas.secoes), mantendo o comportamento
-        visual e funcional atual.
+        (window.__nexusatlas.secoes).
 
    Para adicionar uma nova disciplina:
      • Crie content/atlas/linux.js com window.__nexusatlas = { secoes: [...] }
-     • Adicione a entrada completa (com metadados) em atlas/manifest.js
+     • Adicione a entrada completa em atlas/manifest.js
      • Pronto. Nenhuma outra mudança necessária aqui.
-
-   Sistema de temas:
-     • O manifest define theme: "indigo" (identificador semântico)
-     • O atlas.js aplica data-theme="indigo" nos elementos relevantes
-     • Toda a aparência é responsabilidade exclusiva do CSS:
-         [data-theme="indigo"] { ... }
-         [data-theme="emerald"] { ... }
 
    Infraestrutura compartilhada utilizada:
      • shared/js/utils/logo.js   → injetarLogo
@@ -40,11 +30,11 @@
    ═══════════════════════════════════════════════════════════ */
 
 /* ══════════════════════════════════════════════
-   IMPORTS — infraestrutura compartilhada
+   IMPORTS
 ══════════════════════════════════════════════ */
-import { injetarLogo }                                      from '../shared/js/utils/logo.js';
-import { preencherAnos }                                    from '../shared/js/utils/dom.js';
-import { Sound, audio, installAudioRecovery, playSound }   from '../shared/js/audio/audio-api.js';
+import { injetarLogo }                                    from '../shared/js/utils/logo.js';
+import { preencherAnos }                                  from '../shared/js/utils/dom.js';
+import { Sound, audio, installAudioRecovery, playSound } from '../shared/js/audio/audio-api.js';
 
 /* ══════════════════════════════════════════════
    IA — contexto neutro
@@ -55,8 +45,8 @@ function _loadScript(src) {
   return new Promise((resolve, reject) => {
     if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
     const s = document.createElement('script');
-    s.src    = src;
-    s.onload = resolve;
+    s.src     = src;
+    s.onload  = resolve;
     s.onerror = () => reject(new Error(`[Nexus IA] Falha: ${src}`));
     document.body.appendChild(s);
   });
@@ -118,7 +108,7 @@ function _buildChapterGroups(categoryId, secoes) {
    ESTADO DA UI
 ══════════════════════════════════════════════ */
 const State = {
-  view:              'home',
+  view:              'home',   // 'home' | 'discipline' | 'materials'
   currentCategory:   null,
   currentChapter:    null,
   searchQuery:       '',
@@ -127,7 +117,9 @@ const State = {
   _progressCleanup:  null,
 };
 
-// ── FAVORITOS ──
+/* ══════════════════════════════════════════════
+   FAVORITOS
+══════════════════════════════════════════════ */
 const Favorites = {
   _key:   'nexus_atlas_favorites',
   _limit: 8,
@@ -144,28 +136,24 @@ const Favorites = {
 
   toggle(id) {
     const favs = this.load();
-
     if (favs.has(id)) {
-      // remover — sempre permitido
       favs.delete(id);
       this.save(favs);
       return false;
     }
-
-    // adicionar — verifica limite
     if (favs.size >= this._limit) {
-      return null; // sinaliza limite atingido
+      return null; // limite atingido
     }
-
     favs.add(id);
     this.save(favs);
     return true;
   },
 
-  has(id)   { return this.load().has(id); },
-  getAll()  { return this.load(); },
-  isFull()  { return this.load().size >= this._limit; },
+  has(id)  { return this.load().has(id); },
+  getAll() { return this.load(); },
+  isFull() { return this.load().size >= this._limit; },
 };
+
 /* ══════════════════════════════════════════════
    SELETORES
 ══════════════════════════════════════════════ */
@@ -283,8 +271,8 @@ function _toast(msg) {
   existentes.forEach(t => { nextBottom += t.offsetHeight + OFFSET; });
 
   const t = document.createElement('div');
-  t.className    = 'nexus-toast';
-  t.textContent  = msg;
+  t.className   = 'nexus-toast';
+  t.textContent = msg;
   t.style.bottom = `${nextBottom}px`;
   document.body.appendChild(t);
 
@@ -393,7 +381,7 @@ async function _loadCategoryContent(cat) {
 }
 
 const _contentCache  = new Map();
-const _inflightCache = new Map();  
+const _inflightCache = new Map();
 
 async function _getCategoryContent(categoryId) {
   if (_contentCache.has(categoryId))  return _contentCache.get(categoryId);
@@ -524,24 +512,22 @@ function _renderCategoriesGrid(cats) {
     const id = card.dataset.catId;
 
     // Botão de favorito
-card.querySelector('[data-fav-id]')?.addEventListener('click', (e) => {
-  e.stopPropagation();
-  const favId  = e.currentTarget.dataset.favId;
-  const result = Favorites.toggle(favId);
+    card.querySelector('[data-fav-id]')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const favId  = e.currentTarget.dataset.favId;
+      const result = Favorites.toggle(favId);
 
-  if (result === null) {
-    // limite atingido
-    _toast('Você pode ter no máximo 8 disciplinas favoritas.');
-    // feedback visual no botão: chacoalha e volta
-    e.currentTarget.classList.add('fav-limit');
-    setTimeout(() => e.currentTarget.classList.remove('fav-limit'), 600);
-    return;
-  }
+      if (result === null) {
+        _toast('Você pode ter no máximo 8 disciplinas favoritas.');
+        e.currentTarget.classList.add('fav-limit');
+        setTimeout(() => e.currentTarget.classList.remove('fav-limit'), 600);
+        return;
+      }
 
-  e.currentTarget.classList.toggle('is-active', result);
-  _renderAtlasSidebar();
-  playSound(result ? 'click' : 'hover', 'atlas');
-});
+      e.currentTarget.classList.toggle('is-active', result);
+      _renderAtlasSidebar();
+      playSound(result ? 'click' : 'hover', 'atlas');
+    });
 
     card.addEventListener('mouseenter', () => playSound('hover', 'atlas'));
     card.addEventListener('click', () => {
@@ -562,22 +548,242 @@ card.querySelector('[data-fav-id]')?.addEventListener('click', (e) => {
     } catch { /* silencioso */ }
   });
 }
-/* ──────────────────────────────────────────────
-   _renderHeaderBack
-   Ajusta o botão do header (#btn-back) conforme a
-   tela ativa. Mesma posição/estilo em ambos os casos
-   — só o texto, o destino e a ação mudam:
 
-     • Home (screen-home):
-         "← Início" → <a href="../index.html">,
-         sai do Atlas e volta para a página inicial
-         do site. Comportamento original, inalterado.
+/* ══════════════════════════════════════════════
+   TELA HOME — renderização
+══════════════════════════════════════════════ */
+function _renderHomeScreen() {
+  if (!EL.screenHome) return;
 
-     • Disciplina (screen-discipline):
-         "← Voltar ao Atlas" → não navega para fora;
-         apenas chama _showScreen('home'), reutilizando
-         a navegação interna já existente.
-────────────────────────────────────────────── */
+  EL.screenHome.innerHTML = `
+    <section class="library-hero" id="hero">
+      <div class="library-hero__inner">
+        <div class="library-hero__text-block">
+          <div class="library-hero__eyebrow">
+            <span class="library-hero__eyebrow-dot" aria-hidden="true"></span>
+            <span>Biblioteca</span>
+          </div>
+          <h1 class="library-hero__title">
+            <span class="library-hero__title-main">Atlas</span>
+          </h1>
+          <p class="library-hero__desc">
+            Documentações e materiais do Nexus Study<br>
+            reunidos em um só lugar.
+          </p>
+          <div class="library-search-wrap">
+            <div class="library-search-box" id="search-box">
+              <svg class="library-search-box__icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input
+                class="library-search-box__input"
+                id="search-input"
+                type="search"
+                placeholder="Buscar disciplina…"
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <div class="library-search-box__kbd-wrap" aria-hidden="true">
+                <span class="library-search-box__kbd">⌘</span>
+                <span class="library-search-box__kbd">K</span>
+              </div>
+            </div>
+          </div>
+          <div class="library-hero__stats" id="hero-stats"></div>
+        </div>
+        <div class="library-hero__ornament" aria-hidden="true">
+          <svg class="library-hero__book" viewBox="0 0 220 190" xmlns="http://www.w3.org/2000/svg">
+            <path d="M110 38 C100 28 58 20 26 26 C23 27 22 29 22 32 L22 138 C22 142 24 144 27 143.5
+                     C58 137.5 100 148 110 162
+                     C120 148 162 137.5 193 143.5 C196 144 198 142 198 138
+                     L198 32 C198 29 197 27 194 26 C162 20 120 28 110 38 Z"
+                  stroke="rgba(99,102,241,0.22)" stroke-width="1.5" fill="none"/>
+            <path d="M110 30 C100 21 62 14 32 20 C29.5 20.5 29 22 29 24.5 L29 130 C29 133 30.5 134.5 33 134
+                     C62 128.5 100 138 110 154
+                     C120 138 158 128.5 187 134 C189.5 134.5 191 133 191 130
+                     L191 24.5 C191 22 190.5 20.5 188 20 C158 14 120 21 110 30 Z"
+                  stroke="rgba(99,102,241,0.55)" stroke-width="1.6" fill="none"/>
+            <line x1="42" y1="42" x2="100" y2="48" stroke="rgba(99,102,241,0.20)" stroke-width="1"/>
+            <line x1="40" y1="58" x2="100" y2="64" stroke="rgba(99,102,241,0.16)" stroke-width="1"/>
+            <line x1="38" y1="74" x2="100" y2="80" stroke="rgba(99,102,241,0.12)" stroke-width="1"/>
+            <line x1="37" y1="90" x2="100" y2="96" stroke="rgba(99,102,241,0.08)" stroke-width="1"/>
+            <line x1="120" y1="48" x2="178" y2="42" stroke="rgba(99,102,241,0.20)" stroke-width="1"/>
+            <line x1="120" y1="64" x2="180" y2="58" stroke="rgba(99,102,241,0.16)" stroke-width="1"/>
+            <line x1="120" y1="80" x2="182" y2="74" stroke="rgba(99,102,241,0.12)" stroke-width="1"/>
+            <line x1="120" y1="96" x2="183" y2="90" stroke="rgba(99,102,241,0.08)" stroke-width="1"/>
+            <path d="M110 30 C110 30 110 110 110 154"
+                  stroke="rgba(99,102,241,0.9)" stroke-width="2.5" fill="none"
+                  filter="url(#glow-spine)"/>
+            <circle cx="90"  cy="14" r="1.5" fill="rgba(99,102,241,0.6)"/>
+            <circle cx="110" cy="8"  r="2"   fill="rgba(99,102,241,0.8)"/>
+            <circle cx="130" cy="14" r="1.5" fill="rgba(99,102,241,0.6)"/>
+            <circle cx="72"  cy="20" r="1"   fill="rgba(99,102,241,0.3)"/>
+            <circle cx="148" cy="20" r="1"   fill="rgba(99,102,241,0.3)"/>
+            <circle cx="55"  cy="40" r="1"   fill="rgba(34,211,238,0.4)"/>
+            <circle cx="165" cy="36" r="1.2" fill="rgba(34,211,238,0.5)"/>
+            <circle cx="195" cy="65" r="0.8" fill="rgba(99,102,241,0.4)"/>
+            <defs>
+              <filter id="glow-spine" x="-200%" y="-200%" width="500%" height="500%">
+                <feGaussianBlur stdDeviation="4" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <section class="library-categories-section" id="categories-section">
+      <div class="library-section-header">
+        <div class="library-section-header__left">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+               style="color:var(--indigo);opacity:0.8">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+            <polyline points="2 17 12 22 22 17"/>
+            <polyline points="2 12 12 17 22 12"/>
+          </svg>
+          <div>
+            <h2 class="library-section-title">Disciplinas</h2>
+            <p class="library-section-subtitle">Explore as disciplinas disponíveis na plataforma</p>
+          </div>
+        </div>
+        <span class="library-section-count" id="categories-count"></span>
+      </div>
+      <div class="library-categories-grid" id="categories-grid"></div>
+    </section>
+  `;
+
+  // Reconecta referências dinâmicas
+  EL.searchInput     = $('search-input');
+  EL.catGrid         = $('categories-grid');
+  EL.categoriesCount = $('categories-count');
+  EL.heroStats       = $('hero-stats');
+
+  _renderStats();
+  _renderCategoriesGrid(CATEGORIES);
+
+  EL.searchInput?.addEventListener('input', e => {
+    clearTimeout(window._searchTimer);
+    window._searchTimer = setTimeout(() => _handleSearch(e.target.value), 160);
+  });
+}
+
+/* ══════════════════════════════════════════════
+   TELA MATERIAIS — renderização
+══════════════════════════════════════════════ */
+function _renderMaterialsScreen() {
+  if (!EL.screenHome) return;
+
+  EL.screenHome.innerHTML = `
+    <section class="library-hero" id="hero">
+      <div class="library-hero__inner">
+        <div class="library-hero__text-block">
+          <div class="library-hero__eyebrow">
+            <span class="library-hero__eyebrow-dot" aria-hidden="true"></span>
+            <span>Materiais</span>
+          </div>
+          <h1 class="library-hero__title">
+            <span class="library-hero__title-main">Materiais</span>
+          </h1>
+          <p class="library-hero__desc">
+            Referências externas, documentações oficiais<br>
+            e recursos de estudo reunidos.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="library-categories-section">
+      <div class="library-section-header">
+        <div class="library-section-header__left">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+               style="color:var(--indigo);opacity:0.8">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+          </svg>
+          <div>
+            <h2 class="library-section-title">Hub de Materiais</h2>
+            <p class="library-section-subtitle">Recursos externos organizados por tipo</p>
+          </div>
+        </div>
+      </div>
+      <div class="materials-grid">
+        ${_buildMaterialsCategories()}
+      </div>
+    </section>
+  `;
+}
+
+function _buildMaterialsCategories() {
+  const groups = [
+    {
+      icon:  `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>`,
+      label: 'GitHub',
+      color: '139,148,158',
+      items: CATEGORIES.flatMap(c => (c.resources ?? []).filter(r => r.url?.includes('github'))),
+    },
+    {
+      icon:  `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`,
+      label: 'Documentação',
+      color: '99,102,241',
+      items: CATEGORIES.flatMap(c => (c.resources ?? []).filter(r => !r.url?.includes('github'))),
+    },
+    {
+      icon:  `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>`,
+      label: 'Vídeos',
+      color: '239,68,68',
+      items: [],
+    },
+    {
+      icon:  `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`,
+      label: 'Livros',
+      color: '245,158,11',
+      items: [],
+    },
+    {
+      icon:  `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>`,
+      label: 'Artigos',
+      color: '52,211,153',
+      items: [],
+    },
+    {
+      icon:  `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
+      label: 'Referências',
+      color: '168,85,247',
+      items: [],
+    },
+  ];
+
+  return groups.map(g => `
+    <div class="materials-group">
+      <div class="materials-group__header" style="--mat-rgb:${g.color}">
+        <span class="materials-group__icon" style="--mat-rgb:${g.color}">${g.icon}</span>
+        <span class="materials-group__label">${_esc(g.label)}</span>
+        <span class="materials-group__count">${g.items.length}</span>
+      </div>
+      <div class="materials-group__body">
+        ${g.items.length
+          ? g.items.map(r => `
+              <a class="materials-item" href="${_esc(r.url ?? '#')}" target="_blank" rel="noopener">
+                <span class="materials-item__title">${_esc(r.title ?? r.display ?? r.url ?? '')}</span>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                  <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+              </a>`).join('')
+          : `<div class="materials-group__empty">Nenhum material cadastrado ainda</div>`
+        }
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ══════════════════════════════════════════════
+   HEADER BACK
+══════════════════════════════════════════════ */
 function _renderHeaderBack() {
   const btn = EL.headerBtnBack;
   if (!btn) return;
@@ -606,8 +812,20 @@ function _renderHeaderBack() {
 ══════════════════════════════════════════════ */
 function _showScreen(view) {
   State.view = view;
-  if (EL.screenHome)       EL.screenHome.hidden       = view !== 'home';
-  if (EL.screenDiscipline) EL.screenDiscipline.hidden = view !== 'discipline';
+
+  if (view === 'materials') {
+    if (EL.screenHome)       EL.screenHome.hidden       = false;
+    if (EL.screenDiscipline) EL.screenDiscipline.hidden = true;
+    _renderMaterialsScreen();
+  } else if (view === 'home') {
+    if (EL.screenHome)       EL.screenHome.hidden       = false;
+    if (EL.screenDiscipline) EL.screenDiscipline.hidden = true;
+    _renderHomeScreen();
+  } else {
+    if (EL.screenHome)       EL.screenHome.hidden       = true;
+    if (EL.screenDiscipline) EL.screenDiscipline.hidden = false;
+  }
+
   _renderAtlasSidebar();
   _renderHeaderBack();
 }
@@ -651,9 +869,6 @@ function _moduleIcon(idx) {
 
 /* ──────────────────────────────────────────────
    _renderDisciplineLoading
-   Monta o esqueleto de loading da tela de disciplina.
-   Gera o layout com dados básicos do manifest
-   (sem secoes ainda) e um spinner na coluna central.
 ────────────────────────────────────────────── */
 function _renderDisciplineLoading(cat) {
   if (!EL.screenDiscipline) return;
@@ -685,11 +900,6 @@ function _renderDisciplineLoading(cat) {
 
 /* ──────────────────────────────────────────────
    _renderDisciplineScreen
-   Renderiza a tela completa com dados carregados.
-   Substitui o conteúdo de #screen-discipline com o
-   layout de 2 colunas: área central + sidebar direita.
-   (a sidebar esquerda de navegação é a .atlas-sidebar
-   compartilhada, renderizada por _renderAtlasSidebar)
 ────────────────────────────────────────────── */
 function _renderDisciplineScreen(cat, data) {
   if (!EL.screenDiscipline) return;
@@ -750,7 +960,9 @@ function _renderDisciplineScreen(cat, data) {
         ${moduleCards}
       </div>
       <div class="subject-hint-bar">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
         Navegue pelos módulos ao lado para explorar todos os conteúdos desta disciplina.
       </div>
     </main>
@@ -779,52 +991,41 @@ function _renderDisciplineScreen(cat, data) {
   });
 }
 
-/* ──────────────────────────────────────────────
-   _buildAtlasSidebarNav
-   Gera os links de navegação fixos do Atlas
-   (Biblioteca, Favoritos, Histórico, Recursos…).
-   Mesmos itens que hoje existem na sidebar de
-   ícones; aqui ganham o visual com texto da
-   sidebar criada para a Disciplina.
-────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════
+   SIDEBAR NAV
+══════════════════════════════════════════════ */
 function _buildAtlasSidebarNav(view) {
   const navLinks = [
     {
-      svg: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`,
-      label: 'Biblioteca',
+      svg:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`,
+      label:  'Biblioteca',
       action: 'all',
     },
     {
-      svg: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`,
-      label: 'Favoritos',
-      action: 'favorites',
-    },
-    {
-      svg: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
-      label: 'Histórico',
-      action: 'recent',
-    },
-    {
-      svg: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
-      label: 'Recursos',
-      action: 'resources',
+      svg:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
+      label:  'Materiais',
+      action: 'materials',
     },
   ];
 
-  return navLinks.map(l => `
-    <button class="atlas-sidebar__nav-link${view === 'home' && l.action === 'all' ? ' atlas-sidebar__nav-link--active' : ''}" data-nav-action="${_esc(l.action)}" type="button">
-      ${l.svg}
-      ${_esc(l.label)}
-    </button>`).join('');
+  return navLinks.map(l => {
+    const isActive = (l.action === 'all' && view === 'home')
+                  || (l.action === 'materials' && view === 'materials');
+    return `
+      <button
+        class="atlas-sidebar__nav-link${isActive ? ' atlas-sidebar__nav-link--active' : ''}"
+        data-nav-action="${_esc(l.action)}"
+        type="button"
+      >
+        ${l.svg}
+        ${_esc(l.label)}
+      </button>`;
+  }).join('');
 }
 
-/* ──────────────────────────────────────────────
-   _buildAtlasSidebar
-   Gera o HTML da sidebar única do Atlas: nav fixo
-   + lista de disciplinas. Usada tanto na Biblioteca
-   quanto na Disciplina (mesma estrutura nas duas).
-   activeCatId é null na Home.
-────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════
+   SIDEBAR — build
+══════════════════════════════════════════════ */
 function _buildAtlasSidebar(activeCatId) {
   const favIds  = Favorites.getAll();
   const favCats = CATEGORIES.filter(c => favIds.has(c.id));
@@ -853,44 +1054,31 @@ function _buildAtlasSidebar(activeCatId) {
 
   return `
     <aside class="atlas-sidebar" id="atlas-sidebar" aria-label="Navegação do Atlas">
-
       <div class="atlas-sidebar__section">
         <span class="atlas-sidebar__section-label">Biblioteca</span>
         ${_buildAtlasSidebarNav(State.view)}
       </div>
-
       <div class="atlas-sidebar__section">
         <span class="atlas-sidebar__section-label">Minhas disciplinas</span>
         ${discLinks}
       </div>
-
     </aside>`;
 }
-/* ──────────────────────────────────────────────
-   _renderAtlasSidebar
-   (Re)renderiza a sidebar única dentro do mount
-   fixo no HTML e faz o bind dos eventos. Chamada
-   sempre que a tela muda (_showScreen) ou a lista
-   de categorias é atualizada.
-────────────────────────────────────────────── */
+
+/* ══════════════════════════════════════════════
+   SIDEBAR — render e bind
+══════════════════════════════════════════════ */
 function _renderAtlasSidebar() {
   const mount = $('atlas-sidebar-mount');
   if (!mount) return;
-
   mount.innerHTML = _buildAtlasSidebar(State.currentCategory);
   _bindAtlasSidebarEvents();
 }
 
-/* ──────────────────────────────────────────────
-   _bindAtlasSidebarEvents
-   Bind dos eventos da sidebar única após cada render.
-   Reutiliza _abrirDisciplina e _showScreen existentes.
-────────────────────────────────────────────── */
 function _bindAtlasSidebarEvents() {
   const mount = $('atlas-sidebar-mount');
   if (!mount) return;
 
-  /* "Biblioteca" → volta para Home */
   mount.querySelector('[data-nav-action="all"]')?.addEventListener('click', () => {
     playSound('click', 'atlas');
     State.currentCategory = null;
@@ -898,7 +1086,13 @@ function _bindAtlasSidebarEvents() {
     _renderBreadcrumb();
   });
 
-  /* Links de disciplinas na sidebar */
+  mount.querySelector('[data-nav-action="materials"]')?.addEventListener('click', () => {
+    playSound('click', 'atlas');
+    State.currentCategory = null;
+    _showScreen('materials');
+    _renderBreadcrumb();
+  });
+
   mount.querySelectorAll('[data-disc-id]').forEach(el => {
     el.addEventListener('click', () => {
       const id = el.dataset.discId;
@@ -910,11 +1104,9 @@ function _bindAtlasSidebarEvents() {
   });
 }
 
-/* ──────────────────────────────────────────────
-   _buildDisciplineRightSidebar
-   Gera o HTML da sidebar direita: índice (TOC),
-   atalhos rápidos e recursos da disciplina.
-────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════
+   SIDEBAR DIREITA DA DISCIPLINA
+══════════════════════════════════════════════ */
 function _buildDisciplineRightSidebar(cat, secoes) {
   const tocItems = secoes.map((s, i) => `
     <button class="subject-toc-item${i === 0 ? ' is-active' : ''}" data-toc-index="${i}" type="button">
@@ -923,24 +1115,24 @@ function _buildDisciplineRightSidebar(cat, secoes) {
 
   const quickItems = [
     {
-      svg: `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+      svg:   `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
       title: 'Buscar na disciplina',
-      sub: 'Encontre tópicos e conteúdos',
+      sub:   'Encontre tópicos e conteúdos',
     },
     {
-      svg: `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`,
+      svg:   `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`,
       title: 'Ver índice completo',
-      sub: 'Navegue por toda a estrutura',
+      sub:   'Navegue por toda a estrutura',
     },
     {
-      svg: `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
+      svg:   `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
       title: 'Downloads',
-      sub: 'Materiais complementares',
+      sub:   'Materiais complementares',
     },
     {
-      svg: `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`,
+      svg:   `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`,
       title: 'Referências',
-      sub: 'Documentação oficial',
+      sub:   'Documentação oficial',
     },
   ].map(q => `
     <div class="subject-quick-item">
@@ -1082,7 +1274,7 @@ function _renderReaderBreadcrumb(cat, secao) {
 }
 
 /* ══════════════════════════════════════════════
-   NÍVEL 3 — READER (Leitura)
+   NÍVEL 3 — READER
 ══════════════════════════════════════════════ */
 async function _abrirReader(categoryId, chapterIndex, opts = {}) {
   const cat = CATEGORIES.find(c => c.id === categoryId);
@@ -1105,13 +1297,12 @@ async function _abrirReader(categoryId, chapterIndex, opts = {}) {
     });
   }
 
-  const data   = await _getCategoryContent(categoryId);
+  const data = await _getCategoryContent(categoryId);
   if (State.currentCategory !== categoryId || State.currentChapter !== chapterIndex || !State.readerOpen) return;
 
   const secoes = Array.isArray(data?.secoes) ? data.secoes : [];
   const secao  = secoes[chapterIndex];
 
-  /* Garante que a tela de disciplina esteja renderizada com os dados completos */
   _showScreen('discipline');
   _renderDisciplineScreen(cat, data);
 
@@ -1129,8 +1320,8 @@ async function _abrirReader(categoryId, chapterIndex, opts = {}) {
 }
 
 function _fecharReader(opts = {}) {
-  State.readerOpen  = false;
-  const categoryId  = State.currentCategory;
+  State.readerOpen = false;
+  const categoryId = State.currentCategory;
 
   playSound('closeModal', 'atlas');
   EL.reader.classList.remove('reader--open');
@@ -1138,8 +1329,8 @@ function _fecharReader(opts = {}) {
 
   setTimeout(() => {
     EL.reader.hidden = true;
-    if (EL.readerScroll)       EL.readerScroll.scrollTop  = 0;
-    if (EL.readerProgressFill) EL.readerProgressFill.style.width = '0%';
+    if (EL.readerScroll)       EL.readerScroll.scrollTop          = 0;
+    if (EL.readerProgressFill) EL.readerProgressFill.style.width  = '0%';
   }, 420);
 
   _cleanupProgress();
@@ -1227,7 +1418,7 @@ function _renderAtlasBody(secao, categoryId) {
 
 function _escRich(str) {
   let safe = _esc(str ?? '');
-  safe = safe.replace(/`([^`]+)`/g,     '<code>$1</code>');
+  safe = safe.replace(/`([^`]+)`/g,       '<code>$1</code>');
   safe = safe.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   return safe;
 }
@@ -1266,10 +1457,10 @@ function _renderBloco(bloco, categoryId) {
       return `<div class="kb-block-destaque">${_escRich(bloco.texto)}</div>`;
 
     case 'imagem': {
-      const base  = `../content/atlas/imagens/${categoryId}/`;
-      const src   = _esc(bloco.src ?? '');
-      const alt   = _esc(bloco.legenda ?? bloco.src ?? '');
-      const leg   = bloco.legenda
+      const base = `../content/atlas/imagens/${categoryId}/`;
+      const src  = _esc(bloco.src ?? '');
+      const alt  = _esc(bloco.legenda ?? bloco.src ?? '');
+      const leg  = bloco.legenda
         ? `<figcaption class="kb-block-imagem__legenda">${_escRich(bloco.legenda)}</figcaption>`
         : '';
       return `
@@ -1358,13 +1549,14 @@ function _toggleMobileSidebar() {
   State.sidebarMobileOpen = !State.sidebarMobileOpen;
   EL.readerLayout?.classList.toggle('sidebar-open', State.sidebarMobileOpen);
 }
+
 function _closeMobileSidebar() {
   State.sidebarMobileOpen = false;
   EL.readerLayout?.classList.remove('sidebar-open');
 }
 
 /* ══════════════════════════════════════════════
-   BUSCA (nível 1)
+   BUSCA
 ══════════════════════════════════════════════ */
 function _handleSearch(query) {
   State.searchQuery = query.trim().toLowerCase();
@@ -1400,10 +1592,6 @@ function _renderLoadingState() {
 
 /* ══════════════════════════════════════════════
    BINDINGS DE EVENTOS GLOBAIS
-   Nota: a sidebar única do Atlas (#atlas-sidebar-mount)
-   é gerada dinamicamente por _renderAtlasSidebar e
-   rebindada após cada render via _bindAtlasSidebarEvents.
-   Aqui ficam apenas os bindings de elementos fixos no HTML.
 ══════════════════════════════════════════════ */
 function _bindEvents() {
   document.querySelector('.btn-back')

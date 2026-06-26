@@ -597,3 +597,92 @@
   border-color: rgba(239, 68, 68, 0.40);
   background: rgba(239, 68, 68, 0.10);
 }
+
+/* ══ MATERIAIS ══ */
+.materials-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+.materials-group {
+  background: rgba(16,21,38,0.80);
+  border: 1px solid var(--b2);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  transition: border-color 0.20s var(--ease);
+}
+.materials-group:hover { border-color: var(--b3); }
+
+.materials-group__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem;
+  border-bottom: 1px solid var(--b1);
+}
+
+.materials-group__icon {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(var(--mat-rgb, var(--indigo-rgb)), 0.12);
+  border: 1px solid rgba(var(--mat-rgb, var(--indigo-rgb)), 0.20);
+  color: rgb(var(--mat-rgb, var(--indigo-rgb)));
+  flex-shrink: 0;
+}
+
+.materials-group__label {
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--t1);
+  flex: 1;
+}
+
+.materials-group__count {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--t3);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--b2);
+  border-radius: 99px;
+  padding: 0.15rem 0.55rem;
+}
+
+.materials-group__body {
+  display: flex;
+  flex-direction: column;
+  padding: 0.4rem 0;
+  min-height: 60px;
+}
+
+.materials-group__empty {
+  padding: 0.75rem 1.1rem;
+  font-size: 0.74rem;
+  color: var(--t3);
+  font-style: italic;
+}
+
+.materials-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 1.1rem;
+  text-decoration: none;
+  color: var(--t2);
+  font-size: 0.80rem;
+  transition: background 0.14s, color 0.14s;
+}
+.materials-item:hover {
+  background: rgba(255,255,255,0.03);
+  color: var(--t1);
+}
+.materials-item svg { flex-shrink: 0; opacity: 0.4; }
+
+@media (max-width: 1280px) { .materials-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 860px)  { .materials-grid { grid-template-columns: 1fr; } }
