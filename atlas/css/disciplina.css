@@ -1,37 +1,30 @@
 /* =============================================
-   atlas — DISCIPLINA (Tela 2)
+   atlas — DISCIPLINA (Tela 2 — screen-discipline)
    css/disciplina.css
 
-   Estilos exclusivos da tela #screen-discipline:
-   fundo, header, hero da disciplina e grupos
-   de capítulos.
+   Estilos EXCLUSIVOS de #screen-discipline.
+   Todas as classes seguem o prefixo .subject-*
+   para evitar qualquer colisão com Biblioteca ou
+   Leitura.
 
-   Este arquivo é AUTOSSUFICIENTE — não depende de
-   nenhum outro CSS do Knowledge. Tokens, fundo, header
-   e animações estão duplicados de propósito aqui para
-   permitir que esta tela seja redesenhada de forma
-   totalmente independente das demais (Biblioteca/Leitura).
-
-   Observação: a marcação ".reader__chip" é reaproveitada
-   pelo JS dentro de #discipline-meta (chips de capítulos/
-   tempo/tipo). Para manter este arquivo isolado do CSS da
-   Leitura, a definição de .reader__chip está duplicada
-   abaixo — sem depender de leitura.css.
+   Os tokens :root são os mesmos valores do projeto
+   (partilhados como design tokens), mas nenhum
+   seletor de componente se repete nos outros arquivos.
    ============================================= */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 /* ══════════════════════════════════════════
-   TOKENS
+   TOKENS — Disciplina
 ══════════════════════════════════════════ */
 :root {
   /* Backgrounds */
-  --bg-0:       #080c14;
-  --bg-1:       #0d1220;
-  --bg-2:       #111827;
-  --bg-3:       #1a2236;
-  --bg-4:       #202d42;
-  --bg-hover:   #253148;
+  --bg-0:     #080c14;
+  --bg-1:     #0d1220;
+  --bg-2:     #111827;
+  --bg-3:     #1a2236;
+  --bg-4:     #202d42;
+  --bg-hover: #253148;
 
   /* Borders */
   --b1: rgba(255,255,255,0.05);
@@ -46,13 +39,23 @@
   --indigo-rgb:  99,102,241;
 
   /* Accent secundário — ciano */
-  --cyan:      #22d3ee;
-  --cyan-dim:  rgba(34,211,238,0.08);
-  --cyan-rgb:  34,211,238;
+  --cyan:     #22d3ee;
+  --cyan-dim: rgba(34,211,238,0.08);
+  --cyan-rgb: 34,211,238;
 
-  /* Accent terciário — âmbar (para destaque de categoria) */
+  /* Accent terciário — âmbar */
   --amber:     #f59e0b;
   --amber-dim: rgba(245,158,11,0.08);
+
+  /* Paleta cíclica por disciplina — controlada 100% pelo CSS,
+     mesma paleta de biblioteca.css. O app define apenas a
+     posição da categoria via [data-color-index], nunca a cor. */
+  --cat-rgb-0: 99,102,241;   /* índigo  */
+  --cat-rgb-1: 34,211,238;   /* ciano   */
+  --cat-rgb-2: 245,158,11;   /* âmbar   */
+  --cat-rgb-3: 168,85,247;   /* roxo    */
+  --cat-rgb-4: 52,211,153;   /* verde   */
+  --cat-rgb-5: 244,114,182;  /* rosa    */
 
   /* Texto */
   --t1: #e8eaf0;
@@ -66,7 +69,8 @@
   --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
 
   /* Layout */
-  --header-h:   60px;
+  --header-h:    60px;
+  --sidebar-w:   68px;
   --content-max: 860px;
 
   /* Raios */
@@ -76,7 +80,7 @@
   --r-sm: 5px;
 
   /* Ease */
-  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease:    cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
 }
 
@@ -104,246 +108,15 @@ input { font-family: var(--font-body); }
 ::-webkit-scrollbar-thumb:hover { background: rgba(var(--indigo-rgb),0.36); }
 
 /* ══════════════════════════════════════════
-   FUNDO — GRADE TÉCNICA + GLOWS
+   HERO DA DISCIPLINA
 ══════════════════════════════════════════ */
-.bg-canvas {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.bg-grid {
-  position: absolute;
-  inset: 0;
-  background-image:
-    radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
-  background-size: 32px 32px;
-  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 0%, transparent 100%);
-}
-
-.bg-glow {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.12;
-}
-.bg-glow--1 {
-  width: 600px; height: 600px;
-  top: -200px; left: -100px;
-  background: var(--indigo);
-}
-.bg-glow--2 {
-  width: 500px; height: 500px;
-  top: 40%; right: -150px;
-  background: var(--cyan);
-  opacity: 0.07;
-}
-.bg-glow--3 {
-  width: 400px; height: 400px;
-  bottom: -100px; left: 30%;
-  background: var(--indigo);
-  opacity: 0.08;
-}
-
-/* ══════════════════════════════════════════
-   HEADER
-══════════════════════════════════════════ */
-.header {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  z-index: 200;
-  height: var(--header-h);
-  padding: 0 1.75rem;
-  background: rgba(8,12,20,0.85);
-  backdrop-filter: blur(20px) saturate(1.4);
-  border-bottom: 1px solid var(--b1);
-}
-
-.header__inner {
-  height: 100%;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 1rem;
-  max-width: 1440px;
-  margin: 0 auto;
-}
-
-.header__brand {
-  justify-self: center;
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-}
-
-.header-controls {
-  justify-self: end;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.header__divider {
-  width: 1px;
-  height: 16px;
-  background: var(--b3);
-  flex-shrink: 0;
-}
-
-.header__logo {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.header__logo-icon {
-  width: 28px; height: 28px;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--indigo);
-  opacity: 0.9;
-}
-
-.header__logo-name {
-  font-family: var(--font-display);
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--t1);
-  letter-spacing: 0.01em;
-}
-
-.btn-back {
-  justify-self: start;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.38rem 0.9rem;
-  border-radius: var(--r-md);
-  border: 1px solid var(--b2);
-  color: var(--t2);
-  background: rgba(255,255,255,0.03);
-  font-size: 0.78rem;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  transition: color 0.18s, border-color 0.18s, background 0.18s;
-  white-space: nowrap;
-}
-.btn-back:hover {
-  color: var(--t1);
-  border-color: var(--b3);
-  background: rgba(255,255,255,0.06);
-}
-
-.header__stats {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-.hstat {
-  display: flex;
-  align-items: baseline;
-  gap: 0.3rem;
-}
-.hstat__num {
-  font-family: var(--font-display);
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--t1);
-}
-.hstat__label {
-  font-size: 0.68rem;
-  color: var(--t3);
-  letter-spacing: 0.04em;
-}
-
-/* ──────────────────────────────────────────────
-   Logo injetada via injetarLogo() — mesmo utilitário
-   compartilhado usado no Quiz. Fica ao lado do
-   logotipo "atlas" próprio, dentro de .header__brand.
-────────────────────────────────────────────── */
-#header-logo-wrap {
-  display: flex;
-  align-items: center;
-}
-
-#header-logo-wrap .nexus-logo__link {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  text-decoration: none;
-}
-
-#header-logo-wrap .nexus-logo__img {
-  border-radius: 22%;
-  border: 1px solid var(--b2);
-  transition: filter 0.25s ease, transform 0.25s ease;
-}
-
-#header-logo-wrap .nexus-logo__link:hover .nexus-logo__img {
-  filter: drop-shadow(0 0 6px rgba(var(--indigo-rgb),0.6));
-  transform: scale(1.06);
-}
-
-#header-logo-wrap .nexus-logo__texto--stacked {
-  display: flex;
-  flex-direction: column;
-  line-height: 1;
-  gap: 0.16rem;
-}
-
-#header-logo-wrap .nexus-logo__titulo {
-  font-family: var(--font-display);
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--t1);
-  line-height: 1;
-}
-
-#header-logo-wrap .nexus-logo__sub {
-  font-family: var(--font-display);
-  font-size: 0.5rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--indigo);
-  line-height: 1;
-}
-
-/* ══════════════════════════════════════════
-   APP — wrapper da tela
-══════════════════════════════════════════ */
-.app {
-  position: relative;
-  z-index: 2;
-  padding-top: var(--header-h);
-  min-height: 100vh;
-}
-
-.screen {
-  animation: screen-in 0.32s var(--ease) both;
-}
-.screen[hidden] { display: none !important; }
-
-@keyframes screen-in {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ══════════════════════════════════════════
-   TELA DE DISCIPLINA
-   Hero da disciplina + capítulos agrupados
-   visualmente (Fundamentos / Intermediário /
-   Avançado), sem nenhuma estrutura de dados nova —
-   tudo deriva de `secoes` do arquivo da disciplina.
-══════════════════════════════════════════ */
-.discipline-hero {
+.subject-hero {
   padding: 4.5rem 2.5rem 2.5rem;
   max-width: 1200px;
   margin: 0 auto;
 }
 
-.discipline-hero__back {
+.subject-hero__back {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
@@ -358,31 +131,46 @@ input { font-family: var(--font-body); }
   letter-spacing: 0.02em;
   transition: color 0.18s, border-color 0.18s, background 0.18s;
 }
-.discipline-hero__back:hover {
+.subject-hero__back:hover {
   color: var(--t1);
   border-color: var(--b3);
   background: rgba(255,255,255,0.06);
 }
 
-.discipline-hero__row {
+.subject-hero__row {
   display: flex;
   align-items: flex-start;
   gap: 1.5rem;
 }
 
-.discipline-hero__icon {
+/* ── Cor por disciplina — 100% CSS ──
+   O app define apenas a posição da categoria via
+   [data-color-index] no elemento que recebe o ícone;
+   a cor em si nunca vem do JS de conteúdo. */
+[data-color-index="0"] { --cat-rgb: var(--cat-rgb-0); }
+[data-color-index="1"] { --cat-rgb: var(--cat-rgb-1); }
+[data-color-index="2"] { --cat-rgb: var(--cat-rgb-2); }
+[data-color-index="3"] { --cat-rgb: var(--cat-rgb-3); }
+[data-color-index="4"] { --cat-rgb: var(--cat-rgb-4); }
+[data-color-index="5"] { --cat-rgb: var(--cat-rgb-5); }
+
+.subject-hero__icon {
   position: relative;
   flex-shrink: 0;
   width: 80px; height: 80px;
   display: flex; align-items: center; justify-content: center;
   font-size: 2.5rem;
   border-radius: var(--r-xl);
-  background: linear-gradient(165deg, rgba(var(--cat-rgb, var(--indigo-rgb)),0.14) 0%, rgba(var(--cat-rgb, var(--indigo-rgb)),0.05) 100%);
+  background: linear-gradient(
+    165deg,
+    rgba(var(--cat-rgb, var(--indigo-rgb)),0.14) 0%,
+    rgba(var(--cat-rgb, var(--indigo-rgb)),0.05) 100%
+  );
   border: 1px solid rgba(var(--cat-rgb, var(--indigo-rgb)),0.24);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 24px rgba(0,0,0,0.25);
   overflow: hidden;
 }
-.discipline-hero__icon::before {
+.subject-hero__icon::before {
   content: '';
   position: absolute;
   left: 0; top: 0; bottom: 0;
@@ -390,9 +178,9 @@ input { font-family: var(--font-body); }
   background: rgba(var(--cat-rgb, var(--indigo-rgb)),0.85);
 }
 
-.discipline-hero__main { flex: 1; min-width: 0; }
+.subject-hero__main { flex: 1; min-width: 0; }
 
-.discipline-hero__title {
+.subject-hero__title {
   font-family: var(--font-display);
   font-size: clamp(2rem, 4.5vw, 3rem);
   font-weight: 700;
@@ -402,7 +190,7 @@ input { font-family: var(--font-body); }
   margin-bottom: 0.6rem;
 }
 
-.discipline-hero__desc {
+.subject-hero__desc {
   font-size: 0.95rem;
   color: var(--t2);
   line-height: 1.7;
@@ -410,17 +198,17 @@ input { font-family: var(--font-body); }
   margin-bottom: 1.1rem;
 }
 
-.discipline-hero__meta {
+.subject-hero__meta {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
 }
 
-/* ── "Stat chips" do hero da disciplina (capítulos / tempo / tipo).
-   Mesma marcação (.reader__chip) usada pelo Reader, porém definida
-   aqui de forma independente — este arquivo não depende de leitura.css. ── */
-.discipline-hero__meta .reader__chip {
+/* ── Chips de meta (capítulos / tempo / tipo) ──
+   Classe própria subject-chip — não depende de
+   .reader__chip definido em leitura.css. */
+.subject-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
@@ -431,9 +219,12 @@ input { font-family: var(--font-body); }
   font-size: 0.68rem;
   color: var(--t2);
 }
-.discipline-hero__meta .reader__chip svg { opacity: 0.6; }
+.subject-chip svg { opacity: 0.6; }
 
-.discipline-body {
+/* ══════════════════════════════════════════
+   BODY DA DISCIPLINA — grupos de capítulos
+══════════════════════════════════════════ */
+.subject-body {
   padding: 0 2.5rem 5rem;
   max-width: 1200px;
   margin: 0 auto;
@@ -442,20 +233,19 @@ input { font-family: var(--font-body); }
   gap: 2.5rem;
 }
 
-/* Grupo de capítulos (Fundamentos / Intermediário / Avançado) */
-.chapter-group {
+.subject-chapter-group {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.chapter-group__header {
+.subject-chapter-group__header {
   display: flex;
   align-items: baseline;
   gap: 0.65rem;
 }
 
-.chapter-group__title {
+.subject-chapter-group__title {
   font-family: var(--font-display);
   font-size: 0.78rem;
   font-weight: 600;
@@ -464,27 +254,26 @@ input { font-family: var(--font-body); }
   color: var(--t2);
 }
 
-.chapter-group__count {
+.subject-chapter-group__count {
   font-family: var(--font-mono);
   font-size: 0.65rem;
   color: var(--t3);
 }
 
-.chapter-group__line {
+.subject-chapter-group__line {
   flex: 1;
   height: 1px;
   background: linear-gradient(90deg, var(--b2) 0%, var(--b1) 100%);
 }
 
-.chapter-grid {
+.subject-chapter-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.85rem;
 }
 
-/* Card de capítulo — "ficha catalográfica": número como selo,
-   lombada lateral fina que acende no hover (ecoa o card de disciplina) */
-.chapter-card {
+/* Card de capítulo */
+.subject-chapter-card {
   position: relative;
   display: flex;
   align-items: center;
@@ -495,9 +284,12 @@ input { font-family: var(--font-body); }
   border-radius: var(--r-lg);
   cursor: pointer;
   overflow: hidden;
-  transition: border-color 0.22s var(--ease), background 0.22s var(--ease), transform 0.22s var(--ease);
+  transition:
+    border-color 0.22s var(--ease),
+    background 0.22s var(--ease),
+    transform 0.22s var(--ease);
 }
-.chapter-card::before {
+.subject-chapter-card::before {
   content: '';
   position: absolute;
   left: 0; top: 0; bottom: 0;
@@ -506,14 +298,14 @@ input { font-family: var(--font-body); }
   opacity: 0;
   transition: opacity 0.2s, width 0.2s;
 }
-.chapter-card:hover {
+.subject-chapter-card:hover {
   border-color: rgba(var(--cat-rgb, var(--indigo-rgb)),0.3);
   background: var(--bg-2);
   transform: translateX(2px);
 }
-.chapter-card:hover::before { opacity: 1; width: 4px; }
+.subject-chapter-card:hover::before { opacity: 1; width: 4px; }
 
-.chapter-card__index {
+.subject-chapter-card__index {
   flex-shrink: 0;
   width: 32px; height: 32px;
   display: flex; align-items: center; justify-content: center;
@@ -526,9 +318,9 @@ input { font-family: var(--font-body); }
   font-weight: 600;
 }
 
-.chapter-card__body { flex: 1; min-width: 0; }
+.subject-chapter-card__body { flex: 1; min-width: 0; }
 
-.chapter-card__title {
+.subject-chapter-card__title {
   font-family: var(--font-display);
   font-size: 0.92rem;
   font-weight: 600;
@@ -540,29 +332,29 @@ input { font-family: var(--font-body); }
   text-overflow: ellipsis;
 }
 
-.chapter-card__meta {
+.subject-chapter-card__meta {
   font-size: 0.7rem;
   color: var(--t3);
   font-family: var(--font-mono);
 }
 
-.chapter-card__arrow {
+.subject-chapter-card__arrow {
   flex-shrink: 0;
   color: var(--t3);
   opacity: 0;
   transform: translateX(-3px);
   transition: opacity 0.2s, transform 0.2s var(--ease);
 }
-.chapter-card:hover .chapter-card__arrow {
+.subject-chapter-card:hover .subject-chapter-card__arrow {
   opacity: 1;
   transform: translateX(0);
   color: rgba(var(--cat-rgb, var(--indigo-rgb)),0.8);
 }
 
 /* ══════════════════════════════════════════
-   ESTADO VAZIO
+   ESTADO VAZIO — Disciplina
 ══════════════════════════════════════════ */
-.empty-state {
+.subject-empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -572,86 +364,34 @@ input { font-family: var(--font-body); }
   text-align: center;
   grid-column: 1 / -1;
 }
-.empty-state__icon { font-size: 2.4rem; opacity: 0.5; }
-.empty-state h3 {
+.subject-empty-state__icon { font-size: 2.4rem; opacity: 0.5; }
+.subject-empty-state h3 {
   font-family: var(--font-display);
   font-size: 1.1rem;
   font-weight: 500;
   color: var(--t2);
 }
-.empty-state p { font-size: 0.8rem; color: var(--t3); }
-
-/* ══════════════════════════════════════════
-   FOOTER — mesmo padrão do Quiz
-══════════════════════════════════════════ */
-.site-footer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 2rem 1.5rem;
-  margin-top: auto;
-  font-size: 0.72rem;
-  color: var(--t3, rgba(255, 255, 255, 0.3));
-  letter-spacing: 0.02em;
-}
-
-.site-footer__sep {
-  opacity: 0.4;
-}
-
-/* ══════════════════════════════════════════
-   TOAST — mesmo padrão do Quiz
-   A classe .nexus-toast é criada dinamicamente
-   por _toast() em atlas.js.
-══════════════════════════════════════════ */
-.nexus-toast {
-  position: fixed;
-  right: 1.5rem;
-  bottom: 32px; /* sobrescrito inline pelo JS */
-  z-index: 9999;
-  padding: 0.55rem 1rem;
-  border-radius: 8px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  background: rgba(30, 30, 46, 0.95);
-  color: #e2e2f0;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 0.22s ease, transform 0.22s ease;
-  pointer-events: none;
-}
-
-.nexus-toast--show {
-  opacity: 1;
-  transform: translateY(0);
-}
+.subject-empty-state p { font-size: 0.8rem; color: var(--t3); }
 
 /* ══════════════════════════════════════════
    RESPONSIVO — Disciplina
 ══════════════════════════════════════════ */
 @media (max-width: 1100px) {
-  .chapter-grid { grid-template-columns: repeat(2, 1fr); }
+  .subject-chapter-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 860px) {
-  .discipline-hero { padding: 3.5rem 1.5rem 2rem; }
-  .discipline-body { padding: 0 1.5rem 4rem; }
-  .chapter-grid { grid-template-columns: 1fr; }
+  .subject-hero { padding: 3.5rem 1.5rem 2rem; }
+  .subject-body { padding: 0 1.5rem 4rem; }
+  .subject-chapter-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 600px) {
-  .header-controls { display: none; }
-  .discipline-hero__row { flex-direction: column; gap: 1rem; }
-  .discipline-hero { padding: 2.5rem 1rem 1.5rem; }
-  .discipline-body { padding: 0 1rem 3rem; }
+  .subject-hero__row  { flex-direction: column; gap: 1rem; }
+  .subject-hero       { padding: 2.5rem 1rem 1.5rem; }
+  .subject-body       { padding: 0 1rem 3rem; }
 }
 
-/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }

@@ -38,7 +38,6 @@
 
   <!-- ══════════════════════════════════════════
        SIDEBAR LATERAL — navegação geral do Knowledge
-       Ícones com tooltip. Sem itens de disciplina.
   ══════════════════════════════════════════ -->
   <aside class="kb-sidebar" id="kb-sidebar" aria-label="Navegação do Knowledge">
     <nav class="kb-sidebar__nav">
@@ -99,12 +98,13 @@
 
   <!-- ══════════════════════════════════════════
        HEADER — 3 colunas: btn-back | logo | controles
+       Usa classes library-* (tela Biblioteca)
   ══════════════════════════════════════════ -->
-  <header class="header" id="app-header">
-    <div class="header__inner">
+  <header class="library-header" id="app-header">
+    <div class="library-header__inner">
 
       <!-- Coluna esquerda: botão voltar -->
-      <a href="../index.html" class="btn-back" id="btn-back" title="Voltar ao início">
+      <a href="../index.html" class="library-btn-back" id="btn-back" title="Voltar ao início">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
@@ -113,13 +113,13 @@
       </a>
 
       <!-- Coluna central: logo oficial do projeto -->
-      <div class="header__brand">
+      <div class="library-header__brand">
         <div id="header-logo-wrap"></div>
       </div>
 
       <!-- Coluna direita: controles (stats + áudio) -->
-      <div class="header-controls" id="header-controls">
-        <div class="header__stats" id="header-stats"></div>
+      <div class="library-header-controls" id="header-controls">
+        <div class="library-header__stats" id="header-stats"></div>
       </div>
 
     </div>
@@ -130,7 +130,7 @@
   ══════════════════════════════════════════ -->
   <div class="kb-layout">
 
-    <!-- Espaçador da sidebar (ocupa a largura dela no fluxo) -->
+    <!-- Espaçador da sidebar -->
     <div class="kb-layout__sidebar-spacer" aria-hidden="true"></div>
 
     <!-- Área de conteúdo principal -->
@@ -140,108 +140,108 @@
 
         <!-- ════════════════════════
              TELA 1 — HOME / BIBLIOTECA
+             Classes: library-*
         ════════════════════════ -->
         <div class="screen screen--home" id="screen-home">
 
-          <!-- HERO -->
-          <section class="hero" id="hero">
-            <div class="hero__inner">
+          <!-- HERO — Biblioteca -->
+          <section class="library-hero" id="hero">
+            <div class="library-hero__inner">
 
               <!-- Bloco de texto limitado à esquerda -->
-              <div class="hero__text-block">
+              <div class="library-hero__text-block">
 
-              <!-- Badge eyebrow -->
-              <div class="hero__eyebrow">
-                <span class="hero__eyebrow-dot" aria-hidden="true"></span>
-                <span>Biblioteca</span>
-              </div>
+                <!-- Badge eyebrow -->
+                <div class="library-hero__eyebrow">
+                  <span class="library-hero__eyebrow-dot" aria-hidden="true"></span>
+                  <span>Biblioteca</span>
+                </div>
 
-              <!-- Título principal -->
-              <h1 class="hero__title">
-                <span class="hero__title-main">Knowledge</span>
-              </h1>
+                <!-- Título principal -->
+                <h1 class="library-hero__title">
+                  <span class="library-hero__title-main">Knowledge</span>
+                </h1>
 
-              <!-- Subtítulo -->
-              <p class="hero__desc">
-                Sua biblioteca de estudos organizada<br>
-                e otimizada para o aprendizado.
-              </p>
+                <!-- Subtítulo -->
+                <p class="library-hero__desc">
+                  Documentações e materiais do Nexus Study<br>
+                  reunidos em um só lugar.
+                </p>
 
-              </div><!-- /hero__text-block -->
-
-              <!-- SEARCH BAR — elemento principal da página -->
-              <div class="search-wrap">
-                <div class="search-box" id="search-box" role="search">
-                  <svg class="search-box__icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                       stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-                  </svg>
-                  <input
-                    class="search-box__input"
-                    id="search-input"
-                    type="search"
-                    placeholder="Buscar disciplina, tópico ou conteúdo…"
-                    autocomplete="off"
-                    spellcheck="false"
-                  />
-                  <div class="search-box__kbd-wrap">
-                    <kbd class="search-box__kbd">Ctrl</kbd>
-                    <kbd class="search-box__kbd">K</kbd>
+                <!-- Search bar -->
+                <div class="library-search-wrap">
+                  <div class="library-search-box" id="search-box">
+                    <svg class="library-search-box__icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input
+                      class="library-search-box__input"
+                      id="search-input"
+                      type="search"
+                      placeholder="Buscar disciplina…"
+                      autocomplete="off"
+                      spellcheck="false"
+                    />
+                    <div class="library-search-box__kbd-wrap" aria-hidden="true">
+                      <span class="library-search-box__kbd">⌘</span>
+                      <span class="library-search-box__kbd">K</span>
+                    </div>
                   </div>
                 </div>
+
+                <!-- Estatísticas do hero -->
+                <div class="library-hero__stats" id="hero-stats"></div>
+
+              </div><!-- /library-hero__text-block -->
+
+              <!-- Ornamento decorativo — livro neon -->
+              <div class="library-hero__ornament" aria-hidden="true">
+                <svg class="library-hero__book" viewBox="0 0 220 190" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Livro aberto — linhas luminosas -->
+                  <path d="M110 160 C110 160 30 140 20 60 L110 30 L200 60 C190 140 110 160 110 160Z"
+                        stroke="rgba(99,102,241,0.35)" stroke-width="1.5" fill="none"/>
+                  <path d="M110 30 L110 160" stroke="rgba(99,102,241,0.5)" stroke-width="1.5"/>
+                  <!-- Página esquerda — linhas de texto simuladas -->
+                  <line x1="40" y1="75" x2="100" y2="65" stroke="rgba(99,102,241,0.18)" stroke-width="1"/>
+                  <line x1="38" y1="87" x2="100" y2="77" stroke="rgba(99,102,241,0.14)" stroke-width="1"/>
+                  <line x1="36" y1="99" x2="100" y2="89" stroke="rgba(99,102,241,0.10)" stroke-width="1"/>
+                  <line x1="35" y1="111" x2="100" y2="101" stroke="rgba(99,102,241,0.07)" stroke-width="1"/>
+                  <!-- Página direita -->
+                  <line x1="120" y1="65" x2="180" y2="75" stroke="rgba(99,102,241,0.18)" stroke-width="1"/>
+                  <line x1="120" y1="77" x2="182" y2="87" stroke="rgba(99,102,241,0.14)" stroke-width="1"/>
+                  <line x1="120" y1="89" x2="184" y2="99" stroke="rgba(99,102,241,0.10)" stroke-width="1"/>
+                  <line x1="120" y1="101" x2="185" y2="111" stroke="rgba(99,102,241,0.07)" stroke-width="1"/>
+                  <!-- Glow central — lombada do livro -->
+                  <line x1="110" y1="28" x2="110" y2="162"
+                        stroke="rgba(99,102,241,0.9)" stroke-width="2.5"
+                        filter="url(#glow-spine)"/>
+                  <!-- Pontos de luz acima -->
+                  <circle cx="90" cy="18" r="1.5" fill="rgba(99,102,241,0.6)"/>
+                  <circle cx="110" cy="12" r="2" fill="rgba(99,102,241,0.8)"/>
+                  <circle cx="130" cy="18" r="1.5" fill="rgba(99,102,241,0.6)"/>
+                  <circle cx="72" cy="24" r="1" fill="rgba(99,102,241,0.3)"/>
+                  <circle cx="148" cy="24" r="1" fill="rgba(99,102,241,0.3)"/>
+                  <!-- Estrelinhas dispersas -->
+                  <circle cx="55" cy="45" r="1" fill="rgba(34,211,238,0.4)"/>
+                  <circle cx="165" cy="40" r="1.2" fill="rgba(34,211,238,0.5)"/>
+                  <circle cx="195" cy="70" r="0.8" fill="rgba(99,102,241,0.4)"/>
+                  <defs>
+                    <filter id="glow-spine" x="-200%" y="-200%" width="500%" height="500%">
+                      <feGaussianBlur stdDeviation="4" result="blur"/>
+                      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                    </filter>
+                  </defs>
+                </svg>
               </div>
 
-              <!-- Stats sumários -->
-              <div class="hero__stats" id="hero-stats"></div>
-
             </div>
-
-            <!-- Ornamento decorativo — livro neon (canto direito) -->
-            <div class="hero__ornament" aria-hidden="true">
-              <svg class="hero__book" viewBox="0 0 220 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <!-- Livro aberto — linhas luminosas -->
-                <path d="M110 160 C110 160 30 140 20 60 L110 30 L200 60 C190 140 110 160 110 160Z"
-                      stroke="rgba(99,102,241,0.35)" stroke-width="1.5" fill="none"/>
-                <path d="M110 30 L110 160" stroke="rgba(99,102,241,0.5)" stroke-width="1.5"/>
-                <!-- Página esquerda — linhas de texto simuladas -->
-                <line x1="40" y1="75" x2="100" y2="65" stroke="rgba(99,102,241,0.18)" stroke-width="1"/>
-                <line x1="38" y1="87" x2="100" y2="77" stroke="rgba(99,102,241,0.14)" stroke-width="1"/>
-                <line x1="36" y1="99" x2="100" y2="89" stroke="rgba(99,102,241,0.10)" stroke-width="1"/>
-                <line x1="35" y1="111" x2="100" y2="101" stroke="rgba(99,102,241,0.07)" stroke-width="1"/>
-                <!-- Página direita — linhas de texto simuladas -->
-                <line x1="120" y1="65" x2="180" y2="75" stroke="rgba(99,102,241,0.18)" stroke-width="1"/>
-                <line x1="120" y1="77" x2="182" y2="87" stroke="rgba(99,102,241,0.14)" stroke-width="1"/>
-                <line x1="120" y1="89" x2="184" y2="99" stroke="rgba(99,102,241,0.10)" stroke-width="1"/>
-                <line x1="120" y1="101" x2="185" y2="111" stroke="rgba(99,102,241,0.07)" stroke-width="1"/>
-                <!-- Glow central — lombada do livro -->
-                <line x1="110" y1="28" x2="110" y2="162"
-                      stroke="rgba(99,102,241,0.9)" stroke-width="2.5"
-                      filter="url(#glow-spine)"/>
-                <!-- Pontos de luz acima -->
-                <circle cx="90" cy="18" r="1.5" fill="rgba(99,102,241,0.6)"/>
-                <circle cx="110" cy="12" r="2" fill="rgba(99,102,241,0.8)"/>
-                <circle cx="130" cy="18" r="1.5" fill="rgba(99,102,241,0.6)"/>
-                <circle cx="72" cy="24" r="1" fill="rgba(99,102,241,0.3)"/>
-                <circle cx="148" cy="24" r="1" fill="rgba(99,102,241,0.3)"/>
-                <!-- Estrelinhas dispersas -->
-                <circle cx="55" cy="45" r="1" fill="rgba(34,211,238,0.4)"/>
-                <circle cx="165" cy="40" r="1.2" fill="rgba(34,211,238,0.5)"/>
-                <circle cx="195" cy="70" r="0.8" fill="rgba(99,102,241,0.4)"/>
-                <defs>
-                  <filter id="glow-spine" x="-200%" y="-200%" width="500%" height="500%">
-                    <feGaussianBlur stdDeviation="4" result="blur"/>
-                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                  </filter>
-                </defs>
-              </svg>
-            </div>
-
           </section>
 
           <!-- GRID DE DISCIPLINAS -->
-          <section class="categories-section" id="categories-section">
-            <div class="section-header">
-              <div class="section-header__left">
+          <section class="library-categories-section" id="categories-section">
+            <div class="library-section-header">
+              <div class="library-section-header__left">
                 <!-- Ícone de camadas -->
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--indigo);opacity:0.8">
                   <polygon points="12 2 2 7 12 12 22 7 12 2"/>
@@ -249,14 +249,14 @@
                   <polyline points="2 12 12 17 22 12"/>
                 </svg>
                 <div>
-                  <h2 class="section-title">Disciplinas</h2>
-                  <p class="section-subtitle">Organize seus estudos por área</p>
+                  <h2 class="library-section-title">Disciplinas</h2>
+                  <p class="library-section-subtitle">Explore as disciplinas disponíveis na plataforma</p>
                 </div>
               </div>
-              <span class="section-count" id="categories-count"></span>
+              <span class="library-section-count" id="categories-count"></span>
             </div>
 
-            <div class="categories-grid" id="categories-grid">
+            <div class="library-categories-grid" id="categories-grid">
               <!-- JS preenche -->
             </div>
           </section>
@@ -265,28 +265,29 @@
 
         <!-- ════════════════════════
              TELA 2 — DISCIPLINA
+             Classes: subject-*
         ════════════════════════ -->
         <div class="screen screen--discipline" id="screen-discipline" hidden>
 
-          <section class="discipline-hero" id="discipline-hero">
-            <button class="discipline-hero__back" id="discipline-back" type="button">
+          <section class="subject-hero" id="discipline-hero">
+            <button class="subject-hero__back" id="discipline-back" type="button">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
               </svg>
               <span>Biblioteca</span>
             </button>
 
-            <div class="discipline-hero__row">
-              <div class="discipline-hero__icon" id="discipline-icon"></div>
-              <div class="discipline-hero__main">
-                <h1 class="discipline-hero__title" id="discipline-title"></h1>
-                <p class="discipline-hero__desc" id="discipline-desc"></p>
-                <div class="discipline-hero__meta" id="discipline-meta"></div>
+            <div class="subject-hero__row">
+              <div class="subject-hero__icon" id="discipline-icon"></div>
+              <div class="subject-hero__main">
+                <h1 class="subject-hero__title" id="discipline-title"></h1>
+                <p class="subject-hero__desc" id="discipline-desc"></p>
+                <div class="subject-hero__meta" id="discipline-meta"></div>
               </div>
             </div>
           </section>
 
-          <section class="discipline-body" id="discipline-body"></section>
+          <section class="subject-body" id="discipline-body"></section>
 
         </div><!-- /screen-discipline -->
 
@@ -297,6 +298,7 @@
 
   <!-- ══════════════════════════════════════════
        READER (Nível 3 — Leitura)
+       Classes: reader__* / reader-*
   ══════════════════════════════════════════ -->
   <div class="reader" id="reader" role="dialog" aria-modal="true" aria-label="Leitor de conteúdo" hidden>
     <div class="reader__overlay" id="reader-overlay"></div>
@@ -358,9 +360,9 @@
   </div>
 
   <!-- FOOTER -->
-  <footer class="site-footer">
+  <footer class="library-site-footer">
     <span>© <span id="footer-year"></span> Nexus Study</span>
-    <span class="site-footer__sep" aria-hidden="true">·</span>
+    <span class="library-site-footer__sep" aria-hidden="true">·</span>
     <span>Base de conhecimento do projeto</span>
   </footer>
 

@@ -1,31 +1,28 @@
 /* =============================================
-   atlas — LEITURA (Reader)
+   atlas — LEITURA (Tela 3 — #reader)
    css/leitura.css
 
-   Estilos exclusivos do #reader: overlay, painel,
-   barra superior, progresso, sidebar de navegação
-   e corpo de conteúdo (kb-section / kb-block-*).
+   Estilos EXCLUSIVOS do painel de leitura.
+   Todas as classes seguem o prefixo .reader-*
+   (ou .reader__* onde já existia e não colidia).
 
-   Este arquivo é AUTOSSUFICIENTE — não depende de
-   nenhum outro CSS do Knowledge. Tokens, fundo, header
-   e animações estão duplicados de propósito aqui para
-   permitir que esta tela seja redesenhada de forma
-   totalmente independente das demais (Biblioteca/Disciplina).
+   Este arquivo NÃO interfere em Biblioteca nem
+   em Disciplina.
    ============================================= */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 /* ══════════════════════════════════════════
-   TOKENS
+   TOKENS — Leitura
 ══════════════════════════════════════════ */
 :root {
   /* Backgrounds */
-  --bg-0:       #080c14;
-  --bg-1:       #0d1220;
-  --bg-2:       #111827;
-  --bg-3:       #1a2236;
-  --bg-4:       #202d42;
-  --bg-hover:   #253148;
+  --bg-0:     #080c14;
+  --bg-1:     #0d1220;
+  --bg-2:     #111827;
+  --bg-3:     #1a2236;
+  --bg-4:     #202d42;
+  --bg-hover: #253148;
 
   /* Borders */
   --b1: rgba(255,255,255,0.05);
@@ -40,11 +37,11 @@
   --indigo-rgb:  99,102,241;
 
   /* Accent secundário — ciano */
-  --cyan:      #22d3ee;
-  --cyan-dim:  rgba(34,211,238,0.08);
-  --cyan-rgb:  34,211,238;
+  --cyan:     #22d3ee;
+  --cyan-dim: rgba(34,211,238,0.08);
+  --cyan-rgb: 34,211,238;
 
-  /* Accent terciário — âmbar (para destaque de categoria) */
+  /* Accent terciário — âmbar */
   --amber:     #f59e0b;
   --amber-dim: rgba(245,158,11,0.08);
 
@@ -60,7 +57,7 @@
   --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
 
   /* Layout */
-  --header-h:   60px;
+  --header-h:    60px;
   --content-max: 860px;
 
   /* Raios */
@@ -70,7 +67,7 @@
   --r-sm: 5px;
 
   /* Ease */
-  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease:    cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
 }
 
@@ -98,7 +95,7 @@ input { font-family: var(--font-body); }
 ::-webkit-scrollbar-thumb:hover { background: rgba(var(--indigo-rgb),0.36); }
 
 /* ══════════════════════════════════════════
-   READER
+   READER — wrapper e overlay
 ══════════════════════════════════════════ */
 .reader[hidden] { display: none !important; }
 
@@ -129,6 +126,9 @@ input { font-family: var(--font-body); }
 .reader--open .reader__overlay { opacity: 1; }
 .reader--open .reader__panel   { transform: translateX(0); }
 
+/* ══════════════════════════════════════════
+   BARRA SUPERIOR DO READER
+══════════════════════════════════════════ */
 .reader__bar {
   display: flex;
   align-items: center;
@@ -219,7 +219,9 @@ input { font-family: var(--font-body); }
   white-space: nowrap;
 }
 
-/* Barra de progresso */
+/* ══════════════════════════════════════════
+   BARRA DE PROGRESSO
+══════════════════════════════════════════ */
 .reader__progress {
   height: 2px;
   background: var(--b1);
@@ -232,7 +234,9 @@ input { font-family: var(--font-body); }
   transition: width 0.1s linear;
 }
 
-/* ── Layout interno: sidebar fixa + área de leitura ── */
+/* ══════════════════════════════════════════
+   LAYOUT INTERNO DO READER
+══════════════════════════════════════════ */
 .reader__layout {
   position: relative;
   flex: 1;
@@ -241,6 +245,7 @@ input { font-family: var(--font-body); }
   min-height: 0;
 }
 
+/* ── Sidebar de navegação interna ── */
 .reader__sidebar {
   width: 240px;
   flex-shrink: 0;
@@ -281,7 +286,7 @@ input { font-family: var(--font-body); }
   gap: 0.15rem;
 }
 
-.sidebar-discipline-link {
+.reader-sidebar-discipline-link {
   position: relative;
   display: flex;
   align-items: center;
@@ -296,14 +301,16 @@ input { font-family: var(--font-body); }
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.sidebar-discipline-link:hover { background: rgba(255,255,255,0.04); color: var(--t1); }
-.sidebar-discipline-link.is-active {
+.reader-sidebar-discipline-link:hover {
+  background: rgba(255,255,255,0.04);
+  color: var(--t1);
+}
+.reader-sidebar-discipline-link.is-active {
   background: rgba(var(--indigo-rgb),0.10);
   color: var(--t1);
   font-weight: 500;
 }
-/* Mini-lombada — eco do cat-card, identifica a disciplina aberta */
-.sidebar-discipline-link.is-active::before {
+.reader-sidebar-discipline-link.is-active::before {
   content: '';
   position: absolute;
   left: 0; top: 0.2rem; bottom: 0.2rem;
@@ -311,7 +318,11 @@ input { font-family: var(--font-body); }
   border-radius: 2px;
   background: var(--indigo);
 }
-.sidebar-discipline-link__icon { flex-shrink: 0; font-size: 0.9rem; line-height: 1; }
+.reader-sidebar-discipline-link__icon {
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  line-height: 1;
+}
 
 .reader__sidebar-chapters {
   display: flex;
@@ -319,12 +330,12 @@ input { font-family: var(--font-body); }
   gap: 0.05rem;
 }
 
-.sidebar-chapter-group {
+.reader-sidebar-chapter-group {
   margin-top: 0.6rem;
 }
-.sidebar-chapter-group:first-child { margin-top: 0; }
+.reader-sidebar-chapter-group:first-child { margin-top: 0; }
 
-.sidebar-chapter-group__title {
+.reader-sidebar-chapter-group__title {
   padding: 0.3rem 0.5rem 0.25rem;
   font-size: 0.68rem;
   font-weight: 600;
@@ -333,9 +344,7 @@ input { font-family: var(--font-body); }
   color: var(--t4);
 }
 
-/* Capítulo ativo — "marcador de página" em âmbar: o único uso
-   pontual de âmbar na interface, sinalizando "você está aqui". */
-.sidebar-chapter-link {
+.reader-sidebar-chapter-link {
   position: relative;
   display: flex;
   align-items: center;
@@ -351,14 +360,17 @@ input { font-family: var(--font-body); }
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.sidebar-chapter-link:hover { background: rgba(255,255,255,0.04); color: var(--t1); }
-.sidebar-chapter-link.is-active {
+.reader-sidebar-chapter-link:hover {
+  background: rgba(255,255,255,0.04);
+  color: var(--t1);
+}
+.reader-sidebar-chapter-link.is-active {
   color: var(--t1);
   font-weight: 500;
   border-left-color: var(--amber);
   background: var(--amber-dim);
 }
-.sidebar-chapter-link.is-active::after {
+.reader-sidebar-chapter-link.is-active::after {
   content: '';
   position: absolute;
   right: 0.6rem;
@@ -368,6 +380,15 @@ input { font-family: var(--font-body); }
   box-shadow: 0 0 6px rgba(245,158,11,0.6);
 }
 
+.reader__sidebar-scrim {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  background: rgba(0,0,0,0.4);
+}
+
+/* ── Área de scroll do conteúdo ── */
 .reader__scroll {
   flex: 1;
   overflow-y: auto;
@@ -381,57 +402,9 @@ input { font-family: var(--font-body); }
   padding: 2.75rem 3rem 5rem;
 }
 
-/* Navegação entre capítulos (Anterior / Próximo) */
-.reader__chapter-nav {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.85rem;
-  margin-top: 3rem;
-  padding-top: 2rem;
-  border-top: 1px solid var(--b2);
-}
-.reader__chapter-nav:empty { display: none; }
-
-.chapter-nav-link {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  padding: 0.9rem 1.1rem;
-  border: 1px solid var(--b2);
-  border-radius: var(--r-lg);
-  background: var(--bg-2);
-  cursor: pointer;
-  transition: border-color 0.2s, background 0.2s, transform 0.2s var(--ease);
-  min-width: 0;
-}
-.chapter-nav-link:hover {
-  border-color: var(--b4);
-  background: var(--bg-3);
-  transform: translateY(-2px);
-}
-.chapter-nav-link--next { text-align: right; align-items: flex-end; }
-
-.chapter-nav-link__label {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--t3);
-}
-.chapter-nav-link__title {
-  font-family: var(--font-display);
-  font-size: 0.92rem;
-  font-weight: 600;
-  color: var(--t1);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-}
-
+/* ══════════════════════════════════════════
+   HERO DO READER (capítulo aberto)
+══════════════════════════════════════════ */
 .reader__hero {
   margin-bottom: 2.5rem;
 }
@@ -475,6 +448,10 @@ input { font-family: var(--font-body); }
   flex-wrap: wrap;
 }
 
+/* Chip de meta do reader — usado tanto aqui quanto no subject-meta
+   via classe .reader__chip (o JS emite .reader__chip nos dois lugares).
+   Definido APENAS aqui; o disciplina.css usa .subject-chip próprio
+   para os chips da tela de disciplina. */
 .reader__chip {
   display: inline-flex;
   align-items: center;
@@ -494,14 +471,15 @@ input { font-family: var(--font-body); }
   margin: 0 0 2.5rem;
 }
 
-/* ── Body do reader — conteúdo real renderizado a partir do JS da categoria ── */
+/* ══════════════════════════════════════════
+   BODY DO READER — blocos de conteúdo
+══════════════════════════════════════════ */
 .reader__body {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-/* Seção (Mundo / capítulo) dentro do corpo */
 .kb-section {
   display: flex;
   flex-direction: column;
@@ -573,8 +551,6 @@ input { font-family: var(--font-body); }
   line-height: 1.7;
   color: var(--t1);
 }
-/* Barra de "editor" decorativa — três pontos, sem texto de linguagem
-   (o dado de linguagem não existe na estrutura de conteúdo atual) */
 .kb-block-codigo::before {
   content: '';
   position: absolute;
@@ -643,15 +619,88 @@ input { font-family: var(--font-body); }
 }
 
 /* ══════════════════════════════════════════
+   PLACEHOLDER DE CARREGAMENTO
+══════════════════════════════════════════ */
+.reader__placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 5rem 2rem;
+  text-align: center;
+}
+.reader__placeholder-icon { font-size: 2.4rem; opacity: 0.45; }
+.reader__placeholder h3 {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--t2);
+}
+.reader__placeholder p { font-size: 0.78rem; color: var(--t3); }
+
+/* ══════════════════════════════════════════
+   NAVEGAÇÃO ENTRE CAPÍTULOS
+══════════════════════════════════════════ */
+.reader__chapter-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--b2);
+}
+.reader__chapter-nav:empty { display: none; }
+
+.reader-chapter-nav-link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.9rem 1.1rem;
+  border: 1px solid var(--b2);
+  border-radius: var(--r-lg);
+  background: var(--bg-2);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, transform 0.2s var(--ease);
+  min-width: 0;
+}
+.reader-chapter-nav-link:hover {
+  border-color: var(--b4);
+  background: var(--bg-3);
+  transform: translateY(-2px);
+}
+.reader-chapter-nav-link--next { text-align: right; align-items: flex-end; }
+
+.reader-chapter-nav-link__label {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--t3);
+}
+.reader-chapter-nav-link__title {
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--t1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* ══════════════════════════════════════════
    RESPONSIVO — Leitura
 ══════════════════════════════════════════ */
 @media (max-width: 960px) {
-  .reader__sidebar { width: 210px; }
-  .reader__content { padding: 2.25rem 2rem 4rem; }
+  .reader__sidebar  { width: 210px; }
+  .reader__content  { padding: 2.25rem 2rem 4rem; }
 }
 
 @media (max-width: 860px) {
-  /* Sidebar passa a ser um drawer sobreposto */
   .reader__sidebar-toggle { display: flex; }
   .reader__sidebar {
     position: absolute;
@@ -662,23 +711,15 @@ input { font-family: var(--font-body); }
     box-shadow: 8px 0 24px rgba(0,0,0,0.35);
   }
   .reader__layout.sidebar-open .reader__sidebar { transform: translateX(0); }
-  .reader__sidebar-scrim {
-    display: none;
-    position: absolute;
-    inset: 0;
-    z-index: 4;
-    background: rgba(0,0,0,0.4);
-  }
   .reader__layout.sidebar-open .reader__sidebar-scrim { display: block; }
 }
 
 @media (max-width: 600px) {
   .reader__content { padding: 1.75rem 1.25rem 4rem; }
-  .reader__panel { width: 100vw; }
+  .reader__panel   { width: 100vw; }
   .reader__chapter-nav { grid-template-columns: 1fr; }
 }
 
-/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }

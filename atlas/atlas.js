@@ -290,11 +290,9 @@ async function _loadCategoryMeta(id) {
 
   return {
     id,
-    name:     data.title    ?? id,
-    icon:     data.icon     ?? '📄',
-    desc:     data.desc     ?? '',
-    color:    data.color    ?? '#6366f1',
-    colorRgb: data.colorRgb ?? '99,102,241',
+    name: data.title ?? id,
+    icon: data.icon  ?? '📄',
+    desc: data.desc  ?? '',
   };
 }
 
@@ -304,6 +302,14 @@ async function _loadAllCategories() {
 
   const results = await Promise.all(ids.map(_loadCategoryMeta));
   CATEGORIES = results.filter(Boolean);
+}
+
+/* Índice cíclico (0–5) por posição da categoria — usado apenas
+   para o CSS resolver a cor via [data-color-index]. O app nunca
+   decide qual cor é; só informa a posição estrutural. */
+function _colorIndexFor(categoryId) {
+  const i = CATEGORIES.findIndex(c => c.id === categoryId);
+  return i < 0 ? 0 : i % 6;
 }
 
 /* ══════════════════════════════════════════════
@@ -362,9 +368,9 @@ function _renderStats() {
 
   if (EL.heroStats) {
     EL.heroStats.innerHTML = `
-      <div class="hero-stat">
-        <span class="hero-stat__num">${nCats}</span>
-        <span class="hero-stat__sep"></span>
+      <div class="library-hero-stat">
+        <span class="library-hero-stat__num">${nCats}</span>
+        <span class="library-hero-stat__sep"></span>
         <span>disciplinas</span>
       </div>`;
   }
@@ -402,8 +408,8 @@ function _renderCategoriesGrid(cats) {
 
   if (!cats.length) {
     EL.catGrid.innerHTML = `
-      <div class="empty-state">
-        <span class="empty-state__icon">🔍</span>
+      <div class="library-empty-state">
+        <span class="library-empty-state__icon">🔍</span>
         <h3>Nenhuma disciplina encontrada</h3>
         <p>Tente outro termo de busca.</p>
       </div>`;
@@ -412,25 +418,24 @@ function _renderCategoriesGrid(cats) {
 
   EL.catGrid.innerHTML = cats.map(cat => `
     <article
-      class="cat-card"
+      class="library-cat-card"
       data-cat-id="${_esc(cat.id)}"
-      style="--cat-rgb:${_esc(cat.colorRgb)}"
       tabindex="0"
       role="button"
       aria-label="Abrir disciplina ${_esc(cat.name)}"
     >
-      <div class="cat-card__glow"></div>
+      <div class="library-cat-card__glow"></div>
 
       <!-- Corpo: ícone + texto + seta -->
-      <div class="cat-card__body-wrap">
-        <span class="cat-card__icon" aria-hidden="true">${_renderIcon(cat.icon)}</span>
+      <div class="library-cat-card__body-wrap">
+        <span class="library-cat-card__icon" aria-hidden="true">${_renderIcon(cat.icon)}</span>
 
-        <div class="cat-card__text">
-          <div class="cat-card__name">${_esc(cat.name)}</div>
-          <div class="cat-card__desc">${_esc(cat.desc)}</div>
+        <div class="library-cat-card__text">
+          <div class="library-cat-card__name">${_esc(cat.name)}</div>
+          <div class="library-cat-card__desc">${_esc(cat.desc)}</div>
         </div>
 
-        <span class="cat-card__arrow" aria-hidden="true">
+        <span class="library-cat-card__arrow" aria-hidden="true">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
                stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
             <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
@@ -439,8 +444,8 @@ function _renderCategoriesGrid(cats) {
       </div>
 
       <!-- Footer: contadores (capítulos · blocos estimados) -->
-      <div class="cat-card__footer">
-        <span class="cat-card__stat">
+      <div class="library-cat-card__footer">
+        <span class="library-cat-card__stat">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
           </svg>
@@ -448,9 +453,9 @@ function _renderCategoriesGrid(cats) {
           <span data-stat-chapters="${_esc(cat.id)}">— capítulos</span>
         </span>
 
-        <span class="cat-card__stat-sep" aria-hidden="true"></span>
+        <span class="library-cat-card__stat-sep" aria-hidden="true"></span>
 
-        <span class="cat-card__stat">
+        <span class="library-cat-card__stat">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
             <line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/>
@@ -462,7 +467,7 @@ function _renderCategoriesGrid(cats) {
     </article>
   `).join('');
 
-  EL.catGrid.querySelectorAll('.cat-card').forEach(card => {
+  EL.catGrid.querySelectorAll('.library-cat-card').forEach(card => {
     const id = card.dataset.catId;
     card.addEventListener('mouseenter', () => playSound('hover',  'atlas'));
     card.addEventListener('click',      () => {
@@ -517,14 +522,14 @@ async function _abrirDisciplina(categoryId) {
 }
 
 function _renderDisciplineLoading(cat) {
-  if (EL.disciplineIcon)  EL.disciplineIcon.innerHTML   = _renderIcon(cat.icon);
-  if (EL.disciplineIcon)  EL.disciplineIcon.style.setProperty('--cat-rgb', cat.colorRgb);
+  if (EL.disciplineIcon)  EL.disciplineIcon.innerHTML = _renderIcon(cat.icon);
+  if (EL.disciplineIcon)  EL.disciplineIcon.setAttribute('data-color-index', _colorIndexFor(cat.id));
   if (EL.disciplineTitle) EL.disciplineTitle.textContent = cat.name;
   if (EL.disciplineDesc)  EL.disciplineDesc.textContent  = cat.desc;
   if (EL.disciplineMeta)  EL.disciplineMeta.innerHTML    = '';
   if (EL.disciplineBody)  EL.disciplineBody.innerHTML    = `
-    <div class="empty-state">
-      <span class="empty-state__icon">⏳</span>
+    <div class="library-empty-state">
+      <span class="library-empty-state__icon">⏳</span>
       <h3>Carregando conteúdo…</h3>
       <p>Buscando os capítulos desta disciplina.</p>
     </div>`;
@@ -533,14 +538,14 @@ function _renderDisciplineLoading(cat) {
 function _renderDisciplineScreen(cat, data) {
   const secoes = Array.isArray(data?.secoes) ? data.secoes : [];
 
-  if (EL.disciplineIcon)  EL.disciplineIcon.style.setProperty('--cat-rgb', cat.colorRgb);
+  if (EL.disciplineIcon)  EL.disciplineIcon.setAttribute('data-color-index', _colorIndexFor(cat.id));
   if (EL.disciplineTitle) EL.disciplineTitle.textContent = data.title ?? cat.name;
   if (EL.disciplineDesc)  EL.disciplineDesc.textContent  = data.desc  ?? cat.desc;
 
   if (EL.disciplineMeta) {
     const chips = [];
     chips.push(`
-      <span class="reader__chip">
+      <span class="subject-chip">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
         </svg>
@@ -548,7 +553,7 @@ function _renderDisciplineScreen(cat, data) {
       </span>`);
     if (data.time) {
       chips.push(`
-        <span class="reader__chip">
+        <span class="subject-chip">
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
           </svg>
@@ -556,7 +561,7 @@ function _renderDisciplineScreen(cat, data) {
         </span>`);
     }
     if (data.type) {
-      chips.push(`<span class="reader__chip">${_esc(data.type)}</span>`);
+      chips.push(`<span class="subject-chip">${_esc(data.type)}</span>`);
     }
     EL.disciplineMeta.innerHTML = chips.join('');
   }
@@ -565,8 +570,8 @@ function _renderDisciplineScreen(cat, data) {
 
   if (!secoes.length) {
     EL.disciplineBody.innerHTML = `
-      <div class="empty-state">
-        <span class="empty-state__icon">📭</span>
+      <div class="library-empty-state">
+        <span class="library-empty-state__icon">📭</span>
         <h3>Nenhum conteúdo disponível ainda</h3>
         <p>Esta disciplina ainda não tem capítulos publicados.</p>
       </div>`;
@@ -576,22 +581,22 @@ function _renderDisciplineScreen(cat, data) {
   const groups = _buildChapterGroups(cat.id, secoes);
 
   EL.disciplineBody.innerHTML = groups.map(group => `
-    <div class="chapter-group" style="--cat-rgb:${_esc(cat.colorRgb)}">
-      <div class="chapter-group__header">
-        <span class="chapter-group__title">${_esc(group.titulo)}</span>
-        <span class="chapter-group__count">${group.secoes.length}</span>
-        <span class="chapter-group__line"></span>
+    <div class="subject-chapter-group" data-color-index="${_colorIndexFor(cat.id)}">
+      <div class="subject-chapter-group__header">
+        <span class="subject-chapter-group__title">${_esc(group.titulo)}</span>
+        <span class="subject-chapter-group__count">${group.secoes.length}</span>
+        <span class="subject-chapter-group__line"></span>
       </div>
-      <div class="chapter-grid">
+      <div class="subject-chapter-grid">
         ${group.secoes.map(secao => `
-          <article class="chapter-card" data-chapter-index="${secao._index}" tabindex="0" role="button"
+          <article class="subject-chapter-card" data-chapter-index="${secao._index}" tabindex="0" role="button"
                     aria-label="Abrir ${_esc(secao.titulo ?? '')}">
-            <span class="chapter-card__index">${String(secao._index + 1).padStart(2, '0')}</span>
-            <div class="chapter-card__body">
-              <div class="chapter-card__title">${_esc(secao.titulo ?? '')}</div>
-              <div class="chapter-card__meta">${(secao.blocos ?? []).length} blocos</div>
+            <span class="subject-chapter-card__index">${String(secao._index + 1).padStart(2, '0')}</span>
+            <div class="subject-chapter-card__body">
+              <div class="subject-chapter-card__title">${_esc(secao.titulo ?? '')}</div>
+              <div class="subject-chapter-card__meta">${(secao.blocos ?? []).length} blocos</div>
             </div>
-            <span class="chapter-card__arrow" aria-hidden="true">
+            <span class="subject-chapter-card__arrow" aria-hidden="true">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
               </svg>
@@ -602,7 +607,7 @@ function _renderDisciplineScreen(cat, data) {
     </div>
   `).join('');
 
-  EL.disciplineBody.querySelectorAll('.chapter-card').forEach(card => {
+  EL.disciplineBody.querySelectorAll('.subject-chapter-card').forEach(card => {
     const idx = parseInt(card.dataset.chapterIndex, 10);
     card.addEventListener('mouseenter', () => playSound('hover', 'atlas'));
     card.addEventListener('click',      () => { playSound('click', 'atlas'); _abrirReader(cat.id, idx); });
@@ -622,13 +627,13 @@ function _renderSidebar(categoryId, chapterIndex) {
 
   if (EL.sidebarDisciplines) {
     EL.sidebarDisciplines.innerHTML = CATEGORIES.map(c => `
-      <div class="sidebar-discipline-link ${c.id === categoryId ? 'is-active' : ''}" data-cat-id="${_esc(c.id)}">
-        <span class="sidebar-discipline-link__icon" aria-hidden="true">${_renderIcon(c.icon)}</span>
+      <div class="reader-sidebar-discipline-link ${c.id === categoryId ? 'is-active' : ''}" data-cat-id="${_esc(c.id)}">
+        <span class="reader-sidebar-discipline-link__icon" aria-hidden="true">${_renderIcon(c.icon)}</span>
         <span>${_esc(c.name)}</span>
       </div>
     `).join('');
 
-    EL.sidebarDisciplines.querySelectorAll('.sidebar-discipline-link').forEach(link => {
+    EL.sidebarDisciplines.querySelectorAll('.reader-sidebar-discipline-link').forEach(link => {
       link.addEventListener('click', async () => {
         const id = link.dataset.catId;
         if (id === categoryId) return;
@@ -652,17 +657,17 @@ function _renderSidebar(categoryId, chapterIndex) {
   if (EL.sidebarChapters) {
     const groups = _buildChapterGroups(categoryId, secoes);
     EL.sidebarChapters.innerHTML = groups.map(group => `
-      <div class="sidebar-chapter-group">
-        ${groups.length > 1 ? `<div class="sidebar-chapter-group__title">${_esc(group.titulo)}</div>` : ''}
+      <div class="reader-sidebar-chapter-group">
+        ${groups.length > 1 ? `<div class="reader-sidebar-chapter-group__title">${_esc(group.titulo)}</div>` : ''}
         ${group.secoes.map(secao => `
-          <div class="sidebar-chapter-link ${secao._index === chapterIndex ? 'is-active' : ''}" data-chapter-index="${secao._index}">
+          <div class="reader-sidebar-chapter-link ${secao._index === chapterIndex ? 'is-active' : ''}" data-chapter-index="${secao._index}">
             ${_esc(secao.titulo ?? '')}
           </div>
         `).join('')}
       </div>
     `).join('');
 
-    EL.sidebarChapters.querySelectorAll('.sidebar-chapter-link').forEach(link => {
+    EL.sidebarChapters.querySelectorAll('.reader-sidebar-chapter-link').forEach(link => {
       link.addEventListener('click', () => {
         const idx = parseInt(link.dataset.chapterIndex, 10);
         if (idx === chapterIndex) return;
@@ -898,9 +903,9 @@ function _renderChapterNav(cat, secoes, currentIndex) {
 
   if (prev) {
     parts.push(`
-      <div class="chapter-nav-link chapter-nav-link--prev" data-nav-index="${currentIndex - 1}">
-        <span class="chapter-nav-link__label">← Anterior</span>
-        <span class="chapter-nav-link__title">${_esc(prev.titulo ?? '')}</span>
+      <div class="reader-chapter-nav-link reader-chapter-nav-link--prev" data-nav-index="${currentIndex - 1}">
+        <span class="reader-chapter-nav-link__label">← Anterior</span>
+        <span class="reader-chapter-nav-link__title">${_esc(prev.titulo ?? '')}</span>
       </div>`);
   } else {
     parts.push('<div></div>');
@@ -908,9 +913,9 @@ function _renderChapterNav(cat, secoes, currentIndex) {
 
   if (next) {
     parts.push(`
-      <div class="chapter-nav-link chapter-nav-link--next" data-nav-index="${currentIndex + 1}">
-        <span class="chapter-nav-link__label">Próximo →</span>
-        <span class="chapter-nav-link__title">${_esc(next.titulo ?? '')}</span>
+      <div class="reader-chapter-nav-link reader-chapter-nav-link--next" data-nav-index="${currentIndex + 1}">
+        <span class="reader-chapter-nav-link__label">Próximo →</span>
+        <span class="reader-chapter-nav-link__title">${_esc(next.titulo ?? '')}</span>
       </div>`);
   } else {
     parts.push('<div></div>');
@@ -918,7 +923,7 @@ function _renderChapterNav(cat, secoes, currentIndex) {
 
   EL.readerChapterNav.innerHTML = parts.join('');
 
-  EL.readerChapterNav.querySelectorAll('.chapter-nav-link').forEach(link => {
+  EL.readerChapterNav.querySelectorAll('.reader-chapter-nav-link').forEach(link => {
     link.addEventListener('click', () => {
       playSound('click', 'atlas');
       _abrirReader(cat.id, parseInt(link.dataset.navIndex, 10));
@@ -993,8 +998,8 @@ function _handleSearch(query) {
 function _renderLoadingState() {
   if (!EL.catGrid) return;
   EL.catGrid.innerHTML = `
-    <div class="empty-state" style="grid-column:1/-1">
-      <span class="empty-state__icon">⏳</span>
+    <div class="library-empty-state" style="grid-column:1/-1">
+      <span class="library-empty-state__icon">⏳</span>
       <h3>Carregando disciplinas…</h3>
       <p>Lendo manifest.js e os arquivos de conteúdo.</p>
     </div>`;
