@@ -210,6 +210,29 @@ function _renderIcon(icon, fallback = '📄') {
 }
 
 /* ══════════════════════════════════════════════
+   COR DO ÍCONE — manifest.color (hex) → --cat-rgb
+   Se a disciplina não definir `color`, não inserimos
+   a variável e o CSS aplica o ciclo padrão (nth-child
+   / data-color-index), como já fazia antes.
+══════════════════════════════════════════════ */
+function _hexToRgb(hex) {
+  if (typeof hex !== 'string') return null;
+  const m = hex.trim().replace('#', '').match(/^([0-9a-f]{3}|[0-9a-f]{6})$/i);
+  if (!m) return null;
+  let h = m[1];
+  if (h.length === 3) h = h.split('').map(c => c + c).join('');
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `${r},${g},${b}`;
+}
+
+function _iconStyleAttr(color) {
+  const rgb = _hexToRgb(color);
+  return rgb ? ` style="--cat-rgb:${rgb}"` : '';
+}
+
+/* ══════════════════════════════════════════════
    TEMA — aplica data-theme a partir do manifest
    O CSS é o único responsável pela aparência:
      [data-theme="indigo"] { ... }
@@ -223,6 +246,17 @@ function _themeFor(categoryId) {
 function _applyTheme(el, categoryId) {
   if (!el) return;
   el.setAttribute('data-theme', _themeFor(categoryId));
+}
+
+function _applyIconColor(el, categoryId) {
+  if (!el) return;
+  const cat = CATEGORIES.find(c => c.id === categoryId);
+  const rgb = _hexToRgb(cat?.color);
+  if (rgb) {
+    el.style.setProperty('--cat-rgb', rgb);
+  } else {
+    el.style.removeProperty('--cat-rgb');
+  }
 }
 
 /* ══════════════════════════════════════════════
@@ -308,6 +342,7 @@ async function _loadAllCategories() {
       type:    entry.type  ?? 'Documentação',
       time:    entry.time  ?? 0,
       theme:   entry.theme ?? 'indigo',
+      color:   entry.color ?? null,
       icon:    entry.icon  ?? '📄',
       content: entry.content,
     }));
@@ -431,7 +466,7 @@ function _renderCategoriesGrid(cats) {
 
       <!-- Corpo: ícone + texto + seta -->
       <div class="library-cat-card__body-wrap">
-        <span class="library-cat-card__icon" aria-hidden="true">${_renderIcon(cat.icon)}</span>
+        <span class="library-cat-card__icon"${_iconStyleAttr(cat.color)} aria-hidden="true">${_renderIcon(cat.icon)}</span>
 
         <div class="library-cat-card__text">
           <div class="library-cat-card__name">${_esc(cat.name)}</div>
@@ -527,6 +562,7 @@ function _renderDisciplineLoading(cat) {
   if (EL.disciplineIcon) {
     EL.disciplineIcon.innerHTML = _renderIcon(cat.icon);
     _applyTheme(EL.disciplineIcon, cat.id);
+    _applyIconColor(EL.disciplineIcon, cat.id);
   }
   if (EL.disciplineTitle) EL.disciplineTitle.textContent = cat.name;
   if (EL.disciplineDesc)  EL.disciplineDesc.textContent  = cat.desc;
@@ -544,6 +580,7 @@ function _renderDisciplineScreen(cat, data) {
 
   if (EL.disciplineIcon) {
     _applyTheme(EL.disciplineIcon, cat.id);
+    _applyIconColor(EL.disciplineIcon, cat.id);
   }
   if (EL.disciplineTitle) EL.disciplineTitle.textContent = data.title ?? cat.name;
   if (EL.disciplineDesc)  EL.disciplineDesc.textContent  = data.desc  ?? cat.desc;
@@ -584,6 +621,9 @@ function _renderDisciplineScreen(cat, data) {
     return;
   }
 
+  // SVG fallback usado quando a seção não define secao.icone
+  const _fallbackIcone = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`;
+
   const groups = _buildChapterGroups(cat.id, secoes);
 
   EL.disciplineBody.innerHTML = groups.map(group => `
@@ -595,13 +635,29 @@ function _renderDisciplineScreen(cat, data) {
       </div>
       <div class="subject-chapter-grid">
         ${group.secoes.map(secao => `
-          <article class="subject-chapter-card" data-chapter-index="${secao._index}" tabindex="0" role="button"
-                    aria-label="Abrir ${_esc(secao.titulo ?? '')}">
-            <span class="subject-chapter-card__index">${String(secao._index + 1).padStart(2, '0')}</span>
+          <article
+            class="subject-chapter-card"
+            data-chapter-index="${secao._index}"
+            tabindex="0"
+            role="button"
+            aria-label="Abrir ${_esc(secao.titulo ?? '')}"
+          >
+            <span class="subject-chapter-card__icon" aria-hidden="true">
+              ${secao.icone ?? _fallbackIcone}
+            </span>
+
             <div class="subject-chapter-card__body">
               <div class="subject-chapter-card__title">${_esc(secao.titulo ?? '')}</div>
-              <div class="subject-chapter-card__meta">${(secao.blocos ?? []).length} blocos</div>
+              ${secao.desc
+                ? `<div class="subject-chapter-card__desc">${_esc(secao.desc)}</div>`
+                : `<div class="subject-chapter-card__meta">${(secao.blocos ?? []).length} blocos</div>`
+              }
             </div>
+
+            <span class="subject-chapter-card__meta-right" aria-hidden="false">
+              ${(secao.blocos ?? []).length} ${(secao.blocos ?? []).length === 1 ? 'bloco' : 'blocos'}
+            </span>
+
             <span class="subject-chapter-card__arrow" aria-hidden="true">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
@@ -634,7 +690,7 @@ function _renderSidebar(categoryId, chapterIndex) {
   if (EL.sidebarDisciplines) {
     EL.sidebarDisciplines.innerHTML = CATEGORIES.map(c => `
       <div class="reader-sidebar-discipline-link ${c.id === categoryId ? 'is-active' : ''}" data-cat-id="${_esc(c.id)}">
-        <span class="reader-sidebar-discipline-link__icon" aria-hidden="true">${_renderIcon(c.icon)}</span>
+        <span class="reader-sidebar-discipline-link__icon"${_iconStyleAttr(c.color)} aria-hidden="true">${_renderIcon(c.icon)}</span>
         <span>${_esc(c.name)}</span>
       </div>
     `).join('');
@@ -744,7 +800,7 @@ async function _abrirReader(categoryId, chapterIndex, opts = {}) {
   _renderSidebar(categoryId, chapterIndex);
   _renderReaderBreadcrumb(cat, secao);
   _renderAtlasHero(cat, data, secao);
-  _renderAtlasBody(secao);
+  _renderAtlasBody(secao, categoryId);
   _renderChapterNav(cat, secoes, chapterIndex);
   _renderBreadcrumb();
 
@@ -838,7 +894,7 @@ function _buildLoadingBody() {
    Tipos suportados: texto, subtitulo, lista,
    tabela, codigo, alerta, destaque
 ══════════════════════════════════════════════ */
-function _renderAtlasBody(secao) {
+function _renderAtlasBody(secao, categoryId) {
   if (!EL.readerBody) return;
 
   if (!secao) {
@@ -848,7 +904,7 @@ function _renderAtlasBody(secao) {
 
   EL.readerBody.innerHTML = `
     <section class="kb-section">
-      ${(secao.blocos ?? []).map(_renderBloco).join('')}
+      ${(secao.blocos ?? []).map(b => _renderBloco(b, categoryId)).join('')}
     </section>
   `;
 }
@@ -860,7 +916,7 @@ function _escRich(str) {
   return safe;
 }
 
-function _renderBloco(bloco) {
+function _renderBloco(bloco, categoryId) {
   switch (bloco.tipo) {
     case 'texto':
       return `<p class="kb-block-texto">${_escRich(bloco.texto)}</p>`;
@@ -892,6 +948,20 @@ function _renderBloco(bloco) {
 
     case 'destaque':
       return `<div class="kb-block-destaque">${_escRich(bloco.texto)}</div>`;
+
+    case 'imagem': {
+      const base  = `../content/atlas/imagens/${categoryId}/`;
+      const src   = _esc(bloco.src ?? '');
+      const alt   = _esc(bloco.legenda ?? bloco.src ?? '');
+      const leg   = bloco.legenda
+        ? `<figcaption class="kb-block-imagem__legenda">${_escRich(bloco.legenda)}</figcaption>`
+        : '';
+      return `
+        <figure class="kb-block-imagem">
+          <img src="${base}${src}" alt="${alt}" loading="lazy" />
+          ${leg}
+        </figure>`;
+    }
 
     default:
       return '';

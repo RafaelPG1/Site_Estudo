@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>atlas — Nexus Study</title>
+  <title>Atlas — Nexus Study</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -37,9 +37,9 @@
   </div>
 
   <!-- ══════════════════════════════════════════
-       SIDEBAR LATERAL — navegação geral do Knowledge
+       SIDEBAR LATERAL — navegação geral do Atlas
   ══════════════════════════════════════════ -->
-  <aside class="kb-sidebar" id="kb-sidebar" aria-label="Navegação do Knowledge">
+  <aside class="kb-sidebar" id="kb-sidebar" aria-label="Navegação do Atlas">
     <nav class="kb-sidebar__nav">
 
       <!-- Biblioteca (ativo) -->
@@ -159,7 +159,7 @@
 
                 <!-- Título principal -->
                 <h1 class="library-hero__title">
-                  <span class="library-hero__title-main">Knowledge</span>
+                  <span class="library-hero__title-main">Atlas</span>
                 </h1>
 
                 <!-- Subtítulo -->
@@ -198,34 +198,42 @@
               <!-- Ornamento decorativo — livro neon -->
               <div class="library-hero__ornament" aria-hidden="true">
                 <svg class="library-hero__book" viewBox="0 0 220 190" xmlns="http://www.w3.org/2000/svg">
-                  <!-- Livro aberto — linhas luminosas -->
-                  <path d="M110 160 C110 160 30 140 20 60 L110 30 L200 60 C190 140 110 160 110 160Z"
-                        stroke="rgba(99,102,241,0.35)" stroke-width="1.5" fill="none"/>
-                  <path d="M110 30 L110 160" stroke="rgba(99,102,241,0.5)" stroke-width="1.5"/>
+                  <!-- Capa — contorno externo, mais larga e levemente atrás das páginas -->
+                  <path d="M110 38 C100 28 58 20 26 26 C23 27 22 29 22 32 L22 138 C22 142 24 144 27 143.5
+                           C58 137.5 100 148 110 162
+                           C120 148 162 137.5 193 143.5 C196 144 198 142 198 138
+                           L198 32 C198 29 197 27 194 26 C162 20 120 28 110 38 Z"
+                        stroke="rgba(99,102,241,0.22)" stroke-width="1.5" fill="none"/>
+                  <!-- Páginas — contorno interno, mais alto, abertura em V -->
+                  <path d="M110 30 C100 21 62 14 32 20 C29.5 20.5 29 22 29 24.5 L29 130 C29 133 30.5 134.5 33 134
+                           C62 128.5 100 138 110 154
+                           C120 138 158 128.5 187 134 C189.5 134.5 191 133 191 130
+                           L191 24.5 C191 22 190.5 20.5 188 20 C158 14 120 21 110 30 Z"
+                        stroke="rgba(99,102,241,0.55)" stroke-width="1.6" fill="none"/>
                   <!-- Página esquerda — linhas de texto simuladas -->
-                  <line x1="40" y1="75" x2="100" y2="65" stroke="rgba(99,102,241,0.18)" stroke-width="1"/>
-                  <line x1="38" y1="87" x2="100" y2="77" stroke="rgba(99,102,241,0.14)" stroke-width="1"/>
-                  <line x1="36" y1="99" x2="100" y2="89" stroke="rgba(99,102,241,0.10)" stroke-width="1"/>
-                  <line x1="35" y1="111" x2="100" y2="101" stroke="rgba(99,102,241,0.07)" stroke-width="1"/>
+                  <line x1="42" y1="42" x2="100" y2="48" stroke="rgba(99,102,241,0.20)" stroke-width="1"/>
+                  <line x1="40" y1="58" x2="100" y2="64" stroke="rgba(99,102,241,0.16)" stroke-width="1"/>
+                  <line x1="38" y1="74" x2="100" y2="80" stroke="rgba(99,102,241,0.12)" stroke-width="1"/>
+                  <line x1="37" y1="90" x2="100" y2="96" stroke="rgba(99,102,241,0.08)" stroke-width="1"/>
                   <!-- Página direita -->
-                  <line x1="120" y1="65" x2="180" y2="75" stroke="rgba(99,102,241,0.18)" stroke-width="1"/>
-                  <line x1="120" y1="77" x2="182" y2="87" stroke="rgba(99,102,241,0.14)" stroke-width="1"/>
-                  <line x1="120" y1="89" x2="184" y2="99" stroke="rgba(99,102,241,0.10)" stroke-width="1"/>
-                  <line x1="120" y1="101" x2="185" y2="111" stroke="rgba(99,102,241,0.07)" stroke-width="1"/>
+                  <line x1="120" y1="48" x2="178" y2="42" stroke="rgba(99,102,241,0.20)" stroke-width="1"/>
+                  <line x1="120" y1="64" x2="180" y2="58" stroke="rgba(99,102,241,0.16)" stroke-width="1"/>
+                  <line x1="120" y1="80" x2="182" y2="74" stroke="rgba(99,102,241,0.12)" stroke-width="1"/>
+                  <line x1="120" y1="96" x2="183" y2="90" stroke="rgba(99,102,241,0.08)" stroke-width="1"/>
                   <!-- Glow central — lombada do livro -->
-                  <line x1="110" y1="28" x2="110" y2="162"
-                        stroke="rgba(99,102,241,0.9)" stroke-width="2.5"
+                  <path d="M110 30 C110 30 110 110 110 154"
+                        stroke="rgba(99,102,241,0.9)" stroke-width="2.5" fill="none"
                         filter="url(#glow-spine)"/>
                   <!-- Pontos de luz acima -->
-                  <circle cx="90" cy="18" r="1.5" fill="rgba(99,102,241,0.6)"/>
-                  <circle cx="110" cy="12" r="2" fill="rgba(99,102,241,0.8)"/>
-                  <circle cx="130" cy="18" r="1.5" fill="rgba(99,102,241,0.6)"/>
-                  <circle cx="72" cy="24" r="1" fill="rgba(99,102,241,0.3)"/>
-                  <circle cx="148" cy="24" r="1" fill="rgba(99,102,241,0.3)"/>
+                  <circle cx="90" cy="14" r="1.5" fill="rgba(99,102,241,0.6)"/>
+                  <circle cx="110" cy="8" r="2" fill="rgba(99,102,241,0.8)"/>
+                  <circle cx="130" cy="14" r="1.5" fill="rgba(99,102,241,0.6)"/>
+                  <circle cx="72" cy="20" r="1" fill="rgba(99,102,241,0.3)"/>
+                  <circle cx="148" cy="20" r="1" fill="rgba(99,102,241,0.3)"/>
                   <!-- Estrelinhas dispersas -->
-                  <circle cx="55" cy="45" r="1" fill="rgba(34,211,238,0.4)"/>
-                  <circle cx="165" cy="40" r="1.2" fill="rgba(34,211,238,0.5)"/>
-                  <circle cx="195" cy="70" r="0.8" fill="rgba(99,102,241,0.4)"/>
+                  <circle cx="55" cy="40" r="1" fill="rgba(34,211,238,0.4)"/>
+                  <circle cx="165" cy="36" r="1.2" fill="rgba(34,211,238,0.5)"/>
+                  <circle cx="195" cy="65" r="0.8" fill="rgba(99,102,241,0.4)"/>
                   <defs>
                     <filter id="glow-spine" x="-200%" y="-200%" width="500%" height="500%">
                       <feGaussianBlur stdDeviation="4" result="blur"/>

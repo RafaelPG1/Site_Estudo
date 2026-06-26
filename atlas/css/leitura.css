@@ -723,3 +723,24 @@ input { font-family: var(--font-body); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ── Bloco: imagem ── */
+.kb-block-imagem {
+  margin: 1.5rem 0;
+  text-align: center;
+}
+
+.kb-block-imagem img {
+  max-width: 100%;
+  border-radius: 8px;
+  border: 1px solid rgba(var(--color-border-rgb, 255 255 255), 0.08);
+  display: block;
+  margin: 0 auto;
+}
+
+.kb-block-imagem__legenda {
+  margin-top: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--color-text-muted, #888);
+  font-style: italic;
+}
