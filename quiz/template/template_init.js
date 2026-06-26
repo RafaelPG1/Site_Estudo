@@ -45,7 +45,6 @@ import { carregarRespostasQuiz, salvarRespostasQuiz, limparRespostasQuiz } from 
 
 /* ══════════════════════════════════════════════════════════
    CONFIGURAÇÃO DE MODOS
-   Propriedades visuais por modo — somente apresentação
    ══════════════════════════════════════════════════════════ */
 
 var MODOS_CONFIG = {
@@ -92,7 +91,6 @@ function _resolverDisciplina(disc, semestre) {
 
 /* ══════════════════════════════════════════════════════════
    PASSO 3 — Aplicar tema visual
-   Síncrono — executado antes do DOMContentLoaded para evitar FOUC
    ══════════════════════════════════════════════════════════ */
 
 function _aplicarTema(arquivo) {
@@ -214,14 +212,6 @@ function _injetarNavFloat() {
     return moved.music && moved.sfx && moved.ia;
   }
 
-  /* Checagem síncrona imediata: cobre o caso em que algum desses
-     elementos (em especial #nexus-fab, criado por fab.js — um
-     script defer cuja execução pode já ter terminado antes deste
-     ponto) já existe no DOM ANTES do observer ser configurado.
-     MutationObserver só reage a mutações futuras; se o elemento
-     já existia, a mutação que o criou já passou e nunca seria
-     observada — o botão ficaria escondido para sempre, já que o
-     CSS oculta esses botões até serem movidos para dentro do nav. */
   if (_tentarMover()) return;
 
   var observer = new MutationObserver(function () {
@@ -305,7 +295,16 @@ function _aguardarFirebase(params) {
 
 
 /* ══════════════════════════════════════════════════════════
-   PASSO 9 — Carregar conteúdo + UI + engine
+   PASSO 9 — Carregar conteúdo + filter.js + UI + engine
+
+   Ordem de carregamento:
+     1. Conteúdo (ques_*.js) e filter.js em paralelo
+     2. quiz_ui.js (também em paralelo com o passo 1)
+     3. quiz_engine.js (após todos acima estarem prontos)
+
+   filter.js precisa estar carregado ANTES do engine para que
+   FilterStore.load() seja chamado e o engine já encontre o
+   estado correto ao montar a base de questões.
    ══════════════════════════════════════════════════════════ */
 
 function _loadScript(src, appendTo) {
@@ -323,6 +322,8 @@ function _carregarQuiz(params, info) {
   var uiSrc      = '../js/quiz_ui.js';
   var engineSrc  = '../js/quiz_engine.js';
 
+  /* filter.js já foi carregado antecipadamente no DOMContentLoaded —
+     não recarregar aqui para evitar execução dupla do boot. */
   Promise.all([
     _loadScript(contentSrc, document.head).catch(function () {
       console.warn('[template_init] Conteúdo não encontrado:', contentSrc);
@@ -339,21 +340,6 @@ function _carregarQuiz(params, info) {
 
 /* ══════════════════════════════════════════════════════════
    PASSO 10 — Inicializar Quiz-Assistant
-
-   Aguarda o engine terminar de montar __NEXUS_QUESTOES_VISUAIS__
-   antes de iniciar o assistente, de forma reativa: escuta o evento
-   'nexus:quizPronto' (disparado pelo engine) e, em paralelo, faz um
-   loop leve via requestAnimationFrame como rede de segurança contra
-   corrida de inicialização. Só desiste após 12s reais.
-
-   Ordem de dependências exigidas:
-     - window.NexusUI         (core/ui.js)
-     - window.NexusHistory    (core/history.js)
-     - window.NexusWorker     (core/worker.js)
-     - window.NexusTextUtils  (core/text-utils.js)
-     - window.NexusQuizAssistant (quiz/quiz_assistant.js)
-     - window.__NEXUS_QUIZ_DISC__
-     - window.__NEXUS_QUIZ_MODO__
    ══════════════════════════════════════════════════════════ */
 
 function _depsAssistantPresentes() {
@@ -368,14 +354,8 @@ function _depsAssistantPresentes() {
 }
 
 function _inicializarAssistant() {
-  // Aguarda as dependências do Quiz-Assistant carregarem.
-  // Necessário porque ui.js/history.js/worker.js/assistant.js
-  // agora carregam de propósito por último (prioridade visual:
-  // modal, fab, quick-access vêm antes) — então no instante do
-  // DOMContentLoaded elas podem ainda não existir. Sem esperar,
-  // o assistant simplesmente não iniciaria.
   var tentativasDeps = 0;
-  var MAX_DEPS        = 100; // 100 × 50ms = 5s
+  var MAX_DEPS        = 100;
 
   var timerDeps = setInterval(function () {
     tentativasDeps++;
@@ -393,21 +373,8 @@ function _inicializarAssistant() {
   }, 50);
 }
 
-// Aguarda __NEXUS_QUESTOES_VISUAIS__ (populado pelo engine após renderizar).
-//
-// Estratégia reativa (sem timeout fixo de 3s):
-//   1. Escuta 'nexus:quizPronto' — evento que o engine já dispara assim que
-//      publica o snapshot (ver quiz_engine.js → _publicarSnapshot). Esse é
-//      o caminho normal e dispara o init() no instante exato em que os
-//      dados existem, sem qualquer espera artificial.
-//   2. Em paralelo, faz um loop leve via requestAnimationFrame checando o
-//      snapshot diretamente — cobre o caso em que o evento já foi disparado
-//      antes deste listener ser registrado (corrida entre engine e template).
-//   3. Só desiste após um timeout de segurança bem mais generoso (12s) e,
-//      mesmo assim, registra o aviso apenas nesse cenário realmente
-//      excepcional — nunca como decisão precoce.
 function _aguardarSnapshotEIniciar() {
-  var TIMEOUT_MS  = 12000; // timeout de segurança real, não decisão padrão
+  var TIMEOUT_MS  = 12000;
   var finalizado  = false;
   var inicio      = (window.performance && performance.now)
     ? performance.now()
@@ -528,13 +495,12 @@ function _atualizarEstadoGlobal(params) {
 
      [controlado pelo modal — não automático]
        10. Aguarda Firebase (máx 3s)
-       11. Carrega conteúdo + UI + engine   ← só após modal decidir
+       11. Carrega conteúdo + filter.js + UI + engine
        12. Inicializa Quiz-Assistant (após engine montar questões)
 
    IMPORTANTE: _carregarQuiz NÃO é chamado aqui.
    É exposto via window.__nexusCarregarQuiz e chamado
    pelo quiz_starter_modal.js após a decisão do fluxo.
-   Isso garante que o engine nunca carrega antes do modal.
    ══════════════════════════════════════════════════════════ */
 
 var _params     = _lerParams();
@@ -553,11 +519,17 @@ document.addEventListener('DOMContentLoaded', function () {
   _injetarNavFloat();
   _inicializarAudio();
   _inicializarAssistant();
+
+  /* Carrega filter.js imediatamente — antes do quiz, antes do engine.
+     O modal precisa de window.__nexusFiltroAbrir disponível quando o
+     usuário clicar "Filtrar aulas", e isso acontece ANTES do boot
+     do quiz ser concluído. Sem esse carregamento antecipado, o painel
+     não abre porque filter.js ainda não existe no momento do clique. */
+  _loadScript('../js/filter.js', document.head).catch(function (err) {
+    console.warn('[template_init] filter.js (antecipado) não encontrado:', err);
+  });
 });
 
-/* Expõe o carregador para o modal chamar no momento certo.
-   O modal detecta progresso, decide o fluxo, e só então
-   chama esta função — evitando qualquer render antecipado. */
 window.__nexusCarregarQuiz = function () {
   _aguardarFirebase(_params);
   _carregarQuiz(_params, _info);

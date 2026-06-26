@@ -1,5 +1,5 @@
 /* ============================================================
-   NEXUS STUDY — quiz/js/quiz_starter_modal.js  v7.0
+   NEXUS STUDY — quiz/template/quiz_starter_modal.js  v8.0
 
    REGRA ÚNICA:
      Tem progresso salvo (≥ 1 resposta)? → entra direto no quiz.
@@ -34,23 +34,21 @@
        3. Modal detecta progresso:
           - Tem progresso → _pularModal() → chama _completarBoot()
           - Sem progresso → exibe modal:
-            - Clique em "Filtrar aulas" → vai para a tela 2
-              (estrutura visual apenas — sem lógica de filtro)
+            - Clique em "Filtrar aulas" → abre FilterPanel
+              (window.__nexusFiltroAbrir), que usa o mesmo estado
+              FilterStore. Ao aplicar → conclui o fluxo do modal.
             - Clique em "Todas as aulas" → conclui direto
-            - Clique em "Iniciar Quiz" (tela 2) → conclui
        4. _completarBoot():
           → seta __NSM_AGUARDANDO__ = false
           → chama _carregarEngine() (idempotente)
           → remove .quiz-aguardando do container
 
-   NOTA — TELA 2 ("Filtrar aulas"):
-     A tela 2 deste modal preserva integralmente sua estrutura
-     visual (HTML, CSS, animações e navegação tela1↔tela2), mas
-     não contém mais nenhuma lógica de filtro. Não carrega lista
-     de aulas, não coleta seleção, não persiste nem comunica nada
-     a um engine de filtro. O corpo da tela 2 exibe um placeholder
-     estático. O botão "Iniciar Quiz" da tela 2 simplesmente conclui
-     o fluxo, da mesma forma que "Todas as aulas" na tela 1.
+   INTEGRAÇÃO COM filter.js:
+     A tela 2 do modal NÃO tem estado próprio.
+     Ela delega completamente ao FilterPanel via window.__nexusFiltroAbrir.
+     FilterPanel usa FilterStore como única fonte de verdade.
+     Ao fechar o FilterPanel (Aplicar), o modal é também concluído
+     via window.__nexusModalConcluir — exposto internamente.
 
    DEPENDÊNCIAS:
      window.__NEXUS_QUIZ_DISC__      — definido por template_init.js
@@ -59,18 +57,11 @@
      window.NexusStorage             — definido por template_init.js
      window.__nexusCarregarQuiz      — definido por template_init.js
      window.__NSM_AGUARDANDO__       — definido por template.html (inline, no head)
+     window.__nexusFiltroAbrir       — definido por filter.js
    ============================================================ */
 
 (function () {
   'use strict';
-
-  /* ── window.__NSM_AGUARDANDO__ já foi sinalizado como true
-     pelo script inline no <head> do template.html, antes de
-     qualquer script defer (incluindo este e o engine). Isso
-     garante que o engine NUNCA vê a flag indefinida na sua
-     primeira checagem, independente da ordem de resolução dos
-     defers. Este script é responsável apenas por setá-la de
-     volta para false quando o fluxo for decidido. ──────────── */
 
   /* ══════════════════════════════════════════════════════════
      DETECÇÃO DE PROGRESSO
@@ -104,7 +95,7 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     PULAR MODAL — entra direto no quiz (tem progresso salvo)
+     PULAR MODAL
   ══════════════════════════════════════════════════════════ */
 
   function _pularModal() {
@@ -113,9 +104,7 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     CARREGAR ENGINE — ponto único de disparo do carregamento.
-
-     Idempotente: chamadas subsequentes são ignoradas.
+     CARREGAR ENGINE
   ══════════════════════════════════════════════════════════ */
 
   var _engineCarregando = false;
@@ -130,14 +119,7 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     COMPLETAR BOOT — ponto único de decisão concluída pelo
-     usuário (ou progresso já salvo).
-
-     Responsabilidades (nesta ordem):
-       1. Garante que o carregamento do quiz foi disparado.
-       2. Revela o <main> (remove quiz-aguardando).
-
-     Idempotente: chamadas subsequentes são ignoradas.
+     COMPLETAR BOOT
   ══════════════════════════════════════════════════════════ */
 
   var _bootConcluido = false;
@@ -146,10 +128,8 @@
     if (_bootConcluido) return;
     _bootConcluido = true;
 
-    /* 1. Garante o carregamento do quiz (idempotente) */
     _carregarEngine();
 
-    /* 2. Revela o main — ainda sem questões, sem flash */
     var main = document.getElementById('main-content');
     if (main) {
       main.classList.remove('quiz-aguardando');
@@ -157,7 +137,7 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     CSS — injetado inline
+     CSS
   ══════════════════════════════════════════════════════════ */
 
   function _injetarCSS() {
@@ -166,7 +146,6 @@
     style.id  = 'nsm-css';
     style.textContent = [
 
-      /* Backdrop */
       '#nsm-backdrop{',
         'position:fixed;inset:0;z-index:15;',
         'display:flex;flex-direction:column;',
@@ -180,7 +159,6 @@
       '#nsm-backdrop.nsm-visivel{opacity:1;}',
       '#nsm-backdrop.nsm-saindo{opacity:0;pointer-events:none;transition:opacity .25s ease;}',
 
-      /* Card */
       '#nsm-card{',
         'width:100%;max-width:480px;',
         'background:rgba(14,20,34,.98);',
@@ -194,13 +172,11 @@
       '#nsm-backdrop.nsm-visivel #nsm-card{transform:translateY(0);}',
       '#nsm-backdrop.nsm-saindo  #nsm-card{transform:translateY(10px) scale(.98);transition:transform .22s ease;}',
 
-      /* Linha decorativa no topo do card */
       '#nsm-card::before{',
         'content:"";display:block;height:2px;',
         'background:linear-gradient(90deg,transparent 0%,rgba(var(--accent-rgb,122,168,232),.6) 30%,rgba(var(--accent-rgb,122,168,232),.9) 50%,rgba(var(--accent-rgb,122,168,232),.6) 70%,transparent 100%);',
       '}',
 
-      /* Header */
       '#nsm-head{',
         'padding:2.2rem 2.2rem 1.5rem;text-align:center;',
         'background:linear-gradient(160deg,rgba(var(--accent-rgb,122,168,232),.055) 0%,transparent 55%);',
@@ -222,13 +198,11 @@
       '}',
       '#nsm-subtitulo{font-size:.82rem;color:var(--text-2,#a8a49c);line-height:1.55;margin:0;}',
 
-      /* Telas */
       '.nsm-tela{transition:opacity .2s ease,transform .2s ease;}',
       '.nsm-tela--entrando{opacity:0;transform:translateY(6px);pointer-events:none;}',
       '.nsm-tela--visivel{opacity:1;transform:translateY(0);}',
       '.nsm-tela--saindo{opacity:0;transform:translateY(-6px);pointer-events:none;}',
 
-      /* Tela 1 — botões de opção */
       '#nsm-tela1-btns{display:flex;flex-direction:column;gap:.6rem;padding:1.4rem 1.6rem .8rem;}',
 
       '.nsm-option{',
@@ -265,53 +239,17 @@
       '.nsm-option__arrow{flex-shrink:0;color:rgba(255,255,255,.2);transition:color .2s,transform .2s;}',
       '.nsm-option:hover .nsm-option__arrow{color:var(--accent,#7aa8e8);transform:translateX(3px);}',
 
-      /* Rodapé tela 1 */
       '#nsm-tela1-footer{padding:.5rem 1.6rem 1.4rem;text-align:center;}',
       '#nsm-tela1-footer p{font-size:.7rem;color:var(--text-3,#6e6a62);line-height:1.5;margin:0;}',
       '#nsm-tela1-footer i{color:rgba(var(--accent-rgb,122,168,232),.5);}',
       '#nsm-tela1-footer strong{color:var(--text-2,#a8a49c);font-weight:600;}',
-
-      /* Tela 2 — estrutura visual preservada */
-      '#nsm-btn-voltar{',
-        'display:inline-flex;align-items:center;gap:.4rem;',
-        'background:none;border:none;',
-        'color:var(--text-2,#a8a49c);font-size:.8rem;font-weight:600;',
-        'cursor:pointer;padding:.3rem 0;margin:1rem 1.6rem .2rem;',
-        'transition:color .18s;touch-action:manipulation;',
-      '}',
-      '#nsm-btn-voltar:hover{color:var(--accent,#7aa8e8);}',
-
-      '#nsm-body{padding:.8rem 1.6rem 1rem;}',
-
-      /* Placeholder estático da tela 2 (sem lógica de filtro) */
-      '#nsm-placeholder{text-align:center;padding:2.5rem 1rem;color:var(--text-3,#6e6a62);font-size:.82rem;line-height:1.6;}',
-      '#nsm-placeholder i{font-size:1.4rem;color:rgba(var(--accent-rgb,122,168,232),.5);margin-bottom:.6rem;display:block;}',
-
-      /* Footer tela 2 */
-      '#nsm-footer{',
-        'display:flex;align-items:center;justify-content:flex-end;',
-        'padding:1rem 1.6rem 1.4rem;',
-        'border-top:1px solid rgba(255,255,255,.055);',
-        'gap:1rem;',
-      '}',
-      '#nsm-btn-iniciar{',
-        'display:inline-flex;align-items:center;gap:.55rem;',
-        'padding:.65rem 1.4rem;',
-        'background:var(--accent,#7aa8e8);border:none;border-radius:12px;',
-        'color:#070b14;font-size:.88rem;font-weight:700;',
-        'cursor:pointer;transition:opacity .18s,transform .18s,box-shadow .18s;',
-        'touch-action:manipulation;white-space:nowrap;',
-      '}',
-      '#nsm-btn-iniciar:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,.3);}',
-      '#nsm-btn-iniciar:active{transform:translateY(0);}',
-      '#nsm-btn-iniciar:disabled{opacity:.35;cursor:not-allowed;transform:none;}',
 
     ].join('');
     document.head.appendChild(style);
   }
 
   /* ══════════════════════════════════════════════════════════
-     UTILITÁRIO — criar elemento
+     UTILITÁRIO
   ══════════════════════════════════════════════════════════ */
 
   var _SETA =
@@ -342,12 +280,11 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     CONSTRUIR MODAL
+     CONSTRUIR MODAL (somente tela 1)
   ══════════════════════════════════════════════════════════ */
 
   function _construirModal() {
     var bd = _el('div', { id: 'nsm-backdrop' });
-
     var card = _el('div', { id: 'nsm-card' });
 
     var head      = _el('div', { id: 'nsm-head' });
@@ -362,8 +299,8 @@
     card.appendChild(head);
 
     /* Tela 1 */
-    var tela1   = _el('div', { id: 'nsm-tela1', class: 'nsm-tela nsm-tela--entrando' });
-    var t1Btns  = _el('div', { id: 'nsm-tela1-btns' });
+    var tela1  = _el('div', { id: 'nsm-tela1', class: 'nsm-tela nsm-tela--entrando' });
+    var t1Btns = _el('div', { id: 'nsm-tela1-btns' });
 
     var btnContinuar = _el('button', { type: 'button', class: 'nsm-option' });
     btnContinuar.innerHTML =
@@ -394,39 +331,6 @@
     tela1.appendChild(t1Footer);
     card.appendChild(tela1);
 
-    /* Tela 2 — estrutura visual preservada, sem lógica de filtro */
-    var tela2 = _el('div', { id: 'nsm-tela2', class: 'nsm-tela nsm-tela--entrando' });
-    tela2.style.display = 'none';
-
-    var t2WrapVoltar = _el('div');
-    var btnVoltar    = _el('button', { type: 'button', id: 'nsm-btn-voltar' });
-    btnVoltar.innerHTML =
-      '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"' +
-      ' stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
-      '<polyline points="15 18 9 12 15 6"/></svg> Voltar';
-    t2WrapVoltar.appendChild(btnVoltar);
-    tela2.appendChild(t2WrapVoltar);
-
-    var body = _el('div', { id: 'nsm-body' });
-    var placeholder = _el('div', { id: 'nsm-placeholder' });
-    placeholder.innerHTML =
-      '<i class="fas fa-filter" aria-hidden="true"></i>' +
-      '<div>Seleção de aulas em breve.</div>';
-    body.appendChild(placeholder);
-    tela2.appendChild(body);
-
-    var footer = _el('div', { id: 'nsm-footer' });
-
-    var btnIniciar = _el('button', { id: 'nsm-btn-iniciar', type: 'button' });
-    btnIniciar.innerHTML =
-      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"' +
-      ' stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
-      '<polygon points="5 3 19 12 5 21 5 3"/></svg> Iniciar Quiz';
-
-    footer.appendChild(btnIniciar);
-    tela2.appendChild(footer);
-
-    card.appendChild(tela2);
     bd.appendChild(card);
     document.body.appendChild(bd);
 
@@ -439,43 +343,7 @@
       });
     });
 
-    /* Navegação Tela1 ↔ Tela2 */
-    function _irTela2() {
-      tela1.classList.add('nsm-tela--saindo');
-      setTimeout(function () {
-        tela1.style.display = 'none';
-        tela1.classList.remove('nsm-tela--saindo', 'nsm-tela--visivel');
-        subtitulo.textContent = 'Selecione as aulas que deseja estudar';
-        tela2.style.display = 'block';
-        requestAnimationFrame(function () {
-          requestAnimationFrame(function () {
-            tela2.classList.remove('nsm-tela--entrando');
-            tela2.classList.add('nsm-tela--visivel');
-          });
-        });
-      }, 200);
-    }
-
-    function _irTela1() {
-      tela2.classList.add('nsm-tela--saindo');
-      setTimeout(function () {
-        tela2.style.display = 'none';
-        tela2.classList.remove('nsm-tela--saindo', 'nsm-tela--visivel');
-        subtitulo.textContent = 'Escolha como deseja iniciar';
-        tela1.style.display = 'block';
-        requestAnimationFrame(function () {
-          requestAnimationFrame(function () {
-            tela1.classList.remove('nsm-tela--entrando');
-            tela1.classList.add('nsm-tela--visivel');
-          });
-        });
-      }, 200);
-    }
-
-    btnFiltrar.addEventListener('click', _irTela2);
-    btnVoltar.addEventListener('click',  _irTela1);
-
-    return { bd: bd, btnIniciar: btnIniciar, btnContinuar: btnContinuar, btnFiltrar: btnFiltrar };
+    return { bd: bd, btnContinuar: btnContinuar, btnFiltrar: btnFiltrar };
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -485,19 +353,53 @@
   function _exibirModal() {
     var ui = _construirModal();
 
-    /* "Todas as aulas" (tela 1) — conclui o fluxo */
+    /* Expõe ponto de conclusão para o FilterPanel chamar após Aplicar */
+    window.__nexusModalConcluir = function () {
+      _concluir(ui.bd);
+      window.__nexusModalConcluir = null;
+    };
+
+    /* "Todas as aulas" — conclui direto */
     ui.btnContinuar.addEventListener('click', function () {
+      /* Garante que filtro fica limpo */
+      if (window.NexusFilter) window.NexusFilter.store.clear();
       _concluir(ui.bd);
     });
 
-    /* "Iniciar Quiz" (tela 2) — conclui o fluxo */
-    ui.btnIniciar.addEventListener('click', function () {
-      _concluir(ui.bd);
+    /* "Filtrar aulas" — aguarda filter.js pronto e abre FilterPanel */
+    ui.btnFiltrar.addEventListener('click', function () {
+      _aguardarFilterEAbrir(ui.bd);
     });
   }
 
+  /* Aguarda window.__nexusFiltroAbrir existir (filter.js carregado),
+     registra listener para nexus:filtroAlterado e abre o painel.
+     Loop leve via rAF — sem timeout de desistência. */
+  function _aguardarFilterEAbrir(bd) {
+    function _tentar() {
+      if (typeof window.__nexusFiltroAbrir === 'function') {
+        /* Registra antes de abrir para não perder o evento */
+        _aguardarFiltroEConcluir(bd);
+        window.__nexusFiltroAbrir();
+      } else {
+        requestAnimationFrame(_tentar);
+      }
+    }
+    _tentar();
+  }
+
+  /* Aguarda o FilterPanel disparar nexus:filtroAlterado (ao Aplicar) e conclui */
+  function _aguardarFiltroEConcluir(bd) {
+    function _onFiltro() {
+      window.removeEventListener('nexus:filtroAlterado', _onFiltro);
+      /* Delay para o painel fechar visualmente antes do modal sumir */
+      setTimeout(function () { _concluir(bd); }, 320);
+    }
+    window.addEventListener('nexus:filtroAlterado', _onFiltro);
+  }
+
   /* ══════════════════════════════════════════════════════════
-     CONCLUIR — fecha modal e dispara carregamento
+     CONCLUIR
   ══════════════════════════════════════════════════════════ */
 
   function _concluir(bd) {
@@ -509,17 +411,15 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     BOOT — ponto de entrada
+     BOOT
   ══════════════════════════════════════════════════════════ */
 
   function _boot() {
     _injetarCSS();
 
     if (_temProgresso()) {
-      /* Tem progresso → entra direto */
       _pularModal();
     } else {
-      /* Sem progresso → exibe modal */
       _exibirModal();
     }
   }

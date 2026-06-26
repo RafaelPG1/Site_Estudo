@@ -16,11 +16,14 @@
     11. Modo Step ......................... L.720
     12. Binds e boot ...................... L.930
 
-   v8 — embaralhamento por grupo de aula:
-     Questões são embaralhadas DENTRO de cada aula, preservando
-     a ordem das aulas. Isso garante que subject-title e
-     subject-result apareçam corretamente para todas as aulas,
-     independente de quantas aulas a disciplina tiver.
+   v9 — integração com FilterStore (filter.js):
+     • _buildBaseQuestoes() filtra window.questoes pelo FilterStore
+       antes de qualquer embaralhamento ou restauração.
+     • window.__nexusFiltroReiniciar é exposto para filter.js
+       acionar reiniciar() + remontagem da base filtrada.
+     • F5 restaura sessão normalmente — apenas mudança de filtro
+       dispara reiniciar().
+     • A primeira renderização já nasce com a base correta.
 
    INTEGRAÇÃO COM O QUIZ-ASSISTANT:
      Após cada renderização, o engine:
@@ -53,14 +56,11 @@
   var _snapshotDisparado = false;
 
   function _publicarSnapshot(lista) {
-    // Snapshot imutável: cópia rasa da lista atual
     window.__NEXUS_QUESTOES_VISUAIS__ = (lista || []).slice();
 
     if (!_snapshotDisparado) {
       _snapshotDisparado = true;
-      // Flag de fallback: se o assistant carregar DEPOIS do evento, usa este flag
       window.__NEXUS_QUIZ_PRONTO__ = true;
-      // Evento principal: assistant escuta e inicializa
       try {
         window.dispatchEvent(new CustomEvent('nexus:quizPronto'));
       } catch (e) {
@@ -87,13 +87,11 @@
     var _semestre = window.__NEXUS_QUIZ_SEMESTRE__ || '';
     var _Storage  = window.NexusStorage            || null;
 
-    /* ── UID do usuário logado (isola dados por pessoa) ── */
     function _uid() {
       var u = _Storage ? _Storage.get('usuario', null) : null;
       return (u && u.uid) ? u.uid : 'guest';
     }
 
-    /* ── Prefixo de disco isolado por usuário ── */
     function _discUid() {
       return _uid() + '_' + _disc;
     }
@@ -116,7 +114,6 @@
       _Storage.remove(_stepStateKey());
     }
 
-    /* ── Converte respostas {qi: ai} → string compacta ── */
     function _respostasParaStr(resps, total) {
       var arr = [];
       for (var i = 0; i < total; i++) {
@@ -125,7 +122,6 @@
       return arr.join(',');
     }
 
-    /* ── Converte string compacta → respostas {qi: ai} ── */
     function _strParaRespostas(str) {
       var resps = {};
       str.split(',').forEach(function (v, i) {
@@ -134,7 +130,6 @@
       return resps;
     }
 
-    /* ── Salva no Firebase (fire-and-forget) ── */
     function _salvarFirebase(finalizado) {
       if (!window.NexusFirebase || !_disc) return;
       var usuario = _Storage ? _Storage.get('usuario', null) : null;
@@ -196,7 +191,6 @@
       }
     }
 
-    /* ── Listeners de saída ─────────────────────────────────── */
     window.addEventListener('pagehide', _registrarSaida);
     document.addEventListener('visibilitychange', function () {
       if (document.hidden) _registrarSaida();
@@ -204,16 +198,16 @@
 
     /* ── Questões ─────────────────────────────────────────── */
 
-    var listaQuestoes;
+    var _listaCompleta;
     if (Array.isArray(window.questoes)) {
-      listaQuestoes = window.questoes;
+      _listaCompleta = window.questoes;
     } else if (window.questoes && typeof window.questoes === 'object') {
-      listaQuestoes = window.questoes[tipo];
+      _listaCompleta = window.questoes[tipo];
     }
 
     var container = document.getElementById('quiz-container');
 
-    if (!listaQuestoes || !Array.isArray(listaQuestoes) || listaQuestoes.length === 0) {
+    if (!_listaCompleta || !Array.isArray(_listaCompleta) || _listaCompleta.length === 0) {
       if (container) {
         container.innerHTML =
           '<div style="padding:3rem 2rem;text-align:center;color:var(--text-2,#a8a49c);">' +
@@ -227,7 +221,33 @@
       return;
     }
 
-    var questoesBase = listaQuestoes;
+    /* ══════════════════════════════════════════════════════════
+       FILTRO DE AULAS
+       Consulta FilterStore (filter.js) para montar a base
+       correta ANTES de qualquer embaralhamento ou restauração.
+       F5 → base filtrada idêntica à sessão anterior (shuffle
+       map é restaurado normalmente).
+    ══════════════════════════════════════════════════════════ */
+
+    function _buildBaseQuestoes() {
+      var NF = window.NexusFilter;
+      if (!NF) return _listaCompleta;
+
+      var selected = NF.store.getSelected();
+      if (selected === null) return _listaCompleta; /* sem filtro = todas */
+
+      return _listaCompleta.filter(function (q) {
+        var aula = q.aula !== undefined ? q.aula : null;
+        return aula !== null && selected.has(aula);
+      });
+    }
+
+    var questoesBase = _buildBaseQuestoes();
+
+    if (questoesBase.length === 0) {
+      /* Filtro selecionou aulas sem questões — usa tudo */
+      questoesBase = _listaCompleta;
+    }
 
     /* ══════════════════════════════════════════════════════════
        3. EMBARALHAMENTO (v8 — por grupo de aula)
@@ -603,8 +623,6 @@
         });
       });
 
-      // Publica snapshot APÓS renderização completa
-      // Na primeira chamada, dispara nexus:quizPronto
       _publicarSnapshot(questoes);
     }
 
@@ -715,9 +733,57 @@
       if (resultsEl) { resultsEl.style.display = 'none'; resultsEl.innerHTML = ''; }
 
       _resetarBotaoErros();
-      renderizar();   // _publicarSnapshot é chamado dentro de renderizar()
+      renderizar();
       smoothScrollToTop();
     }
+
+    /* ══════════════════════════════════════════════════════════
+       REINICIAR COM NOVA BASE (para mudança de filtro)
+       Reconstrói questoesBase pelo FilterStore atual,
+       limpa a sessão e rerrenderiza.
+    ══════════════════════════════════════════════════════════ */
+
+    function reiniciarComFiltro() {
+      /* Limpa estado da sessão */
+      respostas        = {};
+      revelado         = false;
+      mostrandoSoErros = false;
+      stepAtual        = 0;
+
+      if (_disc && _Storage) {
+        _Storage.clearProgress(_discUid(), _modo, _semestre);
+        _Storage.remove(_smapKey());
+        _limparEstadoStep();
+      }
+
+      if (window.NexusFirebase && _disc) {
+        var usuario = _Storage ? _Storage.get('usuario', null) : null;
+        if (usuario && usuario.uid) {
+          window.NexusFirebase.limparRespostasQuiz(
+            usuario.uid, _semestre, _modo, _disc
+          ).catch(function () {});
+        }
+      }
+
+      /* Reconstrói base de questões com novo filtro */
+      questoesBase = _buildBaseQuestoes();
+      if (questoesBase.length === 0) questoesBase = _listaCompleta;
+
+      /* Novo embaralhamento */
+      questoes = criarCopiaEmbaralhada(questoesBase);
+      if (_disc && _Storage) _salvarShuffleMap();
+
+      /* Limpa resultado global */
+      var resultsEl = document.getElementById('results');
+      if (resultsEl) { resultsEl.style.display = 'none'; resultsEl.innerHTML = ''; }
+
+      _resetarBotaoErros();
+      renderizar();
+      smoothScrollToTop();
+    }
+
+    /* Expõe para filter.js disparar via nexus:filtroAlterado */
+    window.__nexusFiltroReiniciar = reiniciarComFiltro;
 
     /* ── 9. RESULTADO GLOBAL ──────────────────────────────── */
 
@@ -1202,7 +1268,7 @@
     }
 
     function _renderizarERestaurar() {
-      renderizar();   // → chama _publicarSnapshot → dispara nexus:quizPronto na 1ª vez
+      renderizar();
 
       if (_Storage) {
         var _stepSalvo = _Storage.get(_stepStateKey(), null);
