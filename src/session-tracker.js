@@ -487,8 +487,31 @@ function _newSessionId() {
 }
 
 function _notify() {
+  _registrarTempoAtivoNoHeatmap();
   const payload = getStats();
   _listeners.forEach(fn => { try { fn(payload); } catch (_) {} });
+}
+
+/* ══════════════════════════════════════════════
+   CAMADA 2 — HEATMAP POR TEMPO ATIVO
+   ─────────────────────────────────────────────
+   Pedido explícito: o heatmap deve refletir tempo
+   ativo por hora, não contagem de eventos de navegação.
+   Reaproveita o _notifyTimer da Camada 1 (já roda a
+   cada NOTIFY_INTERVAL = 1s) só para LER o estado de
+   posse do lock e, se esta aba estiver de fato contando
+   tempo agora, somar esse 1s na hora corrente do heatmap.
+   Não cria timer novo, não decide nada sobre lock/tempo
+   — apenas observa o que a Camada 1 já decidiu (_isOwner()
+   + visibilidade), exatamente como getStats() já faz. */
+function _registrarTempoAtivoNoHeatmap() {
+  if (!_initialized) return;
+
+  const contandoAgora = _isOwner() && document.visibilityState !== 'hidden';
+  if (!contandoAgora) return;
+
+  const hour = String(new Date().getHours());
+  _navHourHeatmap[hour] = (_navHourHeatmap[hour] ?? 0) + 1;
 }
 
 function _detectDevice() {
@@ -733,6 +756,11 @@ export async function init(uid) {
   document.addEventListener('visibilitychange', _onVisibilityChange);
   window.addEventListener('beforeunload', _onBeforeUnload);
 
+  /* Camada 2 — detecção automática de navegação (History API/SPA).
+     Idempotente: se o app não usa pushState/replaceState, isto nunca
+     dispara e não tem efeito nenhum sobre nada da Camada 1. */
+  _installNavAutoDetect();
+
   /* Se a sessão era nova (não havia storedId), cria no Firestore */
   const eNova = !storedId;
   if (eNova) await _criarSessaoFirestore();
@@ -965,16 +993,72 @@ function __nexusPageEnter(pathname) {
 
   _navSequence.push(pathname);
 
-  const hour = String(new Date().getHours());
-  _navHourHeatmap[hour] = (_navHourHeatmap[hour] ?? 0) + 1;
-
   console.log('[session-tracker] __nexusPageEnter →', pathname,
-    `| visitas: ${_navPages[pathname].visits} | hora: ${hour}h`);
+    `| visitas: ${_navPages[pathname].visits}`);
 
   if (_initialized && _uid && _isOwner()) _flush().catch(() => {});
 }
 
 window.__nexusPageEnter = __nexusPageEnter;
+
+/* ══════════════════════════════════════════════
+   CAMADA 2 — DETECÇÃO AUTOMÁTICA DE NAVEGAÇÃO
+   ─────────────────────────────────────────────
+   Cobre os dois cenários de navegação sem precisar
+   de chamada manual em cada página:
+
+   1) Navegação MULTI-PÁGINA (recarrega o documento):
+      cada página já chama `__nexusPageEnter(location.pathname)`
+      uma vez, dentro de `init()`, no momento em que o
+      módulo é importado e o tracker inicializa. Isso já
+      é automático — basta a página importar o tracker.
+
+   2) Navegação SPA (sem reload, via History API):
+      intercepta pushState/replaceState e os eventos
+      popstate/hashchange, e chama __nexusPageEnter com
+      o novo pathname sempre que ele mudar. Se o app não
+      usa History API para navegar, estes hooks nunca
+      disparam e não têm efeito nenhum — extensão 100%
+      incremental, não assume SPA.
+
+   Nenhuma destas funções toca em tempo/lock/flush além
+   de delegar para __nexusPageEnter, que já existia.
+══════════════════════════════════════════════ */
+let _navAutoDetectInstalled = false;
+
+function _onRotaPodeTerMudado() {
+  if (!_initialized) return;
+  __nexusPageEnter(location.pathname);
+}
+
+function _installNavAutoDetect() {
+  if (_navAutoDetectInstalled) return;
+  _navAutoDetectInstalled = true;
+
+  /* popstate: back/forward do navegador em SPA */
+  window.addEventListener('popstate', _onRotaPodeTerMudado);
+
+  /* hashchange: navegação por #rota, caso o app use */
+  window.addEventListener('hashchange', _onRotaPodeTerMudado);
+
+  /* pushState/replaceState: intercepta sem alterar o
+     comportamento original — apenas observa a chamada
+     e dispara a detecção depois que a URL já mudou. */
+  const _origPushState    = history.pushState.bind(history);
+  const _origReplaceState = history.replaceState.bind(history);
+
+  history.pushState = function (...args) {
+    const result = _origPushState(...args);
+    _onRotaPodeTerMudado();
+    return result;
+  };
+
+  history.replaceState = function (...args) {
+    const result = _origReplaceState(...args);
+    _onRotaPodeTerMudado();
+    return result;
+  };
+}
 
 /* ══════════════════════════════════════════════
    PERFORMANCE ANALYTICS — quiz finalizado
