@@ -24,6 +24,78 @@
   <script>
     window.__NEXUS_CONTEXT__ = { tipos: ['dashboard'] };
   </script>
+
+  <!-- ═══ Estilos mínimos para os novos blocos de leitura real
+       (navegação / heatmap / evolução diária / quiz). Apenas
+       apresentação — nenhum dado é gerado aqui. Caso o projeto já
+       possua classes equivalentes em dashboard.css, estas regras
+       servem como fallback e podem ser removidas dali. ═══ -->
+  <style>
+    .evo-chart, .heatmap-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 64px;
+      margin-top: 8px;
+    }
+    .evo-col, .heatmap-col {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      align-items: flex-end;
+    }
+    .evo-bar, .heatmap-bar {
+      width: 100%;
+      border-radius: 2px 2px 0 0;
+      background: var(--purple, #6C63FF);
+      min-height: 0;
+      transition: height .3s ease;
+    }
+    .evo-bar-vazia { background: var(--border, #2a2a35); }
+    .heatmap-bar { background: var(--amber, #FFB547); }
+
+    .nav-page-item, .quiz-event-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border, #2a2a35);
+      font-size: 13px;
+    }
+    .nav-page-item:last-child, .quiz-event-item:last-child { border-bottom: none; }
+    .nav-page-name { opacity: .85; word-break: break-all; }
+    .nav-page-meta, .quiz-event-taxa { opacity: .6; white-space: nowrap; }
+
+    .nav-flow {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+    .nav-flow-step {
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(108,99,255,.12);
+      white-space: nowrap;
+    }
+    .nav-flow-arrow { opacity: .5; }
+
+    .nav-empty {
+      font-size: 13px;
+      opacity: .55;
+      padding: 10px 0;
+    }
+
+    .nav-device-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 6px;
+      font-size: 14px;
+    }
+  </style>
 </head>
 <body>
 
@@ -336,6 +408,39 @@
               <polyline points="0,26 13,14 26,22 39,12 52,18 65,8 80,4" fill="none" stroke="#4FA8E8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
+
+          <!-- Tempo médio por sessão (real — tempoTotalGeral / totalSessoes) -->
+          <div class="stat-card c-purple">
+            <div class="stat-icon ic-purple">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="1" y="4" width="14" height="9" rx="2"/>
+                <path d="M5 4V3a2 2 0 014 0v1"/>
+              </svg>
+            </div>
+            <div class="stat-number" id="stat-media-sessao">—</div>
+            <div class="stat-label">Tempo médio por sessão</div>
+            <div class="stat-delta">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="5" cy="5" r="3.5"/>
+                <path d="M5 3v2l1 1"/>
+              </svg>
+              <span class="delta-sub">tempoTotalGeral ÷ totalSessoes</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ── EVOLUÇÃO DIÁRIA (30 dias) — historico_diario ──── -->
+      <section>
+        <div class="section-header">
+          <span class="section-title">Evolução diária</span>
+          <span class="section-count">últimos 30 dias · historico_diario</span>
+          <div class="section-line"></div>
+        </div>
+
+        <div class="perf-card">
+          <div class="evo-chart" id="evolucao-30dias"></div>
         </div>
       </section>
 
@@ -538,6 +643,66 @@
           </div>
         </div>
       </div>
+
+
+      <!-- ── NAVEGAÇÃO E COMPORTAMENTO REAL ──────────────────
+           Tudo nesta seção vem exclusivamente dos campos já
+           existentes na sessão (pages, navigation, hourHeatmap,
+           deviceType, quizEvents), gravados por session-tracker.js.
+           Nenhum campo novo é criado e nenhum dado é simulado. ── -->
+      <div class="two-col">
+
+        <!-- PÁGINAS MAIS ACESSADAS + FLUXO DE NAVEGAÇÃO -->
+        <div class="perf-card">
+          <div class="section-header">
+            <span class="section-title">Navegação</span>
+            <span class="section-count">pages · navigation</span>
+            <div class="section-line"></div>
+          </div>
+
+          <div class="perf-name" style="margin-bottom:4px">Páginas mais acessadas</div>
+          <div id="nav-paginas-lista"></div>
+
+          <div class="perf-name" style="margin:16px 0 4px">Fluxo de navegação (sessão atual)</div>
+          <div class="nav-flow" id="nav-fluxo"></div>
+        </div>
+
+        <!-- PERFIL DO USUÁRIO: DISPOSITIVO + HORÁRIO ATIVO -->
+        <div class="perf-card">
+          <div class="section-header">
+            <span class="section-title">Perfil de uso</span>
+            <span class="section-count">deviceType · hourHeatmap</span>
+            <div class="section-line"></div>
+          </div>
+
+          <div class="nav-device-row">
+            <span class="perf-name">Dispositivo</span>
+            <span class="perf-value" id="nav-device-tipo">—</span>
+          </div>
+
+          <div class="nav-device-row" style="margin-top:10px">
+            <span class="perf-name">Horário mais ativo</span>
+            <span class="perf-value" id="nav-horario-pico">—</span>
+          </div>
+
+          <div class="perf-name" style="margin:16px 0 4px">Distribuição por hora do dia</div>
+          <div class="heatmap-chart" id="nav-heatmap"></div>
+        </div>
+      </div>
+
+
+      <!-- ── QUIZ — SOMENTE LEITURA (quizEvents da sessão) ──── -->
+      <section>
+        <div class="section-header">
+          <span class="section-title">Quizzes da sessão</span>
+          <span class="section-count"><span id="quiz-eventos-count">0</span> evento(s) · quizEvents</span>
+          <div class="section-line"></div>
+        </div>
+
+        <div class="perf-card">
+          <div id="quiz-eventos-lista"></div>
+        </div>
+      </section>
 
 
       <!-- ── DISCIPLINES + ACHIEVEMENTS ────────────────────── -->

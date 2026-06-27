@@ -32,6 +32,11 @@ import { injetarLogo } from '../shared/js/utils/logo.js';
 ───────────────────────────────────────────── */
 import { Sound, playSound } from '../shared/js/audio/audio-api.js';
 
+/* NAVIGATION ANALYTICS — importa o tracker para garantir que
+   window.__nexusPageEnter seja registrado nesta página.
+   O tracker inicializa automaticamente via auto-boot interno. */
+import '../src/session-tracker.js';
+
 injetarLogo('#header-logo-wrap');
 
 /* ══════════════════════════════════════════════
@@ -115,6 +120,11 @@ _carregarIA();
 document.addEventListener('DOMContentLoaded', async () => {
   setPagina('RESUMO');
   preencherAnos();
+
+  /* NAVIGATION ANALYTICS — registra entrada na página de resumos */
+  if (typeof window.__nexusPageEnter === 'function') {
+    window.__nexusPageEnter(location.pathname);
+  }
 
   // Inicializa o sistema de áudio (botão flutuante + modal interno)
   Sound.init();
@@ -520,17 +530,14 @@ function _renderGrid() {
   grid.innerHTML = '';
 
   if (State.modo === 'sintese') {
-    // Síntese rápida: mostra apenas aulas que têm síntese disponível
     State.aulas.forEach((aula, idx) => {
       const sint = State.simplificado[idx] ?? null;
       const temSint = !!(sint && (sint.ideia_central || (sint.secoes ?? []).length > 0));
-      if (!temSint) return; // pula aulas sem síntese
+      if (!temSint) return;
       const card = _criarCardSintese(aula, idx);
       grid.appendChild(card);
     });
   } else if (State.modo === 'resumao') {
-    // Resumão: cada entrada de State.resumao é um objeto no formato de aula
-    // (com aula, ideia_central, secoes) — um card por entrada
     State.resumao.forEach((res, idx) => {
       if (!res) return;
       const temRes = !!(res.ideia_central || (res.secoes ?? []).length > 0);
@@ -571,17 +578,13 @@ function _nivelAula(secoes) {
 
 /* ══════════════════════════════════════════════
    HOVER NOS CARDS — anti-spam
-   Um hover por card: dispara ao entrar no card,
-   não repete enquanto o cursor move dentro dele.
 ══════════════════════════════════════════════ */
 function _bindCardHover(card) {
   card.addEventListener('mouseenter', () => playSound('hover', 'resumos'));
 }
 
 /* ══════════════════════════════════════════════
-   CARDS — Literary Atlas (chapter-mark design)
-   Estrutura: stripe superior + header (nº/seta) +
-   corpo (aula/título/descrição/meta).
+   CARDS
 ══════════════════════════════════════════════ */
 const _ARROW_SVG = `
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -727,8 +730,6 @@ function _criarCardResumao(res, idx) {
    READER — RESUMÃO
 ══════════════════════════════════════════════ */
 function _abrirModalResumao(res) {
-  // res tem o mesmo formato de uma aula: { aula, ideia_central, secoes }
-  // reutiliza o reader normal com badge diferente
   playSound('click', 'resumos');
   playSound('openModal', 'resumos');
 
@@ -750,7 +751,6 @@ function _abrirModalResumao(res) {
   document.getElementById('read-modal').classList.add('read-modal--open');
   document.body.style.overflow = 'hidden';
   document.getElementById('read-modal-panel')?.focus();
-  // Exibe botões flutuantes no modo leitura
   document.querySelector('.float-actions')?.classList.add('float-actions--visible');
 
   if (_progressCleanup) _progressCleanup();
@@ -769,7 +769,6 @@ function _bindModal() {
   });
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
-      // Só toca se o reader estiver aberto
       if (document.getElementById('read-modal')?.classList.contains('read-modal--open')) {
         playSound('closeModal', 'resumos');
       }
@@ -781,11 +780,9 @@ function _bindModal() {
 let _progressCleanup = null;
 
 function _abrirModal(aula) {
-  // Sons de abertura
   playSound('click', 'resumos');
   playSound('openModal', 'resumos');
 
-  // Preenche barra superior
   const aulaLabel = document.getElementById('rm-aula-label');
   if (aulaLabel) aulaLabel.textContent = aula.aula ?? '';
 
@@ -796,28 +793,22 @@ function _abrirModal(aula) {
     badge.className   = 'reader__bar-badge badge--conceito';
   }
 
-  // Monta conteúdo no reader
   const body = document.getElementById('rm-body');
   if (body) body.innerHTML = _buildReaderBody(aula);
 
-  // Bind dos acordeões
   const _accordionKey = _storageKeyAccordion(aula.aula ?? aula.id ?? String(Date.now()));
   _bindReaderAccordion(_accordionKey);
 
-  // Abre
   document.getElementById('read-modal').classList.add('read-modal--open');
   document.body.style.overflow = 'hidden';
   document.getElementById('read-modal-panel')?.focus();
-  // Exibe botões flutuantes no modo leitura
   document.querySelector('.float-actions')?.classList.add('float-actions--visible');
 
-  // Barra de progresso
   if (_progressCleanup) _progressCleanup();
   const scrollEl = document.getElementById('rm-body-wrapper');
   _progressCleanup = _updateReadingProgress(scrollEl);
 }
 
-/* ── Chave localStorage por aula + disciplina + semestre ── */
 function _storageKeyAccordion(aulaId) {
   const disc = State.disciplina?.id ?? 'unknown';
   const sem  = State.semestre    ?? 'unknown';
@@ -936,7 +927,6 @@ function _buildReaderBody(aula) {
 function _fecharModal() {
   document.getElementById('read-modal')?.classList.remove('read-modal--open');
   document.body.style.overflow = '';
-  // Oculta botões flutuantes ao sair da leitura
   document.querySelector('.float-actions')?.classList.remove('float-actions--visible');
   if (State._tocObserver) {
     State._tocObserver.disconnect();
@@ -950,7 +940,6 @@ function _fecharModal() {
   if (bar) { bar.style.width = '0%'; bar.classList.remove('reading-progress--visible'); }
 }
 
-/* Mantido para compatibilidade */
 function _buildModalBody(aula) { return _buildReaderBody(aula); }
 function _bindModalTabs() {}
 function _ativarSecao() {}
@@ -1213,7 +1202,6 @@ function _parseInline(str) {
 
 /* ══════════════════════════════════════════════
    BOTÕES FLUTUANTES LATERAIS
-   ✦ Scroll to top / Collapse all / Scroll to bottom
 ══════════════════════════════════════════════ */
 (function _initFloatActions() {
 

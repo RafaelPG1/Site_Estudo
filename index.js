@@ -45,6 +45,11 @@ import {
   setMusicBtnEnabled,
 } from './shared/js/audio/audio-api.js';
 
+/* NAVIGATION ANALYTICS — importa o tracker para garantir que
+   window.__nexusPageEnter seja registrado nesta página.
+   O tracker inicializa automaticamente via auto-boot interno. */
+import './src/session-tracker.js';
+
 
 /* ── IDs de cards que exigem login — declarado no topo para evitar TDZ ── */
 const CARDS_RESTRITOS = ['card-pessoal'];
@@ -114,6 +119,16 @@ async function init() {
     injetarLogo('#header-logo-wrap');
 
     setPagina('HOME');
+
+    /* NAVIGATION ANALYTICS — registra entrada na página inicial.
+       Chamada após setPagina para garantir contexto correto.
+       O tracker pode ainda não estar com uid neste momento (usuário
+       não logado), mas os dados ficam em memória e são persistidos
+       assim que o login acontecer. */
+    if (typeof window.__nexusPageEnter === 'function') {
+      window.__nexusPageEnter(location.pathname);
+    }
+
     _refreshHeader();
     _aplicarBloqueioCards();
     _bindCardLinks(); // registra listeners imediatamente — não depende do áudio
@@ -122,6 +137,11 @@ async function init() {
     document.addEventListener('nexus:loginSuccess', () => {
       iniciarSessao();
       _aplicarBloqueioCards();
+      /* NAVIGATION ANALYTICS — re-registra a página após login
+         para que o uid esteja disponível no flush */
+      if (typeof window.__nexusPageEnter === 'function') {
+        window.__nexusPageEnter(location.pathname);
+      }
     });
     document.addEventListener('nexus:logout', () => {
       encerrarSessao();

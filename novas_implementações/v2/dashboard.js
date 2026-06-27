@@ -4,31 +4,36 @@
    Dashboard: visão geral, ferramentas pessoais e estatísticas.
    =============================================
 
-   v3 — Session Tracker real (Firebase)
+   v5 — Tempo global contínuo (Camada 1)
    ─────────────────────────────────────────────
-   MUDANÇAS v2.1 → v3
+   MUDANÇAS v4 → v5
    ─────────────────────────────────────────────
-   • _initSessionTimer() substituído por integração real com
-     session-tracker.js. O timer da sidebar agora exibe o tempo
-     ativo da sessão atual vindo do Firebase, atualizado a cada
-     segundo via subscribe().
+   • Filosofia de exibição alterada: o dashboard não
+     exibe "sessões" como unidade principal. O usuário
+     vê tempo contínuo de estudo — como um tracker de
+     progresso pessoal, não um log de conexões.
 
-   • Novo _carregarMetricasReais(): lê estatísticas derivadas das
-     sessões registradas no Firestore via carregarEstatisticas() e
-     preenche os stat-cards, perf-items e session-sub com dados
-     reais do usuário autenticado.
+   • Novos indicadores obrigatórios:
+     - Tempo total lifetime (tempoTotalGeral)
+     - Tempo médio por dia (diasAtivos nos últimos 30)
+     - Evolução diária 30 dias (barras reais)
+     - Streak de dias ativos
+     - Frequência de uso (dias ativos / 30)
+     - Comparação dia a dia (delta vs ontem)
+     - Identificação do melhor dia
+     - Gráfico de crescimento acumulado (últimos 7)
 
-   • Fallback gracioso: quando o usuário não está logado ou não há
-     dados, os cards exibem '—' sem quebrar o layout.
+   • Removido: exibição de contagem de sessões como
+     métrica principal do usuário. totalSessoes permanece
+     como dado técnico interno, não como destaque visual.
 
-   • A sessão começa automaticamente ao importar session-tracker.js
-     e reage ao nexus:loginSuccess / nexus:logout globais.
-
-   MANTIDO (inalterado de v2.1):
-   ─────────────────────────────────────────────
-   BUG 1 — fechamento correto de _trocarSemestre.
-   BUG 2 — wrapper _aplicarCoresSeDefined() para disciplinas sem cores.
-   BUG 3 — _renderGreeting declarada.
+   • Mantido inalterado de v4:
+     - Navigation analytics (pages, navigation, heatmap)
+     - Quiz events rendering
+     - Session timer ao vivo via subscribe()
+     - BUG 1, 2, 3 de versões anteriores
+     - Toda a lógica de troca de semestre
+     - _buscarUltimaSessaoPersistida (fallback Firestore)
    ============================================= */
 
 import {
@@ -60,6 +65,12 @@ import {
   carregarEstatisticas,
   getStats      as sessionGetStats,
 } from '../../src/session-tracker.js';
+
+/* ── Firestore (leitura da última sessão persistida — fallback) ── */
+import { getDb } from '../../src/firebase.js';
+import {
+  collection, query, orderBy, limit, getDocs,
+} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 /* ══════════════════════════════════════════════
    ESTADO
@@ -97,9 +108,7 @@ function _resolverContexto() {
 
   State.discAtiva = disc;
 
-  if (disc) {
-    _aplicarCoresSeDefined(disc.arquivo);
-  }
+  if (disc) _aplicarCoresSeDefined(disc.arquivo);
 }
 
 /* ══════════════════════════════════════════════
@@ -110,8 +119,8 @@ function _renderSemestreSelector() {
   if (!wrap) return;
   wrap.innerHTML = '';
 
-  const select = document.createElement('select');
-  select.className = 'semestre-select';
+  const select      = document.createElement('select');
+  select.className  = 'semestre-select';
   select.title      = 'Selecionar semestre';
   select.id         = 'semestre-select';
 
@@ -142,9 +151,7 @@ function _trocarSemestre(novoSemestre) {
   State.disciplinas = getDisciplinasDeSemestre(novoSemestre);
   State.discAtiva   = State.disciplinas[0] ?? null;
 
-  if (State.discAtiva) {
-    _aplicarCoresSeDefined(State.discAtiva.arquivo);
-  }
+  if (State.discAtiva) _aplicarCoresSeDefined(State.discAtiva.arquivo);
 
   _renderContexto();
   _renderDisciplinas();
@@ -180,8 +187,8 @@ function _renderDisciplinas() {
   grid.innerHTML = '';
 
   if (!State.disciplinas.length) {
-    const vazio = document.createElement('div');
-    vazio.className = 'disc-empty';
+    const vazio       = document.createElement('div');
+    vazio.className   = 'disc-empty';
     vazio.textContent = 'Nenhuma disciplina neste semestre.';
     grid.appendChild(vazio);
     return;
@@ -190,21 +197,21 @@ function _renderDisciplinas() {
   State.disciplinas.forEach(disc => {
     const cor = _corDaDisciplina(disc);
 
-    const item = document.createElement('div');
-    item.className = 'disc-item';
+    const item          = document.createElement('div');
+    item.className      = 'disc-item';
     item.dataset.discId = disc.id;
 
-    const colorBar = document.createElement('div');
+    const colorBar     = document.createElement('div');
     colorBar.className = 'disc-color';
     if (cor) colorBar.style.background = cor;
 
-    const nome = document.createElement('div');
-    nome.className = 'disc-name';
-    nome.textContent = disc.nome;
+    const nome          = document.createElement('div');
+    nome.className      = 'disc-name';
+    nome.textContent    = disc.nome;
 
-    const sub = document.createElement('div');
-    sub.className = 'disc-sessions';
-    sub.textContent = `${disc.emoji ? disc.emoji + ' ' : ''}${disc.apelido ?? disc.id}`;
+    const sub           = document.createElement('div');
+    sub.className       = 'disc-sessions';
+    sub.textContent     = `${disc.emoji ? disc.emoji + ' ' : ''}${disc.apelido ?? disc.id}`;
 
     item.appendChild(colorBar);
     item.appendChild(nome);
@@ -220,11 +227,11 @@ function _renderSidebarDisciplinas() {
   wrap.innerHTML = '';
 
   State.disciplinas.forEach(disc => {
-    const a = document.createElement('a');
-    a.className = 'nav-item';
-    a.href = '#';
+    const a       = document.createElement('a');
+    a.className   = 'nav-item';
+    a.href        = '#';
 
-    const icon = document.createElement('span');
+    const icon    = document.createElement('span');
     icon.className = 'nav-icon nav-emoji';
     icon.textContent = disc.emoji ?? '📚';
     icon.setAttribute('aria-hidden', 'true');
@@ -251,11 +258,13 @@ function _renderGreeting() {
 }
 
 function _renderUsuario() {
-  const el = document.getElementById('page-user-name');
+  const el     = document.getElementById('page-user-name');
   if (!el) return;
   const usuario = getUsuario?.();
   const nome    = usuario?.nome || usuario?.displayName || '';
-  el.innerHTML = nome ? `, <span class="accent">${_escapeHtml(nome.split(' ')[0])}</span>` : '';
+  el.innerHTML  = nome
+    ? `, <span class="accent">${_escapeHtml(nome.split(' ')[0])}</span>`
+    : '';
 }
 
 function _escapeHtml(str) {
@@ -265,10 +274,9 @@ function _escapeHtml(str) {
 }
 
 /* ══════════════════════════════════════════════
-   SESSION TIMER — integrado com session-tracker.js
-   Atualiza a sidebar a cada segundo com dados reais.
-   O tempo exibido é o tempo ATIVO da sessão atual,
-   não um contador fake a partir de um valor fixo.
+   SESSION TIMER — ao vivo
+   Exibe o tempo ativo desta aba (ou pausa se não
+   for a aba líder).
 ══════════════════════════════════════════════ */
 function _initSessionTimer() {
   const timeEl = document.querySelector('.session-time');
@@ -276,14 +284,14 @@ function _initSessionTimer() {
 
   if (!timeEl) return;
 
-  // Atualiza o display imediatamente com o estado atual
   function _atualizar(stats) {
     if (!stats) return;
     timeEl.textContent = sessionFormatTime(stats.activeSeconds);
 
-    // Sub-label: mostra semestre e disciplina ativa, ou status de pausa
     if (subEl) {
-      if (!stats.isRunning && stats.initialized) {
+      if (stats.initialized && !stats.isLeader) {
+        subEl.textContent = 'Outra aba em contagem';
+      } else if (!stats.isRunning && stats.initialized) {
         subEl.textContent = 'Aba em segundo plano';
       } else if (State.discAtiva) {
         subEl.textContent = `${State.discAtiva.apelido ?? State.discAtiva.nome} · ${State.semestre ?? ''}`;
@@ -293,19 +301,16 @@ function _initSessionTimer() {
         subEl.textContent = 'Sessão ativa';
       }
     }
+
+    _renderNavegacaoAoVivo(stats);
   }
 
-  // Atualização inicial
   _atualizar(sessionGetStats());
-
-  // Subscribe para updates a cada segundo
   sessionSubscribe(_atualizar);
 }
 
 /* ══════════════════════════════════════════════
    MÉTRICAS REAIS DO FIREBASE
-   Carrega estatísticas de sessão e preenche os
-   stat-cards com dados reais do usuário.
 ══════════════════════════════════════════════ */
 async function _carregarMetricasReais() {
   const usuario = getUsuario?.();
@@ -315,16 +320,45 @@ async function _carregarMetricasReais() {
   }
 
   try {
-    const stats = await carregarEstatisticas(usuario.uid);
+    const [stats, ultimaSessao] = await Promise.all([
+      carregarEstatisticas(usuario.uid),
+      _buscarUltimaSessaoPersistida(usuario.uid),
+    ]);
+
     if (!stats) {
       _renderMetricasVazio();
       return;
     }
 
-    _renderStatCards(stats);
-    _renderPerfItems(stats);
-    _renderUltimoAcesso(stats);
+    /* ── Bloco principal: tempo global contínuo ── */
+    _renderTempoGlobal(stats);
+
+    /* ── Tendência e evolução ── */
+    _renderTendencia(stats);
+    _renderEvolucaoDiaria(stats);
+    _renderCrescimentoAcumulado(stats);
+
+    /* ── Consistência de uso ── */
+    _renderConsistencia(stats);
+
+    /* ── Sparklines nos cards ── */
     _renderSparklines(stats);
+
+    /* ── Último acesso ── */
+    _renderUltimoAcesso(stats);
+
+    /* ── Navegação: ao vivo ou fallback Firestore ── */
+    const statsSessaoAtual   = sessionGetStats();
+    const temSessaoEmMemoria = statsSessaoAtual?.initialized
+      && (statsSessaoAtual.navSequence?.length > 0);
+
+    if (temSessaoEmMemoria) {
+      _renderNavegacaoAoVivo(statsSessaoAtual);
+    } else if (ultimaSessao) {
+      _renderNavegacaoPersistida(ultimaSessao);
+    } else {
+      _renderNavegacaoVazia();
+    }
 
   } catch (err) {
     console.error('[dashboard] _carregarMetricasReais:', err);
@@ -332,87 +366,115 @@ async function _carregarMetricasReais() {
   }
 }
 
-/**
- * Preenche os 4 stat-cards principais com dados reais.
- * Os cards usam IDs adicionados no HTML (data-stat-*) para
- * localização precisa sem depender de posição no DOM.
- */
-function _renderStatCards(stats) {
-  // Card: Tempo total hoje
-  const elTempoHoje = document.getElementById('stat-tempo-hoje');
-  if (elTempoHoje) {
-    elTempoHoje.textContent = formatTimeHuman(stats.tempoHoje);
+async function _buscarUltimaSessaoPersistida(uid) {
+  if (!uid) return null;
+  try {
+    const db  = getDb();
+    const ref = collection(db, 'usuarios', uid, 'sessoes');
+    const q   = query(ref, orderBy('startedAt', 'desc'), limit(1));
+    const snap = await getDocs(q);
+    if (snap.empty) return null;
+    const docSnap = snap.docs[0];
+    return { id: docSnap.id, ...docSnap.data() };
+  } catch (err) {
+    console.warn('[dashboard] _buscarUltimaSessaoPersistida:', err);
+    return null;
   }
+}
 
-  // Card: Sequência de dias
-  const elStreak = document.getElementById('stat-streak');
-  if (elStreak) {
-    elStreak.textContent = stats.streak;
-  }
-
-  // Card: Total de sessões
-  const elSessoes = document.getElementById('stat-sessoes');
-  if (elSessoes) {
-    elSessoes.textContent = stats.totalSessoes;
-  }
-
-  // Card: Tempo total acumulado
+/* ══════════════════════════════════════════════
+   RENDER — TEMPO GLOBAL CONTÍNUO
+   Principal bloco de métricas. Foco em evolução,
+   não em contagem de sessões.
+══════════════════════════════════════════════ */
+function _renderTempoGlobal(stats) {
+  /* Tempo total lifetime */
   const elTotal = document.getElementById('stat-tempo-total');
-  if (elTotal) {
-    elTotal.textContent = formatTimeHuman(stats.tempoTotalGeral);
+  if (elTotal) elTotal.textContent = formatTimeHuman(stats.tempoTotalGeral);
+
+  /* Tempo hoje */
+  const elHoje = document.getElementById('stat-tempo-hoje');
+  if (elHoje) elHoje.textContent = formatTimeHuman(stats.tempoHoje);
+
+  /* Streak */
+  const elStreak = document.getElementById('stat-streak');
+  if (elStreak) elStreak.textContent = stats.streak;
+
+  /* Média diária (30 dias) */
+  const elMedia = document.getElementById('stat-media-sessao');
+  if (elMedia) {
+    elMedia.textContent = stats.mediaDiaria > 0
+      ? formatTimeHuman(stats.mediaDiaria)
+      : '—';
   }
 
-  // Deltas — comparação vs ontem
-  const ontemKey = (() => {
+  /* Delta vs ontem */
+  const ontemKey   = (() => {
     const d = new Date();
     d.setDate(d.getDate() - 1);
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   })();
   const tempoOntem = stats.historico?.[ontemKey]?.tempoTotal ?? 0;
 
-  const elDeltaHoje = document.getElementById('stat-delta-tempo');
-  if (elDeltaHoje && tempoOntem > 0) {
-    const diff = stats.tempoHoje - tempoOntem;
-    const sinal = diff >= 0 ? '+' : '';
-    elDeltaHoje.textContent = `${sinal}${formatTimeHuman(Math.abs(diff))} vs ontem`;
-    elDeltaHoje.closest('.stat-delta')?.classList.toggle('delta-up', diff >= 0);
-    elDeltaHoje.closest('.stat-delta')?.classList.toggle('delta-down', diff < 0);
+  const elDelta = document.getElementById('stat-delta-tempo');
+  if (elDelta) {
+    if (tempoOntem > 0 || stats.tempoHoje > 0) {
+      const diff  = stats.tempoHoje - tempoOntem;
+      const sinal = diff >= 0 ? '+' : '';
+      elDelta.textContent = `${sinal}${formatTimeHuman(Math.abs(diff))} vs ontem`;
+      elDelta.closest('.stat-delta')?.classList.toggle('delta-up',   diff >= 0);
+      elDelta.closest('.stat-delta')?.classList.toggle('delta-down', diff < 0);
+    } else {
+      elDelta.textContent = '—';
+    }
   }
+
+  /* totalSessoes — mantido como dado técnico (não destaque) */
+  const elSessoes = document.getElementById('stat-sessoes');
+  if (elSessoes) elSessoes.textContent = stats.totalSessoes;
 }
 
-function _renderPerfItems(stats) {
-  // Média diária de tempo (últimos 7 dias)
+/* ══════════════════════════════════════════════
+   RENDER — TENDÊNCIA DE USO
+   Compara os últimos 7 dias para identificar
+   padrão de crescimento ou queda.
+══════════════════════════════════════════════ */
+function _renderTendencia(stats) {
+  /* Média diária */
   const mediaDiaria = document.getElementById('perf-media-diaria');
-  if (mediaDiaria && stats.ultimos7?.length) {
-    const diasAtivos = stats.ultimos7.filter(d => d.tempoTotal > 0);
-    const media = diasAtivos.length
-      ? Math.floor(diasAtivos.reduce((a, b) => a + b.tempoTotal, 0) / diasAtivos.length)
-      : 0;
-    mediaDiaria.textContent = formatTimeHuman(media);
-
-    // Barra de progresso: 2h = 100%
+  if (mediaDiaria) {
+    mediaDiaria.textContent = stats.mediaDiaria > 0
+      ? formatTimeHuman(stats.mediaDiaria)
+      : '—';
     const bar = document.getElementById('perf-bar-media');
-    if (bar) bar.style.width = Math.min(100, (media / 7200) * 100) + '%';
+    if (bar) bar.style.width = Math.min(100, (stats.mediaDiaria / 7200) * 100) + '%';
   }
 
-  // Dias ativos nos últimos 7
+  /* Dias ativos nos últimos 7 */
   const diasAtivos7 = document.getElementById('perf-dias-ativos');
   if (diasAtivos7 && stats.ultimos7?.length) {
     const count = stats.ultimos7.filter(d => d.tempoTotal > 0).length;
-    diasAtivos7.textContent = count;
+    diasAtivos7.textContent = `${count}/7`;
     const bar = document.getElementById('perf-bar-dias');
     if (bar) bar.style.width = (count / 7 * 100) + '%';
   }
 
-  // Total de sessões
-  const totalSessoesEl = document.getElementById('perf-total-sessoes');
-  if (totalSessoesEl) {
-    totalSessoesEl.textContent = stats.totalSessoes;
-    const bar = document.getElementById('perf-bar-sessoes');
-    if (bar) bar.style.width = Math.min(100, (stats.totalSessoes / 100) * 100) + '%';
+  /* Melhor dia (últimos 30) */
+  const melhorDiaEl = document.getElementById('perf-melhor-dia');
+  if (melhorDiaEl) {
+    if (stats.melhorDia?.tempo > 0) {
+      const [, mm, dd] = (stats.melhorDia.key ?? '').split('-');
+      melhorDiaEl.textContent = `${dd}/${mm} · ${formatTimeHuman(stats.melhorDia.tempo)}`;
+    } else {
+      melhorDiaEl.textContent = '—';
+    }
+    const bar = document.getElementById('perf-bar-melhor');
+    if (bar) bar.style.width = stats.melhorDia?.tempo > 0
+      ? Math.min(100, (stats.melhorDia.tempo / 14400) * 100) + '%'
+      : '0%';
   }
 
-  // Sequência atual
+  /* Streak */
   const streakEl = document.getElementById('perf-streak');
   if (streakEl) {
     streakEl.textContent = `${stats.streak} dia${stats.streak !== 1 ? 's' : ''}`;
@@ -421,6 +483,131 @@ function _renderPerfItems(stats) {
   }
 }
 
+/* ══════════════════════════════════════════════
+   RENDER — CRESCIMENTO ACUMULADO (últimos 7 dias)
+   Mostra tempo acumulado corrido para evidenciar
+   a trajetória de estudo, não apenas o dia a dia.
+══════════════════════════════════════════════ */
+function _renderCrescimentoAcumulado(stats) {
+  const wrap = document.getElementById('crescimento-acumulado');
+  if (!wrap || !stats.ultimos7?.length) return;
+
+  wrap.innerHTML = '';
+
+  /* Calcula acumulado corrido */
+  let acum = 0;
+  const pontos = stats.ultimos7.map(d => {
+    acum += d.tempoTotal;
+    return acum;
+  });
+
+  const maxAcum = Math.max(...pontos, 1);
+  const W = 280, H = 64;
+
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.setAttribute('class', 'crescimento-svg');
+
+  /* Área preenchida */
+  const pts = pontos.map((v, i) => {
+    const x = Math.round((i / (pontos.length - 1)) * (W - 8)) + 4;
+    const y = Math.round(H - 8 - ((v / maxAcum) * (H - 16)));
+    return `${x},${y}`;
+  });
+
+  const area = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+  const firstX = pts[0].split(',')[0];
+  const lastX  = pts[pts.length - 1].split(',')[0];
+  area.setAttribute('points', `${firstX},${H} ${pts.join(' ')} ${lastX},${H}`);
+  area.setAttribute('class', 'crescimento-area');
+
+  const line = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+  line.setAttribute('points', pts.join(' '));
+  line.setAttribute('class', 'crescimento-line');
+
+  svg.appendChild(area);
+  svg.appendChild(line);
+  wrap.appendChild(svg);
+
+  /* Label do total acumulado (últimos 7 dias) */
+  const label = document.getElementById('crescimento-total-label');
+  if (label) {
+    const totalUltimos7 = stats.ultimos7.reduce((s, d) => s + d.tempoTotal, 0);
+    label.textContent = totalUltimos7 > 0
+      ? `${formatTimeHuman(totalUltimos7)} nos últimos 7 dias`
+      : '—';
+  }
+}
+
+/* ══════════════════════════════════════════════
+   RENDER — CONSISTÊNCIA DE USO (últimos 30 dias)
+   Frequência de acesso e regularidade — mostra
+   se o usuário tem um padrão sólido ou esporádico.
+══════════════════════════════════════════════ */
+function _renderConsistencia(stats) {
+  /* Frequência: dias ativos / 30 */
+  const freqEl = document.getElementById('consistencia-frequencia');
+  if (freqEl) {
+    const pct = Math.round((stats.diasAtivos30 / 30) * 100);
+    freqEl.textContent = `${stats.diasAtivos30} de 30 dias (${pct}%)`;
+    const bar = document.getElementById('consistencia-bar-freq');
+    if (bar) bar.style.width = pct + '%';
+  }
+
+  /* Regularidade: quanto o tempo varia entre dias (desvio relativo) */
+  const regEl = document.getElementById('consistencia-regularidade');
+  if (regEl) {
+    const diasComTempo = Object.values(stats.historico ?? {})
+      .filter(d => d.tempoTotal > 0)
+      .map(d => d.tempoTotal);
+
+    if (diasComTempo.length >= 2) {
+      const media  = diasComTempo.reduce((a, b) => a + b, 0) / diasComTempo.length;
+      const desv   = Math.sqrt(
+        diasComTempo.reduce((s, v) => s + Math.pow(v - media, 2), 0) / diasComTempo.length
+      );
+      const cv     = media > 0 ? desv / media : 1; // coeficiente de variação (0=uniforme, >1=irregular)
+      const score  = Math.max(0, Math.min(100, Math.round((1 - Math.min(cv, 1)) * 100)));
+      const rotulo = score >= 75 ? 'Regular' : score >= 40 ? 'Moderado' : 'Variável';
+      regEl.textContent = `${rotulo} (${score}%)`;
+      const bar = document.getElementById('consistencia-bar-reg');
+      if (bar) bar.style.width = score + '%';
+    } else {
+      regEl.textContent = diasComTempo.length === 1 ? 'Dados insuficientes' : '—';
+    }
+  }
+
+  /* Tendência: compara média últimos 7 dias vs 7 dias anteriores */
+  const tendEl = document.getElementById('consistencia-tendencia');
+  if (tendEl && stats.ultimos7?.length === 7 && stats.historico) {
+    const mediaRecente = stats.ultimos7.reduce((s, d) => s + d.tempoTotal, 0) / 7;
+
+    const hoje = new Date();
+    let mediaAnterior = 0;
+    for (let i = 7; i < 14; i++) {
+      const d   = new Date(hoje);
+      d.setDate(d.getDate() - i);
+      const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      mediaAnterior += stats.historico?.[key]?.tempoTotal ?? 0;
+    }
+    mediaAnterior /= 7;
+
+    if (mediaAnterior > 0) {
+      const delta  = mediaRecente - mediaAnterior;
+      const sinal  = delta >= 0 ? '▲' : '▼';
+      const classe = delta >= 0 ? 'tend-up' : 'tend-down';
+      tendEl.textContent  = `${sinal} ${formatTimeHuman(Math.abs(delta))}/dia vs semana anterior`;
+      tendEl.className    = `consistencia-tend ${classe}`;
+    } else {
+      tendEl.textContent = mediaRecente > 0 ? '▲ Primeira semana com dados' : '—';
+      tendEl.className   = 'consistencia-tend';
+    }
+  }
+}
+
+/* ══════════════════════════════════════════════
+   RENDER — ÚLTIMO ACESSO
+══════════════════════════════════════════════ */
 function _renderUltimoAcesso(stats) {
   const el = document.getElementById('stat-ultimo-acesso');
   if (!el || !stats.ultimaAtividade) return;
@@ -432,7 +619,7 @@ function _renderUltimoAcesso(stats) {
   const dias    = Math.floor(diff / 86400000);
 
   let texto;
-  if (minutos < 1)      texto = 'agora mesmo';
+  if (minutos < 1)       texto = 'agora mesmo';
   else if (minutos < 60) texto = `há ${minutos}min`;
   else if (horas < 24)   texto = `há ${horas}h`;
   else                   texto = `há ${dias} dia${dias !== 1 ? 's' : ''}`;
@@ -440,17 +627,15 @@ function _renderUltimoAcesso(stats) {
   el.textContent = texto;
 }
 
-/**
- * Atualiza os sparklines SVG dos stat-cards com dados reais
- * dos últimos 7 dias de tempo de estudo.
- */
+/* ══════════════════════════════════════════════
+   RENDER — SPARKLINES
+══════════════════════════════════════════════ */
 function _renderSparklines(stats) {
   if (!stats.ultimos7?.length) return;
 
   const pontos = stats.ultimos7.map(d => d.tempoTotal);
   const maxVal = Math.max(...pontos, 1);
 
-  // Gera coordenadas SVG normalizadas (viewBox 0 0 80 32)
   function _sparkPath(vals) {
     return vals.map((v, i) => {
       const x = Math.round((i / (vals.length - 1)) * 80);
@@ -466,16 +651,259 @@ function _renderSparklines(stats) {
   });
 }
 
+/* ══════════════════════════════════════════════
+   RENDER — EVOLUÇÃO DIÁRIA (30 dias)
+══════════════════════════════════════════════ */
+function _renderEvolucaoDiaria(stats) {
+  const wrap = document.getElementById('evolucao-30dias');
+  if (!wrap) return;
+
+  wrap.innerHTML = '';
+
+  const hoje = new Date();
+  const dias  = [];
+  for (let i = 29; i >= 0; i--) {
+    const d   = new Date(hoje);
+    d.setDate(d.getDate() - i);
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    dias.push({
+      key,
+      dia:        d.getDate(),
+      tempoTotal: stats.historico?.[key]?.tempoTotal ?? 0,
+    });
+  }
+
+  const maxTempo = Math.max(...dias.map(d => d.tempoTotal), 1);
+
+  dias.forEach(d => {
+    const col   = document.createElement('div');
+    col.className = 'evo-col';
+    col.title   = `${d.key} · ${formatTimeHuman(d.tempoTotal)}`;
+
+    const bar       = document.createElement('div');
+    bar.className   = 'evo-bar';
+    const alturaPct = d.tempoTotal > 0 ? Math.max(6, (d.tempoTotal / maxTempo) * 100) : 0;
+    bar.style.height = alturaPct + '%';
+    if (d.tempoTotal === 0) bar.classList.add('evo-bar-vazia');
+
+    /* Destaca o melhor dia */
+    if (d.key === stats.melhorDia?.key) bar.classList.add('evo-bar-melhor');
+
+    col.appendChild(bar);
+    wrap.appendChild(col);
+  });
+}
+
+/* ══════════════════════════════════════════════
+   RENDER — NAVIGATION ANALYTICS
+══════════════════════════════════════════════ */
+function _renderNavegacaoAoVivo(stats) {
+  if (!stats) return;
+  _renderPaginasMaisAcessadas(stats.navPages);
+  _renderFluxoNavegacao(stats.navSequence);
+  _renderHeatmapHorario(stats.navHourHeatmap);
+  _renderDispositivo(stats.navDeviceType);
+  _renderQuizEvents(stats.quizEvents);
+}
+
+function _renderNavegacaoPersistida(sessao) {
+  if (!sessao) return;
+  _renderPaginasMaisAcessadas(sessao.pages);
+  _renderFluxoNavegacao(sessao.navigation);
+  _renderHeatmapHorario(sessao.hourHeatmap);
+  _renderDispositivo(sessao.deviceType);
+  _renderQuizEvents(sessao.quizEvents);
+}
+
+function _renderNavegacaoVazia() {
+  _renderPaginasMaisAcessadas(null);
+  _renderFluxoNavegacao(null);
+  _renderHeatmapHorario(null);
+  _renderDispositivo(null);
+  _renderQuizEvents(null);
+}
+
+function _renderPaginasMaisAcessadas(pages) {
+  const wrap = document.getElementById('nav-paginas-lista');
+  if (!wrap) return;
+
+  wrap.innerHTML = '';
+
+  const entradas = pages && typeof pages === 'object' ? Object.entries(pages) : [];
+
+  if (!entradas.length) {
+    const vazio       = document.createElement('div');
+    vazio.className   = 'nav-empty';
+    vazio.textContent = 'Sem dados de navegação registrados ainda.';
+    wrap.appendChild(vazio);
+    return;
+  }
+
+  entradas
+    .sort((a, b) => (b[1]?.time ?? 0) - (a[1]?.time ?? 0))
+    .slice(0, 6)
+    .forEach(([pathname, info]) => {
+      const item = document.createElement('div');
+      item.className = 'nav-page-item';
+
+      const nome       = document.createElement('span');
+      nome.className   = 'nav-page-name';
+      nome.textContent = pathname;
+
+      const meta       = document.createElement('span');
+      meta.className   = 'nav-page-meta';
+      const tempo      = formatTimeHuman(info?.time ?? 0);
+      const visits     = info?.visits ?? 0;
+      meta.textContent = `${tempo} · ${visits} visita${visits !== 1 ? 's' : ''}`;
+
+      item.appendChild(nome);
+      item.appendChild(meta);
+      wrap.appendChild(item);
+    });
+}
+
+function _renderFluxoNavegacao(navigation) {
+  const wrap = document.getElementById('nav-fluxo');
+  if (!wrap) return;
+
+  wrap.innerHTML = '';
+
+  const sequencia = Array.isArray(navigation) ? navigation : [];
+
+  if (!sequencia.length) {
+    const vazio       = document.createElement('div');
+    vazio.className   = 'nav-empty';
+    vazio.textContent = 'Sem sequência de navegação registrada ainda.';
+    wrap.appendChild(vazio);
+    return;
+  }
+
+  sequencia.slice(-12).forEach((pathname, idx, arr) => {
+    const step       = document.createElement('span');
+    step.className   = 'nav-flow-step';
+    step.textContent = pathname;
+    wrap.appendChild(step);
+
+    if (idx < arr.length - 1) {
+      const seta       = document.createElement('span');
+      seta.className   = 'nav-flow-arrow';
+      seta.textContent = '→';
+      wrap.appendChild(seta);
+    }
+  });
+}
+
+function _renderHeatmapHorario(hourHeatmap) {
+  const wrap = document.getElementById('nav-heatmap');
+  if (!wrap) return;
+
+  wrap.innerHTML = '';
+
+  const mapa    = hourHeatmap && typeof hourHeatmap === 'object' ? hourHeatmap : {};
+  const valores = Object.values(mapa);
+  const maxVal  = Math.max(...valores, 1);
+  const temDados = valores.length > 0;
+
+  for (let h = 0; h < 24; h++) {
+    const count = mapa[String(h)] ?? 0;
+    const col   = document.createElement('div');
+    col.className = 'heatmap-col';
+    col.title   = `${h}h · ${count} acesso${count !== 1 ? 's' : ''}`;
+
+    const bar     = document.createElement('div');
+    bar.className = 'heatmap-bar';
+    bar.style.height = (count > 0 ? Math.max(8, (count / maxVal) * 100) : 0) + '%';
+
+    col.appendChild(bar);
+    wrap.appendChild(col);
+  }
+
+  const labelEl = document.getElementById('nav-horario-pico');
+  if (labelEl) {
+    if (!temDados) {
+      labelEl.textContent = '—';
+    } else {
+      const horaPico = Object.entries(mapa).sort((a, b) => b[1] - a[1])[0]?.[0];
+      labelEl.textContent = horaPico !== undefined
+        ? `${horaPico}h–${Number(horaPico) + 1}h`
+        : '—';
+    }
+  }
+}
+
+function _renderDispositivo(deviceType) {
+  const el = document.getElementById('nav-device-tipo');
+  if (!el) return;
+  if (deviceType === 'mobile')  el.textContent = '📱 Mobile';
+  else if (deviceType === 'desktop') el.textContent = '🖥️ Desktop';
+  else el.textContent = '—';
+}
+
+function _renderQuizEvents(quizEvents) {
+  const wrap   = document.getElementById('quiz-eventos-lista');
+  const count  = document.getElementById('quiz-eventos-count');
+  const eventos = Array.isArray(quizEvents) ? quizEvents : [];
+
+  if (count) count.textContent = eventos.length;
+
+  if (!wrap) return;
+  wrap.innerHTML = '';
+
+  if (!eventos.length) {
+    const vazio       = document.createElement('div');
+    vazio.className   = 'nav-empty';
+    vazio.textContent = 'Nenhum quiz registrado nesta sessão.';
+    wrap.appendChild(vazio);
+    return;
+  }
+
+  eventos.slice(-8).reverse().forEach(ev => {
+    const item = document.createElement('div');
+    item.className = 'quiz-event-item';
+
+    const nome       = document.createElement('span');
+    nome.className   = 'quiz-event-name';
+    nome.textContent = [ev.disc, ev.modo].filter(Boolean).join(' / ') || 'Quiz';
+
+    const taxa       = document.createElement('span');
+    taxa.className   = 'quiz-event-taxa';
+    const pct        = typeof ev.taxaAcerto === 'number' ? Math.round(ev.taxaAcerto * 100) : 0;
+    taxa.textContent = `${ev.acertos ?? 0}/${ev.totalQuestoes ?? 0} · ${pct}%`;
+
+    item.appendChild(nome);
+    item.appendChild(taxa);
+    wrap.appendChild(item);
+  });
+}
+
+/* ══════════════════════════════════════════════
+   RENDER — ESTADO VAZIO
+══════════════════════════════════════════════ */
 function _renderMetricasVazio() {
-  // Preenche com '—' quando não há dados disponíveis
-  ['stat-tempo-hoje', 'stat-streak', 'stat-sessoes', 'stat-tempo-total'].forEach(id => {
+  [
+    'stat-tempo-hoje', 'stat-streak', 'stat-sessoes',
+    'stat-tempo-total', 'stat-media-sessao',
+  ].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.textContent = '—';
   });
-  ['perf-media-diaria', 'perf-dias-ativos', 'perf-total-sessoes', 'perf-streak'].forEach(id => {
+
+  [
+    'perf-media-diaria', 'perf-dias-ativos',
+    'perf-melhor-dia', 'perf-streak',
+    'consistencia-frequencia', 'consistencia-regularidade',
+  ].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.textContent = '—';
   });
+
+  _renderNavegacaoVazia();
+
+  const wrap = document.getElementById('evolucao-30dias');
+  if (wrap) wrap.innerHTML = '';
+
+  const wrapAcum = document.getElementById('crescimento-acumulado');
+  if (wrapAcum) wrapAcum.innerHTML = '';
 }
 
 /* ══════════════════════════════════════════════
@@ -484,10 +912,8 @@ function _renderMetricasVazio() {
 function _initProgressBarAnimation() {
   document.querySelectorAll('.prog-fill').forEach(function (bar) {
     const targetWidth = bar.style.width;
-    bar.style.width = '0%';
-    setTimeout(function () {
-      bar.style.width = targetWidth;
-    }, 200);
+    bar.style.width   = '0%';
+    setTimeout(function () { bar.style.width = targetWidth; }, 200);
   });
 }
 
@@ -508,7 +934,7 @@ async function _bootPagina() {
   });
 
   try {
-    const mod = await import('../../shared/js/themes/cores.js');
+    const mod       = await import('../../shared/js/themes/cores.js');
     State.DISC_CORES = mod.DISC_CORES ?? {};
   } catch (_) {}
 
@@ -520,14 +946,11 @@ async function _bootPagina() {
   _renderGreeting();
   _renderUsuario();
 
-  // Session timer real — conectado ao session-tracker.js
   _initSessionTimer();
   _initProgressBarAnimation();
 
-  // Métricas reais do Firebase
   await _carregarMetricasReais();
 
-  // Re-carrega métricas quando o usuário fizer login após a página já aberta
   document.addEventListener('nexus:loginSuccess', async () => {
     _renderUsuario();
     await _carregarMetricasReais();

@@ -19,6 +19,11 @@ import { criarSemestreSelect, preencherAnos } from '../shared/js/utils/dom.js';
 import { injetarLogo }                      from '../shared/js/utils/logo.js';
 import { Sound, audio, installAudioRecovery, playSound } from '../shared/js/audio/audio-api.js';
 
+/* NAVIGATION ANALYTICS — importa o tracker para garantir que
+   window.__nexusPageEnter seja registrado nesta página.
+   O tracker inicializa automaticamente via auto-boot interno. */
+import '../src/session-tracker.js';
+
 (function () {
 
   /* ══════════════════════════════════════════════
@@ -464,6 +469,11 @@ import { Sound, audio, installAudioRecovery, playSound } from '../shared/js/audi
 
     // Logo
     injetarLogo('#header-logo-wrap');
+
+    /* NAVIGATION ANALYTICS — registra entrada na página de quiz */
+    if (typeof window.__nexusPageEnter === 'function') {
+      window.__nexusPageEnter(location.pathname);
+    }
 
     // Botão voltar
     document.querySelector('.nav-back')

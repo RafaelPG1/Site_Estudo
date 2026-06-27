@@ -79,6 +79,11 @@ import {
   playSound,
 } from '../../shared/js/audio/audio-api.js';
 
+/* NAVIGATION ANALYTICS — importa o tracker para garantir que
+   window.__nexusPageEnter seja registrado nesta página.
+   O tracker inicializa automaticamente via auto-boot interno. */
+import '../../src/session-tracker.js';
+
 
 /* ══════════════════════════════════════════════════════════
    PASSO 1 — Resolver ID da disciplina a partir da URL
@@ -201,6 +206,13 @@ document.addEventListener('DOMContentLoaded', function () {
   } catch (e) {
     console.warn('[disciplinas_init] Áudio não iniciado:', e.message);
   }
+
+  /* NAVIGATION ANALYTICS — registra entrada na página de disciplinas */
+  try {
+    if (typeof window.__nexusPageEnter === 'function') {
+      window.__nexusPageEnter(location.pathname);
+    }
+  } catch (_) {}
 
   /* Eventos de hover e click nos cards */
   try {
