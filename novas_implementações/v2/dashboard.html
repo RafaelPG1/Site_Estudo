@@ -103,8 +103,8 @@
           <div class="pulse-dot"></div>
           <span class="session-label">Sessão ativa</span>
         </div>
-        <div class="session-time">48:22</div>
-        <div class="session-sub">Banco de Dados · Quiz</div>
+        <div class="session-time">00:00</div>
+        <div class="session-sub">Conectando…</div>
       </div>
     </div>
   </aside>
@@ -247,76 +247,75 @@
       <section>
         <div class="section-header">
           <span class="section-title">Visão geral</span>
-          <span class="section-count">este semestre</span>
+          <span class="section-count">dados reais · Firebase</span>
           <div class="section-line"></div>
         </div>
 
         <div class="stat-grid">
-          <!-- Quizzes -->
+          <!-- Tempo de estudo hoje (real — session-tracker.js) -->
           <div class="stat-card c-purple">
             <div class="stat-icon ic-purple">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
                 <circle cx="8" cy="8" r="6.5"/>
-                <path d="M6 6.5c0-1.1.9-2 2-2s2 .9 2 2c0 .8-.5 1.5-1.2 1.8L8 9v1"/>
-                <circle cx="8" cy="11.5" r=".5" fill="currentColor"/>
+                <path d="M8 4.5V8l2.5 2.5"/>
               </svg>
             </div>
-            <div class="stat-number">84</div>
-            <div class="stat-label">Quizzes realizados</div>
+            <div class="stat-number" id="stat-tempo-hoje">—</div>
+            <div class="stat-label">Tempo de estudo hoje</div>
             <div class="stat-delta delta-up">
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path d="M5 8V2M2 5l3-3 3 3"/>
               </svg>
-              +12 <span class="delta-sub">vs mês passado</span>
+              <span id="stat-delta-tempo" class="delta-sub">—</span>
             </div>
-            <svg class="stat-sparkline" width="80" height="32" viewBox="0 0 80 32">
+            <svg class="stat-sparkline" data-real width="80" height="32" viewBox="0 0 80 32">
               <polyline points="0,28 13,22 26,20 39,15 52,10 65,8 80,4" fill="none" stroke="#6C63FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
 
-          <!-- Jogos -->
+          <!-- Sequência de dias ativos (real — session-tracker.js) -->
           <div class="stat-card c-green">
             <div class="stat-icon ic-green">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M2 6.5h4M4 4.5v4M10 6.5h.01M12 8.5h.01"/>
-                <rect x="1" y="3.5" width="14" height="9" rx="2.5"/>
+                <path d="M8 2l1.5 3 3.5.5-2.5 2.5.5 3.5L8 10l-3 1.5.5-3.5L3 5.5l3.5-.5z"/>
               </svg>
             </div>
-            <div class="stat-number">37</div>
-            <div class="stat-label">Sessões de jogo</div>
+            <div class="stat-number" id="stat-streak">—</div>
+            <div class="stat-label">Dias consecutivos</div>
             <div class="stat-delta delta-up">
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path d="M5 8V2M2 5l3-3 3 3"/>
               </svg>
-              +5 <span class="delta-sub">vs mês passado</span>
+              <span class="delta-sub">Sequência atual 🔥</span>
             </div>
-            <svg class="stat-sparkline" width="80" height="32" viewBox="0 0 80 32">
+            <svg class="stat-sparkline" data-real width="80" height="32" viewBox="0 0 80 32">
               <polyline points="0,24 13,26 26,18 39,14 52,16 65,10 80,7" fill="none" stroke="#3DDC84" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
 
-          <!-- Disciplinas -->
+          <!-- Total de sessões (real — session-tracker.js) -->
           <div class="stat-card c-amber">
             <div class="stat-icon ic-amber">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M2 3.5h12M2 7.5h12M2 11.5h8"/>
+                <rect x="1" y="4" width="14" height="9" rx="2"/>
+                <path d="M5 4V3a2 2 0 014 0v1"/>
               </svg>
             </div>
-            <div class="stat-number">4</div>
-            <div class="stat-label">Disciplinas ativas</div>
+            <div class="stat-number" id="stat-sessoes">—</div>
+            <div class="stat-label">Sessões de estudo</div>
             <div class="stat-delta">
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
                 <circle cx="5" cy="5" r="3.5"/>
                 <path d="M5 3v2l1 1"/>
               </svg>
-              <span class="delta-sub">Todas em progresso</span>
+              <span class="delta-sub">Total acumulado</span>
             </div>
-            <svg class="stat-sparkline" width="80" height="32" viewBox="0 0 80 32">
+            <svg class="stat-sparkline" data-real width="80" height="32" viewBox="0 0 80 32">
               <polyline points="0,20 13,20 26,18 39,18 52,18 65,18 80,16" fill="none" stroke="#FFB547" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
 
-          <!-- Último acesso -->
+          <!-- Tempo total acumulado (real — session-tracker.js) -->
           <div class="stat-card c-blue">
             <div class="stat-icon ic-blue">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -324,16 +323,16 @@
                 <path d="M8 4.5V8l2.5 2.5"/>
               </svg>
             </div>
-            <div class="stat-number">0h</div>
-            <div class="stat-label">Último acesso</div>
+            <div class="stat-number" id="stat-tempo-total">—</div>
+            <div class="stat-label">Tempo total de estudo</div>
             <div class="stat-delta delta-up">
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
                 <circle cx="5" cy="5" r="4" fill="none"/>
                 <path d="M3 5l1.5 1.5L7 3"/>
               </svg>
-              <span class="delta-sub">Hoje, agora mesmo</span>
+              <span id="stat-ultimo-acesso" class="delta-sub">—</span>
             </div>
-            <svg class="stat-sparkline" width="80" height="32" viewBox="0 0 80 32">
+            <svg class="stat-sparkline" data-real width="80" height="32" viewBox="0 0 80 32">
               <polyline points="0,26 13,14 26,22 39,12 52,18 65,8 80,4" fill="none" stroke="#4FA8E8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
@@ -351,87 +350,76 @@
             <div class="section-line"></div>
           </div>
 
+          <!-- Desempenho — dados reais de sessão via session-tracker.js -->
           <div class="perf-list">
 
             <div class="perf-item">
               <div class="perf-icon ic-purple">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M1 10l3-3.5 3 2 3-4 3 2"/>
+                  <circle cx="7" cy="7" r="5.5"/>
+                  <path d="M7 4v3l2 2"/>
                 </svg>
               </div>
               <div style="flex:1">
-                <div class="perf-name">Total de questões respondidas</div>
+                <div class="perf-name">Média diária de estudo (7 dias)</div>
                 <div class="prog-bar" style="margin-top:8px">
-                  <div class="prog-fill" style="width:72%"></div>
+                  <div class="prog-fill" id="perf-bar-media" style="width:0%"></div>
                 </div>
               </div>
               <div>
-                <span class="perf-value">1.248</span>
+                <span class="perf-value" id="perf-media-diaria">—</span>
               </div>
             </div>
 
             <div class="perf-item">
               <div class="perf-icon ic-green">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M2 7l3.5 3.5L12 3"/>
+                  <path d="M1 10l2-2 2 1.5 2-2.5 2 1 2-3 2 1.5"/>
                 </svg>
               </div>
               <div style="flex:1">
-                <div class="perf-name">Taxa geral de acertos</div>
+                <div class="perf-name">Dias ativos nos últimos 7</div>
                 <div class="prog-bar" style="margin-top:8px">
-                  <div class="prog-fill green" style="width:78%"></div>
+                  <div class="prog-fill green" id="perf-bar-dias" style="width:0%"></div>
                 </div>
               </div>
               <div>
-                <span class="perf-value">78</span><span class="perf-unit">%</span>
+                <span class="perf-value" id="perf-dias-ativos">—</span><span class="perf-unit">/7</span>
               </div>
             </div>
 
             <div class="perf-item">
               <div class="perf-icon ic-amber">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M7 1.5l1.8 3.7 4.1.6-3 2.9.7 4-3.6-1.9-3.6 1.9.7-4-3-2.9 4.1-.6z"/>
+                  <rect x="1" y="4" width="12" height="7" rx="2"/>
+                  <path d="M5 4V3a2 2 0 014 0v1"/>
                 </svg>
               </div>
               <div style="flex:1">
-                <div class="perf-name">Melhor nota em quiz</div>
+                <div class="perf-name">Total de sessões iniciadas</div>
                 <div class="prog-bar" style="margin-top:8px">
-                  <div class="prog-fill amber" style="width:95%"></div>
+                  <div class="prog-fill amber" id="perf-bar-sessoes" style="width:0%"></div>
                 </div>
               </div>
               <div>
-                <span class="perf-value">9.5</span><span class="perf-unit">/10</span>
+                <span class="perf-value" id="perf-total-sessoes">—</span>
               </div>
             </div>
 
             <div class="perf-item">
               <div class="perf-icon ic-blue">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M1 9l2-2.5 2 1.5 2-3 2 1.5 2-4"/>
+                  <path d="M7 1.5l1.5 3 3.5.5-2.5 2.5.5 3.5L7 9.5 4 11l.5-3.5L2 5l3.5-.5z"/>
                 </svg>
               </div>
               <div style="flex:1">
-                <div class="perf-name">Disciplina mais estudada</div>
-                <div style="font-size:10.5px;color:var(--text-3);margin-top:5px;font-family:'JetBrains Mono',monospace;">312 questões</div>
+                <div class="perf-name">Sequência de dias ativos</div>
+                <div class="prog-bar" style="margin-top:8px">
+                  <div class="prog-fill blue" id="perf-bar-streak" style="width:0%"></div>
+                </div>
               </div>
               <div>
-                <span class="perf-value" style="font-size:14px;letter-spacing:-.3px">Banco de Dados</span>
-              </div>
-            </div>
-
-            <div class="perf-item">
-              <div class="perf-icon ic-purple">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <rect x="1" y="3" width="12" height="8" rx="2"/>
-                  <path d="M4 6h2M8 6h.5M10 6h.5M4 9h6"/>
-                </svg>
-              </div>
-              <div style="flex:1">
-                <div class="perf-name">Melhor pontuação em jogo</div>
-                <div style="font-size:10.5px;color:var(--text-3);margin-top:5px;font-family:'JetBrains Mono',monospace;">Show do Milhão · POO</div>
-              </div>
-              <div>
-                <span class="perf-value">850</span><span class="perf-unit">pts</span>
+                <span class="perf-value" id="perf-streak">—</span>
               </div>
             </div>
 

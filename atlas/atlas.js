@@ -1348,12 +1348,17 @@ function _renderSidebar(categoryId, chapterIndex) {
         ${groups.length > 1
           ? `<div class="reader-sidebar-chapter-group__title">${_esc(group.titulo)}</div>`
           : ''}
-        ${group.secoes.map(secao => `
+        ${group.secoes.map(secao => {
+          const iconHtml = secao.icone
+            ? `<span class="reader-sidebar-chapter-link__icon" aria-hidden="true">${secao.icone}</span>`
+            : `<span class="reader-sidebar-chapter-link__icon reader-sidebar-chapter-link__icon--fallback" aria-hidden="true"></span>`;
+          return `
           <div class="reader-sidebar-chapter-link ${secao._index === chapterIndex ? 'is-active' : ''}"
                data-chapter-index="${secao._index}">
-            ${_esc(secao.titulo ?? '')}
-          </div>
-        `).join('')}
+            ${iconHtml}
+            <span class="reader-sidebar-chapter-link__text">${_esc(secao.titulo ?? '')}</span>
+          </div>`;
+        }).join('')}
       </div>
     `).join('');
 
@@ -1621,8 +1626,7 @@ function _renderChapterNav(cat, secoes, currentIndex) {
 /* ══════════════════════════════════════════════
    PAINEL DIREITO — "Sobre este capítulo"
    Preenche #reader-about-body com metadados
-   da seção atual (descrição da disciplina,
-   tempo estimado de leitura e tipo).
+   da seção atual (descrição da disciplina e tipo).
 ══════════════════════════════════════════════ */
 function _renderAboutPanel(cat, data, secao) {
   if (!EL.readerAboutBody) return;
@@ -1630,40 +1634,38 @@ function _renderAboutPanel(cat, data, secao) {
   const desc = data?.desc ?? cat?.desc ?? '';
   const type = data?.type ?? cat?.type ?? '';
 
-  /* Estimativa de leitura: conta palavras do body renderizado */
-  const wordCount = (EL.readerBody?.textContent || '').split(/\s+/).filter(Boolean).length;
-  const minutes   = Math.max(1, Math.round(wordCount / 200));
-  const timeLabel = minutes === 1 ? '1 min' : `${minutes} min`;
-
   const rows = [];
 
   if (desc) {
     rows.push(`
       <div class="reader__about-row">
-        <span class="reader__about-label">Descrição</span>
+        <span class="reader__about-label">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          </svg>
+          Descrição
+        </span>
         <p class="reader__about-desc">${_esc(desc)}</p>
-      </div>
-      <div class="reader__about-sep"></div>`);
+      </div>`);
   }
-
-  rows.push(`
-    <div class="reader__about-row">
-      <span class="reader__about-label">Leitura estimada</span>
-      <span class="reader__about-value">${timeLabel} de leitura</span>
-    </div>`);
 
   if (type) {
     rows.push(`
-      <div class="reader__about-sep"></div>
       <div class="reader__about-row">
-        <span class="reader__about-label">Tipo</span>
+        <span class="reader__about-label">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>
+          </svg>
+          Tipo
+        </span>
         <span class="reader__about-value">${_esc(type)}</span>
       </div>`);
   }
 
-  EL.readerAboutBody.innerHTML = rows.join('');
+  EL.readerAboutBody.innerHTML = rows.length
+    ? rows.join('')
+    : `<div class="reader__about-empty">Nenhuma informação adicional para este capítulo.</div>`;
 }
-
 /* ══════════════════════════════════════════════
    BOTÕES FLUTUANTES — scroll topo / fim
    Visíveis após 200 px de scroll no reader-scroll.

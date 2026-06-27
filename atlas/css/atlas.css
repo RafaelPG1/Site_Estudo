@@ -489,6 +489,21 @@ input { font-family: var(--font-body); }
   min-height: 100vh;
 }
 
+/* O reader controla sua própria altura via calc(100vh - header)
+   e tem scroll interno próprio (.reader__scroll). Herdar aqui o
+   padding-top + min-height:100vh do .app duplica o espaço
+   reservado para o header (uma vez no .app, outra dentro do
+   próprio .screen--reader) e empurra todo o conteúdo para baixo
+   — essa é a origem do vazio no topo da tela de Leitura, não
+   uma questão de margin/padding pontual. Com o reader ativo,
+   o .app deixa de reservar esse espaço: o header já é resolvido
+   inteiramente dentro do .screen--reader. */
+.app--reader,
+body.reader-active .app {
+  padding-top: 0;
+  min-height: 0;
+}
+
 .screen {
   animation: atlas-screen-in 0.30s var(--ease) both;
 }

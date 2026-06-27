@@ -4,43 +4,31 @@
    Dashboard: visão geral, ferramentas pessoais e estatísticas.
    =============================================
 
-   Este arquivo incorpora ao Dashboard a INFRAESTRUTURA já
-   utilizada pelo restante do Nexus Study (semestre, disciplina
-   atual, áudio, logo, IA/música/Quick Access via script global).
-   Nenhum elemento visual, layout ou card do design foi alterado
-   — apenas dados antes fixos (mock) passaram a ser carregados
-   dinamicamente a partir das mesmas fontes usadas em Resumo e Quiz.
+   v3 — Session Tracker real (Firebase)
+   ─────────────────────────────────────────────
+   MUDANÇAS v2.1 → v3
+   ─────────────────────────────────────────────
+   • _initSessionTimer() substituído por integração real com
+     session-tracker.js. O timer da sidebar agora exibe o tempo
+     ativo da sessão atual vindo do Firebase, atualizado a cada
+     segundo via subscribe().
 
-   Esta página NÃO exige login: ao contrário da Área Pessoal,
-   o Dashboard não possui Route Guard. Os demais sistemas globais
-   (semestre, áudio, IA, Quick Access) funcionam normalmente com
-   ou sem usuário autenticado.
+   • Novo _carregarMetricasReais(): lê estatísticas derivadas das
+     sessões registradas no Firestore via carregarEstatisticas() e
+     preenche os stat-cards, perf-items e session-sub com dados
+     reais do usuário autenticado.
 
-   CORREÇÕES v2 → v2.1:
-   ──────────────────────────────────────────────────────────────
-   BUG 1 — ReferenceError: _renderContexto is not defined
-     Causa: A chave de fechamento de _trocarSemestre estava ausente,
-     fazendo com que _renderContexto, _renderDisciplinas e
-     _renderSidebarDisciplinas fossem declaradas DENTRO do corpo de
-     _trocarSemestre — tornando-as inacessíveis para _bootPagina.
-     Correção: Fechamento correto de _trocarSemestre antes das
-     declarações das funções de renderização.
+   • Fallback gracioso: quando o usuário não está logado ou não há
+     dados, os cards exibem '—' sem quebrar o layout.
 
-   BUG 2 — theme.js: Sem cores definidas para: analise_projeto
-     Causa: A disciplina analise_projeto não possui entrada em DISC_CORES
-     (cores.js), e o dashboard chamava aplicarCoresDisciplina diretamente
-     sem verificar isso — gerando console.warn de theme.js.
-     Correção: Wrapper _aplicarCoresSeDefined() verifica DISC_CORES antes
-     de chamar aplicarCoresDisciplina. Disciplinas sem mapeamento de cores
-     simplesmente não recebem tema — sem aviso, sem erro, sem tocar em
-     theme.js nem em cores.js.
+   • A sessão começa automaticamente ao importar session-tracker.js
+     e reage ao nexus:loginSuccess / nexus:logout globais.
 
-   BUG 3 — _renderGreeting não declarada
-     Causa: A função estava referenciada em _bootPagina mas nunca
-     definida no arquivo.
-     Correção: Declarada abaixo, seguindo o mesmo padrão usado em
-     Resumo e Quiz para exibição de data.
-   ──────────────────────────────────────────────────────────────
+   MANTIDO (inalterado de v2.1):
+   ─────────────────────────────────────────────
+   BUG 1 — fechamento correto de _trocarSemestre.
+   BUG 2 — wrapper _aplicarCoresSeDefined() para disciplinas sem cores.
+   BUG 3 — _renderGreeting declarada.
    ============================================= */
 
 import {
@@ -64,6 +52,15 @@ import {
   playSound,
 } from '../../shared/js/audio/audio-api.js';
 
+/* ── Session Tracker ── */
+import {
+  subscribe     as sessionSubscribe,
+  formatTime    as sessionFormatTime,
+  formatTimeHuman,
+  carregarEstatisticas,
+  getStats      as sessionGetStats,
+} from '../../src/session-tracker.js';
+
 /* ══════════════════════════════════════════════
    ESTADO
 ══════════════════════════════════════════════ */
@@ -76,10 +73,6 @@ const State = {
 
 /* ══════════════════════════════════════════════
    WRAPPER DE TEMA
-   Chama aplicarCoresDisciplina somente se a disciplina possui
-   entrada mapeada em DISC_CORES. Evita o console.warn emitido
-   por theme.js para disciplinas sem cores cadastradas
-   (ex: analise_projeto) — sem alterar theme.js nem cores.js.
 ══════════════════════════════════════════════ */
 function _aplicarCoresSeDefined(discArquivo) {
   if (!discArquivo) return;
@@ -89,15 +82,9 @@ function _aplicarCoresSeDefined(discArquivo) {
 
 /* ══════════════════════════════════════════════
    CONTEXTO — semestre / disciplina atuais
-   (mesma resolução usada nas páginas de Resumo e Quiz)
 ══════════════════════════════════════════════ */
 function _resolverContexto() {
   const semestre = resolverSemestreDeURL();
-
-  /* Persiste no global.js — idêntico ao que Resumo e Quiz fazem.
-     Sem este setSemestre(), o estado do global.js fica defasado
-     em relação ao semestre resolvido da URL, e a primeira troca
-     via <select> partiria do semestre errado. */
   setSemestre(semestre);
 
   const lista = getDisciplinasDeSemestre(semestre);
@@ -117,7 +104,6 @@ function _resolverContexto() {
 
 /* ══════════════════════════════════════════════
    SELETOR DE SEMESTRE
-   (mesmo componente e comportamento usados em todo o Nexus Study)
 ══════════════════════════════════════════════ */
 function _renderSemestreSelector() {
   const wrap = document.getElementById('semestre-selector-wrap');
@@ -160,23 +146,13 @@ function _trocarSemestre(novoSemestre) {
     _aplicarCoresSeDefined(State.discAtiva.arquivo);
   }
 
-  /* BUG 1 — CORREÇÃO:
-     No arquivo original, a chave de fechamento desta função estava
-     ausente aqui. Isso fazia com que _renderContexto, _renderDisciplinas
-     e _renderSidebarDisciplinas fossem declaradas dentro do escopo de
-     _trocarSemestre — inacessíveis para _bootPagina e para qualquer
-     outro chamador externo, resultando em:
-       ReferenceError: _renderContexto is not defined
-     A chave abaixo fecha corretamente _trocarSemestre antes das
-     declarações das funções de renderização. */
   _renderContexto();
   _renderDisciplinas();
   _renderSidebarDisciplinas();
 }
 
 /* ══════════════════════════════════════════════
-   RENDER — elementos dinâmicos do layout existente
-   (nenhum card novo é criado; apenas preenchidos)
+   RENDER — elementos dinâmicos
 ══════════════════════════════════════════════ */
 function _renderContexto() {
   const semEl = document.getElementById('meta-semestre');
@@ -190,13 +166,6 @@ function _renderContexto() {
   }
 }
 
-/**
- * Extrai uma cor utilizável da entrada de DISC_CORES de uma disciplina.
- * O formato exato de DISC_CORES (shared/js/themes/cores.js) não é
- * conhecido por este arquivo, então a busca é defensiva: aceita tanto
- * uma string direta quanto um objeto com chave reconhecível. Se nada
- * for encontrado, retorna null — nenhuma cor é inventada.
- */
 function _corDaDisciplina(disc) {
   const entry = disc?.arquivo ? State.DISC_CORES?.[disc.arquivo] : null;
   if (!entry) return null;
@@ -204,16 +173,6 @@ function _corDaDisciplina(disc) {
   return entry.cor ?? entry.hex ?? entry.primary ?? entry.principal ?? null;
 }
 
-/**
- * Renderiza a grade de disciplinas do semestre atual usando
- * exatamente os dados reais (id, nome, emoji, arquivo) vindos de
- * getDisciplinasDeSemestre() — a mesma fonte usada em todo o
- * Nexus Study. Nenhuma disciplina fica fixa no HTML.
- *
- * Não exibe questões/sessões/progresso: essas métricas não têm
- * fonte de dados real disponível neste módulo, então não são
- * inventadas nem substituídas por placeholders.
- */
 function _renderDisciplinas() {
   const grid = document.getElementById('disc-grid');
   if (!grid) return;
@@ -254,11 +213,6 @@ function _renderDisciplinas() {
   });
 }
 
-/**
- * Renderiza os itens de disciplina na sidebar usando os emojis vindos
- * do global.js como ícone — sem SVG fixo, sem lista hardcoded.
- * Chamada sempre que o semestre muda, junto com _renderDisciplinas().
- */
 function _renderSidebarDisciplinas() {
   const wrap = document.getElementById('sidebar-disciplinas');
   if (!wrap) return;
@@ -284,9 +238,7 @@ function _renderSidebarDisciplinas() {
 }
 
 /* ══════════════════════════════════════════════
-   GREETING — data atual formatada
-   (BUG 3 — função estava referenciada em _bootPagina
-   mas nunca declarada no arquivo original)
+   GREETING
 ══════════════════════════════════════════════ */
 function _renderGreeting() {
   const el = document.getElementById('page-greeting');
@@ -313,8 +265,234 @@ function _escapeHtml(str) {
 }
 
 /* ══════════════════════════════════════════════
+   SESSION TIMER — integrado com session-tracker.js
+   Atualiza a sidebar a cada segundo com dados reais.
+   O tempo exibido é o tempo ATIVO da sessão atual,
+   não um contador fake a partir de um valor fixo.
+══════════════════════════════════════════════ */
+function _initSessionTimer() {
+  const timeEl = document.querySelector('.session-time');
+  const subEl  = document.querySelector('.session-sub');
+
+  if (!timeEl) return;
+
+  // Atualiza o display imediatamente com o estado atual
+  function _atualizar(stats) {
+    if (!stats) return;
+    timeEl.textContent = sessionFormatTime(stats.activeSeconds);
+
+    // Sub-label: mostra semestre e disciplina ativa, ou status de pausa
+    if (subEl) {
+      if (!stats.isRunning && stats.initialized) {
+        subEl.textContent = 'Aba em segundo plano';
+      } else if (State.discAtiva) {
+        subEl.textContent = `${State.discAtiva.apelido ?? State.discAtiva.nome} · ${State.semestre ?? ''}`;
+      } else if (State.semestre) {
+        subEl.textContent = State.semestre;
+      } else {
+        subEl.textContent = 'Sessão ativa';
+      }
+    }
+  }
+
+  // Atualização inicial
+  _atualizar(sessionGetStats());
+
+  // Subscribe para updates a cada segundo
+  sessionSubscribe(_atualizar);
+}
+
+/* ══════════════════════════════════════════════
+   MÉTRICAS REAIS DO FIREBASE
+   Carrega estatísticas de sessão e preenche os
+   stat-cards com dados reais do usuário.
+══════════════════════════════════════════════ */
+async function _carregarMetricasReais() {
+  const usuario = getUsuario?.();
+  if (!usuario?.uid) {
+    _renderMetricasVazio();
+    return;
+  }
+
+  try {
+    const stats = await carregarEstatisticas(usuario.uid);
+    if (!stats) {
+      _renderMetricasVazio();
+      return;
+    }
+
+    _renderStatCards(stats);
+    _renderPerfItems(stats);
+    _renderUltimoAcesso(stats);
+    _renderSparklines(stats);
+
+  } catch (err) {
+    console.error('[dashboard] _carregarMetricasReais:', err);
+    _renderMetricasVazio();
+  }
+}
+
+/**
+ * Preenche os 4 stat-cards principais com dados reais.
+ * Os cards usam IDs adicionados no HTML (data-stat-*) para
+ * localização precisa sem depender de posição no DOM.
+ */
+function _renderStatCards(stats) {
+  // Card: Tempo total hoje
+  const elTempoHoje = document.getElementById('stat-tempo-hoje');
+  if (elTempoHoje) {
+    elTempoHoje.textContent = formatTimeHuman(stats.tempoHoje);
+  }
+
+  // Card: Sequência de dias
+  const elStreak = document.getElementById('stat-streak');
+  if (elStreak) {
+    elStreak.textContent = stats.streak;
+  }
+
+  // Card: Total de sessões
+  const elSessoes = document.getElementById('stat-sessoes');
+  if (elSessoes) {
+    elSessoes.textContent = stats.totalSessoes;
+  }
+
+  // Card: Tempo total acumulado
+  const elTotal = document.getElementById('stat-tempo-total');
+  if (elTotal) {
+    elTotal.textContent = formatTimeHuman(stats.tempoTotalGeral);
+  }
+
+  // Deltas — comparação vs ontem
+  const ontemKey = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  })();
+  const tempoOntem = stats.historico?.[ontemKey]?.tempoTotal ?? 0;
+
+  const elDeltaHoje = document.getElementById('stat-delta-tempo');
+  if (elDeltaHoje && tempoOntem > 0) {
+    const diff = stats.tempoHoje - tempoOntem;
+    const sinal = diff >= 0 ? '+' : '';
+    elDeltaHoje.textContent = `${sinal}${formatTimeHuman(Math.abs(diff))} vs ontem`;
+    elDeltaHoje.closest('.stat-delta')?.classList.toggle('delta-up', diff >= 0);
+    elDeltaHoje.closest('.stat-delta')?.classList.toggle('delta-down', diff < 0);
+  }
+}
+
+function _renderPerfItems(stats) {
+  // Média diária de tempo (últimos 7 dias)
+  const mediaDiaria = document.getElementById('perf-media-diaria');
+  if (mediaDiaria && stats.ultimos7?.length) {
+    const diasAtivos = stats.ultimos7.filter(d => d.tempoTotal > 0);
+    const media = diasAtivos.length
+      ? Math.floor(diasAtivos.reduce((a, b) => a + b.tempoTotal, 0) / diasAtivos.length)
+      : 0;
+    mediaDiaria.textContent = formatTimeHuman(media);
+
+    // Barra de progresso: 2h = 100%
+    const bar = document.getElementById('perf-bar-media');
+    if (bar) bar.style.width = Math.min(100, (media / 7200) * 100) + '%';
+  }
+
+  // Dias ativos nos últimos 7
+  const diasAtivos7 = document.getElementById('perf-dias-ativos');
+  if (diasAtivos7 && stats.ultimos7?.length) {
+    const count = stats.ultimos7.filter(d => d.tempoTotal > 0).length;
+    diasAtivos7.textContent = count;
+    const bar = document.getElementById('perf-bar-dias');
+    if (bar) bar.style.width = (count / 7 * 100) + '%';
+  }
+
+  // Total de sessões
+  const totalSessoesEl = document.getElementById('perf-total-sessoes');
+  if (totalSessoesEl) {
+    totalSessoesEl.textContent = stats.totalSessoes;
+    const bar = document.getElementById('perf-bar-sessoes');
+    if (bar) bar.style.width = Math.min(100, (stats.totalSessoes / 100) * 100) + '%';
+  }
+
+  // Sequência atual
+  const streakEl = document.getElementById('perf-streak');
+  if (streakEl) {
+    streakEl.textContent = `${stats.streak} dia${stats.streak !== 1 ? 's' : ''}`;
+    const bar = document.getElementById('perf-bar-streak');
+    if (bar) bar.style.width = Math.min(100, (stats.streak / 30) * 100) + '%';
+  }
+}
+
+function _renderUltimoAcesso(stats) {
+  const el = document.getElementById('stat-ultimo-acesso');
+  if (!el || !stats.ultimaAtividade) return;
+
+  const agora   = Date.now();
+  const diff    = agora - stats.ultimaAtividade;
+  const minutos = Math.floor(diff / 60000);
+  const horas   = Math.floor(diff / 3600000);
+  const dias    = Math.floor(diff / 86400000);
+
+  let texto;
+  if (minutos < 1)      texto = 'agora mesmo';
+  else if (minutos < 60) texto = `há ${minutos}min`;
+  else if (horas < 24)   texto = `há ${horas}h`;
+  else                   texto = `há ${dias} dia${dias !== 1 ? 's' : ''}`;
+
+  el.textContent = texto;
+}
+
+/**
+ * Atualiza os sparklines SVG dos stat-cards com dados reais
+ * dos últimos 7 dias de tempo de estudo.
+ */
+function _renderSparklines(stats) {
+  if (!stats.ultimos7?.length) return;
+
+  const pontos = stats.ultimos7.map(d => d.tempoTotal);
+  const maxVal = Math.max(...pontos, 1);
+
+  // Gera coordenadas SVG normalizadas (viewBox 0 0 80 32)
+  function _sparkPath(vals) {
+    return vals.map((v, i) => {
+      const x = Math.round((i / (vals.length - 1)) * 80);
+      const y = Math.round(28 - (v / maxVal) * 24);
+      return `${x},${y}`;
+    }).join(' ');
+  }
+
+  const sparkEls = document.querySelectorAll('.stat-sparkline[data-real]');
+  sparkEls.forEach(svg => {
+    const poly = svg.querySelector('polyline');
+    if (poly) poly.setAttribute('points', _sparkPath(pontos));
+  });
+}
+
+function _renderMetricasVazio() {
+  // Preenche com '—' quando não há dados disponíveis
+  ['stat-tempo-hoje', 'stat-streak', 'stat-sessoes', 'stat-tempo-total'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = '—';
+  });
+  ['perf-media-diaria', 'perf-dias-ativos', 'perf-total-sessoes', 'perf-streak'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = '—';
+  });
+}
+
+/* ══════════════════════════════════════════════
+   PROGRESS BAR ANIMATION ON LOAD
+══════════════════════════════════════════════ */
+function _initProgressBarAnimation() {
+  document.querySelectorAll('.prog-fill').forEach(function (bar) {
+    const targetWidth = bar.style.width;
+    bar.style.width = '0%';
+    setTimeout(function () {
+      bar.style.width = targetWidth;
+    }, 200);
+  });
+}
+
+/* ══════════════════════════════════════════════
    BOOT
-   (sem Route Guard — esta página não exige login)
 ══════════════════════════════════════════════ */
 async function _bootPagina() {
   setPagina('DASHBOARD');
@@ -342,11 +520,24 @@ async function _bootPagina() {
   _renderGreeting();
   _renderUsuario();
 
-  /* ── Listener: mudança de semestre disparada externamente ──
-     Garante que o Dashboard reaja a qualquer mudança de semestre
-     originada fora do próprio <select> (ex: outro módulo do Nexus
-     Study que chame setSemestre() e despache este evento).
-     É o mesmo padrão de escuta usado nas páginas de Resumo e Quiz. */
+  // Session timer real — conectado ao session-tracker.js
+  _initSessionTimer();
+  _initProgressBarAnimation();
+
+  // Métricas reais do Firebase
+  await _carregarMetricasReais();
+
+  // Re-carrega métricas quando o usuário fizer login após a página já aberta
+  document.addEventListener('nexus:loginSuccess', async () => {
+    _renderUsuario();
+    await _carregarMetricasReais();
+  });
+
+  document.addEventListener('nexus:logout', () => {
+    _renderUsuario();
+    _renderMetricasVazio();
+  });
+
   document.addEventListener('nexus:semestre-changed', e => {
     const novoSemestre = e?.detail?.semestre;
     if (novoSemestre && novoSemestre !== State.semestre) {
@@ -355,40 +546,8 @@ async function _bootPagina() {
       if (sel) sel.value = novoSemestre;
     }
   });
-
-  _initSessionTimer();
-  _initProgressBarAnimation();
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
   await _bootPagina();
 });
-
-/* ══════════════════════════════════════════════
-   VISUAL DO DASHBOARD (preservado do design original)
-══════════════════════════════════════════════ */
-
-/* ── SESSION TIMER ──────────────────────────────────────── */
-function _initSessionTimer() {
-  let seconds = 48 * 60 + 22;
-  const timeEl = document.querySelector('.session-time');
-  if (!timeEl) return;
-
-  setInterval(function () {
-    seconds++;
-    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-    const s = (seconds % 60).toString().padStart(2, '0');
-    timeEl.textContent = m + ':' + s;
-  }, 1000);
-}
-
-/* ── PROGRESS BAR ANIMATION ON LOAD ────────────────────── */
-function _initProgressBarAnimation() {
-  document.querySelectorAll('.prog-fill').forEach(function (bar) {
-    const targetWidth = bar.style.width;
-    bar.style.width = '0%';
-    setTimeout(function () {
-      bar.style.width = targetWidth;
-    }, 200);
-  });
-}
