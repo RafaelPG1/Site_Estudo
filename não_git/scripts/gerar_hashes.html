@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Nexus — Cadastrar Usuários</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: #070b14; color: #f0ede6;
+      padding: 2.5rem; min-height: 100vh;
+    }
+    h2   { color: #4dd9b4; margin-bottom: .4rem; font-size: 1.4rem; }
+    p.sub { color: #a8a49c; font-size: .85rem; margin-bottom: 2rem; }
+
+    .card {
+      background: #0e1420; border: 1px solid rgba(255,255,255,.07);
+      border-radius: 14px; padding: 1.5rem; max-width: 640px;
+    }
+    .user-row {
+      display: grid; grid-template-columns: 2rem 1fr 1fr auto;
+      align-items: center; gap: .75rem;
+      padding: .65rem 0; border-bottom: 1px solid rgba(255,255,255,.05);
+    }
+    .user-row:last-child { border-bottom: none; }
+    .avatar { font-size: 1.2rem; text-align: center; }
+    .nome   { font-weight: 600; font-size: .9rem; }
+    .uid    { color: #5a5650; font-size: .75rem; }
+    .status {
+      font-size: .72rem; font-weight: 700; padding: 3px 10px;
+      border-radius: 99px; white-space: nowrap; min-width: 80px; text-align: center;
+    }
+    .status--pending { background: rgba(255,255,255,.06); color: #5a5650; }
+    .status--loading { background: rgba(232,201,122,.12); color: #e8c97a; }
+    .status--ok      { background: rgba(52,211,153,.12);  color: #34d399; }
+    .status--erro    { background: rgba(239,68,68,.12);   color: #f87171; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: .5rem;
+      padding: .7rem 1.6rem; border-radius: 10px; border: none;
+      font-family: inherit; font-size: .9rem; font-weight: 700;
+      cursor: pointer; transition: all .2s; margin-top: 1.5rem;
+    }
+    .btn--primary { background: #4dd9b4; color: #070b14; }
+    .btn--primary:hover { filter: brightness(1.1); }
+    .btn--primary:disabled { opacity: .4; cursor: not-allowed; filter: none; }
+
+    .log {
+      margin-top: 1.5rem; padding: 1rem;
+      background: rgba(0,0,0,.3); border-radius: 10px;
+      font-family: monospace; font-size: .78rem; color: #a8a49c;
+      max-height: 180px; overflow-y: auto; display: none; max-width: 640px;
+    }
+    .log.visible { display: block; }
+    .log-line { margin-bottom: .3rem; }
+    .log-line.ok   { color: #34d399; }
+    .log-line.erro { color: #f87171; }
+    .log-line.info { color: #e8c97a; }
+  </style>
+</head>
+<body>
+
+  <h2>🔐 Cadastrar Usuários no Firestore</h2>
+  <p class="sub">Clique em "Cadastrar todos" para salvar os usuários com PIN hasheado diretamente no Firestore.</p>
+
+  <div class="card" id="user-list"></div>
+
+  <button class="btn btn--primary" id="btn-cadastrar">
+    ⚡ Cadastrar todos no Firestore
+  </button>
+
+  <div class="log" id="log"></div>
+
+  <script type="module">
+    import { initializeApp }             from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey:            'AIzaSyBWRSuyiPS9ez7TFm7K4j5pd7LbdSfPPMk',
+      authDomain:        'estudo-site-85244.firebaseapp.com',
+      projectId:         'estudo-site-85244',
+      storageBucket:     'estudo-site-85244.firebasestorage.app',
+      messagingSenderId: '529138252727',
+      appId:             '1:529138252727:web:d866279f0c795b013e4632',
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    const USUARIOS = [
+      { id: 'rafael',   nome: 'Rafael',   pin: '288', avatar: '🧑‍💻' },
+      { id: 'cid',      nome: 'Cid',      pin: '285', avatar: '👨‍🎓' },
+      { id: 'everardo', nome: 'Everardo', pin: '334', avatar: '🎯'   },
+      { id: 'alvaro',   nome: 'Alvaro',   pin: '093', avatar: '🚀'   },
+      { id: 'isaac',    nome: 'Isaac',    pin: '234', avatar: '⚡'   },
+      { id: 'caue',     nome: 'Caue',     pin: '542', avatar: '🎮'   },
+    ];
+
+    async function hashPin(pin) {
+      const encoded = new TextEncoder().encode(String(pin));
+      const buffer  = await crypto.subtle.digest('SHA-256', encoded);
+      return Array.from(new Uint8Array(buffer))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+    }
+
+    /* ── Renderiza lista ── */
+    const list = document.getElementById('user-list');
+    USUARIOS.forEach(u => {
+      const row = document.createElement('div');
+      row.className = 'user-row';
+      row.innerHTML = `
+        <span class="avatar">${u.avatar}</span>
+        <div>
+          <div class="nome">${u.nome}</div>
+          <div class="uid">${u.id}</div>
+        </div>
+        <div style="font-family:monospace;font-size:.7rem;color:#5a5650" id="hash-${u.id}">—</div>
+        <span class="status status--pending" id="status-${u.id}">Pendente</span>
+      `;
+      list.appendChild(row);
+    });
+
+    /* ── Log ── */
+    function addLog(msg, tipo = 'info') {
+      const logEl = document.getElementById('log');
+      logEl.classList.add('visible');
+      const line = document.createElement('div');
+      line.className = `log-line ${tipo}`;
+      line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      logEl.appendChild(line);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    /* ── Cadastrar ── */
+    document.getElementById('btn-cadastrar').addEventListener('click', async () => {
+      const btn = document.getElementById('btn-cadastrar');
+      btn.disabled    = true;
+      btn.textContent = 'Cadastrando…';
+
+      addLog('Iniciando cadastro…', 'info');
+
+      for (const u of USUARIOS) {
+        const statusEl = document.getElementById(`status-${u.id}`);
+        const hashEl   = document.getElementById(`hash-${u.id}`);
+
+        statusEl.textContent = 'Salvando…';
+        statusEl.className   = 'status status--loading';
+
+        try {
+          const pinHash = await hashPin(u.pin);
+          hashEl.textContent = pinHash.slice(0, 14) + '…';
+
+          await setDoc(doc(db, 'usuarios', u.id), {
+            nome:   u.nome,
+            pin:    pinHash,
+            avatar: u.avatar,
+          });
+
+          statusEl.textContent = '✓ Salvo';
+          statusEl.className   = 'status status--ok';
+          addLog(`✓ ${u.nome} salvo`, 'ok');
+
+        } catch (err) {
+          statusEl.textContent = '✗ Erro';
+          statusEl.className   = 'status status--erro';
+          addLog(`✗ ${u.nome}: ${err.message}`, 'erro');
+        }
+      }
+
+      btn.textContent = '✓ Concluído!';
+      addLog('Processo finalizado.', 'info');
+    });
+  </script>
+
+</body>
+</html>

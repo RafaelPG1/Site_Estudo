@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NEXUS STUDY — Som</title>
+  <link rel="stylesheet" href="som.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- Atmospheric background -->
+  <div class="bg" aria-hidden="true">
+    <div class="bg__grid"></div>
+    <div class="bg__orb bg__orb--1"></div>
+    <div class="bg__orb bg__orb--2"></div>
+  </div>
+
+  <!-- ═══ MODAL ═══ -->
+  <div class="page-center">
+    <div class="modal" role="dialog" aria-label="Configurações de Som">
+
+      <!-- ── Header ── -->
+      <header class="modal__header">
+        <div class="modal__header-left">
+          <div class="modal__icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="modal__title">Configurações de Som</h1>
+            <p class="modal__subtitle">Personalize sons, variantes e onde cada efeito é ativado</p>
+          </div>
+        </div>
+        <div class="modal__header-right">
+          <span class="modal__badge">PROTOTYPE</span>
+          <button class="modal__close" id="closeBtn" aria-label="Fechar">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- ── Body ── -->
+      <div class="modal__body">
+
+        <!-- ╔══ SISTEMA ══╗ -->
+        <section class="section">
+          <div class="section__label">
+            <span class="section__dot"></span>
+            SISTEMA
+          </div>
+
+          <div class="global-card">
+
+            <!-- Sliders -->
+            <div class="sliders">
+
+              <!-- Volume Geral -->
+              <div class="slider-group" id="sliderGroupMaster">
+                <div class="slider-group__label">
+                  <span>Volume Geral</span>
+                  <span class="slider-group__value" id="masterValDisplay">1.0</span>
+                </div>
+                <div class="slider-track-wrap">
+                  <div class="slider-fill" id="masterFill"></div>
+                  <div class="slider-mark" id="masterMark" title="Padrão (1.0)"></div>
+                  <input
+                    type="range"
+                    class="slider slider--master"
+                    id="masterSlider"
+                    min="0" max="200" step="1" value="100"
+                    aria-label="Volume Geral"
+                  />
+                </div>
+                <div class="slider-scale">
+                  <span>0</span>
+                  <span class="slider-scale__default">1.0 <em>padrão</em></span>
+                  <span>2.0</span>
+                </div>
+              </div>
+
+              <!-- Música BGM -->
+              <div class="slider-group" id="sliderGroupMusic">
+                <div class="slider-group__label">
+                  <span>Música (BGM)</span>
+                  <span class="slider-group__value slider-group__value--music" id="musicValDisplay">0.4</span>
+                </div>
+                <div class="slider-track-wrap">
+                  <div class="slider-fill slider-fill--music" id="musicFill"></div>
+                  <div class="slider-mark slider-mark--music" id="musicMark" title="Padrão (1.0)"></div>
+                  <input
+                    type="range"
+                    class="slider slider--music"
+                    id="musicSlider"
+                    min="0" max="200" step="1" value="100"
+                    aria-label="Volume de Música"
+                  />
+                </div>
+                <div class="slider-scale">
+                  <span>0</span>
+                  <span class="slider-scale__default">1.0 <em>padrão</em></span>
+                  <span>2.0</span>
+                </div>
+              </div>
+
+              <!-- Efeitos SFX -->
+              <div class="slider-group" id="sliderGroupSfx">
+                <div class="slider-group__label">
+                  <span>Efeitos (SFX)</span>
+                  <span class="slider-group__value slider-group__value--sfx" id="sfxValDisplay">1.0</span>
+                </div>
+                <div class="slider-track-wrap">
+                  <div class="slider-fill slider-fill--sfx" id="sfxFill"></div>
+                  <div class="slider-mark slider-mark--sfx" id="sfxMark" title="Padrão (1.0)"></div>
+                  <input
+                    type="range"
+                    class="slider slider--sfx"
+                    id="sfxSlider"
+                    min="0" max="200" step="1" value="100"
+                    aria-label="Volume de Efeitos"
+                  />
+                </div>
+                <div class="slider-scale">
+                  <span>0</span>
+                  <span class="slider-scale__default">1.0 <em>padrão</em></span>
+                  <span>2.0</span>
+                </div>
+              </div>
+
+            </div><!-- /sliders -->
+          </div><!-- /global-card -->
+        </section>
+
+        <!-- ╔══ CATEGORIAS ══╗ -->
+        <section class="section">
+          <div class="section__label">
+            <span class="section__dot"></span>
+            CATEGORIAS DE SOM
+          </div>
+          <div class="cards-grid" id="cardsGrid">
+            <!-- Injetado pelo som.js -->
+          </div>
+        </section>
+
+        <!-- ╔══ BGM ══╗ -->
+        <section class="section">
+          <div class="section__label">
+            <span class="section__dot section__dot--violet"></span>
+            MÚSICA DE FUNDO (BGM)
+          </div>
+          <div class="music-card">
+            <div class="music-card__header">
+              <div>
+                <span class="music-card__name">Trilhas Sonoras</span>
+                <span class="music-card__desc">Música ambiente para cada área do app</span>
+              </div>
+              <label class="toggle" aria-label="Ativar ou desativar música">
+                <input type="checkbox" class="toggle__input toggle__input--violet" id="musicToggle" checked />
+                <span class="toggle__track toggle__track--violet">
+                  <span class="toggle__thumb"></span>
+                </span>
+              </label>
+            </div>
+            <div class="music-tracks" id="musicTracks">
+              <!-- Injetado pelo som.js -->
+            </div>
+          </div>
+        </section>
+
+
+
+
+      </div><!-- /modal__body -->
+
+      <!-- ── Footer ── -->
+      <footer class="modal__footer">
+        <span class="modal__footer-note">Alterações aplicadas em tempo real · Não salvo</span>
+        <div class="modal__footer-actions">
+          <button class="btn btn--ghost" id="resetBtn">Resetar</button>
+          <button class="btn btn--primary" id="closeBtn2">Fechar</button>
+        </div>
+      </footer>
+
+    </div><!-- /modal -->
+  </div><!-- /page-center -->
+
+  <script type="module" src="som.js"></script>
+</body>
+</html>

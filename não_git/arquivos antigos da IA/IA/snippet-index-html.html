@@ -1,0 +1,24 @@
+<!--
+  ═══════════════════════════════════════════
+  PRÉ-CARREGAMENTO — Scripts da IA (NOVO)
+  Informa ao browser para baixar esses arquivos
+  imediatamente, em paralelo com o resto da página,
+  sem bloquear a renderização.
+
+  Substitui os preloads antigos de ia-ui.js, ia-search.js, etc.
+  ═══════════════════════════════════════════
+-->
+<link rel="preload" href="shared/js/ia/core/text-utils.js"  as="script" />
+<link rel="preload" href="shared/js/ia/core/loader.js"      as="script" />
+<link rel="preload" href="shared/js/ia/core/worker.js"      as="script" />
+<link rel="preload" href="shared/js/ia/core/ui.js"          as="script" />
+<link rel="preload" href="shared/js/ia/resumo/search.js"    as="script" />
+<link rel="preload" href="shared/js/ia/resumo/assistant.js" as="script" />
+<link rel="preload" href="shared/js/ia/init.js"             as="script" />
+
+<!--
+  ═══════════════════════════════════════════
+  SCRIPTS (não muda — continua assim)
+  ═══════════════════════════════════════════
+-->
+<script type="module" src="index.js"></script>
