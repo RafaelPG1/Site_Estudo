@@ -216,7 +216,7 @@
         -->
         <div class="screen screen--reader" id="reader" hidden>
 
-          <!-- Apenas sidebar de capítulos + área de conteúdo -->
+          <!-- Sidebar de capítulos + área de conteúdo + painel direito -->
           <div class="reader__layout" id="reader-layout">
 
             <aside class="reader__sidebar" id="reader-sidebar">
@@ -242,6 +242,26 @@
               </div>
             </div>
 
+            <!-- Painel direito — "Sobre este capítulo" -->
+            <aside class="reader__right-panel" id="reader-right-panel" aria-label="Sobre este capítulo">
+              <div class="reader__about-card" id="reader-about-card">
+                <div class="reader__about-card__header">Sobre este capítulo</div>
+                <div class="reader__about-card__body" id="reader-about-body">
+                  <!-- preenchido pelo reader-patch.js -->
+                </div>
+              </div>
+            </aside>
+
+          </div>
+
+          <!-- Botões flutuantes de scroll — fora do layout, dentro da screen -->
+          <div class="reader__scroll-btns" id="reader-scroll-btns" aria-hidden="true">
+            <button class="reader__scroll-btn" id="reader-scroll-top" title="Ir para o topo" type="button">
+              <svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
+            </button>
+            <button class="reader__scroll-btn" id="reader-scroll-bottom" title="Ir para o final" type="button">
+              <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
           </div>
 
         </div><!-- /screen--reader -->

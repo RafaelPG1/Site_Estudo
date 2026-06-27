@@ -1,3 +1,6 @@
+ /* novas_implementações\v2\dashboard.html
+ proibo de mudar o caminho, os arquivos deve ter os caminhos para saber onde estar  */
+ 
 /* ─── TOKENS ─────────────────────────────────────────────── */
 :root {
   --bg:          #0A0A0F;
@@ -160,6 +163,19 @@ body {
   width: 16px; height: 16px;
   flex-shrink: 0;
   opacity: .8;
+}
+
+/* Disciplinas dinâmicas usam emoji como ícone em vez de SVG.
+   Mesmo tamanho e alinhamento do .nav-icon para consistência visual. */
+.nav-emoji {
+  width: 16px;
+  flex-shrink: 0;
+  font-size: 13px;
+  line-height: 16px;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .nav-badge {

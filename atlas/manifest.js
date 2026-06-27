@@ -33,7 +33,6 @@ window.__atlasManifest = [
     title:   'Python',
     desc:    'Documentação completa de Python: dos fundamentos básicos às estruturas de dados, controle de fluxo e funções.',
     type:    'Documentação',
-    time:    48,
     theme:   'indigo',
     color:   '#3776AB',
     icon: `<svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">

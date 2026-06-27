@@ -1,5 +1,6 @@
 /* =============================================
-   NEXUS STUDY — dashboard.js
+   NEXUS STUDY — novas_implementações\v2\dashboard.js
+    proibo de mudar o caminho, os arquivos deve ter os caminhos para saber onde estar
    Dashboard: visão geral, ferramentas pessoais e estatísticas.
    =============================================
 
@@ -14,6 +15,32 @@
    o Dashboard não possui Route Guard. Os demais sistemas globais
    (semestre, áudio, IA, Quick Access) funcionam normalmente com
    ou sem usuário autenticado.
+
+   CORREÇÕES v2 → v2.1:
+   ──────────────────────────────────────────────────────────────
+   BUG 1 — ReferenceError: _renderContexto is not defined
+     Causa: A chave de fechamento de _trocarSemestre estava ausente,
+     fazendo com que _renderContexto, _renderDisciplinas e
+     _renderSidebarDisciplinas fossem declaradas DENTRO do corpo de
+     _trocarSemestre — tornando-as inacessíveis para _bootPagina.
+     Correção: Fechamento correto de _trocarSemestre antes das
+     declarações das funções de renderização.
+
+   BUG 2 — theme.js: Sem cores definidas para: analise_projeto
+     Causa: A disciplina analise_projeto não possui entrada em DISC_CORES
+     (cores.js), e o dashboard chamava aplicarCoresDisciplina diretamente
+     sem verificar isso — gerando console.warn de theme.js.
+     Correção: Wrapper _aplicarCoresSeDefined() verifica DISC_CORES antes
+     de chamar aplicarCoresDisciplina. Disciplinas sem mapeamento de cores
+     simplesmente não recebem tema — sem aviso, sem erro, sem tocar em
+     theme.js nem em cores.js.
+
+   BUG 3 — _renderGreeting não declarada
+     Causa: A função estava referenciada em _bootPagina mas nunca
+     definida no arquivo.
+     Correção: Declarada abaixo, seguindo o mesmo padrão usado em
+     Resumo e Quiz para exibição de data.
+   ──────────────────────────────────────────────────────────────
    ============================================= */
 
 import {
@@ -23,11 +50,11 @@ import {
   setPagina,
   SEMESTRES,
   getUsuario,
-} from '../src/global.js';
+} from '../../src/global.js';
 
-import { resolverSemestreDeURL } from '../shared/js/utils/url.js';
-import { aplicarCoresDisciplina } from '../shared/js/themes/theme.js';
-import { injetarLogo } from '../shared/js/utils/logo.js';
+import { resolverSemestreDeURL } from '../../shared/js/utils/url.js';
+import { aplicarCoresDisciplina } from '../../shared/js/themes/theme.js';
+import { injetarLogo } from '../../shared/js/utils/logo.js';
 
 /* ── Áudio ── */
 import {
@@ -35,7 +62,7 @@ import {
   audio,
   installAudioRecovery,
   playSound,
-} from '../shared/js/audio/audio-api.js';
+} from '../../shared/js/audio/audio-api.js';
 
 /* ══════════════════════════════════════════════
    ESTADO
@@ -48,12 +75,32 @@ const State = {
 };
 
 /* ══════════════════════════════════════════════
+   WRAPPER DE TEMA
+   Chama aplicarCoresDisciplina somente se a disciplina possui
+   entrada mapeada em DISC_CORES. Evita o console.warn emitido
+   por theme.js para disciplinas sem cores cadastradas
+   (ex: analise_projeto) — sem alterar theme.js nem cores.js.
+══════════════════════════════════════════════ */
+function _aplicarCoresSeDefined(discArquivo) {
+  if (!discArquivo) return;
+  if (!State.DISC_CORES[discArquivo]) return;
+  aplicarCoresDisciplina(discArquivo, State.DISC_CORES);
+}
+
+/* ══════════════════════════════════════════════
    CONTEXTO — semestre / disciplina atuais
    (mesma resolução usada nas páginas de Resumo e Quiz)
 ══════════════════════════════════════════════ */
 function _resolverContexto() {
   const semestre = resolverSemestreDeURL();
-  const lista    = getDisciplinasDeSemestre(semestre);
+
+  /* Persiste no global.js — idêntico ao que Resumo e Quiz fazem.
+     Sem este setSemestre(), o estado do global.js fica defasado
+     em relação ao semestre resolvido da URL, e a primeira troca
+     via <select> partiria do semestre errado. */
+  setSemestre(semestre);
+
+  const lista = getDisciplinasDeSemestre(semestre);
 
   State.semestre    = semestre;
   State.disciplinas = lista;
@@ -64,7 +111,7 @@ function _resolverContexto() {
   State.discAtiva = disc;
 
   if (disc) {
-    aplicarCoresDisciplina(disc.arquivo, State.DISC_CORES);
+    _aplicarCoresSeDefined(disc.arquivo);
   }
 }
 
@@ -110,11 +157,21 @@ function _trocarSemestre(novoSemestre) {
   State.discAtiva   = State.disciplinas[0] ?? null;
 
   if (State.discAtiva) {
-    aplicarCoresDisciplina(State.discAtiva.arquivo, State.DISC_CORES);
+    _aplicarCoresSeDefined(State.discAtiva.arquivo);
   }
 
+  /* BUG 1 — CORREÇÃO:
+     No arquivo original, a chave de fechamento desta função estava
+     ausente aqui. Isso fazia com que _renderContexto, _renderDisciplinas
+     e _renderSidebarDisciplinas fossem declaradas dentro do escopo de
+     _trocarSemestre — inacessíveis para _bootPagina e para qualquer
+     outro chamador externo, resultando em:
+       ReferenceError: _renderContexto is not defined
+     A chave abaixo fecha corretamente _trocarSemestre antes das
+     declarações das funções de renderização. */
   _renderContexto();
   _renderDisciplinas();
+  _renderSidebarDisciplinas();
 }
 
 /* ══════════════════════════════════════════════
@@ -197,6 +254,40 @@ function _renderDisciplinas() {
   });
 }
 
+/**
+ * Renderiza os itens de disciplina na sidebar usando os emojis vindos
+ * do global.js como ícone — sem SVG fixo, sem lista hardcoded.
+ * Chamada sempre que o semestre muda, junto com _renderDisciplinas().
+ */
+function _renderSidebarDisciplinas() {
+  const wrap = document.getElementById('sidebar-disciplinas');
+  if (!wrap) return;
+
+  wrap.innerHTML = '';
+
+  State.disciplinas.forEach(disc => {
+    const a = document.createElement('a');
+    a.className = 'nav-item';
+    a.href = '#';
+
+    const icon = document.createElement('span');
+    icon.className = 'nav-icon nav-emoji';
+    icon.textContent = disc.emoji ?? '📚';
+    icon.setAttribute('aria-hidden', 'true');
+
+    const label = document.createTextNode(disc.apelido ?? disc.nome);
+
+    a.appendChild(icon);
+    a.appendChild(label);
+    wrap.appendChild(a);
+  });
+}
+
+/* ══════════════════════════════════════════════
+   GREETING — data atual formatada
+   (BUG 3 — função estava referenciada em _bootPagina
+   mas nunca declarada no arquivo original)
+══════════════════════════════════════════════ */
 function _renderGreeting() {
   const el = document.getElementById('page-greeting');
   if (!el) return;
@@ -234,12 +325,12 @@ async function _bootPagina() {
     destino:  '#header-logo-wrap',
     tamanho:  32,
     layout:   'stacked',
-    srcBase:  '../shared/img/logo.png',
-    linkHref: '../index.html',
+    srcBase:  '../../shared/img/logo.png',
+    linkHref: '../../index.html',
   });
 
   try {
-    const mod = await import('../shared/js/themes/cores.js');
+    const mod = await import('../../shared/js/themes/cores.js');
     State.DISC_CORES = mod.DISC_CORES ?? {};
   } catch (_) {}
 
@@ -247,8 +338,23 @@ async function _bootPagina() {
   _renderSemestreSelector();
   _renderContexto();
   _renderDisciplinas();
+  _renderSidebarDisciplinas();
   _renderGreeting();
   _renderUsuario();
+
+  /* ── Listener: mudança de semestre disparada externamente ──
+     Garante que o Dashboard reaja a qualquer mudança de semestre
+     originada fora do próprio <select> (ex: outro módulo do Nexus
+     Study que chame setSemestre() e despache este evento).
+     É o mesmo padrão de escuta usado nas páginas de Resumo e Quiz. */
+  document.addEventListener('nexus:semestre-changed', e => {
+    const novoSemestre = e?.detail?.semestre;
+    if (novoSemestre && novoSemestre !== State.semestre) {
+      _trocarSemestre(novoSemestre);
+      const sel = document.getElementById('semestre-select');
+      if (sel) sel.value = novoSemestre;
+    }
+  });
 
   _initSessionTimer();
   _initProgressBarAnimation();

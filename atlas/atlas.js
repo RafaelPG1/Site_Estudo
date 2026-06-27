@@ -100,6 +100,7 @@ const State = {
   searchQuery:       '',
   sidebarMobileOpen: false,
   _progressCleanup:  null,
+  _scrollBtnsCleanup: null,
 };
 
 /* ══════════════════════════════════════════════
@@ -212,6 +213,11 @@ const EL = {
   readerHeroChips:         $('reader-hero-chips'),
   readerBody:              $('reader-body'),
   readerChapterNav:        $('reader-chapter-nav'),
+  // painel direito e botões flutuantes (redesign v2)
+  readerAboutBody:         $('reader-about-body'),
+  readerScrollBtns:        $('reader-scroll-btns'),
+  readerScrollTop:         $('reader-scroll-top'),
+  readerScrollBottom:      $('reader-scroll-bottom'),
 };
 
 /* ══════════════════════════════════════════════
@@ -1410,9 +1416,13 @@ async function _abrirReader(categoryId, chapterIndex, opts = {}) {
   _renderAtlasBody(secao, categoryId);
   _renderChapterNav(cat, secoes, chapterIndex);
 
+  _renderAboutPanel(cat, data, secao);
+
   _closeMobileSidebar();
   _cleanupProgress();
   _setupProgress();
+  _teardownScrollButtons();
+  _setupScrollButtons();
 }
 
 /* ══════════════════════════════════════════════
@@ -1423,6 +1433,7 @@ async function _abrirReader(categoryId, chapterIndex, opts = {}) {
 ══════════════════════════════════════════════ */
 function _fecharReader(opts = {}) {
   _cleanupProgress();
+  _teardownScrollButtons();
   _closeMobileSidebar();
 
   if (EL.readerProgressFill) EL.readerProgressFill.style.width = '0%';
@@ -1605,6 +1616,91 @@ function _renderChapterNav(cat, secoes, currentIndex) {
       _abrirReader(cat.id, parseInt(link.dataset.navIndex, 10));
     });
   });
+}
+
+/* ══════════════════════════════════════════════
+   PAINEL DIREITO — "Sobre este capítulo"
+   Preenche #reader-about-body com metadados
+   da seção atual (descrição da disciplina,
+   tempo estimado de leitura e tipo).
+══════════════════════════════════════════════ */
+function _renderAboutPanel(cat, data, secao) {
+  if (!EL.readerAboutBody) return;
+
+  const desc = data?.desc ?? cat?.desc ?? '';
+  const type = data?.type ?? cat?.type ?? '';
+
+  /* Estimativa de leitura: conta palavras do body renderizado */
+  const wordCount = (EL.readerBody?.textContent || '').split(/\s+/).filter(Boolean).length;
+  const minutes   = Math.max(1, Math.round(wordCount / 200));
+  const timeLabel = minutes === 1 ? '1 min' : `${minutes} min`;
+
+  const rows = [];
+
+  if (desc) {
+    rows.push(`
+      <div class="reader__about-row">
+        <span class="reader__about-label">Descrição</span>
+        <p class="reader__about-desc">${_esc(desc)}</p>
+      </div>
+      <div class="reader__about-sep"></div>`);
+  }
+
+  rows.push(`
+    <div class="reader__about-row">
+      <span class="reader__about-label">Leitura estimada</span>
+      <span class="reader__about-value">${timeLabel} de leitura</span>
+    </div>`);
+
+  if (type) {
+    rows.push(`
+      <div class="reader__about-sep"></div>
+      <div class="reader__about-row">
+        <span class="reader__about-label">Tipo</span>
+        <span class="reader__about-value">${_esc(type)}</span>
+      </div>`);
+  }
+
+  EL.readerAboutBody.innerHTML = rows.join('');
+}
+
+/* ══════════════════════════════════════════════
+   BOTÕES FLUTUANTES — scroll topo / fim
+   Visíveis após 200 px de scroll no reader-scroll.
+   Cleanup guardado em State para remoção limpa.
+══════════════════════════════════════════════ */
+function _setupScrollButtons() {
+  const scrollEl = EL.readerScroll;
+  const btnsEl   = EL.readerScrollBtns;
+  const btnTop   = EL.readerScrollTop;
+  const btnBot   = EL.readerScrollBottom;
+  if (!scrollEl || !btnsEl || !btnTop || !btnBot) return;
+
+  function _updateVis() {
+    btnsEl.classList.toggle('is-visible', scrollEl.scrollTop > 200);
+  }
+
+  function _onTop() { scrollEl.scrollTo({ top: 0, behavior: 'smooth' }); }
+  function _onBot() { scrollEl.scrollTo({ top: scrollEl.scrollHeight, behavior: 'smooth' }); }
+
+  scrollEl.addEventListener('scroll', _updateVis, { passive: true });
+  btnTop.addEventListener('click', _onTop);
+  btnBot.addEventListener('click', _onBot);
+  _updateVis();
+
+  State._scrollBtnsCleanup = () => {
+    scrollEl.removeEventListener('scroll', _updateVis);
+    btnTop.removeEventListener('click', _onTop);
+    btnBot.removeEventListener('click', _onBot);
+    btnsEl.classList.remove('is-visible');
+  };
+}
+
+function _teardownScrollButtons() {
+  if (State._scrollBtnsCleanup) {
+    State._scrollBtnsCleanup();
+    State._scrollBtnsCleanup = null;
+  }
 }
 
 /* ══════════════════════════════════════════════
