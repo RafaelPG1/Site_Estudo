@@ -8,6 +8,13 @@
 
    Este arquivo NÃO interfere em Biblioteca nem
    em Disciplina.
+
+   ───────────────────────────────────────────
+   REVISÃO VISUAL — modo leitura confortável
+   Inspiração: Notion / Medium / Kindle.
+   Mesma estrutura HTML, mesmas classes —
+   apenas refinamento de tipografia, espaçamento,
+   largura de leitura, contraste e hierarquia.
    ============================================= */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -16,13 +23,18 @@
    TOKENS — Leitura
 ══════════════════════════════════════════ */
 :root {
-  /* Backgrounds */
-  --bg-0:     #080c14;
-  --bg-1:     #0d1220;
-  --bg-2:     #111827;
+  /* Backgrounds — levemente mais quentes e suaves
+     que o resto do Atlas, pensados para leitura longa */
+  --bg-0:     #0a0e16;
+  --bg-1:     #0e131f;
+  --bg-2:     #131a29;
   --bg-3:     #1a2236;
   --bg-4:     #202d42;
   --bg-hover: #253148;
+
+  /* Fundo do "papel" de leitura — ligeiramente
+     destacado do resto do painel, sem virar card */
+  --reader-paper: #0d121e;
 
   /* Borders */
   --b1: rgba(255,255,255,0.05);
@@ -45,20 +57,32 @@
   --amber:     #f59e0b;
   --amber-dim: rgba(245,158,11,0.08);
 
-  /* Texto */
-  --t1: #e8eaf0;
-  --t2: #8892a4;
-  --t3: #4a5568;
-  --t4: #2d3748;
+  /* Texto — contraste calibrado para leitura prolongada
+     (texto principal um pouco menos que branco puro,
+     reduz fadiga visual em telas escuras) */
+  --t1: #ecedf3;
+  --t2: #9aa1b5;
+  --t3: #565f78;
+  --t4: #303a52;
 
-  /* Tipografia */
+  /* Texto de leitura — tom dedicado ao corpo do artigo,
+     mais legível que --t2 em blocos longos de texto */
+  --read-text:   #c4c9d8;
+  --read-text-2: #aab0c2;
+
+  /* Tipografia
+     Corpo do texto migra para uma serifada legível,
+     mantendo a Inter para UI/labels e display para títulos */
   --font-display: 'Space Grotesk', system-ui, sans-serif;
   --font-body:    'Inter', system-ui, sans-serif;
   --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
+  --font-read:    'Georgia', 'Iowan Old Style', 'Charter', 'Source Serif Pro', serif;
 
   /* Layout */
   --header-h:    60px;
-  --content-max: 860px;
+
+  /* Largura ideal de leitura — ~68-72 caracteres por linha */
+  --content-max: 700px;
 
   /* Raios */
   --r-xl: 18px;
@@ -102,8 +126,8 @@ input { font-family: var(--font-body); }
 .reader__overlay {
   position: fixed;
   inset: 0;
-  background: rgba(4,7,14,0.75);
-  backdrop-filter: blur(6px);
+  background: rgba(4,7,14,0.78);
+  backdrop-filter: blur(7px);
   z-index: 300;
   opacity: 0;
   transition: opacity 0.3s var(--ease);
@@ -135,7 +159,7 @@ input { font-family: var(--font-body); }
   gap: 0.75rem;
   padding: 0 1.25rem;
   height: var(--header-h);
-  background: rgba(8,12,20,0.9);
+  background: rgba(9,13,21,0.92);
   border-bottom: 1px solid var(--b1);
   flex-shrink: 0;
 }
@@ -388,25 +412,28 @@ input { font-family: var(--font-body); }
   background: rgba(0,0,0,0.4);
 }
 
-/* ── Área de scroll do conteúdo ── */
+/* ── Área de scroll do conteúdo ──
+   Fundo sutilmente diferenciado, criando um
+   "papel" de leitura discreto sem virar card. */
 .reader__scroll {
   flex: 1;
   overflow-y: auto;
   overscroll-behavior: contain;
   min-width: 0;
+  background: var(--reader-paper);
 }
 
 .reader__content {
   max-width: var(--content-max);
   margin: 0 auto;
-  padding: 2.75rem 3rem 5rem;
+  padding: 4.5rem 2rem 6rem;
 }
 
 /* ══════════════════════════════════════════
    HERO DO READER (capítulo aberto)
 ══════════════════════════════════════════ */
 .reader__hero {
-  margin-bottom: 2.5rem;
+  margin-bottom: 3rem;
 }
 
 .reader__hero-category {
@@ -419,26 +446,27 @@ input { font-family: var(--font-body); }
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--indigo);
-  opacity: 0.8;
-  margin-bottom: 1rem;
+  opacity: 0.85;
+  margin-bottom: 1.1rem;
 }
 
 .reader__hero-title {
   font-family: var(--font-display);
-  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-size: clamp(1.9rem, 4vw, 2.65rem);
   font-weight: 700;
   color: var(--t1);
-  letter-spacing: -0.02em;
-  line-height: 1.15;
-  margin-bottom: 0.85rem;
+  letter-spacing: -0.022em;
+  line-height: 1.18;
+  margin-bottom: 1rem;
 }
 
 .reader__hero-desc {
-  font-size: 0.92rem;
-  color: var(--t2);
-  line-height: 1.75;
-  max-width: 520px;
-  margin-bottom: 1.25rem;
+  font-family: var(--font-read);
+  font-size: 1.05rem;
+  color: var(--read-text-2);
+  line-height: 1.7;
+  max-width: 560px;
+  margin-bottom: 1.4rem;
 }
 
 .reader__hero-chips {
@@ -456,114 +484,152 @@ input { font-family: var(--font-body); }
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.25rem 0.7rem;
+  padding: 0.28rem 0.75rem;
   background: rgba(255,255,255,0.04);
   border: 1px solid var(--b2);
   border-radius: 99px;
   font-size: 0.68rem;
   color: var(--t2);
+  font-family: var(--font-body);
 }
 .reader__chip svg { opacity: 0.6; }
 
 .reader__divider {
   height: 1px;
-  background: var(--b2);
-  margin: 0 0 2.5rem;
+  background: linear-gradient(90deg, var(--b2) 0%, transparent 100%);
+  margin: 0 0 3rem;
 }
 
 /* ══════════════════════════════════════════
    BODY DO READER — blocos de conteúdo
+   Tipografia serifada, espaçamento generoso,
+   foco total no texto.
 ══════════════════════════════════════════ */
 .reader__body {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.6rem;
+  font-family: var(--font-read);
 }
 
 .kb-section {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.3rem;
   padding-top: 0.5rem;
 }
 .kb-section + .kb-section {
-  margin-top: 1rem;
-  padding-top: 2rem;
+  margin-top: 1.25rem;
+  padding-top: 2.5rem;
   border-top: 1px solid var(--b2);
 }
 
 .kb-section__title {
   font-family: var(--font-display);
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: 700;
   color: var(--t1);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.012em;
+  line-height: 1.25;
 }
 
 .kb-section__subtitle {
   font-family: var(--font-display);
-  font-size: 1.1rem;
+  font-size: 1.25rem;
   font-weight: 600;
   color: var(--t1);
-  margin-top: 0.5rem;
+  letter-spacing: -0.008em;
+  line-height: 1.3;
+  margin-top: 0.75rem;
+  padding-top: 0.4rem;
 }
 
 .kb-block-texto {
-  font-size: 0.97rem;
-  color: var(--t2);
-  line-height: 1.8;
+  font-family: var(--font-read);
+  font-size: 1.09rem;
+  font-weight: 400;
+  color: var(--read-text);
+  line-height: 1.85;
+  letter-spacing: 0.001em;
+}
+
+.kb-block-texto code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  color: var(--cyan);
+  background: rgba(34,211,238,0.08);
+  border: 1px solid rgba(34,211,238,0.16);
+  border-radius: 4px;
+  padding: 0.12em 0.4em;
+}
+
+.kb-block-texto strong {
+  color: var(--t1);
+  font-weight: 700;
 }
 
 .kb-block-lista {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.7rem;
   padding-left: 0.25rem;
+  font-family: var(--font-read);
 }
 .kb-block-lista li {
-  font-size: 0.92rem;
-  color: var(--t2);
-  line-height: 1.65;
+  font-size: 1.05rem;
+  color: var(--read-text);
+  line-height: 1.75;
   list-style: none;
   position: relative;
-  padding-left: 1.1rem;
+  padding-left: 1.3rem;
 }
 .kb-block-lista li::before {
   content: '';
   position: absolute;
   left: 0;
-  top: 0.55em;
+  top: 0.62em;
   width: 5px; height: 5px;
   border-radius: 50%;
   background: var(--indigo);
-  opacity: 0.6;
+  opacity: 0.7;
 }
+.kb-block-lista li code {
+  font-family: var(--font-mono);
+  font-size: 0.84em;
+  color: var(--cyan);
+  background: rgba(34,211,238,0.08);
+  border: 1px solid rgba(34,211,238,0.16);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+}
+.kb-block-lista li strong { color: var(--t1); font-weight: 700; }
 
 .kb-block-codigo {
   position: relative;
   background: var(--bg-2);
   border: 1px solid var(--b2);
-  border-radius: var(--r-md);
-  padding: 2.1rem 1.1rem 1.1rem;
+  border-radius: var(--r-lg);
+  padding: 2.25rem 1.35rem 1.35rem;
   overflow-x: auto;
   font-family: var(--font-mono);
-  font-size: 0.85rem;
-  line-height: 1.7;
+  font-size: 0.86rem;
+  line-height: 1.75;
   color: var(--t1);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
 }
 .kb-block-codigo::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 1.85rem;
-  background: rgba(255,255,255,0.02);
+  height: 1.95rem;
+  background: rgba(255,255,255,0.025);
   border-bottom: 1px solid var(--b1);
 }
 .kb-block-codigo::after {
   content: '● ● ●';
   position: absolute;
-  top: 0; left: 1rem;
-  height: 1.85rem;
+  top: 0; left: 1.1rem;
+  height: 1.95rem;
   display: flex;
   align-items: center;
   font-size: 0.5rem;
@@ -574,14 +640,17 @@ input { font-family: var(--font-body); }
 .kb-block-tabela {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.85rem;
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  border-radius: var(--r-md);
+  overflow: hidden;
 }
 .kb-block-tabela th,
 .kb-block-tabela td {
   text-align: left;
-  padding: 0.55rem 0.85rem;
+  padding: 0.7rem 1rem;
   border: 1px solid var(--b2);
-  color: var(--t2);
+  color: var(--read-text);
 }
 .kb-block-tabela th {
   background: var(--bg-2);
@@ -592,30 +661,35 @@ input { font-family: var(--font-body); }
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
+.kb-block-tabela tbody tr:hover td {
+  background: rgba(255,255,255,0.02);
+}
 
 .kb-block-alerta {
   display: flex;
   align-items: flex-start;
-  gap: 0.65rem;
-  padding: 0.9rem 1.05rem;
+  gap: 0.7rem;
+  padding: 1.05rem 1.2rem;
   border-radius: var(--r-md);
-  border: 1px solid rgba(245,158,11,0.28);
+  border: 1px solid rgba(245,158,11,0.26);
   background: var(--amber-dim);
-  font-size: 0.87rem;
+  font-family: var(--font-body);
+  font-size: 0.92rem;
   color: var(--t2);
-  line-height: 1.65;
+  line-height: 1.7;
 }
 
 .kb-block-destaque {
   position: relative;
-  padding: 1rem 1.2rem;
+  padding: 1.2rem 1.4rem;
   border-left: 3px solid var(--indigo);
-  background: linear-gradient(90deg, rgba(var(--indigo-rgb),0.06) 0%, rgba(255,255,255,0.02) 100%);
+  background: linear-gradient(90deg, rgba(var(--indigo-rgb),0.07) 0%, rgba(255,255,255,0.015) 100%);
   border-radius: 0 var(--r-sm) var(--r-sm) 0;
-  font-size: 0.92rem;
+  font-family: var(--font-read);
+  font-size: 1.06rem;
   font-style: italic;
   color: var(--t1);
-  line-height: 1.7;
+  line-height: 1.75;
 }
 
 /* ══════════════════════════════════════════
@@ -646,8 +720,8 @@ input { font-family: var(--font-body); }
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.85rem;
-  margin-top: 3rem;
-  padding-top: 2rem;
+  margin-top: 3.5rem;
+  padding-top: 2.25rem;
   border-top: 1px solid var(--b2);
 }
 .reader__chapter-nav:empty { display: none; }
@@ -655,8 +729,8 @@ input { font-family: var(--font-body); }
 .reader-chapter-nav-link {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  padding: 0.9rem 1.1rem;
+  gap: 0.4rem;
+  padding: 1rem 1.2rem;
   border: 1px solid var(--b2);
   border-radius: var(--r-lg);
   background: var(--bg-2);
@@ -665,7 +739,7 @@ input { font-family: var(--font-body); }
   min-width: 0;
 }
 .reader-chapter-nav-link:hover {
-  border-color: var(--b4);
+  border-color: rgba(var(--indigo-rgb),0.32);
   background: var(--bg-3);
   transform: translateY(-2px);
 }
@@ -683,7 +757,7 @@ input { font-family: var(--font-body); }
 }
 .reader-chapter-nav-link__title {
   font-family: var(--font-display);
-  font-size: 0.92rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--t1);
   white-space: nowrap;
@@ -697,7 +771,7 @@ input { font-family: var(--font-body); }
 ══════════════════════════════════════════ */
 @media (max-width: 960px) {
   .reader__sidebar  { width: 210px; }
-  .reader__content  { padding: 2.25rem 2rem 4rem; }
+  .reader__content  { padding: 3rem 2rem 4.5rem; }
 }
 
 @media (max-width: 860px) {
@@ -715,9 +789,11 @@ input { font-family: var(--font-body); }
 }
 
 @media (max-width: 600px) {
-  .reader__content { padding: 1.75rem 1.25rem 4rem; }
+  .reader__content { padding: 2.25rem 1.25rem 4rem; }
   .reader__panel   { width: 100vw; }
   .reader__chapter-nav { grid-template-columns: 1fr; }
+  .kb-block-texto,
+  .kb-block-lista li { font-size: 1.02rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -726,21 +802,23 @@ input { font-family: var(--font-body); }
 
 /* ── Bloco: imagem ── */
 .kb-block-imagem {
-  margin: 1.5rem 0;
+  margin: 2rem 0;
   text-align: center;
 }
 
 .kb-block-imagem img {
   max-width: 100%;
-  border-radius: 8px;
-  border: 1px solid rgba(var(--color-border-rgb, 255 255 255), 0.08);
+  border-radius: var(--r-md);
+  border: 1px solid var(--b2);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.25);
   display: block;
   margin: 0 auto;
 }
 
 .kb-block-imagem__legenda {
-  margin-top: 0.5rem;
-  font-size: 0.78rem;
-  color: var(--color-text-muted, #888);
+  margin-top: 0.65rem;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--t3);
   font-style: italic;
 }
