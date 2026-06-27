@@ -316,7 +316,7 @@ input { font-family: var(--font-body); }
   right: 0;
   z-index: 200;
   height: var(--header-h);
-  padding: 0 1.5rem 0 calc(var(--sidebar-w) + 1.5rem);
+  padding: 0 1.5rem;
   background: rgba(7,9,18,0.90);
   backdrop-filter: blur(20px) saturate(1.4);
   border-bottom: 1px solid var(--b1);
@@ -370,6 +370,54 @@ input { font-family: var(--font-body); }
 
 .library-header__stats {
   display: none;
+}
+
+/* ══════════════════════════════════════════
+   BREADCRUMB DO READER — coluna direita do header
+   Visível apenas durante a leitura, alinhado
+   à direita da logo pelo flexbox de #header-controls.
+══════════════════════════════════════════ */
+.reader-header-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--t3);
+  white-space: nowrap;
+  overflow: hidden;
+  min-width: 0;
+  max-width: 420px;
+}
+
+.reader-header-breadcrumb .crumb {
+  color: var(--t3);
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.15s;
+}
+
+.reader-header-breadcrumb .crumb--link {
+  cursor: pointer;
+}
+.reader-header-breadcrumb .crumb--link:hover {
+  color: var(--t1);
+}
+
+.reader-header-breadcrumb .crumb--current {
+  color: var(--t2);
+  font-weight: 500;
+  flex-shrink: 2;
+}
+
+.reader-header-breadcrumb .crumb-sep {
+  color: var(--t4);
+  flex-shrink: 0;
+  font-size: 0.68rem;
+  margin: 0 0.05rem;
+  user-select: none;
 }
 
 /* Logo injetada via injetarLogo() */
@@ -504,12 +552,26 @@ input { font-family: var(--font-body); }
 [data-color-index="5"] { --cat-rgb: var(--cat-rgb-5); }
 
 /* ══════════════════════════════════════════
+   MODO LEITURA — app--reader
+   Quando o reader está ativo, a atlas-sidebar
+   e seu spacer são ocultados para que a tela
+   de leitura tenha identidade visual própria.
+══════════════════════════════════════════ */
+.app--reader .atlas-sidebar         { display: none !important; }
+.app--reader ~ .kb-layout__sidebar-spacer,
+.kb-layout:has(.app--reader) .kb-layout__sidebar-spacer { display: none !important; }
+
+/* Fallback via classe no body */
+body.reader-active .atlas-sidebar              { display: none !important; }
+body.reader-active .kb-layout__sidebar-spacer  { display: none !important; }
+body.reader-active .bg-canvas::after           { left: 0; }
+
+/* ══════════════════════════════════════════
    RESPONSIVO — Atlas (compartilhado)
 ══════════════════════════════════════════ */
 @media (max-width: 1100px) {
   .atlas-sidebar { display: none; }
   .kb-layout__sidebar-spacer { display: none; }
-  .library-header { padding-left: 1.5rem; }
   .bg-canvas::after { left: 0; }
 }
 

@@ -140,6 +140,38 @@ const Favorites = {
 };
 
 /* ══════════════════════════════════════════════
+   PERSISTÊNCIA DE NAVEGAÇÃO
+   Salva e restaura a tela atual via sessionStorage
+   para que F5 / recarregamento mantenha o contexto.
+   Usa sessionStorage (sessão da aba) — não persiste
+   entre aberturas distintas do browser.
+══════════════════════════════════════════════ */
+const NavState = {
+  _key: 'nexus_atlas_nav',
+
+  save() {
+    try {
+      sessionStorage.setItem(this._key, JSON.stringify({
+        view:     State.view,
+        cat:      State.currentCategory,
+        chapter:  State.currentChapter,
+      }));
+    } catch { /* quota / privado: ignora silenciosamente */ }
+  },
+
+  load() {
+    try {
+      const raw = sessionStorage.getItem(this._key);
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  },
+
+  clear() {
+    try { sessionStorage.removeItem(this._key); } catch { /* noop */ }
+  },
+};
+
+/* ══════════════════════════════════════════════
    SELETORES
 ══════════════════════════════════════════════ */
 const $ = (id) => document.getElementById(id);
@@ -764,43 +796,37 @@ function _buildMaterialsCategories() {
 }
 
 /* ══════════════════════════════════════════════
-   HEADER BACK / BREADCRUMB
-   No reader: o slot esquerdo do header vira
-   breadcrumb navegável  (atlas / Disciplina / Capítulo).
-   Nas demais telas: volta ao btn-back padrão.
+   HEADER BACK
+   No reader: slot esquerdo exibe botão Voltar
+   simples com o nome da disciplina → retorna
+   à tela da Disciplina.
+   Nas demais telas: btn-back padrão.
 ══════════════════════════════════════════════ */
 function _renderHeaderBack() {
   const slot = EL.headerLeftSlot;
   if (!slot) return;
 
   if (State.view === 'reader') {
-    // Breadcrumb substitui completamente o btn-back no slot esquerdo
-    // (o toggle de sidebar mobile fica na col direita do header)
-    const cat   = CATEGORIES.find(c => c.id === State.currentCategory);
-    const data  = _contentCache.get(State.currentCategory);
-    const secoes = Array.isArray(data?.secoes) ? data.secoes : [];
-    const secao  = secoes[State.currentChapter ?? 0];
+    // Slot esquerdo: botão Voltar simples → retorna à tela da disciplina
+    const cat = CATEGORIES.find(c => c.id === State.currentCategory);
 
     slot.innerHTML = `
-      <nav class="reader-header-breadcrumb" aria-label="Localização">
-        <span class="crumb" data-crumb="home">atlas</span>
-        <span class="crumb-sep">/</span>
-        <span class="crumb" data-crumb="discipline">${_esc(cat?.name ?? '')}</span>
-        <span class="crumb-sep">/</span>
-        <span class="crumb crumb--current">${_esc(secao?.titulo ?? '')}</span>
-      </nav>`;
+      <button class="library-btn-back" id="btn-back-reader" type="button"
+              title="Voltar para ${_esc(cat?.name ?? 'disciplina')}">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+        </svg>
+        <span>${_esc(cat?.name ?? 'Voltar')}</span>
+      </button>`;
 
-    slot.querySelector('[data-crumb="home"]')?.addEventListener('click', () => {
-      playSound('click', 'atlas');
-      _fecharReader({ toHome: true });
-    });
-    slot.querySelector('[data-crumb="discipline"]')?.addEventListener('click', () => {
+    slot.querySelector('#btn-back-reader')?.addEventListener('click', () => {
       playSound('click', 'atlas');
       _fecharReader({ toDiscipline: true });
     });
 
-    // Mostra o toggle de sidebar mobile no header
-    if (EL.readerSidebarToggle) EL.readerSidebarToggle.hidden = false;
+    // Toggle de sidebar mobile: oculto no header (o botão Voltar já está no slot esquerdo)
+    if (EL.readerSidebarToggle) EL.readerSidebarToggle.hidden = true;
 
     return;
   }
@@ -840,6 +866,51 @@ function _renderHeaderBack() {
 }
 
 /* ══════════════════════════════════════════════
+   BREADCRUMB DO READER — coluna direita do header
+   Visível apenas na tela de Leitura.
+   Formato: Atlas › Python › Fundamentos
+   Injetado em #header-controls, à direita da logo.
+══════════════════════════════════════════════ */
+function _renderHeaderBreadcrumb() {
+  const controls = $('header-controls');
+  if (!controls) return;
+
+  // Remove breadcrumb anterior se existir
+  controls.querySelector('.reader-header-breadcrumb')?.remove();
+
+  // Só exibe no reader
+  if (State.view !== 'reader') return;
+
+  const cat    = CATEGORIES.find(c => c.id === State.currentCategory);
+  const data   = _contentCache.get(State.currentCategory);
+  const secoes = Array.isArray(data?.secoes) ? data.secoes : [];
+  const secao  = secoes[State.currentChapter ?? 0];
+
+  const nav = document.createElement('nav');
+  nav.className   = 'reader-header-breadcrumb';
+  nav.setAttribute('aria-label', 'Localização');
+
+  nav.innerHTML = `
+    <span class="crumb crumb--link" data-crumb="home">Atlas</span>
+    <span class="crumb-sep" aria-hidden="true">›</span>
+    <span class="crumb crumb--link" data-crumb="discipline">${_esc(cat?.name ?? '')}</span>
+    <span class="crumb-sep" aria-hidden="true">›</span>
+    <span class="crumb crumb--current" aria-current="page">${_esc(secao?.titulo ?? '…')}</span>`;
+
+  nav.querySelector('[data-crumb="home"]')?.addEventListener('click', () => {
+    playSound('click', 'atlas');
+    _fecharReader({ toHome: true });
+  });
+
+  nav.querySelector('[data-crumb="discipline"]')?.addEventListener('click', () => {
+    playSound('click', 'atlas');
+    _fecharReader({ toDiscipline: true });
+  });
+
+  controls.prepend(nav);
+}
+
+/* ══════════════════════════════════════════════
    NAVEGAÇÃO ENTRE TELAS
    _showScreen é o único ponto de troca de tela.
    O reader ('reader') é tratado exatamente igual
@@ -867,6 +938,9 @@ function _showScreen(view) {
   // Barra de progresso: visível apenas na leitura
   if (EL.readerProgress) EL.readerProgress.hidden = (view !== 'reader');
 
+  // Classe no body que oculta a atlas-sidebar e ajusta o header no reader
+  document.body.classList.toggle('reader-active', view === 'reader');
+
   // Renderiza conteúdo específico da tela
   if (view === 'home')      _renderHomeScreen();
   if (view === 'materials') _renderMaterialsScreen();
@@ -875,6 +949,10 @@ function _showScreen(view) {
 
   _renderAtlasSidebar();
   _renderHeaderBack();
+  _renderHeaderBreadcrumb();
+
+  // Persiste estado para restauração após F5
+  NavState.save();
 }
 
 /* ══════════════════════════════════════════════
@@ -1302,6 +1380,9 @@ async function _abrirReader(categoryId, chapterIndex, opts = {}) {
   State.currentCategory = categoryId;
   State.currentChapter  = chapterIndex;
 
+  // Persiste imediatamente (antes do await) para capturar a intenção
+  NavState.save();
+
   // Exibe a screen do reader (troca de tela normal)
   // _showScreen chama _renderHeaderBack que monta o breadcrumb no header
   _showScreen('reader');
@@ -1321,8 +1402,9 @@ async function _abrirReader(categoryId, chapterIndex, opts = {}) {
 
   _renderSidebar(categoryId, chapterIndex);
 
-  // Atualiza o breadcrumb com o título real do capítulo (disponível após carregar)
+  // Atualiza o header com o título real do capítulo (disponível após carregar)
   _renderHeaderBack();
+  _renderHeaderBreadcrumb();
 
   _renderAtlasHero(cat, data, secao);
   _renderAtlasBody(secao, categoryId);
@@ -1663,12 +1745,16 @@ async function init() {
   _renderCategoriesGrid(CATEGORIES);
   _renderAtlasSidebar();
 
-  // Deep link via query string: ?cat=linux&chapter=2
+  // ── Restauração de estado após F5 ──────────────────────────────
+  // Prioridade: query string (deep link externo) > sessionStorage (F5)
   const params     = new URLSearchParams(window.location.search);
   const catParam   = params.get('cat');
   const chapterRaw = params.get('chapter');
 
-  if (catParam && CATEGORIES.some(c => c.id === catParam)) {
+  const hasDeepLink = catParam && CATEGORIES.some(c => c.id === catParam);
+
+  if (hasDeepLink) {
+    // Deep link externo via query string: ?cat=python&chapter=2
     if (chapterRaw !== null && !Number.isNaN(parseInt(chapterRaw, 10))) {
       const cat = CATEGORIES.find(c => c.id === catParam);
       State.currentCategory = catParam;
@@ -1679,6 +1765,25 @@ async function init() {
       _abrirReader(catParam, parseInt(chapterRaw, 10));
     } else {
       _abrirDisciplina(catParam);
+    }
+    return;
+  }
+
+  // Sem deep link — tenta restaurar pelo sessionStorage (F5 / reload)
+  const saved = NavState.load();
+  if (saved?.view && saved.view !== 'home' && saved.view !== 'materials') {
+    const savedCat = CATEGORIES.find(c => c.id === saved.cat);
+    if (savedCat) {
+      if (saved.view === 'reader' && saved.chapter != null) {
+        State.currentCategory = saved.cat;
+        _showScreen('discipline');
+        _renderDisciplineLoading(savedCat);
+        const data = await _getCategoryContent(saved.cat);
+        _renderDisciplineScreen(savedCat, data);
+        _abrirReader(saved.cat, saved.chapter);
+      } else if (saved.view === 'discipline') {
+        _abrirDisciplina(saved.cat);
+      }
     }
   }
 }

@@ -4,10 +4,24 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard — Nexus Study</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- ═══ Infraestrutura global do Nexus Study ═══ -->
+  <link rel="stylesheet" href="../shared/css/audio/sound.css">
+  <link rel="stylesheet" href="../shared/css/audio/audio-btns.css" />
+  <link rel="stylesheet" href="../shared/css/themes/semestre-picker.css" />
+
   <link rel="stylesheet" href="dashboard.css" />
+
+  <!-- ═══ Contrato de domínio de IA ═══
+       Precisa ser declarado ANTES dos módulos de IA serem
+       carregados (mesmo padrão das páginas de Resumo/Quiz). -->
+  <script>
+    window.__NEXUS_CONTEXT__ = { tipos: ['dashboard'] };
+  </script>
 </head>
 <body>
 
@@ -16,11 +30,7 @@
   ══════════════════════════════════════════════════ -->
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <div class="logo-mark">N</div>
-      <div class="logo-text">
-        Nexus Study
-        <span>v2.0 · plataforma</span>
-      </div>
+      <div id="header-logo-wrap" class="header__logo"></div>
     </div>
 
     <nav class="sidebar-nav">
@@ -147,13 +157,7 @@
       </div>
 
       <div class="topbar-right">
-        <button class="topbar-btn">
-          <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M7 1.5v11M1.5 7h11"/>
-          </svg>
-          Nova sessão
-        </button>
-        <div class="avatar">RP</div>
+        <div id="semestre-selector-wrap"></div>
       </div>
     </header>
 
@@ -164,21 +168,21 @@
       <!-- ── PAGE HEADER ───────────────────────────────────── -->
       <div class="page-header">
         <div class="page-header-left">
-          <div class="greeting">// sexta-feira, 27 de junho de 2025</div>
-          <h1 class="page-title">Olá, <span class="accent">Rafael</span> 👋</h1>
+          <div class="greeting" id="page-greeting">// carregando…</div>
+          <h1 class="page-title">Olá<span id="page-user-name"></span> 👋</h1>
           <div class="page-meta">
             <div class="meta-chip">
               <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
                 <circle cx="6" cy="6" r="5"/>
                 <path d="M6 3v3l2 2"/>
               </svg>
-              6.° Semestre · 2025.1
+              <span id="meta-semestre">—</span>
             </div>
             <div class="meta-chip">
               <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path d="M6 1L7.5 4.5H11L8 6.5 9.5 10 6 8 2.5 10 4 6.5 1 4.5h3.5z"/>
               </svg>
-              Nível Avançado
+              <span id="meta-disciplina">—</span>
             </div>
           </div>
         </div>
@@ -588,57 +592,7 @@
             <div class="section-line"></div>
           </div>
 
-          <div class="disc-grid">
-
-            <div class="disc-item">
-              <div class="disc-color" style="background:#6C63FF"></div>
-              <div class="disc-name">Banco de Dados</div>
-              <div class="disc-sessions">312 questões · 28 sessões</div>
-              <div class="disc-prog">
-                <div class="prog-bar">
-                  <div class="prog-fill" style="width:82%"></div>
-                </div>
-                <div class="disc-pct"><span>Progresso</span><span>82%</span></div>
-              </div>
-            </div>
-
-            <div class="disc-item">
-              <div class="disc-color" style="background:#3DDC84"></div>
-              <div class="disc-name">Redes</div>
-              <div class="disc-sessions">198 questões · 19 sessões</div>
-              <div class="disc-prog">
-                <div class="prog-bar">
-                  <div class="prog-fill green" style="width:65%"></div>
-                </div>
-                <div class="disc-pct"><span>Progresso</span><span>65%</span></div>
-              </div>
-            </div>
-
-            <div class="disc-item">
-              <div class="disc-color" style="background:#FFB547"></div>
-              <div class="disc-name">POO</div>
-              <div class="disc-sessions">284 questões · 24 sessões</div>
-              <div class="disc-prog">
-                <div class="prog-bar">
-                  <div class="prog-fill amber" style="width:74%"></div>
-                </div>
-                <div class="disc-pct"><span>Progresso</span><span>74%</span></div>
-              </div>
-            </div>
-
-            <div class="disc-item">
-              <div class="disc-color" style="background:#4FA8E8"></div>
-              <div class="disc-name">Web Design</div>
-              <div class="disc-sessions">154 questões · 14 sessões</div>
-              <div class="disc-prog">
-                <div class="prog-bar">
-                  <div class="prog-fill blue" style="width:51%"></div>
-                </div>
-                <div class="disc-pct"><span>Progresso</span><span>51%</span></div>
-              </div>
-            </div>
-
-          </div>
+          <div class="disc-grid" id="disc-grid"></div>
         </div>
 
 
@@ -704,6 +658,7 @@
     </div><!-- /content -->
   </main>
 
-  <script src="dashboard.js"></script>
+  <script type="module" src="dashboard.js"></script>
+  <script src="../shared/js/utils/quick-access.js"></script>
 </body>
 </html>
