@@ -215,6 +215,8 @@ const EL = {
   readerChapterNav:        $('reader-chapter-nav'),
   // painel direito e botões flutuantes (redesign v2)
   readerAboutBody:         $('reader-about-body'),
+  readerProgressBlock:     $('reader-progress-block'),
+  readerPanelTocBlock:     $('reader-panel-toc-block'),
   readerScrollBtns:        $('reader-scroll-btns'),
   readerScrollTop:         $('reader-scroll-top'),
   readerScrollBottom:      $('reader-scroll-bottom'),
@@ -1422,6 +1424,8 @@ async function _abrirReader(categoryId, chapterIndex, opts = {}) {
   _renderChapterNav(cat, secoes, chapterIndex);
 
   _renderAboutPanel(cat, data, secao);
+  _renderProgressBlock(cat, secoes, chapterIndex);
+  _renderPanelToc(cat, secoes, chapterIndex);
 
   _closeMobileSidebar();
   _cleanupProgress();
@@ -1665,6 +1669,72 @@ function _renderAboutPanel(cat, data, secao) {
   EL.readerAboutBody.innerHTML = rows.length
     ? rows.join('')
     : `<div class="reader__about-empty">Nenhuma informação adicional para este capítulo.</div>`;
+}
+
+/* ══════════════════════════════════════════════
+   PAINEL DIREITO — PROGRESSO NA DISCIPLINA
+   Mostra "capítulo X de Y" + barra visual do
+   quanto já foi percorrido na disciplina atual.
+══════════════════════════════════════════════ */
+function _renderProgressBlock(cat, secoes, chapterIndex) {
+  if (!EL.readerProgressBlock) return;
+
+  const total = secoes.length;
+  const atual = chapterIndex + 1;
+  const pct   = total > 0 ? Math.round((atual / total) * 100) : 0;
+
+  EL.readerProgressBlock.innerHTML = `
+    <div class="reader__panel-block__eyebrow">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 20v-6M6 20V10M18 20V4"/>
+      </svg>
+      Capítulo
+    </div>
+    <div class="reader__progress-block">
+      <div class="reader__progress-block__head">
+        <span class="reader__progress-block__count">${atual}<span> / ${total}</span></span>
+        <span class="reader__progress-block__pct">${pct}%</span>
+      </div>
+      <div class="reader__progress-block__bar">
+        <div class="reader__progress-block__bar-fill" style="width:${pct}%"></div>
+      </div>
+    </div>`;
+}
+
+/* ══════════════════════════════════════════════
+   PAINEL DIREITO — ÍNDICE RÁPIDO
+   Lista compacta de todos os capítulos da
+   disciplina atual, com o capítulo ativo
+   destacado. Permite saltar direto para qualquer
+   um sem abrir a sidebar esquerda inteira.
+══════════════════════════════════════════════ */
+function _renderPanelToc(cat, secoes, chapterIndex) {
+  if (!EL.readerPanelTocBlock) return;
+
+  const items = secoes.map((s, i) => `
+    <button type="button" class="reader__panel-toc-link ${i === chapterIndex ? 'is-active' : ''}" data-panel-toc-index="${i}">
+      <span class="reader__panel-toc-link__num">${i + 1}</span>
+      <span class="reader__panel-toc-link__text">${_esc(s.titulo ?? `Módulo ${i + 1}`)}</span>
+    </button>`).join('');
+
+  EL.readerPanelTocBlock.innerHTML = `
+    <div class="reader__panel-block__eyebrow">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+        <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+      </svg>
+      Nesta disciplina
+    </div>
+    <div class="reader__panel-toc">${items}</div>`;
+
+  EL.readerPanelTocBlock.querySelectorAll('[data-panel-toc-index]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.panelTocIndex, 10);
+      if (idx === chapterIndex) return;
+      playSound('click', 'atlas');
+      _abrirReader(cat.id, idx);
+    });
+  });
 }
 /* ══════════════════════════════════════════════
    BOTÕES FLUTUANTES — scroll topo / fim

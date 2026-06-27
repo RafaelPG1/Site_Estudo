@@ -530,6 +530,14 @@ body.reader-active .app {
 }
 .library-site-footer__sep { opacity: 0.35; }
 
+/* O reader é uma screen de altura fixa (100vh - header) com
+   scroll interno próprio. O footer global, fora do .kb-layout__main,
+   não faz parte dessa área de scroll — mantê-lo visível nessa tela
+   cria um respiro/recorte indevido abaixo do layout de 3 colunas.
+   Continua presente e funcionando normalmente em todas as outras
+   telas (Biblioteca, Disciplina). */
+body.reader-active .library-site-footer { display: none !important; }
+
 /* ══════════════════════════════════════════
    TOAST
 ══════════════════════════════════════════ */

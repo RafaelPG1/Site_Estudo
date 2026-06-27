@@ -242,14 +242,33 @@
               </div>
             </div>
 
-            <!-- Painel direito — "Sobre este capítulo" -->
+            <!-- Painel direito — progresso, contexto do capítulo e navegação rápida -->
             <aside class="reader__right-panel" id="reader-right-panel" aria-label="Sobre este capítulo">
+
+              <div class="reader__panel-block" id="reader-progress-block">
+                <!-- preenchido pelo atlas.js: progresso do capítulo na disciplina -->
+              </div>
+
+              <div class="reader__panel-sep"></div>
+
               <div class="reader__about-card" id="reader-about-card">
-                <div class="reader__about-card__header">Sobre este capítulo</div>
+                <div class="reader__panel-block__eyebrow">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+                  </svg>
+                  Sobre este capítulo
+                </div>
                 <div class="reader__about-card__body" id="reader-about-body">
-                  <!-- preenchido pelo reader-patch.js -->
+                  <!-- preenchido pelo atlas.js -->
                 </div>
               </div>
+
+              <div class="reader__panel-sep"></div>
+
+              <div class="reader__panel-block" id="reader-panel-toc-block">
+                <!-- preenchido pelo atlas.js: índice rápido de capítulos -->
+              </div>
+
             </aside>
 
           </div>
