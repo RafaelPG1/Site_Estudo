@@ -339,6 +339,49 @@
     var aulaGrupos           = [];
     var _stepAulaBannerTimer = null;
 
+    /* ── PERFORMANCE ANALYTICS — estado ──────────────────── */
+    var _perfStartedAt = null;   /* ms — início da tentativa atual */
+    var _perfSalvo     = false;  /* guarda contra duplo-disparo na mesma tentativa */
+
+    function _salvarPerformance(revealed) {
+      if (_perfSalvo || !_disc || !_perfStartedAt) return;
+      if (!window.NexusFirebase || typeof window.NexusFirebase.salvarPerformanceQuiz !== 'function') return;
+      var usuario = _Storage ? _Storage.get('usuario', null) : null;
+      if (!usuario || !usuario.uid) return;
+
+      _perfSalvo = true;
+
+      var endedAt     = Date.now();
+      var total       = questoes.length;
+      var acertos     = 0;
+      Object.keys(respostas).forEach(function (qi) {
+        if (parseInt(respostas[qi]) === questoes[parseInt(qi)].answer) acertos++;
+      });
+
+      var payload = {
+        totalQuestoes: total,
+        acertos:       acertos,
+        taxaAcerto:    total > 0 ? acertos / total : 0,
+        tempoGastoSeg: Math.max(0, Math.round((endedAt - _perfStartedAt) / 1000)),
+        startedAt:     _perfStartedAt,
+        endedAt:       endedAt,
+        modo:          _modo,
+        semestre:      _semestre,
+        disc:          _disc,
+        revealed:      !!revealed,
+      };
+
+      var quizId = _semestre + '_' + _modo + '_' + _disc;
+      window.NexusFirebase.salvarPerformanceQuiz(usuario.uid, quizId, payload)
+        .catch(function () {});
+
+      /* Notifica session-tracker via evento customizado */
+      try {
+        window.dispatchEvent(new CustomEvent('nexus:quizFinalizado', { detail: payload }));
+      } catch (e) {}
+    }
+    /* ─────────────────────────────────────────────────────── */
+
     function _restaurar() {
       if (!_disc || !_Storage) return null;
 
@@ -533,6 +576,10 @@
     /* ── 7. RENDERIZAÇÃO ──────────────────────────────────── */
 
     function renderizar() {
+      /* PERFORMANCE ANALYTICS — reseta timer a cada nova renderização */
+      _perfStartedAt = Date.now();
+      _perfSalvo     = false;
+
       if (modoStep) _sairModoStep();
       container.innerHTML = '';
       mostrandoSoErros = false;
@@ -699,6 +746,8 @@
         _Storage.saveProgress(_discUid(), _modo, _semestre, respostas, true, true);
         _salvarShuffleMap();
         _salvarFirebase(true);
+        /* PERFORMANCE ANALYTICS — tentativa via revelar */
+        _salvarPerformance(true);
       }
 
       _atualizarTodosResultadosAula();
@@ -711,6 +760,9 @@
       revelado         = false;
       mostrandoSoErros = false;
       stepAtual        = 0;
+      /* PERFORMANCE ANALYTICS — próxima tentativa começa do zero */
+      _perfStartedAt   = null;
+      _perfSalvo       = false;
 
       if (_disc && _Storage) {
         _Storage.clearProgress(_discUid(), _modo, _semestre);
@@ -749,6 +801,9 @@
       revelado         = false;
       mostrandoSoErros = false;
       stepAtual        = 0;
+      /* PERFORMANCE ANALYTICS */
+      _perfStartedAt   = null;
+      _perfSalvo       = false;
 
       if (_disc && _Storage) {
         _Storage.clearProgress(_discUid(), _modo, _semestre);
@@ -814,6 +869,9 @@
           '<p class="score">Você acertou ' + acertos + ' de ' + total + ' questões</p>' +
           '<div class="percentage">' + pct + '%</div>' +
           '<p>' + msg + '</p>';
+
+        /* PERFORMANCE ANALYTICS — salva apenas uma vez por tentativa */
+        _salvarPerformance(false);
       }
 
       _atualizarBotaoErros();

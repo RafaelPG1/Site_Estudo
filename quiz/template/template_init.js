@@ -40,7 +40,7 @@ import { setText, setHTML } from '../../shared/js/utils/dom.js';
 import { aplicarCoresDisciplina } from '../../shared/js/themes/theme.js';
 import { injetarLogo } from '../../shared/js/utils/logo.js';
 import { Sound, audio, installAudioRecovery, playSound } from '../../shared/js/audio/audio-api.js';
-import { carregarRespostasQuiz, salvarRespostasQuiz, limparRespostasQuiz } from '../../src/firebase.js';
+import { carregarRespostasQuiz, salvarRespostasQuiz, limparRespostasQuiz, salvarPerformanceQuiz } from '../../src/firebase.js';
 
 
 /* ══════════════════════════════════════════════════════════
@@ -431,7 +431,12 @@ function _aguardarSnapshotEIniciar() {
 
 function _exponerGlobais() {
   window.NexusStorage  = Storage;
-  window.NexusFirebase = { salvarRespostasQuiz, carregarRespostasQuiz, limparRespostasQuiz };
+  window.NexusFirebase = {
+    salvarRespostasQuiz,
+    carregarRespostasQuiz,
+    limparRespostasQuiz,
+    salvarPerformanceQuiz,   /* PERFORMANCE ANALYTICS */
+  };
   window.__nexusPlaySound = playSound;
 }
 

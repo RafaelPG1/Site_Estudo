@@ -10,6 +10,7 @@
      duracao      : number  (segundos ativos totais)
      paginaInicial: string  (pathname da primeira página)
      dataKey      : string  ('YYYY-MM-DD' — chave do dia no histórico diário)
+     quizEvents   : Array   (NOVO — snapshots de performance de quizzes desta sessão)
 
    usuarios/{uid}/historico_diario/{YYYY-MM-DD}
      data         : string  ('YYYY-MM-DD')
@@ -21,16 +22,6 @@
      tempoTotalGeral : number  (segundos acumulados em todas as sessões)
      ultimaAtividade : number  (timestamp ms)
      totalSessoes    : number  (contador global de sessões)
-
-   COMPORTAMENTO:
-   ──────────────
-   • Inicia automaticamente ao importar o módulo (ou chamar init())
-   • Heartbeat a cada HEARTBEAT_INTERVAL ms enquanto a aba está visível
-   • Pausa o timer quando a aba perde foco (visibilitychange hidden)
-   • Retoma o timer quando a aba recupera foco (visibilitychange visible)
-   • Flush final via beforeunload + sendBeacon (melhor esforço)
-   • Funciona em SPA e em múltiplas páginas — sessionId é mantido em
-     sessionStorage, garantindo continuidade entre navegações da mesma aba
    ============================================= */
 
 import {
@@ -45,8 +36,8 @@ import { getUsuario } from './global.js';
 /* ══════════════════════════════════════════════
    CONSTANTES
 ══════════════════════════════════════════════ */
-const HEARTBEAT_INTERVAL = 30_000;   // 30 s — grava no Firestore
-const TICK_INTERVAL      = 1_000;    // 1 s  — atualiza UI local
+const HEARTBEAT_INTERVAL = 30_000;
+const TICK_INTERVAL      = 1_000;
 const SESSION_KEY        = 'nexus_session_id';
 const SESSION_START_KEY  = 'nexus_session_start';
 
@@ -54,16 +45,18 @@ const SESSION_START_KEY  = 'nexus_session_start';
    ESTADO INTERNO
 ══════════════════════════════════════════════ */
 let _sessionId       = null;
-let _startedAt       = null;      // ms — início da sessão (ou retomada)
-let _activeSeconds   = 0;         // segundos ativos acumulados desde o início
-let _pausedAt        = null;      // ms — momento em que ficou invisible/hidden
+let _startedAt       = null;
+let _activeSeconds   = 0;
+let _pausedAt        = null;
 let _isRunning       = false;
 let _tickTimer       = null;
 let _heartbeatTimer  = null;
 let _initialized     = false;
 let _uid             = null;
 
-/* Callbacks externos (ex: dashboard atualiza UI) */
+/* PERFORMANCE ANALYTICS — eventos de quiz desta sessão */
+let _quizEvents      = [];
+
 const _listeners = new Set();
 
 /* ══════════════════════════════════════════════
@@ -105,7 +98,6 @@ function _usuarioRef(uid) {
    OPERAÇÕES NO FIRESTORE
 ══════════════════════════════════════════════ */
 
-/** Cria o documento da sessão no início. */
 async function _criarSessaoFirestore() {
   if (!_uid || !_sessionId) return;
   try {
@@ -116,15 +108,14 @@ async function _criarSessaoFirestore() {
       duracao:       0,
       paginaInicial: location.pathname,
       dataKey,
+      quizEvents:    [],   /* PERFORMANCE ANALYTICS — inicializa vazio */
     });
 
-    // Incrementa contadores globais no documento do usuário
     await setDoc(_usuarioRef(_uid), {
       totalSessoes:    increment(1),
       ultimaAtividade: Date.now(),
     }, { merge: true });
 
-    // Incrementa sessões no histórico diário
     await setDoc(_diarioRef(_uid, dataKey), {
       data:      dataKey,
       sessoes:   increment(1),
@@ -136,35 +127,30 @@ async function _criarSessaoFirestore() {
   }
 }
 
-/**
- * Heartbeat: atualiza endedAt, duracao e tempoTotal no Firestore.
- * Chamado a cada HEARTBEAT_INTERVAL e no unload.
- */
 async function _flush() {
   if (!_uid || !_sessionId) return;
   const now     = Date.now();
   const dataKey = _dateKey(_startedAt);
 
   try {
-    // Calcula delta desde o último flush registrado
-    const snapSessao = await getDoc(_sessaoRef(_uid, _sessionId));
+    const snapSessao  = await getDoc(_sessaoRef(_uid, _sessionId));
     const lastDuracao = snapSessao.exists() ? (snapSessao.data().duracao ?? 0) : 0;
     const delta       = Math.max(0, _activeSeconds - lastDuracao);
 
+    /* PERFORMANCE ANALYTICS — inclui quizEvents no flush */
     await setDoc(_sessaoRef(_uid, _sessionId), {
-      endedAt: now,
-      duracao: _activeSeconds,
+      endedAt:    now,
+      duracao:    _activeSeconds,
+      quizEvents: _quizEvents.length > 0 ? _quizEvents : [],
     }, { merge: true });
 
     if (delta > 0) {
-      // Atualiza histórico diário
       await setDoc(_diarioRef(_uid, dataKey), {
         data:       dataKey,
         tempoTotal: increment(delta),
         updatedAt:  now,
       }, { merge: true });
 
-      // Atualiza total geral no documento do usuário
       await setDoc(_usuarioRef(_uid), {
         tempoTotalGeral: increment(delta),
         ultimaAtividade: now,
@@ -178,7 +164,7 @@ async function _flush() {
 }
 
 /* ══════════════════════════════════════════════
-   TIMER LOCAL (tick a cada 1s)
+   TIMER LOCAL
 ══════════════════════════════════════════════ */
 function _startTick() {
   if (_tickTimer) return;
@@ -211,21 +197,14 @@ function _stopHeartbeat() {
 function _onVisibilityChange() {
   if (document.visibilityState === 'hidden') {
     _isRunning = false;
-    _flush();   // best-effort flush ao perder foco
+    _flush();
   } else {
     _isRunning = true;
   }
 }
 
-/* ══════════════════════════════════════════════
-   UNLOAD — flush final
-   Usa sendBeacon para garantir envio mesmo no fechamento.
-   O Firestore não suporta sendBeacon nativamente, então
-   fazemos o flush assíncrono normal (melhor esforço).
-══════════════════════════════════════════════ */
 function _onBeforeUnload() {
   _isRunning = false;
-  // Tentativa sync — melhor esforço; não bloqueamos o unload
   _flush().catch(() => {});
 }
 
@@ -233,38 +212,27 @@ function _onBeforeUnload() {
    INIT / TEARDOWN PÚBLICO
 ══════════════════════════════════════════════ */
 
-/**
- * Inicializa o tracker para o usuário autenticado.
- * Pode ser chamado novamente quando o usuário fizer login após
- * a página já ter carregado.
- *
- * Se o sessionId já existir no sessionStorage (navegação interna
- * na mesma aba), recupera a sessão existente ao invés de criar
- * uma nova — preservando a continuidade da sessão.
- */
 export async function init(uid) {
   if (!uid) return;
 
-  // Se já está rodando para o mesmo usuário, não reinicia
   if (_initialized && _uid === uid) return;
 
-  // Teardown de sessão anterior se for outro usuário
   if (_initialized) await destroy();
 
   _uid = uid;
 
-  // Recupera ou cria sessionId
   const storedId    = sessionStorage.getItem(SESSION_KEY);
   const storedStart = Number(sessionStorage.getItem(SESSION_START_KEY) || 0);
 
   if (storedId && storedStart) {
-    // Mesma aba, sessão contínua — verifica se o documento existe
     try {
       const snap = await getDoc(_sessaoRef(uid, storedId));
       if (snap.exists()) {
         _sessionId     = storedId;
         _startedAt     = storedStart;
         _activeSeconds = snap.data().duracao ?? 0;
+        /* PERFORMANCE ANALYTICS — restaura eventos salvos */
+        _quizEvents    = Array.isArray(snap.data().quizEvents) ? snap.data().quizEvents : [];
         console.log(`[session-tracker] sessão recuperada: ${_sessionId} (${_activeSeconds}s)`);
       } else {
         _criarNovaSessao();
@@ -296,14 +264,11 @@ function _criarNovaSessao() {
   _sessionId     = _newSessionId();
   _startedAt     = Date.now();
   _activeSeconds = 0;
+  _quizEvents    = [];   /* PERFORMANCE ANALYTICS — limpa eventos em nova sessão */
   sessionStorage.setItem(SESSION_KEY, _sessionId);
   sessionStorage.setItem(SESSION_START_KEY, String(_startedAt));
 }
 
-/**
- * Encerra o tracker (ex: logout).
- * Faz flush final e limpa todos os timers/listeners.
- */
 export async function destroy() {
   if (!_initialized) return;
 
@@ -316,7 +281,6 @@ export async function destroy() {
 
   await _flush();
 
-  // Limpa sessionStorage para que o próximo login inicie nova sessão
   sessionStorage.removeItem(SESSION_KEY);
   sessionStorage.removeItem(SESSION_START_KEY);
 
@@ -325,6 +289,7 @@ export async function destroy() {
   _activeSeconds = 0;
   _uid           = null;
   _initialized   = false;
+  _quizEvents    = [];   /* PERFORMANCE ANALYTICS — limpa ao destruir */
 
   _notify();
 }
@@ -342,6 +307,7 @@ export function getStats() {
     isRunning:     _isRunning,
     startedAt:     _startedAt,
     initialized:   _initialized,
+    quizEvents:    _quizEvents.slice(),   /* PERFORMANCE ANALYTICS — cópia imutável */
   };
 }
 
@@ -367,32 +333,22 @@ export function formatTimeHuman(seconds) {
   return `${s}s`;
 }
 
-/**
- * Inscreve um callback para receber updates de stats a cada segundo.
- * Retorna função de cancelamento.
- */
 export function subscribe(fn) {
   _listeners.add(fn);
   return () => _listeners.delete(fn);
 }
 
-/**
- * Carrega dados históricos do Firestore para o dashboard.
- * Retorna objeto com métricas derivadas das sessões reais.
- */
 export async function carregarEstatisticas(uid) {
   if (!uid) return null;
   try {
     const db = getDb();
 
-    // Documento principal do usuário
-    const snapUsuario = await getDoc(doc(db, 'usuarios', uid));
+    const snapUsuario  = await getDoc(doc(db, 'usuarios', uid));
     const dadosUsuario = snapUsuario.exists() ? snapUsuario.data() : {};
 
-    // Histórico dos últimos 30 dias
-    const hoje = new Date();
+    const hoje     = new Date();
     const historico = {};
-    const promises = [];
+    const promises  = [];
 
     for (let i = 0; i < 30; i++) {
       const d = new Date(hoje);
@@ -409,7 +365,6 @@ export async function carregarEstatisticas(uid) {
 
     await Promise.all(promises);
 
-    // Calcula sequência de dias ativos
     let streak = 0;
     for (let i = 0; i < 30; i++) {
       const d = new Date(hoje);
@@ -418,15 +373,13 @@ export async function carregarEstatisticas(uid) {
       if (historico[key] && historico[key].tempoTotal > 0) {
         streak++;
       } else if (i > 0) {
-        break; // interrupção na sequência
+        break;
       }
     }
 
-    // Tempo de hoje
-    const hojeKey = _dateKey();
+    const hojeKey   = _dateKey();
     const tempoHoje = historico[hojeKey]?.tempoTotal ?? 0;
 
-    // Últimos 7 dias para gráfico
     const ultimos7 = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date(hoje);
@@ -455,9 +408,46 @@ export async function carregarEstatisticas(uid) {
 }
 
 /* ══════════════════════════════════════════════
+   PERFORMANCE ANALYTICS — listener de quiz finalizado
+   ──────────────────────────────────────────────
+   Escuta 'nexus:quizFinalizado' emitido por quiz_engine.js
+   após cada conclusão de quiz (com ou sem revelar).
+   Captura um snapshot enxuto e faz flush imediato para
+   que o evento não se perca em caso de saída rápida.
+══════════════════════════════════════════════ */
+window.addEventListener('nexus:quizFinalizado', function (e) {
+  if (!_initialized || !e || !e.detail) return;
+
+  const p = e.detail;
+
+  const snapshot = {
+    disc:          p.disc          ?? null,
+    modo:          p.modo          ?? null,
+    semestre:      p.semestre      ?? null,
+    totalQuestoes: p.totalQuestoes ?? 0,
+    acertos:       p.acertos       ?? 0,
+    taxaAcerto:    typeof p.taxaAcerto === 'number' ? p.taxaAcerto : 0,
+    tempoGastoSeg: p.tempoGastoSeg ?? 0,
+    revealed:      p.revealed      ?? false,
+    ts:            Date.now(),
+  };
+
+  _quizEvents.push(snapshot);
+
+  console.log(
+    '[session-tracker] quiz registrado:',
+    snapshot.disc + '/' + snapshot.modo,
+    '| taxa:', Math.round(snapshot.taxaAcerto * 100) + '%',
+    '| tempo:', snapshot.tempoGastoSeg + 's',
+    '| eventos na sessão:', _quizEvents.length
+  );
+
+  /* Flush imediato — não espera o próximo heartbeat */
+  _flush().catch(function () {});
+});
+
+/* ══════════════════════════════════════════════
    AUTO-BOOT — reage ao login/logout global
-   Permite usar o tracker em qualquer página sem
-   código adicional além do import.
 ══════════════════════════════════════════════ */
 document.addEventListener('nexus:loginSuccess', async e => {
   const uid = e?.detail?.uid;
@@ -472,10 +462,7 @@ document.addEventListener('nexus:logout', async () => {
   await destroy();
 });
 
-/* Boot imediato se o usuário já estiver logado ao carregar a página
-   (navegação entre páginas — global.js já hidratou o usuário do localStorage) */
 ;(async () => {
-  // Pequeno delay para garantir que global.js já inicializou
   await new Promise(r => setTimeout(r, 50));
   const { getUsuario: _gu } = await import('./global.js').catch(() => ({}));
   const usuario = typeof _gu === 'function' ? _gu() : null;

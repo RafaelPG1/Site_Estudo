@@ -8,7 +8,7 @@ import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebase
 import {
   getFirestore,
   doc, getDoc, setDoc, deleteDoc,
-  collection, getDocs,
+  collection, getDocs, addDoc, query, orderBy,
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 import { setUsuario } from './global.js';
 
@@ -61,7 +61,7 @@ export async function login(nome, pin) {
       nome:   dados.nome ?? nome,
       avatar: dados.avatar ?? '🎓',
       foto:   dados.foto   ?? null,
-      admin:  dados.admin  ?? false,   // ← campo admin incluído
+      admin:  dados.admin  ?? false,
     };
 
     setUsuario(usuario);
@@ -145,10 +145,24 @@ export async function carregarRespostasQuiz(uid, semestre, modo, disc) {
   }
 }
 
+/* ── LIMPAR RESPOSTAS DO QUIZ ──────────────────────────────────────────────
+   ATENÇÃO: usa setDoc de reset em vez de deleteDoc.
+   Motivo: deleteDoc removeria o documento pai, orphanizando a subcoleção
+   'performance' (histórico imutável de desempenho). Com setDoc + merge:false
+   apenas os campos de estado são zerados; a subcoleção permanece intacta.
+   O campo _limpo=true serve como flag de auditoria para diferenciar
+   "nunca respondido" de "resetado intencionalmente".
+   ─────────────────────────────────────────────────────────────────────────*/
 export async function limparRespostasQuiz(uid, semestre, modo, disc) {
   try {
-    await deleteDoc(_quizRef(uid, semestre, modo, disc));
-    console.log('[firebase] limparRespostasQuiz deletado →', `${semestre}_${modo}_${disc}`);
+    await setDoc(_quizRef(uid, semestre, modo, disc), {
+      respostas:  '',
+      revelado:   false,
+      finalizado: false,
+      savedAt:    Date.now(),
+      _limpo:     true,
+    });
+    console.log('[firebase] limparRespostasQuiz (reset seguro) →', `${semestre}_${modo}_${disc}`);
     return { ok: true };
   } catch (err) {
     console.error('[firebase] limparRespostasQuiz erro:', err);
@@ -156,8 +170,67 @@ export async function limparRespostasQuiz(uid, semestre, modo, disc) {
   }
 }
 
+/* ── PERFORMANCE DO QUIZ ───────────────────────────────────────────────────
+   Salva um registro imutável de desempenho em subcoleção separada.
+   Nunca é apagada por limparRespostasQuiz() ou reiniciar().
+
+   Estrutura:
+     usuarios/{uid}/quiz_respostas/{quizId}/performance/{auto-id}
+       totalQuestoes : number
+       acertos       : number
+       taxaAcerto    : number   (0–1)
+       tempoGastoSeg : number
+       startedAt     : number   (ms)
+       endedAt       : number   (ms)
+       modo          : string
+       semestre      : string
+       disc          : string
+       revealed      : boolean
+   ─────────────────────────────────────────────────────────────────────────*/
+export async function salvarPerformanceQuiz(uid, quizId, payload) {
+  if (!uid || !quizId || !payload) return { ok: false };
+
+  const {
+    totalQuestoes, acertos, taxaAcerto, tempoGastoSeg,
+    startedAt, endedAt, modo, semestre, disc, revealed,
+  } = payload;
+
+  /* Validação mínima — não grava dados sem sentido */
+  if (typeof totalQuestoes !== 'number' || totalQuestoes <= 0 ||
+      typeof startedAt !== 'number' || typeof endedAt !== 'number') {
+    console.warn('[firebase] salvarPerformanceQuiz: payload inválido', payload);
+    return { ok: false };
+  }
+
+  try {
+    const perfCol = collection(
+      getDb(), 'usuarios', uid, 'quiz_respostas', quizId, 'performance'
+    );
+    const ref = await addDoc(perfCol, {
+      totalQuestoes,
+      acertos:       acertos       ?? 0,
+      taxaAcerto:    taxaAcerto    ?? 0,
+      tempoGastoSeg: tempoGastoSeg ?? 0,
+      startedAt,
+      endedAt,
+      modo:     modo     ?? null,
+      semestre: semestre ?? null,
+      disc:     disc     ?? null,
+      revealed: !!revealed,
+    });
+    console.log(
+      '[firebase] salvarPerformanceQuiz ok →', quizId, ref.id,
+      `| ${acertos}/${totalQuestoes} (${Math.round((taxaAcerto ?? 0) * 100)}%)`,
+      `| ${tempoGastoSeg}s`
+    );
+    return { ok: true, id: ref.id };
+  } catch (err) {
+    console.error('[firebase] salvarPerformanceQuiz erro:', err);
+    return { ok: false };
+  }
+}
+
 /* ── ADMIN: LISTAR USUÁRIOS ── */
-// Nota: requer regra Firestore que permita o admin ler a coleção inteira.
 export async function getUsuarios() {
   try {
     const col  = collection(getDb(), 'usuarios');
@@ -170,7 +243,6 @@ export async function getUsuarios() {
 }
 
 /* ── ADMIN: CRIAR USUÁRIO ── */
-// pinHash deve chegar já processado via hashPin()
 export async function criarUsuario(uid, nome, pinHash, avatar) {
   try {
     const ref  = doc(getDb(), 'usuarios', uid);
@@ -240,42 +312,6 @@ export async function limparTodoQuizUsuario(uid) {
   }
 }
 
-/*
- * TODO: getEstatisticasUsuario(uid)
- * ─────────────────────────────────────────────
- * Planejado para a seção de Estatísticas do admin.
- *
- * Deve agregar:
- *   - quiz_respostas → total de questões, % acerto por disciplina
- *   - srs_perfis     → total de cards, distribuição de intervalos
- *   - último acesso  → campo 'savedAt' mais recente em quiz_respostas
- *
- * Exemplo de implementação futura:
- *
- * export async function getEstatisticasUsuario(uid) {
- *   try {
- *     const quizCol  = collection(getDb(), 'usuarios', uid, 'quiz_respostas');
- *     const quizSnap = await getDocs(quizCol);
- *
- *     let totalRespondidas = 0;
- *     let totalCorretas    = 0;
- *     let ultimoAcesso     = null;
- *
- *     quizSnap.forEach(d => {
- *       const data = d.data();
- *       // data.respostas é string compacta — parsear conforme quiz_engine
- *       // data.finalizado, data.savedAt
- *       if (data.savedAt > (ultimoAcesso ?? 0)) ultimoAcesso = data.savedAt;
- *     });
- *
- *     return { ok: true, totalRespondidas, totalCorretas, ultimoAcesso };
- *   } catch (err) {
- *     console.error('[firebase] getEstatisticasUsuario erro:', err);
- *     return { ok: false };
- *   }
- * }
- */
-
 /* ── GERAR HASH (utilitário de console) ── */
 export async function gerarHash(pin) {
   const h = await hashPin(pin);
@@ -284,18 +320,14 @@ export async function gerarHash(pin) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   NEXUS STUDY — firebase.js  ·  ADIÇÕES para Área Pessoal
-   Cole estas funções no final do seu firebase.js existente
+   NEXUS STUDY — firebase.js  ·  Área Pessoal
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── Referência base (/usuarios/{uid}/pessoal/{sem}_{discId}) ── */
 function _pessoalRef(uid, semestre, discId) {
   return doc(getDb(), 'usuarios', uid, 'pessoal', `${semestre}_${discId}`);
 }
 
-/* ══════════════════════════════════════════════════════
-   CHECKLIST — IDs marcados
-══════════════════════════════════════════════════════ */
+/* ── Checklist ── */
 export async function salvarChecklistPessoal(uid, semestre, discId, checkedSet) {
   try {
     await setDoc(_pessoalRef(uid, semestre, discId), {
@@ -321,12 +353,9 @@ export async function carregarChecklistPessoal(uid, semestre, discId) {
   }
 }
 
-/* ══════════════════════════════════════════════════════
-   CATEGORIAS (Tarefas personalizadas)
-══════════════════════════════════════════════════════ */
+/* ── Categorias ── */
 export async function salvarCategoriasPessoal(uid, semestre, discId, cats) {
   try {
-    // Firestore não aceita undefined — limpa antes de salvar
     const clean = JSON.parse(JSON.stringify(cats));
     await setDoc(_pessoalRef(uid, semestre, discId), {
       categorias:   clean,
@@ -351,9 +380,7 @@ export async function carregarCategoriasPessoal(uid, semestre, discId) {
   }
 }
 
-/* ══════════════════════════════════════════════════════
-   NOTAS
-══════════════════════════════════════════════════════ */
+/* ── Notas ── */
 export async function salvarNotaPessoal(uid, semestre, discId, nota) {
   try {
     await setDoc(_pessoalRef(uid, semestre, discId), {
@@ -379,9 +406,6 @@ export async function carregarNotaPessoal(uid, semestre, discId) {
   }
 }
 
-/* ══════════════════════════════════════════════════════
-   HELPER — carrega tudo de uma disciplina de uma vez
-══════════════════════════════════════════════════════ */
 export async function carregarTudoPessoal(uid, semestre, discId) {
   try {
     const snap = await getDoc(_pessoalRef(uid, semestre, discId));
