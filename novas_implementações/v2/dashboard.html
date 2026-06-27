@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Nexus Study</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════════════════
+       SIDEBAR
+  ══════════════════════════════════════════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">N</div>
+      <div class="logo-text">
+        Nexus Study
+        <span>v2.0 · plataforma</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="nav-item active" href="#">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="1" y="1" width="6" height="6" rx="1.5"/>
+          <rect x="9" y="1" width="6" height="6" rx="1.5"/>
+          <rect x="1" y="9" width="6" height="6" rx="1.5"/>
+          <rect x="9" y="9" width="6" height="6" rx="1.5"/>
+        </svg>
+        Dashboard
+      </a>
+
+      <span class="nav-label">Pessoal</span>
+
+      <a class="nav-item" href="#">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M2 4h12M2 8h8M2 12h10"/>
+          <path d="M13 6l1.5 1.5L13 9" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Checklist
+      </a>
+
+      <a class="nav-item" href="#">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="2" y="2" width="12" height="12" rx="2"/>
+          <path d="M5 6h6M5 9h4"/>
+        </svg>
+        Tarefas
+      </a>
+
+      <a class="nav-item" href="#">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="1.5" y="3" width="13" height="11" rx="1.5"/>
+          <path d="M5 1.5V4M11 1.5V4M1.5 7h13"/>
+        </svg>
+        Calendário
+      </a>
+
+      <a class="nav-item" href="#">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M3 2h10a1 1 0 011 1v9l-3 2H3a1 1 0 01-1-1V3a1 1 0 011-1z"/>
+          <path d="M5 6h6M5 9h4"/>
+        </svg>
+        Anotações
+      </a>
+
+      <span class="nav-label">Disciplinas</span>
+
+      <a class="nav-item" href="#">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/>
+          <path d="M5 6h6M5 9h4"/>
+        </svg>
+        Banco de Dados
+      </a>
+
+      <a class="nav-item" href="#">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="3" cy="8" r="1.5"/>
+          <circle cx="13" cy="8" r="1.5"/>
+          <circle cx="8" cy="3" r="1.5"/>
+          <path d="M4.5 8h7M8 4.5v7"/>
+        </svg>
+        Redes
+      </a>
+
+      <a class="nav-item" href="#">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M5 2l2 3-2 3M9 8l2 3-2 3"/>
+          <path d="M2 8h12"/>
+        </svg>
+        POO
+      </a>
+
+      <a class="nav-item" href="#">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="2" y="2" width="12" height="12" rx="2"/>
+          <path d="M5 8h6M8 5v6"/>
+        </svg>
+        Web Design
+      </a>
+
+      <span class="nav-label">Sistema</span>
+
+      <a class="nav-item" href="#">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="8" cy="8" r="2.5"/>
+          <path d="M8 1.5v1.8M8 12.7v1.8M1.5 8h1.8M12.7 8h1.8"/>
+        </svg>
+        Configurações
+      </a>
+    </nav>
+
+    <!-- Session pulse -->
+    <div class="sidebar-footer">
+      <div class="session-card">
+        <div class="session-header">
+          <div class="pulse-dot"></div>
+          <span class="session-label">Sessão ativa</span>
+        </div>
+        <div class="session-time">48:22</div>
+        <div class="session-sub">Banco de Dados · Quiz</div>
+      </div>
+    </div>
+  </aside>
+
+
+  <!-- ══════════════════════════════════════════════════
+       MAIN
+  ══════════════════════════════════════════════════ -->
+  <main class="main">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="breadcrumb">
+          Nexus Study
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M4 2l4 4-4 4"/>
+          </svg>
+          <span>Dashboard</span>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <button class="topbar-btn">
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M7 1.5v11M1.5 7h11"/>
+          </svg>
+          Nova sessão
+        </button>
+        <div class="avatar">RP</div>
+      </div>
+    </header>
+
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- ── PAGE HEADER ───────────────────────────────────── -->
+      <div class="page-header">
+        <div class="page-header-left">
+          <div class="greeting">// sexta-feira, 27 de junho de 2025</div>
+          <h1 class="page-title">Olá, <span class="accent">Rafael</span> 👋</h1>
+          <div class="page-meta">
+            <div class="meta-chip">
+              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="6" cy="6" r="5"/>
+                <path d="M6 3v3l2 2"/>
+              </svg>
+              6.° Semestre · 2025.1
+            </div>
+            <div class="meta-chip">
+              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M6 1L7.5 4.5H11L8 6.5 9.5 10 6 8 2.5 10 4 6.5 1 4.5h3.5z"/>
+              </svg>
+              Nível Avançado
+            </div>
+          </div>
+        </div>
+
+        <div class="motivational">
+          <p>Consistência supera intensidade. Cada questão respondida hoje é um passo irreversível em direção à maestria.</p>
+        </div>
+      </div>
+
+
+      <!-- ── FERRAMENTAS PESSOAIS ──────────────────────────── -->
+      <section>
+        <div class="section-header">
+          <span class="section-title">Ferramentas Pessoais</span>
+          <div class="section-line"></div>
+        </div>
+
+        <div class="tools-card">
+          <div class="tools-grid">
+
+            <!-- Checklist -->
+            <button class="tool-btn t-checklist">
+              <div class="tool-icon ic-purple">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M3 5h12M3 9h8M3 13h10"/>
+                  <path d="M14 11l1.5 1.5L18 10" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div class="tool-title">Checklist</div>
+              <div class="tool-desc">Acompanhe os conteúdos concluídos do Nexus Study.</div>
+              <svg class="tool-arrow" width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M2.5 10.5L10.5 2.5M5 2.5h5.5V8"/>
+              </svg>
+            </button>
+
+            <!-- Tarefas -->
+            <button class="tool-btn t-tarefas">
+              <div class="tool-icon ic-green">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <rect x="2" y="2" width="14" height="14" rx="2.5"/>
+                  <path d="M5.5 7h7M5.5 10.5h4.5"/>
+                  <path d="M5.5 7l-1 1 1 1" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div class="tool-title">Tarefas</div>
+              <div class="tool-desc">Crie listas personalizadas e organize suas atividades.</div>
+              <svg class="tool-arrow" width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M2.5 10.5L10.5 2.5M5 2.5h5.5V8"/>
+              </svg>
+            </button>
+
+            <!-- Calendário -->
+            <button class="tool-btn t-calendario">
+              <div class="tool-icon ic-amber">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <rect x="2" y="3.5" width="14" height="12.5" rx="2"/>
+                  <path d="M6 2v3M12 2v3M2 8h14"/>
+                  <circle cx="6.5" cy="12" r=".75" fill="currentColor"/>
+                  <circle cx="9" cy="12" r=".75" fill="currentColor"/>
+                  <circle cx="11.5" cy="12" r=".75" fill="currentColor"/>
+                </svg>
+              </div>
+              <div class="tool-title">Calendário</div>
+              <div class="tool-desc">Planeje sua rotina de estudos e compromissos.</div>
+              <svg class="tool-arrow" width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M2.5 10.5L10.5 2.5M5 2.5h5.5V8"/>
+              </svg>
+            </button>
+
+            <!-- Anotações -->
+            <button class="tool-btn t-anotacoes">
+              <div class="tool-icon ic-blue">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M3 2.5h12a1 1 0 011 1v10l-3.5 2.5H3a1 1 0 01-1-1v-11.5a1 1 0 011-1z"/>
+                  <path d="M5.5 7h7M5.5 10h5"/>
+                </svg>
+              </div>
+              <div class="tool-title">Anotações</div>
+              <div class="tool-desc">Guarde informações importantes, ideias e lembretes.</div>
+              <svg class="tool-arrow" width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M2.5 10.5L10.5 2.5M5 2.5h5.5V8"/>
+              </svg>
+            </button>
+
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ── STAT CARDS ─────────────────────────────────────── -->
+      <section>
+        <div class="section-header">
+          <span class="section-title">Visão geral</span>
+          <span class="section-count">este semestre</span>
+          <div class="section-line"></div>
+        </div>
+
+        <div class="stat-grid">
+          <!-- Quizzes -->
+          <div class="stat-card c-purple">
+            <div class="stat-icon ic-purple">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="8" cy="8" r="6.5"/>
+                <path d="M6 6.5c0-1.1.9-2 2-2s2 .9 2 2c0 .8-.5 1.5-1.2 1.8L8 9v1"/>
+                <circle cx="8" cy="11.5" r=".5" fill="currentColor"/>
+              </svg>
+            </div>
+            <div class="stat-number">84</div>
+            <div class="stat-label">Quizzes realizados</div>
+            <div class="stat-delta delta-up">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M5 8V2M2 5l3-3 3 3"/>
+              </svg>
+              +12 <span class="delta-sub">vs mês passado</span>
+            </div>
+            <svg class="stat-sparkline" width="80" height="32" viewBox="0 0 80 32">
+              <polyline points="0,28 13,22 26,20 39,15 52,10 65,8 80,4" fill="none" stroke="#6C63FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+
+          <!-- Jogos -->
+          <div class="stat-card c-green">
+            <div class="stat-icon ic-green">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M2 6.5h4M4 4.5v4M10 6.5h.01M12 8.5h.01"/>
+                <rect x="1" y="3.5" width="14" height="9" rx="2.5"/>
+              </svg>
+            </div>
+            <div class="stat-number">37</div>
+            <div class="stat-label">Sessões de jogo</div>
+            <div class="stat-delta delta-up">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M5 8V2M2 5l3-3 3 3"/>
+              </svg>
+              +5 <span class="delta-sub">vs mês passado</span>
+            </div>
+            <svg class="stat-sparkline" width="80" height="32" viewBox="0 0 80 32">
+              <polyline points="0,24 13,26 26,18 39,14 52,16 65,10 80,7" fill="none" stroke="#3DDC84" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+
+          <!-- Disciplinas -->
+          <div class="stat-card c-amber">
+            <div class="stat-icon ic-amber">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M2 3.5h12M2 7.5h12M2 11.5h8"/>
+              </svg>
+            </div>
+            <div class="stat-number">4</div>
+            <div class="stat-label">Disciplinas ativas</div>
+            <div class="stat-delta">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="5" cy="5" r="3.5"/>
+                <path d="M5 3v2l1 1"/>
+              </svg>
+              <span class="delta-sub">Todas em progresso</span>
+            </div>
+            <svg class="stat-sparkline" width="80" height="32" viewBox="0 0 80 32">
+              <polyline points="0,20 13,20 26,18 39,18 52,18 65,18 80,16" fill="none" stroke="#FFB547" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+
+          <!-- Último acesso -->
+          <div class="stat-card c-blue">
+            <div class="stat-icon ic-blue">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="8" cy="8" r="6.5"/>
+                <path d="M8 4.5V8l2.5 2.5"/>
+              </svg>
+            </div>
+            <div class="stat-number">0h</div>
+            <div class="stat-label">Último acesso</div>
+            <div class="stat-delta delta-up">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="5" cy="5" r="4" fill="none"/>
+                <path d="M3 5l1.5 1.5L7 3"/>
+              </svg>
+              <span class="delta-sub">Hoje, agora mesmo</span>
+            </div>
+            <svg class="stat-sparkline" width="80" height="32" viewBox="0 0 80 32">
+              <polyline points="0,26 13,14 26,22 39,12 52,18 65,8 80,4" fill="none" stroke="#4FA8E8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ── PERFORMANCE + ACTIVITY ─────────────────────────── -->
+      <div class="two-col">
+
+        <!-- PERFORMANCE -->
+        <div class="perf-card">
+          <div class="section-header">
+            <span class="section-title">Desempenho</span>
+            <div class="section-line"></div>
+          </div>
+
+          <div class="perf-list">
+
+            <div class="perf-item">
+              <div class="perf-icon ic-purple">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M1 10l3-3.5 3 2 3-4 3 2"/>
+                </svg>
+              </div>
+              <div style="flex:1">
+                <div class="perf-name">Total de questões respondidas</div>
+                <div class="prog-bar" style="margin-top:8px">
+                  <div class="prog-fill" style="width:72%"></div>
+                </div>
+              </div>
+              <div>
+                <span class="perf-value">1.248</span>
+              </div>
+            </div>
+
+            <div class="perf-item">
+              <div class="perf-icon ic-green">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M2 7l3.5 3.5L12 3"/>
+                </svg>
+              </div>
+              <div style="flex:1">
+                <div class="perf-name">Taxa geral de acertos</div>
+                <div class="prog-bar" style="margin-top:8px">
+                  <div class="prog-fill green" style="width:78%"></div>
+                </div>
+              </div>
+              <div>
+                <span class="perf-value">78</span><span class="perf-unit">%</span>
+              </div>
+            </div>
+
+            <div class="perf-item">
+              <div class="perf-icon ic-amber">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M7 1.5l1.8 3.7 4.1.6-3 2.9.7 4-3.6-1.9-3.6 1.9.7-4-3-2.9 4.1-.6z"/>
+                </svg>
+              </div>
+              <div style="flex:1">
+                <div class="perf-name">Melhor nota em quiz</div>
+                <div class="prog-bar" style="margin-top:8px">
+                  <div class="prog-fill amber" style="width:95%"></div>
+                </div>
+              </div>
+              <div>
+                <span class="perf-value">9.5</span><span class="perf-unit">/10</span>
+              </div>
+            </div>
+
+            <div class="perf-item">
+              <div class="perf-icon ic-blue">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M1 9l2-2.5 2 1.5 2-3 2 1.5 2-4"/>
+                </svg>
+              </div>
+              <div style="flex:1">
+                <div class="perf-name">Disciplina mais estudada</div>
+                <div style="font-size:10.5px;color:var(--text-3);margin-top:5px;font-family:'JetBrains Mono',monospace;">312 questões</div>
+              </div>
+              <div>
+                <span class="perf-value" style="font-size:14px;letter-spacing:-.3px">Banco de Dados</span>
+              </div>
+            </div>
+
+            <div class="perf-item">
+              <div class="perf-icon ic-purple">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <rect x="1" y="3" width="12" height="8" rx="2"/>
+                  <path d="M4 6h2M8 6h.5M10 6h.5M4 9h6"/>
+                </svg>
+              </div>
+              <div style="flex:1">
+                <div class="perf-name">Melhor pontuação em jogo</div>
+                <div style="font-size:10.5px;color:var(--text-3);margin-top:5px;font-family:'JetBrains Mono',monospace;">Show do Milhão · POO</div>
+              </div>
+              <div>
+                <span class="perf-value">850</span><span class="perf-unit">pts</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+
+        <!-- ACTIVITY TIMELINE -->
+        <div class="activity-card">
+          <div class="section-header">
+            <span class="section-title">Atividade recente</span>
+            <div class="section-line"></div>
+          </div>
+
+          <div class="timeline">
+
+            <div class="tl-item">
+              <div class="tl-dot" style="background:rgba(108,99,255,.15)">
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#A8A3FF" stroke-width="1.5">
+                  <path d="M2 3h10M2 7h10M2 11h6"/>
+                </svg>
+              </div>
+              <div class="tl-body">
+                <div class="tl-title">Resumo aberto</div>
+                <div class="tl-desc">Modelagem Relacional — Banco de Dados</div>
+                <div class="tl-time">
+                  <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="5" cy="5" r="4.5"/>
+                    <path d="M5 2.5V5l1.5 1.5"/>
+                  </svg>
+                  Hoje, 09:41
+                </div>
+              </div>
+            </div>
+
+            <div class="tl-item">
+              <div class="tl-dot" style="background:rgba(61,220,132,.12)">
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#3DDC84" stroke-width="1.5">
+                  <circle cx="7" cy="7" r="5.5"/>
+                  <path d="M5 7c0-1.1.9-2 2-2s2 .9 2 2-.9 1.5-2 1.5v1"/>
+                  <circle cx="7" cy="11" r=".5" fill="#3DDC84"/>
+                </svg>
+              </div>
+              <div class="tl-body">
+                <div class="tl-title">Quiz finalizado</div>
+                <div class="tl-desc">Camada de Transporte — Redes · <strong style="color:var(--green)">8.0/10</strong></div>
+                <div class="tl-time">
+                  <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="5" cy="5" r="4.5"/>
+                    <path d="M5 2.5V5l1.5 1.5"/>
+                  </svg>
+                  Ontem, 21:15
+                </div>
+              </div>
+            </div>
+
+            <div class="tl-item">
+              <div class="tl-dot" style="background:rgba(255,181,71,.12)">
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#FFB547" stroke-width="1.5">
+                  <rect x="1" y="3" width="12" height="8" rx="2"/>
+                  <path d="M4 6.5h2.5M8.5 6.5h.01M10.5 8h.01"/>
+                </svg>
+              </div>
+              <div class="tl-body">
+                <div class="tl-title">Jogo utilizado</div>
+                <div class="tl-desc">Show do Milhão — POO · 850 pontos</div>
+                <div class="tl-time">
+                  <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="5" cy="5" r="4.5"/>
+                    <path d="M5 2.5V5l1.5 1.5"/>
+                  </svg>
+                  Ontem, 19:08
+                </div>
+              </div>
+            </div>
+
+            <div class="tl-item">
+              <div class="tl-dot" style="background:rgba(79,168,232,.12)">
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#4FA8E8" stroke-width="1.5">
+                  <path d="M2 2h10a1 1 0 011 1v8a1 1 0 01-1 1H2a1 1 0 01-1-1V3a1 1 0 011-1z"/>
+                  <path d="M4 6h6M4 9h3"/>
+                </svg>
+              </div>
+              <div class="tl-body">
+                <div class="tl-title">Disciplina acessada</div>
+                <div class="tl-desc">Web Design — Tipografia e Grid Systems</div>
+                <div class="tl-time">
+                  <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="5" cy="5" r="4.5"/>
+                    <path d="M5 2.5V5l1.5 1.5"/>
+                  </svg>
+                  23/06, 14:30
+                </div>
+              </div>
+            </div>
+
+            <div class="tl-item">
+              <div class="tl-dot" style="background:rgba(108,99,255,.15)">
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#A8A3FF" stroke-width="1.5">
+                  <path d="M2 3h10M2 7h10M2 11h6"/>
+                </svg>
+              </div>
+              <div class="tl-body">
+                <div class="tl-title">Flashcard revisado</div>
+                <div class="tl-desc">Herança e Polimorfismo — POO · 12 cards</div>
+                <div class="tl-time">
+                  <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="5" cy="5" r="4.5"/>
+                    <path d="M5 2.5V5l1.5 1.5"/>
+                  </svg>
+                  22/06, 20:05
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ── DISCIPLINES + ACHIEVEMENTS ────────────────────── -->
+      <div class="three-col">
+
+        <!-- DISCIPLINES -->
+        <div class="disc-card">
+          <div class="section-header">
+            <span class="section-title">Disciplinas</span>
+            <span class="section-count">progresso acumulado</span>
+            <div class="section-line"></div>
+          </div>
+
+          <div class="disc-grid">
+
+            <div class="disc-item">
+              <div class="disc-color" style="background:#6C63FF"></div>
+              <div class="disc-name">Banco de Dados</div>
+              <div class="disc-sessions">312 questões · 28 sessões</div>
+              <div class="disc-prog">
+                <div class="prog-bar">
+                  <div class="prog-fill" style="width:82%"></div>
+                </div>
+                <div class="disc-pct"><span>Progresso</span><span>82%</span></div>
+              </div>
+            </div>
+
+            <div class="disc-item">
+              <div class="disc-color" style="background:#3DDC84"></div>
+              <div class="disc-name">Redes</div>
+              <div class="disc-sessions">198 questões · 19 sessões</div>
+              <div class="disc-prog">
+                <div class="prog-bar">
+                  <div class="prog-fill green" style="width:65%"></div>
+                </div>
+                <div class="disc-pct"><span>Progresso</span><span>65%</span></div>
+              </div>
+            </div>
+
+            <div class="disc-item">
+              <div class="disc-color" style="background:#FFB547"></div>
+              <div class="disc-name">POO</div>
+              <div class="disc-sessions">284 questões · 24 sessões</div>
+              <div class="disc-prog">
+                <div class="prog-bar">
+                  <div class="prog-fill amber" style="width:74%"></div>
+                </div>
+                <div class="disc-pct"><span>Progresso</span><span>74%</span></div>
+              </div>
+            </div>
+
+            <div class="disc-item">
+              <div class="disc-color" style="background:#4FA8E8"></div>
+              <div class="disc-name">Web Design</div>
+              <div class="disc-sessions">154 questões · 14 sessões</div>
+              <div class="disc-prog">
+                <div class="prog-bar">
+                  <div class="prog-fill blue" style="width:51%"></div>
+                </div>
+                <div class="disc-pct"><span>Progresso</span><span>51%</span></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+
+        <!-- ACHIEVEMENTS -->
+        <div class="ach-card">
+          <div class="section-header">
+            <span class="section-title">Conquistas</span>
+            <div class="section-line"></div>
+          </div>
+
+          <div class="ach-list">
+
+            <div class="ach-item">
+              <div class="ach-badge" style="background:rgba(255,181,71,.12)">🎯</div>
+              <div class="ach-body">
+                <div class="ach-name">Mira Afiada</div>
+                <div class="ach-desc">Mais de 75% de acertos em todas as disciplinas</div>
+                <span class="ach-tag tag-gold">Ouro</span>
+              </div>
+            </div>
+
+            <div class="ach-item">
+              <div class="ach-badge" style="background:rgba(168,163,255,.12)">🔥</div>
+              <div class="ach-body">
+                <div class="ach-name">Sequência de 7 dias</div>
+                <div class="ach-desc">Estudou por 7 dias consecutivos</div>
+                <span class="ach-tag tag-silver">Prata</span>
+              </div>
+            </div>
+
+            <div class="ach-item">
+              <div class="ach-badge" style="background:rgba(61,220,132,.1)">⚡</div>
+              <div class="ach-body">
+                <div class="ach-name">Mil Questões</div>
+                <div class="ach-desc">Respondeu mais de 1.000 questões na plataforma</div>
+                <span class="ach-tag tag-gold">Ouro</span>
+              </div>
+            </div>
+
+            <div class="ach-item locked">
+              <div class="ach-badge" style="background:var(--border)">🏆</div>
+              <div class="ach-body">
+                <div class="ach-name">Mestre do Nexus</div>
+                <div class="ach-desc">Complete 100% de todas as disciplinas</div>
+                <span class="ach-tag tag-locked">Bloqueado</span>
+              </div>
+            </div>
+
+            <div class="ach-item locked">
+              <div class="ach-badge" style="background:var(--border)">🌐</div>
+              <div class="ach-body">
+                <div class="ach-name">Rede Completa</div>
+                <div class="ach-desc">Finalize todos os módulos de Redes</div>
+                <span class="ach-tag tag-locked">Bloqueado</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div><!-- /content -->
+  </main>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>
