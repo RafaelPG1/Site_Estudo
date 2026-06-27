@@ -5,28 +5,13 @@
 
      Nível 1 — Biblioteca   (screen-home)
      Nível 2 — Disciplina   (screen-discipline)
-     Nível 3 — Leitura      (reader, com sidebar fixa)
+     Nível 3 — Leitura      (screen--reader)  ← screen oficial, não modal
 
-   Descoberta de categorias:
-     1. Carrega atlas/manifest.js
-     2. Para cada entrada do manifest, o atlas.js monta os
-        cards usando APENAS os metadados do manifest.
-     3. Quando o usuário abre uma disciplina, carrega o
-        arquivo indicado em disciplina.content via <script>.
-     4. Une os metadados do manifest com o conteúdo carregado
-        (window.__nexusatlas.secoes).
-
-   Para adicionar uma nova disciplina:
-     • Crie content/atlas/linux.js com window.__nexusatlas = { secoes: [...] }
-     • Adicione a entrada completa em atlas/manifest.js
-     • Pronto. Nenhuma outra mudança necessária aqui.
-
-   Infraestrutura compartilhada utilizada:
-     • shared/js/utils/logo.js   → injetarLogo
-     • shared/js/utils/dom.js    → preencherAnos
-     • shared/js/audio/audio-api.js → Sound, audio, installAudioRecovery, playSound
-     • shared/js/ia/core/fab.js  → injetado via HTML
-     • shared/js/utils/quick-access.js → injetado via HTML
+   O reader é agora uma screen normal do sistema.
+   Não existe mais overlay, position fixed, timeout
+   de animação ou comportamento de modal.
+   A troca para o reader funciona exatamente como
+   _showScreen('home') ou _showScreen('discipline').
    ═══════════════════════════════════════════════════════════ */
 
 /* ══════════════════════════════════════════════
@@ -108,11 +93,11 @@ function _buildChapterGroups(categoryId, secoes) {
    ESTADO DA UI
 ══════════════════════════════════════════════ */
 const State = {
-  view:              'home',   // 'home' | 'discipline' | 'materials'
+  // 'home' | 'discipline' | 'materials' | 'reader'
+  view:              'home',
   currentCategory:   null,
   currentChapter:    null,
   searchQuery:       '',
-  readerOpen:        false,
   sidebarMobileOpen: false,
   _progressCleanup:  null,
 };
@@ -142,7 +127,7 @@ const Favorites = {
       return false;
     }
     if (favs.size >= this._limit) {
-      return null; // limite atingido
+      return null;
     }
     favs.add(id);
     this.save(favs);
@@ -167,6 +152,8 @@ const EL = {
   headerStats:             $('header-stats'),
   searchInput:             $('search-input'),
   headerBtnBack:           $('btn-back'),
+  // slot esquerdo do header — alterna entre btn-back e breadcrumb
+  headerLeftSlot:          $('header-left-slot'),
 
   screenDiscipline:        $('screen-discipline'),
   disciplineBack:          $('discipline-back'),
@@ -176,18 +163,16 @@ const EL = {
   disciplineMeta:          $('discipline-meta'),
   disciplineBody:          $('discipline-body'),
 
-  reader:                  $('reader'),
-  readerOverlay:           $('reader-overlay'),
-  readerPanel:             $('reader-panel'),
-  readerClose:             $('reader-close'),
+  // reader é uma screen normal do sistema (sem modal, sem reader__bar próprio)
+  screenReader:            $('reader'),
   readerLayout:            $('reader-layout'),
   readerSidebar:           $('reader-sidebar'),
   readerSidebarScrim:      $('reader-sidebar-scrim'),
-  readerSidebarToggle:     $('reader-sidebar-toggle'),
-  sidebarDisciplines:      $('sidebar-disciplines'),
+  readerSidebarToggle:     $('reader-sidebar-toggle'),   // no header global
+  readerProgress:          $('reader-progress'),          // fora da screen, abaixo do header
+  readerProgressFill:      $('reader-progress-fill'),
   sidebarCurrentLabel:     $('sidebar-current-discipline'),
   sidebarChapters:         $('sidebar-chapters'),
-  readerBreadcrumbInline:  $('reader-breadcrumb-inline'),
   readerScroll:            $('reader-scroll'),
   readerHeroCategory:      $('reader-hero-category'),
   readerHeroTitle:         $('reader-hero-title'),
@@ -195,8 +180,6 @@ const EL = {
   readerHeroChips:         $('reader-hero-chips'),
   readerBody:              $('reader-body'),
   readerChapterNav:        $('reader-chapter-nav'),
-  readerTime:              $('reader-time'),
-  readerProgressFill:      $('reader-progress-fill'),
 };
 
 /* ══════════════════════════════════════════════
@@ -428,7 +411,7 @@ function _renderStats() {
    HEADER BREADCRUMB
 ══════════════════════════════════════════════ */
 function _renderBreadcrumb() {
-  // O header usa a logo fixa no centro.
+  // Logo fixa no centro do header — sem alteração necessária.
 }
 
 /* ══════════════════════════════════════════════
@@ -511,7 +494,6 @@ function _renderCategoriesGrid(cats) {
   EL.catGrid.querySelectorAll('.library-cat-card').forEach(card => {
     const id = card.dataset.catId;
 
-    // Botão de favorito
     card.querySelector('[data-fav-id]')?.addEventListener('click', (e) => {
       e.stopPropagation();
       const favId  = e.currentTarget.dataset.favId;
@@ -782,49 +764,114 @@ function _buildMaterialsCategories() {
 }
 
 /* ══════════════════════════════════════════════
-   HEADER BACK
+   HEADER BACK / BREADCRUMB
+   No reader: o slot esquerdo do header vira
+   breadcrumb navegável  (atlas / Disciplina / Capítulo).
+   Nas demais telas: volta ao btn-back padrão.
 ══════════════════════════════════════════════ */
 function _renderHeaderBack() {
-  const btn = EL.headerBtnBack;
-  if (!btn) return;
+  const slot = EL.headerLeftSlot;
+  if (!slot) return;
+
+  if (State.view === 'reader') {
+    // Breadcrumb substitui completamente o btn-back no slot esquerdo
+    // (o toggle de sidebar mobile fica na col direita do header)
+    const cat   = CATEGORIES.find(c => c.id === State.currentCategory);
+    const data  = _contentCache.get(State.currentCategory);
+    const secoes = Array.isArray(data?.secoes) ? data.secoes : [];
+    const secao  = secoes[State.currentChapter ?? 0];
+
+    slot.innerHTML = `
+      <nav class="reader-header-breadcrumb" aria-label="Localização">
+        <span class="crumb" data-crumb="home">atlas</span>
+        <span class="crumb-sep">/</span>
+        <span class="crumb" data-crumb="discipline">${_esc(cat?.name ?? '')}</span>
+        <span class="crumb-sep">/</span>
+        <span class="crumb crumb--current">${_esc(secao?.titulo ?? '')}</span>
+      </nav>`;
+
+    slot.querySelector('[data-crumb="home"]')?.addEventListener('click', () => {
+      playSound('click', 'atlas');
+      _fecharReader({ toHome: true });
+    });
+    slot.querySelector('[data-crumb="discipline"]')?.addEventListener('click', () => {
+      playSound('click', 'atlas');
+      _fecharReader({ toDiscipline: true });
+    });
+
+    // Mostra o toggle de sidebar mobile no header
+    if (EL.readerSidebarToggle) EL.readerSidebarToggle.hidden = false;
+
+    return;
+  }
+
+  // Oculta o toggle de sidebar mobile fora do reader
+  if (EL.readerSidebarToggle) EL.readerSidebarToggle.hidden = true;
 
   if (State.view === 'discipline') {
-    btn.removeAttribute('href');
-    btn.title = 'Voltar ao Atlas';
-    btn.querySelector('span').textContent = 'Voltar ao Atlas';
-    btn.onclick = (e) => {
-      e.preventDefault();
+    slot.innerHTML = `
+      <button class="library-btn-back" id="btn-back" type="button" title="Voltar ao Atlas">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+        </svg>
+        <span>Voltar ao Atlas</span>
+      </button>`;
+    slot.querySelector('#btn-back')?.addEventListener('click', () => {
       playSound('click', 'atlas');
       State.currentCategory = null;
       _showScreen('home');
       _renderBreadcrumb();
-    };
+    });
   } else {
-    btn.setAttribute('href', '../index.html');
-    btn.title = 'Início';
-    btn.querySelector('span').textContent = 'Início';
-    btn.onclick = null;
+    // home / materials — link para o Início do projeto
+    slot.innerHTML = `
+      <a href="../index.html" class="library-btn-back" id="btn-back" title="Início">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+        </svg>
+        <span>Início</span>
+      </a>`;
   }
+
+  // Atualiza a referência ao novo elemento
+  EL.headerBtnBack = $('btn-back');
 }
 
 /* ══════════════════════════════════════════════
    NAVEGAÇÃO ENTRE TELAS
+   _showScreen é o único ponto de troca de tela.
+   O reader ('reader') é tratado exatamente igual
+   às outras views — sem lógica especial.
 ══════════════════════════════════════════════ */
 function _showScreen(view) {
   State.view = view;
 
-  if (view === 'materials') {
-    if (EL.screenHome)       EL.screenHome.hidden       = false;
-    if (EL.screenDiscipline) EL.screenDiscipline.hidden = true;
-    _renderMaterialsScreen();
-  } else if (view === 'home') {
-    if (EL.screenHome)       EL.screenHome.hidden       = false;
-    if (EL.screenDiscipline) EL.screenDiscipline.hidden = true;
-    _renderHomeScreen();
-  } else {
-    if (EL.screenHome)       EL.screenHome.hidden       = true;
-    if (EL.screenDiscipline) EL.screenDiscipline.hidden = false;
-  }
+  const screens = {
+    home:       EL.screenHome,
+    materials:  EL.screenHome,
+    discipline: EL.screenDiscipline,
+    reader:     EL.screenReader,
+  };
+
+  // Esconde todas as screens
+  Object.values(screens)
+    .filter((el, i, arr) => el && arr.indexOf(el) === i)
+    .forEach(el => { el.hidden = true; });
+
+  // Exibe a screen alvo
+  const target = screens[view];
+  if (target) target.hidden = false;
+
+  // Barra de progresso: visível apenas na leitura
+  if (EL.readerProgress) EL.readerProgress.hidden = (view !== 'reader');
+
+  // Renderiza conteúdo específico da tela
+  if (view === 'home')      _renderHomeScreen();
+  if (view === 'materials') _renderMaterialsScreen();
+
+  document.body.style.overflow = '';
 
   _renderAtlasSidebar();
   _renderHeaderBack();
@@ -907,7 +954,6 @@ function _renderDisciplineScreen(cat, data) {
   const secoes     = Array.isArray(data?.secoes) ? data.secoes : [];
   const colorStyle = _iconStyleAttr(cat.color);
 
-  /* ── Chips do hero ── */
   const chips = [];
   chips.push(`
     <span class="subject-chip">
@@ -921,7 +967,6 @@ function _renderDisciplineScreen(cat, data) {
     chips.push(`<span class="subject-chip">${_esc(data.type)}</span>`);
   }
 
-  /* ── Lista de módulos ── */
   const moduleCards = secoes.length
     ? secoes.map((s, i) => `
       <article class="subject-module-card" data-chapter-index="${i}" tabindex="0" role="button" aria-label="Abrir ${_esc(s.titulo ?? '')}">
@@ -969,7 +1014,6 @@ function _renderDisciplineScreen(cat, data) {
     ${_buildDisciplineRightSidebar(cat, secoes)}
   `;
 
-  /* ── Bind: módulos abrem o reader ── */
   EL.screenDiscipline.querySelectorAll('[data-chapter-index]').forEach(card => {
     const idx = parseInt(card.dataset.chapterIndex, 10);
     card.addEventListener('mouseenter', () => playSound('hover', 'atlas'));
@@ -979,7 +1023,6 @@ function _renderDisciplineScreen(cat, data) {
     });
   });
 
-  /* ── Bind: TOC scrolls até o card do módulo ── */
   EL.screenDiscipline.querySelectorAll('[data-toc-index]').forEach(btn => {
     btn.addEventListener('click', () => {
       EL.screenDiscipline.querySelectorAll('[data-toc-index]').forEach(b => b.classList.remove('is-active'));
@@ -1009,11 +1052,16 @@ function _buildAtlasSidebarNav(view) {
   ];
 
   return navLinks.map(l => {
-    const isActive = (l.action === 'all' && view === 'home')
+    const isActive = (l.action === 'all'       && (view === 'home' || view === 'reader' || view === 'discipline'))
                   || (l.action === 'materials' && view === 'materials');
+    // reader e discipline ficam com "Biblioteca" ativo na sidebar, mantendo contexto
+    const activeLib = l.action === 'all'
+      && (view === 'home' || view === 'reader' || view === 'discipline');
+    const activeMat = l.action === 'materials' && view === 'materials';
+
     return `
       <button
-        class="atlas-sidebar__nav-link${isActive ? ' atlas-sidebar__nav-link--active' : ''}"
+        class="atlas-sidebar__nav-link${(activeLib || activeMat) ? ' atlas-sidebar__nav-link--active' : ''}"
         data-nav-action="${_esc(l.action)}"
         type="button"
       >
@@ -1082,6 +1130,8 @@ function _bindAtlasSidebarEvents() {
   mount.querySelector('[data-nav-action="all"]')?.addEventListener('click', () => {
     playSound('click', 'atlas');
     State.currentCategory = null;
+    State.currentChapter  = null;
+    _cleanupProgress();
     _showScreen('home');
     _renderBreadcrumb();
   });
@@ -1089,6 +1139,8 @@ function _bindAtlasSidebarEvents() {
   mount.querySelector('[data-nav-action="materials"]')?.addEventListener('click', () => {
     playSound('click', 'atlas');
     State.currentCategory = null;
+    State.currentChapter  = null;
+    _cleanupProgress();
     _showScreen('materials');
     _renderBreadcrumb();
   });
@@ -1098,6 +1150,7 @@ function _bindAtlasSidebarEvents() {
       const id = el.dataset.discId;
       if (id && id !== State.currentCategory) {
         playSound('click', 'atlas');
+        _cleanupProgress();
         _abrirDisciplina(id);
       }
     });
@@ -1189,38 +1242,16 @@ function _buildDisciplineRightSidebar(cat, secoes) {
 }
 
 /* ══════════════════════════════════════════════
-   SIDEBAR DO READER
+   SIDEBAR DO READER — apenas capítulos
+   A seção "Disciplinas" foi removida.
+   A navegação entre disciplinas fica na atlas-sidebar.
 ══════════════════════════════════════════════ */
 function _renderSidebar(categoryId, chapterIndex) {
   const cat    = CATEGORIES.find(c => c.id === categoryId);
   const data   = _contentCache.get(categoryId);
   const secoes = Array.isArray(data?.secoes) ? data.secoes : [];
 
-  if (EL.sidebarDisciplines) {
-    EL.sidebarDisciplines.innerHTML = CATEGORIES.map(c => `
-      <div class="reader-sidebar-discipline-link ${c.id === categoryId ? 'is-active' : ''}" data-cat-id="${_esc(c.id)}">
-        <span class="reader-sidebar-discipline-link__icon"${_iconStyleAttr(c.color)} aria-hidden="true">${_renderIcon(c.icon)}</span>
-        <span>${_esc(c.name)}</span>
-      </div>
-    `).join('');
-
-    EL.sidebarDisciplines.querySelectorAll('.reader-sidebar-discipline-link').forEach(link => {
-      link.addEventListener('click', async () => {
-        const id = link.dataset.catId;
-        if (id === categoryId) return;
-        playSound('click', 'atlas');
-        const newData   = await _getCategoryContent(id);
-        const hasSecoes = Array.isArray(newData?.secoes) && newData.secoes.length;
-        if (hasSecoes) {
-          _abrirReader(id, 0);
-        } else {
-          _fecharReader({ silent: true });
-          _abrirDisciplina(id);
-        }
-      });
-    });
-  }
-
+  // Label do grupo de capítulos
   if (EL.sidebarCurrentLabel && cat) {
     EL.sidebarCurrentLabel.textContent = `Capítulos · ${cat.name}`;
   }
@@ -1230,9 +1261,12 @@ function _renderSidebar(categoryId, chapterIndex) {
 
     EL.sidebarChapters.innerHTML = groups.map(group => `
       <div class="reader-sidebar-chapter-group">
-        ${groups.length > 1 ? `<div class="reader-sidebar-chapter-group__title">${_esc(group.titulo)}</div>` : ''}
+        ${groups.length > 1
+          ? `<div class="reader-sidebar-chapter-group__title">${_esc(group.titulo)}</div>`
+          : ''}
         ${group.secoes.map(secao => `
-          <div class="reader-sidebar-chapter-link ${secao._index === chapterIndex ? 'is-active' : ''}" data-chapter-index="${secao._index}">
+          <div class="reader-sidebar-chapter-link ${secao._index === chapterIndex ? 'is-active' : ''}"
+               data-chapter-index="${secao._index}">
             ${_esc(secao.titulo ?? '')}
           </div>
         `).join('')}
@@ -1250,31 +1284,16 @@ function _renderSidebar(categoryId, chapterIndex) {
   }
 }
 
-/* ══════════════════════════════════════════════
-   BREADCRUMB INLINE DO READER
-══════════════════════════════════════════════ */
-function _renderReaderBreadcrumb(cat, secao) {
-  if (!EL.readerBreadcrumbInline) return;
-  EL.readerBreadcrumbInline.innerHTML = `
-    <span class="crumb crumb--atlas" data-crumb="home">atlas</span>
-    <span class="crumb-sep">/</span>
-    <span class="crumb crumb--cat" data-crumb="discipline">${_esc(cat.name)}</span>
-    <span class="crumb-sep">/</span>
-    <span class="crumb crumb--current">${_esc(secao?.titulo ?? '')}</span>
-  `;
-
-  EL.readerBreadcrumbInline.querySelector('[data-crumb="discipline"]')?.addEventListener('click', () => {
-    playSound('click', 'atlas');
-    _fecharReader({ toDiscipline: true });
-  });
-  EL.readerBreadcrumbInline.querySelector('[data-crumb="home"]')?.addEventListener('click', () => {
-    playSound('click', 'atlas');
-    _fecharReader({ toHome: true });
-  });
-}
+/* _renderReaderBreadcrumb foi removido.
+   O breadcrumb do reader é renderizado por
+   _renderHeaderBack() no slot esquerdo do header global. */
 
 /* ══════════════════════════════════════════════
-   NÍVEL 3 — READER
+   NÍVEL 3 — READER (screen oficial)
+
+   _abrirReader: troca para a screen 'reader'
+   (igual a _showScreen('home')), sem modal,
+   sem overlay, sem animação de drawer.
 ══════════════════════════════════════════════ */
 async function _abrirReader(categoryId, chapterIndex, opts = {}) {
   const cat = CATEGORIES.find(c => c.id === categoryId);
@@ -1282,68 +1301,71 @@ async function _abrirReader(categoryId, chapterIndex, opts = {}) {
 
   State.currentCategory = categoryId;
   State.currentChapter  = chapterIndex;
-  State.readerOpen      = true;
 
-  if (EL.readerBody) EL.readerBody.innerHTML = _buildLoadingBody();
+  // Exibe a screen do reader (troca de tela normal)
+  // _showScreen chama _renderHeaderBack que monta o breadcrumb no header
+  _showScreen('reader');
+  _renderBreadcrumb();
+
+  if (EL.readerBody)       EL.readerBody.innerHTML       = _buildLoadingBody();
   if (EL.readerChapterNav) EL.readerChapterNav.innerHTML = '';
-
-  if (!EL.reader.classList.contains('reader--open')) {
-    playSound('openModal', 'atlas');
-    EL.reader.hidden = false;
-    requestAnimationFrame(() => {
-      EL.reader.classList.add('reader--open');
-      document.body.style.overflow = 'hidden';
-      EL.readerPanel?.focus();
-    });
-  }
+  if (EL.readerScroll)     EL.readerScroll.scrollTop     = 0;
 
   const data = await _getCategoryContent(categoryId);
-  if (State.currentCategory !== categoryId || State.currentChapter !== chapterIndex || !State.readerOpen) return;
+
+  if (State.currentCategory !== categoryId || State.currentChapter !== chapterIndex) return;
+  if (State.view !== 'reader') return;
 
   const secoes = Array.isArray(data?.secoes) ? data.secoes : [];
   const secao  = secoes[chapterIndex];
 
-  _showScreen('discipline');
-  _renderDisciplineScreen(cat, data);
-
   _renderSidebar(categoryId, chapterIndex);
-  _renderReaderBreadcrumb(cat, secao);
+
+  // Atualiza o breadcrumb com o título real do capítulo (disponível após carregar)
+  _renderHeaderBack();
+
   _renderAtlasHero(cat, data, secao);
   _renderAtlasBody(secao, categoryId);
   _renderChapterNav(cat, secoes, chapterIndex);
-  _renderBreadcrumb();
 
   _closeMobileSidebar();
   _cleanupProgress();
   _setupProgress();
-  if (EL.readerScroll) EL.readerScroll.scrollTop = 0;
 }
 
+/* ══════════════════════════════════════════════
+   _fecharReader
+   Navega de volta para a disciplina ou para home.
+   Sem setTimeout, sem animação de fechamento —
+   é simplesmente uma troca de screen.
+══════════════════════════════════════════════ */
 function _fecharReader(opts = {}) {
-  State.readerOpen = false;
-  const categoryId = State.currentCategory;
-
-  playSound('closeModal', 'atlas');
-  EL.reader.classList.remove('reader--open');
-  document.body.style.overflow = '';
-
-  setTimeout(() => {
-    EL.reader.hidden = true;
-    if (EL.readerScroll)       EL.readerScroll.scrollTop          = 0;
-    if (EL.readerProgressFill) EL.readerProgressFill.style.width  = '0%';
-  }, 420);
-
   _cleanupProgress();
   _closeMobileSidebar();
+
+  if (EL.readerProgressFill) EL.readerProgressFill.style.width = '0%';
 
   if (opts.toHome) {
     State.currentCategory = null;
     State.currentChapter  = null;
     _showScreen('home');
-  } else if (opts.toDiscipline && categoryId) {
+  } else if (opts.toDiscipline) {
+    const categoryId      = State.currentCategory;
+    State.currentChapter  = null;
+    _showScreen('discipline');
+    const cat  = CATEGORIES.find(c => c.id === categoryId);
+    const data = _contentCache.get(categoryId);
+    if (cat && data) _renderDisciplineScreen(cat, data);
+    else if (cat)    _renderDisciplineLoading(cat);
+  } else if (!opts.silent) {
+    const categoryId     = State.currentCategory;
     State.currentChapter = null;
     _showScreen('discipline');
-  } else if (!opts.silent) {
+    const cat  = CATEGORIES.find(c => c.id === categoryId);
+    const data = _contentCache.get(categoryId);
+    if (cat && data) _renderDisciplineScreen(cat, data);
+    else if (cat)    _renderDisciplineLoading(cat);
+  } else {
     State.currentChapter = null;
     _showScreen('discipline');
   }
@@ -1352,7 +1374,7 @@ function _fecharReader(opts = {}) {
 }
 
 /* ══════════════════════════════════════════════
-   HERO DO READER
+   HERO DO READER — sem tempo de leitura
 ══════════════════════════════════════════════ */
 function _renderAtlasHero(cat, data, secao) {
   if (EL.readerHeroCategory) {
@@ -1363,15 +1385,7 @@ function _renderAtlasHero(cat, data, secao) {
 
   if (EL.readerHeroChips) {
     const chips = [];
-    if (data.time) {
-      chips.push(`
-        <span class="reader__chip">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-          </svg>
-          ${data.time} min de leitura
-        </span>`);
-    }
+    // Apenas tipo de conteúdo — tempo removido completamente
     if (data.type) {
       chips.push(`
         <span class="reader__chip">
@@ -1382,10 +1396,6 @@ function _renderAtlasHero(cat, data, secao) {
         </span>`);
     }
     EL.readerHeroChips.innerHTML = chips.join('');
-  }
-
-  if (EL.readerTime) {
-    EL.readerTime.textContent = data.time ? `${data.time} min` : '';
   }
 }
 
@@ -1543,7 +1553,7 @@ function _cleanupProgress() {
 }
 
 /* ══════════════════════════════════════════════
-   SIDEBAR MOBILE (drawer)
+   SIDEBAR MOBILE DO READER (drawer interno)
 ══════════════════════════════════════════════ */
 function _toggleMobileSidebar() {
   State.sidebarMobileOpen = !State.sidebarMobileOpen;
@@ -1594,36 +1604,35 @@ function _renderLoadingState() {
    BINDINGS DE EVENTOS GLOBAIS
 ══════════════════════════════════════════════ */
 function _bindEvents() {
-  document.querySelector('.btn-back')
-    ?.addEventListener('click', () => playSound('click', 'atlas'));
-
-  EL.readerClose?.addEventListener('click',   () => _fecharReader());
-  EL.readerOverlay?.addEventListener('click', () => _fecharReader());
-
+  // Toggle de sidebar mobile do reader (botão no header global)
   EL.readerSidebarToggle?.addEventListener('click', _toggleMobileSidebar);
   EL.readerSidebarScrim?.addEventListener('click',  _closeMobileSidebar);
 
+  // Esc: fecha reader → discipline → home (cascata)
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
-    if (State.readerOpen) { _fecharReader(); return; }
+    if (State.view === 'reader') {
+      _fecharReader({ toDiscipline: true });
+      return;
+    }
     if (State.view === 'discipline') {
       State.currentCategory = null;
+      _cleanupProgress();
       _showScreen('home');
       _renderBreadcrumb();
     }
   });
 
-  let searchTimer;
-  EL.searchInput?.addEventListener('input', e => {
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => _handleSearch(e.target.value), 160);
-  });
-
+  // Busca com ⌘K / Ctrl+K
   document.addEventListener('keydown', e => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
       e.preventDefault();
-      EL.searchInput?.focus();
-      EL.searchInput?.select();
+      if (State.view !== 'home') {
+        State.currentCategory = null;
+        _cleanupProgress();
+        _showScreen('home');
+      }
+      setTimeout(() => EL.searchInput?.focus(), 50);
     }
   });
 }
@@ -1654,6 +1663,7 @@ async function init() {
   _renderCategoriesGrid(CATEGORIES);
   _renderAtlasSidebar();
 
+  // Deep link via query string: ?cat=linux&chapter=2
   const params     = new URLSearchParams(window.location.search);
   const catParam   = params.get('cat');
   const chapterRaw = params.get('chapter');

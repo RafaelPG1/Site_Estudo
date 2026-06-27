@@ -37,87 +37,83 @@
     <div class="bg-glow bg-glow--3"></div>
   </div>
 
-  <!-- ══════════════════════════════════════════
-       SIDEBAR ÚNICA DO ATLAS
-       Gerada dinamicamente pelo atlas.js
-       (mesma sidebar para Biblioteca e Disciplina)
-  ══════════════════════════════════════════ -->
+  <!-- SIDEBAR ÚNICA DO ATLAS -->
   <div id="atlas-sidebar-mount"></div>
 
   <!-- ══════════════════════════════════════════
-       HEADER — 3 colunas: btn-back | logo | controles
-       Usa classes library-* (tela Biblioteca)
+       HEADER GLOBAL — 3 colunas:
+         col-esq : btn-back  OU  breadcrumb do reader
+         col-centro : logo
+         col-dir : controles
+       O breadcrumb do reader substitui o btn-back
+       quando a tela de leitura está ativa.
   ══════════════════════════════════════════ -->
   <header class="library-header" id="app-header">
     <div class="library-header__inner">
 
-      <!-- Coluna esquerda: botão voltar — texto e ação dependem da tela ativa
-           (controlado por atlas.js via _renderHeaderBack) -->
-      <a href="../index.html" class="library-btn-back" id="btn-back" title="Início">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
-        </svg>
-        <span>Início</span>
-      </a>
+      <!-- Coluna esquerda: btn-back (home/discipline) ou breadcrumb (reader) -->
+      <div id="header-left-slot">
+        <a href="../index.html" class="library-btn-back" id="btn-back" title="Início">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+          </svg>
+          <span>Início</span>
+        </a>
+      </div>
 
-      <!-- Coluna central: logo oficial do projeto -->
+      <!-- Coluna central: logo -->
       <div class="library-header__brand">
         <div id="header-logo-wrap"></div>
       </div>
 
-      <!-- Coluna direita: controles (stats + áudio) -->
+      <!-- Coluna direita: controles -->
       <div class="library-header-controls" id="header-controls">
         <div class="library-header__stats" id="header-stats"></div>
+        <!-- Toggle sidebar mobile do reader (visível só na leitura em mobile) -->
+        <button class="reader__sidebar-toggle" id="reader-sidebar-toggle"
+                aria-label="Mostrar índice de capítulos" type="button" hidden>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="18" rx="1"/><path d="M14 3h7v18h-7z"/>
+          </svg>
+        </button>
       </div>
 
     </div>
   </header>
 
-  <!-- ══════════════════════════════════════════
-       LAYOUT PRINCIPAL (sidebar + conteúdo)
-  ══════════════════════════════════════════ -->
+  <!-- Barra de progresso de leitura — abaixo do header global, visível só no reader -->
+  <div class="reader__progress" id="reader-progress" hidden>
+    <div class="reader__progress-fill" id="reader-progress-fill"></div>
+  </div>
+
+  <!-- LAYOUT PRINCIPAL -->
   <div class="kb-layout">
 
-    <!-- Espaçador da sidebar -->
     <div class="kb-layout__sidebar-spacer" aria-hidden="true"></div>
 
-    <!-- Área de conteúdo principal -->
     <div class="kb-layout__main">
 
       <div class="app" id="app">
 
-        <!-- ════════════════════════
-             TELA 1 — HOME / BIBLIOTECA
-             Classes: library-*
-        ════════════════════════ -->
+        <!-- TELA 1 — HOME / BIBLIOTECA -->
         <div class="screen screen--home" id="screen-home">
 
-          <!-- HERO — Biblioteca -->
           <section class="library-hero" id="hero">
             <div class="library-hero__inner">
-
-              <!-- Bloco de texto limitado à esquerda -->
               <div class="library-hero__text-block">
-
-                <!-- Badge eyebrow -->
                 <div class="library-hero__eyebrow">
                   <span class="library-hero__eyebrow-dot" aria-hidden="true"></span>
                   <span>Biblioteca</span>
                 </div>
-
-                <!-- Título principal -->
                 <h1 class="library-hero__title">
                   <span class="library-hero__title-main">Atlas</span>
                 </h1>
-
-                <!-- Subtítulo -->
                 <p class="library-hero__desc">
                   Documentações e materiais do Nexus Study<br>
                   reunidos em um só lugar.
                 </p>
-
-                <!-- Search bar -->
                 <div class="library-search-wrap">
                   <div class="library-search-box" id="search-box">
                     <svg class="library-search-box__icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
@@ -138,48 +134,26 @@
                     </div>
                   </div>
                 </div>
-
-                <!-- Estatísticas do hero -->
                 <div class="library-hero__stats" id="hero-stats"></div>
-
-              </div><!-- /library-hero__text-block -->
-
-              <!-- Ornamento decorativo — livro neon -->
+              </div>
               <div class="library-hero__ornament" aria-hidden="true">
                 <svg class="library-hero__book" viewBox="0 0 220 190" xmlns="http://www.w3.org/2000/svg">
-                  <!-- Capa — contorno externo, mais larga e levemente atrás das páginas -->
-                  <path d="M110 38 C100 28 58 20 26 26 C23 27 22 29 22 32 L22 138 C22 142 24 144 27 143.5
-                           C58 137.5 100 148 110 162
-                           C120 148 162 137.5 193 143.5 C196 144 198 142 198 138
-                           L198 32 C198 29 197 27 194 26 C162 20 120 28 110 38 Z"
-                        stroke="rgba(99,102,241,0.22)" stroke-width="1.5" fill="none"/>
-                  <!-- Páginas — contorno interno, mais alto, abertura em V -->
-                  <path d="M110 30 C100 21 62 14 32 20 C29.5 20.5 29 22 29 24.5 L29 130 C29 133 30.5 134.5 33 134
-                           C62 128.5 100 138 110 154
-                           C120 138 158 128.5 187 134 C189.5 134.5 191 133 191 130
-                           L191 24.5 C191 22 190.5 20.5 188 20 C158 14 120 21 110 30 Z"
-                        stroke="rgba(99,102,241,0.55)" stroke-width="1.6" fill="none"/>
-                  <!-- Página esquerda — linhas de texto simuladas -->
+                  <path d="M110 38 C100 28 58 20 26 26 C23 27 22 29 22 32 L22 138 C22 142 24 144 27 143.5 C58 137.5 100 148 110 162 C120 148 162 137.5 193 143.5 C196 144 198 142 198 138 L198 32 C198 29 197 27 194 26 C162 20 120 28 110 38 Z" stroke="rgba(99,102,241,0.22)" stroke-width="1.5" fill="none"/>
+                  <path d="M110 30 C100 21 62 14 32 20 C29.5 20.5 29 22 29 24.5 L29 130 C29 133 30.5 134.5 33 134 C62 128.5 100 138 110 154 C120 138 158 128.5 187 134 C189.5 134.5 191 133 191 130 L191 24.5 C191 22 190.5 20.5 188 20 C158 14 120 21 110 30 Z" stroke="rgba(99,102,241,0.55)" stroke-width="1.6" fill="none"/>
                   <line x1="42" y1="42" x2="100" y2="48" stroke="rgba(99,102,241,0.20)" stroke-width="1"/>
                   <line x1="40" y1="58" x2="100" y2="64" stroke="rgba(99,102,241,0.16)" stroke-width="1"/>
                   <line x1="38" y1="74" x2="100" y2="80" stroke="rgba(99,102,241,0.12)" stroke-width="1"/>
                   <line x1="37" y1="90" x2="100" y2="96" stroke="rgba(99,102,241,0.08)" stroke-width="1"/>
-                  <!-- Página direita -->
                   <line x1="120" y1="48" x2="178" y2="42" stroke="rgba(99,102,241,0.20)" stroke-width="1"/>
                   <line x1="120" y1="64" x2="180" y2="58" stroke="rgba(99,102,241,0.16)" stroke-width="1"/>
                   <line x1="120" y1="80" x2="182" y2="74" stroke="rgba(99,102,241,0.12)" stroke-width="1"/>
                   <line x1="120" y1="96" x2="183" y2="90" stroke="rgba(99,102,241,0.08)" stroke-width="1"/>
-                  <!-- Glow central — lombada do livro -->
-                  <path d="M110 30 C110 30 110 110 110 154"
-                        stroke="rgba(99,102,241,0.9)" stroke-width="2.5" fill="none"
-                        filter="url(#glow-spine)"/>
-                  <!-- Pontos de luz acima -->
+                  <path d="M110 30 C110 30 110 110 110 154" stroke="rgba(99,102,241,0.9)" stroke-width="2.5" fill="none" filter="url(#glow-spine)"/>
                   <circle cx="90" cy="14" r="1.5" fill="rgba(99,102,241,0.6)"/>
                   <circle cx="110" cy="8" r="2" fill="rgba(99,102,241,0.8)"/>
                   <circle cx="130" cy="14" r="1.5" fill="rgba(99,102,241,0.6)"/>
                   <circle cx="72" cy="20" r="1" fill="rgba(99,102,241,0.3)"/>
                   <circle cx="148" cy="20" r="1" fill="rgba(99,102,241,0.3)"/>
-                  <!-- Estrelinhas dispersas -->
                   <circle cx="55" cy="40" r="1" fill="rgba(34,211,238,0.4)"/>
                   <circle cx="165" cy="36" r="1.2" fill="rgba(34,211,238,0.5)"/>
                   <circle cx="195" cy="65" r="0.8" fill="rgba(99,102,241,0.4)"/>
@@ -191,15 +165,12 @@
                   </defs>
                 </svg>
               </div>
-
             </div>
           </section>
 
-          <!-- GRID DE DISCIPLINAS -->
           <section class="library-categories-section" id="categories-section">
             <div class="library-section-header">
               <div class="library-section-header__left">
-                <!-- Ícone de camadas -->
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--indigo);opacity:0.8">
                   <polygon points="12 2 2 7 12 12 22 7 12 2"/>
                   <polyline points="2 17 12 22 22 17"/>
@@ -212,20 +183,13 @@
               </div>
               <span class="library-section-count" id="categories-count"></span>
             </div>
-
-            <div class="library-categories-grid" id="categories-grid">
-              <!-- JS preenche -->
-            </div>
+            <div class="library-categories-grid" id="categories-grid"></div>
           </section>
 
         </div><!-- /screen-home -->
 
-        <!-- ════════════════════════
-             TELA 2 — DISCIPLINA
-             Classes: subject-*
-        ════════════════════════ -->
+        <!-- TELA 2 — DISCIPLINA -->
         <div class="screen screen--discipline" id="screen-discipline" hidden>
-
           <section class="subject-hero" id="discipline-hero">
             <button class="subject-hero__back" id="discipline-back" type="button">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
@@ -233,7 +197,6 @@
               </svg>
               <span>Biblioteca</span>
             </button>
-
             <div class="subject-hero__row">
               <div class="subject-hero__icon" id="discipline-icon"></div>
               <div class="subject-hero__main">
@@ -243,80 +206,51 @@
               </div>
             </div>
           </section>
-
           <section class="subject-body" id="discipline-body"></section>
-
         </div><!-- /screen-discipline -->
+
+        <!-- TELA 3 — LEITURA
+             Sem reader__bar próprio — o header global assume.
+             Sem seção "Disciplinas" na sidebar.
+             Sem qualquer referência a tempo.
+        -->
+        <div class="screen screen--reader" id="reader" hidden>
+
+          <!-- Apenas sidebar de capítulos + área de conteúdo -->
+          <div class="reader__layout" id="reader-layout">
+
+            <aside class="reader__sidebar" id="reader-sidebar">
+              <div class="reader__sidebar-section">
+                <span class="reader__sidebar-label" id="sidebar-current-discipline">Capítulos</span>
+                <nav class="reader__sidebar-chapters" id="sidebar-chapters"></nav>
+              </div>
+            </aside>
+
+            <div class="reader__sidebar-scrim" id="reader-sidebar-scrim"></div>
+
+            <div class="reader__scroll" id="reader-scroll">
+              <div class="reader__content" id="reader-content">
+                <div class="reader__hero" id="reader-hero">
+                  <div class="reader__hero-category" id="reader-hero-category"></div>
+                  <h1 class="reader__hero-title" id="reader-hero-title"></h1>
+                  <p class="reader__hero-desc" id="reader-hero-desc"></p>
+                  <div class="reader__hero-chips" id="reader-hero-chips"></div>
+                </div>
+                <div class="reader__divider"></div>
+                <div class="reader__body" id="reader-body"></div>
+                <nav class="reader__chapter-nav" id="reader-chapter-nav"></nav>
+              </div>
+            </div>
+
+          </div>
+
+        </div><!-- /screen--reader -->
 
       </div><!-- /app -->
 
     </div><!-- /kb-layout__main -->
   </div><!-- /kb-layout -->
 
-  <!-- ══════════════════════════════════════════
-       READER (Nível 3 — Leitura)
-       Classes: reader__* / reader-*
-  ══════════════════════════════════════════ -->
-  <div class="reader" id="reader" role="dialog" aria-modal="true" aria-label="Leitor de conteúdo" hidden>
-    <div class="reader__overlay" id="reader-overlay"></div>
-    <div class="reader__panel" id="reader-panel" tabindex="-1">
-
-      <header class="reader__bar">
-        <button class="reader__close" id="reader-close" aria-label="Fechar leitor">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
-          </svg>
-        </button>
-        <div class="reader__bar-meta">
-          <nav class="reader__breadcrumb" id="reader-breadcrumb-inline"></nav>
-        </div>
-        <div class="reader__bar-actions">
-          <button class="reader__sidebar-toggle" id="reader-sidebar-toggle" aria-label="Mostrar índice" type="button">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="7" height="18" rx="1"/><path d="M14 3h7v18h-7z"/>
-            </svg>
-          </button>
-          <span class="reader__bar-time" id="reader-time"></span>
-        </div>
-      </header>
-
-      <div class="reader__progress">
-        <div class="reader__progress-fill" id="reader-progress-fill"></div>
-      </div>
-
-      <div class="reader__layout" id="reader-layout">
-        <aside class="reader__sidebar" id="reader-sidebar">
-          <div class="reader__sidebar-section">
-            <span class="reader__sidebar-label">Disciplinas</span>
-            <div class="reader__sidebar-disciplines" id="sidebar-disciplines"></div>
-          </div>
-          <div class="reader__sidebar-divider"></div>
-          <div class="reader__sidebar-section">
-            <span class="reader__sidebar-label" id="sidebar-current-discipline">Capítulos</span>
-            <nav class="reader__sidebar-chapters" id="sidebar-chapters"></nav>
-          </div>
-        </aside>
-        <div class="reader__sidebar-scrim" id="reader-sidebar-scrim"></div>
-        <div class="reader__scroll" id="reader-scroll">
-          <div class="reader__content" id="reader-content">
-            <div class="reader__hero" id="reader-hero">
-              <div class="reader__hero-category" id="reader-hero-category"></div>
-              <h1 class="reader__hero-title" id="reader-hero-title"></h1>
-              <p class="reader__hero-desc" id="reader-hero-desc"></p>
-              <div class="reader__hero-chips" id="reader-hero-chips"></div>
-            </div>
-            <div class="reader__divider"></div>
-            <div class="reader__body" id="reader-body"></div>
-            <nav class="reader__chapter-nav" id="reader-chapter-nav"></nav>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- FOOTER -->
   <footer class="library-site-footer">
     <span>© <span id="footer-year"></span> Nexus Study</span>
     <span class="library-site-footer__sep" aria-hidden="true">·</span>

@@ -1,30 +1,21 @@
 /* =============================================
-   atlas — LEITURA (Tela 3 — #reader)
+   atlas — LEITURA (Tela 3 — screen--reader)
    css/leitura.css
 
-   Estilos EXCLUSIVOS do painel de leitura.
-   Todas as classes seguem o prefixo .reader-*
-   (ou .reader__* onde já existia e não colidia).
-
-   Este arquivo NÃO interfere em Biblioteca nem
-   em Disciplina.
-
-   ───────────────────────────────────────────
-   REVISÃO VISUAL — modo leitura confortável
-   Inspiração: Notion / Medium / Kindle.
-   Mesma estrutura HTML, mesmas classes —
-   apenas refinamento de tipografia, espaçamento,
-   largura de leitura, contraste e hierarquia.
+   Screen oficial integrada ao layout principal.
+   Sem modal, sem overlay, sem position fixed.
+   Sem barra de cabeçalho própria — o header
+   global do Atlas assume completamente.
+   Sem qualquer referência a tempo de leitura.
+   Sidebar mostra apenas capítulos.
    ============================================= */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 /* ══════════════════════════════════════════
-   TOKENS — Leitura
+   TOKENS
 ══════════════════════════════════════════ */
 :root {
-  /* Backgrounds — levemente mais quentes e suaves
-     que o resto do Atlas, pensados para leitura longa */
   --bg-0:     #0a0e16;
   --bg-1:     #0e131f;
   --bg-2:     #131a29;
@@ -32,65 +23,46 @@
   --bg-4:     #202d42;
   --bg-hover: #253148;
 
-  /* Fundo do "papel" de leitura — ligeiramente
-     destacado do resto do painel, sem virar card */
   --reader-paper: #0d121e;
 
-  /* Borders */
   --b1: rgba(255,255,255,0.05);
   --b2: rgba(255,255,255,0.08);
   --b3: rgba(255,255,255,0.13);
   --b4: rgba(255,255,255,0.20);
 
-  /* Accent — índigo frio */
   --indigo:      #6366f1;
   --indigo-dim:  rgba(99,102,241,0.10);
   --indigo-glow: rgba(99,102,241,0.22);
   --indigo-rgb:  99,102,241;
 
-  /* Accent secundário — ciano */
   --cyan:     #22d3ee;
   --cyan-dim: rgba(34,211,238,0.08);
   --cyan-rgb: 34,211,238;
 
-  /* Accent terciário — âmbar */
   --amber:     #f59e0b;
   --amber-dim: rgba(245,158,11,0.08);
 
-  /* Texto — contraste calibrado para leitura prolongada
-     (texto principal um pouco menos que branco puro,
-     reduz fadiga visual em telas escuras) */
   --t1: #ecedf3;
   --t2: #9aa1b5;
   --t3: #565f78;
   --t4: #303a52;
 
-  /* Texto de leitura — tom dedicado ao corpo do artigo,
-     mais legível que --t2 em blocos longos de texto */
   --read-text:   #c4c9d8;
   --read-text-2: #aab0c2;
 
-  /* Tipografia
-     Corpo do texto migra para uma serifada legível,
-     mantendo a Inter para UI/labels e display para títulos */
   --font-display: 'Space Grotesk', system-ui, sans-serif;
   --font-body:    'Inter', system-ui, sans-serif;
   --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
   --font-read:    'Georgia', 'Iowan Old Style', 'Charter', 'Source Serif Pro', serif;
 
-  /* Layout */
   --header-h:    60px;
-
-  /* Largura ideal de leitura — ~68-72 caracteres por linha */
   --content-max: 700px;
 
-  /* Raios */
   --r-xl: 18px;
   --r-lg: 12px;
   --r-md: 8px;
   --r-sm: 5px;
 
-  /* Ease */
   --ease:    cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
 }
@@ -119,138 +91,20 @@ input { font-family: var(--font-body); }
 ::-webkit-scrollbar-thumb:hover { background: rgba(var(--indigo-rgb),0.36); }
 
 /* ══════════════════════════════════════════
-   READER — wrapper e overlay
-══════════════════════════════════════════ */
-.reader[hidden] { display: none !important; }
-
-.reader__overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(4,7,14,0.78);
-  backdrop-filter: blur(7px);
-  z-index: 300;
-  opacity: 0;
-  transition: opacity 0.3s var(--ease);
-}
-
-.reader__panel {
-  position: fixed;
-  top: 0; right: 0; bottom: 0;
-  width: min(1100px, 100vw);
-  background: var(--bg-1);
-  border-left: 1px solid var(--b2);
-  z-index: 301;
-  display: flex;
-  flex-direction: column;
-  transform: translateX(100%);
-  transition: transform 0.4s var(--ease);
-  overflow: hidden;
-}
-
-.reader--open .reader__overlay { opacity: 1; }
-.reader--open .reader__panel   { transform: translateX(0); }
-
-/* ══════════════════════════════════════════
-   BARRA SUPERIOR DO READER
-══════════════════════════════════════════ */
-.reader__bar {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0 1.25rem;
-  height: var(--header-h);
-  background: rgba(9,13,21,0.92);
-  border-bottom: 1px solid var(--b1);
-  flex-shrink: 0;
-}
-
-.reader__close {
-  width: 32px; height: 32px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: var(--r-md);
-  border: 1px solid var(--b2);
-  color: var(--t2);
-  background: rgba(255,255,255,0.03);
-  flex-shrink: 0;
-  transition: color 0.18s, border-color 0.18s, background 0.18s;
-}
-.reader__close:hover {
-  color: var(--t1);
-  border-color: var(--b3);
-  background: rgba(255,255,255,0.07);
-}
-
-.reader__bar-meta {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.reader__breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.78rem;
-  color: var(--t3);
-  white-space: nowrap;
-  overflow: hidden;
-}
-.reader__breadcrumb a,
-.reader__breadcrumb span.crumb {
-  color: var(--t3);
-  transition: color 0.16s;
-}
-.reader__breadcrumb a:hover { color: var(--t1); }
-.reader__breadcrumb .crumb--current {
-  color: var(--t1);
-  font-weight: 500;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.reader__breadcrumb .crumb-sep { color: var(--t4); }
-
-.reader__bar-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  flex-shrink: 0;
-}
-
-.reader__sidebar-toggle {
-  width: 30px; height: 30px;
-  display: none;
-  align-items: center; justify-content: center;
-  border-radius: var(--r-md);
-  border: 1px solid var(--b2);
-  color: var(--t2);
-  background: rgba(255,255,255,0.03);
-  flex-shrink: 0;
-  transition: color 0.18s, border-color 0.18s, background 0.18s;
-}
-.reader__sidebar-toggle:hover { color: var(--t1); border-color: var(--b3); }
-
-.reader__bar-time {
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  color: var(--t3);
-  padding: 0.22rem 0.65rem;
-  background: var(--bg-3);
-  border: 1px solid var(--b2);
-  border-radius: 99px;
-  white-space: nowrap;
-}
-
-/* ══════════════════════════════════════════
    BARRA DE PROGRESSO
+   Posicionada logo abaixo do header global,
+   fora da screen--reader, controlada pelo JS.
 ══════════════════════════════════════════ */
 .reader__progress {
+  position: fixed;
+  top: var(--header-h);
+  left: var(--sidebar-w);
+  right: 0;
   height: 2px;
   background: var(--b1);
-  flex-shrink: 0;
+  z-index: 150;
 }
+.reader__progress[hidden] { display: none !important; }
 .reader__progress-fill {
   height: 100%;
   width: 0%;
@@ -259,7 +113,39 @@ input { font-family: var(--font-body); }
 }
 
 /* ══════════════════════════════════════════
-   LAYOUT INTERNO DO READER
+   TOGGLE DE SIDEBAR MOBILE — vive no header
+══════════════════════════════════════════ */
+.reader__sidebar-toggle {
+  width: 30px; height: 30px;
+  display: flex;
+  align-items: center; justify-content: center;
+  border-radius: var(--r-md);
+  border: 1px solid var(--b2);
+  color: var(--t2);
+  background: rgba(255,255,255,0.03);
+  flex-shrink: 0;
+  transition: color 0.18s, border-color 0.18s, background 0.18s;
+}
+.reader__sidebar-toggle[hidden] { display: none !important; }
+.reader__sidebar-toggle:hover { color: var(--t1); border-color: var(--b3); }
+
+/* ══════════════════════════════════════════
+   SCREEN — READER
+   Ocupa toda a altura disponível abaixo do
+   header (o .app já tem padding-top do header).
+   Sem barra de cabeçalho própria.
+══════════════════════════════════════════ */
+.screen--reader {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--header-h));
+  overflow: hidden;
+  background: var(--bg-1);
+}
+.screen--reader[hidden] { display: none !important; }
+
+/* ══════════════════════════════════════════
+   LAYOUT INTERNO: sidebar de capítulos + scroll
 ══════════════════════════════════════════ */
 .reader__layout {
   position: relative;
@@ -269,7 +155,7 @@ input { font-family: var(--font-body); }
   min-height: 0;
 }
 
-/* ── Sidebar de navegação interna ── */
+/* ── Sidebar de capítulos ── */
 .reader__sidebar {
   width: 240px;
   flex-shrink: 0;
@@ -279,7 +165,7 @@ input { font-family: var(--font-body); }
   padding: 1.25rem 1rem 2rem;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
 }
 
 .reader__sidebar-section {
@@ -298,56 +184,7 @@ input { font-family: var(--font-body); }
   padding: 0 0.5rem;
 }
 
-.reader__sidebar-divider {
-  height: 1px;
-  background: var(--b1);
-  margin: 0 0.25rem;
-}
-
-.reader__sidebar-disciplines {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
-.reader-sidebar-discipline-link {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
-  padding: 0.45rem 0.5rem 0.45rem 0.65rem;
-  border-radius: var(--r-sm);
-  font-size: 0.8rem;
-  color: var(--t2);
-  cursor: pointer;
-  transition: background 0.16s, color 0.16s;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.reader-sidebar-discipline-link:hover {
-  background: rgba(255,255,255,0.04);
-  color: var(--t1);
-}
-.reader-sidebar-discipline-link.is-active {
-  background: rgba(var(--indigo-rgb),0.10);
-  color: var(--t1);
-  font-weight: 500;
-}
-.reader-sidebar-discipline-link.is-active::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 0.2rem; bottom: 0.2rem;
-  width: 3px;
-  border-radius: 2px;
-  background: var(--indigo);
-}
-.reader-sidebar-discipline-link__icon {
-  flex-shrink: 0;
-  font-size: 0.9rem;
-  line-height: 1;
-}
-
+/* ── Lista de capítulos ── */
 .reader__sidebar-chapters {
   display: flex;
   flex-direction: column;
@@ -404,6 +241,7 @@ input { font-family: var(--font-body); }
   box-shadow: 0 0 6px rgba(245,158,11,0.6);
 }
 
+/* Scrim do drawer mobile */
 .reader__sidebar-scrim {
   display: none;
   position: absolute;
@@ -412,9 +250,7 @@ input { font-family: var(--font-body); }
   background: rgba(0,0,0,0.4);
 }
 
-/* ── Área de scroll do conteúdo ──
-   Fundo sutilmente diferenciado, criando um
-   "papel" de leitura discreto sem virar card. */
+/* ── Área de scroll do conteúdo ── */
 .reader__scroll {
   flex: 1;
   overflow-y: auto;
@@ -430,7 +266,7 @@ input { font-family: var(--font-body); }
 }
 
 /* ══════════════════════════════════════════
-   HERO DO READER (capítulo aberto)
+   HERO DO READER
 ══════════════════════════════════════════ */
 .reader__hero {
   margin-bottom: 3rem;
@@ -469,6 +305,7 @@ input { font-family: var(--font-body); }
   margin-bottom: 1.4rem;
 }
 
+/* chips — tipo de conteúdo, sem tempo */
 .reader__hero-chips {
   display: flex;
   align-items: center;
@@ -476,10 +313,6 @@ input { font-family: var(--font-body); }
   flex-wrap: wrap;
 }
 
-/* Chip de meta do reader — usado tanto aqui quanto no subject-meta
-   via classe .reader__chip (o JS emite .reader__chip nos dois lugares).
-   Definido APENAS aqui; o disciplina.css usa .subject-chip próprio
-   para os chips da tela de disciplina. */
 .reader__chip {
   display: inline-flex;
   align-items: center;
@@ -502,8 +335,6 @@ input { font-family: var(--font-body); }
 
 /* ══════════════════════════════════════════
    BODY DO READER — blocos de conteúdo
-   Tipografia serifada, espaçamento generoso,
-   foco total no texto.
 ══════════════════════════════════════════ */
 .reader__body {
   display: flex;
@@ -552,7 +383,6 @@ input { font-family: var(--font-body); }
   line-height: 1.85;
   letter-spacing: 0.001em;
 }
-
 .kb-block-texto code {
   font-family: var(--font-mono);
   font-size: 0.86em;
@@ -562,11 +392,7 @@ input { font-family: var(--font-body); }
   border-radius: 4px;
   padding: 0.12em 0.4em;
 }
-
-.kb-block-texto strong {
-  color: var(--t1);
-  font-weight: 700;
-}
+.kb-block-texto strong { color: var(--t1); font-weight: 700; }
 
 .kb-block-lista {
   display: flex;
@@ -586,8 +412,7 @@ input { font-family: var(--font-body); }
 .kb-block-lista li::before {
   content: '';
   position: absolute;
-  left: 0;
-  top: 0.62em;
+  left: 0; top: 0.62em;
   width: 5px; height: 5px;
   border-radius: 50%;
   background: var(--indigo);
@@ -661,9 +486,7 @@ input { font-family: var(--font-body); }
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
-.kb-block-tabela tbody tr:hover td {
-  background: rgba(255,255,255,0.02);
-}
+.kb-block-tabela tbody tr:hover td { background: rgba(255,255,255,0.02); }
 
 .kb-block-alerta {
   display: flex;
@@ -693,7 +516,7 @@ input { font-family: var(--font-body); }
 }
 
 /* ══════════════════════════════════════════
-   PLACEHOLDER DE CARREGAMENTO
+   PLACEHOLDER
 ══════════════════════════════════════════ */
 .reader__placeholder {
   display: flex;
@@ -767,15 +590,47 @@ input { font-family: var(--font-body); }
 }
 
 /* ══════════════════════════════════════════
-   RESPONSIVO — Leitura
+   BREADCRUMB NO HEADER GLOBAL
+   Substitui o btn-back quando view=reader
 ══════════════════════════════════════════ */
-@media (max-width: 960px) {
-  .reader__sidebar  { width: 210px; }
-  .reader__content  { padding: 3rem 2rem 4.5rem; }
+.reader-header-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--t3);
+  white-space: nowrap;
+  overflow: hidden;
+  min-width: 0;
+}
+.reader-header-breadcrumb .crumb {
+  color: var(--t3);
+  cursor: pointer;
+  transition: color 0.16s;
+  flex-shrink: 0;
+}
+.reader-header-breadcrumb .crumb:hover { color: var(--t1); }
+.reader-header-breadcrumb .crumb-sep {
+  color: var(--t4);
+  flex-shrink: 0;
+}
+.reader-header-breadcrumb .crumb--current {
+  color: var(--t1);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVO
+══════════════════════════════════════════ */
+@media (max-width: 1100px) {
+  .reader__progress { left: 0; }
 }
 
 @media (max-width: 860px) {
-  .reader__sidebar-toggle { display: flex; }
+  /* Sidebar vira drawer absoluto dentro do layout */
   .reader__sidebar {
     position: absolute;
     top: 0; left: 0; bottom: 0;
@@ -790,7 +645,6 @@ input { font-family: var(--font-body); }
 
 @media (max-width: 600px) {
   .reader__content { padding: 2.25rem 1.25rem 4rem; }
-  .reader__panel   { width: 100vw; }
   .reader__chapter-nav { grid-template-columns: 1fr; }
   .kb-block-texto,
   .kb-block-lista li { font-size: 1.02rem; }
@@ -801,11 +655,7 @@ input { font-family: var(--font-body); }
 }
 
 /* ── Bloco: imagem ── */
-.kb-block-imagem {
-  margin: 2rem 0;
-  text-align: center;
-}
-
+.kb-block-imagem { margin: 2rem 0; text-align: center; }
 .kb-block-imagem img {
   max-width: 100%;
   border-radius: var(--r-md);
@@ -814,7 +664,6 @@ input { font-family: var(--font-body); }
   display: block;
   margin: 0 auto;
 }
-
 .kb-block-imagem__legenda {
   margin-top: 0.65rem;
   font-family: var(--font-body);
