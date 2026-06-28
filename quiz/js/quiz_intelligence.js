@@ -111,6 +111,57 @@ let _consolidacaoPendente  = false;
 let _ultimoSummaryConhecido = null;
 
 /* ══════════════════════════════════════════════
+   CACHE EM MEMÓRIA — TENTATIVAS BRUTAS (performance/*)
+   ─────────────────────────────────────────────
+   Objetivo: 1 leitura no Firestore por ciclo de análise,
+   não 1 leitura por função da Camada 4.
+
+   Todas as funções da Camada 4 (curva, padrão, tendência,
+   fraquezas, score, previsão) já passam por
+   _buscarTodasTentativas(uid) — o cache vive ali dentro,
+   então toda a Camada 4 se beneficia automaticamente sem
+   que cada função precise saber que o cache existe.
+
+   Invalidação automática (única forma de o cache mudar —
+   PONTOS INALTERADOS nesta revisão, apenas o mecanismo
+   interno de armazenamento foi reforçado):
+     · processarPayloadBruto() invalida ANTES de processar
+       um novo payload (dado mudou na origem)
+     · consolidarUsuario() invalida ao final, depois de ler
+       e gravar (garante que a próxima leitura reflita a
+       consolidação que acabou de rodar)
+   Não há invalidação por tempo (TTL) — o cache só morre por
+   esses dois gatilhos, que são exatamente os únicos pontos
+   do sistema que alteram performance/* o suficiente para
+   um cache ficar desatualizado.
+
+   ── ISOLAMENTO POR UID (reforço de segurança) ──
+   _cacheTentativas.uid é a única chave de validade do cache.
+   Toda leitura do cache passa pela MESMA verificação explícita
+   — "cache apenas se cache.uid === uidAtual" — nunca há reuso
+   implícito. Além disso, _cacheVersao funciona como uma versão
+   simples de invalidação: cada escrita no cache (population ou
+   reset) incrementa _cacheVersao; uma leitura assíncrona em voo
+   (ex.: aguardando o Firestore) só grava o resultado se a versão
+   capturada no início ainda for a vigente — caso outra chamada
+   (para o mesmo uid ou para outro uid) já tenha invalidado ou
+   repopulado o cache nesse intervalo, o resultado tardio é
+   descartado em vez de sobrescrever um estado mais recente. Isso
+   garante que o UID A nunca possa, em nenhuma janela de tempo,
+   reutilizar ou corromper o cache pertencente ao UID B. */
+let _cacheTentativas = {
+  uid:        null,
+  tentativas: null,   // Array<TentativaNormalizada> | null
+};
+let _cacheVersao = 0;
+
+function _invalidarCacheTentativas(uid = null) {
+  if (uid && _cacheTentativas.uid !== uid) return; // nada a invalidar para outro uid
+  _cacheTentativas = { uid: null, tentativas: null };
+  _cacheVersao++;
+}
+
+/* ══════════════════════════════════════════════
    UTILITÁRIOS NUMÉRICOS PUROS
 ══════════════════════════════════════════════ */
 function _media(arr) {
@@ -274,6 +325,19 @@ function _classificarFaixa(taxa) {
   return FAIXAS_NIVEL[FAIXAS_NIVEL.length - 1].nivel;
 }
 
+/* ════════════════════════════════════════════════════════════
+   BLOCO 2 — MÉTRICAS BASE (acertos, taxa, tempo, tendências)
+   ────────────────────────────────────────────────────────────
+   Funções puras de cálculo/classificação que tanto o pipeline
+   (BLOCO 1, via processarPayloadBruto/consolidarUsuario) quanto
+   a Camada 4 (BLOCO 3) reaproveitam: _calcularInsight e tudo que
+   ele compõe (_agruparPorDisciplina, _detectarPadroesDeErro,
+   _calcularTendencia, _classificarEstabilidade,
+   _estimarDificuldadeMedia, _calcularScoreGeral). Nenhuma destas
+   funções toca o Firebase — são só matemática sobre o array de
+   tentativas já normalizado.
+   ════════════════════════════════════════════════════════════ */
+
 /* ══════════════════════════════════════════════
    ANÁLISE PURA — mesma função para qualquer
    granularidade (dia, semana, histórico total)
@@ -428,6 +492,17 @@ function _calcularScoreGeral(taxaMedia, tendencia, estabilidade) {
   return _arredondar(_clamp(score, 0, 100));
 }
 
+/* ════════════════════════════════════════════════════════════
+   BLOCO 1 — PIPELINE (processamento + persistência no Firebase)
+   ────────────────────────────────────────────────────────────
+   Tudo que recebe o payload bruto do engine, calcula o registro
+   de performance, persiste e consolida. Este é o ÚNICO bloco do
+   arquivo que escreve no Firebase (salvarPerformanceQuiz e
+   gravarConsolidacaoEvolucao). Inclui: processarPayloadBruto,
+   consolidarUsuario, processarQuizDireto e o listener do evento
+   (mero trigger, sem lógica própria — ver mais abaixo).
+   ════════════════════════════════════════════════════════════ */
+
 /* ══════════════════════════════════════════════
    PROCESSAR PAYLOAD BRUTO DO ENGINE
    ─────────────────────────────────────────────
@@ -461,6 +536,12 @@ async function processarPayloadBruto(payload, uid) {
     console.warn('[quiz_intelligence] payload inválido — totalQuestoes ausente:', payload);
     return null;
   }
+
+  /* Invalida o cache de tentativas ANTES de processar: o dado na
+     origem (performance/*) está prestes a mudar, então qualquer
+     leitura em cache deixaria de refletir a realidade a partir
+     daqui. */
+  _invalidarCacheTentativas(uid);
 
   /* 1. CALCULAR acertos a partir dos dados brutos */
   const { acertos, respondidas } = _calcularAcertosDoPayload(payload);
@@ -528,25 +609,165 @@ async function processarPayloadBruto(payload, uid) {
    do zero, grava daily+weekly+summary.
    Idempotente — pode rodar N vezes.
 ══════════════════════════════════════════════ */
+export async function consolidarUsuario(uid) {
+  if (!uid) return _insightVazio();
+
+  if (_consolidandoAgora) {
+    _consolidacaoPendente = true;
+    return _ultimoSummaryConhecido ?? _insightVazio();
+  }
+  _consolidandoAgora = true;
+
+  try {
+    const todasTentativas = await _buscarTodasTentativas(uid);
+
+    if (todasTentativas.length === 0) {
+      const vazio = _insightVazio();
+      _ultimoSummaryConhecido = vazio;
+      _notificarListeners({ tipo: 'summary_atualizado', insight: vazio });
+      return vazio;
+    }
+
+    const summaryInsight = _calcularInsight(todasTentativas);
+    const idsProcessados = todasTentativas.map(t => t.id).filter(Boolean);
+
+    const diasTocados    = new Set(todasTentativas.map(t => t.dateKey));
+    const semanasTocadas = new Set(todasTentativas.map(t => t.weekKey));
+
+    const summaryAnterior = await carregarEvolutionSummary(uid).catch(() => null);
+    const idsJaProcessadosAntes = new Set(summaryAnterior?.processedAttemptIds || []);
+    const tentativasNovas = todasTentativas.filter(t => t.id && !idsJaProcessadosAntes.has(t.id));
+
+    const diasParaGravar = tentativasNovas.length > 0
+      ? new Set(tentativasNovas.map(t => t.dateKey))
+      : new Set([_dateKeyHoje()].filter(k => diasTocados.has(k)));
+
+    for (const dia of diasParaGravar) {
+      const tentativasDoDia    = todasTentativas.filter(t => t.dateKey === dia);
+      const semanaDoDia        = tentativasDoDia[0]?.weekKey || _weekKey(Date.now());
+      const tentativasDaSemana = todasTentativas.filter(t => t.weekKey === semanaDoDia);
+
+      const dailyInsight  = _calcularInsight(tentativasDoDia);
+      const weeklyInsight = _calcularInsight(tentativasDaSemana);
+
+      await gravarConsolidacaoEvolucao(uid, {
+        dailyKey:  dia,
+        dailyData:  { ...dailyInsight, dateKey: dia, _updatedAt: Date.now() },
+        weeklyKey:  semanaDoDia,
+        weeklyData: { ...weeklyInsight, weekKey: semanaDoDia, _updatedAt: Date.now() },
+        summaryData: {
+          ...summaryInsight,
+          processedAttemptIds:      idsProcessados,
+          totalDiasComAtividade:    diasTocados.size,
+          totalSemanasComAtividade: semanasTocadas.size,
+          _updatedAt: Date.now(),
+        },
+      }).catch(err => console.warn('[quiz_intelligence] gravarConsolidacaoEvolucao falhou:', err));
+    }
+
+    _ultimoSummaryConhecido = summaryInsight;
+    _notificarListeners({ tipo: 'summary_atualizado', insight: summaryInsight });
+
+    /* Invalida o cache ao final: a consolidação acabou de gravar
+       em daily/weekly/summary, e mesmo não alterando performance/*
+       diretamente, este é o gatilho oficial de "dados atualizados"
+       do pipeline — qualquer leitura cacheada anterior a este ponto
+       deve ser descartada para a próxima chamada da Camada 4. */
+    _invalidarCacheTentativas(uid);
+
+    return summaryInsight;
+
+  } catch (err) {
+    console.warn('[quiz_intelligence] consolidarUsuario falhou:', err);
+    return _ultimoSummaryConhecido ?? _insightVazio();
+  } finally {
+    _consolidandoAgora = false;
+    if (_consolidacaoPendente) {
+      _consolidacaoPendente = false;
+      setTimeout(() => { consolidarUsuario(uid).catch(() => {}); }, 0);
+    }
+  }
+}
+
+/* ══════════════════════════════════════════════
+   FIM DO BLOCO 1 — PIPELINE
+   ────────────────────────────────────────────────
+   A partir daqui: busca compartilhada de tentativas
+   (com cache) seguida do BLOCO 3 — Camada 4.
+══════════════════════════════════════════════ */
+
+/* ── Busca todas as tentativas de um usuário (performance/*).
+   Usada pelo pipeline (BLOCO 1, dentro de consolidarUsuario) E
+   por toda a Camada 4 (BLOCO 3) — é o ÚNICO ponto de leitura de
+   performance/* neste arquivo, e é justamente por isso que o
+   cache vive aqui: colocar o cache neste único ponto faz todas
+   as funções que dependem dele (pipeline + Camada 4) reaproveitarem
+   a mesma leitura automaticamente, sem que cada uma precise saber
+   que o cache existe.
+
+   Regra de 1 leitura por ciclo: se já existe cache válido para
+   este uid, retorna o array em cache sem tocar o Firestore. O
+   cache só é descartado por _invalidarCacheTentativas(), chamada
+   em processarPayloadBruto() e em consolidarUsuario() — nunca por
+   tempo. */
 async function _buscarTodasTentativas(uid) {
+  /* ── Proteção explícita de isolamento por UID ──
+     cache apenas se cache.uid === uidAtual.
+     Nunca reaproveita cache de outro usuário, mesmo que o
+     array já esteja populado e não-vazio. */
+  if (_cacheTentativas.uid === uid && _cacheTentativas.tentativas !== null) {
+    return _cacheTentativas.tentativas;
+  }
+
+  /* versão capturada ANTES de qualquer await — usada para
+     detectar, ao retornar, se o cache já foi alterado por
+     outra chamada concorrente (mesmo uid relendo, ou troca
+     de uid no meio do caminho) enquanto este Firestore estava
+     em voo. Em caso de divergência, o resultado é retornado
+     ao chamador normalmente, mas NÃO é gravado por cima do
+     cache mais recente — evita que uma resposta tardia de um
+     UID sobrescreva o cache já assumido por outro UID. */
+  const versaoNoInicio = _cacheVersao;
+
   const quizIds = await listarQuizIds(uid);
-  if (!quizIds || quizIds.length === 0) return [];
+  if (!quizIds || quizIds.length === 0) {
+    if (_cacheVersao === versaoNoInicio) {
+      _cacheTentativas = { uid, tentativas: [] };
+      _cacheVersao++;
+    }
+    return [];
+  }
 
   const listas = await Promise.all(
     quizIds.map(quizId => listarPerformanceQuiz(uid, quizId).catch(() => []))
   );
 
-  return listas
+  const tentativas = listas
     .flat()
     .filter(Boolean)
     .map(_normalizarTentativa)
     .filter(t => t && t.totalQuestoes > 0);
+
+  if (_cacheVersao === versaoNoInicio) {
+    _cacheTentativas = { uid, tentativas };
+    _cacheVersao++;
+  }
+  return tentativas;
 }
 
+/* ════════════════════════════════════════════════════════════
+   BLOCO 3 — EVOLUÇÃO (CAMADA 4)
+   ────────────────────────────────────────────────────────────
+   Motor de evolução e interpretação. Todas as funções abaixo
+   passam por _buscarTodasTentativas (acima) — e portanto se
+   beneficiam do cache automaticamente — e nenhuma delas escreve
+   no Firebase.
+   ════════════════════════════════════════════════════════════ */
 /* ════════════════════════════════════════════════════════════
    CAMADA 4 — MOTOR DE EVOLUÇÃO E INTERPRETAÇÃO
    ────────────────────────────────────────────────────────────
    "Dado o histórico existente, extrair inteligência do aluno."
+
 
    ⚠️ REGRA ABSOLUTA DESTE BLOCO
    ────────────────────────────────────────────────────────────
@@ -940,77 +1161,15 @@ export async function relatorioEvolucao(uid) {
   };
 }
 
-export async function consolidarUsuario(uid) {
-  if (!uid) return _insightVazio();
-
-  if (_consolidandoAgora) {
-    _consolidacaoPendente = true;
-    return _ultimoSummaryConhecido ?? _insightVazio();
-  }
-  _consolidandoAgora = true;
-
-  try {
-    const todasTentativas = await _buscarTodasTentativas(uid);
-
-    if (todasTentativas.length === 0) {
-      const vazio = _insightVazio();
-      _ultimoSummaryConhecido = vazio;
-      _notificarListeners({ tipo: 'summary_atualizado', insight: vazio });
-      return vazio;
-    }
-
-    const summaryInsight = _calcularInsight(todasTentativas);
-    const idsProcessados = todasTentativas.map(t => t.id).filter(Boolean);
-
-    const diasTocados    = new Set(todasTentativas.map(t => t.dateKey));
-    const semanasTocadas = new Set(todasTentativas.map(t => t.weekKey));
-
-    const summaryAnterior = await carregarEvolutionSummary(uid).catch(() => null);
-    const idsJaProcessadosAntes = new Set(summaryAnterior?.processedAttemptIds || []);
-    const tentativasNovas = todasTentativas.filter(t => t.id && !idsJaProcessadosAntes.has(t.id));
-
-    const diasParaGravar = tentativasNovas.length > 0
-      ? new Set(tentativasNovas.map(t => t.dateKey))
-      : new Set([_dateKeyHoje()].filter(k => diasTocados.has(k)));
-
-    for (const dia of diasParaGravar) {
-      const tentativasDoDia    = todasTentativas.filter(t => t.dateKey === dia);
-      const semanaDoDia        = tentativasDoDia[0]?.weekKey || _weekKey(Date.now());
-      const tentativasDaSemana = todasTentativas.filter(t => t.weekKey === semanaDoDia);
-
-      const dailyInsight  = _calcularInsight(tentativasDoDia);
-      const weeklyInsight = _calcularInsight(tentativasDaSemana);
-
-      await gravarConsolidacaoEvolucao(uid, {
-        dailyKey:  dia,
-        dailyData:  { ...dailyInsight, dateKey: dia, _updatedAt: Date.now() },
-        weeklyKey:  semanaDoDia,
-        weeklyData: { ...weeklyInsight, weekKey: semanaDoDia, _updatedAt: Date.now() },
-        summaryData: {
-          ...summaryInsight,
-          processedAttemptIds:      idsProcessados,
-          totalDiasComAtividade:    diasTocados.size,
-          totalSemanasComAtividade: semanasTocadas.size,
-          _updatedAt: Date.now(),
-        },
-      }).catch(err => console.warn('[quiz_intelligence] gravarConsolidacaoEvolucao falhou:', err));
-    }
-
-    _ultimoSummaryConhecido = summaryInsight;
-    _notificarListeners({ tipo: 'summary_atualizado', insight: summaryInsight });
-    return summaryInsight;
-
-  } catch (err) {
-    console.warn('[quiz_intelligence] consolidarUsuario falhou:', err);
-    return _ultimoSummaryConhecido ?? _insightVazio();
-  } finally {
-    _consolidandoAgora = false;
-    if (_consolidacaoPendente) {
-      _consolidacaoPendente = false;
-      setTimeout(() => { consolidarUsuario(uid).catch(() => {}); }, 0);
-    }
-  }
-}
+/* ══════════════════════════════════════════════
+   FIM DO BLOCO 3 — CAMADA 4
+   ────────────────────────────────────────────────
+   A partir daqui, retomam funções do BLOCO 1 (pipeline):
+   leitura simples do que a consolidação já persistiu,
+   análise pontual local, caminho direto/trigger do evento,
+   reconciliação de login e subscribe — encerrando com o
+   BLOCO 4 (API pública).
+══════════════════════════════════════════════ */
 
 /* ══════════════════════════════════════════════
    LEITURA — só consome o que a consolidação gravou
@@ -1075,32 +1234,60 @@ export function analisarHistorico(attemptsRaw) {
 }
 
 /* ══════════════════════════════════════════════
-   GATILHO PRINCIPAL — nexus:quizFinalizado
+   CAMINHO DIRETO — processarQuizDireto(payload)
    ─────────────────────────────────────────────
-   NOVO em v3: este módulo é o ÚNICO que ouve
-   nexus:quizFinalizado para fins de performance.
-   O engine apenas despacha; o intelligence faz todo
-   o processamento (cálculo + persistência + consolidação).
-══════════════════════════════════════════════ */
+   O evento nexus:quizFinalizado NÃO é mais o único ponto de
+   entrada do pipeline. Esta função é o caminho de execução
+   direto e oficial: qualquer código (UI, testes, backfill,
+   uma futura chamada explícita do engine) pode chamá-la
+   diretamente, sem depender de o evento ter sido disparado
+   e recebido corretamente.
 
+   Regra de ouro respeitada: esta função contém TODA a lógica
+   (resolve uid, valida, delega a processarPayloadBruto). O
+   listener do evento (_onQuizFinalizado, abaixo) NUNCA duplica
+   nada disso — ele apenas chama processarQuizDireto(). Evento
+   deixa de ser um ponto crítico: se o evento falhar ao disparar
+   ou nunca for ouvido, o mesmo resultado pode ser obtido
+   chamando processarQuizDireto(payload) diretamente.
+══════════════════════════════════════════════ */
+export async function processarQuizDireto(payload, uidExplicito = null) {
+  if (!payload) return null;
+
+  const uid = uidExplicito || _resolverUid();
+  if (!uid) {
+    console.warn('[quiz_intelligence] processarQuizDireto: sem uid resolvido — ignorado.');
+    return null;
+  }
+
+  return processarPayloadBruto(payload, uid).catch(err => {
+    console.warn('[quiz_intelligence] processarQuizDireto: falha ao processar payload:', err);
+    return null;
+  });
+}
+
+/* ══════════════════════════════════════════════
+   GATILHO SECUNDÁRIO — nexus:quizFinalizado
+   ─────────────────────────────────────────────
+   O evento existe apenas como TRIGGER puro (zero lógica de
+   negócio). As duas linhas abaixo de _onQuizFinalizado fazem
+   somente o desempacotamento estritamente necessário do
+   CustomEvent (ler e.detail, descartar se vazio) — não há
+   cálculo, validação de regra de negócio, nem decisão alguma
+   aqui. Em seguida delega 100% para processarQuizDireto(), o
+   mesmo caminho que qualquer chamada direta usaria. Isso
+   garante que evento e chamada direta nunca divirjam: são
+   literalmente a mesma função por baixo.
+
+   ÚNICO FLUXO REAL DO SISTEMA:
+     evento → processarQuizDireto → processarPayloadBruto
+   (processarPayload, no objeto público, é apenas alias do
+   mesmo processarQuizDireto — não é um segundo fluxo.)
+══════════════════════════════════════════════ */
 async function _onQuizFinalizado(e) {
   const payload = e?.detail;
   if (!payload) return;
-
-  const uid = _resolverUid();
-  if (!uid) {
-    console.warn('[quiz_intelligence] nexus:quizFinalizado recebido mas sem uid — ignorado.');
-    return;
-  }
-
-  /* processarPayloadBruto faz:
-     1. calcular acertos
-     2. salvar em performance/*
-     3. notificar listeners
-     4. consolidar em background */
-  await processarPayloadBruto(payload, uid).catch(err => {
-    console.warn('[quiz_intelligence] falha ao processar payload:', err);
-  });
+  await processarQuizDireto(payload);
 }
 
 window.addEventListener('nexus:quizFinalizado', _onQuizFinalizado);
@@ -1149,6 +1336,14 @@ export function subscribe(fn) {
   return () => _listeners.delete(fn);
 }
 
+/* ════════════════════════════════════════════════════════════
+   BLOCO 4 — API PÚBLICA (window.NexusQuizIntelligence)
+   ────────────────────────────────────────────────────────────
+   Único ponto de exposição global. Reúne BLOCO 1 (pipeline),
+   BLOCO 2 (métricas — exposto indiretamente via análises) e
+   BLOCO 3 (Camada 4). Nenhum método aqui contém lógica própria
+   nova: todos delegam para funções já definidas acima.
+   ════════════════════════════════════════════════════════════ */
 /* ══════════════════════════════════════════════
    API PÚBLICA GLOBAL
    (Camada 3 + Camada 4 — cérebro único do sistema)
@@ -1157,8 +1352,15 @@ window.NexusQuizIntelligence = {
   /* pipeline (Camada 3) */
   consolidar:           (uid) => consolidarUsuario(uid || _resolverUid()),
 
-  /* processa um payload bruto manualmente (útil para testes / backfill) */
-  processarPayload:     (payload, uid) => processarPayloadBruto(payload, uid || _resolverUid()),
+  /* ALIAS SEGURO — sem lógica própria. processarPayload existe
+     apenas por compatibilidade de contrato com código que já
+     chama esse nome; 100% da execução é delegada para
+     processarQuizDireto(payload, uid), que é o único fluxo real
+     do sistema. Não adicionar nenhuma lógica aqui. */
+  processarPayload:     (payload, uid) => processarQuizDireto(payload, uid),
+
+  /* caminho direto e oficial — mesmo pipeline do evento, sem depender dele */
+  processarQuizDireto,
 
   /* leitura — só consome o que a consolidação persistiu (Camada 3) */
   lerSummary,
