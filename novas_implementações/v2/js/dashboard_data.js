@@ -28,10 +28,8 @@
        cards inteligentes da Camada 5.
 
    Não pertence a este arquivo:
-     ✗ renderDashboardIntelligence e os 6
-       renderizadores da Camada 5 (Score, Trend,
-       Comparison, Weaknesses, Prediction,
-       LearningCurve) — ver dashboard_render.js
+     ✗ renderDashboardIntelligence e os renderizadores
+       da Camada 5 — ver dashboard_render.js
      ✗ bootstrap / listeners de evento — ver
        dashboard.js
    ============================================= */
@@ -63,7 +61,8 @@ export const State = {
   DISC_CORES:  {},
 
   /* ── CAMADA 5 ──
-     Resultado completo de relatorioEvolucao(uid).
+     Resultado completo de relatorioEvolucao(uid) mais
+     dados complementares (tentativasRecentes, conquistas).
      Populado por _carregarIntelligence(uid).
      Nunca modificado diretamente por nenhum renderizador.
      Nunca recalculado — apenas recebido da API pública. */
@@ -75,25 +74,15 @@ export const State = {
    ─────────────────────────────────────────────
    Ponto único de carregamento da inteligência.
 
-   REGRA: este bloco NUNCA calcula nada.
+   REGRA: este bloco NUNCA calcula métricas de quiz.
    Apenas chama a API pública e armazena o resultado.
 
-   Fluxo:
-     1. Verifica se window.NexusQuizIntelligence existe.
-        Se não existir ainda (race condition no boot),
-        aguarda até 3s com polling de 100ms antes de desistir.
-     2. Chama relatorioEvolucao(uid) — uma única vez.
-        Internamente ela já usa Promise.allSettled, então
-        falhas parciais não quebram o retorno.
-     3. Armazena em State.intelligence.
-     4. Loga o resultado completo no console para
-        validação durante desenvolvimento.
-
-   O que NÃO está aqui (e nunca estará):
-     ✗ Cálculo de taxa de acerto
-     ✗ Derivação de tendência
-     ✗ Classificação de nível
-     ✗ Qualquer Math.* sobre dados de quiz
+   O cálculo das conquistas usa SOMENTE campos já
+   presentes no relatorio (taxaAcertoMediaPct,
+   tendenciaDoAluno, scoreEvolutivo, fraquezasPorDisciplina)
+   e dados de sessão já disponíveis em State/carregarEstatisticas
+   — sem nenhum novo acesso ao Firebase ou ao quiz_intelligence.
+   É transformação de dados, não derivação de métricas.
    ─────────────────────────────────────────────*/
 async function _aguardarNexusIntelligence(timeoutMs = 3000) {
   if (window.NexusQuizIntelligence) return window.NexusQuizIntelligence;
@@ -115,6 +104,59 @@ async function _aguardarNexusIntelligence(timeoutMs = 3000) {
   });
 }
 
+/* ── Derivação das conquistas ────────────────────────────────
+   Recebe o relatorio completo + estatísticas de sessão
+   (ambos já em memória — nenhuma chamada adicional).
+   Retorna objeto { id: boolean } para renderAchievements().
+
+   Regras de cada conquista — leitura de campos já existentes:
+     sequencia7      → stats.streak >= 7
+     sequencia30     → stats.streak >= 30
+     tentativas100   → relatorio.scoreEvolutivo.totalTentativas >= 100
+     questoesMil     → relatorio.totalQuestoes >= 1000
+                       (contarQuestoesRespondidas já foi chamado e
+                        armazenado em relatorio.totalQuestoes)
+     scoreAvancado   → relatorio.scoreEvolutivo.nivelEstimado === 'avancado'
+     emEvolucao      → relatorio.tendenciaDoAluno.direcao === 'melhorando'
+     miraAfiada      → scoreEvolutivo.composicao.taxaAcertoMediaPct >= 75
+     maratonista     → stats.melhorDia.tempo >= 18000 (5h)
+     semQuedas       → fraquezasPorDisciplina sem nenhum emQueda === true
+     sessoes50       → stats.totalSessoes >= 50
+*/
+function _calcularConquistas(relatorio, stats) {
+  if (!relatorio || !stats) return {};
+
+  const score      = relatorio.scoreEvolutivo;
+  const tendencia  = relatorio.tendenciaDoAluno;
+  const fraquezas  = relatorio.fraquezasPorDisciplina;
+
+  const streak          = stats.streak ?? 0;
+  const totalSessoes    = stats.totalSessoes ?? 0;
+  const melhorDiaTempo  = stats.melhorDia?.tempo ?? 0;
+
+  const totalTentativas   = score?.totalTentativas ?? 0;
+  const totalQuestoes     = relatorio.totalQuestoes ?? 0;
+  const nivelEstimado     = score?.nivelEstimado ?? '';
+  const tendenciaDir      = tendencia?.direcao ?? '';
+  const taxaMediaPct      = score?.composicao?.taxaAcertoMediaPct ?? 0;
+  const temQueda          = Array.isArray(fraquezas)
+    ? fraquezas.some(f => f?.emQueda === true)
+    : false;
+
+  return {
+    sequencia7:    streak >= 7,
+    sequencia30:   streak >= 30,
+    tentativas100: totalTentativas >= 100,
+    questoesMil:   totalQuestoes >= 1000,
+    scoreAvancado: nivelEstimado === 'avancado',
+    emEvolucao:    tendenciaDir === 'melhorando',
+    miraAfiada:    taxaMediaPct >= 75,
+    maratonista:   melhorDiaTempo >= 18000,
+    semQuedas:     !temQueda && totalTentativas > 0,
+    sessoes50:     totalSessoes >= 50,
+  };
+}
+
 export async function _carregarIntelligence(uid) {
   if (!uid) {
     console.warn('[dashboard] _carregarIntelligence: uid ausente — ignorado.');
@@ -131,13 +173,32 @@ export async function _carregarIntelligence(uid) {
 
   try {
     console.log('[dashboard] _carregarIntelligence: chamando relatorioEvolucao para', uid);
-    const relatorio = await intelligence.relatorioEvolucao(uid);
+
+    /* Carrega o relatório principal + dados complementares em paralelo */
+    const [relatorio, tentativasRecentes, totalQuestoes] = await Promise.all([
+      intelligence.relatorioEvolucao(uid),
+      intelligence.listarTentativasRecentes
+        ? intelligence.listarTentativasRecentes(uid, 10)
+        : Promise.resolve([]),
+      intelligence.contarQuestoesRespondidas
+        ? intelligence.contarQuestoesRespondidas(uid)
+        : Promise.resolve(0),
+    ]);
+
+    /* Adiciona os dados complementares ao relatorio em memória.
+       Não altera o que foi persistido no Firebase. */
+    relatorio.tentativasRecentes = tentativasRecentes;
+    relatorio.totalQuestoes      = totalQuestoes;
+
+    /* Calcula conquistas usando o relatorio já populado e as
+       estatísticas de sessão já carregadas pela _carregarMetricasReais.
+       Se as stats não estiverem disponíveis neste momento, passa null
+       e renderAchievements exibirá tudo como bloqueado. */
+    const statsAtuais = await carregarEstatisticas(uid).catch(() => null);
+    relatorio.conquistas = _calcularConquistas(relatorio, statsAtuais);
 
     State.intelligence = relatorio;
 
-    /* Log de validação — permite confirmar no console
-       que todos os blocos da API estão retornando dados.
-       Remover ou suprimir em produção se necessário. */
     console.group('[dashboard] State.intelligence — relatorio recebido');
     console.log('geradoEm:',             new Date(relatorio?.geradoEm).toLocaleTimeString());
     console.log('scoreEvolutivo:',       relatorio?.scoreEvolutivo);
@@ -147,12 +208,11 @@ export async function _carregarIntelligence(uid) {
     console.log('previsaoSimples:',      relatorio?.previsaoSimples);
     console.log('comparacaoDePeriodos:', relatorio?.comparacaoDePeriodos);
     console.log('summaryPersistido:',    relatorio?.summaryPersistidoCamada3);
+    console.log('tentativasRecentes:',   relatorio?.tentativasRecentes?.length, 'itens');
+    console.log('totalQuestoes:',        relatorio?.totalQuestoes);
+    console.log('conquistas:',           relatorio?.conquistas);
     console.groupEnd();
 
-    /* Disparar o coordenador de render da Camada 5.
-       State.intelligence já foi populado acima — renderDashboardIntelligence
-       recebe o relatorio diretamente para evitar dependência implícita
-       de estado global dentro dos renderizadores. */
     renderDashboardIntelligence(relatorio);
 
     return relatorio;
@@ -185,24 +245,14 @@ export async function _carregarMetricasReais() {
       return;
     }
 
-    /* ── Bloco principal: tempo global contínuo ── */
     _renderTempoGlobal(stats);
-
-    /* ── Tendência e evolução ── */
     _renderTendencia(stats);
     _renderEvolucaoDiaria(stats);
     _renderCrescimentoAcumulado(stats);
-
-    /* ── Consistência de uso ── */
     _renderConsistencia(stats);
-
-    /* ── Sparklines nos cards ── */
     _renderSparklines(stats);
-
-    /* ── Último acesso ── */
     _renderUltimoAcesso(stats);
 
-    /* ── Navegação: ao vivo ou fallback Firestore ── */
     const statsSessaoAtual   = sessionGetStats();
     const temSessaoEmMemoria = statsSessaoAtual?.initialized
       && (statsSessaoAtual.navSequence?.length > 0);
@@ -220,11 +270,6 @@ export async function _carregarMetricasReais() {
     _renderMetricasVazio();
   }
 
-  /* ── CAMADA 5: carregar inteligência após métricas de sessão ──
-     Chamado aqui para garantir que o uid já foi validado acima.
-     Não bloqueia o render das métricas de sessão — é independente.
-     O resultado fica em State.intelligence para os futuros
-     renderizadores da Fase 2 consumirem. */
   _carregarIntelligence(getUsuario()?.uid).catch(() => {});
 }
 
@@ -246,23 +291,17 @@ async function _buscarUltimaSessaoPersistida(uid) {
 
 /* ══════════════════════════════════════════════
    RENDER — TEMPO GLOBAL CONTÍNUO
-   Principal bloco de métricas. Foco em evolução,
-   não em contagem de sessões.
 ══════════════════════════════════════════════ */
 function _renderTempoGlobal(stats) {
-  /* Tempo total lifetime */
   const elTotal = document.getElementById('stat-tempo-total');
   if (elTotal) elTotal.textContent = formatTimeHuman(stats.tempoTotalGeral);
 
-  /* Tempo hoje */
   const elHoje = document.getElementById('stat-tempo-hoje');
   if (elHoje) elHoje.textContent = formatTimeHuman(stats.tempoHoje);
 
-  /* Streak */
   const elStreak = document.getElementById('stat-streak');
   if (elStreak) elStreak.textContent = stats.streak;
 
-  /* Média diária (30 dias) */
   const elMedia = document.getElementById('stat-media-sessao');
   if (elMedia) {
     elMedia.textContent = stats.mediaDiaria > 0
@@ -270,7 +309,6 @@ function _renderTempoGlobal(stats) {
       : '—';
   }
 
-  /* Delta vs ontem */
   const ontemKey   = (() => {
     const d = new Date();
     d.setDate(d.getDate() - 1);
@@ -291,18 +329,14 @@ function _renderTempoGlobal(stats) {
     }
   }
 
-  /* totalSessoes — mantido como dado técnico (não destaque) */
   const elSessoes = document.getElementById('stat-sessoes');
   if (elSessoes) elSessoes.textContent = stats.totalSessoes;
 }
 
 /* ══════════════════════════════════════════════
    RENDER — TENDÊNCIA DE USO
-   Compara os últimos 7 dias para identificar
-   padrão de crescimento ou queda.
 ══════════════════════════════════════════════ */
 function _renderTendencia(stats) {
-  /* Média diária */
   const mediaDiaria = document.getElementById('perf-media-diaria');
   if (mediaDiaria) {
     mediaDiaria.textContent = stats.mediaDiaria > 0
@@ -312,7 +346,6 @@ function _renderTendencia(stats) {
     if (bar) bar.style.width = Math.min(100, (stats.mediaDiaria / 7200) * 100) + '%';
   }
 
-  /* Dias ativos nos últimos 7 */
   const diasAtivos7 = document.getElementById('perf-dias-ativos');
   if (diasAtivos7 && stats.ultimos7?.length) {
     const count = stats.ultimos7.filter(d => d.tempoTotal > 0).length;
@@ -321,7 +354,6 @@ function _renderTendencia(stats) {
     if (bar) bar.style.width = (count / 7 * 100) + '%';
   }
 
-  /* Melhor dia (últimos 30) */
   const melhorDiaEl = document.getElementById('perf-melhor-dia');
   if (melhorDiaEl) {
     if (stats.melhorDia?.tempo > 0) {
@@ -336,7 +368,6 @@ function _renderTendencia(stats) {
       : '0%';
   }
 
-  /* Streak */
   const streakEl = document.getElementById('perf-streak');
   if (streakEl) {
     streakEl.textContent = `${stats.streak} dia${stats.streak !== 1 ? 's' : ''}`;
@@ -347,8 +378,6 @@ function _renderTendencia(stats) {
 
 /* ══════════════════════════════════════════════
    RENDER — CRESCIMENTO ACUMULADO (últimos 7 dias)
-   Mostra tempo acumulado corrido para evidenciar
-   a trajetória de estudo, não apenas o dia a dia.
 ══════════════════════════════════════════════ */
 function _renderCrescimentoAcumulado(stats) {
   const wrap = document.getElementById('crescimento-acumulado');
@@ -356,7 +385,6 @@ function _renderCrescimentoAcumulado(stats) {
 
   wrap.innerHTML = '';
 
-  /* Calcula acumulado corrido */
   let acum = 0;
   const pontos = stats.ultimos7.map(d => {
     acum += d.tempoTotal;
@@ -370,7 +398,6 @@ function _renderCrescimentoAcumulado(stats) {
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   svg.setAttribute('class', 'crescimento-svg');
 
-  /* Área preenchida */
   const pts = pontos.map((v, i) => {
     const x = Math.round((i / (pontos.length - 1)) * (W - 8)) + 4;
     const y = Math.round(H - 8 - ((v / maxAcum) * (H - 16)));
@@ -391,7 +418,6 @@ function _renderCrescimentoAcumulado(stats) {
   svg.appendChild(line);
   wrap.appendChild(svg);
 
-  /* Label do total acumulado (últimos 7 dias) */
   const label = document.getElementById('crescimento-total-label');
   if (label) {
     const totalUltimos7 = stats.ultimos7.reduce((s, d) => s + d.tempoTotal, 0);
@@ -403,11 +429,8 @@ function _renderCrescimentoAcumulado(stats) {
 
 /* ══════════════════════════════════════════════
    RENDER — CONSISTÊNCIA DE USO (últimos 30 dias)
-   Frequência de acesso e regularidade — mostra
-   se o usuário tem um padrão sólido ou esporádico.
 ══════════════════════════════════════════════ */
 function _renderConsistencia(stats) {
-  /* Frequência: dias ativos / 30 */
   const freqEl = document.getElementById('consistencia-frequencia');
   if (freqEl) {
     const pct = Math.round((stats.diasAtivos30 / 30) * 100);
@@ -416,7 +439,6 @@ function _renderConsistencia(stats) {
     if (bar) bar.style.width = pct + '%';
   }
 
-  /* Regularidade: quanto o tempo varia entre dias (desvio relativo) */
   const regEl = document.getElementById('consistencia-regularidade');
   if (regEl) {
     const diasComTempo = Object.values(stats.historico ?? {})
@@ -428,7 +450,7 @@ function _renderConsistencia(stats) {
       const desv   = Math.sqrt(
         diasComTempo.reduce((s, v) => s + Math.pow(v - media, 2), 0) / diasComTempo.length
       );
-      const cv     = media > 0 ? desv / media : 1; // coeficiente de variação (0=uniforme, >1=irregular)
+      const cv     = media > 0 ? desv / media : 1;
       const score  = Math.max(0, Math.min(100, Math.round((1 - Math.min(cv, 1)) * 100)));
       const rotulo = score >= 75 ? 'Regular' : score >= 40 ? 'Moderado' : 'Variável';
       regEl.textContent = `${rotulo} (${score}%)`;
@@ -439,7 +461,6 @@ function _renderConsistencia(stats) {
     }
   }
 
-  /* Tendência: compara média últimos 7 dias vs 7 dias anteriores */
   const tendEl = document.getElementById('consistencia-tendencia');
   if (tendEl && stats.ultimos7?.length === 7 && stats.historico) {
     const mediaRecente = stats.ultimos7.reduce((s, d) => s + d.tempoTotal, 0) / 7;
@@ -547,8 +568,6 @@ function _renderEvolucaoDiaria(stats) {
     const alturaPct = d.tempoTotal > 0 ? Math.max(6, (d.tempoTotal / maxTempo) * 100) : 0;
     bar.style.height = alturaPct + '%';
     if (d.tempoTotal === 0) bar.classList.add('evo-bar-vazia');
-
-    /* Destaca o melhor dia */
     if (d.key === stats.melhorDia?.key) bar.classList.add('evo-bar-melhor');
 
     col.appendChild(bar);
@@ -696,9 +715,9 @@ function _renderHeatmapHorario(hourHeatmap) {
 function _renderDispositivo(deviceType) {
   const el = document.getElementById('nav-device-tipo');
   if (!el) return;
-  if (deviceType === 'mobile')  el.textContent = '📱 Mobile';
+  if (deviceType === 'mobile')       el.textContent = '📱 Mobile';
   else if (deviceType === 'desktop') el.textContent = '🖥️ Desktop';
-  else el.textContent = '—';
+  else                               el.textContent = '—';
 }
 
 function _renderQuizEvents(quizEvents) {
@@ -768,7 +787,4 @@ function _renderMetricasVazio() {
   if (wrapAcum) wrapAcum.innerHTML = '';
 }
 
-/* Exportadas para uso no boot (dashboard.js):
-   - _renderMetricasVazio: listener de logout
-   - _renderNavegacaoAoVivo: callback do session timer ao vivo (_initSessionTimer) */
 export { _renderMetricasVazio, _renderNavegacaoAoVivo };

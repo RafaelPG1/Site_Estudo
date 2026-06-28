@@ -28,6 +28,8 @@
      ✔ Score evolutivo (0–100)
      ✔ Previsão simples (regressão linear leve, sem libs externas)
      ✔ Comparação entre períodos (usa daily/weekly já persistidos)
+     ✔ Listar tentativas recentes (para Timeline do Dashboard)
+     ✔ Contar questões respondidas (para Conquistas do Dashboard)
      A Camada 4 NUNCA escreve no Firebase — reaproveita os mesmos
      utilitários (_media, _desvioPadrao, _normalizarTentativa,
      _buscarTodasTentativas, _classificarFaixa, _calcularTendencia,
@@ -94,69 +96,28 @@ const FAIXAS_NIVEL = [
   { min: 0.00, nivel: 'fundamentos'   },
 ];
 
-/* ── Constantes específicas da Camada 4 (evolução/previsão) ──
-   Reaproveitam as mesmas convenções da Camada 3 (JANELA_RECENTE,
-   DESVIO_INSTAVEL, MELHORA_MINIMA_PCT já definidas acima e usadas
-   também aqui) — só o que é exclusivo da Camada 4 é declarado: */
-const JANELA_REGRESSAO_MIN = 3;  // mínimo de pontos para regressão linear
-const JANELA_MEDIA_MOVEL   = 3;  // tamanho da janela de média móvel
-const DIAS_PERIODO_PADRAO  = 7;  // tamanho padrão de "período" em comparações
+const JANELA_REGRESSAO_MIN = 3;
+const JANELA_MEDIA_MOVEL   = 3;
+const DIAS_PERIODO_PADRAO  = 7;
 
 const _listeners = new Set();
 
-/* estado interno — lock local de consolidação concorrente */
 let _uidAtual              = null;
 let _consolidandoAgora     = false;
 let _consolidacaoPendente  = false;
 let _ultimoSummaryConhecido = null;
 
 /* ══════════════════════════════════════════════
-   CACHE EM MEMÓRIA — TENTATIVAS BRUTAS (performance/*)
-   ─────────────────────────────────────────────
-   Objetivo: 1 leitura no Firestore por ciclo de análise,
-   não 1 leitura por função da Camada 4.
-
-   Todas as funções da Camada 4 (curva, padrão, tendência,
-   fraquezas, score, previsão) já passam por
-   _buscarTodasTentativas(uid) — o cache vive ali dentro,
-   então toda a Camada 4 se beneficia automaticamente sem
-   que cada função precise saber que o cache existe.
-
-   Invalidação automática (única forma de o cache mudar —
-   PONTOS INALTERADOS nesta revisão, apenas o mecanismo
-   interno de armazenamento foi reforçado):
-     · processarPayloadBruto() invalida ANTES de processar
-       um novo payload (dado mudou na origem)
-     · consolidarUsuario() invalida ao final, depois de ler
-       e gravar (garante que a próxima leitura reflita a
-       consolidação que acabou de rodar)
-   Não há invalidação por tempo (TTL) — o cache só morre por
-   esses dois gatilhos, que são exatamente os únicos pontos
-   do sistema que alteram performance/* o suficiente para
-   um cache ficar desatualizado.
-
-   ── ISOLAMENTO POR UID (reforço de segurança) ──
-   _cacheTentativas.uid é a única chave de validade do cache.
-   Toda leitura do cache passa pela MESMA verificação explícita
-   — "cache apenas se cache.uid === uidAtual" — nunca há reuso
-   implícito. Além disso, _cacheVersao funciona como uma versão
-   simples de invalidação: cada escrita no cache (population ou
-   reset) incrementa _cacheVersao; uma leitura assíncrona em voo
-   (ex.: aguardando o Firestore) só grava o resultado se a versão
-   capturada no início ainda for a vigente — caso outra chamada
-   (para o mesmo uid ou para outro uid) já tenha invalidado ou
-   repopulado o cache nesse intervalo, o resultado tardio é
-   descartado em vez de sobrescrever um estado mais recente. Isso
-   garante que o UID A nunca possa, em nenhuma janela de tempo,
-   reutilizar ou corromper o cache pertencente ao UID B. */
+   CACHE EM MEMÓRIA — TENTATIVAS BRUTAS
+══════════════════════════════════════════════ */
 let _cacheTentativas = {
   uid:        null,
-  tentativas: null,   // Array<TentativaNormalizada> | null
+  tentativas: null,
 };
 let _cacheVersao = 0;
 
 function _invalidarCacheTentativas(uid = null) {
-  if (uid && _cacheTentativas.uid !== uid) return; // nada a invalidar para outro uid
+  if (uid && _cacheTentativas.uid !== uid) return;
   _cacheTentativas = { uid: null, tentativas: null };
   _cacheVersao++;
 }
@@ -179,12 +140,6 @@ function _arredondar(n, casas = 1) {
 }
 function _clamp(n, min, max) { return Math.min(max, Math.max(min, n)); }
 
-/* ── Regressão linear simples (mínimos quadrados) — Camada 4 ──
-   entrada: array de números (y), x assumido como índice 0..n-1
-   saída: { slope, intercept } ou null se não houver pontos
-   suficientes. Usada apenas para a extrapolação leve (previsão
-   simples) — não é machine learning, é álgebra de ensino médio.
-   Reaproveita _media já definida acima. */
 function _regressaoLinear(valores) {
   const n = valores.length;
   if (n < JANELA_REGRESSAO_MIN) return null;
@@ -206,7 +161,6 @@ function _regressaoLinear(valores) {
   return { slope, intercept };
 }
 
-/* ── Média móvel simples — Camada 4 ── */
 function _mediaMovel(valores, janela = JANELA_MEDIA_MOVEL) {
   if (!valores || valores.length === 0) return [];
   return valores.map((_, i) => {
@@ -218,11 +172,6 @@ function _mediaMovel(valores, janela = JANELA_MEDIA_MOVEL) {
 
 /* ══════════════════════════════════════════════
    CÁLCULO DE ACERTOS A PARTIR DO PAYLOAD BRUTO
-   ─────────────────────────────────────────────
-   NOVO em v3: o engine não calcula mais acertos.
-   Ele envia respostasBrutas (qi → alternativa escolhida)
-   e gabarito (qi → alternativa correta).
-   Esta função cruza os dois e retorna { acertos, erros }.
 ══════════════════════════════════════════════ */
 function _calcularAcertosDoPayload(payload) {
   const { respostasBrutas, gabarito, totalQuestoes } = payload;
@@ -231,8 +180,8 @@ function _calcularAcertosDoPayload(payload) {
     return { acertos: 0, erros: 0, respondidas: 0 };
   }
 
-  let acertos    = 0;
-  let erros      = 0;
+  let acertos     = 0;
+  let erros       = 0;
   let respondidas = 0;
 
   for (let qi = 0; qi < totalQuestoes; qi++) {
@@ -250,7 +199,7 @@ function _calcularAcertosDoPayload(payload) {
 }
 
 /* ══════════════════════════════════════════════
-   DATAS — dateKey (YYYY-MM-DD) e weekKey (YYYY-Www)
+   DATAS
 ══════════════════════════════════════════════ */
 function _dateKey(ts) {
   const d  = new Date(ts);
@@ -267,14 +216,11 @@ function _weekKey(ts) {
   date.setUTCDate(date.getUTCDate() + (4 - dayNum));
   const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
   const weekNum   = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
-  return `${date.getUTCFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+  return `${date.getUTCFullYear()}-W${String(weekNum).padStart(2, '00')}`;
 }
 
 function _dateKeyHoje() { return _dateKey(Date.now()); }
 
-/* ── Gera as dateKeys dos últimos N dias, com deslocamento opcional
-   (usado pela comparação de períodos da Camada 4 — ex: para obter o
-   período "anterior", passa-se offsetDias = n) ── */
 function _ultimosNDiasKeys(n, offsetDias = 0) {
   const hoje = new Date();
   const keys = [];
@@ -288,7 +234,6 @@ function _ultimosNDiasKeys(n, offsetDias = 0) {
 
 /* ══════════════════════════════════════════════
    NORMALIZAÇÃO DE TENTATIVAS
-   (leitura do Firestore — formato performance/*)
 ══════════════════════════════════════════════ */
 function _normalizarTentativa(raw) {
   if (!raw) return null;
@@ -325,22 +270,8 @@ function _classificarFaixa(taxa) {
   return FAIXAS_NIVEL[FAIXAS_NIVEL.length - 1].nivel;
 }
 
-/* ════════════════════════════════════════════════════════════
-   BLOCO 2 — MÉTRICAS BASE (acertos, taxa, tempo, tendências)
-   ────────────────────────────────────────────────────────────
-   Funções puras de cálculo/classificação que tanto o pipeline
-   (BLOCO 1, via processarPayloadBruto/consolidarUsuario) quanto
-   a Camada 4 (BLOCO 3) reaproveitam: _calcularInsight e tudo que
-   ele compõe (_agruparPorDisciplina, _detectarPadroesDeErro,
-   _calcularTendencia, _classificarEstabilidade,
-   _estimarDificuldadeMedia, _calcularScoreGeral). Nenhuma destas
-   funções toca o Firebase — são só matemática sobre o array de
-   tentativas já normalizado.
-   ════════════════════════════════════════════════════════════ */
-
 /* ══════════════════════════════════════════════
-   ANÁLISE PURA — mesma função para qualquer
-   granularidade (dia, semana, histórico total)
+   BLOCO 2 — MÉTRICAS BASE
 ══════════════════════════════════════════════ */
 function _calcularInsight(tentativasNormalizadas) {
   const tentativas = tentativasNormalizadas
@@ -355,12 +286,12 @@ function _calcularInsight(tentativasNormalizadas) {
   const tempoMedio  = _media(tempos);
   const desvioTaxas = _desvioPadrao(taxas) * 100;
 
-  const porDisciplina   = _agruparPorDisciplina(tentativas);
-  const padroesErro     = _detectarPadroesDeErro(tentativas);
-  const tendencia       = _calcularTendencia(taxas);
-  const estabilidade    = _classificarEstabilidade(desvioTaxas, tendencia);
+  const porDisciplina    = _agruparPorDisciplina(tentativas);
+  const padroesErro      = _detectarPadroesDeErro(tentativas);
+  const tendencia        = _calcularTendencia(taxas);
+  const estabilidade     = _classificarEstabilidade(desvioTaxas, tendencia);
   const dificuldadeMedia = _estimarDificuldadeMedia(tentativas);
-  const scoreGeral      = _calcularScoreGeral(taxaMedia, tendencia, estabilidade);
+  const scoreGeral       = _calcularScoreGeral(taxaMedia, tendencia, estabilidade);
 
   return {
     totalTentativas: tentativas.length,
@@ -440,10 +371,10 @@ function _detectarPadroesDeErro(tentativas) {
   return Object.entries(porChave)
     .filter(([, v]) => v.baixas >= 2 || (v.ocorrencias > 0 && v.baixas / v.ocorrencias >= 0.5))
     .map(([chave, v]) => ({
-      grupo:                   chave,
-      ocorrenciasComErroAlto:  v.baixas,
-      totalTentativas:         v.ocorrencias,
-      taxaAcertoMediaPct:      _arredondar(_media(v.taxas) * 100),
+      grupo:                  chave,
+      ocorrenciasComErroAlto: v.baixas,
+      totalTentativas:        v.ocorrencias,
+      taxaAcertoMediaPct:     _arredondar(_media(v.taxas) * 100),
     }))
     .sort((a, b) => b.ocorrenciasComErroAlto - a.ocorrenciasComErroAlto);
 }
@@ -492,35 +423,8 @@ function _calcularScoreGeral(taxaMedia, tendencia, estabilidade) {
   return _arredondar(_clamp(score, 0, 100));
 }
 
-/* ════════════════════════════════════════════════════════════
-   BLOCO 1 — PIPELINE (processamento + persistência no Firebase)
-   ────────────────────────────────────────────────────────────
-   Tudo que recebe o payload bruto do engine, calcula o registro
-   de performance, persiste e consolida. Este é o ÚNICO bloco do
-   arquivo que escreve no Firebase (salvarPerformanceQuiz e
-   gravarConsolidacaoEvolucao). Inclui: processarPayloadBruto,
-   consolidarUsuario, processarQuizDireto e o listener do evento
-   (mero trigger, sem lógica própria — ver mais abaixo).
-   ════════════════════════════════════════════════════════════ */
-
 /* ══════════════════════════════════════════════
-   PROCESSAR PAYLOAD BRUTO DO ENGINE
-   ─────────────────────────────────────────────
-   NOVO em v3: ponto de entrada para o payload que
-   chega via nexus:quizFinalizado.
-
-   O engine despacha:
-     { disc, modo, semestre, totalQuestoes,
-       respostasBrutas, gabarito, startedAt,
-       endedAt, revealed }
-
-   Este módulo:
-     1. Cruza respostasBrutas x gabarito → acertos
-     2. Calcula taxaAcerto e tempoGastoSeg
-     3. Persiste em performance/* (Firebase)
-     4. Dispara consolidação incremental
-
-   Retorna o objeto salvo (ou null em falha).
+   BLOCO 1 — PIPELINE
 ══════════════════════════════════════════════ */
 async function processarPayloadBruto(payload, uid) {
   if (!payload || !uid) return null;
@@ -531,28 +435,21 @@ async function processarPayloadBruto(payload, uid) {
     startedAt, endedAt, revealed,
   } = payload;
 
-  /* Validação mínima */
   if (!totalQuestoes || totalQuestoes <= 0) {
     console.warn('[quiz_intelligence] payload inválido — totalQuestoes ausente:', payload);
     return null;
   }
 
-  /* Invalida o cache de tentativas ANTES de processar: o dado na
-     origem (performance/*) está prestes a mudar, então qualquer
-     leitura em cache deixaria de refletir a realidade a partir
-     daqui. */
   _invalidarCacheTentativas(uid);
 
-  /* 1. CALCULAR acertos a partir dos dados brutos */
   const { acertos, respondidas } = _calcularAcertosDoPayload(payload);
-  const taxaAcerto     = respondidas > 0 ? acertos / respondidas : 0;
-  const tempoGastoSeg  = (endedAt && startedAt)
+  const taxaAcerto    = respondidas > 0 ? acertos / respondidas : 0;
+  const tempoGastoSeg = (endedAt && startedAt)
     ? Math.max(0, Math.round((endedAt - startedAt) / 1000))
     : 0;
 
   const quizId = `${semestre}_${modo}_${disc}`;
 
-  /* 2. PERSISTIR no Firebase (único módulo que faz isso) */
   const registroFirebase = {
     totalQuestoes,
     acertos,
@@ -581,7 +478,6 @@ async function processarPayloadBruto(payload, uid) {
     console.warn('[quiz_intelligence] falha ao salvar performance:', err);
   }
 
-  /* 3. ANALISAR esta tentativa para notificação imediata */
   const tentativaNormalizada = _normalizarTentativa({
     ...registroFirebase,
     id: idRegistro,
@@ -596,19 +492,11 @@ async function processarPayloadBruto(payload, uid) {
     _notificarListeners({ tipo: 'tentativa_processada', analise: analiseImediata });
   }
 
-  /* 4. CONSOLIDAR em background (best-effort, não bloqueia) */
   consolidarUsuario(uid).catch(() => {});
 
   return { registroFirebase, analiseImediata, idRegistro };
 }
 
-/* ══════════════════════════════════════════════
-   PIPELINE DE CONSOLIDAÇÃO
-   ─────────────────────────────────────────────
-   Idêntico à v2: lê TUDO do Firestore, recalcula
-   do zero, grava daily+weekly+summary.
-   Idempotente — pode rodar N vezes.
-══════════════════════════════════════════════ */
 export async function consolidarUsuario(uid) {
   if (!uid) return _insightVazio();
 
@@ -651,7 +539,7 @@ export async function consolidarUsuario(uid) {
       const weeklyInsight = _calcularInsight(tentativasDaSemana);
 
       await gravarConsolidacaoEvolucao(uid, {
-        dailyKey:  dia,
+        dailyKey:   dia,
         dailyData:  { ...dailyInsight, dateKey: dia, _updatedAt: Date.now() },
         weeklyKey:  semanaDoDia,
         weeklyData: { ...weeklyInsight, weekKey: semanaDoDia, _updatedAt: Date.now() },
@@ -667,12 +555,6 @@ export async function consolidarUsuario(uid) {
 
     _ultimoSummaryConhecido = summaryInsight;
     _notificarListeners({ tipo: 'summary_atualizado', insight: summaryInsight });
-
-    /* Invalida o cache ao final: a consolidação acabou de gravar
-       em daily/weekly/summary, e mesmo não alterando performance/*
-       diretamente, este é o gatilho oficial de "dados atualizados"
-       do pipeline — qualquer leitura cacheada anterior a este ponto
-       deve ser descartada para a próxima chamada da Camada 4. */
     _invalidarCacheTentativas(uid);
 
     return summaryInsight;
@@ -690,43 +572,14 @@ export async function consolidarUsuario(uid) {
 }
 
 /* ══════════════════════════════════════════════
-   FIM DO BLOCO 1 — PIPELINE
-   ────────────────────────────────────────────────
-   A partir daqui: busca compartilhada de tentativas
-   (com cache) seguida do BLOCO 3 — Camada 4.
+   BUSCA COMPARTILHADA (cache único para pipeline
+   + Camada 4)
 ══════════════════════════════════════════════ */
-
-/* ── Busca todas as tentativas de um usuário (performance/*).
-   Usada pelo pipeline (BLOCO 1, dentro de consolidarUsuario) E
-   por toda a Camada 4 (BLOCO 3) — é o ÚNICO ponto de leitura de
-   performance/* neste arquivo, e é justamente por isso que o
-   cache vive aqui: colocar o cache neste único ponto faz todas
-   as funções que dependem dele (pipeline + Camada 4) reaproveitarem
-   a mesma leitura automaticamente, sem que cada uma precise saber
-   que o cache existe.
-
-   Regra de 1 leitura por ciclo: se já existe cache válido para
-   este uid, retorna o array em cache sem tocar o Firestore. O
-   cache só é descartado por _invalidarCacheTentativas(), chamada
-   em processarPayloadBruto() e em consolidarUsuario() — nunca por
-   tempo. */
 async function _buscarTodasTentativas(uid) {
-  /* ── Proteção explícita de isolamento por UID ──
-     cache apenas se cache.uid === uidAtual.
-     Nunca reaproveita cache de outro usuário, mesmo que o
-     array já esteja populado e não-vazio. */
   if (_cacheTentativas.uid === uid && _cacheTentativas.tentativas !== null) {
     return _cacheTentativas.tentativas;
   }
 
-  /* versão capturada ANTES de qualquer await — usada para
-     detectar, ao retornar, se o cache já foi alterado por
-     outra chamada concorrente (mesmo uid relendo, ou troca
-     de uid no meio do caminho) enquanto este Firestore estava
-     em voo. Em caso de divergência, o resultado é retornado
-     ao chamador normalmente, mas NÃO é gravado por cima do
-     cache mais recente — evita que uma resposta tardia de um
-     UID sobrescreva o cache já assumido por outro UID. */
   const versaoNoInicio = _cacheVersao;
 
   const quizIds = await listarQuizIds(uid);
@@ -756,52 +609,14 @@ async function _buscarTodasTentativas(uid) {
 }
 
 /* ════════════════════════════════════════════════════════════
-   BLOCO 3 — EVOLUÇÃO (CAMADA 4)
+   BLOCO 3 — CAMADA 4 — MOTOR DE EVOLUÇÃO E INTERPRETAÇÃO
    ────────────────────────────────────────────────────────────
-   Motor de evolução e interpretação. Todas as funções abaixo
-   passam por _buscarTodasTentativas (acima) — e portanto se
-   beneficiam do cache automaticamente — e nenhuma delas escreve
-   no Firebase.
-   ════════════════════════════════════════════════════════════ */
-/* ════════════════════════════════════════════════════════════
-   CAMADA 4 — MOTOR DE EVOLUÇÃO E INTERPRETAÇÃO
-   ────────────────────────────────────────────────────────────
-   "Dado o histórico existente, extrair inteligência do aluno."
-
-
-   ⚠️ REGRA ABSOLUTA DESTE BLOCO
-   ────────────────────────────────────────────────────────────
-   As funções abaixo NÃO:
-     ✗ coletam novos dados
-     ✗ escutam eventos (nenhum addEventListener próprio)
-     ✗ escrevem no Firebase (usam apenas as funções de LEITURA
-       já importadas no topo deste arquivo — listarQuizIds,
-       listarPerformanceQuiz, carregarEvolutionSummary,
-       carregarEvolutionDaily, carregarEvolutionWeekly,
-       carregarEvolutionDailyRange)
-     ✗ modificam schema de performance/daily/weekly/summary
-     ✗ criam novas coleções ou novos campos persistidos
-     ✗ duplicam lógica já existente na Camada 3 — toda a base
-       (busca de tentativas, normalização, médias, desvio
-       padrão, classificação de faixa) é a MESMA já usada acima
-       por _calcularInsight(); a Camada 4 apenas reorganiza e
-       extrapola esses mesmos números sob ângulos diferentes.
-
-   As funções abaixo SOMENTE:
-     ✔ leem o que já existe (performance/*, daily, weekly, summary)
-     ✔ interpretam, agrupam, comparam, projetam
-     ✔ retornam estruturas em memória — nunca gravam nada
-
-   Se faltar dado para uma análise, a resposta correspondente
-   vem marcada como indeterminada/null — nunca inventa dado,
-   nunca aciona coleta nova.
+   Todas as funções abaixo SOMENTE leem e interpretam.
+   Nenhuma escreve no Firebase. Nenhuma duplica lógica da
+   Camada 3. Todas reutilizam _buscarTodasTentativas e seu cache.
    ════════════════════════════════════════════════════════════ */
 
-/* ── 1. 📈 CURVA DE APRENDIZADO POR DISCIPLINA ──────────────
-   Para cada disciplina: série temporal de taxaAcerto, média
-   móvel, e reta de tendência (regressão linear). Não cria dado
-   novo — apenas reorganiza o que _buscarTodasTentativas já lê
-   de performance/*, agrupando por disciplina. */
+/* ── 1. Curva de aprendizado ── */
 export async function curvaDeAprendizado(uid) {
   if (!uid) return { porDisciplina: {}, geral: null };
 
@@ -821,10 +636,10 @@ export async function curvaDeAprendizado(uid) {
     const reta     = _regressaoLinear(taxasPct);
 
     resultadoPorDisc[disc] = {
-      totalTentativas: lista.length,
+      totalTentativas:    lista.length,
       serieTaxaAcertoPct: taxasPct.map(v => _arredondar(v)),
-      serieDatas: lista.map(t => t.dateKey),
-      mediaMovelPct: _mediaMovel(taxasPct).map(v => _arredondar(v)),
+      serieDatas:         lista.map(t => t.dateKey),
+      mediaMovelPct:      _mediaMovel(taxasPct).map(v => _arredondar(v)),
       tendencia: reta
         ? {
             inclinacaoPctPorTentativa: _arredondar(reta.slope, 2),
@@ -837,16 +652,15 @@ export async function curvaDeAprendizado(uid) {
     };
   });
 
-  /* curva geral = todas as tentativas, sem segmentar por disciplina */
   const taxasGeralPct = tentativas.map(t => t.taxaAcerto * 100);
-  const retaGeral      = _regressaoLinear(taxasGeralPct);
+  const retaGeral     = _regressaoLinear(taxasGeralPct);
 
   return {
     porDisciplina: resultadoPorDisc,
     geral: {
-      totalTentativas: tentativas.length,
+      totalTentativas:    tentativas.length,
       serieTaxaAcertoPct: taxasGeralPct.map(v => _arredondar(v)),
-      mediaMovelPct: _mediaMovel(taxasGeralPct).map(v => _arredondar(v)),
+      mediaMovelPct:      _mediaMovel(taxasGeralPct).map(v => _arredondar(v)),
       tendencia: retaGeral
         ? {
             inclinacaoPctPorTentativa: _arredondar(retaGeral.slope, 2),
@@ -859,11 +673,7 @@ export async function curvaDeAprendizado(uid) {
   };
 }
 
-/* ── 2. 🧠 PADRÃO DE DESEMPENHO (consistência/estabilidade) ──
-   Reaproveita o mesmo princípio estatístico (_desvioPadrao das
-   taxas) já usado por _calcularInsight()/_classificarEstabilidade
-   acima, mas devolve a visão por disciplina lado a lado com a
-   geral, em vez de só a classificação agregada única. */
+/* ── 2. Padrão de desempenho ── */
 export async function padraoDeDesempenho(uid) {
   if (!uid) return { geral: null, porDisciplina: {} };
 
@@ -886,7 +696,7 @@ export async function padraoDeDesempenho(uid) {
     return {
       totalTentativas: taxas.length,
       desvioPadraoPct: _arredondar(desvioPct),
-      variacaoMaxPct: variacao,
+      variacaoMaxPct:  variacao,
       classificacao,
     };
   }
@@ -909,13 +719,7 @@ export async function padraoDeDesempenho(uid) {
   };
 }
 
-/* ── 3. 🔥 TENDÊNCIA DO ALUNO (classificação simples) ───────
-   melhorando / estável / piorando, comparando uma janela
-   recente com uma janela anterior. Usa as MESMAS constantes
-   (JANELA_RECENTE, MELHORA_MINIMA_PCT) que _calcularTendencia()
-   já usa para o cálculo agregado — aqui exposta como função
-   pública independente para consumo direto (ex: dashboard),
-   sem precisar passar por todo o pipeline de _calcularInsight. */
+/* ── 3. Tendência do aluno ── */
 export async function tendenciaDoAluno(uid) {
   if (!uid) return { direcao: 'indeterminado', diferencaPct: 0, confianca: 'baixa' };
 
@@ -926,10 +730,7 @@ export async function tendenciaDoAluno(uid) {
   return _calcularTendencia(taxas);
 }
 
-/* ── 4. 🧩 FRAQUEZAS POR DISCIPLINA ──────────────────────────
-   Ranking de disciplinas por taxa média mais baixa e/ou por
-   tendência de queda — usando os mesmos dados já lidos por
-   _buscarTodasTentativas, sem nova coleta. */
+/* ── 4. Fraquezas por disciplina ── */
 export async function fraquezasPorDisciplina(uid) {
   if (!uid) return [];
 
@@ -944,84 +745,68 @@ export async function fraquezasPorDisciplina(uid) {
   });
 
   const lista = Object.entries(porDisc).map(([disc, itens]) => {
-    const taxas    = itens.map(t => t.taxaAcerto);
+    const taxas     = itens.map(t => t.taxaAcerto);
     const taxaMedia = _media(taxas);
     const reta      = _regressaoLinear(taxas.map(v => v * 100));
     const emQueda   = !!reta && reta.slope < -0.5;
 
     return {
-      disciplina: disc,
-      totalTentativas: itens.length,
-      taxaAcertoMediaPct: _arredondar(taxaMedia * 100),
-      nivelEstimado: _classificarFaixa(taxaMedia),
+      disciplina:                disc,
+      totalTentativas:           itens.length,
+      taxaAcertoMediaPct:        _arredondar(taxaMedia * 100),
+      nivelEstimado:             _classificarFaixa(taxaMedia),
       emQueda,
       inclinacaoPctPorTentativa: reta ? _arredondar(reta.slope, 2) : null,
     };
   });
 
-  /* ordena: primeiro por estar em queda, depois pela menor taxa média */
   return lista.sort((a, b) => {
     if (a.emQueda !== b.emQueda) return a.emQueda ? -1 : 1;
     return a.taxaAcertoMediaPct - b.taxaAcertoMediaPct;
   });
 }
 
-/* ── 5. 📊 SCORE EVOLUTIVO ───────────────────────────────────
-   Combina média histórica + tendência recente + consistência
-   num único número 0–100. Usa a mesma fórmula de base de
-   _calcularScoreGeral() (mesmos pesos e mesmo clamp 0–100),
-   mas calculada aqui de forma independente e exposta como
-   consulta isolada — não depende de rodar _calcularInsight
-   por completo. Não persiste nada; é sempre derivada na hora. */
+/* ── 5. Score evolutivo ── */
 export async function scoreEvolutivo(uid) {
   if (!uid) return null;
 
   const tentativas = await _buscarTodasTentativas(uid);
   if (tentativas.length === 0) return null;
 
-  const taxas     = tentativas.map(t => t.taxaAcerto);
-  const taxaMedia = _media(taxas);
-  const tendencia = _calcularTendencia(taxas);
-  const desvioPct = _desvioPadrao(taxas) * 100;
+  const taxas        = tentativas.map(t => t.taxaAcerto);
+  const taxaMedia    = _media(taxas);
+  const tendencia    = _calcularTendencia(taxas);
+  const desvioPct    = _desvioPadrao(taxas) * 100;
   const estabilidade = _classificarEstabilidade(desvioPct, tendencia);
-
-  const scoreGeral = _calcularScoreGeral(taxaMedia, tendencia, estabilidade);
+  const scoreGeral   = _calcularScoreGeral(taxaMedia, tendencia, estabilidade);
 
   return {
     scoreGeral,
     composicao: {
       taxaAcertoMediaPct: _arredondar(taxaMedia * 100),
       tendencia,
-      consistencia: estabilidade,
-      desvioPadraoPct: _arredondar(desvioPct),
+      consistencia:       estabilidade,
+      desvioPadraoPct:    _arredondar(desvioPct),
     },
-    nivelEstimado: _classificarFaixa(taxaMedia),
+    nivelEstimado:   _classificarFaixa(taxaMedia),
     totalTentativas: tentativas.length,
   };
 }
 
-/* ── 6. 🔮 PREVISÃO SIMPLES (extrapolação leve) ──────────────
-   Regressão linear sobre as últimas tentativas (geral ou por
-   disciplina), extrapolando 1 passo adiante. SEM machine
-   learning externo — só álgebra simples (_regressaoLinear,
-   definida no bloco de utilitários numéricos acima). Se não
-   houver pontos suficientes, retorna indeterminado em vez de
-   inventar um número. */
+/* ── 6. Previsão simples ── */
 export async function previsaoSimples(uid, disc = null) {
   if (!uid) return { previsaoTaxaAcertoPct: null, confianca: 'baixa', metodo: 'regressao_linear' };
 
-  const todas = await _buscarTodasTentativas(uid);
-  const tentativas = disc
-    ? todas.filter(t => t.disc === disc)
-    : todas;
+  const todas      = await _buscarTodasTentativas(uid);
+  const tentativas = disc ? todas.filter(t => t.disc === disc) : todas;
 
   if (tentativas.length < JANELA_REGRESSAO_MIN) {
     return {
       previsaoTaxaAcertoPct: null,
-      confianca: 'baixa',
-      metodo: 'regressao_linear',
-      motivo: 'dados_insuficientes',
-      amostras: tentativas.length,
+      confianca:  'baixa',
+      metodo:     'regressao_linear',
+      motivo:     'dados_insuficientes',
+      amostras:   tentativas.length,
       disciplina: disc,
     };
   }
@@ -1031,20 +816,18 @@ export async function previsaoSimples(uid, disc = null) {
   if (!reta) {
     return {
       previsaoTaxaAcertoPct: null,
-      confianca: 'baixa',
-      metodo: 'regressao_linear',
-      motivo: 'dados_insuficientes',
-      amostras: tentativas.length,
+      confianca:  'baixa',
+      metodo:     'regressao_linear',
+      motivo:     'dados_insuficientes',
+      amostras:   tentativas.length,
       disciplina: disc,
     };
   }
 
-  const proximoIndice   = taxasPct.length; // próxima tentativa, índice n
+  const proximoIndice   = taxasPct.length;
   const previsaoBruta   = reta.slope * proximoIndice + reta.intercept;
   const previsaoClamped = _clamp(previsaoBruta, 0, 100);
 
-  /* média móvel como segundo sinal — usada só para nota de
-     confiança, não substitui a regressão como método principal */
   const movel       = _mediaMovel(taxasPct);
   const ultimaMovel  = movel[movel.length - 1];
   const divergencia  = Math.abs(previsaoClamped - ultimaMovel);
@@ -1057,19 +840,13 @@ export async function previsaoSimples(uid, disc = null) {
     previsaoTaxaAcertoPct: _arredondar(previsaoClamped),
     direcaoEsperada: reta.slope > 0.5 ? 'melhora' : (reta.slope < -0.5 ? 'queda' : 'estavel'),
     confianca,
-    metodo: 'regressao_linear',
-    amostras: tentativas.length,
+    metodo:     'regressao_linear',
+    amostras:   tentativas.length,
     disciplina: disc,
   };
 }
 
-/* ── 7. ⏳ COMPARAÇÃO ENTRE PERÍODOS ─────────────────────────
-   Usa carregarEvolutionDailyRange (a Camada 3 já grava os
-   snapshots diários via gravarConsolidacaoEvolucao) para
-   comparar dois intervalos, por padrão "últimos 7 dias" vs
-   "7 dias anteriores a esses". Não recalcula nada que o daily
-   já não tenha — só lê e compara dois conjuntos de snapshots
-   já persistidos, sem nenhuma escrita. */
+/* ── 7. Comparação entre períodos ── */
 export async function compararPeriodos(uid, diasPorPeriodo = DIAS_PERIODO_PADRAO) {
   if (!uid) return null;
 
@@ -1083,23 +860,17 @@ export async function compararPeriodos(uid, diasPorPeriodo = DIAS_PERIODO_PADRAO
 
   function _resumirPeriodo(mapa, keys) {
     const dias = keys.map(k => mapa[k]).filter(Boolean);
-
     if (dias.length === 0) {
       return { diasComAtividade: 0, taxaAcertoMediaPct: null, totalTentativas: 0 };
     }
-
     const taxas = dias
       .map(d => d?.performance?.taxaAcertoMediaPct)
       .filter(v => typeof v === 'number');
-
-    const tentativasTotais = dias.reduce(
-      (acc, d) => acc + (d?.totalTentativas ?? 0), 0
-    );
-
+    const tentativasTotais = dias.reduce((acc, d) => acc + (d?.totalTentativas ?? 0), 0);
     return {
-      diasComAtividade: dias.length,
+      diasComAtividade:   dias.length,
       taxaAcertoMediaPct: taxas.length > 0 ? _arredondar(_media(taxas)) : null,
-      totalTentativas: tentativasTotais,
+      totalTentativas:    tentativasTotais,
     };
   }
 
@@ -1116,20 +887,14 @@ export async function compararPeriodos(uid, diasPorPeriodo = DIAS_PERIODO_PADRAO
 
   return {
     diasPorPeriodo,
-    periodoAtual: atual,
+    periodoAtual:    atual,
     periodoAnterior: anterior,
     variacaoPct,
     direcao,
   };
 }
 
-/* ── RELATÓRIO COMPLETO DA CAMADA 4 ──────────────────────────
-   Agrega todas as visões acima numa única chamada, para
-   consumo direto por UI/dashboard. Cada bloco é resolvido de
-   forma independente; falha em um bloco não derruba os demais
-   (Promise.allSettled). Inclui o summary já persistido pela
-   Camada 3 apenas como referência de leitura — não recalculado
-   aqui. */
+/* ── Relatório completo da Camada 4 ── */
 export async function relatorioEvolucao(uid) {
   if (!uid) return null;
 
@@ -1149,32 +914,60 @@ export async function relatorioEvolucao(uid) {
   const _valor = (r) => (r.status === 'fulfilled' ? r.value : null);
 
   return {
-    geradoEm: Date.now(),
-    curvaDeAprendizado: _valor(curva),
-    padraoDeDesempenho: _valor(padrao),
-    tendenciaDoAluno: _valor(tendencia),
-    fraquezasPorDisciplina: _valor(fraquezas),
-    scoreEvolutivo: _valor(score),
-    previsaoSimples: _valor(previsao),
-    comparacaoDePeriodos: _valor(periodos),
+    geradoEm:                Date.now(),
+    curvaDeAprendizado:      _valor(curva),
+    padraoDeDesempenho:      _valor(padrao),
+    tendenciaDoAluno:        _valor(tendencia),
+    fraquezasPorDisciplina:  _valor(fraquezas),
+    scoreEvolutivo:          _valor(score),
+    previsaoSimples:         _valor(previsao),
+    comparacaoDePeriodos:    _valor(periodos),
     summaryPersistidoCamada3: _valor(summaryPersistido),
   };
 }
 
-/* ══════════════════════════════════════════════
-   FIM DO BLOCO 3 — CAMADA 4
-   ────────────────────────────────────────────────
-   A partir daqui, retomam funções do BLOCO 1 (pipeline):
-   leitura simples do que a consolidação já persistiu,
-   análise pontual local, caminho direto/trigger do evento,
-   reconciliação de login e subscribe — encerrando com o
-   BLOCO 4 (API pública).
-══════════════════════════════════════════════ */
+/* ── 8. Listar tentativas recentes (para Timeline do Dashboard) ──
+   Reutiliza _buscarTodasTentativas e seu cache existente.
+   Não cria novo cache. Não recalcula dados.
+   Ordena por endedAt decrescente e retorna apenas os campos
+   necessários para a Timeline. */
+export async function listarTentativasRecentes(uid, limite = 10) {
+  if (!uid) return [];
+
+  const tentativas = await _buscarTodasTentativas(uid);
+  if (tentativas.length === 0) return [];
+
+  return tentativas
+    .slice()
+    .sort((a, b) => (b.endedAt ?? 0) - (a.endedAt ?? 0))
+    .slice(0, limite)
+    .map(t => ({
+      disc:          t.disc,
+      modo:          t.modo,
+      semestre:      t.semestre,
+      acertos:       t.acertos,
+      totalQuestoes: t.totalQuestoes,
+      taxaAcerto:    t.taxaAcerto,
+      tempoGastoSeg: t.tempoGastoSeg,
+      revealed:      t.revealed,
+      endedAt:       t.endedAt,
+      dateKey:       t.dateKey,
+    }));
+}
+
+/* ── 9. Contar questões respondidas (para Conquistas do Dashboard) ──
+   Reutiliza _buscarTodasTentativas e seu cache existente.
+   Apenas soma totalQuestoes. Sem novo cache. Sem recálculo. */
+export async function contarQuestoesRespondidas(uid) {
+  if (!uid) return 0;
+
+  const tentativas = await _buscarTodasTentativas(uid);
+  return tentativas.reduce((soma, t) => soma + (t.totalQuestoes ?? 0), 0);
+}
 
 /* ══════════════════════════════════════════════
    LEITURA — só consome o que a consolidação gravou
 ══════════════════════════════════════════════ */
-
 export async function lerSummary(uid) {
   if (!uid) return null;
   return carregarEvolutionSummary(uid);
@@ -1210,22 +1003,20 @@ export function analisarTentativa(tentativaNormalizada) {
   const t = tentativaNormalizada;
   if (!t || t.totalQuestoes <= 0) return null;
   return {
-    tipo:                   'tentativa_unica',
-    disc:                   t.disc,
-    modo:                   t.modo,
-    semestre:               t.semestre,
-    taxaAcertoPct:          _arredondar(t.taxaAcerto * 100),
-    acertos:                t.acertos,
-    totalQuestoes:          t.totalQuestoes,
-    tempoTotalSeg:          t.tempoGastoSeg,
+    tipo:                    'tentativa_unica',
+    disc:                    t.disc,
+    modo:                    t.modo,
+    semestre:                t.semestre,
+    taxaAcertoPct:           _arredondar(t.taxaAcerto * 100),
+    acertos:                 t.acertos,
+    totalQuestoes:           t.totalQuestoes,
+    tempoTotalSeg:           t.tempoGastoSeg,
     tempoMedioPorQuestaoSeg: _arredondar(t.tempoPorQuestaoSeg, 1),
-    revelado:               t.revealed,
-    classificacaoRapida:    _classificarFaixa(t.taxaAcerto),
+    revelado:                t.revealed,
+    classificacaoRapida:     _classificarFaixa(t.taxaAcerto),
   };
 }
 
-/* mantida por compatibilidade — análise síncrona/local de um array
-   já em mãos, sem ir ao Firebase */
 export function analisarHistorico(attemptsRaw) {
   const tentativas = (Array.isArray(attemptsRaw) ? attemptsRaw : [])
     .map(_normalizarTentativa)
@@ -1234,22 +1025,7 @@ export function analisarHistorico(attemptsRaw) {
 }
 
 /* ══════════════════════════════════════════════
-   CAMINHO DIRETO — processarQuizDireto(payload)
-   ─────────────────────────────────────────────
-   O evento nexus:quizFinalizado NÃO é mais o único ponto de
-   entrada do pipeline. Esta função é o caminho de execução
-   direto e oficial: qualquer código (UI, testes, backfill,
-   uma futura chamada explícita do engine) pode chamá-la
-   diretamente, sem depender de o evento ter sido disparado
-   e recebido corretamente.
-
-   Regra de ouro respeitada: esta função contém TODA a lógica
-   (resolve uid, valida, delega a processarPayloadBruto). O
-   listener do evento (_onQuizFinalizado, abaixo) NUNCA duplica
-   nada disso — ele apenas chama processarQuizDireto(). Evento
-   deixa de ser um ponto crítico: se o evento falhar ao disparar
-   ou nunca for ouvido, o mesmo resultado pode ser obtido
-   chamando processarQuizDireto(payload) diretamente.
+   CAMINHO DIRETO
 ══════════════════════════════════════════════ */
 export async function processarQuizDireto(payload, uidExplicito = null) {
   if (!payload) return null;
@@ -1267,22 +1043,7 @@ export async function processarQuizDireto(payload, uidExplicito = null) {
 }
 
 /* ══════════════════════════════════════════════
-   GATILHO SECUNDÁRIO — nexus:quizFinalizado
-   ─────────────────────────────────────────────
-   O evento existe apenas como TRIGGER puro (zero lógica de
-   negócio). As duas linhas abaixo de _onQuizFinalizado fazem
-   somente o desempacotamento estritamente necessário do
-   CustomEvent (ler e.detail, descartar se vazio) — não há
-   cálculo, validação de regra de negócio, nem decisão alguma
-   aqui. Em seguida delega 100% para processarQuizDireto(), o
-   mesmo caminho que qualquer chamada direta usaria. Isso
-   garante que evento e chamada direta nunca divirjam: são
-   literalmente a mesma função por baixo.
-
-   ÚNICO FLUXO REAL DO SISTEMA:
-     evento → processarQuizDireto → processarPayloadBruto
-   (processarPayload, no objeto público, é apenas alias do
-   mesmo processarQuizDireto — não é um segundo fluxo.)
+   GATILHO — nexus:quizFinalizado
 ══════════════════════════════════════════════ */
 async function _onQuizFinalizado(e) {
   const payload = e?.detail;
@@ -1315,7 +1076,6 @@ document.addEventListener('nexus:loginSuccess', (e) => {
   if (uid) _reconciliarNoLogin(uid);
 });
 
-/* boot imediato — cobre reload com sessão já logada */
 ;(async () => {
   await new Promise(r => setTimeout(r, 50));
   const uid = _resolverUid();
@@ -1327,7 +1087,7 @@ document.addEventListener('nexus:loginSuccess', (e) => {
 ══════════════════════════════════════════════ */
 function _notificarListeners(evento) {
   _listeners.forEach(fn => {
-    try { fn(evento); } catch (_) { /* listener não deve quebrar o pipeline */ }
+    try { fn(evento); } catch (_) {}
   });
 }
 
@@ -1338,41 +1098,24 @@ export function subscribe(fn) {
 
 /* ════════════════════════════════════════════════════════════
    BLOCO 4 — API PÚBLICA (window.NexusQuizIntelligence)
-   ────────────────────────────────────────────────────────────
-   Único ponto de exposição global. Reúne BLOCO 1 (pipeline),
-   BLOCO 2 (métricas — exposto indiretamente via análises) e
-   BLOCO 3 (Camada 4). Nenhum método aqui contém lógica própria
-   nova: todos delegam para funções já definidas acima.
    ════════════════════════════════════════════════════════════ */
-/* ══════════════════════════════════════════════
-   API PÚBLICA GLOBAL
-   (Camada 3 + Camada 4 — cérebro único do sistema)
-══════════════════════════════════════════════ */
 window.NexusQuizIntelligence = {
   /* pipeline (Camada 3) */
-  consolidar:           (uid) => consolidarUsuario(uid || _resolverUid()),
-
-  /* ALIAS SEGURO — sem lógica própria. processarPayload existe
-     apenas por compatibilidade de contrato com código que já
-     chama esse nome; 100% da execução é delegada para
-     processarQuizDireto(payload, uid), que é o único fluxo real
-     do sistema. Não adicionar nenhuma lógica aqui. */
-  processarPayload:     (payload, uid) => processarQuizDireto(payload, uid),
-
-  /* caminho direto e oficial — mesmo pipeline do evento, sem depender dele */
+  consolidar:         (uid) => consolidarUsuario(uid || _resolverUid()),
+  processarPayload:   (payload, uid) => processarQuizDireto(payload, uid),
   processarQuizDireto,
 
-  /* leitura — só consome o que a consolidação persistiu (Camada 3) */
+  /* leitura — só consome o que a consolidação persistiu */
   lerSummary,
   lerDia,
   lerSemana,
   lerSerieDiaria,
 
-  /* análise local, sem ir ao Firebase (Camada 3) */
+  /* análise local, sem ir ao Firebase */
   analisarTentativa,
   analisarHistorico,
 
-  /* ── Camada 4 — evolução do aluno (somente leitura/interpretação) ── */
+  /* Camada 4 — evolução do aluno */
   curvaDeAprendizado,
   padraoDeDesempenho,
   tendenciaDoAluno,
@@ -1381,6 +1124,10 @@ window.NexusQuizIntelligence = {
   previsaoSimples,
   compararPeriodos,
   relatorioEvolucao,
+
+  /* Camada 4 — dados para Dashboard (Timeline + Conquistas) */
+  listarTentativasRecentes,
+  contarQuestoesRespondidas,
 
   subscribe,
 };

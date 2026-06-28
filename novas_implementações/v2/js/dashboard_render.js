@@ -11,8 +11,9 @@
    Extraído de dashboard.js (v5) na reorganização
    da Camada 5 — Fase 1.6 (split de arquivos).
    Nenhuma lógica foi alterada nesta extração:
-   apenas movida para este módulo dedicado a
-   renderização dos cards inteligentes.
+   apenas os blocos exclusivos dos cards inteligentes
+   (Score, Tendência, Comparação, Fraquezas) foram
+   movidos para este módulo.
 
    ─────────────────────────────────────────────
    CAMADA 5 — COORDENADORA DE RENDER (intelligence)
@@ -32,6 +33,7 @@
    definida na especificação da Camada 5:
      1. Score → 2. Trend → 3. Comparison
      4. Weaknesses → 5. Prediction → 6. LearningCurve
+     7. Timeline → 8. Achievements
    ─────────────────────────────────────────────
 
    REGRAS que cada renderizador abaixo obedece:
@@ -59,17 +61,15 @@ export function renderDashboardIntelligence(relatorio) {
   renderWeaknesses(relatorio);
   renderPrediction(relatorio);
   renderLearningCurve(relatorio);
+  renderTimeline(relatorio);
+  renderAchievements(relatorio);
 }
 
 /* ══════════════════════════════════════════════
    CAMADA 5 — RENDERIZADORES
 ══════════════════════════════════════════════ */
 
-/* Fase 2.1 — Score evolutivo (0-100) + nivel estimado
-   ─────────────────────────────────────────────────────
-   Fonte: relatorio.scoreEvolutivo (calculado por quiz_intelligence.js)
-   Esta funcao apenas le campos e atualiza o DOM.
-   Zero calculos. Zero chamadas externas. */
+/* Fase 2.1 — Score evolutivo (0-100) + nivel estimado */
 export function renderScore(relatorio) {
   const score = relatorio?.scoreEvolutivo;
 
@@ -79,10 +79,8 @@ export function renderScore(relatorio) {
   const elTentativas  = document.getElementById('score-tentativas');
   const elDescricao   = document.getElementById('score-descricao');
 
-  /* Sem elemento no DOM: secao ainda nao existe no HTML */
   if (!elCard) return;
 
-  /* Estado vazio: sem dados de inteligencia */
   if (!score || score.scoreGeral === null || score.scoreGeral === undefined) {
     elGeral.textContent      = '—';
     elNivel.textContent      = 'Nível indisponível';
@@ -92,10 +90,8 @@ export function renderScore(relatorio) {
     return;
   }
 
-  /* Score geral — numero inteiro, ja calculado pelo quiz_intelligence */
   elGeral.textContent = Math.round(score.scoreGeral);
 
-  /* Nivel estimado — mapeamento de chave para label em portugues */
   const NIVEL_LABEL = {
     'avancado':      'Avançado',
     'proficiente':   'Proficiente',
@@ -106,16 +102,11 @@ export function renderScore(relatorio) {
   const nivelChave = score.nivelEstimado ?? 'indeterminado';
   elNivel.textContent = `Nível: ${NIVEL_LABEL[nivelChave] ?? nivelChave}`;
 
-  /* Classe de cor do nivel — controlada por CSS, sem inline style */
   elCard.className = `score-card score-nivel-${nivelChave}`;
 
-  /* Total de tentativas — campo direto */
   const total = score.totalTentativas ?? 0;
   elTentativas.textContent = `${total} tentativa${total !== 1 ? 's' : ''} analisada${total !== 1 ? 's' : ''}`;
 
-  /* Descricao — texto fixo mapeado de composicao.consistencia
-     Nenhuma string e derivada de calculo: e apenas um lookup
-     sobre o valor de consistencia ja classificado pelo quiz_intelligence */
   const DESCRICAO = {
     'melhorando':    'Sua evolução demonstra crescimento constante.',
     'consistente':   'Sua evolução demonstra boa consistência.',
@@ -126,12 +117,7 @@ export function renderScore(relatorio) {
   elDescricao.textContent = DESCRICAO[consistencia] ?? 'Continue praticando para consolidar seu perfil.';
 }
 
-/* Fase 2.2 — Tendencia do aluno (melhorando/estavel/piorando)
-   ─────────────────────────────────────────────────────────────
-   Fonte: relatorio.tendenciaDoAluno (calculado por quiz_intelligence.js
-   via _calcularTendencia). Campos disponíveis: direcao, diferencaPct,
-   confianca. Esta funcao apenas le esses campos e atualiza o DOM.
-   Zero calculos. Zero chamadas externas. */
+/* Fase 2.2 — Tendencia do aluno */
 export function renderTrend(relatorio) {
   const tendencia = relatorio?.tendenciaDoAluno;
 
@@ -140,10 +126,8 @@ export function renderTrend(relatorio) {
   const elDiferenca = document.getElementById('trend-diferenca');
   const elConfianca = document.getElementById('trend-confianca');
 
-  /* Sem elemento no DOM: secao ainda nao existe */
   if (!elCard) return;
 
-  /* Estado vazio: sem dados ou direcao indeterminada por falta de tentativas */
   if (!tendencia || tendencia.direcao === 'indeterminado') {
     elCard.className      = 'trend-card trend-indeterminado';
     elDirecao.textContent = '— Indeterminado';
@@ -152,10 +136,8 @@ export function renderTrend(relatorio) {
     return;
   }
 
-  /* Classe de cor do card — controlada por CSS, sem inline style */
   elCard.className = `trend-card trend-${tendencia.direcao}`;
 
-  /* Icone + label da direcao — lookup puro, sem calculo */
   const DIRECAO_ICONE = {
     'melhorando': '↑',
     'estavel':    '→',
@@ -170,13 +152,10 @@ export function renderTrend(relatorio) {
   const label = DIRECAO_LABEL[tendencia.direcao] ?? tendencia.direcao;
   elDirecao.textContent = `${icone} ${label}`;
 
-  /* Variacao percentual — campo ja calculado pelo quiz_intelligence.
-     Apenas formatamos o sinal e a unidade para exibicao. */
   const pct   = tendencia.diferencaPct ?? 0;
   const sinal = pct >= 0 ? '+' : '';
   elDiferenca.textContent = `${sinal}${pct}% em relação ao período anterior`;
 
-  /* Confianca da analise — lookup puro */
   const CONFIANCA_LABEL = {
     'alta':  'Alta confiança',
     'media': 'Confiança média',
@@ -185,13 +164,7 @@ export function renderTrend(relatorio) {
   elConfianca.textContent = CONFIANCA_LABEL[tendencia.confianca] ?? tendencia.confianca ?? '';
 }
 
-/* Fase 2.3 — Comparacao entre periodos (variacao % entre semanas)
-   ──────────────────────────────────────────────────────────────────
-   Fonte: relatorio.comparacaoDePeriodos (calculado por quiz_intelligence.js
-   via compararPeriodos). Campos disponíveis: diasPorPeriodo, periodoAtual,
-   periodoAnterior, variacaoPct, direcao.
-   Esta funcao apenas le esses campos e atualiza o DOM.
-   Zero calculos. Zero chamadas externas. */
+/* Fase 2.3 — Comparacao entre periodos */
 export function renderComparison(relatorio) {
   const comp = relatorio?.comparacaoDePeriodos;
 
@@ -203,10 +176,8 @@ export function renderComparison(relatorio) {
   const elVariacao   = document.getElementById('comparison-variacao');
   const elDirecao    = document.getElementById('comparison-direcao');
 
-  /* Sem elemento no DOM: secao ainda nao existe */
   if (!elCard) return;
 
-  /* Estado vazio: sem dados ou direcao indeterminada */
   if (!comp || comp.direcao === 'indeterminado' ||
       comp.periodoAtual?.taxaAcertoMediaPct === null) {
     elCard.className     = 'comparison-card comparison-indeterminado';
@@ -219,25 +190,20 @@ export function renderComparison(relatorio) {
     return;
   }
 
-  /* Classe de cor do card — controlada por CSS, sem inline style */
   elCard.className = `comparison-card comparison-${comp.direcao}`;
 
-  /* Periodo atual — campos ja calculados pelo quiz_intelligence */
   const taxaAtual = comp.periodoAtual?.taxaAcertoMediaPct ?? null;
   elAtualTaxa.textContent = taxaAtual !== null ? `${taxaAtual}%` : '—';
 
   const tentAtual = comp.periodoAtual?.totalTentativas ?? 0;
   elAtualTent.textContent = `${tentAtual} tentativa${tentAtual !== 1 ? 's' : ''}`;
 
-  /* Periodo anterior — campos ja calculados pelo quiz_intelligence */
   const taxaAnt = comp.periodoAnterior?.taxaAcertoMediaPct ?? null;
   elAntTaxa.textContent = taxaAnt !== null ? `${taxaAnt}%` : '—';
 
   const tentAnt = comp.periodoAnterior?.totalTentativas ?? 0;
   elAntTent.textContent = `${tentAnt} tentativa${tentAnt !== 1 ? 's' : ''}`;
 
-  /* Variacao — campo ja calculado (variacaoPct = atual.taxa - anterior.taxa)
-     Apenas formatamos o sinal para exibicao */
   const variacao = comp.variacaoPct ?? null;
   if (variacao !== null) {
     const sinal = variacao >= 0 ? '+' : '';
@@ -246,7 +212,6 @@ export function renderComparison(relatorio) {
     elVariacao.textContent = '—';
   }
 
-  /* Direcao — lookup puro de string */
   const DIRECAO_LABEL = {
     'melhorando': '↑ Melhorando em relação ao período anterior',
     'estavel':    '→ Desempenho estável entre os períodos',
@@ -258,19 +223,7 @@ export function renderComparison(relatorio) {
     ` · últimos ${dias} dias vs ${dias} anteriores`;
 }
 
-/* Fase 2.4 — Fraquezas por disciplina (ranking + badge queda)
-   ──────────────────────────────────────────────────────────────
-   Fonte: relatorio.fraquezasPorDisciplina (calculado por quiz_intelligence.js)
-   A lista chega ordenada da Camada 4 — exibida exatamente na ordem recebida.
-
-   Campos consumidos por item (defensivo — so usa o que existe):
-     .disciplina      string  nome/id da disciplina
-     .taxaAcertoPct   number  taxa de acerto em % (0-100)
-     .tendencia       string  'melhorando' | 'estavel' | 'piorando'
-     .emQueda         boolean true se a disciplina está em queda
-
-   Esta funcao apenas le os dados recebidos e atualiza o DOM.
-   Zero calculos. Zero reordenacao. Zero chamadas externas. */
+/* Fase 2.4 — Fraquezas por disciplina */
 export function renderWeaknesses(relatorio) {
   const lista = relatorio?.fraquezasPorDisciplina;
 
@@ -278,10 +231,8 @@ export function renderWeaknesses(relatorio) {
   const elLista   = document.getElementById('weaknesses-lista');
   const elCount   = document.getElementById('weaknesses-count');
 
-  /* Sem elemento no DOM: secao ainda nao existe no HTML */
   if (!elSection || !elLista) return;
 
-  /* Estado vazio: sem dados ou array vazio */
   if (!lista || !Array.isArray(lista) || lista.length === 0) {
     elSection.className = 'weaknesses-card weaknesses-vazio';
     elLista.innerHTML   = '';
@@ -294,12 +245,10 @@ export function renderWeaknesses(relatorio) {
     return;
   }
 
-  /* Card ativo */
   elSection.className = 'weaknesses-card';
   if (elCount) elCount.textContent = lista.length;
   elLista.innerHTML   = '';
 
-  /* Lookup de icone, classe e label por tendencia — apenas exibicao, sem calculo */
   const TENDENCIA_ICONE = {
     'melhorando': '↑',
     'estavel':    '→',
@@ -316,8 +265,6 @@ export function renderWeaknesses(relatorio) {
     'piorando':   'Piorando',
   };
 
-  /* Renderiza cada disciplina na ordem exata recebida da Camada 4.
-     Sem .sort(). Sem reordenacao. */
   lista.forEach((item, idx) => {
     const disc      = item?.disciplina    ?? '—';
     const taxa      = item?.taxaAcertoPct ?? null;
@@ -328,12 +275,10 @@ export function renderWeaknesses(relatorio) {
     row.className   = 'wk-item';
     if (emQueda) row.classList.add('wk-item-queda');
 
-    /* ── Posicao no ranking ── */
     const pos         = document.createElement('div');
     pos.className     = 'wk-pos';
     pos.textContent   = idx + 1;
 
-    /* ── Corpo: nome + badge + barra ── */
     const corpo       = document.createElement('div');
     corpo.className   = 'wk-corpo';
 
@@ -352,7 +297,6 @@ export function renderWeaknesses(relatorio) {
       nomeWrap.appendChild(badge);
     }
 
-    /* Barra de progresso — largura = taxa recebida, sem calculo */
     const barWrap     = document.createElement('div');
     barWrap.className = 'wk-bar-wrap';
 
@@ -362,11 +306,9 @@ export function renderWeaknesses(relatorio) {
     const barFill     = document.createElement('div');
     barFill.className = 'wk-bar-fill';
 
-    /* Sanitizacao de limite para style.width — nao e calculo de metrica */
     const largura = taxa !== null ? Math.max(0, Math.min(100, taxa)) : 0;
     barFill.style.width = largura + '%';
 
-    /* Classe de cor da barra por faixa — apenas CSS, sem nova metrica */
     if (taxa !== null) {
       if (taxa >= 70)      barFill.classList.add('wk-bar-ok');
       else if (taxa >= 40) barFill.classList.add('wk-bar-medio');
@@ -379,7 +321,6 @@ export function renderWeaknesses(relatorio) {
     corpo.appendChild(nomeWrap);
     corpo.appendChild(barWrap);
 
-    /* ── Coluna direita: taxa + tendencia ── */
     const meta        = document.createElement('div');
     meta.className    = 'wk-meta';
 
@@ -407,28 +348,7 @@ export function renderWeaknesses(relatorio) {
   });
 }
 
-/* Fase 2.5 — Previsao simples de desempenho
-   ──────────────────────────────────────────────────────────────
-   Fonte: relatorio.previsaoSimples (calculado por quiz_intelligence.js
-   via previsaoSimples / _regressaoLinear). Campos disponíveis,
-   confirmados diretamente no código-fonte do quiz_intelligence:
-
-     previsaoTaxaAcertoPct   number | null   previsão (%) já calculada
-     direcaoEsperada         string          'melhora' | 'queda' | 'estavel'
-                                              (só existe quando a previsão
-                                              foi calculada com sucesso)
-     confianca               string          'alta' | 'média' | 'baixa'
-     metodo                  string          sempre 'regressao_linear'
-     amostras                number          total de tentativas usadas
-     disciplina              string | null   sempre null neste fluxo
-                                              (relatorioEvolucao chama
-                                              previsaoSimples(uid) sem disc)
-     motivo                  string          'dados_insuficientes'
-                                              (só existe quando NÃO há
-                                              pontos suficientes p/ prever)
-
-   Esta funcao apenas le esses campos e atualiza o DOM.
-   Zero calculos. Zero chamadas externas. */
+/* Fase 2.5 — Previsao simples */
 export function renderPrediction(relatorio) {
   const previsao = relatorio?.previsaoSimples;
 
@@ -438,14 +358,8 @@ export function renderPrediction(relatorio) {
   const elAmostras  = document.getElementById('prediction-amostras');
   const elDescricao = document.getElementById('prediction-descricao');
 
-  /* Sem elemento no DOM: secao ainda nao existe */
   if (!elCard) return;
 
-  /* Estado vazio: sem dados de inteligencia, ou previsão não pôde
-     ser calculada (previsaoTaxaAcertoPct null — falta de dados ou
-     amostras insuficientes). Cobre tanto o caso "motivo: dados_insuficientes"
-     quanto o caso de relatorio.previsaoSimples ausente (Promise rejeitada
-     em relatorioEvolucao). */
   if (!previsao || previsao.previsaoTaxaAcertoPct === null || previsao.previsaoTaxaAcertoPct === undefined) {
     elCard.className        = 'prediction-card prediction-vazio';
     elNumero.textContent    = '—';
@@ -459,10 +373,8 @@ export function renderPrediction(relatorio) {
     return;
   }
 
-  /* Previsão calculada — campo direto, ja vem pronto do quiz_intelligence */
   elNumero.textContent = `${previsao.previsaoTaxaAcertoPct}%`;
 
-  /* Direcao esperada — lookup puro, sem calculo */
   const DIRECAO_ICONE = {
     'melhora': '↑',
     'estavel': '→',
@@ -478,14 +390,11 @@ export function renderPrediction(relatorio) {
   const label = DIRECAO_LABEL[direcaoChave] ?? direcaoChave;
   elDirecao.textContent = `${icone} ${label}`;
 
-  /* Classe de cor do card — controlada por CSS, sem inline style */
   elCard.className = `prediction-card prediction-${direcaoChave}`;
 
-  /* Amostras — campo direto */
   const amostras = previsao.amostras ?? 0;
   elAmostras.textContent = `${amostras} amostra${amostras !== 1 ? 's' : ''} analisada${amostras !== 1 ? 's' : ''}`;
 
-  /* Confianca — lookup puro, mesma convencao usada em renderTrend() */
   const CONFIANCA_LABEL = {
     'alta':  'Alta confiança',
     'media': 'Confiança média',
@@ -498,33 +407,7 @@ export function renderPrediction(relatorio) {
     : 'Estimativa via regressão linear.';
 }
 
-/* Fase 2.6 — Curva de aprendizado (serie temporal + media movel)
-   ──────────────────────────────────────────────────────────────────
-   Fonte: relatorio.curvaDeAprendizado (calculado por quiz_intelligence.js
-   via curvaDeAprendizado / _regressaoLinear / _mediaMovel). Esta função
-   usa exclusivamente o bloco "geral" (visão agregada, sem segmentar por
-   disciplina) — os mesmos campos que renderPrediction/renderTrend já
-   consomem em outros relatórios, confirmados diretamente no código-fonte
-   do quiz_intelligence:
-
-     curvaDeAprendizado.geral.totalTentativas        number
-     curvaDeAprendizado.geral.serieTaxaAcertoPct      number[]  (já em %, já arredondado)
-     curvaDeAprendizado.geral.mediaMovelPct           number[]  (mesmo tamanho da série)
-     curvaDeAprendizado.geral.tendencia.direcao       'melhorando'|'estavel'|'piorando'|'indeterminado'
-     curvaDeAprendizado.geral.tendencia.inclinacaoPctPorTentativa  number | null
-
-   (curvaDeAprendizado.geral NÃO possui serieDatas nem nivelAtual —
-   esses campos só existem em curvaDeAprendizado.porDisciplina[disc],
-   que não é usado por este card.)
-
-   Esta funcao apenas le esses campos e desenha um SVG simples a partir
-   dos pontos já prontos — o mesmo padrão de construção de gráfico já
-   usado em outras partes do dashboard (polyline a partir de um array
-   de valores). Nenhum ponto é calculado aqui: as coordenadas X vêm do
-   índice do array, e as coordenadas Y vêm de uma normalização linear
-   simples (0-100% mapeado para a altura do SVG) — apenas escala de
-   desenho, não uma métrica nova. Zero regressão. Zero média móvel.
-   Zero chamadas externas. */
+/* Fase 2.6 — Curva de aprendizado */
 export function renderLearningCurve(relatorio) {
   const curva = relatorio?.curvaDeAprendizado?.geral;
 
@@ -533,11 +416,8 @@ export function renderLearningCurve(relatorio) {
   const elAmostras   = document.getElementById('curve-amostras');
   const elChartWrap  = document.getElementById('curve-chart-wrap');
 
-  /* Sem elemento no DOM: secao ainda nao existe */
   if (!elCard) return;
 
-  /* Estado vazio: sem dados de inteligencia, ou serie vazia/insuficiente
-     para desenhar uma curva (menos de 2 pontos não forma uma linha) */
   const serie = curva?.serieTaxaAcertoPct;
   if (!curva || !Array.isArray(serie) || serie.length < 2) {
     elCard.className       = 'curve-card curve-vazio';
@@ -555,7 +435,6 @@ export function renderLearningCurve(relatorio) {
     return;
   }
 
-  /* Tendencia — lookup puro, mesma convencao usada em renderTrend() */
   const tendencia = curva.tendencia ?? { direcao: 'indeterminado', inclinacaoPctPorTentativa: null };
 
   const DIRECAO_ICONE = {
@@ -573,18 +452,11 @@ export function renderLearningCurve(relatorio) {
   const label = DIRECAO_LABEL[direcaoChave] ?? direcaoChave;
   elTendencia.textContent = `${icone} ${label}`;
 
-  /* Classe de cor do card — controlada por CSS, sem inline style */
   elCard.className = `curve-card curve-${direcaoChave}`;
 
-  /* Total de tentativas — campo direto */
   const total = curva.totalTentativas ?? serie.length;
   elAmostras.textContent = `${total} tentativa${total !== 1 ? 's' : ''} analisada${total !== 1 ? 's' : ''}`;
 
-  /* ── Desenho do SVG ──
-     mediaMovelPct ja vem calculada pelo quiz_intelligence — aqui
-     apenas plotamos os pontos recebidos, sem nenhum processamento
-     estatistico. A normalizacao 0-100% → altura do SVG é escala
-     de desenho (mapeamento linear fixo), nao uma metrica derivada. */
   if (elChartWrap) {
     elChartWrap.innerHTML = '';
 
@@ -596,8 +468,6 @@ export function renderLearningCurve(relatorio) {
     svg.setAttribute('class', 'curve-svg');
     svg.setAttribute('preserveAspectRatio', 'none');
 
-    /* Escala fixa 0-100%, ja que serieTaxaAcertoPct e mediaMovelPct
-       sao sempre percentuais (0 a 100) — sem calculo de min/max */
     function _pontos(valores) {
       return valores.map((v, i) => {
         const x = valores.length > 1
@@ -623,4 +493,251 @@ export function renderLearningCurve(relatorio) {
 
     elChartWrap.appendChild(svg);
   }
+}
+
+/* ══════════════════════════════════════════════
+   FASE 3 — Timeline (Atividade Recente)
+   ─────────────────────────────────────────────
+   Fonte: relatorio.tentativasRecentes
+   (populado em _carregarIntelligence via
+   listarTentativasRecentes())
+
+   Campos consumidos por item:
+     .disc          string
+     .modo          string
+     .acertos       number
+     .totalQuestoes number
+     .taxaAcerto    number  (0–1)
+     .endedAt       number  (timestamp)
+
+   Zero cálculos. Zero Firebase. Zero quiz_intelligence.
+   Apenas lookup de formatação e atualização de DOM.
+══════════════════════════════════════════════ */
+export function renderTimeline(relatorio) {
+  const tentativas = relatorio?.tentativasRecentes;
+
+  const elTimeline = document.getElementById('activity-timeline');
+  if (!elTimeline) return;
+
+  elTimeline.innerHTML = '';
+
+  if (!tentativas || !Array.isArray(tentativas) || tentativas.length === 0) {
+    const vazio = document.createElement('div');
+    vazio.className   = 'tl-empty';
+    vazio.textContent = 'Nenhum quiz registrado ainda. Complete quizzes para ver sua atividade recente.';
+    elTimeline.appendChild(vazio);
+    return;
+  }
+
+  tentativas.forEach(t => {
+    const taxa  = typeof t.taxaAcerto === 'number' ? Math.round(t.taxaAcerto * 100) : 0;
+    const label = [t.disc, t.modo].filter(Boolean).join(' · ') || 'Quiz';
+
+    /* Cor do dot baseada na taxa — lookup CSS, sem cálculo */
+    let corDot, corIcone;
+    if (taxa >= 75)      { corDot = 'rgba(61,220,132,.12)';  corIcone = '#3DDC84'; }
+    else if (taxa >= 50) { corDot = 'rgba(255,181,71,.12)';  corIcone = '#FFB547'; }
+    else                 { corDot = 'rgba(255,92,106,.12)';   corIcone = '#FF5C6A'; }
+
+    const tempoFormatado = _formatarTempoRelativo(t.endedAt);
+
+    const item = document.createElement('div');
+    item.className = 'tl-item';
+
+    item.innerHTML = `
+      <div class="tl-dot" style="background:${corDot}">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="${corIcone}" stroke-width="1.5">
+          <circle cx="7" cy="7" r="5.5"/>
+          <path d="M5 7c0-1.1.9-2 2-2s2 .9 2 2-.9 1.5-2 1.5v1"/>
+          <circle cx="7" cy="11" r=".5" fill="${corIcone}"/>
+        </svg>
+      </div>
+      <div class="tl-body">
+        <div class="tl-title">Quiz finalizado</div>
+        <div class="tl-desc">${_escapeHtml(label)} · <strong style="color:${corIcone}">${t.acertos ?? 0}/${t.totalQuestoes ?? 0} (${taxa}%)</strong></div>
+        <div class="tl-time">
+          <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="5" cy="5" r="4.5"/>
+            <path d="M5 2.5V5l1.5 1.5"/>
+          </svg>
+          ${_escapeHtml(tempoFormatado)}
+        </div>
+      </div>
+    `;
+
+    elTimeline.appendChild(item);
+  });
+}
+
+/* Formata timestamp como texto relativo — apenas formatação, sem cálculo de métrica */
+function _formatarTempoRelativo(ts) {
+  if (!ts) return '—';
+  const diff    = Date.now() - ts;
+  const minutos = Math.floor(diff / 60000);
+  const horas   = Math.floor(diff / 3600000);
+  const dias    = Math.floor(diff / 86400000);
+
+  if (minutos < 1)       return 'agora mesmo';
+  if (minutos < 60)      return `há ${minutos}min`;
+  if (horas < 24)        return `há ${horas}h`;
+  if (dias === 1)        return 'ontem';
+  if (dias < 7)          return `há ${dias} dias`;
+  return new Date(ts).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+}
+
+function _escapeHtml(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
+/* ══════════════════════════════════════════════
+   FASE 3 — Conquistas
+   ─────────────────────────────────────────────
+   Fonte: relatorio.conquistas
+   (objeto calculado em _carregarIntelligence e
+   armazenado em State.intelligence)
+
+   Estrutura esperada de relatorio.conquistas:
+     {
+       sequencia7:       boolean,
+       sequencia30:      boolean,
+       tentativas100:    boolean,
+       questoesMil:      boolean,
+       scoreAvancado:    boolean,
+       emEvolucao:       boolean,
+       miraAfiada:       boolean,
+       maratonista:      boolean,
+       semQuedas:        boolean,
+       sessoes50:        boolean,
+     }
+
+   Zero cálculos. Zero Firebase. Zero quiz_intelligence.
+   Apenas lookup de estado e atualização de DOM.
+══════════════════════════════════════════════ */
+
+/* Catálogo de conquistas — definição estática, sem lógica */
+const CONQUISTAS_CATALOGO = [
+  {
+    id:      'sequencia7',
+    emoji:   '🔥',
+    nome:    'Sequência de 7 dias',
+    desc:    'Estudou por 7 dias consecutivos',
+    tag:     'Prata',
+    tagCls:  'tag-silver',
+    corBg:   'rgba(168,163,255,.12)',
+  },
+  {
+    id:      'sequencia30',
+    emoji:   '🔥',
+    nome:    'Sequência de 30 dias',
+    desc:    'Estudou por 30 dias consecutivos',
+    tag:     'Ouro',
+    tagCls:  'tag-gold',
+    corBg:   'rgba(255,181,71,.12)',
+  },
+  {
+    id:      'tentativas100',
+    emoji:   '📝',
+    nome:    '100 Tentativas',
+    desc:    'Completou 100 quizzes na plataforma',
+    tag:     'Prata',
+    tagCls:  'tag-silver',
+    corBg:   'rgba(79,168,232,.12)',
+  },
+  {
+    id:      'questoesMil',
+    emoji:   '⚡',
+    nome:    'Mil Questões',
+    desc:    'Respondeu mais de 1.000 questões na plataforma',
+    tag:     'Ouro',
+    tagCls:  'tag-gold',
+    corBg:   'rgba(61,220,132,.1)',
+  },
+  {
+    id:      'scoreAvancado',
+    emoji:   '🎯',
+    nome:    'Score Avançado',
+    desc:    'Atingiu nível Avançado no Score Evolutivo',
+    tag:     'Ouro',
+    tagCls:  'tag-gold',
+    corBg:   'rgba(255,181,71,.12)',
+  },
+  {
+    id:      'emEvolucao',
+    emoji:   '📈',
+    nome:    'Em Evolução',
+    desc:    'Tendência de melhora detectada pelo sistema',
+    tag:     'Prata',
+    tagCls:  'tag-silver',
+    corBg:   'rgba(61,220,132,.1)',
+  },
+  {
+    id:      'miraAfiada',
+    emoji:   '🎯',
+    nome:    'Mira Afiada',
+    desc:    'Mais de 75% de acertos na média geral',
+    tag:     'Ouro',
+    tagCls:  'tag-gold',
+    corBg:   'rgba(255,181,71,.12)',
+  },
+  {
+    id:      'maratonista',
+    emoji:   '🏅',
+    nome:    'Maratonista',
+    desc:    'Mais de 5 horas de estudo em um único dia',
+    tag:     'Ouro',
+    tagCls:  'tag-gold',
+    corBg:   'rgba(108,99,255,.15)',
+  },
+  {
+    id:      'semQuedas',
+    emoji:   '✅',
+    nome:    'Sem Quedas',
+    desc:    'Sem disciplinas em queda detectadas',
+    tag:     'Prata',
+    tagCls:  'tag-silver',
+    corBg:   'rgba(61,220,132,.1)',
+  },
+  {
+    id:      'sessoes50',
+    emoji:   '🏆',
+    nome:    '50 Sessões',
+    desc:    'Realizou 50 sessões de estudo',
+    tag:     'Ouro',
+    tagCls:  'tag-gold',
+    corBg:   'rgba(255,181,71,.12)',
+  },
+];
+
+export function renderAchievements(relatorio) {
+  const conquistas = relatorio?.conquistas;
+
+  const elLista = document.getElementById('ach-list');
+  if (!elLista) return;
+
+  elLista.innerHTML = '';
+
+  /* Se não há dados ainda, renderiza tudo como bloqueado */
+  const dados = conquistas ?? {};
+
+  CONQUISTAS_CATALOGO.forEach(c => {
+    const desbloqueada = dados[c.id] === true;
+
+    const item          = document.createElement('div');
+    item.className      = `ach-item${desbloqueada ? '' : ' locked'}`;
+
+    const badgeBg = desbloqueada ? c.corBg : 'var(--border)';
+
+    item.innerHTML = `
+      <div class="ach-badge" style="background:${badgeBg}">${c.emoji}</div>
+      <div class="ach-body">
+        <div class="ach-name">${_escapeHtml(c.nome)}</div>
+        <div class="ach-desc">${_escapeHtml(c.desc)}</div>
+        <span class="ach-tag ${desbloqueada ? c.tagCls : 'tag-locked'}">${desbloqueada ? c.tag : 'Bloqueado'}</span>
+      </div>
+    `;
+
+    elLista.appendChild(item);
+  });
 }

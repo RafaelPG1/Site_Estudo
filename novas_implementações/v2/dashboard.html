@@ -767,109 +767,9 @@
             <span class="section-title">Atividade recente</span>
             <div class="section-line"></div>
           </div>
-
-          <div class="timeline">
-
-            <div class="tl-item">
-              <div class="tl-dot" style="background:rgba(108,99,255,.15)">
-                <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#A8A3FF" stroke-width="1.5">
-                  <path d="M2 3h10M2 7h10M2 11h6"/>
-                </svg>
-              </div>
-              <div class="tl-body">
-                <div class="tl-title">Resumo aberto</div>
-                <div class="tl-desc">Modelagem Relacional — Banco de Dados</div>
-                <div class="tl-time">
-                  <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <circle cx="5" cy="5" r="4.5"/>
-                    <path d="M5 2.5V5l1.5 1.5"/>
-                  </svg>
-                  Hoje, 09:41
-                </div>
-              </div>
-            </div>
-
-            <div class="tl-item">
-              <div class="tl-dot" style="background:rgba(61,220,132,.12)">
-                <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#3DDC84" stroke-width="1.5">
-                  <circle cx="7" cy="7" r="5.5"/>
-                  <path d="M5 7c0-1.1.9-2 2-2s2 .9 2 2-.9 1.5-2 1.5v1"/>
-                  <circle cx="7" cy="11" r=".5" fill="#3DDC84"/>
-                </svg>
-              </div>
-              <div class="tl-body">
-                <div class="tl-title">Quiz finalizado</div>
-                <div class="tl-desc">Camada de Transporte — Redes · <strong style="color:var(--green)">8.0/10</strong></div>
-                <div class="tl-time">
-                  <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <circle cx="5" cy="5" r="4.5"/>
-                    <path d="M5 2.5V5l1.5 1.5"/>
-                  </svg>
-                  Ontem, 21:15
-                </div>
-              </div>
-            </div>
-
-            <div class="tl-item">
-              <div class="tl-dot" style="background:rgba(255,181,71,.12)">
-                <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#FFB547" stroke-width="1.5">
-                  <rect x="1" y="3" width="12" height="8" rx="2"/>
-                  <path d="M4 6.5h2.5M8.5 6.5h.01M10.5 8h.01"/>
-                </svg>
-              </div>
-              <div class="tl-body">
-                <div class="tl-title">Jogo utilizado</div>
-                <div class="tl-desc">Show do Milhão — POO · 850 pontos</div>
-                <div class="tl-time">
-                  <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <circle cx="5" cy="5" r="4.5"/>
-                    <path d="M5 2.5V5l1.5 1.5"/>
-                  </svg>
-                  Ontem, 19:08
-                </div>
-              </div>
-            </div>
-
-            <div class="tl-item">
-              <div class="tl-dot" style="background:rgba(79,168,232,.12)">
-                <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#4FA8E8" stroke-width="1.5">
-                  <path d="M2 2h10a1 1 0 011 1v8a1 1 0 01-1 1H2a1 1 0 01-1-1V3a1 1 0 011-1z"/>
-                  <path d="M4 6h6M4 9h3"/>
-                </svg>
-              </div>
-              <div class="tl-body">
-                <div class="tl-title">Disciplina acessada</div>
-                <div class="tl-desc">Web Design — Tipografia e Grid Systems</div>
-                <div class="tl-time">
-                  <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <circle cx="5" cy="5" r="4.5"/>
-                    <path d="M5 2.5V5l1.5 1.5"/>
-                  </svg>
-                  23/06, 14:30
-                </div>
-              </div>
-            </div>
-
-            <div class="tl-item">
-              <div class="tl-dot" style="background:rgba(108,99,255,.15)">
-                <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#A8A3FF" stroke-width="1.5">
-                  <path d="M2 3h10M2 7h10M2 11h6"/>
-                </svg>
-              </div>
-              <div class="tl-body">
-                <div class="tl-title">Flashcard revisado</div>
-                <div class="tl-desc">Herança e Polimorfismo — POO · 12 cards</div>
-                <div class="tl-time">
-                  <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <circle cx="5" cy="5" r="4.5"/>
-                    <path d="M5 2.5V5l1.5 1.5"/>
-                  </svg>
-                  22/06, 20:05
-                </div>
-              </div>
-            </div>
-
-          </div>
+ 
+          <!-- Preenchido por renderTimeline() em dashboard_render.js -->
+          <div class="timeline" id="activity-timeline"></div>
         </div>
       </div>
 
@@ -1027,56 +927,11 @@
             <span class="section-title">Conquistas</span>
             <div class="section-line"></div>
           </div>
-
-          <div class="ach-list">
-
-            <div class="ach-item">
-              <div class="ach-badge" style="background:rgba(255,181,71,.12)">🎯</div>
-              <div class="ach-body">
-                <div class="ach-name">Mira Afiada</div>
-                <div class="ach-desc">Mais de 75% de acertos em todas as disciplinas</div>
-                <span class="ach-tag tag-gold">Ouro</span>
-              </div>
-            </div>
-
-            <div class="ach-item">
-              <div class="ach-badge" style="background:rgba(168,163,255,.12)">🔥</div>
-              <div class="ach-body">
-                <div class="ach-name">Sequência de 7 dias</div>
-                <div class="ach-desc">Estudou por 7 dias consecutivos</div>
-                <span class="ach-tag tag-silver">Prata</span>
-              </div>
-            </div>
-
-            <div class="ach-item">
-              <div class="ach-badge" style="background:rgba(61,220,132,.1)">⚡</div>
-              <div class="ach-body">
-                <div class="ach-name">Mil Questões</div>
-                <div class="ach-desc">Respondeu mais de 1.000 questões na plataforma</div>
-                <span class="ach-tag tag-gold">Ouro</span>
-              </div>
-            </div>
-
-            <div class="ach-item locked">
-              <div class="ach-badge" style="background:var(--border)">🏆</div>
-              <div class="ach-body">
-                <div class="ach-name">Mestre do Nexus</div>
-                <div class="ach-desc">Complete 100% de todas as disciplinas</div>
-                <span class="ach-tag tag-locked">Bloqueado</span>
-              </div>
-            </div>
-
-            <div class="ach-item locked">
-              <div class="ach-badge" style="background:var(--border)">🌐</div>
-              <div class="ach-body">
-                <div class="ach-name">Rede Completa</div>
-                <div class="ach-desc">Finalize todos os módulos de Redes</div>
-                <span class="ach-tag tag-locked">Bloqueado</span>
-              </div>
-            </div>
-
-          </div>
+ 
+          <!-- Preenchido por renderAchievements() em dashboard_render.js -->
+          <div class="ach-list" id="ach-list"></div>
         </div>
+ 
 
       </div>
 
