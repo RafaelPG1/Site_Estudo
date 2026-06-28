@@ -2,10 +2,13 @@
 /* ============================================================
    NEXUS STUDY — quiz/js/quiz_intelligence.js
 
-   CAMADA 3 v3 — Quiz Intelligence (cérebro do sistema)
+   CAMADA 3 + CAMADA 4 — Quiz Intelligence (cérebro único do sistema)
    ─────────────────────────────────────────────────────
-   RESPONSABILIDADE TOTAL de inteligência de aprendizado:
+   Este módulo concentra TODA a inteligência de aprendizado.
+   Não existe arquivo paralelo de inteligência — Camada 3 e
+   Camada 4 vivem dentro do mesmo módulo, sem duplicação.
 
+   CAMADA 3 — pipeline ativo (escreve no Firebase):
      ✔ Receber payload BRUTO de nexus:quizFinalizado
      ✔ Calcular acertos, erros, taxa de acerto
      ✔ Calcular tempo por questão e tempo total
@@ -14,6 +17,23 @@
      ✔ Detectar padrões de erro e tendências de evolução
      ✔ Calcular nível estimado, consistência, dificuldade
      ✔ Notificar assinantes via subscribe()
+
+   CAMADA 4 — motor de evolução (somente leitura/interpretação,
+   ver bloco "CAMADA 4 — MOTOR DE EVOLUÇÃO E INTERPRETAÇÃO" mais
+   abaixo, logo após _buscarTodasTentativas):
+     ✔ Curva de aprendizado por disciplina ao longo do tempo
+     ✔ Padrão de desempenho / consistência (geral e por disciplina)
+     ✔ Tendência do aluno (melhorando / estável / piorando)
+     ✔ Fraquezas por disciplina (ranking + detecção de queda)
+     ✔ Score evolutivo (0–100)
+     ✔ Previsão simples (regressão linear leve, sem libs externas)
+     ✔ Comparação entre períodos (usa daily/weekly já persistidos)
+     A Camada 4 NUNCA escreve no Firebase — reaproveita os mesmos
+     utilitários (_media, _desvioPadrao, _normalizarTentativa,
+     _buscarTodasTentativas, _classificarFaixa, _calcularTendencia,
+     _calcularScoreGeral, _classificarEstabilidade) já definidos
+     pela Camada 3 neste mesmo arquivo, evitando qualquer duplicação
+     de lógica entre módulos.
 
    POR QUE O ENGINE NÃO FAZ MAIS ISSO (v10 → v3):
      O quiz_engine.js (v10) despacha um CustomEvent
@@ -35,12 +55,16 @@
    IDEMPOTÊNCIA:
      consolidarUsuario(uid) reconstrói TUDO do zero lendo
      performance/* do Firestore. Pode rodar N vezes com
-     o mesmo resultado.
+     o mesmo resultado. As funções da Camada 4 também são
+     idempotentes pelo mesmo motivo: leem do zero, não acumulam
+     estado entre chamadas, e nunca escrevem nada.
 
    NÃO FAZ:
      ✗ UI / dashboard / gráficos
      ✗ Alterações em quiz_engine.js
      ✗ Alterações em session-tracker.js
+     ✗ Escrita no Firebase fora do pipeline da Camada 3
+     ✗ Coleta de novos dados (Camada 4 é só leitura/interpretação)
    ============================================================ */
 
 import {
@@ -70,6 +94,14 @@ const FAIXAS_NIVEL = [
   { min: 0.00, nivel: 'fundamentos'   },
 ];
 
+/* ── Constantes específicas da Camada 4 (evolução/previsão) ──
+   Reaproveitam as mesmas convenções da Camada 3 (JANELA_RECENTE,
+   DESVIO_INSTAVEL, MELHORA_MINIMA_PCT já definidas acima e usadas
+   também aqui) — só o que é exclusivo da Camada 4 é declarado: */
+const JANELA_REGRESSAO_MIN = 3;  // mínimo de pontos para regressão linear
+const JANELA_MEDIA_MOVEL   = 3;  // tamanho da janela de média móvel
+const DIAS_PERIODO_PADRAO  = 7;  // tamanho padrão de "período" em comparações
+
 const _listeners = new Set();
 
 /* estado interno — lock local de consolidação concorrente */
@@ -95,6 +127,43 @@ function _arredondar(n, casas = 1) {
   return Math.round((n + Number.EPSILON) * f) / f;
 }
 function _clamp(n, min, max) { return Math.min(max, Math.max(min, n)); }
+
+/* ── Regressão linear simples (mínimos quadrados) — Camada 4 ──
+   entrada: array de números (y), x assumido como índice 0..n-1
+   saída: { slope, intercept } ou null se não houver pontos
+   suficientes. Usada apenas para a extrapolação leve (previsão
+   simples) — não é machine learning, é álgebra de ensino médio.
+   Reaproveita _media já definida acima. */
+function _regressaoLinear(valores) {
+  const n = valores.length;
+  if (n < JANELA_REGRESSAO_MIN) return null;
+
+  const xs     = valores.map((_, i) => i);
+  const mediaX = _media(xs);
+  const mediaY = _media(valores);
+
+  let num = 0;
+  let den = 0;
+  for (let i = 0; i < n; i++) {
+    num += (xs[i] - mediaX) * (valores[i] - mediaY);
+    den += (xs[i] - mediaX) ** 2;
+  }
+  if (den === 0) return { slope: 0, intercept: mediaY };
+
+  const slope     = num / den;
+  const intercept = mediaY - slope * mediaX;
+  return { slope, intercept };
+}
+
+/* ── Média móvel simples — Camada 4 ── */
+function _mediaMovel(valores, janela = JANELA_MEDIA_MOVEL) {
+  if (!valores || valores.length === 0) return [];
+  return valores.map((_, i) => {
+    const inicio = Math.max(0, i - janela + 1);
+    const fatia  = valores.slice(inicio, i + 1);
+    return _media(fatia);
+  });
+}
 
 /* ══════════════════════════════════════════════
    CÁLCULO DE ACERTOS A PARTIR DO PAYLOAD BRUTO
@@ -151,6 +220,20 @@ function _weekKey(ts) {
 }
 
 function _dateKeyHoje() { return _dateKey(Date.now()); }
+
+/* ── Gera as dateKeys dos últimos N dias, com deslocamento opcional
+   (usado pela comparação de períodos da Camada 4 — ex: para obter o
+   período "anterior", passa-se offsetDias = n) ── */
+function _ultimosNDiasKeys(n, offsetDias = 0) {
+  const hoje = new Date();
+  const keys = [];
+  for (let i = n - 1; i >= 0; i--) {
+    const d = new Date(hoje);
+    d.setDate(d.getDate() - i - offsetDias);
+    keys.push(_dateKey(d.getTime()));
+  }
+  return keys;
+}
 
 /* ══════════════════════════════════════════════
    NORMALIZAÇÃO DE TENTATIVAS
@@ -460,6 +543,403 @@ async function _buscarTodasTentativas(uid) {
     .filter(t => t && t.totalQuestoes > 0);
 }
 
+/* ════════════════════════════════════════════════════════════
+   CAMADA 4 — MOTOR DE EVOLUÇÃO E INTERPRETAÇÃO
+   ────────────────────────────────────────────────────────────
+   "Dado o histórico existente, extrair inteligência do aluno."
+
+   ⚠️ REGRA ABSOLUTA DESTE BLOCO
+   ────────────────────────────────────────────────────────────
+   As funções abaixo NÃO:
+     ✗ coletam novos dados
+     ✗ escutam eventos (nenhum addEventListener próprio)
+     ✗ escrevem no Firebase (usam apenas as funções de LEITURA
+       já importadas no topo deste arquivo — listarQuizIds,
+       listarPerformanceQuiz, carregarEvolutionSummary,
+       carregarEvolutionDaily, carregarEvolutionWeekly,
+       carregarEvolutionDailyRange)
+     ✗ modificam schema de performance/daily/weekly/summary
+     ✗ criam novas coleções ou novos campos persistidos
+     ✗ duplicam lógica já existente na Camada 3 — toda a base
+       (busca de tentativas, normalização, médias, desvio
+       padrão, classificação de faixa) é a MESMA já usada acima
+       por _calcularInsight(); a Camada 4 apenas reorganiza e
+       extrapola esses mesmos números sob ângulos diferentes.
+
+   As funções abaixo SOMENTE:
+     ✔ leem o que já existe (performance/*, daily, weekly, summary)
+     ✔ interpretam, agrupam, comparam, projetam
+     ✔ retornam estruturas em memória — nunca gravam nada
+
+   Se faltar dado para uma análise, a resposta correspondente
+   vem marcada como indeterminada/null — nunca inventa dado,
+   nunca aciona coleta nova.
+   ════════════════════════════════════════════════════════════ */
+
+/* ── 1. 📈 CURVA DE APRENDIZADO POR DISCIPLINA ──────────────
+   Para cada disciplina: série temporal de taxaAcerto, média
+   móvel, e reta de tendência (regressão linear). Não cria dado
+   novo — apenas reorganiza o que _buscarTodasTentativas já lê
+   de performance/*, agrupando por disciplina. */
+export async function curvaDeAprendizado(uid) {
+  if (!uid) return { porDisciplina: {}, geral: null };
+
+  const tentativas = await _buscarTodasTentativas(uid);
+  if (tentativas.length === 0) return { porDisciplina: {}, geral: null };
+
+  const porDisc = {};
+  tentativas.forEach(t => {
+    const chave = t.disc || '__sem_disciplina__';
+    if (!porDisc[chave]) porDisc[chave] = [];
+    porDisc[chave].push(t);
+  });
+
+  const resultadoPorDisc = {};
+  Object.entries(porDisc).forEach(([disc, lista]) => {
+    const taxasPct = lista.map(t => t.taxaAcerto * 100);
+    const reta     = _regressaoLinear(taxasPct);
+
+    resultadoPorDisc[disc] = {
+      totalTentativas: lista.length,
+      serieTaxaAcertoPct: taxasPct.map(v => _arredondar(v)),
+      serieDatas: lista.map(t => t.dateKey),
+      mediaMovelPct: _mediaMovel(taxasPct).map(v => _arredondar(v)),
+      tendencia: reta
+        ? {
+            inclinacaoPctPorTentativa: _arredondar(reta.slope, 2),
+            direcao: Math.abs(reta.slope) < 0.5
+              ? 'estavel'
+              : (reta.slope > 0 ? 'melhorando' : 'piorando'),
+          }
+        : { inclinacaoPctPorTentativa: null, direcao: 'indeterminado' },
+      nivelAtual: _classificarFaixa(_media(lista.slice(-JANELA_MEDIA_MOVEL).map(t => t.taxaAcerto))),
+    };
+  });
+
+  /* curva geral = todas as tentativas, sem segmentar por disciplina */
+  const taxasGeralPct = tentativas.map(t => t.taxaAcerto * 100);
+  const retaGeral      = _regressaoLinear(taxasGeralPct);
+
+  return {
+    porDisciplina: resultadoPorDisc,
+    geral: {
+      totalTentativas: tentativas.length,
+      serieTaxaAcertoPct: taxasGeralPct.map(v => _arredondar(v)),
+      mediaMovelPct: _mediaMovel(taxasGeralPct).map(v => _arredondar(v)),
+      tendencia: retaGeral
+        ? {
+            inclinacaoPctPorTentativa: _arredondar(retaGeral.slope, 2),
+            direcao: Math.abs(retaGeral.slope) < 0.5
+              ? 'estavel'
+              : (retaGeral.slope > 0 ? 'melhorando' : 'piorando'),
+          }
+        : { inclinacaoPctPorTentativa: null, direcao: 'indeterminado' },
+    },
+  };
+}
+
+/* ── 2. 🧠 PADRÃO DE DESEMPENHO (consistência/estabilidade) ──
+   Reaproveita o mesmo princípio estatístico (_desvioPadrao das
+   taxas) já usado por _calcularInsight()/_classificarEstabilidade
+   acima, mas devolve a visão por disciplina lado a lado com a
+   geral, em vez de só a classificação agregada única. */
+export async function padraoDeDesempenho(uid) {
+  if (!uid) return { geral: null, porDisciplina: {} };
+
+  const tentativas = await _buscarTodasTentativas(uid);
+  if (tentativas.length === 0) return { geral: null, porDisciplina: {} };
+
+  function _avaliar(lista) {
+    const taxas = lista.map(t => t.taxaAcerto);
+    if (taxas.length === 0) return null;
+    const desvioPct = _desvioPadrao(taxas) * 100;
+    const variacao  = taxas.length >= 2
+      ? _arredondar((Math.max(...taxas) - Math.min(...taxas)) * 100)
+      : 0;
+
+    let classificacao;
+    if (taxas.length < JANELA_REGRESSAO_MIN) classificacao = 'indeterminado';
+    else if (desvioPct >= DESVIO_INSTAVEL)    classificacao = 'oscilante';
+    else                                       classificacao = 'consistente';
+
+    return {
+      totalTentativas: taxas.length,
+      desvioPadraoPct: _arredondar(desvioPct),
+      variacaoMaxPct: variacao,
+      classificacao,
+    };
+  }
+
+  const porDisc = {};
+  tentativas.forEach(t => {
+    const chave = t.disc || '__sem_disciplina__';
+    if (!porDisc[chave]) porDisc[chave] = [];
+    porDisc[chave].push(t);
+  });
+
+  const resultadoPorDisc = {};
+  Object.entries(porDisc).forEach(([disc, lista]) => {
+    resultadoPorDisc[disc] = _avaliar(lista);
+  });
+
+  return {
+    geral: _avaliar(tentativas),
+    porDisciplina: resultadoPorDisc,
+  };
+}
+
+/* ── 3. 🔥 TENDÊNCIA DO ALUNO (classificação simples) ───────
+   melhorando / estável / piorando, comparando uma janela
+   recente com uma janela anterior. Usa as MESMAS constantes
+   (JANELA_RECENTE, MELHORA_MINIMA_PCT) que _calcularTendencia()
+   já usa para o cálculo agregado — aqui exposta como função
+   pública independente para consumo direto (ex: dashboard),
+   sem precisar passar por todo o pipeline de _calcularInsight. */
+export async function tendenciaDoAluno(uid) {
+  if (!uid) return { direcao: 'indeterminado', diferencaPct: 0, confianca: 'baixa' };
+
+  const tentativas = await _buscarTodasTentativas(uid);
+  if (tentativas.length === 0) return { direcao: 'indeterminado', diferencaPct: 0, confianca: 'baixa' };
+
+  const taxas = tentativas.map(t => t.taxaAcerto);
+  return _calcularTendencia(taxas);
+}
+
+/* ── 4. 🧩 FRAQUEZAS POR DISCIPLINA ──────────────────────────
+   Ranking de disciplinas por taxa média mais baixa e/ou por
+   tendência de queda — usando os mesmos dados já lidos por
+   _buscarTodasTentativas, sem nova coleta. */
+export async function fraquezasPorDisciplina(uid) {
+  if (!uid) return [];
+
+  const tentativas = await _buscarTodasTentativas(uid);
+  if (tentativas.length === 0) return [];
+
+  const porDisc = {};
+  tentativas.forEach(t => {
+    const chave = t.disc || '__sem_disciplina__';
+    if (!porDisc[chave]) porDisc[chave] = [];
+    porDisc[chave].push(t);
+  });
+
+  const lista = Object.entries(porDisc).map(([disc, itens]) => {
+    const taxas    = itens.map(t => t.taxaAcerto);
+    const taxaMedia = _media(taxas);
+    const reta      = _regressaoLinear(taxas.map(v => v * 100));
+    const emQueda   = !!reta && reta.slope < -0.5;
+
+    return {
+      disciplina: disc,
+      totalTentativas: itens.length,
+      taxaAcertoMediaPct: _arredondar(taxaMedia * 100),
+      nivelEstimado: _classificarFaixa(taxaMedia),
+      emQueda,
+      inclinacaoPctPorTentativa: reta ? _arredondar(reta.slope, 2) : null,
+    };
+  });
+
+  /* ordena: primeiro por estar em queda, depois pela menor taxa média */
+  return lista.sort((a, b) => {
+    if (a.emQueda !== b.emQueda) return a.emQueda ? -1 : 1;
+    return a.taxaAcertoMediaPct - b.taxaAcertoMediaPct;
+  });
+}
+
+/* ── 5. 📊 SCORE EVOLUTIVO ───────────────────────────────────
+   Combina média histórica + tendência recente + consistência
+   num único número 0–100. Usa a mesma fórmula de base de
+   _calcularScoreGeral() (mesmos pesos e mesmo clamp 0–100),
+   mas calculada aqui de forma independente e exposta como
+   consulta isolada — não depende de rodar _calcularInsight
+   por completo. Não persiste nada; é sempre derivada na hora. */
+export async function scoreEvolutivo(uid) {
+  if (!uid) return null;
+
+  const tentativas = await _buscarTodasTentativas(uid);
+  if (tentativas.length === 0) return null;
+
+  const taxas     = tentativas.map(t => t.taxaAcerto);
+  const taxaMedia = _media(taxas);
+  const tendencia = _calcularTendencia(taxas);
+  const desvioPct = _desvioPadrao(taxas) * 100;
+  const estabilidade = _classificarEstabilidade(desvioPct, tendencia);
+
+  const scoreGeral = _calcularScoreGeral(taxaMedia, tendencia, estabilidade);
+
+  return {
+    scoreGeral,
+    composicao: {
+      taxaAcertoMediaPct: _arredondar(taxaMedia * 100),
+      tendencia,
+      consistencia: estabilidade,
+      desvioPadraoPct: _arredondar(desvioPct),
+    },
+    nivelEstimado: _classificarFaixa(taxaMedia),
+    totalTentativas: tentativas.length,
+  };
+}
+
+/* ── 6. 🔮 PREVISÃO SIMPLES (extrapolação leve) ──────────────
+   Regressão linear sobre as últimas tentativas (geral ou por
+   disciplina), extrapolando 1 passo adiante. SEM machine
+   learning externo — só álgebra simples (_regressaoLinear,
+   definida no bloco de utilitários numéricos acima). Se não
+   houver pontos suficientes, retorna indeterminado em vez de
+   inventar um número. */
+export async function previsaoSimples(uid, disc = null) {
+  if (!uid) return { previsaoTaxaAcertoPct: null, confianca: 'baixa', metodo: 'regressao_linear' };
+
+  const todas = await _buscarTodasTentativas(uid);
+  const tentativas = disc
+    ? todas.filter(t => t.disc === disc)
+    : todas;
+
+  if (tentativas.length < JANELA_REGRESSAO_MIN) {
+    return {
+      previsaoTaxaAcertoPct: null,
+      confianca: 'baixa',
+      metodo: 'regressao_linear',
+      motivo: 'dados_insuficientes',
+      amostras: tentativas.length,
+      disciplina: disc,
+    };
+  }
+
+  const taxasPct = tentativas.map(t => t.taxaAcerto * 100);
+  const reta     = _regressaoLinear(taxasPct);
+  if (!reta) {
+    return {
+      previsaoTaxaAcertoPct: null,
+      confianca: 'baixa',
+      metodo: 'regressao_linear',
+      motivo: 'dados_insuficientes',
+      amostras: tentativas.length,
+      disciplina: disc,
+    };
+  }
+
+  const proximoIndice   = taxasPct.length; // próxima tentativa, índice n
+  const previsaoBruta   = reta.slope * proximoIndice + reta.intercept;
+  const previsaoClamped = _clamp(previsaoBruta, 0, 100);
+
+  /* média móvel como segundo sinal — usada só para nota de
+     confiança, não substitui a regressão como método principal */
+  const movel       = _mediaMovel(taxasPct);
+  const ultimaMovel  = movel[movel.length - 1];
+  const divergencia  = Math.abs(previsaoClamped - ultimaMovel);
+
+  const confianca = tentativas.length >= 10 && divergencia < 10
+    ? 'alta'
+    : (tentativas.length >= 6 && divergencia < 15 ? 'média' : 'baixa');
+
+  return {
+    previsaoTaxaAcertoPct: _arredondar(previsaoClamped),
+    direcaoEsperada: reta.slope > 0.5 ? 'melhora' : (reta.slope < -0.5 ? 'queda' : 'estavel'),
+    confianca,
+    metodo: 'regressao_linear',
+    amostras: tentativas.length,
+    disciplina: disc,
+  };
+}
+
+/* ── 7. ⏳ COMPARAÇÃO ENTRE PERÍODOS ─────────────────────────
+   Usa carregarEvolutionDailyRange (a Camada 3 já grava os
+   snapshots diários via gravarConsolidacaoEvolucao) para
+   comparar dois intervalos, por padrão "últimos 7 dias" vs
+   "7 dias anteriores a esses". Não recalcula nada que o daily
+   já não tenha — só lê e compara dois conjuntos de snapshots
+   já persistidos, sem nenhuma escrita. */
+export async function compararPeriodos(uid, diasPorPeriodo = DIAS_PERIODO_PADRAO) {
+  if (!uid) return null;
+
+  const keysPeriodoAtual    = _ultimosNDiasKeys(diasPorPeriodo, 0);
+  const keysPeriodoAnterior = _ultimosNDiasKeys(diasPorPeriodo, diasPorPeriodo);
+
+  const [mapaAtual, mapaAnterior] = await Promise.all([
+    carregarEvolutionDailyRange(uid, keysPeriodoAtual),
+    carregarEvolutionDailyRange(uid, keysPeriodoAnterior),
+  ]);
+
+  function _resumirPeriodo(mapa, keys) {
+    const dias = keys.map(k => mapa[k]).filter(Boolean);
+
+    if (dias.length === 0) {
+      return { diasComAtividade: 0, taxaAcertoMediaPct: null, totalTentativas: 0 };
+    }
+
+    const taxas = dias
+      .map(d => d?.performance?.taxaAcertoMediaPct)
+      .filter(v => typeof v === 'number');
+
+    const tentativasTotais = dias.reduce(
+      (acc, d) => acc + (d?.totalTentativas ?? 0), 0
+    );
+
+    return {
+      diasComAtividade: dias.length,
+      taxaAcertoMediaPct: taxas.length > 0 ? _arredondar(_media(taxas)) : null,
+      totalTentativas: tentativasTotais,
+    };
+  }
+
+  const atual    = _resumirPeriodo(mapaAtual, keysPeriodoAtual);
+  const anterior = _resumirPeriodo(mapaAnterior, keysPeriodoAnterior);
+
+  let variacaoPct = null;
+  let direcao     = 'indeterminado';
+  if (typeof atual.taxaAcertoMediaPct === 'number' && typeof anterior.taxaAcertoMediaPct === 'number') {
+    variacaoPct = _arredondar(atual.taxaAcertoMediaPct - anterior.taxaAcertoMediaPct);
+    if (Math.abs(variacaoPct) < MELHORA_MINIMA_PCT) direcao = 'estavel';
+    else direcao = variacaoPct > 0 ? 'melhorando' : 'piorando';
+  }
+
+  return {
+    diasPorPeriodo,
+    periodoAtual: atual,
+    periodoAnterior: anterior,
+    variacaoPct,
+    direcao,
+  };
+}
+
+/* ── RELATÓRIO COMPLETO DA CAMADA 4 ──────────────────────────
+   Agrega todas as visões acima numa única chamada, para
+   consumo direto por UI/dashboard. Cada bloco é resolvido de
+   forma independente; falha em um bloco não derruba os demais
+   (Promise.allSettled). Inclui o summary já persistido pela
+   Camada 3 apenas como referência de leitura — não recalculado
+   aqui. */
+export async function relatorioEvolucao(uid) {
+  if (!uid) return null;
+
+  const [
+    curva, padrao, tendencia, fraquezas, score, previsao, periodos, summaryPersistido,
+  ] = await Promise.allSettled([
+    curvaDeAprendizado(uid),
+    padraoDeDesempenho(uid),
+    tendenciaDoAluno(uid),
+    fraquezasPorDisciplina(uid),
+    scoreEvolutivo(uid),
+    previsaoSimples(uid),
+    compararPeriodos(uid),
+    carregarEvolutionSummary(uid),
+  ]);
+
+  const _valor = (r) => (r.status === 'fulfilled' ? r.value : null);
+
+  return {
+    geradoEm: Date.now(),
+    curvaDeAprendizado: _valor(curva),
+    padraoDeDesempenho: _valor(padrao),
+    tendenciaDoAluno: _valor(tendencia),
+    fraquezasPorDisciplina: _valor(fraquezas),
+    scoreEvolutivo: _valor(score),
+    previsaoSimples: _valor(previsao),
+    comparacaoDePeriodos: _valor(periodos),
+    summaryPersistidoCamada3: _valor(summaryPersistido),
+  };
+}
+
 export async function consolidarUsuario(uid) {
   if (!uid) return _insightVazio();
 
@@ -671,23 +1151,34 @@ export function subscribe(fn) {
 
 /* ══════════════════════════════════════════════
    API PÚBLICA GLOBAL
+   (Camada 3 + Camada 4 — cérebro único do sistema)
 ══════════════════════════════════════════════ */
 window.NexusQuizIntelligence = {
-  /* pipeline */
+  /* pipeline (Camada 3) */
   consolidar:           (uid) => consolidarUsuario(uid || _resolverUid()),
 
   /* processa um payload bruto manualmente (útil para testes / backfill) */
   processarPayload:     (payload, uid) => processarPayloadBruto(payload, uid || _resolverUid()),
 
-  /* leitura — só consome o que a consolidação persistiu */
+  /* leitura — só consome o que a consolidação persistiu (Camada 3) */
   lerSummary,
   lerDia,
   lerSemana,
   lerSerieDiaria,
 
-  /* análise local, sem ir ao Firebase */
+  /* análise local, sem ir ao Firebase (Camada 3) */
   analisarTentativa,
   analisarHistorico,
+
+  /* ── Camada 4 — evolução do aluno (somente leitura/interpretação) ── */
+  curvaDeAprendizado,
+  padraoDeDesempenho,
+  tendenciaDoAluno,
+  fraquezasPorDisciplina,
+  scoreEvolutivo,
+  previsaoSimples,
+  compararPeriodos,
+  relatorioEvolucao,
 
   subscribe,
 };
