@@ -2,144 +2,7 @@
    NEXUS STUDY — src/session-tracker.js
 
    v7 — Lock determinístico de aba única (Camada 1 — FINAL)
-   ─────────────────────────────────────────────
-   PROBLEMA RESOLVIDO EM v7
-   ─────────────────────────────────────────────
-   A v6 usava BroadcastChannel como sinalização de
-   "quem está contando" — isso é um evento frágil
-   (mensagem pode se perder, ordem não é garantida,
-   uma aba pode nunca receber o aviso de pausa).
-   Resultado possível: duas abas com runStart ativo
-   ao mesmo tempo → tempo duplicado.
-
-   v7 substitui o mecanismo por um LOCK GLOBAL escrito
-   diretamente no localStorage, com expiração por TTL.
-   A pergunta "esta aba pode contar tempo?" deixa de
-   depender de eventos recebidos e passa a depender de
-   uma ÚNICA leitura síncrona:
-
-       localStorage.getItem(LOCK_ID_KEY) === meuTabId
-       &&
-       (Date.now() - lockTimestamp) < LOCK_TTL
-
-   Isso é determinístico: mesmo estado de localStorage
-   sempre produz a mesma resposta, em qualquer aba, sem
-   depender de mensagens já entregues ou timers de espera
-   arbitrários para "decidir" quem assumiu primeiro.
-
-   ─────────────────────────────────────────────
-   ARQUITETURA v7
-   ─────────────────────────────────────────────
-
-   ┌─────────────────────────────────────────────┐
-   │  LOCK GLOBAL (localStorage)                 │
-   │  · nexus_active_tab_id        (dono atual)  │
-   │  · nexus_active_tab_timestamp (heartbeat)   │
-   │  → único mecanismo que decide quem conta     │
-   ├─────────────────────────────────────────────┤
-   │  FONTE DA VERDADE DO TEMPO: localStorage     │
-   │  · tempo acumulado entre páginas             │
-   │  · timestamps de início / pausa              │
-   │  · cálculo: accum + (Date.now() - runStart)  │
-   │             — SOMENTE se dono do lock        │
-   ├─────────────────────────────────────────────┤
-   │  CONTEXTO DA SESSÃO: sessionStorage          │
-   │  · sessionId (referência técnica)            │
-   │  · startedAt (início da sessão)              │
-   ├─────────────────────────────────────────────┤
-   │  PERSISTÊNCIA: Firebase                      │
-   │  · recebe apenas delta calculado localmente  │
-   │  · NÃO participa do cálculo de tempo ativo   │
-   │  · NÃO é lido para decidir/ajustar tempo     │
-   │  · gravado em heartbeats e no unload         │
-   └─────────────────────────────────────────────┘
-
-   GARANTIAS desta versão
-   ─────────────────────────────────────────────
-   ✔ Apenas 1 aba tem runStart ativo em qualquer
-     instante — garantido por leitura do lock, não
-     por mensagens de coordenação.
-   ✔ O lock expira (TTL) se a aba dona não renovar
-     (crash, fechamento sem beforeunload, etc.) —
-     outra aba assume automaticamente no próximo
-     ciclo de verificação.
-   ✔ Fechar a aba ativa libera o lock explicitamente
-     (beforeunload) — a próxima aba visível assume
-     no ciclo de verificação seguinte, sem espera de
-     TTL completo.
-   ✔ Reload não duplica tempo: a aba ao recarregar
-     gera um novo tabId, mas o accum em localStorage
-     pertence à SESSÃO (chave global, não por aba) —
-     o tempo continua de onde parou.
-   ✔ Offline não quebra nada: todo o cálculo de tempo
-     é 100% local. Firebase só recebe o delta quando
-     conseguir (heartbeat/flush), sem bloquear ou
-     alterar o cálculo.
-   ✔ Firestore nunca é lido para decidir quanto tempo
-     somar — o delta enviado é sempre
-     activeSecondsLocal - ultimoDeltaJaEnviadoLocal,
-     ambos lidos do localStorage, nunca do Firestore.
-
-   REMOVIDO em v7 (em relação à v6)
-   ─────────────────────────────────────────────
-   · BroadcastChannel como mecanismo de decisão
-     (mantido apenas como ATALHO opcional de latência,
-     nunca como fonte de verdade — ver nota abaixo)
-   · leitura de `duracao` salva no Firestore para
-     calcular delta (delta agora vem 100% do
-     localStorage local, via LS_LAST_SENT_KEY)
-   · qualquer estado "isLeader" derivado de mensagens
-     recebidas — agora é 100% derivado do lock
-
-   NOTA SOBRE BroadcastChannel
-   ─────────────────────────────────────────────
-   BroadcastChannel é mantido SOMENTE como notificação
-   de "ei, talvez algo mudou, recalcule o lock agora"
-   para reduzir a latência de transferência entre abas
-   (em vez de esperar o próximo tick do poll de 2s).
-   Nenhuma decisão de contagem de tempo é tomada com
-   base em uma mensagem recebida — toda decisão sempre
-   relê o lock diretamente do localStorage no momento
-   da verificação. Se BroadcastChannel não existir no
-   navegador, o sistema funciona de forma idêntica,
-   apenas com a latência de transferência igual ao
-   intervalo de polling (LOCK_POLL_INTERVAL).
-
-   API pública 100% compatível (getStats, subscribe,
-   formatTime, formatTimeHuman, carregarEstatisticas)
-
-   ESTRUTURA NO FIRESTORE (inalterada)
-   ───────────────────────────────────
-   usuarios/{uid}/sessoes/{sessionId}
-     startedAt    : number
-     endedAt      : number
-     duracao      : number  (segundos ativos — calculados localmente)
-     paginaInicial: string
-     dataKey      : string
-     quizEvents   : Array
-     pages        : Object
-     navigation   : Array
-     hourHeatmap  : Object
-     deviceType   : string
-
-   usuarios/{uid}/historico_diario/{YYYY-MM-DD}
-     data         : string
-     tempoTotal   : number
-     sessoes      : number
-     updatedAt    : number
-
-   usuarios/{uid}
-     tempoTotalGeral : number  (monotônico)
-     ultimaAtividade : number
-     totalSessoes    : number
-
-   MUDANÇA v7.1 — quizEvents agora é logger passivo
-   ─────────────────────────────────────────────────
-   O listener de nexus:quizFinalizado não interpreta
-   mais o payload. Ele armazena o payload BRUTO inteiro
-   com um envelope mínimo { tipo, payload, ts }.
-   Todo cálculo (acertos, taxa, tempo) pertence
-   exclusivamente ao quiz_intelligence.js.
+   v7.2 — localStorage como buffer de navegação (nav fix)
    ============================================= */
 
 import {
@@ -166,6 +29,9 @@ const LOCK_ID_KEY         = 'nexus_active_tab_id';
 const LOCK_TS_KEY         = 'nexus_active_tab_timestamp';
 const LOCK_UID_KEY        = 'nexus_active_tab_uid';
 
+const LS_NAV_PAGES_KEY    = 'nexus_nav_pages';
+const LS_NAV_SEQ_KEY      = 'nexus_nav_sequence';
+
 const LOCK_TTL            = 7_000;
 const LOCK_HEARTBEAT      = 2_000;
 const LOCK_POLL_INTERVAL  = 2_000;
@@ -179,6 +45,8 @@ const ZOMBIE_THRESHOLD    = 5 * 60 * 1000;
 let _sessionId      = null;
 let _startedAt      = null;
 let _initialized    = false;
+let _booting        = false;
+let _initInProgress = false;
 let _uid            = null;
 let _notifyTimer    = null;
 let _heartbeatTimer = null;
@@ -351,6 +219,45 @@ function _readLSNumber(key, fallback = 0) {
 
 function _hasLSKey(key) {
   return localStorage.getItem(key) !== null;
+}
+
+/* ══════════════════════════════════════════════
+   NAVEGAÇÃO — PERSISTÊNCIA EM localStorage
+   Garante que navPages e navSequence sobrevivam
+   a reloads sem depender do Firestore como
+   fonte de recuperação.
+══════════════════════════════════════════════ */
+function _lsNavKey(suffix) {
+  return `${suffix}_${_uid ?? 'anon'}`;
+}
+
+function _salvarNavLS() {
+  try {
+    localStorage.setItem(_lsNavKey(LS_NAV_PAGES_KEY), JSON.stringify(_navPages));
+    localStorage.setItem(_lsNavKey(LS_NAV_SEQ_KEY),   JSON.stringify(_navSequence));
+  } catch (_) {}
+}
+
+function _carregarNavLS() {
+  try {
+    const rawPages = localStorage.getItem(_lsNavKey(LS_NAV_PAGES_KEY));
+    const rawSeq   = localStorage.getItem(_lsNavKey(LS_NAV_SEQ_KEY));
+    const pages = rawPages ? JSON.parse(rawPages) : null;
+    const seq   = rawSeq   ? JSON.parse(rawSeq)   : null;
+    return {
+      pages: _isPlainObject(pages) ? pages : null,
+      seq:   Array.isArray(seq)    ? seq   : null,
+    };
+  } catch (_) {
+    return { pages: null, seq: null };
+  }
+}
+
+function _limparNavLS() {
+  try {
+    localStorage.removeItem(_lsNavKey(LS_NAV_PAGES_KEY));
+    localStorage.removeItem(_lsNavKey(LS_NAV_SEQ_KEY));
+  } catch (_) {}
 }
 
 /* ══════════════════════════════════════════════
@@ -534,9 +441,12 @@ async function _resolverSessaoZumbi(uid, sessionId) {
 export async function init(uid) {
   if (!uid) return;
   if (_initialized && _uid === uid) return;
+  if (_initInProgress) return;
   if (_initialized) await destroy();
 
-  _uid = uid;
+  _initInProgress = true;
+  _booting        = true;
+  _uid            = uid;
 
   const storedId    = sessionStorage.getItem(SESSION_KEY);
   const storedStart = Number(sessionStorage.getItem(SESSION_START_KEY) || 0);
@@ -545,16 +455,21 @@ export async function init(uid) {
     try {
       const snap = await getDoc(_sessaoRef(uid, storedId));
       if (snap.exists()) {
-        const data      = snap.data();
+        const data = snap.data();
         _sessionId      = storedId;
         _startedAt      = storedStart;
         _quizEvents     = Array.isArray(data.quizEvents) ? data.quizEvents : [];
-        _navPages       = _isPlainObject(data.pages)       ? data.pages       : {};
-        _navSequence    = Array.isArray(data.navigation)   ? data.navigation  : [];
         _navHourHeatmap = _isPlainObject(data.hourHeatmap) ? data.hourHeatmap : {};
         _navDeviceType  = typeof data.deviceType === 'string' ? data.deviceType : _detectDevice();
-        const lsAccum   = _readLSNumber(LS_ACCUM_KEY, 0);
-        console.log(`[session-tracker] sessão recuperada: ${_sessionId} | localStorage: ${lsAccum}s`);
+
+        /* localStorage tem prioridade sobre Firestore para navPages/navSequence
+           pois é escrito a cada __nexusPageEnter — mais recente que o último flush */
+        const navLS  = _carregarNavLS();
+        _navPages    = navLS.pages ?? (_isPlainObject(data.pages)     ? data.pages     : {});
+        _navSequence = navLS.seq   ?? (Array.isArray(data.navigation) ? data.navigation : []);
+
+        const lsAccum = _readLSNumber(LS_ACCUM_KEY, 0);
+        console.log(`[session-tracker] sessão recuperada: ${_sessionId} | localStorage: ${lsAccum}s | nav pages: ${Object.keys(_navPages).length}`);
       } else {
         await _iniciarNovaSessao();
       }
@@ -568,7 +483,7 @@ export async function init(uid) {
   _initialized = true;
   _initLockSystem();
 
-  _notifyTimer = setInterval(() => { _notify(); }, NOTIFY_INTERVAL);
+  _notifyTimer    = setInterval(() => { _notify(); }, NOTIFY_INTERVAL);
   _heartbeatTimer = setInterval(() => { if (_isOwner()) _flush(); }, HEARTBEAT_INTERVAL);
 
   document.addEventListener('visibilitychange', _onVisibilityChange);
@@ -579,6 +494,8 @@ export async function init(uid) {
   if (eNova) await _criarSessaoFirestore();
 
   __nexusPageEnter(location.pathname);
+  _booting        = false;
+  _initInProgress = false;
   _notify();
 }
 
@@ -596,6 +513,8 @@ async function _iniciarNovaSessao() {
   _navCurrentPage = null;
   _navPageStart   = null;
 
+  /* Nova sessão — limpa o buffer de navegação do localStorage */
+  _limparNavLS();
   _resetLocalTimer();
   sessionStorage.setItem(SESSION_KEY, _sessionId);
   sessionStorage.setItem(SESSION_START_KEY, String(_startedAt));
@@ -619,6 +538,7 @@ export async function destroy() {
   document.removeEventListener('visibilitychange', _onVisibilityChange);
   window.removeEventListener('beforeunload', _onBeforeUnload);
 
+  _limparNavLS();
   _resetLocalTimer();
   sessionStorage.removeItem(SESSION_KEY);
   sessionStorage.removeItem(SESSION_START_KEY);
@@ -627,6 +547,8 @@ export async function destroy() {
   _startedAt      = null;
   _uid            = null;
   _initialized    = false;
+  _booting        = false;
+  _initInProgress = false;
   _quizEvents     = [];
   _navPages       = {};
   _navSequence    = [];
@@ -795,10 +717,20 @@ function __nexusPageEnter(pathname) {
   _navPageStart   = Date.now();
   if (!_navPages[pathname]) _navPages[pathname] = { time: 0, visits: 0 };
   _navPages[pathname].visits += 1;
-  _navSequence.push(pathname);
+
+  /* Só adiciona à sequência se diferente da última entrada —
+     evita repetição tipo Dashboard → Dashboard → Dashboard */
+  const ultimo = _navSequence[_navSequence.length - 1];
+  if (ultimo !== pathname) _navSequence.push(pathname);
+
+  /* Persiste imediatamente no localStorage — sobrevive a reloads
+     sem depender do ciclo de heartbeat do Firestore */
+  _salvarNavLS();
+
   console.log('[session-tracker] __nexusPageEnter →', pathname,
-    `| visitas: ${_navPages[pathname].visits}`);
-  if (_initialized && _uid && _isOwner()) _flush().catch(() => {});
+    `| visitas: ${_navPages[pathname].visits} | pages em memória: ${Object.keys(_navPages).length}`);
+
+  if (_initialized && !_booting && _uid && _isOwner()) _flush().catch(() => {});
 }
 
 window.__nexusPageEnter = __nexusPageEnter;
@@ -834,25 +766,6 @@ function _installNavAutoDetect() {
 
 /* ══════════════════════════════════════════════
    LOGGER PASSIVO DE EVENTOS DE QUIZ
-   ─────────────────────────────────────────────
-   O session-tracker é um OBSERVADOR. Ele não
-   interpreta o payload de quiz — não calcula
-   acertos, taxa nem tempo. Armazena o payload
-   BRUTO inteiro dentro de um envelope mínimo.
-
-   Todo cálculo pertence exclusivamente ao
-   quiz_intelligence.js (Camada 3).
-
-   O envelope gravado em quizEvents é:
-     {
-       tipo:    'quiz_finalizado',
-       payload: <payload bruto do engine>,
-       ts:      <timestamp local do registro>
-     }
-
-   Consumidores que precisam de acertos/taxa devem
-   ler quiz_evolution/* via quiz_intelligence.js,
-   nunca derivar esses valores de quizEvents.
 ══════════════════════════════════════════════ */
 window.addEventListener('nexus:quizFinalizado', function (e) {
   if (!_initialized || !e?.detail) return;
