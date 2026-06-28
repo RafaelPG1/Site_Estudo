@@ -6,10 +6,10 @@
 
 import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import {
-  getFirestore,
-  doc, getDoc, setDoc, deleteDoc,
-  collection, getDocs, addDoc, query, orderBy,
-} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+   getFirestore,
+   doc, getDoc, setDoc, deleteDoc,
+   collection, getDocs, addDoc, query, orderBy, writeBatch,
+ } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 import { setUsuario } from './global.js';
 
 /* ── CONFIG ─────────────────────────────────── */
@@ -419,5 +419,135 @@ export async function carregarTudoPessoal(uid, semestre, discId) {
   } catch (err) {
     console.error('[firebase] carregarTudoPessoal:', err);
     return null;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   NEXUS STUDY — firebase.js · Camada 3 v2 (Quiz Intelligence)
+   ─────────────────────────────────────────────────────────────
+   Estrutura de evolução PERSISTIDA. Firebase passa a ser a fonte
+   de verdade da inteligência — não apenas um destino de log.
+
+   usuarios/{uid}/quiz_respostas/{quizId}/performance/{auto-id}
+     → histórico bruto por tentativa (já existia, intocado)
+
+   quiz_evolution/{uid}/daily/{YYYY-MM-DD}
+     → snapshot consolidado do dia: tentativas do dia, acertos,
+       tempo, por disciplina, score do dia
+
+   quiz_evolution/{uid}/weekly/{YYYY-Www}
+     → mesma forma, agregada por semana ISO
+
+   quiz_evolution/{uid}/summary/main
+     → agregados acumulados (médias, score histórico incremental,
+       evolução por disciplina) + processedAttemptIds, que é o que
+       torna a consolidação IDEMPOTENTE: qualquer tentativa cujo id
+       já esteja nesta lista é ignorada, então rodar a consolidação
+       2x, 10x, ou após reload total nunca duplica nada.
+   ═══════════════════════════════════════════════════════════════ */
+
+function _evolutionDailyRef(uid, dateKey)  { return doc(getDb(), 'quiz_evolution', uid, 'daily',  dateKey); }
+function _evolutionWeeklyRef(uid, weekKey) { return doc(getDb(), 'quiz_evolution', uid, 'weekly', weekKey); }
+function _evolutionSummaryRef(uid)         { return doc(getDb(), 'quiz_evolution', uid, 'summary', 'main'); }
+
+/* ── LISTAR HISTÓRICO BRUTO (somente leitura) ── */
+export async function listarPerformanceQuiz(uid, quizId) {
+  if (!uid || !quizId) return [];
+  try {
+    const perfCol = collection(
+      getDb(), 'usuarios', uid, 'quiz_respostas', quizId, 'performance'
+    );
+    const q = query(perfCol, orderBy('endedAt', 'asc'));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, quizId, ...d.data() }));
+  } catch (err) {
+    console.warn('[firebase] listarPerformanceQuiz erro:', err);
+    return [];
+  }
+}
+
+/* ── LISTAR TODOS OS quizIds que um usuário já tem em quiz_respostas ──
+   Necessário para a consolidação conseguir varrer TODAS as tentativas
+   do usuário sem que o chamador precise adivinhar semestre/modo/disc
+   de antemão. Só leitura; não decide nada por conta própria. */
+export async function listarQuizIds(uid) {
+  if (!uid) return [];
+  try {
+    const col  = collection(getDb(), 'usuarios', uid, 'quiz_respostas');
+    const snap = await getDocs(col);
+    return snap.docs.map(d => d.id);
+  } catch (err) {
+    console.warn('[firebase] listarQuizIds erro:', err);
+    return [];
+  }
+}
+
+/* ── LER O RESUMO ACUMULADO ── */
+export async function carregarEvolutionSummary(uid) {
+  if (!uid) return null;
+  try {
+    const snap = await getDoc(_evolutionSummaryRef(uid));
+    return snap.exists() ? snap.data() : null;
+  } catch (err) {
+    console.warn('[firebase] carregarEvolutionSummary erro:', err);
+    return null;
+  }
+}
+
+/* ── LER SNAPSHOT DIÁRIO / SEMANAL (para séries temporais) ── */
+export async function carregarEvolutionDaily(uid, dateKey) {
+  if (!uid || !dateKey) return null;
+  try {
+    const snap = await getDoc(_evolutionDailyRef(uid, dateKey));
+    return snap.exists() ? snap.data() : null;
+  } catch (err) {
+    console.warn('[firebase] carregarEvolutionDaily erro:', err);
+    return null;
+  }
+}
+
+export async function carregarEvolutionWeekly(uid, weekKey) {
+  if (!uid || !weekKey) return null;
+  try {
+    const snap = await getDoc(_evolutionWeeklyRef(uid, weekKey));
+    return snap.exists() ? snap.data() : null;
+  } catch (err) {
+    console.warn('[firebase] carregarEvolutionWeekly erro:', err);
+    return null;
+  }
+}
+
+/* ── LER UM INTERVALO DE DIAS (usado para reconstruir série temporal) ── */
+export async function carregarEvolutionDailyRange(uid, dateKeys) {
+  if (!uid || !Array.isArray(dateKeys) || dateKeys.length === 0) return {};
+  const out = {};
+  await Promise.all(dateKeys.map(async (key) => {
+    try {
+      const snap = await getDoc(_evolutionDailyRef(uid, key));
+      if (snap.exists()) out[key] = snap.data();
+    } catch (_) { /* dia sem dado é normal, ignora */ }
+  }));
+  return out;
+}
+
+/* ── GRAVAR CONSOLIDAÇÃO (chamada SOMENTE por quiz_intelligence.js) ──
+   Grava de forma atômica: snapshot do dia, snapshot da semana, e o
+   resumo acumulado (que inclui processedAttemptIds para idempotência).
+   O CHAMADOR monta os três objetos já calculados — esta função apenas
+   persiste, não decide nada sobre o conteúdo. */
+export async function gravarConsolidacaoEvolucao(uid, { dailyKey, dailyData, weeklyKey, weeklyData, summaryData }) {
+  if (!uid || !dailyKey || !weeklyKey || !summaryData) return { ok: false };
+  try {
+    const batch = writeBatch(getDb());
+
+    batch.set(_evolutionDailyRef(uid, dailyKey), dailyData, { merge: true });
+    batch.set(_evolutionWeeklyRef(uid, weeklyKey), weeklyData, { merge: true });
+    batch.set(_evolutionSummaryRef(uid), summaryData, { merge: true });
+
+    await batch.commit();
+    return { ok: true };
+  } catch (err) {
+    console.warn('[firebase] gravarConsolidacaoEvolucao erro:', err);
+    return { ok: false };
   }
 }

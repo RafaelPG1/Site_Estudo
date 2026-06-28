@@ -1,41 +1,40 @@
 /* ============================================================
-   NEXUS STUDY — quiz/quiz_engine.js
-   Lógica de estado do quiz — depende de quiz_ui.js
+   NEXUS STUDY — quiz/js/quiz_engine.js
+   Lógica de FLUXO do quiz — depende de quiz_ui.js
 
-   ÍNDICE:
-     1. Contexto e configuração ........... L.95
-     2. Expiração (20s) ................... L.140
-     3. Embaralhamento ..................... L.190
-     4. Estado e restauração .............. L.240
-     5. Feedback e corpo .................. L.300
-     6. Resultado por aula ................ L.350
-     7. Renderização ...................... L.410
-     8. Interação do usuário .............. L.510
-     9. Resultado global .................. L.590
-    10. Ver erros ......................... L.640
-    11. Modo Step ......................... L.720
-    12. Binds e boot ...................... L.930
+   RESPONSABILIDADE ÚNICA: orquestrar o fluxo do quiz.
+     ✔ Renderizar questões
+     ✔ Registrar respostas do usuário
+     ✔ Controlar navegação (Modo Step, scroll, botões)
+     ✔ Restaurar/persistir progresso (localStorage + Firebase)
+     ✔ Disparar nexus:quizFinalizado com payload BRUTO
 
-   v9 — integração com NexusFilter (filter.js):
-     • _buildBaseQuestoes() consulta window.NexusFilter (API pública)
-       para filtrar a lista de questões antes de qualquer embaralhamento.
-     • Engine escuta 'nexus:filtroAlterado' e chama reiniciarComFiltro().
-     • filter.js não conhece nenhuma função do engine — comunicação
-       exclusivamente por evento.
-     • F5 restaura sessão normalmente — apenas mudança de filtro
-       dispara reiniciar().
-     • A primeira renderização já nasce com a base correta.
+   PROIBIÇÕES ABSOLUTAS (delegadas a quiz_intelligence.js):
+     ✗ Cálculo de acertos / taxa de acerto
+     ✗ Tempo médio por questão / métricas de performance
+     ✗ Análise de tendência, nível, consistência
+     ✗ Consolidação de histórico de aprendizado
+     ✗ Qualquer escrita direta em performance/* do Firebase
+
+   INTEGRAÇÃO COM QUIZ-INTELLIGENCE:
+     O engine coleta SOMENTE os dados brutos que ele já possui
+     sem custo extra (respostas[], questoes[], timestamps de
+     início/fim, modo, semestre, disc, revelado) e os despacha
+     via CustomEvent 'nexus:quizFinalizado'. O intelligence.js
+     escuta esse evento e assume TODA a responsabilidade de
+     cálculo e persistência de performance.
 
    INTEGRAÇÃO COM O QUIZ-ASSISTANT:
      Após cada renderização, o engine:
-       1. Grava window.__NEXUS_QUESTOES_VISUAIS__ com o snapshot imutável
-          da lista atual de questões (alternativas já embaralhadas).
-       2. Na primeira inicialização, dispara o evento 'nexus:quizPronto'
-          e seta window.__NEXUS_QUIZ_PRONTO__ = true como flag de fallback.
-
-     O Quiz-Assistant lê o snapshot e escuta o evento.
+       1. Grava window.__NEXUS_QUESTOES_VISUAIS__ com o snapshot
+          imutável da lista atual de questões.
+       2. Na primeira inicialização, dispara 'nexus:quizPronto'
+          e seta window.__NEXUS_QUIZ_PRONTO__ = true.
      O engine NUNCA chama diretamente funções do assistant.
-     Sem polling, sem dependência cruzada de módulos.
+
+   v10 — sem lógica de performance interna. O payload do evento
+   nexus:quizFinalizado inclui os dados brutos completos para
+   que quiz_intelligence.js faça todo o processamento.
    ============================================================ */
 
 (function () {
@@ -74,7 +73,7 @@
 
   /* ══════════════════════════════════════════════════════════
      INIT QUIZ
-     ══════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════════ */
 
   function initQuiz() {
 
@@ -143,8 +142,8 @@
     }
 
     /* ══════════════════════════════════════════════════════════
-       2. EXPIRAÇÃO (20s)
-       ══════════════════════════════════════════════════════════ */
+       2. EXPIRAÇÃO (20s / 10min)
+    ══════════════════════════════════════════════════════════ */
 
     var EXPIRY_FINALIZADO_MS = 20000;
     var EXPIRY_PARCIAL_MS    = 600000;
@@ -224,18 +223,14 @@
 
     /* ══════════════════════════════════════════════════════════
        FILTRO DE AULAS
-       Consulta NexusFilter (API pública de filter.js) para montar a base
-       correta ANTES de qualquer embaralhamento ou restauração.
-       F5 → base filtrada idêntica à sessão anterior (shuffle
-       map é restaurado normalmente).
+       Consulta NexusFilter (API pública de filter.js).
     ══════════════════════════════════════════════════════════ */
 
     function _buildBaseQuestoes() {
       var NF = window.NexusFilter;
-      /* Sem filtro carregado ou sem filtro ativo → todas as questões */
       if (!NF || !NF.hasFilter()) return _listaCompleta;
 
-      var selected = NF.getSelectedLessons(); /* Set de nomes de aula */
+      var selected = NF.getSelectedLessons();
       if (!selected || selected.size === 0) return _listaCompleta;
 
       var filtrada = _listaCompleta.filter(function (q) {
@@ -243,15 +238,14 @@
         return aula !== null && selected.has(aula);
       });
 
-      /* Segurança: se o filtro não bater com nenhuma questão, usa tudo */
       return filtrada.length > 0 ? filtrada : _listaCompleta;
     }
 
     var questoesBase = _buildBaseQuestoes();
 
     /* ══════════════════════════════════════════════════════════
-       3. EMBARALHAMENTO (v8 — por grupo de aula)
-       ══════════════════════════════════════════════════════════ */
+       3. EMBARALHAMENTO (por grupo de aula)
+    ══════════════════════════════════════════════════════════ */
 
     function shuffleArray(arr) {
       var a = arr.slice();
@@ -339,48 +333,67 @@
     var aulaGrupos           = [];
     var _stepAulaBannerTimer = null;
 
-    /* ── PERFORMANCE ANALYTICS — estado ──────────────────── */
-    var _perfStartedAt = null;   /* ms — início da tentativa atual */
-    var _perfSalvo     = false;  /* guarda contra duplo-disparo na mesma tentativa */
+    /* ── TIMESTAMPS BRUTOS para o payload de finalização ─── */
+    /* O engine registra APENAS quando a tentativa começou e
+       terminou. Todo o CÁLCULO com esses dados (taxa, tempo
+       médio, nível) é exclusividade do quiz_intelligence.js. */
+    var _tentativaStartedAt = null;
+    var _tentativaFinalizada = false;
 
-    function _salvarPerformance(revealed) {
-      if (_perfSalvo || !_disc || !_perfStartedAt) return;
-      if (!window.NexusFirebase || typeof window.NexusFirebase.salvarPerformanceQuiz !== 'function') return;
-      var usuario = _Storage ? _Storage.get('usuario', null) : null;
-      if (!usuario || !usuario.uid) return;
+    function _registrarInicioTentativa() {
+      _tentativaStartedAt  = Date.now();
+      _tentativaFinalizada = false;
+    }
 
-      _perfSalvo = true;
+    /* ── DISPARAR EVENTO DE FINALIZAÇÃO ─────────────────────
+       O engine coleta apenas o que ele já possui GRATUITAMENTE
+       (respostas brutas, questões, timestamps, contexto).
+       Todo o resto é responsabilidade do intelligence.js.
+    ────────────────────────────────────────────────────────── */
+    function _dispararFinalizacao(reveladoPorBotao) {
+      if (_tentativaFinalizada) return;
+      _tentativaFinalizada = true;
 
-      var endedAt     = Date.now();
-      var total       = questoes.length;
-      var acertos     = 0;
+      var endedAt = Date.now();
+
+      /* Coleta respostas brutas: índice da alternativa escolhida
+         por questão. Sem cálculo de acerto aqui. */
+      var respostasBrutas = {};
       Object.keys(respostas).forEach(function (qi) {
-        if (parseInt(respostas[qi]) === questoes[parseInt(qi)].answer) acertos++;
+        respostasBrutas[parseInt(qi)] = respostas[qi];
+      });
+
+      /* Gabarito bruto: índice da alternativa correta por questão.
+         O intelligence.js cruzará respostas x gabarito. */
+      var gabarito = {};
+      questoes.forEach(function (q, qi) {
+        gabarito[qi] = q.answer;
       });
 
       var payload = {
-        totalQuestoes: total,
-        acertos:       acertos,
-        taxaAcerto:    total > 0 ? acertos / total : 0,
-        tempoGastoSeg: Math.max(0, Math.round((endedAt - _perfStartedAt) / 1000)),
-        startedAt:     _perfStartedAt,
-        endedAt:       endedAt,
+        /* Contexto */
+        disc:          _disc,
         modo:          _modo,
         semestre:      _semestre,
-        disc:          _disc,
-        revealed:      !!revealed,
+        /* Dados brutos — sem cálculo */
+        totalQuestoes: questoes.length,
+        respostasBrutas: respostasBrutas,
+        gabarito:        gabarito,
+        /* Timestamps */
+        startedAt:     _tentativaStartedAt || endedAt,
+        endedAt:       endedAt,
+        /* Flag de modo */
+        revealed:      !!reveladoPorBotao,
       };
 
-      var quizId = _semestre + '_' + _modo + '_' + _disc;
-      window.NexusFirebase.salvarPerformanceQuiz(usuario.uid, quizId, payload)
-        .catch(function () {});
-
-      /* Notifica session-tracker via evento customizado */
       try {
         window.dispatchEvent(new CustomEvent('nexus:quizFinalizado', { detail: payload }));
-      } catch (e) {}
+        console.log('[quiz_engine] nexus:quizFinalizado disparado —',
+          questoes.length + ' questões | revealed=' + payload.revealed);
+      } catch (e) {
+        console.warn('[quiz_engine] falha ao disparar nexus:quizFinalizado:', e);
+      }
     }
-    /* ─────────────────────────────────────────────────────── */
 
     function _restaurar() {
       if (!_disc || !_Storage) return null;
@@ -508,6 +521,13 @@
     var _AZUL_BAR_FROM = '#4a90d9';
     var _AZUL_BAR_TO   = '#7ab8f0';
 
+    /* ── NOTA: o resultado por aula usa respostas[] vs questoes[].answer
+       localmente para UI imediata (progresso visual). Isso é diferente
+       de "calcular performance" — é apenas renderização de feedback
+       imediato para o usuário saber quantas questões respondeu por aula.
+       A análise real de desempenho (taxa global, tendência, nível) é
+       responsabilidade exclusiva do quiz_intelligence.js. ── */
+
     function _calcularResultadoAula(indices) {
       var total = indices.length, respondidas = 0, acertos = 0;
       indices.forEach(function (qi) {
@@ -576,9 +596,8 @@
     /* ── 7. RENDERIZAÇÃO ──────────────────────────────────── */
 
     function renderizar() {
-      /* PERFORMANCE ANALYTICS — reseta timer a cada nova renderização */
-      _perfStartedAt = Date.now();
-      _perfSalvo     = false;
+      /* Registra início da nova tentativa — timestamp bruto, sem cálculo */
+      _registrarInicioTentativa();
 
       if (modoStep) _sairModoStep();
       container.innerHTML = '';
@@ -727,6 +746,12 @@
         _Storage.saveProgress(_discUid(), _modo, _semestre, respostas, revelado, finalizado);
         _salvarShuffleMap();
         _salvarFirebase(finalizado);
+
+        /* Ao completar TODAS as questões por resposta manual,
+           dispara o evento de finalização com dados brutos. */
+        if (finalizado) {
+          _dispararFinalizacao(false);
+        }
       }
     }
 
@@ -746,8 +771,8 @@
         _Storage.saveProgress(_discUid(), _modo, _semestre, respostas, true, true);
         _salvarShuffleMap();
         _salvarFirebase(true);
-        /* PERFORMANCE ANALYTICS — tentativa via revelar */
-        _salvarPerformance(true);
+        /* Revelar = finalização forçada — dispara evento com flag revealed=true */
+        _dispararFinalizacao(true);
       }
 
       _atualizarTodosResultadosAula();
@@ -760,9 +785,10 @@
       revelado         = false;
       mostrandoSoErros = false;
       stepAtual        = 0;
-      /* PERFORMANCE ANALYTICS — próxima tentativa começa do zero */
-      _perfStartedAt   = null;
-      _perfSalvo       = false;
+      /* Reseta controle de tentativa — a próxima renderização
+         registra um novo _tentativaStartedAt. */
+      _tentativaStartedAt  = null;
+      _tentativaFinalizada = false;
 
       if (_disc && _Storage) {
         _Storage.clearProgress(_discUid(), _modo, _semestre);
@@ -791,19 +817,15 @@
 
     /* ══════════════════════════════════════════════════════════
        REINICIAR COM NOVA BASE (para mudança de filtro)
-       Reconstrói questoesBase via NexusFilter (API pública),
-       limpa a sessão e rerrenderiza.
     ══════════════════════════════════════════════════════════ */
 
     function reiniciarComFiltro() {
-      /* Limpa estado da sessão */
       respostas        = {};
       revelado         = false;
       mostrandoSoErros = false;
       stepAtual        = 0;
-      /* PERFORMANCE ANALYTICS */
-      _perfStartedAt   = null;
-      _perfSalvo       = false;
+      _tentativaStartedAt  = null;
+      _tentativaFinalizada = false;
 
       if (_disc && _Storage) {
         _Storage.clearProgress(_discUid(), _modo, _semestre);
@@ -820,15 +842,12 @@
         }
       }
 
-      /* Reconstrói base de questões com novo filtro */
       questoesBase = _buildBaseQuestoes();
       if (questoesBase.length === 0) questoesBase = _listaCompleta;
 
-      /* Novo embaralhamento */
       questoes = criarCopiaEmbaralhada(questoesBase);
       if (_disc && _Storage) _salvarShuffleMap();
 
-      /* Limpa resultado global */
       var resultsEl = document.getElementById('results');
       if (resultsEl) { resultsEl.style.display = 'none'; resultsEl.innerHTML = ''; }
 
@@ -837,7 +856,6 @@
       smoothScrollToTop();
     }
 
-    /* Engine escuta nexus:filtroAlterado e reinicia com nova base */
     window.addEventListener('nexus:filtroAlterado', function () {
       reiniciarComFiltro();
     });
@@ -849,6 +867,11 @@
       var respondidas = Object.keys(respostas).length;
       var acertos     = 0;
 
+      /* Este cálculo local serve APENAS para exibição imediata
+         de UI (placar final na tela). Não é armazenado, não é
+         enviado ao Firebase, não alimenta analytics. A fonte de
+         verdade de performance é quiz_intelligence.js, que calcula
+         a partir do payload bruto de nexus:quizFinalizado. */
       Object.keys(respostas).forEach(function (qi) {
         if (parseInt(respostas[qi]) === questoes[qi].answer) acertos++;
       });
@@ -869,9 +892,6 @@
           '<p class="score">Você acertou ' + acertos + ' de ' + total + ' questões</p>' +
           '<div class="percentage">' + pct + '%</div>' +
           '<p>' + msg + '</p>';
-
-        /* PERFORMANCE ANALYTICS — salva apenas uma vez por tentativa */
-        _salvarPerformance(false);
       }
 
       _atualizarBotaoErros();
@@ -1347,7 +1367,7 @@
 
   /* ══════════════════════════════════════════════════════════
      BOOT
-     ══════════════════════════════════════════════════════════ */
+  ══════════════════════════════════════════════════════════ */
 
   function boot() {
     window.QuizUI.initLegendaModal();

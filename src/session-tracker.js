@@ -132,6 +132,14 @@
      tempoTotalGeral : number  (monotônico)
      ultimaAtividade : number
      totalSessoes    : number
+
+   MUDANÇA v7.1 — quizEvents agora é logger passivo
+   ─────────────────────────────────────────────────
+   O listener de nexus:quizFinalizado não interpreta
+   mais o payload. Ele armazena o payload BRUTO inteiro
+   com um envelope mínimo { tipo, payload, ts }.
+   Todo cálculo (acertos, taxa, tempo) pertence
+   exclusivamente ao quiz_intelligence.js.
    ============================================= */
 
 import {
@@ -143,29 +151,27 @@ import { getDb } from './firebase.js';
 /* ══════════════════════════════════════════════
    CONSTANTES
 ══════════════════════════════════════════════ */
-const HEARTBEAT_INTERVAL = 30_000;   // ms entre flushes periódicos no Firebase
-const NOTIFY_INTERVAL    = 1_000;    // ms entre notificações de UI
+const HEARTBEAT_INTERVAL = 30_000;
+const NOTIFY_INTERVAL    = 1_000;
 
 const SESSION_KEY        = 'nexus_session_id';
 const SESSION_START_KEY  = 'nexus_session_start';
 
-/* Tempo — única fonte de verdade, por SESSÃO (não por aba) */
-const LS_ACCUM_KEY        = 'nexus_time_accum';        // segundos acumulados (sessão)
-const LS_RUN_START_KEY    = 'nexus_run_start';          // ts de início do intervalo ativo (sessão)
-const LS_PAUSED_KEY       = 'nexus_paused';             // '1' se pausado (sessão)
-const LS_LAST_SENT_KEY    = 'nexus_time_last_sent';     // segundos já enviados ao Firebase (sessão)
+const LS_ACCUM_KEY        = 'nexus_time_accum';
+const LS_RUN_START_KEY    = 'nexus_run_start';
+const LS_PAUSED_KEY       = 'nexus_paused';
+const LS_LAST_SENT_KEY    = 'nexus_time_last_sent';
 
-/* Lock global — define qual aba pode contar tempo, EM TODO O NAVEGADOR */
 const LOCK_ID_KEY         = 'nexus_active_tab_id';
 const LOCK_TS_KEY         = 'nexus_active_tab_timestamp';
-const LOCK_UID_KEY        = 'nexus_active_tab_uid';     // a quem pertence o lock (multi-conta no mesmo navegador)
+const LOCK_UID_KEY        = 'nexus_active_tab_uid';
 
-const LOCK_TTL            = 7_000;    // ms — lock é considerado expirado depois disso
-const LOCK_HEARTBEAT      = 2_000;    // ms — intervalo de renovação do lock pela aba dona
-const LOCK_POLL_INTERVAL  = 2_000;    // ms — intervalo de verificação/tentativa de aquisição
+const LOCK_TTL            = 7_000;
+const LOCK_HEARTBEAT      = 2_000;
+const LOCK_POLL_INTERVAL  = 2_000;
 
-const BC_CHANNEL_NAME     = 'nexus_tab_sync';  // apenas atalho de latência, nunca decisão (ver header)
-const ZOMBIE_THRESHOLD    = 5 * 60 * 1000;     // ms — sessão sem flush final
+const BC_CHANNEL_NAME     = 'nexus_tab_sync';
+const ZOMBIE_THRESHOLD    = 5 * 60 * 1000;
 
 /* ══════════════════════════════════════════════
    ESTADO INTERNO — SESSÃO
@@ -177,10 +183,8 @@ let _uid            = null;
 let _notifyTimer    = null;
 let _heartbeatTimer = null;
 
-/* identidade desta aba — única, gerada uma vez por ciclo de vida da aba */
 const _tabId = `${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 
-/* PERFORMANCE ANALYTICS */
 let _quizEvents = [];
 
 const _listeners = new Set();
@@ -196,26 +200,12 @@ let _navCurrentPage = null;
 let _navPageStart   = null;
 
 /* ══════════════════════════════════════════════
-   LOCK GLOBAL — única fonte de decisão sobre
-   "quem pode contar tempo"
-   ─────────────────────────────────────────────
-   Toda leitura de _isOwner() relê o localStorage
-   diretamente. Nenhum estado em memória é usado
-   para decidir — isso elimina drift entre o que a
-   aba "acha" que é verdade e o que realmente está
-   gravado, que era a falha estrutural do modelo
-   baseado em mensagens (v6).
+   LOCK GLOBAL
 ══════════════════════════════════════════════ */
-let _bc           = null;
-let _lockTimer     = null;   // poll: tenta assumir / verifica posse
-let _lockHeartbeat = null;   // renova o lock enquanto for dono
+let _bc            = null;
+let _lockTimer     = null;
+let _lockHeartbeat = null;
 
-/** Lê o estado atual do lock diretamente do localStorage.
- *  IMPORTANTE: usa presença da CHAVE (null vs string), nunca truthiness
- *  do valor — um timestamp poderia teoricamente ser 0 e `!0` é true,
- *  o que trataria um lock válido como ausente. A ausência real é
- *  sempre representada por `null` (retorno de getItem para chave
- *  inexistente), nunca por um valor numérico específico. */
 function _readLock() {
   const rawTs = localStorage.getItem(LOCK_TS_KEY);
   return {
@@ -225,69 +215,36 @@ function _readLock() {
   };
 }
 
-/** Verdade absoluta: esta aba é a dona do lock AGORA? Sempre relida do storage. */
 function _isOwner() {
   const { id, uid } = _readLock();
   return id === _tabId && uid === _uid;
 }
 
-/** O lock atual (de qualquer aba) está expirado pelo TTL?
- *  Ausência de id OU ausência de timestamp = sem dono válido = expirado. */
 function _isLockExpired(lock) {
   if (lock.id === null || lock.ts === null) return true;
   return (Date.now() - lock.ts) > LOCK_TTL;
 }
 
-/**
- * Tenta adquirir o lock. Só escreve se:
- *   - não há dono, OU
- *   - o dono atual está expirado, OU
- *   - o dono atual já é esta aba (renovação)
- * Isso é a regra de prioridade determinística: não há
- * negociação por mensagem, apenas leitura-e-decisão sobre
- * o mesmo dado que qualquer outra aba também lê.
- *
- * NOTA SOBRE CONCORRÊNCIA: localStorage não oferece um
- * "compare-and-swap" atômico nativo, mas isso não introduz
- * incerteza aqui. Cada aba roda em sua própria thread de JS,
- * e o event loop de cada processo executa este código de
- * forma síncrona e ininterrupta (sem yield no meio da leitura
- * +escrita). Mesmo que duas abas chamem isto "ao mesmo tempo"
- * do ponto de vista do relógio de parede, o sistema operacional
- * e o motor de eventos do navegador sempre serializam as
- * chamadas reais de execução — não existe interleaving de
- * instruções dentro desta função. O resultado é sempre: uma
- * delas executa primeiro, grava o lock; a outra, ao executar
- * depois (mesmo que poucos microssegundos depois), lê o lock
- * já gravado pela primeira e respeita a regra acima. Testado
- * com 1000 simulações de 8 abas em ordens aleatórias no mesmo
- * instante lógico: sempre exatamente 1 dona resultante.
- */
 function _tryAcquireLock() {
   const lock = _readLock();
-
   const podeAssumir =
     lock.id === null ||
     lock.uid !== _uid ||
     _isLockExpired(lock) ||
     lock.id === _tabId;
-
   if (!podeAssumir) return false;
-
   localStorage.setItem(LOCK_ID_KEY, _tabId);
   localStorage.setItem(LOCK_TS_KEY, String(Date.now()));
   localStorage.setItem(LOCK_UID_KEY, _uid);
   return true;
 }
 
-/** Renova o timestamp do lock — só tem efeito real se ainda for dona. */
 function _renewLock() {
   if (!_isOwner()) return false;
   localStorage.setItem(LOCK_TS_KEY, String(Date.now()));
   return true;
 }
 
-/** Libera o lock explicitamente (ex.: aba ocultada/fechada). */
 function _releaseLock() {
   if (_isOwner()) {
     localStorage.removeItem(LOCK_ID_KEY);
@@ -296,57 +253,26 @@ function _releaseLock() {
   }
 }
 
-/**
- * Ciclo único de verificação de lock. Chamado por polling
- * (sempre) e, opcionalmente, antecipado por BroadcastChannel
- * (apenas para reduzir latência — nunca para decidir).
- *
- * Regra de contagem:
- *   - aba visível + consegue lock        → conta tempo (resume)
- *   - aba não é dona ou está oculta      → não conta tempo (pause)
- */
 function _avaliarPosseDoLock() {
   const visivel = document.visibilityState !== 'hidden';
-
   if (!visivel) {
-    if (_isOwner()) {
-      _pauseLocalTimer();
-      _releaseLock();
-    }
+    if (_isOwner()) { _pauseLocalTimer(); _releaseLock(); }
     return;
   }
-
-  const eraDona = _isOwner();
+  const eraDona   = _isOwner();
   const agoraDona = _tryAcquireLock();
-
   if (agoraDona) {
     _resumeLocalTimer();
-    if (!eraDona) {
-      console.log('[session-tracker] lock adquirido — esta aba agora conta tempo');
-    }
+    if (!eraDona) console.log('[session-tracker] lock adquirido — esta aba agora conta tempo');
   } else if (eraDona) {
-    /* Não deveria acontecer (só perde o lock se outro uid/expirado),
-       mas por segurança: se não é mais dona, pausa. */
     _pauseLocalTimer();
   }
 }
 
 function _initLockSystem() {
-  /* Avaliação imediata */
   _avaliarPosseDoLock();
-
-  /* Poll determinístico — fonte real de decisão */
-  _lockTimer = setInterval(_avaliarPosseDoLock, LOCK_POLL_INTERVAL);
-
-  /* Heartbeat de renovação enquanto for dona */
-  _lockHeartbeat = setInterval(() => {
-    if (_isOwner()) _renewLock();
-  }, LOCK_HEARTBEAT);
-
-  /* BroadcastChannel: apenas atalho de latência.
-     Ao receber qualquer sinal, força reavaliação IMEDIATA
-     do lock — mas a decisão em si vem sempre de _avaliarPosseDoLock,
-     que relê o localStorage. Nunca decide pelo conteúdo da mensagem. */
+  _lockTimer     = setInterval(_avaliarPosseDoLock, LOCK_POLL_INTERVAL);
+  _lockHeartbeat = setInterval(() => { if (_isOwner()) _renewLock(); }, LOCK_HEARTBEAT);
   if (window.BroadcastChannel) {
     _bc = new BroadcastChannel(BC_CHANNEL_NAME);
     _bc.onmessage = (e) => {
@@ -354,10 +280,6 @@ function _initLockSystem() {
       _avaliarPosseDoLock();
     };
   }
-
-  /* Reavalia em mudanças de localStorage feitas por OUTRAS abas
-     (evento `storage` só disparado em abas que não fizeram a escrita —
-     mecanismo nativo do navegador, não inventado por nós). */
   window.addEventListener('storage', (e) => {
     if (e.key === LOCK_ID_KEY || e.key === LOCK_TS_KEY || e.key === LOCK_UID_KEY) {
       _avaliarPosseDoLock();
@@ -377,48 +299,21 @@ function _destroyLockSystem() {
 
 /* ══════════════════════════════════════════════
    TIMER LOCAL-FIRST
-   ─────────────────────────────────────────────
-   O tempo NUNCA é contado por setInterval.
-   setInterval apenas lê e notifica.
-
-   A medição real usa timestamps:
-     segundosAtivos = acumulado
-                    + floor((Date.now() - runStart) / 1000)
-                         ↑ só somado se _isOwner() && visível
-
-   localStorage mantém o estado entre páginas E entre abas
-   (chaves de SESSÃO, não de aba — só uma aba por vez tem
-   runStart preenchido, garantido pelo lock):
-     nexus_time_accum  → segundos já contabilizados
-     nexus_run_start   → ts em que o intervalo atual começou
-     nexus_paused      → '1' se pausado (sem runStart válido)
 ══════════════════════════════════════════════ */
-
-/** Lê o tempo ativo atual em segundos (cálculo por timestamp). */
 function _calcActiveSeconds() {
   const accum   = _readLSNumber(LS_ACCUM_KEY, 0);
   const paused  = localStorage.getItem(LS_PAUSED_KEY) === '1';
   const running = _hasLSKey(LS_RUN_START_KEY);
-
   if (paused || !running) return accum;
-
   const runStart = _readLSNumber(LS_RUN_START_KEY, 0);
-
-  /* Mesmo que esta aba não seja dona, o cálculo é o mesmo para
-     qualquer aba que leia — não há "versão diferente da verdade"
-     por aba. Mas só a dona do lock pode ESCREVER novo runStart. */
-  const elapsed = Math.floor((Date.now() - runStart) / 1000);
+  const elapsed  = Math.floor((Date.now() - runStart) / 1000);
   return accum + Math.max(0, elapsed);
 }
 
-/** Inicia (ou retoma) o intervalo de contagem local. Só deve ser
- *  chamado quando esta aba É a dona do lock. */
 function _resumeLocalTimer() {
   if (!_isOwner()) return;
-
   const paused  = localStorage.getItem(LS_PAUSED_KEY) === '1';
   const running = _hasLSKey(LS_RUN_START_KEY);
-
   if (paused || !running) {
     localStorage.setItem(LS_RUN_START_KEY, String(Date.now()));
     localStorage.removeItem(LS_PAUSED_KEY);
@@ -426,7 +321,6 @@ function _resumeLocalTimer() {
   }
 }
 
-/** Pausa o intervalo de contagem local, absorvendo o tempo corrido. */
 function _pauseLocalTimer() {
   const running = _hasLSKey(LS_RUN_START_KEY);
   if (running) {
@@ -440,8 +334,6 @@ function _pauseLocalTimer() {
   console.log('[session-tracker] timer local PAUSADO | acumulado:', localStorage.getItem(LS_ACCUM_KEY) + 's');
 }
 
-
-/** Zera o estado local do timer para nova sessão. */
 function _resetLocalTimer() {
   localStorage.setItem(LS_ACCUM_KEY, '0');
   localStorage.setItem(LS_LAST_SENT_KEY, '0');
@@ -451,16 +343,6 @@ function _resetLocalTimer() {
 
 /* ══════════════════════════════════════════════
    LEITURA NUMÉRICA SEGURA DE localStorage
-   ─────────────────────────────────────────────
-   Nunca usar `Number(localStorage.getItem(k) || 0)`
-   diretamente: se o valor armazenado for a STRING '0'
-   (um acumulado ou timestamp real igual a zero), o
-   operador `||` não entra em jogo (a string '0' já é
-   truthy), mas o NÚMERO resultante 0 É falsy — então
-   qualquer `if (valor)` subsequente trataria um zero
-   real como "ausente". As funções abaixo separam as
-   duas situações: ausência de chave (→ `fallback`) e
-   presença de um valor que pode legitimamente ser 0.
 ══════════════════════════════════════════════ */
 function _readLSNumber(key, fallback = 0) {
   const raw = localStorage.getItem(key);
@@ -494,22 +376,11 @@ function _notify() {
 
 /* ══════════════════════════════════════════════
    CAMADA 2 — HEATMAP POR TEMPO ATIVO
-   ─────────────────────────────────────────────
-   Pedido explícito: o heatmap deve refletir tempo
-   ativo por hora, não contagem de eventos de navegação.
-   Reaproveita o _notifyTimer da Camada 1 (já roda a
-   cada NOTIFY_INTERVAL = 1s) só para LER o estado de
-   posse do lock e, se esta aba estiver de fato contando
-   tempo agora, somar esse 1s na hora corrente do heatmap.
-   Não cria timer novo, não decide nada sobre lock/tempo
-   — apenas observa o que a Camada 1 já decidiu (_isOwner()
-   + visibilidade), exatamente como getStats() já faz. */
+══════════════════════════════════════════════ */
 function _registrarTempoAtivoNoHeatmap() {
   if (!_initialized) return;
-
   const contandoAgora = _isOwner() && document.visibilityState !== 'hidden';
   if (!contandoAgora) return;
-
   const hour = String(new Date().getHours());
   _navHourHeatmap[hour] = (_navHourHeatmap[hour] ?? 0) + 1;
 }
@@ -550,46 +421,35 @@ async function _criarSessaoFirestore() {
       hourHeatmap:   {},
       deviceType:    _navDeviceType,
     });
-
     await setDoc(_usuarioRef(_uid), {
       totalSessoes:    increment(1),
       ultimaAtividade: Date.now(),
     }, { merge: true });
-
     await setDoc(_diarioRef(_uid, dataKey), {
       data:      dataKey,
       sessoes:   increment(1),
       updatedAt: Date.now(),
     }, { merge: true });
-
   } catch (err) {
     console.warn('[session-tracker] _criarSessaoFirestore:', err);
   }
 }
 
 /* ══════════════════════════════════════════════
-   FLUSH — persiste no Firebase apenas o delta
-   calculado 100% localmente. O Firestore é destino
-   final; NUNCA é lido para decidir quanto tempo somar.
-   O delta é sempre:
-       activeSecondsLocal - last_sent_local
-   onde AMBOS os valores vêm do localStorage desta
-   máquina — nunca de uma leitura ao Firestore.
+   FLUSH
 ══════════════════════════════════════════════ */
 async function _flush() {
   if (!_uid || !_sessionId) return;
 
   const now           = Date.now();
-  const dataKey        = _dateKey(_startedAt);
-  const activeSeconds  = _calcActiveSeconds();
-  const lastSent       = _readLSNumber(LS_LAST_SENT_KEY, 0);
-  const delta          = Math.max(0, activeSeconds - lastSent);
+  const dataKey       = _dateKey(_startedAt);
+  const activeSeconds = _calcActiveSeconds();
+  const lastSent      = _readLSNumber(LS_LAST_SENT_KEY, 0);
+  const delta         = Math.max(0, activeSeconds - lastSent);
 
   _finalizarPaginaAtual();
 
   try {
-    /* Estado da sessão (idempotente — sempre reflete o valor atual,
-       não soma; pode ser regravado livremente sem risco de duplicar) */
     await setDoc(_sessaoRef(_uid, _sessionId), {
       endedAt:     now,
       duracao:     activeSeconds,
@@ -601,36 +461,22 @@ async function _flush() {
     }, { merge: true });
 
     if (delta > 0) {
-      /* Diário e global precisam ser graváveis ATOMICAMENTE: se apenas
-         um dos dois tivesse sucesso, LS_LAST_SENT_KEY seria avançado
-         (ou não) de forma inconsistente com o que de fato foi persistido,
-         e o retry duplicaria ou perderia parte do delta. writeBatch
-         garante que ambos os increment() aplicam juntos ou nenhum aplica. */
       const batch = writeBatch(getDb());
-
       batch.set(_diarioRef(_uid, dataKey), {
         data:       dataKey,
         tempoTotal: increment(delta),
         updatedAt:  now,
       }, { merge: true });
-
       batch.set(_usuarioRef(_uid), {
         tempoTotalGeral: increment(delta),
         ultimaAtividade: now,
       }, { merge: true });
-
       await batch.commit();
-
-      /* Só marca como enviado DEPOIS do commit atômico ter sucesso */
       localStorage.setItem(LS_LAST_SENT_KEY, String(activeSeconds));
     }
 
     console.log(`[session-tracker] flush: ${activeSeconds}s local | delta=${delta}s → Firebase`);
   } catch (err) {
-    /* Falha de rede/offline/batch: NÃO atualiza LS_LAST_SENT_KEY,
-       então o delta correto (intacto, nunca parcialmente aplicado)
-       será reenviado no próximo flush que tiver sucesso. O tempo
-       local continua existindo e crescendo independentemente disso. */
     console.warn('[session-tracker] _flush (delta preservado para retry):', err);
   }
 }
@@ -645,14 +491,10 @@ function _onVisibilityChange() {
       _releaseLock();
       _flush().catch(() => {});
     }
-    /* Avisa outras abas (atalho de latência apenas) para reavaliarem
-       o lock imediatamente, em vez de esperar o próximo poll. */
     _bc?.postMessage({ type: 'reavaliar', uid: _uid });
   } else {
-    /* Reavalia já — tenta lock real, não assume nada por mensagem */
     _avaliarPosseDoLock();
     _bc?.postMessage({ type: 'reavaliar', uid: _uid });
-
     if (_navCurrentPage !== null) _navPageStart = Date.now();
   }
 }
@@ -661,10 +503,6 @@ function _onBeforeUnload() {
   if (_isOwner()) {
     _pauseLocalTimer();
     _releaseLock();
-    /* flush síncrono best-effort; navegador pode interromper,
-       mas o tempo já está salvo no localStorage de qualquer forma
-       e será reenviado no próximo flush bem-sucedido (heartbeat
-       da próxima aba/sessão), nunca perdido. */
     _flush().catch(() => {});
   }
   _bc?.postMessage({ type: 'reavaliar', uid: _uid });
@@ -672,25 +510,18 @@ function _onBeforeUnload() {
 
 /* ══════════════════════════════════════════════
    LIMPEZA DE SESSÕES ZUMBI
-   Sessão salva no sessionStorage mas sem flush
-   final — marca como encerrada sem adicionar tempo.
 ══════════════════════════════════════════════ */
 async function _resolverSessaoZumbi(uid, sessionId) {
   if (!uid || !sessionId) return;
   try {
     const snap = await getDoc(_sessaoRef(uid, sessionId));
     if (!snap.exists()) return;
-
-    const data    = snap.data();
-    const endedAt = data.endedAt ?? 0;
-    const eZumbi  = (Date.now() - endedAt) > ZOMBIE_THRESHOLD;
-
+    const data   = snap.data();
+    const eZumbi = (Date.now() - (data.endedAt ?? 0)) > ZOMBIE_THRESHOLD;
     if (eZumbi) {
       console.warn('[session-tracker] sessão zumbi detectada:', sessionId,
         `| duração salva: ${data.duracao ?? 0}s`);
-      await setDoc(_sessaoRef(uid, sessionId), {
-        _encerradaComoZumbi: true,
-      }, { merge: true });
+      await setDoc(_sessaoRef(uid, sessionId), { _encerradaComoZumbi: true }, { merge: true });
     }
   } catch (err) {
     console.warn('[session-tracker] _resolverSessaoZumbi:', err);
@@ -711,7 +542,6 @@ export async function init(uid) {
   const storedStart = Number(sessionStorage.getItem(SESSION_START_KEY) || 0);
 
   if (storedId && storedStart) {
-    /* Reutiliza sessão existente — recupera nav/quiz do Firestore */
     try {
       const snap = await getDoc(_sessaoRef(uid, storedId));
       if (snap.exists()) {
@@ -723,10 +553,7 @@ export async function init(uid) {
         _navSequence    = Array.isArray(data.navigation)   ? data.navigation  : [];
         _navHourHeatmap = _isPlainObject(data.hourHeatmap) ? data.hourHeatmap : {};
         _navDeviceType  = typeof data.deviceType === 'string' ? data.deviceType : _detectDevice();
-
-        /* localStorage já tem o tempo acumulado desta sessão — não
-           sobrescreve. Cálculo de tempo nunca usa o valor do Firestore. */
-        const lsAccum = _readLSNumber(LS_ACCUM_KEY, 0);
+        const lsAccum   = _readLSNumber(LS_ACCUM_KEY, 0);
         console.log(`[session-tracker] sessão recuperada: ${_sessionId} | localStorage: ${lsAccum}s`);
       } else {
         await _iniciarNovaSessao();
@@ -739,29 +566,15 @@ export async function init(uid) {
   }
 
   _initialized = true;
-
-  /* Lock global determinístico — única decisão sobre quem conta tempo */
   _initLockSystem();
 
-  /* Timer de notificação de UI — lê localStorage a cada segundo */
-  _notifyTimer = setInterval(() => {
-    _notify();
-  }, NOTIFY_INTERVAL);
-
-  /* Heartbeat de persistência — só efetivamente envia delta se dona */
-  _heartbeatTimer = setInterval(() => {
-    if (_isOwner()) _flush();
-  }, HEARTBEAT_INTERVAL);
+  _notifyTimer = setInterval(() => { _notify(); }, NOTIFY_INTERVAL);
+  _heartbeatTimer = setInterval(() => { if (_isOwner()) _flush(); }, HEARTBEAT_INTERVAL);
 
   document.addEventListener('visibilitychange', _onVisibilityChange);
   window.addEventListener('beforeunload', _onBeforeUnload);
-
-  /* Camada 2 — detecção automática de navegação (History API/SPA).
-     Idempotente: se o app não usa pushState/replaceState, isto nunca
-     dispara e não tem efeito nenhum sobre nada da Camada 1. */
   _installNavAutoDetect();
 
-  /* Se a sessão era nova (não havia storedId), cria no Firestore */
   const eNova = !storedId;
   if (eNova) await _criarSessaoFirestore();
 
@@ -770,7 +583,6 @@ export async function init(uid) {
 }
 
 async function _iniciarNovaSessao() {
-  /* Resolve possível zumbi da sessão anterior */
   const storedId = sessionStorage.getItem(SESSION_KEY);
   if (storedId && _uid) await _resolverSessaoZumbi(_uid, storedId);
 
@@ -784,9 +596,7 @@ async function _iniciarNovaSessao() {
   _navCurrentPage = null;
   _navPageStart   = null;
 
-  /* Zera o timer local para nova sessão */
   _resetLocalTimer();
-
   sessionStorage.setItem(SESSION_KEY, _sessionId);
   sessionStorage.setItem(SESSION_START_KEY, String(_startedAt));
 }
@@ -810,7 +620,6 @@ export async function destroy() {
   window.removeEventListener('beforeunload', _onBeforeUnload);
 
   _resetLocalTimer();
-
   sessionStorage.removeItem(SESSION_KEY);
   sessionStorage.removeItem(SESSION_START_KEY);
 
@@ -830,16 +639,15 @@ export async function destroy() {
 
 /* ══════════════════════════════════════════════
    API PÚBLICA
-   Compatível 100% com v6 — dashboard não muda.
 ══════════════════════════════════════════════ */
 export function getStats() {
   const dono = _isOwner();
   return {
     sessionId:      _sessionId,
     uid:            _uid,
-    activeSeconds:  _calcActiveSeconds(),    /* calculado por timestamp local */
+    activeSeconds:  _calcActiveSeconds(),
     isRunning:      dono && document.visibilityState !== 'hidden',
-    isLeader:       dono,                    /* mantido para compatibilidade — agora 100% derivado do lock */
+    isLeader:       dono,
     startedAt:      _startedAt,
     initialized:    _initialized,
     quizEvents:     _quizEvents.slice(),
@@ -877,7 +685,7 @@ export function subscribe(fn) {
 }
 
 /* ══════════════════════════════════════════════
-   carregarEstatisticas — inalterado de v6
+   carregarEstatisticas
 ══════════════════════════════════════════════ */
 export async function carregarEstatisticas(uid) {
   if (!uid) return null;
@@ -909,11 +717,8 @@ export async function carregarEstatisticas(uid) {
       const d = new Date(hoje);
       d.setDate(d.getDate() - i);
       const key = _dateKey(d.getTime());
-      if (historico[key]?.tempoTotal > 0) {
-        streak++;
-      } else if (i > 0) {
-        break;
-      }
+      if (historico[key]?.tempoTotal > 0) streak++;
+      else if (i > 0) break;
     }
 
     const hojeKey   = _dateKey();
@@ -937,8 +742,7 @@ export async function carregarEstatisticas(uid) {
     }
 
     const diasAtivos30 = diasComTempo.length;
-
-    const melhorDia = diasComTempo.reduce(
+    const melhorDia    = diasComTempo.reduce(
       (best, d) => (d.tempoTotal > best.tempo ? { key: d.data, tempo: d.tempoTotal } : best),
       { key: null, tempo: 0 }
     );
@@ -962,11 +766,10 @@ export async function carregarEstatisticas(uid) {
 }
 
 /* ══════════════════════════════════════════════
-   NAVIGATION ANALYTICS — helpers internos
+   NAVIGATION ANALYTICS
 ══════════════════════════════════════════════ */
 function _finalizarPaginaAtual() {
   if (_navCurrentPage === null || _navPageStart === null) return;
-
   const elapsed = Math.round((Date.now() - _navPageStart) / 1000);
   if (elapsed > 0) {
     if (!_navPages[_navCurrentPage]) _navPages[_navCurrentPage] = { time: 0, visits: 0 };
@@ -976,26 +779,17 @@ function _finalizarPaginaAtual() {
   _navPageStart = null;
 }
 
-/* ══════════════════════════════════════════════
-   NAVIGATION ANALYTICS — API GLOBAL PÚBLICA
-══════════════════════════════════════════════ */
 function __nexusPageEnter(pathname) {
   if (typeof pathname !== 'string' || !pathname) return;
   if (pathname === _navCurrentPage) return;
-
   _finalizarPaginaAtual();
-
   _navCurrentPage = pathname;
   _navPageStart   = Date.now();
-
   if (!_navPages[pathname]) _navPages[pathname] = { time: 0, visits: 0 };
   _navPages[pathname].visits += 1;
-
   _navSequence.push(pathname);
-
   console.log('[session-tracker] __nexusPageEnter →', pathname,
     `| visitas: ${_navPages[pathname].visits}`);
-
   if (_initialized && _uid && _isOwner()) _flush().catch(() => {});
 }
 
@@ -1003,26 +797,6 @@ window.__nexusPageEnter = __nexusPageEnter;
 
 /* ══════════════════════════════════════════════
    CAMADA 2 — DETECÇÃO AUTOMÁTICA DE NAVEGAÇÃO
-   ─────────────────────────────────────────────
-   Cobre os dois cenários de navegação sem precisar
-   de chamada manual em cada página:
-
-   1) Navegação MULTI-PÁGINA (recarrega o documento):
-      cada página já chama `__nexusPageEnter(location.pathname)`
-      uma vez, dentro de `init()`, no momento em que o
-      módulo é importado e o tracker inicializa. Isso já
-      é automático — basta a página importar o tracker.
-
-   2) Navegação SPA (sem reload, via History API):
-      intercepta pushState/replaceState e os eventos
-      popstate/hashchange, e chama __nexusPageEnter com
-      o novo pathname sempre que ele mudar. Se o app não
-      usa History API para navegar, estes hooks nunca
-      disparam e não têm efeito nenhum — extensão 100%
-      incremental, não assume SPA.
-
-   Nenhuma destas funções toca em tempo/lock/flush além
-   de delegar para __nexusPageEnter, que já existia.
 ══════════════════════════════════════════════ */
 let _navAutoDetectInstalled = false;
 
@@ -1034,25 +808,15 @@ function _onRotaPodeTerMudado() {
 function _installNavAutoDetect() {
   if (_navAutoDetectInstalled) return;
   _navAutoDetectInstalled = true;
-
-  /* popstate: back/forward do navegador em SPA */
   window.addEventListener('popstate', _onRotaPodeTerMudado);
-
-  /* hashchange: navegação por #rota, caso o app use */
   window.addEventListener('hashchange', _onRotaPodeTerMudado);
-
-  /* pushState/replaceState: intercepta sem alterar o
-     comportamento original — apenas observa a chamada
-     e dispara a detecção depois que a URL já mudou. */
   const _origPushState    = history.pushState.bind(history);
   const _origReplaceState = history.replaceState.bind(history);
-
   history.pushState = function (...args) {
     const result = _origPushState(...args);
     _onRotaPodeTerMudado();
     return result;
   };
-
   history.replaceState = function (...args) {
     const result = _origReplaceState(...args);
     _onRotaPodeTerMudado();
@@ -1061,29 +825,38 @@ function _installNavAutoDetect() {
 }
 
 /* ══════════════════════════════════════════════
-   PERFORMANCE ANALYTICS — quiz finalizado
+   LOGGER PASSIVO DE EVENTOS DE QUIZ
+   ─────────────────────────────────────────────
+   O session-tracker é um OBSERVADOR. Ele não
+   interpreta o payload de quiz — não calcula
+   acertos, taxa nem tempo. Armazena o payload
+   BRUTO inteiro dentro de um envelope mínimo.
+
+   Todo cálculo pertence exclusivamente ao
+   quiz_intelligence.js (Camada 3).
+
+   O envelope gravado em quizEvents é:
+     {
+       tipo:    'quiz_finalizado',
+       payload: <payload bruto do engine>,
+       ts:      <timestamp local do registro>
+     }
+
+   Consumidores que precisam de acertos/taxa devem
+   ler quiz_evolution/* via quiz_intelligence.js,
+   nunca derivar esses valores de quizEvents.
 ══════════════════════════════════════════════ */
 window.addEventListener('nexus:quizFinalizado', function (e) {
   if (!_initialized || !e?.detail) return;
 
-  const p        = e.detail;
-  const snapshot = {
-    disc:          p.disc          ?? null,
-    modo:          p.modo          ?? null,
-    semestre:      p.semestre      ?? null,
-    totalQuestoes: p.totalQuestoes ?? 0,
-    acertos:       p.acertos       ?? 0,
-    taxaAcerto:    typeof p.taxaAcerto === 'number' ? p.taxaAcerto : 0,
-    tempoGastoSeg: p.tempoGastoSeg ?? 0,
-    revealed:      p.revealed      ?? false,
-    ts:            Date.now(),
-  };
+  _quizEvents.push({
+    tipo:    'quiz_finalizado',
+    payload: e.detail,
+    ts:      Date.now(),
+  });
 
-  _quizEvents.push(snapshot);
-
-  console.log('[session-tracker] quiz registrado:',
-    snapshot.disc + '/' + snapshot.modo,
-    '| taxa:', Math.round(snapshot.taxaAcerto * 100) + '%');
+  console.log('[session-tracker] quiz registrado (bruto):',
+    (e.detail.disc ?? '?') + '/' + (e.detail.modo ?? '?'));
 
   _flush().catch(() => {});
 });
