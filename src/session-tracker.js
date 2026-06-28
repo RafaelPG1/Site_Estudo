@@ -651,7 +651,9 @@ export function getStats() {
     startedAt:      _startedAt,
     initialized:    _initialized,
     quizEvents:     _quizEvents.slice(),
-    navPages:       Object.assign({}, _navPages),
+    navPages:       Object.fromEntries(
+                      Object.entries(_navPages).map(([k, v]) => [k, { ...v }])
+                    ),
     navSequence:    _navSequence.slice(),
     navHourHeatmap: Object.assign({}, _navHourHeatmap),
     navDeviceType:  _navDeviceType,

@@ -30,7 +30,7 @@ import {
 
 import { injetarLogo }                       from './shared/js/utils/logo.js';
 import { login, logout, carregarConfigs }     from './src/firebase.js';
-import { iniciarSessao, encerrarSessao }      from './shared/js/utils/session-tracker.js';
+import { iniciarSessao, encerrarSessao }      from './shared/js/utils/session-manager.js';
 import { criarSemestreSelect, preencherAnos } from './shared/js/utils/dom.js';
 import {
   Sound,

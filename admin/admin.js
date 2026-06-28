@@ -17,7 +17,7 @@ import {
   getDb,
 } from '../src/firebase.js';
 
-import { encerrarSessao } from '../shared/js/utils/session-tracker.js';
+import { encerrarSessao } from '../shared/js/utils/session-manager.js';
 
 import { _renderProgress } from './admin_progress.js';
 import { _renderSessions } from './admin-sessions.js';

@@ -54,6 +54,121 @@ import { renderDashboardIntelligence } from './dashboard_render.js';
 /* ══════════════════════════════════════════════
    ESTADO
 ══════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════
+   NORMALIZAÇÃO SEMÂNTICA DE NAVEGAÇÃO
+   ─────────────────────────────────────────────
+   Camada exclusivamente de EXIBIÇÃO. Não altera
+   tracking, não altera o que session-tracker.js
+   grava (pathname puro, sem query string).
+
+   Usada por _renderPaginasMaisAcessadas() e
+   _renderFluxoNavegacao() — mesma função, para
+   garantir que o mesmo pathname produza sempre
+   o mesmo rótulo nas duas seções.
+
+   LIMITAÇÃO CONHECIDA: session-tracker.js só
+   registra location.pathname (sem query string).
+   Por isso, ?disc= nunca está disponível para
+   entradas do histórico — apenas State.discAtiva
+   (estado atual em memória) pode complementar a
+   disciplina, e somente quando o pathname exibido
+   corresponde à área de disciplina ativa agora.
+   Não é possível recuperar a disciplina de uma
+   visita passada a outra disciplina.
+══════════════════════════════════════════════ */
+
+const ROTA_LABELS = {
+  quiz:      'Quiz',
+  resumo:    'Resumo',
+  atlas:     'Atlas',
+  index:     'Início',
+  dashboard: 'Dashboard',
+};
+
+/* Áreas que fazem sentido combinar com disciplina ativa */
+const ROTAS_COM_DISCIPLINA = new Set(['quiz', 'resumo', 'atlas']);
+
+function _limparSegmento(segmento) {
+  if (!segmento) return '';
+  let s = segmento;
+  try { s = decodeURIComponent(s); } catch (_) { /* já decodificado ou inválido */ }
+  s = s.replace(/\.html?$/i, '');
+  s = s.replace(/[-_]+/g, ' ').trim();
+  if (!s) return '';
+  return s
+    .split(' ')
+    .filter(Boolean)
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+}
+
+function _extrairChaveDeRota(pathname) {
+  if (typeof pathname !== 'string' || !pathname) return null;
+
+  let limpo = pathname;
+  try { limpo = decodeURIComponent(pathname); } catch (_) { /* mantém original */ }
+
+  const segmentos = limpo.split('/').filter(Boolean);
+  if (segmentos.length === 0) return { chave: 'index', ultimoSegmentoLimpo: 'Início' };
+
+  for (const seg of segmentos) {
+    const semExt = seg.replace(/\.html?$/i, '').toLowerCase();
+    if (ROTA_LABELS[semExt]) {
+      return { chave: semExt, ultimoSegmentoLimpo: null };
+    }
+  }
+
+  const ultimo = segmentos[segmentos.length - 1];
+  const semExtUltimo = ultimo.replace(/\.html?$/i, '').toLowerCase();
+  if (semExtUltimo === '' || semExtUltimo === 'index') {
+    return { chave: 'index', ultimoSegmentoLimpo: null };
+  }
+
+  return { chave: null, ultimoSegmentoLimpo: _limparSegmento(ultimo) };
+}
+
+/* Disciplina via query string (?disc=) — só funciona se o
+   pathname recebido já contiver a query (não é o caso do
+   session-tracker.js hoje, mas a função suporta se um dia
+   passar a registrar). Mantido por completude da regra 4.3. */
+function _extrairDisciplinaDaQuery(pathnameOuUrl) {
+  try {
+    const idx = pathnameOuUrl.indexOf('?');
+    if (idx === -1) return null;
+    const params = new URLSearchParams(pathnameOuUrl.slice(idx));
+    const disc = params.get('disc');
+    return disc ? _limparSegmento(disc) : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+function _resolverNomeDisciplinaAtiva() {
+  const disc = State.discAtiva;
+  if (!disc) return null;
+  return disc.nome || disc.apelido || null;
+}
+
+/* Função única de normalização — ponto central exigido
+   pela regra de consistência (seção 5). */
+function _normalizarRotaParaLabel(pathname) {
+  const { chave, ultimoSegmentoLimpo } = _extrairChaveDeRota(pathname) || {};
+
+  if (!chave) {
+    return ultimoSegmentoLimpo || 'Página';
+  }
+
+  const labelBase = ROTA_LABELS[chave] ?? _limparSegmento(chave) ?? 'Página';
+
+  if (!ROTAS_COM_DISCIPLINA.has(chave)) {
+    return labelBase;
+  }
+
+  const discDaQuery = _extrairDisciplinaDaQuery(pathname);
+  const disciplina  = discDaQuery || _resolverNomeDisciplinaAtiva();
+
+  return disciplina ? `${labelBase} · ${disciplina}` : labelBase;
+}
 export const State = {
   semestre:    null,
   disciplinas: [],
@@ -622,7 +737,7 @@ function _renderPaginasMaisAcessadas(pages) {
     return;
   }
 
-  entradas
+entradas
     .sort((a, b) => (b[1]?.time ?? 0) - (a[1]?.time ?? 0))
     .slice(0, 6)
     .forEach(([pathname, info]) => {
@@ -631,7 +746,7 @@ function _renderPaginasMaisAcessadas(pages) {
 
       const nome       = document.createElement('span');
       nome.className   = 'nav-page-name';
-      nome.textContent = pathname;
+      nome.textContent = _normalizarRotaParaLabel(pathname);
 
       const meta       = document.createElement('span');
       meta.className   = 'nav-page-meta';
@@ -661,10 +776,10 @@ function _renderFluxoNavegacao(navigation) {
     return;
   }
 
-  sequencia.slice(-12).forEach((pathname, idx, arr) => {
+sequencia.slice(-12).forEach((pathname, idx, arr) => {
     const step       = document.createElement('span');
     step.className   = 'nav-flow-step';
-    step.textContent = pathname;
+    step.textContent = _normalizarRotaParaLabel(pathname);
     wrap.appendChild(step);
 
     if (idx < arr.length - 1) {
