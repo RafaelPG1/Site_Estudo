@@ -1,4 +1,4 @@
-<!-- novas_implementações\v2\dashboard.html
+<!-- dashboard\dashboard.html
  proibo de mudar o caminho, os arquivos deve ter os caminhos para saber onde estar -->
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -16,7 +16,8 @@
   <link rel="stylesheet" href="../../shared/css/audio/audio-btns.css" />
   <link rel="stylesheet" href="../../shared/css/themes/semestre-picker.css" />
 
-  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/dashboard_cards.css" />
 
   <!-- ═══ Contrato de domínio de IA ═══
        Precisa ser declarado ANTES dos módulos de IA serem
@@ -434,7 +435,7 @@
       <!-- ── SCORE EVOLUTIVO (Camada 5 — Fase 2.1) ─────────────
            Fonte: window.NexusQuizIntelligence.relatorioEvolucao()
            Campo: relatorio.scoreEvolutivo
-           Preenchido por: renderScore() em dashboard.js
+           Preenchido por: renderScore() em dashboard_render.js
            Nenhum dado é calculado aqui — apenas estrutura HTML. ── -->
       <section>
         <div class="section-header">
@@ -464,7 +465,7 @@
       <!-- ── TENDENCIA DO ALUNO (Camada 5 — Fase 2.2) ──────────
            Fonte: window.NexusQuizIntelligence.relatorioEvolucao()
            Campo: relatorio.tendenciaDoAluno
-           Preenchido por: renderTrend() em dashboard.js
+           Preenchido por: renderTrend() em dashboard_render.js
            Campos usados: direcao, diferencaPct, confianca
            Nenhum dado é calculado aqui — apenas estrutura HTML. ── -->
       <section>
@@ -490,7 +491,7 @@
       <!-- ── COMPARACAO ENTRE PERIODOS (Camada 5 — Fase 2.3) ───
            Fonte: window.NexusQuizIntelligence.relatorioEvolucao()
            Campo: relatorio.comparacaoDePeriodos
-           Preenchido por: renderComparison() em dashboard.js
+           Preenchido por: renderComparison() em dashboard_render.js
            Campos usados: diasPorPeriodo, periodoAtual, periodoAnterior,
                           variacaoPct, direcao
            Nenhum dado é calculado aqui — apenas estrutura HTML. ── -->
@@ -534,7 +535,7 @@
       <!-- ── FRAQUEZAS POR DISCIPLINA (Camada 5 — Fase 2.4) ────
            Fonte: window.NexusQuizIntelligence.relatorioEvolucao()
            Campo: relatorio.fraquezasPorDisciplina
-           Preenchido por: renderWeaknesses() em dashboard.js
+           Preenchido por: renderWeaknesses() em dashboard_render.js
            Campos usados: disciplina, taxaAcertoPct, tendencia, emQueda
            A lista chega ordenada da Camada 4 — exibida na ordem recebida.
            Nenhum dado é calculado aqui — apenas estrutura HTML. ── -->
@@ -549,7 +550,7 @@
 
         <div class="weaknesses-card" id="weaknesses-section">
           <div class="weaknesses-lista" id="weaknesses-lista">
-            <!-- Preenchido por renderWeaknesses() em dashboard.js -->
+            <!-- Preenchido por renderWeaknesses() em dashboard_render.js -->
           </div>
         </div>
       </section>
@@ -906,7 +907,7 @@
     </div><!-- /content -->
   </main>
 
-  <script type="module" src="dashboard.js"></script>
+  <script type="module" src="js/dashboard.js"></script>
   <script src="../../shared/js/utils/quick-access.js"></script>
 </body>
 </html>
