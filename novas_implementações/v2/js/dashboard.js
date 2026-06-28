@@ -210,13 +210,6 @@ function _trocarSemestre(novoSemestre) {
 function _renderContexto() {
   const semEl = document.getElementById('meta-semestre');
   if (semEl) semEl.textContent = State.semestre ? `Semestre · ${State.semestre}` : '—';
-
-  const discEl = document.getElementById('meta-disciplina');
-  if (discEl) {
-    discEl.textContent = State.discAtiva
-      ? `${State.discAtiva.emoji ? State.discAtiva.emoji + ' ' : ''}${State.discAtiva.nome}`
-      : 'Nenhuma disciplina';
-  }
 }
 
 function _corDaDisciplina(disc) {
@@ -334,15 +327,11 @@ function _initSessionTimer() {
     if (!stats) return;
     timeEl.textContent = sessionFormatTime(stats.activeSeconds);
 
-    if (subEl) {
+if (subEl) {
       if (stats.initialized && !stats.isLeader) {
         subEl.textContent = 'Outra aba em contagem';
       } else if (!stats.isRunning && stats.initialized) {
         subEl.textContent = 'Aba em segundo plano';
-      } else if (State.discAtiva) {
-        subEl.textContent = `${State.discAtiva.apelido ?? State.discAtiva.nome} · ${State.semestre ?? ''}`;
-      } else if (State.semestre) {
-        subEl.textContent = State.semestre;
       } else {
         subEl.textContent = 'Sessão ativa';
       }

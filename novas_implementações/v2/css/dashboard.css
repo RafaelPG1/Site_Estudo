@@ -358,7 +358,7 @@ body {
   gap: 24px;
 }
 
-.page-header-left {}
+
 
 .greeting {
   font-size: 12px;
@@ -401,7 +401,6 @@ body {
 }
 
 .meta-chip svg { opacity: .6; }
-
 .motivational {
   background: var(--accent-dim);
   border: 1px solid rgba(108,99,255,.25);
@@ -409,18 +408,33 @@ body {
   padding: 14px 18px;
   max-width: 320px;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
+/* Aspa de Abertura (Topo Esquerdo) */
 .motivational::before {
-  content: '"';
+  content: '\201C'; 
   position: absolute;
-  top: -8px; left: 10px;
-  font-size: 64px;
+  top: -25px; left: -40px;
+  font-size: 80px;
   font-family: 'Space Grotesk', sans-serif;
   color: var(--accent);
-  opacity: .15;
+  opacity: .35;
   line-height: 1;
+  pointer-events: none;
+}
+
+/* Aspa de Fechamento (Baixo Direito) */
+.motivational::after {
+  content: '\201D'; /* Código para a aspa de fechamento: ” */
+  position: absolute;
+  bottom: -75px; right: -30px; /* Valores negativos para jogar ela para fora do card */
+  font-size: 80px;
+  font-family: 'Space Grotesk', sans-serif;
+  color: var(--accent);
+  opacity: .35;
+  line-height: 1;
+  pointer-events: none;
 }
 
 .motivational p {
@@ -843,7 +857,6 @@ body {
   margin-bottom: 10px;
 }
 
-.disc-prog {}
 
 .disc-pct {
   display: flex;
