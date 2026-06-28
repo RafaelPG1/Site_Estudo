@@ -21,6 +21,16 @@
    Depende dos tokens definidos em dashboard.css
    (:root) — este arquivo deve ser carregado SEMPRE
    após dashboard.css no <head> do dashboard.html.
+
+   ─────────────────────────────────────────────
+   FASE 2.5.5A — CORREÇÃO TÉCNICA
+   ─────────────────────────────────────────────
+   · Seletor .score-nivel-intermediario corrigido
+     para .score-nivel-intermediário (com acento).
+     quiz_intelligence.js retorna 'intermediário'
+     (com acento) em FAIXAS_NIVEL. O seletor CSS
+     estava sem acento, portanto nunca resolvia
+     para alunos em nível intermediário.
 */
 
 
@@ -111,7 +121,11 @@
 /* ─── MODIFICADORES DE COR POR NIVEL ────────────────────────
    Aplicados como classe no .score-card pelo renderScore().
    Afetam: cor do numero, cor e fundo do badge de nivel.
-   Usam apenas variaveis ja existentes — nenhuma cor nova. */
+   Usam apenas variaveis ja existentes — nenhuma cor nova.
+
+   FASE 2.5.5A: .score-nivel-intermediário corrigido (acento).
+   O valor retornado por quiz_intelligence.js é 'intermediário'
+   (com acento), portanto o seletor CSS deve conter acento. */
 
 .score-nivel-avancado .score-number      { color: var(--green); }
 .score-nivel-avancado .score-nivel       { background: rgba(61,220,132,.12); color: var(--green); }
@@ -119,8 +133,8 @@
 .score-nivel-proficiente .score-number   { color: var(--blue); }
 .score-nivel-proficiente .score-nivel    { background: rgba(79,168,232,.12); color: var(--blue); }
 
-.score-nivel-intermediario .score-number { color: var(--amber); }
-.score-nivel-intermediario .score-nivel  { background: rgba(255,181,71,.12); color: var(--amber); }
+.score-nivel-intermediário .score-number { color: var(--amber); }
+.score-nivel-intermediário .score-nivel  { background: rgba(255,181,71,.12); color: var(--amber); }
 
 .score-nivel-iniciante .score-number     { color: var(--accent-lite); }
 .score-nivel-iniciante .score-nivel      { background: var(--accent-dim); color: var(--accent-lite); }

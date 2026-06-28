@@ -620,6 +620,25 @@
       </section>
 
 
+      <!-- ── CRESCIMENTO ACUMULADO (7 dias) — session-tracker ──
+           Preenchido por: _renderCrescimentoAcumulado() em dashboard_data.js
+           O SVG é injetado em #crescimento-acumulado pelo JS.
+           O label de total é atualizado em #crescimento-total-label.
+           Nenhum dado é calculado aqui — apenas estrutura HTML. ── -->
+      <section>
+        <div class="section-header">
+          <span class="section-title">Crescimento acumulado</span>
+          <span class="section-count">últimos 7 dias · historico_diario</span>
+          <div class="section-line"></div>
+        </div>
+
+        <div class="perf-card">
+          <div id="crescimento-acumulado" class="crescimento-chart-wrap"></div>
+          <div class="section-count" id="crescimento-total-label" style="margin-top: 8px">—</div>
+        </div>
+      </section>
+
+
       <!-- ── EVOLUÇÃO DIÁRIA (30 dias) — historico_diario ──── -->
       <section>
         <div class="section-header">
@@ -679,6 +698,27 @@
               </div>
               <div>
                 <span class="perf-value" id="perf-dias-ativos">—</span><span class="perf-unit">/7</span>
+              </div>
+            </div>
+
+            <!-- ── MELHOR DIA (últimos 30) ────────────────────────
+                 Preenchido por: _renderTendencia() em dashboard_data.js
+                 IDs: perf-melhor-dia (valor), perf-bar-melhor (barra)
+                 Ausentes na versão anterior — adicionados aqui. ── -->
+            <div class="perf-item">
+              <div class="perf-icon ic-amber">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M7 1.5l1.5 3 3.5.5-2.5 2.5.5 3.5L7 9.5 4 11l.5-3.5L2 5l3.5-.5z"/>
+                </svg>
+              </div>
+              <div style="flex:1">
+                <div class="perf-name">Melhor dia (últimos 30)</div>
+                <div class="prog-bar" style="margin-top:8px">
+                  <div class="prog-fill amber" id="perf-bar-melhor" style="width:0%"></div>
+                </div>
+              </div>
+              <div>
+                <span class="perf-value" id="perf-melhor-dia">—</span>
               </div>
             </div>
 
@@ -832,6 +872,78 @@
           </div>
         </div>
       </div>
+
+
+      <!-- ── CONSISTÊNCIA DE USO — session-tracker ─────────────
+           Preenchido por: _renderConsistencia() em dashboard_data.js
+           IDs adicionados (ausentes na versão anterior):
+             consistencia-frequencia   (texto frequência)
+             consistencia-bar-freq     (barra frequência)
+             consistencia-regularidade (texto regularidade)
+             consistencia-bar-reg      (barra regularidade)
+             consistencia-tendencia    (label de tendência semanal)
+           Nenhum dado é calculado aqui — apenas estrutura HTML. ── -->
+      <section>
+        <div class="section-header">
+          <span class="section-title">Consistência de uso</span>
+          <span class="section-count">últimos 30 dias · historico_diario</span>
+          <div class="section-line"></div>
+        </div>
+
+        <div class="perf-card">
+          <div class="perf-list">
+
+            <div class="perf-item">
+              <div class="perf-icon ic-purple">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <rect x="1.5" y="3" width="11" height="9" rx="1.5"/>
+                  <path d="M4 1.5V4M10 1.5V4M1.5 6.5h11"/>
+                </svg>
+              </div>
+              <div style="flex:1">
+                <div class="perf-name">Frequência (dias ativos / 30)</div>
+                <div class="prog-bar" style="margin-top:8px">
+                  <div class="prog-fill" id="consistencia-bar-freq" style="width:0%"></div>
+                </div>
+              </div>
+              <div>
+                <span class="perf-value" id="consistencia-frequencia">—</span>
+              </div>
+            </div>
+
+            <div class="perf-item">
+              <div class="perf-icon ic-green">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M1 10l2-2 2 1.5 2-2.5 2 1 2-3 2 1.5"/>
+                </svg>
+              </div>
+              <div style="flex:1">
+                <div class="perf-name">Regularidade (variação entre dias)</div>
+                <div class="prog-bar" style="margin-top:8px">
+                  <div class="prog-fill green" id="consistencia-bar-reg" style="width:0%"></div>
+                </div>
+              </div>
+              <div>
+                <span class="perf-value" id="consistencia-regularidade">—</span>
+              </div>
+            </div>
+
+            <div class="perf-item" style="border-bottom:none">
+              <div class="perf-icon ic-blue">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <circle cx="7" cy="7" r="5.5"/>
+                  <path d="M7 4v3l2 2"/>
+                </svg>
+              </div>
+              <div style="flex:1">
+                <div class="perf-name">Tendência semanal</div>
+                <div id="consistencia-tendencia" class="consistencia-tend" style="margin-top:4px">—</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
 
 
       <!-- ── NAVEGAÇÃO E COMPORTAMENTO REAL ──────────────────

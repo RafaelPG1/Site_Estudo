@@ -957,3 +957,59 @@ body {
   .page-header { flex-direction: column; gap: 16px; }
   .motivational { max-width: 100%; }
 }
+
+
+/* ═══════════════════════════════════════════════════════════
+   FASE 2.5.5A — CLASSES DE MÉTRICAS DE SESSÃO
+   ───────────────────────────────────────────────────────────
+   Classes aplicadas dinamicamente pelo JavaScript em
+   dashboard_data.js mas ausentes do CSS. Adicionadas aqui
+   (dashboard.css) pois pertencem às métricas de sessão
+   (session-tracker), não aos cards inteligentes da Camada 5.
+
+   Nenhuma regra existente foi alterada.
+   Apenas variáveis CSS já definidas em :root são usadas.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ─── GRÁFICO DE CRESCIMENTO ACUMULADO ───────────────────────
+   Criado por _renderCrescimentoAcumulado() em dashboard_data.js.
+   SVG inserido dentro de #crescimento-acumulado. */
+.crescimento-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.crescimento-area {
+  fill: var(--accent-dim);
+}
+
+.crescimento-line {
+  fill: none;
+  stroke: var(--accent-lite);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ─── CONSISTÊNCIA DE USO — LABEL DE TENDÊNCIA ───────────────
+   Criado por _renderConsistencia() em dashboard_data.js.
+   Elemento <div> com classe base .consistencia-tend e um
+   modificador .tend-up ou .tend-down. */
+.consistencia-tend {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  margin-top: 6px;
+}
+
+.consistencia-tend.tend-up   { color: var(--green); }
+.consistencia-tend.tend-down { color: var(--red); }
+
+/* ─── BARRA DO MELHOR DIA ────────────────────────────────────
+   Aplicado por _renderEvolucaoDiaria() em dashboard_data.js
+   como modificador sobre .evo-bar para destacar o melhor dia
+   dos últimos 30. */
+.evo-bar-melhor {
+  background: var(--amber);
+}
