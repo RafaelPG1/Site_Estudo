@@ -556,6 +556,70 @@
       </section>
 
 
+      <!-- ── PREVISÃO (Camada 5 — Fase 2.5) ────────────────────
+           Fonte: window.NexusQuizIntelligence.relatorioEvolucao()
+           Campo: relatorio.previsaoSimples
+           Preenchido por: renderPrediction() em dashboard_render.js
+           Campos usados: previsaoTaxaAcertoPct, direcaoEsperada,
+                          confianca, amostras, motivo
+           Nenhum dado é calculado aqui — apenas estrutura HTML. ── -->
+      <section>
+        <div class="section-header">
+          <span class="section-title">Previsão</span>
+          <span class="section-count">quiz_intelligence · previsaoSimples</span>
+          <div class="section-line"></div>
+        </div>
+
+        <div class="prediction-card" id="prediction-card">
+
+          <div class="prediction-main">
+            <div class="prediction-numero" id="prediction-numero">—</div>
+            <div class="prediction-label-wrap">
+              <div class="prediction-direcao" id="prediction-direcao">—</div>
+              <div class="prediction-amostras" id="prediction-amostras">— amostras analisadas</div>
+            </div>
+          </div>
+
+          <div class="prediction-descricao" id="prediction-descricao">
+            Carregando previsão…
+          </div>
+
+        </div>
+      </section>
+
+
+      <!-- ── CURVA DE APRENDIZADO (Camada 5 — Fase 2.6) ────────
+           Fonte: window.NexusQuizIntelligence.relatorioEvolucao()
+           Campo: relatorio.curvaDeAprendizado.geral
+           Preenchido por: renderLearningCurve() em dashboard_render.js
+           Campos usados: totalTentativas, serieTaxaAcertoPct,
+                          mediaMovelPct, tendencia
+           Nenhum dado é calculado aqui — apenas estrutura HTML. ── -->
+      <section>
+        <div class="section-header">
+          <span class="section-title">Curva de Aprendizado</span>
+          <span class="section-count">quiz_intelligence · curvaDeAprendizado</span>
+          <div class="section-line"></div>
+        </div>
+
+        <div class="curve-card" id="curve-card">
+
+          <div class="curve-header">
+            <div class="curve-tendencia" id="curve-tendencia">—</div>
+            <div class="curve-amostras" id="curve-amostras">— tentativas analisadas</div>
+          </div>
+
+          <div class="curve-chart-wrap" id="curve-chart-wrap"></div>
+
+          <div class="curve-legenda">
+            <span class="curve-legenda-item"><span class="curve-dot curve-dot-real"></span>Taxa de acerto</span>
+            <span class="curve-legenda-item"><span class="curve-dot curve-dot-movel"></span>Média móvel</span>
+          </div>
+
+        </div>
+      </section>
+
+
       <!-- ── EVOLUÇÃO DIÁRIA (30 dias) — historico_diario ──── -->
       <section>
         <div class="section-header">

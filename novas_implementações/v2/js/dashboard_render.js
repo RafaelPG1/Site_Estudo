@@ -407,14 +407,220 @@ export function renderWeaknesses(relatorio) {
   });
 }
 
-/* Fase 2.5 — Previsao simples de desempenho */
+/* Fase 2.5 — Previsao simples de desempenho
+   ──────────────────────────────────────────────────────────────
+   Fonte: relatorio.previsaoSimples (calculado por quiz_intelligence.js
+   via previsaoSimples / _regressaoLinear). Campos disponíveis,
+   confirmados diretamente no código-fonte do quiz_intelligence:
+
+     previsaoTaxaAcertoPct   number | null   previsão (%) já calculada
+     direcaoEsperada         string          'melhora' | 'queda' | 'estavel'
+                                              (só existe quando a previsão
+                                              foi calculada com sucesso)
+     confianca               string          'alta' | 'média' | 'baixa'
+     metodo                  string          sempre 'regressao_linear'
+     amostras                number          total de tentativas usadas
+     disciplina              string | null   sempre null neste fluxo
+                                              (relatorioEvolucao chama
+                                              previsaoSimples(uid) sem disc)
+     motivo                  string          'dados_insuficientes'
+                                              (só existe quando NÃO há
+                                              pontos suficientes p/ prever)
+
+   Esta funcao apenas le esses campos e atualiza o DOM.
+   Zero calculos. Zero chamadas externas. */
 export function renderPrediction(relatorio) {
-  /* stub — sera preenchido na Fase 2.5 */
-  /* fonte: relatorio.previsaoSimples */
+  const previsao = relatorio?.previsaoSimples;
+
+  const elCard      = document.getElementById('prediction-card');
+  const elNumero    = document.getElementById('prediction-numero');
+  const elDirecao   = document.getElementById('prediction-direcao');
+  const elAmostras  = document.getElementById('prediction-amostras');
+  const elDescricao = document.getElementById('prediction-descricao');
+
+  /* Sem elemento no DOM: secao ainda nao existe */
+  if (!elCard) return;
+
+  /* Estado vazio: sem dados de inteligencia, ou previsão não pôde
+     ser calculada (previsaoTaxaAcertoPct null — falta de dados ou
+     amostras insuficientes). Cobre tanto o caso "motivo: dados_insuficientes"
+     quanto o caso de relatorio.previsaoSimples ausente (Promise rejeitada
+     em relatorioEvolucao). */
+  if (!previsao || previsao.previsaoTaxaAcertoPct === null || previsao.previsaoTaxaAcertoPct === undefined) {
+    elCard.className        = 'prediction-card prediction-vazio';
+    elNumero.textContent    = '—';
+    elDirecao.textContent   = 'Indeterminado';
+    elAmostras.textContent  = previsao?.amostras
+      ? `${previsao.amostras} amostra${previsao.amostras !== 1 ? 's' : ''} analisada${previsao.amostras !== 1 ? 's' : ''}`
+      : 'Nenhuma amostra analisada ainda';
+    elDescricao.textContent = previsao?.motivo === 'dados_insuficientes'
+      ? 'Dados insuficientes para gerar uma previsão. Realize mais quizzes.'
+      : 'Realize quizzes para gerar sua previsão de desempenho.';
+    return;
+  }
+
+  /* Previsão calculada — campo direto, ja vem pronto do quiz_intelligence */
+  elNumero.textContent = `${previsao.previsaoTaxaAcertoPct}%`;
+
+  /* Direcao esperada — lookup puro, sem calculo */
+  const DIRECAO_ICONE = {
+    'melhora': '↑',
+    'estavel': '→',
+    'queda':   '↓',
+  };
+  const DIRECAO_LABEL = {
+    'melhora': 'Melhora esperada',
+    'estavel': 'Estabilidade esperada',
+    'queda':   'Queda esperada',
+  };
+  const direcaoChave = previsao.direcaoEsperada ?? 'indeterminado';
+  const icone = DIRECAO_ICONE[direcaoChave] ?? '—';
+  const label = DIRECAO_LABEL[direcaoChave] ?? direcaoChave;
+  elDirecao.textContent = `${icone} ${label}`;
+
+  /* Classe de cor do card — controlada por CSS, sem inline style */
+  elCard.className = `prediction-card prediction-${direcaoChave}`;
+
+  /* Amostras — campo direto */
+  const amostras = previsao.amostras ?? 0;
+  elAmostras.textContent = `${amostras} amostra${amostras !== 1 ? 's' : ''} analisada${amostras !== 1 ? 's' : ''}`;
+
+  /* Confianca — lookup puro, mesma convencao usada em renderTrend() */
+  const CONFIANCA_LABEL = {
+    'alta':  'Alta confiança',
+    'media': 'Confiança média',
+    'média': 'Confiança média',
+    'baixa': 'Baixa confiança',
+  };
+  const confiancaLabel = CONFIANCA_LABEL[previsao.confianca] ?? previsao.confianca ?? '';
+  elDescricao.textContent = confiancaLabel
+    ? `Estimativa via regressão linear · ${confiancaLabel}`
+    : 'Estimativa via regressão linear.';
 }
 
-/* Fase 2.6 — Curva de aprendizado (serie temporal + media movel) */
+/* Fase 2.6 — Curva de aprendizado (serie temporal + media movel)
+   ──────────────────────────────────────────────────────────────────
+   Fonte: relatorio.curvaDeAprendizado (calculado por quiz_intelligence.js
+   via curvaDeAprendizado / _regressaoLinear / _mediaMovel). Esta função
+   usa exclusivamente o bloco "geral" (visão agregada, sem segmentar por
+   disciplina) — os mesmos campos que renderPrediction/renderTrend já
+   consomem em outros relatórios, confirmados diretamente no código-fonte
+   do quiz_intelligence:
+
+     curvaDeAprendizado.geral.totalTentativas        number
+     curvaDeAprendizado.geral.serieTaxaAcertoPct      number[]  (já em %, já arredondado)
+     curvaDeAprendizado.geral.mediaMovelPct           number[]  (mesmo tamanho da série)
+     curvaDeAprendizado.geral.tendencia.direcao       'melhorando'|'estavel'|'piorando'|'indeterminado'
+     curvaDeAprendizado.geral.tendencia.inclinacaoPctPorTentativa  number | null
+
+   (curvaDeAprendizado.geral NÃO possui serieDatas nem nivelAtual —
+   esses campos só existem em curvaDeAprendizado.porDisciplina[disc],
+   que não é usado por este card.)
+
+   Esta funcao apenas le esses campos e desenha um SVG simples a partir
+   dos pontos já prontos — o mesmo padrão de construção de gráfico já
+   usado em outras partes do dashboard (polyline a partir de um array
+   de valores). Nenhum ponto é calculado aqui: as coordenadas X vêm do
+   índice do array, e as coordenadas Y vêm de uma normalização linear
+   simples (0-100% mapeado para a altura do SVG) — apenas escala de
+   desenho, não uma métrica nova. Zero regressão. Zero média móvel.
+   Zero chamadas externas. */
 export function renderLearningCurve(relatorio) {
-  /* stub — sera preenchido na Fase 2.6 */
-  /* fonte: relatorio.curvaDeAprendizado */
+  const curva = relatorio?.curvaDeAprendizado?.geral;
+
+  const elCard       = document.getElementById('curve-card');
+  const elTendencia  = document.getElementById('curve-tendencia');
+  const elAmostras   = document.getElementById('curve-amostras');
+  const elChartWrap  = document.getElementById('curve-chart-wrap');
+
+  /* Sem elemento no DOM: secao ainda nao existe */
+  if (!elCard) return;
+
+  /* Estado vazio: sem dados de inteligencia, ou serie vazia/insuficiente
+     para desenhar uma curva (menos de 2 pontos não forma uma linha) */
+  const serie = curva?.serieTaxaAcertoPct;
+  if (!curva || !Array.isArray(serie) || serie.length < 2) {
+    elCard.className       = 'curve-card curve-vazio';
+    elTendencia.textContent = 'Indeterminado';
+    elAmostras.textContent  = curva?.totalTentativas
+      ? `${curva.totalTentativas} tentativa${curva.totalTentativas !== 1 ? 's' : ''} analisada${curva.totalTentativas !== 1 ? 's' : ''}`
+      : 'Nenhuma tentativa analisada ainda';
+    if (elChartWrap) {
+      elChartWrap.innerHTML = '';
+      const vazio       = document.createElement('div');
+      vazio.className   = 'curve-empty';
+      vazio.textContent = 'Realize mais quizzes para gerar sua curva de aprendizado.';
+      elChartWrap.appendChild(vazio);
+    }
+    return;
+  }
+
+  /* Tendencia — lookup puro, mesma convencao usada em renderTrend() */
+  const tendencia = curva.tendencia ?? { direcao: 'indeterminado', inclinacaoPctPorTentativa: null };
+
+  const DIRECAO_ICONE = {
+    'melhorando': '↑',
+    'estavel':    '→',
+    'piorando':   '↓',
+  };
+  const DIRECAO_LABEL = {
+    'melhorando': 'Melhorando',
+    'estavel':    'Estável',
+    'piorando':   'Piorando',
+  };
+  const direcaoChave = tendencia.direcao ?? 'indeterminado';
+  const icone = DIRECAO_ICONE[direcaoChave] ?? '—';
+  const label = DIRECAO_LABEL[direcaoChave] ?? direcaoChave;
+  elTendencia.textContent = `${icone} ${label}`;
+
+  /* Classe de cor do card — controlada por CSS, sem inline style */
+  elCard.className = `curve-card curve-${direcaoChave}`;
+
+  /* Total de tentativas — campo direto */
+  const total = curva.totalTentativas ?? serie.length;
+  elAmostras.textContent = `${total} tentativa${total !== 1 ? 's' : ''} analisada${total !== 1 ? 's' : ''}`;
+
+  /* ── Desenho do SVG ──
+     mediaMovelPct ja vem calculada pelo quiz_intelligence — aqui
+     apenas plotamos os pontos recebidos, sem nenhum processamento
+     estatistico. A normalizacao 0-100% → altura do SVG é escala
+     de desenho (mapeamento linear fixo), nao uma metrica derivada. */
+  if (elChartWrap) {
+    elChartWrap.innerHTML = '';
+
+    const movel = Array.isArray(curva.mediaMovelPct) ? curva.mediaMovelPct : [];
+    const W = 560, H = 140, PAD = 8;
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    svg.setAttribute('class', 'curve-svg');
+    svg.setAttribute('preserveAspectRatio', 'none');
+
+    /* Escala fixa 0-100%, ja que serieTaxaAcertoPct e mediaMovelPct
+       sao sempre percentuais (0 a 100) — sem calculo de min/max */
+    function _pontos(valores) {
+      return valores.map((v, i) => {
+        const x = valores.length > 1
+          ? Math.round((i / (valores.length - 1)) * (W - PAD * 2)) + PAD
+          : PAD;
+        const vClamped = Math.max(0, Math.min(100, v));
+        const y = Math.round(H - PAD - (vClamped / 100) * (H - PAD * 2));
+        return `${x},${y}`;
+      }).join(' ');
+    }
+
+    const linhaReal = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+    linhaReal.setAttribute('points', _pontos(serie));
+    linhaReal.setAttribute('class', 'curve-line-real');
+    svg.appendChild(linhaReal);
+
+    if (movel.length === serie.length && movel.length > 0) {
+      const linhaMovel = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+      linhaMovel.setAttribute('points', _pontos(movel));
+      linhaMovel.setAttribute('class', 'curve-line-movel');
+      svg.appendChild(linhaMovel);
+    }
+
+    elChartWrap.appendChild(svg);
+  }
 }

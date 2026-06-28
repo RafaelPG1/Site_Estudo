@@ -589,3 +589,254 @@
  
   .wk-taxa { font-size: 15px; }
 }
+
+
+/* ============================================
+   CAMADA 5 — Fase 2.5
+   Card — Previsão
+============================================ */
+
+/* ─── CARD CONTAINER ─────────────────────────────────────── */
+.prediction-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: border-color .2s ease;
+}
+
+.prediction-card:hover {
+  border-color: var(--border-2);
+}
+
+/* ─── LINHA PRINCIPAL: numero + labels ───────────────────── */
+.prediction-main {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+/* ─── NUMERO DA PREVISAO ─────────────────────────────────── */
+.prediction-numero {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 64px;
+  font-weight: 700;
+  letter-spacing: -3px;
+  line-height: 1;
+  color: var(--accent-lite);
+  flex-shrink: 0;
+  transition: color .3s ease;
+}
+
+/* ─── AREA DE LABELS (direcao + amostras) ────────────────── */
+.prediction-label-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ─── DIRECAO ESPERADA ───────────────────────────────────── */
+.prediction-direcao {
+  display: inline-flex;
+  align-items: center;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .3px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  /* cor padrao — sobrescrita pelos modificadores abaixo */
+  background: var(--accent-dim);
+  color: var(--accent-lite);
+  width: fit-content;
+  transition: background .3s ease, color .3s ease;
+}
+
+/* ─── CONTAGEM DE AMOSTRAS ───────────────────────────────── */
+.prediction-amostras {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-3);
+  letter-spacing: .3px;
+}
+
+/* ─── DESCRICAO ──────────────────────────────────────────── */
+.prediction-descricao {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.55;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
+
+/* ─── MODIFICADORES DE COR POR DIRECAO ──────────────────────
+   Aplicados como classe no .prediction-card pelo renderPrediction().
+   Afetam: cor do numero, cor e fundo do badge de direcao.
+   Usam apenas variaveis ja existentes — nenhuma cor nova. */
+
+.prediction-melhora .prediction-numero  { color: var(--green); }
+.prediction-melhora .prediction-direcao { background: rgba(61,220,132,.12); color: var(--green); }
+
+.prediction-estavel .prediction-numero  { color: var(--blue); }
+.prediction-estavel .prediction-direcao { background: rgba(79,168,232,.12); color: var(--blue); }
+
+.prediction-queda .prediction-numero  { color: var(--red); }
+.prediction-queda .prediction-direcao { background: rgba(255,92,106,.12); color: var(--red); }
+
+/* ─── ESTADO VAZIO ───────────────────────────────────────── */
+.prediction-vazio .prediction-numero    { color: var(--text-3); }
+.prediction-vazio .prediction-direcao   { background: var(--border); color: var(--text-3); }
+.prediction-vazio .prediction-descricao { color: var(--text-3); font-style: italic; }
+
+/* ─── RESPONSIVO ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .prediction-card    { padding: 20px; }
+  .prediction-numero  { font-size: 48px; letter-spacing: -2px; }
+  .prediction-main    { gap: 16px; }
+}
+
+
+/* ============================================
+   CAMADA 5 — Fase 2.6
+   Card — Curva de Aprendizado
+============================================ */
+
+/* ─── CARD CONTAINER ─────────────────────────────────────── */
+.curve-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 24px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: border-color .2s ease;
+}
+
+.curve-card:hover {
+  border-color: var(--border-2);
+}
+
+/* ─── CABECALHO: tendencia + amostras ─────────────────────── */
+.curve-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* ─── TENDENCIA ──────────────────────────────────────────── */
+.curve-tendencia {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -.3px;
+  /* cor padrao — sobrescrita pelos modificadores abaixo */
+  color: var(--text-3);
+  transition: color .3s ease;
+}
+
+/* ─── CONTAGEM DE AMOSTRAS ───────────────────────────────── */
+.curve-amostras {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-3);
+  letter-spacing: .3px;
+}
+
+/* ─── AREA DO GRAFICO ────────────────────────────────────── */
+.curve-chart-wrap {
+  width: 100%;
+  height: 140px;
+}
+
+.curve-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Serie real (taxa de acerto) — ja vem calculada do quiz_intelligence,
+   apenas desenhada aqui */
+.curve-line-real {
+  fill: none;
+  stroke: var(--accent-lite);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Media movel — ja vem calculada do quiz_intelligence, apenas desenhada
+   aqui com um traco diferenciado para distinguir da serie real */
+.curve-line-movel {
+  fill: none;
+  stroke: var(--amber);
+  stroke-width: 2;
+  stroke-dasharray: 4 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: .85;
+}
+
+/* ─── LEGENDA ────────────────────────────────────────────── */
+.curve-legenda {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-size: 11px;
+  color: var(--text-3);
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.curve-legenda-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.curve-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.curve-dot-real  { background: var(--accent-lite); }
+.curve-dot-movel { background: var(--amber); }
+
+/* ─── ESTADO VAZIO ───────────────────────────────────────── */
+.curve-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 13px;
+  color: var(--text-3);
+  font-style: italic;
+  text-align: center;
+}
+
+.curve-vazio .curve-tendencia { color: var(--text-3); }
+
+/* ─── MODIFICADORES DE COR POR DIRECAO ──────────────────────
+   Aplicados como classe no .curve-card pelo renderLearningCurve().
+   Afetam apenas a cor do label de tendencia no cabecalho — a cor
+   das linhas do grafico permanece fixa (accent-lite/amber) para
+   manter a leitura visual consistente em qualquer direcao.
+   Usam apenas variaveis ja existentes — nenhuma cor nova. */
+
+.curve-melhorando .curve-tendencia { color: var(--green); }
+.curve-estavel    .curve-tendencia { color: var(--blue); }
+.curve-piorando   .curve-tendencia { color: var(--red); }
+
+/* ─── RESPONSIVO ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .curve-card       { padding: 18px 20px; }
+  .curve-chart-wrap { height: 110px; }
+  .curve-tendencia  { font-size: 17px; }
+}
