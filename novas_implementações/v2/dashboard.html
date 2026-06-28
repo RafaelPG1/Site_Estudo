@@ -431,6 +431,130 @@
       </section>
 
 
+      <!-- ── SCORE EVOLUTIVO (Camada 5 — Fase 2.1) ─────────────
+           Fonte: window.NexusQuizIntelligence.relatorioEvolucao()
+           Campo: relatorio.scoreEvolutivo
+           Preenchido por: renderScore() em dashboard.js
+           Nenhum dado é calculado aqui — apenas estrutura HTML. ── -->
+      <section>
+        <div class="section-header">
+          <span class="section-title">Score Evolutivo</span>
+          <span class="section-count">quiz_intelligence · scoreEvolutivo</span>
+          <div class="section-line"></div>
+        </div>
+
+        <div class="score-card" id="score-card">
+
+          <div class="score-main">
+            <div class="score-number" id="score-geral">—</div>
+            <div class="score-label-wrap">
+              <div class="score-nivel" id="score-nivel">Nível —</div>
+              <div class="score-tentativas" id="score-tentativas">— tentativas analisadas</div>
+            </div>
+          </div>
+
+          <div class="score-descricao" id="score-descricao">
+            Carregando análise…
+          </div>
+
+        </div>
+      </section>
+
+
+      <!-- ── TENDENCIA DO ALUNO (Camada 5 — Fase 2.2) ──────────
+           Fonte: window.NexusQuizIntelligence.relatorioEvolucao()
+           Campo: relatorio.tendenciaDoAluno
+           Preenchido por: renderTrend() em dashboard.js
+           Campos usados: direcao, diferencaPct, confianca
+           Nenhum dado é calculado aqui — apenas estrutura HTML. ── -->
+      <section>
+        <div class="section-header">
+          <span class="section-title">Tendência do Aluno</span>
+          <span class="section-count">quiz_intelligence · tendenciaDoAluno</span>
+          <div class="section-line"></div>
+        </div>
+
+        <div class="trend-card" id="trend-card">
+
+          <div class="trend-main">
+            <div class="trend-direcao" id="trend-direcao">— —</div>
+            <div class="trend-diferenca" id="trend-diferenca">Carregando…</div>
+          </div>
+
+          <div class="trend-confianca" id="trend-confianca"></div>
+
+        </div>
+      </section>
+
+
+      <!-- ── COMPARACAO ENTRE PERIODOS (Camada 5 — Fase 2.3) ───
+           Fonte: window.NexusQuizIntelligence.relatorioEvolucao()
+           Campo: relatorio.comparacaoDePeriodos
+           Preenchido por: renderComparison() em dashboard.js
+           Campos usados: diasPorPeriodo, periodoAtual, periodoAnterior,
+                          variacaoPct, direcao
+           Nenhum dado é calculado aqui — apenas estrutura HTML. ── -->
+      <section>
+        <div class="section-header">
+          <span class="section-title">Comparação entre Períodos</span>
+          <span class="section-count">quiz_intelligence · comparacaoDePeriodos</span>
+          <div class="section-line"></div>
+        </div>
+
+        <div class="comparison-card" id="comparison-card">
+
+          <div class="comparison-periodos">
+
+            <div class="comparison-periodo">
+              <div class="comparison-periodo-label">Período atual</div>
+              <div class="comparison-periodo-taxa" id="comparison-atual-taxa">—</div>
+              <div class="comparison-periodo-tent" id="comparison-atual-tent">—</div>
+            </div>
+
+            <div class="comparison-sep">
+              <div class="comparison-variacao" id="comparison-variacao">—</div>
+            </div>
+
+            <div class="comparison-periodo">
+              <div class="comparison-periodo-label">Período anterior</div>
+              <div class="comparison-periodo-taxa" id="comparison-ant-taxa">—</div>
+              <div class="comparison-periodo-tent" id="comparison-ant-tent">—</div>
+            </div>
+
+          </div>
+
+          <div class="comparison-direcao" id="comparison-direcao">
+            Carregando…
+          </div>
+
+        </div>
+      </section>
+
+
+      <!-- ── FRAQUEZAS POR DISCIPLINA (Camada 5 — Fase 2.4) ────
+           Fonte: window.NexusQuizIntelligence.relatorioEvolucao()
+           Campo: relatorio.fraquezasPorDisciplina
+           Preenchido por: renderWeaknesses() em dashboard.js
+           Campos usados: disciplina, taxaAcertoPct, tendencia, emQueda
+           A lista chega ordenada da Camada 4 — exibida na ordem recebida.
+           Nenhum dado é calculado aqui — apenas estrutura HTML. ── -->
+      <section>
+        <div class="section-header">
+          <span class="section-title">Fraquezas por Disciplina</span>
+          <span class="section-count">
+            <span id="weaknesses-count">—</span> disciplina(s) · quiz_intelligence · fraquezasPorDisciplina
+          </span>
+          <div class="section-line"></div>
+        </div>
+
+        <div class="weaknesses-card" id="weaknesses-section">
+          <div class="weaknesses-lista" id="weaknesses-lista">
+            <!-- Preenchido por renderWeaknesses() em dashboard.js -->
+          </div>
+        </div>
+      </section>
+
+
       <!-- ── EVOLUÇÃO DIÁRIA (30 dias) — historico_diario ──── -->
       <section>
         <div class="section-header">
