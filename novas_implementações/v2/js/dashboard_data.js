@@ -163,11 +163,12 @@ export async function _carregarIntelligence(uid) {
     return null;
   }
 
-  const intelligence = await _aguardarNexusIntelligence();
+const intelligence = await _aguardarNexusIntelligence();
 
   if (!intelligence) {
     console.warn('[dashboard] _carregarIntelligence: NexusQuizIntelligence indisponível.');
     State.intelligence = null;
+    renderDashboardIntelligence(null);
     return null;
   }
 
@@ -220,6 +221,7 @@ export async function _carregarIntelligence(uid) {
   } catch (err) {
     console.error('[dashboard] _carregarIntelligence: erro ao chamar relatorioEvolucao:', err);
     State.intelligence = null;
+    renderDashboardIntelligence(null);
     return null;
   }
 }
@@ -304,8 +306,8 @@ function _renderTempoGlobal(stats) {
 
   const elMedia = document.getElementById('stat-media-sessao');
   if (elMedia) {
-    elMedia.textContent = stats.mediaDiaria > 0
-      ? formatTimeHuman(stats.mediaDiaria)
+    elMedia.textContent = stats.mediaSessao > 0
+      ? formatTimeHuman(stats.mediaSessao)
       : '—';
   }
 

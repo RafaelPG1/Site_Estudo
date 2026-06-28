@@ -746,15 +746,21 @@ export async function carregarEstatisticas(uid) {
       (best, d) => (d.tempoTotal > best.tempo ? { key: d.data, tempo: d.tempoTotal } : best),
       { key: null, tempo: 0 }
     );
+    const tempoTotalGeralFinal = dadosUsuario.tempoTotalGeral ?? 0;
+    const totalSessoesFinal    = dadosUsuario.totalSessoes    ?? 0;
+    const mediaSessao = totalSessoesFinal > 0
+      ? Math.floor(tempoTotalGeralFinal / totalSessoesFinal)
+      : 0;
 
     return {
-      tempoTotalGeral: dadosUsuario.tempoTotalGeral ?? 0,
-      totalSessoes:    dadosUsuario.totalSessoes    ?? 0,
+      tempoTotalGeral: tempoTotalGeralFinal,
+      totalSessoes:    totalSessoesFinal,
       ultimaAtividade: dadosUsuario.ultimaAtividade ?? null,
       tempoHoje,
       streak,
       diasAtivos30,
       mediaDiaria,
+      mediaSessao,
       melhorDia,
       ultimos7,
       historico,

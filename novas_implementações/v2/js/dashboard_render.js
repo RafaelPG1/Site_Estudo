@@ -51,8 +51,7 @@
 ══════════════════════════════════════════════ */
 export function renderDashboardIntelligence(relatorio) {
   if (!relatorio) {
-    console.log('[dashboard] renderDashboardIntelligence: relatorio ausente — stubs ignorados.');
-    return;
+    console.log('[dashboard] renderDashboardIntelligence: relatorio ausente — renderizando estado vazio.');
   }
 
   renderScore(relatorio);
