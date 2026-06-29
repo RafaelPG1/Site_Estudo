@@ -448,6 +448,16 @@ export async function init(uid) {
   _booting        = true;
   _uid            = uid;
 
+  /* Pode existir uma entrada de página já registrada em memória por uma
+     chamada manual de __nexusPageEnter() feita pela própria página (ex.:
+     quiz.js / resumo.js no DOMContentLoaded) ANTES deste init() terminar
+     a recuperação assíncrona de sessão. Preservamos esse registro para
+     poder mesclá-lo de volta depois, em vez de perdê-lo. */
+  const paginaJaRegistradaAntesDoInit   = _navCurrentPage;
+  const visitaJaRegistradaAntesDoInit   = paginaJaRegistradaAntesDoInit
+    ? { ..._navPages[paginaJaRegistradaAntesDoInit] }
+    : null;
+
   const storedId    = sessionStorage.getItem(SESSION_KEY);
   const storedStart = Number(sessionStorage.getItem(SESSION_START_KEY) || 0);
 
@@ -467,6 +477,23 @@ export async function init(uid) {
         const navLS  = _carregarNavLS();
         _navPages    = navLS.pages ?? (_isPlainObject(data.pages)     ? data.pages     : {});
         _navSequence = navLS.seq   ?? (Array.isArray(data.navigation) ? data.navigation : []);
+
+        /* MESCLA — reaplica a visita que ocorreu antes desta recuperação
+           terminar, em vez de deixá-la ser sobrescrita silenciosamente. */
+        if (paginaJaRegistradaAntesDoInit && visitaJaRegistradaAntesDoInit) {
+          const existente = _navPages[paginaJaRegistradaAntesDoInit] ?? { time: 0, visits: 0 };
+          _navPages[paginaJaRegistradaAntesDoInit] = {
+            time:   existente.time,
+            visits: Math.max(existente.visits, visitaJaRegistradaAntesDoInit.visits ?? 0),
+          };
+          const ultimo = _navSequence[_navSequence.length - 1];
+          if (ultimo !== paginaJaRegistradaAntesDoInit) {
+            _navSequence.push(paginaJaRegistradaAntesDoInit);
+          }
+          _navCurrentPage = paginaJaRegistradaAntesDoInit;
+          _navPageStart   = Date.now();
+          _salvarNavLS();
+        }
 
         const lsAccum = _readLSNumber(LS_ACCUM_KEY, 0);
         console.log(`[session-tracker] sessão recuperada: ${_sessionId} | localStorage: ${lsAccum}s | nav pages: ${Object.keys(_navPages).length}`);
@@ -493,7 +520,13 @@ export async function init(uid) {
   const eNova = !storedId;
   if (eNova) await _criarSessaoFirestore();
 
+  /* Força o registro mesmo que _navCurrentPage já aponte para o pathname
+     atual (caso de mesclagem acima): zera a guarda de idempotência antes
+     de chamar, garantindo que visits/sequence fiquem consistentes mesmo
+     se nenhuma mesclagem ocorreu (ex.: sessão nova). */
+  if (location.pathname === _navCurrentPage) _navCurrentPage = null;
   __nexusPageEnter(location.pathname);
+
   _booting        = false;
   _initInProgress = false;
   _notify();
