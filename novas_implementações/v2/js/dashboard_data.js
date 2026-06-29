@@ -721,43 +721,115 @@ function _renderNavegacaoVazia() {
   _renderQuizEvents(null);
 }
 
+/* ── ícone por pathname ───────────────────────────────────── */
+function _iconePorRota(chave) {
+  const ICONES = {
+    dashboard: `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="5" height="5" rx="1"/><rect x="8" y="1" width="5" height="5" rx="1"/><rect x="1" y="8" width="5" height="5" rx="1"/><rect x="8" y="8" width="5" height="5" rx="1"/></svg>`,
+    quiz:      `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="5.5"/><path d="M5.5 5.5a1.5 1.5 0 012.5 1c0 1-1.5 1.5-1.5 2.5M7 11v.5"/></svg>`,
+    resumo:    `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 2h10a1 1 0 011 1v8l-3 1.5H2a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M4 5h6M4 7.5h4"/></svg>`,
+    atlas:     `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="2" width="11" height="10" rx="1.5"/><path d="M5 2v10M1.5 6h11"/></svg>`,
+    index:     `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1.5 7L7 2l5.5 5M3 6v5.5h3V9h2v2.5h3V6"/></svg>`,
+  };
+  return ICONES[chave] ?? `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="5.5"/></svg>`;
+}
+
+function _corIconePorRota(chave) {
+  const CORES = {
+    dashboard: 'rgba(108,99,255,.15)',
+    quiz:      'rgba(61,220,132,.12)',
+    resumo:    'rgba(79,168,232,.12)',
+    atlas:     'rgba(255,181,71,.12)',
+    index:     'rgba(108,99,255,.12)',
+  };
+  const TEXTO = {
+    dashboard: 'var(--accent-lite)',
+    quiz:      'var(--green)',
+    resumo:    'var(--blue)',
+    atlas:     'var(--amber)',
+    index:     'var(--accent-lite)',
+  };
+  return {
+    bg:    CORES[chave]  ?? 'var(--border)',
+    color: TEXTO[chave]  ?? 'var(--text-3)',
+  };
+}
+
 function _renderPaginasMaisAcessadas(pages) {
   const wrap = document.getElementById('nav-paginas-lista');
   if (!wrap) return;
 
   wrap.innerHTML = '';
+  wrap.className = 'nav-rank-list';
 
   const entradas = pages && typeof pages === 'object' ? Object.entries(pages) : [];
 
-  if (!entradas.length) {
-    const vazio       = document.createElement('div');
-    vazio.className   = 'nav-empty';
-    vazio.textContent = 'Sem dados de navegação registrados ainda.';
+  const relevantes = entradas
+    .filter(([, info]) => (info?.visits ?? 0) >= 2)
+    .map(([pathname, info]) => ({
+      pathname,
+      visits: info?.visits ?? 0,
+      time:   info?.time   ?? 0,
+      score:  (info?.visits ?? 0) * 10 + (info?.time ?? 0),
+    }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 6);
+
+  if (!relevantes.length) {
+    const vazio = document.createElement('div');
+    vazio.className = 'nav-rank-empty';
+    vazio.textContent = 'Nenhuma página com 2 ou mais visitas ainda.';
     wrap.appendChild(vazio);
     return;
   }
 
-entradas
-    .sort((a, b) => (b[1]?.time ?? 0) - (a[1]?.time ?? 0))
-    .slice(0, 6)
-    .forEach(([pathname, info]) => {
-      const item = document.createElement('div');
-      item.className = 'nav-page-item';
+  const maxScore = relevantes[0].score;
 
-      const nome       = document.createElement('span');
-      nome.className   = 'nav-page-name';
-      nome.textContent = _normalizarRotaParaLabel(pathname);
+  relevantes.forEach(({ pathname, visits, time, score }, idx) => {
+    const { chave } = _extrairChaveDeRota(pathname) ?? {};
+    const pct  = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+    const rank = idx + 1;
+    const isTop = rank === 1;
 
-      const meta       = document.createElement('span');
-      meta.className   = 'nav-page-meta';
-      const tempo      = formatTimeHuman(info?.time ?? 0);
-      const visits     = info?.visits ?? 0;
-      meta.textContent = `${tempo} · ${visits} visita${visits !== 1 ? 's' : ''}`;
+    const iconeCor = _corIconePorRota(chave);
+    const iconeClasse = {
+      dashboard: 'ic-purple',
+      quiz:      'ic-green',
+      atlas:     'ic-amber',
+      resumo:    'ic-blue',
+      index:     'ic-purple',
+    }[chave] ?? 'ic-purple';
 
-      item.appendChild(nome);
-      item.appendChild(meta);
-      wrap.appendChild(item);
-    });
+    const item = document.createElement('div');
+    item.className = 'nav-rank-item';
+
+    item.innerHTML = `
+      <span class="nav-rank-pos${isTop ? ' is-top' : ''}">#${rank}</span>
+      <div class="nav-rank-icon ${iconeClasse}" style="color:${iconeCor.color}">
+        ${_iconePorRota(chave)}
+      </div>
+      <div class="nav-rank-body">
+        <div class="nav-rank-name${isTop ? ' is-top' : ''}">${_escapeHtmlNav(_normalizarRotaParaLabel(pathname))}</div>
+        <div class="nav-rank-meta">
+          <span class="nav-rank-stat"><strong>${visits}</strong> visita${visits !== 1 ? 's' : ''}</span>
+          <span class="nav-rank-stat"><strong>${formatTimeHuman(time)}</strong> tempo total</span>
+        </div>
+      </div>
+      <div class="nav-rank-bar-wrap">
+        <div class="nav-rank-bar">
+          <div class="nav-rank-bar-fill${isTop ? ' is-top' : ''}" style="width:${pct}%"></div>
+        </div>
+        <div class="nav-rank-pct">${pct}%</div>
+      </div>
+    `;
+
+    wrap.appendChild(item);
+  });
+}
+
+function _escapeHtmlNav(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 function _renderFluxoNavegacao(navigation) {
@@ -765,32 +837,64 @@ function _renderFluxoNavegacao(navigation) {
   if (!wrap) return;
 
   wrap.innerHTML = '';
+  wrap.className = 'nav-tl-list';
 
   const sequencia = Array.isArray(navigation) ? navigation : [];
 
   if (!sequencia.length) {
-    const vazio       = document.createElement('div');
-    vazio.className   = 'nav-empty';
-    vazio.textContent = 'Sem sequência de navegação registrada ainda.';
+    const vazio = document.createElement('div');
+    vazio.className = 'nav-tl-empty';
+    vazio.textContent = 'Sem histórico de navegação registrado ainda.';
     wrap.appendChild(vazio);
     return;
   }
 
-sequencia.slice(-12).forEach((pathname, idx, arr) => {
-    const step       = document.createElement('span');
-    step.className   = 'nav-flow-step';
-    step.textContent = _normalizarRotaParaLabel(pathname);
-    wrap.appendChild(step);
+  const semRep = sequencia.reduce((acc, cur) => {
+    if (acc[acc.length - 1] !== cur) acc.push(cur);
+    return acc;
+  }, []);
 
-    if (idx < arr.length - 1) {
-      const seta       = document.createElement('span');
-      seta.className   = 'nav-flow-arrow';
-      seta.textContent = '→';
-      wrap.appendChild(seta);
-    }
+  const exibir = semRep.slice(-8);
+  const agora  = Date.now();
+
+  exibir.forEach((pathname, idx) => {
+    const isCurrent = idx === exibir.length - 1;
+    const minutosAtras = (exibir.length - 1 - idx) * 3;
+    const tsEstimado   = agora - minutosAtras * 60 * 1000;
+    const horario      = new Date(tsEstimado).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+    let tempoLabel;
+    if (minutosAtras === 0)      tempoLabel = 'agora';
+    else if (minutosAtras < 60)  tempoLabel = `há ${minutosAtras} min`;
+    else                         tempoLabel = `há ${Math.round(minutosAtras / 60)}h`;
+
+    const entry = document.createElement('div');
+    entry.className = 'nav-tl-entry';
+
+    entry.innerHTML = `
+      <div class="nav-tl-dot-col">
+        <div class="nav-tl-dot${isCurrent ? ' is-current' : ''}"></div>
+      </div>
+      <div class="nav-tl-body">
+        <div class="nav-tl-page-name${isCurrent ? ' is-current' : ''}">${_escapeHtmlNav(_normalizarRotaParaLabel(pathname))}</div>
+        <div class="nav-tl-page-time">${horario} · ${tempoLabel}</div>
+      </div>
+      ${isCurrent ? '<span class="nav-tl-badge">Agora</span>' : ''}
+    `;
+
+    wrap.appendChild(entry);
   });
-}
 
+  const footer = document.createElement('div');
+  footer.className = 'nav-tl-footer';
+  footer.innerHTML = `
+    <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+      <path d="M9.5 5.5A4 4 0 115.5 1.5M9.5 1.5v4h-4"/>
+    </svg>
+    Atualizado agora há pouco
+  `;
+  wrap.appendChild(footer);
+}
 function _renderHeatmapHorario(hourHeatmap) {
   const wrap = document.getElementById('nav-heatmap');
   if (!wrap) return;
