@@ -105,11 +105,37 @@ function _limparSegmento(segmento) {
 function _extrairChaveDeRota(pathname) {
   if (typeof pathname !== 'string' || !pathname) return null;
 
-  let limpo = pathname;
-  try { limpo = decodeURIComponent(pathname); } catch (_) { /* mantém original */ }
+  /* Separa a query string ANTES de decodificar/dividir em segmentos —
+     evita que ela permaneça colada ao último segmento do caminho. */
+  const semQuery = pathname.split('?')[0];
+
+  let limpo = semQuery;
+  try { limpo = decodeURIComponent(semQuery); } catch (_) { /* mantém original */ }
 
   const segmentos = limpo.split('/').filter(Boolean);
   if (segmentos.length === 0) return { chave: 'index', ultimoSegmentoLimpo: 'Início' };
+
+  /* ── Caso especial: /quiz/disciplinas/.../arquivo.html ──────────────
+     Nesta etapa (escolha de modo) o caminho contém o segmento literal
+     "disciplinas" entre "quiz" e o arquivo final. Quando esse padrão
+     aparece, a disciplina é o NOME DO ARQUIVO final, não a rota "quiz"
+     — então este caso precisa ser resolvido ANTES da busca genérica
+     por ROTA_LABELS, que do contrário sempre bate em "quiz" primeiro
+     (pois "quiz" é o primeiro segmento de toda URL desta área). */
+  const idxDisciplinas = segmentos.findIndex(s => s.toLowerCase() === 'disciplinas');
+  if (idxDisciplinas !== -1 && segmentos[0]?.toLowerCase() === 'quiz') {
+    const arquivoFinal = segmentos[segmentos.length - 1];
+    const semExtArquivo = arquivoFinal.replace(/\.html?$/i, '').toLowerCase();
+    /* Só trata como disciplina se o arquivo final não for, ele mesmo,
+       uma rota conhecida (ex.: index.html dentro de /disciplinas/) */
+    if (semExtArquivo && !ROTA_LABELS[semExtArquivo]) {
+      return {
+        chave:               'quiz',
+        ultimoSegmentoLimpo: null,
+        discDoArquivo:       _limparSegmento(arquivoFinal),
+      };
+    }
+  }
 
   for (const seg of segmentos) {
     const semExt = seg.replace(/\.html?$/i, '').toLowerCase();
@@ -159,7 +185,7 @@ function _resolverNomeDisciplinaAtiva() {
    em memória da aplicação no momento da exibição. Se a chave não
    tiver ?disc=, exibe apenas o label base (sem disciplina). */
 function _normalizarRotaParaLabel(chaveNav) {
-  const { chave, ultimoSegmentoLimpo } = _extrairChaveDeRota(chaveNav) || {};
+  const { chave, ultimoSegmentoLimpo, discDoArquivo } = _extrairChaveDeRota(chaveNav) || {};
 
   if (!chave) {
     return ultimoSegmentoLimpo || 'Página';
@@ -171,7 +197,12 @@ function _normalizarRotaParaLabel(chaveNav) {
     return labelBase;
   }
 
-  const disciplina = _extrairDisciplinaDaQuery(chaveNav);
+  /* Prioridade obrigatória, lida sempre a partir da própria URL
+     registrada — nunca de State, variáveis globais ou contexto:
+       1. ?disc= na query string da entrada
+       2. nome do arquivo, quando vier de /quiz/disciplinas/.../arquivo.html
+       3. nenhuma disciplina — mostra só o label base */
+  const disciplina = _extrairDisciplinaDaQuery(chaveNav) || discDoArquivo || null;
 
   return disciplina ? `${labelBase} · ${disciplina}` : labelBase;
 }
