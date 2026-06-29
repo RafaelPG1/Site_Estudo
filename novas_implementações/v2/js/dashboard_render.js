@@ -224,7 +224,7 @@ export function renderComparison(relatorio) {
 
 /* Fase 2.4 — Fraquezas por disciplina */
 export function renderWeaknesses(relatorio) {
-  const lista = relatorio?.fraquezasPorDisciplina;
+    const lista = relatorio?.fraquezasPorDisciplina;
 
   const elSection = document.getElementById('weaknesses-section');
   const elLista   = document.getElementById('weaknesses-lista');
@@ -265,10 +265,14 @@ export function renderWeaknesses(relatorio) {
   };
 
   lista.forEach((item, idx) => {
-    const disc      = item?.disciplina    ?? '—';
-    const taxa      = item?.taxaAcertoPct ?? null;
-    const tendencia = item?.tendencia     ?? null;
-    const emQueda   = item?.emQueda       === true;
+    const disc      = item?.disciplina        ?? '—';
+    const taxa      = item?.taxaAcertoMediaPct ?? null;
+    const tendencia = item?.inclinacaoPctPorTentativa != null
+      ? (item.inclinacaoPctPorTentativa > 0.5 ? 'melhorando'
+        : item.inclinacaoPctPorTentativa < -0.5 ? 'piorando'
+        : 'estavel')
+      : null;
+    const emQueda   = item?.emQueda === true;
 
     const row       = document.createElement('div');
     row.className   = 'wk-item';

@@ -316,10 +316,13 @@ function _loadScript(src, appendTo) {
   });
 }
 
+
+
 function _carregarQuiz(params, info) {
-  var contentSrc = _resolverCaminhoConteudo(params.semestre, info.arquivo);
-  var uiSrc      = '../js/quiz_ui.js';
-  var engineSrc  = '../js/quiz_engine.js';
+  var contentSrc      = _resolverCaminhoConteudo(params.semestre, info.arquivo);
+  var uiSrc           = '../js/quiz_ui.js';
+  var engineSrc       = '../js/quiz_engine.js';
+  var intelligenceSrc = '../js/quiz_intelligence.js';
 
   /* filter.js carregado pelo template.html antes deste módulo. */
   Promise.all([
@@ -329,12 +332,23 @@ function _carregarQuiz(params, info) {
     }),
     _loadScript(uiSrc, document.head),
   ])
-    .then(function () { _loadScript(engineSrc, document.body); })
+    .then(function () {
+      return new Promise(function (resolve, reject) {
+        var s  = document.createElement('script');
+        s.type = 'module';
+        s.src  = intelligenceSrc;
+        s.onload  = resolve;
+        s.onerror = reject;
+        document.body.appendChild(s);
+      });
+    })
+    .then(function () {
+      return _loadScript(engineSrc, document.body);
+    })
     .catch(function (err) {
       console.error('[template_init] Falha ao carregar UI do quiz:', err);
     });
 }
-
 
 /* ══════════════════════════════════════════════════════════
    PASSO 10 — Inicializar Quiz-Assistant
