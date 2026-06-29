@@ -744,24 +744,33 @@ function _finalizarPaginaAtual() {
 
 function __nexusPageEnter(pathname) {
   if (typeof pathname !== 'string' || !pathname) return;
-  if (pathname === _navCurrentPage) return;
+
+  /* Chave de navegação inclui a query string (?disc=, ?modo=, etc.) no
+     momento exato da entrada. Isso é o que permite que cada entrada do
+     histórico carregue sua própria disciplina/modo, em vez de depender
+     do estado em memória da aplicação no momento da exibição. O
+     pathname puro continua existindo apenas como parte desta chave —
+     nunca é usado isoladamente para decidir o que mostrar depois. */
+  const chaveNav = pathname + (location.search || '');
+
+  if (chaveNav === _navCurrentPage) return;
   _finalizarPaginaAtual();
-  _navCurrentPage = pathname;
+  _navCurrentPage = chaveNav;
   _navPageStart   = Date.now();
-  if (!_navPages[pathname]) _navPages[pathname] = { time: 0, visits: 0 };
-  _navPages[pathname].visits += 1;
+  if (!_navPages[chaveNav]) _navPages[chaveNav] = { time: 0, visits: 0 };
+  _navPages[chaveNav].visits += 1;
 
   /* Só adiciona à sequência se diferente da última entrada —
      evita repetição tipo Dashboard → Dashboard → Dashboard */
   const ultimo = _navSequence[_navSequence.length - 1];
-  if (ultimo !== pathname) _navSequence.push(pathname);
+  if (ultimo !== chaveNav) _navSequence.push(chaveNav);
 
   /* Persiste imediatamente no localStorage — sobrevive a reloads
      sem depender do ciclo de heartbeat do Firestore */
   _salvarNavLS();
 
-  console.log('[session-tracker] __nexusPageEnter →', pathname,
-    `| visitas: ${_navPages[pathname].visits} | pages em memória: ${Object.keys(_navPages).length}`);
+  console.log('[session-tracker] __nexusPageEnter →', chaveNav,
+    `| visitas: ${_navPages[chaveNav].visits} | pages em memória: ${Object.keys(_navPages).length}`);
 
   if (_initialized && !_booting && _uid && _isOwner()) _flush().catch(() => {});
 }

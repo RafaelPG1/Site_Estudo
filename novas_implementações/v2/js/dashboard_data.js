@@ -150,9 +150,16 @@ function _resolverNomeDisciplinaAtiva() {
 }
 
 /* Função única de normalização — ponto central exigido
-   pela regra de consistência (seção 5). */
-function _normalizarRotaParaLabel(pathname) {
-  const { chave, ultimoSegmentoLimpo } = _extrairChaveDeRota(pathname) || {};
+   pela regra de consistência (seção 5).
+   ─────────────────────────────────────────────
+   REGRA (corrigida): a disciplina exibida vem EXCLUSIVAMENTE da
+   query string presente na própria chave de navegação registrada
+   (pathname + search, gravados juntos em __nexusPageEnter).
+   NUNCA usa State.discAtiva, variáveis globais, ou qualquer dado
+   em memória da aplicação no momento da exibição. Se a chave não
+   tiver ?disc=, exibe apenas o label base (sem disciplina). */
+function _normalizarRotaParaLabel(chaveNav) {
+  const { chave, ultimoSegmentoLimpo } = _extrairChaveDeRota(chaveNav) || {};
 
   if (!chave) {
     return ultimoSegmentoLimpo || 'Página';
@@ -164,11 +171,12 @@ function _normalizarRotaParaLabel(pathname) {
     return labelBase;
   }
 
-  const discDaQuery = _extrairDisciplinaDaQuery(pathname);
-  const disciplina  = discDaQuery || _resolverNomeDisciplinaAtiva();
+  const disciplina = _extrairDisciplinaDaQuery(chaveNav);
 
   return disciplina ? `${labelBase} · ${disciplina}` : labelBase;
 }
+
+
 export const State = {
   semestre:    null,
   disciplinas: [],
