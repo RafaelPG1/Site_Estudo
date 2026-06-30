@@ -95,30 +95,33 @@ export function renderDashboardIntelligence(relatorio) {
 export function renderScore(relatorio) {
   const score = relatorio?.scoreEvolutivo;
 
-  const elCard        = document.getElementById('score-card');
+const elCard        = document.getElementById('score-card');
   const elGeral       = document.getElementById('score-geral');
   const elNivel       = document.getElementById('score-nivel');
   const elTentativas  = document.getElementById('score-tentativas');
   const elDescricao   = document.getElementById('score-descricao');
+  const elRingIcon    = document.getElementById('score-ring-icon');
 
   if (!elCard) return;
 
   if (!score || score.scoreGeral === null || score.scoreGeral === undefined) {
     elCard.className = 'score-card score-vazio';
 
-    elGeral.innerHTML = `
-      <span class="empty-icon" aria-hidden="true">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+    elGeral.textContent = '0';
+
+    if (elRingIcon) {
+      elRingIcon.innerHTML = `
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="1.5"
              stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="9"/>
           <path d="M8 12h4l2-4"/>
           <circle cx="12" cy="16" r=".5" fill="currentColor"/>
-        </svg>
-      </span>`;
+        </svg>`;
+    }
 
     elNivel.innerHTML = `
-      <span class="empty-state-title">Score Evolutivo</span>
+      <span class="score-nivel-text">Score Evolutivo</span>
       <span class="empty-state-info-btn" tabindex="0"
             aria-label="Como o Score Evolutivo é calculado"
             data-tooltip="Calculado com base na sua taxa de acerto, tendência de melhora e consistência entre quizzes.">ⓘ</span>`;
@@ -134,11 +137,27 @@ export function renderScore(relatorio) {
     const ringElVazio = elCard.querySelector('.score-ring');
     if (ringElVazio) ringElVazio.style.setProperty('--score-pct', '0%');
 
+    const labelVazio = elCard.querySelector('.score-ring-label');
+    if (labelVazio) labelVazio.textContent = '/ 100';
+
     return;
   }
 
-  const scoreArredondado = Math.round(score.scoreGeral);
+const scoreArredondado = Math.round(score.scoreGeral);
   elGeral.textContent = scoreArredondado;
+
+  /* O ícone central nunca é removido do DOM — apenas fica mais discreto
+     quando há um Score calculado (controlado via CSS, não aqui). */
+  if (elRingIcon && !elRingIcon.innerHTML) {
+    elRingIcon.innerHTML = `
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="1.5"
+           stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M8 12h4l2-4"/>
+        <circle cx="12" cy="16" r=".5" fill="currentColor"/>
+      </svg>`;
+  }
 
   /* Atualiza o anel de progresso (puramente visual — não afeta o
      valor exibido nem nenhum cálculo). Usa requestAnimationFrame
@@ -158,8 +177,8 @@ export function renderScore(relatorio) {
     'iniciante':     'Iniciante',
     'fundamentos':   'Fundamentos',
   };
-  const nivelChave = score.nivelEstimado ?? 'indeterminado';
-  elNivel.textContent = `Nível: ${NIVEL_LABEL[nivelChave] ?? nivelChave}`;
+const nivelChave = score.nivelEstimado ?? 'indeterminado';
+  elNivel.innerHTML = `<span class="score-nivel-text">Nível: ${NIVEL_LABEL[nivelChave] ?? nivelChave}</span>`;
 
   elCard.className = `score-card score-nivel-${nivelChave}`;
 

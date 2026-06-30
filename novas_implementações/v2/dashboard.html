@@ -403,12 +403,18 @@
             <div class="section-line"></div>
           </div>
 
-          <div class="score-card" id="score-card">
-            <div class="score-ring-wrap">
-              <div class="score-ring" id="score-ring-el" aria-hidden="true"></div>
-              <div class="score-ring-inner">
-                <div class="score-number" id="score-geral">—</div>
-                <div class="score-ring-label">/ 100</div>
+<div class="score-card" id="score-card">
+            <div class="score-top-row">
+              <div class="score-ring-wrap">
+                <div class="score-ring" id="score-ring-el" aria-hidden="true">
+                  <div class="score-ring-inner">
+                    <div class="score-ring-icon" id="score-ring-icon"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="score-value-row">
+                <span class="score-number" id="score-geral">—</span>
+                <span class="score-ring-label">/ 100</span>
               </div>
             </div>
             <div class="score-info">
@@ -426,11 +432,18 @@
             <div class="section-line"></div>
           </div>
 
-          <div class="trend-card" id="trend-card">
+<div class="trend-card" id="trend-card">
             <div class="trend-arrow-bg" aria-hidden="true">
               <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path class="trend-arrow-path" d="M40 70 L40 10 M20 30 L40 10 L60 30" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
+            </div>
+            <div class="trend-header">
+              <svg class="trend-header-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path d="M1 9l3.5-4 2.5 2.5L12 2"/>
+                <path d="M8.5 2H12v3.5"/>
+              </svg>
+              <span class="trend-header-badge">Tendência do Aluno</span>
             </div>
             <div class="trend-body">
               <div class="trend-direcao" id="trend-direcao">—</div>

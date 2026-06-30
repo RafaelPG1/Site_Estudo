@@ -1468,7 +1468,8 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  width: 14px;
+  height: 14px;
   color: var(--text-3);
   cursor: default;
   position: relative;
@@ -1477,19 +1478,35 @@ body {
   line-height: 1;
 }
 
+/* Substitui o glifo "ⓘ" (que renderiza deformado em algumas fontes/SO)
+   por um ícone SVG via CSS mask — círculo + "i", consistente em qualquer ambiente. */
+.empty-state-info-btn {
+  font-size: 0;
+}
+.empty-state-info-btn::before {
+  content: '';
+  width: 14px;
+  height: 14px;
+  display: block;
+  background-color: currentColor;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.4'%3E%3Ccircle cx='8' cy='8' r='6.5'/%3E%3Cpath d='M8 7.2v4' stroke-linecap='round'/%3E%3Ccircle cx='8' cy='4.8' r='.2' fill='black' stroke-width='0.8'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.4'%3E%3Ccircle cx='8' cy='8' r='6.5'/%3E%3Cpath d='M8 7.2v4' stroke-linecap='round'/%3E%3Ccircle cx='8' cy='4.8' r='.2' fill='black' stroke-width='0.8'/%3E%3C/svg%3E");
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
 .empty-state-info-btn:hover,
 .empty-state-info-btn:focus {
   color: var(--accent-lite);
   outline: none;
 }
 
-/* Tooltip — aparece acima do ⓘ */
+/* Tooltip — aparece acima do ⓘ, acima de qualquer card */
 .empty-state-info-btn::after {
   content: attr(data-tooltip);
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
+  position: fixed;
   background: var(--surface-2, #16161f);
   border: 1px solid var(--border-2, #26263a);
   color: var(--text-2);
@@ -1504,16 +1521,37 @@ body {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.15s ease, transform 0.15s ease;
-  transform: translateX(-50%) translateY(4px);
-  z-index: 300;
+  visibility: hidden;
+  transition: opacity 0.15s ease;
+  z-index: 9999;
   text-align: left;
+  top: var(--tooltip-top, auto);
+  left: var(--tooltip-left, auto);
+  transform: translate(-50%, calc(-100% - 10px));
 }
 
 .empty-state-info-btn:hover::after,
 .empty-state-info-btn:focus::after {
   opacity: 1;
-  transform: translateX(-50%) translateY(0);
+  visibility: visible;
+}
+
+/* Em cards com pouco espaço horizontal, ancora o tooltip à direita */
+.score-vazio .empty-state-info-btn::after,
+.trend-indeterminado .empty-state-info-btn::after,
+.prediction-vazio .empty-state-info-btn::after {
+  left: auto;
+  right: 0;
+  transform: translateX(0) translateY(4px);
+}
+
+.score-vazio .empty-state-info-btn:hover::after,
+.score-vazio .empty-state-info-btn:focus::after,
+.trend-indeterminado .empty-state-info-btn:hover::after,
+.trend-indeterminado .empty-state-info-btn:focus::after,
+.prediction-vazio .empty-state-info-btn:hover::after,
+.prediction-vazio .empty-state-info-btn:focus::after {
+  transform: translateX(0) translateY(0);
 }
 
 /* Versão compacta para conquistas */

@@ -370,8 +370,9 @@ async function _bootPagina() {
   _renderGreeting();
   _renderUsuario();
 
-  _initSessionTimer();
+_initSessionTimer();
   _initProgressBarAnimation();
+  _initTooltipPositioning();
 
   await _carregarMetricasReais();
 
@@ -403,3 +404,23 @@ document.addEventListener('nexus:semestre-changed', e => {
 document.addEventListener('DOMContentLoaded', async () => {
   await _bootPagina();
 });
+
+/* ══════════════════════════════════════════════
+   TOOLTIP — posicionamento dinâmico via fixed
+   Os botões ⓘ usam position:fixed no ::after para
+   nunca serem cortados por overflow:hidden dos
+   cards. Como fixed não se ancora ao pai sozinho,
+   calculamos as coordenadas no hover/focus.
+══════════════════════════════════════════════ */
+function _initTooltipPositioning() {
+  document.body.addEventListener('mouseover', _posicionarTooltip, true);
+  document.body.addEventListener('focusin', _posicionarTooltip, true);
+}
+
+function _posicionarTooltip(e) {
+  const btn = e.target.closest('.empty-state-info-btn');
+  if (!btn) return;
+  const rect = btn.getBoundingClientRect();
+  btn.style.setProperty('--tooltip-left', `${rect.left + rect.width / 2}px`);
+  btn.style.setProperty('--tooltip-top', `${rect.top}px`);
+}

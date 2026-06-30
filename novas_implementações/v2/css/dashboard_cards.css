@@ -64,10 +64,17 @@
 .score-card:hover { border-color: var(--border-2); }
 
 /* ── Linha principal: anel + info ── */
-.score-ring-wrap {
+.score-top-row {
   display: flex;
   align-items: center;
   gap: 20px;
+}
+
+.score-ring-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 /* ── Anel de progresso via conic-gradient ── */
@@ -91,19 +98,55 @@
 }
 
 /* Número e "/100" sobrepostos ao centro do anel */
+/* Conteúdo sobreposto ao centro do anel: ícone (estado vazio) + valor (estado com dados) */
 .score-ring-inner {
   position: absolute;
   inset: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   z-index: 1;
 }
 
+/* Ícone central — visível apenas no estado vazio (controlado por .score-vazio) */
+.score-ring-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-3);
+  opacity: .70;
+  transition: opacity .3s ease, color .3s ease;
+}
+
+.score-vazio .score-ring-icon {
+  opacity: .7;
+}
+
+.score-ring-icon svg {
+  width: 35px;
+  height: 35px;
+}
+
+/* Linha do valor: número + "/100" sempre na mesma linha */
+.score-ring-value {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.score-value-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
 .score-number {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 22px;
+  font-size: 34px;
   font-weight: 700;
   letter-spacing: -1px;
   line-height: 1;
@@ -113,9 +156,10 @@
 
 .score-ring-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--text-3);
-  margin-top: 1px;
+  line-height: 1;
 }
 
 /* ── Coluna de informações à direita do anel ── */
@@ -130,16 +174,25 @@
 .score-nivel {
   display: inline-flex;
   align-items: center;
+  gap: 7px;
   font-family: 'Space Grotesk', sans-serif;
   font-size: 11.5px;
   font-weight: 600;
   letter-spacing: .3px;
-  padding: 3px 9px;
+  padding: 5px 11px;
   border-radius: 20px;
   background: var(--accent-dim);
   color: var(--accent-lite);
   width: fit-content;
   transition: background .3s ease, color .3s ease;
+}
+
+.score-nivel .score-nivel-text {
+  line-height: 1;
+}
+
+.score-nivel .empty-state-info-btn {
+  flex-shrink: 0;
 }
 
 .score-tentativas {
@@ -184,13 +237,14 @@
 .score-vazio .score-descricao { color: var(--text-3); font-style: italic; }
 .score-vazio .score-ring     { background: var(--border); }
 
+
+
 @media (max-width: 768px) {
   .score-card      { padding: 18px 20px; }
   .score-ring      { width: 68px; height: 68px; }
-  .score-number    { font-size: 18px; }
-  .score-ring-wrap { gap: 14px; }
+  .score-number    { font-size: 26px; }
+  .score-top-row   { gap: 14px; }
 }
-
 /* ═══════════════════════════════════════════════════════════
    CAMADA 5 — Fase 2.2: Tendência do Aluno
    Layout redesenhado: seta decorativa de fundo + corpo de texto.
@@ -213,6 +267,48 @@
 }
 
 .trend-card:hover { border-color: var(--border-2); }
+
+/* ── Header padronizado: ícone + badge (mesmo padrão de Score/Previsão) ── */
+.trend-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.trend-header-icon {
+  color: var(--accent-lite);
+  flex-shrink: 0;
+}
+
+.trend-header-badge {
+  display: inline-flex;
+  align-items: center;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: .3px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  background: var(--accent-dim);
+  color: var(--accent-lite);
+  width: fit-content;
+  transition: background .3s ease, color .3s ease;
+}
+
+.trend-melhorando .trend-header-icon,
+.trend-melhorando .trend-header-badge { color: var(--green); }
+.trend-melhorando .trend-header-badge { background: rgba(61,220,132,.12); }
+
+.trend-estavel .trend-header-icon,
+.trend-estavel .trend-header-badge { color: var(--blue); }
+.trend-estavel .trend-header-badge { background: rgba(79,168,232,.12); }
+
+.trend-piorando .trend-header-icon,
+.trend-piorando .trend-header-badge { color: var(--red); }
+.trend-piorando .trend-header-badge { background: rgba(255,92,106,.12); }
 
 /* ── Seta SVG decorativa de fundo ── */
 .trend-arrow-bg {
