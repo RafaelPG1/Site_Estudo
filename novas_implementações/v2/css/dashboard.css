@@ -317,31 +317,13 @@ body {
   align-items: center;
   gap: 12px;
 }
-
-/* ─── SELETOR DE SEMESTRE (infraestrutura global) ──────────
-   O componente em si (markup + comportamento) vem de
-   ../shared/css/themes/semestre-picker.css. Este bloco apenas
-   adapta a casca visual do componente para casar com os tokens
-   de cor do Dashboard, sem alterar layout, cards ou tipografia. */
-#semestre-selector-wrap .semestre-select {
-  background: var(--surface);
-  border: 1px solid var(--border-2);
-  border-radius: var(--r-sm);
-  color: var(--text-2);
-  font-family: 'Inter', sans-serif;
-  font-size: 12.5px;
-  font-weight: 500;
+/* ─── SELETOR DE SEMESTRE ────────────────────────────────────
+   O componente visual vem de semestre-picker.css (compartilhado
+   com o Quiz). Apenas desloca o painel 10px para a esquerda
+   para alinhar melhor com o layout do Dashboard. */
+#semestre-selector-wrap .sp-panel {
+  left: -70px;
 }
-#semestre-selector-wrap .semestre-select:hover,
-#semestre-selector-wrap .semestre-select:focus {
-  border-color: var(--accent);
-  color: var(--accent-lite);
-}
-#semestre-selector-wrap .semestre-select option {
-  background: var(--surface-2);
-  color: var(--text-1);
-}
-
 /* ─── CONTENT ────────────────────────────────────────────── */
 .content {
   padding: 36px 32px 60px;

@@ -101,6 +101,8 @@ import {
   getUsuario,
 } from '../../../src/global.js';
 
+import { criarSemestreSelect } from '../../../shared/js/utils/dom.js';
+
 import { resolverSemestreDeURL } from '../../../shared/js/utils/url.js';
 import { aplicarCoresDisciplina } from '../../../shared/js/themes/theme.js';
 import { injetarLogo } from '../../../shared/js/utils/logo.js';
@@ -161,34 +163,13 @@ function _resolverContexto() {
    SELETOR DE SEMESTRE
 ══════════════════════════════════════════════ */
 function _renderSemestreSelector() {
-  const wrap = document.getElementById('semestre-selector-wrap');
-  if (!wrap) return;
-  wrap.innerHTML = '';
-
-  const select      = document.createElement('select');
-  select.className  = 'semestre-select';
-  select.title      = 'Selecionar semestre';
-  select.id         = 'semestre-select';
-
-  SEMESTRES.forEach(s => {
-    const opt       = document.createElement('option');
-    opt.value       = s;
-    opt.textContent = s;
-    if (s === State.semestre) opt.selected = true;
-    select.appendChild(opt);
-  });
-
-  select.addEventListener('change', e => {
+  /* Usa o mesmo componente visual do Quiz (criarSemestreSelect de dom.js).
+     O CSS vem de semestre-picker.css, carregado no HTML do Dashboard.
+     Não cria <select> nativo — monta .sp-wrap > .sp-trigger + .sp-panel. */
+  criarSemestreSelect('semestre-selector-wrap', novoSemestre => {
     playSound('select', 'perfil');
-    _trocarSemestre(e.target.value);
-  });
-
-  wrap.appendChild(select);
-
-  requestAnimationFrame(() => {
-    const sel = wrap.querySelector('select');
-    if (sel) sel.addEventListener('mousedown', () => playSound('click', 'perfil'));
-  });
+    _trocarSemestre(novoSemestre);
+  }, State.semestre);
 }
 
 function _trocarSemestre(novoSemestre) {
@@ -409,12 +390,12 @@ async function _bootPagina() {
     console.log('[dashboard] nexus:logout — State.intelligence limpo.');
   });
 
-  document.addEventListener('nexus:semestre-changed', e => {
+document.addEventListener('nexus:semestre-changed', e => {
     const novoSemestre = e?.detail?.semestre;
     if (novoSemestre && novoSemestre !== State.semestre) {
       _trocarSemestre(novoSemestre);
-      const sel = document.getElementById('semestre-select');
-      if (sel) sel.value = novoSemestre;
+      /* criarSemestreSelect gerencia seu próprio estado visual —
+         não há <select> nativo para sincronizar. */
     }
   });
 }
