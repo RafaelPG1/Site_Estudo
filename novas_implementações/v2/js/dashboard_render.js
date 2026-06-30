@@ -206,14 +206,19 @@ export function renderTrend(relatorio) {
 
   if (!elCard) return;
 
-  if (!tendencia || tendencia.direcao === 'indeterminado') {
+if (!tendencia || tendencia.direcao === 'indeterminado') {
     elCard.className = 'trend-card trend-indeterminado';
 
-    elDirecao.innerHTML = `
-      <span class="empty-state-title">Tendência do Aluno</span>
-      <span class="empty-state-info-btn" tabindex="0"
-            aria-label="Como a tendência é calculada"
-            data-tooltip="Compara sua taxa de acerto recente com períodos anteriores para identificar se você está melhorando, estável ou piorando.">ⓘ</span>`;
+    const elHeaderBadge = elCard.querySelector('.trend-header-badge');
+    if (elHeaderBadge) {
+      elHeaderBadge.innerHTML = `
+        <span class="score-nivel-text">Tendência do Aluno</span>
+        <span class="empty-state-info-btn" tabindex="0"
+              aria-label="Como a tendência é calculada"
+              data-tooltip="Compara sua taxa de acerto recente com períodos anteriores para identificar se você está melhorando, estável ou piorando.">ⓘ</span>`;
+    }
+
+    elDirecao.textContent = '—';
 
     elDiferenca.innerHTML = `
       <span class="empty-state-msg">
