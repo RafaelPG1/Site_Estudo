@@ -563,8 +563,13 @@ export async function consolidarUsuario(uid) {
    BUSCA COMPARTILHADA (cache único para pipeline
    + Camada 4)
 ══════════════════════════════════════════════ */
-async function _buscarTodasTentativas(uid) {
-  if (_cacheTentativas.uid === uid && _cacheTentativas.tentativas !== null) {
+/* _buscarTodasTentativas(uid, semestre?)
+   sem semestre → retorna tudo (comportamento original, usado por consolidarUsuario)
+   com semestre → filtra apenas as tentativas daquele semestre */
+async function _buscarTodasTentativas(uid, semestre = null) {
+  /* Cache só é aproveitado quando não há filtro de semestre,
+     pois o cache armazena o conjunto completo. */
+  if (!semestre && _cacheTentativas.uid === uid && _cacheTentativas.tentativas !== null) {
     return _cacheTentativas.tentativas;
   }
 
@@ -572,7 +577,7 @@ async function _buscarTodasTentativas(uid) {
 
   const quizIds = await listarQuizIds(uid);
   if (!quizIds || quizIds.length === 0) {
-    if (_cacheVersao === versaoNoInicio) {
+    if (!semestre && _cacheVersao === versaoNoInicio) {
       _cacheTentativas = { uid, tentativas: [] };
       _cacheVersao++;
     }
@@ -583,19 +588,25 @@ async function _buscarTodasTentativas(uid) {
     quizIds.map(quizId => listarPerformanceQuiz(uid, quizId).catch(() => []))
   );
 
-  const tentativas = listas
+  const todasTentativas = listas
     .flat()
     .filter(Boolean)
     .map(_normalizarTentativa)
     .filter(t => t && t.totalQuestoes > 0);
 
-  if (_cacheVersao === versaoNoInicio) {
-    _cacheTentativas = { uid, tentativas };
+  /* Armazena o conjunto completo no cache independente do filtro */
+  if (!semestre && _cacheVersao === versaoNoInicio) {
+    _cacheTentativas = { uid, tentativas: todasTentativas };
     _cacheVersao++;
   }
-  return tentativas;
-}
 
+  /* Aplica filtro de semestre APÓS o cache, sem alterar estrutura do Firebase */
+  if (semestre) {
+    return todasTentativas.filter(t => t.semestre === semestre);
+  }
+
+  return todasTentativas;
+}
 /* ════════════════════════════════════════════════════════════
    BLOCO 3 — CAMADA 4 — MOTOR DE EVOLUÇÃO E INTERPRETAÇÃO
    ────────────────────────────────────────────────────────────
@@ -607,10 +618,10 @@ async function _buscarTodasTentativas(uid) {
 
 
 /* ── 2. Padrão de desempenho ── */
-export async function padraoDeDesempenho(uid) {
+export async function padraoDeDesempenho(uid, semestre = null) {
   if (!uid) return { geral: null, porDisciplina: {} };
 
-  const tentativas = await _buscarTodasTentativas(uid);
+  const tentativas = await _buscarTodasTentativas(uid, semestre);
   if (tentativas.length === 0) return { geral: null, porDisciplina: {} };
 
   function _avaliar(lista) {
@@ -653,10 +664,10 @@ export async function padraoDeDesempenho(uid) {
 }
 
 /* ── 3. Tendência do aluno ── */
-export async function tendenciaDoAluno(uid) {
+export async function tendenciaDoAluno(uid, semestre = null) {
   if (!uid) return { direcao: 'indeterminado', diferencaPct: 0, confianca: 'baixa' };
 
-  const tentativas = await _buscarTodasTentativas(uid);
+  const tentativas = await _buscarTodasTentativas(uid, semestre);
   if (tentativas.length === 0) return { direcao: 'indeterminado', diferencaPct: 0, confianca: 'baixa' };
 
   const taxas = tentativas.map(t => t.taxaAcerto);
@@ -664,10 +675,10 @@ export async function tendenciaDoAluno(uid) {
 }
 
 /* ── 4. Fraquezas por disciplina ── */
-export async function fraquezasPorDisciplina(uid) {
+export async function fraquezasPorDisciplina(uid, semestre = null) {
   if (!uid) return [];
 
-  const tentativas = await _buscarTodasTentativas(uid);
+  const tentativas = await _buscarTodasTentativas(uid, semestre);
   if (tentativas.length === 0) return [];
 
   const porDisc = {};
@@ -700,10 +711,10 @@ export async function fraquezasPorDisciplina(uid) {
 }
 
 /* ── 5. Score evolutivo ── */
-export async function scoreEvolutivo(uid) {
+export async function scoreEvolutivo(uid, semestre = null) {
   if (!uid) return null;
 
-  const tentativas = await _buscarTodasTentativas(uid);
+  const tentativas = await _buscarTodasTentativas(uid, semestre);
   if (tentativas.length === 0) return null;
 
   const taxas        = tentativas.map(t => t.taxaAcerto);
@@ -727,10 +738,10 @@ export async function scoreEvolutivo(uid) {
 }
 
 /* ── 6. Previsão simples ── */
-export async function previsaoSimples(uid, disc = null) {
+export async function previsaoSimples(uid, disc = null, semestre = null) {
   if (!uid) return { previsaoTaxaAcertoPct: null, confianca: 'baixa', metodo: 'regressao_linear' };
 
-  const todas      = await _buscarTodasTentativas(uid);
+  const todas      = await _buscarTodasTentativas(uid, semestre);
   const tentativas = disc ? todas.filter(t => t.disc === disc) : todas;
 
   if (tentativas.length < JANELA_REGRESSAO_MIN) {
@@ -778,17 +789,21 @@ export async function previsaoSimples(uid, disc = null) {
     disciplina: disc,
   };
 }
-export async function relatorioEvolucao(uid) {
+
+/* relatorioEvolucao(uid, semestre?)
+   sem semestre → comportamento original (todos os dados)
+   com semestre → todas as métricas filtradas pelo semestre informado */
+export async function relatorioEvolucao(uid, semestre = null) {
   if (!uid) return null;
 
   const [
     padrao, tendencia, fraquezas, score, previsao, summaryPersistido,
   ] = await Promise.allSettled([
-    padraoDeDesempenho(uid),
-    tendenciaDoAluno(uid),
-    fraquezasPorDisciplina(uid),
-    scoreEvolutivo(uid),
-    previsaoSimples(uid),
+    padraoDeDesempenho(uid, semestre),
+    tendenciaDoAluno(uid, semestre),
+    fraquezasPorDisciplina(uid, semestre),
+    scoreEvolutivo(uid, semestre),
+    previsaoSimples(uid, null, semestre),
     carregarEvolutionSummary(uid),
   ]);
 
@@ -796,6 +811,7 @@ export async function relatorioEvolucao(uid) {
 
   return {
     geradoEm:                Date.now(),
+    semestre:                semestre ?? null,
     padraoDeDesempenho:      _valor(padrao),
     tendenciaDoAluno:        _valor(tendencia),
     fraquezasPorDisciplina:  _valor(fraquezas),
@@ -810,10 +826,10 @@ export async function relatorioEvolucao(uid) {
    Não cria novo cache. Não recalcula dados.
    Ordena por endedAt decrescente e retorna apenas os campos
    necessários para a Timeline. */
-export async function listarTentativasRecentes(uid, limite = 10) {
+export async function listarTentativasRecentes(uid, limite = 10, semestre = null) {
   if (!uid) return [];
 
-  const tentativas = await _buscarTodasTentativas(uid);
+  const tentativas = await _buscarTodasTentativas(uid, semestre);
   if (tentativas.length === 0) return [];
 
   return tentativas
@@ -837,10 +853,10 @@ export async function listarTentativasRecentes(uid, limite = 10) {
 /* ── 9. Contar questões respondidas (para Conquistas do Dashboard) ──
    Reutiliza _buscarTodasTentativas e seu cache existente.
    Apenas soma totalQuestoes. Sem novo cache. Sem recálculo. */
-export async function contarQuestoesRespondidas(uid) {
+export async function contarQuestoesRespondidas(uid, semestre = null) {
   if (!uid) return 0;
 
-  const tentativas = await _buscarTodasTentativas(uid);
+  const tentativas = await _buscarTodasTentativas(uid, semestre);
   return tentativas.reduce((soma, t) => soma + (t.totalQuestoes ?? 0), 0);
 }
 
@@ -975,11 +991,13 @@ window.NexusQuizIntelligence = {
   fraquezasPorDisciplina,
   scoreEvolutivo,
   previsaoSimples,
-  relatorioEvolucao,
+relatorioEvolucao: (uid, semestre = null) => relatorioEvolucao(uid, semestre),
 
   /* Camada 4 — dados para Dashboard (Timeline + Conquistas) */
-  listarTentativasRecentes,
-  contarQuestoesRespondidas,
+  listarTentativasRecentes: (uid, limite = 10, semestre = null) =>
+    listarTentativasRecentes(uid, limite, semestre),
+  contarQuestoesRespondidas: (uid, semestre = null) =>
+    contarQuestoesRespondidas(uid, semestre),
 
   subscribe,
 };

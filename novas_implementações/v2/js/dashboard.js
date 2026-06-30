@@ -202,6 +202,11 @@ function _trocarSemestre(novoSemestre) {
   _renderContexto();
   _renderDisciplinas();
   _renderSidebarDisciplinas();
+
+  /* Recarrega todas as métricas usando o novo semestre como filtro.
+     _carregarMetricasReais lê State.semestre internamente, por isso
+     basta chamá-la após a atualização do State acima. */
+  _carregarMetricasReais().catch(() => {});
 }
 
 /* ══════════════════════════════════════════════

@@ -311,13 +311,16 @@ function _calcularConquistas(relatorio, stats) {
   };
 }
 
+/* _carregarIntelligence(uid)
+   Lê State.semestre para filtrar todas as métricas de quiz
+   pelo semestre atualmente selecionado no dashboard. */
 export async function _carregarIntelligence(uid) {
   if (!uid) {
     console.warn('[dashboard] _carregarIntelligence: uid ausente — ignorado.');
     return null;
   }
 
-const intelligence = await _aguardarNexusIntelligence();
+  const intelligence = await _aguardarNexusIntelligence();
 
   if (!intelligence) {
     console.warn('[dashboard] _carregarIntelligence: NexusQuizIntelligence indisponível.');
@@ -326,17 +329,25 @@ const intelligence = await _aguardarNexusIntelligence();
     return null;
   }
 
-  try {
-    console.log('[dashboard] _carregarIntelligence: chamando relatorioEvolucao para', uid);
+  /* Semestre ativo no momento da chamada — lido de State para garantir
+     que qualquer troca de semestre seja respeitada. */
+  const semestreAtivo = State.semestre ?? null;
 
-    /* Carrega o relatório principal + dados complementares em paralelo */
+  try {
+    console.log(
+      '[dashboard] _carregarIntelligence: chamando relatorioEvolucao para', uid,
+      '| semestre:', semestreAtivo ?? 'todos'
+    );
+
+    /* Carrega o relatório principal + dados complementares em paralelo,
+       todos filtrados pelo semestre ativo. */
     const [relatorio, tentativasRecentes, totalQuestoes] = await Promise.all([
-      intelligence.relatorioEvolucao(uid),
+      intelligence.relatorioEvolucao(uid, semestreAtivo),
       intelligence.listarTentativasRecentes
-        ? intelligence.listarTentativasRecentes(uid, 10)
+        ? intelligence.listarTentativasRecentes(uid, 10, semestreAtivo)
         : Promise.resolve([]),
       intelligence.contarQuestoesRespondidas
-        ? intelligence.contarQuestoesRespondidas(uid)
+        ? intelligence.contarQuestoesRespondidas(uid, semestreAtivo)
         : Promise.resolve(0),
     ]);
 
@@ -344,11 +355,11 @@ const intelligence = await _aguardarNexusIntelligence();
        Não altera o que foi persistido no Firebase. */
     relatorio.tentativasRecentes = tentativasRecentes;
     relatorio.totalQuestoes      = totalQuestoes;
+    relatorio.semestreFiltrado   = semestreAtivo;
 
-    /* Calcula conquistas usando o relatorio já populado e as
-       estatísticas de sessão já carregadas pela _carregarMetricasReais.
-       Se as stats não estiverem disponíveis neste momento, passa null
-       e renderAchievements exibirá tudo como bloqueado. */
+    /* Calcula conquistas usando o relatorio já populado (já filtrado por
+       semestre) e as estatísticas de sessão globais — streak e sessões
+       são métricas do usuário, não do semestre. */
     const statsAtuais = await carregarEstatisticas(uid).catch(() => null);
     relatorio.conquistas = _calcularConquistas(relatorio, statsAtuais);
 
@@ -356,12 +367,11 @@ const intelligence = await _aguardarNexusIntelligence();
 
     console.group('[dashboard] State.intelligence — relatorio recebido');
     console.log('geradoEm:',             new Date(relatorio?.geradoEm).toLocaleTimeString());
+    console.log('semestreFiltrado:',     relatorio?.semestreFiltrado);
     console.log('scoreEvolutivo:',       relatorio?.scoreEvolutivo);
     console.log('tendenciaDoAluno:',     relatorio?.tendenciaDoAluno);
     console.log('fraquezasPorDisc:',     relatorio?.fraquezasPorDisciplina?.length, 'disciplinas');
-    console.log('curvaDeAprendizado:',   relatorio?.curvaDeAprendizado?.geral?.totalTentativas, 'tentativas gerais');
     console.log('previsaoSimples:',      relatorio?.previsaoSimples);
-    console.log('comparacaoDePeriodos:', relatorio?.comparacaoDePeriodos);
     console.log('summaryPersistido:',    relatorio?.summaryPersistidoCamada3);
     console.log('tentativasRecentes:',   relatorio?.tentativasRecentes?.length, 'itens');
     console.log('totalQuestoes:',        relatorio?.totalQuestoes);
@@ -379,7 +389,6 @@ const intelligence = await _aguardarNexusIntelligence();
     return null;
   }
 }
-
 /* ══════════════════════════════════════════════
    METRICAS REAIS DO FIREBASE
 ══════════════════════════════════════════════ */
