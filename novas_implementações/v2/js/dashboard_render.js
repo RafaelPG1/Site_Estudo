@@ -78,11 +78,33 @@ export function renderScore(relatorio) {
   if (!elCard) return;
 
   if (!score || score.scoreGeral === null || score.scoreGeral === undefined) {
-    elGeral.textContent      = '—';
-    elNivel.textContent      = 'Nível indisponível';
-    elTentativas.textContent = 'Nenhuma tentativa analisada ainda';
-    elDescricao.textContent  = 'Realize quizzes para gerar seu Score Evolutivo.';
-    elCard.className         = 'score-card score-vazio';
+    elCard.className = 'score-card score-vazio';
+
+    elGeral.innerHTML = `
+      <span class="empty-icon" aria-hidden="true">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M8 12h4l2-4"/>
+          <circle cx="12" cy="16" r=".5" fill="currentColor"/>
+        </svg>
+      </span>`;
+
+    elNivel.innerHTML = `
+      <span class="empty-state-title">Score Evolutivo</span>
+      <span class="empty-state-info-btn" tabindex="0"
+            aria-label="Como o Score Evolutivo é calculado"
+            data-tooltip="Calculado com base na sua taxa de acerto, tendência de melhora e consistência entre quizzes.">ⓘ</span>`;
+
+    elTentativas.textContent = '';
+
+    elDescricao.innerHTML = `
+      <span class="empty-state-msg">
+        Complete alguns quizzes para calcular seu Score Evolutivo.
+        <br><span class="empty-state-hint">Mínimo de 2 tentativas registradas.</span>
+      </span>`;
+
     return;
   }
 
@@ -125,9 +147,21 @@ export function renderTrend(relatorio) {
   if (!elCard) return;
 
   if (!tendencia || tendencia.direcao === 'indeterminado') {
-    elCard.className      = 'trend-card trend-indeterminado';
-    elDirecao.textContent = '— Indeterminado';
-    elDiferenca.textContent = 'Dados insuficientes para calcular tendência.';
+    elCard.className = 'trend-card trend-indeterminado';
+
+    elDirecao.innerHTML = `
+      <span class="empty-state-title">Tendência do Aluno</span>
+      <span class="empty-state-info-btn" tabindex="0"
+            aria-label="Como a tendência é calculada"
+            data-tooltip="Compara sua taxa de acerto recente com períodos anteriores para identificar se você está melhorando, estável ou piorando.">ⓘ</span>`;
+
+    elDiferenca.innerHTML = `
+      <span class="empty-state-msg">
+        A tendência será calculada automaticamente
+        quando houver mais tentativas registradas.
+        <br><span class="empty-state-hint">São necessárias pelo menos 2 tentativas.</span>
+      </span>`;
+
     elConfianca.textContent = '';
     return;
   }
@@ -164,7 +198,7 @@ export function renderTrend(relatorio) {
 
 /* Fase 2.4 — Fraquezas por disciplina */
 export function renderWeaknesses(relatorio) {
-    const lista = relatorio?.fraquezasPorDisciplina;
+  const lista = relatorio?.fraquezasPorDisciplina;
 
   const elSection = document.getElementById('weaknesses-section');
   const elLista   = document.getElementById('weaknesses-lista');
@@ -174,19 +208,39 @@ export function renderWeaknesses(relatorio) {
 
   if (!lista || !Array.isArray(lista) || lista.length === 0) {
     elSection.className = 'weaknesses-card weaknesses-vazio';
-    elLista.innerHTML   = '';
-    if (elCount) elCount.textContent = '0';
-
-    const vazio       = document.createElement('div');
-    vazio.className   = 'weaknesses-empty';
-    vazio.textContent = 'Nenhuma fraqueza identificada ainda. Realize quizzes para gerar análise por disciplina.';
-    elLista.appendChild(vazio);
+    if (elCount) elCount.textContent = '';
+    elLista.innerHTML = `
+      <div class="empty-state-block">
+        <div class="empty-state-icon" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20V10"/>
+            <path d="M18 20V4"/>
+            <path d="M6 20v-4"/>
+          </svg>
+        </div>
+        <div class="empty-state-text">
+          <span class="empty-state-title">
+            Análise por Disciplina
+            <span class="empty-state-info-btn" tabindex="0"
+                  aria-label="Como as fraquezas são identificadas"
+                  data-tooltip="Identifica as disciplinas com menor taxa de acerto e detecta quando o desempenho está em queda ao longo das tentativas.">ⓘ</span>
+          </span>
+          <span class="empty-state-msg">
+            Nenhuma análise disponível ainda.
+            <br>Realize quizzes em diferentes disciplinas
+            para identificar seus pontos de melhoria.
+          </span>
+          <span class="empty-state-hint">A análise aparece após a primeira tentativa por disciplina.</span>
+        </div>
+      </div>`;
     return;
   }
 
   elSection.className = 'weaknesses-card';
   if (elCount) elCount.textContent = lista.length;
-  elLista.innerHTML   = '';
+  elLista.innerHTML = '';
 
   const TENDENCIA_ICONE = {
     'melhorando': '↑',
@@ -304,15 +358,42 @@ export function renderPrediction(relatorio) {
   if (!elCard) return;
 
   if (!previsao || previsao.previsaoTaxaAcertoPct === null || previsao.previsaoTaxaAcertoPct === undefined) {
-    elCard.className        = 'prediction-card prediction-vazio';
-    elNumero.textContent    = '—';
-    elDirecao.textContent   = 'Indeterminado';
-    elAmostras.textContent  = previsao?.amostras
-      ? `${previsao.amostras} amostra${previsao.amostras !== 1 ? 's' : ''} analisada${previsao.amostras !== 1 ? 's' : ''}`
-      : 'Nenhuma amostra analisada ainda';
-    elDescricao.textContent = previsao?.motivo === 'dados_insuficientes'
-      ? 'Dados insuficientes para gerar uma previsão. Realize mais quizzes.'
-      : 'Realize quizzes para gerar sua previsão de desempenho.';
+    elCard.className = 'prediction-card prediction-vazio';
+
+    const amostrasAtuais = previsao?.amostras ?? 0;
+    const faltam         = Math.max(0, 3 - amostrasAtuais);
+
+    elNumero.innerHTML = `
+      <span class="empty-icon" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 3v18h18"/>
+          <path d="M7 16l4-4 4 4 4-8" stroke-dasharray="2 2"/>
+        </svg>
+      </span>`;
+
+    elDirecao.innerHTML = `
+      <span class="empty-state-title">Previsão de Desempenho</span>
+      <span class="empty-state-info-btn" tabindex="0"
+            aria-label="Como a previsão é calculada"
+            data-tooltip="Usa regressão linear sobre suas tentativas para estimar sua próxima taxa de acerto. Quanto mais tentativas, maior a precisão.">ⓘ</span>`;
+
+    elAmostras.textContent = amostrasAtuais > 0
+      ? `${amostrasAtuais} de 3 tentativas registradas`
+      : '';
+
+    elDescricao.innerHTML = faltam > 0
+      ? `<span class="empty-state-msg">
+           Ainda não é possível gerar uma previsão.
+           <br><span class="empty-state-hint">
+             Realize mais ${faltam} quiz${faltam !== 1 ? 'zes' : ''} para ativar esta análise.
+           </span>
+         </span>`
+      : `<span class="empty-state-msg">
+           Realize mais quizzes para aumentar a precisão da análise.
+         </span>`;
+
     return;
   }
 
@@ -378,11 +459,25 @@ export function renderTimeline(relatorio) {
 
   elTimeline.innerHTML = '';
 
-  if (!tentativas || !Array.isArray(tentativas) || tentativas.length === 0) {
-    const vazio = document.createElement('div');
-    vazio.className   = 'tl-empty';
-    vazio.textContent = 'Nenhum quiz registrado ainda. Complete quizzes para ver sua atividade recente.';
-    elTimeline.appendChild(vazio);
+if (!tentativas || !Array.isArray(tentativas) || tentativas.length === 0) {
+    elTimeline.innerHTML = `
+      <div class="empty-state-block empty-state-block--timeline">
+        <div class="empty-state-icon" aria-hidden="true">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M12 7v5l3 3"/>
+          </svg>
+        </div>
+        <div class="empty-state-text">
+          <span class="empty-state-title">Atividade Recente</span>
+          <span class="empty-state-msg">
+            Nenhum quiz registrado ainda.
+            <br>Complete quizzes para ver seu histórico de atividade aqui.
+          </span>
+        </div>
+      </div>`;
     return;
   }
 
@@ -578,7 +673,7 @@ export function renderAchievements(relatorio) {
   /* Se não há dados ainda, renderiza tudo como bloqueado */
   const dados = conquistas ?? {};
 
-  CONQUISTAS_CATALOGO.forEach(c => {
+CONQUISTAS_CATALOGO.forEach(c => {
     const desbloqueada = dados[c.id] === true;
 
     const item          = document.createElement('div');
@@ -586,10 +681,19 @@ export function renderAchievements(relatorio) {
 
     const badgeBg = desbloqueada ? c.corBg : 'var(--border)';
 
+    /* Conquistas bloqueadas mostram dica de desbloqueio no tooltip */
+    const infoBtn = !desbloqueada
+      ? `<span class="empty-state-info-btn ach-info-btn" tabindex="0"
+               aria-label="Como desbloquear ${_escapeHtml(c.nome)}"
+               data-tooltip="${_escapeHtml(c.desc)}">ⓘ</span>`
+      : '';
+
     item.innerHTML = `
       <div class="ach-badge" style="background:${badgeBg}">${c.emoji}</div>
       <div class="ach-body">
-        <div class="ach-name">${_escapeHtml(c.nome)}</div>
+        <div class="ach-name">
+          ${_escapeHtml(c.nome)}${infoBtn}
+        </div>
         <div class="ach-desc">${_escapeHtml(c.desc)}</div>
         <span class="ach-tag ${desbloqueada ? c.tagCls : 'tag-locked'}">${desbloqueada ? c.tag : 'Bloqueado'}</span>
       </div>

@@ -443,11 +443,6 @@ body {
   letter-spacing: -.2px;
 }
 
-.section-count {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: var(--text-3);
-}
 
 .section-line {
   flex: 1;
@@ -1386,4 +1381,166 @@ body {
   .weaknesses-card.full-width                 { padding: 20px; }
   .nav-section-wrap                           { padding: 20px; }
   .nav-rank-bar-wrap                          { display: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   EMPTY STATE — cards sem dados suficientes
+   Compartilhado entre Score, Tendência, Previsão,
+   Fraquezas e Timeline.
+   ═══════════════════════════════════════════════════════════ */
+
+/* Bloco container do empty state */
+.empty-state-block {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 8px 0;
+}
+
+.empty-state-block--timeline {
+  padding: 12px 0 4px;
+}
+
+/* Ícone ilustrativo */
+.empty-state-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-md, 12px);
+  background: var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--text-3);
+}
+
+/* Ícone inline nos cards Score e Prediction (substitui o número) */
+.empty-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-3);
+  opacity: 0.6;
+  margin-bottom: 4px;
+}
+
+/* Bloco de texto */
+.empty-state-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+/* Título do card no estado vazio — substitui identificadores técnicos */
+.empty-state-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  letter-spacing: -0.1px;
+}
+
+/* Mensagem principal */
+.empty-state-msg {
+  font-size: 12.5px;
+  color: var(--text-3);
+  line-height: 1.6;
+}
+
+/* Dica secundária — menor e mais apagada */
+.empty-state-hint {
+  display: block;
+  font-size: 11px;
+  color: var(--text-3);
+  opacity: 0.7;
+  margin-top: 4px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ── Botão de informação ⓘ ──────────────────────────────────
+   Aparece ao lado do título ou da conquista bloqueada.
+   O tooltip usa data-tooltip + CSS puro — sem JS extra. */
+.empty-state-info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--text-3);
+  cursor: default;
+  position: relative;
+  transition: color 0.15s;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+.empty-state-info-btn:hover,
+.empty-state-info-btn:focus {
+  color: var(--accent-lite);
+  outline: none;
+}
+
+/* Tooltip — aparece acima do ⓘ */
+.empty-state-info-btn::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface-2, #16161f);
+  border: 1px solid var(--border-2, #26263a);
+  color: var(--text-2);
+  font-family: 'Inter', sans-serif;
+  font-size: 11.5px;
+  font-weight: 400;
+  line-height: 1.5;
+  padding: 7px 10px;
+  border-radius: 8px;
+  white-space: normal;
+  width: 200px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  transform: translateX(-50%) translateY(4px);
+  z-index: 300;
+  text-align: left;
+}
+
+.empty-state-info-btn:hover::after,
+.empty-state-info-btn:focus::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Versão compacta para conquistas */
+.ach-info-btn {
+  font-size: 10px;
+  opacity: 0.5;
+}
+
+.ach-info-btn:hover,
+.ach-info-btn:focus {
+  opacity: 1;
+}
+
+/* Em cards com pouco espaço horizontal, ancora o tooltip à direita */
+.score-vazio .empty-state-info-btn::after,
+.trend-indeterminado .empty-state-info-btn::after,
+.prediction-vazio .empty-state-info-btn::after {
+  left: auto;
+  right: 0;
+  transform: translateX(0) translateY(4px);
+}
+
+.score-vazio .empty-state-info-btn:hover::after,
+.score-vazio .empty-state-info-btn:focus::after,
+.trend-indeterminado .empty-state-info-btn:hover::after,
+.trend-indeterminado .empty-state-info-btn:focus::after,
+.prediction-vazio .empty-state-info-btn:hover::after,
+.prediction-vazio .empty-state-info-btn:focus::after {
+  transform: translateX(0) translateY(0);
 }
