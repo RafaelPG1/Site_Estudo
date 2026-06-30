@@ -404,25 +404,35 @@
           </div>
 
 <div class="score-card" id="score-card">
-            <div class="score-top-row">
-              <div class="score-ring-wrap">
-                <div class="score-ring" id="score-ring-el" aria-hidden="true">
-                  <div class="score-ring-inner">
-                    <div class="score-ring-icon" id="score-ring-icon"></div>
-                  </div>
-                </div>
-              </div>
-              <div class="score-value-row">
-                <span class="score-number" id="score-geral">—</span>
-                <span class="score-ring-label">/ 100</span>
-              </div>
-            </div>
-            <div class="score-info">
-              <div class="score-nivel" id="score-nivel">Nível —</div>
-              <div class="score-tentativas" id="score-tentativas">— tentativas analisadas</div>
-              <div class="score-descricao" id="score-descricao">Carregando análise…</div>
-            </div>
-          </div>
+  <div class="intel-head">
+    <span class="intel-icon" aria-hidden="true">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="7" cy="7" r="5.5"/>
+        <circle cx="7" cy="7" r="2"/>
+      </svg>
+    </span>
+    <span class="intel-badge score-nivel" id="score-nivel">Nível —</span>
+  </div>
+
+  <div class="intel-hero score-top-row">
+    <div class="score-ring-wrap">
+      <div class="score-ring" id="score-ring-el" aria-hidden="true">
+        <div class="score-ring-inner">
+          <div class="score-ring-icon" id="score-ring-icon"></div>
+        </div>
+      </div>
+    </div>
+    <div class="score-value-row">
+      <span class="score-number" id="score-geral">—</span>
+      <span class="score-ring-label">/ 100</span>
+    </div>
+  </div>
+
+  <div class="intel-footer">
+    <div class="intel-footer-meta" id="score-tentativas">— tentativas analisadas</div>
+    <div class="intel-footer-desc" id="score-descricao">Carregando análise…</div>
+  </div>
+</div>
         </section>
 
         <!-- Tendência do Aluno — Fase 2.2 -->
