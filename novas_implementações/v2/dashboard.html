@@ -400,24 +400,22 @@
         <section>
           <div class="section-header">
             <span class="section-title">Score Evolutivo</span>
-
             <div class="section-line"></div>
           </div>
 
           <div class="score-card" id="score-card">
-
-            <div class="score-main">
-              <div class="score-number" id="score-geral">—</div>
-              <div class="score-label-wrap">
-                <div class="score-nivel" id="score-nivel">Nível —</div>
-                <div class="score-tentativas" id="score-tentativas">— tentativas analisadas</div>
+            <div class="score-ring-wrap">
+              <div class="score-ring" id="score-ring-el" aria-hidden="true"></div>
+              <div class="score-ring-inner">
+                <div class="score-number" id="score-geral">—</div>
+                <div class="score-ring-label">/ 100</div>
               </div>
             </div>
-
-            <div class="score-descricao" id="score-descricao">
-              Carregando análise…
+            <div class="score-info">
+              <div class="score-nivel" id="score-nivel">Nível —</div>
+              <div class="score-tentativas" id="score-tentativas">— tentativas analisadas</div>
+              <div class="score-descricao" id="score-descricao">Carregando análise…</div>
             </div>
-
           </div>
         </section>
 
@@ -429,14 +427,16 @@
           </div>
 
           <div class="trend-card" id="trend-card">
-
-            <div class="trend-main">
-              <div class="trend-direcao" id="trend-direcao">— —</div>
-              <div class="trend-diferenca" id="trend-diferenca">Carregando…</div>
+            <div class="trend-arrow-bg" aria-hidden="true">
+              <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path class="trend-arrow-path" d="M40 70 L40 10 M20 30 L40 10 L60 30" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
             </div>
-
-            <div class="trend-confianca" id="trend-confianca"></div>
-
+            <div class="trend-body">
+              <div class="trend-direcao" id="trend-direcao">—</div>
+              <div class="trend-diferenca" id="trend-diferenca">Carregando…</div>
+              <div class="trend-confianca" id="trend-confianca"></div>
+            </div>
           </div>
         </section>
 
@@ -448,19 +448,21 @@
           </div>
 
           <div class="prediction-card" id="prediction-card">
-
-            <div class="prediction-main">
+            <div class="prediction-top">
               <div class="prediction-numero" id="prediction-numero">—</div>
-              <div class="prediction-label-wrap">
-                <div class="prediction-direcao" id="prediction-direcao">—</div>
-                <div class="prediction-amostras" id="prediction-amostras">— amostras analisadas</div>
-              </div>
+              <div class="prediction-direcao" id="prediction-direcao">—</div>
             </div>
-
-            <div class="prediction-descricao" id="prediction-descricao">
-              Carregando previsão…
+            <div class="prediction-chart-wrap" aria-hidden="true">
+              <svg class="prediction-chart-svg" viewBox="0 0 200 48" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path class="prediction-chart-area" d="M0 40 C30 38 60 30 100 22 C140 14 170 10 200 4 L200 48 L0 48 Z"/>
+                <path class="prediction-chart-line" d="M0 40 C30 38 60 30 100 22 C140 14 170 10 200 4"/>
+                <path class="prediction-chart-proj" d="M200 4 L230 0" stroke-dasharray="4 3"/>
+              </svg>
             </div>
-
+            <div class="prediction-bottom">
+              <div class="prediction-amostras" id="prediction-amostras">— amostras analisadas</div>
+              <div class="prediction-descricao" id="prediction-descricao">Carregando previsão…</div>
+            </div>
           </div>
         </section>
 

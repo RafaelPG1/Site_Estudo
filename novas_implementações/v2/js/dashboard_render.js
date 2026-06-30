@@ -44,7 +44,33 @@
      ✔ Nunca chamar NexusQuizIntelligence
      ✔ Nunca calcular metricas — apenas exibir
      ✔ Nunca derivar score, tendencia ou previsao
+
+   ─────────────────────────────────────────────
+   AJUSTE — REDESIGN VISUAL DOS CARDS (Score / Tendência / Previsão)
+   ─────────────────────────────────────────────
+   Apenas apresentação foi alterada. Nenhum cálculo,
+   nenhuma chamada a Firebase ou quiz_intelligence foi
+   adicionada. O único acréscimo funcional é a leitura
+   de uma custom property CSS (--score-pct) para animar
+   o anel de progresso do Score Evolutivo — puramente
+   visual, sem afetar o valor exibido nem a lógica.
+
+   ─────────────────────────────────────────────
+   AJUSTE — FRAQUEZAS POR DISCIPLINA: TODAS AS DISCIPLINAS
+   ─────────────────────────────────────────────
+   renderWeaknesses agora cruza relatorio.fraquezasPorDisciplina
+   (vindo do quiz_intelligence, somente disciplinas com dados)
+   com State.disciplinas (todas as disciplinas do semestre
+   selecionado, já existente em dashboard_data.js). Disciplinas
+   sem tentativas aparecem com 0% e "Sem dados", sem tendência
+   e sem badge de queda. Nenhum cálculo de taxa, tendência ou
+   queda foi alterado — apenas a montagem da lista exibida.
+   O match entre os dois lados usa o nome normalizado
+   (minúsculas, sem acentos), pois é o único campo em comum
+   entre os dois conjuntos de dados (não há id compartilhado).
    ============================================= */
+
+import { State } from './dashboard_data.js';
 
 /* ══════════════════════════════════════════════
    CAMADA 5 — COORDENADORA DE RENDER (intelligence)
@@ -105,10 +131,25 @@ export function renderScore(relatorio) {
         <br><span class="empty-state-hint">Mínimo de 2 tentativas registradas.</span>
       </span>`;
 
+    const ringElVazio = elCard.querySelector('.score-ring');
+    if (ringElVazio) ringElVazio.style.setProperty('--score-pct', '0%');
+
     return;
   }
 
-  elGeral.textContent = Math.round(score.scoreGeral);
+  const scoreArredondado = Math.round(score.scoreGeral);
+  elGeral.textContent = scoreArredondado;
+
+  /* Atualiza o anel de progresso (puramente visual — não afeta o
+     valor exibido nem nenhum cálculo). Usa requestAnimationFrame
+     para garantir que a transição CSS seja percebida ao trocar
+     de 0% para o valor real na primeira renderização. */
+  const ringEl = elCard.querySelector('.score-ring');
+  if (ringEl) {
+    requestAnimationFrame(() => {
+      ringEl.style.setProperty('--score-pct', `${scoreArredondado}%`);
+    });
+  }
 
   const NIVEL_LABEL = {
     'avancado':      'Avançado',
@@ -196,9 +237,14 @@ export function renderTrend(relatorio) {
 
 
 
-/* Fase 2.4 — Fraquezas por disciplina */
+/* Fase 2.4 — Fraquezas por disciplina
+   ─────────────────────────────────────────────
+   Agora sempre exibe TODAS as disciplinas do semestre
+   selecionado (State.disciplinas), cruzando com os dados
+   reais vindos de relatorio.fraquezasPorDisciplina.
+   Disciplinas sem tentativas aparecem com 0% e "Sem dados". */
 export function renderWeaknesses(relatorio) {
-  const lista = relatorio?.fraquezasPorDisciplina;
+  const dadosReaisLista = relatorio?.fraquezasPorDisciplina;
 
   const elSection = document.getElementById('weaknesses-section');
   const elLista   = document.getElementById('weaknesses-lista');
@@ -206,7 +252,26 @@ export function renderWeaknesses(relatorio) {
 
   if (!elSection || !elLista) return;
 
-  if (!lista || !Array.isArray(lista) || lista.length === 0) {
+  /* Normaliza string para comparação: minúsculas, sem acentos, sem espaços extras.
+     Único campo em comum entre fraquezasPorDisciplina (item.disciplina) e
+     State.disciplinas (disc.nome) — não há id compartilhado entre os dois. */
+  function _norm(s) {
+    return String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  }
+
+  /* Mapa de dados reais indexado por nome normalizado */
+  const mapaReais = new Map();
+  if (Array.isArray(dadosReaisLista)) {
+    dadosReaisLista.forEach(item => {
+      if (item?.disciplina) mapaReais.set(_norm(item.disciplina), item);
+    });
+  }
+
+  /* Lista base: todas as disciplinas do semestre atualmente selecionado */
+  const discsSemestre = State.disciplinas ?? [];
+
+  if (discsSemestre.length === 0) {
+    /* Sem disciplinas configuradas no semestre — não há o que listar */
     elSection.className = 'weaknesses-card weaknesses-vazio';
     if (elCount) elCount.textContent = '';
     elLista.innerHTML = `
@@ -228,18 +293,35 @@ export function renderWeaknesses(relatorio) {
                   data-tooltip="Identifica as disciplinas com menor taxa de acerto e detecta quando o desempenho está em queda ao longo das tentativas.">ⓘ</span>
           </span>
           <span class="empty-state-msg">
-            Nenhuma análise disponível ainda.
-            <br>Realize quizzes em diferentes disciplinas
-            para identificar seus pontos de melhoria.
+            Nenhuma disciplina configurada para este semestre.
           </span>
-          <span class="empty-state-hint">A análise aparece após a primeira tentativa por disciplina.</span>
         </div>
       </div>`;
     return;
   }
 
+  /* Constrói a lista final: dados reais quando existem,
+     placeholder de "sem dados" quando a disciplina nunca foi praticada.
+     Nenhum cálculo de taxa/tendência/queda é feito aqui — apenas
+     reaproveitamento dos campos já calculados pelo quiz_intelligence
+     ou montagem de um objeto neutro (0%, sem tendência). */
+  const lista = discsSemestre.map(disc => {
+    const dadosReais = mapaReais.get(_norm(disc.nome));
+    if (dadosReais) return dadosReais;
+    return {
+      disciplina:                disc.nome,
+      taxaAcertoMediaPct:        0,
+      inclinacaoPctPorTentativa: null,
+      emQueda:                   false,
+      _semDados:                 true,
+    };
+  });
+
   elSection.className = 'weaknesses-card';
-  if (elCount) elCount.textContent = lista.length;
+  if (elCount) {
+    const comDados = lista.filter(i => !i._semDados).length;
+    elCount.textContent = comDados > 0 ? comDados : '';
+  }
   elLista.innerHTML = '';
 
   const TENDENCIA_ICONE = {
@@ -270,7 +352,8 @@ export function renderWeaknesses(relatorio) {
 
     const row       = document.createElement('div');
     row.className   = 'wk-item';
-    if (emQueda) row.classList.add('wk-item-queda');
+    if (emQueda && !item._semDados) row.classList.add('wk-item-queda');
+    if (item._semDados) row.classList.add('wk-item-semdados');
 
     const pos         = document.createElement('div');
     pos.className     = 'wk-pos';
@@ -287,7 +370,7 @@ export function renderWeaknesses(relatorio) {
     nome.textContent  = disc;
     nomeWrap.appendChild(nome);
 
-    if (emQueda) {
+    if (emQueda && !item._semDados) {
       const badge       = document.createElement('span');
       badge.className   = 'wk-badge-queda';
       badge.textContent = '↓ Em queda';
@@ -306,7 +389,9 @@ export function renderWeaknesses(relatorio) {
     const largura = taxa !== null ? Math.max(0, Math.min(100, taxa)) : 0;
     barFill.style.width = largura + '%';
 
-    if (taxa !== null) {
+    if (item._semDados) {
+      barFill.classList.add('wk-bar-semdados');
+    } else if (taxa !== null) {
       if (taxa >= 70)      barFill.classList.add('wk-bar-ok');
       else if (taxa >= 40) barFill.classList.add('wk-bar-medio');
       else                 barFill.classList.add('wk-bar-baixo');
@@ -328,11 +413,12 @@ export function renderWeaknesses(relatorio) {
     const tendEl      = document.createElement('div');
     tendEl.className  = [
       'wk-tendencia',
-      tendencia ? (TENDENCIA_CLASSE[tendencia] ?? '') : '',
+      (!item._semDados && tendencia) ? (TENDENCIA_CLASSE[tendencia] ?? '') : '',
+      item._semDados ? 'wk-tend-semdados' : '',
     ].join(' ').trim();
 
-    const icone = tendencia ? (TENDENCIA_ICONE[tendencia] ?? '') : '';
-    const label = tendencia ? (TENDENCIA_LABEL[tendencia] ?? tendencia) : '—';
+    const icone = (!item._semDados && tendencia) ? (TENDENCIA_ICONE[tendencia] ?? '') : '';
+    const label = item._semDados ? 'Sem dados' : (tendencia ? (TENDENCIA_LABEL[tendencia] ?? tendencia) : '—');
     tendEl.textContent = icone ? `${icone} ${label}` : label;
 
     meta.appendChild(taxaEl);

@@ -36,231 +36,272 @@
 
 /* ═══════════════════════════════════════════════════════════
    CAMADA 5 — Fase 2.1: Score Evolutivo
-   ───────────────────────────────────────────────────────────
-   Estilos exclusivos do card #score-card.
-   Apenas variaveis CSS ja existentes — nenhuma cor nova.
-   Nenhuma regra aqui afeta componentes pre-existentes.
+   Layout redesenhado: anel de progresso + info lateral.
+   IDs e classes JS preservados integralmente.
    ═══════════════════════════════════════════════════════════ */
 
-/* ─── CARD CONTAINER ─────────────────────────────────────── */
 .score-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
-  padding: 28px 32px;
+  padding: 24px 28px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
   transition: border-color .2s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.score-card:hover {
-  border-color: var(--border-2);
+.score-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 10% 0%, rgba(108,99,255,.07) 0%, transparent 60%);
+  pointer-events: none;
 }
 
-/* ─── LINHA PRINCIPAL: numero + labels ───────────────────── */
-.score-main {
+.score-card:hover { border-color: var(--border-2); }
+
+/* ── Linha principal: anel + info ── */
+.score-ring-wrap {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 20px;
 }
 
-/* ─── NUMERO DO SCORE ────────────────────────────────────── */
+/* ── Anel de progresso via conic-gradient ── */
+.score-ring {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  position: relative;
+  background: conic-gradient(var(--accent-lite) 0% 0%, var(--border) 0% 100%);
+  transition: background .6s cubic-bezier(.4,0,.2,1);
+}
+
+/* Círculo interno que cria o "anel" (donut) */
+.score-ring::after {
+  content: '';
+  position: absolute;
+  inset: 10px;
+  border-radius: 50%;
+  background: var(--surface);
+}
+
+/* Número e "/100" sobrepostos ao centro do anel */
+.score-ring-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
 .score-number {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 64px;
+  font-size: 22px;
   font-weight: 700;
-  letter-spacing: -3px;
+  letter-spacing: -1px;
   line-height: 1;
   color: var(--accent-lite);
-  flex-shrink: 0;
   transition: color .3s ease;
 }
 
-/* ─── AREA DE LABELS (nivel + tentativas) ────────────────── */
-.score-label-wrap {
+.score-ring-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--text-3);
+  margin-top: 1px;
+}
+
+/* ── Coluna de informações à direita do anel ── */
+.score-info {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  flex: 1;
+  min-width: 0;
 }
 
-/* ─── BADGE DE NIVEL ─────────────────────────────────────── */
 .score-nivel {
   display: inline-flex;
   align-items: center;
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 600;
   letter-spacing: .3px;
-  padding: 4px 10px;
+  padding: 3px 9px;
   border-radius: 20px;
-  /* cor padrao — sobrescrita pelos modificadores abaixo */
   background: var(--accent-dim);
   color: var(--accent-lite);
   width: fit-content;
   transition: background .3s ease, color .3s ease;
 }
 
-/* ─── CONTAGEM DE TENTATIVAS ─────────────────────────────── */
 .score-tentativas {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: 10.5px;
   color: var(--text-3);
   letter-spacing: .3px;
 }
 
-/* ─── DESCRICAO ──────────────────────────────────────────── */
 .score-descricao {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-2);
-  line-height: 1.55;
-  padding-top: 4px;
+  line-height: 1.5;
+  padding-top: 6px;
   border-top: 1px solid var(--border);
+  margin-top: 2px;
 }
 
-/* ─── MODIFICADORES DE COR POR NIVEL ────────────────────────
-   Aplicados como classe no .score-card pelo renderScore().
-   Afetam: cor do numero, cor e fundo do badge de nivel.
-   Usam apenas variaveis ja existentes — nenhuma cor nova.
-
-   FASE 2.5.5A: .score-nivel-intermediário corrigido (acento).
-   O valor retornado por quiz_intelligence.js é 'intermediário'
-   (com acento), portanto o seletor CSS deve conter acento. */
-
+/* ── Modificadores por nível (preservados) ── */
 .score-nivel-avancado .score-number      { color: var(--green); }
 .score-nivel-avancado .score-nivel       { background: rgba(61,220,132,.12); color: var(--green); }
+.score-nivel-avancado .score-ring        { background: conic-gradient(var(--green) 0% var(--score-pct, 0%), var(--border) 0% 100%); }
 
 .score-nivel-proficiente .score-number   { color: var(--blue); }
 .score-nivel-proficiente .score-nivel    { background: rgba(79,168,232,.12); color: var(--blue); }
+.score-nivel-proficiente .score-ring     { background: conic-gradient(var(--blue) 0% var(--score-pct, 0%), var(--border) 0% 100%); }
 
 .score-nivel-intermediário .score-number { color: var(--amber); }
 .score-nivel-intermediário .score-nivel  { background: rgba(255,181,71,.12); color: var(--amber); }
+.score-nivel-intermediário .score-ring   { background: conic-gradient(var(--amber) 0% var(--score-pct, 0%), var(--border) 0% 100%); }
 
 .score-nivel-iniciante .score-number     { color: var(--accent-lite); }
 .score-nivel-iniciante .score-nivel      { background: var(--accent-dim); color: var(--accent-lite); }
+.score-nivel-iniciante .score-ring       { background: conic-gradient(var(--accent-lite) 0% var(--score-pct, 0%), var(--border) 0% 100%); }
 
 .score-nivel-fundamentos .score-number   { color: var(--text-3); }
 .score-nivel-fundamentos .score-nivel    { background: var(--border); color: var(--text-3); }
+.score-nivel-fundamentos .score-ring     { background: conic-gradient(var(--text-3) 0% var(--score-pct, 0%), var(--border) 0% 100%); }
 
-/* ─── ESTADO VAZIO ───────────────────────────────────────── */
-.score-vazio .score-number  { color: var(--text-3); }
-.score-vazio .score-nivel   { background: var(--border); color: var(--text-3); }
+.score-vazio .score-number   { color: var(--text-3); }
+.score-vazio .score-nivel    { background: var(--border); color: var(--text-3); }
 .score-vazio .score-descricao { color: var(--text-3); font-style: italic; }
+.score-vazio .score-ring     { background: var(--border); }
 
-/* ─── RESPONSIVO ─────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .score-card    { padding: 20px; }
-  .score-number  { font-size: 48px; letter-spacing: -2px; }
-  .score-main    { gap: 16px; }
+  .score-card      { padding: 18px 20px; }
+  .score-ring      { width: 68px; height: 68px; }
+  .score-number    { font-size: 18px; }
+  .score-ring-wrap { gap: 14px; }
 }
 
-
 /* ═══════════════════════════════════════════════════════════
-   CAMADA 5 — Fase 2.2: Tendencia do Aluno
-   ───────────────────────────────────────────────────────────
-   Estilos exclusivos do card #trend-card.
-   Apenas variaveis CSS ja existentes — nenhuma cor nova.
-   Nenhuma regra aqui afeta componentes pre-existentes.
+   CAMADA 5 — Fase 2.2: Tendência do Aluno
+   Layout redesenhado: seta decorativa de fundo + corpo de texto.
+   IDs e classes JS preservados integralmente.
    ═══════════════════════════════════════════════════════════ */
 
-/* ─── CARD CONTAINER ─────────────────────────────────────── */
 .trend-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
-  padding: 24px 32px;
+  padding: 24px 28px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  justify-content: space-between;
+  gap: 0;
   transition: border-color .2s ease;
+  position: relative;
+  overflow: hidden;
+  min-height: 150px;
 }
 
-.trend-card:hover {
-  border-color: var(--border-2);
+.trend-card:hover { border-color: var(--border-2); }
+
+/* ── Seta SVG decorativa de fundo ── */
+.trend-arrow-bg {
+  position: absolute;
+  right: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 90px;
+  height: 90px;
+  opacity: .06;
+  pointer-events: none;
+  transition: opacity .3s ease;
 }
 
-/* ─── LINHA PRINCIPAL: icone + label + variacao ──────────── */
-.trend-main {
+.trend-arrow-bg svg { width: 100%; height: 100%; }
+
+.trend-arrow-path {
+  stroke: var(--text-1);
+  transition: stroke .3s ease;
+}
+
+.trend-card:hover .trend-arrow-bg { opacity: .1; }
+
+/* ── Corpo de texto (sobreposto à seta) ── */
+.trend-body {
   display: flex;
-  align-items: baseline;
-  gap: 20px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
 }
 
-/* ─── DIRECAO (icone + label) ────────────────────────────── */
+/* ── Label de direção — hero do card ── */
 .trend-direcao {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 700;
-  letter-spacing: -.5px;
+  letter-spacing: -.8px;
   line-height: 1;
-  /* cor padrao — sobrescrita pelos modificadores abaixo */
   color: var(--text-3);
   transition: color .3s ease;
-  flex-shrink: 0;
 }
 
-/* ─── VARIACAO PERCENTUAL ────────────────────────────────── */
+/* ── Variação percentual ── */
 .trend-diferenca {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
+  font-size: 12.5px;
   color: var(--text-2);
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
-/* ─── CONFIANCA ──────────────────────────────────────────── */
+/* ── Nível de confiança ── */
 .trend-confianca {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: 10.5px;
   color: var(--text-3);
   letter-spacing: .3px;
   min-height: 14px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
 }
 
-/* ─── MODIFICADORES DE COR POR DIRECAO ──────────────────────
-   Aplicados como classe no .trend-card pelo renderTrend().
-   Afetam borda esquerda e cor do label de direcao.
-   Usam apenas variaveis ja existentes — nenhuma cor nova. */
+/* ── Modificadores por direção ── */
+.trend-melhorando { border-left: 3px solid var(--green); }
+.trend-melhorando .trend-direcao      { color: var(--green); }
+.trend-melhorando .trend-arrow-path   { stroke: var(--green); }
+.trend-melhorando .trend-arrow-bg     { opacity: .08; }
 
-.trend-melhorando {
-  border-left: 3px solid var(--green);
-}
-.trend-melhorando .trend-direcao {
-  color: var(--green);
-}
+.trend-estavel    { border-left: 3px solid var(--blue); }
+.trend-estavel .trend-direcao         { color: var(--blue); }
+.trend-estavel .trend-arrow-path      { stroke: var(--blue); }
+/* seta aponta para a direita quando estável */
+.trend-estavel .trend-arrow-bg svg    { transform: rotate(-90deg); }
 
-.trend-estavel {
-  border-left: 3px solid var(--blue);
-}
-.trend-estavel .trend-direcao {
-  color: var(--blue);
-}
+.trend-piorando   { border-left: 3px solid var(--red); }
+.trend-piorando .trend-direcao        { color: var(--red); }
+.trend-piorando .trend-arrow-path     { stroke: var(--red); }
+/* seta invertida quando piorando */
+.trend-piorando .trend-arrow-bg svg   { transform: rotate(180deg); }
 
-.trend-piorando {
-  border-left: 3px solid var(--red);
-}
-.trend-piorando .trend-direcao {
-  color: var(--red);
-}
+.trend-indeterminado { border-left: 3px solid var(--border-2); }
+.trend-indeterminado .trend-direcao   { color: var(--text-3); }
+.trend-indeterminado .trend-diferenca { color: var(--text-3); font-style: italic; }
 
-.trend-indeterminado {
-  border-left: 3px solid var(--border-2);
-}
-.trend-indeterminado .trend-direcao {
-  color: var(--text-3);
-}
-.trend-indeterminado .trend-diferenca {
-  color: var(--text-3);
-  font-style: italic;
-}
-
-/* ─── RESPONSIVO ─────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .trend-card     { padding: 18px 20px; }
-  .trend-direcao  { font-size: 22px; }
-  .trend-main     { gap: 12px; }
+  .trend-card     { padding: 18px 20px; min-height: 120px; }
+  .trend-direcao  { font-size: 24px; }
+  .trend-arrow-bg { width: 70px; height: 70px; }
 }
-
 
 /* ═══════════════════════════════════════════════════════════
    CAMADA 5 — Fase 2.3: Comparacao entre Periodos
@@ -605,252 +646,146 @@
 }
 
 
-/* ============================================
-   CAMADA 5 — Fase 2.5
-   Card — Previsão
-============================================ */
+/* ═══════════════════════════════════════════════════════════
+   CAMADA 5 — Fase 2.5: Previsão
+   Layout redesenhado: número + badge no topo, gráfico decorativo
+   de linha no meio, amostras + descrição no rodapé.
+   IDs e classes JS preservados integralmente.
+   ═══════════════════════════════════════════════════════════ */
 
-/* ─── CARD CONTAINER ─────────────────────────────────────── */
 .prediction-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
-  padding: 28px 32px;
+  padding: 20px 24px 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 0;
   transition: border-color .2s ease;
+  overflow: hidden;
 }
 
-.prediction-card:hover {
-  border-color: var(--border-2);
-}
+.prediction-card:hover { border-color: var(--border-2); }
 
-/* ─── LINHA PRINCIPAL: numero + labels ───────────────────── */
-.prediction-main {
+/* ── Zona superior: número projetado + badge ── */
+.prediction-top {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 14px;
+  padding-bottom: 12px;
 }
 
-/* ─── NUMERO DA PREVISAO ─────────────────────────────────── */
 .prediction-numero {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 64px;
+  font-size: 52px;
   font-weight: 700;
-  letter-spacing: -3px;
+  letter-spacing: -2.5px;
   line-height: 1;
   color: var(--accent-lite);
-  flex-shrink: 0;
   transition: color .3s ease;
+  flex-shrink: 0;
 }
 
-/* ─── AREA DE LABELS (direcao + amostras) ────────────────── */
-.prediction-label-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-/* ─── DIRECAO ESPERADA ───────────────────────────────────── */
 .prediction-direcao {
   display: inline-flex;
   align-items: center;
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 600;
   letter-spacing: .3px;
   padding: 4px 10px;
   border-radius: 20px;
-  /* cor padrao — sobrescrita pelos modificadores abaixo */
   background: var(--accent-dim);
   color: var(--accent-lite);
   width: fit-content;
   transition: background .3s ease, color .3s ease;
+  align-self: center;
 }
 
-/* ─── CONTAGEM DE AMOSTRAS ───────────────────────────────── */
-.prediction-amostras {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: var(--text-3);
-  letter-spacing: .3px;
+/* ── Gráfico SVG decorativo de linha de projeção ── */
+.prediction-chart-wrap {
+  width: calc(100% + 48px);
+  margin-left: -24px;
+  height: 52px;
+  flex-shrink: 0;
 }
 
-/* ─── DESCRICAO ──────────────────────────────────────────── */
-.prediction-descricao {
-  font-size: 13px;
-  color: var(--text-2);
-  line-height: 1.55;
-  padding-top: 4px;
-  border-top: 1px solid var(--border);
+.prediction-chart-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
-/* ─── MODIFICADORES DE COR POR DIRECAO ──────────────────────
-   Aplicados como classe no .prediction-card pelo renderPrediction().
-   Afetam: cor do numero, cor e fundo do badge de direcao.
-   Usam apenas variaveis ja existentes — nenhuma cor nova. */
-
-.prediction-melhora .prediction-numero  { color: var(--green); }
-.prediction-melhora .prediction-direcao { background: rgba(61,220,132,.12); color: var(--green); }
-
-.prediction-estavel .prediction-numero  { color: var(--blue); }
-.prediction-estavel .prediction-direcao { background: rgba(79,168,232,.12); color: var(--blue); }
-
-.prediction-queda .prediction-numero  { color: var(--red); }
-.prediction-queda .prediction-direcao { background: rgba(255,92,106,.12); color: var(--red); }
-
-/* ─── ESTADO VAZIO ───────────────────────────────────────── */
-.prediction-vazio .prediction-numero    { color: var(--text-3); }
-.prediction-vazio .prediction-direcao   { background: var(--border); color: var(--text-3); }
-.prediction-vazio .prediction-descricao { color: var(--text-3); font-style: italic; }
-
-/* ─── RESPONSIVO ─────────────────────────────────────────── */
-@media (max-width: 768px) {
-  .prediction-card    { padding: 20px; }
-  .prediction-numero  { font-size: 48px; letter-spacing: -2px; }
-  .prediction-main    { gap: 16px; }
+.prediction-chart-area {
+  fill: rgba(108,99,255,.07);
+  transition: fill .3s ease;
 }
 
+.prediction-chart-line {
+  stroke: var(--accent-lite);
+  stroke-width: 1.5;
+  fill: none;
+  opacity: .5;
+  transition: stroke .3s ease;
+}
 
-/* ============================================
-   CAMADA 5 — Fase 2.6
-   Card — Curva de Aprendizado
-============================================ */
+.prediction-chart-proj {
+  stroke: var(--accent-lite);
+  stroke-width: 1.5;
+  opacity: .3;
+  transition: stroke .3s ease;
+}
 
-/* ─── CARD CONTAINER ─────────────────────────────────────── */
-.curve-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  padding: 24px 32px;
+/* ── Zona inferior: amostras + descrição ── */
+.prediction-bottom {
+  padding: 10px 0 18px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  transition: border-color .2s ease;
+  gap: 4px;
+  border-top: 1px solid var(--border);
 }
 
-.curve-card:hover {
-  border-color: var(--border-2);
-}
-
-/* ─── CABECALHO: tendencia + amostras ─────────────────────── */
-.curve-header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-/* ─── TENDENCIA ──────────────────────────────────────────── */
-.curve-tendencia {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -.3px;
-  /* cor padrao — sobrescrita pelos modificadores abaixo */
-  color: var(--text-3);
-  transition: color .3s ease;
-}
-
-/* ─── CONTAGEM DE AMOSTRAS ───────────────────────────────── */
-.curve-amostras {
+.prediction-amostras {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: 10.5px;
   color: var(--text-3);
   letter-spacing: .3px;
 }
 
-/* ─── AREA DO GRAFICO ────────────────────────────────────── */
-.curve-chart-wrap {
-  width: 100%;
-  height: 140px;
+.prediction-descricao {
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.5;
 }
 
-.curve-svg {
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
+/* ── Modificadores por direção ── */
+.prediction-melhora .prediction-numero        { color: var(--green); }
+.prediction-melhora .prediction-direcao       { background: rgba(61,220,132,.12); color: var(--green); }
+.prediction-melhora .prediction-chart-area    { fill: rgba(61,220,132,.07); }
+.prediction-melhora .prediction-chart-line    { stroke: var(--green); }
+.prediction-melhora .prediction-chart-proj    { stroke: var(--green); }
 
-/* Serie real (taxa de acerto) — ja vem calculada do quiz_intelligence,
-   apenas desenhada aqui */
-.curve-line-real {
-  fill: none;
-  stroke: var(--accent-lite);
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
+.prediction-estavel .prediction-numero        { color: var(--blue); }
+.prediction-estavel .prediction-direcao       { background: rgba(79,168,232,.12); color: var(--blue); }
+.prediction-estavel .prediction-chart-area    { fill: rgba(79,168,232,.07); }
+.prediction-estavel .prediction-chart-line    { stroke: var(--blue); }
+.prediction-estavel .prediction-chart-proj    { stroke: var(--blue); }
 
-/* Media movel — ja vem calculada do quiz_intelligence, apenas desenhada
-   aqui com um traco diferenciado para distinguir da serie real */
-.curve-line-movel {
-  fill: none;
-  stroke: var(--amber);
-  stroke-width: 2;
-  stroke-dasharray: 4 3;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  opacity: .85;
-}
+.prediction-queda .prediction-numero          { color: var(--red); }
+.prediction-queda .prediction-direcao         { background: rgba(255,92,106,.12); color: var(--red); }
+.prediction-queda .prediction-chart-area      { fill: rgba(255,92,106,.07); }
+.prediction-queda .prediction-chart-line      { stroke: var(--red); }
+.prediction-queda .prediction-chart-proj      { stroke: var(--red); }
 
-/* ─── LEGENDA ────────────────────────────────────────────── */
-.curve-legenda {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  font-size: 11px;
-  color: var(--text-3);
-  border-top: 1px solid var(--border);
-  padding-top: 12px;
-}
+.prediction-vazio .prediction-numero          { color: var(--text-3); }
+.prediction-vazio .prediction-direcao         { background: var(--border); color: var(--text-3); }
+.prediction-vazio .prediction-descricao       { color: var(--text-3); font-style: italic; }
+.prediction-vazio .prediction-chart-area      { fill: transparent; }
+.prediction-vazio .prediction-chart-line      { stroke: var(--border-2); opacity: .4; }
+.prediction-vazio .prediction-chart-proj      { display: none; }
 
-.curve-legenda-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.curve-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-}
-
-.curve-dot-real  { background: var(--accent-lite); }
-.curve-dot-movel { background: var(--amber); }
-
-/* ─── ESTADO VAZIO ───────────────────────────────────────── */
-.curve-empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  font-size: 13px;
-  color: var(--text-3);
-  font-style: italic;
-  text-align: center;
-}
-
-.curve-vazio .curve-tendencia { color: var(--text-3); }
-
-/* ─── MODIFICADORES DE COR POR DIRECAO ──────────────────────
-   Aplicados como classe no .curve-card pelo renderLearningCurve().
-   Afetam apenas a cor do label de tendencia no cabecalho — a cor
-   das linhas do grafico permanece fixa (accent-lite/amber) para
-   manter a leitura visual consistente em qualquer direcao.
-   Usam apenas variaveis ja existentes — nenhuma cor nova. */
-
-.curve-melhorando .curve-tendencia { color: var(--green); }
-.curve-estavel    .curve-tendencia { color: var(--blue); }
-.curve-piorando   .curve-tendencia { color: var(--red); }
-
-/* ─── RESPONSIVO ─────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .curve-card       { padding: 18px 20px; }
-  .curve-chart-wrap { height: 110px; }
-  .curve-tendencia  { font-size: 17px; }
+  .prediction-card    { padding: 18px 18px 0; }
+  .prediction-numero  { font-size: 40px; letter-spacing: -2px; }
+  .prediction-chart-wrap { width: calc(100% + 36px); margin-left: -18px; height: 40px; }
 }
