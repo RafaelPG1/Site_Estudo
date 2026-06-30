@@ -56,14 +56,11 @@ export function renderDashboardIntelligence(relatorio) {
 
   renderScore(relatorio);
   renderTrend(relatorio);
-  renderComparison(relatorio);
   renderWeaknesses(relatorio);
   renderPrediction(relatorio);
-  renderLearningCurve(relatorio);
   renderTimeline(relatorio);
   renderAchievements(relatorio);
 }
-
 /* ══════════════════════════════════════════════
    CAMADA 5 — RENDERIZADORES
 ══════════════════════════════════════════════ */
@@ -163,64 +160,7 @@ export function renderTrend(relatorio) {
   elConfianca.textContent = CONFIANCA_LABEL[tendencia.confianca] ?? tendencia.confianca ?? '';
 }
 
-/* Fase 2.3 — Comparacao entre periodos */
-export function renderComparison(relatorio) {
-  const comp = relatorio?.comparacaoDePeriodos;
 
-  const elCard       = document.getElementById('comparison-card');
-  const elAtualTaxa  = document.getElementById('comparison-atual-taxa');
-  const elAtualTent  = document.getElementById('comparison-atual-tent');
-  const elAntTaxa    = document.getElementById('comparison-ant-taxa');
-  const elAntTent    = document.getElementById('comparison-ant-tent');
-  const elVariacao   = document.getElementById('comparison-variacao');
-  const elDirecao    = document.getElementById('comparison-direcao');
-
-  if (!elCard) return;
-
-  if (!comp || comp.direcao === 'indeterminado' ||
-      comp.periodoAtual?.taxaAcertoMediaPct === null) {
-    elCard.className     = 'comparison-card comparison-indeterminado';
-    elAtualTaxa.textContent  = '—';
-    elAtualTent.textContent  = '—';
-    elAntTaxa.textContent    = '—';
-    elAntTent.textContent    = '—';
-    elVariacao.textContent   = '—';
-    elDirecao.textContent    = 'Histórico insuficiente para comparar períodos.';
-    return;
-  }
-
-  elCard.className = `comparison-card comparison-${comp.direcao}`;
-
-  const taxaAtual = comp.periodoAtual?.taxaAcertoMediaPct ?? null;
-  elAtualTaxa.textContent = taxaAtual !== null ? `${taxaAtual}%` : '—';
-
-  const tentAtual = comp.periodoAtual?.totalTentativas ?? 0;
-  elAtualTent.textContent = `${tentAtual} tentativa${tentAtual !== 1 ? 's' : ''}`;
-
-  const taxaAnt = comp.periodoAnterior?.taxaAcertoMediaPct ?? null;
-  elAntTaxa.textContent = taxaAnt !== null ? `${taxaAnt}%` : '—';
-
-  const tentAnt = comp.periodoAnterior?.totalTentativas ?? 0;
-  elAntTent.textContent = `${tentAnt} tentativa${tentAnt !== 1 ? 's' : ''}`;
-
-  const variacao = comp.variacaoPct ?? null;
-  if (variacao !== null) {
-    const sinal = variacao >= 0 ? '+' : '';
-    elVariacao.textContent = `${sinal}${variacao}%`;
-  } else {
-    elVariacao.textContent = '—';
-  }
-
-  const DIRECAO_LABEL = {
-    'melhorando': '↑ Melhorando em relação ao período anterior',
-    'estavel':    '→ Desempenho estável entre os períodos',
-    'piorando':   '↓ Queda em relação ao período anterior',
-  };
-  const dias = comp.diasPorPeriodo ?? 7;
-  elDirecao.textContent =
-    (DIRECAO_LABEL[comp.direcao] ?? comp.direcao) +
-    ` · últimos ${dias} dias vs ${dias} anteriores`;
-}
 
 /* Fase 2.4 — Fraquezas por disciplina */
 export function renderWeaknesses(relatorio) {
@@ -410,93 +350,7 @@ export function renderPrediction(relatorio) {
     : 'Estimativa via regressão linear.';
 }
 
-/* Fase 2.6 — Curva de aprendizado */
-export function renderLearningCurve(relatorio) {
-  const curva = relatorio?.curvaDeAprendizado?.geral;
 
-  const elCard       = document.getElementById('curve-card');
-  const elTendencia  = document.getElementById('curve-tendencia');
-  const elAmostras   = document.getElementById('curve-amostras');
-  const elChartWrap  = document.getElementById('curve-chart-wrap');
-
-  if (!elCard) return;
-
-  const serie = curva?.serieTaxaAcertoPct;
-  if (!curva || !Array.isArray(serie) || serie.length < 2) {
-    elCard.className       = 'curve-card curve-vazio';
-    elTendencia.textContent = 'Indeterminado';
-    elAmostras.textContent  = curva?.totalTentativas
-      ? `${curva.totalTentativas} tentativa${curva.totalTentativas !== 1 ? 's' : ''} analisada${curva.totalTentativas !== 1 ? 's' : ''}`
-      : 'Nenhuma tentativa analisada ainda';
-    if (elChartWrap) {
-      elChartWrap.innerHTML = '';
-      const vazio       = document.createElement('div');
-      vazio.className   = 'curve-empty';
-      vazio.textContent = 'Realize mais quizzes para gerar sua curva de aprendizado.';
-      elChartWrap.appendChild(vazio);
-    }
-    return;
-  }
-
-  const tendencia = curva.tendencia ?? { direcao: 'indeterminado', inclinacaoPctPorTentativa: null };
-
-  const DIRECAO_ICONE = {
-    'melhorando': '↑',
-    'estavel':    '→',
-    'piorando':   '↓',
-  };
-  const DIRECAO_LABEL = {
-    'melhorando': 'Melhorando',
-    'estavel':    'Estável',
-    'piorando':   'Piorando',
-  };
-  const direcaoChave = tendencia.direcao ?? 'indeterminado';
-  const icone = DIRECAO_ICONE[direcaoChave] ?? '—';
-  const label = DIRECAO_LABEL[direcaoChave] ?? direcaoChave;
-  elTendencia.textContent = `${icone} ${label}`;
-
-  elCard.className = `curve-card curve-${direcaoChave}`;
-
-  const total = curva.totalTentativas ?? serie.length;
-  elAmostras.textContent = `${total} tentativa${total !== 1 ? 's' : ''} analisada${total !== 1 ? 's' : ''}`;
-
-  if (elChartWrap) {
-    elChartWrap.innerHTML = '';
-
-    const movel = Array.isArray(curva.mediaMovelPct) ? curva.mediaMovelPct : [];
-    const W = 560, H = 140, PAD = 8;
-
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-    svg.setAttribute('class', 'curve-svg');
-    svg.setAttribute('preserveAspectRatio', 'none');
-
-    function _pontos(valores) {
-      return valores.map((v, i) => {
-        const x = valores.length > 1
-          ? Math.round((i / (valores.length - 1)) * (W - PAD * 2)) + PAD
-          : PAD;
-        const vClamped = Math.max(0, Math.min(100, v));
-        const y = Math.round(H - PAD - (vClamped / 100) * (H - PAD * 2));
-        return `${x},${y}`;
-      }).join(' ');
-    }
-
-    const linhaReal = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
-    linhaReal.setAttribute('points', _pontos(serie));
-    linhaReal.setAttribute('class', 'curve-line-real');
-    svg.appendChild(linhaReal);
-
-    if (movel.length === serie.length && movel.length > 0) {
-      const linhaMovel = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
-      linhaMovel.setAttribute('points', _pontos(movel));
-      linhaMovel.setAttribute('class', 'curve-line-movel');
-      svg.appendChild(linhaMovel);
-    }
-
-    elChartWrap.appendChild(svg);
-  }
-}
 
 /* ══════════════════════════════════════════════
    FASE 3 — Timeline (Atividade Recente)

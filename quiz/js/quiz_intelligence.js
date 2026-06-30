@@ -74,9 +74,6 @@ import {
   listarPerformanceQuiz,
   listarQuizIds,
   carregarEvolutionSummary,
-  carregarEvolutionDaily,
-  carregarEvolutionWeekly,
-  carregarEvolutionDailyRange,
   gravarConsolidacaoEvolucao,
 } from '../../src/firebase.js';
 
@@ -221,16 +218,7 @@ function _weekKey(ts) {
 
 function _dateKeyHoje() { return _dateKey(Date.now()); }
 
-function _ultimosNDiasKeys(n, offsetDias = 0) {
-  const hoje = new Date();
-  const keys = [];
-  for (let i = n - 1; i >= 0; i--) {
-    const d = new Date(hoje);
-    d.setDate(d.getDate() - i - offsetDias);
-    keys.push(_dateKey(d.getTime()));
-  }
-  return keys;
-}
+
 
 /* ══════════════════════════════════════════════
    NORMALIZAÇÃO DE TENTATIVAS
@@ -616,62 +604,7 @@ async function _buscarTodasTentativas(uid) {
    Camada 3. Todas reutilizam _buscarTodasTentativas e seu cache.
    ════════════════════════════════════════════════════════════ */
 
-/* ── 1. Curva de aprendizado ── */
-export async function curvaDeAprendizado(uid) {
-  if (!uid) return { porDisciplina: {}, geral: null };
 
-  const tentativas = await _buscarTodasTentativas(uid);
-  if (tentativas.length === 0) return { porDisciplina: {}, geral: null };
-
-  const porDisc = {};
-  tentativas.forEach(t => {
-    const chave = t.disc || '__sem_disciplina__';
-    if (!porDisc[chave]) porDisc[chave] = [];
-    porDisc[chave].push(t);
-  });
-
-  const resultadoPorDisc = {};
-  Object.entries(porDisc).forEach(([disc, lista]) => {
-    const taxasPct = lista.map(t => t.taxaAcerto * 100);
-    const reta     = _regressaoLinear(taxasPct);
-
-    resultadoPorDisc[disc] = {
-      totalTentativas:    lista.length,
-      serieTaxaAcertoPct: taxasPct.map(v => _arredondar(v)),
-      serieDatas:         lista.map(t => t.dateKey),
-      mediaMovelPct:      _mediaMovel(taxasPct).map(v => _arredondar(v)),
-      tendencia: reta
-        ? {
-            inclinacaoPctPorTentativa: _arredondar(reta.slope, 2),
-            direcao: Math.abs(reta.slope) < 0.5
-              ? 'estavel'
-              : (reta.slope > 0 ? 'melhorando' : 'piorando'),
-          }
-        : { inclinacaoPctPorTentativa: null, direcao: 'indeterminado' },
-      nivelAtual: _classificarFaixa(_media(lista.slice(-JANELA_MEDIA_MOVEL).map(t => t.taxaAcerto))),
-    };
-  });
-
-  const taxasGeralPct = tentativas.map(t => t.taxaAcerto * 100);
-  const retaGeral     = _regressaoLinear(taxasGeralPct);
-
-  return {
-    porDisciplina: resultadoPorDisc,
-    geral: {
-      totalTentativas:    tentativas.length,
-      serieTaxaAcertoPct: taxasGeralPct.map(v => _arredondar(v)),
-      mediaMovelPct:      _mediaMovel(taxasGeralPct).map(v => _arredondar(v)),
-      tendencia: retaGeral
-        ? {
-            inclinacaoPctPorTentativa: _arredondar(retaGeral.slope, 2),
-            direcao: Math.abs(retaGeral.slope) < 0.5
-              ? 'estavel'
-              : (retaGeral.slope > 0 ? 'melhorando' : 'piorando'),
-          }
-        : { inclinacaoPctPorTentativa: null, direcao: 'indeterminado' },
-    },
-  };
-}
 
 /* ── 2. Padrão de desempenho ── */
 export async function padraoDeDesempenho(uid) {
@@ -845,69 +778,17 @@ export async function previsaoSimples(uid, disc = null) {
     disciplina: disc,
   };
 }
-
-/* ── 7. Comparação entre períodos ── */
-export async function compararPeriodos(uid, diasPorPeriodo = DIAS_PERIODO_PADRAO) {
-  if (!uid) return null;
-
-  const keysPeriodoAtual    = _ultimosNDiasKeys(diasPorPeriodo, 0);
-  const keysPeriodoAnterior = _ultimosNDiasKeys(diasPorPeriodo, diasPorPeriodo);
-
-  const [mapaAtual, mapaAnterior] = await Promise.all([
-    carregarEvolutionDailyRange(uid, keysPeriodoAtual),
-    carregarEvolutionDailyRange(uid, keysPeriodoAnterior),
-  ]);
-
-  function _resumirPeriodo(mapa, keys) {
-    const dias = keys.map(k => mapa[k]).filter(Boolean);
-    if (dias.length === 0) {
-      return { diasComAtividade: 0, taxaAcertoMediaPct: null, totalTentativas: 0 };
-    }
-    const taxas = dias
-      .map(d => d?.performance?.taxaAcertoMediaPct)
-      .filter(v => typeof v === 'number');
-    const tentativasTotais = dias.reduce((acc, d) => acc + (d?.totalTentativas ?? 0), 0);
-    return {
-      diasComAtividade:   dias.length,
-      taxaAcertoMediaPct: taxas.length > 0 ? _arredondar(_media(taxas)) : null,
-      totalTentativas:    tentativasTotais,
-    };
-  }
-
-  const atual    = _resumirPeriodo(mapaAtual, keysPeriodoAtual);
-  const anterior = _resumirPeriodo(mapaAnterior, keysPeriodoAnterior);
-
-  let variacaoPct = null;
-  let direcao     = 'indeterminado';
-  if (typeof atual.taxaAcertoMediaPct === 'number' && typeof anterior.taxaAcertoMediaPct === 'number') {
-    variacaoPct = _arredondar(atual.taxaAcertoMediaPct - anterior.taxaAcertoMediaPct);
-    if (Math.abs(variacaoPct) < MELHORA_MINIMA_PCT) direcao = 'estavel';
-    else direcao = variacaoPct > 0 ? 'melhorando' : 'piorando';
-  }
-
-  return {
-    diasPorPeriodo,
-    periodoAtual:    atual,
-    periodoAnterior: anterior,
-    variacaoPct,
-    direcao,
-  };
-}
-
-/* ── Relatório completo da Camada 4 ── */
 export async function relatorioEvolucao(uid) {
   if (!uid) return null;
 
   const [
-    curva, padrao, tendencia, fraquezas, score, previsao, periodos, summaryPersistido,
+    padrao, tendencia, fraquezas, score, previsao, summaryPersistido,
   ] = await Promise.allSettled([
-    curvaDeAprendizado(uid),
     padraoDeDesempenho(uid),
     tendenciaDoAluno(uid),
     fraquezasPorDisciplina(uid),
     scoreEvolutivo(uid),
     previsaoSimples(uid),
-    compararPeriodos(uid),
     carregarEvolutionSummary(uid),
   ]);
 
@@ -915,13 +796,11 @@ export async function relatorioEvolucao(uid) {
 
   return {
     geradoEm:                Date.now(),
-    curvaDeAprendizado:      _valor(curva),
     padraoDeDesempenho:      _valor(padrao),
     tendenciaDoAluno:        _valor(tendencia),
     fraquezasPorDisciplina:  _valor(fraquezas),
     scoreEvolutivo:          _valor(score),
     previsaoSimples:         _valor(previsao),
-    comparacaoDePeriodos:    _valor(periodos),
     summaryPersistidoCamada3: _valor(summaryPersistido),
   };
 }
@@ -973,28 +852,6 @@ export async function lerSummary(uid) {
   return carregarEvolutionSummary(uid);
 }
 
-export async function lerDia(uid, dateKey) {
-  if (!uid || !dateKey) return null;
-  return carregarEvolutionDaily(uid, dateKey);
-}
-
-export async function lerSemana(uid, weekKey) {
-  if (!uid || !weekKey) return null;
-  return carregarEvolutionWeekly(uid, weekKey);
-}
-
-export async function lerSerieDiaria(uid, dias = 30) {
-  if (!uid) return [];
-  const hoje = new Date();
-  const keys = [];
-  for (let i = dias - 1; i >= 0; i--) {
-    const d = new Date(hoje);
-    d.setDate(d.getDate() - i);
-    keys.push(_dateKey(d.getTime()));
-  }
-  const mapa = await carregarEvolutionDailyRange(uid, keys);
-  return keys.map(key => ({ dateKey: key, dados: mapa[key] || null }));
-}
 
 /* ══════════════════════════════════════════════
    ANÁLISE PONTUAL (sem ir ao Firebase)
@@ -1107,22 +964,17 @@ window.NexusQuizIntelligence = {
 
   /* leitura — só consome o que a consolidação persistiu */
   lerSummary,
-  lerDia,
-  lerSemana,
-  lerSerieDiaria,
 
   /* análise local, sem ir ao Firebase */
   analisarTentativa,
   analisarHistorico,
 
   /* Camada 4 — evolução do aluno */
-  curvaDeAprendizado,
   padraoDeDesempenho,
   tendenciaDoAluno,
   fraquezasPorDisciplina,
   scoreEvolutivo,
   previsaoSimples,
-  compararPeriodos,
   relatorioEvolucao,
 
   /* Camada 4 — dados para Dashboard (Timeline + Conquistas) */

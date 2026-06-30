@@ -1302,63 +1302,106 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   REDESIGN VISUAL — GRID DA SEÇÃO DE INTELIGÊNCIA
+   SEÇÃO DE INTELIGÊNCIA — GRID E HIERARQUIA VISUAL
    ───────────────────────────────────────────────────────────
-   Wrappers novos (.intel-grid-2col, .intel-section-wide,
-   .intel-section-hero, .evo-card-hero) criados apenas para
-   reorganizar visualmente os cards já existentes.
-   Nenhum id, classe usada pelo JS, ou estrutura interna dos
-   cards foi alterada — apenas o agrupamento e a largura.
+   Reorganização compacta da Camada 5:
+
+   Linha 1 — intel-grid-3col
+     Score Evolutivo | Tendência do Aluno | Previsão
+     Três colunas simétricas (≈33% cada).
+
+   Linha 2 — intel-grid-weak-consist
+     Fraquezas por Disciplina (60%) | Consistência de uso (40%)
+     Fraquezas tem mais conteúdo — recebe mais espaço.
+
+   Nenhum id, classe JS ou lógica foi alterada.
    ═══════════════════════════════════════════════════════════ */
 
-/* Score + Tendência | Fraquezas + Previsão — 2 colunas iguais */
-.intel-grid-2col {
+/* ── Linha 1: Score · Tendência · Previsão ── */
+.intel-grid-3col {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: var(--gap);
   align-items: stretch;
 }
 
-.intel-grid-2col > section {
+.intel-grid-3col > section {
   display: flex;
   flex-direction: column;
 }
 
-/* Os cards internos (score-card, trend-card, weaknesses-card,
-   prediction-card) esticam para acompanhar a altura da linha,
-   mantendo o alinhamento visual entre pares. */
-.intel-grid-2col > section > .score-card,
-.intel-grid-2col > section > .trend-card,
-.intel-grid-2col > section > .weaknesses-card,
-.intel-grid-2col > section > .prediction-card {
+.intel-grid-3col > section > .score-card,
+.intel-grid-3col > section > .trend-card,
+.intel-grid-3col > section > .prediction-card {
   flex: 1;
 }
 
-/* Comparação entre Períodos — ocupa ~65% da largura, centralizado */
-.intel-section-wide {
-  max-width: 68%;
+/* ── Linha 2: Fraquezas (60%) · Consistência (40%) ── */
+.intel-grid-weak-consist {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: var(--gap);
+  align-items: start;
 }
 
-/* Evolução diária — card-mestre, com mais destaque visual */
-.intel-section-hero .evo-card-hero {
-  padding: 28px 32px;
+.intel-grid-weak-consist > section {
+  display: flex;
+  flex-direction: column;
 }
 
-.intel-section-hero .evo-chart {
-  height: 96px;
+.intel-grid-weak-consist > section > .weaknesses-card,
+.intel-grid-weak-consist > section > .perf-card {
+  flex: 1;
+}
+
+/* ── Fraquezas — largura total dentro do grid ── */
+.intel-section-full {
+  width: 100%;
+}
+
+.weaknesses-card.full-width {
+  padding: 24px 28px;
+}
+
+/* ── Curva de Aprendizado — hero com destaque visual (mantida) ── */
+.intel-section-curve-hero .curve-card {
+  padding: 32px 36px;
+  border-left: 3px solid var(--accent);
+  position: relative;
+  overflow: hidden;
+}
+
+.intel-section-curve-hero .curve-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 0% 50%, rgba(108,99,255,.07) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.intel-section-curve-hero .curve-chart-wrap {
+  min-height: 160px;
 }
 
 /* ─── RESPONSIVO ─────────────────────────────────────────── */
+@media (max-width: 1200px) {
+  .intel-grid-3col          { grid-template-columns: 1fr 1fr; }
+}
+
 @media (max-width: 1100px) {
-  .intel-grid-2col   { grid-template-columns: 1fr; }
-  .intel-section-wide { max-width: 100%; }
+  .intel-grid-3col          { grid-template-columns: 1fr 1fr; }
+  .intel-grid-weak-consist  { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 800px) {
+  .intel-grid-3col          { grid-template-columns: 1fr; }
+  .intel-grid-weak-consist  { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 768px) {
-  .intel-section-hero .evo-chart { height: 72px; }
-}
-
-@media (max-width: 768px) {
-  .nav-section-wrap { padding: 20px; }
-  .nav-rank-bar-wrap { display: none; }
+  .intel-section-curve-hero .curve-chart-wrap { min-height: 100px; }
+  .intel-section-curve-hero .curve-card       { padding: 22px 20px; }
+  .weaknesses-card.full-width                 { padding: 20px; }
+  .nav-section-wrap                           { padding: 20px; }
+  .nav-rank-bar-wrap                          { display: none; }
 }

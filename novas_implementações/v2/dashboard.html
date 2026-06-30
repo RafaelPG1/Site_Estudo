@@ -19,41 +19,32 @@
   <link rel="stylesheet" href="css/dashboard.css" />
   <link rel="stylesheet" href="css/dashboard_cards.css" />
 
-  <!-- ═══ Contrato de domínio de IA ═══
-       Precisa ser declarado ANTES dos módulos de IA serem
-       carregados (mesmo padrão das páginas de Resumo/Quiz). -->
+  <!-- ═══ Contrato de domínio de IA ═══ -->
   <script>
     window.__NEXUS_CONTEXT__ = { tipos: ['dashboard'] };
   </script>
 
-  <!-- ═══ Estilos mínimos para os novos blocos de leitura real
-       (navegação / heatmap / evolução diária / quiz). Apenas
-       apresentação — nenhum dado é gerado aqui. Caso o projeto já
-       possua classes equivalentes em dashboard.css, estas regras
-       servem como fallback e podem ser removidas dali. ═══ -->
   <style>
-    .evo-chart, .heatmap-chart {
+    .heatmap-chart {
       display: flex;
       align-items: flex-end;
       gap: 2px;
       height: 64px;
       margin-top: 8px;
     }
-    .evo-col, .heatmap-col {
+    .heatmap-col {
       flex: 1;
       height: 100%;
       display: flex;
       align-items: flex-end;
     }
-    .evo-bar, .heatmap-bar {
+    .heatmap-bar {
       width: 100%;
       border-radius: 2px 2px 0 0;
-      background: var(--purple, #6C63FF);
+      background: var(--amber, #FFB547);
       min-height: 0;
       transition: height .3s ease;
     }
-    .evo-bar-vazia { background: var(--border, #2a2a35); }
-    .heatmap-bar { background: var(--amber, #FFB547); }
 
     .nav-page-item, .quiz-event-item {
       display: flex;
@@ -66,22 +57,6 @@
     .nav-page-item:last-child, .quiz-event-item:last-child { border-bottom: none; }
     .nav-page-name { opacity: .85; word-break: break-all; }
     .nav-page-meta, .quiz-event-taxa { opacity: .6; white-space: nowrap; }
-
-    .nav-flow {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 4px;
-      font-size: 12px;
-      margin-top: 8px;
-    }
-    .nav-flow-step {
-      padding: 3px 8px;
-      border-radius: 6px;
-      background: rgba(108,99,255,.12);
-      white-space: nowrap;
-    }
-    .nav-flow-arrow { opacity: .5; }
 
     .nav-empty {
       font-size: 13px;
@@ -155,7 +130,6 @@
 
       <span class="nav-label">Disciplinas</span>
 
-      <!-- Preenchido dinamicamente por dashboard.js via getDisciplinasDeSemestre() -->
       <div id="sidebar-disciplinas"></div>
 
       <span class="nav-label">Sistema</span>
@@ -169,8 +143,7 @@
       </a>
     </nav>
 
-    <!-- Session pulse -->
-<div class="sidebar-footer">
+    <div class="sidebar-footer">
       <div class="session-card">
         <div class="session-header">
           <div class="pulse-dot"></div>
@@ -178,8 +151,6 @@
         </div>
         <div class="session-time">00:00</div>
         <div class="session-sub">Conectando…</div>
-      </div>
-    </div>
       </div>
     </div>
   </aside>
@@ -224,7 +195,6 @@
               </svg>
               <span id="meta-semestre">—</span>
             </div>
-
           </div>
         </div>
 
@@ -244,7 +214,6 @@
         <div class="tools-card">
           <div class="tools-grid">
 
-            <!-- Checklist -->
             <button class="tool-btn t-checklist">
               <div class="tool-icon ic-purple">
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -259,7 +228,6 @@
               </svg>
             </button>
 
-            <!-- Tarefas -->
             <button class="tool-btn t-tarefas">
               <div class="tool-icon ic-green">
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -275,7 +243,6 @@
               </svg>
             </button>
 
-            <!-- Calendário -->
             <button class="tool-btn t-calendario">
               <div class="tool-icon ic-amber">
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -293,7 +260,6 @@
               </svg>
             </button>
 
-            <!-- Anotações -->
             <button class="tool-btn t-anotacoes">
               <div class="tool-icon ic-blue">
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -322,7 +288,6 @@
         </div>
 
         <div class="stat-grid">
-          <!-- Tempo de estudo hoje (real — session-tracker.js) -->
           <div class="stat-card c-purple">
             <div class="stat-icon ic-purple">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -343,7 +308,6 @@
             </svg>
           </div>
 
-          <!-- Sequência de dias ativos (real — session-tracker.js) -->
           <div class="stat-card c-green">
             <div class="stat-icon ic-green">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -363,7 +327,6 @@
             </svg>
           </div>
 
-          <!-- Total de sessões (real — session-tracker.js) -->
           <div class="stat-card c-amber">
             <div class="stat-icon ic-amber">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -385,7 +348,6 @@
             </svg>
           </div>
 
-          <!-- Tempo total acumulado (real — session-tracker.js) -->
           <div class="stat-card c-blue">
             <div class="stat-icon ic-blue">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -407,7 +369,6 @@
             </svg>
           </div>
 
-          <!-- Tempo médio por sessão (real — tempoTotalGeral / totalSessoes) -->
           <div class="stat-card c-purple">
             <div class="stat-icon ic-purple">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -429,15 +390,14 @@
       </section>
 
 
-<!-- ── GRID: SCORE + TENDÊNCIA (redesign visual — wrapper novo,
-           sem alterar nenhum id/classe usado pelo JS) ───────────── -->
-      <div class="intel-grid-2col">
+      <!-- ── LINHA 1: SCORE · TENDÊNCIA · PREVISÃO ──────────
+           Três cards de inteligência lado a lado.
+           Fonte: quiz_intelligence
+           Preenchidos por: renderScore(), renderTrend(), renderPrediction()
+           em dashboard_render.js ── -->
+      <div class="intel-grid-3col">
 
-        <!-- ── SCORE EVOLUTIVO (Camada 5 — Fase 2.1) ─────────────
-             Fonte: window.NexusQuizIntelligence.relatorioEvolucao()
-             Campo: relatorio.scoreEvolutivo
-             Preenchido por: renderScore() em dashboard_render.js
-             Nenhum dado é calculado aqui — apenas estrutura HTML. ── -->
+        <!-- Score Evolutivo — Fase 2.1 -->
         <section>
           <div class="section-header">
             <span class="section-title">Score Evolutivo</span>
@@ -462,13 +422,7 @@
           </div>
         </section>
 
-
-        <!-- ── TENDENCIA DO ALUNO (Camada 5 — Fase 2.2) ──────────
-             Fonte: window.NexusQuizIntelligence.relatorioEvolucao()
-             Campo: relatorio.tendenciaDoAluno
-             Preenchido por: renderTrend() em dashboard_render.js
-             Campos usados: direcao, diferencaPct, confianca
-             Nenhum dado é calculado aqui — apenas estrutura HTML. ── -->
+        <!-- Tendência do Aluno — Fase 2.2 -->
         <section>
           <div class="section-header">
             <span class="section-title">Tendência do Aluno</span>
@@ -488,87 +442,7 @@
           </div>
         </section>
 
-      </div>
-
-
-      <!-- ── COMPARACAO ENTRE PERIODOS (Camada 5 — Fase 2.3) ───
-           Fonte: window.NexusQuizIntelligence.relatorioEvolucao()
-           Campo: relatorio.comparacaoDePeriodos
-           Preenchido por: renderComparison() em dashboard_render.js
-           Campos usados: diasPorPeriodo, periodoAtual, periodoAnterior,
-                          variacaoPct, direcao
-           Nenhum dado é calculado aqui — apenas estrutura HTML. ── -->
-<section class="intel-section-wide">
-        <div class="section-header">
-          <span class="section-title">Comparação entre Períodos</span>
-          <span class="section-count">quiz_intelligence · comparacaoDePeriodos</span>
-          <div class="section-line"></div>
-        </div>
-
-        <div class="comparison-card" id="comparison-card">
-
-          <div class="comparison-periodos">
-
-            <div class="comparison-periodo">
-              <div class="comparison-periodo-label">Período atual</div>
-              <div class="comparison-periodo-taxa" id="comparison-atual-taxa">—</div>
-              <div class="comparison-periodo-tent" id="comparison-atual-tent">—</div>
-            </div>
-
-            <div class="comparison-sep">
-              <div class="comparison-variacao" id="comparison-variacao">—</div>
-            </div>
-
-            <div class="comparison-periodo">
-              <div class="comparison-periodo-label">Período anterior</div>
-              <div class="comparison-periodo-taxa" id="comparison-ant-taxa">—</div>
-              <div class="comparison-periodo-tent" id="comparison-ant-tent">—</div>
-            </div>
-
-          </div>
-
-          <div class="comparison-direcao" id="comparison-direcao">
-            Carregando…
-          </div>
-
-        </div>
-      </section>
-
-<!-- ── GRID: FRAQUEZAS + PREVISÃO (redesign visual — wrapper
-           novo, sem alterar nenhum id/classe usado pelo JS) ───── -->
-      <div class="intel-grid-2col">
-
-        <!-- ── FRAQUEZAS POR DISCIPLINA (Camada 5 — Fase 2.4) ────
-             Fonte: window.NexusQuizIntelligence.relatorioEvolucao()
-             Campo: relatorio.fraquezasPorDisciplina
-             Preenchido por: renderWeaknesses() em dashboard_render.js
-             Campos usados: disciplina, taxaAcertoPct, tendencia, emQueda
-             A lista chega ordenada da Camada 4 — exibida na ordem recebida.
-             Nenhum dado é calculado aqui — apenas estrutura HTML. ── -->
-        <section>
-          <div class="section-header">
-            <span class="section-title">Fraquezas por Disciplina</span>
-            <span class="section-count">
-              <span id="weaknesses-count">—</span> disciplina(s) · quiz_intelligence · fraquezasPorDisciplina
-            </span>
-            <div class="section-line"></div>
-          </div>
-
-          <div class="weaknesses-card" id="weaknesses-section">
-            <div class="weaknesses-lista" id="weaknesses-lista">
-              <!-- Preenchido por renderWeaknesses() em dashboard_render.js -->
-            </div>
-          </div>
-        </section>
-
-
-        <!-- ── PREVISÃO (Camada 5 — Fase 2.5) ────────────────────
-             Fonte: window.NexusQuizIntelligence.relatorioEvolucao()
-             Campo: relatorio.previsaoSimples
-             Preenchido por: renderPrediction() em dashboard_render.js
-             Campos usados: previsaoTaxaAcertoPct, direcaoEsperada,
-                            confianca, amostras, motivo
-             Nenhum dado é calculado aqui — apenas estrutura HTML. ── -->
+        <!-- Previsão — Fase 2.5 -->
         <section>
           <div class="section-header">
             <span class="section-title">Previsão</span>
@@ -596,69 +470,93 @@
       </div>
 
 
-      <!-- ── CURVA DE APRENDIZADO (Camada 5 — Fase 2.6) ────────
-           Fonte: window.NexusQuizIntelligence.relatorioEvolucao()
-           Campo: relatorio.curvaDeAprendizado.geral
-           Preenchido por: renderLearningCurve() em dashboard_render.js
-           Campos usados: totalTentativas, serieTaxaAcertoPct,
-                          mediaMovelPct, tendencia
-           Nenhum dado é calculado aqui — apenas estrutura HTML. ── -->
-      <section>
-        <div class="section-header">
-          <span class="section-title">Curva de Aprendizado</span>
-          <span class="section-count">quiz_intelligence · curvaDeAprendizado</span>
-          <div class="section-line"></div>
-        </div>
+      <!-- ── LINHA 2: FRAQUEZAS · CONSISTÊNCIA ─────────────
+           60/40 — Fraquezas tem mais conteúdo, recebe mais espaço.
+           Fonte: quiz_intelligence · fraquezasPorDisciplina | historico_diario
+           Preenchidos por: renderWeaknesses() | _renderConsistencia() ── -->
+      <div class="intel-grid-weak-consist">
 
-        <div class="curve-card" id="curve-card">
-
-          <div class="curve-header">
-            <div class="curve-tendencia" id="curve-tendencia">—</div>
-            <div class="curve-amostras" id="curve-amostras">— tentativas analisadas</div>
+        <!-- Fraquezas por Disciplina — Fase 2.4 -->
+        <section class="intel-section-full">
+          <div class="section-header">
+            <span class="section-title">Fraquezas por Disciplina</span>
+            <span class="section-count">
+              <span id="weaknesses-count">—</span> disciplina(s) · quiz_intelligence · fraquezasPorDisciplina
+            </span>
+            <div class="section-line"></div>
           </div>
 
-          <div class="curve-chart-wrap" id="curve-chart-wrap"></div>
+          <div class="weaknesses-card full-width" id="weaknesses-section">
+            <div class="weaknesses-lista" id="weaknesses-lista">
+              <!-- Preenchido por renderWeaknesses() em dashboard_render.js -->
+            </div>
+          </div>
+        </section>
 
-          <div class="curve-legenda">
-            <span class="curve-legenda-item"><span class="curve-dot curve-dot-real"></span>Taxa de acerto</span>
-            <span class="curve-legenda-item"><span class="curve-dot curve-dot-movel"></span>Média móvel</span>
+        <!-- Consistência de uso — historico_diario -->
+        <section>
+          <div class="section-header">
+            <span class="section-title">Consistência de uso</span>
+            <span class="section-count">últimos 30 dias · historico_diario</span>
+            <div class="section-line"></div>
           </div>
 
-        </div>
-      </section>
+          <div class="perf-card">
+            <div class="perf-list">
 
+              <div class="perf-item">
+                <div class="perf-icon ic-purple">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="1.5" y="3" width="11" height="9" rx="1.5"/>
+                    <path d="M4 1.5V4M10 1.5V4M1.5 6.5h11"/>
+                  </svg>
+                </div>
+                <div style="flex:1">
+                  <div class="perf-name">Frequência (dias ativos / 30)</div>
+                  <div class="prog-bar" style="margin-top:8px">
+                    <div class="prog-fill" id="consistencia-bar-freq" style="width:0%"></div>
+                  </div>
+                </div>
+                <div>
+                  <span class="perf-value" id="consistencia-frequencia">—</span>
+                </div>
+              </div>
 
-      <!-- ── CRESCIMENTO ACUMULADO (7 dias) — session-tracker ──
-           Preenchido por: _renderCrescimentoAcumulado() em dashboard_data.js
-           O SVG é injetado em #crescimento-acumulado pelo JS.
-           O label de total é atualizado em #crescimento-total-label.
-           Nenhum dado é calculado aqui — apenas estrutura HTML. ── -->
-      <section>
-        <div class="section-header">
-          <span class="section-title">Crescimento acumulado</span>
-          <span class="section-count">últimos 7 dias · historico_diario</span>
-          <div class="section-line"></div>
-        </div>
+              <div class="perf-item">
+                <div class="perf-icon ic-green">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M1 10l2-2 2 1.5 2-2.5 2 1 2-3 2 1.5"/>
+                  </svg>
+                </div>
+                <div style="flex:1">
+                  <div class="perf-name">Regularidade (variação entre dias)</div>
+                  <div class="prog-bar" style="margin-top:8px">
+                    <div class="prog-fill green" id="consistencia-bar-reg" style="width:0%"></div>
+                  </div>
+                </div>
+                <div>
+                  <span class="perf-value" id="consistencia-regularidade">—</span>
+                </div>
+              </div>
 
-        <div class="perf-card">
-          <div id="crescimento-acumulado" class="crescimento-chart-wrap"></div>
-          <div class="section-count" id="crescimento-total-label" style="margin-top: 8px">—</div>
-        </div>
-      </section>
+              <div class="perf-item" style="border-bottom:none">
+                <div class="perf-icon ic-blue">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="7" cy="7" r="5.5"/>
+                    <path d="M7 4v3l2 2"/>
+                  </svg>
+                </div>
+                <div style="flex:1">
+                  <div class="perf-name">Tendência semanal</div>
+                  <div id="consistencia-tendencia" class="consistencia-tend" style="margin-top:4px">—</div>
+                </div>
+              </div>
 
+            </div>
+          </div>
+        </section>
 
-<!-- ── EVOLUÇÃO DIÁRIA (30 dias) — historico_diario ──── -->
-      <section class="intel-section-hero">
-        <div class="section-header">
-          <span class="section-title">Evolução diária</span>
-          <span class="section-count">últimos 30 dias · historico_diario</span>
-          <div class="section-line"></div>
-        </div>
-
-        <div class="perf-card evo-card-hero">
-          <div class="evo-chart" id="evolucao-30dias"></div>
-        </div>
-      </section>
+      </div>
 
 
       <!-- ── PERFORMANCE + ACTIVITY ─────────────────────────── -->
@@ -671,7 +569,6 @@
             <div class="section-line"></div>
           </div>
 
-          <!-- Desempenho — dados reais de sessão via session-tracker.js -->
           <div class="perf-list">
 
             <div class="perf-item">
@@ -709,10 +606,6 @@
               </div>
             </div>
 
-            <!-- ── MELHOR DIA (últimos 30) ────────────────────────
-                 Preenchido por: _renderTendencia() em dashboard_data.js
-                 IDs: perf-melhor-dia (valor), perf-bar-melhor (barra)
-                 Ausentes na versão anterior — adicionados aqui. ── -->
             <div class="perf-item">
               <div class="perf-icon ic-amber">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -775,137 +668,53 @@
             <span class="section-title">Atividade recente</span>
             <div class="section-line"></div>
           </div>
- 
-          <!-- Preenchido por renderTimeline() em dashboard_render.js -->
+
           <div class="timeline" id="activity-timeline"></div>
         </div>
       </div>
 
 
-      <!-- ── CONSISTÊNCIA DE USO — session-tracker ─────────────
-           Preenchido por: _renderConsistencia() em dashboard_data.js
-           IDs adicionados (ausentes na versão anterior):
-             consistencia-frequencia   (texto frequência)
-             consistencia-bar-freq     (barra frequência)
-             consistencia-regularidade (texto regularidade)
-             consistencia-bar-reg      (barra regularidade)
-             consistencia-tendencia    (label de tendência semanal)
-           Nenhum dado é calculado aqui — apenas estrutura HTML. ── -->
-      <section>
-        <div class="section-header">
-          <span class="section-title">Consistência de uso</span>
-          <span class="section-count">últimos 30 dias · historico_diario</span>
-          <div class="section-line"></div>
-        </div>
-
-        <div class="perf-card">
-          <div class="perf-list">
-
-            <div class="perf-item">
-              <div class="perf-icon ic-purple">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <rect x="1.5" y="3" width="11" height="9" rx="1.5"/>
-                  <path d="M4 1.5V4M10 1.5V4M1.5 6.5h11"/>
-                </svg>
-              </div>
-              <div style="flex:1">
-                <div class="perf-name">Frequência (dias ativos / 30)</div>
-                <div class="prog-bar" style="margin-top:8px">
-                  <div class="prog-fill" id="consistencia-bar-freq" style="width:0%"></div>
-                </div>
-              </div>
-              <div>
-                <span class="perf-value" id="consistencia-frequencia">—</span>
-              </div>
-            </div>
-
-            <div class="perf-item">
-              <div class="perf-icon ic-green">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M1 10l2-2 2 1.5 2-2.5 2 1 2-3 2 1.5"/>
-                </svg>
-              </div>
-              <div style="flex:1">
-                <div class="perf-name">Regularidade (variação entre dias)</div>
-                <div class="prog-bar" style="margin-top:8px">
-                  <div class="prog-fill green" id="consistencia-bar-reg" style="width:0%"></div>
-                </div>
-              </div>
-              <div>
-                <span class="perf-value" id="consistencia-regularidade">—</span>
-              </div>
-            </div>
-
-            <div class="perf-item" style="border-bottom:none">
-              <div class="perf-icon ic-blue">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <circle cx="7" cy="7" r="5.5"/>
-                  <path d="M7 4v3l2 2"/>
-                </svg>
-              </div>
-              <div style="flex:1">
-                <div class="perf-name">Tendência semanal</div>
-                <div id="consistencia-tendencia" class="consistencia-tend" style="margin-top:4px">—</div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-
       <!-- ── NAVEGAÇÃO E COMPORTAMENTO REAL ──────────────────
-           Tudo nesta seção vem exclusivamente dos campos já
-           existentes na sessão (pages, navigation, hourHeatmap,
-           deviceType, quizEvents), gravados por session-tracker.js.
-           Nenhum campo novo é criado e nenhum dado é simulado. ── -->
+           Dados de pages, navigation, hourHeatmap, deviceType, quizEvents ── -->
       <div class="two-col">
 
-        <!-- PÁGINAS MAIS ACESSADAS + FLUXO DE NAVEGAÇÃO -->
+        <div class="nav-section-wrap">
 
-        <!-- NAVEGAÇÃO — redesign moderno -->
-<!-- NAVEGAÇÃO — redesign moderno -->
-<div class="nav-section-wrap">
+          <div class="nav-section-header">
+            <div class="nav-section-icon">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="8" cy="8" r="6.5"/>
+                <path d="M8 4v4l2.5 2.5"/>
+              </svg>
+            </div>
+            <span class="section-title">Navegação</span>
+            <span class="section-count">pages · navigation</span>
+            <div class="section-line"></div>
+          </div>
 
-  <!-- HEADER DA SEÇÃO -->
-  <div class="nav-section-header">
-    <div class="nav-section-icon">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-        <circle cx="8" cy="8" r="6.5"/>
-        <path d="M8 4v4l2.5 2.5"/>
-      </svg>
-    </div>
-    <span class="section-title">Navegação</span>
-    <span class="section-count">pages · navigation</span>
-    <div class="section-line"></div>
-  </div>
+          <div class="nav-ranking-wrap">
+            <div class="nav-sub-header">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M1 10l2.5-3 2 1.5 2.5-3 2 1.5 2.5-3.5"/>
+              </svg>
+              Páginas mais acessadas
+            </div>
+            <div class="nav-rank-list" id="nav-paginas-lista"></div>
+          </div>
 
-  <!-- PÁGINAS MAIS ACESSADAS -->
-  <div class="nav-ranking-wrap">
-    <div class="nav-sub-header">
-      <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path d="M1 10l2.5-3 2 1.5 2.5-3 2 1.5 2.5-3.5"/>
-      </svg>
-      Páginas mais acessadas
-    </div>
-    <div class="nav-rank-list" id="nav-paginas-lista"></div>
-  </div>
+          <div class="nav-timeline-wrap">
+            <div class="nav-sub-header">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="6.5" cy="6.5" r="5.5"/>
+                <path d="M6.5 3.5v3l1.5 1.5"/>
+              </svg>
+              Histórico de navegação
+            </div>
+            <div class="nav-tl-list" id="nav-fluxo"></div>
+          </div>
 
-  <!-- HISTÓRICO DE NAVEGAÇÃO -->
-  <div class="nav-timeline-wrap">
-    <div class="nav-sub-header">
-      <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5">
-        <circle cx="6.5" cy="6.5" r="5.5"/>
-        <path d="M6.5 3.5v3l1.5 1.5"/>
-      </svg>
-      Histórico de navegação
-    </div>
-    <div class="nav-tl-list" id="nav-fluxo"></div>
-  </div>
+        </div>
 
-</div>
-
-        <!-- PERFIL DO USUÁRIO: DISPOSITIVO + HORÁRIO ATIVO -->
         <div class="perf-card">
           <div class="section-header">
             <span class="section-title">Perfil de uso</span>
@@ -929,7 +738,7 @@
       </div>
 
 
-      <!-- ── QUIZ — SOMENTE LEITURA (quizEvents da sessão) ──── -->
+      <!-- ── QUIZ — SOMENTE LEITURA ────────────────────────── -->
       <section>
         <div class="section-header">
           <span class="section-title">Quizzes da sessão</span>
@@ -946,7 +755,6 @@
       <!-- ── DISCIPLINES + ACHIEVEMENTS ────────────────────── -->
       <div class="three-col">
 
-        <!-- DISCIPLINES -->
         <div class="disc-card">
           <div class="section-header">
             <span class="section-title">Disciplinas</span>
@@ -957,25 +765,21 @@
           <div class="disc-grid" id="disc-grid"></div>
         </div>
 
-
-        <!-- ACHIEVEMENTS -->
         <div class="ach-card">
           <div class="section-header">
             <span class="section-title">Conquistas</span>
             <div class="section-line"></div>
           </div>
- 
-          <!-- Preenchido por renderAchievements() em dashboard_render.js -->
+
           <div class="ach-list" id="ach-list"></div>
         </div>
- 
 
       </div>
 
     </div><!-- /content -->
   </main>
 
-<script type="module" src="../../quiz/js/quiz_intelligence.js"></script>
+  <script type="module" src="../../quiz/js/quiz_intelligence.js"></script>
   <script type="module" src="js/dashboard.js"></script>
   <script src="../../shared/js/utils/quick-access.js"></script>
 </body>

@@ -403,8 +403,6 @@ export async function _carregarMetricasReais() {
 
     _renderTempoGlobal(stats);
     _renderTendencia(stats);
-    _renderEvolucaoDiaria(stats);
-    _renderCrescimentoAcumulado(stats);
     _renderConsistencia(stats);
     _renderSparklines(stats);
     _renderUltimoAcesso(stats);
@@ -428,7 +426,6 @@ export async function _carregarMetricasReais() {
 
   _carregarIntelligence(getUsuario()?.uid).catch(() => {});
 }
-
 async function _buscarUltimaSessaoPersistida(uid) {
   if (!uid) return null;
   try {
@@ -532,56 +529,7 @@ function _renderTendencia(stats) {
   }
 }
 
-/* ══════════════════════════════════════════════
-   RENDER — CRESCIMENTO ACUMULADO (últimos 7 dias)
-══════════════════════════════════════════════ */
-function _renderCrescimentoAcumulado(stats) {
-  const wrap = document.getElementById('crescimento-acumulado');
-  if (!wrap || !stats.ultimos7?.length) return;
 
-  wrap.innerHTML = '';
-
-  let acum = 0;
-  const pontos = stats.ultimos7.map(d => {
-    acum += d.tempoTotal;
-    return acum;
-  });
-
-  const maxAcum = Math.max(...pontos, 1);
-  const W = 280, H = 64;
-
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-  svg.setAttribute('class', 'crescimento-svg');
-
-  const pts = pontos.map((v, i) => {
-    const x = Math.round((i / (pontos.length - 1)) * (W - 8)) + 4;
-    const y = Math.round(H - 8 - ((v / maxAcum) * (H - 16)));
-    return `${x},${y}`;
-  });
-
-  const area = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-  const firstX = pts[0].split(',')[0];
-  const lastX  = pts[pts.length - 1].split(',')[0];
-  area.setAttribute('points', `${firstX},${H} ${pts.join(' ')} ${lastX},${H}`);
-  area.setAttribute('class', 'crescimento-area');
-
-  const line = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
-  line.setAttribute('points', pts.join(' '));
-  line.setAttribute('class', 'crescimento-line');
-
-  svg.appendChild(area);
-  svg.appendChild(line);
-  wrap.appendChild(svg);
-
-  const label = document.getElementById('crescimento-total-label');
-  if (label) {
-    const totalUltimos7 = stats.ultimos7.reduce((s, d) => s + d.tempoTotal, 0);
-    label.textContent = totalUltimos7 > 0
-      ? `${formatTimeHuman(totalUltimos7)} nos últimos 7 dias`
-      : '—';
-  }
-}
 
 /* ══════════════════════════════════════════════
    RENDER — CONSISTÊNCIA DE USO (últimos 30 dias)
@@ -618,32 +566,8 @@ function _renderConsistencia(stats) {
   }
 
   const tendEl = document.getElementById('consistencia-tendencia');
-  if (tendEl && stats.ultimos7?.length === 7 && stats.historico) {
-    const mediaRecente = stats.ultimos7.reduce((s, d) => s + d.tempoTotal, 0) / 7;
-
-    const hoje = new Date();
-    let mediaAnterior = 0;
-    for (let i = 7; i < 14; i++) {
-      const d   = new Date(hoje);
-      d.setDate(d.getDate() - i);
-      const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-      mediaAnterior += stats.historico?.[key]?.tempoTotal ?? 0;
-    }
-    mediaAnterior /= 7;
-
-    if (mediaAnterior > 0) {
-      const delta  = mediaRecente - mediaAnterior;
-      const sinal  = delta >= 0 ? '▲' : '▼';
-      const classe = delta >= 0 ? 'tend-up' : 'tend-down';
-      tendEl.textContent  = `${sinal} ${formatTimeHuman(Math.abs(delta))}/dia vs semana anterior`;
-      tendEl.className    = `consistencia-tend ${classe}`;
-    } else {
-      tendEl.textContent = mediaRecente > 0 ? '▲ Primeira semana com dados' : '—';
-      tendEl.className   = 'consistencia-tend';
-    }
-  }
+  if (tendEl) tendEl.textContent = '—';
 }
-
 /* ══════════════════════════════════════════════
    RENDER — ÚLTIMO ACESSO
 ══════════════════════════════════════════════ */
@@ -690,46 +614,6 @@ function _renderSparklines(stats) {
   });
 }
 
-/* ══════════════════════════════════════════════
-   RENDER — EVOLUÇÃO DIÁRIA (30 dias)
-══════════════════════════════════════════════ */
-function _renderEvolucaoDiaria(stats) {
-  const wrap = document.getElementById('evolucao-30dias');
-  if (!wrap) return;
-
-  wrap.innerHTML = '';
-
-  const hoje = new Date();
-  const dias  = [];
-  for (let i = 29; i >= 0; i--) {
-    const d   = new Date(hoje);
-    d.setDate(d.getDate() - i);
-    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    dias.push({
-      key,
-      dia:        d.getDate(),
-      tempoTotal: stats.historico?.[key]?.tempoTotal ?? 0,
-    });
-  }
-
-  const maxTempo = Math.max(...dias.map(d => d.tempoTotal), 1);
-
-  dias.forEach(d => {
-    const col   = document.createElement('div');
-    col.className = 'evo-col';
-    col.title   = `${d.key} · ${formatTimeHuman(d.tempoTotal)}`;
-
-    const bar       = document.createElement('div');
-    bar.className   = 'evo-bar';
-    const alturaPct = d.tempoTotal > 0 ? Math.max(6, (d.tempoTotal / maxTempo) * 100) : 0;
-    bar.style.height = alturaPct + '%';
-    if (d.tempoTotal === 0) bar.classList.add('evo-bar-vazia');
-    if (d.key === stats.melhorDia?.key) bar.classList.add('evo-bar-melhor');
-
-    col.appendChild(bar);
-    wrap.appendChild(col);
-  });
-}
 
 /* ══════════════════════════════════════════════
    RENDER — NAVIGATION ANALYTICS
@@ -1039,12 +923,6 @@ function _renderMetricasVazio() {
   });
 
   _renderNavegacaoVazia();
-
-  const wrap = document.getElementById('evolucao-30dias');
-  if (wrap) wrap.innerHTML = '';
-
-  const wrapAcum = document.getElementById('crescimento-acumulado');
-  if (wrapAcum) wrapAcum.innerHTML = '';
 }
 
 export { _renderMetricasVazio, _renderNavegacaoAoVivo };
