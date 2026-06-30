@@ -154,6 +154,16 @@
 
     function _registrarSaida() {
       if (!_disc || !_Storage) return;
+
+      /* Se há respostas reais não finalizadas, dispara o payload parcial
+         antes de sair. Isso garante que quizzes abandonados sejam
+         contabilizados pelo intelligence com os dados reais do usuário.
+         A guarda _tentativaFinalizada evita duplo disparo. */
+      var temRespostasReais = Object.keys(_respostasReais).length > 0;
+      if (temRespostasReais && !_tentativaFinalizada && _tentativaStartedAt) {
+        _dispararFinalizacao(false);
+      }
+
       var salvo = _Storage.loadProgress(_discUid(), _modo, _semestre);
       if (!salvo) return;
       var configs = _Storage.get('configs', {});
@@ -324,7 +334,12 @@
 
     /* ── 4. ESTADO E RESTAURAÇÃO ──────────────────────────── */
 
-    var respostas        = {};
+var respostas        = {};
+    /* _respostasReais é o espelho imutável de respostas[]:
+       recebe entrada SOMENTE em selectOption(), nunca em revelar().
+       É a única fonte usada por _dispararFinalizacao() para montar
+       respostasBrutas — garantindo que revelar() não contamina o payload. */
+    var _respostasReais  = {};
     var revelado         = false;
     var modoStep         = false;
     var stepAtual        = 0;
@@ -337,7 +352,7 @@
     /* O engine registra APENAS quando a tentativa começou e
        terminou. Todo o CÁLCULO com esses dados (taxa, tempo
        médio, nível) é exclusividade do quiz_intelligence.js. */
-    var _tentativaStartedAt = null;
+    var _tentativaStartedAt  = null;
     var _tentativaFinalizada = false;
 
     function _registrarInicioTentativa() {
@@ -350,50 +365,52 @@
        (respostas brutas, questões, timestamps, contexto).
        Todo o resto é responsabilidade do intelligence.js.
     ────────────────────────────────────────────────────────── */
-    function _dispararFinalizacao(reveladoPorBotao) {
-      if (_tentativaFinalizada) return;
-      _tentativaFinalizada = true;
+function _dispararFinalizacao(reveladoPorBotao) {
+  if (_tentativaFinalizada) return;
+  _tentativaFinalizada = true;
 
-      var endedAt = Date.now();
+  var endedAt = Date.now();
 
-      /* Coleta respostas brutas: índice da alternativa escolhida
-         por questão. Sem cálculo de acerto aqui. */
-      var respostasBrutas = {};
-      Object.keys(respostas).forEach(function (qi) {
-        respostasBrutas[parseInt(qi)] = respostas[qi];
-      });
+  /* Coleta APENAS as respostas que o usuário efetivamente escolheu
+     ANTES de qualquer revelação. O snapshot é feito sobre
+     _respostasReais, que nunca é tocado por revelar(). */
+  var respostasBrutas = {};
+  Object.keys(_respostasReais).forEach(function (qi) {
+    respostasBrutas[parseInt(qi)] = _respostasReais[qi];
+  });
 
-      /* Gabarito bruto: índice da alternativa correta por questão.
-         O intelligence.js cruzará respostas x gabarito. */
-      var gabarito = {};
-      questoes.forEach(function (q, qi) {
-        gabarito[qi] = q.answer;
-      });
+  /* Gabarito bruto: índice da alternativa correta por questão.
+     O intelligence.js cruzará respostasBrutas x gabarito. */
+  var gabarito = {};
+  questoes.forEach(function (q, qi) {
+    gabarito[qi] = q.answer;
+  });
 
-      var payload = {
-        /* Contexto */
-        disc:          _disc,
-        modo:          _modo,
-        semestre:      _semestre,
-        /* Dados brutos — sem cálculo */
-        totalQuestoes: questoes.length,
-        respostasBrutas: respostasBrutas,
-        gabarito:        gabarito,
-        /* Timestamps */
-        startedAt:     _tentativaStartedAt || endedAt,
-        endedAt:       endedAt,
-        /* Flag de modo */
-        revealed:      !!reveladoPorBotao,
-      };
+  var payload = {
+    /* Contexto */
+    disc:          _disc,
+    modo:          _modo,
+    semestre:      _semestre,
+    /* Dados brutos — apenas o que o usuário respondeu */
+    totalQuestoes:   questoes.length,
+    respostasBrutas: respostasBrutas,
+    gabarito:        gabarito,
+    /* Timestamps */
+    startedAt:  _tentativaStartedAt || endedAt,
+    endedAt:    endedAt,
+    /* Flag de modo */
+    revealed:   !!reveladoPorBotao,
+  };
 
-      try {
-        window.dispatchEvent(new CustomEvent('nexus:quizFinalizado', { detail: payload }));
-        console.log('[quiz_engine] nexus:quizFinalizado disparado —',
-          questoes.length + ' questões | revealed=' + payload.revealed);
-      } catch (e) {
-        console.warn('[quiz_engine] falha ao disparar nexus:quizFinalizado:', e);
-      }
-    }
+  try {
+    window.dispatchEvent(new CustomEvent('nexus:quizFinalizado', { detail: payload }));
+    console.log('[quiz_engine] nexus:quizFinalizado disparado —',
+      questoes.length + ' questões | respondidas=' +
+      Object.keys(respostasBrutas).length + ' | revealed=' + payload.revealed);
+  } catch (e) {
+    console.warn('[quiz_engine] falha ao disparar nexus:quizFinalizado:', e);
+  }
+}
 
     function _restaurar() {
       if (!_disc || !_Storage) return null;
@@ -719,7 +736,8 @@
 
     function selectOption(qi, oi) {
       if (revelado || respostas[qi] !== undefined) return;
-      respostas[qi] = oi;
+      respostas[qi]       = oi;
+      _respostasReais[qi] = oi;  /* espelho imutável — nunca tocado por revelar() */
 
       var _playSound = window.__nexusPlaySound;
       if (typeof _playSound === 'function') {
@@ -755,9 +773,19 @@
       }
     }
 
-    function revelar() {
+   function revelar() {
+      /* _dispararFinalizacao deve ser chamada ANTES de qualquer mutação
+         visual em respostas[], para que o payload capture apenas o que
+         o usuário realmente respondeu até este momento. */
+      if (_disc && _Storage) {
+        _dispararFinalizacao(true);
+      }
+
       revelado = true;
 
+      /* A partir daqui, respostas[] recebe as respostas corretas apenas
+         para fins visuais (UI, feedback, resultado por aula).
+         _respostasReais[] permanece intocado — foi snapshot antes. */
       questoes.forEach(function (q, qi) {
         if (respostas[qi] === undefined) respostas[qi] = q.answer;
         _atualizarOpcoes(qi);
@@ -771,8 +799,6 @@
         _Storage.saveProgress(_discUid(), _modo, _semestre, respostas, true, true);
         _salvarShuffleMap();
         _salvarFirebase(true);
-        /* Revelar = finalização forçada — dispara evento com flag revealed=true */
-        _dispararFinalizacao(true);
       }
 
       _atualizarTodosResultadosAula();
@@ -782,6 +808,7 @@
 
     function reiniciar() {
       respostas        = {};
+      _respostasReais  = {};  /* limpa o espelho junto com respostas[] */
       revelado         = false;
       mostrandoSoErros = false;
       stepAtual        = 0;
@@ -821,6 +848,7 @@
 
     function reiniciarComFiltro() {
       respostas        = {};
+      _respostasReais  = {};  /* limpa o espelho junto com respostas[] */
       revelado         = false;
       mostrandoSoErros = false;
       stepAtual        = 0;

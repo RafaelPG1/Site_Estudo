@@ -170,6 +170,9 @@ function _mediaMovel(valores, janela = JANELA_MEDIA_MOVEL) {
 /* ══════════════════════════════════════════════
    CÁLCULO DE ACERTOS A PARTIR DO PAYLOAD BRUTO
 ══════════════════════════════════════════════ */
+/* Cruza respostasBrutas (apenas o que o usuário escolheu) com
+   o gabarito. Questões ausentes em respostasBrutas são tratadas
+   como não respondidas — nunca como erro. */
 function _calcularAcertosDoPayload(payload) {
   const { respostasBrutas, gabarito, totalQuestoes } = payload;
 
@@ -181,9 +184,13 @@ function _calcularAcertosDoPayload(payload) {
   let erros       = 0;
   let respondidas = 0;
 
-  for (let qi = 0; qi < totalQuestoes; qi++) {
-    const resp = respostasBrutas[qi];
+  /* Itera apenas sobre as chaves presentes em respostasBrutas —
+     questões não respondidas simplesmente não aparecem aqui. */
+  const chaves = Object.keys(respostasBrutas);
+  for (const qiStr of chaves) {
+    const resp = respostasBrutas[qiStr];
     if (resp === undefined || resp === null) continue;
+    const qi = parseInt(qiStr);
     respondidas++;
     if (parseInt(resp) === parseInt(gabarito[qi])) {
       acertos++;
@@ -223,33 +230,63 @@ function _dateKeyHoje() { return _dateKey(Date.now()); }
 /* ══════════════════════════════════════════════
    NORMALIZAÇÃO DE TENTATIVAS
 ══════════════════════════════════════════════ */
+/* Normaliza um registro bruto (do Firebase ou do pipeline).
+   respondidas: usa o campo explícito quando presente (registros
+   novos), ou recalcula a partir de acertos como fallback para
+   registros legados que não tinham o campo. */
 function _normalizarTentativa(raw) {
   if (!raw) return null;
 
-  const total   = Number(raw.totalQuestoes) || 0;
-  const acertos = Number(raw.acertos) || 0;
-  const taxa    = typeof raw.taxaAcerto === 'number'
+  const total      = Number(raw.totalQuestoes) || 0;
+  const acertos    = Number(raw.acertos) || 0;
+  const erros      = Number(raw.erros) || 0;
+
+  /* respondidas: campo explícito tem prioridade sobre recálculo.
+     Registros legados (sem o campo) usam acertos + erros como
+     aproximação — compatível com dados anteriores. */
+  const respondidas = raw.respondidas !== undefined
+    ? Number(raw.respondidas)
+    : (acertos + erros) || 0;
+
+  const naoRespondidas = raw.naoRespondidas !== undefined
+    ? Number(raw.naoRespondidas)
+    : Math.max(0, total - respondidas);
+
+  /* taxa calculada sobre respondidas, nunca sobre total.
+     Campo taxaAcerto explícito tem prioridade (já calculado
+     corretamente na gravação). */
+  const taxa = typeof raw.taxaAcerto === 'number'
     ? raw.taxaAcerto
-    : (total > 0 ? acertos / total : 0);
+    : (respondidas > 0 ? acertos / respondidas : 0);
 
   const ts = raw.endedAt ?? raw.ts ?? raw.startedAt ?? Date.now();
 
+  /* tempoPorQuestao baseado em respondidas, não em total —
+     questões não respondidas não consumiram tempo de leitura
+     comparável a uma questão respondida. */
+  const tempoPorQuestaoSeg = respondidas > 0
+    ? (Number(raw.tempoGastoSeg) || 0) / respondidas
+    : 0;
+
   return {
-    id:            raw.id ?? null,
-    quizId:        raw.quizId ?? null,
-    disc:          raw.disc ?? null,
-    modo:          raw.modo ?? null,
-    semestre:      raw.semestre ?? null,
-    totalQuestoes: total,
+    id:                  raw.id ?? null,
+    quizId:              raw.quizId ?? null,
+    disc:                raw.disc ?? null,
+    modo:                raw.modo ?? null,
+    semestre:            raw.semestre ?? null,
+    totalQuestoes:       total,
+    respondidas,
+    naoRespondidas,
     acertos,
-    taxaAcerto:    _clamp(taxa, 0, 1),
-    tempoGastoSeg: Number(raw.tempoGastoSeg) || 0,
-    tempoPorQuestaoSeg: total > 0 ? (Number(raw.tempoGastoSeg) || 0) / total : 0,
-    revealed:      !!raw.revealed,
-    startedAt:     raw.startedAt ?? null,
-    endedAt:       ts,
-    dateKey:       _dateKey(ts),
-    weekKey:       _weekKey(ts),
+    erros,
+    taxaAcerto:          _clamp(taxa, 0, 1),
+    tempoGastoSeg:       Number(raw.tempoGastoSeg) || 0,
+    tempoPorQuestaoSeg,
+    revealed:            !!raw.revealed,
+    startedAt:           raw.startedAt ?? null,
+    endedAt:             ts,
+    dateKey:             _dateKey(ts),
+    weekKey:             _weekKey(ts),
   };
 }
 
@@ -428,10 +465,21 @@ async function processarPayloadBruto(payload, uid) {
     return null;
   }
 
+  /* Exige pelo menos uma resposta real para registrar.
+     Payloads de quizzes onde o usuário não respondeu nada
+     (ex: abriu e fechou imediatamente) não geram registro. */
+  const { acertos, erros, respondidas } = _calcularAcertosDoPayload(payload);
+  if (respondidas === 0) {
+    console.log('[quiz_intelligence] nenhuma resposta real — payload ignorado.');
+    return null;
+  }
+
   _invalidarCacheTentativas(uid);
 
-  const { acertos, respondidas } = _calcularAcertosDoPayload(payload);
-  const taxaAcerto    = respondidas > 0 ? acertos / respondidas : 0;
+  /* Taxa calculada sobre respondidas, nunca sobre totalQuestoes.
+     Questões não respondidas não entram no denominador. */
+  const taxaAcerto    = acertos / respondidas;
+  const naoRespondidas = totalQuestoes - respondidas;
   const tempoGastoSeg = (endedAt && startedAt)
     ? Math.max(0, Math.round((endedAt - startedAt) / 1000))
     : 0;
@@ -440,7 +488,10 @@ async function processarPayloadBruto(payload, uid) {
 
   const registroFirebase = {
     totalQuestoes,
+    respondidas,
+    naoRespondidas,
     acertos,
+    erros,
     taxaAcerto,
     tempoGastoSeg,
     startedAt: startedAt ?? endedAt,
@@ -457,8 +508,9 @@ async function processarPayloadBruto(payload, uid) {
     idRegistro = resultado?.id ?? null;
     console.log(
       '[quiz_intelligence] performance salva →', quizId,
-      `| ${acertos}/${totalQuestoes}`,
-      `(${Math.round(taxaAcerto * 100)}%)`,
+      `| acertos: ${acertos}/${respondidas} respondidas (de ${totalQuestoes} total)`,
+      `| não respondidas: ${naoRespondidas}`,
+      `| taxa: ${Math.round(taxaAcerto * 100)}%`,
       `| ${tempoGastoSeg}s`,
       revealed ? '| revelado' : ''
     );
