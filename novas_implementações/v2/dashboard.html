@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="../../shared/css/audio/audio-btns.css" />
   <link rel="stylesheet" href="../../shared/css/themes/semestre-picker.css" />
 
+  <!-- ═══ Estilos do Dashboard (dashboard.css deve vir ANTES de dashboard_cards.css) ═══ -->
   <link rel="stylesheet" href="css/dashboard.css" />
   <link rel="stylesheet" href="css/dashboard_cards.css" />
 
@@ -24,6 +25,8 @@
     window.__NEXUS_CONTEXT__ = { tipos: ['dashboard'] };
   </script>
 
+  <!-- ═══ Estilos locais — componentes exclusivos desta página
+       (heatmap de horários, listas de navegação/quiz) ═══ -->
   <style>
     .heatmap-chart {
       display: flex;
@@ -79,10 +82,13 @@
        SIDEBAR
   ══════════════════════════════════════════════════ -->
   <aside class="sidebar">
+
+    <!-- ── Logo ── -->
     <div class="sidebar-logo">
       <div id="header-logo-wrap" class="header__logo"></div>
     </div>
 
+    <!-- ── Navegação principal ── -->
     <nav class="sidebar-nav">
       <a class="nav-item active" href="#">
         <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -143,6 +149,7 @@
       </a>
     </nav>
 
+    <!-- ── Sessão ativa ── -->
     <div class="sidebar-footer">
       <div class="session-card">
         <div class="session-header">
@@ -161,7 +168,7 @@
   ══════════════════════════════════════════════════ -->
   <main class="main">
 
-    <!-- TOPBAR -->
+    <!-- ── TOPBAR ── -->
     <header class="topbar">
       <div class="topbar-left">
         <div class="breadcrumb">
@@ -179,7 +186,9 @@
     </header>
 
 
-    <!-- CONTENT -->
+    <!-- ══════════════════════════════════════════════════
+         CONTENT
+    ══════════════════════════════════════════════════ -->
     <div class="content">
 
       <!-- ── PAGE HEADER ───────────────────────────────────── -->
@@ -287,6 +296,7 @@
         </div>
 
         <div class="stat-grid">
+
           <div class="stat-card c-purple">
             <div class="stat-icon ic-purple">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -300,7 +310,7 @@
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path d="M5 8V2M2 5l3-3 3 3"/>
               </svg>
-              <span id="stat-delta-tempo" class="delta-sub">—</span>
+              <span class="delta-sub" id="stat-delta-tempo">—</span>
             </div>
             <svg class="stat-sparkline" data-real width="80" height="32" viewBox="0 0 80 32">
               <polyline points="0,28 13,22 26,20 39,15 52,10 65,8 80,4" fill="none" stroke="#6C63FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -361,7 +371,7 @@
                 <circle cx="5" cy="5" r="4" fill="none"/>
                 <path d="M3 5l1.5 1.5L7 3"/>
               </svg>
-              <span id="stat-ultimo-acesso" class="delta-sub">—</span>
+              <span class="delta-sub" id="stat-ultimo-acesso">—</span>
             </div>
             <svg class="stat-sparkline" data-real width="80" height="32" viewBox="0 0 80 32">
               <polyline points="0,26 13,14 26,22 39,12 52,18 65,8 80,4" fill="none" stroke="#4FA8E8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -385,15 +395,18 @@
               <span class="delta-sub">tempoTotalGeral ÷ totalSessoes</span>
             </div>
           </div>
+
         </div>
       </section>
 
 
-      <!-- ── LINHA 1: SCORE · TENDÊNCIA · PREVISÃO ──────────
+      <!-- ══════════════════════════════════════════════════
+           LINHA 1: SCORE · TENDÊNCIA · PREVISÃO
            Três cards de inteligência lado a lado.
            Fonte: quiz_intelligence
-           Preenchidos por: renderScore(), renderTrend(), renderPrediction()
-           em dashboard_render.js ── -->
+           Preenchidos por: renderScore(), renderTrend(),
+           renderPrediction() em dashboard_render.js
+      ══════════════════════════════════════════════════ -->
       <div class="intel-grid-3col">
 
         <!-- Score Evolutivo — Fase 2.1 -->
@@ -403,36 +416,36 @@
             <div class="section-line"></div>
           </div>
 
-<div class="score-card" id="score-card">
-  <div class="intel-head">
-    <span class="intel-icon" aria-hidden="true">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
-        <circle cx="7" cy="7" r="5.5"/>
-        <circle cx="7" cy="7" r="2"/>
-      </svg>
-    </span>
-    <span class="intel-badge score-nivel" id="score-nivel">Nível —</span>
-  </div>
+          <div class="score-card" id="score-card">
+            <div class="intel-head">
+              <span class="intel-icon" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <circle cx="7" cy="7" r="5.5"/>
+                  <circle cx="7" cy="7" r="2"/>
+                </svg>
+              </span>
+              <span class="intel-badge score-nivel" id="score-nivel">Nível —</span>
+            </div>
 
-  <div class="intel-hero score-top-row">
-    <div class="score-ring-wrap">
-      <div class="score-ring" id="score-ring-el" aria-hidden="true">
-        <div class="score-ring-inner">
-          <div class="score-ring-icon" id="score-ring-icon"></div>
-        </div>
-      </div>
-    </div>
-    <div class="score-value-row">
-      <span class="score-number" id="score-geral">—</span>
-      <span class="score-ring-label">/ 100</span>
-    </div>
-  </div>
+            <div class="intel-hero score-top-row">
+              <div class="score-ring-wrap">
+                <div class="score-ring" id="score-ring-el" aria-hidden="true">
+                  <div class="score-ring-inner">
+                    <div class="score-ring-icon" id="score-ring-icon"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="score-value-row">
+                <span class="score-number" id="score-geral">—</span>
+                <span class="score-ring-label">/ 100</span>
+              </div>
+            </div>
 
-  <div class="intel-footer">
-    <div class="intel-footer-meta" id="score-tentativas">— tentativas analisadas</div>
-    <div class="intel-footer-desc" id="score-descricao">Carregando análise…</div>
-  </div>
-</div>
+            <div class="intel-footer">
+              <div class="intel-footer-meta" id="score-tentativas">— tentativas analisadas</div>
+              <div class="intel-footer-desc" id="score-descricao">Carregando análise…</div>
+            </div>
+          </div>
         </section>
 
         <!-- Tendência do Aluno — Fase 2.2 -->
@@ -442,21 +455,21 @@
             <div class="section-line"></div>
           </div>
 
-<div class="trend-card" id="trend-card">
+          <div class="trend-card" id="trend-card">
             <div class="trend-arrow-bg" aria-hidden="true">
               <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path class="trend-arrow-path" d="M40 70 L40 10 M20 30 L40 10 L60 30" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </div>
-<div class="trend-header">
-  <span class="trend-header-badge">
-    <svg class="trend-header-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-      <path d="M1 9l3.5-4 2.5 2.5L12 2"/>
-      <path d="M8.5 2H12v3.5"/>
-    </svg>
-    <span class="score-nivel-text">Tendência do Aluno</span>
-  </span>
-</div>
+            <div class="trend-header">
+              <span class="trend-header-badge">
+                <svg class="trend-header-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                  <path d="M1 9l3.5-4 2.5 2.5L12 2"/>
+                  <path d="M8.5 2H12v3.5"/>
+                </svg>
+                <span class="score-nivel-text">Tendência do Aluno</span>
+              </span>
+            </div>
             <div class="trend-body">
               <div class="trend-direcao" id="trend-direcao">—</div>
               <div class="trend-diferenca" id="trend-diferenca">Carregando…</div>
@@ -494,18 +507,22 @@
       </div>
 
 
-      <!-- ── LINHA 2: FRAQUEZAS · CONSISTÊNCIA ─────────────
-           60/40 — Fraquezas tem mais conteúdo, recebe mais espaço.
-           Fonte: quiz_intelligence · fraquezasPorDisciplina | historico_diario
-           Preenchidos por: renderWeaknesses() | _renderConsistencia() ── -->
+      <!-- ══════════════════════════════════════════════════
+           LINHA 2: FRAQUEZAS · CONSISTÊNCIA
+           60/40 — Fraquezas tem mais conteúdo, recebe mais
+           espaço.
+           Fonte: quiz_intelligence.fraquezasPorDisciplina |
+           historico_diario
+           Preenchidos por: renderWeaknesses() |
+           _renderConsistencia()
+      ══════════════════════════════════════════════════ -->
       <div class="intel-grid-weak-consist">
 
         <!-- Fraquezas por Disciplina — Fase 2.4 -->
         <section class="intel-section-full">
           <div class="section-header">
             <span class="section-title">Fraquezas por Disciplina</span>
-            <span class="section-count">
-            </span>
+            <span class="section-count"></span>
             <div class="section-line"></div>
           </div>
 
@@ -570,7 +587,7 @@
                 </div>
                 <div style="flex:1">
                   <div class="perf-name">Tendência semanal</div>
-                  <div id="consistencia-tendencia" class="consistencia-tend" style="margin-top:4px">—</div>
+                  <div class="consistencia-tend" id="consistencia-tendencia" style="margin-top:4px">—</div>
                 </div>
               </div>
 
@@ -581,10 +598,12 @@
       </div>
 
 
-      <!-- ── PERFORMANCE + ACTIVITY ─────────────────────────── -->
+      <!-- ══════════════════════════════════════════════════
+           PERFORMANCE + ACTIVITY
+      ══════════════════════════════════════════════════ -->
       <div class="two-col">
 
-        <!-- PERFORMANCE -->
+        <!-- ── PERFORMANCE ── -->
         <div class="perf-card">
           <div class="section-header">
             <span class="section-title">Desempenho</span>
@@ -684,7 +703,7 @@
         </div>
 
 
-        <!-- ACTIVITY TIMELINE -->
+        <!-- ── ACTIVITY TIMELINE ── -->
         <div class="activity-card">
           <div class="section-header">
             <span class="section-title">Atividade recente</span>
@@ -696,8 +715,11 @@
       </div>
 
 
-      <!-- ── NAVEGAÇÃO E COMPORTAMENTO REAL ──────────────────
-           Dados de pages, navigation, hourHeatmap, deviceType, quizEvents ── -->
+      <!-- ══════════════════════════════════════════════════
+           NAVEGAÇÃO E COMPORTAMENTO REAL
+           Dados de pages, navigation, hourHeatmap,
+           deviceType, quizEvents
+      ══════════════════════════════════════════════════ -->
       <div class="two-col">
 
         <div class="nav-section-wrap">
@@ -771,7 +793,9 @@
       </section>
 
 
-      <!-- ── DISCIPLINES + ACHIEVEMENTS ────────────────────── -->
+      <!-- ══════════════════════════════════════════════════
+           DISCIPLINES + ACHIEVEMENTS
+      ══════════════════════════════════════════════════ -->
       <div class="three-col">
 
         <div class="disc-card">

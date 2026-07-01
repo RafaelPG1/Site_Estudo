@@ -17,6 +17,22 @@
      ✔ containers
      ✔ tipografia
      ✔ estrutura da página
+
+   ─────────────────────────────────────────────
+   NOTA DE REFATORAÇÃO (organização, sem mudança
+   visual/funcional)
+   ─────────────────────────────────────────────
+   · Removida 1 duplicata exata de regra (bloco
+     "ancora o tooltip à direita", que estava
+     colado duas vezes seguidas no arquivo
+     original). Como as duas cópias eram
+     idênticas, a remoção não altera o resultado
+     visual.
+   · Linhas em branco repetidas foram normalizadas
+     para manter espaçamento consistente entre
+     blocos.
+   · Nenhum seletor, valor, ordem de regras
+     conflitantes ou breakpoint foi alterado.
 */
  
 /* ─── TOKENS ─────────────────────────────────────────────── */
@@ -340,8 +356,6 @@ body {
   gap: 24px;
 }
 
-
-
 .greeting {
   font-size: 12px;
   font-weight: 500;
@@ -442,7 +456,6 @@ body {
   color: var(--text-1);
   letter-spacing: -.2px;
 }
-
 
 .section-line {
   flex: 1;
@@ -834,7 +847,6 @@ body {
   margin-bottom: 10px;
 }
 
-
 .disc-pct {
   display: flex;
   justify-content: space-between;
@@ -947,7 +959,6 @@ body {
   .page-header { flex-direction: column; gap: 16px; }
   .motivational { max-width: 100%; }
 }
-
 
 /* ═══════════════════════════════════════════════════════════
    FASE 2.5.5A — CLASSES DE MÉTRICAS DE SESSÃO
@@ -1563,22 +1574,4 @@ body {
 .ach-info-btn:hover,
 .ach-info-btn:focus {
   opacity: 1;
-}
-
-/* Em cards com pouco espaço horizontal, ancora o tooltip à direita */
-.score-vazio .empty-state-info-btn::after,
-.trend-indeterminado .empty-state-info-btn::after,
-.prediction-vazio .empty-state-info-btn::after {
-  left: auto;
-  right: 0;
-  transform: translateX(0) translateY(4px);
-}
-
-.score-vazio .empty-state-info-btn:hover::after,
-.score-vazio .empty-state-info-btn:focus::after,
-.trend-indeterminado .empty-state-info-btn:hover::after,
-.trend-indeterminado .empty-state-info-btn:focus::after,
-.prediction-vazio .empty-state-info-btn:hover::after,
-.prediction-vazio .empty-state-info-btn:focus::after {
-  transform: translateX(0) translateY(0);
 }
