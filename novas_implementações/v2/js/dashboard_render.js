@@ -75,6 +75,7 @@ import { State } from './dashboard_data.js';
 /* ══════════════════════════════════════════════
    CAMADA 5 — COORDENADORA DE RENDER (intelligence)
 ══════════════════════════════════════════════ */
+
 export function renderDashboardIntelligence(relatorio) {
   if (!relatorio) {
     console.log('[dashboard] renderDashboardIntelligence: relatorio ausente — renderizando estado vazio.');
@@ -86,68 +87,55 @@ export function renderDashboardIntelligence(relatorio) {
   renderPrediction(relatorio);
   renderTimeline(relatorio);
   renderAchievements(relatorio);
+  renderInsight(relatorio);
+}
+
+/* Faixa de insight — abaixo da linha Score · Tendência · Previsão.
+   Zero cálculo: apenas escolhe uma das duas mensagens conforme
+   a presença (ou não) de um scoreGeral válido no relatorio,
+   o mesmo guard já usado por renderScore(). */
+export function renderInsight(relatorio) {
+  const temDados = !!(relatorio?.scoreEvolutivo && relatorio.scoreEvolutivo.scoreGeral !== null && relatorio.scoreEvolutivo.scoreGeral !== undefined);
+
+  const elBanner = document.getElementById('intel-insight-banner');
+  const elIcon   = document.getElementById('intel-insight-icon');
+  const elText   = document.getElementById('intel-insight-text');
+  if (!elBanner) return;
+
+  if (!temDados) {
+    elBanner.className = 'intel-insight-banner is-vazio';
+    if (elIcon) elIcon.textContent = '💡';
+    if (elText) elText.textContent = 'Continue praticando! Quanto mais quizzes você fizer, mais precisas serão suas análises.';
+    return;
+  }
+
+  elBanner.className = 'intel-insight-banner is-preenchido';
+  if (elIcon) elIcon.textContent = '🚀';
+  if (elText) elText.textContent = 'Excelente progresso! Você está no caminho certo para alcançar seus objetivos.';
 }
 /* ══════════════════════════════════════════════
    CAMADA 5 — RENDERIZADORES
 ══════════════════════════════════════════════ */
 
 /* Fase 2.1 — Score evolutivo (0-100) + nivel estimado */
+
 export function renderScore(relatorio) {
   const score = relatorio?.scoreEvolutivo;
 
-const elCard        = document.getElementById('score-card');
-  const elGeral       = document.getElementById('score-geral');
-  const elNivel       = document.getElementById('score-nivel');
-  const elTentativas  = document.getElementById('score-tentativas');
-  const elDescricao   = document.getElementById('score-descricao');
-  const elRingIcon    = document.getElementById('score-ring-icon');
+  const elCard       = document.getElementById('score-card');
+  const elGeral      = document.getElementById('score-geral');
+  const elNivel      = document.getElementById('score-nivel');
+  const elRingIcon   = document.getElementById('score-ring-icon');
+  const elHeadline   = document.getElementById('score-headline');
+  const elDescricao  = document.getElementById('score-descricao');
+  const elChipText   = document.getElementById('score-chip-text');
+  const elTentativas = document.getElementById('score-tentativas');
+  const elQuestoes   = document.getElementById('score-questoes');
 
   if (!elCard) return;
 
-  if (!score || score.scoreGeral === null || score.scoreGeral === undefined) {
-    elCard.className = 'score-card score-vazio';
-
-    elGeral.textContent = '0';
-
-    if (elRingIcon) {
-      elRingIcon.innerHTML = `
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="1.5"
-             stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="9"/>
-          <path d="M8 12h4l2-4"/>
-          <circle cx="12" cy="16" r=".5" fill="currentColor"/>
-        </svg>`;
-    }
-
-    elNivel.innerHTML = `
-      <span class="score-nivel-text">Score Evolutivo</span>
-      <span class="empty-state-info-btn" tabindex="0"
-            aria-label="Como o Score Evolutivo é calculado"
-            data-tooltip="Calculado com base na sua taxa de acerto, tendência de melhora e consistência entre quizzes.">ⓘ</span>`;
-
-    elTentativas.textContent = '';
-
-    elDescricao.innerHTML = `
-      <span class="empty-state-msg">
-        Complete alguns quizzes para calcular seu Score Evolutivo.
-        <br><span class="empty-state-hint">Mínimo de 2 tentativas registradas.</span>
-      </span>`;
-
-    const ringElVazio = elCard.querySelector('.score-ring');
-    if (ringElVazio) ringElVazio.style.setProperty('--score-pct', '0%');
-
-    const labelVazio = elCard.querySelector('.score-ring-label');
-    if (labelVazio) labelVazio.textContent = '/ 100';
-
-    return;
-  }
-
-const scoreArredondado = Math.round(score.scoreGeral);
-  elGeral.textContent = scoreArredondado;
-
-  /* O ícone central nunca é removido do DOM — apenas fica mais discreto
-     quando há um Score calculado (controlado via CSS, não aqui). */
+  /* Ícone do anel — igual nos dois estados, apenas fica mais
+     discreto via CSS quando há Score calculado. */
   if (elRingIcon && !elRingIcon.innerHTML) {
     elRingIcon.innerHTML = `
       <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
@@ -158,6 +146,31 @@ const scoreArredondado = Math.round(score.scoreGeral);
         <circle cx="12" cy="16" r=".5" fill="currentColor"/>
       </svg>`;
   }
+
+  if (!score || score.scoreGeral === null || score.scoreGeral === undefined) {
+    elCard.className = 'score-card score-vazio';
+
+    elGeral.textContent = '0';
+
+    elNivel.innerHTML = `<span class="score-nivel-text">Sem dados</span>`;
+
+    if (elHeadline)  elHeadline.textContent  = 'Seu score está começando!';
+    if (elDescricao) elDescricao.textContent = 'Complete quizzes para acumular pontos e acompanhar sua evolução.';
+    if (elChipText)  elChipText.textContent  = 'Mínimo de 2 tentativas para gerar seu score.';
+    if (elTentativas) elTentativas.textContent = '—';
+    if (elQuestoes)   elQuestoes.textContent   = '—';
+
+    const ringElVazio = elCard.querySelector('.score-ring');
+    if (ringElVazio) ringElVazio.style.setProperty('--score-pct', '0%');
+
+    const labelVazio = elCard.querySelector('.score-ring-label');
+    if (labelVazio) labelVazio.textContent = '/ 100';
+
+    return;
+  }
+
+  const scoreArredondado = Math.round(score.scoreGeral);
+  elGeral.textContent = scoreArredondado;
 
   /* Atualiza o anel de progresso (puramente visual — não afeta o
      valor exibido nem nenhum cálculo). Usa requestAnimationFrame
@@ -177,13 +190,11 @@ const scoreArredondado = Math.round(score.scoreGeral);
     'iniciante':     'Iniciante',
     'fundamentos':   'Fundamentos',
   };
-const nivelChave = score.nivelEstimado ?? 'indeterminado';
+  const nivelChave = score.nivelEstimado ?? 'indeterminado';
   elNivel.innerHTML = `<span class="score-nivel-text">Nível: ${NIVEL_LABEL[nivelChave] ?? nivelChave}</span>`;
-
   elCard.className = `score-card score-nivel-${nivelChave}`;
 
-  const total = score.totalTentativas ?? 0;
-  elTentativas.textContent = `${total} tentativa${total !== 1 ? 's' : ''} analisada${total !== 1 ? 's' : ''}`;
+  if (elHeadline) elHeadline.textContent = `Nível ${NIVEL_LABEL[nivelChave] ?? nivelChave}`;
 
   const DESCRICAO = {
     'melhorando':    'Sua evolução demonstra crescimento constante.',
@@ -192,33 +203,33 @@ const nivelChave = score.nivelEstimado ?? 'indeterminado';
     'indeterminado': 'Realize mais quizzes para gerar um perfil completo.',
   };
   const consistencia = score.composicao?.consistencia ?? 'indeterminado';
-  elDescricao.textContent = DESCRICAO[consistencia] ?? 'Continue praticando para consolidar seu perfil.';
+  if (elDescricao) elDescricao.textContent = DESCRICAO[consistencia] ?? 'Continue praticando para consolidar seu perfil.';
+
+  const total = score.totalTentativas ?? 0;
+  if (elTentativas) elTentativas.textContent = total;
+  if (elChipText)   elChipText.textContent   = `${total} tentativa${total !== 1 ? 's' : ''} analisada${total !== 1 ? 's' : ''}`;
+
+  const totalQuestoes = relatorio?.totalQuestoes ?? 0;
+  if (elQuestoes) elQuestoes.textContent = totalQuestoes;
 }
 
 /* Fase 2.2 — Tendencia do aluno */
+
 export function renderTrend(relatorio) {
   const tendencia = relatorio?.tendenciaDoAluno;
 
-  const elCard      = document.getElementById('trend-card');
-  const elDirecao   = document.getElementById('trend-direcao');
-  const elDiferenca = document.getElementById('trend-diferenca');
-  const elConfianca = document.getElementById('trend-confianca');
+  const elCard        = document.getElementById('trend-card');
+  const elDirecao      = document.getElementById('trend-direcao');
+  const elDiferenca      = document.getElementById('trend-diferenca');
+  const elConfianca        = document.getElementById('trend-confianca');
+  const elChartBadge          = document.getElementById('trend-chart-badge');
 
   if (!elCard) return;
 
-if (!tendencia || tendencia.direcao === 'indeterminado') {
+  if (!tendencia || tendencia.direcao === 'indeterminado') {
     elCard.className = 'trend-card trend-indeterminado';
 
-    const elHeaderBadge = elCard.querySelector('.trend-header-badge');
-    if (elHeaderBadge) {
-      elHeaderBadge.innerHTML = `
-        <span class="score-nivel-text">Tendência do Aluno</span>
-        <span class="empty-state-info-btn" tabindex="0"
-              aria-label="Como a tendência é calculada"
-              data-tooltip="Compara sua taxa de acerto recente com períodos anteriores para identificar se você está melhorando, estável ou piorando.">ⓘ</span>`;
-    }
-
-    elDirecao.textContent = '—';
+    elDirecao.textContent = 'Ainda sem dados suficientes';
 
     elDiferenca.innerHTML = `
       <span class="empty-state-msg">
@@ -228,6 +239,7 @@ if (!tendencia || tendencia.direcao === 'indeterminado') {
       </span>`;
 
     elConfianca.textContent = '';
+    if (elChartBadge) elChartBadge.textContent = '—';
     return;
   }
 
@@ -257,8 +269,9 @@ if (!tendencia || tendencia.direcao === 'indeterminado') {
     'baixa': 'Baixa confiança',
   };
   elConfianca.textContent = CONFIANCA_LABEL[tendencia.confianca] ?? tendencia.confianca ?? '';
-}
 
+  if (elChartBadge) elChartBadge.textContent = `${sinal}${pct}%`;
+}
 
 
 /* Fase 2.4 — Fraquezas por disciplina
@@ -456,22 +469,35 @@ export function renderWeaknesses(relatorio) {
 }
 
 /* Fase 2.5 — Previsao simples */
+
 export function renderPrediction(relatorio) {
   const previsao = relatorio?.previsaoSimples;
 
   const elCard      = document.getElementById('prediction-card');
+  const elBadge     = document.getElementById('prediction-badge');
   const elNumero    = document.getElementById('prediction-numero');
   const elDirecao   = document.getElementById('prediction-direcao');
+  const elFill      = document.getElementById('prediction-slider-fill');
+  const elHandle    = document.getElementById('prediction-slider-handle');
   const elAmostras  = document.getElementById('prediction-amostras');
   const elDescricao = document.getElementById('prediction-descricao');
 
   if (!elCard) return;
+
+  const PROBABILIDADE_LABEL = {
+    'alta':  'Alta probabilidade',
+    'media': 'Probabilidade moderada',
+    'média': 'Probabilidade moderada',
+    'baixa': 'Baixa probabilidade',
+  };
 
   if (!previsao || previsao.previsaoTaxaAcertoPct === null || previsao.previsaoTaxaAcertoPct === undefined) {
     elCard.className = 'prediction-card prediction-vazio';
 
     const amostrasAtuais = previsao?.amostras ?? 0;
     const faltam         = Math.max(0, 3 - amostrasAtuais);
+
+    if (elBadge) elBadge.textContent = 'Sem dados';
 
     elNumero.innerHTML = `
       <span class="empty-icon" aria-hidden="true">
@@ -483,11 +509,10 @@ export function renderPrediction(relatorio) {
         </svg>
       </span>`;
 
-    elDirecao.innerHTML = `
-      <span class="empty-state-title">Previsão de Desempenho</span>
-      <span class="empty-state-info-btn" tabindex="0"
-            aria-label="Como a previsão é calculada"
-            data-tooltip="Usa regressão linear sobre suas tentativas para estimar sua próxima taxa de acerto. Quanto mais tentativas, maior a precisão.">ⓘ</span>`;
+    elDirecao.textContent = 'Previsão indisponível no momento';
+
+    if (elFill)   elFill.style.width  = '0%';
+    if (elHandle) elHandle.style.left = '0%';
 
     elAmostras.textContent = amostrasAtuais > 0
       ? `${amostrasAtuais} de 3 tentativas registradas`
@@ -495,9 +520,9 @@ export function renderPrediction(relatorio) {
 
     elDescricao.innerHTML = faltam > 0
       ? `<span class="empty-state-msg">
-           Ainda não é possível gerar uma previsão.
+           Realize mais quizzes para ativar a previsão de desempenho.
            <br><span class="empty-state-hint">
-             Realize mais ${faltam} quiz${faltam !== 1 ? 'zes' : ''} para ativar esta análise.
+             Mínimo de 3 quizzes para ativar esta análise.
            </span>
          </span>`
       : `<span class="empty-state-msg">
@@ -507,6 +532,7 @@ export function renderPrediction(relatorio) {
     return;
   }
 
+  const pctSeguro = Math.max(0, Math.min(100, previsao.previsaoTaxaAcertoPct));
   elNumero.textContent = `${previsao.previsaoTaxaAcertoPct}%`;
 
   const DIRECAO_ICONE = {
@@ -526,19 +552,16 @@ export function renderPrediction(relatorio) {
 
   elCard.className = `prediction-card prediction-${direcaoChave}`;
 
+  if (elFill)   elFill.style.width  = `${pctSeguro}%`;
+  if (elHandle) elHandle.style.left = `${pctSeguro}%`;
+
+  const probabilidadeLabel = PROBABILIDADE_LABEL[previsao.confianca] ?? 'Previsão disponível';
+  if (elBadge) elBadge.textContent = probabilidadeLabel;
+
   const amostras = previsao.amostras ?? 0;
   elAmostras.textContent = `${amostras} amostra${amostras !== 1 ? 's' : ''} analisada${amostras !== 1 ? 's' : ''}`;
 
-  const CONFIANCA_LABEL = {
-    'alta':  'Alta confiança',
-    'media': 'Confiança média',
-    'média': 'Confiança média',
-    'baixa': 'Baixa confiança',
-  };
-  const confiancaLabel = CONFIANCA_LABEL[previsao.confianca] ?? previsao.confianca ?? '';
-  elDescricao.textContent = confiancaLabel
-    ? `Estimativa via regressão linear · ${confiancaLabel}`
-    : 'Estimativa via regressão linear.';
+  elDescricao.textContent = `Com base no seu desempenho atual, você tem ${probabilidadeLabel.toLowerCase()} de alcançar um excelente resultado.`;
 }
 
 

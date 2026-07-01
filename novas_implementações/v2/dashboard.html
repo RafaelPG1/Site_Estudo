@@ -411,19 +411,12 @@
 
         <!-- Score Evolutivo — Fase 2.1 -->
         <section>
-          <div class="section-header">
-            <span class="section-title">Score Evolutivo</span>
-            <div class="section-line"></div>
-          </div>
-
           <div class="score-card" id="score-card">
             <div class="intel-head">
-              <span class="intel-icon" aria-hidden="true">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <circle cx="7" cy="7" r="5.5"/>
-                  <circle cx="7" cy="7" r="2"/>
-                </svg>
-              </span>
+              <h3 class="intel-title">Score Evolutivo</h3>
+              <span class="empty-state-info-btn intel-title-info" tabindex="0"
+                    aria-label="Como o Score Evolutivo é calculado"
+                    data-tooltip="Calculado com base na sua taxa de acerto, tendência de melhora e consistência entre quizzes.">ⓘ</span>
               <span class="intel-badge score-nivel" id="score-nivel">Nível —</span>
             </div>
 
@@ -435,41 +428,74 @@
                   </div>
                 </div>
               </div>
-              <div class="score-value-row">
-                <span class="score-number" id="score-geral">—</span>
-                <span class="score-ring-label">/ 100</span>
+              <div class="score-value-col">
+                <div class="score-value-row">
+                  <span class="score-number" id="score-geral">—</span>
+                  <span class="score-ring-label">/ 100</span>
+                </div>
+                <div class="score-headline" id="score-headline">Seu score está começando!</div>
+                <div class="score-desc" id="score-descricao">Complete quizzes para acumular pontos e acompanhar sua evolução.</div>
               </div>
             </div>
 
-            <div class="intel-footer">
-              <div class="intel-footer-meta" id="score-tentativas">— tentativas analisadas</div>
-              <div class="intel-footer-desc" id="score-descricao">Carregando análise…</div>
+            <div class="score-chip" id="score-chip">
+              <span class="score-chip-icon" aria-hidden="true">★</span>
+              <span id="score-chip-text">Mínimo de 2 tentativas para gerar seu score.</span>
+            </div>
+
+            <div class="intel-footer score-stats-footer">
+              <div class="score-stat">
+                <span class="score-stat-icon" aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="3" y="2" width="8" height="10.5" rx="1.5"/>
+                    <path d="M5.5 2V1.3a.8.8 0 01.8-.8h1.4a.8.8 0 01.8.8V2M5 6.5h4M5 9h2.5"/>
+                  </svg>
+                </span>
+                <div class="score-stat-body">
+                  <span class="score-stat-label">Tentativas</span>
+                  <span class="score-stat-value" id="score-tentativas">—</span>
+                </div>
+              </div>
+              <div class="score-stat">
+                <span class="score-stat-icon" aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="7" cy="7" r="5.5"/>
+                    <path d="M4.5 7l1.7 1.7L9.5 5"/>
+                  </svg>
+                </span>
+                <div class="score-stat-body">
+                  <span class="score-stat-label">Questões respondidas</span>
+                  <span class="score-stat-value" id="score-questoes">—</span>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
         <!-- Tendência do Aluno — Fase 2.2 -->
         <section>
-          <div class="section-header">
-            <span class="section-title">Tendência do Aluno</span>
-            <div class="section-line"></div>
-          </div>
-
           <div class="trend-card" id="trend-card">
-            <div class="trend-arrow-bg" aria-hidden="true">
-              <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path class="trend-arrow-path" d="M40 70 L40 10 M20 30 L40 10 L60 30" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
+            <div class="intel-head">
+              <h3 class="intel-title">Tendência do Aluno</h3>
+              <span class="empty-state-info-btn intel-title-info" tabindex="0"
+                    aria-label="Como a tendência é calculada"
+                    data-tooltip="Compara sua taxa de acerto recente com períodos anteriores para identificar se você está melhorando, estável ou piorando.">ⓘ</span>
+              <span class="intel-badge trend-badge-vazio">Sem dados</span>
             </div>
-            <div class="trend-header">
-              <span class="trend-header-badge">
-                <svg class="trend-header-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                  <path d="M1 9l3.5-4 2.5 2.5L12 2"/>
-                  <path d="M8.5 2H12v3.5"/>
+
+            <div class="trend-chart-wrap" aria-hidden="true">
+              <div class="trend-chart-axis">
+                <span>100</span><span>75</span><span>50</span><span>25</span><span>0</span>
+              </div>
+              <div class="trend-chart-plot">
+                <svg class="trend-chart-svg" viewBox="0 0 200 70" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path class="trend-chart-area" d="M0 55 C25 52 45 40 65 38 C90 36 110 30 135 24 C160 18 180 12 200 8 L200 70 L0 70 Z"/>
+                  <path class="trend-chart-line" d="M0 55 C25 52 45 40 65 38 C90 36 110 30 135 24 C160 18 180 12 200 8"/>
                 </svg>
-                <span class="score-nivel-text">Tendência do Aluno</span>
-              </span>
+                <span class="trend-chart-badge" id="trend-chart-badge">—</span>
+              </div>
             </div>
+
             <div class="trend-body">
               <div class="trend-direcao" id="trend-direcao">—</div>
               <div class="trend-diferenca" id="trend-diferenca">Carregando…</div>
@@ -480,23 +506,30 @@
 
         <!-- Previsão — Fase 2.5 -->
         <section>
-          <div class="section-header">
-            <span class="section-title">Previsão</span>
-            <div class="section-line"></div>
-          </div>
-
           <div class="prediction-card" id="prediction-card">
+            <div class="intel-head">
+              <h3 class="intel-title">Previsão</h3>
+              <span class="empty-state-info-btn intel-title-info" tabindex="0"
+                    aria-label="Como a previsão é calculada"
+                    data-tooltip="Usa regressão linear sobre suas tentativas para estimar sua próxima taxa de acerto. Quanto mais tentativas, maior a precisão.">ⓘ</span>
+              <span class="intel-badge prediction-badge" id="prediction-badge">—</span>
+            </div>
+
             <div class="prediction-top">
               <div class="prediction-numero" id="prediction-numero">—</div>
               <div class="prediction-direcao" id="prediction-direcao">—</div>
             </div>
-            <div class="prediction-chart-wrap" aria-hidden="true">
-              <svg class="prediction-chart-svg" viewBox="0 0 200 48" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path class="prediction-chart-area" d="M0 40 C30 38 60 30 100 22 C140 14 170 10 200 4 L200 48 L0 48 Z"/>
-                <path class="prediction-chart-line" d="M0 40 C30 38 60 30 100 22 C140 14 170 10 200 4"/>
-                <path class="prediction-chart-proj" d="M200 4 L230 0" stroke-dasharray="4 3"/>
-              </svg>
+
+            <div class="prediction-slider-wrap" aria-hidden="true">
+              <div class="prediction-slider-track">
+                <div class="prediction-slider-fill" id="prediction-slider-fill" style="width:0%"></div>
+                <div class="prediction-slider-handle" id="prediction-slider-handle" style="left:0%"></div>
+              </div>
+              <div class="prediction-slider-scale">
+                <span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span>
+              </div>
             </div>
+
             <div class="prediction-bottom">
               <div class="prediction-amostras" id="prediction-amostras">— amostras analisadas</div>
               <div class="prediction-descricao" id="prediction-descricao">Carregando previsão…</div>
@@ -504,6 +537,12 @@
           </div>
         </section>
 
+      </div>
+
+      <!-- Faixa de insight — Camada 5. Preenchida por renderInsight() em dashboard_render.js -->
+      <div class="intel-insight-banner" id="intel-insight-banner">
+        <span class="intel-insight-icon" id="intel-insight-icon" aria-hidden="true">💡</span>
+        <span class="intel-insight-text" id="intel-insight-text">Carregando recomendações…</span>
       </div>
 
 

@@ -337,9 +337,58 @@ body {
    O componente visual vem de semestre-picker.css (compartilhado
    com o Quiz). Apenas desloca o painel 10px para a esquerda
    para alinhar melhor com o layout do Dashboard. */
+
 #semestre-selector-wrap .sp-panel {
   left: -70px;
 }
+
+/* ─── FAIXA DE INSIGHT DA CAMADA 5 ───────────────────────────
+   Mensagem contextual exibida logo abaixo da linha
+   Score · Tendência · Previsão. Populada por renderInsight()
+   em dashboard_render.js. Conteúdo muda conforme haver ou
+   não relatorio de inteligência disponível — nenhum cálculo
+   novo, apenas seleção de texto. */
+.intel-insight-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 14px 24px;
+  font-size: 13px;
+  color: var(--text-2);
+  text-align: center;
+  transition: border-color .2s ease, background .2s ease;
+}
+
+.intel-insight-icon {
+  font-size: 15px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.intel-insight-banner.is-vazio {
+  border-color: rgba(108,99,255,.2);
+}
+
+.intel-insight-banner.is-preenchido {
+  border-color: rgba(61,220,132,.25);
+  background: rgba(61,220,132,.04);
+}
+
+@media (max-width: 768px) {
+  .intel-insight-banner {
+    padding: 12px 16px;
+    font-size: 12.5px;
+    text-align: left;
+  }
+}
+
+
+
+
 /* ─── CONTENT ────────────────────────────────────────────── */
 .content {
   padding: 36px 32px 60px;

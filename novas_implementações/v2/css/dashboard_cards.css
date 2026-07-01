@@ -96,10 +96,9 @@
 /* ── Conteúdo: linha principal (anel + valor) ── */
 .score-top-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 20px;
 }
-
 .score-ring-wrap {
   display: flex;
   align-items: center;
@@ -160,6 +159,128 @@
   white-space: nowrap;
 }
 
+/* ── Título interno do card (padrão compartilhado por
+     Score / Tendência / Previsão) ── */
+.intel-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--text-1);
+  letter-spacing: -.2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.intel-title-info {
+  flex-shrink: 0;
+}
+
+/* ── Coluna de valor (substitui a antiga linha única) ── */
+.score-value-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.score-headline {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-1);
+  margin-top: 2px;
+}
+
+.score-desc {
+  font-size: 12px;
+  color: var(--text-3);
+  line-height: 1.5;
+}
+
+/* ── Chip inferior (dica no estado vazio / resumo no preenchido) ── */
+.score-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(108,99,255,.2);
+  border-radius: var(--r-sm);
+  padding: 9px 12px;
+  font-size: 12px;
+  color: var(--accent-lite);
+  position: relative;
+  z-index: 1;
+}
+
+.score-chip-icon {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--amber);
+}
+
+.score-vazio .score-chip {
+  background: var(--border);
+  border-color: var(--border-2);
+  color: var(--text-2);
+}
+
+.score-vazio .score-chip .score-chip-icon {
+  color: var(--text-3);
+}
+
+/* ── Footer de estatísticas (Tentativas / Questões respondidas) ── */
+.score-stats-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  min-height: 0;
+}
+
+.score-stat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.score-stat-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: var(--border);
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.score-stat-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.score-stat-label {
+  font-size: 10px;
+  color: var(--text-3);
+  letter-spacing: .2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.score-stat-value {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-1);
+  line-height: 1.3;
+}
 .score-value-row {
   display: flex;
   align-items: baseline;
@@ -436,6 +557,148 @@
 .trend-indeterminado .trend-direcao   { color: var(--text-3); }
 .trend-indeterminado .trend-diferenca { color: var(--text-3); font-style: italic; }
 .trend-indeterminado .trend-header-badge { background: var(--border); color: var(--text-2); }
+
+
+/* ── PADRONIZAÇÃO VISUAL DO ESTADO VAZIO
+     (Score Evolutivo · Tendência do Aluno · Previsão)
+     ─────────────────────────────────────────────
+     Apenas ajustes de aparência do estado sem dados.
+     Nenhuma lógica, texto dinâmico ou classe controlada
+     por JS foi criada/alterada — o JS continua apenas
+     aplicando .trend-indeterminado / .prediction-vazio /
+     .score-vazio exatamente como antes. Referência de
+     estilo: Score Evolutivo. ── */
+
+/* Badge "Sem dados" da Tendência — mesmo componente visual
+   (.intel-badge) já usado por Score (#score-nivel) e
+   Previsão (#prediction-badge). Fica oculto por padrão e só
+   aparece quando o card está no estado indeterminado. */
+.trend-badge-vazio {
+  display: none;
+}
+
+.trend-indeterminado .trend-badge-vazio {
+  display: inline-flex;
+  background: var(--border);
+  color: var(--text-3);
+}
+
+/* Headline da Tendência vazia — mesmo tamanho, peso, família
+   e cor da headline do Score ("Seu score está começando!"),
+   em vez do tamanho de 32px usado para exibir a direção real
+   (↑ Melhorando / → Estável / ↓ Piorando). */
+.trend-indeterminado .trend-direcao {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: normal;
+  line-height: 1.3;
+  color: var(--text-1);
+  margin-top: 2px;
+}
+
+/* Descrição da Tendência vazia — mesma tipografia da descrição
+   do Score: Inter, 12px, sem itálico, cor --text-3. */
+.trend-indeterminado .trend-diferenca {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  color: var(--text-3);
+  line-height: 1.5;
+}
+
+/* Descrição da Previsão vazia — remove o itálico para bater
+   com o padrão não-itálico do Score (fonte, tamanho e cor
+   já eram os mesmos). */
+.prediction-vazio .prediction-descricao {
+  color: var(--text-3);
+  font-style: normal;
+}
+
+/* ── Gráfico decorativo (Camada 5 não fornece série histórica —
+     este gráfico é puramente visual; o único dado real exibido
+     é o badge no fim da linha, com tendencia.diferencaPct) ── */
+.trend-chart-wrap {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  margin-bottom: 4px;
+  position: relative;
+  z-index: 1;
+}
+
+.trend-chart-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  color: var(--text-3);
+  padding: 2px 0;
+  flex-shrink: 0;
+}
+
+.trend-chart-plot {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 64px;
+}
+
+.trend-chart-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  transition: transform .4s ease;
+}
+
+.trend-chart-area {
+  fill: rgba(108,99,255,.10);
+  transition: fill .3s ease;
+}
+
+.trend-chart-line {
+  stroke: var(--accent-lite);
+  stroke-width: 2;
+  fill: none;
+  transition: stroke .3s ease;
+}
+
+.trend-chart-badge {
+  position: absolute;
+  top: -6px;
+  right: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: var(--accent-lite);
+  color: var(--bg);
+  transition: background .3s ease;
+}
+
+.trend-melhorando .trend-chart-area  { fill: rgba(61,220,132,.10); }
+.trend-melhorando .trend-chart-line  { stroke: var(--green); }
+.trend-melhorando .trend-chart-badge { background: var(--green); }
+
+.trend-estavel .trend-chart-svg    { transform: scaleY(.2); transform-origin: 100% 100%; }
+.trend-estavel .trend-chart-area   { fill: rgba(79,168,232,.10); }
+.trend-estavel .trend-chart-line   { stroke: var(--blue); }
+.trend-estavel .trend-chart-badge  { background: var(--blue); }
+
+.trend-piorando .trend-chart-svg   { transform: scaleY(-1); transform-origin: 50% 50%; }
+.trend-piorando .trend-chart-area  { fill: rgba(255,92,106,.10); }
+.trend-piorando .trend-chart-line  { stroke: var(--red); }
+.trend-piorando .trend-chart-badge { background: var(--red); }
+
+.trend-indeterminado .trend-chart-svg   { opacity: .3; filter: grayscale(1); }
+.trend-indeterminado .trend-chart-badge { background: var(--border); color: var(--text-3); }
+
+@media (max-width: 768px) {
+  .trend-chart-plot { height: 48px; }
+  .trend-chart-axis { display: none; }
+}
 
 /* ── Responsividade ── */
 @media (max-width: 768px) {
@@ -930,6 +1193,65 @@
 .prediction-vazio .prediction-chart-area      { fill: transparent; }
 .prediction-vazio .prediction-chart-line      { stroke: var(--border-2); opacity: .4; }
 .prediction-vazio .prediction-chart-proj      { display: none; }
+
+
+/* ── Slider de probabilidade (dado real: previsaoTaxaAcertoPct) ── */
+.prediction-slider-wrap {
+  padding: 6px 0 4px;
+  position: relative;
+  z-index: 1;
+}
+
+.prediction-slider-track {
+  position: relative;
+  height: 6px;
+  border-radius: 6px;
+  background: var(--border);
+}
+
+.prediction-slider-fill {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  border-radius: 6px;
+  background: var(--accent-lite);
+  transition: width .6s cubic-bezier(.4,0,.2,1);
+}
+
+.prediction-slider-handle {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent-lite);
+  border: 3px solid var(--surface);
+  box-shadow: 0 0 0 2px var(--accent-lite);
+  transform: translate(-50%, -50%);
+  transition: left .6s cubic-bezier(.4,0,.2,1), background .3s ease, box-shadow .3s ease;
+}
+
+.prediction-slider-scale {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-3);
+}
+
+.prediction-melhora .prediction-slider-fill   { background: var(--green); }
+.prediction-melhora .prediction-slider-handle { background: var(--green); box-shadow: 0 0 0 2px var(--green); }
+
+.prediction-estavel .prediction-slider-fill   { background: var(--blue); }
+.prediction-estavel .prediction-slider-handle { background: var(--blue); box-shadow: 0 0 0 2px var(--blue); }
+
+.prediction-queda .prediction-slider-fill   { background: var(--red); }
+.prediction-queda .prediction-slider-handle { background: var(--red); box-shadow: 0 0 0 2px var(--red); }
+
+.prediction-vazio .prediction-slider-fill    { background: var(--border-2); }
+.prediction-vazio .prediction-slider-handle  { background: var(--border-2); box-shadow: 0 0 0 2px var(--border-2); }
+.prediction-vazio .prediction-badge          { background: var(--border); color: var(--text-3); }
+
 
 /* ── Responsividade ── */
 @media (max-width: 768px) {
