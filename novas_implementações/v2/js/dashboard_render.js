@@ -283,25 +283,82 @@ export function renderTrend(relatorio) {
    Nenhum cálculo novo foi introduzido — chips e insight
    apenas agrupam/selecionam campos já presentes em `lista`,
    a mesma lista já usada para renderizar as linhas. */
+/* ─────────────────────────────────────────────
+   REDESIGN — Desempenho por Disciplina
+   (antigo "Fraquezas por Disciplina")
+   ─────────────────────────────────────────────
+   Transforma a lista simples em um painel analítico:
+   cards de resumo + tabela com Nível, Prioridade e
+   Evolução. NENHUM cálculo novo foi introduzido —
+   todos os campos usados (taxaAcertoMediaPct,
+   totalTentativas, nivelEstimado, emQueda,
+   inclinacaoPctPorTentativa, tendencia.direcao) já
+   são retornados por fraquezasPorDisciplina() em
+   quiz_intelligence.js. "Nível" e "Prioridade" são
+   apenas uma tradução visual de nivelEstimado
+   (rótulos + nº de estrelas) — sem novo threshold
+   sendo calculado aqui. */
+
+const WK_NIVEL_META = {
+  fundamentos:     { label: 'Crítico',   cls: 'wk-nivel-critico',   estrelas: 5 },
+  iniciante:       { label: 'Baixo',     cls: 'wk-nivel-baixo',     estrelas: 4 },
+  'intermediário': { label: 'Moderado',  cls: 'wk-nivel-moderado',  estrelas: 3 },
+  proficiente:     { label: 'Bom',       cls: 'wk-nivel-bom',       estrelas: 2 },
+  'avançado':      { label: 'Excelente', cls: 'wk-nivel-excelente', estrelas: 1 },
+};
+
+const WK_AVATAR_PALETTE = [
+  { bg: 'rgba(108,99,255,.18)', color: 'var(--accent-lite)' },
+  { bg: 'rgba(61,220,132,.18)', color: 'var(--green)' },
+  { bg: 'rgba(255,181,71,.18)', color: 'var(--amber)' },
+  { bg: 'rgba(79,168,232,.18)', color: 'var(--blue)' },
+  { bg: 'rgba(255,92,106,.18)', color: 'var(--red)' },
+];
+
+const WK_STOPWORDS = new Set(['de', 'da', 'do', 'das', 'dos', 'e']);
+
+/* Iniciais do avatar — puramente estético, não representa nenhum
+   dado do sistema (apenas o nome real da disciplina, já existente). */
+function _wkIniciais(nome) {
+  const palavras = String(nome ?? '').trim().split(/\s+/)
+    .filter(w => w && !WK_STOPWORDS.has(w.toLowerCase()));
+  if (palavras.length === 0) return '?';
+  if (palavras.length === 1) {
+    const p = palavras[0];
+    return (p[0] ?? '').toUpperCase() + (p[1] ?? '').toLowerCase();
+  }
+  return palavras[0][0].toUpperCase() + palavras[1][0].toLowerCase();
+}
+
+/* Estrelas de prioridade — apenas renderização de um número
+   (0 a 5) já derivado de nivelEstimado, sem novo cálculo. */
+/* Sempre renderiza as 5 estrelas — quando qtd=0 (poucos/sem dados),
+   as 5 ficam vazias, deixando claro que ainda não há classificação
+   em vez de esconder a informação atrás de um "—". */
+function _wkEstrelasHtml(qtd) {
+  let html = '';
+  for (let i = 1; i <= 5; i++) {
+    html += `<span class="wk-star${i <= qtd ? ' is-filled' : ''}">★</span>`;
+  }
+  return html;
+}
+
 export function renderWeaknesses(relatorio) {
   const dadosReaisLista = relatorio?.fraquezasPorDisciplina;
 
   const elSection  = document.getElementById('weaknesses-section');
   const elLista    = document.getElementById('weaknesses-lista');
-  const elCount    = document.getElementById('weaknesses-count');
   const elStatsRow = document.getElementById('wk-stats-row');
   const elInsight  = document.getElementById('wk-insight');
 
   if (!elSection || !elLista) return;
 
-  /* Normaliza string para comparação: minúsculas, sem acentos, sem espaços extras. */
   function _norm(s) {
     return String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
   }
 
-  /* Mapa de dados reais indexado pelo identificador oficial normalizado.
-     item.disciplina vem de t.disc, que é o mesmo valor de disc.id
-     propagado desde window.__NEXUS_QUIZ_DISC__ (ver template_init.js). */
+  /* Mapa de dados reais indexado pelo identificador oficial normalizado
+     — mesma regra de match de sempre (item.disciplina == disc.id). */
   const mapaReais = new Map();
   if (Array.isArray(dadosReaisLista)) {
     dadosReaisLista.forEach(item => {
@@ -309,13 +366,10 @@ export function renderWeaknesses(relatorio) {
     });
   }
 
-  /* Lista base: todas as disciplinas do semestre atualmente selecionado */
   const discsSemestre = State.disciplinas ?? [];
 
   if (discsSemestre.length === 0) {
-    /* Sem disciplinas configuradas no semestre — não há o que listar */
     elSection.className = 'weaknesses-card weaknesses-vazio';
-    if (elCount) elCount.textContent = '';
     if (elStatsRow) elStatsRow.innerHTML = '';
     if (elInsight) elInsight.textContent = 'Nenhuma disciplina configurada para este semestre.';
     elLista.innerHTML = `
@@ -324,37 +378,32 @@ export function renderWeaknesses(relatorio) {
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
                stroke="currentColor" stroke-width="1.5"
                stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 20V10"/>
-            <path d="M18 20V4"/>
-            <path d="M6 20v-4"/>
+            <path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/>
           </svg>
         </div>
         <div class="empty-state-text">
           <span class="empty-state-title">
-            Análise por Disciplina
+            Desempenho por Disciplina
             <span class="empty-state-info-btn" tabindex="0"
-                  aria-label="Como as fraquezas são identificadas"
-                  data-tooltip="Identifica as disciplinas com menor taxa de acerto e detecta quando o desempenho está em queda ao longo das tentativas.">ⓘ</span>
+                  aria-label="Como o desempenho é analisado"
+                  data-tooltip="Cruza sua taxa de acerto por disciplina com a tendência de evolução para indicar onde focar os estudos.">ⓘ</span>
           </span>
-          <span class="empty-state-msg">
-            Nenhuma disciplina configurada para este semestre.
-          </span>
+          <span class="empty-state-msg">Nenhuma disciplina configurada para este semestre.</span>
         </div>
       </div>`;
     return;
   }
 
-  /* Constrói a lista final: dados reais quando existem,
-     placeholder de "sem dados" quando a disciplina nunca foi praticada.
-     Nenhum cálculo de taxa/tendência/queda é feito aqui — apenas
-     reaproveitamento dos campos já calculados pelo quiz_intelligence
-     ou montagem de um objeto neutro (0%, sem tendência). */
-  const lista = discsSemestre.map(disc => {
+  /* Lista base: dado real quando existe, placeholder neutro quando
+     a disciplina nunca foi praticada — mesma regra de sempre. */
+  const listaBase = discsSemestre.map(disc => {
     const dadosReais = mapaReais.get(_norm(disc.id));
-    if (dadosReais) return dadosReais;
+    if (dadosReais) return { ...dadosReais, _semDados: false };
     return {
       disciplina:                disc.nome,
+      totalTentativas:           0,
       taxaAcertoMediaPct:        0,
+      nivelEstimado:             null,
       inclinacaoPctPorTentativa: null,
       tendencia:                 null,
       emQueda:                   false,
@@ -362,171 +411,46 @@ export function renderWeaknesses(relatorio) {
     };
   });
 
-  elSection.className = 'weaknesses-card full-width';
-  if (elCount) {
-    const comDados = lista.filter(i => !i._semDados).length;
-    elCount.textContent = comDados > 0 ? comDados : '';
-  }
-  elLista.innerHTML = '';
-
-  const TENDENCIA_LABEL = {
-    'melhorando': 'Melhorando',
-    'estavel':    'Estável',
-    'piorando':   'Piorando',
-  };
-  const TENDENCIA_CLASSE = {
-    'melhorando': 'wk-tend-melhorando',
-    'estavel':    'wk-tend-estavel',
-    'piorando':   'wk-tend-piorando',
-  };
-
-  /* Acumulado durante o loop, usado depois para montar o insight
-     do rodapé — nenhum cálculo novo, apenas coleta dos itens que
-     já têm taxa consolidada (mesmo critério de dadosInsuficientes
-     usado linha a linha). */
-  const candidatosInsight = [];
-
-  lista.forEach((item, idx) => {
-    const disc = item?.disciplina        ?? '—';
-    const taxa = item?.taxaAcertoMediaPct ?? null;
-
-    /* Tendência real da disciplina — lida diretamente de
-       item.tendencia.direcao (calculada por _calcularTendencia
-       em quiz_intelligence.js). 'indeterminado' é tratado como
-       "sem direção conhecida ainda", igual ao card de Tendência
-       do Aluno — não é um valor fixo, é o próprio resultado
-       retornado pela função quando há menos de 2 tentativas. */
+  /* Enriquecimento por item — leitura e classificação dos campos
+     já existentes, nenhum cálculo novo. */
+  const lista = listaBase.map(item => {
     const direcaoReal = (!item._semDados && item?.tendencia?.direcao)
       ? item.tendencia.direcao
       : null;
-    const temDirecaoValida = direcaoReal && direcaoReal !== 'indeterminado';
-
-    /* Quando há tentativas mas ainda não o suficiente para calcular
-       tendência (temDirecaoValida === false, e não é o caso de
-       disciplina nunca praticada), a porcentagem também é ocultada
-       com '—'. Evita a inconsistência de mostrar, por exemplo, 100%
-       ao lado de "Aguardando mais tentativas" — o dado é real, mas
-       ainda não é representativo o suficiente para ser exibido como
-       taxa consolidada. Nenhum cálculo foi alterado: apenas a
-       decisão de exibir ou não o valor já calculado. */
+    const temDirecaoValida   = !!direcaoReal && direcaoReal !== 'indeterminado';
     const dadosInsuficientes = !item._semDados && !temDirecaoValida;
-    const emQueda = item?.emQueda === true;
+    const nivelMeta = (!item._semDados && item.nivelEstimado)
+      ? WK_NIVEL_META[item.nivelEstimado]
+      : null;
 
-    if (!item._semDados && !dadosInsuficientes && taxa !== null) {
-      candidatosInsight.push({ disciplina: disc, taxa });
-    }
-
-    const row       = document.createElement('div');
-    row.className   = 'wk-item';
-    if (emQueda && !item._semDados) row.classList.add('wk-item-queda');
-    if (item._semDados) row.classList.add('wk-item-semdados');
-
-    const pos         = document.createElement('div');
-    /* Cor do indicador de posição por faixa de desempenho — apenas
-       aparência, reaproveita a mesma faixa já usada na barra
-       (wk-bar-ok / wk-bar-medio / wk-bar-baixo). */
-    const posClasse = item._semDados
-      ? 'wk-pos-semdados'
-      : dadosInsuficientes
-        ? ''
-        : (taxa >= 70 ? 'wk-pos-ok' : taxa >= 40 ? 'wk-pos-medio' : 'wk-pos-baixo');
-    pos.className     = ['wk-pos', posClasse].filter(Boolean).join(' ');
-    pos.textContent   = idx + 1;
-
-    const corpo       = document.createElement('div');
-    corpo.className   = 'wk-corpo';
-
-    const nomeWrap    = document.createElement('div');
-    nomeWrap.className = 'wk-nome-wrap';
-
-    const nome        = document.createElement('span');
-    nome.className    = 'wk-nome';
-    nome.textContent  = disc;
-    nomeWrap.appendChild(nome);
-
-    if (emQueda && !item._semDados) {
-      const badge       = document.createElement('span');
-      badge.className   = 'wk-badge-queda';
-      badge.textContent = '↓ Em queda';
-      nomeWrap.appendChild(badge);
-    }
-
-    const barWrap     = document.createElement('div');
-    barWrap.className = 'wk-bar-wrap';
-
-    const barBg       = document.createElement('div');
-    barBg.className   = 'wk-bar-bg';
-
-    const barFill     = document.createElement('div');
-    barFill.className = 'wk-bar-fill';
-
-    /* Barra "vazia": tanto para disciplinas nunca praticadas
-       (_semDados) quanto para disciplinas com dados insuficientes
-       para confiar na tendência (dadosInsuficientes) — mesmo
-       critério já usado para ocultar a porcentagem em wk-taxa.
-       Nos dois casos a barra fica neutra (cinza, largura 0),
-       em vez de colorida com base na taxa. */
-    const barraVazia = item._semDados || dadosInsuficientes;
-    const largura = (taxa !== null && !barraVazia) ? Math.max(0, Math.min(100, taxa)) : 0;
-    barFill.style.width = largura + '%';
-
-    if (barraVazia) {
-      barFill.classList.add('wk-bar-semdados');
-    } else if (taxa !== null) {
-      if (taxa >= 70)      barFill.classList.add('wk-bar-ok');
-      else if (taxa >= 40) barFill.classList.add('wk-bar-medio');
-      else                 barFill.classList.add('wk-bar-baixo');
-    }
-
-    barBg.appendChild(barFill);
-    barWrap.appendChild(barBg);
-
-    corpo.appendChild(nomeWrap);
-    corpo.appendChild(barWrap);
-// DEPOIS
-const meta        = document.createElement('div');
-meta.className    = 'wk-meta';
-
-const taxaEl      = document.createElement('div');
-taxaEl.className  = 'wk-taxa';
-taxaEl.textContent = (taxa !== null && !dadosInsuficientes) ? `${taxa}%` : '—';
-
-/* "Evolução" agora é um bloco isolado (pill com rótulo fixo + valor
-   colorido) em vez de um texto solto embaixo da porcentagem — evita
-   que as duas informações sejam lidas como uma frase única. Nenhum
-   dado novo: mesmas classes de estado (TENDENCIA_CLASSE) já calculadas
-   acima, apenas reorganizadas visualmente. */
-const tendEl      = document.createElement('div');
-tendEl.className  = [
-  'wk-evolucao',
-  (!item._semDados && temDirecaoValida) ? (TENDENCIA_CLASSE[direcaoReal] ?? '') : '',
-  item._semDados ? 'wk-tend-semdados' : '',
-  (!item._semDados && !temDirecaoValida) ? 'wk-evolucao-poucos' : '',
-].join(' ').trim();
-
-const label = item._semDados
-  ? 'Sem dados'
-  : (temDirecaoValida ? (TENDENCIA_LABEL[direcaoReal] ?? direcaoReal) : 'Poucos dados');
-
-tendEl.innerHTML = `
-  <span class="wk-evolucao-rotulo">Evolução</span>
-  <span class="wk-evolucao-valor">${label}</span>
-`;
-
-meta.appendChild(taxaEl);
-meta.appendChild(tendEl);
-    row.appendChild(pos);
-    row.appendChild(corpo);
-    row.appendChild(meta);
-    elLista.appendChild(row);
+    return {
+      ...item,
+      _direcaoReal:        direcaoReal,
+      _temDirecaoValida:   temDirecaoValida,
+      _dadosInsuficientes: dadosInsuficientes,
+      _nivelMeta:          nivelMeta,
+    };
   });
 
-  /* ── Zona 1: chips de resumo (topo do card) ──
-     Apenas agrupamento de campos já existentes em `lista`,
-     mesmo padrão do total exibido no heatmap de "Perfil de uso". */
+  /* Ordenação: mesma prioridade já usada em fraquezasPorDisciplina()
+     no quiz_intelligence.js (em queda primeiro, depois pior taxa
+     primeiro). Sem dados vão para o final. */
+  lista.sort((a, b) => {
+    if (a._semDados !== b._semDados) return a._semDados ? 1 : -1;
+    if (a.emQueda !== b.emQueda) return a.emQueda ? -1 : 1;
+    return (a.taxaAcertoMediaPct ?? 0) - (b.taxaAcertoMediaPct ?? 0);
+  });
+
+  elSection.className = 'weaknesses-card full-width';
+
+  /* ── Zona 1: cards de resumo ── */
   if (elStatsRow) {
-    const comDados  = lista.filter(i => !i._semDados).length;
-    const emQuedaQt = lista.filter(i => i.emQueda === true && !i._semDados).length;
+    const totalDisc         = lista.length;
+    const comDados          = lista.filter(i => i._temDirecaoValida).length;
+    const emQuedaQt         = lista.filter(i => i.emQueda === true && !i._semDados).length;
+    const precisamAtencaoQt = lista.filter(i =>
+      !i._semDados && (i.nivelEstimado === 'fundamentos' || i.nivelEstimado === 'iniciante')
+    ).length;
 
     elStatsRow.innerHTML = `
       <div class="wk-stat-chip">
@@ -537,42 +461,151 @@ meta.appendChild(tendEl);
           </svg>
         </div>
         <div class="wk-stat-body">
-          <span class="wk-stat-label">Disciplinas monitoradas</span>
-          <span class="wk-stat-value">${comDados} de ${lista.length}</span>
+          <span class="wk-stat-value">${totalDisc}</span>
+          <span class="wk-stat-label">Monitoradas</span>
+        </div>
+      </div>
+      <div class="wk-stat-chip">
+        <div class="wk-stat-icon ic-green">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="9" cy="9" r="6.5"/><path d="M6.2 9.3l1.8 1.8 3.8-3.8"/>
+          </svg>
+        </div>
+        <div class="wk-stat-body">
+          <span class="wk-stat-value">${comDados}</span>
+          <span class="wk-stat-label">Com dados suficientes</span>
         </div>
       </div>
       <div class="wk-stat-chip">
         <div class="wk-stat-icon ${emQuedaQt > 0 ? 'ic-red' : 'ic-green'}">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M9 5.5v4.5M9 12.3v.2"/>
-            <circle cx="9" cy="9" r="6.5"/>
+            <path d="M2.5 5.5L7 10l2.5-2.5L15.5 13.5M11.5 13.5h4v-4"/>
           </svg>
         </div>
         <div class="wk-stat-body">
+          <span class="wk-stat-value">${String(emQuedaQt).padStart(2, '0')}</span>
           <span class="wk-stat-label">Em queda</span>
-          <span class="wk-stat-value">${emQuedaQt > 0 ? `${emQuedaQt} disciplina${emQuedaQt !== 1 ? 's' : ''}` : 'Nenhuma'}</span>
+        </div>
+      </div>
+      <div class="wk-stat-chip">
+        <div class="wk-stat-icon ${precisamAtencaoQt > 0 ? 'ic-amber' : 'ic-green'}">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M9 2.5l7 12.5H2z"/><path d="M9 7.5v3.2M9 13v.2"/>
+          </svg>
+        </div>
+        <div class="wk-stat-body">
+          <span class="wk-stat-value">${String(precisamAtencaoQt).padStart(2, '0')}</span>
+          <span class="wk-stat-label">Precisam de atenção</span>
         </div>
       </div>
     `;
   }
 
-  /* ── Zona 3: insight (rodapé do card) ──
-     Seleciona (não calcula) a disciplina com menor taxa entre as
-     que já têm dado consolidado — mesma lógica de "maior oportunidade
-     de melhoria" que já orienta a ordenação visual da lista. */
+  /* ── Zona 2: tabela ── */
+  const EVOL_LABEL = { melhorando: 'Melhorando', estavel: 'Estável', piorando: 'Piorando' };
+  const EVOL_CLS   = { melhorando: 'wk-tend-melhorando', estavel: 'wk-tend-estavel', piorando: 'wk-tend-piorando' };
+
+  const linhasHtml = lista.map((item, idx) => {
+    const rank   = idx + 1;
+    const disc   = item.disciplina ?? '—';
+    const taxa   = item.taxaAcertoMediaPct ?? null;
+    const emQueda = item.emQueda === true && !item._semDados;
+    const nivelMeta = item._nivelMeta;
+    const paleta = WK_AVATAR_PALETTE[idx % WK_AVATAR_PALETTE.length];
+
+    const mostraTaxa = !item._semDados && !item._dadosInsuficientes && taxa !== null;
+    const taxaTexto    = mostraTaxa ? `${taxa}%` : '—';
+    const larguraBarra = mostraTaxa ? Math.max(0, Math.min(100, taxa)) : 0;
+    const corBarra = !mostraTaxa
+      ? 'wk-bar-semdados'
+      : (taxa >= 70 ? 'wk-bar-ok' : taxa >= 40 ? 'wk-bar-medio' : 'wk-bar-baixo');
+
+    /* Nível e Prioridade só são exibidos quando há dado consolidado
+       o suficiente para confiar na tendência (_temDirecaoValida).
+       Sem isso, o sistema já trata a disciplina como "não classificável"
+       em outras partes do dashboard — aqui a linha só reflete essa
+       mesma regra, sem novo critério. */
+    const nivelHtml = item._semDados
+      ? `<span class="wk-nivel-badge wk-nivel-semdados">Sem dados</span>`
+      : (item._dadosInsuficientes
+          ? `<span class="wk-nivel-badge wk-nivel-poucosdados">Poucos dados</span>`
+          : `<span class="wk-nivel-badge ${nivelMeta.cls}">${nivelMeta.label}</span>`);
+
+    const estrelasQtd = (!item._semDados && !item._dadosInsuficientes && nivelMeta)
+      ? nivelMeta.estrelas
+      : 0;
+    const prioridadeHtml = `<span class="wk-stars" aria-label="Prioridade ${estrelasQtd} de 5">${_wkEstrelasHtml(estrelasQtd)}</span>`;
+
+    const EVOL_LABEL = { melhorando: 'Melhorando', estavel: 'Estável', piorando: 'Piorando' };
+    const EVOL_CLS   = { melhorando: 'wk-tend-melhorando', estavel: 'wk-tend-estavel', piorando: 'wk-tend-piorando' };
+    const evolClasse = item._temDirecaoValida ? (EVOL_CLS[item._direcaoReal] ?? '') : (item._semDados ? 'wk-tend-semdados' : 'wk-evolucao-poucos');
+    const evolLabel   = item._semDados ? 'Sem dados' : (item._temDirecaoValida ? (EVOL_LABEL[item._direcaoReal] ?? item._direcaoReal) : 'Poucos dados');
+    /* Badge só mostra o valor — a coluna "Evolução" já dá o contexto,
+       repetir a palavra dentro do badge era redundante. */
+    const evolucaoHtml = `
+      <span class="wk-evolucao ${evolClasse}">
+        <span class="wk-evolucao-valor">${evolLabel}</span>
+      </span>${emQueda ? '<span class="wk-badge-queda">↓ Em queda</span>' : ''}`;
+    const tentativasTexto = item._semDados ? '—' : (item.totalTentativas ?? 0);
+
+    return `
+      <tr class="wk-row${emQueda ? ' wk-row-queda' : ''}${item._semDados ? ' wk-row-semdados' : ''}">
+        <td class="wk-td-pos"><span class="wk-pos">${rank}</span></td>
+        <td class="wk-td-disc">
+          <div class="wk-disc-cell">
+            <div class="wk-avatar" style="background:${paleta.bg};color:${paleta.color}">${_wkIniciais(disc)}</div>
+            <span class="wk-disc-nome">${disc}</span>
+          </div>
+        </td>
+        <td class="wk-td-desemp">
+          <div class="wk-desemp-cell">
+            <span class="wk-desemp-pct">${taxaTexto}</span>
+            <div class="wk-bar-wrap"><div class="wk-bar-bg"><div class="wk-bar-fill ${corBarra}" style="width:${larguraBarra}%"></div></div></div>
+          </div>
+        </td>
+        <td class="wk-td-nivel">${nivelHtml}</td>
+        <td class="wk-td-prioridade">${prioridadeHtml}</td>
+        <td class="wk-td-evolucao">${evolucaoHtml}</td>
+        <td class="wk-td-tentativas"><span class="wk-tentativas-valor">${tentativasTexto}</span></td>
+      </tr>`;
+  }).join('');
+
+  elLista.innerHTML = `
+    <div class="wk-table-wrap">
+      <table class="wk-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Disciplina</th>
+            <th>Desempenho</th>
+            <th>Nível</th>
+            <th>Prioridade</th>
+            <th>Evolução</th>
+            <th>Tentativas</th>
+          </tr>
+        </thead>
+        <tbody>${linhasHtml}</tbody>
+      </table>
+    </div>`;
+
+  /* ── Zona 3: insight ── (mesma lógica de sempre: seleciona,
+     não calcula, a pior taxa entre disciplinas com dado consolidado) */
   if (elInsight) {
+    const candidatos    = lista.filter(i => !i._semDados && !i._dadosInsuficientes && i.taxaAcertoMediaPct !== null);
     const todasSemDados = lista.every(i => i._semDados);
 
     if (todasSemDados) {
       elInsight.textContent = 'Complete quizzes para gerar sua análise por disciplina.';
-    } else if (candidatosInsight.length > 0) {
-      const pior = [...candidatosInsight].sort((a, b) => a.taxa - b.taxa)[0];
-      elInsight.textContent = `Sua maior oportunidade de melhoria está em ${pior.disciplina} (${pior.taxa}%). Reforce essa disciplina para elevar sua média geral.`;
+    } else if (candidatos.length > 0) {
+      const pior = [...candidatos].sort((a, b) => a.taxaAcertoMediaPct - b.taxaAcertoMediaPct)[0];
+      elInsight.textContent = `Sua maior oportunidade de melhoria está em ${pior.disciplina} (${pior.taxaAcertoMediaPct}%). Foque nessa disciplina para elevar seu desempenho geral.`;
     } else {
       elInsight.textContent = 'Continue realizando quizzes para consolidar a análise por disciplina.';
     }
   }
 }
+
+
 /* Fase 2.5 — Previsao simples */
 
 export function renderPrediction(relatorio) {

@@ -852,16 +852,15 @@
   .comparison-periodo-taxa { font-size: 24px; }
 }
 
-
 /* ═══════════════════════════════════════════════════════════
-   CAMADA 5 — Fase 2.4: Fraquezas por Disciplina
+   CAMADA 5 — Fase 2.4 (REDESIGN): Desempenho por Disciplina
    ───────────────────────────────────────────────────────────
-   Estilos exclusivos do card #weaknesses-section.
-   Apenas variáveis CSS já existentes — nenhuma cor nova.
-   Nenhuma regra aqui afeta componentes pré-existentes.
+   Painel analítico: cards de resumo + tabela. Substitui o
+   antigo layout de linhas soltas por uma tabela real, mantendo
+   os tokens de cor do Nexus Study. Nenhuma lógica de cálculo
+   foi alterada — apenas apresentação.
    ═══════════════════════════════════════════════════════════ */
 
-/* ── Estrutura ── */
 .weaknesses-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -869,77 +868,105 @@
   padding: 8px 0;
   transition: border-color .2s ease;
 }
+.weaknesses-card:hover { border-color: var(--border-2); }
 
-.weaknesses-card:hover {
-  border-color: var(--border-2);
-}
+.weaknesses-vazio { padding: 24px 28px; }
 
-/* ── Estado vazio (lista sem nenhum item) ── */
-.weaknesses-vazio {
-  padding: 24px 28px;
-}
-
-.weaknesses-empty {
-  font-size: 13px;
-  color: var(--text-3);
-  font-style: italic;
-  line-height: 1.5;
-}
-
-/* ── Conteúdo: lista de disciplinas ── */
-.weaknesses-lista {
+.weaknesses-card.full-width {
   display: flex;
   flex-direction: column;
+  padding: 22px 0 4px;
 }
 
-/* Linha de uma disciplina */
-.wk-item {
+/* ── Zona 1: chips de resumo ── */
+.wk-stats-row {
   display: grid;
-  grid-template-columns: 28px 1fr 150px; /* era: 28px 1fr auto */
-  align-items: center;
-  gap: 16px;
-  padding: 14px 28px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 0 24px 20px;
+  margin-bottom: 4px;
   border-bottom: 1px solid var(--border);
-  transition: background .15s ease;
 }
-
-.wk-item:last-child {
-  border-bottom: none;
-}
-
-.wk-item:hover {
+.wk-stat-chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 12px 14px;
+  min-width: 0;
+}
+.wk-stat-icon {
+  width: 36px; height: 36px;
+  border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  background: var(--border);
+  color: var(--text-3);
+}
+.wk-stat-icon.ic-red   { background: rgba(255,92,106,.14); color: var(--red); }
+.wk-stat-icon.ic-green { background: rgba(61,220,132,.14); color: var(--green); }
+.wk-stat-icon.ic-amber { background: rgba(255,181,71,.14); color: var(--amber); }
+
+.wk-stat-body { display: flex; flex-direction: column-reverse; gap: 2px; min-width: 0; }
+.wk-stat-label { font-size: 11px; color: var(--text-3); font-weight: 450; white-space: nowrap; }
+.wk-stat-value {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: -.4px;
+  line-height: 1.1;
 }
 
-/* Número do ranking */
+/* ── Zona 2: tabela ── */
+.wk-table-wrap { overflow-x: auto; }
+.wk-table { width: 100%; border-collapse: collapse; min-width: 720px; }
+
+.wk-table thead th {
+  text-align: left;
+  padding: 12px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.wk-table tbody td {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.wk-table tbody tr:last-child td { border-bottom: none; }
+.wk-table tbody tr:hover td { background: var(--surface-2); }
+
+.wk-row-queda td:first-child { box-shadow: inset 3px 0 0 var(--red); }
+.wk-row-semdados { opacity: .55; }
+
+.wk-td-pos { width: 36px; }
 .wk-pos {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
-  color: var(--text-3);
   font-weight: 600;
-  letter-spacing: .5px;
-  text-align: center;
+  color: var(--text-3);
+}
+
+.wk-disc-cell { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.wk-avatar {
+  width: 30px; height: 30px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
-  line-height: 1;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
 }
-
-/* Corpo: nome + barra */
-.wk-corpo {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-width: 0; /* permite truncamento do nome */
-}
-
-/* Nome + badge "em queda" */
-.wk-nome-wrap {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.wk-nome {
+.wk-disc-nome {
   font-family: 'Space Grotesk', sans-serif;
   font-size: 13.5px;
   font-weight: 500;
@@ -947,59 +974,48 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 260px;
+  max-width: 220px;
 }
 
-.wk-badge-queda {
+.wk-td-desemp { min-width: 150px; }
+.wk-desemp-cell { display: flex; flex-direction: column; gap: 6px; }
+.wk-desemp-pct {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.wk-bar-wrap { width: 100%; }
+.wk-bar-bg { width: 100%; height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.wk-bar-fill { height: 100%; border-radius: 4px; background: var(--text-3); transition: width .6s cubic-bezier(.4,0,.2,1); }
+.wk-bar-fill.wk-bar-ok       { background: var(--green); }
+.wk-bar-fill.wk-bar-medio    { background: var(--amber); }
+.wk-bar-fill.wk-bar-baixo    { background: var(--red); }
+.wk-bar-fill.wk-bar-semdados { background: var(--border-2); }
+
+.wk-nivel-badge {
   display: inline-flex;
   align-items: center;
-  font-size: 10px;
-  font-weight: 600;
   font-family: 'Space Grotesk', sans-serif;
-  letter-spacing: .3px;
-  padding: 2px 7px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .2px;
+  padding: 4px 10px;
   border-radius: 20px;
-  background: rgba(255,92,106,.12);
-  color: var(--red);
   white-space: nowrap;
-  flex-shrink: 0;
 }
+.wk-nivel-critico   { background: rgba(255,92,106,.14); color: var(--red); }
+.wk-nivel-baixo     { background: rgba(255,138,76,.14); color: #FF8A4C; }
+.wk-nivel-moderado  { background: rgba(255,181,71,.14); color: var(--amber); }
+.wk-nivel-bom       { background: rgba(79,168,232,.14); color: var(--blue); }
+.wk-nivel-excelente { background: rgba(61,220,132,.14); color: var(--green); }
+.wk-nivel-semdados  { background: var(--border); color: var(--text-3); }
+.wk-nivel-poucosdados { background: var(--border); color: var(--text-3);  }
+.wk-stars { display: inline-flex; gap: 2px; }
+.wk-star { font-size: 12px; color: var(--border-2); line-height: 1; }
+.wk-star.is-filled { color: var(--amber); }
+.wk-stars-empty { color: var(--text-3); font-size: 12px; }
 
-/* Barra de progresso */
-.wk-bar-wrap {
-  width: 100%;
-}
-
-.wk-bar-bg {
-  width: 100%;
-  height: 3px;
-  background: var(--border);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.wk-bar-fill {
-  height: 100%;
-  border-radius: 4px;
-  /* cor padrão — sobrescrita pelos modificadores de estado abaixo */
-  background: var(--text-3);
-  transition: width .6s cubic-bezier(.4,0,.2,1);
-}
-
-/* ── Rodapé: coluna direita (taxa + tendência) ── */
-.wk-meta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;              /* era 4px — mais respiro separa
-                             visualmente as duas informações */
-  flex-shrink: 0;
-}
-
-
-/* "Evolução" — pill com rótulo fixo + valor colorido.
-   Mesmo padrão visual já usado em intel-badge (Score/Tendência/
-   Previsão), trazendo consistência com o resto do dashboard. */
 .wk-evolucao {
   display: inline-flex;
   align-items: center;
@@ -1010,7 +1026,6 @@
   white-space: nowrap;
   line-height: 1;
 }
-
 .wk-evolucao-rotulo {
   font-family: 'JetBrains Mono', monospace;
   font-size: 9.5px;
@@ -1018,197 +1033,63 @@
   letter-spacing: .2px;
   color: var(--text-3);
 }
-
 .wk-evolucao-valor {
   font-family: 'Space Grotesk', sans-serif;
   font-size: 10.5px;
   font-weight: 700;
-  letter-spacing: .1px;
+  color: var(--text-2);
+}
+.wk-evolucao.wk-tend-melhorando { background: rgba(61,220,132,.12); }
+.wk-evolucao.wk-tend-melhorando .wk-evolucao-valor { color: var(--green); }
+.wk-evolucao.wk-tend-estavel { background: rgba(79,168,232,.12); }
+.wk-evolucao.wk-tend-estavel .wk-evolucao-valor { color: var(--blue); }
+.wk-evolucao.wk-tend-piorando { background: rgba(255,92,106,.12); }
+.wk-evolucao.wk-tend-piorando .wk-evolucao-valor { color: var(--red); }
+.wk-evolucao.wk-tend-semdados,
+.wk-evolucao.wk-evolucao-poucos { background: var(--border); }
+.wk-evolucao.wk-tend-semdados .wk-evolucao-valor,
+.wk-evolucao.wk-evolucao-poucos .wk-evolucao-valor { color: var(--text-3); }
+
+.wk-badge-queda {
+  display: inline-flex;
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: .3px;
+  padding: 2px 7px;
+  border-radius: 20px;
+  background: rgba(255,92,106,.12);
+  color: var(--red);
+  white-space: nowrap;
+}
+
+.wk-tentativas-valor {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
   color: var(--text-2);
 }
 
-.wk-evolucao.wk-tend-melhorando { background: rgba(61,220,132,.12); }
-.wk-evolucao.wk-tend-melhorando .wk-evolucao-valor { color: var(--green); }
-
-.wk-evolucao.wk-tend-estavel { background: rgba(79,168,232,.12); }
-.wk-evolucao.wk-tend-estavel .wk-evolucao-valor { color: var(--blue); }
-
-.wk-evolucao.wk-tend-piorando { background: rgba(255,92,106,.12); }
-.wk-evolucao.wk-tend-piorando .wk-evolucao-valor { color: var(--red); }
-
-.wk-evolucao.wk-tend-semdados,
-.wk-evolucao.wk-evolucao-poucos {
-  background: var(--border);
-}
-.wk-evolucao.wk-tend-semdados .wk-evolucao-valor,
-.wk-evolucao.wk-evolucao-poucos .wk-evolucao-valor {
-  color: var(--text-3);
-}
-
-.wk-taxa {
-  font-size: 20px;        /* era 18px — reforça que é o dado
-                             principal da coluna (hero number) */
-  font-weight: 700;
-  letter-spacing: -.5px;
-  color: var(--text-1);
-  line-height: 1;
-}
-
-.wk-tendencia {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10.5px;
-  color: var(--text-3);
-  letter-spacing: .3px;
-  white-space: nowrap;
-}
-
-/* ── Estados ──
-   Modificadores de cor por faixa de taxa e por
-   direção de tendência (apenas aparência CSS —
-   nenhum cálculo é feito em JS). Especificidade
-   maior que as regras base, posição não interfere. */
-
-/* Destaque sutil para disciplinas em queda */
-.wk-item-queda {
-  border-left: 3px solid var(--red);
-  padding-left: 25px; /* compensa a borda (28px - 3px) */
-}
-
-.wk-bar-fill.wk-bar-ok     { background: var(--green); }
-.wk-bar-fill.wk-bar-medio  { background: var(--amber); }
-.wk-bar-fill.wk-bar-baixo  { background: var(--red); }
-
-.wk-tend-melhorando { color: var(--green); }
-.wk-tend-estavel    { color: var(--blue); }
-.wk-tend-piorando   { color: var(--red); }
-
-/* ── Fraquezas — card em 3 zonas (paridade visual com Perfil de uso) ── */
-.weaknesses-card.full-width {
-  display: flex;
-  flex-direction: column;
-  padding: 20px 0 4px;
-}
-
-.weaknesses-lista {
-  display: flex;
-  flex-direction: column;
-}
-
-/* Zona 1 — chips de resumo (mesmo padrão visual do usage-stats-row) */
-.wk-stats-row {
-  display: flex;
-  gap: 12px;
-  padding: 0 28px 18px;
-  margin-bottom: 6px;
-  border-bottom: 1px solid var(--border);
-}
-
-.wk-stat-chip {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  padding: 12px 14px;
-  min-width: 0;
-}
-
-.wk-stat-icon {
-  width: 36px; height: 36px;
-  border-radius: var(--r-sm);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  background: var(--border);
-  color: var(--text-3);
-}
-.wk-stat-icon.ic-red   { background: rgba(255,92,106,.12); color: var(--red); }
-.wk-stat-icon.ic-green { background: rgba(61,220,132,.12); color: var(--green); }
-
-.wk-stat-body {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-.wk-stat-label {
-  font-size: 11px;
-  color: var(--text-3);
-  font-weight: 450;
-}
-.wk-stat-value {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-1);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Linhas da lista — mais respiro e um badge de posição colorido
-   (substitui o número monocromático por um indicador de status) */
-.wk-item {
-  padding: 18px 28px;
-}
-
-.wk-pos {
-  width: 26px; height: 26px;
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  background: var(--border);
-  color: var(--text-3);
-}
-.wk-pos.wk-pos-ok     { background: rgba(61,220,132,.14); color: var(--green); }
-.wk-pos.wk-pos-medio  { background: rgba(255,181,71,.14); color: var(--amber); }
-.wk-pos.wk-pos-baixo  { background: rgba(255,92,106,.14); color: var(--red); }
-.wk-pos.wk-pos-semdados { background: var(--border); color: var(--text-3); }
-
-.wk-nome { font-size: 14px; }
-.wk-taxa { font-size: 19px; }
-
-/* Zona 3 — insight, sempre ancorado ao rodapé do card */
+/* ── Zona 3: insight ── */
 .wk-insight {
   margin-top: auto;
-  padding: 14px 28px 4px;
+  padding: 16px 24px 4px;
   border-top: 1px solid var(--border);
   font-size: 12px;
   color: var(--text-2);
   line-height: 1.5;
 }
 
-@media (max-width: 768px) {
-  .wk-item {
-    grid-template-columns: 24px 1fr 108px; /* era: 24px 1fr auto */
-    gap: 12px;
-    padding: 12px 18px;
-  }
-
-  .wk-item-queda { padding-left: 15px; }
-  .wk-nome { max-width: 140px; }
-  .wk-taxa { font-size: 16px; }
-  .wk-evolucao-rotulo { display: none; }
-}
-
 /* ── Responsividade ── */
-@media (max-width: 768px) {
-  .wk-item {
-    grid-template-columns: 24px 1fr auto;
-    gap: 12px;
-    padding: 12px 18px;
-  }
-
-  .wk-item-queda {
-    padding-left: 15px;
-  }
-
-  .wk-nome { max-width: 160px; }
-
-  .wk-taxa { font-size: 15px; }
+@media (max-width: 900px) {
+  .wk-stats-row { grid-template-columns: repeat(2, 1fr); }
 }
-
-
+@media (max-width: 768px) {
+  .wk-stats-row { padding: 0 18px 16px; }
+  .wk-table thead th, .wk-table tbody td { padding: 10px 14px; }
+  .wk-disc-nome { max-width: 140px; }
+  .wk-insight { padding: 14px 18px 4px; }
+}
 /* ═══════════════════════════════════════════════════════════
    CAMADA 5 — Fase 2.5: Previsão
    Layout: número + badge no topo, gráfico decorativo de
