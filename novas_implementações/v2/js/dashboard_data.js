@@ -32,6 +32,28 @@
        da Camada 5 — ver dashboard_render.js
      ✗ bootstrap / listeners de evento — ver
        dashboard.js
+
+   ─────────────────────────────────────────────
+   AJUSTES — CARD "NAVEGAÇÃO" (Páginas mais acessadas
+   e Histórico de navegação)
+   ─────────────────────────────────────────────
+   1. Correção de páginas duplicadas no ranking:
+      _renderPaginasMaisAcessadas agora agrupa por
+      RÓTULO NORMALIZADO (não pelo pathname bruto),
+      já que pathnames diferentes podem resolver
+      para o mesmo label visível (ex.: "/" e
+      "/index.html" → "Início"). Ver comentário
+      dentro da função.
+
+   2. Limite inicial de 3 itens + expandir/recolher:
+      tanto o ranking quanto o histórico exibem no
+      máximo 3 itens por padrão. Um botão permite
+      expandir para ver todos os registros, com
+      rolagem interna isolada (sem afetar o scroll
+      da página) e sem alterar a altura do card.
+
+   Nenhuma lógica de coleta, tracking ou persistência
+   de dados foi alterada — apenas apresentação.
    ============================================= */
 
 import { getUsuario } from '../../../src/global.js';
@@ -686,27 +708,109 @@ function _corIconePorRota(chave) {
   };
 }
 
+/* ══════════════════════════════════════════════
+   UTILITÁRIOS — histórico/ranking expansíveis
+   ─────────────────────────────────────────────
+   Compartilhados entre _renderPaginasMaisAcessadas
+   e _renderFluxoNavegacao. Apenas apresentação —
+   não tocam em dados, tracking ou lógica de negócio.
+══════════════════════════════════════════════ */
+const NAV_ITENS_VISIVEIS = 3;
+
+/* Mede a altura real dos N primeiros itens já renderizados no DOM
+   e aplica como max-height inline. Mais preciso que um valor fixo
+   em CSS, pois a altura de cada item varia entre ranking e histórico
+   (conteúdo diferente) e pode mudar com fonte/zoom do navegador. */
+function _aplicarAlturaVisivel(entriesEl, qtdVisivel) {
+  const itens = entriesEl.children;
+  if (itens.length <= qtdVisivel) {
+    entriesEl.style.maxHeight = '';
+    return;
+  }
+  let altura = 0;
+  for (let i = 0; i < qtdVisivel; i++) {
+    altura += itens[i].getBoundingClientRect().height;
+  }
+  entriesEl.style.maxHeight = `${Math.ceil(altura)}px`;
+}
+
+/* Isola o scroll da lista: enquanto ainda houver conteúdo para rolar
+   na direção do gesto, o wheel é totalmente interceptado (preventDefault)
+   e aplicado manualmente ao contêiner interno — nada vaza para a página.
+   Só quando a lista já está no limite (topo/fundo) o evento segue seu
+   curso normal, liberando o scroll da página. */
+function _isolarScrollWheel(entriesEl) {
+  entriesEl.addEventListener('wheel', (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = entriesEl;
+    const podeDescer = scrollTop + clientHeight < scrollHeight - 1;
+    const podeSubir  = scrollTop > 0;
+
+    if ((e.deltaY > 0 && podeDescer) || (e.deltaY < 0 && podeSubir)) {
+      e.preventDefault();
+      entriesEl.scrollTop += e.deltaY;
+    }
+  }, { passive: false });
+}
+
+/* Estado dos toggles "ver todos" — ficam fora das funções de render
+   para persistir entre re-renders (ranking e histórico são atualizados
+   a cada tick do session-tracker, então uma variável local se perderia). */
+let _historicoExpandido = false;
+let _paginasExpandido   = false;
+
 function _renderPaginasMaisAcessadas(pages) {
   const wrap = document.getElementById('nav-paginas-lista');
   if (!wrap) return;
+
+  /* Preserva a posição de rolagem entre re-renders. A lista é
+     redesenhada a cada tick do session-tracker (cronômetro ao vivo),
+     o que recriava o contêiner do zero e resetava scrollTop para 0 —
+     dando a impressão de que o scroll "voltava sozinho" durante o uso. */
+  const scrollAnterior = wrap.querySelector('.nav-rank-entries')?.scrollTop ?? 0;
 
   wrap.innerHTML = '';
   wrap.className = 'nav-rank-list';
 
   const entradas = pages && typeof pages === 'object' ? Object.entries(pages) : [];
 
-  const relevantes = entradas
-    .filter(([, info]) => (info?.visits ?? 0) >= 2)
-    .map(([pathname, info]) => ({
-      pathname,
-      visits: info?.visits ?? 0,
-      time:   info?.time   ?? 0,
-      score:  (info?.visits ?? 0) * 10 + (info?.time ?? 0),
-    }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 6);
+  const grupos = new Map();
 
-  if (!relevantes.length) {
+  entradas.forEach(([pathname, info]) => {
+    const visits = info?.visits ?? 0;
+    const time   = info?.time   ?? 0;
+    const label  = _normalizarRotaParaLabel(pathname);
+
+    const grupo = grupos.get(label);
+    if (!grupo) {
+      grupos.set(label, {
+        label,
+        pathnameRepresentativo: pathname,
+        maiorVisitasIndividual: visits,
+        visits,
+        time,
+      });
+    } else {
+      grupo.visits += visits;
+      grupo.time   += time;
+      if (visits > grupo.maiorVisitasIndividual) {
+        grupo.maiorVisitasIndividual = visits;
+        grupo.pathnameRepresentativo = pathname;
+      }
+    }
+  });
+
+  const todasRelevantes = Array.from(grupos.values())
+    .filter(g => g.visits >= 2)
+    .map(g => ({
+      label:    g.label,
+      pathname: g.pathnameRepresentativo,
+      visits:   g.visits,
+      time:     g.time,
+      score:    g.visits * 10 + g.time,
+    }))
+    .sort((a, b) => b.score - a.score);
+
+  if (!todasRelevantes.length) {
     const vazio = document.createElement('div');
     vazio.className = 'nav-rank-empty';
     vazio.textContent = 'Nenhuma página com 2 ou mais visitas ainda.';
@@ -714,12 +818,21 @@ function _renderPaginasMaisAcessadas(pages) {
     return;
   }
 
-  const maxScore = relevantes[0].score;
+  const LIMITE_COLAPSADO = NAV_ITENS_VISIVEIS;
+  const temMais = todasRelevantes.length > LIMITE_COLAPSADO;
 
-  relevantes.forEach(({ pathname, visits, time, score }, idx) => {
+  if (!temMais) _paginasExpandido = false;
+
+  const relevantes = _paginasExpandido
+    ? todasRelevantes
+    : todasRelevantes.slice(0, LIMITE_COLAPSADO);
+
+  const entriesEl = document.createElement('div');
+  entriesEl.className = 'nav-rank-entries' + (_paginasExpandido ? ' is-expandido' : '');
+
+  relevantes.forEach(({ label, pathname, visits, time }, idx) => {
     const { chave } = _extrairChaveDeRota(pathname) ?? {};
-    const pct  = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
-    const rank = idx + 1;
+    const rank  = idx + 1;
     const isTop = rank === 1;
 
     const iconeCor = _corIconePorRota(chave);
@@ -740,22 +853,38 @@ function _renderPaginasMaisAcessadas(pages) {
         ${_iconePorRota(chave)}
       </div>
       <div class="nav-rank-body">
-        <div class="nav-rank-name${isTop ? ' is-top' : ''}">${_escapeHtmlNav(_normalizarRotaParaLabel(pathname))}</div>
+        <div class="nav-rank-name${isTop ? ' is-top' : ''}">${_escapeHtmlNav(label)}</div>
         <div class="nav-rank-meta">
           <span class="nav-rank-stat"><strong>${visits}</strong> visita${visits !== 1 ? 's' : ''}</span>
           <span class="nav-rank-stat"><strong>${formatTimeHuman(time)}</strong> tempo total</span>
         </div>
       </div>
-      <div class="nav-rank-bar-wrap">
-        <div class="nav-rank-bar">
-          <div class="nav-rank-bar-fill${isTop ? ' is-top' : ''}" style="width:${pct}%"></div>
-        </div>
-        <div class="nav-rank-pct">${pct}%</div>
-      </div>
     `;
 
-    wrap.appendChild(item);
+    entriesEl.appendChild(item);
   });
+
+  wrap.appendChild(entriesEl);
+
+  if (_paginasExpandido) {
+    _aplicarAlturaVisivel(entriesEl, NAV_ITENS_VISIVEIS);
+    entriesEl.scrollTop = scrollAnterior;
+    _isolarScrollWheel(entriesEl);
+  }
+
+  if (temMais) {
+    const toggle = document.createElement('button');
+    toggle.type       = 'button';
+    toggle.className  = 'nav-rank-toggle';
+    toggle.textContent = _paginasExpandido
+      ? 'Mostrar menos'
+      : `Ver todas as páginas (${todasRelevantes.length})`;
+    toggle.addEventListener('click', () => {
+      _paginasExpandido = !_paginasExpandido;
+      _renderPaginasMaisAcessadas(pages);
+    });
+    wrap.appendChild(toggle);
+  }
 }
 
 function _escapeHtmlNav(str) {
@@ -767,6 +896,10 @@ function _escapeHtmlNav(str) {
 function _renderFluxoNavegacao(navigation) {
   const wrap = document.getElementById('nav-fluxo');
   if (!wrap) return;
+
+  /* Preserva scrollTop entre re-renders — mesma causa e mesmo
+     remédio de _renderPaginasMaisAcessadas (ver comentário lá). */
+  const scrollAnterior = wrap.querySelector('.nav-tl-entries')?.scrollTop ?? 0;
 
   wrap.innerHTML = '';
   wrap.className = 'nav-tl-list';
@@ -786,12 +919,34 @@ function _renderFluxoNavegacao(navigation) {
     return acc;
   }, []);
 
-  const exibir = semRep.slice(-8);
-  const agora  = Date.now();
+  /* ── Ordem de exibição: mais recente primeiro ──────────────────
+     semRep vem em ordem cronológica crescente (mais antigo → mais
+     recente, item atual por último). Invertendo aqui, o item mais
+     recente (atual) fica no índice 0. Isso garante que os 3 itens
+     exibidos no modo colapsado sejam EXATAMENTE os 3 primeiros itens
+     do modo expandido — o restante do histórico aparece só abaixo,
+     sem reposicionar o que já estava visível. */
+  const semRepRecenteAntes = [...semRep].reverse();
+
+  const LIMITE_COLAPSADO = NAV_ITENS_VISIVEIS;
+  const temMais = semRepRecenteAntes.length > LIMITE_COLAPSADO;
+
+  if (!temMais) _historicoExpandido = false;
+
+  const exibir = _historicoExpandido
+    ? semRepRecenteAntes
+    : semRepRecenteAntes.slice(0, LIMITE_COLAPSADO);
+
+  const agora = Date.now();
+
+  const entriesEl = document.createElement('div');
+  entriesEl.className = 'nav-tl-entries' + (_historicoExpandido ? ' is-expandido' : '');
 
   exibir.forEach((pathname, idx) => {
-    const isCurrent = idx === exibir.length - 1;
-    const minutosAtras = (exibir.length - 1 - idx) * 3;
+    /* idx 0 = item mais recente (atual), pois "exibir" já está
+       em ordem "mais recente primeiro". */
+    const isCurrent    = idx === 0;
+    const minutosAtras = idx * 3;
     const tsEstimado   = agora - minutosAtras * 60 * 1000;
     const horario      = new Date(tsEstimado).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
@@ -814,19 +969,43 @@ function _renderFluxoNavegacao(navigation) {
       ${isCurrent ? '<span class="nav-tl-badge">Agora</span>' : ''}
     `;
 
-    wrap.appendChild(entry);
+    entriesEl.appendChild(entry);
   });
 
-  const footer = document.createElement('div');
-  footer.className = 'nav-tl-footer';
-  footer.innerHTML = `
-    <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-      <path d="M9.5 5.5A4 4 0 115.5 1.5M9.5 1.5v4h-4"/>
-    </svg>
-    Atualizado agora há pouco
-  `;
-  wrap.appendChild(footer);
+  wrap.appendChild(entriesEl);
+
+  if (_historicoExpandido) {
+    _aplicarAlturaVisivel(entriesEl, NAV_ITENS_VISIVEIS);
+    entriesEl.scrollTop = scrollAnterior;
+    _isolarScrollWheel(entriesEl);
+  }
+
+  if (temMais) {
+    const toggle = document.createElement('button');
+    toggle.type       = 'button';
+    toggle.className  = 'nav-tl-toggle';
+    toggle.textContent = _historicoExpandido
+      ? 'Mostrar menos'
+      : `Ver histórico completo (${semRepRecenteAntes.length})`;
+    toggle.addEventListener('click', () => {
+      _historicoExpandido = !_historicoExpandido;
+      _renderFluxoNavegacao(navigation);
+    });
+    wrap.appendChild(toggle);
+  }
+
+const footer = document.createElement('div');
+footer.className = 'nav-tl-footer';
+footer.innerHTML = `
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" 
+  fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+  class="lucide lucide-clock2-icon lucide-clock-2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4-2"/>
+  </svg>
+  Atualizado agora há pouco
+`;
+wrap.appendChild(footer);
 }
+
 function _renderHeatmapHorario(hourHeatmap) {
   const wrap = document.getElementById('nav-heatmap');
   if (!wrap) return;

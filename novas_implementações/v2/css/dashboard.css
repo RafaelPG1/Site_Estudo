@@ -1069,6 +1069,8 @@ body {
 .nav-sub-header svg {
   color: var(--accent-lite);
   flex-shrink: 0;
+  width: 18px;   /* Altere para o tamanho desejado */
+  height: 18px;  /* Altere para o tamanho desejado */
 }
 
 /* ── RANKING: lista de páginas mais acessadas ── */
@@ -1197,7 +1199,57 @@ body {
 }
 
 /* ── TIMELINE: histórico de navegação ── */
+.nav-tl-entries {
+  display: flex;
+  flex-direction: column;
+}
 
+.nav-tl-entries.is-expandido {
+  max-height: 280px; /* fallback — sobrescrito por style inline calculado via JS */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 6px;
+}
+
+.nav-rank-entries.is-expandido {
+  max-height: 280px; /* fallback — sobrescrito por style inline calculado via JS */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 6px;
+}
+
+
+.nav-tl-toggle,
+.nav-rank-toggle {
+  width: 100%;
+  background: transparent;
+  border: 1px dashed var(--border-2);
+  border-radius: var(--r-sm);
+  color: var(--text-3);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .2px;
+  padding: 8px 0;
+  margin-top: 8px;
+  cursor: pointer;
+  transition: color .15s ease, border-color .15s ease, background .15s ease;
+}
+
+.nav-tl-toggle:hover, .nav-tl-toggle:focus,
+.nav-rank-toggle:hover, .nav-rank-toggle:focus {
+  color: var(--accent-lite);
+  border-color: rgba(108,99,255,.4);
+  background: var(--accent-dim);
+  outline: none;
+}
+
+.nav-tl-toggle:hover,
+.nav-tl-toggle:focus {
+  color: var(--accent-lite);
+  border-color: rgba(108,99,255,.4);
+  background: var(--accent-dim);
+  outline: none;
+}
 .nav-tl-list {
   display: flex;
   flex-direction: column;
@@ -1285,10 +1337,15 @@ body {
   padding-top: 12px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 10.5px;
-  color: var(--text-3);
+  color: var(--text-2);
   border-top: 1px solid var(--border);
-  margin-top: 4px;
+  margin-top: 8px;
 }
+.nav-tl-footer  svg {
+  width: 13px;   /* Altere para o tamanho desejado */
+  height: 13px;  /* Altere para o tamanho desejado */
+}
+
 
 .nav-tl-empty {
   font-size: 13px;
