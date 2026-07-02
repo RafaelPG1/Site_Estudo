@@ -1304,6 +1304,18 @@ body {
   text-overflow: ellipsis;
 }
 
+.nav-page-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border, #2a2a35);
+  font-size: 13px;
+}
+.nav-page-item:last-child { border-bottom: none; }
+.nav-page-name { opacity: .85; word-break: break-all; }
+.nav-page-meta { opacity: .6; white-space: nowrap; }
+
 .nav-tl-page-name.is-current {
   color: var(--accent-lite);
 }

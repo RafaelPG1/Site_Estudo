@@ -655,7 +655,6 @@ function _renderNavegacaoAoVivo(stats) {
   _renderFluxoNavegacao(stats.navSequence);
   _renderHeatmapHorario(stats.navHourHeatmap);
   _renderDispositivo(stats.navDeviceType);
-  _renderQuizEvents(stats.quizEvents);
 }
 
 function _renderNavegacaoPersistida(sessao) {
@@ -664,7 +663,6 @@ function _renderNavegacaoPersistida(sessao) {
   _renderFluxoNavegacao(sessao.navigation);
   _renderHeatmapHorario(sessao.hourHeatmap);
   _renderDispositivo(sessao.deviceType);
-  _renderQuizEvents(sessao.quizEvents);
 }
 
 function _renderNavegacaoVazia() {
@@ -672,7 +670,6 @@ function _renderNavegacaoVazia() {
   _renderFluxoNavegacao(null);
   _renderHeatmapHorario(null);
   _renderDispositivo(null);
-  _renderQuizEvents(null);
 }
 
 /* ── ícone por pathname ───────────────────────────────────── */
@@ -1050,43 +1047,6 @@ function _renderDispositivo(deviceType) {
   if (deviceType === 'mobile')       el.textContent = '📱 Mobile';
   else if (deviceType === 'desktop') el.textContent = '🖥️ Desktop';
   else                               el.textContent = '—';
-}
-
-function _renderQuizEvents(quizEvents) {
-  const wrap   = document.getElementById('quiz-eventos-lista');
-  const count  = document.getElementById('quiz-eventos-count');
-  const eventos = Array.isArray(quizEvents) ? quizEvents : [];
-
-  if (count) count.textContent = eventos.length;
-
-  if (!wrap) return;
-  wrap.innerHTML = '';
-
-  if (!eventos.length) {
-    const vazio       = document.createElement('div');
-    vazio.className   = 'nav-empty';
-    vazio.textContent = 'Nenhum quiz registrado nesta sessão.';
-    wrap.appendChild(vazio);
-    return;
-  }
-
-  eventos.slice(-8).reverse().forEach(ev => {
-    const item = document.createElement('div');
-    item.className = 'quiz-event-item';
-
-    const nome       = document.createElement('span');
-    nome.className   = 'quiz-event-name';
-    nome.textContent = [ev.disc, ev.modo].filter(Boolean).join(' / ') || 'Quiz';
-
-    const taxa       = document.createElement('span');
-    taxa.className   = 'quiz-event-taxa';
-    const pct        = typeof ev.taxaAcerto === 'number' ? Math.round(ev.taxaAcerto * 100) : 0;
-    taxa.textContent = `${ev.acertos ?? 0}/${ev.totalQuestoes ?? 0} · ${pct}%`;
-
-    item.appendChild(nome);
-    item.appendChild(taxa);
-    wrap.appendChild(item);
-  });
 }
 
 /* ══════════════════════════════════════════════

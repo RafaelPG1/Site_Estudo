@@ -53,8 +53,6 @@ let _heartbeatTimer = null;
 
 const _tabId = `${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 
-let _quizEvents = [];
-
 const _listeners = new Set();
 
 /* ══════════════════════════════════════════════
@@ -322,7 +320,6 @@ async function _criarSessaoFirestore() {
       duracao:       0,
       paginaInicial: location.pathname,
       dataKey,
-      quizEvents:    [],
       pages:         {},
       navigation:    [],
       hourHeatmap:   {},
@@ -360,7 +357,6 @@ async function _flush() {
     await setDoc(_sessaoRef(_uid, _sessionId), {
       endedAt:     now,
       duracao:     activeSeconds,
-      quizEvents:  _quizEvents.length > 0 ? _quizEvents : [],
       pages:       _navPages,
       navigation:  _navSequence,
       hourHeatmap: _navHourHeatmap,
@@ -468,7 +464,6 @@ export async function init(uid) {
         const data = snap.data();
         _sessionId      = storedId;
         _startedAt      = storedStart;
-        _quizEvents     = Array.isArray(data.quizEvents) ? data.quizEvents : [];
         _navHourHeatmap = _isPlainObject(data.hourHeatmap) ? data.hourHeatmap : {};
         _navDeviceType  = typeof data.deviceType === 'string' ? data.deviceType : _detectDevice();
 
@@ -538,7 +533,6 @@ async function _iniciarNovaSessao() {
 
   _sessionId      = _newSessionId();
   _startedAt      = Date.now();
-  _quizEvents     = [];
   _navPages       = {};
   _navSequence    = [];
   _navHourHeatmap = {};
@@ -582,7 +576,6 @@ export async function destroy() {
   _initialized    = false;
   _booting        = false;
   _initInProgress = false;
-  _quizEvents     = [];
   _navPages       = {};
   _navSequence    = [];
   _navHourHeatmap = {};
@@ -605,7 +598,6 @@ export function getStats() {
     isLeader:       dono,
     startedAt:      _startedAt,
     initialized:    _initialized,
-    quizEvents:     _quizEvents.slice(),
     navPages:       Object.fromEntries(
                       Object.entries(_navPages).map(([k, v]) => [k, { ...v }])
                     ),
@@ -805,24 +797,6 @@ function _installNavAutoDetect() {
     return result;
   };
 }
-
-/* ══════════════════════════════════════════════
-   LOGGER PASSIVO DE EVENTOS DE QUIZ
-══════════════════════════════════════════════ */
-window.addEventListener('nexus:quizFinalizado', function (e) {
-  if (!_initialized || !e?.detail) return;
-
-  _quizEvents.push({
-    tipo:    'quiz_finalizado',
-    payload: e.detail,
-    ts:      Date.now(),
-  });
-
-  console.log('[session-tracker] quiz registrado (bruto):',
-    (e.detail.disc ?? '?') + '/' + (e.detail.modo ?? '?'));
-
-  _flush().catch(() => {});
-});
 
 /* ══════════════════════════════════════════════
    AUTO-BOOT
