@@ -556,7 +556,6 @@
 .trend-indeterminado { border-left: 3px solid var(--border-2); }
 .trend-indeterminado .trend-direcao   { color: var(--text-3); }
 .trend-indeterminado .trend-diferenca { color: var(--text-3); font-style: italic; }
-.trend-indeterminado .trend-header-badge { background: var(--border); color: var(--text-2); }
 
 
 /* ── PADRONIZAÇÃO VISUAL DO ESTADO VAZIO
@@ -580,7 +579,7 @@
 .trend-indeterminado .trend-badge-vazio {
   display: inline-flex;
   background: var(--border);
-  color: var(--text-3);
+  color: var(--text-2);
 }
 
 /* Headline da Tendência vazia — mesmo tamanho, peso, família
@@ -1250,8 +1249,7 @@
 
 .prediction-vazio .prediction-slider-fill    { background: var(--border-2); }
 .prediction-vazio .prediction-slider-handle  { background: var(--border-2); box-shadow: 0 0 0 2px var(--border-2); }
-.prediction-vazio .prediction-badge          { background: var(--border); color: var(--text-3); }
-
+.prediction-vazio .prediction-badge { background: var(--border); color: var(--text-2); }
 
 /* ── Responsividade ── */
 @media (max-width: 768px) {
@@ -1448,8 +1446,11 @@
   height: 28px;
 }
 
-/* Pílula: mesmo padding/fonte/espaçamento da Previsão */
-.score-vazio .score-nivel {
+/* Pílula "Sem dados" — estilo compartilhado entre os três cards
+   (Score / Tendência / Previsão). */
+.score-vazio .score-nivel,
+.trend-indeterminado .trend-badge-vazio,
+.prediction-vazio .prediction-badge {
   padding: 4px 10px;
   gap: 4px;
   font-size: 13px;
@@ -1487,11 +1488,3 @@
   mask-position: center;
 }
 
-/* Pílula: mesmo padding/fonte/espaçamento da Previsão
-   (cor e fundo já corretos na regra original) */
-.trend-indeterminado .trend-header-badge {
-  padding: 4px 10px;
-  gap: 4px;
-  font-size: 13px;
-  letter-spacing: -0.1px;
-}

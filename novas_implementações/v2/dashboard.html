@@ -480,7 +480,7 @@
               <span class="empty-state-info-btn intel-title-info" tabindex="0"
                     aria-label="Como a tendência é calculada"
                     data-tooltip="Compara sua taxa de acerto recente com períodos anteriores para identificar se você está melhorando, estável ou piorando.">ⓘ</span>
-              <span class="intel-badge trend-badge-vazio">Sem dados</span>
+               <span class="intel-badge trend-badge-vazio" id="trend-badge">Sem dados</span>
             </div>
 
             <div class="trend-chart-wrap" aria-hidden="true">
@@ -539,11 +539,7 @@
 
       </div>
 
-      <!-- Faixa de insight — Camada 5. Preenchida por renderInsight() em dashboard_render.js -->
-      <div class="intel-insight-banner" id="intel-insight-banner">
-        <span class="intel-insight-icon" id="intel-insight-icon" aria-hidden="true">💡</span>
-        <span class="intel-insight-text" id="intel-insight-text">Carregando recomendações…</span>
-      </div>
+
 
 
       <!-- ══════════════════════════════════════════════════

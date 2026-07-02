@@ -47,7 +47,7 @@
   --accent-lite: #A8A3FF;
   --text-1:      #F0EFF8;
   --text-2:      #9896A8;
-  --text-3:      #5A596B;
+  --text-3:      #737288;
   --green:       #3DDC84;
   --amber:       #FFB547;
   --red:         #FF5C6A;
@@ -342,49 +342,8 @@ body {
   left: -70px;
 }
 
-/* ─── FAIXA DE INSIGHT DA CAMADA 5 ───────────────────────────
-   Mensagem contextual exibida logo abaixo da linha
-   Score · Tendência · Previsão. Populada por renderInsight()
-   em dashboard_render.js. Conteúdo muda conforme haver ou
-   não relatorio de inteligência disponível — nenhum cálculo
-   novo, apenas seleção de texto. */
-.intel-insight-banner {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  padding: 14px 24px;
-  font-size: 13px;
-  color: var(--text-2);
-  text-align: center;
-  transition: border-color .2s ease, background .2s ease;
-}
 
-.intel-insight-icon {
-  font-size: 15px;
-  flex-shrink: 0;
-  line-height: 1;
-}
 
-.intel-insight-banner.is-vazio {
-  border-color: rgba(108,99,255,.2);
-}
-
-.intel-insight-banner.is-preenchido {
-  border-color: rgba(61,220,132,.25);
-  background: rgba(61,220,132,.04);
-}
-
-@media (max-width: 768px) {
-  .intel-insight-banner {
-    padding: 12px 16px;
-    font-size: 12.5px;
-    text-align: left;
-  }
-}
 
 
 
@@ -1596,23 +1555,6 @@ body {
   visibility: visible;
 }
 
-/* Em cards com pouco espaço horizontal, ancora o tooltip à direita */
-.score-vazio .empty-state-info-btn::after,
-.trend-indeterminado .empty-state-info-btn::after,
-.prediction-vazio .empty-state-info-btn::after {
-  left: auto;
-  right: 0;
-  transform: translateX(0) translateY(4px);
-}
-
-.score-vazio .empty-state-info-btn:hover::after,
-.score-vazio .empty-state-info-btn:focus::after,
-.trend-indeterminado .empty-state-info-btn:hover::after,
-.trend-indeterminado .empty-state-info-btn:focus::after,
-.prediction-vazio .empty-state-info-btn:hover::after,
-.prediction-vazio .empty-state-info-btn:focus::after {
-  transform: translateX(0) translateY(0);
-}
 
 /* Versão compacta para conquistas */
 .ach-info-btn {

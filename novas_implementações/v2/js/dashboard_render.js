@@ -87,32 +87,10 @@ export function renderDashboardIntelligence(relatorio) {
   renderPrediction(relatorio);
   renderTimeline(relatorio);
   renderAchievements(relatorio);
-  renderInsight(relatorio);
+
 }
 
-/* Faixa de insight — abaixo da linha Score · Tendência · Previsão.
-   Zero cálculo: apenas escolhe uma das duas mensagens conforme
-   a presença (ou não) de um scoreGeral válido no relatorio,
-   o mesmo guard já usado por renderScore(). */
-export function renderInsight(relatorio) {
-  const temDados = !!(relatorio?.scoreEvolutivo && relatorio.scoreEvolutivo.scoreGeral !== null && relatorio.scoreEvolutivo.scoreGeral !== undefined);
 
-  const elBanner = document.getElementById('intel-insight-banner');
-  const elIcon   = document.getElementById('intel-insight-icon');
-  const elText   = document.getElementById('intel-insight-text');
-  if (!elBanner) return;
-
-  if (!temDados) {
-    elBanner.className = 'intel-insight-banner is-vazio';
-    if (elIcon) elIcon.textContent = '💡';
-    if (elText) elText.textContent = 'Continue praticando! Quanto mais quizzes você fizer, mais precisas serão suas análises.';
-    return;
-  }
-
-  elBanner.className = 'intel-insight-banner is-preenchido';
-  if (elIcon) elIcon.textContent = '🚀';
-  if (elText) elText.textContent = 'Excelente progresso! Você está no caminho certo para alcançar seus objetivos.';
-}
 /* ══════════════════════════════════════════════
    CAMADA 5 — RENDERIZADORES
 ══════════════════════════════════════════════ */
@@ -157,8 +135,8 @@ export function renderScore(relatorio) {
     if (elHeadline)  elHeadline.textContent  = 'Seu score está começando!';
     if (elDescricao) elDescricao.textContent = 'Complete quizzes para acumular pontos e acompanhar sua evolução.';
     if (elChipText)  elChipText.textContent  = 'Mínimo de 2 tentativas para gerar seu score.';
-    if (elTentativas) elTentativas.textContent = '—';
-    if (elQuestoes)   elQuestoes.textContent   = '—';
+    if (elTentativas) elTentativas.textContent = '0';
+    if (elQuestoes)   elQuestoes.textContent   = '0';
 
     const ringElVazio = elCard.querySelector('.score-ring');
     if (ringElVazio) ringElVazio.style.setProperty('--score-pct', '0%');
@@ -216,59 +194,62 @@ export function renderScore(relatorio) {
 /* Fase 2.2 — Tendencia do aluno */
 
 export function renderTrend(relatorio) {
-  const tendencia = relatorio?.tendenciaDoAluno;
+   const tendencia = relatorio?.tendenciaDoAluno;
+ 
+   const elCard        = document.getElementById('trend-card');
+   const elDirecao      = document.getElementById('trend-direcao');
+   const elDiferenca      = document.getElementById('trend-diferenca');
+   const elConfianca        = document.getElementById('trend-confianca');
+   const elChartBadge          = document.getElementById('trend-chart-badge');
+  const elBadge                 = document.getElementById('trend-badge');
+ 
+   if (!elCard) return;
+ 
+   if (!tendencia || tendencia.direcao === 'indeterminado') {
+     elCard.className = 'trend-card trend-indeterminado';
+ 
+     elDirecao.textContent = 'Ainda sem dados suficientes';
+ 
+     elDiferenca.innerHTML = `
+       <span class="empty-state-msg">
+         A tendência será calculada automaticamente
+         quando houver mais tentativas registradas.
+         <br><span class="empty-state-hint">São necessárias pelo menos 2 tentativas.</span>
+       </span>`;
+ 
+     elConfianca.textContent = '';
+     if (elChartBadge) elChartBadge.textContent = '—';
+    if (elBadge) {
+      elBadge.className   = 'intel-badge trend-badge-vazio';
+      elBadge.textContent = 'Sem dados';
+    }
+     return;
+   }
+ 
+   elCard.className = `trend-card trend-${tendencia.direcao}`;
+ 
+   const DIRECAO_ICONE = {
+     'melhorando': '↑',
+     'estavel':    '→',
+     'piorando':   '↓',
+   };
+   const DIRECAO_LABEL = {
+     'melhorando': 'Melhorando',
+     'estavel':    'Estável',
+     'piorando':   'Piorando',
+   };
+   const icone = DIRECAO_ICONE[tendencia.direcao] ?? '—';
+   const label = DIRECAO_LABEL[tendencia.direcao] ?? tendencia.direcao;
+   elDirecao.textContent = `${icone} ${label}`;
 
-  const elCard        = document.getElementById('trend-card');
-  const elDirecao      = document.getElementById('trend-direcao');
-  const elDiferenca      = document.getElementById('trend-diferenca');
-  const elConfianca        = document.getElementById('trend-confianca');
-  const elChartBadge          = document.getElementById('trend-chart-badge');
-
-  if (!elCard) return;
-
-  if (!tendencia || tendencia.direcao === 'indeterminado') {
-    elCard.className = 'trend-card trend-indeterminado';
-
-    elDirecao.textContent = 'Ainda sem dados suficientes';
-
-    elDiferenca.innerHTML = `
-      <span class="empty-state-msg">
-        A tendência será calculada automaticamente
-        quando houver mais tentativas registradas.
-        <br><span class="empty-state-hint">São necessárias pelo menos 2 tentativas.</span>
-      </span>`;
-
-    elConfianca.textContent = '';
-    if (elChartBadge) elChartBadge.textContent = '—';
-    return;
+  if (elBadge) {
+    elBadge.className   = 'intel-badge trend-header-badge';
+    elBadge.textContent = label;
   }
-
-  elCard.className = `trend-card trend-${tendencia.direcao}`;
-
-  const DIRECAO_ICONE = {
-    'melhorando': '↑',
-    'estavel':    '→',
-    'piorando':   '↓',
-  };
-  const DIRECAO_LABEL = {
-    'melhorando': 'Melhorando',
-    'estavel':    'Estável',
-    'piorando':   'Piorando',
-  };
-  const icone = DIRECAO_ICONE[tendencia.direcao] ?? '—';
-  const label = DIRECAO_LABEL[tendencia.direcao] ?? tendencia.direcao;
-  elDirecao.textContent = `${icone} ${label}`;
-
-  const pct   = tendencia.diferencaPct ?? 0;
+ 
+   const pct   = tendencia.diferencaPct ?? 0;
   const sinal = pct >= 0 ? '+' : '';
-  elDiferenca.textContent = `${sinal}${pct}% em relação ao período anterior`;
-
-  const CONFIANCA_LABEL = {
-    'alta':  'Alta confiança',
-    'media': 'Confiança média',
-    'baixa': 'Baixa confiança',
-  };
-  elConfianca.textContent = CONFIANCA_LABEL[tendencia.confianca] ?? tendencia.confianca ?? '';
+  elDiferenca.textContent = `${sinal}${pct}% em relação ao seu desempenho recente`;
 
   if (elChartBadge) elChartBadge.textContent = `${sinal}${pct}%`;
 }
