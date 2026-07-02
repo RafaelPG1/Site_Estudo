@@ -1433,7 +1433,7 @@ body {
   display: grid;
   grid-template-columns: 3fr 2fr;
   gap: var(--gap);
-  align-items: start;
+  align-items: stretch;   /* era: start */
 }
 
 .intel-grid-weak-consist > section {

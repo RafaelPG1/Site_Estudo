@@ -1032,6 +1032,108 @@
 .wk-tend-estavel    { color: var(--blue); }
 .wk-tend-piorando   { color: var(--red); }
 
+/* ── Fraquezas — card em 3 zonas (paridade visual com Perfil de uso) ── */
+.weaknesses-card.full-width {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0 4px;
+}
+
+.weaknesses-lista {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Zona 1 — chips de resumo (mesmo padrão visual do usage-stats-row) */
+.wk-stats-row {
+  display: flex;
+  gap: 12px;
+  padding: 0 28px 18px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.wk-stat-chip {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 12px 14px;
+  min-width: 0;
+}
+
+.wk-stat-icon {
+  width: 36px; height: 36px;
+  border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  background: var(--border);
+  color: var(--text-3);
+}
+.wk-stat-icon.ic-red   { background: rgba(255,92,106,.12); color: var(--red); }
+.wk-stat-icon.ic-green { background: rgba(61,220,132,.12); color: var(--green); }
+
+.wk-stat-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.wk-stat-label {
+  font-size: 11px;
+  color: var(--text-3);
+  font-weight: 450;
+}
+.wk-stat-value {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Linhas da lista — mais respiro e um badge de posição colorido
+   (substitui o número monocromático por um indicador de status) */
+.wk-item {
+  padding: 18px 28px;
+}
+
+.wk-pos {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--border);
+  color: var(--text-3);
+}
+.wk-pos.wk-pos-ok     { background: rgba(61,220,132,.14); color: var(--green); }
+.wk-pos.wk-pos-medio  { background: rgba(255,181,71,.14); color: var(--amber); }
+.wk-pos.wk-pos-baixo  { background: rgba(255,92,106,.14); color: var(--red); }
+.wk-pos.wk-pos-semdados { background: var(--border); color: var(--text-3); }
+
+.wk-nome { font-size: 14px; }
+.wk-taxa { font-size: 19px; }
+
+/* Zona 3 — insight, sempre ancorado ao rodapé do card */
+.wk-insight {
+  margin-top: auto;
+  padding: 14px 28px 4px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .wk-stats-row { flex-direction: column; padding: 0 18px 14px; }
+  .wk-item      { padding: 14px 18px; }
+  .wk-insight   { padding: 12px 18px 4px; }
+}
+
 /* ── Responsividade ── */
 @media (max-width: 768px) {
   .wk-item {

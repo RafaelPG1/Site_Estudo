@@ -273,16 +273,24 @@ export function renderTrend(relatorio) {
 
 /* Fase 2.4 — Fraquezas por disciplina
    ─────────────────────────────────────────────
-   Agora sempre exibe TODAS as disciplinas do semestre
+   Sempre exibe TODAS as disciplinas do semestre
    selecionado (State.disciplinas), cruzando com os dados
    reais vindos de relatorio.fraquezasPorDisciplina.
-   Disciplinas sem tentativas aparecem com 0% e "Sem dados". */
+   Disciplinas sem tentativas aparecem com 0% e "Sem dados".
+
+   AJUSTE — equilíbrio visual com o card "Perfil de uso":
+   o card ganhou 3 zonas (chips de resumo → lista → insight).
+   Nenhum cálculo novo foi introduzido — chips e insight
+   apenas agrupam/selecionam campos já presentes em `lista`,
+   a mesma lista já usada para renderizar as linhas. */
 export function renderWeaknesses(relatorio) {
   const dadosReaisLista = relatorio?.fraquezasPorDisciplina;
 
-  const elSection = document.getElementById('weaknesses-section');
-  const elLista   = document.getElementById('weaknesses-lista');
-  const elCount   = document.getElementById('weaknesses-count');
+  const elSection  = document.getElementById('weaknesses-section');
+  const elLista    = document.getElementById('weaknesses-lista');
+  const elCount    = document.getElementById('weaknesses-count');
+  const elStatsRow = document.getElementById('wk-stats-row');
+  const elInsight  = document.getElementById('wk-insight');
 
   if (!elSection || !elLista) return;
 
@@ -308,6 +316,8 @@ export function renderWeaknesses(relatorio) {
     /* Sem disciplinas configuradas no semestre — não há o que listar */
     elSection.className = 'weaknesses-card weaknesses-vazio';
     if (elCount) elCount.textContent = '';
+    if (elStatsRow) elStatsRow.innerHTML = '';
+    if (elInsight) elInsight.textContent = 'Nenhuma disciplina configurada para este semestre.';
     elLista.innerHTML = `
       <div class="empty-state-block">
         <div class="empty-state-icon" aria-hidden="true">
@@ -352,7 +362,7 @@ export function renderWeaknesses(relatorio) {
     };
   });
 
-  elSection.className = 'weaknesses-card';
+  elSection.className = 'weaknesses-card full-width';
   if (elCount) {
     const comDados = lista.filter(i => !i._semDados).length;
     elCount.textContent = comDados > 0 ? comDados : '';
@@ -370,6 +380,12 @@ export function renderWeaknesses(relatorio) {
     'piorando':   'wk-tend-piorando',
   };
 
+  /* Acumulado durante o loop, usado depois para montar o insight
+     do rodapé — nenhum cálculo novo, apenas coleta dos itens que
+     já têm taxa consolidada (mesmo critério de dadosInsuficientes
+     usado linha a linha). */
+  const candidatosInsight = [];
+
   lista.forEach((item, idx) => {
     const disc = item?.disciplina        ?? '—';
     const taxa = item?.taxaAcertoMediaPct ?? null;
@@ -384,7 +400,8 @@ export function renderWeaknesses(relatorio) {
       ? item.tendencia.direcao
       : null;
     const temDirecaoValida = direcaoReal && direcaoReal !== 'indeterminado';
-/* Quando há tentativas mas ainda não o suficiente para calcular
+
+    /* Quando há tentativas mas ainda não o suficiente para calcular
        tendência (temDirecaoValida === false, e não é o caso de
        disciplina nunca praticada), a porcentagem também é ocultada
        com '—'. Evita a inconsistência de mostrar, por exemplo, 100%
@@ -395,13 +412,25 @@ export function renderWeaknesses(relatorio) {
     const dadosInsuficientes = !item._semDados && !temDirecaoValida;
     const emQueda = item?.emQueda === true;
 
+    if (!item._semDados && !dadosInsuficientes && taxa !== null) {
+      candidatosInsight.push({ disciplina: disc, taxa });
+    }
+
     const row       = document.createElement('div');
     row.className   = 'wk-item';
     if (emQueda && !item._semDados) row.classList.add('wk-item-queda');
     if (item._semDados) row.classList.add('wk-item-semdados');
 
     const pos         = document.createElement('div');
-    pos.className     = 'wk-pos';
+    /* Cor do indicador de posição por faixa de desempenho — apenas
+       aparência, reaproveita a mesma faixa já usada na barra
+       (wk-bar-ok / wk-bar-medio / wk-bar-baixo). */
+    const posClasse = item._semDados
+      ? 'wk-pos-semdados'
+      : dadosInsuficientes
+        ? ''
+        : (taxa >= 70 ? 'wk-pos-ok' : taxa >= 40 ? 'wk-pos-medio' : 'wk-pos-baixo');
+    pos.className     = ['wk-pos', posClasse].filter(Boolean).join(' ');
     pos.textContent   = idx + 1;
 
     const corpo       = document.createElement('div');
@@ -431,7 +460,7 @@ export function renderWeaknesses(relatorio) {
     const barFill     = document.createElement('div');
     barFill.className = 'wk-bar-fill';
 
-/* Barra "vazia": tanto para disciplinas nunca praticadas
+    /* Barra "vazia": tanto para disciplinas nunca praticadas
        (_semDados) quanto para disciplinas com dados insuficientes
        para confiar na tendência (dadosInsuficientes) — mesmo
        critério já usado para ocultar a porcentagem em wk-taxa.
@@ -458,7 +487,7 @@ export function renderWeaknesses(relatorio) {
     const meta        = document.createElement('div');
     meta.className    = 'wk-meta';
 
-const taxaEl      = document.createElement('div');
+    const taxaEl      = document.createElement('div');
     taxaEl.className  = 'wk-taxa';
     taxaEl.textContent = (taxa !== null && !dadosInsuficientes) ? `${taxa}%` : '—';
 
@@ -474,7 +503,7 @@ const taxaEl      = document.createElement('div');
        que a ausência de tendência é sobre HISTÓRICO insuficiente para
        comparar "antes" e "depois" — e não sobre o desempenho em si, que
        já é conhecido e exibido corretamente na porcentagem ao lado. */
-const label = item._semDados
+    const label = item._semDados
       ? 'Sem dados'
       : (temDirecaoValida ? (TENDENCIA_LABEL[direcaoReal] ?? direcaoReal) : 'Poucos dados');
     tendEl.textContent = label;
@@ -487,8 +516,59 @@ const label = item._semDados
     row.appendChild(meta);
     elLista.appendChild(row);
   });
-}
 
+  /* ── Zona 1: chips de resumo (topo do card) ──
+     Apenas agrupamento de campos já existentes em `lista`,
+     mesmo padrão do total exibido no heatmap de "Perfil de uso". */
+  if (elStatsRow) {
+    const comDados  = lista.filter(i => !i._semDados).length;
+    const emQuedaQt = lista.filter(i => i.emQueda === true && !i._semDados).length;
+
+    elStatsRow.innerHTML = `
+      <div class="wk-stat-chip">
+        <div class="wk-stat-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="2" y="2" width="14" height="14" rx="2.5"/>
+            <path d="M5.5 6.5h7M5.5 9.5h7M5.5 12.5h4"/>
+          </svg>
+        </div>
+        <div class="wk-stat-body">
+          <span class="wk-stat-label">Disciplinas monitoradas</span>
+          <span class="wk-stat-value">${comDados} de ${lista.length}</span>
+        </div>
+      </div>
+      <div class="wk-stat-chip">
+        <div class="wk-stat-icon ${emQuedaQt > 0 ? 'ic-red' : 'ic-green'}">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M9 5.5v4.5M9 12.3v.2"/>
+            <circle cx="9" cy="9" r="6.5"/>
+          </svg>
+        </div>
+        <div class="wk-stat-body">
+          <span class="wk-stat-label">Em queda</span>
+          <span class="wk-stat-value">${emQuedaQt > 0 ? `${emQuedaQt} disciplina${emQuedaQt !== 1 ? 's' : ''}` : 'Nenhuma'}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  /* ── Zona 3: insight (rodapé do card) ──
+     Seleciona (não calcula) a disciplina com menor taxa entre as
+     que já têm dado consolidado — mesma lógica de "maior oportunidade
+     de melhoria" que já orienta a ordenação visual da lista. */
+  if (elInsight) {
+    const todasSemDados = lista.every(i => i._semDados);
+
+    if (todasSemDados) {
+      elInsight.textContent = 'Complete quizzes para gerar sua análise por disciplina.';
+    } else if (candidatosInsight.length > 0) {
+      const pior = [...candidatosInsight].sort((a, b) => a.taxa - b.taxa)[0];
+      elInsight.textContent = `Sua maior oportunidade de melhoria está em ${pior.disciplina} (${pior.taxa}%). Reforce essa disciplina para elevar sua média geral.`;
+    } else {
+      elInsight.textContent = 'Continue realizando quizzes para consolidar a análise por disciplina.';
+    }
+  }
+}
 /* Fase 2.5 — Previsao simples */
 
 export function renderPrediction(relatorio) {
