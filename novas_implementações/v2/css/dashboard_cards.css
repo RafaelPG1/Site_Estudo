@@ -895,7 +895,7 @@
 /* Linha de uma disciplina */
 .wk-item {
   display: grid;
-  grid-template-columns: 28px 1fr auto;
+  grid-template-columns: 28px 1fr 150px; /* era: 28px 1fr auto */
   align-items: center;
   gap: 16px;
   padding: 14px 28px;
@@ -991,13 +991,63 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 4px;
+  gap: 8px;              /* era 4px — mais respiro separa
+                             visualmente as duas informações */
   flex-shrink: 0;
 }
 
-.wk-taxa {
+
+/* "Evolução" — pill com rótulo fixo + valor colorido.
+   Mesmo padrão visual já usado em intel-badge (Score/Tendência/
+   Previsão), trazendo consistência com o resto do dashboard. */
+.wk-evolucao {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border-radius: 20px;
+  background: var(--border);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.wk-evolucao-rotulo {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: .2px;
+  color: var(--text-3);
+}
+
+.wk-evolucao-valor {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 18px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .1px;
+  color: var(--text-2);
+}
+
+.wk-evolucao.wk-tend-melhorando { background: rgba(61,220,132,.12); }
+.wk-evolucao.wk-tend-melhorando .wk-evolucao-valor { color: var(--green); }
+
+.wk-evolucao.wk-tend-estavel { background: rgba(79,168,232,.12); }
+.wk-evolucao.wk-tend-estavel .wk-evolucao-valor { color: var(--blue); }
+
+.wk-evolucao.wk-tend-piorando { background: rgba(255,92,106,.12); }
+.wk-evolucao.wk-tend-piorando .wk-evolucao-valor { color: var(--red); }
+
+.wk-evolucao.wk-tend-semdados,
+.wk-evolucao.wk-evolucao-poucos {
+  background: var(--border);
+}
+.wk-evolucao.wk-tend-semdados .wk-evolucao-valor,
+.wk-evolucao.wk-evolucao-poucos .wk-evolucao-valor {
+  color: var(--text-3);
+}
+
+.wk-taxa {
+  font-size: 20px;        /* era 18px — reforça que é o dado
+                             principal da coluna (hero number) */
   font-weight: 700;
   letter-spacing: -.5px;
   color: var(--text-1);
@@ -1129,9 +1179,16 @@
 }
 
 @media (max-width: 768px) {
-  .wk-stats-row { flex-direction: column; padding: 0 18px 14px; }
-  .wk-item      { padding: 14px 18px; }
-  .wk-insight   { padding: 12px 18px 4px; }
+  .wk-item {
+    grid-template-columns: 24px 1fr 108px; /* era: 24px 1fr auto */
+    gap: 12px;
+    padding: 12px 18px;
+  }
+
+  .wk-item-queda { padding-left: 15px; }
+  .wk-nome { max-width: 140px; }
+  .wk-taxa { font-size: 16px; }
+  .wk-evolucao-rotulo { display: none; }
 }
 
 /* ── Responsividade ── */

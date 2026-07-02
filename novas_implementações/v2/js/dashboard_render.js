@@ -483,34 +483,38 @@ export function renderWeaknesses(relatorio) {
 
     corpo.appendChild(nomeWrap);
     corpo.appendChild(barWrap);
+// DEPOIS
+const meta        = document.createElement('div');
+meta.className    = 'wk-meta';
 
-    const meta        = document.createElement('div');
-    meta.className    = 'wk-meta';
+const taxaEl      = document.createElement('div');
+taxaEl.className  = 'wk-taxa';
+taxaEl.textContent = (taxa !== null && !dadosInsuficientes) ? `${taxa}%` : '—';
 
-    const taxaEl      = document.createElement('div');
-    taxaEl.className  = 'wk-taxa';
-    taxaEl.textContent = (taxa !== null && !dadosInsuficientes) ? `${taxa}%` : '—';
+/* "Evolução" agora é um bloco isolado (pill com rótulo fixo + valor
+   colorido) em vez de um texto solto embaixo da porcentagem — evita
+   que as duas informações sejam lidas como uma frase única. Nenhum
+   dado novo: mesmas classes de estado (TENDENCIA_CLASSE) já calculadas
+   acima, apenas reorganizadas visualmente. */
+const tendEl      = document.createElement('div');
+tendEl.className  = [
+  'wk-evolucao',
+  (!item._semDados && temDirecaoValida) ? (TENDENCIA_CLASSE[direcaoReal] ?? '') : '',
+  item._semDados ? 'wk-tend-semdados' : '',
+  (!item._semDados && !temDirecaoValida) ? 'wk-evolucao-poucos' : '',
+].join(' ').trim();
 
-    const tendEl      = document.createElement('div');
-    tendEl.className  = [
-      'wk-tendencia',
-      (!item._semDados && temDirecaoValida) ? (TENDENCIA_CLASSE[direcaoReal] ?? '') : '',
-      item._semDados ? 'wk-tend-semdados' : '',
-    ].join(' ').trim();
+const label = item._semDados
+  ? 'Sem dados'
+  : (temDirecaoValida ? (TENDENCIA_LABEL[direcaoReal] ?? direcaoReal) : 'Poucos dados');
 
-    /* Apenas texto — sem ícone, sem seta, sem emoji.
-       'Aguardando mais tentativas' (em vez de 'Indeterminado') deixa claro
-       que a ausência de tendência é sobre HISTÓRICO insuficiente para
-       comparar "antes" e "depois" — e não sobre o desempenho em si, que
-       já é conhecido e exibido corretamente na porcentagem ao lado. */
-    const label = item._semDados
-      ? 'Sem dados'
-      : (temDirecaoValida ? (TENDENCIA_LABEL[direcaoReal] ?? direcaoReal) : 'Poucos dados');
-    tendEl.textContent = label;
+tendEl.innerHTML = `
+  <span class="wk-evolucao-rotulo">Evolução</span>
+  <span class="wk-evolucao-valor">${label}</span>
+`;
 
-    meta.appendChild(taxaEl);
-    meta.appendChild(tendEl);
-
+meta.appendChild(taxaEl);
+meta.appendChild(tendEl);
     row.appendChild(pos);
     row.appendChild(corpo);
     row.appendChild(meta);
