@@ -785,6 +785,33 @@ body {
   margin-bottom: 2px;
 }
 
+/* ─── ACTIVITY TIMELINE ──────────────────────────────────── */
+.activity-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 24px;
+}
+
+/* Especificidade reforçada (ID + classe + ancestral) para que esta
+   regra não seja silenciosamente sobrescrita por dashboard_cards.css,
+   que é carregado depois de dashboard.css (ver ordem de <link> em
+   dashboard.html). O comportamento de scroll interno é contrato
+   funcional desta seção — não apenas estético — por isso a defesa
+   extra de especificidade. */
+.activity-card #activity-timeline.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+  max-height: 312px;              /* ≈ 4 itens completos (78px × 4) */
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;   /* impede o scroll de "vazar" para a página */
+  padding-right: 6px;
+  scrollbar-gutter: stable;       /* evita deslocamento de layout ao surgir a barra */
+}
+
 .tl-desc {
   font-size: 11.5px;
   color: var(--text-3);

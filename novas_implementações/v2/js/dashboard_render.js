@@ -611,9 +611,16 @@ export function renderTimeline(relatorio) {
   const elTimeline = document.getElementById('activity-timeline');
   if (!elTimeline) return;
 
+  _garantirScrollInterno(elTimeline);
+
+  /* Preserva a posição do scroll entre re-renders: o container é
+     reconstruído a cada chamada (innerHTML = ''), o que por padrão
+     zeraria a rolagem mesmo que o usuário estivesse no meio da lista. */
+  const scrollAnterior = elTimeline.scrollTop;
+
   elTimeline.innerHTML = '';
 
-if (!tentativas || !Array.isArray(tentativas) || tentativas.length === 0) {
+  if (!tentativas || !Array.isArray(tentativas) || tentativas.length === 0) {
     elTimeline.innerHTML = `
       <div class="empty-state-block empty-state-block--timeline">
         <div class="empty-state-icon" aria-hidden="true">
@@ -639,7 +646,6 @@ if (!tentativas || !Array.isArray(tentativas) || tentativas.length === 0) {
     const taxa  = typeof t.taxaAcerto === 'number' ? Math.round(t.taxaAcerto * 100) : 0;
     const label = [t.disc, t.modo].filter(Boolean).join(' · ') || 'Quiz';
 
-    /* Cor do dot baseada na taxa — lookup CSS, sem cálculo */
     let corDot, corIcone;
     if (taxa >= 75)      { corDot = 'rgba(61,220,132,.12)';  corIcone = '#3DDC84'; }
     else if (taxa >= 50) { corDot = 'rgba(255,181,71,.12)';  corIcone = '#FFB547'; }
@@ -673,6 +679,29 @@ if (!tentativas || !Array.isArray(tentativas) || tentativas.length === 0) {
 
     elTimeline.appendChild(item);
   });
+
+  /* Restaura a posição de rolagem, limitada ao novo scrollHeight
+     (evita "scroll fantasma" caso a lista tenha ficado menor). */
+  elTimeline.scrollTop = Math.min(scrollAnterior, elTimeline.scrollHeight);
+}
+
+/* ─── Contrato de scroll interno da Atividade Recente ───────
+   Aplicado via style inline (não apenas via classe CSS) porque
+   este container está sujeito à cascata de dois arquivos CSS
+   carregados em sequência (dashboard.css → dashboard_cards.css).
+   Estilo inline tem prioridade sobre qualquer <link>, garantindo
+   que o comportamento de "lista com ~4 itens visíveis + scroll
+   interno" funcione mesmo que outra folha de estilo redefina
+   .timeline / #activity-timeline no futuro.
+   Não é lógica de negócio — é apenas reforço de apresentação,
+   chamado a cada render para manter o contrato consistente. */
+function _garantirScrollInterno(elTimeline) {
+  elTimeline.style.maxHeight        = '312px';
+  elTimeline.style.overflowY        = 'auto';
+  elTimeline.style.overflowX        = 'hidden';
+  elTimeline.style.overscrollBehavior = 'contain';
+  elTimeline.style.scrollbarGutter  = 'stable';
+  elTimeline.style.paddingRight     = '6px';
 }
 
 /* Formata timestamp como texto relativo — apenas formatação, sem cálculo de métrica */
