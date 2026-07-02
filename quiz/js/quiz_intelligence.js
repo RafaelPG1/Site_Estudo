@@ -37,6 +37,20 @@
      pela Camada 3 neste mesmo arquivo, evitando qualquer duplicação
      de lógica entre módulos.
 
+   ─────────────────────────────────────────────────────
+   AJUSTE — TENDÊNCIA POR DISCIPLINA (fraquezasPorDisciplina)
+   ─────────────────────────────────────────────────────
+   fraquezasPorDisciplina() agora também retorna o campo
+   `tendencia`, calculado via _calcularTendencia(taxas) —
+   a MESMA função já usada por tendenciaDoAluno() para o card
+   "Tendência do Aluno". Nenhuma lógica nova foi criada: apenas
+   reaproveitado um utilitário já existente, para que cada
+   disciplina exponha sua tendência real (mínimo de 2 tentativas,
+   igual ao resto do sistema) em vez de depender exclusivamente
+   de `inclinacaoPctPorTentativa` (regressão linear, que exige
+   no mínimo 3 tentativas e é usada apenas para `emQueda`).
+   `emQueda` e `inclinacaoPctPorTentativa` permanecem inalterados.
+
    POR QUE O ENGINE NÃO FAZ MAIS ISSO (v10 → v3):
      O quiz_engine.js (v10) despacha um CustomEvent
      'nexus:quizFinalizado' com o payload BRUTO:
@@ -726,7 +740,12 @@ export async function tendenciaDoAluno(uid, semestre = null) {
   return _calcularTendencia(taxas);
 }
 
-/* ── 4. Fraquezas por disciplina ── */
+/* ── 4. Fraquezas por disciplina ──
+   AJUSTE: cada item agora também traz `tendencia` (objeto
+   { direcao, diferencaPct, confianca }), calculada via
+   _calcularTendencia — a mesma função usada em tendenciaDoAluno().
+   Isso não substitui nem altera `inclinacaoPctPorTentativa`/`emQueda`,
+   que continuam vindos exclusivamente da regressão linear. */
 export async function fraquezasPorDisciplina(uid, semestre = null) {
   if (!uid) return [];
 
@@ -745,6 +764,7 @@ export async function fraquezasPorDisciplina(uid, semestre = null) {
     const taxaMedia = _media(taxas);
     const reta      = _regressaoLinear(taxas.map(v => v * 100));
     const emQueda   = !!reta && reta.slope < -0.5;
+    const tendencia = _calcularTendencia(taxas);
 
     return {
       disciplina:                disc,
@@ -753,6 +773,7 @@ export async function fraquezasPorDisciplina(uid, semestre = null) {
       nivelEstimado:             _classificarFaixa(taxaMedia),
       emQueda,
       inclinacaoPctPorTentativa: reta ? _arredondar(reta.slope, 2) : null,
+      tendencia,
     };
   });
 

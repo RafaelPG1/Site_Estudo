@@ -65,9 +65,25 @@
    sem tentativas aparecem com 0% e "Sem dados", sem tendência
    e sem badge de queda. Nenhum cálculo de taxa, tendência ou
    queda foi alterado — apenas a montagem da lista exibida.
-   O match entre os dois lados usa o nome normalizado
-   (minúsculas, sem acentos), pois é o único campo em comum
-   entre os dois conjuntos de dados (não há id compartilhado).
+   O match entre os dois lados usa o identificador oficial da
+   disciplina (disc.id), pois é o mesmo valor propagado desde
+   a URL do quiz (window.__NEXUS_QUIZ_DISC__) até t.disc /
+   item.disciplina em quiz_intelligence.js — não há mais
+   dependência do nome de exibição (disc.nome) para o match.
+
+   ─────────────────────────────────────────────
+   AJUSTE — TENDÊNCIA POR DISCIPLINA (texto correto por item)
+   ─────────────────────────────────────────────
+   O rótulo textual de tendência de cada disciplina (Melhorando /
+   Estável / Piorando) agora é lido diretamente de
+   item.tendencia.direcao, campo já calculado por
+   quiz_intelligence.js (fraquezasPorDisciplina) via
+   _calcularTendencia — a MESMA função usada pelo card
+   "Tendência do Aluno". Nenhuma lógica de tendência foi
+   recalculada aqui: apenas exibida. `emQueda` e a barra de
+   progresso continuam vindos de inclinacaoPctPorTentativa
+   (regressão linear), inalterados. Ícones/setas foram
+   removidos do rótulo — exibe-se apenas o texto.
    ============================================= */
 
 import { State } from './dashboard_data.js';
@@ -270,14 +286,14 @@ export function renderWeaknesses(relatorio) {
 
   if (!elSection || !elLista) return;
 
-  /* Normaliza string para comparação: minúsculas, sem acentos, sem espaços extras.
-     Único campo em comum entre fraquezasPorDisciplina (item.disciplina) e
-     State.disciplinas (disc.nome) — não há id compartilhado entre os dois. */
+  /* Normaliza string para comparação: minúsculas, sem acentos, sem espaços extras. */
   function _norm(s) {
     return String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
   }
 
-  /* Mapa de dados reais indexado por nome normalizado */
+  /* Mapa de dados reais indexado pelo identificador oficial normalizado.
+     item.disciplina vem de t.disc, que é o mesmo valor de disc.id
+     propagado desde window.__NEXUS_QUIZ_DISC__ (ver template_init.js). */
   const mapaReais = new Map();
   if (Array.isArray(dadosReaisLista)) {
     dadosReaisLista.forEach(item => {
@@ -324,12 +340,13 @@ export function renderWeaknesses(relatorio) {
      reaproveitamento dos campos já calculados pelo quiz_intelligence
      ou montagem de um objeto neutro (0%, sem tendência). */
   const lista = discsSemestre.map(disc => {
-    const dadosReais = mapaReais.get(_norm(disc.nome));
+    const dadosReais = mapaReais.get(_norm(disc.id));
     if (dadosReais) return dadosReais;
     return {
       disciplina:                disc.nome,
       taxaAcertoMediaPct:        0,
       inclinacaoPctPorTentativa: null,
+      tendencia:                 null,
       emQueda:                   false,
       _semDados:                 true,
     };
@@ -342,31 +359,41 @@ export function renderWeaknesses(relatorio) {
   }
   elLista.innerHTML = '';
 
-  const TENDENCIA_ICONE = {
-    'melhorando': '↑',
-    'estavel':    '→',
-    'piorando':   '↓',
+  const TENDENCIA_LABEL = {
+    'melhorando': 'Melhorando',
+    'estavel':    'Estável',
+    'piorando':   'Piorando',
   };
   const TENDENCIA_CLASSE = {
     'melhorando': 'wk-tend-melhorando',
     'estavel':    'wk-tend-estavel',
     'piorando':   'wk-tend-piorando',
   };
-  const TENDENCIA_LABEL = {
-    'melhorando': 'Melhorando',
-    'estavel':    'Estável',
-    'piorando':   'Piorando',
-  };
 
   lista.forEach((item, idx) => {
-    const disc      = item?.disciplina        ?? '—';
-    const taxa      = item?.taxaAcertoMediaPct ?? null;
-    const tendencia = item?.inclinacaoPctPorTentativa != null
-      ? (item.inclinacaoPctPorTentativa > 0.5 ? 'melhorando'
-        : item.inclinacaoPctPorTentativa < -0.5 ? 'piorando'
-        : 'estavel')
+    const disc = item?.disciplina        ?? '—';
+    const taxa = item?.taxaAcertoMediaPct ?? null;
+
+    /* Tendência real da disciplina — lida diretamente de
+       item.tendencia.direcao (calculada por _calcularTendencia
+       em quiz_intelligence.js). 'indeterminado' é tratado como
+       "sem direção conhecida ainda", igual ao card de Tendência
+       do Aluno — não é um valor fixo, é o próprio resultado
+       retornado pela função quando há menos de 2 tentativas. */
+    const direcaoReal = (!item._semDados && item?.tendencia?.direcao)
+      ? item.tendencia.direcao
       : null;
-    const emQueda   = item?.emQueda === true;
+    const temDirecaoValida = direcaoReal && direcaoReal !== 'indeterminado';
+/* Quando há tentativas mas ainda não o suficiente para calcular
+       tendência (temDirecaoValida === false, e não é o caso de
+       disciplina nunca praticada), a porcentagem também é ocultada
+       com '—'. Evita a inconsistência de mostrar, por exemplo, 100%
+       ao lado de "Aguardando mais tentativas" — o dado é real, mas
+       ainda não é representativo o suficiente para ser exibido como
+       taxa consolidada. Nenhum cálculo foi alterado: apenas a
+       decisão de exibir ou não o valor já calculado. */
+    const dadosInsuficientes = !item._semDados && !temDirecaoValida;
+    const emQueda = item?.emQueda === true;
 
     const row       = document.createElement('div');
     row.className   = 'wk-item';
@@ -404,10 +431,17 @@ export function renderWeaknesses(relatorio) {
     const barFill     = document.createElement('div');
     barFill.className = 'wk-bar-fill';
 
-    const largura = taxa !== null ? Math.max(0, Math.min(100, taxa)) : 0;
+/* Barra "vazia": tanto para disciplinas nunca praticadas
+       (_semDados) quanto para disciplinas com dados insuficientes
+       para confiar na tendência (dadosInsuficientes) — mesmo
+       critério já usado para ocultar a porcentagem em wk-taxa.
+       Nos dois casos a barra fica neutra (cinza, largura 0),
+       em vez de colorida com base na taxa. */
+    const barraVazia = item._semDados || dadosInsuficientes;
+    const largura = (taxa !== null && !barraVazia) ? Math.max(0, Math.min(100, taxa)) : 0;
     barFill.style.width = largura + '%';
 
-    if (item._semDados) {
+    if (barraVazia) {
       barFill.classList.add('wk-bar-semdados');
     } else if (taxa !== null) {
       if (taxa >= 70)      barFill.classList.add('wk-bar-ok');
@@ -424,20 +458,26 @@ export function renderWeaknesses(relatorio) {
     const meta        = document.createElement('div');
     meta.className    = 'wk-meta';
 
-    const taxaEl      = document.createElement('div');
+const taxaEl      = document.createElement('div');
     taxaEl.className  = 'wk-taxa';
-    taxaEl.textContent = taxa !== null ? `${taxa}%` : '—';
+    taxaEl.textContent = (taxa !== null && !dadosInsuficientes) ? `${taxa}%` : '—';
 
     const tendEl      = document.createElement('div');
     tendEl.className  = [
       'wk-tendencia',
-      (!item._semDados && tendencia) ? (TENDENCIA_CLASSE[tendencia] ?? '') : '',
+      (!item._semDados && temDirecaoValida) ? (TENDENCIA_CLASSE[direcaoReal] ?? '') : '',
       item._semDados ? 'wk-tend-semdados' : '',
     ].join(' ').trim();
 
-    const icone = (!item._semDados && tendencia) ? (TENDENCIA_ICONE[tendencia] ?? '') : '';
-    const label = item._semDados ? 'Sem dados' : (tendencia ? (TENDENCIA_LABEL[tendencia] ?? tendencia) : '—');
-    tendEl.textContent = icone ? `${icone} ${label}` : label;
+    /* Apenas texto — sem ícone, sem seta, sem emoji.
+       'Aguardando mais tentativas' (em vez de 'Indeterminado') deixa claro
+       que a ausência de tendência é sobre HISTÓRICO insuficiente para
+       comparar "antes" e "depois" — e não sobre o desempenho em si, que
+       já é conhecido e exibido corretamente na porcentagem ao lado. */
+const label = item._semDados
+      ? 'Sem dados'
+      : (temDirecaoValida ? (TENDENCIA_LABEL[direcaoReal] ?? direcaoReal) : 'Poucos dados');
+    tendEl.textContent = label;
 
     meta.appendChild(taxaEl);
     meta.appendChild(tendEl);
