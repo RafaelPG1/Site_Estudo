@@ -563,7 +563,7 @@ function _renderTendencia(stats) {
 
 
 /* ══════════════════════════════════════════════
-   RENDER — CONSISTÊNCIA DE USO (últimos 30 dias)
+   RENDER — >Perfil de uso (últimos 30 dias)
 ══════════════════════════════════════════════ */
 function _renderConsistencia(stats) {
   const freqEl = document.getElementById('consistencia-frequencia');
@@ -645,6 +645,15 @@ function _renderSparklines(stats) {
   });
 }
 
+/* Agrupamento de horas em períodos do dia — apenas apresentação,
+   reaproveita o mesmo hourHeatmap já calculado por session-tracker.
+   Cores seguem os modificadores já existentes de .prog-fill. */
+const USAGE_PERIODOS = [
+  { id: 'madrugada', label: 'Madrugada', horas: [0,1,2,3,4,5],   corClasse: 'blue'  },
+  { id: 'manha',     label: 'Manhã',     horas: [6,7,8,9,10,11], corClasse: 'amber' },
+  { id: 'tarde',     label: 'Tarde',     horas: [12,13,14,15,16,17], corClasse: 'green' },
+  { id: 'noite',     label: 'Noite',     horas: [18,19,20,21,22,23], corClasse: 'var(--accent)'    }, // '' = var(--accent)
+];
 
 /* ══════════════════════════════════════════════
    RENDER — NAVIGATION ANALYTICS
@@ -1003,17 +1012,27 @@ footer.innerHTML = `
 wrap.appendChild(footer);
 }
 
+
 function _renderHeatmapHorario(hourHeatmap) {
   const wrap = document.getElementById('nav-heatmap');
   if (!wrap) return;
 
   wrap.innerHTML = '';
 
-  const mapa    = hourHeatmap && typeof hourHeatmap === 'object' ? hourHeatmap : {};
-  const valores = Object.values(mapa);
-  const maxVal  = Math.max(...valores, 1);
-  const temDados = valores.length > 0;
+  const mapa     = hourHeatmap && typeof hourHeatmap === 'object' ? hourHeatmap : {};
+  const valores  = Object.values(mapa);
+  const maxVal   = Math.max(...valores, 1);
+  const total    = valores.reduce((a, b) => a + (b || 0), 0);
+  const temDados = total > 0;
 
+  let horaPicoNum = null;
+  if (temDados) {
+    const entradas = Object.entries(mapa).sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0));
+    horaPicoNum = Number(entradas[0][0]);
+  }
+
+  /* Barras — mesma lógica de altura de antes, apenas com destaque
+     visual para a barra do horário de pico (puramente apresentação). */
   for (let h = 0; h < 24; h++) {
     const count = mapa[String(h)] ?? 0;
     const col   = document.createElement('div');
@@ -1022,6 +1041,7 @@ function _renderHeatmapHorario(hourHeatmap) {
 
     const bar     = document.createElement('div');
     bar.className = 'heatmap-bar';
+    if (temDados && h === horaPicoNum) bar.classList.add('heatmap-bar-peak');
     bar.style.height = (count > 0 ? Math.max(8, (count / maxVal) * 100) : 0) + '%';
 
     col.appendChild(bar);
@@ -1030,23 +1050,77 @@ function _renderHeatmapHorario(hourHeatmap) {
 
   const labelEl = document.getElementById('nav-horario-pico');
   if (labelEl) {
+    labelEl.textContent = temDados ? `${horaPicoNum}h–${horaPicoNum + 1}h` : '—';
+  }
+
+  const totalEl = document.getElementById('usage-heatmap-total');
+  if (totalEl) {
+    totalEl.textContent = temDados ? `${total} acesso${total !== 1 ? 's' : ''}` : 'Sem dados';
+  }
+
+  /* Resumo por período — soma das mesmas contagens do heatmap,
+     agrupadas em 4 faixas. Nenhum dado novo, apenas reagrupamento. */
+  const periodsWrap = document.getElementById('usage-periods-row');
+  if (periodsWrap) {
+    periodsWrap.innerHTML = '';
+
     if (!temDados) {
-      labelEl.textContent = '—';
+      periodsWrap.innerHTML = `<span class="usage-periods-empty">Sem dados suficientes ainda.</span>`;
     } else {
-      const horaPico = Object.entries(mapa).sort((a, b) => b[1] - a[1])[0]?.[0];
-      labelEl.textContent = horaPico !== undefined
-        ? `${horaPico}h–${Number(horaPico) + 1}h`
-        : '—';
+      const somas = USAGE_PERIODOS.map(p => ({
+        ...p,
+        soma: p.horas.reduce((s, h) => s + (mapa[String(h)] ?? 0), 0),
+      }));
+      const maiorSoma = Math.max(...somas.map(p => p.soma));
+
+      somas.forEach(p => {
+        const pct = total > 0 ? Math.round((p.soma / total) * 100) : 0;
+        const isDominante = p.soma > 0 && p.soma === maiorSoma;
+
+        const row = document.createElement('div');
+        row.className = 'usage-period-row' + (isDominante ? ' is-dominant' : '');
+        row.innerHTML = `
+          <span class="usage-period-name">${p.label}</span>
+          <div class="prog-bar"><div class="prog-fill ${p.corClasse}" style="width:${pct}%"></div></div>
+          <span class="usage-period-pct">${pct}%</span>
+        `;
+        periodsWrap.appendChild(row);
+      });
+    }
+  }
+
+  /* Insight textual — frase única derivada do horário de pico
+     já calculado acima. Não introduz nenhum cálculo novo de negócio. */
+  const insightEl = document.getElementById('usage-insight');
+  if (insightEl) {
+    if (!temDados) {
+      insightEl.textContent = 'Continue estudando para gerar seu perfil de uso.';
+    } else {
+      const periodoPico = USAGE_PERIODOS.find(p => p.horas.includes(horaPicoNum));
+      insightEl.textContent = `Você costuma estudar mais durante a ${periodoPico?.label.toLowerCase() ?? 'esse período'}, por volta das ${horaPicoNum}h.`;
     }
   }
 }
 
 function _renderDispositivo(deviceType) {
-  const el = document.getElementById('nav-device-tipo');
+  const el       = document.getElementById('nav-device-tipo');
+  const iconWrap = document.getElementById('usage-device-icon');
   if (!el) return;
-  if (deviceType === 'mobile')       el.textContent = '📱 Mobile';
-  else if (deviceType === 'desktop') el.textContent = '🖥️ Desktop';
-  else                               el.textContent = '—';
+
+  const ICONE_DESKTOP = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="14" height="9" rx="1.5"/><path d="M6.5 15.5h5M9 12v3.5" stroke-linecap="round"/></svg>`;
+  const ICONE_MOBILE  = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5.5" y="1.5" width="7" height="15" rx="2"/><path d="M8.25 14.2h1.5" stroke-linecap="round"/></svg>`;
+  const ICONE_UNKNOWN = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="9" r="6.5"/><path d="M6.8 7.2a2.2 2.2 0 014.2.9c0 1.4-2 1.7-2 3.1" stroke-linecap="round"/><circle cx="9" cy="13" r=".4" fill="currentColor"/></svg>`;
+
+  if (deviceType === 'mobile') {
+    el.textContent = 'Mobile';
+    if (iconWrap) { iconWrap.innerHTML = ICONE_MOBILE; iconWrap.className = 'usage-stat-icon ic-green'; }
+  } else if (deviceType === 'desktop') {
+    el.textContent = 'Desktop';
+    if (iconWrap) { iconWrap.innerHTML = ICONE_DESKTOP; iconWrap.className = 'usage-stat-icon ic-purple'; }
+  } else {
+    el.textContent = '—';
+    if (iconWrap) { iconWrap.innerHTML = ICONE_UNKNOWN; iconWrap.className = 'usage-stat-icon'; }
+  }
 }
 
 /* ══════════════════════════════════════════════
