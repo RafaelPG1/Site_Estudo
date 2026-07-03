@@ -948,160 +948,161 @@
       <!-- ══════════════════════════════════════════════════
            PERFORMANCE + ACTIVITY
       ══════════════════════════════════════════════════ -->
-      <div class="two-col">
+<div class="two-col">
 
         <!-- ── PERFORMANCE ── -->
-        <div class="perf-card">
+        <section>
           <div class="section-header">
             <span class="section-title">Desempenho</span>
             <div class="section-line"></div>
           </div>
 
-          <div class="perf-list">
+          <div class="perf-card">
+            <div class="perf-list">
 
-            <div class="perf-item">
-              <div class="perf-icon ic-purple">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <circle cx="7" cy="7" r="5.5"/>
-                  <path d="M7 4v3l2 2"/>
-                </svg>
-              </div>
-              <div style="flex:1">
-                <div class="perf-name">Média diária de estudo (7 dias)</div>
-                <div class="prog-bar" style="margin-top:8px">
-                  <div class="prog-fill" id="perf-bar-media" style="width:0%"></div>
+              <div class="perf-item">
+                <div class="perf-icon ic-purple">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="7" cy="7" r="5.5"/>
+                    <path d="M7 4v3l2 2"/>
+                  </svg>
+                </div>
+                <div style="flex:1">
+                  <div class="perf-name">Média diária de estudo (7 dias)</div>
+                  <div class="prog-bar" style="margin-top:8px">
+                    <div class="prog-fill" id="perf-bar-media" style="width:0%"></div>
+                  </div>
+                </div>
+                <div>
+                  <span class="perf-value" id="perf-media-diaria">—</span>
                 </div>
               </div>
-              <div>
-                <span class="perf-value" id="perf-media-diaria">—</span>
-              </div>
-            </div>
 
-            <div class="perf-item">
-              <div class="perf-icon ic-green">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M1 10l2-2 2 1.5 2-2.5 2 1 2-3 2 1.5"/>
-                </svg>
-              </div>
-              <div style="flex:1">
-                <div class="perf-name">Dias ativos nos últimos 7</div>
-                <div class="prog-bar" style="margin-top:8px">
-                  <div class="prog-fill green" id="perf-bar-dias" style="width:0%"></div>
+              <div class="perf-item">
+                <div class="perf-icon ic-green">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M1 10l2-2 2 1.5 2-2.5 2 1 2-3 2 1.5"/>
+                  </svg>
+                </div>
+                <div style="flex:1">
+                  <div class="perf-name">Dias ativos nos últimos 7</div>
+                  <div class="prog-bar" style="margin-top:8px">
+                    <div class="prog-fill green" id="perf-bar-dias" style="width:0%"></div>
+                  </div>
+                </div>
+                <div>
+                  <span class="perf-value" id="perf-dias-ativos">—</span><span class="perf-unit">/7</span>
                 </div>
               </div>
-              <div>
-                <span class="perf-value" id="perf-dias-ativos">—</span><span class="perf-unit">/7</span>
-              </div>
-            </div>
 
-            <div class="perf-item">
-              <div class="perf-icon ic-amber">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M7 1.5l1.5 3 3.5.5-2.5 2.5.5 3.5L7 9.5 4 11l.5-3.5L2 5l3.5-.5z"/>
-                </svg>
-              </div>
-              <div style="flex:1">
-                <div class="perf-name">Melhor dia (últimos 30)</div>
-                <div class="prog-bar" style="margin-top:8px">
-                  <div class="prog-fill amber" id="perf-bar-melhor" style="width:0%"></div>
+              <div class="perf-item">
+                <div class="perf-icon ic-amber">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M7 1.5l1.5 3 3.5.5-2.5 2.5.5 3.5L7 9.5 4 11l.5-3.5L2 5l3.5-.5z"/>
+                  </svg>
+                </div>
+                <div style="flex:1">
+                  <div class="perf-name">Melhor dia (últimos 30)</div>
+                  <div class="prog-bar" style="margin-top:8px">
+                    <div class="prog-fill amber" id="perf-bar-melhor" style="width:0%"></div>
+                  </div>
+                </div>
+                <div>
+                  <span class="perf-value" id="perf-melhor-dia">—</span>
                 </div>
               </div>
-              <div>
-                <span class="perf-value" id="perf-melhor-dia">—</span>
-              </div>
-            </div>
 
-            <div class="perf-item">
-              <div class="perf-icon ic-amber">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <rect x="1" y="4" width="12" height="7" rx="2"/>
-                  <path d="M5 4V3a2 2 0 014 0v1"/>
-                </svg>
-              </div>
-              <div style="flex:1">
-                <div class="perf-name">Total de sessões iniciadas</div>
-                <div class="prog-bar" style="margin-top:8px">
-                  <div class="prog-fill amber" id="perf-bar-sessoes" style="width:0%"></div>
+              <div class="perf-item">
+                <div class="perf-icon ic-amber">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="1" y="4" width="12" height="7" rx="2"/>
+                    <path d="M5 4V3a2 2 0 014 0v1"/>
+                  </svg>
+                </div>
+                <div style="flex:1">
+                  <div class="perf-name">Total de sessões iniciadas</div>
+                  <div class="prog-bar" style="margin-top:8px">
+                    <div class="prog-fill amber" id="perf-bar-sessoes" style="width:0%"></div>
+                  </div>
+                </div>
+                <div>
+                  <span class="perf-value" id="perf-total-sessoes">—</span>
                 </div>
               </div>
-              <div>
-                <span class="perf-value" id="perf-total-sessoes">—</span>
-              </div>
-            </div>
 
-            <div class="perf-item">
-              <div class="perf-icon ic-blue">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M7 1.5l1.5 3 3.5.5-2.5 2.5.5 3.5L7 9.5 4 11l.5-3.5L2 5l3.5-.5z"/>
-                </svg>
-              </div>
-              <div style="flex:1">
-                <div class="perf-name">Sequência de dias ativos</div>
-                <div class="prog-bar" style="margin-top:8px">
-                  <div class="prog-fill blue" id="perf-bar-streak" style="width:0%"></div>
+              <div class="perf-item">
+                <div class="perf-icon ic-blue">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M7 1.5l1.5 3 3.5.5-2.5 2.5.5 3.5L7 9.5 4 11l.5-3.5L2 5l3.5-.5z"/>
+                  </svg>
+                </div>
+                <div style="flex:1">
+                  <div class="perf-name">Sequência de dias ativos</div>
+                  <div class="prog-bar" style="margin-top:8px">
+                    <div class="prog-fill blue" id="perf-bar-streak" style="width:0%"></div>
+                  </div>
+                </div>
+                <div>
+                  <span class="perf-value" id="perf-streak">—</span>
                 </div>
               </div>
-              <div>
-                <span class="perf-value" id="perf-streak">—</span>
-              </div>
-            </div>
 
+            </div>
           </div>
-        </div>
+        </section>
 
 
         <!-- ── ACTIVITY TIMELINE ── -->
-        <div class="activity-card">
+        <section>
           <div class="section-header">
             <span class="section-title">Atividade recente</span>
             <div class="section-line"></div>
           </div>
 
-          <div class="timeline" id="activity-timeline"></div>
-        </div>
+          <div class="activity-card">
+            <div class="timeline" id="activity-timeline"></div>
+          </div>
+        </section>
       </div>
-
 
       <!-- ══════════════════════════════════════════════════
            NAVEGAÇÃO E COMPORTAMENTO REAL
            Dados de pages, navigation, hourHeatmap,
            deviceType, quizEvents
       ══════════════════════════════════════════════════ -->
-      <div class="nav-section-wrap">
+<section>
 
-        <div class="nav-section-header">
-          <div class="nav-section-icon">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-              <circle cx="8" cy="8" r="6.5"/>
-              <path d="M8 4v4l2.5 2.5"/>
-            </svg>
-          </div>
+        <div class="section-header">
           <span class="section-title">Navegação</span>
           <div class="section-line"></div>
         </div>
 
-        <div class="nav-ranking-wrap">
-          <div class="nav-sub-header">
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M1 10l2.5-3 2 1.5 2.5-3 2 1.5 2.5-3.5"/>
-            </svg>
-            Páginas mais acessadas
+        <div class="nav-section-wrap">
+
+          <div class="nav-ranking-wrap">
+            <div class="nav-sub-header">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M1 10l2.5-3 2 1.5 2.5-3 2 1.5 2.5-3.5"/>
+              </svg>
+              Páginas mais acessadas
+            </div>
+            <div class="nav-rank-list" id="nav-paginas-lista"></div>
           </div>
-          <div class="nav-rank-list" id="nav-paginas-lista"></div>
+
+          <div class="nav-timeline-wrap">
+            <div class="nav-sub-header">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+              class="lucide lucide-history-icon lucide-history"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+              <path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+              Histórico de navegação
+            </div>
+            <div class="nav-tl-list" id="nav-fluxo"></div>
+          </div>
+
         </div>
 
-        <div class="nav-timeline-wrap">
-          <div class="nav-sub-header">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
-            class="lucide lucide-history-icon lucide-history"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-            <path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
-            Histórico de navegação
-          </div>
-          <div class="nav-tl-list" id="nav-fluxo"></div>
-        </div>
-
-      </div>
+      </section>
       <!-- Nota: a antiga card "Perfil de uso" que ficava aqui ao lado foi
            removida — ela usava os MESMOS ids (nav-device-tipo,
            nav-horario-pico, nav-heatmap) da card em intel-grid-weak-consist,
@@ -1111,30 +1112,32 @@
            por Disciplina". -->
 
 
-
-
       <!-- ══════════════════════════════════════════════════
            DISCIPLINES + ACHIEVEMENTS
       ══════════════════════════════════════════════════ -->
-      <div class="three-col">
+<div class="three-col">
 
-        <div class="disc-card">
+        <section>
           <div class="section-header">
             <span class="section-title">Disciplinas</span>
             <div class="section-line"></div>
           </div>
 
-          <div class="disc-grid" id="disc-grid"></div>
-        </div>
+          <div class="disc-card">
+            <div class="disc-grid" id="disc-grid"></div>
+          </div>
+        </section>
 
-        <div class="ach-card">
+        <section>
           <div class="section-header">
             <span class="section-title">Conquistas</span>
             <div class="section-line"></div>
           </div>
 
-          <div class="ach-list" id="ach-list"></div>
-        </div>
+          <div class="ach-card">
+            <div class="ach-list" id="ach-list"></div>
+          </div>
+        </section>
 
       </div>
 
