@@ -54,6 +54,36 @@
 
    Nenhuma lógica de coleta, tracking ou persistência
    de dados foi alterada — apenas apresentação.
+
+   ─────────────────────────────────────────────
+   AJUSTE — REDESIGN "PERFIL DE USO"
+   ─────────────────────────────────────────────
+   _renderHeatmapHorario continua calculando
+   EXATAMENTE os mesmos valores de sempre (mapa por
+   hora, maxVal, total, horaPicoNum, somas por
+   período via USAGE_PERIODOS). A única mudança é
+   que, além de renderizar como antes, agora também:
+     · desenha um eixo Y no gráfico (apenas exibição
+       do maxVal já calculado);
+     · exibe uma pílula com o nome do período no chip
+       de "Horário mais ativo" (mesmo período já
+       encontrado via USAGE_PERIODOS.find);
+     · troca a lista simples de períodos por cards
+       com ícone (mesmos soma/pct já calculados);
+     · guarda o resultado em `_ultimoPerfilUso`
+       (módulo) para a nova seção "Seus hábitos de
+       estudo" reaproveitar sem recalcular nada.
+   O antigo parágrafo de insight (#usage-insight) foi
+   removido do HTML; a mesma frase que ele exibia
+   agora é reaproveitada como descrição do card de
+   hábito "Mais ativo à ...".
+   `_renderHabitosEstudo` é a única função nova:
+   ela NÃO calcula nada — apenas lê `_ultimoPerfilUso`
+   (gerado por `_renderHeatmapHorario`) e
+   `stats.ultimos7` (já calculado por
+   carregarEstatisticas, mesma fórmula usada em
+   "Dias ativos nos últimos 7") e formata os dois
+   cards de hábito.
    ============================================= */
 
 import { getUsuario } from '../../../src/global.js';
@@ -450,6 +480,12 @@ export async function _carregarMetricasReais() {
       _renderNavegacaoVazia();
     }
 
+    /* "Seus hábitos de estudo" — não recalcula nada: lê o resultado
+       que _renderHeatmapHorario acabou de guardar em _ultimoPerfilUso
+       (chamado dentro de um dos três ramos acima) e reaproveita
+       stats.ultimos7, já calculado por carregarEstatisticas(). */
+    _renderUsageInsight();
+
   } catch (err) {
     console.error('[dashboard] _carregarMetricasReais:', err);
     _renderMetricasVazio();
@@ -652,8 +688,39 @@ const USAGE_PERIODOS = [
   { id: 'madrugada', label: 'Madrugada', horas: [0,1,2,3,4,5],   corClasse: 'blue'  },
   { id: 'manha',     label: 'Manhã',     horas: [6,7,8,9,10,11], corClasse: 'amber' },
   { id: 'tarde',     label: 'Tarde',     horas: [12,13,14,15,16,17], corClasse: 'green' },
-  { id: 'noite',     label: 'Noite',     horas: [18,19,20,21,22,23], corClasse: 'var(--accent)'    }, // '' = var(--accent)
+  { id: 'noite',     label: 'Noite',     horas: [18,19,20,21,22,23], corClasse: 'purple'    },
 ];
+
+/* Guarda o último resultado calculado por _renderHeatmapHorario
+   (período dominante + sua % + frase de insight já existente),
+   para a seção "Seus hábitos de estudo" reaproveitar sem recalcular
+   nada. Populado sempre que o heatmap é renderizado (ao vivo,
+   persistido ou vazio). */
+let _ultimoPerfilUso = {
+  temDados:     false,
+  periodoId:    null,
+  periodoLabel: null,
+  periodoPct:   0,
+  descricao:    'Continue estudando para gerar seu perfil de uso.',
+};
+
+/* Ícones por período do dia — puramente decorativo, mesmo padrão
+   de ícone-linha (stroke) usado no restante do dashboard. */
+function _iconePeriodo(id) {
+  const ICONES = {
+    madrugada: `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9.6 2.2a5.4 5.4 0 106.2 6.7A4.3 4.3 0 019.6 2.2z"/></svg>`,
+    manha:     `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.2a3.5 3.5 0 017 0"/><path d="M7.5 3.5v1.4M2.6 8.2h1.2M11.2 8.2h1.2M4 5l.9.9M11 5l-.9.9"/><path d="M1.8 11h11.4"/></svg>`,
+    tarde:     `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="7.5" r="2.6"/><path d="M7.5 1.6v1.3M7.5 12.1v1.3M1.6 7.5h1.3M12.1 7.5h1.3M3.3 3.3l.9.9M10.3 3.3l-.9.9M3.3 11.7l.9-.9M10.3 11.7l-.9-.9"/></svg>`,
+    noite:     `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9.6 2.2a5.4 5.4 0 106.2 6.7A4.3 4.3 0 019.6 2.2z"/><path d="M12.3 1.6l.35.9.9.35-.9.35-.35.9-.35-.9-.9-.35.9-.35z" fill="currentColor" stroke="none"/></svg>`,
+  };
+  return ICONES[id] ?? ICONES.noite;
+}
+
+/* Ícone de calendário reaproveitado para o card de frequência de
+   estudo — mesmo estilo do ícone já usado no menu "Calendário". */
+function _iconeCalendarioHabito() {
+  return `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="3" width="13" height="11" rx="1.5"/><path d="M5 1.5V4M11 1.5V4M1.5 7h13"/></svg>`;
+}
 
 /* ══════════════════════════════════════════════
    RENDER — NAVIGATION ANALYTICS
@@ -1048,6 +1115,15 @@ function _renderHeatmapHorario(hourHeatmap) {
     wrap.appendChild(col);
   }
 
+  /* Eixo Y — apenas exibição do maxVal já calculado acima (0 / metade /
+     máximo). Nenhum cálculo de negócio novo. */
+  const yaxisEl = document.getElementById('usage-heatmap-yaxis');
+  if (yaxisEl) {
+    yaxisEl.innerHTML = temDados
+      ? `<span>${maxVal}</span><span>${Math.round(maxVal / 2)}</span><span>0</span>`
+      : `<span>—</span><span>—</span><span>0</span>`;
+  }
+
   const labelEl = document.getElementById('nav-horario-pico');
   if (labelEl) {
     labelEl.textContent = temDados ? `${horaPicoNum}h–${horaPicoNum + 1}h` : '—';
@@ -1058,9 +1134,30 @@ function _renderHeatmapHorario(hourHeatmap) {
     totalEl.textContent = temDados ? `${total} acesso${total !== 1 ? 's' : ''}` : 'Sem dados';
   }
 
+  /* Período que contém o horário de pico — mesmo cálculo que já
+     existia para compor a frase de insight. Reaproveitado também
+     para a pílula no chip "Horário mais ativo". */
+  const periodoDoPico = temDados
+    ? USAGE_PERIODOS.find(p => p.horas.includes(horaPicoNum))
+    : null;
+
+  const badgeEl = document.getElementById('usage-horario-badge');
+  if (badgeEl) {
+    if (temDados && periodoDoPico) {
+      badgeEl.textContent = periodoDoPico.label;
+      badgeEl.classList.add('is-visible');
+    } else {
+      badgeEl.classList.remove('is-visible');
+      badgeEl.textContent = '';
+    }
+  }
+
   /* Resumo por período — soma das mesmas contagens do heatmap,
-     agrupadas em 4 faixas. Nenhum dado novo, apenas reagrupamento. */
+     agrupadas em 4 faixas. Nenhum dado novo, apenas reagrupamento
+     (mesma lógica de sempre, agora renderizada como cards). */
   const periodsWrap = document.getElementById('usage-periods-row');
+  let periodoDominante = null;
+
   if (periodsWrap) {
     periodsWrap.innerHTML = '';
 
@@ -1077,29 +1174,63 @@ function _renderHeatmapHorario(hourHeatmap) {
         const pct = total > 0 ? Math.round((p.soma / total) * 100) : 0;
         const isDominante = p.soma > 0 && p.soma === maiorSoma;
 
-        const row = document.createElement('div');
-        row.className = 'usage-period-row' + (isDominante ? ' is-dominant' : '');
-        row.innerHTML = `
-          <span class="usage-period-name">${p.label}</span>
-          <div class="prog-bar"><div class="prog-fill ${p.corClasse}" style="width:${pct}%"></div></div>
+        if (isDominante && !periodoDominante) {
+          periodoDominante = { id: p.id, label: p.label, pct };
+        }
+
+        const card = document.createElement('div');
+        card.className = 'usage-period-card' + (isDominante ? ' is-dominant' : '');
+        card.title = `${p.label}: ${p.soma} acesso${p.soma !== 1 ? 's' : ''}`;
+        card.innerHTML = `
+          <div class="usage-period-top">
+            <span class="usage-period-icon">${_iconePeriodo(p.id)}</span>
+            <span class="usage-period-name">${p.label}</span>
+          </div>
           <span class="usage-period-pct">${pct}%</span>
         `;
-        periodsWrap.appendChild(row);
+        periodsWrap.appendChild(card);
       });
     }
   }
 
-  /* Insight textual — frase única derivada do horário de pico
-     já calculado acima. Não introduz nenhum cálculo novo de negócio. */
-  const insightEl = document.getElementById('usage-insight');
-  if (insightEl) {
-    if (!temDados) {
-      insightEl.textContent = 'Continue estudando para gerar seu perfil de uso.';
-    } else {
-      const periodoPico = USAGE_PERIODOS.find(p => p.horas.includes(horaPicoNum));
-      insightEl.textContent = `Você costuma estudar mais durante a ${periodoPico?.label.toLowerCase() ?? 'esse período'}, por volta das ${horaPicoNum}h.`;
-    }
-  }
+  /* Guarda o resultado para a seção "Seus hábitos de estudo"
+     reaproveitar sem recalcular nada — mesmos valores já derivados
+     acima (período dominante por soma + frase de insight já usada
+     anteriormente no card, agora reaproveitada como descrição). */
+  _ultimoPerfilUso = {
+    temDados,
+    periodoId:    periodoDominante?.id    ?? null,
+    periodoLabel: periodoDominante?.label ?? null,
+    periodoPct:   periodoDominante?.pct   ?? 0,
+    descricao: temDados && periodoDoPico
+      ? `Você costuma estudar mais durante a ${periodoDoPico.label.toLowerCase()}, por volta das ${horaPicoNum}h.`
+      : 'Continue estudando para gerar seu perfil de uso.',
+  };
+}
+
+/* ══════════════════════════════════════════════
+   RENDER — SEUS HÁBITOS DE ESTUDO
+   ─────────────────────────────────────────────
+   NÃO calcula nenhuma métrica nova. Apenas lê:
+     · _ultimoPerfilUso (preenchido por
+       _renderHeatmapHorario logo acima — período
+       dominante + % já calculados)
+     · statsGlobal.ultimos7 (já calculado por
+       carregarEstatisticas em session-tracker.js,
+       mesma fórmula usada em "Dias ativos nos
+       últimos 7" dentro de _renderTendencia)
+   e formata os dois cards de resumo.
+══════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════
+   RENDER — INSIGHT DE HORÁRIO DE ESTUDO
+   ─────────────────────────────────────────────
+   NÃO calcula nada — apenas lê _ultimoPerfilUso.descricao,
+   já preenchido por _renderHeatmapHorario logo acima.
+══════════════════════════════════════════════ */
+function _renderUsageInsight() {
+  const el = document.getElementById('usage-insight');
+  if (!el) return;
+  el.textContent = _ultimoPerfilUso.descricao;
 }
 
 function _renderDispositivo(deviceType) {
@@ -1145,6 +1276,7 @@ function _renderMetricasVazio() {
   });
 
   _renderNavegacaoVazia();
+  _renderUsageInsight();
 }
 
 export { _renderMetricasVazio, _renderNavegacaoAoVivo };

@@ -28,33 +28,27 @@
   <!-- ═══ Estilos locais — componentes exclusivos desta página
        (heatmap de horários, listas de navegação/quiz) ═══ -->
   <style>
-/* ── Perfil de uso — heatmap redesenhado ── */
-.heatmap-chart {
+/* ═══════════════════════════════════════════════════════════
+   PERFIL DE USO — redesign (cabeçalho + stats + heatmap +
+   períodos + hábitos de estudo). Ver comentário no topo do
+   arquivo sobre a origem/objetivo desta seção.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Cabeçalho ── */
+.usage-card-head { margin-bottom: 18px; }
+.usage-card-title-row {
   display: flex;
-  align-items: flex-end;
-  gap: 3px;
-  height: 130px;
-  margin-top: 0;
+  align-items: center;
+  gap: 8px;
 }
-.heatmap-col {
-  flex: 1;
-  height: 100%;
-  display: flex;
-  align-items: flex-end;
-}
-.heatmap-bar {
-  width: 100%;
-  border-radius: 3px 3px 0 0;
-  background: var(--border-2);
-  min-height: 2px;
-  transition: height .3s ease, background .2s ease;
-}
-.heatmap-bar-peak {
-  background: var(--amber, #FFB547);
-  box-shadow: 0 0 0 1px rgba(255,181,71,.25);
+.usage-card-subtitle {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 4px;
+  line-height: 1.5;
 }
 
-/* ── Perfil de uso — stats principais (dispositivo / horário de pico) ── */
+/* ── Stats principais (dispositivo / horário de pico) ── */
 .usage-stats-row {
   display: flex;
   gap: 12px;
@@ -84,6 +78,7 @@
   flex-direction: column;
   gap: 2px;
   min-width: 0;
+  flex: 1;
 }
 .usage-stat-label {
   font-size: 11px;
@@ -99,14 +94,29 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* Pílula de destaque dentro do chip de horário (ex.: "Noite") —
+   apenas apresentação do mesmo período já calculado no heatmap. */
+.usage-stat-badge {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 20px;
+  background: rgba(255,181,71,.12);
+  color: var(--amber);
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: none;
+}
+.usage-stat-badge.is-visible { display: inline-flex; }
 
-/* ── Perfil de uso — cabeçalho e eixo do heatmap ── */
+/* ── Distribuição por hora do dia ── */
 .usage-heatmap-section { margin-bottom: 18px; }
 .usage-heatmap-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 .usage-heatmap-title {
   font-size: 12px;
@@ -119,62 +129,207 @@
   font-size: 10.5px;
   color: var(--text-3);
 }
+.usage-heatmap-body {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+.usage-heatmap-yaxis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--text-3);
+  padding: 2px 0;
+  flex-shrink: 0;
+  width: 20px;
+  text-align: right;
+}
+.heatmap-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 150px;
+  flex: 1;
+  min-width: 0;
+  margin-top: 0;
+  background-image: repeating-linear-gradient(
+    to top,
+    var(--border) 0, var(--border) 1px,
+    transparent 1px, transparent 33.33%
+  );
+}
+.heatmap-col {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+.heatmap-bar {
+  width: 100%;
+  border-radius: 3px 3px 0 0;
+  background: var(--border-2);
+  min-height: 2px;
+  transition: height .3s ease, background .2s ease;
+}
+.heatmap-bar-peak {
+  background: var(--amber, #FFB547);
+  box-shadow: 0 0 0 1px rgba(255,181,71,.25);
+}
 .usage-heatmap-axis {
   display: flex;
   justify-content: space-between;
   margin-top: 6px;
+  margin-left: 28px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 9.5px;
   color: var(--text-3);
 }
 
-/* ── Perfil de uso — resumo por período do dia ── */
-.usage-periods-list {
-  padding-top: 14px;
+/* ── Resumo por período do dia (cards com ícone) ── */
+.usage-periods-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding-top: 16px;
   border-top: 1px solid var(--border);
+  margin-bottom: 18px;
+}
+.usage-period-card {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 10px 12px;
+  min-width: 0;
+  transition: border-color .15s ease;
 }
-.usage-period-row {
+.usage-period-card.is-dominant {
+  border-color: rgba(108,99,255,.35);
+}
+.usage-period-top {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 5px 0;
+  gap: 6px;
+  min-width: 0;
 }
-.usage-period-name {
-  width: 76px;
+.usage-period-icon {
+  display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
-  font-size: 11.5px;
-  color: var(--text-2);
-}
-.usage-period-pct {
-  width: 34px;
-  text-align: right;
-  flex-shrink: 0;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
   color: var(--text-3);
 }
-.usage-period-row.is-dominant .usage-period-name,
-.usage-period-row.is-dominant .usage-period-pct {
-  color: var(--text-1);
-  font-weight: 600;
+.usage-period-card.is-dominant .usage-period-icon { color: var(--accent-lite); }
+.usage-period-name {
+  font-size: 11px;
+  color: var(--text-2);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+.usage-period-pct {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: -.4px;
+}
+.usage-period-card.is-dominant .usage-period-pct { color: var(--accent-lite); }
 .usage-periods-empty {
+  grid-column: 1 / -1;
   font-size: 12px;
   color: var(--text-3);
   font-style: italic;
+  padding: 6px 0;
 }
 
-/* ── Perfil de uso — insight textual ── */
-.usage-insight {
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
+/* ── Seus hábitos de estudo ── */
+.usage-habits-head {
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 12px;
+  font-weight: 600;
   color: var(--text-2);
+  margin-bottom: 12px;
+}
+.usage-habits-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.usage-habit-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.usage-habit-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.usage-habit-icon {
+  width: 30px; height: 30px;
+  border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  background: var(--accent-dim);
+  color: var(--accent-lite);
+}
+.usage-habit-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-1);
+  font-family: 'Space Grotesk', sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.usage-habit-value {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent-lite);
+  letter-spacing: -.6px;
+  line-height: 1;
+}
+.usage-habit-desc {
+  font-size: 11px;
+  color: var(--text-3);
   line-height: 1.5;
+  margin-top: 3px;
+}
+.usage-habit-bar {
+  width: 100%;
+  height: 3px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 2px;
+}
+.usage-habit-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--accent-lite);
+  transition: width .6s cubic-bezier(.4,0,.2,1);
+}
+.usage-habits-empty {
+  font-size: 12px;
+  color: var(--text-3);
+  font-style: italic;
+  padding: 6px 0;
+}
+
+@media (max-width: 900px) {
+  .usage-periods-row { grid-template-columns: repeat(2, 1fr); }
+  .usage-habits-row  { grid-template-columns: 1fr; }
 }
     .nav-page-item, .quiz-event-item {
       display: flex;
@@ -706,19 +861,25 @@
 
         <!-- >Perfil de uso — historico_diario -->
         <section>
-          <div class="section-header">
-            <span class="section-title">Perfil de uso</span>
-            <div class="section-line"></div>
-          </div>
-
 <div class="perf-card usage-profile-card" id="usage-profile-card">
+
+  <!-- Cabeçalho -->
+  <div class="usage-card-head">
+    <div class="usage-card-title-row">
+      <span class="section-title">Perfil de uso</span>
+      <span class="empty-state-info-btn usage-title-info" tabindex="0"
+            aria-label="Como o perfil de uso é calculado"
+            data-tooltip="Baseado no dispositivo utilizado e nos horários em que você fica ativo na plataforma.">ⓘ</span>
+    </div>
+    <p class="usage-card-subtitle">Entenda seus hábitos e aproveite melhor seu tempo de estudo.</p>
+  </div>
 
   <!-- Stats principais: dispositivo + horário de pico -->
   <div class="usage-stats-row">
     <div class="usage-stat-chip">
       <div class="usage-stat-icon" id="usage-device-icon"></div>
       <div class="usage-stat-body">
-        <span class="usage-stat-label">Dispositivo</span>
+        <span class="usage-stat-label">Dispositivo principal</span>
         <span class="usage-stat-value" id="nav-device-tipo">—</span>
       </div>
     </div>
@@ -734,6 +895,7 @@
         <span class="usage-stat-label">Horário mais ativo</span>
         <span class="usage-stat-value" id="nav-horario-pico">—</span>
       </div>
+      <span class="usage-stat-badge" id="usage-horario-badge"></span>
     </div>
   </div>
 
@@ -743,18 +905,22 @@
       <span class="usage-heatmap-title">Distribuição por hora do dia</span>
       <span class="usage-heatmap-badge" id="usage-heatmap-total">—</span>
     </div>
-    <div class="heatmap-chart" id="nav-heatmap"></div>
+    <div class="usage-heatmap-body">
+      <div class="usage-heatmap-yaxis" id="usage-heatmap-yaxis"></div>
+      <div class="heatmap-chart" id="nav-heatmap"></div>
+    </div>
     <div class="usage-heatmap-axis">
       <span>0h</span><span>6h</span><span>12h</span><span>18h</span><span>23h</span>
     </div>
   </div>
 
-  <!-- Resumo por período do dia -->
-  <div class="usage-periods-list" id="usage-periods-row"></div>
+<!-- Resumo por período do dia -->
+  <div class="usage-periods-row" id="usage-periods-row"></div>
 
-  <!-- Insight textual, gerado a partir do próprio heatmap -->
-  <div class="usage-insight" id="usage-insight">Continue estudando para gerar seu perfil de uso.</div>
-</div>
+  <!-- Insight textual sobre o horário de estudo -->
+  <p class="usage-insight" id="usage-insight">Continue estudando para gerar seu perfil de uso.</p>
+
+
         </section>
 
       </div>
@@ -882,64 +1048,49 @@
            Dados de pages, navigation, hourHeatmap,
            deviceType, quizEvents
       ══════════════════════════════════════════════════ -->
-      <div class="two-col">
+      <div class="nav-section-wrap">
 
-        <div class="nav-section-wrap">
-
-          <div class="nav-section-header">
-            <div class="nav-section-icon">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-                <circle cx="8" cy="8" r="6.5"/>
-                <path d="M8 4v4l2.5 2.5"/>
-              </svg>
-            </div>
-            <span class="section-title">Navegação</span>
-            <div class="section-line"></div>
+        <div class="nav-section-header">
+          <div class="nav-section-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="8" cy="8" r="6.5"/>
+              <path d="M8 4v4l2.5 2.5"/>
+            </svg>
           </div>
-
-          <div class="nav-ranking-wrap">
-            <div class="nav-sub-header">
-              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M1 10l2.5-3 2 1.5 2.5-3 2 1.5 2.5-3.5"/>
-              </svg>
-              Páginas mais acessadas
-            </div>
-            <div class="nav-rank-list" id="nav-paginas-lista"></div>
-          </div>
-
-          <div class="nav-timeline-wrap">
-            <div class="nav-sub-header">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
-              class="lucide lucide-history-icon lucide-history"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-              <path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
-              Histórico de navegação
-            </div>
-            <div class="nav-tl-list" id="nav-fluxo"></div>
-          </div>
-
+          <span class="section-title">Navegação</span>
+          <div class="section-line"></div>
         </div>
 
-        <div class="perf-card">
-          <div class="section-header">
-            <span class="section-title">Perfil de uso</span>
-            <div class="section-line"></div>
+        <div class="nav-ranking-wrap">
+          <div class="nav-sub-header">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M1 10l2.5-3 2 1.5 2.5-3 2 1.5 2.5-3.5"/>
+            </svg>
+            Páginas mais acessadas
           </div>
-
-          <div class="nav-device-row">
-            <span class="perf-name">Dispositivo</span>
-            <span class="perf-value" id="nav-device-tipo">—</span>
-          </div>
-
-          <div class="nav-device-row" style="margin-top:10px">
-            <span class="perf-name">Horário mais ativo</span>
-            <span class="perf-value" id="nav-horario-pico">—</span>
-          </div>
-
-          <div class="perf-name" style="margin:16px 0 4px">Distribuição por hora do dia</div>
-          <div class="heatmap-chart" id="nav-heatmap"></div>
+          <div class="nav-rank-list" id="nav-paginas-lista"></div>
         </div>
+
+        <div class="nav-timeline-wrap">
+          <div class="nav-sub-header">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+            class="lucide lucide-history-icon lucide-history"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+            Histórico de navegação
+          </div>
+          <div class="nav-tl-list" id="nav-fluxo"></div>
+        </div>
+
       </div>
+      <!-- Nota: a antiga card "Perfil de uso" que ficava aqui ao lado foi
+           removida — ela usava os MESMOS ids (nav-device-tipo,
+           nav-horario-pico, nav-heatmap) da card em intel-grid-weak-consist,
+           então nunca era atualizada pelo JS (getElementById sempre resolve
+           para a primeira ocorrência no DOM). O Perfil de uso real e
+           funcional agora vive só na seção acima, ao lado de "Fraquezas
+           por Disciplina". -->
+
 
 
 
