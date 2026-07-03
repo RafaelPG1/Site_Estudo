@@ -628,51 +628,89 @@ export async function consolidarUsuario(uid) {
 /* ══════════════════════════════════════════════
    BUSCA COMPARTILHADA (cache único para pipeline
    + Camada 4)
-══════════════════════════════════════════════ */
-/* _buscarTodasTentativas(uid, semestre?)
-   sem semestre → retorna tudo (comportamento original, usado por consolidarUsuario)
-   com semestre → filtra apenas as tentativas daquele semestre */
-async function _buscarTodasTentativas(uid, semestre = null) {
-  /* Cache só é aproveitado quando não há filtro de semestre,
-     pois o cache armazena o conjunto completo. */
-  if (!semestre && _cacheTentativas.uid === uid && _cacheTentativas.tentativas !== null) {
+   ─────────────────────────────────────────────
+   AJUSTE — o cache agora vale também quando um
+   semestre é informado. Antes, qualquer chamada com
+   `semestre` ignorava o cache por completo e disparava
+   uma nova leitura no Firestore — como praticamente
+   todas as funções da Camada 4 são chamadas com o
+   mesmo semestre dentro de um mesmo relatorioEvolucao(),
+   isso resultava em várias leituras completas e
+   idênticas, em paralelo, do mesmo conjunto de dados.
+
+   Agora: o conjunto COMPLETO de tentativas (sem filtro)
+   é buscado uma única vez por uid — inclusive quando
+   várias chamadas concorrentes chegam antes da primeira
+   terminar, graças a `_fetchEmAndamento` abaixo — e o
+   filtro por semestre é aplicado em memória, sem gerar
+   nenhuma leitura adicional no Firestore.
+
+   Nenhum cálculo foi alterado. Nenhum contrato público
+   mudou: `_buscarTodasTentativas` não é exportada, e as
+   funções que a chamam (padraoDeDesempenho,
+   tendenciaDoAluno, fraquezasPorDisciplina, scoreEvolutivo,
+   previsaoSimples, listarTentativasRecentes,
+   contarQuestoesRespondidas, consolidarUsuario) continuam
+   recebendo e devolvendo exatamente o mesmo formato de
+   antes. ────────────────────────────────────────────── */
+let _fetchEmAndamento = null; // { uid, promise } | null — evita leituras concorrentes duplicadas
+
+async function _buscarTodasTentativasBrutas(uid) {
+  if (_cacheTentativas.uid === uid && _cacheTentativas.tentativas !== null) {
     return _cacheTentativas.tentativas;
+  }
+
+  /* Já existe uma busca em andamento para este uid (ex.: várias
+     funções da Camada 4 chamadas quase simultaneamente dentro do
+     mesmo Promise.all/allSettled) — reaproveita a MESMA promise em
+     vez de disparar uma nova leitura ao Firestore. */
+  if (_fetchEmAndamento && _fetchEmAndamento.uid === uid) {
+    return _fetchEmAndamento.promise;
   }
 
   const versaoNoInicio = _cacheVersao;
 
-  const quizIds = await listarQuizIds(uid);
-  if (!quizIds || quizIds.length === 0) {
-    if (!semestre && _cacheVersao === versaoNoInicio) {
-      _cacheTentativas = { uid, tentativas: [] };
+  const promise = (async () => {
+    const quizIds = await listarQuizIds(uid);
+    if (!quizIds || quizIds.length === 0) return [];
+
+    const listas = await Promise.all(
+      quizIds.map(quizId => listarPerformanceQuiz(uid, quizId).catch(() => []))
+    );
+
+    return listas
+      .flat()
+      .filter(Boolean)
+      .map(_normalizarTentativa)
+      .filter(t => t && t.totalQuestoes > 0);
+  })();
+
+  _fetchEmAndamento = { uid, promise };
+
+  try {
+    const resultado = await promise;
+    if (_cacheVersao === versaoNoInicio) {
+      _cacheTentativas = { uid, tentativas: resultado };
       _cacheVersao++;
     }
-    return [];
+    return resultado;
+  } finally {
+    if (_fetchEmAndamento && _fetchEmAndamento.uid === uid) {
+      _fetchEmAndamento = null;
+    }
   }
+}
 
-  const listas = await Promise.all(
-    quizIds.map(quizId => listarPerformanceQuiz(uid, quizId).catch(() => []))
-  );
-
-  const todasTentativas = listas
-    .flat()
-    .filter(Boolean)
-    .map(_normalizarTentativa)
-    .filter(t => t && t.totalQuestoes > 0);
-
-  /* Armazena o conjunto completo no cache independente do filtro */
-  if (!semestre && _cacheVersao === versaoNoInicio) {
-    _cacheTentativas = { uid, tentativas: todasTentativas };
-    _cacheVersao++;
-  }
-
-  /* Aplica filtro de semestre APÓS o cache, sem alterar estrutura do Firebase */
-  if (semestre) {
-    return todasTentativas.filter(t => t.semestre === semestre);
-  }
-
+/* _buscarTodasTentativas(uid, semestre?)
+   sem semestre → retorna tudo (mesmo comportamento de sempre)
+   com semestre → filtra EM MEMÓRIA o mesmo conjunto já buscado
+                  (ou já em cache), nunca gerando nova leitura */
+async function _buscarTodasTentativas(uid, semestre = null) {
+  const todasTentativas = await _buscarTodasTentativasBrutas(uid);
+  if (semestre) return todasTentativas.filter(t => t.semestre === semestre);
   return todasTentativas;
 }
+
 /* ════════════════════════════════════════════════════════════
    BLOCO 3 — CAMADA 4 — MOTOR DE EVOLUÇÃO E INTERPRETAÇÃO
    ────────────────────────────────────────────────────────────

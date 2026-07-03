@@ -314,38 +314,33 @@ export const State = {
 };
 
 /* ══════════════════════════════════════════════
-   CAMADA 5 — INTEGRAÇÃO COM QUIZ INTELLIGENCE
+   CAMADA 5 — SINCRONIZAÇÃO COM QUIZ INTELLIGENCE
    ─────────────────────────────────────────────
-   Ponto único de carregamento da inteligência.
+   Substitui o antigo polling (_aguardarNexusIntelligence,
+   setInterval de 100ms até 3000ms esperando
+   window.NexusQuizIntelligence existir). Em vez de espera
+   ativa, usamos import() dinâmico do próprio módulo ES —
+   a arquitetura de módulos já existente. O import é
+   assíncrono e resolvido pelo runtime assim que o módulo
+   terminar de carregar/avaliar; se o módulo já tiver sido
+   carregado por qualquer outra página/import, o browser
+   reaproveita o mesmo module record (sem nova requisição).
+   Falha de carregamento é tratada de forma equivalente ao
+   antigo timeout: retorna null e o card correspondente
+   renderiza estado vazio, sem travar o carregamento. ── */
+let _quizIntelligenceModulePromise = null;
 
-   REGRA: este bloco NUNCA calcula métricas de quiz.
-   Apenas chama a API pública e armazena o resultado.
+function _importarQuizIntelligence() {
+  if (_quizIntelligenceModulePromise) return _quizIntelligenceModulePromise;
 
-   O cálculo das conquistas usa SOMENTE campos já
-   presentes no relatorio (taxaAcertoMediaPct,
-   tendenciaDoAluno, scoreEvolutivo, fraquezasPorDisciplina)
-   e dados de sessão já disponíveis em State/carregarEstatisticas
-   — sem nenhum novo acesso ao Firebase ou ao quiz_intelligence.
-   É transformação de dados, não derivação de métricas.
-   ─────────────────────────────────────────────*/
-async function _aguardarNexusIntelligence(timeoutMs = 3000) {
-  if (window.NexusQuizIntelligence) return window.NexusQuizIntelligence;
+  _quizIntelligenceModulePromise = import('../../../quiz/js/quiz_intelligence.js')
+    .catch(err => {
+      console.warn('[dashboard] _importarQuizIntelligence: falha ao importar quiz_intelligence.js:', err);
+      _quizIntelligenceModulePromise = null; // permite nova tentativa numa próxima chamada
+      return null;
+    });
 
-  return new Promise((resolve) => {
-    const inicio    = Date.now();
-    const intervalo = setInterval(() => {
-      if (window.NexusQuizIntelligence) {
-        clearInterval(intervalo);
-        resolve(window.NexusQuizIntelligence);
-        return;
-      }
-      if (Date.now() - inicio >= timeoutMs) {
-        clearInterval(intervalo);
-        console.warn('[dashboard] NexusQuizIntelligence não disponível após', timeoutMs, 'ms');
-        resolve(null);
-      }
-    }, 100);
-  });
+  return _quizIntelligenceModulePromise;
 }
 
 /* ── Derivação das conquistas ────────────────────────────────
@@ -433,24 +428,31 @@ function _calcularProgressoConquistas(relatorio, stats) {
 /* _carregarIntelligence(uid)
    Lê State.semestre para filtrar todas as métricas de quiz
    pelo semestre atualmente selecionado no dashboard. */
-export async function _carregarIntelligence(uid) {
+export async function _carregarIntelligence(uid, statsPreCarregadas = null) {
   if (!uid) {
     console.warn('[dashboard] _carregarIntelligence: uid ausente — ignorado.');
     return null;
   }
 
-  const intelligence = await _aguardarNexusIntelligence();
+  const mod = await _importarQuizIntelligence();
 
-  if (!intelligence) {
-    console.warn('[dashboard] _carregarIntelligence: NexusQuizIntelligence indisponível.');
+  if (!mod) {
+    console.warn('[dashboard] _carregarIntelligence: quiz_intelligence.js indisponível.');
     State.intelligence = null;
     renderDashboardIntelligence(null);
     return null;
   }
 
-  /* Semestre ativo no momento da chamada — lido de State para garantir
-     que qualquer troca de semestre seja respeitada. */
   const semestreAtivo = State.semestre ?? null;
+
+  /* Reaproveita as estatísticas de sessão já buscadas por quem chamou
+     (ex.: _carregarMetricasReais), evitando uma segunda leitura de
+     carregarEstatisticas(uid). Quando chamada isoladamente — sem esse
+     parâmetro — continua buscando por conta própria, mantendo o
+     comportamento original para qualquer outro chamador futuro. */
+  const statsPromise = statsPreCarregadas !== null
+    ? Promise.resolve(statsPreCarregadas)
+    : carregarEstatisticas(uid).catch(() => null);
 
   try {
     console.log(
@@ -458,30 +460,27 @@ export async function _carregarIntelligence(uid) {
       '| semestre:', semestreAtivo ?? 'todos'
     );
 
-    /* Carrega o relatório principal + dados complementares em paralelo,
-       todos filtrados pelo semestre ativo. */
-    const [relatorio, tentativasRecentes, totalQuestoes] = await Promise.all([
-      intelligence.relatorioEvolucao(uid, semestreAtivo),
-      intelligence.listarTentativasRecentes
-        ? intelligence.listarTentativasRecentes(uid, 10, semestreAtivo)
+    /* As quatro fontes abaixo são independentes entre si — todas
+       dependem apenas de uid/semestre — por isso disparam em
+       paralelo em vez de sequencialmente (antes, statsAtuais só
+       era buscada DEPOIS do relatorio terminar). */
+    const [relatorio, tentativasRecentes, totalQuestoes, statsAtuais] = await Promise.all([
+      mod.relatorioEvolucao(uid, semestreAtivo),
+      typeof mod.listarTentativasRecentes === 'function'
+        ? mod.listarTentativasRecentes(uid, 10, semestreAtivo)
         : Promise.resolve([]),
-      intelligence.contarQuestoesRespondidas
-        ? intelligence.contarQuestoesRespondidas(uid, semestreAtivo)
+      typeof mod.contarQuestoesRespondidas === 'function'
+        ? mod.contarQuestoesRespondidas(uid, semestreAtivo)
         : Promise.resolve(0),
+      statsPromise,
     ]);
 
-    /* Adiciona os dados complementares ao relatorio em memória.
-       Não altera o que foi persistido no Firebase. */
     relatorio.tentativasRecentes = tentativasRecentes;
     relatorio.totalQuestoes      = totalQuestoes;
     relatorio.semestreFiltrado   = semestreAtivo;
 
-    /* Calcula conquistas usando o relatorio já populado (já filtrado por
-       semestre) e as estatísticas de sessão globais — streak e sessões
-       são métricas do usuário, não do semestre. */
-    const statsAtuais = await carregarEstatisticas(uid).catch(() => null);
-    relatorio.conquistas = _calcularConquistas(relatorio, statsAtuais);
-relatorio.conquistasProgresso = _calcularProgressoConquistas(relatorio, statsAtuais);
+    relatorio.conquistas          = _calcularConquistas(relatorio, statsAtuais);
+    relatorio.conquistasProgresso = _calcularProgressoConquistas(relatorio, statsAtuais);
 
     State.intelligence = relatorio;
 
@@ -509,6 +508,7 @@ relatorio.conquistasProgresso = _calcularProgressoConquistas(relatorio, statsAtu
     return null;
   }
 }
+
 /* ══════════════════════════════════════════════
    METRICAS REAIS DO FIREBASE
 ══════════════════════════════════════════════ */
@@ -519,62 +519,68 @@ export async function _carregarMetricasReais() {
     return;
   }
 
-  /* Informa ao session-tracker.js qual é o semestre ativo — mesma
-     fonte de verdade que o Dashboard já usa (State.semestre). Não
-     cria nenhuma variável/config nova: apenas espelha o valor para
-     um módulo que roda em todas as páginas e não tem acesso direto
-     ao State do Dashboard. Necessário para que _flush() grave (e
-     carregarPerfilUso() leia) o documento correto de perfil_uso. */
   setSemestreAtivo(State.semestre);
+
+  /* Leitura única de estatísticas de sessão — o mesmo resultado é
+     repassado para _carregarIntelligence (cálculo de conquistas),
+     eliminando a segunda leitura de carregarEstatisticas(uid) que
+     existia antes. */
+  const statsPromise = carregarEstatisticas(usuario.uid);
+
+  /* Dispara a pipeline de inteligência (Camada 5) em paralelo com as
+     métricas de sessão abaixo — nenhuma das duas depende do
+     resultado da outra, ambas dependem apenas do uid. A Camada 5
+     renderiza seus próprios cards assim que terminar, sem bloquear
+     nem esperar as métricas de sessão. */
+  const intelligencePromise = _carregarIntelligence(usuario.uid, statsPromise)
+    .catch(err => {
+      console.error('[dashboard] _carregarIntelligence (pipeline paralela):', err);
+      return null;
+    });
 
   try {
     const [stats, ultimaSessao, perfilUso] = await Promise.all([
-      carregarEstatisticas(usuario.uid),
+      statsPromise,
       _buscarUltimaSessaoPersistida(usuario.uid),
       carregarPerfilUso(usuario.uid, State.semestre),
     ]);
 
     if (!stats) {
       _renderMetricasVazio();
-      return;
-    }
-
-    _renderTempoGlobal(stats);
-    _renderTendencia(stats);
-    _renderConsistencia(stats);
-    _renderSparklines(stats);
-    _renderUltimoAcesso(stats);
-
-    const statsSessaoAtual   = sessionGetStats();
-    const temSessaoEmMemoria = statsSessaoAtual?.initialized
-      && (statsSessaoAtual.navSequence?.length > 0);
-
-    if (temSessaoEmMemoria) {
-      _renderNavegacaoAoVivo(statsSessaoAtual);
-    } else if (ultimaSessao) {
-      _renderNavegacaoPersistida(ultimaSessao);
     } else {
-      _renderNavegacaoVazia();
+      _renderTempoGlobal(stats);
+      _renderTendencia(stats);
+      _renderConsistencia(stats);
+      _renderSparklines(stats);
+      _renderUltimoAcesso(stats);
+
+      const statsSessaoAtual   = sessionGetStats();
+      const temSessaoEmMemoria = statsSessaoAtual?.initialized
+        && (statsSessaoAtual.navSequence?.length > 0);
+
+      if (temSessaoEmMemoria) {
+        _renderNavegacaoAoVivo(statsSessaoAtual);
+      } else if (ultimaSessao) {
+        _renderNavegacaoPersistida(ultimaSessao);
+      } else {
+        _renderNavegacaoVazia();
+      }
+
+      _renderPerfilUsoConsolidado(perfilUso);
+      _renderUsageInsight();
     }
-
-    /* "Perfil de uso" (heatmap por hora + dispositivo) — fonte própria
-       e consolidada por semestre, desacoplada da sessão (ver bloco de
-       AJUSTE — REORGANIZAÇÃO DE PERSISTÊNCIA no topo do arquivo). */
-    _renderPerfilUsoConsolidado(perfilUso);
-
-    /* "Seus hábitos de estudo" — não recalcula nada: lê o resultado
-       que _renderHeatmapHorario acabou de guardar em _ultimoPerfilUso
-       (chamado dentro de _renderPerfilUsoConsolidado acima) e
-       reaproveita stats.ultimos7, já calculado por carregarEstatisticas(). */
-    _renderUsageInsight();
 
   } catch (err) {
     console.error('[dashboard] _carregarMetricasReais:', err);
     _renderMetricasVazio();
   }
 
-  _carregarIntelligence(getUsuario()?.uid).catch(() => {});
+  /* Fire-and-forget: a pipeline de inteligência já foi disparada
+     acima e continua renderizando seus próprios cards de forma
+     independente, mesmo depois desta função retornar. */
+  intelligencePromise.catch(() => {});
 }
+
 async function _buscarUltimaSessaoPersistida(uid) {
   if (!uid) return null;
   try {
