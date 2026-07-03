@@ -1071,51 +1071,42 @@
            deviceType, quizEvents
       ══════════════════════════════════════════════════ -->
 <section>
-
-        <div class="section-header">
-          <span class="section-title">Navegação</span>
-          <div class="section-line"></div>
-        </div>
-
-        <div class="nav-section-wrap">
-
-          <div class="nav-ranking-wrap">
-            <div class="nav-sub-header">
-              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M1 10l2.5-3 2 1.5 2.5-3 2 1.5 2.5-3.5"/>
-              </svg>
-              Páginas mais acessadas
-            </div>
-            <div class="nav-rank-list" id="nav-paginas-lista"></div>
-          </div>
-
-          <div class="nav-timeline-wrap">
-            <div class="nav-sub-header">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
-              class="lucide lucide-history-icon lucide-history"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-              <path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
-              Histórico de navegação
-            </div>
-            <div class="nav-tl-list" id="nav-fluxo"></div>
-          </div>
-
-        </div>
-
-      </section>
-      <!-- Nota: a antiga card "Perfil de uso" que ficava aqui ao lado foi
-           removida — ela usava os MESMOS ids (nav-device-tipo,
-           nav-horario-pico, nav-heatmap) da card em intel-grid-weak-consist,
-           então nunca era atualizada pelo JS (getElementById sempre resolve
-           para a primeira ocorrência no DOM). O Perfil de uso real e
-           funcional agora vive só na seção acima, ao lado de "Fraquezas
-           por Disciplina". -->
-
-
-      <!-- ══════════════════════════════════════════════════
-           DISCIPLINES + ACHIEVEMENTS
+  <!-- ══════════════════════════════════════════════════
+           NAVEGAÇÃO + DISCIPLINAS (mesma linha)
       ══════════════════════════════════════════════════ -->
-<div class="three-col">
+      <div class="two-col">
+
+        <section>
+          <div class="section-header">
+            <span class="section-title">Navegação</span>
+            <div class="section-line"></div>
+          </div>
+
+          <div class="nav-section-wrap">
+
+            <div class="nav-ranking-wrap">
+              <div class="nav-sub-header">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M1 10l2.5-3 2 1.5 2.5-3 2 1.5 2.5-3.5"/>
+                </svg>
+                Páginas mais acessadas
+              </div>
+              <div class="nav-rank-list" id="nav-paginas-lista"></div>
+            </div>
+
+            <div class="nav-timeline-wrap">
+              <div class="nav-sub-header">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+                class="lucide lucide-history-icon lucide-history"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                <path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+                Histórico de navegação
+              </div>
+              <div class="nav-tl-list" id="nav-fluxo"></div>
+            </div>
+
+          </div>
+        </section>
 
         <section>
           <div class="section-header">
@@ -1128,17 +1119,30 @@
           </div>
         </section>
 
-        <section>
-          <div class="section-header">
-            <span class="section-title">Conquistas</span>
-            <div class="section-line"></div>
-          </div>
+      </div>
+      </section>
+      <!-- Nota: a antiga card "Perfil de uso" que ficava aqui ao lado foi
+           removida — ela usava os MESMOS ids (nav-device-tipo,
+           nav-horario-pico, nav-heatmap) da card em intel-grid-weak-consist,
+           então nunca era atualizada pelo JS (getElementById sempre resolve
+           para a primeira ocorrência no DOM). O Perfil de uso real e
+           funcional agora vive só na seção acima, ao lado de "Fraquezas
+           por Disciplina". -->
 
-          <div class="ach-card">
-            <div class="ach-list" id="ach-list"></div>
-          </div>
-        </section>
 
+      <!-- ══════════════════════════════════════════════════
+           CONQUISTAS (largura total)
+      ══════════════════════════════════════════════════ -->
+      <section>
+        <div class="section-header">
+          <span class="section-title">Conquistas</span>
+          <div class="section-line"></div>
+        </div>
+
+        <div class="ach-card">
+          <div class="ach-list" id="ach-list"></div>
+        </div>
+      </section>
       </div>
 
     </div><!-- /content -->
