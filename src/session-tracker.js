@@ -3,6 +3,50 @@
 
    v7 — Lock determinístico de aba única (Camada 1 — FINAL)
    v7.2 — localStorage como buffer de navegação (nav fix)
+   v8   — REORGANIZAÇÃO DE PERSISTÊNCIA (aprovada)
+          ─────────────────────────────────────────
+          1. historico_diario agora é agrupado por MÊS
+             (usuarios/{uid}/historico_diario/{YYYY-MM}),
+             em vez de um documento por dia. Reduz o
+             crescimento da coleção de ~365 para ~12
+             documentos por ano.
+             COMPATIBILIDADE: carregarEstatisticas() faz
+             leitura híbrida — busca primeiro no(s)
+             documento(s) mensal(is) novo(s); qualquer dia
+             da janela de 30 dias que não exista lá cai em
+             fallback de leitura no documento diário antigo
+             (usuarios/{uid}/historico_diario/{YYYY-MM-DD}).
+             Nenhuma migração de dados antigos é feita.
+             Documentos diários antigos não são apagados
+             nem alterados — apenas deixam de receber
+             gravação nova.
+
+          2. Nova coleção perfil_uso/{semestre} — heatmap
+             por hora e deviceType consolidados, POR
+             SEMESTRE (não vitalício). O card "Perfil de
+             uso" do Dashboard passa a ler exclusivamente
+             daqui (ver carregarPerfilUso), em vez de
+             depender da última sessão persistida.
+             O semestre ativo é informado de fora (mesma
+             fonte que o Dashboard já usa — State.semestre)
+             via setSemestreAtivo(), pois este módulo roda
+             em todas as páginas e não tem acesso direto ao
+             State do dashboard.
+             O incremento é feito por DELTA de cada hora do
+             heatmap da sessão atual desde o último flush,
+             para nunca contar a mesma hora duas vezes.
+
+          3. sessoes: removido o campo paginaInicial (nunca
+             lido em nenhum ponto do sistema). Adicionado o
+             campo semestre (útil para análises futuras).
+             hourHeatmap e deviceType da sessão individual
+             foram MANTIDOS — perfil_uso é um dado adicional
+             consolidado, não um substituto.
+
+          NADA MAIS foi alterado: lock de aba, timer local,
+          navegação (pages/sequence), API pública
+          (getStats/subscribe/formatTime/etc.) permanecem
+          idênticos em contrato e comportamento.
    ============================================= */
 
 import {
@@ -64,6 +108,25 @@ let _navHourHeatmap = {};
 let _navDeviceType  = _detectDevice();
 let _navCurrentPage = null;
 let _navPageStart   = null;
+
+/* ══════════════════════════════════════════════
+   ESTADO INTERNO — SEMESTRE ATIVO (perfil_uso)
+   ─────────────────────────────────────────────
+   Não é uma fonte nova de verdade: é apenas um
+   "espelho" do State.semestre que o Dashboard já
+   controla. Quem chama setSemestreAtivo() é o
+   próprio dashboard_data.js, dono do State.
+══════════════════════════════════════════════ */
+let _semestreAtivo = null;
+
+export function setSemestreAtivo(semestre) {
+  _semestreAtivo = semestre || null;
+}
+
+/* Espelha, por sessão, o que já foi somado ao perfil_uso
+   consolidado — usado para calcular apenas o DELTA de cada
+   hora a cada _flush(), evitando dupla contagem via increment(). */
+let _perfilUsoSincronizado = {};
 
 /* ══════════════════════════════════════════════
    LOCK GLOBAL
@@ -269,6 +332,16 @@ function _dateKey(ts = Date.now()) {
   return `${yy}-${mm}-${dd}`;
 }
 
+/* Chave mensal usada pela nova estrutura agrupada de
+   historico_diario. Mesmo formato de ano/mês de _dateKey,
+   sem o dia. */
+function _mesKey(ts = Date.now()) {
+  const d  = new Date(ts);
+  const yy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  return `${yy}-${mm}`;
+}
+
 function _newSessionId() {
   return `${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 }
@@ -304,8 +377,18 @@ function _isPlainObject(v) {
    REFS DO FIRESTORE
 ══════════════════════════════════════════════ */
 function _sessaoRef(uid, sid)     { return doc(getDb(), 'usuarios', uid, 'sessoes', sid); }
-function _diarioRef(uid, dateKey) { return doc(getDb(), 'usuarios', uid, 'historico_diario', dateKey); }
 function _usuarioRef(uid)         { return doc(getDb(), 'usuarios', uid); }
+
+/* Documento diário ANTIGO — mantido apenas para leitura de
+   fallback em carregarEstatisticas(). Não recebe mais gravação. */
+function _diarioRef(uid, dateKey) { return doc(getDb(), 'usuarios', uid, 'historico_diario', dateKey); }
+
+/* Documento mensal NOVO — fonte de gravação e leitura primária
+   de historico_diario a partir da v8. */
+function _diarioMensalRef(uid, mesKey) { return doc(getDb(), 'usuarios', uid, 'historico_diario', mesKey); }
+
+/* Documento consolidado de Perfil de Uso, um por semestre. */
+function _perfilUsoRef(uid, semestre) { return doc(getDb(), 'usuarios', uid, 'perfil_uso', semestre); }
 
 /* ══════════════════════════════════════════════
    CRIAÇÃO DE SESSÃO NO FIRESTORE
@@ -314,24 +397,27 @@ async function _criarSessaoFirestore() {
   if (!_uid || !_sessionId) return;
   try {
     const dataKey = _dateKey(_startedAt);
+    const mesKey  = _mesKey(_startedAt);
+    const dia     = dataKey.slice(-2);
+
     await setDoc(_sessaoRef(_uid, _sessionId), {
-      startedAt:     _startedAt,
-      endedAt:       _startedAt,
-      duracao:       0,
-      paginaInicial: location.pathname,
+      startedAt:   _startedAt,
+      endedAt:     _startedAt,
+      duracao:     0,
       dataKey,
-      pages:         {},
-      navigation:    [],
-      hourHeatmap:   {},
-      deviceType:    _navDeviceType,
+      semestre:    _semestreAtivo,
+      pages:       {},
+      navigation:  [],
+      hourHeatmap: {},
+      deviceType:  _navDeviceType,
     });
     await setDoc(_usuarioRef(_uid), {
       totalSessoes:    increment(1),
       ultimaAtividade: Date.now(),
     }, { merge: true });
-    await setDoc(_diarioRef(_uid, dataKey), {
-      data:      dataKey,
-      sessoes:   increment(1),
+    await setDoc(_diarioMensalRef(_uid, mesKey), {
+      mes: mesKey,
+      [`dias.${dia}.sessoes`]: increment(1),
       updatedAt: Date.now(),
     }, { merge: true });
   } catch (err) {
@@ -347,6 +433,8 @@ async function _flush() {
 
   const now           = Date.now();
   const dataKey       = _dateKey(_startedAt);
+  const mesKey        = _mesKey(_startedAt);
+  const dia           = dataKey.slice(-2);
   const activeSeconds = _calcActiveSeconds();
   const lastSent      = _readLSNumber(LS_LAST_SENT_KEY, 0);
   const delta         = Math.max(0, activeSeconds - lastSent);
@@ -361,14 +449,15 @@ async function _flush() {
       navigation:  _navSequence,
       hourHeatmap: _navHourHeatmap,
       deviceType:  _navDeviceType,
+      semestre:    _semestreAtivo,
     }, { merge: true });
 
     if (delta > 0) {
       const batch = writeBatch(getDb());
-      batch.set(_diarioRef(_uid, dataKey), {
-        data:       dataKey,
-        tempoTotal: increment(delta),
-        updatedAt:  now,
+      batch.set(_diarioMensalRef(_uid, mesKey), {
+        mes: mesKey,
+        [`dias.${dia}.tempoTotal`]: increment(delta),
+        updatedAt: now,
       }, { merge: true });
       batch.set(_usuarioRef(_uid), {
         tempoTotalGeral: increment(delta),
@@ -376,6 +465,35 @@ async function _flush() {
       }, { merge: true });
       await batch.commit();
       localStorage.setItem(LS_LAST_SENT_KEY, String(activeSeconds));
+    }
+
+    /* ── perfil_uso/{semestre} ──────────────────────────────
+       Incrementa apenas o DELTA de cada hora do heatmap desta
+       sessão desde o último flush — nunca o valor absoluto —
+       para que increment() não conte a mesma hora duas vezes
+       em flushes sucessivos da mesma sessão. Não substitui o
+       hourHeatmap gravado por sessão em _sessaoRef acima; é um
+       dado consolidado adicional. Sem semestre ativo definido,
+       simplesmente não grava (evita registro sem contexto). */
+    if (_semestreAtivo) {
+      const deltas = {};
+      Object.keys(_navHourHeatmap).forEach(h => {
+        const diff = (_navHourHeatmap[h] ?? 0) - (_perfilUsoSincronizado[h] ?? 0);
+        if (diff > 0) deltas[h] = diff;
+      });
+
+      if (Object.keys(deltas).length > 0) {
+        const updatePerfil = {
+          semestre:   _semestreAtivo,
+          deviceType: _navDeviceType,
+          updatedAt:  now,
+        };
+        Object.entries(deltas).forEach(([h, diff]) => {
+          updatePerfil[`hourHeatmap.${h}`] = increment(diff);
+        });
+        await setDoc(_perfilUsoRef(_uid, _semestreAtivo), updatePerfil, { merge: true });
+        _perfilUsoSincronizado = { ..._navHourHeatmap };
+      }
     }
 
     console.log(`[session-tracker] flush: ${activeSeconds}s local | delta=${delta}s → Firebase`);
@@ -473,6 +591,14 @@ export async function init(uid) {
         _navPages    = navLS.pages ?? (_isPlainObject(data.pages)     ? data.pages     : {});
         _navSequence = navLS.seq   ?? (Array.isArray(data.navigation) ? data.navigation : []);
 
+        /* Reconstrói o "espelho" do que já havia sido sincronizado com
+           perfil_uso nesta sessão recuperada — evita reenviar deltas já
+           gravados em flushes anteriores da mesma sessão. Como o próprio
+           hourHeatmap recuperado é o estado mais recente conhecido, ele
+           serve como baseline seguro (o pior caso é um pequeno recontagem
+           após reload, nunca perda de dado). */
+        _perfilUsoSincronizado = { ..._navHourHeatmap };
+
         /* MESCLA — reaplica a visita que ocorreu antes desta recuperação
            terminar, em vez de deixá-la ser sobrescrita silenciosamente. */
         if (paginaJaRegistradaAntesDoInit && visitaJaRegistradaAntesDoInit) {
@@ -539,6 +665,7 @@ async function _iniciarNovaSessao() {
   _navDeviceType  = _detectDevice();
   _navCurrentPage = null;
   _navPageStart   = null;
+  _perfilUsoSincronizado = {};
 
   /* Nova sessão — limpa o buffer de navegação do localStorage */
   _limparNavLS();
@@ -581,6 +708,7 @@ export async function destroy() {
   _navHourHeatmap = {};
   _navCurrentPage = null;
   _navPageStart   = null;
+  _perfilUsoSincronizado = {};
 
   _notify();
 }
@@ -635,6 +763,22 @@ export function subscribe(fn) {
 
 /* ══════════════════════════════════════════════
    carregarEstatisticas
+   ─────────────────────────────────────────────
+   LEITURA HÍBRIDA (v8):
+     1. Determina os meses (YYYY-MM) cobertos pela janela
+        de 30 dias e busca os documentos mensais novos
+        (historico_diario/{YYYY-MM}).
+     2. Para cada dia da janela que NÃO tiver dado no
+        documento mensal correspondente (ex.: dias antigos
+        gravados antes da migração de estrutura), busca em
+        fallback o documento diário antigo
+        (historico_diario/{YYYY-MM-DD}).
+     3. Monta o mesmo objeto `historico` (chave = dateKey)
+        que a função já retornava antes — nenhum consumidor
+        (Dashboard) precisa mudar, pois o formato de saída é
+        idêntico ao anterior.
+   Nenhuma migração de dados é feita — documentos antigos
+   apenas deixam de receber gravação nova.
 ══════════════════════════════════════════════ */
 export async function carregarEstatisticas(uid) {
   if (!uid) return null;
@@ -644,22 +788,53 @@ export async function carregarEstatisticas(uid) {
     const snapUsuario  = await getDoc(doc(db, 'usuarios', uid));
     const dadosUsuario = snapUsuario.exists() ? snapUsuario.data() : {};
 
-    const hoje      = new Date();
-    const historico = {};
-    const promises  = [];
+    const hoje = new Date();
 
+    /* Monta a janela de 30 dias e agrupa por mês para minimizar leituras */
+    const diasJanela = [];
     for (let i = 0; i < 30; i++) {
       const d = new Date(hoje);
       d.setDate(d.getDate() - i);
-      const key = _dateKey(d.getTime());
-      promises.push(
-        getDoc(doc(db, 'usuarios', uid, 'historico_diario', key))
-          .then(snap => { if (snap.exists()) historico[key] = snap.data(); })
+      diasJanela.push({ dateKey: _dateKey(d.getTime()), mesKey: _mesKey(d.getTime()) });
+    }
+    const mesesUnicos = [...new Set(diasJanela.map(d => d.mesKey))];
+
+    /* 1. Busca os documentos mensais novos (no máx. 2: mês atual + anterior) */
+    const mapasMensais = {};
+    await Promise.all(mesesUnicos.map(async (mesKey) => {
+      try {
+        const snap = await getDoc(_diarioMensalRef(uid, mesKey));
+        mapasMensais[mesKey] = snap.exists() ? (snap.data().dias || {}) : {};
+      } catch (_) {
+        mapasMensais[mesKey] = {};
+      }
+    }));
+
+    /* 2. Monta `historico` a partir dos mensais; separa os dias sem dado
+          para buscar em fallback nos documentos diários antigos. */
+    const historico = {};
+    const diasParaFallback = [];
+
+    diasJanela.forEach(({ dateKey, mesKey }) => {
+      const dia   = dateKey.slice(-2);
+      const doMes = mapasMensais[mesKey]?.[dia];
+      if (doMes) {
+        historico[dateKey] = doMes;
+      } else {
+        diasParaFallback.push(dateKey);
+      }
+    });
+
+    if (diasParaFallback.length > 0) {
+      await Promise.all(diasParaFallback.map(dateKey =>
+        getDoc(_diarioRef(uid, dateKey))
+          .then(snap => { if (snap.exists()) historico[dateKey] = snap.data(); })
           .catch(() => {})
-      );
+      ));
     }
 
-    await Promise.all(promises);
+    /* ── A partir daqui, lógica idêntica à versão anterior — apenas
+       lendo de `historico`, já montado pela leitura híbrida acima. ── */
 
     let streak = 0;
     for (let i = 0; i < 30; i++) {
@@ -673,8 +848,9 @@ export async function carregarEstatisticas(uid) {
     const hojeKey   = _dateKey();
     const tempoHoje = historico[hojeKey]?.tempoTotal ?? 0;
 
-    const diasComTempo = Object.values(historico).filter(d => d.tempoTotal > 0);
-    const mediaDiaria  = diasComTempo.length > 0
+    const entradasComTempo = Object.entries(historico).filter(([, d]) => d.tempoTotal > 0);
+    const diasComTempo     = entradasComTempo.map(([, d]) => d);
+    const mediaDiaria      = diasComTempo.length > 0
       ? Math.floor(diasComTempo.reduce((a, d) => a + d.tempoTotal, 0) / diasComTempo.length)
       : 0;
 
@@ -691,10 +867,11 @@ export async function carregarEstatisticas(uid) {
     }
 
     const diasAtivos30 = diasComTempo.length;
-    const melhorDia    = diasComTempo.reduce(
-      (best, d) => (d.tempoTotal > best.tempo ? { key: d.data, tempo: d.tempoTotal } : best),
+    const melhorDia = entradasComTempo.reduce(
+      (best, [key, d]) => (d.tempoTotal > best.tempo ? { key, tempo: d.tempoTotal } : best),
       { key: null, tempo: 0 }
     );
+
     const tempoTotalGeralFinal = dadosUsuario.tempoTotalGeral ?? 0;
     const totalSessoesFinal    = dadosUsuario.totalSessoes    ?? 0;
     const mediaSessao = totalSessoesFinal > 0
@@ -716,6 +893,34 @@ export async function carregarEstatisticas(uid) {
     };
   } catch (err) {
     console.error('[session-tracker] carregarEstatisticas:', err);
+    return null;
+  }
+}
+
+/* ══════════════════════════════════════════════
+   carregarPerfilUso(uid, semestre)
+   ─────────────────────────────────────────────
+   Nova função (v8). Lê o documento consolidado
+   perfil_uso/{semestre} — heatmap por hora e
+   deviceType daquele semestre especificamente.
+   Retorna null se não houver uid/semestre ou se
+   o documento ainda não existir (ex.: usuário sem
+   nenhuma sessão registrada no semestre selecionado).
+   Não calcula nada — apenas lê e devolve os campos
+   já persistidos por _flush().
+══════════════════════════════════════════════ */
+export async function carregarPerfilUso(uid, semestre) {
+  if (!uid || !semestre) return null;
+  try {
+    const snap = await getDoc(_perfilUsoRef(uid, semestre));
+    if (!snap.exists()) return null;
+    const data = snap.data();
+    return {
+      hourHeatmap: _isPlainObject(data.hourHeatmap) ? data.hourHeatmap : {},
+      deviceType:  typeof data.deviceType === 'string' ? data.deviceType : null,
+    };
+  } catch (err) {
+    console.warn('[session-tracker] carregarPerfilUso:', err);
     return null;
   }
 }

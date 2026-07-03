@@ -84,6 +84,42 @@
    carregarEstatisticas, mesma fórmula usada em
    "Dias ativos nos últimos 7") e formata os dois
    cards de hábito.
+
+   ─────────────────────────────────────────────
+   AJUSTE — REORGANIZAÇÃO DE PERSISTÊNCIA (aprovada)
+   ─────────────────────────────────────────────
+   1. O card "Perfil de uso" (heatmap por hora +
+      dispositivo) deixou de depender da última sessão
+      persistida (fallback frágil e não-semestral).
+      Passa a consumir exclusivamente
+      session-tracker.carregarPerfilUso(uid, semestre),
+      que lê o documento consolidado
+      perfil_uso/{semestre} do Firebase — um heatmap
+      por semestre, não vitalício.
+      _renderHeatmapHorario e _renderDispositivo NÃO
+      mudaram de contrato: continuam recebendo
+      exatamente os mesmos formatos de dados
+      (hourHeatmap: objeto por hora / deviceType:
+      string) e calculando exatamente o mesmo que já
+      calculavam. Só mudou de onde o dado vem.
+
+   2. O card "Navegação" (páginas mais acessadas +
+      histórico) continua usando a sessão ao vivo ou a
+      última sessão persistida como antes — nenhuma
+      mudança de comportamento aqui. Apenas foi
+      desacoplado do heatmap/dispositivo, que agora tem
+      fonte própria (item 1).
+
+   3. setSemestreAtivo(State.semestre) é chamado antes
+      de carregar as métricas para que session-tracker.js
+      (que roda em todas as páginas, sem acesso direto ao
+      State do Dashboard) saiba qual semestre gravar/ler
+      em perfil_uso. Reaproveita a mesma fonte de verdade
+      que o Dashboard já usa (State.semestre) — nenhuma
+      nova variável/configuração foi criada.
+
+   Nenhuma mudança de cálculo, contrato público, HTML ou
+   renderização dos demais cards.
    ============================================= */
 
 import { getUsuario } from '../../../src/global.js';
@@ -92,10 +128,12 @@ import { getUsuario } from '../../../src/global.js';
 import {
   formatTimeHuman,
   carregarEstatisticas,
-  getStats      as sessionGetStats,
+  getStats        as sessionGetStats,
+  setSemestreAtivo,
+  carregarPerfilUso,
 } from '../../../src/session-tracker.js';
 
-/* ── Firestore (leitura da última sessão persistida — fallback) ── */
+/* ── Firestore (leitura da última sessão persistida — fallback do card Navegação) ── */
 import { getDb } from '../../../src/firebase.js';
 import {
   collection, query, orderBy, limit, getDocs,
@@ -481,10 +519,19 @@ export async function _carregarMetricasReais() {
     return;
   }
 
+  /* Informa ao session-tracker.js qual é o semestre ativo — mesma
+     fonte de verdade que o Dashboard já usa (State.semestre). Não
+     cria nenhuma variável/config nova: apenas espelha o valor para
+     um módulo que roda em todas as páginas e não tem acesso direto
+     ao State do Dashboard. Necessário para que _flush() grave (e
+     carregarPerfilUso() leia) o documento correto de perfil_uso. */
+  setSemestreAtivo(State.semestre);
+
   try {
-    const [stats, ultimaSessao] = await Promise.all([
+    const [stats, ultimaSessao, perfilUso] = await Promise.all([
       carregarEstatisticas(usuario.uid),
       _buscarUltimaSessaoPersistida(usuario.uid),
+      carregarPerfilUso(usuario.uid, State.semestre),
     ]);
 
     if (!stats) {
@@ -510,10 +557,15 @@ export async function _carregarMetricasReais() {
       _renderNavegacaoVazia();
     }
 
+    /* "Perfil de uso" (heatmap por hora + dispositivo) — fonte própria
+       e consolidada por semestre, desacoplada da sessão (ver bloco de
+       AJUSTE — REORGANIZAÇÃO DE PERSISTÊNCIA no topo do arquivo). */
+    _renderPerfilUsoConsolidado(perfilUso);
+
     /* "Seus hábitos de estudo" — não recalcula nada: lê o resultado
        que _renderHeatmapHorario acabou de guardar em _ultimoPerfilUso
-       (chamado dentro de um dos três ramos acima) e reaproveita
-       stats.ultimos7, já calculado por carregarEstatisticas(). */
+       (chamado dentro de _renderPerfilUsoConsolidado acima) e
+       reaproveita stats.ultimos7, já calculado por carregarEstatisticas(). */
     _renderUsageInsight();
 
   } catch (err) {
@@ -712,8 +764,9 @@ function _renderSparklines(stats) {
 }
 
 /* Agrupamento de horas em períodos do dia — apenas apresentação,
-   reaproveita o mesmo hourHeatmap já calculado por session-tracker.
-   Cores seguem os modificadores já existentes de .prog-fill. */
+   reaproveita o mesmo hourHeatmap já calculado (agora vindo de
+   perfil_uso/{semestre} em vez da sessão). Cores seguem os
+   modificadores já existentes de .prog-fill. */
 const USAGE_PERIODOS = [
   { id: 'madrugada', label: 'Madrugada', horas: [0,1,2,3,4,5],   corClasse: 'blue'  },
   { id: 'manha',     label: 'Manhã',     horas: [6,7,8,9,10,11], corClasse: 'amber' },
@@ -724,8 +777,8 @@ const USAGE_PERIODOS = [
 /* Guarda o último resultado calculado por _renderHeatmapHorario
    (período dominante + sua % + frase de insight já existente),
    para a seção "Seus hábitos de estudo" reaproveitar sem recalcular
-   nada. Populado sempre que o heatmap é renderizado (ao vivo,
-   persistido ou vazio). */
+   nada. Populado sempre que o heatmap é renderizado (via perfil_uso
+   consolidado ou estado vazio). */
 let _ultimoPerfilUso = {
   temDados:     false,
   periodoId:    null,
@@ -753,29 +806,44 @@ function _iconeCalendarioHabito() {
 }
 
 /* ══════════════════════════════════════════════
+   RENDER — PERFIL DE USO CONSOLIDADO (Firebase)
+   ─────────────────────────────────────────────
+   Nova função (v8). Substitui a antiga dependência
+   de sessão para alimentar o heatmap/dispositivo:
+   recebe o objeto já lido de perfil_uso/{semestre}
+   (via carregarPerfilUso) e delega para as MESMAS
+   funções de render de sempre — _renderHeatmapHorario
+   e _renderDispositivo — sem alterar o contrato ou
+   o cálculo interno delas.
+══════════════════════════════════════════════ */
+function _renderPerfilUsoConsolidado(perfilUso) {
+  _renderHeatmapHorario(perfilUso?.hourHeatmap ?? null);
+  _renderDispositivo(perfilUso?.deviceType ?? null);
+}
+
+/* ══════════════════════════════════════════════
    RENDER — NAVIGATION ANALYTICS
+   ─────────────────────────────────────────────
+   Agora cuidam SOMENTE de páginas mais acessadas e
+   histórico de navegação. Heatmap/dispositivo saíram
+   daqui e passaram para _renderPerfilUsoConsolidado,
+   com fonte própria (perfil_uso/{semestre}).
 ══════════════════════════════════════════════ */
 function _renderNavegacaoAoVivo(stats) {
   if (!stats) return;
   _renderPaginasMaisAcessadas(stats.navPages);
   _renderFluxoNavegacao(stats.navSequence);
-  _renderHeatmapHorario(stats.navHourHeatmap);
-  _renderDispositivo(stats.navDeviceType);
 }
 
 function _renderNavegacaoPersistida(sessao) {
   if (!sessao) return;
   _renderPaginasMaisAcessadas(sessao.pages);
   _renderFluxoNavegacao(sessao.navigation);
-  _renderHeatmapHorario(sessao.hourHeatmap);
-  _renderDispositivo(sessao.deviceType);
 }
 
 function _renderNavegacaoVazia() {
   _renderPaginasMaisAcessadas(null);
   _renderFluxoNavegacao(null);
-  _renderHeatmapHorario(null);
-  _renderDispositivo(null);
 }
 
 /* ── ícone por pathname ───────────────────────────────────── */
@@ -1306,6 +1374,7 @@ function _renderMetricasVazio() {
   });
 
   _renderNavegacaoVazia();
+  _renderPerfilUsoConsolidado(null);
   _renderUsageInsight();
 }
 
