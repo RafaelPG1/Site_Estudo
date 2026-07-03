@@ -363,6 +363,35 @@ function _calcularConquistas(relatorio, stats) {
   };
 }
 
+/* ── Progresso numérico das conquistas (apoio visual) ──────────
+   NÃO recalcula nada e NÃO cria nenhuma regra nova: lê os MESMOS
+   campos já extraídos em _calcularConquistas (streak, totalSessoes,
+   totalTentativas, totalQuestoes, taxaAcertoMediaPct, melhorDia.tempo)
+   e apenas expõe o par {atual, meta} para as barras de progresso
+   da UI. A lógica de desbloqueio continua 100% em _calcularConquistas. */
+function _calcularProgressoConquistas(relatorio, stats) {
+  if (!relatorio || !stats) return {};
+
+  const score = relatorio.scoreEvolutivo;
+
+  const streak           = stats.streak ?? 0;
+  const totalSessoes     = stats.totalSessoes ?? 0;
+  const melhorDiaTempo   = stats.melhorDia?.tempo ?? 0;
+  const totalTentativas  = score?.totalTentativas ?? 0;
+  const totalQuestoes    = relatorio.totalQuestoes ?? 0;
+  const taxaMediaPct     = score?.composicao?.taxaAcertoMediaPct ?? 0;
+
+  return {
+    sequencia7:    { atual: streak,          meta: 7,     tipo: 'numero'     },
+    sequencia30:   { atual: streak,          meta: 30,    tipo: 'numero'     },
+    tentativas100: { atual: totalTentativas, meta: 100,   tipo: 'numero'     },
+    questoesMil:   { atual: totalQuestoes,   meta: 1000,  tipo: 'numero'     },
+    miraAfiada:    { atual: taxaMediaPct,    meta: 75,    tipo: 'percentual' },
+    maratonista:   { atual: melhorDiaTempo,  meta: 18000, tipo: 'tempo'      },
+    sessoes50:     { atual: totalSessoes,    meta: 50,    tipo: 'numero'     },
+  };
+}
+
 /* _carregarIntelligence(uid)
    Lê State.semestre para filtrar todas as métricas de quiz
    pelo semestre atualmente selecionado no dashboard. */
@@ -414,6 +443,7 @@ export async function _carregarIntelligence(uid) {
        são métricas do usuário, não do semestre. */
     const statsAtuais = await carregarEstatisticas(uid).catch(() => null);
     relatorio.conquistas = _calcularConquistas(relatorio, statsAtuais);
+relatorio.conquistasProgresso = _calcularProgressoConquistas(relatorio, statsAtuais);
 
     State.intelligence = relatorio;
 

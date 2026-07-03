@@ -1130,19 +1130,42 @@
            por Disciplina". -->
 
 
-      <!-- ══════════════════════════════════════════════════
-           CONQUISTAS (largura total)
-      ══════════════════════════════════════════════════ -->
-      <section>
-        <div class="section-header">
-          <span class="section-title">Conquistas</span>
-          <div class="section-line"></div>
-        </div>
+<!-- ══════════════════════════════════════════════════
+     CONQUISTAS (largura total) — redesign gamificado
+     Fonte: relatorio.conquistas + relatorio.conquistasProgresso
+     Preenchido por: renderAchievements() em dashboard_render.js
+══════════════════════════════════════════════════ -->
+<section>
+  <div class="section-header">
+    <span class="section-title">Conquistas</span>
+    <span class="empty-state-info-btn ach-title-info" tabindex="0"
+          aria-label="Como as conquistas funcionam"
+          data-tooltip="Desbloqueadas automaticamente conforme você estuda, completa quizzes e evolui na plataforma.">ⓘ</span>
+    <div class="section-line"></div>
+  </div>
 
-        <div class="ach-card">
-          <div class="ach-list" id="ach-list"></div>
-        </div>
-      </section>
+  <div class="ach-card" id="ach-card">
+
+    <div class="ach-summary" id="ach-summary">
+      <!-- Preenchido por renderAchievements() -->
+    </div>
+
+    <div class="ach-filters" id="ach-filters">
+      <!-- Preenchido por renderAchievements() -->
+    </div>
+
+    <div class="ach-highlights-block" id="ach-highlights-block">
+      <div class="ach-subsection-title">Destaques</div>
+      <div class="ach-highlights" id="ach-highlights"></div>
+    </div>
+
+    <div class="ach-all-block">
+      <div class="ach-subsection-title">Todas as conquistas</div>
+      <div class="ach-grid" id="ach-list"></div>
+    </div>
+
+  </div>
+</section>
       </div>
 
     </div><!-- /content -->
