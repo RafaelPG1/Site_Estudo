@@ -776,16 +776,33 @@ export function renderTimeline(relatorio) {
     return;
   }
 
-  tentativas.forEach(t => {
+tentativas.forEach(t => {
     const taxa  = typeof t.taxaAcerto === 'number' ? Math.round(t.taxaAcerto * 100) : 0;
     const label = [t.disc, t.modo].filter(Boolean).join(' · ') || 'Quiz';
 
+    /* Concluído x em andamento: reaproveita exclusivamente os campos
+       já normalizados por quiz_intelligence.js (respondidas e
+       totalQuestoes, os mesmos que alimentam todo o resto do sistema).
+       Nenhum novo status é calculado ou persistido — é apenas a
+       mesma condição que já define `finalizado` no quiz_engine.js
+       (respondidas === totalQuestoes), lida aqui só para exibição. */
+    const respondidas = t.respondidas ?? t.acertos ?? 0;
+    const total        = t.totalQuestoes ?? 0;
+    const concluido     = total > 0 && respondidas >= total;
+
     let corDot, corIcone;
-    if (taxa >= 75)      { corDot = 'rgba(61,220,132,.12)';  corIcone = '#3DDC84'; }
+    if (!concluido) {
+      corDot = 'rgba(255,181,71,.12)'; corIcone = '#FFB547';
+    } else if (taxa >= 75)      { corDot = 'rgba(61,220,132,.12)'; corIcone = '#3DDC84'; }
     else if (taxa >= 50) { corDot = 'rgba(255,181,71,.12)';  corIcone = '#FFB547'; }
     else                 { corDot = 'rgba(255,92,106,.12)';   corIcone = '#FF5C6A'; }
 
     const tempoFormatado = _formatarTempoRelativo(t.endedAt);
+
+    const titulo = concluido ? 'Quiz concluído' : 'Quiz em andamento';
+    const descHtml = concluido
+      ? `${_escapeHtml(label)} · <strong style="color:${corIcone}">${t.acertos ?? 0}/${total} (${taxa}%)</strong>`
+      : `${_escapeHtml(label)} · <strong style="color:${corIcone}">${respondidas}/${total} respondidas</strong>`;
 
     const item = document.createElement('div');
     item.className = 'tl-item';
@@ -799,8 +816,8 @@ export function renderTimeline(relatorio) {
         </svg>
       </div>
       <div class="tl-body">
-        <div class="tl-title">Quiz finalizado</div>
-        <div class="tl-desc">${_escapeHtml(label)} · <strong style="color:${corIcone}">${t.acertos ?? 0}/${t.totalQuestoes ?? 0} (${taxa}%)</strong></div>
+        <div class="tl-title">${titulo}</div>
+        <div class="tl-desc">${descHtml}</div>
         <div class="tl-time">
           <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
             <circle cx="5" cy="5" r="4.5"/>

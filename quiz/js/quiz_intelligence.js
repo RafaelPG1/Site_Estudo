@@ -909,12 +909,19 @@ export async function listarTentativasRecentes(uid, limite = 10, semestre = null
     .slice()
     .sort((a, b) => (b.endedAt ?? 0) - (a.endedAt ?? 0))
     .slice(0, limite)
-    .map(t => ({
+.map(t => ({
       disc:          t.disc,
       modo:          t.modo,
       semestre:      t.semestre,
       acertos:       t.acertos,
       totalQuestoes: t.totalQuestoes,
+      /* respondidas: mesmo campo já normalizado por _normalizarTentativa
+         (acertos + erros / campo explícito do registro salvo). Exposto
+         aqui apenas para a UI (Atividade Recente) distinguir tentativa
+         concluída de tentativa em andamento comparando
+         respondidas === totalQuestoes — nenhum cálculo novo, nenhum
+         campo de status persistido no Firebase. */
+      respondidas:   t.respondidas,
       taxaAcerto:    t.taxaAcerto,
       tempoGastoSeg: t.tempoGastoSeg,
       revealed:      t.revealed,

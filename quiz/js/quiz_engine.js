@@ -35,6 +35,13 @@
    v10 — sem lógica de performance interna. O payload do evento
    nexus:quizFinalizado inclui os dados brutos completos para
    que quiz_intelligence.js faça todo o processamento.
+
+   v11 — CORREÇÃO: _registrarSaida() agora distingue saída real
+   (pagehide) de mera perda de foco (visibilitychange/hidden).
+   Antes, qualquer perda de foco consumia _tentativaFinalizada
+   permanentemente, travando o registro de performance no
+   primeiro estado parcial capturado. Ver comentário completo
+   junto a _registrarSaida() logo abaixo.
    ============================================================ */
 
 (function () {
@@ -152,15 +159,34 @@
       return 'quiz_leftat_' + _uid() + '_' + _disc + '_' + _modo + '_' + _semestre;
     }
 
-    function _registrarSaida() {
+    /* saidaReal distingue duas situações que hoje eram tratadas como
+       idênticas:
+         · pagehide  → a página está sendo genuinamente descartada
+           (navegação, fechamento de aba, recarregamento). A instância
+           atual do módulo morre logo em seguida — é seguro e correto
+           disparar o payload de "tentativa abandonada" aqui, pois não
+           há mais nenhuma chance de completar a tentativa nesta mesma
+           execução.
+         · visibilitychange (hidden)  → só significa perda de foco
+           (trocar de aba, minimizar, abrir DevTools, notificação do
+           SO). A MESMA instância do módulo continua viva e o usuário
+           pode voltar e seguir respondendo normalmente. Disparar
+           _dispararFinalizacao() aqui consumia _tentativaFinalizada
+           permanentemente (guarda de disparo único) mesmo sem a
+           tentativa ter realmente terminado — travando o registro de
+           performance no primeiro estado parcial capturado e
+           impedindo qualquer atualização posterior, inclusive a
+           conclusão real do quiz.
+       Por isso, o payload de abandono só é disparado em saída real
+       (pagehide). visibilitychange continua fazendo apenas o
+       bookkeeping de localStorage (_leftAtKey), usado por
+       _verificarRetorno() para expirar progresso — comportamento
+       inalterado. */
+    function _registrarSaida(saidaReal) {
       if (!_disc || !_Storage) return;
 
-      /* Se há respostas reais não finalizadas, dispara o payload parcial
-         antes de sair. Isso garante que quizzes abandonados sejam
-         contabilizados pelo intelligence com os dados reais do usuário.
-         A guarda _tentativaFinalizada evita duplo disparo. */
       var temRespostasReais = Object.keys(_respostasReais).length > 0;
-      if (temRespostasReais && !_tentativaFinalizada && _tentativaStartedAt) {
+      if (saidaReal && temRespostasReais && !_tentativaFinalizada && _tentativaStartedAt) {
         _dispararFinalizacao(false);
       }
 
@@ -201,9 +227,22 @@
       }
     }
 
-    window.addEventListener('pagehide', _registrarSaida);
+    window.addEventListener('pagehide', function () { _registrarSaida(true); });
     document.addEventListener('visibilitychange', function () {
-      if (document.hidden) _registrarSaida();
+      if (document.hidden) _registrarSaida(false);
+    });
+
+    /* Rede de segurança para bfcache (Firefox/Safari podem restaurar a
+       página do cache de navegação sem reexecutar o script — inclusive
+       após um pagehide que já tenha disparado o payload de abandono).
+       Nesse caso específico, e SOMENTE nesse caso (event.persisted),
+       a mesma instância do módulo é reaproveitada com
+       _tentativaFinalizada ainda true. Reabrir apenas essa trava
+       permite que a tentativa seja corretamente finalizada mais tarde
+       (conclusão natural ou "revelar"), sem reiniciar _respostasReais,
+       respostas[] ou _tentativaStartedAt — nada do progresso é tocado. */
+    window.addEventListener('pageshow', function (e) {
+      if (e.persisted) _tentativaFinalizada = false;
     });
 
     /* ── Questões ─────────────────────────────────────────── */
@@ -371,6 +410,25 @@ function _dispararFinalizacao(reveladoPorBotao) {
 
   var endedAt = Date.now();
 
+  /* Reconciliação de consistência — rede de segurança, não uma nova
+     fonte de verdade. Neste ponto exato da execução, `revelado` ainda
+     é false nos dois caminhos que chegam aqui: conclusão natural via
+     selectOption, ou clique em "revelar" (que só marca revelado = true
+     DEPOIS de chamar esta função). Logo, respostas[] neste instante só
+     pode conter respostas reais do usuário — nunca valores de
+     auto-preenchimento. Qualquer entrada presente em respostas[] e
+     ausente em _respostasReais (ex.: progresso restaurado que por
+     algum motivo não tenha passado pela sincronização de _restaurar())
+     é copiada para o espelho antes de montar o payload, garantindo que
+     respostasBrutas sempre reflita TODAS as respostas da tentativa —
+     não apenas as dadas após o último carregamento da página.
+     _respostasReais continua sendo a única fonte usada logo abaixo. */
+  Object.keys(respostas).forEach(function (qi) {
+    if (_respostasReais[qi] === undefined && respostas[qi] !== undefined) {
+      _respostasReais[qi] = respostas[qi];
+    }
+  });
+
   /* Coleta APENAS as respostas que o usuário efetivamente escolheu
      ANTES de qualquer revelação. O snapshot é feito sobre
      _respostasReais, que nunca é tocado por revelar(). */
@@ -378,7 +436,6 @@ function _dispararFinalizacao(reveladoPorBotao) {
   Object.keys(_respostasReais).forEach(function (qi) {
     respostasBrutas[parseInt(qi)] = _respostasReais[qi];
   });
-
   /* Gabarito bruto: índice da alternativa correta por questão.
      O intelligence.js cruzará respostasBrutas x gabarito. */
   var gabarito = {};
@@ -436,10 +493,25 @@ function _dispararFinalizacao(reveladoPorBotao) {
         }
       }
 
-      if (!salvo || !salvo.respostas) return null;
+if (!salvo || !salvo.respostas) return null;
 
       Object.keys(salvo.respostas).forEach(function (qi) {
-        respostas[parseInt(qi)] = salvo.respostas[qi];
+        var idx = parseInt(qi);
+        respostas[idx] = salvo.respostas[qi];
+
+        /* Sincroniza o espelho imutável com o progresso restaurado.
+           Só quando a tentativa salva NÃO estava revelada — se estivesse,
+           respostas[] poderia conter valores de auto-preenchimento
+           (revelar() grava a resposta correta nas questões não
+           respondidas), que nunca devem ser tratados como resposta real
+           do usuário. Sem esta sincronização, uma tentativa iniciada
+           antes de um reload perdia suas respostas reais do payload de
+           finalização (nexus:quizFinalizado), pois _respostasReais
+           sempre começava vazio a cada carregamento de página — mesmo
+           com respostas[] corretamente restaurado. */
+        if (!salvo.revelado) {
+          _respostasReais[idx] = salvo.respostas[qi];
+        }
       });
       if (salvo.revelado) revelado = true;
 
