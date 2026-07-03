@@ -56,7 +56,7 @@
    visual, sem afetar o valor exibido nem a lógica.
 
    ─────────────────────────────────────────────
-   AJUSTE — FRAQUEZAS POR DISCIPLINA: TODAS AS DISCIPLINAS
+   AJUSTE — Desempenho por Disciplina: TODAS AS DISCIPLINAS
    ─────────────────────────────────────────────
    renderWeaknesses agora cruza relatorio.fraquezasPorDisciplina
    (vindo do quiz_intelligence, somente disciplinas com dados)
@@ -271,7 +271,7 @@ export function renderTrend(relatorio) {
 }
 
 
-/* Fase 2.4 — Fraquezas por disciplina
+/* Fase 2.4 — Desempenho por Disciplina
    ─────────────────────────────────────────────
    Sempre exibe TODAS as disciplinas do semestre
    selecionado (State.disciplinas), cruzando com os dados
@@ -285,7 +285,7 @@ export function renderTrend(relatorio) {
    a mesma lista já usada para renderizar as linhas. */
 /* ─────────────────────────────────────────────
    REDESIGN — Desempenho por Disciplina
-   (antigo "Fraquezas por Disciplina")
+   (antigo "Desempenho por Disciplina")
    ─────────────────────────────────────────────
    Transforma a lista simples em um painel analítico:
    cards de resumo + tabela com Nível, Prioridade e
