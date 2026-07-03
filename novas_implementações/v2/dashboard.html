@@ -112,11 +112,8 @@
 
 /* ── Distribuição por hora do dia ── */
 .usage-heatmap-section { margin-bottom: 18px; }
-.usage-heatmap-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-bottom: 12px;
+.usage-section-header {
+  align-items: center;
 }
 .usage-heatmap-title {
   font-size: 12px;
@@ -870,18 +867,20 @@
 </div>
         </section>
 
-        <!-- >Perfil de uso — historico_diario -->
+<!-- >Perfil de uso — historico_diario -->
         <section>
+          <div class="section-header usage-section-header">
+            <span class="section-title">Perfil de uso</span>
+            <span class="empty-state-info-btn usage-title-info" tabindex="0"
+                  aria-label="Como o perfil de uso é calculado"
+                  data-tooltip="Baseado no dispositivo utilizado e nos horários em que você fica ativo na plataforma.">ⓘ</span>
+            <div class="section-line"></div>
+          </div>
+
 <div class="perf-card usage-profile-card" id="usage-profile-card">
 
   <!-- Cabeçalho -->
   <div class="usage-card-head">
-    <div class="usage-card-title-row">
-      <span class="section-title">Perfil de uso</span>
-      <span class="empty-state-info-btn usage-title-info" tabindex="0"
-            aria-label="Como o perfil de uso é calculado"
-            data-tooltip="Baseado no dispositivo utilizado e nos horários em que você fica ativo na plataforma.">ⓘ</span>
-    </div>
     <p class="usage-card-subtitle">Entenda seus hábitos e aproveite melhor seu tempo de estudo.</p>
   </div>
 
