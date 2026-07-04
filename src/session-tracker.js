@@ -48,6 +48,35 @@
           (getStats/subscribe/formatTime/etc.) permanecem
           idênticos em contrato e comportamento.
 
+   v9   — PERFIL DE USO GLOBAL (reimplementação do zero —
+          substitui o esqueleto v8 acima, que nunca chegou
+          a ser lido corretamente pelo dashboard)
+          ─────────────────────────────────────────
+          1. Estrutura passa a ser GLOBAL por usuário:
+             usuarios/{uid}/perfil_uso/global (não depende
+             mais de semestre).
+          2. Registro IMEDIATO: a cada init() (cada entrada
+             na plataforma), a hora atual já é somada ao
+             heatmap em memória e enviada ao Firestore na
+             hora — sem esperar o heartbeat de 30s. Isso
+             garante que sessões curtas (poucos segundos)
+             já contem.
+          3. O dispositivo é gravado no momento da criação
+             da sessão (_criarSessaoFirestore), também sem
+             esperar tempo mínimo.
+          4. O baseline usado para calcular o delta a
+             enviar (_perfilUsoHourBaseline) agora é
+             persistido em localStorage — antes só existia
+             em memória e se perdia a cada reload, podendo
+             gerar contagem incorreta.
+          5. Após cada flush bem-sucedido, é disparado o
+             evento 'nexus:perfilUsoAtualizado' no
+             document — o dashboard escuta esse evento e
+             re-renderiza o card sozinho, sem precisar de
+             reload, cobrindo o caso em que o primeiro
+             flush termina depois que o dashboard já tinha
+             carregado (e renderizado vazio).
+
    ─────────────────────────────────────────────
    INSTRUMENTAÇÃO TEMPORÁRIA — INVESTIGAÇÃO "PERFIL DE USO"
    ─────────────────────────────────────────────
@@ -119,6 +148,12 @@ let _navHourHeatmap = {};
 let _navDeviceType  = _detectDevice();
 let _navCurrentPage = null;
 let _navPageStart   = null;
+
+/* Snapshot de _navHourHeatmap no último flush bem-sucedido do
+   Perfil de Uso Global — usado só para calcular o DELTA a enviar
+   ao Firestore. Persistido em localStorage (ver _salvarBaselinePerfilUso)
+   para sobreviver a reloads de página sem duplicar nem perder contagem. */
+let _perfilUsoHourBaseline = {};
 
 /* ══════════════════════════════════════════════
    ESTADO INTERNO — SEMESTRE ATIVO (perfil_uso)
@@ -401,6 +436,32 @@ function _diarioRef(uid, dateKey) { return doc(getDb(), 'usuarios', uid, 'histor
    de historico_diario a partir da v8. */
 function _diarioMensalRef(uid, mesKey) { return doc(getDb(), 'usuarios', uid, 'historico_diario', mesKey); }
 
+/* ══════════════════════════════════════════════
+   PERFIL DE USO — GLOBAL (v9 — reimplementação do zero)
+   ─────────────────────────────────────────────
+   Documento único por usuário: usuarios/{uid}/perfil_uso/global.
+   NÃO depende de State.semestre, NÃO depende de Quiz Intelligence,
+   NÃO interfere no timer/lock/navegação já existentes.
+══════════════════════════════════════════════ */
+function _perfilUsoRef(uid) { return doc(getDb(), 'usuarios', uid, 'perfil_uso', 'global'); }
+
+const LS_PERFILUSO_BASELINE_KEY = 'nexus_perfilUso_baseline';
+
+/* Agrupamento de horas em períodos do dia — fonte única de verdade,
+   usada tanto para consolidar periodHeatmap no Firestore quanto para
+   os cards de período no dashboard (dashboard_data.js importa esta
+   mesma constante — a regra nunca é duplicada). */
+export const USAGE_PERIODOS = [
+  { id: 'madrugada', label: 'Madrugada', horas: [0,1,2,3,4,5],       corClasse: 'blue'   },
+  { id: 'manha',     label: 'Manhã',     horas: [6,7,8,9,10,11],     corClasse: 'amber'  },
+  { id: 'tarde',     label: 'Tarde',     horas: [12,13,14,15,16,17], corClasse: 'green'  },
+  { id: 'noite',     label: 'Noite',     horas: [18,19,20,21,22,23], corClasse: 'purple' },
+];
+
+function _periodoDaHora(hora) {
+  const h = Number(hora);
+  return USAGE_PERIODOS.find(p => p.horas.includes(h))?.id ?? null;
+}
 
 /* ══════════════════════════════════════════════
    CRIAÇÃO DE SESSÃO NO FIRESTORE
@@ -432,6 +493,14 @@ async function _criarSessaoFirestore() {
       [`dias.${dia}.sessoes`]: increment(1),
       updatedAt: Date.now(),
     }, { merge: true });
+
+    /* Perfil de Uso Global — dispositivo é registrado no MOMENTO em
+       que a sessão é criada, sem esperar nenhum tempo mínimo. */
+    await setDoc(_perfilUsoRef(_uid), {
+      [`deviceType.${_navDeviceType}`]: increment(1),
+      lastUpdate: Date.now(),
+    }, { merge: true });
+    document.dispatchEvent(new CustomEvent('nexus:perfilUsoAtualizado'));
   } catch (err) {
     console.warn('[session-tracker] _criarSessaoFirestore:', err);
   }
@@ -483,8 +552,89 @@ async function _flush() {
     }
 
     console.log(`[session-tracker] flush: ${activeSeconds}s local | delta=${delta}s → Firebase`);
+
+    /* Perfil de Uso Global — mantém o heatmap sincronizado a cada
+       heartbeat (30s) e a cada troca de página/aba, além do registro
+       imediato já feito em init(). */
+    await _flushPerfilUsoGlobal();
   } catch (err) {
     console.warn('[session-tracker] _flush (delta preservado para retry):', err);
+  }
+}
+
+/* ══════════════════════════════════════════════
+   PERFIL DE USO GLOBAL — REGISTRO IMEDIATO + FLUSH POR DELTA
+══════════════════════════════════════════════ */
+
+/* Registra NA HORA a hora atual no heatmap em memória — não espera
+   o tick de 1s do _notifyTimer nem o heartbeat de 30s. Chamada uma
+   vez a cada init() (cada entrada na plataforma), garantindo que
+   mesmo uma visita de poucos segundos já produza 1 registro. */
+function _registrarEntradaHeatmap() {
+  const hour = String(new Date().getHours());
+  _navHourHeatmap[hour] = (_navHourHeatmap[hour] ?? 0) + 1;
+}
+
+function _salvarBaselinePerfilUso() {
+  try {
+    localStorage.setItem(_lsNavKey(LS_PERFILUSO_BASELINE_KEY), JSON.stringify(_perfilUsoHourBaseline));
+  } catch (_) {}
+}
+
+function _carregarBaselinePerfilUso() {
+  try {
+    const raw = localStorage.getItem(_lsNavKey(LS_PERFILUSO_BASELINE_KEY));
+    const obj = raw ? JSON.parse(raw) : null;
+    return _isPlainObject(obj) ? obj : {};
+  } catch (_) {
+    return {};
+  }
+}
+
+function _limparBaselinePerfilUso() {
+  try { localStorage.removeItem(_lsNavKey(LS_PERFILUSO_BASELINE_KEY)); } catch (_) {}
+}
+
+/* Lê _navHourHeatmap (mantido pelo sistema de sessão já existente,
+   sem nenhuma alteração nele) e envia ao Firestore só o delta ainda
+   não enviado, comparando com _perfilUsoHourBaseline. Cada hora é
+   somada também ao período do dia correspondente (USAGE_PERIODOS).
+   Dispara 'nexus:perfilUsoAtualizado' para o dashboard atualizar o
+   card sem precisar de reload — cobre o caso de sessões curtas, onde
+   o flush pode terminar depois que o dashboard já tinha carregado. */
+async function _flushPerfilUsoGlobal() {
+  if (!_uid) return;
+
+  const periodDeltas = {};
+  const updates      = {};
+  let houveDelta      = false;
+
+  Object.entries(_navHourHeatmap).forEach(([hora, valorAtual]) => {
+    const baseline = _perfilUsoHourBaseline[hora] ?? 0;
+    const delta    = valorAtual - baseline;
+    if (delta > 0) {
+      updates[`hourHeatmap.${hora}`] = increment(delta);
+      const periodo = _periodoDaHora(hora);
+      if (periodo) periodDeltas[periodo] = (periodDeltas[periodo] ?? 0) + delta;
+      houveDelta = true;
+    }
+  });
+
+  if (!houveDelta) return;
+
+  Object.entries(periodDeltas).forEach(([periodo, delta]) => {
+    updates[`periodHeatmap.${periodo}`] = increment(delta);
+  });
+
+  updates.lastUpdate = Date.now();
+
+  try {
+    await setDoc(_perfilUsoRef(_uid), updates, { merge: true });
+    _perfilUsoHourBaseline = { ..._navHourHeatmap };
+    _salvarBaselinePerfilUso();
+    document.dispatchEvent(new CustomEvent('nexus:perfilUsoAtualizado'));
+  } catch (err) {
+    console.warn('[session-tracker] _flushPerfilUsoGlobal:', err);
   }
 }
 
@@ -553,6 +703,11 @@ export async function init(uid) {
   _booting        = true;
   _uid            = uid;
 
+  /* Recupera o baseline do Perfil de Uso Global persistido por um
+     load anterior — sem isso, um reload zeraria esta variável em
+     memória enquanto _navHourHeatmap continuaria acumulado, causando
+     reenvio duplicado do que já foi consolidado no Firestore. */
+  _perfilUsoHourBaseline = _carregarBaselinePerfilUso();
 
   /* Recupera o semestre ativo persistido por uma página anterior
      (tipicamente o Dashboard, via setSemestreAtivo). Sem isso,
@@ -648,6 +803,14 @@ export async function init(uid) {
   if (location.pathname === _navCurrentPage) _navCurrentPage = null;
   __nexusPageEnter(location.pathname);
 
+  /* Perfil de Uso Global — registra a hora atual e envia ao Firestore
+     IMEDIATAMENTE, sem esperar o heartbeat de 30s. Garante que mesmo
+     uma visita de poucos segundos já conte, e que o dashboard receba
+     o evento de atualização assim que possível. Erro aqui não afeta
+     o boot da sessão (try/catch isolado dentro da própria função). */
+  _registrarEntradaHeatmap();
+  _flushPerfilUsoGlobal().catch(() => {});
+
   _booting        = false;
   _initInProgress = false;
   _notify();
@@ -666,6 +829,11 @@ async function _iniciarNovaSessao() {
   _navCurrentPage = null;
   _navPageStart   = null;
 
+  /* Reseta junto com _navHourHeatmap: o baseline precisa nascer
+     zerado sempre que o heatmap da sessão também nasce zerado,
+     senão o próximo flush calcularia um delta negativo. */
+  _perfilUsoHourBaseline = {};
+  _limparBaselinePerfilUso();
 
   /* Nova sessão — limpa o buffer de navegação do localStorage */
   _limparNavLS();
@@ -1103,3 +1271,26 @@ document.addEventListener('nexus:logout', async () => {
     await init(usuario.uid);
   }
 })();
+
+/* ══════════════════════════════════════════════
+   PERFIL DE USO — LEITURA (consumido pelo dashboard)
+   ─────────────────────────────────────────────
+   Único ponto de leitura de usuarios/{uid}/perfil_uso/global.
+   Zero cálculo aqui: apenas retorna o documento consolidado
+   (deviceType, hourHeatmap, periodHeatmap, lastUpdate) exatamente
+   como foi gravado por _criarSessaoFirestore / _flushPerfilUsoGlobal.
+══════════════════════════════════════════════ */
+export async function carregarPerfilUso(uid) {
+  if (!uid) return null;
+  const t0 = performance.now();
+  try {
+    const snap = await getDoc(_perfilUsoRef(uid));
+    const resultado = snap.exists() ? snap.data() : null;
+    logFirestore('usuarios/{uid}/perfil_uso/global', uid, performance.now() - t0, resultado ? 1 : 0);
+    return resultado;
+  } catch (err) {
+    console.warn('[session-tracker] carregarPerfilUso:', err);
+    logFirestore('usuarios/{uid}/perfil_uso/global (ERRO)', uid, performance.now() - t0, 0);
+    return null;
+  }
+}

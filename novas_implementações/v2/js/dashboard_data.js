@@ -22,10 +22,7 @@
        session-tracker + Firestore (fallback)
      ✔ Renderização das métricas "reais" de sessão
        (tempo global, tendência de uso, evolução
-       diária, navegação, etc.) — mantidas aqui
-       porque fazem parte do mesmo fluxo de
-       carregamento de dados de sessão, e não dos
-       cards inteligentes da Camada 5.
+       diária, navegação, Perfil de Uso, etc.)
 
    Não pertence a este arquivo:
      ✗ renderDashboardIntelligence e os renderizadores
@@ -34,102 +31,18 @@
        dashboard.js
 
    ─────────────────────────────────────────────
-   AJUSTES — CARD "NAVEGAÇÃO" (Páginas mais acessadas
-   e Histórico de navegação)
+   PERFIL DE USO — v9 (reimplementação do zero, global)
    ─────────────────────────────────────────────
-   1. Correção de páginas duplicadas no ranking:
-      _renderPaginasMaisAcessadas agora agrupa por
-      RÓTULO NORMALIZADO (não pelo pathname bruto),
-      já que pathnames diferentes podem resolver
-      para o mesmo label visível (ex.: "/" e
-      "/index.html" → "Início"). Ver comentário
-      dentro da função.
-
-   2. Limite inicial de 3 itens + expandir/recolher:
-      tanto o ranking quanto o histórico exibem no
-      máximo 3 itens por padrão. Um botão permite
-      expandir para ver todos os registros, com
-      rolagem interna isolada (sem afetar o scroll
-      da página) e sem alterar a altura do card.
-
-   Nenhuma lógica de coleta, tracking ou persistência
-   de dados foi alterada — apenas apresentação.
-
-   ─────────────────────────────────────────────
-   AJUSTE — REDESIGN "PERFIL DE USO"
-   ─────────────────────────────────────────────
-   _renderHeatmapHorario continua calculando
-   EXATAMENTE os mesmos valores de sempre (mapa por
-   hora, maxVal, total, horaPicoNum, somas por
-   período via USAGE_PERIODOS). A única mudança é
-   que, além de renderizar como antes, agora também:
-     · desenha um eixo Y no gráfico (apenas exibição
-       do maxVal já calculado);
-     · exibe uma pílula com o nome do período no chip
-       de "Horário mais ativo" (mesmo período já
-       encontrado via USAGE_PERIODOS.find);
-     · troca a lista simples de períodos por cards
-       com ícone (mesmos soma/pct já calculados);
-     · guarda o resultado em `_ultimoPerfilUso`
-       (módulo) para a nova seção "Seus hábitos de
-       estudo" reaproveitar sem recalcular nada.
-   O antigo parágrafo de insight (#usage-insight) foi
-   removido do HTML; a mesma frase que ele exibia
-   agora é reaproveitada como descrição do card de
-   hábito "Mais ativo à ...".
-   `_renderHabitosEstudo` é a única função nova:
-   ela NÃO calcula nada — apenas lê `_ultimoPerfilUso`
-   (gerado por `_renderHeatmapHorario`) e
-   `stats.ultimos7` (já calculado por
-   carregarEstatisticas, mesma fórmula usada em
-   "Dias ativos nos últimos 7") e formata os dois
-   cards de hábito.
-
-   ─────────────────────────────────────────────
-   AJUSTE — REORGANIZAÇÃO DE PERSISTÊNCIA (aprovada)
-   ─────────────────────────────────────────────
-   1. O card "Perfil de uso" (heatmap por hora +
-      dispositivo) deixou de depender da última sessão
-      persistida (fallback frágil e não-semestral).
-      Passa a consumir exclusivamente
-      session-tracker.carregarPerfilUso(uid, semestre),
-      que lê o documento consolidado
-      perfil_uso/{semestre} do Firebase — um heatmap
-      por semestre, não vitalício.
-      _renderHeatmapHorario e _renderDispositivo NÃO
-      mudaram de contrato: continuam recebendo
-      exatamente os mesmos formatos de dados
-      (hourHeatmap: objeto por hora / deviceType:
-      string) e calculando exatamente o mesmo que já
-      calculavam. Só mudou de onde o dado vem.
-
-   2. O card "Navegação" (páginas mais acessadas +
-      histórico) continua usando a sessão ao vivo ou a
-      última sessão persistida como antes — nenhuma
-      mudança de comportamento aqui. Apenas foi
-      desacoplado do heatmap/dispositivo, que agora tem
-      fonte própria (item 1).
-
-   3. setSemestreAtivo(State.semestre) é chamado antes
-      de carregar as métricas para que session-tracker.js
-      (que roda em todas as páginas, sem acesso direto ao
-      State do Dashboard) saiba qual semestre gravar/ler
-      em perfil_uso. Reaproveita a mesma fonte de verdade
-      que o Dashboard já usa (State.semestre) — nenhuma
-      nova variável/configuração foi criada.
-
-   Nenhuma mudança de cálculo, contrato público, HTML ou
-   renderização dos demais cards.
-
-   ─────────────────────────────────────────────
-   INSTRUMENTAÇÃO TEMPORÁRIA — INVESTIGAÇÃO "PERFIL DE USO"
-   ─────────────────────────────────────────────
-   Todos os console.log/console.warn marcados com o prefixo
-   [PERFIL-USO] foram adicionados exclusivamente para
-   diagnóstico. Nenhuma regra de negócio, contrato público
-   ou comportamento de leitura/renderização foi alterado
-   por eles. Devem ser removidos após a causa raiz ser
-   confirmada.
+   O card "Perfil de uso" passa a ler exclusivamente de
+   usuarios/{uid}/perfil_uso/global (via carregarPerfilUso,
+   em src/session-tracker.js). Não depende de semestre, não
+   depende de Quiz Intelligence. O registro do lado do
+   session-tracker.js agora é IMEDIATO (hora + dispositivo
+   gravados assim que a página carrega, sem esperar heartbeat
+   nem tempo mínimo de sessão) e dispara o evento DOM
+   'nexus:perfilUsoAtualizado' a cada flush bem-sucedido —
+   este arquivo escuta esse evento para re-renderizar o card
+   sozinho, sem depender de reload.
    ============================================= */
 
 import { getUsuario } from '../../../src/global.js';
@@ -140,6 +53,8 @@ import {
   carregarEstatisticas,
   getStats        as sessionGetStats,
   setSemestreAtivo,
+  carregarPerfilUso,
+  USAGE_PERIODOS,
 } from '../../../src/session-tracker.js';
 
 /* ── Firestore (leitura da última sessão persistida — fallback do card Navegação) ── */
@@ -596,9 +511,13 @@ export async function _carregarMetricasReais() {
     ? Promise.resolve(null)
     : _buscarUltimaSessaoPersistida(usuario.uid);
 
+  /* Perfil de Uso Global — independente de semestre e de sessão em
+     memória; é lido em paralelo, sem bloquear nada acima. */
+  const perfilUsoPromise = carregarPerfilUso(usuario.uid).catch(() => null);
+
   try {
     const _tPromiseAll = performance.now();
-const [stats, ultimaSessao] = await Promise.all([
+const [stats, ultimaSessao, perfilUso] = await Promise.all([
   statsPromise.then(r => {
     perfLog('Promise.all (item)', '_carregarMetricasReais :: carregarEstatisticas', performance.now() - _tPromiseAll);
     return r;
@@ -607,8 +526,12 @@ const [stats, ultimaSessao] = await Promise.all([
     perfLog('Promise.all (item)', '_carregarMetricasReais :: ultimaSessaoPromise', performance.now() - _tPromiseAll);
     return r;
   }),
+  perfilUsoPromise.then(r => {
+    perfLog('Promise.all (item)', '_carregarMetricasReais :: perfilUsoPromise', performance.now() - _tPromiseAll);
+    return r;
+  }),
 ]);
-    perfLog('Promise.all', '_carregarMetricasReais :: total do conjunto (3 itens)', performance.now() - _tPromiseAll);
+    perfLog('Promise.all', '_carregarMetricasReais :: total do conjunto (4 itens)', performance.now() - _tPromiseAll);
 
 
     /* Guarda de geração — descarta resultado obsoleto.
@@ -650,6 +573,10 @@ const [stats, ultimaSessao] = await Promise.all([
         _renderNavegacaoVazia();
       }
       perfLog('Render', '_carregarMetricasReais :: render navegação (páginas + histórico)', performance.now() - _tRenderNav);
+
+      const _tRenderPerfilUso = performance.now();
+      _renderPerfilUso(perfilUso);
+      perfLog('Render', '_carregarMetricasReais :: render Perfil de Uso (global)', performance.now() - _tRenderPerfilUso);
 
           }
 
@@ -775,7 +702,7 @@ function _renderTendencia(stats) {
 
 
 /* ══════════════════════════════════════════════
-   RENDER — >Perfil de uso (últimos 30 dias)
+   RENDER — Consistência de uso (últimos 30 dias)
 ══════════════════════════════════════════════ */
 function _renderConsistencia(stats) {
   const freqEl = document.getElementById('consistencia-frequencia');
@@ -834,6 +761,131 @@ function _renderUltimoAcesso(stats) {
 }
 
 /* ══════════════════════════════════════════════
+   RENDER — PERFIL DE USO (GLOBAL)
+   ─────────────────────────────────────────────
+   Fonte: usuarios/{uid}/perfil_uso/global (via carregarPerfilUso).
+   Zero cálculo de negócio novo: apenas lê deviceType, hourHeatmap
+   e periodHeatmap já consolidados pelo session-tracker.js e formata
+   para os elementos do card "Perfil de uso" do dashboard.html.
+══════════════════════════════════════════════ */
+const DEVICE_LABELS = { desktop: 'Computador', mobile: 'Celular', tablet: 'Tablet' };
+
+const DEVICE_ICONS = {
+  desktop: `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="2.5" width="15" height="10" rx="1.5"/><path d="M6 15.5h6M9 12.5v3"/></svg>`,
+  mobile:  `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="1.5" width="8" height="15" rx="1.5"/><path d="M8 14h2"/></svg>`,
+  tablet:  `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="1.5" width="12" height="15" rx="1.5"/><path d="M8 14h2"/></svg>`,
+};
+
+function _iconePeriodo(id) {
+  const ICONES = {
+    madrugada: `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 1.5a5.5 5.5 0 105.5 5.5A4.5 4.5 0 017 1.5z"/></svg>`,
+    manha:     `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="8" r="3"/><path d="M7 1v1.5M2 8H.5M13.5 8H12M3.5 4l-1-1M10.5 4l1-1"/></svg>`,
+    tarde:     `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="4"/><path d="M7 1v1.5M7 11.5V13M1 7h1.5M11.5 7H13"/></svg>`,
+    noite:     `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 8.5A5 5 0 116 1.5 4 4 0 0011 8.5z"/></svg>`,
+  };
+  return ICONES[id] ?? '';
+}
+
+function _renderPerfilUso(perfil) {
+  const elDeviceIcon   = document.getElementById('usage-device-icon');
+  const elDeviceTipo   = document.getElementById('nav-device-tipo');
+  const elHorarioPico  = document.getElementById('nav-horario-pico');
+  const elHorarioBadge = document.getElementById('usage-horario-badge');
+  const elHeatmapTotal = document.getElementById('usage-heatmap-total');
+  const elYAxis        = document.getElementById('usage-heatmap-yaxis');
+  const elHeatmap      = document.getElementById('nav-heatmap');
+  const elPeriodsRow   = document.getElementById('usage-periods-row');
+  const elInsight      = document.getElementById('usage-insight');
+
+  if (!elHeatmap) return;
+
+  const deviceType    = perfil?.deviceType    ?? {};
+  const hourHeatmap   = perfil?.hourHeatmap   ?? {};
+  const periodHeatmap = perfil?.periodHeatmap ?? {};
+
+  /* ── Dispositivo principal ── */
+  const deviceEntries = Object.entries(deviceType).filter(([, v]) => v > 0);
+  if (deviceEntries.length === 0) {
+    if (elDeviceTipo) elDeviceTipo.textContent = '—';
+    if (elDeviceIcon) elDeviceIcon.innerHTML = DEVICE_ICONS.desktop;
+  } else {
+    const [tipoPrincipal] = [...deviceEntries].sort((a, b) => b[1] - a[1])[0];
+    if (elDeviceTipo) elDeviceTipo.textContent = DEVICE_LABELS[tipoPrincipal] ?? tipoPrincipal;
+    if (elDeviceIcon) elDeviceIcon.innerHTML = DEVICE_ICONS[tipoPrincipal] ?? DEVICE_ICONS.desktop;
+  }
+
+  /* ── Heatmap por hora (0–23) ── */
+  const valores = Array.from({ length: 24 }, (_, h) => hourHeatmap[h] ?? hourHeatmap[String(h)] ?? 0);
+  const total   = valores.reduce((a, b) => a + b, 0);
+  const maxVal  = Math.max(...valores, 1);
+
+  if (elHeatmapTotal) elHeatmapTotal.textContent = total > 0 ? `${total} registros` : '—';
+  if (elYAxis) elYAxis.innerHTML = `<span>${maxVal}</span><span>${Math.round(maxVal / 2)}</span><span>0</span>`;
+
+  let horaPicoNum = null, picoValor = -1;
+  valores.forEach((v, h) => { if (v > picoValor) { picoValor = v; horaPicoNum = h; } });
+
+  elHeatmap.innerHTML = '';
+  valores.forEach((v, h) => {
+    const col = document.createElement('div');
+    col.className = 'heatmap-col';
+    const bar = document.createElement('div');
+    const alturaPct = total > 0 ? Math.max(2, Math.round((v / maxVal) * 100)) : 2;
+    bar.className = 'heatmap-bar' + (h === horaPicoNum && total > 0 ? ' heatmap-bar-peak' : '');
+    bar.style.height = `${alturaPct}%`;
+    bar.title = `${h}h — ${v} registro${v !== 1 ? 's' : ''}`;
+    col.appendChild(bar);
+    elHeatmap.appendChild(col);
+  });
+
+  if (elHorarioPico) elHorarioPico.textContent = total > 0 ? `${horaPicoNum}h` : '—';
+
+  /* ── Período dominante (já consolidado em periodHeatmap) ── */
+  const periodoEntries = USAGE_PERIODOS.map(p => ({ ...p, valor: periodHeatmap[p.id] ?? 0 }));
+  const totalPeriodos  = periodoEntries.reduce((a, p) => a + p.valor, 0);
+  const periodoDominante = totalPeriodos > 0
+    ? [...periodoEntries].sort((a, b) => b.valor - a.valor)[0]
+    : null;
+
+  if (elHorarioBadge) {
+    if (periodoDominante) {
+      elHorarioBadge.textContent = periodoDominante.label;
+      elHorarioBadge.classList.add('is-visible');
+    } else {
+      elHorarioBadge.textContent = '';
+      elHorarioBadge.classList.remove('is-visible');
+    }
+  }
+
+  if (elPeriodsRow) {
+    if (totalPeriodos === 0) {
+      elPeriodsRow.innerHTML = `<div class="usage-periods-empty">Continue usando a plataforma para gerar seu perfil de horários.</div>`;
+    } else {
+      elPeriodsRow.innerHTML = periodoEntries.map(p => {
+        const pct = Math.round((p.valor / totalPeriodos) * 100);
+        return `
+          <div class="usage-period-card${periodoDominante?.id === p.id ? ' is-dominant' : ''}">
+            <div class="usage-period-top">
+              <span class="usage-period-icon">${_iconePeriodo(p.id)}</span>
+              <span class="usage-period-name">${p.label}</span>
+            </div>
+            <span class="usage-period-pct">${pct}%</span>
+          </div>`;
+      }).join('');
+    }
+  }
+
+  if (elInsight) {
+    if (!periodoDominante) {
+      elInsight.textContent = 'Continue estudando para gerar seu perfil de uso.';
+    } else {
+      const horaTxt = total > 0 ? `, com pico às ${horaPicoNum}h` : '';
+      elInsight.textContent = `Você costuma usar a plataforma principalmente à ${periodoDominante.label.toLowerCase()}${horaTxt}.`;
+    }
+  }
+}
+
+/* ══════════════════════════════════════════════
    RENDER — SPARKLINES
 ══════════════════════════════════════════════ */
 function _renderSparklines(stats) {
@@ -861,10 +913,9 @@ function _renderSparklines(stats) {
 /* ══════════════════════════════════════════════
    RENDER — NAVIGATION ANALYTICS
    ─────────────────────────────────────────────
-   Agora cuidam SOMENTE de páginas mais acessadas e
-   histórico de navegação. Heatmap/dispositivo saíram
-   daqui e passaram para _renderPerfilUsoConsolidado,
-   com fonte própria (perfil_uso/{semestre}).
+   Cuidam SOMENTE de páginas mais acessadas e
+   histórico de navegação. Heatmap/dispositivo têm
+   fonte própria (Perfil de Uso Global — ver acima).
 ══════════════════════════════════════════════ */
 function _renderNavegacaoAoVivo(stats) {
   if (!stats) return;
@@ -1207,29 +1258,12 @@ footer.className = 'nav-tl-footer';
 footer.innerHTML = `
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" 
   fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
-  class="lucide lucide-clock2-icon lucide-clock-2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4-2"/>
-  </svg>
+  class="lucide lucide-history-icon lucide-history"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+  <path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
   Atualizado agora há pouco
 `;
 wrap.appendChild(footer);
 }
-
-
-/* ══════════════════════════════════════════════
-   RENDER — SEUS HÁBITOS DE ESTUDO
-   ─────────────────────────────────────────────
-   NÃO calcula nenhuma métrica nova. Apenas lê:
-     · _ultimoPerfilUso (preenchido por
-       _renderHeatmapHorario logo acima — período
-       dominante + % já calculados)
-     · statsGlobal.ultimos7 (já calculado por
-       carregarEstatisticas em session-tracker.js,
-       mesma fórmula usada em "Dias ativos nos
-       últimos 7" dentro de _renderTendencia)
-   e formata os dois cards de resumo.
-══════════════════════════════════════════════ */
-
-
 
 
 /* ══════════════════════════════════════════════
@@ -1254,6 +1288,22 @@ function _renderMetricasVazio() {
   });
 
   _renderNavegacaoVazia();
+  _renderPerfilUso(null);
 }
+
+/* ══════════════════════════════════════════════
+   PERFIL DE USO — ATUALIZAÇÃO EM TEMPO REAL
+   ─────────────────────────────────────────────
+   session-tracker.js despacha 'nexus:perfilUsoAtualizado' assim que
+   consolida um flush (imediatamente ao entrar na página, e a cada
+   heartbeat). Ouvindo aqui, o card se atualiza sozinho — cobre o
+   caso de sessões curtas, onde o primeiro flush pode terminar DEPOIS
+   que _carregarMetricasReais() já tinha rodado e renderizado vazio.
+══════════════════════════════════════════════ */
+document.addEventListener('nexus:perfilUsoAtualizado', () => {
+  const usuario = getUsuario?.();
+  if (!usuario?.uid) return;
+  carregarPerfilUso(usuario.uid).then(_renderPerfilUso).catch(() => {});
+});
 
 export { _renderMetricasVazio, _renderNavegacaoAoVivo };
