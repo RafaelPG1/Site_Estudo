@@ -140,7 +140,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 import { renderDashboardIntelligence } from './dashboard_render.js';
-
+import { perfLog, logFirestore } from '../../../src/perf_logger.js';
 /* ══════════════════════════════════════════════
    ESTADO
 ══════════════════════════════════════════════ */
@@ -429,27 +429,26 @@ function _calcularProgressoConquistas(relatorio, stats) {
    Lê State.semestre para filtrar todas as métricas de quiz
    pelo semestre atualmente selecionado no dashboard. */
 export async function _carregarIntelligence(uid, statsPreCarregadas = null) {
+  const _t0 = performance.now();
   if (!uid) {
     console.warn('[dashboard] _carregarIntelligence: uid ausente — ignorado.');
     return null;
   }
 
+  const _tImport = performance.now();
   const mod = await _importarQuizIntelligence();
+  perfLog('dashboard_data', '_importarQuizIntelligence (import dinâmico)', performance.now() - _tImport);
 
   if (!mod) {
     console.warn('[dashboard] _carregarIntelligence: quiz_intelligence.js indisponível.');
     State.intelligence = null;
     renderDashboardIntelligence(null);
+    perfLog('dashboard_data', '_carregarIntelligence (módulo indisponível)', performance.now() - _t0);
     return null;
   }
 
   const semestreAtivo = State.semestre ?? null;
 
-  /* Reaproveita as estatísticas de sessão já buscadas por quem chamou
-     (ex.: _carregarMetricasReais), evitando uma segunda leitura de
-     carregarEstatisticas(uid). Quando chamada isoladamente — sem esse
-     parâmetro — continua buscando por conta própria, mantendo o
-     comportamento original para qualquer outro chamador futuro. */
   const statsPromise = statsPreCarregadas !== null
     ? Promise.resolve(statsPreCarregadas)
     : carregarEstatisticas(uid).catch(() => null);
@@ -460,27 +459,47 @@ export async function _carregarIntelligence(uid, statsPreCarregadas = null) {
       '| semestre:', semestreAtivo ?? 'todos'
     );
 
-    /* As quatro fontes abaixo são independentes entre si — todas
-       dependem apenas de uid/semestre — por isso disparam em
-       paralelo em vez de sequencialmente (antes, statsAtuais só
-       era buscada DEPOIS do relatorio terminar). */
+    const _tPromiseAll = performance.now();
     const [relatorio, tentativasRecentes, totalQuestoes, statsAtuais] = await Promise.all([
-      mod.relatorioEvolucao(uid, semestreAtivo),
-      typeof mod.listarTentativasRecentes === 'function'
-        ? mod.listarTentativasRecentes(uid, 10, semestreAtivo)
-        : Promise.resolve([]),
-      typeof mod.contarQuestoesRespondidas === 'function'
-        ? mod.contarQuestoesRespondidas(uid, semestreAtivo)
-        : Promise.resolve(0),
-      statsPromise,
+      (async () => {
+        const t0 = performance.now();
+        const r = await mod.relatorioEvolucao(uid, semestreAtivo);
+        perfLog('Promise.all (item)', '_carregarIntelligence :: relatorioEvolucao', performance.now() - t0);
+        return r;
+      })(),
+      (async () => {
+        const t0 = performance.now();
+        const r = typeof mod.listarTentativasRecentes === 'function'
+          ? await mod.listarTentativasRecentes(uid, 10, semestreAtivo)
+          : [];
+        perfLog('Promise.all (item)', '_carregarIntelligence :: listarTentativasRecentes', performance.now() - t0);
+        return r;
+      })(),
+      (async () => {
+        const t0 = performance.now();
+        const r = typeof mod.contarQuestoesRespondidas === 'function'
+          ? await mod.contarQuestoesRespondidas(uid, semestreAtivo)
+          : 0;
+        perfLog('Promise.all (item)', '_carregarIntelligence :: contarQuestoesRespondidas', performance.now() - t0);
+        return r;
+      })(),
+      (async () => {
+        const t0 = performance.now();
+        const r = await statsPromise;
+        perfLog('Promise.all (item)', '_carregarIntelligence :: statsPromise (compartilhada)', performance.now() - t0);
+        return r;
+      })(),
     ]);
+    perfLog('Promise.all', '_carregarIntelligence :: total do conjunto (4 itens)', performance.now() - _tPromiseAll);
 
     relatorio.tentativasRecentes = tentativasRecentes;
     relatorio.totalQuestoes      = totalQuestoes;
     relatorio.semestreFiltrado   = semestreAtivo;
 
+    const _tConquistas = performance.now();
     relatorio.conquistas          = _calcularConquistas(relatorio, statsAtuais);
     relatorio.conquistasProgresso = _calcularProgressoConquistas(relatorio, statsAtuais);
+    perfLog('quiz_intelligence', '_carregarIntelligence :: cálculo local de conquistas', performance.now() - _tConquistas);
 
     State.intelligence = relatorio;
 
@@ -497,7 +516,11 @@ export async function _carregarIntelligence(uid, statsPreCarregadas = null) {
     console.log('conquistas:',           relatorio?.conquistas);
     console.groupEnd();
 
+    const _tRender = performance.now();
     renderDashboardIntelligence(relatorio);
+    perfLog('Render', '_carregarIntelligence :: renderDashboardIntelligence (chamada)', performance.now() - _tRender);
+
+    perfLog('dashboard_data', '_carregarIntelligence (total)', performance.now() - _t0);
 
     return relatorio;
 
@@ -505,6 +528,7 @@ export async function _carregarIntelligence(uid, statsPreCarregadas = null) {
     console.error('[dashboard] _carregarIntelligence: erro ao chamar relatorioEvolucao:', err);
     State.intelligence = null;
     renderDashboardIntelligence(null);
+    perfLog('dashboard_data', '_carregarIntelligence (ERRO)', performance.now() - _t0);
     return null;
   }
 }
@@ -513,51 +537,65 @@ export async function _carregarIntelligence(uid, statsPreCarregadas = null) {
    METRICAS REAIS DO FIREBASE
 ══════════════════════════════════════════════ */
 export async function _carregarMetricasReais() {
+  const _t0 = performance.now();
   const usuario = getUsuario?.();
   if (!usuario?.uid) {
     _renderMetricasVazio();
+    perfLog('dashboard_data', '_carregarMetricasReais (sem usuário)', performance.now() - _t0);
     return;
   }
 
   setSemestreAtivo(State.semestre);
 
-  /* Leitura única de estatísticas de sessão — o mesmo resultado é
-     repassado para _carregarIntelligence (cálculo de conquistas),
-     eliminando a segunda leitura de carregarEstatisticas(uid) que
-     existia antes. */
   const statsPromise = carregarEstatisticas(usuario.uid);
 
-  /* Dispara a pipeline de inteligência (Camada 5) em paralelo com as
-     métricas de sessão abaixo — nenhuma das duas depende do
-     resultado da outra, ambas dependem apenas do uid. A Camada 5
-     renderiza seus próprios cards assim que terminar, sem bloquear
-     nem esperar as métricas de sessão. */
+  const _tIntelligence = performance.now();
   const intelligencePromise = _carregarIntelligence(usuario.uid, statsPromise)
+    .then(r => {
+      perfLog('dashboard_data', '_carregarMetricasReais :: pipeline intelligence (paralela, não bloqueia)', performance.now() - _tIntelligence);
+      return r;
+    })
     .catch(err => {
       console.error('[dashboard] _carregarIntelligence (pipeline paralela):', err);
+      perfLog('dashboard_data', '_carregarMetricasReais :: pipeline intelligence (paralela, ERRO)', performance.now() - _tIntelligence);
       return null;
     });
 
+  const _tSessaoCheck = performance.now();
+  const statsSessaoAtualPreCheck = sessionGetStats();
+  const temSessaoEmMemoriaPreCheck = statsSessaoAtualPreCheck?.initialized
+    && (statsSessaoAtualPreCheck.navSequence?.length > 0);
+  perfLog('Sessão', '_carregarMetricasReais :: checagem sessão em memória (getStats síncrono)', performance.now() - _tSessaoCheck, { temSessaoEmMemoria: temSessaoEmMemoriaPreCheck });
+
+  const ultimaSessaoPromise = temSessaoEmMemoriaPreCheck
+    ? Promise.resolve(null)
+    : _buscarUltimaSessaoPersistida(usuario.uid);
+
   try {
+    const _tPromiseAll = performance.now();
     const [stats, ultimaSessao, perfilUso] = await Promise.all([
-      statsPromise,
-      _buscarUltimaSessaoPersistida(usuario.uid),
-      carregarPerfilUso(usuario.uid, State.semestre),
+      statsPromise.then(r => { perfLog('Promise.all (item)', '_carregarMetricasReais :: carregarEstatisticas', performance.now() - _tPromiseAll); return r; }),
+      ultimaSessaoPromise.then(r => { perfLog('Promise.all (item)', '_carregarMetricasReais :: ultimaSessaoPromise', performance.now() - _tPromiseAll); return r; }),
+      carregarPerfilUso(usuario.uid, State.semestre).then(r => { perfLog('Promise.all (item)', '_carregarMetricasReais :: carregarPerfilUso', performance.now() - _tPromiseAll); return r; }),
     ]);
+    perfLog('Promise.all', '_carregarMetricasReais :: total do conjunto (3 itens)', performance.now() - _tPromiseAll);
 
     if (!stats) {
       _renderMetricasVazio();
     } else {
+      const _tRenderSessao = performance.now();
       _renderTempoGlobal(stats);
       _renderTendencia(stats);
       _renderConsistencia(stats);
       _renderSparklines(stats);
       _renderUltimoAcesso(stats);
+      perfLog('Render', '_carregarMetricasReais :: renders de sessão (Tempo Global/Tendência/Consistência/Sparklines/Último acesso)', performance.now() - _tRenderSessao);
 
       const statsSessaoAtual   = sessionGetStats();
       const temSessaoEmMemoria = statsSessaoAtual?.initialized
         && (statsSessaoAtual.navSequence?.length > 0);
 
+      const _tRenderNav = performance.now();
       if (temSessaoEmMemoria) {
         _renderNavegacaoAoVivo(statsSessaoAtual);
       } else if (ultimaSessao) {
@@ -565,9 +603,12 @@ export async function _carregarMetricasReais() {
       } else {
         _renderNavegacaoVazia();
       }
+      perfLog('Render', '_carregarMetricasReais :: render navegação (páginas + histórico)', performance.now() - _tRenderNav);
 
+      const _tRenderPerfil = performance.now();
       _renderPerfilUsoConsolidado(perfilUso);
       _renderUsageInsight();
+      perfLog('Render', '_carregarMetricasReais :: render perfil de uso (heatmap + dispositivo + insight)', performance.now() - _tRenderPerfil);
     }
 
   } catch (err) {
@@ -575,24 +616,29 @@ export async function _carregarMetricasReais() {
     _renderMetricasVazio();
   }
 
-  /* Fire-and-forget: a pipeline de inteligência já foi disparada
-     acima e continua renderizando seus próprios cards de forma
-     independente, mesmo depois desta função retornar. */
+  perfLog('dashboard_data', '_carregarMetricasReais (bloco síncrono, sem contar pipeline intelligence)', performance.now() - _t0);
+
   intelligencePromise.catch(() => {});
 }
 
 async function _buscarUltimaSessaoPersistida(uid) {
   if (!uid) return null;
+  const t0 = performance.now();
   try {
     const db  = getDb();
     const ref = collection(db, 'usuarios', uid, 'sessoes');
     const q   = query(ref, orderBy('startedAt', 'desc'), limit(1));
     const snap = await getDocs(q);
-    if (snap.empty) return null;
+    if (snap.empty) {
+      logFirestore('usuarios/{uid}/sessoes (última)', uid, performance.now() - t0, 0);
+      return null;
+    }
     const docSnap = snap.docs[0];
+    logFirestore('usuarios/{uid}/sessoes (última)', uid, performance.now() - t0, 1);
     return { id: docSnap.id, ...docSnap.data() };
   } catch (err) {
     console.warn('[dashboard] _buscarUltimaSessaoPersistida:', err);
+    logFirestore('usuarios/{uid}/sessoes (última) (ERRO)', uid, performance.now() - t0, 0);
     return null;
   }
 }

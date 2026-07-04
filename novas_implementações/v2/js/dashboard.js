@@ -107,6 +107,14 @@ import { resolverSemestreDeURL } from '../../../shared/js/utils/url.js';
 import { aplicarCoresDisciplina } from '../../../shared/js/themes/theme.js';
 import { injetarLogo } from '../../../shared/js/utils/logo.js';
 
+// no topo do arquivo
+import { perfLog } from '../../../src/perf_logger.js';
+
+// primeira linha do bootstrap/init do dashboard
+const __nexusDashboardT0 = performance.now();
+
+// última linha, depois que _carregarMetricasReais() (e o que mais rodar no boot) terminar
+perfLog('Dashboard', 'Dashboard Total', performance.now() - __nexusDashboardT0);
 /* ── Áudio ── */
 import {
   Sound,

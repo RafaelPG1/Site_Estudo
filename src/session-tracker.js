@@ -54,7 +54,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 import { getDb } from './firebase.js';
-
+import { perfLog, logFirestore } from './perf_logger.js';
 /* ══════════════════════════════════════════════
    CONSTANTES
 ══════════════════════════════════════════════ */
@@ -717,8 +717,9 @@ export async function destroy() {
    API PÚBLICA
 ══════════════════════════════════════════════ */
 export function getStats() {
+  const _t0 = performance.now();
   const dono = _isOwner();
-  return {
+  const resultado = {
     sessionId:      _sessionId,
     uid:            _uid,
     activeSeconds:  _calcActiveSeconds(),
@@ -734,6 +735,8 @@ export function getStats() {
     navDeviceType:  _navDeviceType,
     navCurrentPage: _navCurrentPage,
   };
+  perfLog('Sessão', 'getStats (síncrono)', performance.now() - _t0, { navPages: Object.keys(_navPages).length });
+  return resultado;
 }
 
 export function formatTime(seconds) {
@@ -782,15 +785,12 @@ export function subscribe(fn) {
 ══════════════════════════════════════════════ */
 export async function carregarEstatisticas(uid) {
   if (!uid) return null;
+  const _tInicio = performance.now();
   try {
     const db = getDb();
 
-    const snapUsuario  = await getDoc(doc(db, 'usuarios', uid));
-    const dadosUsuario = snapUsuario.exists() ? snapUsuario.data() : {};
-
     const hoje = new Date();
 
-    /* Monta a janela de 30 dias e agrupa por mês para minimizar leituras */
     const diasJanela = [];
     for (let i = 0; i < 30; i++) {
       const d = new Date(hoje);
@@ -799,19 +799,31 @@ export async function carregarEstatisticas(uid) {
     }
     const mesesUnicos = [...new Set(diasJanela.map(d => d.mesKey))];
 
-    /* 1. Busca os documentos mensais novos (no máx. 2: mês atual + anterior) */
     const mapasMensais = {};
-    await Promise.all(mesesUnicos.map(async (mesKey) => {
-      try {
-        const snap = await getDoc(_diarioMensalRef(uid, mesKey));
-        mapasMensais[mesKey] = snap.exists() ? (snap.data().dias || {}) : {};
-      } catch (_) {
-        mapasMensais[mesKey] = {};
-      }
-    }));
+    const _tFaseUm = performance.now();
+    const [snapUsuario] = await Promise.all([
+      (async () => {
+        const t0 = performance.now();
+        const snap = await getDoc(doc(db, 'usuarios', uid));
+        logFirestore('usuarios/{uid}', uid, performance.now() - t0, snap.exists() ? 1 : 0);
+        return snap;
+      })(),
+      ...mesesUnicos.map(async (mesKey) => {
+        const t0 = performance.now();
+        try {
+          const snap = await getDoc(_diarioMensalRef(uid, mesKey));
+          mapasMensais[mesKey] = snap.exists() ? (snap.data().dias || {}) : {};
+          logFirestore(`historico_diario/${mesKey}`, uid, performance.now() - t0, snap.exists() ? 1 : 0);
+        } catch (_) {
+          mapasMensais[mesKey] = {};
+          logFirestore(`historico_diario/${mesKey} (ERRO)`, uid, performance.now() - t0, 0);
+        }
+      }),
+    ]);
+    perfLog('Promise.all', 'carregarEstatisticas :: usuário + meses (paralelo)', performance.now() - _tFaseUm, { meses: mesesUnicos.length });
 
-    /* 2. Monta `historico` a partir dos mensais; separa os dias sem dado
-          para buscar em fallback nos documentos diários antigos. */
+    const dadosUsuario = snapUsuario.exists() ? snapUsuario.data() : {};
+
     const historico = {};
     const diasParaFallback = [];
 
@@ -826,15 +838,22 @@ export async function carregarEstatisticas(uid) {
     });
 
     if (diasParaFallback.length > 0) {
-      await Promise.all(diasParaFallback.map(dateKey =>
-        getDoc(_diarioRef(uid, dateKey))
-          .then(snap => { if (snap.exists()) historico[dateKey] = snap.data(); })
-          .catch(() => {})
-      ));
+      const _tFallback = performance.now();
+      await Promise.all(diasParaFallback.map(dateKey => {
+        const t0 = performance.now();
+        return getDoc(_diarioRef(uid, dateKey))
+          .then(snap => {
+            if (snap.exists()) historico[dateKey] = snap.data();
+            logFirestore(`historico_diario/${dateKey} (fallback antigo)`, uid, performance.now() - t0, snap.exists() ? 1 : 0);
+          })
+          .catch(() => {
+            logFirestore(`historico_diario/${dateKey} (fallback ERRO)`, uid, performance.now() - t0, 0);
+          });
+      }));
+      perfLog('Promise.all', 'carregarEstatisticas :: fallback diário antigo', performance.now() - _tFallback, { dias: diasParaFallback.length });
+    } else {
+      perfLog('dashboard_data', 'carregarEstatisticas :: fallback diário (não necessário)', 0, { dias: 0 });
     }
-
-    /* ── A partir daqui, lógica idêntica à versão anterior — apenas
-       lendo de `historico`, já montado pela leitura híbrida acima. ── */
 
     let streak = 0;
     for (let i = 0; i < 30; i++) {
@@ -878,7 +897,7 @@ export async function carregarEstatisticas(uid) {
       ? Math.floor(tempoTotalGeralFinal / totalSessoesFinal)
       : 0;
 
-    return {
+    const resultado = {
       tempoTotalGeral: tempoTotalGeralFinal,
       totalSessoes:    totalSessoesFinal,
       ultimaAtividade: dadosUsuario.ultimaAtividade ?? null,
@@ -891,8 +910,16 @@ export async function carregarEstatisticas(uid) {
       ultimos7,
       historico,
     };
+
+    perfLog('dashboard_data', 'carregarEstatisticas (total)', performance.now() - _tInicio, {
+      meses: mesesUnicos.length,
+      fallbackDias: diasParaFallback.length,
+    });
+
+    return resultado;
   } catch (err) {
     console.error('[session-tracker] carregarEstatisticas:', err);
+    perfLog('dashboard_data', 'carregarEstatisticas (ERRO)', performance.now() - _tInicio);
     return null;
   }
 }
@@ -911,16 +938,22 @@ export async function carregarEstatisticas(uid) {
 ══════════════════════════════════════════════ */
 export async function carregarPerfilUso(uid, semestre) {
   if (!uid || !semestre) return null;
+  const t0 = performance.now();
   try {
     const snap = await getDoc(_perfilUsoRef(uid, semestre));
-    if (!snap.exists()) return null;
+    if (!snap.exists()) {
+      logFirestore(`perfil_uso/${semestre}`, uid, performance.now() - t0, 0);
+      return null;
+    }
     const data = snap.data();
+    logFirestore(`perfil_uso/${semestre}`, uid, performance.now() - t0, 1);
     return {
       hourHeatmap: _isPlainObject(data.hourHeatmap) ? data.hourHeatmap : {},
       deviceType:  typeof data.deviceType === 'string' ? data.deviceType : null,
     };
   } catch (err) {
     console.warn('[session-tracker] carregarPerfilUso:', err);
+    logFirestore(`perfil_uso/${semestre} (ERRO)`, uid, performance.now() - t0, 0);
     return null;
   }
 }

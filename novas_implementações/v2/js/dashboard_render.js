@@ -104,25 +104,32 @@
    ============================================= */
 
 import { State } from './dashboard_data.js';
-
+import { perfLog } from '../../../src/perf_logger.js';
 /* ══════════════════════════════════════════════
    CAMADA 5 — COORDENADORA DE RENDER (intelligence)
 ══════════════════════════════════════════════ */
-
 export function renderDashboardIntelligence(relatorio) {
+  const _t0 = performance.now();
+
   if (!relatorio) {
     console.log('[dashboard] renderDashboardIntelligence: relatorio ausente — renderizando estado vazio.');
   }
 
-  renderScore(relatorio);
-  renderTrend(relatorio);
-  renderWeaknesses(relatorio);
-  renderPrediction(relatorio);
-  renderTimeline(relatorio);
-  renderAchievements(relatorio);
+  const _medir = (label, fn) => {
+    const t0 = performance.now();
+    fn();
+    perfLog('Render', label, performance.now() - t0);
+  };
 
+  _medir('Render Score',       () => renderScore(relatorio));
+  _medir('Render Tendência',   () => renderTrend(relatorio));
+  _medir('Render Disciplinas', () => renderWeaknesses(relatorio));
+  _medir('Render Previsão',    () => renderPrediction(relatorio));
+  _medir('Render Atividade',   () => renderTimeline(relatorio));
+  _medir('Render Conquistas',  () => renderAchievements(relatorio));
+
+  perfLog('Render', 'Render completo (renderDashboardIntelligence)', performance.now() - _t0);
 }
-
 
 /* ══════════════════════════════════════════════
    CAMADA 5 — RENDERIZADORES

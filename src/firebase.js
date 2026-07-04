@@ -11,7 +11,7 @@ import {
    collection, getDocs, addDoc, query, orderBy, writeBatch,
  } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 import { setUsuario } from './global.js';
-
+import { logFirestore } from './perf_logger.js';
 /* ── CONFIG ─────────────────────────────────── */
 const firebaseConfig = {
   apiKey:            'AIzaSyBWRSuyiPS9ez7TFm7K4j5pd7LbdSfPPMk',
@@ -453,31 +453,38 @@ function _evolutionSummaryRef(uid)         { return doc(getDb(), 'quiz_evolution
 /* ── LISTAR HISTÓRICO BRUTO (somente leitura) ── */
 export async function listarPerformanceQuiz(uid, quizId) {
   if (!uid || !quizId) return [];
+  const t0 = performance.now();
   try {
     const perfCol = collection(
       getDb(), 'usuarios', uid, 'quiz_respostas', quizId, 'performance'
     );
     const q = query(perfCol, orderBy('endedAt', 'asc'));
     const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, quizId, ...d.data() }));
+    const resultado = snap.docs.map(d => ({ id: d.id, quizId, ...d.data() }));
+    logFirestore(`quiz_respostas/${quizId}/performance`, uid, performance.now() - t0, resultado.length);
+    return resultado;
   } catch (err) {
     console.warn('[firebase] listarPerformanceQuiz erro:', err);
+    logFirestore(`quiz_respostas/${quizId}/performance (ERRO)`, uid, performance.now() - t0, 0);
     return [];
   }
 }
-
 /* ── LISTAR TODOS OS quizIds que um usuário já tem em quiz_respostas ──
    Necessário para a consolidação conseguir varrer TODAS as tentativas
    do usuário sem que o chamador precise adivinhar semestre/modo/disc
    de antemão. Só leitura; não decide nada por conta própria. */
 export async function listarQuizIds(uid) {
   if (!uid) return [];
+  const t0 = performance.now();
   try {
     const col  = collection(getDb(), 'usuarios', uid, 'quiz_respostas');
     const snap = await getDocs(col);
-    return snap.docs.map(d => d.id);
+    const ids = snap.docs.map(d => d.id);
+    logFirestore('usuarios/{uid}/quiz_respostas (lista de IDs)', uid, performance.now() - t0, ids.length);
+    return ids;
   } catch (err) {
     console.warn('[firebase] listarQuizIds erro:', err);
+    logFirestore('usuarios/{uid}/quiz_respostas (ERRO)', uid, performance.now() - t0, 0);
     return [];
   }
 }
@@ -485,11 +492,15 @@ export async function listarQuizIds(uid) {
 /* ── LER O RESUMO ACUMULADO ── */
 export async function carregarEvolutionSummary(uid) {
   if (!uid) return null;
+  const t0 = performance.now();
   try {
     const snap = await getDoc(_evolutionSummaryRef(uid));
-    return snap.exists() ? snap.data() : null;
+    const resultado = snap.exists() ? snap.data() : null;
+    logFirestore('quiz_evolution/{uid}/summary/main', uid, performance.now() - t0, resultado ? 1 : 0);
+    return resultado;
   } catch (err) {
     console.warn('[firebase] carregarEvolutionSummary erro:', err);
+    logFirestore('quiz_evolution/{uid}/summary/main (ERRO)', uid, performance.now() - t0, 0);
     return null;
   }
 }

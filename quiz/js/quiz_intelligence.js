@@ -90,7 +90,7 @@ import {
   carregarEvolutionSummary,
   gravarConsolidacaoEvolucao,
 } from '../../src/firebase.js';
-
+import { perfLog, logFirestore, logCache } from '../../src/perf_logger.js';
 /* ══════════════════════════════════════════════
    CONSTANTES
 ══════════════════════════════════════════════ */
@@ -488,7 +488,8 @@ async function processarPayloadBruto(payload, uid) {
     return null;
   }
 
-  _invalidarCacheTentativas(uid);
+ _invalidarCacheTentativas(uid);
+  _marcarTentativasDirty(uid);
 
   /* Taxa calculada sobre respondidas, nunca sobre totalQuestoes.
      Questões não respondidas não entram no denominador. */
@@ -655,34 +656,121 @@ export async function consolidarUsuario(uid) {
    antes. ────────────────────────────────────────────── */
 let _fetchEmAndamento = null; // { uid, promise } | null — evita leituras concorrentes duplicadas
 
+/* ── Cache cross-navegação (sessionStorage) ────────────────────────
+   Não substitui _cacheTentativas (que continua servindo chamadas
+   concorrentes dentro do MESMO carregamento de página). Este cache
+   adicional sobrevive à navegação entre páginas dentro da mesma aba,
+   que é o cenário em que _cacheTentativas se perde (módulo ES
+   reavaliado do zero a cada page load).
+
+   Invalidação: NÃO depende de reler o Firestore. Depende apenas de
+   um "sinal de sujo" em localStorage, escrito por processarPayloadBruto
+   sempre que uma tentativa nova é persistida com sucesso. Se o sinal
+   for mais recente que o cache, o cache é descartado e a busca
+   completa (listarQuizIds + N leituras) é refeita normalmente. */
+const TENTATIVAS_CACHE_PREFIX = 'nexus_tentativas_cache_';
+const TENTATIVAS_DIRTY_PREFIX = 'nexus_tentativas_dirty_';
+
+function _lerCacheSessao(uid) {
+  try {
+    const raw = sessionStorage.getItem(TENTATIVAS_CACHE_PREFIX + uid);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || !Array.isArray(parsed.tentativas) || typeof parsed.cachedAt !== 'number') return null;
+    return parsed;
+  } catch (_) {
+    return null;
+  }
+}
+
+function _gravarCacheSessao(uid, tentativas) {
+  try {
+    sessionStorage.setItem(TENTATIVAS_CACHE_PREFIX + uid, JSON.stringify({
+      tentativas,
+      cachedAt: Date.now(),
+    }));
+  } catch (_) {
+    /* quota excedida ou modo privado — apenas perde o benefício do
+       cache cross-página, sem afetar corretude. */
+  }
+}
+
+function _cacheSessaoValido(uid, cache) {
+  if (!cache) return false;
+  try {
+    const dirtyRaw = localStorage.getItem(TENTATIVAS_DIRTY_PREFIX + uid);
+    const dirtyTs  = dirtyRaw ? Number(dirtyRaw) : 0;
+    return dirtyTs <= cache.cachedAt;
+  } catch (_) {
+    return false;
+  }
+}
+
+function _marcarTentativasDirty(uid) {
+  try {
+    localStorage.setItem(TENTATIVAS_DIRTY_PREFIX + uid, String(Date.now()));
+  } catch (_) { /* ambiente sem localStorage — ignora */ }
+}
+
 async function _buscarTodasTentativasBrutas(uid) {
+  const _t0 = performance.now();
+
   if (_cacheTentativas.uid === uid && _cacheTentativas.tentativas !== null) {
+    logCache('_buscarTodasTentativasBrutas (memória do módulo)', true, performance.now() - _t0);
     return _cacheTentativas.tentativas;
   }
 
-  /* Já existe uma busca em andamento para este uid (ex.: várias
-     funções da Camada 4 chamadas quase simultaneamente dentro do
-     mesmo Promise.all/allSettled) — reaproveita a MESMA promise em
-     vez de disparar uma nova leitura ao Firestore. */
   if (_fetchEmAndamento && _fetchEmAndamento.uid === uid) {
-    return _fetchEmAndamento.promise;
+    const resultado = await _fetchEmAndamento.promise;
+    perfLog('quiz_intelligence', '_buscarTodasTentativasBrutas (aguardou fetch já em andamento)', performance.now() - _t0);
+    return resultado;
   }
+
+  const cacheSessao = _lerCacheSessao(uid);
+  if (_cacheSessaoValido(uid, cacheSessao)) {
+    _cacheTentativas = { uid, tentativas: cacheSessao.tentativas };
+    _cacheVersao++;
+    logCache('_buscarTodasTentativasBrutas (sessionStorage cross-navegação)', true, performance.now() - _t0);
+    console.log('[quiz_intelligence] tentativas servidas via cache de sessão (0 leituras Firestore)');
+    return cacheSessao.tentativas;
+  }
+  logCache('_buscarTodasTentativasBrutas', false, performance.now() - _t0);
 
   const versaoNoInicio = _cacheVersao;
 
   const promise = (async () => {
+    const _tIds = performance.now();
     const quizIds = await listarQuizIds(uid);
+    perfLog('quiz_intelligence', 'listarQuizIds', performance.now() - _tIds, { quizIds: quizIds?.length ?? 0 });
+
     if (!quizIds || quizIds.length === 0) return [];
 
+    const _tFanOut = performance.now();
     const listas = await Promise.all(
-      quizIds.map(quizId => listarPerformanceQuiz(uid, quizId).catch(() => []))
+      quizIds.map(quizId => {
+        const t0 = performance.now();
+        return listarPerformanceQuiz(uid, quizId)
+          .then(r => {
+            perfLog('quiz_intelligence', `listarPerformanceQuiz(${quizId})`, performance.now() - t0, { registros: r.length });
+            return r;
+          })
+          .catch(() => {
+            perfLog('quiz_intelligence', `listarPerformanceQuiz(${quizId}) (ERRO)`, performance.now() - t0);
+            return [];
+          });
+      })
     );
+    perfLog('Promise.all', '_buscarTodasTentativasBrutas :: fan-out de performance', performance.now() - _tFanOut, { quizIds: quizIds.length });
 
-    return listas
+    const _tNormaliza = performance.now();
+    const resultado = listas
       .flat()
       .filter(Boolean)
       .map(_normalizarTentativa)
       .filter(t => t && t.totalQuestoes > 0);
+    perfLog('Loop', '_buscarTodasTentativasBrutas :: normalização + filtro', performance.now() - _tNormaliza, { itensFinais: resultado.length });
+
+    return resultado;
   })();
 
   _fetchEmAndamento = { uid, promise };
@@ -693,6 +781,8 @@ async function _buscarTodasTentativasBrutas(uid) {
       _cacheTentativas = { uid, tentativas: resultado };
       _cacheVersao++;
     }
+    _gravarCacheSessao(uid, resultado);
+    perfLog('quiz_intelligence', '_buscarTodasTentativasBrutas (total, cache MISS)', performance.now() - _t0, { tentativas: resultado.length });
     return resultado;
   } finally {
     if (_fetchEmAndamento && _fetchEmAndamento.uid === uid) {
@@ -723,10 +813,17 @@ async function _buscarTodasTentativas(uid, semestre = null) {
 
 /* ── 2. Padrão de desempenho ── */
 export async function padraoDeDesempenho(uid, semestre = null) {
-  if (!uid) return { geral: null, porDisciplina: {} };
+  const _t0 = performance.now();
+  if (!uid) {
+    perfLog('quiz_intelligence', 'padraoDeDesempenho (sem uid)', performance.now() - _t0);
+    return { geral: null, porDisciplina: {} };
+  }
 
   const tentativas = await _buscarTodasTentativas(uid, semestre);
-  if (tentativas.length === 0) return { geral: null, porDisciplina: {} };
+  if (tentativas.length === 0) {
+    perfLog('quiz_intelligence', 'padraoDeDesempenho (sem tentativas)', performance.now() - _t0);
+    return { geral: null, porDisciplina: {} };
+  }
 
   function _avaliar(lista) {
     const taxas = lista.map(t => t.taxaAcerto);
@@ -749,6 +846,7 @@ export async function padraoDeDesempenho(uid, semestre = null) {
     };
   }
 
+  const _tLoop = performance.now();
   const porDisc = {};
   tentativas.forEach(t => {
     const chave = t.disc || '__sem_disciplina__';
@@ -760,22 +858,35 @@ export async function padraoDeDesempenho(uid, semestre = null) {
   Object.entries(porDisc).forEach(([disc, lista]) => {
     resultadoPorDisc[disc] = _avaliar(lista);
   });
+  perfLog('Loop', 'padraoDeDesempenho :: agrupamento por disciplina', performance.now() - _tLoop, { tentativas: tentativas.length, disciplinas: Object.keys(porDisc).length });
 
-  return {
+  const resultado = {
     geral: _avaliar(tentativas),
     porDisciplina: resultadoPorDisc,
   };
+
+  perfLog('quiz_intelligence', 'padraoDeDesempenho (total)', performance.now() - _t0, { tentativas: tentativas.length });
+  return resultado;
 }
 
 /* ── 3. Tendência do aluno ── */
 export async function tendenciaDoAluno(uid, semestre = null) {
-  if (!uid) return { direcao: 'indeterminado', diferencaPct: 0, confianca: 'baixa' };
+  const _t0 = performance.now();
+  if (!uid) {
+    perfLog('quiz_intelligence', 'tendenciaDoAluno (sem uid)', performance.now() - _t0);
+    return { direcao: 'indeterminado', diferencaPct: 0, confianca: 'baixa' };
+  }
 
   const tentativas = await _buscarTodasTentativas(uid, semestre);
-  if (tentativas.length === 0) return { direcao: 'indeterminado', diferencaPct: 0, confianca: 'baixa' };
+  if (tentativas.length === 0) {
+    perfLog('quiz_intelligence', 'tendenciaDoAluno (sem tentativas)', performance.now() - _t0);
+    return { direcao: 'indeterminado', diferencaPct: 0, confianca: 'baixa' };
+  }
 
   const taxas = tentativas.map(t => t.taxaAcerto);
-  return _calcularTendencia(taxas);
+  const resultado = _calcularTendencia(taxas);
+  perfLog('quiz_intelligence', 'tendenciaDoAluno (total)', performance.now() - _t0, { tentativas: tentativas.length });
+  return resultado;
 }
 
 /* ── 4. Fraquezas por disciplina ──
@@ -785,11 +896,19 @@ export async function tendenciaDoAluno(uid, semestre = null) {
    Isso não substitui nem altera `inclinacaoPctPorTentativa`/`emQueda`,
    que continuam vindos exclusivamente da regressão linear. */
 export async function fraquezasPorDisciplina(uid, semestre = null) {
-  if (!uid) return [];
+  const _t0 = performance.now();
+  if (!uid) {
+    perfLog('quiz_intelligence', 'fraquezasPorDisciplina (sem uid)', performance.now() - _t0);
+    return [];
+  }
 
   const tentativas = await _buscarTodasTentativas(uid, semestre);
-  if (tentativas.length === 0) return [];
+  if (tentativas.length === 0) {
+    perfLog('quiz_intelligence', 'fraquezasPorDisciplina (sem tentativas)', performance.now() - _t0);
+    return [];
+  }
 
+  const _tLoop = performance.now();
   const porDisc = {};
   tentativas.forEach(t => {
     const chave = t.disc || '__sem_disciplina__';
@@ -814,19 +933,30 @@ export async function fraquezasPorDisciplina(uid, semestre = null) {
       tendencia,
     };
   });
+  perfLog('Loop', 'fraquezasPorDisciplina :: cálculo por disciplina (regressão + tendência)', performance.now() - _tLoop, { disciplinas: Object.keys(porDisc).length });
 
-  return lista.sort((a, b) => {
+  const resultado = lista.sort((a, b) => {
     if (a.emQueda !== b.emQueda) return a.emQueda ? -1 : 1;
     return a.taxaAcertoMediaPct - b.taxaAcertoMediaPct;
   });
+
+  perfLog('quiz_intelligence', 'fraquezasPorDisciplina (total)', performance.now() - _t0, { tentativas: tentativas.length, disciplinas: resultado.length });
+  return resultado;
 }
 
 /* ── 5. Score evolutivo ── */
 export async function scoreEvolutivo(uid, semestre = null) {
-  if (!uid) return null;
+  const _t0 = performance.now();
+  if (!uid) {
+    perfLog('quiz_intelligence', 'scoreEvolutivo (sem uid)', performance.now() - _t0);
+    return null;
+  }
 
   const tentativas = await _buscarTodasTentativas(uid, semestre);
-  if (tentativas.length === 0) return null;
+  if (tentativas.length === 0) {
+    perfLog('quiz_intelligence', 'scoreEvolutivo (sem tentativas)', performance.now() - _t0);
+    return null;
+  }
 
   const taxas        = tentativas.map(t => t.taxaAcerto);
   const taxaMedia    = _media(taxas);
@@ -835,7 +965,7 @@ export async function scoreEvolutivo(uid, semestre = null) {
   const estabilidade = _classificarEstabilidade(desvioPct, tendencia);
   const scoreGeral   = _calcularScoreGeral(taxaMedia, tendencia, estabilidade);
 
-  return {
+  const resultado = {
     scoreGeral,
     composicao: {
       taxaAcertoMediaPct: _arredondar(taxaMedia * 100),
@@ -846,16 +976,24 @@ export async function scoreEvolutivo(uid, semestre = null) {
     nivelEstimado:   _classificarFaixa(taxaMedia),
     totalTentativas: tentativas.length,
   };
+
+  perfLog('quiz_intelligence', 'scoreEvolutivo (total)', performance.now() - _t0, { tentativas: tentativas.length });
+  return resultado;
 }
 
 /* ── 6. Previsão simples ── */
 export async function previsaoSimples(uid, disc = null, semestre = null) {
-  if (!uid) return { previsaoTaxaAcertoPct: null, confianca: 'baixa', metodo: 'regressao_linear' };
+  const _t0 = performance.now();
+  if (!uid) {
+    perfLog('quiz_intelligence', 'previsaoSimples (sem uid)', performance.now() - _t0);
+    return { previsaoTaxaAcertoPct: null, confianca: 'baixa', metodo: 'regressao_linear' };
+  }
 
   const todas      = await _buscarTodasTentativas(uid, semestre);
   const tentativas = disc ? todas.filter(t => t.disc === disc) : todas;
 
   if (tentativas.length < JANELA_REGRESSAO_MIN) {
+    perfLog('quiz_intelligence', 'previsaoSimples (dados insuficientes)', performance.now() - _t0, { amostras: tentativas.length });
     return {
       previsaoTaxaAcertoPct: null,
       confianca:  'baixa',
@@ -869,6 +1007,7 @@ export async function previsaoSimples(uid, disc = null, semestre = null) {
   const taxasPct = tentativas.map(t => t.taxaAcerto * 100);
   const reta     = _regressaoLinear(taxasPct);
   if (!reta) {
+    perfLog('quiz_intelligence', 'previsaoSimples (sem reta de regressão)', performance.now() - _t0, { amostras: tentativas.length });
     return {
       previsaoTaxaAcertoPct: null,
       confianca:  'baixa',
@@ -891,7 +1030,7 @@ export async function previsaoSimples(uid, disc = null, semestre = null) {
     ? 'alta'
     : (tentativas.length >= 6 && divergencia < 15 ? 'média' : 'baixa');
 
-  return {
+  const resultado = {
     previsaoTaxaAcertoPct: _arredondar(previsaoClamped),
     direcaoEsperada: reta.slope > 0.5 ? 'melhora' : (reta.slope < -0.5 ? 'queda' : 'estavel'),
     confianca,
@@ -899,6 +1038,9 @@ export async function previsaoSimples(uid, disc = null, semestre = null) {
     amostras:   tentativas.length,
     disciplina: disc,
   };
+
+  perfLog('quiz_intelligence', 'previsaoSimples (total)', performance.now() - _t0, { amostras: tentativas.length });
+  return resultado;
 }
 
 /* relatorioEvolucao(uid, semestre?)
@@ -906,21 +1048,32 @@ export async function previsaoSimples(uid, disc = null, semestre = null) {
    com semestre → todas as métricas filtradas pelo semestre informado */
 export async function relatorioEvolucao(uid, semestre = null) {
   if (!uid) return null;
+  const _t0 = performance.now();
 
+  function _instrumentar(label, promiseFactory) {
+    const t0 = performance.now();
+    return promiseFactory().then(
+      (v) => { perfLog('relatorioEvolucao', label, performance.now() - t0); return v; },
+      (e) => { perfLog('relatorioEvolucao', `${label} (ERRO)`, performance.now() - t0); throw e; }
+    );
+  }
+
+  const _tConjunto = performance.now();
   const [
     padrao, tendencia, fraquezas, score, previsao, summaryPersistido,
   ] = await Promise.allSettled([
-    padraoDeDesempenho(uid, semestre),
-    tendenciaDoAluno(uid, semestre),
-    fraquezasPorDisciplina(uid, semestre),
-    scoreEvolutivo(uid, semestre),
-    previsaoSimples(uid, null, semestre),
-    carregarEvolutionSummary(uid),
+    _instrumentar('padraoDeDesempenho',     () => padraoDeDesempenho(uid, semestre)),
+    _instrumentar('tendenciaDoAluno',       () => tendenciaDoAluno(uid, semestre)),
+    _instrumentar('fraquezasPorDisciplina', () => fraquezasPorDisciplina(uid, semestre)),
+    _instrumentar('scoreEvolutivo',         () => scoreEvolutivo(uid, semestre)),
+    _instrumentar('previsaoSimples',        () => previsaoSimples(uid, null, semestre)),
+    _instrumentar('carregarEvolutionSummary', () => carregarEvolutionSummary(uid)),
   ]);
+  perfLog('Promise.all', 'relatorioEvolucao :: Promise.allSettled (6 itens)', performance.now() - _tConjunto);
 
   const _valor = (r) => (r.status === 'fulfilled' ? r.value : null);
 
-  return {
+  const resultado = {
     geradoEm:                Date.now(),
     semestre:                semestre ?? null,
     padraoDeDesempenho:      _valor(padrao),
@@ -930,6 +1083,9 @@ export async function relatorioEvolucao(uid, semestre = null) {
     previsaoSimples:         _valor(previsao),
     summaryPersistidoCamada3: _valor(summaryPersistido),
   };
+
+  perfLog('quiz_intelligence', 'relatorioEvolucao (total)', performance.now() - _t0);
+  return resultado;
 }
 
 /* ── 8. Listar tentativas recentes (para Timeline do Dashboard) ──
@@ -938,27 +1094,28 @@ export async function relatorioEvolucao(uid, semestre = null) {
    Ordena por endedAt decrescente e retorna apenas os campos
    necessários para a Timeline. */
 export async function listarTentativasRecentes(uid, limite = 10, semestre = null) {
-  if (!uid) return [];
+  const _t0 = performance.now();
+  if (!uid) {
+    perfLog('quiz_intelligence', 'listarTentativasRecentes (sem uid)', performance.now() - _t0);
+    return [];
+  }
 
   const tentativas = await _buscarTodasTentativas(uid, semestre);
-  if (tentativas.length === 0) return [];
+  if (tentativas.length === 0) {
+    perfLog('quiz_intelligence', 'listarTentativasRecentes (sem tentativas)', performance.now() - _t0);
+    return [];
+  }
 
-  return tentativas
+  const resultado = tentativas
     .slice()
     .sort((a, b) => (b.endedAt ?? 0) - (a.endedAt ?? 0))
     .slice(0, limite)
-.map(t => ({
+    .map(t => ({
       disc:          t.disc,
       modo:          t.modo,
       semestre:      t.semestre,
       acertos:       t.acertos,
       totalQuestoes: t.totalQuestoes,
-      /* respondidas: mesmo campo já normalizado por _normalizarTentativa
-         (acertos + erros / campo explícito do registro salvo). Exposto
-         aqui apenas para a UI (Atividade Recente) distinguir tentativa
-         concluída de tentativa em andamento comparando
-         respondidas === totalQuestoes — nenhum cálculo novo, nenhum
-         campo de status persistido no Firebase. */
       respondidas:   t.respondidas,
       taxaAcerto:    t.taxaAcerto,
       tempoGastoSeg: t.tempoGastoSeg,
@@ -966,16 +1123,26 @@ export async function listarTentativasRecentes(uid, limite = 10, semestre = null
       endedAt:       t.endedAt,
       dateKey:       t.dateKey,
     }));
+
+  perfLog('quiz_intelligence', 'listarTentativasRecentes (total)', performance.now() - _t0, { tentativas: tentativas.length, retornados: resultado.length });
+  return resultado;
 }
 
 /* ── 9. Contar questões respondidas (para Conquistas do Dashboard) ──
    Reutiliza _buscarTodasTentativas e seu cache existente.
    Apenas soma totalQuestoes. Sem novo cache. Sem recálculo. */
 export async function contarQuestoesRespondidas(uid, semestre = null) {
-  if (!uid) return 0;
+  const _t0 = performance.now();
+  if (!uid) {
+    perfLog('quiz_intelligence', 'contarQuestoesRespondidas (sem uid)', performance.now() - _t0);
+    return 0;
+  }
 
   const tentativas = await _buscarTodasTentativas(uid, semestre);
-  return tentativas.reduce((soma, t) => soma + (t.totalQuestoes ?? 0), 0);
+  const resultado = tentativas.reduce((soma, t) => soma + (t.totalQuestoes ?? 0), 0);
+
+  perfLog('quiz_intelligence', 'contarQuestoesRespondidas (total)', performance.now() - _t0, { tentativas: tentativas.length });
+  return resultado;
 }
 
 /* ══════════════════════════════════════════════
