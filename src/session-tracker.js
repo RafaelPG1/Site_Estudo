@@ -1291,6 +1291,7 @@ export async function carregarPerfilUso(uid) {
   } catch (err) {
     console.warn('[session-tracker] carregarPerfilUso:', err);
     logFirestore('usuarios/{uid}/perfil_uso/global (ERRO)', uid, performance.now() - t0, 0);
+    console.log('[PERFIL-USO] Firestore:', resultado);
     return null;
   }
 }

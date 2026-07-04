@@ -548,6 +548,7 @@ const [stats, ultimaSessao, perfilUso] = await Promise.all([
       intelligencePromise.catch(() => {});
       return;
     }
+// dashboard_data.js — dentro de _carregarMetricasReais()
 
     if (!stats) {
       _renderMetricasVazio();
@@ -573,12 +574,17 @@ const [stats, ultimaSessao, perfilUso] = await Promise.all([
         _renderNavegacaoVazia();
       }
       perfLog('Render', '_carregarMetricasReais :: render navegação (páginas + histórico)', performance.now() - _tRenderNav);
+    }
 
-      const _tRenderPerfilUso = performance.now();
-      _renderPerfilUso(perfilUso);
-      perfLog('Render', '_carregarMetricasReais :: render Perfil de Uso (global)', performance.now() - _tRenderPerfilUso);
-
-          }
+    /* Perfil de Uso é independente de `stats` — precisa ser renderizado
+       com o dado real sempre que carregarPerfilUso() tiver retornado algo,
+       mesmo que carregarEstatisticas() (stats) tenha falhado. Antes, esta
+       chamada vivia dentro do `else` acima e ficava refém de `stats`;
+       quando stats vinha null, _renderMetricasVazio() já tinha forçado
+       _renderPerfilUso(null) por cima de um perfilUso real já carregado. */
+    const _tRenderPerfilUso = performance.now();
+    _renderPerfilUso(perfilUso);
+    perfLog('Render', '_carregarMetricasReais :: render Perfil de Uso (global)', performance.now() - _tRenderPerfilUso);
 
   } catch (err) {
     console.error('[dashboard] _carregarMetricasReais:', err);
@@ -799,9 +805,9 @@ function _renderPerfilUso(perfil) {
 
   if (!elHeatmap) return;
 
-  const deviceType    = perfil?.deviceType    ?? {};
-  const hourHeatmap   = perfil?.hourHeatmap   ?? {};
-  const periodHeatmap = perfil?.periodHeatmap ?? {};
+  const deviceType    = _extrairMapaAninhado(perfil, 'deviceType');
+  const hourHeatmap   = _extrairMapaAninhado(perfil, 'hourHeatmap');
+  const periodHeatmap = _extrairMapaAninhado(perfil, 'periodHeatmap');
 
   /* ── Dispositivo principal ── */
   const deviceEntries = Object.entries(deviceType).filter(([, v]) => v > 0);
@@ -884,7 +890,32 @@ function _renderPerfilUso(perfil) {
     }
   }
 }
+/* Lê um submapa de perfil_uso suportando dois formatos possíveis do
+   documento no Firestore:
+     1. Aninhado correto:  perfil.hourHeatmap = { "11": 115, "12": 39 }
+     2. Chave plana com ponto literal no nome (formato real constatado
+        em produção via inspeção direta do documento):
+        perfil["hourHeatmap.11"] = 115, perfil["hourHeatmap.12"] = 39
+   Não altera nada em session-tracker.js nem no Firestore — apenas
+   normaliza a leitura para o formato que o render já espera,
+   funcionando com documentos já existentes E com qualquer escrita
+   futura que venha corretamente aninhada. */
+function _extrairMapaAninhado(perfil, prefixo) {
+  if (!perfil) return {};
+  if (perfil[prefixo] && typeof perfil[prefixo] === 'object' && !Array.isArray(perfil[prefixo])) {
+    return perfil[prefixo];
+  }
 
+  const resultado = {};
+  const prefixoComPonto = `${prefixo}.`;
+  Object.keys(perfil).forEach(chave => {
+    if (chave.startsWith(prefixoComPonto)) {
+      const subchave = chave.slice(prefixoComPonto.length);
+      resultado[subchave] = perfil[chave];
+    }
+  });
+  return resultado;
+}
 /* ══════════════════════════════════════════════
    RENDER — SPARKLINES
 ══════════════════════════════════════════════ */
