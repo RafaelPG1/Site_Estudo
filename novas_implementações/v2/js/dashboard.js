@@ -90,6 +90,22 @@
      Camada 5 foram movidos para dashboard_render.js.
    - Nenhuma lógica foi alterada nesta reorganização —
      apenas a localização do código.
+
+   ─────────────────────────────────────────────
+   v10.1 — ALINHAMENTO DE COPY COM SESSION-TRACKER IDLE-AWARE
+   ─────────────────────────────────────────────
+   session-tracker.js (v10) passou a exigir atividade real
+   (mouse/scroll/teclado) para considerar a sessão "rodando"
+   — ver campo stats.isIdle, novo em getStats(). O texto
+   dinâmico do card de sessão (.session-sub) foi ajustado
+   para refletir isso:
+     ✔ novo estado "Inativo — sem interação", exibido quando
+       stats.isIdle é true (aba em foco, mas sem atividade
+       real há mais de 15s)
+     ✗ "Sessão ativa" trocado por "Engajamento ativo", para
+       usar a mesma linguagem do restante do dashboard
+   Nenhuma outra lógica deste arquivo foi alterada — apenas
+   a função _atualizar() dentro de _initSessionTimer().
    ============================================= */
 
 import {
@@ -310,6 +326,12 @@ function _escapeHtml(str) {
    SESSION TIMER — ao vivo
    Exibe o tempo ativo desta aba (ou pausa se não
    for a aba líder).
+
+   v10.1 — agora também distingue "inativo por falta de
+   interação" (stats.isIdle) de "em segundo plano"
+   (aba sem lock/visibilidade). São causas diferentes de
+   a contagem estar parada, então merecem textos diferentes
+   em vez de caírem no mesmo rótulo genérico.
 ══════════════════════════════════════════════ */
 function _initSessionTimer() {
   const timeEl = document.querySelector('.session-time');
@@ -321,13 +343,20 @@ function _initSessionTimer() {
     if (!stats) return;
     timeEl.textContent = sessionFormatTime(stats.activeSeconds);
 
-if (subEl) {
+    if (subEl) {
       if (stats.initialized && !stats.isLeader) {
         subEl.textContent = 'Outra aba em contagem';
+      } else if (stats.initialized && stats.isIdle) {
+        /* v10.1 — session-tracker.js é idle-aware: activeSeconds só
+           avança com interação real (mouse/scroll/teclado). Quando
+           isIdle é true, o timer está pausado por ausência de
+           atividade — cenário diferente de "aba em segundo plano"
+           (tratado no branch abaixo), por isso ganha texto próprio. */
+        subEl.textContent = 'Inativo — sem interação';
       } else if (!stats.isRunning && stats.initialized) {
         subEl.textContent = 'Aba em segundo plano';
       } else {
-        subEl.textContent = 'Sessão ativa';
+        subEl.textContent = 'Engajamento ativo';
       }
     }
 

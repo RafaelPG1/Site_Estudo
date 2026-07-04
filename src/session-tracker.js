@@ -77,6 +77,45 @@
              flush termina depois que o dashboard já tinha
              carregado (e renderizado vazio).
 
+   v10  — DETECÇÃO DE ATIVIDADE REAL (engajamento)
+          ─────────────────────────────────────────
+          PROBLEMA RESOLVIDO: antes desta versão, o sistema
+          contava "tempo ativo" (timer local + hourHeatmap)
+          apenas com base em duas condições: (1) esta aba é
+          a dona do lock, e (2) a aba está visível. Isso
+          significa que um usuário que abre a página e a
+          deixa parada — sem mover o mouse, sem rolar, sem
+          teclar — continuava sendo contado como "ativo"
+          indefinidamente, inflando tempoTotalGeral e o
+          hourHeatmap com tempo de mera presença passiva.
+
+          SOLUÇÃO: adicionada uma TERCEIRA condição,
+          ortogonal às duas já existentes — atividade real
+          recente (_isUserIdle) — detectada via listeners
+          leves de mousemove/mousedown/keydown/scroll/
+          touchstart/wheel. Um checador roda a cada
+          ACTIVITY_CHECK_INTERVAL (2s) e marca o usuário
+          como ocioso se não houver interação há mais de
+          INACTIVITY_THRESHOLD (15s). A retomada da
+          contagem acontece IMEDIATAMENTE na próxima
+          interação (não espera o próximo tick do
+          checador), evitando atraso perceptível.
+
+          O QUE NÃO MUDOU: lock de aba única, timer
+          local-first, navegação (pages/sequence), flush,
+          Perfil de Uso Global (estrutura e leitura),
+          carregarEstatisticas, contrato de getStats() para
+          os campos já existentes. A única mudança de
+          comportamento é que _pauseLocalTimer()/
+          _resumeLocalTimer() e o incremento do
+          hourHeatmap agora também respeitam o estado de
+          ociosidade, além da posse do lock e da
+          visibilidade da aba. Dois novos campos foram
+          ADICIONADOS a getStats() (isIdle) e o valor de
+          isRunning passou a considerar também a ociosidade
+          — nenhum campo existente foi removido ou
+          renomeado.
+
    ─────────────────────────────────────────────
    INSTRUMENTAÇÃO TEMPORÁRIA — INVESTIGAÇÃO "PERFIL DE USO"
    ─────────────────────────────────────────────
@@ -124,6 +163,21 @@ const BC_CHANNEL_NAME     = 'nexus_tab_sync';
 const ZOMBIE_THRESHOLD    = 5 * 60 * 1000;
 
 /* ══════════════════════════════════════════════
+   CONSTANTES — DETECÇÃO DE ATIVIDADE REAL (v10)
+   ─────────────────────────────────────────────
+   INACTIVITY_THRESHOLD: tempo sem nenhuma interação
+   (mouse/scroll/teclado/clique/touch) após o qual o
+   usuário é considerado ocioso e a contagem é pausada.
+   ACTIVITY_CHECK_INTERVAL: frequência do checador que
+   avalia se o limiar de inatividade foi ultrapassado —
+   este é o verdadeiro "throttle" do sistema, não os
+   listeners em si (que só gravam um timestamp).
+══════════════════════════════════════════════ */
+const INACTIVITY_THRESHOLD    = 15_000; // 15s sem interação = ocioso
+const ACTIVITY_CHECK_INTERVAL = 2_000;
+const ACTIVITY_EVENTS = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'wheel'];
+
+/* ══════════════════════════════════════════════
    ESTADO INTERNO — SESSÃO
 ══════════════════════════════════════════════ */
 let _sessionId      = null;
@@ -138,6 +192,26 @@ let _heartbeatTimer = null;
 const _tabId = `${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 
 const _listeners = new Set();
+
+/* ══════════════════════════════════════════════
+   ESTADO INTERNO — DETECÇÃO DE ATIVIDADE REAL (v10)
+   ─────────────────────────────────────────────
+   _lastActivityTs: timestamp da última interação real
+   detectada por qualquer um dos ACTIVITY_EVENTS.
+   _isUserIdle: flag central lida por _avaliarPosseDoLock
+   e por _registrarTempoAtivoNoHeatmap — enquanto true,
+   nenhuma das duas conta tempo, independentemente de
+   posse de lock ou visibilidade da aba.
+   _idleCheckTimer: intervalo que reavalia o limiar de
+   inatividade a cada ACTIVITY_CHECK_INTERVAL.
+   _activityListenersInstalled: guarda de idempotência
+   para não instalar os listeners mais de uma vez caso
+   init() seja chamado novamente sem destroy() anterior.
+══════════════════════════════════════════════ */
+let _lastActivityTs             = Date.now();
+let _isUserIdle                 = false;
+let _idleCheckTimer             = null;
+let _activityListenersInstalled = false;
 
 /* ══════════════════════════════════════════════
    ESTADO INTERNO — NAVIGATION ANALYTICS
@@ -175,6 +249,58 @@ export function setSemestreAtivo(semestre) {
       localStorage.removeItem(_lsNavKey(LS_SEMESTRE_ATIVO_KEY));
     }
   } catch (_) {}
+}
+
+/* ══════════════════════════════════════════════
+   DETECÇÃO DE ATIVIDADE REAL — implementação (v10)
+   ─────────────────────────────────────────────
+   Camada adicional ao lock/visibilidade já existentes.
+   Não substitui _isOwner() nem visibilityState — apenas
+   soma uma terceira condição: houve interação recente?
+══════════════════════════════════════════════ */
+function _registrarAtividade() {
+  _lastActivityTs = Date.now();
+  if (_isUserIdle) {
+    _isUserIdle = false;
+    console.log('[session-tracker] usuário voltou a ficar ativo — retomando contagem');
+    /* Retomada imediata: não espera o próximo tick de
+       _verificarInatividade. Só retoma de fato se as outras
+       duas condições (lock + visibilidade) também permitirem. */
+    if (_isOwner() && document.visibilityState !== 'hidden') {
+      _resumeLocalTimer();
+    }
+  }
+}
+
+function _instalarDetectorDeAtividade() {
+  if (_activityListenersInstalled) return;
+  _activityListenersInstalled = true;
+  ACTIVITY_EVENTS.forEach(evt => {
+    window.addEventListener(evt, _registrarAtividade, { passive: true });
+  });
+}
+
+function _removerDetectorDeAtividade() {
+  if (!_activityListenersInstalled) return;
+  _activityListenersInstalled = false;
+  ACTIVITY_EVENTS.forEach(evt => {
+    window.removeEventListener(evt, _registrarAtividade);
+  });
+}
+
+/* Único ponto que MARCA o início da ociosidade. A saída da
+   ociosidade acontece em _registrarAtividade(), não aqui —
+   isso garante retomada instantânea na próxima interação em
+   vez de esperar até ACTIVITY_CHECK_INTERVAL de atraso. */
+function _verificarInatividade() {
+  if (!_initialized) return;
+  const parado = (Date.now() - _lastActivityTs) > INACTIVITY_THRESHOLD;
+
+  if (parado && !_isUserIdle) {
+    _isUserIdle = true;
+    console.log('[session-tracker] usuário inativo há mais de', INACTIVITY_THRESHOLD / 1000, 's — pausando contagem');
+    if (_isOwner()) _pauseLocalTimer();
+  }
 }
 
 /* ══════════════════════════════════════════════
@@ -240,7 +366,11 @@ function _avaliarPosseDoLock() {
   const eraDona   = _isOwner();
   const agoraDona = _tryAcquireLock();
   if (agoraDona) {
-    _resumeLocalTimer();
+    /* v10 — só retoma o timer se o usuário também estiver
+       ativo. Se estiver ocioso, o lock é adquirido normalmente
+       (necessário para não travar a disputa entre abas), mas a
+       contagem de tempo permanece pausada até _registrarAtividade(). */
+    if (!_isUserIdle) _resumeLocalTimer();
     if (!eraDona) console.log('[session-tracker] lock adquirido — esta aba agora conta tempo');
   } else if (eraDona) {
     _pauseLocalTimer();
@@ -406,7 +536,13 @@ function _notify() {
 ══════════════════════════════════════════════ */
 function _registrarTempoAtivoNoHeatmap() {
   if (!_initialized) return;
-  const contandoAgora = _isOwner() && document.visibilityState !== 'hidden';
+  /* v10 — soma-se a condição de atividade real (!_isUserIdle)
+     às duas condições já existentes (posse do lock e
+     visibilidade da aba). Sem interação recente, o heatmap
+     para de crescer mesmo que a aba continue aberta e em
+     foco — é exatamente o cenário do problema relatado
+     (contagem inflada por presença passiva). */
+  const contandoAgora = _isOwner() && document.visibilityState !== 'hidden' && !_isUserIdle;
   if (!contandoAgora) return;
   const hour = String(new Date().getHours());
   _navHourHeatmap[hour] = (_navHourHeatmap[hour] ?? 0) + 1;
@@ -786,6 +922,15 @@ export async function init(uid) {
   _initialized = true;
   _initLockSystem();
 
+  /* v10 — a sessão nasce considerada ATIVA (usuário acabou de entrar
+     na página, o que já é uma interação implícita). O timestamp de
+     atividade é ancorado agora, e o detector + checador de
+     inatividade são ligados junto do resto do ciclo de vida. */
+  _lastActivityTs = Date.now();
+  _isUserIdle     = false;
+  _instalarDetectorDeAtividade();
+  _idleCheckTimer = setInterval(_verificarInatividade, ACTIVITY_CHECK_INTERVAL);
+
   _notifyTimer    = setInterval(() => { _notify(); }, NOTIFY_INTERVAL);
   _heartbeatTimer = setInterval(() => { if (_isOwner()) _flush(); }, HEARTBEAT_INTERVAL);
 
@@ -850,6 +995,13 @@ export async function destroy() {
   _notifyTimer    = null;
   _heartbeatTimer = null;
 
+  /* v10 — desliga o detector de atividade e o checador de
+     inatividade junto do resto do ciclo de vida da sessão. */
+  clearInterval(_idleCheckTimer);
+  _idleCheckTimer = null;
+  _removerDetectorDeAtividade();
+  _isUserIdle = false;
+
   if (_isOwner()) {
     _pauseLocalTimer();
     await _flush();
@@ -890,8 +1042,15 @@ export function getStats() {
     sessionId:      _sessionId,
     uid:            _uid,
     activeSeconds:  _calcActiveSeconds(),
-    isRunning:      dono && document.visibilityState !== 'hidden',
+    /* v10 — isRunning agora também exige atividade real recente,
+       além de posse do lock e visibilidade. Campo já existente,
+       apenas a condição foi ampliada — nenhum consumidor precisa
+       tratar um novo formato. */
+    isRunning:      dono && document.visibilityState !== 'hidden' && !_isUserIdle,
     isLeader:       dono,
+    /* v10 — NOVO campo. Consumidores existentes que ignoram campos
+       desconhecidos (spread/leitura por chave) não são afetados. */
+    isIdle:         _isUserIdle,
     startedAt:      _startedAt,
     initialized:    _initialized,
     navPages:       Object.fromEntries(
@@ -1291,7 +1450,6 @@ export async function carregarPerfilUso(uid) {
   } catch (err) {
     console.warn('[session-tracker] carregarPerfilUso:', err);
     logFirestore('usuarios/{uid}/perfil_uso/global (ERRO)', uid, performance.now() - t0, 0);
-    console.log('[PERFIL-USO] Firestore:', resultado);
     return null;
   }
 }

@@ -43,6 +43,29 @@
    'nexus:perfilUsoAtualizado' a cada flush bem-sucedido —
    este arquivo escuta esse evento para re-renderizar o card
    sozinho, sem depender de reload.
+
+   ─────────────────────────────────────────────
+   PERFIL DE USO — v9.1 (alinhamento de copy com idle-aware)
+   ─────────────────────────────────────────────
+   session-tracker.js (v10) passou a exigir atividade real
+   (mouse/scroll/teclado) para incrementar hourHeatmap —
+   deixou de contar apenas por a aba estar aberta e visível.
+   Isso muda o SIGNIFICADO do valor bruto de cada bucket:
+   antes era "quantos ticks de presença passiva", agora é
+   "quantos segundos de engajamento ativo real". A camada de
+   apresentação foi ajustada para refletir essa mudança:
+     ✗ removido: "N registros" (sugeria contagem de eventos)
+     ✔ adicionado: tempo formatado via formatTimeHuman/
+       _formatMinutosCurto ("12m", "1h30m")
+     ✗ removido: linguagem de "uso" ("seu uso", "perfil de
+       uso" nos textos dinâmicos, "Sem uso")
+     ✔ adicionado: linguagem de "engajamento"/"presença
+       ativa", coerente com o que o dado agora mede
+   Nenhum cálculo, nenhuma leitura de Firestore e nenhuma
+   estrutura de dados foram alterados — apenas a formatação
+   e o texto exibido. O documento em si (usuarios/{uid}/
+   perfil_uso/global) e seus campos continuam com os mesmos
+   nomes (hourHeatmap, periodHeatmap, deviceType).
    ============================================= */
 
 import { getUsuario } from '../../../src/global.js';
@@ -773,6 +796,15 @@ function _renderUltimoAcesso(stats) {
    Zero cálculo de negócio novo: apenas lê deviceType, hourHeatmap
    e periodHeatmap já consolidados pelo session-tracker.js e formata
    para os elementos do card "Perfil de uso" do dashboard.html.
+
+   v9.1 — Desde que session-tracker.js (v10) passou a ser idle-aware,
+   cada unidade de hourHeatmap/periodHeatmap representa 1 SEGUNDO de
+   engajamento ativo real (não um "evento" nem presença passiva).
+   Todo texto abaixo que antes exibia a contagem bruta como "N
+   registros" agora converte esse valor para tempo legível via
+   formatTimeHuman / _formatMinutosCurto, e a linguagem de "uso" foi
+   trocada por "engajamento"/"presença ativa" para refletir o que o
+   dado de fato mede.
 ══════════════════════════════════════════════ */
 const DEVICE_LABELS = { desktop: 'Computador', mobile: 'Celular', tablet: 'Tablet' };
 
@@ -807,7 +839,21 @@ function _classificarValorHeatmap(valor, media, maxVal) {
   return 'baixo';
 }
 
-const UH_LABEL = { vazio: 'Sem uso', baixo: 'Baixo', medio: 'Médio', pico: 'Pico' };
+const UH_LABEL = { vazio: 'Sem atividade', baixo: 'Baixo', medio: 'Médio', pico: 'Pico' };
+
+/* Formata segundos em minutos compactos para o eixo Y do heatmap —
+   o espaço disponível é reduzido (20px de largura) e exige rótulos
+   curtos. Não é uma nova métrica: é apenas outra representação
+   textual do mesmo valor em segundos já usado para classificar e
+   desenhar as barras (ver _classificarValorHeatmap). */
+function _formatMinutosCurto(segundos) {
+  const min = Math.round((segundos ?? 0) / 60);
+  if (min <= 0) return '<1m';
+  if (min < 60) return `${min}m`;
+  const h        = Math.floor(min / 60);
+  const restoMin = min % 60;
+  return restoMin > 0 ? `${h}h${restoMin}m` : `${h}h`;
+}
 
 /* ── Tooltip customizado do heatmap ──────────────────────────────
    Delegação de evento única no container pai (#nav-heatmap), que
@@ -830,7 +876,9 @@ function _instalarTooltipHeatmap(elHeatmap) {
     const classe = col.dataset.classe;
 
     elHora.textContent  = `${hora}h`;
-    elValor.textContent = `${valor} registro${valor !== '1' ? 's' : ''}`;
+    /* v9.1 — valor é o total de segundos de engajamento ativo
+       acumulados nesta hora (não uma contagem de eventos). */
+    elValor.textContent = `${formatTimeHuman(Number(valor))} de engajamento`;
     elBadge.textContent = UH_LABEL[classe] ?? '—';
     elBadge.className   = `uht-badge ${classe}`;
 
@@ -901,21 +949,24 @@ function _renderPerfilUso(perfil) {
     if (elDeviceIcon) elDeviceIcon.innerHTML = DEVICE_ICONS[tipoPrincipal] ?? DEVICE_ICONS.desktop;
   }
 
-  /* ── Heatmap por hora (0–23) ── */
+  /* ── Heatmap por hora (0–23) ──
+     Cada valor é a soma de segundos de engajamento ativo (ver
+     header do arquivo e session-tracker.js v10 — idle-aware). */
   const valores = Array.from({ length: 24 }, (_, h) => hourHeatmap[h] ?? hourHeatmap[String(h)] ?? 0);
   const total   = valores.reduce((a, b) => a + b, 0);
   const maxVal  = Math.max(...valores, 1);
 
-  /* Média calculada só sobre horas COM uso — usada exclusivamente
-     para classificar visualmente baixo/médio/pico (apresentação),
-     não altera nenhum número exibido em outros lugares. */
+  /* Média calculada só sobre horas COM atividade — usada
+     exclusivamente para classificar visualmente baixo/médio/pico
+     (apresentação), não altera nenhum número exibido em outros
+     lugares. */
   const horasComUso = valores.filter(v => v > 0);
   const media = horasComUso.length > 0
     ? horasComUso.reduce((a, b) => a + b, 0) / horasComUso.length
     : 0;
 
-  if (elHeatmapTotal) elHeatmapTotal.textContent = total > 0 ? `${total} registros` : '—';
-  if (elYAxis) elYAxis.innerHTML = `<span>${maxVal}</span><span>${Math.round(maxVal / 2)}</span><span>0</span>`;
+  if (elHeatmapTotal) elHeatmapTotal.textContent = total > 0 ? `${formatTimeHuman(total)} de engajamento` : '—';
+  if (elYAxis) elYAxis.innerHTML = `<span>${_formatMinutosCurto(maxVal)}</span><span>${_formatMinutosCurto(Math.round(maxVal / 2))}</span><span>0</span>`;
 
   let horaPicoNum = null, picoValor = -1;
   valores.forEach((v, h) => { if (v > picoValor) { picoValor = v; horaPicoNum = h; } });
@@ -931,7 +982,7 @@ function _renderPerfilUso(perfil) {
     col.dataset.hora   = h;
     col.dataset.valor  = v;
     col.dataset.classe = classe;
-    col.setAttribute('aria-label', `${h}h — ${v} registro${v !== 1 ? 's' : ''} (${UH_LABEL[classe]})`);
+    col.setAttribute('aria-label', `${h}h — ${formatTimeHuman(v)} de engajamento (${UH_LABEL[classe]})`);
 
     const bar = document.createElement('div');
     bar.className = `heatmap-bar uh-${classe}`;
@@ -980,21 +1031,25 @@ function _renderPerfilUso(perfil) {
     }
   }
 
-  /* ── NOVO — insight interpretativo acima do gráfico ── */
+  /* ── Insight interpretativo acima do gráfico ──
+     v9.1: "uso" trocado por "engajamento", e o pico passa a exibir
+     também o tempo ativo correspondente (não apenas a hora). */
   if (elChartInsight) {
     if (total === 0 || !periodoDominante) {
-      elChartInsight.innerHTML = 'Continue estudando para gerarmos uma leitura do seu padrão de uso.';
+      elChartInsight.innerHTML = 'Continue estudando para gerarmos uma leitura do seu padrão de engajamento.';
     } else {
       elChartInsight.innerHTML =
-        `Seu uso se concentra principalmente <strong>à ${periodoDominante.label.toLowerCase()}</strong>. ` +
-        `Pico de atividade identificado às <strong>${horaPicoNum}h</strong>.`;
+        `Seu engajamento se concentra principalmente <strong>à ${periodoDominante.label.toLowerCase()}</strong>. ` +
+        `Pico de presença ativa identificado às <strong>${horaPicoNum}h</strong> (${formatTimeHuman(picoValor)}).`;
     }
   }
 
-  /* ── NOVO — callout fixo do pico real ── */
+  /* ── Callout fixo do pico real ──
+     v9.1: exibe tempo de engajamento no pico, não uma contagem de
+     "registros" — o pico agora reflete presença ativa, não eventos. */
   if (elPeakCallout && elPeakText) {
     if (total > 0 && horaPicoNum !== null) {
-      elPeakText.textContent = `Pico de uso: ${horaPicoNum}h (${picoValor} registro${picoValor !== 1 ? 's' : ''})`;
+      elPeakText.textContent = `Pico de engajamento: ${horaPicoNum}h (${formatTimeHuman(picoValor)} ativos)`;
       elPeakCallout.style.display = '';
     } else {
       elPeakCallout.style.display = 'none';
@@ -1003,10 +1058,10 @@ function _renderPerfilUso(perfil) {
 
   if (elInsight) {
     if (!periodoDominante) {
-      elInsight.textContent = 'Continue estudando para gerar seu perfil de uso.';
+      elInsight.textContent = 'Continue estudando para gerar seu perfil de engajamento.';
     } else {
-      const horaTxt = total > 0 ? `, com pico às ${horaPicoNum}h` : '';
-      elInsight.textContent = `Você costuma usar a plataforma principalmente à ${periodoDominante.label.toLowerCase()}${horaTxt}.`;
+      const horaTxt = total > 0 ? `, com pico às ${horaPicoNum}h (${formatTimeHuman(picoValor)})` : '';
+      elInsight.textContent = `Você costuma manter engajamento ativo principalmente à ${periodoDominante.label.toLowerCase()}${horaTxt}.`;
     }
   }
 }
