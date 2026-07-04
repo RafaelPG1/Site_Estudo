@@ -545,12 +545,28 @@ export async function _carregarIntelligence(uid, statsPreCarregadas = null) {
 
 /* ══════════════════════════════════════════════
    METRICAS REAIS DO FIREBASE
+   ─────────────────────────────────────────────
+   Guarda de geração (correção da race condition):
+   _carregarMetricasReais() pode ser disparada por 3
+   gatilhos independentes em dashboard.js — boot,
+   nexus:loginSuccess e troca de semestre (esta última
+   sem await) — sem qualquer exclusão mútua entre eles.
+   Sem essa guarda, uma chamada mais ANTIGA que termina
+   DEPOIS de uma mais nova sobrescrevia o DOM já correto
+   (inclusive apagando o Perfil de Uso já renderizado).
+   _cargaMetricasGeracaoAtual é incrementado a cada nova
+   chamada; ao final, cada execução só escreve no DOM se
+   ainda for a mais recente. Nenhum dado, cálculo ou regra
+   de negócio foi alterado — apenas a permissão de escrita.
 ══════════════════════════════════════════════ */
+let _cargaMetricasGeracaoAtual = 0;
 export async function _carregarMetricasReais() {
+  const _minhaGeracao = ++_cargaMetricasGeracaoAtual;
+
   const _t0 = performance.now();
   const usuario = getUsuario?.();
   if (!usuario?.uid) {
-    _renderMetricasVazio();
+    if (_minhaGeracao === _cargaMetricasGeracaoAtual) _renderMetricasVazio();
     perfLog('dashboard_data', '_carregarMetricasReais (sem usuário)', performance.now() - _t0);
     return;
   }
@@ -596,6 +612,21 @@ export async function _carregarMetricasReais() {
     /* [PERFIL-USO] diagnóstico */
     console.log('[PERFIL-USO][dashboard_data] perfilUso recebido do Promise.all (ANTES de ir ao render):', perfilUso);
 
+    /* Guarda de geração — descarta resultado obsoleto.
+       Se, entre o início desta chamada e agora, uma chamada mais
+       recente de _carregarMetricasReais já foi disparada (login,
+       troca de semestre, novo boot), esta execução NÃO escreve
+       no DOM — mesmo que stats/perfilUso tenham vindo corretos.
+       Isso evita que uma resposta antiga, mais lenta, sobrescreva
+       uma resposta mais nova já renderizada corretamente. */
+    if (_minhaGeracao !== _cargaMetricasGeracaoAtual) {
+      console.warn('[PERFIL-USO][dashboard_data] resultado obsoleto descartado — geração',
+        _minhaGeracao, '| geração atual:', _cargaMetricasGeracaoAtual);
+      perfLog('dashboard_data', '_carregarMetricasReais (descartada — geração obsoleta)', performance.now() - _t0);
+      intelligencePromise.catch(() => {});
+      return;
+    }
+
     if (!stats) {
       _renderMetricasVazio();
     } else {
@@ -631,7 +662,7 @@ export async function _carregarMetricasReais() {
 
   } catch (err) {
     console.error('[dashboard] _carregarMetricasReais:', err);
-    _renderMetricasVazio();
+    if (_minhaGeracao === _cargaMetricasGeracaoAtual) _renderMetricasVazio();
   }
 
   perfLog('dashboard_data', '_carregarMetricasReais (bloco síncrono, sem contar pipeline intelligence)', performance.now() - _t0);
