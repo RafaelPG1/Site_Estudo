@@ -140,7 +140,6 @@ import {
   carregarEstatisticas,
   getStats        as sessionGetStats,
   setSemestreAtivo,
-  carregarPerfilUso,
 } from '../../../src/session-tracker.js';
 
 /* ── Firestore (leitura da última sessão persistida — fallback do card Navegação) ── */
@@ -571,9 +570,6 @@ export async function _carregarMetricasReais() {
     return;
   }
 
-  /* [PERFIL-USO] diagnóstico — ver cabeçalho do arquivo */
-  console.log('[PERFIL-USO][dashboard_data] chamando setSemestreAtivo |',
-    'State.semestre:', State.semestre);
   setSemestreAtivo(State.semestre);
 
   const statsPromise = carregarEstatisticas(usuario.uid);
@@ -602,15 +598,18 @@ export async function _carregarMetricasReais() {
 
   try {
     const _tPromiseAll = performance.now();
-    const [stats, ultimaSessao, perfilUso] = await Promise.all([
-      statsPromise.then(r => { perfLog('Promise.all (item)', '_carregarMetricasReais :: carregarEstatisticas', performance.now() - _tPromiseAll); return r; }),
-      ultimaSessaoPromise.then(r => { perfLog('Promise.all (item)', '_carregarMetricasReais :: ultimaSessaoPromise', performance.now() - _tPromiseAll); return r; }),
-      carregarPerfilUso(usuario.uid, State.semestre).then(r => { perfLog('Promise.all (item)', '_carregarMetricasReais :: carregarPerfilUso', performance.now() - _tPromiseAll); return r; }),
-    ]);
+const [stats, ultimaSessao] = await Promise.all([
+  statsPromise.then(r => {
+    perfLog('Promise.all (item)', '_carregarMetricasReais :: carregarEstatisticas', performance.now() - _tPromiseAll);
+    return r;
+  }),
+  ultimaSessaoPromise.then(r => {
+    perfLog('Promise.all (item)', '_carregarMetricasReais :: ultimaSessaoPromise', performance.now() - _tPromiseAll);
+    return r;
+  }),
+]);
     perfLog('Promise.all', '_carregarMetricasReais :: total do conjunto (3 itens)', performance.now() - _tPromiseAll);
 
-    /* [PERFIL-USO] diagnóstico */
-    console.log('[PERFIL-USO][dashboard_data] perfilUso recebido do Promise.all (ANTES de ir ao render):', perfilUso);
 
     /* Guarda de geração — descarta resultado obsoleto.
        Se, entre o início desta chamada e agora, uma chamada mais
@@ -652,13 +651,7 @@ export async function _carregarMetricasReais() {
       }
       perfLog('Render', '_carregarMetricasReais :: render navegação (páginas + histórico)', performance.now() - _tRenderNav);
 
-      const _tRenderPerfil = performance.now();
-      /* [PERFIL-USO] diagnóstico */
-      console.log('[PERFIL-USO][dashboard_data] enviando perfilUso para _renderPerfilUsoConsolidado:', perfilUso);
-      _renderPerfilUsoConsolidado(perfilUso);
-      _renderUsageInsight();
-      perfLog('Render', '_carregarMetricasReais :: render perfil de uso (heatmap + dispositivo + insight)', performance.now() - _tRenderPerfil);
-    }
+          }
 
   } catch (err) {
     console.error('[dashboard] _carregarMetricasReais:', err);
@@ -864,68 +857,6 @@ function _renderSparklines(stats) {
   });
 }
 
-/* Agrupamento de horas em períodos do dia — apenas apresentação,
-   reaproveita o mesmo hourHeatmap já calculado (agora vindo de
-   perfil_uso/{semestre} em vez da sessão). Cores seguem os
-   modificadores já existentes de .prog-fill. */
-const USAGE_PERIODOS = [
-  { id: 'madrugada', label: 'Madrugada', horas: [0,1,2,3,4,5],   corClasse: 'blue'  },
-  { id: 'manha',     label: 'Manhã',     horas: [6,7,8,9,10,11], corClasse: 'amber' },
-  { id: 'tarde',     label: 'Tarde',     horas: [12,13,14,15,16,17], corClasse: 'green' },
-  { id: 'noite',     label: 'Noite',     horas: [18,19,20,21,22,23], corClasse: 'purple'    },
-];
-
-/* Guarda o último resultado calculado por _renderHeatmapHorario
-   (período dominante + sua % + frase de insight já existente),
-   para a seção "Seus hábitos de estudo" reaproveitar sem recalcular
-   nada. Populado sempre que o heatmap é renderizado (via perfil_uso
-   consolidado ou estado vazio). */
-let _ultimoPerfilUso = {
-  temDados:     false,
-  periodoId:    null,
-  periodoLabel: null,
-  periodoPct:   0,
-  descricao:    'Continue estudando para gerar seu perfil de uso.',
-};
-
-/* Ícones por período do dia — puramente decorativo, mesmo padrão
-   de ícone-linha (stroke) usado no restante do dashboard. */
-function _iconePeriodo(id) {
-  const ICONES = {
-    madrugada: `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9.6 2.2a5.4 5.4 0 106.2 6.7A4.3 4.3 0 019.6 2.2z"/></svg>`,
-    manha:     `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.2a3.5 3.5 0 017 0"/><path d="M7.5 3.5v1.4M2.6 8.2h1.2M11.2 8.2h1.2M4 5l.9.9M11 5l-.9.9"/><path d="M1.8 11h11.4"/></svg>`,
-    tarde:     `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="7.5" r="2.6"/><path d="M7.5 1.6v1.3M7.5 12.1v1.3M1.6 7.5h1.3M12.1 7.5h1.3M3.3 3.3l.9.9M10.3 3.3l-.9.9M3.3 11.7l.9-.9M10.3 11.7l-.9-.9"/></svg>`,
-    noite:     `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9.6 2.2a5.4 5.4 0 106.2 6.7A4.3 4.3 0 019.6 2.2z"/><path d="M12.3 1.6l.35.9.9.35-.9.35-.35.9-.35-.9-.9-.35.9-.35z" fill="currentColor" stroke="none"/></svg>`,
-  };
-  return ICONES[id] ?? ICONES.noite;
-}
-
-/* Ícone de calendário reaproveitado para o card de frequência de
-   estudo — mesmo estilo do ícone já usado no menu "Calendário". */
-function _iconeCalendarioHabito() {
-  return `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="3" width="13" height="11" rx="1.5"/><path d="M5 1.5V4M11 1.5V4M1.5 7h13"/></svg>`;
-}
-
-/* ══════════════════════════════════════════════
-   RENDER — PERFIL DE USO CONSOLIDADO (Firebase)
-   ─────────────────────────────────────────────
-   Nova função (v8). Substitui a antiga dependência
-   de sessão para alimentar o heatmap/dispositivo:
-   recebe o objeto já lido de perfil_uso/{semestre}
-   (via carregarPerfilUso) e delega para as MESMAS
-   funções de render de sempre — _renderHeatmapHorario
-   e _renderDispositivo — sem alterar o contrato ou
-   o cálculo interno delas.
-══════════════════════════════════════════════ */
-function _renderPerfilUsoConsolidado(perfilUso) {
-  /* [PERFIL-USO] diagnóstico — ver cabeçalho do arquivo */
-  console.log('[PERFIL-USO][_renderPerfilUsoConsolidado] recebido:', perfilUso,
-    '| hourHeatmap:', perfilUso?.hourHeatmap,
-    '| deviceType:', perfilUso?.deviceType);
-
-  _renderHeatmapHorario(perfilUso?.hourHeatmap ?? null);
-  _renderDispositivo(perfilUso?.deviceType ?? null);
-}
 
 /* ══════════════════════════════════════════════
    RENDER — NAVIGATION ANALYTICS
@@ -1284,141 +1215,6 @@ wrap.appendChild(footer);
 }
 
 
-function _renderHeatmapHorario(hourHeatmap) {
-  const wrap = document.getElementById('nav-heatmap');
-  if (!wrap) return;
-
-  wrap.innerHTML = '';
-
-  const mapa     = hourHeatmap && typeof hourHeatmap === 'object' ? hourHeatmap : {};
-  const valores  = Object.values(mapa);
-  const maxVal   = Math.max(...valores, 1);
-  const total    = valores.reduce((a, b) => a + (b || 0), 0);
-  const temDados = total > 0;
-
-  /* [PERFIL-USO] diagnóstico — ver cabeçalho do arquivo */
-  console.log('[PERFIL-USO][_renderHeatmapHorario] mapa recebido:', mapa,
-    '| total:', total, '| temDados:', temDados);
-
-  let horaPicoNum = null;
-  if (temDados) {
-    const entradas = Object.entries(mapa).sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0));
-    horaPicoNum = Number(entradas[0][0]);
-  }
-
-  /* Barras — mesma lógica de altura de antes, apenas com destaque
-     visual para a barra do horário de pico (puramente apresentação). */
-  for (let h = 0; h < 24; h++) {
-    const count = mapa[String(h)] ?? 0;
-    const col   = document.createElement('div');
-    col.className = 'heatmap-col';
-    col.title   = `${h}h · ${count} acesso${count !== 1 ? 's' : ''}`;
-
-    const bar     = document.createElement('div');
-    bar.className = 'heatmap-bar';
-    if (temDados && h === horaPicoNum) bar.classList.add('heatmap-bar-peak');
-    bar.style.height = (count > 0 ? Math.max(8, (count / maxVal) * 100) : 0) + '%';
-
-    col.appendChild(bar);
-    wrap.appendChild(col);
-  }
-
-  /* Eixo Y — apenas exibição do maxVal já calculado acima (0 / metade /
-     máximo). Nenhum cálculo de negócio novo. */
-  const yaxisEl = document.getElementById('usage-heatmap-yaxis');
-  if (yaxisEl) {
-    yaxisEl.innerHTML = temDados
-      ? `<span>${maxVal}</span><span>${Math.round(maxVal / 2)}</span><span>0</span>`
-      : `<span>—</span><span>—</span><span>0</span>`;
-  }
-
-  const labelEl = document.getElementById('nav-horario-pico');
-  if (labelEl) {
-    labelEl.textContent = temDados ? `${horaPicoNum}h–${horaPicoNum + 1}h` : '—';
-  }
-
-  const totalEl = document.getElementById('usage-heatmap-total');
-  if (totalEl) {
-    totalEl.textContent = temDados ? `${total} acesso${total !== 1 ? 's' : ''}` : 'Sem dados';
-  }
-
-  /* Período que contém o horário de pico — mesmo cálculo que já
-     existia para compor a frase de insight. Reaproveitado também
-     para a pílula no chip "Horário mais ativo". */
-  const periodoDoPico = temDados
-    ? USAGE_PERIODOS.find(p => p.horas.includes(horaPicoNum))
-    : null;
-
-  const badgeEl = document.getElementById('usage-horario-badge');
-  if (badgeEl) {
-    if (temDados && periodoDoPico) {
-      badgeEl.textContent = periodoDoPico.label;
-      badgeEl.classList.add('is-visible');
-    } else {
-      badgeEl.classList.remove('is-visible');
-      badgeEl.textContent = '';
-    }
-  }
-
-  /* Resumo por período — soma das mesmas contagens do heatmap,
-     agrupadas em 4 faixas. Nenhum dado novo, apenas reagrupamento
-     (mesma lógica de sempre, agora renderizada como cards). */
-  const periodsWrap = document.getElementById('usage-periods-row');
-  let periodoDominante = null;
-
-  if (periodsWrap) {
-    periodsWrap.innerHTML = '';
-
-    if (!temDados) {
-      periodsWrap.innerHTML = `<span class="usage-periods-empty">Sem dados suficientes ainda.</span>`;
-    } else {
-      const somas = USAGE_PERIODOS.map(p => ({
-        ...p,
-        soma: p.horas.reduce((s, h) => s + (mapa[String(h)] ?? 0), 0),
-      }));
-      const maiorSoma = Math.max(...somas.map(p => p.soma));
-
-      somas.forEach(p => {
-        const pct = total > 0 ? Math.round((p.soma / total) * 100) : 0;
-        const isDominante = p.soma > 0 && p.soma === maiorSoma;
-
-        if (isDominante && !periodoDominante) {
-          periodoDominante = { id: p.id, label: p.label, pct };
-        }
-
-        const card = document.createElement('div');
-        card.className = 'usage-period-card' + (isDominante ? ' is-dominant' : '');
-        card.title = `${p.label}: ${p.soma} acesso${p.soma !== 1 ? 's' : ''}`;
-        card.innerHTML = `
-          <div class="usage-period-top">
-            <span class="usage-period-icon">${_iconePeriodo(p.id)}</span>
-            <span class="usage-period-name">${p.label}</span>
-          </div>
-          <span class="usage-period-pct">${pct}%</span>
-        `;
-        periodsWrap.appendChild(card);
-      });
-    }
-  }
-
-  /* Guarda o resultado para a seção "Seus hábitos de estudo"
-     reaproveitar sem recalcular nada — mesmos valores já derivados
-     acima (período dominante por soma + frase de insight já usada
-     anteriormente no card, agora reaproveitada como descrição). */
-  _ultimoPerfilUso = {
-    temDados,
-    periodoId:    periodoDominante?.id    ?? null,
-    periodoLabel: periodoDominante?.label ?? null,
-    periodoPct:   periodoDominante?.pct   ?? 0,
-    descricao: temDados && periodoDoPico
-      ? `Você costuma estudar mais durante a ${periodoDoPico.label.toLowerCase()}, por volta das ${horaPicoNum}h.`
-      : 'Continue estudando para gerar seu perfil de uso.',
-  };
-
-  /* [PERFIL-USO] diagnóstico */
-  console.log('[PERFIL-USO][_renderHeatmapHorario] RENDERIZADO — _ultimoPerfilUso final:', _ultimoPerfilUso);
-}
-
 /* ══════════════════════════════════════════════
    RENDER — SEUS HÁBITOS DE ESTUDO
    ─────────────────────────────────────────────
@@ -1432,41 +1228,9 @@ function _renderHeatmapHorario(hourHeatmap) {
        últimos 7" dentro de _renderTendencia)
    e formata os dois cards de resumo.
 ══════════════════════════════════════════════ */
-/* ══════════════════════════════════════════════
-   RENDER — INSIGHT DE HORÁRIO DE ESTUDO
-   ─────────────────────────────────────────────
-   NÃO calcula nada — apenas lê _ultimoPerfilUso.descricao,
-   já preenchido por _renderHeatmapHorario logo acima.
-══════════════════════════════════════════════ */
-function _renderUsageInsight() {
-  const el = document.getElementById('usage-insight');
-  if (!el) return;
-  el.textContent = _ultimoPerfilUso.descricao;
-}
 
-function _renderDispositivo(deviceType) {
-  const el       = document.getElementById('nav-device-tipo');
-  const iconWrap = document.getElementById('usage-device-icon');
-  if (!el) return;
 
-  /* [PERFIL-USO] diagnóstico — ver cabeçalho do arquivo */
-  console.log('[PERFIL-USO][_renderDispositivo] recebido:', deviceType);
 
-  const ICONE_DESKTOP = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="14" height="9" rx="1.5"/><path d="M6.5 15.5h5M9 12v3.5" stroke-linecap="round"/></svg>`;
-  const ICONE_MOBILE  = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5.5" y="1.5" width="7" height="15" rx="2"/><path d="M8.25 14.2h1.5" stroke-linecap="round"/></svg>`;
-  const ICONE_UNKNOWN = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="9" r="6.5"/><path d="M6.8 7.2a2.2 2.2 0 014.2.9c0 1.4-2 1.7-2 3.1" stroke-linecap="round"/><circle cx="9" cy="13" r=".4" fill="currentColor"/></svg>`;
-
-  if (deviceType === 'mobile') {
-    el.textContent = 'Mobile';
-    if (iconWrap) { iconWrap.innerHTML = ICONE_MOBILE; iconWrap.className = 'usage-stat-icon ic-green'; }
-  } else if (deviceType === 'desktop') {
-    el.textContent = 'Desktop';
-    if (iconWrap) { iconWrap.innerHTML = ICONE_DESKTOP; iconWrap.className = 'usage-stat-icon ic-purple'; }
-  } else {
-    el.textContent = '—';
-    if (iconWrap) { iconWrap.innerHTML = ICONE_UNKNOWN; iconWrap.className = 'usage-stat-icon'; }
-  }
-}
 
 /* ══════════════════════════════════════════════
    RENDER — ESTADO VAZIO
@@ -1490,8 +1254,6 @@ function _renderMetricasVazio() {
   });
 
   _renderNavegacaoVazia();
-  _renderPerfilUsoConsolidado(null);
-  _renderUsageInsight();
 }
 
 export { _renderMetricasVazio, _renderNavegacaoAoVivo };

@@ -133,27 +133,14 @@ let _semestreAtivo = null;
 export function setSemestreAtivo(semestre) {
   _semestreAtivo = semestre || null;
 
-  /* [PERFIL-USO] diagnóstico */
-  console.log('[PERFIL-USO][setSemestreAtivo] chamado |',
-    'semestre recebido:', semestre,
-    '| _uid no momento da chamada:', _uid,
-    '| chave localStorage usada:', _lsNavKey(LS_SEMESTRE_ATIVO_KEY));
-
   try {
     if (_semestreAtivo) {
       localStorage.setItem(_lsNavKey(LS_SEMESTRE_ATIVO_KEY), _semestreAtivo);
-      console.log('[PERFIL-USO][setSemestreAtivo] persistido em localStorage:',
-        _lsNavKey(LS_SEMESTRE_ATIVO_KEY), '=', _semestreAtivo);
     } else {
       localStorage.removeItem(_lsNavKey(LS_SEMESTRE_ATIVO_KEY));
     }
   } catch (_) {}
 }
-
-/* Espelha, por sessão, o que já foi somado ao perfil_uso
-   consolidado — usado para calcular apenas o DELTA de cada
-   hora a cada _flush(), evitando dupla contagem via increment(). */
-let _perfilUsoSincronizado = {};
 
 /* ══════════════════════════════════════════════
    LOCK GLOBAL
@@ -414,8 +401,6 @@ function _diarioRef(uid, dateKey) { return doc(getDb(), 'usuarios', uid, 'histor
    de historico_diario a partir da v8. */
 function _diarioMensalRef(uid, mesKey) { return doc(getDb(), 'usuarios', uid, 'historico_diario', mesKey); }
 
-/* Documento consolidado de Perfil de Uso, um por semestre. */
-function _perfilUsoRef(uid, semestre) { return doc(getDb(), 'usuarios', uid, 'perfil_uso', semestre); }
 
 /* ══════════════════════════════════════════════
    CRIAÇÃO DE SESSÃO NO FIRESTORE
@@ -468,12 +453,6 @@ async function _flush() {
 
   _finalizarPaginaAtual();
 
-  /* [PERFIL-USO] diagnóstico */
-  console.log('[PERFIL-USO][_flush] estado no momento do flush |',
-    '_semestreAtivo:', _semestreAtivo,
-    '| _navHourHeatmap:', { ..._navHourHeatmap },
-    '| _perfilUsoSincronizado:', { ..._perfilUsoSincronizado });
-
   try {
     await setDoc(_sessaoRef(_uid, _sessionId), {
       endedAt:     now,
@@ -487,56 +466,20 @@ async function _flush() {
 
     if (delta > 0) {
       const batch = writeBatch(getDb());
+
       batch.set(_diarioMensalRef(_uid, mesKey), {
         mes: mesKey,
         [`dias.${dia}.tempoTotal`]: increment(delta),
         updatedAt: now,
       }, { merge: true });
+
       batch.set(_usuarioRef(_uid), {
         tempoTotalGeral: increment(delta),
         ultimaAtividade: now,
       }, { merge: true });
+
       await batch.commit();
       localStorage.setItem(LS_LAST_SENT_KEY, String(activeSeconds));
-    }
-
-    /* ── perfil_uso/{semestre} ──────────────────────────────
-       Incrementa apenas o DELTA de cada hora do heatmap desta
-       sessão desde o último flush — nunca o valor absoluto —
-       para que increment() não conte a mesma hora duas vezes
-       em flushes sucessivos da mesma sessão. Não substitui o
-       hourHeatmap gravado por sessão em _sessaoRef acima; é um
-       dado consolidado adicional. Sem semestre ativo definido,
-       simplesmente não grava (evita registro sem contexto). */
-    if (_semestreAtivo) {
-      const deltas = {};
-      Object.keys(_navHourHeatmap).forEach(h => {
-        const diff = (_navHourHeatmap[h] ?? 0) - (_perfilUsoSincronizado[h] ?? 0);
-        if (diff > 0) deltas[h] = diff;
-      });
-
-      /* [PERFIL-USO] diagnóstico */
-      console.log('[PERFIL-USO][_flush] deltas calculados para perfil_uso:', deltas);
-
-      if (Object.keys(deltas).length > 0) {
-        const updatePerfil = {
-          semestre:   _semestreAtivo,
-          deviceType: _navDeviceType,
-          updatedAt:  now,
-        };
-        Object.entries(deltas).forEach(([h, diff]) => {
-          updatePerfil[`hourHeatmap.${h}`] = increment(diff);
-        });
-        await setDoc(_perfilUsoRef(_uid, _semestreAtivo), updatePerfil, { merge: true });
-        _perfilUsoSincronizado = { ..._navHourHeatmap };
-
-        /* [PERFIL-USO] diagnóstico */
-        console.log('[PERFIL-USO][_flush] PERSISTIDO em perfil_uso/' + _semestreAtivo, updatePerfil);
-      } else {
-        console.log('[PERFIL-USO][_flush] nenhum delta > 0 — nada a gravar neste flush.');
-      }
-    } else {
-      console.warn('[PERFIL-USO][_flush] IGNORADO — _semestreAtivo é null/undefined neste momento.');
     }
 
     console.log(`[session-tracker] flush: ${activeSeconds}s local | delta=${delta}s → Firebase`);
@@ -610,8 +553,6 @@ export async function init(uid) {
   _booting        = true;
   _uid            = uid;
 
-  /* [PERFIL-USO] diagnóstico */
-  console.log('[PERFIL-USO][init] _uid definido:', _uid, '| página:', location.pathname);
 
   /* Recupera o semestre ativo persistido por uma página anterior
      (tipicamente o Dashboard, via setSemestreAtivo). Sem isso,
@@ -622,18 +563,7 @@ export async function init(uid) {
     try {
       const chave = _lsNavKey(LS_SEMESTRE_ATIVO_KEY);
       const persistido = localStorage.getItem(chave);
-
-      /* [PERFIL-USO] diagnóstico */
-      console.log('[PERFIL-USO][init] tentando recuperar semestre |',
-        'chave consultada:', chave,
-        '| valor encontrado:', persistido);
-
-      if (persistido) {
-        _semestreAtivo = persistido;
-        console.log('[PERFIL-USO][init] _semestreAtivo recuperado com sucesso:', _semestreAtivo);
-      } else {
-        console.warn('[PERFIL-USO][init] NENHUM semestre encontrado em localStorage para esta chave.');
-      }
+      if (persistido) _semestreAtivo = persistido;
     } catch (_) {}
   } else {
     console.log('[PERFIL-USO][init] _semestreAtivo já estava definido (mesma execução de módulo):', _semestreAtivo);
@@ -668,13 +598,6 @@ export async function init(uid) {
         _navPages    = navLS.pages ?? (_isPlainObject(data.pages)     ? data.pages     : {});
         _navSequence = navLS.seq   ?? (Array.isArray(data.navigation) ? data.navigation : []);
 
-        /* Reconstrói o "espelho" do que já havia sido sincronizado com
-           perfil_uso nesta sessão recuperada — evita reenviar deltas já
-           gravados em flushes anteriores da mesma sessão. Como o próprio
-           hourHeatmap recuperado é o estado mais recente conhecido, ele
-           serve como baseline seguro (o pior caso é um pequeno recontagem
-           após reload, nunca perda de dado). */
-        _perfilUsoSincronizado = { ..._navHourHeatmap };
 
         /* MESCLA — reaplica a visita que ocorreu antes desta recuperação
            terminar, em vez de deixá-la ser sobrescrita silenciosamente. */
@@ -742,7 +665,7 @@ async function _iniciarNovaSessao() {
   _navDeviceType  = _detectDevice();
   _navCurrentPage = null;
   _navPageStart   = null;
-  _perfilUsoSincronizado = {};
+
 
   /* Nova sessão — limpa o buffer de navegação do localStorage */
   _limparNavLS();
@@ -785,7 +708,6 @@ export async function destroy() {
   _navHourHeatmap = {};
   _navCurrentPage = null;
   _navPageStart   = null;
-  _perfilUsoSincronizado = {};
 
   _notify();
 }
@@ -1076,50 +998,7 @@ async function _persistirLegacyCheck(uid, datasVerificadas, historicoResultante)
     console.warn('[session-tracker] falha ao persistir legacyCheck:', err);
   }
 }
-/* ══════════════════════════════════════════════
-   carregarPerfilUso(uid, semestre)
-   ─────────────────────────────────────────────
-   Nova função (v8). Lê o documento consolidado
-   perfil_uso/{semestre} — heatmap por hora e
-   deviceType daquele semestre especificamente.
-   Retorna null se não houver uid/semestre ou se
-   o documento ainda não existir (ex.: usuário sem
-   nenhuma sessão registrada no semestre selecionado).
-   Não calcula nada — apenas lê e devolve os campos
-   já persistidos por _flush().
-══════════════════════════════════════════════ */
-export async function carregarPerfilUso(uid, semestre) {
-  if (!uid || !semestre) {
-    /* [PERFIL-USO] diagnóstico */
-    console.warn('[PERFIL-USO][carregarPerfilUso] chamado sem uid ou semestre |',
-      'uid:', uid, '| semestre:', semestre);
-    return null;
-  }
-  const t0 = performance.now();
-  try {
-    const snap = await getDoc(_perfilUsoRef(uid, semestre));
-    if (!snap.exists()) {
-      /* [PERFIL-USO] diagnóstico */
-      console.warn('[PERFIL-USO][carregarPerfilUso] documento NÃO existe em perfil_uso/' + semestre);
-      logFirestore(`perfil_uso/${semestre}`, uid, performance.now() - t0, 0);
-      return null;
-    }
-    const data = snap.data();
 
-    /* [PERFIL-USO] diagnóstico */
-    console.log('[PERFIL-USO][carregarPerfilUso] documento carregado:', data);
-
-    logFirestore(`perfil_uso/${semestre}`, uid, performance.now() - t0, 1);
-    return {
-      hourHeatmap: _isPlainObject(data.hourHeatmap) ? data.hourHeatmap : {},
-      deviceType:  typeof data.deviceType === 'string' ? data.deviceType : null,
-    };
-  } catch (err) {
-    console.warn('[session-tracker] carregarPerfilUso:', err);
-    logFirestore(`perfil_uso/${semestre} (ERRO)`, uid, performance.now() - t0, 0);
-    return null;
-  }
-}
 
 /* ══════════════════════════════════════════════
    NAVIGATION ANALYTICS
