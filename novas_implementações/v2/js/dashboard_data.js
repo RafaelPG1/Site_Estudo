@@ -792,6 +792,84 @@ function _iconePeriodo(id) {
   return ICONES[id] ?? '';
 }
 
+/* ── Classificação visual das barras do heatmap ─────────────────
+   Puramente de apresentação: não recalcula hourHeatmap, apenas
+   categoriza os MESMOS valores já lidos de perfil.hourHeatmap
+   para decidir cor/hierarquia e o texto do tooltip.
+     vazio → valor 0
+     baixo → valor > 0 e abaixo da média das horas com uso
+     médio → valor >= média e < pico
+     pico  → o(s) valor(es) igual(is) ao máximo do dia */
+function _classificarValorHeatmap(valor, media, maxVal) {
+  if (valor <= 0) return 'vazio';
+  if (valor === maxVal) return 'pico';
+  if (valor >= media) return 'medio';
+  return 'baixo';
+}
+
+const UH_LABEL = { vazio: 'Sem uso', baixo: 'Baixo', medio: 'Médio', pico: 'Pico' };
+
+/* ── Tooltip customizado do heatmap ──────────────────────────────
+   Delegação de evento única no container pai (#nav-heatmap), que
+   sobrevive aos re-renders (innerHTML é limpo e recriado a cada
+   chamada, mas o elemento #nav-heatmap em si nunca é substituído).
+   dataset.tooltipBound evita anexar o listener mais de uma vez. */
+function _instalarTooltipHeatmap(elHeatmap) {
+  if (elHeatmap.dataset.tooltipBound === '1') return;
+  elHeatmap.dataset.tooltipBound = '1';
+
+  const tooltipEl = document.getElementById('usage-heatmap-tooltip');
+  const elHora    = document.getElementById('uht-hora');
+  const elValor   = document.getElementById('uht-valor');
+  const elBadge   = document.getElementById('uht-badge');
+  if (!tooltipEl) return;
+
+  function mostrar(col) {
+    const hora   = col.dataset.hora;
+    const valor  = col.dataset.valor;
+    const classe = col.dataset.classe;
+
+    elHora.textContent  = `${hora}h`;
+    elValor.textContent = `${valor} registro${valor !== '1' ? 's' : ''}`;
+    elBadge.textContent = UH_LABEL[classe] ?? '—';
+    elBadge.className   = `uht-badge ${classe}`;
+
+    const bodyEl = elHeatmap.closest('.usage-heatmap-body');
+    const barEl  = col.querySelector('.heatmap-bar');
+    if (!bodyEl || !barEl) return;
+
+    const rectBar  = barEl.getBoundingClientRect();
+    const rectBody = bodyEl.getBoundingClientRect();
+
+    tooltipEl.style.left = `${rectBar.left - rectBody.left + rectBar.width / 2}px`;
+    tooltipEl.style.top  = `${rectBar.top  - rectBody.top}px`;
+    tooltipEl.classList.add('is-visible');
+  }
+
+  function esconder() {
+    tooltipEl.classList.remove('is-visible');
+  }
+
+  elHeatmap.addEventListener('mouseover', (e) => {
+    const col = e.target.closest('.heatmap-col');
+    if (col && elHeatmap.contains(col)) mostrar(col);
+  });
+
+  elHeatmap.addEventListener('mouseout', (e) => {
+    const col = e.target.closest('.heatmap-col');
+    if (!col) return;
+    if (e.relatedTarget && col.contains(e.relatedTarget)) return;
+    esconder();
+  });
+
+  /* Acessibilidade — foco via teclado também aciona o tooltip */
+  elHeatmap.addEventListener('focusin', (e) => {
+    const col = e.target.closest('.heatmap-col');
+    if (col) mostrar(col);
+  });
+  elHeatmap.addEventListener('focusout', esconder);
+}
+
 function _renderPerfilUso(perfil) {
   const elDeviceIcon   = document.getElementById('usage-device-icon');
   const elDeviceTipo   = document.getElementById('nav-device-tipo');
@@ -802,6 +880,9 @@ function _renderPerfilUso(perfil) {
   const elHeatmap      = document.getElementById('nav-heatmap');
   const elPeriodsRow   = document.getElementById('usage-periods-row');
   const elInsight      = document.getElementById('usage-insight');
+  const elChartInsight = document.getElementById('usage-chart-insight');
+  const elPeakCallout  = document.getElementById('usage-peak-callout');
+  const elPeakText     = document.getElementById('usage-peak-text');
 
   if (!elHeatmap) return;
 
@@ -825,6 +906,14 @@ function _renderPerfilUso(perfil) {
   const total   = valores.reduce((a, b) => a + b, 0);
   const maxVal  = Math.max(...valores, 1);
 
+  /* Média calculada só sobre horas COM uso — usada exclusivamente
+     para classificar visualmente baixo/médio/pico (apresentação),
+     não altera nenhum número exibido em outros lugares. */
+  const horasComUso = valores.filter(v => v > 0);
+  const media = horasComUso.length > 0
+    ? horasComUso.reduce((a, b) => a + b, 0) / horasComUso.length
+    : 0;
+
   if (elHeatmapTotal) elHeatmapTotal.textContent = total > 0 ? `${total} registros` : '—';
   if (elYAxis) elYAxis.innerHTML = `<span>${maxVal}</span><span>${Math.round(maxVal / 2)}</span><span>0</span>`;
 
@@ -833,16 +922,26 @@ function _renderPerfilUso(perfil) {
 
   elHeatmap.innerHTML = '';
   valores.forEach((v, h) => {
+    const classe    = _classificarValorHeatmap(v, media, maxVal);
+    const alturaPct = total > 0 ? Math.max(2, Math.round((v / maxVal) * 100)) : 2;
+
     const col = document.createElement('div');
     col.className = 'heatmap-col';
+    col.tabIndex  = total > 0 ? 0 : -1;
+    col.dataset.hora   = h;
+    col.dataset.valor  = v;
+    col.dataset.classe = classe;
+    col.setAttribute('aria-label', `${h}h — ${v} registro${v !== 1 ? 's' : ''} (${UH_LABEL[classe]})`);
+
     const bar = document.createElement('div');
-    const alturaPct = total > 0 ? Math.max(2, Math.round((v / maxVal) * 100)) : 2;
-    bar.className = 'heatmap-bar' + (h === horaPicoNum && total > 0 ? ' heatmap-bar-peak' : '');
+    bar.className = `heatmap-bar uh-${classe}`;
     bar.style.height = `${alturaPct}%`;
-    bar.title = `${h}h — ${v} registro${v !== 1 ? 's' : ''}`;
+
     col.appendChild(bar);
     elHeatmap.appendChild(col);
   });
+
+  _instalarTooltipHeatmap(elHeatmap);
 
   if (elHorarioPico) elHorarioPico.textContent = total > 0 ? `${horaPicoNum}h` : '—';
 
@@ -881,6 +980,27 @@ function _renderPerfilUso(perfil) {
     }
   }
 
+  /* ── NOVO — insight interpretativo acima do gráfico ── */
+  if (elChartInsight) {
+    if (total === 0 || !periodoDominante) {
+      elChartInsight.innerHTML = 'Continue estudando para gerarmos uma leitura do seu padrão de uso.';
+    } else {
+      elChartInsight.innerHTML =
+        `Seu uso se concentra principalmente <strong>à ${periodoDominante.label.toLowerCase()}</strong>. ` +
+        `Pico de atividade identificado às <strong>${horaPicoNum}h</strong>.`;
+    }
+  }
+
+  /* ── NOVO — callout fixo do pico real ── */
+  if (elPeakCallout && elPeakText) {
+    if (total > 0 && horaPicoNum !== null) {
+      elPeakText.textContent = `Pico de uso: ${horaPicoNum}h (${picoValor} registro${picoValor !== 1 ? 's' : ''})`;
+      elPeakCallout.style.display = '';
+    } else {
+      elPeakCallout.style.display = 'none';
+    }
+  }
+
   if (elInsight) {
     if (!periodoDominante) {
       elInsight.textContent = 'Continue estudando para gerar seu perfil de uso.';
@@ -890,6 +1010,7 @@ function _renderPerfilUso(perfil) {
     }
   }
 }
+
 /* Lê um submapa de perfil_uso suportando dois formatos possíveis do
    documento no Firestore:
      1. Aninhado correto:  perfil.hourHeatmap = { "11": 115, "12": 39 }

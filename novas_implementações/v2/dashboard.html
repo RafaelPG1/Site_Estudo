@@ -401,6 +401,166 @@
       margin-top: 6px;
       font-size: 14px;
     }
+
+    /* ═══════════════════════════════════════════════════════════
+   PERFIL DE USO — "Mapa de comportamento de uso"
+   Redesign do heatmap: hierarquia visual, tooltip customizado,
+   destaque de pico e insight interpretativo.
+   Apenas apresentação — nenhuma leitura/cálculo de dado foi
+   introduzida ou alterada aqui.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Insight acima do gráfico ── */
+.usage-chart-insight {
+  font-size: 12.5px;
+  color: var(--text-2);
+  line-height: 1.5;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(108,99,255,.2);
+  border-radius: var(--r-sm);
+}
+.usage-chart-insight strong {
+  color: var(--accent-lite);
+  font-weight: 600;
+}
+
+/* ── Barras: hierarquia visual (baixo / médio / pico / vazio) ── */
+.heatmap-col { cursor: pointer; }
+
+.heatmap-bar {
+  transition: height .5s cubic-bezier(.4,0,.2,1),
+              transform .15s ease,
+              filter .15s ease;
+  transform-origin: bottom;
+  opacity: 0;
+  animation: uht-bar-in .5s cubic-bezier(.4,0,.2,1) forwards;
+}
+
+@keyframes uht-bar-in {
+  from { opacity: 0; transform: scaleY(.25); }
+  to   { opacity: 1; transform: scaleY(1); }
+}
+
+/* leve escalonamento de entrada — dá sensação de "onda" ao carregar */
+.heatmap-col:nth-child(1)  .heatmap-bar { animation-delay: 0ms;  }
+.heatmap-col:nth-child(2)  .heatmap-bar { animation-delay: 10ms; }
+.heatmap-col:nth-child(3)  .heatmap-bar { animation-delay: 20ms; }
+.heatmap-col:nth-child(4)  .heatmap-bar { animation-delay: 30ms; }
+.heatmap-col:nth-child(5)  .heatmap-bar { animation-delay: 40ms; }
+.heatmap-col:nth-child(6)  .heatmap-bar { animation-delay: 50ms; }
+.heatmap-col:nth-child(7)  .heatmap-bar { animation-delay: 60ms; }
+.heatmap-col:nth-child(8)  .heatmap-bar { animation-delay: 70ms; }
+.heatmap-col:nth-child(9)  .heatmap-bar { animation-delay: 80ms; }
+.heatmap-col:nth-child(10) .heatmap-bar { animation-delay: 90ms; }
+.heatmap-col:nth-child(11) .heatmap-bar { animation-delay: 100ms; }
+.heatmap-col:nth-child(12) .heatmap-bar { animation-delay: 110ms; }
+.heatmap-col:nth-child(n+13) .heatmap-bar { animation-delay: 120ms; }
+
+.heatmap-bar.uh-vazio {
+  background: var(--border);
+  opacity: .35;
+}
+.heatmap-bar.uh-baixo {
+  background: var(--border-2);
+}
+.heatmap-bar.uh-medio {
+  background: var(--blue);
+  opacity: .65;
+}
+.heatmap-bar.uh-pico {
+  background: linear-gradient(180deg, #FFCB73 0%, var(--amber) 100%);
+  box-shadow: 0 0 14px rgba(255,181,71,.5), 0 0 3px rgba(255,181,71,.75);
+}
+
+.heatmap-col:hover .heatmap-bar {
+  filter: brightness(1.25);
+  transform: scaleY(1.02);
+}
+.heatmap-col:hover .heatmap-bar.uh-pico {
+  box-shadow: 0 0 22px rgba(255,181,71,.75), 0 0 6px rgba(255,181,71,.9);
+}
+
+/* ── Tooltip customizado (sem usar title nativo) ── */
+.usage-heatmap-body { position: relative; }
+
+.usage-heatmap-tooltip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translate(-50%, calc(-100% - 10px));
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-sm);
+  padding: 8px 12px;
+  min-width: 96px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.45);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .15s ease;
+  z-index: 20;
+  text-align: center;
+}
+.usage-heatmap-tooltip.is-visible {
+  opacity: 1;
+  visibility: visible;
+}
+.usage-heatmap-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--surface-2);
+}
+.uht-hora {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  color: var(--text-3);
+  letter-spacing: .3px;
+}
+.uht-valor {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-1);
+  margin: 2px 0;
+}
+.uht-badge {
+  display: inline-flex;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: .3px;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+.uht-badge.uh-vazio { background: var(--border);            color: var(--text-3); }
+.uht-badge.uh-baixo { background: var(--border-2);          color: var(--text-2); }
+.uht-badge.uh-medio { background: rgba(79,168,232,.15);     color: var(--blue);   }
+.uht-badge.uh-pico  { background: rgba(255,181,71,.18);     color: var(--amber);  }
+
+/* ── Callout fixo do pico real ── */
+.usage-peak-callout {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 8px 12px;
+  background: rgba(255,181,71,.08);
+  border: 1px solid rgba(255,181,71,.25);
+  border-radius: var(--r-sm);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--amber);
+  width: fit-content;
+}
+.usage-peak-emoji { font-size: 13px; }
+
   </style>
 </head>
 <body>
@@ -956,20 +1116,43 @@
   </div>
 
   <!-- Distribuição por hora do dia -->
+<!-- Distribuição por hora do dia -->
   <div class="usage-heatmap-section">
+
+    <!-- NOVO — insight interpretativo, acima do gráfico -->
+    <p class="usage-chart-insight" id="usage-chart-insight">
+      Continue estudando para gerarmos uma leitura do seu padrão de uso.
+    </p>
+
     <div class="usage-heatmap-head">
       <span class="usage-heatmap-title">Distribuição por hora do dia</span>
       <span class="usage-heatmap-badge" id="usage-heatmap-total">—</span>
     </div>
+
     <div class="usage-heatmap-body">
       <div class="usage-heatmap-yaxis" id="usage-heatmap-yaxis"></div>
       <div class="heatmap-chart" id="nav-heatmap"></div>
+
+      <!-- NOVO — tooltip customizado (fica fora do innerHTML que é
+           resetado a cada render, por isso vive fixo no HTML) -->
+      <div class="usage-heatmap-tooltip" id="usage-heatmap-tooltip" role="tooltip">
+        <div class="uht-hora" id="uht-hora">—</div>
+        <div class="uht-valor" id="uht-valor">—</div>
+        <span class="uht-badge" id="uht-badge">—</span>
+      </div>
     </div>
+
     <div class="usage-heatmap-axis">
       <span>0h</span><span>6h</span><span>12h</span><span>18h</span><span>23h</span>
     </div>
-  </div>
 
+    <!-- NOVO — callout fixo do pico real -->
+    <div class="usage-peak-callout" id="usage-peak-callout" style="display:none;">
+      <span class="usage-peak-emoji" aria-hidden="true">🔥</span>
+      <span id="usage-peak-text">Pico: —</span>
+    </div>
+
+  </div>
   <!-- Resumo por período do dia -->
   <div class="usage-periods-row" id="usage-periods-row"></div>
 
