@@ -47,6 +47,17 @@
           navegação (pages/sequence), API pública
           (getStats/subscribe/formatTime/etc.) permanecem
           idênticos em contrato e comportamento.
+
+   ─────────────────────────────────────────────
+   INSTRUMENTAÇÃO TEMPORÁRIA — INVESTIGAÇÃO "PERFIL DE USO"
+   ─────────────────────────────────────────────
+   Todos os console.log/console.warn marcados com o prefixo
+   [PERFIL-USO] foram adicionados exclusivamente para
+   diagnóstico. Nenhuma regra de negócio, contrato público
+   ou comportamento de gravação/leitura foi alterado por
+   eles — são apenas observações do estado já existente em
+   cada etapa. Devem ser removidos após a causa raiz ser
+   confirmada.
    ============================================= */
 
 import {
@@ -75,7 +86,7 @@ const LOCK_UID_KEY        = 'nexus_active_tab_uid';
 
 const LS_NAV_PAGES_KEY    = 'nexus_nav_pages';
 const LS_NAV_SEQ_KEY      = 'nexus_nav_sequence';
-
+const LS_SEMESTRE_ATIVO_KEY = 'nexus_semestre_ativo';
 const LOCK_TTL            = 7_000;
 const LOCK_HEARTBEAT      = 2_000;
 const LOCK_POLL_INTERVAL  = 2_000;
@@ -121,6 +132,22 @@ let _semestreAtivo = null;
 
 export function setSemestreAtivo(semestre) {
   _semestreAtivo = semestre || null;
+
+  /* [PERFIL-USO] diagnóstico */
+  console.log('[PERFIL-USO][setSemestreAtivo] chamado |',
+    'semestre recebido:', semestre,
+    '| _uid no momento da chamada:', _uid,
+    '| chave localStorage usada:', _lsNavKey(LS_SEMESTRE_ATIVO_KEY));
+
+  try {
+    if (_semestreAtivo) {
+      localStorage.setItem(_lsNavKey(LS_SEMESTRE_ATIVO_KEY), _semestreAtivo);
+      console.log('[PERFIL-USO][setSemestreAtivo] persistido em localStorage:',
+        _lsNavKey(LS_SEMESTRE_ATIVO_KEY), '=', _semestreAtivo);
+    } else {
+      localStorage.removeItem(_lsNavKey(LS_SEMESTRE_ATIVO_KEY));
+    }
+  } catch (_) {}
 }
 
 /* Espelha, por sessão, o que já foi somado ao perfil_uso
@@ -441,6 +468,12 @@ async function _flush() {
 
   _finalizarPaginaAtual();
 
+  /* [PERFIL-USO] diagnóstico */
+  console.log('[PERFIL-USO][_flush] estado no momento do flush |',
+    '_semestreAtivo:', _semestreAtivo,
+    '| _navHourHeatmap:', { ..._navHourHeatmap },
+    '| _perfilUsoSincronizado:', { ..._perfilUsoSincronizado });
+
   try {
     await setDoc(_sessaoRef(_uid, _sessionId), {
       endedAt:     now,
@@ -482,6 +515,9 @@ async function _flush() {
         if (diff > 0) deltas[h] = diff;
       });
 
+      /* [PERFIL-USO] diagnóstico */
+      console.log('[PERFIL-USO][_flush] deltas calculados para perfil_uso:', deltas);
+
       if (Object.keys(deltas).length > 0) {
         const updatePerfil = {
           semestre:   _semestreAtivo,
@@ -493,7 +529,14 @@ async function _flush() {
         });
         await setDoc(_perfilUsoRef(_uid, _semestreAtivo), updatePerfil, { merge: true });
         _perfilUsoSincronizado = { ..._navHourHeatmap };
+
+        /* [PERFIL-USO] diagnóstico */
+        console.log('[PERFIL-USO][_flush] PERSISTIDO em perfil_uso/' + _semestreAtivo, updatePerfil);
+      } else {
+        console.log('[PERFIL-USO][_flush] nenhum delta > 0 — nada a gravar neste flush.');
       }
+    } else {
+      console.warn('[PERFIL-USO][_flush] IGNORADO — _semestreAtivo é null/undefined neste momento.');
     }
 
     console.log(`[session-tracker] flush: ${activeSeconds}s local | delta=${delta}s → Firebase`);
@@ -551,6 +594,11 @@ async function _resolverSessaoZumbi(uid, sessionId) {
 
 /* ══════════════════════════════════════════════
    INIT / TEARDOWN PÚBLICO
+   ─────────────────────────────────────────────
+   ÚNICA declaração de init() no módulo. Inclui a
+   recuperação do semestre ativo via localStorage
+   (necessária para páginas que não chamam
+   setSemestreAtivo diretamente — quiz/resumo/atlas).
 ══════════════════════════════════════════════ */
 export async function init(uid) {
   if (!uid) return;
@@ -561,6 +609,35 @@ export async function init(uid) {
   _initInProgress = true;
   _booting        = true;
   _uid            = uid;
+
+  /* [PERFIL-USO] diagnóstico */
+  console.log('[PERFIL-USO][init] _uid definido:', _uid, '| página:', location.pathname);
+
+  /* Recupera o semestre ativo persistido por uma página anterior
+     (tipicamente o Dashboard, via setSemestreAtivo). Sem isso,
+     _semestreAtivo nasce null em toda página que não chama
+     setSemestreAtivo explicitamente, e o bloco de escrita em
+     perfil_uso/{semestre} dentro de _flush() nunca executa. */
+  if (!_semestreAtivo) {
+    try {
+      const chave = _lsNavKey(LS_SEMESTRE_ATIVO_KEY);
+      const persistido = localStorage.getItem(chave);
+
+      /* [PERFIL-USO] diagnóstico */
+      console.log('[PERFIL-USO][init] tentando recuperar semestre |',
+        'chave consultada:', chave,
+        '| valor encontrado:', persistido);
+
+      if (persistido) {
+        _semestreAtivo = persistido;
+        console.log('[PERFIL-USO][init] _semestreAtivo recuperado com sucesso:', _semestreAtivo);
+      } else {
+        console.warn('[PERFIL-USO][init] NENHUM semestre encontrado em localStorage para esta chave.');
+      }
+    } catch (_) {}
+  } else {
+    console.log('[PERFIL-USO][init] _semestreAtivo já estava definido (mesma execução de módulo):', _semestreAtivo);
+  }
 
   /* Pode existir uma entrada de página já registrada em memória por uma
      chamada manual de __nexusPageEnter() feita pela própria página (ex.:
@@ -1012,15 +1089,26 @@ async function _persistirLegacyCheck(uid, datasVerificadas, historicoResultante)
    já persistidos por _flush().
 ══════════════════════════════════════════════ */
 export async function carregarPerfilUso(uid, semestre) {
-  if (!uid || !semestre) return null;
+  if (!uid || !semestre) {
+    /* [PERFIL-USO] diagnóstico */
+    console.warn('[PERFIL-USO][carregarPerfilUso] chamado sem uid ou semestre |',
+      'uid:', uid, '| semestre:', semestre);
+    return null;
+  }
   const t0 = performance.now();
   try {
     const snap = await getDoc(_perfilUsoRef(uid, semestre));
     if (!snap.exists()) {
+      /* [PERFIL-USO] diagnóstico */
+      console.warn('[PERFIL-USO][carregarPerfilUso] documento NÃO existe em perfil_uso/' + semestre);
       logFirestore(`perfil_uso/${semestre}`, uid, performance.now() - t0, 0);
       return null;
     }
     const data = snap.data();
+
+    /* [PERFIL-USO] diagnóstico */
+    console.log('[PERFIL-USO][carregarPerfilUso] documento carregado:', data);
+
     logFirestore(`perfil_uso/${semestre}`, uid, performance.now() - t0, 1);
     return {
       hourHeatmap: _isPlainObject(data.hourHeatmap) ? data.hourHeatmap : {},

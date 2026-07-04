@@ -120,6 +120,16 @@
 
    Nenhuma mudança de cálculo, contrato público, HTML ou
    renderização dos demais cards.
+
+   ─────────────────────────────────────────────
+   INSTRUMENTAÇÃO TEMPORÁRIA — INVESTIGAÇÃO "PERFIL DE USO"
+   ─────────────────────────────────────────────
+   Todos os console.log/console.warn marcados com o prefixo
+   [PERFIL-USO] foram adicionados exclusivamente para
+   diagnóstico. Nenhuma regra de negócio, contrato público
+   ou comportamento de leitura/renderização foi alterado
+   por eles. Devem ser removidos após a causa raiz ser
+   confirmada.
    ============================================= */
 
 import { getUsuario } from '../../../src/global.js';
@@ -545,6 +555,9 @@ export async function _carregarMetricasReais() {
     return;
   }
 
+  /* [PERFIL-USO] diagnóstico — ver cabeçalho do arquivo */
+  console.log('[PERFIL-USO][dashboard_data] chamando setSemestreAtivo |',
+    'State.semestre:', State.semestre);
   setSemestreAtivo(State.semestre);
 
   const statsPromise = carregarEstatisticas(usuario.uid);
@@ -580,6 +593,9 @@ export async function _carregarMetricasReais() {
     ]);
     perfLog('Promise.all', '_carregarMetricasReais :: total do conjunto (3 itens)', performance.now() - _tPromiseAll);
 
+    /* [PERFIL-USO] diagnóstico */
+    console.log('[PERFIL-USO][dashboard_data] perfilUso recebido do Promise.all (ANTES de ir ao render):', perfilUso);
+
     if (!stats) {
       _renderMetricasVazio();
     } else {
@@ -606,6 +622,8 @@ export async function _carregarMetricasReais() {
       perfLog('Render', '_carregarMetricasReais :: render navegação (páginas + histórico)', performance.now() - _tRenderNav);
 
       const _tRenderPerfil = performance.now();
+      /* [PERFIL-USO] diagnóstico */
+      console.log('[PERFIL-USO][dashboard_data] enviando perfilUso para _renderPerfilUsoConsolidado:', perfilUso);
       _renderPerfilUsoConsolidado(perfilUso);
       _renderUsageInsight();
       perfLog('Render', '_carregarMetricasReais :: render perfil de uso (heatmap + dispositivo + insight)', performance.now() - _tRenderPerfil);
@@ -869,6 +887,11 @@ function _iconeCalendarioHabito() {
    o cálculo interno delas.
 ══════════════════════════════════════════════ */
 function _renderPerfilUsoConsolidado(perfilUso) {
+  /* [PERFIL-USO] diagnóstico — ver cabeçalho do arquivo */
+  console.log('[PERFIL-USO][_renderPerfilUsoConsolidado] recebido:', perfilUso,
+    '| hourHeatmap:', perfilUso?.hourHeatmap,
+    '| deviceType:', perfilUso?.deviceType);
+
   _renderHeatmapHorario(perfilUso?.hourHeatmap ?? null);
   _renderDispositivo(perfilUso?.deviceType ?? null);
 }
@@ -1242,6 +1265,10 @@ function _renderHeatmapHorario(hourHeatmap) {
   const total    = valores.reduce((a, b) => a + (b || 0), 0);
   const temDados = total > 0;
 
+  /* [PERFIL-USO] diagnóstico — ver cabeçalho do arquivo */
+  console.log('[PERFIL-USO][_renderHeatmapHorario] mapa recebido:', mapa,
+    '| total:', total, '| temDados:', temDados);
+
   let horaPicoNum = null;
   if (temDados) {
     const entradas = Object.entries(mapa).sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0));
@@ -1356,6 +1383,9 @@ function _renderHeatmapHorario(hourHeatmap) {
       ? `Você costuma estudar mais durante a ${periodoDoPico.label.toLowerCase()}, por volta das ${horaPicoNum}h.`
       : 'Continue estudando para gerar seu perfil de uso.',
   };
+
+  /* [PERFIL-USO] diagnóstico */
+  console.log('[PERFIL-USO][_renderHeatmapHorario] RENDERIZADO — _ultimoPerfilUso final:', _ultimoPerfilUso);
 }
 
 /* ══════════════════════════════════════════════
@@ -1387,6 +1417,9 @@ function _renderDispositivo(deviceType) {
   const el       = document.getElementById('nav-device-tipo');
   const iconWrap = document.getElementById('usage-device-icon');
   if (!el) return;
+
+  /* [PERFIL-USO] diagnóstico — ver cabeçalho do arquivo */
+  console.log('[PERFIL-USO][_renderDispositivo] recebido:', deviceType);
 
   const ICONE_DESKTOP = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="14" height="9" rx="1.5"/><path d="M6.5 15.5h5M9 12v3.5" stroke-linecap="round"/></svg>`;
   const ICONE_MOBILE  = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5.5" y="1.5" width="7" height="15" rx="2"/><path d="M8.25 14.2h1.5" stroke-linecap="round"/></svg>`;
