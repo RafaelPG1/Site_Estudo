@@ -1,4 +1,4 @@
-  <!-- dashboard\dashboard.html
+<!-- dashboard\dashboard.html
  proibo de mudar o caminho, os arquivos deve ter os caminhos para saber onde estar -->
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -6,6 +6,33 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard — Nexus Study</title>
+
+  <!-- ═══ WARM-UP DE REDE DO FIRESTORE ═══════════════════════════
+       Precisa ser o PRIMEIRO script da página, em tag clássica
+       (não type="module"), para rodar durante o parsing do HTML —
+       antes mesmo do navegador começar a baixar o grafo de módulos
+       ES (dashboard.js → dashboard_data.js → firebase.js → SDK).
+       Só assim existe uma janela real de tempo entre a abertura do
+       handshake TCP/TLS e as leituras reais do Firestore, que antes
+       disparavam quase no mesmo instante que qualquer warm-up feito
+       dentro do próprio grafo de módulos (scripts type="module" só
+       executam perto do DOMContentLoaded, equivalentes a defer).
+       Usa fetch() cru — não o SDK — porque o SDK só é resolvido
+       depois que o grafo de módulos termina de carregar, o que
+       anularia o propósito deste warm-up. Não lê nem grava nada de
+       negócio: é uma requisição REST descartável, cujo único efeito
+       colateral desejado é o navegador reutilizar a mesma conexão
+       TCP/TLS para o mesmo host quando o SDK do Firestore precisar
+       dela pouco depois. Resultado sempre ignorado, erros sempre
+       silenciados (mode:'no-cors' evita exception de CORS no
+       console, já que a resposta não importa — só o efeito
+       colateral de rede). ─────────────────────────────────────── -->
+  <script>
+    fetch(
+      'https://firestore.googleapis.com/v1/projects/estudo-site-85244/databases/(default)/documents/__warmup__/ping',
+      { mode: 'no-cors', credentials: 'omit' }
+    ).catch(() => {});
+  </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -19,11 +46,17 @@
   <!-- ═══ Estilos do Dashboard (dashboard.css deve vir ANTES de dashboard_cards.css) ═══ -->
   <link rel="stylesheet" href="css/dashboard.css" />
   <link rel="stylesheet" href="css/dashboard_cards.css" />
-<!-- no <head> de dashboard.html (e idealmente de toda página que usa Firestore) -->
-<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
-<link rel="dns-prefetch" href="https://firestore.googleapis.com">
-<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js">
-<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js">
+
+  <!-- ═══ Warm-up complementar de rede/módulos (Firestore) ═══════
+       preconnect/dns-prefetch: adianta DNS + handshake TLS com o
+       host do Firestore, em paralelo com o fetch() de warm-up acima.
+       modulepreload: adianta o download/parse do SDK do Firebase,
+       sem esperar a cadeia de imports estáticos de dashboard.js. -->
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+  <link rel="dns-prefetch" href="https://firestore.googleapis.com">
+  <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js">
+  <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js">
+
   <!-- ═══ Contrato de domínio de IA ═══ -->
   <script>
     window.__NEXUS_CONTEXT__ = { tipos: ['dashboard'] };
