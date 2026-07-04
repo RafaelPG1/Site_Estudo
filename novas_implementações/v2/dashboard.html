@@ -1,4 +1,4 @@
-<!-- dashboard\dashboard.html
+  <!-- dashboard\dashboard.html
  proibo de mudar o caminho, os arquivos deve ter os caminhos para saber onde estar -->
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -19,7 +19,11 @@
   <!-- ═══ Estilos do Dashboard (dashboard.css deve vir ANTES de dashboard_cards.css) ═══ -->
   <link rel="stylesheet" href="css/dashboard.css" />
   <link rel="stylesheet" href="css/dashboard_cards.css" />
-
+<!-- no <head> de dashboard.html (e idealmente de toda página que usa Firestore) -->
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+<link rel="dns-prefetch" href="https://firestore.googleapis.com">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js">
   <!-- ═══ Contrato de domínio de IA ═══ -->
   <script>
     window.__NEXUS_CONTEXT__ = { tipos: ['dashboard'] };

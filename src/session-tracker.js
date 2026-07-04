@@ -788,7 +788,6 @@ export async function carregarEstatisticas(uid) {
   const _tInicio = performance.now();
   try {
     const db = getDb();
-
     const hoje = new Date();
 
     const diasJanela = [];
@@ -824,6 +823,12 @@ export async function carregarEstatisticas(uid) {
 
     const dadosUsuario = snapUsuario.exists() ? snapUsuario.data() : {};
 
+    /* ── NOVO: marcador de histórico legado ──────────────────────
+       Já veio "de graça" dentro de snapUsuario acima — custo zero.
+       Ver _persistirLegacyCheck() logo abaixo para a explicação
+       completa da garantia de permanência. */
+    const legacyCheck = dadosUsuario.legacyCheck ?? null;
+
     const historico = {};
     const diasParaFallback = [];
 
@@ -832,9 +837,29 @@ export async function carregarEstatisticas(uid) {
       const doMes = mapasMensais[mesKey]?.[dia];
       if (doMes) {
         historico[dateKey] = doMes;
-      } else {
-        diasParaFallback.push(dateKey);
+        return;
       }
+
+      /* NOVO — usuário já confirmado sem nenhum dado legado:
+         o resultado do fallback para esta data já é conhecido
+         (vazio) e é permanente. Não consulta o Firestore. */
+      if (legacyCheck?.verificado && legacyCheck.possuiDadosLegados === false) {
+        return;
+      }
+
+      /* NOVO — usuário confirmado COM dado legado em datas
+         específicas: só faz fallback para essas datas exatas.
+         Qualquer outra data fora da lista já está confirmada
+         como vazia, pelo mesmo motivo acima. */
+      if (
+        legacyCheck?.verificado &&
+        Array.isArray(legacyCheck.datasComDados) &&
+        !legacyCheck.datasComDados.includes(dateKey)
+      ) {
+        return;
+      }
+
+      diasParaFallback.push(dateKey);
     });
 
     if (diasParaFallback.length > 0) {
@@ -851,8 +876,24 @@ export async function carregarEstatisticas(uid) {
           });
       }));
       perfLog('Promise.all', 'carregarEstatisticas :: fallback diário antigo', performance.now() - _tFallback, { dias: diasParaFallback.length });
+
+      /* NOVO — só grava a conclusão definitiva na PRIMEIRA vez que
+         o fallback é executado sem filtro nenhum (legacyCheck ainda
+         não existia). Isso garante que a decisão foi tomada com base
+         em TODAS as datas realmente consultadas, nunca em um
+         subconjunto já filtrado por um resultado anterior. */
+      if (!legacyCheck?.verificado) {
+        _persistirLegacyCheck(uid, diasParaFallback, historico).catch(() => {});
+      }
     } else {
-      perfLog('dashboard_data', 'carregarEstatisticas :: fallback diário (não necessário)', 0, { dias: 0 });
+      perfLog(
+        legacyCheck?.verificado ? 'Cache' : 'dashboard_data',
+        legacyCheck?.verificado
+          ? 'carregarEstatisticas :: fallback diário pulado (legacyCheck confirma ausência)'
+          : 'carregarEstatisticas :: fallback diário (não necessário)',
+        0,
+        { dias: 0 }
+      );
     }
 
     let streak = 0;
@@ -923,7 +964,41 @@ export async function carregarEstatisticas(uid) {
     return null;
   }
 }
+/* ══════════════════════════════════════════════
+   MARCADOR DE HISTÓRICO LEGADO — usuarios/{uid}.legacyCheck
+   ─────────────────────────────────────────────
+   Grava, uma única vez por usuário, o resultado definitivo do
+   fallback de historico_diario/{YYYY-MM-DD} (formato antigo,
+   pré-v8). Documentos nesse formato NUNCA MAIS recebem escrita
+   (ver _diarioRef — mantido só para leitura), portanto:
+     · se uma data não tinha doc legado quando checada, ela
+       nunca vai passar a ter;
+     · o resultado é válido para sempre, sem necessidade de
+       revalidação periódica.
+   Não altera o valor de `historico` retornado por
+   carregarEstatisticas nesta chamada — apenas evita repetir,
+   em TODAS as próximas chamadas, leituras cujo resultado já
+   é conhecido.
+══════════════════════════════════════════════ */
+async function _persistirLegacyCheck(uid, datasVerificadas, historicoResultante) {
+  const datasComDados = datasVerificadas.filter(
+    dateKey => historicoResultante[dateKey] !== undefined
+  );
 
+  const legacyCheck = {
+    verificado:         true,
+    possuiDadosLegados: datasComDados.length > 0,
+    datasComDados,
+    verificadoEm:        Date.now(),
+  };
+
+  try {
+    await setDoc(_usuarioRef(uid), { legacyCheck }, { merge: true });
+    console.log('[session-tracker] legacyCheck persistido:', legacyCheck);
+  } catch (err) {
+    console.warn('[session-tracker] falha ao persistir legacyCheck:', err);
+  }
+}
 /* ══════════════════════════════════════════════
    carregarPerfilUso(uid, semestre)
    ─────────────────────────────────────────────

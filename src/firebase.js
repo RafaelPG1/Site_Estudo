@@ -6,10 +6,11 @@
 
 import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import {
-   getFirestore,
-   doc, getDoc, setDoc, deleteDoc,
-   collection, getDocs, addDoc, query, orderBy, writeBatch,
- } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+  initializeFirestore, // em vez de getFirestore
+  doc, getDoc, setDoc, deleteDoc,
+  collection, getDocs, addDoc, query, orderBy, writeBatch,
+} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
 import { setUsuario } from './global.js';
 import { logFirestore } from './perf_logger.js';
 /* ── CONFIG ─────────────────────────────────── */
@@ -26,9 +27,30 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
 let _db = null;
 export function getDb() {
-  if (!_db) _db = getFirestore(app);
+  if (!_db) {
+    _db = initializeFirestore(app, {
+      experimentalAutoDetectLongPolling: true,
+    });
+  }
   return _db;
 }
+// src/firebase.js — logo após a definição de getDb()
+
+/* ── WARM-UP DE CANAL (Firestore) ──────────────────────────────
+   Não é regra de negócio: dispara uma leitura descartável assim
+   que este módulo é avaliado — o que já acontece estaticamente,
+   muito antes de qualquer leitura real de dados no boot da página.
+   Objetivo único: consumir o custo de abertura do canal/handshake
+   do WebChannel durante o tempo ocioso do boot (tema, DOM,
+   disciplinas, session timer), em vez de deixar esse custo cair
+   sobre a primeira leitura real (carregarEstatisticas / relatorioEvolucao).
+   O resultado é sempre descartado — nunca lido, nunca afeta nada. */
+(function _warmupFirestoreChannel() {
+  try {
+    const db = getDb();
+    getDoc(doc(db, '__warmup__', 'ping')).catch(() => {});
+  } catch (_) { /* ambiente sem rede — ignora silenciosamente */ }
+})();
 
 /* ── HASH SHA-256 ── */
 export async function hashPin(pin) {
