@@ -250,7 +250,7 @@
 
 .subject-module-card__desc {
   font-size: 0.74rem;
-  color: var(--t3);
+  color: var(--t2);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -260,7 +260,7 @@
 .subject-module-card__count {
   flex-shrink: 0;
   font-size: 0.74rem;
-  color: var(--t3);
+  color: var(--t2);
   margin-left: auto;
   white-space: nowrap;
 }
@@ -290,9 +290,9 @@
   background: rgba(255,255,255,0.02);
   border: 1px solid var(--b1);
   font-size: 0.74rem;
-  color: var(--t3);
+  color: var(--t2);
 }
-.subject-hint-bar svg { opacity: 0.4; flex-shrink: 0; }
+.subject-hint-bar svg { opacity: 0.55; flex-shrink: 0; }
 
 /* ══════════════════════════════════════════
    SIDEBAR DIREITA
@@ -400,7 +400,7 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: var(--t3);
+  color: var(--t2);
 }
 
 .subject-quick-item__text { min-width: 0; }
@@ -414,7 +414,7 @@
 
 .subject-quick-item__sub {
   font-size: 0.68rem;
-  color: var(--t3);
+  color: var(--t2);
 }
 
 /* Recursos externos */
@@ -446,7 +446,7 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: var(--t3);
+  color: var(--t2);
 }
 
 .subject-resource-item__text { flex: 1; min-width: 0; }
@@ -461,7 +461,7 @@
 
 .subject-resource-item__url {
   font-size: 0.67rem;
-  color: var(--t3);
+  color: var(--t2);
   display: block;
   white-space: nowrap;
   overflow: hidden;
@@ -470,8 +470,8 @@
 
 .subject-resource-item__ext {
   flex-shrink: 0;
-  color: var(--t3);
-  opacity: 0.5;
+  color: var(--t2);
+  opacity: 0.6;
 }
 
 /* ══════════════════════════════════════════
@@ -494,7 +494,7 @@
   font-weight: 500;
   color: var(--t2);
 }
-.subject-empty-state p { font-size: 0.8rem; color: var(--t3); }
+.subject-empty-state p { font-size: 0.8rem; color: var(--t2); }
 
 /* ══════════════════════════════════════════
    HERO LEGADO — mantido para retrocompat com JS

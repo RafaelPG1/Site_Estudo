@@ -145,7 +145,7 @@
 }
 
 .library-search-box__icon {
-  color: var(--t3);
+  color: var(--t2);
   flex-shrink: 0;
   transition: color 0.18s;
 }
@@ -434,7 +434,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  color: var(--t3);
+  color: var(--t2);
   flex-shrink: 0;
   margin-left: 0.75rem;
   transition: color 0.2s, transform 0.22s var(--ease);
@@ -456,15 +456,15 @@
   align-items: center;
   gap: 0.4rem;
   font-size: 0.74rem;
-  color: var(--t3);
+  color: var(--t2);
   transition: color 0.18s;
   white-space: nowrap;
 }
-.library-cat-card:hover .library-cat-card__stat { color: var(--t2); }
+.library-cat-card:hover .library-cat-card__stat { color: var(--t1); }
 
 .library-cat-card__stat svg {
   flex-shrink: 0;
-  opacity: 0.65;
+  opacity: 0.8;
 }
 
 .library-cat-card__stat-sep {
@@ -495,7 +495,7 @@
   font-weight: 500;
   color: var(--t2);
 }
-.library-empty-state p { font-size: 0.78rem; color: var(--t3); }
+.library-empty-state p { font-size: 0.78rem; color: var(--t2); }
 
 /* ══════════════════════════════════════════
    RESPONSIVO — Biblioteca
@@ -536,7 +536,7 @@
   justify-content: center;
   background: rgba(255,255,255,0.04);
   border: 1px solid var(--b2);
-  color: var(--t3);
+  color: var(--t2);
   opacity: 0;
   transform: scale(0.85);
   transition:
@@ -575,10 +575,10 @@
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   font-size: 0.74rem;
-  color: var(--t3);
+  color: var(--t2);
   font-style: italic;
 }
-.atlas-sidebar__empty svg { opacity: 0.4; flex-shrink: 0; }
+.atlas-sidebar__empty svg { opacity: 0.55; flex-shrink: 0; }
 
 /* Remove .atlas-sidebar__see-all se ainda existir */
 .atlas-sidebar__see-all { display: none; }
@@ -646,7 +646,7 @@
 .materials-group__count {
   font-family: var(--font-mono);
   font-size: 0.68rem;
-  color: var(--t3);
+  color: var(--t2);
   background: rgba(255,255,255,0.04);
   border: 1px solid var(--b2);
   border-radius: 99px;
@@ -663,7 +663,7 @@
 .materials-group__empty {
   padding: 0.75rem 1.1rem;
   font-size: 0.74rem;
-  color: var(--t3);
+  color: var(--t2);
   font-style: italic;
 }
 
@@ -682,7 +682,7 @@
   background: rgba(255,255,255,0.03);
   color: var(--t1);
 }
-.materials-item svg { flex-shrink: 0; opacity: 0.4; }
+.materials-item svg { flex-shrink: 0; opacity: 0.55; }
 
 @media (max-width: 1280px) { .materials-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 860px)  { .materials-grid { grid-template-columns: 1fr; } }

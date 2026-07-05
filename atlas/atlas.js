@@ -1259,19 +1259,9 @@ function _buildDisciplineRightSidebar(cat, secoes) {
       sub:   'Encontre tópicos e conteúdos',
     },
     {
-      svg:   `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`,
-      title: 'Ver índice completo',
-      sub:   'Navegue por toda a estrutura',
-    },
-    {
       svg:   `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
       title: 'Downloads',
       sub:   'Materiais complementares',
-    },
-    {
-      svg:   `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`,
-      title: 'Referências',
-      sub:   'Documentação oficial',
     },
   ].map(q => `
     <div class="subject-quick-item">
@@ -1284,10 +1274,7 @@ function _buildDisciplineRightSidebar(cat, secoes) {
 
   const catResources = Array.isArray(cat?.resources) && cat.resources.length
     ? cat.resources
-    : [
-        { title: 'Documentação Oficial', url: '#', display: `docs.${cat.id ?? 'exemplo'}.org` },
-        { title: 'Exemplos de Código',   url: '#', display: 'github.com' },
-      ];
+    : [];
 
   const resourceItems = catResources.map(r => `
     <a class="subject-resource-item" href="${_esc(r.url ?? '#')}" target="_blank" rel="noopener">
@@ -1319,10 +1306,6 @@ function _buildDisciplineRightSidebar(cat, secoes) {
       <div class="subject-right-panel">
         <div class="subject-right-panel__header">Atalhos rápidos</div>
         <div class="subject-quick-list">${quickItems}</div>
-      </div>
-      <div class="subject-right-panel">
-        <div class="subject-right-panel__header">Recursos da disciplina</div>
-        <div class="subject-resource-list">${resourceItems}</div>
       </div>
     </aside>`;
 }
