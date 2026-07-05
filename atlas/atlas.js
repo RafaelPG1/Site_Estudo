@@ -214,6 +214,7 @@ const EL = {
   readerBody:              $('reader-body'),
   readerChapterNav:        $('reader-chapter-nav'),
   // painel direito e botões flutuantes (redesign v2)
+  readerRightPanel:        $('reader-right-panel'),
   readerAboutBody:         $('reader-about-body'),
   readerProgressBlock:     $('reader-progress-block'),
   readerPanelTocBlock:     $('reader-panel-toc-block'),
@@ -925,6 +926,14 @@ function _renderHeaderBreadcrumb() {
    às outras views — sem lógica especial.
 ══════════════════════════════════════════════ */
 function _showScreen(view) {
+  // A busca opera sobre o conteúdo da LEITURA (#reader-body),
+  // que só é visível na screen do Reader. Ao navegar para
+  // qualquer outra screen (Disciplina, Biblioteca, Materiais),
+  // a barra e os destaques são fechados/desfeitos — exceto
+  // quando o destino é o próprio Reader (ex.: abrir um capítulo
+  // com a busca já aberta deve preservá-la).
+  if (DisciplineSearch.isOpen() && view !== 'reader') DisciplineSearch.close();
+
   State.view = view;
 
   const screens = {
@@ -970,6 +979,11 @@ async function _abrirDisciplina(categoryId) {
   const cat = CATEGORIES.find(c => c.id === categoryId);
   if (!cat) return;
 
+  // O conteúdo da disciplina está prestes a ser substituído —
+  // fecha qualquer busca em andamento para não operar sobre
+  // nós de DOM que serão descartados.
+  DisciplineSearch.close();
+
   State.currentCategory = categoryId;
   State.currentChapter  = null;
 
@@ -1000,6 +1014,283 @@ function _moduleIcon(idx) {
   return _MODULE_ICONS[idx % _MODULE_ICONS.length];
 }
 
+/* ══════════════════════════════════════════════
+   BUSCA DENTRO DO CONTEÚDO DA LEITURA (estilo Ctrl+F)
+
+   Objetivo: permitir localizar termos EXCLUSIVAMENTE
+   dentro do material de estudo que o aluno está lendo
+   naquele momento — título do capítulo, descrição e o
+   corpo com os blocos de conteúdo (subtítulos,
+   parágrafos, listas, tabelas, destaques/citações etc.,
+   tudo o que _renderBloco() produz dentro de #reader-body).
+
+   Escopo — o que É pesquisado:
+   - EL.readerHeroTitle  → título da leitura (capítulo)
+   - EL.readerHeroDesc   → descrição da leitura
+   - EL.readerBody       → todos os blocos de conteúdo
+                           (texto, subtítulo, lista, tabela,
+                           código, alerta, destaque, legendas)
+
+   Escopo — o que NUNCA é pesquisado (interface):
+   - atlas-sidebar, header, breadcrumb, botões de navegação,
+   - painel direito (progresso, "sobre este capítulo", índice),
+   - sidebar de capítulos do reader, atalhos rápidos, cards,
+   - rodapé e qualquer outro elemento de chrome da aplicação.
+   Esses elementos ficam fora de qualquer TreeWalker usado
+   pela busca — não há fallback para `document`.
+
+   Importante:
+   - Não recarrega a página, não faz requisição.
+   - Não altera a estrutura do conteúdo: os destaques
+     (<mark>) são inseridos por cima do texto existente
+     e completamente desfeitos ao fechar a busca,
+     restaurando os nós de texto originais.
+   - Como o texto pesquisado é sempre o do capítulo
+     atualmente carregado em #reader-body, a busca é
+     fechada automaticamente ao trocar de capítulo, de
+     disciplina, ou ao sair da tela de Leitura (ver
+     _abrirReader, _abrirDisciplina e _showScreen).
+══════════════════════════════════════════════ */
+const DisciplineSearch = {
+  panelEl:     null,
+  scopeEls:    null,
+  inputEl:     null,
+  countEl:     null,
+  matches:     [],
+  activeIndex: -1,
+  _debounceT:  null,
+
+  isOpen() {
+    return !!this.panelEl;
+  },
+
+  open() {
+    // Já aberta: apenas devolve o foco ao campo.
+    if (this.panelEl) {
+      this.inputEl?.focus();
+      this.inputEl?.select();
+      return;
+    }
+
+    // Escopo fixo: apenas os elementos que compõem a leitura
+    // atual. Esses nós existem no DOM desde o carregamento da
+    // página (fazem parte da screen do Reader) e têm seu
+    // innerHTML substituído a cada capítulo aberto — ou seja,
+    // buscar aqui sempre reflete "o texto que o aluno está
+    // lendo naquele momento", independente da tela visível.
+    this.scopeEls = [EL.readerHeroTitle, EL.readerHeroDesc, EL.readerBody].filter(Boolean);
+
+    const hasContent = this.scopeEls.some(el => (el.textContent || '').trim().length > 0);
+    if (!this.scopeEls.length || !hasContent) {
+      _toast('Abra um capítulo de leitura para buscar no conteúdo.');
+      this.scopeEls = null;
+      return;
+    }
+
+    const panel = document.createElement('div');
+    panel.className = 'subject-search-bar';
+    panel.setAttribute('role', 'search');
+    panel.setAttribute('aria-label', 'Buscar nesta leitura');
+    panel.innerHTML = `
+      <svg class="subject-search-bar__icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input
+        type="text"
+        class="subject-search-bar__input"
+        placeholder="Buscar nesta leitura…"
+        aria-label="Buscar nesta leitura"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <span class="subject-search-bar__count is-empty" aria-live="polite">0/0</span>
+      <span class="subject-search-bar__sep" aria-hidden="true"></span>
+      <button class="subject-search-bar__nav" data-dir="prev" type="button" title="Anterior (Shift+Enter)" disabled>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 15l-6-6-6 6"/>
+        </svg>
+      </button>
+      <button class="subject-search-bar__nav" data-dir="next" type="button" title="Próximo (Enter)" disabled>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+      </button>
+      <button class="subject-search-bar__close" type="button" title="Fechar (Esc)" aria-label="Fechar busca">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 6L6 18"/><path d="M6 6l12 12"/>
+        </svg>
+      </button>
+    `;
+
+    document.body.appendChild(panel);
+    this.panelEl = panel;
+    this.inputEl = panel.querySelector('.subject-search-bar__input');
+    this.countEl = panel.querySelector('.subject-search-bar__count');
+
+    panel.querySelector('[data-dir="prev"]').addEventListener('click', () => {
+      playSound('hover', 'atlas');
+      this._step(-1);
+    });
+    panel.querySelector('[data-dir="next"]').addEventListener('click', () => {
+      playSound('hover', 'atlas');
+      this._step(1);
+    });
+    panel.querySelector('.subject-search-bar__close').addEventListener('click', () => {
+      playSound('click', 'atlas');
+      this.close();
+    });
+
+    this.inputEl.addEventListener('input', () => {
+      clearTimeout(this._debounceT);
+      this._debounceT = setTimeout(() => this._runSearch(this.inputEl.value), 120);
+    });
+
+    this.inputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); this._step(e.shiftKey ? -1 : 1); }
+      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); this.close(); }
+    });
+
+    requestAnimationFrame(() => this.inputEl?.focus());
+  },
+
+  close() {
+    if (!this.panelEl) return;
+    clearTimeout(this._debounceT);
+    this._clearHighlights();
+    this.panelEl.remove();
+    this.panelEl     = null;
+    this.scopeEls    = null;
+    this.inputEl     = null;
+    this.countEl     = null;
+    this.matches     = [];
+    this.activeIndex = -1;
+  },
+
+  // Percorre um ou mais containers e retorna todos os nós de
+  // texto encontrados, na ordem em que aparecem no documento
+  // (título → descrição → corpo), ignorando <script>/<style>.
+  _collectTextNodes(roots) {
+    const list  = Array.isArray(roots) ? roots : [roots];
+    const nodes = [];
+    list.forEach(root => {
+      if (!root) return;
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+        acceptNode(node) {
+          if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+          const tag = node.parentElement?.tagName;
+          if (tag === 'SCRIPT' || tag === 'STYLE') return NodeFilter.FILTER_REJECT;
+          return NodeFilter.FILTER_ACCEPT;
+        },
+      });
+      let n;
+      while ((n = walker.nextNode())) nodes.push(n);
+    });
+    return nodes;
+  },
+
+  // Desfaz todos os <mark> inseridos, devolvendo o texto
+  // original exatamente como estava (sem alterar a estrutura).
+  _clearHighlights() {
+    if (!this.scopeEls) return;
+    this.scopeEls.forEach(root => {
+      root.querySelectorAll('.subject-search-mark').forEach(mark => {
+        const parent = mark.parentNode;
+        if (!parent) return;
+        parent.replaceChild(document.createTextNode(mark.textContent), mark);
+        parent.normalize();
+      });
+    });
+  },
+
+  _runSearch(rawTerm) {
+    this._clearHighlights();
+    this.matches     = [];
+    this.activeIndex = -1;
+
+    const term = rawTerm.trim();
+    if (!term || !this.scopeEls?.length) {
+      this._updateCount();
+      this._updateNavButtons();
+      return;
+    }
+
+    const termLower = term.toLowerCase();
+    const nodes = this._collectTextNodes(this.scopeEls);
+
+    nodes.forEach(node => {
+      const text      = node.nodeValue;
+      const textLower = text.toLowerCase();
+      if (!textLower.includes(termLower)) return;
+
+      const frag = document.createDocumentFragment();
+      let cursor = 0;
+      let idx;
+      while ((idx = textLower.indexOf(termLower, cursor)) !== -1) {
+        if (idx > cursor) frag.appendChild(document.createTextNode(text.slice(cursor, idx)));
+        const mark = document.createElement('mark');
+        mark.className   = 'subject-search-mark';
+        mark.textContent = text.slice(idx, idx + term.length);
+        frag.appendChild(mark);
+        this.matches.push(mark);
+        cursor = idx + term.length;
+      }
+      if (cursor < text.length) frag.appendChild(document.createTextNode(text.slice(cursor)));
+
+      node.parentNode?.replaceChild(frag, node);
+    });
+
+    if (this.matches.length) {
+      this.activeIndex = 0;
+      this._highlightActive();
+    }
+
+    this._updateCount();
+    this._updateNavButtons();
+  },
+
+  _step(dir) {
+    if (!this.matches.length) return;
+    this.activeIndex = (this.activeIndex + dir + this.matches.length) % this.matches.length;
+    this._highlightActive();
+    this._updateCount();
+  },
+
+  _highlightActive() {
+    this.matches.forEach(m => m.classList.remove('is-active'));
+    const active = this.matches[this.activeIndex];
+    if (!active) return;
+    active.classList.add('is-active');
+    active.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  },
+
+  _updateCount() {
+    if (!this.countEl) return;
+    const hasTerm = !!this.inputEl?.value.trim();
+    if (!this.matches.length) {
+      this.countEl.textContent = hasTerm ? 'Nenhum resultado' : '0/0';
+      this.countEl.classList.add('is-empty');
+    } else {
+      this.countEl.textContent = `${this.activeIndex + 1} de ${this.matches.length}`;
+      this.countEl.classList.remove('is-empty');
+    }
+  },
+
+  // Reexecuta a busca atual sobre o conteúdo já carregado.
+  // Não é chamado automaticamente — apenas utilitário caso o
+  // conteúdo do capítulo seja atualizado com a busca aberta.
+  refresh() {
+    if (!this.isOpen()) return;
+    this._runSearch(this.inputEl?.value ?? '');
+  },
+
+  _updateNavButtons() {
+    if (!this.panelEl) return;
+    const disabled = this.matches.length < 2;
+    this.panelEl.querySelectorAll('.subject-search-bar__nav').forEach(btn => { btn.disabled = disabled; });
+  },
+};
+
 /* ──────────────────────────────────────────────
    _renderDisciplineLoading
 ────────────────────────────────────────────── */
@@ -1029,6 +1320,22 @@ function _renderDisciplineLoading(cat) {
     </main>
     ${_buildDisciplineRightSidebar(cat, [])}
   `;
+
+  _bindDisciplineQuickActions();
+}
+
+/* ──────────────────────────────────────────────
+   _bindDisciplineQuickActions
+   Liga as ações dos itens da sidebar direita
+   (ex.: abrir a busca) após cada renderização.
+────────────────────────────────────────────── */
+function _bindDisciplineQuickActions() {
+  EL.screenDiscipline
+    ?.querySelector('[data-quick-action="search"]')
+    ?.addEventListener('click', () => {
+      playSound('click', 'atlas');
+      DisciplineSearch.open();
+    });
 }
 
 /* ──────────────────────────────────────────────
@@ -1118,6 +1425,8 @@ function _renderDisciplineScreen(cat, data) {
       card?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
   });
+
+  _bindDisciplineQuickActions();
 }
 
 /* ══════════════════════════════════════════════
@@ -1254,23 +1563,29 @@ function _buildDisciplineRightSidebar(cat, secoes) {
 
   const quickItems = [
     {
-      svg:   `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
-      title: 'Buscar na disciplina',
-      sub:   'Encontre tópicos e conteúdos',
+      svg:    `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+      title:  'Buscar na leitura',
+      sub:    'Encontre termos no texto do capítulo',
+      action: 'search',
     },
     {
-      svg:   `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
-      title: 'Downloads',
-      sub:   'Materiais complementares',
+      svg:    `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
+      title:  'Downloads',
+      sub:    'Materiais complementares',
+      action: null,
     },
-  ].map(q => `
-    <div class="subject-quick-item">
+  ].map(q => {
+    const tag = q.action ? 'button' : 'div';
+    const attrs = q.action ? ` type="button" data-quick-action="${_esc(q.action)}"` : '';
+    return `
+    <${tag} class="subject-quick-item"${attrs}>
       <span class="subject-quick-item__icon">${q.svg}</span>
       <span class="subject-quick-item__text">
         <span class="subject-quick-item__title">${_esc(q.title)}</span>
         <span class="subject-quick-item__sub">${_esc(q.sub)}</span>
       </span>
-    </div>`).join('');
+    </${tag}>`;
+  }).join('');
 
   const catResources = Array.isArray(cat?.resources) && cat.resources.length
     ? cat.resources
@@ -1373,6 +1688,12 @@ async function _abrirReader(categoryId, chapterIndex, opts = {}) {
   const cat = CATEGORIES.find(c => c.id === categoryId);
   if (!cat) return;
 
+  // O conteúdo de #reader-body (e o título/descrição do capítulo)
+  // está prestes a ser substituído — fecha a busca para não deixar
+  // <mark> órfãos ou índices de navegação apontando para nós que
+  // serão removidos do DOM.
+  DisciplineSearch.close();
+
   State.currentCategory = categoryId;
   State.currentChapter  = chapterIndex;
 
@@ -1406,6 +1727,7 @@ async function _abrirReader(categoryId, chapterIndex, opts = {}) {
   _renderAtlasBody(secao, categoryId);
   _renderChapterNav(cat, secoes, chapterIndex);
 
+  _renderReaderSearchTrigger();
   _renderAboutPanel(cat, data, secao);
   _renderProgressBlock(cat, secoes, chapterIndex);
   _renderPanelToc(cat, secoes, chapterIndex);
@@ -1608,6 +1930,34 @@ function _renderChapterNav(cat, secoes, currentIndex) {
       _abrirReader(cat.id, parseInt(link.dataset.navIndex, 10));
     });
   });
+}
+
+/* ══════════════════════════════════════════════
+   PAINEL DIREITO — ATALHO DE BUSCA NA LEITURA
+   Insere (uma única vez) um botão no topo do painel
+   direito do Reader para abrir a busca dentro do
+   conteúdo do capítulo atual. Reaproveita o mesmo
+   DisciplineSearch usado a partir da sidebar da
+   tela de Disciplina — nenhuma lógica duplicada.
+══════════════════════════════════════════════ */
+function _renderReaderSearchTrigger() {
+  if (!EL.readerRightPanel || EL.readerRightPanel.querySelector('.reader-search-trigger')) return;
+
+  const btn = document.createElement('button');
+  btn.type      = 'button';
+  btn.className = 'reader-search-trigger';
+  btn.innerHTML = `
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <span>Buscar nesta leitura</span>`;
+
+  btn.addEventListener('click', () => {
+    playSound('click', 'atlas');
+    DisciplineSearch.open();
+  });
+
+  EL.readerRightPanel.prepend(btn);
 }
 
 /* ══════════════════════════════════════════════
@@ -1841,9 +2191,16 @@ function _bindEvents() {
   EL.readerSidebarToggle?.addEventListener('click', _toggleMobileSidebar);
   EL.readerSidebarScrim?.addEventListener('click',  _closeMobileSidebar);
 
-  // Esc: fecha reader → discipline → home (cascata)
+  // Esc: se a busca da disciplina estiver aberta, fecha só ela.
+  // Caso contrário, mantém a cascata original: fecha reader → discipline → home.
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
+
+    if (DisciplineSearch.isOpen()) {
+      DisciplineSearch.close();
+      return;
+    }
+
     if (State.view === 'reader') {
       _fecharReader({ toDiscipline: true });
       return;

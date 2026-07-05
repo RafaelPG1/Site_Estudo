@@ -511,6 +511,150 @@
 }
 
 /* ══════════════════════════════════════════
+   ATALHO DE BUSCA NO PAINEL DIREITO DO READER
+   Botão injetado via JS (_renderReaderSearchTrigger)
+   no topo de #reader-right-panel. Este arquivo é
+   carregado globalmente (todas as screens), por isso
+   pode estilizar um elemento que vive na tela de Leitura.
+══════════════════════════════════════════ */
+.reader-search-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.65rem 0.9rem;
+  margin-bottom: 0.85rem;
+  background: var(--bg-2);
+  border: 1px solid var(--b2);
+  border-radius: var(--r-lg);
+  color: var(--t2);
+  font-size: 0.78rem;
+  font-weight: 500;
+  transition: color 0.16s, border-color 0.16s, background 0.16s;
+}
+.reader-search-trigger svg { flex-shrink: 0; opacity: 0.8; }
+.reader-search-trigger:hover {
+  color: var(--t1);
+  border-color: var(--b3);
+  background: var(--bg-3);
+}
+
+/* ══════════════════════════════════════════
+   BUSCA DENTRO DA LEITURA — estilo Ctrl+F
+   Barra flutuante acionada pelo atalho "Buscar na
+   leitura" (na sidebar direita da Disciplina e no
+   painel direito do Reader). Destaca ocorrências
+   apenas dentro do conteúdo da leitura atual —
+   título, descrição e blocos em #reader-body —
+   sem alterar a estrutura (ver DisciplineSearch em
+   atlas.js). Visual alinhado ao restante do Atlas:
+   mesmo blur, bordas e paleta de accent (âmbar
+   para ocorrências, índigo para a ativa).
+══════════════════════════════════════════ */
+.subject-search-bar {
+  position: fixed;
+  top: calc(var(--header-h) + 14px);
+  right: 1.5rem;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.6rem 0.5rem 0.85rem;
+  background: rgba(16,21,38,0.94);
+  border: 1px solid var(--b3);
+  border-radius: var(--r-lg);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+  animation: subject-search-in 0.18s var(--ease) both;
+}
+
+@keyframes subject-search-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.subject-search-bar__icon {
+  flex-shrink: 0;
+  color: var(--t2);
+  opacity: 0.7;
+}
+
+.subject-search-bar__input {
+  width: 210px;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--t1);
+  font-size: 0.82rem;
+  font-family: var(--font-body);
+}
+.subject-search-bar__input::placeholder { color: var(--t3); }
+
+.subject-search-bar__count {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  color: var(--t2);
+  min-width: 5.4em;
+  text-align: center;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+.subject-search-bar__count.is-empty { color: var(--t3); font-style: italic; }
+
+.subject-search-bar__sep {
+  width: 1px;
+  height: 16px;
+  background: var(--b3);
+  flex-shrink: 0;
+}
+
+.subject-search-bar__nav,
+.subject-search-bar__close {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--r-sm);
+  color: var(--t2);
+  transition: color 0.14s, background 0.14s;
+}
+.subject-search-bar__nav:hover,
+.subject-search-bar__close:hover {
+  color: var(--t1);
+  background: rgba(255,255,255,0.06);
+}
+.subject-search-bar__nav:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.subject-search-bar__nav:disabled:hover {
+  background: none;
+  color: var(--t2);
+}
+
+/* Marcações de ocorrência dentro do conteúdo da disciplina */
+.subject-search-mark {
+  background: rgba(245,158,11,0.32);
+  color: var(--t1);
+  border-radius: 3px;
+  padding: 0 1px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.subject-search-mark.is-active {
+  background: rgba(var(--indigo-rgb),0.55);
+  box-shadow: 0 0 0 1px rgba(var(--indigo-rgb),0.65);
+}
+
+@media (max-width: 600px) {
+  .subject-search-bar { left: 0.75rem; right: 0.75rem; }
+  .subject-search-bar__input { width: auto; flex: 1; }
+  .subject-search-bar__count { min-width: 4.6em; }
+}
+
+/* ══════════════════════════════════════════
    RESPONSIVO
 ══════════════════════════════════════════ */
 @media (max-width: 1280px) {
