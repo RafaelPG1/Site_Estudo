@@ -1137,7 +1137,7 @@ export async function carregarEstatisticas(uid) {
         const t0 = performance.now();
         try {
           const snap = await getDoc(_diarioMensalRef(uid, mesKey));
-          mapasMensais[mesKey] = snap.exists() ? (snap.data().dias || {}) : {};
+mapasMensais[mesKey] = snap.exists() ? _extrairDiasDoMes(snap.data()) : {};
           logFirestore(`historico_diario/${mesKey}`, uid, performance.now() - t0, snap.exists() ? 1 : 0);
         } catch (_) {
           mapasMensais[mesKey] = {};
@@ -1290,6 +1290,40 @@ export async function carregarEstatisticas(uid) {
     return null;
   }
 }
+
+/* Lê o submapa `dias` de historico_diario/{mes} suportando dois formatos
+   possíveis do documento no Firestore — mesmo raciocínio já aplicado a
+   perfil_uso (_extrairMapaAninhado), pois a escrita usa o mesmo padrão
+   de chave dinâmica com ponto (`[`dias.${dia}.campo`]: increment(...)`
+   dentro de setDoc com merge:true), que grava CAMPOS PLANOS com ponto
+   literal no nome, não um mapa aninhado:
+     1. Aninhado "correto":  data.dias = { "05": { tempoTotal, sessoes } }
+     2. Chave plana real:    data["dias.05.tempoTotal"] = 1317
+                             data["dias.05.sessoes"]    = 4
+   Não altera a escrita nem o modelo do documento — apenas normaliza a
+   leitura para o formato que o restante da função já espera. */
+function _extrairDiasDoMes(docData) {
+  if (!docData) return {};
+
+  if (docData.dias && typeof docData.dias === 'object' && !Array.isArray(docData.dias)) {
+    return docData.dias;
+  }
+
+  const resultado = {};
+  const prefixo = 'dias.';
+  Object.keys(docData).forEach(chave => {
+    if (!chave.startsWith(prefixo)) return;
+    const resto = chave.slice(prefixo.length);       // "05.tempoTotal"
+    const idxPonto = resto.indexOf('.');
+    if (idxPonto === -1) return;
+    const dia   = resto.slice(0, idxPonto);           // "05"
+    const campo = resto.slice(idxPonto + 1);          // "tempoTotal"
+    if (!resultado[dia]) resultado[dia] = {};
+    resultado[dia][campo] = docData[chave];
+  });
+  return resultado;
+}
+
 /* ══════════════════════════════════════════════
    MARCADOR DE HISTÓRICO LEGADO — usuarios/{uid}.legacyCheck
    ─────────────────────────────────────────────

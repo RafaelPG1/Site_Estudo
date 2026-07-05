@@ -752,6 +752,13 @@ function _renderTendencia(stats) {
     const bar = document.getElementById('perf-bar-streak');
     if (bar) bar.style.width = Math.min(100, (stats.streak / 30) * 100) + '%';
   }
+  const totalSessoesEl = document.getElementById('perf-total-sessoes');
+  if (totalSessoesEl) {
+    const total = stats.totalSessoes ?? 0;
+    totalSessoesEl.textContent = total;
+    const bar = document.getElementById('perf-bar-sessoes');
+    if (bar) bar.style.width = Math.min(100, (total / 50) * 100) + '%'; // mesma meta usada em conquistas (sessoes50)
+  }
 }
 
 
