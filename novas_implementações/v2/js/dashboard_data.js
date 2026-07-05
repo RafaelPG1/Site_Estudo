@@ -53,19 +53,45 @@
    Isso muda o SIGNIFICADO do valor bruto de cada bucket:
    antes era "quantos ticks de presença passiva", agora é
    "quantos segundos de engajamento ativo real". A camada de
-   apresentação foi ajustada para refletir essa mudança:
-     ✗ removido: "N registros" (sugeria contagem de eventos)
-     ✔ adicionado: tempo formatado via formatTimeHuman/
-       _formatMinutosCurto ("12m", "1h30m")
-     ✗ removido: linguagem de "uso" ("seu uso", "perfil de
-       uso" nos textos dinâmicos, "Sem uso")
-     ✔ adicionado: linguagem de "engajamento"/"presença
-       ativa", coerente com o que o dado agora mede
-   Nenhum cálculo, nenhuma leitura de Firestore e nenhuma
-   estrutura de dados foram alterados — apenas a formatação
-   e o texto exibido. O documento em si (usuarios/{uid}/
-   perfil_uso/global) e seus campos continuam com os mesmos
-   nomes (hourHeatmap, periodHeatmap, deviceType).
+   apresentação foi ajustada para refletir essa mudança
+   (textos de "uso" trocados por "engajamento"/"presença
+   ativa"). Nenhum cálculo, leitura de Firestore ou estrutura
+   de dados foi alterado — apenas formatação e texto.
+
+   ─────────────────────────────────────────────
+   PERFIL DE USO — v9.2 (dois bugs corrigidos)
+   ─────────────────────────────────────────────
+   BUG 1 — perda de precisão na exibição de detalhe:
+   formatTimeHuman() (session-tracker.js) arredonda para a
+   unidade maior — 61s e 119s produzem ambos "1m". Como a
+   classificação Baixo/Médio/Pico usa o valor em SEGUNDOS
+   (não alterado aqui), duas colunas podiam exibir o mesmo
+   texto e ainda assim ter classificações diferentes,
+   parecendo um erro. CORREÇÃO: nova função local
+   _formatTempoDetalhado(), usada em todo texto de DETALHE
+   (tooltip, callout de pico, insights) — mostra minutos E
+   segundos (ex.: "1m 02s", "1h 05m 18s"). O eixo Y do
+   gráfico continua resumido via _formatMinutosCurto
+   (inalterado) — só os detalhes ganharam precisão total.
+
+   BUG 2 — eixo X desalinhado das colunas reais:
+   investigação completa da cadeia (leitura de hourHeatmap →
+   montagem do array de 24 posições → renderização das
+   colunas → dataset.hora → tooltip → aria-label →
+   classificação → callout de pico) confirmou que TODOS esses
+   pontos usam consistentemente o mesmo índice `h` — não
+   havia nenhum off-by-one no JavaScript. A causa raiz estava
+   no HTML/CSS: o eixo X era uma faixa ESTÁTICA de 5 <span>
+   distribuídos via `justify-content:space-between`, um
+   modelo de grade diferente do das 24 barras (`flex:1` com
+   `gap:3px` cada). Isso fazia os rótulos "12h"/"18h" caírem
+   visualmente sobre o limite entre colunas, não sobre o
+   centro da coluna correta. CORREÇÃO: o eixo X agora é
+   gerado dinamicamente aqui, com os MESMOS 24 itens, mesmo
+   `flex:1` e mesmo `gap` das barras (ver dashboard.html/CSS
+   — classe .usage-heatmap-axis-tick), garantindo alinhamento
+   por construção. Nenhum índice foi somado/subtraído —
+   apenas o modelo de layout foi unificado com o das colunas.
    ============================================= */
 
 import { getUsuario } from '../../../src/global.js';
@@ -797,14 +823,16 @@ function _renderUltimoAcesso(stats) {
    e periodHeatmap já consolidados pelo session-tracker.js e formata
    para os elementos do card "Perfil de uso" do dashboard.html.
 
-   v9.1 — Desde que session-tracker.js (v10) passou a ser idle-aware,
-   cada unidade de hourHeatmap/periodHeatmap representa 1 SEGUNDO de
-   engajamento ativo real (não um "evento" nem presença passiva).
-   Todo texto abaixo que antes exibia a contagem bruta como "N
-   registros" agora converte esse valor para tempo legível via
-   formatTimeHuman / _formatMinutosCurto, e a linguagem de "uso" foi
-   trocada por "engajamento"/"presença ativa" para refletir o que o
-   dado de fato mede.
+   v9.1 — cada unidade de hourHeatmap/periodHeatmap representa 1
+   SEGUNDO de engajamento ativo real (session-tracker.js v10,
+   idle-aware). Textos usam linguagem de "engajamento".
+
+   v9.2 — dois ajustes de apresentação (ver changelog no topo do
+   arquivo): _formatTempoDetalhado() para precisão de segundos em
+   todo texto de detalhe, e geração dinâmica do eixo X do heatmap
+   (HEATMAP_AXIS_HORAS) para eliminar o desalinhamento entre
+   rótulo e coluna. Nenhum cálculo de hourHeatmap/classificação foi
+   alterado — apenas a formatação e a geração do eixo.
 ══════════════════════════════════════════════ */
 const DEVICE_LABELS = { desktop: 'Computador', mobile: 'Celular', tablet: 'Tablet' };
 
@@ -831,7 +859,8 @@ function _iconePeriodo(id) {
      vazio → valor 0
      baixo → valor > 0 e abaixo da média das horas com uso
      médio → valor >= média e < pico
-     pico  → o(s) valor(es) igual(is) ao máximo do dia */
+     pico  → o(s) valor(es) igual(is) ao máximo do dia
+   INALTERADA na v9.2 — nenhuma regra de classificação foi tocada. */
 function _classificarValorHeatmap(valor, media, maxVal) {
   if (valor <= 0) return 'vazio';
   if (valor === maxVal) return 'pico';
@@ -841,11 +870,21 @@ function _classificarValorHeatmap(valor, media, maxVal) {
 
 const UH_LABEL = { vazio: 'Sem atividade', baixo: 'Baixo', medio: 'Médio', pico: 'Pico' };
 
-/* Formata segundos em minutos compactos para o eixo Y do heatmap —
-   o espaço disponível é reduzido (20px de largura) e exige rótulos
-   curtos. Não é uma nova métrica: é apenas outra representação
-   textual do mesmo valor em segundos já usado para classificar e
-   desenhar as barras (ver _classificarValorHeatmap). */
+/* Horas exibidas com rótulo no eixo X do heatmap. As outras 19
+   posições são geradas como itens vazios — mas com o MESMO flex:1
+   e o MESMO gap das 24 barras (.heatmap-chart), garantindo que a
+   posição de cada rótulo coincida exatamente com a coluna
+   correspondente. Antes, o eixo era uma faixa estática de 5 <span>
+   distribuídos via justify-content:space-between — um modelo de
+   grade diferente do das barras, que é a causa raiz do
+   desalinhamento relatado. */
+const HEATMAP_AXIS_HORAS = new Set([0, 6, 12, 18, 23]);
+
+/* Formata segundos em minutos compactos — usado SÓ no eixo Y do
+   heatmap, onde o espaço é reduzido (20px de largura) e exige
+   rótulos curtos. Não é uma nova métrica: é apenas outra
+   representação textual do mesmo valor em segundos já usado para
+   classificar e desenhar as barras. */
 function _formatMinutosCurto(segundos) {
   const min = Math.round((segundos ?? 0) / 60);
   if (min <= 0) return '<1m';
@@ -853,6 +892,30 @@ function _formatMinutosCurto(segundos) {
   const h        = Math.floor(min / 60);
   const restoMin = min % 60;
   return restoMin > 0 ? `${h}h${restoMin}m` : `${h}h`;
+}
+
+/* Formata segundos com precisão TOTAL (minutos e segundos, ou
+   horas/minutos/segundos) — usado em qualquer texto de DETALHE:
+   tooltip, callout de pico, insights. Diferente de formatTimeHuman
+   (session-tracker.js), que arredonda para a unidade maior e por
+   isso pode exibir "1m" tanto para 61s quanto para 119s, mascarando
+   a diferença que a classificação (acima) já usa corretamente.
+   Exemplos: 62s → "1m 02s" | 754s → "12m 34s" | 3918s → "1h 05m 18s". */
+function _formatTempoDetalhado(segundosBrutos) {
+  const total = Math.max(0, Math.floor(segundosBrutos ?? 0));
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  const ss = String(s).padStart(2, '0');
+
+  if (h > 0) {
+    const mm = String(m).padStart(2, '0');
+    return `${h}h ${mm}m ${ss}s`;
+  }
+  if (m > 0) {
+    return `${m}m ${ss}s`;
+  }
+  return `${s}s`;
 }
 
 /* ── Tooltip customizado do heatmap ──────────────────────────────
@@ -876,9 +939,9 @@ function _instalarTooltipHeatmap(elHeatmap) {
     const classe = col.dataset.classe;
 
     elHora.textContent  = `${hora}h`;
-    /* v9.1 — valor é o total de segundos de engajamento ativo
-       acumulados nesta hora (não uma contagem de eventos). */
-    elValor.textContent = `${formatTimeHuman(Number(valor))} de engajamento`;
+    /* v9.2 — precisão total (minutos + segundos), não mais o valor
+       arredondado de formatTimeHuman. */
+    elValor.textContent = `${_formatTempoDetalhado(Number(valor))} de engajamento`;
     elBadge.textContent = UH_LABEL[classe] ?? '—';
     elBadge.className   = `uht-badge ${classe}`;
 
@@ -926,9 +989,10 @@ function _renderPerfilUso(perfil) {
   const elHeatmapTotal = document.getElementById('usage-heatmap-total');
   const elYAxis        = document.getElementById('usage-heatmap-yaxis');
   const elHeatmap      = document.getElementById('nav-heatmap');
+  /* v9.2 — eixo X agora é gerado aqui, não mais estático no HTML. */
+  const elXAxis        = document.getElementById('usage-heatmap-axis');
   const elPeriodsRow   = document.getElementById('usage-periods-row');
   const elInsight      = document.getElementById('usage-insight');
-  const elChartInsight = document.getElementById('usage-chart-insight');
   const elPeakCallout  = document.getElementById('usage-peak-callout');
   const elPeakText     = document.getElementById('usage-peak-text');
 
@@ -950,8 +1014,10 @@ function _renderPerfilUso(perfil) {
   }
 
   /* ── Heatmap por hora (0–23) ──
-     Cada valor é a soma de segundos de engajamento ativo (ver
-     header do arquivo e session-tracker.js v10 — idle-aware). */
+     valores[h] corresponde exatamente à hora h. Este é o ÚNICO
+     array-fonte usado por barras, dataset.hora, tooltip, aria-label,
+     classificação e callout de pico abaixo — todos leem o mesmo
+     índice h do mesmo array, nunca um índice derivado ou deslocado. */
   const valores = Array.from({ length: 24 }, (_, h) => hourHeatmap[h] ?? hourHeatmap[String(h)] ?? 0);
   const total   = valores.reduce((a, b) => a + b, 0);
   const maxVal  = Math.max(...valores, 1);
@@ -965,7 +1031,7 @@ function _renderPerfilUso(perfil) {
     ? horasComUso.reduce((a, b) => a + b, 0) / horasComUso.length
     : 0;
 
-  if (elHeatmapTotal) elHeatmapTotal.textContent = total > 0 ? `${formatTimeHuman(total)} de engajamento` : '—';
+  if (elHeatmapTotal) elHeatmapTotal.textContent = total > 0 ? `${_formatTempoDetalhado(total)} de engajamento` : '—';
   if (elYAxis) elYAxis.innerHTML = `<span>${_formatMinutosCurto(maxVal)}</span><span>${_formatMinutosCurto(Math.round(maxVal / 2))}</span><span>0</span>`;
 
   let horaPicoNum = null, picoValor = -1;
@@ -982,7 +1048,7 @@ function _renderPerfilUso(perfil) {
     col.dataset.hora   = h;
     col.dataset.valor  = v;
     col.dataset.classe = classe;
-    col.setAttribute('aria-label', `${h}h — ${formatTimeHuman(v)} de engajamento (${UH_LABEL[classe]})`);
+    col.setAttribute('aria-label', `${h}h — ${_formatTempoDetalhado(v)} de engajamento (${UH_LABEL[classe]})`);
 
     const bar = document.createElement('div');
     bar.className = `heatmap-bar uh-${classe}`;
@@ -993,6 +1059,26 @@ function _renderPerfilUso(perfil) {
   });
 
   _instalarTooltipHeatmap(elHeatmap);
+
+  /* ── Eixo X — gerado com o MESMO número de itens (24), mesmo gap
+     e mesmo flex:1 por item que .heatmap-chart (ver CSS em
+     dashboard.html: .usage-heatmap-axis / .usage-heatmap-axis-tick).
+     Isso garante que cada rótulo ocupe exatamente a mesma coluna
+     horizontal da barra correspondente — a correção da causa raiz
+     do desalinhamento (o eixo antigo era uma faixa estática de 5
+     <span> via justify-content:space-between, um modelo de grade
+     diferente do das barras). Nenhum índice foi somado/subtraído:
+     tick[h] e valores[h] são construídos a partir do MESMO laço de
+     0 a 23, na mesma ordem. */
+  if (elXAxis) {
+    elXAxis.innerHTML = '';
+    for (let h = 0; h < 24; h++) {
+      const tick = document.createElement('span');
+      tick.className = 'usage-heatmap-axis-tick';
+      if (HEATMAP_AXIS_HORAS.has(h)) tick.textContent = `${h}h`;
+      elXAxis.appendChild(tick);
+    }
+  }
 
   if (elHorarioPico) elHorarioPico.textContent = total > 0 ? `${horaPicoNum}h` : '—';
 
@@ -1031,25 +1117,18 @@ function _renderPerfilUso(perfil) {
     }
   }
 
-  /* ── Insight interpretativo acima do gráfico ──
-     v9.1: "uso" trocado por "engajamento", e o pico passa a exibir
-     também o tempo ativo correspondente (não apenas a hora). */
-  if (elChartInsight) {
-    if (total === 0 || !periodoDominante) {
-      elChartInsight.innerHTML = 'Continue estudando para gerarmos uma leitura do seu padrão de engajamento.';
-    } else {
-      elChartInsight.innerHTML =
-        `Seu engajamento se concentra principalmente <strong>à ${periodoDominante.label.toLowerCase()}</strong>. ` +
-        `Pico de presença ativa identificado às <strong>${horaPicoNum}h</strong> (${formatTimeHuman(picoValor)}).`;
-    }
-  }
-
   /* ── Callout fixo do pico real ──
-     v9.1: exibe tempo de engajamento no pico, não uma contagem de
-     "registros" — o pico agora reflete presença ativa, não eventos. */
+     v9.3: este é agora o ÚNICO destaque visual acima do gráfico
+     (âmbar/🔥). O bloco roxo (usage-chart-insight) foi removido —
+     as duas mensagens diziam basicamente a mesma coisa (período
+     dominante + horário de pico), então manter as duas era
+     redundante. O insight cinza de rodapé (usage-insight, logo
+     abaixo do heatmap) permanece como o único texto complementar
+     do card. Tempo de engajamento no pico com precisão total
+     (_formatTempoDetalhado), inalterado desde a v9.2. */
   if (elPeakCallout && elPeakText) {
     if (total > 0 && horaPicoNum !== null) {
-      elPeakText.textContent = `Pico de engajamento: ${horaPicoNum}h (${formatTimeHuman(picoValor)} ativos)`;
+      elPeakText.textContent = `Pico de engajamento: ${horaPicoNum}h (${_formatTempoDetalhado(picoValor)} ativos)`;
       elPeakCallout.style.display = '';
     } else {
       elPeakCallout.style.display = 'none';
@@ -1060,7 +1139,7 @@ function _renderPerfilUso(perfil) {
     if (!periodoDominante) {
       elInsight.textContent = 'Continue estudando para gerar seu perfil de engajamento.';
     } else {
-      const horaTxt = total > 0 ? `, com pico às ${horaPicoNum}h (${formatTimeHuman(picoValor)})` : '';
+      const horaTxt = total > 0 ? `, com pico às ${horaPicoNum}h (${_formatTempoDetalhado(picoValor)})` : '';
       elInsight.textContent = `Você costuma manter engajamento ativo principalmente à ${periodoDominante.label.toLowerCase()}${horaTxt}.`;
     }
   }

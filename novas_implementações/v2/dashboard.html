@@ -163,6 +163,16 @@
   font-size: 10.5px;
   color: var(--text-3);
 }
+/* v9.3 — espaço vertical entre o cabeçalho ("Distribuição por hora
+   do dia" + badge de tempo total) e o gráfico logo abaixo. Antes
+   não havia nenhuma regra para .usage-heatmap-head, então o
+   .usage-heatmap-body ficava colado ao texto, sem respiro. */
+.usage-heatmap-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
 .usage-heatmap-body {
   display: flex;
   gap: 8px;
@@ -211,15 +221,43 @@
   background: var(--amber, #FFB547);
   box-shadow: 0 0 0 1px rgba(255,181,71,.25);
 }
+/* ─────────────────────────────────────────────────────────────
+   EIXO X — v9.3 (correção definitiva do deslocamento de 1 hora)
+   ─────────────────────────────────────────────────────────────
+   CAUSA RAIZ do bug relatado: esta faixa de rótulos ("0h 6h 12h
+   18h 23h") era uma lista de 5 <span> distribuídos via
+   justify-content:space-between — um modelo de grade DIFERENTE
+   do das 24 barras em .heatmap-chart (flex:1 + gap:3px cada).
+   Isso fazia cada rótulo (ex.: "12h") cair matematicamente sobre
+   a BORDA esquerda da sua coluna, não sobre o centro — ou seja,
+   bem em cima do limite entre as colunas 11 e 12. Visualmente,
+   isso parece (e se comporta como) "a coluna 12h mostra dados da
+   11h", mas os dados/tooltip/aria-label sempre estiveram
+   corretos — o problema nunca foi um índice errado no JS.
+   CORREÇÃO: o eixo agora usa o MESMO modelo de flexbox das
+   barras (mesmo gap, item por item), e o dashboard_data.js passa
+   a gerar 24 itens (um por hora, mesma ordem do array de dados),
+   preenchendo texto só nas horas 0/6/12/18/23. Como os dois
+   containers compartilham a mesma matemática de grade, cada
+   rótulo fica garantidamente alinhado com a coluna correta —
+   por construção, não por coincidência de números redondos. */
 .usage-heatmap-axis {
   display: flex;
-  justify-content: space-between;
+  gap: 3px;
   margin-top: 6px;
   margin-left: 28px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 9.5px;
   color: var(--text-3);
 }
+.usage-heatmap-axis-tick {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  white-space: nowrap;
+}
+.usage-heatmap-axis-tick:first-child { text-align: left; }
+.usage-heatmap-axis-tick:last-child  { text-align: right; }
 
 /* ── Resumo por período do dia (cards com ícone) ── */
 .usage-periods-row {
@@ -410,21 +448,14 @@
    introduzida ou alterada aqui.
    ═══════════════════════════════════════════════════════════ */
 
-/* ── Insight acima do gráfico ── */
-.usage-chart-insight {
-  font-size: 12.5px;
-  color: var(--text-2);
-  line-height: 1.5;
-  margin-bottom: 14px;
-  padding: 10px 12px;
-  background: var(--accent-dim);
-  border: 1px solid rgba(108,99,255,.2);
-  border-radius: var(--r-sm);
-}
-.usage-chart-insight strong {
-  color: var(--accent-lite);
-  font-weight: 600;
-}
+/* v9.3 — bloco .usage-chart-insight (o antigo card ROXO acima do
+   gráfico) foi REMOVIDO por completo — tanto a marcação quanto o
+   texto dinâmico que o preenchia (elChartInsight, em
+   dashboard_data.js). O card mantém apenas dois destaques de
+   texto: o callout âmbar de pico (.usage-peak-callout, logo
+   abaixo do gráfico) e o insight cinza de rodapé (.usage-insight,
+   no fim do card). As regras .usage-chart-insight que existiam
+   aqui foram removidas junto com a marcação correspondente. */
 
 /* ── Barras: hierarquia visual (baixo / médio / pico / vazio) ── */
 .heatmap-col { cursor: pointer; }
@@ -1116,13 +1147,13 @@
   </div>
 
   <!-- Distribuição por hora do dia -->
-<!-- Distribuição por hora do dia -->
   <div class="usage-heatmap-section">
 
-    <!-- NOVO — insight interpretativo, acima do gráfico -->
-    <p class="usage-chart-insight" id="usage-chart-insight">
-      Continue estudando para gerarmos uma leitura do seu padrão de uso.
-    </p>
+    <!-- v9.3 — o bloco roxo (.usage-chart-insight) que ficava aqui,
+         acima do cabeçalho, foi REMOVIDO. As duas mensagens (esta e
+         o callout âmbar de pico, mais abaixo) diziam basicamente a
+         mesma coisa e eram redundantes. dashboard_data.js também
+         não referencia mais nenhum elemento "usage-chart-insight". -->
 
     <div class="usage-heatmap-head">
       <span class="usage-heatmap-title">Distribuição por hora do dia</span>
@@ -1133,7 +1164,7 @@
       <div class="usage-heatmap-yaxis" id="usage-heatmap-yaxis"></div>
       <div class="heatmap-chart" id="nav-heatmap"></div>
 
-      <!-- NOVO — tooltip customizado (fica fora do innerHTML que é
+      <!-- Tooltip customizado (fica fora do innerHTML que é
            resetado a cada render, por isso vive fixo no HTML) -->
       <div class="usage-heatmap-tooltip" id="usage-heatmap-tooltip" role="tooltip">
         <div class="uht-hora" id="uht-hora">—</div>
@@ -1142,11 +1173,21 @@
       </div>
     </div>
 
-    <div class="usage-heatmap-axis">
-      <span>0h</span><span>6h</span><span>12h</span><span>18h</span><span>23h</span>
-    </div>
+    <!-- v9.3 — CORREÇÃO DEFINITIVA DO DESLOCAMENTO DE 1 HORA.
+         Antes: 5 <span> estáticos ("0h 6h 12h 18h 23h") distribuídos
+         via justify-content:space-between — grade DIFERENTE da das
+         24 barras (flex:1 + gap:3px), o que fazia cada rótulo cair
+         sobre o LIMITE entre duas colunas, não sobre o centro da
+         coluna certa (ver comentário completo na CSS .usage-heatmap-axis
+         no <head> desta página).
+         Agora: container vazio, preenchido dinamicamente por
+         dashboard_data.js (_renderPerfilUso) com 24 <span> — um por
+         hora, na mesma ordem do array `valores` que gera as barras,
+         mesmo flex:1 e mesmo gap. Alinhamento garantido por
+         construção, não por coincidência de posições. -->
+    <div class="usage-heatmap-axis" id="usage-heatmap-axis"></div>
 
-    <!-- NOVO — callout fixo do pico real -->
+    <!-- Callout fixo do pico real -->
     <div class="usage-peak-callout" id="usage-peak-callout" style="display:none;">
       <span class="usage-peak-emoji" aria-hidden="true">🔥</span>
       <span id="usage-peak-text">Pico: —</span>
