@@ -119,44 +119,47 @@
 
 /* ================= OVERVIEW BAR ================= */
 .ach-v2-scope .overview-bar{
-  display:flex; align-items:stretch;
+  display:flex; align-items:center;
   background:var(--bg-tile);
   border:1px solid var(--border);
-  border-radius:14px;
-  padding:22px 28px;
+  border-radius:12px;
+  padding:26px 20px;
   margin-bottom:26px;
   gap:0;
 }
-.ach-v2-scope .ov-hero{ display:flex; align-items:center; gap:18px; padding-right:32px; }
-.ach-v2-scope .ring-wrap{ position:relative; width:56px; height:56px; flex-shrink:0; }
+.ach-v2-scope .ov-hero{ display:flex; align-items:center; gap:12px; padding-right:20px; }
+.ach-v2-scope .ring-wrap{ position:relative; width:48px; height:48px; flex-shrink:0; }
 .ach-v2-scope .ring-wrap svg{ transform:rotate(-90deg); }
 .ach-v2-scope .ring-bg{ stroke:rgba(255,255,255,0.07); }
 .ach-v2-scope .ring-fill{ stroke:var(--accent); stroke-linecap:round; transition:stroke-dashoffset .6s var(--ease); }
 .ach-v2-scope .ring-label{
   position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-  font-size:13px; font-weight:600; font-family:'Space Grotesk', sans-serif; letter-spacing:-0.02em;
+  font-size:11px; font-weight:700; font-family:'Space Grotesk', sans-serif; letter-spacing:-0.02em;
+  color:var(--accent);
 }
-.ach-v2-scope .ov-hero-text .ov-title{ font-size:12px; color:var(--text-secondary); margin-bottom:3px; font-weight:500; }
+.ach-v2-scope .ov-hero-text{ line-height:1.3; }
+.ach-v2-scope .ov-hero-text .ov-title{ font-size:10.5px; color:var(--text-tertiary); font-weight:500; }
+.ach-v2-scope .ov-hero-text .ov-count{ white-space:nowrap; }
 .ach-v2-scope .ov-hero-text .ov-value{
-  font-family:'Space Grotesk', sans-serif; font-size:24px; font-weight:700; color:var(--text-primary);
-  font-variant-numeric:tabular-nums; line-height:1.15;
+  font-family:'Space Grotesk', sans-serif; font-size:14px; font-weight:700; color:var(--text-primary);
+  font-variant-numeric:tabular-nums;
 }
 .ach-v2-scope .ov-hero-text .ov-caption{
-  font-size:12px; color:var(--text-tertiary); font-weight:500; margin-top:2px;
+  font-size:12px; color:var(--text-secondary); font-weight:500;
 }
-.ach-v2-scope .ov-divider{ width:1px; background:var(--border); margin:0 28px; align-self:stretch; }
 
-.ach-v2-scope .ov-stats{ display:flex; align-items:center; justify-content:space-between; gap:32px; flex:1; }
-.ach-v2-scope .ov-stat{ display:flex; align-items:center; gap:11px; }
+.ach-v2-scope .ov-divider{ width:1px; height:42px; background:var(--border); margin:0 20px; align-self:center; }
+
+.ach-v2-scope .ov-stats{ display:flex; align-items:center; justify-content:space-between; gap:28px; flex:1; }
+.ach-v2-scope .ov-stat{ display:flex; align-items:center; gap:9px; }
 .ach-v2-scope .ov-stat-icon{
-  width:34px; height:34px; border-radius:9px; flex-shrink:0;
+  width:26px; height:26px; flex-shrink:0;
   display:flex; align-items:center; justify-content:center;
-  background:rgba(255,255,255,0.04);
 }
-.ach-v2-scope .ov-stat-icon svg{ width:15px; height:15px; }
+.ach-v2-scope .ov-stat-icon svg{ width:24px; height:24px; }
 .ach-v2-scope .ov-stat-num{
-  font-family:'Space Grotesk', sans-serif; font-size:16px; font-weight:600;
-  font-variant-numeric:tabular-nums; line-height:1.2;
+  font-family:'Space Grotesk', sans-serif; font-size:14px; font-weight:700; color:var(--text-primary);
+  font-variant-numeric:tabular-nums;
 }
 .ach-v2-scope .ov-stat-label{ font-size:11.5px; color:var(--text-secondary); }
 

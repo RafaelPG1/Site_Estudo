@@ -34,6 +34,20 @@
    Da mesma forma, o sistema não persiste a DATA de desbloqueio de
    cada conquista — por isso o rótulo de data usa sempre
    "Concluída" no lugar de uma data real (ver _achRotuloData).
+
+   ─────────────────────────────────────────────
+   CORREÇÃO — legenda "{n} de {total} desbloqueadas"
+   ─────────────────────────────────────────────
+   _achRenderOverview() escrevia o texto do #ach-overview-caption
+   duas vezes seguidas: uma com espaço antes de "de" (correto) e
+   logo em seguida outra sem esse espaço, que sobrescrevia a
+   primeira (a última atribuição a .textContent sempre vence). Como
+   o número (#ach-overview-value) e esta legenda são dois <span>
+   adjacentes sem espaço algum entre eles no HTML, o resultado era
+   "1de 48 desbloqueadas". A causa não era o HTML nem a
+   concatenação do número em si — era a segunda linha, morta e
+   duplicada, sobrescrevendo o espaço da primeira. Removida a linha
+   duplicada; mantida apenas a atribuição com o espaço inicial.
    ═══════════════════════════════════════════════════════════ */
 
 function escapeHtml(str) {
@@ -303,21 +317,29 @@ function _achRenderOverview(itens) {
     i.status === 'unlocked' && ['rara', 'epica', 'lendaria'].includes(i.rarity)
   ).length;
 
+
   const elRingFill = document.getElementById('ach-ring-fill');
-  const elRingLabel = document.getElementById('ach-ring-label');
-  if (elRingFill) {
-    const circunferencia = 150.8; // 2πr, r=24
-    const offset = circunferencia - (circunferencia * pct) / 100;
-    elRingFill.style.strokeDasharray  = `${circunferencia}`;
-    elRingFill.style.strokeDashoffset = `${offset}`;
-  }
-  if (elRingLabel) elRingLabel.textContent = `${pct}%`;
+const elRingLabel = document.getElementById('ach-ring-label');
+if (elRingFill) {
+ const circunferencia = 125.7; // 2πr, r=20
+  const offset = circunferencia - (circunferencia * pct) / 100;
+  elRingFill.style.strokeDasharray  = `${circunferencia}`;
+  elRingFill.style.strokeDashoffset = `${offset}`;
+}
+if (elRingLabel) elRingLabel.textContent = `${pct}%`;
 
 const elValue = document.getElementById('ach-overview-value');
 if (elValue) elValue.textContent = desbloqueadas;
 
+/* Legenda "{n} de {total} desbloqueadas". O número (#ach-overview-value)
+   e esta legenda são <span> adjacentes sem espaço no HTML, então o
+   espaço antes de "de" precisa vir daqui — por isso a string começa
+   com espaço. (Ver nota de correção no topo do arquivo: havia uma
+   segunda atribuição duplicada, sem esse espaço, que sobrescrevia
+   esta e causava "1de 48 desbloqueadas".) */
 const elCaption = document.getElementById('ach-overview-caption');
-if (elCaption) elCaption.textContent = `de ${total} desbloqueadas`;
+if (elCaption) elCaption.textContent = ` de ${total} desbloqueadas`;
+
   const setNum = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
   setNum('ach-stat-progress-num', emAndamento);
   setNum('ach-stat-locked-num',   bloqueadas);
