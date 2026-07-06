@@ -46,6 +46,7 @@
   <!-- ═══ Estilos do Dashboard (dashboard.css deve vir ANTES de dashboard_cards.css) ═══ -->
   <link rel="stylesheet" href="css/dashboard.css" />
   <link rel="stylesheet" href="css/dashboard_cards.css" />
+  <link rel="stylesheet" href="css/conquistas.css" />
 
   <!-- ═══ Warm-up complementar de rede/módulos (Firestore) ═══════
        preconnect/dns-prefetch: adianta DNS + handshake TLS com o
@@ -1332,8 +1333,7 @@
            Dados de pages, navigation, hourHeatmap,
            deviceType, quizEvents
       ══════════════════════════════════════════════════ -->
-<section>
-  <!-- ══════════════════════════════════════════════════
+<!-- ══════════════════════════════════════════════════
            NAVEGAÇÃO + DISCIPLINAS (mesma linha)
       ══════════════════════════════════════════════════ -->
       <div class="two-col">
@@ -1382,7 +1382,6 @@
         </section>
 
       </div>
-      </section>
       <!-- Nota: a antiga card "Perfil de uso" que ficava aqui ao lado foi
            removida — ela usava os MESMOS ids (nav-device-tipo,
            nav-horario-pico, nav-heatmap) da card em intel-grid-weak-consist,
@@ -1391,57 +1390,93 @@
            funcional agora vive só na seção acima, ao lado de "Fraquezas
            por Disciplina". -->
 
-
-<!-- ══════════════════════════════════════════════════
-     CONQUISTAS (largura total) — arquitetura escalável
-     Fonte: relatorio.conquistas + relatorio.conquistasProgresso
-     Preenchido por: renderAchievements() em dashboard/js/conquistas.js
-
-     Estrutura em 4 zonas (ver comentário no topo de
-     dashboard_cards.css para o detalhamento visual):
-       1. #ach-summary + #ach-filters   → zona superior compacta
-       2. #ach-highlights               → no máximo 3 destaques
-       3. #ach-list                     → galeria (CSS Grid)
-       4. #ach-gallery-footer           → criado dinamicamente pelo
-                                           JS logo após #ach-list
-                                           (contador + "Mostrar mais")
-══════════════════════════════════════════════════ -->
+      <!-- ══════════════════════════════════════════════════
+           CONQUISTAS — V2 (seção própria, independente da
+           Navegação/Disciplinas acima)
+           Fonte: relatorio.conquistas + relatorio.conquistasProgresso
+           Preenchido por: renderAchievements() em dashboard/js/conquistas.js
+      ══════════════════════════════════════════════════ -->
 <section>
   <div class="section-header">
     <span class="section-title">Conquistas</span>
-    <span class="empty-state-info-btn ach-title-info" tabindex="0"
-          aria-label="Como as conquistas funcionam"
-          data-tooltip="Desbloqueadas automaticamente conforme você estuda, completa quizzes e evolui na plataforma.">ⓘ</span>
     <div class="section-line"></div>
   </div>
 
-  <div class="ach-card" id="ach-card">
+  <div class="ach-v2-scope">
 
-    <div class="ach-top-zone">
-      <div class="ach-summary" id="ach-summary">
-        <!-- Preenchido por renderAchievements() -->
-      </div>
-      <div class="ach-filters" id="ach-filters">
-        <!-- Preenchido por renderAchievements() -->
-      </div>
-    </div>
+    <section class="achievements-section">
 
-    <div class="ach-highlights-block" id="ach-highlights-block">
-      <div class="ach-subsection-title">Destaques</div>
-      <div class="ach-highlights" id="ach-highlights"></div>
-    </div>
+<p class="ach-subtitle">Cada marco alcançado é um passo na sua jornada de estudos.</p>
 
-    <div class="ach-all-block">
-      <div class="ach-subsection-title">Coleção completa</div>
-      <div class="ach-grid" id="ach-list"></div>
-      <!-- #ach-gallery-footer (contador + botão "Mostrar mais") é
-           criado dinamicamente logo após #ach-list por
-           dashboard/js/conquistas.js — não precisa existir aqui. -->
-    </div>
+            <div class="overview-bar">
+              <div class="ov-hero">
+                <div class="ring-wrap">
+                  <svg width="56" height="56" viewBox="0 0 56 56">
+                    <circle class="ring-bg" cx="28" cy="28" r="24" fill="none" stroke-width="3.5"></circle>
+                    <circle class="ring-fill" id="ach-ring-fill" cx="28" cy="28" r="24" fill="none" stroke-width="3.5"
+                      stroke-dasharray="150.8" stroke-dashoffset="150.8"></circle>
+                  </svg>
+                  <div class="ring-label" id="ach-ring-label">0%</div>
+                </div>
+                <div class="ov-hero-text">
+                  <div class="ov-title">Progresso geral</div>
+                  <div class="ov-value" id="ach-overview-value">0</div>
+<div class="ov-caption" id="ach-overview-caption">de 0 desbloqueadas</div>
+                </div>
+              </div>
 
-  </div>
-</section>
-      </div>
+              <div class="ov-divider"></div>
+
+              <div class="ov-stats">
+                <div class="ov-stat">
+                  <div class="ov-stat-icon" style="color:#5FAD82;" id="ach-icon-progress"></div>
+                  <div>
+                    <div class="ov-stat-num" id="ach-stat-progress-num">0</div>
+                    <div class="ov-stat-label">Em andamento</div>
+                  </div>
+                </div>
+                <div class="ov-stat">
+                  <div class="ov-stat-icon" style="color:var(--text-tertiary);" id="ach-icon-locked"></div>
+                  <div>
+                    <div class="ov-stat-num" id="ach-stat-locked-num">0</div>
+                    <div class="ov-stat-label">Bloqueadas</div>
+                  </div>
+                </div>
+                <div class="ov-stat">
+                  <div class="ov-stat-icon" style="color:var(--accent);" id="ach-icon-rare"></div>
+                  <div>
+                    <div class="ov-stat-num" id="ach-stat-rare-num">0</div>
+                    <div class="ov-stat-label">Raras ou superiores</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="cat-tabs" id="ach-cat-tabs"></div>
+
+            <div class="ach-featured-block" id="ach-featured-block">
+              <div class="section-label">
+                <h3>Em destaque</h3>
+              </div>
+              <div class="featured-row" id="ach-featured-row"></div>
+            </div>
+
+            <div class="section-label">
+              <h3>Todas as conquistas<span class="count" id="ach-grid-count"></span></h3>
+            </div>
+            <div class="ach-grid" id="ach-grid"></div>
+
+            <div class="ach-footer">
+              <div class="pager" id="ach-pager"></div>
+            </div>
+          </section>
+
+          <div class="ach-modal-backdrop" id="ach-modal-backdrop">
+            <div class="ach-modal" id="ach-modal-content"></div>
+          </div>
+
+        </div><!-- /.ach-v2-scope -->
+      </section>
 
     </div><!-- /content -->
   </main>
