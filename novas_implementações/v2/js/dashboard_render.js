@@ -101,10 +101,32 @@
    Correção aplicada: a segunda declaração (versão antiga, simples)
    foi removida. Mantida apenas a primeira, que é a compatível com
    o HTML atual. Nenhuma outra lógica foi alterada.
+
+   ─────────────────────────────────────────────
+   REFATORAÇÃO — MODULARIZAÇÃO DE CONQUISTAS
+   ─────────────────────────────────────────────
+   Toda a lógica de Conquistas (catálogo estático, categorias de
+   filtro, estado do filtro ativo, renderAchievements() e os
+   helpers _ach* de formatação/ícones) foi extraída para
+   dashboard/js/conquistas.js. Este arquivo passou a apenas
+   IMPORTAR renderAchievements() e delegar a chamada dentro do
+   coordenador renderDashboardIntelligence(), exatamente na mesma
+   posição da sequência de render que já existia antes (item 8,
+   após Timeline). Nenhum comportamento, HTML gerado, classe CSS
+   ou ordem de execução foi alterado — apenas a localização física
+   do código.
+   A função _escapeHtml() continua definida aqui (como sempre
+   esteve), pois também é usada por renderTimeline(). conquistas.js
+   tem sua própria cópia local e privada — por decisão explícita,
+   nenhum arquivo utilitário compartilhado foi criado; a pequena
+   duplicação dessa função pura foi o trade-off aceito para manter
+   os dois módulos sem dependência de um terceiro arquivo.
    ============================================= */
 
 import { State } from './dashboard_data.js';
 import { perfLog } from '../../../src/perf_logger.js';
+import { renderAchievements } from './conquistas.js';
+
 /* ══════════════════════════════════════════════
    CAMADA 5 — COORDENADORA DE RENDER (intelligence)
 ══════════════════════════════════════════════ */
@@ -882,264 +904,4 @@ function _escapeHtml(str) {
   return String(str ?? '')
     .replace(/&/g, '&amp;').replace(/</g, '&lt;')
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
-}
-
-/* ══════════════════════════════════════════════
-   FASE 3 — Conquistas
-   ─────────────────────────────────────────────
-   Fonte: relatorio.conquistas
-   (objeto calculado em _carregarIntelligence e
-   armazenado em State.intelligence)
-
-   Estrutura esperada de relatorio.conquistas:
-     {
-       sequencia7:       boolean,
-       sequencia30:      boolean,
-       tentativas100:    boolean,
-       questoesMil:      boolean,
-       scoreAvancado:    boolean,
-       emEvolucao:       boolean,
-       miraAfiada:       boolean,
-       maratonista:      boolean,
-       semQuedas:        boolean,
-       sessoes50:        boolean,
-     }
-
-   Zero cálculos. Zero Firebase. Zero quiz_intelligence.
-   Apenas lookup de estado e atualização de DOM.
-══════════════════════════════════════════════ */
-
-/* Catálogo de conquistas — definição estática, sem lógica */
-const CONQUISTAS_CATALOGO = [
-  { id: 'sequencia7',    categoria: 'sequencias',   emoji: '🔥', nome: 'Sequência de 7 dias',  desc: 'Estudou por 7 dias consecutivos',                 tag: 'Prata', tagCls: 'tag-silver', corBg: 'rgba(168,163,255,.12)' },
-  { id: 'sequencia30',   categoria: 'sequencias',   emoji: '🔥', nome: 'Sequência de 30 dias', desc: 'Estudou por 30 dias consecutivos',                tag: 'Ouro',  tagCls: 'tag-gold',   corBg: 'rgba(255,181,71,.12)'  },
-  { id: 'tentativas100', categoria: 'estudo',       emoji: '📝', nome: '100 Tentativas',       desc: 'Completou 100 quizzes na plataforma',             tag: 'Prata', tagCls: 'tag-silver', corBg: 'rgba(79,168,232,.12)'  },
-  { id: 'questoesMil',   categoria: 'conhecimento', emoji: '⚡', nome: 'Mil Questões',         desc: 'Respondeu mais de 1.000 questões na plataforma',  tag: 'Ouro',  tagCls: 'tag-gold',   corBg: 'rgba(61,220,132,.1)'   },
-  { id: 'scoreAvancado', categoria: 'desempenho',   emoji: '🎯', nome: 'Score Avançado',       desc: 'Atingiu nível Avançado no Score Evolutivo',       tag: 'Ouro',  tagCls: 'tag-gold',   corBg: 'rgba(255,181,71,.12)'  },
-  { id: 'emEvolucao',    categoria: 'desempenho',   emoji: '📈', nome: 'Em Evolução',          desc: 'Tendência de melhora detectada pelo sistema',     tag: 'Prata', tagCls: 'tag-silver', corBg: 'rgba(61,220,132,.1)'   },
-  { id: 'miraAfiada',    categoria: 'desempenho',   emoji: '🎯', nome: 'Mira Afiada',          desc: 'Mais de 75% de acertos na média geral',           tag: 'Ouro',  tagCls: 'tag-gold',   corBg: 'rgba(255,181,71,.12)'  },
-  { id: 'maratonista',   categoria: 'tempo',        emoji: '🏅', nome: 'Maratonista',          desc: 'Mais de 5 horas de estudo em um único dia',       tag: 'Ouro',  tagCls: 'tag-gold',   corBg: 'rgba(108,99,255,.15)'  },
-  { id: 'semQuedas',     categoria: 'consistencia', emoji: '✅', nome: 'Sem Quedas',           desc: 'Sem disciplinas em queda detectadas',             tag: 'Prata', tagCls: 'tag-silver', corBg: 'rgba(61,220,132,.1)'   },
-  { id: 'sessoes50',     categoria: 'consistencia', emoji: '🏆', nome: '50 Sessões',           desc: 'Realizou 50 sessões de estudo',                   tag: 'Ouro',  tagCls: 'tag-gold',   corBg: 'rgba(255,181,71,.12)'  },
-];
-const ACH_CATEGORIAS = [
-  { id: 'todas',        label: 'Todas' },
-  { id: 'desempenho',   label: 'Desempenho' },
-  { id: 'consistencia', label: 'Consistência' },
-  { id: 'estudo',       label: 'Estudo' },
-  { id: 'conhecimento', label: 'Conhecimento' },
-  { id: 'sequencias',   label: 'Sequências' },
-  { id: 'tempo',        label: 'Tempo de estudo' },
-];
-
-let _achFiltroAtivo = 'todas';
-
-export function renderAchievements(relatorio) {
-  const conquistas = relatorio?.conquistas ?? {};
-  const progresso  = relatorio?.conquistasProgresso ?? {};
-
-  const elSummary    = document.getElementById('ach-summary');
-  const elFilters    = document.getElementById('ach-filters');
-  const elHighlights = document.getElementById('ach-highlights');
-  const elHighBlock  = document.getElementById('ach-highlights-block');
-  const elLista      = document.getElementById('ach-list');
-
-  if (!elLista) return;
-
-  const total          = CONQUISTAS_CATALOGO.length;
-  const desbloqueadas  = CONQUISTAS_CATALOGO.filter(c => conquistas[c.id] === true).length;
-  const bloqueadas     = total - desbloqueadas;
-  const pct            = total > 0 ? Math.round((desbloqueadas / total) * 100) : 0;
-
-  const emAndamentoQt = CONQUISTAS_CATALOGO.filter(c => {
-    if (conquistas[c.id] === true) return false;
-    const p = progresso[c.id];
-    return p && p.atual > 0;
-  }).length;
-
-  /* ── Resumo geral ── */
-  if (elSummary) {
-    elSummary.innerHTML = `
-      <div class="ach-summary-ring">
-        <div class="ach-ring" style="--ach-pct:${pct}%">
-          <div class="ach-ring-inner"><span class="ach-ring-pct">${pct}%</span></div>
-        </div>
-        <div class="ach-ring-caption">
-          <span class="ach-ring-caption-num">${desbloqueadas}</span> de ${total} conquistas desbloqueadas
-        </div>
-      </div>
-      <div class="ach-summary-chips">
-        <div class="ach-chip">
-          <div class="ach-chip-icon ic-purple">${_achIconTrofeu()}</div>
-          <div class="ach-chip-body">
-            <span class="ach-chip-value">${desbloqueadas}</span>
-            <span class="ach-chip-label">Desbloqueadas</span>
-          </div>
-        </div>
-        <div class="ach-chip">
-          <div class="ach-chip-icon">${_achIconCadeado()}</div>
-          <div class="ach-chip-body">
-            <span class="ach-chip-value">${bloqueadas}</span>
-            <span class="ach-chip-label">Bloqueadas</span>
-          </div>
-        </div>
-        <div class="ach-chip">
-          <div class="ach-chip-icon ic-amber">${_achIconFogo()}</div>
-          <div class="ach-chip-body">
-            <span class="ach-chip-value">${emAndamentoQt}</span>
-            <span class="ach-chip-label">Em andamento</span>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  /* ── Filtros por categoria ── */
-  if (elFilters) {
-    elFilters.innerHTML = '';
-    ACH_CATEGORIAS.forEach(cat => {
-      const btn = document.createElement('button');
-      btn.type      = 'button';
-      btn.className = 'ach-filter-pill' + (cat.id === _achFiltroAtivo ? ' is-active' : '');
-      btn.textContent = cat.label;
-      btn.addEventListener('click', () => {
-        _achFiltroAtivo = cat.id;
-        renderAchievements(relatorio);
-      });
-      elFilters.appendChild(btn);
-    });
-  }
-
-  /* ── Destaques ──
-     "Quase lá": até 2 conquistas bloqueadas com maior % de progresso
-     (mesmos números de conquistasProgresso, apenas ordenados).
-     "Conquista de destaque": uma conquista Ouro já desbloqueada. */
-  if (elHighlights && elHighBlock) {
-    const candidatosProgresso = CONQUISTAS_CATALOGO
-      .filter(c => conquistas[c.id] !== true && progresso[c.id])
-      .map(c => {
-        const p = progresso[c.id];
-        const pctItem = p.meta > 0 ? Math.min(100, Math.round((p.atual / p.meta) * 100)) : 0;
-        return { c, p, pctItem };
-      })
-      .filter(x => x.pctItem > 0)
-      .sort((a, b) => b.pctItem - a.pctItem)
-      .slice(0, 2);
-
-    const douradaDesbloqueada = CONQUISTAS_CATALOGO.find(c => conquistas[c.id] === true && c.tag === 'Ouro');
-
-    const cardsHtml = [];
-
-    candidatosProgresso.forEach(({ c, p, pctItem }) => {
-      cardsHtml.push(`
-        <div class="ach-highlight-card">
-          <span class="ach-highlight-ribbon">Quase lá</span>
-          <div class="ach-highlight-icon" style="background:${c.corBg}">${c.emoji}</div>
-          <div class="ach-highlight-name">${_escapeHtml(c.nome)}</div>
-          <div class="ach-highlight-desc">${_escapeHtml(c.desc)}</div>
-          <div class="ach-highlight-bar"><div class="ach-highlight-bar-fill" style="width:${pctItem}%"></div></div>
-          <div class="ach-highlight-meta">${_achFormatarValor(p)} · ${pctItem}%</div>
-        </div>`);
-    });
-
-    if (douradaDesbloqueada) {
-      cardsHtml.push(`
-        <div class="ach-highlight-card is-unlocked">
-          <span class="ach-highlight-ribbon ribbon-gold">Conquista de destaque</span>
-          <div class="ach-highlight-icon" style="background:${douradaDesbloqueada.corBg}">${douradaDesbloqueada.emoji}</div>
-          <div class="ach-highlight-name">${_escapeHtml(douradaDesbloqueada.nome)}</div>
-          <div class="ach-highlight-desc">${_escapeHtml(douradaDesbloqueada.desc)}</div>
-          <span class="ach-tag tag-gold">Desbloqueada</span>
-        </div>`);
-    }
-
-    if (cardsHtml.length === 0) {
-      elHighBlock.style.display = 'none';
-    } else {
-      elHighBlock.style.display = '';
-      elHighlights.innerHTML = cardsHtml.join('');
-    }
-  }
-
-  /* ── Grid completo ── */
-  elLista.innerHTML = '';
-
-  const itensFiltrados = _achFiltroAtivo === 'todas'
-    ? CONQUISTAS_CATALOGO
-    : CONQUISTAS_CATALOGO.filter(c => c.categoria === _achFiltroAtivo);
-
-  itensFiltrados.forEach(c => {
-    const desbloqueada = conquistas[c.id] === true;
-    const prog = progresso[c.id];
-
-    const item = document.createElement('div');
-    item.className = `ach-item${desbloqueada ? ' is-unlocked' : ' is-locked'}`;
-
-    const badgeBg = desbloqueada ? c.corBg : 'var(--border)';
-
-    let progressoHtml;
-    if (prog) {
-      const pctItem = prog.meta > 0 ? Math.min(100, Math.round((prog.atual / prog.meta) * 100)) : 0;
-      progressoHtml = `
-        <div class="ach-item-progress">
-          <div class="ach-item-bar"><div class="ach-item-bar-fill${desbloqueada ? ' is-complete' : ''}" style="width:${pctItem}%"></div></div>
-          <span class="ach-item-progress-txt">${_achFormatarValor(prog)}</span>
-        </div>`;
-    } else {
-      progressoHtml = `<span class="ach-status-pill${desbloqueada ? ' is-unlocked' : ''}">${desbloqueada ? 'Desbloqueada' : 'Bloqueada'}</span>`;
-    }
-
-    const infoBtn = !desbloqueada
-      ? `<span class="empty-state-info-btn ach-info-btn" tabindex="0"
-               aria-label="Como desbloquear ${_escapeHtml(c.nome)}"
-               data-tooltip="${_escapeHtml(c.desc)}">ⓘ</span>`
-      : '';
-
-    item.innerHTML = `
-      <div class="ach-item-head">
-        <div class="ach-badge" style="background:${badgeBg}">${desbloqueada ? c.emoji : _achIconCadeadoSmall()}</div>
-        <span class="ach-tag ${desbloqueada ? c.tagCls : 'tag-locked'}">${desbloqueada ? c.tag : 'Bloqueado'}</span>
-      </div>
-      <div class="ach-body">
-        <div class="ach-name">${_escapeHtml(c.nome)}${infoBtn}</div>
-        <div class="ach-desc">${_escapeHtml(c.desc)}</div>
-      </div>
-      ${progressoHtml}
-    `;
-
-    elLista.appendChild(item);
-  });
-
-  if (itensFiltrados.length === 0) {
-    elLista.innerHTML = `<div class="ach-empty">Nenhuma conquista nesta categoria ainda.</div>`;
-  }
-}
-
-/* ── Helpers exclusivos de Conquistas ── */
-function _achFormatarValor(prog) {
-  if (!prog) return '';
-  if (prog.tipo === 'tempo')       return `${_achFormatarTempo(prog.atual)} / ${_achFormatarTempo(prog.meta)}`;
-  if (prog.tipo === 'percentual')  return `${Math.round(prog.atual)}% / ${prog.meta}%`;
-  return `${prog.atual} / ${prog.meta}`;
-}
-
-function _achFormatarTempo(segundos) {
-  const s = segundos ?? 0;
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  if (h > 0) return `${h}h${m > 0 ? m + 'm' : ''}`;
-  return `${m}m`;
-}
-
-function _achIconTrofeu() {
-  return `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 3h8v3a4 4 0 01-4 4 4 4 0 01-4-4V3z"/><path d="M3 4H1.5v1.5A2.5 2.5 0 004 8M15 4h1.5v1.5A2.5 2.5 0 0114 8M9 10v3M6.5 15.5h5L11 13H7l-.5 2.5z"/></svg>`;
-}
-function _achIconCadeado() {
-  return `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3.5" y="8" width="11" height="7.5" rx="1.5"/><path d="M6 8V5.5a3 3 0 016 0V8"/></svg>`;
-}
-function _achIconCadeadoSmall() {
-  return `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="7" width="10" height="6.5" rx="1.3"/><path d="M5.3 7V4.8a2.7 2.7 0 015.4 0V7"/></svg>`;
-}
-function _achIconFogo() {
-  return `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 2.2c1 2 3.5 3 3.5 6a3.5 3.5 0 01-7 0c0-1 .4-1.8.9-2.4C6.8 6.8 7 8 7.8 8c.6 0 .5-1 .3-1.8C7.7 4.6 8 3 9 2.2z"/></svg>`;
 }

@@ -1393,9 +1393,18 @@
 
 
 <!-- ══════════════════════════════════════════════════
-     CONQUISTAS (largura total) — redesign gamificado
+     CONQUISTAS (largura total) — arquitetura escalável
      Fonte: relatorio.conquistas + relatorio.conquistasProgresso
-     Preenchido por: renderAchievements() em dashboard_render.js
+     Preenchido por: renderAchievements() em dashboard/js/conquistas.js
+
+     Estrutura em 4 zonas (ver comentário no topo de
+     dashboard_cards.css para o detalhamento visual):
+       1. #ach-summary + #ach-filters   → zona superior compacta
+       2. #ach-highlights               → no máximo 3 destaques
+       3. #ach-list                     → galeria (CSS Grid)
+       4. #ach-gallery-footer           → criado dinamicamente pelo
+                                           JS logo após #ach-list
+                                           (contador + "Mostrar mais")
 ══════════════════════════════════════════════════ -->
 <section>
   <div class="section-header">
@@ -1408,12 +1417,13 @@
 
   <div class="ach-card" id="ach-card">
 
-    <div class="ach-summary" id="ach-summary">
-      <!-- Preenchido por renderAchievements() -->
-    </div>
-
-    <div class="ach-filters" id="ach-filters">
-      <!-- Preenchido por renderAchievements() -->
+    <div class="ach-top-zone">
+      <div class="ach-summary" id="ach-summary">
+        <!-- Preenchido por renderAchievements() -->
+      </div>
+      <div class="ach-filters" id="ach-filters">
+        <!-- Preenchido por renderAchievements() -->
+      </div>
     </div>
 
     <div class="ach-highlights-block" id="ach-highlights-block">
@@ -1422,8 +1432,11 @@
     </div>
 
     <div class="ach-all-block">
-      <div class="ach-subsection-title">Todas as conquistas</div>
+      <div class="ach-subsection-title">Coleção completa</div>
       <div class="ach-grid" id="ach-list"></div>
+      <!-- #ach-gallery-footer (contador + botão "Mostrar mais") é
+           criado dinamicamente logo após #ach-list por
+           dashboard/js/conquistas.js — não precisa existir aqui. -->
     </div>
 
   </div>
