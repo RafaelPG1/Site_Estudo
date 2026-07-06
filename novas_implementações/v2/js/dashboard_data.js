@@ -92,6 +92,65 @@
    — classe .usage-heatmap-axis-tick), garantindo alinhamento
    por construção. Nenhum índice foi somado/subtraído —
    apenas o modelo de layout foi unificado com o das colunas.
+
+   ─────────────────────────────────────────────
+   CORREÇÃO — CONQUISTAS INDEPENDENTES DE SEMESTRE
+   ─────────────────────────────────────────────
+   Bug relatado: a coleção de Conquistas mudava (ou "perdia"
+   conquistas já desbloqueadas) ao trocar de semestre no
+   seletor do topo do Dashboard. O esperado é que Conquistas
+   representem a jornada TODA do usuário na plataforma, nunca
+   um recorte por semestre.
+
+   Causa raiz: `_carregarIntelligence(uid)` chamava
+   `mod.relatorioEvolucao(uid, semestreAtivo)` — onde
+   `semestreAtivo = State.semestre` — UMA ÚNICA VEZ, e
+   reaproveitava esse mesmo `relatorio` (já filtrado pelo
+   semestre selecionado) tanto para os cards que DEVEM ser por
+   semestre (Score, Tendência, Fraquezas por Disciplina,
+   Previsão) quanto para alimentar
+   `_calcularConquistas`/`_calcularProgressoConquistas`. Essas
+   duas funções leem `scoreEvolutivo.totalTentativas`,
+   `scoreEvolutivo.composicao.taxaAcertoMediaPct`,
+   `tendenciaDoAluno.direcao`, `fraquezasPorDisciplina` e
+   `totalQuestoes` — todos campos FILTRADOS por semestre dentro
+   de `relatorio` (o próprio `totalQuestoes` vinha de
+   `contarQuestoesRespondidas(uid, semestreAtivo)`). Trocar de
+   semestre alterava esses números e, com isso, o resultado das
+   regras de desbloqueio — ex.: "tentativas100" (>= 100
+   tentativas) podia deixar de bater porque, com um semestre
+   específico selecionado, só as tentativas DAQUELE semestre
+   eram contadas, quando o correto é somar a jornada inteira.
+
+   Correção aplicada: `_carregarIntelligence` agora busca, em
+   paralelo, um SEGUNDO relatório — sempre com semestre `null`
+   (todos os semestres) — usado EXCLUSIVAMENTE para alimentar
+   `_calcularConquistas`/`_calcularProgressoConquistas`. O
+   `relatorio` filtrado por semestre continua exatamente como
+   antes para todos os outros cards (nenhuma mudança de
+   comportamento neles, nenhuma mudança de HTML/CSS/layout).
+   Apenas `relatorio.conquistas` e `relatorio.conquistasProgresso`
+   — os dois únicos campos que a seção de Conquistas lê (ver
+   conquistas.js) — passam a ser derivados do relatório global.
+   `totalQuestoes` usado nesse cálculo específico também passa a
+   vir de `contarQuestoesRespondidas(uid, null)` (global), nunca
+   do valor filtrado por semestre.
+
+   `stats` (streak, totalSessoes, melhorDia.tempo — vindos de
+   carregarEstatisticas()/session-tracker.js) NÃO foi alterado:
+   essas métricas já são inerentemente temporais/globais (dias
+   consecutivos, total histórico de sessões, melhor dia already
+   registrado), e `carregarEstatisticas(uid)` já é chamada aqui
+   apenas com o `uid` — sem nenhum segundo argumento de semestre
+   —, então não há, neste arquivo, nenhuma filtragem por semestre
+   sobre esses três campos para remover. Caso uma investigação
+   futura em session-tracker.js revele algum filtro implícito por
+   semestre nesses campos específicos, o ajuste deve ser feito lá,
+   fora do escopo deste arquivo.
+
+   Nenhum HTML, CSS, layout, modal, filtro ou animação da seção de
+   Conquistas foi alterado — apenas a origem dos dados usados no
+   cálculo de desbloqueio/progresso.
    ============================================= */
 
 import { getUsuario } from '../../../src/global.js';
@@ -282,7 +341,15 @@ export const State = {
      dados complementares (tentativasRecentes, conquistas).
      Populado por _carregarIntelligence(uid).
      Nunca modificado diretamente por nenhum renderizador.
-     Nunca recalculado — apenas recebido da API pública. */
+     Nunca recalculado — apenas recebido da API pública.
+
+     IMPORTANTE: apesar de este relatório em si ser filtrado
+     pelo semestre selecionado (State.semestre), os campos
+     `.conquistas` e `.conquistasProgresso` dentro dele são
+     SEMPRE calculados a partir de um relatório GLOBAL separado
+     (semestre=null), buscado internamente por
+     _carregarIntelligence — ver changelog "CORREÇÃO — CONQUISTAS
+     INDEPENDENTES DE SEMESTRE" no topo do arquivo. */
   intelligence: null,
 };
 
@@ -317,8 +384,18 @@ function _importarQuizIntelligence() {
 }
 
 /* ── Derivação das conquistas ────────────────────────────────
-   Recebe o relatorio completo + estatísticas de sessão
-   (ambos já em memória — nenhuma chamada adicional).
+   Recebe o relatorio + estatísticas de sessão (ambos já em
+   memória — nenhuma chamada adicional).
+
+   IMPORTANTE (ver changelog "CONQUISTAS INDEPENDENTES DE
+   SEMESTRE" no topo do arquivo): o `relatorio` recebido aqui
+   por _carregarIntelligence é sempre o relatório GLOBAL
+   (semestre=null), nunca o relatório filtrado pelo semestre
+   selecionado no dashboard. Esta função em si não sabe nem
+   precisa saber disso — ela só lê os campos do objeto que
+   recebe; a garantia de "sempre global" é responsabilidade de
+   quem chama (_carregarIntelligence).
+
    Retorna objeto { id: boolean } para renderAchievements().
 
    Regras de cada conquista — leitura de campos já existentes:
@@ -374,7 +451,11 @@ function _calcularConquistas(relatorio, stats) {
    campos já extraídos em _calcularConquistas (streak, totalSessoes,
    totalTentativas, totalQuestoes, taxaAcertoMediaPct, melhorDia.tempo)
    e apenas expõe o par {atual, meta} para as barras de progresso
-   da UI. A lógica de desbloqueio continua 100% em _calcularConquistas. */
+   da UI. A lógica de desbloqueio continua 100% em _calcularConquistas.
+
+   IMPORTANTE: assim como em _calcularConquistas, o `relatorio`
+   recebido aqui deve ser sempre o relatório GLOBAL (semestre=null)
+   — ver changelog "CONQUISTAS INDEPENDENTES DE SEMESTRE". */
 function _calcularProgressoConquistas(relatorio, stats) {
   if (!relatorio || !stats) return {};
 
@@ -399,8 +480,11 @@ function _calcularProgressoConquistas(relatorio, stats) {
 }
 
 /* _carregarIntelligence(uid)
-   Lê State.semestre para filtrar todas as métricas de quiz
-   pelo semestre atualmente selecionado no dashboard. */
+   Lê State.semestre para filtrar as métricas de quiz POR SEMESTRE
+   (Score, Tendência, Fraquezas por Disciplina, Previsão, tentativas
+   recentes). Conquistas são a exceção proposital: ver bloco abaixo
+   e o changelog "CONQUISTAS INDEPENDENTES DE SEMESTRE" no topo do
+   arquivo. */
 export async function _carregarIntelligence(uid, statsPreCarregadas = null) {
   const _t0 = performance.now();
   if (!uid) {
@@ -433,11 +517,18 @@ export async function _carregarIntelligence(uid, statsPreCarregadas = null) {
     );
 
     const _tPromiseAll = performance.now();
-    const [relatorio, tentativasRecentes, totalQuestoes, statsAtuais] = await Promise.all([
+    const [
+      relatorio,
+      tentativasRecentes,
+      totalQuestoes,
+      statsAtuais,
+      relatorioGlobalConquistas,
+      totalQuestoesGlobal,
+    ] = await Promise.all([
       (async () => {
         const t0 = performance.now();
         const r = await mod.relatorioEvolucao(uid, semestreAtivo);
-        perfLog('Promise.all (item)', '_carregarIntelligence :: relatorioEvolucao', performance.now() - t0);
+        perfLog('Promise.all (item)', '_carregarIntelligence :: relatorioEvolucao (filtrado por semestre)', performance.now() - t0);
         return r;
       })(),
       (async () => {
@@ -453,7 +544,7 @@ export async function _carregarIntelligence(uid, statsPreCarregadas = null) {
         const r = typeof mod.contarQuestoesRespondidas === 'function'
           ? await mod.contarQuestoesRespondidas(uid, semestreAtivo)
           : 0;
-        perfLog('Promise.all (item)', '_carregarIntelligence :: contarQuestoesRespondidas', performance.now() - t0);
+        perfLog('Promise.all (item)', '_carregarIntelligence :: contarQuestoesRespondidas (filtrado por semestre)', performance.now() - t0);
         return r;
       })(),
       (async () => {
@@ -462,17 +553,45 @@ export async function _carregarIntelligence(uid, statsPreCarregadas = null) {
         perfLog('Promise.all (item)', '_carregarIntelligence :: statsPromise (compartilhada)', performance.now() - t0);
         return r;
       })(),
+      /* ── CONQUISTAS — SEMPRE GLOBAL ──────────────────────────────
+         Relatório independente, buscado com semestre=null
+         INDEPENDENTEMENTE de State.semestre. É a única fonte usada
+         para _calcularConquistas/_calcularProgressoConquistas logo
+         abaixo — nunca o `relatorio` filtrado acima. Isso garante
+         que a coleção de Conquistas nunca varie ao trocar de
+         semestre no seletor do dashboard. */
+      (async () => {
+        const t0 = performance.now();
+        const r = await mod.relatorioEvolucao(uid, null);
+        perfLog('Promise.all (item)', '_carregarIntelligence :: relatorioEvolucao (GLOBAL, p/ conquistas)', performance.now() - t0);
+        return r;
+      })(),
+      (async () => {
+        const t0 = performance.now();
+        const r = typeof mod.contarQuestoesRespondidas === 'function'
+          ? await mod.contarQuestoesRespondidas(uid, null)
+          : 0;
+        perfLog('Promise.all (item)', '_carregarIntelligence :: contarQuestoesRespondidas (GLOBAL, p/ conquistas)', performance.now() - t0);
+        return r;
+      })(),
     ]);
-    perfLog('Promise.all', '_carregarIntelligence :: total do conjunto (4 itens)', performance.now() - _tPromiseAll);
+    perfLog('Promise.all', '_carregarIntelligence :: total do conjunto (6 itens)', performance.now() - _tPromiseAll);
 
     relatorio.tentativasRecentes = tentativasRecentes;
     relatorio.totalQuestoes      = totalQuestoes;
     relatorio.semestreFiltrado   = semestreAtivo;
 
+    /* Conquistas: SEMPRE calculadas a partir do relatório GLOBAL
+       (relatorioGlobalConquistas / totalQuestoesGlobal) — nunca do
+       `relatorio` filtrado por semestre acima. `relatorio.conquistas`
+       e `relatorio.conquistasProgresso` continuam sendo os campos
+       lidos por renderAchievements() (ver conquistas.js), então nada
+       muda do lado de fora desta função: só a origem dos dados. */
     const _tConquistas = performance.now();
-    relatorio.conquistas          = _calcularConquistas(relatorio, statsAtuais);
-    relatorio.conquistasProgresso = _calcularProgressoConquistas(relatorio, statsAtuais);
-    perfLog('quiz_intelligence', '_carregarIntelligence :: cálculo local de conquistas', performance.now() - _tConquistas);
+    relatorioGlobalConquistas.totalQuestoes = totalQuestoesGlobal;
+    relatorio.conquistas          = _calcularConquistas(relatorioGlobalConquistas, statsAtuais);
+    relatorio.conquistasProgresso = _calcularProgressoConquistas(relatorioGlobalConquistas, statsAtuais);
+    perfLog('quiz_intelligence', '_carregarIntelligence :: cálculo local de conquistas (fonte global)', performance.now() - _tConquistas);
 
     State.intelligence = relatorio;
 
@@ -485,8 +604,8 @@ export async function _carregarIntelligence(uid, statsPreCarregadas = null) {
     console.log('previsaoSimples:',      relatorio?.previsaoSimples);
     console.log('summaryPersistido:',    relatorio?.summaryPersistidoCamada3);
     console.log('tentativasRecentes:',   relatorio?.tentativasRecentes?.length, 'itens');
-    console.log('totalQuestoes:',        relatorio?.totalQuestoes);
-    console.log('conquistas:',           relatorio?.conquistas);
+    console.log('totalQuestoes:',        relatorio?.totalQuestoes, '(filtrado por semestre)');
+    console.log('conquistas:',           relatorio?.conquistas, '(fonte: relatório GLOBAL, independente de semestre)');
     console.groupEnd();
 
     const _tRender = performance.now();
