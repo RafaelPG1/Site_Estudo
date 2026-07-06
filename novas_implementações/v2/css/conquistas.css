@@ -6,72 +6,127 @@
    ─────────────────────────────────────────────
    Conquistas · V5 — fonte oficial de design (protótipo standalone
    fornecido pelo usuário). Este arquivo é uma transcrição FIEL do
-   <style> desse protótipo. Nenhum valor visual foi alterado: mesmas
-   cores, mesmos tamanhos, mesmos espaçamentos, mesmas sombras,
-   mesmas transições/animações, mesma estrutura de grid do protótipo
-   original.
+   <style> desse protótipo. Nenhum valor visual foi alterado nesta
+   fase original: mesmas cores, mesmos tamanhos, mesmos espaçamentos,
+   mesmas sombras, mesmas transições/animações, mesma estrutura de
+   grid do protótipo original.
 
-   ÚNICA adaptação estrutural (não-visual): todas as variáveis que
-   viviam em `:root` e todos os seletores foram escopados dentro de
-   `.ach-v2-scope` (o wrapper que envolve a seção de Conquistas em
-   dashboard.html). Motivo: o protótipo standalone define `--border`,
-   `--accent`, `--text-primary` etc. em `:root` — se isso fosse
-   carregado global, sobrescreveria os tokens do RESTO do dashboard
-   (dashboard.css já define `--border` e `--accent` com valores
-   diferentes, usados por Score/Tendência/Fraquezas/etc.). Escopando
-   em `.ach-v2-scope`, os valores do protótipo (dourado/--r-* como
-   raridade) ficam disponíveis exatamente onde o HTML já espera
-   (dashboard.html usa `style="color:var(--accent)"` dentro da seção
-   de Conquistas), sem vazar para fora dela.
+   ÚNICA adaptação estrutural (não-visual) da fase original: todas as
+   variáveis que viviam em `:root` e todos os seletores foram
+   escopados dentro de `.ach-v2-scope` (o wrapper que envolve a seção
+   de Conquistas em dashboard.html).
 
    Removidos apenas os seletores que só faziam sentido numa página
-   demo standalone:
-     · `*{box-sizing:border-box}` e `html,body{margin:0;padding:0}`
-       — o Dashboard já define esse reset globalmente em dashboard.css.
-     · `body{ background/padding/min-height/font-family }`
-       — o card `.achievements-section` já carrega seu próprio fundo,
-       padding e sombra; nada do visual do componente dependia do
-       <body> da página demo, então nada muda ao remover essa regra.
+   demo standalone (reset global e estilos de <body>).
 
    ─────────────────────────────────────────────
    SUBSTITUI
    ─────────────────────────────────────────────
-   Toda a implementação antiga da seção Conquistas (arquitetura
-   "Zona 1-4": resumo + filtros + destaques + galeria paginada via
-   "Mostrar mais"), que vivia no final de dashboard_cards.css. Esse
-   bloco foi REMOVIDO de lá — inclusive porque reaproveitava o mesmo
-   nome de classe `.ach-card` com um propósito diferente (lá era o
-   card grande de resumo da seção inteira; aqui é o tile pequeno de
-   cada conquista dentro da grade). Mantidos os dois arquivos vivos
-   ao mesmo tempo, o `.ach-card` antigo vazava padding/flex-direction
-   sobre os tiles novos e quebrava o layout da V5. Este arquivo é
-   agora a ÚNICA fonte de estilo para a seção de Conquistas.
+   Toda a implementação antiga da seção Conquistas ("Zona 1-4"), que
+   vivia no final de dashboard_cards.css. Este arquivo é a ÚNICA
+   fonte de estilo para a seção de Conquistas.
+
+   ─────────────────────────────────────────────
+   REFINAMENTO 1 — HARMONIZAÇÃO COM A IDENTIDADE DO DASHBOARD
+   ─────────────────────────────────────────────
+   Problema identificado: o protótipo V5 trazia sua própria paleta
+   independente (fundo preto puro #0A0A0D, acento dourado #CBA35C,
+   bordas brancas translúcidas), sem nenhuma relação com os tokens
+   globais definidos em dashboard.css (:root) — usados por TODOS os
+   outros componentes: fundo preto-azulado (#0A0A0F/#111118), acento
+   roxo (#6C63FF / #A8A3FF), bordas sólidas (#1E1E2C/#26263A), raios
+   de 8/12/18/24px.
+
+   Como `--border` e `--accent` eram redefinidos aqui com o MESMO
+   NOME dos tokens globais, eles sobrescreviam silenciosamente o
+   valor do resto do sistema só dentro de `.ach-v2-scope`.
+
+   Mudança 100% de tokens/valores visuais — nenhum seletor, layout,
+   grid, tamanho de card, animação, HTML ou JS foi alterado:
+
+     · --border/--accent renomeados para --ach-border/--ach-accent
+       (evita sombrear os tokens globais) e remapeados para os
+       tokens reais do dashboard via var(...).
+     · Fundos remapeados para var(--surface)/var(--surface-2)/
+       var(--border), seguindo o MESMO padrão já usado em
+       Score/Fraquezas/Perfil de Uso (container = --surface, painel
+       aninhado = --surface-2, círculo de ícone = --border).
+     · Texto remapeado para var(--text-1/2/3).
+     · Raridades: "Lendária" passa a usar var(--amber) (mesmo tom de
+       destaque/pico de Sequência e Perfil de Uso) em vez de copiar
+       o acento. Incomum/Rara usam var(--green)/var(--blue).
+     · Raio das bordas alinhado à escala do dashboard (--r-lg/--r-md).
+     · Overlay do modal alinhado ao "vidro" do topbar.
+
+   ─────────────────────────────────────────────
+   REFINAMENTO 2 — CONTAINER PRINCIPAL 100% PLANO
+   (correção do resíduo de brilho que ainda destoava)
+   ─────────────────────────────────────────────
+   Auditoria adicional comparando especificamente com os cards
+   GRANDES de seção inteira citados como referência (Perfil de Uso
+   = .perf-card, Desempenho por Disciplina = .weaknesses-card,
+   Disciplinas = .disc-card, Atividade = .activity-card): todos eles
+   são estruturalmente PLANOS — apenas background:var(--surface),
+   border:1px solid var(--border), border-radius:var(--r-lg), sem
+   nenhum brilho/gradiente decorativo.
+
+   O brilho radial (::before com radial-gradient roxo) só existe no
+   dashboard nos três cards PEQUENOS "intel" (Score/Tendência/
+   Previsão) — nunca nos cards grandes de seção. Esse brilho havia
+   sido adicionado por engano à .achievements-section no refinamento
+   anterior, criando exatamente a diferença sutil de tom apontada:
+   com o card de Conquistas sendo estruturalmente um card grande
+   (como Perfil de Uso), o correto é ele seguir o padrão PLANO desses
+   cards, não o padrão com brilho dos cards pequenos.
+
+   Removidos: a regra `.achievements-section::before` (o gradiente)
+   e o hack `position:relative;z-index:1` nos filhos diretos que
+   existia apenas para acomodar esse gradiente. `.achievements-section`
+   agora usa exatamente as mesmas três propriedades de fundo que
+   `.perf-card`/`.weaknesses-card`/`.disc-card` — nenhuma variação,
+   nenhum tom novo.
    ═══════════════════════════════════════════════════════════ */
 
 .ach-v2-scope {
-  --bg-page:#0A0A0D;
-  --bg-surface:#131217;
-  --bg-surface-2:#18171D;
-  --bg-tile:#16151A;
-  --bg-card:#151419;
-  --bg-card-hover:#1B1A21;
+  /* ── Fundos — mapeados aos tokens globais do dashboard,
+       mesma hierarquia container→painel→ícone usada em todo o
+       resto do sistema (ver Score/Fraquezas/Perfil de Uso). ── */
+  --bg-surface:   var(--surface);      /* container principal, igual a score-card/perf-card/disc-card/weaknesses-card */
+  --bg-surface-2: var(--border);       /* círculos de medalha/ícone — "elevados" sobre o card, igual a score-stat-icon/wk-stat-icon */
+  --bg-tile:      var(--surface-2);    /* overview-bar / cat-tabs — painel aninhado, igual a wk-stat-chip/usage-stat-chip/disc-item */
+  --bg-card:      var(--surface-2);    /* featured-card / ach-card — painel aninhado, igual a disc-item */
+  --bg-card-hover: var(--border-2);    /* preenchimento de hover, um tom acima */
 
-  --border:rgba(255,255,255,0.06);
-  --border-strong:rgba(255,255,255,0.11);
+  /* ── Bordas — renomeadas para não sombrear os tokens globais
+       --border/--border-strong do dashboard.css, e remapeadas
+       para os mesmos valores sólidos usados por todo o sistema
+       (antes: branco translúcido, independente do resto). ── */
+  --ach-border:        var(--border);
+  --ach-border-strong: var(--border-2);
 
-  --text-primary:#EDEDF2;
-  --text-secondary:#9A99A6;
-  --text-tertiary:#5B5A66;
+  /* ── Texto — mesmos tokens de --text-1/2/3 usados em todo o
+       dashboard. ── */
+  --text-primary:   var(--text-1);
+  --text-secondary: var(--text-2);
+  --text-tertiary:  var(--text-3);
 
-  /* single premium accent — doubles as the "legendary" tier color */
-  --accent:#CBA35C;
-  --accent-soft:rgba(203,163,92,0.14);
+  /* ── Acento — renomeado para não sombrear --accent global.
+       Antes era um dourado próprio (#CBA35C); agora usa o roxo
+       "lite" do sistema, o mesmo de score-number/nav-item.active/
+       intel-icon. ── */
+  --ach-accent:      var(--accent-lite);
+  --ach-accent-soft: var(--accent-dim);
 
-  --r-comum:#7E7D89;
-  --r-incomum:#5FAD82;
-  --r-rara:#5B9BD6;
-  --r-epica:#9B84D9;
-  --r-lendaria:#CBA35C;
+  /* Raridades — cada nível de raridade usa um token de ESTADO já
+     existente no dashboard, em vez de uma paleta própria isolada.
+     "Lendária" não copia mais o acento e passa a usar o mesmo âmbar
+     de destaque já usado em Sequência/Perfil de Uso para marcar "o
+     melhor". */
+  --r-comum:    var(--text-3);
+  --r-incomum:  var(--green);
+  --r-rara:     var(--blue);
+  --r-epica:    var(--accent-lite);
+  --r-lendaria: var(--amber);
 
   --ease:cubic-bezier(.16,1,.3,1);
 
@@ -84,14 +139,17 @@
   .ach-v2-scope *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
 }
 
-.ach-v2-scope :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; border-radius:6px; }
+.ach-v2-scope :focus-visible{ outline:2px solid var(--ach-accent); outline-offset:2px; border-radius:6px; }
 
+/* Container principal — EXATAMENTE as mesmas 3 propriedades de
+   fundo usadas por .perf-card / .weaknesses-card / .disc-card
+   (cards grandes de seção inteira). Sem brilho, sem gradiente,
+   sem sombra própria — 100% plano, igual à referência. */
 .ach-v2-scope .achievements-section{
   background:var(--bg-surface);
-  border:1px solid var(--border);
-  border-radius:20px;
+  border:1px solid var(--ach-border);
+  border-radius:var(--r-lg);
   padding:36px 36px 32px;
-  box-shadow:0 60px 100px -60px rgba(0,0,0,0.7);
 }
 
 /* ================= HEADER ================= */
@@ -107,10 +165,10 @@
 .ach-v2-scope .ach-icon-badge{
   width:44px; height:44px; border-radius:12px; flex-shrink:0;
   background:linear-gradient(160deg, #1E1C22, #17161B);
-  border:1px solid var(--border-strong);
+  border:1px solid var(--ach-border-strong);
   display:flex; align-items:center; justify-content:center;
 }
-.ach-v2-scope .ach-icon-badge svg{ width:20px; height:20px; stroke:var(--accent); }
+.ach-v2-scope .ach-icon-badge svg{ width:20px; height:20px; stroke:var(--ach-accent); }
 .ach-v2-scope .ach-title-block h2{
   font-family:'Space Grotesk', sans-serif; font-size:20px; font-weight:600;
   margin:0 0 4px; letter-spacing:-0.01em; color:var(--text-primary);
@@ -121,8 +179,8 @@
 .ach-v2-scope .overview-bar{
   display:flex; align-items:center;
   background:var(--bg-tile);
-  border:1px solid var(--border);
-  border-radius:12px;
+  border:1px solid var(--ach-border);
+  border-radius:var(--r-md);
   padding:26px 20px;
   margin-bottom:26px;
   gap:0;
@@ -130,12 +188,12 @@
 .ach-v2-scope .ov-hero{ display:flex; align-items:center; gap:12px; padding-right:20px; }
 .ach-v2-scope .ring-wrap{ position:relative; width:48px; height:48px; flex-shrink:0; }
 .ach-v2-scope .ring-wrap svg{ transform:rotate(-90deg); }
-.ach-v2-scope .ring-bg{ stroke:rgba(255,255,255,0.07); }
-.ach-v2-scope .ring-fill{ stroke:var(--accent); stroke-linecap:round; transition:stroke-dashoffset .6s var(--ease); }
+.ach-v2-scope .ring-bg{ stroke:var(--ach-border); }
+.ach-v2-scope .ring-fill{ stroke:var(--ach-accent); stroke-linecap:round; transition:stroke-dashoffset .6s var(--ease); }
 .ach-v2-scope .ring-label{
   position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
   font-size:11px; font-weight:700; font-family:'Space Grotesk', sans-serif; letter-spacing:-0.02em;
-  color:var(--accent);
+  color:var(--ach-accent);
 }
 .ach-v2-scope .ov-hero-text{ line-height:1.3; }
 .ach-v2-scope .ov-hero-text .ov-title{ font-size:10.5px; color:var(--text-tertiary); font-weight:500; }
@@ -148,7 +206,7 @@
   font-size:12px; color:var(--text-secondary); font-weight:500;
 }
 
-.ach-v2-scope .ov-divider{ width:1px; height:42px; background:var(--border); margin:0 20px; align-self:center; }
+.ach-v2-scope .ov-divider{ width:1px; height:42px; background:var(--ach-border); margin:0 20px; align-self:center; }
 
 .ach-v2-scope .ov-stats{ display:flex; align-items:center; justify-content:space-between; gap:28px; flex:1; }
 .ach-v2-scope .ov-stat{ display:flex; align-items:center; gap:9px; }
@@ -167,8 +225,8 @@
 .ach-v2-scope .cat-tabs{
   display:flex; align-items:center; gap:2px;
   background:var(--bg-tile);
-  border:1px solid var(--border);
-  border-radius:11px;
+  border:1px solid var(--ach-border);
+  border-radius:var(--r-md);
   padding:4px;
   margin-bottom:30px;
   width:fit-content;
@@ -179,7 +237,7 @@
   background:transparent; border:none;
   color:var(--text-secondary);
   font-size:12.5px; font-weight:500;
-  padding:8px 14px; border-radius:8px; cursor:pointer;
+  padding:8px 14px; border-radius:var(--r-sm); cursor:pointer;
   transition:background .18s var(--ease), color .18s var(--ease);
   font-family:'Inter', sans-serif;
 }
@@ -201,13 +259,13 @@
 .ach-v2-scope .featured-row{ display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; margin-bottom:38px; }
 .ach-v2-scope .featured-card{
   background:var(--bg-card);
-  border:1px solid var(--border);
-  border-radius:15px; padding:20px;
+  border:1px solid var(--ach-border);
+  border-radius:var(--r-md); padding:20px;
   display:flex; gap:16px; align-items:flex-start;
   cursor:pointer;
   transition:border-color .2s var(--ease), transform .2s var(--ease), background .2s var(--ease);
 }
-.ach-v2-scope .featured-card:hover{ border-color:var(--border-strong); background:var(--bg-card-hover); transform:translateY(-2px); }
+.ach-v2-scope .featured-card:hover{ border-color:var(--ach-border-strong); background:var(--bg-card-hover); transform:translateY(-2px); }
 
 .ach-v2-scope .f-medal{
   width:52px; height:52px; border-radius:50%; flex-shrink:0;
@@ -232,7 +290,7 @@
 .ach-v2-scope .f-progress-fill{ height:100%; border-radius:2px; background:var(--f-color); }
 .ach-v2-scope .f-meta{ display:flex; justify-content:space-between; font-size:11px; color:var(--text-tertiary); font-variant-numeric:tabular-nums; }
 .ach-v2-scope .f-done{ display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--text-secondary); font-weight:500; }
-.ach-v2-scope .f-done svg{ width:13px; height:13px; stroke:#5FAD82; }
+.ach-v2-scope .f-done svg{ width:13px; height:13px; stroke:var(--green); }
 
 /* ================= GRID ================= */
 .ach-v2-scope .ach-grid{
@@ -242,8 +300,8 @@
 .ach-v2-scope .ach-card{
   position:relative;
   background:var(--bg-card);
-  border:1px solid var(--border);
-  border-radius:14px;
+  border:1px solid var(--ach-border);
+  border-radius:var(--r-md);
   padding:15px 12px 13px;
   display:flex; flex-direction:column; align-items:center; text-align:center;
   cursor:pointer;
@@ -269,7 +327,7 @@
 
 .ach-v2-scope .ach-card[data-rarity="lendaria"] .medal::after{
   content:""; position:absolute; inset:-1.5px; border-radius:50%;
-  background:conic-gradient(from 0deg, transparent 0%, rgba(203,163,92,0.5) 15%, transparent 30%);
+  background:conic-gradient(from 0deg, transparent 0%, rgba(255,181,71,0.5) 15%, transparent 30%);
   opacity:0; transition:opacity .3s var(--ease);
 }
 .ach-v2-scope .ach-card[data-rarity="lendaria"]:hover .medal::after{ opacity:1; animation:ach-sheen-rotate 1.8s linear; }
@@ -277,7 +335,7 @@
 
 .ach-v2-scope .legend-dot{
   position:absolute; top:-1px; right:-1px; width:8px; height:8px; border-radius:50%;
-  background:var(--accent); border:2px solid var(--bg-card);
+  background:var(--r-lendaria); border:2px solid var(--bg-card);
 }
 
 .ach-v2-scope .ach-name{
@@ -336,11 +394,11 @@
 /* ================= FOOTER / PAGINATION ================= */
 .ach-v2-scope .ach-footer{
   display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:14px;
-  padding-top:20px; border-top:1px solid var(--border);
+  padding-top:20px; border-top:1px solid var(--ach-border);
 }
 .ach-v2-scope .pager{ display:flex; align-items:center; gap:4px; }
 .ach-v2-scope .pager button{
-  min-width:30px; height:30px; border-radius:8px;
+  min-width:30px; height:30px; border-radius:var(--r-sm);
   background:transparent; border:1px solid transparent;
   color:var(--text-tertiary); font-size:12px; font-weight:500; cursor:pointer;
   display:flex; align-items:center; justify-content:center;
@@ -348,20 +406,20 @@
 }
 .ach-v2-scope .pager button svg{ width:14px; height:14px; }
 .ach-v2-scope .pager button:hover:not(:disabled){ color:var(--text-primary); background:var(--bg-card-hover); }
-.ach-v2-scope .pager button.active{ background:var(--bg-card-hover); color:var(--text-primary); border-color:var(--border-strong); }
+.ach-v2-scope .pager button.active{ background:var(--bg-card-hover); color:var(--text-primary); border-color:var(--ach-border-strong); }
 .ach-v2-scope .pager button:disabled{ opacity:0.3; cursor:default; }
 .ach-v2-scope .pager span.ellipsis{ color:var(--text-tertiary); padding:0 4px; font-size:12px; }
 
 /* ================= MODAL ================= */
 .ach-v2-scope .ach-modal-backdrop{
-  position:fixed; inset:0; background:rgba(5,5,7,0.6); backdrop-filter:blur(4px);
+  position:fixed; inset:0; background:rgba(10,10,15,0.75); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
   display:flex; align-items:center; justify-content:center;
   opacity:0; pointer-events:none; transition:opacity .25s var(--ease); z-index:50;
 }
 .ach-v2-scope .ach-modal-backdrop.open{ opacity:1; pointer-events:auto; }
 .ach-v2-scope .ach-modal{
-  width:340px; background:var(--bg-surface); border:1px solid var(--border-strong);
-  border-radius:18px; padding:28px;
+  width:340px; background:var(--bg-surface); border:1px solid var(--ach-border-strong);
+  border-radius:var(--r-lg); padding:28px;
   transform:translateY(10px) scale(0.97); transition:transform .25s var(--ease);
   text-align:center;
 }
@@ -373,12 +431,12 @@
 .ach-v2-scope .ach-modal p.desc{ font-size:13px; color:var(--text-secondary); line-height:1.55; margin:16px 0; }
 .ach-v2-scope .ach-modal .meta-row{
   display:flex; justify-content:space-between; font-size:12px; color:var(--text-secondary);
-  border-top:1px solid var(--border); padding:11px 0;
+  border-top:1px solid var(--ach-border); padding:11px 0;
 }
 .ach-v2-scope .ach-modal .meta-row b{ color:var(--text-primary); font-weight:500; }
 .ach-v2-scope .ach-modal .close-btn{
-  margin-top:16px; width:100%; background:transparent; border:1px solid var(--border-strong);
-  color:var(--text-primary); padding:10px; border-radius:9px; font-size:12.5px; font-weight:500; cursor:pointer;
+  margin-top:16px; width:100%; background:transparent; border:1px solid var(--ach-border-strong);
+  color:var(--text-primary); padding:10px; border-radius:var(--r-sm); font-size:12.5px; font-weight:500; cursor:pointer;
   transition:background .18s var(--ease);
 }
 .ach-v2-scope .ach-modal .close-btn:hover{ background:rgba(255,255,255,0.03); }
