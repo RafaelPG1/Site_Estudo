@@ -48,6 +48,55 @@
    concatenação do número em si — era a segunda linha, morta e
    duplicada, sobrescrevendo o espaço da primeira. Removida a linha
    duplicada; mantida apenas a atribuição com o espaço inicial.
+
+   ─────────────────────────────────────────────
+   AJUSTE 2 — DE MODAL CENTRALIZADO PARA POPOVER CONTEXTUAL
+   ─────────────────────────────────────────────
+   Puramente UX/apresentação, a pedido do usuário. O detalhe da
+   conquista deixou de abrir como modal grande centralizado e passou
+   a abrir como um painel contextual (popover) ancorado no card que
+   foi clicado — mesmo espírito de GitHub/Figma/Notion/Linear/
+   Discord. O CONTEÚDO do painel (função _achAbrirModal, o HTML
+   montado dentro de #ach-modal-content) não mudou nada — só COMO e
+   ONDE ele aparece na tela.
+
+   Principais adições:
+     · _achPosicionarPopover(anchorEl) — calcula a posição via
+       getBoundingClientRect() do card clicado, tentando abrir à
+       direita; se não couber, tenta à esquerda; se nenhuma lateral
+       couber (telas menores), abre abaixo (ou acima, se não houver
+       espaço embaixo). Sempre clampado para nunca sair da viewport.
+     · _achAnchorEl guarda o card que originou o popover atual, para
+       poder recalcular a posição em resize/scroll (ver AJUSTE 3
+       abaixo).
+   Nenhum cálculo de negócio, conteúdo do painel, cor ou botão foi
+   alterado — apenas onde/como ele aparece.
+
+   ─────────────────────────────────────────────
+   AJUSTE 3 — FECHAR SÓ POR AÇÃO EXPLÍCITA + REPOSICIONAMENTO
+   ─────────────────────────────────────────────
+   Antes, QUALQUER evento de scroll fechava o popover — inclusive
+   rolagem por mouse wheel, o que dava a falsa impressão de "o
+   painel fecha sozinho quando eu mexo o mouse". O pedido explícito
+   do usuário foi: mover o mouse NUNCA deve fechar o painel; ele só
+   fecha por ação explícita (clique fora, clique de novo no mesmo
+   card, ou ESC).
+
+   Mudança:
+     · _achOnScrollFechar foi REMOVIDA. Em seu lugar,
+       _achOnScrollOuResizeReposicionar cuida de scroll E resize da
+       mesma forma: recalcula a posição do painel em relação ao card
+       (que pode ter se movido na tela), sem nunca fechá-lo — motivo
+       pelo qual o listener de scroll já existia (o popover está em
+       position:fixed, então não acompanha o card durante a rolagem
+       a menos que seja reposicionado manualmente a cada evento).
+     · _achAbrirModalPorId agora funciona como TOGGLE: clicar de novo
+       no mesmo card que já está com o painel aberto fecha o painel
+       (mesmo padrão usado por popovers do Notion/Linear/GitHub).
+     · ESC (_achInicializarUmaVez) e clique no backdrop continuam
+       fechando, sem alteração.
+   Nenhum cálculo de negócio, conteúdo do painel, cor ou botão foi
+   alterado — apenas as regras de quando o painel fecha/reposiciona.
    ═══════════════════════════════════════════════════════════ */
 
 function escapeHtml(str) {
@@ -190,6 +239,100 @@ let _achDadosAtuais    = [];
 let _achInicializado   = false;
 
 /* ══════════════════════════════════════════════
+   POSICIONAMENTO DO POPOVER — apenas UX/apresentação.
+   Não é lógica de negócio: só decide ONDE o painel de
+   detalhe aparece na tela em relação ao card clicado.
+══════════════════════════════════════════════ */
+const ACH_POPOVER_GAP    = 12; // espaço entre o card e o painel
+const ACH_POPOVER_MARGIN = 16; // respiro mínimo até a borda da viewport
+const ACH_POPOVER_ARROW_MIN = 20; // distância mínima da seta até um canto arredondado do painel
+
+let _achAnchorEl = null; // card (ou featured-card) que originou o popover aberto no momento
+
+/* Calcula e aplica a posição (top/left), o lado (data-side) e o
+   alinhamento da seta do popover, a partir da posição REAL do card
+   na tela (getBoundingClientRect) — não de um valor fixo. Lógica:
+     1. Tenta abrir à DIREITA do card.
+     2. Se não couber, tenta à ESQUERDA.
+     3. Se não couber em nenhuma lateral (telas menores), abre
+        ABAIXO do card — ou ACIMA, se também não houver espaço
+        suficiente embaixo.
+     4. Em qualquer um dos casos, a posição final é sempre
+        "clampada" para nunca deixar o painel sair da viewport.
+   O painel já está no DOM com o conteúdo preenchido (mas
+   visibility:hidden, conforme CSS) no momento desta chamada, então
+   offsetWidth/offsetHeight refletem o tamanho real do conteúdo
+   atual — inclusive quando limitado por max-height/overflow-y.
+   Como o CSS agora usa height:auto (ver AJUSTE de altura no CSS),
+   offsetHeight aqui já reflete a altura NATURAL do conteúdo (sem
+   forçar scrollbar), exceto quando ela realmente ultrapassa
+   max-height — só nesse caso o painel rola internamente. */
+function _achPosicionarPopover(anchorEl) {
+  const modal = document.getElementById('ach-modal-content');
+  if (!modal || !anchorEl) return;
+
+  const rect = anchorEl.getBoundingClientRect();
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  const pw = modal.offsetWidth;
+  const ph = modal.offsetHeight;
+
+  let side, top, left;
+
+  const cabeDireita  = rect.right + ACH_POPOVER_GAP + pw <= vw - ACH_POPOVER_MARGIN;
+  const cabeEsquerda = rect.left  - ACH_POPOVER_GAP - pw >= ACH_POPOVER_MARGIN;
+
+  if (cabeDireita) {
+    side = 'right';
+    left = rect.right + ACH_POPOVER_GAP;
+    top  = rect.top + rect.height / 2 - ph / 2;
+  } else if (cabeEsquerda) {
+    side = 'left';
+    left = rect.left - ACH_POPOVER_GAP - pw;
+    top  = rect.top + rect.height / 2 - ph / 2;
+  } else {
+    const cabeAbaixo = rect.bottom + ACH_POPOVER_GAP + ph <= vh - ACH_POPOVER_MARGIN;
+    side = cabeAbaixo ? 'below' : 'above';
+    top  = cabeAbaixo ? rect.bottom + ACH_POPOVER_GAP : rect.top - ACH_POPOVER_GAP - ph;
+    left = rect.left + rect.width / 2 - pw / 2;
+  }
+
+  /* Clamp final — nunca deixa o painel sair da viewport em nenhuma
+     das quatro direções, independentemente do lado escolhido acima. */
+  top  = Math.max(ACH_POPOVER_MARGIN, Math.min(top,  vh - ph - ACH_POPOVER_MARGIN));
+  left = Math.max(ACH_POPOVER_MARGIN, Math.min(left, vw - pw - ACH_POPOVER_MARGIN));
+
+  modal.style.top  = `${top}px`;
+  modal.style.left = `${left}px`;
+  modal.dataset.side = side;
+
+  /* Seta — alinhada com o centro do card no eixo relevante para o
+     lado escolhido (vertical para direita/esquerda, horizontal para
+     abaixo/acima), sempre mantida a uma distância mínima dos cantos
+     arredondados do próprio painel. */
+  if (side === 'right' || side === 'left') {
+    const centroCardY = rect.top + rect.height / 2;
+    const arrowTop = Math.max(ACH_POPOVER_ARROW_MIN, Math.min(centroCardY - top, ph - ACH_POPOVER_ARROW_MIN));
+    modal.style.setProperty('--ach-pop-arrow', `${arrowTop}px`);
+  } else {
+    const centroCardX = rect.left + rect.width / 2;
+    const arrowLeft = Math.max(ACH_POPOVER_ARROW_MIN, Math.min(centroCardX - left, pw - ACH_POPOVER_ARROW_MIN));
+    modal.style.setProperty('--ach-pop-arrow', `${arrowLeft}px`);
+  }
+}
+
+/* AJUSTE 3 — scroll e resize fazem a MESMA coisa: reposicionar o
+   painel em relação ao card (que pode ter se movido na tela), sem
+   NUNCA fechá-lo. `capture:true` no listener de scroll (aplicado
+   onde a função é registrada, em _achAbrirModal) garante que o
+   reposicionamento funcione mesmo que a rolagem aconteça num
+   container interno (ex.: <main class="main">), não só na janela. */
+function _achOnScrollOuResizeReposicionar() {
+  if (_achAnchorEl) _achPosicionarPopover(_achAnchorEl);
+}
+
+/* ══════════════════════════════════════════════
    API PÚBLICA
 ══════════════════════════════════════════════ */
 export function renderAchievements(relatorio) {
@@ -297,10 +440,28 @@ function _achInicializarUmaVez() {
     });
   }
 
-  const backdrop = document.getElementById('ach-modal-backdrop');
-  if (backdrop) {
-    backdrop.addEventListener('click', e => { if (e.target === backdrop) _achFecharModal(); });
-  }
+  /* REFINAMENTO 4 — clique fora fecha o painel.
+     ANTES: o backdrop cobria a tela inteira com pointer-events:auto
+     sempre que o painel estava aberto — então QUALQUER clique
+     (inclusive em outro card de conquista) era engolido pelo
+     backdrop antes de chegar ao elemento de baixo, e fechava o
+     painel. Era essa a causa real do "fecha sozinho".
+     AGORA: o backdrop nunca intercepta cliques (ver CSS,
+     pointer-events:none fixo). Quem detecta "clique fora" é este
+     listener no document: só fecha se o clique não foi dentro do
+     painel E não foi em nenhum card de conquista — nesse último
+     caso, quem decide o que fazer é o próprio handler do card
+     (_achAbrirModalPorId), que já sabe abrir, trocar de conquista
+     ou fechar via toggle (clique de novo no mesmo card). */
+  document.addEventListener('click', e => {
+    const backdrop = document.getElementById('ach-modal-backdrop');
+    if (!backdrop?.classList.contains('open')) return;
+    const modalEl = document.getElementById('ach-modal-content');
+    if (modalEl?.contains(e.target)) return;
+    if (e.target.closest('.ach-card, .featured-card')) return;
+    _achFecharModal();
+  });
+
   document.addEventListener('keydown', e => { if (e.key === 'Escape') _achFecharModal(); });
 }
 
@@ -393,9 +554,9 @@ function _achRenderFeatured(itens) {
   }).join('');
 
   elRow.querySelectorAll('.featured-card').forEach(el => {
-    el.addEventListener('click', () => _achAbrirModalPorId(el.dataset.id));
+    el.addEventListener('click', () => _achAbrirModalPorId(el.dataset.id, el));
     el.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _achAbrirModalPorId(el.dataset.id); }
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _achAbrirModalPorId(el.dataset.id, el); }
     });
   });
 }
@@ -444,9 +605,9 @@ function _achRenderGrid() {
     }).join('');
 
     grid.querySelectorAll('.ach-card').forEach(el => {
-      el.addEventListener('click', () => _achAbrirModalPorId(el.dataset.id));
+      el.addEventListener('click', () => _achAbrirModalPorId(el.dataset.id, el));
       el.addEventListener('keydown', e => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _achAbrirModalPorId(el.dataset.id); }
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _achAbrirModalPorId(el.dataset.id, el); }
       });
     });
   }
@@ -491,14 +652,23 @@ function _achRenderPager(totalPages) {
 }
 
 /* ══════════════════════════════════════════════
-   MODAL
+   MODAL / POPOVER
 ══════════════════════════════════════════════ */
-function _achAbrirModalPorId(id) {
+
+/* AJUSTE 3 — toggle: clicar de novo no MESMO card que já está com o
+   painel aberto fecha o painel, em vez de reabri-lo. Clicar em outro
+   card enquanto o painel já está aberto simplesmente abre o novo
+   (comportamento inalterado). */
+function _achAbrirModalPorId(id, anchorEl) {
+  const backdrop = document.getElementById('ach-modal-backdrop');
+  const mesmoCardJaAberto = backdrop?.classList.contains('open') && _achAnchorEl === anchorEl;
+  if (mesmoCardJaAberto) { _achFecharModal(); return; }
+
   const item = _achDadosAtuais.find(i => i.id === id);
-  if (item) _achAbrirModal(item);
+  if (item) _achAbrirModal(item, anchorEl);
 }
 
-function _achAbrirModal(item) {
+function _achAbrirModal(item, anchorEl) {
   const backdrop = document.getElementById('ach-modal-backdrop');
   const content  = document.getElementById('ach-modal-content');
   if (!backdrop || !content) return;
@@ -519,10 +689,45 @@ function _achAbrirModal(item) {
     </div>
     <button type="button" class="close-btn" id="ach-modal-close-btn">Fechar</button>
   `;
+
+  _achAnchorEl = anchorEl ?? null;
+  if (_achAnchorEl) _achPosicionarPopover(_achAnchorEl);
+
   backdrop.classList.add('open');
+
+  /* REFINAMENTO 4 — animação de abertura via classe + @keyframes.
+     Remove qualquer resquício de animação de saída em andamento
+     (troca rápida de card) e força um reflow antes de religar
+     is-opening, garantindo que a keyframe sempre reinicie do zero
+     — mesmo se o painel estivesse no meio de um fechamento. */
+  content.classList.remove('is-closing');
+  content.classList.remove('is-opening');
+  void content.offsetWidth;
+  content.classList.add('is-opening');
+
+  window.addEventListener('scroll', _achOnScrollOuResizeReposicionar, true);
+  window.addEventListener('resize', _achOnScrollOuResizeReposicionar);
+
   document.getElementById('ach-modal-close-btn')?.addEventListener('click', _achFecharModal);
 }
-
 function _achFecharModal() {
-  document.getElementById('ach-modal-backdrop')?.classList.remove('open');
+  const backdrop = document.getElementById('ach-modal-backdrop');
+  const content  = document.getElementById('ach-modal-content');
+  if (!backdrop?.classList.contains('open')) return; // já fechado, evita reprocessar
+
+  backdrop.classList.remove('open');
+  window.removeEventListener('scroll', _achOnScrollOuResizeReposicionar, true);
+  window.removeEventListener('resize', _achOnScrollOuResizeReposicionar);
+  _achAnchorEl = null;
+
+  if (content) {
+    content.classList.remove('is-opening');
+    content.classList.add('is-closing');
+    // Ao fim da animação de saída, remove a classe — o painel volta
+    // ao estado base (opacity:0/visibility:hidden do CSS), sem flash.
+    content.addEventListener('animationend', function onEnd() {
+      content.classList.remove('is-closing');
+      content.removeEventListener('animationend', onEnd);
+    }, { once: true });
+  }
 }

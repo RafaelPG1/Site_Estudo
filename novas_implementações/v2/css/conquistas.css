@@ -85,6 +85,30 @@
    agora usa exatamente as mesmas três propriedades de fundo que
    `.perf-card`/`.weaknesses-card`/`.disc-card` — nenhuma variação,
    nenhum tom novo.
+
+   ─────────────────────────────────────────────
+   REFINAMENTO 3 — POPOVER: ANIMAÇÃO, FECHAR SÓ POR AÇÃO EXPLÍCITA
+   E ALTURA AUTOMÁTICA
+   ─────────────────────────────────────────────
+   Puramente UX/apresentação — nenhum seletor de layout, cor de
+   conteúdo, grid ou estrutura HTML foi alterado. Três ajustes:
+
+     · Animação — troca do easing de transform por
+       --ach-ease-spring: uma curva com leve overshoot que faz o
+       painel "assentar" suavemente no lugar final, em vez de parar
+       seco. Fade continua rápido e linear-ish (--ease); só o
+       transform (scale+translate) ganhou a curva nova. Deslocamento
+       inicial (translate) levemente maior para reforçar a sensação
+       de que o painel nasce do card.
+     · Fechar automaticamente por scroll/mouseleave foi REMOVIDO
+       (essa parte é 100% JS — ver conquistas.js AJUSTE 3). Nada
+       neste CSS controlava esse fechamento, então nada aqui mudou
+       por causa disso; citado apenas para contexto do pedido.
+     · Altura automática — height:auto explícito adicionado (além do
+       max-height/overflow-y:auto que já existiam) para deixar claro
+       que o painel deve crescer com o conteúdo e só ganhar
+       scrollbar quando realmente ultrapassar a altura disponível da
+       viewport.
    ═══════════════════════════════════════════════════════════ */
 
 .ach-v2-scope {
@@ -129,6 +153,11 @@
   --r-lendaria: var(--amber);
 
   --ease:cubic-bezier(.16,1,.3,1);
+  /* REFINAMENTO 3 — easing exclusivo do popover: leve overshoot no
+     transform (scale/translate) para dar sensação de "assentamento"
+     no final da animação de abertura. Usado só em .ach-modal (ver
+     abaixo); todo o resto do componente continua com --ease. */
+  --ach-ease-spring:cubic-bezier(.22,1.22,.36,1);
 
   font-family:'Inter', sans-serif;
   color: var(--text-primary);
@@ -283,7 +312,7 @@
 .ach-v2-scope .f-body h4{ font-family:'Space Grotesk', sans-serif; font-size:14.5px; margin:0 0 5px; font-weight:600; color:var(--text-primary); }
 .ach-v2-scope .f-body p{
   font-size:12px; color:var(--text-secondary); margin:0 0 13px; line-height:1.45;
-  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+  display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical;
   overflow:hidden; min-height:34.8px;
 }
 .ach-v2-scope .f-progress{ height:3px; background:rgba(255,255,255,0.06); border-radius:2px; overflow:hidden; margin-bottom:6px; }
@@ -347,7 +376,7 @@
 .ach-v2-scope .ach-desc{
   font-size:9.5px; font-weight:400; color:var(--text-tertiary);
   line-height:1.4; margin-bottom:8px;
-  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+  display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical;
   overflow:hidden; min-height:26.6px;
 }
 .ach-v2-scope .ach-card.state-progress .ach-desc,
@@ -410,20 +439,127 @@
 .ach-v2-scope .pager button:disabled{ opacity:0.3; cursor:default; }
 .ach-v2-scope .pager span.ellipsis{ color:var(--text-tertiary); padding:0 4px; font-size:12px; }
 
-/* ================= MODAL ================= */
-.ach-v2-scope .ach-modal-backdrop{
-  position:fixed; inset:0; background:rgba(10,10,15,0.75); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
-  display:flex; align-items:center; justify-content:center;
-  opacity:0; pointer-events:none; transition:opacity .25s var(--ease); z-index:50;
+/* ================= POPOVER DE DETALHE (antigo modal) ================= */
+/* ═══════════════════════════════════════════════════════════
+   AJUSTE 2 — DE MODAL CENTRALIZADO PARA POPOVER CONTEXTUAL
+   ─────────────────────────────────────────────
+   Substitui integralmente a abordagem de "modal grande centralizado
+   com backdrop escurecido" por um painel contextual que nasce ao
+   lado do card clicado — mesmo espírito de GitHub/Figma/Notion/
+   Linear/Discord. Mudança 100% de apresentação: o MESMO miolo de
+   conteúdo (.medal, h3, .m-rarity, p.desc, .meta-row, .close-btn)
+   continua abaixo, sem nenhuma alteração de cor, texto ou estrutura.
+
+     · .ach-modal-backdrop deixou de escurecer/borrar a tela — agora
+       é só uma camada invisível e full-screen usada para detectar
+       "clique fora" (o dashboard continua 100% visível e utilizável).
+     · .ach-modal é position:fixed com `top`/`left` calculados via
+       JS (getBoundingClientRect do card + _achPosicionarPopover em
+       conquistas.js) — nunca mais centralizado na tela. width
+       continua 340px (idêntico ao modal anterior), só a POSIÇÃO
+       mudou.
+     · [data-side] controla de qual lado o painel "nasce" em relação
+       ao card (right/left/below/above) — o JS decide dinamicamente
+       qual cabe na viewport e aplica o atributo. O transform-origin
+       de cada lado + a leve translação de entrada reforçam a
+       sensação de que o painel "abriu a partir do card", em vez de
+       aparecer do nada.
+     · Uma pequena seta (::before) aponta na direção do card,
+       alinhada pelo JS via --ach-pop-arrow, para deixar clara a
+       relação painel↔card mesmo quando os dois não estão
+       perfeitamente alinhados verticalmente/horizontalmente.
+
+   REFINAMENTO 3 (ver nota completa no topo do arquivo):
+     · height:auto adicionado — painel cresce com o conteúdo; scroll
+       interno só entra em ação se o conteúdo ultrapassar max-height
+       (altura disponível da viewport), nunca por padrão.
+     · Transição de transform passa a usar --ach-ease-spring (leve
+       overshoot/assentamento) em vez de --ease puro, e o
+       deslocamento de entrada (translate) foi levemente aumentado —
+       reforça a sensação de "o painel nasceu do card". Fade continua
+       com --ease, rápido e sem assentamento (não faria sentido
+       "assentar" opacidade).
+     · Fechar por scroll/mouseleave foi removido no JS (conquistas.js
+       AJUSTE 3) — nada neste CSS controlava esse comportamento, e
+       nada aqui precisou mudar por causa disso. ══ */
+       .ach-v2-scope .ach-modal-backdrop{
+  position:fixed; inset:0; background:transparent;
+  /* REFINAMENTO 4 — nunca intercepta cliques. Antes ficava
+     pointer-events:auto quando aberto e, por cobrir a tela
+     inteira, "roubava" qualquer clique — inclusive em outro card
+     de conquista — antes que ele chegasse ao elemento de baixo.
+     Era essa a causa real do painel "fechando sozinho": não tinha
+     nada a ver com mouse se movendo, e sim com qualquer clique em
+     outro lugar da tela enquanto o painel estava aberto. A detecção
+     de "clique fora" agora é feita por um listener no document
+     (ver conquistas.js, _achInicializarUmaVez). */
+  pointer-events:none; z-index:50;
 }
-.ach-v2-scope .ach-modal-backdrop.open{ opacity:1; pointer-events:auto; }
+
 .ach-v2-scope .ach-modal{
-  width:340px; background:var(--bg-surface); border:1px solid var(--ach-border-strong);
+  position:fixed; top:0; left:0;
+  width:340px; max-width:calc(100vw - 32px);
+  height:auto; max-height:calc(100vh - 32px); overflow-y:auto;
+  background:var(--bg-surface); border:1px solid var(--ach-border-strong);
   border-radius:var(--r-lg); padding:28px;
-  transform:translateY(10px) scale(0.97); transition:transform .25s var(--ease);
+  box-shadow:0 24px 48px -12px rgba(0,0,0,.55), 0 6px 20px -4px rgba(0,0,0,.4);
+  opacity:0; visibility:hidden; pointer-events:none;
   text-align:center;
 }
-.ach-v2-scope .ach-modal-backdrop.open .ach-modal{ transform:translateY(0) scale(1); }
+
+/* Direção de entrada/saída — cada lado define de onde o painel
+   "nasce" (usado pelas keyframes abaixo via --ach-pop-from). */
+.ach-v2-scope .ach-modal[data-side="right"]{ transform-origin:left center;   --ach-pop-from:translateX(-12px) scale(.96); }
+.ach-v2-scope .ach-modal[data-side="left"]{  transform-origin:right center;  --ach-pop-from:translateX(12px)  scale(.96); }
+.ach-v2-scope .ach-modal[data-side="below"]{ transform-origin:top center;    --ach-pop-from:translateY(-12px) scale(.96); }
+.ach-v2-scope .ach-modal[data-side="above"]{ transform-origin:bottom center; --ach-pop-from:translateY(12px)  scale(.96); }
+
+/* REFINAMENTO 4 — animação via @keyframes (substitui a transition
+   de toggle de classe da versão anterior). Mais confiável — não
+   depende do navegador "perceber" a mudança de estilo computado
+   entre dois estados — e mais fácil de perceber: fade + scale
+   (.96→1) + translate (10~12px) + easing com leve
+   desaceleração no final. Classes ligadas/desligadas pelo JS
+   (_achAbrirModal/_achFecharModal). */
+.ach-v2-scope .ach-modal.is-opening{
+  visibility:visible; pointer-events:auto;
+  animation: ach-pop-in .32s cubic-bezier(.22,1,.36,1) forwards;
+}
+.ach-v2-scope .ach-modal.is-closing{
+  visibility:visible; pointer-events:none;
+  animation: ach-pop-out .16s cubic-bezier(.4,0,1,1) forwards;
+}
+@keyframes ach-pop-in{
+  from{ opacity:0; transform:var(--ach-pop-from, translateY(10px) scale(.96)); }
+  to  { opacity:1; transform:translate(0,0) scale(1); }
+}
+@keyframes ach-pop-out{
+  from{ opacity:1; transform:translate(0,0) scale(1); }
+  to  { opacity:0; transform:var(--ach-pop-from, translateY(10px) scale(.96)); }
+}
+
+.ach-v2-scope .ach-modal::before{
+  content:""; position:absolute; width:12px; height:12px;
+  background:var(--bg-surface); border:1px solid var(--ach-border-strong);
+  transform:rotate(45deg); display:none;
+}
+.ach-v2-scope .ach-modal[data-side="right"]::before{
+  display:block; left:-7px; top:var(--ach-pop-arrow, 24px);
+  border-right:none; border-top:none;
+}
+.ach-v2-scope .ach-modal[data-side="left"]::before{
+  display:block; right:-7px; top:var(--ach-pop-arrow, 24px);
+  border-left:none; border-bottom:none;
+}
+.ach-v2-scope .ach-modal[data-side="below"]::before{
+  display:block; top:-7px; left:var(--ach-pop-arrow, 24px);
+  border-bottom:none; border-right:none;
+}
+.ach-v2-scope .ach-modal[data-side="above"]::before{
+  display:block; bottom:-7px; left:var(--ach-pop-arrow, 24px);
+  border-top:none; border-left:none;
+}
+
 .ach-v2-scope .ach-modal .medal{ width:64px; height:64px; margin:0 auto 16px; border-width:1.5px; }
 .ach-v2-scope .ach-modal .medal svg{ width:26px; height:26px; }
 .ach-v2-scope .ach-modal h3{ font-family:'Space Grotesk', sans-serif; font-size:17px; margin:0 0 6px; font-weight:600; }
