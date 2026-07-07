@@ -109,9 +109,51 @@
        que o painel deve crescer com o conteúdo e só ganhar
        scrollbar quando realmente ultrapassar a altura disponível da
        viewport.
+
+   ─────────────────────────────────────────────
+   REFINAMENTO 4 — MODAL VOLTA A PERTENCER À SEÇÃO (fixed → absolute)
+   ─────────────────────────────────────────────
+   Problema relatado pelo usuário: ao rolar o scroll global da
+   página, o painel de detalhe "subia sozinho"/ficava para trás,
+   saindo completamente da área da conquista onde foi aberto —
+   inclusive aparecendo sobreposto a outras seções distantes
+   (ex.: "Atividade recente"), como mostrado em screenshot.
+
+   Causa raiz: tanto `.ach-modal-backdrop` quanto `.ach-modal` usavam
+   `position:fixed`, o que os prendia à VIEWPORT, não à seção de
+   Conquistas. Para tentar compensar isso, o JS reposicionava o
+   painel a cada evento de `scroll` (ver conquistas.js) — só que o
+   nome da função usada no listener nunca existiu no arquivo
+   (`_achOnScrollOuResizeReposicionar` vs. a função real,
+   `_achOnResizeReposicionar`), então o reposicionamento por scroll
+   nunca funcionou de fato, e o painel realmente ficava "preso" a
+   uma posição de viewport enquanto a página rolava por baixo dele.
+
+   Correção: `.ach-modal-backdrop` e `.ach-modal` passam a usar
+   `position:absolute`, com `.ach-v2-scope` como containing block
+   (`position:relative` adicionado ao wrapper). Com isso o painel
+   passa a fazer parte do fluxo posicional da própria seção de
+   Conquistas — o scroll nativo do navegador já o move junto com o
+   card que o originou, sem necessidade de nenhum listener de
+   scroll. O cálculo de POSIÇÃO (qual lado abrir, coordenadas)
+   continua sendo feito com getBoundingClientRect() em
+   conquistas.js — só a conversão final passou a ser relativa ao
+   container, não mais direto para a viewport. Nenhuma cor, texto,
+   animação, seta ou estrutura de conteúdo do painel mudou.
+
+   Removida também a variante de seletor
+   `.ach-modal-backdrop.ach-v2-scope` (só existia para o caso do
+   backdrop ser movido para filho direto de `<body>`, revertido
+   junto com esta correção — ver nota em conquistas.js).
    ═══════════════════════════════════════════════════════════ */
 
 .ach-v2-scope {
+  /* REFINAMENTO 4 — necessário para que .ach-modal-backdrop e
+     .ach-modal (ambos position:absolute) fiquem escopados à seção
+     de Conquistas como containing block, em vez de "vazarem" para
+     o body/viewport. */
+  position: relative;
+
   /* ── Fundos — mapeados aos tokens globais do dashboard,
        mesma hierarquia container→painel→ícone usada em todo o
        resto do sistema (ver Score/Fraquezas/Perfil de Uso). ── */
@@ -451,13 +493,14 @@
    continua abaixo, sem nenhuma alteração de cor, texto ou estrutura.
 
      · .ach-modal-backdrop deixou de escurecer/borrar a tela — agora
-       é só uma camada invisível e full-screen usada para detectar
-       "clique fora" (o dashboard continua 100% visível e utilizável).
-     · .ach-modal é position:fixed com `top`/`left` calculados via
-       JS (getBoundingClientRect do card + _achPosicionarPopover em
-       conquistas.js) — nunca mais centralizado na tela. width
-       continua 340px (idêntico ao modal anterior), só a POSIÇÃO
-       mudou.
+       é só uma camada invisível usada para detectar "clique fora"
+       (o dashboard continua 100% visível e utilizável).
+     · .ach-modal é position:absolute (ver REFINAMENTO 4 acima) com
+       `top`/`left` calculados via JS (getBoundingClientRect do card
+       + _achPosicionarPopover em conquistas.js, convertidos para
+       coordenadas relativas ao container) — nunca mais centralizado
+       na tela. width continua 340px (idêntico ao modal anterior),
+       só a POSIÇÃO mudou.
      · [data-side] controla de qual lado o painel "nasce" em relação
        ao card (right/left/below/above) — o JS decide dinamicamente
        qual cabe na viewport e aplica o atributo. O transform-origin
@@ -481,23 +524,18 @@
        "assentar" opacidade).
      · Fechar por scroll/mouseleave foi removido no JS (conquistas.js
        AJUSTE 3) — nada neste CSS controlava esse comportamento, e
-       nada aqui precisou mudar por causa disso. ══ */
-       .ach-v2-scope .ach-modal-backdrop{
-  position:fixed; inset:0; background:transparent;
-  /* REFINAMENTO 4 — nunca intercepta cliques. Antes ficava
-     pointer-events:auto quando aberto e, por cobrir a tela
-     inteira, "roubava" qualquer clique — inclusive em outro card
-     de conquista — antes que ele chegasse ao elemento de baixo.
-     Era essa a causa real do painel "fechando sozinho": não tinha
-     nada a ver com mouse se movendo, e sim com qualquer clique em
-     outro lugar da tela enquanto o painel estava aberto. A detecção
-     de "clique fora" agora é feita por um listener no document
-     (ver conquistas.js, _achInicializarUmaVez). */
-  pointer-events:none; z-index:50;
-}
+       nada aqui precisou mudar por causa disso.
+
+   REFINAMENTO 4 (ver nota completa no topo do arquivo):
+     · position:fixed → position:absolute em .ach-modal-backdrop e
+       .ach-modal. O painel volta a pertencer ao fluxo posicional da
+       seção de Conquistas (.ach-v2-scope, agora position:relative),
+       em vez de ficar preso à viewport. Isso é o que faz o scroll
+       global da página mover o painel naturalmente junto com o
+       card, sem nenhum JS de scroll. ══ */
 
 .ach-v2-scope .ach-modal{
-  position:fixed; top:0; left:0;
+  position:absolute; top:0; left:0;
   width:340px; max-width:calc(100vw - 32px);
   height:auto; max-height:calc(100vh - 32px); overflow-y:auto;
   background:var(--bg-surface); border:1px solid var(--ach-border-strong);
@@ -506,7 +544,17 @@
   opacity:0; visibility:hidden; pointer-events:none;
   text-align:center;
 }
-
+/* REFINAMENTO 4 — position:fixed → position:absolute. O backdrop
+   agora é sempre filho direto de .ach-v2-scope no HTML (nenhum
+   transplante para <body> — ver conquistas.js), então um único
+   seletor já cobre o caso real; a variante
+   ".ach-modal-backdrop.ach-v2-scope" foi removida por não se
+   aplicar mais a nenhum cenário. */
+.ach-v2-scope .ach-modal-backdrop{
+  position:absolute; inset:0; background:transparent;
+  pointer-events:none; z-index:50;
+}
+.ach-v2-scope .ach-modal-backdrop.open{ pointer-events:auto; }
 /* Direção de entrada/saída — cada lado define de onde o painel
    "nasce" (usado pelas keyframes abaixo via --ach-pop-from). */
 .ach-v2-scope .ach-modal[data-side="right"]{ transform-origin:left center;   --ach-pop-from:translateX(-12px) scale(.96); }
