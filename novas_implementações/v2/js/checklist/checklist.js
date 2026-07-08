@@ -8,6 +8,8 @@
      ✔ Resolver dinamicamente o caminho de checklist_data.js a
        partir do semestre selecionado (State.semestre)
      ✔ Carregar o progresso do usuário (checklist_storage.js)
+     ✔ Carregar/salvar o estado de UI dos accordions — quais
+       disciplinas/categorias estão recolhidas (checklist_storage.js)
      ✔ Validar as disciplinas do checklist contra a lista OFICIAL
        do semestre (getDisciplinasDeSemestre) — ver Fase "Disciplinas
        oficiais" abaixo
@@ -61,6 +63,21 @@
        arbitrária" possível)
 
    ─────────────────────────────────────────────
+   ESTADO DE UI DOS ACCORDIONS — persistência por semestre
+   ─────────────────────────────────────────────
+   Quais disciplinas/categorias estão recolhidas é lido de
+   checklist_storage.js (carregarEstadoUI) ANTES de chamar
+   renderChecklist(), e passado a ela como estado inicial — assim
+   um F5 restaura exatamente o que estava aberto/fechado. Toda vez
+   que o usuário expande/recolhe algo, checklist_renderer.js chama
+   o callback abaixo (onMudarEstadoUI), que apenas repassa para
+   salvarEstadoUI(semestre, estadoUI). Este arquivo não guarda
+   esse estado em memória — cada leitura/escrita passa direto por
+   checklist_storage.js, que já usa o mesmo localStorage do
+   progresso (chave própria, por semestre, sem misturar com
+   progresso nem com outros semestres).
+
+   ─────────────────────────────────────────────
    DIAGNÓSTICO — 404 ao importar checklist_data.js
    ─────────────────────────────────────────────
    import() dinâmico resolve caminhos relativos com base na URL
@@ -80,7 +97,7 @@
 
 import { State } from '../dashboard_data.js';
 import { getUsuario, getDisciplinasDeSemestre } from '../../../../src/global.js';
-import { carregarProgresso, salvarItem } from './checklist_storage.js';
+import { carregarProgresso, salvarItem, carregarEstadoUI, salvarEstadoUI } from './checklist_storage.js';
 import { renderChecklist, renderEstadoVazio } from './checklist_renderer.js';
 
 let _viewAberta   = false;
@@ -244,10 +261,26 @@ export async function abrirChecklist(containerEl) {
 
   const checklistDataValidado = { disciplinas: disciplinasMescladas };
 
-  renderChecklist(containerEl, checklistDataValidado, progresso, semestre, (itemId, concluido) => {
-    const usuario = getUsuario?.();
-    salvarItem(usuario?.uid ?? null, semestre, itemId, concluido).catch(() => {});
-  });
+  /* Estado de UI dos accordions (quais disciplinas/categorias estão
+     recolhidas) — lido do mesmo semestre, ANTES de renderizar, para
+     que a primeira pintura na tela já saia exatamente como o
+     usuário deixou (sem "piscar" tudo aberto e depois recolher). */
+  const estadoUISalvo = carregarEstadoUI(semestre);
+
+  renderChecklist(
+    containerEl,
+    checklistDataValidado,
+    progresso,
+    semestre,
+    (itemId, concluido) => {
+      const usuario = getUsuario?.();
+      salvarItem(usuario?.uid ?? null, semestre, itemId, concluido).catch(() => {});
+    },
+    estadoUISalvo,
+    (estadoUI) => {
+      salvarEstadoUI(semestre, estadoUI);
+    }
+  );
 }
 
 /* Chamado por dashboard.js ao voltar para a view padrão do

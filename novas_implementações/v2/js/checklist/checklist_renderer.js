@@ -15,6 +15,45 @@
    (total/concluídos por disciplina), nunca um campo fictício.
 
    ─────────────────────────────────────────────
+   REDESIGN v4 — MASONRY de 2 colunas independentes (corrige
+   "buracos" verticais quando uma disciplina é recolhida)
+   ─────────────────────────────────────────────
+   CAUSA RAIZ do bug: CSS Grid tradicional (grid-template-columns:
+   1fr 1fr) organiza os itens em LINHAS — a altura de cada linha é
+   sempre o máximo entre as células daquela linha. Ao recolher uma
+   disciplina, a linha inteira só encolhe até a altura do vizinho
+   mais alto da MESMA linha; a disciplina da linha seguinte nunca
+   "sabe" que sobrou espaço acima, porque Grid não tem noção de
+   preenchimento entre linhas. É uma limitação estrutural do
+   modelo de Grid, não um bug de implementação.
+   CORREÇÃO: em vez de 1 container em grid, `.checklist-disciplinas`
+   agora é um `display:flex` HORIZONTAL contendo 2 (ou 1, no
+   mobile) sub-containers `.checklist-disciplinas-col`, cada um em
+   `display:flex; flex-direction:column` — ou seja, 2 colunas
+   TOTALMENTE INDEPENDENTES entre si, cada uma em fluxo normal de
+   documento. Assim, quando uma disciplina de uma coluna recolhe,
+   somente as disciplinas ABAIXO DELA NA MESMA COLUNA sobem — sem
+   depender de linhas compartilhadas com a outra coluna. É o mesmo
+   mecanismo simples que já funcionava bem quando só existia 1
+   coluna (fluxo normal), duplicado em 2 colunas.
+   Distribuição: as disciplinas filtradas/ordenadas são divididas
+   por índice alternado (round-robin: índice par → coluna 0, ímpar
+   → coluna 1) em _renderColunasHtml/_numColunasAtual — mantém a
+   ordem de leitura (A,C na esquerda / B,D na direita, igual ao
+   layout visual de 2 colunas atual) sem depender de medir altura
+   em JS. O número de colunas é decidido por `matchMedia` (2 acima
+   de 900px, 1 abaixo — mesmo breakpoint do CSS anterior) e
+   recalculado automaticamente quando a tela cruza esse breakpoint
+   (ver `_mediaQueryDuasColunas` no fim do arquivo), então no
+   mobile as disciplinas voltam a aparecer em ordem sequencial
+   normal, sem qualquer split.
+   ANIMAÇÃO: nenhuma técnica nova foi necessária para a
+   reorganização ficar suave — como cada coluna é fluxo normal de
+   documento, o encolhimento contínuo do card (grid-template-rows
+   já animado, ver mais abaixo) já faz o navegador reposicionar os
+   vizinhos da mesma coluna quadro a quadro, exatamente como
+   acontecia antes de existir a divisão em colunas.
+   ─────────────────────────────────────────────
    REDESIGN v3 — categorias voltam a ser uma LISTA VERTICAL, cada
    uma com accordion PRÓPRIO (em vez de abas horizontais, que não
    escalam para disciplinas com muitas categorias). Também corrige
@@ -40,10 +79,19 @@
      }
 
    Estado de UI (filtro ativo, ordenação, disciplinas e categorias
-   colapsadas) é 100% visual, mantido em módulo (_estado) e
-   resetado sempre que renderChecklist() é chamado de novo (troca
-   de semestre ou reabertura da view) — não é persistido, não faz
-   parte de `progresso` e não afeta checklist_storage.js.
+   colapsadas) é mantido em módulo (_estado), sempre reconstruído
+   quando renderChecklist() é chamado de novo (troca de semestre ou
+   reabertura da view). filtro/ordenação continuam 100% efêmeros
+   (nunca persistidos). Já colapsados/categoriasColapsadas — que
+   registram quais disciplinas/categorias estão RECOLHIDAS — são
+   inicializados a partir de `estadoUISalvo` (parâmetro recebido de
+   fora, já lido do armazenamento por checklist.js) e, a cada
+   alteração, são repassados para fora via o callback
+   `onMudarEstadoUI`. Este arquivo continua SEM SABER onde/como
+   isso é persistido (localStorage, Firestore, etc.) — só lê o
+   estado inicial que recebeu e avisa quando ele muda, mantendo a
+   responsabilidade única de renderização. Quem decide onde salvar
+   é sempre checklist.js (via checklist_storage.js).
 
    Toggle de item (checkbox) e colapso de disciplina/categoria são
    feitos por atualização direta do DOM (sem re-renderizar a árvore
@@ -147,13 +195,43 @@ const _ICON_CIRCLE = `
    ───────────────────────────────────────────── */
 let _estado = null;
 
-function _estadoInicial() {
+/* Callback opcional recebido por renderChecklist(), chamado toda
+   vez que colapsados/categoriasColapsadas mudam (ver
+   _persistirEstadoUI). Resetado a cada renderChecklist() novo,
+   igual a _estado. */
+let _onMudarEstadoUI = null;
+
+/* Referência para o rerender mais recente (ver _ligarEventos),
+   usada pelo listener de matchMedia registrado logo abaixo, para
+   redesenhar a lista de disciplinas quando a tela cruza o
+   breakpoint de 2↔1 colunas (ver REDESIGN v4 no topo do arquivo). */
+let _rerenderAtual = null;
+
+/* `estadoUISalvo` (opcional) vem de fora já lido do armazenamento
+   — { colapsados: string[], categoriasColapsadas: string[] } —
+   com os IDs que estavam RECOLHIDOS na última visita. Ausente ou
+   inválido = tudo expandido (mesmo default de sempre). */
+function _estadoInicial(estadoUISalvo) {
+  const salvo = estadoUISalvo ?? {};
   return {
     filtro: 'todas',        // todas | andamento | concluidas | nao-iniciadas
     ordenacao: 'padrao',    // padrao | nome | progresso-desc | progresso-asc
-    colapsados: new Set(),           // ids de disciplina recolhidas
-    categoriasColapsadas: new Set(), // chaves "discId::catId" recolhidas
+    colapsados: new Set(Array.isArray(salvo.colapsados) ? salvo.colapsados : []),
+    categoriasColapsadas: new Set(Array.isArray(salvo.categoriasColapsadas) ? salvo.categoriasColapsadas : []),
   };
+}
+
+/* Serializa colapsados/categoriasColapsadas (Sets) para arrays e
+   repassa ao callback externo, se houver. Chamado apenas nos dois
+   pontos onde essas duas coleções realmente mudam (toggle de
+   disciplina e toggle de categoria em _ligarEventos) — nunca a
+   cada clique de checkbox nem a cada rerender de filtro/ordenação. */
+function _persistirEstadoUI() {
+  if (typeof _onMudarEstadoUI !== 'function') return;
+  _onMudarEstadoUI({
+    colapsados: Array.from(_estado.colapsados),
+    categoriasColapsadas: Array.from(_estado.categoriasColapsadas),
+  });
 }
 
 export function renderEstadoVazio(containerEl, mensagem) {
@@ -365,20 +443,54 @@ function _construirControlesHtml() {
     </div>`;
 }
 
+/* ─────────────────────────────────────────────
+   MASONRY — 2 colunas independentes (ver comentário REDESIGN v4
+   no topo do arquivo). Mesmo breakpoint do CSS (900px): acima
+   disso, 2 colunas; 900px ou abaixo, 1 coluna só (sem split). */
+const _mediaQueryDuasColunas = window.matchMedia('(min-width: 901px)');
+
+/* Registrado uma única vez (escopo de módulo, não por render) —
+   sempre que a tela cruza o breakpoint, redesenha a lista de
+   disciplinas para recalcular quantas colunas usar. */
+_mediaQueryDuasColunas.addEventListener('change', () => {
+  _rerenderAtual?.();
+});
+
+function _numColunasAtual() {
+  return _mediaQueryDuasColunas.matches ? 2 : 1;
+}
+
+/* Distribui a lista já filtrada/ordenada em N colunas por índice
+   alternado (round-robin: 0,2,4... na coluna 0; 1,3,5... na
+   coluna 1) — mantém a ordem de leitura sem precisar medir altura
+   em JS. Cada coluna vira um sub-container de fluxo normal
+   totalmente independente (ver .checklist-disciplinas-col no
+   CSS), o que é o que garante que recolher uma disciplina nunca
+   deixa "buraco": só os itens abaixo dela NA MESMA COLUNA sobem. */
+function _renderColunasHtml(listaFiltrada, progresso) {
+  const numColunas = _numColunasAtual();
+  const colunas = Array.from({ length: numColunas }, () => []);
+  listaFiltrada.forEach((d, i) => colunas[i % numColunas].push(d));
+
+  return colunas
+    .map(col => `<div class="checklist-disciplinas-col">${col.map(d => _renderDisciplinaHtml(d, progresso)).join('')}</div>`)
+    .join('');
+}
+
 /* Redesenha cabeçalho + controles + lista de disciplinas por
    inteiro, a partir do estado atual (_estado) + dados/progresso
    recebidos. Reatribui os listeners delegados a cada chamada,
    pois o innerHTML inteiro é substituído. Chamado apenas em
    reações pouco frequentes (abrir a view, trocar filtro/ordenação,
-   colapsar disciplina) — NUNCA a cada clique de checkbox (ver
-   _atualizarContadores). */
+   colapsar disciplina, cruzar o breakpoint de colunas) — NUNCA a
+   cada clique de checkbox (ver _atualizarContadores). */
 function _renderCompleto(containerEl, checklistData, progresso, semestre, onToggleItem) {
   const disciplinas = checklistData?.disciplinas ?? [];
   const stats = _statsGlobais(disciplinas, progresso);
   const listaFiltrada = _filtrarOrdenarDisciplinas(disciplinas, progresso);
 
   const listaHtml = listaFiltrada.length
-    ? listaFiltrada.map(d => _renderDisciplinaHtml(d, progresso)).join('')
+    ? _renderColunasHtml(listaFiltrada, progresso)
     : '<div class="checklist-filtro-vazio">Nenhuma disciplina encontrada para este filtro.</div>';
 
   containerEl.innerHTML = `
@@ -391,7 +503,18 @@ function _renderCompleto(containerEl, checklistData, progresso, semestre, onTogg
 }
 
 function _ligarEventos(containerEl, checklistData, progresso, semestre, onToggleItem) {
-  const rerender = () => _renderCompleto(containerEl, checklistData, progresso, semestre, onToggleItem);
+  const rerender = () => {
+    /* Guarda simples: se o container não está mais no documento
+       (view fechada / trocada), não há nada para redesenhar. */
+    if (!containerEl.isConnected) return;
+    _renderCompleto(containerEl, checklistData, progresso, semestre, onToggleItem);
+  };
+
+  /* Mantém sempre a referência do rerender mais recente, para que
+     o listener de matchMedia (registrado uma única vez, fora desta
+     função) saiba redesenhar a lista quando a tela cruzar o
+     breakpoint de 2↔1 colunas. */
+  _rerenderAtual = rerender;
 
   /* ── Filtro por status ── */
   const filterTabs = containerEl.querySelector('.checklist-filter-tabs');
@@ -430,6 +553,7 @@ function _ligarEventos(containerEl, checklistData, progresso, semestre, onToggle
       else _estado.categoriasColapsadas.delete(chave);
       blocoCat.classList.toggle('is-collapsed', colapsarAgora);
       catHeader.setAttribute('aria-expanded', String(!colapsarAgora));
+      _persistirEstadoUI();
       return;
     }
 
@@ -443,6 +567,7 @@ function _ligarEventos(containerEl, checklistData, progresso, semestre, onToggle
       else _estado.colapsados.delete(discId);
       bloco.classList.toggle('is-collapsed', colapsarAgora);
       header.setAttribute('aria-expanded', String(!colapsarAgora));
+      _persistirEstadoUI();
       return;
     }
   });
@@ -543,8 +668,17 @@ function _atualizarHeaderStats(containerEl, stats) {
    os contadores possam ser atualizados sem re-renderizar a árvore
    inteira a cada clique. `onToggleItem(itemId, concluido)` é
    chamado apenas como efeito colateral de persistência — não
-   afeta o que é exibido (isso já foi feito antes de chamá-lo). */
-export function renderChecklist(containerEl, checklistData, progresso, semestre, onToggleItem) {
+   afeta o que é exibido (isso já foi feito antes de chamá-lo).
+
+   `estadoUISalvo` (opcional) — { colapsados, categoriasColapsadas }
+   já lido do armazenamento por checklist.js — restaura quais
+   disciplinas/categorias estavam recolhidas na última visita a
+   este semestre. `onMudarEstadoUI(estadoUI)` (opcional) é chamado
+   toda vez que o usuário expande/recolhe uma disciplina ou
+   categoria, para que checklist.js persista a mudança; assim como
+   onToggleItem, é só efeito colateral — nunca afeta o que já foi
+   desenhado na tela. */
+export function renderChecklist(containerEl, checklistData, progresso, semestre, onToggleItem, estadoUISalvo, onMudarEstadoUI) {
   const disciplinas = checklistData?.disciplinas ?? [];
 
   if (disciplinas.length === 0) {
@@ -552,6 +686,7 @@ export function renderChecklist(containerEl, checklistData, progresso, semestre,
     return;
   }
 
-  _estado = _estadoInicial();
+  _estado = _estadoInicial(estadoUISalvo);
+  _onMudarEstadoUI = onMudarEstadoUI ?? null;
   _renderCompleto(containerEl, checklistData, progresso, semestre, onToggleItem);
 }

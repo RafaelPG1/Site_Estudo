@@ -52,24 +52,40 @@
    `progresso`.
 
    ─────────────────────────────────────────────
-   TESTE — grid de DUAS COLUNAS para as disciplinas
+   MASONRY — 2 colunas INDEPENDENTES para as disciplinas
    ─────────────────────────────────────────────
-   .checklist-disciplinas passa de coluna única (flex column) para
-   um grid de exatamente 2 colunas de largura igual
-   (grid-template-columns: 1fr 1fr), aproveitando melhor a largura
-   da página. `align-items: start` evita que um card alto "estique"
-   o vizinho da mesma linha (cada disciplina continua com altura
-   própria conforme seu conteúdo/accordion), mas os dois cards de
-   uma mesma linha ficam alinhados no topo. Abaixo de 900px volta a
-   1 coluna (mesmo padrão dos breakpoints já existentes no arquivo)
-   para não espremer o conteúdo em telas menores. Nada além da
-   disposição das disciplinas foi alterado — categorias continuam
-   verticais, accordions continuam funcionando como antes. */
+   A primeira versão do grid de 2 colunas usava
+   `display:grid; grid-template-columns:1fr 1fr`. CSS Grid organiza
+   os itens em LINHAS — a altura de cada linha é o máximo entre as
+   células daquela linha — então recolher uma disciplina só
+   encolhia a linha até a altura do vizinho mais alto da MESMA
+   linha; a disciplina da linha seguinte nunca subia para preencher
+   o espaço, criando "buracos" visuais. É uma limitação estrutural
+   do modelo de Grid, não algo ajustável com align-items/
+   grid-auto-rows.
+   CORREÇÃO: `.checklist-disciplinas` passa a ser um
+   `display:flex` HORIZONTAL contendo 2 (ou 1, no mobile)
+   sub-containers `.checklist-disciplinas-col`, cada um em
+   `display:flex; flex-direction:column` — colunas TOTALMENTE
+   independentes em fluxo normal de documento. `checklist_renderer.js`
+   é quem decide, via `matchMedia`, quantas colunas existem e
+   distribui as disciplinas entre elas (round-robin por índice,
+   mantendo a ordem de leitura); este arquivo só estiliza os dois
+   níveis (linha horizontal + cada coluna vertical). Como cada
+   coluna é fluxo normal, recolher uma disciplina automaticamente
+   sobe todo o resto ABAIXO DELA NA MESMA COLUNA — sem "buracos" e
+   sem precisar de altura fixa, JS de medição, ou biblioteca de
+   masonry externa. A animação de reorganização continua sendo a
+   mesma transição de `grid-template-rows` já usada no collapse de
+   cada card (ver comentário logo abaixo) — como ela anima
+   continuamente quadro a quadro, o navegador já reposiciona os
+   vizinhos da mesma coluna de forma suave, sem JS adicional.
+*/
 
 .view-checklist {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
   min-width: 0;
 }
 
@@ -273,8 +289,9 @@
 
 .checklist-filter-tabs {
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 12px;
 }
 .checklist-filter-tab {
   font: inherit;
@@ -314,7 +331,7 @@
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--r-sm);
-  padding: 7px 10px;
+  padding: 8px 12px;
   cursor: pointer;
 }
 .checklist-sort-select:hover { border-color: var(--border-2); }
@@ -328,23 +345,32 @@
   background: var(--surface);
   border: 1px dashed var(--border-2);
   border-radius: var(--r-lg);
-  /* ocupa a linha inteira do grid quando é o único item exibido */
-  grid-column: 1 / -1;
+  /* ocupa a linha inteira quando é o único filho de
+     .checklist-disciplinas (nenhuma coluna é criada nesse caso) */
+  flex: 1 1 100%;
+  width: 100%;
 }
 
-/* ── Grid de disciplinas — 2 colunas de largura igual ──
-   `align-items: start` faz cada card manter sua própria altura
-   (conforme conteúdo/accordion aberto ou fechado), em vez de
-   esticar para acompanhar o vizinho mais alto da mesma linha. */
+/* ── Grid (agora flex) de disciplinas — colunas independentes ──
+   O split real em N colunas é decidido em JS (matchMedia +
+   round-robin, ver checklist_renderer.js); aqui só existem os
+   dois níveis de container: a linha horizontal (`.checklist-
+   disciplinas`) e cada coluna vertical independente
+   (`.checklist-disciplinas-col`), cada uma em fluxo normal de
+   documento — é isso que elimina os "buracos" ao recolher uma
+   disciplina (ver comentário MASONRY no topo do arquivo). */
 .checklist-disciplinas {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  align-items: start;
+  display: flex;
+  align-items: flex-start;
   gap: 16px;
+  min-width: 0;
 }
-
-@media (max-width: 900px) {
-  .checklist-disciplinas { grid-template-columns: 1fr; }
+.checklist-disciplinas-col {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 /* ══════════════════════════════════════
