@@ -1,0 +1,265 @@
+/* dashboard\css\checklist\checklist.css
+ proibo de mudar o caminho, os arquivos deve ter os caminhos para saber onde estar
+
+   Estilos exclusivos do módulo Checklist (view SPA dentro do
+   Dashboard). Depende apenas dos tokens definidos em
+   dashboard.css (:root) — por isso este arquivo deve ser
+   carregado SEMPRE depois de dashboard.css no <head> de
+   dashboard.html. Nenhum estilo de outro módulo é lido ou
+   sobrescrito aqui — escopo 100% contido em .view-checklist. */
+
+.view-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+/* ── Carregando ── */
+.checklist-loading {
+  padding: 40px 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+/* ── Estado vazio (sem semestre / sem checklist_data.js) ── */
+.checklist-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 60px 20px;
+  text-align: center;
+}
+.checklist-empty-icon {
+  width: 56px; height: 56px;
+  border-radius: var(--r-md);
+  background: var(--border);
+  color: var(--text-3);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.checklist-empty-msg {
+  font-size: 13px;
+  color: var(--text-3);
+  max-width: 440px;
+  line-height: 1.6;
+}
+
+/* ── Cabeçalho ── */
+.checklist-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 22px 26px;
+  min-width: 0;
+}
+
+.checklist-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(19px, 3vw, 24px);
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: -.5px;
+}
+
+.checklist-subtitle {
+  font-size: 12.5px;
+  color: var(--text-3);
+  margin-top: 4px;
+}
+
+.checklist-progress-geral {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.checklist-progress-ring-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 140px;
+}
+
+.checklist-progress-bar-bg {
+  width: 120px;
+  height: 6px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.checklist-progress-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--accent-lite);
+  transition: width .5s cubic-bezier(.4,0,.2,1);
+}
+
+.checklist-progress-pct {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent-lite);
+  white-space: nowrap;
+}
+
+.checklist-progress-label {
+  font-size: 11.5px;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .checklist-header { flex-direction: column; align-items: stretch; }
+  .checklist-progress-geral { justify-content: space-between; }
+}
+
+/* ── Grade de disciplinas (não assume nenhuma disciplina fixa) ── */
+.checklist-disciplinas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.checklist-disc-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  transition: border-color .2s ease;
+}
+.checklist-disc-card:hover { border-color: var(--border-2); }
+
+.checklist-disc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+.checklist-disc-titulo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.checklist-disc-emoji {
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.checklist-disc-nome {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.checklist-disc-contagem {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+
+.checklist-disc-bar-bg {
+  width: 100%;
+  height: 4px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.checklist-disc-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--accent-lite);
+  transition: width .5s cubic-bezier(.4,0,.2,1);
+}
+
+.checklist-itens-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.checklist-itens-vazio {
+  font-size: 12px;
+  color: var(--text-3);
+  font-style: italic;
+  padding: 6px 0;
+}
+
+/* ── Item individual ── */
+.checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 4px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  min-width: 0;
+  position: relative;
+  transition: background .15s ease;
+}
+.checklist-item:hover { background: var(--surface-2); }
+
+.checklist-item-checkbox {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.checklist-item-check {
+  width: 18px; height: 18px;
+  border-radius: 5px;
+  border: 1.5px solid var(--border-2);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  color: transparent;
+  transition: background .15s ease, border-color .15s ease, color .15s ease;
+}
+
+.checklist-item.is-concluido .checklist-item-check {
+  background: var(--accent-lite);
+  border-color: var(--accent-lite);
+  color: var(--bg);
+}
+
+.checklist-item-titulo {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.4;
+  min-width: 0;
+  overflow-wrap: break-word;
+  transition: color .15s ease;
+}
+
+.checklist-item.is-concluido .checklist-item-titulo {
+  color: var(--text-3);
+  text-decoration: line-through;
+}
+
+@media (max-width: 768px) {
+  .checklist-disciplinas { grid-template-columns: minmax(0, 1fr); }
+  .checklist-header { padding: 18px 20px; }
+}

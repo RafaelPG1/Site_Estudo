@@ -106,6 +106,31 @@
        usar a mesma linguagem do restante do dashboard
    Nenhuma outra lógica deste arquivo foi alterada — apenas
    a função _atualizar() dentro de _initSessionTimer().
+
+   ─────────────────────────────────────────────
+   MÓDULO CHECKLIST — NAVEGAÇÃO SPA (novo)
+   ─────────────────────────────────────────────
+   Adicionado o módulo Checklist como uma segunda "view" dentro
+   de .content, alternada via display — sem nenhum reload de
+   página, sem novo checklist.html. Sidebar, cabeçalho e o
+   seletor de semestre nunca são recriados/tocados.
+
+   Este arquivo passou a conhecer apenas 4 coisas do módulo
+   Checklist (import de dashboard/js/checklist/checklist.js):
+     - abrirChecklist(containerEl)   → monta a view
+     - fecharChecklist()             → limpa flag de estado aberto
+     - checklistEstaAberta()         → usado ao trocar de semestre,
+                                        para saber se precisa recarregar
+   Toda a lógica de dados/renderização do Checklist vive isolada
+   nesse módulo — dashboard.js apenas alterna a view e delega.
+
+   Novo:
+     - _setNavAtivo(id) — helper de UI (marca item ativo na sidebar)
+     - _mostrarViewChecklist() / _mostrarViewDashboard() — troca de view
+     - wiring de clique em #nav-home, #nav-checklist, #tool-btn-checklist
+     - _trocarSemestre() passou a recarregar o Checklist quando a
+       view já está aberta no momento da troca de semestre.
+   Nenhuma outra lógica pré-existente deste arquivo foi alterada.
    ============================================= */
 
 import {
@@ -153,6 +178,13 @@ import {
   _renderMetricasVazio,
   _renderNavegacaoAoVivo,
 } from './dashboard_data.js';
+
+/* ── Checklist (módulo desacoplado — ver dashboard/js/checklist/) ── */
+import {
+  abrirChecklist,
+  fecharChecklist,
+  checklistEstaAberta,
+} from './checklist/checklist.js';
 
 /* ══════════════════════════════════════════════
    WRAPPER DE TEMA
@@ -212,6 +244,18 @@ function _trocarSemestre(novoSemestre) {
      _carregarMetricasReais lê State.semestre internamente, por isso
      basta chamá-la após a atualização do State acima. */
   _carregarMetricasReais().catch(() => {});
+
+  /* Checklist — módulo desacoplado (ver dashboard/js/checklist/).
+     Se a view do Checklist estiver aberta no momento da troca de
+     semestre, ela precisa ser recarregada com o novo semestre;
+     caso contrário continuaria mostrando os dados do semestre
+     anterior até o usuário navegar para fora e voltar. Se a view
+     não estiver aberta, checklist.js resolve o semestre correto
+     sozinho (via State.semestre) na próxima vez que for aberta. */
+  if (checklistEstaAberta()) {
+    const viewChecklist = document.getElementById('view-checklist');
+    if (viewChecklist) abrirChecklist(viewChecklist).catch(() => {});
+  }
 }
 
 /* ══════════════════════════════════════════════
@@ -323,6 +367,67 @@ function _escapeHtml(str) {
 }
 
 /* ══════════════════════════════════════════════
+   NAVEGAÇÃO SPA — Dashboard ↔ Checklist
+   ─────────────────────────────────────────────
+   Sidebar, cabeçalho (.topbar) e o seletor de semestre vivem
+   FORA de #view-dashboard-home / #view-checklist e nunca são
+   recriados ao alternar de view. Apenas o conteúdo principal
+   é trocado, via display — nenhum reload de página, nenhuma
+   navegação de URL.
+
+   _setNavAtivo() cuida apenas do estado visual (.active) dos
+   itens da sidebar — mesma classe já usada estaticamente no
+   HTML original ("Dashboard" nasce com .active).
+══════════════════════════════════════════════ */
+function _setNavAtivo(idAtivo) {
+  document.querySelectorAll('.sidebar-nav .nav-item').forEach(el => {
+    el.classList.toggle('active', el.id === idAtivo);
+  });
+}
+
+async function _mostrarViewChecklist() {
+  const home = document.getElementById('view-dashboard-home');
+  const view = document.getElementById('view-checklist');
+  if (!home || !view) return;
+
+  home.style.display = 'none';
+  view.style.display = '';
+  _setNavAtivo('nav-checklist');
+
+  await abrirChecklist(view);
+}
+
+function _mostrarViewDashboard() {
+  const home = document.getElementById('view-dashboard-home');
+  const view = document.getElementById('view-checklist');
+  if (!home || !view) return;
+
+  view.style.display = 'none';
+  home.style.display = '';
+  _setNavAtivo('nav-home');
+  fecharChecklist();
+}
+
+function _initNavegacaoSpa() {
+  document.getElementById('nav-home')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    _mostrarViewDashboard();
+  });
+
+  document.getElementById('nav-checklist')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    _mostrarViewChecklist();
+  });
+
+  /* Botão "Checklist" na grade de Ferramentas Pessoais — mesmo
+     destino da navegação da sidebar, apenas outro ponto de entrada
+     para a mesma view. */
+  document.getElementById('tool-btn-checklist')?.addEventListener('click', () => {
+    _mostrarViewChecklist();
+  });
+}
+
+/* ══════════════════════════════════════════════
    SESSION TIMER — ao vivo
    Exibe o tempo ativo desta aba (ou pausa se não
    for a aba líder).
@@ -407,9 +512,10 @@ async function _bootPagina() {
   _renderGreeting();
   _renderUsuario();
 
-_initSessionTimer();
+  _initSessionTimer();
   _initProgressBarAnimation();
   _initTooltipPositioning();
+  _initNavegacaoSpa();
 
   await _carregarMetricasReais();
 

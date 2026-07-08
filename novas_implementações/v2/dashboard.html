@@ -48,6 +48,12 @@
   <link rel="stylesheet" href="css/dashboard_cards.css" />
   <link rel="stylesheet" href="css/conquistas.css" />
 
+  <!-- ═══ Checklist — módulo desacoplado, view SPA dentro do Dashboard ═══
+       Carregado DEPOIS de dashboard.css/dashboard_cards.css (depende dos
+       mesmos tokens :root). Nenhum estilo de outro módulo é lido ou
+       sobrescrito por este arquivo. -->
+  <link rel="stylesheet" href="css/checklist/checklist.css" />
+
   <!-- ═══ Warm-up complementar de rede/módulos (Firestore) ═══════
        preconnect/dns-prefetch: adianta DNS + handshake TLS com o
        host do Firestore, em paralelo com o fetch() de warm-up acima.
@@ -666,7 +672,7 @@
 
     <!-- ── Navegação principal ── -->
     <nav class="sidebar-nav">
-      <a class="nav-item active" href="#">
+      <a class="nav-item active" href="#" id="nav-home">
         <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
           <rect x="1" y="1" width="6" height="6" rx="1.5"/>
           <rect x="9" y="1" width="6" height="6" rx="1.5"/>
@@ -678,7 +684,7 @@
 
       <span class="nav-label">Pessoal</span>
 
-      <a class="nav-item" href="#">
+      <a class="nav-item" href="#" id="nav-checklist">
         <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
           <path d="M2 4h12M2 8h8M2 12h10"/>
           <path d="M13 6l1.5 1.5L13 9" stroke-linecap="round" stroke-linejoin="round"/>
@@ -764,8 +770,18 @@
 
     <!-- ══════════════════════════════════════════════════
          CONTENT
+         ─────────────────────────────────────────────────
+         NAVEGAÇÃO SPA — Sidebar, Cabeçalho (header/topbar) e o
+         seletor de semestre ficam FORA de .content e nunca são
+         recriados. Dentro de .content existem duas views
+         irmãs, alternadas via display por dashboard.js:
+           #view-dashboard-home → conteúdo original do Dashboard
+           #view-checklist      → módulo Checklist (ver
+                                   dashboard/js/checklist/checklist.js)
+         Nenhum reload de página ocorre ao trocar de view.
     ══════════════════════════════════════════════════ -->
     <div class="content">
+      <div id="view-dashboard-home">
 
       <!-- ── PAGE HEADER ───────────────────────────────────── -->
       <div class="page-header">
@@ -799,7 +815,7 @@
         <div class="tools-card">
           <div class="tools-grid">
 
-            <button class="tool-btn t-checklist">
+            <button class="tool-btn t-checklist" id="tool-btn-checklist">
               <div class="tool-icon ic-purple">
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
                   <path d="M3 5h12M3 9h8M3 13h10"/>
@@ -1529,6 +1545,19 @@
 
         </div><!-- /.ach-v2-scope -->
       </section>
+
+      </div><!-- /view-dashboard-home -->
+
+      <!-- ══════════════════════════════════════════════════
+           VIEW — CHECKLIST (módulo desacoplado)
+           ─────────────────────────────────────────────────
+           Vazio por padrão — todo o conteúdo é montado por
+           dashboard/js/checklist/checklist.js via
+           renderChecklist()/renderEstadoVazio() (ver
+           checklist_renderer.js). Nenhum HTML de checklist é
+           escrito estaticamente aqui, além deste container.
+      ══════════════════════════════════════════════════ -->
+      <div id="view-checklist" class="view-checklist" style="display:none;"></div>
 
     </div><!-- /content -->
   </main>
