@@ -8,6 +8,9 @@
      ✔ Resolver dinamicamente o caminho de checklist_data.js a
        partir do semestre selecionado (State.semestre)
      ✔ Carregar o progresso do usuário (checklist_storage.js)
+     ✔ Validar as disciplinas do checklist contra a lista OFICIAL
+       do semestre (getDisciplinasDeSemestre) — ver Fase "Disciplinas
+       oficiais" abaixo
      ✔ Delegar toda a renderização a checklist_renderer.js
      ✔ Persistir alterações de progresso — nunca modifica
        checklist_data.js
@@ -18,10 +21,40 @@
    "2026") — nunca hardcoded. Adicionar um novo semestre nunca
    exige alterar este arquivo: basta criar a pasta e o
    checklist_data.js correspondente.
+   IMPORTANTE: este caminho continua indexado pelo SEMESTRE COMPLETO
+   (ex.: "2026.1-AP2"), não pelo período-base — porque o CONTEÚDO
+   do checklist (tarefas/itens) é diferente entre AP1 e AP2, mesmo
+   que as disciplinas sejam as mesmas. Só a lista de disciplinas é
+   compartilhada entre AP1/AP2; os itens continuam por semestre.
 
-   Este arquivo não lê State.intelligence, State.disciplinas ou
-   qualquer outro dado da Camada 5 — é totalmente desacoplado do
-   restante do Dashboard, como pedido.
+   ─────────────────────────────────────────────
+   DISCIPLINAS OFICIAIS — fonte única de verdade (obrigatório)
+   ─────────────────────────────────────────────
+   O Checklist NUNCA aceita disciplinas arbitrárias. checklist_data.js
+   não declara nome/emoji de disciplina — apenas referencia um
+   `disciplinaId` e a lista de itens daquela disciplina. Quem diz
+   quais disciplinas existem (nome, emoji, cor) em cada semestre é
+   SEMPRE getDisciplinasDeSemestre() (src/global.js) — a MESMA fonte
+   já usada pelo restante do Dashboard (disc-grid, sidebar, cores de
+   tema). Isso evita ter duas listas de disciplinas divergentes.
+
+   getDisciplinasDeSemestre() já recebe o semestre completo (ex.:
+   "2026.1-AP2") e resolve internamente o período-base (2026.1) —
+   é por isso que AP1 e AP2 já mostram as mesmas disciplinas em
+   outras partes do Dashboard. O Checklist reaproveita exatamente
+   essa mesma chamada, sem reimplementar a regra "AP1/AP2 = mesmas
+   disciplinas" — reimplementar seria criar uma segunda fonte de
+   verdade, o que é exatamente o que este módulo deve evitar.
+
+   _mesclarComDisciplinasOficiais() cruza checklistData.disciplinas
+   (só disciplinaId + itens) com a lista oficial (id + nome + emoji):
+     - disciplinaId que existe oficialmente  → aparece no Checklist,
+       com nome/emoji vindos da fonte oficial (nunca de
+       checklist_data.js)
+     - disciplinaId que NÃO existe oficialmente naquele semestre →
+       descartado silenciosamente da UI, com aviso no console (não
+       quebra a tela, só não é exibido — não existe "disciplina
+       arbitrária" possível)
 
    ─────────────────────────────────────────────
    DIAGNÓSTICO — 404 ao importar checklist_data.js
@@ -42,7 +75,7 @@
    alterado: apenas a forma de resolvê-lo e reportá-lo. */
 
 import { State } from '../dashboard_data.js';
-import { getUsuario } from '../../../../src/global.js';
+import { getUsuario, getDisciplinasDeSemestre } from '../../../../src/global.js';
 import { carregarProgresso, salvarItem } from './checklist_storage.js';
 import { renderChecklist, renderEstadoVazio } from './checklist_renderer.js';
 
@@ -56,6 +89,45 @@ export function checklistEstaAberta() {
 function _resolverCaminhoDados(semestre) {
   const ano = String(semestre ?? '').slice(0, 4);
   return `../../../../content/pessoal/${ano}/${semestre}/checklist_data.js`;
+}
+
+/* Cruza as disciplinas declaradas em checklist_data.js (apenas
+   `disciplinaId` + `itens`) com a lista OFICIAL de disciplinas do
+   semestre (getDisciplinasDeSemestre). Nome, emoji e ordem sempre
+   vêm da fonte oficial — nunca do checklist_data.js.
+
+   Qualquer disciplinaId que não exista oficialmente no semestre é
+   descartado da exibição (não é um erro fatal: apenas não aparece),
+   com aviso no console para facilitar detectar checklist_data.js
+   desatualizados (ex.: disciplina renomeada/removida do semestre). */
+function _mesclarComDisciplinasOficiais(checklistData, disciplinasOficiais, semestre) {
+  const oficiaisPorId = new Map((disciplinasOficiais ?? []).map(d => [d.id, d]));
+  const disciplinasChecklist = checklistData?.disciplinas ?? [];
+
+  const mescladas = [];
+
+  disciplinasChecklist.forEach(discChecklist => {
+    const oficial = oficiaisPorId.get(discChecklist.disciplinaId);
+
+    if (!oficial) {
+      console.warn(
+        `[checklist] Disciplina "${discChecklist.disciplinaId}" não existe na lista oficial ` +
+        `do semestre "${semestre}" (getDisciplinasDeSemestre) — ignorada na exibição. ` +
+        `Verifique se o disciplinaId em checklist_data.js está correto ou se a disciplina ` +
+        `ainda está cadastrada para este semestre.`
+      );
+      return;
+    }
+
+    mescladas.push({
+      id:    oficial.id,
+      nome:  oficial.nome,
+      emoji: oficial.emoji ?? null,
+      itens: discChecklist.itens ?? [],
+    });
+  });
+
+  return mescladas;
 }
 
 async function _importarDadosSemestre(semestre) {
@@ -118,7 +190,7 @@ export async function abrirChecklist(containerEl) {
 
   containerEl.innerHTML = `<div class="checklist-loading">Carregando checklist…</div>`;
 
-  const [checklistData, progresso] = await Promise.all([
+  const [checklistDataBruto, progresso] = await Promise.all([
     _importarDadosSemestre(semestre),
     (async () => {
       const usuario = getUsuario?.();
@@ -131,7 +203,7 @@ export async function abrirChecklist(containerEl) {
      sobrescrever o que já está na tela. */
   if (minhaGeracao !== _geracaoAtual) return;
 
-  if (!checklistData) {
+  if (!checklistDataBruto) {
     const ano = String(semestre).slice(0, 4);
     renderEstadoVazio(
       containerEl,
@@ -140,7 +212,26 @@ export async function abrirChecklist(containerEl) {
     return;
   }
 
-  renderChecklist(containerEl, checklistData, progresso, semestre, (itemId, concluido) => {
+  /* Fonte única de verdade das disciplinas: a MESMA função já usada
+     por dashboard.js para o disc-grid/sidebar/cores. O Checklist
+     nunca declara disciplinas por conta própria. */
+  const disciplinasOficiais = getDisciplinasDeSemestre(semestre) ?? [];
+  const disciplinasMescladas = _mesclarComDisciplinasOficiais(
+    checklistDataBruto, disciplinasOficiais, semestre
+  );
+
+  if (disciplinasMescladas.length === 0) {
+    renderEstadoVazio(
+      containerEl,
+      `Nenhuma disciplina do checklist deste semestre corresponde às disciplinas oficiais de ${semestre}. ` +
+      `Verifique os campos "disciplinaId" em checklist_data.js (veja o console para detalhes).`
+    );
+    return;
+  }
+
+  const checklistDataValidado = { disciplinas: disciplinasMescladas };
+
+  renderChecklist(containerEl, checklistDataValidado, progresso, semestre, (itemId, concluido) => {
     const usuario = getUsuario?.();
     salvarItem(usuario?.uid ?? null, semestre, itemId, concluido).catch(() => {});
   });
