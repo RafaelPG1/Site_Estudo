@@ -214,13 +214,11 @@ let _rerenderAtual = null;
 function _estadoInicial(estadoUISalvo) {
   const salvo = estadoUISalvo ?? {};
   return {
-    filtro: 'todas',        // todas | andamento | concluidas | nao-iniciadas
-    ordenacao: 'padrao',    // padrao | nome | progresso-desc | progresso-asc
+    filtro: 'todas',
     colapsados: new Set(Array.isArray(salvo.colapsados) ? salvo.colapsados : []),
     categoriasColapsadas: new Set(Array.isArray(salvo.categoriasColapsadas) ? salvo.categoriasColapsadas : []),
   };
 }
-
 /* Serializa colapsados/categoriasColapsadas (Sets) para arrays e
    repassa ao callback externo, se houver. Chamado apenas nos dois
    pontos onde essas duas coleções realmente mudam (toggle de
@@ -328,7 +326,7 @@ function _renderDisciplinaHtml(disciplina, progresso) {
     </section>`;
 }
 
-function _filtrarOrdenarDisciplinas(disciplinas, progresso) {
+function _filtrarDisciplinas(disciplinas, progresso) {
   let lista = disciplinas.map(d => ({ d, r: _progressoDisciplina(d, progresso) }));
 
   if (_estado.filtro !== 'todas') {
@@ -337,20 +335,6 @@ function _filtrarOrdenarDisciplinas(disciplinas, progresso) {
       if (_estado.filtro === 'nao-iniciadas') return chave === 'nao-iniciada' || chave === 'sem-itens';
       return chave === _estado.filtro;
     });
-  }
-
-  switch (_estado.ordenacao) {
-    case 'nome':
-      lista.sort((a, b) => a.d.nome.localeCompare(b.d.nome, 'pt-BR'));
-      break;
-    case 'progresso-desc':
-      lista.sort((a, b) => b.r.pct - a.r.pct);
-      break;
-    case 'progresso-asc':
-      lista.sort((a, b) => a.r.pct - b.r.pct);
-      break;
-    default:
-      break; // 'padrao' — mantém a ordem original
   }
 
   return lista.map(x => x.d);
@@ -411,6 +395,7 @@ function _construirHeaderHtml(stats, semestre) {
     </div>`;
 }
 
+
 function _construirControlesHtml() {
   const filtros = [
     { chave: 'todas',          label: 'Todas' },
@@ -423,26 +408,11 @@ function _construirControlesHtml() {
       ${f.label}
     </button>`).join('');
 
-  const opcoesOrdenacao = [
-    ['padrao', 'Padrão'],
-    ['nome', 'Nome (A–Z)'],
-    ['progresso-desc', 'Progresso (maior primeiro)'],
-    ['progresso-asc', 'Progresso (menor primeiro)'],
-  ];
-  const opcoesHtml = opcoesOrdenacao
-    .map(([valor, label]) => `<option value="${valor}"${_estado.ordenacao === valor ? ' selected' : ''}>${label}</option>`)
-    .join('');
-
   return `
     <div class="checklist-controls">
       <div class="checklist-filter-tabs" role="tablist">${tabsHtml}</div>
-      <label class="checklist-sort-wrap">
-        <span class="checklist-sort-label">Ordenar</span>
-        <select class="checklist-sort-select" data-ordenacao>${opcoesHtml}</select>
-      </label>
     </div>`;
 }
-
 /* ─────────────────────────────────────────────
    MASONRY — 2 colunas independentes (ver comentário REDESIGN v4
    no topo do arquivo). Mesmo breakpoint do CSS (900px): acima
@@ -487,8 +457,7 @@ function _renderColunasHtml(listaFiltrada, progresso) {
 function _renderCompleto(containerEl, checklistData, progresso, semestre, onToggleItem) {
   const disciplinas = checklistData?.disciplinas ?? [];
   const stats = _statsGlobais(disciplinas, progresso);
-  const listaFiltrada = _filtrarOrdenarDisciplinas(disciplinas, progresso);
-
+const listaFiltrada = _filtrarDisciplinas(disciplinas, progresso);
   const listaHtml = listaFiltrada.length
     ? _renderColunasHtml(listaFiltrada, progresso)
     : '<div class="checklist-filtro-vazio">Nenhuma disciplina encontrada para este filtro.</div>';
@@ -525,12 +494,6 @@ function _ligarEventos(containerEl, checklistData, progresso, semestre, onToggle
     rerender();
   });
 
-  /* ── Ordenação ── */
-  const sortSelect = containerEl.querySelector('[data-ordenacao]');
-  sortSelect?.addEventListener('change', (e) => {
-    _estado.ordenacao = e.target.value;
-    rerender();
-  });
 
   const wrap = containerEl.querySelector('#checklist-disciplinas');
   if (!wrap) return;

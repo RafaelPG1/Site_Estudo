@@ -1,0 +1,594 @@
+/* dashboard\css\tarefa\tarefa.css
+   Módulo Tarefas — reaproveita os tokens de dashboard.css (:root),
+   igual ao Checklist. Identidade própria (.tarefa-*), pois aqui o
+   usuário cria/edita/exclui tudo — diferente do Checklist (só
+   leitura). Carregar SEMPRE depois de dashboard.css. */
+
+.view-tarefas {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.tarefa-loading {
+  padding: 40px 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+/* ── Cabeçalho ── */
+.tarefa-header {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 24px 28px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 10px 28px -16px rgba(0,0,0,.30);
+}
+.tarefa-header-topo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.tarefa-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(19px, 3vw, 24px);
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: -.5px;
+}
+.tarefa-subtitle {
+  font-size: 12.5px;
+  color: var(--text-3);
+  margin-top: 4px;
+}
+
+.tarefa-btn-primario {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--bg);
+  background: var(--accent-lite);
+  border: none;
+  border-radius: var(--r-md);
+  padding: 10px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: filter .15s ease;
+}
+.tarefa-btn-primario:hover { filter: brightness(1.1); }
+
+/* ── Cards de resumo (mesmo padrão visual do Checklist) ── */
+.tarefa-resumo-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.tarefa-resumo-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+}
+.tarefa-resumo-valor {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-1);
+  line-height: 1;
+}
+.tarefa-resumo-label {
+  font-size: 11px;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+@media (max-width: 640px) {
+  .tarefa-resumo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ── Estado vazio ── */
+.tarefa-empty {
+  padding: 48px 20px;
+  text-align: center;
+  background: var(--surface);
+  border: 1px dashed var(--border-2);
+  border-radius: var(--r-lg);
+}
+.tarefa-empty-msg {
+  font-size: 13px;
+  color: var(--text-3);
+  max-width: 420px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.tarefa-vazio {
+  font-size: 12px;
+  color: var(--text-3);
+  font-style: italic;
+  padding: 8px 2px;
+  display: block;
+}
+
+/* ── Listas ── */
+.tarefa-listas-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tarefa-lista-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px -16px rgba(0,0,0,.28);
+  transition: border-color .2s ease;
+}
+.tarefa-lista-block:hover { border-color: var(--border-2); }
+
+.tarefa-lista-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 22px;
+  flex-wrap: wrap;
+}
+
+.tarefa-lista-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  padding: 0;
+  min-width: 0;
+}
+.tarefa-lista-nome {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 15.5px;
+  font-weight: 700;
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Badge de disciplina na lista ── */
+.tarefa-lista-disciplina-badge {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--accent-lite);
+  background: color-mix(in srgb, var(--accent-lite) 14%, transparent);
+  border-radius: 999px;
+  padding: 2px 9px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.tarefa-lista-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 160px;
+}
+.tarefa-lista-bar-bg {
+  flex: 1;
+  max-width: 220px;
+  height: 5px;
+  background: var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.tarefa-lista-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--accent-lite), color-mix(in srgb, var(--accent-lite) 55%, #ffffff));
+  transition: width .5s cubic-bezier(.4,0,.2,1);
+}
+.tarefa-lista-contagem {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.tarefa-lista-pct {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent-lite);
+  white-space: nowrap;
+}
+
+.tarefa-lista-acoes {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.tarefa-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text-3);
+  padding: 6px 9px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: color .15s ease, border-color .15s ease;
+}
+.tarefa-icon-btn:hover { color: var(--text-1); border-color: var(--border-2); }
+
+.tarefa-chevron {
+  flex-shrink: 0;
+  color: var(--text-3);
+  transition: transform .3s cubic-bezier(.4,0,.2,1);
+}
+.tarefa-lista-block.is-collapsed .tarefa-lista-toggle .tarefa-chevron { transform: rotate(-90deg); }
+.tarefa-categoria.is-collapsed .tarefa-categoria-toggle .tarefa-chevron { transform: rotate(-90deg); }
+
+/* Accordion — mesma técnica do Checklist (minmax(0,...) garante
+   colapso real a 0px, não só corte visual). */
+.tarefa-lista-body {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  transition: grid-template-rows .35s cubic-bezier(.4,0,.2,1);
+}
+.tarefa-lista-block.is-collapsed .tarefa-lista-body { grid-template-rows: minmax(0, 0fr); }
+.tarefa-lista-body-inner {
+  overflow: hidden;
+  min-height: 0;
+  border-top: 1px solid var(--border);
+  padding: 16px 22px 20px;
+}
+
+/* ── Categorias ── */
+.tarefa-categorias-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tarefa-categoria {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.tarefa-categoria-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  flex-wrap: wrap;
+}
+.tarefa-categoria-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  padding: 0;
+}
+.tarefa-categoria-nome {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tarefa-categoria-contagem {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+.tarefa-categoria-acoes { display: flex; gap: 6px; flex-shrink: 0; }
+
+.tarefa-categoria-body {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  transition: grid-template-rows .3s cubic-bezier(.4,0,.2,1);
+}
+.tarefa-categoria.is-collapsed .tarefa-categoria-body { grid-template-rows: minmax(0, 0fr); }
+.tarefa-categoria-body-inner {
+  overflow: hidden;
+  min-height: 0;
+  padding: 2px 14px 14px;
+}
+
+/* ── Itens (tarefas) ── */
+.tarefa-itens-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.tarefa-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: background .18s ease;
+}
+.tarefa-item:hover { background: var(--surface); }
+.tarefa-item-checkbox { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.tarefa-item-check {
+  width: 19px; height: 19px;
+  border-radius: 6px;
+  border: 1.5px solid var(--border-2);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  color: transparent;
+  background: var(--surface);
+  transition: background .2s ease, border-color .2s ease, color .2s ease, transform .2s ease;
+}
+.tarefa-item.is-concluido .tarefa-item-check {
+  background: linear-gradient(135deg, var(--accent-lite), color-mix(in srgb, var(--accent-lite) 70%, #7a6bff));
+  border-color: transparent;
+  color: var(--bg);
+  transform: scale(1.04);
+}
+.tarefa-item-titulo {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
+  color: var(--text-2);
+  overflow-wrap: break-word;
+}
+.tarefa-item.is-concluido .tarefa-item-titulo {
+  color: var(--text-3);
+  text-decoration: line-through;
+  text-decoration-color: var(--border-2);
+}
+.tarefa-item-acoes {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity .15s ease;
+}
+.tarefa-item:hover .tarefa-item-acoes { opacity: 1; }
+.tarefa-item-acoes .tarefa-icon-btn { padding: 5px 6px; }
+
+/* ── Modal genérico (renomear/confirmar) ── */
+.tarefa-modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.55);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200;
+  opacity: 0;
+  transition: opacity .2s ease;
+}
+.tarefa-modal-overlay.is-aberto { opacity: 1; }
+.tarefa-modal {
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-lg);
+  padding: 24px;
+  width: min(360px, 90vw);
+  box-shadow: 0 20px 60px rgba(0,0,0,.5);
+  transform: translateY(8px);
+  transition: transform .2s ease;
+}
+.tarefa-modal-overlay.is-aberto .tarefa-modal { transform: translateY(0); }
+.tarefa-modal-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-1);
+  margin-bottom: 14px;
+}
+.tarefa-modal-msg { font-size: 13px; color: var(--text-2); line-height: 1.5; margin-bottom: 18px; }
+.tarefa-modal-label { display: block; font-size: 11.5px; color: var(--text-3); margin-bottom: 6px; }
+.tarefa-modal-input {
+  width: 100%;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--text-1);
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-sm);
+  padding: 10px 12px;
+  margin-bottom: 20px;
+}
+.tarefa-modal-input:focus { outline: none; border-color: var(--accent-lite); }
+.tarefa-modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+.tarefa-modal-btn {
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  border-radius: var(--r-sm);
+  padding: 8px 16px;
+  cursor: pointer;
+  border: 1px solid var(--border-2);
+  background: var(--surface-2);
+  color: var(--text-2);
+}
+.tarefa-modal-btn-confirmar { background: var(--accent-lite); border-color: transparent; color: var(--bg); }
+.tarefa-modal-btn-perigo { background: var(--red, #FF5C6A); border-color: transparent; color: #fff; }
+
+/* ── Modal rico de nova lista ── */
+.tarefa-modal--nova-lista {
+  width: min(460px, 92vw);
+  max-height: 85vh;
+  overflow-y: auto;
+}
+.tarefa-modal-tabs {
+  display: flex;
+  gap: 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 4px;
+  margin-bottom: 8px;
+}
+.tarefa-modal-tab {
+  flex: 1;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-3);
+  background: transparent;
+  border: none;
+  border-radius: calc(var(--r-md) - 3px);
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: background .18s ease, color .18s ease;
+}
+.tarefa-modal-tab.is-active {
+  background: var(--accent-lite);
+  color: var(--bg);
+}
+.tarefa-modal-tab-hint {
+  font-size: 11.5px;
+  color: var(--text-3);
+  margin-bottom: 16px;
+}
+.tarefa-modal-section { margin-bottom: 16px; }
+.tarefa-modal-opcional { color: var(--text-3); font-weight: 400; text-transform: none; }
+.tarefa-modal-select {
+  width: 100%;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--text-1);
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-sm);
+  padding: 10px 12px;
+}
+.tarefa-modal-select:focus { outline: none; border-color: var(--accent-lite); }
+.tarefa-modal-separador {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0 16px;
+}
+.tarefa-modal-secao-categorias[hidden] { display: none; }
+
+.tarefa-modal-categorias {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.tarefa-modal-categoria-bloco {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+  animation: tarefaModalFadeIn .18s ease;
+}
+.tarefa-modal-categoria-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.tarefa-modal-categoria-cabecalho .tarefa-modal-input { margin-bottom: 0; flex: 1; }
+.tarefa-modal-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text-3);
+  padding: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color .15s ease, border-color .15s ease;
+}
+.tarefa-modal-icon-btn:hover { color: var(--text-1); border-color: var(--border-2); }
+
+.tarefa-modal-itens-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.tarefa-modal-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--text-2);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 6px 4px 10px;
+  animation: tarefaModalFadeIn .15s ease;
+}
+.tarefa-modal-chip button {
+  background: transparent;
+  border: none;
+  color: var(--text-3);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+}
+.tarefa-modal-chip button:hover { color: var(--red, #FF5C6A); }
+
+.tarefa-modal-add-item .tarefa-modal-input {
+  margin-bottom: 0;
+  font-size: 12.5px;
+  padding: 8px 10px;
+}
+
+.tarefa-modal-btn-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-lite);
+  background: transparent;
+  border: 1px dashed var(--border-2);
+  border-radius: var(--r-sm);
+  padding: 8px 12px;
+  cursor: pointer;
+  width: 100%;
+  justify-content: center;
+  transition: border-color .15s ease, background .15s ease;
+}
+.tarefa-modal-btn-add:hover { border-color: var(--accent-lite); background: color-mix(in srgb, var(--accent-lite) 8%, transparent); }
+
+@keyframes tarefaModalFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 640px) {
+  .tarefa-header-topo { flex-direction: column; align-items: stretch; }
+  .tarefa-lista-meta { min-width: 100%; order: 3; }
+}

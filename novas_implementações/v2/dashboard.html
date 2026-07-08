@@ -53,7 +53,7 @@
        mesmos tokens :root). Nenhum estilo de outro módulo é lido ou
        sobrescrito por este arquivo. -->
   <link rel="stylesheet" href="css/checklist/checklist.css" />
-
+<link rel="stylesheet" href="css/tarefa/tarefa.css" />
   <!-- ═══ Warm-up complementar de rede/módulos (Firestore) ═══════
        preconnect/dns-prefetch: adianta DNS + handshake TLS com o
        host do Firestore, em paralelo com o fetch() de warm-up acima.
@@ -692,7 +692,7 @@
         Checklist
       </a>
 
-      <a class="nav-item" href="#">
+      <a class="nav-item" href="#" id="nav-tarefas">
         <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
           <rect x="2" y="2" width="12" height="12" rx="2"/>
           <path d="M5 6h6M5 9h4"/>
@@ -829,7 +829,7 @@
               </svg>
             </button>
 
-            <button class="tool-btn t-tarefas">
+            <button class="tool-btn t-tarefas" id="tool-btn-tarefas">
               <div class="tool-icon ic-green">
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
                   <rect x="2" y="2" width="14" height="14" rx="2.5"/>
@@ -1558,7 +1558,8 @@
            escrito estaticamente aqui, além deste container.
       ══════════════════════════════════════════════════ -->
       <div id="view-checklist" class="view-checklist" style="display:none;"></div>
-
+<div id="view-checklist" class="view-checklist" style="display:none;"></div>
+<div id="view-tarefas" class="view-tarefas" style="display:none;"></div>
     </div><!-- /content -->
   </main>
   <!-- ═══ ZOOM PADRÃO DA PÁGINA (80%) ═══════════════════════════

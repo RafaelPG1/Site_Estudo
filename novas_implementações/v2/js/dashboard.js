@@ -186,6 +186,12 @@ import {
   checklistEstaAberta,
 } from './checklist/checklist.js';
 
+/* ── Tarefas (módulo desacoplado — ver dashboard/js/tarefa/) ── */
+import {
+  abrirTarefas,
+  fecharTarefas,
+  tarefasEstaAberta,
+} from './tarefa/tarefa.js';
 /* ══════════════════════════════════════════════
    WRAPPER DE TEMA
 ══════════════════════════════════════════════ */
@@ -385,29 +391,41 @@ function _setNavAtivo(idAtivo) {
   });
 }
 
-async function _mostrarViewChecklist() {
-  const home = document.getElementById('view-dashboard-home');
-  const view = document.getElementById('view-checklist');
-  if (!home || !view) return;
+function _esconderTodasViews() {
+  document.getElementById('view-dashboard-home')?.style.setProperty('display', 'none');
+  document.getElementById('view-checklist')?.style.setProperty('display', 'none');
+  document.getElementById('view-tarefas')?.style.setProperty('display', 'none');
+}
 
-  home.style.display = 'none';
+async function _mostrarViewChecklist() {
+  const view = document.getElementById('view-checklist');
+  if (!view) return;
+  _esconderTodasViews();
   view.style.display = '';
   _setNavAtivo('nav-checklist');
-
+  fecharTarefas();
   await abrirChecklist(view);
+}
+
+async function _mostrarViewTarefas() {
+  const view = document.getElementById('view-tarefas');
+  if (!view) return;
+  _esconderTodasViews();
+  view.style.display = '';
+  _setNavAtivo('nav-tarefas');
+  fecharChecklist();
+  await abrirTarefas(view);
 }
 
 function _mostrarViewDashboard() {
   const home = document.getElementById('view-dashboard-home');
-  const view = document.getElementById('view-checklist');
-  if (!home || !view) return;
-
-  view.style.display = 'none';
+  if (!home) return;
+  _esconderTodasViews();
   home.style.display = '';
   _setNavAtivo('nav-home');
   fecharChecklist();
+  fecharTarefas();
 }
-
 function _initNavegacaoSpa() {
   document.getElementById('nav-home')?.addEventListener('click', (e) => {
     e.preventDefault();
@@ -425,6 +443,15 @@ function _initNavegacaoSpa() {
   document.getElementById('tool-btn-checklist')?.addEventListener('click', () => {
     _mostrarViewChecklist();
   });
+
+  document.getElementById('nav-tarefas')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  _mostrarViewTarefas();
+});
+
+document.getElementById('tool-btn-tarefas')?.addEventListener('click', () => {
+  _mostrarViewTarefas();
+});
 }
 
 /* ══════════════════════════════════════════════
