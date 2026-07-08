@@ -32,8 +32,12 @@
    ─────────────────────────────────────────────
    O Checklist NUNCA aceita disciplinas arbitrárias. checklist_data.js
    não declara nome/emoji de disciplina — apenas referencia um
-   `disciplinaId` e a lista de itens daquela disciplina. Quem diz
-   quais disciplinas existem (nome, emoji, cor) em cada semestre é
+   `disciplinaId` e a lista de CATEGORIAS daquela disciplina (ex.:
+   "Aulas", "Exercícios", "Projeto"), cada categoria com seus itens.
+   Isso é conteúdo/estrutura interna do checklist, livre para o autor
+   de cada checklist_data.js organizar como quiser — só a disciplina-
+   -mãe é validada. Quem diz quais disciplinas existem (nome, emoji, cor)
+   em cada semestre é
    SEMPRE getDisciplinasDeSemestre() (src/global.js) — a MESMA fonte
    já usada pelo restante do Dashboard (disc-grid, sidebar, cores de
    tema). Isso evita ter duas listas de disciplinas divergentes.
@@ -92,9 +96,12 @@ function _resolverCaminhoDados(semestre) {
 }
 
 /* Cruza as disciplinas declaradas em checklist_data.js (apenas
-   `disciplinaId` + `itens`) com a lista OFICIAL de disciplinas do
-   semestre (getDisciplinasDeSemestre). Nome, emoji e ordem sempre
-   vêm da fonte oficial — nunca do checklist_data.js.
+   `disciplinaId` + `categorias`) com a lista OFICIAL de disciplinas
+   do semestre (getDisciplinasDeSemestre). Nome, emoji e ordem da
+   DISCIPLINA sempre vêm da fonte oficial — nunca do checklist_data.js.
+   `categorias` (Aulas/Exercícios/Projeto/...) e seus `itens` são
+   conteúdo próprio do checklist e passam direto — este módulo não
+   impõe categorias fixas, só valida a disciplina-mãe.
 
    Qualquer disciplinaId que não exista oficialmente no semestre é
    descartado da exibição (não é um erro fatal: apenas não aparece),
@@ -119,11 +126,17 @@ function _mesclarComDisciplinasOficiais(checklistData, disciplinasOficiais, seme
       return;
     }
 
+    const categorias = (discChecklist.categorias ?? []).map(cat => ({
+      id:    cat.id,
+      nome:  cat.nome,
+      itens: cat.itens ?? [],
+    }));
+
     mescladas.push({
       id:    oficial.id,
       nome:  oficial.nome,
       emoji: oficial.emoji ?? null,
-      itens: discChecklist.itens ?? [],
+      categorias,
     });
   });
 

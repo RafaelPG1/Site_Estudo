@@ -8,21 +8,68 @@
    dashboard.html. Nenhum estilo de outro módulo é lido ou
    sobrescrito aqui — escopo 100% contido em .view-checklist.
 
+   Também reaproveita as classes globais de cor de ícone já usadas
+   em outras cards do Dashboard (ic-purple / ic-green / ic-amber /
+   ic-blue, ver dashboard.html) para os chips de estatística —
+   propositalmente, para manter a MESMA identidade visual em vez
+   de inventar uma paleta nova só para o Checklist.
+
    ─────────────────────────────────────────────
-   REDESIGN — visual "SaaS premium" (blocos por disciplina)
+   REDESIGN v3 — categorias voltam a ser LISTA VERTICAL, cada uma
+   com accordion PRÓPRIO (em vez de abas horizontais)
    ─────────────────────────────────────────────
-   Cada disciplina passa a ser um bloco visualmente independente:
-   cantos mais arredondados, sombra suave em camadas, respiro
-   generoso entre disciplinas, badge de ícone em vez de emoji solto,
-   checkbox customizado com animação de "pop" ao marcar, e barra de
-   progresso com gradiente. Nenhuma classe foi renomeada — apenas
-   estilizada com mais profundidade — então checklist_renderer.js
-   não precisou de nenhuma alteração. */
+   Abas horizontais (v2) não escalam: disciplinas podem ter dezenas
+   de categorias (Aulas, Exercícios, Trabalhos, Projetos, Avaliações,
+   Leituras, Laboratórios, Desafios, Revisão, Material Complementar,
+   Seminários, Atividades Extras...) e uma linha de abas com todas
+   elas quebraria o layout. Cada categoria agora é seu próprio bloco
+   vertical com header clicável (expande/recolhe) — suporta qualquer
+   quantidade de categorias sem estourar a largura, só a altura (e
+   cada uma pode ficar recolhida quando não está em uso).
+
+   ─────────────────────────────────────────────
+   CAUSA RAIZ do bug "conteúdo sobra ao recolher a disciplina" (v2)
+   ─────────────────────────────────────────────
+   A animação de collapse usava `grid-template-rows: 1fr` (aberto) →
+   `0fr` (fechado). Um valor de track sozinho como `1fr`/`0fr` é
+   equivalente a `minmax(auto, 1fr)`/`minmax(auto, 0fr)` — o mínimo
+   continua `auto` (min-content do conteúdo interno), NUNCA vira `0`
+   de verdade. Por isso o card, ao "fechar", só ficava cortado pela
+   metade pelo `overflow: hidden` do pai (que sempre esteve correto)
+   em vez de colapsar de fato — o problema nunca foi o clipping, foi
+   o track nunca chegar a 0px de tamanho real.
+   CORREÇÃO: os dois níveis de accordion (disciplina e categoria)
+   usam `grid-template-rows: minmax(0, 1fr)` aberto e
+   `grid-template-rows: minmax(0, 0fr)` fechado — forçando o mínimo
+   do track a 0, então o conteúdo colapsa de verdade a 0px. Continua
+   100% CSS (sem medir altura em JS, sem height fixa, sem opacity
+   como substituto de esconder); checklist_renderer.js só alterna a
+   classe `.is-collapsed` no elemento pai — todo o resto é CSS.
+
+   Todo estado de UI (filtro, ordenação, disciplinas/categorias
+   colapsadas) é 100% visual — ver comentário equivalente em
+   checklist_renderer.js. Nada disso é persistido nem faz parte de
+   `progresso`.
+
+   ─────────────────────────────────────────────
+   TESTE — grid de DUAS COLUNAS para as disciplinas
+   ─────────────────────────────────────────────
+   .checklist-disciplinas passa de coluna única (flex column) para
+   um grid de exatamente 2 colunas de largura igual
+   (grid-template-columns: 1fr 1fr), aproveitando melhor a largura
+   da página. `align-items: start` evita que um card alto "estique"
+   o vizinho da mesma linha (cada disciplina continua com altura
+   própria conforme seu conteúdo/accordion), mas os dois cards de
+   uma mesma linha ficam alinhados no topo. Abaixo de 900px volta a
+   1 coluna (mesmo padrão dos breakpoints já existentes no arquivo)
+   para não espremer o conteúdo em telas menores. Nada além da
+   disposição das disciplinas foi alterado — categorias continuam
+   verticais, accordions continuam funcionando como antes. */
 
 .view-checklist {
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 20px;
   min-width: 0;
 }
 
@@ -59,13 +106,13 @@
   line-height: 1.6;
 }
 
-/* ── Cabeçalho ── */
+/* ══════════════════════════════════════
+   CABEÇALHO — título + anel de progresso geral + chips de status
+══════════════════════════════════════ */
 .checklist-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 16px;
+  flex-direction: column;
+  gap: 20px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
@@ -73,6 +120,16 @@
   min-width: 0;
   box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 10px 28px -16px rgba(0,0,0,.30);
 }
+
+.checklist-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.checklist-header-left { min-width: 0; }
 
 .checklist-title {
   font-family: 'Space Grotesk', sans-serif;
@@ -88,151 +145,298 @@
   margin-top: 4px;
 }
 
-.checklist-progress-geral {
+/* Anel de progresso — conic-gradient em vez de SVG, usa os
+   mesmos tokens de cor do resto do Dashboard. --pct é 0–100. */
+.checklist-ring-wrap {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   flex-shrink: 0;
 }
 
-.checklist-progress-ring-wrap {
+.checklist-ring {
+  --pct: 0;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: conic-gradient(
+    var(--accent-lite) calc(var(--pct) * 1%),
+    var(--border) 0
+  );
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-width: 140px;
+  justify-content: center;
+  transition: background .5s ease;
+}
+.checklist-ring-hole {
+  width: 58px; height: 58px;
+  border-radius: 50%;
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.checklist-ring-pct {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-1);
 }
 
-.checklist-progress-bar-bg {
-  width: 120px;
-  height: 7px;
-  background: var(--border);
-  border-radius: 6px;
-  overflow: hidden;
+.checklist-ring-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
-.checklist-progress-bar-fill {
-  height: 100%;
-  border-radius: 6px;
-  background: linear-gradient(90deg, var(--accent-lite), color-mix(in srgb, var(--accent-lite) 60%, #ffffff));
-  transition: width .5s cubic-bezier(.4,0,.2,1);
-}
-
-.checklist-progress-pct {
+.checklist-ring-fracao {
   font-family: 'Space Grotesk', sans-serif;
   font-size: 15px;
   font-weight: 700;
-  color: var(--accent-lite);
-  white-space: nowrap;
+  color: var(--text-1);
 }
-
-.checklist-progress-label {
+.checklist-ring-label {
   font-size: 11.5px;
   color: var(--text-3);
-  white-space: nowrap;
+}
+.checklist-ring-restam {
+  font-size: 11.5px;
+  color: var(--accent-lite);
+  font-weight: 500;
+  margin-top: 2px;
 }
 
-@media (max-width: 560px) {
-  .checklist-header { flex-direction: column; align-items: stretch; }
-  .checklist-progress-geral { justify-content: space-between; }
+/* Chips de status das disciplinas — derivados de dados reais
+   (não existe "atrasado" no modelo, então não é exibido aqui). */
+.checklist-stats-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
-
-/* ── Grade de disciplinas (não assume nenhuma disciplina fixa —
-     disciplinas vêm sempre validadas contra a lista oficial do
-     semestre em checklist.js) ── */
-.checklist-disciplinas {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 24px;
-}
-
-.checklist-disc-card {
-  background: var(--surface);
+.checklist-stat-chip {
+  flex: 1 1 160px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 24px 26px 22px;
+  border-radius: var(--r-md);
+  padding: 11px 14px;
+}
+.checklist-stat-icon {
+  width: 34px; height: 34px;
+  border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  background: var(--border);
+}
+.checklist-stat-body {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 2px;
   min-width: 0;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px -14px rgba(0,0,0,.28);
-  transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease;
+}
+.checklist-stat-label {
+  font-size: 11px;
+  color: var(--text-3);
+  font-weight: 450;
+  white-space: nowrap;
+}
+.checklist-stat-value {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-1);
 }
 
-/* Fita de destaque no topo — dá "identidade de seção" a cada
-   bloco, sem depender de cor por disciplina (que pode não existir
-   para todas). Sutil de propósito. */
-.checklist-disc-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--accent-lite), transparent 85%);
-  opacity: .85;
+@media (max-width: 640px) {
+  .checklist-header-top { flex-direction: column; align-items: stretch; }
+  .checklist-ring-wrap { justify-content: flex-start; }
+}
+@media (max-width: 420px) {
+  .checklist-stats-row { flex-direction: column; }
+  .checklist-stat-chip { flex-basis: auto; }
 }
 
-.checklist-disc-card:hover {
-  border-color: var(--border-2);
-  box-shadow: 0 2px 6px rgba(0,0,0,.06), 0 18px 40px -16px rgba(0,0,0,.38);
-  transform: translateY(-2px);
-}
-
-.checklist-disc-head {
+/* ══════════════════════════════════════
+   CONTROLES — filtro por status + ordenação
+══════════════════════════════════════ */
+.checklist-controls {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 12px;
-  min-width: 0;
 }
 
-.checklist-disc-titulo-wrap {
+.checklist-filter-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.checklist-filter-tab {
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+  white-space: nowrap;
+}
+.checklist-filter-tab:hover {
+  color: var(--text-2);
+  border-color: var(--border-2);
+}
+.checklist-filter-tab.is-active {
+  background: var(--accent-dim, rgba(108,99,255,.14));
+  border-color: var(--accent-lite);
+  color: var(--accent-lite);
+}
+
+.checklist-sort-wrap {
   display: flex;
   align-items: center;
-  gap: 12px;
-  min-width: 0;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+.checklist-sort-select {
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--text-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 7px 10px;
+  cursor: pointer;
+}
+.checklist-sort-select:hover { border-color: var(--border-2); }
+
+.checklist-filtro-vazio {
+  padding: 32px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-3);
+  font-style: italic;
+  background: var(--surface);
+  border: 1px dashed var(--border-2);
+  border-radius: var(--r-lg);
+  /* ocupa a linha inteira do grid quando é o único item exibido */
+  grid-column: 1 / -1;
 }
 
-/* Badge de ícone — substitui o emoji "solto" por um selo com fundo,
-   mesma linguagem visual dos ic-purple/ic-green etc. usados no
-   resto do Dashboard (círculo/quadrado com contraste sutil). */
+/* ── Grid de disciplinas — 2 colunas de largura igual ──
+   `align-items: start` faz cada card manter sua própria altura
+   (conforme conteúdo/accordion aberto ou fechado), em vez de
+   esticar para acompanhar o vizinho mais alto da mesma linha. */
+.checklist-disciplinas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .checklist-disciplinas { grid-template-columns: 1fr; }
+}
+
+/* ══════════════════════════════════════
+   BLOCO DE DISCIPLINA
+══════════════════════════════════════ */
+.checklist-disc-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px -16px rgba(0,0,0,.28);
+  transition: border-color .2s ease;
+  min-width: 0;
+}
+.checklist-disc-block:hover { border-color: var(--border-2); }
+
+.checklist-disc-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 24px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+.checklist-disc-header:hover { background: var(--surface-2); }
+
 .checklist-disc-emoji {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 12px;
   background: var(--accent-dim, rgba(108,99,255,.12));
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: 17px;
   flex-shrink: 0;
 }
 
+.checklist-disc-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.checklist-disc-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
 .checklist-disc-nome {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 15.5px;
+  font-weight: 700;
   color: var(--text-1);
-  letter-spacing: -.2px;
+  letter-spacing: -.3px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
 }
 
-.checklist-disc-contagem {
-  font-family: 'JetBrains Mono', monospace;
+.checklist-disc-status {
   font-size: 10.5px;
-  color: var(--text-3);
-  flex-shrink: 0;
-  padding: 4px 10px;
+  font-weight: 600;
+  padding: 3px 10px;
   border-radius: 20px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
   white-space: nowrap;
+  flex-shrink: 0;
+}
+.checklist-disc-status.status-concluida    { background: rgba(61,220,132,.14); color: var(--green, #3DDC84); }
+.checklist-disc-status.status-andamento    { background: rgba(79,168,232,.14); color: var(--blue, #4FA8E8); }
+.checklist-disc-status.status-nao-iniciada { background: var(--border); color: var(--text-3); }
+.checklist-disc-status.status-sem-itens    { background: var(--border); color: var(--text-3); font-style: italic; }
+
+.checklist-disc-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
 }
 
 .checklist-disc-bar-bg {
-  width: 100%;
+  flex: 1;
+  max-width: 280px;
   height: 5px;
   background: var(--border);
   border-radius: 6px;
@@ -245,19 +449,158 @@
   transition: width .5s cubic-bezier(.4,0,.2,1);
 }
 
-.checklist-itens-lista {
+.checklist-disc-contagem {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  color: var(--text-3);
+  flex-shrink: 0;
+  padding: 3px 9px;
+  border-radius: 20px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+.checklist-disc-pct {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent-lite);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.checklist-chevron {
+  flex-shrink: 0;
+  color: var(--text-3);
+  transition: transform .3s cubic-bezier(.4,0,.2,1);
+}
+.checklist-disc-block.is-collapsed > .checklist-disc-header .checklist-chevron {
+  transform: rotate(-90deg);
+}
+
+/* Corpo colapsável — técnica grid-template-rows, com MÍNIMO do
+   track forçado a 0 via minmax(0, ...). Isso é o que garante que
+   "fechado" realmente colapsa a 0px (ver comentário no topo do
+   arquivo sobre a causa raiz do bug corrigido nesta versão) — sem
+   medir altura em JS, sem height fixa, sem opacity como substituto
+   de esconder conteúdo. */
+.checklist-disc-body {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  transition: grid-template-rows .35s cubic-bezier(.4,0,.2,1);
+}
+.checklist-disc-block.is-collapsed .checklist-disc-body {
+  grid-template-rows: minmax(0, 0fr);
+}
+.checklist-disc-body-inner {
+  overflow: hidden;
+  min-height: 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  padding-top: 6px;
+  gap: 12px;
   border-top: 1px solid var(--border);
+  padding: 16px 24px 20px;
+}
+
+/* ══════════════════════════════════════
+   CATEGORIAS — lista vertical, cada uma com accordion PRÓPRIO
+   (Aulas / Exercícios / Trabalhos / Projetos / Avaliações / ...).
+   Substitui as abas horizontais: escala para qualquer quantidade
+   de categorias, já que empilha na vertical em vez de disputar
+   largura numa única linha.
+══════════════════════════════════════ */
+.checklist-categorias-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.checklist-categoria {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.checklist-categoria-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+.checklist-categoria-header:hover { background: var(--border); }
+
+.checklist-categoria-header .checklist-chevron { width: 12px; height: 12px; }
+.checklist-categoria.is-collapsed > .checklist-categoria-header .checklist-chevron {
+  transform: rotate(-90deg);
+}
+
+.checklist-categoria-nome {
+  flex: 1;
+  min-width: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.checklist-categoria-contagem {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  color: var(--text-3);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Mesmo princípio do accordion de disciplina: minmax(0, ...)
+   garante colapso real a 0px, não só corte visual. */
+.checklist-categoria-body {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  transition: grid-template-rows .3s cubic-bezier(.4,0,.2,1);
+}
+.checklist-categoria.is-collapsed .checklist-categoria-body {
+  grid-template-rows: minmax(0, 0fr);
+}
+.checklist-categoria-body-inner {
+  overflow: hidden;
+  min-height: 0;
+  min-width: 0;
+  padding: 2px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Grade de itens — até 2 colunas, encolhe sozinha em telas
+   estreitas via auto-fill (nenhuma media query extra necessária
+   para o caso comum). */
+.checklist-itens-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2px 16px;
 }
 
 .checklist-itens-vazio {
   font-size: 12px;
   color: var(--text-3);
   font-style: italic;
-  padding: 8px 4px;
+  padding: 8px 2px;
+  display: block;
 }
 
 /* ── Item individual ── */
@@ -265,8 +608,8 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 8px;
-  border-radius: 10px;
+  padding: 9px 10px;
+  border-radius: 9px;
   cursor: pointer;
   min-width: 0;
   position: relative;
@@ -283,11 +626,9 @@
   pointer-events: none;
 }
 
-/* Checkbox custom — cantos suaves, transição em várias propriedades
-   para dar sensação de "material" ao marcar/desmarcar. */
 .checklist-item-check {
-  width: 20px; height: 20px;
-  border-radius: 7px;
+  width: 19px; height: 19px;
+  border-radius: 6px;
   border: 1.5px solid var(--border-2);
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
@@ -312,9 +653,6 @@
   transform: scale(1.04);
 }
 
-/* Pequena animação de "pop" no ícone de check ao marcar — só roda
-   quando o item ganha .is-concluido (não repete em cada re-render
-   de contador, já que a classe some/some fora dessa transição). */
 .checklist-item.is-concluido .checklist-item-check svg {
   animation: checklist-check-pop .28s cubic-bezier(.34,1.56,.64,1);
 }
@@ -340,7 +678,13 @@
 }
 
 @media (max-width: 768px) {
-  .checklist-disciplinas { grid-template-columns: minmax(0, 1fr); gap: 18px; }
-  .checklist-header { padding: 20px 22px; }
-  .checklist-disc-card { padding: 20px 20px 18px; }
+  .checklist-disc-header { padding: 15px 18px; gap: 12px; }
+  .checklist-disc-body-inner { padding: 14px 18px 16px; }
+  .checklist-disc-bar-bg { max-width: none; }
+  .checklist-disc-emoji { width: 34px; height: 34px; font-size: 15px; }
+}
+
+@media (max-width: 480px) {
+  .checklist-disc-meta { flex-wrap: wrap; row-gap: 6px; }
+  .checklist-itens-grid { grid-template-columns: 1fr; }
 }
