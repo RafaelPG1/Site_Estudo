@@ -109,6 +109,38 @@
    em telas estreitas — o container pai nunca estoura porque
    o scroll fica contido dentro do wrapper, não vaza para a
    página.
+   ═══════════════════════════════════════════════════════════
+
+   ─────────────────────────────────────────────
+   CORREÇÃO — SCROLL "FLUTUANTE" EM
+   Desempenho por Disciplina (.wk-table-wrap)
+   ─────────────────────────────────────────────
+   CAUSA RAIZ: .weaknesses-card.full-width é um flex column,
+   e o grid pai (.intel-grid-weak-consist, em dashboard.css)
+   usa align-items:stretch — então o CARD cresce para acompanhar
+   a altura do card vizinho ("Perfil de uso"). Porém nenhum
+   filho interno de .weaknesses-card.full-width tinha flex:1,
+   então nenhum deles crescia junto: a altura extra do card
+   só era absorvida pelo margin-top:auto de .wk-insight, que
+   empurrava o rodapé para baixo mas deixava .wk-table-wrap
+   com a altura mínima do próprio conteúdo (as linhas da
+   tabela). Resultado: sobrava um vão vazio entre o fim da
+   tabela e o insight, e a scrollbar (desenhada na borda
+   inferior da CAIXA do wrapper, não do conteúdo) ficava colada
+   nas linhas, "flutuando" acima desse vão — sem nenhuma relação
+   visual com o fim real da área disponível no card.
+
+   CORREÇÃO: .weaknesses-lista e .wk-table-wrap passam a ter
+   flex:1 + min-height:0, propagando o crescimento do card até
+   a caixa rolável. min-height:0 é o que efetivamente permite o
+   encolhimento/crescimento correto (por padrão um item flex
+   nunca fica menor que o tamanho mínimo do seu conteúdo).
+   overflow-y:hidden evita uma barra vertical implícita agora
+   que a caixa pode ficar mais alta que o conteúdo. Nenhum valor
+   fixo em px foi usado para altura — tudo é proporcional ao
+   espaço calculado pelo flexbox, então o comportamento é
+   correto com qualquer quantidade de disciplinas e qualquer
+   altura do card vizinho.
    ═══════════════════════════════════════════════════════════ */
 
 
@@ -1009,9 +1041,59 @@
    é intencional (tabela densa de 7 colunas) — não é a causa do bug
    relatado. O scroll fica CONTIDO dentro do wrapper, então nunca
    estoura a página; é o mesmo padrão de qualquer tabela de dados
-   densa em produto SaaS responsivo. */
-.wk-table-wrap { overflow-x: auto; max-width: 100%; -webkit-overflow-scrolling: touch; }
+   densa em produto SaaS responsivo.
+
+   CORREÇÃO — scroll "flutuante": ver nota completa no topo do
+   arquivo ("CORREÇÃO — SCROLL FLUTUANTE"). .weaknesses-lista e
+   .wk-table-wrap ganham flex:1 + min-height:0 para que a área
+   rolável cresça junto com o card (que já cresce via
+   align-items:stretch no grid pai, em dashboard.css), mantendo a
+   scrollbar sempre ancorada no fim real da área disponível — nunca
+   colada nas linhas da tabela com um vão vazio abaixo dela. */
+.weaknesses-lista {
+  display: flex;
+  flex-direction: column;
+  flex: 1;        /* NOVO — herda e propaga o crescimento do card */
+  min-height: 0;  /* NOVO — permite que o item flex encolha/cresça de verdade */
+}
+
+.wk-table-wrap {
+  flex: 1;              /* NOVO — a área rolável ocupa 100% do espaço disponível */
+  min-height: 0;         /* NOVO — mesma razão do item acima */
+  overflow-x: auto;
+  overflow-y: hidden;    /* NOVO — evita scrollbar vertical implícita quando a caixa cresce */
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+  padding-bottom: 10px;      /* espaço fixo e constante reservado para a barra */
+  scrollbar-gutter: stable;  /* evita "pulo" de layout ao a barra aparecer/desaparecer */
+}
 .wk-table { width: 100%; border-collapse: collapse; min-width: 720px; }
+
+/* Scrollbar customizada — fina, discreta, alinhada à identidade
+   visual do dashboard. Mesmo padrão já usado em #activity-timeline. */
+
+/* Firefox */
+.wk-table-wrap {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-2) transparent;
+}
+
+/* Chrome / Edge / Safari / Opera */
+.wk-table-wrap::-webkit-scrollbar {
+  height: 6px;
+}
+.wk-table-wrap::-webkit-scrollbar-track {
+  background: transparent;
+}
+.wk-table-wrap::-webkit-scrollbar-thumb {
+  background-color: var(--border-2);
+  border-radius: 20px;
+  transition: background-color .2s ease;
+}
+.wk-table-wrap::-webkit-scrollbar-thumb:hover {
+  background-color: var(--accent-lite);
+}
 
 .wk-table thead th {
   text-align: left;
