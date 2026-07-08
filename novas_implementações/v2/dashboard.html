@@ -64,7 +64,17 @@
   </script>
 
   <!-- ═══ Estilos locais — componentes exclusivos desta página
-       (heatmap de horários, listas de navegação/quiz) ═══ -->
+       (heatmap de horários, listas de navegação/quiz) ═══
+
+       AUDITORIA DE RESPONSIVIDADE — CAUSA RAIZ (Perfil de Uso)
+       ─────────────────────────────────────────────
+       .usage-stats-row e .usage-periods-row nunca tinham breakpoint
+       — grid/flex de largura fixa sem `minmax(0, 1fr)` nos filhos,
+       então em telas estreitas os 2 chips de estatística e os 4
+       cards de período espremiam o card inteiro para fora da
+       viewport. .heatmap-chart também não tinha limite de altura
+       em telas pequenas. Corrigido diretamente nas regras abaixo —
+       nenhuma classe nova, nenhum HTML alterado. -->
   <style>
 /* ═══════════════════════════════════════════════════════════
    PERFIL DE USO — redesign (cabeçalho + stats + heatmap +
@@ -89,11 +99,13 @@
 /* ── Stats principais (dispositivo / horário de pico) ── */
 .usage-stats-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 20px;
 }
 .usage-stat-chip {
-  flex: 1;
+  flex: 1 1 180px;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -101,7 +113,6 @@
   border: 1px solid var(--border);
   border-radius: var(--r-md);
   padding: 12px 14px;
-  min-width: 0;
 }
 .usage-stat-icon {
   width: 36px; height: 36px;
@@ -148,8 +159,13 @@
 }
 .usage-stat-badge.is-visible { display: inline-flex; }
 
+@media (max-width: 380px) {
+  .usage-stats-row { flex-direction: column; }
+  .usage-stat-chip { flex-basis: auto; }
+}
+
 /* ── Distribuição por hora do dia ── */
-.usage-heatmap-section { margin-bottom: 18px; }
+.usage-heatmap-section { margin-bottom: 18px; min-width: 0; }
 .usage-section-header {
   align-items: center;
 }
@@ -163,6 +179,7 @@
   font-family: 'JetBrains Mono', monospace;
   font-size: 10.5px;
   color: var(--text-3);
+  white-space: nowrap;
 }
 /* v9.3 — espaço vertical entre o cabeçalho ("Distribuição por hora
    do dia" + badge de tempo total) e o gráfico logo abaixo. Antes
@@ -171,6 +188,8 @@
 .usage-heatmap-head {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
   justify-content: space-between;
   margin-bottom: 28px;
 }
@@ -178,6 +197,7 @@
   display: flex;
   gap: 8px;
   align-items: stretch;
+  min-width: 0;
 }
 .usage-heatmap-yaxis {
   display: flex;
@@ -208,6 +228,7 @@
 .heatmap-col {
   flex: 1;
   height: 100%;
+  min-width: 0;
   display: flex;
   align-items: flex-end;
 }
@@ -222,6 +243,15 @@
   background: var(--amber, #FFB547);
   box-shadow: 0 0 0 1px rgba(255,181,71,.25);
 }
+
+/* Em telas pequenas, 24 barras finas com gap de 3px ficam com
+   menos de ~4px de largura útil cada abaixo de ~360px — reduz a
+   altura do gráfico (não a largura, que já é fluida via flex:1)
+   para manter as barras proporcionalmente legíveis. */
+@media (max-width: 480px) {
+  .heatmap-chart { height: 108px; }
+}
+
 /* ─────────────────────────────────────────────────────────────
    EIXO X — v9.3 (correção definitiva do deslocamento de 1 hora)
    ─────────────────────────────────────────────────────────────
@@ -250,25 +280,40 @@
   font-family: 'JetBrains Mono', monospace;
   font-size: 9.5px;
   color: var(--text-3);
+  min-width: 0;
 }
 .usage-heatmap-axis-tick {
   flex: 1;
   min-width: 0;
   text-align: center;
   white-space: nowrap;
+  overflow: hidden;
 }
 .usage-heatmap-axis-tick:first-child { text-align: left; }
 .usage-heatmap-axis-tick:last-child  { text-align: right; }
 
+/* Abaixo de 480px os 24 rótulos ficam sobrepostos entre si (menos
+   de 8px por coluna) mesmo com overflow:hidden. O gráfico + o
+   tooltip por barra (.usage-heatmap-tooltip, já existente) seguem
+   cobrindo o dado exato ao toque/hover, então ocultar o eixo aqui
+   remove ruído sem perder informação. */
+@media (max-width: 480px) {
+  .usage-heatmap-axis { display: none; }
+  .usage-heatmap-yaxis { display: none; }
+}
+
 /* ── Resumo por período do dia (cards com ícone) ── */
 .usage-periods-row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
   padding-top: 16px;
   border-top: 1px solid var(--border);
   margin-bottom: 18px;
 }
+@media (max-width: 560px) { .usage-periods-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 340px) { .usage-periods-row { grid-template-columns: minmax(0, 1fr); } }
+
 .usage-period-card {
   display: flex;
   flex-direction: column;
@@ -302,6 +347,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 .usage-period-pct {
   font-family: 'Space Grotesk', sans-serif;
@@ -329,9 +375,11 @@
 }
 .usage-habits-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
+@media (max-width: 420px) { .usage-habits-row { grid-template-columns: minmax(0, 1fr); } }
+
 .usage-habit-card {
   background: var(--surface-2);
   border: 1px solid var(--border);
@@ -364,10 +412,11 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 .usage-habit-value {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 24px;
+  font-size: clamp(18px, 3vw, 24px);
   font-weight: 700;
   color: var(--accent-lite);
   letter-spacing: -.6px;
@@ -378,6 +427,7 @@
   color: var(--text-3);
   line-height: 1.5;
   margin-top: 3px;
+  overflow-wrap: break-word;
 }
 .usage-habit-bar {
   width: 100%;
@@ -409,11 +459,12 @@
   font-size: 12px;
   color: var(--text-2);
   line-height: 1.5;
+  overflow-wrap: break-word;
 }
 
 @media (max-width: 900px) {
-  .usage-periods-row { grid-template-columns: repeat(2, 1fr); }
-  .usage-habits-row  { grid-template-columns: 1fr; }
+  .usage-periods-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .usage-habits-row  { grid-template-columns: minmax(0, 1fr); }
 }
     .nav-page-item, .quiz-event-item {
       display: flex;
@@ -422,10 +473,11 @@
       padding: 8px 0;
       border-bottom: 1px solid var(--border, #2a2a35);
       font-size: 13px;
+      min-width: 0;
     }
     .nav-page-item:last-child, .quiz-event-item:last-child { border-bottom: none; }
-    .nav-page-name { opacity: .85; word-break: break-all; }
-    .nav-page-meta, .quiz-event-taxa { opacity: .6; white-space: nowrap; }
+    .nav-page-name { opacity: .85; word-break: break-all; min-width: 0; }
+    .nav-page-meta, .quiz-event-taxa { opacity: .6; white-space: nowrap; flex-shrink: 0; }
 
     .nav-empty {
       font-size: 13px;
@@ -439,6 +491,8 @@
       justify-content: space-between;
       margin-top: 6px;
       font-size: 14px;
+      flex-wrap: wrap;
+      gap: 6px;
     }
 
     /* ═══════════════════════════════════════════════════════════
@@ -527,6 +581,7 @@
   border-radius: var(--r-sm);
   padding: 8px 12px;
   min-width: 96px;
+  max-width: calc(100vw - 24px);
   box-shadow: 0 8px 24px rgba(0,0,0,.45);
   opacity: 0;
   visibility: hidden;
@@ -590,8 +645,10 @@
   font-weight: 600;
   color: var(--amber);
   width: fit-content;
+  max-width: 100%;
 }
-.usage-peak-emoji { font-size: 13px; }
+.usage-peak-emoji { font-size: 13px; flex-shrink: 0; }
+#usage-peak-text { overflow-wrap: break-word; }
 
   </style>
 </head>
@@ -1230,7 +1287,7 @@
                     <path d="M7 4v3l2 2"/>
                   </svg>
                 </div>
-                <div style="flex:1">
+                <div style="flex:1; min-width:0;">
                   <div class="perf-name">Média diária de estudo (7 dias)</div>
                   <div class="prog-bar" style="margin-top:8px">
                     <div class="prog-fill" id="perf-bar-media" style="width:0%"></div>
@@ -1247,7 +1304,7 @@
                     <path d="M1 10l2-2 2 1.5 2-2.5 2 1 2-3 2 1.5"/>
                   </svg>
                 </div>
-                <div style="flex:1">
+                <div style="flex:1; min-width:0;">
                   <div class="perf-name">Dias ativos nos últimos 7</div>
                   <div class="prog-bar" style="margin-top:8px">
                     <div class="prog-fill green" id="perf-bar-dias" style="width:0%"></div>
@@ -1264,7 +1321,7 @@
                     <path d="M7 1.5l1.5 3 3.5.5-2.5 2.5.5 3.5L7 9.5 4 11l.5-3.5L2 5l3.5-.5z"/>
                   </svg>
                 </div>
-                <div style="flex:1">
+                <div style="flex:1; min-width:0;">
                   <div class="perf-name">Melhor dia (últimos 30)</div>
                   <div class="prog-bar" style="margin-top:8px">
                     <div class="prog-fill amber" id="perf-bar-melhor" style="width:0%"></div>
@@ -1282,7 +1339,7 @@
                     <path d="M5 4V3a2 2 0 014 0v1"/>
                   </svg>
                 </div>
-                <div style="flex:1">
+                <div style="flex:1; min-width:0;">
                   <div class="perf-name">Total de sessões iniciadas</div>
                   <div class="prog-bar" style="margin-top:8px">
                     <div class="prog-fill amber" id="perf-bar-sessoes" style="width:0%"></div>
@@ -1299,7 +1356,7 @@
                     <path d="M7 1.5l1.5 3 3.5.5-2.5 2.5.5 3.5L7 9.5 4 11l.5-3.5L2 5l3.5-.5z"/>
                   </svg>
                 </div>
-                <div style="flex:1">
+                <div style="flex:1; min-width:0;">
                   <div class="perf-name">Sequência de dias ativos</div>
                   <div class="prog-bar" style="margin-top:8px">
                     <div class="prog-fill blue" id="perf-bar-streak" style="width:0%"></div>

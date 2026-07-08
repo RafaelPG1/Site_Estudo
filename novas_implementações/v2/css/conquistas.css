@@ -90,61 +90,33 @@
    REFINAMENTO 3 — POPOVER: ANIMAÇÃO, FECHAR SÓ POR AÇÃO EXPLÍCITA
    E ALTURA AUTOMÁTICA
    ─────────────────────────────────────────────
-   Puramente UX/apresentação — nenhum seletor de layout, cor de
-   conteúdo, grid ou estrutura HTML foi alterado. Três ajustes:
-
-     · Animação — troca do easing de transform por
-       --ach-ease-spring: uma curva com leve overshoot que faz o
-       painel "assentar" suavemente no lugar final, em vez de parar
-       seco. Fade continua rápido e linear-ish (--ease); só o
-       transform (scale+translate) ganhou a curva nova. Deslocamento
-       inicial (translate) levemente maior para reforçar a sensação
-       de que o painel nasce do card.
-     · Fechar automaticamente por scroll/mouseleave foi REMOVIDO
-       (essa parte é 100% JS — ver conquistas.js AJUSTE 3). Nada
-       neste CSS controlava esse fechamento, então nada aqui mudou
-       por causa disso; citado apenas para contexto do pedido.
-     · Altura automática — height:auto explícito adicionado (além do
-       max-height/overflow-y:auto que já existiam) para deixar claro
-       que o painel deve crescer com o conteúdo e só ganhar
-       scrollbar quando realmente ultrapassar a altura disponível da
-       viewport.
+   (ver histórico completo nas versões anteriores deste arquivo)
 
    ─────────────────────────────────────────────
    REFINAMENTO 4 — MODAL VOLTA A PERTENCER À SEÇÃO (fixed → absolute)
    ─────────────────────────────────────────────
-   Problema relatado pelo usuário: ao rolar o scroll global da
-   página, o painel de detalhe "subia sozinho"/ficava para trás,
-   saindo completamente da área da conquista onde foi aberto —
-   inclusive aparecendo sobreposto a outras seções distantes
-   (ex.: "Atividade recente"), como mostrado em screenshot.
+   (ver histórico completo nas versões anteriores deste arquivo)
 
-   Causa raiz: tanto `.ach-modal-backdrop` quanto `.ach-modal` usavam
-   `position:fixed`, o que os prendia à VIEWPORT, não à seção de
-   Conquistas. Para tentar compensar isso, o JS reposicionava o
-   painel a cada evento de `scroll` (ver conquistas.js) — só que o
-   nome da função usada no listener nunca existiu no arquivo
-   (`_achOnScrollOuResizeReposicionar` vs. a função real,
-   `_achOnResizeReposicionar`), então o reposicionamento por scroll
-   nunca funcionou de fato, e o painel realmente ficava "preso" a
-   uma posição de viewport enquanto a página rolava por baixo dele.
-
-   Correção: `.ach-modal-backdrop` e `.ach-modal` passam a usar
-   `position:absolute`, com `.ach-v2-scope` como containing block
-   (`position:relative` adicionado ao wrapper). Com isso o painel
-   passa a fazer parte do fluxo posicional da própria seção de
-   Conquistas — o scroll nativo do navegador já o move junto com o
-   card que o originou, sem necessidade de nenhum listener de
-   scroll. O cálculo de POSIÇÃO (qual lado abrir, coordenadas)
-   continua sendo feito com getBoundingClientRect() em
-   conquistas.js — só a conversão final passou a ser relativa ao
-   container, não mais direto para a viewport. Nenhuma cor, texto,
-   animação, seta ou estrutura de conteúdo do painel mudou.
-
-   Removida também a variante de seletor
-   `.ach-modal-backdrop.ach-v2-scope` (só existia para o caso do
-   backdrop ser movido para filho direto de `<body>`, revertido
-   junto com esta correção — ver nota em conquistas.js).
+   ─────────────────────────────────────────────
+   AUDITORIA DE RESPONSIVIDADE — CAUSA RAIZ
+   ─────────────────────────────────────────────
+   Mesmo bug estrutural de dashboard.css/dashboard_cards.css: itens
+   de flex/grid sem `min-width: 0`. Aqui isso afetava:
+     · .overview-bar (flex row) — .ov-hero, .ov-stats e os 3
+       .ov-stat internos não tinham min-width:0, então em telas
+       estreitas o anel + os 3 números empurravam o card para fora.
+     · .ach-grid (grid auto-fill minmax(128px,...)) — 128px de
+       mínimo por tile já estoura sozinho abaixo de ~340px de
+       largura útil; reduzido progressivamente por breakpoint.
+     · .featured-row (grid 3 colunas fixas) — sem breakpoint
+       intermediário, pulava direto de 3 para "quebrado".
+     · .ach-modal — já usava max-width:calc(100vw - 32px), o que
+       está correto; só o `left`/`top` calculados via JS
+       (_achPosicionarPopover, em conquistas.js) dependem do
+       tamanho real do card, que agora está correto porque os
+       cards pais não vazam mais.
+   Nenhum seletor, cor, animação ou classe controlada por JS foi
+   alterado — apenas as propriedades de dimensionamento/quebra.
    ═══════════════════════════════════════════════════════════ */
 
 .ach-v2-scope {
@@ -153,6 +125,8 @@
      de Conquistas como containing block, em vez de "vazarem" para
      o body/viewport. */
   position: relative;
+  min-width: 0;
+  max-width: 100%;
 
   /* ── Fundos — mapeados aos tokens globais do dashboard,
        mesma hierarquia container→painel→ícone usada em todo o
@@ -221,17 +195,24 @@
   border:1px solid var(--ach-border);
   border-radius:var(--r-lg);
   padding:36px 36px 32px;
+  min-width: 0;
+}
+@media (max-width: 620px) {
+  .ach-v2-scope .achievements-section { padding: 24px 18px 22px; }
 }
 
 /* ================= HEADER ================= */
 .ach-v2-scope .ach-header{
   display:flex; align-items:flex-start;
+  flex-wrap: wrap;
   gap:16px; margin-bottom:30px;
+  min-width: 0;
 }
 .ach-v2-scope .ach-subtitle{
   font-size:13px;
   color:var(--text-secondary);
   margin:0 0 30px;
+  overflow-wrap: break-word;
 }
 .ach-v2-scope .ach-icon-badge{
   width:44px; height:44px; border-radius:12px; flex-shrink:0;
@@ -240,23 +221,27 @@
   display:flex; align-items:center; justify-content:center;
 }
 .ach-v2-scope .ach-icon-badge svg{ width:20px; height:20px; stroke:var(--ach-accent); }
+.ach-v2-scope .ach-title-block{ min-width: 0; }
 .ach-v2-scope .ach-title-block h2{
   font-family:'Space Grotesk', sans-serif; font-size:20px; font-weight:600;
   margin:0 0 4px; letter-spacing:-0.01em; color:var(--text-primary);
+  overflow-wrap: break-word;
 }
-.ach-v2-scope .ach-title-block p{ margin:0; font-size:13px; color:var(--text-secondary); }
+.ach-v2-scope .ach-title-block p{ margin:0; font-size:13px; color:var(--text-secondary); overflow-wrap: break-word; }
 
 /* ================= OVERVIEW BAR ================= */
 .ach-v2-scope .overview-bar{
   display:flex; align-items:center;
+  flex-wrap: wrap;
   background:var(--bg-tile);
   border:1px solid var(--ach-border);
   border-radius:var(--r-md);
   padding:26px 20px;
   margin-bottom:26px;
-  gap:0;
+  gap:16px 0;
+  min-width: 0;
 }
-.ach-v2-scope .ov-hero{ display:flex; align-items:center; gap:12px; padding-right:20px; }
+.ach-v2-scope .ov-hero{ display:flex; align-items:center; gap:12px; padding-right:20px; min-width: 0; }
 .ach-v2-scope .ring-wrap{ position:relative; width:48px; height:48px; flex-shrink:0; }
 .ach-v2-scope .ring-wrap svg{ transform:rotate(-90deg); }
 .ach-v2-scope .ring-bg{ stroke:var(--ach-border); }
@@ -266,7 +251,7 @@
   font-size:11px; font-weight:700; font-family:'Space Grotesk', sans-serif; letter-spacing:-0.02em;
   color:var(--ach-accent);
 }
-.ach-v2-scope .ov-hero-text{ line-height:1.3; }
+.ach-v2-scope .ov-hero-text{ line-height:1.3; min-width: 0; }
 .ach-v2-scope .ov-hero-text .ov-title{ font-size:10.5px; color:var(--text-tertiary); font-weight:500; }
 .ach-v2-scope .ov-hero-text .ov-count{ white-space:nowrap; }
 .ach-v2-scope .ov-hero-text .ov-value{
@@ -277,10 +262,10 @@
   font-size:12px; color:var(--text-secondary); font-weight:500;
 }
 
-.ach-v2-scope .ov-divider{ width:1px; height:42px; background:var(--ach-border); margin:0 20px; align-self:center; }
+.ach-v2-scope .ov-divider{ width:1px; height:42px; background:var(--ach-border); margin:0 20px; align-self:center; flex-shrink: 0; }
 
-.ach-v2-scope .ov-stats{ display:flex; align-items:center; justify-content:space-between; gap:28px; flex:1; }
-.ach-v2-scope .ov-stat{ display:flex; align-items:center; gap:9px; }
+.ach-v2-scope .ov-stats{ display:flex; align-items:center; justify-content:space-between; flex-wrap: wrap; gap:14px 28px; flex:1; min-width: 0; }
+.ach-v2-scope .ov-stat{ display:flex; align-items:center; gap:9px; min-width: 0; }
 .ach-v2-scope .ov-stat-icon{
   width:26px; height:26px; flex-shrink:0;
   display:flex; align-items:center; justify-content:center;
@@ -289,8 +274,17 @@
 .ach-v2-scope .ov-stat-num{
   font-family:'Space Grotesk', sans-serif; font-size:14px; font-weight:700; color:var(--text-primary);
   font-variant-numeric:tabular-nums;
+  white-space: nowrap;
 }
-.ach-v2-scope .ov-stat-label{ font-size:11.5px; color:var(--text-secondary); }
+.ach-v2-scope .ov-stat-label{ font-size:11.5px; color:var(--text-secondary); white-space: nowrap; }
+
+/* Abaixo de 720px o divisor vertical não faz mais sentido com o
+   layout em wrap (fica "flutuando" sozinho numa quebra de linha). */
+@media (max-width: 720px) {
+  .ach-v2-scope .ov-divider { display: none; }
+  .ach-v2-scope .ov-hero    { padding-right: 0; flex: 1 1 100%; }
+  .ach-v2-scope .ov-stats   { justify-content: flex-start; flex: 1 1 100%; }
+}
 
 /* ================= CATEGORY TABS ================= */
 .ach-v2-scope .cat-tabs{
@@ -301,6 +295,7 @@
   padding:4px;
   margin-bottom:30px;
   width:fit-content;
+  max-width: 100%;
   flex-wrap:wrap;
 }
 .ach-v2-scope .cat-tab{
@@ -311,14 +306,21 @@
   padding:8px 14px; border-radius:var(--r-sm); cursor:pointer;
   transition:background .18s var(--ease), color .18s var(--ease);
   font-family:'Inter', sans-serif;
+  white-space: nowrap;
 }
-.ach-v2-scope .cat-tab svg{ width:14px; height:14px; opacity:0.85; }
+.ach-v2-scope .cat-tab svg{ width:14px; height:14px; opacity:0.85; flex-shrink: 0; }
 .ach-v2-scope .cat-tab:hover{ color:var(--text-primary); }
 .ach-v2-scope .cat-tab.active{ background:var(--bg-card-hover); color:var(--text-primary); box-shadow:0 1px 0 rgba(255,255,255,0.04) inset; }
 
+@media (max-width: 480px) {
+  .ach-v2-scope .cat-tab { padding: 7px 10px; font-size: 12px; }
+}
+
 /* ================= SECTION LABEL ================= */
 .ach-v2-scope .section-label{
-  display:flex; align-items:baseline; justify-content:space-between; margin-bottom:16px;
+  display:flex; align-items:baseline; justify-content:space-between;
+  flex-wrap: wrap; gap: 6px;
+  margin-bottom:16px;
 }
 .ach-v2-scope .section-label h3{
   font-family:'Space Grotesk', sans-serif; font-size:14px; font-weight:600; margin:0;
@@ -327,12 +329,16 @@
 .ach-v2-scope .section-label .count{ color:var(--text-tertiary); font-weight:500; font-size:13px; margin-left:6px; }
 
 /* ================= FEATURED ================= */
-.ach-v2-scope .featured-row{ display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; margin-bottom:38px; }
+.ach-v2-scope .featured-row{ display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:14px; margin-bottom:38px; }
+@media (max-width: 760px) { .ach-v2-scope .featured-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 480px) { .ach-v2-scope .featured-row { grid-template-columns: minmax(0, 1fr); } }
+
 .ach-v2-scope .featured-card{
   background:var(--bg-card);
   border:1px solid var(--ach-border);
   border-radius:var(--r-md); padding:20px;
   display:flex; gap:16px; align-items:flex-start;
+  min-width: 0;
   cursor:pointer;
   transition:border-color .2s var(--ease), transform .2s var(--ease), background .2s var(--ease);
 }
@@ -351,29 +357,42 @@
   font-size:10.5px; font-weight:600; letter-spacing:0.03em;
   color:var(--f-color); margin-bottom:6px; display:block;
 }
-.ach-v2-scope .f-body h4{ font-family:'Space Grotesk', sans-serif; font-size:14.5px; margin:0 0 5px; font-weight:600; color:var(--text-primary); }
+.ach-v2-scope .f-body h4{ font-family:'Space Grotesk', sans-serif; font-size:14.5px; margin:0 0 5px; font-weight:600; color:var(--text-primary); overflow-wrap: break-word; }
 .ach-v2-scope .f-body p{
   font-size:12px; color:var(--text-secondary); margin:0 0 13px; line-height:1.45;
   display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical;
   overflow:hidden; min-height:34.8px;
+  overflow-wrap: break-word;
 }
 .ach-v2-scope .f-progress{ height:3px; background:rgba(255,255,255,0.06); border-radius:2px; overflow:hidden; margin-bottom:6px; }
 .ach-v2-scope .f-progress-fill{ height:100%; border-radius:2px; background:var(--f-color); }
-.ach-v2-scope .f-meta{ display:flex; justify-content:space-between; font-size:11px; color:var(--text-tertiary); font-variant-numeric:tabular-nums; }
+.ach-v2-scope .f-meta{ display:flex; justify-content:space-between; gap: 8px; font-size:11px; color:var(--text-tertiary); font-variant-numeric:tabular-nums; }
+.ach-v2-scope .f-meta span:first-child{ min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ach-v2-scope .f-done{ display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--text-secondary); font-weight:500; }
-.ach-v2-scope .f-done svg{ width:13px; height:13px; stroke:var(--green); }
+.ach-v2-scope .f-done svg{ width:13px; height:13px; stroke:var(--green); flex-shrink: 0; }
 
 /* ================= GRID ================= */
 .ach-v2-scope .ach-grid{
   display:grid; grid-template-columns:repeat(auto-fill, minmax(128px, 1fr));
   gap:10px; margin-bottom:24px;
 }
+/* 128px de mínimo por tile já estoura sozinho abaixo de ~340px de
+   largura útil do card (padding + gap descontados) — reduzido em
+   dois estágios em vez de um valor único genérico. */
+@media (max-width: 480px) {
+  .ach-v2-scope .ach-grid { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
+}
+@media (max-width: 340px) {
+  .ach-v2-scope .ach-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
 .ach-v2-scope .ach-card{
   position:relative;
   background:var(--bg-card);
   border:1px solid var(--ach-border);
   border-radius:var(--r-md);
   padding:15px 12px 13px;
+  min-width: 0;
   display:flex; flex-direction:column; align-items:center; text-align:center;
   cursor:pointer;
   transition:transform .22s var(--ease), box-shadow .22s var(--ease), border-color .22s var(--ease), background .22s var(--ease);
@@ -420,6 +439,7 @@
   line-height:1.4; margin-bottom:8px;
   display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical;
   overflow:hidden; min-height:26.6px;
+  overflow-wrap: break-word;
 }
 .ach-v2-scope .ach-card.state-progress .ach-desc,
 .ach-v2-scope .ach-card.locked .ach-desc{ color:var(--text-tertiary); opacity:0.85; }
@@ -467,7 +487,7 @@
   display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:14px;
   padding-top:20px; border-top:1px solid var(--ach-border);
 }
-.ach-v2-scope .pager{ display:flex; align-items:center; gap:4px; }
+.ach-v2-scope .pager{ display:flex; align-items:center; gap:4px; flex-wrap: wrap; justify-content: center; }
 .ach-v2-scope .pager button{
   min-width:30px; height:30px; border-radius:var(--r-sm);
   background:transparent; border:1px solid transparent;
@@ -484,55 +504,8 @@
 /* ================= POPOVER DE DETALHE (antigo modal) ================= */
 /* ═══════════════════════════════════════════════════════════
    AJUSTE 2 — DE MODAL CENTRALIZADO PARA POPOVER CONTEXTUAL
-   ─────────────────────────────────────────────
-   Substitui integralmente a abordagem de "modal grande centralizado
-   com backdrop escurecido" por um painel contextual que nasce ao
-   lado do card clicado — mesmo espírito de GitHub/Figma/Notion/
-   Linear/Discord. Mudança 100% de apresentação: o MESMO miolo de
-   conteúdo (.medal, h3, .m-rarity, p.desc, .meta-row, .close-btn)
-   continua abaixo, sem nenhuma alteração de cor, texto ou estrutura.
-
-     · .ach-modal-backdrop deixou de escurecer/borrar a tela — agora
-       é só uma camada invisível usada para detectar "clique fora"
-       (o dashboard continua 100% visível e utilizável).
-     · .ach-modal é position:absolute (ver REFINAMENTO 4 acima) com
-       `top`/`left` calculados via JS (getBoundingClientRect do card
-       + _achPosicionarPopover em conquistas.js, convertidos para
-       coordenadas relativas ao container) — nunca mais centralizado
-       na tela. width continua 340px (idêntico ao modal anterior),
-       só a POSIÇÃO mudou.
-     · [data-side] controla de qual lado o painel "nasce" em relação
-       ao card (right/left/below/above) — o JS decide dinamicamente
-       qual cabe na viewport e aplica o atributo. O transform-origin
-       de cada lado + a leve translação de entrada reforçam a
-       sensação de que o painel "abriu a partir do card", em vez de
-       aparecer do nada.
-     · Uma pequena seta (::before) aponta na direção do card,
-       alinhada pelo JS via --ach-pop-arrow, para deixar clara a
-       relação painel↔card mesmo quando os dois não estão
-       perfeitamente alinhados verticalmente/horizontalmente.
-
-   REFINAMENTO 3 (ver nota completa no topo do arquivo):
-     · height:auto adicionado — painel cresce com o conteúdo; scroll
-       interno só entra em ação se o conteúdo ultrapassar max-height
-       (altura disponível da viewport), nunca por padrão.
-     · Transição de transform passa a usar --ach-ease-spring (leve
-       overshoot/assentamento) em vez de --ease puro, e o
-       deslocamento de entrada (translate) foi levemente aumentado —
-       reforça a sensação de "o painel nasceu do card". Fade continua
-       com --ease, rápido e sem assentamento (não faria sentido
-       "assentar" opacidade).
-     · Fechar por scroll/mouseleave foi removido no JS (conquistas.js
-       AJUSTE 3) — nada neste CSS controlava esse comportamento, e
-       nada aqui precisou mudar por causa disso.
-
-   REFINAMENTO 4 (ver nota completa no topo do arquivo):
-     · position:fixed → position:absolute em .ach-modal-backdrop e
-       .ach-modal. O painel volta a pertencer ao fluxo posicional da
-       seção de Conquistas (.ach-v2-scope, agora position:relative),
-       em vez de ficar preso à viewport. Isso é o que faz o scroll
-       global da página mover o painel naturalmente junto com o
-       card, sem nenhum JS de scroll. ══ */
+   (ver histórico completo nas versões anteriores deste arquivo)
+   ═══════════════════════════════════════════════════════════ */
 
 .ach-v2-scope .ach-modal{
   position:absolute; top:0; left:0;
@@ -543,6 +516,9 @@
   box-shadow:0 24px 48px -12px rgba(0,0,0,.55), 0 6px 20px -4px rgba(0,0,0,.4);
   opacity:0; visibility:hidden; pointer-events:none;
   text-align:center;
+}
+@media (max-width: 420px) {
+  .ach-v2-scope .ach-modal { width: min(340px, calc(100vw - 24px)); padding: 22px; }
 }
 /* REFINAMENTO 4 — position:fixed → position:absolute. O backdrop
    agora é sempre filho direto de .ach-v2-scope no HTML (nenhum
@@ -610,14 +586,14 @@
 
 .ach-v2-scope .ach-modal .medal{ width:64px; height:64px; margin:0 auto 16px; border-width:1.5px; }
 .ach-v2-scope .ach-modal .medal svg{ width:26px; height:26px; }
-.ach-v2-scope .ach-modal h3{ font-family:'Space Grotesk', sans-serif; font-size:17px; margin:0 0 6px; font-weight:600; }
+.ach-v2-scope .ach-modal h3{ font-family:'Space Grotesk', sans-serif; font-size:17px; margin:0 0 6px; font-weight:600; overflow-wrap: break-word; }
 .ach-v2-scope .ach-modal .m-rarity{ font-size:11px; font-weight:600; letter-spacing:0.03em; }
-.ach-v2-scope .ach-modal p.desc{ font-size:13px; color:var(--text-secondary); line-height:1.55; margin:16px 0; }
+.ach-v2-scope .ach-modal p.desc{ font-size:13px; color:var(--text-secondary); line-height:1.55; margin:16px 0; overflow-wrap: break-word; }
 .ach-v2-scope .ach-modal .meta-row{
-  display:flex; justify-content:space-between; font-size:12px; color:var(--text-secondary);
+  display:flex; justify-content:space-between; gap: 10px; font-size:12px; color:var(--text-secondary);
   border-top:1px solid var(--ach-border); padding:11px 0;
 }
-.ach-v2-scope .ach-modal .meta-row b{ color:var(--text-primary); font-weight:500; }
+.ach-v2-scope .ach-modal .meta-row b{ color:var(--text-primary); font-weight:500; text-align: right; overflow-wrap: break-word; }
 .ach-v2-scope .ach-modal .close-btn{
   margin-top:16px; width:100%; background:transparent; border:1px solid var(--ach-border-strong);
   color:var(--text-primary); padding:10px; border-radius:var(--r-sm); font-size:12.5px; font-weight:500; cursor:pointer;

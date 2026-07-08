@@ -48,6 +48,62 @@
    componente, mantendo uma única definição real das
    classes .ach-* (em dashboard_cards.css). Nenhum
    outro estilo deste arquivo foi alterado.
+
+   ─────────────────────────────────────────────
+   CORREÇÃO — SCROLLBAR NATIVA EM "ATIVIDADE RECENTE"
+   ─────────────────────────────────────────────
+   Problema relatado: a lista de #activity-timeline
+   (dentro de .activity-card) já tinha overflow-y:auto
+   configurado (ver bloco ".activity-card
+   #activity-timeline.timeline" abaixo), mas nenhuma
+   regra de ::-webkit-scrollbar (ou scrollbar-width/
+   scrollbar-color, para Firefox) jamais foi definida
+   em nenhum arquivo do projeto. Resultado: o navegador
+   desenhava sua barra de rolagem NATIVA/do sistema
+   operacional (branca, grossa, com setas e trilho
+   quadrado), destoando completamente do tema escuro do
+   dashboard — exatamente o visual reportado em
+   screenshot.
+
+   Correção: adicionada estilização de scrollbar
+   diretamente no mesmo seletor que já controla o
+   overflow (".activity-card #activity-timeline.timeline"),
+   usando apenas tokens de cor já existentes em :root
+   (--border-2 para o "thumb" em repouso, --accent-lite
+   no hover) — nenhuma cor nova foi introduzida. Cobre
+   tanto navegadores WebKit/Blink (Chrome, Edge, Safari,
+   Opera) via ::-webkit-scrollbar quanto Firefox via
+   scrollbar-width/scrollbar-color. Nenhuma outra
+   propriedade do bloco original (overflow, max-height,
+   overscroll-behavior, padding-right, scrollbar-gutter)
+   foi alterada — a correção é puramente de aparência da
+   barra de rolagem, não de comportamento de scroll.
+
+   ─────────────────────────────────────────────
+   AUDITORIA DE RESPONSIVIDADE — RAIZ DO PROBLEMA
+   ─────────────────────────────────────────────
+   Causa raiz identificada (ver print do usuário — card
+   "Previsão" cortado mesmo em desktop largo): os grids
+   de seção (.stat-grid, .two-col, .tools-grid,
+   .intel-grid-3col, .intel-grid-weak-consist) usam
+   `1fr`/`repeat(n, 1fr)`, mas os ITENS diretos desses
+   grids (as tags <section>/.stat-card/.tool-btn) nunca
+   receberam `min-width: 0`. Por padrão CSS, um item de
+   grid/flex tem `min-width: auto`, ou seja, ele NUNCA
+   encolhe além do tamanho mínimo do seu conteúdo — se
+   qualquer filho tiver texto/ícone que não quebra linha
+   (badges, números grandes, ícones fixos), aquela coluna
+   força a largura total do grid a ultrapassar o
+   container, empurrando as colunas seguintes para fora
+   da viewport. É exatamente esse bug clássico de CSS
+   Grid/Flexbox que causava o corte do terceiro card em
+   `.intel-grid-3col`, independentemente da largura da
+   tela. A correção abaixo NÃO usa overflow:hidden para
+   esconder o sintoma — ela remove a causa, permitindo
+   que cada coluna realmente encolha até caber no espaço
+   disponível. Breakpoints reais (320/360/390/414/768/
+   1024) foram adicionados onde não existiam.
+   ═══════════════════════════════════════════════════════════
 */
  
 /* ─── TOKENS ─────────────────────────────────────────────── */
@@ -75,11 +131,17 @@
 
   --sidebar-w: 240px;
   --gap: 20px;
+
+  /* Espaçamento fluido de conteúdo — usado por .content/.topbar
+     em vez de padding fixo, para telas de 320px até desktop
+     largo sem precisar de um breakpoint para cada valor. */
+  --content-pad-x: clamp(14px, 4vw, 32px);
 }
 
 /* ─── RESET ──────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 15px; scroll-behavior: smooth; }
+html, body { width: 100%; }
 body {
   background: var(--bg);
   color: var(--text-1);
@@ -113,30 +175,58 @@ body {
 
 /* ─── LOGO INJETADO (infraestrutura global — injetarLogo()) ────
    O markup interno (img + texto) é gerado por
-   ../shared/js/utils/logo.js. Aqui apenas adaptamos a tipografia
-   do texto do logo aos tokens do Dashboard, sem alterar a
-   estrutura ou o conteúdo do componente. */
+   ../shared/js/utils/logo.js — o MESMO módulo compartilhado
+   usado pelo Quiz (quiz/quiz.html + quiz/quiz.css). A regra
+   original deste bloco mirava classes que o logo.js nunca gera
+   (.nexus-logo__text / .nexus-logo__title) e nunca estilizava
+   .nexus-logo__img nem o wrapper .nexus-logo__texto--stacked —
+   por isso a logo do Dashboard nunca bateu visualmente com a do
+   Quiz. Ajustado para usar exatamente os mesmos seletores/valores
+   de quiz.css (só os tokens de cor foram trocados pelos
+   equivalentes do Dashboard: --violet do Quiz = --accent daqui,
+   mesmo hex #6c63ff). Nenhum outro componente foi alterado. */
 #header-logo-wrap .nexus-logo__link {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8.8px; /* 0.55rem a 16px, igual ao Quiz */
   text-decoration: none;
 }
-#header-logo-wrap .nexus-logo__text,
-#header-logo-wrap .nexus-logo__title {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-1);
-  line-height: 1.2;
+
+#header-logo-wrap .nexus-logo__img {
+  border-radius: 22%;
+  border: 1px solid rgba(255,255,255,0.12);
+  transition: filter 0.25s ease, transform 0.25s ease;
 }
+
+#header-logo-wrap .nexus-logo__link:hover .nexus-logo__img {
+  filter: drop-shadow(0 0 6px rgba(108,99,255,0.6));
+  transform: scale(1.06);
+}
+
+#header-logo-wrap .nexus-logo__texto--stacked {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+  gap: 2.88px; /* 0.18rem a 16px, igual ao Quiz */
+}
+
+#header-logo-wrap .nexus-logo__titulo {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14.72px; /* 0.92rem a 16px, igual ao Quiz */
+  font-weight: 500;
+  color: var(--text-1);
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+
 #header-logo-wrap .nexus-logo__sub {
-  display: block;
-  font-size: 10px;
-  font-weight: 400;
-  color: var(--text-3);
-  font-family: 'JetBrains Mono', monospace;
-  letter-spacing: .5px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 8.96px; /* 0.56rem a 16px, igual ao Quiz */
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  line-height: 1;
 }
 
 .logo-mark {
@@ -302,22 +392,86 @@ body {
   margin-top: 1px;
 }
 
+/* ─────────────────────────────────────────────────────────────
+   SIDEBAR RESPONSIVA — vira barra superior horizontal abaixo de
+   900px. Correção de causa raiz, não gambiarra: sem isso,
+   `.main { margin-left: 240px }` sobra em qualquer tela menor
+   que 240px de conteúdo útil, e é isso que "empurra" o conteúdo
+   inteiro para fora da viewport em celulares. Nenhum JS foi
+   adicionado — os mesmos links continuam clicáveis, só a
+   direção do flex muda.
+   ───────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  body { flex-direction: column; }
+
+  .sidebar {
+    position: relative;
+    top: auto; left: auto; bottom: auto;
+    width: 100%;
+    min-height: auto;
+    max-width: 100%;
+    flex-direction: row;
+    align-items: center;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-logo { border-bottom: none; padding: 12px 16px; flex-shrink: 0; }
+
+  .sidebar-nav {
+    flex: 0 1 auto;
+    flex-direction: row;
+    align-items: center;
+    padding: 8px 10px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    gap: 4px;
+    min-width: 0;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .sidebar-nav::-webkit-scrollbar { display: none; }
+
+  .nav-label { display: none; }
+  .nav-item  { white-space: nowrap; flex-shrink: 0; }
+  .nav-badge { margin-left: 6px; }
+
+  .sidebar-footer {
+    border-top: none;
+    border-left: 1px solid var(--border);
+    padding: 8px 14px;
+    flex-shrink: 0;
+  }
+  .session-card { padding: 8px 10px; }
+  .session-time { font-size: 15px; }
+  .session-sub  { display: none; }
+}
+
+@media (max-width: 560px) {
+  .sidebar-footer { display: none; }
+}
+
 /* ─── MAIN ───────────────────────────────────────────────── */
 .main {
   margin-left: var(--sidebar-w);
   flex: 1;
+  min-width: 0;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
+@media (max-width: 900px) {
+  .main { margin-left: 0; width: 100%; }
+}
 
 /* ─── TOPBAR ─────────────────────────────────────────────── */
 .topbar {
-  padding: 0 32px;
+  padding: 0 var(--content-pad-x);
   height: 60px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
@@ -331,6 +485,7 @@ body {
   display: flex;
   align-items: center;
   gap: 14px;
+  min-width: 0;
 }
 
 .breadcrumb {
@@ -339,6 +494,7 @@ body {
   gap: 6px;
   font-size: 13px;
   color: var(--text-3);
+  min-width: 0;
 }
 
 .breadcrumb span { color: var(--text-1); font-weight: 500; }
@@ -347,6 +503,7 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;
 }
 /* ─── SELETOR DE SEMESTRE ────────────────────────────────────
    O componente visual vem de semestre-picker.css (compartilhado
@@ -357,18 +514,31 @@ body {
   left: -70px;
 }
 
+/* Em telas estreitas, "left:-70px" fixo empurra o painel para
+   fora da viewport pela esquerda. Ancora pela direita e limita a
+   largura ao espaço realmente disponível. */
+@media (max-width: 480px) {
+  #semestre-selector-wrap .sp-panel {
+    left: auto;
+    right: 0;
+    max-width: calc(100vw - 28px);
+  }
+}
 
-
-
-
+@media (max-width: 560px) {
+  .topbar { height: auto; min-height: 56px; padding: 10px var(--content-pad-x); }
+  .breadcrumb { font-size: 12px; }
+}
 
 
 /* ─── CONTENT ────────────────────────────────────────────── */
 .content {
-  padding: 36px 32px 60px;
+  padding: clamp(20px, 5vw, 36px) var(--content-pad-x) 60px;
   display: flex;
   flex-direction: column;
-  gap: 36px;
+  gap: clamp(22px, 4vw, 36px);
+  min-width: 0;
+  max-width: 100%;
 }
 
 /* ─── HEADER SECTION ─────────────────────────────────────── */
@@ -376,8 +546,11 @@ body {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 24px;
 }
+
+.page-header-left { min-width: 0; flex: 1 1 260px; }
 
 .greeting {
   font-size: 12px;
@@ -390,11 +563,12 @@ body {
 
 .page-title {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 28px;
+  font-size: clamp(21px, 3.2vw, 28px);
   font-weight: 700;
   color: var(--text-1);
   letter-spacing: -.8px;
   line-height: 1.15;
+  overflow-wrap: break-word;
 }
 
 .page-title .accent { color: var(--accent-lite); }
@@ -402,7 +576,8 @@ body {
 .page-meta {
   display: flex;
   align-items: center;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 10px 16px;
   margin-top: 10px;
 }
 
@@ -419,23 +594,27 @@ body {
   font-weight: 450;
 }
 
-.meta-chip svg { opacity: .6; }
+.meta-chip svg { opacity: .6; flex-shrink: 0; }
 .motivational {
   background: var(--accent-dim);
   border: 1px solid rgba(108,99,255,.25);
   border-radius: var(--r-md);
   padding: 14px 18px;
+  width: 100%;
   max-width: 320px;
+  flex: 1 1 240px;
   position: relative;
-  overflow: visible;
+  overflow: hidden; /* as aspas decorativas (::before/::after) só devem
+                        vazar sobre o próprio card, nunca sobre a página —
+                        ver ajuste de posição delas logo abaixo */
 }
 
 /* Aspa de Abertura (Topo Esquerdo) */
 .motivational::before {
   content: '\201C'; 
   position: absolute;
-  top: -25px; left: -40px;
-  font-size: 80px;
+  top: -6px; left: -8px;
+  font-size: 64px;
   font-family: 'Space Grotesk', sans-serif;
   color: var(--accent);
   opacity: .35;
@@ -447,8 +626,8 @@ body {
 .motivational::after {
   content: '\201D'; /* Código para a aspa de fechamento: ” */
   position: absolute;
-  bottom: -75px; right: -30px; /* Valores negativos para jogar ela para fora do card */
-  font-size: 80px;
+  bottom: -30px; right: -6px;
+  font-size: 64px;
   font-family: 'Space Grotesk', sans-serif;
   color: var(--accent);
   opacity: .35;
@@ -464,11 +643,17 @@ body {
   position: relative;
 }
 
+@media (max-width: 760px) {
+  .page-header { flex-direction: column; align-items: stretch; }
+  .motivational { max-width: 100%; }
+}
+
 /* ─── SECTION HEADER ─────────────────────────────────────── */
 .section-header {
   display: flex;
   align-items: baseline;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 8px 10px;
   margin-bottom: 16px;
 }
 
@@ -482,6 +667,7 @@ body {
 
 .section-line {
   flex: 1;
+  min-width: 24px;
   height: 1px;
   background: var(--border);
 }
@@ -492,13 +678,16 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
   padding: 24px;
+  min-width: 0;
 }
 
 .tools-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
 }
+@media (max-width: 900px)  { .tools-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 420px)  { .tools-grid { grid-template-columns: minmax(0, 1fr); } }
 
 .tool-btn {
   background: var(--surface-2);
@@ -508,6 +697,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0;
+  min-width: 0;
   cursor: pointer;
   transition: border-color .18s ease, transform .18s ease, background .18s ease;
   text-align: left;
@@ -565,6 +755,7 @@ body {
   font-size: 11.5px;
   color: var(--text-3);
   line-height: 1.5;
+  overflow-wrap: break-word;
 }
 
 .tool-arrow {
@@ -583,15 +774,22 @@ body {
 /* ─── STAT CARDS ─────────────────────────────────────────── */
 .stat-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--gap);
 }
+/* Breakpoints reais — não existiam no arquivo original, o que
+   deixava o grid de 4 colunas "espremido" entre 480–1180px antes
+   de finalmente virar 1 coluna. */
+@media (max-width: 1180px) { .stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 820px)  { .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 480px)  { .stat-grid { grid-template-columns: minmax(0, 1fr); } }
 
 .stat-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
   padding: 22px;
+  min-width: 0;
   position: relative;
   overflow: hidden;
   cursor: default;
@@ -633,11 +831,12 @@ body {
 
 .stat-number {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 34px;
+  font-size: clamp(24px, 2.4vw, 34px);
   font-weight: 700;
   letter-spacing: -1.5px;
   line-height: 1;
   color: var(--text-1);
+  overflow-wrap: break-word;
 }
 
 .stat-label {
@@ -655,6 +854,7 @@ body {
   font-size: 11px;
   font-weight: 500;
   font-family: 'Space Grotesk', sans-serif;
+  flex-wrap: wrap;
 }
 
 .delta-up   { color: var(--green); }
@@ -667,15 +867,23 @@ body {
   bottom: 0; right: 0;
   opacity: .25;
   pointer-events: none;
+  max-width: 40%;
+  height: auto;
 }
 
 /* ─── PERFORMANCE + ACTIVITY GRID ───────────────────────── */
 .two-col {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--gap);
   align-items: start;
 }
+@media (max-width: 900px) { .two-col { grid-template-columns: minmax(0, 1fr); } }
+
+/* Os dois grids ".two-col" da página envolvem <section> sem classe
+   própria — são eles o item de grid real, então min-width:0 precisa
+   estar exatamente aqui para permitir que cada coluna encolha. */
+.two-col > section { min-width: 0; }
 
 /* ─── PERFORMANCE CARD ───────────────────────────────────── */
 .perf-card {
@@ -683,6 +891,7 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
   padding: 24px;
+  min-width: 0;
 }
 
 .perf-list {
@@ -697,6 +906,7 @@ body {
   gap: 14px;
   padding: 13px 0;
   border-bottom: 1px solid var(--border);
+  min-width: 0;
 }
 
 .perf-item:last-child { border-bottom: none; }
@@ -710,9 +920,11 @@ body {
 
 .perf-name {
   flex: 1;
+  min-width: 0;
   font-size: 13px;
   color: var(--text-2);
   font-weight: 450;
+  overflow-wrap: break-word;
 }
 
 .perf-value {
@@ -721,6 +933,7 @@ body {
   font-weight: 700;
   color: var(--text-1);
   letter-spacing: -.5px;
+  white-space: nowrap;
 }
 
 .perf-unit {
@@ -757,6 +970,7 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
   padding: 24px;
+  min-width: 0;
 }
 
 .timeline {
@@ -780,6 +994,7 @@ body {
   padding: 12px 0;
   position: relative;
   cursor: default;
+  min-width: 0;
 }
 
 .tl-dot {
@@ -791,21 +1006,13 @@ body {
   z-index: 1;
 }
 
-.tl-body { flex: 1; padding-top: 2px; }
+.tl-body { flex: 1; min-width: 0; padding-top: 2px; }
 
 .tl-title {
   font-size: 13px;
   font-weight: 500;
   color: var(--text-1);
   margin-bottom: 2px;
-}
-
-/* ─── ACTIVITY TIMELINE ──────────────────────────────────── */
-.activity-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  padding: 24px;
 }
 
 /* Especificidade reforçada (ID + classe + ancestral) para que esta
@@ -827,10 +1034,40 @@ body {
   scrollbar-gutter: stable;       /* evita deslocamento de layout ao surgir a barra */
 }
 
+/* CORREÇÃO — SCROLLBAR NATIVA (ver nota completa no topo do
+   arquivo). Estiliza a barra de rolagem do mesmo elemento acima
+   para casar com o tema escuro do dashboard, em vez de usar a
+   aparência padrão do navegador/SO. Mesma especificidade reforçada
+   do bloco anterior (ID + classe + ancestral), pelo mesmo motivo:
+   garantir que dashboard_cards.css (carregado depois) não precise
+   — e não deva — redefinir isso. */
+
+/* Firefox */
+.activity-card #activity-timeline.timeline {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-2) transparent;
+}
+
+/* Chrome / Edge / Safari / Opera (WebKit e Blink) */
+.activity-card #activity-timeline.timeline::-webkit-scrollbar {
+  width: 6px;
+}
+.activity-card #activity-timeline.timeline::-webkit-scrollbar-track {
+  background: transparent;
+}
+.activity-card #activity-timeline.timeline::-webkit-scrollbar-thumb {
+  background-color: var(--border-2);
+  border-radius: 20px;
+}
+.activity-card #activity-timeline.timeline::-webkit-scrollbar-thumb:hover {
+  background-color: var(--accent-lite);
+}
+
 .tl-desc {
   font-size: 11.5px;
   color: var(--text-3);
   line-height: 1.45;
+  overflow-wrap: break-word;
 }
 
 .tl-time {
@@ -839,15 +1076,17 @@ body {
   color: var(--text-3);
   margin-top: 5px;
   display: flex; align-items: center; gap: 5px;
+  flex-wrap: wrap;
 }
 
 /* ─── BOTTOM ROW: disciplines + achievements ─────────────── */
 .three-col {
   display: grid;
-  grid-template-columns: 1.4fr 1fr;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
   gap: var(--gap);
   align-items: start;
 }
+@media (max-width: 900px) { .three-col { grid-template-columns: minmax(0, 1fr); } }
 
 /* ─── DISCIPLINES ────────────────────────────────────────── */
 .disc-card {
@@ -855,19 +1094,22 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
   padding: 24px;
+  min-width: 0;
 }
 
 .disc-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
+@media (max-width: 360px) { .disc-grid { grid-template-columns: minmax(0, 1fr); } }
 
 .disc-item {
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--r-md);
   padding: 14px;
+  min-width: 0;
   transition: border-color .15s, transform .15s;
   cursor: default;
 }
@@ -889,6 +1131,7 @@ body {
   color: var(--text-1);
   margin-bottom: 2px;
   font-family: 'Space Grotesk', sans-serif;
+  overflow-wrap: break-word;
 }
 
 .disc-sessions {
@@ -900,6 +1143,7 @@ body {
 .disc-pct {
   display: flex;
   justify-content: space-between;
+  gap: 6px;
   font-size: 10.5px;
   color: var(--text-3);
   margin-top: 4px;
@@ -980,7 +1224,9 @@ body {
   display: flex;
   flex-direction: column;
   gap: 28px;
+  min-width: 0;
 }
+@media (max-width: 768px) { .nav-section-wrap { padding: 20px; gap: 22px; } }
 
 .nav-section-header {
   display: flex;
@@ -1024,6 +1270,7 @@ body {
 .nav-rank-list {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .nav-rank-item {
@@ -1033,6 +1280,7 @@ body {
   padding: 13px 0;
   border-bottom: 1px solid var(--border);
   transition: background .12s ease;
+  min-width: 0;
 }
 
 .nav-rank-item:last-child {
@@ -1082,6 +1330,7 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .nav-rank-name.is-top {
@@ -1093,12 +1342,14 @@ body {
   align-items: center;
   gap: 14px;
   margin-top: 3px;
+  flex-wrap: wrap;
 }
 
 .nav-rank-stat {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   color: var(--text-3);
+  white-space: nowrap;
 }
 
 .nav-rank-stat strong {
@@ -1110,6 +1361,7 @@ body {
   width: 72px;
   flex-shrink: 0;
 }
+@media (max-width: 480px) { .nav-rank-bar-wrap { display: none; } }
 
 .nav-rank-bar {
   height: 3px;
@@ -1148,6 +1400,7 @@ body {
 .nav-tl-entries {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .nav-tl-entries.is-expandido {
@@ -1199,6 +1452,7 @@ body {
 .nav-tl-list {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .nav-tl-entry {
@@ -1207,6 +1461,7 @@ body {
   gap: 14px;
   padding: 11px 0;
   border-bottom: 1px solid var(--border);
+  min-width: 0;
 }
 
 .nav-tl-entry:last-child {
@@ -1248,6 +1503,7 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .nav-page-item {
@@ -1257,10 +1513,11 @@ body {
   padding: 8px 0;
   border-bottom: 1px solid var(--border, #2a2a35);
   font-size: 13px;
+  min-width: 0;
 }
 .nav-page-item:last-child { border-bottom: none; }
-.nav-page-name { opacity: .85; word-break: break-all; }
-.nav-page-meta { opacity: .6; white-space: nowrap; }
+.nav-page-name { opacity: .85; word-break: break-all; min-width: 0; }
+.nav-page-meta { opacity: .6; white-space: nowrap; flex-shrink: 0; }
 
 .nav-tl-page-name.is-current {
   color: var(--accent-lite);
@@ -1298,6 +1555,8 @@ body {
   color: var(--text-2);
   border-top: 1px solid var(--border);
   margin-top: 8px;
+  flex-wrap: wrap;
+  text-align: center;
 }
 .nav-tl-footer  svg {
   width: 13px;   /* Altere para o tamanho desejado */
@@ -1325,32 +1584,38 @@ body {
      Desempenho por Disciplina (60%) | Consistência de uso (40%)
      Fraquezas tem mais conteúdo — recebe mais espaço.
 
-   Nenhum id, classe JS ou lógica foi alterada.
+   Nenhum id, classe JS ou lógica foi alterado.
    ═══════════════════════════════════════════════════════════ */
 
 /* ── Linha 1: Score · Tendência · Previsão ── */
 .intel-grid-3col {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--gap);
   align-items: stretch;
 }
 
+/* CAUSA RAIZ do card cortado (ver nota de auditoria no topo do
+   arquivo): a <section> é o item real do grid, e sem min-width:0
+   ela nunca encolhe abaixo do conteúdo mínimo — isso empurrava a
+   3ª coluna para fora da tela mesmo em telas largas. */
 .intel-grid-3col > section {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .intel-grid-3col > section > .score-card,
 .intel-grid-3col > section > .trend-card,
 .intel-grid-3col > section > .prediction-card {
   flex: 1;
+  min-width: 0;
 }
 
 /* ── Linha 2: Fraquezas (60%) · Consistência (40%) ── */
 .intel-grid-weak-consist {
   display: grid;
-  grid-template-columns: 3fr 2fr;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
   gap: var(--gap);
   align-items: stretch;   /* era: start */
 }
@@ -1358,16 +1623,19 @@ body {
 .intel-grid-weak-consist > section {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .intel-grid-weak-consist > section > .weaknesses-card,
 .intel-grid-weak-consist > section > .perf-card {
   flex: 1;
+  min-width: 0;
 }
 
 /* ── Fraquezas — largura total dentro do grid ── */
 .intel-section-full {
   width: 100%;
+  min-width: 0;
 }
 
 .weaknesses-card.full-width {
@@ -1396,17 +1664,17 @@ body {
 
 /* ─── RESPONSIVO ─────────────────────────────────────────── */
 @media (max-width: 1200px) {
-  .intel-grid-3col          { grid-template-columns: 1fr 1fr; }
+  .intel-grid-3col          { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 1100px) {
-  .intel-grid-3col          { grid-template-columns: 1fr 1fr; }
-  .intel-grid-weak-consist  { grid-template-columns: 1fr; }
+  .intel-grid-3col          { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .intel-grid-weak-consist  { grid-template-columns: minmax(0, 1fr); }
 }
 
 @media (max-width: 800px) {
-  .intel-grid-3col          { grid-template-columns: 1fr; }
-  .intel-grid-weak-consist  { grid-template-columns: 1fr; }
+  .intel-grid-3col          { grid-template-columns: minmax(0, 1fr); }
+  .intel-grid-weak-consist  { grid-template-columns: minmax(0, 1fr); }
 }
 
 @media (max-width: 768px) {
@@ -1429,6 +1697,7 @@ body {
   align-items: flex-start;
   gap: 14px;
   padding: 8px 0;
+  min-width: 0;
 }
 
 .empty-state-block--timeline {
@@ -1464,12 +1733,14 @@ body {
   flex-direction: column;
   gap: 6px;
   flex: 1;
+  min-width: 0;
 }
 
 /* Título do card no estado vazio — substitui identificadores técnicos */
 .empty-state-title {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 6px;
   font-family: 'Space Grotesk', sans-serif;
   font-size: 13px;
@@ -1483,6 +1754,7 @@ body {
   font-size: 12.5px;
   color: var(--text-3);
   line-height: 1.6;
+  overflow-wrap: break-word;
 }
 
 /* Dica secundária — menor e mais apagada */
@@ -1510,6 +1782,7 @@ body {
   transition: color 0.15s;
   vertical-align: middle;
   line-height: 1;
+  flex-shrink: 0;
 }
 
 /* Substitui o glifo "ⓘ" (que renderiza deformado em algumas fontes/SO)
@@ -1551,7 +1824,7 @@ body {
   padding: 7px 10px;
   border-radius: 8px;
   white-space: normal;
-  width: 200px;
+  width: min(200px, calc(100vw - 24px));
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
   pointer-events: none;
   opacity: 0;
