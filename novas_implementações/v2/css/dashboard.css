@@ -359,9 +359,13 @@ body {
 .pulse-dot::after {
   content: '';
   position: absolute;
-  inset: -3px;
+  top: -3px;
+  right: -3px;
+  bottom: -3px;
+  left: -3px;
   border-radius: 50%;
   border: 2px solid var(--green);
+  transform-origin: center center;
   animation: pulse-ring 2s cubic-bezier(.4,0,.6,1) infinite;
 }
 
@@ -604,35 +608,41 @@ body {
   max-width: 320px;
   flex: 1 1 240px;
   position: relative;
-  overflow: hidden; /* as aspas decorativas (::before/::after) só devem
-                        vazar sobre o próprio card, nunca sobre a página —
-                        ver ajuste de posição delas logo abaixo */
+  overflow: visible;   /* permite que as aspas fiquem fora da caixa do card */
 }
 
-/* Aspa de Abertura (Topo Esquerdo) */
+/* Aspa de Abertura — elemento externo e independente do texto,
+   mantendo 10px de distância constante da borda externa do card
+   (canto superior esquerdo). */
 .motivational::before {
-  content: '\201C'; 
+  content: '\201C';
   position: absolute;
-  top: -6px; left: -8px;
-  font-size: 64px;
+  top: -24px;
+  left: -30px;
+  font-size: 58px;
   font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
   color: var(--accent);
-  opacity: .35;
+  opacity: .9;
   line-height: 1;
   pointer-events: none;
+  z-index: 0;
 }
 
-/* Aspa de Fechamento (Baixo Direito) */
+/* Aspa de Fechamento — mesmo espaçamento de 10px, canto inferior direito. */
 .motivational::after {
-  content: '\201D'; /* Código para a aspa de fechamento: ” */
+  content: '\201D';
   position: absolute;
-  bottom: -30px; right: -6px;
-  font-size: 64px;
+  bottom: -50px;
+  right: -30px;
+  font-size: 58px;
   font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
   color: var(--accent);
-  opacity: .35;
+  opacity: .9;
   line-height: 1;
   pointer-events: none;
+  z-index: 0;
 }
 
 .motivational p {
@@ -641,11 +651,23 @@ body {
   line-height: 1.55;
   font-style: italic;
   position: relative;
+  z-index: 1;
 }
 
 @media (max-width: 760px) {
   .page-header { flex-direction: column; align-items: stretch; }
   .motivational { max-width: 100%; }
+
+  .motivational::before {
+    top: -14px;
+    left: -16px;
+    font-size: 40px;
+  }
+  .motivational::after {
+    bottom: -28px;
+    right: -16px;
+    font-size: 40px;
+  }
 }
 
 /* ─── SECTION HEADER ─────────────────────────────────────── */
