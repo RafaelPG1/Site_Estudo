@@ -13,7 +13,7 @@
    getDisciplinasDeSemestre() — já exportado por src/global.js e
    usado pelo próprio Dashboard (mesma fonte do card "Disciplinas"). */
 
-import { getUsuario, getSemestreAtual, getDisciplinasDeSemestre } from '../../../../src/global.js';
+import { getUsuario, getSemestreAtual, getDisciplinasDeSemestre } from '../../../src/global.js';
 import * as TarefaStorage from './tarefa_storage.js';
 import { renderTarefas } from './tarefa_renderer.js';
 

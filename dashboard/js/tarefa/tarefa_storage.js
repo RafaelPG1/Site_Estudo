@@ -34,7 +34,7 @@
    editar/excluir itens no meio do array). Aceitável para o volume
    de dados de uma lista de tarefas pessoal. */
 
-import { getDb } from '../../../../src/firebase.js';
+import { getDb } from '../../../src/firebase.js';
 import {
   collection, doc, getDocs, setDoc, deleteDoc, query, orderBy,
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';

@@ -48,7 +48,7 @@
    Checklist antes (primeira visita = nada salvo = tudo expandido,
    igual a hoje). */
 
-import { getDb } from '../../../../src/firebase.js';
+import { getDb } from '../../../src/firebase.js';
 import {
   doc, getDoc, setDoc,
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';

@@ -124,7 +124,7 @@
    ============================================= */
 
 import { State } from './dashboard_data.js';
-import { perfLog } from '../../../src/perf_logger.js';
+import { perfLog } from '../../src/perf_logger.js';
 import { renderAchievements } from './conquistas.js';
 
 /* ══════════════════════════════════════════════

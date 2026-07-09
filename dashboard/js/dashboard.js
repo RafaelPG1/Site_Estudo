@@ -140,16 +140,16 @@ import {
   setPagina,
   SEMESTRES,
   getUsuario,
-} from '../../../src/global.js';
+} from '../../src/global.js';
 
-import { criarSemestreSelect } from '../../../shared/js/utils/dom.js';
+import { criarSemestreSelect } from '../../shared/js/utils/dom.js';
 
-import { resolverSemestreDeURL } from '../../../shared/js/utils/url.js';
-import { aplicarCoresDisciplina } from '../../../shared/js/themes/theme.js';
-import { injetarLogo } from '../../../shared/js/utils/logo.js';
+import { resolverSemestreDeURL } from '../../shared/js/utils/url.js';
+import { aplicarCoresDisciplina } from '../../shared/js/themes/theme.js';
+import { injetarLogo } from '../../shared/js/utils/logo.js';
 
 // no topo do arquivo
-import { perfLog } from '../../../src/perf_logger.js';
+import { perfLog } from '../../src/perf_logger.js';
 
 // primeira linha do bootstrap/init do dashboard
 const __nexusDashboardT0 = performance.now();
@@ -162,14 +162,14 @@ import {
   audio,
   installAudioRecovery,
   playSound,
-} from '../../../shared/js/audio/audio-api.js';
+} from '../../shared/js/audio/audio-api.js';
 
 /* ── Session Tracker ── */
 import {
   subscribe     as sessionSubscribe,
   formatTime    as sessionFormatTime,
   getStats      as sessionGetStats,
-} from '../../../src/session-tracker.js';
+} from '../../src/session-tracker.js';
 
 /* ── Dados (Camada 5 — Fase 1.6: extraído para dashboard_data.js) ── */
 import {
@@ -522,12 +522,12 @@ async function _bootPagina() {
     destino:  '#header-logo-wrap',
     tamanho:  32,
     layout:   'stacked',
-    srcBase:  '../../../shared/img/logo.png',
-    linkHref: '../../../index.html',
+    srcBase:  '../../shared/img/logo.png',
+    linkHref: '../../index.html',
   });
 
   try {
-    const mod       = await import('../../../shared/js/themes/cores.js');
+    const mod       = await import('../../shared/js/themes/cores.js');
     State.DISC_CORES = mod.DISC_CORES ?? {};
   } catch (_) {}
 

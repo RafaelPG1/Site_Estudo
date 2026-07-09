@@ -153,7 +153,7 @@
    cálculo de desbloqueio/progresso.
    ============================================= */
 
-import { getUsuario } from '../../../src/global.js';
+import { getUsuario } from '../../src/global.js';
 
 /* ── Session Tracker ── */
 import {
@@ -163,16 +163,16 @@ import {
   setSemestreAtivo,
   carregarPerfilUso,
   USAGE_PERIODOS,
-} from '../../../src/session-tracker.js';
+} from '../../src/session-tracker.js';
 
 /* ── Firestore (leitura da última sessão persistida — fallback do card Navegação) ── */
-import { getDb } from '../../../src/firebase.js';
+import { getDb } from '../../src/firebase.js';
 import {
   collection, query, orderBy, limit, getDocs,
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 import { renderDashboardIntelligence } from './dashboard_render.js';
-import { perfLog, logFirestore } from '../../../src/perf_logger.js';
+import { perfLog, logFirestore } from '../../src/perf_logger.js';
 /* ══════════════════════════════════════════════
    ESTADO
 ══════════════════════════════════════════════ */
@@ -373,7 +373,7 @@ let _quizIntelligenceModulePromise = null;
 function _importarQuizIntelligence() {
   if (_quizIntelligenceModulePromise) return _quizIntelligenceModulePromise;
 
-  _quizIntelligenceModulePromise = import('../../../quiz/js/quiz_intelligence.js')
+  _quizIntelligenceModulePromise = import('../../quiz/js/quiz_intelligence.js')
     .catch(err => {
       console.warn('[dashboard] _importarQuizIntelligence: falha ao importar quiz_intelligence.js:', err);
       _quizIntelligenceModulePromise = null; // permite nova tentativa numa próxima chamada

@@ -96,7 +96,7 @@
    alterado: apenas a forma de resolvê-lo e reportá-lo. */
 
 import { State } from '../dashboard_data.js';
-import { getUsuario, getDisciplinasDeSemestre } from '../../../../src/global.js';
+import { getUsuario, getDisciplinasDeSemestre } from '../../../src/global.js';
 import { carregarProgresso, salvarItem, carregarEstadoUI, salvarEstadoUI } from './checklist_storage.js';
 import { renderChecklist, renderEstadoVazio } from './checklist_renderer.js';
 
@@ -109,7 +109,7 @@ export function checklistEstaAberta() {
 
 function _resolverCaminhoDados(semestre) {
   const ano = String(semestre ?? '').slice(0, 4);
-  return `../../../../content/pessoal/${ano}/${semestre}/checklist_data.js`;
+  return `../../../content/pessoal/${ano}/${semestre}/checklist_data.js`;
 }
 
 /* Cruza as disciplinas declaradas em checklist_data.js (apenas
