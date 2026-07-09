@@ -420,6 +420,7 @@
   border-radius: var(--r-sm);
   padding: 10px 12px;
   margin-bottom: 20px;
+  transition: border-color .15s ease;
 }
 .tarefa-modal-input:focus { outline: none; border-color: var(--accent-lite); }
 .tarefa-modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
@@ -435,7 +436,34 @@
   color: var(--text-2);
 }
 .tarefa-modal-btn-confirmar { background: var(--accent-lite); border-color: transparent; color: var(--bg); }
+.tarefa-modal-btn-confirmar.is-disabled,
+.tarefa-modal-btn-confirmar:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+  filter: none;
+}
 .tarefa-modal-btn-perigo { background: var(--red, #FF5C6A); border-color: transparent; color: #fff; }
+
+/* ── Validação (nome da lista / categorias) ── */
+.tarefa-modal-input.is-invalid,
+.tarefa-modal-input-categoria.is-invalid {
+  border-color: var(--red, #FF5C6A);
+}
+.tarefa-modal-campo-erro,
+.tarefa-modal-categoria-erro {
+  display: block;
+  font-size: 11px;
+  color: var(--red, #FF5C6A);
+  margin-top: -14px;
+  margin-bottom: 14px;
+  line-height: 1.4;
+}
+.tarefa-modal-categoria-erro {
+  margin-top: 6px;
+  margin-bottom: 0;
+}
+.tarefa-modal-campo-erro[hidden],
+.tarefa-modal-categoria-erro[hidden] { display: none; }
 
 /* ── Modal rico de nova lista ── */
 .tarefa-modal--nova-lista {
@@ -499,6 +527,9 @@
   flex-direction: column;
   gap: 12px;
   margin-bottom: 10px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 .tarefa-modal-categoria-bloco {
   background: var(--surface-2);
@@ -586,6 +617,36 @@
 @keyframes tarefaModalFadeIn {
   from { opacity: 0; transform: translateY(-4px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Scroll customizado — usado no modal rico e em qualquer área
+   interna com overflow (ex.: lista de categorias). Fino, discreto,
+   cantos arredondados, transição suave no hover, alinhado ao tema
+   escuro do Dashboard. Não é o scroll padrão do navegador. ── */
+.tarefa-scroll-fino {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: var(--border-2) transparent; /* Firefox */
+}
+.tarefa-scroll-fino::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.tarefa-scroll-fino::-webkit-scrollbar-track {
+  background: transparent;
+}
+.tarefa-scroll-fino::-webkit-scrollbar-thumb {
+  background-color: var(--border-2);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background-color .2s ease;
+}
+.tarefa-scroll-fino::-webkit-scrollbar-thumb:hover {
+  background-color: var(--accent-lite);
+  background-clip: padding-box;
+}
+.tarefa-scroll-fino::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 @media (max-width: 640px) {

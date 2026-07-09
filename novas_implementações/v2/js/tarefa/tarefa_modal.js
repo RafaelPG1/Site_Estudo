@@ -89,8 +89,11 @@ export function abrirModalConfirmar({ titulo, mensagem, textoConfirmar = 'Exclui
      { nome: string, disciplinaId: string|null, categorias: [{ nome, itens: string[] }] }
    `categorias` vem vazio no modo simples — quem chama decide se usa
    criarLista() ou criarListaCompleta() com base nisso.
-   `disciplinas`: [{ id, nome }] — vem do módulo de disciplinas do
-   semestre atual (ver tarefa.js), nunca fixo aqui. */
+   `disciplinas`: [{ id, nome, emoji }] — vem do módulo de disciplinas
+   do semestre atual (ver tarefa.js), nunca fixo aqui. `emoji` é
+   opcional; quando presente, é usado como prefixo visual da opção
+   no select, na mesma identidade usada pelo resto do Dashboard
+   (ver .disc-item / sidebar-disciplinas em dashboard.js). */
 export function abrirModalNovaLista({ disciplinas = [] } = {}) {
   return new Promise((resolve) => {
     const overlay = document.createElement('div');
@@ -100,7 +103,7 @@ export function abrirModalNovaLista({ disciplinas = [] } = {}) {
     let categoriasState = []; // [{ nome, itens: string[] }]
 
     overlay.innerHTML = `
-      <div class="tarefa-modal tarefa-modal--nova-lista" role="dialog" aria-modal="true" aria-labelledby="tnl-title">
+      <div class="tarefa-modal tarefa-modal--nova-lista tarefa-scroll-fino" role="dialog" aria-modal="true" aria-labelledby="tnl-title">
         <h3 class="tarefa-modal-title" id="tnl-title">Nova lista de tarefas</h3>
 
         <div class="tarefa-modal-tabs" role="tablist">
@@ -112,20 +115,21 @@ export function abrirModalNovaLista({ disciplinas = [] } = {}) {
         <div class="tarefa-modal-section">
           <label class="tarefa-modal-label">Nome da lista</label>
           <input type="text" class="tarefa-modal-input" id="tnl-nome" maxlength="80" placeholder="Ex: Estudos para a prova final" />
+          <span class="tarefa-modal-campo-erro" id="tnl-erro-nome" hidden>Informe um nome para a lista.</span>
         </div>
 
         <div class="tarefa-modal-section">
           <label class="tarefa-modal-label">Associar a uma disciplina <span class="tarefa-modal-opcional">(opcional)</span></label>
           <select class="tarefa-modal-select" id="tnl-disciplina">
             <option value="">Nenhuma</option>
-            ${disciplinas.map(d => `<option value="${_escapeHtmlModal(d.id)}">${_escapeHtmlModal(d.nome)}</option>`).join('')}
+            ${disciplinas.map(d => `<option value="${_escapeHtmlModal(d.id)}">${d.emoji ? _escapeHtmlModal(d.emoji) + ' ' : ''}${_escapeHtmlModal(d.nome)}</option>`).join('')}
           </select>
         </div>
 
         <div class="tarefa-modal-section tarefa-modal-secao-categorias" id="tnl-secao-categorias" hidden>
           <div class="tarefa-modal-separador"></div>
           <label class="tarefa-modal-label">Categorias e itens</label>
-          <div class="tarefa-modal-categorias" id="tnl-categorias"></div>
+          <div class="tarefa-modal-categorias tarefa-scroll-fino" id="tnl-categorias"></div>
           <button type="button" class="tarefa-modal-btn-add" id="tnl-add-categoria">${_ICON_PLUS} Adicionar categoria</button>
         </div>
 
@@ -138,21 +142,84 @@ export function abrirModalNovaLista({ disciplinas = [] } = {}) {
     document.body.appendChild(overlay);
     requestAnimationFrame(() => overlay.classList.add('is-aberto'));
 
-    const inputNome  = overlay.querySelector('#tnl-nome');
-    const selectDisc = overlay.querySelector('#tnl-disciplina');
-    const secaoCat   = overlay.querySelector('#tnl-secao-categorias');
-    const catsWrap   = overlay.querySelector('#tnl-categorias');
-    const hint       = overlay.querySelector('#tnl-hint');
-    const tabs       = overlay.querySelectorAll('.tarefa-modal-tab');
+    const inputNome    = overlay.querySelector('#tnl-nome');
+    const erroNomeEl   = overlay.querySelector('#tnl-erro-nome');
+    const selectDisc   = overlay.querySelector('#tnl-disciplina');
+    const secaoCat     = overlay.querySelector('#tnl-secao-categorias');
+    const catsWrap     = overlay.querySelector('#tnl-categorias');
+    const hint         = overlay.querySelector('#tnl-hint');
+    const tabs         = overlay.querySelectorAll('.tarefa-modal-tab');
+    const btnConfirmar = overlay.querySelector('#tnl-confirmar');
 
     inputNome.focus();
+
+    /* ── Validação ──
+       Nome da lista sempre obrigatório. No modo completo, toda
+       categoria precisa ter nome E ao menos um item — senão a
+       criação fica bloqueada (botão desabilitado) e o campo
+       problemático é destacado com borda + mensagem abaixo dele. */
+    function _computarErros() {
+      const erros = { nome: !inputNome.value.trim(), categorias: [] };
+      if (modo === 'completo') {
+        categoriasState.forEach(cat => {
+          erros.categorias.push({
+            semNome:  !cat.nome.trim(),
+            semItens: cat.itens.length === 0,
+          });
+        });
+      }
+      return erros;
+    }
+
+    function _aplicarValidacaoUI() {
+      const erros = _computarErros();
+
+      inputNome.classList.toggle('is-invalid', erros.nome);
+      erroNomeEl.hidden = !erros.nome;
+
+      const blocos = catsWrap.querySelectorAll('.tarefa-modal-categoria-bloco');
+      blocos.forEach((bloco, idx) => {
+        const catInput = bloco.querySelector('.tarefa-modal-input-categoria');
+        const erroEl   = bloco.querySelector('.tarefa-modal-categoria-erro');
+        const info     = erros.categorias[idx];
+
+        if (!info) {
+          catInput?.classList.remove('is-invalid');
+          if (erroEl) erroEl.hidden = true;
+          return;
+        }
+
+        catInput.classList.toggle('is-invalid', info.semNome);
+        if (erroEl) {
+          if (info.semNome) {
+            erroEl.textContent = 'Dê um nome a esta categoria.';
+            erroEl.hidden = false;
+          } else if (info.semItens) {
+            erroEl.textContent = 'Adicione ao menos um item nesta categoria.';
+            erroEl.hidden = false;
+          } else {
+            erroEl.hidden = true;
+          }
+        }
+      });
+
+      const categoriasOk = modo !== 'completo'
+        || erros.categorias.every(c => !c.semNome && !c.semItens);
+      const valido = !erros.nome && categoriasOk;
+
+      btnConfirmar.disabled = !valido;
+      btnConfirmar.classList.toggle('is-disabled', !valido);
+      return valido;
+    }
 
     function _renderCategorias() {
       catsWrap.innerHTML = categoriasState.map((cat, catIdx) => `
         <div class="tarefa-modal-categoria-bloco" data-cat-idx="${catIdx}">
           <div class="tarefa-modal-categoria-cabecalho">
             <input type="text" class="tarefa-modal-input tarefa-modal-input-categoria" placeholder="Nome da categoria" value="${_escapeHtmlModal(cat.nome)}" />
-            <button type="button" class="tarefa-modal-icon-btn tnl-remover-categoria" title="Remover categoria" aria-label="Remover categoria">${_ICON_TRASH}</button>
+            <button type="button" class="tarefa-modal-icon-btn tnl-remover-categoria"
+                    title="${categoriasState.length <= 1 ? 'Limpar categoria' : 'Remover categoria'}"
+                    aria-label="${categoriasState.length <= 1 ? 'Limpar categoria' : 'Remover categoria'}">${_ICON_TRASH}</button>
           </div>
           <div class="tarefa-modal-itens-chips">
             ${cat.itens.map((item, itIdx) => `
@@ -164,7 +231,10 @@ export function abrirModalNovaLista({ disciplinas = [] } = {}) {
           <div class="tarefa-modal-add-item">
             <input type="text" class="tarefa-modal-input tarefa-modal-input-item" placeholder="Novo item + Enter" />
           </div>
+          <p class="tarefa-modal-categoria-erro" hidden></p>
         </div>`).join('');
+
+      _aplicarValidacaoUI();
     }
 
     overlay.querySelector('#tnl-add-categoria').addEventListener('click', () => {
@@ -179,7 +249,15 @@ export function abrirModalNovaLista({ disciplinas = [] } = {}) {
       const catIdx = Number(bloco.dataset.catIdx);
 
       if (e.target.closest('.tnl-remover-categoria')) {
-        categoriasState.splice(catIdx, 1);
+        /* Regra: nunca deixar o formulário com 0 categorias. Se só
+           existe uma, "Excluir" limpa os campos em vez de remover
+           o bloco — o usuário sempre tem pelo menos uma categoria
+           disponível para preencher. */
+        if (categoriasState.length <= 1) {
+          categoriasState[catIdx] = { nome: '', itens: [] };
+        } else {
+          categoriasState.splice(catIdx, 1);
+        }
         _renderCategorias();
         return;
       }
@@ -195,6 +273,7 @@ export function abrirModalNovaLista({ disciplinas = [] } = {}) {
       const bloco = e.target.closest('.tarefa-modal-categoria-bloco');
       if (!bloco || !e.target.classList.contains('tarefa-modal-input-categoria')) return;
       categoriasState[Number(bloco.dataset.catIdx)].nome = e.target.value;
+      _aplicarValidacaoUI();
     });
 
     catsWrap.addEventListener('keydown', (e) => {
@@ -211,6 +290,8 @@ export function abrirModalNovaLista({ disciplinas = [] } = {}) {
         ?.querySelector('.tarefa-modal-input-item')?.focus();
     });
 
+    inputNome.addEventListener('input', _aplicarValidacaoUI);
+
     tabs.forEach(tab => {
       tab.addEventListener('click', () => {
         modo = tab.dataset.modo;
@@ -225,20 +306,31 @@ export function abrirModalNovaLista({ disciplinas = [] } = {}) {
           : 'Crie só o nome agora e organize o resto depois.';
         if (ehCompleto && categoriasState.length === 0) {
           categoriasState.push({ nome: '', itens: [] });
-          _renderCategorias();
         }
+        _renderCategorias();
       });
     });
 
     const confirmar = () => {
-      const nome = inputNome.value.trim();
-      if (!nome) { inputNome.focus(); return; }
+      const valido = _aplicarValidacaoUI();
+      if (!valido) {
+        const erros = _computarErros();
+        if (erros.nome) {
+          inputNome.focus();
+        } else {
+          const idxInvalido = erros.categorias.findIndex(c => c.semNome || c.semItens);
+          if (idxInvalido !== -1) {
+            catsWrap.querySelectorAll('.tarefa-modal-categoria-bloco')[idxInvalido]
+              ?.querySelector('.tarefa-modal-input-categoria')?.focus();
+          }
+        }
+        return;
+      }
 
+      const nome = inputNome.value.trim();
       const disciplinaId = selectDisc.value || null;
       const categorias = modo === 'completo'
-        ? categoriasState
-            .map(c => ({ nome: c.nome.trim(), itens: c.itens.filter(Boolean) }))
-            .filter(c => c.nome)
+        ? categoriasState.map(c => ({ nome: c.nome.trim(), itens: c.itens.filter(Boolean) }))
         : [];
 
       _fechar(overlay);
@@ -246,10 +338,12 @@ export function abrirModalNovaLista({ disciplinas = [] } = {}) {
     };
     const cancelar = () => { _fechar(overlay); resolve(null); };
 
-    overlay.querySelector('#tnl-confirmar').addEventListener('click', confirmar);
+    btnConfirmar.addEventListener('click', confirmar);
     overlay.querySelector('.tarefa-modal-btn-cancelar').addEventListener('click', cancelar);
     inputNome.addEventListener('keydown', (e) => { if (e.key === 'Enter') confirmar(); });
     overlay.addEventListener('keydown', (e) => { if (e.key === 'Escape') cancelar(); });
     overlay.addEventListener('click', (e) => { if (e.target === overlay) cancelar(); });
+
+    _aplicarValidacaoUI();
   });
 }
