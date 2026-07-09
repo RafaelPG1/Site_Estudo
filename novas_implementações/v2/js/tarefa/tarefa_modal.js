@@ -16,6 +16,7 @@ function _escapeHtmlModal(str) {
 
 const _ICON_PLUS  = `<svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M7 2.5v9M2.5 7h9"/></svg>`;
 const _ICON_TRASH = `<svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.5 4h9M5 4V2.5h4V4M5.5 6.5v4M8.5 6.5v4M3 4l.6 8a1 1 0 001 .9h4.8a1 1 0 001-.9L11 4"/></svg>`;
+const _ICON_CLOSE = `<svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 3l8 8M11 3l-8 8"/></svg>`;
 
 function _fechar(overlay) {
   overlay.classList.remove('is-aberto');
@@ -93,7 +94,18 @@ export function abrirModalConfirmar({ titulo, mensagem, textoConfirmar = 'Exclui
    do semestre atual (ver tarefa.js), nunca fixo aqui. `emoji` é
    opcional; quando presente, é usado como prefixo visual da opção
    no select, na mesma identidade usada pelo resto do Dashboard
-   (ver .disc-item / sidebar-disciplinas em dashboard.js). */
+   (ver .disc-item / sidebar-disciplinas em dashboard.js).
+
+   ── Validação "lazy" (estilo Notion/Linear/GitHub) ──
+   O modal nunca nasce com erros visíveis, e simplesmente focar/
+   desfocar campos (clicar, tabular, sair vazio) também não gera
+   nenhum erro — navegar pelo formulário é sempre neutro. O único
+   gatilho que liga a validação visual é uma tentativa de submit
+   (clicar em "Criar"): a partir daí, `tentouSubmeter` fica `true`
+   pelo resto da vida do modal e a validação passa a ser dinâmica —
+   cada campo corrigido faz o erro dele sumir na hora, e qualquer
+   campo/categoria nova criada depois desse ponto já é validada em
+   tempo real também. */
 export function abrirModalNovaLista({ disciplinas = [] } = {}) {
   return new Promise((resolve) => {
     const overlay = document.createElement('div');
@@ -102,38 +114,48 @@ export function abrirModalNovaLista({ disciplinas = [] } = {}) {
     let modo = 'simples'; // 'simples' | 'completo'
     let categoriasState = []; // [{ nome, itens: string[] }]
 
+    // Único gatilho de validação visual: uma tentativa de submit.
+    // Antes disso, nada — nem focar, nem desfocar, nem digitar —
+    // deve pintar um campo de vermelho.
+    let tentouSubmeter = false;
+
     overlay.innerHTML = `
-      <div class="tarefa-modal tarefa-modal--nova-lista tarefa-scroll-fino" role="dialog" aria-modal="true" aria-labelledby="tnl-title">
-        <h3 class="tarefa-modal-title" id="tnl-title">Nova lista de tarefas</h3>
-
-        <div class="tarefa-modal-tabs" role="tablist">
-          <button type="button" class="tarefa-modal-tab is-active" data-modo="simples" role="tab" aria-selected="true">Modo simples</button>
-          <button type="button" class="tarefa-modal-tab" data-modo="completo" role="tab" aria-selected="false">Modo completo</button>
-        </div>
-        <p class="tarefa-modal-tab-hint" id="tnl-hint">Crie só o nome agora e organize o resto depois.</p>
-
-        <div class="tarefa-modal-section">
-          <label class="tarefa-modal-label">Nome da lista</label>
-          <input type="text" class="tarefa-modal-input" id="tnl-nome" maxlength="80" placeholder="Ex: Estudos para a prova final" />
-          <span class="tarefa-modal-campo-erro" id="tnl-erro-nome" hidden>Informe um nome para a lista.</span>
+      <div class="tarefa-modal tarefa-modal--nova-lista" role="dialog" aria-modal="true" aria-labelledby="tnl-title">
+        <div class="tarefa-modal-header">
+          <h3 class="tarefa-modal-title" id="tnl-title">Nova lista de tarefas</h3>
+          <button type="button" class="tarefa-modal-fechar" id="tnl-fechar" aria-label="Fechar">${_ICON_CLOSE}</button>
         </div>
 
-        <div class="tarefa-modal-section">
-          <label class="tarefa-modal-label">Associar a uma disciplina <span class="tarefa-modal-opcional">(opcional)</span></label>
-          <select class="tarefa-modal-select" id="tnl-disciplina">
-            <option value="">Nenhuma</option>
-            ${disciplinas.map(d => `<option value="${_escapeHtmlModal(d.id)}">${d.emoji ? _escapeHtmlModal(d.emoji) + ' ' : ''}${_escapeHtmlModal(d.nome)}</option>`).join('')}
-          </select>
+        <div class="tarefa-modal-body tarefa-scroll-fino">
+          <div class="tarefa-modal-tabs" role="tablist">
+            <button type="button" class="tarefa-modal-tab is-active" data-modo="simples" role="tab" aria-selected="true">Modo simples</button>
+            <button type="button" class="tarefa-modal-tab" data-modo="completo" role="tab" aria-selected="false">Modo completo</button>
+          </div>
+          <p class="tarefa-modal-tab-hint" id="tnl-hint">Crie só o nome agora e organize o resto depois.</p>
+
+          <div class="tarefa-modal-section">
+            <label class="tarefa-modal-label">Nome da lista</label>
+            <input type="text" class="tarefa-modal-input" id="tnl-nome" maxlength="80" placeholder="Ex: Estudos para a prova final" />
+            <span class="tarefa-modal-campo-erro" id="tnl-erro-nome" hidden>Informe um nome para a lista.</span>
+          </div>
+
+          <div class="tarefa-modal-section">
+            <label class="tarefa-modal-label">Associar a uma disciplina <span class="tarefa-modal-opcional">(opcional)</span></label>
+            <select class="tarefa-modal-select" id="tnl-disciplina">
+              <option value="">Nenhuma</option>
+              ${disciplinas.map(d => `<option value="${_escapeHtmlModal(d.id)}">${d.emoji ? _escapeHtmlModal(d.emoji) + ' ' : ''}${_escapeHtmlModal(d.nome)}</option>`).join('')}
+            </select>
+          </div>
+
+          <div class="tarefa-modal-section tarefa-modal-secao-categorias" id="tnl-secao-categorias" hidden>
+            <div class="tarefa-modal-separador"></div>
+            <label class="tarefa-modal-label">Categorias e itens</label>
+            <div class="tarefa-modal-categorias tarefa-scroll-fino" id="tnl-categorias"></div>
+            <button type="button" class="tarefa-modal-btn-add" id="tnl-add-categoria">${_ICON_PLUS} Adicionar categoria</button>
+          </div>
         </div>
 
-        <div class="tarefa-modal-section tarefa-modal-secao-categorias" id="tnl-secao-categorias" hidden>
-          <div class="tarefa-modal-separador"></div>
-          <label class="tarefa-modal-label">Categorias e itens</label>
-          <div class="tarefa-modal-categorias tarefa-scroll-fino" id="tnl-categorias"></div>
-          <button type="button" class="tarefa-modal-btn-add" id="tnl-add-categoria">${_ICON_PLUS} Adicionar categoria</button>
-        </div>
-
-        <div class="tarefa-modal-actions">
+        <div class="tarefa-modal-actions tarefa-modal-footer">
           <button type="button" class="tarefa-modal-btn tarefa-modal-btn-cancelar">Cancelar</button>
           <button type="button" class="tarefa-modal-btn tarefa-modal-btn-confirmar" id="tnl-confirmar">Criar lista</button>
         </div>
@@ -153,11 +175,10 @@ export function abrirModalNovaLista({ disciplinas = [] } = {}) {
 
     inputNome.focus();
 
-    /* ── Validação ──
-       Nome da lista sempre obrigatório. No modo completo, toda
-       categoria precisa ter nome E ao menos um item — senão a
-       criação fica bloqueada (botão desabilitado) e o campo
-       problemático é destacado com borda + mensagem abaixo dele. */
+    /* ── Cálculo de erros (puro) ──
+       Não decide o que mostrar na tela — só descreve o que está
+       inválido. Quem decide exibir ou não é _aplicarValidacaoUI(),
+       cruzando isso com `tentouSubmeter`. */
     function _computarErros() {
       const erros = { nome: !inputNome.value.trim(), categorias: [] };
       if (modo === 'completo') {
@@ -171,19 +192,32 @@ export function abrirModalNovaLista({ disciplinas = [] } = {}) {
       return erros;
     }
 
+    /* ── Aplicação visual da validação ──
+       Um erro só aparece na tela depois que houve uma tentativa de
+       submit (tentouSubmeter === true). Antes disso, focar,
+       desfocar ou navegar entre campos nunca pinta nada de
+       vermelho. A VALIDADE real (retorno da função) é sempre
+       calculada em cima do estado verdadeiro dos campos,
+       independente de exibição — é o que confirmar() usa para
+       decidir se pode seguir em frente. */
     function _aplicarValidacaoUI() {
       const erros = _computarErros();
 
-      inputNome.classList.toggle('is-invalid', erros.nome);
-      erroNomeEl.hidden = !erros.nome;
+      // Antes da primeira tentativa de submit, nada é exibido —
+      // independentemente de o campo ter sido focado/desfocado.
+      const mostrarErroNome = erros.nome && tentouSubmeter;
+      inputNome.classList.toggle('is-invalid', mostrarErroNome);
+      erroNomeEl.hidden = !mostrarErroNome;
 
       const blocos = catsWrap.querySelectorAll('.tarefa-modal-categoria-bloco');
       blocos.forEach((bloco, idx) => {
         const catInput = bloco.querySelector('.tarefa-modal-input-categoria');
         const erroEl   = bloco.querySelector('.tarefa-modal-categoria-erro');
         const info     = erros.categorias[idx];
+        const temErro  = !!info && (info.semNome || info.semItens);
+        const mostrar  = temErro && tentouSubmeter;
 
-        if (!info) {
+        if (!mostrar) {
           catInput?.classList.remove('is-invalid');
           if (erroEl) erroEl.hidden = true;
           return;
@@ -207,8 +241,8 @@ export function abrirModalNovaLista({ disciplinas = [] } = {}) {
         || erros.categorias.every(c => !c.semNome && !c.semItens);
       const valido = !erros.nome && categoriasOk;
 
-      btnConfirmar.disabled = !valido;
-      btnConfirmar.classList.toggle('is-disabled', !valido);
+      // O botão fica sempre clicável — é o clique que revela os
+      // erros (padrão Notion/Linear), em vez de nascer desabilitado.
       return valido;
     }
 
@@ -269,10 +303,16 @@ export function abrirModalNovaLista({ disciplinas = [] } = {}) {
       }
     });
 
+    // Digitar sempre atualiza o estado; a validação visual só
+    // reage a isso depois da 1ª tentativa de submit (ver
+    // _aplicarValidacaoUI). Simplesmente focar/desfocar nunca
+    // dispara validação — só existe o listener de 'input' aqui,
+    // de propósito (nenhum 'blur'/'focusout' nestes campos).
     catsWrap.addEventListener('input', (e) => {
       const bloco = e.target.closest('.tarefa-modal-categoria-bloco');
       if (!bloco || !e.target.classList.contains('tarefa-modal-input-categoria')) return;
-      categoriasState[Number(bloco.dataset.catIdx)].nome = e.target.value;
+      const cat = categoriasState[Number(bloco.dataset.catIdx)];
+      cat.nome = e.target.value;
       _aplicarValidacaoUI();
     });
 
@@ -290,7 +330,11 @@ export function abrirModalNovaLista({ disciplinas = [] } = {}) {
         ?.querySelector('.tarefa-modal-input-item')?.focus();
     });
 
-    inputNome.addEventListener('input', _aplicarValidacaoUI);
+    // Mesma regra para o nome da lista: só 'input' (digitar) reage
+    // à validação; focar/desfocar o campo nunca pinta nada.
+    inputNome.addEventListener('input', () => {
+      _aplicarValidacaoUI();
+    });
 
     tabs.forEach(tab => {
       tab.addEventListener('click', () => {
@@ -314,6 +358,12 @@ export function abrirModalNovaLista({ disciplinas = [] } = {}) {
     const confirmar = () => {
       const valido = _aplicarValidacaoUI();
       if (!valido) {
+        // Primeira tentativa "fracassada" de submit: a partir de
+        // agora a validação passa a ser dinâmica em tempo real,
+        // até que todos os erros sejam corrigidos.
+        tentouSubmeter = true;
+        _aplicarValidacaoUI();
+
         const erros = _computarErros();
         if (erros.nome) {
           inputNome.focus();
@@ -340,10 +390,13 @@ export function abrirModalNovaLista({ disciplinas = [] } = {}) {
 
     btnConfirmar.addEventListener('click', confirmar);
     overlay.querySelector('.tarefa-modal-btn-cancelar').addEventListener('click', cancelar);
+    overlay.querySelector('#tnl-fechar').addEventListener('click', cancelar);
     inputNome.addEventListener('keydown', (e) => { if (e.key === 'Enter') confirmar(); });
     overlay.addEventListener('keydown', (e) => { if (e.key === 'Escape') cancelar(); });
     overlay.addEventListener('click', (e) => { if (e.target === overlay) cancelar(); });
 
+    // Estado inicial: nada foi tocado ainda, então nenhum erro deve
+    // aparecer — mesmo que o nome esteja vazio (é o padrão ao abrir).
     _aplicarValidacaoUI();
   });
 }

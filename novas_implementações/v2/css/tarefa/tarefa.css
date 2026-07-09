@@ -18,35 +18,24 @@
   color: var(--text-3);
 }
 
-/* ── Cabeçalho ── */
-.tarefa-header {
+/* ── Cabeçalho ──
+   Reaproveita diretamente as classes do Checklist (checklist.css):
+   .checklist-header, .checklist-header-top, .checklist-header-left,
+   .checklist-title, .checklist-subtitle, .checklist-stats-row,
+   .checklist-stat-chip (e filhos). Essas classes não são escopadas
+   a `.view-checklist` — são componentes soltos, reutilizáveis em
+   qualquer view do Dashboard — por isso Tarefas as usa diretamente
+   no HTML gerado por tarefa_renderer.js, sem duplicar nenhuma
+   regra de layout/espaçamento aqui. O Checklist não tem um botão
+   principal no cabeçalho (disciplinas são fixas, não criadas pelo
+   usuário); para Tarefas, o botão "Nova lista" ocupa exatamente o
+   slot onde fica o anel de progresso no Checklist — mesmo lugar,
+   mesmo alinhamento — usando o botão primário já existente aqui
+   embaixo (mesma linguagem visual do resto do Dashboard). */
+.tarefa-header-acao {
   display: flex;
-  flex-direction: column;
-  gap: 18px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  padding: 24px 28px;
-  box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 10px 28px -16px rgba(0,0,0,.30);
-}
-.tarefa-header-topo {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-.tarefa-title {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(19px, 3vw, 24px);
-  font-weight: 700;
-  color: var(--text-1);
-  letter-spacing: -.5px;
-}
-.tarefa-subtitle {
-  font-size: 12.5px;
-  color: var(--text-3);
-  margin-top: 4px;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 .tarefa-btn-primario {
@@ -66,38 +55,6 @@
   transition: filter .15s ease;
 }
 .tarefa-btn-primario:hover { filter: brightness(1.1); }
-
-/* ── Cards de resumo (mesmo padrão visual do Checklist) ── */
-.tarefa-resumo-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-}
-.tarefa-resumo-card {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  padding: 14px 16px;
-}
-.tarefa-resumo-valor {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text-1);
-  line-height: 1;
-}
-.tarefa-resumo-label {
-  font-size: 11px;
-  color: var(--text-3);
-  text-transform: uppercase;
-  letter-spacing: .4px;
-}
-@media (max-width: 640px) {
-  .tarefa-resumo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
 
 /* ── Estado vazio ── */
 .tarefa-empty {
@@ -465,11 +422,60 @@
 .tarefa-modal-campo-erro[hidden],
 .tarefa-modal-categoria-erro[hidden] { display: none; }
 
-/* ── Modal rico de nova lista ── */
+/* ── Modal rico de nova lista ──
+   Estrutura em 3 blocos fixos/roláveis (padrão Notion/Linear):
+     .tarefa-modal-header  → fixo, nunca rola
+     .tarefa-modal-body    → único que rola (nome, disciplina,
+                              categorias, itens...)
+     .tarefa-modal-footer  → fixo, os botões de ação nunca saem
+                              da tela, mesmo com muito conteúdo.
+   O padding de 24px que antes ficava só em .tarefa-modal passa a
+   ser distribuído entre os 3 blocos, mantendo o respiro visual
+   idêntico ao anterior. */
 .tarefa-modal--nova-lista {
   width: min(460px, 92vw);
   max-height: 85vh;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.tarefa-modal--nova-lista .tarefa-modal-header {
+  flex-shrink: 0;
+  padding: 24px 24px 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.tarefa-modal--nova-lista .tarefa-modal-header .tarefa-modal-title {
+  margin-bottom: 14px;
+}
+.tarefa-modal-fechar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text-3);
+  cursor: pointer;
+  transition: color .15s ease, border-color .15s ease;
+}
+.tarefa-modal-fechar:hover { color: var(--text-1); border-color: var(--border-2); }
+.tarefa-modal--nova-lista .tarefa-modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
+  padding: 0 24px 20px;
+}
+.tarefa-modal--nova-lista .tarefa-modal-footer {
+  flex-shrink: 0;
+  padding: 16px 24px 24px;
+  border-top: 1px solid var(--border);
 }
 .tarefa-modal-tabs {
   display: flex;
@@ -650,6 +656,5 @@
 }
 
 @media (max-width: 640px) {
-  .tarefa-header-topo { flex-direction: column; align-items: stretch; }
   .tarefa-lista-meta { min-width: 100%; order: 3; }
 }

@@ -9,7 +9,23 @@
    Mesmos princípios visuais do Checklist (accordion de 2 níveis,
    grid-template-rows minmax(0,...) para colapso real, cards de
    resumo no topo), mas com identidade própria (.tarefa-*) e ações
-   de CRUD, já que aqui o usuário cria/edita/exclui tudo. */
+   de CRUD, já que aqui o usuário cria/edita/exclui tudo.
+
+   ─────────────────────────────────────────────
+   CABEÇALHO — reaproveita diretamente os componentes do Checklist
+   ─────────────────────────────────────────────
+   `.checklist-header`, `.checklist-header-top`, `.checklist-header-left`,
+   `.checklist-title`, `.checklist-subtitle`, `.checklist-stats-row` e
+   `.checklist-stat-chip` (definidos em checklist.css) não são
+   escopados a `.view-checklist` — são componentes soltos,
+   compartilháveis entre views do Dashboard. _cabecalhoHtml() usa
+   essas classes diretamente, então nenhuma regra de layout/
+   espaçamento do cabeçalho é duplicada em tarefa.css; só o wrapper
+   do botão (`.tarefa-header-acao`) e o próprio botão
+   (`.tarefa-btn-primario`, que já existia) são específicos daqui,
+   já que o Checklist não tem um botão principal (suas disciplinas
+   são fixas, não criadas pelo usuário) — o botão ocupa exatamente
+   o slot onde o Checklist mostra o anel de progresso. */
 
 import { abrirModalTexto, abrirModalConfirmar, abrirModalNovaLista } from './tarefa_modal.js';
 
@@ -28,6 +44,31 @@ const _CHECK_SVG = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none" 
 const _ICON_EDIT  = `<svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9.5 1.5l3 3-7 7-3.5 1 1-3.5z"/></svg>`;
 const _ICON_TRASH = `<svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.5 4h9M5 4V2.5h4V4M5.5 6.5v4M8.5 6.5v4M3 4l.6 8a1 1 0 001 .9h4.8a1 1 0 001-.9L11 4"/></svg>`;
 const _ICON_PLUS  = `<svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M7 2.5v9M2.5 7h9"/></svg>`;
+
+/* Ícones dos 4 chips de estatística do cabeçalho — mesmos desenhos
+   usados pelo Checklist (_ICON_TOTAL/_ICON_CHECK/_ICON_CLOCK/
+   _ICON_CIRCLE em checklist_renderer.js), copiados aqui para
+   manter cada módulo dono do próprio conjunto de ícones (mesmo
+   padrão já seguido por _ICON_EDIT/_ICON_TRASH/_ICON_PLUS acima),
+   mas com o traçado idêntico para garantir a mesma linguagem
+   visual exigida entre os dois módulos. */
+const _ICON_STAT_LISTAS = `
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+    <rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/>
+    <rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/>
+  </svg>`;
+const _ICON_STAT_CONCLUIDAS = `
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+    <circle cx="8" cy="8" r="6.5"/><path d="M5 8.2l2.1 2.1L11.2 6"/>
+  </svg>`;
+const _ICON_STAT_ANDAMENTO = `
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+    <circle cx="8" cy="8" r="6.5"/><path d="M8 4.5V8l2.5 2.5"/>
+  </svg>`;
+const _ICON_STAT_PENDENTES = `
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+    <circle cx="8" cy="8" r="6.5" stroke-dasharray="2.5 2.5"/>
+  </svg>`;
 
 let _colapsadasListas = new Set();
 let _colapsadasCategorias = new Set();
@@ -147,30 +188,39 @@ function _resumoGeral(listas) {
   return { total: listas.length, concluidas, emAndamento, pendentes };
 }
 
-function _cardResumoHtml(valor, label) {
+/* Um chip de estatística — mesma estrutura/classes do Checklist
+   (.checklist-stat-chip > .checklist-stat-icon + .checklist-stat-body),
+   incluindo as classes globais de cor de ícone já usadas em outros
+   cards do Dashboard (ic-blue/ic-green/ic-amber/ic-purple). */
+function _statChipHtml(iconSvg, corIcone, label, valor) {
   return `
-    <div class="tarefa-resumo-card">
-      <span class="tarefa-resumo-valor">${valor}</span>
-      <span class="tarefa-resumo-label">${label}</span>
+    <div class="checklist-stat-chip">
+      <span class="checklist-stat-icon ${corIcone}">${iconSvg}</span>
+      <div class="checklist-stat-body">
+        <span class="checklist-stat-label">${label}</span>
+        <span class="checklist-stat-value">${valor}</span>
+      </div>
     </div>`;
 }
 
 function _cabecalhoHtml(listas = []) {
   const r = _resumoGeral(listas);
   return `
-    <div class="tarefa-header">
-      <div class="tarefa-header-topo">
-        <div>
-          <h2 class="tarefa-title">Tarefas</h2>
-          <p class="tarefa-subtitle">Crie suas próprias listas e organize seus estudos do seu jeito.</p>
+    <div class="checklist-header">
+      <div class="checklist-header-top">
+        <div class="checklist-header-left">
+          <h2 class="checklist-title">Tarefas</h2>
+          <p class="checklist-subtitle">Crie suas próprias listas e organize seus estudos do seu jeito.</p>
         </div>
-        <button type="button" class="tarefa-btn-primario" id="tarefa-btn-nova-lista">${_ICON_PLUS} Nova lista</button>
+        <div class="tarefa-header-acao">
+          <button type="button" class="tarefa-btn-primario" id="tarefa-btn-nova-lista">${_ICON_PLUS} Nova lista</button>
+        </div>
       </div>
-      <div class="tarefa-resumo-grid">
-        ${_cardResumoHtml(r.total, 'Listas')}
-        ${_cardResumoHtml(r.concluidas, 'Concluídas')}
-        ${_cardResumoHtml(r.emAndamento, 'Em andamento')}
-        ${_cardResumoHtml(r.pendentes, 'Pendentes')}
+      <div class="checklist-stats-row">
+        ${_statChipHtml(_ICON_STAT_LISTAS, 'ic-blue', 'Listas', r.total)}
+        ${_statChipHtml(_ICON_STAT_CONCLUIDAS, 'ic-green', 'Concluídas', r.concluidas)}
+        ${_statChipHtml(_ICON_STAT_ANDAMENTO, 'ic-amber', 'Em andamento', r.emAndamento)}
+        ${_statChipHtml(_ICON_STAT_PENDENTES, 'ic-purple', 'Pendentes', r.pendentes)}
       </div>
     </div>`;
 }
