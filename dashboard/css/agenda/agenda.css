@@ -26,6 +26,16 @@
        usar exatamente os mesmos raios de borda (--r-sm/md/lg),
        espaçamentos e sombras já usados em .stat-card/.perf-card/
        .modal-overlay-like do Dashboard.
+     ✔ v10 — Campos de Data/Hora deixaram de depender dos
+       <input type="time"/"date"> nativos (digitação obrigatória
+       caractere a caractere, com máscara imposta pelo navegador
+       e aparência inconsistente entre navegadores). Ver bloco
+       "CAMPOS INTELIGENTES DE DATA/HORA" abaixo — o HTML desses
+       campos agora é um <input type="text" readonly> (mesmo id,
+       mesmo .value, mesmos eventos 'input'/'change' que a lógica
+       em agenda_interactions.js já esperava) acoplado a um
+       seletor customizado (relógio de duas colunas / calendário
+       mensal), no mesmo padrão visual do restante do Dashboard.
 
    Tudo neste arquivo está escopado sob `.agenda-module` para
    nunca vazar estilo para o restante do Dashboard (Checklist,
@@ -64,7 +74,21 @@
 }
 
 .agenda-module * { box-sizing: border-box; }
-.agenda-module button { font-family: inherit; cursor: pointer; border: none; background: none; outline: none; color: inherit; }
+/* CORREÇÃO: o seletor anterior era `.agenda-module button` — classe +
+   elemento, especificidade (0,1,1). Isso é MAIS específico que qualquer
+   classe isolada de componente (.agenda-color-dot, .agenda-btn-primary,
+   .agenda-goal-done-btn etc., todas (0,1,0)), então o reset sempre vencia
+   e apagava o background/border definidos nesses componentes — sintoma
+   visível no seletor de cores do modal "Novo estudo" (só a bolinha ativa,
+   com box-shadow, aparecia; as demais ficavam sem preenchimento).
+   `:where(button)` zera a especificidade do elemento dentro do seletor,
+   deixando o reset com (0,1,0) — igual às classes de componente. Em caso
+   de empate, quem vem DEPOIS no arquivo vence, e todo componente com
+   background/border próprio está definido depois deste reset. Resultado:
+   o reset continua funcionando como fallback (remove o "chrome" nativo de
+   <button> onde nada mais foi definido, como .agenda-week-arrow), mas
+   nunca mais sobrepõe um componente que define sua própria aparência. */
+.agenda-module :where(button) { font-family: inherit; cursor: pointer; border: none; background: none; outline: none; color: inherit; }
 .agenda-module input, .agenda-module textarea, .agenda-module select { font-family: inherit; outline: none; color: inherit; }
 
 /* ── TOOLBAR — substitui a antiga sidebar do calendário ── */
@@ -356,6 +380,38 @@
 .agenda-modal-close { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-3); }
 .agenda-modal-close:hover { background: var(--border); color: var(--text-1); }
 .agenda-modal-body { padding: 18px 22px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; max-height: 62vh; }
+
+/* ── SCROLLBAR — corpo dos modais (Novo estudo / Rotina de estudos) ──
+   Antes usava a barra nativa do navegador/SO (grossa, quadrada, sem
+   relação com o tema escuro). Substituída por uma versão fina, com
+   cantos arredondados e transição suave no hover, no MESMO padrão já
+   usado em outras áreas roláveis do Dashboard (ver
+   #activity-timeline em dashboard.css). Qualquer outra área rolável
+   interna de um modal deste módulo (ex.: o picker de estudos vinculados
+   a uma meta) segue exatamente o mesmo padrão logo abaixo. */
+.agenda-modal-body,
+.agenda-goal-session-picker {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-2) transparent;
+}
+.agenda-modal-body::-webkit-scrollbar,
+.agenda-goal-session-picker::-webkit-scrollbar {
+  width: 6px;
+}
+.agenda-modal-body::-webkit-scrollbar-track,
+.agenda-goal-session-picker::-webkit-scrollbar-track {
+  background: transparent;
+}
+.agenda-modal-body::-webkit-scrollbar-thumb,
+.agenda-goal-session-picker::-webkit-scrollbar-thumb {
+  background-color: var(--border-2);
+  border-radius: 20px;
+  transition: background-color .2s ease;
+}
+.agenda-modal-body::-webkit-scrollbar-thumb:hover,
+.agenda-goal-session-picker::-webkit-scrollbar-thumb:hover {
+  background-color: var(--accent-lite);
+}
 .agenda-modal-footer { display: flex; align-items: center; justify-content: space-between; padding: 14px 22px 20px; border-top: 1px solid var(--border); gap: 8px; }
 .agenda-modal-footer-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
 
@@ -379,6 +435,125 @@
   background-repeat: no-repeat; background-position: right 10px center; background-size: 14px; padding-right: 34px;
 }
 .agenda-textarea { resize: vertical; min-height: 64px; }
+
+/* ══════════════════════════════════════════════════════════════
+   CAMPOS INTELIGENTES DE DATA/HORA
+   ──────────────────────────────────────────────────────────────
+   Substituem os antigos <input type="time"> / <input type="date">
+   nativos. O elemento visível continua sendo um <input> real com
+   o MESMO id (ex.: #agenda-input-time) — por isso toda a lógica
+   já existente em agenda_interactions.js (leitura de `.value`,
+   `.focus()`, listeners de 'input'/'change', checagem de
+   `.validity.badInput`) continua funcionando sem nenhuma alteração.
+   Só o `type` muda para "text" + `readonly`: o navegador nunca
+   mais impõe teclado/segmentos nativos — em vez disso, o clique
+   abre um seletor customizado (relógio de duas colunas para hora,
+   calendário mensal para data), e o teclado aceita digitação livre
+   de dígitos (ex.: "1430" → 14:30, sem ordem/máscara forçada) e
+   setas ↑/↓ como spinner. Ver initTimePicker()/initDatePicker()
+   em agenda_interactions.js.
+
+   Os popovers usam position:fixed e são ancorados via JS
+   (getBoundingClientRect), então nunca são cortados pelo
+   overflow:auto do corpo dos modais (.agenda-modal-body). */
+.agenda-picker-input { cursor: pointer; caret-color: transparent; }
+.agenda-picker-input::placeholder { color: var(--text-3); }
+/* v11 — Campos de HORÁRIO (Hora inicial/final, Rotina): passaram
+   a ser digitação livre, um <input> de texto comum. Precisam de
+   cursor de texto normal (não o "cursor:pointer" herdado de
+   .agenda-picker-input, que continua servindo ao campo de DATA,
+   inalterado). O espaço à direita reserva lugar para o botão de
+   relógio, único responsável por abrir o seletor agora. */
+.agenda-time-input {
+  cursor: text;
+  caret-color: auto;
+  padding-right: 32px;
+}
+
+.agenda-picker-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.agenda-time-icon-btn {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-sm);
+  color: var(--text-3);
+  transition: all .15s ease;
+}
+.agenda-time-icon-btn:hover { background: var(--border); color: var(--text-1); }
+.agenda-time-icon-btn:focus-visible { outline: 2px solid var(--accent-dim); outline-offset: 1px; }
+.agenda-picker-popover {
+  position: fixed;
+  z-index: 400;
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-md);
+  box-shadow: 0 16px 40px rgba(0,0,0,.5);
+  opacity: 0;
+  transform: translateY(-6px) scale(.98);
+  pointer-events: none;
+  transition: opacity .15s ease, transform .15s ease;
+}
+.agenda-picker-popover.open { opacity: 1; transform: translateY(0) scale(1); pointer-events: all; }
+
+/* Seletor de hora — duas colunas roláveis (hora / minuto) */
+.agenda-time-popover { display: flex; flex-direction: column; width: 188px; }
+.agenda-time-cols { display: flex; align-items: stretch; gap: 2px; padding: 8px; }
+.agenda-time-col {
+  flex: 1; max-height: 208px; overflow-y: auto; scroll-behavior: smooth;
+  display: flex; flex-direction: column; gap: 2px;
+  scrollbar-width: thin; scrollbar-color: var(--border-2) transparent;
+}
+.agenda-time-col::-webkit-scrollbar { width: 4px; }
+.agenda-time-col::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 3px; }
+.agenda-time-sep { align-self: center; color: var(--text-3); font-weight: 700; font-size: 13px; padding: 0 2px; }
+.agenda-time-opt {
+  flex-shrink: 0; padding: 7px 0; text-align: center; border-radius: var(--r-sm);
+  font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 600;
+  color: var(--text-2); transition: background .12s, color .12s;
+}
+.agenda-time-opt:hover { background: var(--border); color: var(--text-1); }
+.agenda-time-opt.active { background: var(--accent-dim); color: var(--accent-lite); }
+.agenda-time-popover-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 10px; border-top: 1px solid var(--border);
+}
+.agenda-time-quick-hint { font-size: 9.5px; color: var(--text-3); }
+.agenda-time-clear { font-size: 11px; font-weight: 600; color: var(--text-3); padding: 4px 8px; border-radius: var(--r-sm); }
+.agenda-time-clear:hover { background: var(--border); color: var(--red); }
+
+/* Seletor de data — calendário mensal */
+.agenda-date-popover { width: 250px; padding: 10px; }
+.agenda-date-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.agenda-date-nav { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-3); font-size: 14px; }
+.agenda-date-nav:hover { background: var(--border); color: var(--text-1); }
+.agenda-date-title { font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 700; color: var(--text-1); text-transform: capitalize; }
+.agenda-date-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 4px; }
+.agenda-date-weekday { text-align: center; font-size: 9px; font-weight: 700; color: var(--text-3); text-transform: uppercase; }
+.agenda-date-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.agenda-date-cell {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  border-radius: var(--r-sm); font-size: 11.5px; font-weight: 600; color: var(--text-2);
+}
+.agenda-date-cell:hover { background: var(--border); color: var(--text-1); }
+.agenda-date-cell.is-outside { color: var(--text-3); opacity: .35; }
+.agenda-date-cell.is-today { box-shadow: inset 0 0 0 1px var(--border-2); }
+.agenda-date-cell.is-selected { background: var(--accent); color: #fff; }
+.agenda-date-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
+.agenda-date-today-btn { font-size: 11px; font-weight: 600; color: var(--accent-lite); padding: 4px 8px; border-radius: var(--r-sm); }
+.agenda-date-today-btn:hover { background: var(--accent-dim); }
+.agenda-date-clear { font-size: 11px; font-weight: 600; color: var(--text-3); padding: 4px 8px; border-radius: var(--r-sm); }
+.agenda-date-clear:hover { background: var(--border); color: var(--red); }
 
 .agenda-subject-suggestions {
   position: absolute; top: calc(100% + 4px); left: 0; right: 0;

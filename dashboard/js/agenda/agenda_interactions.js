@@ -9,6 +9,25 @@
    substitui a antiga sidebar do calendário. Portado de
    pessoal/calendar/calendar.js, trocando IDs/classes para o
    prefixo `agenda-*` usado no template deste módulo.
+
+   v10 — Adiciona initTimePicker()/initDatePicker(): os campos
+   de Hora inicial/final, Rotina (início/fim) e Data (meta
+   "Concluir até") deixaram de ser <input type="time"/"date">
+   nativos (preenchimento caractere a caractere, com máscara
+   imposta pelo navegador). Continuam sendo <input> reais com
+   o MESMO id — só a FORMA de preencher muda:
+     • clique  → abre um seletor customizado (relógio de duas
+                 colunas / calendário mensal) no padrão visual
+                 do Dashboard;
+     • teclado → Enter/Espaço abre e fecha o seletor, setas ↑/↓
+                 funcionam como spinner (Shift = pula hora
+                 inteira), dígitos digitados em sequência (ex.:
+                 "1430") preenchem sem ordem/máscara forçada, e
+                 Backspace/Delete limpa o campo (preserva o
+                 conceito de estudo "planejado", sem horário).
+   Nenhuma outra função deste arquivo teve sua lógica interna
+   alterada: os pickers apenas gravam `.value` e disparam
+   'input'/'change' no mesmo elemento que a lógica já lia.
    ============================================= */
 
 import {
@@ -17,7 +36,8 @@ import {
   getWeekKey, buildEmptyWeek, uid, getSession, findConflicts,
   timeToMinutes, minutesToTime, snapMinutes, offsetToMinutes, timeToOffset,
   getHourHeight, isPlanned, sortPlanned, saveStorage, saveRoutine,
-  showToast, DAY_NAMES, getMondayOf, toISO, escHtml,
+  recalcTimelineBounds,
+  showToast, DAY_NAMES, DAY_SHORT, getMondayOf, toISO, escHtml,
 } from './agenda.js';
 
 import { renderCalendar } from './agenda_render.js';
@@ -355,6 +375,480 @@ export function initScheduledToPlannedDrag(card, weekKey, dayIdx, sessionId) {
   });
 }
 
+/* ══════════════════ CAMPOS INTELIGENTES DE HORA/DATA ══════════════════
+   Ver cabeçalho do arquivo e o bloco "CAMPOS INTELIGENTES DE
+   DATA/HORA" em agenda.css. Ambas as funções abaixo operam sobre o
+   MESMO <input id="..."> que a lógica de saveSession()/
+   saveRoutineModal()/saveGoalFromEditor() já lê via `.value` — só
+   trocam a experiência de preenchimento, nunca o dado gravado. */
+
+function dispatchValueChange(input) {
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+  input.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+function positionPopoverNear(popover, anchor) {
+  const GAP = 8;    // distância vertical entre o input e o popover
+  const MARGIN = 8; // respiro mínimo em relação às bordas do limite (modal/janela)
+
+  const rect = anchor.getBoundingClientRect();
+  const popRect = popover.getBoundingClientRect();
+
+  // Limite de contenção: o modal (.agenda-modal) mais próximo do input,
+  // se existir — assim o popover nunca ultrapassa as bordas do modal
+  // mesmo que a janela seja bem maior. Fora de um modal (ex.: dentro da
+  // aba "Metas"), cai de volta para os limites da própria janela.
+  const modalEl = anchor.closest('.agenda-modal');
+  const boundsRect = modalEl ? modalEl.getBoundingClientRect() : null;
+  const boundLeft   = Math.max(MARGIN, boundsRect ? boundsRect.left : MARGIN);
+  const boundRight  = Math.min(window.innerWidth - MARGIN, boundsRect ? boundsRect.right : window.innerWidth - MARGIN);
+  const boundTop    = MARGIN;
+  const boundBottom = window.innerHeight - MARGIN;
+
+  // Horizontal: centralizado em relação ao input, depois "empurrado"
+  // para dentro dos limites caso estoure de um dos lados — o popover
+  // fica visualmente ancorado ao campo, e não a uma posição fixa.
+  let left = rect.left + rect.width / 2 - popRect.width / 2;
+  left = Math.min(left, boundRight - popRect.width);
+  left = Math.max(left, boundLeft);
+
+  // Vertical: abre abaixo do input por padrão; se não houver espaço até
+  // o limite inferior, inverte para cima do input automaticamente; se
+  // nenhum dos dois lados tiver espaço suficiente (campo muito perto do
+  // topo/rodapé), apenas garante que o popover fique inteiramente
+  // dentro dos limites, o mais próximo possível do input.
+  const spaceBelow = boundBottom - (rect.bottom + GAP);
+  const spaceAbove = (rect.top - GAP) - boundTop;
+  let top;
+  if (popRect.height <= spaceBelow) {
+    top = rect.bottom + GAP; // cabe abaixo (comportamento padrão)
+  } else if (popRect.height <= spaceAbove) {
+    top = rect.top - GAP - popRect.height; // não cabe abaixo, mas cabe acima
+  } else {
+    // não cabe inteiro em nenhum dos dois lados — usa o lado com mais
+    // espaço disponível; o clamp final abaixo garante visibilidade total.
+    top = spaceBelow >= spaceAbove ? rect.bottom + GAP : rect.top - GAP - popRect.height;
+  }
+  top = Math.min(top, boundBottom - popRect.height);
+  top = Math.max(top, boundTop);
+
+  popover.style.top = `${top}px`;
+  popover.style.left = `${left}px`;
+}
+
+/* Registro dos seletores de horário atualmente abertos. Permite
+   fechá-los de fora (ex.: quando o modal principal é fechado) sem
+   acoplar initTimePicker() a closeSessionModal()/closeRoutineModal()
+   — cada instância só se registra/desregistra a si mesma. */
+let _openTimePickerClosers = [];
+function closeAllTimePickers() {
+  [..._openTimePickerClosers].forEach(fn => fn());
+}
+
+/* Ancora o popover de horário no campo de horário (wrapper
+   input + ícone), não mais só no input "puro". O ícone continua
+   sendo o único responsável por abrir/fechar o popover — aqui ele
+   só entra como referência para fechar a distância horizontal,
+   já que fica inset alguns pixels dentro da borda do input
+   (right: 6px, ver .agenda-time-icon-btn em agenda.css).
+   Regra: borda direita do popover = borda direita do ÍCONE,
+   deslocada só o suficiente para não colar nem sobrepor (GAP_X
+   pequeno, 8–12px). Verticalmente, abre logo abaixo do campo
+   (GAP_Y pequeno), com flip para cima se não houver espaço. */
+function positionPopoverNearInput(popover, input, iconBtn) {
+  const GAP_Y = 8;   // espaço vertical entre o campo e o popover
+  const GAP_X = 10;  // espaço horizontal entre o ícone e a borda do popover
+  const MARGIN = 8;
+
+  const fieldRect = input.getBoundingClientRect();
+  const anchorRect = iconBtn ? iconBtn.getBoundingClientRect() : fieldRect;
+  const popRect = popover.getBoundingClientRect();
+
+  const viewportLeft  = MARGIN;
+  const viewportRight = window.innerWidth - MARGIN;
+  const boundTop      = MARGIN;
+  const boundBottom   = window.innerHeight - MARGIN;
+
+  // Horizontal: borda direita do popover = borda direita do ÍCONE
+  // menos um respiro pequeno e fixo (não mais a borda externa do
+  // input inteiro, que ficava alguns pixels mais à direita/distante).
+  let left = anchorRect.right - GAP_X - popRect.width + GAP_X; // = anchorRect.right - popRect.width
+  left = anchorRect.right - popRect.width;
+  left = Math.max(viewportLeft, Math.min(left, viewportRight - popRect.width));
+
+  // Vertical: abaixo do campo por padrão; inverte para cima se não
+  // houver espaço; clamp final garante visibilidade total.
+  const spaceBelow = boundBottom - (fieldRect.bottom + GAP_Y);
+  const spaceAbove = (fieldRect.top - GAP_Y) - boundTop;
+  let top;
+  if (popRect.height <= spaceBelow) {
+    top = fieldRect.bottom + GAP_Y;
+  } else if (popRect.height <= spaceAbove) {
+    top = fieldRect.top - GAP_Y - popRect.height;
+  } else {
+    top = spaceBelow >= spaceAbove ? fieldRect.bottom + GAP_Y : fieldRect.top - GAP_Y - popRect.height;
+  }
+  top = Math.min(top, boundBottom - popRect.height);
+  top = Math.max(top, boundTop);
+
+  popover.style.top = `${top}px`;
+  popover.style.left = `${left}px`;
+}
+
+/* ── Seletor de hora: duas colunas roláveis (hora / minuto) ──
+   v11 — O input voltou a ser um campo de texto comum (sem
+   readonly): a digitação livre ("8"→08:00, "830"→08:30,
+   "1430"→14:30, "08:30"→08:30) é a forma PRINCIPAL de uso e é
+   formatada apenas ao perder o foco ou confirmar com Enter — não
+   mais interceptada tecla a tecla. O clique no input NÃO abre
+   mais o seletor; quem abre é o botão de relógio
+   (.agenda-time-icon-btn) ao lado, adicionado em TEMPLATE_HTML.
+   O seletor em si (build/open/close/syncActive/scrollToActive)
+   não teve nenhuma lógica interna alterada. */
+function initTimePicker(inputId) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const btn = document.getElementById(`${inputId}-picker-btn`);
+
+  let popover = null;
+
+  function currentMinutes() {
+    const v = input.value.trim();
+    if (!/^\d{2}:\d{2}$/.test(v)) return null;
+    return timeToMinutes(v);
+  }
+
+  function commit(minutes) {
+    minutes = ((minutes % 1440) + 1440) % 1440;
+    const val = minutesToTime(minutes);
+    if (input.value !== val) { input.value = val; dispatchValueChange(input); }
+  }
+
+  function clearValue() {
+    if (input.value !== '') { input.value = ''; dispatchValueChange(input); }
+  }
+
+  function parseFreeTyped(raw) {
+    const digits = raw.replace(/\D/g, '');
+    if (!digits) return null;
+    let h, m;
+    if (digits.length <= 2) {
+      h = Math.min(23, Number(digits));
+      m = 0;
+    } else {
+      m = Math.min(59, Number(digits.slice(-2)));
+      h = Math.min(23, Number(digits.slice(0, digits.length - 2)));
+    }
+    return h * 60 + m;
+  }
+
+  function formatTypedValue() {
+    const raw = input.value.trim();
+    if (!raw) { clearValue(); return; }
+    if (/^\d{2}:\d{2}$/.test(raw) && currentMinutes() !== null) return;
+    const mins = parseFreeTyped(raw);
+    if (mins === null) { clearValue(); return; }
+    commit(mins);
+    if (popover) { syncActive(); scrollToActive(); }
+  }
+
+  function syncActive() {
+    if (!popover) return;
+    const mins = currentMinutes();
+    const h = mins === null ? null : Math.floor(mins / 60);
+    const m = mins === null ? null : mins % 60;
+    popover.querySelectorAll('[data-hour]').forEach(el => {
+      el.classList.toggle('active', h !== null && Number(el.dataset.hour) === h);
+    });
+    popover.querySelectorAll('[data-min]').forEach(el => {
+      el.classList.toggle('active', m !== null && Number(el.dataset.min) === Math.round(m / 5) * 5 % 60);
+    });
+  }
+
+  function scrollToActive() {
+    if (!popover) return;
+    popover.querySelector('[data-hour].active')?.scrollIntoView({ block: 'center' });
+    popover.querySelector('[data-min].active')?.scrollIntoView({ block: 'center' });
+  }
+
+  function build() {
+    const pop = document.createElement('div');
+    pop.className = 'agenda-picker-popover agenda-time-popover';
+
+    const cols = document.createElement('div');
+    cols.className = 'agenda-time-cols';
+
+    const hourCol = document.createElement('div');
+    hourCol.className = 'agenda-time-col';
+    for (let h = 0; h < 24; h++) {
+      const opt = document.createElement('div');
+      opt.className = 'agenda-time-opt';
+      opt.dataset.hour = String(h);
+      opt.textContent = String(h).padStart(2, '0');
+      hourCol.appendChild(opt);
+    }
+
+    const sep = document.createElement('div');
+    sep.className = 'agenda-time-sep';
+    sep.textContent = ':';
+
+    const minCol = document.createElement('div');
+    minCol.className = 'agenda-time-col';
+    for (let m = 0; m < 60; m += 5) {
+      const opt = document.createElement('div');
+      opt.className = 'agenda-time-opt';
+      opt.dataset.min = String(m);
+      opt.textContent = String(m).padStart(2, '0');
+      minCol.appendChild(opt);
+    }
+
+    cols.appendChild(hourCol);
+    cols.appendChild(sep);
+    cols.appendChild(minCol);
+
+    const footer = document.createElement('div');
+    footer.className = 'agenda-time-popover-footer';
+    footer.innerHTML = `<span class="agenda-time-quick-hint">Digite, ex.: 1430</span><button type="button" class="agenda-time-clear">Limpar</button>`;
+
+    pop.appendChild(cols);
+    pop.appendChild(footer);
+
+    cols.addEventListener('click', (e) => {
+      const hourOpt = e.target.closest('[data-hour]');
+      const minOpt = e.target.closest('[data-min]');
+      if (!hourOpt && !minOpt) return;
+      const mins = currentMinutes();
+      const now = new Date();
+      let h = mins === null ? now.getHours() : Math.floor(mins / 60);
+      let m = mins === null ? Math.round(now.getMinutes() / 5) * 5 : mins % 60;
+      if (hourOpt) h = Number(hourOpt.dataset.hour);
+      if (minOpt) m = Number(minOpt.dataset.min);
+      commit(h * 60 + m);
+      syncActive();
+    });
+
+    footer.querySelector('.agenda-time-clear').addEventListener('click', () => { clearValue(); close(); });
+
+    return pop;
+  }
+
+function open() {
+    if (popover || !btn) return;
+    popover = build();
+    document.body.appendChild(popover);
+    positionPopoverNearInput(popover, input);           // was: positionPopoverNearIcon(popover, btn)
+    requestAnimationFrame(() => popover && popover.classList.add('open'));
+    input.classList.add('is-open');
+    syncActive();
+    scrollToActive();
+    window.addEventListener('scroll', onScrollReposition, true);
+    window.addEventListener('resize', onResizeReposition);
+    _openTimePickerClosers.push(close);
+  }
+
+  function close() {
+    if (!popover) return;
+    popover.classList.remove('open');
+    input.classList.remove('is-open');
+    const p = popover;
+    popover = null;
+    window.removeEventListener('scroll', onScrollReposition, true);
+    window.removeEventListener('resize', onResizeReposition);
+    _openTimePickerClosers = _openTimePickerClosers.filter(fn => fn !== close);
+    setTimeout(() => p.remove(), 150);
+  }
+
+function onScrollReposition() {
+    if (popover) positionPopoverNearInput(popover, input);   // was: if (popover && btn) positionPopoverNearIcon(popover, btn)
+  }
+  function onResizeReposition() {
+    if (popover) positionPopoverNearInput(popover, input);   // was: if (popover && btn) positionPopoverNearIcon(popover, btn)
+  }
+
+  if (btn) {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      popover ? close() : open();
+    });
+  }
+
+  // v12 — digitação livre, porém limitada a dígitos e no máximo 4
+  // caracteres (ex.: "1430"). Sem máscara: os dígitos digitados só
+  // são filtrados/cortados aqui; a interpretação/formatação em
+  // "HH:MM" continua acontecendo só no blur/Enter, via
+  // formatTypedValue(), sem nenhuma mudança de lógica. Valores já
+  // formatados programaticamente ("HH:MM", vindos de commit()/do
+  // seletor) batem no regex abaixo e não são afetados pelo filtro.
+  input.addEventListener('input', () => {
+    if (/^\d{2}:\d{2}$/.test(input.value)) return;
+    const digitsOnly = input.value.replace(/\D/g, '').slice(0, 4);
+    if (input.value !== digitsOnly) {
+      const removed = input.value.length - digitsOnly.length;
+      const pos = Math.max(0, (input.selectionStart || digitsOnly.length) - removed);
+      input.value = digitsOnly;
+      input.setSelectionRange(pos, pos);
+    }
+  });
+
+  input.addEventListener('blur', formatTypedValue);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') formatTypedValue();
+    else if (e.key === 'Escape' && popover) close();
+  });
+
+  document.addEventListener('mousedown', (e) => {
+    if (!popover) return;
+    if (input.contains(e.target) || popover.contains(e.target) || (btn && btn.contains(e.target))) return;
+    close();
+  });
+}
+
+/* ── Seletor de data: calendário mensal ── */
+const MONTH_FULL = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+
+function buildMonthGrid(viewDate, selectedDate) {
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const first = new Date(year, month, 1);
+  const startOffset = (first.getDay() + 6) % 7; // 0 = Segunda
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const todayIso = toISO(new Date());
+  const selectedIso = selectedDate ? toISO(selectedDate) : null;
+
+  const cells = [];
+  for (let i = 0; i < startOffset; i++) {
+    const date = new Date(year, month, 1 - (startOffset - i));
+    cells.push({ date, outside: true });
+  }
+  for (let d = 1; d <= daysInMonth; d++) cells.push({ date: new Date(year, month, d), outside: false });
+  while (cells.length < 42) {
+    const date = new Date(year, month, cells.length - startOffset + 1);
+    cells.push({ date, outside: true });
+  }
+
+  return cells.map(c => ({
+    day: c.date.getDate(),
+    date: c.date,
+    outside: c.outside,
+    isToday: toISO(c.date) === todayIso,
+    isSelected: selectedIso !== null && toISO(c.date) === selectedIso,
+  }));
+}
+
+function initDatePicker(inputId) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+
+  let popover = null;
+  let viewDate = new Date();
+
+  function parseValue() {
+    const v = input.value.trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) return null;
+    const [y, m, d] = v.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  }
+
+  function commit(date) {
+    const iso = toISO(date);
+    if (input.value !== iso) { input.value = iso; dispatchValueChange(input); }
+  }
+
+  function clearValue() {
+    if (input.value !== '') { input.value = ''; dispatchValueChange(input); }
+  }
+
+  function renderGrid() {
+    const body = popover.querySelector('.agenda-date-grid');
+    const title = popover.querySelector('.agenda-date-title');
+    title.textContent = `${MONTH_FULL[viewDate.getMonth()]} de ${viewDate.getFullYear()}`;
+    body.innerHTML = '';
+    buildMonthGrid(viewDate, parseValue()).forEach(cell => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'agenda-date-cell'
+        + (cell.outside ? ' is-outside' : '')
+        + (cell.isToday ? ' is-today' : '')
+        + (cell.isSelected ? ' is-selected' : '');
+      btn.textContent = cell.day;
+      btn.addEventListener('click', () => { commit(cell.date); close(); });
+      body.appendChild(btn);
+    });
+  }
+
+  function build() {
+    const pop = document.createElement('div');
+    pop.className = 'agenda-picker-popover agenda-date-popover';
+    pop.innerHTML = `
+      <div class="agenda-date-head">
+        <button type="button" class="agenda-date-nav" data-nav="-1" aria-label="Mês anterior">‹</button>
+        <span class="agenda-date-title"></span>
+        <button type="button" class="agenda-date-nav" data-nav="1" aria-label="Próximo mês">›</button>
+      </div>
+      <div class="agenda-date-weekdays">${DAY_SHORT.map(d => `<span class="agenda-date-weekday">${d[0]}</span>`).join('')}</div>
+      <div class="agenda-date-grid"></div>
+      <div class="agenda-date-footer">
+        <button type="button" class="agenda-date-today-btn">Hoje</button>
+        <button type="button" class="agenda-date-clear">Limpar</button>
+      </div>
+    `;
+    pop.querySelector('[data-nav="-1"]').addEventListener('click', () => { viewDate.setMonth(viewDate.getMonth() - 1); renderGrid(); repositionSoon(); });
+    pop.querySelector('[data-nav="1"]').addEventListener('click', () => { viewDate.setMonth(viewDate.getMonth() + 1); renderGrid(); repositionSoon(); });
+    pop.querySelector('.agenda-date-today-btn').addEventListener('click', () => { commit(new Date()); close(); });
+    pop.querySelector('.agenda-date-clear').addEventListener('click', () => { clearValue(); close(); });
+    return pop;
+  }
+
+  function repositionSoon() {
+    if (popover) requestAnimationFrame(() => popover && positionPopoverNear(popover, input));
+  }
+
+  function open() {
+    if (popover) return;
+    const existing = parseValue();
+    viewDate = existing ? new Date(existing) : new Date();
+    popover = build();
+    document.body.appendChild(popover);
+    renderGrid();
+    positionPopoverNear(popover, input);
+    requestAnimationFrame(() => popover && popover.classList.add('open'));
+    input.classList.add('is-open');
+    input.focus();
+    window.addEventListener('scroll', onOutsideScroll, true);
+    window.addEventListener('resize', close);
+  }
+
+  function close() {
+    if (!popover) return;
+    popover.classList.remove('open');
+    input.classList.remove('is-open');
+    const p = popover;
+    popover = null;
+    window.removeEventListener('scroll', onOutsideScroll, true);
+    window.removeEventListener('resize', close);
+    setTimeout(() => p.remove(), 150);
+  }
+
+  function onOutsideScroll(e) {
+    if (popover && !popover.contains(e.target)) close();
+  }
+
+  input.addEventListener('click', () => { popover ? close() : open(); });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { e.stopImmediatePropagation(); close(); return; }
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopImmediatePropagation(); popover ? close() : open(); return; }
+    if (e.key === 'Backspace' || e.key === 'Delete') { e.preventDefault(); e.stopImmediatePropagation(); clearValue(); }
+  });
+
+  document.addEventListener('mousedown', (e) => {
+    if (!popover) return;
+    if (input.contains(e.target) || popover.contains(e.target)) return;
+    close();
+  });
+}
+
 /* ══════════════════ MODAL: Novo/Editar estudo ══════════════════ */
 function populateDayOptions(currentDayIdx) {
   const select = document.getElementById('agenda-input-day');
@@ -403,13 +897,13 @@ export function openSessionModal({ weekKey, dayIdx, sessionId }) {
 }
 
 function closeSessionModal() {
+  closeAllTimePickers();
   const overlay = document.getElementById('agenda-modal-session');
   overlay.classList.remove('open');
   overlay.setAttribute('aria-hidden', 'true');
   document.getElementById('agenda-subject-suggestions').classList.remove('visible');
   hideDurationHint();
 }
-
 function hideDurationHint() {
   const hint = document.getElementById('agenda-duration-hint');
   hint.style.display = 'none';
@@ -595,6 +1089,7 @@ function openRoutineModal() {
 }
 
 function closeRoutineModal() {
+  closeAllTimePickers();
   const overlay = document.getElementById('agenda-modal-routine');
   overlay.classList.remove('open');
   overlay.setAttribute('aria-hidden', 'true');
@@ -612,7 +1107,13 @@ function saveRoutineModal() {
 
   state.routine = { activeDays, startHour, endHour, minSessionMinutes };
   saveRoutine();
-  import('./agenda.js').then(mod => mod.recalcTimelineBounds());
+  // CORREÇÃO: recalcTimelineBounds() precisa rodar de forma SÍNCRONA e
+  // ANTES de renderCalendar(). A versão anterior usava import('./agenda.js')
+  // (dinâmico), cuja Promise só resolve depois que renderCalendar() já
+  // tinha sido executado — por isso a grade continuava com o intervalo de
+  // horas antigo até um F5 (que recarrega o módulo e chama
+  // recalcTimelineBounds() de forma síncrona dentro de loadStorage()).
+  recalcTimelineBounds();
   renderCalendar();
   closeRoutineModal();
   showToast('Rotina de estudos atualizada.');
@@ -769,6 +1270,17 @@ export function initAgendaEventListeners() {
   initColorPicker('agenda-goal-color-options', 'goalModal');
   initAutocomplete('agenda-input-subject', 'agenda-subject-suggestions');
   initAutocomplete('agenda-goal-subject', 'agenda-goal-subject-suggestions');
+
+  // Campos inteligentes de hora/data — registrados ANTES do listener de
+  // "Enter salva o formulário" abaixo, para que Enter/Espaço nesses campos
+  // controle o seletor (abrir/fechar) em vez de disparar saveSession()
+  // imediatamente (o handler de teclado de cada picker usa
+  // stopImmediatePropagation() para isso).
+  initTimePicker('agenda-input-time');
+  initTimePicker('agenda-input-time-end');
+  initTimePicker('agenda-routine-start');
+  initTimePicker('agenda-routine-end');
+  initDatePicker('agenda-goal-deadline');
 
   ['agenda-input-time', 'agenda-input-time-end', 'agenda-input-subject'].forEach(id => {
     document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); saveSession(); } });

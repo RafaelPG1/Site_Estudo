@@ -26,6 +26,18 @@
    Este arquivo é o único "dono" de `state` e das funções de
    persistência — os demais arquivos do módulo (agenda_render.js,
    agenda_interactions.js, agenda_pages.js) importam tudo daqui.
+
+   v10 — Campos de Hora inicial/final (modal "Novo estudo" e
+   modal "Rotina de estudos") e o campo de Data (meta "Concluir
+   até") deixaram de ser <input type="time"> / <input type="date">
+   nativos. Continuam sendo <input> reais com o MESMO id (por
+   isso .value/.focus()/eventos 'input'/'change' seguem
+   funcionando sem qualquer mudança na lógica de
+   agenda_interactions.js), mas agora são type="text" + readonly,
+   preenchidos através de um seletor customizado no padrão visual
+   do Dashboard (ver initTimePicker()/initDatePicker() em
+   agenda_interactions.js e o bloco "CAMPOS INTELIGENTES DE
+   DATA/HORA" em agenda.css).
    ============================================= */
 
 import { renderCalendar } from './agenda_render.js';
@@ -325,7 +337,9 @@ const TEMPLATE_HTML = `
         </div>
         <div class="agenda-form-group" id="agenda-goal-deadline-group" style="display:none">
           <label class="agenda-form-label" for="agenda-goal-deadline">Concluir até</label>
-          <input class="agenda-input" type="date" id="agenda-goal-deadline" />
+          <div class="agenda-picker-field">
+            <input class="agenda-input agenda-picker-input" type="text" id="agenda-goal-deadline" placeholder="Selecionar data" readonly autocomplete="off" />
+          </div>
         </div>
       </div>
       <div class="agenda-form-group">
@@ -395,15 +409,25 @@ const TEMPLATE_HTML = `
         <div class="agenda-form-row">
           <div class="agenda-form-group">
             <label class="agenda-form-label" for="agenda-input-time">Hora inicial <span class="agenda-optional">(opcional)</span></label>
-            <input class="agenda-input" type="time" id="agenda-input-time" />
+            <div class="agenda-picker-field">
+              <input class="agenda-input agenda-picker-input agenda-time-input" type="text" id="agenda-input-time" placeholder="--:--" autocomplete="off" inputmode="numeric" />
+              <button type="button" class="agenda-time-icon-btn" id="agenda-input-time-picker-btn" aria-label="Abrir seletor de horário" tabindex="-1">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5V8l2.5 2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
           </div>
           <div class="agenda-form-group">
             <label class="agenda-form-label" for="agenda-input-time-end">Hora final <span class="agenda-optional">(opcional)</span></label>
-            <input class="agenda-input" type="time" id="agenda-input-time-end" />
+            <div class="agenda-picker-field">
+              <input class="agenda-input agenda-picker-input agenda-time-input" type="text" id="agenda-input-time-end" placeholder="--:--" autocomplete="off" inputmode="numeric" />
+              <button type="button" class="agenda-time-icon-btn" id="agenda-input-time-end-picker-btn" aria-label="Abrir seletor de horário" tabindex="-1">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5V8l2.5 2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
           </div>
         </div>
         <p class="agenda-field-hint" id="agenda-duration-hint" style="display:none"></p>
-        <p class="agenda-field-hint">Deixe os horários em branco para criar um estudo planejado.</p>
+        <p class="agenda-field-hint">Deixe os horários em branco (Backspace no campo) para criar um estudo planejado.</p>
         <div class="agenda-form-group">
           <label class="agenda-form-label" for="agenda-input-subject">Conteúdo</label>
           <div style="position:relative">
@@ -465,11 +489,21 @@ const TEMPLATE_HTML = `
         <div class="agenda-form-row">
           <div class="agenda-form-group">
             <label class="agenda-form-label" for="agenda-routine-start">Horário inicial</label>
-            <input class="agenda-input" type="time" id="agenda-routine-start" value="06:00" />
+            <div class="agenda-picker-field">
+              <input class="agenda-input agenda-picker-input agenda-time-input" type="text" id="agenda-routine-start" value="06:00" autocomplete="off" inputmode="numeric" />
+              <button type="button" class="agenda-time-icon-btn" id="agenda-routine-start-picker-btn" aria-label="Abrir seletor de horário" tabindex="-1">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5V8l2.5 2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
           </div>
           <div class="agenda-form-group">
             <label class="agenda-form-label" for="agenda-routine-end">Horário final</label>
-            <input class="agenda-input" type="time" id="agenda-routine-end" value="22:00" />
+            <div class="agenda-picker-field">
+              <input class="agenda-input agenda-picker-input agenda-time-input" type="text" id="agenda-routine-end" value="22:00" autocomplete="off" inputmode="numeric" />
+              <button type="button" class="agenda-time-icon-btn" id="agenda-routine-end-picker-btn" aria-label="Abrir seletor de horário" tabindex="-1">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5V8l2.5 2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
           </div>
         </div>
         <div class="agenda-form-group">
