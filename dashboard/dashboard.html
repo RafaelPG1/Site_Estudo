@@ -54,6 +54,7 @@
        sobrescrito por este arquivo. -->
   <link rel="stylesheet" href="css/checklist/checklist.css" />
 <link rel="stylesheet" href="css/tarefa/tarefa.css" />
+<link rel="stylesheet" href="css/agenda/agenda.css" />
   <!-- ═══ Warm-up complementar de rede/módulos (Firestore) ═══════
        preconnect/dns-prefetch: adianta DNS + handshake TLS com o
        host do Firestore, em paralelo com o fetch() de warm-up acima.
@@ -700,7 +701,7 @@
         Tarefas
       </a>
 
-      <a class="nav-item" href="#">
+      <a class="nav-item" href="#" id="nav-calendario">
         <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
           <rect x="1.5" y="3" width="13" height="11" rx="1.5"/>
           <path d="M5 1.5V4M11 1.5V4M1.5 7h13"/>
@@ -844,7 +845,7 @@
               </svg>
             </button>
 
-            <button class="tool-btn t-calendario">
+            <button class="tool-btn t-calendario" id="tool-btn-calendario">
               <div class="tool-icon ic-amber">
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
                   <rect x="2" y="3.5" width="14" height="12.5" rx="2"/>
@@ -1560,6 +1561,7 @@
       <div id="view-checklist" class="view-checklist" style="display:none;"></div>
 <div id="view-checklist" class="view-checklist" style="display:none;"></div>
 <div id="view-tarefas" class="view-tarefas" style="display:none;"></div>
+<div id="view-agenda" class="view-agenda" style="display:none;"></div>
     </div><!-- /content -->
   </main>
   <!-- ═══ ZOOM PADRÃO DA PÁGINA (80%) ═══════════════════════════

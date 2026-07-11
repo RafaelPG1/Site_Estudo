@@ -131,6 +131,35 @@
      - _trocarSemestre() passou a recarregar o Checklist quando a
        view já está aberta no momento da troca de semestre.
    Nenhuma outra lógica pré-existente deste arquivo foi alterada.
+
+   ─────────────────────────────────────────────
+   MÓDULO AGENDA / CALENDÁRIO — NAVEGAÇÃO SPA (novo)
+   ─────────────────────────────────────────────
+   Migração de pessoal/calendar/ (projeto standalone) para uma
+   terceira view desacoplada dentro do Dashboard, seguindo
+   EXATAMENTE o mesmo padrão de Checklist e Tarefas: sidebar,
+   cabeçalho e seletor de semestre nunca são recriados/tocados;
+   apenas #view-agenda é alternada via display.
+
+   Este arquivo passou a conhecer apenas 3 coisas do módulo
+   Agenda (import de dashboard/js/agenda/agenda.js):
+     - abrirAgenda(containerEl) → monta (1ª vez) ou apenas
+       atualiza os dados (demais vezes) da view
+     - fecharAgenda()           → fecha menus/modais abertos
+     - agendaEstaAberta()       → disponível para uso futuro,
+       no mesmo espírito de checklistEstaAberta()/tarefasEstaAberta()
+
+   Diferente do Checklist, a Agenda NÃO depende de semestre nem
+   de disciplina (seus dados são próprios, em localStorage), então
+   _trocarSemestre() não precisa recarregá-la.
+
+   Novo:
+     - _mostrarViewAgenda() — mesmo padrão de _mostrarViewChecklist()/
+       _mostrarViewTarefas()
+     - wiring de clique em #nav-calendario e #tool-btn-calendario
+     - _esconderTodasViews() e _mostrarViewDashboard() passaram a
+       também esconder/fechar a view da Agenda
+   Nenhuma outra lógica pré-existente deste arquivo foi alterada.
    ============================================= */
 
 import {
@@ -192,6 +221,13 @@ import {
   fecharTarefas,
   tarefasEstaAberta,
 } from './tarefa/tarefa.js';
+
+/* ── Agenda / Calendário (módulo desacoplado — ver dashboard/js/agenda/) ── */
+import {
+  abrirAgenda,
+  fecharAgenda,
+  agendaEstaAberta,
+} from './agenda/agenda.js';
 /* ══════════════════════════════════════════════
    WRAPPER DE TEMA
 ══════════════════════════════════════════════ */
@@ -262,6 +298,10 @@ function _trocarSemestre(novoSemestre) {
     const viewChecklist = document.getElementById('view-checklist');
     if (viewChecklist) abrirChecklist(viewChecklist).catch(() => {});
   }
+
+  /* Agenda — não depende de semestre/disciplina (dados próprios em
+     localStorage), então não precisa recarregar aqui. Ver nota no
+     changelog "MÓDULO AGENDA / CALENDÁRIO" no topo do arquivo. */
 }
 
 /* ══════════════════════════════════════════════
@@ -373,13 +413,13 @@ function _escapeHtml(str) {
 }
 
 /* ══════════════════════════════════════════════
-   NAVEGAÇÃO SPA — Dashboard ↔ Checklist
+   NAVEGAÇÃO SPA — Dashboard ↔ Checklist ↔ Tarefas ↔ Agenda
    ─────────────────────────────────────────────
    Sidebar, cabeçalho (.topbar) e o seletor de semestre vivem
-   FORA de #view-dashboard-home / #view-checklist e nunca são
-   recriados ao alternar de view. Apenas o conteúdo principal
-   é trocado, via display — nenhum reload de página, nenhuma
-   navegação de URL.
+   FORA de #view-dashboard-home / #view-checklist / #view-tarefas /
+   #view-agenda e nunca são recriados ao alternar de view. Apenas
+   o conteúdo principal é trocado, via display — nenhum reload de
+   página, nenhuma navegação de URL.
 
    _setNavAtivo() cuida apenas do estado visual (.active) dos
    itens da sidebar — mesma classe já usada estaticamente no
@@ -395,6 +435,7 @@ function _esconderTodasViews() {
   document.getElementById('view-dashboard-home')?.style.setProperty('display', 'none');
   document.getElementById('view-checklist')?.style.setProperty('display', 'none');
   document.getElementById('view-tarefas')?.style.setProperty('display', 'none');
+  document.getElementById('view-agenda')?.style.setProperty('display', 'none');
 }
 
 async function _mostrarViewChecklist() {
@@ -404,6 +445,7 @@ async function _mostrarViewChecklist() {
   view.style.display = '';
   _setNavAtivo('nav-checklist');
   fecharTarefas();
+  fecharAgenda();
   await abrirChecklist(view);
 }
 
@@ -414,7 +456,19 @@ async function _mostrarViewTarefas() {
   view.style.display = '';
   _setNavAtivo('nav-tarefas');
   fecharChecklist();
+  fecharAgenda();
   await abrirTarefas(view);
+}
+
+async function _mostrarViewAgenda() {
+  const view = document.getElementById('view-agenda');
+  if (!view) return;
+  _esconderTodasViews();
+  view.style.display = '';
+  _setNavAtivo('nav-calendario');
+  fecharChecklist();
+  fecharTarefas();
+  await abrirAgenda(view);
 }
 
 function _mostrarViewDashboard() {
@@ -425,6 +479,7 @@ function _mostrarViewDashboard() {
   _setNavAtivo('nav-home');
   fecharChecklist();
   fecharTarefas();
+  fecharAgenda();
 }
 function _initNavegacaoSpa() {
   document.getElementById('nav-home')?.addEventListener('click', (e) => {
@@ -452,6 +507,15 @@ function _initNavegacaoSpa() {
 document.getElementById('tool-btn-tarefas')?.addEventListener('click', () => {
   _mostrarViewTarefas();
 });
+
+  document.getElementById('nav-calendario')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    _mostrarViewAgenda();
+  });
+
+  document.getElementById('tool-btn-calendario')?.addEventListener('click', () => {
+    _mostrarViewAgenda();
+  });
 }
 
 /* ══════════════════════════════════════════════
