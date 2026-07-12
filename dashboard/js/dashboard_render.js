@@ -126,6 +126,7 @@
 import { State } from './dashboard_data.js';
 import { perfLog } from '../../src/perf_logger.js';
 import { renderAchievements } from './conquistas.js';
+import { UIState } from './utils/ui_state_manager.js';
 
 /* ══════════════════════════════════════════════
    CAMADA 5 — COORDENADORA DE RENDER (intelligence)
@@ -778,8 +779,11 @@ export function renderTimeline(relatorio) {
 
   /* Preserva a posição do scroll entre re-renders: o container é
      reconstruído a cada chamada (innerHTML = ''), o que por padrão
-     zeraria a rolagem mesmo que o usuário estivesse no meio da lista. */
-  const scrollAnterior = elTimeline.scrollTop;
+     zeraria a rolagem mesmo que o usuário estivesse no meio da lista.
+     Mesmo mecanismo usado pelos outros módulos — ver
+     dashboard/js/utils/ui_state_manager.js. */
+  const scrollables = { timeline: () => document.getElementById('activity-timeline') };
+  const scrollAnterior = UIState.captureScrollNow(scrollables);
 
   elTimeline.innerHTML = '';
 
@@ -860,9 +864,11 @@ tentativas.forEach(t => {
     elTimeline.appendChild(item);
   });
 
-  /* Restaura a posição de rolagem, limitada ao novo scrollHeight
-     (evita "scroll fantasma" caso a lista tenha ficado menor). */
-  elTimeline.scrollTop = Math.min(scrollAnterior, elTimeline.scrollHeight);
+  /* Restaura a posição de rolagem — o próprio navegador limita
+     scrollTop ao scrollHeight atual, então não é preciso clampar
+     manualmente aqui (evita "scroll fantasma" caso a lista tenha
+     ficado menor). */
+  UIState.applyScrollNow(scrollables, scrollAnterior);
 }
 
 /* ─── Contrato de scroll interno da Atividade Recente ───────

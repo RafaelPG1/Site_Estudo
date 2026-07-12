@@ -41,8 +41,21 @@
    ============================================= */
 
 import { renderCalendar } from './agenda_render.js';
-import { initAgendaEventListeners } from './agenda_interactions.js';
-import { renderGoalsList, renderStats } from './agenda_pages.js';
+import { initAgendaEventListeners, switchTab } from './agenda_interactions.js';
+
+/* ─────────────────────────────────────────────
+   UI STATE MANAGER (sistema global de preservação de estado)
+   ─────────────────────────────────────────────
+   `state.currentWeekStart` (semana visível) e `state.activeTab`
+   (Agenda/Metas/Estatísticas) só viviam em memória: sobreviviam a
+   uma troca de view dentro da mesma sessão (a Agenda só é montada
+   uma vez, ver `_construida` mais abaixo), mas um F5 sempre voltava
+   para a semana atual e a aba "Agenda", mesmo que o usuário
+   estivesse revisando uma semana passada na aba "Estatísticas".
+   Isso é persistido agora pelo mesmo UIState usado por todos os
+   outros módulos — ver dashboard/js/utils/ui_state_manager.js. */
+import { UIState } from '../utils/ui_state_manager.js';
+const _CHAVE_ESTADO_UI = 'agenda';
 
 /* ── CONSTANTES (idênticas ao calendar.js original) ── */
 export const DAY_NAMES = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
@@ -551,6 +564,17 @@ let _construida = false;
 
 export function agendaEstaAberta() { return _aberta; }
 
+/* Persiste a semana visível + a aba ativa. Chamado por
+   agenda_interactions.js sempre que qualquer uma das duas muda
+   (navegar de semana, "Hoje", trocar de aba) — ver navigateWeek(),
+   goToToday() e switchTab() em agenda_interactions.js. */
+export function persistirEstadoUIAgenda() {
+  UIState.setState(_CHAVE_ESTADO_UI, {
+    currentWeekStartISO: toISO(state.currentWeekStart),
+    activeTab: state.activeTab,
+  });
+}
+
 export function fecharAgenda() {
   _aberta = false;
   const menu = document.getElementById('agenda-week-menu');
@@ -564,7 +588,16 @@ export async function abrirAgenda(containerEl) {
   if (!_construida) {
     containerEl.innerHTML = TEMPLATE_HTML;
     loadStorage();
-    state.currentWeekStart = getMondayOf(new Date());
+
+    /* Restaura a semana e a aba da última visita (inclusive depois
+       de um F5) — sem isso, a Agenda sempre reabria na semana atual
+       e na aba "Agenda", perdendo o contexto de navegação. */
+    const estadoSalvo = UIState.getState(_CHAVE_ESTADO_UI, { currentWeekStartISO: null, activeTab: 'agenda' });
+    state.currentWeekStart = estadoSalvo.currentWeekStartISO
+      ? getMondayOf(new Date(estadoSalvo.currentWeekStartISO))
+      : getMondayOf(new Date());
+    state.activeTab = ['agenda', 'goals', 'stats'].includes(estadoSalvo.activeTab) ? estadoSalvo.activeTab : 'agenda';
+
     initAgendaEventListeners();
     _construida = true;
   } else {
@@ -573,6 +606,9 @@ export async function abrirAgenda(containerEl) {
 
   renderCalendar();
 
-  if (state.activeTab === 'goals') renderGoalsList();
-  if (state.activeTab === 'stats') renderStats();
+  /* Sincroniza a aba visível (classes .active dos 3 painéis + botões
+     de aba) com state.activeTab — importante sobretudo na primeira
+     montagem, quando a aba pode ter sido restaurada de uma sessão
+     anterior (F5) e não é mais o "agenda" estático do TEMPLATE_HTML. */
+  switchTab(state.activeTab);
 }

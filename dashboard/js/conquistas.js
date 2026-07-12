@@ -149,6 +149,18 @@
    mecanismo de posicionamento.
    ═══════════════════════════════════════════════════════════ */
 
+/* ─────────────────────────────────────────────
+   UI STATE MANAGER (sistema global de preservação de estado)
+   ─────────────────────────────────────────────
+   Categoria filtrada e página atual da galeria eram só variáveis
+   de módulo (`_achFiltroAtivo`/`_achPage` abaixo) — sobreviviam a
+   um re-render de relatório na mesma sessão, mas eram perdidas a
+   cada F5. Agora são semeadas do UIState (mesma peça usada por
+   Checklist/Tarefas/Agenda/Dashboard) e persistidas a cada mudança
+   — ver dashboard/js/utils/ui_state_manager.js. */
+import { UIState } from './utils/ui_state_manager.js';
+const _ACH_CHAVE_ESTADO_UI = 'conquistas';
+
 function escapeHtml(str) {
   return String(str ?? '')
     .replace(/&/g, '&amp;').replace(/</g, '&lt;')
@@ -283,8 +295,9 @@ function icon(name, extra = '') {
    ESTADO DE UI (não é dado de negócio — apenas
    seleção/paginação atual da pessoa na interface)
 ══════════════════════════════════════════════ */
-let _achFiltroAtivo    = 'todas';
-let _achPage           = 1;
+const _achEstadoUISalvo = UIState.getState(_ACH_CHAVE_ESTADO_UI, { filtro: 'todas', pagina: 1 });
+let _achFiltroAtivo    = typeof _achEstadoUISalvo.filtro === 'string' ? _achEstadoUISalvo.filtro : 'todas';
+let _achPage           = Number.isFinite(_achEstadoUISalvo.pagina) && _achEstadoUISalvo.pagina > 0 ? _achEstadoUISalvo.pagina : 1;
 let _achDadosAtuais    = [];
 let _achInicializado   = false;
 
@@ -520,7 +533,8 @@ function _achInicializarUmaVez() {
       btn.classList.add('active');
       _achFiltroAtivo = btn.dataset.cat;
       _achPage = 1;
-      _achRenderGrid();
+      UIState.setState(_ACH_CHAVE_ESTADO_UI, { filtro: _achFiltroAtivo, pagina: _achPage });
+      UIState.preserveScroll('conquistas-grid', { window: 'window' }, _achRenderGrid);
     });
   }
 
@@ -697,7 +711,11 @@ function _achRenderPager(totalPages) {
     b.innerHTML = content;
     if (opts.active)   b.classList.add('active');
     if (opts.disabled) b.disabled = true;
-    b.addEventListener('click', () => { _achPage = page; _achRenderGrid(); });
+    b.addEventListener('click', () => {
+      _achPage = page;
+      UIState.setState(_ACH_CHAVE_ESTADO_UI, { filtro: _achFiltroAtivo, pagina: _achPage });
+      UIState.preserveScroll('conquistas-grid', { window: 'window' }, _achRenderGrid);
+    });
     return b;
   };
 

@@ -15,12 +15,34 @@
 
 import { getUsuario, getSemestreAtual, getDisciplinasDeSemestre } from '../../../src/global.js';
 import * as TarefaStorage from './tarefa_storage.js';
-import { renderTarefas } from './tarefa_renderer.js';
+import { renderTarefas, reabrirRascunhoNovaListaSeExistir } from './tarefa_renderer.js';
+
+/* ─────────────────────────────────────────────
+   UI STATE MANAGER (sistema global de preservação de estado)
+   ─────────────────────────────────────────────
+   _rerender() é chamado depois de TODA mutação (criar/renomear/
+   excluir lista, categoria ou tarefa, marcar/desmarcar item) — cada
+   uma delas reconstrói `.tarefa-listas-wrap` do zero (ver
+   tarefa_renderer.js → renderTarefas → innerHTML). Sem tratamento,
+   marcar uma única tarefa no meio de uma lista longa jogaria o
+   usuário de volta pro topo da página a cada clique. Envolver
+   _rerender() com UIState.preserveScroll() resolve isso de forma
+   genérica, no único ponto por onde toda atualização já passa. */
+import { UIState } from '../utils/ui_state_manager.js';
 
 let _viewAberta      = false;
 let _listasEmMemoria = [];
 let _disciplinas     = [];
 let _containerAtual  = null;
+
+/* Garante que a verificação de rascunho pendente (modal "Nova
+   lista") só é feita UMA VEZ por carregamento de página — não a
+   cada vez que o usuário navega para a aba Tarefas. Continua sendo
+   exatamente o momento certo mesmo que a 1ª exibição de Tarefas
+   após o F5 não seja imediata (ex.: o usuário estava no Dashboard
+   no reload e só clicou em "Tarefas" depois): é a 1ª vez que
+   abrirTarefas roda desde o carregamento, e é isso que importa. */
+let _verificouRascunhoModalNaBoot = false;
 
 export function tarefasEstaAberta() {
   return _viewAberta;
@@ -44,7 +66,13 @@ function _carregarDisciplinasSemestreAtual() {
 
 function _rerender() {
   if (!_containerAtual) return;
-  renderTarefas(_containerAtual, _listasEmMemoria, _callbacks, _disciplinas);
+  const containerEl = _containerAtual;
+  UIState.preserveScroll('tarefas-rerender', {
+    window: 'window',
+    corpo: () => containerEl,
+  }, () => {
+    renderTarefas(containerEl, _listasEmMemoria, _callbacks, _disciplinas);
+  });
 }
 
 const _callbacks = {
@@ -112,6 +140,13 @@ export async function abrirTarefas(containerEl) {
   if (!_viewAberta || _containerAtual !== containerEl) return;
 
   renderTarefas(containerEl, _listasEmMemoria, _callbacks, _disciplinas);
+
+  if (!_verificouRascunhoModalNaBoot) {
+    _verificouRascunhoModalNaBoot = true;
+    /* Reabre sozinho o modal "Nova lista" se havia um rascunho não
+       salvo antes do F5 (ver tarefa_modal.js/tarefa_renderer.js). */
+    await reabrirRascunhoNovaListaSeExistir();
+  }
 }
 
 export function fecharTarefas() {

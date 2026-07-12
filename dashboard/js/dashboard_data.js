@@ -173,6 +173,18 @@ import {
 
 import { renderDashboardIntelligence } from './dashboard_render.js';
 import { perfLog, logFirestore } from '../../src/perf_logger.js';
+
+/* ─────────────────────────────────────────────
+   UI STATE MANAGER (sistema global de preservação de estado)
+   ─────────────────────────────────────────────
+   Substitui os dois padrões manuais que existiam aqui (variável
+   `scrollAnterior` capturada antes de `wrap.innerHTML = ''` e
+   restaurada depois, e `_paginasExpandido`/`_historicoExpandido`
+   como variáveis soltas de módulo — perdidas a cada F5). Mesma peça
+   usada por Checklist/Tarefas/Agenda/Conquistas — ver
+   dashboard/js/utils/ui_state_manager.js. */
+import { UIState } from './utils/ui_state_manager.js';
+const _CHAVE_ESTADO_UI_NAV = 'dashboard-nav-lists';
 /* ══════════════════════════════════════════════
    ESTADO
 ══════════════════════════════════════════════ */
@@ -1423,11 +1435,22 @@ function _isolarScrollWheel(entriesEl) {
   }, { passive: false });
 }
 
-/* Estado dos toggles "ver todos" — ficam fora das funções de render
-   para persistir entre re-renders (ranking e histórico são atualizados
-   a cada tick do session-tracker, então uma variável local se perderia). */
-let _historicoExpandido = false;
-let _paginasExpandido   = false;
+/* Estado dos toggles "ver todos" — antes eram só variáveis soltas
+   de módulo (sobreviviam a re-renders na mesma sessão, mas eram
+   perdidas a cada F5). Agora vivem no UIState, junto com o resto do
+   estado de UI do Dashboard. */
+function _getPaginasExpandido() {
+  return !!UIState.getState(_CHAVE_ESTADO_UI_NAV, { paginasExpandido: false, historicoExpandido: false }).paginasExpandido;
+}
+function _setPaginasExpandido(valor) {
+  UIState.setState(_CHAVE_ESTADO_UI_NAV, { paginasExpandido: !!valor });
+}
+function _getHistoricoExpandido() {
+  return !!UIState.getState(_CHAVE_ESTADO_UI_NAV, { paginasExpandido: false, historicoExpandido: false }).historicoExpandido;
+}
+function _setHistoricoExpandido(valor) {
+  UIState.setState(_CHAVE_ESTADO_UI_NAV, { historicoExpandido: !!valor });
+}
 
 function _renderPaginasMaisAcessadas(pages) {
   const wrap = document.getElementById('nav-paginas-lista');
@@ -1437,7 +1460,8 @@ function _renderPaginasMaisAcessadas(pages) {
      redesenhada a cada tick do session-tracker (cronômetro ao vivo),
      o que recriava o contêiner do zero e resetava scrollTop para 0 —
      dando a impressão de que o scroll "voltava sozinho" durante o uso. */
-  const scrollAnterior = wrap.querySelector('.nav-rank-entries')?.scrollTop ?? 0;
+  const scrollables = { lista: () => wrap.querySelector('.nav-rank-entries') };
+  const scrollAnterior = UIState.captureScrollNow(scrollables);
 
   wrap.innerHTML = '';
   wrap.className = 'nav-rank-list';
@@ -1492,14 +1516,15 @@ function _renderPaginasMaisAcessadas(pages) {
   const LIMITE_COLAPSADO = NAV_ITENS_VISIVEIS;
   const temMais = todasRelevantes.length > LIMITE_COLAPSADO;
 
-  if (!temMais) _paginasExpandido = false;
+  if (!temMais) _setPaginasExpandido(false);
+  const paginasExpandido = _getPaginasExpandido();
 
-  const relevantes = _paginasExpandido
+  const relevantes = paginasExpandido
     ? todasRelevantes
     : todasRelevantes.slice(0, LIMITE_COLAPSADO);
 
   const entriesEl = document.createElement('div');
-  entriesEl.className = 'nav-rank-entries' + (_paginasExpandido ? ' is-expandido' : '');
+  entriesEl.className = 'nav-rank-entries' + (paginasExpandido ? ' is-expandido' : '');
 
   relevantes.forEach(({ label, pathname, visits, time }, idx) => {
     const { chave } = _extrairChaveDeRota(pathname) ?? {};
@@ -1537,9 +1562,9 @@ function _renderPaginasMaisAcessadas(pages) {
 
   wrap.appendChild(entriesEl);
 
-  if (_paginasExpandido) {
+  if (paginasExpandido) {
     _aplicarAlturaVisivel(entriesEl, NAV_ITENS_VISIVEIS);
-    entriesEl.scrollTop = scrollAnterior;
+    UIState.applyScrollNow(scrollables, scrollAnterior);
     _isolarScrollWheel(entriesEl);
   }
 
@@ -1547,11 +1572,11 @@ function _renderPaginasMaisAcessadas(pages) {
     const toggle = document.createElement('button');
     toggle.type       = 'button';
     toggle.className  = 'nav-rank-toggle';
-    toggle.textContent = _paginasExpandido
+    toggle.textContent = paginasExpandido
       ? 'Mostrar menos'
       : `Ver todas as páginas (${todasRelevantes.length})`;
     toggle.addEventListener('click', () => {
-      _paginasExpandido = !_paginasExpandido;
+      _setPaginasExpandido(!paginasExpandido);
       _renderPaginasMaisAcessadas(pages);
     });
     wrap.appendChild(toggle);
@@ -1570,7 +1595,8 @@ function _renderFluxoNavegacao(navigation) {
 
   /* Preserva scrollTop entre re-renders — mesma causa e mesmo
      remédio de _renderPaginasMaisAcessadas (ver comentário lá). */
-  const scrollAnterior = wrap.querySelector('.nav-tl-entries')?.scrollTop ?? 0;
+  const scrollables = { lista: () => wrap.querySelector('.nav-tl-entries') };
+  const scrollAnterior = UIState.captureScrollNow(scrollables);
 
   wrap.innerHTML = '';
   wrap.className = 'nav-tl-list';
@@ -1602,16 +1628,17 @@ function _renderFluxoNavegacao(navigation) {
   const LIMITE_COLAPSADO = NAV_ITENS_VISIVEIS;
   const temMais = semRepRecenteAntes.length > LIMITE_COLAPSADO;
 
-  if (!temMais) _historicoExpandido = false;
+  if (!temMais) _setHistoricoExpandido(false);
+  const historicoExpandido = _getHistoricoExpandido();
 
-  const exibir = _historicoExpandido
+  const exibir = historicoExpandido
     ? semRepRecenteAntes
     : semRepRecenteAntes.slice(0, LIMITE_COLAPSADO);
 
   const agora = Date.now();
 
   const entriesEl = document.createElement('div');
-  entriesEl.className = 'nav-tl-entries' + (_historicoExpandido ? ' is-expandido' : '');
+  entriesEl.className = 'nav-tl-entries' + (historicoExpandido ? ' is-expandido' : '');
 
   exibir.forEach((pathname, idx) => {
     /* idx 0 = item mais recente (atual), pois "exibir" já está
@@ -1645,9 +1672,9 @@ function _renderFluxoNavegacao(navigation) {
 
   wrap.appendChild(entriesEl);
 
-  if (_historicoExpandido) {
+  if (historicoExpandido) {
     _aplicarAlturaVisivel(entriesEl, NAV_ITENS_VISIVEIS);
-    entriesEl.scrollTop = scrollAnterior;
+    UIState.applyScrollNow(scrollables, scrollAnterior);
     _isolarScrollWheel(entriesEl);
   }
 
@@ -1655,11 +1682,11 @@ function _renderFluxoNavegacao(navigation) {
     const toggle = document.createElement('button');
     toggle.type       = 'button';
     toggle.className  = 'nav-tl-toggle';
-    toggle.textContent = _historicoExpandido
+    toggle.textContent = historicoExpandido
       ? 'Mostrar menos'
       : `Ver histórico completo (${semRepRecenteAntes.length})`;
     toggle.addEventListener('click', () => {
-      _historicoExpandido = !_historicoExpandido;
+      _setHistoricoExpandido(!historicoExpandido);
       _renderFluxoNavegacao(navigation);
     });
     wrap.appendChild(toggle);

@@ -27,7 +27,39 @@
    são fixas, não criadas pelo usuário) — o botão ocupa exatamente
    o slot onde o Checklist mostra o anel de progresso. */
 
-import { abrirModalTexto, abrirModalConfirmar, abrirModalNovaLista } from './tarefa_modal.js';
+import { abrirModalTexto, abrirModalConfirmar, abrirModalNovaLista, CHAVE_RASCUNHO_NOVA_LISTA } from './tarefa_modal.js';
+
+/* ─────────────────────────────────────────────
+   UI STATE MANAGER (sistema global de preservação de estado)
+   ─────────────────────────────────────────────
+   `_colapsadasListas`/`_colapsadasCategorias` eram Sets que só
+   viviam na memória do módulo: sobreviviam a um re-render dentro
+   da mesma sessão (tarefa.js chama renderTarefas de novo, mas o
+   arquivo continua carregado), mas eram perdidos a cada F5 — nunca
+   existiu nenhuma persistência para eles. Agora os dois conjuntos
+   são semeados uma vez a partir do UIState (mesma peça usada por
+   Checklist/Agenda/Dashboard/Conquistas) e toda mudança é
+   persistida de volta, então um F5 no meio de Tarefas volta
+   exatamente com as mesmas listas/categorias abertas ou fechadas. */
+import { UIState } from '../utils/ui_state_manager.js';
+
+const _CHAVE_ESTADO_UI = 'tarefas';
+let _estadoUICarregado = false;
+
+function _carregarEstadoUISeNecessario() {
+  if (_estadoUICarregado) return;
+  _estadoUICarregado = true;
+  const salvo = UIState.getState(_CHAVE_ESTADO_UI, { colapsadasListas: [], colapsadasCategorias: [] });
+  _colapsadasListas = new Set(Array.isArray(salvo.colapsadasListas) ? salvo.colapsadasListas : []);
+  _colapsadasCategorias = new Set(Array.isArray(salvo.colapsadasCategorias) ? salvo.colapsadasCategorias : []);
+}
+
+function _persistirEstadoUI() {
+  UIState.setState(_CHAVE_ESTADO_UI, {
+    colapsadasListas: Array.from(_colapsadasListas),
+    colapsadasCategorias: Array.from(_colapsadasCategorias),
+  });
+}
 
 function _escapeHtml(str) {
   return String(str ?? '')
@@ -226,6 +258,7 @@ function _cabecalhoHtml(listas = []) {
 }
 
 export function renderTarefasVazio(containerEl, disciplinas = []) {
+  _carregarEstadoUISeNecessario();
   _disciplinasAtuais = disciplinas;
   containerEl.innerHTML = `
     ${_cabecalhoHtml([])}
@@ -236,6 +269,7 @@ export function renderTarefasVazio(containerEl, disciplinas = []) {
 }
 
 export function renderTarefas(containerEl, listas, callbacks, disciplinas = []) {
+  _carregarEstadoUISeNecessario();
   _callbacks = callbacks ?? {};
   _disciplinasAtuais = disciplinas;
 
@@ -256,10 +290,23 @@ export function renderTarefas(containerEl, listas, callbacks, disciplinas = []) 
 }
 
 function _ligarEventoNovaLista(containerEl) {
-  containerEl.querySelector('#tarefa-btn-nova-lista')?.addEventListener('click', async () => {
-    const spec = await abrirModalNovaLista({ disciplinas: _disciplinasAtuais });
-    if (spec) _callbacks.onCriarLista?.(spec);
-  });
+  containerEl.querySelector('#tarefa-btn-nova-lista')?.addEventListener('click', () => _abrirNovaListaEProcessar());
+}
+
+async function _abrirNovaListaEProcessar() {
+  const spec = await abrirModalNovaLista({ disciplinas: _disciplinasAtuais });
+  if (spec) _callbacks.onCriarLista?.(spec);
+}
+
+/* Chamada por tarefa.js uma única vez, logo após a primeira
+   renderização da view (boot/F5) — reabre sozinho o modal "Nova
+   lista" se houver um rascunho pendente de uma sessão anterior (ver
+   comentário no topo de tarefa_modal.js). Reusa exatamente o mesmo
+   caminho do clique manual no botão — abrirModalNovaLista() já se
+   encarrega de preencher os campos com o rascunho salvo. */
+export async function reabrirRascunhoNovaListaSeExistir() {
+  if (!UIState.hasState(CHAVE_RASCUNHO_NOVA_LISTA)) return;
+  await _abrirNovaListaEProcessar();
 }
 
 function _buscarLista(listas, listaId) { return listas.find(l => l.id === listaId); }
@@ -278,6 +325,7 @@ function _ligarEventos(containerEl, listas) {
       const colapsar = !_colapsadasListas.has(listaId);
       colapsar ? _colapsadasListas.add(listaId) : _colapsadasListas.delete(listaId);
       blocoLista.classList.toggle('is-collapsed', colapsar);
+      _persistirEstadoUI();
       return;
     }
 
@@ -288,6 +336,7 @@ function _ligarEventos(containerEl, listas) {
       const colapsar = !_colapsadasCategorias.has(chave);
       colapsar ? _colapsadasCategorias.add(chave) : _colapsadasCategorias.delete(chave);
       blocoCat.classList.toggle('is-collapsed', colapsar);
+      _persistirEstadoUI();
       return;
     }
 

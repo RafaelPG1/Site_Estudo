@@ -6,7 +6,43 @@
    exclusão, além do modal rico de criação de lista (abrirModalNovaLista).
    Sem framework — cria/remove o próprio DOM a cada chamada.
    Responsabilidade ÚNICA: interface do modal. Persistência fica em
-   tarefa_storage.js — este arquivo não sabe nada de Firestore. */
+   tarefa_storage.js — este arquivo não sabe nada de Firestore.
+
+   ─────────────────────────────────────────────
+   RASCUNHO DO MODAL "NOVA LISTA" (UI State Manager)
+   ─────────────────────────────────────────────
+   abrirModalNovaLista() é o formulário mais rico do módulo (nome,
+   disciplina, modo, categorias e itens dinâmicos) e o exemplo de
+   referência do sistema de restauração de sessão: se o usuário
+   ainda não clicou em "Criar lista" e a página recarrega (F5, queda,
+   etc.), o preenchimento não pode se perder. Isso é feito com o
+   mesmo UIState de sempre (getState/setState), sem nenhum mecanismo
+   novo:
+     - toda mudança relevante (nome, disciplina, modo, categorias/
+       itens) chama _persistirRascunho(), que salva o objeto inteiro
+       sob _CHAVE_RASCUNHO_NOVA_LISTA;
+     - ao abrir o modal, se já existir um rascunho salvo, os campos
+       nascem preenchidos com ele (ver bloco "restaura rascunho"
+       logo após os elementos serem obtidos);
+     - ao confirmar OU cancelar, o rascunho é apagado — ele nunca é
+       dado de negócio, só uma rede de segurança até o clique real
+       em "Criar lista" (que continua indo para tarefa_storage.js,
+       como sempre).
+   Quem decide REABRIR o modal sozinho depois de um F5 é
+   dashboard/js/tarefa/tarefa.js (abrirTarefas), verificando
+   UIState.hasState(_CHAVE_RASCUNHO_NOVA_LISTA) — ver comentário lá.
+   Os modais simples (abrirModalTexto/abrirModalConfirmar) ficaram
+   de fora deste tratamento de propósito: eles sempre operam sobre
+   uma lista/categoria/tarefa específica já existente em memória
+   (ex.: "renomear ESTA lista"), e esse objeto em memória não
+   sobrevive a um F5 — reabri-los sozinhos exigiria primeiro
+   re-buscar a entidade por id, o que é um problema diferente
+   (e maior) do que "não perder um rascunho de formulário". */
+
+import { UIState } from '../utils/ui_state_manager.js';
+
+export const CHAVE_RASCUNHO_NOVA_LISTA = 'tarefa-modal-nova-lista';
+const _CHAVE_RASCUNHO_NOVA_LISTA = CHAVE_RASCUNHO_NOVA_LISTA;
 
 function _escapeHtmlModal(str) {
   return String(str ?? '')
@@ -111,8 +147,20 @@ export function abrirModalNovaLista({ disciplinas = [] } = {}) {
     const overlay = document.createElement('div');
     overlay.className = 'tarefa-modal-overlay';
 
-    let modo = 'simples'; // 'simples' | 'completo'
-    let categoriasState = []; // [{ nome, itens: string[] }]
+    /* Rascunho de uma sessão anterior (F5 no meio do preenchimento),
+       se existir. `hasState` distingue "nunca houve rascunho" de
+       "rascunho vazio" — não vale a pena reabrir campos com valores
+       vazios/default, então só usamos o rascunho se ele realmente
+       existir salvo. */
+    const _temRascunho = UIState.hasState(_CHAVE_RASCUNHO_NOVA_LISTA);
+    const _rascunho = UIState.getState(_CHAVE_RASCUNHO_NOVA_LISTA, {
+      nome: '', disciplinaId: null, modo: 'simples', categoriasState: [],
+    });
+
+    let modo = _temRascunho && _rascunho.modo === 'completo' ? 'completo' : 'simples'; // 'simples' | 'completo'
+    let categoriasState = _temRascunho && Array.isArray(_rascunho.categoriasState)
+      ? _rascunho.categoriasState.map(c => ({ nome: c?.nome ?? '', itens: Array.isArray(c?.itens) ? c.itens : [] }))
+      : []; // [{ nome, itens: string[] }]
 
     // Único gatilho de validação visual: uma tentativa de submit.
     // Antes disso, nada — nem focar, nem desfocar, nem digitar —
@@ -172,6 +220,39 @@ export function abrirModalNovaLista({ disciplinas = [] } = {}) {
     const hint         = overlay.querySelector('#tnl-hint');
     const tabs         = overlay.querySelectorAll('.tarefa-modal-tab');
     const btnConfirmar = overlay.querySelector('#tnl-confirmar');
+
+    /* Persiste o rascunho inteiro (mesmo objeto usado para restaurar
+       acima) — chamado em todo ponto onde nome/disciplina/modo/
+       categorias mudam. Nunca é dado de negócio: é só apagado ao
+       confirmar ou cancelar (ver `confirmar`/`cancelar` abaixo). */
+    function _persistirRascunho() {
+      UIState.setState(_CHAVE_RASCUNHO_NOVA_LISTA, {
+        nome: inputNome.value,
+        disciplinaId: selectDisc.value || null,
+        modo,
+        categoriasState,
+      });
+    }
+
+    /* ── Restaura o rascunho salvo (se houver) ──
+       Precisa rodar DEPOIS de obter os elementos acima (para poder
+       preenchê-los) e ANTES de qualquer listener que dependa do
+       estado inicial correto dos campos. */
+    if (_temRascunho) {
+      inputNome.value = _rascunho.nome ?? '';
+      if (_rascunho.disciplinaId) selectDisc.value = _rascunho.disciplinaId;
+
+      if (modo === 'completo') {
+        tabs.forEach(t => {
+          const ativa = t.dataset.modo === 'completo';
+          t.classList.toggle('is-active', ativa);
+          t.setAttribute('aria-selected', ativa ? 'true' : 'false');
+        });
+        secaoCat.hidden = false;
+        hint.textContent = 'Monte categorias e itens agora — tudo em uma única criação.';
+        _renderCategorias(); // function declaration — hoisted, seguro chamar aqui
+      }
+    }
 
     inputNome.focus();
 
@@ -269,6 +350,7 @@ export function abrirModalNovaLista({ disciplinas = [] } = {}) {
         </div>`).join('');
 
       _aplicarValidacaoUI();
+      _persistirRascunho();
     }
 
     overlay.querySelector('#tnl-add-categoria').addEventListener('click', () => {
@@ -314,6 +396,7 @@ export function abrirModalNovaLista({ disciplinas = [] } = {}) {
       const cat = categoriasState[Number(bloco.dataset.catIdx)];
       cat.nome = e.target.value;
       _aplicarValidacaoUI();
+      _persistirRascunho();
     });
 
     catsWrap.addEventListener('keydown', (e) => {
@@ -334,6 +417,14 @@ export function abrirModalNovaLista({ disciplinas = [] } = {}) {
     // à validação; focar/desfocar o campo nunca pinta nada.
     inputNome.addEventListener('input', () => {
       _aplicarValidacaoUI();
+      _persistirRascunho();
+    });
+
+    // Disciplina não participa da validação, mas ainda faz parte do
+    // rascunho — sem isso, trocar a disciplina e dar F5 perderia só
+    // essa escolha, mesmo com o resto do formulário preservado.
+    selectDisc.addEventListener('change', () => {
+      _persistirRascunho();
     });
 
     tabs.forEach(tab => {
@@ -383,10 +474,20 @@ export function abrirModalNovaLista({ disciplinas = [] } = {}) {
         ? categoriasState.map(c => ({ nome: c.nome.trim(), itens: c.itens.filter(Boolean) }))
         : [];
 
+      /* Formulário confirmado: o rascunho cumpriu seu papel (evitar
+         perda por F5) e agora vira dado real via onCriarLista/
+         tarefa_storage.js — não faz mais sentido mantê-lo aqui. */
+      UIState.clearState(_CHAVE_RASCUNHO_NOVA_LISTA);
       _fechar(overlay);
       resolve({ nome, disciplinaId, categorias });
     };
-    const cancelar = () => { _fechar(overlay); resolve(null); };
+    const cancelar = () => {
+      /* Cancelamento é uma decisão explícita de descartar — o
+         rascunho não deve reaparecer num F5 futuro. */
+      UIState.clearState(_CHAVE_RASCUNHO_NOVA_LISTA);
+      _fechar(overlay);
+      resolve(null);
+    };
 
     btnConfirmar.addEventListener('click', confirmar);
     overlay.querySelector('.tarefa-modal-btn-cancelar').addEventListener('click', cancelar);

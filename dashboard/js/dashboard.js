@@ -228,6 +228,17 @@ import {
   fecharAgenda,
   agendaEstaAberta,
 } from './agenda/agenda.js';
+
+/* ── UI State Manager (sistema GLOBAL de preservação de estado de
+   interface — ver dashboard/js/utils/ui_state_manager.js). dashboard.js
+   é o único lugar que sabe qual view está visível agora, então é
+   aqui que a navegação SPA se conecta ao sistema: registra as 4
+   views existentes, liga a captura automática de F5 e dispara a
+   restauração sempre que uma view é exibida. Módulos futuros
+   (Estatísticas, Configurações, ...) só precisam de mais uma
+   chamada a UIState.registerView() + UIState.restoreView() no ponto
+   em que passam a existir — nenhuma lógica nova precisa ser escrita. ── */
+import { UIState } from './utils/ui_state_manager.js';
 /* ══════════════════════════════════════════════
    WRAPPER DE TEMA
 ══════════════════════════════════════════════ */
@@ -296,7 +307,15 @@ function _trocarSemestre(novoSemestre) {
      sozinho (via State.semestre) na próxima vez que for aberta. */
   if (checklistEstaAberta()) {
     const viewChecklist = document.getElementById('view-checklist');
-    if (viewChecklist) abrirChecklist(viewChecklist).catch(() => {});
+    if (viewChecklist) {
+      /* Troca de semestre reconstrói o Checklist inteiro (outro
+         checklist_data.js, outro progresso) — sem isso o scroll
+         voltaria ao topo mesmo permanecendo na mesma view. */
+      UIState.preserveScroll('checklist-semestre', {
+        window: 'window',
+        corpo: () => viewChecklist,
+      }, () => abrirChecklist(viewChecklist)).catch(() => {});
+    }
   }
 
   /* Agenda — não depende de semestre/disciplina (dados próprios em
@@ -438,48 +457,109 @@ function _esconderTodasViews() {
   document.getElementById('view-agenda')?.style.setProperty('display', 'none');
 }
 
-async function _mostrarViewChecklist() {
+/* ══════════════════════════════════════════════
+   UI STATE — registro das views (sistema global de preservação
+   de estado de interface, ver dashboard/js/utils/ui_state_manager.js)
+   ─────────────────────────────────────────────
+   `_viewAtiva` é a fonte única de verdade de "qual view está
+   visível agora" — é isso que UIState.initAutoCapture() consulta
+   no instante de um F5, e é o mesmo valor usado para saber qual
+   view restaurar depois de mostrá-la. Cada view registra apenas
+   o(s) elemento(s) roláveis que possui — o resto (captura, debounce,
+   duplo requestAnimationFrame, F5 via pagehide/beforeunload) é
+   tratado inteiramente pelo UIState, sem nenhuma lógica repetida
+   aqui. Adicionar uma view nova no futuro (Estatísticas,
+   Configurações, ...) é só mais uma chamada a registerView(). ══ */
+let _viewAtiva = 'dashboard-home';
+
+/* Key de UI State onde a VIEW ativa (aba) é persistida — usada só
+   no boot (_bootPagina), para saber em qual view reabrir depois de
+   um F5, ANTES de restaurar scroll/filtros/expansões dessa view.
+   Mesma peça central de sempre (UIState.getState/setState), nenhum
+   mecanismo novo. */
+const _CHAVE_VIEW_ATIVA = 'dashboard-view-ativa';
+function _persistirViewAtiva() {
+  UIState.setState(_CHAVE_VIEW_ATIVA, { view: _viewAtiva });
+}
+
+UIState.registerView('dashboard-home', {
+  getScrollables: () => ({ window: 'window' }),
+});
+UIState.registerView('checklist', {
+  getScrollables: () => ({ window: 'window', corpo: () => document.getElementById('view-checklist') }),
+});
+UIState.registerView('tarefas', {
+  getScrollables: () => ({ window: 'window', corpo: () => document.getElementById('view-tarefas') }),
+});
+UIState.registerView('agenda', {
+  getScrollables: () => ({ window: 'window', corpo: () => document.getElementById('view-agenda') }),
+});
+
+/* `capturarViewAnterior=false` é usado apenas pelo boot (_bootPagina),
+   quando está restaurando a view de uma sessão anterior (F5): nesse
+   momento `_viewAtiva` ainda é só o valor inicial 'dashboard-home' e
+   a página acabou de carregar (scroll no topo) — capturar isso
+   sobrescreveria, com um scroll "zerado", a posição real que o
+   Dashboard tinha antes do F5. Em qualquer navegação normal pelo
+   menu (clique do usuário) o parâmetro continua `true`, como sempre. */
+async function _mostrarViewChecklist({ capturarViewAnterior = true } = {}) {
   const view = document.getElementById('view-checklist');
   if (!view) return;
+  if (capturarViewAnterior) UIState.captureView(_viewAtiva);
   _esconderTodasViews();
   view.style.display = '';
   _setNavAtivo('nav-checklist');
   fecharTarefas();
   fecharAgenda();
+  _viewAtiva = 'checklist';
+  _persistirViewAtiva();
   await abrirChecklist(view);
+  await UIState.restoreView('checklist');
 }
 
-async function _mostrarViewTarefas() {
+async function _mostrarViewTarefas({ capturarViewAnterior = true } = {}) {
   const view = document.getElementById('view-tarefas');
   if (!view) return;
+  if (capturarViewAnterior) UIState.captureView(_viewAtiva);
   _esconderTodasViews();
   view.style.display = '';
   _setNavAtivo('nav-tarefas');
   fecharChecklist();
   fecharAgenda();
+  _viewAtiva = 'tarefas';
+  _persistirViewAtiva();
   await abrirTarefas(view);
+  await UIState.restoreView('tarefas');
 }
 
-async function _mostrarViewAgenda() {
+async function _mostrarViewAgenda({ capturarViewAnterior = true } = {}) {
   const view = document.getElementById('view-agenda');
   if (!view) return;
+  if (capturarViewAnterior) UIState.captureView(_viewAtiva);
   _esconderTodasViews();
   view.style.display = '';
   _setNavAtivo('nav-calendario');
   fecharChecklist();
   fecharTarefas();
+  _viewAtiva = 'agenda';
+  _persistirViewAtiva();
   await abrirAgenda(view);
+  await UIState.restoreView('agenda');
 }
 
-function _mostrarViewDashboard() {
+async function _mostrarViewDashboard({ capturarViewAnterior = true } = {}) {
   const home = document.getElementById('view-dashboard-home');
   if (!home) return;
+  if (capturarViewAnterior) UIState.captureView(_viewAtiva);
   _esconderTodasViews();
   home.style.display = '';
   _setNavAtivo('nav-home');
   fecharChecklist();
   fecharTarefas();
   fecharAgenda();
+  _viewAtiva = 'dashboard-home';
+  _persistirViewAtiva();
+  await UIState.restoreView('dashboard-home');
 }
 function _initNavegacaoSpa() {
   document.getElementById('nav-home')?.addEventListener('click', (e) => {
@@ -608,7 +688,33 @@ async function _bootPagina() {
   _initTooltipPositioning();
   _initNavegacaoSpa();
 
+  /* UI State — liga a captura automática de F5 (pagehide/beforeunload/
+     aba oculta) para a view que estiver ativa no momento. */
+  UIState.initAutoCapture(() => _viewAtiva);
+
   await _carregarMetricasReais();
+
+  /* Restaura a VIEW (aba) em que o usuário estava antes de um F5 —
+     Checklist, Tarefas, Calendário ou o próprio Dashboard — ANTES de
+     restaurar scroll/filtros/expansões dessa view, para que tudo já
+     seja restaurado na tela certa. Só cai no Dashboard padrão quando
+     não há nenhuma view salva (primeira visita, ou storage vazio). */
+  const _viewSalva = UIState.getState(_CHAVE_VIEW_ATIVA, { view: 'dashboard-home' }).view;
+
+  if (_viewSalva === 'checklist') {
+    await _mostrarViewChecklist({ capturarViewAnterior: false });
+  } else if (_viewSalva === 'tarefas') {
+    await _mostrarViewTarefas({ capturarViewAnterior: false });
+  } else if (_viewSalva === 'agenda') {
+    await _mostrarViewAgenda({ capturarViewAnterior: false });
+  } else {
+    /* Restaura o scroll da view inicial (Dashboard, já visível no HTML
+       estático antes de qualquer clique de navegação) só DEPOIS que as
+       métricas terminarem de renderizar — a altura da página muda
+       bastante com esses dados assíncronos, e restaurar cedo demais
+       posicionaria o scroll com base numa altura ainda incompleta. */
+    await UIState.restoreView('dashboard-home');
+  }
 
   document.addEventListener('nexus:loginSuccess', async () => {
     _renderUsuario();

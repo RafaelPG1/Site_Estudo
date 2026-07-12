@@ -53,6 +53,21 @@ import {
   doc, getDoc, setDoc,
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
+/* ─────────────────────────────────────────────
+   UI STATE MANAGER — sistema GLOBAL de preservação de estado de
+   interface (ver dashboard/js/utils/ui_state_manager.js). A seção
+   "ESTADO DE UI" abaixo costumava ter sua PRÓPRIA chave de
+   localStorage e seu próprio parsing/validação — exatamente o tipo
+   de solução isolada por tela que o sistema global veio substituir.
+   As funções carregarEstadoUI()/salvarEstadoUI() continuam
+   existindo com a MESMA assinatura (checklist.js e
+   checklist_renderer.js não precisam saber onde/como isso é
+   guardado agora), só que por baixo elas delegam tudo ao UIState —
+   a mesma peça que Tarefas, Agenda, Dashboard e Conquistas também
+   usam. Isso é o "cada módulo registra o que precisa preservar,
+   toda a lógica de salvar/restaurar fica centralizada" pedido. ── */
+import { UIState } from '../utils/ui_state_manager.js';
+
 function _chaveLocal(semestre) {
   return `nexus_checklist_progresso::${semestre}`;
 }
@@ -130,46 +145,42 @@ export async function salvarItem(uid, semestre, itemId, concluido) {
    ESTADO DE UI — accordions de disciplina/categoria
    ───────────────────────────────────────────── */
 
-function _chaveLocalUI(semestre) {
-  return `nexus_checklist_ui::${semestre}`;
+/* Uma key de estado por semestre — mesmo motivo de sempre: abrir/
+   recolher disciplinas num semestre nunca deve afetar outro. */
+function _chaveEstadoUI(semestre) {
+  return `checklist:${semestre}`;
 }
 
-const _ESTADO_UI_VAZIO = Object.freeze({ colapsados: [], categoriasColapsadas: [] });
+const _ESTADO_UI_VAZIO = Object.freeze({ filtro: 'todas', colapsados: [], categoriasColapsadas: [] });
 
-/* Lê o estado de UI salvo para o semestre. Retorna sempre um
-   objeto { colapsados: string[], categoriasColapsadas: string[] }
-   — nunca null/undefined — mesmo se nada foi salvo ainda, se o
-   JSON estiver corrompido, ou se localStorage estiver indisponível
-   (mesma postura defensiva de carregarProgresso/_lerLocal acima). */
+/* Lê o estado de UI salvo para o semestre (filtro ativo + o que
+   está recolhido). Retorna sempre um objeto completo — nunca
+   null/undefined — mesmo se nada foi salvo ainda ou o dado salvo
+   estiver corrompido (mesma postura defensiva de sempre, agora
+   garantida centralmente por UIState.getState). */
 export function carregarEstadoUI(semestre) {
   if (!semestre) return { ..._ESTADO_UI_VAZIO };
 
-  try {
-    const raw = localStorage.getItem(_chaveLocalUI(semestre));
-    if (!raw) return { ..._ESTADO_UI_VAZIO };
-
-    const parsed = JSON.parse(raw);
-    return {
-      colapsados: Array.isArray(parsed?.colapsados) ? parsed.colapsados : [],
-      categoriasColapsadas: Array.isArray(parsed?.categoriasColapsadas) ? parsed.categoriasColapsadas : [],
-    };
-  } catch (_) {
-    return { ..._ESTADO_UI_VAZIO };
-  }
+  const estado = UIState.getState(_chaveEstadoUI(semestre), _ESTADO_UI_VAZIO);
+  return {
+    filtro: typeof estado.filtro === 'string' ? estado.filtro : 'todas',
+    colapsados: Array.isArray(estado.colapsados) ? estado.colapsados : [],
+    categoriasColapsadas: Array.isArray(estado.categoriasColapsadas) ? estado.categoriasColapsadas : [],
+  };
 }
 
-/* Salva o estado de UI do semestre. Somente local (localStorage) —
-   estado de accordion é visual, não é "progresso" do usuário, não
-   vai para o Firestore nem precisa sincronizar entre dispositivos.
-   Chamado pelo orquestrador (checklist.js) toda vez que o usuário
-   expande/recolhe uma disciplina ou categoria. */
+/* Salva o estado de UI do semestre via UIState (sessionStorage —
+   sobrevive a F5, que é o requisito real aqui; não precisa
+   sincronizar entre dispositivos nem sobreviver ao fechamento da
+   aba). Chamado pelo orquestrador (checklist.js) toda vez que o
+   usuário expande/recolhe uma disciplina/categoria ou troca de
+   filtro (ver checklist_renderer.js). */
 export function salvarEstadoUI(semestre, estadoUI) {
   if (!semestre) return;
 
-  try {
-    localStorage.setItem(_chaveLocalUI(semestre), JSON.stringify({
-      colapsados: Array.isArray(estadoUI?.colapsados) ? estadoUI.colapsados : [],
-      categoriasColapsadas: Array.isArray(estadoUI?.categoriasColapsadas) ? estadoUI.categoriasColapsadas : [],
-    }));
-  } catch (_) { /* localStorage indisponível — ignora silenciosamente */ }
+  UIState.setState(_chaveEstadoUI(semestre), {
+    filtro: typeof estadoUI?.filtro === 'string' ? estadoUI.filtro : 'todas',
+    colapsados: Array.isArray(estadoUI?.colapsados) ? estadoUI.colapsados : [],
+    categoriasColapsadas: Array.isArray(estadoUI?.categoriasColapsadas) ? estadoUI.categoriasColapsadas : [],
+  });
 }

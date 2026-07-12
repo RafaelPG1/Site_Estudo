@@ -21,9 +21,30 @@ import { initPlannedChipDrag, initPlannedDropZone, initTimelineDropZone, initCar
 import { openSessionModal } from './agenda_interactions.js';
 import { toggleSessionStatus } from './agenda_interactions.js';
 
+/* ─────────────────────────────────────────────
+   UI STATE MANAGER (sistema global de preservação de estado)
+   ─────────────────────────────────────────────
+   renderCalendar() é chamado de DEZENAS de pontos diferentes em
+   agenda_interactions.js (toda ação de drag&drop, criar/editar/
+   excluir sessão, trocar de semana, redimensionar a janela...) —
+   cada chamada substitui `grid.innerHTML` inteiro. Em vez de
+   espalhar captura/restauração de scroll manual por cada um desses
+   pontos, o wrap fica UMA vez aqui, no único lugar por onde toda
+   atualização do grid já passa — exatamente o "ponto único de
+   renderização" que o sistema global de preservação de estado
+   pede para ser instrumentado. */
+import { UIState } from '../utils/ui_state_manager.js';
+
 export function renderCalendar() {
   const grid = document.getElementById('agenda-calendar-grid');
   if (!grid) return;
+  UIState.preserveScroll('agenda-grid', {
+    window: 'window',
+    scrollHorizontal: () => grid.querySelector('.agenda-grid-scroll'),
+  }, () => _renderCalendarAgora(grid));
+}
+
+function _renderCalendarAgora(grid) {
   grid.innerHTML = '';
 
   const monday = state.currentWeekStart;
@@ -299,4 +320,4 @@ function createSessionCard(session, col, cols, weekKey, dayIdx) {
   initScheduledToPlannedDrag(card, weekKey, dayIdx, session.id);
 
   return card;
-}   
+}

@@ -38,6 +38,7 @@ import {
   getHourHeight, isPlanned, sortPlanned, saveStorage, saveRoutine,
   recalcTimelineBounds,
   showToast, DAY_NAMES, DAY_SHORT, getMondayOf, toISO, escHtml,
+  persistirEstadoUIAgenda,
 } from './agenda.js';
 
 import { renderCalendar } from './agenda_render.js';
@@ -1130,11 +1131,13 @@ function navigateWeek(delta) {
   }
   state.currentWeekStart = d;
   renderCalendar();
+  persistirEstadoUIAgenda();
 }
 
 function goToToday() {
   state.currentWeekStart = getMondayOf(new Date());
   renderCalendar();
+  persistirEstadoUIAgenda();
 }
 
 function toggleWeekMenu(forceClose) {
@@ -1187,8 +1190,12 @@ async function clearCurrentWeek() {
   showToast('Semana limpa.');
 }
 
-/* ══════════════════ ABAS (Agenda / Metas / Estatísticas) ══════════════════ */
-function switchTab(tab) {
+/* ══════════════════ ABAS (Agenda / Metas / Estatísticas) ══════════════════
+   Exportada para que agenda.js possa restaurar a aba salva (UIState)
+   assim que o template é montado — sem isso, um F5 na aba
+   "Estatísticas" sempre voltaria visualmente para "Agenda", mesmo
+   com state.activeTab já restaurado internamente. */
+export function switchTab(tab) {
   state.activeTab = tab;
   document.querySelectorAll('.agenda-tab').forEach(el => el.classList.toggle('active', el.dataset.tab === tab));
   document.getElementById('agenda-page-week').classList.toggle('active', tab === 'agenda');
@@ -1197,6 +1204,8 @@ function switchTab(tab) {
 
   if (tab === 'goals') { openGoalsView(); }
   if (tab === 'stats') { renderStats(); }
+
+  persistirEstadoUIAgenda();
 }
 
 /* ══════════════════ WIRING GERAL (chamado 1x por abrirAgenda) ══════════════════ */

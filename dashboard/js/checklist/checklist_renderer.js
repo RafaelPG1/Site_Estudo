@@ -97,7 +97,18 @@
    feitos por atualização direta do DOM (sem re-renderizar a árvore
    inteira) — ver _atualizarContadores() e _ligarEventos(). Só
    filtro/ordenação, por serem bem menos frequentes, re-renderizam
-   a lista via _renderCompleto(). */
+   a lista via _renderCompleto().
+
+   ─────────────────────────────────────────────
+   UI STATE MANAGER (sistema global de preservação de estado)
+   ─────────────────────────────────────────────
+   Trocar de filtro reconstrói `#checklist-disciplinas` do zero
+   (_renderCompleto → innerHTML). Sem tratamento, isso pode fazer o
+   scroll da página "pular" quando a lista filtrada é bem menor que
+   a anterior. UIState.preserveScroll() resolve isso de forma
+   genérica — mesma função usada por todos os outros módulos, ver
+   dashboard/js/utils/ui_state_manager.js. */
+import { UIState } from '../utils/ui_state_manager.js';
 
 function _escapeHtml(str) {
   return String(str ?? '')
@@ -214,19 +225,21 @@ let _rerenderAtual = null;
 function _estadoInicial(estadoUISalvo) {
   const salvo = estadoUISalvo ?? {};
   return {
-    filtro: 'todas',
+    filtro: typeof salvo.filtro === 'string' ? salvo.filtro : 'todas',
     colapsados: new Set(Array.isArray(salvo.colapsados) ? salvo.colapsados : []),
     categoriasColapsadas: new Set(Array.isArray(salvo.categoriasColapsadas) ? salvo.categoriasColapsadas : []),
   };
 }
-/* Serializa colapsados/categoriasColapsadas (Sets) para arrays e
-   repassa ao callback externo, se houver. Chamado apenas nos dois
-   pontos onde essas duas coleções realmente mudam (toggle de
-   disciplina e toggle de categoria em _ligarEventos) — nunca a
-   cada clique de checkbox nem a cada rerender de filtro/ordenação. */
+/* Serializa o estado de UI (filtro + as duas coleções de
+   colapsados) e repassa ao callback externo, se houver. Chamado
+   sempre que qualquer uma dessas três coisas muda: toggle de
+   disciplina/categoria (em _ligarEventos) e troca de filtro —
+   nunca a cada clique de checkbox (isso é progresso, não estado de
+   UI, e é persistido por outro caminho, ver checklist.js). */
 function _persistirEstadoUI() {
   if (typeof _onMudarEstadoUI !== 'function') return;
   _onMudarEstadoUI({
+    filtro: _estado.filtro,
     colapsados: Array.from(_estado.colapsados),
     categoriasColapsadas: Array.from(_estado.categoriasColapsadas),
   });
@@ -491,7 +504,14 @@ function _ligarEventos(containerEl, checklistData, progresso, semestre, onToggle
     const btn = e.target.closest('[data-filtro]');
     if (!btn) return;
     _estado.filtro = btn.dataset.filtro;
-    rerender();
+    _persistirEstadoUI();
+    /* A lista filtrada pode ser bem menor que a anterior — sem
+       preservar o scroll, a página "pularia" para uma posição sem
+       relação com onde o usuário estava. */
+    UIState.preserveScroll('checklist-filtro', {
+      window: 'window',
+      corpo: () => containerEl,
+    }, rerender);
   });
 
 

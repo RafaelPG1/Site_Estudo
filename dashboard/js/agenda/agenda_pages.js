@@ -16,6 +16,14 @@ import {
 
 import { confirmDialog } from './agenda_interactions.js';
 
+/* ─────────────────────────────────────────────
+   UI STATE MANAGER (sistema global de preservação de estado)
+   ─────────────────────────────────────────────
+   renderGoalsList() reconstrói `#agenda-goals-list` inteiro a cada
+   chamada (criar/concluir/editar/excluir meta) — mesmo tratamento
+   de scroll usado em renderCalendar() (ver agenda_render.js). */
+import { UIState } from '../utils/ui_state_manager.js';
+
 /* ══════════════════ METAS ══════════════════ */
 function createEmptyGoalDraft() {
   return {
@@ -70,6 +78,10 @@ export function openGoalsView() {
 export function renderGoalsList() {
   const list = document.getElementById('agenda-goals-list');
   if (!list) return;
+  UIState.preserveScroll('agenda-goals', { window: 'window' }, () => _renderGoalsListAgora(list));
+}
+
+function _renderGoalsListAgora(list) {
   list.innerHTML = '';
 
   if (!state.goals.length) {
