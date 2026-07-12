@@ -36,6 +36,20 @@
        em agenda_interactions.js já esperava) acoplado a um
        seletor customizado (relógio de duas colunas / calendário
        mensal), no mesmo padrão visual do restante do Dashboard.
+     ✔ v12 — .agenda-picker-popover ganhou `box-sizing: border-box`
+       PRÓPRIO (não herdado). Motivo: o popover é criado via JS e
+       anexado a `document.body` (não a `.agenda-module`), para
+       poder usar `position: fixed` livre de qualquer overflow/
+       clipping dos modais — mas isso também significa que o reset
+       `.agenda-module * { box-sizing: border-box; }` logo abaixo
+       NUNCA o alcança (seletor de descendência não cruza essa
+       fronteira de DOM). Sem essa regra própria, o popover caía no
+       `content-box` padrão do navegador, e a largura calculada em
+       JS (positionTimePickerPopover(), em agenda_interactions.js)
+       deixava de bater exatamente com a largura realmente
+       renderizada (188px "de conteúdo" + 2px de borda ≠ 188px
+       "reais") — um dos fatores que afastava o popover do ícone do
+       relógio além do respiro pedido.
 
    Tudo neste arquivo está escopado sob `.agenda-module` para
    nunca vazar estilo para o restante do Dashboard (Checklist,
@@ -493,6 +507,16 @@
 .agenda-time-icon-btn:hover { background: var(--border); color: var(--text-1); }
 .agenda-time-icon-btn:focus-visible { outline: 2px solid var(--accent-dim); outline-offset: 1px; }
 .agenda-picker-popover {
+  /* v12 — box-sizing PRÓPRIO, não herdado de `.agenda-module *`
+     (ver nota no topo do arquivo): este elemento é anexado a
+     `document.body` via JS, fora da árvore de `.agenda-module`,
+     então aquele reset nunca chega até aqui. Sem esta linha, o
+     popover caía no `content-box` padrão do navegador e a largura
+     que a JS assume (offsetWidth) deixava de bater com a largura
+     declarada — pequena discrepância, mas suficiente para estourar
+     a tolerância de poucos pixels pedida para o respiro em relação
+     ao ícone do relógio. */
+  box-sizing: border-box;
   position: fixed;
   z-index: 400;
   background: var(--surface-2);

@@ -424,18 +424,16 @@ const TEMPLATE_HTML = `
             <label class="agenda-form-label" for="agenda-input-time">Hora inicial <span class="agenda-optional">(opcional)</span></label>
             <div class="agenda-picker-field">
               <input class="agenda-input agenda-picker-input agenda-time-input" type="text" id="agenda-input-time" placeholder="--:--" autocomplete="off" inputmode="numeric" />
-              <button type="button" class="agenda-time-icon-btn" id="agenda-input-time-picker-btn" aria-label="Abrir seletor de horário" tabindex="-1">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5V8l2.5 2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
+              <!-- v13 — o botão do relógio NÃO nasce mais aqui: initTimePicker('agenda-input-time'),
+                   em agenda_interactions.js, cria e insere esse botão sozinho, como elemento
+                   totalmente independente do input (ver comentário lá para o motivo). -->
             </div>
           </div>
           <div class="agenda-form-group">
             <label class="agenda-form-label" for="agenda-input-time-end">Hora final <span class="agenda-optional">(opcional)</span></label>
             <div class="agenda-picker-field">
               <input class="agenda-input agenda-picker-input agenda-time-input" type="text" id="agenda-input-time-end" placeholder="--:--" autocomplete="off" inputmode="numeric" />
-              <button type="button" class="agenda-time-icon-btn" id="agenda-input-time-end-picker-btn" aria-label="Abrir seletor de horário" tabindex="-1">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5V8l2.5 2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
+              <!-- v13 — botão criado dinamicamente por initTimePicker('agenda-input-time-end'). -->
             </div>
           </div>
         </div>
@@ -504,18 +502,14 @@ const TEMPLATE_HTML = `
             <label class="agenda-form-label" for="agenda-routine-start">Horário inicial</label>
             <div class="agenda-picker-field">
               <input class="agenda-input agenda-picker-input agenda-time-input" type="text" id="agenda-routine-start" value="06:00" autocomplete="off" inputmode="numeric" />
-              <button type="button" class="agenda-time-icon-btn" id="agenda-routine-start-picker-btn" aria-label="Abrir seletor de horário" tabindex="-1">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5V8l2.5 2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
+              <!-- v13 — botão criado dinamicamente por initTimePicker('agenda-routine-start'). -->
             </div>
           </div>
           <div class="agenda-form-group">
             <label class="agenda-form-label" for="agenda-routine-end">Horário final</label>
             <div class="agenda-picker-field">
               <input class="agenda-input agenda-picker-input agenda-time-input" type="text" id="agenda-routine-end" value="22:00" autocomplete="off" inputmode="numeric" />
-              <button type="button" class="agenda-time-icon-btn" id="agenda-routine-end-picker-btn" aria-label="Abrir seletor de horário" tabindex="-1">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5V8l2.5 2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
+              <!-- v13 — botão criado dinamicamente por initTimePicker('agenda-routine-end'). -->
             </div>
           </div>
         </div>

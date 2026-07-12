@@ -446,53 +446,69 @@ function closeAllTimePickers() {
   [..._openTimePickerClosers].forEach(fn => fn());
 }
 
-/* Ancora o popover de horário no campo de horário (wrapper
-   input + ícone), não mais só no input "puro". O ícone continua
-   sendo o único responsável por abrir/fechar o popover — aqui ele
-   só entra como referência para fechar a distância horizontal,
-   já que fica inset alguns pixels dentro da borda do input
-   (right: 6px, ver .agenda-time-icon-btn em agenda.css).
-   Regra: borda direita do popover = borda direita do ÍCONE,
-   deslocada só o suficiente para não colar nem sobrepor (GAP_X
-   pequeno, 8–12px). Verticalmente, abre logo abaixo do campo
-   (GAP_Y pequeno), com flip para cima se não houver espaço. */
-function positionPopoverNearInput(popover, input, iconBtn) {
-  const GAP_Y = 8;   // espaço vertical entre o campo e o popover
-  const GAP_X = 10;  // espaço horizontal entre o ícone e a borda do popover
-  const MARGIN = 8;
+/* ─────────────────────────────────────────────
+   POSICIONAMENTO DO POPOVER DE HORÁRIO
+   ─────────────────────────────────────────────
+   Âncora ÚNICA E EXCLUSIVA: o botão do relógio (iconBtn). Esta
+   função nem RECEBE o input como parâmetro — estruturalmente
+   impossível dele participar do cálculo horizontal (antes havia um
+   `iconBtn ?? input`, um fallback silencioso que mascarava qualquer
+   chamada errada; foi removido de propósito).
 
-  const fieldRect = input.getBoundingClientRect();
-  const anchorRect = iconBtn ? iconBtn.getBoundingClientRect() : fieldRect;
-  const popRect = popover.getBoundingClientRect();
+   Regra: a borda DIREITA do popover fica colada à borda ESQUERDA do
+   ícone, com um respiro fixo de poucos pixels. Sem espaço à
+   esquerda, abre à direita do ícone. Verticalmente, abre logo
+   abaixo do próprio ícone (não do campo — o ícone já fica
+   centralizado verticalmente dentro do campo via
+   `transform: translateY(-50%)` em agenda.css, então a posição
+   vertical dele já reflete corretamente a altura do campo; usar o
+   ícone aqui também mantém a função inteira ancorada em UM único
+   elemento, sem exceção). Sobe se não houver espaço abaixo. Sempre
+   clampado para nunca vazar da viewport, em qualquer resolução/
+   zoom/scroll.
 
-  const viewportLeft  = MARGIN;
-  const viewportRight = window.innerWidth - MARGIN;
-  const boundTop      = MARGIN;
-  const boundBottom   = window.innerHeight - MARGIN;
+   Tamanho do popover via offsetWidth/offsetHeight (não
+   getBoundingClientRect) — imune ao `scale(.98)` do estado fechado
+   (ver `.agenda-picker-popover` em agenda.css), que só vira
+   `scale(1)` um frame depois de posicionarmos. */
+const TIME_POPOVER_GAP_X = 4;  // respiro horizontal entre o popover e o ícone
+const TIME_POPOVER_GAP_Y = 4;  // respiro vertical entre o ícone e o popover
+const TIME_POPOVER_MARGEM = 8; // nunca colar nas bordas da viewport
 
-  // Horizontal: borda direita do popover = borda direita do ÍCONE
-  // menos um respiro pequeno e fixo (não mais a borda externa do
-  // input inteiro, que ficava alguns pixels mais à direita/distante).
-  let left = anchorRect.right - GAP_X - popRect.width + GAP_X; // = anchorRect.right - popRect.width
-  left = anchorRect.right - popRect.width;
-  left = Math.max(viewportLeft, Math.min(left, viewportRight - popRect.width));
-
-  // Vertical: abaixo do campo por padrão; inverte para cima se não
-  // houver espaço; clamp final garante visibilidade total.
-  const spaceBelow = boundBottom - (fieldRect.bottom + GAP_Y);
-  const spaceAbove = (fieldRect.top - GAP_Y) - boundTop;
-  let top;
-  if (popRect.height <= spaceBelow) {
-    top = fieldRect.bottom + GAP_Y;
-  } else if (popRect.height <= spaceAbove) {
-    top = fieldRect.top - GAP_Y - popRect.height;
-  } else {
-    top = spaceBelow >= spaceAbove ? fieldRect.bottom + GAP_Y : fieldRect.top - GAP_Y - popRect.height;
+function positionTimePickerPopover(popover, iconBtn) {
+  if (!(iconBtn instanceof Element)) {
+    console.error('[agenda] positionTimePickerPopover chamado sem um botão de ícone válido.', iconBtn);
+    return;
   }
-  top = Math.min(top, boundBottom - popRect.height);
-  top = Math.max(top, boundTop);
 
-  popover.style.top = `${top}px`;
+  const iconRect = iconBtn.getBoundingClientRect();
+
+  // Tamanho de LAYOUT do popover — não o tamanho pintado (que ainda
+  // pode estar sob o `scale(.98)` do estado fechado nesse instante).
+  const popW = popover.offsetWidth;
+  const popH = popover.offsetHeight;
+
+  const viewportW = window.innerWidth;
+  const viewportH = window.innerHeight;
+
+  // ── Horizontal: borda direita do popover = borda esquerda do
+  //    ícone, com o respiro fixo. Sem espaço à esquerda → abre à
+  //    direita do ícone. Único dado de entrada: iconRect. ──
+  let left = iconRect.left - TIME_POPOVER_GAP_X - popW;
+  if (left < TIME_POPOVER_MARGEM) {
+    left = iconRect.right + TIME_POPOVER_GAP_X;
+  }
+  left = Math.max(TIME_POPOVER_MARGEM, Math.min(left, viewportW - TIME_POPOVER_MARGEM - popW));
+
+  // ── Vertical: logo abaixo do ícone; sobe se não houver espaço. ──
+  let top = iconRect.bottom + TIME_POPOVER_GAP_Y;
+  const estouraEmbaixo = top + popH > viewportH - TIME_POPOVER_MARGEM;
+  if (estouraEmbaixo) {
+    top = iconRect.top - TIME_POPOVER_GAP_Y - popH;
+  }
+  top = Math.max(TIME_POPOVER_MARGEM, Math.min(top, viewportH - TIME_POPOVER_MARGEM - popH));
+
+  popover.style.top  = `${top}px`;
   popover.style.left = `${left}px`;
 }
 
@@ -509,7 +525,28 @@ function positionPopoverNearInput(popover, input, iconBtn) {
 function initTimePicker(inputId) {
   const input = document.getElementById(inputId);
   if (!input) return;
-  const btn = document.getElementById(`${inputId}-picker-btn`);
+
+  /* ─────────────────────────────────────────────
+     BOTÃO DO RELÓGIO — elemento próprio e independente
+     ─────────────────────────────────────────────
+     v13: o botão deixou de existir no HTML estático (agenda.js).
+     Ele é criado e inserido AQUI, por este módulo — sua existência,
+     seus atributos e sua posição no DOM são decisão exclusiva deste
+     código, nunca compartilhados com o markup do campo de texto.
+     Ele continua VISUALMENTE dentro do campo (mesmo CSS de sempre:
+     .agenda-time-icon-btn, position:absolute dentro de
+     .agenda-picker-field — nada mudou aí), mas tecnicamente é um
+     elemento irmão do input, nunca um descendente/parte dele.
+     positionTimePickerPopover() só recebe ESTE `btn` — nunca o
+     `input` — como fica explícito logo abaixo. */
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'agenda-time-icon-btn';
+  btn.id = `${inputId}-picker-btn`;
+  btn.setAttribute('aria-label', 'Abrir seletor de horário');
+  btn.tabIndex = -1;
+  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5V8l2.5 2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  input.insertAdjacentElement('afterend', btn);
 
   let popover = null;
 
@@ -637,7 +674,7 @@ function open() {
     if (popover || !btn) return;
     popover = build();
     document.body.appendChild(popover);
-    positionPopoverNearInput(popover, input);           // was: positionPopoverNearIcon(popover, btn)
+    positionTimePickerPopover(popover, btn);
     requestAnimationFrame(() => popover && popover.classList.add('open'));
     input.classList.add('is-open');
     syncActive();
@@ -660,10 +697,10 @@ function open() {
   }
 
 function onScrollReposition() {
-    if (popover) positionPopoverNearInput(popover, input);   // was: if (popover && btn) positionPopoverNearIcon(popover, btn)
+    if (popover) positionTimePickerPopover(popover, btn);
   }
   function onResizeReposition() {
-    if (popover) positionPopoverNearInput(popover, input);   // was: if (popover && btn) positionPopoverNearIcon(popover, btn)
+    if (popover) positionTimePickerPopover(popover, btn);
   }
 
   if (btn) {
