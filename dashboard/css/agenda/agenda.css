@@ -435,6 +435,11 @@
 .agenda-optional { font-weight: 400; text-transform: none; color: var(--text-3); font-size: 10.5px; }
 .agenda-field-hint { font-size: 11px; color: var(--text-3); line-height: 1.4; margin-top: -4px; }
 .agenda-field-hint.is-active { color: var(--accent-lite); }
+/* v16 — variante de erro do hint (reaproveita o MESMO elemento/classe
+   .agenda-field-hint já usado para dicas neutras — nenhuma classe/
+   componente novo foi criado, só esta variante de cor). Usada pelo
+   campo "Concluir até" quando o ano ainda não tem os 4 dígitos. */
+.agenda-field-hint.is-error { color: var(--red); }
 .agenda-input {
   background: var(--border); border: 1px solid var(--border-2); border-radius: var(--r-sm);
   padding: 9px 12px; color: var(--text-1); font-size: 13px; width: 100%;
@@ -443,6 +448,12 @@
 .agenda-input:focus { border-color: rgba(108,99,255,.6); box-shadow: 0 0 0 3px var(--accent-dim); }
 .agenda-input::placeholder { color: var(--text-3); }
 .agenda-input[type="time"] { color-scheme: dark; }
+/* v16 — estado de erro do próprio input, no MESMO padrão visual do
+   :focus acima (borda + halo), só trocando a cor de acento (--accent)
+   pela cor de perigo (--red) já usada em .agenda-btn-danger/
+   .agenda-week-menu-item-danger etc. Usado pelo campo "Concluir até"
+   enquanto o ano estiver incompleto (menos de 4 dígitos). */
+.agenda-input.is-error { border-color: rgba(255,92,106,.55); box-shadow: 0 0 0 3px rgba(255,92,106,.14); }
 .agenda-select {
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239896A8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");

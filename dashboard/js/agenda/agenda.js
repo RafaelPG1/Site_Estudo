@@ -156,6 +156,28 @@ export function toISO(date) {
   return `${y}-${m}-${d}`;
 }
 
+/* v14 — Conversão pura de EXIBIÇÃO para o campo "Concluir até" (Metas):
+   o dado salvo em goal.deadline (state.goals → localStorage) continua
+   100% em ISO "AAAA-MM-DD", exatamente como sempre foi — nenhuma
+   lógica de metas/salvamento foi tocada. Estas duas funções só convertem
+   a string no exato instante em que ela entra/sai do campo de texto
+   (ver agenda_pages.js: openGoalEditor/saveGoalFromEditor), para que o
+   input mostre "DD/MM/AAAA" ao usuário sem exigir mudança no formato
+   persistido. Nenhuma outra tela/campo usa isso. */
+export function isoToBR(iso) {
+  const v = (iso || '').trim();
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v);
+  if (!m) return '';
+  return `${m[3]}/${m[2]}/${m[1]}`;
+}
+
+export function brToISO(br) {
+  const v = (br || '').trim();
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(v);
+  if (!m) return '';
+  return `${m[3]}-${m[2]}-${m[1]}`;
+}
+
 export function formatRange(monday) {
   const sunday = new Date(monday);
   sunday.setDate(sunday.getDate() + 6);
@@ -351,8 +373,9 @@ const TEMPLATE_HTML = `
         <div class="agenda-form-group" id="agenda-goal-deadline-group" style="display:none">
           <label class="agenda-form-label" for="agenda-goal-deadline">Concluir até</label>
           <div class="agenda-picker-field">
-            <input class="agenda-input agenda-picker-input" type="text" id="agenda-goal-deadline" placeholder="Selecionar data" readonly autocomplete="off" />
+            <input class="agenda-input agenda-picker-input agenda-time-input" type="text" id="agenda-goal-deadline" placeholder="DD/MM/AAAA" autocomplete="off" inputmode="numeric" />
           </div>
+          <span class="agenda-field-hint" id="agenda-goal-deadline-hint" style="display:none"></span>
         </div>
       </div>
       <div class="agenda-form-group">

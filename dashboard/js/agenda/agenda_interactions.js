@@ -778,23 +778,123 @@ function initDatePicker(inputId) {
   const input = document.getElementById(inputId);
   if (!input) return;
 
+  /* ─────────────────────────────────────────────
+     BOTÃO DO CALENDÁRIO — elemento próprio e independente
+     ─────────────────────────────────────────────
+     v14: mesmo padrão do botão de relógio em initTimePicker() —
+     criado e inserido AQUI, como irmão do input (nunca descendente/
+     parte dele), reaproveitando a MESMA classe `.agenda-time-icon-btn`
+     (posicionamento absoluto dentro de `.agenda-picker-field`, já
+     definida em agenda.css — nenhum CSS novo foi criado). Quem abre
+     o popover agora é exclusivamente este botão; o clique no input
+     não abre mais nada, só edita texto normalmente. */
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'agenda-time-icon-btn';
+  btn.id = `${inputId}-picker-btn`;
+  btn.setAttribute('aria-label', 'Abrir seletor de data');
+  btn.tabIndex = -1;
+  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M2 6.5h12M5 1.5v2M11 1.5v2" stroke-linecap="round"/></svg>';
+  input.insertAdjacentElement('afterend', btn);
+
+  /* v16 — hint discreto opcional (ver agenda.js: só o campo
+     "Concluir até" tem o span `${inputId}-hint`; outros campos que
+     usem initDatePicker no futuro simplesmente não terão esse
+     elemento, e tudo abaixo já lida com isso via `if (hint)`). */
+  const hint = document.getElementById(`${inputId}-hint`);
+
+  /* Liga/desliga o estado de "ano incompleto" — borda vermelha no
+     input (mesmo padrão visual de --red já usado em .agenda-btn-danger
+     etc.) e, se existir, a mensagem discreta no hint. Nada aqui mexe
+     no valor do campo, só na aparência. */
+  function setYearError(active) {
+    input.classList.toggle('is-error', active);
+    if (hint) {
+      hint.classList.toggle('is-error', active);
+      hint.textContent = active ? 'O ano precisa ter 4 dígitos.' : '';
+      hint.style.display = active ? '' : 'none';
+    }
+  }
+
   let popover = null;
   let viewDate = new Date();
 
+  /* Valor exibido/digitado é sempre "DD/MM/AAAA" — mesmo padrão de
+     "o que o usuário vê é o que está no .value" já usado no campo de
+     horário ("HH:MM"). A conversão para o formato ISO que
+     saveGoalFromEditor() grava continua acontecendo só na leitura do
+     campo (ver brToISO() em agenda_pages.js) — nada aqui muda o dado
+     salvo, só a experiência de preenchimento. */
   function parseValue() {
     const v = input.value.trim();
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) return null;
-    const [y, m, d] = v.split('-').map(Number);
-    return new Date(y, m - 1, d);
+    const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(v);
+    if (!m) return null;
+    const d = Number(m[1]), mo = Number(m[2]), y = Number(m[3]);
+    const date = new Date(y, mo - 1, d);
+    if (date.getMonth() !== mo - 1) return null; // dia inválido para o mês (ex.: 31/02)
+    return date;
+  }
+
+  function formatBR(date) {
+    const d = String(date.getDate()).padStart(2, '0');
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const y = date.getFullYear();
+    return `${d}/${m}/${y}`;
   }
 
   function commit(date) {
-    const iso = toISO(date);
-    if (input.value !== iso) { input.value = iso; dispatchValueChange(input); }
+    const br = formatBR(date);
+    if (input.value !== br) { input.value = br; dispatchValueChange(input); }
   }
 
   function clearValue() {
     if (input.value !== '') { input.value = ''; dispatchValueChange(input); }
+  }
+
+  /* ── Formatação + validação EM TEMPO REAL (a cada tecla) ──
+     v15: antes a interpretação de "25122026" só virava "25/12/2026"
+     no blur/Enter (mesmo timing usado pelo campo de horário). Agora
+     as barras aparecem já durante a digitação, e cada bloco (dia,
+     depois mês) é grampeado para um intervalo válido assim que
+     completa seus 2 dígitos — sem esperar o valor inteiro. O ano
+     (últimos 4 dígitos) nunca é tocado aqui, como pedido. */
+  function clampSegment(twoDigits, min, max) {
+    if (twoDigits.length < 2) return twoDigits; // ainda incompleto, nada a grampear
+    const n = Math.max(min, Math.min(max, Number(twoDigits)));
+    return String(n).padStart(2, '0');
+  }
+
+  function formatDigitsLive(digits) {
+    const day = clampSegment(digits.slice(0, 2), 1, 31);
+    const month = clampSegment(digits.slice(2, 4), 1, 12);
+    const year = digits.slice(4, 8);
+    let out = day;
+    if (digits.length >= 2) out += '/';
+    out += month;
+    if (digits.length >= 4) out += '/';
+    out += year;
+    return out;
+  }
+
+  /* Validação FINAL contra o calendário real (dias por mês, ano
+     bissexto) — o clamp por segmento acima não sabe quantos dias tem
+     cada mês, então só entra em ação aqui, assim que os 8 dígitos já
+     existem (ex.: 31/02 → 28 ou 29, conforme o ano). Mesma regra de
+     "cai no último dia real do mês" que já existia. */
+  function clampToRealDate(d, mo, y) {
+    let date = new Date(y, mo - 1, d);
+    if (date.getMonth() !== mo - 1) date = new Date(y, mo, 0);
+    return date;
+  }
+
+  function formatTypedValue() {
+    const raw = input.value.trim();
+    if (!raw) { clearValue(); return; }
+    // Ano com menos de 4 dígitos = data ainda em edição, não inválida.
+    // A formatação/clamp de dia e mês e a validação de calendário real
+    // (quando o ano já tem 4 dígitos) já acontecem a cada tecla, no
+    // listener de 'input' — aqui, no blur/Enter, não há mais nada a
+    // fazer além de preservar exatamente o que já está no campo.
   }
 
   function renderGrid() {
@@ -839,20 +939,19 @@ function initDatePicker(inputId) {
   }
 
   function repositionSoon() {
-    if (popover) requestAnimationFrame(() => popover && positionPopoverNear(popover, input));
+    if (popover) requestAnimationFrame(() => popover && positionPopoverNear(popover, btn));
   }
 
   function open() {
-    if (popover) return;
+    if (popover || !btn) return;
     const existing = parseValue();
     viewDate = existing ? new Date(existing) : new Date();
     popover = build();
     document.body.appendChild(popover);
     renderGrid();
-    positionPopoverNear(popover, input);
+    positionPopoverNear(popover, btn);
     requestAnimationFrame(() => popover && popover.classList.add('open'));
     input.classList.add('is-open');
-    input.focus();
     window.addEventListener('scroll', onOutsideScroll, true);
     window.addEventListener('resize', close);
   }
@@ -872,17 +971,110 @@ function initDatePicker(inputId) {
     if (popover && !popover.contains(e.target)) close();
   }
 
-  input.addEventListener('click', () => { popover ? close() : open(); });
+  /* Quem abre/fecha o popover agora é exclusivamente o botão de
+     calendário — mesmo comportamento do botão de relógio. O input
+     só recebe digitação normal de texto. */
+  if (btn) {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      popover ? close() : open();
+    });
+  }
 
+  // Formatação + clamp acontecem a cada tecla agora (ver
+  // formatDigitsLive/clampSegment acima). O cursor é reposicionado
+  // contando DÍGITOS (não caracteres) antes dele na digitação
+  // original, e recolocado depois do mesmo número de dígitos no
+  // resultado formatado — as barras nunca "prendem" o cursor.
+  input.addEventListener('input', () => {
+    const raw = input.value;
+    const caret = input.selectionStart ?? raw.length;
+    const digitsBeforeCaret = (raw.slice(0, caret).match(/\d/g) || []).length;
+
+    let digits = (raw.match(/\d/g) || []).slice(0, 8).join('');
+    let formatted = formatDigitsLive(digits);
+
+    // Validação final contra o calendário real assim que os 8
+    // dígitos já existem (ex.: 31/02 → 28 ou 29) — sem esperar blur.
+    if (digits.length === 8) {
+      const d = Number(formatted.slice(0, 2));
+      const mo = Number(formatted.slice(3, 5));
+      const y = Number(formatted.slice(6, 10));
+      formatted = formatBR(clampToRealDate(d, mo, y));
+    }
+
+    if (input.value !== formatted) input.value = formatted;
+
+    // Ano incompleto = dia e mês já ocupam os 4 primeiros dígitos
+    // (digits.length > 4) mas o ano ainda não fechou os seus 4
+    // (digits.length < 8). Só o AAAA entra nesse cálculo — DD/MM
+    // continuam sem nenhum estado de erro, como pedido.
+    setYearError(digits.length > 4 && digits.length < 8);
+
+    let pos = formatted.length, count = 0;
+    for (let i = 0; i < formatted.length; i++) {
+      if (/\d/.test(formatted[i])) count++;
+      if (count === digitsBeforeCaret) { pos = i + 1; break; }
+    }
+    if (digitsBeforeCaret === 0) pos = 0;
+    while (formatted[pos] === '/') pos++; // pula a barra recém-inserida, em vez de parar antes dela
+    input.setSelectionRange(pos, pos);
+
+    if (popover) {
+      const p = parseValue();
+      if (p) { viewDate = new Date(p); renderGrid(); }
+    }
+  });
+
+  input.addEventListener('blur', formatTypedValue);
   input.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') { e.stopImmediatePropagation(); close(); return; }
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopImmediatePropagation(); popover ? close() : open(); return; }
-    if (e.key === 'Backspace' || e.key === 'Delete') { e.preventDefault(); e.stopImmediatePropagation(); clearValue(); }
+    if (e.key === 'Enter') {
+      const digitCount = (input.value.match(/\d/g) || []).length;
+      if (digitCount > 4 && digitCount < 8) {
+        // Ano incompleto: não limpa, não conclui, não fecha nada —
+        // só reforça visualmente o erro e mantém o foco no campo,
+        // exatamente como está, para o usuário continuar digitando.
+        e.preventDefault();
+        setYearError(true);
+        return;
+      }
+      // Vazio → apaga (comportamento já existente). Data completa
+      // (8 dígitos) → já foi formatada/validada contra o calendário
+      // real a cada tecla; Enter aqui só conclui a edição normalmente.
+      formatTypedValue();
+      // Conclui a edição (mesmo resultado de clicar fora do campo)
+      // sempre que o valor já estiver num estado "terminado": vazio
+      // (apagado acima) ou uma data completa e válida (parseValue()
+      // só retorna algo quando bate DD/MM/AAAA com dia/mês reais).
+      // Nos demais casos (dia/mês ainda incompletos, sem os 8
+      // dígitos) nada muda aqui — o foco continua no campo, como já
+      // acontecia antes desta correção.
+      if (digitCount === 0 || parseValue()) {
+        if (popover) close();
+        input.blur();
+      }
+      return;
+    }
+    if (e.key === 'Escape' && popover) { close(); return; }
+    // Backspace logo depois de uma barra automática: remove a barra
+    // E o dígito anterior a ela numa tacada só, senão o backspace
+    // "prenderia" nas barras (o próximo ciclo de formatação
+    // reinseriria a barra sozinho, e o dígito ficaria intocado).
+    if (e.key === 'Backspace' && input.selectionStart === input.selectionEnd) {
+      const pos = input.selectionStart;
+      if (pos > 0 && input.value[pos - 1] === '/') {
+        e.preventDefault();
+        input.value = input.value.slice(0, pos - 2) + input.value.slice(pos);
+        input.setSelectionRange(pos - 2, pos - 2);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    }
   });
 
   document.addEventListener('mousedown', (e) => {
     if (!popover) return;
-    if (input.contains(e.target) || popover.contains(e.target)) return;
+    if (input.contains(e.target) || popover.contains(e.target) || (btn && btn.contains(e.target))) return;
     close();
   });
 }

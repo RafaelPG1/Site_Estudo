@@ -11,7 +11,7 @@ import {
   state, DAY_SHORT, MONTH_NAMES, uid,
   getWeekKey, isCurrentWeek, formatRange, getAllSessionsFlat,
   findSessionRef, forEachSession, isPlanned, timeToMinutes, toISO,
-  saveGoals, showToast, escHtml,
+  saveGoals, showToast, escHtml, isoToBR, brToISO,
 } from './agenda.js';
 
 import { confirmDialog } from './agenda_interactions.js';
@@ -147,7 +147,7 @@ export function openGoalEditor(goalId) {
   document.getElementById('agenda-goal-title').value = goal.title || '';
   document.getElementById('agenda-goal-description').value = goal.description || '';
   document.getElementById('agenda-goal-period').value = goal.period || 'week';
-  document.getElementById('agenda-goal-deadline').value = goal.deadline || '';
+  document.getElementById('agenda-goal-deadline').value = isoToBR(goal.deadline || '');
   document.getElementById('agenda-goal-deadline-group').style.display = goal.period === 'custom' ? '' : 'none';
   document.getElementById('agenda-goal-subject').value = goal.subject || '';
   document.getElementById('agenda-goal-manual-progress').value = String(goal.manualProgress || 0);
@@ -221,7 +221,7 @@ export function saveGoalFromEditor() {
 
   const description = document.getElementById('agenda-goal-description').value.trim();
   const period = document.getElementById('agenda-goal-period').value;
-  const deadline = document.getElementById('agenda-goal-deadline').value;
+  const deadline = brToISO(document.getElementById('agenda-goal-deadline').value);
   const linkMode = state.goalModal.linkMode;
   const subject = document.getElementById('agenda-goal-subject').value.trim();
   const manualProgress = Number(document.getElementById('agenda-goal-manual-progress').value) || 0;
