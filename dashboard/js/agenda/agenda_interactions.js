@@ -10,24 +10,14 @@
    pessoal/calendar/calendar.js, trocando IDs/classes para o
    prefixo `agenda-*` usado no template deste módulo.
 
-   v10 — Adiciona initTimePicker()/initDatePicker(): os campos
-   de Hora inicial/final, Rotina (início/fim) e Data (meta
-   "Concluir até") deixaram de ser <input type="time"/"date">
-   nativos (preenchimento caractere a caractere, com máscara
-   imposta pelo navegador). Continuam sendo <input> reais com
-   o MESMO id — só a FORMA de preencher muda:
-     • clique  → abre um seletor customizado (relógio de duas
-                 colunas / calendário mensal) no padrão visual
-                 do Dashboard;
-     • teclado → Enter/Espaço abre e fecha o seletor, setas ↑/↓
-                 funcionam como spinner (Shift = pula hora
-                 inteira), dígitos digitados em sequência (ex.:
-                 "1430") preenchem sem ordem/máscara forçada, e
-                 Backspace/Delete limpa o campo (preserva o
-                 conceito de estudo "planejado", sem horário).
-   Nenhuma outra função deste arquivo teve sua lógica interna
-   alterada: os pickers apenas gravam `.value` e disparam
-   'input'/'change' no mesmo elemento que a lógica já lia.
+   Os campos de Hora inicial/final, Rotina (início/fim) e Data
+   (meta "Concluir até") são <input type="text"> comuns, de
+   digitação manual — sem nenhum seletor/popover associado.
+   initTimeInput()/initDateInput() só formatam e validam o que é
+   digitado (máscara progressiva, limites de caracteres, correção
+   de dia/mês/ano, formato HH:MM / DD/MM/AAAA), gravando o
+   resultado em `.value` e disparando 'input'/'change' no mesmo
+   elemento que a lógica de salvamento já lê.
    ============================================= */
 
 import {
@@ -376,179 +366,27 @@ export function initScheduledToPlannedDrag(card, weekKey, dayIdx, sessionId) {
   });
 }
 
-/* ══════════════════ CAMPOS INTELIGENTES DE HORA/DATA ══════════════════
-   Ver cabeçalho do arquivo e o bloco "CAMPOS INTELIGENTES DE
-   DATA/HORA" em agenda.css. Ambas as funções abaixo operam sobre o
-   MESMO <input id="..."> que a lógica de saveSession()/
-   saveRoutineModal()/saveGoalFromEditor() já lê via `.value` — só
-   trocam a experiência de preenchimento, nunca o dado gravado. */
+/* ══════════════════ CAMPOS DE HORA/DATA (digitação manual) ══════════════════
+   Os campos de Hora inicial/final, Rotina (início/fim) e Data (meta
+   "Concluir até") são <input type="text"> comuns, preenchidos por
+   digitação livre — sem nenhum seletor/popover associado. Ambas as
+   funções abaixo (initTimeInput/initDateInput) só cuidam de formatar e
+   validar o que é digitado (máscara progressiva, limites de caracteres,
+   correção de dia/mês/ano) sobre o MESMO <input id="..."> que a lógica
+   de saveSession()/saveRoutineModal()/saveGoalFromEditor() já lê via
+   `.value` — nenhum dado gravado muda, só a formatação em tela. */
 
 function dispatchValueChange(input) {
   input.dispatchEvent(new Event('input', { bubbles: true }));
   input.dispatchEvent(new Event('change', { bubbles: true }));
 }
 
-function positionPopoverNear(popover, anchor) {
-  const GAP = 8;    // distância vertical entre o input e o popover
-  const MARGIN = 8; // respiro mínimo em relação às bordas do limite (modal/janela)
-
-  const rect = anchor.getBoundingClientRect();
-  const popRect = popover.getBoundingClientRect();
-
-  // Limite de contenção: o modal (.agenda-modal) mais próximo do input,
-  // se existir — assim o popover nunca ultrapassa as bordas do modal
-  // mesmo que a janela seja bem maior. Fora de um modal (ex.: dentro da
-  // aba "Metas"), cai de volta para os limites da própria janela.
-  const modalEl = anchor.closest('.agenda-modal');
-  const boundsRect = modalEl ? modalEl.getBoundingClientRect() : null;
-  const boundLeft   = Math.max(MARGIN, boundsRect ? boundsRect.left : MARGIN);
-  const boundRight  = Math.min(window.innerWidth - MARGIN, boundsRect ? boundsRect.right : window.innerWidth - MARGIN);
-  const boundTop    = MARGIN;
-  const boundBottom = window.innerHeight - MARGIN;
-
-  // Horizontal: centralizado em relação ao input, depois "empurrado"
-  // para dentro dos limites caso estoure de um dos lados — o popover
-  // fica visualmente ancorado ao campo, e não a uma posição fixa.
-  let left = rect.left + rect.width / 2 - popRect.width / 2;
-  left = Math.min(left, boundRight - popRect.width);
-  left = Math.max(left, boundLeft);
-
-  // Vertical: abre abaixo do input por padrão; se não houver espaço até
-  // o limite inferior, inverte para cima do input automaticamente; se
-  // nenhum dos dois lados tiver espaço suficiente (campo muito perto do
-  // topo/rodapé), apenas garante que o popover fique inteiramente
-  // dentro dos limites, o mais próximo possível do input.
-  const spaceBelow = boundBottom - (rect.bottom + GAP);
-  const spaceAbove = (rect.top - GAP) - boundTop;
-  let top;
-  if (popRect.height <= spaceBelow) {
-    top = rect.bottom + GAP; // cabe abaixo (comportamento padrão)
-  } else if (popRect.height <= spaceAbove) {
-    top = rect.top - GAP - popRect.height; // não cabe abaixo, mas cabe acima
-  } else {
-    // não cabe inteiro em nenhum dos dois lados — usa o lado com mais
-    // espaço disponível; o clamp final abaixo garante visibilidade total.
-    top = spaceBelow >= spaceAbove ? rect.bottom + GAP : rect.top - GAP - popRect.height;
-  }
-  top = Math.min(top, boundBottom - popRect.height);
-  top = Math.max(top, boundTop);
-
-  popover.style.top = `${top}px`;
-  popover.style.left = `${left}px`;
-}
-
-/* Registro dos seletores de horário atualmente abertos. Permite
-   fechá-los de fora (ex.: quando o modal principal é fechado) sem
-   acoplar initTimePicker() a closeSessionModal()/closeRoutineModal()
-   — cada instância só se registra/desregistra a si mesma. */
-let _openTimePickerClosers = [];
-function closeAllTimePickers() {
-  [..._openTimePickerClosers].forEach(fn => fn());
-}
-
-/* ─────────────────────────────────────────────
-   POSICIONAMENTO DO POPOVER DE HORÁRIO
-   ─────────────────────────────────────────────
-   Âncora ÚNICA E EXCLUSIVA: o botão do relógio (iconBtn). Esta
-   função nem RECEBE o input como parâmetro — estruturalmente
-   impossível dele participar do cálculo horizontal (antes havia um
-   `iconBtn ?? input`, um fallback silencioso que mascarava qualquer
-   chamada errada; foi removido de propósito).
-
-   Regra: a borda DIREITA do popover fica colada à borda ESQUERDA do
-   ícone, com um respiro fixo de poucos pixels. Sem espaço à
-   esquerda, abre à direita do ícone. Verticalmente, abre logo
-   abaixo do próprio ícone (não do campo — o ícone já fica
-   centralizado verticalmente dentro do campo via
-   `transform: translateY(-50%)` em agenda.css, então a posição
-   vertical dele já reflete corretamente a altura do campo; usar o
-   ícone aqui também mantém a função inteira ancorada em UM único
-   elemento, sem exceção). Sobe se não houver espaço abaixo. Sempre
-   clampado para nunca vazar da viewport, em qualquer resolução/
-   zoom/scroll.
-
-   Tamanho do popover via offsetWidth/offsetHeight (não
-   getBoundingClientRect) — imune ao `scale(.98)` do estado fechado
-   (ver `.agenda-picker-popover` em agenda.css), que só vira
-   `scale(1)` um frame depois de posicionarmos. */
-const TIME_POPOVER_GAP_X = 4;  // respiro horizontal entre o popover e o ícone
-const TIME_POPOVER_GAP_Y = 4;  // respiro vertical entre o ícone e o popover
-const TIME_POPOVER_MARGEM = 8; // nunca colar nas bordas da viewport
-
-function positionTimePickerPopover(popover, iconBtn) {
-  if (!(iconBtn instanceof Element)) {
-    console.error('[agenda] positionTimePickerPopover chamado sem um botão de ícone válido.', iconBtn);
-    return;
-  }
-
-  const iconRect = iconBtn.getBoundingClientRect();
-
-  // Tamanho de LAYOUT do popover — não o tamanho pintado (que ainda
-  // pode estar sob o `scale(.98)` do estado fechado nesse instante).
-  const popW = popover.offsetWidth;
-  const popH = popover.offsetHeight;
-
-  const viewportW = window.innerWidth;
-  const viewportH = window.innerHeight;
-
-  // ── Horizontal: borda direita do popover = borda esquerda do
-  //    ícone, com o respiro fixo. Sem espaço à esquerda → abre à
-  //    direita do ícone. Único dado de entrada: iconRect. ──
-  let left = iconRect.left - TIME_POPOVER_GAP_X - popW;
-  if (left < TIME_POPOVER_MARGEM) {
-    left = iconRect.right + TIME_POPOVER_GAP_X;
-  }
-  left = Math.max(TIME_POPOVER_MARGEM, Math.min(left, viewportW - TIME_POPOVER_MARGEM - popW));
-
-  // ── Vertical: logo abaixo do ícone; sobe se não houver espaço. ──
-  let top = iconRect.bottom + TIME_POPOVER_GAP_Y;
-  const estouraEmbaixo = top + popH > viewportH - TIME_POPOVER_MARGEM;
-  if (estouraEmbaixo) {
-    top = iconRect.top - TIME_POPOVER_GAP_Y - popH;
-  }
-  top = Math.max(TIME_POPOVER_MARGEM, Math.min(top, viewportH - TIME_POPOVER_MARGEM - popH));
-
-  popover.style.top  = `${top}px`;
-  popover.style.left = `${left}px`;
-}
-
-/* ── Seletor de hora: duas colunas roláveis (hora / minuto) ──
-   v11 — O input voltou a ser um campo de texto comum (sem
-   readonly): a digitação livre ("8"→08:00, "830"→08:30,
-   "1430"→14:30, "08:30"→08:30) é a forma PRINCIPAL de uso e é
-   formatada apenas ao perder o foco ou confirmar com Enter — não
-   mais interceptada tecla a tecla. O clique no input NÃO abre
-   mais o seletor; quem abre é o botão de relógio
-   (.agenda-time-icon-btn) ao lado, adicionado em TEMPLATE_HTML.
-   O seletor em si (build/open/close/syncActive/scrollToActive)
-   não teve nenhuma lógica interna alterada. */
-function initTimePicker(inputId) {
+/* ── Hora (HH:MM): digitação livre, ex.: "8"→08:00, "830"→08:30,
+   "1430"→14:30, "08:30"→08:30 — formatada apenas ao perder o foco ou
+   confirmar com Enter. ── */
+function initTimeInput(inputId) {
   const input = document.getElementById(inputId);
   if (!input) return;
-
-  /* ─────────────────────────────────────────────
-     BOTÃO DO RELÓGIO — elemento próprio e independente
-     ─────────────────────────────────────────────
-     v13: o botão deixou de existir no HTML estático (agenda.js).
-     Ele é criado e inserido AQUI, por este módulo — sua existência,
-     seus atributos e sua posição no DOM são decisão exclusiva deste
-     código, nunca compartilhados com o markup do campo de texto.
-     Ele continua VISUALMENTE dentro do campo (mesmo CSS de sempre:
-     .agenda-time-icon-btn, position:absolute dentro de
-     .agenda-picker-field — nada mudou aí), mas tecnicamente é um
-     elemento irmão do input, nunca um descendente/parte dele.
-     positionTimePickerPopover() só recebe ESTE `btn` — nunca o
-     `input` — como fica explícito logo abaixo. */
-  const btn = document.createElement('button');
-  btn.type = 'button';
-  btn.className = 'agenda-time-icon-btn';
-  btn.id = `${inputId}-picker-btn`;
-  btn.setAttribute('aria-label', 'Abrir seletor de horário');
-  btn.tabIndex = -1;
-  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5V8l2.5 2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-  input.insertAdjacentElement('afterend', btn);
-
-  let popover = null;
 
   function currentMinutes() {
     const v = input.value.trim();
@@ -587,137 +425,14 @@ function initTimePicker(inputId) {
     const mins = parseFreeTyped(raw);
     if (mins === null) { clearValue(); return; }
     commit(mins);
-    if (popover) { syncActive(); scrollToActive(); }
   }
 
-  function syncActive() {
-    if (!popover) return;
-    const mins = currentMinutes();
-    const h = mins === null ? null : Math.floor(mins / 60);
-    const m = mins === null ? null : mins % 60;
-    popover.querySelectorAll('[data-hour]').forEach(el => {
-      el.classList.toggle('active', h !== null && Number(el.dataset.hour) === h);
-    });
-    popover.querySelectorAll('[data-min]').forEach(el => {
-      el.classList.toggle('active', m !== null && Number(el.dataset.min) === Math.round(m / 5) * 5 % 60);
-    });
-  }
-
-  function scrollToActive() {
-    if (!popover) return;
-    popover.querySelector('[data-hour].active')?.scrollIntoView({ block: 'center' });
-    popover.querySelector('[data-min].active')?.scrollIntoView({ block: 'center' });
-  }
-
-  function build() {
-    const pop = document.createElement('div');
-    pop.className = 'agenda-picker-popover agenda-time-popover';
-
-    const cols = document.createElement('div');
-    cols.className = 'agenda-time-cols';
-
-    const hourCol = document.createElement('div');
-    hourCol.className = 'agenda-time-col';
-    for (let h = 0; h < 24; h++) {
-      const opt = document.createElement('div');
-      opt.className = 'agenda-time-opt';
-      opt.dataset.hour = String(h);
-      opt.textContent = String(h).padStart(2, '0');
-      hourCol.appendChild(opt);
-    }
-
-    const sep = document.createElement('div');
-    sep.className = 'agenda-time-sep';
-    sep.textContent = ':';
-
-    const minCol = document.createElement('div');
-    minCol.className = 'agenda-time-col';
-    for (let m = 0; m < 60; m += 5) {
-      const opt = document.createElement('div');
-      opt.className = 'agenda-time-opt';
-      opt.dataset.min = String(m);
-      opt.textContent = String(m).padStart(2, '0');
-      minCol.appendChild(opt);
-    }
-
-    cols.appendChild(hourCol);
-    cols.appendChild(sep);
-    cols.appendChild(minCol);
-
-    const footer = document.createElement('div');
-    footer.className = 'agenda-time-popover-footer';
-    footer.innerHTML = `<span class="agenda-time-quick-hint">Digite, ex.: 1430</span><button type="button" class="agenda-time-clear">Limpar</button>`;
-
-    pop.appendChild(cols);
-    pop.appendChild(footer);
-
-    cols.addEventListener('click', (e) => {
-      const hourOpt = e.target.closest('[data-hour]');
-      const minOpt = e.target.closest('[data-min]');
-      if (!hourOpt && !minOpt) return;
-      const mins = currentMinutes();
-      const now = new Date();
-      let h = mins === null ? now.getHours() : Math.floor(mins / 60);
-      let m = mins === null ? Math.round(now.getMinutes() / 5) * 5 : mins % 60;
-      if (hourOpt) h = Number(hourOpt.dataset.hour);
-      if (minOpt) m = Number(minOpt.dataset.min);
-      commit(h * 60 + m);
-      syncActive();
-    });
-
-    footer.querySelector('.agenda-time-clear').addEventListener('click', () => { clearValue(); close(); });
-
-    return pop;
-  }
-
-function open() {
-    if (popover || !btn) return;
-    popover = build();
-    document.body.appendChild(popover);
-    positionTimePickerPopover(popover, btn);
-    requestAnimationFrame(() => popover && popover.classList.add('open'));
-    input.classList.add('is-open');
-    syncActive();
-    scrollToActive();
-    window.addEventListener('scroll', onScrollReposition, true);
-    window.addEventListener('resize', onResizeReposition);
-    _openTimePickerClosers.push(close);
-  }
-
-  function close() {
-    if (!popover) return;
-    popover.classList.remove('open');
-    input.classList.remove('is-open');
-    const p = popover;
-    popover = null;
-    window.removeEventListener('scroll', onScrollReposition, true);
-    window.removeEventListener('resize', onResizeReposition);
-    _openTimePickerClosers = _openTimePickerClosers.filter(fn => fn !== close);
-    setTimeout(() => p.remove(), 150);
-  }
-
-function onScrollReposition() {
-    if (popover) positionTimePickerPopover(popover, btn);
-  }
-  function onResizeReposition() {
-    if (popover) positionTimePickerPopover(popover, btn);
-  }
-
-  if (btn) {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      popover ? close() : open();
-    });
-  }
-
-  // v12 — digitação livre, porém limitada a dígitos e no máximo 4
-  // caracteres (ex.: "1430"). Sem máscara: os dígitos digitados só
-  // são filtrados/cortados aqui; a interpretação/formatação em
-  // "HH:MM" continua acontecendo só no blur/Enter, via
-  // formatTypedValue(), sem nenhuma mudança de lógica. Valores já
-  // formatados programaticamente ("HH:MM", vindos de commit()/do
-  // seletor) batem no regex abaixo e não são afetados pelo filtro.
+  // Digitação limitada a dígitos e no máximo 4 caracteres (ex.: "1430").
+  // Sem máscara: os dígitos digitados só são filtrados/cortados aqui; a
+  // interpretação/formatação em "HH:MM" continua acontecendo só no
+  // blur/Enter, via formatTypedValue(). Valores já formatados
+  // programaticamente ("HH:MM") batem no regex abaixo e não são
+  // afetados pelo filtro.
   input.addEventListener('input', () => {
     if (/^\d{2}:\d{2}$/.test(input.value)) return;
     const digitsOnly = input.value.replace(/\D/g, '').slice(0, 4);
@@ -732,74 +447,19 @@ function onScrollReposition() {
   input.addEventListener('blur', formatTypedValue);
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') formatTypedValue();
-    else if (e.key === 'Escape' && popover) close();
-  });
-
-  document.addEventListener('mousedown', (e) => {
-    if (!popover) return;
-    if (input.contains(e.target) || popover.contains(e.target) || (btn && btn.contains(e.target))) return;
-    close();
   });
 }
 
-/* ── Seletor de data: calendário mensal ── */
-const MONTH_FULL = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
-
-function buildMonthGrid(viewDate, selectedDate) {
-  const year = viewDate.getFullYear();
-  const month = viewDate.getMonth();
-  const first = new Date(year, month, 1);
-  const startOffset = (first.getDay() + 6) % 7; // 0 = Segunda
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const todayIso = toISO(new Date());
-  const selectedIso = selectedDate ? toISO(selectedDate) : null;
-
-  const cells = [];
-  for (let i = 0; i < startOffset; i++) {
-    const date = new Date(year, month, 1 - (startOffset - i));
-    cells.push({ date, outside: true });
-  }
-  for (let d = 1; d <= daysInMonth; d++) cells.push({ date: new Date(year, month, d), outside: false });
-  while (cells.length < 42) {
-    const date = new Date(year, month, cells.length - startOffset + 1);
-    cells.push({ date, outside: true });
-  }
-
-  return cells.map(c => ({
-    day: c.date.getDate(),
-    date: c.date,
-    outside: c.outside,
-    isToday: toISO(c.date) === todayIso,
-    isSelected: selectedIso !== null && toISO(c.date) === selectedIso,
-  }));
-}
-
-function initDatePicker(inputId) {
+/* ── Data (DD/MM/AAAA): digitação livre, com barras automáticas e
+   validação em tempo real contra o calendário real (dias por mês, ano
+   bissexto). ── */
+function initDateInput(inputId) {
   const input = document.getElementById(inputId);
   if (!input) return;
 
-  /* ─────────────────────────────────────────────
-     BOTÃO DO CALENDÁRIO — elemento próprio e independente
-     ─────────────────────────────────────────────
-     v14: mesmo padrão do botão de relógio em initTimePicker() —
-     criado e inserido AQUI, como irmão do input (nunca descendente/
-     parte dele), reaproveitando a MESMA classe `.agenda-time-icon-btn`
-     (posicionamento absoluto dentro de `.agenda-picker-field`, já
-     definida em agenda.css — nenhum CSS novo foi criado). Quem abre
-     o popover agora é exclusivamente este botão; o clique no input
-     não abre mais nada, só edita texto normalmente. */
-  const btn = document.createElement('button');
-  btn.type = 'button';
-  btn.className = 'agenda-time-icon-btn';
-  btn.id = `${inputId}-picker-btn`;
-  btn.setAttribute('aria-label', 'Abrir seletor de data');
-  btn.tabIndex = -1;
-  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M2 6.5h12M5 1.5v2M11 1.5v2" stroke-linecap="round"/></svg>';
-  input.insertAdjacentElement('afterend', btn);
-
   /* v16 — hint discreto opcional (ver agenda.js: só o campo
      "Concluir até" tem o span `${inputId}-hint`; outros campos que
-     usem initDatePicker no futuro simplesmente não terão esse
+     usem initDateInput no futuro simplesmente não terão esse
      elemento, e tudo abaixo já lida com isso via `if (hint)`). */
   const hint = document.getElementById(`${inputId}-hint`);
 
@@ -815,9 +475,6 @@ function initDatePicker(inputId) {
       hint.style.display = active ? '' : 'none';
     }
   }
-
-  let popover = null;
-  let viewDate = new Date();
 
   /* Valor exibido/digitado é sempre "DD/MM/AAAA" — mesmo padrão de
      "o que o usuário vê é o que está no .value" já usado no campo de
@@ -842,22 +499,15 @@ function initDatePicker(inputId) {
     return `${d}/${m}/${y}`;
   }
 
-  function commit(date) {
-    const br = formatBR(date);
-    if (input.value !== br) { input.value = br; dispatchValueChange(input); }
-  }
-
   function clearValue() {
     if (input.value !== '') { input.value = ''; dispatchValueChange(input); }
   }
 
   /* ── Formatação + validação EM TEMPO REAL (a cada tecla) ──
-     v15: antes a interpretação de "25122026" só virava "25/12/2026"
-     no blur/Enter (mesmo timing usado pelo campo de horário). Agora
-     as barras aparecem já durante a digitação, e cada bloco (dia,
-     depois mês) é grampeado para um intervalo válido assim que
+     "25122026" já vira "25/12/2026" durante a digitação, e cada bloco
+     (dia, depois mês) é grampeado para um intervalo válido assim que
      completa seus 2 dígitos — sem esperar o valor inteiro. O ano
-     (últimos 4 dígitos) nunca é tocado aqui, como pedido. */
+     (últimos 4 dígitos) nunca é tocado aqui. */
   function clampSegment(twoDigits, min, max) {
     if (twoDigits.length < 2) return twoDigits; // ainda incompleto, nada a grampear
     const n = Math.max(min, Math.min(max, Number(twoDigits)));
@@ -897,96 +547,11 @@ function initDatePicker(inputId) {
     // fazer além de preservar exatamente o que já está no campo.
   }
 
-  function renderGrid() {
-    const body = popover.querySelector('.agenda-date-grid');
-    const title = popover.querySelector('.agenda-date-title');
-    title.textContent = `${MONTH_FULL[viewDate.getMonth()]} de ${viewDate.getFullYear()}`;
-    body.innerHTML = '';
-    buildMonthGrid(viewDate, parseValue()).forEach(cell => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'agenda-date-cell'
-        + (cell.outside ? ' is-outside' : '')
-        + (cell.isToday ? ' is-today' : '')
-        + (cell.isSelected ? ' is-selected' : '');
-      btn.textContent = cell.day;
-      btn.addEventListener('click', () => { commit(cell.date); close(); });
-      body.appendChild(btn);
-    });
-  }
-
-  function build() {
-    const pop = document.createElement('div');
-    pop.className = 'agenda-picker-popover agenda-date-popover';
-    pop.innerHTML = `
-      <div class="agenda-date-head">
-        <button type="button" class="agenda-date-nav" data-nav="-1" aria-label="Mês anterior">‹</button>
-        <span class="agenda-date-title"></span>
-        <button type="button" class="agenda-date-nav" data-nav="1" aria-label="Próximo mês">›</button>
-      </div>
-      <div class="agenda-date-weekdays">${DAY_SHORT.map(d => `<span class="agenda-date-weekday">${d[0]}</span>`).join('')}</div>
-      <div class="agenda-date-grid"></div>
-      <div class="agenda-date-footer">
-        <button type="button" class="agenda-date-today-btn">Hoje</button>
-        <button type="button" class="agenda-date-clear">Limpar</button>
-      </div>
-    `;
-    pop.querySelector('[data-nav="-1"]').addEventListener('click', () => { viewDate.setMonth(viewDate.getMonth() - 1); renderGrid(); repositionSoon(); });
-    pop.querySelector('[data-nav="1"]').addEventListener('click', () => { viewDate.setMonth(viewDate.getMonth() + 1); renderGrid(); repositionSoon(); });
-    pop.querySelector('.agenda-date-today-btn').addEventListener('click', () => { commit(new Date()); close(); });
-    pop.querySelector('.agenda-date-clear').addEventListener('click', () => { clearValue(); close(); });
-    return pop;
-  }
-
-  function repositionSoon() {
-    if (popover) requestAnimationFrame(() => popover && positionPopoverNear(popover, btn));
-  }
-
-  function open() {
-    if (popover || !btn) return;
-    const existing = parseValue();
-    viewDate = existing ? new Date(existing) : new Date();
-    popover = build();
-    document.body.appendChild(popover);
-    renderGrid();
-    positionPopoverNear(popover, btn);
-    requestAnimationFrame(() => popover && popover.classList.add('open'));
-    input.classList.add('is-open');
-    window.addEventListener('scroll', onOutsideScroll, true);
-    window.addEventListener('resize', close);
-  }
-
-  function close() {
-    if (!popover) return;
-    popover.classList.remove('open');
-    input.classList.remove('is-open');
-    const p = popover;
-    popover = null;
-    window.removeEventListener('scroll', onOutsideScroll, true);
-    window.removeEventListener('resize', close);
-    setTimeout(() => p.remove(), 150);
-  }
-
-  function onOutsideScroll(e) {
-    if (popover && !popover.contains(e.target)) close();
-  }
-
-  /* Quem abre/fecha o popover agora é exclusivamente o botão de
-     calendário — mesmo comportamento do botão de relógio. O input
-     só recebe digitação normal de texto. */
-  if (btn) {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      popover ? close() : open();
-    });
-  }
-
-  // Formatação + clamp acontecem a cada tecla agora (ver
-  // formatDigitsLive/clampSegment acima). O cursor é reposicionado
-  // contando DÍGITOS (não caracteres) antes dele na digitação
-  // original, e recolocado depois do mesmo número de dígitos no
-  // resultado formatado — as barras nunca "prendem" o cursor.
+  // Formatação + clamp acontecem a cada tecla (ver formatDigitsLive/
+  // clampSegment acima). O cursor é reposicionado contando DÍGITOS
+  // (não caracteres) antes dele na digitação original, e recolocado
+  // depois do mesmo número de dígitos no resultado formatado — as
+  // barras nunca "prendem" o cursor.
   input.addEventListener('input', () => {
     const raw = input.value;
     const caret = input.selectionStart ?? raw.length;
@@ -1009,7 +574,7 @@ function initDatePicker(inputId) {
     // Ano incompleto = dia e mês já ocupam os 4 primeiros dígitos
     // (digits.length > 4) mas o ano ainda não fechou os seus 4
     // (digits.length < 8). Só o AAAA entra nesse cálculo — DD/MM
-    // continuam sem nenhum estado de erro, como pedido.
+    // continuam sem nenhum estado de erro.
     setYearError(digits.length > 4 && digits.length < 8);
 
     let pos = formatted.length, count = 0;
@@ -1020,11 +585,6 @@ function initDatePicker(inputId) {
     if (digitsBeforeCaret === 0) pos = 0;
     while (formatted[pos] === '/') pos++; // pula a barra recém-inserida, em vez de parar antes dela
     input.setSelectionRange(pos, pos);
-
-    if (popover) {
-      const p = parseValue();
-      if (p) { viewDate = new Date(p); renderGrid(); }
-    }
   });
 
   input.addEventListener('blur', formatTypedValue);
@@ -1032,9 +592,9 @@ function initDatePicker(inputId) {
     if (e.key === 'Enter') {
       const digitCount = (input.value.match(/\d/g) || []).length;
       if (digitCount > 4 && digitCount < 8) {
-        // Ano incompleto: não limpa, não conclui, não fecha nada —
-        // só reforça visualmente o erro e mantém o foco no campo,
-        // exatamente como está, para o usuário continuar digitando.
+        // Ano incompleto: não limpa, não conclui — só reforça
+        // visualmente o erro e mantém o foco no campo, para o
+        // usuário continuar digitando.
         e.preventDefault();
         setYearError(true);
         return;
@@ -1043,20 +603,11 @@ function initDatePicker(inputId) {
       // (8 dígitos) → já foi formatada/validada contra o calendário
       // real a cada tecla; Enter aqui só conclui a edição normalmente.
       formatTypedValue();
-      // Conclui a edição (mesmo resultado de clicar fora do campo)
-      // sempre que o valor já estiver num estado "terminado": vazio
-      // (apagado acima) ou uma data completa e válida (parseValue()
-      // só retorna algo quando bate DD/MM/AAAA com dia/mês reais).
-      // Nos demais casos (dia/mês ainda incompletos, sem os 8
-      // dígitos) nada muda aqui — o foco continua no campo, como já
-      // acontecia antes desta correção.
       if (digitCount === 0 || parseValue()) {
-        if (popover) close();
         input.blur();
       }
       return;
     }
-    if (e.key === 'Escape' && popover) { close(); return; }
     // Backspace logo depois de uma barra automática: remove a barra
     // E o dígito anterior a ela numa tacada só, senão o backspace
     // "prenderia" nas barras (o próximo ciclo de formatação
@@ -1070,12 +621,6 @@ function initDatePicker(inputId) {
         input.dispatchEvent(new Event('input', { bubbles: true }));
       }
     }
-  });
-
-  document.addEventListener('mousedown', (e) => {
-    if (!popover) return;
-    if (input.contains(e.target) || popover.contains(e.target) || (btn && btn.contains(e.target))) return;
-    close();
   });
 }
 
@@ -1127,7 +672,6 @@ export function openSessionModal({ weekKey, dayIdx, sessionId }) {
 }
 
 function closeSessionModal() {
-  closeAllTimePickers();
   const overlay = document.getElementById('agenda-modal-session');
   overlay.classList.remove('open');
   overlay.setAttribute('aria-hidden', 'true');
@@ -1319,7 +863,6 @@ function openRoutineModal() {
 }
 
 function closeRoutineModal() {
-  closeAllTimePickers();
   const overlay = document.getElementById('agenda-modal-routine');
   overlay.classList.remove('open');
   overlay.setAttribute('aria-hidden', 'true');
@@ -1509,16 +1052,15 @@ export function initAgendaEventListeners() {
   initAutocomplete('agenda-input-subject', 'agenda-subject-suggestions');
   initAutocomplete('agenda-goal-subject', 'agenda-goal-subject-suggestions');
 
-  // Campos inteligentes de hora/data — registrados ANTES do listener de
-  // "Enter salva o formulário" abaixo, para que Enter/Espaço nesses campos
-  // controle o seletor (abrir/fechar) em vez de disparar saveSession()
-  // imediatamente (o handler de teclado de cada picker usa
-  // stopImmediatePropagation() para isso).
-  initTimePicker('agenda-input-time');
-  initTimePicker('agenda-input-time-end');
-  initTimePicker('agenda-routine-start');
-  initTimePicker('agenda-routine-end');
-  initDatePicker('agenda-goal-deadline');
+  // Campos de hora/data — formatação e validação de digitação,
+  // registrados ANTES do listener de "Enter salva o formulário" abaixo,
+  // para que Enter nesses campos apenas formate o valor em vez de
+  // disparar saveSession() imediatamente.
+  initTimeInput('agenda-input-time');
+  initTimeInput('agenda-input-time-end');
+  initTimeInput('agenda-routine-start');
+  initTimeInput('agenda-routine-end');
+  initDateInput('agenda-goal-deadline');
 
   ['agenda-input-time', 'agenda-input-time-end', 'agenda-input-subject'].forEach(id => {
     document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); saveSession(); } });

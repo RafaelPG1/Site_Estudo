@@ -27,17 +27,12 @@
    persistência — os demais arquivos do módulo (agenda_render.js,
    agenda_interactions.js, agenda_pages.js) importam tudo daqui.
 
-   v10 — Campos de Hora inicial/final (modal "Novo estudo" e
-   modal "Rotina de estudos") e o campo de Data (meta "Concluir
-   até") deixaram de ser <input type="time"> / <input type="date">
-   nativos. Continuam sendo <input> reais com o MESMO id (por
-   isso .value/.focus()/eventos 'input'/'change' seguem
-   funcionando sem qualquer mudança na lógica de
-   agenda_interactions.js), mas agora são type="text" + readonly,
-   preenchidos através de um seletor customizado no padrão visual
-   do Dashboard (ver initTimePicker()/initDatePicker() em
-   agenda_interactions.js e o bloco "CAMPOS INTELIGENTES DE
-   DATA/HORA" em agenda.css).
+   Os campos de Hora inicial/final (modal "Novo estudo" e modal
+   "Rotina de estudos") e o campo de Data (meta "Concluir até")
+   não são <input type="time"> / <input type="date"> nativos —
+   são <input type="text"> comuns, de digitação manual (formato
+   HH:MM / DD/MM/AAAA), com formatação e validação feitas por
+   initTimeInput()/initDateInput() em agenda_interactions.js.
    ============================================= */
 
 import { renderCalendar } from './agenda_render.js';
@@ -372,9 +367,7 @@ const TEMPLATE_HTML = `
         </div>
         <div class="agenda-form-group" id="agenda-goal-deadline-group" style="display:none">
           <label class="agenda-form-label" for="agenda-goal-deadline">Concluir até</label>
-          <div class="agenda-picker-field">
-            <input class="agenda-input agenda-picker-input agenda-time-input" type="text" id="agenda-goal-deadline" placeholder="DD/MM/AAAA" autocomplete="off" inputmode="numeric" />
-          </div>
+          <input class="agenda-input" type="text" id="agenda-goal-deadline" placeholder="DD/MM/AAAA" autocomplete="off" inputmode="numeric" />
           <span class="agenda-field-hint" id="agenda-goal-deadline-hint" style="display:none"></span>
         </div>
       </div>
@@ -445,19 +438,11 @@ const TEMPLATE_HTML = `
         <div class="agenda-form-row">
           <div class="agenda-form-group">
             <label class="agenda-form-label" for="agenda-input-time">Hora inicial <span class="agenda-optional">(opcional)</span></label>
-            <div class="agenda-picker-field">
-              <input class="agenda-input agenda-picker-input agenda-time-input" type="text" id="agenda-input-time" placeholder="--:--" autocomplete="off" inputmode="numeric" />
-              <!-- v13 — o botão do relógio NÃO nasce mais aqui: initTimePicker('agenda-input-time'),
-                   em agenda_interactions.js, cria e insere esse botão sozinho, como elemento
-                   totalmente independente do input (ver comentário lá para o motivo). -->
-            </div>
+            <input class="agenda-input" type="text" id="agenda-input-time" placeholder="--:--" autocomplete="off" inputmode="numeric" />
           </div>
           <div class="agenda-form-group">
             <label class="agenda-form-label" for="agenda-input-time-end">Hora final <span class="agenda-optional">(opcional)</span></label>
-            <div class="agenda-picker-field">
-              <input class="agenda-input agenda-picker-input agenda-time-input" type="text" id="agenda-input-time-end" placeholder="--:--" autocomplete="off" inputmode="numeric" />
-              <!-- v13 — botão criado dinamicamente por initTimePicker('agenda-input-time-end'). -->
-            </div>
+            <input class="agenda-input" type="text" id="agenda-input-time-end" placeholder="--:--" autocomplete="off" inputmode="numeric" />
           </div>
         </div>
         <p class="agenda-field-hint" id="agenda-duration-hint" style="display:none"></p>
@@ -523,17 +508,11 @@ const TEMPLATE_HTML = `
         <div class="agenda-form-row">
           <div class="agenda-form-group">
             <label class="agenda-form-label" for="agenda-routine-start">Horário inicial</label>
-            <div class="agenda-picker-field">
-              <input class="agenda-input agenda-picker-input agenda-time-input" type="text" id="agenda-routine-start" value="06:00" autocomplete="off" inputmode="numeric" />
-              <!-- v13 — botão criado dinamicamente por initTimePicker('agenda-routine-start'). -->
-            </div>
+            <input class="agenda-input" type="text" id="agenda-routine-start" value="06:00" autocomplete="off" inputmode="numeric" />
           </div>
           <div class="agenda-form-group">
             <label class="agenda-form-label" for="agenda-routine-end">Horário final</label>
-            <div class="agenda-picker-field">
-              <input class="agenda-input agenda-picker-input agenda-time-input" type="text" id="agenda-routine-end" value="22:00" autocomplete="off" inputmode="numeric" />
-              <!-- v13 — botão criado dinamicamente por initTimePicker('agenda-routine-end'). -->
-            </div>
+            <input class="agenda-input" type="text" id="agenda-routine-end" value="22:00" autocomplete="off" inputmode="numeric" />
           </div>
         </div>
         <div class="agenda-form-group">

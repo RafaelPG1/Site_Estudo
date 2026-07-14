@@ -26,30 +26,14 @@
        usar exatamente os mesmos raios de borda (--r-sm/md/lg),
        espaçamentos e sombras já usados em .stat-card/.perf-card/
        .modal-overlay-like do Dashboard.
-     ✔ v10 — Campos de Data/Hora deixaram de depender dos
-       <input type="time"/"date"> nativos (digitação obrigatória
-       caractere a caractere, com máscara imposta pelo navegador
-       e aparência inconsistente entre navegadores). Ver bloco
-       "CAMPOS INTELIGENTES DE DATA/HORA" abaixo — o HTML desses
-       campos agora é um <input type="text" readonly> (mesmo id,
-       mesmo .value, mesmos eventos 'input'/'change' que a lógica
-       em agenda_interactions.js já esperava) acoplado a um
-       seletor customizado (relógio de duas colunas / calendário
-       mensal), no mesmo padrão visual do restante do Dashboard.
-     ✔ v12 — .agenda-picker-popover ganhou `box-sizing: border-box`
-       PRÓPRIO (não herdado). Motivo: o popover é criado via JS e
-       anexado a `document.body` (não a `.agenda-module`), para
-       poder usar `position: fixed` livre de qualquer overflow/
-       clipping dos modais — mas isso também significa que o reset
-       `.agenda-module * { box-sizing: border-box; }` logo abaixo
-       NUNCA o alcança (seletor de descendência não cruza essa
-       fronteira de DOM). Sem essa regra própria, o popover caía no
-       `content-box` padrão do navegador, e a largura calculada em
-       JS (positionTimePickerPopover(), em agenda_interactions.js)
-       deixava de bater exatamente com a largura realmente
-       renderizada (188px "de conteúdo" + 2px de borda ≠ 188px
-       "reais") — um dos fatores que afastava o popover do ícone do
-       relógio além do respiro pedido.
+     ✔ Os campos de Data/Hora (Hora inicial/final, Rotina,
+       "Concluir até") são <input type="text"> comuns, de
+       digitação manual (formato HH:MM / DD/MM/AAAA). A
+       formatação/validação em tempo real fica em
+       initTimeInput()/initDateInput(), em
+       agenda_interactions.js; aqui só o estilo padrão de
+       `.agenda-input` (e a variante `.is-error`, usada quando o
+       ano da data ainda está incompleto) se aplica a eles.
 
    Tudo neste arquivo está escopado sob `.agenda-module` para
    nunca vazar estilo para o restante do Dashboard (Checklist,
@@ -435,10 +419,9 @@
 .agenda-optional { font-weight: 400; text-transform: none; color: var(--text-3); font-size: 10.5px; }
 .agenda-field-hint { font-size: 11px; color: var(--text-3); line-height: 1.4; margin-top: -4px; }
 .agenda-field-hint.is-active { color: var(--accent-lite); }
-/* v16 — variante de erro do hint (reaproveita o MESMO elemento/classe
-   .agenda-field-hint já usado para dicas neutras — nenhuma classe/
-   componente novo foi criado, só esta variante de cor). Usada pelo
-   campo "Concluir até" quando o ano ainda não tem os 4 dígitos. */
+/* Variante de erro do hint (reaproveita o MESMO elemento/classe
+   .agenda-field-hint já usado para dicas neutras). Usada pelo campo
+   "Concluir até" quando o ano ainda não tem os 4 dígitos. */
 .agenda-field-hint.is-error { color: var(--red); }
 .agenda-input {
   background: var(--border); border: 1px solid var(--border-2); border-radius: var(--r-sm);
@@ -447,10 +430,9 @@
 }
 .agenda-input:focus { border-color: rgba(108,99,255,.6); box-shadow: 0 0 0 3px var(--accent-dim); }
 .agenda-input::placeholder { color: var(--text-3); }
-.agenda-input[type="time"] { color-scheme: dark; }
-/* v16 — estado de erro do próprio input, no MESMO padrão visual do
-   :focus acima (borda + halo), só trocando a cor de acento (--accent)
-   pela cor de perigo (--red) já usada em .agenda-btn-danger/
+/* Estado de erro do próprio input, no MESMO padrão visual do :focus
+   acima (borda + halo), só trocando a cor de acento (--accent) pela
+   cor de perigo (--red) já usada em .agenda-btn-danger/
    .agenda-week-menu-item-danger etc. Usado pelo campo "Concluir até"
    enquanto o ano estiver incompleto (menos de 4 dígitos). */
 .agenda-input.is-error { border-color: rgba(255,92,106,.55); box-shadow: 0 0 0 3px rgba(255,92,106,.14); }
@@ -460,135 +442,6 @@
   background-repeat: no-repeat; background-position: right 10px center; background-size: 14px; padding-right: 34px;
 }
 .agenda-textarea { resize: vertical; min-height: 64px; }
-
-/* ══════════════════════════════════════════════════════════════
-   CAMPOS INTELIGENTES DE DATA/HORA
-   ──────────────────────────────────────────────────────────────
-   Substituem os antigos <input type="time"> / <input type="date">
-   nativos. O elemento visível continua sendo um <input> real com
-   o MESMO id (ex.: #agenda-input-time) — por isso toda a lógica
-   já existente em agenda_interactions.js (leitura de `.value`,
-   `.focus()`, listeners de 'input'/'change', checagem de
-   `.validity.badInput`) continua funcionando sem nenhuma alteração.
-   Só o `type` muda para "text" + `readonly`: o navegador nunca
-   mais impõe teclado/segmentos nativos — em vez disso, o clique
-   abre um seletor customizado (relógio de duas colunas para hora,
-   calendário mensal para data), e o teclado aceita digitação livre
-   de dígitos (ex.: "1430" → 14:30, sem ordem/máscara forçada) e
-   setas ↑/↓ como spinner. Ver initTimePicker()/initDatePicker()
-   em agenda_interactions.js.
-
-   Os popovers usam position:fixed e são ancorados via JS
-   (getBoundingClientRect), então nunca são cortados pelo
-   overflow:auto do corpo dos modais (.agenda-modal-body). */
-.agenda-picker-input { cursor: pointer; caret-color: transparent; }
-.agenda-picker-input::placeholder { color: var(--text-3); }
-/* v11 — Campos de HORÁRIO (Hora inicial/final, Rotina): passaram
-   a ser digitação livre, um <input> de texto comum. Precisam de
-   cursor de texto normal (não o "cursor:pointer" herdado de
-   .agenda-picker-input, que continua servindo ao campo de DATA,
-   inalterado). O espaço à direita reserva lugar para o botão de
-   relógio, único responsável por abrir o seletor agora. */
-.agenda-time-input {
-  cursor: text;
-  caret-color: auto;
-  padding-right: 32px;
-}
-
-.agenda-picker-field {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.agenda-time-icon-btn {
-  position: absolute;
-  right: 6px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 22px;
-  height: 22px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--r-sm);
-  color: var(--text-3);
-  transition: all .15s ease;
-}
-.agenda-time-icon-btn:hover { background: var(--border); color: var(--text-1); }
-.agenda-time-icon-btn:focus-visible { outline: 2px solid var(--accent-dim); outline-offset: 1px; }
-.agenda-picker-popover {
-  /* v12 — box-sizing PRÓPRIO, não herdado de `.agenda-module *`
-     (ver nota no topo do arquivo): este elemento é anexado a
-     `document.body` via JS, fora da árvore de `.agenda-module`,
-     então aquele reset nunca chega até aqui. Sem esta linha, o
-     popover caía no `content-box` padrão do navegador e a largura
-     que a JS assume (offsetWidth) deixava de bater com a largura
-     declarada — pequena discrepância, mas suficiente para estourar
-     a tolerância de poucos pixels pedida para o respiro em relação
-     ao ícone do relógio. */
-  box-sizing: border-box;
-  position: fixed;
-  z-index: 400;
-  background: var(--surface-2);
-  border: 1px solid var(--border-2);
-  border-radius: var(--r-md);
-  box-shadow: 0 16px 40px rgba(0,0,0,.5);
-  opacity: 0;
-  transform: translateY(-6px) scale(.98);
-  pointer-events: none;
-  transition: opacity .15s ease, transform .15s ease;
-}
-.agenda-picker-popover.open { opacity: 1; transform: translateY(0) scale(1); pointer-events: all; }
-
-/* Seletor de hora — duas colunas roláveis (hora / minuto) */
-.agenda-time-popover { display: flex; flex-direction: column; width: 188px; }
-.agenda-time-cols { display: flex; align-items: stretch; gap: 2px; padding: 8px; }
-.agenda-time-col {
-  flex: 1; max-height: 208px; overflow-y: auto; scroll-behavior: smooth;
-  display: flex; flex-direction: column; gap: 2px;
-  scrollbar-width: thin; scrollbar-color: var(--border-2) transparent;
-}
-.agenda-time-col::-webkit-scrollbar { width: 4px; }
-.agenda-time-col::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 3px; }
-.agenda-time-sep { align-self: center; color: var(--text-3); font-weight: 700; font-size: 13px; padding: 0 2px; }
-.agenda-time-opt {
-  flex-shrink: 0; padding: 7px 0; text-align: center; border-radius: var(--r-sm);
-  font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 600;
-  color: var(--text-2); transition: background .12s, color .12s;
-}
-.agenda-time-opt:hover { background: var(--border); color: var(--text-1); }
-.agenda-time-opt.active { background: var(--accent-dim); color: var(--accent-lite); }
-.agenda-time-popover-footer {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 8px 10px; border-top: 1px solid var(--border);
-}
-.agenda-time-quick-hint { font-size: 9.5px; color: var(--text-3); }
-.agenda-time-clear { font-size: 11px; font-weight: 600; color: var(--text-3); padding: 4px 8px; border-radius: var(--r-sm); }
-.agenda-time-clear:hover { background: var(--border); color: var(--red); }
-
-/* Seletor de data — calendário mensal */
-.agenda-date-popover { width: 250px; padding: 10px; }
-.agenda-date-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-.agenda-date-nav { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-3); font-size: 14px; }
-.agenda-date-nav:hover { background: var(--border); color: var(--text-1); }
-.agenda-date-title { font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 700; color: var(--text-1); text-transform: capitalize; }
-.agenda-date-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 4px; }
-.agenda-date-weekday { text-align: center; font-size: 9px; font-weight: 700; color: var(--text-3); text-transform: uppercase; }
-.agenda-date-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
-.agenda-date-cell {
-  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
-  border-radius: var(--r-sm); font-size: 11.5px; font-weight: 600; color: var(--text-2);
-}
-.agenda-date-cell:hover { background: var(--border); color: var(--text-1); }
-.agenda-date-cell.is-outside { color: var(--text-3); opacity: .35; }
-.agenda-date-cell.is-today { box-shadow: inset 0 0 0 1px var(--border-2); }
-.agenda-date-cell.is-selected { background: var(--accent); color: #fff; }
-.agenda-date-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
-.agenda-date-today-btn { font-size: 11px; font-weight: 600; color: var(--accent-lite); padding: 4px 8px; border-radius: var(--r-sm); }
-.agenda-date-today-btn:hover { background: var(--accent-dim); }
-.agenda-date-clear { font-size: 11px; font-weight: 600; color: var(--text-3); padding: 4px 8px; border-radius: var(--r-sm); }
-.agenda-date-clear:hover { background: var(--border); color: var(--red); }
 
 .agenda-subject-suggestions {
   position: absolute; top: calc(100% + 4px); left: 0; right: 0;
