@@ -27,7 +27,7 @@ import {
   timeToMinutes, minutesToTime, snapMinutes, offsetToMinutes, timeToOffset,
   getHourHeight, isPlanned, sortPlanned, saveStorage, saveRoutine,
   recalcTimelineBounds,
-  showToast, DAY_NAMES, DAY_SHORT, getMondayOf, toISO, escHtml,
+  showToast, DAY_SHORT, getMondayOf, toISO, escHtml,
   persistirEstadoUIAgenda,
 } from './agenda.js';
 
@@ -625,14 +625,269 @@ function initDateInput(inputId) {
 }
 
 /* ══════════════════ MODAL: Novo/Editar estudo ══════════════════ */
-function populateDayOptions(currentDayIdx) {
-  const select = document.getElementById('agenda-input-day');
-  let days = [...(state.routine.activeDays || [])].sort((a, b) => a - b);
-  if (currentDayIdx !== null && currentDayIdx !== undefined && !days.includes(currentDayIdx)) {
-    days.push(currentDayIdx); days.sort((a, b) => a - b);
+/* v-premium — Nomes completos usados SÓ para exibição no novo
+   cabeçalho/card de contexto/resumo do modal "Novo estudo" (ver
+   TEMPLATE_HTML em agenda.js). Não substituem DAY_NAMES/MONTH_NAMES
+   (usados em outros lugares, com abreviações), então ficam locais
+   aqui, alinhados por índice (0=Segunda...6=Domingo). Nenhuma
+   lógica de salvamento ou estrutura de dados é afetada por eles. */
+const FULL_DAY_NAMES = ['Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado', 'Domingo'];
+const FULL_MONTH_NAMES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+const SHORT_MONTH_NAMES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+const PLAN_MODE_LABELS = { this: 'Semana atual', next: 'Próxima semana', other: 'Semana selecionada' };
+
+function formatFullDateBR(date) {
+  return `${date.getDate()} de ${FULL_MONTH_NAMES[date.getMonth()]} de ${date.getFullYear()}`;
+}
+
+/* "14 Jul → 20 Jul 2026" — usado só no card de Planejamento (chips de
+   semana), formato mais compacto que formatFullDateBR(). Se a semana
+   cruzar o ano (raríssimo, só na última semana de dezembro), mostra o
+   ano das duas pontas para não ficar ambíguo. */
+function formatWeekRangeShort(monday) {
+  const end = new Date(monday);
+  end.setDate(end.getDate() + 6);
+  const p1 = `${String(monday.getDate()).padStart(2, '0')} ${SHORT_MONTH_NAMES[monday.getMonth()]}`;
+  const p2 = `${String(end.getDate()).padStart(2, '0')} ${SHORT_MONTH_NAMES[end.getMonth()]}`;
+  if (monday.getFullYear() !== end.getFullYear()) return `${p1} ${monday.getFullYear()} → ${p2} ${end.getFullYear()}`;
+  return `${p1} → ${p2} ${end.getFullYear()}`;
+}
+
+/* dayIdx (0=Segunda...6=Domingo) → Date real dentro da semana
+   ESCOLHIDA NO PLANEJADOR (state.modal.planWeekStart) — não mais a
+   semana visível no grid principal (state.currentWeekStart). É essa
+   escolha, feita no card "Planejamento", que agora decide em qual
+   semana a sessão é de fato salva (ver saveSession()). */
+function dateForPlanDayIdx(dayIdx) {
+  const d = new Date(state.modal.planWeekStart);
+  d.setDate(d.getDate() + dayIdx);
+  return d;
+}
+
+/* Classifica uma segunda-feira como "esta semana" / "próxima semana"
+   / "outra" em relação à semana real atual (data do dispositivo) —
+   não em relação à semana visível no grid. Usado tanto para decidir
+   o modo inicial do planejador (ao abrir o modal) quanto para rotular
+   o card de semana. */
+function classifyWeekMode(monday) {
+  const thisMonday = getMondayOf(new Date());
+  const nextMonday = new Date(thisMonday);
+  nextMonday.setDate(nextMonday.getDate() + 7);
+  const key = toISO(monday);
+  if (key === toISO(thisMonday)) return 'this';
+  if (key === toISO(nextMonday)) return 'next';
+  return 'other';
+}
+
+/* Card "Hoje/Agora" do topo do modal — puramente informativo,
+   calculado a partir da data/hora reais do dispositivo no momento
+   em que o modal é aberto. */
+function renderNowContextCard() {
+  const now = new Date();
+  const dow = now.getDay();
+  const idx = dow === 0 ? 6 : dow - 1;
+  const elWeekday = document.getElementById('agenda-context-weekday');
+  const elDate = document.getElementById('agenda-context-date');
+  const elTime = document.getElementById('agenda-context-time');
+  const elMonthYear = document.getElementById('agenda-context-monthyear');
+  if (!elWeekday) return;
+  elWeekday.textContent = FULL_DAY_NAMES[idx];
+  elDate.textContent = formatFullDateBR(now);
+  elTime.textContent = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  elMonthYear.textContent = `${FULL_MONTH_NAMES[now.getMonth()]} de ${now.getFullYear()}`;
+}
+
+/* ══════════════════ CARD "PLANEJAMENTO" ══════════════════ */
+/* Gera os 7 chips de dia (SEG 14, TER 15...) da semana em
+   state.modal.planWeekStart, destacando o dia real de hoje
+   (is-today), o dia escolhido (is-selected) e esmaecendo os dias
+   fora da rotina ativa (is-inactive) — mesmo dado de
+   state.routine.activeDays já usado no grid principal, só exibido
+   aqui como dica visual (não bloqueia o clique: o usuário pode
+   perfeitamente planejar um estudo num dia fora da rotina). */
+function renderPlanDayChips() {
+  const container = document.getElementById('agenda-plan-day-chips');
+  if (!container || !state.modal.planWeekStart) return;
+  const monday = state.modal.planWeekStart;
+  const todayISO = toISO(new Date());
+  const activeDays = new Set(state.routine.activeDays || []);
+  container.innerHTML = '';
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(d.getDate() + i);
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'agenda-plan-day-chip'
+      + (toISO(d) === todayISO ? ' is-today' : '')
+      + (i === state.modal.planDayIdx ? ' is-selected' : '')
+      + (!activeDays.has(i) ? ' is-inactive' : '');
+    chip.dataset.dayIdx = String(i);
+    chip.innerHTML = `<span class="dow">${DAY_SHORT[i]}</span><span class="num">${d.getDate()}</span>`;
+    chip.addEventListener('click', () => selectPlanDay(i));
+    container.appendChild(chip);
   }
-  if (!days.length) days = [0, 1, 2, 3, 4, 5, 6];
-  select.innerHTML = days.map(d => `<option value="${d}">${DAY_NAMES[d]}</option>`).join('');
+}
+
+function selectPlanDay(dayIdx) {
+  state.modal.planDayIdx = dayIdx;
+  renderPlanDayChips();
+  updateSessionSummary();
+}
+
+/* Repinta o painel de semana (label + intervalo + "Hoje é" + chips)
+   a partir do estado atual — não muda planWeekStart/planDayIdx, só
+   exibe. As setas de navegação só ficam visíveis no modo "other"
+   (nos modos "this"/"next" a semana é sempre a mesma, determinística,
+   então navegar não faz sentido ali). */
+function renderPlanWeekPanel() {
+  const monday = state.modal.planWeekStart;
+  if (!monday) return;
+  const mode = state.modal.planMode;
+  document.getElementById('agenda-plan-week-label').textContent = PLAN_MODE_LABELS[mode] || 'Semana selecionada';
+  document.getElementById('agenda-plan-week-range').textContent = formatWeekRangeShort(monday);
+
+  const showNav = mode === 'other';
+  document.getElementById('agenda-plan-week-prev').style.visibility = showNav ? 'visible' : 'hidden';
+  document.getElementById('agenda-plan-week-next').style.visibility = showNav ? 'visible' : 'hidden';
+
+  const todayLine = document.getElementById('agenda-plan-today-line');
+  if (mode === 'this') {
+    const now = new Date();
+    const idx = now.getDay() === 0 ? 6 : now.getDay() - 1;
+    todayLine.textContent = `Hoje é: ${FULL_DAY_NAMES[idx]}, ${formatFullDateBR(now)}`;
+    todayLine.style.display = '';
+  } else {
+    todayLine.style.display = 'none';
+  }
+
+  renderPlanDayChips();
+}
+
+/* Repinta a casca inteira do card (botões de modo + alterna entre o
+   painel de semana e o de data específica) a partir do estado atual
+   — chamada ao abrir o modal (sem mexer no estado, já calculado em
+   openSessionModal) e depois de qualquer troca de modo. */
+function renderPlanCard() {
+  const mode = state.modal.planMode;
+  document.querySelectorAll('#agenda-plan-modes .agenda-plan-mode-opt').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mode === mode);
+  });
+
+  const weekPanel = document.getElementById('agenda-plan-week-panel');
+  const datePanel = document.getElementById('agenda-plan-date-panel');
+  if (!weekPanel || !datePanel) return;
+
+  if (mode === 'date') {
+    weekPanel.style.display = 'none';
+    datePanel.style.display = '';
+    if (state.modal.planWeekStart && (state.modal.planDayIdx ?? null) !== null) {
+      const d = dateForPlanDayIdx(state.modal.planDayIdx);
+      document.getElementById('agenda-plan-date-input').value =
+        `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+    }
+  } else {
+    weekPanel.style.display = '';
+    datePanel.style.display = 'none';
+    renderPlanWeekPanel();
+  }
+}
+
+/* Clique num dos 4 botões de modo — só aqui o modo/semana são
+   REALMENTE decididos (renderPlanCard() acima só exibe o que já foi
+   decidido). "this"/"next" sempre apontam para a semana real atual/
+   seguinte (determinístico); "other" preserva a última semana
+   navegada (ou parte da semana atual, se ainda não havia nenhuma). */
+function setPlanMode(mode) {
+  state.modal.planMode = mode;
+  const thisMonday = getMondayOf(new Date());
+  if (mode === 'this') {
+    state.modal.planWeekStart = thisMonday;
+  } else if (mode === 'next') {
+    const n = new Date(thisMonday);
+    n.setDate(n.getDate() + 7);
+    state.modal.planWeekStart = n;
+  } else if (mode === 'other' && !state.modal.planWeekStart) {
+    state.modal.planWeekStart = thisMonday;
+  }
+  renderPlanCard();
+  updateSessionSummary();
+}
+
+/* Setas ← / → do modo "other" — troca a semana navegada em blocos de
+   7 dias, sem alterar o dia (planDayIdx) já escolhido. */
+function changePlanWeek(deltaWeeks) {
+  if (state.modal.planMode !== 'other' || !state.modal.planWeekStart) return;
+  const d = new Date(state.modal.planWeekStart);
+  d.setDate(d.getDate() + deltaWeeks * 7);
+  state.modal.planWeekStart = d;
+  renderPlanWeekPanel();
+  updateSessionSummary();
+}
+
+/* Campo "Escolha uma data" (modo "date") — initTimeInput já cuida da
+   máscara/validação de digitação (ver initDateInput mais abaixo);
+   aqui só lemos o valor já formatado "DD/MM/AAAA" e recalculamos a
+   semana + o dia correspondentes, exatamente como pedido ("semana
+   correspondente, dia da semana, mês e ano" — tudo deriva da mesma
+   data escolhida, sem duplicar o dado em outro lugar). */
+function parsePlanDateInput() {
+  const raw = document.getElementById('agenda-plan-date-input').value.trim();
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(raw);
+  if (!m) return;
+  const day = Number(m[1]), month = Number(m[2]) - 1, year = Number(m[3]);
+  const date = new Date(year, month, day);
+  if (date.getMonth() !== month) return; // dia inválido para o mês; initDateInput já corrige a digitação
+  state.modal.planWeekStart = getMondayOf(date);
+  const dow = date.getDay();
+  state.modal.planDayIdx = dow === 0 ? 6 : dow - 1;
+  updateSessionSummary();
+}
+
+/* Painel "Resumo da sessão" — espelha, em tempo real, os mesmos
+   campos que já existem no formulário (semana/dia escolhidos no
+   Planejamento, horários, conteúdo) e deriva 2 informações extras só
+   de leitura:
+   • Categoria: "Agendado" (tem horário) vs "Planejado" (sem
+     horário) — já é exatamente a mesma distinção usada por
+     isPlanned()/sortPlanned() no resto do módulo, só exibida aqui.
+   • Status: "Concluído"/"Pendente", lido do próprio session.status
+     quando em edição (nunca escrito por esta função). */
+function updateSessionSummary() {
+  const summarySubject = document.getElementById('agenda-summary-subject');
+  const dayIdx = state.modal.planDayIdx;
+  if (!summarySubject || dayIdx === null || dayIdx === undefined || !state.modal.planWeekStart) return;
+
+  const timeStart = document.getElementById('agenda-input-time').value.trim();
+  const timeEnd = document.getElementById('agenda-input-time-end').value.trim();
+  const subject = document.getElementById('agenda-input-subject').value.trim();
+
+  summarySubject.textContent = subject || '—';
+  document.getElementById('agenda-summary-date').textContent = `${FULL_DAY_NAMES[dayIdx]}, ${formatFullDateBR(dateForPlanDayIdx(dayIdx))}`;
+
+  const hasTime = timeStart && timeEnd;
+  document.getElementById('agenda-summary-time').textContent = hasTime ? `${timeStart} – ${timeEnd}` : 'Sem horário definido';
+  document.getElementById('agenda-summary-category').textContent = hasTime ? 'Agendado' : 'Planejado';
+
+  let durationLabel = '—';
+  if (hasTime) {
+    const duration = timeToMinutes(timeEnd) - timeToMinutes(timeStart);
+    if (duration > 0) durationLabel = formatDurationLabel(duration);
+  }
+  document.getElementById('agenda-summary-duration').textContent = durationLabel;
+
+  let statusLabel = 'Pendente';
+  if (state.modal.mode === 'edit' && state.modal.context) {
+    const { weekKey, dayIdx: origDayIdx, sessionId } = state.modal.context;
+    const session = getSession(weekKey, origDayIdx, sessionId);
+    if (session && session.status === 'done') statusLabel = 'Concluído';
+  }
+  document.getElementById('agenda-summary-status').textContent = statusLabel;
+}
+
+function refreshSessionModalInfo() {
+  renderNowContextCard();
+  renderPlanCard();
+  updateSessionSummary();
 }
 
 export function openSessionModal({ weekKey, dayIdx, sessionId }) {
@@ -643,9 +898,21 @@ export function openSessionModal({ weekKey, dayIdx, sessionId }) {
   state.modal.mode = isEdit ? 'edit' : 'new';
 
   document.getElementById('agenda-modal-title').textContent = isEdit ? 'Editar estudo' : 'Novo estudo';
-  populateDayOptions(dayIdx);
-  document.getElementById('agenda-input-day').value = String(dayIdx ?? 0);
   hideDurationHint();
+
+  /* Planejamento — inicializa a partir de ONDE a sessão já está
+     (edição) ou de onde o usuário clicou (nova sessão), mas
+     classificado contra a semana REAL de hoje (não a semana visível
+     no grid): se cair exatamente na semana atual ou na próxima, o
+     planejador já abre no modo correspondente; caso contrário, abre
+     em "Escolher outra semana" já navegado até lá. Isso desacopla de
+     vez o modal da semana que porventura esteja sendo visualizada no
+     grid principal (state.currentWeekStart), que pode ser qualquer
+     semana passada/futura. */
+  const baseMonday = new Date(state.currentWeekStart);
+  state.modal.planWeekStart = baseMonday;
+  state.modal.planDayIdx = dayIdx ?? 0;
+  state.modal.planMode = classifyWeekMode(baseMonday);
 
   if (isEdit) {
     const session = getSession(weekKey, dayIdx, sessionId);
@@ -666,6 +933,8 @@ export function openSessionModal({ weekKey, dayIdx, sessionId }) {
     document.getElementById('agenda-btn-delete').style.display = 'none';
   }
 
+  refreshSessionModalInfo();
+
   overlay.classList.add('open');
   overlay.setAttribute('aria-hidden', 'false');
   setTimeout(() => document.getElementById('agenda-input-time').focus(), 100);
@@ -682,6 +951,7 @@ function hideDurationHint() {
   const hint = document.getElementById('agenda-duration-hint');
   hint.style.display = 'none';
   hint.classList.remove('is-active');
+  updateSessionSummary();
 }
 
 function updateDurationSuggestion() {
@@ -697,6 +967,7 @@ function updateDurationSuggestion() {
     hint.textContent = `Duração sugerida com base na sua rotina: ${formatDurationLabel(minSession)} (até ${suggestedEnd}).`;
     hint.style.display = 'block';
     hint.classList.add('is-active');
+    updateSessionSummary();
   } else {
     hideDurationHint();
   }
@@ -716,7 +987,11 @@ function nextPlannedOrder(weekKey, dayIdx, excludeId) {
 }
 
 async function saveSession() {
-  const dayIdx = Number(document.getElementById('agenda-input-day').value);
+  if (!state.modal.planWeekStart || state.modal.planDayIdx === null || state.modal.planDayIdx === undefined) {
+    return showToast('Escolha uma semana ou uma data válida no Planejamento.');
+  }
+  const weekKey = toISO(state.modal.planWeekStart);
+  const dayIdx = Number(state.modal.planDayIdx);
   const timeInput = document.getElementById('agenda-input-time');
   const timeEndInput = document.getElementById('agenda-input-time-end');
   const timeStart = timeInput.value.trim();
@@ -735,7 +1010,7 @@ async function saveSession() {
     if (duration < MIN_SESSION_MINUTES) return showToast(`A sessão deve ter no mínimo ${MIN_SESSION_MINUTES} minutos.`);
   }
 
-  const { weekKey, sessionId } = state.modal.context;
+  const { sessionId } = state.modal.context;
   const isEdit = state.modal.mode === 'edit';
 
   if (timeStart && timeEnd) {
@@ -748,11 +1023,18 @@ async function saveSession() {
   }
 
   if (!state.weeks[weekKey]) state.weeks[weekKey] = buildEmptyWeek();
+  const prevWeekKey = state.modal.context.weekKey;
   const prevDayIdx = state.modal.context.dayIdx;
   const becamePlanned = !timeStart && !timeEnd;
+  /* v-planejamento — antes só existia troca de DIA dentro da MESMA
+     semana (o modal nunca deixava mudar a semana). Agora o usuário
+     pode replanejar a sessão para qualquer semana/data no card
+     "Planejamento", então a detecção de "mudou de lugar" precisa
+     comparar semana E dia — não só o dia como antes. */
+  const moved = isEdit && (prevWeekKey !== weekKey || prevDayIdx !== dayIdx);
 
-  if (isEdit && prevDayIdx !== dayIdx) {
-    const fromArr = state.weeks[weekKey][prevDayIdx] || [];
+  if (moved) {
+    const fromArr = (state.weeks[prevWeekKey] && state.weeks[prevWeekKey][prevDayIdx]) || [];
     const idx = fromArr.findIndex(s => s.id === sessionId);
     let existing = {};
     if (idx >= 0) { existing = fromArr[idx]; fromArr.splice(idx, 1); }
@@ -1013,6 +1295,22 @@ export function initAgendaEventListeners() {
   document.getElementById('agenda-input-time').addEventListener('change', updateDurationSuggestion);
   document.getElementById('agenda-input-time-end').addEventListener('input', hideDurationHint);
 
+  /* v-planejamento — card "Planejamento": 4 modos de escolha de
+     semana/data, setas de navegação (só ativas no modo "other") e o
+     campo de data específica. Nenhum deles interfere no listener de
+     salvamento — só atualizam state.modal.planWeekStart/planDayIdx e
+     repintam o próprio card + o Resumo da sessão. */
+  document.getElementById('agenda-plan-modes').addEventListener('click', (e) => {
+    const btn = e.target.closest('.agenda-plan-mode-opt');
+    if (btn) setPlanMode(btn.dataset.mode);
+  });
+  document.getElementById('agenda-plan-week-prev').addEventListener('click', () => changePlanWeek(-1));
+  document.getElementById('agenda-plan-week-next').addEventListener('click', () => changePlanWeek(1));
+  document.getElementById('agenda-plan-date-input').addEventListener('input', parsePlanDateInput);
+  document.getElementById('agenda-plan-date-input').addEventListener('change', parsePlanDateInput);
+
+  document.getElementById('agenda-input-subject').addEventListener('input', updateSessionSummary);
+
   document.getElementById('agenda-modal-routine-close').addEventListener('click', closeRoutineModal);
   document.getElementById('agenda-btn-routine-cancel').addEventListener('click', closeRoutineModal);
   document.getElementById('agenda-btn-routine-save').addEventListener('click', saveRoutineModal);
@@ -1061,6 +1359,7 @@ export function initAgendaEventListeners() {
   initTimeInput('agenda-routine-start');
   initTimeInput('agenda-routine-end');
   initDateInput('agenda-goal-deadline');
+  initDateInput('agenda-plan-date-input');
 
   ['agenda-input-time', 'agenda-input-time-end', 'agenda-input-subject'].forEach(id => {
     document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); saveSession(); } });
