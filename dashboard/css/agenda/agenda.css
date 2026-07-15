@@ -413,107 +413,98 @@
 .agenda-modal-footer { display: flex; align-items: center; justify-content: space-between; padding: 14px 22px 20px; border-top: 1px solid var(--border); gap: 8px; }
 .agenda-modal-footer-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
 
-/* ── MODAL "NOVO ESTUDO" — cabeçalho enriquecido, contexto e resumo ──
+/* ── MODAL "NOVO ESTUDO" — redesign completo ──────────────────────
    Escopado exclusivamente sob .agenda-modal-session (aplicada só ao
    overlay #agenda-modal-session, ver TEMPLATE_HTML em agenda.js).
    Não afeta o modal de Rotina de estudos (#agenda-modal-routine) nem
    o de confirmação — nenhuma regra abaixo tem seletor genérico o
    suficiente para vazar para eles.
 
-   v-compact — Este modal ficou ~12% maior do que o resto do
-   Dashboard (herdava os tamanhos de .agenda-modal-header/-body/
-   -footer, .agenda-form-*, .agenda-input etc., pensados para
-   modais mais curtos como Rotina/Confirmação). Em vez de reduzir
-   com `zoom`/`transform: scale()` (que geram borrão de fonte e não
-   mudam o espaço realmente ocupado), cada propriedade real
-   (padding/gap/margin/font-size/min-height) é sobrescrita aqui,
-   SÓ para dentro de #agenda-modal-session — os valores-base em
-   .agenda-modal-header/.agenda-input/etc. continuam intocados e
-   seguem valendo normalmente para os outros modais.
+   v-redesign — Arquitetura em 2 colunas (inspirada em painéis de
+   propriedades de apps como Linear/Notion, sem copiar nenhum deles):
+   • Coluna principal (.agenda-session-main): o fluxo de
+     preenchimento em si — Quando → Horário → Conteúdo — como
+     seções separadas por divisórias finas (sem caixa em volta de
+     cada uma; menos "caixa dentro de caixa", mais respiração).
+   • Coluna lateral (.agenda-session-side): tudo que é metadado/
+     confirmação — Agora, Cor do cartão e o Resumo da sessão — num
+     painel único, visualmente separado das decisões que o usuário
+     precisa tomar. Usar a LARGURA do modal em vez de empilhar tudo
+     verticalmente é o que faz o formulário parecer bem mais curto
+     mesmo contendo exatamente os mesmos campos de antes.
+   Nenhum campo, botão, resumo ou informação foi removido — só
+   reorganizados (ver comentário no TEMPLATE_HTML, agenda.js). */
+.agenda-modal.agenda-modal-session { width: 700px; }
 
-   v-compact-fix — a 1ª versão deste bloco tentava um
-   `.agenda-modal-session { display:flex; flex-direction:column }`
-   com o corpo em `flex:1` para "aproveitar melhor a altura da
-   janela". Isso tem uma armadilha clássica do flexbox: um
-   container SEM `height` explícita (só `max-height`) se
-   auto-dimensiona pelo conteúdo, e nesse caso `flex-grow` não tem
-   "espaço livre" nenhum para distribuir — o corpo (`flex-basis:0`)
-   simplesmente não crescia, colapsando quase a zero e cortando
-   Observação/Cor do cartão. Voltamos ao padrão simples e já
-   comprovado do resto do módulo: o corpo com um `max-height` FIXO
-   (em vh) — sem flex —, generoso o bastante para caber todos os
-   campos sem scroll na maioria das telas, e só rolando internamente
-   em janelas bem baixas. */
-.agenda-modal.agenda-modal-session {
-  width: 460px;
+.agenda-modal-session .agenda-modal-header { padding: 22px 26px 0; }
+.agenda-modal-session .agenda-modal-title { font-size: 17px; }
+.agenda-modal-session .agenda-modal-subtitle { font-size: 12px; margin-top: 3px; }
+
+.agenda-modal-session .agenda-session-layout {
+  display: grid;
+  grid-template-columns: 1fr 216px;
+  align-items: start;
+  gap: 24px;
+  max-height: 64vh;
+  padding: 22px 26px;
 }
 
-.agenda-modal-session .agenda-modal-header { padding: 16px 18px 0; gap: 10px; }
-.agenda-modal-session .agenda-modal-title { font-size: 14.5px; }
-.agenda-modal-session .agenda-modal-subtitle { font-size: 10.5px; margin-top: 2px; }
-.agenda-modal-session .agenda-modal-close { width: 26px; height: 26px; }
+/* ── Coluna principal — seções separadas por divisória, sem caixa ── */
+.agenda-session-main { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
 
-.agenda-session-context {
-  display: flex;
-  gap: 8px;
-  padding: 10px 18px 0;
-}
-.agenda-context-card {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: var(--r-sm);
-  background: var(--surface);
-  border: 1px solid var(--border);
-}
-.agenda-context-icon { font-size: 14px; line-height: 1; flex-shrink: 0; opacity: .9; }
-.agenda-context-info { display: flex; flex-direction: column; gap: 0; min-width: 0; }
-.agenda-context-label { font-size: 8px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--text-3); line-height: 1.3; }
-.agenda-context-value { font-family: 'Space Grotesk', sans-serif; font-size: 11.5px; font-weight: 700; color: var(--text-1); line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.agenda-context-sub { font-size: 9.5px; color: var(--text-2); line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.agenda-sec { min-width: 0; }
+.agenda-sec + .agenda-sec { border-top: 1px solid var(--border); padding-top: 20px; }
+.agenda-sec-head { display: flex; align-items: center; gap: 8px; margin-bottom: 13px; }
+.agenda-sec-icon { font-size: 15px; line-height: 1; opacity: .9; }
+.agenda-sec-title { font-family: 'Space Grotesk', sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: .2px; color: var(--text-1); }
 
-.agenda-plan-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-sm);
-  padding: 9px 10px;
-}
-.agenda-plan-title { font-size: 9.5px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
+.agenda-modal-session .agenda-form-label { color: var(--text-3); font-weight: 600; }
+.agenda-modal-session .agenda-input { padding: 9px 12px; font-size: 13px; }
 
-.agenda-plan-modes { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 9px; }
+/* Seção "Quando" — botões de modo soltos (sem card em volta) +
+   UM único card de destaque para a semana/data escolhida (é a
+   decisão mais importante do formulário, por isso ganha o único
+   "bloco" de verdade da coluna principal — "a semana deve ficar
+   bem destacada", conforme pedido). */
+.agenda-plan-modes { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
 .agenda-plan-mode-opt {
-  padding: 6px 10px;
+  padding: 7px 12px;
   border-radius: var(--r-sm);
-  background: var(--border);
-  border: 1px solid var(--border-2);
+  background: var(--surface);
+  border: 1px solid var(--border);
   color: var(--text-2);
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 600;
   transition: all .15s ease;
 }
-.agenda-plan-mode-opt:hover { border-color: var(--text-3); color: var(--text-1); }
+.agenda-plan-mode-opt:hover { border-color: var(--border-2); color: var(--text-1); }
 .agenda-plan-mode-opt.active { background: var(--accent-dim); border-color: rgba(108,99,255,.45); color: var(--accent-lite); }
 
-.agenda-plan-week-panel { border-top: 1px solid var(--border); padding-top: 9px; }
-.agenda-plan-week-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.agenda-plan-week-panel,
+.agenda-plan-date-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 15px 17px;
+}
+.agenda-plan-date-panel { margin-top: 0; }
+
+.agenda-plan-week-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 9px; }
 .agenda-plan-week-nav {
-  width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+  width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   color: var(--text-3); transition: all .15s ease;
 }
 .agenda-plan-week-nav:hover { background: var(--border); color: var(--text-1); }
-.agenda-plan-week-info { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 1px; }
-.agenda-plan-week-label { font-family: 'Space Grotesk', sans-serif; font-size: 11.5px; font-weight: 700; color: var(--text-1); }
-.agenda-plan-week-range { font-size: 10px; color: var(--text-3); }
-.agenda-plan-today-line { font-size: 10px; color: var(--text-2); margin: 0 0 8px; text-align: center; }
+.agenda-plan-week-info { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.agenda-plan-week-label { font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; color: var(--text-1); }
+.agenda-plan-week-range { font-size: 11px; color: var(--text-3); }
+.agenda-plan-today-line { font-size: 11.5px; color: var(--text-2); margin: 0 0 13px; text-align: center; }
 
-.agenda-plan-day-chips { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+.agenda-plan-day-chips { display: grid; grid-template-columns: repeat(7, 1fr); gap: 7px; }
 .agenda-plan-day-chip {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 2px; padding: 5px 2px;
+  gap: 3px; padding: 8px 3px;
   border-radius: var(--r-sm);
   background: var(--border);
   border: 1px solid transparent;
@@ -522,55 +513,47 @@
   transition: all .15s ease;
 }
 .agenda-plan-day-chip:hover { border-color: var(--border-2); }
-.agenda-plan-day-chip .dow { font-size: 8px; font-weight: 700; letter-spacing: .3px; text-transform: uppercase; color: var(--text-3); }
-.agenda-plan-day-chip .num { font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 700; color: var(--text-1); }
+.agenda-plan-day-chip .dow { font-size: 8.5px; font-weight: 700; letter-spacing: .3px; text-transform: uppercase; color: var(--text-3); }
+.agenda-plan-day-chip .num { font-family: 'Space Grotesk', sans-serif; font-size: 13.5px; font-weight: 700; color: var(--text-1); }
 .agenda-plan-day-chip.is-today { border-color: var(--ag-today-border); }
 .agenda-plan-day-chip.is-today .dow { color: var(--accent-lite); }
 .agenda-plan-day-chip.is-selected { background: var(--accent-dim); border-color: rgba(108,99,255,.5); }
 .agenda-plan-day-chip.is-selected .dow, .agenda-plan-day-chip.is-selected .num { color: var(--accent-lite); }
 .agenda-plan-day-chip.is-inactive { opacity: .45; }
 
-.agenda-plan-date-panel { border-top: 1px solid var(--border); padding-top: 9px; margin-top: 2px; }
-
-.agenda-modal-session .agenda-modal-body {
-  max-height: 55vh;
-  padding: 10px 18px;
-  gap: 9px;
-}
-
-.agenda-modal-session .agenda-form-row { gap: 9px; }
-.agenda-modal-session .agenda-form-group { gap: 4px; }
-.agenda-modal-session .agenda-form-label { font-size: 9.5px; }
-.agenda-modal-session .agenda-optional { font-size: 9.5px; }
-.agenda-modal-session .agenda-field-hint { font-size: 10px; line-height: 1.3; margin-top: -2px; }
-.agenda-modal-session .agenda-input { padding: 6px 10px; font-size: 12px; }
-.agenda-modal-session .agenda-textarea { min-height: 48px; }
-.agenda-modal-session .agenda-color-options { gap: 6px; }
-.agenda-modal-session .agenda-color-dot { width: 18px; height: 18px; }
-
-.agenda-session-summary {
-  margin: 5px 18px 12px;
-  padding: 9px 12px;
-  border-radius: var(--r-sm);
+/* ── Coluna lateral — painel único de metadados/confirmação ── */
+.agenda-session-side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.agenda-side-block {
   background: var(--surface);
   border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 14px 15px;
 }
-.agenda-summary-title { font-size: 9.5px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--text-3); margin-bottom: 7px; }
-.agenda-summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px 14px; }
-.agenda-summary-item { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.agenda-summary-key { font-size: 9px; font-weight: 600; color: var(--text-3); }
-.agenda-summary-val { font-size: 11px; font-weight: 700; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.agenda-side-title { font-size: 10px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--text-3); margin-bottom: 11px; }
 
-.agenda-modal-session .agenda-modal-footer { padding: 10px 18px 14px; }
+.agenda-now-row { display: flex; align-items: flex-start; gap: 9px; }
+.agenda-now-row + .agenda-now-row { margin-top: 11px; }
+.agenda-now-icon { font-size: 14px; line-height: 1.4; opacity: .85; }
+.agenda-now-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.agenda-now-label { font-size: 9px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--text-3); }
+.agenda-now-value { font-size: 11.5px; font-weight: 600; color: var(--text-1); line-height: 1.35; }
 
-@media (max-width: 560px) {
+.agenda-summary-list { display: flex; flex-direction: column; gap: 11px; }
+.agenda-summary-row { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.agenda-summary-key { font-size: 9.5px; font-weight: 700; letter-spacing: .3px; text-transform: uppercase; color: var(--text-3); }
+.agenda-summary-val { font-size: 12px; font-weight: 700; color: var(--text-1); line-height: 1.35; }
+
+.agenda-modal-session .agenda-modal-footer { padding: 16px 26px 22px; }
+
+@media (max-width: 760px) {
   .agenda-modal.agenda-modal-session { width: calc(100vw - 32px); }
-  .agenda-session-context { flex-direction: column; }
-  .agenda-summary-grid { grid-template-columns: 1fr; }
-  .agenda-plan-mode-opt { font-size: 10px; padding: 5px 8px; }
-  .agenda-plan-day-chips { gap: 3px; }
-  .agenda-plan-day-chip { padding: 4px 1px; }
-  .agenda-plan-day-chip .num { font-size: 11px; }
+  .agenda-modal-session .agenda-session-layout { grid-template-columns: 1fr; max-height: 70vh; }
+}
+@media (max-width: 480px) {
+  .agenda-plan-mode-opt { font-size: 10.5px; padding: 6px 10px; }
+  .agenda-plan-day-chips { gap: 4px; }
+  .agenda-plan-day-chip { padding: 6px 2px; }
+  .agenda-plan-day-chip .num { font-size: 12px; }
 }
 
 .agenda-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }

@@ -421,7 +421,17 @@ const TEMPLATE_HTML = `
     <div id="agenda-stats-body"></div>
   </div>
 
-  <!-- MODAL: Novo/Editar estudo -->
+  <!-- MODAL: Novo/Editar estudo
+       ─────────────────────────────────────────────
+       v-redesign — Arquitetura em 2 colunas (ver agenda.css,
+       bloco ".agenda-modal-session"): uma coluna principal com o
+       fluxo de preenchimento (Quando → Horário → Conteúdo) e uma
+       coluna lateral de metadados (Agora/Cor/Resumo), no espírito
+       de painéis de propriedades de apps como Linear/Notion.
+       Nenhum campo, botão ou informação foi removido — só
+       reorganizados. Todos os IDs são os mesmos que
+       agenda_interactions.js já lê/escuta, então nenhuma lógica
+       precisou mudar, só a casca visual. -->
   <div class="agenda-modal-overlay" id="agenda-modal-session" aria-hidden="true">
     <div class="agenda-modal agenda-modal-session" role="dialog" aria-modal="true">
       <div class="agenda-modal-header">
@@ -434,131 +444,158 @@ const TEMPLATE_HTML = `
         </button>
       </div>
 
-      <!-- CONTEXTO — data/hora atuais, só informativo (nunca é salvo) -->
-      <div class="agenda-session-context">
-        <div class="agenda-context-card">
-          <span class="agenda-context-icon" aria-hidden="true">📅</span>
-          <div class="agenda-context-info">
-            <span class="agenda-context-label">Hoje</span>
-            <span class="agenda-context-value" id="agenda-context-weekday">—</span>
-            <span class="agenda-context-sub" id="agenda-context-date">—</span>
-          </div>
-        </div>
-        <div class="agenda-context-card">
-          <span class="agenda-context-icon" aria-hidden="true">🕒</span>
-          <div class="agenda-context-info">
-            <span class="agenda-context-label">Agora</span>
-            <span class="agenda-context-value" id="agenda-context-time">—</span>
-            <span class="agenda-context-sub" id="agenda-context-monthyear">—</span>
-          </div>
-        </div>
-      </div>
+      <div class="agenda-modal-body agenda-session-layout">
+        <!-- COLUNA PRINCIPAL — o fluxo de preenchimento em si -->
+        <div class="agenda-session-main">
 
-      <div class="agenda-modal-body">
-        <!-- PLANEJAMENTO — substitui o antigo select "Dia da semana" e a
-             barra "Sessão será criada para". Deixa o usuário escolher em
-             qual semana (ou data específica) a sessão deve entrar, de
-             forma independente da semana que está sendo visualizada no
-             grid principal da Agenda. Toda a lógica de renderização e
-             troca de modo fica em agenda_interactions.js
-             (renderPlanCard/setPlanMode/etc.) — aqui só a casca estática. -->
-        <div class="agenda-plan-card" id="agenda-plan-card">
-          <div class="agenda-plan-title">Planejamento</div>
-          <div class="agenda-plan-modes" id="agenda-plan-modes">
-            <button type="button" class="agenda-plan-mode-opt" data-mode="this">Esta semana</button>
-            <button type="button" class="agenda-plan-mode-opt" data-mode="next">Próxima semana</button>
-            <button type="button" class="agenda-plan-mode-opt" data-mode="other">Escolher outra semana</button>
-            <button type="button" class="agenda-plan-mode-opt" data-mode="date">Data específica</button>
-          </div>
-
-          <div class="agenda-plan-week-panel" id="agenda-plan-week-panel">
-            <div class="agenda-plan-week-head">
-              <button type="button" class="agenda-plan-week-nav" id="agenda-plan-week-prev" aria-label="Semana anterior">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
-              <div class="agenda-plan-week-info">
-                <span class="agenda-plan-week-label" id="agenda-plan-week-label">Semana atual</span>
-                <span class="agenda-plan-week-range" id="agenda-plan-week-range">—</span>
-              </div>
-              <button type="button" class="agenda-plan-week-nav" id="agenda-plan-week-next" aria-label="Próxima semana">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
+          <!-- QUANDO — substitui o antigo select "Dia da semana" e a
+               barra "Sessão será criada para". Deixa o usuário
+               escolher em qual semana (ou data específica) a sessão
+               deve entrar, independente da semana visível no grid
+               principal da Agenda. Lógica em agenda_interactions.js
+               (renderPlanCard/setPlanMode/etc.) — aqui só a casca. -->
+          <section class="agenda-sec" id="agenda-plan-card">
+            <div class="agenda-sec-head">
+              <span class="agenda-sec-icon" aria-hidden="true">🗓️</span>
+              <h3 class="agenda-sec-title">Quando</h3>
             </div>
-            <p class="agenda-plan-today-line" id="agenda-plan-today-line">Hoje é: —</p>
-            <div class="agenda-plan-day-chips" id="agenda-plan-day-chips"></div>
+
+            <div class="agenda-plan-modes" id="agenda-plan-modes">
+              <button type="button" class="agenda-plan-mode-opt" data-mode="this">Esta semana</button>
+              <button type="button" class="agenda-plan-mode-opt" data-mode="next">Próxima semana</button>
+              <button type="button" class="agenda-plan-mode-opt" data-mode="other">Escolher outra semana</button>
+              <button type="button" class="agenda-plan-mode-opt" data-mode="date">Data específica</button>
+            </div>
+
+            <div class="agenda-plan-week-panel" id="agenda-plan-week-panel">
+              <div class="agenda-plan-week-head">
+                <button type="button" class="agenda-plan-week-nav" id="agenda-plan-week-prev" aria-label="Semana anterior">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <div class="agenda-plan-week-info">
+                  <span class="agenda-plan-week-label" id="agenda-plan-week-label">Semana atual</span>
+                  <span class="agenda-plan-week-range" id="agenda-plan-week-range">—</span>
+                </div>
+                <button type="button" class="agenda-plan-week-nav" id="agenda-plan-week-next" aria-label="Próxima semana">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+              </div>
+              <p class="agenda-plan-today-line" id="agenda-plan-today-line">Hoje é: —</p>
+              <div class="agenda-plan-day-chips" id="agenda-plan-day-chips"></div>
+            </div>
+
+            <div class="agenda-form-group agenda-plan-date-panel" id="agenda-plan-date-panel" style="display:none">
+              <label class="agenda-form-label" for="agenda-plan-date-input">Escolha uma data</label>
+              <input class="agenda-input" type="text" id="agenda-plan-date-input" placeholder="DD/MM/AAAA" autocomplete="off" inputmode="numeric" />
+              <p class="agenda-field-hint" id="agenda-plan-date-input-hint" style="display:none"></p>
+            </div>
+          </section>
+
+          <!-- HORÁRIO -->
+          <section class="agenda-sec">
+            <div class="agenda-sec-head">
+              <span class="agenda-sec-icon" aria-hidden="true">⏱️</span>
+              <h3 class="agenda-sec-title">Horário</h3>
+            </div>
+            <div class="agenda-form-row">
+              <div class="agenda-form-group">
+                <label class="agenda-form-label" for="agenda-input-time">Hora inicial <span class="agenda-optional">(opcional)</span></label>
+                <input class="agenda-input" type="text" id="agenda-input-time" placeholder="--:--" autocomplete="off" inputmode="numeric" />
+              </div>
+              <div class="agenda-form-group">
+                <label class="agenda-form-label" for="agenda-input-time-end">Hora final <span class="agenda-optional">(opcional)</span></label>
+                <input class="agenda-input" type="text" id="agenda-input-time-end" placeholder="--:--" autocomplete="off" inputmode="numeric" />
+              </div>
+            </div>
+            <p class="agenda-field-hint" id="agenda-duration-hint" style="display:none"></p>
+            <p class="agenda-field-hint">Deixe os horários em branco (Backspace no campo) para criar um estudo planejado.</p>
+          </section>
+
+          <!-- CONTEÚDO -->
+          <section class="agenda-sec">
+            <div class="agenda-sec-head">
+              <span class="agenda-sec-icon" aria-hidden="true">📚</span>
+              <h3 class="agenda-sec-title">Conteúdo</h3>
+            </div>
+            <div class="agenda-form-group">
+              <label class="agenda-form-label" for="agenda-input-subject">Disciplina / assunto</label>
+              <div style="position:relative">
+                <input class="agenda-input" type="text" id="agenda-input-subject" placeholder="Ex: Matemática, Física…" autocomplete="off" />
+                <div class="agenda-subject-suggestions" id="agenda-subject-suggestions"></div>
+              </div>
+            </div>
+            <div class="agenda-form-group">
+              <label class="agenda-form-label" for="agenda-input-note">Observação <span class="agenda-optional">(opcional)</span></label>
+              <textarea class="agenda-input agenda-textarea" id="agenda-input-note" rows="3" placeholder="Capítulo, exercícios, revisão…"></textarea>
+            </div>
+          </section>
+        </div>
+
+        <!-- COLUNA LATERAL — metadados: momento atual, cor e resumo
+             ao vivo. Fica visualmente separada do fluxo principal
+             (painel de propriedades, no espírito Notion/Linear), sem
+             competir por atenção com as decisões que o usuário
+             precisa tomar (Quando/Horário/Conteúdo). -->
+        <aside class="agenda-session-side">
+          <div class="agenda-side-block agenda-side-now">
+            <div class="agenda-now-row">
+              <span class="agenda-now-icon" aria-hidden="true">📅</span>
+              <div class="agenda-now-info">
+                <span class="agenda-now-label">Hoje</span>
+                <span class="agenda-now-value"><span id="agenda-context-weekday">—</span>, <span id="agenda-context-date">—</span></span>
+              </div>
+            </div>
+            <div class="agenda-now-row">
+              <span class="agenda-now-icon" aria-hidden="true">🕒</span>
+              <div class="agenda-now-info">
+                <span class="agenda-now-label">Agora</span>
+                <span class="agenda-now-value"><span id="agenda-context-time">—</span> · <span id="agenda-context-monthyear">—</span></span>
+              </div>
+            </div>
           </div>
 
-          <div class="agenda-form-group agenda-plan-date-panel" id="agenda-plan-date-panel" style="display:none">
-            <label class="agenda-form-label" for="agenda-plan-date-input">Escolha uma data</label>
-            <input class="agenda-input" type="text" id="agenda-plan-date-input" placeholder="DD/MM/AAAA" autocomplete="off" inputmode="numeric" />
-            <p class="agenda-field-hint" id="agenda-plan-date-input-hint" style="display:none"></p>
+          <div class="agenda-side-block">
+            <div class="agenda-side-title">Cor do cartão</div>
+            <div class="agenda-color-options" id="agenda-color-options">
+              <button class="agenda-color-dot active" data-color="blue" style="--c:#4FA8E8"></button>
+              <button class="agenda-color-dot" data-color="purple" style="--c:#6C63FF"></button>
+              <button class="agenda-color-dot" data-color="green" style="--c:#3DDC84"></button>
+              <button class="agenda-color-dot" data-color="amber" style="--c:#FFB547"></button>
+              <button class="agenda-color-dot" data-color="rose" style="--c:#FF5C6A"></button>
+              <button class="agenda-color-dot" data-color="teal" style="--c:#2DD4BF"></button>
+            </div>
           </div>
-        </div>
-        <div class="agenda-form-row">
-          <div class="agenda-form-group">
-            <label class="agenda-form-label" for="agenda-input-time">Hora inicial <span class="agenda-optional">(opcional)</span></label>
-            <input class="agenda-input" type="text" id="agenda-input-time" placeholder="--:--" autocomplete="off" inputmode="numeric" />
-          </div>
-          <div class="agenda-form-group">
-            <label class="agenda-form-label" for="agenda-input-time-end">Hora final <span class="agenda-optional">(opcional)</span></label>
-            <input class="agenda-input" type="text" id="agenda-input-time-end" placeholder="--:--" autocomplete="off" inputmode="numeric" />
-          </div>
-        </div>
-        <p class="agenda-field-hint" id="agenda-duration-hint" style="display:none"></p>
-        <p class="agenda-field-hint">Deixe os horários em branco (Backspace no campo) para criar um estudo planejado.</p>
-        <div class="agenda-form-group">
-          <label class="agenda-form-label" for="agenda-input-subject">Conteúdo</label>
-          <div style="position:relative">
-            <input class="agenda-input" type="text" id="agenda-input-subject" placeholder="Ex: Matemática, Física…" autocomplete="off" />
-            <div class="agenda-subject-suggestions" id="agenda-subject-suggestions"></div>
-          </div>
-        </div>
-        <div class="agenda-form-group">
-          <label class="agenda-form-label" for="agenda-input-note">Observação <span class="agenda-optional">(opcional)</span></label>
-          <textarea class="agenda-input agenda-textarea" id="agenda-input-note" rows="3" placeholder="Capítulo, exercícios, revisão…"></textarea>
-        </div>
-        <div class="agenda-form-group">
-          <label class="agenda-form-label">Cor do cartão</label>
-          <div class="agenda-color-options" id="agenda-color-options">
-            <button class="agenda-color-dot active" data-color="blue" style="--c:#4FA8E8"></button>
-            <button class="agenda-color-dot" data-color="purple" style="--c:#6C63FF"></button>
-            <button class="agenda-color-dot" data-color="green" style="--c:#3DDC84"></button>
-            <button class="agenda-color-dot" data-color="amber" style="--c:#FFB547"></button>
-            <button class="agenda-color-dot" data-color="rose" style="--c:#FF5C6A"></button>
-            <button class="agenda-color-dot" data-color="teal" style="--c:#2DD4BF"></button>
-          </div>
-        </div>
-      </div>
 
-      <!-- RESUMO — espelha os campos acima em tempo real, não é editável -->
-      <div class="agenda-session-summary" id="agenda-session-summary">
-        <div class="agenda-summary-title">Resumo da sessão</div>
-        <div class="agenda-summary-grid">
-          <div class="agenda-summary-item">
-            <span class="agenda-summary-key">Disciplina</span>
-            <span class="agenda-summary-val" id="agenda-summary-subject">—</span>
+          <div class="agenda-side-block agenda-session-summary" id="agenda-session-summary">
+            <div class="agenda-side-title">Resumo da sessão</div>
+            <div class="agenda-summary-list">
+              <div class="agenda-summary-row">
+                <span class="agenda-summary-key">Disciplina</span>
+                <span class="agenda-summary-val" id="agenda-summary-subject">—</span>
+              </div>
+              <div class="agenda-summary-row">
+                <span class="agenda-summary-key">Data</span>
+                <span class="agenda-summary-val" id="agenda-summary-date">—</span>
+              </div>
+              <div class="agenda-summary-row">
+                <span class="agenda-summary-key">Horário</span>
+                <span class="agenda-summary-val" id="agenda-summary-time">—</span>
+              </div>
+              <div class="agenda-summary-row">
+                <span class="agenda-summary-key">Duração</span>
+                <span class="agenda-summary-val" id="agenda-summary-duration">—</span>
+              </div>
+              <div class="agenda-summary-row">
+                <span class="agenda-summary-key">Categoria</span>
+                <span class="agenda-summary-val" id="agenda-summary-category">—</span>
+              </div>
+              <div class="agenda-summary-row">
+                <span class="agenda-summary-key">Status</span>
+                <span class="agenda-summary-val" id="agenda-summary-status">—</span>
+              </div>
+            </div>
           </div>
-          <div class="agenda-summary-item">
-            <span class="agenda-summary-key">Data</span>
-            <span class="agenda-summary-val" id="agenda-summary-date">—</span>
-          </div>
-          <div class="agenda-summary-item">
-            <span class="agenda-summary-key">Horário</span>
-            <span class="agenda-summary-val" id="agenda-summary-time">—</span>
-          </div>
-          <div class="agenda-summary-item">
-            <span class="agenda-summary-key">Duração</span>
-            <span class="agenda-summary-val" id="agenda-summary-duration">—</span>
-          </div>
-          <div class="agenda-summary-item">
-            <span class="agenda-summary-key">Categoria</span>
-            <span class="agenda-summary-val" id="agenda-summary-category">—</span>
-          </div>
-          <div class="agenda-summary-item">
-            <span class="agenda-summary-key">Status</span>
-            <span class="agenda-summary-val" id="agenda-summary-status">—</span>
-          </div>
-        </div>
+        </aside>
       </div>
 
       <div class="agenda-modal-footer">
