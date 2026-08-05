@@ -114,7 +114,7 @@
       icon:  '👤',
       label: 'Pessoal',
       title: 'Pessoal',
-      href:  `${BASE_URL}/novas_implementações/v2/dashboard.html`,
+      href:  `${BASE_URL}/dashboard/dashboard.html`,
       match: /\/pessoal\//,
     },
   ];

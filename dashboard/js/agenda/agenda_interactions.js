@@ -690,11 +690,17 @@ function renderNowContextCard() {
   const elDate = document.getElementById('agenda-context-date');
   const elTime = document.getElementById('agenda-context-time');
   const elMonthYear = document.getElementById('agenda-context-monthyear');
+  const elWeekRange = document.getElementById('agenda-context-week-range');
   if (!elWeekday) return;
   elWeekday.textContent = FULL_DAY_NAMES[idx];
   elDate.textContent = formatFullDateBR(now);
   elTime.textContent = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
   elMonthYear.textContent = `${FULL_MONTH_NAMES[now.getMonth()]} de ${now.getFullYear()}`;
+  /* Card "Semana atual" — sempre a semana real de hoje (independente
+     da semana visível no grid principal ou da semana escolhida no
+     card "Quando"), com o mesmo formato compacto já usado no painel
+     de planejamento (formatWeekRangeShort). */
+  if (elWeekRange) elWeekRange.textContent = formatWeekRangeShort(getMondayOf(now));
 }
 
 /* ══════════════════ CARD "PLANEJAMENTO" ══════════════════ */
@@ -932,6 +938,11 @@ export function openSessionModal({ weekKey, dayIdx, sessionId }) {
     state.modal.color = 'blue';
     document.getElementById('agenda-btn-delete').style.display = 'none';
   }
+  /* Rodapé: o hint "Você poderá editar todos os detalhes depois." só
+     faz sentido ao CRIAR (na edição, quem ocupa aquele canto é o
+     botão Excluir) — nunca aparecem juntos. */
+  const footerHint = document.getElementById('agenda-footer-hint');
+  if (footerHint) footerHint.style.display = isEdit ? 'none' : 'flex';
 
   refreshSessionModalInfo();
 
@@ -1194,6 +1205,17 @@ function goToToday() {
   persistirEstadoUIAgenda();
 }
 
+/* Link "Ver semana ›" do card de contexto "Semana atual" (modal Novo
+   estudo) — leva o grid principal para a semana real de hoje (mesmo
+   destino de goToToday()) e fecha o modal, trocando também para a
+   aba Agenda caso o modal tenha sido aberto a partir de Metas/
+   Estatísticas (o botão "Novo estudo" fica visível nas 3 abas). */
+function goToCurrentWeekFromModal() {
+  switchTab('agenda');
+  goToToday();
+  closeSessionModal();
+}
+
 function toggleWeekMenu(forceClose) {
   const menu = document.getElementById('agenda-week-menu');
   if (forceClose) { menu.classList.remove('open'); return; }
@@ -1291,6 +1313,7 @@ export function initAgendaEventListeners() {
   document.getElementById('agenda-btn-cancel').addEventListener('click', closeSessionModal);
   document.getElementById('agenda-btn-save').addEventListener('click', saveSession);
   document.getElementById('agenda-btn-delete').addEventListener('click', deleteSession);
+  document.getElementById('agenda-context-view-week-btn').addEventListener('click', goToCurrentWeekFromModal);
 
   document.getElementById('agenda-input-time').addEventListener('change', updateDurationSuggestion);
   document.getElementById('agenda-input-time-end').addEventListener('input', hideDurationHint);

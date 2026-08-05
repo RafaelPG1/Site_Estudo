@@ -427,26 +427,74 @@
      seções separadas por divisórias finas (sem caixa em volta de
      cada uma; menos "caixa dentro de caixa", mais respiração).
    • Coluna lateral (.agenda-session-side): tudo que é metadado/
-     confirmação — Agora, Cor do cartão e o Resumo da sessão — num
+     confirmação — Cor do cartão e o Resumo da sessão — num
      painel único, visualmente separado das decisões que o usuário
      precisa tomar. Usar a LARGURA do modal em vez de empilhar tudo
      verticalmente é o que faz o formulário parecer bem mais curto
      mesmo contendo exatamente os mesmos campos de antes.
    Nenhum campo, botão, resumo ou informação foi removido — só
    reorganizados (ver comentário no TEMPLATE_HTML, agenda.js). */
-.agenda-modal.agenda-modal-session { width: 700px; }
+.agenda-modal.agenda-modal-session { width: 720px; }
 
 .agenda-modal-session .agenda-modal-header { padding: 22px 26px 0; }
-.agenda-modal-session .agenda-modal-title { font-size: 17px; }
+.agenda-modal-session .agenda-modal-header-info { display: flex; align-items: flex-start; gap: 13px; min-width: 0; }
+.agenda-modal-icon {
+  flex-shrink: 0; width: 42px; height: 42px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: var(--accent-lite);
+  background: linear-gradient(155deg, rgba(108,99,255,.28), rgba(108,99,255,.08));
+  border: 1px solid rgba(108,99,255,.35);
+  box-shadow: 0 4px 14px rgba(108,99,255,.18), inset 0 1px 0 rgba(255,255,255,.06);
+}
+.agenda-modal-icon svg { width: 19px; height: 19px; }
+.agenda-modal-session .agenda-modal-title { font-size: 18px; }
 .agenda-modal-session .agenda-modal-subtitle { font-size: 12px; margin-top: 3px; }
+
+/* ── FAIXA DE CONTEXTO — "Hoje / Agora / Semana atual" ──────────────
+   Substitui o antigo bloco .agenda-side-now (que ficava perdido no
+   fim da coluna lateral). Como são 3 fatos puramente informativos
+   sobre o momento real (não decisões do usuário), ganham destaque
+   próprio logo abaixo do cabeçalho — largura cheia, 3 cartões iguais
+   — em vez de competir por espaço com "Cor do cartão"/"Resumo" na
+   coluna lateral. Preenchido por renderNowContextCard() em
+   agenda_interactions.js; os IDs de Hoje/Agora são os mesmos de
+   antes, só a "casca" mudou. */
+.agenda-context-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 18px 26px 0;
+}
+.agenda-context-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 12px 14px;
+  min-width: 0;
+}
+.agenda-context-card-icon { display: flex; align-items: center; justify-content: center; width: 17px; height: 17px; margin-top: 1px; color: var(--text-3); opacity: .95; flex-shrink: 0; }
+.agenda-context-card-icon svg { width: 100%; height: 100%; }
+.agenda-context-card-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.agenda-context-card-label { font-size: 9px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--text-3); }
+.agenda-context-card-value { font-family: 'Space Grotesk', sans-serif; font-size: 13.5px; font-weight: 700; color: var(--text-1); line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.agenda-context-card-sub { font-size: 10.5px; color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.agenda-context-card-link {
+  align-self: flex-start;
+  font-size: 10.5px; font-weight: 700; color: var(--accent-lite);
+  margin-top: 1px; transition: color .15s ease;
+}
+.agenda-context-card-link:hover { color: #fff; text-decoration: underline; }
 
 .agenda-modal-session .agenda-session-layout {
   display: grid;
   grid-template-columns: 1fr 216px;
   align-items: start;
   gap: 24px;
-  max-height: 64vh;
-  padding: 22px 26px;
+  max-height: 60vh;
+  padding: 20px 26px 22px;
 }
 
 /* ── Coluna principal — seções separadas por divisória, sem caixa ── */
@@ -455,8 +503,14 @@
 .agenda-sec { min-width: 0; }
 .agenda-sec + .agenda-sec { border-top: 1px solid var(--border); padding-top: 20px; }
 .agenda-sec-head { display: flex; align-items: center; gap: 8px; margin-bottom: 13px; }
-.agenda-sec-icon { font-size: 15px; line-height: 1; opacity: .9; }
+.agenda-sec-icon { display: flex; align-items: center; justify-content: center; width: 15px; height: 15px; color: var(--accent-lite); opacity: .95; }
+.agenda-sec-icon svg { width: 100%; height: 100%; }
 .agenda-sec-title { font-family: 'Space Grotesk', sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: .2px; color: var(--text-1); }
+/* Ajustes exclusivos da seção "Quando" (redesign pontual pedido pelo
+   usuário) — escopados sob #agenda-plan-card, o id único dessa
+   <section>, para NUNCA afetar "Horário"/"Conteúdo", que reaproveitam
+   as mesmas classes .agenda-sec/.agenda-sec-title/.agenda-sec-icon. */
+#agenda-plan-card .agenda-sec-title { font-size: 13px; letter-spacing: .4px; text-transform: uppercase; }
 
 .agenda-modal-session .agenda-form-label { color: var(--text-3); font-weight: 600; }
 .agenda-modal-session .agenda-input { padding: 9px 12px; font-size: 13px; }
@@ -468,17 +522,20 @@
    bem destacada", conforme pedido). */
 .agenda-plan-modes { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
 .agenda-plan-mode-opt {
-  padding: 7px 12px;
-  border-radius: var(--r-sm);
+  display: flex; align-items: center; gap: 7px;
+  padding: 9px 15px;
+  border-radius: var(--r-md);
   background: var(--surface);
   border: 1px solid var(--border);
   color: var(--text-2);
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 600;
   transition: all .15s ease;
 }
 .agenda-plan-mode-opt:hover { border-color: var(--border-2); color: var(--text-1); }
-.agenda-plan-mode-opt.active { background: var(--accent-dim); border-color: rgba(108,99,255,.45); color: var(--accent-lite); }
+.agenda-plan-mode-opt.active { background: var(--accent-dim); border-color: rgba(108,99,255,.6); color: var(--accent-lite); box-shadow: 0 0 0 1px rgba(108,99,255,.18) inset, 0 0 16px rgba(108,99,255,.25); }
+.agenda-plan-mode-opt span[aria-hidden] { display: flex; align-items: center; justify-content: center; width: 13px; height: 13px; flex-shrink: 0; }
+.agenda-plan-mode-opt span[aria-hidden] svg { width: 100%; height: 100%; }
 
 .agenda-plan-week-panel,
 .agenda-plan-date-panel {
@@ -489,22 +546,37 @@
 }
 .agenda-plan-date-panel { margin-top: 0; }
 
-.agenda-plan-week-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 9px; }
+.agenda-plan-week-head { display: flex; align-items: center; gap: 10px; margin-bottom: 13px; }
 .agenda-plan-week-nav {
   width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   color: var(--text-3); transition: all .15s ease;
 }
 .agenda-plan-week-nav:hover { background: var(--border); color: var(--text-1); }
-.agenda-plan-week-info { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.agenda-plan-week-label { font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; color: var(--text-1); }
+.agenda-plan-week-info { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.agenda-plan-week-label { font-family: 'Space Grotesk', sans-serif; font-size: 13.5px; font-weight: 700; color: var(--text-1); }
 .agenda-plan-week-range { font-size: 11px; color: var(--text-3); }
-.agenda-plan-today-line { font-size: 11.5px; color: var(--text-2); margin: 0 0 13px; text-align: center; }
+/* "Hoje é: ..." — antes era uma linha centralizada acima dos chips;
+   agora é um badge/pill no fim da mesma linha do label da semana
+   (só aparece no modo "Esta semana", ver renderPlanWeekPanel()),
+   deixando o painel mais compacto e com uma única leitura horizontal
+   em vez de 3 linhas empilhadas. */
+.agenda-plan-today-line {
+  flex-shrink: 0;
+  display: flex; align-items: center; gap: 7px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(108,99,255,.3);
+  border-radius: 20px;
+  padding: 7px 14px 7px 11px;
+  font-size: 11px; font-weight: 600; color: var(--text-2);
+  white-space: nowrap; max-width: 320px; overflow: hidden; text-overflow: ellipsis;
+}
+.agenda-plan-today-line::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent-lite); flex-shrink: 0; box-shadow: 0 0 6px var(--accent-lite); }
 
-.agenda-plan-day-chips { display: grid; grid-template-columns: repeat(7, 1fr); gap: 7px; }
+.agenda-plan-day-chips { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
 .agenda-plan-day-chip {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 3px; padding: 8px 3px;
+  gap: 6px; padding: 12px 3px;
   border-radius: var(--r-sm);
   background: var(--border);
   border: 1px solid transparent;
@@ -513,12 +585,13 @@
   transition: all .15s ease;
 }
 .agenda-plan-day-chip:hover { border-color: var(--border-2); }
-.agenda-plan-day-chip .dow { font-size: 8.5px; font-weight: 700; letter-spacing: .3px; text-transform: uppercase; color: var(--text-3); }
-.agenda-plan-day-chip .num { font-family: 'Space Grotesk', sans-serif; font-size: 13.5px; font-weight: 700; color: var(--text-1); }
+.agenda-plan-day-chip .dow { font-size: 9px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--text-3); }
+.agenda-plan-day-chip .num { font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 700; color: var(--text-1); }
 .agenda-plan-day-chip.is-today { border-color: var(--ag-today-border); }
 .agenda-plan-day-chip.is-today .dow { color: var(--accent-lite); }
-.agenda-plan-day-chip.is-selected { background: var(--accent-dim); border-color: rgba(108,99,255,.5); }
+.agenda-plan-day-chip.is-selected { background: var(--accent-dim); border-color: rgba(108,99,255,.75); box-shadow: 0 0 0 1px rgba(108,99,255,.35), 0 0 14px rgba(108,99,255,.2); }
 .agenda-plan-day-chip.is-selected .dow, .agenda-plan-day-chip.is-selected .num { color: var(--accent-lite); }
+.agenda-plan-day-chip.is-selected::after { content: ''; width: 4px; height: 4px; border-radius: 50%; background: var(--accent-lite); box-shadow: 0 0 5px var(--accent-lite); }
 .agenda-plan-day-chip.is-inactive { opacity: .45; }
 
 /* ── Coluna lateral — painel único de metadados/confirmação ── */
@@ -529,31 +602,52 @@
   border-radius: var(--r-md);
   padding: 14px 15px;
 }
-.agenda-side-title { font-size: 10px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--text-3); margin-bottom: 11px; }
-
-.agenda-now-row { display: flex; align-items: flex-start; gap: 9px; }
-.agenda-now-row + .agenda-now-row { margin-top: 11px; }
-.agenda-now-icon { font-size: 14px; line-height: 1.4; opacity: .85; }
-.agenda-now-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.agenda-now-label { font-size: 9px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--text-3); }
-.agenda-now-value { font-size: 11.5px; font-weight: 600; color: var(--text-1); line-height: 1.35; }
+.agenda-side-title { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--text-3); margin-bottom: 11px; }
+.agenda-side-title svg { width: 13px; height: 13px; flex-shrink: 0; opacity: .8; }
 
 .agenda-summary-list { display: flex; flex-direction: column; gap: 11px; }
 .agenda-summary-row { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .agenda-summary-key { font-size: 9.5px; font-weight: 700; letter-spacing: .3px; text-transform: uppercase; color: var(--text-3); }
 .agenda-summary-val { font-size: 12px; font-weight: 700; color: var(--text-1); line-height: 1.35; }
+/* Linha "Status" — mesmo dado de sempre (Pendente/Concluído), só
+   com uma "casca" de pill (igual aos badges já usados em outras
+   partes do Dashboard) em vez de texto solto, para bater com a
+   referência visual. Continua sendo o MESMO span que
+   updateSessionSummary() em agenda_interactions.js já preenche via
+   textContent — nenhuma lógica mudou, só o estilo. */
+#agenda-summary-status {
+  display: inline-flex; align-self: flex-start;
+  padding: 3px 10px; border-radius: 20px;
+  background: var(--accent-dim); border: 1px solid rgba(108,99,255,.4);
+  color: var(--accent-lite); font-size: 10.5px;
+}
 
 .agenda-modal-session .agenda-modal-footer { padding: 16px 26px 22px; }
+/* Área esquerda do rodapé: no modo edição mostra o botão Excluir;
+   no modo criação, dá lugar à dica "Você poderá editar todos os
+   detalhes depois." — nenhum dos dois é removido, só nunca aparecem
+   ao mesmo tempo (ver toggle de display em openSessionModal(),
+   agenda_interactions.js). */
+.agenda-modal-footer-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.agenda-footer-hint { display: flex; align-items: center; gap: 7px; font-size: 11.5px; color: var(--text-3); line-height: 1.4; }
+.agenda-footer-hint-icon {
+  flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--border); color: var(--text-3); font-size: 10px; font-weight: 700;
+}
 
 @media (max-width: 760px) {
   .agenda-modal.agenda-modal-session { width: calc(100vw - 32px); }
-  .agenda-modal-session .agenda-session-layout { grid-template-columns: 1fr; max-height: 70vh; }
+  .agenda-context-strip { grid-template-columns: 1fr; padding: 16px 20px 0; }
+  .agenda-modal-session .agenda-session-layout { grid-template-columns: 1fr; max-height: 70vh; padding: 18px 20px 20px; }
 }
 @media (max-width: 480px) {
   .agenda-plan-mode-opt { font-size: 10.5px; padding: 6px 10px; }
   .agenda-plan-day-chips { gap: 4px; }
   .agenda-plan-day-chip { padding: 6px 2px; }
   .agenda-plan-day-chip .num { font-size: 12px; }
+  .agenda-plan-week-head { flex-wrap: wrap; }
+  .agenda-plan-today-line { order: 3; max-width: 100%; }
 }
 
 .agenda-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -579,6 +673,17 @@
    .agenda-week-menu-item-danger etc. Usado pelo campo "Concluir até"
    enquanto o ano estiver incompleto (menos de 4 dígitos). */
 .agenda-input.is-error { border-color: rgba(255,92,106,.55); box-shadow: 0 0 0 3px rgba(255,92,106,.14); }
+/* Wrapper opcional para inputs com ícone fixo à direita (ex.: campos
+   de Hora inicial/final, ver "Horário" no TEMPLATE_HTML de agenda.js).
+   Não interfere em nenhum outro `.agenda-input` — só ativa o padding
+   extra quando o input está de fato dentro de `.agenda-input-icon-wrap`. */
+.agenda-input-icon-wrap { position: relative; }
+.agenda-input-icon-wrap .agenda-input { padding-right: 34px; }
+.agenda-input-icon-wrap .agenda-input-icon {
+  position: absolute; right: 11px; top: 50%; transform: translateY(-50%);
+  width: 14px; height: 14px; color: var(--text-3); pointer-events: none;
+}
+.agenda-input-icon-wrap .agenda-input-icon svg { width: 100%; height: 100%; }
 .agenda-select {
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239896A8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
@@ -595,8 +700,8 @@
 .agenda-suggestion-item { padding: 9px 12px; font-size: 12.5px; color: var(--text-2); transition: background .1s; }
 .agenda-suggestion-item:hover, .agenda-suggestion-item.focused { background: var(--surface-2); color: var(--text-1); }
 
-.agenda-color-options { display: flex; gap: 8px; align-items: center; }
-.agenda-color-dot { width: 22px; height: 22px; border-radius: 50%; background: var(--c); border: 2px solid transparent; transition: all .18s cubic-bezier(.34,1.56,.64,1); }
+.agenda-color-options { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; }
+.agenda-color-dot { width: 24px; height: 24px; border-radius: 50%; background: var(--c); border: 2px solid transparent; transition: all .18s cubic-bezier(.34,1.56,.64,1); }
 .agenda-color-dot:hover { transform: scale(1.15); }
 .agenda-color-dot.active { border-color: #fff; transform: scale(1.2); box-shadow: 0 0 0 2px rgba(255,255,255,.15), 0 0 10px var(--c); }
 
@@ -610,7 +715,7 @@
 }
 .agenda-day-toggle input:checked + span { background: var(--accent-dim); border-color: rgba(108,99,255,.45); color: var(--accent-lite); }
 
-.agenda-btn-save { padding: 8px 20px; border-radius: var(--r-sm); background: var(--accent); color: #fff; font-size: 13px; font-weight: 600; transition: all .18s ease; }
+.agenda-btn-save { display: flex; align-items: center; gap: 6px; padding: 8px 20px; border-radius: var(--r-sm); background: var(--accent); color: #fff; font-size: 13px; font-weight: 600; transition: all .18s ease; }
 .agenda-btn-save:hover { background: var(--accent-lite); box-shadow: 0 6px 18px rgba(108,99,255,.35); }
 .agenda-btn-cancel { padding: 8px 16px; border-radius: var(--r-sm); background: var(--border); border: 1px solid var(--border-2); color: var(--text-2); font-size: 13px; }
 .agenda-btn-cancel:hover { border-color: var(--text-3); color: var(--text-1); }

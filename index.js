@@ -310,7 +310,7 @@ function _renderHeader() {
 
 function _bindCardLinks() {
   const rotas = {
-    'card-pessoal': { path: './pessoal/pessoal.html', area: 'perfil'  },
+    'card-pessoal': { path: './dashboard/dashboard.html', area: 'perfil'  },
     'card-resumos': { path: './resumo/resumo.html',   area: 'resumos' },
     'card-quiz':    { path: './quiz/quiz.html',        area: 'quiz'    },
     'card-jogos':   { path: './games/jogo.html',       area: 'game'    },
