@@ -1895,7 +1895,8 @@ body {
    de cada componente para toque/tela pequena.
 
    Sumário:
-     1. Sidebar → Navigation Drawer (botão flutuante + overlay)
+     1. Sidebar → Navigation Drawer (botão flutuante + overlay,
+        sincronizados por transform/opacity com timing único)
      2. Topbar
      3. Cabeçalho da página (saudação / frase motivacional)
      4. Ferramentas pessoais (tools-grid)
@@ -1923,21 +1924,44 @@ body {
   /* Trava o scroll do conteúdo por trás enquanto o drawer está aberto. */
   body.sidebar-open { overflow: hidden; }
 
+  /* ── Variáveis de sincronização da animação do Drawer ───────────
+     --sb-w        largura real do drawer neste breakpoint (mesma
+                   usada em .sidebar), para calcular o deslocamento
+                   exato do botão flutuante até a posição final ao
+                   lado da logo.
+     --sb-btn-left offset esquerdo do botão em repouso (mesmo valor
+                   usado em .sidebar-toggle), usado na mesma conta.
+     --sb-ease/--sb-duration
+                   timing único compartilhado por Sidebar, botão e
+                   overlay — os três usam a MESMA curva e a MESMA
+                   duração, terminando exatamente juntos. A curva
+                   (leve desaceleração no final, sem overshoot
+                   brusco) foi escolhida para lembrar a abertura de
+                   drawers de apps nativos. ───────────────────────── */
+  :root {
+    --sb-w: min(82vw, 300px);
+    --sb-btn-left: max(16px, env(safe-area-inset-left));
+    --sb-ease: cubic-bezier(.16, 1, .3, 1);
+    --sb-duration: 420ms;
+  }
+
   /* ── Botão flutuante (☰ / ✕) ────────────────────────────────────
-     position:fixed (não sticky) para acompanhar o scroll sempre,
-     preso à lateral esquerda, longe do meio da tela, sem ocupar
-     espaço do conteúdo. Respeita notch/status bar via
-     env(safe-area-inset-*). Visual segue o mesmo Design System dos
-     cards (fundo --surface-2, borda --border-2, raio --r-md) com
-     leve elevação/realce em hover e destaque --accent quando o
-     drawer está aberto (estado ativo). ── */
+     Continua sendo o MESMO elemento, no MESMO lugar do DOM (irmão
+     da <aside>, fora dela) — nenhuma arquitetura mudou. A diferença
+     é que agora ele anima junto com a Sidebar: ao abrir, desliza
+     via `transform: translateX(...)` (calculado a partir de --sb-w
+     e --sb-btn-left) até encostar exatamente à direita da logo,
+     formando um único cabeçalho "Logo + botão". Ao fechar, volta
+     ao mesmo tempo para a posição flutuante original. Só
+     `transform`/`opacity`/`box-shadow` (cosmético) são animados —
+     nada de `left`/`top`/`width`, para não gerar reflow. ────────── */
   .sidebar-toggle {
     display: flex;
     align-items: center;
     justify-content: center;
     position: fixed;
     top: max(16px, env(safe-area-inset-top));
-    left: max(16px, env(safe-area-inset-left));
+    left: var(--sb-btn-left);
     width: 42px;
     height: 42px;
     padding: 0;
@@ -1949,8 +1973,10 @@ body {
     z-index: 1001;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
+    transform: translateX(0);
     transition: border-color .2s ease, background .2s ease, color .2s ease,
-                box-shadow .2s ease, transform .25s cubic-bezier(.34,1.56,.64,1);
+                box-shadow var(--sb-duration) var(--sb-ease),
+                transform var(--sb-duration) var(--sb-ease);
   }
   .sidebar-toggle:hover {
     color: var(--text-1);
@@ -1964,14 +1990,31 @@ body {
   }
   .sidebar-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-  /* Estado ativo — drawer aberto: o botão ganha o mesmo tom de
-     destaque usado em ".nav-item.active" (accent-dim/accent-lite),
-     reforçando que ele agora funciona como "fechar". */
+  /* Estado ativo — drawer aberto: além do tom de destaque (mesmo
+     usado em ".nav-item.active"), o botão desliza junto com a
+     Sidebar (mesma curva/duração) até ficar encostado à direita da
+     logo. `z-index` sobe acima da Sidebar (1002) assim que o
+     drawer abre, para o botão nunca ficar escondido atrás do
+     painel enquanto os dois se movem — ele parece "fazer parte" do
+     drawer do início ao fim do gesto, não só no final. */
   body.sidebar-open .sidebar-toggle {
     color: var(--accent-lite);
     border-color: var(--accent);
     background: var(--accent-dim);
-    box-shadow: 0 10px 24px -8px rgba(0,0,0,.6), 0 0 0 3px rgba(108,99,255,.18);
+    box-shadow: 0 2px 10px -2px rgba(0,0,0,.4), 0 0 0 3px rgba(108,99,255,.16);
+    transform: translateX(calc(var(--sb-w) - 58px - var(--sb-btn-left))) translateY(2px);
+    z-index: 1003;
+  }
+
+  /* Preserva o deslocamento (translateX/translateY) do estado
+     aberto quando o botão recebe hover/active — sem isso, o
+     `transform` dos estados de toque abaixo sobrescreveria a
+     posição e o botão "pularia" de volta ao canto. */
+  body.sidebar-open .sidebar-toggle:hover {
+    transform: translateX(calc(var(--sb-w) - 58px - var(--sb-btn-left))) translateY(2px);
+  }
+  body.sidebar-open .sidebar-toggle:active {
+    transform: translateX(calc(var(--sb-w) - 58px - var(--sb-btn-left))) translateY(2px) scale(.94);
   }
 
   .sidebar-toggle .icon-bar { position: relative; width: 18px; height: 13px; flex-shrink: 0; }
@@ -1982,7 +2025,10 @@ body {
     height: 2px;
     border-radius: 3px;
     background: currentColor;
-    transition: transform .3s cubic-bezier(.4,0,.2,1), opacity .2s ease, top .3s ease, width .2s ease;
+    transition: transform var(--sb-duration) var(--sb-ease),
+                opacity calc(var(--sb-duration) * .6) ease,
+                top var(--sb-duration) var(--sb-ease),
+                width .2s ease;
   }
   .sidebar-toggle .icon-bar span:nth-child(1) { top: 0; }
   .sidebar-toggle .icon-bar span:nth-child(2) { top: 50%; margin-top: -1px; width: 74%; }
@@ -1992,14 +2038,18 @@ body {
      do clique — reforça que o botão é interativo. */
   .sidebar-toggle:hover .icon-bar span:nth-child(2) { width: 100%; }
 
+  /* ☰ → ✕ — morph animado (não é troca abrupta de ícone): as três
+     barras giram/desaparecem com a mesma curva/duração do resto do
+     drawer, formando o X suavemente. */
   body.sidebar-open .sidebar-toggle .icon-bar span:nth-child(1) { top: 50%; margin-top: -1px; transform: rotate(45deg); }
   body.sidebar-open .sidebar-toggle .icon-bar span:nth-child(2) { opacity: 0; width: 100%; }
   body.sidebar-open .sidebar-toggle .icon-bar span:nth-child(3) { top: 50%; margin-top: -1px; transform: rotate(-45deg); }
 
   /* ── Overlay ─────────────────────────────────────────────────────
-     Escurece o restante da página com o drawer aberto e permite
-     fechar tocando fora dele. pointer-events desligado quando
-     fechado, para nunca capturar toque do conteúdo por baixo. ── */
+     Mesma curva/duração de Sidebar e botão (--sb-ease/--sb-duration):
+     fade-in ao abrir, fade-out ao fechar, terminando exatamente
+     junto com o deslize do drawer. Só `opacity` é animada;
+     `pointer-events` muda junto com a classe, sem custo de layout. ── */
   .sidebar-overlay {
     display: block;
     position: fixed;
@@ -2008,22 +2058,26 @@ body {
     opacity: 0;
     pointer-events: none;
     z-index: 999;
-    transition: opacity .25s ease;
+    transition: opacity var(--sb-duration) var(--sb-ease);
   }
   body.sidebar-open .sidebar-overlay { opacity: 1; pointer-events: auto; }
 
   /* ── A própria Sidebar vira o drawer ───────────────────────────
-     Mantém position:fixed/top:0/left:0/bottom:0 e a MESMA transição
-     (transform .3s) já definida na regra base ".sidebar" — só ganha
-     largura fluida de mobile e passa a nascer fora da tela. ── */
+     Mantém position:fixed/top:0/left:0/bottom:0 já definido na
+     regra base ".sidebar" — aqui só ganha largura fluida de mobile
+     (via --sb-w) e nasce fora da tela. A transição passa a usar a
+     curva/duração compartilhada (--sb-ease/--sb-duration) no lugar
+     da transição genérica da regra base, para o slide terminar
+     exatamente junto com o botão e o overlay. ── */
   .sidebar {
-    width: min(82vw, 300px);
+    width: var(--sb-w);
     max-width: 300px;
     min-height: 100vh;
     min-height: 100dvh;
     transform: translateX(-100%);
     z-index: 1002;
     box-shadow: 16px 0 40px -12px rgba(0,0,0,.55);
+    transition: transform var(--sb-duration) var(--sb-ease);
   }
   body.sidebar-open .sidebar { transform: translateX(0); }
 
@@ -2116,9 +2170,17 @@ body {
 @media (max-width: 480px) {
   /* Telas muito estreitas: o drawer usa mais % da viewport (ainda
      limitado por max-width) para não ficar apertado, e o botão
-     flutuante encolhe a margem lateral em alguns px. */
-  .sidebar { width: min(86vw, 300px); }
-  .sidebar-toggle { top: max(12px, env(safe-area-inset-top)); left: max(12px, env(safe-area-inset-left)); }
+     flutuante encolhe a margem lateral em alguns px. As variáveis
+     de sincronização (--sb-w/--sb-btn-left) são atualizadas aqui
+     também, para que o cálculo do deslocamento do botão continue
+     batendo exatamente com a nova largura/margem da Sidebar neste
+     breakpoint. */
+  :root {
+    --sb-w: min(86vw, 300px);
+    --sb-btn-left: max(12px, env(safe-area-inset-left));
+  }
+  .sidebar { width: var(--sb-w); }
+  .sidebar-toggle { top: max(12px, env(safe-area-inset-top)); left: var(--sb-btn-left); }
 
   /* Ferramentas: com apenas 1 coluna, cada botão ganha largura de
      sobra — reorganiza para layout horizontal (ícone à esquerda,
