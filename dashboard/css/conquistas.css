@@ -600,3 +600,29 @@
   transition:background .18s var(--ease);
 }
 .ach-v2-scope .ach-modal .close-btn:hover{ background:rgba(255,255,255,0.03); }
+
+/* ═══════════════════════════════════════════════════════════════
+   REDESIGN MOBILE — CONQUISTAS
+   ───────────────────────────────────────────────────────────────
+   Ajustes de respiro/hierarquia para telas de celular, usando os
+   mesmos tokens (--ach-*, --text-*, --bg-tile) já definidos no
+   topo deste arquivo. Nada roda fora de @media — Desktop intocado.
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .ach-v2-scope .achievements-section { padding: 22px 16px 20px; }
+  .ach-v2-scope .ach-header { margin-bottom: 22px; }
+  .ach-v2-scope .ach-subtitle { margin-bottom: 22px; }
+
+  .ach-v2-scope .overview-bar { padding: 18px 16px; gap: 14px 0; }
+  .ach-v2-scope .ov-divider { display: none; }
+  .ach-v2-scope .ov-hero { padding-right: 0; flex: 1 1 100%; }
+  .ach-v2-scope .ov-stats { justify-content: flex-start; flex: 1 1 100%; gap: 12px 22px; }
+
+  .ach-v2-scope .cat-tabs { width: 100%; overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+  .ach-v2-scope .cat-tabs { scrollbar-width: none; }
+  .ach-v2-scope .cat-tabs::-webkit-scrollbar { display: none; }
+  .ach-v2-scope .cat-tab { flex-shrink: 0; }
+
+  .ach-v2-scope .featured-row { gap: 10px; margin-bottom: 28px; }
+  .ach-v2-scope .ach-grid { gap: 10px; }
+}

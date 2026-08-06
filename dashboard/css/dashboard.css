@@ -328,10 +328,16 @@ body {
   border-radius: 20px;
 }
 
-/* Session pulse at bottom of sidebar */
+/* Session pulse at bottom of sidebar.
+   margin-top:auto substitui o antigo posicionamento "de graça" que
+   .sidebar-footer tinha por ser irmã de .sidebar-nav (flex:1) fora
+   dela — agora que está aninhada como último filho de .sidebar-nav,
+   o auto-margin empurra o card para o fim do mesmo espaço que a nav
+   já ocupava, reproduzindo pixel a pixel a posição anterior. */
 .sidebar-footer {
   padding: 16px;
   border-top: 1px solid var(--border);
+  margin-top: auto;
 }
 
 .session-card {
@@ -397,63 +403,15 @@ body {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   SIDEBAR RESPONSIVA — vira barra superior horizontal abaixo de
-   900px. Correção de causa raiz, não gambiarra: sem isso,
-   `.main { margin-left: 240px }` sobra em qualquer tela menor
-   que 240px de conteúdo útil, e é isso que "empurra" o conteúdo
-   inteiro para fora da viewport em celulares. Nenhum JS foi
-   adicionado — os mesmos links continuam clicáveis, só a
-   direção do flex muda.
+   SIDEBAR RESPONSIVA — a versão mobile completa (grade de
+   navegação + disciplinas + sessão ativa, sem barra horizontal
+   comprimida e sem esconder nenhum item) foi movida para o bloco
+   consolidado "REDESIGN MOBILE — DASHBOARD" no final deste
+   arquivo, junto com todo o resto do redesenho mobile. Isso evita
+   ter regras de mobile espalhadas em vários pontos do arquivo.
+   `.main { margin-left: 240px }` continua neutralizado abaixo,
+   pois isso é estrutural e vale também para o novo layout.
    ───────────────────────────────────────────────────────────── */
-@media (max-width: 900px) {
-  body { flex-direction: column; }
-
-  .sidebar {
-    position: relative;
-    top: auto; left: auto; bottom: auto;
-    width: 100%;
-    min-height: auto;
-    max-width: 100%;
-    flex-direction: row;
-    align-items: center;
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .sidebar-logo { border-bottom: none; padding: 12px 16px; flex-shrink: 0; }
-
-  .sidebar-nav {
-    flex: 0 1 auto;
-    flex-direction: row;
-    align-items: center;
-    padding: 8px 10px;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    gap: 4px;
-    min-width: 0;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  .sidebar-nav::-webkit-scrollbar { display: none; }
-
-  .nav-label { display: none; }
-  .nav-item  { white-space: nowrap; flex-shrink: 0; }
-  .nav-badge { margin-left: 6px; }
-
-  .sidebar-footer {
-    border-top: none;
-    border-left: 1px solid var(--border);
-    padding: 8px 14px;
-    flex-shrink: 0;
-  }
-  .session-card { padding: 8px 10px; }
-  .session-time { font-size: 15px; }
-  .session-sub  { display: none; }
-}
-
-@media (max-width: 560px) {
-  .sidebar-footer { display: none; }
-}
 
 /* ─── MAIN ───────────────────────────────────────────────── */
 .main {
@@ -470,12 +428,13 @@ body {
 
 /* ─── TOPBAR ─────────────────────────────────────────────── */
 .topbar {
-  padding: 0 var(--content-pad-x);
-  height: 60px;
+  padding: 16px var(--content-pad-x);
+  height: auto;
+  min-height: 76px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 14px;
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
@@ -492,16 +451,59 @@ body {
   min-width: 0;
 }
 
-.breadcrumb {
-  display: flex;
+/* ─── BOTÃO VOLTAR ───────────────────────────────────────────
+   Substitui o antigo breadcrumb ("Nexus Study > Dashboard").
+   Segue o mesmo Design System dos cards/botões do Dashboard:
+   fundo --surface-2, borda --border, raio --r-md, e o mesmo
+   padrão de hover com leve deslocamento usado em .tool-btn. ── */
+.back-btn {
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  height: 38px;
+  padding: 0 15px 0 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--text-2);
   font-size: 13px;
-  color: var(--text-3);
-  min-width: 0;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  transition: border-color .18s ease, color .18s ease, background .18s ease, transform .18s ease, box-shadow .18s ease;
 }
 
-.breadcrumb span { color: var(--text-1); font-weight: 500; }
+.back-btn-icon {
+  flex-shrink: 0;
+  transition: transform .18s ease;
+}
+
+.back-btn:hover {
+  color: var(--text-1);
+  background: var(--border);
+  border-color: var(--border-2);
+  transform: translateX(-2px);
+  box-shadow: 0 6px 16px -8px rgba(0,0,0,.5);
+}
+
+.back-btn:hover .back-btn-icon { transform: translateX(-2px); }
+
+.back-btn:active {
+  transform: translateX(-1px) scale(.96);
+  background: var(--border);
+}
+
+.back-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 380px) {
+  .back-btn span { display: none; }
+  .back-btn { width: 38px; padding: 0; justify-content: center; }
+}
 
 .topbar-right {
   display: flex;
@@ -530,8 +532,7 @@ body {
 }
 
 @media (max-width: 560px) {
-  .topbar { height: auto; min-height: 56px; padding: 10px var(--content-pad-x); }
-  .breadcrumb { font-size: 12px; }
+  .topbar { min-height: 66px; padding: 13px var(--content-pad-x); }
 }
 
 
@@ -1863,4 +1864,277 @@ body {
 .empty-state-info-btn:focus::after {
   opacity: 1;
   visibility: visible;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   NAVEGAÇÃO MOBILE — BOTÃO FLUTUANTE + OVERLAY (elementos novos)
+   ───────────────────────────────────────────────────────────────
+   .sidebar-toggle e .sidebar-overlay não existiam antes — são os
+   dois únicos elementos novos no HTML, usados só pelo drawer do
+   Mobile. Esta regra (fora de qualquer media query) define o
+   estado padrão deles como oculto, que é exatamente o comportamento
+   do Desktop: como o Desktop nunca precisa do botão nem do overlay,
+   isto não altera nada do que já existia — apenas garante que os
+   dois elementos novos fiquem invisíveis fora do breakpoint mobile
+   definido logo abaixo, em @media (max-width: 900px).
+   ═══════════════════════════════════════════════════════════════ */
+.sidebar-toggle,
+.sidebar-overlay {
+  display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   REDESIGN MOBILE — DASHBOARD (Nexus Study)
+   ───────────────────────────────────────────────────────────────
+   Bloco único e consolidado com TODA a experiência mobile do
+   Dashboard. Nada aqui altera o Desktop: todas as regras vivem
+   dentro de @media (max-width: 900px) ou breakpoints mais
+   estreitos, e usam os MESMOS tokens de :root (cores, raios,
+   fontes) já usados no restante do arquivo — nenhuma identidade
+   visual nova foi introduzida, apenas reorganização e adaptação
+   de cada componente para toque/tela pequena.
+
+   Sumário:
+     1. Sidebar → Navigation Drawer (botão flutuante + overlay)
+     2. Topbar
+     3. Cabeçalho da página (saudação / frase motivacional)
+     4. Ferramentas pessoais (tools-grid)
+     5. Cards de estatística (stat-grid)
+     6. Grids de conteúdo (two-col / three-col / intel-grid-*)
+     7. Disciplinas (disc-grid)
+     8. Navegação + Disciplinas (nav-section-wrap)
+     9. Atividade recente (timeline)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 900px) {
+
+  /* ─── 1. SIDEBAR → NAVIGATION DRAWER ───────────────────────────
+     Mesma <aside class="sidebar"> do Desktop (mesmo HTML, mesmos
+     ícones/categorias/componentes) — nada foi duplicado. No mobile
+     ela passa a nascer fora da tela (translateX(-100%)) e desliza
+     por cima do conteúdo quando o body recebe a classe
+     "sidebar-open" (alternada por um pequeno script no fim do
+     dashboard.html, que só abre/fecha o drawer — não mexe na
+     navegação SPA existente). Nenhum id/classe usada pelo JS de
+     rotas foi removida ou renomeada. ─────────────────────────────── */
+
+  body { flex-direction: column; }
+
+  /* Trava o scroll do conteúdo por trás enquanto o drawer está aberto. */
+  body.sidebar-open { overflow: hidden; }
+
+  /* ── Botão flutuante (☰ / ✕) ────────────────────────────────────
+     position:fixed (não sticky) para acompanhar o scroll sempre,
+     preso à lateral esquerda, longe do meio da tela, sem ocupar
+     espaço do conteúdo. Respeita notch/status bar via
+     env(safe-area-inset-*). Visual segue o mesmo Design System dos
+     cards (fundo --surface-2, borda --border-2, raio --r-md) com
+     leve elevação/realce em hover e destaque --accent quando o
+     drawer está aberto (estado ativo). ── */
+  .sidebar-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: max(16px, env(safe-area-inset-top));
+    left: max(16px, env(safe-area-inset-left));
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    background: linear-gradient(180deg, var(--surface-2), var(--surface));
+    border: 1px solid var(--border-2);
+    border-radius: var(--r-md);
+    color: var(--text-2);
+    box-shadow: 0 10px 24px -8px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.03);
+    z-index: 1001;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: border-color .2s ease, background .2s ease, color .2s ease,
+                box-shadow .2s ease, transform .25s cubic-bezier(.34,1.56,.64,1);
+  }
+  .sidebar-toggle:hover {
+    color: var(--text-1);
+    border-color: var(--accent);
+    box-shadow: 0 12px 28px -8px rgba(0,0,0,.65), 0 0 0 3px rgba(108,99,255,.14);
+    transform: translateY(-1px);
+  }
+  .sidebar-toggle:active {
+    transform: translateY(0) scale(.94);
+    background: var(--border);
+  }
+  .sidebar-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* Estado ativo — drawer aberto: o botão ganha o mesmo tom de
+     destaque usado em ".nav-item.active" (accent-dim/accent-lite),
+     reforçando que ele agora funciona como "fechar". */
+  body.sidebar-open .sidebar-toggle {
+    color: var(--accent-lite);
+    border-color: var(--accent);
+    background: var(--accent-dim);
+    box-shadow: 0 10px 24px -8px rgba(0,0,0,.6), 0 0 0 3px rgba(108,99,255,.18);
+  }
+
+  .sidebar-toggle .icon-bar { position: relative; width: 18px; height: 13px; flex-shrink: 0; }
+  .sidebar-toggle .icon-bar span {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    border-radius: 3px;
+    background: currentColor;
+    transition: transform .3s cubic-bezier(.4,0,.2,1), opacity .2s ease, top .3s ease, width .2s ease;
+  }
+  .sidebar-toggle .icon-bar span:nth-child(1) { top: 0; }
+  .sidebar-toggle .icon-bar span:nth-child(2) { top: 50%; margin-top: -1px; width: 74%; }
+  .sidebar-toggle .icon-bar span:nth-child(3) { top: 100%; margin-top: -2px; }
+
+  /* Micro-feedback: a barra do meio "cresce" no hover, antes mesmo
+     do clique — reforça que o botão é interativo. */
+  .sidebar-toggle:hover .icon-bar span:nth-child(2) { width: 100%; }
+
+  body.sidebar-open .sidebar-toggle .icon-bar span:nth-child(1) { top: 50%; margin-top: -1px; transform: rotate(45deg); }
+  body.sidebar-open .sidebar-toggle .icon-bar span:nth-child(2) { opacity: 0; width: 100%; }
+  body.sidebar-open .sidebar-toggle .icon-bar span:nth-child(3) { top: 50%; margin-top: -1px; transform: rotate(-45deg); }
+
+  /* ── Overlay ─────────────────────────────────────────────────────
+     Escurece o restante da página com o drawer aberto e permite
+     fechar tocando fora dele. pointer-events desligado quando
+     fechado, para nunca capturar toque do conteúdo por baixo. ── */
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 999;
+    transition: opacity .25s ease;
+  }
+  body.sidebar-open .sidebar-overlay { opacity: 1; pointer-events: auto; }
+
+  /* ── A própria Sidebar vira o drawer ───────────────────────────
+     Mantém position:fixed/top:0/left:0/bottom:0 e a MESMA transição
+     (transform .3s) já definida na regra base ".sidebar" — só ganha
+     largura fluida de mobile e passa a nascer fora da tela. ── */
+  .sidebar {
+    width: min(82vw, 300px);
+    max-width: 300px;
+    min-height: 100vh;
+    min-height: 100dvh;
+    transform: translateX(-100%);
+    z-index: 1002;
+    box-shadow: 16px 0 40px -12px rgba(0,0,0,.55);
+  }
+  body.sidebar-open .sidebar { transform: translateX(0); }
+
+  .sidebar-logo { padding: 18px 16px 16px; }
+
+  /* Scroll interno do drawer — necessário quando Disciplinas +
+     Configurações + Sessão ativa juntas ultrapassam a altura da
+     tela (celulares pequenos ou muitas disciplinas cadastradas). */
+  .sidebar-nav {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-2) transparent;
+  }
+  .sidebar-nav::-webkit-scrollbar { width: 5px; }
+  .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+  .sidebar-nav::-webkit-scrollbar-thumb { background-color: var(--border-2); border-radius: 20px; }
+
+  /* Mesma identidade visual do Desktop (ícone + rótulo em linha) —
+     só um pouco mais alta, para uma área de toque confortável. */
+  .sidebar .nav-item { min-height: 46px; }
+
+  .main { margin-left: 0; width: 100%; }
+
+
+  /* ─── 2. TOPBAR ─────────────────────────────────────────────────
+     padding-left extra reserva o espaço ocupado pelo botão flutuante
+     (42px + margem), pro botão "Início" nunca ficar por baixo dele —
+     o botão é fixed/flutuante, então não empurra layout sozinho;
+     quem abre espaço é esta regra. Altura um pouco menor que no
+     Desktop (telas pequenas ganham menos respiro vertical), mas
+     ainda confortável perto do padrão anterior. ── */
+  .topbar {
+    height: auto;
+    min-height: 68px;
+    padding: 14px var(--content-pad-x);
+    padding-left: calc(max(16px, env(safe-area-inset-left)) + 42px + 12px);
+  }
+
+  /* ─── 3. CABEÇALHO DA PÁGINA ───────────────────────────────── */
+  .page-header { gap: 18px; }
+  .page-title { font-size: clamp(20px, 6vw, 24px); }
+  .page-meta { margin-top: 8px; }
+  .motivational { padding: 14px 16px; }
+
+  /* ─── 4. FERRAMENTAS PESSOAIS ──────────────────────────────── */
+  .tools-card { padding: 16px; }
+  .tools-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .tool-btn { padding: 16px 14px; }
+
+  /* ─── 5. CARDS DE ESTATÍSTICA ──────────────────────────────── */
+  .stat-grid { gap: 12px; }
+  .stat-card { padding: 18px; }
+  .stat-icon { margin-bottom: 12px; }
+  .stat-number { font-size: 28px; }
+
+  /* ─── 6. GRIDS DE CONTEÚDO ─────────────────────────────────── */
+  .content { gap: 26px; padding-top: 22px; }
+  .two-col, .three-col, .intel-grid-3col, .intel-grid-weak-consist { gap: 16px; }
+
+  .tools-card, .perf-card, .activity-card, .disc-card, .weaknesses-card.full-width,
+  .usage-profile-card, .score-card, .trend-card, .prediction-card {
+    border-radius: var(--r-md);
+  }
+
+  /* ─── 7. DISCIPLINAS (bloco do corpo do Dashboard) ─────────── */
+  .disc-card { padding: 16px; }
+  .disc-grid { gap: 8px; }
+
+  /* ─── 8. NAVEGAÇÃO + DISCIPLINAS (histórico / páginas) ─────── */
+  .nav-section-wrap { padding: 16px; gap: 20px; }
+
+  /* ─── 9. ATIVIDADE RECENTE ──────────────────────────────────
+     Um scroll interno dentro de um card, dentro de uma página que
+     já rola, cria "scroll dentro de scroll" — desconfortável com
+     o polegar em celular (o gesto de rolar a página frequentemente
+     "prende" na área interna). No mobile a timeline passa a rolar
+     junto com a página inteira, sem caixa de altura fixa. ── */
+  .activity-card { padding: 16px; }
+  .activity-card #activity-timeline.timeline {
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+    scrollbar-gutter: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Telas muito estreitas: o drawer usa mais % da viewport (ainda
+     limitado por max-width) para não ficar apertado, e o botão
+     flutuante encolhe a margem lateral em alguns px. */
+  .sidebar { width: min(86vw, 300px); }
+  .sidebar-toggle { top: max(12px, env(safe-area-inset-top)); left: max(12px, env(safe-area-inset-left)); }
+
+  /* Ferramentas: com apenas 1 coluna, cada botão ganha largura de
+     sobra — reorganiza para layout horizontal (ícone à esquerda,
+     texto à direita) em vez de continuar empilhado como no
+     Desktop, aproveitando melhor a largura disponível. */
+  .tools-grid { grid-template-columns: minmax(0, 1fr); }
+  .tool-btn {
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+  }
+  .tool-icon { margin-bottom: 0; }
+  .tool-title { margin-bottom: 2px; }
+  .tool-arrow { display: none; }
+
+  .stat-grid { grid-template-columns: minmax(0, 1fr); }
+  .stat-number { font-size: 26px; }
 }

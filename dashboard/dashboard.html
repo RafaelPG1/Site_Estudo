@@ -657,9 +657,43 @@
 .usage-peak-emoji { font-size: 13px; flex-shrink: 0; }
 #usage-peak-text { overflow-wrap: break-word; }
 
+/* ─────────────────────────────────────────────────────────────
+   REDESIGN MOBILE — PERFIL DE USO (ajustes finais)
+   ─────────────────────────────────────────────────────────────
+   Esta seção já tinha breakpoints reais e bem pensados (480/560/
+   340/420/900 acima) — não era uma gambiarra de overflow, então
+   não foi reescrita do zero. Os ajustes abaixo só arredondam o
+   respiro/toque para completar a experiência mobile do card,
+   usando os mesmos tokens já usados no resto do arquivo. ───────── */
+@media (max-width: 900px) {
+  .usage-card-head { margin-bottom: 14px; }
+  .usage-stat-chip { padding: 10px 12px; }
+  .usage-heatmap-section { margin-bottom: 14px; }
+  .usage-heatmap-head { margin-bottom: 14px; }
+}
+@media (max-width: 420px) {
+  .heatmap-chart { height: 92px; }
+}
+
   </style>
 </head>
 <body>
+
+  <!-- ══════════════════════════════════════════════════
+       NAVEGAÇÃO MOBILE — BOTÃO + OVERLAY (Navigation Drawer)
+       ─────────────────────────────────────────────────
+       Exclusivos do Mobile — ocultos por padrão no Desktop via
+       CSS (ver dashboard.css). Não recriam nem duplicam a
+       Sidebar: apenas abrem/fecham a MESMA <aside class="sidebar">
+       logo abaixo, alternando a classe "sidebar-open" em <body>
+       (ver script no fim da página). Nenhum id/classe usada pela
+       navegação SPA existente (dashboard.js) foi tocado.
+  ══════════════════════════════════════════════════ -->
+  <button type="button" class="sidebar-toggle" id="sidebar-toggle"
+    aria-label="Abrir menu de navegação" aria-expanded="false">
+    <span class="icon-bar"><span></span><span></span><span></span></span>
+  </button>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
   <!-- ══════════════════════════════════════════════════
        SIDEBAR
@@ -730,19 +764,31 @@
         </svg>
         Configurações
       </a>
-    </nav>
 
-    <!-- ── Sessão ativa ── -->
-    <div class="sidebar-footer">
-      <div class="session-card">
-        <div class="session-header">
-          <div class="pulse-dot"></div>
-          <span class="session-label">Sessão ativa</span>
+      <!-- ── Sessão ativa ──────────────────────────────────────
+           Movida para DENTRO de .sidebar-nav (era irmã, fora da
+           nav) só de posição no DOM — nenhum id/classe mudou,
+           então session-manager continua funcionando via
+           document.querySelector('.session-time'/'.session-sub'),
+           que são seletores de classe (independem de profundidade).
+           No Desktop, .sidebar-footer recebe margin-top:auto, que
+           dentro do container flex:1 (.sidebar-nav) reproduz
+           exatamente a mesma posição fixa no rodapé que ela já
+           tinha como irmã de nav — zero mudança visual no Desktop.
+           No Mobile, isso libera o uso de `order` para posicionar
+           a sessão ativa como uma seção própria, ao invés de barra
+           inferior fixa (ver bloco consolidado no final do CSS). ── -->
+      <div class="sidebar-footer">
+        <div class="session-card">
+          <div class="session-header">
+            <div class="pulse-dot"></div>
+            <span class="session-label">Sessão ativa</span>
+          </div>
+          <div class="session-time">00:00</div>
+          <div class="session-sub">Conectando…</div>
         </div>
-        <div class="session-time">00:00</div>
-        <div class="session-sub">Conectando…</div>
       </div>
-    </div>
+    </nav>
   </aside>
 
 
@@ -754,13 +800,12 @@
     <!-- ── TOPBAR ── -->
     <header class="topbar">
       <div class="topbar-left">
-        <div class="breadcrumb">
-          Nexus Study
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M4 2l4 4-4 4"/>
+        <a class="back-btn" href="../index.html" aria-label="Voltar para o início">
+          <svg class="back-btn-icon" width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 3.5L5 8l5 4.5"/>
           </svg>
-          <span>Dashboard</span>
-        </div>
+          <span>Início</span>
+        </a>
       </div>
 
       <div class="topbar-right">
@@ -1584,6 +1629,60 @@
     document.documentElement.style.zoom = zoomAtual + '%';
   })();
 </script>
+
+  <!-- ═══ NAVIGATION DRAWER (Mobile) — abre/fecha a Sidebar ═══════
+       Script isolado, só cuida de abrir/fechar o drawer (classe
+       "sidebar-open" em <body>). Não interfere na navegação SPA de
+       dashboard.js: os cliques nos #nav-home/#nav-checklist/etc.
+       continuam disparando os MESMOS handlers de sempre — este
+       script só adiciona um listener extra nesses mesmos elementos
+       para fechar o menu depois do clique, no mobile. ─────────── -->
+  <script>
+    (function () {
+      var toggleBtn = document.getElementById('sidebar-toggle');
+      var overlay = document.getElementById('sidebar-overlay');
+      var sidebarEl = document.querySelector('.sidebar');
+      if (!toggleBtn || !overlay || !sidebarEl) return;
+
+      function isOpen() {
+        return document.body.classList.contains('sidebar-open');
+      }
+
+      function openDrawer() {
+        document.body.classList.add('sidebar-open');
+        toggleBtn.setAttribute('aria-expanded', 'true');
+      }
+
+      function closeDrawer() {
+        document.body.classList.remove('sidebar-open');
+        toggleBtn.setAttribute('aria-expanded', 'false');
+      }
+
+      toggleBtn.addEventListener('click', function () {
+        if (isOpen()) { closeDrawer(); } else { openDrawer(); }
+      });
+
+      overlay.addEventListener('click', closeDrawer);
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && isOpen()) closeDrawer();
+      });
+
+      // Fecha o drawer ao navegar por qualquer item da Sidebar
+      // (Dashboard/Checklist/Tarefas/Calendário/Anotações/
+      // Disciplinas/Configurações) — só UX de mobile, coexiste
+      // normalmente com os handlers de rota já existentes.
+      sidebarEl.addEventListener('click', function (e) {
+        if (e.target.closest('.nav-item')) closeDrawer();
+      });
+
+      // Se a viewport crescer para Desktop com o drawer aberto,
+      // limpa o estado para não deixar overflow:hidden travado.
+      window.addEventListener('resize', function () {
+        if (window.innerWidth > 900 && isOpen()) closeDrawer();
+      });
+    })();
+  </script>
 
   <script type="module" src="../quiz/js/quiz_intelligence.js"></script>
   <script type="module" src="js/dashboard.js"></script>
