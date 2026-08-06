@@ -1945,7 +1945,7 @@ body {
     --sb-duration: 420ms;
   }
 
-  /* ── Botão flutuante (☰ / ✕) ────────────────────────────────────
+  /* ── Botão flutuante (☰) ─────────────────────────────────────────
      Continua sendo o MESMO elemento, no MESMO lugar do DOM (irmão
      da <aside>, fora dela) — nenhuma arquitetura mudou. A diferença
      é que agora ele anima junto com a Sidebar: ao abrir, desliza
@@ -1954,7 +1954,9 @@ body {
      formando um único cabeçalho "Logo + botão". Ao fechar, volta
      ao mesmo tempo para a posição flutuante original. Só
      `transform`/`opacity`/`box-shadow` (cosmético) são animados —
-     nada de `left`/`top`/`width`, para não gerar reflow. ────────── */
+     nada de `left`/`top`/`width`, para não gerar reflow. O ícone
+     interno (☰) NUNCA se transforma em X — ver bloco "ÍCONE ☰"
+     logo abaixo, reescrito do zero. ─────────────────────────────── */
   .sidebar-toggle {
     display: flex;
     align-items: center;
@@ -2017,33 +2019,71 @@ body {
     transform: translateX(calc(var(--sb-w) - 58px - var(--sb-btn-left))) translateY(2px) scale(.94);
   }
 
-  .sidebar-toggle .icon-bar { position: relative; width: 18px; height: 13px; flex-shrink: 0; }
-  .sidebar-toggle .icon-bar span {
-    position: absolute;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    border-radius: 3px;
-    background: currentColor;
-    transition: transform var(--sb-duration) var(--sb-ease),
-                opacity calc(var(--sb-duration) * .6) ease,
-                top var(--sb-duration) var(--sb-ease),
-                width .2s ease;
+  /* ── ÍCONE — refeito do zero como SVG (conceito substituído por
+     completo; o antigo ícone de três barras foi descartado) ──────
+     Seis <path>: dois formam a "seta" central (transformada em X
+     de abertura) e quatro formam os arcos do círculo ao redor.
+     No estado fechado, o conjunto forma um alvo/mira; no estado
+     aberto, os dois traços centrais giram 45°/-45° formando um X
+     e os quatro arcos "recolhem" via stroke-dasharray/dashoffset,
+     enquanto o SVG inteiro gira 90°. Mapeamento do estado: a
+     classe ".active" do conceito original é substituída por
+     "body.sidebar-open .sidebar-toggle", que é exatamente o
+     estado já controlado pelo JS existente — nenhuma classe nova
+     é alternada por script. Cor via currentColor: herda as MESMAS
+     regras de cor já existentes em .sidebar-toggle (repouso/hover/
+     aberto), sem nenhuma regra de cor nova. Timing via
+     var(--sb-duration)/var(--sb-ease): os mesmos tokens que já
+     sincronizam Sidebar e Overlay, no lugar dos 500ms fixos do
+     conceito original — o ícone termina de animar exatamente
+     junto com o slide do drawer. */
+  .sidebar-toggle svg {
+    width: 22px;
+    height: 22px;
+    overflow: visible;
+    transition: transform var(--sb-duration) var(--sb-ease);
   }
-  .sidebar-toggle .icon-bar span:nth-child(1) { top: 0; }
-  .sidebar-toggle .icon-bar span:nth-child(2) { top: 50%; margin-top: -1px; width: 74%; }
-  .sidebar-toggle .icon-bar span:nth-child(3) { top: 100%; margin-top: -2px; }
+  body.sidebar-open .sidebar-toggle svg {
+    transform: rotate(90deg);
+  }
 
-  /* Micro-feedback: a barra do meio "cresce" no hover, antes mesmo
-     do clique — reforça que o botão é interativo. */
-  .sidebar-toggle:hover .icon-bar span:nth-child(2) { width: 100%; }
+  .sidebar-toggle svg path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 6.5;
+    stroke-linecap: round;
+    transition: transform var(--sb-duration) var(--sb-ease),
+                stroke-dasharray var(--sb-duration) var(--sb-ease),
+                stroke-dashoffset var(--sb-duration) var(--sb-ease);
+  }
 
-  /* ☰ → ✕ — morph animado (não é troca abrupta de ícone): as três
-     barras giram/desaparecem com a mesma curva/duração do resto do
-     drawer, formando o X suavemente. */
-  body.sidebar-open .sidebar-toggle .icon-bar span:nth-child(1) { top: 50%; margin-top: -1px; transform: rotate(45deg); }
-  body.sidebar-open .sidebar-toggle .icon-bar span:nth-child(2) { opacity: 0; width: 100%; }
-  body.sidebar-open .sidebar-toggle .icon-bar span:nth-child(3) { top: 50%; margin-top: -1px; transform: rotate(-45deg); }
+  .sidebar-toggle svg path:nth-child(1) { transform-origin: 36% 40%; }
+  .sidebar-toggle svg path:nth-child(2) { stroke-dasharray: 29 299; }
+  .sidebar-toggle svg path:nth-child(3) { transform-origin: 35% 63%; }
+  .sidebar-toggle svg path:nth-child(4) { stroke-dasharray: 29 299; }
+  .sidebar-toggle svg path:nth-child(5) { transform-origin: 61% 52%; }
+  .sidebar-toggle svg path:nth-child(6) { transform-origin: 62% 52%; }
+
+  body.sidebar-open .sidebar-toggle svg path:nth-child(1) {
+    transform: translateX(9px) translateY(1px) rotate(45deg);
+  }
+  body.sidebar-open .sidebar-toggle svg path:nth-child(2) {
+    stroke-dasharray: 225 299;
+    stroke-dashoffset: -72px;
+  }
+  body.sidebar-open .sidebar-toggle svg path:nth-child(3) {
+    transform: translateX(9px) translateY(1px) rotate(-45deg);
+  }
+  body.sidebar-open .sidebar-toggle svg path:nth-child(4) {
+    stroke-dasharray: 225 299;
+    stroke-dashoffset: -72px;
+  }
+  body.sidebar-open .sidebar-toggle svg path:nth-child(5) {
+    transform: translateX(9px) translateY(1px) rotate(-45deg);
+  }
+  body.sidebar-open .sidebar-toggle svg path:nth-child(6) {
+    transform: translateX(9px) translateY(1px) rotate(45deg);
+  }
 
   /* ── Overlay ─────────────────────────────────────────────────────
      Mesma curva/duração de Sidebar e botão (--sb-ease/--sb-duration):

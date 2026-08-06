@@ -688,10 +688,26 @@
        logo abaixo, alternando a classe "sidebar-open" em <body>
        (ver script no fim da página). Nenhum id/classe usada pela
        navegação SPA existente (dashboard.js) foi tocado.
-  ══════════════════════════════════════════════════ -->
+
+       ÍCONE — conceito substituído por completo por um SVG
+       animado (seis <path>: dois traços centrais + quatro arcos).
+       O JS não muda: continua alternando "sidebar-open" no
+       <body> e "aria-expanded" no botão — é essa mesma classe que
+       a nova animação do SVG usa como gatilho (ver dashboard.css,
+       seletor "body.sidebar-open .sidebar-toggle svg/path"). ── -->
   <button type="button" class="sidebar-toggle" id="sidebar-toggle"
     aria-label="Abrir menu de navegação" aria-expanded="false">
-    <span class="icon-bar"><span></span><span></span><span></span></span>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+  <g transform="translate(100, 100) scale(1.35) translate(-100, -100)">
+    <path d="M72 82.286h28.75"/>
+    <path d="M100.75 103.714l72.482-.143c.043 39.398-32.284 71.434-72.16 71.434-39.878 0-72.204-32.036-72.204-71.554"/>
+    <path d="M72 125.143h28.75"/>
+    <path d="M100.75 103.714l-71.908-.143c.026-39.638 32.352-71.674 72.23-71.674 39.876 0 72.203 32.036 72.203 71.554"/>
+    <path d="M100.75 82.286h28.75"/>
+    <path d="M100.75 125.143h28.75"/>
+  </g>
+</svg>
+
   </button>
   <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
@@ -1636,7 +1652,11 @@
        dashboard.js: os cliques nos #nav-home/#nav-checklist/etc.
        continuam disparando os MESMOS handlers de sempre — este
        script só adiciona um listener extra nesses mesmos elementos
-       para fechar o menu depois do clique, no mobile. ─────────── -->
+       para fechar o menu depois do clique, no mobile.
+       NADA neste script foi alterado pela troca do ícone: ele nunca
+       manipulou span/svg diretamente, só a classe "sidebar-open" em
+       <body> e o atributo "aria-expanded" no botão — o novo ícone
+       reage a essa mesma classe via CSS. ─────────────────────── -->
   <script>
     (function () {
       var toggleBtn = document.getElementById('sidebar-toggle');
