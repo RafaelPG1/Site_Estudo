@@ -1942,7 +1942,7 @@ body {
     --sb-w: min(82vw, 300px);
     --sb-btn-left: max(16px, env(safe-area-inset-left));
     --sb-ease: cubic-bezier(.16, 1, .3, 1);
-    --sb-duration: 420ms;
+    --sb-duration: 1000ms;
   }
 
   /* ── Botão flutuante (☰) ─────────────────────────────────────────
@@ -2032,19 +2032,41 @@ body {
      estado já controlado pelo JS existente — nenhuma classe nova
      é alternada por script. Cor via currentColor: herda as MESMAS
      regras de cor já existentes em .sidebar-toggle (repouso/hover/
-     aberto), sem nenhuma regra de cor nova. Timing via
-     var(--sb-duration)/var(--sb-ease): os mesmos tokens que já
-     sincronizam Sidebar e Overlay, no lugar dos 500ms fixos do
-     conceito original — o ícone termina de animar exatamente
-     junto com o slide do drawer. */
+     aberto), sem nenhuma regra de cor nova.
+
+     TAMANHO — camada separada da animação de formação do X.
+     width/height do <svg> ficam fixos em 28px (tamanho do estado
+     "fechado") e servem só de base; quem decide o tamanho visual
+     final é o `scale()` combinado ao `rotate()` já existente aqui.
+     No repouso (fechado) o scale fica em 1 → ≈28px, do jeito que o
+     menu deve aparecer maior. No estado aberto, o mesmo seletor que
+     já fazia `rotate(90deg)` passa a fazer também `scale(0.7857)`
+     (22 / 28), levando o ícone a ≈22px — exatamente o tamanho atual
+     do X, sem tocar em viewBox, path ou geometria alguma.
+     `rotate(...) scale(...)` é escrito por extenso nos dois estados
+     (mesmo com rotate:0deg em repouso) para o navegador animar
+     rotate e scale como funções independentes, e não como uma
+     matriz combinada — evita qualquer salto/trajetória estranha no
+     meio da transição. transform-origin:center garante que o
+     ícone encolhe/cresce a partir do próprio centro, continuando
+     perfeitamente centralizado durante todo o movimento — igual ao
+     rotate isolado que já existia.
+     Timing via var(--sb-duration)/var(--sb-ease): os mesmos tokens
+     que já sincronizam Sidebar e Overlay — o ícone termina de
+     animar (tamanho + rotação) exatamente junto com o slide do
+     drawer. */
   .sidebar-toggle svg {
-    width: 22px;
-    height: 22px;
+    width: 28px;
+    height: 28px;
     overflow: visible;
+    transform-origin: center;
+    transform: rotate(0deg) scale(1);
     transition: transform var(--sb-duration) var(--sb-ease);
   }
   body.sidebar-open .sidebar-toggle svg {
-    transform: rotate(90deg);
+    /* 22 / 28 ≈ 0.7857 — reduz o ícone de ≈28px (fechado) para
+       exatamente ≈22px (aberto), preservando o X tal como está. */
+    transform: rotate(90deg) scale(0.7857);
   }
 
   .sidebar-toggle svg path {
