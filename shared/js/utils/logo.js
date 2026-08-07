@@ -3,7 +3,7 @@
    ============================================================ */
 
 import { playSound as _playSound } from '../audio/audio-api.js';
-
+import "./zoom.js";
 /* ── Caminho da imagem resolvido uma vez, relativo ao logo.js ── */
 const _LOGO_SRC = new URL('../../img/logo.png', import.meta.url).href;
 
@@ -96,3 +96,4 @@ if (!destino) {
   container.appendChild(wrap);
   return wrap;
 }
+
