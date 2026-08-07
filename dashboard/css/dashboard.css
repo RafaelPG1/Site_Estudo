@@ -798,22 +798,24 @@ body {
     opacity: 1;
   }
 
-  /* Aspa de fechamento: mesmo conceito do Desktop (aspa dupla no
-     canto inferior direito do card), só que discreta e proporcional
-     ao Mobile — pequena, semitransparente, position:absolute dentro
-     do próprio card (não vazando para fora dele como no Desktop),
-     só um detalhe de acabamento que não compete com a frase. */
+  /* Aspa de fechamento: mesma identidade visual da aspa de abertura
+     (mesmo font-size, font-weight, color e opacity) — a única
+     diferença é o caractere (fechamento) e o posicionamento
+     (absolute, no canto inferior direito do card, em vez de inline
+     no fluxo do texto). Antes usava font-size/opacity/color
+     diferentes da abertura, o que fazia parecer um caractere de
+     texto solto em vez de parte do mesmo componente de aspas. */
   .page-header .motivational::after {
     content: '\201D';
     position: absolute;
-    bottom: 2px;
+    bottom: 6px;
     right: 12px;
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 20px;
+    font-size: 26px;
     font-weight: 700;
-    line-height: 1;
+    line-height: .7;
     color: var(--accent-lite);
-    opacity: .5;
+    opacity: 1;
     pointer-events: none;
   }
 
@@ -833,7 +835,9 @@ body {
 @media (max-width: 480px) {
   .page-header .motivational { padding: 12px 14px 18px 14px; gap: 8px; }
   .page-header .motivational::before { font-size: 22px; }
-  .page-header .motivational::after { font-size: 17px; bottom: 2px; right: 10px; }
+  /* Mesmo font-size da abertura nesta faixa — só a posição (canto
+     inferior direito) e o caractere mudam. */
+  .page-header .motivational::after { font-size: 22px; bottom: 4px; right: 10px; }
   .page-header .motivational p { font-size: 13.5px; }
 }
 
