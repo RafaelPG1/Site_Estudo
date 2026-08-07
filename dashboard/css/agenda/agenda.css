@@ -799,12 +799,61 @@
 /* ── RESPONSIVE ── */
 @media (max-width: 900px) {
   .agenda-toolbar { flex-direction: column; align-items: stretch; }
-  .agenda-grid-scroll { overflow-x: auto; grid-template-columns: var(--ag-ruler-w) repeat(7, 124px); }
+
+  /* ─────────────────────────────────────────────────────────────
+     CAUSA RAIZ DO SCROLL TRAVADO NO MOBILE (Calendário/Agenda)
+     ─────────────────────────────────────────────────────────────
+     .agenda-grid-scroll tinha `max-height: var(--ag-day-col-h)`
+     (820px no desktop, 540px no mobile) + `overflow-y: auto`. Isso
+     transforma a grade do calendário em um CONTAINER DE SCROLL
+     PRÓPRIO, independente da página. Como essa grade ocupa quase
+     toda a altura útil da tela no mobile, qualquer gesto de
+     arrastar que começa em cima dela é capturado por ESTE scroll
+     interno primeiro — o dedo só rola a página como um todo se o
+     toque começar fora da grade, ou depois que o scroll interno já
+     chegou ao fim/início (por isso "às vezes funciona com um gesto
+     específico"). A página em si sempre teve conteúdo abaixo da
+     área visível (24h de agenda + resto das seções) — o bug nunca
+     foi a falta de overflow, foi um overflow extra e independente
+     no meio do caminho competindo pelo mesmo gesto de toque.
+
+     CORREÇÃO: no mobile, a grade deixa de ter sua própria caixa de
+     rolagem vertical — sua altura passa a ser a altura real do
+     conteúdo (24h) e ela flui normalmente dentro de `.content`,
+     rolando junto com o resto da página (mesmo princípio já usado
+     em `.activity-card #activity-timeline.timeline` acima, ver
+     comentário “ATIVIDADE RECENTE” em dashboard.css). O scroll
+     HORIZONTAL (para ver os 7 dias da semana em telas estreitas)
+     é mantido — ele não conflita com o gesto vertical de rolar a
+     página, então continua ativo em `.agenda-grid-scroll`. ───── */
+  .agenda-grid-scroll {
+    grid-template-columns: var(--ag-ruler-w) repeat(7, 124px);
+    max-height: none;
+    overflow-y: visible;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* `position: sticky` só faz sentido em relação a um ancestral com
+     scroll PRÓPRIO. Sem o overflow-y:auto acima, o ancestral de
+     scroll passa a ser a própria página — e a página já tem a
+     `.topbar` fixa/sticky nesse mesmo lugar (top:0). Deixar estes
+     elementos sticky faria o cabeçalho do calendário "brigar" com a
+     topbar (ambos tentando colar no topo real da tela, com a topbar
+     sempre por cima via z-index, escondendo o cabeçalho do
+     calendário sem aviso). Por isso, no mobile, eles voltam a ser
+     elementos normais do fluxo — mesmo comportamento de qualquer
+     cabeçalho de tabela que rola junto com o conteúdo. */
+  .agenda-corner,
+  .agenda-day-header,
+  .agenda-planned-corner,
+  .agenda-planned-cell {
+    position: static;
+  }
 }
 @media (max-width: 560px) {
   .agenda-week-nav { gap: 8px; }
   .agenda-week-title-btn { min-width: 0; padding: 4px 10px; }
   .agenda-form-row { grid-template-columns: 1fr; }
-  .agenda-module { --ag-day-col-h: 540px; }
   .agenda-stats-grid { grid-template-columns: minmax(0,1fr); }
 }

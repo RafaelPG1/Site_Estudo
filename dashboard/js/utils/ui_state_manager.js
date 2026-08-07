@@ -99,6 +99,14 @@
           recriado do zero, a referência antiga fica "morta"; por
           isso é sempre uma função, nunca o elemento direto).
 
+      IMPORTANTE — a restauração de posição feita por este módulo é
+      sempre INSTANTÂNEA (ver _writeScrollPos abaixo), independente
+      de qualquer `scroll-behavior: smooth` que exista em CSS. Este
+      reposicionamento é invisível/estrutural (não é uma ação de
+      navegação do usuário) — animá-lo é o que causava conflito com
+      a rolagem por toque nativa no mobile (ver comentário na função
+      _writeScrollPos).
+
    3) RECARREGAMENTO DE PÁGINA (F5) — automático, para QUALQUER view
       registrada, sem que o módulo precise ouvir eventos de unload:
 
@@ -285,10 +293,45 @@ function _readScrollPos(el) {
   return { x: el.scrollLeft, y: el.scrollTop };
 }
 
+/* ─────────────────────────────────────────────────────────────
+   CAUSA RAIZ DO SCROLL "TRAVADO" NO MOBILE (Checklist / Tarefas)
+   ─────────────────────────────────────────────────────────────
+   Esta função é chamada por restoreView()/preserveScroll() toda
+   vez que uma view é aberta ou re-renderizada — ou seja, é um
+   reposicionamento ESTRUTURAL (voltar pro lugar de antes), não uma
+   ação de navegação visível do usuário. Antes, `window.scrollTo(x,y)`
+   (a forma de 2 argumentos) equivale a `{ left, top, behavior:'auto' }`,
+   que HERDA o `scroll-behavior` computado do <html>. Com
+   `scroll-behavior: smooth` global (ver dashboard.css), esse
+   reposicionamento passava a ANIMAR, podendo competir com a
+   rolagem por toque nativa logo depois de trocar de view —
+   perceptível principalmente em páginas com pouca área rolável
+   (Checklist/Tarefas com os accordions fechados), onde o atrito
+   entre a curva de easing do "smooth" e o gesto de arrastar o dedo
+   é suficiente para o scroll parecer "travado".
+   CORREÇÃO: `scroll-behavior: smooth` foi removido do <html> em
+   dashboard.css (correção estrutural, na raiz). Esta função passa
+   a pedir `behavior: 'instant'` explicitamente também aqui, como
+   segunda camada de proteção — o reposicionamento automático desta
+   API nunca deve animar, independente de qualquer CSS presente
+   agora ou adicionado no futuro. */
 function _writeScrollPos(el, pos) {
   if (!pos) return;
-  if (el === window) window.scrollTo(pos.x ?? 0, pos.y ?? 0);
-  else { el.scrollLeft = pos.x ?? 0; el.scrollTop = pos.y ?? 0; }
+  if (el === window) {
+    if (typeof window.scrollTo === 'function') {
+      try {
+        window.scrollTo({ left: pos.x ?? 0, top: pos.y ?? 0, behavior: 'instant' });
+        return;
+      } catch (_) {
+        /* navegadores muito antigos podem não aceitar a forma de
+           objeto — cai para a forma de 2 argumentos abaixo. */
+      }
+    }
+    window.scrollTo(pos.x ?? 0, pos.y ?? 0);
+    return;
+  }
+  el.scrollLeft = pos.x ?? 0;
+  el.scrollTop = pos.y ?? 0;
 }
 
 /* Captura a posição atual de cada scrollável do mapa `scrollables`

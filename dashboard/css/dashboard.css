@@ -184,7 +184,37 @@
 
 /* ─── RESET ──────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 15px; scroll-behavior: smooth; }
+
+/* ─────────────────────────────────────────────────────────────
+   CAUSA RAIZ DO SCROLL "TRAVADO" NO MOBILE (Checklist / Tarefas)
+   ─────────────────────────────────────────────────────────────
+   `scroll-behavior: smooth` era global (no <html>) e afeta TODA
+   rolagem — inclusive a rolagem por toque nativa, não só chamadas
+   programáticas por JS. Em navegadores mobile (principalmente
+   WebKit/iOS), a curva de easing do "smooth" briga com a curva de
+   desaceleração do gesto de arrastar o dedo. Esse atrito é
+   praticamente imperceptível quando a área rolável é grande (ex.:
+   Dashboard, com dezenas de cards) — mas fica muito perceptível
+   quando a área rolável é pequena, como Checklist/Tarefas com os
+   accordions fechados (só os cabeçalhos das disciplinas/listas
+   somam pouco mais que a altura da tela). É por isso que abrir uma
+   disciplina "destravava" o scroll: não destrava de verdade, só
+   aumenta a área rolável o suficiente pro mesmo atrito parar de
+   incomodar.
+   Além disso, `UIState._writeScrollPos` (ui_state_manager.js)
+   restaura a posição de scroll via `window.scrollTo(x, y)` toda
+   vez que uma view é aberta (Checklist/Tarefas/Agenda/Dashboard) —
+   essa chamada de 2 argumentos equivale a `behavior:'auto'`, que
+   herda o `scroll-behavior` computado do <html>. Com `smooth`
+   global, esse reposicionamento (que deveria ser instantâneo e
+   invisível) passava a ANIMAR, podendo competir com o toque do
+   usuário logo após trocar de view.
+   CORREÇÃO: `scroll-behavior: smooth` removido do <html> — não há,
+   nos arquivos do projeto, nenhuma âncora/`scrollIntoView` que
+   dependa dele. Se algum dia for necessário um scroll suave para
+   um caso específico (ex.: clique num link de âncora), ele deve
+   ser aplicado no seletor daquele caso, não globalmente. */
+html { font-size: 15px; }
 html, body { width: 100%; }
 body {
   background: var(--bg);
