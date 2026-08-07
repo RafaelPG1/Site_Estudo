@@ -129,6 +129,50 @@
   --r-lg:  18px;
   --r-xl:  24px;
 
+  /* ─── ESCALA DE ESPAÇAMENTO — hierarquia de título de seção ───
+     Duas únicas variáveis controlam a "respiração" de TODOS os
+     títulos de seção do Dashboard (Ferramentas Pessoais, Visão
+     Geral, Desempenho por Disciplina, Perfil de Uso, Atividade
+     Recente, Navegação, Disciplinas, Conquistas etc.):
+
+     --section-title-gap → distância entre o título (.section-title
+       + .section-line) e o conteúdo logo abaixo dele. Usada em
+       .section-header (margin-bottom).
+
+     --card-pad → padding padrão dos "cards" que ficam imediatamente
+       abaixo de um título de seção (.tools-card, .perf-card,
+       .activity-card, .disc-card, .nav-section-wrap,
+       .weaknesses-card.full-width, .score-card/.trend-card/
+       .prediction-card). Antes desses valores serem centralizados
+       aqui, cada card tinha seu próprio número "solto" no CSS
+       (24px, 28px, 22px...) — pequenas divergências que não tinham
+       motivo de design, só inconsistência histórica. Center-aliar
+       aqui garante que a distância "fim de uma seção → título da
+       próxima → conteúdo abaixo do título" seja sempre a mesma em
+       todo o Dashboard, no Desktop e no Mobile (que usa seus
+       próprios valores reduzidos nos breakpoints, mas seguindo o
+       mesmo princípio de 1 valor único por faixa de tela). ───── */
+  --section-title-gap: 16px;
+  --card-pad: 24px;
+
+  /* ─── ESPAÇO ENTRE SEÇÕES (distinto do --section-title-gap acima)
+     Este é o token que de fato separa uma seção da próxima — usado
+     no `gap` do `.content` (flex-column: aplica-se entre TODOS os
+     filhos diretos — .page-header, cada <section>, .two-col,
+     .intel-grid-3col, .intel-grid-weak-consist). Mudar o padding
+     interno dos cards não altera essa distância; quem controla é
+     este gap do container pai.
+     Também é usado como gap de `.two-col`/`.three-col`/
+     `.intel-grid-*` QUANDO eles colapsam para 1 coluna no Mobile —
+     nesse momento duas <section> que antes ficavam lado a lado
+     passam a ficar empilhadas, e sem este ajuste elas herdavam o
+     gap horizontal do grid (--gap: 20px, pensado para colunas
+     lado a lado), bem menor que o espaço entre as demais seções da
+     página — por isso o Mobile parecia mais "colado" que o Desktop
+     mesmo depois do --card-pad já estar padronizado. */
+  --section-gap: clamp(14px, 2vw, 18px);
+  --section-gap-mobile: 14px;
+
   --sidebar-w: 240px;
   --gap: 20px;
 
@@ -541,9 +585,38 @@ body {
   padding: clamp(20px, 5vw, 36px) var(--content-pad-x) 60px;
   display: flex;
   flex-direction: column;
-  gap: clamp(22px, 4vw, 36px);
+  /* .content só tem 2 filhos diretos: #view-dashboard-home e
+     #view-checklist (views irmãs, uma delas sempre com
+     display:none). Este gap portanto não separa as seções entre
+     si — ver #view-dashboard-home abaixo, que é quem de fato
+     precisa do gap, por ser o elemento cujos filhos diretos SÃO
+     as seções (.page-header, cada <section>, .two-col,
+     .intel-grid-3col, .intel-grid-weak-consist etc.). */
+  gap: var(--section-gap);
   min-width: 0;
   max-width: 100%;
+}
+
+/* ─── SEPARAÇÃO ENTRE SEÇÕES DO DASHBOARD ────────────────────
+   CAUSA RAIZ do "espremido": as seções (.page-header, <section>,
+   .two-col, .intel-grid-3col, .intel-grid-weak-consist, o bloco
+   de Conquistas...) não são filhas diretas de .content — são
+   filhas de #view-dashboard-home, um <div> sem display/gap
+   nenhum. Isso fazia com que o gap acima em .content ficasse sem
+   efeito prático: .content só enxerga #view-dashboard-home como
+   filho (display:flex de 1 item só não gera espaçamento nenhum).
+   Resultado: as seções empilhavam em fluxo normal, sem qualquer
+   respiro além dos poucos margin/padding soltos de cada card —
+   por isso aumentar --section-gap antes "não tinha efeito visual
+   nenhum": a variável nunca chegava a ser aplicada entre as
+   seções reais. A correção é repetir aqui o mesmo padrão
+   flex-column + gap, desta vez no container que de fato envolve
+   as seções. ───────────────────────────────────────────────── */
+#view-dashboard-home {
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-gap);
+  min-width: 0;
 }
 
 /* ─── HEADER SECTION ─────────────────────────────────────── */
@@ -656,19 +729,112 @@ body {
 }
 
 @media (max-width: 760px) {
-  .page-header { flex-direction: column; align-items: stretch; }
-  .motivational { max-width: 100%; }
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
 
-  .motivational::before {
-    top: -14px;
-    left: -16px;
-    font-size: 40px;
+  /* ─────────────────────────────────────────────────────────────
+     CAUSA RAIZ do espaço vazio gigante + card gigante no Mobile
+     antigo: .page-header-left e .motivational usam flex-basis
+     (260px / 240px) pensado para o eixo HORIZONTAL do Desktop
+     (.page-header em row). Ao virar column aqui em cima, o MESMO
+     flex-basis passa a valer para o eixo VERTICAL, obrigando os
+     dois blocos a crescerem em altura até esse valor mínimo — daí
+     o buraco entre a saudação e o card, e o card enorme com pouco
+     conteúdo dentro. Usamos seletores compostos (.page-header .x)
+     só para garantir maior especificidade que as regras base,
+     independente de onde este bloco fica no arquivo. ───────────── */
+  .page-header .page-header-left { flex: 0 0 auto; }
+
+  /* ═══════════════════════════════════════════════════════════
+     FRASE MOTIVACIONAL — redesign Mobile
+     ─────────────────────────────────────────────────────────────
+     Por que o Desktop funciona: o card é um elemento SECUNDÁRIO e
+     compacto ao lado do título (max-width: 320px), com aspas
+     decorativas grandes que vazam para fora da caixa como uma
+     assinatura visual. Isso só funciona em uma coluna estreita,
+     cercada de espaço livre — a aspa "flutua" porque tem para onde
+     vazar. Em largura cheia (Mobile) a mesma receita vira um
+     retângulo enorme e vazio, com aspas grandes mal posicionadas e
+     a frase perdida no meio.
+
+     Nova proposta (inspirada em callouts do Notion/Linear/GitHub):
+     um "pull-quote" compacto — barra de destaque à esquerda, aspa
+     pequena e ESTÁTICA (inline no fluxo, não mais um elemento
+     absoluto de 40/58px), e a frase como elemento principal da
+     composição, com tipografia maior e mais legível. A altura do
+     card passa a ser dada só pelo próprio conteúdo — sem sobra. ── */
+  .page-header .motivational {
+    max-width: 100%;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: linear-gradient(160deg, rgba(108,99,255,.16), rgba(108,99,255,.05));
+    border: none;
+    border-left: 3px solid var(--accent);
+    border-radius: 10px;
+    /* padding-bottom um pouco maior que os demais lados: abre espaço
+       reservado para a aspa de fechamento (abaixo) não encostar/
+       sobrepor a última linha da frase. */
+    padding: 14px 16px 22px 16px;
   }
-  .motivational::after {
-    bottom: -28px;
-    right: -16px;
-    font-size: 40px;
+
+  /* Aspa de abertura: agora um item de flexbox comum (position:
+     static), do tamanho da própria letra maiúscula do texto ao
+     lado — decoração discreta, não mais protagonista da composição. */
+  .page-header .motivational::before {
+    content: '\201C';
+    position: static;
+    flex-shrink: 0;
+    margin-top: 1px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: .7;
+    color: var(--accent-lite);
+    opacity: 1;
   }
+
+  /* Aspa de fechamento: mesmo conceito do Desktop (aspa dupla no
+     canto inferior direito do card), só que discreta e proporcional
+     ao Mobile — pequena, semitransparente, position:absolute dentro
+     do próprio card (não vazando para fora dele como no Desktop),
+     só um detalhe de acabamento que não compete com a frase. */
+  .page-header .motivational::after {
+    content: '\201D';
+    position: absolute;
+    bottom: 2px;
+    right: 12px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--accent-lite);
+    opacity: .5;
+    pointer-events: none;
+  }
+
+  .page-header .motivational p {
+    font-size: 14px;
+    font-weight: 500;
+    font-style: normal;
+    line-height: 1.5;
+    letter-spacing: -.1px;
+    /* Mesmo token de cor usado na frase do Desktop (linha ~651
+       deste arquivo: ".motivational p { color: var(--accent-lite); }"),
+       para manter as duas versões consistentes. */
+    color: var(--accent-lite);
+  }
+}
+
+@media (max-width: 480px) {
+  .page-header .motivational { padding: 12px 14px 18px 14px; gap: 8px; }
+  .page-header .motivational::before { font-size: 22px; }
+  .page-header .motivational::after { font-size: 17px; bottom: 2px; right: 10px; }
+  .page-header .motivational p { font-size: 13.5px; }
 }
 
 /* ─── SECTION HEADER ─────────────────────────────────────── */
@@ -677,7 +843,7 @@ body {
   align-items: baseline;
   flex-wrap: wrap;
   gap: 8px 10px;
-  margin-bottom: 16px;
+  margin-bottom: var(--section-title-gap);
 }
 
 .section-title {
@@ -700,7 +866,7 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
-  padding: 24px;
+  padding: var(--card-pad);
   min-width: 0;
 }
 
@@ -913,7 +1079,7 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
-  padding: 24px;
+  padding: var(--card-pad);
   min-width: 0;
 }
 
@@ -992,7 +1158,7 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
-  padding: 24px;
+  padding: var(--card-pad);
   min-width: 0;
 }
 
@@ -1116,7 +1282,7 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
-  padding: 24px;
+  padding: var(--card-pad);
   min-width: 0;
 }
 
@@ -1243,13 +1409,21 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
-  padding: 28px 32px;
+  /* Era "28px 32px" — 4px a mais de respiro vertical do que todos os
+     outros cards da página (tools-card, perf-card, activity-card,
+     disc-card usam 24px). Mantém os 32px horizontais (intencionais:
+     as duas listas internas — páginas mais acessadas / histórico —
+     pedem uma margem lateral maior), mas alinha o vertical ao
+     mesmo --card-pad usado no resto do Dashboard. */
+  padding: var(--card-pad) 32px;
   display: flex;
   flex-direction: column;
   gap: 28px;
   min-width: 0;
 }
-@media (max-width: 768px) { .nav-section-wrap { padding: 20px; gap: 22px; } }
+/* padding/gap responsivos de .nav-section-wrap: ver bloco único em
+   @media (max-width: 900px), mais abaixo neste arquivo — cobre esta
+   mesma faixa de tela sem duplicar o valor em dois lugares. */
 
 .nav-section-header {
   display: flex;
@@ -1661,8 +1835,14 @@ body {
   min-width: 0;
 }
 
+/* Nota: esta regra é sobrescrita pela declaração de
+   .weaknesses-card.full-width em dashboard_cards.css (carregado
+   depois deste arquivo, mesma especificidade → ele vence). O valor
+   abaixo foi alinhado ao mesmo --card-pad só para não divergir caso
+   a ordem de carregamento mude no futuro; a correção "de verdade"
+   (22px → var(--card-pad) no topo) está no outro arquivo. */
 .weaknesses-card.full-width {
-  padding: 24px 28px;
+  padding: var(--card-pad) 28px;
 }
 
 /* ── Curva de Aprendizado — hero com destaque visual (mantida) ── */
@@ -1698,13 +1878,16 @@ body {
 @media (max-width: 800px) {
   .intel-grid-3col          { grid-template-columns: minmax(0, 1fr); }
   .intel-grid-weak-consist  { grid-template-columns: minmax(0, 1fr); }
+  /* Só a partir daqui .intel-grid-3col vira 1 coluna de verdade —
+     é aqui, e não em 900px, que seu gap passa a separar duas
+     seções empilhadas (Score/Tendência/Previsão) em vez de duas
+     colunas lado a lado. */
+  .intel-grid-3col          { gap: var(--section-gap-mobile); }
 }
 
 @media (max-width: 768px) {
   .intel-section-curve-hero .curve-chart-wrap { min-height: 100px; }
   .intel-section-curve-hero .curve-card       { padding: 22px 20px; }
-  .weaknesses-card.full-width                 { padding: 20px; }
-  .nav-section-wrap                           { padding: 20px; }
   .nav-rank-bar-wrap                          { display: none; }
 }
 
@@ -2199,8 +2382,26 @@ body {
   .stat-number { font-size: 28px; }
 
   /* ─── 6. GRIDS DE CONTEÚDO ─────────────────────────────────── */
-  .content { gap: 26px; padding-top: 22px; }
-  .two-col, .three-col, .intel-grid-3col, .intel-grid-weak-consist { gap: 16px; }
+  .content { gap: var(--section-gap-mobile); padding-top: 22px; }
+  /* Mesmo raciocínio do bloco Desktop: quem precisa do gap reduzido
+     no Mobile é #view-dashboard-home (dono real das seções), não
+     .content (que só alterna entre 2 views inteiras). */
+  #view-dashboard-home { gap: var(--section-gap-mobile); }
+
+  /* Este é o segundo lugar que de fato controlava a distância entre
+     seções no Mobile — e o que a mudança anterior (só no padding
+     dos cards) não alcançava. .two-col/.three-col têm 2 <section>
+     lado a lado no Desktop e colapsam para 1 coluna exatamente
+     nesta faixa (900px) — nesse momento o `gap` do grid deixa de
+     separar colunas e passa a separar duas seções verticalmente,
+     como o gap de .content faz para as demais. .intel-grid-weak-consist
+     já havia colapsado antes (1100px), então também entra aqui.
+     .intel-grid-3col FICA DE FORA deste bloco de propósito: ele só
+     colapsa para 1 coluna em 800px (ver @media abaixo) — até lá
+     ainda é 2 colunas lado a lado, e aumentar o gap aqui bagunçaria
+     o espaço horizontal entre Score/Tendência/Previsão antes da
+     hora. O ajuste dele mora no @media (max-width: 800px). */
+  .two-col, .three-col, .intel-grid-weak-consist { gap: var(--section-gap-mobile); }
 
   .tools-card, .perf-card, .activity-card, .disc-card, .weaknesses-card.full-width,
   .usage-profile-card, .score-card, .trend-card, .prediction-card {
@@ -2210,6 +2411,13 @@ body {
   /* ─── 7. DISCIPLINAS (bloco do corpo do Dashboard) ─────────── */
   .disc-card { padding: 16px; }
   .disc-grid { gap: 8px; }
+
+  /* Sem esta linha, .weaknesses-card.full-width ficava "esquecido"
+     entre 768–900px: todos os outros cards já tinham caído para
+     16px aqui, só ele continuava com o padding do Desktop (22px)
+     até o próximo breakpoint (768px) — uma faixa de tela inteira
+     com um card fora do padrão dos vizinhos. */
+  .weaknesses-card.full-width { padding: 16px; }
 
   /* ─── 8. NAVEGAÇÃO + DISCIPLINAS (histórico / páginas) ─────── */
   .nav-section-wrap { padding: 16px; gap: 20px; }

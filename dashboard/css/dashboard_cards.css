@@ -987,7 +987,12 @@
 .weaknesses-card.full-width {
   display: flex;
   flex-direction: column;
-  padding: 22px 0 4px;
+  /* Era "22px 0 4px" — o único card da página com um valor de topo
+     "solto" (22px), 2px fora do --card-pad (24px) usado por todos
+     os outros. Horizontal (0) e rodapé (4px) continuam como estavam:
+     são intencionais, este card é uma lista full-bleed cujo próprio
+     conteúdo interno (.wk-stats-row) já define seu respiro lateral. */
+  padding: var(--card-pad) 0 4px;
   min-width: 0;
 }
 
