@@ -1628,26 +1628,6 @@
 <div id="view-agenda" class="view-agenda" style="display:none;"></div>
     </div><!-- /content -->
   </main>
-  <!-- ═══ ZOOM PADRÃO DA PÁGINA (80%) ═══════════════════════════
-     Aplicado via CSS `zoom` (suportado por Chrome/Edge/Opera —
-     a maioria dos navegadores Chromium). Roda no carregamento
-     inicial, definindo o zoom da página para 80%. Se o usuário
-     alterar o zoom manualmente depois (Ctrl+/Ctrl-), este script
-     não interfere — só define o valor no load. ─────────────── -->
-<script>
-  (function () {
-    var ZOOM_PADRAO = 80; // %
-    // Lógica solicitada: só reduz se o zoom atual for maior que 80.
-    // Como não há API confiável para ler o zoom real do navegador,
-    // tratamos o "zoom atual" como 100% (padrão de qualquer página
-    // recém-carregada) e aplicamos o teto de 80%.
-    var zoomAtual = 100;
-    if (zoomAtual > ZOOM_PADRAO) {
-      zoomAtual = ZOOM_PADRAO;
-    }
-    document.documentElement.style.zoom = zoomAtual + '%';
-  })();
-</script>
 
   <!-- ═══ NAVIGATION DRAWER (Mobile) — abre/fecha a Sidebar ═══════
        Script isolado, só cuida de abrir/fechar o drawer (classe
