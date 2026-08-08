@@ -18,16 +18,28 @@
        checklist_data.js
 
    REGRA DE CAMINHO (obrigatória):
-     content/pessoal/{ANO}/{SEMESTRE}/checklist_data.js
-   ANO é sempre extraído do próprio semestre (ex.: "2026-AP1" →
-   "2026") — nunca hardcoded. Adicionar um novo semestre nunca
-   exige alterar este arquivo: basta criar a pasta e o
+     content/pessoal/{ANO}/{SEMESTRE_BASE}/{ETAPA}/checklist_data.js
+   State.semestre chega aqui como uma string ÚNICA no formato
+   "{SEMESTRE_BASE}-{ETAPA}" (ex.: "2026.1-AP1", "2026.1-AP2"),
+   igual ao valor já usado no restante do Dashboard (seletor de
+   semestre, getDisciplinasDeSemestre etc.) — este arquivo não
+   inventa um formato novo, apenas SEPARA essa string em 3 partes
+   para montar o caminho de pastas real:
+     ANO           → primeiros 4 caracteres do semestre-base
+                      (ex.: "2026.1" → "2026")
+     SEMESTRE_BASE → parte antes do "-" (ex.: "2026.1")
+     ETAPA         → parte depois do "-" (ex.: "AP1" ou "AP2")
+   Nenhuma dessas partes é hardcoded — são sempre extraídas do
+   próprio `semestre` recebido. Adicionar um novo semestre/etapa
+   nunca exige alterar este arquivo: basta criar a pasta e o
    checklist_data.js correspondente.
-   IMPORTANTE: este caminho continua indexado pelo SEMESTRE COMPLETO
-   (ex.: "2026.1-AP2"), não pelo período-base — porque o CONTEÚDO
-   do checklist (tarefas/itens) é diferente entre AP1 e AP2, mesmo
-   que as disciplinas sejam as mesmas. Só a lista de disciplinas é
-   compartilhada entre AP1/AP2; os itens continuam por semestre.
+   IMPORTANTE: o caminho continua indexado pela ETAPA (AP1/AP2),
+   não só pelo período-base — porque o CONTEÚDO do checklist
+   (tarefas/itens) é diferente entre AP1 e AP2, mesmo que as
+   disciplinas sejam as mesmas. Só a lista de disciplinas é
+   compartilhada entre AP1/AP2 (via getDisciplinasDeSemestre); os
+   itens continuam por etapa, agora numa subpasta própria em vez
+   de grudados no nome da pasta do semestre.
 
    ─────────────────────────────────────────────
    DISCIPLINAS OFICIAIS — fonte única de verdade (obrigatório)
@@ -107,9 +119,29 @@ export function checklistEstaAberta() {
   return _viewAberta;
 }
 
+/* Separa o semestre completo ("2026.1-AP1") em semestre-base
+   ("2026.1") e etapa ("AP1") — a MESMA string já usada em todo o
+   Dashboard (State.semestre), só quebrada em partes aqui, no único
+   lugar que precisa saber onde cada pedaço vira pasta no disco.
+   Retorna null se o formato não bater com o esperado (ex.: falta
+   o "-ETAPA"), para que o chamador trate como "sem dados" em vez
+   de montar um caminho quebrado. */
+function _separarSemestre(semestre) {
+  const str = String(semestre ?? '').trim();
+  const match = /^(\d{4}\.\d+)-(AP\d+)$/i.exec(str);
+  if (!match) return null;
+
+  const [, semestreBase, etapa] = match;
+  const ano = semestreBase.slice(0, 4);
+  return { ano, semestreBase, etapa: etapa.toUpperCase() };
+}
+
 function _resolverCaminhoDados(semestre) {
-  const ano = String(semestre ?? '').slice(0, 4);
-  return `../../../content/pessoal/${ano}/${semestre}/checklist_data.js`;
+  const partes = _separarSemestre(semestre);
+  if (!partes) return null;
+
+  const { ano, semestreBase, etapa } = partes;
+  return `../../../content/pessoal/${ano}/${semestreBase}/${etapa}/checklist_data.js`;
 }
 
 /* Cruza as disciplinas declaradas em checklist_data.js (apenas
@@ -162,6 +194,15 @@ function _mesclarComDisciplinasOficiais(checklistData, disciplinasOficiais, seme
 
 async function _importarDadosSemestre(semestre) {
   const caminhoRelativo = _resolverCaminhoDados(semestre);
+
+  if (!caminhoRelativo) {
+    console.warn(
+      `[checklist] Semestre "${semestre}" não está no formato esperado ` +
+      `"{SEMESTRE_BASE}-{ETAPA}" (ex.: "2026.1-AP1") — não é possível montar ` +
+      `o caminho de content/pessoal/{ANO}/{SEMESTRE_BASE}/{ETAPA}/checklist_data.js.`
+    );
+    return null;
+  }
 
   /* URL absoluta real que o navegador vai buscar — calculada
      ANTES da tentativa, para aparecer no console mesmo se o
@@ -234,10 +275,13 @@ export async function abrirChecklist(containerEl) {
   if (minhaGeracao !== _geracaoAtual) return;
 
   if (!checklistDataBruto) {
-    const ano = String(semestre).slice(0, 4);
+    const partes = _separarSemestre(semestre);
+    const caminhoExemplo = partes
+      ? `content/pessoal/${partes.ano}/${partes.semestreBase}/${partes.etapa}/checklist_data.js`
+      : `content/pessoal/{ANO}/{SEMESTRE_BASE}/{ETAPA}/checklist_data.js`;
     renderEstadoVazio(
       containerEl,
-      `Nenhum checklist configurado para o semestre ${semestre} ainda. Crie o arquivo content/pessoal/${ano}/${semestre}/checklist_data.js para habilitá-lo. (Veja o console para o caminho exato que foi tentado.)`
+      `Nenhum checklist configurado para o semestre ${semestre} ainda. Crie o arquivo ${caminhoExemplo} para habilitá-lo. (Veja o console para o caminho exato que foi tentado.)`
     );
     return;
   }
