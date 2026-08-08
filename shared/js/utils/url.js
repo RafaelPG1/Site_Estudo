@@ -14,8 +14,10 @@ import { getSemestreAtual } from '../../../src/global.js';
    resolverSemestreDeURL
    Resolve o semestre ativo com prioridade:
      1º) ?sem= na URL atual
-     2º) getSemestreAtual() — valor salvo no storage
-     3º) fallback automático do global.js (SEMESTRES[0])
+     2º) getSemestreAtual() — valor salvo no storage; se não
+         houver nada salvo (ou o valor salvo não for mais um
+         semestre válido), getSemestreAtual() já resolve
+         internamente para SEMESTRE_PADRAO (ver src/global.js)
 ───────────────────────────────────────────────────────────── */
 export function resolverSemestreDeURL() {
   return new URLSearchParams(location.search).get('sem')
