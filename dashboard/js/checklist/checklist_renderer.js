@@ -110,6 +110,40 @@
    dashboard/js/utils/ui_state_manager.js. */
 import { UIState } from '../utils/ui_state_manager.js';
 
+/* ─────────────────────────────────────────────
+   FIX MOBILE — "scroll travado" até abrir uma disciplina
+   ─────────────────────────────────────────────
+   CAUSA RAIZ: `_renderCompleto()` é chamado depois de um `await`
+   (busca em checklist_storage.js / Firestore, ver checklist.js →
+   abrirChecklist), ou seja, o `containerEl.innerHTML` que faz a
+   página crescer de verdade roda FORA da pilha de execução do
+   toque que abriu a view (o clique original já terminou antes da
+   Promise resolver). No WebKit/iOS Safari, crescer o DOM de forma
+   assíncrona assim nem sempre resincroniza os limites de rolagem
+   por toque (`scrollHeight`) — o motor de scroll só reage de novo
+   na próxima mudança de layout LIGADA A UM GESTO SÍNCRONO. É por
+   isso que abrir uma disciplina "destravava": não era o accordion,
+   era o simples fato de `classList.toggle('is-collapsed', ...)`
+   (ver _ligarEventos abaixo) rodar dentro do handler `click`,
+   síncrono, do toque do usuário.
+   CORREÇÃO: depois de montar o DOM, força o WebKit a remedir os
+   limites de rolagem com um nudge de scroll de 1px (vai e volta),
+   sem precisar de nenhum gesto do usuário. Só roda no mobile — no
+   Desktop este bug não existe, e o nudge nunca é chamado lá. Não
+   cria nenhum scroll interno novo, não toca nos accordions: só
+   corrige o scroll da JANELA (window), que é o mesmo scroll normal
+   da página em qualquer outro momento. */
+const _mqScrollFixMobile = window.matchMedia('(max-width: 900px)');
+function _destravarScrollMobile() {
+  if (!_mqScrollFixMobile.matches) return;
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      window.scrollBy(0, 1);
+      window.scrollBy(0, -1);
+    });
+  });
+}
+
 function _escapeHtml(str) {
   return String(str ?? '')
     .replace(/&/g, '&amp;').replace(/</g, '&lt;')
@@ -482,6 +516,7 @@ const listaFiltrada = _filtrarDisciplinas(disciplinas, progresso);
   `;
 
   _ligarEventos(containerEl, checklistData, progresso, semestre, onToggleItem);
+  _destravarScrollMobile();
 }
 
 function _ligarEventos(containerEl, checklistData, progresso, semestre, onToggleItem) {

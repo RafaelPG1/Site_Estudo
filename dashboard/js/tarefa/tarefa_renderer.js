@@ -43,6 +43,34 @@ import { abrirModalTexto, abrirModalConfirmar, abrirModalNovaLista, CHAVE_RASCUN
    exatamente com as mesmas listas/categorias abertas ou fechadas. */
 import { UIState } from '../utils/ui_state_manager.js';
 
+/* ─────────────────────────────────────────────
+   FIX MOBILE — "scroll travado" até abrir uma lista
+   ─────────────────────────────────────────────
+   Mesma causa raiz do Checklist (ver comentário equivalente em
+   checklist_renderer.js): `renderTarefas()` é chamado depois de um
+   `await` (tarefa_storage.js / Firestore — ver tarefa.js →
+   abrirTarefas/_rerender), então o `containerEl.innerHTML` que faz
+   a página crescer roda FORA da pilha de execução do toque que
+   abriu a view ou disparou a mutação. No WebKit/iOS Safari isso
+   pode deixar o motor de rolagem por toque com um `scrollHeight`
+   desatualizado até a próxima mudança de layout ligada a um gesto
+   SÍNCRONO — no caso das Tarefas, abrir uma lista (.tarefa-lista-
+   -toggle, ver _ligarEventos abaixo), que faz `classList.toggle`
+   direto dentro do handler `click`.
+   CORREÇÃO: mesmo nudge de scroll de 1px (vai e volta), só no
+   mobile, sem gesto do usuário, sem scroll interno novo, sem tocar
+   em accordions — só resincroniza o scroll normal da janela. */
+const _mqScrollFixMobile = window.matchMedia('(max-width: 900px)');
+function _destravarScrollMobile() {
+  if (!_mqScrollFixMobile.matches) return;
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      window.scrollBy(0, 1);
+      window.scrollBy(0, -1);
+    });
+  });
+}
+
 const _CHAVE_ESTADO_UI = 'tarefas';
 let _estadoUICarregado = false;
 
@@ -287,6 +315,7 @@ export function renderTarefas(containerEl, listas, callbacks, disciplinas = []) 
 
   _ligarEventoNovaLista(containerEl);
   _ligarEventos(containerEl, listasOrdenadas);
+  _destravarScrollMobile();
 }
 
 function _ligarEventoNovaLista(containerEl) {
