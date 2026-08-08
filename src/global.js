@@ -81,6 +81,22 @@ export const SEMESTRES = [
   '2026.1-AP1'
 ];
 
+/* Semestre padrão — usado quando não há `semestre_atual` salvo no
+   localStorage desta origem (ex.: primeiro acesso, ou acesso a
+   partir de uma origem diferente da usada em testes locais, como
+   GitHub Pages vs Live Server — localStorage não é compartilhado
+   entre origens).
+
+   IMPORTANTE: este valor é INDEPENDENTE da ordem de SEMESTRES[].
+   Antes, o fallback usava `SEMESTRES[0]` — ou seja, o padrão
+   mudava silenciosamente toda vez que a lista era reordenada ou
+   um semestre novo era adicionado no topo (foi exatamente isso
+   que fez o fallback virar "2026.2-AP2" ao adicionar esse
+   semestre à lista, mesmo sem nenhum checklist_data.js configurado
+   para ele ainda). Ajuste este valor manualmente quando o
+   semestre corrente do curso mudar. */
+export const SEMESTRE_PADRAO = '2026.1-AP2';
+
 
 
 
@@ -158,7 +174,7 @@ let _estado = {
   pagina:     'HOME',
   semestre: (() => {
     const raw = _normalizarSemestre(Storage.get('semestre_atual') || '');
-    return SEMESTRES.includes(raw) ? raw : SEMESTRES[0];
+    return SEMESTRES.includes(raw) ? raw : SEMESTRE_PADRAO;
   })(),
   disciplina: null,
   usuario:    Storage.get('usuario', null),
