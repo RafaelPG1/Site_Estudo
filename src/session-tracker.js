@@ -116,16 +116,22 @@
           — nenhum campo existente foi removido ou
           renomeado.
 
-   ─────────────────────────────────────────────
-   INSTRUMENTAÇÃO TEMPORÁRIA — INVESTIGAÇÃO "PERFIL DE USO"
-   ─────────────────────────────────────────────
-   Todos os console.log/console.warn marcados com o prefixo
-   [PERFIL-USO] foram adicionados exclusivamente para
-   diagnóstico. Nenhuma regra de negócio, contrato público
-   ou comportamento de gravação/leitura foi alterado por
-   eles — são apenas observações do estado já existente em
-   cada etapa. Devem ser removidos após a causa raiz ser
-   confirmada.
+   v11  — LIMPEZA DE LOGS DE CONSOLE (ruído em produção)
+          ─────────────────────────────────────────
+          Removidos todos os console.log informativos deste
+          arquivo (timer pausado/retomado, lock adquirido,
+          flush, página finalizada, navegação, boot, etc.),
+          incluindo o bloco de instrumentação temporária
+          [PERFIL-USO] (que o próprio comentário já indicava
+          como descartável após a investigação) e as chamadas
+          a perfLog/logFirestore (perf_logger.js), que também
+          poluíam o console com métricas [PERF] a cada
+          getStats()/flush. Nenhuma lógica de negócio, timing,
+          contrato de API pública ou comportamento de
+          gravação/leitura foi alterado — só a saída no
+          console. console.warn/console.error de tratamento
+          de falha real foram mantidos, pois sinalizam
+          problemas de fato (rede, Firestore, etc.).
    ============================================= */
 
 import {
@@ -133,7 +139,6 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 import { getDb } from './firebase.js';
-import { perfLog, logFirestore } from './perf_logger.js';
 /* ══════════════════════════════════════════════
    CONSTANTES
 ══════════════════════════════════════════════ */
@@ -262,7 +267,6 @@ function _registrarAtividade() {
   _lastActivityTs = Date.now();
   if (_isUserIdle) {
     _isUserIdle = false;
-    console.log('[session-tracker] usuário voltou a ficar ativo — retomando contagem');
     /* Retomada imediata: não espera o próximo tick de
        _verificarInatividade. Só retoma de fato se as outras
        duas condições (lock + visibilidade) também permitirem. */
@@ -298,7 +302,6 @@ function _verificarInatividade() {
 
   if (parado && !_isUserIdle) {
     _isUserIdle = true;
-    console.log('[session-tracker] usuário inativo há mais de', INACTIVITY_THRESHOLD / 1000, 's — pausando contagem');
     if (_isOwner()) _pauseLocalTimer();
   }
 }
@@ -363,7 +366,6 @@ function _avaliarPosseDoLock() {
     if (_isOwner()) { _pauseLocalTimer(); _releaseLock(); }
     return;
   }
-  const eraDona   = _isOwner();
   const agoraDona = _tryAcquireLock();
   if (agoraDona) {
     /* v10 — só retoma o timer se o usuário também estiver
@@ -371,8 +373,7 @@ function _avaliarPosseDoLock() {
        (necessário para não travar a disputa entre abas), mas a
        contagem de tempo permanece pausada até _registrarAtividade(). */
     if (!_isUserIdle) _resumeLocalTimer();
-    if (!eraDona) console.log('[session-tracker] lock adquirido — esta aba agora conta tempo');
-  } else if (eraDona) {
+  } else {
     _pauseLocalTimer();
   }
 }
@@ -425,7 +426,6 @@ function _resumeLocalTimer() {
   if (paused || !running) {
     localStorage.setItem(LS_RUN_START_KEY, String(Date.now()));
     localStorage.removeItem(LS_PAUSED_KEY);
-    console.log('[session-tracker] timer local RETOMADO (dona do lock)');
   }
 }
 
@@ -439,7 +439,6 @@ function _pauseLocalTimer() {
   }
   localStorage.setItem(LS_PAUSED_KEY, '1');
   localStorage.removeItem(LS_RUN_START_KEY);
-  console.log('[session-tracker] timer local PAUSADO | acumulado:', localStorage.getItem(LS_ACCUM_KEY) + 's');
 }
 
 function _resetLocalTimer() {
@@ -687,8 +686,6 @@ async function _flush() {
       localStorage.setItem(LS_LAST_SENT_KEY, String(activeSeconds));
     }
 
-    console.log(`[session-tracker] flush: ${activeSeconds}s local | delta=${delta}s → Firebase`);
-
     /* Perfil de Uso Global — mantém o heatmap sincronizado a cada
        heartbeat (30s) e a cada troca de página/aba, além do registro
        imediato já feito em init(). */
@@ -812,8 +809,6 @@ async function _resolverSessaoZumbi(uid, sessionId) {
     const data   = snap.data();
     const eZumbi = (Date.now() - (data.endedAt ?? 0)) > ZOMBIE_THRESHOLD;
     if (eZumbi) {
-      console.warn('[session-tracker] sessão zumbi detectada:', sessionId,
-        `| duração salva: ${data.duracao ?? 0}s`);
       await setDoc(_sessaoRef(uid, sessionId), { _encerradaComoZumbi: true }, { merge: true });
     }
   } catch (err) {
@@ -856,8 +851,6 @@ export async function init(uid) {
       const persistido = localStorage.getItem(chave);
       if (persistido) _semestreAtivo = persistido;
     } catch (_) {}
-  } else {
-    console.log('[PERFIL-USO][init] _semestreAtivo já estava definido (mesma execução de módulo):', _semestreAtivo);
   }
 
   /* Pode existir uma entrada de página já registrada em memória por uma
@@ -906,9 +899,6 @@ export async function init(uid) {
           _navPageStart   = Date.now();
           _salvarNavLS();
         }
-
-        const lsAccum = _readLSNumber(LS_ACCUM_KEY, 0);
-        console.log(`[session-tracker] sessão recuperada: ${_sessionId} | localStorage: ${lsAccum}s | nav pages: ${Object.keys(_navPages).length}`);
       } else {
         await _iniciarNovaSessao();
       }
@@ -1036,9 +1026,8 @@ export async function destroy() {
    API PÚBLICA
 ══════════════════════════════════════════════ */
 export function getStats() {
-  const _t0 = performance.now();
   const dono = _isOwner();
-  const resultado = {
+  return {
     sessionId:      _sessionId,
     uid:            _uid,
     activeSeconds:  _calcActiveSeconds(),
@@ -1061,8 +1050,6 @@ export function getStats() {
     navDeviceType:  _navDeviceType,
     navCurrentPage: _navCurrentPage,
   };
-  perfLog('Sessão', 'getStats (síncrono)', performance.now() - _t0, { navPages: Object.keys(_navPages).length });
-  return resultado;
 }
 
 export function formatTime(seconds) {
@@ -1111,7 +1098,6 @@ export function subscribe(fn) {
 ══════════════════════════════════════════════ */
 export async function carregarEstatisticas(uid) {
   if (!uid) return null;
-  const _tInicio = performance.now();
   try {
     const db = getDb();
     const hoje = new Date();
@@ -1125,27 +1111,20 @@ export async function carregarEstatisticas(uid) {
     const mesesUnicos = [...new Set(diasJanela.map(d => d.mesKey))];
 
     const mapasMensais = {};
-    const _tFaseUm = performance.now();
     const [snapUsuario] = await Promise.all([
       (async () => {
-        const t0 = performance.now();
         const snap = await getDoc(doc(db, 'usuarios', uid));
-        logFirestore('usuarios/{uid}', uid, performance.now() - t0, snap.exists() ? 1 : 0);
         return snap;
       })(),
       ...mesesUnicos.map(async (mesKey) => {
-        const t0 = performance.now();
         try {
           const snap = await getDoc(_diarioMensalRef(uid, mesKey));
-mapasMensais[mesKey] = snap.exists() ? _extrairDiasDoMes(snap.data()) : {};
-          logFirestore(`historico_diario/${mesKey}`, uid, performance.now() - t0, snap.exists() ? 1 : 0);
+          mapasMensais[mesKey] = snap.exists() ? _extrairDiasDoMes(snap.data()) : {};
         } catch (_) {
           mapasMensais[mesKey] = {};
-          logFirestore(`historico_diario/${mesKey} (ERRO)`, uid, performance.now() - t0, 0);
         }
       }),
     ]);
-    perfLog('Promise.all', 'carregarEstatisticas :: usuário + meses (paralelo)', performance.now() - _tFaseUm, { meses: mesesUnicos.length });
 
     const dadosUsuario = snapUsuario.exists() ? snapUsuario.data() : {};
 
@@ -1189,19 +1168,13 @@ mapasMensais[mesKey] = snap.exists() ? _extrairDiasDoMes(snap.data()) : {};
     });
 
     if (diasParaFallback.length > 0) {
-      const _tFallback = performance.now();
       await Promise.all(diasParaFallback.map(dateKey => {
-        const t0 = performance.now();
         return getDoc(_diarioRef(uid, dateKey))
           .then(snap => {
             if (snap.exists()) historico[dateKey] = snap.data();
-            logFirestore(`historico_diario/${dateKey} (fallback antigo)`, uid, performance.now() - t0, snap.exists() ? 1 : 0);
           })
-          .catch(() => {
-            logFirestore(`historico_diario/${dateKey} (fallback ERRO)`, uid, performance.now() - t0, 0);
-          });
+          .catch(() => {});
       }));
-      perfLog('Promise.all', 'carregarEstatisticas :: fallback diário antigo', performance.now() - _tFallback, { dias: diasParaFallback.length });
 
       /* NOVO — só grava a conclusão definitiva na PRIMEIRA vez que
          o fallback é executado sem filtro nenhum (legacyCheck ainda
@@ -1211,15 +1184,6 @@ mapasMensais[mesKey] = snap.exists() ? _extrairDiasDoMes(snap.data()) : {};
       if (!legacyCheck?.verificado) {
         _persistirLegacyCheck(uid, diasParaFallback, historico).catch(() => {});
       }
-    } else {
-      perfLog(
-        legacyCheck?.verificado ? 'Cache' : 'dashboard_data',
-        legacyCheck?.verificado
-          ? 'carregarEstatisticas :: fallback diário pulado (legacyCheck confirma ausência)'
-          : 'carregarEstatisticas :: fallback diário (não necessário)',
-        0,
-        { dias: 0 }
-      );
     }
 
     let streak = 0;
@@ -1278,15 +1242,9 @@ mapasMensais[mesKey] = snap.exists() ? _extrairDiasDoMes(snap.data()) : {};
       historico,
     };
 
-    perfLog('dashboard_data', 'carregarEstatisticas (total)', performance.now() - _tInicio, {
-      meses: mesesUnicos.length,
-      fallbackDias: diasParaFallback.length,
-    });
-
     return resultado;
   } catch (err) {
     console.error('[session-tracker] carregarEstatisticas:', err);
-    perfLog('dashboard_data', 'carregarEstatisticas (ERRO)', performance.now() - _tInicio);
     return null;
   }
 }
@@ -1354,7 +1312,6 @@ async function _persistirLegacyCheck(uid, datasVerificadas, historicoResultante)
 
   try {
     await setDoc(_usuarioRef(uid), { legacyCheck }, { merge: true });
-    console.log('[session-tracker] legacyCheck persistido:', legacyCheck);
   } catch (err) {
     console.warn('[session-tracker] falha ao persistir legacyCheck:', err);
   }
@@ -1370,7 +1327,6 @@ function _finalizarPaginaAtual() {
   if (elapsed > 0) {
     if (!_navPages[_navCurrentPage]) _navPages[_navCurrentPage] = { time: 0, visits: 0 };
     _navPages[_navCurrentPage].time += elapsed;
-    console.log(`[session-tracker] página finalizada: ${_navCurrentPage} | +${elapsed}s`);
   }
   _navPageStart = null;
 }
@@ -1401,9 +1357,6 @@ function __nexusPageEnter(pathname) {
   /* Persiste imediatamente no localStorage — sobrevive a reloads
      sem depender do ciclo de heartbeat do Firestore */
   _salvarNavLS();
-
-  console.log('[session-tracker] __nexusPageEnter →', chaveNav,
-    `| visitas: ${_navPages[chaveNav].visits} | pages em memória: ${Object.keys(_navPages).length}`);
 
   if (_initialized && !_booting && _uid && _isOwner()) _flush().catch(() => {});
 }
@@ -1445,13 +1398,11 @@ function _installNavAutoDetect() {
 document.addEventListener('nexus:loginSuccess', async e => {
   const uid = e?.detail?.uid;
   if (uid) {
-    console.log('[session-tracker] nexus:loginSuccess →', uid);
     await init(uid);
   }
 });
 
 document.addEventListener('nexus:logout', async () => {
-  console.log('[session-tracker] nexus:logout — destruindo sessão');
   await destroy();
 });
 
@@ -1460,7 +1411,6 @@ document.addEventListener('nexus:logout', async () => {
   const { getUsuario: _gu } = await import('./global.js').catch(() => ({}));
   const usuario = typeof _gu === 'function' ? _gu() : null;
   if (usuario?.uid) {
-    console.log('[session-tracker] boot imediato para', usuario.uid);
     await init(usuario.uid);
   }
 })();
@@ -1475,15 +1425,12 @@ document.addEventListener('nexus:logout', async () => {
 ══════════════════════════════════════════════ */
 export async function carregarPerfilUso(uid) {
   if (!uid) return null;
-  const t0 = performance.now();
   try {
     const snap = await getDoc(_perfilUsoRef(uid));
     const resultado = snap.exists() ? snap.data() : null;
-    logFirestore('usuarios/{uid}/perfil_uso/global', uid, performance.now() - t0, resultado ? 1 : 0);
     return resultado;
   } catch (err) {
     console.warn('[session-tracker] carregarPerfilUso:', err);
-    logFirestore('usuarios/{uid}/perfil_uso/global (ERRO)', uid, performance.now() - t0, 0);
     return null;
   }
 }

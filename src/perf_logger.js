@@ -25,9 +25,36 @@
 
      __nexusPerfClear() zera os registros acumulados
      (útil para medir só um ciclo de carregamento).
+
+   ─────────────────────────────────────────────
+   INSTRUMENTAÇÃO DESLIGADA POR PADRÃO (ruído no console)
+   ─────────────────────────────────────────────
+   `_ativo` era `true` fixo — todo `perfLog`/`logFirestore`/
+   `logCache`/`logDom` chamado por QUALQUER módulo (dashboard_data.js,
+   session-tracker.js etc.) imprimia uma linha `[PERF] ...` no
+   console a cada chamada, mesmo fora de qualquer investigação ativa.
+   Isso é o que gerava as linhas
+     [PERF] Firestore :: usuarios/{uid}/perfil_uso/global :: ...ms
+     [PERF] Sessão :: getStats (síncrono) :: ...ms
+   vistas no console em uso normal.
+
+   Agora `_ativo` é `false` por padrão: todas as funções de log
+   (perfLog, logFirestore, logCache, logDom) continuam existindo
+   com a MESMA assinatura — nenhum import em outro arquivo quebra —
+   mas retornam imediatamente sem imprimir nada nem acumular
+   registros enquanto `_ativo` for `false`. `medirAsync`/`medirSync`
+   continuam executando a função medida normalmente (o valor de
+   retorno não muda), só o log em si é suprimido.
+
+   Para reativar temporariamente uma investigação de performance,
+   basta trocar `_ativo` para `true` de novo — nenhuma outra
+   alteração é necessária em nenhum outro módulo. `__nexusPerfReport()`
+   e `__nexusPerfClear()` continuam expostos no console, mas com
+   `_ativo = false` o relatório fica vazio (nenhuma medição para
+   agregar) até a instrumentação ser religada.
    ============================================= */
 
-const _ativo = true; // instrumentação sempre ativa nesta fase de diagnóstico
+const _ativo = false; // instrumentação desligada — reative para investigar performance
 
 const _registros = [];
 
@@ -162,7 +189,7 @@ export function gerarRelatorioPerf() {
 
 export function limparRegistrosPerf() {
   _registros.length = 0;
-  console.log('[PERF] registros limpos.');
+  if (_ativo) console.log('[PERF] registros limpos.');
 }
 
 if (typeof window !== 'undefined') {

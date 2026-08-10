@@ -151,6 +151,23 @@
    Nenhum HTML, CSS, layout, modal, filtro ou animação da seção de
    Conquistas foi alterado — apenas a origem dos dados usados no
    cálculo de desbloqueio/progresso.
+
+   ─────────────────────────────────────────────
+   LIMPEZA DE LOGS DE CONSOLE (ruído em produção)
+   ─────────────────────────────────────────────
+   Removidos os console.log/console.group informativos deste
+   arquivo (chamada a relatorioEvolucao, dump completo de
+   State.intelligence a cada carga) e o console.warn de
+   instrumentação temporária [PERFIL-USO] (geração obsoleta
+   descartada — comportamento em si continua idêntico, só
+   deixou de imprimir). As chamadas a perfLog/logFirestore
+   permanecem no código (já são no-op globalmente, pois
+   perf_logger.js tem sua instrumentação desligada por padrão
+   — ver `_ativo` em src/perf_logger.js) — nenhuma lógica,
+   timing ou contrato de dados foi alterado, só a saída no
+   console. console.warn/console.error de erro real (uid
+   ausente, módulo indisponível, falha de leitura) foram
+   mantidos.
    ============================================= */
 
 import { getUsuario } from '../../src/global.js';
@@ -523,11 +540,6 @@ export async function _carregarIntelligence(uid, statsPreCarregadas = null) {
     : carregarEstatisticas(uid).catch(() => null);
 
   try {
-    console.log(
-      '[dashboard] _carregarIntelligence: chamando relatorioEvolucao para', uid,
-      '| semestre:', semestreAtivo ?? 'todos'
-    );
-
     const _tPromiseAll = performance.now();
     const [
       relatorio,
@@ -606,19 +618,6 @@ export async function _carregarIntelligence(uid, statsPreCarregadas = null) {
     perfLog('quiz_intelligence', '_carregarIntelligence :: cálculo local de conquistas (fonte global)', performance.now() - _tConquistas);
 
     State.intelligence = relatorio;
-
-    console.group('[dashboard] State.intelligence — relatorio recebido');
-    console.log('geradoEm:',             new Date(relatorio?.geradoEm).toLocaleTimeString());
-    console.log('semestreFiltrado:',     relatorio?.semestreFiltrado);
-    console.log('scoreEvolutivo:',       relatorio?.scoreEvolutivo);
-    console.log('tendenciaDoAluno:',     relatorio?.tendenciaDoAluno);
-    console.log('fraquezasPorDisc:',     relatorio?.fraquezasPorDisciplina?.length, 'disciplinas');
-    console.log('previsaoSimples:',      relatorio?.previsaoSimples);
-    console.log('summaryPersistido:',    relatorio?.summaryPersistidoCamada3);
-    console.log('tentativasRecentes:',   relatorio?.tentativasRecentes?.length, 'itens');
-    console.log('totalQuestoes:',        relatorio?.totalQuestoes, '(filtrado por semestre)');
-    console.log('conquistas:',           relatorio?.conquistas, '(fonte: relatório GLOBAL, independente de semestre)');
-    console.groupEnd();
 
     const _tRender = performance.now();
     renderDashboardIntelligence(relatorio);
@@ -722,8 +721,6 @@ const [stats, ultimaSessao, perfilUso] = await Promise.all([
        Isso evita que uma resposta antiga, mais lenta, sobrescreva
        uma resposta mais nova já renderizada corretamente. */
     if (_minhaGeracao !== _cargaMetricasGeracaoAtual) {
-      console.warn('[PERFIL-USO][dashboard_data] resultado obsoleto descartado — geração',
-        _minhaGeracao, '| geração atual:', _cargaMetricasGeracaoAtual);
       perfLog('dashboard_data', '_carregarMetricasReais (descartada — geração obsoleta)', performance.now() - _t0);
       intelligencePromise.catch(() => {});
       return;

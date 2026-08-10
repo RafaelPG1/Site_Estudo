@@ -81,6 +81,69 @@
      ✗ Alterações em session-tracker.js
      ✗ Escrita no Firebase fora do pipeline da Camada 3
      ✗ Coleta de novos dados (Camada 4 é só leitura/interpretação)
+
+   ─────────────────────────────────────────────────────
+   LIMPEZA DE LOGS DE CONSOLE (ruído em produção)
+   ─────────────────────────────────────────────────────
+   Removidos os console.log informativos que disparavam a cada
+   quiz ("performance salva →...", "nenhuma resposta real —
+   payload ignorado") e a cada leitura servida por cache
+   ("tentativas servidas via cache de sessão"). As chamadas a
+   perfLog/logFirestore/logCache permanecem no código (já são
+   no-op globalmente, pois perf_logger.js tem sua instrumentação
+   desligada por padrão — ver `_ativo` em src/perf_logger.js) —
+   nenhuma lógica, cálculo ou contrato de dados foi alterado, só
+   a saída no console. console.warn/console.error de erro real
+   (payload inválido, falha ao salvar/consolidar, uid ausente)
+   foram mantidos.
+
+   ─────────────────────────────────────────────────────
+   CORREÇÃO — PREVISÃO SEMPRE EM 0% ("Queda esperada" indevida)
+   ─────────────────────────────────────────────────────
+   Bug relatado: o card "Previsão" do Dashboard exibia 0% com o
+   rótulo "Queda esperada", mesmo quando os demais cards (Score,
+   Tendência, Fraquezas por Disciplina) calculavam normalmente a
+   partir dos mesmos dados.
+
+   Causa raiz: `previsaoSimples(uid, disc, semestre)` construía o
+   array `taxasPct` diretamente a partir do resultado de
+   `_buscarTodasTentativas(uid, semestre)`, SEM ordenar por data.
+   `_buscarTodasTentativas` → `_buscarTodasTentativasBrutas` monta
+   o array via fan-out paralelo (`Promise.all` por quizId) seguido
+   de `.flat()` — a ordem final é a ordem de resolução das
+   promises/leitura do Firestore, não a ordem cronológica das
+   tentativas.
+
+   `_regressaoLinear(valores)` usa o ÍNDICE do array como eixo X
+   (0, 1, 2, ...), pressupondo que índice = ordem no tempo. Com o
+   array fora de ordem, o `slope` calculado não refletia a
+   evolução real do aluno. Ao extrapolar um ponto além da última
+   amostra (`proximoIndice = taxasPct.length`), o resultado
+   (`previsaoBruta`) podia cair abaixo de 0 e era truncado por
+   `_clamp(previsaoBruta, 0, 100)` — sempre exibindo 0%, com
+   `direcaoEsperada: 'queda'` (pois `reta.slope < -0.5`) e
+   `confianca: 'média'` (6 amostras, divergência dentro da faixa
+   "moderada") — exatamente o texto reportado ("Probabilidade
+   moderada" + "0%" + "Queda esperada").
+
+   Os dados de entrada (`taxaAcerto`, `endedAt` de cada tentativa)
+   sempre estiveram corretos e são os MESMOS já usados corretamente
+   por Score Evolutivo, Fraquezas por Disciplina etc. O defeito era
+   exclusivamente a falta de ordenação cronológica antes da
+   regressão — não a fórmula (matematicamente correta) nem os dados
+   em si.
+
+   Correção aplicada: dentro de `previsaoSimples`, as tentativas
+   filtradas por disciplina (quando informada) agora passam por
+   `.slice().sort((a, b) => (a.endedAt ?? 0) - (b.endedAt ?? 0))`
+   antes de alimentar `taxasPct`/`_regressaoLinear` — o MESMO
+   padrão de ordenação que `_calcularInsight()` já usa (função
+   usada pelo pipeline de Score/Consolidação). Nenhuma outra
+   função (`padraoDeDesempenho`, `tendenciaDoAluno`,
+   `fraquezasPorDisciplina`, `scoreEvolutivo`,
+   `listarTentativasRecentes`, `contarQuestoesRespondidas`) foi
+   alterada — o ajuste ficou restrito exclusivamente à função que
+   alimenta o card "Previsão".
    ============================================================ */
 
 import {
@@ -484,7 +547,6 @@ async function processarPayloadBruto(payload, uid) {
      (ex: abriu e fechou imediatamente) não geram registro. */
   const { acertos, erros, respondidas } = _calcularAcertosDoPayload(payload);
   if (respondidas === 0) {
-    console.log('[quiz_intelligence] nenhuma resposta real — payload ignorado.');
     return null;
   }
 
@@ -521,14 +583,6 @@ async function processarPayloadBruto(payload, uid) {
   try {
     const resultado = await salvarPerformanceQuiz(uid, quizId, registroFirebase);
     idRegistro = resultado?.id ?? null;
-    console.log(
-      '[quiz_intelligence] performance salva →', quizId,
-      `| acertos: ${acertos}/${respondidas} respondidas (de ${totalQuestoes} total)`,
-      `| não respondidas: ${naoRespondidas}`,
-      `| taxa: ${Math.round(taxaAcerto * 100)}%`,
-      `| ${tempoGastoSeg}s`,
-      revealed ? '| revelado' : ''
-    );
   } catch (err) {
     console.warn('[quiz_intelligence] falha ao salvar performance:', err);
   }
@@ -653,7 +707,16 @@ export async function consolidarUsuario(uid) {
    previsaoSimples, listarTentativasRecentes,
    contarQuestoesRespondidas, consolidarUsuario) continuam
    recebendo e devolvendo exatamente o mesmo formato de
-   antes. ────────────────────────────────────────────── */
+   antes.
+
+   IMPORTANTE (ver changelog "CORREÇÃO — PREVISÃO SEMPRE EM
+   0%" no topo do arquivo): o array devolvido por esta busca
+   NÃO é garantidamente ordenado por data — é a ordem de
+   resolução do fan-out por quizId. Funções que dependem de
+   ordem cronológica (regressão linear, janelas recente/antiga)
+   precisam ordenar por conta própria antes de usar o resultado
+   — exatamente como `_calcularInsight` e, agora, também
+   `previsaoSimples` já fazem. ────────────────────────────── */
 let _fetchEmAndamento = null; // { uid, promise } | null — evita leituras concorrentes duplicadas
 
 /* ── Cache cross-navegação (sessionStorage) ────────────────────────
@@ -731,7 +794,6 @@ async function _buscarTodasTentativasBrutas(uid) {
     _cacheTentativas = { uid, tentativas: cacheSessao.tentativas };
     _cacheVersao++;
     logCache('_buscarTodasTentativasBrutas (sessionStorage cross-navegação)', true, performance.now() - _t0);
-    console.log('[quiz_intelligence] tentativas servidas via cache de sessão (0 leituras Firestore)');
     return cacheSessao.tentativas;
   }
   logCache('_buscarTodasTentativasBrutas', false, performance.now() - _t0);
@@ -794,7 +856,12 @@ async function _buscarTodasTentativasBrutas(uid) {
 /* _buscarTodasTentativas(uid, semestre?)
    sem semestre → retorna tudo (mesmo comportamento de sempre)
    com semestre → filtra EM MEMÓRIA o mesmo conjunto já buscado
-                  (ou já em cache), nunca gerando nova leitura */
+                  (ou já em cache), nunca gerando nova leitura
+
+   Lembrete: a ordem do array retornado NÃO é garantidamente
+   cronológica (ver comentário acima, em _buscarTodasTentativasBrutas
+   / changelog "CORREÇÃO — PREVISÃO SEMPRE EM 0%"). Quem precisa de
+   ordem por tempo deve ordenar por `endedAt` explicitamente. */
 async function _buscarTodasTentativas(uid, semestre = null) {
   const todasTentativas = await _buscarTodasTentativasBrutas(uid);
   if (semestre) return todasTentativas.filter(t => t.semestre === semestre);
@@ -894,7 +961,7 @@ export async function tendenciaDoAluno(uid, semestre = null) {
    { direcao, diferencaPct, confianca }), calculada via
    _calcularTendencia — a mesma função usada em tendenciaDoAluno().
    Isso não substitui nem altera `inclinacaoPctPorTentativa`/`emQueda`,
-   que continuam vindos exclusivamente da regressão linear. */
+   que continuam vindo exclusivamente da regressão linear. */
 export async function fraquezasPorDisciplina(uid, semestre = null) {
   const _t0 = performance.now();
   if (!uid) {
@@ -981,7 +1048,17 @@ export async function scoreEvolutivo(uid, semestre = null) {
   return resultado;
 }
 
-/* ── 6. Previsão simples ── */
+/* ── 6. Previsão simples ──
+   CORREÇÃO (ver changelog "CORREÇÃO — PREVISÃO SEMPRE EM 0%" no
+   topo do arquivo): as tentativas usadas na regressão linear agora
+   são ordenadas cronologicamente por `endedAt` ANTES de alimentar
+   `taxasPct`/`_regressaoLinear`. Antes, o array vinha na ordem de
+   retorno do fan-out por quizId (não cronológica), e a regressão
+   usava o índice do array como eixo do tempo — produzindo um
+   `slope` incorreto que, extrapolado, podia cair abaixo de 0 e ser
+   truncado por `_clamp(...,0,100)`, sempre exibindo 0% no card
+   "Previsão" do Dashboard. Nenhuma outra parte da fórmula foi
+   alterada. */
 export async function previsaoSimples(uid, disc = null, semestre = null) {
   const _t0 = performance.now();
   if (!uid) {
@@ -989,8 +1066,27 @@ export async function previsaoSimples(uid, disc = null, semestre = null) {
     return { previsaoTaxaAcertoPct: null, confianca: 'baixa', metodo: 'regressao_linear' };
   }
 
-  const todas      = await _buscarTodasTentativas(uid, semestre);
-  const tentativas = disc ? todas.filter(t => t.disc === disc) : todas;
+  const todas               = await _buscarTodasTentativas(uid, semestre);
+  const tentativasFiltradas = disc ? todas.filter(t => t.disc === disc) : todas;
+
+  /* CORREÇÃO — ordenação cronológica ausente (causa do "0% / Queda
+     esperada" incorreto no card Previsão).
+     _buscarTodasTentativas()/_buscarTodasTentativasBrutas() devolvem
+     as tentativas na ordem em que o Firestore respondeu o fan-out por
+     quizId (Promise.all + .flat()) — NÃO em ordem de tempo. A regressão
+     linear abaixo usa o ÍNDICE do array como eixo X (0,1,2...),
+     pressupondo que índice = ordem cronológica das tentativas. Sem
+     ordenar, o slope calculado refletia a ordem arbitrária de retorno
+     do Firestore, não a evolução real do aluno — e ao extrapolar um
+     ponto além da última amostra, a previsão caía abaixo de 0 e era
+     truncada por _clamp(...,0,100), sempre exibindo 0%.
+     _calcularInsight() (usado por Score/Consolidação) já ordena por
+     endedAt antes de calcular — esta é a mesma ordenação, aplicada
+     aqui apenas para previsaoSimples, sem alterar nenhum outro
+     consumidor de _buscarTodasTentativas. */
+  const tentativas = tentativasFiltradas
+    .slice()
+    .sort((a, b) => (a.endedAt ?? 0) - (b.endedAt ?? 0));
 
   if (tentativas.length < JANELA_REGRESSAO_MIN) {
     perfLog('quiz_intelligence', 'previsaoSimples (dados insuficientes)', performance.now() - _t0, { amostras: tentativas.length });
