@@ -225,9 +225,9 @@ export function renderScore(relatorio) {
   }
 
   const NIVEL_LABEL = {
-    'avancado':      'Avançado',
+    'avançado':      'Avançado',
     'proficiente':   'Proficiente',
-    'intermediario': 'Intermediário',
+    'intermediário': 'Intermediário',
     'iniciante':     'Iniciante',
     'fundamentos':   'Fundamentos',
   };

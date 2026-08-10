@@ -210,22 +210,17 @@ const _CHAVE_ESTADO_UI_NAV = 'dashboard-nav-lists';
    ─────────────────────────────────────────────
    Camada exclusivamente de EXIBIÇÃO. Não altera
    tracking, não altera o que session-tracker.js
-   grava (pathname puro, sem query string).
+   grava (chave = pathname + query string, ver
+   __nexusPageEnter em session-tracker.js).
 
    Usada por _renderPaginasMaisAcessadas() e
    _renderFluxoNavegacao() — mesma função, para
    garantir que o mesmo pathname produza sempre
    o mesmo rótulo nas duas seções.
 
-   LIMITAÇÃO CONHECIDA: session-tracker.js só
-   registra location.pathname (sem query string).
-   Por isso, ?disc= nunca está disponível para
-   entradas do histórico — apenas State.discAtiva
-   (estado atual em memória) pode complementar a
-   disciplina, e somente quando o pathname exibido
-   corresponde à área de disciplina ativa agora.
-   Não é possível recuperar a disciplina de uma
-   visita passada a outra disciplina.
+   A disciplina exibida vem EXCLUSIVAMENTE da query string
+   (?disc=) presente na própria chave de navegação registrada —
+   ver REGRA em _normalizarRotaParaLabel() logo abaixo.
 ══════════════════════════════════════════════ */
 
 const ROTA_LABELS = {
@@ -304,10 +299,9 @@ function _extrairChaveDeRota(pathname) {
   return { chave: null, ultimoSegmentoLimpo: _limparSegmento(ultimo) };
 }
 
-/* Disciplina via query string (?disc=) — só funciona se o
-   pathname recebido já contiver a query (não é o caso do
-   session-tracker.js hoje, mas a função suporta se um dia
-   passar a registrar). Mantido por completude da regra 4.3. */
+/* Disciplina via query string (?disc=) — presente na própria chave
+   de navegação registrada por __nexusPageEnter (pathname + search),
+   ver session-tracker.js. */
 function _extrairDisciplinaDaQuery(pathnameOuUrl) {
   try {
     const idx = pathnameOuUrl.indexOf('?');
@@ -318,12 +312,6 @@ function _extrairDisciplinaDaQuery(pathnameOuUrl) {
   } catch (_) {
     return null;
   }
-}
-
-function _resolverNomeDisciplinaAtiva() {
-  const disc = State.discAtiva;
-  if (!disc) return null;
-  return disc.nome || disc.apelido || null;
 }
 
 /* Função única de normalização — ponto central exigido
@@ -466,7 +454,7 @@ function _calcularConquistas(relatorio, stats) {
     sequencia30:   streak >= 30,
     tentativas100: totalTentativas >= 100,
     questoesMil:   totalQuestoes >= 1000,
-    scoreAvancado: nivelEstimado === 'avancado',
+    scoreAvancado: nivelEstimado === 'avançado',
     emEvolucao:    tendenciaDir === 'melhorando',
     miraAfiada:    taxaMediaPct >= 75,
     maratonista:   melhorDiaTempo >= 18000,
@@ -733,7 +721,6 @@ const [stats, ultimaSessao, perfilUso] = await Promise.all([
       const _tRenderSessao = performance.now();
       _renderTempoGlobal(stats);
       _renderTendencia(stats);
-      _renderConsistencia(stats);
       _renderSparklines(stats);
       _renderUltimoAcesso(stats);
       perfLog('Render', '_carregarMetricasReais :: renders de sessão (Tempo Global/Tendência/Consistência/Sparklines/Último acesso)', performance.now() - _tRenderSessao);
@@ -892,42 +879,22 @@ function _renderTendencia(stats) {
 
 
 /* ══════════════════════════════════════════════
-   RENDER — Consistência de uso (últimos 30 dias)
+   [REMOVIDO] RENDER — Consistência de uso (últimos 30 dias)
+   ─────────────────────────────────────────────
+   _renderConsistencia(stats) foi removida: escrevia em
+   #consistencia-frequencia / #consistencia-bar-freq /
+   #consistencia-regularidade / #consistencia-bar-reg /
+   #consistencia-tendencia — elementos que não existem mais em
+   dashboard.html (a seção "Consistência" da grade "Fraquezas ·
+   Consistência" foi substituída por "Perfil de uso" em algum
+   momento, sem que esta função ou sua chamada fossem removidas
+   junto). Como todos os getElementById() retornavam null, os
+   guards `if (el)` faziam a função rodar a cada carregamento sem
+   nenhum efeito visível — código morto silencioso. Nenhuma outra
+   lógica foi alterada; se o card "Consistência de uso" for
+   reintroduzido no HTML no futuro, esta função pode ser restaurada
+   a partir do histórico de versões.
 ══════════════════════════════════════════════ */
-function _renderConsistencia(stats) {
-  const freqEl = document.getElementById('consistencia-frequencia');
-  if (freqEl) {
-    const pct = Math.round((stats.diasAtivos30 / 30) * 100);
-    freqEl.textContent = `${stats.diasAtivos30} de 30 dias (${pct}%)`;
-    const bar = document.getElementById('consistencia-bar-freq');
-    if (bar) bar.style.width = pct + '%';
-  }
-
-  const regEl = document.getElementById('consistencia-regularidade');
-  if (regEl) {
-    const diasComTempo = Object.values(stats.historico ?? {})
-      .filter(d => d.tempoTotal > 0)
-      .map(d => d.tempoTotal);
-
-    if (diasComTempo.length >= 2) {
-      const media  = diasComTempo.reduce((a, b) => a + b, 0) / diasComTempo.length;
-      const desv   = Math.sqrt(
-        diasComTempo.reduce((s, v) => s + Math.pow(v - media, 2), 0) / diasComTempo.length
-      );
-      const cv     = media > 0 ? desv / media : 1;
-      const score  = Math.max(0, Math.min(100, Math.round((1 - Math.min(cv, 1)) * 100)));
-      const rotulo = score >= 75 ? 'Regular' : score >= 40 ? 'Moderado' : 'Variável';
-      regEl.textContent = `${rotulo} (${score}%)`;
-      const bar = document.getElementById('consistencia-bar-reg');
-      if (bar) bar.style.width = score + '%';
-    } else {
-      regEl.textContent = diasComTempo.length === 1 ? 'Dados insuficientes' : '—';
-    }
-  }
-
-  const tendEl = document.getElementById('consistencia-tendencia');
-  if (tendEl) tendEl.textContent = '—';
-}
 /* ══════════════════════════════════════════════
    RENDER — ÚLTIMO ACESSO
 ══════════════════════════════════════════════ */
@@ -1440,13 +1407,24 @@ function _getPaginasExpandido() {
   return !!UIState.getState(_CHAVE_ESTADO_UI_NAV, { paginasExpandido: false, historicoExpandido: false }).paginasExpandido;
 }
 function _setPaginasExpandido(valor) {
-  UIState.setState(_CHAVE_ESTADO_UI_NAV, { paginasExpandido: !!valor });
+  /* immediate: true — evita race condition com o debounce padrão
+     (120ms) de UIState.setState. O toggle clicado chama esta função
+     e, na mesma execução síncrona, dispara _renderPaginasMaisAcessadas()
+     de novo, que lê o valor via _getPaginasExpandido()/UIState.getState()
+     imediatamente. Com escrita debounced, essa leitura síncrona ainda
+     pegava o valor ANTERIOR (a escrita real só acontecia ~120ms depois),
+     fazendo o botão "Ver todas"/"Mostrar menos" parecer não responder
+     ao primeiro clique. */
+  UIState.setState(_CHAVE_ESTADO_UI_NAV, { paginasExpandido: !!valor }, { immediate: true });
 }
 function _getHistoricoExpandido() {
   return !!UIState.getState(_CHAVE_ESTADO_UI_NAV, { paginasExpandido: false, historicoExpandido: false }).historicoExpandido;
 }
 function _setHistoricoExpandido(valor) {
-  UIState.setState(_CHAVE_ESTADO_UI_NAV, { historicoExpandido: !!valor });
+  /* immediate: true — mesma race condition e mesma correção de
+     _setPaginasExpandido acima, aplicada ao toggle do Histórico de
+     navegação (_renderFluxoNavegacao). */
+  UIState.setState(_CHAVE_ESTADO_UI_NAV, { historicoExpandido: !!valor }, { immediate: true });
 }
 
 function _renderPaginasMaisAcessadas(pages) {
@@ -1717,7 +1695,6 @@ function _renderMetricasVazio() {
   [
     'perf-media-diaria', 'perf-dias-ativos',
     'perf-melhor-dia', 'perf-streak',
-    'consistencia-frequencia', 'consistencia-regularidade',
   ].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.textContent = '—';
