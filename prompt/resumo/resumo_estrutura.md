@@ -1,4 +1,3 @@
-Vou ler o prompt atual e melhorá-lo para garantir que todo o conteúdo seja preservado integralmente, sem cortes ou simplificações.Aqui está o prompt corrigido e reforçado para garantir preservação integral do conteúdo:
 
 Você receberá o conteúdo completo de UMA aula.
 Sua tarefa é organizar esse conteúdo EXATAMENTE na estrutura JavaScript de objeto de aula mostrada abaixo.
