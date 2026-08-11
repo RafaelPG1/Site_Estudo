@@ -447,7 +447,7 @@ function _construirControlesHtml() {
   const filtros = [
     { chave: 'todas',          label: 'Todas' },
     { chave: 'andamento',      label: 'Em andamento' },
-    { chave: 'concluidas',     label: 'Concluídas' },
+    { chave: 'concluida',      label: 'Concluídas' },
     { chave: 'nao-iniciadas',  label: 'Não iniciadas' },
   ];
   const tabsHtml = filtros.map(f => `

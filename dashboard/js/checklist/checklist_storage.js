@@ -22,7 +22,7 @@
    Fallback local (localStorage), usado:
      - enquanto a escrita remota não confirma (otimista)
      - quando não há usuário autenticado (uid ausente)
-   Chave local: nexus_checklist_progresso::{semestre}
+   Chave local: nexus_checklist_progresso::{uid|anon}::{semestre}
 
    Mesmo padrão de acesso ao Firestore já usado em
    dashboard/js/dashboard_data.js (getDb() + SDK modular via CDN).
@@ -68,22 +68,29 @@ import {
    toda a lógica de salvar/restaurar fica centralizada" pedido. ── */
 import { UIState } from '../utils/ui_state_manager.js';
 
-function _chaveLocal(semestre) {
-  return `nexus_checklist_progresso::${semestre}`;
+/* Mesmo padrão de tarefa_storage.js: a chave inclui o uid (ou
+   'anon' sem usuário autenticado). Antes, a chave era só por
+   semestre — em um navegador compartilhado por mais de uma conta,
+   o progresso local de um usuário ficava visível/misturado ao
+   carregar o Checklist de outro usuário (e podia até ser
+   sincronizado para o Firestore do segundo usuário via
+   salvarItem, contaminando os dados dele). */
+function _chaveLocal(uid, semestre) {
+  return `nexus_checklist_progresso::${uid ?? 'anon'}::${semestre}`;
 }
 
-function _lerLocal(semestre) {
+function _lerLocal(uid, semestre) {
   try {
-    const raw = localStorage.getItem(_chaveLocal(semestre));
+    const raw = localStorage.getItem(_chaveLocal(uid, semestre));
     return raw ? JSON.parse(raw) : {};
   } catch (_) {
     return {};
   }
 }
 
-function _gravarLocal(semestre, itens) {
+function _gravarLocal(uid, semestre, itens) {
   try {
-    localStorage.setItem(_chaveLocal(semestre), JSON.stringify(itens));
+    localStorage.setItem(_chaveLocal(uid, semestre), JSON.stringify(itens));
   } catch (_) { /* localStorage indisponível — ignora silenciosamente */ }
 }
 
@@ -95,7 +102,7 @@ function _gravarLocal(semestre, itens) {
 export async function carregarProgresso(uid, semestre) {
   if (!semestre) return {};
 
-  const local = _lerLocal(semestre);
+  const local = _lerLocal(uid, semestre);
   if (!uid) return local;
 
   try {
@@ -107,7 +114,7 @@ export async function carregarProgresso(uid, semestre) {
 
     const remoto   = snap.data()?.itens ?? {};
     const mesclado = { ...local, ...remoto };
-    _gravarLocal(semestre, mesclado);
+    _gravarLocal(uid, semestre, mesclado);
     return mesclado;
   } catch (err) {
     console.warn('[checklist_storage] carregarProgresso: falha ao ler Firestore, usando cache local.', err);
@@ -123,9 +130,9 @@ export async function carregarProgresso(uid, semestre) {
 export async function salvarItem(uid, semestre, itemId, concluido) {
   if (!semestre || !itemId) return;
 
-  const local = _lerLocal(semestre);
+  const local = _lerLocal(uid, semestre);
   local[itemId] = !!concluido;
-  _gravarLocal(semestre, local);
+  _gravarLocal(uid, semestre, local);
 
   if (!uid) return;
 

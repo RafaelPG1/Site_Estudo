@@ -458,10 +458,15 @@
   opacity: .7;
 }
 
-/* Modificadores por nível */
-.score-nivel-avancado .score-number      { color: var(--green); }
-.score-nivel-avancado .score-nivel       { background: rgba(61,220,132,.12); color: var(--green); }
-.score-nivel-avancado .score-ring        { background: conic-gradient(var(--green) 0% var(--score-pct, 0%), var(--border) 0% 100%); }
+/* Modificadores por nível
+   FASE 2.5.5A (continuação) — .score-nivel-avancado tinha o MESMO
+   problema já documentado acima para 'intermediário': quiz_intelligence.js
+   (FAIXAS_NIVEL) também retorna 'avançado' com acento — o seletor sem
+   acento nunca resolvia, então o nível mais alto nunca recebia a cor
+   verde (número/badge/anel), mesmo sendo o melhor desempenho possível. */
+.score-nivel-avançado .score-number      { color: var(--green); }
+.score-nivel-avançado .score-nivel       { background: rgba(61,220,132,.12); color: var(--green); }
+.score-nivel-avançado .score-ring        { background: conic-gradient(var(--green) 0% var(--score-pct, 0%), var(--border) 0% 100%); }
 
 .score-nivel-proficiente .score-number   { color: var(--blue); }
 .score-nivel-proficiente .score-nivel    { background: rgba(79,168,232,.12); color: var(--blue); }

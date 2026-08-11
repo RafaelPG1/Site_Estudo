@@ -124,10 +124,13 @@ const _callbacks = {
   },
 };
 
+let _geracaoAtual = 0; // guarda de geração — mesma técnica de checklist.js
+
 export async function abrirTarefas(containerEl) {
   if (!containerEl) return;
   _viewAberta = true;
   _containerAtual = containerEl;
+  const minhaGeracao = ++_geracaoAtual;
 
   containerEl.innerHTML = `<div class="tarefa-loading">Carregando tarefas…</div>`;
 
@@ -135,9 +138,13 @@ export async function abrirTarefas(containerEl) {
   _disciplinas = _carregarDisciplinasSemestreAtual();
   _listasEmMemoria = await TarefaStorage.carregarListas(usuario?.uid ?? null);
 
-  /* Guarda simples: se a view foi trocada enquanto carregava, não
-     sobrescreve o que já está na tela. */
-  if (!_viewAberta || _containerAtual !== containerEl) return;
+  /* Guarda de geração: se abrirTarefas() foi chamado de novo (ou a
+     view foi fechada) enquanto esperávamos, esta resposta antiga
+     não deve sobrescrever o que já está na tela. Comparar apenas
+     containerEl não bastava — o mesmo elemento é reaproveitado
+     entre aberturas, então uma resposta antiga podia "vencer" uma
+     mais nova se chegasse depois dela. */
+  if (!_viewAberta || _containerAtual !== containerEl || minhaGeracao !== _geracaoAtual) return;
 
   renderTarefas(containerEl, _listasEmMemoria, _callbacks, _disciplinas);
 

@@ -134,6 +134,7 @@ let _colapsadasListas = new Set();
 let _colapsadasCategorias = new Set();
 let _callbacks = {};
 let _disciplinasAtuais = [];
+let _rerenderAtual = null; // referência ao último render — ver MASONRY mais abaixo
 
 function _contarTarefas(tarefas) {
   const total = tarefas?.length ?? 0;
@@ -150,9 +151,29 @@ function _contarLista(lista) {
   return { total, concluidas, pct: total > 0 ? Math.round((concluidas / total) * 100) : 0 };
 }
 
+/* Mesma classificação de _statusDisciplina() em checklist_renderer.js
+   (mesmas 4 chaves/labels, mesmo critério), para que o badge de
+   status no header da lista tenha exatamente a mesma linguagem
+   visual. Usa classe própria (.tarefa-lista-status, ver tarefa.css)
+   com os mesmos valores visuais de .checklist-disc-status — mesmo
+   padrão já seguido pelo resto deste arquivo (identidade .tarefa-*
+   própria; só o cabeçalho, documentado no topo, reaproveita classes
+   do Checklist diretamente). */
+function _statusLista(total, pct) {
+  if (total === 0) return { chave: 'sem-itens',    label: 'Sem itens' };
+  if (pct >= 100)  return { chave: 'concluida',    label: 'Concluída' };
+  if (pct > 0)     return { chave: 'andamento',    label: 'Em andamento' };
+  return              { chave: 'nao-iniciada', label: 'Não iniciada' };
+}
+
 function _nomeDisciplina(disciplinaId) {
   if (!disciplinaId) return null;
   return _disciplinasAtuais.find(d => d.id === disciplinaId)?.nome ?? null;
+}
+
+function _emojiDisciplina(disciplinaId) {
+  if (!disciplinaId) return null;
+  return _disciplinasAtuais.find(d => d.id === disciplinaId)?.emoji ?? null;
 }
 
 function _renderItemHtml(tarefa) {
@@ -184,8 +205,8 @@ function _renderCategoriaHtml(lista, categoria) {
         <button type="button" class="tarefa-categoria-toggle" aria-expanded="${!colapsada}">
           ${_CHEVRON_SVG}
           <span class="tarefa-categoria-nome">${_escapeHtml(categoria.nome)}</span>
+          <span class="tarefa-categoria-contagem">${r.concluidas}/${r.total}</span>
         </button>
-        <span class="tarefa-categoria-contagem">${r.concluidas}/${r.total}</span>
         <span class="tarefa-categoria-acoes">
           <button type="button" class="tarefa-icon-btn tarefa-acao-add-tarefa" title="Nova tarefa">${_ICON_PLUS}</button>
           <button type="button" class="tarefa-icon-btn tarefa-acao-editar-categoria" title="Renomear">${_ICON_EDIT}</button>
@@ -194,7 +215,7 @@ function _renderCategoriaHtml(lista, categoria) {
       </div>
       <div class="tarefa-categoria-body">
         <div class="tarefa-categoria-body-inner">
-          <div class="tarefa-itens-lista">${itensHtml}</div>
+          <div class="tarefa-itens-grid">${itensHtml}</div>
         </div>
       </div>
     </div>`;
@@ -202,26 +223,34 @@ function _renderCategoriaHtml(lista, categoria) {
 
 function _renderListaHtml(lista) {
   const r = _contarLista(lista);
+  const status = _statusLista(r.total, r.pct);
   const colapsada = _colapsadasListas.has(lista.id);
   const categorias = lista.categorias ?? [];
   const categoriasHtml = categorias.length
     ? categorias.map(c => _renderCategoriaHtml(lista, c)).join('')
     : '<span class="tarefa-vazio">Nenhuma categoria ainda. Use "+ Categoria" para começar.</span>';
-  const nomeDisc = _nomeDisciplina(lista.disciplinaId);
+  const nomeDisc  = _nomeDisciplina(lista.disciplinaId);
+  const emojiDisc = _emojiDisciplina(lista.disciplinaId);
 
   return `
     <section class="tarefa-lista-block${colapsada ? ' is-collapsed' : ''}" data-lista-id="${_escapeHtml(lista.id)}">
       <div class="tarefa-lista-header">
         <button type="button" class="tarefa-lista-toggle" aria-expanded="${!colapsada}">
+          <span class="tarefa-lista-emoji">${emojiDisc ? _escapeHtml(emojiDisc) : '📋'}</span>
+          <div class="tarefa-lista-info">
+            <div class="tarefa-lista-title-row">
+              <h3 class="tarefa-lista-nome">${_escapeHtml(lista.nome)}</h3>
+              ${nomeDisc ? `<span class="tarefa-lista-disciplina-badge">${_escapeHtml(nomeDisc)}</span>` : ''}
+              <span class="tarefa-lista-status status-${status.chave}">${status.label}</span>
+            </div>
+            <div class="tarefa-lista-meta">
+              <div class="tarefa-lista-bar-bg"><div class="tarefa-lista-bar-fill" style="width:${r.pct}%"></div></div>
+              <span class="tarefa-lista-contagem">${r.concluidas}/${r.total}</span>
+              <span class="tarefa-lista-pct">${r.pct}%</span>
+            </div>
+          </div>
           ${_CHEVRON_SVG}
-          <span class="tarefa-lista-nome">${_escapeHtml(lista.nome)}</span>
-          ${nomeDisc ? `<span class="tarefa-lista-disciplina-badge">${_escapeHtml(nomeDisc)}</span>` : ''}
         </button>
-        <div class="tarefa-lista-meta">
-          <div class="tarefa-lista-bar-bg"><div class="tarefa-lista-bar-fill" style="width:${r.pct}%"></div></div>
-          <span class="tarefa-lista-contagem">${r.concluidas}/${r.total}</span>
-          <span class="tarefa-lista-pct">${r.pct}%</span>
-        </div>
         <span class="tarefa-lista-acoes">
           <button type="button" class="tarefa-icon-btn tarefa-acao-add-categoria" title="Nova categoria">${_ICON_PLUS} Categoria</button>
           <button type="button" class="tarefa-icon-btn tarefa-acao-editar-lista" title="Renomear lista">${_ICON_EDIT}</button>
@@ -234,6 +263,31 @@ function _renderListaHtml(lista) {
         </div>
       </div>
     </section>`;
+}
+
+/* ─────────────────────────────────────────────
+   MASONRY — 2 colunas independentes (mesma técnica e mesmo
+   breakpoint de checklist_renderer.js — ver comentário lá).
+   Evita que recolher uma lista deixe "buraco" na coluna: cada
+   coluna é um sub-container de fluxo normal totalmente
+   independente (.tarefa-listas-col no CSS). */
+const _mqDuasColunas = window.matchMedia('(min-width: 901px)');
+_mqDuasColunas.addEventListener('change', () => {
+  _rerenderAtual?.();
+});
+
+function _numColunasAtual() {
+  return _mqDuasColunas.matches ? 2 : 1;
+}
+
+function _renderColunasHtml(listasOrdenadas) {
+  const numColunas = _numColunasAtual();
+  const colunas = Array.from({ length: numColunas }, () => []);
+  listasOrdenadas.forEach((l, i) => colunas[i % numColunas].push(l));
+
+  return colunas
+    .map(col => `<div class="tarefa-listas-col">${col.map(_renderListaHtml).join('')}</div>`)
+    .join('');
 }
 
 function _resumoGeral(listas) {
@@ -288,9 +342,15 @@ function _cabecalhoHtml(listas = []) {
 export function renderTarefasVazio(containerEl, disciplinas = []) {
   _carregarEstadoUISeNecessario();
   _disciplinasAtuais = disciplinas;
+  _rerenderAtual = null; // nada para redesenhar no cruzamento de breakpoint enquanto vazio
   containerEl.innerHTML = `
     ${_cabecalhoHtml([])}
     <div class="tarefa-empty">
+      <div class="tarefa-empty-icon" aria-hidden="true">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M3 5h12M3 9h8M3 13h10"/>
+        </svg>
+      </div>
       <p class="tarefa-empty-msg">Você ainda não criou nenhuma lista. Comece criando sua primeira lista de tarefas.</p>
     </div>`;
   _ligarEventoNovaLista(containerEl);
@@ -307,7 +367,17 @@ export function renderTarefas(containerEl, listas, callbacks, disciplinas = []) 
   }
 
   const listasOrdenadas = [...listas].sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0));
-  const listasHtml = listasOrdenadas.map(_renderListaHtml).join('');
+  _renderCompleto(containerEl, listasOrdenadas);
+}
+
+/* Redesenha cabeçalho + lista de listas por inteiro. Reatribui os
+   listeners delegados a cada chamada (innerHTML inteiro é
+   substituído). Chamado tanto por renderTarefas() quanto pelo
+   listener de matchMedia (_rerenderAtual, ver MASONRY acima) quando
+   a tela cruza o breakpoint de 2↔1 colunas — mesmo padrão de
+   _renderCompleto em checklist_renderer.js. */
+function _renderCompleto(containerEl, listasOrdenadas) {
+  const listasHtml = _renderColunasHtml(listasOrdenadas);
 
   containerEl.innerHTML = `
     ${_cabecalhoHtml(listasOrdenadas)}
@@ -344,6 +414,17 @@ function _buscarCategoria(lista, catId) { return (lista?.categorias ?? []).find(
 function _ligarEventos(containerEl, listas) {
   const wrap = containerEl.querySelector('#tarefa-listas-wrap');
   if (!wrap) return;
+
+  /* Mantém sempre a referência do rerender mais recente, para que o
+     listener de matchMedia (registrado uma única vez, fora desta
+     função — ver MASONRY acima) saiba redesenhar a lista quando a
+     tela cruzar o breakpoint de 2↔1 colunas. Guarda simples: se o
+     container não está mais no documento (view fechada/trocada),
+     não há nada para redesenhar — mesmo padrão de checklist_renderer.js. */
+  _rerenderAtual = () => {
+    if (!containerEl.isConnected) return;
+    _renderCompleto(containerEl, listas);
+  };
 
   wrap.addEventListener('click', async (e) => {
     const blocoLista = e.target.closest('.tarefa-lista-block');
