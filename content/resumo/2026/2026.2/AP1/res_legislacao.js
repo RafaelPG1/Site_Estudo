@@ -1613,7 +1613,759 @@ window.__nexusConteudo = {
       ]
     }
   ]
-}
+},
+{
+  aula: "Remuneração e Salário",
+  ideia_central: "O material aborda os princípios de proteção ao salário, a distinção entre salário e remuneração, as parcelas salariais e não salariais com seus adicionais, e os meios de pagamento do salário no Direito do Trabalho.",
+  secoes: [
+    {
+      id: "visao_geral",
+      titulo: "Visão geral do conteúdo",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O material aborda os principais aspectos relacionados à remuneração e ao salário no Direito do Trabalho, destacando sua importância como garantia do trabalhador."
+        },
+        {
+          tipo: "lista",
+          titulo: "Os assuntos estão organizados em quatro grandes blocos",
+          itens: [
+            "Princípios de proteção ao salário",
+            "Salário e remuneração, incluindo a distinção entre os dois conceitos",
+            "Parcelas salariais e não salariais, incluindo adicionais",
+            "Meios de pagamento do salário, abrangendo pagamento em dinheiro e salário in natura ou salário-utilidade"
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "O material também aborda especificamente",
+          itens: [
+            "irredutibilidade salarial",
+            "inalterabilidade salarial",
+            "integralidade salarial",
+            "intangibilidade salarial",
+            "gorjetas",
+            "adicionais de hora extra",
+            "insalubridade",
+            "periculosidade",
+            "adicional noturno",
+            "ajuda de custo",
+            "diárias para viagem",
+            "participação nos lucros e resultados (PLR)",
+            "salário-utilidade",
+            "pagamento em dinheiro"
+          ]
+        }
+      ]
+    },
+    {
+      id: "principios_protecao_salario",
+      titulo: "Princípios de proteção ao salário",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O material apresenta princípios que justificam a proteção especial conferida ao salário, considerando que ele constitui uma das garantias mínimas essenciais do trabalhador."
+        },
+        {
+          tipo: "lista",
+          titulo: "São apresentados quatro princípios principais",
+          itens: ["Irredutibilidade salarial", "Inalterabilidade salarial", "Integralidade salarial", "Intangibilidade salarial"]
+        }
+      ]
+    },
+    {
+      id: "irredutibilidade_salarial",
+      titulo: "Irredutibilidade salarial",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "A irredutibilidade salarial consiste na proibição de diminuir o salário que foi pactuado, evitando prejuízo ao trabalhador."
+        },
+        {
+          tipo: "lista",
+          titulo: "O material apresenta como fundamento o art. 7º, inciso VI, da Constituição Federal, segundo o qual a redução salarial é admitida quando houver previsão em",
+          itens: ["convenção coletiva", "ou acordo coletivo"]
+        },
+        {
+          tipo: "topico",
+          titulo: "Exceção apresentada",
+          lista: ["força maior", "dificuldades econômicas da empresa"]
+        },
+        {
+          tipo: "texto",
+          texto: "Segundo o material, a redução pode ocorrer excepcionalmente nas situações listadas acima. Essa medida possui caráter temporário e deve respeitar o limite mínimo considerado indisponível, isto é, o salário mínimo. Além disso, deve existir disposição em convenção ou acordo coletivo, conforme os arts. 501 a 504 da CLT."
+        },
+        {
+          tipo: "destaque",
+          texto: "Ponto importante: Regra — salário não pode ser reduzido. Exceção apresentada — redução mediante instrumento coletivo, nas hipóteses indicadas no material."
+        },
+        {
+          tipo: "texto",
+          texto: "O PDF ainda afirma que a renúncia ao direito fundamental de irredutibilidade salarial sem observância dessas condições pode resultar na nulidade do instrumento pactuado, com fundamento no art. 611-A, §3º, da CLT."
+        }
+      ]
+    },
+    {
+      id: "inalterabilidade_salarial",
+      titulo: "Inalterabilidade salarial",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O princípio da inalterabilidade salarial não deve ser confundido com a irredutibilidade. Aqui, a preocupação é impedir uma alteração que seja prejudicial ao empregado, ou seja, uma mudança in pejus."
+        },
+        {
+          tipo: "lista",
+          titulo: "Segundo o material",
+          itens: [
+            "alterações que pioram o recebimento do empregado são proibidas",
+            "somente alterações que proporcionem vantagem ao empregado são admitidas",
+            "cabe ao empregador provar que a alteração é vantajosa para o empregado, caso isso seja exigido"
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "Diferença para memorizar: Irredutibilidade — protege contra a redução do salário. Inalterabilidade — protege contra alterações prejudiciais no salário."
+        }
+      ]
+    },
+    {
+      id: "integralidade_salarial",
+      titulo: "Integralidade salarial",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O princípio da integralidade salarial protege o empregado contra descontos indevidos ou arbitrários realizados pelo empregador."
+        },
+        {
+          tipo: "lista",
+          titulo: "O material apresenta o art. 462 da CLT, segundo o qual o empregador não pode efetuar descontos no salário, salvo quando decorrentes de",
+          itens: ["adiantamentos", "dispositivos de lei", "contrato coletivo"]
+        },
+        {
+          tipo: "topico",
+          titulo: "Desconto por dano causado pelo empregado",
+          lista: ["quando essa possibilidade tiver sido acordada", "quando houver dolo do empregado"]
+        },
+        {
+          tipo: "texto",
+          texto: "O PDF também destaca que a empresa não pode obrigar ou induzir empregados a utilizarem armazéns ou serviços mantidos pela própria empresa. Além disso, é vedado limitar a liberdade do empregado de dispor do próprio salário."
+        }
+      ]
+    },
+    {
+      id: "intangibilidade_salarial",
+      titulo: "Intangibilidade salarial",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "A intangibilidade salarial está relacionada à natureza alimentar do salário. O material explica que o salário possui função de subsistência do empregado e, por isso, recebe proteção especial."
+        },
+        {
+          tipo: "lista",
+          titulo: "O PDF relaciona esse princípio ao art. 449 da CLT e destaca a proteção dos direitos decorrentes do contrato de trabalho mesmo em situações como",
+          itens: ["falência", "concordata", "dissolução da empresa"]
+        },
+        {
+          tipo: "texto",
+          texto: "Na falência, os salários devidos e determinadas indenizações constituem créditos privilegiados, conforme o conteúdo apresentado."
+        },
+        {
+          tipo: "topico",
+          titulo: "Exceções mencionadas",
+          lista: ["pensão alimentícia", "imposto de renda"]
+        }
+      ]
+    },
+    {
+      id: "salario_remuneracao",
+      titulo: "Salário e remuneração: conceitos e distinção",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Um dos pontos mais importantes para a prova é diferenciar salário de remuneração. O material apresenta a seguinte relação: Salário + gorjeta = remuneração."
+        },
+        {
+          tipo: "imagem",
+          src: "figura_1_salario_x_remuneracao.png",
+          pasta: "imagens_legislacao/aula_03",
+          alt: "A figura compara salário e remuneração à luz do art. 457 da CLT. Apresenta o salário como a contraprestação devida e paga diretamente pelo empregador em razão do contrato de trabalho e a gorjeta como importância dada espontaneamente pelo cliente ou cobrada pela empresa para distribuição aos empregados. A representação conclui pela relação salário + gorjeta = remuneração.",
+          num: 1
+        },
+        {
+          tipo: "topico",
+          titulo: "7.1. Salário",
+          lista: ["devida", "paga diretamente pelo empregador", "em razão do contrato de trabalho"]
+        },
+        {
+          tipo: "texto",
+          texto: "O salário é apresentado como a contraprestação com as características listadas acima. Pode ser exemplificado, no material, pelo salário mensal ou por hora."
+        },
+        {
+          tipo: "destaque",
+          texto: "Fórmula para memorizar: SALÁRIO = pagamento direto do empregador pelo trabalho."
+        },
+        {
+          tipo: "topico",
+          titulo: "7.2. Gorjeta",
+          lista: [
+            "importância dada espontaneamente pelo cliente ao empregado",
+            "ou valor cobrado pela empresa do cliente, nas contas, a qualquer título, destinado à distribuição aos empregados"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "A gorjeta é apresentada com as características listadas acima. O material destaca que a gorjeta integra a remuneração do empregado para todos os efeitos legais, dentro da estrutura apresentada no art. 457 da CLT."
+        },
+        {
+          tipo: "topico",
+          titulo: "7.3. Remuneração",
+          lista: ["diretamente do empregador", "indiretamente de terceiros, em razão do trabalho"]
+        },
+        {
+          tipo: "texto",
+          texto: "A remuneração corresponde à soma das parcelas obtidas pelo empregado nas formas listadas acima. O material utiliza como principal exemplo a relação: Salário + gorjeta = remuneração."
+        },
+        {
+          tipo: "tabela",
+          titulo: "Resumindo",
+          colunas: ["Conceito", "Origem"],
+          linhas: [
+            ["Salário", "Pago diretamente pelo empregador"],
+            ["Gorjeta", "Pode vir diretamente do cliente ou ser cobrada pela empresa"],
+            ["Remuneração", "Salário + gorjetas"]
+          ]
+        }
+      ]
+    },
+    {
+      id: "parcelas_salariais_nao_salariais",
+      titulo: "Parcelas salariais e não salariais",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O material explica que nem tudo que o trabalhador recebe em razão do trabalho possui natureza salarial. As parcelas podem possuir natureza salarial ou não salarial."
+        },
+        {
+          tipo: "topico",
+          titulo: "Natureza salarial",
+          texto: "São aquelas que possuem natureza de contraprestação pelo trabalho realizado, sendo pagas pelo empregador.",
+          lista: ["adicionais", "gratificações", "prêmios", "outras parcelas que incidam sobre o salário stricto sensu"]
+        },
+        {
+          tipo: "topico",
+          titulo: "Natureza não salarial",
+          texto: "São parcelas que possuem caráter indenizatório, destinadas a reembolsar ou compensar determinadas despesas do empregado, em vez de remunerar diretamente o serviço prestado."
+        }
+      ]
+    },
+    {
+      id: "parcelas_salariais",
+      titulo: "Parcelas salariais",
+      blocos: [
+        {
+          tipo: "lista",
+          titulo: "O material reproduz o art. 457 da CLT e destaca que integram o salário",
+          itens: ["importância fixa estipulada", "gratificações legais", "comissões pagas pelo empregador"]
+        },
+        {
+          tipo: "lista",
+          titulo: "Também apresenta as parcelas que, segundo o texto do material, não integram a remuneração, mesmo quando habituais",
+          itens: [
+            "ajuda de custo",
+            "auxílio-alimentação, quando não pago em dinheiro",
+            "diárias para viagem",
+            "prêmios",
+            "abonos"
+          ]
+        }
+      ]
+    },
+    {
+      id: "adicionais",
+      titulo: "Adicionais",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Os adicionais são apresentados como parcelas salariais suplementares devidas em razão de situações específicas e mais gravosas relacionadas ao exercício do trabalho."
+        },
+        {
+          tipo: "lista",
+          titulo: "O material cita os seguintes adicionais",
+          itens: ["hora extra", "insalubridade", "periculosidade", "noturno", "transferência", "tempo de serviço"]
+        }
+      ]
+    },
+    {
+      id: "adicional_hora_extra",
+      titulo: "Adicional de hora extra",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "É devido quando o empregado trabalha além da jornada normal."
+        },
+        {
+          tipo: "topico",
+          titulo: "O material apresenta",
+          lista: [
+            "limite máximo de 2 horas extras",
+            "possibilidade mediante acordo individual, convenção coletiva ou acordo coletivo de trabalho"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "A hora extra deve ser remunerada com acréscimo de, no mínimo, 50% sobre o valor da hora normal. O material também afirma que as horas extras habituais integram o salário para cálculo de outras verbas."
+        },
+        {
+          tipo: "destaque",
+          texto: "Para memorizar: Hora extra → mínimo +50%. Limite apresentado → até 2 horas adicionais."
+        }
+      ]
+    },
+    {
+      id: "adicional_insalubridade",
+      titulo: "Adicional de insalubridade",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "A definição de atividade insalubre é apresentada com base no art. 189 da CLT."
+        },
+        {
+          tipo: "topico",
+          titulo: "São consideradas insalubres as atividades ou operações que, por sua",
+          lista: ["natureza", "condições", "métodos de trabalho"]
+        },
+        {
+          tipo: "texto",
+          texto: "Essas atividades expõem os empregados a agentes nocivos à saúde acima dos limites de tolerância relacionados à natureza e intensidade do agente e ao tempo de exposição."
+        },
+        {
+          tipo: "topico",
+          titulo: "12.1. Requisitos apresentados",
+          lista: [
+            "realização de perícia por médico ou engenheiro",
+            "relação da atividade como insalubre na relação oficial do Ministério do Trabalho e Emprego (MTE)"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "12.2. Graus de insalubridade",
+          texto: "O adicional varia conforme o grau de insalubridade."
+        },
+        {
+          tipo: "tabela",
+          colunas: ["Grau", "Percentual apresentado"],
+          linhas: [
+            ["Mínimo", "10%"],
+            ["Médio", "20%"],
+            ["Máximo/alto", "40%"]
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "Atenção para prova: Insalubridade → 10%, 20% ou 40%."
+        }
+      ]
+    },
+    {
+      id: "adicional_periculosidade",
+      titulo: "Adicional de periculosidade",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "A periculosidade está relacionada a atividades que apresentam risco acentuado em razão da exposição permanente do trabalhador a determinadas situações."
+        },
+        {
+          tipo: "lista",
+          titulo: "O art. 193 apresentado no material cita",
+          itens: [
+            "inflamáveis",
+            "explosivos",
+            "energia elétrica",
+            "roubos ou outras espécies de violência física nas atividades profissionais de segurança pessoal ou patrimonial"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "O material também menciona a necessidade de perícia para averiguação da insalubridade, apresentando exceções relacionadas às situações em que o adicional já é pago ou existe previsão legal. O texto ainda destaca que, embora o art. 193 apresente um rol taxativo, súmulas do TST trazem outras hipóteses de atividades perigosas."
+        }
+      ]
+    },
+    {
+      id: "adicional_noturno",
+      titulo: "Adicional noturno",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O adicional noturno é apresentado como uma compensação financeira pelo trabalho realizado em período noturno. Os horários apresentados são diferentes conforme a categoria."
+        },
+        {
+          tipo: "topico",
+          titulo: "Trabalhador urbano",
+          texto: "22h de um dia até 5h do dia seguinte."
+        },
+        {
+          tipo: "topico",
+          titulo: "Trabalhador rural — agricultura",
+          texto: "21h de um dia até 5h do dia seguinte."
+        },
+        {
+          tipo: "topico",
+          titulo: "Trabalhador rural — pecuária",
+          texto: "20h de um dia até 4h do dia seguinte."
+        },
+        {
+          tipo: "tabela",
+          titulo: "14.1. Percentuais apresentados",
+          colunas: ["Trabalhador", "Período noturno apresentado", "Adicional"],
+          linhas: [
+            ["Urbano", "22h às 5h", "20%"],
+            ["Rural — agricultura", "21h às 5h", "25%"],
+            ["Rural — pecuária", "20h às 4h", "25%"]
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "14.2. Hora noturna reduzida",
+          texto: "O material destaca uma característica importante: 1 hora de trabalho noturno = 52 minutos e 30 segundos. Essa regra é apresentada no art. 73 da CLT reproduzido no PDF."
+        },
+        {
+          tipo: "destaque",
+          texto: "Ponto de memorização: Hora noturna urbana → 52min30s."
+        }
+      ]
+    },
+    {
+      id: "parcelas_nao_salariais",
+      titulo: "Parcelas não salariais",
+      blocos: [
+        {
+          tipo: "lista",
+          titulo: "O material apresenta três exemplos principais",
+          itens: ["Ajuda de custo", "Diárias para viagem", "Participação nos lucros e resultados (PLR)"]
+        },
+        {
+          tipo: "imagem",
+          src: "quadro_1_parcelas_nao_salariais.png",
+          pasta: "imagens_legislacao/aula_03",
+          alt: "O quadro organiza as três parcelas apresentadas pelo material e resume sua característica principal: a ajuda de custo, as diárias para viagem e a participação nos lucros e resultados.",
+          num: 1
+        }
+      ]
+    },
+    {
+      id: "ajuda_de_custo",
+      titulo: "Ajuda de custo",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "A ajuda de custo é apresentada como uma parcela única paga em razão de situações",
+          lista: ["atípicas", "necessárias à efetivação do contrato de trabalho"]
+        },
+        {
+          tipo: "texto",
+          texto: "Sua finalidade principal é compensar o empregado que precisa se mudar em consequência da alteração do local de trabalho."
+        },
+        {
+          tipo: "lista",
+          titulo: "O material relaciona sua regulamentação aos",
+          itens: ["art. 457, §2º, da CLT", "art. 470 da CLT"]
+        }
+      ]
+    },
+    {
+      id: "diarias_viagem",
+      titulo: "Diárias para viagem",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "As diárias para viagem correspondem aos valores restituídos ao empregado em razão dos gastos decorrentes de viagens realizadas a trabalho. Sua natureza é apresentada como meramente ressarcitória."
+        },
+        {
+          tipo: "destaque",
+          texto: "Palavra-chave: Diária para viagem → ressarcimento de gastos."
+        }
+      ]
+    },
+    {
+      id: "plr",
+      titulo: "Participação nos lucros e resultados — PLR",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "A PLR é apresentada como uma prestação paga ao empregado de acordo com a Lei nº 10.101/2000, relacionada à participação dos trabalhadores nos lucros e resultados da empresa. O material afirma que normalmente é estabelecida mediante norma coletiva."
+        }
+      ]
+    },
+    {
+      id: "meios_pagamento",
+      titulo: "Meios de pagamento do salário",
+      blocos: [
+        {
+          tipo: "lista",
+          titulo: "O material apresenta dois meios principais",
+          itens: ["Salário in natura ou salário-utilidade", "Pagamento feito em dinheiro"]
+        },
+        {
+          tipo: "lista",
+          titulo: "O art. 458 da CLT, conforme apresentado no PDF, estabelece que o salário pode compreender, além do dinheiro",
+          itens: [
+            "alimentação",
+            "habitação",
+            "vestuário",
+            "outras prestações in natura fornecidas habitualmente pela empresa em razão do contrato ou costume"
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "O material ressalta que não é permitido o pagamento com",
+          itens: ["bebidas alcoólicas", "drogas nocivas"]
+        }
+      ]
+    },
+    {
+      id: "salario_in_natura",
+      titulo: "Salário in natura ou salário-utilidade",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O salário-utilidade corresponde à possibilidade de parte do pagamento ser realizada por meio de bens econômicos, em vez de exclusivamente dinheiro."
+        },
+        {
+          tipo: "lista",
+          titulo: "Para que seja legítimo, o material destaca a necessidade de acordo entre",
+          itens: ["empregado", "empregador"]
+        },
+        {
+          tipo: "destaque",
+          texto: "Um ponto importante: O salário-utilidade deve ser pago pelo trabalho, e não para o trabalho."
+        },
+        {
+          tipo: "texto",
+          texto: "O material também determina que pelo menos 30% do salário deve ser pago em dinheiro."
+        },
+        {
+          tipo: "topico",
+          titulo: "20.1. Utilidades que não são consideradas salário",
+          texto: "O art. 458, §2º, da CLT, conforme apresentado no material, especifica bens e benefícios que não podem ser considerados salário.",
+          lista: [
+            "vestuário",
+            "educação",
+            "transporte",
+            "assistência médica e odontológica",
+            "seguro de vida e contra acidentes",
+            "previdência privada",
+            "vale-cultura"
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "Ponto para memorizar: Salário-utilidade → pagamento por bens econômicos. Mínimo de 30% → dinheiro."
+        }
+      ]
+    },
+    {
+      id: "pagamento_dinheiro",
+      titulo: "Pagamento do salário em dinheiro",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O pagamento em dinheiro deve, segundo o material, ser realizado necessariamente em moeda nacional, salvo na situação de trabalho realizado no exterior. O material afirma ainda que o pagamento realizado em desacordo com a regra da moeda nacional será considerado como não feito."
+        },
+        {
+          tipo: "texto",
+          texto: "Também é reafirmado que pelo menos 30% do salário deve ser pago em dinheiro. O texto relaciona essa regra ao art. 82 da CLT."
+        }
+      ]
+    },
+    {
+      id: "relacoes_importantes",
+      titulo: "Relações importantes para a prova",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "22.1. Salário × remuneração",
+          texto: "Salário = pago diretamente pelo empregador. Gorjeta = recebida do cliente ou cobrada pela empresa para distribuição. Remuneração = salário + gorjetas."
+        },
+        {
+          tipo: "topico",
+          titulo: "22.2. Parcela salarial × parcela não salarial",
+          texto: "Salarial → contraprestação pelo trabalho. Não salarial → caráter indenizatório/ressarcitório."
+        },
+        {
+          tipo: "topico",
+          titulo: "22.3. Insalubridade × periculosidade",
+          texto: "Insalubridade → exposição a agentes nocivos à saúde acima dos limites de tolerância. Periculosidade → exposição a situações de risco acentuado."
+        },
+        {
+          tipo: "topico",
+          titulo: "22.4. Adicional noturno",
+          texto: "Urbano → 22h às 5h → 20%. Rural/agricultura → 21h às 5h → 25%. Rural/pecuária → 20h às 4h → 25%. Hora noturna → 52min30s."
+        }
+      ]
+    },
+    {
+      id: "quadro_geral_revisao",
+      titulo: "Quadro geral de revisão",
+      blocos: [
+        {
+          tipo: "tabela",
+          titulo: "Quadro geral de revisão",
+          colunas: ["Tema", "Informação principal"],
+          linhas: [
+            ["Irredutibilidade salarial", "Proibição da redução do salário, salvo a exceção apresentada mediante instrumento coletivo"],
+            ["Inalterabilidade salarial", "Impede alteração prejudicial ao empregado"],
+            ["Integralidade salarial", "Protege contra descontos indevidos"],
+            ["Intangibilidade salarial", "Relacionada à natureza alimentar do salário"],
+            ["Salário", "Contraprestação paga diretamente pelo empregador"],
+            ["Gorjeta", "Importância dada pelo cliente ou cobrada pela empresa"],
+            ["Remuneração", "Salário + gorjeta"],
+            ["Hora extra", "Mínimo de 50% sobre a hora normal"],
+            ["Limite de hora extra", "Até 2 horas"],
+            ["Insalubridade", "10%, 20% ou 40%, conforme o grau apresentado"],
+            ["Periculosidade", "Relacionada ao risco acentuado"],
+            ["Adicional noturno urbano", "20%"],
+            ["Adicional noturno rural", "25%"],
+            ["Horário noturno urbano", "22h às 5h"],
+            ["Horário rural — agricultura", "21h às 5h"],
+            ["Horário rural — pecuária", "20h às 4h"],
+            ["Hora noturna", "52min30s"],
+            ["Ajuda de custo", "Parcela ligada a situações atípicas e mudança de local de trabalho"],
+            ["Diárias", "Ressarcimento de gastos de viagem"],
+            ["PLR", "Participação nos lucros e resultados"],
+            ["Salário-utilidade", "Pagamento por meio de bens econômicos"],
+            ["Pagamento em dinheiro", "Mínimo de 30% do salário em dinheiro"],
+            ["Utilidades que não integram salário", "Vestuário, educação, transporte, assistência médica/odontológica, seguro, previdência privada e vale-cultura"]
+          ]
+        }
+      ]
+    },
+    {
+      id: "numeros_memorizar",
+      titulo: "Números para memorizar",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Este é um dos melhores blocos para uma revisão pré-prova:"
+        },
+        {
+          tipo: "topico",
+          titulo: "💰 Proteção salarial",
+          texto: "30% → mínimo do salário que deve ser pago em dinheiro, conforme apresentado no material."
+        },
+        {
+          tipo: "topico",
+          titulo: "⏱️ Hora extra",
+          lista: ["2 horas → limite máximo de horas extras apresentado", "50% → adicional mínimo sobre a hora normal"]
+        },
+        {
+          tipo: "topico",
+          titulo: "☣️ Insalubridade",
+          lista: ["10% → grau mínimo", "20% → grau médio", "40% → grau máximo/alto"]
+        },
+        {
+          tipo: "topico",
+          titulo: "🌙 Adicional noturno",
+          lista: [
+            "20% → trabalhador urbano",
+            "25% → trabalhador rural",
+            "52min30s → duração da hora noturna apresentada"
+          ]
+        }
+      ]
+    },
+    {
+      id: "resumo_final",
+      titulo: "Resumo final para revisão rápida",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "⭐ 1. Proteção ao salário",
+          texto: "Memorize os quatro princípios: Irredutibilidade → não reduzir o salário. Inalterabilidade → não alterar prejudicialmente. Integralidade → proteger contra descontos indevidos. Intangibilidade → proteção relacionada à natureza alimentar do salário."
+        },
+        {
+          tipo: "topico",
+          titulo: "⭐ 2. Salário × remuneração",
+          texto: "Salário = pagamento direto do empregador. Gorjeta = pagamento relacionado ao cliente. Remuneração = salário + gorjeta."
+        },
+        {
+          tipo: "topico",
+          titulo: "⭐ 3. Parcelas",
+          texto: "Salarial → contraprestação pelo trabalho. Não salarial → indenização/ressarcimento.",
+          lista: ["ajuda de custo", "diárias para viagem", "PLR"]
+        },
+        {
+          tipo: "topico",
+          titulo: "⭐ 4. Adicionais",
+          texto: "Hora extra → mínimo +50%. Insalubridade → 10%, 20% ou 40%. Periculosidade → risco acentuado. Noturno → 20% urbano / 25% rural."
+        },
+        {
+          tipo: "topico",
+          titulo: "⭐ 5. Adicional noturno",
+          texto: "Decore: Urbano: 22h → 5h. Agricultura: 21h → 5h. Pecuária: 20h → 4h. Hora noturna: 52min30s."
+        },
+        {
+          tipo: "topico",
+          titulo: "⭐ 6. Salário-utilidade",
+          texto: "Pode haver pagamento por meio de bens econômicos, desde que observadas as condições apresentadas. Pelo menos 30% deve ser pago em dinheiro. O material diferencia ainda utilidades que não são consideradas salário, como educação, transporte, assistência médica/odontológica, seguro, previdência privada e vale-cultura, além de vestuário."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "🧠 MAPA MENTAL TEXTUAL"
+        },
+        {
+          tipo: "topico",
+          titulo: "REMUNERAÇÃO E SALÁRIO → Proteção ao salário",
+          lista: ["Irredutibilidade", "Inalterabilidade", "Integralidade", "Intangibilidade"]
+        },
+        {
+          tipo: "topico",
+          titulo: "→ Salário × remuneração",
+          lista: ["Salário = empregador", "Gorjeta = cliente", "Remuneração = salário + gorjeta"]
+        },
+        {
+          tipo: "topico",
+          titulo: "→ Parcelas",
+          lista: [
+            "Salariais: Adicionais, Gratificações, Prêmios, Comissões",
+            "Não salariais: Ajuda de custo, Diárias, PLR"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "→ Adicionais",
+          lista: [
+            "Hora extra → +50%",
+            "Insalubridade → 10/20/40%",
+            "Periculosidade → risco acentuado",
+            "Noturno → 20% urbano / 25% rural"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "→ Pagamento",
+          lista: ["Dinheiro", "In natura / utilidades", "Mínimo de 30% em dinheiro"]
+        },
+        {
+          tipo: "topico",
+          titulo: "🎯 O que mais vale memorizar para a prova",
+          lista: [
+            "Salário ≠ remuneração",
+            "Remuneração = salário + gorjeta",
+            "Irredutibilidade ≠ inalterabilidade",
+            "Integralidade = proteção contra descontos",
+            "Intangibilidade = natureza alimentar",
+            "Hora extra = mínimo 50%",
+            "Insalubridade = 10%, 20%, 40%",
+            "Periculosidade = risco acentuado",
+            "Noturno urbano = 22h–5h / 20%",
+            "Hora noturna = 52min30s",
+            "Salário-utilidade = bens econômicos, com pelo menos 30% em dinheiro"
+          ]
+        }
+      ]
+    }
+  ]
+},
 
 
 
