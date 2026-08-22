@@ -1,0 +1,524 @@
+/* =============================================
+   NEXUS STUDY — resumo/css/sidebar.css
+   ETAPA 1 — cópia literal da sidebar validada em
+   teste.html (shell/mecânica do Dashboard + conteúdo
+   estático do Resumos). Fonte da verdade: teste.html.
+
+   Este arquivo é AUTOCONTIDO de propósito: todas as
+   variáveis específicas da sidebar vivem aqui (prefixo
+   --sb- para as do "shell"/mecânica, prefixo --rs- para
+   as de "conteúdo", exatamente como em teste.html) para
+   não colidir com nenhuma variável já existente em
+   resumo.css/resumo-components.css (que usam os mesmos
+   nomes --border-2/--text-1/--text-2/--text-3/--r-md com
+   OUTROS valores). Nenhum arquivo existente do Resumos
+   foi alterado para esta etapa — só este arquivo novo +
+   os pontos de integração inevitáveis (".content-area"
+   e ".header", meros equivalentes de ".main"/".topbar"
+   do teste.html, também tocados só dentro deste arquivo).
+
+   Conteúdo ainda é o MOCK estático de teste.html
+   (Matemática/Química/Português/Física/História) — a
+   integração com os dados reais do Resumos (disciplinas/
+   semestre) fica para a Etapa 2, junto com resumo.js.
+   ============================================= */
+
+/* ── Tokens do SHELL (mecânica/cores do Dashboard) ──
+   Prefixo --sb- para não colidir com --border-2/--text-1/
+   --text-2/--text-3/--r-md já existentes em resumo.css
+   (mesmos nomes, valores diferentes). --sidebar-w não
+   precisa de prefixo: não existe em nenhum outro arquivo
+   do Resumos neste momento (240px, mesmo valor de
+   teste.html). */
+:root {
+  --sidebar-w:      240px;
+
+  /* Corrigido: eram valores do "shell" roxo do Dashboard
+     (#111118/#1E1E2C/#26263A/#9896A8), copiados em Etapa 1 e nunca
+     alinhados à identidade real do Resumos. Agora usam os mesmos
+     valores de --bg-surface/--border-2/--border-3/--text-3 do
+     resumo.css (mantidos como literais aqui, e não var(), porque
+     este arquivo é propositalmente autocontido — ver comentário
+     no topo do arquivo). --sb-accent* e --sb-surface-2/--sb-r-md
+     (paleta roxa/dead code, nunca usados em nenhuma regra) foram
+     removidos. */
+  --sb-surface:     #10142b;
+  --sb-border:      rgba(255,255,255,0.09);
+  --sb-border-2:    rgba(255,255,255,0.14);
+  --sb-text-1:      #f0ead8;
+  --sb-text-2:      #ada698;
+}
+
+/* ── SIDEBAR — shell (posição/largura/altura/transição) ──
+   Cópia exata de teste.html: position:fixed, altura
+   inteira da tela (top:0/bottom:0), largura --sidebar-w,
+   superfície sólida, transition de transform.
+   (Correção nesta revisão: tinha um "overflow:hidden" extra
+   que não existe em teste.html — removido; e faltava o
+   "min-height:100vh" que teste.html tem — adicionado.
+   Nenhum dos dois é a causa do bug de overlay cobrindo a
+   sidebar — essa causa era estrutural, no HTML: ver o
+   comentário em resumo.html sobre por que a sidebar teve
+   que sair de dentro de ".layout".) ─────────────────────── */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--sidebar-w);
+  min-height: 100vh;
+  background: var(--sb-surface);
+  border-right: 1px solid var(--sb-border);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  transition: transform .3s cubic-bezier(.4,0,.2,1);
+}
+
+/* ── Tokens de CONTEÚDO (paleta do Resumos) — escopados
+   dentro de ".sidebar" via custom properties, exatamente
+   como em teste.html (prefixo --rs-, não colide com nada). */
+.sidebar {
+  /* --rs-bg-surface removido: não era usado em nenhuma regra (o
+     fundo real do .sidebar vem de --sb-surface, corrigido acima).
+     --rs-disc-tema/--rs-disc-tema-rgb removidos: a sidebar agora lê
+     diretamente var(--disc-tema)/var(--disc-tema-rgb) — os mesmos
+     tokens globais que o header, os badges e aplicarCoresDisciplina()
+     (resumo.js) já usam. Antes a sidebar tinha sua própria cópia
+     desses tokens (prefixo --rs-), desconectada: só era atualizada
+     por um script de mock em resumo.html que não existe mais. */
+  --rs-border-2:     rgba(255,255,255,0.09);
+  --rs-border-3:     rgba(255,255,255,0.14);
+  --rs-text-1:       #f0ead8;
+  --rs-text-2:       #ada698;
+  --rs-text-3:       #837c72;
+  --rs-font-body:    'DM Sans', system-ui, sans-serif;
+  --rs-r-sm:         6px;
+  --rs-focus-ring:   0 0 0 2px #07091a, 0 0 0 4px rgba(var(--disc-tema-rgb, 127,203,160), 0.65);
+  --rs-dur-fast:     0.12s;
+  --rs-dur-base:     0.2s;
+  --rs-sage:         #7fcba0;
+}
+
+/* ── Conteúdo — cabeçalho (título "Disciplinas" + badge de
+   semestre), lista de disciplinas e rodapé. Cópia exata de
+   teste.html. ─────────────────────────────────────────── */
+.sidebar__header {
+  padding: 22px 20px 20px;
+  border-bottom: 1px solid var(--sb-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.sidebar__title {
+  font-family: var(--rs-font-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+    color: color-mix(in srgb, var(--sb-text-1) 90%, transparent);
+}
+.sidebar__semestre {
+  font-family: var(--rs-font-body);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--disc-tema, #7fcba0);
+  background: rgba(var(--disc-tema-rgb, 127,203,160), 0.08);
+  border: 1px solid rgba(var(--disc-tema-rgb, 127,203,160), 0.28);
+  border-radius: 7px;
+  padding: 0.32rem 0.9rem;
+  white-space: nowrap;
+  box-shadow: 0 0 10px rgba(var(--disc-tema-rgb, 127,203,160), 0.08);
+  transition: color 0.3s, background 0.3s, border-color 0.3s;
+}
+
+.disc-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.disc-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--rs-r-sm);
+  border: 1px solid transparent;
+  border-left: 2px solid transparent;
+  cursor: pointer;
+  transition: background var(--rs-dur-base), border-color var(--rs-dur-base);
+  width: 100%;
+  text-align: left;
+  background: none;
+  color: var(--rs-text-1);
+  font-family: var(--rs-font-body);
+}
+.disc-item:hover {
+  background: rgba(var(--disc-tema-rgb, 127,203,160), 0.08);
+  border-color: var(--rs-border-2);
+}
+.disc-item--active {
+  background: rgba(var(--disc-tema-rgb, 127,203,160), 0.12);
+  border-color: rgba(var(--disc-tema-rgb, 127,203,160), 0.22);
+  border-left-color: var(--disc-tema, #7fcba0);
+}
+.disc-item__emoji { width: 16px; font-size: 1rem; flex-shrink: 0; line-height: 1; opacity: .8; text-align: center; }
+.disc-item--active .disc-item__emoji { opacity: 1; }
+.disc-item__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.disc-item__nome {
+  font-size: 13.5px;
+  font-weight: 450;
+  color: var(--rs-text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+.disc-item--active .disc-item__nome { color: var(--disc-tema, #7fcba0); }
+.disc-item__status {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-family: var(--rs-font-body);
+}
+.disc-item__status--ok    { color: var(--rs-sage); }
+.disc-item__status--empty { color: var(--rs-text-3); }
+.disc-item__chevron {
+  width: 14px; height: 14px;
+  flex-shrink: 0;
+  color: var(--rs-text-3);
+  opacity: 0;
+  transition: opacity .15s ease, color .15s ease;
+}
+.disc-item:hover .disc-item__chevron { opacity: 0.7; }
+.disc-item--active .disc-item__chevron { opacity: 1; color: var(--disc-tema, #7fcba0); }
+
+.disc-item:focus-visible {
+  box-shadow: var(--rs-focus-ring);
+  outline: none;
+}
+.disc-item:active {
+  transform: scale(0.97);
+  transition-duration: var(--rs-dur-fast);
+}
+
+.sidebar__footer {
+  padding: 16px;
+  border-top: 1px solid var(--sb-border);
+  font-size: 0.8rem;
+  font-family: var(--rs-font-body);
+    color: color-mix(in srgb, var(--sb-text-1) 90%, transparent);
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+/* ── Integração de layout — necessária para a sidebar não
+   sobrepor o conteúdo (equivalente ao ".main" de teste.html,
+   aqui é ".content-area", já existente no Resumos). ────── */
+.content-area {
+  margin-left: var(--sidebar-w);
+}
+
+/* ── NAVEGAÇÃO MOBILE — botão flutuante + overlay ──
+   Escondidos por padrão no Desktop, exatamente como em
+   teste.html/Dashboard. ──────────────────────────────── */
+.sidebar-toggle,
+.sidebar-overlay {
+  display: none;
+}
+
+/* ═══════════════════════════════════════════════════════
+   DRAWER MOBILE — cópia ponto a ponto do bloco @media de
+   teste.html (variáveis de sincronização, botão flutuante,
+   ícone SVG animado, overlay, transform da sidebar). Único
+   ajuste de nomes: ".topbar" → ".header" e ".main" →
+   ".content-area" (equivalentes diretos já existentes no
+   Resumos), nada de mecânica/animação/timing foi alterado.
+   ═══════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+
+  body.sidebar-open { overflow: hidden; }
+
+  :root {
+    --sb-w: min(82vw, 300px);
+    --sb-btn-left: max(16px, env(safe-area-inset-left));
+    --sb-ease: cubic-bezier(.16, 1, .3, 1);
+    --sb-duration: 1000ms;
+  }
+
+  .sidebar-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    /* Centralização vertical: alinhada ao centro real do ".header"
+       (64px de altura, var(--header-h) definida em resumo.css),
+       exatamente como ".btn-back" fica centralizado dentro dele via
+       "align-items:center" no ".header__inner". Antes o valor era um
+       "top" fixo (16px) escolhido no vácuo, sem relação nenhuma com
+       a altura do header — por isso o botão ficava mais baixo que o
+       "VOLTAR". Fórmula: (altura do header − altura do botão) / 2,
+       mais o respiro de notch/safe-area quando existir. */
+    top: calc(env(safe-area-inset-top, 0px) + (var(--header-h, 64px) - 42px) / 2);
+    left: var(--sb-btn-left);
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    /* Mesma linguagem visual do ".btn-back" (resumo.css): fundo
+       translúcido neutro + borda sutil + texto secundário — em vez
+       da paleta roxa (--sb-surface/--sb-accent) usada antes, que
+       pertencia a outro sistema visual (o "shell" copiado de
+       teste.html) e por isso destoava do resto do header. */
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border-2);
+    border-radius: 8px; /* mesmo valor de ".btn-back" (resumo.css) */
+    color: var(--text-2);
+    box-shadow: none;
+    z-index: 1001;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transform: translateX(0);
+    transition: border-color var(--dur-base, .2s) ease, background var(--dur-base, .2s) ease, color var(--dur-base, .2s) ease,
+                box-shadow var(--sb-duration) var(--sb-ease),
+                transform var(--sb-duration) var(--sb-ease);
+  }
+
+  /* Modo de leitura ativo: o botão de 3 barras (abre a sidebar
+     principal) não deve competir com o botão de voltar do reader —
+     dentro do modo de leitura só o botão de voltar (.reader__back)
+     deve ficar visível. resumo.js adiciona/remove "reader-open" em
+     <body> exatamente no ciclo de vida do reader (_abrirModal /
+     _abrirModalResumao / _fecharModal), então esta regra só se
+     aplica enquanto o reader está de fato aberto. Fora do modo de
+     leitura o botão continua 100% intacto (posição, animação,
+     mecânica do drawer — nada disso foi tocado). A especificidade de
+     "body.reader-open .sidebar-toggle" já vence a regra base acima
+     (".sidebar-toggle { display:flex }"), sem precisar de !important. */
+  body.reader-open .sidebar-toggle {
+    display: none;
+  }
+
+  .sidebar-toggle:hover {
+    color: var(--text-1);
+    border-color: var(--border-3);
+    background: rgba(255,255,255,0.08);
+  }
+  .sidebar-toggle:active {
+    transform: scale(.97);
+    transition-duration: var(--dur-fast, .12s);
+  }
+  .sidebar-toggle:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
+
+  /* Estado "aberto" (botão de fechar): mesma linguagem de cores do
+     estado de hover/active acima — não uma cor diferente (roxo) só
+     porque a sidebar está aberta. Continua compatível com
+     ".btn-back". Posição/transform (deslocar para dentro da sidebar
+     aberta) e timing NÃO foram alterados — é a mesma animação de
+     antes, só a cor mudou. */
+  body.sidebar-open .sidebar-toggle {
+    color: var(--text-1);
+    border-color: var(--border-3);
+    background: rgba(255,255,255,0.08);
+    box-shadow: none;
+    transform: translateX(calc(var(--sb-w) - 58px - var(--sb-btn-left))) translateY(2px);
+    z-index: 1003;
+  }
+  body.sidebar-open .sidebar-toggle:hover {
+    transform: translateX(calc(var(--sb-w) - 58px - var(--sb-btn-left))) translateY(2px);
+  }
+  body.sidebar-open .sidebar-toggle:active {
+    transform: translateX(calc(var(--sb-w) - 58px - var(--sb-btn-left))) translateY(2px) scale(.94);
+  }
+
+  .sidebar-toggle svg {
+    width: 30px;
+    height: 30px;
+    overflow: visible;
+    transform-origin: center;
+    transform: rotate(0deg) scale(1);
+    transition: transform var(--sb-duration) var(--sb-ease);
+    /* Renderização nítida: evita que o navegador arredonde o
+       viewport do SVG para um tamanho fracionário (fonte comum de
+       blur em ícones pequenos) e garante que o traçado seja
+       rasterizado na resolução real da tela. */
+    shape-rendering: geometricPrecision;
+  }
+  body.sidebar-open .sidebar-toggle svg {
+    transform: rotate(90deg) scale(0.7857);
+  }
+
+  .sidebar-toggle svg path {
+    fill: none;
+    stroke: currentColor;
+    /* Antes este valor (6.5) SOBRESCREVIA o "stroke-width=8" do SVG
+       inline e, multiplicado pela "scale(1.35)" do <g> interno e
+       depois reduzido pela escala do viewBox (200 → 28px de exibição
+       antiga), resultava numa espessura final de ~1.2px de tela — um
+       valor fracionário de pixel, que o navegador só consegue
+       desenhar com anti-aliasing pesado (= aparência borrada).
+       Removendo o conflito e ajustando o tamanho de exibição do SVG
+       (28px → 30px, acima) a espessura final passa a ~1.6px,
+       consistente e nítida, sem depender de subpixel. */
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: transform var(--sb-duration) var(--sb-ease),
+                stroke-dasharray var(--sb-duration) var(--sb-ease),
+                stroke-dashoffset var(--sb-duration) var(--sb-ease);
+  }
+
+  .sidebar-toggle svg path:nth-child(1) { transform-origin: 36% 40%; }
+  .sidebar-toggle svg path:nth-child(2) { stroke-dasharray: 29 299; }
+  .sidebar-toggle svg path:nth-child(3) { transform-origin: 35% 63%; }
+  .sidebar-toggle svg path:nth-child(4) { stroke-dasharray: 29 299; }
+  .sidebar-toggle svg path:nth-child(5) { transform-origin: 61% 52%; }
+  .sidebar-toggle svg path:nth-child(6) { transform-origin: 62% 52%; }
+
+  body.sidebar-open .sidebar-toggle svg path:nth-child(1) {
+    transform: translateX(9px) translateY(1px) rotate(45deg);
+  }
+  body.sidebar-open .sidebar-toggle svg path:nth-child(2) {
+    stroke-dasharray: 225 299;
+    stroke-dashoffset: -72px;
+  }
+  body.sidebar-open .sidebar-toggle svg path:nth-child(3) {
+    transform: translateX(9px) translateY(1px) rotate(-45deg);
+  }
+  body.sidebar-open .sidebar-toggle svg path:nth-child(4) {
+    stroke-dasharray: 225 299;
+    stroke-dashoffset: -72px;
+  }
+  body.sidebar-open .sidebar-toggle svg path:nth-child(5) {
+    transform: translateX(9px) translateY(1px) rotate(-45deg);
+  }
+  body.sidebar-open .sidebar-toggle svg path:nth-child(6) {
+    transform: translateX(9px) translateY(1px) rotate(45deg);
+  }
+
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 999;
+    transition: opacity var(--sb-duration) var(--sb-ease);
+  }
+  body.sidebar-open .sidebar-overlay { opacity: 1; pointer-events: auto; }
+
+  .sidebar {
+    width: var(--sb-w);
+    max-width: 300px;
+    min-height: 100vh;
+    min-height: 100dvh;
+    transform: translateX(-100%);
+    z-index: 1002;
+    box-shadow: 16px 0 40px -12px rgba(0,0,0,.55);
+    transition: transform var(--sb-duration) var(--sb-ease);
+  }
+  body.sidebar-open .sidebar { transform: translateX(0); }
+
+  .disc-list {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
+    scrollbar-width: thin;
+    scrollbar-color: var(--sb-border-2) transparent;
+  }
+  .disc-list::-webkit-scrollbar { width: 5px; }
+  .disc-list::-webkit-scrollbar-track { background: transparent; }
+  .disc-list::-webkit-scrollbar-thumb { background-color: var(--sb-border-2); border-radius: 20px; }
+
+  .disc-item { min-height: 46px; }
+
+  /* Reserva de espaço no cabeçalho da sidebar para o botão
+     flutuante não sobrepor o badge de semestre. */
+  .sidebar__header { padding-right: 64px; }
+
+  /* Conteúdo ocupa a largura toda no mobile — equivalente a
+     ".main { margin-left:0; width:100%; }" de teste.html. */
+  .content-area { margin-left: 0; }
+
+  /* Reserva de espaço no header do Resumos para o botão
+     flutuante não sobrepor o botão "Início" — equivalente a
+     ".topbar { padding-left: ... }" de teste.html. */
+  .header {
+    padding-left: calc(max(16px, env(safe-area-inset-left)) + 42px + 12px);
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --sb-w: min(86vw, 300px);
+    --sb-btn-left: max(12px, env(safe-area-inset-left));
+  }
+  .sidebar { width: var(--sb-w); }
+  /* "top" não precisa mais de override aqui: a fórmula de
+     centralização definida no bloco de 900px já usa var(--header-h),
+     que não muda nesta faixa — só o "left" muda (--sb-btn-left). */
+  .sidebar-toggle { left: var(--sb-btn-left); }
+}
+
+/* ═══════════════════════════════════════════════════════
+   EXCEÇÃO ao "prefers-reduced-motion" global de resumo.css
+   ─────────────────────────────────────────────────────────
+   resumo.css tem, fora deste arquivo:
+     @media (prefers-reduced-motion: reduce) {
+       *, *::before, *::after { animation:none!important; transition:none!important; }
+     }
+   Isso zera TODA transition do site quando o usuário tem
+   "reduzir movimento" ativado no SO/navegador — inclusive a
+   da ".sidebar" e a dos "path" do SVG do botão. Como a
+   abertura/fechamento aqui não usa @keyframes (nem aqui nem
+   em teste.html) — é só a classe "sidebar-open" trocando em
+   <body> e a "transition" interpolando — sem transition não
+   sobra animação nenhuma: a sidebar salta direto pro estado
+   final ("abre como um raio") e o ícone do botão troca de
+   estado sem passar pela rotação/traço intermediários.
+
+   teste.html (fonte da verdade) não tem essa regra — por
+   isso só ele "funciona" nesse quesito.
+
+   Correção: reafirmar, com seletor mais específico que "*"
+   (logo vencendo o !important dele) + !important, os MESMOS
+   valores de transition já usados acima neste arquivo — só
+   para os elementos do mecanismo da sidebar. Não altera nada
+   mais no site: o resto continua respeitando "reduzir
+   movimento" normalmente. ─────────────────────────────────── */
+.sidebar {
+  transition: transform .3s cubic-bezier(.4,0,.2,1) !important;
+}
+@media (max-width: 900px) {
+  .sidebar {
+    transition: transform var(--sb-duration) var(--sb-ease) !important;
+  }
+  .sidebar-toggle {
+    transition: border-color .2s ease, background .2s ease, color .2s ease,
+                box-shadow var(--sb-duration) var(--sb-ease),
+                transform var(--sb-duration) var(--sb-ease) !important;
+  }
+  .sidebar-toggle svg {
+    transition: transform var(--sb-duration) var(--sb-ease) !important;
+  }
+  .sidebar-toggle svg path {
+    transition: transform var(--sb-duration) var(--sb-ease),
+                stroke-dasharray var(--sb-duration) var(--sb-ease),
+                stroke-dashoffset var(--sb-duration) var(--sb-ease) !important;
+  }
+  .sidebar-overlay {
+    transition: opacity var(--sb-duration) var(--sb-ease) !important;
+  }
+}

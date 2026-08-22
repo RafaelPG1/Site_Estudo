@@ -1,3 +1,4 @@
+<!-- resumo/resumo.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -20,8 +21,18 @@
   <!-- Picker de semestre -->
   <link rel="stylesheet" href="../shared/css/themes/semestre-picker.css" />
 
-  <!-- Design da página — novo, independente -->
-  <link rel="stylesheet" href="resumo.css" />
+  <!-- Design da página — novo, independente.
+       Ordem importa: resumo.css define as variáveis/tokens (:root)
+       usadas pelos outros dois arquivos, por isso vem primeiro. -->
+  <link rel="stylesheet" href="css/resumo.css" />
+  <link rel="stylesheet" href="css/resumo-components.css" />
+  <link rel="stylesheet" href="css/resumo-reader.css" />
+
+  <!-- Sidebar — Etapa 1: cópia literal da sidebar validada em
+       teste.html (ver css/sidebar.css). Carregado por último
+       para garantir prioridade sobre resumo.css/resumo-components.css
+       nos pontos de integração (.content-area/.header). -->
+  <link rel="stylesheet" href="css/sidebar.css" />
 
   <link rel="manifest" href="../manifest.json" />
 
@@ -37,92 +48,127 @@
 </head>
 <body>
 
-  <!-- Fundo: aurora literária em camadas -->
-  <div class="bg-canvas" aria-hidden="true"></div>
-  <div class="bg-grain"  aria-hidden="true"></div>
+  <!-- ══════════════════════════════════════════════════
+       NAVEGAÇÃO MOBILE — BOTÃO + OVERLAY
+       Cópia exata do markup de teste.html (Etapa 1). -->
+  <button type="button" class="sidebar-toggle" id="sidebar-toggle"
+    aria-label="Abrir menu de navegação" aria-expanded="false">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+  <g transform="translate(100, 100) scale(1.35) translate(-100, -100)">
+    <path d="M72 82.286h28.75"/>
+    <path d="M100.75 103.714l72.482-.143c.043 39.398-32.284 71.434-72.16 71.434-39.878 0-72.204-32.036-72.204-71.554"/>
+    <path d="M72 125.143h28.75"/>
+    <path d="M100.75 103.714l-71.908-.143c.026-39.638 32.352-71.674 72.23-71.674 39.876 0 72.203 32.036 72.203 71.554"/>
+    <path d="M100.75 82.286h28.75"/>
+    <path d="M100.75 125.143h28.75"/>
+  </g>
+</svg>
+  </button>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
-  <!-- Barra de progresso de leitura -->
-  <div class="reading-progress" id="reading-progress"></div>
+  <!-- Sidebar — Etapa 2: conteúdo real. O <nav id="disc-list"> nasce
+       vazio e é preenchido por _renderSidebar() (resumo.js) a partir
+       de State.disciplinas (src/global.js). Mock de disciplinas
+       (Etapa 1, teste.html) removido.
 
-  <!-- ═══════════════════════════════════════════
-       HEADER
-  ═══════════════════════════════════════════ -->
-  <header class="header" id="app-header">
-    <div class="header__inner">
-
-      <div class="header__left">
-        <a href="../index.html" class="btn-back" id="btn-back" title="Voltar ao início">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
-          </svg>
-          <span class="btn-back__label">Início</span>
-        </a>
-
-        <div class="header__divider"></div>
-
-        <div id="header-logo-wrap" class="header__logo"></div>
-      </div>
-
-      <!-- Breadcrumb central -->
-      <div class="header__center" id="header-breadcrumb"></div>
-
-      <div class="header__right">
-        <!-- Seletor de semestre funcional -->
-        <div id="semestre-wrap-resumo"></div>
-      </div>
-
-    </div>
-  </header>
-
-  <!-- ═══════════════════════════════════════════
-       LAYOUT
-  ═══════════════════════════════════════════ -->
-  <div class="layout">
-
-    <!-- Sidebar de disciplinas -->
+       IMPORTANTE: a sidebar precisa ficar FORA de ".layout" e ser
+       irmã direta dela (exatamente como em teste.html, onde
+       ".sidebar"/".sidebar-toggle"/".sidebar-overlay"/".main" são
+       todos filhos diretos de <body>, sem nenhum wrapper no meio).
+       ".layout" tem "position:relative; z-index:2" (resumo.css),
+       o que cria um novo contexto de empilhamento — se a sidebar
+       ficasse DENTRO de ".layout", o z-index:100/1002 dela passaria
+       a valer só DENTRO desse contexto, e o conjunto inteiro de
+       ".layout" ficaria preso no z-index:2 visto de fora. Resultado:
+       ".sidebar-overlay" (z-index:999, fora de ".layout") pintava
+       por CIMA da sidebar, bloqueando o clique nos itens — era
+       exatamente o bug de "overlay cobrindo a sidebar". Por isso a
+       sidebar foi movida para cá, antes de ".layout". -->
     <aside class="sidebar" id="sidebar">
+
       <div class="sidebar__header">
         <span class="sidebar__title">Disciplinas</span>
         <span class="sidebar__semestre" id="sidebar-semestre">—</span>
       </div>
-      <nav class="disc-list" id="disc-list" aria-label="Disciplinas disponíveis">
-        <!-- JS injeta -->
-      </nav>
+
+      <!-- Preenchido por _renderSidebar() em resumo.js, a partir de
+           State.disciplinas (dados reais de src/global.js). Nada de
+           mock/hardcoded aqui — ver resumo.js. -->
+      <nav class="disc-list" id="disc-list" aria-label="Disciplinas disponíveis"></nav>
+
       <div class="sidebar__footer">
         <span>Nexus Study · <span id="sidebar-year"></span></span>
       </div>
     </aside>
 
+    <!-- Fundo: aurora literária em camadas -->
+    <div class="bg-canvas" aria-hidden="true"></div>
+    <div class="bg-grain"  aria-hidden="true"></div>
+
+    <!-- Barra de progresso de leitura -->
+    <div class="reading-progress" id="reading-progress"></div>
+
+    <!-- ═══════════════════════════════════════════
+       LAYOUT
+       ─────────────────────────────────────────────
+       ".content-area" é a única coluna do layout. O cabeçalho
+       (".header") vive dentro dela, como primeiro elemento, e é
+       "position: sticky". ═══════════════════════════════════════ -->
+  <div class="layout">
+
     <!-- Área de conteúdo -->
     <div class="content-area">
+
+      <!-- ═══════════════════════════════════════════
+           HEADER — agora dentro de .content-area, "sticky"
+           (equivalente exato de ".topbar" dentro de ".main" no
+           Dashboard). Nenhum id/classe/conteúdo interno mudou.
+      ═══════════════════════════════════════════ -->
+      <header class="header" id="app-header">
+        <div class="header__inner">
+
+          <div class="header__left">
+            <a href="../index.html" class="btn-back" id="btn-back" title="Voltar ao início">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+              </svg>
+              <span class="btn-back__label">Início</span>
+            </a>
+
+            <div class="header__divider"></div>
+
+            <div id="header-logo-wrap" class="header__logo"></div>
+          </div>
+
+          <!-- Breadcrumb central -->
+          <div class="header__center" id="header-breadcrumb"></div>
+
+          <div class="header__right">
+            <!-- Seletor de semestre funcional -->
+            <div id="semestre-wrap-resumo"></div>
+          </div>
+
+        </div>
+      </header>
 
       <!-- Hero -->
       <div class="page-hero" id="page-hero">
         <div class="page-hero__inner">
-          <div class="page-hero__eyebrow">
-            <span class="eyebrow-dot"></span>
-            <span id="hero-eyebrow-text">Carregando…</span>
+          <div class="page-hero__text">
+            <div class="page-hero__eyebrow">
+              <span class="eyebrow-dot"></span>
+              <span id="hero-eyebrow-text">Carregando…</span>
+            </div>
+            <h1 class="page-hero__title">Resumos</h1>
+            <p class="page-hero__sub" id="hero-sub">Selecione uma disciplina.</p>
           </div>
-          <h1 class="page-hero__title">Resumos</h1>
-          <p class="page-hero__sub" id="hero-sub">Selecione uma disciplina.</p>
           <div class="page-hero__stats" id="hero-stats"></div>
         </div>
       </div>
 
       <!-- Vídeos das aulas -->
       <div id="videos-section" style="display:none"></div>
-
-      <!-- Toolbar mobile: troca de disciplina -->
-      <div class="mobile-toolbar" id="mobile-toolbar">
-        <button class="mobile-disc-btn" id="mobile-disc-btn">
-          <span id="mobile-disc-label">Disciplina</span>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="6 9 12 15 18 9"/>
-          </svg>
-        </button>
-      </div>
 
       <!-- Main -->
       <main class="main" id="main-content">
@@ -161,22 +207,47 @@
   </div><!-- /layout -->
 
   <!-- ═══════════════════════════════════════════
-       READER MODE
+       READER MODE — três zonas: contexto (barra),
+       leitura (coluna central) e índice (trilha de
+       seções, ancorada no desktop / bottom-sheet no
+       mobile). O índice é a espinha dorsal de
+       navegação: mostra onde o leitor está, o que
+       falta e permite saltar direto a uma seção.
   ═══════════════════════════════════════════ -->
   <div class="reader" id="read-modal" role="dialog" aria-modal="true" aria-label="Leitura do resumo">
 
     <header class="reader__bar" id="read-modal-panel" tabindex="-1">
-      <button class="reader__back" id="read-modal-close" aria-label="Fechar leitor">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
-        </svg>
-        <span>Voltar</span>
-      </button>
+      <div class="reader__bar-row">
+        <button class="reader__back" id="read-modal-close" aria-label="Fechar leitor">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+          </svg>
+          <span class="reader__back-label">Voltar</span>
+        </button>
 
-      <div class="reader__bar-meta">
-        <span class="reader__bar-aula" id="rm-aula-label"></span>
-        <span class="reader__bar-badge" id="rm-tipo-badge"></span>
+        <div class="reader__bar-context">
+          <span class="reader__bar-disc" id="rm-disc-label"></span>
+          <span class="reader__bar-sep" aria-hidden="true">·</span>
+          <span class="reader__bar-aula" id="rm-aula-label"></span>
+          <!-- Some inline no mesmo eixo, nunca cria uma segunda linha —
+               por isso a altura do header nunca "pula" ao trocar de seção. -->
+          <span class="reader__bar-section" id="rm-active-section">
+            <span class="reader__bar-sep" aria-hidden="true">·</span>
+            <span class="reader__bar-active-dot"></span>
+            <span id="rm-active-section-label"></span>
+          </span>
+        </div>
+
+        <div class="reader__bar-actions">
+          <span class="reader__bar-badge" id="rm-tipo-badge"></span>
+          <button class="reader__toc-trigger" id="rm-toc-trigger" aria-label="Abrir índice de seções" aria-expanded="false" aria-controls="rm-toc">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/>
+            </svg>
+            <span id="rm-toc-trigger-label">Índice</span>
+          </button>
+        </div>
       </div>
 
       <div class="reader__bar-progress" id="reader-progress-wrap">
@@ -184,26 +255,104 @@
       </div>
     </header>
 
-    <div class="reader__scroll" id="rm-body-wrapper">
-      <div class="reader__content" id="rm-body"></div>
+    <div class="reader__shell">
+
+      <div class="reader__scroll" id="rm-body-wrapper">
+        <div class="reader__content" id="rm-body"></div>
+      </div>
+
+      <!-- Índice de seções — trilha fixa no desktop -->
+      <aside class="reader__toc-rail">
+        <nav class="rm-toc" id="rm-toc" aria-label="Seções do resumo">
+          <div class="rm-toc__head">
+            <span class="rm-toc__head-label">Nesta leitura</span>
+            <button class="rm-toc__action" id="rm-toc-collapse-all" data-tip="Recolher todas as seções" aria-label="Recolher todas as seções">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/>
+                <line x1="4" y1="20" x2="10" y2="14"/><line x1="20" y1="4" x2="14" y2="10"/>
+              </svg>
+            </button>
+          </div>
+          <ol class="rm-toc__list" id="rm-toc-list"></ol>
+          <button class="rm-toc__top" id="rm-toc-top">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+            Voltar ao início
+          </button>
+        </nav>
+      </aside>
+
     </div>
 
-    <!-- TOC oculto — mantido para compatibilidade JS -->
-    <nav class="rm-toc" id="rm-toc" aria-label="Seções do resumo" style="display:none"></nav>
+    <!-- Índice em bottom-sheet — mobile/tablet -->
+    <div class="rm-toc-sheet" id="rm-toc-sheet">
+      <div class="rm-toc-sheet__backdrop" id="rm-toc-sheet-backdrop"></div>
+      <div class="rm-toc-sheet__panel">
+        <div class="rm-toc-sheet__handle"></div>
+        <div class="rm-toc-sheet__head">
+          <span>Índice do resumo</span>
+          <button class="rm-toc__action" id="rm-toc-collapse-all-mobile" aria-label="Recolher todas as seções">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/>
+              <line x1="4" y1="20" x2="10" y2="14"/><line x1="20" y1="4" x2="14" y2="10"/>
+            </svg>
+          </button>
+        </div>
+        <ol class="rm-toc__list rm-toc__list--sheet" id="rm-toc-list-mobile"></ol>
+      </div>
+    </div>
 
   </div>
 
-  <!-- ═══════════════════════════════════════════
-       DROPDOWN MOBILE DE DISCIPLINAS
-  ═══════════════════════════════════════════ -->
-  <div class="mobile-dropdown" id="mobile-dropdown">
-    <div class="mobile-dropdown__backdrop" id="mobile-dropdown-backdrop"></div>
-    <div class="mobile-dropdown__sheet" id="mobile-dropdown-sheet">
-      <div class="mobile-dropdown__handle"></div>
-      <div class="mobile-dropdown__title">Selecionar disciplina</div>
-      <div class="mobile-dropdown__list" id="mobile-dropdown-list"></div>
-    </div>
-  </div>
+  <!-- ═══ SIDEBAR — SCRIPTS (Etapa 1) ══════════════════════════════
+       Primeiro script: mecânica do drawer mobile (abre/fecha via
+       classe "sidebar-open" em <body>) — intocado desde teste.html.
+       Segundo script: só preenche o ano no rodapé. O clique nos
+       .disc-item, o estado ativo e a cor por disciplina (--disc-tema)
+       agora são responsabilidade de _renderSidebar()/_trocarDisciplina()
+       em resumo.js (dados reais). ─────────────────────────────── -->
+  <script>
+    (function () {
+      var toggleBtn = document.getElementById('sidebar-toggle');
+      var overlay = document.getElementById('sidebar-overlay');
+      var sidebarEl = document.querySelector('.sidebar');
+      if (!toggleBtn || !overlay || !sidebarEl) return;
+
+      function isOpen() {
+        return document.body.classList.contains('sidebar-open');
+      }
+      function openDrawer() {
+        document.body.classList.add('sidebar-open');
+        toggleBtn.setAttribute('aria-expanded', 'true');
+      }
+      function closeDrawer() {
+        document.body.classList.remove('sidebar-open');
+        toggleBtn.setAttribute('aria-expanded', 'false');
+      }
+
+      toggleBtn.addEventListener('click', function () {
+        if (isOpen()) { closeDrawer(); } else { openDrawer(); }
+      });
+      overlay.addEventListener('click', closeDrawer);
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && isOpen()) closeDrawer();
+      });
+      sidebarEl.addEventListener('click', function (e) {
+        if (e.target.closest('.disc-item')) closeDrawer();
+      });
+      window.addEventListener('resize', function () {
+        if (window.innerWidth > 900 && isOpen()) closeDrawer();
+      });
+    })();
+  </script>
+  <script>
+    (function () {
+      var yearEl = document.getElementById('sidebar-year');
+      if (yearEl) yearEl.textContent = new Date().getFullYear();
+      // Clique/estado ativo/cor dos .disc-item: agora é responsabilidade
+      // de _renderSidebar() + _trocarDisciplina() em resumo.js, que
+      // renderizam os itens a partir de dados reais (State.disciplinas).
+    })();
+  </script>
 
   <!-- ═══════════════════════════════════════════
        SCRIPTS

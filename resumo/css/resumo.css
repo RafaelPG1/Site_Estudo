@@ -1,0 +1,490 @@
+/* =============================================
+   NEXUS STUDY — resumo/css/resumo.css  (v7 — split em 3 arquivos)
+   Responsabilidade deste arquivo: variáveis, base,
+   tipografia, layout geral, header e responsividade
+   geral. Cards/listagem → resumo-components.css.
+   Reader → resumo-reader.css.
+   ============================================= */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ══════════════════════════════════════════
+   TOKENS
+══════════════════════════════════════════ */
+:root {
+  /* Background system */
+  --bg-base:      #07091a;
+  --bg-mid:       #0c0f22;
+  --bg-surface:   #10142b;
+  --bg-raised:    #161b35;
+  --bg-hover:     #1c2240;
+
+  /* Borders */
+  --border-1: rgba(255,255,255,0.05);
+  --border-2: rgba(255,255,255,0.09);
+  --border-3: rgba(255,255,255,0.14);
+
+  /* Accent palette — warm, literary */
+  --sage:       #7fcba0;
+  --sage-dim:   rgba(127,203,160,0.10);
+  --sage-glow:  rgba(127,203,160,0.18);
+  --amber:      #e8b86d;
+  --amber-dim:  rgba(232,184,109,0.10);
+  --rose:       #d9829a;
+  --cyan:       #3dd9c2;          /* badge de semestre */
+  --violet:     #a48fe0;
+
+  /* Disc theme — sobrescrita por JS */
+  --disc-tema:     #7fcba0;
+  --disc-tema-rgb: 127,203,160;
+  --disc-tema2:    #e8b86d;
+
+  /* Typography */
+  --text-1: #f0ead8;
+  --text-2: #ada698;
+  --text-3: #837c72; /* AA-safe contra --bg-base (era #5e5a52, ~2.9:1) */
+
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body:    'DM Sans', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Layout */
+  --header-h:    64px;
+  --content-max: 800px;   /* largura do grid/hero */
+  /* Largura do CARD/container de leitura — não é a medida do texto.
+     Antes os dois eram o mesmo valor (42rem), o que deixava a coluna
+     inteira estreita com muito vazio ao lado. Agora o card ocupa mais
+     espaço da tela; quem controla o conforto de leitura é
+     --text-measure, aplicado ao texto internamente. */
+  --reading-max: 52rem;    /* ~832px: largura do card/container */
+  --text-measure: 68ch;    /* medida ideal de linha, aplicada ao texto dentro do card */
+
+  /* Ritmo vertical — escala consistente usada no reader */
+  --space-1: 0.5rem;
+  --space-2: 0.75rem;
+  --space-3: 1.25rem;
+  --space-4: 2rem;
+  --space-5: 3rem;
+
+  /* Radius */
+  --r-xl: 20px;
+  --r-lg: 14px;
+  --r-md: 10px;
+  --r-sm: 6px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 20px rgba(0,0,0,0.5);
+  --shadow-lg: 0 12px 48px rgba(0,0,0,0.6);
+
+  /* Foco — acessibilidade de teclado (antes inexistente no arquivo) */
+  --focus-ring: 0 0 0 2px var(--bg-base), 0 0 0 4px rgba(var(--disc-tema-rgb), 0.65);
+
+  --ease:      cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out:  cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast:  0.12s;
+  --dur-base:  0.2s;
+  --dur-slow:  0.38s;
+}
+
+/* ══════════════════════════════════════════
+   BASE
+══════════════════════════════════════════ */
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  color: var(--text-1);
+  background: var(--bg-base);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+a { text-decoration: none; color: inherit; }
+button { font-family: var(--font-body); cursor: pointer; border: none; background: none; }
+img { display: block; max-width: 100%; }
+
+
+/* ══════════════════════════════════════════
+   FOCO DE TECLADO — acessibilidade
+══════════════════════════════════════════ */
+:focus { outline: none; }
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible,
+input:focus-visible {
+  outline: none;
+  border-radius: var(--r-sm);
+  box-shadow: var(--focus-ring);
+}
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(var(--disc-tema-rgb),0.18);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--disc-tema-rgb),0.32);
+}
+
+/* ══════════════════════════════════════════
+   FUNDO — AURORA LITERÁRIA
+══════════════════════════════════════════ */
+.bg-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.bg-canvas::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 90% 55% at 20% -10%,  rgba(120,90,200,0.18) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 40% at 80% 10%,   rgba(127,203,160,0.10) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 50% at 50% 100%,  rgba(100,70,180,0.12) 0%, transparent 60%),
+    linear-gradient(170deg, #0a0d20 0%, #07091a 40%, #080b1c 100%);
+}
+.bg-canvas::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 15% 22%, rgba(255,255,255,0.12) 0%, transparent 100%),
+    radial-gradient(1px 1px at 72% 14%, rgba(255,255,255,0.10) 0%, transparent 100%),
+    radial-gradient(1px 1px at 40% 60%, rgba(255,255,255,0.07) 0%, transparent 100%),
+    radial-gradient(1px 1px at 85% 48%, rgba(255,255,255,0.09) 0%, transparent 100%),
+    radial-gradient(1px 1px at 30% 80%, rgba(255,255,255,0.06) 0%, transparent 100%);
+  opacity: 0.5;
+}
+.bg-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+}
+
+/* ══════════════════════════════════════════
+   BARRA DE PROGRESSO DE LEITURA
+══════════════════════════════════════════ */
+.reading-progress,
+.reading-progress--visible {
+  display: none;
+}
+
+/* ══════════════════════════════════════════
+   HEADER
+══════════════════════════════════════════ */
+/* ".header" é o primeiro filho de ".content-area" (ver resumo.html)
+   e usa "position: sticky" pelo mesmo motivo do ".topbar" do
+   Dashboard: só existe geometricamente na coluna de conteúdo. */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: var(--header-h);
+  padding: 0 2rem;
+  background: rgba(7,9,26,0.80);
+  backdrop-filter: blur(24px) saturate(1.6);
+  border-bottom: 1px solid var(--border-1);
+}
+.header__inner {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  position: relative;
+}
+.header__left {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-shrink: 0;
+  min-width: 0;
+}
+.header__center {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  white-space: nowrap;
+  pointer-events: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 200px;
+}
+.header__center span { color: var(--disc-tema); }
+.header__right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+.header__divider {
+  width: 1px; height: 18px;
+  background: var(--border-2);
+  flex-shrink: 0;
+}
+
+.header__logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.header__logo img,
+.header__logo svg {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  display: block;
+}
+.header__logo-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  line-height: 1;
+}
+.header__logo-name {
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-1);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+.header__logo-sub {
+  font-size: 0.62rem;
+  font-weight: 400;
+  color: var(--text-3);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+/* Ação secundária: sai da tela atual, não é a ação principal do header */
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 1.1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-2);
+  color: var(--text-2);
+  background: rgba(255,255,255,0.05);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: color var(--dur-base), border-color var(--dur-base), background var(--dur-base), transform var(--dur-fast);
+  white-space: nowrap;
+}
+.btn-back:hover {
+  color: var(--text-1);
+  border-color: var(--border-3);
+  background: rgba(255,255,255,0.08);
+}
+.btn-back__label { font-weight: 600; }
+
+.header__sem-badge {
+  justify-self: end;
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  background: rgba(61,217,194,0.08);
+  border: 1px solid rgba(61,217,194,0.28);
+  border-radius: 7px;
+  padding: 0.32rem 0.9rem;
+  white-space: nowrap;
+  box-shadow: 0 0 12px rgba(61,217,194,0.1);
+  pointer-events: none;
+  user-select: none;
+}
+
+.disc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--r-md);
+  background: rgba(var(--disc-tema-rgb),0.08);
+  border: 1px solid rgba(var(--disc-tema-rgb),0.22);
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: var(--disc-tema);
+  max-width: 180px;
+  overflow: hidden;
+}
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--r-md);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-2);
+  font-size: 0.74rem;
+  color: var(--text-2);
+}
+.status-badge--empty { color: var(--rose); border-color: rgba(217,130,154,0.25); }
+
+
+/* Feedback de toque instantâneo — resposta ao "press", não ao "release" */
+.btn-back:active {
+  transform: scale(0.97);
+  transition-duration: var(--dur-fast);
+}
+/* ══════════════════════════════════════════
+   LAYOUT PRINCIPAL
+══════════════════════════════════════════ */
+.layout {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+  z-index: 2;
+}
+
+/* ── ÁREA DE CONTEÚDO ── */
+.content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+/* ══════════════════════════════════════════
+   MAIN / GRID
+══════════════════════════════════════════ */
+.main {
+  padding: 2rem 2.5rem 4rem;
+  max-width: 100%;
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVO GERAL
+══════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .header__center { display: none; }
+  .main { padding: 1.5rem 1.5rem 4rem; }
+}
+
+@media (max-width: 600px) {
+  .main { padding: 1.25rem 1rem 4rem; }
+  .header__right { gap: 0.4rem; }
+  .header__sem-badge { display: none; }
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+#header-logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+#header-logo-wrap img,
+#header-logo-wrap svg {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  display: block;
+  object-fit: contain;
+}
+#header-logo-wrap > span,
+#header-logo-wrap > div,
+#header-logo-wrap > p {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  line-height: 1;
+}
+#header-logo-wrap > span:first-of-type,
+#header-logo-wrap .logo-name,
+#header-logo-wrap strong,
+#header-logo-wrap b {
+  font-family: var(--font-body);
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: var(--text-1);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+#header-logo-wrap .logo-sub,
+#header-logo-wrap small,
+#header-logo-wrap em {
+  font-size: 0.61rem;
+  font-weight: 400;
+  color: var(--text-3);
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  font-style: normal;
+}
+#header-logo-wrap a {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: inherit;
+}
+#header-logo-wrap .nexus-logo__img {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 22%;
+  border: 1px solid rgba(255,255,255,0.12);
+  transition: filter 0.25s ease, transform 0.25s ease;
+}
+#header-logo-wrap .nexus-logo__link:hover .nexus-logo__img {
+  filter: drop-shadow(0 0 6px rgba(255,255,255,0.15));
+  transform: scale(1.05);
+}
+#header-logo-wrap .nexus-logo__link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  color: inherit;
+}
+#header-logo-wrap .nexus-logo__texto--stacked {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+  gap: 0.18rem;
+}
+#header-logo-wrap .nexus-logo__titulo {
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--text-1);
+  letter-spacing: 0.01em;
+  line-height: 1;
+}
+#header-logo-wrap .nexus-logo__sub {
+  font-family: var(--font-body);
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #4ade80;
+  line-height: 1;
+}
+/* ══════════════════════════════════════════
+   SEMESTRE PICKER — corrige dropdown saindo
+   da tela pela direita
+══════════════════════════════════════════ */
+
+#semestre-wrap-resumo > div > div:not(:first-child) {
+  right: -20px !important; /* Ajuste esse valor (ex: -10px, -15px) até dar o ponto */
+  left: auto !important;
+}

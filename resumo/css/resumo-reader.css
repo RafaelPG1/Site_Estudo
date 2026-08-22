@@ -1,0 +1,924 @@
+/* =============================================
+   NEXUS STUDY — resumo/css/resumo-reader.css
+   Responsabilidade: modo de leitura (reader), o
+   conteúdo renderizado dentro dele, o índice/TOC,
+   a barra de contexto e os componentes exclusivos
+   do reader — incluindo os media queries
+   específicos desses componentes.
+   ============================================= */
+
+/* ══════════════════════════════════════════
+   READER MODE
+══════════════════════════════════════════ */
+.reader {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  background: var(--bg-base);
+  transform: translateX(100%);
+  transition: transform var(--dur-slow) var(--ease);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.reader.read-modal--open { transform: translateX(0); }
+
+/* ══════════════════════════════════════════
+   BARRA DE CONTEXTO
+   Uma única linha, sempre — a seção ativa entra e
+   sai no mesmo eixo horizontal do resto do contexto
+   (nunca cria uma segunda linha), então a altura do
+   header nunca "pula". Ao descer, o header encolhe e
+   fica mais discreto; ao subir, expande de volta.
+   Nunca some por completo — o botão Voltar e a trilha
+   de disciplina continuam sempre alcançáveis.
+══════════════════════════════════════════ */
+.reader__bar {
+  position: relative;
+  flex-shrink: 0;
+  background: rgba(7,9,26,0.92);
+  backdrop-filter: blur(20px) saturate(1.3);
+  border-bottom: 1px solid var(--border-1);
+  z-index: 10;
+}
+.reader__bar-row {
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0 1.5rem;
+  transition: height var(--dur-slow) var(--ease);
+}
+.reader__bar--compact .reader__bar-row { height: 50px; }
+
+.reader__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-2);
+  color: var(--text-2);
+  background: rgba(255,255,255,0.05);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: color var(--dur-base), border-color var(--dur-base), background var(--dur-base), transform var(--dur-fast);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.reader__back:hover {
+  color: var(--text-1);
+  border-color: var(--border-3);
+  background: rgba(255,255,255,0.08);
+}
+.reader__back-label {
+  display: inline-block;
+  max-width: 60px;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: max-width var(--dur-slow) var(--ease), opacity var(--dur-base);
+}
+.reader__bar--compact .reader__back-label { max-width: 0; opacity: 0; }
+
+/* Identidade: Disciplina · Aula (· Seção, quando compacto) — alinhado
+   à esquerda, junto do botão Voltar, como uma trilha de contexto real. */
+.reader__bar-context {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+}
+.reader__bar-disc {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--disc-tema);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 40%;
+  flex-shrink: 3;
+}
+.reader__bar-sep { color: var(--text-3); font-size: 0.78rem; flex-shrink: 0; }
+.reader__bar-aula {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex-shrink: 2;
+}
+/* A seção ativa entra inline, no mesmo eixo — por isso não altera a
+   altura do header. Some por padrão; só aparece no estado compacto. */
+.reader__bar-section {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-1);
+  transition: max-width var(--dur-slow) var(--ease), opacity var(--dur-base);
+}
+.reader__bar--compact .reader__bar-section { max-width: 280px; opacity: 1; }
+
+.reader__bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+.reader__bar-badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--r-sm);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(var(--disc-tema-rgb),0.10);
+  color: var(--disc-tema);
+  border: 1px solid rgba(var(--disc-tema-rgb),0.22);
+  white-space: nowrap;
+  max-width: 120px;
+  overflow: hidden;
+  transition: max-width var(--dur-base) var(--ease), opacity var(--dur-base), padding var(--dur-base), margin var(--dur-base);
+}
+/* No estado compacto, o distintivo de tipo cede espaço para a seção
+   ativa — a informação mais útil enquanto o leitor está lendo. */
+.reader__bar--compact .reader__bar-badge {
+  max-width: 0; opacity: 0; padding: 0; margin: 0; border-width: 0;
+}
+
+/* Abre o índice em bottom-sheet — só existe como controle autônomo
+   no mobile/tablet; no desktop o índice já está sempre visível. */
+.reader__toc-trigger {
+  display: none;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.7rem;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border-2);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-2);
+  font-size: 0.72rem;
+  font-weight: 600;
+  transition: color var(--dur-base), border-color var(--dur-base);
+}
+.reader__toc-trigger:hover { color: var(--text-1); border-color: var(--border-3); }
+
+#rm-active-section-label {
+  transition: opacity 0.15s ease;
+}
+.reader__bar-active-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--disc-tema);
+  box-shadow: 0 0 6px rgba(var(--disc-tema-rgb),0.6);
+  flex-shrink: 0;
+}
+
+.reader__bar-progress {
+  position: absolute;
+  left: 0; right: 0; bottom: -1px;
+  height: 2px;
+  background: transparent;
+  z-index: 3;
+}
+.reader__bar-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--disc-tema);
+  box-shadow: 0 0 8px rgba(var(--disc-tema-rgb), 0.5);
+  transition: width 0.1s linear;
+}
+
+/* ══════════════════════════════════════════
+   TRÊS ZONAS: leitura (centro) + índice (rail)
+   No lugar de "espaço vazio | texto | espaço vazio",
+   o espaço lateral direito passa a carregar a
+   navegação de seções — sempre visível, nunca
+   sobreposta ao texto.
+══════════════════════════════════════════ */
+.reader__shell {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+.reader__scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+  scrollbar-gutter: stable;
+}
+.reader__content {
+  max-width: var(--reading-max);
+  margin: 0 auto;
+  padding: var(--space-5) 1.5rem 7rem;
+}
+
+/* ══════════════════════════════════════════
+   CONTENT RENDERING
+══════════════════════════════════════════ */
+/* Tipografia de leitura: corpo em 17px/1.75. O CARD (.rm-collapse)
+   ocupa a largura cheia de --reading-max; o TEXTO dentro dele é
+   limitado a --text-measure (~68ch) — são medidas independentes de
+   propósito. Cabeçalhos podem correr mais largos que o parágrafo,
+   já que uma linha de título não sofre o mesmo problema de
+   legibilidade que uma linha de corpo de texto. */
+.reader__content h1,
+.reader__content h2,
+.reader__content h3 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.22;
+  color: var(--text-1);
+  letter-spacing: -0.005em;
+  max-width: var(--text-measure);
+}
+.reader__content h1 { font-size: 2rem; margin-bottom: var(--space-3); }
+.reader__content h2 {
+  font-size: 1.5rem;
+  margin: var(--space-5) 0 var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-1);
+}
+.reader__content h2:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+.reader__content h3 { font-size: 1.15rem; font-weight: 500; font-family: var(--font-body); margin: var(--space-4) 0 var(--space-1); }
+.reader__content p  {
+  font-size: 1.0625rem;
+  color: var(--text-2);
+  line-height: 1.75;
+  margin-bottom: var(--space-3);
+  max-width: var(--text-measure);
+}
+.reader__content strong { color: var(--text-1); font-weight: 600; }
+.reader__content em { font-style: italic; color: var(--disc-tema); }
+.reader__content code {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  background: rgba(var(--disc-tema-rgb),0.08);
+  color: var(--disc-tema);
+  padding: 0.12em 0.4em;
+  border-radius: 4px;
+}
+.reader__content ul, .reader__content ol {
+  padding-left: 1.4rem;
+  margin-bottom: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  max-width: var(--text-measure);
+}
+.reader__content li { font-size: 1.02rem; color: var(--text-2); line-height: 1.7; }
+.reader__content hr {
+  border: none;
+  border-top: 1px solid var(--border-2);
+  margin: var(--space-4) 0;
+}
+
+/* Seções colapsáveis — a espinha dorsal da navegação: cada uma
+   corresponde a uma "seção" do resumo (índice numerado + título). */
+.rm-collapse {
+  border: 1px solid var(--border-1);
+  border-left: 2px solid transparent;
+  border-radius: var(--r-lg);
+  margin-bottom: var(--space-2);
+  overflow: hidden;
+  background: var(--bg-surface);
+  transition: border-color var(--dur-base);
+  /* Folga ao navegar via índice — mesmo com o header medido ao vivo,
+     uma pequena margem evita que o título cole na borda da barra. */
+  scroll-margin-top: 16px;
+}
+/* Reforça "onde estou" também dentro da coluna de leitura, não só
+   no índice — a seção sob o scroll ganha uma régua sutil. */
+.rm-collapse--current { border-left-color: rgba(var(--disc-tema-rgb), 0.5); }
+.rm-collapse__trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 44px;
+  padding: 1.1rem 2rem;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  background: none;
+  color: var(--text-1);
+  transition: background var(--dur-base);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+.rm-collapse__trigger:hover { background: rgba(255,255,255,0.03); }
+.rm-collapse__icon {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  background: rgba(var(--disc-tema-rgb),0.10);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--disc-tema);
+  flex-shrink: 0;
+  font-size: 0.8rem;
+}
+.rm-collapse__chevron {
+  margin-left: auto;
+  color: var(--text-3);
+  transition: transform 0.22s var(--ease);
+}
+.rm-collapse--open .rm-collapse__chevron { transform: rotate(180deg); }
+.rm-collapse__body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s var(--ease);
+}
+.rm-collapse--open .rm-collapse__body { max-height: 8000px; }
+/* Usado só durante a navegação pelo índice, para abrir a seção sem
+   transição e eliminar a corrida com o scrollIntoView (ver JS). */
+.rm-collapse__body--instant { transition: none !important; }
+.rm-collapse__inner {
+  padding: 0.25rem 1.4rem 1.4rem;
+  border-top: 1px solid var(--border-1);
+}
+.rm-collapse__inner p { font-size: 0.91rem; line-height: 1.8; }
+
+.tópico-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.tópico-item {
+  display: flex; gap: 0.65rem; align-items: flex-start;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--r-md);
+  background: rgba(255,255,255,0.02);
+}
+.tópico-item::before {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--disc-tema);
+  flex-shrink: 0;
+  margin-top: 0.5rem;
+}
+.tópico-item p { font-size: 0.85rem; color: var(--text-2); margin: 0; }
+
+.callout {
+  padding: 1rem 1.25rem;
+  border-radius: var(--r-md);
+  border-left: 3px solid var(--disc-tema);
+  background: rgba(var(--disc-tema-rgb),0.05);
+  margin: 1rem 0;
+}
+.callout p { font-size: 0.86rem; color: var(--text-2); margin: 0; }
+
+/* Estados de foco/toque dos componentes do reader — concentrados
+   aqui junto da definição de cada componente (ver resumo.css para
+   as regras genéricas de foco/toque que valem para qualquer elemento). */
+.rm-collapse__trigger:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+.reader__back:active,
+.rm-toc__action:active,
+.rm-collapse__trigger:active {
+  transform: scale(0.97);
+  transition-duration: var(--dur-fast);
+}
+/* ══════════════════════════════════════════
+   TOC (mantido por compatibilidade JS)
+══════════════════════════════════════════ */
+/* ══════════════════════════════════════════
+   ÍNDICE DE SEÇÕES — a navegação real do reader.
+   Desktop: trilha fixa à direita do texto.
+   Mobile/tablet: bottom-sheet (ver .rm-toc-sheet).
+══════════════════════════════════════════ */
+.reader__toc-rail {
+  width: 240px;
+  flex-shrink: 0;
+  border-left: 1px solid var(--border-1);
+  overflow-y: auto;
+  background: rgba(8,10,22,0.4);
+}
+.rm-toc {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-3) var(--space-2);
+  min-height: 100%;
+}
+.rm-toc__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0.5rem var(--space-2);
+  margin-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-1);
+}
+.rm-toc__head-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.rm-toc__action {
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--r-sm);
+  color: var(--text-3);
+  transition: color var(--dur-base), background var(--dur-base);
+}
+.rm-toc__action:hover { color: var(--disc-tema); background: rgba(var(--disc-tema-rgb),0.10); }
+
+.rm-toc__list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+}
+.rm-toc__link {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  width: 100%;
+  min-height: 40px;
+  padding: 0.45rem 0.5rem;
+  border-radius: var(--r-sm);
+  border-left: 2px solid transparent;
+  text-align: left;
+  color: var(--text-2);
+  transition: background var(--dur-base), color var(--dur-base), border-color var(--dur-base);
+}
+.rm-toc__link:hover { background: rgba(255,255,255,0.04); color: var(--text-1); }
+.rm-toc__num {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-3);
+  flex-shrink: 0;
+  transition: color var(--dur-base), transform var(--dur-base) var(--ease);
+}
+.rm-toc__title {
+  font-size: 0.82rem;
+  line-height: 1.4;
+  transition: color var(--dur-base);
+}
+.rm-toc__item--active .rm-toc__link {
+  background: rgba(var(--disc-tema-rgb),0.09);
+  border-left-color: var(--disc-tema);
+  color: var(--text-1);
+}
+.rm-toc__item--active .rm-toc__num {
+  color: var(--disc-tema);
+  transform: scale(1.05);
+}
+
+.rm-toc__top {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border-1);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-2);
+  transition: color var(--dur-base);
+}
+.rm-toc__top:hover { color: var(--disc-tema); }
+
+/* Bottom-sheet mobile do índice — reaproveita o mesmo
+   padrão visual do dropdown de disciplinas. */
+.rm-toc-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--dur-base);
+}
+.rm-toc-sheet--open { pointer-events: all; opacity: 1; }
+.rm-toc-sheet__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(7,9,26,0.65);
+  backdrop-filter: blur(6px);
+}
+.rm-toc-sheet__panel {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  max-height: 75vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-raised);
+  border-top: 1px solid var(--border-2);
+  border-radius: 18px 18px 0 0;
+  padding-bottom: env(safe-area-inset-bottom, 1rem);
+  transform: translateY(100%);
+  transition: transform var(--dur-slow) var(--ease);
+}
+.rm-toc-sheet--open .rm-toc-sheet__panel { transform: translateY(0); }
+.rm-toc-sheet__handle {
+  width: 36px; height: 4px;
+  border-radius: 99px;
+  background: var(--border-3);
+  margin: 0.75rem auto 0;
+  flex-shrink: 0;
+}
+.rm-toc-sheet__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+.rm-toc__list--sheet {
+  padding: 0 0.75rem 0.75rem;
+  overflow-y: auto;
+}
+
+/* ══════════════════════════════════════════════
+   READER — HERO INTERNO
+══════════════════════════════════════════════ */
+.reader__hero {
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border-1);
+  text-align: center;
+}
+.reader__hero-number {
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 10vw, 7rem);
+  font-weight: 300;
+  line-height: 1;
+  color: rgba(var(--disc-tema-rgb), 0.08);
+  letter-spacing: -0.03em;
+  margin-bottom: -1.5rem;
+  user-select: none;
+}
+.reader__hero-eyebrow {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--disc-tema);
+  margin-bottom: 0.6rem;
+  opacity: 0.8;
+}
+.reader__hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 4.4vw, 2.85rem);
+  font-weight: 400;
+  line-height: 1.15;
+  color: var(--text-1);
+  letter-spacing: -0.01em;
+  margin-bottom: 1.25rem;
+}
+.hero-divider {
+  width: 40px; height: 2px;
+  background: var(--disc-tema);
+  border-radius: 2px;
+  margin: 0 auto 1rem;
+  opacity: 0.5;
+}
+.reader__hero-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.reader__hero-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-2);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-1);
+  padding: 0.25rem 0.65rem;
+  border-radius: 99px;
+}
+/* O número da aula (ex: "Aula 3") desceu do eyebrow — que agora é a
+   disciplina — para virar um metadado entre os demais, com leve
+   destaque de identidade em vez de neutro como os outros chips. */
+.reader__hero-chip--num {
+  color: var(--disc-tema);
+  border-color: rgba(var(--disc-tema-rgb), 0.22);
+  background: rgba(var(--disc-tema-rgb), 0.07);
+  font-weight: 600;
+}
+
+.reader__ideia {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: var(--space-3) var(--space-4);
+  background: rgba(var(--disc-tema-rgb), 0.06);
+  border: 1px solid rgba(var(--disc-tema-rgb), 0.16);
+  border-radius: var(--r-lg);
+  margin-bottom: var(--space-4);
+  font-size: 1rem;
+  color: var(--text-2);
+  line-height: 1.6;
+  /* CORREÇÃO: este box é irmão direto dos cards (.rm-collapse) dentro
+     do mesmo .reader__content — não um parágrafo solto dentro de um
+     card. Um cap de --text-measure aqui o deixava mais estreito que
+     os cards abaixo, quebrando o eixo único do container. Ele deve
+     acompanhar --reading-max, igual ao resto; o padding lateral
+     maior (--space-4) já evita o texto colar na borda. */
+}
+.rm-ideia-icon { font-size: 1rem; flex-shrink: 0; line-height: 1.5; }
+
+.rm-collapse__body-inner { padding: 1.75rem 2rem; }
+.rm-collapse__body-content { display: flex; flex-direction: column; gap: var(--space-3); }
+
+/* Tópico = conceito/definição. Tratamento de verbete: termo em
+   pequenas versais, corpo indentado por uma régua fina — lido como
+   "termo → explicação", não como mais um parágrafo solto. Largura
+   do CARD (.rm-collapse) segue --reading-max; a prosa aqui dentro
+   segue --text-measure — são medidas diferentes de propósito. */
+.rm-topico {
+  padding: var(--space-2) 0 var(--space-2) 1rem;
+  border-bottom: 1px solid var(--border-1);
+  border-left: 2px solid var(--border-2);
+  max-width: var(--text-measure);
+}
+.rm-topico:last-child { border-bottom: none; }
+.rm-topico__titulo {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--disc-tema);
+  margin-bottom: 0.5rem;
+}
+.rm-topico__texto {
+  font-size: 1rem;
+  color: var(--text-2);
+  line-height: 1.75;
+}
+.rm-topico__fig { margin: 0.75rem 0; }
+.rm-topico__img {
+  max-width: 100%;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-2);
+}
+.rm-topico__fig-caption {
+  font-size: 0.68rem;
+  color: var(--text-3);
+  text-align: center;
+  margin-top: 0.4rem;
+  font-style: italic;
+}
+
+.rm-lista {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  max-width: var(--text-measure);
+}
+.rm-lista li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 0.98rem;
+  color: var(--text-2);
+  line-height: 1.7;
+  padding: 0.2rem 0;
+}
+.rm-lista li::before {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--disc-tema);
+  flex-shrink: 0;
+  margin-top: 0.55rem;
+  opacity: 0.7;
+}
+.rm-lista-titulo {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-1);
+  margin-bottom: 0.4rem;
+}
+
+.rm-subtitulo {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: var(--text-1);
+  margin: var(--space-1) 0 0.25rem;
+  max-width: var(--text-measure);
+}
+.rm-subtitulo::before {
+  content: '';
+  width: 14px; height: 1px;
+  background: var(--disc-tema);
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+/* Exemplo = nota de margem/caso aplicado. Tratada como um "aside"
+   anexado ao texto — rótulo em coluna própria, não mais um box
+   genérico tingido de âmbar. */
+.rm-exemplo {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: rgba(232,184,109,0.04);
+  border: 1px dashed rgba(232,184,109,0.28);
+  border-radius: var(--r-md);
+  max-width: var(--text-measure);
+}
+.rm-exemplo__titulo {
+  flex-shrink: 0;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--amber);
+  padding-right: 0.15rem;
+  border-right: 1px solid rgba(232,184,109,0.25);
+}
+.rm-exemplo__texto {
+  font-size: 0.96rem;
+  color: var(--text-2);
+  line-height: 1.65;
+}
+.rm-exemplo__detalhe {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--text-3);
+  margin-top: 0.4rem;
+  font-style: italic;
+}
+
+/* Destaque = citação editorial. Sem caixa colorida: aspas grandes
+   decorativas + serifa itálica, como uma epígrafe de livro — cria
+   uma pausa visual real na leitura em vez de mais um card tingido. */
+.rm-destaque {
+  position: relative;
+  padding: 0.25rem 0 0.25rem 2.5rem;
+  margin: var(--space-1) 0;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 400;
+  color: var(--text-1);
+  line-height: 1.5;
+  font-style: italic;
+  max-width: var(--text-measure);
+}
+.rm-destaque::before {
+  content: '"';
+  position: absolute;
+  left: -0.2rem;
+  top: -0.6rem;
+  font-family: var(--font-display);
+  font-size: 3.2rem;
+  font-style: normal;
+  color: rgba(var(--disc-tema-rgb), 0.4);
+  line-height: 1;
+}
+
+.rm-tabela-wrap {
+  overflow-x: auto;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-2);
+  margin: var(--space-1) 0;
+  /* Tabelas, código e imagens ficam de fora do cap de --text-measure
+     de propósito: eles se beneficiam do espaço extra do card mais
+     largo (colunas de tabela, linhas de código, área de imagem) —
+     só a prosa corrida precisa de uma medida curta para ser
+     confortável de ler. */
+}
+.rm-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.rm-tabela th {
+  padding: 0.65rem 0.9rem;
+  background: rgba(var(--disc-tema-rgb), 0.07);
+  color: var(--disc-tema);
+  font-weight: 600;
+  font-size: 0.74rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-align: left;
+  border-bottom: 1px solid var(--border-2);
+}
+.rm-tabela td {
+  padding: 0.6rem 0.9rem;
+  color: var(--text-2);
+  border-bottom: 1px solid var(--border-1);
+  line-height: 1.5;
+}
+.rm-tabela tr:last-child td { border-bottom: none; }
+.rm-tabela tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
+
+.rm-fig { margin: 1rem 0; }
+.rm-fig__img {
+  max-width: 100%;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-2);
+  display: block;
+}
+.rm-fig__caption {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+  font-size: 0.68rem;
+  color: var(--text-3);
+}
+.rm-fig__num {
+  font-weight: 700;
+  color: var(--disc-tema);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.rm-codigo {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-md);
+  padding: var(--space-3);
+  overflow-x: auto;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+.rm-codigo code {
+  font-family: var(--font-mono);
+  color: var(--disc-tema);
+}
+
+.badge--conceito {
+  background: rgba(var(--disc-tema-rgb), 0.10);
+  color: var(--disc-tema);
+  border-color: rgba(var(--disc-tema-rgb), 0.22);
+}
+.badge--resumao {
+  background: rgba(164,143,224,0.10);
+  color: var(--violet);
+  border-color: rgba(164,143,224,0.22);
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVO — READER
+══════════════════════════════════════════ */
+/* Telas muito largas: o rail do índice (240px) already reserva seu
+   próprio espaço, mas em monitores grandes ainda sobrava vazio nas
+   laterais do card. Damos mais respiro ao card sem deixá-lo esticar
+   até virar parede de texto — o teto de --text-measure na prosa
+   continua intacto. */
+@media (min-width: 1600px) {
+  :root { --reading-max: 58rem; }
+}
+
+@media (max-width: 900px) {
+  .reader__back-label { display: none; } /* ícone basta; abre espaço para o contexto */
+  /* Tablet: sem o rail do índice competindo pelo espaço (vira
+     bottom-sheet), o card pode aproveitar mais da largura disponível
+     do que no desktop — mas ainda com teto, para não esticar demais
+     em tablets grandes/paisagem. */
+  .reader__content { max-width: min(90%, 46rem); padding: 2.5rem 1.75rem 5rem; }
+
+  /* Abaixo de 900px o rail fixo do índice não cabe sem espremer a
+     coluna de leitura — vira bottom-sheet sob demanda em vez de uma
+     versão "encolhida" da barra lateral. */
+  .reader__toc-rail { display: none; }
+  .reader__toc-trigger { display: inline-flex; }
+}
+
+@media (max-width: 600px) {
+  /* Mobile: o card ocupa a largura disponível — a legibilidade aqui
+     já é resolvida pela largura física da tela, não por um teto de
+     medida (68ch não cabe de qualquer forma numa tela de 375px). */
+  .reader__content { max-width: 100%; padding: 1.75rem 1.1rem 6rem; }
+  .reader__content p, .reader__content li,
+  .rm-topico, .rm-lista, .rm-subtitulo, .rm-exemplo, .rm-destaque {
+    max-width: none;
+  }
+  .rm-collapse__body-inner { padding: 1.25rem 1.1rem; }
+  .rm-collapse__trigger { padding: 1rem 1.1rem; }
+  .reader__bar-disc { max-width: 30%; }
+  .reader__toc-trigger span { display: none; } /* só o ícone */
+}
