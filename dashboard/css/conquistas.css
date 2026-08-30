@@ -117,6 +117,21 @@
        cards pais não vazam mais.
    Nenhum seletor, cor, animação ou classe controlada por JS foi
    alterado — apenas as propriedades de dimensionamento/quebra.
+   ═══════════════════════════════════════════════════════════
+
+   ─────────────────────────────────────────────
+   REDESIGN VISUAL — CONSISTÊNCIA COM O RESTO DO DASHBOARD
+   ─────────────────────────────────────────────
+   Única mudança desta fase: `.achievements-section` (o card grande
+   de seção inteira) ganhou o mesmo highlight interno de 1px
+   (`--surface-hl`, definido em dashboard.css) usado agora por
+   `.perf-card`/`.weaknesses-card`/`.disc-card`/`.activity-card`/
+   `.tools-card`/`.nav-section-wrap` — a mesma "família" de cards
+   estruturais que REFINAMENTO 2 (acima) já havia igualado em
+   background/border/border-radius. Fallback `inset 0 1px 0
+   rgba(255,255,255,.025)` inline, caso este arquivo seja carregado
+   isoladamente em algum contexto sem dashboard.css. Nenhuma cor,
+   raio, grid, animação ou classe controlada por JS foi alterada.
    ═══════════════════════════════════════════════════════════ */
 
 .ach-v2-scope {
@@ -188,14 +203,17 @@
 
 /* Container principal — EXATAMENTE as mesmas 3 propriedades de
    fundo usadas por .perf-card / .weaknesses-card / .disc-card
-   (cards grandes de seção inteira). Sem brilho, sem gradiente,
-   sem sombra própria — 100% plano, igual à referência. */
+   (cards grandes de seção inteira), mais o mesmo highlight interno
+   de 1px (--surface-hl) que essa mesma família de cards ganhou no
+   redesign — ver nota "REDESIGN VISUAL" no topo do arquivo. Sem
+   brilho, sem gradiente, sem sombra própria além do highlight. */
 .ach-v2-scope .achievements-section{
   background:var(--bg-surface);
   border:1px solid var(--ach-border);
   border-radius:var(--r-lg);
   padding:36px 36px 32px;
   min-width: 0;
+  box-shadow: var(--surface-hl, inset 0 1px 0 rgba(255,255,255,.025));
 }
 @media (max-width: 620px) {
   .ach-v2-scope .achievements-section { padding: 24px 18px 22px; }

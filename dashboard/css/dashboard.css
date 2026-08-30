@@ -104,6 +104,26 @@
    disponível. Breakpoints reais (320/360/390/414/768/
    1024) foram adicionados onde não existiam.
    ═══════════════════════════════════════════════════════════
+
+   ─────────────────────────────────────────────
+   REDESIGN VISUAL — CAMADA 5 (Fase "Home redesign")
+   ─────────────────────────────────────────────
+   Ver nota completa no topo de dashboard_cards.css.
+   Resumo do que mudou aqui, em dashboard.css:
+     · Novo token --surface-hl (highlight interno de 1px
+       no topo dos cards) — profundidade sutil, sem
+       glassmorphism, aplicado nos cards estruturais
+       (.tools-card/.stat-card/.perf-card/.activity-card/
+       .disc-card/.nav-section-wrap).
+     · .stat-card deixou de subir no hover (translateY):
+       o card não é clicável (cursor:default já existia),
+       então "levantar" no hover mentia uma affordance de
+       clique que ele nunca teve. .tool-btn (que É um
+       botão real) continua subindo normalmente — nenhuma
+       mudança nele.
+   Nenhum outro valor, cor, breakpoint ou seletor deste
+   arquivo foi alterado.
+   ═══════════════════════════════════════════════════════════
 */
  
 /* ─── TOKENS ─────────────────────────────────────────────── */
@@ -128,6 +148,14 @@
   --r-md:  12px;
   --r-lg:  18px;
   --r-xl:  24px;
+
+  /* Highlight interno de 1px no topo dos cards estruturais —
+     dá uma leve sensação de "painel elevado" (mesmo princípio
+     usado por Linear/Vercel: inset box-shadow, não borda nem
+     gradiente) sem introduzir nenhuma cor nova. Aplicado junto
+     com box-shadow: none como fallback em navegadores antigos
+     não é necessário — box-shadow tem suporte universal. */
+  --surface-hl: inset 0 1px 0 rgba(255,255,255,.025);
 
   /* ─── ESCALA DE ESPAÇAMENTO — hierarquia de título de seção ───
      Duas únicas variáveis controlam a "respiração" de TODOS os
@@ -902,6 +930,7 @@ body {
   border-radius: var(--r-lg);
   padding: var(--card-pad);
   min-width: 0;
+  box-shadow: var(--surface-hl);
 }
 
 .tools-grid {
@@ -943,6 +972,11 @@ body {
 }
 
 .tool-btn:hover::after { opacity: 1; }
+
+.tool-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 
 .tool-btn.t-checklist:hover  { border-color: rgba(108,99,255,.4); }
 .tool-btn.t-tarefas:hover    { border-color: rgba(61,220,132,.35); }
@@ -1016,12 +1050,17 @@ body {
   position: relative;
   overflow: hidden;
   cursor: default;
-  transition: border-color .2s ease, transform .2s ease;
+  box-shadow: var(--surface-hl);
+  transition: border-color .2s ease;
 }
 
+/* Cards de estatística são apenas leitura (cursor:default) — o
+   hover não sobe mais (translateY), só reforça a borda + o wash
+   de cor abaixo. "Levantar" no hover é uma affordance de clique;
+   usar isso num elemento não-clicável (mesmo gesto de .tool-btn,
+   que É um botão) confundia o que é ação e o que é apenas dado. */
 .stat-card:hover {
   border-color: var(--border-2);
-  transform: translateY(-2px);
 }
 
 .stat-card::after {
@@ -1115,6 +1154,7 @@ body {
   border-radius: var(--r-lg);
   padding: var(--card-pad);
   min-width: 0;
+  box-shadow: var(--surface-hl);
 }
 
 .perf-list {
@@ -1194,6 +1234,7 @@ body {
   border-radius: var(--r-lg);
   padding: var(--card-pad);
   min-width: 0;
+  box-shadow: var(--surface-hl);
 }
 
 .timeline {
@@ -1318,6 +1359,7 @@ body {
   border-radius: var(--r-lg);
   padding: var(--card-pad);
   min-width: 0;
+  box-shadow: var(--surface-hl);
 }
 
 .disc-grid {
@@ -1454,6 +1496,7 @@ body {
   flex-direction: column;
   gap: 28px;
   min-width: 0;
+  box-shadow: var(--surface-hl);
 }
 /* padding/gap responsivos de .nav-section-wrap: ver bloco único em
    @media (max-width: 900px), mais abaixo neste arquivo — cobre esta

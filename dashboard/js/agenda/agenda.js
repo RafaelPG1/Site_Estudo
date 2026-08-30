@@ -426,12 +426,26 @@ const TEMPLATE_HTML = `
        v-redesign — Arquitetura em 2 colunas (ver agenda.css,
        bloco ".agenda-modal-session"): uma coluna principal com o
        fluxo de preenchimento (Quando → Horário → Conteúdo) e uma
-       coluna lateral de metadados (Agora/Cor/Resumo), no espírito
+       coluna lateral de metadados (Cor/Resumo), no espírito
        de painéis de propriedades de apps como Linear/Notion.
        Nenhum campo, botão ou informação foi removido — só
        reorganizados. Todos os IDs são os mesmos que
        agenda_interactions.js já lê/escuta, então nenhuma lógica
-       precisou mudar, só a casca visual. -->
+       precisou mudar, só a casca visual.
+
+       v-refino-espaçamento — passo seguinte, só de CSS (ver
+       agenda.css): os campos estavam "colados" porque cada
+       <section class="agenda-sec"> não tinha um sistema de
+       espaçamento interno — o respiro entre label/input/grupo
+       dependia de margins soltas (ou nem existia, caso do
+       "Conteúdo", onde os dois .agenda-form-group ficavam a 0px
+       de distância). Agora cada .agenda-sec é um flex column com
+       um único gap que rege header→conteúdo e campo→campo de
+       forma consistente, e o bloco "Resumo da sessão" ganhou um
+       divisor sob o título + separadores finos entre linhas para
+       parecer um cartão de resumo de verdade, não mais um input
+       solto. HTML praticamente idêntico — só o "Ver semana" saiu
+       do card "Semana atual" (ver abaixo). -->
   <div class="agenda-modal-overlay" id="agenda-modal-session" aria-hidden="true">
     <div class="agenda-modal agenda-modal-session" role="dialog" aria-modal="true">
       <div class="agenda-modal-header">
@@ -457,9 +471,11 @@ const TEMPLATE_HTML = `
            coluna lateral para só metadados de fato editáveis/vivos
            (Cor do cartão / Resumo). Preenchido por
            renderNowContextCard() em agenda_interactions.js; os IDs
-           de Hoje/Agora são os mesmos de antes. "Ver semana" navega
-           o grid principal para a semana real atual e fecha o modal
-           (goToCurrentWeekFromModal(), mesmo helper de goToToday()). -->
+           de Hoje/Agora são os mesmos de antes. O card "Semana atual"
+           é puramente informativo (o link "Ver semana" foi removido
+           a pedido do usuário, junto do helper goToCurrentWeekFromModal()
+           em agenda_interactions.js — goToToday() continua existindo
+           e sendo usado normalmente em outros pontos da Agenda). -->
       <div class="agenda-context-strip">
         <div class="agenda-context-card">
           <span class="agenda-context-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>
@@ -482,7 +498,6 @@ const TEMPLATE_HTML = `
           <div class="agenda-context-card-body">
             <span class="agenda-context-card-label">Semana atual</span>
             <span class="agenda-context-card-value" id="agenda-context-week-range">—</span>
-            <button type="button" class="agenda-context-card-link" id="agenda-context-view-week-btn">Ver semana ›</button>
           </div>
         </div>
       </div>

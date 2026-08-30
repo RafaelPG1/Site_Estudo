@@ -89,6 +89,24 @@
   min-width: 0;
 }
 
+/* ── ACESSIBILIDADE — pass de consistência com Tarefas/Agenda ──
+   Nenhuma das três áreas tinha prefers-reduced-motion nem foco
+   visível em todos os elementos clicáveis. Adicionado aqui sem
+   alterar nenhuma cor, timing padrão ou classe usada pelo JS. */
+@media (prefers-reduced-motion: reduce) {
+  .view-checklist *,
+  .view-checklist *::before,
+  .view-checklist *::after {
+    animation-duration: .001ms !important;
+    transition-duration: .001ms !important;
+  }
+}
+.view-checklist :focus-visible {
+  outline: 2px solid var(--accent-lite);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
 /* ── Carregando ── */
 .checklist-loading {
   padding: 40px 0;

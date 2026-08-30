@@ -1205,17 +1205,6 @@ function goToToday() {
   persistirEstadoUIAgenda();
 }
 
-/* Link "Ver semana ›" do card de contexto "Semana atual" (modal Novo
-   estudo) — leva o grid principal para a semana real de hoje (mesmo
-   destino de goToToday()) e fecha o modal, trocando também para a
-   aba Agenda caso o modal tenha sido aberto a partir de Metas/
-   Estatísticas (o botão "Novo estudo" fica visível nas 3 abas). */
-function goToCurrentWeekFromModal() {
-  switchTab('agenda');
-  goToToday();
-  closeSessionModal();
-}
-
 function toggleWeekMenu(forceClose) {
   const menu = document.getElementById('agenda-week-menu');
   if (forceClose) { menu.classList.remove('open'); return; }
@@ -1313,7 +1302,6 @@ export function initAgendaEventListeners() {
   document.getElementById('agenda-btn-cancel').addEventListener('click', closeSessionModal);
   document.getElementById('agenda-btn-save').addEventListener('click', saveSession);
   document.getElementById('agenda-btn-delete').addEventListener('click', deleteSession);
-  document.getElementById('agenda-context-view-week-btn').addEventListener('click', goToCurrentWeekFromModal);
 
   document.getElementById('agenda-input-time').addEventListener('change', updateDurationSuggestion);
   document.getElementById('agenda-input-time-end').addEventListener('input', hideDurationHint);

@@ -11,6 +11,21 @@
   min-width: 0;
 }
 
+/* ── ACESSIBILIDADE — mesmo pass aplicado em checklist.css/agenda.css ── */
+@media (prefers-reduced-motion: reduce) {
+  .view-tarefas *,
+  .view-tarefas *::before,
+  .view-tarefas *::after {
+    animation-duration: .001ms !important;
+    transition-duration: .001ms !important;
+  }
+}
+.view-tarefas :focus-visible {
+  outline: 2px solid var(--accent-lite);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
 .tarefa-loading {
   padding: 40px 0;
   text-align: center;
@@ -117,6 +132,7 @@
 .tarefa-lista-block {
   background: var(--surface);
   border: 1px solid var(--border);
+  border-left: 3px solid var(--border-2);
   border-radius: 18px;
   overflow: hidden;
   box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px -16px rgba(0,0,0,.28);
@@ -124,6 +140,22 @@
   min-width: 0;
 }
 .tarefa-lista-block:hover { border-color: var(--border-2); }
+
+/* ── Identidade de Tarefas vs. Checklist ──────────────────────────
+   Checklist é só leitura/progresso (accordion neutro). Tarefas é
+   onde o usuário cria/edita/decide o que fazer agora — por isso,
+   diferente do Checklist, cada lista aqui ganha uma barra de acento
+   à esquerda de acordo com o mesmo status já exibido em
+   .tarefa-lista-status (concluída/andamento/não iniciada), o mesmo
+   princípio de sinalização já usado em .trend-melhorando/.trend-
+   piorando (dashboard_cards.css). Permite escanear o painel inteiro
+   sem ler nenhum texto: cor da borda = onde focar. Nenhuma cor nova
+   — reaproveita --green/--blue/--border-2 já usados nos badges de
+   status logo abaixo. */
+.tarefa-lista-block:has(.status-concluida)    { border-left-color: var(--green, #3DDC84); }
+.tarefa-lista-block:has(.status-andamento)    { border-left-color: var(--blue, #4FA8E8); }
+.tarefa-lista-block:has(.status-nao-iniciada) { border-left-color: var(--border-2); }
+.tarefa-lista-block:has(.status-sem-itens)    { border-left-color: var(--border-2); }
 
 /* Diferente do Checklist (cujo header inteiro é um único <button>,
    já que não há ações de CRUD), aqui o header precisa comportar os
@@ -474,8 +506,17 @@
   opacity: 0;
   transition: opacity .15s ease;
 }
-.tarefa-item:hover .tarefa-item-acoes { opacity: 1; }
+.tarefa-item:hover .tarefa-item-acoes,
+.tarefa-item:focus-within .tarefa-item-acoes { opacity: 1; }
 .tarefa-item-acoes .tarefa-icon-btn { padding: 5px 6px; }
+
+/* Em ponteiros que não suportam hover de verdade (touch), esconder
+   as ações atrás do hover as torna inacessíveis — o dedo nunca
+   "paira". Mantém o reveal-on-hover discreto no desktop (mouse) e
+   deixa as ações sempre visíveis quando o dispositivo é touch. */
+@media (hover: none) {
+  .tarefa-item-acoes { opacity: 1; }
+}
 
 /* Mesmos breakpoints do Checklist (768px/480px), mesmos ajustes:
    padding do header reduzido, barra de progresso sem largura

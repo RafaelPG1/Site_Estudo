@@ -141,6 +141,35 @@
    espaço calculado pelo flexbox, então o comportamento é
    correto com qualquer quantidade de disciplinas e qualquer
    altura do card vizinho.
+   ═══════════════════════════════════════════════════════════
+
+   ─────────────────────────────────────────────
+   REDESIGN VISUAL — HIERARQUIA DA CAMADA 5
+   ─────────────────────────────────────────────
+   Score, Tendência e Previsão tinham exatamente o mesmo peso
+   visual (mesmo glow radial ::before nos três, mesmo padding,
+   mesma borda) — mas Score Evolutivo é a métrica-mãe do
+   dashboard (0-100, resume tudo). Sem nenhuma hierarquia entre
+   os três, nada dizia visualmente "comece por aqui".
+
+   Mudanças (só no bloco "Família" no fim do arquivo, que é
+   quem realmente vence a cascata — ver nota original acima):
+     · O glow ::before (radial-gradient roxo) deixou de ser
+       aplicado em .trend-card/.prediction-card e ficou
+       exclusivo de .score-card, com opacidade levemente maior
+       — reforça o Score como o card "âncora" da linha.
+     · .score-card ganhou uma barra de acento de 2px no topo
+       (::after), o mesmo tipo de sinal visual que os estados
+       de Tendência/Comparação já usam (border-left 3px) —
+       aqui aplicado ao card que sempre está "ativo", não só
+       a um estado condicional.
+     · Highlight interno de 1px (--surface-hl, definido em
+       dashboard.css) adicionado aos três cards + Comparação +
+       Fraquezas, para bater com a mesma profundidade sutil
+       aplicada aos cards estruturais do resto do dashboard.
+   Nenhuma cor nova, nenhum layout, nenhuma classe de estado
+   (.score-nivel-*, .trend-melhorando etc.) foi alterada —
+   todas continuam funcionando exatamente como antes.
    ═══════════════════════════════════════════════════════════ */
 
 
@@ -837,6 +866,7 @@
   gap: 16px;
   min-width: 0;
   transition: border-color .2s ease;
+  box-shadow: var(--surface-hl);
 }
 
 .comparison-card:hover {
@@ -984,6 +1014,7 @@
   padding: 8px 0;
   min-width: 0;
   transition: border-color .2s ease;
+  box-shadow: var(--surface-hl);
 }
 .weaknesses-card:hover { border-color: var(--border-2); }
 
@@ -1502,6 +1533,19 @@
    de .prediction-card é o definido aqui, não o do bloco
    "Fase 2.5"). Esse comportamento é o mesmo da versão
    original e foi mantido sem alteração.
+
+   REDESIGN — a única mudança de fundo neste bloco é a
+   hierarquia entre os três cards: o glow ::before (que
+   antes era idêntico nos três) agora é exclusivo do Score
+   Evolutivo — a métrica-mãe da Camada 5 — e ganhou uma
+   barra de acento no topo (::after) para reforçar esse
+   papel de "card âncora" da linha. Tendência e Previsão
+   mantêm toda a sua própria linguagem de estado (cor de
+   borda esquerda / ícone / número conforme melhorando,
+   estável, piorando etc.) — nada nisso mudou. Os três
+   ganharam também o highlight interno --surface-hl, para
+   bater com a mesma profundidade sutil usada nos cards
+   estruturais do resto do dashboard.
    ═══════════════════════════════════════════════════════════ */
 
 /* ── Estrutura (sobrescreve parte da Estrutura individual — ver nota acima) ── */
@@ -1518,18 +1562,39 @@
   position: relative;
   overflow: hidden;
   transition: border-color .2s ease;
+  box-shadow: var(--surface-hl);
 }
 
 .score-card:hover, .trend-card:hover, .prediction-card:hover {
   border-color: var(--border-2);
 }
 
-.score-card::before, .trend-card::before, .prediction-card::before {
+/* Glow radial — exclusivo do Score Evolutivo (ver nota acima).
+   Levemente mais forte que o glow genérico que existia antes nos
+   três cards, já que agora precisa carregar sozinho o papel de
+   "isto é o card principal". */
+.score-card::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 10% 0%, rgba(108,99,255,.07) 0%, transparent 60%);
+  background: radial-gradient(ellipse at 10% 0%, rgba(108,99,255,.10) 0%, transparent 60%);
   pointer-events: none;
+}
+
+/* Barra de acento no topo — sinal constante (não depende de estado)
+   de que o Score é o card âncora da linha. clip pelo overflow:hidden
+   já existente em .score-card, então respeita o border-radius. */
+.score-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-lite) 60%, transparent 100%);
+  pointer-events: none;
+}
+
+.score-vazio::after {
+  background: var(--border-2);
 }
 
 /* ── Cabeçalho: ícone + badge ── */
