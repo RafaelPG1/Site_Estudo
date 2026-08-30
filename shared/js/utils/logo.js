@@ -1,9 +1,11 @@
 /* ============================================================
-   NEXUS STUDY — shared/js/utils/logo.js  (v2.1)
+   NEXUS STUDY — shared/js/utils/logo.js  (v2.2)
    ============================================================ */
 
 import { playSound as _playSound } from '../audio/audio-api.js';
-import "./zoom.js";
+import { getAreaFromPath } from './zoom.js';
+export { getAreaFromPath };
+
 /* ── Caminho da imagem resolvido uma vez, relativo ao logo.js ── */
 const _LOGO_SRC = new URL('../../img/logo.png', import.meta.url).href;
 
@@ -21,22 +23,6 @@ function _hrefRaiz() {
   
   const raiz = '/' + partes.slice(0, idx).join('/') + '/';
   return raiz + 'index.html';
-}
-
-/* ── Mapa de área por pathname ──────────────────────────────── */
-const _AREA_MAP = [
-  { match: /\/quiz\//,         area: 'quiz'    },
-  { match: /\/resumo\//,       area: 'resumos' },
-  { match: /\/games?\//,       area: 'game'    },
-  { match: /\/pessoal\//, area: 'perfil' },
-  { match: /\/admin\//,        area: 'inicial' },
-];
-
-export function getAreaFromPath(path = window.location.pathname) {
-  for (const { match, area } of _AREA_MAP) {
-    if (match.test(path)) return area;
-  }
-  return 'inicial';
 }
 
 /* ── API pública ─────────────────────────────────────────────── */
@@ -96,4 +82,3 @@ if (!destino) {
   container.appendChild(wrap);
   return wrap;
 }
-

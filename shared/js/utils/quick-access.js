@@ -115,7 +115,7 @@
       label: 'Pessoal',
       title: 'Pessoal',
       href:  `${BASE_URL}/dashboard/dashboard.html`,
-      match: /\/pessoal\//,
+      match: /\/dashboard\//,
     },
   ];
 
