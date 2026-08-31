@@ -37,12 +37,8 @@ import {
   audio,
   installAudioRecovery,
   playSound,
-  mountMusicBtn,
-  getMusicMode,
   getSfxBtnEnabled,
   setSfxBtnEnabled,
-  getMusicBtnEnabled,
-  setMusicBtnEnabled,
 } from './shared/js/audio/audio-api.js';
 
 /* NAVIGATION ANALYTICS — importa o tracker para garantir que
@@ -113,7 +109,6 @@ async function init() {
     }
 
     Sound.init();
-    mountMusicBtn();
     installAudioRecovery({ Sound, audio });
 
     injetarLogo('#header-logo-wrap');
@@ -158,34 +153,10 @@ async function init() {
 
     preencherAnos(['footer-year']);
 
-    _iniciarMusicaMenu();
-
   } catch (err) {
     console.error('[init] Erro crítico na inicialização:', err);
     try { _refreshHeader(); } catch (_) {}
   }
-}
-
-/* Inicia a BGM da página inicial e mantém um watchdog para retomá-la */
-function _iniciarMusicaMenu() {
-  function _tryStart() {
-    if (!audio.isUnlocked()) return;
-    if (audio.music.currentId() === 'music-menu') return;
-    if ((getMusicMode() ?? 'normal') === 'mute') return;
-    audio.music.menu();
-  }
-
-  _tryStart();
-  document.addEventListener('nexus:audioUnlocked', _tryStart, { once: true });
-
-  const watchdog = setInterval(() => {
-    if (document.hidden || !audio.isUnlocked()) return;
-    if (audio.music.currentId() !== 'music-menu' && (getMusicMode() ?? 'normal') !== 'mute') {
-      audio.music.menu();
-    }
-  }, 30_000);
-
-  window.addEventListener('pagehide', () => clearInterval(watchdog), { once: true });
 }
 
 if (document.readyState === 'loading') {
@@ -689,24 +660,10 @@ function _abrirModalConfig() {
           </div>
 
           <div class="config-row">
-            <label for="cfg-music-enabled">
-              Música de fundo
-              <small class="config-label-hint">
-                Trilhas sonoras ambiente. Quando desativado, a música para
-                e o botão flutuante de música é ocultado.
-              </small>
-            </label>
-            <label class="toggle">
-              <input type="checkbox" id="cfg-music-enabled" ${getMusicBtnEnabled() ? 'checked' : ''} />
-              <span class="toggle__track"></span>
-            </label>
-          </div>
-
-          <div class="config-row">
             <label>
               Configurações de Som
               <small class="config-label-hint">
-                Ajuste volumes, variantes de SFX e trilhas sonoras.
+                Ajuste o volume e as variantes de SFX.
               </small>
             </label>
             <button class="modal-btn modal-btn--ghost" id="btn-abrir-audio">
@@ -741,7 +698,6 @@ function _abrirModalConfig() {
       animacoes:       modal.querySelector('#cfg-anim').checked,
       notificacoes:    modal.querySelector('#cfg-notif').checked,
       sfxBtnEnabled:   modal.querySelector('#cfg-sfx-enabled').checked,
-      musicBtnEnabled: modal.querySelector('#cfg-music-enabled').checked,
     };
   }
 
@@ -760,13 +716,6 @@ function _abrirModalConfig() {
     setSfxBtnEnabled(this.checked);
     setConfigs({ sfxBtnEnabled: this.checked });
     if (this.checked) playSound('click', 'inicial');
-  });
-
-  /* Música — controla visibilidade do botão flutuante */
-  modal.querySelector('#cfg-music-enabled').addEventListener('change', function () {
-    setMusicBtnEnabled(this.checked);
-    setConfigs({ musicBtnEnabled: this.checked });
-    playSound('click', 'inicial');
   });
 
   /* Fechar com toast se houve alterações */

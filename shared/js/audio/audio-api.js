@@ -12,8 +12,6 @@
    ─────────────────────────────────────────────
    import { audio, audioState, playSound, Sound,
             mountAudioBtn, destroyAudioBtn,
-            mountMusicBtn, destroyMusicBtn,
-            setMusicMode, getMusicMode,
             installAudioRecovery }
      from './audio/audio-api.js';
    ============================================= */
@@ -26,26 +24,16 @@ export { playSound }                   from './engine/play.js';
 // Estado
 export { default as audioState }      from './state/audio-state.js';
 
-// UI — botões flutuantes (SFX + Música unificados)
+// UI — botão flutuante (SFX)
 export { default as Sound }            from './ui/sound.js';
 export { default as makeVolumeSlider } from './ui/vol-slider.js';
 export {
   mountAudioBtn,
   destroyAudioBtn,
-  mountMusicBtn,
-  destroyMusicBtn,
-  getMusicMode,
-  setMusicMode,
-  subscribeMusicMode,
-  unsubscribeMusicMode,
   getSfxBtnEnabled,
   setSfxBtnEnabled,
   subscribeSfxBtnEnabled,
   unsubscribeSfxBtnEnabled,
-  getMusicBtnEnabled,
-  setMusicBtnEnabled,
-  subscribeMusicBtnEnabled,
-  unsubscribeMusicBtnEnabled,
 } from './ui/audio-btns.js';
 
 // Recovery

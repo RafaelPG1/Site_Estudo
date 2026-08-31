@@ -12,15 +12,14 @@
 
    DIVISÃO INTERNA
    ─────────────────────────────────────────────
-   sfx-core.js    → AudioContext, gain nodes, primitivas,
-                    BGM engine, API pública
-   sfx-catalog.js → Todos os sons SFX + BGM
+   sfx-core.js    → AudioContext, gain nodes, primitivas, API pública
+   sfx-catalog.js → Todos os sons SFX
    ============================================= */
 
 import audio from './sfx-core.js';
 import { catalog } from './sfx-catalog.js';
 
-// Registra o catálogo no core e constrói os Proxies de sfx / music / playEvent
+// Registra o catálogo no core e constrói o Proxy de sfx / playEvent
 audio.init(catalog);
 
 export { catalog };

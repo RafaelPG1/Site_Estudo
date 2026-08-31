@@ -49,8 +49,6 @@ export function installAudioRecovery({ Sound, audio }) {
     Sound.reinit();
     // Reinstala o listener de gesto — o resume ocorrerá no próximo gesto real.
     audio.resumeCtx();
-    // Agenda a retomada da música para depois do primeiro gesto.
-    _scheduleResumeMusicOnGesture(audio);
   });
 
   /* ── 2. Visibilidade — aba voltando ao foco ──────────────
@@ -74,35 +72,4 @@ export function installAudioRecovery({ Sound, audio }) {
   window.addEventListener('focus', () => {
     if (!audio.isUnlocked()) audio.resumeCtx();
   });
-
-  /* ── 5. Unlock via nexus:audioUnlocked ──────────────────
-     Quando o ctx finalmente desbloquear (pelo gesto real),
-     retoma a última música salva.
-  ────────────────────────────────────────────────────────── */
-  document.addEventListener('nexus:audioUnlocked', () => {
-    _resumeLastTrack(audio);
-  }, { once: true });
-}
-
-/**
- * Agenda a retomada da música para o próximo evento nexus:audioUnlocked.
- * Chamado após bfcache restore, onde o ctx ainda está suspended.
- */
-function _scheduleResumeMusicOnGesture(audio) {
-  document.addEventListener('nexus:audioUnlocked', () => {
-    _resumeLastTrack(audio);
-  }, { once: true });
-}
-
-/**
- * Retoma a última faixa salva no localStorage, se houver.
- */
-function _resumeLastTrack(audio) {
-  try {
-    const track = localStorage.getItem('nexus_last_track');
-    const mode  = localStorage.getItem('nexus_music_mode') || 'normal';
-    if (track && mode !== 'mute') {
-      audio.music[track]?.();
-    }
-  } catch (_) {}
 }

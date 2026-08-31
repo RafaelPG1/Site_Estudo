@@ -5,9 +5,8 @@
    ─────────────────────────────────────────────
    Responsabilidades:
    ✅ AudioContext (criação, resume, warmup)
-   ✅ Gain nodes por canal (master / sfx / music)
+   ✅ Gain nodes por canal (master / sfx)
    ✅ Primitivas de som (_tone, _seq)
-   ✅ BGM engine (_bgmEngine)
    ✅ API pública (export default audio)
    ✅ Catálogo via sfx-catalog.js (injetado em init)
 
@@ -25,7 +24,6 @@ const _DEFAULT_SFX_STATE = {
   muted:        false,
   masterVolume: 1.0,
   sfxVolume:    0.5,
-  musicVolume:  0.5,
 };
 
 const _state = { ..._DEFAULT_SFX_STATE };
@@ -95,7 +93,6 @@ function _warmup() {
 
 let _masterGain = null;
 let _sfxGain    = null;
-let _musicGain  = null;
 
 function _getGains() {
   if (!_isCtxReady()) return null;
@@ -103,16 +100,14 @@ function _getGains() {
   if (!_masterGain) {
     _masterGain = _ctx.createGain();
     _sfxGain    = _ctx.createGain();
-    _musicGain  = _ctx.createGain();
 
     _sfxGain.connect(_masterGain);
-    _musicGain.connect(_masterGain);
     _masterGain.connect(_ctx.destination);
 
     _syncGains();
   }
 
-  return { master: _masterGain, sfx: _sfxGain, music: _musicGain };
+  return { master: _masterGain, sfx: _sfxGain };
 }
 
 function _syncGains() {
@@ -120,7 +115,6 @@ function _syncGains() {
   const muted = _state.muted || !_state.enabled;
   _masterGain.gain.value = muted ? 0 : _state.masterVolume;
   _sfxGain.gain.value    = _state.sfxVolume;
-  _musicGain.gain.value  = _state.musicVolume;
 }
 
 // Cria o AudioContext imediatamente.
@@ -198,79 +192,6 @@ export function isCtxReady() { return _isCtxReady(); }
 export function getState()   { return _state; }
 
 /* ═══════════════════════════════════════════════
-   5. SISTEMA DE MÚSICA / BGM
-═══════════════════════════════════════════════ */
-
-let _currentBgm = null;
-
-export const bgmEngine = {
-  stop(fadeTime = 0.5) {
-    if (!_currentBgm) return;
-    const { nodes } = _currentBgm;
-
-    if (fadeTime > 0 && _musicGain && _isCtxReady()) {
-      const t = _ctx.currentTime;
-      _musicGain.gain.setValueAtTime(_musicGain.gain.value, t);
-      _musicGain.gain.linearRampToValueAtTime(0, t + fadeTime);
-      setTimeout(() => {
-        nodes.forEach(n => { try { n.stop(); } catch (_) {} });
-        _musicGain.gain.value = _state.musicVolume;
-        _currentBgm = null;
-        try { localStorage.removeItem('nexus_last_track'); } catch (_) {}
-      }, fadeTime * 1000 + 50);
-    } else {
-      nodes.forEach(n => { try { n.stop(); } catch (_) {} });
-      _currentBgm = null;
-      try { localStorage.removeItem('nexus_last_track'); } catch (_) {}
-    }
-  },
-
-play(id, buildFn) {
-  if (!_state.enabled || _state.muted) return;
-  if (!_isCtxReady()) return;
-  if (_currentBgm?.id === id) return;
-
-  this.stop(0.3);
-
-  setTimeout(() => {
-    if (!_isCtxReady()) return;
-    _getGains();
-    const nodes = buildFn(_ctx, _musicGain);
-    _currentBgm = { id, nodes: Array.isArray(nodes) ? nodes : [nodes] };
-    try { localStorage.setItem('nexus_last_track', id); } catch (_) {}
-  }, _currentBgm ? 350 : 0);
-},
-
-  playUrl(id, url) {
-    if (!_state.enabled || _state.muted) return;
-    if (_currentBgm?.id === id) return;
-
-    this.stop(0.3);
-
-    setTimeout(() => {
-      const el = new Audio(url);
-      el.loop   = true;
-      el.volume = _state.musicVolume * _state.masterVolume;
-      el.play().catch(() => {});
-
-      _currentBgm = {
-        id,
-        nodes: [],
-        _el: el,
-        stop: () => { el.pause(); el.currentTime = 0; },
-      };
-    }, _currentBgm ? 350 : 0);
-  },
-
-  currentId() {
-    return _currentBgm?.id ?? null;
-  },
-
-  // Expõe _currentBgm para uso interno do catálogo de BGM
-  getCurrent() { return _currentBgm; },
-};
-
-/* ═══════════════════════════════════════════════
    9. API PRINCIPAL (export default)
    Montada após o catálogo ser registrado via
    audio.init(catalog) — chamado por sfx.js.
@@ -281,7 +202,6 @@ const audio = {
   catalog: [],
 
   sfx: null,    // Proxy preenchido em init()
-  music: null,  // Proxy preenchido em init()
 
   /**
    * Registra o catálogo e constrói os Proxies de acesso.
@@ -298,25 +218,6 @@ const audio = {
     this.sfx = new Proxy({}, {
       get(_, id) {
         const entry = _sfxMap[id];
-        if (entry) return () => entry.fn.call(entry);
-        return undefined;
-      },
-    });
-
-    // Índice Music
-    const _musicMap = {};
-    catalog.filter(e => e.type === 'music').forEach(e => { _musicMap[e.id] = e; });
-
-    this.music = new Proxy({
-      stop:      (fade) => bgmEngine.stop(fade),
-      currentId: ()     => bgmEngine.currentId(),
-    }, {
-      get(target, key) {
-        if (key in target) return target[key];
-        const entry =
-          _musicMap[key] ||
-          _musicMap[`music-${key}`] ||
-          Object.values(_musicMap).find(e => e.label === key);
         if (entry) return () => entry.fn.call(entry);
         return undefined;
       },
@@ -352,9 +253,6 @@ const audio = {
   setMasterVolume(val) {
     _state.masterVolume = Math.min(1.5, Math.max(0, Number(val) || 0));
     _syncGains();
-    if (_currentBgm?._el) {
-      _currentBgm._el.volume = Math.min(1, _state.musicVolume * _state.masterVolume);
-    }
   },
 
   setSfxVolume(val) {
@@ -362,17 +260,8 @@ const audio = {
     _syncGains();
   },
 
-  setMusicVolume(val) {
-    _state.musicVolume = Math.min(1.5, Math.max(0, Number(val) || 0));
-    _syncGains();
-    if (_currentBgm?._el) {
-      _currentBgm._el.volume = Math.min(1, _state.musicVolume * _state.masterVolume);
-    }
-  },
-
   getMasterVolume() { return _state.masterVolume; },
   getSfxVolume()    { return _state.sfxVolume; },
-  getMusicVolume()  { return _state.musicVolume; },
 
   setEnabled(bool) {
     _state.enabled = !!bool;
@@ -393,7 +282,7 @@ const audio = {
 
   isMuted() { return _state.muted; },
 
-  stopAll() { bgmEngine.stop(0); },
+  stopAll() {},
 
   fadeOut(duration = 1) {
     if (!_masterGain || !_isCtxReady()) return;
@@ -430,7 +319,6 @@ const audio = {
   resumeCtx() {
     _masterGain = null;
     _sfxGain    = null;
-    _musicGain  = null;
     _installResumeListener();
   },
 

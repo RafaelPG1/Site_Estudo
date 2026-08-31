@@ -1,10 +1,7 @@
 /* =============================================
-   audio-btns.css — PATCH pilha-botoes
+   audio-btns.css — botão flutuante SFX
    
-   Pilha de baixo pra cima:
-     24px  → IA (nexus-fab)        44px de altura
-     90px  → SFX (audio-btn)       44px de altura  (24 + 44 + 22 gap)
-     152px → Música (music-btn)    44px de altura  (90 + 44 + 18 gap)
+   Posição: 90px do fundo (24 + 44 + 22 gap acima do FAB da IA)
    ============================================= */
 
 
@@ -179,72 +176,7 @@
 
 
 /* ═══════════════════════════════════════════════
-   SEÇÃO 3 — BOTÃO MÚSICA
-   Fórmula: bottom SFX (90) + altura .abtn (44) + gap (18) = 152px
-═══════════════════════════════════════════════ */
-
-#music-btn-global {
-  bottom: 152px;
-  right: 28px;
-}
-
-.mbtn::after {
-  content: 'música';
-  position: absolute;
-  right: calc(100% + 10px);
-  top: 50%;
-  transform: translateY(-50%) translateX(4px);
-  background: rgba(0, 16, 28, 0.92);
-  border: 1px solid rgba(255, 190, 60, 0.3);
-  border-radius: 6px;
-  padding: 4px 8px;
-  font-size: 10px;
-  font-family: inherit;
-  color: rgba(255, 200, 80, 0.88);
-  white-space: nowrap;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-  letter-spacing: 0.04em;
-}
-
-.mbtn:hover::after {
-  opacity: 1;
-  transform: translateY(-50%) translateX(0);
-}
-
-body:has(#music-btn-global) #audio-btn-global::after {
-  content: 'efeitos';
-  position: absolute;
-  right: calc(100% + 10px);
-  top: 50%;
-  transform: translateY(-50%) translateX(4px);
-  background: rgba(0, 16, 28, 0.92);
-  border: 1px solid rgba(0, 200, 255, 0.25);
-  border-radius: 6px;
-  padding: 4px 8px;
-  font-size: 10px;
-  font-family: inherit;
-  color: rgba(0, 210, 255, 0.85);
-  white-space: nowrap;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-  letter-spacing: 0.04em;
-}
-
-body:has(#music-btn-global) #audio-btn-global:hover::after {
-  opacity: 1;
-  transform: translateY(-50%) translateX(0);
-}
-
-
-/* ═══════════════════════════════════════════════
-   SEÇÃO 4 — RESPONSIVE
-   Fórmula mobile: base 16px
-     SFX    → 16px  (base)           ← .abtn
-     Música → 16 + 44 + 14 = 74px   ← #music-btn-global
-   IA FAB permanece em 16px no ia.css (mobile).
+   SEÇÃO 3 — RESPONSIVE
 ═══════════════════════════════════════════════ */
 
 @media (max-width: 480px) {
@@ -256,33 +188,5 @@ body:has(#music-btn-global) #audio-btn-global:hover::after {
   #abtn-unlock-hint {
     bottom: 74px;
     right: calc(20px + 44px + 12px);
-  }
-
-  #music-btn-global {
-    bottom: 136px;
-    right: 20px;
-  }
-}
-
-
-/* ═══════════════════════════════════════════════
-   SEÇÃO 5 — REPOSICIONAMENTO QUANDO SFX DESATIVADO
-   ─────────────────────────────────────────────
-   Quando o usuário desativa "Efeitos sonoros" nas
-   Configurações, audio-btns.js remove #audio-btn-global
-   do DOM. O botão de Música (se ativo) desce e ocupa
-   a posição que era do SFX, evitando o "buraco" na pilha.
-
-   Se SFX for reativado, a regra deixa de bater (o elemento
-   volta a existir) e a Música retorna à posição normal (152px).
-═══════════════════════════════════════════════ */
-
-body:not(:has(#audio-btn-global)) #music-btn-global {
-  bottom: 90px;
-}
-
-@media (max-width: 480px) {
-  body:not(:has(#audio-btn-global)) #music-btn-global {
-    bottom: 74px;
   }
 }

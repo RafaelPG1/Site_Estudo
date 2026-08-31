@@ -187,30 +187,13 @@ let _currentMode = (() => {
   } catch { return AUDIO_DEFAULTS.sfxMode; }
 })();
 
-const VALID_MUSIC_MODES = ['normal', 'mute', 'low'];
-let _currentMusicMode = (() => {
-  try { return localStorage.getItem('nexus_music_mode') || AUDIO_DEFAULTS.musicMode; } catch { return AUDIO_DEFAULTS.musicMode; }
-})();
-if (!VALID_MUSIC_MODES.includes(_currentMusicMode)) _currentMusicMode = AUDIO_DEFAULTS.musicMode;
-
-const _musicModeSubscribers = new Set();
-
-function _notifyMusicMode() {
-  for (const fn of _musicModeSubscribers) {
-    try { fn(_currentMusicMode); } catch (err) {
-      console.warn('[audio-state] musicMode subscriber error:', err);
-    }
-  }
-}
-
 /* ═══════════════════════════════════════════════
-   2a-bis. VISIBILIDADE DOS BOTÕES FLUTUANTES (SFX / MÚSICA)
+   2a-bis. VISIBILIDADE DO BOTÃO FLUTUANTE (SFX)
    ─────────────────────────────────────────────
    Controla se o botão flutuante aparece na tela e se o
    canal correspondente fica audível.
 
-   - SFX desativado    → botão some + audio.mute() (via _applyToEngine)
-   - Música desativada → botão some + audio.setMusicVolume(0)
+   - SFX desativado → botão some + audio.mute() (via _applyToEngine)
 
    Persistido apenas em localStorage (preferência local de UI,
    não sincronizada via Firebase).
@@ -223,28 +206,12 @@ let _sfxBtnEnabled = (() => {
   } catch { return AUDIO_DEFAULTS.sfxBtnEnabled; }
 })();
 
-let _musicBtnEnabled = (() => {
-  try {
-    const v = localStorage.getItem('nexus_music_btn_enabled');
-    return v === null ? AUDIO_DEFAULTS.musicBtnEnabled : v === 'true';
-  } catch { return AUDIO_DEFAULTS.musicBtnEnabled; }
-})();
-
-const _sfxBtnSubscribers   = new Set();
-const _musicBtnSubscribers = new Set();
+const _sfxBtnSubscribers = new Set();
 
 function _notifySfxBtnEnabled() {
   for (const fn of _sfxBtnSubscribers) {
     try { fn(_sfxBtnEnabled); } catch (err) {
       console.warn('[audio-state] sfxBtnEnabled subscriber error:', err);
-    }
-  }
-}
-
-function _notifyMusicBtnEnabled() {
-  for (const fn of _musicBtnSubscribers) {
-    try { fn(_musicBtnEnabled); } catch (err) {
-      console.warn('[audio-state] musicBtnEnabled subscriber error:', err);
     }
   }
 }
@@ -280,19 +247,9 @@ function _notify() {
 /* ═══════════════════════════════════════════════
    4. APLICAÇÃO NO sfx.js
 
-   REGRA FUNDAMENTAL:
-   _applyToEngine NÃO toca em musicVolume.
-   O volume de música é controlado EXCLUSIVAMENTE pelo botão de música
-   (audio-btns.js) via _musicApplyToEngine → audio.setMusicVolume().
-
-   Se _applyToEngine sobrescrevesse musicVolume, um loginSuccess ou
-   qualquer mudança no modo SFX resetaria o volume da música para
-   _volumes.music, ignorando o modo do botão (LOW = 0.25, MUTE = 0).
-
    Volumes por canal:
      master → controlado pelo modo SFX (normal/low/mute)
      sfx    → controlado pelo slider de SFX no modal
-     music  → controlado pelo botão de música (audio-btns.js)
 ═══════════════════════════════════════════════ */
 
 function _applyToEngine(modeId) {
@@ -308,8 +265,6 @@ function _applyToEngine(modeId) {
   }
   // SFX volume — controlado pelo slider
   audio.setSfxVolume?.(_volumes.sfx);
-  // NOTA: audio.setMusicVolume NÃO é chamado aqui.
-  // O botão de música (audio-btns.js) é o único responsável pelo canal music.
   _dbg('_applyToEngine mode:', modeId, '| master:', _volumes.master, '| sfx:', _volumes.sfx, '| sfxBtnEnabled:', _sfxBtnEnabled);
 }
 
@@ -321,17 +276,10 @@ function _applyToEngine(modeId) {
  * Aplica estado carregado do Firebase ao estado em memória e na engine.
  *
  * IMPORTANTE: NÃO chama audio.resetToDefaults().
- * Os volumes e modos são aplicados individualmente para não sobrescrever
- * o estado do canal de música (controlado pelo botão de música).
+ * Os volumes e modos são aplicados individualmente.
  */
 function _applyLoadedState(saved) {
   _currentMode = saved.mode ?? DEFAULT_MODE;
-
-  if (saved.musicMode && VALID_MUSIC_MODES.includes(saved.musicMode)) {
-    _currentMusicMode = saved.musicMode;
-    try { localStorage.setItem('nexus_music_mode', _currentMusicMode); } catch { /* noop */ }
-    _notifyMusicMode();
-  }
 
   if (saved.sfxMap) {
     const sanitized = {};
@@ -354,35 +302,25 @@ function _applyLoadedState(saved) {
 
   if (saved.volumes) {
     _volumes.master = typeof saved.volumes.master === 'number' ? saved.volumes.master : 1.0;
-    _volumes.music  = typeof saved.volumes.music  === 'number' ? saved.volumes.music  : 0.5;
     _volumes.sfx    = typeof saved.volumes.sfx    === 'number' ? saved.volumes.sfx    : 0.5;
     _dbg('volumes carregados:', _volumes);
   }
 
-  // Aplica SFX volume diretamente (sem tocar no music — botão de música cuida disso)
+  // Aplica SFX volume diretamente
   audio.setSfxVolume?.(_volumes.sfx);
 
-  // Restaura visibilidade dos botões flutuantes (SFX / Música) se o Firebase tiver os valores.
-  // Sem isso, navegar entre páginas resetava os flags para o default (musicBtnEnabled=false)
-  // porque o loginSuccess bootstrap reconstruía o estado sem esses campos.
+  // Restaura visibilidade do botão flutuante (SFX) se o Firebase tiver o valor.
+  // Sem isso, navegar entre páginas resetava o flag para o default
+  // porque o loginSuccess bootstrap reconstruía o estado sem esse campo.
   if (typeof saved.sfxBtnEnabled === 'boolean') {
     _sfxBtnEnabled = saved.sfxBtnEnabled;
     try { localStorage.setItem('nexus_sfx_btn_enabled', String(_sfxBtnEnabled)); } catch { /* noop */ }
     _notifySfxBtnEnabled();
   }
-  if (typeof saved.musicBtnEnabled === 'boolean') {
-    _musicBtnEnabled = saved.musicBtnEnabled;
-    try { localStorage.setItem('nexus_music_btn_enabled', String(_musicBtnEnabled)); } catch { /* noop */ }
-    _notifyMusicBtnEnabled();
-  }
 
-  // Aplica o modo SFX (master + mute/unmute) mas NÃO sobrescreve music
+  // Aplica o modo SFX (master + mute/unmute)
   _applyToEngine(_currentMode);
   _notify();
-
-  // O musicMode chega via subscribeMusicMode → _musicApplyToEngine em audio-btns.js
-  // _notifyMusicMode() já foi chamado acima quando saved.musicMode existia.
-  // Se não havia musicMode salvo, o botão de música mantém o estado atual (localStorage).
 }
 
 async function _fetchFromFirebase(uid) {
@@ -391,27 +329,23 @@ async function _fetchFromFirebase(uid) {
     const configs      = await carregarConfigs(uid);
     _perf.firebaseEnd  = performance.now();
     const saved        = configs?.audioState;
-    const savedMusicMode = configs?.musicMode ?? null;
     const savedSfxMap  = configs?.sfxMap     ?? null;
     const savedAreaMap = configs?.sfxAreaMap ?? null;
     const savedVolumes = configs?.volumes    ?? null;
-    const savedSfxBtnEnabled   = typeof configs?.sfxBtnEnabled   === 'boolean' ? configs.sfxBtnEnabled   : null;
-    const savedMusicBtnEnabled = typeof configs?.musicBtnEnabled === 'boolean' ? configs.musicBtnEnabled : null;
+    const savedSfxBtnEnabled = typeof configs?.sfxBtnEnabled === 'boolean' ? configs.sfxBtnEnabled : null;
 
     _dbg('_fetchFromFirebase: uid="' + uid + '" sfxMap=', savedSfxMap, 'sfxAreaMap=', savedAreaMap);
 
     return {
-      mode:            VALID_MODES.includes(saved) ? saved : null,
-      musicMode:       VALID_MUSIC_MODES.includes(savedMusicMode) ? savedMusicMode : null,
-      sfxMap:          savedSfxMap  && typeof savedSfxMap  === 'object' ? savedSfxMap  : null,
-      areaMap:         savedAreaMap && typeof savedAreaMap === 'object' ? savedAreaMap : null,
-      volumes:         savedVolumes && typeof savedVolumes === 'object' ? savedVolumes : null,
-      sfxBtnEnabled:   savedSfxBtnEnabled,
-      musicBtnEnabled: savedMusicBtnEnabled,
+      mode:          VALID_MODES.includes(saved) ? saved : null,
+      sfxMap:        savedSfxMap  && typeof savedSfxMap  === 'object' ? savedSfxMap  : null,
+      areaMap:       savedAreaMap && typeof savedAreaMap === 'object' ? savedAreaMap : null,
+      volumes:       savedVolumes && typeof savedVolumes === 'object' ? savedVolumes : null,
+      sfxBtnEnabled: savedSfxBtnEnabled,
     };
   } catch (err) {
     _dbg('Erro ao carregar Firebase:', err);
-    return { mode: null, sfxMap: null, areaMap: null, sfxBtnEnabled: null, musicBtnEnabled: null };
+    return { mode: null, sfxMap: null, areaMap: null, sfxBtnEnabled: null };
   }
 }
 
@@ -420,24 +354,22 @@ async function _persistAllToFirebaseNow() {
   const uid = _currentUid;
 
   const modeSnap           = _currentMode;
-  const musicModeSnap      = _currentMusicMode;
   const sfxSnap            = { ..._currentSfxMap };
   const areaSnap           = {};
   for (const [k, v] of Object.entries(_currentSfxAreaMap)) areaSnap[k] = { ...v };
   const volSnap            = { ..._volumes };
   const sfxBtnEnabledSnap  = _sfxBtnEnabled;
-  const musicBtnEnabledSnap = _musicBtnEnabled;
 
   try {
     const { getConfigs } = await import('../../../../src/global.js');
     const configsAtuais  = getConfigs();
-    const { audioState: _d1, sfxMap: _d2, sfxAreaMap: _d3, volumes: _d4, musicMode: _d5, sfxBtnEnabled: _d6, musicBtnEnabled: _d7, ...restConfigs } = configsAtuais;
-    const payload = { ...restConfigs, audioState: modeSnap, musicMode: musicModeSnap, sfxMap: sfxSnap, sfxAreaMap: areaSnap, volumes: volSnap, sfxBtnEnabled: sfxBtnEnabledSnap, musicBtnEnabled: musicBtnEnabledSnap };
-    _dbg('persistindo →', modeSnap, musicModeSnap, volSnap, 'sfxBtn:', sfxBtnEnabledSnap, 'musicBtn:', musicBtnEnabledSnap);
+    const { audioState: _d1, sfxMap: _d2, sfxAreaMap: _d3, volumes: _d4, sfxBtnEnabled: _d6, ...restConfigs } = configsAtuais;
+    const payload = { ...restConfigs, audioState: modeSnap, sfxMap: sfxSnap, sfxAreaMap: areaSnap, volumes: volSnap, sfxBtnEnabled: sfxBtnEnabledSnap };
+    _dbg('persistindo →', modeSnap, volSnap, 'sfxBtn:', sfxBtnEnabledSnap);
     await salvarConfigs(uid, payload);
   } catch (_) {
     try {
-      await salvarConfigs(uid, { audioState: modeSnap, musicMode: musicModeSnap, sfxMap: sfxSnap, sfxAreaMap: areaSnap, volumes: volSnap, sfxBtnEnabled: sfxBtnEnabledSnap, musicBtnEnabled: musicBtnEnabledSnap });
+      await salvarConfigs(uid, { audioState: modeSnap, sfxMap: sfxSnap, sfxAreaMap: areaSnap, volumes: volSnap, sfxBtnEnabled: sfxBtnEnabledSnap });
     } catch (err) {
       _dbg('Erro ao salvar Firebase:', err);
     }
@@ -475,21 +407,17 @@ document.addEventListener('nexus:loginSuccess', async ({ detail }) => {
   if (detail?.configs) {
     const c = detail.configs;
     const savedMode      = c?.audioState;
-    const savedMusicMode = c?.musicMode   ?? null;
     const savedSfxMap    = c?.sfxMap      ?? null;
     const savedAreaMap   = c?.sfxAreaMap  ?? null;
     const savedVolumes   = c?.volumes     ?? null;
-    const savedSfxBtnEnabled   = typeof c?.sfxBtnEnabled   === 'boolean' ? c.sfxBtnEnabled   : null;
-    const savedMusicBtnEnabled = typeof c?.musicBtnEnabled === 'boolean' ? c.musicBtnEnabled : null;
+    const savedSfxBtnEnabled = typeof c?.sfxBtnEnabled === 'boolean' ? c.sfxBtnEnabled : null;
     _dbg('loginSuccess: usando configs do detail (sem round-trip Firebase)', { savedMode, savedSfxMap });
     saved = {
-      mode:            VALID_MODES.includes(savedMode) ? savedMode : null,
-      musicMode:       VALID_MUSIC_MODES.includes(savedMusicMode) ? savedMusicMode : null,
-      sfxMap:          savedSfxMap  && typeof savedSfxMap  === 'object' ? savedSfxMap  : null,
-      areaMap:         savedAreaMap && typeof savedAreaMap === 'object' ? savedAreaMap : null,
-      volumes:         savedVolumes && typeof savedVolumes === 'object' ? savedVolumes : null,
-      sfxBtnEnabled:   savedSfxBtnEnabled,
-      musicBtnEnabled: savedMusicBtnEnabled,
+      mode:          VALID_MODES.includes(savedMode) ? savedMode : null,
+      sfxMap:        savedSfxMap  && typeof savedSfxMap  === 'object' ? savedSfxMap  : null,
+      areaMap:       savedAreaMap && typeof savedAreaMap === 'object' ? savedAreaMap : null,
+      volumes:       savedVolumes && typeof savedVolumes === 'object' ? savedVolumes : null,
+      sfxBtnEnabled: savedSfxBtnEnabled,
     };
   } else {
     _dbg('loginSuccess: detail sem configs, fazendo _fetchFromFirebase (fallback)');
@@ -522,7 +450,6 @@ document.addEventListener('nexus:logout', () => {
 
   // No logout SIM resetamos — o usuário saiu, estado volta ao padrão
   _currentMode       = AUDIO_DEFAULTS.sfxMode;
-  _currentMusicMode  = AUDIO_DEFAULTS.musicMode;
   _currentSfxMap     = { ...DEFAULT_SFX_MAP };
   _currentSfxAreaMap = {};
 
@@ -530,12 +457,9 @@ document.addEventListener('nexus:logout', () => {
   audio.resetToDefaults();
   _applyToEngine(_currentMode);
   _notify();
-  _notifyMusicMode();
 
   _sfxQueue.length = 0;
   _sfxReady = true;
-
-  try { localStorage.setItem('nexus_music_mode', AUDIO_DEFAULTS.musicMode); } catch { /* noop */ }
 
   _dbg('Logout → modo resetado para padrão');
 });
@@ -605,28 +529,6 @@ setMode(modeId) {
     return [...VALID_MODES];
   },
 
-  // ── MODO DE MÚSICA ───────────────────────────
-
-  getMusicMode() {
-    return _currentMusicMode;
-  },
-
-  setMusicMode(modeId) {
-    if (!VALID_MUSIC_MODES.includes(modeId)) return;
-    _currentMusicMode = modeId;
-    try { localStorage.setItem('nexus_music_mode', modeId); } catch { /* noop */ }
-    _persistAllToFirebase();
-    _notifyMusicMode();
-  },
-
-  subscribeMusicMode(fn) {
-    if (typeof fn === 'function') _musicModeSubscribers.add(fn);
-  },
-
-  unsubscribeMusicMode(fn) {
-    _musicModeSubscribers.delete(fn);
-  },
-
   // ── VOLUMES ──────────────────────────────────
 
   getVolumes() {
@@ -634,7 +536,7 @@ setMode(modeId) {
   },
 
   setVolume(channel, value) {
-    if (!['master', 'music', 'sfx'].includes(channel)) {
+    if (!['master', 'sfx'].includes(channel)) {
       _dbg('setVolume: canal invalido:', channel);
       return;
     }
@@ -645,28 +547,6 @@ setMode(modeId) {
     if (channel === 'master') {
       if (clamped === 0) { audio.setMasterVolume(0); audio.mute(); }
       else               { audio.unmute(); audio.setMasterVolume(clamped); }
-    } else if (channel === 'music') {
-      // Atualiza _volumes.music mas NÃO aplica direto na engine aqui.
-      // O botão de música é quem controla audio.setMusicVolume().
-      // Se o slider de música do modal mudar _volumes.music, o botão de música
-      // não perde o controle — a próxima vez que o modo mudar, ele aplica o
-      // musicVolume correto do modo (normal=1.0, low=0.25, mute=0).
-      // Mas o slider quer aplicar imediatamente para o usuário ouvir.
-      // Solução: aplica na engine SOMENTE se o modo de música for 'normal',
-      // para não sobrescrever um LOW (0.25) ou MUTE (0) com o valor do slider.
-      //
-      // Na prática: o slider de música no modal de som ajusta o volume BASE.
-      // O botão de música aplica um MULTIPLICADOR sobre esse volume base.
-      // Nesta arquitetura simplificada, o botão de música define o volume final.
-      // Então o slider altera _volumes.music (persistência) e também aplica
-      // se o modo atual permitir (não-mute).
-      const musicMode = _currentMusicMode;
-      if (musicMode !== 'mute') {
-        // Escala pelo modo: normal usa 100% do slider, low usa 50%
-        const scale = musicMode === 'low' ? 0.5 : 1.0;
-        audio.setMusicVolume?.(clamped * scale);
-      }
-      // Se musicMode === 'mute', não aplica — respeita o mute do botão de música
     } else {
       audio.setSfxVolume?.(clamped);
     }
@@ -749,13 +629,11 @@ setMode(modeId) {
     const areaSnap = {};
     for (const [k, v] of Object.entries(_currentSfxAreaMap)) areaSnap[k] = { ...v };
     return {
-      audioState:      _currentMode,
-      musicMode:       _currentMusicMode,
-      sfxMap:          { ..._currentSfxMap },
-      sfxAreaMap:      areaSnap,
-      volumes:         { ..._volumes },
-      sfxBtnEnabled:   _sfxBtnEnabled,
-      musicBtnEnabled: _musicBtnEnabled,
+      audioState:    _currentMode,
+      sfxMap:        { ..._currentSfxMap },
+      sfxAreaMap:    areaSnap,
+      volumes:       { ..._volumes },
+      sfxBtnEnabled: _sfxBtnEnabled,
     };
   },
 
@@ -773,7 +651,7 @@ setMode(modeId) {
     return _readyPromise;
   },
 
-  // ── VISIBILIDADE DOS BOTÕES (SFX / MÚSICA) ──
+  // ── VISIBILIDADE DO BOTÃO (SFX) ──────────────
   // Controla se o botão flutuante aparece e se o canal
   // correspondente fica audível. Ver seção 2a-bis acima.
 
@@ -794,24 +672,6 @@ setMode(modeId) {
 
   unsubscribeSfxBtnEnabled(fn) {
     _sfxBtnSubscribers.delete(fn);
-  },
-
-  getMusicBtnEnabled() {
-    return _musicBtnEnabled;
-  },
-
-  setMusicBtnEnabled(enabled) {
-    _musicBtnEnabled = !!enabled;
-    try { localStorage.setItem('nexus_music_btn_enabled', String(_musicBtnEnabled)); } catch { /* noop */ }
-    _notifyMusicBtnEnabled();
-  },
-
-  subscribeMusicBtnEnabled(fn) {
-    if (typeof fn === 'function') _musicBtnSubscribers.add(fn);
-  },
-
-  unsubscribeMusicBtnEnabled(fn) {
-    _musicBtnSubscribers.delete(fn);
   },
 
 };

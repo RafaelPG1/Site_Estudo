@@ -20,7 +20,6 @@ window.questoes = {
   // 1 - redução salarial
   {
     aula: "Atividade 2 - Aula 3 e 4 (Pode haver questões erradas)",
-    tipo: "Aplicação",
     texto: "Uma empresa de médio porte, enfrentando dificuldades financeiras, decidiu reduzir os salários de seus funcionários em 20% para evitar demissões. O gestor de RH foi informado da decisão e precisa avaliar a legalidade e os riscos dessa medida, considerando que a redução será feita sem a participação do sindicato.",
     question: "Como o gestor de RH deve agir diante dessa situação?",
     code: ``,
@@ -38,7 +37,6 @@ window.questoes = {
   // 2 - marcos históricos CLT
   {
     aula: "Atividade 2 - Aula 3 e 4 (Pode haver questões erradas)",
-    tipo: "Aplicação",
     texto: "O Direito do Trabalho no Brasil teve um desenvolvimento marcado por transformações econômicas, sociais e políticas, que resultaram em marcos legislativos fundamentais.",
     question: "Analise as afirmativas:\n\nI. A Lei Áurea (1888) aboliu o trabalho escravo, criando a necessidade de regulamentação das relações de trabalho.\nII. A Constituição de 1934 trouxe direitos trabalhistas, como jornada de 8 horas e repouso semanal remunerado.\nIII. A Consolidação das Leis do Trabalho (CLT) foi instituída em 1943, durante o governo de Getúlio Vargas.\nIV. A Constituição de 1988 ampliou os direitos dos trabalhadores, incluindo FGTS e férias remuneradas.\n\nEstá correto o que se afirma em:",
     code: ``,
@@ -55,7 +53,6 @@ window.questoes = {
   // 3 - vínculo empregatício sem contrato escrito
   {
     aula: "Atividade 2 - Aula 3 e 4 (Pode haver questões erradas)",
-    tipo: "Aplicação",
     texto: "Carlos foi contratado como auxiliar administrativo, mas não teve contrato escrito. Após 6 meses, foi dispensado sem justa causa e questiona se seu contrato era válido.",
     question: "Analise as afirmativas:\n\nI. A relação de emprego não precisa de contrato escrito para existir.\nII. A continuidade da relação de emprego é um princípio do Direito do Trabalho.\nIII. Carlos tem direito a todas as verbas trabalhistas previstas na CLT.\nIV. Sem contrato escrito, o vínculo é considerado inválido.\n\nEstá correto o que se afirma em:",
     code: ``,
@@ -72,7 +69,6 @@ window.questoes = {
   // 4 - atraso na anotação da CTPS
   {
     aula: "Atividade 2 - Aula 3 e 4 (Pode haver questões erradas)",
-    tipo: "Aplicação",
     texto: "Um empregado foi contratado em 1º de abril de 2023, mas sua Carteira de Trabalho e Previdência Social (CTPS) foi assinada apenas em 1º de junho do mesmo ano.",
     question: "Analise as afirmativas:\n\nI. A CTPS deve ser assinada no prazo de até 5 dias úteis após o início do trabalho.\nII. O período trabalhado sem registro será considerado como vínculo empregatício se comprovado.\nIII. O empregador pode ser multado pela ausência de anotação tempestiva.\nIV. O vínculo empregatício passa a valer apenas a partir da anotação em CTPS.\n\nEstá correto o que se afirma em:",
     code: ``,
@@ -89,7 +85,6 @@ window.questoes = {
   // 5 - suspensão de contrato de trabalho
   {
     aula: "Atividade 2 - Aula 3 e 4 (Pode haver questões erradas)",
-    tipo: "Aplicação",
     texto: "Devido a uma crise financeira, a empresa Beta pretende suspender temporariamente o contrato de alguns empregados para reduzir custos, com a ideia de recontratá-los futuramente. O dono da empresa consulta o gestor de RH sobre as implicações legais.",
     question: "Qual a orientação correta que o gestor de RH deve fornecer?",
     code: ``,
@@ -106,7 +101,6 @@ window.questoes = {
   // 6 - férias vencidas em dobro
   {
     aula: "Atividade 2 - Aula 3 e 4 (Pode haver questões erradas)",
-    tipo: "Aplicação",
     texto: "Joana completou um ano de trabalho na empresa Delta, mas o gestor de RH percebeu que o setor administrativo não concedeu as férias dentro do período concessivo de 12 meses subsequentes.",
     question: "Qual é a consequência legal para a empresa?",
     code: ``,
@@ -123,7 +117,6 @@ window.questoes = {
   // 7 - princípio da proteção e norma mais favorável
   {
     aula: "Atividade 2 - Aula 3 e 4 (Pode haver questões erradas)",
-    tipo: "Aplicação",
     texto: "Um trabalhador ajuizou uma ação alegando que a convenção coletiva lhe conferia direito a um adicional maior do que o previsto na CLT. O juiz, ao analisar o caso, verificou a existência de normas diferentes e optou por aplicar a mais favorável ao trabalhador.",
     question: "Analise as afirmativas:\n\nI. O juiz aplicou corretamente o princípio da proteção.\nII. A aplicação da norma mais favorável visa equilibrar a relação entre empregado e empregador.\nIII. O princípio da proteção está previsto expressamente na CLT.\nIV. A escolha da norma mais favorável é obrigatória mesmo em contratos individuais.\n\nEstá correto o que se afirma em:",
     code: ``,
@@ -140,7 +133,6 @@ window.questoes = {
   // 8 - contrato de experiência
   {
     aula: "Atividade 2 - Aula 3 e 4 (Pode haver questões erradas)",
-    tipo: "Aplicação",
     texto: "A empresa Alfa pretende contratar um novo funcionário para a área de logística. O dono da empresa está preocupado com a possibilidade de um rompimento precoce do contrato, o que poderia gerar custos com verbas rescisórias. O gerente de RH sugere a utilização de um contrato de experiência para avaliar a competência do candidato, explicando que esse tipo de contrato oferece segurança tanto para a empresa quanto para o empregado, caso o vínculo não seja mantido.",
     question: "Considerando as regras da CLT sobre contratos de experiência, qual alternativa expressa corretamente o que o gerente de RH pode afirmar ao dono da empresa?",
     code: ``,
@@ -157,7 +149,6 @@ window.questoes = {
   // 9 - retroatividade da anotação em CTPS
   {
     aula: "Atividade 2 - Aula 3 e 4 (Pode haver questões erradas)",
-    tipo: "Aplicação",
     texto: "A empresa Alfa contratou 10 novos funcionários em 10 de março, mas, por falha administrativa do setor de RH, a anotação na CTPS só foi feita no final de abril. Um dos funcionários, inconformado, acionou a Justiça do Trabalho, pedindo o reconhecimento do vínculo desde a data de início do serviço.",
     question: "Qual deve ser a postura correta do gestor de RH?",
     code: ``,
@@ -175,7 +166,6 @@ window.questoes = {
   // 10 - primazia da realidade
   {
     aula: "Atividade 2 - Aula 3 e 4 (Pode haver questões erradas)",
-    tipo: "Aplicação",
     texto: "Um trabalhador contratado como \"prestador de serviços\" comprovou em juízo que trabalhava com habitualidade, subordinação e pessoalidade, recebendo salário fixo.",
     question: "Sobre a situação, considere:\n\nI. O contrato formal tem prevalência sobre a realidade do vínculo.\nII. A primazia da realidade garante que os fatos reais prevaleçam sobre o que está escrito.\nIII. O trabalhador poderá ter reconhecido vínculo de emprego, mesmo com contrato de prestação de serviços.\nIV. Subordinação e habitualidade são elementos essenciais do vínculo empregatício.\n\nEstá correto o que se afirma em:",
     code: ``,

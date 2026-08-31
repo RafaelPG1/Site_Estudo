@@ -132,12 +132,9 @@ const _DISCIPLINAS = {
 
 export const AUDIO_DEFAULTS = {
   sfxMode:         'normal',
-  musicMode:       'normal',
   sfxBtnEnabled:   true,
-  musicBtnEnabled: false,
   volumes: {
     master: 1.0,
-    music:  0.5,
     sfx:    0.5,
   },
   sfxMap: {
@@ -162,7 +159,6 @@ function _defaultConfigs() {
     salvarProgressoParcial: true,
     salvarProgresso:        false,
     sfxBtnEnabled:          AUDIO_DEFAULTS.sfxBtnEnabled,
-    musicBtnEnabled:        AUDIO_DEFAULTS.musicBtnEnabled,
   };
 }
 
@@ -328,7 +324,7 @@ export function setConfigs(novas) {
 
   const u = _estado.usuario;
   if (u?.uid) {
-    const { audioState: _d1, sfxMap: _d2, sfxAreaMap: _d3, sfxBtnEnabled: _d4, musicBtnEnabled: _d5, ...restConfigs } = _estado.configs;
+    const { audioState: _d1, sfxMap: _d2, sfxAreaMap: _d3, sfxBtnEnabled: _d4, ...restConfigs } = _estado.configs;
 
     _getAudioState().then(as => {
       const audioPayload = as?.getAudioPayload?.() ?? {};
@@ -359,25 +355,22 @@ function _aplicarConfigs(cfg, { syncAudio = false } = {}) {
     document.documentElement.classList.remove('sem-animacoes');
   }
 
-  // ── Botões flutuantes de áudio (Efeitos / Música) ──────────
-  // Sincroniza os toggles "Efeitos sonoros" e "Música de fundo"
-  // SOMENTE quando syncAudio=true (mudança intencional do usuário via
+  // ── Botão flutuante de áudio (Efeitos) ──────────────────
+  // Sincroniza o toggle "Efeitos sonoros" SOMENTE quando
+  // syncAudio=true (mudança intencional do usuário via
   // setConfigs ou hydrateConfigs pós-Firebase).
   //
   // NÃO sincroniza na inicialização do módulo (_aplicarConfigs chamado
   // com syncAudio=false, o padrão), porque nesse momento os valores em
-  // localStorage podem ser o default (musicBtnEnabled=false) e ainda não
-  // refletem o que está no Firebase. Sincronizar aqui causaria:
-  //   1. setMusicBtnEnabled(false) → _persistAllToFirebase() → sobrescreve Firebase com false
+  // localStorage podem ser o default e ainda não refletem o que está
+  // no Firebase. Sincronizar aqui causaria:
+  //   1. setSfxBtnEnabled(false) → _persistAllToFirebase() → sobrescreve Firebase com false
   //   2. Ao navegar → lê Firebase → false → botão some
   if (syncAudio) {
     _getAudioState().then(as => {
       if (!as) return;
       if (typeof cfg.sfxBtnEnabled === 'boolean') {
         as.setSfxBtnEnabled(cfg.sfxBtnEnabled);
-      }
-      if (typeof cfg.musicBtnEnabled === 'boolean') {
-        as.setMusicBtnEnabled(cfg.musicBtnEnabled);
       }
     }).catch(() => { /* audio-state ainda não disponível — ignora */ });
   }

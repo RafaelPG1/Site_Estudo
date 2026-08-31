@@ -1,33 +1,33 @@
 // @ts-nocheck
 /* =============================================
    NEXUS STUDY — shared/js/audio/ui/sound.js
-   Sistema de áudio unificado — v2.0
-   (integra vol-slider.js — slider pixel-perfect)
+   Sistema de áudio unificado — v3.0 (redesign)
+   (integra vol-slider.js v3 — slider pixel-perfect corrigido)
 
-   ORIGINADO DE:
-     som.js       → modal de configuração de som (DOM + lógica)
-     som.html     → estrutura HTML do modal (agora gerada dinamicamente)
-     audio-btn.js → botão flutuante de volume global
+   O QUE MUDOU NESTA VERSÃO
+   ─────────────────────────────────────────────
+   Redesign visual completo do modal (ver sound.css v3 e
+   vol-slider.css v3). A estrutura passou de "grid de cards
+   coloridos" para um layout de duas colunas: um rail de
+   navegação à esquerda (Volume + cada categoria) e um painel
+   de detalhe à direita. O painel de overrides específicos, que
+   antes era um popover posicionado via getBoundingClientRect,
+   agora é uma seção inline expansível dentro do próprio painel
+   de categoria — mais robusto a resize/DPI e mais simples.
+
+   A API PÚBLICA (Sound.init/openModal/closeModal/waitUntilReady/
+   resetAudio/reinit/resetCtx), os dados de _CATEGORIES, o
+   contrato com audio-state.js (setVolume/getVolumes/setSfxMap/
+   getSfxMap/setSfxAreaMap/getSfxAreaMap) e com audio-btns.js
+   (mountAudioBtn/destroyAudioBtn) NÃO mudaram — só a camada de
+   apresentação foi reescrita.
 
    ARQUITETURA
    ─────────────────────────────────────────────
    sound.js ←→ sfx.js        (engine de áudio)
    sound.js ←→ audio-state.js (estado global de modo)
-   sound.js ←→ vol-slider.js  (módulo de volume refatorado v2)
+   sound.js ←→ vol-slider.js  (módulo de volume v3)
    sound.js    auto-inicia:   botão flutuante + modal interno
-
-   RESPONSABILIDADES
-   ─────────────────────────────────────────────
-   ✅ Botão flutuante de volume (.abtn) — cicla entre modos
-   ✅ Modal de configuração de som:
-       - Sliders de volume (music / sfx) via makeVolumeSlider
-       - Cards de categorias (click / hover / select / modal)
-       - Variants + preview de cada som
-       - Área-chips (por seção do app)
-       - Spec panel (overrides por área)
-       - BGM tracks (pré-escuta das trilhas)
-   ✅ Sincronização com audio-state.js (subscribe)
-   ✅ Não duplica lógica de sfx.js nem audio-state.js
 
    ❌ NÃO acessa Firebase diretamente
    ❌ NÃO conhece schema de autenticação
@@ -45,13 +45,12 @@
 import audio          from '../engine/sfx.js';
 import audioState     from '../state/audio-state.js';
 import makeVolumeSlider from './vol-slider.js';
-import { mountAudioBtn, destroyAudioBtn, mountMusicBtn, destroyMusicBtn } from './audio-btns.js';
+import { mountAudioBtn, destroyAudioBtn } from './audio-btns.js';
 
 /* ═══════════════════════════════════════════════
    SEÇÃO A — BOTÃO FLUTUANTE DE VOLUME
-   Implementação centralizada em ui/audio-btn.js.
-   sound.js delega montagem e destruição via API
-   exportada, sem duplicar dados visuais nem lógica.
+   Implementação centralizada em ui/audio-btns.js.
+   sound.js delega montagem e destruição via API exportada.
 ═══════════════════════════════════════════════ */
 
 
@@ -59,10 +58,9 @@ import { mountAudioBtn, destroyAudioBtn, mountMusicBtn, destroyMusicBtn } from '
    SEÇÃO B — MODAL DE CONFIGURAÇÃO DE SOM
 ═══════════════════════════════════════════════ */
 
-/* ── Dados ── */
+/* ── Dados (inalterados em relação à v2) ── */
 
-const _DEFAULT_MUSIC = 50;   // int 0-150 (= 0.50 real)
-const _DEFAULT_SFX   = 50;   // int 0-150 (= 0.50 real)
+const _DEFAULT_SFX = 50;   // int 0-150 (= 0.50 real)
 
 const _CATEGORIES = [
   {
@@ -70,7 +68,6 @@ const _CATEGORIES = [
     name: 'Click Sounds',
     desc: 'Sons ao clicar em botões e elementos.',
     icon: '◉',
-    cls: 'snd-sound-card--click',
     areas: ['Inicial', 'Game', 'Quiz', 'Perfil', 'Resumos'],
     defaultVariant: 'click',
     variants: [
@@ -87,7 +84,6 @@ const _CATEGORIES = [
     name: 'Hover Sounds',
     desc: 'Sons ao passar o cursor sobre elementos.',
     icon: '◈',
-    cls: 'snd-sound-card--hover',
     areas: ['Inicial', 'Game', 'Quiz', 'Perfil', 'Resumos'],
     defaultVariant: 'hover2',
     variants: [
@@ -106,7 +102,6 @@ const _CATEGORIES = [
     name: 'Select Sounds',
     desc: 'Sons ao selecionar opções e respostas.',
     icon: '⊛',
-    cls: 'snd-sound-card--select',
     areas: ['Inicial', 'Game', 'Quiz', 'Perfil', 'Resumos'],
     defaultVariant: 'select',
     variants: [
@@ -127,7 +122,6 @@ const _CATEGORIES = [
     name: 'Modal Sounds',
     desc: 'Sons ao abrir e fechar modais e painéis.',
     icon: '⊡',
-    cls: 'snd-sound-card--modal',
     areas: ['Inicial', 'Game', 'Quiz', 'Perfil', 'Resumos'],
     defaultVariant: 'openModal2',
     variants: [
@@ -144,7 +138,6 @@ const _CATEGORIES = [
     name: 'Correct Sounds',
     desc: 'Sons ao acertar uma questão.',
     icon: '✓',
-    cls: 'snd-sound-card--correct',
     areas: ['Quiz', 'Game'],
     defaultVariant: 'correct4',
     variants: [
@@ -160,7 +153,6 @@ const _CATEGORIES = [
     name: 'Wrong Sounds',
     desc: 'Sons ao errar uma questão.',
     icon: '✕',
-    cls: 'snd-sound-card--wrong',
     areas: ['Quiz', 'Game'],
     defaultVariant: 'wrong',
     variants: [
@@ -177,7 +169,6 @@ const _CATEGORIES = [
     name: 'Timeout Sounds',
     desc: 'Sons ao esgotar o tempo.',
     icon: '⏱',
-    cls: 'snd-sound-card--timeout',
     areas: ['Quiz', 'Game'],
     defaultVariant: 'timeout',
     variants: [
@@ -192,7 +183,6 @@ const _CATEGORIES = [
     name: 'Timer Warning Sounds',
     desc: 'Sons de aviso quando o tempo está acabando.',
     icon: '⚠',
-    cls: 'snd-sound-card--timerwarning',
     areas: ['Quiz', 'Game'],
     defaultVariant: 'timerWarning',
     variants: [
@@ -207,11 +197,10 @@ const _CATEGORIES = [
     name: 'Pause Sounds',
     desc: 'Sons ao pausar o jogo ou questão.',
     icon: '⏸',
-    cls: 'snd-sound-card--pause',
     areas: ['Quiz', 'Game'],
     defaultVariant: 'pause',
     variants: [
-      { id: 'pause', label: 'Pause 1 — Dois tons descendentes', fn: () => audio.sfx.pause?.() },
+      { id: 'pause',  label: 'Pause 1 — Dois tons descendentes', fn: () => audio.sfx.pause?.()  },
       { id: 'pause2', label: 'Pause 2 — Fade out lento',         fn: () => audio.sfx.pause2?.() },
       { id: 'pause3', label: 'Pause 3 — Thud + shimmer',         fn: () => audio.sfx.pause3?.() },
       { id: 'pause4', label: 'Pause 4 — Tock + drone',           fn: () => audio.sfx.pause4?.() },
@@ -219,34 +208,20 @@ const _CATEGORIES = [
   },
 ];
 
-const _MUSIC_TRACKS = [
-  { id: 'music-menu',    name: 'Menu Principal', desc: 'Atmosfera ambient suave',         fn: () => audio.music['music-menu']?.() },
-  { id: 'music-game',    name: 'Game',           desc: 'Futurista — arpejo sci-fi',       fn: () => audio.music['music-game']?.() },
-  { id: 'music-quiz',    name: 'Quiz',           desc: 'Emocional e acolhedora',          fn: () => audio.music['music-quiz']?.() },
-  { id: 'music-results', name: 'Resultados',     desc: 'Lo-fi digital, missão concluída', fn: () => audio.music['music-results']?.() },
-  { id: 'music-profile', name: 'Área Pessoal',   desc: 'Jornada do jogador, motivadora',  fn: () => audio.music['music-profile']?.() },
-];
 
-
-/* ── Estado do modal ── */
+/* ── Estado do modal (inalterado) ── */
 
 const _modalState = {
-  musicEnabled:    true,
-  musicSlider:     _DEFAULT_MUSIC,
   sfxSlider:       _DEFAULT_SFX,
   selectedVariant: {},
   enabledCats:     {},
   selectedAreas:   {},
-  playingMusic:    null,
 };
 
 const _specificOverrides = {};
 
 function _resetModalState() {
-  _modalState.musicEnabled  = true;
-  _modalState.musicSlider   = _DEFAULT_MUSIC;
-  _modalState.sfxSlider     = _DEFAULT_SFX;
-  _modalState.playingMusic  = null;
+  _modalState.sfxSlider = _DEFAULT_SFX;
 
   _CATEGORIES.forEach(cat => {
     if (cat.id === 'modal') {
@@ -265,238 +240,111 @@ function _resetModalState() {
 _resetModalState();
 
 
-/* ── Variáveis de módulo ── */
+/* ── Estado de navegação/UI (novo — só de apresentação) ── */
 
-let _overlay     = null;
-let _wrap        = null;
-let _modalEl     = null;
-let _specOverlay = null;
-let _specPanelEl = null;
-let _modalOpen   = false;
-let _activePanelCatId = null;
+let _activeSection    = 'volume';           // 'volume' | catId
+const _expandedSpecs   = new Set();          // catIds com o painel de overrides aberto
 
-// Instâncias dos sliders de volume (vol-slider.js)
-let _musicSlider = null;
-let _sfxSlider   = null;
+
+/* ── Variáveis de módulo (DOM) ── */
+
+let _overlay   = null;
+let _wrap      = null;
+let _modalEl   = null;
+let _railEl    = null;
+let _contentEl = null;
+let _modalOpen = false;
+
+let _sfxSlider = null;
+
+
+/* ── Ícone de fechar / setas reaproveitáveis (SVG inline) ── */
+
+const _ICON_CLOSE = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+const _ICON_HEADER = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>`;
+const _ICON_CHEVRON = `<svg class="asx-spec-toggle__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
+const _ICON_SLIDERS = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>`;
 
 
 /* ── Criação do DOM do modal ── */
 
 function _buildModalDOM() {
   _overlay = document.createElement('div');
-  _overlay.className = 'snd-modal-overlay';
+  _overlay.className = 'asx-overlay';
 
   _wrap = document.createElement('div');
-  _wrap.className = 'snd-modal-wrap';
+  _wrap.className = 'asx-wrap';
 
   _modalEl = document.createElement('div');
-  _modalEl.className = 'snd-modal';
+  _modalEl.className = 'asx-modal';
   _modalEl.setAttribute('role', 'dialog');
   _modalEl.setAttribute('aria-label', 'Configurações de Som');
+  _modalEl.setAttribute('aria-modal', 'true');
 
   _modalEl.innerHTML = `
-    <!-- Header -->
-    <header class="snd-modal__header">
-      <div class="snd-modal__header-left">
-        <div class="snd-modal__icon" aria-hidden="true">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
-            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
-          </svg>
-        </div>
+    <header class="asx-header">
+      <div class="asx-header__left">
+        <div class="asx-header__icon" aria-hidden="true">${_ICON_HEADER}</div>
         <div>
-          <h1 class="snd-modal__title">Configurações de Som</h1>
-          <p class="snd-modal__subtitle">Personalize sons, variantes e onde cada efeito é ativado</p>
+          <h1 class="asx-header__title">Configurações de Som</h1>
+          <p class="asx-header__subtitle">Ajuste volume, sons e onde cada efeito toca</p>
         </div>
       </div>
-      <div class="snd-modal__header-right">
-        <span class="snd-modal__badge">ÁUDIO</span>
-        <button class="snd-modal__close" id="snd-close-btn" aria-label="Fechar">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="18" y1="6" x2="6" y2="18"/>
-            <line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
-      </div>
+      <button class="asx-header__close" id="asx-close-btn" aria-label="Fechar">${_ICON_CLOSE}</button>
     </header>
 
-    <!-- Body -->
-    <div class="snd-modal__body">
-
-      <!-- SISTEMA -->
-      <section class="snd-section">
-        <div class="snd-section__label">
-          <span class="snd-section__dot"></span>
-          SISTEMA
-        </div>
-        <div class="vol-card">
-          <div class="vol-card-inner">
-
-            <!-- Music BGM -->
-            <div class="vol-group" data-type="music" id="vol-grp-music">
-              <div class="vol-header">
-                <div class="vol-label">
-                  <span class="vol-label-dot"></span>
-                  Música (BGM)
-                </div>
-                <div class="vol-header-right">
-                  <span class="vol-badge" id="snd-musicBadge">0.5×</span>
-                  <span class="vol-val" id="snd-musicValDisplay">0.50</span>
-                </div>
-              </div>
-              <div class="vol-track-wrap" id="snd-sliderGroupMusic">
-                <div class="vol-track-bg">
-                  <div class="vol-track-fill" id="snd-musicFill"></div>
-                </div>
-                <div class="vol-snap-mark" id="snd-musicMark50"  title="0.5×"></div>
-                <div class="vol-snap-mark" id="snd-musicMark100" title="1.0×"></div>
-                <div class="vol-snap-mark" id="snd-musicMark150" title="1.5×"></div>
-                <input type="range" class="vol-input" id="snd-musicSlider"
-                  min="0" max="150" step="1" value="50" aria-label="Volume de Música" />
-                <div class="vol-thumb" id="snd-musicThumb"></div>
-              </div>
-              <div class="vol-scale">
-                <span>0</span>
-                <span class="def">0.5× padrão</span>
-                <span>1.0×</span>
-                <span>1.5×</span>
-              </div>
-            </div>
-
-            <div class="vol-divider"></div>
-
-            <!-- SFX -->
-            <div class="vol-group" data-type="sfx" id="vol-grp-sfx">
-              <div class="vol-header">
-                <div class="vol-label">
-                  <span class="vol-label-dot"></span>
-                  Efeitos (SFX)
-                </div>
-                <div class="vol-header-right">
-                  <span class="vol-badge" id="snd-sfxBadge">0.5×</span>
-                  <span class="vol-val" id="snd-sfxValDisplay">0.50</span>
-                </div>
-              </div>
-              <div class="vol-track-wrap" id="snd-sliderGroupSfx">
-                <div class="vol-track-bg">
-                  <div class="vol-track-fill" id="snd-sfxFill"></div>
-                </div>
-                <div class="vol-snap-mark" id="snd-sfxMark50"  title="0.5×"></div>
-                <div class="vol-snap-mark" id="snd-sfxMark100" title="1.0×"></div>
-                <div class="vol-snap-mark" id="snd-sfxMark150" title="1.5×"></div>
-                <input type="range" class="vol-input" id="snd-sfxSlider"
-                  min="0" max="150" step="1" value="50" aria-label="Volume de Efeitos" />
-                <div class="vol-thumb" id="snd-sfxThumb"></div>
-              </div>
-              <div class="vol-scale">
-                <span>0</span>
-                <span class="def">0.5× padrão</span>
-                <span>1.0×</span>
-                <span>1.5×</span>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      <!-- CATEGORIAS -->
-      <section class="snd-section">
-        <div class="snd-section__label">
-          <span class="snd-section__dot"></span>
-          CATEGORIAS DE SOM
-        </div>
-        <div class="snd-cards-grid" id="snd-cardsGrid"></div>
-      </section>
-
-      <!-- BGM -->
-      <section class="snd-section">
-        <div class="snd-section__label">
-          <span class="snd-section__dot snd-section__dot--violet"></span>
-          MÚSICA DE FUNDO (BGM)
-        </div>
-        <div class="snd-music-card">
-          <div class="snd-music-card__header">
-            <div>
-              <span class="snd-music-card__name">Trilhas Sonoras</span>
-              <span class="snd-music-card__desc">Música ambiente para cada área do app</span>
-            </div>
-            <label class="snd-toggle" aria-label="Ativar ou desativar música">
-              <input type="checkbox" class="snd-toggle__input snd-toggle__input--violet" id="snd-musicToggle" checked />
-              <span class="snd-toggle__track snd-toggle__track--violet">
-                <span class="snd-toggle__thumb"></span>
-              </span>
-            </label>
-          </div>
-          <div class="snd-music-tracks" id="snd-musicTracks"></div>
-        </div>
-      </section>
-
+    <div class="asx-body">
+      <nav class="asx-rail" id="asx-rail" aria-label="Seções de configuração de som"></nav>
+      <div class="asx-content">
+        <section class="asx-panel" id="asx-panel-volume" data-panel="volume"></section>
+        <section class="asx-panel" id="asx-panel-category" data-panel="category"></section>
+      </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="snd-modal__footer">
-      <div class="snd-modal__footer-note">
-        <span>NEXUS AUDIO</span>
-      </div>
-      <div class="snd-modal__footer-actions">
-        <button class="snd-btn snd-btn--ghost" id="snd-resetBtn">Resetar</button>
-        <button class="snd-btn snd-btn--primary" id="snd-closeBtn2">Fechar</button>
-        <button class="snd-btn snd-btn--save" id="snd-saveBtn">Salvar</button>
+    <footer class="asx-footer">
+      <div class="asx-footer__note">NEXUS AUDIO</div>
+      <div class="asx-footer__actions">
+        <button class="asx-btn asx-btn--ghost" id="asx-reset-btn">Resetar</button>
+        <button class="asx-btn asx-btn--primary" id="asx-close-btn-2">Fechar</button>
+        <button class="asx-btn asx-btn--accent" id="asx-save-btn">Salvar</button>
       </div>
     </footer>
   `;
 
-  _specOverlay = document.createElement('div');
-  _specOverlay.className = 'snd-spec-overlay';
-
-  _specPanelEl = document.createElement('div');
-  _specPanelEl.className = 'snd-spec-panel';
-
   _wrap.appendChild(_modalEl);
-
   document.body.appendChild(_overlay);
   document.body.appendChild(_wrap);
-  document.body.appendChild(_specOverlay);
-  document.body.appendChild(_specPanelEl);
 
+  _railEl    = _modalEl.querySelector('#asx-rail');
+  _contentEl = _modalEl.querySelector('.asx-content');
+
+  _renderVolumePanelSkeleton();
   _bindModalEvents();
 }
 
 
-/* ── Sync overrides from audio-state ── */
+/* ── Sync overrides from audio-state (inalterado) ── */
 
 function _syncOverridesFromState() {
   const areaMap = audioState.getSfxAreaMap?.() ?? {};
 
-  console.log('[sound] _syncOverridesFromState: sfxAreaMap do audio-state =', JSON.stringify(areaMap));
-
   _CATEGORIES.forEach(cat => {
-    cat.areas.forEach(area => {
-      _specificOverrides[cat.id][area] = null;
-    });
+    cat.areas.forEach(area => { _specificOverrides[cat.id][area] = null; });
   });
 
   const areaLabelByKey = {};
   _CATEGORIES.forEach(cat => {
-    cat.areas.forEach(area => {
-      areaLabelByKey[area.toLowerCase()] = area;
-    });
+    cat.areas.forEach(area => { areaLabelByKey[area.toLowerCase()] = area; });
   });
 
   Object.entries(areaMap).forEach(([areaKey, actionMap]) => {
     const areaLabel = areaLabelByKey[areaKey];
-    if (!areaLabel) {
-      console.warn('[sound] _syncOverridesFromState: chave de área desconhecida "' + areaKey + '" — ignorada');
-      return;
-    }
+    if (!areaLabel) return;
 
     Object.entries(actionMap).forEach(([action, variantId]) => {
       const catId = (action === 'openModal' || action === 'closeModal') ? 'modal' : action;
       if (_specificOverrides[catId] !== undefined) {
         _specificOverrides[catId][areaLabel] = variantId || null;
-        console.log(`[sound] _syncOverridesFromState: override aplicado catId="${catId}" area="${areaLabel}" variant="${variantId}"`);
       }
     });
   });
@@ -526,49 +374,29 @@ function _openModal() {
   // 2. Sincroniza overrides por área
   _syncOverridesFromState();
 
-  console.log('[sound] _openModal: _specificOverrides após sync =', JSON.stringify(_specificOverrides));
-
-  // 3. Renderiza cards e tracks
-  _renderCards();
-  _renderMusicTracks();
+  // 3. Renderiza rail + seção ativa
+  _activeSection = 'volume';
+  _renderRail();
+  _renderActivePanel();
 
   // 4. Abre o modal
   _overlay.classList.add('is-open');
   _wrap.classList.add('is-open');
 
-  // 5. Instancia ou reutiliza os sliders de volume
+  // 5. Instancia ou reutiliza o slider de volume
   const volumes = audioState.getVolumes();
-
-  if (_musicSlider) {
-    _musicSlider.setValue(volumes.music);
-  } else {
-    _musicSlider = makeVolumeSlider({
-      wrapId:  'snd-sliderGroupMusic',
-      inputId: 'snd-musicSlider',
-      thumbId: 'snd-musicThumb',
-      fillId:  'snd-musicFill',
-      valId:   'snd-musicValDisplay',
-      badgeId: 'snd-musicBadge',
-      markIds: ['snd-musicMark50', 'snd-musicMark100', 'snd-musicMark150'],
-      onInput: (v) => {
-        _modalState.musicSlider = Math.round(v * 100);
-        audioState.setVolume('music', v);
-      },
-    });
-    _musicSlider.setValue(volumes.music);
-  }
 
   if (_sfxSlider) {
     _sfxSlider.setValue(volumes.sfx);
   } else {
     _sfxSlider = makeVolumeSlider({
-      wrapId:  'snd-sliderGroupSfx',
-      inputId: 'snd-sfxSlider',
-      thumbId: 'snd-sfxThumb',
-      fillId:  'snd-sfxFill',
-      valId:   'snd-sfxValDisplay',
-      badgeId: 'snd-sfxBadge',
-      markIds: ['snd-sfxMark50', 'snd-sfxMark100', 'snd-sfxMark150'],
+      wrapId:  'asx-vol-wrap',
+      inputId: 'asx-vol-input',
+      thumbId: 'asx-vol-thumb',
+      fillId:  'asx-vol-fill',
+      valId:   'asx-vol-value',
+      badgeId: 'asx-vol-badge',
+      markIds: ['asx-vol-mark-50', 'asx-vol-mark-100', 'asx-vol-mark-150'],
       onInput: (v) => {
         _modalState.sfxSlider = Math.round(v * 100);
         audioState.setVolume('sfx', v);
@@ -585,9 +413,6 @@ function _closeModal() {
   if (!_modalOpen) return;
   _modalOpen = false;
 
-  _closeSpecPanel();
-  _stopMusic();
-
   _overlay.classList.remove('is-open');
   _wrap.classList.remove('is-open');
 
@@ -600,155 +425,297 @@ function _onWrapClick(e) {
 }
 
 function _onKeyDown(e) {
-  if (e.key === 'Escape') {
-    if (_specPanelEl.classList.contains('is-open')) _closeSpecPanel();
-    else _closeModal();
+  if (e.key === 'Escape') _closeModal();
+}
+
+
+/* ── Bindings de eventos do modal (estáticos, ligados uma vez) ── */
+
+function _bindModalEvents() {
+  _modalEl.querySelector('#asx-close-btn').addEventListener('click',   _closeModal);
+  _modalEl.querySelector('#asx-close-btn-2').addEventListener('click', _closeModal);
+  _modalEl.querySelector('#asx-reset-btn').addEventListener('click',   _resetAll);
+  _modalEl.querySelector('#asx-save-btn').addEventListener('click',    _saveAll);
+}
+
+
+/* ═══════════════════════════════════════════════
+   RAIL DE NAVEGAÇÃO
+═══════════════════════════════════════════════ */
+
+function _renderRail() {
+  _railEl.innerHTML = '';
+
+  const groupLabel = document.createElement('div');
+  groupLabel.className = 'asx-rail__group-label';
+  groupLabel.textContent = 'Sistema';
+  _railEl.appendChild(groupLabel);
+
+  _railEl.appendChild(_buildRailItem({
+    id: 'volume',
+    icon: _ICON_SLIDERS,
+    name: 'Volume',
+  }));
+
+  const catsLabel = document.createElement('div');
+  catsLabel.className = 'asx-rail__group-label';
+  catsLabel.textContent = 'Categorias de som';
+  _railEl.appendChild(catsLabel);
+
+  _CATEGORIES.forEach(cat => {
+    _railEl.appendChild(_buildRailItem({
+      id: cat.id,
+      icon: cat.icon,
+      name: cat.name,
+      count: _countOverrides(cat.id),
+      disabled: !_modalState.enabledCats[cat.id],
+    }));
+  });
+}
+
+function _buildRailItem({ id, icon, name, count = 0, disabled = false }) {
+  const btn = document.createElement('button');
+  btn.className = 'asx-rail__item' + (id === _activeSection ? ' is-active' : '') + (disabled ? ' is-disabled' : '');
+  btn.id = `asx-rail-item-${id}`;
+  btn.type = 'button';
+
+  const isEmoji = /^[◉◈⊛⊡✓✕⏱⚠⏸]$/.test(icon);
+  btn.innerHTML = `
+    <span class="asx-rail__icon" aria-hidden="true">${isEmoji ? icon : icon}</span>
+    <span class="asx-rail__name">${name}</span>
+    ${count > 0 ? `<span class="asx-rail__count">${count}</span>` : ''}
+    ${disabled ? `<span class="asx-rail__off-dot" title="Categoria desativada"></span>` : ''}
+  `;
+
+  btn.addEventListener('click', () => {
+    _activeSection = id;
+    _railEl.querySelectorAll('.asx-rail__item').forEach(el => el.classList.remove('is-active'));
+    btn.classList.add('is-active');
+    _renderActivePanel();
+  });
+
+  return btn;
+}
+
+function _refreshRailBadges() {
+  _CATEGORIES.forEach(cat => {
+    const item = document.getElementById(`asx-rail-item-${cat.id}`);
+    if (!item) return;
+    let count = item.querySelector('.asx-rail__count');
+    const n = _countOverrides(cat.id);
+    if (n > 0) {
+      if (!count) {
+        count = document.createElement('span');
+        count.className = 'asx-rail__count';
+        item.insertBefore(count, item.querySelector('.asx-rail__off-dot') || null);
+      }
+      count.textContent = n;
+    } else if (count) {
+      count.remove();
+    }
+    item.classList.toggle('is-disabled', !_modalState.enabledCats[cat.id]);
+  });
+}
+
+
+/* ═══════════════════════════════════════════════
+   PAINEL ATIVO — roteamento
+═══════════════════════════════════════════════ */
+
+function _renderActivePanel() {
+  const volPanel = document.getElementById('asx-panel-volume');
+  const catPanel = document.getElementById('asx-panel-category');
+
+  if (_activeSection === 'volume') {
+    volPanel.classList.add('is-active');
+    catPanel.classList.remove('is-active');
+    if (_sfxSlider) _sfxSlider.layout();
+  } else {
+    volPanel.classList.remove('is-active');
+    catPanel.classList.add('is-active');
+    const cat = _CATEGORIES.find(c => c.id === _activeSection);
+    if (cat) _renderCategoryPanel(cat);
   }
 }
 
 
-/* ── Bindings de eventos do modal ── */
+/* ═══════════════════════════════════════════════
+   PAINEL — VOLUME (montado uma única vez)
+═══════════════════════════════════════════════ */
 
-function _bindModalEvents() {
-  _modalEl.querySelector('#snd-close-btn').addEventListener('click',  _closeModal);
-  _modalEl.querySelector('#snd-closeBtn2').addEventListener('click',  _closeModal);
-  _modalEl.querySelector('#snd-resetBtn').addEventListener('click',   _resetAll);
-  _modalEl.querySelector('#snd-saveBtn').addEventListener('click',    _saveAll);
-
-  _modalEl.querySelector('#snd-musicToggle').addEventListener('change', e => {
-    _modalState.musicEnabled = e.target.checked;
-    if (!_modalState.musicEnabled) _stopMusic();
-  });
-}
-
-
-/* ── Sound Cards ── */
-
-function _renderCards() {
-  const grid = document.getElementById('snd-cardsGrid');
-  if (!grid) return;
-  grid.innerHTML = '';
-
-  _CATEGORIES.forEach((cat, ci) => {
-    const card = document.createElement('div');
-    card.className = `snd-sound-card ${cat.cls}`;
-    card.id = `snd-sc-${cat.id}`;
-    card.style.animationDelay = `${ci * 55}ms`;
-    if (!_modalState.enabledCats[cat.id]) card.classList.add('is-disabled');
-
-    const head = document.createElement('div');
-    head.className = 'snd-sound-card__head';
-    head.innerHTML = `
-      <div class="snd-sound-card__head-left">
-        <div class="snd-sound-card__icon">${cat.icon}</div>
-        <div>
-          <span class="snd-sound-card__name">${cat.name}</span>
-          <span class="snd-sound-card__desc">${cat.desc}</span>
+function _renderVolumePanelSkeleton() {
+  const panel = document.getElementById('asx-panel-volume');
+  panel.innerHTML = `
+    <div class="asx-panel-head">
+      <h2 class="asx-panel-head__title">Volume geral</h2>
+      <p class="asx-panel-head__desc">Controla o volume de todos os efeitos sonoros (SFX) do app. Arraste, use as setas do teclado ou o scroll do mouse.</p>
+    </div>
+    <div class="asx-vol-card">
+      <div class="asx-vol">
+        <div class="asx-vol__head">
+          <div>
+            <div class="asx-vol__label">Efeitos (SFX)</div>
+            <div class="asx-vol__sub">Padrão: 0.5×</div>
+          </div>
+          <div class="asx-vol__readout">
+            <span class="asx-vol-badge" id="asx-vol-badge">0.5×</span>
+            <span class="asx-vol-value" id="asx-vol-value">0.50×</span>
+          </div>
+        </div>
+        <div class="asx-vol-wrap" id="asx-vol-wrap">
+          <div class="asx-vol-track">
+            <div class="asx-vol-fill" id="asx-vol-fill"></div>
+          </div>
+          <div class="asx-vol-mark" id="asx-vol-mark-50"  title="0.5×"></div>
+          <div class="asx-vol-mark" id="asx-vol-mark-100" title="1.0×"></div>
+          <div class="asx-vol-mark" id="asx-vol-mark-150" title="1.5×"></div>
+          <input type="range" class="asx-vol-input" id="asx-vol-input"
+            min="0" max="150" step="1" value="50" aria-label="Volume de Efeitos" />
+          <div class="asx-vol-thumb" id="asx-vol-thumb"></div>
+        </div>
+        <div class="asx-vol-scale">
+          <span>0×</span>
+          <span class="is-default">0.5× padrão</span>
+          <span>1.0×</span>
+          <span>1.5×</span>
         </div>
       </div>
-    `;
-    head.appendChild(_buildCatToggle(cat.id));
-    card.appendChild(head);
-
-    const secLabel = document.createElement('div');
-    secLabel.className = 'snd-sound-card__sec';
-    secLabel.textContent = 'Variante ativa';
-    card.appendChild(secLabel);
-
-    if (cat.id === 'modal') {
-      const openVariants  = cat.variants.filter(v => v.id.startsWith('open')  || v.id.startsWith('Open'));
-      const closeVariants = cat.variants.filter(v => v.id.startsWith('close') || v.id.startsWith('Close'));
-
-      const openSec = document.createElement('div');
-      openSec.className = 'snd-sound-card__sec snd-sound-card__sec--sub';
-      openSec.textContent = 'ABRIR';
-      card.appendChild(openSec);
-
-      const openList = document.createElement('div');
-      openList.className = 'snd-sound-card__variants';
-      openVariants.forEach(v => openList.appendChild(_buildVariantRow(cat, v)));
-      card.appendChild(openList);
-
-      const closeSec = document.createElement('div');
-      closeSec.className = 'snd-sound-card__sec snd-sound-card__sec--sub';
-      closeSec.textContent = 'FECHAR';
-      card.appendChild(closeSec);
-
-      const closeList = document.createElement('div');
-      closeList.className = 'snd-sound-card__variants';
-      closeVariants.forEach(v => closeList.appendChild(_buildVariantRow(cat, v)));
-      card.appendChild(closeList);
-    } else {
-      const varList = document.createElement('div');
-      varList.className = 'snd-sound-card__variants';
-      cat.variants.forEach(v => varList.appendChild(_buildVariantRow(cat, v)));
-      card.appendChild(varList);
-    }
-
-    const areaSecLabel = document.createElement('div');
-    areaSecLabel.className = 'snd-sound-card__sec';
-    areaSecLabel.textContent = 'ÁREA GERAL';
-    card.appendChild(areaSecLabel);
-
-    const areasSection = document.createElement('div');
-    areasSection.className = 'snd-sound-card__areas-section';
-    areasSection.id = `snd-areas-section-${cat.id}`;
-
-    const generalRow = document.createElement('div');
-    generalRow.className = 'snd-areas-general';
-    generalRow.id = `snd-areas-general-${cat.id}`;
-    cat.areas.forEach(area => generalRow.appendChild(_buildGeneralAreaChip(cat.id, area)));
-    areasSection.appendChild(generalRow);
-    areasSection.appendChild(_buildSpecificBtn(cat));
-    card.appendChild(areasSection);
-
-    grid.appendChild(card);
-  });
+    </div>
+  `;
 }
 
-function _buildCatToggle(catId) {
+
+/* ═══════════════════════════════════════════════
+   PAINEL — CATEGORIA (re-renderizado a cada seleção)
+═══════════════════════════════════════════════ */
+
+function _renderCategoryPanel(cat) {
+  const panel = document.getElementById('asx-panel-category');
+  panel.innerHTML = '';
+
+  /* Header: ícone + nome + descrição + toggle */
+  const head = document.createElement('div');
+  head.className = 'asx-cat-head';
+  head.innerHTML = `
+    <div class="asx-cat-head__left">
+      <div class="asx-cat-head__icon" aria-hidden="true">${cat.icon}</div>
+      <div>
+        <div class="asx-cat-head__title">${cat.name}</div>
+        <div class="asx-cat-head__desc">${cat.desc}</div>
+      </div>
+    </div>
+  `;
+  head.appendChild(_buildCatToggle(cat));
+  panel.appendChild(head);
+
+  /* Variantes */
+  const varSection = document.createElement('div');
+  varSection.className = 'asx-section';
+
+  if (cat.id === 'modal') {
+    const openVariants  = cat.variants.filter(v => v.id.startsWith('open')  || v.id.startsWith('Open'));
+    const closeVariants = cat.variants.filter(v => v.id.startsWith('close') || v.id.startsWith('Close'));
+
+    const openLabel = document.createElement('div');
+    openLabel.className = 'asx-section__label';
+    openLabel.textContent = 'Variante ativa — Abrir';
+    varSection.appendChild(openLabel);
+    varSection.appendChild(_buildVariantList(cat, openVariants));
+
+    const closeLabel = document.createElement('div');
+    closeLabel.className = 'asx-section__sub-label';
+    closeLabel.textContent = 'FECHAR';
+    varSection.appendChild(closeLabel);
+    varSection.appendChild(_buildVariantList(cat, closeVariants));
+  } else {
+    const label = document.createElement('div');
+    label.className = 'asx-section__label';
+    label.textContent = 'Variante ativa';
+    varSection.appendChild(label);
+    varSection.appendChild(_buildVariantList(cat, cat.variants));
+  }
+  panel.appendChild(varSection);
+
+  /* Áreas gerais */
+  const areaSection = document.createElement('div');
+  areaSection.className = 'asx-section';
+  const areaLabel = document.createElement('div');
+  areaLabel.className = 'asx-section__label';
+  areaLabel.textContent = 'Área geral';
+  areaSection.appendChild(areaLabel);
+
+  const chips = document.createElement('div');
+  chips.className = 'asx-chips';
+  chips.id = `asx-chips-${cat.id}`;
+  cat.areas.forEach(area => chips.appendChild(_buildAreaChip(cat, area)));
+  areaSection.appendChild(chips);
+
+  /* Overrides específicos (inline, expansível) */
+  const specToggle = _buildSpecToggle(cat);
+  areaSection.appendChild(specToggle);
+
+  const specPanel = _buildSpecPanel(cat);
+  areaSection.appendChild(specPanel);
+
+  panel.appendChild(areaSection);
+}
+
+function _buildCatToggle(cat) {
   const label = document.createElement('label');
-  label.className = 'snd-toggle';
-  label.setAttribute('aria-label', `Ativar sons de ${catId}`);
-  const checked = _modalState.enabledCats[catId];
+  label.className = 'asx-toggle';
+  label.setAttribute('aria-label', `Ativar sons de ${cat.name}`);
+  const checked = _modalState.enabledCats[cat.id];
   label.innerHTML = `
-    <input type="checkbox" class="snd-toggle__input" ${checked ? 'checked' : ''} />
-    <span class="snd-toggle__track"><span class="snd-toggle__thumb"></span></span>
+    <input type="checkbox" class="asx-toggle__input" ${checked ? 'checked' : ''} />
+    <span class="asx-toggle__track"><span class="asx-toggle__thumb"></span></span>
   `;
   label.querySelector('input').addEventListener('change', e => {
-    _modalState.enabledCats[catId] = e.target.checked;
-    document.getElementById(`snd-sc-${catId}`)
-      ?.classList.toggle('is-disabled', !e.target.checked);
+    _modalState.enabledCats[cat.id] = e.target.checked;
+    _refreshRailBadges();
   });
   return label;
 }
 
+function _buildVariantList(cat, variants) {
+  const list = document.createElement('div');
+  list.className = 'asx-variants';
+  variants.forEach(v => list.appendChild(_buildVariantRow(cat, v)));
+  return list;
+}
+
 function _buildVariantRow(cat, v) {
-  const _modalSlot = cat.id === 'modal'
+  const slot = cat.id === 'modal'
     ? ((v.id.startsWith('open') || v.id.startsWith('Open')) ? 'modal-open' : 'modal-close')
     : cat.id;
-  const isActive = _modalState.selectedVariant[_modalSlot] === v.id;
+  const isActive = _modalState.selectedVariant[slot] === v.id;
+
   const row = document.createElement('div');
-  row.className = `snd-variant-row${isActive ? ' is-active' : ''}`;
-  row.dataset.cat = cat.id;
+  row.className = 'asx-variant-row' + (isActive ? ' is-active' : '');
+  row.tabIndex = 0;
   row.dataset.var = v.id;
   row.innerHTML = `
-    <div class="snd-vr-radio"><div class="snd-vr-radio__dot"></div></div>
-    <span class="snd-vr-label">${v.label}</span>
-    <button class="snd-vr-preview" aria-label="Preview ${v.label}" title="Ouvir prévia">▶</button>
+    <span class="asx-variant-radio"></span>
+    <span class="asx-variant-label">${v.label}</span>
+    <button class="asx-preview-btn" type="button" aria-label="Ouvir ${v.label}" title="Ouvir prévia">▶</button>
   `;
+
+  const select = () => _setActiveVariant(cat, v.id);
   row.addEventListener('click', e => {
-    if (e.target.closest('.snd-vr-preview')) return;
-    _setActiveVariant(cat.id, v.id);
+    if (e.target.closest('.asx-preview-btn')) return;
+    select();
   });
-  row.querySelector('.snd-vr-preview').addEventListener('click', e => {
+  row.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(); }
+  });
+  row.querySelector('.asx-preview-btn').addEventListener('click', e => {
     e.stopPropagation();
     _triggerPreview(v, e.currentTarget);
   });
   return row;
 }
 
-function _setActiveVariant(catId, varId) {
+function _setActiveVariant(cat, varId) {
+  const catId = cat.id;
   if (catId !== 'modal') {
     _modalState.selectedVariant[catId] = varId;
     audioState.setSfxMap(catId, varId);
@@ -761,112 +728,174 @@ function _setActiveVariant(catId, varId) {
       audioState.setSfxMap('closeModal', varId);
     }
   }
-
-  const card = document.getElementById(`snd-sc-${catId}`);
-  if (!card) return;
-  if (catId === 'modal') {
-    const isOpen = varId.startsWith('open') || varId.startsWith('Open');
-    card.querySelectorAll('.snd-variant-row').forEach(row => {
-      const rowIsOpen = row.dataset.var.startsWith('open') || row.dataset.var.startsWith('Open');
-      if (rowIsOpen === isOpen) row.classList.toggle('is-active', row.dataset.var === varId);
-    });
-  } else {
-    card.querySelectorAll('.snd-variant-row').forEach(row => {
-      row.classList.toggle('is-active', row.dataset.var === varId);
-    });
-  }
+  // Re-renderiza o painel de categoria para refletir a nova seleção
+  _renderCategoryPanel(cat);
 }
 
 function _triggerPreview(variant, btn) {
   variant.fn();
   btn.classList.add('is-playing');
-  setTimeout(() => btn.classList.remove('is-playing'), 500);
+  setTimeout(() => btn.classList.remove('is-playing'), 480);
 }
 
 
-/* ── General Area Chips ── */
+/* ── Chips de área geral ── */
 
-function _buildGeneralAreaChip(catId, area) {
-  const isOverridden = _specificOverrides[catId][area] !== null;
-  const isOn = _modalState.selectedAreas[catId].includes(area);
+function _buildAreaChip(cat, area) {
+  const isOverridden = _specificOverrides[cat.id][area] !== null;
+  const isOn = _modalState.selectedAreas[cat.id].includes(area);
 
   const chip = document.createElement('label');
-  chip.className = `snd-area-chip-gen${isOverridden ? ' overridden' : (isOn ? ' on' : '')}`;
-  chip.id = `snd-gen-chip-${catId}-${area}`;
+  chip.className = 'asx-chip' + (isOverridden ? ' is-overridden' : (isOn ? ' is-on' : ''));
   chip.innerHTML = `
     <input type="checkbox" ${isOn && !isOverridden ? 'checked' : ''} ${isOverridden ? 'disabled' : ''} />
-    <span class="snd-area-chip-gen__dot"></span>
+    <span class="asx-chip__dot"></span>
     ${area}
   `;
 
   if (!isOverridden) {
     chip.addEventListener('change', () => {
-      const areas = _modalState.selectedAreas[catId];
+      const areas = _modalState.selectedAreas[cat.id];
       const idx = areas.indexOf(area);
-      if (idx > -1) {
-        areas.splice(idx, 1);
-        chip.classList.remove('on');
-      } else {
-        areas.push(area);
-        chip.classList.add('on');
-      }
+      if (idx > -1) { areas.splice(idx, 1); chip.classList.remove('is-on'); }
+      else           { areas.push(area);     chip.classList.add('is-on'); }
       chip.querySelector('input').checked = areas.includes(area);
     });
   }
   return chip;
 }
 
-function _syncGeneralChips(catId) {
-  const cat = _CATEGORIES.find(c => c.id === catId);
-  const row = document.getElementById(`snd-areas-general-${catId}`);
-  if (!row || !cat) return;
-  row.innerHTML = '';
-  cat.areas.forEach(area => row.appendChild(_buildGeneralAreaChip(catId, area)));
-}
 
+/* ── Overrides específicos por área (inline expansível) ── */
 
-/* ── Spec Button ── */
-
-function _buildSpecificBtn(cat) {
-  const btn = document.createElement('button');
-  btn.className = 'snd-btn-specific';
-  btn.id = `snd-btn-spec-${cat.id}`;
+function _buildSpecToggle(cat) {
   const n = _countOverrides(cat.id);
-  btn.innerHTML = `
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-      <circle cx="12" cy="12" r="3"/>
-      <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
-    </svg>
-    Configurar áreas específicas
-    ${n > 0 ? `<span class="snd-btn-specific__badge">${n}</span>` : ''}
-  `;
-  if (n > 0) btn.classList.add('has-overrides');
+  const expanded = _expandedSpecs.has(cat.id);
 
-  btn.addEventListener('click', e => {
-    e.stopPropagation();
-    _openSpecPanel(cat, btn);
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'asx-spec-toggle' + (n > 0 ? ' has-overrides' : '') + (expanded ? ' is-expanded' : '');
+  btn.id = `asx-spec-toggle-${cat.id}`;
+  btn.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+    Configurar áreas específicas
+    ${n > 0 ? `<span class="asx-spec-toggle__badge">${n}</span>` : ''}
+    ${_ICON_CHEVRON}
+  `;
+
+  btn.addEventListener('click', () => {
+    if (_expandedSpecs.has(cat.id)) _expandedSpecs.delete(cat.id);
+    else _expandedSpecs.add(cat.id);
+    _renderCategoryPanel(cat);
   });
+
   return btn;
 }
 
-function _syncSpecBtn(catId) {
-  const btn = document.getElementById(`snd-btn-spec-${catId}`);
-  if (!btn) return;
-  const n = _countOverrides(catId);
-  const badge = btn.querySelector('.snd-btn-specific__badge');
-  if (n > 0) {
-    btn.classList.add('has-overrides');
-    if (badge) { badge.textContent = n; }
-    else {
-      const sp = document.createElement('span');
-      sp.className = 'snd-btn-specific__badge';
-      sp.textContent = n;
-      btn.appendChild(sp);
-    }
-  } else {
-    btn.classList.remove('has-overrides');
-    if (badge) badge.remove();
+function _buildSpecPanel(cat) {
+  const wrap = document.createElement('div');
+  wrap.className = 'asx-spec-panel' + (_expandedSpecs.has(cat.id) ? ' is-expanded' : '');
+  if (!_expandedSpecs.has(cat.id)) return wrap;
+
+  const scroll = document.createElement('div');
+  scroll.className = 'asx-spec-panel__scroll';
+
+  const nAreas = cat.areas.length;
+  const table = document.createElement('div');
+  table.className = 'asx-spec-table';
+  table.style.setProperty('--spec-cols', nAreas);
+
+  const labelHeader = document.createElement('div');
+  labelHeader.className = 'asx-spec-th asx-spec-th--label';
+  labelHeader.textContent = 'Variante';
+  table.appendChild(labelHeader);
+
+  const playHeader = document.createElement('div');
+  playHeader.className = 'asx-spec-th';
+  table.appendChild(playHeader);
+
+  cat.areas.forEach(area => {
+    const th = document.createElement('div');
+    th.className = 'asx-spec-th asx-spec-th--area';
+    const hasOv = _specificOverrides[cat.id][area] !== null;
+    th.innerHTML = `<span>${area}</span><span class="asx-spec-th__dot${hasOv ? ' has-override' : ''}"></span>`;
+    table.appendChild(th);
+  });
+
+  _appendSpecRow(table, cat, null);
+  cat.variants.forEach(v => _appendSpecRow(table, cat, v));
+
+  scroll.appendChild(table);
+  wrap.appendChild(scroll);
+
+  const footer = document.createElement('div');
+  footer.className = 'asx-spec-panel__footer';
+  const clearBtn = document.createElement('button');
+  clearBtn.type = 'button';
+  clearBtn.className = 'asx-spec-clear';
+  clearBtn.textContent = 'Limpar overrides';
+  clearBtn.addEventListener('click', () => {
+    cat.areas.forEach(area => {
+      _specificOverrides[cat.id][area] = null;
+      _applyModalAreaOverride(cat.id, area, null);
+    });
+    _modalState.selectedAreas[cat.id] = [...cat.areas];
+    _refreshRailBadges();
+    _renderCategoryPanel(cat);
+  });
+  footer.appendChild(clearBtn);
+  wrap.appendChild(footer);
+
+  return wrap;
+}
+
+function _appendSpecRow(table, cat, variant) {
+  const isDefault = variant === null;
+
+  const labelCell = document.createElement('div');
+  labelCell.className = 'asx-spec-td asx-spec-td--label' + (isDefault ? ' asx-spec-row-default' : '');
+  const shortLabel = isDefault ? '↩ Geral' : variant.label.replace(/\s—.*$/, '');
+  const subLabel   = isDefault ? 'padrão'  : variant.label.replace(/^[^—]+—\s*/, '');
+  labelCell.innerHTML = `<span class="asx-spec-td__main">${shortLabel}</span><span class="asx-spec-td__sub">${subLabel}</span>`;
+  table.appendChild(labelCell);
+
+  const playCell = document.createElement('div');
+  playCell.className = 'asx-spec-td asx-spec-td--play';
+  if (!isDefault) {
+    const previewBtn = document.createElement('button');
+    previewBtn.type = 'button';
+    previewBtn.className = 'asx-spec-mini-preview';
+    previewBtn.setAttribute('aria-label', `Ouvir ${shortLabel}`);
+    previewBtn.textContent = '▶';
+    previewBtn.addEventListener('click', e => { e.stopPropagation(); _triggerPreview(variant, previewBtn); });
+    playCell.appendChild(previewBtn);
   }
+  table.appendChild(playCell);
+
+  cat.areas.forEach(area => {
+    const override = _specificOverrides[cat.id][area];
+    const isActive = isDefault ? override === null : override === variant.id;
+
+    const cell = document.createElement('div');
+    cell.className = 'asx-spec-td asx-spec-td--radio' + (isActive ? ' is-active' : '');
+    cell.innerHTML = `<span class="asx-spec-radio"><span class="asx-spec-radio__dot"></span></span>`;
+
+    cell.addEventListener('click', () => {
+      const newOverride = isDefault ? null : variant.id;
+      _specificOverrides[cat.id][area] = newOverride;
+
+      const areas = _modalState.selectedAreas[cat.id];
+      const idx   = areas.indexOf(area);
+      if (newOverride !== null) { if (idx > -1) areas.splice(idx, 1); }
+      else                       { if (idx === -1) areas.push(area); }
+
+      _applyModalAreaOverride(cat.id, area, newOverride);
+      _refreshRailBadges();
+      _renderCategoryPanel(cat);
+    });
+
+    table.appendChild(cell);
+  });
 }
 
 function _countOverrides(catId) {
@@ -875,17 +904,9 @@ function _countOverrides(catId) {
 
 /**
  * Aplica um override de área no audioState, tratando a categoria 'modal'
- * de forma especial (split em openModal / closeModal).
- *
- * Centraliza a lógica que antes estava duplicada em:
- *   - _buildSpecTableRow (click handler)
- *   - _renderSpecPanel   (botão "Limpar overrides")
- *   - _saveAll
- *   - _resetAll
- *
- * @param {string}      catId     — id da categoria (ex: 'click', 'modal')
- * @param {string}      area      — label da área (ex: 'Game') — normalizado internamente
- * @param {string|null} variantId — id da variante ou null para remover override
+ * de forma especial (split em openModal / closeModal). Centraliza a
+ * lógica compartilhada por _appendSpecRow, "Limpar overrides", _saveAll
+ * e _resetAll.
  */
 function _applyModalAreaOverride(catId, area, variantId) {
   const areaKey = area.toLowerCase();
@@ -904,254 +925,10 @@ function _applyModalAreaOverride(catId, area, variantId) {
 }
 
 
-/* ── Spec Panel ── */
-
-function _openSpecPanel(cat, triggerBtn) {
-  if (_activePanelCatId === cat.id && _specPanelEl.classList.contains('is-open')) {
-    _closeSpecPanel();
-    return;
-  }
-
-  _activePanelCatId = cat.id;
-
-  const cardEl = document.getElementById(`snd-sc-${cat.id}`);
-  if (cardEl) {
-    const style = getComputedStyle(cardEl);
-    _specPanelEl.style.setProperty('--c-panel-accent', style.getPropertyValue('--c-accent').trim());
-    _specPanelEl.style.setProperty('--c-panel-glow',   style.getPropertyValue('--c-glow').trim());
-    _specPanelEl.style.setProperty('--c-bg-on',        style.getPropertyValue('--c-bg-on').trim());
-  }
-
-  _renderSpecPanel(cat);
-  _positionPanel(triggerBtn);
-
-  _specOverlay.classList.add('is-open');
-  _specPanelEl.classList.add('is-open');
-  _specOverlay.onclick = _closeSpecPanel;
-}
-
-function _closeSpecPanel() {
-  if (!_specPanelEl) return;
-  _specPanelEl.classList.remove('is-open');
-  _specOverlay.classList.remove('is-open');
-  _activePanelCatId = null;
-}
-
-function _positionPanel(triggerBtn) {
-  const rect   = triggerBtn.getBoundingClientRect();
-  const panelW = 280;
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-
-  let left = rect.left;
-  let top  = rect.bottom + 8;
-
-  if (left + panelW > vw - 12) left = vw - panelW - 12;
-  if (left < 12) left = 12;
-  if (top + 320 > vh - 12) top = rect.top - 8 - Math.min(300, vh * 0.5);
-  if (top < 12) top = 12;
-
-  _specPanelEl.style.left = `${left}px`;
-  _specPanelEl.style.top  = `${top}px`;
-}
-
-function _renderSpecPanel(cat) {
-  _specPanelEl.innerHTML = `
-    <div class="snd-spec-panel__head">
-      <span class="snd-spec-panel__title">
-        <span class="snd-spec-panel__title-dot"></span>
-        ${cat.name.replace(' Sounds', '')} — Específico
-      </span>
-      <button class="snd-spec-panel__close" id="snd-specPanelClose" aria-label="Fechar">✕</button>
-    </div>
-    <div class="snd-spec-panel__body" id="snd-specPanelBody"></div>
-    <div class="snd-spec-panel__footer">
-      <button class="snd-spec-panel__clear" id="snd-specPanelClear">Limpar overrides</button>
-    </div>
-  `;
-
-  document.getElementById('snd-specPanelClose').addEventListener('click', _closeSpecPanel);
-  document.getElementById('snd-specPanelClear').addEventListener('click', () => {
-    cat.areas.forEach(area => {
-      _specificOverrides[cat.id][area] = null;
-      _applyModalAreaOverride(cat.id, area, null);
-    });
-    _modalState.selectedAreas[cat.id] = [...cat.areas];
-    _renderSpecPanel(cat);
-    _syncGeneralChips(cat.id);
-    _syncSpecBtn(cat.id);
-  });
-
-  const body   = document.getElementById('snd-specPanelBody');
-  const nAreas = cat.areas.length;
-
-  const table = document.createElement('div');
-  table.className = 'snd-spec-table';
-  table.style.setProperty('--spec-cols', nAreas);
-
-  const headerRow = document.createElement('div');
-  headerRow.className = 'snd-spec-table__header';
-
-  const labelHeader = document.createElement('div');
-  labelHeader.className = 'snd-spec-th snd-spec-th--label';
-  labelHeader.textContent = 'Variante';
-  headerRow.appendChild(labelHeader);
-
-  const playHeader = document.createElement('div');
-  playHeader.className = 'snd-spec-th';
-  headerRow.appendChild(playHeader);
-
-  cat.areas.forEach(area => {
-    const th = document.createElement('div');
-    th.className = 'snd-spec-th snd-spec-th--area';
-    const hasOv = _specificOverrides[cat.id][area] !== null;
-    th.innerHTML = `
-      <span class="snd-spec-th__name">${area}</span>
-      ${hasOv
-        ? `<span class="snd-spec-th__dot snd-spec-th__dot--override"></span>`
-        : `<span class="snd-spec-th__dot"></span>`}
-    `;
-    headerRow.appendChild(th);
-  });
-  table.appendChild(headerRow);
-
-  table.appendChild(_buildSpecTableRow(cat, null));
-  cat.variants.forEach(v => table.appendChild(_buildSpecTableRow(cat, v)));
-
-  body.appendChild(table);
-}
-
-function _buildSpecTableRow(cat, variant) {
-  const isDefault = variant === null;
-  const row = document.createElement('div');
-  row.className = `snd-spec-table__row${isDefault ? ' snd-spec-table__row--default' : ''}`;
-
-  const labelCell = document.createElement('div');
-  labelCell.className = 'snd-spec-td snd-spec-td--label';
-  const shortLabel = isDefault ? '↩ Geral' : variant.label.replace(/\s—.*$/, '');
-  const subLabel   = isDefault ? 'padrão'  : variant.label.replace(/^[^—]+—\s*/, '');
-  labelCell.innerHTML = `
-    <div class="snd-spec-td__text">
-      <span class="snd-spec-td__main">${shortLabel}</span>
-      <span class="snd-spec-td__sub">${subLabel}</span>
-    </div>
-  `;
-  row.appendChild(labelCell);
-
-  const playCell = document.createElement('div');
-  playCell.className = 'snd-spec-td snd-spec-td--play';
-  if (!isDefault) {
-    const previewBtn = document.createElement('button');
-    previewBtn.className = 'snd-spec-preview';
-    previewBtn.setAttribute('aria-label', `Ouvir ${shortLabel}`);
-    previewBtn.setAttribute('title', 'Ouvir prévia');
-    previewBtn.textContent = '▶';
-    previewBtn.addEventListener('click', e => {
-      e.stopPropagation();
-      _triggerPreview(variant, previewBtn);
-    });
-    playCell.appendChild(previewBtn);
-  }
-  row.appendChild(playCell);
-
-  cat.areas.forEach(area => {
-    const override = _specificOverrides[cat.id][area];
-    const isActive = isDefault ? override === null : override === variant.id;
-
-    const cell = document.createElement('div');
-    cell.className = `snd-spec-td snd-spec-td--radio${isActive ? ' is-active' : ''}`;
-    cell.dataset.area    = area;
-    cell.dataset.variant = isDefault ? '__default__' : variant.id;
-    cell.innerHTML = `<div class="snd-spec-radio"><div class="snd-spec-radio__dot"></div></div>`;
-
-    cell.addEventListener('click', () => {
-      const newOverride = isDefault ? null : variant.id;
-      _specificOverrides[cat.id][area] = newOverride;
-
-      const areas = _modalState.selectedAreas[cat.id];
-      const idx   = areas.indexOf(area);
-
-      if (newOverride !== null) {
-        if (idx > -1) areas.splice(idx, 1);
-      } else {
-        if (idx === -1) areas.push(area);
-      }
-
-      _applyModalAreaOverride(cat.id, area, newOverride);
-
-      _renderSpecPanel(cat);
-      _syncGeneralChips(cat.id);
-      _syncSpecBtn(cat.id);
-    });
-
-    row.appendChild(cell);
-  });
-
-  return row;
-}
-
-
-/* ── Music Tracks ── */
-
-function _renderMusicTracks() {
-  const container = document.getElementById('snd-musicTracks');
-  if (!container) return;
-  container.innerHTML = '';
-
-  _MUSIC_TRACKS.forEach(track => {
-    const row = document.createElement('div');
-    row.className = 'snd-music-track';
-    row.id = `snd-mt-${track.id}`;
-    row.innerHTML = `
-      <div class="snd-mt-radio"></div>
-      <div class="snd-mt-info">
-        <div class="snd-mt-name">${track.name}</div>
-        <div class="snd-mt-desc">${track.desc}</div>
-      </div>
-      <span class="snd-mt-tag">A TOCAR</span>
-      <button class="snd-mt-btn" aria-label="Preview ${track.name}">▶</button>
-    `;
-    row.addEventListener('click', e => {
-      if (e.target.closest('.snd-mt-btn')) return;
-      _toggleMusicTrack(track);
-    });
-    row.querySelector('.snd-mt-btn').addEventListener('click', e => {
-      e.stopPropagation();
-      _toggleMusicTrack(track);
-    });
-    container.appendChild(row);
-  });
-}
-
-function _toggleMusicTrack(track) {
-  if (_modalState.playingMusic === track.id) { _stopMusic(); return; }
-  if (!_modalState.musicEnabled) return;
-  _modalState.playingMusic = track.id;
-  track.fn();
-  _syncMusicUI();
-}
-
-function _stopMusic() {
-  _modalState.playingMusic = null;
-  audio.music.stop?.();
-  _syncMusicUI();
-}
-
-function _syncMusicUI() {
-  document.querySelectorAll('.snd-music-track').forEach(el => {
-    const playing = el.id === `snd-mt-${_modalState.playingMusic}`;
-    el.classList.toggle('is-on', playing);
-    const btn = el.querySelector('.snd-mt-btn');
-    if (btn) btn.textContent = playing ? '■' : '▶';
-  });
-}
-
-
 /* ── Save ── */
 
 function _saveAll() {
-  audioState.setVolume('music', _modalState.musicSlider / 100);
-  audioState.setVolume('sfx',   _modalState.sfxSlider   / 100);
+  audioState.setVolume('sfx', _modalState.sfxSlider / 100);
 
   _CATEGORIES.forEach(cat => {
     cat.areas.forEach(area => {
@@ -1160,18 +937,13 @@ function _saveAll() {
     });
   });
 
-  const btn = document.getElementById('snd-saveBtn');
+  const btn = document.getElementById('asx-save-btn');
   if (btn) {
     const prev = btn.textContent;
     btn.textContent = 'Salvo ✓';
     btn.disabled = true;
     setTimeout(() => { btn.textContent = prev; btn.disabled = false; }, 1400);
   }
-
-  console.log('[sound] _saveAll: configurações salvas', {
-    music: _modalState.musicSlider / 100,
-    sfx:   _modalState.sfxSlider   / 100,
-  });
 }
 
 
@@ -1193,13 +965,11 @@ const _DEFAULT_SFX_MAP = {
 function _resetAll() {
   // 1. Engine de áudio
   audio.setMasterVolume(1.0);
-  audio.setMusicVolume(0.5);
   audio.unmute();
   audio.setEnabled(true);
 
-  // 2. Volumes no audioState (antes de setValue nos sliders)
+  // 2. Volumes no audioState (antes de setValue no slider)
   audioState.setVolume('master', 1.0);
-  audioState.setVolume('music', 0.5);
   audioState.setVolume('sfx',   0.5);
 
   // 3. sfxMap padrão → Firebase
@@ -1209,36 +979,21 @@ function _resetAll() {
 
   // 4. Limpa overrides de área → Firebase
   _CATEGORIES.forEach(cat => {
-    cat.areas.forEach(area => {
-      _applyModalAreaOverride(cat.id, area, null);
-    });
+    cat.areas.forEach(area => _applyModalAreaOverride(cat.id, area, null));
   });
 
   // 5. Estado local do modal
   _resetModalState();
+  _expandedSpecs.clear();
 
-  // 6. DOM
-  if (_modalOpen) {
-    _closeSpecPanel();
-    _stopMusic();
-  } else {
-    audio.music?.stop?.();
-    _modalState.playingMusic = null;
+  // 6. Atualiza slider via API do vol-slider (sem recriar)
+  if (_sfxSlider) _sfxSlider.setValue(_DEFAULT_SFX / 100);
+
+  // 7. Redesenha rail + painel ativo
+  if (_railEl) {
+    _renderRail();
+    _renderActivePanel();
   }
-
-  const musicToggle = document.getElementById('snd-musicToggle');
-  if (musicToggle) musicToggle.checked = true;
-
-  // 7. Atualiza sliders via API do vol-slider (sem recriar)
-  if (_musicSlider) _musicSlider.setValue(_DEFAULT_MUSIC / 100);
-  if (_sfxSlider)   _sfxSlider.setValue(_DEFAULT_SFX   / 100);
-
-  // 8. Recria cards
-  if (document.getElementById('snd-cardsGrid')) {
-    _renderCards();
-  }
-
-  console.log('[sound] _resetAll: reset completo — sfxMap, sfxAreaMap, volumes e estado local restaurados aos padrões.');
 }
 
 
@@ -1247,7 +1002,7 @@ function _resetAll() {
 ═══════════════════════════════════════════════ */
 
 let _initialized = false;
-let _modalBuilt  = false;
+let _modalBuilt   = false;
 
 const Sound = {
 
@@ -1278,19 +1033,12 @@ const Sound = {
     _resetAll();
   },
 
-reinit() {
-  destroyAudioBtn();
-  destroyMusicBtn();    // estava faltando
-
-  _initialized = false;
-
-  this.init();
-  mountMusicBtn();      // init() só monta o SFX btn
-
-  audio.resumeCtx();
-
-  console.log('[sound] reinit() executado — botões recriados, ctx resume tentado');
-},
+  reinit() {
+    destroyAudioBtn();
+    _initialized = false;
+    this.init();
+    audio.resumeCtx();
+  },
 
   resetCtx() {
     audio.resumeCtx();

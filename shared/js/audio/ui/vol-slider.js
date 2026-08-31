@@ -1,51 +1,69 @@
 /* =============================================
    NEXUS STUDY — shared/js/audio/ui/vol-slider.js
-   Módulo de Volume Refatorado — v2.0
+   Módulo de Volume — v3.0 (redesign)
 
    RESPONSABILIDADE
    ─────────────────────────────────────────────
    Exporta makeVolumeSlider(opts) — fábrica que
    instancia e gerencia UM slider de volume com:
-     • posicionamento pixel-perfect do thumb
+     • posicionamento pixel-perfect do thumb E do fill
      • snap points com zona de atração
      • badge de snap animado
      • marcadores de snap alinhados
-     • ResizeObserver para layout reativo
-     • eventos hover / drag sem janking
+     • ResizeObserver para layout reativo (resize/DPI-safe)
+     • eventos hover / drag / teclado / wheel sem jank
      • callbacks onInput / onSnap / onRelease
+
+   O QUE MUDOU NA v3 (bugfix + redesign)
+   ─────────────────────────────────────────────
+   O bug visual do slider antigo NÃO estava na posição do thumb
+   (thumbOffsetPx já compensava corretamente o raio do thumb).
+   Estava no PREENCHIMENTO (.vol-track-fill), que usava uma
+   percentagem simples da largura TOTAL da track:
+
+       fill.width = (val / MAX) * 100%          ← ERRADO
+
+   Isso faz o fill terminar no fim físico da track, enquanto o
+   centro do thumb pára meio thumb-width ANTES disso (porque o
+   navegador reserva THUMB_PX/2 de margem em cada ponta para o
+   thumb não "vazar" da trilha). Resultado: nos extremos, a borda
+   do preenchimento e o centro do thumb ficam ~11px desalinhados.
+
+   A correção usa a MESMA fórmula (mesma "usable width") para o
+   fill e para o thumb, então os dois são sempre consistentes:
+
+       usableWidth = trackW - THUMB_PX
+       thumbCenterPx = (val / MAX) * usableWidth + THUMB_PX / 2
+       fill.width    = thumbCenterPx                ← CORRETO
+                        (o preenchimento sempre termina
+                         exatamente no centro do thumb)
 
    USO EM sound.js
    ─────────────────────────────────────────────
    import makeVolumeSlider from './vol-slider.js';
 
-   // Cria os dois sliders após o DOM do modal existir:
-   const musicSlider = makeVolumeSlider({
-     wrapId:   'snd-sliderGroupMusic',
-     inputId:  'snd-musicSlider',
-     thumbId:  'snd-musicThumb',
-     fillId:   'snd-musicFill',
-     valId:    'snd-musicValDisplay',
-     badgeId:  'snd-musicBadge',
-     markIds: ['snd-musicMark50', 'snd-musicMark100', 'snd-musicMark150'],
-     onInput:  v => audioState.setVolume('music', v),
+   const sfxSlider = makeVolumeSlider({
+     wrapId:   'asx-vol-wrap',
+     inputId:  'asx-vol-input',
+     thumbId:  'asx-vol-thumb',
+     fillId:   'asx-vol-fill',
+     valId:    'asx-vol-value',
+     badgeId:  'asx-vol-badge',
+     markIds: ['asx-vol-mark-50', 'asx-vol-mark-100', 'asx-vol-mark-150'],
+     onInput:  v => audioState.setVolume('sfx', v),
    });
 
-   // Ao abrir o modal, sincroniza valor externo:
-   musicSlider.setValue(audioState.getVolumes().music);
-
-   // Ao resetar:
-   musicSlider.setValue(0.5);
-
-   // Ao desmontar (cleanup):
-   musicSlider.destroy();
+   sfxSlider.setValue(audioState.getVolumes().sfx);
+   sfxSlider.destroy();
    ============================================= */
 
 /* ── Constantes ── */
 
 const SLIDER_MAX  = 150;      // input[max]  → valor real = val/100
-const THUMB_PX    = 22;       // largura do .vol-thumb em px (deve bater com o CSS)
-const SNAP_POINTS = [50, 100, 150];  // valores inteiros (0–150)
-const SNAP_ZONE   = 4;        // px de atração (±4 unidades do slider)
+const THUMB_PX     = 16;       // largura do .asx-vol-thumb em px (deve bater com o CSS)
+const SNAP_POINTS  = [50, 100, 150];  // valores inteiros (0–150)
+const SNAP_ZONE    = 4;        // px de atração (±4 unidades do slider)
+const WHEEL_STEP    = 2;       // unidades por "tick" de scroll
 
 const SNAP_LABELS = {
   50:  '0.5×',
@@ -54,49 +72,38 @@ const SNAP_LABELS = {
 };
 
 /**
- * thumbOffsetPx(val, trackW)
+ * usablePx(val, trackW)
  * ─────────────────────────────────────────────
- * Calcula a posição em px do CENTRO do thumb para
- * um dado valor, compensando as margens que o
- * browser reserva nas extremidades da trilha.
+ * Calcula a posição em px do CENTRO do thumb (e, por extensão,
+ * o fim correto do preenchimento) para um dado valor.
  *
- * O browser comprime o percurso real do thumb para:
+ * O percurso real do centro do thumb é comprimido para:
  *   [THUMB_PX/2 … trackW - THUMB_PX/2]
  *
  * Portanto:
  *   px = (val / MAX) * (trackW - THUMB_PX) + THUMB_PX / 2
  *
- * Essa fórmula garante alinhamento pixel-perfect
- * entre o thumb visual e o thumb nativo (invisible).
+ * Esta é a ÚNICA fórmula de posicionamento do módulo. Thumb,
+ * fill e marks usam exatamente esta função — é isso que garante
+ * que nunca fiquem visualmente dessincronizados entre si.
  *
  * @param {number} val    — valor inteiro do slider (0–150)
  * @param {number} trackW — largura total do <input> em px
- * @returns {number} posição em px (left do centro do thumb)
+ * @returns {number} posição em px (centro do thumb / fim do fill)
  */
-function thumbOffsetPx(val, trackW) {
+function usablePx(val, trackW) {
+  if (trackW <= THUMB_PX) return trackW / 2;
   return (val / SLIDER_MAX) * (trackW - THUMB_PX) + THUMB_PX / 2;
 }
 
 /**
  * makeVolumeSlider(opts)
  * ─────────────────────────────────────────────
- * Fábrica de slider de volume. Retorna { setValue, destroy }.
- *
- * @param {object}   opts
- * @param {string}   opts.wrapId   — id do .vol-track-wrap (recebe classes CSS)
- * @param {string}   opts.inputId  — id do <input type="range">
- * @param {string}   opts.thumbId  — id do .vol-thumb (div visual)
- * @param {string}   opts.fillId   — id do .vol-track-fill
- * @param {string}   opts.valId    — id do display de valor (ex: "0.50")
- * @param {string}   opts.badgeId  — id do .vol-badge (SNAP label)
- * @param {string[]} opts.markIds  — ids dos 3 .vol-snap-mark, na ordem de SNAP_POINTS
- * @param {Function} [opts.onInput]   — cb(realValue: 0–1.5) chamado a cada input
- * @param {Function} [opts.onSnap]    — cb(realValue) chamado quando encaixa num snap point
- * @param {Function} [opts.onRelease] — cb(realValue) chamado no mouseup/touchend
+ * Fábrica de slider de volume. Retorna { setValue, destroy, layout }.
  */
 function makeVolumeSlider(opts) {
   const {
-    wrapId, inputId, thumbId, fillId, valId, badgeId, markIds,
+    wrapId, inputId, thumbId, fillId, valId, badgeId, markIds = [],
     onInput, onSnap, onRelease,
   } = opts;
 
@@ -106,7 +113,7 @@ function makeVolumeSlider(opts) {
   const thumb = document.getElementById(thumbId);
   const fill  = document.getElementById(fillId);
   const valEl = document.getElementById(valId);
-  const badge = document.getElementById(badgeId);
+  const badge = badgeId ? document.getElementById(badgeId) : null;
 
   const marks = markIds.map((id, i) => ({
     el:      document.getElementById(id),
@@ -115,48 +122,50 @@ function makeVolumeSlider(opts) {
 
   if (!wrap || !input || !thumb || !fill || !valEl) {
     console.warn('[vol-slider] makeVolumeSlider: elementos do DOM não encontrados', opts);
-    return { setValue: () => {}, destroy: () => {} };
+    return { setValue: () => {}, destroy: () => {}, layout: () => {} };
   }
 
   /* ── Estado interno ── */
-  let rafId    = null;
+  let rafId      = null;
   let isDragging = false;
 
-  /* ── Layout (coloca thumb + fill + marks) ── */
+  /* ── Layout (posiciona thumb + fill + marks) ── */
 
   function layout() {
     const trackW = input.getBoundingClientRect().width;
-    if (trackW === 0) return;   // ainda não visível
+    if (trackW === 0) return; // ainda não visível (ex.: modal fechado)
 
     const raw = parseInt(input.value, 10);
-    const px  = thumbOffsetPx(raw, trackW);
+    const px  = usablePx(raw, trackW);
 
-    // Thumb: só atualiza left (sem transition — motion é via CSS will-change)
+    // Thumb: left = centro exato (sem transition de posição — via rAF)
     thumb.style.left = px + 'px';
 
-    // Fill: percentagem simples (não precisa compensar thumb)
-    fill.style.width = (raw / SLIDER_MAX * 100).toFixed(3) + '%';
+    // Fill: termina exatamente onde o thumb termina (mesma fórmula)
+    fill.style.width = px + 'px';
 
     // Valor
-    valEl.textContent = (raw / 100).toFixed(2);
+    const real = raw / 100;
+    valEl.textContent = real.toFixed(2) + '×';
+    input.setAttribute('aria-valuetext', real.toFixed(2) + 'x');
 
     // Snap state
     const snapped = SNAP_POINTS.includes(raw);
-    wrap.classList.toggle('snapped', snapped);
+    wrap.classList.toggle('is-snapped', snapped);
 
     if (badge) {
-      badge.classList.toggle('visible', snapped);
+      badge.classList.toggle('is-visible', snapped);
       if (snapped) badge.textContent = SNAP_LABELS[raw] ?? 'SNAP';
     }
 
-    // Marks: posição exata + classe de proximidade
+    // Marks: posição exata (mesma fórmula) + classe de proximidade
     marks.forEach(({ el, snapVal }) => {
       if (!el) return;
-      const mPx  = thumbOffsetPx(snapVal, trackW);
+      const mPx  = usablePx(snapVal, trackW);
       const dist = Math.abs(raw - snapVal);
       el.style.left = mPx + 'px';
-      el.classList.toggle('active', dist === 0);
-      el.classList.toggle('near',   dist > 0 && dist <= SNAP_ZONE * 3);
+      el.classList.toggle('is-active', dist === 0);
+      el.classList.toggle('is-near',   dist > 0 && dist <= SNAP_ZONE * 3);
     });
   }
 
@@ -189,32 +198,44 @@ function makeVolumeSlider(opts) {
     if (SNAP_POINTS.includes(val)) onSnap?.(realVal);
   }
 
-  function handleMousedown() {
+  function handlePointerDown() {
     isDragging = true;
-    wrap.classList.add('dragging');
+    wrap.classList.add('is-dragging');
   }
 
   function handleUp() {
     if (!isDragging) return;
     isDragging = false;
-    wrap.classList.remove('dragging');
+    wrap.classList.remove('is-dragging');
     const realVal = parseInt(input.value, 10) / 100;
     onRelease?.(realVal);
   }
 
+  // Scroll do mouse ajusta o volume em pequenos incrementos.
+  function handleWheel(e) {
+    e.preventDefault();
+    const dir = e.deltaY > 0 ? -1 : 1;
+    let val = parseInt(input.value, 10) + dir * WHEEL_STEP;
+    val = Math.max(0, Math.min(SLIDER_MAX, val));
+    input.value = val;
+    handleInput();
+    onRelease?.(val / 100);
+  }
+
   input.addEventListener('input',      handleInput);
-  input.addEventListener('mousedown',  handleMousedown);
-  input.addEventListener('touchstart', handleMousedown, { passive: true });
+  input.addEventListener('mousedown',  handlePointerDown);
+  input.addEventListener('touchstart', handlePointerDown, { passive: true });
+  input.addEventListener('wheel',      handleWheel,        { passive: false });
   window.addEventListener('mouseup',   handleUp);
   window.addEventListener('touchend',  handleUp);
 
-  /* ── ResizeObserver: reposiciona ao redimensionar ── */
+  /* ── ResizeObserver: reposiciona ao redimensionar / mudar DPI ── */
 
   const ro = new ResizeObserver(scheduleLayout);
   ro.observe(input);
 
   /* ── Layout inicial ── */
-  // rAF garante que o browser calculou dimensões após inserção no DOM
+  // rAF garante que o browser já calculou dimensões após inserção no DOM
   requestAnimationFrame(scheduleLayout);
 
   /* ── API pública ── */
@@ -222,9 +243,6 @@ function makeVolumeSlider(opts) {
   /**
    * setValue(realValue)
    * Define o valor do slider a partir do valor real (0.0 – 1.5).
-   * Ex.: setValue(0.5) → slider em 50 (ponto padrão).
-   *
-   * @param {number} realValue — volume real (0.0 a 1.5)
    */
   function setValue(realValue) {
     const clamped = Math.max(0, Math.min(1.5, realValue));
@@ -235,12 +253,12 @@ function makeVolumeSlider(opts) {
   /**
    * destroy()
    * Remove listeners e desconecta o ResizeObserver.
-   * Chame ao desmontar o modal definitivamente.
    */
   function destroy() {
     input.removeEventListener('input',      handleInput);
-    input.removeEventListener('mousedown',  handleMousedown);
-    input.removeEventListener('touchstart', handleMousedown);
+    input.removeEventListener('mousedown',  handlePointerDown);
+    input.removeEventListener('touchstart', handlePointerDown);
+    input.removeEventListener('wheel',      handleWheel);
     window.removeEventListener('mouseup',   handleUp);
     window.removeEventListener('touchend',  handleUp);
     ro.disconnect();
@@ -251,3 +269,4 @@ function makeVolumeSlider(opts) {
 }
 
 export default makeVolumeSlider;
+export { usablePx, SLIDER_MAX, THUMB_PX, SNAP_POINTS };
