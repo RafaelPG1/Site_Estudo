@@ -694,10 +694,16 @@ function _buildVariantRow(cat, v) {
   row.tabIndex = 0;
   row.dataset.var = v.id;
   row.innerHTML = `
-    <span class="asx-variant-radio"></span>
+    <span class="asx-variant-radio" aria-hidden="true">
+      <svg class="asx-variant-radio__check" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3.5 8.4 6.6 11.5 12.5 4.5"/>
+      </svg>
+    </span>
     <span class="asx-variant-label">${v.label}</span>
     <button class="asx-preview-btn" type="button" aria-label="Ouvir ${v.label}" title="Ouvir prévia">▶</button>
   `;
+  row.setAttribute('role', 'radio');
+  row.setAttribute('aria-checked', String(isActive));
 
   const select = () => _setActiveVariant(cat, v.id);
   row.addEventListener('click', e => {
@@ -776,9 +782,14 @@ function _buildSpecToggle(cat) {
   btn.type = 'button';
   btn.className = 'asx-spec-toggle' + (n > 0 ? ' has-overrides' : '') + (expanded ? ' is-expanded' : '');
   btn.id = `asx-spec-toggle-${cat.id}`;
+  // O texto deixa de ser um nó solto dentro do <button> e passa a ser um
+  // <span> próprio (.asx-spec-toggle__label) — isso é o que garante que a
+  // largura/altura do item sejam previsíveis e consistentes com os demais
+  // irmãos de flex (ícone, badge, chevron), ao invés de depender da caixa
+  // de linha "anônima" que o navegador cria para texto solto.
   btn.innerHTML = `
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
-    Configurar áreas específicas
+    <span class="asx-spec-toggle__label">Configurar áreas específicas</span>
     ${n > 0 ? `<span class="asx-spec-toggle__badge">${n}</span>` : ''}
     ${_ICON_CHEVRON}
   `;
@@ -878,9 +889,22 @@ function _appendSpecRow(table, cat, variant) {
 
     const cell = document.createElement('div');
     cell.className = 'asx-spec-td asx-spec-td--radio' + (isActive ? ' is-active' : '');
-    cell.innerHTML = `<span class="asx-spec-radio"><span class="asx-spec-radio__dot"></span></span>`;
+    cell.setAttribute('role', 'radio');
+    cell.setAttribute('aria-checked', String(isActive));
+    cell.setAttribute('aria-label', `${area}: ${shortLabel}`);
+    cell.tabIndex = 0;
+    // Chip com check em vez do antigo radio de "bolinha cheia" — o traço
+    // só aparece (escala + fade) no estado ativo, então não existe mais
+    // o "miolo gordo" sempre visível que havia no dot antigo.
+    cell.innerHTML = `
+      <span class="asx-spec-radio" aria-hidden="true">
+        <svg class="asx-spec-radio__check" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3.5 8.4 6.6 11.5 12.5 4.5"/>
+        </svg>
+      </span>
+    `;
 
-    cell.addEventListener('click', () => {
+    const selectThisCell = () => {
       const newOverride = isDefault ? null : variant.id;
       _specificOverrides[cat.id][area] = newOverride;
 
@@ -892,6 +916,11 @@ function _appendSpecRow(table, cat, variant) {
       _applyModalAreaOverride(cat.id, area, newOverride);
       _refreshRailBadges();
       _renderCategoryPanel(cat);
+    };
+
+    cell.addEventListener('click', selectThisCell);
+    cell.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectThisCell(); }
     });
 
     table.appendChild(cell);

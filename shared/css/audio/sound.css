@@ -23,7 +23,7 @@
   --asx-surface-2:  #16171d;
   --asx-surface-3:  #1c1e26;
   --asx-border:     #24262f;
-  --asx-border-strong: #33353f;
+  --asx-border-strong: #2f3036;
 
   /* Texto */
   --asx-text-1: #f2f2f4;
@@ -467,24 +467,33 @@
 .asx-variant-row.is-active { background: var(--asx-accent-dim); }
 .asx-variant-row:focus-visible { outline: 2px solid var(--asx-accent-ring); outline-offset: -1px; }
 
+/* ── Seletor da linha: chip com check (mesmo padrão da tabela de
+   overrides). O dot antigo era 7px cheio dentro de um círculo de
+   15px (quase metade do diâmetro) — ainda mais chunky do que o da
+   tabela, e mais visível aqui porque a linha ativa também ganha
+   fundo colorido. */
 .asx-variant-radio {
-  width: 15px; height: 15px;
-  border-radius: 50%;
+  width: 18px; height: 18px;
+  border-radius: var(--asx-r-sm);
   border: 1.5px solid var(--asx-border-strong);
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
-  transition: border-color var(--asx-t-fast);
+  background: transparent;
+  transition: background var(--asx-t-fast), border-color var(--asx-t-fast), box-shadow var(--asx-t-fast);
 }
-.asx-variant-radio::after {
-  content: '';
-  width: 7px; height: 7px;
-  border-radius: 50%;
+.asx-variant-radio__check {
+  width: 11px; height: 11px;
+  color: var(--asx-bg);
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity var(--asx-t-fast), transform var(--asx-t-spring);
+}
+.asx-variant-row.is-active .asx-variant-radio {
   background: var(--asx-accent);
-  transform: scale(0);
-  transition: transform var(--asx-t-spring);
+  border-color: var(--asx-accent);
+  box-shadow: 0 0 0 3px var(--asx-accent-dim);
 }
-.asx-variant-row.is-active .asx-variant-radio { border-color: var(--asx-accent); }
-.asx-variant-row.is-active .asx-variant-radio::after { transform: scale(1); }
+.asx-variant-row.is-active .asx-variant-radio__check { opacity: 1; transform: scale(1); }
 .asx-variant-row:hover .asx-variant-radio { border-color: var(--asx-text-2); }
 
 .asx-variant-label {
@@ -585,18 +594,48 @@
 }
 .asx-spec-toggle:hover { color: var(--asx-text-1); border-color: var(--asx-border-strong); }
 .asx-spec-toggle.has-overrides { color: var(--asx-accent-text); border-color: var(--asx-accent-ring); background: var(--asx-accent-dim); }
-.asx-spec-toggle svg { width: 12px; height: 12px; }
+.asx-spec-toggle svg { width: 12px; height: 12px; flex-shrink: 0; }
 .asx-spec-toggle__chevron { transition: transform var(--asx-t-mid); margin-left: 2px; }
 .asx-spec-toggle.is-expanded .asx-spec-toggle__chevron { transform: rotate(180deg); }
+
+/* O texto "Configurar áreas específicas" agora é um <span> próprio
+   (antes era um nó de texto solto no botão) — largura/altura previsíveis,
+   sem depender da caixa de linha anônima que o navegador monta para
+   texto solto dentro de um flex container. */
+.asx-spec-toggle__label {
+  flex: 1 1 auto;
+  min-width: 0;
+  line-height: 1.3;
+}
+
+/* BUG DO BADGE — causa real:
+   Antes, o "2" era centralizado só pelo line-height (1.4) da própria
+   fonte do badge (--asx-font-mono), enquanto o resto da linha usa
+   --asx-font-display. Fontes diferentes têm métricas de ascent/descent
+   (leading interno) diferentes — então "centralizar por line-height"
+   em uma fonte não coincide com o centro óptico das outras peças da
+   linha (ícone, label). Isso é o que empurra o dígito para cima.
+   A correção: o badge vira uma caixa flex de ALTURA FIXA que centraliza
+   o próprio glifo internamente (align-items+justify-content), em vez de
+   confiar no line-height do texto. Passa a funcionar identicamente para
+   "2", "10" ou "100", em qualquer fonte/DPI — min-width cresce
+   horizontalmente, mas a altura (e o centro vertical) nunca muda. */
 .asx-spec-toggle__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 5px;
   font-family: var(--asx-font-mono);
   font-size: 8.5px;
   font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
   background: var(--asx-accent);
   color: var(--asx-bg);
   border-radius: 99px;
-  padding: 1px 5px;
-  line-height: 1.4;
 }
 
 .asx-spec-panel {
@@ -611,12 +650,13 @@
 
 .asx-spec-panel__scroll {
   overflow-x: auto;
+  padding: 2px 2px 4px;
 }
 
 .asx-spec-table {
   --spec-cols: 4;
   display: grid;
-  grid-template-columns: minmax(120px, 1.4fr) 30px repeat(var(--spec-cols), 46px);
+  grid-template-columns: minmax(120px, 1.4fr) 34px repeat(var(--spec-cols), 46px);
   min-width: max-content;
 }
 
@@ -625,9 +665,9 @@
   font-size: 8px;
   font-weight: 700;
   letter-spacing: 0.06em;
-  color: var(--asx-text-3);
+  color: var(--asx-text-2);
   text-transform: uppercase;
-  padding: 8px 6px;
+  padding: 10px 6px 8px;
   border-bottom: 1px solid var(--asx-border);
   text-align: center;
 }
@@ -638,16 +678,28 @@
 
 .asx-spec-row-default .asx-spec-td--label { opacity: 0.65; }
 
+/* Divisores sutis (só border-bottom, baixo contraste) em vez de uma
+   grade pesada — a sensação de "tabela encaixotada" some sem perder o
+   agrupamento visual das linhas. Padding vertical maior dá mais
+   respiro sem inflar demais a altura do painel. */
 .asx-spec-td {
-  padding: 5px 6px;
+  padding: 8px 6px;
   display: flex;
   align-items: center;
   border-bottom: 1px solid var(--asx-border);
 }
-.asx-spec-td--label { padding-left: 10px; min-width: 0; }
+.asx-spec-td--label {
+  display: grid;
+  grid-template-columns: minmax(0, 80px) minmax(0, 1fr);
+  align-items: baseline;
+  gap: 16px;
+  padding-left: 10px;
+  min-width: 0;
+}
 .asx-spec-td__main {
   font-size: 11px;
-  color: var(--asx-text-2);
+  color: var(--asx-text-1);
+  min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -655,47 +707,68 @@
 .asx-spec-td__sub {
   font-size: 9px;
   color: var(--asx-text-3);
+  min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.asx-spec-td--play { justify-content: center; padding: 5px 0; }
+.asx-spec-td--play { justify-content: center; padding: 6px 0; }
 .asx-spec-td--radio {
   justify-content: center;
   cursor: pointer;
+  border-radius: var(--asx-r-sm);
   transition: background var(--asx-t-fast);
 }
 .asx-spec-td--radio:hover { background: var(--asx-surface-3); }
+.asx-spec-td--radio:focus-visible { outline: 2px solid var(--asx-accent-ring); outline-offset: -2px; }
 
+/* Área clicável do preview: 26px reais (antes 18px) — cabe folgado
+   um alvo de toque, mesmo o ícone dentro continuando pequeno/discreto. */
 .asx-spec-mini-preview {
-  width: 18px; height: 18px;
+  width: 26px; height: 26px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 7px;
+  font-size: 10px;
   background: transparent;
   border: 1px solid var(--asx-border-strong);
-  border-radius: 5px;
+  border-radius: var(--asx-r-sm);
   color: var(--asx-text-3);
   cursor: pointer;
-  transition: color var(--asx-t-fast), border-color var(--asx-t-fast);
+  transition: color var(--asx-t-fast), border-color var(--asx-t-fast), background var(--asx-t-fast);
 }
-.asx-spec-mini-preview:hover { color: var(--asx-accent); border-color: var(--asx-accent-ring); }
+.asx-spec-mini-preview:hover { color: var(--asx-accent); border-color: var(--asx-accent-ring); background: var(--asx-accent-dim); }
+.asx-spec-mini-preview.is-playing { color: var(--asx-bg); background: var(--asx-accent); border-color: var(--asx-accent); }
 
+/* ── Seletor: chip com check (substitui o radio de bolinha cheia) ──
+   O "miolo" antigo (.asx-spec-radio__dot, 5px cheio dentro de um
+   círculo de 13px = ~38% do diâmetro) sempre pareceu um blob gordo
+   quando ativo — é proporção, não estado. Um traço de check fino lê
+   como preciso/refinado em qualquer tamanho, e em repouso a caixa
+   fica completamente vazia (sem nenhum miolo, gordo ou fino). */
 .asx-spec-radio {
-  width: 13px; height: 13px;
-  border-radius: 50%;
+  width: 16px; height: 16px;
+  border-radius: var(--asx-r-sm);
   border: 1.5px solid var(--asx-border-strong);
   display: flex; align-items: center; justify-content: center;
-  transition: border-color var(--asx-t-fast);
+  background: transparent;
+  transition: background var(--asx-t-fast), border-color var(--asx-t-fast), box-shadow var(--asx-t-fast);
 }
-.asx-spec-td--radio.is-active .asx-spec-radio { border-color: var(--asx-accent); }
-.asx-spec-radio__dot {
-  width: 5px; height: 5px;
-  border-radius: 50%;
+.asx-spec-td--radio:hover .asx-spec-radio { border-color: var(--asx-accent-ring); }
+.asx-spec-td--radio.is-active .asx-spec-radio {
   background: var(--asx-accent);
-  transform: scale(0);
-  transition: transform var(--asx-t-spring);
+  border-color: var(--asx-accent);
+  box-shadow: 0 0 0 3px var(--asx-accent-dim);
 }
-.asx-spec-td--radio.is-active .asx-spec-radio__dot { transform: scale(1); }
+.asx-spec-radio__check {
+  width: 10px; height: 10px;
+  color: var(--asx-bg);
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity var(--asx-t-fast), transform var(--asx-t-spring);
+}
+.asx-spec-td--radio.is-active .asx-spec-radio__check {
+  opacity: 1;
+  transform: scale(1);
+}
 
 .asx-spec-panel__footer {
   display: flex;
@@ -706,14 +779,17 @@
 .asx-spec-clear {
   font-family: var(--asx-font-display);
   font-size: 11px;
-  color: var(--asx-text-3);
+  font-weight: 500;
+  color: var(--asx-text-2);
   background: transparent;
-  border: none;
+  border: 1px solid transparent;
+  border-radius: var(--asx-r-sm);
+  padding: 4px 8px;
   cursor: pointer;
-  padding: 0;
-  transition: color var(--asx-t-fast);
+  transition: color var(--asx-t-fast), background var(--asx-t-fast), border-color var(--asx-t-fast);
 }
-.asx-spec-clear:hover { color: var(--asx-danger); }
+.asx-spec-clear:hover { color: var(--asx-danger); background: var(--asx-danger-dim); border-color: var(--asx-danger); }
+.asx-spec-clear:focus-visible { outline: 2px solid var(--asx-accent-ring); outline-offset: 2px; }
 
 
 /* ═══════════════════════════════════════════════
@@ -815,7 +891,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .asx-modal, .asx-overlay, .asx-toggle__thumb, .asx-variant-radio,
-  .asx-spec-radio__dot, .asx-chip, .asx-preview-btn {
+  .asx-variant-radio__check, .asx-spec-radio__check, .asx-chip, .asx-preview-btn {
     transition: none !important;
     animation: none !important;
   }

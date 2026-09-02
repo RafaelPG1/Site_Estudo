@@ -51,24 +51,11 @@
 }
 
 .asx-vol-badge {
-  font-family: var(--asx-font-mono);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  padding: 2px 8px;
-  border-radius: var(--asx-r-full);
-  color: var(--asx-accent);
-  background: var(--asx-accent-dim);
-  border: 1px solid var(--asx-accent-ring);
-  opacity: 0;
-  transform: translateY(2px) scale(0.9);
-  transition: opacity var(--asx-t-mid), transform var(--asx-t-spring);
-  pointer-events: none;
-  white-space: nowrap;
-}
-.asx-vol-badge.is-visible {
-  opacity: 1;
-  transform: translateY(0) scale(1);
+  /* Indicador de snap removido do visual a pedido — o JS (vol-slider.js)
+     continua fazendo toggle de .is-visible e setando o textContent
+     normalmente (nenhuma lógica foi tocada), só que o elemento fica
+     sempre oculto, então nada aparece no lugar dele. */
+  display: none;
 }
 
 .asx-vol-value {
@@ -130,13 +117,21 @@
   width: 2px;
   height: 6px;
   border-radius: 1px;
-  background: var(--asx-border-strong);
+  /* Antes era var(--asx-border-strong) — o MESMO token usado no
+     background da própria track (.asx-vol-track), por isso o
+     marcador ficava praticamente invisível em repouso. Trocado por
+     --asx-text-3, que já é usado em outros textos discretos da UI
+     (ex.: escala inferior) e garante contraste real contra o fundo
+     sem chamar atenção. */
+  background: var(--asx-text-3);
   pointer-events: none;
   z-index: 2;
   transition: background var(--asx-t-mid), height var(--asx-t-mid), opacity var(--asx-t-mid);
-  opacity: 0.9;
+  opacity: 1;
 }
-.asx-vol-mark.is-near   { height: 9px; background: var(--asx-text-3); }
+/* is-near sobe mais um degrau de contraste (era igual ao repouso
+   antigo); is-active permanece o accent, sem mudança. */
+.asx-vol-mark.is-near   { height: 9px; background: var(--asx-text-2); }
 .asx-vol-mark.is-active { height: 12px; background: var(--asx-accent); opacity: 1; }
 
 /* ── Input nativo (invisível, cobre a área inteira) ──
@@ -155,6 +150,10 @@
   -webkit-appearance: none;
   appearance: none;
   background: transparent;
+  /* Necessário para o Pointer Events drag (vol-slider.js v3.1): sem
+     isso, o touchmove do arraste pode ser interpretado pelo browser
+     como scroll da página em vez de arraste do slider. */
+  touch-action: none;
 }
 
 .asx-vol-input::-webkit-slider-thumb { -webkit-appearance: none; width: 0; height: 0; }
