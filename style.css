@@ -1796,196 +1796,358 @@ a { text-decoration: none; color: inherit; }
    13b. MODAL CONFIG — TEMA "ARENA" (estilo Quiz)
    Isolado em .modal__box--quiz: não afeta Login
    nem Perfil, que mantêm o tema padrão da Home.
-   Paleta: violeta elétrico + âmbar · Space Grotesk + Inter
+   Redesign: hierarquia tipográfica clara, grid de
+   alinhamento, indicadores discretos, espaçamento
+   consistente. Paleta única (teal) usada com
+   moderação · Space Grotesk + Inter
    ───────────────────────────────────────────── */
 
 .modal__box--quiz {
+  /* Superfícies */
   --q-ink:         #060a17;
   --q-ink-2:       #0c1228;
   --q-surface:     rgba(255,255,255,0.035);
-  --q-surface-hi:  rgba(255,255,255,0.07);
-  --q-border:      rgba(255,255,255,0.08);
-  --q-border-hi:   rgba(255,255,255,0.18);
+  --q-surface-hi:  rgba(255,255,255,0.065);
+  --q-border:      rgba(255,255,255,0.07);
+  --q-border-hi:   rgba(255,255,255,0.14);
+
+  /* Acento (usado com moderação) */
   --q-violet:      #3dd8af;
   --q-violet-rgb:  61,216,175;
-  --q-violet-dim:  rgba(61,216,175,0.12);
-  --q-violet-glow: rgba(61,216,175,0.3);
+  --q-violet-dim:  rgba(61,216,175,0.10);
   --q-amber:       #f7c948;
   --q-amber-rgb:   247,201,72;
-  --q-text-1:      #e8e6f0;
-  --q-text-2:      #8e8ba8;
-  --q-text-3:      #5a5775;
+
+  /* Texto — contraste calibrado para uso prolongado */
+  --q-text-1:      #ece9f5;
+  --q-text-2:      #a19dbf;
+  --q-text-3:      #726e93;
+
   --q-f-display:   'Space Grotesk', system-ui, sans-serif;
   --q-f-body:      'Inter', system-ui, sans-serif;
+  --q-ease:        cubic-bezier(0.4, 0, 0.2, 1);
   --q-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
+  /* Escala de espaçamento — reaproveitada em header/seções/rodapé */
+  --q-sp-1: 0.4rem;
+  --q-sp-2: 0.65rem;
+  --q-sp-3: 1rem;
+  --q-sp-4: 1.4rem;
+  --q-sp-x: 1.4rem;   /* ritmo horizontal do modal inteiro */
+
+  width: 100%;
+  max-width: 420px;
+  max-height: min(82vh, 600px);
   font-family: var(--q-f-body);
-  background: var(--q-ink-2);
+  background: linear-gradient(180deg, var(--q-ink-2) 0%, var(--q-ink) 100%);
   border: 1px solid var(--q-border-hi);
-  box-shadow: 0 28px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(var(--q-violet-rgb),0.1);
+  border-radius: 18px;
+  box-shadow:
+    0 24px 60px rgba(0,0,0,0.55),
+    0 1px 0 rgba(255,255,255,0.04) inset;
 }
 
+/* ── Header ── */
+
 .modal__box--quiz .cfg-header {
+  padding: var(--q-sp-4) var(--q-sp-x) var(--q-sp-3);
   border-bottom: 1px solid var(--q-border);
 }
 
 .modal__box--quiz .cfg-header__title {
   font-family: var(--q-f-display);
-  color: var(--q-text-1);
+  font-size: 1.2rem;
   font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--q-text-1);
+  gap: 0.65rem;
 }
 
 .modal__box--quiz .cfg-header__icon {
+  width: 32px; height: 32px;
+  border-radius: 9px;
   background: var(--q-violet-dim);
-  border-color: rgba(var(--q-violet-rgb),0.3);
+  border: 1px solid rgba(var(--q-violet-rgb),0.24);
   color: var(--q-violet);
 }
 
+.modal__box--quiz .cfg-header__icon svg { width: 15px; height: 15px; }
+
 .modal__box--quiz .modal__close {
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0;
   border: 1px solid var(--q-border);
-  border-radius: 6px;
+  border-radius: 9px;
   color: var(--q-text-2);
+  font-size: 0.8rem;
+  transition: background 0.18s var(--q-ease), border-color 0.18s var(--q-ease),
+              color 0.18s var(--q-ease), transform 0.12s var(--q-ease);
 }
 
 .modal__box--quiz .modal__close:hover {
   background: var(--q-surface-hi);
+  border-color: var(--q-border-hi);
   color: var(--q-text-1);
 }
+
+.modal__box--quiz .modal__close:active { transform: scale(0.92); }
+
+.modal__box--quiz .modal__close:focus-visible {
+  outline: 2px solid rgba(var(--q-violet-rgb), 0.55);
+  outline-offset: 2px;
+}
+
+/* ── Corpo & seções ── */
 
 .modal__box--quiz .cfg-body { background: transparent; }
 
 .modal__box--quiz .cfg-section {
-  position: relative;
+  padding: var(--q-sp-4) var(--q-sp-x);
   border-bottom: 1px solid var(--q-border);
-  background: var(--q-surface);
-  transition: background 0.2s;
+  background: transparent;
 }
 
 .modal__box--quiz .cfg-section:last-of-type { border-bottom: none; }
 
+/* Indicador discreto (barra) no lugar do "dot" com glow */
 .modal__box--quiz .cfg-section-title {
-  font-family: var(--q-f-display);
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  color: var(--q-violet);
+  font-family: var(--q-f-body);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--q-text-3);
+  gap: 0.55rem;
+  margin-bottom: var(--q-sp-3);
 }
 
-/* Dots de categoria recalibrados para a paleta arena */
-.modal__box--quiz .cfg-dot--conta      { background: #ff6b8a; box-shadow: 0 0 6px rgba(255,107,138,0.6); }
-.modal__box--quiz .cfg-dot--aparencia  { background: #a78bfa; box-shadow: 0 0 6px rgba(167,139,250,0.6); }
-.modal__box--quiz .cfg-dot--sistema    { background: #6aaee8; box-shadow: 0 0 6px rgba(106,174,232,0.6); }
-.modal__box--quiz .cfg-dot--audio      { background: var(--q-violet); box-shadow: 0 0 6px var(--q-violet-glow); }
-.modal__box--quiz .cfg-dot--pessoal    { background: var(--q-amber); box-shadow: 0 0 6px rgba(var(--q-amber-rgb),0.5); }
-
-.modal__box--quiz .config-row { color: var(--q-text-1); }
-.modal__box--quiz .config-row label { color: var(--q-text-1); }
-.modal__box--quiz .config-label-hint { color: var(--q-text-3); }
-.modal__box--quiz .cfg-section .config-row + .config-row {
-  border-top: 1px solid rgba(255,255,255,0.04);
+.modal__box--quiz .cfg-section-title__dot {
+  width: 3px; height: 12px;
+  border-radius: 2px;
+  box-shadow: none;
+  opacity: 0.65;
 }
 
-/* Select no padrão arena */
-.modal__box--quiz .config-select {
-  font-family: var(--q-f-display);
-  background-color: var(--q-surface);
-  border-color: var(--q-border);
+.modal__box--quiz .cfg-dot--conta      { background: #ff6b8a; }
+.modal__box--quiz .cfg-dot--aparencia  { background: #a78bfa; }
+.modal__box--quiz .cfg-dot--sistema    { background: #6aaee8; }
+.modal__box--quiz .cfg-dot--audio      { background: var(--q-violet); }
+.modal__box--quiz .cfg-dot--pessoal    { background: var(--q-amber); }
+
+/* ── Linhas de configuração — grid perfeitamente alinhado ── */
+
+.modal__box--quiz .config-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  column-gap: var(--q-sp-3);
+  margin: 0 calc(var(--q-sp-2) * -1);
+  padding: 0.68rem var(--q-sp-2);
+  border-radius: 10px;
   color: var(--q-text-2);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%238e8ba8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  transition: background 0.15s var(--q-ease);
+}
+
+.modal__box--quiz .config-row:hover { background: var(--q-surface); }
+
+.modal__box--quiz .config-row--col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: 0;
+  padding: 0.4rem 0;
+  border-radius: 0;
+}
+
+.modal__box--quiz .config-row--col:hover { background: transparent; }
+
+.modal__box--quiz .config-row label {
+  color: var(--q-text-1);
+  font-size: 0.86rem;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.modal__box--quiz .config-label-hint {
+  color: var(--q-text-3);
+  font-weight: 400;
+  font-size: 0.71rem;
+  line-height: 1.5;
+}
+
+.modal__box--quiz .cfg-section .config-row + .config-row { border-top: none; }
+
+/* ── Select ── */
+
+.modal__box--quiz .config-select {
+  font-family: var(--q-f-body);
+  font-size: 0.82rem;
+  font-weight: 500;
+  height: 30px;
+  padding: 0 2rem 0 0.75rem;
+  background-color: var(--q-surface);
+  border: 1px solid var(--q-border);
+  border-radius: 8px;
+  color: var(--q-text-1);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%23a19dbf' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-position: right 0.6rem center;
+  transition: border-color 0.18s var(--q-ease), background-color 0.18s var(--q-ease),
+              box-shadow 0.18s var(--q-ease);
 }
 
 .modal__box--quiz .config-select:hover {
-  border-color: rgba(var(--q-violet-rgb),0.4);
-  color: var(--q-text-1);
+  border-color: rgba(var(--q-violet-rgb),0.35);
   background-color: var(--q-surface-hi);
 }
 
 .modal__box--quiz .config-select:focus {
-  border-color: rgba(var(--q-violet-rgb),0.4);
-  box-shadow: none;
-  color: var(--q-text-1);
+  border-color: var(--q-violet);
+  box-shadow: 0 0 0 3px rgba(var(--q-violet-rgb),0.16);
   background-color: var(--q-surface-hi);
 }
 
 .modal__box--quiz .config-select option { background: var(--q-ink-2); color: var(--q-text-1); }
 
-/* Toggle violeta, no padrão do quiz */
+/* ── Toggle ── */
+
+.modal__box--quiz .toggle { width: 38px; height: 22px; }
+
 .modal__box--quiz .toggle__track {
-  background: rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.06);
   border: 1px solid var(--q-border);
 }
 
 .modal__box--quiz .toggle__track::after {
+  top: 2px; left: 2px; width: 16px; height: 16px;
   background: var(--q-text-3);
   transition: transform 0.25s var(--q-ease-spring), background 0.2s;
 }
 
 .modal__box--quiz .toggle input:checked + .toggle__track {
-  background: rgba(var(--q-violet-rgb),0.25);
-  border-color: var(--q-violet);
+  background: rgba(var(--q-violet-rgb),0.22);
+  border-color: rgba(var(--q-violet-rgb),0.55);
 }
 
 .modal__box--quiz .toggle input:checked + .toggle__track::after {
+  transform: translateX(16px);
   background: var(--q-violet);
 }
 
-/* Perfil resumido (Conta) no padrão arena */
-.modal__box--quiz .config-perfil__avatar {
-  background: var(--q-violet-dim);
-  border-color: var(--q-violet);
-  color: var(--q-violet);
-  font-family: var(--q-f-display);
+.modal__box--quiz .toggle input:focus-visible + .toggle__track {
+  outline: 2px solid rgba(var(--q-violet-rgb), 0.55);
+  outline-offset: 2px;
 }
 
-.modal__box--quiz .config-perfil__info strong { color: var(--q-text-1); }
-.modal__box--quiz .config-perfil__info span   { color: var(--q-text-3); }
+/* ── Painel de perfil (Conta) ── */
+
+.modal__box--quiz .config-perfil {
+  padding: 0.7rem 0.85rem;
+  background: var(--q-surface);
+  border: 1px solid var(--q-border);
+  border-radius: 13px;
+  gap: 0.85rem;
+}
+
+.modal__box--quiz .config-perfil__avatar {
+  width: 38px; height: 38px;
+  background: var(--q-violet-dim);
+  border: 1.5px solid rgba(var(--q-violet-rgb),0.5);
+  color: var(--q-violet);
+  font-family: var(--q-f-display);
+  font-size: 1rem;
+}
+
+.modal__box--quiz .config-perfil__info strong {
+  color: var(--q-text-1);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.modal__box--quiz .config-perfil__info span {
+  color: var(--q-text-3);
+  font-size: 0.72rem;
+}
 
 .modal__box--quiz .config-perfil__logout {
-  font-family: var(--q-f-display);
-  color: #ff6b8a;
-  background: rgba(255,107,138,0.1);
-  border-color: rgba(255,107,138,0.3);
+  font-family: var(--q-f-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #ff92a9;
+  background: rgba(255,107,138,0.08);
+  border: 1px solid rgba(255,107,138,0.22);
+  border-radius: 999px;
+  padding: 0.38rem 0.85rem;
+  transition: background 0.18s var(--q-ease), border-color 0.18s var(--q-ease), transform 0.12s var(--q-ease);
 }
 
 .modal__box--quiz .config-perfil__logout:hover {
-  background: rgba(255,107,138,0.2);
+  background: rgba(255,107,138,0.16);
+  border-color: rgba(255,107,138,0.4);
 }
 
-/* Botões no padrão arena */
-.modal__box--quiz .cfg-footer { border-top: 1px solid var(--q-border); }
+.modal__box--quiz .config-perfil__logout:active { transform: scale(0.96); }
+
+.modal__box--quiz .config-perfil__logout:focus-visible {
+  outline: 2px solid rgba(255,107,138,0.5);
+  outline-offset: 2px;
+}
+
+/* ── Rodapé & botões ── */
+
+.modal__box--quiz .cfg-footer {
+  padding: var(--q-sp-3) var(--q-sp-x);
+  border-top: 1px solid var(--q-border);
+  background: rgba(0,0,0,0.14);
+  gap: 0.6rem;
+}
 
 .modal__box--quiz .modal-btn {
-  font-family: var(--q-f-display);
+  font-family: var(--q-f-body);
   font-weight: 600;
-  border-radius: 8px;
+  font-size: 0.8rem;
+  height: 38px;
+  padding: 0 1.1rem;
+  border-radius: 9px;
+  transition: background 0.18s var(--q-ease), border-color 0.18s var(--q-ease),
+              box-shadow 0.18s var(--q-ease), transform 0.12s var(--q-ease), color 0.18s var(--q-ease);
+}
+
+.modal__box--quiz .modal-btn:active { transform: scale(0.97); }
+
+.modal__box--quiz .modal-btn:focus-visible {
+  outline: 2px solid rgba(var(--q-violet-rgb), 0.55);
+  outline-offset: 2px;
 }
 
 .modal__box--quiz .modal-btn--primary {
-  background: rgba(var(--q-violet-rgb), 0.12);
+  background: rgba(var(--q-violet-rgb), 0.14);
   color: var(--q-violet);
-  border-color: rgba(var(--q-violet-rgb), 0.4);
+  border: 1px solid rgba(var(--q-violet-rgb), 0.42);
 }
 
 .modal__box--quiz .modal-btn--primary:hover {
-  background: rgba(var(--q-violet-rgb), 0.2);
+  background: rgba(var(--q-violet-rgb), 0.22);
   border-color: var(--q-violet);
-  box-shadow: 0 0 14px rgba(var(--q-violet-rgb), 0.25);
+  box-shadow: 0 0 0 3px rgba(var(--q-violet-rgb), 0.1);
 }
 
 .modal__box--quiz .modal-btn--ghost {
   background: var(--q-surface);
   color: var(--q-text-2);
-  border-color: var(--q-border);
+  border: 1px solid var(--q-border);
 }
 
 .modal__box--quiz .modal-btn--ghost:hover {
   background: var(--q-surface-hi);
   color: var(--q-text-1);
+  border-color: var(--q-border-hi);
 }
 
 .modal__box--quiz .modal-btn--danger {
   background: rgba(255,80,80,0.1);
   color: #ff5050;
-  border-color: rgba(255,80,80,0.3);
+  border: 1px solid rgba(255,80,80,0.3);
 }
 
 .modal__box--quiz .modal-btn--danger:hover {
@@ -1993,10 +2155,19 @@ a { text-decoration: none; color: inherit; }
   border-color: rgba(255,80,80,0.3);
 }
 
-/* Scrollbar no tom violeta */
+/* Scrollbar no tom do acento */
 .modal__box--quiz .modal__body-scroll::-webkit-scrollbar-thumb {
-  background: rgba(var(--q-violet-rgb),0.3);
+  background: rgba(var(--q-violet-rgb),0.28);
 }
+
+/* Ajuste fino em telas estreitas — mantém ritmo de espaçamento */
+@media (max-width: 480px) {
+  .modal__box--quiz {
+    --q-sp-x: 1.15rem;
+    max-width: calc(100% - 2rem);
+  }
+}
+
 
 
 /* ─────────────────────────────────────────────

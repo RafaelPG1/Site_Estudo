@@ -1,135 +1,261 @@
 /* =============================================
    audio-btns.css — botão flutuante SFX
-   
-   Posição: 90px do fundo (24 + 44 + 22 gap acima do FAB da IA)
+   Redesign — alinhado ao sistema visual do #nexus-fab
+   (ver shared/css/ia/btn-ia.css)
+
+   Estrutura, sombras, anéis e tipografia do tooltip
+   reaproveitam os MESMOS princípios do botão de IA.
+   A identidade de áudio vem da cor por estado
+   (normal / mudo / reduzido) e do ícone.
    ============================================= */
 
 
 /* ═══════════════════════════════════════════════
+   SEÇÃO 0 — RELAÇÃO COM O BOTÃO DE IA (fonte da verdade)
+
+   O botão de IA (#nexus-fab, btn-ia.css) define:
+     bottom: 24px   (16px no mobile)
+     height: 48px
+   O SFX fica empilhado ACIMA dele. Em vez de um número
+   mágico, o offset é calculado a partir desses dois
+   valores + um gap único — se o botão de IA mudar de
+   tamanho/posição, só é preciso revisar esta seção.
+═══════════════════════════════════════════════ */
+
+:root {
+  --sfx-gap-above-ia: 16px; /* espaçamento vertical entre os dois FABs */
+}
+
+/* ── identidade de cor do SFX ──────────────────────────────────
+   Um único valor RGB por estado. Toda a coloração do botão
+   (anel, glow, borda, sombra, ícone, tooltip) referencia esta
+   variável — trocar a identidade do componente é uma alteração
+   em um lugar só, e o hover/focus deixam de "brigar" com cor
+   fixada via JS (problema do markup anterior).
+   Roxo escolhido de propósito para NÃO coincidir com o ciano
+   do #nexus-fab — mesma qualidade visual, identidade distinta. */
+.abtn { --abtn-rgb: 64, 130, 255; }               /* normal — azul royal, mais "profundo" que o ciano da IA */
+.abtn[data-state="mute"] { --abtn-rgb: 255, 77, 94; }   /* mudo — vermelho */
+.abtn[data-state="low"]  { --abtn-rgb: 0, 224, 184; }   /* reduzido — verde-água */
+
+
+/* ═══════════════════════════════════════════════
    SEÇÃO 1 — BASE COMPARTILHADA
+   (mesma altura/largura, raio, sombra e tipografia
+   de tooltip do #nexus-fab)
 ═══════════════════════════════════════════════ */
 
 .abtn {
   position: fixed;
-  bottom: 90px;   /* era 24px — agora sobe para ficar acima do FAB da IA */
+  /* 24px + 48px (bottom/altura do #nexus-fab) + gap */
+  bottom: calc(24px + 48px + var(--sfx-gap-above-ia));
   right: 28px;
   z-index: 9999;
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
   border: none;
   background: none;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   outline: none;
   flex-shrink: 0;
+  will-change: transform;
   -webkit-tap-highlight-color: transparent;
 }
 
-.abtn .glow {
-  position: absolute;
-  inset: -10px;
-  border-radius: 50%;
-  opacity: 0;
-  transition: opacity .5s, background .5s;
-  pointer-events: none;
-}
-
+/* ── anel externo (único, como em #nexus-fab-ring-outer) ── */
 .abtn .ro {
   position: absolute;
   inset: -5px;
   border-radius: 50%;
-  border: 1px solid rgba(0,200,255,.13);
-  transition: border-color .5s, transform .4s;
+  border: 1px solid rgba(var(--abtn-rgb), .18);
+  pointer-events: none;
+  transition: border-color .3s ease, transform .3s ease;
 }
 
-.abtn .rm {
+/* ── aura (glow radial), escondida em repouso — igual #nexus-fab-aura ── */
+.abtn .glow {
   position: absolute;
-  inset: -1px;
+  inset: -10px;
   border-radius: 50%;
-  border: 1px solid rgba(0,200,255,.2);
-  transition: border-color .5s;
+  background: radial-gradient(circle, rgba(var(--abtn-rgb), .28) 0%, transparent 70%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .35s ease, background .35s ease;
 }
 
+/* ── corpo principal — mesma estrutura de sombra em camadas do #nexus-fab-body,
+   fundo neutro (não azulado) para não puxar de volta pro tom da IA ── */
 .abtn .body {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: rgba(6,18,36,.88);
-  border: 1px solid rgba(0,200,255,.25);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: radial-gradient(circle at 35% 30%, rgba(30, 27, 40, .92) 0%, rgba(10, 9, 15, .97) 65%);
+  border: 1px solid rgba(var(--abtn-rgb), .30);
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, .55),
+    0 0 0 1px rgba(var(--abtn-rgb), .05),
+    inset 0 1px 0 rgba(255, 255, 255, .06);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: border-color .5s, background .5s, transform .12s;
+  overflow: hidden;
+  transition:
+    border-color .25s ease,
+    box-shadow .25s ease,
+    background .4s ease,
+    transform .15s ease;
 }
 
+/* linha de shimmer no topo — mesma estrutura do #nexus-fab-body::before,
+   tingida com a cor do estado atual */
 .abtn .body::before {
   content: '';
   position: absolute;
-  top: 0; left: 12%; right: 12%;
+  top: 0;
+  left: 18%;
+  right: 18%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(180,240,255,.28), transparent);
-}
-
-.abtn .pulse {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 1px solid;
-  opacity: 0;
+  background: linear-gradient(90deg, transparent, rgba(var(--abtn-rgb), .35), transparent);
   pointer-events: none;
 }
 
+/* feedback de clique — anel que expande e some (mantém a identidade tátil já existente) */
 .abtn .ripple {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 2px solid rgba(0,200,255,.5);
+  border: 2px solid rgba(var(--abtn-rgb), .5);
   opacity: 0;
   pointer-events: none;
 }
 
+/* ── ícone — mesmo wrap 22px / ícone 20px do #nexus-fab ── */
 .abtn .iw {
   position: relative;
+  z-index: 2;
   width: 22px;
   height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .abtn .ic {
   position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%,-50%);
-  transition: opacity .3s ease, transform .3s cubic-bezier(.34,1.56,.64,1);
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  transform: translate(-50%, -50%);
+  transition: opacity .3s ease, transform .3s cubic-bezier(.34, 1.56, .64, 1);
   opacity: 0;
   pointer-events: none;
 }
 
-.abtn .ic.on  { opacity: 1; transform: translate(-50%,-50%) scale(1); }
-.abtn .ic.out { opacity: 0; transform: translate(-50%,-50%) scale(.65); }
+.abtn .ic.on  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.abtn .ic.out { opacity: 0; transform: translate(-50%, -50%) scale(.65); }
 
-.abtn:hover .ro    { transform: scale(1.07); }
-.abtn:hover .body  { border-color: rgba(0,200,255,.42); }
-.abtn:active .body { transform: scale(.92); }
+/* cor do ícone vem do currentColor — os paths/lines usam stroke="currentColor" */
+.abtn .ic { color: rgb(var(--abtn-rgb)); }
 
-@keyframes abtn-pulse  { 0% { transform: scale(1);   opacity: .65; } 100% { transform: scale(1.6);  opacity: 0; } }
-@keyframes abtn-ripple { 0% { transform: scale(.88); opacity: .75; } 100% { transform: scale(1.65); opacity: 0; } }
-
-/* Variante quando montado dentro do header-nav */
-#header-nav .abtn {
-  align-self: center;
-  width: 44px;
-  height: 44px;
+/* ── tooltip — mesmo componente visual do .nexus-fab-label ── */
+.abtn-label {
+  position: absolute;
+  right: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%) translateX(6px);
+  background: rgba(4, 10, 22, .94);
+  border: 1px solid rgba(var(--abtn-rgb), .22);
+  border-radius: 6px;
+  padding: 4px 9px;
+  font-size: 10px;
+  font-family: var(--nx-font-mono, inherit);
+  font-weight: 500;
+  color: rgba(var(--abtn-rgb), .85);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  letter-spacing: .05em;
+  transition: opacity .18s ease, transform .18s ease, border-color .3s ease, color .3s ease;
 }
 
 
-/* ═══════════════════════════════════════════════
-   SEÇÃO 2 — BOTÃO SFX
-═══════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════
+   SEÇÃO 2 — ESTADOS INTERATIVOS (paridade com #nexus-fab)
+══════════════════════════════════════════════════════════════ */
+
+/* ── hover ── */
+.abtn:hover .ro {
+  border-color: rgba(var(--abtn-rgb), .34);
+  transform: scale(1.07);
+}
+
+.abtn:hover .glow { opacity: 1; }
+
+.abtn:hover .body {
+  border-color: rgba(var(--abtn-rgb), .55);
+  box-shadow:
+    0 4px 18px rgba(0, 0, 0, .52),
+    0 0 22px rgba(var(--abtn-rgb), .16),
+    inset 0 1px 0 rgba(255, 255, 255, .08);
+}
+
+.abtn:hover .abtn-label {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* ── active/pressed ── */
+.abtn:active .body { transform: scale(.92); }
+
+/* ── focus visível (navegação por teclado) ── */
+.abtn:focus-visible .ro {
+  border-color: rgba(var(--abtn-rgb), .55);
+}
+
+.abtn:focus-visible .body {
+  box-shadow:
+    0 0 0 3px rgba(var(--abtn-rgb), .35),
+    0 2px 10px rgba(0, 0, 0, .55);
+}
+
+/* ── disabled ── */
+.abtn:disabled,
+.abtn.abtn--disabled {
+  filter: grayscale(.7);
+  opacity: .60;
+  cursor: not-allowed;
+}
+
+.abtn:disabled .body,
+.abtn.abtn--disabled .body { transform: none; }
+
+
+/* ══════════════════════════════════════════════════════════════
+   SEÇÃO 3 — VARIANTE DENTRO DO HEADER-NAV
+   (mesma regra já usada pelo #nexus-fab quando ancorado no nav)
+══════════════════════════════════════════════════════════════ */
+
+#header-nav .abtn {
+  position: static;
+  align-self: center;
+  width: 48px;
+  height: 48px;
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   SEÇÃO 4 — HINT DE DESBLOQUEIO DO ÁUDIO
+══════════════════════════════════════════════════════════════ */
 
 #abtn-unlock-hint {
   position: fixed;
-  bottom: 90px;                          /* alinha com o botão SFX */
-  right: calc(28px + 44px + 12px);
+  bottom: calc(24px + 48px + var(--sfx-gap-above-ia)); /* alinha com o botão SFX */
+  right: calc(28px + 48px + 12px);
   background: rgba(0, 18, 36, 0.92);
   border: 1px solid rgba(0, 200, 255, 0.35);
   border-radius: 8px;
@@ -175,18 +301,43 @@
 }
 
 
-/* ═══════════════════════════════════════════════
-   SEÇÃO 3 — RESPONSIVE
-═══════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════
+   SEÇÃO 5 — KEYFRAMES
+══════════════════════════════════════════════════════════════ */
+
+@keyframes abtn-ripple {
+  0%   { transform: scale(.88); opacity: .75; }
+  100% { transform: scale(1.65); opacity: 0; }
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   SEÇÃO 6 — RESPONSIVO MOBILE
+   (mesmos breakpoints/offsets do #nexus-fab, gap preservado)
+══════════════════════════════════════════════════════════════ */
 
 @media (max-width: 480px) {
   .abtn {
-    bottom: 74px;
+    /* 16px + 48px (bottom/altura do #nexus-fab no mobile) + gap */
+    bottom: calc(16px + 48px + var(--sfx-gap-above-ia));
     right: 20px;
   }
 
   #abtn-unlock-hint {
-    bottom: 74px;
-    right: calc(20px + 44px + 12px);
+    bottom: calc(16px + 48px + var(--sfx-gap-above-ia));
+    right: calc(20px + 48px + 12px);
   }
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   SEÇÃO 7 — ACESSIBILIDADE
+══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .abtn .ro,
+  .abtn .body,
+  .abtn .ic,
+  .abtn-label { transition: none; }
+  .abtn .ripple { animation: none !important; }
 }
