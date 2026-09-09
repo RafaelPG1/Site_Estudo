@@ -5,6 +5,7 @@
 
 window.__nexusConteudo = {
   aulas: [
+  // aula 1
   {
   aula: "Conceitos Iniciais",
     ideia_central: "A aula introduz os conceitos fundamentais de análise e projeto de sistemas, apresentando o processo de desenvolvimento de software, a diferença complementar entre análise (o que o sistema deve fazer) e modelagem (como o sistema deve fazer), os tipos de modelagem existentes e os conceitos centrais da abordagem orientada a objetos.",
@@ -623,6 +624,7 @@ window.__nexusConteudo = {
       }
     ]
   },
+  // aula 2
   {
   aula: "Ciclo de Vida do Software",
 ideia_central: "A aula apresenta o conceito de ciclo de vida do software, os principais modelos de ciclo de vida (Cascata, Incremental, RAD, Prototipagem, Espiral, RUP e Metodologias Ágeis), suas características, vantagens e exemplos de aplicação, além de detalhar as fases gerais do desenvolvimento de software e os principais tipos de testes utilizados para validação.",
@@ -1473,6 +1475,7 @@ secoes: [
   }
 ]
   },
+  // aula 3
   {
     aula: "Modelos Cascata e Incremental",
     ideia_central: "O módulo compara Modelos Tradicionais, Iterativos e Incrementais de desenvolvimento de software, aprofundando especialmente o Modelo Cascata e o Modelo Incremental, suas etapas, vantagens, desvantagens e contextos de aplicação.",
@@ -2289,7 +2292,3538 @@ secoes: [
       }
     ]
   },
-  
-    
+  // aula 4
+  {
+  aula: "Métodos Ágeis",
+  ideia_central: "A aula apresenta os Métodos Ágeis como abordagens iterativas e incrementais de desenvolvimento de software, fundamentadas no Manifesto Ágil, comparando-os aos métodos tradicionais e detalhando exemplos de aplicação, além de explicar em profundidade as metodologias Scrum e Extreme Programming (XP).",
+  secoes: [
+    {
+      id: "visao_geral",
+      titulo: "Visão geral do conteúdo",
+      blocos: [
+        {
+          tipo: "destaque",
+          texto: "Base do resumo: exclusivamente o conteúdo do PDF *Aula 4 Métodos Ágeis*. O material possui 28 páginas e aborda Métodos Ágeis, Manifesto Ágil, comparação com métodos tradicionais, exemplos de utilização, Scrum e Extreme Programming (XP)."
+        },
+        {
+          tipo: "texto",
+          texto: "Os **Métodos Ágeis** são apresentados no PDF como abordagens **iterativas e incrementais** para o desenvolvimento de software, com prioridade para colaboração, flexibilidade, entrega contínua de valor ao cliente, adaptação às mudanças, comunicação entre os envolvidos e desenvolvimento de software funcional."
+        },
+        {
+          tipo: "lista",
+          titulo: "Prioridades dos Métodos Ágeis",
+          itens: [
+            "colaboração",
+            "flexibilidade",
+            "entrega contínua de valor ao cliente",
+            "adaptação às mudanças",
+            "comunicação entre os envolvidos",
+            "desenvolvimento de software funcional"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Eles surgem como alternativa aos métodos tradicionais, caracterizados no material por processos mais **lineares, estruturados e rígidos**."
+        },
+        {
+          tipo: "topico",
+          titulo: "Dois métodos principais abordados no PDF",
+          lista: [
+            "**Scrum** — apresentado como uma metodologia de gerenciamento de projetos baseada em ciclos curtos chamados **sprints**.",
+            "**Extreme Programming (XP)** — apresentado como uma abordagem com forte ênfase em práticas técnicas de desenvolvimento, qualidade, comunicação e feedback."
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "Relação geral: Métodos Ágeis → Manifesto Ágil → princípios e valores → diferentes métodos/práticas → Scrum e XP."
+        },
+        {
+          tipo: "texto",
+          texto: "Além desses dois, o material menciona **Kanban, Lean, DevOps e Pair Programming**."
+        }
+      ]
+    },
+    {
+      id: "o_que_sao_metodos_ageis",
+      titulo: "O que são Métodos Ágeis",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Os Métodos Ágeis são abordagens **iterativas e incrementais** para desenvolvimento de software. Seu objetivo é permitir que o desenvolvimento aconteça em ciclos menores, com entregas frequentes e possibilidade de adaptação durante o projeto."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Principais características"
+        },
+        {
+          tipo: "topico",
+          titulo: "Colaboração",
+          texto: "A colaboração entre os integrantes da equipe e o cliente possui papel central. O cliente participa do processo para que suas necessidades e expectativas sejam consideradas durante o desenvolvimento."
+        },
+        {
+          tipo: "topico",
+          titulo: "Flexibilidade",
+          texto: "A equipe pode adaptar o projeto conforme mudanças nos requisitos, novas informações, necessidades dos clientes e oportunidades identificadas durante o desenvolvimento.",
+          lista: [
+            "mudanças nos requisitos",
+            "novas informações",
+            "necessidades dos clientes",
+            "oportunidades identificadas durante o desenvolvimento"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Entrega contínua",
+          texto: "O software funcional é entregue em intervalos regulares, normalmente por meio de **iterações ou sprints curtas**. Isso permite obter feedback e realizar ajustes rapidamente."
+        },
+        {
+          tipo: "topico",
+          titulo: "Trabalho em equipe",
+          texto: "O material enfatiza a colaboração entre os membros da equipe, buscando um ambiente cooperativo e aberto."
+        }
+      ]
+    },
+    {
+      id: "manifesto_agil",
+      titulo: "Manifesto Ágil",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O **Manifesto Ágil**, criado em **2001**, é apresentado como a base sobre a qual os métodos ágeis são construídos. Ele estabelece **4 valores fundamentais** e **12 princípios**."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Os quatro valores fundamentais"
+        },
+        {
+          tipo: "topico",
+          titulo: "1. Indivíduos e interações mais que processos e ferramentas",
+          texto: "O foco deve estar nas **pessoas, comunicação e colaboração**, em vez de priorizar processos rígidos e ferramentas."
+        },
+        {
+          tipo: "topico",
+          titulo: "2. Software em funcionamento mais que documentação abrangente",
+          texto: "A prioridade é entregar **software funcional**, em vez de concentrar esforços em documentação extensa."
+        },
+        {
+          tipo: "topico",
+          titulo: "3. Colaboração com o cliente mais que negociação de contratos",
+          texto: "O cliente deve colaborar continuamente com a equipe para ajudar a garantir que o produto final atenda às suas necessidades."
+        },
+        {
+          tipo: "topico",
+          titulo: "4. Responder a mudanças mais que seguir um plano",
+          texto: "Mudanças são consideradas inevitáveis. Por isso, a capacidade de adaptação é mais importante do que seguir rigidamente um plano inflexível."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Representação visual: os quatro valores fundamentais do Manifesto Ágil",
+          texto: "A representação organiza os quatro valores em quatro blocos, associados visualmente a símbolos de pessoas, software/código, colaboração e planejamento/mudança. Ela reforça que os valores priorizam pessoas e interações, software funcionando, colaboração com o cliente e resposta às mudanças.",
+          detalhe: "Página: 7 do PDF. Parte do conteúdo: Manifesto Ágil. id: representacao_visual_quatro_valores_manifesto_agil"
+        }
+      ]
+    },
+    {
+      id: "doze_principios",
+      titulo: "Os 12 princípios do Manifesto Ágil",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O PDF apresenta os seguintes princípios que fundamentam a aplicação prática dos valores do Manifesto Ágil."
+        },
+        {
+          tipo: "lista",
+          titulo: "Os 12 princípios",
+          itens: [
+            "**Satisfazer o cliente** por meio da entrega contínua e adiantada de software de valor.",
+            "**Aceitar mudanças nos requisitos**, inclusive no final do desenvolvimento.",
+            "**Entregar software funcional frequentemente**, preferindo iterações curtas.",
+            "Manter **desenvolvedores e stakeholders trabalhando juntos diariamente**.",
+            "Construir projetos em torno de **indivíduos motivados**, oferecendo ambiente e suporte.",
+            "Considerar a **conversa face a face** como o meio mais eficiente e eficaz de transmitir informações.",
+            "Utilizar o **software funcional como principal medida de progresso**.",
+            "Promover **desenvolvimento sustentável**, mantendo um ritmo constante indefinidamente.",
+            "Valorizar **excelência técnica e bom design**, pois aumentam a agilidade.",
+            "Buscar a **simplicidade**, maximizando a quantidade de trabalho que não precisa ser realizado.",
+            "Considerar que as melhores **arquiteturas, requisitos e designs** surgem de equipes auto-organizadas.",
+            "Fazer **reflexões regulares** sobre como melhorar a eficácia da equipe, ajustando e aperfeiçoando seu comportamento."
+          ]
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Para memorizar"
+        },
+        {
+          tipo: "destaque",
+          texto: "Os princípios enfatizam principalmente: cliente + mudanças + entregas frequentes + colaboração + pessoas + comunicação + software funcional + sustentabilidade + qualidade técnica + simplicidade + auto-organização + melhoria contínua."
+        }
+      ]
+    },
+    {
+      id: "historia_metodos_ageis",
+      titulo: "História dos Métodos Ágeis",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Os métodos ágeis surgiram como uma resposta à **rigidez dos modelos tradicionais**, especialmente modelos como o **Waterfall**. Na década de 1990, aumentou a busca por formas mais dinâmicas de desenvolvimento."
+        },
+        {
+          tipo: "lista",
+          titulo: "Criadores destacados pelo PDF",
+          itens: [
+            "**Ken Schwaber e Jeff Sutherland** → desenvolvimento do **Scrum**",
+            "**Kent Beck e Ward Cunningham** → criação do **Extreme Programming (XP)**"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Essas abordagens passaram a trabalhar com ciclos **iterativos e incrementais**, realizando entregas frequentes em pequenos pedaços. Isso permitia receber feedback, realizar adaptações, responder às mudanças e envolver mais ativamente o cliente."
+        },
+        {
+          tipo: "lista",
+          titulo: "O que os ciclos iterativos e incrementais permitiam",
+          itens: [
+            "receber feedback",
+            "realizar adaptações",
+            "responder às mudanças",
+            "envolver mais ativamente o cliente"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Ao longo do tempo, a utilização dos métodos ágeis se expandiu. O material associa essa expansão a benefícios como maior agilidade, maior flexibilidade, adaptação às mudanças, entrega mais eficiente de valor, melhoria contínua da qualidade e maior satisfação do cliente."
+        },
+        {
+          tipo: "lista",
+          titulo: "Benefícios associados à expansão dos métodos ágeis",
+          itens: [
+            "maior agilidade",
+            "maior flexibilidade",
+            "adaptação às mudanças",
+            "entrega mais eficiente de valor",
+            "melhoria contínua da qualidade",
+            "maior satisfação do cliente"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Também surgiram ferramentas e frameworks que complementam essas práticas, como **Kanban, Lean e DevOps**."
+        },
+        {
+          tipo: "topico",
+          titulo: "Kanban",
+          lista: [
+            "visualização do fluxo de trabalho",
+            "limitação do trabalho em progresso",
+            "otimização do processo"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Lean",
+          lista: [
+            "eliminação de desperdícios",
+            "otimização do desenvolvimento"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "DevOps",
+          texto: "Integra desenvolvimento e operações. Seu objetivo, segundo o material, é uma entrega de software **mais rápida e confiável**.",
+          lista: [
+            "desenvolvimento",
+            "operações"
+          ]
+        }
+      ]
+    },
+    {
+      id: "ageis_vs_tradicionais",
+      titulo: "Métodos Ágeis × Métodos Tradicionais",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Os métodos tradicionais apresentados no PDF incluem **Waterfall**, **V-Model** e **RUP**. Eles são caracterizados como abordagens mais estruturadas, enquanto os métodos ágeis são **iterativos e incrementais**."
+        },
+        {
+          tipo: "lista",
+          titulo: "Métodos tradicionais citados",
+          itens: [
+            "Waterfall",
+            "V-Model",
+            "RUP"
+          ]
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Quadro 1 — Comparativo entre Métodos Tradicionais e Ágeis",
+          texto: "O quadro compara as duas abordagens em relação a abordagem, flexibilidade, feedback, documentação, entrega, riscos, planejamento, colaboração, requisitos e qualidade.",
+          detalhe: "Página: 10 do PDF. Parte do conteúdo: Comparação entre métodos ágeis e tradicionais. id: quadro_1_comparativo_metodos_tradicionais_ageis"
+        },
+        {
+          tipo: "tabela",
+          titulo: "Quadro 1 — Comparativo entre Métodos Tradicionais e Ágeis",
+          colunas: ["Aspecto", "Métodos tradicionais", "Métodos ágeis"],
+          linhas: [
+            ["Abordagem", "Sequencial e linear no Waterfall; iterativo fixo no V-Model; fases sobrepostas no RUP", "Iterativa e incremental"],
+            ["Flexibilidade", "Baixa devido à rigidez do planejamento", "Alta, com adaptação rápida"],
+            ["Feedback do cliente", "Limitado a fases específicas", "Contínuo e constante"],
+            ["Documentação", "Extensa e detalhada", "Suficiente para a necessidade atual"],
+            ["Entrega de software", "Ao final do projeto", "Frequente, em pequenos incrementos"],
+            ["Gerenciamento de riscos", "Antecipado e formalizado", "Contínuo, com respostas rápidas"],
+            ["Planejamento", "Extensivo no início", "Adaptável ao longo do projeto"],
+            ["Colaboração", "Menor ênfase", "Forte ênfase na colaboração"],
+            ["Mudança de requisitos", "Dificilmente acomodada", "Facilmente acomodada"],
+            ["Qualidade", "Verificada ao final", "Verificada continuamente"]
+          ]
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Diferença central para prova"
+        },
+        {
+          tipo: "destaque",
+          texto: "Tradicional: planejamento mais rígido → mudanças mais difíceis → entrega concentrada no final. Ágil: planejamento adaptável → mudanças mais facilmente acomodadas → entregas frequentes → feedback contínuo."
+        }
+      ]
+    },
+    {
+      id: "exemplos_utilizacao_tecnologia",
+      titulo: "Exemplos de utilização de Métodos Ágeis — Empresas de tecnologia",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O material apresenta organizações de diferentes tipos que utilizam métodos ágeis, começando pelas empresas de tecnologia."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Spotify",
+          texto: "Utiliza **Scrum**, com sprints curtos, entregas frequentes, novas funcionalidades e resposta rápida às necessidades dos usuários.",
+          detalhe: "sprints curtos; entregas frequentes; novas funcionalidades; resposta rápida às necessidades dos usuários"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Netflix",
+          texto: "Também utiliza **Scrum**, com destaque para colaboração entre equipes, entrega rápida de melhorias, e atualizações e inovações constantes.",
+          detalhe: "colaboração entre equipes; entrega rápida de melhorias; atualizações e inovações constantes"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "ThoughtWorks",
+          texto: "Utiliza métodos como **Scrum** e **Kanban**. O objetivo apresentado é desenvolver soluções mantendo padrões de qualidade e eficiência."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Representação visual: logotipos de Spotify, Netflix e ThoughtWorks associados aos exemplos de empresas de tecnologia",
+          texto: "Os logotipos identificam visualmente as três empresas apresentadas no texto como exemplos de organizações que utilizam métodos ágeis.",
+          detalhe: "Página: 11 do PDF. Parte do conteúdo: Empresas de Tecnologia. id: representacao_visual_empresas_tecnologia_agil"
+        }
+      ]
+    },
+    {
+      id: "empresas_tradicionais",
+      titulo: "Empresas tradicionais",
+      blocos: [
+        {
+          tipo: "exemplo",
+          titulo: "Banco Itaú",
+          texto: "Utiliza **Scrum** em projetos como aplicativos mobile e plataformas digitais. O material relaciona a adoção dos métodos ágeis à aceleração das entregas e à melhoria da experiência do cliente.",
+          detalhe: "aplicativos mobile; plataformas digitais"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Volkswagen",
+          texto: "Utiliza **Scrum** e **Kanban**, aplicados ao desenvolvimento de software embarcado nos veículos."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Philips",
+          texto: "Utiliza métodos ágeis no desenvolvimento de produtos de saúde e eletrodomésticos inteligentes. O material destaca flexibilidade, adaptabilidade e inovação rápida.",
+          detalhe: "produtos de saúde; eletrodomésticos inteligentes"
+        },
+        {
+          tipo: "texto",
+          texto: "Os logotipos dessas três empresas (Banco Itaú, Volkswagen e Philips) aparecem junto aos respectivos exemplos na página 11 do PDF."
+        }
+      ]
+    },
+    {
+      id: "startups",
+      titulo: "Startups",
+      blocos: [
+        {
+          tipo: "exemplo",
+          titulo: "Nubank",
+          texto: "É apresentado como referência no uso de métodos ágeis, com foco em experimentação, rápida entrega de produtos e serviços, e adaptação às demandas do mercado financeiro.",
+          detalhe: "experimentação; rápida entrega de produtos e serviços; adaptação às demandas do mercado financeiro"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "QuintoAndar",
+          texto: "Utiliza **Scrum** no desenvolvimento do aplicativo e da plataforma web."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Rappi",
+          texto: "Utiliza métodos ágeis para escalar rapidamente suas operações, responder à demanda, adaptar-se às mudanças do mercado e atender às necessidades dos clientes.",
+          detalhe: "escalar rapidamente suas operações; responder à demanda; adaptar-se às mudanças do mercado; atender às necessidades dos clientes"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Representação visual: logotipos de Nubank, QuintoAndar e Rappi associados aos exemplos de startups",
+          texto: "Os elementos visuais identificam as três startups utilizadas no material como exemplos de adoção de métodos ágeis.",
+          detalhe: "Página: 12 do PDF. Parte do conteúdo: Startups. id: representacao_visual_startups_metodos_ageis"
+        }
+      ]
+    },
+    {
+      id: "instituicoes_governamentais",
+      titulo: "Instituições governamentais brasileiras",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O PDF também apresenta exemplos no setor público."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Ministério da Economia",
+          texto: "Adota métodos ágeis em alguns projetos de desenvolvimento de software, buscando maior agilidade e eficiência na entrega de serviços públicos."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Tribunal de Contas da União (TCU)",
+          texto: "Utiliza **Scrum** no desenvolvimento de sistemas internos, com foco em qualidade, segurança da informação, eficiência e segurança.",
+          detalhe: "qualidade; segurança da informação; eficiência; segurança"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Prefeitura de São Paulo",
+          texto: "Aplica métodos ágeis no desenvolvimento de aplicativos mobile e plataformas digitais. O objetivo apresentado é realizar entregas mais rápidas e eficazes de serviços públicos.",
+          detalhe: "aplicativos mobile; plataformas digitais"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Universidade Federal do Ceará",
+          texto: "O material apresenta um caso específico da UFC: desenvolvimento de uma nova versão do Ambiente Virtual de Aprendizagem **Solar**, utilizando **Scrum**, **Behavior Driven Development (BDD)**, testes unitários e programação em par. O grupo manteve essa filosofia durante criação e manutenção do ambiente entre **2010 e 2016**. Posteriormente, devido a problemas internos e desfalques na equipe, as práticas foram abandonadas.",
+          detalhe: "desenvolvimento de uma nova versão do Ambiente Virtual de Aprendizagem Solar; utilização de Scrum; utilização de Behavior Driven Development (BDD); testes unitários; programação em par"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Representação visual: identificação da Universidade Federal do Ceará associada ao exemplo do Solar",
+          texto: "O elemento visual identifica a Universidade Federal do Ceará no trecho que apresenta o desenvolvimento do Solar utilizando Scrum, BDD, testes unitários e programação em par.",
+          detalhe: "Página: 13 do PDF. Parte do conteúdo: Instituições Governamentais Brasileiras. id: representacao_visual_ufc_solar"
+        }
+      ]
+    },
+    {
+      id: "scrum_visao_geral",
+      titulo: "Scrum",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O **Scrum** é apresentado como uma metodologia de gerenciamento de projetos de software baseada em ciclos curtos de desenvolvimento chamados **sprints**. Cada sprint normalmente dura **1 a 4 semanas**, possui objetivos específicos, envolve trabalho colaborativo e busca entregar valor ao cliente."
+        },
+        {
+          tipo: "lista",
+          titulo: "Características de cada sprint",
+          itens: [
+            "normalmente dura 1 a 4 semanas",
+            "possui objetivos específicos",
+            "envolve trabalho colaborativo",
+            "busca entregar valor ao cliente"
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "O PDF informa que sprints de **uma semana** são mais utilizadas em desenvolvimentos rápidos de pequenas aplicações, enquanto ciclos de **duas semanas** são os mais comuns."
+        }
+      ]
+    },
+    {
+      id: "tres_pilares_scrum",
+      titulo: "Os três pilares do Scrum",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O Scrum é baseado em três pilares."
+        },
+        {
+          tipo: "topico",
+          titulo: "1. Transparência",
+          texto: "As informações do projeto devem estar visíveis para membros da equipe e partes interessadas.",
+          lista: [
+            "membros da equipe",
+            "partes interessadas"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "2. Inspeção",
+          texto: "A equipe revisa regularmente o progresso e identifica pontos que podem ser melhorados."
+        },
+        {
+          tipo: "topico",
+          titulo: "3. Adaptação",
+          texto: "A equipe modifica sua abordagem com base em feedback e novas informações.",
+          lista: [
+            "feedback",
+            "novas informações"
+          ]
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Para memorizar"
+        },
+        {
+          tipo: "destaque",
+          texto: "Scrum = Transparência + Inspeção + Adaptação."
+        }
+      ]
+    },
+    {
+      id: "caracteristicas_scrum",
+      titulo: "Características do Scrum",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "A divisão do projeto em **sprints curtos** proporciona maior flexibilidade e adaptabilidade."
+        },
+        {
+          tipo: "texto",
+          texto: "As reuniões de sprint promovem comunicação e colaboração entre equipe, Product Owner e stakeholders. Além disso, os papéis são definidos para facilitar a distribuição das responsabilidades."
+        },
+        {
+          tipo: "lista",
+          titulo: "Envolvidos nas reuniões de sprint",
+          itens: [
+            "equipe",
+            "Product Owner",
+            "stakeholders"
+          ]
+        }
+      ]
+    },
+    {
+      id: "atores_chave_scrum",
+      titulo: "Atores-chave do Scrum",
+      blocos: [
+        {
+          tipo: "exemplo",
+          titulo: "Representação visual: atores-chave do Scrum",
+          texto: "A representação apresenta quatro participantes/papéis ligados ao projeto: Product Owner, Scrum Master, Time de Desenvolvimento e Stakeholders.",
+          detalhe: "Página: 14 do PDF. Parte do conteúdo: Características do Scrum — Atores-chave. id: representacao_visual_atores_chave_scrum"
+        },
+        {
+          tipo: "topico",
+          titulo: "Product Owner (PO)",
+          texto: "É a **\"voz\" do cliente** no projeto.",
+          lista: [
+            "definir a visão do produto",
+            "priorizar itens do backlog",
+            "garantir que o produto atenda às necessidades dos usuários"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Scrum Master (SM)",
+          texto: "É o **guardião do processo Scrum**.",
+          lista: [
+            "facilitar a implementação da metodologia",
+            "remover obstáculos para a equipe",
+            "garantir que princípios e valores do Scrum sejam seguidos"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Time de Desenvolvimento",
+          texto: "É apresentado como a **força motriz do projeto**. Pode ser composto por desenvolvedores, testadores e outros profissionais. Sua responsabilidade é transformar ideias em um produto funcional e de alta qualidade.",
+          lista: [
+            "desenvolvedores",
+            "testadores",
+            "outros profissionais"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Stakeholders",
+          texto: "São as **partes interessadas no projeto**.",
+          lista: [
+            "clientes",
+            "gerentes",
+            "investidores",
+            "outras pessoas interessadas no sucesso do projeto"
+          ]
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Decore esta diferença"
+        },
+        {
+          tipo: "tabela",
+          titulo: "Papéis e principais responsabilidades",
+          colunas: ["Papel", "Principal responsabilidade"],
+          linhas: [
+            ["Product Owner", "Visão do produto e priorização do backlog"],
+            ["Scrum Master", "Facilitar Scrum e remover obstáculos"],
+            ["Time de Desenvolvimento", "Transformar ideias em produto"],
+            ["Stakeholders", "Pessoas interessadas no sucesso do projeto"]
+          ]
+        }
+      ]
+    },
+    {
+      id: "artefatos_scrum_sprint_backlog",
+      titulo: "Artefatos do Scrum — Sprint Backlog",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O PDF destaca dois artefatos: **Sprint Backlog** e **Burndown Chart**. Eles fornecem visibilidade sobre o progresso do projeto."
+        },
+        {
+          tipo: "texto",
+          texto: "O **Sprint Backlog** apresenta o fluxo de desenvolvimento das funcionalidades selecionadas para uma sprint. O material apresenta um exemplo utilizando um quadro com post-its."
+        },
+        {
+          tipo: "texto",
+          texto: "As funcionalidades podem passar por três estados: `To-Do` → `Doing` → `Done`."
+        },
+        {
+          tipo: "topico",
+          titulo: "To-Do",
+          texto: "Funcionalidades que ainda precisam ser feitas."
+        },
+        {
+          tipo: "topico",
+          titulo: "Doing",
+          texto: "Funcionalidades que estão sendo desenvolvidas."
+        },
+        {
+          tipo: "topico",
+          titulo: "Done",
+          texto: "Funcionalidades concluídas e devidamente testadas."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Figura 1 — Exemplo de um Sprint Backlog utilizando um quadro branco e post-its",
+          texto: "A figura apresenta um quadro físico dividido em colunas de trabalho, com post-its distribuídos conforme o estado das tarefas. Visualmente, o quadro demonstra o fluxo das funcionalidades durante a sprint, desde tarefas ainda não iniciadas até tarefas em andamento, em teste e concluídas.",
+          detalhe: "Página: 15 do PDF. Parte do conteúdo: Artefatos Scrum — Sprint Backlog. id: figura_1_exemplo_sprint_backlog"
+        }
+      ]
+    },
+    {
+      id: "burndown_chart",
+      titulo: "Burndown Chart",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O **Burndown Chart** é uma ferramenta gráfica utilizada para visualizar o **trabalho restante ao longo do tempo**. Ele permite acompanhar o progresso da equipe, verificar a relação com os objetivos, identificar problemas e identificar atrasos de forma proativa."
+        },
+        {
+          tipo: "lista",
+          titulo: "O que o Burndown Chart permite",
+          itens: [
+            "acompanhar o progresso da equipe",
+            "verificar a relação com os objetivos",
+            "identificar problemas",
+            "identificar atrasos de forma proativa"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Eixos",
+          texto: "Normalmente: eixo X representa iterações ou sprints; eixo Y representa esforço a ser realizado, expresso em **pontos de complexidade**. A complexidade é determinada de acordo com a experiência do time no desenvolvimento daquela funcionalidade: funcionalidade muito complicada recebe pontuação alta; funcionalidade simples recebe pontuação baixa."
+        },
+        {
+          tipo: "topico",
+          titulo: "Linha de Trabalho Restante Ideal",
+          texto: "É uma linha reta que começa no eixo Y com o total de pontos da sprint e termina no eixo X na posição correspondente à última iteração. Ela representa a evolução **ideal** do trabalho restante."
+        },
+        {
+          tipo: "topico",
+          titulo: "Linha de Trabalho Restante Real",
+          texto: "A equipe seleciona requisitos em cada iteração e atribui seus pontos de complexidade. O somatório desses pontos é colocado no gráfico. Ao conectar esses pontos, forma-se a **Linha de Trabalho Restante Real**."
+        },
+        {
+          tipo: "topico",
+          titulo: "Interpretação",
+          texto: "Se a linha real permanecer **abaixo da linha ideal**, o material indica que a equipe está trabalhando em um bom ritmo e deverá cumprir o cronograma. Caso contrário, a equipe precisará melhorar seu ritmo ou rever o planejamento de tempo do projeto."
+        },
+        {
+          tipo: "topico",
+          titulo: "Burndown dentro de uma sprint",
+          texto: "O gráfico também pode acompanhar o progresso **dentro de uma única sprint**. Nesse caso, X representa os dias da sprint e Y representa os pontos de complexidade. A linha ideal começa a partir do número total de pontos do Sprint Backlog. A linha real representa a evolução diária dos pontos restantes."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Figura 2 — Exemplo de um Burndown Chart",
+          texto: "O gráfico apresenta no eixo X os dias da sprint, de 1 a 10, e no eixo Y os pontos de história restantes no Sprint Backlog. Há uma linha ideal descendente e uma linha real representando a evolução observada dos pontos restantes. Ambas chegam a aproximadamente zero no décimo dia.",
+          detalhe: "Página: 16 do PDF. Parte do conteúdo: Artefatos Scrum — Burndown Chart. id: figura_2_exemplo_burndown_chart"
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Ponto importante para prova"
+        },
+        {
+          tipo: "destaque",
+          texto: "Burndown Chart = trabalho restante ao longo do tempo. Não confundir com uma representação do trabalho já realizado: o eixo vertical apresentado pelo material representa o trabalho/pontos que ainda permanecem."
+        }
+      ]
+    },
+    {
+      id: "ferramentas_apoio_sprint_backlog",
+      titulo: "Ferramentas de apoio ao Sprint Backlog",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O material menciona softwares que podem ser utilizados para criação e compartilhamento do Sprint Backlog."
+        },
+        {
+          tipo: "lista",
+          titulo: "Softwares mencionados",
+          itens: [
+            "Pivotal Tracker",
+            "Trello",
+            "Jira"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Apesar disso, o PDF destaca que a prática de utilizar **quadros físicos e interação presencial** é incentivada no Scrum para fortalecer colaboração, companheirismo e responsabilidade entre os membros da equipe."
+        },
+        {
+          tipo: "lista",
+          titulo: "O que os quadros físicos e a interação presencial fortalecem",
+          itens: [
+            "colaboração",
+            "companheirismo",
+            "responsabilidade entre os membros da equipe"
+          ]
+        }
+      ]
+    },
+    {
+      id: "experiencia_adocao_metodos_ageis",
+      titulo: "Experiência de adoção de Métodos Ágeis",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O PDF apresenta um relato de experiência de adoção de Scrum em uma universidade federal. Inicialmente, a equipe utilizava quadros brancos e post-its. Depois, passou a utilizar o **Pivotal Tracker** para apoiar a gestão dos projetos."
+        },
+        {
+          tipo: "texto",
+          texto: "Mesmo com a utilização de software, as reuniões presenciais continuaram sendo consideradas importantes para discussões **face a face**."
+        },
+        {
+          tipo: "lista",
+          titulo: "Pontos destacados no relato",
+          itens: [
+            "valorização da equipe",
+            "redução do estresse",
+            "harmonia interna",
+            "responsabilidade pelas tarefas",
+            "busca por técnicas e tecnologias que aumentem a produtividade sem manter a equipe sob estresse constante"
+          ]
+        }
+      ]
+    },
+    {
+      id: "papel_po_relato",
+      titulo: "Papel do Product Owner no relato",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "No caso relatado, uma das pessoas assumiu a função de **Product Owner**. Para isso, passou a trabalhar com gerenciamento de backlog, priorização de tarefas, Sprint Planning, User Stories, Sprint Review e técnicas ágeis para definição de requisitos."
+        },
+        {
+          tipo: "lista",
+          titulo: "Atividades assumidas pelo Product Owner no relato",
+          itens: [
+            "gerenciamento de backlog",
+            "priorização de tarefas",
+            "Sprint Planning",
+            "User Stories",
+            "Sprint Review",
+            "técnicas ágeis para definição de requisitos"
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "O material destaca que a adoção dos métodos ágeis exige tempo, esforço e investimento, não sendo uma mudança que necessariamente ocorre em apenas um ano."
+        }
+      ]
+    },
+    {
+      id: "equipe_auto_organizada",
+      titulo: "Equipe auto-organizada e valorização humana",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Um dos pontos enfatizados no relato é que o time deve ocupar uma posição central na produção. O material afirma que ninguém sabe melhor quanto pode produzir em uma sprint do que o próprio time que trabalhará nela."
+        },
+        {
+          tipo: "lista",
+          titulo: "O que a gerência deve fazer",
+          itens: [
+            "ouvir a equipe",
+            "discutir sugestões",
+            "considerar suas dificuldades",
+            "dar espaço para participação"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "O primeiro passo para adoção dos métodos ágeis em uma empresa é apresentado como a necessidade de convencer a cadeia de comando de que esses métodos funcionam e de que a busca por **equipes auto-organizáveis** é essencial."
+        },
+        {
+          tipo: "texto",
+          texto: "O texto também defende que gestores e diretores precisam compreender o processo de desenvolvimento e conversar com as equipes, em vez de enxergar as pessoas apenas como \"recursos\"."
+        },
+        {
+          tipo: "destaque",
+          texto: "Isso está diretamente relacionado ao valor do Manifesto Ágil: \"Indivíduos e interações mais do que processos e ferramentas.\""
+        }
+      ]
+    },
+    {
+      id: "reunioes_scrum",
+      titulo: "Reuniões do Scrum",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O PDF apresenta quatro reuniões principais."
+        },
+        {
+          tipo: "topico",
+          titulo: "Scrum Daily",
+          texto: "É uma conversa aberta e colaborativa na qual cada membro compartilha avanços, obstáculos e planos para o dia. O **Scrum Master** facilita a discussão.",
+          lista: [
+            "avanços",
+            "obstáculos",
+            "planos para o dia"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Sprint Planning",
+          texto: "Participam Product Owner, Scrum Master e equipe de desenvolvimento. Os objetivos são definir o escopo da sprint, definir prioridades, analisar o backlog, estimar esforço e estabelecer os objetivos da sprint.",
+          lista: [
+            "definir o escopo da sprint",
+            "definir prioridades",
+            "analisar o backlog",
+            "estimar esforço",
+            "estabelecer os objetivos da sprint"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Sprint Review",
+          texto: "Serve para apresentar o que foi realizado e receber feedback dos stakeholders. O Product Owner valida o trabalho e os stakeholders podem sugerir melhorias e novas ideias.",
+          lista: [
+            "apresentar o que foi realizado",
+            "receber feedback dos stakeholders"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Sprint Retrospective",
+          texto: "É um momento de aprendizado e melhoria. A equipe reflete sobre o que deu certo, o que deu errado e como melhorar no próximo sprint.",
+          lista: [
+            "o que deu certo",
+            "o que deu errado",
+            "como melhorar no próximo sprint"
+          ]
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Memorize a sequência"
+        },
+        {
+          tipo: "destaque",
+          texto: "Planning → desenvolvimento da Sprint → Review → Retrospective."
+        },
+        {
+          tipo: "tabela",
+          titulo: "Função principal de cada reunião",
+          colunas: ["Reunião", "Ideia principal"],
+          linhas: [
+            ["Daily", "Acompanhar avanços, obstáculos e planos"],
+            ["Planning", "Planejar a sprint"],
+            ["Review", "Apresentar o resultado e receber feedback"],
+            ["Retrospective", "Refletir e melhorar o processo"]
+          ]
+        }
+      ]
+    },
+    {
+      id: "extreme_programming_xp",
+      titulo: "Extreme Programming — XP",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O **Extreme Programming (XP)**, ou Programação Extrema, surgiu em meados da década de 1990 como resposta à necessidade de maior agilidade e adaptabilidade no desenvolvimento de software. Foi idealizado por **Kent Beck e sua equipe** durante o projeto **C3 (Chrysler Comprehensive Compensation System)**."
+        }
+      ]
+    },
+    {
+      id: "cinco_valores_xp",
+      titulo: "Os cinco valores do XP",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O XP possui cinco valores fundamentais."
+        },
+        {
+          tipo: "topico",
+          titulo: "1. Comunicação",
+          texto: "É a base para um trabalho colaborativo e eficiente."
+        },
+        {
+          tipo: "topico",
+          titulo: "2. Simplicidade",
+          texto: "Busca soluções descomplicadas e fáceis de entender.",
+          lista: [
+            "descomplicadas",
+            "fáceis de entender"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "3. Feedback",
+          texto: "Busca obter e fornecer informações constantemente para melhorar o processo."
+        },
+        {
+          tipo: "topico",
+          titulo: "4. Coragem",
+          texto: "Relacionada a experimentar novas ideias e enfrentar desafios.",
+          lista: [
+            "experimentar novas ideias",
+            "enfrentar desafios"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "5. Respeito",
+          texto: "Valoriza habilidades, opiniões e participação dos membros da equipe.",
+          lista: [
+            "habilidades",
+            "opiniões",
+            "participação dos membros da equipe"
+          ]
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Para memorizar"
+        },
+        {
+          tipo: "destaque",
+          texto: "XP = Comunicação + Simplicidade + Feedback + Coragem + Respeito."
+        }
+      ]
+    },
+    {
+      id: "praticas_xp",
+      titulo: "Práticas do Extreme Programming",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "Ciclos de desenvolvimento curtos",
+          texto: "O projeto é dividido em pequenas iterações. Isso possibilita entregas frequentes, feedback contínuo e ajustes rápidos.",
+          lista: [
+            "entregas frequentes",
+            "feedback contínuo",
+            "ajustes rápidos"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Programação em pares",
+          texto: "Dois programadores trabalham juntos na mesma estação de trabalho. O material relaciona a prática à colaboração, revisão do código em tempo real, aumento da qualidade e resolução de problemas.",
+          lista: [
+            "colaboração",
+            "revisão do código em tempo real",
+            "aumento da qualidade",
+            "resolução de problemas"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Testes unitários",
+          texto: "São testes automatizados destinados a garantir a qualidade do código, prevenir falhas e verificar cada parte do software isoladamente.",
+          lista: [
+            "garantir a qualidade do código",
+            "prevenir falhas",
+            "verificar cada parte do software isoladamente"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Refatoração",
+          texto: "Consiste em reorganizar o código existente para torná-lo mais limpo, mais eficiente e mais fácil de manter. A refatoração contínua ajuda a manter integridade e extensibilidade do software.",
+          lista: [
+            "mais limpo",
+            "mais eficiente",
+            "mais fácil de manter"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Integração contínua",
+          texto: "Consiste em integrar frequentemente as mudanças do código à base principal. Isso permite detectar problemas precocemente, reduzir riscos de integração tardia e manter o software em estado funcional.",
+          lista: [
+            "detectar problemas precocemente",
+            "reduzir riscos de integração tardia",
+            "manter o software em estado funcional"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Metáfora da Sala de Reuniões",
+          texto: "É apresentada como um espaço aberto para comunicação, colaboração entre equipe e cliente, transparência e integração.",
+          lista: [
+            "comunicação",
+            "colaboração entre equipe e cliente",
+            "transparência",
+            "integração"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Histórias de Usuário",
+          texto: "Descrevem as funcionalidades do software a partir da **perspectiva do usuário**. Seu objetivo é manter o foco nas necessidades do usuário e no valor entregue ao cliente."
+        },
+        {
+          tipo: "topico",
+          titulo: "Planejamento em Tempo Real",
+          texto: "Adapta o planejamento às mudanças do projeto e prioridades do cliente.",
+          lista: [
+            "mudanças do projeto",
+            "prioridades do cliente"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Liberação de software com frequência",
+          texto: "Consiste em entregar versões funcionais regularmente ao cliente. Isso permite feedback, solicitação de alterações e participação contínua do cliente.",
+          lista: [
+            "feedback",
+            "solicitação de alterações",
+            "participação contínua do cliente"
+          ]
+        }
+      ]
+    },
+    {
+      id: "vantagens_implementacao_xp",
+      titulo: "Vantagens e implementação do XP",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O material afirma que, embora o XP seja frequentemente associado a projetos grandes, seus princípios podem ser adaptados a diferentes contextos e diferentes tamanhos de equipe."
+        },
+        {
+          tipo: "texto",
+          texto: "O PDF cita **Google, Spotify e ThoughtWorks** como empresas que adotaram XP e são apresentadas como tendo obtido maior agilidade, melhoria da qualidade do software e equipes mais engajadas."
+        },
+        {
+          tipo: "lista",
+          titulo: "Resultados obtidos pelas empresas citadas",
+          itens: [
+            "maior agilidade",
+            "melhoria da qualidade do software",
+            "equipes mais engajadas"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "O sucesso do XP é relacionado à sua capacidade de promover flexibilidade, adaptabilidade, foco no cliente, comunicação, feedback e desenvolvimento contínuo."
+        },
+        {
+          tipo: "lista",
+          titulo: "Capacidades relacionadas ao sucesso do XP",
+          itens: [
+            "flexibilidade",
+            "adaptabilidade",
+            "foco no cliente",
+            "comunicação",
+            "feedback",
+            "desenvolvimento contínuo"
+          ]
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Representação visual: equipe trabalhando diante de um quadro dividido em \"To do\", \"Doing\" e \"Done\"",
+          texto: "A ilustração mostra duas pessoas trabalhando juntas diante de um quadro organizado em estados de tarefas. A representação reforça visualmente a ideia de colaboração e organização do trabalho apresentada no trecho sobre o sucesso do XP.",
+          detalhe: "Página: 23 do PDF. Parte do conteúdo: Vantagens e implementações do XP. id: representacao_visual_equipe_xp_quadro_tarefas"
+        }
+      ]
+    },
+    {
+      id: "scrum_vs_xp",
+      titulo: "Scrum × Extreme Programming",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O PDF apresenta uma comparação direta entre Scrum e XP. Antes do quadro, o material destaca que **XP** é considerado adequado para projetos que exigem alta qualidade de software e adaptação frequente, enquanto **Scrum** é apresentado como mais adequado para projetos com requisitos bem definidos e necessidade de entregas em prazos fixos."
+        },
+        {
+          tipo: "texto",
+          texto: "O Scrum possui uma abordagem gerencial mais estruturada, enquanto o XP mergulha mais diretamente nas práticas de engenharia de software."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Quadro 2 — Comparativo entre Métodos XP e Scrum",
+          texto: "O quadro compara XP e Scrum em cinco critérios: foco, planejamento, ciclos de desenvolvimento, métricas e reuniões.",
+          detalhe: "Página: 24 do PDF. Parte do conteúdo: Comparativo entre Scrum e Extreme Programming. id: quadro_2_comparativo_xp_scrum"
+        },
+        {
+          tipo: "tabela",
+          titulo: "Quadro 2 — Comparativo entre Métodos XP e Scrum",
+          colunas: ["Critério", "XP", "Scrum"],
+          linhas: [
+            ["Foco", "Engenharia de software, práticas técnicas rigorosas, qualidade do código e produto robusto", "Visão mais gerencial, organização do fluxo em sprints e definição de papéis"],
+            ["Planejamento", "Adaptativo, ajustando prioridades e escopo conforme feedback e necessidades do cliente", "Backlog priorizado e definição das funcionalidades no início da sprint, com pouca flexibilidade para alterações durante o ciclo"],
+            ["Ciclos de desenvolvimento", "Ciclos curtos com entregas frequentes de versões funcionais", "Sprints de duração fixa, geralmente de 1 a 4 semanas"],
+            ["Métricas", "Velocidade de desenvolvimento, testes unitários e cobertura de código", "Velocidade de entrega, Burndown Chart e impedimentos"],
+            ["Reuniões", "Frequentes e informais, como stand-up e planejamento diário", "Reuniões cerimoniais como Sprint Planning, Sprint Review e Sprint Retrospective"]
+          ]
+        }
+      ]
+    },
+    {
+      id: "diferenca_essencial_scrum_xp",
+      titulo: "Diferença essencial entre Scrum e XP",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Uma forma de organizar o conteúdo do próprio PDF para revisão é separar os dois métodos pela sua ênfase principal."
+        },
+        {
+          tipo: "topico",
+          titulo: "Scrum — Ênfase gerencial e organizacional",
+          lista: [
+            "sprints",
+            "Product Owner",
+            "Scrum Master",
+            "backlog",
+            "Sprint Planning",
+            "Sprint Review",
+            "Sprint Retrospective",
+            "Burndown Chart",
+            "organização e comunicação"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "XP — Ênfase técnica e engenharia de software",
+          lista: [
+            "programação em pares",
+            "testes unitários",
+            "refatoração",
+            "integração contínua",
+            "ciclos curtos",
+            "histórias de usuário",
+            "liberações frequentes",
+            "qualidade do código"
+          ]
+        }
+      ]
+    },
+    {
+      id: "pair_programming",
+      titulo: "Pair Programming / Programação em Pares",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Nas considerações finais, o PDF retoma a **Programação em Pares**. Dois programadores trabalham na mesma estação: um escreve o código (**driver**), outro revisa cada linha (**observer** ou **navigator**). Os papéis podem ser trocados frequentemente."
+        },
+        {
+          tipo: "lista",
+          titulo: "Benefícios associados à prática",
+          itens: [
+            "colaboração",
+            "troca de conhecimento",
+            "revisão contínua",
+            "maior qualidade",
+            "menos bugs",
+            "disseminação de conhecimento",
+            "maior coesão da equipe",
+            "capacidade coletiva para resolver problemas complexos"
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "A Programação em Pares é apresentada como uma das práticas centrais do Extreme Programming."
+        }
+      ]
+    },
+    {
+      id: "relacao_conceitos",
+      titulo: "Relação entre os principais conceitos",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O conteúdo pode ser organizado mentalmente da seguinte forma: Métodos Ágeis → são iterativos e incrementais → priorizam colaboração, flexibilidade e entrega contínua de valor → têm como base o Manifesto Ágil → Manifesto Ágil possui 4 valores + 12 princípios → diferentes métodos e práticas podem aplicar esses princípios → dois métodos destacados no PDF: Scrum e XP."
+        },
+        {
+          tipo: "topico",
+          titulo: "Scrum",
+          lista: [
+            "gerenciamento",
+            "sprints",
+            "papéis",
+            "reuniões",
+            "backlog",
+            "acompanhamento do progresso"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "XP",
+          lista: [
+            "engenharia de software",
+            "qualidade",
+            "programação em pares",
+            "testes",
+            "refatoração",
+            "integração contínua",
+            "feedback"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Também aparecem Kanban (visualização do fluxo + limitação do trabalho em progresso), Lean (eliminação de desperdícios + otimização) e DevOps (integração entre desenvolvimento e operações + entrega mais rápida e confiável)."
+        }
+      ]
+    },
+    {
+      id: "pontos_atencao_prova",
+      titulo: "Pontos que merecem atenção para a prova",
+      blocos: [
+        {
+          tipo: "subtitulo",
+          texto: "Manifesto Ágil"
+        },
+        {
+          tipo: "destaque",
+          texto: "Memorize os 4 valores: 1. Indivíduos e interações > processos e ferramentas. 2. Software em funcionamento > documentação abrangente. 3. Colaboração com o cliente > negociação de contratos. 4. Responder a mudanças > seguir um plano."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Scrum"
+        },
+        {
+          tipo: "topico",
+          titulo: "3 pilares",
+          lista: [
+            "Transparência",
+            "Inspeção",
+            "Adaptação"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Principais papéis",
+          lista: [
+            "Product Owner",
+            "Scrum Master",
+            "Time de Desenvolvimento",
+            "Stakeholders"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Sprint",
+          lista: [
+            "ciclo curto",
+            "geralmente 1–4 semanas",
+            "objetivos específicos",
+            "entrega de valor"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Artefatos destacados",
+          lista: [
+            "Sprint Backlog",
+            "Burndown Chart"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Reuniões",
+          lista: [
+            "Daily",
+            "Sprint Planning",
+            "Sprint Review",
+            "Sprint Retrospective"
+          ]
+        },
+        {
+          tipo: "subtitulo",
+          texto: "XP"
+        },
+        {
+          tipo: "topico",
+          titulo: "5 valores",
+          lista: [
+            "Comunicação",
+            "Simplicidade",
+            "Feedback",
+            "Coragem",
+            "Respeito"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Principais práticas",
+          lista: [
+            "ciclos curtos",
+            "programação em pares",
+            "testes unitários",
+            "refatoração",
+            "integração contínua",
+            "metáfora da sala de reuniões",
+            "histórias de usuário",
+            "planejamento em tempo real",
+            "liberação frequente de software"
+          ]
+        }
+      ]
+    },
+    {
+      id: "resumo_final",
+      titulo: "Resumo final para revisão rápida",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "Métodos Ágeis",
+          lista: [
+            "São iterativos e incrementais.",
+            "Priorizam colaboração, flexibilidade e entrega contínua de valor.",
+            "Permitem adaptação frequente às mudanças.",
+            "O cliente participa continuamente do processo."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Manifesto Ágil",
+          lista: [
+            "Criado em 2001.",
+            "Possui 4 valores e 12 princípios.",
+            "Valoriza pessoas, software funcional, colaboração e adaptação."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Métodos tradicionais × ágeis",
+          lista: [
+            "Tradicionais → maior rigidez, planejamento inicial extensivo, mudanças mais difíceis e entrega ao final.",
+            "Ágeis → maior flexibilidade, planejamento adaptável, mudanças mais facilmente acomodadas e entregas frequentes."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Scrum",
+          lista: [
+            "Foco apresentado como mais gerencial.",
+            "Trabalha com sprints.",
+            "Sprint geralmente dura 1 a 4 semanas.",
+            "Três pilares: transparência, inspeção e adaptação.",
+            "PO → visão e priorização.",
+            "SM → processo e remoção de obstáculos.",
+            "Time → desenvolvimento do produto.",
+            "Stakeholders → partes interessadas.",
+            "Sprint Backlog → funcionalidades da sprint e seu fluxo.",
+            "Burndown Chart → trabalho restante ao longo do tempo."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "XP",
+          lista: [
+            "Surgiu em meados dos anos 1990.",
+            "Associado a Kent Beck e sua equipe.",
+            "Cinco valores: comunicação, simplicidade, feedback, coragem e respeito.",
+            "Forte ênfase em práticas técnicas.",
+            "Práticas importantes: programação em pares, testes unitários, refatoração, integração contínua, histórias de usuário e liberações frequentes."
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "Scrum → organização e gerenciamento. XP → práticas técnicas e qualidade do software."
+        },
+        {
+          tipo: "topico",
+          titulo: "Outros conceitos",
+          lista: [
+            "Kanban: visualização do fluxo e limitação do trabalho em progresso.",
+            "Lean: eliminação de desperdícios e otimização.",
+            "DevOps: integração entre desenvolvimento e operações.",
+            "Pair Programming: dois programadores trabalhando juntos, com alternância entre quem escreve e quem revisa."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "O material conclui destacando que a agilidade permite adaptação rápida às mudanças, colaboração próxima com clientes, entrega contínua de valor, melhoria da eficiência e melhor organização das equipes."
+        }
+      ]
+    }
+  ]
+  },
+  //aula 5
+  {
+  aula: "Análise de Requisitos",
+  ideia_central: "A Análise de Requisitos é uma etapa fundamental do desenvolvimento de software que parte da elicitação das necessidades dos stakeholders e, por meio da análise, organiza essas necessidades em requisitos funcionais (o que o sistema faz) e requisitos não funcionais (as características e qualidades que o sistema deve possuir), utilizando técnicas como User Stories e critérios de aceitação para garantir clareza, priorização e sucesso do projeto.",
+  secoes: [
+    {
+      id: "visao_geral",
+      titulo: "Visão geral do conteúdo",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "A **Análise de Requisitos** é apresentada no PDF como uma etapa fundamental para o sucesso de um projeto de software."
+        },
+        {
+          tipo: "texto",
+          texto: "Os requisitos representam as **expectativas e necessidades dos stakeholders** — pessoas que possuem interesse no sistema."
+        },
+        {
+          tipo: "lista",
+          titulo: "Exemplos de stakeholders",
+          itens: [
+            "usuários",
+            "clientes",
+            "desenvolvedores",
+            "gestores",
+            "outras partes envolvidas"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "O módulo aborda principalmente três frentes de conteúdo."
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "Elicitação e análise de requisitos",
+            "Requisitos funcionais",
+            "Requisitos não funcionais"
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "A relação entre esses assuntos é: Necessidades dos stakeholders → Elicitação → Análise → Organização e priorização → Requisitos funcionais e não funcionais → Desenvolvimento do sistema."
+        },
+        {
+          tipo: "texto",
+          texto: "O PDF destaca que requisitos bem definidos ajudam a alcançar diversos benefícios para o projeto."
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "reduzir retrabalho",
+            "reduzir custos",
+            "melhorar a qualidade",
+            "aumentar a satisfação dos clientes",
+            "melhorar comunicação e colaboração",
+            "tornar o desenvolvimento mais ágil e eficiente"
+          ]
+        }
+      ]
+    },
+    {
+      id: "elicitacao_e_analise",
+      titulo: "Elicitação e análise de requisitos",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "O que é elicitação de requisitos?",
+          texto: "A **elicitação** é o processo de **descobrir, ouvir e compreender os requisitos das partes interessadas**."
+        },
+        {
+          tipo: "texto",
+          texto: "Seu objetivo é identificar necessidades, desejos, expectativas e informações necessárias para definir o que o software deverá realizar."
+        },
+        {
+          tipo: "lista",
+          titulo: "O que a elicitação busca identificar",
+          itens: [
+            "necessidades",
+            "desejos",
+            "expectativas",
+            "informações necessárias para definir o que o software deverá realizar"
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "Técnicas de elicitação apresentadas no PDF",
+          itens: [
+            "entrevistas",
+            "questionários",
+            "workshops",
+            "observação"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Entrevistas",
+          texto: "Consistem em conversas individuais com stakeholders para coletar informações em profundidade."
+        },
+        {
+          tipo: "topico",
+          titulo: "Questionários",
+          texto: "Permitem coletar dados de um grupo maior de stakeholders de maneira estruturada."
+        },
+        {
+          tipo: "topico",
+          titulo: "Workshops",
+          texto: "São sessões colaborativas utilizadas para discutir e refinar requisitos com a equipe."
+        },
+        {
+          tipo: "topico",
+          titulo: "Observação",
+          texto: "É utilizada para compreender as necessidades a partir da observação das atividades relacionadas ao sistema."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "O que acontece depois da elicitação?"
+        },
+        {
+          tipo: "texto",
+          texto: "Depois que os requisitos são coletados, eles ainda estão em uma forma **bruta**."
+        },
+        {
+          tipo: "texto",
+          texto: "A etapa de **análise de requisitos** serve para refinar as informações, organizar os dados, estruturar os requisitos, cruzar informações, identificar inconsistências, priorizar necessidades e definir funcionalidades essenciais."
+        },
+        {
+          tipo: "lista",
+          titulo: "Para que serve a análise de requisitos",
+          itens: [
+            "refinar as informações",
+            "organizar os dados",
+            "estruturar os requisitos",
+            "cruzar informações",
+            "identificar inconsistências",
+            "priorizar necessidades",
+            "definir funcionalidades essenciais"
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "Elicitação = descobrir/coletar. Análise = organizar, refinar, verificar e priorizar. Essa diferença é muito importante."
+        }
+      ]
+    },
+    {
+      id: "tipos_de_requisitos",
+      titulo: "Dois grandes tipos de requisitos",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O PDF divide os requisitos em duas categorias principais: requisitos funcionais e requisitos não funcionais."
+        },
+        {
+          tipo: "topico",
+          titulo: "Requisitos funcionais",
+          texto: "Definem **o que o software deve fazer**. Relacionam-se às funcionalidades, operações e interações do sistema com o usuário.",
+          lista: [
+            "funcionalidades",
+            "operações",
+            "interações do sistema com o usuário"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Requisitos não funcionais",
+          texto: "Descrevem **as características que o software deve possuir**. O material apresenta exemplos como desempenho, segurança, usabilidade, confiabilidade e escalabilidade.",
+          lista: [
+            "desempenho",
+            "segurança",
+            "usabilidade",
+            "confiabilidade",
+            "escalabilidade"
+          ]
+        },
+        {
+          tipo: "imagem",
+          src: "representacao_visual_requisitos_funcionais_nao_funcionais.png",
+          pasta: "imagens_analise_de_requisitos/aula_5",
+          alt: "Comparação entre requisitos funcionais e requisitos não funcionais: de um lado os requisitos funcionais associados ao que o software deve fazer, às funcionalidades e à interação com o usuário; do outro os requisitos não funcionais associados às características do software, como performance, segurança, usabilidade, confiabilidade e escalabilidade. (Página 6 do PDF)",
+          num: 1
+        }
+      ]
+    },
+    {
+      id: "ferramentas_elicitacao_analise",
+      titulo: "Ferramentas utilizadas na elicitação e análise",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O PDF apresenta seis técnicas/ferramentas principais utilizadas na elicitação e análise de requisitos."
+        },
+        {
+          tipo: "tabela",
+          titulo: "Técnicas/Ferramentas de elicitação e análise",
+          colunas: ["Técnica/Ferramenta", "Função apresentada no PDF"],
+          linhas: [
+            ["Entrevistas", "Conversas individuais ou em grupo para coletar informações detalhadas"],
+            ["Questionários", "Coleta estruturada de dados de um grupo maior de stakeholders"],
+            ["Workshops", "Sessões colaborativas para discutir e refinar requisitos"],
+            ["Diagrama de Casos de Uso", "Representação visual das interações entre usuários e sistema"],
+            ["Protótipos", "Modelos interativos para visualizar e validar requisitos"],
+            ["Ferramentas CASE", "Softwares especializados para gerenciamento e documentação de requisitos"]
+          ]
+        }
+      ]
+    },
+    {
+      id: "beneficios_elicitacao_analise",
+      titulo: "Benefícios de uma boa elicitação e análise",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Investir corretamente nessas etapas proporciona diversos benefícios ao projeto."
+        },
+        {
+          tipo: "topico",
+          titulo: "Redução de retrabalho e custos",
+          texto: "Evita desenvolver funcionalidades desnecessárias ou que não atendem às expectativas dos usuários."
+        },
+        {
+          tipo: "topico",
+          titulo: "Melhoria da qualidade",
+          texto: "O software tende a atender melhor às necessidades reais dos usuários, apresentando menos bugs e falhas."
+        },
+        {
+          tipo: "topico",
+          titulo: "Maior satisfação do cliente",
+          texto: "O sistema entrega valor real e atende melhor às expectativas."
+        },
+        {
+          tipo: "topico",
+          titulo: "Melhor comunicação e colaboração",
+          texto: "Todos os envolvidos passam a ter um entendimento mais claro dos requisitos."
+        },
+        {
+          tipo: "topico",
+          titulo: "Maior agilidade",
+          texto: "O desenvolvimento pode ser mais rápido e eficiente quando está focado nas necessidades reais dos usuários."
+        }
+      ]
+    },
+    {
+      id: "exemplo_gerenciamento_projetos",
+      titulo: "Exemplo: Sistema de Gerenciamento de Projetos",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O PDF apresenta um exemplo de elicitação e análise para um **Sistema de Gerenciamento de Projetos**."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Elicitação",
+          texto: "Por meio de entrevistas com gerentes de projeto, foram identificadas necessidades como criar, editar e excluir projetos; atribuir tarefas aos membros da equipe; definir prazos; acompanhar o progresso das tarefas; e gerar relatórios de status do projeto.",
+          detalhe: "Necessidades identificadas: criar, editar e excluir projetos; atribuir tarefas aos membros da equipe; definir prazos; acompanhar o progresso das tarefas; gerar relatórios de status do projeto."
+        },
+        {
+          tipo: "texto",
+          texto: "Na etapa de **Análise**, os requisitos são organizados em funcionais, como criar e editar projetos, e não funcionais, como segurança, usabilidade e performance. Os requisitos críticos são priorizados para o **MVP (Minimum Viable Product)**."
+        },
+        {
+          tipo: "imagem",
+          src: "quadro_1_requisitos_sistema_gerenciamento_projetos.png",
+          pasta: "imagens_analise_de_requisitos/aula_5",
+          alt: "Quadro 1 – Requisitos Funcionais e não funcionais do sistema de gerenciamento de projetos, separando os requisitos em funcionais (operações que o sistema deve realizar) e não funcionais (características como segurança, usabilidade, performance, escalabilidade e confiabilidade). (Página 8 do PDF)",
+          num: 2
+        },
+        {
+          tipo: "tabela",
+          titulo: "Quadro 1 — Requisitos Funcionais do Sistema de Gerenciamento de Projetos",
+          colunas: ["Identificador", "Requisito", "Descrição"],
+          linhas: [
+            ["RF0001", "Criar Projeto", "Permitir criar projetos informando nome, descrição, prazo e membros"],
+            ["RF0002", "Editar Projeto", "Permitir editar informações de projetos existentes"],
+            ["RF0003", "Excluir Projeto", "Permitir excluir projetos que não são mais necessários"],
+            ["RF0004", "Atribuir Tarefas", "Permitir atribuir tarefas aos membros da equipe"],
+            ["RF0005", "Definir Prazos", "Definir prazos para tarefas e para o projeto"],
+            ["RF0006", "Acompanhar Progresso das Tarefas", "Visualizar tarefas concluídas, em andamento e pendentes"],
+            ["RF0007", "Gerar Relatórios de Status do Projeto", "Gerar relatórios sobre progresso e cumprimento de prazos"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Quadro 1 — Requisitos Não Funcionais do Sistema de Gerenciamento de Projetos",
+          colunas: ["Identificador", "Requisito", "Descrição"],
+          linhas: [
+            ["RF0001", "Segurança", "Controle de acesso baseado em papéis"],
+            ["RF0002", "Usabilidade", "Interface intuitiva e fácil de usar"],
+            ["RF0003", "Performance", "Suportar múltiplos projetos e tarefas simultaneamente sem degradação perceptível"],
+            ["RF0004", "Escalabilidade", "Suportar número crescente de usuários e projetos"],
+            ["RF0005", "Confiabilidade", "Sistema disponível e funcional pelo menos 99,9% do tempo"]
+          ]
+        }
+      ]
+    },
+    {
+      id: "mvp",
+      titulo: "MVP — Minimum Viable Product",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O **MVP (Minimum Viable Product)** é definido como a versão **mais simples e funcional de um produto**, desenvolvida utilizando o mínimo de esforço e tempo necessário para testar uma ideia no mercado."
+        },
+        {
+          tipo: "lista",
+          titulo: "Objetivos do MVP",
+          itens: [
+            "validar hipóteses de negócio",
+            "entender a aceitação dos usuários",
+            "coletar feedback",
+            "realizar isso com o menor investimento possível"
+          ]
+        }
+      ]
+    },
+    {
+      id: "exemplo_mvp_event_planner",
+      titulo: "Exemplo de MVP — Event Planner",
+      blocos: [
+        {
+          tipo: "exemplo",
+          titulo: "Event Planner",
+          texto: "O PDF utiliza um projeto chamado **Event Planner**, um software para planejar, organizar e gerenciar eventos.",
+          detalhe: "Objetivo: planejar, organizar e gerenciar eventos."
+        },
+        {
+          tipo: "lista",
+          titulo: "Principais funcionalidades identificadas",
+          itens: [
+            "criação de eventos",
+            "gestão de convidados",
+            "criação e atribuição de tarefas",
+            "envio de convites por e-mail"
+          ]
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Ordem de implementação apresentada"
+        },
+        {
+          tipo: "topico",
+          titulo: "1. Criação de eventos",
+          texto: "Permite inserir título, data, hora e descrição.",
+          lista: ["título", "data", "hora", "descrição"]
+        },
+        {
+          tipo: "topico",
+          titulo: "2. Gestão de convidados",
+          texto: "Permite inserir nomes e e-mails.",
+          lista: ["nomes", "e-mails"]
+        },
+        {
+          tipo: "topico",
+          titulo: "3. Criação e atribuição de tarefas",
+          texto: "Permite criar tarefas relacionadas ao evento e atribuí-las aos membros da equipe."
+        },
+        {
+          tipo: "topico",
+          titulo: "4. Envio de convites",
+          texto: "Implementação do sistema de envio de convites por e-mail."
+        },
+        {
+          tipo: "texto",
+          texto: "Após cada sprint, a equipe realiza uma **Sprint Review** para obter feedback dos usuários."
+        },
+        {
+          tipo: "lista",
+          titulo: "O feedback pode envolver",
+          itens: [
+            "facilidade de uso da criação de eventos",
+            "efetividade da gestão de convidados",
+            "utilidade das tarefas",
+            "funcionamento dos convites"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Com base no feedback, o backlog é ajustado, melhorias são priorizadas e novas funcionalidades podem ser adicionadas."
+        },
+        {
+          tipo: "destaque",
+          texto: "Ideia central: o MVP é desenvolvido **incrementalmente**, com cada sprint adicionando funcionalidades e permitindo ajustes baseados no feedback dos usuários."
+        }
+      ]
+    },
+    {
+      id: "exemplo_ecommerce",
+      titulo: "Exemplo: criação de um E-commerce",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O segundo exemplo apresenta a criação de um **E-commerce**."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Elicitação",
+          texto: "Foram realizados workshops com clientes e vendedores para identificar expectativas.",
+          detalhe: "Participantes: clientes e vendedores."
+        },
+        {
+          tipo: "lista",
+          titulo: "Expectativas identificadas",
+          itens: [
+            "interface amigável e intuitiva",
+            "catálogo com fotos, descrições e preços",
+            "carrinho de compras seguro e eficiente",
+            "diversas opções de pagamento e entrega",
+            "sistema de avaliações e comentários"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Na **Análise**, os requisitos são refinados e transformados em funcionalidades específicas, como pesquisa por produto e filtro por categoria. Também são priorizadas as necessidades de cada grupo de stakeholders: clientes e vendedores."
+        },
+        {
+          tipo: "lista",
+          titulo: "Funcionalidades específicas resultantes da análise",
+          itens: [
+            "pesquisa por produto",
+            "filtro por categoria"
+          ]
+        }
+      ]
+    },
+    {
+      id: "processos_continuos",
+      titulo: "Elicitação e análise são processos contínuos",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Um ponto importante do PDF é que a elicitação e análise **não acontecem apenas uma vez**. São processos dinâmicos e contínuos."
+        },
+        {
+          tipo: "lista",
+          titulo: "Durante o projeto",
+          itens: [
+            "novos requisitos podem surgir",
+            "requisitos existentes podem ser revisados",
+            "requisitos podem ser ajustados"
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "Para o sucesso do processo, é importante manter comunicação aberta e colaboração constante entre os envolvidos."
+        }
+      ]
+    },
+    {
+      id: "requisitos_funcionais_user_stories",
+      titulo: "Requisitos funcionais e User Stories",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Os **requisitos funcionais** são as funcionalidades que o sistema deve possuir para solucionar o problema do cliente. Tanto a equipe técnica quanto os stakeholders devem ter clareza sobre esses requisitos."
+        },
+        {
+          tipo: "topico",
+          titulo: "User Stories (Histórias de Usuário)",
+          texto: "O PDF apresenta as **User Stories** como uma técnica que pode ajudar a tornar a comunicação entre equipe técnica e clientes mais clara e objetiva."
+        },
+        {
+          tipo: "lista",
+          titulo: "Uma User Story permite identificar",
+          itens: [
+            "quem é o usuário",
+            "quais são suas permissões",
+            "qual ação ele deve realizar",
+            "qual é o objetivo dessa ação"
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "A linguagem deve ser",
+          itens: [
+            "curta",
+            "clara",
+            "objetiva",
+            "mais próxima da linguagem do cliente do que da linguagem técnica"
+          ]
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Estrutura de User Story",
+          texto: "O material apresenta a estrutura: \"Como [usuário], eu quero [ação], para que [objetivo].\" No exemplo do sistema de prontuário: \"Como recepcionista do hospital, eu quero cadastrar novos pacientes com informações básicas, para que possamos ter um registro completo dos pacientes que chegam ao hospital.\"",
+          detalhe: "Essa estrutura relaciona: Usuário → ação desejada → finalidade/benefício."
+        },
+        {
+          tipo: "topico",
+          titulo: "User Stories e telas do sistema",
+          texto: "O PDF destaca que é importante deixar claros os **campos de informação presentes nas telas**. Por exemplo, uma tela de autenticação pode precisar de endereço de e-mail e senha. Essa abordagem permite que desenvolvedores e designers compreendam quais elementos precisam existir na interface.",
+          lista: ["endereço de e-mail", "senha"]
+        },
+        {
+          tipo: "texto",
+          texto: "O uso da ideia de **\"tela do sistema\"** permite uma abordagem mais visual para analisar o sistema a partir de seus pontos de interação com o usuário. Isso torna definições abstratas sobre funcionalidades mais concretas e facilita a discussão entre clientes e desenvolvedores."
+        },
+        {
+          tipo: "imagem",
+          src: "representacao_visual_user_stories_interface.png",
+          pasta: "imagens_analise_de_requisitos/aula_5",
+          alt: "Ilustração de uma pessoa utilizando um computador, associada à discussão sobre User Stories e interface, apoiando o conceito de interação do usuário com o sistema. (Página 11 do PDF)",
+          num: 3
+        }
+      ]
+    },
+    {
+      id: "stakeholders_usuarios_reais",
+      titulo: "Stakeholders e usuários reais",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O termo **stakeholders** não se limita aos gerentes ou administradores. O PDF enfatiza que também devem ser considerados aqueles que **realmente utilizarão o sistema no dia a dia**. Esses usuários são importantes porque possuem experiência prática com o negócio."
+        },
+        {
+          tipo: "lista",
+          titulo: "Eles podem fornecer informações fundamentais para",
+          itens: [
+            "definir funcionalidades",
+            "compreender necessidades de automatização",
+            "facilitar tomadas de decisão",
+            "determinar como os dados devem ser coletados",
+            "determinar como as informações devem ser fornecidas pelo sistema"
+          ]
+        }
+      ]
+    },
+    {
+      id: "priorizacao_documento_requisitos",
+      titulo: "Priorização dos requisitos funcionais e Documento de Requisitos",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Nem todas as funcionalidades possuem a mesma urgência."
+        },
+        {
+          tipo: "lista",
+          titulo: "Algumas podem ser",
+          itens: [
+            "determinantes",
+            "urgentes",
+            "necessárias para colocar o sistema em produção"
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "Outras podem ficar para posteriormente, pois",
+          itens: [
+            "podem esperar",
+            "representam melhorias",
+            "possuem menor urgência"
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "A priorização exige **intensa comunicação entre equipe técnica e clientes**. Ela é fundamental para criar o **cronograma de desenvolvimento**."
+        },
+        {
+          tipo: "texto",
+          texto: "O cronograma permite que gestores e diretores acompanhem quando o software poderá ser adotado. Quando o desenvolvimento é terceirizado, o cronograma também pode participar da definição dos contratos."
+        },
+        {
+          tipo: "texto",
+          texto: "O **Documento de Requisitos do Sistema** estabelece as diretrizes principais do projeto."
+        },
+        {
+          tipo: "lista",
+          titulo: "O Documento de Requisitos do Sistema estabelece",
+          itens: [
+            "funcionalidades do sistema",
+            "escopo do projeto",
+            "descrição",
+            "prioridades",
+            "cronograma de entrega"
+          ]
+        }
+      ]
+    },
+    {
+      id: "escopo_fixo_variado",
+      titulo: "Escopo fixo × Escopo variado",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O PDF apresenta uma discussão importante sobre o escopo de software."
+        },
+        {
+          tipo: "topico",
+          titulo: "Escopo Variado de Produto",
+          texto: "O material defende uma definição de escopo **flexível e discutida em diferentes momentos da produção**. Isso ocorre porque novas necessidades podem surgir, o cliente pode identificar novas necessidades durante o uso, o negócio da empresa pode mudar e prioridades gerenciais podem mudar. Por isso, os requisitos funcionais podem precisar ser modificados durante o desenvolvimento.",
+          lista: [
+            "novas necessidades podem surgir",
+            "o cliente pode identificar novas necessidades durante o uso",
+            "o negócio da empresa pode mudar",
+            "prioridades gerenciais podem mudar"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Escopo Fixo de Produto",
+          texto: "No escopo fixo, os requisitos não podem ser modificados durante o desenvolvimento, as funcionalidades não podem ser redimensionadas e funcionalidades não podem ser eliminadas.",
+          lista: [
+            "os requisitos não podem ser modificados durante o desenvolvimento",
+            "as funcionalidades não podem ser redimensionadas",
+            "funcionalidades não podem ser eliminadas"
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Comparação: Escopo Variado × Escopo Fixo",
+          colunas: ["Escopo Variado", "Escopo Fixo"],
+          linhas: [
+            ["Flexível", "Rígido"],
+            ["Requisitos podem mudar", "Requisitos não devem ser modificados"],
+            ["Funcionalidades podem ser redimensionadas", "Funcionalidades não podem ser redimensionadas"],
+            ["Relacionado à abordagem iterativa dos Métodos Ágeis", "Mantém o escopo definido"]
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "O PDF defende o **Escopo Variado de Produto** como uma abordagem mais adequada à natureza peculiar do desenvolvimento de software apresentada no material."
+        }
+      ]
+    },
+    {
+      id: "exemplo_prontuario_eletronico",
+      titulo: "Exemplo: Sistema de Prontuário Eletrônico",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O material utiliza como exemplo um **Sistema de Prontuário Eletrônico**."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Elicitação",
+          texto: "Na elicitação, são considerados médicos, enfermeiros, pacientes e administradores do hospital.",
+          detalhe: "Stakeholders considerados: médicos, enfermeiros, pacientes, administradores do hospital."
+        },
+        {
+          tipo: "lista",
+          titulo: "Necessidades levantadas",
+          itens: [
+            "cadastro e gestão de pacientes",
+            "registro de consultas",
+            "histórico médico",
+            "exames",
+            "prescrição de medicamentos",
+            "solicitação de exames",
+            "integração com outros sistemas de saúde",
+            "segurança para proteger dados confidenciais"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Na **análise**, também são consideradas exigências legais, exigências éticas e segurança da informação."
+        },
+        {
+          tipo: "lista",
+          titulo: "Necessidades priorizadas",
+          itens: [
+            "confidencialidade dos dados",
+            "interoperabilidade com outros sistemas"
+          ]
+        },
+        {
+          tipo: "imagem",
+          src: "quadro_2_requisitos_funcionais_prontuario.png",
+          pasta: "imagens_analise_de_requisitos/aula_5",
+          alt: "Quadro 2 – Requisitos Funcionais do Sistema de Prontuário Eletrônico, apresentando identificadores, descrições e respectivas prioridades. (Página 15 do PDF)",
+          num: 4
+        },
+        {
+          tipo: "tabela",
+          titulo: "Quadro 2 — Requisitos Funcionais do Prontuário Eletrônico",
+          colunas: ["ID", "Requisito", "Prioridade"],
+          linhas: [
+            ["RF0001", "Cadastro de Pacientes", "Alta"],
+            ["RF0002", "Gestão de Pacientes", "Alta"],
+            ["RF0003", "Registro de Consultas", "Alta"],
+            ["RF0004", "Histórico Médico", "Alta"],
+            ["RF0005", "Registro de Exames", "Média"],
+            ["RF0006", "Prescrição de Medicamentos", "Alta"],
+            ["RF0007", "Solicitação de Exames", "Alta"],
+            ["RF0008", "Integração com Sistemas de Saúde", "Média"],
+            ["RF0009", "Controle de Acesso", "Alta"],
+            ["RF0010", "Auditoria de Acessos", "Alta"],
+            ["RF0011", "Interface Amigável", "Média"],
+            ["RF0012", "Notificações", "Média"],
+            ["RF0013", "Backup e Recuperação de Dados", "Alta"]
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "O que cada requisito representa",
+          itens: [
+            "Cadastro de Pacientes: registrar novos pacientes com informações básicas.",
+            "Gestão de Pacientes: atualizar, editar e excluir dados.",
+            "Registro de Consultas: registrar diagnóstico, procedimentos e recomendações.",
+            "Histórico Médico: manter histórico de consultas, diagnósticos, tratamentos e procedimentos.",
+            "Registro de Exames: registrar e visualizar resultados.",
+            "Prescrição de Medicamentos: permitir que médicos registrem prescrições.",
+            "Solicitação de Exames: permitir solicitação de exames pelo sistema.",
+            "Integração: permitir interoperabilidade com outros sistemas de saúde.",
+            "Controle de Acesso: restringir acesso/modificação de dados sensíveis a usuários autorizados.",
+            "Auditoria: registrar operações realizadas.",
+            "Interface Amigável: fornecer interface intuitiva.",
+            "Notificações: informar sobre consultas, exames e atualizações.",
+            "Backup e Recuperação: copiar dados regularmente e permitir sua recuperação em caso de falha."
+          ]
+        },
+        {
+          tipo: "imagem",
+          src: "quadro_3_user_stories_rf0001_rf0002.png",
+          pasta: "imagens_analise_de_requisitos/aula_5",
+          alt: "Quadro 3 – User Stories para os Requisitos Funcionais RF0001 e RF0002, relacionadas ao cadastro e à gestão de pacientes, juntamente com seus critérios de aceitação. (Página 16 do PDF)",
+          num: 5
+        },
+        {
+          tipo: "exemplo",
+          titulo: "RF0001 — Cadastro de pacientes (User Story)",
+          texto: "Como recepcionista do hospital, eu quero cadastrar novos pacientes com informações básicas, para que exista um registro completo dos pacientes que chegam ao hospital.",
+          detalhe: "Critérios de aceitação: 1) Permitir entrada de nome, idade, endereço, número de contato e detalhes do plano de saúde. 2) Validar campos obrigatórios, como nome e número de contato. 3) Após salvar, confirmar a criação e disponibilizar um número de identificação único."
+        },
+        {
+          tipo: "lista",
+          titulo: "Critérios de aceitação — RF0001 Cadastro de pacientes",
+          itens: [
+            "Permitir entrada de nome, idade, endereço, número de contato e detalhes do plano de saúde.",
+            "Validar campos obrigatórios, como nome e número de contato.",
+            "Após salvar, confirmar a criação e disponibilizar um número de identificação único."
+          ]
+        },
+        {
+          tipo: "exemplo",
+          titulo: "RF0002 — Gestão de pacientes (User Story)",
+          texto: "Como recepcionista do hospital, eu quero atualizar, editar e excluir os dados cadastrais, para que as informações permaneçam atualizadas e corretas.",
+          detalhe: "Critérios de aceitação: 1) Buscar paciente por nome ou número de identificação. 2) Editar informações básicas, como endereço e número de contato. 3) Registrar e exibir data da última atualização e usuário responsável pela atualização. 4) Ao excluir um paciente, solicitar confirmação para evitar exclusões acidentais."
+        },
+        {
+          tipo: "lista",
+          titulo: "Critérios de aceitação — RF0002 Gestão de pacientes",
+          itens: [
+            "Buscar paciente por nome ou número de identificação.",
+            "Editar informações básicas, como endereço e número de contato.",
+            "Registrar e exibir data da última atualização e usuário responsável pela atualização.",
+            "Ao excluir um paciente, solicitar confirmação para evitar exclusões acidentais."
+          ]
+        }
+      ]
+    },
+    {
+      id: "criterios_aceitacao",
+      titulo: "Critérios de aceitação",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Os **critérios de aceitação** são condições que o software precisa cumprir para que uma User Story seja considerada aceita pelo cliente, usuário e equipe de desenvolvimento."
+        },
+        {
+          tipo: "lista",
+          titulo: "Eles definem",
+          itens: [
+            "comportamento esperado",
+            "funcionalidades que a User Story precisa atender",
+            "condições para considerar a história completa e funcional"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Também servem como base para validação e testes do software."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Características dos critérios de aceitação"
+        },
+        {
+          tipo: "topico",
+          titulo: "Clareza",
+          texto: "Devem ser claros e específicos, sem ambiguidades."
+        },
+        {
+          tipo: "topico",
+          titulo: "Mensuráveis",
+          texto: "Devem poder ser medidos ou testados."
+        },
+        {
+          tipo: "topico",
+          titulo: "Relevantes",
+          texto: "Devem estar diretamente relacionados à User Story."
+        },
+        {
+          tipo: "topico",
+          titulo: "Objetivos",
+          texto: "Devem permitir que os envolvidos concordem sobre o que significa cumprir o critério."
+        },
+        {
+          tipo: "destaque",
+          texto: "Para memorizar: Critérios de aceitação = condições claras, mensuráveis, relevantes e objetivas para verificar se uma User Story foi cumprida."
+        }
+      ]
+    },
+    {
+      id: "requisitos_nao_funcionais",
+      titulo: "Requisitos não funcionais",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Os **Requisitos Não Funcionais (RNF)** definem qualidades, características e restrições que o sistema deve possuir."
+        },
+        {
+          tipo: "texto",
+          texto: "Eles garantem que o sistema não apenas funcione, mas também atenda a determinados padrões de qualidade e desempenho."
+        },
+        {
+          tipo: "lista",
+          titulo: "O PDF destaca principalmente",
+          itens: [
+            "desempenho",
+            "segurança",
+            "confiabilidade",
+            "usabilidade",
+            "escalabilidade",
+            "manutenibilidade",
+            "compatibilidade"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Desempenho",
+          texto: "O sistema deve responder rapidamente, suportar múltiplas operações simultâneas e evitar degradação perceptível de desempenho. No exemplo do prontuário eletrônico, o requisito especifica resposta às solicitações em **menos de 2 segundos durante operações normais**."
+        },
+        {
+          tipo: "topico",
+          titulo: "Segurança",
+          texto: "É necessário proteger os dados contra acesso não autorizado, perda e roubo. O PDF destaca o **controle de acesso baseado em papéis**, permitindo acesso a dados sensíveis somente a usuários autenticados e autorizados."
+        },
+        {
+          tipo: "topico",
+          titulo: "Confiabilidade",
+          texto: "O sistema deve permanecer disponível e funcional por **pelo menos 99,9% do tempo**, excluindo períodos de manutenção programada."
+        },
+        {
+          tipo: "topico",
+          titulo: "Usabilidade",
+          texto: "A interface deve ser intuitiva e fácil de utilizar. No exemplo, médicos e enfermeiros devem conseguir usar o sistema sem treinamento extensivo."
+        },
+        {
+          tipo: "topico",
+          titulo: "Escalabilidade",
+          texto: "O sistema deve conseguir crescer com aumento de usuários e aumento de registros, sem perda de desempenho."
+        },
+        {
+          tipo: "topico",
+          titulo: "Manutenibilidade",
+          texto: "O sistema deve ser fácil de manter e atualizar. O material relaciona isso à existência de documentação completa e clara do código e das funcionalidades."
+        },
+        {
+          tipo: "topico",
+          titulo: "Compatibilidade",
+          texto: "O sistema deve funcionar em diferentes dispositivos e navegadores. O exemplo cita desktops, tablets e smartphones.",
+          lista: ["desktops", "tablets", "smartphones"]
+        },
+        {
+          tipo: "imagem",
+          src: "quadro_4_requisitos_nao_funcionais_prontuario.png",
+          pasta: "imagens_analise_de_requisitos/aula_5",
+          alt: "Quadro 4 – Requisitos Não Funcionais do Sistema de Prontuário Eletrônico, organizados em identificador, descrição e prioridade, relacionados a segurança, acesso, desempenho, escalabilidade, confiabilidade, usabilidade, compatibilidade, manutenção, auditoria e recuperação de dados. (Página 20 do PDF)",
+          num: 6
+        },
+        {
+          tipo: "tabela",
+          titulo: "Quadro 4 — Requisitos Não Funcionais do Prontuário Eletrônico",
+          colunas: ["Requisito", "Prioridade"],
+          linhas: [
+            ["Segurança de Dados — proteger os dados contra acesso não autorizado, perda e roubo", "Alta"],
+            ["Controle de Acesso — acesso apenas por usuários autenticados/autorizados, com níveis baseados em papéis", "Alta"],
+            ["Desempenho — responder em menos de 2 segundos durante operações normais", "Alta"],
+            ["Escalabilidade — suportar aumento de usuários e registros sem perda de desempenho", "Média"],
+            ["Confiabilidade — disponibilidade de 99,9%, excluindo manutenção programada", "Alta"],
+            ["Usabilidade — interface intuitiva, sem necessidade de treinamento extensivo", "Média"],
+            ["Compatibilidade — compatível com diferentes dispositivos e navegadores", "Média"],
+            ["Manutenibilidade — fácil manutenção e atualização, com documentação completa e clara", "Média"],
+            ["Auditabilidade — registrar operações e acessos para auditoria e segurança", "Alta"],
+            ["Backup e Recuperação — backup regular e procedimentos de recuperação em caso de falhas", "Alta"]
+          ]
+        }
+      ]
+    },
+    {
+      id: "funcional_x_nao_funcional",
+      titulo: "Funcional × Não funcional — diferença fundamental",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Essa é uma das distinções mais importantes do conteúdo."
+        },
+        {
+          tipo: "tabela",
+          titulo: "Requisito funcional × Requisito não funcional",
+          colunas: ["Requisito funcional", "Requisito não funcional"],
+          linhas: [
+            ["Define o que o sistema faz", "Define como o sistema deve ser/funcionar"],
+            ["Está ligado às funcionalidades", "Está ligado às características e restrições"],
+            ["Ex.: cadastrar paciente", "Ex.: sistema responder em menos de 2 segundos"],
+            ["Ex.: registrar consulta", "Ex.: disponibilidade de 99,9%"],
+            ["Ex.: solicitar exame", "Ex.: controle de acesso"],
+            ["Ex.: gerar relatório", "Ex.: compatibilidade com dispositivos"]
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "Regra simples para memorizar: FUNCIONAL → FUNÇÃO → o que faz. NÃO FUNCIONAL → QUALIDADE/CARACTERÍSTICA → como deve funcionar."
+        }
+      ]
+    },
+    {
+      id: "consideracoes_processo_requisitos",
+      titulo: "Considerações sobre o processo de requisitos",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O PDF destaca que a análise de requisitos possui desafios importantes."
+        },
+        {
+          tipo: "lista",
+          titulo: "É necessário lidar com",
+          itens: [
+            "ambiguidade",
+            "incerteza",
+            "necessidades diferentes dos stakeholders",
+            "alinhamento entre os envolvidos",
+            "interpretação correta das necessidades",
+            "priorização"
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "A priorização é particularmente difícil porque precisa equilibrar: necessidades dos usuários × tempo disponível × recursos disponíveis."
+        },
+        {
+          tipo: "lista",
+          titulo: "Por isso, a análise de requisitos exige uma abordagem",
+          itens: [
+            "meticulosa",
+            "colaborativa",
+            "contínua"
+          ]
+        }
+      ]
+    },
+    {
+      id: "relacao_geral_entre_conceitos",
+      titulo: "Relação geral entre os conceitos",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O conteúdo inteiro pode ser organizado em um fluxo lógico contínuo, conforme apresentado no PDF."
+        },
+        {
+          tipo: "lista",
+          titulo: "Fluxo do processo de requisitos",
+          itens: [
+            "Stakeholders fornecem necessidades, expectativas e desejos",
+            "Elicitação utiliza entrevistas, questionários, workshops, observação etc.",
+            "Geração de requisitos brutos",
+            "Análise refina, organiza, estrutura, identifica inconsistências e prioriza",
+            "Definição de Requisitos, divididos em Funcionais e Não funcionais",
+            "Requisitos Funcionais definem o que o sistema faz e originam User Stories",
+            "Requisitos Não funcionais definem características que o sistema deve possuir (desempenho, segurança, usabilidade, confiabilidade, escalabilidade etc.)",
+            "User Stories originam Critérios de aceitação",
+            "Critérios de aceitação sustentam a Validação e testes"
+          ]
+        }
+      ]
+    },
+    {
+      id: "pontos_atencao_prova",
+      titulo: "Pontos que merecem atenção para a prova",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "Elicitação",
+          texto: "É o processo de **descobrir, ouvir e entender** as necessidades dos stakeholders."
+        },
+        {
+          tipo: "topico",
+          titulo: "Análise",
+          texto: "É responsável por **refinar, organizar, estruturar, verificar e priorizar** as informações coletadas."
+        },
+        {
+          tipo: "topico",
+          titulo: "Técnicas e ferramentas",
+          lista: [
+            "Entrevistas",
+            "Questionários",
+            "Workshops",
+            "Observação",
+            "Diagramas de casos de uso",
+            "Protótipos",
+            "Ferramentas CASE"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Requisitos funcionais",
+          texto: "Definem **o que o sistema deve fazer**."
+        },
+        {
+          tipo: "topico",
+          titulo: "Requisitos não funcionais",
+          texto: "Definem **características, qualidades e restrições do sistema**."
+        },
+        {
+          tipo: "topico",
+          titulo: "User Stories",
+          texto: "Ajudam a comunicar funcionalidades usando uma linguagem próxima do cliente. Estrutura apresentada: \"Como [usuário], eu quero [ação], para que [objetivo].\""
+        },
+        {
+          tipo: "topico",
+          titulo: "Critérios de aceitação",
+          texto: "Definem as condições que precisam ser cumpridas para uma User Story ser considerada completa e funcional.",
+          lista: ["Claros", "Mensuráveis", "Relevantes", "Objetivos"]
+        },
+        {
+          tipo: "topico",
+          titulo: "Stakeholders",
+          texto: "Não são apenas gestores e administradores. O PDF destaca também os **usuários reais do sistema**, que possuem experiência prática com o negócio."
+        },
+        {
+          tipo: "topico",
+          titulo: "Priorização",
+          texto: "É necessária porque algumas funcionalidades são mais urgentes ou determinantes que outras."
+        },
+        {
+          tipo: "topico",
+          titulo: "Documento de Requisitos",
+          texto: "Estabelece funcionalidades, escopo, descrição, prioridades e cronograma.",
+          lista: ["funcionalidades", "escopo", "descrição", "prioridades", "cronograma"]
+        },
+        {
+          tipo: "topico",
+          titulo: "Escopo variado",
+          texto: "Permite modificar requisitos e funcionalidades durante o desenvolvimento."
+        },
+        {
+          tipo: "topico",
+          titulo: "Escopo fixo",
+          texto: "Não permite modificar, redimensionar ou eliminar requisitos durante o desenvolvimento."
+        },
+        {
+          tipo: "topico",
+          titulo: "MVP",
+          texto: "É a versão mais simples e funcional do produto, criada para testar uma ideia, validar hipóteses e obter feedback com menor investimento."
+        }
+      ]
+    },
+    {
+      id: "revisao_rapida",
+      titulo: "Revisão rápida",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "Elicitação",
+          texto: "Coletar e compreender necessidades."
+        },
+        {
+          tipo: "topico",
+          titulo: "Análise",
+          texto: "Refinar, organizar, verificar e priorizar."
+        },
+        {
+          tipo: "topico",
+          titulo: "Requisitos funcionais",
+          texto: "O que o sistema faz."
+        },
+        {
+          tipo: "topico",
+          titulo: "Requisitos não funcionais",
+          texto: "Características que o sistema deve possuir."
+        },
+        {
+          tipo: "topico",
+          titulo: "User Story",
+          texto: "Usuário + ação + objetivo."
+        },
+        {
+          tipo: "topico",
+          titulo: "Critérios de aceitação",
+          texto: "Condições objetivas para verificar se a User Story foi cumprida."
+        },
+        {
+          tipo: "topico",
+          titulo: "MVP",
+          texto: "Versão mais simples e funcional para validar uma ideia e obter feedback."
+        },
+        {
+          tipo: "topico",
+          titulo: "Escopo variado",
+          texto: "Pode mudar durante o desenvolvimento."
+        },
+        {
+          tipo: "topico",
+          titulo: "Escopo fixo",
+          texto: "Não deve ser modificado durante o desenvolvimento."
+        },
+        {
+          tipo: "topico",
+          titulo: "Stakeholders",
+          texto: "Todos os interessados no sistema, incluindo os usuários que realmente o utilizarão."
+        },
+        {
+          tipo: "topico",
+          titulo: "Principais RNFs do material",
+          texto: "Desempenho + Segurança + Confiabilidade + Usabilidade + Escalabilidade + Manutenibilidade + Compatibilidade."
+        },
+        {
+          tipo: "destaque",
+          texto: "Números importantes do PDF: 99,9% → disponibilidade apresentada para confiabilidade. Menos de 2 segundos → desempenho especificado no exemplo do prontuário eletrônico."
+        }
+      ]
+    }
+  ]
+  },
+  // aula 6
+  {
+  aula: "Técnicas de Levantamento de Requisitos",
+  ideia_central: "O levantamento de requisitos é uma etapa fundamental da Engenharia de Requisitos que utiliza quatro técnicas principais — entrevistas, reuniões, etnografia e análise de documentos — para coletar, compreender e alinhar as necessidades dos stakeholders com o software a ser desenvolvido, exigindo do profissional uma combinação de hard skills e soft skills.",
+  secoes: [
+    {
+      id: "introducao",
+      titulo: "Introdução ao Levantamento de Requisitos",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O **Levantamento de Requisitos** é uma etapa fundamental da **Engenharia de Requisitos** e do desenvolvimento de software. A Engenharia de Requisitos é apresentada como a disciplina responsável por **definir, documentar e gerenciar os requisitos de um sistema de software**. Para isso, utiliza técnicas e ferramentas que ajudam a garantir que o software atenda às expectativas dos usuários desde sua concepção até sua implementação e manutenção."
+        },
+        {
+          tipo: "destaque",
+          texto: "O levantamento de requisitos funciona como uma **ponte entre aquilo que os usuários e stakeholders precisam e o software que será desenvolvido**."
+        },
+        {
+          tipo: "topico",
+          titulo: "Objetivos do levantamento de requisitos",
+          lista: [
+            "coletar as necessidades dos envolvidos",
+            "compreender suas expectativas",
+            "identificar funcionalidades importantes",
+            "identificar características necessárias ao sistema",
+            "evitar o desenvolvimento de recursos desnecessários",
+            "melhorar a comunicação entre desenvolvedores e usuários",
+            "alinhar todos os envolvidos aos objetivos do projeto",
+            "otimizar tempo e recursos",
+            "reduzir retrabalho",
+            "reduzir custos desnecessários",
+            "diminuir riscos de falhas e frustrações",
+            "contribuir para um software de maior qualidade"
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "Quatro técnicas principais destacadas no material",
+          itens: [
+            "Entrevistas",
+            "Reuniões",
+            "Etnografia",
+            "Análise de documentos existentes"
+          ]
+        },
+        {
+          tipo: "imagem",
+          src: "capa_tecnicas_levantamento_requisitos",
+          pasta: "imagens_engenharia_software/aula_6",
+          alt: "Capa do módulo 'Técnicas de levantamento de requisitos', com composição visual relacionada ao uso de computador e tecnologia (Página 1 do PDF)",
+          num: 1
+        }
+      ]
+    },
+    {
+      id: "visao_geral_tecnicas",
+      titulo: "Visão geral das quatro técnicas",
+      blocos: [
+        {
+          tipo: "tabela",
+          titulo: "Visão geral das quatro técnicas",
+          colunas: ["Técnica", "Ideia principal"],
+          linhas: [
+            ["Entrevistas", "Conversar diretamente com stakeholders para obter informações detalhadas"],
+            ["Reuniões", "Reunir diferentes stakeholders para discutir, alinhar e chegar a consensos"],
+            ["Etnografia", "Observar os usuários diretamente em seu ambiente natural de trabalho"],
+            ["Análise de documentos", "Examinar documentos existentes para descobrir requisitos explícitos, implícitos e complementares"]
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Essas técnicas não devem ser vistas como necessariamente isoladas. O material apresenta diferentes maneiras de obter informações sobre as necessidades reais dos usuários. Além disso, o levantamento de requisitos é um **processo contínuo**, realizado ao longo do ciclo de vida do software. Os requisitos precisam permanecer atualizados para que o sistema continue atendendo às necessidades dos usuários e possa evoluir de maneira sustentável."
+        }
+      ]
+    },
+    {
+      id: "entrevistas",
+      titulo: "Entrevistas",
+      blocos: [
+        {
+          tipo: "subtitulo",
+          texto: "O que são entrevistas?"
+        },
+        {
+          tipo: "texto",
+          texto: "As entrevistas são uma das técnicas mais utilizadas no levantamento de requisitos. Elas consistem em **conversas diretas entre analistas de sistemas e stakeholders**, com o objetivo de coletar informações detalhadas sobre: necessidades; expectativas; problemas; perspectivas dos usuários."
+        },
+        {
+          tipo: "lista",
+          titulo: "Três tipos principais de entrevistas apresentados no material",
+          itens: [
+            "entrevistas estruturadas",
+            "entrevistas semiestruturadas",
+            "entrevistas não estruturadas"
+          ]
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Entrevistas estruturadas"
+        },
+        {
+          tipo: "texto",
+          texto: "As entrevistas estruturadas utilizam um **roteiro rígido de perguntas previamente definidas**. Isso significa que o entrevistador segue uma sequência de perguntas estabelecida antes da entrevista."
+        },
+        {
+          tipo: "topico",
+          titulo: "Principal característica",
+          texto: "Permitir a obtenção de informações específicas, organizadas e comparáveis entre diferentes stakeholders."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Exemplo de entrevista estruturada",
+          texto: "Um analista pode entrevistar diferentes gerentes de projeto utilizando exatamente as mesmas perguntas para descobrir quais funcionalidades eles desejam em um sistema de gerenciamento de tarefas.",
+          detalhe: "Entre as perguntas apresentadas estão: quais são as funcionalidades mais importantes esperadas do sistema; como o entrevistado define o sucesso do software."
+        },
+        {
+          tipo: "destaque",
+          texto: "Resumindo: **Estruturada = roteiro definido + perguntas previamente estabelecidas + maior padronização.**"
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Entrevistas semiestruturadas"
+        },
+        {
+          tipo: "texto",
+          texto: "As entrevistas semiestruturadas combinam: perguntas previamente definidas; liberdade para explorar novos assuntos durante a conversa. Existe uma estrutura inicial, mas o entrevistador pode fazer perguntas adicionais conforme as respostas do entrevistado."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Exemplo de entrevista semiestruturada",
+          texto: "O analista pode perguntar inicialmente sobre as funcionalidades desejadas e, caso o entrevistado mencione a necessidade de integração com outros sistemas, aprofundar o assunto perguntando: quais sistemas precisam ser integrados; por que essa integração é importante."
+        },
+        {
+          tipo: "destaque",
+          texto: "Resumindo: **Semiestruturada = roteiro inicial + flexibilidade para aprofundar assuntos.**"
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Entrevistas não estruturadas"
+        },
+        {
+          tipo: "texto",
+          texto: "As entrevistas não estruturadas são **conversas abertas**, sem um roteiro rígido. O entrevistador possui maior liberdade para acompanhar os assuntos que surgem naturalmente durante a conversa."
+        },
+        {
+          tipo: "topico",
+          titulo: "Objetivo",
+          texto: "Obter uma compreensão ampla, profunda e livre das perspectivas dos usuários."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Exemplo de entrevista não estruturada",
+          texto: "O analista pode iniciar com uma pergunta geral sobre os problemas enfrentados pelo usuário no sistema atual e, a partir da resposta, continuar explorando os assuntos que surgirem."
+        },
+        {
+          tipo: "destaque",
+          texto: "Resumindo: **Não estruturada = conversa aberta + pouca rigidez + exploração livre.**"
+        },
+        {
+          tipo: "tabela",
+          titulo: "Comparação dos tipos de entrevista",
+          colunas: ["Tipo", "Roteiro", "Flexibilidade", "Principal característica"],
+          linhas: [
+            ["Estruturada", "Rígido", "Baixa", "Perguntas previamente definidas"],
+            ["Semiestruturada", "Parcial", "Média/alta", "Permite aprofundar novos assuntos"],
+            ["Não estruturada", "Não rígido", "Alta", "Conversa aberta e exploratória"]
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "Para memorizar: **Estruturada → segue o roteiro.** **Semiestruturada → segue o roteiro, mas pode explorar.** **Não estruturada → conversa livre.**"
+        },
+        {
+          tipo: "imagem",
+          src: "representacao_visual_entrevista_stakeholders",
+          pasta: "imagens_engenharia_software/aula_6",
+          alt: "Ilustração mostrando pessoas em uma situação de conversa/interação, associada ao conteúdo sobre entrevistas e levantamento de informações (Página 7 do PDF)",
+          num: 2
+        }
+      ]
+    },
+    {
+      id: "desafios_entrevistas",
+      titulo: "Desafios das entrevistas",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Realizar entrevistas para levantamento de requisitos apresenta diversos desafios."
+        },
+        {
+          tipo: "topico",
+          titulo: "Criar um ambiente de confiança",
+          texto: "É necessário criar um ambiente em que os entrevistados se sintam confortáveis para compartilhar informações de maneira detalhada, honesta e aberta. Sem confiança, informações importantes podem deixar de ser apresentadas."
+        },
+        {
+          tipo: "topico",
+          titulo: "O usuário pode não saber expressar suas próprias necessidades",
+          texto: "O entrevistado pode não ter clareza sobre aquilo que realmente precisa, ter dificuldade para explicar suas necessidades e não saber transformar suas necessidades em termos técnicos. Portanto, o analista precisa interpretar e aprofundar as respostas."
+        },
+        {
+          tipo: "topico",
+          titulo: "Informações conflitantes",
+          texto: "Stakeholders diferentes podem fornecer informações inconsistentes, divergentes e conflitantes. O analista precisa identificar essas diferenças e **reconciliá-las**, buscando construir um conjunto de requisitos coeso e viável."
+        }
+      ]
+    },
+    {
+      id: "habilidades_entrevistas",
+      titulo: "Habilidades necessárias para entrevistas",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Para conduzir entrevistas eficazes, o profissional precisa desenvolver tanto **hard skills** quanto **soft skills**."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Hard Skills"
+        },
+        {
+          tipo: "topico",
+          titulo: "O que são hard skills?",
+          texto: "São habilidades técnicas, específicas, adquiridas por treinamento, desenvolvidas por experiência prática, desenvolvidas por educação formal, e que podem ser medidas. Elas estão relacionadas ao conhecimento técnico necessário para realizar determinadas tarefas."
+        },
+        {
+          tipo: "lista",
+          titulo: "Exemplos gerais de hard skills apresentados",
+          itens: [
+            "programação em Python, Java ou C++",
+            "utilização de ferramentas como Excel, AutoCAD e Photoshop",
+            "análise de dados usando SQL, R ou MATLAB",
+            "proficiência em idiomas estrangeiros",
+            "conhecimentos específicos de áreas como contabilidade, engenharia e redação técnica"
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Quadro 1 – Hard Skills para profissionais de requisitos",
+          colunas: ["Hard Skill", "Descrição"],
+          linhas: [
+            ["Conhecimento Técnico", "Compreender tecnicamente o domínio do problema e a tecnologia envolvida para formular perguntas relevantes e entender as respostas"],
+            ["Documentação", "Documentar respostas de maneira clara e organizada utilizando ferramentas adequadas"],
+            ["Análise de Dados", "Analisar informações coletadas para identificar padrões, inconsistências e pontos que precisam de esclarecimento"]
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "Ideia principal: o profissional não precisa apenas **conversar** com o usuário. Ele precisa conseguir: **entender → registrar → analisar** as informações obtidas."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Soft Skills"
+        },
+        {
+          tipo: "topico",
+          titulo: "O que são soft skills?",
+          texto: "As soft skills estão relacionadas ao comportamento, personalidade, relacionamento social, maneira de trabalhar e maneira de interagir com outras pessoas. São habilidades interpessoais e pessoais importantes para o sucesso profissional."
+        },
+        {
+          tipo: "lista",
+          titulo: "Exemplos gerais de soft skills apresentados",
+          itens: [
+            "comunicação",
+            "empatia",
+            "trabalho em equipe",
+            "resolução de problemas",
+            "ética de trabalho"
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Quadro 2 – Soft Skills para profissionais de requisitos",
+          colunas: ["Soft Skill", "Descrição"],
+          linhas: [
+            ["Comunicação", "Fazer perguntas claras, ouvir ativamente e registrar respostas com precisão"],
+            ["Empatia", "Compreender e valorizar as perspectivas e preocupações dos stakeholders"],
+            ["Pensamento Crítico", "Avaliar criticamente as respostas e identificar problemas ou necessidade de mais detalhes"],
+            ["Gerenciamento do Tempo", "Administrar o tempo da entrevista para abordar os pontos importantes sem perder o foco"],
+            ["Negociação", "Reconciliar requisitos conflitantes e buscar compromissos que atendam às necessidades dos envolvidos"]
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "Para memorizar: **Entrevista eficaz = conhecimento técnico + documentação + análise + comunicação + empatia + pensamento crítico + tempo + negociação.**"
+        },
+        {
+          tipo: "imagem",
+          src: "multimidia_entrevistas_elicitacao",
+          pasta: "imagens_engenharia_software/aula_6",
+          alt: "Área visual destacada para conteúdo multimídia relacionado às entrevistas e à elicitação de requisitos, incluindo referência ao material de Gilleanes Guedes (Página 13 do PDF)",
+          num: 3
+        }
+      ]
+    },
+    {
+      id: "reunioes",
+      titulo: "Reuniões",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "As reuniões são outra técnica essencial de levantamento de requisitos. Elas envolvem **discussões em grupo com stakeholders** para: identificar necessidades; alinhar expectativas; discutir diferentes perspectivas; colaborar; gerar ideias; buscar consenso sobre os requisitos."
+        },
+        {
+          tipo: "texto",
+          texto: "Diferentemente da entrevista, que pode concentrar-se em uma conversa individual, a reunião permite que **vários envolvidos participem simultaneamente**."
+        },
+        {
+          tipo: "lista",
+          titulo: "Três tipos de reuniões apresentados no material",
+          itens: [
+            "brainstorming",
+            "análise e revisão",
+            "workshops"
+          ]
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Brainstorming"
+        },
+        {
+          tipo: "texto",
+          texto: "O brainstorming é voltado para a **geração colaborativa de ideias e soluções**. Os participantes são incentivados a apresentar ideias livremente, **sem julgamentos imediatos**. Isso cria um ambiente criativo, aberto e colaborativo."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Exemplo de brainstorming",
+          texto: "Uma equipe pode realizar brainstorming para identificar possíveis funcionalidades, melhorias e novas ideias para um sistema de gerenciamento de projetos."
+        },
+        {
+          tipo: "destaque",
+          texto: "Memorize: **Brainstorming → gerar ideias.**"
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Reuniões de análise e revisão"
+        },
+        {
+          tipo: "texto",
+          texto: "São utilizadas para **analisar e revisar requisitos que já foram coletados**. O objetivo é verificar se os requisitos estão claros, completos e alinhados aos objetivos do projeto. Durante a reunião, os participantes podem: discutir requisitos; refiná-los; encontrar inconsistências; identificar pontos que precisam de mais detalhes."
+        },
+        {
+          tipo: "destaque",
+          texto: "Memorize: **Análise e revisão → verificar e melhorar requisitos.**"
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Workshops"
+        },
+        {
+          tipo: "texto",
+          texto: "Os workshops são sessões colaborativas mais estruturadas. Eles combinam elementos de brainstorming, análise e atividades práticas. São utilizados para explorar e definir requisitos."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Exemplo de workshop",
+          texto: "Um workshop pode ser utilizado para: mapear os processos atuais de uma organização; identificar problemas; identificar oportunidades de melhoria; definir como um novo sistema poderia contribuir."
+        },
+        {
+          tipo: "destaque",
+          texto: "Memorize: **Workshop → colaboração estruturada + atividades práticas.**"
+        },
+        {
+          tipo: "tabela",
+          titulo: "Comparação das reuniões",
+          colunas: ["Tipo", "Principal objetivo"],
+          linhas: [
+            ["Brainstorming", "Gerar ideias"],
+            ["Análise e revisão", "Avaliar e refinar requisitos"],
+            ["Workshop", "Explorar e definir requisitos por meio de colaboração estruturada"]
+          ]
+        }
+      ]
+    },
+    {
+      id: "desafios_reunioes",
+      titulo: "Desafios das reuniões",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "As reuniões também possuem dificuldades."
+        },
+        {
+          tipo: "topico",
+          titulo: "Participação dos stakeholders",
+          texto: "É necessário garantir a participação ativa e o envolvimento de todos os stakeholders. Isso pode ser complicado devido a: conflitos de agenda; interesses diferentes; baixa participação."
+        },
+        {
+          tipo: "topico",
+          titulo: "Manter o foco",
+          texto: "Outro desafio é manter a reunião produtiva, objetiva e focada nos assuntos importantes. É necessário evitar que a discussão se desvie excessivamente dos objetivos definidos."
+        }
+      ]
+    },
+    {
+      id: "habilidades_reunioes",
+      titulo: "Habilidades para conduzir reuniões",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O material divide novamente as habilidades em **hard skills** e **soft skills**."
+        },
+        {
+          tipo: "tabela",
+          titulo: "Quadro 3 – Hard Skills para condução de reuniões",
+          colunas: ["Hard Skill", "Descrição"],
+          linhas: [
+            ["Planejamento de Reuniões", "Definir agendas claras e objetivos específicos"],
+            ["Facilitação de Grupos", "Conduzir e moderar discussões garantindo oportunidade de participação"],
+            ["Documentação", "Registrar discussões e decisões de maneira clara e organizada"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Quadro 4 – Soft Skills para condução de reuniões",
+          colunas: ["Soft Skill", "Descrição"],
+          linhas: [
+            ["Comunicação", "Conduzir a reunião de forma clara e eficiente"],
+            ["Empatia", "Compreender e valorizar perspectivas e preocupações dos stakeholders"],
+            ["Pensamento Crítico", "Avaliar as discussões e identificar pontos que precisam de refinamento"],
+            ["Gerenciamento do Tempo", "Garantir que os assuntos importantes sejam tratados eficientemente"],
+            ["Negociação", "Resolver conflitos entre requisitos e interesses diferentes, buscando consenso"]
+          ]
+        }
+      ]
+    },
+    {
+      id: "relacao_reunioes_entrevistas",
+      titulo: "Relação entre reuniões e entrevistas",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O material destaca que reuniões podem ser utilizadas tanto para organização das equipes quanto para o levantamento propriamente dito dos requisitos. No levantamento, entrevistas também podem ser utilizadas para obter informações dos clientes e do público-alvo."
+        },
+        {
+          tipo: "texto",
+          texto: "Além disso, o texto observa que a entrevista não é exclusiva da Engenharia de Software. Ela também é utilizada em áreas como: Psicologia; Sociologia; Medicina. É uma técnica presente na metodologia científica de pesquisa qualitativa."
+        }
+      ]
+    },
+    {
+      id: "etnografia",
+      titulo: "Etnografia",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "A **etnografia** é uma técnica de levantamento de requisitos baseada na **observação direta dos usuários em seu ambiente natural de trabalho**. O objetivo é entender: como os usuários trabalham; como utilizam o sistema existente; como interagem com o sistema; quais dificuldades enfrentam; quais oportunidades de melhoria existem."
+        },
+        {
+          tipo: "destaque",
+          texto: "Diferença fundamental: enquanto a entrevista depende principalmente **do que o usuário fala**, a etnografia busca observar **o que o usuário realmente faz**."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Metodologia da etnografia"
+        },
+        {
+          tipo: "texto",
+          texto: "A etnografia utiliza **métodos qualitativos** para coletar informações detalhadas sobre: utilização do sistema; práticas de trabalho; atividades diárias; interações dos usuários. O analista realiza uma espécie de imersão no ambiente de trabalho dos usuários."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Observação direta"
+        },
+        {
+          tipo: "texto",
+          texto: "Na observação direta, o analista acompanha os usuários enquanto eles executam suas tarefas. Durante essa observação, registra: como utilizam o sistema; dificuldades encontradas; soluções adotadas; comportamentos; atividades realizadas."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Exemplo de observação direta",
+          texto: "O material apresenta o caso de um analista que passa um dia em um hospital observando médicos e enfermeiros utilizando um sistema de prontuário eletrônico.",
+          detalhe: "A observação permite compreender melhor as necessidades e dificuldades desses profissionais."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Entrevistas contextuais"
+        },
+        {
+          tipo: "texto",
+          texto: "Além da observação, o analista pode realizar **entrevistas contextuais**. Nesse caso, as perguntas são feitas enquanto o usuário está realizando suas atividades. Isso permite: obter informações adicionais; entender melhor o que está acontecendo; esclarecer comportamentos observados; relacionar as respostas diretamente ao contexto da atividade."
+        },
+        {
+          tipo: "destaque",
+          texto: "Memorize: **Etnografia = observar + compreender o contexto + eventualmente perguntar durante a atividade.**"
+        },
+        {
+          tipo: "imagem",
+          src: "multimidia_etnografia_requisitos",
+          pasta: "imagens_engenharia_software/aula_6",
+          alt: "Área visual destacada indicando conteúdo multimídia relacionado à observação/etnografia no levantamento de requisitos (Página 14 do PDF)",
+          num: 4
+        }
+      ]
+    },
+    {
+      id: "desafios_etnografia",
+      titulo: "Desafios da etnografia",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "A etnografia apresenta alguns desafios importantes."
+        },
+        {
+          tipo: "topico",
+          titulo: "1. Tempo e recursos",
+          texto: "Observações detalhadas podem exigir bastante tempo, disponibilidade e recursos."
+        },
+        {
+          tipo: "topico",
+          titulo: "2. Alteração do comportamento",
+          texto: "Os usuários podem modificar seu comportamento simplesmente porque sabem que estão sendo observados. Isso pode prejudicar a validade dos dados coletados."
+        },
+        {
+          tipo: "topico",
+          titulo: "3. Interpretação dos dados",
+          texto: "Os dados obtidos são predominantemente qualitativos. Por isso, pode ser difícil transformá-los em informações objetivas, úteis e aplicáveis ao desenvolvimento dos requisitos."
+        }
+      ]
+    },
+    {
+      id: "habilidades_etnografia",
+      titulo: "Habilidades necessárias para etnografia",
+      blocos: [
+        {
+          tipo: "tabela",
+          titulo: "Quadro 5 – Hard Skills para etnografia",
+          colunas: ["Hard Skill", "Descrição"],
+          linhas: [
+            ["Técnicas de Observação", "Observar detalhadamente e registrar os dados de maneira sistemática"],
+            ["Documentação Qualitativa", "Registrar observações e entrevistas de forma clara e organizada"],
+            ["Análise Qualitativa", "Analisar dados qualitativos e identificar padrões e insights relevantes"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Quadro 6 – Soft Skills para etnografia",
+          colunas: ["Soft Skill", "Descrição"],
+          linhas: [
+            ["Empatia", "Compreender e valorizar as perspectivas dos usuários"],
+            ["Comunicação", "Realizar entrevistas contextuais e documentar informações corretamente"],
+            ["Pensamento Crítico", "Interpretar dados qualitativos e identificar informações relevantes"],
+            ["Gerenciamento do Tempo", "Planejar e realizar observações de maneira eficiente"],
+            ["Discrição", "Observar de forma não intrusiva para minimizar alterações no comportamento dos usuários"]
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "Ponto importante: a **discrição** é especialmente importante na etnografia porque o analista precisa evitar interferir no comportamento que está tentando observar."
+        }
+      ]
+    },
+    {
+      id: "analise_documentos",
+      titulo: "Análise de documentos",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "A **análise de documentos** é outra técnica de levantamento de requisitos. Consiste em revisar documentos existentes, como: manuais; relatórios; registros de uso. O objetivo é encontrar: requisitos implícitos; requisitos complementares; informações sobre o sistema atual; necessidades que os usuários talvez não mencionem diretamente."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Tipos de documentos analisados"
+        },
+        {
+          tipo: "topico",
+          titulo: "Manuais e documentação técnica",
+          texto: "Os documentos técnicos do sistema atual podem mostrar: funcionalidades existentes; limitações; características do sistema. A análise de um manual de usuário, por exemplo, pode revelar requisitos funcionais e não funcionais que precisam ser mantidos ou melhorados no novo sistema."
+        },
+        {
+          tipo: "topico",
+          titulo: "Relatórios de uso",
+          texto: "Os relatórios de uso mostram como o sistema é utilizado na prática. Eles podem ajudar a descobrir: quais funcionalidades são mais utilizadas; onde aparecem problemas frequentes; quais áreas precisam de melhorias; quais novas funcionalidades podem ser necessárias."
+        },
+        {
+          tipo: "topico",
+          titulo: "Registros de incidentes e suporte",
+          texto: "Registros de incidentes, solicitações de suporte e problemas relatados pelos usuários podem revelar problemas recorrentes e necessidades ainda não atendidas."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Exemplo de registros de suporte",
+          texto: "Se os registros de suporte mostrarem que usuários solicitam repetidamente uma determinada funcionalidade que não existe, isso pode indicar uma necessidade importante para o novo sistema."
+        }
+      ]
+    },
+    {
+      id: "desafios_analise_documentos",
+      titulo: "Desafios da análise de documentos",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "A análise documental apresenta alguns problemas."
+        },
+        {
+          tipo: "topico",
+          titulo: "Grande quantidade de informações",
+          texto: "Pode ser necessário acessar e interpretar uma quantidade muito grande de documentos."
+        },
+        {
+          tipo: "topico",
+          titulo: "Documentos incompletos",
+          texto: "Um documento pode não conter todas as informações necessárias."
+        },
+        {
+          tipo: "topico",
+          titulo: "Documentos desatualizados",
+          texto: "Documentos antigos podem não representar corretamente o funcionamento atual do sistema. Isso pode levar a uma compreensão incorreta dos requisitos."
+        },
+        {
+          tipo: "topico",
+          titulo: "Necessidades não documentadas",
+          texto: "Nem todas as necessidades dos usuários aparecem em documentos. Por isso, a análise documental pode não ser suficiente sozinha para descobrir tudo aquilo que os usuários precisam."
+        }
+      ]
+    },
+    {
+      id: "metodos_ageis",
+      titulo: "Métodos ágeis e levantamento de requisitos",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O material também relaciona o levantamento de requisitos aos **métodos ágeis**. Os métodos ágeis procuram soluções criativas e produtivas nas diferentes fases do desenvolvimento de software, incluindo a área de levantamento de requisitos."
+        },
+        {
+          tipo: "destaque",
+          texto: "O PDF também recomenda material complementar sobre **User Stories**, destacando sua importância no processo de levantamento de requisitos."
+        }
+      ]
+    },
+    {
+      id: "comparacao_geral",
+      titulo: "Comparação geral e complementaridade das técnicas",
+      blocos: [
+        {
+          tipo: "tabela",
+          titulo: "Comparação geral das quatro técnicas",
+          colunas: ["Técnica", "Como funciona", "Principal vantagem", "Principal desafio"],
+          linhas: [
+            ["Entrevista", "Conversa com stakeholders", "Informações detalhadas", "Usuário pode ter dificuldade de expressar necessidades"],
+            ["Reunião", "Discussão em grupo", "Colaboração e consenso", "Conflitos e dificuldade de manter o foco"],
+            ["Etnografia", "Observação no ambiente real", "Mostra práticas reais", "Exige tempo e pode alterar o comportamento observado"],
+            ["Análise documental", "Estudo de documentos existentes", "Revela informações implícitas/complementares", "Documentos podem estar incompletos ou desatualizados"]
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Uma ideia importante do material é que cada técnica consegue revelar um tipo diferente de informação."
+        },
+        {
+          tipo: "topico",
+          titulo: "Entrevista",
+          texto: "Mostra principalmente: **O que o stakeholder diz que precisa.**"
+        },
+        {
+          tipo: "topico",
+          titulo: "Reunião",
+          texto: "Permite descobrir: **O que diferentes stakeholders pensam juntos e onde existe consenso ou conflito.**"
+        },
+        {
+          tipo: "topico",
+          titulo: "Etnografia",
+          texto: "Permite observar: **Como o usuário realmente trabalha e utiliza o sistema.**"
+        },
+        {
+          tipo: "topico",
+          titulo: "Análise documental",
+          texto: "Permite encontrar: **O que já está registrado e quais informações podem estar implícitas nos documentos existentes.**"
+        },
+        {
+          tipo: "destaque",
+          texto: "Portanto, combinar técnicas pode proporcionar uma visão mais completa dos requisitos."
+        }
+      ]
+    },
+    {
+      id: "hard_soft_skills_gerais",
+      titulo: "Hard Skills × Soft Skills e sua importância",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Essa distinção aparece várias vezes no PDF."
+        },
+        {
+          tipo: "topico",
+          titulo: "Hard Skills",
+          texto: "São as habilidades **técnicas e específicas**.",
+          lista: [
+            "conhecimento técnico",
+            "documentação",
+            "análise de dados",
+            "planejamento",
+            "facilitação",
+            "técnicas de observação",
+            "análise qualitativa"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Soft Skills",
+          texto: "São habilidades **comportamentais e interpessoais**.",
+          lista: [
+            "comunicação",
+            "empatia",
+            "pensamento crítico",
+            "gerenciamento do tempo",
+            "negociação",
+            "discrição"
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "Forma fácil de memorizar: **Hard Skill = saber fazer tecnicamente.** **Soft Skill = saber lidar com pessoas e situações.**"
+        },
+        {
+          tipo: "tabela",
+          titulo: "Comparação das habilidades por técnica",
+          colunas: ["Técnica", "Hard Skills principais", "Soft Skills principais"],
+          linhas: [
+            ["Entrevistas", "Conhecimento técnico, documentação, análise de dados", "Comunicação, empatia, pensamento crítico, tempo, negociação"],
+            ["Reuniões", "Planejamento, facilitação, documentação", "Comunicação, empatia, pensamento crítico, tempo, negociação"],
+            ["Etnografia", "Observação, documentação qualitativa, análise qualitativa", "Empatia, comunicação, pensamento crítico, tempo, discrição"]
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Essa comparação mostra que algumas habilidades aparecem repetidamente porque são fundamentais para o trabalho com requisitos."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Importância da comunicação"
+        },
+        {
+          tipo: "texto",
+          texto: "A comunicação aparece como uma habilidade fundamental em praticamente todo o processo. O profissional precisa conseguir:"
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "fazer perguntas claras",
+            "ouvir os stakeholders",
+            "compreender respostas",
+            "identificar problemas",
+            "registrar informações",
+            "comunicar decisões",
+            "lidar com opiniões diferentes",
+            "negociar conflitos"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Isso é especialmente importante porque diferentes stakeholders podem possuir necessidades e interesses divergentes."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Importância da empatia"
+        },
+        {
+          tipo: "texto",
+          texto: "A empatia é apresentada como a capacidade de: compreender a perspectiva dos usuários; valorizar suas preocupações; criar confiança; favorecer a colaboração. No levantamento de requisitos, o analista não deve considerar apenas aquilo que é tecnicamente conveniente. É necessário compreender **a perspectiva de quem realmente utiliza ou será afetado pelo sistema**."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Importância do pensamento crítico"
+        },
+        {
+          tipo: "texto",
+          texto: "O pensamento crítico permite que o profissional não aceite automaticamente toda informação recebida. É necessário: avaliar respostas; identificar inconsistências; perceber pontos que precisam de esclarecimento; interpretar dados; identificar padrões; buscar informações adicionais quando necessário. Essa habilidade aparece nas entrevistas, reuniões e etnografia."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Importância do gerenciamento do tempo"
+        },
+        {
+          tipo: "texto",
+          texto: "O gerenciamento do tempo aparece nas diferentes técnicas porque o levantamento precisa ser eficiente. O profissional deve conseguir: manter o foco; abordar assuntos importantes; evitar desvios; organizar observações; planejar reuniões; aproveitar adequadamente o tempo dos stakeholders."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Importância da negociação"
+        },
+        {
+          tipo: "texto",
+          texto: "A negociação é especialmente importante quando existem: requisitos conflitantes; interesses divergentes; diferentes expectativas entre stakeholders. O objetivo é encontrar **compromissos que permitam satisfazer as necessidades dos envolvidos**, sempre buscando um requisito coerente e viável para o projeto."
+        }
+      ]
+    },
+    {
+      id: "visuais_e_quadros",
+      titulo: "Visuais e quadros presentes no PDF",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O material possui diversos elementos visuais além do texto, catalogados a seguir com página e identificador."
+        },
+        {
+          tipo: "topico",
+          titulo: "Capa do módulo (Página 1)",
+          texto: "A capa apresenta o título 'Técnicas de levantamento de requisitos', com uma composição visual relacionada ao uso de computador e tecnologia. id: `capa_tecnicas_levantamento_requisitos`."
+        },
+        {
+          tipo: "topico",
+          titulo: "Ilustração relacionada à entrevista (Página 7)",
+          texto: "Há uma ilustração mostrando pessoas em uma situação de conversa/interação, associada ao conteúdo sobre entrevistas e levantamento de informações. A representação reforça visualmente a ideia de **interação entre pessoas durante o processo de obtenção de informações**. id: `representacao_visual_entrevista_stakeholders`."
+        },
+        {
+          tipo: "topico",
+          titulo: "Quadro 1 (Página 10)",
+          texto: "'Lista das hard skills necessárias ao profissional que trabalha com requisitos'. Apresenta as hard skills: Conhecimento Técnico; Documentação; Análise de Dados, cada uma acompanhada de sua respectiva descrição. id: `quadro_1_hard_skills_requisitos`."
+        },
+        {
+          tipo: "topico",
+          titulo: "Quadro 2 (Página 10)",
+          texto: "'Lista das hard skills necessárias ao profissional que trabalha com requisitos' — apesar do título apresentado no documento, este quadro contém as **soft skills**: Comunicação; Empatia; Pensamento Crítico; Gerenciamento do Tempo; Negociação. id: `quadro_2_soft_skills_requisitos`."
+        },
+        {
+          tipo: "topico",
+          titulo: "Quadro 3 (Página 12)",
+          texto: "'Quadro de hard skills para condução de reuniões'. Apresenta: Planejamento de Reuniões; Facilitação de Grupos; Documentação. id: `quadro_3_hard_skills_reunioes`."
+        },
+        {
+          tipo: "topico",
+          titulo: "Quadro 4 (Página 12)",
+          texto: "'Quadro de soft skills para condução de reuniões'. Apresenta: Comunicação; Empatia; Pensamento Crítico; Gerenciamento do Tempo; Negociação. id: `quadro_4_soft_skills_reunioes`."
+        },
+        {
+          tipo: "topico",
+          titulo: "Seção multimídia sobre entrevistas (Página 13)",
+          texto: "O material apresenta uma área visual destacada para conteúdo multimídia relacionado às entrevistas e à elicitação de requisitos, incluindo referência ao material de Gilleanes Guedes. id: `multimidia_entrevistas_elicitacao`."
+        },
+        {
+          tipo: "topico",
+          titulo: "Seção multimídia sobre etnografia (Página 14)",
+          texto: "Há uma área visual destacada indicando conteúdo multimídia relacionado à observação/etnografia no levantamento de requisitos. id: `multimidia_etnografia_requisitos`."
+        },
+        {
+          tipo: "topico",
+          titulo: "Quadro 5 (Página 15)",
+          texto: "'Quadro de soft skills para condução de reuniões' — o próprio título do quadro aparece dessa maneira no material, embora seu conteúdo corresponda às **hard skills para etnografia**: Técnicas de Observação; Documentação Qualitativa; Análise Qualitativa. id: `quadro_5_hard_skills_etnografia`."
+        },
+        {
+          tipo: "topico",
+          titulo: "Quadro 6 (Página 15)",
+          texto: "'Quadro de soft skills para condução de reuniões'. O quadro apresenta as soft skills necessárias para etnografia: Empatia; Comunicação; Pensamento Crítico; Gerenciamento do Tempo; Discrição. id: `quadro_6_soft_skills_etnografia`."
+        }
+      ]
+    },
+    {
+      id: "pontos_fundamentais",
+      titulo: "Pontos fundamentais para estudar",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Se a prova cobrar os conceitos centrais dessa aula, estes são os pontos que você precisa dominar:"
+        },
+        {
+          tipo: "topico",
+          titulo: "Levantamento de requisitos",
+          texto: "É a etapa responsável por **coletar e analisar as necessidades e expectativas dos envolvidos no projeto**."
+        },
+        {
+          tipo: "topico",
+          titulo: "Quatro técnicas",
+          texto: "**Entrevistas → Reuniões → Etnografia → Análise de documentos.**"
+        },
+        {
+          tipo: "topico",
+          titulo: "Entrevistas",
+          lista: [
+            "Estruturadas → roteiro rígido",
+            "Semiestruturadas → roteiro + flexibilidade",
+            "Não estruturadas → conversa aberta"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Reuniões",
+          lista: [
+            "Brainstorming → gerar ideias",
+            "Análise e revisão → revisar/refinar requisitos",
+            "Workshop → colaboração estruturada e atividades práticas"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Etnografia",
+          texto: "**Observar o usuário em seu ambiente natural de trabalho.** Possui: observação direta; entrevistas contextuais."
+        },
+        {
+          tipo: "topico",
+          titulo: "Análise de documentos",
+          texto: "Analisa principalmente: manuais/documentação técnica; relatórios de uso; registros de incidentes e suporte."
+        },
+        {
+          tipo: "topico",
+          titulo: "Hard Skills",
+          texto: "**Técnicas/conhecimentos que podem ser desenvolvidos e medidos.**"
+        },
+        {
+          tipo: "topico",
+          titulo: "Soft Skills",
+          texto: "**Habilidades comportamentais e interpessoais.**"
+        },
+        {
+          tipo: "topico",
+          titulo: "Desafios",
+          lista: [
+            "conflitos entre stakeholders",
+            "dificuldade de expressar necessidades",
+            "falta de participação",
+            "perda de foco",
+            "alteração de comportamento durante observação",
+            "documentos incompletos",
+            "documentos desatualizados",
+            "interpretação de dados qualitativos"
+          ]
+        }
+      ]
+    },
+    {
+      id: "mapa_mental",
+      titulo: "Mapa mental da aula",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "`TÉCNICAS DE LEVANTAMENTO DE REQUISITOS` — estrutura hierárquica apresentada no material:"
+        },
+        {
+          tipo: "topico",
+          titulo: "LEVANTAMENTO DE REQUISITOS",
+          lista: [
+            "Coletar necessidades",
+            "Compreender expectativas",
+            "Identificar funcionalidades",
+            "Reduzir retrabalho",
+            "Melhorar qualidade"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "ENTREVISTAS",
+          lista: [
+            "Estruturadas → Roteiro rígido",
+            "Semiestruturadas → Roteiro + flexibilidade",
+            "Não estruturadas → Conversa aberta"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "REUNIÕES",
+          lista: [
+            "Brainstorming → Gerar ideias",
+            "Análise e revisão → Refinar requisitos",
+            "Workshops → Colaboração estruturada"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "ETNOGRAFIA",
+          lista: [
+            "Observação direta",
+            "Entrevistas contextuais",
+            "Ambiente natural",
+            "Práticas reais dos usuários"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "ANÁLISE DE DOCUMENTOS",
+          lista: [
+            "Manuais",
+            "Relatórios de uso",
+            "Incidentes e suporte"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "HABILIDADES — HARD SKILLS",
+          lista: [
+            "Conhecimento técnico",
+            "Documentação",
+            "Análise",
+            "Observação"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "HABILIDADES — SOFT SKILLS",
+          lista: [
+            "Comunicação",
+            "Empatia",
+            "Pensamento crítico",
+            "Gerenciamento do tempo",
+            "Negociação",
+            "Discrição"
+          ]
+        }
+      ]
+    },
+    {
+      id: "resumo_final",
+      titulo: "Resumo final da Aula 6",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O **Levantamento de Requisitos** é uma etapa crítica da Engenharia de Requisitos porque permite compreender as necessidades dos usuários e stakeholders antes e durante o desenvolvimento do software. O PDF apresenta quatro técnicas principais."
+        },
+        {
+          tipo: "texto",
+          texto: "**Entrevistas** permitem obter informações detalhadas diretamente dos stakeholders. Podem ser estruturadas, semiestruturadas ou não estruturadas."
+        },
+        {
+          tipo: "texto",
+          texto: "**Reuniões** possibilitam a participação de vários stakeholders, facilitando colaboração, discussão, geração de ideias, revisão e consenso. Entre seus formatos estão brainstorming, análise e revisão e workshops."
+        },
+        {
+          tipo: "texto",
+          texto: "**Etnografia** busca compreender o trabalho real dos usuários por meio da observação direta em seu ambiente natural, podendo utilizar entrevistas contextuais para complementar as observações."
+        },
+        {
+          tipo: "texto",
+          texto: "**Análise de documentos** examina materiais já existentes, como manuais, relatórios de uso e registros de incidentes e suporte, permitindo descobrir requisitos implícitos e complementares."
+        },
+        {
+          tipo: "texto",
+          texto: "Para executar essas técnicas adequadamente, o profissional precisa combinar **hard skills**, relacionadas aos conhecimentos e capacidades técnicas, com **soft skills**, relacionadas à comunicação, empatia, pensamento crítico, negociação, gerenciamento do tempo e outras capacidades interpessoais."
+        },
+        {
+          tipo: "destaque",
+          texto: "Por fim, o material reforça que o levantamento de requisitos não deve ser tratado como uma atividade isolada: ele é um **processo contínuo ao longo do ciclo de vida do software**, exigindo comunicação eficaz, precisão, colaboração e atualização constante dos requisitos."
+        }
+      ]
+    }
+  ]
+  },
 
   ]};

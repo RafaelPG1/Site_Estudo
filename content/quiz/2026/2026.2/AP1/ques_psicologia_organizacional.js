@@ -189,7 +189,9 @@ window.questoes = {
   ],
   answer: 3,
   feedback: "A sequência correta é F, V, V, F. A primeira é falsa, pois a Psicologia tornou-se ciência autônoma no século XIX (não XVIII), e não com a Psicanálise, mas geralmente associada ao laboratório de Wundt. A segunda é verdadeira: para Vygotsky, o ==ddl==psiquismo== se constitui nas interações sociais mediadas pela ==key==linguagem==. A terceira também é verdadeira, pois a Psicologia se diferencia da Filosofia justamente por adotar ==dml==métodos empíricos== de investigação. A quarta é falsa, já que a Psicologia (incluindo a Organizacional e do Trabalho) atua em múltiplos campos, não se restringindo à Clínica."
-}
+},
+
+
   ],
 
 };

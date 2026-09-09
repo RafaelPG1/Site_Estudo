@@ -593,6 +593,8 @@ ava: [
     answer: 3,
     feedback: "O ==ddl==Modelo Cascata== é ideal para projetos com ==key==requisitos bem definidos e estáveis==, pois sua estrutura sequencial rígida exige que cada fase seja concluída antes de iniciar a próxima, sem espaço natural para revisões constantes. Por isso, ele não se adapta bem a cenários de requisitos em constante evolução, alta incerteza com envolvimento contínuo do cliente, ou necessidade de entregas parciais e graduais — situações mais adequadas a modelos incrementais ou ágeis."
   },
+
+  
 ],
 
 };
