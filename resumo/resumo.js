@@ -1290,6 +1290,8 @@ function _renderBloco(b) {
       return `<pre class="rm-codigo"><code>${_esc(b.codigo ?? '')}</code></pre>`;
     case 'destaque':
       return `<div class="rm-destaque">${_parseInline(b.texto ?? '')}</div>`;
+    case 'citacao':
+      return `<div class="rm-citacao">${_parseInline(b.texto ?? '')}${b.autor ? `<span class="rm-citacao__autor">${_parseInline(b.autor)}</span>` : ''}</div>`;
     default:
       return '';
   }

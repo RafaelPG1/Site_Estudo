@@ -797,6 +797,47 @@
   line-height: 1;
 }
 
+/* Citação = trecho literal transcrito de uma fonte (autor, obra,
+   depoimento no material). Mesmo tratamento editorial do destaque
+   (aspas grandes decorativas + serifa itálica), mas com tom mais
+   neutro/acinzentado — quem marca "isso é importante" é o
+   .rm-destaque; quem diz "isso foi dito, literalmente, por alguém"
+   é o .rm-citacao. A linha de atribuição (autor/fonte) é o que
+   distingue semanticamente os dois blocos. */
+.rm-citacao {
+  position: relative;
+  padding: 0.25rem 0 0.25rem 2.5rem;
+  margin: var(--space-1) 0;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 400;
+  color: var(--text-2);
+  line-height: 1.55;
+  font-style: italic;
+  max-width: var(--text-measure);
+}
+.rm-citacao::before {
+  content: '"';
+  position: absolute;
+  left: -0.2rem;
+  top: -0.6rem;
+  font-family: var(--font-display);
+  font-size: 3.2rem;
+  font-style: normal;
+  color: rgba(255,255,255,0.14);
+  line-height: 1;
+}
+.rm-citacao__autor {
+  display: block;
+  margin-top: 0.5rem;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-style: normal;
+  color: var(--text-3);
+  letter-spacing: 0.02em;
+}
+.rm-citacao__autor::before { content: '— '; }
+
 .rm-tabela-wrap {
   overflow-x: auto;
   border-radius: var(--r-md);
@@ -914,7 +955,7 @@
      medida (68ch não cabe de qualquer forma numa tela de 375px). */
   .reader__content { max-width: 100%; padding: 1.75rem 1.1rem 6rem; }
   .reader__content p, .reader__content li,
-  .rm-topico, .rm-lista, .rm-subtitulo, .rm-exemplo, .rm-destaque {
+  .rm-topico, .rm-lista, .rm-subtitulo, .rm-exemplo, .rm-destaque, .rm-citacao {
     max-width: none;
   }
   .rm-collapse__body-inner { padding: 1.25rem 1.1rem; }

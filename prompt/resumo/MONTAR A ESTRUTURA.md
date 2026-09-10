@@ -1,8 +1,21 @@
 Você receberá o conteúdo completo de UMA aula.
 Sua tarefa é organizar esse conteúdo EXATAMENTE na estrutura JavaScript de objeto de aula mostrada abaixo.
 
+═══════════════════ PASSO 0 — VERIFICAÇÃO DE IMAGENS (OBRIGATÓRIO, ANTES DE QUALQUER OUTRA COISA) ═══════════════════
+Antes de gerar qualquer saída, verifique se o conteúdo recebido menciona explicitamente uma ou mais figuras/imagens (com nome de arquivo, "Figura X", legenda de imagem, ou qualquer referência visual que exigiria um bloco `tipo: "imagem"`).
+
+- Se **houver** menção a imagem(ns):
+  - **PARE** e **não gere o objeto ainda**.
+  - Pergunte ao usuário qual é o valor exato do campo `pasta` a ser usado (seguindo o padrão `"imagens_<disciplina>/aula_<N>"`), informando quantas imagens foram identificadas e, se possível, seus nomes/descrições.
+  - Só prossiga para gerar o objeto da aula depois que o usuário responder com o valor da pasta.
+- Se **não houver** nenhuma menção a imagem/figura no conteúdo:
+  - Prossiga normalmente, sem usar o bloco `tipo: "imagem"` e sem perguntar nada sobre pasta.
+
+⚠️ Nunca invente, estime ou deixe um valor padrão/placeholder para o campo `pasta`. Esse dado deve vir sempre do usuário.
+
 ═══════════════════ CONTRATO DE SAÍDA (MAIS IMPORTANTE DE TUDO) ═══════════════════
-⚠️ O PRIMEIRO CARACTERE da sua resposta DEVE ser `{`.
+⚠️ Isto se aplica à resposta final, DEPOIS que o Passo 0 (se aplicável) já tiver sido resolvido.
+⚠️ O PRIMEIRO CARACTERE da sua resposta final DEVE ser `{`.
 ⚠️ NÃO escreva NADA antes do `{` — nem saudação, nem "Aqui está", nem comentário, nem quebra de linha, nem espaço.
 ⚠️ O ÚLTIMO CARACTERE da sua resposta DEVE ser `}` (o fechamento do objeto da aula).
 ⚠️ NÃO escreva NADA depois do `}` — nem explicações, nem observações finais.
@@ -86,13 +99,20 @@ tabela — para dados em formato tabular:
   ]
 }
 
-destaque — para informações marcadas como importantes:
+destaque — para informações marcadas como importantes (não é uma citação literal — é uma frase-síntese, um aviso do tipo "atenção" ou "ponto-chave para a prova", que pode ser sua própria redação enfatizando algo crucial do conteúdo):
 {
   tipo: "destaque",
   texto: "informação importante para prova"
 }
 
-imagem — use APENAS quando o conteúdo mencionar explicitamente uma figura/imagem com nome de arquivo:
+citacao — use APENAS quando o conteúdo original trouxer uma fala/trecho LITERAL atribuído a uma pessoa, autor, obra ou fonte (ex.: uma frase entre aspas no PDF, um depoimento, uma epígrafe, uma citação de autor citada pelo material). NÃO invente citações e NÃO transforme uma frase comum do texto em citação só para preencher o campo — se não houver uma citação literal com fonte identificável no material, não use este bloco. O campo "autor" deve conter exatamente o nome da pessoa/fonte como aparece no material (ex.: "Wellington Wagner F. Sarmento", "Kent Beck", "Manifesto Ágil, 2001"); omita o campo "autor" apenas se o material não identificar a fonte:
+{
+  tipo: "citacao",
+  texto: "trecho citado literalmente, palavra por palavra, como aparece no material",
+  autor: "opcional — nome da pessoa/fonte exatamente como identificada no material"
+}
+
+imagem — use APENAS quando o conteúdo mencionar explicitamente uma figura/imagem com nome de arquivo, E APENAS depois de o usuário ter informado a pasta no Passo 0:
 {
   tipo: "imagem",
   src: "nome_do_arquivo.png",
@@ -100,7 +120,7 @@ imagem — use APENAS quando o conteúdo mencionar explicitamente uma figura/ima
   alt: "descrição da imagem",
   num: 1
 }
-O campo pasta SEMPRE deve seguir o padrão "imagens_<disciplina>/aula_<N>" (ex: "imagens_design/aula_12").
+O campo pasta SEMPRE deve seguir o padrão "imagens_<disciplina>/aula_<N>" (ex: "imagens_design/aula_12") e deve ser exatamente o valor informado pelo usuário no Passo 0 — nunca inventado.
 num é o número sequencial da figura (1, 2, 3…).
 
 ═══════════════════ REGRAS DE CONTEÚDO ═══════════════════
@@ -123,6 +143,7 @@ Transformar explicações detalhadas em tópicos vagos
 
 ═══════════════════ VERIFICAÇÃO ANTES DE RESPONDER ═══════════════════
 Antes de gerar a saída, confirme mentalmente:
+0. Se havia imagem(ns) mencionada(s), eu já perguntei e recebi a pasta do usuário antes de gerar o objeto?
 1. Todo parágrafo do conteúdo original foi mapeado para algum bloco?
 2. Todos os exemplos foram incluídos com seus detalhes?
 3. Todas as listas estão completas, com todos os itens?
@@ -132,7 +153,7 @@ Antes de gerar a saída, confirme mentalmente:
 Se a resposta a qualquer uma dessas perguntas for "não", corrija antes de responder.
 
 ═══════════════════ FORMATO FINAL EXATO (repetindo o mais importante) ═══════════════════
-Retorne SOMENTE o objeto abaixo. A resposta inteira deve ser este objeto, começando em `{` e terminando em `}` — nenhum caractere, palavra, comentário ou marcação antes ou depois:
+Depois de resolvido o Passo 0 (se aplicável), retorne SOMENTE o objeto abaixo. A resposta inteira deve ser este objeto, começando em `{` e terminando em `}` — nenhum caractere, palavra, comentário ou marcação antes ou depois:
 {
   aula: "...",
   ideia_central: "...",
