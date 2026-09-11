@@ -2957,7 +2957,7 @@ secoes: [
           tipo: "imagem",
           id: "representacao_visual_comparacao_requisitos_funcionais_nao_funcionais",
           src: "representacao_visual_comparacao_requisitos_funcionais_nao_funcionais.png",
-          pasta: "imagens_analise_projeto\\aula_05",
+          pasta: "imagens_analise_projeto/aula_05",
           alt: "Dois quadros lado a lado, cada um com um ícone (pessoa / engrenagem com \"</>\"), contrastando visualmente requisitos funcionais e não funcionais como categorias complementares",
           num: 1
         },
@@ -3332,9 +3332,482 @@ secoes: [
       ]
     }
   ]
-}
+  },
 
   // aula 6
-
+  {
+  aula: "Técnicas de Levantamento de Requisitos",
+  ideia_central: "O Levantamento de Requisitos é a etapa da Engenharia de Requisitos que coleta e analisa, de forma contínua ao longo de todo o ciclo de vida do software, as necessidades dos stakeholders por meio de quatro técnicas principais — Entrevistas, Reuniões, Etnografia e Análise de Documentos —, cada uma com seus tipos, desafios e hard/soft skills necessárias.",
+  secoes: [
+    {
+      id: "visao_geral",
+      titulo: "Visão Geral",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O módulo trata do **Levantamento de Requisitos**, etapa fundamental da **Engenharia de Requisitos** — a disciplina responsável por definir, documentar e gerenciar os requisitos de um sistema de software, do início até a manutenção. O Levantamento de Requisitos é a fase que coleta e analisa as necessidades e expectativas dos envolvidos no projeto, garantindo que o software atenda às necessidades reais dos usuários, evite funcionalidades desnecessárias, facilite a comunicação entre desenvolvedores, usuários e demais *stakeholders*, e reduza retrabalho e custos."
+        },
+        {
+          tipo: "lista",
+          titulo: "Quatro técnicas centrais, sempre apresentadas na mesma lógica (definição → tipos/metodologia → desafios → habilidades necessárias)",
+          itens: [
+            "**Entrevistas** — conversas individuais com cada stakeholder.",
+            "**Reuniões** — discussões em grupo para alinhar expectativas.",
+            "**Etnografia** — observação direta dos usuários em seu ambiente natural de trabalho.",
+            "**Análise de documentos** — revisão de documentos já existentes (manuais, relatórios, registros)."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "O texto reforça que o Levantamento de Requisitos é um **processo contínuo**, que deve acompanhar todo o ciclo de vida do software para que os requisitos permaneçam atualizados e o sistema evolua de forma sustentável."
+        }
+      ]
+    },
+    {
+      id: "entrevistas",
+      titulo: "Entrevistas",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "As entrevistas são uma das técnicas **mais utilizadas** para levantamento de requisitos. Envolvem conversas diretas entre analistas de sistemas e *stakeholders*, com o objetivo de coletar informações detalhadas sobre necessidades e expectativas dos usuários."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Tipos de Entrevistas"
+        },
+        {
+          tipo: "topico",
+          titulo: "a) Entrevistas Estruturadas",
+          texto: "Seguem um **roteiro rígido de perguntas predefinidas**. São úteis para obter informações **específicas e comparáveis** entre diferentes *stakeholders* — por exemplo, perguntar a cada gerente de projeto, com a mesma lista fixa de perguntas, quais funcionalidades ele espera de um sistema."
+        },
+        {
+          tipo: "topico",
+          titulo: "b) Entrevistas Semiestruturadas",
+          texto: "Combinam **perguntas predefinidas** com a **flexibilidade** de explorar novos tópicos que surgem durante a conversa. Servem para aprofundar o entendimento de áreas específicas mantendo uma estrutura básica — o analista pode, por exemplo, partir de uma pergunta fixa sobre funcionalidades e depois pedir mais detalhes sobre um ponto que o entrevistado mencionou espontaneamente (como a importância de uma integração entre sistemas)."
+        },
+        {
+          tipo: "topico",
+          titulo: "c) Entrevistas Não Estruturadas",
+          texto: "São **conversas abertas, sem roteiro rígido**, permitindo exploração livre das necessidades e expectativas dos *stakeholders*. São úteis para obter uma compreensão **ampla e profunda** das perspectivas dos usuários. O analista pode iniciar com uma pergunta geral e deixar a conversa seguir os tópicos que surgem naturalmente."
+        },
+        {
+          tipo: "imagem",
+          id: "representacao_visual_entrevista_nao_estruturada",
+          src: "representacao_visual_entrevista_nao_estruturada.png",
+          pasta: "imagens_analise_projeto/aula_06",
+          alt: "Uma analista, sentada com papéis em mãos, entrevista um stakeholder e pergunta, em um balão de fala, sobre os desafios que ele enfrenta atualmente com o sistema existente. A cena ilustra concretamente como uma entrevista não estruturada pode começar com uma pergunta ampla e aberta, deixando o restante da conversa fluir conforme os tópicos trazidos pelo próprio entrevistado.",
+          num: 1
+        },
+        {
+          tipo: "texto",
+          texto: "**Contexto complementar (indicado no PDF):** o material observa que entrevistas não são uma técnica exclusiva da Engenharia de Software — elas também são usadas como método científico em pesquisa qualitativa em áreas como Psicologia, Sociologia e Medicina."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Desafios das Entrevistas para Levantamento de Requisitos"
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "Estabelecer um **ambiente de confiança**, para que os entrevistados se sintam à vontade para compartilhar informações detalhadas e honestas.",
+            "Entrevistados podem **não ter uma visão clara** das próprias necessidades ou ter dificuldade em **articulá-las tecnicamente**.",
+            "Podem surgir **informações inconsistentes ou conflitantes** entre diferentes *stakeholders* — o analista precisa saber identificar e reconciliar essas discrepâncias para construir um conjunto de requisitos coeso e viável."
+          ]
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Habilidades Necessárias para Conduzir Entrevistas"
+        },
+        {
+          tipo: "texto",
+          texto: "Para conduzir entrevistas eficazes, o profissional precisa desenvolver tanto **hard skills** quanto **soft skills**: **Hard skills** são habilidades **técnicas/específicas**, adquiridas por treinamento, experiência prática e educação formal (ex.: programação em `Python`/`Java`/`C++`, uso de ferramentas como `Excel`/`AutoCAD`/`Photoshop`, análise de dados com `SQL`/`R`/`MATLAB`, proficiência em línguas estrangeiras, competências técnicas de área). **Soft skills** são relacionadas a **comportamento, personalidade e habilidades sociais**, cruciais para o sucesso profissional (ex.: comunicação, empatia, trabalho em equipe, resolução de problemas, ética de trabalho)."
+        },
+        {
+          tipo: "tabela",
+          titulo: "Quadro 1 — Hard skills necessárias ao profissional que trabalha com requisitos (entrevistas)",
+          colunas: ["Hard Skill", "Descrição"],
+          linhas: [
+            ["Conhecimento Técnico", "Compreensão técnica do domínio do problema e da tecnologia envolvida, para formular perguntas relevantes e entender respostas técnicas."],
+            ["Documentação", "Capacidade de documentar respostas de maneira clara e organizada, usando ferramentas adequadas para registrar requisitos coletados."],
+            ["Análise de Dados", "Habilidade de analisar informações coletadas para identificar padrões, inconsistências e áreas que precisam de mais esclarecimentos."]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Quadro 2 — Soft skills necessárias ao profissional que trabalha com requisitos (entrevistas)",
+          colunas: ["Soft Skill", "Descrição"],
+          linhas: [
+            ["Comunicação", "Comunicação verbal e escrita para formular perguntas claras, escutar ativamente e documentar respostas com precisão."],
+            ["Empatia", "Compreender e valorizar as perspectivas e preocupações dos stakeholders, estabelecendo confiança e colaboração."],
+            ["Negociação", "Reconciliar requisitos conflitantes entre diferentes stakeholders, buscando compromissos que satisfaçam a todos."],
+            ["Pensamento Crítico", "Avaliar criticamente as respostas dos stakeholders, identificando problemas ou áreas que precisam de mais detalhes."],
+            ["Gerenciamento do Tempo", "Gerenciar o tempo durante as entrevistas, garantindo que todas as questões importantes sejam abordadas sem fugir do foco."]
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "⚠️ Possível pegadinha de prova: no documento original, os títulos dos Quadros 1 e 2 estão trocados — ambos aparecem rotulados como \"Lista das hard skills...\", embora o Quadro 2 liste, na verdade, as soft skills. O conteúdo das tabelas acima já está corrigido conforme o cabeçalho real de cada uma (HARD SKILLS / SOFT SKILLS)."
+        },
+        {
+          tipo: "texto",
+          texto: "**Material complementar sugerido no PDF:** vídeos do Prof. Gilleanes Guedes — *\"Elicitação de Requisitos – Parte II – Entrevistas\"* e *\"Elicitação de Requisitos – Parte III – Questionários\"* (este último aborda a técnica de Questionário, não coberta neste material, mas apontada como importante para o Levantamento de Requisitos)."
+        }
+      ]
+    },
+    {
+      id: "reunioes",
+      titulo: "Reuniões",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "As reuniões são uma técnica essencial de levantamento de requisitos, envolvendo **discussões em grupo** com os *stakeholders* para identificar necessidades, alinhar expectativas e debater diferentes perspectivas. Permitem colaboração e geração de ideias, facilitando o consenso sobre os requisitos do sistema."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Tipos de Reuniões"
+        },
+        {
+          tipo: "topico",
+          titulo: "a) Reuniões de Brainstorming",
+          texto: "Focadas na **geração de ideias e soluções de forma colaborativa**. Os participantes são incentivados a sugerir ideias livremente, sem julgamentos imediatos, em ambiente criativo e aberto."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Reunião de brainstorming",
+          texto: "Uma equipe realiza uma sessão de brainstorming para identificar possíveis funcionalidades e melhorias para um novo sistema de gerenciamento de projetos."
+        },
+        {
+          tipo: "topico",
+          titulo: "b) Reuniões de Análise e Revisão",
+          texto: "Usadas para **analisar e revisar os requisitos já coletados**, garantindo que estejam claros, completos e alinhados com os objetivos do projeto. Os participantes discutem e refinam os requisitos, identificando inconsistências ou áreas que precisam de mais detalhes."
+        },
+        {
+          tipo: "topico",
+          titulo: "c) Workshops",
+          texto: "Sessões colaborativas **mais estruturadas**, que combinam elementos de brainstorming e de análise, geralmente com atividades práticas e exercícios para explorar e definir requisitos."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Workshop",
+          texto: "Um workshop organizado para mapear os processos atuais de uma organização e identificar áreas de melhoria por meio de um novo sistema de software."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Desafios das Reuniões para Levantamento de Requisitos"
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "Garantir a **participação ativa e o engajamento** de todos os stakeholders — difícil quando há conflitos de agenda ou interesses divergentes.",
+            "Manter o **foco e a produtividade**, evitando digressões e garantindo que todos os tópicos importantes sejam abordados."
+          ]
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Habilidades Necessárias para Conduzir Reuniões"
+        },
+        {
+          tipo: "tabela",
+          titulo: "Quadro 3 — Hard skills para condução de reuniões",
+          colunas: ["Hard Skill", "Descrição"],
+          linhas: [
+            ["Planejamento de Reuniões", "Planejar reuniões de forma eficaz, definindo agendas claras e objetivos específicos."],
+            ["Facilitação de Grupos", "Conduzir e moderar discussões, assegurando que todos os participantes possam contribuir."],
+            ["Documentação", "Registrar discussões e decisões tomadas durante a reunião de maneira clara e organizada."]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Quadro 4 — Soft skills para condução de reuniões",
+          colunas: ["Soft Skill", "Descrição"],
+          linhas: [
+            ["Comunicação", "Comunicação verbal e escrita para conduzir reuniões de forma clara e eficiente, promovendo entendimento mútuo."],
+            ["Empatia", "Compreender e valorizar as perspectivas e preocupações dos stakeholders, criando um ambiente colaborativo."],
+            ["Negociação", "Reconciliar requisitos conflitantes e interesses divergentes, facilitando a obtenção de consenso."],
+            ["Pensamento Crítico", "Avaliar criticamente as discussões, identificando áreas que precisam de mais detalhes ou refinamentos."],
+            ["Gerenciamento do Tempo", "Gerenciar o tempo durante as reuniões, garantindo que todos os tópicos importantes sejam abordados eficientemente."]
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "**Contexto complementar (indicado no PDF):** as reuniões podem ser usadas tanto para a **organização das equipes** quanto para o **levantamento de requisitos propriamente dito** — nesse segundo caso, é comum usar entrevistas dentro da própria reunião para coletar dados dos clientes e do público-alvo do sistema."
+        }
+      ]
+    },
+    {
+      id: "etnografia",
+      titulo: "Etnografia",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "A etnografia é uma técnica de levantamento de requisitos que envolve a **observação direta dos usuários em seu ambiente natural de trabalho**. Permite aos analistas entenderem como os usuários interagem com o sistema existente e identificar oportunidades de melhoria com base em **comportamentos reais**."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Metodologia da Etnografia"
+        },
+        {
+          tipo: "texto",
+          texto: "A etnografia usa **métodos qualitativos** para coletar dados detalhados sobre o uso do sistema e as práticas de trabalho dos usuários, envolvendo **imersão** no ambiente de trabalho deles."
+        },
+        {
+          tipo: "topico",
+          titulo: "a) Observação Direta",
+          texto: "O analista observa os usuários enquanto realizam suas tarefas, registrando como utilizam o sistema, as dificuldades encontradas e as soluções adotadas."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Etnografia (observação direta)",
+          texto: "Um analista passa um dia em um hospital observando como médicos e enfermeiros utilizam o sistema de prontuário eletrônico, para entender melhor suas necessidades e desafios."
+        },
+        {
+          tipo: "topico",
+          titulo: "b) Entrevistas Contextuais",
+          texto: "Além da observação, o analista pode conduzir entrevistas contextuais com os usuários, perguntando sobre suas atividades e experiências **enquanto elas ocorrem**. Essa abordagem permite obter *insights* adicionais e esclarecer aspectos observados durante a interação com o sistema."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Desafios da Etnografia para Levantamento de Requisitos"
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "Exige **tempo e recursos** para realizar observações detalhadas.",
+            "Os usuários podem **alterar o comportamento** quando sabem que estão sendo observados, afetando a validade dos dados coletados (efeito observador).",
+            "Pode ser **difícil interpretar dados qualitativos** de forma objetiva e utilizável para o desenvolvimento de requisitos."
+          ]
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Habilidades Necessárias para Conduzir Etnografia"
+        },
+        {
+          tipo: "tabela",
+          titulo: "Quadro 5 — Hard skills para condução de etnografia",
+          colunas: ["Hard Skill", "Descrição"],
+          linhas: [
+            ["Técnicas de Observação", "Realizar observações detalhadas e registrar dados de forma sistemática."],
+            ["Documentação Qualitativa", "Documentar observações e entrevistas de maneira clara e organizada."],
+            ["Análise Qualitativa", "Analisar dados qualitativos e identificar padrões e insights relevantes."]
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "⚠️ Possível pegadinha de prova: no PDF original, este quadro está rotulado como \"Quadro de soft skills...\", mas o cabeçalho da própria tabela mostra \"HARD SKILLS\" e todo o conteúdo (técnicas de observação, documentação, análise qualitativa) é de natureza técnica — trata-se, de fato, de um quadro de hard skills."
+        },
+        {
+          tipo: "tabela",
+          titulo: "Quadro 6 — Soft skills para condução de etnografia",
+          colunas: ["Soft Skill", "Descrição"],
+          linhas: [
+            ["Empatia", "Compreender e valorizar as perspectivas dos usuários, estabelecendo um ambiente de confiança."],
+            ["Comunicação", "Realizar entrevistas contextuais e documentar informações de maneira precisa."],
+            ["Discrição", "Observar de forma não intrusiva, minimizando a alteração do comportamento dos usuários."],
+            ["Pensamento Crítico", "Avaliar e interpretar dados qualitativos, identificando insights relevantes para o desenvolvimento de requisitos."],
+            ["Gerenciamento do Tempo", "Planejar e realizar observações de forma eficiente, garantindo a coleta de dados abrangentes."]
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "**Material complementar sugerido no PDF:** vídeo *\"Webinar - Levantamento de Requisitos com Observações/Etnografia\"*, de Leonardo Nascimento (Fatto Consultoria e Soluções), indicado como um bom material sobre a preparação necessária para conduzir uma pesquisa etnográfica de identificação de requisitos."
+        }
+      ]
+    },
+    {
+      id: "analise_documentos",
+      titulo: "Análise de Documentos",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "A análise de documentos é uma técnica que envolve a **revisão de documentos existentes** (manuais, relatórios, registros de uso) para identificar **requisitos implícitos e complementares**. É útil para entender o contexto do sistema atual e identificar necessidades que os usuários podem não mencionar explicitamente."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Tipos de Documentos Analisados"
+        },
+        {
+          tipo: "topico",
+          titulo: "a) Manuais e Documentação Técnica",
+          texto: "Fornecem informações detalhadas sobre funcionalidades existentes e limitações do sistema."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Manual de usuário",
+          texto: "A análise de um manual de usuário pode revelar requisitos funcionais e não funcionais que precisam ser mantidos ou melhorados no novo sistema."
+        },
+        {
+          tipo: "topico",
+          titulo: "b) Relatórios de Uso",
+          texto: "Fornecem *insights* sobre como o sistema é utilizado na prática — quais funcionalidades são mais usadas e onde ocorrem problemas frequentes — ajudando a identificar áreas que precisam de melhorias ou novas funcionalidades."
+        },
+        {
+          tipo: "topico",
+          titulo: "c) Registros de Incidentes e Suporte",
+          texto: "Revelam problemas recorrentes e necessidades não atendidas pelos usuários."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Análise de documentos (registros de suporte)",
+          texto: "A análise de registros de suporte pode mostrar que os usuários solicitam frequentemente uma funcionalidade específica ausente no sistema atual."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Desafios da Análise de Documentos para Levantamento de Requisitos"
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "Necessidade de **acessar e interpretar grande quantidade de informações**.",
+            "Documentos podem estar **incompletos ou desatualizados**, levando a uma compreensão incorreta dos requisitos.",
+            "A análise de documentos pode **não capturar todas as necessidades** dos usuários, especialmente as que não estão documentadas."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "**Material complementar sugerido no PDF (contexto de métodos ágeis):** vídeo *\"Requisitos Ágeis - Como escrever histórias de usuário incríveis!\"*, do canal Agilizando!, indicado para quem quiser aprofundar o processo de criação de *User Stories* e sua importância para o Levantamento de Requisitos."
+        }
+      ]
+    },
+    {
+      id: "formulas_metodos",
+      titulo: "Fórmulas e Métodos",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Este módulo não apresenta fórmulas matemáticas ou métodos de cálculo — seu conteúdo é conceitual e qualitativo, focado na descrição de técnicas de levantamento de requisitos (entrevistas, reuniões, etnografia e análise de documentos), seus tipos, desafios e habilidades necessárias."
+        }
+      ]
+    },
+    {
+      id: "exemplos_explicativos",
+      titulo: "Exemplos Explicativos",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Os exemplos a seguir são os mesmos trazidos ao longo do PDF, reunidos e organizados por técnica."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Entrevista estruturada",
+          texto: "Um analista usa uma lista fixa de perguntas para coletar, de cada gerente de projeto, dados comparáveis sobre requisitos funcionais de um sistema de gerenciamento de tarefas.",
+          detalhe: "Perguntas como: \"Quais são as cinco funcionalidades mais importantes que você espera deste sistema?\" e \"Como você define o sucesso para este software?\"."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Entrevista semiestruturada",
+          texto: "O analista parte de perguntas predefinidas sobre funcionalidades desejadas e, a partir da resposta do entrevistado, aprofunda com uma pergunta de acompanhamento sobre a importância da integração com outros sistemas."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Entrevista não estruturada",
+          texto: "O analista inicia com uma pergunta geral e aberta e deixa a conversa fluir conforme os tópicos surgem.",
+          detalhe: "Pergunta de abertura: \"Pode me falar sobre os desafios que você enfrenta atualmente com o sistema existente?\" (ver representação visual na seção de Entrevistas)."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Reunião de brainstorming",
+          texto: "Uma equipe realiza uma sessão para identificar possíveis funcionalidades e melhorias para um novo sistema de gerenciamento de projetos."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Workshop",
+          texto: "Organizado para mapear os processos atuais de uma organização e identificar áreas de melhoria por meio de um novo sistema de software."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Etnografia (observação direta)",
+          texto: "Um analista passa um dia em um hospital observando médicos e enfermeiros usarem o sistema de prontuário eletrônico, para entender necessidades e desafios reais."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Análise de documentos (registros de suporte)",
+          texto: "A análise revela que usuários solicitam repetidamente uma funcionalidade específica que ainda não existe no sistema atual."
+        }
+      ]
+    },
+    {
+      id: "imagens_graficos_diagramas",
+      titulo: "Imagens, Gráficos e Diagramas Importantes",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O único elemento visual do PDF com valor informativo direto para o conteúdo — a ilustração da entrevista não estruturada — já foi referenciado em seu contexto natural, na seção de Entrevistas (Tipos de Entrevistas → Entrevistas Não Estruturadas). Os Quadros (tabelas) 1 a 6, por conterem dados totalmente representáveis em texto, foram transcritos como tabelas textuais fiéis dentro das seções correspondentes, sem necessidade de referência de imagem separada."
+        },
+        {
+          tipo: "texto",
+          texto: "Os demais elementos gráficos do documento (ícones de capa, clipe de prancheta, alvo, lata de lápis das seções \"Anotações\", sinal de \"Parada Obrigatória\", claquete de \"Multimídia\", chapéu de formatura dos exercícios) são puramente decorativos/ilustrativos de seção, sem conteúdo informativo próprio, e por isso não foram referenciados individualmente."
+        }
+      ]
+    },
+    {
+      id: "resumo_final",
+      titulo: "Resumo Final para Revisão Rápida",
+      blocos: [
+        {
+          tipo: "lista",
+          itens: [
+            "**Levantamento de Requisitos** = etapa da Engenharia de Requisitos que coleta/analisa necessidades dos stakeholders; é um processo **contínuo** ao longo do ciclo de vida do software.",
+            "**4 técnicas estudadas:** Entrevistas, Reuniões, Etnografia, Análise de Documentos."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Entrevistas",
+          lista: [
+            "Estruturada = roteiro rígido, respostas comparáveis.",
+            "Semiestruturada = roteiro + flexibilidade para aprofundar.",
+            "Não estruturada = conversa aberta, sem roteiro.",
+            "Desafios: confiança, falta de clareza dos entrevistados, respostas conflitantes."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Reuniões",
+          lista: [
+            "Brainstorming = geração livre de ideias.",
+            "Análise e Revisão = refinar requisitos já coletados.",
+            "Workshop = mais estruturado, combina brainstorming + análise.",
+            "Desafios: engajamento de todos, manter foco/produtividade."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Etnografia",
+          lista: [
+            "Observação direta + Entrevistas contextuais, no ambiente real do usuário.",
+            "Desafios: tempo/recursos, efeito observador (mudança de comportamento), dificuldade de interpretar dados qualitativos."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Análise de Documentos",
+          lista: [
+            "Tipos: manuais/documentação técnica, relatórios de uso, registros de incidentes/suporte.",
+            "Desafios: volume de informação, documentos incompletos/desatualizados, necessidades não documentadas."
+          ]
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "**Hard skills** = técnicas, mensuráveis, adquiridas por treinamento/educação (ex.: conhecimento técnico, documentação, análise de dados/qualitativa, planejamento, facilitação, técnicas de observação).",
+            "**Soft skills** = comportamentais/interpessoais (ex.: comunicação, empatia, negociação, pensamento crítico, gerenciamento do tempo, discrição)."
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "**Atenção:** no PDF original, os títulos dos Quadros 1, 2 e 5 estão trocados em relação ao conteúdo real das tabelas (ex.: Quadro 5 é rotulado \"soft skills\" mas lista hard skills) — cuidado ao revisar esse ponto para prova."
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "**Observação:** este módulo não contém fórmulas matemáticas; seu conteúdo é integralmente conceitual/qualitativo."
+          ]
+        }
+      ]
+    }
+  ]
+  },
+  
+  // aula 07
   
   ]};

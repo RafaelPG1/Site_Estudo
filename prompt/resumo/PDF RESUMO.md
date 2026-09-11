@@ -167,11 +167,31 @@ Vá direto ao conteúdo da imagem, sem introduções como "esta figura", "esse d
 ---
 
 ## 4. Tabelas, Gráficos e Diagramas
-- **Tabelas:** se contiverem dados relevantes, reorganize-os em uma tabela textual fiel (sem adicionar dados que não estejam no PDF).
-- **Gráficos:** descreva o que é comparado, variáveis, tendências e valores legíveis — sem interpretações não sustentadas pelo gráfico.
-- **Diagramas/fluxogramas:** explique elementos, sequência, conexões e etapas.
 
-Todos esses elementos seguem o mesmo formato e a mesma regra de `id` obrigatório da Seção 3.4.
+### 4.1 Critério: quando usar só texto vs. quando usar referência de imagem
+
+O critério **não** é "é uma imagem ou é texto nativo do PDF" — é se o conteúdo pode ser **totalmente representado em texto sem perda de informação**.
+
+**Use SÓ texto (sem `[Figura X]`, sem `id`, sem pasta/página de imagem) quando:**
+- o conteúdo é uma tabela de dados (mesmo que ela esteja "dentro" de uma imagem/print/captura no PDF) — os dados cabem inteiramente em linhas e colunas de texto;
+- é uma lista, um texto simples fotografado, ou qualquer conteúdo cuja informação completa é transmitida só pelos dados/palavras, sem depender de organização visual/espacial.
+
+Nesses casos, transcreva diretamente como tabela textual (ou lista/texto) fiel aos dados — **isso é suficiente**. Não faça o dobro do trabalho pedindo também para anexar a imagem: se o conteúdo já foi 100% capturado em texto, referenciar a imagem separadamente é redundante e não agrega nada.
+
+**Use referência de imagem completa (`[Figura X]`, página, `id`, etc. — Seção 3.4) apenas quando:**
+- a informação depende de estrutura visual/espacial que o texto não consegue captar sozinho: diagramas, fluxogramas, arquiteturas, mapas conceituais, ilustrações, fotos, esquemas com setas/conexões/hierarquia visual.
+- Nesses casos, a organização espacial *é* a informação — por isso a referência de imagem é necessária, mesmo com uma boa descrição textual ao lado.
+
+**Regra prática:** pergunte-se "se eu tirar a imagem e deixar só o texto que escrevi, alguma informação se perde?"
+- Se **não** perde nada → só texto.
+- Se **perde** (relação visual, posição, fluxo, hierarquia gráfica) → referência de imagem completa.
+
+### 4.2 Outras regras
+- **Tabelas (nativas ou capturadas de imagem):** reorganize os dados em uma tabela textual fiel, sem adicionar dados que não estejam no PDF.
+- **Gráficos com dados legíveis:** se todos os valores/pontos puderem ser transcritos em uma tabela ou lista sem perda, trate como texto (tabela de dados). Se o gráfico tiver elementos visuais que não reduzem a números simples (curvas complexas, comparações visuais de forma/área), use referência de imagem completa.
+- **Diagramas/fluxogramas:** quase sempre exigem referência de imagem completa, pois a sequência/conexão visual é a própria informação.
+
+Elementos que exigem referência de imagem seguem o formato e a regra de `id` obrigatório da Seção 3.4.
 
 ---
 
@@ -205,6 +225,7 @@ Se necessário, divida o resumo em partes, mantendo a estrutura, a numeração d
 - [ ] Números e títulos de figuras conferem **exatamente** (palavra por palavra) com o original?
 - [ ] A página informada é o **número impresso no rodapé/canto da própria página da figura** — e não a posição sequencial do arquivo nem a página onde a figura é apenas citada?
 - [ ] Cada página com figura foi conferida individualmente pelo rodapé, sem presumir sequência?
-- [ ] **Todo** elemento visual incluído tem um `id`, mesmo sem número/título original?
+- [ ] **Todo** elemento visual que exige referência de imagem tem um `id`, mesmo sem número/título original?
+- [ ] Nenhum conteúdo totalmente representável em texto (ex: tabela de dados que veio de uma imagem) recebeu referência de imagem redundante — só texto quando o texto já captura tudo?
 - [ ] Nenhuma imagem foi anexada/reproduzida — apenas descrita em texto?
 - [ ] O resumo está pronto para aprendizado profundo, consulta e estudo para prova?

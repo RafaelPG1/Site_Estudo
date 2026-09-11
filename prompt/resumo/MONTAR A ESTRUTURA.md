@@ -15,6 +15,17 @@ Esta etapa é uma **varredura exaustiva**, não uma busca que para na primeira r
 3. Ignore apenas o que o próprio material já sinaliza como **puramente decorativo** (ex: ícones estéticos, clip-arts sem conteúdo informativo) — mas isso deve ser uma exclusão consciente, não um esquecimento.
 4. Não conte como imagem o que já virou **tabela de dados** (`tipo: "tabela"`) — se o conteúdo de um quadro/tabela já está totalmente reproduzido como dados tabulares, ele não duplica como bloco de imagem.
 
+### Critério: quando NÃO criar bloco de imagem (evitar redundância)
+Não crie um bloco `tipo: "imagem"` — nem conte a referência como "imagem pendente" no Passo 0 — se o conteúdo dessa referência visual já está **totalmente representado em texto** em outro bloco (`tabela`, `lista`, `texto`). Exemplos:
+- Uma tabela de dados que apareceu como imagem/print no material, mas cujo conteúdo já virou um bloco `tipo: "tabela"` completo → **não** peça a imagem também. O bloco `tabela` já é suficiente; pedir a imagem seria redundante, pois nada de informação seria perdido ao não tê-la.
+- Um texto fotografado cujo conteúdo integral já virou um bloco `tipo: "texto"` ou `tipo: "lista"` → mesma lógica, não peça a imagem.
+
+**Só crie bloco de imagem (e só conte como "imagem pendente" no Passo 0) quando a informação depende de estrutura visual/espacial que nenhum bloco de texto consegue capturar sozinho** — diagramas, fluxogramas, arquiteturas, mapas conceituais, ilustrações, fotos, esquemas com setas/conexões/hierarquia visual. Nesses casos, a organização espacial *é* a informação, e perdê-la significa perder conteúdo.
+
+**Pergunta prática antes de decidir:** "se eu não tiver a imagem, só o(s) bloco(s) de texto que já escrevi, alguma informação se perde?"
+- Se **não** perde nada → não crie bloco de imagem, não peça pasta para essa referência.
+- Se **perde** (relação visual, fluxo, hierarquia gráfica, posição) → crie o bloco de imagem normalmente.
+
 ### Antes de perguntar ao usuário
 Monte uma lista interna com **todas** as imagens relevantes encontradas, contendo para cada uma:
 - posição/local no material (página, seção ou trecho onde aparece);
@@ -167,7 +178,7 @@ Transformar explicações detalhadas em tópicos vagos
 
 ═══════════════════ VERIFICAÇÃO ANTES DE RESPONDER ═══════════════════
 Antes de gerar a saída, confirme mentalmente:
-0. Refiz a varredura completa do conteúdo (do início ao fim) e tenho certeza de que identifiquei TODAS as imagens relevantes, não apenas a primeira? Se havia imagem(ns), já perguntei e recebi a pasta do usuário antes de gerar o objeto?
+0. Refiz a varredura completa do conteúdo (do início ao fim) e tenho certeza de que identifiquei TODAS as imagens que realmente precisam de bloco `imagem` (informação visual/espacial não capturável em texto), sem contar as que já viraram tabela/lista/texto completos? Se havia imagem(ns) pendente(s), já perguntei e recebi a pasta do usuário antes de gerar o objeto?
 0.1. Cada bloco de imagem tem um `id` único preenchido?
 1. Todo parágrafo do conteúdo original foi mapeado para algum bloco?
 2. Todos os exemplos foram incluídos com seus detalhes?
