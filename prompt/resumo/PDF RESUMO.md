@@ -8,7 +8,7 @@ Este NÃO é um resumo superficial ou "enxuto". O resultado deve ser **extenso e
 
 - **Conteúdo essencial**: definições, conceitos centrais, classificações, fórmulas, processos — tudo que é indispensável para entender o tema.
 - **Conteúdo complementar relevante**: detalhes, nuances, exceções, observações, exemplos secundários, comparações adicionais, contexto explicativo que o PDF apresenta mas que não é "o básico" — tudo isso deve ser incluído, mesmo que não seja estritamente cobrado em prova. Se está no PDF e agrega valor ao entendimento, inclua.
-- Não resuma demais a ponto de perder profundidade. Prefira um resumo mais longo e completo a um resumo curto que only capture o superficial.
+- Não resuma demais a ponto de perder profundidade. Prefira um resumo mais longo e completo a um resumo curto que capture apenas o superficial.
 
 A meta é que, lendo apenas o resumo, a pessoa entenda o assunto com a mesma profundidade que teria lendo o PDF inteiro — só que de forma mais organizada e didática.
 
@@ -37,6 +37,17 @@ Pergunte: **"Esse elemento ajuda a compreender, organizar, relacionar, memorizar
 > A ausência de numeração/legenda **nunca** é motivo para ignorar um elemento relevante.
 > Gráficos, tabelas, diagramas, fluxogramas, arquiteturas, mapas conceituais e infográficos são quase sempre relevantes — trate a inclusão deles como regra, não exceção.
 
+### Obrigatoriedade de Imagens
+A inclusão de elementos visuais relevantes é **obrigatória**, não opcional. Você deve buscar ativamente por eles em todas as páginas do PDF, não apenas reagir se algum "aparecer".
+
+- Se o PDF tiver qualquer elemento visual com valor informativo (mesmo mínimo), ele **deve** ser incluído no resumo, no formato definido na Seção 3.4.
+- Só é aceitável não incluir nenhuma imagem se, após analisar o PDF por completo, **nenhum** elemento visual relevante for encontrado (ex: PDF é só texto corrido, sem nenhuma figura/gráfico/tabela/diagrama).
+- Nesse caso — e apenas nesse caso —, informe isso explicitamente ao final do resumo, com uma frase como:
+
+  > **Observação:** este PDF não contém elementos visuais (figuras, gráficos, tabelas ou diagramas) relevantes para o aprendizado do conteúdo.
+
+Nunca finalize o resumo em silêncio sobre a ausência de imagens — ou você inclui as imagens relevantes encontradas, ou você declara explicitamente que não há nenhuma.
+
 ---
 
 ## 2. Estrutura do Resumo
@@ -48,7 +59,7 @@ Pergunte: **"Esse elemento ajuda a compreender, organizar, relacionar, memorizar
 | **3. Fórmulas e métodos** | Fórmulas, significado das variáveis, procedimentos e quando/como usar (apenas o que o PDF explicar). |
 | **4. Exemplos explicativos** | Somente exemplos que já existam no PDF, explicados didaticamente. |
 | **5. Imagens, gráficos e diagramas importantes** | Seção **complementar**, usada apenas para elementos visuais relevantes que não têm um lugar natural em outra seção. Não é um repositório automático de todas as figuras. |
-| **6. Resumo final para revisão rápida** | Pontos-chave objetivos para memorização antes da prova. |
+| **6. Resumo final para revisão rápida** | Pontos-chave objetivos para memorização, incluindo a observação sobre ausência de imagens, se for o caso. |
 
 **Prioridade de posicionamento:** sempre que possível, insira a referência visual dentro da seção de conteúdo correspondente. Use a Seção 5 apenas como exceção.
 
@@ -88,7 +99,7 @@ O título/legenda deve ser **copiado exatamente como está escrito na imagem ou 
 Antes de escrever o título:
 1. Releia o texto exato que aparece dentro ou junto à figura (legenda, cabeçalho da imagem, texto sobreposto).
 2. Copie esse texto literalmente.
-3. Só se não houver NENHUM título/legenda escrito, use uma descrição objetiva sua — e nesse caso, sinalize claramente que é uma descrição e não um título original (ver formato em 3.7).
+3. Só se não houver NENHUM título/legenda escrito, use uma descrição objetiva sua — e nesse caso, sinalize claramente que é uma descrição e não um título original (ver formato em 3.4).
 
 **Nunca faça:**
 - Escrever um título "parecido" ou "que resume a ideia" quando existe um título real diferente na imagem.
@@ -111,7 +122,10 @@ id: figura_x_titulo_em_snake_case
 **Com número, sem título:**
 ```
 [Figura X: descrição objetiva]
-Página / Parte do conteúdo / Explicação / id — igual acima
+Página: X
+Parte do conteúdo: Nome da seção/assunto
+Explicação: descrição fiel e objetiva da figura e sua importância.
+id: figura_x_descricao_em_snake_case
 ```
 
 **Sem número nem título:**
@@ -120,24 +134,35 @@ Página / Parte do conteúdo / Explicação / id — igual acima
 Página: X
 Parte do conteúdo: Nome da seção/assunto
 Explicação: descrição fiel do que a imagem representa.
+id: representacao_visual_descricao_em_snake_case
 ```
-*(Nunca crie um número de figura artificial nesse caso.)*
+
+**Regra do `id` (sem exceção):** TODO elemento visual incluído no resumo precisa ter um `id`, mesmo quando não há número nem título original. Nesses casos, o `id` é criado a partir da sua própria descrição objetiva — nunca a partir de um número/título inventado. Isso vale para os três formatos acima, sempre.
+
+*(Nunca crie um número de figura artificial quando não houver um original — mas sempre crie um `id`.)*
 
 ### 3.5 Regras do `id`
-Único, estável, curto, em `snake_case`, sem acentos, baseado no número/título original quando disponível.
-Exemplos: `figura_1_modelo_cascata`, `diagrama_relacao_conceitos`.
+Único, estável, curto, em `snake_case`, sem acentos, baseado no número/título original quando disponível, ou na descrição objetiva quando não houver.
+Exemplos: `figura_1_modelo_cascata`, `diagrama_relacao_conceitos`, `representacao_visual_fluxo_atendimento`.
 
 ### 3.6 Confirmação obrigatória
 Antes de criar qualquer referência, confirme que o elemento **realmente existe** no PDF (número, título, localização e conteúdo). Nunca crie uma referência apenas porque o texto a menciona.
 
 ### 3.7 Profundidade da descrição visual
-A "Explicação" de cada elemento visual deve ser **completa, não resumida em uma frase genérica**. Descreva:
-- todos os componentes/elementos visíveis relevantes (não apenas o tema geral);
-- relações, setas, hierarquias, conexões ou fluxos representados;
-- valores, rótulos ou dados legíveis, quando existirem;
+A "Explicação" de cada elemento visual deve ser **objetiva e informativa**, sem ser genérica demais nem virar um texto enorme. Descreva:
+- os componentes/elementos visíveis realmente relevantes (não precisa listar tudo, só o que importa para entender);
+- relações, hierarquias, conexões ou fluxos representados;
+- valores, rótulos ou dados legíveis, quando existirem e forem importantes;
 - o que a figura acrescenta que o texto sozinho não deixa claro.
 
-Evite descrições curtas como "mostra o processo X". Prefira reconstruir textualmente a informação da figura com detalhe suficiente para que o leitor entenda o conteúdo dela sem precisar olhar o PDF.
+**Limite de tamanho:** a explicação deve caber em **2 a 4 frases curtas** (ou uma lista curta, se houver múltiplos dados). Evite parágrafos longos — o objetivo é uma descrição direta e útil, não uma reconstrução exaustiva de cada detalhe visual.
+
+**Não faça referência ao próprio rótulo da figura dentro da explicação.** O número/identificação já aparece na linha `[Figura X: ...]` — não repita isso na explicação. 
+
+- ❌ Errado: "A Figura 2 mostra o fluxo de atendimento, com as etapas..."
+- ✅ Certo: "Representa o fluxo de atendimento, com as etapas de recepção, triagem e encaminhamento conectadas por setas sequenciais."
+
+Vá direto ao conteúdo da imagem, sem introduções como "esta figura", "esse diagrama mostra" ou repetir o número.
 
 ---
 
@@ -146,13 +171,15 @@ Evite descrições curtas como "mostra o processo X". Prefira reconstruir textua
 - **Gráficos:** descreva o que é comparado, variáveis, tendências e valores legíveis — sem interpretações não sustentadas pelo gráfico.
 - **Diagramas/fluxogramas:** explique elementos, sequência, conexões e etapas.
 
+Todos esses elementos seguem o mesmo formato e a mesma regra de `id` obrigatório da Seção 3.4.
+
 ---
 
 ## 5. Restrição Absoluta sobre Imagens
 A resposta final deve ser **somente texto**. Nunca:
 - anexar, reproduzir, extrair ou gerar imagens (originais ou equivalentes).
 
-Toda informação visual relevante deve virar **descrição textual fiel**, no formato definido na Seção 3.
+Toda informação visual relevante deve virar **descrição textual fiel**, no formato definido na Seção 3.4.
 
 ---
 
@@ -171,12 +198,13 @@ Se necessário, divida o resumo em partes, mantendo a estrutura, a numeração d
 - [ ] O resumo está **detalhado e completo**, incluindo conteúdo essencial E complementar — não apenas o mínimo?
 - [ ] Nenhuma informação externa foi adicionada?
 - [ ] Nenhum exercício foi resolvido ou mencionado além do necessário para contexto?
-- [ ] **Todos** os elementos visuais com alguma informação foram incluídos (postura padrão = incluir)?
+- [ ] **Todos** os elementos visuais com alguma informação foram incluídos (postura padrão = incluir, busca ativa obrigatória)?
 - [ ] Apenas elementos inequivocamente decorativos foram omitidos?
-- [ ] As descrições visuais são completas e detalhadas, não frases genéricas de uma linha?
+- [ ] Se **nenhuma** imagem relevante foi encontrada, isso foi declarado explicitamente no final do resumo?
+- [ ] As descrições visuais são objetivas, sem repetir "Figura X" dentro do texto da explicação, e cabem em poucas frases (sem virar parágrafos longos)?
 - [ ] Números e títulos de figuras conferem **exatamente** (palavra por palavra) com o original?
 - [ ] A página informada é o **número impresso no rodapé/canto da própria página da figura** — e não a posição sequencial do arquivo nem a página onde a figura é apenas citada?
 - [ ] Cada página com figura foi conferida individualmente pelo rodapé, sem presumir sequência?
+- [ ] **Todo** elemento visual incluído tem um `id`, mesmo sem número/título original?
 - [ ] Nenhuma imagem foi anexada/reproduzida — apenas descrita em texto?
-- [ ] Os `id`s são únicos e consistentes?
 - [ ] O resumo está pronto para aprendizado profundo, consulta e estudo para prova?

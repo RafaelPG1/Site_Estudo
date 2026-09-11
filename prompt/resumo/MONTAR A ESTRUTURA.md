@@ -1,17 +1,39 @@
 Você receberá o conteúdo completo de UMA aula.
 Sua tarefa é organizar esse conteúdo EXATAMENTE na estrutura JavaScript de objeto de aula mostrada abaixo.
 
-═══════════════════ PASSO 0 — VERIFICAÇÃO DE IMAGENS (OBRIGATÓRIO, ANTES DE QUALQUER OUTRA COISA) ═══════════════════
-Antes de gerar qualquer saída, verifique se o conteúdo recebido menciona explicitamente uma ou mais figuras/imagens (com nome de arquivo, "Figura X", legenda de imagem, ou qualquer referência visual que exigiria um bloco `tipo: "imagem"`).
+═══════════════════ PASSO 0 — VARREDURA COMPLETA DE IMAGENS (OBRIGATÓRIO, ANTES DE QUALQUER OUTRA COISA) ═══════════════════
 
-- Se **houver** menção a imagem(ns):
+Esta etapa é uma **varredura exaustiva**, não uma busca que para na primeira referência encontrada. O erro mais comum é identificar só a primeira imagem e ignorar as demais — por isso siga o processo abaixo à risca.
+
+### Como identificar
+1. Percorra o conteúdo **do início ao fim, sem pular nenhuma parte**, procurando por QUALQUER referência visual:
+   - menção explícita a "Figura X", "Imagem X", nome de arquivo;
+   - legendas de imagem;
+   - representações visuais descritas no texto (ex: "quadro comparativo com ícones", "diagrama de fluxo", "esquema visual"), mesmo sem número ou nome de arquivo formal;
+   - qualquer trecho do material que já descreva algo como sendo uma ilustração, figura ou representação visual — inclusive dentro de seções como "Imagens, gráficos e diagramas importantes", se o material já vier resumido.
+2. **Não pare na primeira encontrada.** Continue a varredura até o fim do conteúdo, mesmo depois de já ter identificado uma ou mais imagens.
+3. Ignore apenas o que o próprio material já sinaliza como **puramente decorativo** (ex: ícones estéticos, clip-arts sem conteúdo informativo) — mas isso deve ser uma exclusão consciente, não um esquecimento.
+4. Não conte como imagem o que já virou **tabela de dados** (`tipo: "tabela"`) — se o conteúdo de um quadro/tabela já está totalmente reproduzido como dados tabulares, ele não duplica como bloco de imagem.
+
+### Antes de perguntar ao usuário
+Monte uma lista interna com **todas** as imagens relevantes encontradas, contendo para cada uma:
+- posição/local no material (página, seção ou trecho onde aparece);
+- descrição breve do que ela representa;
+- se possui nome de arquivo, número de figura ou título explícito no material.
+
+Revise essa lista **uma segunda vez antes de perguntar**, conferindo se não ficou nenhuma referência visual para trás em partes do conteúdo que você já leu.
+
+### O que perguntar ao usuário
+- Se **houver** uma ou mais imagens relevantes identificadas:
   - **PARE** e **não gere o objeto ainda**.
-  - Pergunte ao usuário qual é o valor exato do campo `pasta` a ser usado (seguindo o padrão `"imagens_<disciplina>/aula_<N>"`), informando quantas imagens foram identificadas e, se possível, seus nomes/descrições.
-  - Só prossiga para gerar o objeto da aula depois que o usuário responder com o valor da pasta.
-- Se **não houver** nenhuma menção a imagem/figura no conteúdo:
+  - Liste **todas** as imagens encontradas (não apenas a primeira), numeradas, cada uma com sua breve descrição e localização.
+  - Pergunte o valor exato do campo `pasta` a ser usado (padrão `"imagens_<disciplina>/aula_<N>"`) — normalmente uma pasta única vale para todas as imagens da aula, mas confirme com o usuário se alguma imagem deve usar uma pasta diferente.
+  - Só prossiga para gerar o objeto da aula depois que o usuário responder.
+- Se **não houver** nenhuma menção a imagem/figura relevante no conteúdo:
   - Prossiga normalmente, sem usar o bloco `tipo: "imagem"` e sem perguntar nada sobre pasta.
 
 ⚠️ Nunca invente, estime ou deixe um valor padrão/placeholder para o campo `pasta`. Esse dado deve vir sempre do usuário.
+⚠️ Nunca informe "1 imagem identificada" se houver mais de uma no material — a lista deve refletir o total real encontrado na varredura completa.
 
 ═══════════════════ CONTRATO DE SAÍDA (MAIS IMPORTANTE DE TUDO) ═══════════════════
 ⚠️ Isto se aplica à resposta final, DEPOIS que o Passo 0 (se aplicável) já tiver sido resolvido.
@@ -112,16 +134,18 @@ citacao — use APENAS quando o conteúdo original trouxer uma fala/trecho LITER
   autor: "opcional — nome da pessoa/fonte exatamente como identificada no material"
 }
 
-imagem — use APENAS quando o conteúdo mencionar explicitamente uma figura/imagem com nome de arquivo, E APENAS depois de o usuário ter informado a pasta no Passo 0:
+imagem — use APENAS quando o conteúdo mencionar explicitamente uma figura/imagem relevante, E APENAS depois de o usuário ter informado a pasta no Passo 0:
 {
   tipo: "imagem",
+  id: "identificador_unico_em_snake_case",
   src: "nome_do_arquivo.png",
   pasta: "imagens_<disciplina>/aula_<N>",
   alt: "descrição da imagem",
   num: 1
 }
-O campo pasta SEMPRE deve seguir o padrão "imagens_<disciplina>/aula_<N>" (ex: "imagens_design/aula_12") e deve ser exatamente o valor informado pelo usuário no Passo 0 — nunca inventado.
-num é o número sequencial da figura (1, 2, 3…).
+- O campo `id` é obrigatório em todo bloco de imagem, mesmo quando a figura não tem número ou título formal no material. Deve ser único, curto, em snake_case, baseado no número/título original quando existir, ou na descrição objetiva quando não existir (ex: `figura_1_modelo_cascata`, `imagem_comparacao_requisitos_funcionais_nao_funcionais`).
+- O campo `pasta` SEMPRE deve seguir o padrão "imagens_<disciplina>/aula_<N>" (ex: "imagens_design/aula_12") e deve ser exatamente o valor informado pelo usuário no Passo 0 — nunca inventado.
+- `num` é o número sequencial da figura dentro da aula (1, 2, 3…), na ordem em que aparecem no conteúdo — não pule números nem repita.
 
 ═══════════════════ REGRAS DE CONTEÚDO ═══════════════════
 ✅ OBRIGATÓRIO preservar:
@@ -143,7 +167,8 @@ Transformar explicações detalhadas em tópicos vagos
 
 ═══════════════════ VERIFICAÇÃO ANTES DE RESPONDER ═══════════════════
 Antes de gerar a saída, confirme mentalmente:
-0. Se havia imagem(ns) mencionada(s), eu já perguntei e recebi a pasta do usuário antes de gerar o objeto?
+0. Refiz a varredura completa do conteúdo (do início ao fim) e tenho certeza de que identifiquei TODAS as imagens relevantes, não apenas a primeira? Se havia imagem(ns), já perguntei e recebi a pasta do usuário antes de gerar o objeto?
+0.1. Cada bloco de imagem tem um `id` único preenchido?
 1. Todo parágrafo do conteúdo original foi mapeado para algum bloco?
 2. Todos os exemplos foram incluídos com seus detalhes?
 3. Todas as listas estão completas, com todos os itens?

@@ -2293,9 +2293,580 @@ secoes: [
     ]
   },
   // aula 4
-{
-  aula: "Métodos Ágeis",
-  ideia_central: "Os métodos ágeis são abordagens iterativas e incrementais ao desenvolvimento de software, fundamentadas no Manifesto Ágil (2001), cujas duas aplicações concretas mais relevantes — o Scrum, de viés gerencial, e o Extreme Programming (XP), de viés técnico — organizam equipes e práticas para entregar valor contínuo ao cliente.",
+  {
+    aula: "Métodos Ágeis",
+    ideia_central: "Os métodos ágeis são abordagens iterativas e incrementais ao desenvolvimento de software, fundamentadas no Manifesto Ágil (2001), cujas duas aplicações concretas mais relevantes — o Scrum, de viés gerencial, e o Extreme Programming (XP), de viés técnico — organizam equipes e práticas para entregar valor contínuo ao cliente.",
+    secoes: [
+      {
+        id: "visao_geral",
+        titulo: "Visão Geral",
+        blocos: [
+          {
+            tipo: "texto",
+            texto: "O material trata dos **Métodos Ágeis** como abordagens iterativas e incrementais para o desenvolvimento de software, contrapondo-as aos **métodos tradicionais** (como Waterfall). O conteúdo está organizado em três grandes blocos:"
+          },
+          {
+            tipo: "lista",
+            itens: [
+              "Fundamentos dos Métodos Ágeis — o que são, sua origem histórica, o Manifesto Ágil (valores e princípios), a comparação com métodos tradicionais e exemplos reais de empresas e instituições que os adotam.",
+              "Scrum — uma metodologia de gerenciamento de projetos baseada em sprints, detalhando seus pilares, papéis, artefatos (Sprint Backlog e Burndown Chart) e reuniões (cerimônias).",
+              "Extreme Programming (XP) — um método ágil focado em práticas técnicas de engenharia de software, com seus valores, práticas específicas e comparação direta com o Scrum."
+            ]
+          },
+          {
+            tipo: "texto",
+            texto: "Esses três blocos se relacionam porque o Scrum e o XP são apresentados como **duas aplicações concretas** dos princípios gerais dos métodos ágeis: o Scrum com um viés mais **gerencial/organizacional**, e o XP com um viés mais **técnico/de engenharia de código**. O objetivo declarado do módulo é capacitar o leitor a entender os métodos ágeis, conhecer o Scrum e conhecer o XP."
+          }
+        ]
+      },
+      {
+        id: "fundamentos",
+        titulo: "Fundamentos dos Métodos Ágeis",
+        blocos: [
+          {
+            tipo: "subtitulo",
+            texto: "O que são Métodos Ágeis"
+          },
+          {
+            tipo: "texto",
+            texto: "Os **Métodos Ágeis** são abordagens **iterativas e incrementais** para o desenvolvimento de software que priorizam:"
+          },
+          {
+            tipo: "lista",
+            itens: [
+              "Colaboração",
+              "Flexibilidade",
+              "Entrega contínua de valor ao cliente"
+            ]
+          },
+          {
+            tipo: "texto",
+            texto: "Diferentemente dos métodos tradicionais — que seguem um processo **linear e rigidamente estruturado** — os métodos ágeis permitem **adaptações frequentes e rápidas** às mudanças nas necessidades dos clientes e no ambiente do projeto."
+          },
+          {
+            tipo: "texto",
+            texto: "Essa abordagem parte de um conjunto de princípios voltados a melhorar a eficiência e a eficácia do desenvolvimento de software:"
+          },
+          {
+            tipo: "lista",
+            itens: [
+              "Entrega contínua de software funcional, em intervalos regulares (sprints/iterações curtas), permitindo feedback constante e ajustes rápidos;",
+              "Colaboração com o cliente durante todo o processo, garantindo que suas necessidades sejam atendidas;",
+              "Adaptação à mudança, permitindo respostas rápidas a alterações nos requisitos;",
+              "Trabalho em equipe, promovendo um ambiente cooperativo e aberto."
+            ]
+          },
+          {
+            tipo: "subtitulo",
+            texto: "O Manifesto Ágil (2001)"
+          },
+          {
+            tipo: "texto",
+            texto: "Criado em 2001 por um grupo de desenvolvedores experientes, o **Manifesto Ágil** estabelece **quatro valores fundamentais** e **doze princípios** que orientam as práticas ágeis, servindo de base para todos os métodos ágeis."
+          },
+          {
+            tipo: "tabela",
+            titulo: "Os quatro valores fundamentais do Manifesto Ágil",
+            colunas: ["Valor", "Explicação"],
+            linhas: [
+              ["Indivíduos e interações mais que processos e ferramentas", "Valoriza a comunicação e a colaboração entre pessoas acima de processos rígidos."],
+              ["Software em funcionamento mais que documentação abrangente", "Prioriza a entrega de software funcional em vez de extensa documentação."],
+              ["Colaboração com o cliente mais que negociação de contratos", "Enfatiza a colaboração contínua com o cliente para garantir que o produto atenda às suas necessidades."],
+              ["Responder a mudanças mais que seguir um plano", "Reconhece que mudanças são inevitáveis; é mais importante ser adaptável do que seguir um plano inflexível."]
+            ]
+          },
+          {
+            tipo: "texto",
+            texto: "Esse documento é considerado crucial para os métodos ágeis, pois fornece diretrizes que ajudam as equipes a serem mais **flexíveis, colaborativas e focadas** na entrega contínua de valor."
+          },
+          {
+            tipo: "lista",
+            titulo: "Os doze princípios do Manifesto Ágil",
+            itens: [
+              "a) Satisfazer o cliente através da entrega contínua e adiantada de software de valor;",
+              "b) Aceitar mudanças de requisitos, mesmo no final do desenvolvimento;",
+              "c) Entregar software funcional frequentemente, com preferência por iterações curtas;",
+              "d) Trabalho diário em conjunto entre desenvolvedores e stakeholders;",
+              "e) Construir projetos em torno de indivíduos motivados, dando-lhes ambiente e suporte necessários;",
+              "f) A conversa face a face é o método mais eficiente e eficaz de transmitir informações;",
+              "g) Software funcional é a medida primária de progresso;",
+              "h) Promover o desenvolvimento sustentável, mantendo um ritmo constante indefinidamente;",
+              "i) Excelência técnica e bom design aumentam a agilidade;",
+              "j) Simplicidade é essencial — maximizar a quantidade de trabalho **não** realizado;",
+              "k) As melhores arquiteturas, requisitos e designs emergem de equipes auto-organizadas;",
+              "l) Refletir regularmente sobre como se tornar mais eficaz, ajustando o comportamento conforme necessário."
+            ]
+          },
+          {
+            tipo: "imagem",
+            src: "ilustracao_equipe_colaborativa.png",
+            pasta: "imagens_analise_projeto\\aula_04",
+            alt: "Ilustração de equipe trabalhando de forma colaborativa, associada ao trecho sobre comparação entre métodos ágeis e tradicionais (página 07).",
+            num: 1
+          },
+          {
+            tipo: "texto",
+            texto: "Explicação da imagem (página 07; parte do conteúdo: Comparação entre métodos ágeis e tradicionais): a imagem, de caráter ilustrativo, acompanha um bloco de texto em destaque que resume a essência dos métodos ágeis — a prioridade é o envolvimento ativo do cliente e a colaboração intensa entre os membros da equipe de desenvolvimento; a flexibilidade e a adaptabilidade são características centrais, permitindo respostas rápidas a mudanças. O texto reforça que a adoção dos métodos ágeis se expandiu ao longo dos anos, impulsionada por benefícios como maior agilidade, flexibilidade e entrega de valor ao cliente de forma mais eficiente."
+          },
+          {
+            tipo: "subtitulo",
+            texto: "História dos Métodos Ágeis"
+          },
+          {
+            tipo: "texto",
+            texto: "Os métodos ágeis emergiram como **resposta à rigidez dos modelos tradicionais**, como o Waterfall, que limitavam a flexibilidade e a adaptabilidade nos projetos de software."
+          },
+          {
+            tipo: "lista",
+            itens: [
+              "Na década de 1990, essa busca por alternativas mais dinâmicas impulsionou o desenvolvimento de novas metodologias.",
+              "Ken Schwaber e Jeff Sutherland lideraram o desenvolvimento do Scrum.",
+              "Kent Beck e Ward Cunningham criaram o Extreme Programming (XP).",
+              "Essas e outras abordagens focaram em ciclos de desenvolvimento iterativos e incrementais, priorizando entregas frequentes em pequenos pedaços, permitindo feedbacks e adaptações constantes."
+            ]
+          },
+          {
+            tipo: "texto",
+            texto: "Com a evolução dos métodos ágeis, surgiram ferramentas e frameworks complementares:"
+          },
+          {
+            tipo: "lista",
+            itens: [
+              "Kanban — oferece visualização do fluxo de trabalho e limitação do trabalho em progresso para otimizar o processo;",
+              "Lean — foca na eliminação de desperdícios e na otimização do desenvolvimento;",
+              "DevOps — integra desenvolvimento e operações, visando entrega de software mais rápida e confiável."
+            ]
+          },
+          {
+            tipo: "destaque",
+            texto: "Nota de rodapé do material: o DevOps não é apenas um conjunto de ferramentas/práticas, mas uma filosofia que engloba princípios e valores ágeis — embora essa descrição simplificada não seja falsa, apenas resumida."
+          },
+          {
+            tipo: "subtitulo",
+            texto: "Comparação entre Métodos Ágeis e Tradicionais"
+          },
+          {
+            tipo: "texto",
+            texto: "Os métodos tradicionais (**Waterfall, V-Model e RUP**) seguem uma sequência linear e estruturada, enquanto os métodos ágeis são iterativos e incrementais, permitindo maior flexibilidade e adaptabilidade."
+          },
+          {
+            tipo: "destaque",
+            texto: "Nota de rodapé sobre o V-Model: também conhecido como Modelo em V, é uma metodologia de desenvolvimento de software sequencial que se assemelha à forma da letra \"V\" quando representada em um gráfico. Essa estrutura visa garantir um ciclo de vida do software organizado e controlado, com foco na qualidade e na previsibilidade."
+          },
+          {
+            tipo: "tabela",
+            titulo: "Quadro 1 – Comparativo entre Métodos Tradicionais e Ágeis (página 08)",
+            colunas: ["Aspecto", "Métodos Tradicionais (Waterfall, V-Model, RUP)", "Métodos Ágeis"],
+            linhas: [
+              ["Abordagem", "Sequencial e linear (Waterfall), iterativo fixo (V-Model), fases sobrepostas (RUP)", "Iterativa e incremental"],
+              ["Flexibilidade", "Baixa, devido à rigidez do planejamento", "Alta, com capacidade de adaptação rápida"],
+              ["Feedback do Cliente", "Limitado a fases específicas", "Contínuo e constante"],
+              ["Documentação", "Extensa e detalhada", "Suficiente para a necessidade atual"],
+              ["Entrega de Software", "Ao final do projeto", "Frequente, em pequenos incrementos"],
+              ["Gerenciamento de Riscos", "Antecipado e formalizado", "Contínuo, com respostas rápidas"],
+              ["Planejamento", "Extensivo no início do projeto", "Adaptável ao longo do projeto"],
+              ["Colaboração", "Menos ênfase na colaboração", "Forte ênfase na colaboração entre todos os membros da equipe"],
+              ["Mudança de Requisitos", "Dificilmente acomodada", "Facilmente acomodada"],
+              ["Qualidade", "Verificada ao final", "Verificada continuamente"]
+            ]
+          },
+          {
+            tipo: "texto",
+            texto: "Fonte: Autores (2024)."
+          },
+          {
+            tipo: "subtitulo",
+            texto: "Exemplos de Utilização de Métodos Ágeis"
+          },
+          {
+            tipo: "texto",
+            texto: "O material apresenta uma coletânea de organizações, de diferentes setores, que adotam métodos ágeis, demonstrando que a adoção não se limita a um único tipo de empresa."
+          },
+          {
+            tipo: "lista",
+            titulo: "Empresas de Tecnologia",
+            itens: [
+              "Spotify — utiliza o Scrum para gerenciar o desenvolvimento de produtos, com sprints curtos e entregas frequentes, respondendo rapidamente às necessidades dos usuários.",
+              "Netflix — também adota o Scrum, focando na colaboração entre equipes e na rápida entrega de melhorias.",
+              "ThoughtWorks (consultoria de software global) — utiliza Scrum e Kanban, mantendo altos padrões de qualidade e eficiência."
+            ]
+          },
+          {
+            tipo: "lista",
+            titulo: "Empresas Tradicionais",
+            itens: [
+              "Banco Itaú — emprega o Scrum em projetos como aplicativos mobile e plataformas digitais, acelerando a entrega de funcionalidades.",
+              "Volkswagen — adota Scrum e Kanban para gerenciar o desenvolvimento de software embarcado em veículos.",
+              "Philips — utiliza métodos ágeis no desenvolvimento de produtos de saúde e eletrodomésticos inteligentes."
+            ]
+          },
+          {
+            tipo: "lista",
+            titulo: "Startups",
+            itens: [
+              "Nubank — referência no uso de métodos ágeis, com foco em experimentação e rápida entrega de produtos/serviços.",
+              "QuintoAndar — usa Scrum para gerenciar o desenvolvimento de app e plataforma web.",
+              "Rappi — emprega métodos ágeis para escalar operações rapidamente."
+            ]
+          },
+          {
+            tipo: "lista",
+            titulo: "Instituições Governamentais Brasileiras",
+            itens: [
+              "Ministério da Economia do Brasil — adota métodos ágeis em alguns projetos de desenvolvimento de software.",
+              "Tribunal de Contas da União (TCU) — usa Scrum para gerenciar o desenvolvimento de sistemas internos, com foco em qualidade e segurança da informação.",
+              "Prefeitura de São Paulo — aplica métodos ágeis no desenvolvimento de aplicativos e plataformas digitais."
+            ]
+          },
+          {
+            tipo: "exemplo",
+            titulo: "Caso adicional — Universidade Federal do Ceará (UFC)",
+            texto: "A UFC desenvolveu uma versão completamente nova do seu Ambiente Virtual de Aprendizagem, o Solar, utilizando Scrum e práticas ágeis como Behavior Driven Development (BDD), testes unitários e programação em par.",
+            detalhe: "Essa filosofia foi mantida entre 2010 e 2016; após esse período, devido a problemas internos e desfalques na equipe, as práticas foram abandonadas."
+          }
+        ]
+      },
+      {
+        id: "scrum",
+        titulo: "SCRUM",
+        blocos: [
+          {
+            tipo: "subtitulo",
+            texto: "Definição e Pilares"
+          },
+          {
+            tipo: "texto",
+            texto: "O **Scrum** é uma metodologia de gerenciamento de projetos (de software) baseada em **ciclos curtos de desenvolvimento**, chamados **sprints**. Cada sprint tipicamente dura de **1 a 4 semanas** e possui um conjunto específico de objetivos que a equipe busca completar. Ao longo do sprint, a equipe trabalha colaborativamente para entregar valor ao cliente."
+          },
+          {
+            tipo: "destaque",
+            texto: "Nota de rodapé: sprints de uma semana são mais utilizadas em desenvolvimentos rápidos de pequenas aplicações; ciclos de 2 semanas são os mais comuns."
+          },
+          {
+            tipo: "lista",
+            titulo: "O Scrum é baseado em três pilares",
+            itens: [
+              "Transparência — todas as informações do projeto são visíveis para todos os membros da equipe e partes interessadas;",
+              "Inspeção — a equipe revisa regularmente seu progresso e identifica áreas de melhoria;",
+              "Adaptação — a equipe está disposta a mudar sua abordagem com base no feedback e em novas informações."
+            ]
+          },
+          {
+            tipo: "subtitulo",
+            texto: "Características do Scrum"
+          },
+          {
+            tipo: "texto",
+            texto: "A divisão do projeto em sprints curtos permite maior flexibilidade e adaptabilidade às mudanças. As reuniões de sprint garantem comunicação e colaboração constantes entre a equipe, o Product Owner e os stakeholders. Papéis bem definidos facilitam o desenvolvimento das responsabilidades entre os membros."
+          },
+          {
+            tipo: "subtitulo",
+            texto: "a) Atores-chave do Scrum"
+          },
+          {
+            tipo: "imagem",
+            src: "diagrama_atores_chave_scrum.png",
+            pasta: "imagens_analise_projeto\\aula_04",
+            alt: "Diagrama dos Atores Chave do Scrum: figura central (equipe/quadro de trabalho) conectada a quatro caixas — Product Owner, Scrum Master, Time de Desenvolvimento e Stakeholders (página 12).",
+            num: 2
+          },
+          {
+            tipo: "texto",
+            texto: "Explicação da imagem (página 12; parte do conteúdo: 2.1 Características do Scrum — Atores Chave do Scrum): o diagrama apresenta uma figura central (representando a equipe/quadro de trabalho) conectada, por meio de linhas, a quatro caixas de texto que descrevem os quatro papéis-chave do Scrum: (1) Product Owner (PO) — descrito como a \"voz\" do cliente no projeto, responsável por definir a visão do produto, priorizar os itens do backlog e garantir que o produto atenda às necessidades dos usuários; (2) Scrum Master (SM) — descrito como o guardião do processo Scrum, que facilita a implementação da metodologia, remove obstáculos para a equipe e garante que os princípios e valores do Scrum sejam seguidos; (3) Time de Desenvolvimento — descrito como a força motriz do projeto, composto por desenvolvedores, testadores e outros profissionais, responsável por transformar as ideias em um produto funcional e de alta qualidade; (4) Stakeholders — descritos como as partes interessadas no projeto, podendo incluir clientes, gerentes, investidores e qualquer outra pessoa com interesse no sucesso do projeto."
+          },
+          {
+            tipo: "tabela",
+            titulo: "Papéis do Scrum (resumo)",
+            colunas: ["Papel", "Função"],
+            linhas: [
+              ["Product Owner (PO)", "\"Voz\" do cliente; define a visão do produto, prioriza o backlog e garante que o produto atenda às necessidades dos usuários."],
+              ["Scrum Master (SM)", "Guardião do processo; facilita a implementação da metodologia, remove obstáculos e garante que os princípios do Scrum sejam seguidos."],
+              ["Time de Desenvolvimento", "Força motriz do projeto; composto por desenvolvedores, testadores e outros profissionais, transforma ideias em produto funcional."],
+              ["Stakeholders", "Partes interessadas no projeto (clientes, gerentes, investidores etc.)."]
+            ]
+          },
+          {
+            tipo: "subtitulo",
+            texto: "b) Artefatos Scrum: Sprint Backlog e Burndown Chart"
+          },
+          {
+            tipo: "texto",
+            texto: "Os artefatos do Scrum fornecem **visibilidade sobre o progresso do projeto**."
+          },
+          {
+            tipo: "texto",
+            texto: "**Sprint Backlog:** contém o fluxo de desenvolvimento das funcionalidades da aplicação. Na prática, é comum organizá-lo em um quadro com colunas:"
+          },
+          {
+            tipo: "lista",
+            itens: [
+              "\"To-Do\" (para fazer) — funcionalidades selecionadas para a sprint, escritas em post-its;",
+              "\"Doing\" (fazendo) — quando um membro da equipe pega a funcionalidade para desenvolver;",
+              "\"Done\" (feito) — quando a funcionalidade é encerrada e devidamente testada."
+            ]
+          },
+          {
+            tipo: "imagem",
+            src: "figura_1_sprint_backlog_quadro_branco.png",
+            pasta: "imagens_analise_projeto\\aula_04",
+            alt: "Figura 1 – Exemplo de um Sprint Backlog utilizando um quadro branco e post-its (página 13).",
+            num: 3
+          },
+          {
+            tipo: "texto",
+            texto: "Explicação da imagem — Figura 1 (página 13; parte do conteúdo: 2.1 Características do Scrum — Os artefatos Scrum): a figura mostra um quadro branco físico organizado em colunas verticais rotuladas (da esquerda para a direita): \"STORIES\" (uma coluna lateral com itens numerados, listando as histórias/funcionalidades do backlog), \"TO DO\", \"IN PROGRESS\", \"TESTING\" e uma coluna final rotulada com uma data (indicando o fim da sprint, \"12/22\"). Diversos post-its coloridos (laranja, rosa/magenta, azul-claro/turquesa e amarelo) estão distribuídos pelas colunas, representando tarefas em diferentes estágios de desenvolvimento — a maior concentração de post-its aparece nas colunas \"TO DO\" e \"TESTING\". A imagem ilustra concretamente a prática descrita no texto: escrever as funcionalidades em post-its e movê-los entre colunas conforme avançam no fluxo de trabalho (a fazer → fazendo → testando → feito)."
+          },
+          {
+            tipo: "texto",
+            texto: "**Burndown Chart:** é uma ferramenta gráfica utilizada em metodologias ágeis, como o Scrum, para **visualizar o progresso do trabalho restante** em um projeto ao longo do tempo. Permite acompanhar a equipe em relação aos seus objetivos e identificar possíveis problemas ou atrasos de forma proativa."
+          },
+          {
+            tipo: "lista",
+            itens: [
+              "Eixo X: normalmente as iterações/sprints (ou, dentro de uma única sprint, os dias da sprint);",
+              "Eixo Y: o esforço a ser realizado pela equipe, dado em pontos de complexidade."
+            ]
+          },
+          {
+            tipo: "texto",
+            texto: "A complexidade de uma tarefa/requisito é medida conforme a experiência do time em desenvolver aquela funcionalidade: quanto mais complicada, maior a pontuação; quanto mais simples, menor."
+          },
+          {
+            tipo: "texto",
+            texto: "Como o gráfico é construído:"
+          },
+          {
+            tipo: "lista",
+            itens: [
+              "1. Traça-se uma linha reta iniciando no eixo Y (no total de pontos das sprints, marcando o início das iterações) e terminando no eixo X (na posição da última iteração) — essa é a \"Linha de Trabalho Restante Ideal\".",
+              "2. Em cada iteração, um conjunto de requisitos é selecionado e seus pontos de complexidade são atribuídos; o somatório desses pontos é plotado como um ponto no gráfico.",
+              "3. Ao interligar esses pontos, cria-se a \"Linha de Trabalho Restante Real\".",
+              "4. Se a linha real se mantiver abaixo da ideal, a equipe está em bom ritmo e deverá cumprir o cronograma; caso contrário, a equipe precisará melhorar o ritmo ou revisar o planejamento de tempo do projeto."
+            ]
+          },
+          {
+            tipo: "destaque",
+            texto: "Nota de rodapé (nota 5 do material): esse é um ponto conflitante entre times desenvolvedores e contratantes/chefias, pois parte do princípio de que o escopo e seu dimensionamento podem não bater com o cronograma estipulado inicialmente. O ideal para métodos ágeis é o trabalho com \"escopos flexíveis\", discutidos entre stakeholders e desenvolvedores ao longo do desenvolvimento, de forma que o tempo empregado gere um produto adequado dentro de um prazo viável para a equipe. Essa discussão sobre tempo é um motivo recorrente de conflito entre o que o cliente deseja, o que a equipe pode entregar e o prazo necessário."
+          },
+          {
+            tipo: "texto",
+            texto: "O gráfico também pode ser usado para verificar o progresso **dentro de uma sprint** — nesse caso, o eixo X contém os dias da sprint, e a Linha de Trabalho Restante Ideal é traçada a partir do total de pontos do Sprint Backlog, enquanto a linha real reflete a evolução diária dos pontos remanescentes."
+          },
+          {
+            tipo: "imagem",
+            src: "figura_2_burndown_chart.png",
+            pasta: "imagens_analise_projeto\\aula_04",
+            alt: "Figura 2 - Exemplo de um Burndown Chart: Story Points Remaining (0 a 35) por Days in the Sprint (1 a 10), com Linha de Trabalho Restante Ideal e Linha de Trabalho Restante Real (página 14).",
+            num: 4
+          },
+          {
+            tipo: "texto",
+            texto: "Explicação da imagem — Figura 2 (página 14; parte do conteúdo: 2.1 Características do Scrum — Os artefatos Scrum, Burndown Chart): o gráfico, intitulado \"Sprint Burn-Down Chart\", tem no eixo Y os \"Story Points Remaining in the Sprint Backlog\" (pontos de história restantes no Sprint Backlog), com escala de 0 a 35, e no eixo X os \"Days in the Sprint\" (dias da sprint), numerados de 1 a 10. Há duas linhas: uma linha tracejada (reta), representando a Linha de Trabalho Restante Ideal, que parte de aproximadamente 30 pontos no dia 1 e desce linearmente até 0 no dia 10; e uma linha sólida com marcadores em losango, representando a Linha de Trabalho Restante Real, que acompanha de perto a linha ideal, oscilando ligeiramente acima e abaixo dela ao longo dos dias, partindo também de cerca de 30 pontos no dia 1 e chegando a 0 (ou próximo disso) no dia 10. A figura ilustra visualmente o conceito explicado no texto: o acompanhamento diário do trabalho restante comparado ao ritmo ideal esperado."
+          },
+          {
+            tipo: "texto",
+            texto: "Embora se possa usar softwares como **Pivotal Tracker**, **Trello** ou **Jira** para criar e compartilhar o Sprint Backlog, a prática do uso de **quadros físicos** e a **interação presencial** entre os membros da equipe é incentivada na metodologia Scrum, para criar um laço de colaboração, companheirismo e responsabilidade entre os membros da equipe."
+          },
+          {
+            tipo: "subtitulo",
+            texto: "c) A Dinâmica das Reuniões (Cerimônias) no Scrum"
+          },
+          {
+            tipo: "tabela",
+            titulo: "Reuniões (cerimônias) do Scrum",
+            colunas: ["Reunião", "Descrição"],
+            linhas: [
+              ["Scrum Daily", "Conversa aberta e colaborativa em que cada membro compartilha avanços, obstáculos e planos para o dia. O Scrum Master facilita a discussão e garante que todos estejam alinhados."],
+              ["Sprint Planning", "Colaboração entre Product Owner, Scrum Master e equipe de desenvolvimento para definir o escopo do sprint e as prioridades. O PO apresenta o backlog do produto, a equipe estima o esforço de cada item e, juntos, definem os objetivos do sprint."],
+              ["Sprint Review", "Oportunidade para a equipe mostrar o que foi realizado durante o sprint e receber feedback dos stakeholders. O PO valida o trabalho e os stakeholders podem sugerir melhorias ou novas ideias."],
+              ["Sprint Retrospective", "Momento de aprendizado e crescimento para a equipe. O Scrum Master guia a discussão sobre o que deu certo, o que deu errado e como melhorar no próximo sprint."]
+            ]
+          },
+          {
+            tipo: "subtitulo",
+            texto: "Relato de Experiência Prática (seção \"Saiba Mais\")"
+          },
+          {
+            tipo: "texto",
+            texto: "O material inclui um relato pessoal dos autores (Wellington Sarmento e Patrícia Paula), que participaram de equipes usando Scrum em uma universidade federal por **oito anos**. Pontos relevantes do relato:"
+          },
+          {
+            tipo: "lista",
+            itens: [
+              "No primeiro ano, usaram quadros brancos com post-its; posteriormente, adotaram o Pivotal Tracker como software de apoio, mas nunca abandonaram as reuniões presenciais, por considerarem a interação direta essencial para uma boa equipe de trabalho.",
+              "Vieram de processos tradicionais (incluindo Waterfall) e enfrentaram o desafio de criar um novo ambiente de aprendizagem para milhares de usuários, com uma equipe heterogênea em maturidade de processo.",
+              "Já conheciam técnicas como Test Driven Development (TDD) e Pair Programming, mas ainda usavam gerenciamento tradicional até conhecerem um orientando do diretor executivo (Ari Amaral), que se tornou o Scrum Master/coach de agilidade da equipe.",
+              "O coach priorizou a saúde mental da equipe, a harmonia interna, a responsabilidade com as tarefas e o compromisso com técnicas/tecnologias que melhorassem a produtividade sem gerar estresse constante.",
+              "Wellington relata ter atuado como Product Owner, precisando aprender técnicas de gerência de backlog, priorização de tarefas, sprint planning, elaboração de User Stories e sprint review, tendo se certificado como PO.",
+              "A mudança de filosofia para métodos ágeis não foi simples nem rápida — demandou tempo, esforço e investimento (mais de um ano).",
+              "Ao longo dos anos, a equipe também usou Trello e Slack para gestão e comunicação inter-equipes; o aprendizado foi que o entrosamento de um time demanda tempo, boa gerência de conflitos, políticas de incentivo e valorização pessoal.",
+              "O relato conclui com reflexões de Wellington Sarmento sobre a importância de gestores terem vivência prática do processo de desenvolvimento, tratando as pessoas como indivíduos (não apenas \"recursos\"), reforçando o valor ágil de \"indivíduos e interações mais que processos e ferramentas\"."
+            ]
+          }
+        ]
+      },
+      {
+        id: "xp",
+        titulo: "Extreme Programming (XP)",
+        blocos: [
+          {
+            tipo: "subtitulo",
+            texto: "Definição e Valores Fundamentais"
+          },
+          {
+            tipo: "texto",
+            texto: "O **Extreme Programming (XP)**, ou **Programação Extrema**, surgiu em meados da **década de 90** como resposta à necessidade de maior agilidade e adaptabilidade no desenvolvimento de software. Foi idealizado por **Kent Beck** e sua equipe durante o **projeto C3** (*Chrysler Comprehensive Compensation System*)."
+          },
+          {
+            tipo: "texto",
+            texto: "O XP se baseia em **cinco valores fundamentais**:"
+          },
+          {
+            tipo: "tabela",
+            titulo: "Os cinco valores fundamentais do XP",
+            colunas: ["Valor", "Descrição"],
+            linhas: [
+              ["Comunicação", "Base para um trabalho colaborativo e eficiente."],
+              ["Simplicidade", "Buscar soluções descomplicadas e fáceis de entender."],
+              ["Feedback", "Obter e fornecer informações constantes para aprimorar o processo."],
+              ["Coragem", "Experimentar novas ideias e enfrentar desafios sem medo."],
+              ["Respeito", "Valorizar as habilidades e opiniões de todos os membros da equipe."]
+            ]
+          },
+          {
+            tipo: "subtitulo",
+            texto: "Práticas do Extreme Programming"
+          },
+          {
+            tipo: "texto",
+            texto: "A partir desses valores, o XP propõe um conjunto de práticas:"
+          },
+          {
+            tipo: "lista",
+            itens: [
+              "a) Ciclos de Desenvolvimento Curtos — dividir o projeto em pequenas iterações, com entregas frequentes e feedback contínuo, permitindo ajuste rápido de curso;",
+              "b) Programação em Pares — dois programadores trabalhando juntos na mesma estação de trabalho, promovendo colaboração e revisão de código em tempo real, aumentando a qualidade e acelerando a resolução de problemas;",
+              "c) Testes Unitários — escrever testes automatizados para garantir a qualidade do código e prevenir falhas, assegurando que cada parte do software funcione corretamente isoladamente;",
+              "d) Refatoração — reorganizar o código existente para torná-lo mais limpo, eficiente e fácil de manter, ajudando a manter a integridade e extensibilidade do software;",
+              "e) Integração Contínua — integrar as mudanças no código à base principal com frequência, permitindo detecção precoce de problemas e reduzindo riscos de integração tardia;",
+              "f) Metáfora da Sala de Reuniões — espaço aberto para comunicação e colaboração entre equipe e cliente, promovendo um ambiente de trabalho mais transparente e integrado;",
+              "g) Histórias de Usuário — descrever as funcionalidades do software a partir da perspectiva do usuário, garantindo que o produto atenda às suas necessidades e mantendo o foco no valor entregue ao cliente;",
+              "h) Planejamento em Tempo Real — adaptar o planejamento às mudanças do projeto e às prioridades do cliente, mantendo o desenvolvimento sempre alinhado às necessidades mais atuais;",
+              "i) Liberação de Software com Frequência — entregar versões funcionais do software ao cliente com regularidade, permitindo feedback e solicitação de alterações, mantendo o cliente envolvido e informado."
+            ]
+          },
+          {
+            tipo: "subtitulo",
+            texto: "Vantagens e Implementações do XP"
+          },
+          {
+            tipo: "texto",
+            texto: "Embora o XP seja frequentemente associado a projetos de grande porte, seus princípios podem ser adaptados a diferentes contextos e tamanhos de equipe. Empresas como **Google**, **Spotify** e **ThoughtWorks** já colhem os frutos da adoção do XP, relatando maior agilidade, qualidade de software aprimorada e equipes mais engajadas."
+          },
+          {
+            tipo: "citacao",
+            texto: "O sucesso do XP reside na sua capacidade de promover flexibilidade, adaptabilidade e foco no cliente. Através de um ciclo de desenvolvimento contínuo e da valorização da comunicação e do feedback, o XP permite que as equipes de software respondam às mudanças com rapidez e entreguem produtos que realmente atendam às necessidades dos usuários."
+          },
+          {
+            tipo: "subtitulo",
+            texto: "Comparativo entre Scrum e Extreme Programming"
+          },
+          {
+            tipo: "texto",
+            texto: "O XP é apresentado como **ideal para projetos que exigem alta qualidade de software e adaptabilidade a mudanças frequentes**, com um ambiente flexível e tecnicamente robusto. Já o Scrum é mais adequado para **projetos com requisitos bem definidos e necessidade de entregas em prazos fixos**, com uma abordagem gerencial estruturada, focada em organização e comunicação da equipe."
+          },
+          {
+            tipo: "tabela",
+            titulo: "Quadro 2 – Comparativo entre Métodos XP e Scrum (página 22)",
+            colunas: ["Critério", "Extreme Programming (XP)", "Scrum"],
+            linhas: [
+              ["Foco", "Mergulha na engenharia de software, priorizando práticas técnicas rigorosas para garantir a qualidade do código e a entrega de um produto robusto.", "Assume uma visão mais gerencial, estruturando o fluxo de trabalho em sprints e definindo papéis como Product Owner e Scrum Master para facilitar a organização e a comunicação."],
+              ["Planejamento", "Abraça o planejamento adaptativo, ajustando prioridades e escopo conforme o feedback e as necessidades do cliente.", "Baseia-se em um backlog de produto priorizado, definindo no início do sprint quais funcionalidades serão desenvolvidas, com pouca flexibilidade para alterações durante o ciclo."],
+              ["Ciclos de Desenvolvimento", "Utiliza ciclos curtos de desenvolvimento, com entregas frequentes de versões funcionais do software.", "Emprega sprints de duração fixa, geralmente entre 1 e 4 semanas, com entregas ao final de cada um."],
+              ["Métricas", "Valoriza métricas como velocidade de desenvolvimento, testes unitários e cobertura de código.", "Foca em métricas como velocidade de entrega, burndown chart e impedimentos."],
+              ["Reuniões", "Realiza reuniões frequentes e informais, como reuniões de stand-up e planejamento diário.", "Possui um conjunto definido de reuniões cerimoniais (sprint planning, sprint review, sprint retrospective) para marcar início, meio e fim do sprint."]
+            ]
+          },
+          {
+            tipo: "texto",
+            texto: "Fonte: Autores (2024)."
+          },
+          {
+            tipo: "destaque",
+            texto: "Nota importante para revisão: embora a coluna \"Foco\" do quadro descreva o XP como voltado à engenharia técnica e o Scrum como voltado à visão gerencial, essa é exatamente a distinção central entre os dois métodos explorada ao longo de todo o capítulo — o XP complementa o Scrum tecnicamente, enquanto o Scrum organiza o processo gerencialmente. Muitas equipes, inclusive, combinam práticas dos dois métodos (como fez a UFC, citada anteriormente, que usou Scrum + práticas como BDD, testes unitários e programação em par)."
+          }
+        ]
+      },
+      {
+        id: "outros_metodos",
+        titulo: "Conteúdo Complementar — Outros Métodos Ágeis",
+        blocos: [
+          {
+            tipo: "texto",
+            texto: "Conforme as Considerações Finais do material, além do Scrum e do XP existem outros métodos ágeis relevantes no desenvolvimento de software:"
+          },
+          {
+            tipo: "lista",
+            itens: [
+              "Pair Programming (Programação em Pares): técnica em que dois programadores trabalham juntos na mesma estação de trabalho. Um escreve o código (driver) enquanto o outro revisa cada linha à medida que é escrita (observer/navigator); os papéis podem ser trocados frequentemente. Promove colaboração, troca de conhecimento e revisão contínua do código, resultando em software de maior qualidade e menos bugs, além de disseminar conhecimento entre a equipe. É uma das práticas centrais do XP e reflete os valores ágeis de comunicação e trabalho em equipe.",
+              "Kanban: foca na visualização do fluxo de trabalho e na limitação do trabalho em progresso para otimizar a eficiência.",
+              "Lean: derivado dos princípios de manufatura enxuta, busca eliminar desperdícios e otimizar processos.",
+              "DevOps: integra desenvolvimento e operações, visando acelerar a entrega de software com maior confiabilidade."
+            ]
+          }
+        ]
+      },
+      {
+        id: "resumo_final",
+        titulo: "Resumo Final para Revisão Rápida",
+        blocos: [
+          {
+            tipo: "lista",
+            itens: [
+              "Métodos Ágeis: abordagens iterativas e incrementais que priorizam colaboração, flexibilidade e entrega contínua de valor, em contraste com métodos tradicionais lineares (Waterfall, V-Model, RUP).",
+              "Manifesto Ágil (2001): define 4 valores (indivíduos/interações > processos/ferramentas; software funcionando > documentação; colaboração com cliente > negociação de contratos; responder a mudanças > seguir um plano) e 12 princípios.",
+              "História: métodos ágeis surgiram nos anos 1990 como reação à rigidez do Waterfall. Scrum → Ken Schwaber e Jeff Sutherland. XP → Kent Beck e Ward Cunningham.",
+              "Ferramentas/frameworks complementares: Kanban (visualização do fluxo), Lean (eliminação de desperdícios), DevOps (integração dev + operações).",
+              "Exemplos de adoção: empresas de tecnologia (Spotify, Netflix, ThoughtWorks), tradicionais (Itaú, Volkswagen, Philips), startups (Nubank, QuintoAndar, Rappi) e instituições governamentais brasileiras (Ministério da Economia, TCU, Prefeitura de SP), além do caso da UFC (Ambiente Solar, 2010–2016)."
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Scrum",
+            lista: [
+              "Baseado em sprints (1 a 4 semanas) e em 3 pilares: transparência, inspeção, adaptação.",
+              "4 papéis: Product Owner, Scrum Master, Time de Desenvolvimento, Stakeholders.",
+              "Artefatos: Sprint Backlog (quadro To-Do/Doing/Done) e Burndown Chart (Linha Ideal vs. Linha Real de trabalho restante, em pontos de complexidade).",
+              "4 cerimônias: Scrum Daily, Sprint Planning, Sprint Review, Sprint Retrospective.",
+              "Incentiva quadros físicos e reuniões presenciais, mesmo com uso de softwares como Pivotal Tracker, Trello ou Jira."
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Extreme Programming (XP)",
+            lista: [
+              "Criado por Kent Beck durante o projeto C3 (Chrysler).",
+              "5 valores: comunicação, simplicidade, feedback, coragem, respeito.",
+              "9 práticas principais: ciclos curtos, programação em pares, testes unitários, refatoração, integração contínua, metáfora da sala de reuniões, histórias de usuário, planejamento em tempo real, liberação frequente de software."
+            ]
+          },
+          {
+            tipo: "lista",
+            itens: [
+              "Scrum x XP: Scrum tem foco gerencial (papéis, sprints fixos, cerimônias); XP tem foco técnico/engenharia (qualidade de código, práticas técnicas, planejamento adaptativo, reuniões informais).",
+              "Pair Programming: prática central do XP — driver (escreve) + observer/navigator (revisa), com troca frequente de papéis.",
+              "Aprender métodos ágeis é considerado crucial para profissionais de software, pois promove flexibilidade, adaptabilidade, foco no cliente, maior qualidade e melhor organização das equipes diante da complexidade dos projetos."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+
+  //aula 5
+  {
+  aula: "Análise de Requisitos",
+  ideia_central: "A Análise de Requisitos é o processo de elicitar (descobrir), analisar (organizar e priorizar) e classificar as necessidades dos stakeholders em Requisitos Funcionais (o que o sistema faz) e Requisitos Não Funcionais (as qualidades que o sistema deve ter), sendo a base para o sucesso de qualquer projeto de software.",
   secoes: [
     {
       id: "visao_geral",
@@ -2303,516 +2874,434 @@ secoes: [
       blocos: [
         {
           tipo: "texto",
-          texto: "O material trata dos **Métodos Ágeis** como abordagens iterativas e incrementais para o desenvolvimento de software, contrapondo-as aos **métodos tradicionais** (como Waterfall). O conteúdo está organizado em três grandes blocos:"
+          texto: "Este módulo trata do processo de **Análise de Requisitos** no desenvolvimento de *software*, cobrindo três grandes blocos de conteúdo, na mesma ordem em que aparecem no material:"
         },
         {
           tipo: "lista",
           itens: [
-            "Fundamentos dos Métodos Ágeis — o que são, sua origem histórica, o Manifesto Ágil (valores e princípios), a comparação com métodos tradicionais e exemplos reais de empresas e instituições que os adotam.",
-            "Scrum — uma metodologia de gerenciamento de projetos baseada em sprints, detalhando seus pilares, papéis, artefatos (Sprint Backlog e Burndown Chart) e reuniões (cerimônias).",
-            "Extreme Programming (XP) — um método ágil focado em práticas técnicas de engenharia de software, com seus valores, práticas específicas e comparação direta com o Scrum."
+            "**Elicitação e Análise de Requisitos** – como descobrir, entender, organizar e priorizar as necessidades dos *stakeholders* (interessados no sistema), incluindo exemplos práticos (Sistema de Gerenciamento de Projetos e E-commerce), o conceito de MVP (Produto Mínimo Viável) e as ferramentas/técnicas usadas nesse processo.",
+            "**Requisitos Funcionais** – o que o sistema deve fazer, com foco em *User Stories*, critérios de aceitação, priorização de requisitos e a discussão sobre Escopo Fixo x Escopo Variado, ilustrados com o exemplo de um Sistema de Prontuário Eletrônico.",
+            "**Requisitos Não Funcionais** – as características de qualidade que o sistema deve possuir (desempenho, segurança, confiabilidade, usabilidade, escalabilidade, manutenibilidade, compatibilidade), também exemplificados com o Prontuário Eletrônico."
           ]
         },
         {
           tipo: "texto",
-          texto: "Esses três blocos se relacionam porque o Scrum e o XP são apresentados como **duas aplicações concretas** dos princípios gerais dos métodos ágeis: o Scrum com um viés mais **gerencial/organizacional**, e o XP com um viés mais **técnico/de engenharia de código**. O objetivo declarado do módulo é capacitar o leitor a entender os métodos ágeis, conhecer o Scrum e conhecer o XP."
+          texto: "A lógica geral do módulo é: primeiro descobrimos **o que os stakeholders precisam** (elicitação), depois **organizamos e refinamos** essas informações (análise), e então **classificamos** o resultado em requisitos funcionais (o que o sistema faz) e requisitos não funcionais (como o sistema deve se comportar em termos de qualidade). Essas duas categorias são apresentadas como complementares e igualmente importantes — comparadas, no material, à \"melodia principal\" e à \"harmonia\" de uma música."
         }
       ]
     },
     {
-      id: "fundamentos",
-      titulo: "Fundamentos dos Métodos Ágeis",
+      id: "conceitos_principais",
+      titulo: "Conceitos Principais",
       blocos: [
         {
           tipo: "subtitulo",
-          texto: "O que são Métodos Ágeis"
+          texto: "O que são Requisitos"
         },
         {
           tipo: "texto",
-          texto: "Os **Métodos Ágeis** são abordagens **iterativas e incrementais** para o desenvolvimento de software que priorizam:"
-        },
-        {
-          tipo: "lista",
-          itens: [
-            "Colaboração",
-            "Flexibilidade",
-            "Entrega contínua de valor ao cliente"
-          ]
+          texto: "Os **Requisitos** são definidos como as expectativas e necessidades dos ***stakeholders*** — ou seja, de todos os que têm interesse no sistema: usuários, clientes, desenvolvedores, gestores e até o próprio sistema. Eles são a base fundamental para o sucesso de qualquer projeto de *software*, pois garantem que o sistema atenda às necessidades de todos os envolvidos."
         },
         {
           tipo: "texto",
-          texto: "Diferentemente dos métodos tradicionais — que seguem um processo **linear e rigidamente estruturado** — os métodos ágeis permitem **adaptações frequentes e rápidas** às mudanças nas necessidades dos clientes e no ambiente do projeto."
-        },
-        {
-          tipo: "texto",
-          texto: "Essa abordagem parte de um conjunto de princípios voltados a melhorar a eficiência e a eficácia do desenvolvimento de software:"
-        },
-        {
-          tipo: "lista",
-          itens: [
-            "Entrega contínua de software funcional, em intervalos regulares (sprints/iterações curtas), permitindo feedback constante e ajustes rápidos;",
-            "Colaboração com o cliente durante todo o processo, garantindo que suas necessidades sejam atendidas;",
-            "Adaptação à mudança, permitindo respostas rápidas a alterações nos requisitos;",
-            "Trabalho em equipe, promovendo um ambiente cooperativo e aberto."
-          ]
+          texto: "O material reforça um ponto importante: quando se fala em \"clientes\" ou \"*stakeholders*\", **não se trata apenas de gerentes ou administradores** responsáveis pelo setor da empresa onde o sistema será usado. Refere-se também — e principalmente — **aos que efetivamente vão usar o sistema no dia a dia**, pois são esses usuários reais que têm a vivência do negócio e, portanto, são essenciais para entender as necessidades de automatização de processos e de facilitação da tomada de decisão."
         },
         {
           tipo: "subtitulo",
-          texto: "O Manifesto Ágil (2001)"
+          texto: "Elicitação de Requisitos"
         },
         {
           tipo: "texto",
-          texto: "Criado em 2001 por um grupo de desenvolvedores experientes, o **Manifesto Ágil** estabelece **quatro valores fundamentais** e **doze princípios** que orientam as práticas ágeis, servindo de base para todos os métodos ágeis."
+          texto: "A **elicitação** é descrita como \"a arte de descobrir, ouvir e entender os requisitos de todas as partes interessadas no projeto\". É a etapa em que se descobre **o que o sistema realmente precisa fazer**, por meio de técnicas como entrevistas, questionários, *workshops* e observação, mapeando as necessidades, desejos e \"sonhos\" que o *software* deve realizar."
         },
         {
-          tipo: "tabela",
-          titulo: "Os quatro valores fundamentais do Manifesto Ágil",
-          colunas: ["Valor", "Explicação"],
-          linhas: [
-            ["Indivíduos e interações mais que processos e ferramentas", "Valoriza a comunicação e a colaboração entre pessoas acima de processos rígidos."],
-            ["Software em funcionamento mais que documentação abrangente", "Prioriza a entrega de software funcional em vez de extensa documentação."],
-            ["Colaboração com o cliente mais que negociação de contratos", "Enfatiza a colaboração contínua com o cliente para garantir que o produto atenda às suas necessidades."],
-            ["Responder a mudanças mais que seguir um plano", "Reconhece que mudanças são inevitáveis; é mais importante ser adaptável do que seguir um plano inflexível."]
+          tipo: "subtitulo",
+          texto: "Análise de Requisitos"
+        },
+        {
+          tipo: "texto",
+          texto: "Uma vez que os requisitos brutos são coletados na elicitação, a **análise** entra em cena para:"
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "refinar, organizar e estruturar as informações",
+            "cruzar os dados",
+            "identificar inconsistências",
+            "priorizar as necessidades",
+            "definir as funcionalidades essenciais do *software*"
           ]
         },
         {
           tipo: "texto",
-          texto: "Esse documento é considerado crucial para os métodos ágeis, pois fornece diretrizes que ajudam as equipes a serem mais **flexíveis, colaborativas e focadas** na entrega contínua de valor."
+          texto: "O material usa a metáfora de \"lapidar uma pedra preciosa, revelando sua verdadeira essência\" para descrever esse processo."
         },
         {
-          tipo: "lista",
-          titulo: "Os doze princípios do Manifesto Ágil",
-          itens: [
-            "a) Satisfazer o cliente através da entrega contínua e adiantada de software de valor;",
-            "b) Aceitar mudanças de requisitos, mesmo no final do desenvolvimento;",
-            "c) Entregar software funcional frequentemente, com preferência por iterações curtas;",
-            "d) Trabalho diário em conjunto entre desenvolvedores e stakeholders;",
-            "e) Construir projetos em torno de indivíduos motivados, dando-lhes ambiente e suporte necessários;",
-            "f) A conversa face a face é o método mais eficiente e eficaz de transmitir informações;",
-            "g) Software funcional é a medida primária de progresso;",
-            "h) Promover o desenvolvimento sustentável, mantendo um ritmo constante indefinidamente;",
-            "i) Excelência técnica e bom design aumentam a agilidade;",
-            "j) Simplicidade é essencial — maximizar a quantidade de trabalho **não** realizado;",
-            "k) As melhores arquiteturas, requisitos e designs emergem de equipes auto-organizadas;",
-            "l) Refletir regularmente sobre como se tornar mais eficaz, ajustando o comportamento conforme necessário."
+          tipo: "subtitulo",
+          texto: "As Duas Categorias de Requisitos"
+        },
+        {
+          tipo: "texto",
+          texto: "Os requisitos se dividem em duas categorias principais, apresentadas em um quadro comparativo no PDF:"
+        },
+        {
+          tipo: "tabela",
+          titulo: "Categorias de Requisitos",
+          colunas: ["Categoria", "Definição", "Metáfora usada no PDF"],
+          linhas: [
+            ["Requisitos Funcionais", "Definem o que o *software* deve fazer, as suas funcionalidades, e como ele deve interagir com o usuário.", "\"A melodia principal da sinfonia do software\""],
+            ["Requisitos Não Funcionais", "Descrevem as características que o *software* deve ter, como performance, segurança, usabilidade, confiabilidade e escalabilidade.", "\"A harmonia que completa a música\""]
           ]
         },
         {
           tipo: "imagem",
-          src: "ilustracao_equipe_colaborativa.png",
-          pasta: "imagens_analise_projeto\\aula_04",
-          alt: "Ilustração de equipe trabalhando de forma colaborativa, associada ao trecho sobre comparação entre métodos ágeis e tradicionais (página 07).",
+          id: "representacao_visual_comparacao_requisitos_funcionais_nao_funcionais",
+          src: "representacao_visual_comparacao_requisitos_funcionais_nao_funcionais.png",
+          pasta: "imagens_analise_projeto\\aula_05",
+          alt: "Dois quadros lado a lado, cada um com um ícone (pessoa / engrenagem com \"</>\"), contrastando visualmente requisitos funcionais e não funcionais como categorias complementares",
           num: 1
         },
         {
-          tipo: "texto",
-          texto: "Explicação da imagem (página 07; parte do conteúdo: Comparação entre métodos ágeis e tradicionais): a imagem, de caráter ilustrativo, acompanha um bloco de texto em destaque que resume a essência dos métodos ágeis — a prioridade é o envolvimento ativo do cliente e a colaboração intensa entre os membros da equipe de desenvolvimento; a flexibilidade e a adaptabilidade são características centrais, permitindo respostas rápidas a mudanças. O texto reforça que a adoção dos métodos ágeis se expandiu ao longo dos anos, impulsionada por benefícios como maior agilidade, flexibilidade e entrega de valor ao cliente de forma mais eficiente."
-        },
-        {
           tipo: "subtitulo",
-          texto: "História dos Métodos Ágeis"
+          texto: "Benefícios de Investir em Elicitação e Análise de Requisitos"
         },
         {
           tipo: "texto",
-          texto: "Os métodos ágeis emergiram como **resposta à rigidez dos modelos tradicionais**, como o Waterfall, que limitavam a flexibilidade e a adaptabilidade nos projetos de software."
+          texto: "O PDF lista os seguintes benefícios de um bom processo de elicitação e análise:"
         },
         {
           tipo: "lista",
           itens: [
-            "Na década de 1990, essa busca por alternativas mais dinâmicas impulsionou o desenvolvimento de novas metodologias.",
-            "Ken Schwaber e Jeff Sutherland lideraram o desenvolvimento do Scrum.",
-            "Kent Beck e Ward Cunningham criaram o Extreme Programming (XP).",
-            "Essas e outras abordagens focaram em ciclos de desenvolvimento iterativos e incrementais, priorizando entregas frequentes em pequenos pedaços, permitindo feedbacks e adaptações constantes."
+            "**Redução de retrabalho e custos**: evita o desenvolvimento de funcionalidades desnecessárias ou que não atendem às expectativas dos usuários.",
+            "**Melhoria da qualidade do software**: atende às necessidades reais dos usuários, com menos *bugs* e falhas.",
+            "**Aumento da satisfação do cliente**: o software entrega valor real e atende às expectativas.",
+            "**Melhoria da comunicação e colaboração da equipe**: todos têm entendimento claro dos requisitos e trabalham juntos.",
+            "**Maior agilidade no desenvolvimento**: o foco nas necessidades reais dos usuários permite um desenvolvimento mais rápido e eficiente."
           ]
         },
         {
+          tipo: "subtitulo",
+          texto: "Ferramentas e Técnicas de Elicitação e Análise de Requisitos"
+        },
+        {
+          tipo: "topico",
+          titulo: "Técnicas",
+          lista: [
+            "**Entrevistas** – conversas individuais ou em grupo para coletar informações detalhadas com *stakeholders*",
+            "**Questionários** – coleta estruturada de dados de um grupo maior de *stakeholders*",
+            "**Workshops** – sessões colaborativas para discutir e refinar os requisitos com a equipe"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Ferramentas",
+          lista: [
+            "**Diagrama de Casos de Uso** – representação visual das interações entre os usuários e o sistema",
+            "**Protótipos** – modelos interativos do *software* para auxiliar na visualização e validação dos requisitos",
+            "**Ferramentas CASE** – *softwares* especializados para gerenciamento e documentação de requisitos"
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "A elicitação e a análise de requisitos são processos **dinâmicos e contínuos**. Novos requisitos podem surgir ao longo do projeto, e os existentes podem ser revisados e ajustados. A chave para o sucesso é manter a comunicação aberta e a colaboração constante entre todos os envolvidos."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Requisitos Funcionais — Aprofundamento"
+        },
+        {
           tipo: "texto",
-          texto: "Com a evolução dos métodos ágeis, surgiram ferramentas e frameworks complementares:"
+          texto: "O processo de levantamento e análise de requisitos funcionais é descrito como **vital** para o bom entendimento do sistema — tanto a equipe técnica quanto os *stakeholders* precisam ter clareza sobre eles, pois tratam das funcionalidades que o sistema deverá possuir para solucionar o problema do cliente."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "User Stories (Histórias de Usuário)"
+        },
+        {
+          tipo: "texto",
+          texto: "As **User Stories** são apresentadas como uma técnica essencial para que a comunicação entre a equipe técnica e os clientes seja clara e objetiva. Elas permitem identificar:"
         },
         {
           tipo: "lista",
           itens: [
-            "Kanban — oferece visualização do fluxo de trabalho e limitação do trabalho em progresso para otimizar o processo;",
-            "Lean — foca na eliminação de desperdícios e na otimização do desenvolvimento;",
-            "DevOps — integra desenvolvimento e operações, visando entrega de software mais rápida e confiável."
+            "os usuários que deverão estar no sistema",
+            "os seus perfis de permissões para acesso às funcionalidades",
+            "como o usuário deve proceder para executar uma ação",
+            "com qual objetivo essa ação é executada"
           ]
         },
         {
-          tipo: "destaque",
-          texto: "Nota de rodapé do material: o DevOps não é apenas um conjunto de ferramentas/práticas, mas uma filosofia que engloba princípios e valores ágeis — embora essa descrição simplificada não seja falsa, apenas resumida."
-        },
-        {
-          tipo: "subtitulo",
-          texto: "Comparação entre Métodos Ágeis e Tradicionais"
+          tipo: "texto",
+          texto: "Tudo isso deve ser descrito em um **texto curto, claro e objetivo**, usando uma linguagem mais próxima do cliente do que do grupo técnico."
         },
         {
           tipo: "texto",
-          texto: "Os métodos tradicionais (**Waterfall, V-Model e RUP**) seguem uma sequência linear e estruturada, enquanto os métodos ágeis são iterativos e incrementais, permitindo maior flexibilidade e adaptabilidade."
+          texto: "O material destaca a importância de, nas *User Stories*, deixar claros os **campos de informação** em telas como cadastros ou autenticações (por exemplo, especificar que o usuário deve fornecer e-mail e senha para se autenticar). Isso ajuda desenvolvedores e *designers* de interação a saberem quais elementos devem estar presentes em determinada tela do sistema."
+        },
+        {
+          tipo: "texto",
+          texto: "Também é discutido que o uso do termo **\"tela do sistema\"** (ou \"tela do programa\") já representa uma **estratégia de análise baseada em abordagem visual**, em que o sistema é entendido tanto por desenvolvedores quanto por clientes a partir dos seus pontos de interação com o usuário — isto é, sua **interface com o usuário**. Essa estratégia permite discussões mais claras sobre as funcionalidades a partir das interfaces, tornando mais \"concretas\" definições que, de outra forma, seriam abstratas."
         },
         {
           tipo: "destaque",
-          texto: "Nota de rodapé sobre o V-Model: também conhecido como Modelo em V, é uma metodologia de desenvolvimento de software sequencial que se assemelha à forma da letra \"V\" quando representada em um gráfico. Essa estrutura visa garantir um ciclo de vida do software organizado e controlado, com foco na qualidade e na previsibilidade."
+          texto: "O processo de análise de requisitos pode parecer simples à primeira vista, mas essa simplicidade desaparece em sistemas muito complexos, com milhares ou dezenas de milhares de requisitos funcionais. Ajustar a comunicação entre desenvolvedores e clientes — evitando linguagem excessivamente técnica ou excessivamente ligada ao negócio do cliente — é essencial para obter bons resultados."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Priorização de Requisitos Funcionais"
+        },
+        {
+          tipo: "texto",
+          texto: "Outra questão central no levantamento de requisitos funcionais é a **definição de prioridades**:"
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "Algumas funcionalidades são **determinantes e urgentes**, precisando ser implementadas para que o sistema possa entrar em produção.",
+            "Outras funcionalidades podem esperar para um **futuro próximo**, por se tratarem de processos que podem ser automatizados depois, ou melhorias de processo com urgência menor."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "O processo de priorização exige **intensa comunicação** entre a equipe técnica e os clientes, sendo fundamental para a criação do **cronograma de desenvolvimento do sistema**."
+        },
+        {
+          tipo: "texto",
+          texto: "O **cronograma** permite que gerentes e diretores acompanhem quando o *software* será adotado na instituição, e serve também, no caso de equipes terceirizadas, para definir os **contratos de prestação de serviço**. Esses contratos costumam ser baseados no **Documento de Requisitos do Sistema**, que estabelece:"
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "as funcionalidades do sistema (**escopo do projeto**)",
+            "a descrição de cada funcionalidade",
+            "as prioridades",
+            "o cronograma de entrega"
+          ]
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Escopo Fixo x Escopo Variado (opinião do autor Wellington W. F. Sarmento)"
+        },
+        {
+          tipo: "texto",
+          texto: "Em um boxe de \"Parada Obrigatória\" assinado pelo autor **Wellington W. F. Sarmento**, é discutida a questão de qual seria a melhor forma de definir o escopo de um projeto de *software*:"
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "O autor defende que o escopo do projeto **deve ser flexível** e discutido em diferentes momentos de iteração da produção do *software*, pois, por mais que se tente esgotar as funcionalidades na análise, **novas necessidades podem surgir** durante o desenvolvimento e o uso do sistema. Mudanças no negócio da empresa e nas prioridades gerenciais também podem ocorrer.",
+            "Embora o processo de criação de *software* seja chamado de \"engenharia de software\" (sugerindo um processo racional, preciso, formal e procedimental), o autor argumenta que **não é possível ter o mesmo nível de precisão** na estimativa de tempo que se tem, por exemplo, na construção de um parafuso ou de uma roda de carro — produtos mais simples, com dados e funcionalidades bem estabelecidos e claros. Já no *software*, as funcionalidades podem não ser tão claras, e os dados para sua criação muitas vezes estão na \"cabeça das pessoas\", em suas experiências e conhecimentos sobre o negócio.",
+            "Essa especificidade faz do *software* um \"produto peculiar\" em seu processo de construção. O autor usa a analogia de um **carro que mudaria constantemente** conforme surgem novas necessidades dos usuários e mudanças do mercado — mas que, em vez de ser trocado por outro, precisaria ser modificado continuamente."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "A partir dessa reflexão, são definidas duas filosofias contrapostas:"
         },
         {
           tipo: "tabela",
-          titulo: "Quadro 1 – Comparativo entre Métodos Tradicionais e Ágeis (página 08)",
-          colunas: ["Aspecto", "Métodos Tradicionais (Waterfall, V-Model, RUP)", "Métodos Ágeis"],
+          titulo: "Escopo Variado x Escopo Fixo",
+          colunas: ["Filosofia", "Definição"],
           linhas: [
-            ["Abordagem", "Sequencial e linear (Waterfall), iterativo fixo (V-Model), fases sobrepostas (RUP)", "Iterativa e incremental"],
-            ["Flexibilidade", "Baixa, devido à rigidez do planejamento", "Alta, com capacidade de adaptação rápida"],
-            ["Feedback do Cliente", "Limitado a fases específicas", "Contínuo e constante"],
-            ["Documentação", "Extensa e detalhada", "Suficiente para a necessidade atual"],
-            ["Entrega de Software", "Ao final do projeto", "Frequente, em pequenos incrementos"],
-            ["Gerenciamento de Riscos", "Antecipado e formalizado", "Contínuo, com respostas rápidas"],
-            ["Planejamento", "Extensivo no início do projeto", "Adaptável ao longo do projeto"],
-            ["Colaboração", "Menos ênfase na colaboração", "Forte ênfase na colaboração entre todos os membros da equipe"],
-            ["Mudança de Requisitos", "Dificilmente acomodada", "Facilmente acomodada"],
-            ["Qualidade", "Verificada ao final", "Verificada continuamente"]
+            ["Escopo Variado de Produto", "Definição de requisitos funcionais de forma mais flexível e iterativa. Abordagem associada aos **Métodos Ágeis** de projeto de sistemas. É a filosofia que o autor declara preferir."],
+            ["Escopo Fixo de Produto", "Os requisitos **não podem ser modificados** no decorrer do desenvolvimento; o escopo (as funcionalidades) não pode ser redimensionado ou eliminado."]
           ]
-        },
-        {
-          tipo: "texto",
-          texto: "Fonte: Autores (2024)."
         },
         {
           tipo: "subtitulo",
-          texto: "Exemplos de Utilização de Métodos Ágeis"
+          texto: "Critérios de Aceitação"
         },
         {
           tipo: "texto",
-          texto: "O material apresenta uma coletânea de organizações, de diferentes setores, que adotam métodos ágeis, demonstrando que a adoção não se limita a um único tipo de empresa."
+          texto: "Os **critérios de aceitação** são definidos como um conjunto de condições que um *software* deve cumprir para ser aceito pelo cliente, usuário ou equipe de desenvolvimento. Eles definem o comportamento esperado e as funcionalidades que a *User Story* deve atender para ser considerada completa e funcional. Servem também como base para **validação e testes** do *software*, garantindo que a implementação está correta e conforme o esperado."
         },
         {
-          tipo: "lista",
-          titulo: "Empresas de Tecnologia",
-          itens: [
-            "Spotify — utiliza o Scrum para gerenciar o desenvolvimento de produtos, com sprints curtos e entregas frequentes, respondendo rapidamente às necessidades dos usuários.",
-            "Netflix — também adota o Scrum, focando na colaboração entre equipes e na rápida entrega de melhorias.",
-            "ThoughtWorks (consultoria de software global) — utiliza Scrum e Kanban, mantendo altos padrões de qualidade e eficiência."
+          tipo: "topico",
+          titulo: "Características dos Critérios de Aceitação",
+          lista: [
+            "**Clareza** – devem ser claros e específicos, sem ambiguidades",
+            "**Mensuráveis** – devem ser possíveis de medir ou testar",
+            "**Relevantes** – devem estar diretamente relacionados à história de usuário",
+            "**Objetivos** – devem ser objetivos, de forma que todos os envolvidos concordem sobre o que significa cumprir o critério"
           ]
         },
         {
-          tipo: "lista",
-          titulo: "Empresas Tradicionais",
-          itens: [
-            "Banco Itaú — emprega o Scrum em projetos como aplicativos mobile e plataformas digitais, acelerando a entrega de funcionalidades.",
-            "Volkswagen — adota Scrum e Kanban para gerenciar o desenvolvimento de software embarcado em veículos.",
-            "Philips — utiliza métodos ágeis no desenvolvimento de produtos de saúde e eletrodomésticos inteligentes."
-          ]
+          tipo: "subtitulo",
+          texto: "Requisitos Não Funcionais — Aprofundamento"
+        },
+        {
+          tipo: "texto",
+          texto: "Os **Requisitos Não Funcionais** desempenham papel crucial na definição das qualidades e restrições do sistema, garantindo que ele não apenas funcione corretamente, mas também atenda a diversos padrões de qualidade e desempenho. O PDF detalha cada característica:"
         },
         {
           tipo: "lista",
-          titulo: "Startups",
           itens: [
-            "Nubank — referência no uso de métodos ágeis, com foco em experimentação e rápida entrega de produtos/serviços.",
-            "QuintoAndar — usa Scrum para gerenciar o desenvolvimento de app e plataforma web.",
-            "Rappi — emprega métodos ágeis para escalar operações rapidamente."
+            "**Desempenho**: aspecto vital, assegura que o sistema responda rapidamente às solicitações dos usuários e possa lidar com múltiplas operações simultâneas sem degradação perceptível.",
+            "**Segurança**: área crítica, exige medidas robustas para proteger os dados contra acesso não autorizado, perda e roubo. Inclui **controle de acesso baseado em papéis** (apenas usuários autenticados e autorizados acessam dados sensíveis), garantindo a confidencialidade das informações.",
+            "**Confiabilidade**: refere-se à capacidade do sistema de estar disponível e funcional pelo menos **99,9% do tempo**, excluindo períodos de manutenção programada, garantindo que os usuários possam depender do sistema sem interrupções inesperadas.",
+            "**Usabilidade**: exige que a interface do usuário seja intuitiva e fácil de usar, permitindo que profissionais utilizem o sistema sem necessidade de treinamento extensivo.",
+            "**Escalabilidade**: assegura que o sistema possa crescer e se adaptar a um aumento no número de usuários e registros sem perda de desempenho.",
+            "**Manutenibilidade**: garante que o sistema seja fácil de manter e atualizar, com documentação completa e clara do código e das funcionalidades.",
+            "**Compatibilidade**: exige que o sistema seja acessível a partir de diferentes dispositivos e navegadores (*desktops*, *tablets*, *smartphones*), assegurando experiência de usuário consistente e eficiente."
           ]
         },
         {
+          tipo: "texto",
+          texto: "O PDF conclui que esses requisitos formam a **base para um software robusto**, capaz de evoluir e se adaptar às necessidades futuras dos usuários e das empresas."
+        }
+      ]
+    },
+    {
+      id: "formulas_metodos",
+      titulo: "Fórmulas e Métodos",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O PDF não apresenta fórmulas matemáticas. Os únicos valores quantitativos concretos mencionados são **metas de qualidade**, já descritas nas seções de requisitos não funcionais:"
+        },
+        {
           tipo: "lista",
-          titulo: "Instituições Governamentais Brasileiras",
           itens: [
-            "Ministério da Economia do Brasil — adota métodos ágeis em alguns projetos de desenvolvimento de software.",
-            "Tribunal de Contas da União (TCU) — usa Scrum para gerenciar o desenvolvimento de sistemas internos, com foco em qualidade e segurança da informação.",
-            "Prefeitura de São Paulo — aplica métodos ágeis no desenvolvimento de aplicativos e plataformas digitais."
+            "**Confiabilidade/Disponibilidade**: sistema deve estar disponível e funcional pelo menos **99,9% do tempo** (excluindo manutenção programada).",
+            "**Desempenho** (no exemplo do Prontuário Eletrônico – Quadro 4): o sistema deve responder às solicitações dos usuários em **menos de 2 segundos** durante operações normais."
+          ]
+        }
+      ]
+    },
+    {
+      id: "exemplos",
+      titulo: "Exemplos Explicativos",
+      blocos: [
+        {
+          tipo: "exemplo",
+          titulo: "Exemplo 1 – Desenvolvendo um Sistema de Gerenciamento de Projetos",
+          texto: "**Elicitação** – Por meio de entrevistas com gerentes de projeto, foram identificadas as seguintes necessidades: a) Criar, editar e excluir projetos; b) Atribuir tarefas aos membros da equipe; c) Definir prazos e acompanhar o progresso das tarefas; d) Gerar relatórios de status do projeto. **Análise de Requisitos** – Os requisitos foram organizados em categorias funcionais (criar projeto, editar projeto e afins) e não funcionais (segurança, usabilidade, performance). Os requisitos críticos para o **MVP** (*Minimum Viable Product*) foram priorizados. O resultado está no Quadro 1, apresentado a seguir.",
+          detalhe: "Fonte: Autores (2024)."
+        },
+        {
+          tipo: "tabela",
+          titulo: "Quadro 1 – Requisitos Funcionais e não funcionais do sistema",
+          colunas: ["Identificador", "Requisito", "Descrição"],
+          linhas: [
+            ["Funcionais", "", ""],
+            ["RF0001", "Criar Projeto", "Permitir aos usuários criarem novos projetos inserindo nome, descrição, prazo e membros da equipe."],
+            ["RF0002", "Editar Projeto", "Permitir a edição de informações de projetos existentes, como nome, descrição, prazo e membros."],
+            ["RF0003", "Excluir Projeto", "Permitir a exclusão de projetos que não são mais necessários."],
+            ["RF0004", "Atribuir Tarefas", "Permitir a atribuição de tarefas específicas aos membros da equipe."],
+            ["RF0005", "Definir Prazos", "Definir prazos para cada tarefa e para o projeto como um todo."],
+            ["RF0006", "Acompanhar Progresso das Tarefas", "Visualizar o status atual das tarefas, incluindo tarefas concluídas, em andamento e pendentes."],
+            ["RF0007", "Gerar Relatórios de Status do Projeto", "Gerar relatórios detalhados sobre o status do projeto, incluindo progresso das tarefas e cumprimento de prazos."],
+            ["Não Funcionais", "", ""],
+            ["RF0001", "Segurança", "Implementar controle de acesso baseado em papéis, garantindo que apenas usuários autorizados possam criar, editar ou excluir projetos e tarefas."],
+            ["RF0002", "Usabilidade", "Interface intuitiva e fácil de usar para garantir que os usuários possam realizar suas tarefas sem dificuldade."],
+            ["RF0003", "Performance", "O sistema deve ser capaz de lidar com múltiplos projetos e tarefas simultaneamente, sem degradação perceptível de desempenho."],
+            ["RF0004", "Escalabilidade", "O sistema deve ser escalável para suportar um número crescente de usuários e projetos."],
+            ["RF0005", "Confiabilidade", "Garantir que o sistema esteja disponível e funcional pelo menos 99,9% do tempo."]
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "Observação do PDF original: a numeração dos identificadores dos requisitos não funcionais reinicia em \"RF0001\", coexistindo com os identificadores dos requisitos funcionais (que também começam em RF0001). Essa é uma característica do documento original, mantida fielmente."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "MVP (Minimum Viable Product) – Exemplo Prático no Scrum"
+        },
+        {
+          tipo: "texto",
+          texto: "Em um boxe de \"Parada Obrigatória\", o material aprofunda o conceito de **MVP** com um exemplo prático. O **Minimum Viable Product (MVP)**, ou **Produto Mínimo Viável**, é a versão mais simples e funcional de um produto, desenvolvida com o mínimo de esforço e tempo necessários para testar uma ideia no mercado. Seu objetivo principal é **validar hipóteses de negócio**, entender a aceitação do produto pelos usuários e coletar *feedback* valioso para aprimoramentos futuros, com o menor investimento possível."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Event Planner (software de gerenciamento de eventos)",
+          texto: "**Objetivo do produto**: ajudar os usuários a planejar, organizar e gerenciar eventos de forma eficiente. **Funcionalidades principais identificadas**: criação de eventos, gestão de convidados, criação e atribuição de tarefas, e envio de convites por e-mail."
+        },
+        {
+          tipo: "topico",
+          titulo: "Ordem de construção do MVP (por prioridade)",
+          lista: [
+            "Criação de eventos — permitindo inserir título, data, hora e descrição do evento",
+            "Gestão de convidados — possibilitando a inserção de nomes e e-mails",
+            "Criação e atribuição de tarefas — permitindo criar tarefas relacionadas ao evento e atribuí-las aos membros da equipe",
+            "Sistema de envio de convites por e-mail para os convidados"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Processo Scrum aplicado ao MVP",
+          lista: [
+            "Após cada *sprint*, a equipe Scrum realiza uma **Sprint Review** para coletar *feedback* dos usuários sobre as funcionalidades implementadas (facilidade de uso da criação de eventos, efetividade da gestão de convidados, utilidade da criação/atribuição de tarefas e funcionamento do envio de convites).",
+            "Com base nesse *feedback*, a equipe **ajusta o backlog** do produto, prioriza melhorias e adiciona novas funcionalidades para os próximos *sprints*.",
+            "O MVP no contexto do Scrum envolve a **implementação incremental** das funcionalidades essenciais, com foco na entrega rápida de valor ao usuário e na coleta contínua de *feedback*. Cada *sprint* adiciona uma camada de funcionalidade, permitindo ajustes baseados nas respostas dos usuários até alcançar uma versão completa e refinada do produto."
           ]
         },
         {
           tipo: "exemplo",
-          titulo: "Caso adicional — Universidade Federal do Ceará (UFC)",
-          texto: "A UFC desenvolveu uma versão completamente nova do seu Ambiente Virtual de Aprendizagem, o Solar, utilizando Scrum e práticas ágeis como Behavior Driven Development (BDD), testes unitários e programação em par.",
-          detalhe: "Essa filosofia foi mantida entre 2010 e 2016; após esse período, devido a problemas internos e desfalques na equipe, as práticas foram abandonadas."
-        }
-      ]
-    },
-    {
-      id: "scrum",
-      titulo: "SCRUM",
-      blocos: [
-        {
-          tipo: "subtitulo",
-          texto: "Definição e Pilares"
-        },
-        {
-          tipo: "texto",
-          texto: "O **Scrum** é uma metodologia de gerenciamento de projetos (de software) baseada em **ciclos curtos de desenvolvimento**, chamados **sprints**. Cada sprint tipicamente dura de **1 a 4 semanas** e possui um conjunto específico de objetivos que a equipe busca completar. Ao longo do sprint, a equipe trabalha colaborativamente para entregar valor ao cliente."
-        },
-        {
-          tipo: "destaque",
-          texto: "Nota de rodapé: sprints de uma semana são mais utilizadas em desenvolvimentos rápidos de pequenas aplicações; ciclos de 2 semanas são os mais comuns."
-        },
-        {
-          tipo: "lista",
-          titulo: "O Scrum é baseado em três pilares",
-          itens: [
-            "Transparência — todas as informações do projeto são visíveis para todos os membros da equipe e partes interessadas;",
-            "Inspeção — a equipe revisa regularmente seu progresso e identifica áreas de melhoria;",
-            "Adaptação — a equipe está disposta a mudar sua abordagem com base no feedback e em novas informações."
-          ]
+          titulo: "Exemplo 2 – Criando um E-commerce",
+          texto: "**Elicitação** – Realizada por meio de *workshops* com clientes e vendedores, para entender suas expectativas: a) Interface amigável e intuitiva para navegação e compra; b) Catálogo de produtos com fotos, descrições e preços detalhados; c) Carrinho de compras seguro e eficiente; d) Diversas opções de pagamento e entrega; e) Sistema de avaliações e comentários dos produtos. **Análise de Requisitos** – Os requisitos foram refinados, definindo funcionalidades específicas (pesquisa por produto, filtro por categoria e afins) e priorizando as necessidades de cada grupo de *stakeholders* (clientes, vendedores)."
         },
         {
           tipo: "subtitulo",
-          texto: "Características do Scrum"
+          texto: "Exemplo (Requisitos Funcionais e Não Funcionais) – Sistema de Prontuário Eletrônico"
         },
         {
           tipo: "texto",
-          texto: "A divisão do projeto em sprints curtos permite maior flexibilidade e adaptabilidade às mudanças. As reuniões de sprint garantem comunicação e colaboração constantes entre a equipe, o Product Owner e os stakeholders. Papéis bem definidos facilitam o desenvolvimento das responsabilidades entre os membros."
+          texto: "Esse exemplo é utilizado tanto na seção de Requisitos Funcionais quanto na de Requisitos Não Funcionais do PDF, com a mesma elicitação servindo de base para as duas análises."
         },
         {
-          tipo: "subtitulo",
-          texto: "a) Atores-chave do Scrum"
-        },
-        {
-          tipo: "imagem",
-          src: "diagrama_atores_chave_scrum.png",
-          pasta: "imagens_analise_projeto\\aula_04",
-          alt: "Diagrama dos Atores Chave do Scrum: figura central (equipe/quadro de trabalho) conectada a quatro caixas — Product Owner, Scrum Master, Time de Desenvolvimento e Stakeholders (página 12).",
-          num: 2
-        },
-        {
-          tipo: "texto",
-          texto: "Explicação da imagem (página 12; parte do conteúdo: 2.1 Características do Scrum — Atores Chave do Scrum): o diagrama apresenta uma figura central (representando a equipe/quadro de trabalho) conectada, por meio de linhas, a quatro caixas de texto que descrevem os quatro papéis-chave do Scrum: (1) Product Owner (PO) — descrito como a \"voz\" do cliente no projeto, responsável por definir a visão do produto, priorizar os itens do backlog e garantir que o produto atenda às necessidades dos usuários; (2) Scrum Master (SM) — descrito como o guardião do processo Scrum, que facilita a implementação da metodologia, remove obstáculos para a equipe e garante que os princípios e valores do Scrum sejam seguidos; (3) Time de Desenvolvimento — descrito como a força motriz do projeto, composto por desenvolvedores, testadores e outros profissionais, responsável por transformar as ideias em um produto funcional e de alta qualidade; (4) Stakeholders — descritos como as partes interessadas no projeto, podendo incluir clientes, gerentes, investidores e qualquer outra pessoa com interesse no sucesso do projeto."
+          tipo: "exemplo",
+          titulo: "Elicitação e Análise – Prontuário Eletrônico",
+          texto: "**Elicitação** – Requisitos coletados de médicos, enfermeiros, pacientes e administradores do hospital: a) Cadastro e gestão de pacientes; b) Registro de consultas, histórico médico e exames; c) Prescrição de medicamentos e solicitação de exames; d) Integração com outros sistemas de saúde; e) Segurança robusta para proteger dados confidenciais. **Análise de Requisitos** – Durante a análise, foram consideradas as **exigências legais, éticas e de segurança da informação**, priorizando a **confidencialidade dos dados dos pacientes** e a **interoperabilidade** com outros sistemas."
         },
         {
           tipo: "tabela",
-          titulo: "Papéis do Scrum (resumo)",
-          colunas: ["Papel", "Função"],
+          titulo: "Quadro 2 – Requisitos Funcionais do Sistema (Prontuário Eletrônico)",
+          colunas: ["Identificador", "Descrição", "Prioridade"],
           linhas: [
-            ["Product Owner (PO)", "\"Voz\" do cliente; define a visão do produto, prioriza o backlog e garante que o produto atenda às necessidades dos usuários."],
-            ["Scrum Master (SM)", "Guardião do processo; facilita a implementação da metodologia, remove obstáculos e garante que os princípios do Scrum sejam seguidos."],
-            ["Time de Desenvolvimento", "Força motriz do projeto; composto por desenvolvedores, testadores e outros profissionais, transforma ideias em produto funcional."],
-            ["Stakeholders", "Partes interessadas no projeto (clientes, gerentes, investidores etc.)."]
+            ["RF0001", "**Cadastro de Pacientes**: Permitir o registro de novos pacientes com informações básicas (nome, idade, endereço, contatos e afins).", "Alta"],
+            ["RF0002", "**Gestão de Pacientes**: Permitir a atualização, edição e exclusão dos dados cadastrais dos pacientes.", "Alta"],
+            ["RF0003", "**Registro de Consultas**: Permitir o registro das consultas médicas com detalhes sobre o diagnóstico, procedimentos realizados e recomendações.", "Alta"],
+            ["RF0004", "**Histórico Médico**: Manter um histórico detalhado das consultas, diagnósticos, tratamentos e procedimentos médicos dos pacientes.", "Alta"],
+            ["RF0005", "**Registro de Exames**: Permitir o registro e visualização dos resultados de exames laboratoriais e de imagem.", "Média"],
+            ["RF0006", "**Prescrição de Medicamentos**: Permitir que os médicos registrem prescrições de medicamentos diretamente no sistema.", "Alta"],
+            ["RF0007", "**Solicitação de Exames**: Permitir que os médicos solicitem exames diretamente pelo sistema.", "Alta"],
+            ["RF0008", "**Integração com Sistemas de Saúde**: Garantir a interoperabilidade com outros sistemas de saúde, facilitando a troca de informações médicas.", "Média"],
+            ["RF0009", "**Controle de Acesso**: Implementar controle de acesso baseado em papéis para garantir que apenas usuários autorizados possam acessar ou modificar dados sensíveis.", "Alta"],
+            ["RF0010", "**Auditoria de Acessos**: Registrar todas as operações realizadas no sistema para fins de auditoria e controle de segurança.", "Alta"],
+            ["RF0011", "**Interface Amigável**: Desenvolver uma interface intuitiva e fácil de usar para médicos, enfermeiros e outros profissionais de saúde.", "Média"],
+            ["RF0012", "**Notificações**: Enviar notificações aos usuários sobre consultas agendadas, resultados de exames prontos, e atualizações de prescrições.", "Média"],
+            ["RF0013", "**Backup e Recuperação de Dados**: Garantir que os dados do sistema sejam regularmente copiados e possam ser recuperados em caso de falha.", "Alta"]
           ]
         },
         {
-          tipo: "subtitulo",
-          texto: "b) Artefatos Scrum: Sprint Backlog e Burndown Chart"
-        },
-        {
-          tipo: "texto",
-          texto: "Os artefatos do Scrum fornecem **visibilidade sobre o progresso do projeto**."
-        },
-        {
-          tipo: "texto",
-          texto: "**Sprint Backlog:** contém o fluxo de desenvolvimento das funcionalidades da aplicação. Na prática, é comum organizá-lo em um quadro com colunas:"
-        },
-        {
-          tipo: "lista",
-          itens: [
-            "\"To-Do\" (para fazer) — funcionalidades selecionadas para a sprint, escritas em post-its;",
-            "\"Doing\" (fazendo) — quando um membro da equipe pega a funcionalidade para desenvolver;",
-            "\"Done\" (feito) — quando a funcionalidade é encerrada e devidamente testada."
+          tipo: "tabela",
+          titulo: "Quadro 3 – User Stories para os Requisitos Funcionais RF0001 e RF0002",
+          colunas: ["Identificador", "User Story", "Critérios de Aceitação"],
+          linhas: [
+            ["RF0001", "**Como** recepcionista do hospital, **eu quero** cadastrar novos pacientes com informações básicas (nome, idade, endereço, contatos etc.), **para que** possamos ter um registro completo dos pacientes que chegam ao hospital.", "1. O sistema deve permitir a entrada de informações básicas do paciente: nome, idade, endereço, número de contato e detalhes do plano de saúde.\n2. Deve haver validação para campos obrigatórios, como nome e número de contato.\n3. Ao salvar o cadastro, o sistema deve confirmar a criação do novo paciente e disponibilizar um número de identificação único."],
+            ["RF0002", "**Como** recepcionista do hospital, **eu quero** atualizar, editar e excluir os dados cadastrais dos pacientes, **para que** possamos manter as informações dos pacientes sempre atualizadas e corretas.", "1. O sistema deve permitir a busca do paciente pelo nome ou número de identificação.\n2. Deve ser possível editar as informações básicas do paciente, como endereço e número de contato.\n3. O sistema deve registrar e exibir a data e o usuário que realizou a última atualização.\n4. Ao excluir um paciente, o sistema deve solicitar confirmação para evitar exclusões acidentais."]
           ]
         },
         {
-          tipo: "imagem",
-          src: "figura_1_sprint_backlog_quadro_branco.png",
-          pasta: "imagens_analise_projeto\\aula_04",
-          alt: "Figura 1 – Exemplo de um Sprint Backlog utilizando um quadro branco e post-its (página 13).",
-          num: 3
-        },
-        {
-          tipo: "texto",
-          texto: "Explicação da imagem — Figura 1 (página 13; parte do conteúdo: 2.1 Características do Scrum — Os artefatos Scrum): a figura mostra um quadro branco físico organizado em colunas verticais rotuladas (da esquerda para a direita): \"STORIES\" (uma coluna lateral com itens numerados, listando as histórias/funcionalidades do backlog), \"TO DO\", \"IN PROGRESS\", \"TESTING\" e uma coluna final rotulada com uma data (indicando o fim da sprint, \"12/22\"). Diversos post-its coloridos (laranja, rosa/magenta, azul-claro/turquesa e amarelo) estão distribuídos pelas colunas, representando tarefas em diferentes estágios de desenvolvimento — a maior concentração de post-its aparece nas colunas \"TO DO\" e \"TESTING\". A imagem ilustra concretamente a prática descrita no texto: escrever as funcionalidades em post-its e movê-los entre colunas conforme avançam no fluxo de trabalho (a fazer → fazendo → testando → feito)."
-        },
-        {
-          tipo: "texto",
-          texto: "**Burndown Chart:** é uma ferramenta gráfica utilizada em metodologias ágeis, como o Scrum, para **visualizar o progresso do trabalho restante** em um projeto ao longo do tempo. Permite acompanhar a equipe em relação aos seus objetivos e identificar possíveis problemas ou atrasos de forma proativa."
-        },
-        {
-          tipo: "lista",
-          itens: [
-            "Eixo X: normalmente as iterações/sprints (ou, dentro de uma única sprint, os dias da sprint);",
-            "Eixo Y: o esforço a ser realizado pela equipe, dado em pontos de complexidade."
-          ]
-        },
-        {
-          tipo: "texto",
-          texto: "A complexidade de uma tarefa/requisito é medida conforme a experiência do time em desenvolver aquela funcionalidade: quanto mais complicada, maior a pontuação; quanto mais simples, menor."
-        },
-        {
-          tipo: "texto",
-          texto: "Como o gráfico é construído:"
-        },
-        {
-          tipo: "lista",
-          itens: [
-            "1. Traça-se uma linha reta iniciando no eixo Y (no total de pontos das sprints, marcando o início das iterações) e terminando no eixo X (na posição da última iteração) — essa é a \"Linha de Trabalho Restante Ideal\".",
-            "2. Em cada iteração, um conjunto de requisitos é selecionado e seus pontos de complexidade são atribuídos; o somatório desses pontos é plotado como um ponto no gráfico.",
-            "3. Ao interligar esses pontos, cria-se a \"Linha de Trabalho Restante Real\".",
-            "4. Se a linha real se mantiver abaixo da ideal, a equipe está em bom ritmo e deverá cumprir o cronograma; caso contrário, a equipe precisará melhorar o ritmo ou revisar o planejamento de tempo do projeto."
+          tipo: "tabela",
+          titulo: "Quadro 4 – Requisitos Não Funcionais do Sistema de Prontuário Eletrônico",
+          colunas: ["Identificador", "Descrição", "Prioridade"],
+          linhas: [
+            ["RNF0001", "**Segurança de Dados**: Implementar medidas de segurança para proteger os dados dos pacientes contra acesso não autorizado, perda e roubo.", "Alta"],
+            ["RNF0002", "**Controle de Acesso**: Garantir que apenas usuários autenticados e autorizados possam acessar dados sensíveis, com diferentes níveis de permissão baseados em papéis.", "Alta"],
+            ["RNF0002", "**Desempenho**: Assegurar que o sistema responda às solicitações de usuários em menos de 2 segundos durante operações normais.", "Alta"],
+            ["RNF0002", "**Escalabilidade**: O sistema deve ser capaz de escalar para atender a um aumento no número de usuários e registros sem perda de desempenho.", "Média"],
+            ["RNF0002", "**Confiabilidade**: O sistema deve estar disponível 99,9% do tempo, excluindo períodos de manutenção programada.", "Alta"],
+            ["RNF0002", "**Usabilidade**: Desenvolver uma interface de usuário intuitiva e fácil de usar para garantir que médicos e enfermeiros possam usar o sistema sem necessidade de treinamento extensivo.", "Média"],
+            ["RNF0002", "**Compatibilidade**: Assegurar que o sistema seja compatível com diferentes dispositivos e navegadores, incluindo desktops, tablets e smartphones.", "Média"],
+            ["RNF0002", "**Manutenibilidade**: O sistema deve ser fácil de manter e atualizar, com documentação completa e clara do código e das funcionalidades.", "Média"],
+            ["RNF0002", "**Auditabilidade**: Registrar todas as operações e acessos ao sistema para fins de auditoria e controle de segurança.", "Alta"],
+            ["RNF0002", "**Backup e Recuperação**: Implementar mecanismos de backup regular e procedimentos de recuperação de dados em caso de falhas.", "Alta"]
           ]
         },
         {
           tipo: "destaque",
-          texto: "Nota de rodapé (nota 5 do material): esse é um ponto conflitante entre times desenvolvedores e contratantes/chefias, pois parte do princípio de que o escopo e seu dimensionamento podem não bater com o cronograma estipulado inicialmente. O ideal para métodos ágeis é o trabalho com \"escopos flexíveis\", discutidos entre stakeholders e desenvolvedores ao longo do desenvolvimento, de forma que o tempo empregado gere um produto adequado dentro de um prazo viável para a equipe. Essa discussão sobre tempo é um motivo recorrente de conflito entre o que o cliente deseja, o que a equipe pode entregar e o prazo necessário."
-        },
-        {
-          tipo: "texto",
-          texto: "O gráfico também pode ser usado para verificar o progresso **dentro de uma sprint** — nesse caso, o eixo X contém os dias da sprint, e a Linha de Trabalho Restante Ideal é traçada a partir do total de pontos do Sprint Backlog, enquanto a linha real reflete a evolução diária dos pontos remanescentes."
-        },
-        {
-          tipo: "imagem",
-          src: "figura_2_burndown_chart.png",
-          pasta: "imagens_analise_projeto\\aula_04",
-          alt: "Figura 2 - Exemplo de um Burndown Chart: Story Points Remaining (0 a 35) por Days in the Sprint (1 a 10), com Linha de Trabalho Restante Ideal e Linha de Trabalho Restante Real (página 14).",
-          num: 4
-        },
-        {
-          tipo: "texto",
-          texto: "Explicação da imagem — Figura 2 (página 14; parte do conteúdo: 2.1 Características do Scrum — Os artefatos Scrum, Burndown Chart): o gráfico, intitulado \"Sprint Burn-Down Chart\", tem no eixo Y os \"Story Points Remaining in the Sprint Backlog\" (pontos de história restantes no Sprint Backlog), com escala de 0 a 35, e no eixo X os \"Days in the Sprint\" (dias da sprint), numerados de 1 a 10. Há duas linhas: uma linha tracejada (reta), representando a Linha de Trabalho Restante Ideal, que parte de aproximadamente 30 pontos no dia 1 e desce linearmente até 0 no dia 10; e uma linha sólida com marcadores em losango, representando a Linha de Trabalho Restante Real, que acompanha de perto a linha ideal, oscilando ligeiramente acima e abaixo dela ao longo dos dias, partindo também de cerca de 30 pontos no dia 1 e chegando a 0 (ou próximo disso) no dia 10. A figura ilustra visualmente o conceito explicado no texto: o acompanhamento diário do trabalho restante comparado ao ritmo ideal esperado."
-        },
-        {
-          tipo: "texto",
-          texto: "Embora se possa usar softwares como **Pivotal Tracker**, **Trello** ou **Jira** para criar e compartilhar o Sprint Backlog, a prática do uso de **quadros físicos** e a **interação presencial** entre os membros da equipe é incentivada na metodologia Scrum, para criar um laço de colaboração, companheirismo e responsabilidade entre os membros da equipe."
-        },
-        {
-          tipo: "subtitulo",
-          texto: "c) A Dinâmica das Reuniões (Cerimônias) no Scrum"
-        },
-        {
-          tipo: "tabela",
-          titulo: "Reuniões (cerimônias) do Scrum",
-          colunas: ["Reunião", "Descrição"],
-          linhas: [
-            ["Scrum Daily", "Conversa aberta e colaborativa em que cada membro compartilha avanços, obstáculos e planos para o dia. O Scrum Master facilita a discussão e garante que todos estejam alinhados."],
-            ["Sprint Planning", "Colaboração entre Product Owner, Scrum Master e equipe de desenvolvimento para definir o escopo do sprint e as prioridades. O PO apresenta o backlog do produto, a equipe estima o esforço de cada item e, juntos, definem os objetivos do sprint."],
-            ["Sprint Review", "Oportunidade para a equipe mostrar o que foi realizado durante o sprint e receber feedback dos stakeholders. O PO valida o trabalho e os stakeholders podem sugerir melhorias ou novas ideias."],
-            ["Sprint Retrospective", "Momento de aprendizado e crescimento para a equipe. O Scrum Master guia a discussão sobre o que deu certo, o que deu errado e como melhorar no próximo sprint."]
-          ]
-        },
-        {
-          tipo: "subtitulo",
-          texto: "Relato de Experiência Prática (seção \"Saiba Mais\")"
-        },
-        {
-          tipo: "texto",
-          texto: "O material inclui um relato pessoal dos autores (Wellington Sarmento e Patrícia Paula), que participaram de equipes usando Scrum em uma universidade federal por **oito anos**. Pontos relevantes do relato:"
-        },
-        {
-          tipo: "lista",
-          itens: [
-            "No primeiro ano, usaram quadros brancos com post-its; posteriormente, adotaram o Pivotal Tracker como software de apoio, mas nunca abandonaram as reuniões presenciais, por considerarem a interação direta essencial para uma boa equipe de trabalho.",
-            "Vieram de processos tradicionais (incluindo Waterfall) e enfrentaram o desafio de criar um novo ambiente de aprendizagem para milhares de usuários, com uma equipe heterogênea em maturidade de processo.",
-            "Já conheciam técnicas como Test Driven Development (TDD) e Pair Programming, mas ainda usavam gerenciamento tradicional até conhecerem um orientando do diretor executivo (Ari Amaral), que se tornou o Scrum Master/coach de agilidade da equipe.",
-            "O coach priorizou a saúde mental da equipe, a harmonia interna, a responsabilidade com as tarefas e o compromisso com técnicas/tecnologias que melhorassem a produtividade sem gerar estresse constante.",
-            "Wellington relata ter atuado como Product Owner, precisando aprender técnicas de gerência de backlog, priorização de tarefas, sprint planning, elaboração de User Stories e sprint review, tendo se certificado como PO.",
-            "A mudança de filosofia para métodos ágeis não foi simples nem rápida — demandou tempo, esforço e investimento (mais de um ano).",
-            "Ao longo dos anos, a equipe também usou Trello e Slack para gestão e comunicação inter-equipes; o aprendizado foi que o entrosamento de um time demanda tempo, boa gerência de conflitos, políticas de incentivo e valorização pessoal.",
-            "O relato conclui com reflexões de Wellington Sarmento sobre a importância de gestores terem vivência prática do processo de desenvolvimento, tratando as pessoas como indivíduos (não apenas \"recursos\"), reforçando o valor ágil de \"indivíduos e interações mais que processos e ferramentas\"."
-          ]
-        }
-      ]
-    },
-    {
-      id: "xp",
-      titulo: "Extreme Programming (XP)",
-      blocos: [
-        {
-          tipo: "subtitulo",
-          texto: "Definição e Valores Fundamentais"
-        },
-        {
-          tipo: "texto",
-          texto: "O **Extreme Programming (XP)**, ou **Programação Extrema**, surgiu em meados da **década de 90** como resposta à necessidade de maior agilidade e adaptabilidade no desenvolvimento de software. Foi idealizado por **Kent Beck** e sua equipe durante o **projeto C3** (*Chrysler Comprehensive Compensation System*)."
-        },
-        {
-          tipo: "texto",
-          texto: "O XP se baseia em **cinco valores fundamentais**:"
-        },
-        {
-          tipo: "tabela",
-          titulo: "Os cinco valores fundamentais do XP",
-          colunas: ["Valor", "Descrição"],
-          linhas: [
-            ["Comunicação", "Base para um trabalho colaborativo e eficiente."],
-            ["Simplicidade", "Buscar soluções descomplicadas e fáceis de entender."],
-            ["Feedback", "Obter e fornecer informações constantes para aprimorar o processo."],
-            ["Coragem", "Experimentar novas ideias e enfrentar desafios sem medo."],
-            ["Respeito", "Valorizar as habilidades e opiniões de todos os membros da equipe."]
-          ]
-        },
-        {
-          tipo: "subtitulo",
-          texto: "Práticas do Extreme Programming"
-        },
-        {
-          tipo: "texto",
-          texto: "A partir desses valores, o XP propõe um conjunto de práticas:"
-        },
-        {
-          tipo: "lista",
-          itens: [
-            "a) Ciclos de Desenvolvimento Curtos — dividir o projeto em pequenas iterações, com entregas frequentes e feedback contínuo, permitindo ajuste rápido de curso;",
-            "b) Programação em Pares — dois programadores trabalhando juntos na mesma estação de trabalho, promovendo colaboração e revisão de código em tempo real, aumentando a qualidade e acelerando a resolução de problemas;",
-            "c) Testes Unitários — escrever testes automatizados para garantir a qualidade do código e prevenir falhas, assegurando que cada parte do software funcione corretamente isoladamente;",
-            "d) Refatoração — reorganizar o código existente para torná-lo mais limpo, eficiente e fácil de manter, ajudando a manter a integridade e extensibilidade do software;",
-            "e) Integração Contínua — integrar as mudanças no código à base principal com frequência, permitindo detecção precoce de problemas e reduzindo riscos de integração tardia;",
-            "f) Metáfora da Sala de Reuniões — espaço aberto para comunicação e colaboração entre equipe e cliente, promovendo um ambiente de trabalho mais transparente e integrado;",
-            "g) Histórias de Usuário — descrever as funcionalidades do software a partir da perspectiva do usuário, garantindo que o produto atenda às suas necessidades e mantendo o foco no valor entregue ao cliente;",
-            "h) Planejamento em Tempo Real — adaptar o planejamento às mudanças do projeto e às prioridades do cliente, mantendo o desenvolvimento sempre alinhado às necessidades mais atuais;",
-            "i) Liberação de Software com Frequência — entregar versões funcionais do software ao cliente com regularidade, permitindo feedback e solicitação de alterações, mantendo o cliente envolvido e informado."
-          ]
-        },
-        {
-          tipo: "subtitulo",
-          texto: "Vantagens e Implementações do XP"
-        },
-        {
-          tipo: "texto",
-          texto: "Embora o XP seja frequentemente associado a projetos de grande porte, seus princípios podem ser adaptados a diferentes contextos e tamanhos de equipe. Empresas como **Google**, **Spotify** e **ThoughtWorks** já colhem os frutos da adoção do XP, relatando maior agilidade, qualidade de software aprimorada e equipes mais engajadas."
-        },
-        {
-          tipo: "citacao",
-          texto: "O sucesso do XP reside na sua capacidade de promover flexibilidade, adaptabilidade e foco no cliente. Através de um ciclo de desenvolvimento contínuo e da valorização da comunicação e do feedback, o XP permite que as equipes de software respondam às mudanças com rapidez e entreguem produtos que realmente atendam às necessidades dos usuários."
-        },
-        {
-          tipo: "subtitulo",
-          texto: "Comparativo entre Scrum e Extreme Programming"
-        },
-        {
-          tipo: "texto",
-          texto: "O XP é apresentado como **ideal para projetos que exigem alta qualidade de software e adaptabilidade a mudanças frequentes**, com um ambiente flexível e tecnicamente robusto. Já o Scrum é mais adequado para **projetos com requisitos bem definidos e necessidade de entregas em prazos fixos**, com uma abordagem gerencial estruturada, focada em organização e comunicação da equipe."
-        },
-        {
-          tipo: "tabela",
-          titulo: "Quadro 2 – Comparativo entre Métodos XP e Scrum (página 22)",
-          colunas: ["Critério", "Extreme Programming (XP)", "Scrum"],
-          linhas: [
-            ["Foco", "Mergulha na engenharia de software, priorizando práticas técnicas rigorosas para garantir a qualidade do código e a entrega de um produto robusto.", "Assume uma visão mais gerencial, estruturando o fluxo de trabalho em sprints e definindo papéis como Product Owner e Scrum Master para facilitar a organização e a comunicação."],
-            ["Planejamento", "Abraça o planejamento adaptativo, ajustando prioridades e escopo conforme o feedback e as necessidades do cliente.", "Baseia-se em um backlog de produto priorizado, definindo no início do sprint quais funcionalidades serão desenvolvidas, com pouca flexibilidade para alterações durante o ciclo."],
-            ["Ciclos de Desenvolvimento", "Utiliza ciclos curtos de desenvolvimento, com entregas frequentes de versões funcionais do software.", "Emprega sprints de duração fixa, geralmente entre 1 e 4 semanas, com entregas ao final de cada um."],
-            ["Métricas", "Valoriza métricas como velocidade de desenvolvimento, testes unitários e cobertura de código.", "Foca em métricas como velocidade de entrega, burndown chart e impedimentos."],
-            ["Reuniões", "Realiza reuniões frequentes e informais, como reuniões de stand-up e planejamento diário.", "Possui um conjunto definido de reuniões cerimoniais (sprint planning, sprint review, sprint retrospective) para marcar início, meio e fim do sprint."]
-          ]
-        },
-        {
-          tipo: "texto",
-          texto: "Fonte: Autores (2024)."
-        },
-        {
-          tipo: "destaque",
-          texto: "Nota importante para revisão: embora a coluna \"Foco\" do quadro descreva o XP como voltado à engenharia técnica e o Scrum como voltado à visão gerencial, essa é exatamente a distinção central entre os dois métodos explorada ao longo de todo o capítulo — o XP complementa o Scrum tecnicamente, enquanto o Scrum organiza o processo gerencialmente. Muitas equipes, inclusive, combinam práticas dos dois métodos (como fez a UFC, citada anteriormente, que usou Scrum + práticas como BDD, testes unitários e programação em par)."
-        }
-      ]
-    },
-    {
-      id: "outros_metodos",
-      titulo: "Conteúdo Complementar — Outros Métodos Ágeis",
-      blocos: [
-        {
-          tipo: "texto",
-          texto: "Conforme as Considerações Finais do material, além do Scrum e do XP existem outros métodos ágeis relevantes no desenvolvimento de software:"
-        },
-        {
-          tipo: "lista",
-          itens: [
-            "Pair Programming (Programação em Pares): técnica em que dois programadores trabalham juntos na mesma estação de trabalho. Um escreve o código (driver) enquanto o outro revisa cada linha à medida que é escrita (observer/navigator); os papéis podem ser trocados frequentemente. Promove colaboração, troca de conhecimento e revisão contínua do código, resultando em software de maior qualidade e menos bugs, além de disseminar conhecimento entre a equipe. É uma das práticas centrais do XP e reflete os valores ágeis de comunicação e trabalho em equipe.",
-            "Kanban: foca na visualização do fluxo de trabalho e na limitação do trabalho em progresso para otimizar a eficiência.",
-            "Lean: derivado dos princípios de manufatura enxuta, busca eliminar desperdícios e otimizar processos.",
-            "DevOps: integra desenvolvimento e operações, visando acelerar a entrega de software com maior confiabilidade."
-          ]
+          texto: "Nota sobre a numeração: assim como no Quadro 1, o Quadro 4 do PDF apresenta uma inconsistência de numeração — apenas o primeiro item é identificado como RNF0001, e todos os demais aparecem repetidos como \"RNF0002\". Essa característica pertence ao documento original e foi mantida sem alteração para garantir fidelidade ao material."
         }
       ]
     },
@@ -2822,49 +3311,28 @@ secoes: [
       blocos: [
         {
           tipo: "lista",
+          titulo: "Pontos-chave para revisão",
           itens: [
-            "Métodos Ágeis: abordagens iterativas e incrementais que priorizam colaboração, flexibilidade e entrega contínua de valor, em contraste com métodos tradicionais lineares (Waterfall, V-Model, RUP).",
-            "Manifesto Ágil (2001): define 4 valores (indivíduos/interações > processos/ferramentas; software funcionando > documentação; colaboração com cliente > negociação de contratos; responder a mudanças > seguir um plano) e 12 princípios.",
-            "História: métodos ágeis surgiram nos anos 1990 como reação à rigidez do Waterfall. Scrum → Ken Schwaber e Jeff Sutherland. XP → Kent Beck e Ward Cunningham.",
-            "Ferramentas/frameworks complementares: Kanban (visualização do fluxo), Lean (eliminação de desperdícios), DevOps (integração dev + operações).",
-            "Exemplos de adoção: empresas de tecnologia (Spotify, Netflix, ThoughtWorks), tradicionais (Itaú, Volkswagen, Philips), startups (Nubank, QuintoAndar, Rappi) e instituições governamentais brasileiras (Ministério da Economia, TCU, Prefeitura de SP), além do caso da UFC (Ambiente Solar, 2010–2016)."
-          ]
-        },
-        {
-          tipo: "topico",
-          titulo: "Scrum",
-          lista: [
-            "Baseado em sprints (1 a 4 semanas) e em 3 pilares: transparência, inspeção, adaptação.",
-            "4 papéis: Product Owner, Scrum Master, Time de Desenvolvimento, Stakeholders.",
-            "Artefatos: Sprint Backlog (quadro To-Do/Doing/Done) e Burndown Chart (Linha Ideal vs. Linha Real de trabalho restante, em pontos de complexidade).",
-            "4 cerimônias: Scrum Daily, Sprint Planning, Sprint Review, Sprint Retrospective.",
-            "Incentiva quadros físicos e reuniões presenciais, mesmo com uso de softwares como Pivotal Tracker, Trello ou Jira."
-          ]
-        },
-        {
-          tipo: "topico",
-          titulo: "Extreme Programming (XP)",
-          lista: [
-            "Criado por Kent Beck durante o projeto C3 (Chrysler).",
-            "5 valores: comunicação, simplicidade, feedback, coragem, respeito.",
-            "9 práticas principais: ciclos curtos, programação em pares, testes unitários, refatoração, integração contínua, metáfora da sala de reuniões, histórias de usuário, planejamento em tempo real, liberação frequente de software."
-          ]
-        },
-        {
-          tipo: "lista",
-          itens: [
-            "Scrum x XP: Scrum tem foco gerencial (papéis, sprints fixos, cerimônias); XP tem foco técnico/engenharia (qualidade de código, práticas técnicas, planejamento adaptativo, reuniões informais).",
-            "Pair Programming: prática central do XP — driver (escreve) + observer/navigator (revisa), com troca frequente de papéis.",
-            "Aprender métodos ágeis é considerado crucial para profissionais de software, pois promove flexibilidade, adaptabilidade, foco no cliente, maior qualidade e melhor organização das equipes diante da complexidade dos projetos."
+            "**Requisitos** = expectativas e necessidades dos *stakeholders* (usuários, clientes, desenvolvedores, gestores, o próprio sistema).",
+            "**Elicitação** = descobrir/ouvir/entender os requisitos (entrevistas, questionários, *workshops*, observação).",
+            "**Análise** = refinar, organizar, cruzar dados, identificar inconsistências e **priorizar** os requisitos coletados.",
+            "Duas categorias de requisitos: **Funcionais** — o que o sistema faz (a \"melodia\"); **Não funcionais** — características de qualidade: desempenho, segurança, confiabilidade, usabilidade, escalabilidade, manutenibilidade, compatibilidade (a \"harmonia\").",
+            "Técnicas de elicitação: **entrevistas, questionários, workshops**.",
+            "Ferramentas de apoio: **diagrama de casos de uso, protótipos, ferramentas CASE**.",
+            "Benefícios de bons requisitos: menos retrabalho/custo, mais qualidade, mais satisfação do cliente, melhor comunicação da equipe, mais agilidade.",
+            "**User Stories**: formato \"Como [usuário], eu quero [ação], para que [objetivo]\" — linguagem próxima do cliente, detalhando campos de tela e interface.",
+            "**Critérios de aceitação**: condições que a User Story deve cumprir — devem ser claros, mensuráveis, relevantes e objetivos.",
+            "**Priorização de requisitos funcionais**: requisitos urgentes/determinantes vs. requisitos para o futuro próximo; base para o cronograma e para o Documento de Requisitos do Sistema (que define escopo, descrição, prioridades e cronograma).",
+            "**Escopo Variado de Produto** (flexível/iterativo, método ágil) x **Escopo Fixo de Produto** (requisitos imutáveis) — o autor do capítulo defende o escopo variado.",
+            "**MVP (Produto Mínimo Viável)**: versão mais simples e funcional para testar uma ideia com o menor investimento, validando hipóteses de negócio e coletando *feedback*; construído de forma incremental, priorizando funcionalidades críticas primeiro (exemplo: *Event Planner*).",
+            "Requisitos não funcionais essenciais e suas metas típicas: **confiabilidade ≥ 99,9% de disponibilidade**; **desempenho** com resposta em menos de 2 segundos (no exemplo do prontuário eletrônico).",
+            "Os dois exemplos centrais do módulo: **Sistema de Gerenciamento de Projetos** / **E-commerce** (para ilustrar elicitação e análise) e **Sistema de Prontuário Eletrônico** (usado de forma mais aprofundada para exemplificar tanto requisitos funcionais quanto não funcionais, com quadros de requisitos e *User Stories*)."
           ]
         }
       ]
     }
   ]
 }
-
-  //aula 5
-
 
   // aula 6
 
