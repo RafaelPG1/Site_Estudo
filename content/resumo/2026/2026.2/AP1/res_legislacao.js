@@ -2371,534 +2371,1339 @@ window.__nexusConteudo = {
     },
     //aula 4
     {
-  aula: "Fundo de Garantia por Tempo de Serviço (FGTS) e Aviso Prévio",
-  ideia_central: "A aula explica dois institutos do Direito do Trabalho — o FGTS, fundo formado por depósitos mensais do empregador em conta vinculada à Caixa Econômica Federal com finalidade de amparo financeiro ao trabalhador, e o aviso prévio, comunicação antecipada e proporcional ao tempo de serviço sobre o encerramento do contrato de trabalho, com suas regras, exceções, percentuais, prazos e modalidades.",
-  secoes: [
-    {
-      id: "objetivos_introducao",
-      titulo: "Objetivos da aula e introdução",
-      blocos: [
+      aula: "Fundo de garantia por tempo de serviço",
+      ideia_central: "A aula explica dois institutos do Direito do Trabalho — o FGTS, fundo formado por depósitos mensais do empregador em conta vinculada à Caixa Econômica Federal com finalidade de amparo financeiro ao trabalhador, e o aviso prévio, comunicação antecipada e proporcional ao tempo de serviço sobre o encerramento do contrato de trabalho, com suas regras, exceções, percentuais, prazos e modalidades.",
+      secoes: [
         {
-          tipo: "texto",
-          texto: "O material apresenta três objetivos principais: explicar o instituto do **Fundo de Garantia por Tempo de Serviço (FGTS)** e suas particularidades; interpretar o **aviso prévio** e seus reflexos no contrato de trabalho; e aplicar os conceitos apresentados no cotidiano, desenvolvendo uma compreensão crítica sobre eles."
-        },
-        {
-          tipo: "lista",
-          titulo: "A aula está dividida em dois grandes assuntos",
-          itens: [
-            "FGTS",
-            "Aviso prévio"
+          id: "objetivos_introducao",
+          titulo: "Objetivos da aula e introdução",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "O material apresenta três objetivos principais: explicar o instituto do **Fundo de Garantia por Tempo de Serviço (FGTS)** e suas particularidades; interpretar o **aviso prévio** e seus reflexos no contrato de trabalho; e aplicar os conceitos apresentados no cotidiano, desenvolvendo uma compreensão crítica sobre eles."
+            },
+            {
+              tipo: "lista",
+              titulo: "A aula está dividida em dois grandes assuntos",
+              itens: [
+                "FGTS",
+                "Aviso prévio"
+              ]
+            },
+            {
+              tipo: "texto",
+              texto: "O módulo apresenta dois grandes institutos do **Direito do Trabalho**: o **Fundo de Garantia por Tempo de Serviço (FGTS)** e o **aviso prévio**. O objetivo é compreender direitos e possíveis deveres existentes na relação entre **empregado e empregador**, incluindo questões relacionadas a salários, porcentagens, depósitos e término do contrato de trabalho."
+            }
           ]
         },
         {
-          tipo: "texto",
-          texto: "O módulo apresenta dois grandes institutos do **Direito do Trabalho**: o **Fundo de Garantia por Tempo de Serviço (FGTS)** e o **aviso prévio**. O objetivo é compreender direitos e possíveis deveres existentes na relação entre **empregado e empregador**, incluindo questões relacionadas a salários, porcentagens, depósitos e término do contrato de trabalho."
-        }
-      ]
-    },
-    {
-      id: "fgts_conceito_origem",
-      titulo: "FGTS — Conceito, origem e obrigatoriedade",
-      blocos: [
-        {
-          tipo: "topico",
-          titulo: "O que significa FGTS?",
-          texto: "**FGTS** significa **Fundo de Garantia por Tempo de Serviço**. Segundo o material, o trabalhador **celetista**, geralmente conhecido como trabalhador com carteira assinada e regido pela **CLT**, possui um fundo de garantia formado por **depósitos mensais sobre sua remuneração**. Esses valores são depositados em uma **conta vinculada à Caixa Econômica Federal**. A finalidade apresentada é proporcionar ao trabalhador um **amparo financeiro**, especialmente na situação de desemprego."
-        },
-        {
-          tipo: "topico",
-          titulo: "Em outras palavras",
-          texto: "O FGTS funciona, dentro da lógica apresentada pela aula, como uma reserva formada por depósitos realizados durante o contrato de trabalho, que poderá ser movimentada pelo trabalhador nas situações previstas em lei."
-        },
-        {
-          tipo: "texto",
-          texto: "O material informa que o FGTS foi estabelecido pela **Lei nº 5.108/66**. Posteriormente, a **Constituição Federal de 1988** tornou obrigatório o regime do FGTS, retirando do ordenamento a antiga possibilidade de estabilidade após **10 anos de serviço**."
-        },
-        {
-          tipo: "destaque",
-          texto: "A Constituição é apresentada no material por meio do **Art. 7º, inciso III — fundo de garantia do tempo de serviço.**"
-        }
-      ]
-    },
-    {
-      id: "fgts_quem_possui_protecao",
-      titulo: "Quem possui FGTS e sua função de proteção",
-      blocos: [
-        {
-          tipo: "texto",
-          texto: "De acordo com o material, a obrigatoriedade do FGTS alcança:"
-        },
-        {
-          tipo: "lista",
-          itens: [
-            "empregados urbanos;",
-            "empregados rurais;",
-            "empregados domésticos, regidos pela Lei Complementar nº 150/2015."
+          id: "fgts_conceito_origem",
+          titulo: "FGTS — Conceito, origem e obrigatoriedade",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "O que significa FGTS?",
+              texto: "**FGTS** significa **Fundo de Garantia por Tempo de Serviço**. Segundo o material, o trabalhador **celetista**, geralmente conhecido como trabalhador com carteira assinada e regido pela **CLT**, possui um fundo de garantia formado por **depósitos mensais sobre sua remuneração**. Esses valores são depositados em uma **conta vinculada à Caixa Econômica Federal**. A finalidade apresentada é proporcionar ao trabalhador um **amparo financeiro**, especialmente na situação de desemprego."
+            },
+            {
+              tipo: "topico",
+              titulo: "Em outras palavras",
+              texto: "O FGTS funciona, dentro da lógica apresentada pela aula, como uma reserva formada por depósitos realizados durante o contrato de trabalho, que poderá ser movimentada pelo trabalhador nas situações previstas em lei."
+            },
+            {
+              tipo: "texto",
+              texto: "O material informa que o FGTS foi estabelecido pela **Lei nº 5.108/66**. Posteriormente, a **Constituição Federal de 1988** tornou obrigatório o regime do FGTS, retirando do ordenamento a antiga possibilidade de estabilidade após **10 anos de serviço**."
+            },
+            {
+              tipo: "destaque",
+              texto: "A Constituição é apresentada no material por meio do **Art. 7º, inciso III — fundo de garantia do tempo de serviço.**"
+            }
           ]
         },
         {
-          tipo: "topico",
-          titulo: "Servidor público estatutário",
-          texto: "O recolhimento do FGTS **não é obrigatório para o servidor público estatutário**, regido pela Lei nº 8.112/1990, porque ele já possui estabilidade."
-        },
-        {
-          tipo: "topico",
-          titulo: "Empregado público",
-          texto: "O recolhimento é obrigatório para o **empregado público**, mesmo que ele possua estabilidade, conforme a Súmula 390, item I, do TST."
-        },
-        {
-          tipo: "texto",
-          texto: "O material também apresenta uma função do FGTS relacionada à proteção do trabalhador. Segundo a explicação citada na aula, o FGTS pode funcionar como uma forma de **inibir o empregador de dispensar o empregado sem que tenha ocorrido uma falta**, pois, em determinadas situações, o empregador terá de pagar um acréscimo de **40% sobre o total dos depósitos realizados na conta vinculada**. Essa questão da multa de 40% será explicada mais adiante."
-        }
-      ]
-    },
-    {
-      id: "fgts_aliquotas_prazo_base",
-      titulo: "Alíquotas, prazo de recolhimento, FGTS rescisório e base de cálculo",
-      blocos: [
-        {
-          tipo: "topico",
-          titulo: "Regra geral",
-          texto: "O FGTS mensal corresponde a **8% da remuneração do empregado**. Esse percentual é indicado no material com fundamento no **Art. 15 da Lei nº 8.036/1990**."
-        },
-        {
-          tipo: "topico",
-          titulo: "Aprendizes",
-          texto: "Para os aprendizes, o percentual apresentado é **2% da remuneração**."
-        },
-        {
-          tipo: "destaque",
-          texto: "Para memorizar: **Empregado → 8%** e **Aprendiz → 2%**."
-        },
-        {
-          tipo: "topico",
-          titulo: "Prazo para recolhimento",
-          texto: "O empregador deve realizar o depósito do FGTS na conta vinculada à Caixa Econômica Federal até o **Dia 7 de cada mês**. O depósito corresponde à remuneração do **mês anterior**."
-        },
-        {
-          tipo: "exemplo",
-          titulo: "Exemplo didático do prazo de recolhimento",
-          texto: "Se estamos falando da remuneração referente a determinado mês, o depósito correspondente deve ser realizado até o dia 7 do mês seguinte, conforme a regra apresentada na aula."
-        },
-        {
-          tipo: "topico",
-          titulo: "FGTS rescisório",
-          texto: "O material diferencia o depósito mensal do **FGTS rescisório**. O FGTS rescisório é aquele relacionado à **rescisão do contrato de trabalho**. O FGTS rescisório e a multa compensatória relacionados ao último mês do contrato devem observar o **prazo de pagamento das verbas rescisórias**."
-        },
-        {
-          tipo: "topico",
-          titulo: "Base de cálculo",
-          texto: "A base de cálculo do FGTS inclui qualquer parcela que tenha **natureza remuneratória**, independentemente da habitualidade do pagamento. Ou seja, o material destaca que não é necessário que a parcela remuneratória seja paga habitualmente para que possa integrar a base de cálculo do FGTS."
-        }
-      ]
-    },
-    {
-      id: "fgts_movimentacao",
-      titulo: "Movimentação do FGTS",
-      blocos: [
-        {
-          tipo: "texto",
-          texto: "O FGTS não pode ser movimentado livremente a qualquer momento. Segundo o material, a movimentação ocorre apenas nas situações previstas pelo **Art. 20 da Lei nº 8.036/1990**."
-        },
-        {
-          tipo: "lista",
-          titulo: "Entre as situações apresentadas estão",
-          itens: [
-            "aposentadoria pelo INSS;",
-            "idade superior a 70 anos;",
-            "despedida sem justa causa;",
-            "trabalhador portador de HIV ou câncer;",
-            "extinção da empresa;",
-            "despedida indireta;",
-            "desastre natural, mediante autorização do governo;",
-            "conta inativa por mais de 3 anos;",
-            "trabalhador avulso sem trabalho por mais de 30 dias;",
-            "término do contrato a prazo;",
-            "aquisição de moradia."
+          id: "fgts_quem_possui_protecao",
+          titulo: "Quem possui FGTS e sua função de proteção",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "De acordo com o material, a obrigatoriedade do FGTS alcança:"
+            },
+            {
+              tipo: "lista",
+              itens: [
+                "empregados urbanos;",
+                "empregados rurais;",
+                "empregados domésticos, regidos pela Lei Complementar nº 150/2015."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Servidor público estatutário",
+              texto: "O recolhimento do FGTS **não é obrigatório para o servidor público estatutário**, regido pela Lei nº 8.112/1990, porque ele já possui estabilidade."
+            },
+            {
+              tipo: "topico",
+              titulo: "Empregado público",
+              texto: "O recolhimento é obrigatório para o **empregado público**, mesmo que ele possua estabilidade, conforme a Súmula 390, item I, do TST."
+            },
+            {
+              tipo: "texto",
+              texto: "O material também apresenta uma função do FGTS relacionada à proteção do trabalhador. Segundo a explicação citada na aula, o FGTS pode funcionar como uma forma de **inibir o empregador de dispensar o empregado sem que tenha ocorrido uma falta**, pois, em determinadas situações, o empregador terá de pagar um acréscimo de **40% sobre o total dos depósitos realizados na conta vinculada**. Essa questão da multa de 40% será explicada mais adiante."
+            }
           ]
         },
         {
-          tipo: "topico",
-          titulo: "Figura 1 – Movimentação do FGTS (Página 8 do PDF)",
-          texto: "O visual organiza as hipóteses de movimentação do FGTS em torno da ideia central **\"Movimentação do FGTS\"**. Ao redor aparecem diferentes situações que autorizam a movimentação, incluindo aposentadoria, idade superior a 70 anos, despedida sem justa causa, doenças mencionadas, extinção da empresa, despedida indireta, desastre natural, conta inativa, trabalhador avulso sem trabalho, término de contrato a prazo e aquisição de moradia. id da imagem no material: `figura_1_movimentacao_fgts`."
-        },
-        {
-          tipo: "destaque",
-          texto: "Importante: a imagem é apenas uma referência visual; o conteúdo estudado é o que está descrito no próprio PDF."
-        },
-        {
-          tipo: "destaque",
-          texto: "O FGTS não pode ser pago diretamente ao empregado. O valor deve ser depositado na **conta vinculada**, conforme o sistema apresentado anteriormente."
-        }
-      ]
-    },
-    {
-      id: "fgts_multa_afastamentos",
-      titulo: "Multa de 40% e FGTS durante afastamentos",
-      blocos: [
-        {
-          tipo: "texto",
-          texto: "Quando o **empregador** decide rescindir o contrato **sem justa causa**, existe a chamada **multa de 40%**. Nesse caso, cabe ao empregador pagar uma multa correspondente a **40% sobre o montante existente na conta vinculada**. Esse montante é resultado dos depósitos realizados durante o contrato de trabalho."
-        },
-        {
-          tipo: "topico",
-          titulo: "Como é feito o pagamento da multa?",
-          texto: "O material explica que, embora a multa seja devida ao empregado quando ocorre a extinção do contrato, ela deve ser **depositada na conta vinculada**. Depois disso, o trabalhador poderá realizar o saque juntamente com o saldo disponível, observadas as regras aplicáveis."
-        },
-        {
-          tipo: "destaque",
-          texto: "Memorize: Demissão sem justa causa pelo empregador → multa de 40% sobre o montante existente na conta vinculada."
-        },
-        {
-          tipo: "topico",
-          titulo: "FGTS durante afastamentos",
-          texto: "A ideia apresentada é: o FGTS é devido quando o trabalho também é devido. Nas hipóteses de **suspensão do contrato de trabalho**, o empregado normalmente não recebe salário porque não está trabalhando e, segundo a explicação do material, o FGTS também não seria devido."
-        },
-        {
-          tipo: "lista",
-          titulo: "Exceções importantes em que o depósito do FGTS continua obrigatório",
-          itens: [
-            "afastamento para prestação de serviço militar obrigatório;",
-            "afastamento em razão de acidente de trabalho."
+          id: "fgts_aliquotas_prazo_base",
+          titulo: "Alíquotas, prazo de recolhimento, FGTS rescisório e base de cálculo",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "Regra geral",
+              texto: "O FGTS mensal corresponde a **8% da remuneração do empregado**. Esse percentual é indicado no material com fundamento no **Art. 15 da Lei nº 8.036/1990**."
+            },
+            {
+              tipo: "topico",
+              titulo: "Aprendizes",
+              texto: "Para os aprendizes, o percentual apresentado é **2% da remuneração**."
+            },
+            {
+              tipo: "destaque",
+              texto: "Para memorizar: **Empregado → 8%** e **Aprendiz → 2%**."
+            },
+            {
+              tipo: "topico",
+              titulo: "Prazo para recolhimento",
+              texto: "O empregador deve realizar o depósito do FGTS na conta vinculada à Caixa Econômica Federal até o **Dia 7 de cada mês**. O depósito corresponde à remuneração do **mês anterior**."
+            },
+            {
+              tipo: "exemplo",
+              titulo: "Exemplo didático do prazo de recolhimento",
+              texto: "Se estamos falando da remuneração referente a determinado mês, o depósito correspondente deve ser realizado até o dia 7 do mês seguinte, conforme a regra apresentada na aula."
+            },
+            {
+              tipo: "topico",
+              titulo: "FGTS rescisório",
+              texto: "O material diferencia o depósito mensal do **FGTS rescisório**. O FGTS rescisório é aquele relacionado à **rescisão do contrato de trabalho**. O FGTS rescisório e a multa compensatória relacionados ao último mês do contrato devem observar o **prazo de pagamento das verbas rescisórias**."
+            },
+            {
+              tipo: "topico",
+              titulo: "Base de cálculo",
+              texto: "A base de cálculo do FGTS inclui qualquer parcela que tenha **natureza remuneratória**, independentemente da habitualidade do pagamento. Ou seja, o material destaca que não é necessário que a parcela remuneratória seja paga habitualmente para que possa integrar a base de cálculo do FGTS."
+            }
           ]
         },
         {
-          tipo: "destaque",
-          texto: "Para prova: Suspensão do contrato → normalmente não há FGTS. Exceções: serviço militar obrigatório; acidente de trabalho."
-        }
-      ]
-    },
-    {
-      id: "aviso_previo_conceito",
-      titulo: "Aviso prévio — conceito, finalidade e características",
-      blocos: [
-        {
-          tipo: "texto",
-          texto: "O segundo grande assunto da aula é o **aviso prévio**. O aviso prévio é o instituto do Direito do Trabalho que consiste na **comunicação do fim do contrato de trabalho por uma das partes à outra**. A parte que decide romper o contrato deve comunicar a outra com antecedência prevista em lei. Caso essa comunicação não seja realizada adequadamente, poderá surgir a obrigação de pagar uma **indenização substitutiva**."
-        },
-        {
-          tipo: "topico",
-          titulo: "Finalidade do aviso prévio",
-          texto: "A finalidade do aviso prévio é evitar que uma das partes seja **surpreendida pela ruptura do contrato**. A comunicação antecipada permite que a pessoa tenha tempo para se organizar diante do encerramento da relação de trabalho."
-        },
-        {
-          tipo: "exemplo",
-          titulo: "Exemplo da lógica do aviso prévio",
-          texto: "Se o empregador decidir encerrar o contrato, o empregado recebe uma comunicação antecipada para que possa se organizar e buscar uma nova oportunidade profissional. Da mesma maneira, quando a iniciativa é do empregado, o empregador recebe a comunicação antecipada."
-        },
-        {
-          tipo: "topico",
-          titulo: "Três características do aviso prévio",
-          lista: [
-            "Comunicação: existe uma comunicação da vontade de encerrar o contrato.",
-            "Fixação de prazo: é estabelecido um período para que o término aconteça.",
-            "Pagamento: existe o pagamento correspondente ao período do aviso, que pode ser trabalhado ou indenizado."
+          id: "fgts_movimentacao",
+          titulo: "Movimentação do FGTS",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "O FGTS não pode ser movimentado livremente a qualquer momento. Segundo o material, a movimentação ocorre apenas nas situações previstas pelo **Art. 20 da Lei nº 8.036/1990**."
+            },
+            {
+              tipo: "lista",
+              titulo: "Entre as situações apresentadas estão",
+              itens: [
+                "aposentadoria pelo INSS;",
+                "idade superior a 70 anos;",
+                "despedida sem justa causa;",
+                "trabalhador portador de HIV ou câncer;",
+                "extinção da empresa;",
+                "despedida indireta;",
+                "desastre natural, mediante autorização do governo;",
+                "conta inativa por mais de 3 anos;",
+                "trabalhador avulso sem trabalho por mais de 30 dias;",
+                "término do contrato a prazo;",
+                "aquisição de moradia."
+              ]
+            },
+            {
+              tipo: "imagem",
+              id: "figura_1_movimentacao_do_fgts",
+              src: "figura_1_movimentacao_do_fgts.png",
+              pasta: "imagens_legislacao/aula_04",
+              alt: "Figura 1 – Movimentação do FGTS: diagrama em hexágonos com a ideia central \"Movimentação do FGTS\" e, ao redor, as hipóteses legais que autorizam a movimentação da conta vinculada.",
+              num: 1
+            },
+            {
+              tipo: "topico",
+              titulo: "Figura 1 – Movimentação do FGTS (Página 8 do PDF)",
+              texto: "O visual organiza as hipóteses de movimentação do FGTS em torno da ideia central \"Movimentação do FGTS\". Ao redor aparecem diferentes situações que autorizam a movimentação, incluindo aposentadoria, idade superior a 70 anos, despedida sem justa causa, doenças mencionadas, extinção da empresa, despedida indireta, desastre natural, conta inativa, trabalhador avulso sem trabalho, término de contrato a prazo e aquisição de moradia."
+            },
+            {
+              tipo: "destaque",
+              texto: "Importante: a imagem é apenas uma referência visual; o conteúdo estudado é o que está descrito no próprio PDF."
+            },
+            {
+              tipo: "destaque",
+              texto: "O FGTS não pode ser pago diretamente ao empregado. O valor deve ser depositado na **conta vinculada**, conforme o sistema apresentado anteriormente."
+            }
           ]
         },
         {
-          tipo: "destaque",
-          texto: "Fórmula para lembrar: Aviso prévio = comunicação + prazo + pagamento."
-        }
-      ]
-    },
-    {
-      id: "aviso_previo_cabimento",
-      titulo: "Cabimento, fundamentação e situações do aviso prévio",
-      blocos: [
-        {
-          tipo: "texto",
-          texto: "A regra apresentada é que o aviso prévio é aplicável principalmente aos **contratos por prazo indeterminado**. Isso ocorre porque nesses contratos não existe uma data previamente estabelecida para o encerramento. Já no contrato por prazo determinado, a data final já é conhecida pelas partes."
-        },
-        {
-          tipo: "topico",
-          titulo: "Constituição Federal — Art. 7º, XXI",
-          texto: "Prevê o \"aviso prévio proporcional ao tempo de serviço, sendo no mínimo de trinta dias\"."
-        },
-        {
-          tipo: "topico",
-          titulo: "CLT — Art. 487, II",
-          texto: "O material apresenta a previsão de **30 dias** para aqueles que recebem por quinzena ou mês ou possuem mais de 12 meses de serviço na empresa."
-        },
-        {
-          tipo: "topico",
-          titulo: "1. Rescisão sem justa causa de contrato por prazo indeterminado",
-          texto: "Pode ocorrer por iniciativa do empregador ou do empregado. O direito ao aviso prévio será da parte que foi avisada."
-        },
-        {
-          tipo: "topico",
-          titulo: "2. Rescisão por comum acordo",
-          texto: "Também chamada de **distrato**, conforme o Art. 484-A, I, da CLT."
-        },
-        {
-          tipo: "topico",
-          titulo: "3. Rescisão indireta",
-          texto: "É a chamada **justa causa do empregador**, conforme a explicação apresentada."
-        },
-        {
-          tipo: "topico",
-          titulo: "4. Rescisão antecipada de contrato a termo",
-          texto: "Aplica-se quando o contrato possui **cláusula assecuratória do direito recíproco de rescisão antecipada**, conforme Art. 481 da CLT."
-        },
-        {
-          tipo: "topico",
-          titulo: "5. Culpa recíproca",
-          texto: "Nessa hipótese, o aviso prévio é devido **pela metade**."
-        },
-        {
-          tipo: "destaque",
-          texto: "Não há aviso prévio na rescisão por justa causa."
-        }
-      ]
-    },
-    {
-      id: "aviso_previo_proporcional",
-      titulo: "Aviso prévio proporcional",
-      blocos: [
-        {
-          tipo: "texto",
-          texto: "A Constituição estabelece que o aviso prévio deve ser proporcional ao tempo de serviço, tendo como mínimo **30 dias**. Na seção sobre a contagem proporcional, o material apresenta a regra de acréscimo de **3 dias por ano trabalhado**, com limite máximo de **90 dias**. O material também relaciona o limite de 90 dias a **20 anos de serviço**."
-        },
-        {
-          tipo: "destaque",
-          texto: "Observação sobre o próprio PDF: o título da seção é \"Contagem de prazo pós Lei 12.506/11\", mas no corpo do texto aparece \"Lei nº 12.503\". Ou seja, há uma inconsistência de numeração dentro do próprio material. Para não alterar o conteúdo da fonte, é importante saber que o PDF apresenta essas duas formas."
-        },
-        {
-          tipo: "tabela",
-          titulo: "Quadro 1 – Contagem de prazo pós Lei 12.506/11 (Página 12 do PDF)",
-          colunas: ["Tempo trabalhado", "Aviso prévio"],
-          linhas: [
-            ["Até 11 meses e 29 dias", "30 dias"],
-            ["1 ano", "33 dias"],
-            ["1 ano, 11 meses e 29 dias", "33 dias"],
-            ["2 anos", "36 dias"],
-            ["3 anos", "39 dias"],
-            ["Até o limite de 90 dias", "Conforme a proporcionalidade"],
-            ["20 anos de serviço", "90 dias"]
+          id: "fgts_multa_afastamentos",
+          titulo: "Multa de 40% e FGTS durante afastamentos",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "Quando o **empregador** decide rescindir o contrato **sem justa causa**, existe a chamada **multa de 40%**. Nesse caso, cabe ao empregador pagar uma multa correspondente a **40% sobre o montante existente na conta vinculada**. Esse montante é resultado dos depósitos realizados durante o contrato de trabalho."
+            },
+            {
+              tipo: "topico",
+              titulo: "Como é feito o pagamento da multa?",
+              texto: "O material explica que, embora a multa seja devida ao empregado quando ocorre a extinção do contrato, ela deve ser **depositada na conta vinculada**. Depois disso, o trabalhador poderá realizar o saque juntamente com o saldo disponível, observadas as regras aplicáveis."
+            },
+            {
+              tipo: "destaque",
+              texto: "Memorize: Demissão sem justa causa pelo empregador → multa de 40% sobre o montante existente na conta vinculada."
+            },
+            {
+              tipo: "topico",
+              titulo: "FGTS durante afastamentos",
+              texto: "A ideia apresentada é: o FGTS é devido quando o trabalho também é devido. Nas hipóteses de **suspensão do contrato de trabalho**, o empregado normalmente não recebe salário porque não está trabalhando e, segundo a explicação do material, o FGTS também não seria devido."
+            },
+            {
+              tipo: "lista",
+              titulo: "Exceções importantes em que o depósito do FGTS continua obrigatório",
+              itens: [
+                "afastamento para prestação de serviço militar obrigatório;",
+                "afastamento em razão de acidente de trabalho."
+              ]
+            },
+            {
+              tipo: "destaque",
+              texto: "Para prova: Suspensão do contrato → normalmente não há FGTS. Exceções: serviço militar obrigatório; acidente de trabalho."
+            }
           ]
         },
         {
-          tipo: "destaque",
-          texto: "Regra para memorizar: 30 dias + 3 dias por ano trabalhado, respeitando o limite de 90 dias."
-        }
-      ]
-    },
-    {
-      id: "aviso_previo_empregador",
-      titulo: "Aviso prévio concedido pelo empregador",
-      blocos: [
-        {
-          tipo: "texto",
-          texto: "Quando o **empregador demite o empregado sem justa causa**, é responsabilidade do empregador conceder o aviso prévio. O material apresenta duas modalidades: **aviso prévio trabalhado** e **aviso prévio indenizado**."
+          id: "aviso_previo_conceito",
+          titulo: "Aviso prévio — conceito, finalidade e características",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "O segundo grande assunto da aula é o **aviso prévio**. O aviso prévio é o instituto do Direito do Trabalho que consiste na **comunicação do fim do contrato de trabalho por uma das partes à outra**. A parte que decide romper o contrato deve comunicar a outra com antecedência prevista em lei. Caso essa comunicação não seja realizada adequadamente, poderá surgir a obrigação de pagar uma **indenização substitutiva**."
+            },
+            {
+              tipo: "topico",
+              titulo: "Finalidade do aviso prévio",
+              texto: "A finalidade do aviso prévio é evitar que uma das partes seja **surpreendida pela ruptura do contrato**. A comunicação antecipada permite que a pessoa tenha tempo para se organizar diante do encerramento da relação de trabalho."
+            },
+            {
+              tipo: "exemplo",
+              titulo: "Exemplo da lógica do aviso prévio",
+              texto: "Se o empregador decidir encerrar o contrato, o empregado recebe uma comunicação antecipada para que possa se organizar e buscar uma nova oportunidade profissional. Da mesma maneira, quando a iniciativa é do empregado, o empregador recebe a comunicação antecipada."
+            },
+            {
+              tipo: "topico",
+              titulo: "Três características do aviso prévio",
+              lista: [
+                "Comunicação: existe uma comunicação da vontade de encerrar o contrato.",
+                "Fixação de prazo: é estabelecido um período para que o término aconteça.",
+                "Pagamento: existe o pagamento correspondente ao período do aviso, que pode ser trabalhado ou indenizado."
+              ]
+            },
+            {
+              tipo: "destaque",
+              texto: "Fórmula para lembrar: Aviso prévio = comunicação + prazo + pagamento."
+            }
+          ]
         },
         {
-          tipo: "topico",
-          titulo: "Aviso prévio trabalhado",
-          texto: "O aviso prévio trabalhado ocorre quando o empregado **continua trabalhando durante o período do aviso**. Nesse caso, o Art. 488 da CLT prevê uma redução da jornada. O empregado pode **trabalhar 2 horas a menos por dia** sem prejuízo do salário integral. Existe também a possibilidade, conforme a explicação apresentada, de não utilizar a redução diária e faltar **7 dias corridos** sem prejuízo do salário integral, nas condições apresentadas pelo material."
+          id: "aviso_previo_cabimento",
+          titulo: "Cabimento, fundamentação e situações do aviso prévio",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "A regra apresentada é que o aviso prévio é aplicável principalmente aos **contratos por prazo indeterminado**. Isso ocorre porque nesses contratos não existe uma data previamente estabelecida para o encerramento. Já no contrato por prazo determinado, a data final já é conhecida pelas partes."
+            },
+            {
+              tipo: "topico",
+              titulo: "Constituição Federal — Art. 7º, XXI",
+              texto: "Prevê o \"aviso prévio proporcional ao tempo de serviço, sendo no mínimo de trinta dias\"."
+            },
+            {
+              tipo: "topico",
+              titulo: "CLT — Art. 487, II",
+              texto: "O material apresenta a previsão de **30 dias** para aqueles que recebem por quinzena ou mês ou possuem mais de 12 meses de serviço na empresa."
+            },
+            {
+              tipo: "topico",
+              titulo: "1. Rescisão sem justa causa de contrato por prazo indeterminado",
+              texto: "Pode ocorrer por iniciativa do empregador ou do empregado. O direito ao aviso prévio será da parte que foi avisada."
+            },
+            {
+              tipo: "topico",
+              titulo: "2. Rescisão por comum acordo",
+              texto: "Também chamada de **distrato**, conforme o Art. 484-A, I, da CLT."
+            },
+            {
+              tipo: "topico",
+              titulo: "3. Rescisão indireta",
+              texto: "É a chamada **justa causa do empregador**, conforme a explicação apresentada."
+            },
+            {
+              tipo: "topico",
+              titulo: "4. Rescisão antecipada de contrato a termo",
+              texto: "Aplica-se quando o contrato possui **cláusula assecuratória do direito recíproco de rescisão antecipada**, conforme Art. 481 da CLT."
+            },
+            {
+              tipo: "topico",
+              titulo: "5. Culpa recíproca",
+              texto: "Nessa hipótese, o aviso prévio é devido **pela metade**."
+            },
+            {
+              tipo: "destaque",
+              texto: "Não há aviso prévio na rescisão por justa causa."
+            }
+          ]
         },
         {
-          tipo: "topico",
-          titulo: "Renúncia ao restante do aviso",
-          texto: "O material apresenta ainda que o empregado pode **renunciar ao restante do aviso prévio** se comprovar que conseguiu um **novo emprego**."
+          id: "aviso_previo_proporcional",
+          titulo: "Aviso prévio proporcional",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "A Constituição estabelece que o aviso prévio deve ser proporcional ao tempo de serviço, tendo como mínimo **30 dias**. Na seção sobre a contagem proporcional, o material apresenta a regra de acréscimo de **3 dias por ano trabalhado**, com limite máximo de **90 dias**. O material também relaciona o limite de 90 dias a **20 anos de serviço**."
+            },
+            {
+              tipo: "destaque",
+              texto: "Observação sobre o próprio PDF: o título da seção é \"Contagem de prazo pós Lei 12.506/11\", mas no corpo do texto aparece \"Lei nº 12.503\". Ou seja, há uma inconsistência de numeração dentro do próprio material. Para não alterar o conteúdo da fonte, é importante saber que o PDF apresenta essas duas formas."
+            },
+            {
+              tipo: "tabela",
+              titulo: "Quadro 1 – Contagem de prazo pós Lei 12.506/11 (Página 12 do PDF)",
+              colunas: ["Tempo trabalhado", "Aviso prévio"],
+              linhas: [
+                ["Até 11 meses e 29 dias", "30 dias"],
+                ["1 ano", "33 dias"],
+                ["1 ano, 11 meses e 29 dias", "33 dias"],
+                ["2 anos", "36 dias"],
+                ["3 anos", "39 dias"],
+                ["Até o limite de 90 dias", "Conforme a proporcionalidade"],
+                ["20 anos de serviço", "90 dias"]
+              ]
+            },
+            {
+              tipo: "destaque",
+              texto: "Regra para memorizar: 30 dias + 3 dias por ano trabalhado, respeitando o limite de 90 dias."
+            }
+          ]
         },
         {
-          tipo: "topico",
-          titulo: "Aviso prévio indenizado",
-          texto: "O aviso prévio indenizado ocorre quando o empregado é afastado **imediatamente**, sem precisar permanecer trabalhando durante o período correspondente ao aviso. Nesse caso, o **empregador paga o valor correspondente ao período do aviso**."
+          id: "aviso_previo_empregador",
+          titulo: "Aviso prévio concedido pelo empregador",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "Quando o **empregador demite o empregado sem justa causa**, é responsabilidade do empregador conceder o aviso prévio. O material apresenta duas modalidades: **aviso prévio trabalhado** e **aviso prévio indenizado**."
+            },
+            {
+              tipo: "topico",
+              titulo: "Aviso prévio trabalhado",
+              texto: "O aviso prévio trabalhado ocorre quando o empregado **continua trabalhando durante o período do aviso**. Nesse caso, o Art. 488 da CLT prevê uma redução da jornada. O empregado pode **trabalhar 2 horas a menos por dia** sem prejuízo do salário integral. Existe também a possibilidade, conforme a explicação apresentada, de não utilizar a redução diária e faltar **7 dias corridos** sem prejuízo do salário integral, nas condições apresentadas pelo material."
+            },
+            {
+              tipo: "topico",
+              titulo: "Renúncia ao restante do aviso",
+              texto: "O material apresenta ainda que o empregado pode **renunciar ao restante do aviso prévio** se comprovar que conseguiu um **novo emprego**."
+            },
+            {
+              tipo: "topico",
+              titulo: "Aviso prévio indenizado",
+              texto: "O aviso prévio indenizado ocorre quando o empregado é afastado **imediatamente**, sem precisar permanecer trabalhando durante o período correspondente ao aviso. Nesse caso, o **empregador paga o valor correspondente ao período do aviso**."
+            },
+            {
+              tipo: "tabela",
+              titulo: "Comparação entre as modalidades",
+              colunas: ["Modalidade", "O empregado trabalha?", "O que acontece?"],
+              linhas: [
+                ["Trabalhado", "Sim", "Cumpre o período trabalhando"],
+                ["Indenizado", "Não", "Recebe o valor correspondente ao período"]
+              ]
+            }
+          ]
         },
         {
-          tipo: "tabela",
-          titulo: "Comparação entre as modalidades",
-          colunas: ["Modalidade", "O empregado trabalha?", "O que acontece?"],
-          linhas: [
-            ["Trabalhado", "Sim", "Cumpre o período trabalhando"],
-            ["Indenizado", "Não", "Recebe o valor correspondente ao período"]
+          id: "aviso_previo_empregado",
+          titulo: "Aviso prévio concedido pelo empregado",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "Quando o **empregado pede demissão**, ele passa a ter o dever de conceder o aviso prévio. Nesse caso, o aviso prévio não é apresentado como um direito do empregado, mas como um **dever do empregado**."
+            },
+            {
+              tipo: "topico",
+              titulo: "O que acontece se o empregado não cumprir o aviso?",
+              texto: "Se o empregado não conceder ou não cumprir o aviso prévio devido, o empregador poderá **descontar das verbas rescisórias o valor correspondente ao aviso prévio**. O material fundamenta isso no Art. 487, §2º, da CLT."
+            },
+            {
+              tipo: "destaque",
+              texto: "Memorize: Empregado pede demissão e não cumpre o aviso → pode haver desconto nas verbas rescisórias."
+            },
+            {
+              tipo: "topico",
+              titulo: "Não existe redução da jornada quando o empregado pede demissão",
+              texto: "A redução da jornada durante o aviso prévio **não será aplicada quando o aviso é concedido pelo empregado**. A explicação apresentada é que, quando o próprio empregado toma a iniciativa de encerrar o contrato, presume-se que ele já tenha encontrado uma nova oportunidade."
+            },
+            {
+              tipo: "topico",
+              titulo: "Pagamento indenizado pelo empregado",
+              texto: "Quando o empregado deveria cumprir o aviso, mas não o faz, o pagamento correspondente pode ocorrer por meio de **desconto nas verbas rescisórias**."
+            },
+            {
+              tipo: "tabela",
+              titulo: "Comparação: aviso pelo empregador × aviso pelo empregado",
+              colunas: ["Situação", "Empregador concede", "Empregado concede"],
+              linhas: [
+                ["Iniciativa", "Empregador", "Empregado"],
+                ["Exemplo", "Demissão sem justa causa", "Pedido de demissão"],
+                ["Aviso trabalhado", "Sim", "Sim, quando devido"],
+                ["Redução de 2h/dia", "Sim, conforme o material", "Não"],
+                ["Não cumprimento", "Empregador paga valor correspondente", "Pode haver desconto nas verbas rescisórias"],
+                ["Aviso indenizado", "Empregador paga", "Pode ocorrer desconto das verbas rescisórias"]
+              ]
+            }
+          ]
+        },
+        {
+          id: "elementos_visuais",
+          titulo: "Elementos visuais relevantes do PDF",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "Capa (Página 1)",
+              texto: "A capa apresenta o título \"Fundo de Garantia por Tempo de Serviço\", com uma composição visual relacionada ao Direito, contendo elementos como martelo de juiz, balança da justiça e livros/ambiente jurídico."
+            },
+            {
+              tipo: "topico",
+              titulo: "Página de objetivos e temas (Página 5)",
+              texto: "A página apresenta visualmente os Objetivos de Aprendizagem e os Temas da aula. A estrutura destaca os dois grandes assuntos: FGTS e aviso prévio."
+            },
+            {
+              tipo: "topico",
+              titulo: "Figura 1 – Movimentação do FGTS (Página 8)",
+              texto: "É o principal diagrama conceitual da aula, já incluído como bloco de imagem na seção \"Movimentação do FGTS\". O centro apresenta \"Movimentação do FGTS\", enquanto diferentes situações legais aparecem ao redor, representando hipóteses de movimentação da conta."
+            },
+            {
+              tipo: "topico",
+              titulo: "Quadro 1 – Contagem de prazo pós Lei 12.506/11 (Página 12)",
+              texto: "Tabela que relaciona o tempo trabalhado à quantidade de dias de aviso prévio, já transcrita integralmente como bloco de tabela na seção \"Aviso prévio proporcional\". Ela visualmente organiza a progressão: 30 → 33 → 36 → 39 dias → até 90 dias."
+            }
+          ]
+        },
+        {
+          id: "relacao_pontos_importantes",
+          titulo: "Relação entre FGTS e aviso prévio, e pontos importantes",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "Os dois institutos estudados estão relacionados ao contrato de trabalho, mas possuem funções diferentes."
+            },
+            {
+              tipo: "topico",
+              titulo: "FGTS",
+              texto: "É formado por **depósitos mensais** realizados pelo empregador em uma conta vinculada e possui finalidade de proteção financeira do trabalhador nas hipóteses previstas."
+            },
+            {
+              tipo: "topico",
+              titulo: "Aviso prévio",
+              texto: "É uma **comunicação antecipada da intenção de encerrar o contrato**, acompanhada do respectivo período e pagamento, seja trabalhado ou indenizado."
+            },
+            {
+              tipo: "destaque",
+              texto: "Diferença essencial: FGTS → depósito/reserva vinculada ao trabalhador. Aviso prévio → comunicação e período relacionado ao encerramento do contrato."
+            },
+            {
+              tipo: "topico",
+              titulo: "Pontos mais importantes para memorizar — FGTS",
+              lista: [
+                "Significa Fundo de Garantia por Tempo de Serviço.",
+                "É destinado aos trabalhadores abrangidos pelas regras apresentadas no material.",
+                "É depositado em conta vinculada à Caixa Econômica Federal.",
+                "Regra geral: 8% da remuneração.",
+                "Aprendiz: 2%.",
+                "Depósito mensal: até o dia 7.",
+                "O FGTS não é pago diretamente ao empregado.",
+                "A movimentação ocorre somente nas hipóteses previstas.",
+                "Demissão sem justa causa pelo empregador → multa de 40%.",
+                "Suspensão do contrato → em regra, não há FGTS.",
+                "Exceções destacadas: serviço militar obrigatório e acidente de trabalho."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Pontos mais importantes para memorizar — Aviso prévio",
+              lista: [
+                "É a comunicação antecipada do fim do contrato.",
+                "Sua finalidade é evitar uma ruptura inesperada.",
+                "Possui três elementos: comunicação, prazo e pagamento.",
+                "Em regra, aplica-se aos contratos por prazo indeterminado.",
+                "Mínimo apresentado: 30 dias.",
+                "Há proporcionalidade pelo tempo de serviço.",
+                "A regra apresentada acrescenta 3 dias por ano, até o limite de 90 dias.",
+                "Pode ser trabalhado ou indenizado.",
+                "Na demissão sem justa causa pelo empregador, o aviso é responsabilidade do empregador.",
+                "No aviso trabalhado concedido pelo empregador, há redução de 2 horas diárias ou possibilidade de ausência de 7 dias corridos, conforme o material.",
+                "No pedido de demissão, o aviso passa a ser dever do empregado.",
+                "Se o empregado não cumprir o aviso devido, pode haver desconto nas verbas rescisórias.",
+                "A redução da jornada não se aplica ao aviso concedido pelo empregado.",
+                "Não cabe aviso prévio na justa causa."
+              ]
+            }
+          ]
+        },
+        {
+          id: "mapa_mental",
+          titulo: "Mapa mental da aula",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "Estrutura geral: Fundo de Garantia por Tempo de Serviço",
+              lista: [
+                "FGTS: Conceito (Fundo de Garantia por Tempo de Serviço, Depósitos mensais, Conta vinculada)",
+                "FGTS: Alíquotas (Empregado → 8%, Aprendiz → 2%)",
+                "FGTS: Recolhimento (Até dia 7)",
+                "FGTS: Movimentação (Aposentadoria, Demissão sem justa causa, Doenças previstas, Extinção da empresa, Rescisão indireta, Desastre natural, Conta inativa, Término de contrato, Aquisição de moradia)",
+                "FGTS: Multa (40% na demissão sem justa causa)",
+                "FGTS: Afastamentos (Regra → não há FGTS; Serviço militar → há FGTS; Acidente de trabalho → há FGTS)",
+                "Aviso prévio: Conceito (Comunicação do término do contrato)",
+                "Aviso prévio: Finalidade (Evitar surpresa com a ruptura)",
+                "Aviso prévio: Características (Comunicação, Prazo, Pagamento)",
+                "Aviso prévio: Cabimento (Sem justa causa, Comum acordo, Rescisão indireta, Contrato a termo com cláusula específica, Culpa recíproca → metade)",
+                "Aviso prévio: Não cabe (Justa causa)",
+                "Aviso prévio: Proporcionalidade (Mínimo → 30 dias, +3 dias por ano, Máximo → 90 dias)",
+                "Aviso prévio: Empregador (Trabalhado: -2h por dia ou 7 dias corridos; Indenizado)",
+                "Aviso prévio: Empregado (Pedido de demissão, Aviso é dever, Sem redução da jornada, Não cumprimento → possível desconto)"
+              ]
+            }
+          ]
+        },
+        {
+          id: "resumo_final",
+          titulo: "Resumo final",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "A aula apresenta dois importantes institutos do Direito do Trabalho: **FGTS e aviso prévio**. O **FGTS** é um fundo constituído por depósitos mensais realizados pelo empregador em uma conta vinculada. A regra apresentada é de **8% da remuneração**, sendo **2% para aprendizes**. O depósito deve ser realizado até o **dia 7 de cada mês**, e o trabalhador somente pode movimentar os valores nas hipóteses previstas. Entre essas hipóteses estão aposentadoria, demissão sem justa causa, determinadas doenças, extinção da empresa, rescisão indireta, término de contrato e aquisição de moradia."
+            },
+            {
+              tipo: "texto",
+              texto: "Na **demissão sem justa causa promovida pelo empregador**, o material apresenta a **multa de 40%** sobre o montante existente na conta vinculada. Em relação aos afastamentos, a regra apresentada é de que não há FGTS durante a suspensão do contrato, mas existem duas exceções destacadas: **serviço militar obrigatório e acidente de trabalho**."
+            },
+            {
+              tipo: "texto",
+              texto: "O **aviso prévio**, por sua vez, é a comunicação antecipada da intenção de encerrar o contrato. Sua finalidade é evitar que uma das partes seja surpreendida pela ruptura. O material destaca três elementos: **comunicação, prazo e pagamento**. O aviso é, em regra, aplicável aos contratos por prazo indeterminado e possui mínimo de **30 dias**, sendo apresentado como proporcional ao tempo de serviço, com acréscimo de **3 dias por ano**, até o limite de **90 dias**."
+            },
+            {
+              tipo: "texto",
+              texto: "Quando o **empregador** concede o aviso em uma demissão sem justa causa, ele pode ser **trabalhado ou indenizado**. No aviso trabalhado, o material apresenta a redução de **2 horas diárias** ou a possibilidade de **7 dias corridos** de ausência, sem prejuízo do salário integral, nas condições descritas. Quando o **empregado pede demissão**, o aviso passa a ser um dever, e o seu não cumprimento pode resultar em desconto nas verbas rescisórias."
+            },
+            {
+              tipo: "destaque",
+              texto: "Para memorizar a essência da aula: FGTS = depósitos mensais + proteção financeira + hipóteses legais de movimentação. Aviso prévio = comunicação antecipada + prazo + pagamento na ruptura contratual."
+            }
           ]
         }
       ]
     },
+    // aula 5
     {
-      id: "aviso_previo_empregado",
-      titulo: "Aviso prévio concedido pelo empregado",
-      blocos: [
-        {
-          tipo: "texto",
-          texto: "Quando o **empregado pede demissão**, ele passa a ter o dever de conceder o aviso prévio. Nesse caso, o aviso prévio não é apresentado como um direito do empregado, mas como um **dever do empregado**."
-        },
-        {
-          tipo: "topico",
-          titulo: "O que acontece se o empregado não cumprir o aviso?",
-          texto: "Se o empregado não conceder ou não cumprir o aviso prévio devido, o empregador poderá **descontar das verbas rescisórias o valor correspondente ao aviso prévio**. O material fundamenta isso no Art. 487, §2º, da CLT."
-        },
-        {
-          tipo: "destaque",
-          texto: "Memorize: Empregado pede demissão e não cumpre o aviso → pode haver desconto nas verbas rescisórias."
-        },
-        {
-          tipo: "topico",
-          titulo: "Não existe redução da jornada quando o empregado pede demissão",
-          texto: "A redução da jornada durante o aviso prévio **não será aplicada quando o aviso é concedido pelo empregado**. A explicação apresentada é que, quando o próprio empregado toma a iniciativa de encerrar o contrato, presume-se que ele já tenha encontrado uma nova oportunidade."
-        },
-        {
-          tipo: "topico",
-          titulo: "Pagamento indenizado pelo empregado",
-          texto: "Quando o empregado deveria cumprir o aviso, mas não o faz, o pagamento correspondente pode ocorrer por meio de **desconto nas verbas rescisórias**."
-        },
-        {
-          tipo: "tabela",
-          titulo: "Comparação: aviso pelo empregador × aviso pelo empregado",
-          colunas: ["Situação", "Empregador concede", "Empregado concede"],
-          linhas: [
-            ["Iniciativa", "Empregador", "Empregado"],
-            ["Exemplo", "Demissão sem justa causa", "Pedido de demissão"],
-            ["Aviso trabalhado", "Sim", "Sim, quando devido"],
-            ["Redução de 2h/dia", "Sim, conforme o material", "Não"],
-            ["Não cumprimento", "Empregador paga valor correspondente", "Pode haver desconto nas verbas rescisórias"],
-            ["Aviso indenizado", "Empregador paga", "Pode ocorrer desconto das verbas rescisórias"]
-          ]
-        }
-      ]
+    aula: "Cessação (ou extinção) do contrato de trabalho",
+    ideia_central: "O contrato de trabalho, em regra pactuado por prazo indeterminado, pode se extinguir por diferentes modalidades — sem justa causa, com justa causa, pedido de demissão, rescisão indireta, culpa recíproca, força maior e fato do príncipe, dispensa coletiva/PDV e acordo entre as partes — cada uma com hipóteses legais próprias e verbas rescisórias específicas.",
+    secoes: [
+    {
+    id: "apresentacao",
+    titulo: "Apresentação da Aula",
+    blocos: [
+    {
+    tipo: "lista",
+    titulo: "Objetivos de Aprendizagem",
+    itens: [
+    "Explicar as modalidades de extinção do contrato de trabalho;",
+    "observar as hipóteses e a aplicação de cada uma delas e saber identificá-las quanto ao seu surgimento dos institutos;",
+    "organizar todo o conhecimento obtido até aqui sobre todo o desenvolver da relação empregatícia."
+    ]
     },
     {
-      id: "elementos_visuais",
-      titulo: "Elementos visuais relevantes do PDF",
-      blocos: [
-        {
-          tipo: "topico",
-          titulo: "Capa (Página 1)",
-          texto: "A capa apresenta o título \"Fundo de Garantia por Tempo de Serviço\", com uma composição visual relacionada ao Direito, contendo elementos como martelo de juiz, balança da justiça e livros/ambiente jurídico. id: `capa_fundo_garantia_tempo_servico`."
-        },
-        {
-          tipo: "topico",
-          titulo: "Página de objetivos e temas (Página 5)",
-          texto: "A página apresenta visualmente os Objetivos de Aprendizagem e os Temas da aula. A estrutura destaca os dois grandes assuntos: FGTS e aviso prévio. id: `objetivos_temas_fgts_aviso_previo`."
-        },
-        {
-          tipo: "topico",
-          titulo: "Figura 1 – Movimentação do FGTS (Página 8)",
-          texto: "É o principal diagrama conceitual da aula. O centro apresenta \"Movimentação do FGTS\", enquanto diferentes situações legais aparecem ao redor, representando hipóteses de movimentação da conta. id: `figura_1_movimentacao_fgts`."
-        },
-        {
-          tipo: "topico",
-          titulo: "Quadro 1 – Contagem de prazo pós Lei 12.506/11 (Página 12)",
-          texto: "Tabela que relaciona o tempo trabalhado à quantidade de dias de aviso prévio. Ela visualmente organiza a progressão: 30 → 33 → 36 → 39 dias → até 90 dias. id: `quadro_1_contagem_aviso_previo`."
-        }
-      ]
+    tipo: "lista",
+    titulo: "Temas",
+    itens: [
+    "Introdução",
+    "1 Cessação do contrato de trabalho",
+    "2 Tipos de extinção do contrato de trabalho",
+    "Considerações finais",
+    "Referências"
+    ]
     },
     {
-      id: "relacao_pontos_importantes",
-      titulo: "Relação entre FGTS e aviso prévio, e pontos importantes",
-      blocos: [
-        {
-          tipo: "texto",
-          texto: "Os dois institutos estudados estão relacionados ao contrato de trabalho, mas possuem funções diferentes."
-        },
-        {
-          tipo: "topico",
-          titulo: "FGTS",
-          texto: "É formado por **depósitos mensais** realizados pelo empregador em uma conta vinculada e possui finalidade de proteção financeira do trabalhador nas hipóteses previstas."
-        },
-        {
-          tipo: "topico",
-          titulo: "Aviso prévio",
-          texto: "É uma **comunicação antecipada da intenção de encerrar o contrato**, acompanhada do respectivo período e pagamento, seja trabalhado ou indenizado."
-        },
-        {
-          tipo: "destaque",
-          texto: "Diferença essencial: FGTS → depósito/reserva vinculada ao trabalhador. Aviso prévio → comunicação e período relacionado ao encerramento do contrato."
-        },
-        {
-          tipo: "topico",
-          titulo: "Pontos mais importantes para memorizar — FGTS",
-          lista: [
-            "Significa Fundo de Garantia por Tempo de Serviço.",
-            "É destinado aos trabalhadores abrangidos pelas regras apresentadas no material.",
-            "É depositado em conta vinculada à Caixa Econômica Federal.",
-            "Regra geral: 8% da remuneração.",
-            "Aprendiz: 2%.",
-            "Depósito mensal: até o dia 7.",
-            "O FGTS não é pago diretamente ao empregado.",
-            "A movimentação ocorre somente nas hipóteses previstas.",
-            "Demissão sem justa causa pelo empregador → multa de 40%.",
-            "Suspensão do contrato → em regra, não há FGTS.",
-            "Exceções destacadas: serviço militar obrigatório e acidente de trabalho."
-          ]
-        },
-        {
-          tipo: "topico",
-          titulo: "Pontos mais importantes para memorizar — Aviso prévio",
-          lista: [
-            "É a comunicação antecipada do fim do contrato.",
-            "Sua finalidade é evitar uma ruptura inesperada.",
-            "Possui três elementos: comunicação, prazo e pagamento.",
-            "Em regra, aplica-se aos contratos por prazo indeterminado.",
-            "Mínimo apresentado: 30 dias.",
-            "Há proporcionalidade pelo tempo de serviço.",
-            "A regra apresentada acrescenta 3 dias por ano, até o limite de 90 dias.",
-            "Pode ser trabalhado ou indenizado.",
-            "Na demissão sem justa causa pelo empregador, o aviso é responsabilidade do empregador.",
-            "No aviso trabalhado concedido pelo empregador, há redução de 2 horas diárias ou possibilidade de ausência de 7 dias corridos, conforme o material.",
-            "No pedido de demissão, o aviso passa a ser dever do empregado.",
-            "Se o empregado não cumprir o aviso devido, pode haver desconto nas verbas rescisórias.",
-            "A redução da jornada não se aplica ao aviso concedido pelo empregado.",
-            "Não cabe aviso prévio na justa causa."
-          ]
-        }
-      ]
-    },
-    {
-      id: "mapa_mental",
-      titulo: "Mapa mental da aula",
-      blocos: [
-        {
-          tipo: "topico",
-          titulo: "Estrutura geral: Fundo de Garantia por Tempo de Serviço",
-          lista: [
-            "FGTS: Conceito (Fundo de Garantia por Tempo de Serviço, Depósitos mensais, Conta vinculada)",
-            "FGTS: Alíquotas (Empregado → 8%, Aprendiz → 2%)",
-            "FGTS: Recolhimento (Até dia 7)",
-            "FGTS: Movimentação (Aposentadoria, Demissão sem justa causa, Doenças previstas, Extinção da empresa, Rescisão indireta, Desastre natural, Conta inativa, Término de contrato, Aquisição de moradia)",
-            "FGTS: Multa (40% na demissão sem justa causa)",
-            "FGTS: Afastamentos (Regra → não há FGTS; Serviço militar → há FGTS; Acidente de trabalho → há FGTS)",
-            "Aviso prévio: Conceito (Comunicação do término do contrato)",
-            "Aviso prévio: Finalidade (Evitar surpresa com a ruptura)",
-            "Aviso prévio: Características (Comunicação, Prazo, Pagamento)",
-            "Aviso prévio: Cabimento (Sem justa causa, Comum acordo, Rescisão indireta, Contrato a termo com cláusula específica, Culpa recíproca → metade)",
-            "Aviso prévio: Não cabe (Justa causa)",
-            "Aviso prévio: Proporcionalidade (Mínimo → 30 dias, +3 dias por ano, Máximo → 90 dias)",
-            "Aviso prévio: Empregador (Trabalhado: -2h por dia ou 7 dias corridos; Indenizado)",
-            "Aviso prévio: Empregado (Pedido de demissão, Aviso é dever, Sem redução da jornada, Não cumprimento → possível desconto)"
-          ]
-        }
-      ]
-    },
-    {
-      id: "resumo_final",
-      titulo: "Resumo final",
-      blocos: [
-        {
-          tipo: "texto",
-          texto: "A aula apresenta dois importantes institutos do Direito do Trabalho: **FGTS e aviso prévio**. O **FGTS** é um fundo constituído por depósitos mensais realizados pelo empregador em uma conta vinculada. A regra apresentada é de **8% da remuneração**, sendo **2% para aprendizes**. O depósito deve ser realizado até o **dia 7 de cada mês**, e o trabalhador somente pode movimentar os valores nas hipóteses previstas. Entre essas hipóteses estão aposentadoria, demissão sem justa causa, determinadas doenças, extinção da empresa, rescisão indireta, término de contrato e aquisição de moradia."
-        },
-        {
-          tipo: "texto",
-          texto: "Na **demissão sem justa causa promovida pelo empregador**, o material apresenta a **multa de 40%** sobre o montante existente na conta vinculada. Em relação aos afastamentos, a regra apresentada é de que não há FGTS durante a suspensão do contrato, mas existem duas exceções destacadas: **serviço militar obrigatório e acidente de trabalho**."
-        },
-        {
-          tipo: "texto",
-          texto: "O **aviso prévio**, por sua vez, é a comunicação antecipada da intenção de encerrar o contrato. Sua finalidade é evitar que uma das partes seja surpreendida pela ruptura. O material destaca três elementos: **comunicação, prazo e pagamento**. O aviso é, em regra, aplicável aos contratos por prazo indeterminado e possui mínimo de **30 dias**, sendo apresentado como proporcional ao tempo de serviço, com acréscimo de **3 dias por ano**, até o limite de **90 dias**."
-        },
-        {
-          tipo: "texto",
-          texto: "Quando o **empregador** concede o aviso em uma demissão sem justa causa, ele pode ser **trabalhado ou indenizado**. No aviso trabalhado, o material apresenta a redução de **2 horas diárias** ou a possibilidade de **7 dias corridos** de ausência, sem prejuízo do salário integral, nas condições descritas. Quando o **empregado pede demissão**, o aviso passa a ser um dever, e o seu não cumprimento pode resultar em desconto nas verbas rescisórias."
-        },
-        {
-          tipo: "destaque",
-          texto: "Para memorizar a essência da aula: FGTS = depósitos mensais + proteção financeira + hipóteses legais de movimentação. Aviso prévio = comunicação antecipada + prazo + pagamento na ruptura contratual."
-        }
-      ]
+    tipo: "texto",
+    texto: "Você está iniciado o estudo sobre o fim da relação de trabalho. Depois de percorremos a caminhada de toda a validação sobre a relação trabalhista, enfim chegamos às formas de extinção do instrumento que desencadeou todos os institutos e efeitos estudados até aqui. Neste módulo, você verá diversas maneiras de encerramento da relação, inclusive aquelas que existem a culpa recíproca, a culpa do empregado, a culpa do empregador e que poderá também não existir culpa de nenhuma das partes, somente a tão simples ausência em continuar o vínculo. Iremos aprender os pontos principais deste fim."
     }
-  ]
-}
+    ]
+    },
+    {
+    id: "cessacao_contrato_trabalho",
+    titulo: "1 Cessação do Contrato de Trabalho",
+    blocos: [
+    {
+    tipo: "texto",
+    texto: "Conforme o que estudamos no módulo sobre o contrato de trabalho, eles em regra possuem características a serem pactuadas para por prazo indeterminado. Aqui importa dizer a você que este fim pode ser motivado por qualquer das partes, não importando o tempo, desde que haja notificação anterior à parte interessada na extinção."
+    }
+    ]
+    },
+    {
+    id: "sem_justa_causa",
+    titulo: "2.a Sem Justa Causa",
+    blocos: [
+    {
+    tipo: "texto",
+    texto: "Acontece quando o empregador decide pôr fim ao contrato de trabalho e, para isso, não aconteceu nenhuma falta por parte do empregado que justifique a medida tomada."
+    },
+    {
+    tipo: "lista",
+    titulo: "Verbas rescisórias devidas na extinção sem justa causa",
+    itens: [
+    "Saldo de salário",
+    "Aviso prévio",
+    "13º salário proporcional",
+    "Férias vencidas acrescidas de 1/3 (se houver)",
+    "Férias proporcionais (acrescidas do 1/3 constitucional)",
+    "Multa de 40% sobre os depósitos do FGTS"
+    ]
+    }
+    ]
+    },
+    {
+    id: "com_justa_causa",
+    titulo: "2.b Com Justa Causa",
+    blocos: [
+    {
+    tipo: "texto",
+    texto: "Essa hipótese de extinção do contrato de trabalho é a que reúne uma série de faltas graves cometidas pelo empregado para que a extinção do contrato seja dada como consequência."
+    },
+    {
+    tipo: "destaque",
+    texto: "Os termos de justa causa e falta grave não são sinônimos. Justa causa é a forma da extinção e falta grave é a conduta irregular, cometida repetidas vezes ou não. Ou seja, é a motivação que ocasiona a justa causa."
+    },
+    {
+    tipo: "texto",
+    texto: "Antes de analisarmos os detalhes da justa causa, precisamos passar (mais uma vez) pelo estudo principiológico da justa causa, que como você já sabe, serve para que compreendamos qual é o objetivo basilar que guarda aquele instituto. Dentre os princípios da justa causa temos os seguintes:"
+    },
+    {
+    tipo: "tabela",
+    titulo: "Quadro 1 – Princípios da justa causa",
+    colunas: ["Princípios", "Conceito"],
+    linhas: [
+    ["Princípio da imediatividade", "Impõe que a falta grave precisa ser punida imediatamente, não adiantando tomar ciência do fato e só buscar por sua punição depois de passado algum tempo."],
+    ["Princípio da isonomia do tratamento", "É a garantia de que todos os empregados incluídos na falta grave terão a mesma punição."],
+    ["Princípio da taxatividade", "Fixa a garantia de que, para que uma conduta seja verdadeiramente definida como falta grave, ela terá que estar assim estabelecida em lei. Não adiantando a criação de uma conduta como falta grave, ela terá que está taxada em lei."],
+    ["Bis in Iden", "Determina a proibição da reunião de duas punições devido a mesma falta pelo mesmo empregado."]
+    ]
+    },
+    {
+    tipo: "texto",
+    texto: "Fonte: Autora."
+    },
+    {
+    tipo: "texto",
+    texto: "Depois de te apresentar os princípios fundamentadores da falta grave, vou te apresentar quais são as condutas. Elas estão taxadas no Art. 482 da CLT, acompanhe:"
+    },
+    {
+    tipo: "lista",
+    titulo: "Art. 482 da CLT – Constituem justa causa para rescisão do contrato de trabalho pelo empregador",
+    itens: [
+    "ato de improbidade;",
+    "incontinência de conduta ou mau procedimento;",
+    "negociação habitual por conta própria ou alheia sem permissão do empregador, e quando constituir ato de concorrência à empresa para a qual trabalha o empregado, ou for prejudicial ao serviço;",
+    "condenação criminal do empregado, passada em julgado, caso não tenha havido suspensão da execução da pena;",
+    "desídia no desempenho das respectivas funções;",
+    "embriaguez habitual ou em serviço;",
+    "violação de segredo da empresa;",
+    "ato de indisciplina ou de insubordinação;",
+    "abandono de emprego;",
+    "ato lesivo da honra ou da boa fama praticado no serviço contra qualquer pessoa, ou ofensas físicas, nas mesmas condições, salvo em caso de legítima defesa, própria ou de outrem;",
+    "ato lesivo da honra ou da boa fama ou ofensas físicas praticadas contra o empregador e superiores hierárquicos, salvo em caso de legítima defesa, própria ou de outrem;",
+    "prática constante de jogos de azar;",
+    "perda da habilitação ou dos requisitos estabelecidos em lei para o exercício da profissão, em decorrência de conduta dolosa do empregado."
+    ]
+    },
+    {
+    tipo: "texto",
+    texto: "Parágrafo único – constitui igualmente justa causa para dispensa de empregado a prática, devidamente comprovada em inquérito administrativo, de atos atentatórios à segurança nacional."
+    },
+    {
+    tipo: "lista",
+    titulo: "Detalhamento das hipóteses de justa causa",
+    itens: [
+    "**Ato de improbidade**: qualquer atitude que viole o patrimônio do empregador é considerada ato improbo.",
+    "**Incontinência de conduta ou mau procedimento**: a incontinência de conduta faz referência aos atos que atentem contra a dignidade sexual dos empregados e o mau procedimento tem relação aos comportamentos em conflito com as regras de boa convivência.",
+    "**Negociação habitual**: a prática repetida de faltas graves por parte do empregado.",
+    "**Condenação criminal**: o empregado condenado criminalmente, com trânsito em julgado da decisão penal e reclusão (impossibilidade de aparecer no trabalho) do empregado.",
+    "**Desídia**: é o famoso 'enrolar serviço', quando o empregado não cumpre suas funções da forma adequada.",
+    "**Embriaguez habitual ou em serviço**: a embriaguez habitual é doença como já temos conhecimento, se o empregado sofrer deste mal, ele será afastado e direcionado ao INSS para que fique recebendo auxílio, mas o vínculo com a empresa fica mantido. Já embriaguez em serviço caracteriza justa causa, pois durante o horário de expediente o empregado não pode estar fazendo uso de álcool.",
+    "**Violação de segredo de empresa**: acontece quando o empregado usa da confiança em saber de um segredo próprio da empresa e o dá publicidade.",
+    "**Indisciplina ou insubordinação**: indisciplina é a desobediência às regras gerais relativas aos serviços, comuns a todos da empresa. Já a insubordinação é a desobediência às regras de ordem específica, relacionadas à particularidade do serviço.",
+    "**Abandono de emprego**: é a quebra da habitualidade (requisito caracterizador da relação trabalhista), ou seja, da espera que o empregado torne ao emprego e continue a atividade laboral.",
+    "**Ato lesivo à honra, à boa fama e à ofensa física**: caracterizadas pelas agressões verbais, a superiores ou ao empregado. As ofensas realizadas contra o empregado somente se caracterizam durante o horário de expediente e dentro da empresa. Já a ofensa realizada contra o empregador será caracterizada como justa causa em qualquer local e horário.",
+    "**Prática constante de jogos de azar**: realização de jogos que se relacionem ao dinheiro, durante o tempo de serviço e que sejam ilegais (cumulativos os 3 requisitos).",
+    "**Atos atentatórios à segurança nacional**: caracterizam atos de terrorismo, vandalismo e demais manifestações imoderadas e excessivas."
+    ]
+    }
+    ]
+    },
+    {
+    id: "pedido_demissao_rescisao_indireta",
+    titulo: "2.c Pedido de Demissão e Rescisão Indireta",
+    blocos: [
+    {
+    tipo: "texto",
+    texto: "Temos ainda estes dois tipos de extinção, que são importantes para que você possua a clareza dos institutos. O primeiro, que é o pedido de demissão, acontece quando o empregado opta por sua vontade pedir a demissão, e o empregador não poderá se obstacularizar à escolha. No pedido de demissão, as verbas rescisórias cabíveis a esta modalidade são as seguintes: saldo de salário, 13º proporcional, férias vencidas acrescidas de 1/3, se houver, férias proporcionais acrescidas de 1/3."
+    },
+    {
+    tipo: "texto",
+    texto: "Já na rescisão indireta, por mais que a iniciativa de colocar fim ao contrato de trabalho seja do empregado, ele só o faz em razão do empregador ter cometido faltas graves que estão previstas no Art. 483 da CLT na constância da relação trabalhista, veja quais são a seguir:"
+    },
+    {
+    tipo: "lista",
+    titulo: "Art. 483 da CLT – O empregado poderá considerar rescindido o contrato e pleitear a devida indenização quando",
+    itens: [
+    "a. forem exigidos serviços superiores às suas forças, defesos por lei, contrários aos bons costumes, ou alheios ao contrato;",
+    "b. for tratado pelo empregador ou por seus superiores hierárquicos com rigor excessivo;",
+    "c. correr perigo manifesto de mal considerável;",
+    "d. não cumprir o empregador as obrigações do contrato;",
+    "e. praticar o empregador ou seus prepostos, contra ele ou pessoas de sua família, ato lesivo da honra e boa fama;",
+    "f. o empregador ou seus prepostos ofenderem-no fisicamente, salvo em caso de legítima defesa, própria ou de outrem;",
+    "g. o empregador reduzir o seu trabalho, sendo este por peça ou tarefa, de forma a afetar sensivelmente a importância dos salários."
+    ]
+    },
+    {
+    tipo: "lista",
+    titulo: "Parágrafos do Art. 483 da CLT",
+    itens: [
+    "§ 1º - O empregado poderá suspender a prestação dos serviços ou rescindir o contrato, quando tiver de desempenhar obrigações legais, incompatíveis com a continuação do serviço.",
+    "§ 2º - No caso de morte do empregador constituído em empresa individual, é facultado ao empregado rescindir o contrato de trabalho.",
+    "§ 3º - Nas hipóteses das letras 'd' e 'g', poderá o empregado pleitear a rescisão de seu contrato de trabalho e o pagamento das respectivas indenizações, permanecendo ou não no serviço até final decisão do processo."
+    ]
+    },
+    {
+    tipo: "destaque",
+    texto: "Neste tipo de extinção do contrato de trabalho, também são levados em consideração os princípios/requisitos (bis in iden, taxatividade, isonomia e imediatividade) apresentados na justa causa, pois aqui também são cometidas faltas graves, porém a diferença é que elas partem do empregador."
+    },
+    {
+    tipo: "texto",
+    texto: "Quanto às verbas rescisórias, as devidas são as seguintes: saldo de salário, aviso prévio, 13º proporcional, férias vencidas, acrescidas de 1/3, se houver, férias proporcionais acrescidas de 1/3 e a multa de 40% sobre os depósitos do FGTS."
+    }
+    ]
+    },
+    {
+    id: "culpa_reciproca",
+    titulo: "2.d Culpa Recíproca",
+    blocos: [
+    {
+    tipo: "texto",
+    texto: "Uma das modalidades de extinção do contrato de trabalho é a por culpa recíproca, que, como o nome mesmo diz, é o tipo pelo qual o empregador e o empregado concorrem no mesmo grau de responsabilidade pelo fim do contrato de trabalho, considerando que os dois cometeram faltas graves, de acordo com o que trata o Art. 484 da CLT."
+    },
+    {
+    tipo: "citacao",
+    texto: "Havendo culpa recíproca no ato que determinou a rescisão do contrato de trabalho, o tribunal de trabalho reduzirá a indenização à que seria devida em caso de culpa exclusiva do empregador, por metade.",
+    autor: "Art. 484 da CLT"
+    },
+    {
+    tipo: "texto",
+    texto: "Na culpa recíproca, o empregado possui a garantia de receber todas as verbas rescisórias, porém, como dito acima, tudo pela metade."
+    }
+    ]
+    },
+    {
+    id: "forca_maior_fato_principe",
+    titulo: "2.e Força Maior e Fato do Príncipe",
+    blocos: [
+    {
+    tipo: "texto",
+    texto: "Nesta modalidade de extinção, acontece o fim do contrato de trabalho por motivos involuntários à vontade tanto do empregador quanto do empregado. Temos dois tipos de exemplos bem compreensíveis sobre a ausência da iniciativa em extinguir o contrato de trabalho."
+    },
+    {
+    tipo: "subtitulo",
+    texto: "Força maior"
+    },
+    {
+    tipo: "texto",
+    texto: "A motivação por força maior apresenta, como o nome mesmo já dispõe, um motivo pelo qual não se pode suportar. A CLT trata a definição de força maior e de seus reflexos nos Art. 501 e 502, como você verá a seguir:"
+    },
+    {
+    tipo: "citacao",
+    texto: "Entende-se como força maior todo acontecimento inevitável, em relação à vontade do empregador, e para a realização do qual este não concorreu, direta ou indiretamente.",
+    autor: "Art. 501 da CLT"
+    },
+    {
+    tipo: "lista",
+    titulo: "Parágrafos do Art. 501 da CLT",
+    itens: [
+    "§ 1º - A imprevidência do empregador exclui a razão de força maior.",
+    "§ 2º - A ocorrência do motivo de força maior que não afetar substancialmente, nem for suscetível de afetar, em tais condições, a situação econômica e financeira da empresa não se aplica às restrições desta Lei referentes ao disposto neste capítulo."
+    ]
+    },
+    {
+    tipo: "texto",
+    texto: "Art. 502 - Ocorrendo motivo de força maior que determine a extinção da empresa, ou de um dos estabelecimentos em que trabalhe o empregado, é assegurada a este, quando despedido, uma indenização na forma seguinte:"
+    },
+    {
+    tipo: "lista",
+    titulo: "Art. 502 da CLT",
+    itens: [
+    "I - Sendo estável, nos termos dos Arts. 477 e 478;",
+    "II - Não tendo direito à estabilidade, metade da que seria devida em caso de rescisão sem justa causa;",
+    "III - Havendo contrato por prazo determinado, aquela a que se refere o Art. 479 desta Lei, reduzida igualmente à metade."
+    ]
+    },
+    {
+    tipo: "texto",
+    texto: "No campo trabalhista, as motivações de força maior são geralmente ligadas aos desastres de ordem natural, como deslizamentos de terra, enchentes entre outras, ou seja, acontecimentos dos quais a vontade humana não possui controle algum."
+    },
+    {
+    tipo: "subtitulo",
+    texto: "Fato do príncipe"
+    },
+    {
+    tipo: "texto",
+    texto: "Já o fato do príncipe acontece quando o fechamento da empresa é motivado por autoridades públicas, sejam elas de esfera municipal, estadual ou federal. Normalmente se dá nas situações em que acontece desapropriação do imóvel, o que impede a continuação da atividade e o funcionamento normal da empresa. O Art. 486 na CLT é que trata sobre o instituto, a saber:"
+    },
+    {
+    tipo: "citacao",
+    texto: "No caso de paralisação temporária ou definitiva do trabalho, motivada por ato de autoridade municipal, estadual ou federal, ou pela promulgação de lei ou resolução que impossibilite a continuação da atividade, prevalecerá o pagamento da indenização, que ficará a cargo do governo responsável.",
+    autor: "Art. 486 da CLT"
+    },
+    {
+    tipo: "lista",
+    titulo: "Parágrafos do Art. 486 da CLT",
+    itens: [
+    "§ 1º - Sempre que o empregador invocar em sua defesa o preceito do presente artigo, o tribunal do trabalho competente notificará a pessoa de direito público apontada como responsável pela paralisação do trabalho, para que, no prazo de 30 (trinta) dias, alegue o que entender devido, passando a figurar no processo como chamada à autoria.",
+    "§ 2º - Sempre que a parte interessada, firmada em documento hábil, invocar defesa baseada na disposição deste artigo e indicar qual o juiz competente, será ouvida a parte contrária, para, dentro de 3 (três) dias, falar sobre essa alegação.",
+    "§ 3º - Verificada qual a autoridade responsável, a Junta de Conciliação ou Juiz dar-se-á por incompetente, remetendo os autos ao Juiz Privativo da Fazenda, perante o qual correrá o feito nos termos previstos no processo comum."
+    ]
+    },
+    {
+    tipo: "texto",
+    texto: "As verbas rescisórias devidas na modalidade do fato do príncipe são devidas como se fossem na modalidade da extinção sem justa causa, com a diferença que o aviso prévio e multa de 40% sobre os depósitos do FGTS são de responsabilidade do Estado (por sua competência em ter dado a causa para o fim daquela relação) e o empregador responsável pelas demais verbas rescisórias."
+    }
+    ]
+    },
+    {
+    id: "dispensa_coletiva_pdv",
+    titulo: "2.f Dispensa Coletiva ou PDV",
+    blocos: [
+    {
+    tipo: "texto",
+    texto: "Na modalidade de dispensa coletiva, temos o chamado Plano de Demissão Voluntária (PDV), que foi uma novidade trazida pela reforma trabalhista em 2017. O PDV antever a possibilidade da empresa desligar em massa alguns funcionários sem a necessidade de um cumprimento de algum tipo de requisito pré-estabelecido, até mesmo sem precisar da autorização do sindicato de classe ou convenção coletiva."
+    },
+    {
+    tipo: "texto",
+    texto: "Na CLT, os artigos que esboçam a possibilidade são os 477-A e 477-B, acompanhe:"
+    },
+    {
+    tipo: "citacao",
+    texto: "As dispensas imotivadas individuais, plúrimas ou coletivas equiparam-se para todos os fins, não havendo necessidade de autorização prévia de entidade sindical ou de celebração de convenção coletiva ou acordo coletivo de trabalho para sua efetivação.",
+    autor: "Art. 477-A da CLT"
+    },
+    {
+    tipo: "citacao",
+    texto: "Plano de Demissão Voluntária ou Incentivada, para dispensa individual, plúrima ou coletiva, previsto em convenção coletiva ou acordo coletivo de trabalho, enseja quitação plena e irrevogável dos direitos decorrentes da relação empregatícia, salvo disposição em contrário estipulada entre as partes.",
+    autor: "Art. 477-B da CLT"
+    }
+    ]
+    },
+    {
+    id: "acordo_entre_partes",
+    titulo: "2.g Acordo Entre as Partes (Distrato)",
+    blocos: [
+    {
+    tipo: "texto",
+    texto: "Essa modalidade de extinção do contrato de trabalho também é chamada de distrato e consiste na vontade bilateral das partes em extinguir a relação. Essa categoria é regida pelo Art. 484 da CLT."
+    },
+    {
+    tipo: "texto",
+    texto: "Art. 484-A. O contrato de trabalho poderá ser extinto por acordo entre empregado e empregador, caso em que serão devidas as seguintes verbas trabalhistas:"
+    },
+    {
+    tipo: "lista",
+    titulo: "Verbas trabalhistas no acordo entre as partes (Art. 484-A da CLT)",
+    itens: [
+    "I - Por metade: o aviso prévio, se indenizado; e a indenização sobre o saldo do fundo de garantia do tempo de serviço, prevista no § 1º do Art. 18 da Lei nº 8.036, de 11 de maio de 1990;",
+    "II - Na integralidade, as demais verbas trabalhistas."
+    ]
+    },
+    {
+    tipo: "lista",
+    titulo: "Parágrafos do Art. 484-A da CLT",
+    itens: [
+    "§ 1º A extinção do contrato prevista no caput deste artigo permite a movimentação da conta vinculada do trabalhador no Fundo de Garantia do Tempo de Serviço na forma do inciso I-A do Art. 20 da Lei nº 8.036, de 11 de maio de 1990, limitada até 80% (oitenta por cento) do valor dos depósitos.",
+    "§ 2º A extinção do contrato por acordo prevista no caput deste artigo não autoriza o ingresso no Programa de Seguro-Desemprego."
+    ]
+    },
+    {
+    tipo: "texto",
+    texto: "As verbas rescisórias devidas nesta modalidade são estas: saldo de salário, férias (simples, proporcionais e vencidas), 13º proporcional, aviso prévio pela metade (se for indenizado), multa sobre os depósitos do FGTS pela metade (ou seja 20% e não 40%) e saque do FGTS até o limite de 80% dos depósitos."
+    },
+    {
+    tipo: "texto",
+    texto: "O empregado não fará jus ao ingresso no programa de seguro desemprego, pois não faz relação ao desemprego voluntário, que é o requisito para pleitear o benefício do programa."
+    }
+    ]
+    },
+    {
+    id: "consideracoes_finais",
+    titulo: "Considerações Finais",
+    blocos: [
+    {
+    tipo: "texto",
+    texto: "Neste módulo, você pôde aprender mais sobre o fim da relação contratual trabalhista. Como disse no começo, aqui encerramos toda a compreensão geral acerca do andamento e dos elementos que fazem parte do contrato de trabalho."
+    },
+    {
+    tipo: "texto",
+    texto: "De agora em diante, trataremos dos temas mais voltados para a assistência depois do fim do vínculo empregatício e o direito coletivo, que você aprenderá melhor sobre os mesmos nos próximos módulos."
+    }
+    ]
+    },
+    {
+    id: "referencias",
+    titulo: "Referências",
+    blocos: [
+    {
+    tipo: "lista",
+    titulo: "Referências",
+    itens: [
+    "BRASIL. Lei n. 8036. 1990. Disponível em: http://www.planalto.gov.br/ccivil_03/leis/l8036consol.htm",
+    "SILVA, Homero B. M. da. Comentários à reforma trabalhista. São Paulo: Revista dos Tribunais, 2017, p. 25."
+    ]
+    }
+    ]
+    }
+    ]
+    },
+    //aula 6
+    {
+    aula: "Assistência na Rescisão do Contrato e Direito Coletivo do Trabalho",
+    ideia_central: "A aula trata da assistência sindical na rescisão do contrato de trabalho (suas restrições, forma de pagamento, descontos e prazos) e do direito coletivo do trabalho, abrangendo seus princípios, a organização sindical, os instrumentos de negociação coletiva e o exercício do direito de greve e do lockout.",
+    secoes: [
+    {
+    id: "apresentacao",
+    titulo: "Apresentação da Aula",
+    blocos: [
+    {
+    tipo: "lista",
+    titulo: "Objetivos de Aprendizagem",
+    itens: [
+    "Identificação e explicação sobre os direitos pertencentes ao trabalhador na rescisão do contrato de trabalho juntamente com a observação dos prazos previstos em lei;",
+    "conhecer os institutos pertencentes ao direito sindical brasileiro;",
+    "explicar as peculiaridades, regras e limites quanto ao direito de greve no direito brasileiro."
+    ]
+    },
+    {
+    tipo: "lista",
+    titulo: "Temas",
+    itens: [
+    "Introdução",
+    "1 Assistência na rescisão do trabalho",
+    "1.1 Restrições quanto à forma de pagamento e descontos das verbas rescisórias",
+    "1.2 Prazo para pagamento das verbas rescisórias",
+    "2 Direito coletivo do trabalho: definição e princípios",
+    "2.1 Organização sindical",
+    "2.2 Negociações coletivas e instrumentos normativos",
+    "2.3 Greve e lockout",
+    "Considerações finais",
+    "Referências"
+    ]
+    },
+    {
+    tipo: "texto",
+    texto: "Você verificou até aqui todas as fases que compõem o desenrolar da relação trabalhista, dos princípios norteadores até as formas de findar a relação. Neste módulo, você acompanhará o tipo de assistência sindical que era garantida ao empregado, quando seu contrato de trabalho é encerrado, porém, você ainda terá a oportunidade de conhecer sobre as restrições e os prazos dessa fase. Mais adiante, apresentarei o tão midiaticamente falado direito coletivo do trabalho, do qual os sindicatos são elementos pertencentes, possuindo você também a chance de entender qual é o papel de tais institutos, na relação laboral do trabalhador e a função dos acordos e convenções para as categorias, não como tão somente indivíduos, mas também como agremiação coletiva."
+    }
+    ]
+    },
+    {
+    id: "assistencia_rescisao",
+    titulo: "1 Assistência na Rescisão do Trabalho",
+    blocos: [
+    {
+    tipo: "texto",
+    texto: "A assistência na rescisão do contrato de trabalho era uma garantia assegurada aos empregados no §1º do Art. 477 da CLT até a reforma trabalhista, que revogou tal regra. Para que você compreenda a disposição, já foi explicado que o direito do trabalho visa sempre a assegurar os melhores direitos ao trabalhador, que na relação com seu empregador é o mais vulnerável."
+    },
+    {
+    tipo: "texto",
+    texto: "Acontece que toda mudança que ocorre tem seu lado positivo e negativo. Em se tratando da assistência na rescisão do contrato de trabalho, infelizmente houve essa supressão da garantia de exigência da homologação depois das vistas do sindicato. Os sindicatos da categoria que o empregado se enquadrava eram obrigados a somente homologarem a rescisão quando observados a presença dos direitos trabalhistas cabidos ao empregado naquela modalidade de rescisão e dos seus devidos pagamentos."
+    },
+    {
+    tipo: "texto",
+    texto: "Havendo somente uma hipótese da necessidade de homologação da rescisão do contrato de trabalho ser submetida à \"fiscalização\" do sindicato, que é quando a modalidade de extinção consistir em pedido de demissão de empregado estável (aquele que tem garantido por algum motivo importante a continuidade do contrato de trabalho, não podendo ser demitido - sem justa causa - pela vontade do empregador), conforme o que dita o Art. 500 da CLT."
+    },
+    {
+    tipo: "citacao",
+    texto: "O pedido de demissão do empregado estável só será válido quando feito com a assistência do respectivo sindicato e, se não o houver, perante autoridade local competente do Ministério do Trabalho e Previdência Social ou da Justiça do Trabalho.",
+    autor: "Art. 500 da CLT"
+    },
+    {
+    tipo: "subtitulo",
+    texto: "1.1 Restrições quanto à forma de pagamento e descontos das verbas rescisórias"
+    },
+    {
+    tipo: "texto",
+    texto: "A regra que trata sobre como se dará o pagamento das verbas rescisórias é trazida no §4º do Art. 477 da CLT."
+    },
+    {
+    tipo: "citacao",
+    texto: "Na extinção do contrato de trabalho, o empregador deverá proceder à anotação na Carteira de Trabalho e Previdência Social, comunicar a dispensa aos órgãos competentes e realizar o pagamento das verbas rescisórias no prazo e na forma estabelecidos neste artigo. § 4º O pagamento a que fizer jus o empregado será efetuado: I - em dinheiro, depósito bancário ou cheque visado, conforme acordem as partes; ou II - em dinheiro ou depósito bancário quando o empregado for analfabeto.",
+    autor: "Art. 477, caput e §4º, da CLT"
+    },
+    {
+    tipo: "texto",
+    texto: "É importante destacar que a forma de pagamento é escolhida conforme acordo entre as partes do que melhor os atender, não podendo o empregador nem mesmo o empregado determinarem a melhor maneira para si sem saber se aquilo converge com a possibilidade do outro."
+    },
+    {
+    tipo: "texto",
+    texto: "O pagamento poderá ser feito em dinheiro, depósito bancário ou cheque, possuindo apenas a determinação de, no caso em que o trabalhador for analfabeto, o pagamento é obrigatoriamente feito em dinheiro ou depósito bancário, sendo proibida a hipótese de o pagamento ser feito por meio do cheque."
+    },
+    {
+    tipo: "texto",
+    texto: "Quanto aos descontos, eles também possuem limitação em decorrência do desconto das parcelas. O §5º do Art. 477 da CLT trata dessa limitação."
+    },
+    {
+    tipo: "citacao",
+    texto: "Qualquer compensação no pagamento de que trata o parágrafo anterior não poderá exceder o equivalente a um mês de remuneração do empregado.",
+    autor: "Art. 477, §5º, da CLT"
+    },
+    {
+    tipo: "texto",
+    texto: "Diante desse exposto, temos a compreensão de que caso existam valores a serem descontados decorrentes do contrato de trabalho, tais descontos apenas se realizarão desde que não exceda o limite do valor referente a um mês de remuneração."
+    },
+    {
+    tipo: "texto",
+    texto: "Nas hipóteses em que esse limite exceda a regra dita acima, é tido como dívida civil, e não sendo permitido o desconto nas parcelas rescisórias."
+    },
+    {
+    tipo: "texto",
+    texto: "Um entendimento mais recente acerca do tema presume a chance de o limite dos descontos serem feitos até 35% das parcelas rescisórias devidas. O professor Ricardo Resende (2020, p. 1497) anota que os descontos podem ser feitos a título de pagamento de empréstimos, financiamentos, cartões de crédito e operações de arrendamento mercantil por instituições financeiras e sociedades de arrendamento mercantil, quando previsto no contrato."
+    },
+    {
+    tipo: "subtitulo",
+    texto: "1.2 Prazo para pagamento das verbas rescisórias"
+    },
+    {
+    tipo: "texto",
+    texto: "Atualmente, a CLT possui uma unificação quanto ao prazo para o pagamento de verbas rescisórias, também trazida a sua regulamentação no Art. 477, ademais agora no § 6º."
+    },
+    {
+    tipo: "citacao",
+    texto: "A entrega ao empregado de documentos que comprovem a comunicação da extinção contratual aos órgãos competentes bem como o pagamento dos valores constantes do instrumento de rescisão ou recibo de quitação deverão ser efetuados até dez dias contados a partir do término do contrato.",
+    autor: "Art. 477, §6º, da CLT"
+    },
+    {
+    tipo: "destaque",
+    texto: "Existe também o pagamento de uma multa, nos casos de descumprimento do compromisso do empregador, de entregar ao empregado os documentos que comprovam a comunicação do fim da relação trabalhista aos órgãos competentes, como se pode constatar no Art. 744, § 8º."
+    }
+    ]
+    },
+    {
+    id: "direito_coletivo_definicao_principios",
+    titulo: "2 Direito Coletivo do Trabalho: Definição e Princípios",
+    blocos: [
+    {
+    tipo: "texto",
+    texto: "Direito coletivo do trabalho é a denominação recebida para se falar sobre direito sindical, que resulta da observação pela qual os empregados necessitam se unir para obter força em defesa de seus direitos frente ao empregador, atuando em conjunto com mais impacto social, por assim dizer."
+    },
+    {
+    tipo: "texto",
+    texto: "O professor Cairo Jr. (2015, p. 948) aponta que o direito sindical instituiu regras e princípios para regulamentar a atividade das entidades representativas de patrões e empregados, com o objetivo de evitar o surgimento de conflitos grupais, bem como traçar diretrizes da função criadora de normas profissionais pelos próprios interessados. Mas, não é somente isso. As normas diretivas das relações travadas entre os sindicatos e seus representados ou filiados também fazem parte do objeto do direito coletivo do trabalho."
+    },
+    {
+    tipo: "texto",
+    texto: "Não diferentemente do que foi estudado nos módulos passados, no direito coletivo do trabalho também teremos a presença dos seguintes princípios:"
+    },
+    {
+    tipo: "lista",
+    titulo: "Princípios do Direito Coletivo do Trabalho",
+    itens: [
+    "**Liberdade sindical**: narra que os sindicatos devem ter atuação absoluta, que foi instituída pela Convenção nº 87 da OIT, porém o Brasil não ratificou a convenção, o que induz ao entendimento de que, no Brasil, a liberdade sindical é relativa. Tal princípio está expresso no Art. 8º da Constituição Federal.",
+    "**Interveniência sindical**: garante que os acordos celebrados entre empregado e empregador precisarão da autenticação das organizações sindicais que possuem competência sob a classe de empregados.",
+    "**Autonomia coletiva**: declara que não existe predominância hierárquica do sindicato que representa os empregados sobre o sindicato que representa os empregadores.",
+    "**Força normativa**: esclarece que as partes terão possibilidade de estipular regras que poderão vir a ter natureza jurídica de norma geral, produzindo regras para os seus representados."
+    ]
+    },
+    {
+    tipo: "texto",
+    texto: "A seguir, o Art. 8º da Constituição Federal e a caracterização dos princípios apresentados acima:"
+    },
+    {
+    tipo: "lista",
+    titulo: "Art. 8º da Constituição Federal – É livre a associação profissional ou sindical, observado o seguinte",
+    itens: [
+    "I - a lei não poderá exigir autorização do Estado para a fundação de sindicato, ressalvado o registro no órgão competente, vedadas ao Poder Público a interferência e a intervenção na organização sindical;",
+    "II - é vedada a criação de mais de uma organização sindical, em qualquer grau, representativa de categoria profissional ou econômica, na mesma base territorial, que será definida pelos trabalhadores ou empregadores interessados, não podendo ser inferior à área de um Município;",
+    "III - ao sindicato cabe a defesa dos direitos e interesses coletivos ou individuais da categoria, inclusive em questões judiciais ou administrativas;",
+    "IV - a assembleia geral fixará a contribuição que, em se tratando de categoria profissional, será descontada em folha, para custeio do sistema confederativo da representação sindical respectiva, independentemente da contribuição prevista em lei;",
+    "V - ninguém será obrigado a filiar-se ou a manter-se filiado a sindicato;",
+    "VI - é obrigatória a participação dos sindicatos nas negociações coletivas de trabalho;",
+    "VII - o aposentado filiado tem direito a votar e ser votado nas organizações sindicais;",
+    "VIII - é vedada a dispensa do empregado sindicalizado a partir do registro da candidatura a cargo de direção ou representação sindical e, se eleito, ainda que suplente, até um ano após o final do mandato, salvo se cometer falta grave nos termos da lei."
+    ]
+    },
+    {
+    tipo: "texto",
+    texto: "Parágrafo único do Art. 8º da CF: as disposições deste artigo aplicam-se à organização de sindicatos rurais e de colônias de pescadores, atendidas as condições que a lei estabelecer."
+    }
+    ]
+    },
+    {
+    id: "organizacao_sindical",
+    titulo: "2.1 Organização Sindical",
+    blocos: [
+    {
+    tipo: "texto",
+    texto: "O sistema sindical possui uma organização até a posição nacional, chamada de sistema sindical nacional. Essa organização compreende níveis distintos: a base é composta pelos sindicatos de estrutura sindical básica. O próximo nível é o intermediário, formado pelas federações, que é o agrupamento dos sindicatos. Já o terceiro é formado pelas confederações, agregadas pela reunião das federações. Por fim, Cairo Jr. (2015, p. 991) anota que a central sindical de trabalhadores é constituída por sindicatos de categoria profissional, de acordo com os critérios estabelecidos pelo Art. 2º da Lei n. 11.648/04, mas com prerrogativas sindicais limitadas."
+    },
+    {
+    tipo: "subtitulo",
+    texto: "a) Sindicatos"
+    },
+    {
+    tipo: "texto",
+    texto: "Os sindicatos preenchem a lacuna da base da organização do sistema sindical nacional - a mais básica. No Brasil, eles podem representar sindicatos profissionais (quando formados por empregados) ou econômicos (quando formados por empregadores), pois a organização acontece em conformidade com a classe que estão, a saber: operária ou patronal. A regulamentação dos sindicatos está expressa no Art. 511 da CLT."
+    },
+    {
+    tipo: "citacao",
+    texto: "É lícita a associação para fins de estudo, defesa e coordenação dos seus interesses econômicos ou profissionais de todos os que, como empregadores, empregados, agentes ou trabalhadores autônomos ou profissionais liberais exerçam, respectivamente, a mesma atividade ou profissão ou atividades ou profissões similares ou conexas.",
+    autor: "Art. 511, caput, da CLT"
+    },
+    {
+    tipo: "lista",
+    titulo: "Parágrafos do Art. 511 da CLT",
+    itens: [
+    "§ 1º A solidariedade de interesses econômicos dos que empreendem atividades idênticas, similares ou conexas, constitui o vínculo social básico que se denomina categoria econômica.",
+    "§ 2º A similitude de condições de vida oriunda da profissão ou trabalho em comum, em situação de emprego na mesma atividade econômica ou em atividades econômicas similares ou conexas, compõe a expressão social elementar compreendida como categoria profissional.",
+    "§ 3º Categoria profissional diferenciada é a que se forma dos empregados que exerçam profissões ou funções diferenciadas por força de estatuto profissional especial ou em consequência de condições de vida singulares.",
+    "§ 4º Os limites de identidade, similaridade ou conexidade fixam as dimensões dentro das quais a categoria econômica ou profissional é homogênea e a associação é natural."
+    ]
+    },
+    {
+    tipo: "texto",
+    texto: "As categorias dos sindicatos podem ser econômicas, profissionais ou profissionais diferenciadas, conforme o artigo citado. A categoria econômica se refere à correlação dos interesses econômicos que alcançam as profissões/funções similares, idênticas ou conexas (bares e restaurantes que apresentam similaridade ou hotéis e restaurantes que apresentam conexão de suas atividades). O elo econômico que se refere à categoria patronal é a dos empregadores."
+    },
+    {
+    tipo: "texto",
+    texto: "Categoria profissional é aquela que compreende a classe dos trabalhadores. E a categoria profissional diferenciada é aquela que compreende aquela categoria profissional que se difere das outras pela força de seu estatuto profissional exclusivo, de maneira que só aquela classe de trabalhadores poderá exercer aquele tipo de atividade, como os técnicos de segurança do trabalho. Para que não haja dúvidas, aqui não estamos tratando dos profissionais liberais, tais como médicos, advogados e engenheiros, pois essas categorias são representadas por suas respectivas ordens profissionais, cuja inscrição para atuação como profissional da área é obrigatória, diferente do sindicato, que a filiação é facultativa."
+    },
+    {
+    tipo: "destaque",
+    texto: "As decisões advindas da atuação do sindicato são para todos os membros da categoria, não importando se são ou não associados ao sindicato. Pois, como abrangem vantagens que todos serão englobadas, a eficácia é geral para tal categoria."
+    },
+    {
+    tipo: "subtitulo",
+    texto: "b) Federações"
+    },
+    {
+    tipo: "texto",
+    texto: "São as instituições sindicais de grau maior que os sindicatos, pois são ordenadas por Estados e obedecem à regra de não reunir mais de 5 sindicatos profissionais que correspondem à maioria absoluta de uma categoria de atividades ou a profissões idênticas, similares ou conexas, como bem aborda o caput do Art. 534 da CLT."
+    },
+    {
+    tipo: "citacao",
+    texto: "É facultado aos Sindicatos, quando em número não inferior a 5 (cinco), desde que representem a maioria absoluta de um grupo de atividades ou profissões idênticas, similares ou conexas, organizarem-se em federação.",
+    autor: "Art. 534, caput, da CLT"
+    },
+    {
+    tipo: "lista",
+    titulo: "Parágrafos do Art. 534 da CLT",
+    itens: [
+    "§ 1º Se já existir federação no grupo de atividades ou profissões em que deva ser constituída a nova entidade, a criação desta não poderá reduzir a menos de 5 (cinco) o número de Sindicatos que àquela devam continuar filiados.",
+    "§ 2º As federações serão constituídas por Estados, podendo o Ministro do Trabalho, Indústria e Comércio autorizar a constituição de Federações interestaduais ou nacionais.",
+    "§ 3º É permitido a qualquer federação, para o fim de lhes coordenar os interesses, agrupar os Sindicatos de determinado município ou região a ela filiados; mas a união não terá direito de representação das atividades ou profissões agrupadas."
+    ]
+    },
+    {
+    tipo: "subtitulo",
+    texto: "c) Confederações"
+    },
+    {
+    tipo: "texto",
+    texto: "São as instituições sindicais de grau maior que as federações, pois são de domínio nacional, sua sede possui fixação em Brasília e são formadas pelo número mínimo de 3 federações, conforme exposto no Art. 535 da CLT."
+    },
+    {
+    tipo: "citacao",
+    texto: "As Confederações organizar-se-ão com o mínimo de 3 (três) federações e terão sede na Capital da República.",
+    autor: "Art. 535 da CLT"
+    },
+    {
+    tipo: "subtitulo",
+    texto: "d) Centrais sindicais"
+    },
+    {
+    tipo: "texto",
+    texto: "A Lei 11.648/2008 trouxe como também integrante da estrutura sindical a central sindical, que é entidade de representação geral dos trabalhadores. São instituídas na esfera nacional e dispõem de atribuição para atuar em acordos que versem sobre os assuntos de interesse geral dos trabalhadores em fóruns, colegiados públicos e nas demais situações que se fizerem necessárias."
+    },
+    {
+    tipo: "destaque",
+    texto: "Existem apenas centrais sindicais de empregados!"
+    }
+    ]
+    },
+    {
+    id: "negociacoes_coletivas_instrumentos_normativos",
+    titulo: "2.2 Negociações Coletivas e Instrumentos Normativos",
+    blocos: [
+    {
+    tipo: "texto",
+    texto: "A negociação coletiva é o recurso mais eficaz de ajuste entre as partes no direito do trabalho, pois é o recurso pelo qual não há presença de terceiros que influenciam diretamente na constituição da resolução do conflito existente, restando a única saída que as partes construam uma resolução para aquele impasse (estratégia esta chamada de autocomposição). É uma figura mais genérica do direito coletivo de trabalho, se comparada aos instrumentos normativos."
+    },
+    {
+    tipo: "texto",
+    texto: "Dentro do que foi tratado sobre direito coletivo do trabalho até aqui, temos a negociação coletiva e, em seu interior, instrumentos que são elementos mais específicos."
+    },
+    {
+    tipo: "texto",
+    texto: "O instrumento normativo, como bem anota o professor Cairo Jr. (2015, p. 1090), é o negócio jurídico celebrado por tempo determinado, fruto de negociação coletiva efetivada entre entidades sindicais de empregados e empregadores que, por meio de suas cláusulas de natureza normativa, estipula novas condições de trabalho para aquelas pessoas que representam."
+    },
+    {
+    tipo: "texto",
+    texto: "Os instrumentos podem ser os seguintes: convenção coletiva de trabalho e acordo coletivo de trabalho."
+    },
+    {
+    tipo: "topico",
+    titulo: "Convenção coletiva de trabalho",
+    texto: "Instrumento pelo qual o sindicato dos representantes dos empregados, juntamente com o sindicato representante dos empregadores, define e estabelece um conjunto de regras que produzirão efeitos por tempo e base territorial determinadas destinadas à certa categoria profissional e econômica."
+    },
+    {
+    tipo: "topico",
+    titulo: "Acordo coletivo de trabalho",
+    texto: "Instrumento pelo qual o sindicato dos representantes dos empregados, juntamente com uma ou mais empresas, definem e estabelecem um conjunto de regras que produzirão efeitos por tempo e base territorial determinadas destinadas a certa categoria profissional."
+    },
+    {
+    tipo: "texto",
+    texto: "A regulamentação de tais institutos é regulada pelo Art. 611 da CLT."
+    },
+    {
+    tipo: "citacao",
+    texto: "Convenção coletiva de trabalho é o acordo de caráter normativo, pelo qual dois ou mais Sindicatos representativos de categorias econômicas e profissionais estipulam condições de trabalho aplicáveis, no âmbito das respectivas representações, às relações individuais de trabalho.",
+    autor: "Art. 611, caput, da CLT"
+    },
+    {
+    tipo: "lista",
+    titulo: "Parágrafos do Art. 611 da CLT",
+    itens: [
+    "§ 1º É facultado aos Sindicatos representativos de categorias profissionais celebrar Acordos Coletivos com uma ou mais empresas da correspondente categoria econômica, que estipulem condições de trabalho, aplicáveis no âmbito da empresa ou das acordantes respectivas relações de trabalho.",
+    "§ 2º As Federações e, na falta desta, as Confederações representativas de categorias econômicas ou profissionais poderão celebrar convenções coletivas de trabalho para reger as relações das categorias a elas vinculadas, inorganizadas em Sindicatos, no âmbito de suas representações."
+    ]
+    },
+    {
+    tipo: "texto",
+    texto: "O professor Ricardo Resende (2020, p. 2107) apresentou, sintetizando, que a distinção básica entre as duas figuras se refere à legitimidade das partes, sendo que no acordo coletivo de trabalho o empregador se faz representar sozinho ou, no máximo, acompanhado por outros empregadores. Na convenção coletiva de trabalho, por sua vez, há negociação entre sindicatos, estando de um lado o sindicato representativo dos trabalhadores (categoria profissional) e, de outro, o sindicato representativo dos empregadores (categoria econômica). Em qualquer caso, é obrigatória a participação, nas negociações coletivas, do sindicato representativo da categoria profissional, nos termos do Art. 8º, VI, da CFRB."
+    },
+    {
+    tipo: "tabela",
+    titulo: "Esquematicamente: Convenção Coletiva x Acordo Coletivo",
+    colunas: ["Instrumento", "Composição das partes"],
+    linhas: [
+    ["Convenção Coletiva de Trabalho", "= sindicato dos empregadores (categoria econômica) X sindicato dos trabalhadores (categoria profissional)"],
+    ["Acordo Coletivo de Trabalho", "= empresa(s) X sindicato dos trabalhadores (categoria profissional)"]
+    ]
+    }
+    ]
+    },
+    {
+    id: "greve_e_lockout",
+    titulo: "2.3 Greve e Lockout",
+    blocos: [
+    {
+    tipo: "texto",
+    texto: "Greve é o meio mais efetivo que o empregado dispõe para assegurar que sua questão terá atenção suficiente ao ser analisada pelo empregador, pois, quando há a paralização coletiva das atividades, a pressão pela resolução da mesma é maior, juntamente com a retomada das atividades em ritmo normal. A definição legal é trazida pelo Art. 2º da Lei nº 7.783/1989."
+    },
+    {
+    tipo: "citacao",
+    texto: "Para os fins desta Lei, considera-se legítimo exercício do direito de greve a suspensão coletiva, temporária e pacífica, total ou parcial, de prestação pessoal de serviços a empregador.",
+    autor: "Art. 2º da Lei nº 7.783/1989"
+    },
+    {
+    tipo: "texto",
+    texto: "Dado esse entendimento, as características do movimento grevista encontram-se sublinhadas no artigo citado:"
+    },
+    {
+    tipo: "lista",
+    titulo: "Características do movimento grevista",
+    itens: [
+    "**Coletividade**: coletivo nos lembra a ideia de um conjunto de pessoas, logo, somente se evidencia uma greve quando há um agrupamento de pessoas que paralisam suas atividades. Dessa forma, é importante esclarecer que não é necessário que todos os profissionais de uma categoria ou todo o setor de uma empresa adiram ao movimento para que ele seja válido e lícito, somente bastando a coletividade para ser legítima.",
+    "**Sustação temporária**: aqui temos a condição da temporariedade para que o movimento grevista exista. Uma vez que a atividade exercida for abandonada em definitivo, não se identifica a greve, e sim um abandono de emprego (que é inclusive uma das hipóteses elencadas como justa causa no Art. 482 da CLT).",
+    "**Utilização de meios pacíficos**: é de essencialidade do movimento a conduta absoluta mansa e pacífica, afastando a possibilidade de toda e qualquer violência, tanto material quanto verbal, seja para com o empregador ou qualquer outro colega que não seja a favor do movimento."
+    ]
+    },
+    {
+    tipo: "texto",
+    texto: "Outra observação fundamental sobre o direito de greve é que ela nunca pode acontecer de surpresa para o empregador; para que lhe confira a validade do movimento, ela precisa ser comunicada pelo menos 48h antes de iniciada ao empregador, podendo a comunicação prévia ser de 72h antes (conforme o art. 9º da Lei nº 7.783/1989), nos casos de greve das atividades essenciais (atividades listadas no art. 10 da Lei nº 7.783/1989). Por ser a atividade essencial (como a greve dos motoristas de transporte coletivo), além da prévia comunicação à categoria econômica, a comunicação se estende como obrigatória aos usuários diretos do serviço para o comum conhecimento de todos."
+    },
+    {
+    tipo: "destaque",
+    texto: "Na greve se tem a suspensão do contrato de trabalho!"
+    },
+    {
+    tipo: "texto",
+    texto: "Por fim, é bom explicar que outro limite que o exercício de greve possui é a obrigação de manutenção da prestação dos serviços indispensáveis ao atendimento das necessidades inadiáveis da sociedade, conforme preconiza o parágrafo único do Art. 11 da Lei nº 7.783/1989. Em caso de descumprimento da obrigação pela qual toda uma sociedade será afetada pela ausência dessa prestação, caberá ao Poder Judiciário garantir a prestação dos serviços indispensáveis, conforme certifica o Art. 12 da Lei nº 7.783/1989."
+    },
+    {
+    tipo: "texto",
+    texto: "O direito de greve ainda pode ser exercido abusivamente, nos termos do Art. 14 da Lei nº 7.783/1989."
+    },
+    {
+    tipo: "citacao",
+    texto: "Constitui abuso do direito de greve a inobservância das normas contidas na presente Lei, bem como a manutenção da paralisação após a celebração de acordo, convenção ou decisão da Justiça do Trabalho.",
+    autor: "Art. 14, caput, da Lei nº 7.783/1989"
+    },
+    {
+    tipo: "lista",
+    titulo: "Parágrafo único do Art. 14 da Lei nº 7.783/1989 – Na vigência de acordo, convenção ou sentença normativa não constitui abuso do exercício do direito de greve a paralisação que",
+    itens: [
+    "I – tenha por objetivo exigir o cumprimento de cláusula ou condição;",
+    "II – seja motivada pela superveniência de fatos novos ou acontecimento imprevisto que modifique substancialmente a relação de trabalho."
+    ]
+    },
+    {
+    tipo: "citacao",
+    texto: "Constitui abuso do direito de greve a manutenção da paralisação após a celebração de acordo, convenção ou decisão da justiça do trabalho.",
+    autor: "TRT (Tribunal Regional do Trabalho)"
+    },
+    {
+    tipo: "texto",
+    texto: "Isso porque os instrumentos são citados como atenuantes do conflito de interesses existente entre empregados e empregadores."
+    },
+    {
+    tipo: "texto",
+    texto: "O lockout é a conduta conhecida como o fechamento do estabelecimento comercial pelo empregador com o propósito de inibir o movimento grevista. Tal comportamento é proibido pelo ordenamento jurídico, que tem por compreensão que o empregado é a parte mais vulnerável da relação trabalhista, logo, os empregadores possuem um grande poder determinador na relação e, diante dessa vantagem obtida pela categoria patronal, nasce o direito de greve, como um \"trunfo\" que objetiva um certo equilíbrio entre a necessidade do empregado e a validação da mesma pelo empregador."
+    }
+    ]
+    },
+    {
+    id: "consideracoes_finais",
+    titulo: "Considerações Finais",
+    blocos: [
+    {
+    tipo: "texto",
+    texto: "Neste módulo, você chegou ao fim do estudo sobre a relação trabalhista, e até aqui foi percorrido todo o conjunto que forma a grande seara trabalhista. A partir daqui, espera-se que você tenha conseguido adquirir outra perspectiva da legislação trabalhista, dos direitos e das obrigações que dela decorrem."
+    }
+    ]
+    },
+    {
+    id: "referencias",
+    titulo: "Referências",
+    blocos: [
+    {
+    tipo: "lista",
+    titulo: "Referências",
+    itens: [
+    "BRASIL. Lei n. 5452. 1943. Disponível em: http://www.planalto.gov.br/ccivil_03/decreto-lei/del5452.htm.",
+    "CAIRO Jr., José. Curso de direito do trabalho: direito individual e coletivo. 10. ed. Salvador: JusPodivm, 2015."
+    ]
+    }
+    ]
+    }
+    ]
+    }
+
 
 
 
