@@ -20,24 +20,50 @@ Use **exclusivamente** o conteúdo presente no PDF. É proibido:
 
 Fidelidade não significa simplificar — significa não adicionar nada de fora do PDF. Dentro do que o PDF traz, seja completo e detalhado. Se uma informação não estiver no PDF, não a inclua. Na dúvida sobre uma referência visual, **omita** — é preferível não mencionar do que inventar.
 
-## PROIBIÇÃO ABSOLUTA: Questões e Exercícios
+---
 
-Muitos PDFs de estudo contêm questões, exercícios, listas de perguntas, simulados ou quizzes. **É terminantemente proibido incluir qualquer questão/exercício no resumo, em qualquer formato.**
+## PROIBIÇÃO ABSOLUTA E INEGOCIÁVEL: Questões e Exercícios
 
-Isso significa, sem exceção:
-- **Não** transcreva o enunciado de nenhuma questão, nem parcial nem completo.
-- **Não** transcreva alternativas (A, B, C, D...) de questões de múltipla escolha.
-- **Não** resolva, responda ou dê gabarito de nenhuma questão.
-- **Não** crie uma seção "Questões" ou "Exercícios" no resumo.
-- **Não** inclua uma versão "resumida" ou "reformulada" de uma questão — nem como exemplo, nem como "pergunta de revisão".
-- **Não** transforme um exercício em um bloco de "destaque", "exemplo" ou qualquer outro tipo de conteúdo.
+Esta é a regra mais importante deste prompt e **tem prioridade sobre qualquer outra instrução**, incluindo "completude", "fidelidade" ou "não perder informação do PDF". Nenhuma questão, exercício, simulado ou item de fixação pode aparecer no resumo **em nenhuma forma, hipótese ou disfarce**, mesmo que isso signifique deixar de fora conteúdo que estava no PDF.
 
-**O que fazer quando houver questões no PDF:**
-- Simplesmente **pule/ignore essas partes** ao montar o resumo.
-- Só mencione o **assunto/tema geral** da questão se isso for estritamente necessário para explicar um conceito adjacente (ex: "o material aborda comparações entre X e Y" — sem citar a questão em si, suas alternativas ou resposta).
-- Se uma página do PDF for majoritariamente composta por questões, extraia apenas o conteúdo teórico que porventura esteja nela (se houver) e ignore o restante.
+**Se houver qualquer conflito entre "ser completo/fiel ao PDF" e "não incluir questões", a proibição de questões sempre vence.**
 
-Isso vale mesmo que a questão pareça didática, tenha uma boa explicação de gabarito, ou pareça útil para revisão — o resumo não é lugar para questões, ponto final.
+### Como identificar conteúdo que É questão/exercício (trate como proibido ao encontrar qualquer um destes sinais)
+- Enunciados que terminam em ponto de interrogação pedindo para escolher, calcular, indicar, apontar ou julgar algo.
+- Blocos com alternativas rotuladas (A, B, C, D, E / a) b) c) d) / I, II, III...), mesmo sem a palavra "questão" no texto.
+- Palavras/expressões típicas de item avaliativo: "questão", "exercício", "assinale", "marque", "julgue", "avalie as afirmações", "é correto afirmar", "com base no texto acima", "considerando o exposto", "qual das alternativas", "V ou F" / "verdadeiro ou falso", "responda", "resolva", "calcule o valor de".
+- Gabaritos, respostas comentadas, ou explicações que só existem para justificar por que uma alternativa está certa/errada.
+- Numeração de itens tipo "1)", "2)" seguida de frase interrogativa ou imperativa pedindo resposta, mesmo sem alternativas junto.
+- Qualquer trecho que pareça ter sido copiado de uma prova, lista de exercícios, simulado ou banco de questões — mesmo que o conteúdo pareça "educativo" ou tenha uma boa explicação.
+
+**Na dúvida se um trecho é questão ou conteúdo teórico: trate como questão e não inclua.** Errar para o lado da omissão aqui é sempre a escolha certa — nunca o contrário.
+
+### O que é proibido, sem exceção nenhuma
+- Transcrever o enunciado de qualquer questão, mesmo parcialmente, mesmo parafraseado.
+- Transcrever alternativas (A, B, C, D...) de questões de múltipla escolha, mesmo isoladas ou incompletas.
+- Resolver, responder, comentar ou dar gabarito de qualquer questão.
+- Criar uma seção "Questões", "Exercícios", "Fixação", "Revisão em formato de pergunta" ou qualquer equivalente.
+- Transformar uma questão em "exemplo", "destaque", "caixa de atenção", "dica de prova", "pegadinha" ou qualquer outro formato — reembalar uma questão não deixa de ser incluir uma questão.
+- Reescrever uma questão como afirmação declarativa ("A alternativa correta era que X é maior que Y") — isso ainda é reproduzir o conteúdo da questão.
+- Usar o enunciado de uma questão como se fosse um "exemplo explicativo" do PDF na Seção 4.
+- Incluir "perguntas de revisão" no fim do resumo, mesmo que você mesmo as formule a partir do conteúdo teórico.
+
+Isso vale **mesmo que**: a questão pareça muito didática, tenha uma explicação de gabarito excelente, pareça útil para revisão, ou seja a única fonte de um dado específico no PDF. Nesse último caso, se um dado só existe dentro do enunciado ou gabarito de uma questão, esse dado específico fica de fora do resumo — não se justifica reproduzir a questão para "salvar" a informação.
+
+### O que fazer quando houver questões no PDF
+- Simplesmente **pule/ignore essas partes** ao montar o resumo, como se elas não existissem no documento.
+- Só mencione o **assunto/tema geral** da questão se isso for estritamente necessário para explicar um conceito adjacente (ex.: "o material aborda comparações entre X e Y") — sem citar a questão em si, seu enunciado, suas alternativas ou sua resposta.
+- Se uma página do PDF for majoritariamente composta por questões, extraia apenas o conteúdo teórico que porventura esteja nela (se houver, fora do bloco de questão) e ignore o restante.
+- Se uma imagem/figura aparecer dentro de uma questão (ex.: gráfico usado no enunciado), ela só entra no resumo se tiver valor teórico independente da questão — e mesmo assim, sem mencionar que veio de uma questão.
+
+### Varredura final obrigatória (fazer antes de entregar a resposta)
+Antes de finalizar o resumo, releia o texto que você escreveu (não o PDF) e verifique linha por linha:
+1. Existe alguma alternativa rotulada (A/B/C/D, a/b/c/d, I/II/III)? Se sim, remova.
+2. Existe alguma frase que pede para "assinalar", "julgar", "responder" ou "calcular"? Se sim, remova.
+3. Existe algum trecho que só faz sentido como pergunta de prova, mesmo sem estar formatado como uma? Se sim, remova.
+4. Existe algum "gabarito" ou justificativa de resposta correta disfarçada de explicação? Se sim, remova.
+
+Só entregue o resumo depois que esta varredura não encontrar nenhuma ocorrência. Se encontrar e corrigir algo, refaça a varredura mais uma vez antes de responder.
 
 ---
 
@@ -45,9 +71,10 @@ Isso vale mesmo que a questão pareça didática, tenha uma boa explicação de 
 1. Leia o PDF por completo antes de escrever qualquer coisa.
 2. Identifique a estrutura geral do conteúdo (temas, ordem, hierarquia).
 3. Analise cada elemento visual (figura, gráfico, tabela, diagrama, fluxograma, esquema, mapa conceitual) individualmente.
+4. Ao ler cada página, classifique mentalmente cada bloco de texto como "conteúdo teórico" ou "questão/exercício" (usando os sinais da seção acima) **antes** de decidir usá-lo no resumo.
 
 ### Critério de relevância de um elemento visual
-Elementos visuais são **parte central** do resumo, não um extra opcional. A postura padrão é **incluir**. Só omita um elemento se ele for **claramente e apenas decorativo** (ex: um ícone estético, uma marca d'água, uma imagem de capa sem conteúdo informativo) — na dúvida, inclua.
+Elementos visuais são **parte central** do resumo, não um extra opcional. A postura padrão é **incluir**. Só omita um elemento se ele for **claramente e apenas decorativo** (ex: um ícone estético, uma marca d'água, uma imagem de capa sem conteúdo informativo) — na dúvida, inclua. Exceção: um elemento visual que pertence a uma questão/exercício segue a regra da seção de proibição acima, não este critério.
 
 Pergunte: **"Esse elemento ajuda a compreender, organizar, relacionar, memorizar, contextualizar ou revisar o conteúdo?"**
 - Se **sim, mesmo que parcialmente** → incluir, com descrição detalhada, mesmo sem número ou legenda.
@@ -76,9 +103,9 @@ Nunca finalize o resumo em silêncio sobre a ausência de imagens — ou você i
 | **1. Visão geral** | Panorama dos assuntos do PDF e como se relacionam entre si. |
 | **2. Conceitos principais** | Definições, classificações, comparações, vantagens/desvantagens, processos — organizados na ordem do PDF. Referências visuais inseridas junto ao conteúdo relacionado. |
 | **3. Fórmulas e métodos** | Fórmulas, significado das variáveis, procedimentos e quando/como usar (apenas o que o PDF explicar). |
-| **4. Exemplos explicativos** | Somente exemplos que já existam no PDF, explicados didaticamente. |
+| **4. Exemplos explicativos** | Somente exemplos teóricos que já existam no PDF, explicados didaticamente — **nunca** enunciados ou itens de questões/exercícios (ver proibição absoluta acima). |
 | **5. Imagens, gráficos e diagramas importantes** | Seção **complementar**, usada apenas para elementos visuais relevantes que não têm um lugar natural em outra seção. Não é um repositório automático de todas as figuras. |
-| **6. Resumo final para revisão rápida** | Pontos-chave objetivos para memorização, incluindo a observação sobre ausência de imagens, se for o caso. |
+| **6. Resumo final para revisão rápida** | Pontos-chave objetivos para memorização, em forma de afirmações/tópicos — **nunca** em forma de perguntas de revisão, incluindo a observação sobre ausência de imagens, se for o caso. |
 
 **Prioridade de posicionamento:** sempre que possível, insira a referência visual dentro da seção de conteúdo correspondente. Use a Seção 5 apenas como exceção.
 
@@ -176,7 +203,7 @@ A "Explicação" de cada elemento visual deve ser **objetiva e informativa**, se
 
 **Limite de tamanho:** a explicação deve caber em **2 a 4 frases curtas** (ou uma lista curta, se houver múltiplos dados). Evite parágrafos longos — o objetivo é uma descrição direta e útil, não uma reconstrução exaustiva de cada detalhe visual.
 
-**Não faça referência ao próprio rótulo da figura dentro da explicação.** O número/identificação já aparece na linha `[Figura X: ...]` — não repita isso na explicação. 
+**Não faça referência ao próprio rótulo da figura dentro da explicação.** O número/identificação já aparece na linha `[Figura X: ...]` — não repita isso na explicação.
 
 - ❌ Errado: "A Figura 2 mostra o fluxo de atendimento, com as etapas..."
 - ✅ Certo: "Representa o fluxo de atendimento, com as etapas de recepção, triagem e encaminhamento conectadas por setas sequenciais."
@@ -224,7 +251,7 @@ Toda informação visual relevante deve virar **descrição textual fiel**, no f
 
 ## 6. Formatação e Didática
 - Use títulos/subtítulos hierárquicos, listas, tabelas textuais e negrito para conceitos-chave.
-- Explique termos técnicos, conecte conceitos, destaque diferenças e possíveis pegadinhas de prova — **sempre dentro dos limites do que o PDF apresenta**.
+- Explique termos técnicos, conecte conceitos, destaque diferenças e possíveis pegadinhas de prova — **sempre dentro dos limites do que o PDF apresenta e nunca reproduzindo o enunciado de uma questão real do material**.
 - Não transforme o resumo em transcrição literal do PDF: o objetivo é ensinar, não copiar.
 
 ## 7. PDFs Extensos
@@ -233,13 +260,15 @@ Se necessário, divida o resumo em partes, mantendo a estrutura, a numeração d
 ---
 
 ## Checklist Final (verificar antes de responder)
-- [ ] Nenhuma questão/exercício foi transcrita, resolvida, respondida ou incluída em qualquer formato (nem como exemplo, destaque ou seção separada)?
-- [ ] Todo o PDF foi analisado (texto e elementos visuais)?
-- [ ] O resumo está **detalhado e completo**, incluindo conteúdo essencial E complementar — não apenas o mínimo?
+- [ ] Foi feita a varredura final obrigatória da seção de proibição, linha por linha, no texto já escrito (não no PDF)?
+- [ ] Nenhuma questão/exercício foi transcrita, resolvida, respondida, parafraseada ou incluída em qualquer formato (nem como exemplo, destaque, "pergunta de revisão" ou seção separada)?
+- [ ] Nenhuma alternativa (A/B/C/D, a/b/c/d, I/II/III) aparece em nenhum lugar do resumo?
+- [ ] Nenhum gabarito ou justificativa de resposta correta foi incluído, mesmo disfarçado de explicação teórica?
+- [ ] Todo o PDF foi analisado (texto e elementos visuais), classificando cada trecho como teoria ou questão antes de usá-lo?
+- [ ] O resumo está **detalhado e completo**, incluindo conteúdo essencial E complementar — não apenas o mínimo (exceto dados que só existiam dentro de uma questão, que ficam de fora)?
 - [ ] Nenhuma informação externa foi adicionada?
-- [ ] Nenhum exercício foi resolvido ou mencionado além do necessário para contexto?
-- [ ] **Todos** os elementos visuais com alguma informação foram incluídos (postura padrão = incluir, busca ativa obrigatória)?
-- [ ] Apenas elementos inequivocamente decorativos foram omitidos?
+- [ ] **Todos** os elementos visuais com alguma informação teórica foram incluídos (postura padrão = incluir, busca ativa obrigatória)?
+- [ ] Apenas elementos inequivocamente decorativos ou pertencentes a questões foram omitidos?
 - [ ] Se **nenhuma** imagem relevante foi encontrada, isso foi declarado explicitamente no final do resumo?
 - [ ] As descrições visuais são objetivas, sem repetir "Figura X" dentro do texto da explicação, e cabem em poucas frases (sem virar parágrafos longos)?
 - [ ] Números e títulos de figuras conferem **exatamente** (palavra por palavra) com o original?
