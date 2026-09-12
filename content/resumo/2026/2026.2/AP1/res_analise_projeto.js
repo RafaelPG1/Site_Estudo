@@ -3809,5 +3809,312 @@ secoes: [
   },
   
   // aula 07
-  
+  {
+  aula: "Análise e Programação Orientada a Objetos",
+  ideia_central: "A Análise Orientada a Objetos (AOO) cuida da fase de modelagem de um sistema em torno de objetos, enquanto a Programação Orientada a Objetos (POO) trata da implementação dessas definições em código, juntas formando uma abordagem modular, reutilizável e de fácil manutenção.",
+  secoes: [
+    {
+      id: "visao_geral",
+      titulo: "Visão Geral",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Este módulo introduz os fundamentos da **Análise Orientada a Objetos (AOO)** e da **Programação Orientada a Objetos (POO)**, dois processos complementares: a AOO cuida da fase de análise e modelagem de um sistema, enquanto a POO trata da implementação dessas definições em código."
+        },
+        {
+          tipo: "lista",
+          titulo: "O conteúdo está organizado em três grandes blocos",
+          itens: [
+            "**Conceitos gerais** — o que é POO, o que é AOO, e as principais técnicas de **modelagem orientada a objetos** (OMT, BON e UML), incluindo diagramas ilustrativos de cada uma.",
+            "**Classes, objetos e atributos** — os blocos de construção básicos da POO (objetos, classes, atributos, métodos), com sua origem histórica nas *structs* de linguagens como C, e exemplos práticos de código em **Java, JavaScript e Python**.",
+            "**Herança, polimorfismo e interfaces** — os mecanismos que tornam a POO flexível e reutilizável, também exemplificados em código nas três linguagens."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "O módulo também discute, em boxes de aprofundamento (\"Parada Obrigatória\"), aplicações práticas da POO no mundo real: *frameworks*, componentização de software, interfaces gráficas (GUI) e computação gráfica/jogos."
+        }
+      ]
+    },
+    {
+      id: "poo_e_aoo",
+      titulo: "Programação Orientada a Objetos (POO) e Análise Orientada a Objetos (AOO)",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "Programação Orientada a Objetos (POO) e outros paradigmas",
+          texto: "A **POO** é um paradigma de programação que organiza o código em torno de **\"objetos\"** — entidades que encapsulam dados e comportamentos relacionados. Ao contrário da **programação procedural**, que foca em funções e procedimentos isolados, a POO promove **reutilização** e **modularidade** ao estruturar o sistema como um conjunto de objetos que interagem entre si."
+        },
+        {
+          tipo: "topico",
+          titulo: "Análise Orientada a Objetos (AOO)",
+          texto: "A **AOO** é a abordagem usada no desenvolvimento de software que foca na **identificação e definição dos objetos** que compõem um sistema — objetos esses que representam entidades do mundo real ou abstrato, cada uma com suas próprias características e comportamentos. O objetivo principal da AOO é criar um modelo do sistema que seja **intuitivo e próximo da realidade** do problema, facilitando tanto a compreensão quanto a implementação."
+        },
+        {
+          tipo: "destaque",
+          texto: "**Relação AOO ↔ POO:** a AOO cuida da **fase de análise e modelagem** (definição dos objetos e suas interações); a POO cuida da **implementação** dessas definições em código. Juntas, formam uma abordagem de desenvolvimento modular, reutilizável e fácil de manter."
+        }
+      ]
+    },
+    {
+      id: "conceitos_basicos_aoo",
+      titulo: "Conceitos Básicos da Análise Orientada a Objetos",
+      blocos: [
+        {
+          tipo: "tabela",
+          titulo: "Conceitos básicos da Análise Orientada a Objetos",
+          colunas: ["Conceito", "Definição"],
+          linhas: [
+            ["Objetos", "Unidades básicas de um sistema orientado a objetos. Um objeto é uma **instância de uma classe** e possui atributos (dados) e métodos (comportamentos). Objetos interagem entre si para realizar tarefas específicas."],
+            ["Classes", "Modelos ou generalizações que definem a estrutura e o comportamento de objetos. Uma classe especifica quais atributos e métodos os seus objetos terão. A classe é o conceito **geral**; o objeto é a manifestação **específica** dessa classe."],
+            ["Encapsulamento", "Prática de esconder os detalhes internos de um objeto, expondo apenas o necessário para o funcionamento externo. Promove modularidade e protege a integridade dos dados."],
+            ["Abstração", "Processo de simplificar a complexidade do sistema, focando apenas nos aspectos essenciais, permitindo trabalhar com modelos conceituais mais simples e gerenciáveis."],
+            ["Herança", "Permite que uma classe derive de outra, herdando seus atributos e métodos. Facilita a reutilização de código e a criação de hierarquias, onde classes mais específicas derivam de classes mais gerais."],
+            ["Polimorfismo", "Capacidade de diferentes classes serem tratadas de forma unificada, pois métodos podem ser **redefinidos (*override*)** em subclasses, permitindo que o mesmo método tenha comportamentos diferentes conforme a classe do objeto."]
+          ]
+        }
+      ]
+    },
+    {
+      id: "modelagem_moo",
+      titulo: "Modelagem Orientada a Objetos (MOO)",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "A **Modelagem Orientada a Objetos** permite a **representação visual** da estrutura, comportamento e interações entre os objetos de um sistema. Além da popular **UML**, o módulo apresenta duas outras técnicas: **OMT** e **BON**."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Object Modeling Technique (OMT)"
+        },
+        {
+          tipo: "texto",
+          texto: "Desenvolvida por **James Rumbaugh em 1991**, a OMT divide a modelagem em três aspectos principais: **Estrutura estática** (modelagem de objetos); **Comportamento dinâmico** (modelagem dinâmica); **Fluxo de dados** (modelagem funcional). É uma técnica que simplifica a representação do sistema, especialmente útil em fases iniciais de *design*."
+        },
+        {
+          tipo: "imagem",
+          id: "figura_1_diagrama_de_objeto_em_omt",
+          src: "figura_1_diagrama_de_objeto_em_omt.png",
+          pasta: "imagens_analise_projeto/aula_07",
+          alt: "Modela a estrutura de uma lista (classe List, com métodos add, insert, get, getSize) com duas implementações específicas — LinkedList e ArrayList — ligadas a List por generalização/herança (seta triangular). LinkedList associa-se à classe Entry (que referencia a si mesma via next), enquanto ArrayList se relaciona com Object por agregação (losango). A legenda no canto superior esquerdo explica a notação: triângulo para generalização/herança, \"$\" para operação/atributo de classe, itálico para classe/operação abstrata, e diferentes traços/símbolos para multiplicidade de associação (um, opcional, muitos) e agregação.",
+          num: 1
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Business Object Notation (BON)"
+        },
+        {
+          tipo: "texto",
+          texto: "Criada por **Jean-Marc Nerson e Kim Waldén**, consolidada a partir de **1993**, a BON é uma técnica que foca na **integração entre análise, design e implementação**. Usa uma **notação gráfica simples** para descrever classes e suas interações, sendo particularmente eficaz em projetos que exigem transição suave entre design e código."
+        },
+        {
+          tipo: "imagem",
+          id: "figura_2_diagrama_de_classes_em_bon",
+          src: "figura_2_diagrama_de_classes_em_bon.png",
+          pasta: "imagens_analise_projeto/aula_07",
+          alt: "Mostra a estrutura e o comportamento de um sistema de controle de elevador com três classes: ELEVATOR (atributos como posição, requisições pendentes, estados booleanos de movimento/porta, e métodos como open_doors, close_doors, process_requests, além de um bloco de invariantes lógicas), MOTOR (posição da cabine, métodos move_up, move_down, stop, signal_stopped) e REQUESTS (arrays booleanos de solicitações e métodos para calcular a próxima parada). Uma seta bidirecional liga ELEVATOR a MOTOR, e outra liga ELEVATOR a REQUESTS, indicando comunicação entre as entidades.",
+          num: 2
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Unified Modeling Language (UML)"
+        },
+        {
+          tipo: "texto",
+          texto: "A **UML** é uma linguagem de **modelagem visual padronizada**, usada para **especificar, visualizar, construir e documentar** os artefatos de sistemas de software. Fornece um conjunto abrangente de diagramas — como diagramas de **classes, casos de uso, sequência e atividades** — que representam desde a estrutura estática até o comportamento dinâmico e as interações de um sistema."
+        },
+        {
+          tipo: "imagem",
+          id: "figura_3_diagramas_que_compoem_a_uml",
+          src: "figura_3_diagramas_que_compoem_a_uml.png",
+          pasta: "imagens_analise_projeto/aula_07",
+          alt: "Árvore hierárquica com o nó raiz \"Diagrama\", dividido em dois ramos: \"Diagrama de Estruturas\" (contendo Diagrama de Classes, Componentes, Objetos, Perfil, Estruturas Compostas, Implantação e Pacotes) e \"Diagrama de Comportamentos\" (contendo Diagrama de Atividades, Casos de Uso, Máquina de Estados, e Diagrama de Interação, que por sua vez se subdivide em Sequência, Comunicação, Visão Geral de Interação e Tempo).",
+          num: 3
+        },
+        {
+          tipo: "texto",
+          texto: "O **Diagrama de Classes** é o tipo específico de diagrama UML detalhado a seguir: nele, as entidades (classes) são apresentadas junto às suas estruturas de dados (atributos) e procedimentos (métodos), e o relacionamento entre classes é representado por linhas que as ligam."
+        },
+        {
+          tipo: "imagem",
+          id: "figura_4_diagramas_que_compoem_a_uml_pg09",
+          src: "figura_4_diagramas_que_compoem_a_uml_pg09.png",
+          pasta: "imagens_analise_projeto/aula_07",
+          alt: "Exemplifica a notação de um Diagrama de Classes: a caixa \"Nome da Classe\" lista atributos com indicadores de visibilidade (+ público, # protegido, - privado) e uma operação com argumento e tipo de retorno. Um losango preenchido (rotulado \"Composição\") liga essa classe à \"Classe Dependente\", que possui um método próprio; uma caixa separada \"Anotação\" representa uma nota explicativa solta no diagrama.",
+          num: 4
+        },
+        {
+          tipo: "destaque",
+          texto: "As técnicas de modelagem orientada a objetos são fundamentais para criar representações completas e detalhadas de sistemas, garantindo que todos os aspectos relevantes sejam considerados e planejados antes da codificação."
+        }
+      ]
+    },
+    {
+      id: "aplicacoes_praticas",
+      titulo: "Aplicações Práticas e Importância da POO",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "A compreensão da POO é vital para o desenvolvimento de sistemas complexos, pois permite **isolar melhor as estruturas de dados e algoritmos**, tornando a depuração de código mais eficiente na busca por *bugs*. Trechos de código organizados em objetos funcionam de forma mais **desacoplada** do que funções e procedimentos convencionais tradicionais, sendo também mais facilmente **reaproveitados** em outros projetos."
+        },
+        {
+          tipo: "topico",
+          titulo: "Frameworks",
+          texto: "O paradigma de orientação a objetos permite a criação de estruturas básicas reutilizáveis chamadas **frameworks**, usadas em diversas linguagens de programação.",
+          lista: [
+            "**Express** — framework para desenvolvimento de aplicações web em **JavaScript**, rodando sobre o ambiente **Node.js**; possui objetos básicos presentes em diferentes tipos de aplicações web, funcionando como um arcabouço que simplifica a escrita de código.",
+            "**Flask** — framework similar ao Express, mas para a linguagem **Python**."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Componentização",
+          texto: "Além do conceito de framework, a POO trouxe às arquiteturas de software o conceito de **componentização** — a concepção de um sistema como unidades básicas (componentes) combinadas para realizar uma funcionalidade, comunicando-se por troca de mensagens (analogia: \"peças de um Lego que se comunicam\"). Tecnologias como os **Componentes Web (*Web Components*)** derivam desse conceito."
+        },
+        {
+          tipo: "topico",
+          titulo: "Interfaces gráficas (GUI)",
+          texto: "A construção de *Graphical User Interfaces* (janelas, botões, caixas de texto) também se beneficiou do conceito de componentes. Um programador pode usar componentes gráficos prontos de um ambiente como o **Microsoft Windows** sem precisar reescrever seu código interno. O acesso a esses componentes de GUI no Windows é feito através do **WinUI**, uma das APIs do *Software Development Kit* (SDK) desse sistema operacional."
+        },
+        {
+          tipo: "topico",
+          titulo: "Jogos e computação gráfica",
+          texto: "Projetos de jogos eletrônicos e computação gráfica também se beneficiaram da POO — elementos geométricos básicos (como linha ou polígono) puderam ser representados como objetos, aproximando os conceitos geométricos dos algoritmos e estruturas de dados que os representam."
+        },
+        {
+          tipo: "topico",
+          titulo: "Convivência com outros paradigmas",
+          texto: "A criação e difusão da POO **não** eliminou outros paradigmas, como a **Programação Imperativa** ou a **Funcional** — apenas agregou uma nova forma de construir sistemas, facilitando sua compreensão e manutenção."
+        }
+      ]
+    },
+    {
+      id: "objetos_structs",
+      titulo: "Objetos: Origem nas Structs e Evolução",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Um **objeto** é uma entidade de software que encapsula estruturas de dados e procedimentos, representando entidades concretas (ex.: \"Roda\") ou abstratas (ex.: \"Débito em conta bancária\"). Cada objeto tem um **estado** (atributos) e **comportamentos** (métodos). Exemplo do material: um objeto `Carro` poderia ter atributos \"cor\", \"marca\" e \"quilometragem\", e métodos `acelerar()` e `frear()`."
+        },
+        {
+          tipo: "texto",
+          texto: "A evolução dos objetos está ligada ao desenvolvimento das ***structs*** em linguagens como **C, C++ e Rust**: uma *struct* é uma forma de agrupar variáveis de diferentes tipos em uma única unidade (ex.: uma *struct* \"Carro\" agrupando \"cor\", \"marca\" e \"quilometragem\"). Porém, *structs* **carecem de comportamento** — armazenam apenas dados, sem capacidade de definir operações sobre eles. Com a introdução do paradigma orientado a objetos, as *structs* evoluíram para **objetos**, que além de agrupar dados também **encapsulam o comportamento** associado a eles."
+        },
+        {
+          tipo: "destaque",
+          texto: "**Problema em aberto:** como definir objetos semelhantes sem reescrever código, da mesma forma que se declaram variáveis de um tipo primitivo? Essa necessidade motivou a criação da abstração chamada **Classe**."
+        }
+      ]
+    },
+    {
+      id: "classes_atributos_metodos",
+      titulo: "Classes, Atributos e Métodos",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "Classes",
+          texto: "As **Classes** são \"*blueprints*\" ou modelos/generalizações que definem a estrutura e o comportamento de objetos — especificando quais atributos e métodos seus objetos terão."
+        },
+        {
+          tipo: "topico",
+          titulo: "Atributos",
+          texto: "**Atributos** são variáveis que armazenam o **estado** de um objeto, representando suas características (nome, idade, cor etc.)."
+        },
+        {
+          tipo: "topico",
+          titulo: "Métodos",
+          texto: "**Métodos** são a forma de acessar os atributos de um objeto de maneira controlada. Em algumas linguagens, permitem encapsular a lógica de leitura e escrita dos atributos."
+        }
+      ]
+    },
+    {
+      id: "heranca_polimorfismo_interfaces",
+      titulo: "Herança, Polimorfismo e Interfaces",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "Herança",
+          texto: "**Herança** é o mecanismo que permite a criação de novas classes a partir de classes existentes, facilitando reutilização de código e criação de hierarquias. Uma **classe derivada (subclasse)** herda atributos e métodos de sua **classe base (superclasse)**."
+        },
+        {
+          tipo: "topico",
+          titulo: "Polimorfismo",
+          texto: "**Polimorfismo** permite que objetos de diferentes classes sejam tratados de forma unificada, pois métodos podem ser **redefinidos (*override*)** em subclasses — permitindo comportamentos específicos enquanto se mantêm interfaces comuns."
+        },
+        {
+          tipo: "topico",
+          titulo: "Interfaces",
+          texto: "**Interfaces** definem **contratos** que classes podem implementar, garantindo que certas metodologias sejam seguidas, sem especificar a implementação em si. Isso promove **flexibilidade** e **intercambialidade** entre diferentes implementações."
+        }
+      ]
+    },
+    {
+      id: "formulas_metodos",
+      titulo: "Fórmulas e Métodos",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O material não apresenta fórmulas matemáticas. O conceito de **método** enquanto elemento da POO já foi definido na seção anterior (forma controlada de acessar/modificar o estado de um objeto)."
+        }
+      ]
+    },
+    {
+      id: "exemplos_codigo",
+      titulo: "Exemplos Explicativos de Código",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O PDF traz oito exemplos de código (\"Código 1\" a \"Código 8\") demonstrando, na prática, os conceitos discutidos. O material sugere o uso do ambiente online **Replit** para executar e estudar esses códigos."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Código 1 — Struct em C (evolução histórica do conceito de objeto)",
+          texto: "Demonstra como uma *struct* agrupa dados sem comportamento associado.",
+          detalhe: "```c\n#include <stdio.h>\n\n// Definição da struct\nstruct Carro {\n    char marca[50];\n    int ano;\n    float quilometragem;\n};\n\nint main() {\n    // Declaração e inicialização de um objeto do tipo struct Carro\n    struct Carro meuCarro;\n\n    // Atribuindo valores aos campos da struct\n    strcpy(meuCarro.marca, \"Toyota\");\n    meuCarro.ano = 2015;\n    meuCarro.quilometragem = 50000.0;\n\n    // Acessando e imprimindo os valores da struct\n    printf(\"Marca: %s\\n\", meuCarro.marca);\n    printf(\"Ano: %d\\n\", meuCarro.ano);\n    printf(\"Quilometragem: %.2f km\\n\", meuCarro.quilometragem);\n\n    return 0;\n}\n```"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Código 2 — Classe Carro em Python",
+          texto: "Mostra uma classe com atributos, valor padrão (`velocidade = 0`) e métodos que alteram o estado do objeto (`acelerar`, `frear`) e o exibem (`exibir_informacoes`).",
+          detalhe: "```python\n# Definição da classe Carro\nclass Carro:\n    # Construtor: define os atributos da classe\n    def __init__(self, marca, modelo, ano):\n        self.marca = marca\n        self.modelo = modelo\n        self.ano = ano\n        self.velocidade = 0  # Atributo inicializado com valor padrão\n\n    # Método para acelerar o carro\n    def acelerar(self, incremento):\n        self.velocidade += incremento\n        print(f\"O {self.modelo} acelerou para {self.velocidade} km/h.\")\n\n    # Método para frear o carro\n    def frear(self, decremento):\n        self.velocidade -= decremento\n        if self.velocidade < 0:\n            self.velocidade = 0\n        print(f\"O {self.modelo} reduziu a velocidade para {self.velocidade} km/h.\")\n\n    # Método para exibir informações do carro\n    def exibir_informacoes(self):\n        print(f\"Carro: {self.marca} {self.modelo}, Ano: {self.ano}, Velocidade Atual: {self.velocidade} km/h\")\n\n# Criação de objetos (instâncias) da classe Carro\ncarro1 = Carro(\"Toyota\", \"Corolla\", 2020)\ncarro2 = Carro(\"Honda\", \"Civic\", 2019)\n\n# Utilização dos métodos dos objetos\ncarro1.exibir_informacoes()\ncarro1.acelerar(50)\ncarro1.frear(20)\ncarro1.exibir_informacoes()\n\nprint(\"\\n\")  # Apenas para separar a saída dos dois carros\n\ncarro2.exibir_informacoes()\ncarro2.acelerar(70)\ncarro2.frear(30)\ncarro2.exibir_informacoes()\n```"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Códigos 3, 4 e 5 — Classe Pessoa em Java, JavaScript e Python",
+          texto: "Os três exemplos implementam a **mesma classe conceitual** — `Pessoa`, com atributos `nome` e `idade` **encapsulados** (privados), um construtor, métodos de acesso (`getNome`/`getIdade` ou `get_nome`/`get_idade`), e um método `aniversario()` que incrementa a idade em um ano — permitindo comparar a sintaxe das três linguagens para o mesmo conceito.",
+          detalhe: "**Código 3 — Java:**\n```java\npublic class Pessoa {\n    private String nome;\n    private int idade;\n    public Pessoa(String nome, int idade) {\n        this.nome = nome;\n        this.idade = idade;\n    }\n    public String getNome() {\n        return nome;\n    }\n    public int getIdade() {\n        return idade;\n    }\n    public void aniversario() {\n        this.idade++;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        // Criação de objetos da classe Pessoa\n        Pessoa pessoa1 = new Pessoa(\"João\", 25);\n        Pessoa pessoa2 = new Pessoa(\"Maria\", 30);\n\n        // Exibindo o nome e a idade de cada pessoa\n        System.out.println(\"Nome: \" + pessoa1.getNome() + \", Idade: \" + pessoa1.getIdade());\n        System.out.println(\"Nome: \" + pessoa2.getNome() + \", Idade: \" + pessoa2.getIdade());\n\n        // João faz aniversário\n        pessoa1.aniversario();\n\n        // Exibindo a idade de João após o aniversário\n        System.out.println(\"Após o aniversário de João:\");\n        System.out.println(\"Nome: \" + pessoa1.getNome() + \", Idade: \" + pessoa1.getIdade());\n\n        // Maria faz aniversário\n        pessoa2.aniversario();\n\n        // Exibindo a idade de Maria após o aniversário\n        System.out.println(\"Após o aniversário de Maria:\");\n        System.out.println(\"Nome: \" + pessoa2.getNome() + \", Idade: \" + pessoa2.getIdade());\n    }\n}\n```\n\n**Código 4 — JavaScript:**\n```javascript\nclass Pessoa {\n    constructor(nome, idade) {\n        this.nome = nome;\n        this.idade = idade;\n    }\n    getNome() {\n        return this.nome;\n    }\n    getIdade() {\n        return this.idade;\n    }\n    aniversario() {\n        this.idade++;\n    }\n}\n\n// Criação de objetos da classe Pessoa\nconst pessoa1 = new Pessoa(\"João\", 25);\nconst pessoa2 = new Pessoa(\"Maria\", 30);\n\n// Exibindo o nome e a idade de cada pessoa\nconsole.log(\"Nome:\", pessoa1.getNome(), \", Idade:\", pessoa1.getIdade());\nconsole.log(\"Nome:\", pessoa2.getNome(), \", Idade:\", pessoa2.getIdade());\n\n// João faz aniversário\npessoa1.aniversario();\n\n// Exibindo a idade de João após o aniversário\nconsole.log(\"Após o aniversário de João:\");\nconsole.log(\"Nome:\", pessoa1.getNome(), \", Idade:\", pessoa1.getIdade());\n\n// Maria faz aniversário\npessoa2.aniversario();\n\n// Exibindo a idade de Maria após o aniversário\nconsole.log(\"Após o aniversário de Maria:\");\nconsole.log(\"Nome:\", pessoa2.getNome(), \", Idade:\", pessoa2.getIdade());\n```\n\n**Código 5 — Python:**\n```python\nclass Pessoa:\n    def __init__(self, nome, idade):\n        self.nome = nome\n        self.idade = idade\n    def get_nome(self):\n        return self.nome\n    def get_idade(self):\n        return self.idade\n    def aniversario(self):\n        self.idade += 1\n\n# Criação de objetos da classe Pessoa\npessoa1 = Pessoa(\"João\", 25)\npessoa2 = Pessoa(\"Maria\", 30)\n\n# Exibindo o nome e a idade de cada pessoa\nprint(\"Nome:\", pessoa1.get_nome(), \", Idade:\", pessoa1.get_idade())\nprint(\"Nome:\", pessoa2.get_nome(), \", Idade:\", pessoa2.get_idade())\n\n# João faz aniversário\npessoa1.aniversario()\n\n# Exibindo a idade de João após o aniversário\nprint(\"Após o aniversário de João:\")\nprint(\"Nome:\", pessoa1.get_nome(), \", Idade:\", pessoa1.get_idade())\n\n# Maria faz aniversário\npessoa2.aniversario()\n\n# Exibindo a idade de Maria após o aniversário\nprint(\"Após o aniversário de Maria:\")\nprint(\"Nome:\", pessoa2.get_nome(), \", Idade:\", pessoa2.get_idade())\n```"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Códigos 6, 7 e 8 — Herança, Polimorfismo e Interface Animal em Java, JavaScript e Python",
+          texto: "Os três exemplos modelam uma hierarquia de animais para demonstrar **herança**, **polimorfismo** e **interfaces**: uma **interface** (ou classe base, dependendo da linguagem) `Animal` define os métodos `fazerSom()` e `mover()`. A classe abstrata **`Mamifero`** implementa `Animal`, fornece uma implementação comum de `mover()` e deixa `fazerSom()` como método abstrato. **`Cachorro`** e **`Gato`** herdam de `Mamifero`, cada um implementando `fazerSom()` de forma diferente (\"Au Au\" / \"Miau\") — isso é o **polimorfismo** em ação. **`Passaro`** implementa a interface `Animal` **diretamente** (sem passar por `Mamifero`), definindo seu próprio `fazerSom()` (\"Piu Piu\") e `mover()` (\"está voando\"). Na função/método principal, todos os animais são tratados de forma **uniforme** através de um laço que percorre um array/lista de `Animal`, chamando `fazerSom()` e `mover()` em cada um — demonstrando o polimorfismo de forma prática.",
+          detalhe: "**Código 6 — Java:**\n```java\n// Definição da interface Animal\npublic interface Animal {\n    void fazerSom();\n    void mover(); // Novo método para demonstrar polimorfismo adicional\n}\n\n// Classe base Mamifero que implementa a interface Animal\npublic abstract class Mamifero implements Animal {\n    protected String nome;\n\n    public Mamifero(String nome) {\n        this.nome = nome;\n    }\n\n    // Método comum a todos os mamíferos\n    public void mover() {\n        System.out.println(nome + \" está se movendo\");\n    }\n\n    // Método abstrato para som, a ser implementado por subclasses\n    public abstract void fazerSom();\n}\n\n// Classe Cachorro que herda de Mamifero e implementa o método fazerSom\npublic class Cachorro extends Mamifero {\n    public Cachorro(String nome) {\n        super(nome);\n    }\n\n    @Override\n    public void fazerSom() {\n        System.out.println(nome + \" faz: Au Au\");\n    }\n}\n\n// Classe Gato que herda de Mamifero e implementa o método fazerSom\npublic class Gato extends Mamifero {\n    public Gato(String nome) {\n        super(nome);\n    }\n\n    @Override\n    public void fazerSom() {\n        System.out.println(nome + \" faz: Miau\");\n    }\n}\n\n// Classe Passaro que implementa a interface Animal diretamente\npublic class Passaro implements Animal {\n    private String nome;\n\n    public Passaro(String nome) {\n        this.nome = nome;\n    }\n\n    @Override\n    public void fazerSom() {\n        System.out.println(nome + \" faz: Piu Piu\");\n    }\n\n    @Override\n    public void mover() {\n        System.out.println(nome + \" está voando\");\n    }\n}\n\n// Classe principal para demonstrar o polimorfismo\npublic class Main {\n    public static void main(String[] args) {\n        // Criando objetos de diferentes classes que implementam Animal\n        Animal cachorro = new Cachorro(\"Rex\");\n        Animal gato = new Gato(\"Mimi\");\n        Animal passaro = new Passaro(\"Piu\");\n\n        // Usando polimorfismo para tratar todos os animais de forma uniforme\n        Animal[] animais = {cachorro, gato, passaro};\n\n        for (Animal animal : animais) {\n            animal.fazerSom();\n            animal.mover();\n            System.out.println(); // Apenas para separar as saídas\n        }\n    }\n}\n```\n\n**Código 7 — JavaScript:**\n```javascript\n// Definição da interface Animal (em JavaScript usamos classes para isso)\nclass Animal {\n    fazerSom() {\n        throw new Error(\"Este método deve ser implementado por subclasses\");\n    }\n\n    mover() {\n        throw new Error(\"Este método deve ser implementado por subclasses\");\n    }\n}\n\n// Classe base Mamifero que estende Animal\nclass Mamifero extends Animal {\n    constructor(nome) {\n        super();\n        this.nome = nome;\n    }\n\n    // Método comum a todos os mamíferos\n    mover() {\n        console.log(`${this.nome} está se movendo`);\n    }\n}\n\n// Classe Cachorro que herda de Mamifero e implementa o método fazerSom\nclass Cachorro extends Mamifero {\n    constructor(nome) {\n        super(nome);\n    }\n\n    fazerSom() {\n        console.log(`${this.nome} faz: Au Au`);\n    }\n}\n\n// Classe Gato que herda de Mamifero e implementa o método fazerSom\nclass Gato extends Mamifero {\n    constructor(nome) {\n        super(nome);\n    }\n\n    fazerSom() {\n        console.log(`${this.nome} faz: Miau`);\n    }\n}\n\n// Classe Passaro que implementa diretamente a \"interface\" Animal\nclass Passaro extends Animal {\n    constructor(nome) {\n        super();\n        this.nome = nome;\n    }\n\n    fazerSom() {\n        console.log(`${this.nome} faz: Piu Piu`);\n    }\n\n    mover() {\n        console.log(`${this.nome} está voando`);\n    }\n}\n\n// Criando objetos de diferentes classes que estendem ou implementam Animal\nconst cachorro = new Cachorro(\"Rex\");\nconst gato = new Gato(\"Mimi\");\nconst passaro = new Passaro(\"Piu\");\n\n// Usando polimorfismo para tratar todos os animais de forma uniforme\nconst animais = [cachorro, gato, passaro];\n\nfor (let animal of animais) {\n    animal.fazerSom();\n    animal.mover();\n    console.log(); // Apenas para separar as saídas\n}\n```\n\n**Código 8 — Python:**\n\n> Observação: a versão em Python apresentada no material é **mais simples** que as versões em Java e JavaScript — não inclui as classes `Mamifero` (intermediária) nem `Passaro`, e não implementa o método `mover()`, focando apenas em `Cachorro` e `Gato` herdando diretamente de `Animal` e sobrescrevendo `fazer_som()`.\n\n```python\n# Definição da classe base Animal\nclass Animal:\n    # Método fazer_som, que deve ser implementado pelas subclasses\n    def fazer_som(self):\n        raise NotImplementedError(\"Este método deve ser implementado por subclasses\")\n\n# Classe Cachorro que herda de Animal e implementa o método fazer_som\nclass Cachorro(Animal):\n    def fazer_som(self):\n        print(\"Au Au\")\n\n# Classe Gato que herda de Animal e implementa o método fazer_som\nclass Gato(Animal):\n    def fazer_som(self):\n        print(\"Miau\")\n\n# Função principal para demonstrar o polimorfismo\ndef main():\n    # Criando objetos de diferentes classes que estendem Animal\n    cachorro = Cachorro()\n    gato = Gato()\n\n    # Usando polimorfismo para tratar todos os animais de forma uniforme\n    animais = [cachorro, gato]\n\n    for animal in animais:\n        animal.fazer_som()\n\n# Chama a função principal para executar o código\nif __name__ == \"__main__\":\n    main()\n```"
+        }
+      ]
+    },
+    {
+      id: "resumo_final",
+      titulo: "Resumo Final para Revisão Rápida",
+      blocos: [
+        {
+          tipo: "lista",
+          itens: [
+            "**POO** organiza código em **objetos** (dados + comportamento); contrasta com a programação **procedural** (funções/procedimentos).",
+            "**AOO** = fase de **análise/modelagem**; **POO** = fase de **implementação**. São complementares.",
+            "**6 pilares da AOO**: Objetos, Classes, Encapsulamento, Abstração, Herança, Polimorfismo. **Objeto** = instância de uma classe (estado + comportamento). **Classe** = modelo/generalização que define atributos e métodos dos objetos. **Encapsulamento** = esconder detalhes internos, expor só o necessário. **Abstração** = simplificar, focar no essencial. **Herança** = subclasse herda de superclasse. **Polimorfismo** = métodos redefinidos (*override*) tratados de forma unificada.",
+            "**Técnicas de Modelagem Orientada a Objetos (MOO)**: **OMT** (Rumbaugh, 1991) → estrutura estática + comportamento dinâmico + fluxo de dados. **BON** (Nerson & Waldén, 1993) → integração análise/design/implementação, notação gráfica simples. **UML** → linguagem de modelagem visual padronizada; diagramas de Estruturas (ex.: Classes) e de Comportamentos (ex.: Sequência, Casos de Uso).",
+            "**Objetos evoluíram de *structs*** (que só armazenam dados, sem comportamento) — o problema de \"declarar objetos semelhantes sem reescrever código\" levou à criação do conceito de **Classe**.",
+            "**Atributos** = estado (variáveis); **Métodos** = comportamento (acesso controlado ao estado).",
+            "**Aplicações da POO no mundo real**: frameworks (**Express**/JS, **Flask**/Python), **componentização** (Web Components), **GUI** (WinUI/SDK do Windows), jogos/computação gráfica (primitivas geométricas como objetos).",
+            "A POO **não substituiu** outros paradigmas (Imperativo, Funcional) — apenas agregou uma nova abordagem.",
+            "**Herança**: subclasse deriva de superclasse, herdando atributos/métodos.",
+            "**Polimorfismo**: mesmo método, comportamentos diferentes conforme a subclasse (via *override*).",
+            "**Interfaces**: definem contratos (métodos que devem existir) sem especificar implementação — promovem flexibilidade.",
+            "Nos exemplos de código (Java/JavaScript/Python), o padrão `Animal → Mamifero → Cachorro/Gato`, mais `Passaro` implementando `Animal` diretamente, ilustra herança + polimorfismo + interface na prática — a versão em Python é simplificada em relação às demais."
+          ]
+        }
+      ]
+    }
+  ]
+  },
   ]};
