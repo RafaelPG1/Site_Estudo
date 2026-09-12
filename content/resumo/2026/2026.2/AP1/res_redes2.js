@@ -5,6 +5,7 @@
 
 window.__nexusConteudo = {
   aulas: [
+    // aula 1
     {
 aula: "Apresentação da disciplina, ementa e metodologia. Revisão de conceitos básicos",
   ideia_central: "A aula introduz a disciplina Redes de Computadores II, apresentando sua ementa e metodologia, e revisa os conceitos fundamentais de Redes I necessários para o restante do curso, como componentes de rede, endereçamento IP, modelos cliente-servidor e P2P, tipos e topologias de redes, modelo em camadas (OSI e TCP/IP) e os processos de encapsulamento e desencapsulamento.",
@@ -997,6 +998,7 @@ aula: "Apresentação da disciplina, ementa e metodologia. Revisão de conceitos
     }
   ]
     },
+    // aula 2
     {
       aula: "Camadas físicas e de enlace",
     ideia_central: "A aula aborda as funções das camadas Física e de Enlace do modelo OSI, cobrindo sinais analógicos e digitais, suas características, formas de transmissão, perdas e degradações do sinal, limites teóricos da taxa de dados (Nyquist e Shannon), desempenho de rede, e os mecanismos de detecção e correção de erros e controle de fluxo utilizados na camada de Enlace, incluindo os protocolos ARQ.",
@@ -1933,6 +1935,7 @@ aula: "Apresentação da disciplina, ementa e metodologia. Revisão de conceitos
       }
     ]
     },
+    // aula 3
     {
       aula: "Padrões IEEE e Redes locais (LANs)",
       ideia_central: "Os padrões IEEE 802 organizam a comunicação em redes locais, definindo mecanismos diferentes de acesso ao meio, transmissão e endereçamento para Ethernet, Wi-Fi e Bluetooth, enquanto o estudo das LANs envolve topologias, infraestrutura, endereçamento MAC/IP e criação de sub-redes.",
@@ -3468,5 +3471,1601 @@ aula: "Apresentação da disciplina, ementa e metodologia. Revisão de conceitos
         }
       ]
     },
+    // aula 4
+    {
+  aula: "Redes Metropolitanas (MANs)",
+  ideia_central: "As Redes Metropolitanas (MANs) interligam LANs distribuídas em uma cidade por meio de arquiteturas como Metro Ethernet, MPLS e anéis ópticos resilientes, sustentadas por uma infraestrutura física e lógica específica, podendo também ser implementadas sem fio (WMAN).",
+  secoes: [
+    {
+      id: "objetivos",
+      titulo: "Objetivos de Aprendizagem",
+      blocos: [
+        {
+          tipo: "lista",
+          itens: [
+            "Compreender o conceito de Redes Metropolitanas (MANs) e sua importância na interligação de redes locais.",
+            "Identificar os componentes da infraestrutura de uma MAN, distinguindo elementos da planta externa e equipamentos ativos.",
+            "Explicar o funcionamento das principais tecnologias empregadas em MANs, como Metro Ethernet, MPLS, CWDM e DWDM.",
+            "Comparar redes LAN, MAN e WAN quanto à área de cobertura, infraestrutura, desempenho e aplicações."
+          ]
+        }
+      ]
+    },
+    {
+      id: "introducao",
+      titulo: "Introdução — O que é uma MAN (Metropolitan Area Network)?",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Uma MAN (Metropolitan Area Network) é uma rede de alta velocidade que conecta diversas LANs distribuídas em uma mesma cidade ou região metropolitana. Geralmente utiliza fibra óptica e tecnologias como Metro Ethernet para oferecer comunicação rápida, confiável e integrada entre diferentes unidades de uma organização, suportando simultaneamente serviços de dados, voz e vídeo."
+        },
+        {
+          tipo: "topico",
+          titulo: "Posicionamento na Hierarquia de Redes",
+          lista: [
+            "LAN (Local): Abrangência de um cômodo, prédio ou conjunto de prédios próximos.",
+            "MAN (Metropolitana): Cobertura em nível de cidade.",
+            "WAN (Wide Area): Cobertura regional, nacional ou global."
+          ]
+        }
+      ]
+    },
+    {
+      id: "arquiteturas",
+      titulo: "Arquiteturas de Transporte de Dados",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "As arquiteturas de MAN evoluíram para suprir a necessidade de altíssima largura de banda, isolamento de tráfego corporativo e tolerância a falhas na infraestrutura urbana."
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "Metro Ethernet (Carrier Ethernet)",
+            "MANs Ethernet baseadas em MPLS",
+            "Anéis Ópticos e Resiliência (RPR / ERPS)"
+          ]
+        }
+      ]
+    },
+    {
+      id: "metro_ethernet",
+      titulo: "Metro Ethernet",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Metro Ethernet (Carrier Ethernet): É a extensão do protocolo Ethernet para abranger distâncias metropolitanas (10km a 50km)."
+        },
+        {
+          tipo: "topico",
+          titulo: "Como funciona",
+          lista: [
+            "A operadora de telecomunicações usa switches de alta capacidade e fibras ópticas urbanas para criar \"redes locais virtuais\" pela cidade.",
+            "Não exige adaptadores ou roteadores industriais complexos do lado do cliente.",
+            "Conectar duas sedes fica tão simples quanto plugar um cabo num switch.",
+            "É fácil contratar mais velocidade apenas mudando uma configuração lógica no sistema do provedor."
+          ]
+        }
+      ]
+    },
+    {
+      id: "mpls",
+      titulo: "MANs Ethernet Baseadas em MPLS",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Embora o cliente utilize um serviço Ethernet, a operadora precisa transportar o tráfego de milhares de clientes pela mesma infraestrutura. Para realizar esse transporte de forma eficiente, ela utiliza o MPLS (Multiprotocol Label Switching). Assim, em uma MAN Ethernet baseada em MPLS, o cliente utiliza Ethernet, enquanto a operadora utiliza o MPLS para encaminhar os dados dentro do seu backbone. Em outras palavras, a Metro Ethernet representa o serviço oferecido ao cliente, enquanto o MPLS é a tecnologia utilizada internamente pela operadora para garantir desempenho, escalabilidade, qualidade de serviço e confiabilidade na comunicação entre as redes."
+        },
+        {
+          tipo: "texto",
+          texto: "Comutação por Rótulos (MPLS): O MPLS (Multiprotocol Label Switching) é uma técnica de transporte de dados que opera entre a Camada 2 (Enlace) e a Camada 3 (Rede) do modelo OSI."
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "Adiciona um cabeçalho curto (rótulo/etiqueta) ao pacote de dados assim que ele entra na rede metropolitana. Os roteadores intermediários (Label Switch Routers) comutam o pacote baseando-se apenas nesse rótulo."
+          ]
+        },
+        {
+          tipo: "imagem",
+          id: "figura_mpls_label_switched_path_lsp",
+          src: "mpls_label_switched_path_lsp.png",
+          pasta: "imagens_redes2/aula_04",
+          alt: "Diagrama MPLS - Label-Switched Path (LSP) mostrando o caminho de rótulos entre a rede 192.168.0.0/24 e a rede 10.0.0.0/24 através dos roteadores R1 (Edge LSR), R2, R3, R4 (Intermediate LSR) e R5 (Edge LSR), com tabelas de FIB e LFIB indicando label-in, label-out e via em cada roteador.",
+          num: 1
+        },
+        {
+          tipo: "topico",
+          titulo: "Funcionamento (cinco etapas)",
+          lista: [
+            "Envio dos dados: Um computador envia um quadro Ethernet para outro dispositivo localizado em outra filial da empresa.",
+            "Entrada na rede da operadora: Ao entrar na rede da operadora, o tráfego Ethernet é identificado e preparado para ser transportado pela infraestrutura metropolitana.",
+            "Adição do Label: O primeiro roteador MPLS adiciona um Label (rótulo) ao pacote. Esse rótulo identifica o caminho que deverá ser seguido dentro da rede da operadora.",
+            "Encaminhamento pela rede MPLS: Durante o percurso, os roteadores da rede MPLS não precisam analisar o endereço IP do pacote. Eles observam apenas o Label, substituindo-o por outro quando necessário e encaminhando rapidamente o pacote para o próximo equipamento. Esse processo é conhecido como Label Swapping.",
+            "Entrega ao destino: Ao chegar ao último roteador da rede MPLS, o Label é removido. Em seguida, o quadro Ethernet é entregue normalmente à rede de destino. Para o cliente, todo esse processo é transparente."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Por que utilizar MPLS em uma MAN Ethernet?",
+          texto: "A utilização do MPLS traz diversas vantagens para a operadora e para os clientes.",
+          lista: [
+            "Maior eficiência: Os roteadores analisam apenas os Labels, tornando o encaminhamento dos pacotes mais rápido.",
+            "Engenharia de Tráfego (Traffic Engineering): Permite escolher caminhos mais adequados para cada tipo de tráfego, considerando critérios como utilização da rede, largura de banda e congestionamento.",
+            "Qualidade de Serviço (QoS): O MPLS permite priorizar aplicações que necessitam de baixa latência, como: Voz sobre IP (VoIP); Videoconferência; Streaming.",
+            "Escalabilidade: A mesma infraestrutura pode atender milhares de clientes sem comprometer o desempenho da rede.",
+            "VPNs MPLS: O MPLS permite criar redes privadas virtuais (VPNs), possibilitando que diferentes empresas utilizem a mesma infraestrutura física da operadora com isolamento lógico entre suas redes."
+          ]
+        }
+      ]
+    },
+    {
+      id: "aneis_opticos",
+      titulo: "Anéis Ópticos e Resiliência (RPR / ERPS)",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "RPR (Resilient Packet Ring - IEEE 802.17): Arquitetura histórica de anel duplo de fibra óptica projetada para transporte eficiente de pacotes."
+        },
+        {
+          tipo: "texto",
+          texto: "ERPS (Ethernet Ring Protection Switching - ITU-T G.8032): O padrão moderno usado em redes Metro Ethernet que garante proteção em anel sem precisar do antigo SDH."
+        },
+        {
+          tipo: "topico",
+          titulo: "Como funciona o mecanismo de autorrecuperação (Self-Healing)",
+          lista: [
+            "Em condições normais, um link no anel fica \"bloqueado\" de forma lógica para evitar que os dados fiquem dando voltas infinitas (loop).",
+            "Quando ocorre um rompimento físico de cabo em algum ponto da cidade, os switches das pontas percebem a queda em menos de 50 milissegundos.",
+            "O bloqueio é liberado e os dados passam a fluir pelo caminho oposto do anel."
+          ]
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Acidentes em vias públicas urbanas",
+          texto: "Em vias públicas urbanas é muito comum ocorrerem acidentes de trânsito em postes ou escavações que cortam cabos. O anel garante que os serviços (como bancos e hospitais) não fiquem fora do ar."
+        }
+      ]
+    },
+    {
+      id: "infraestrutura",
+      titulo: "Infraestrutura Física e Lógica",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "A infraestrutura de uma MAN é dividida em Planta Externa (Passiva) e Equipamentos Ativos."
+        },
+        {
+          tipo: "topico",
+          titulo: "Planta Externa (Passiva)",
+          texto: "É composta pelos elementos que não necessitam de energia elétrica e têm como função suportar ou conduzir o sinal óptico.",
+          lista: [
+            "Fibra Óptica Monomodo (SMF): Utilizada em 100% das redes metropolitanas devido ao baixo nível de atenuação do sinal de luz em longas distâncias.",
+            "Mecanismos de Passagem: Dutos subterrâneos, caixas de inspeção (manholes) e posteamento público.",
+            "DIOs (Distribuidores Internos Ópticos) e Caixas de Emenda: Ponto de fusão e organização dos cabos de fibra."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Equipamentos Ativos e Nós da Rede",
+          texto: "São os equipamentos que necessitam de alimentação elétrica e processam, regeneram, amplificam ou encaminham os sinais.",
+          lista: [
+            "PoPs (Points of Presence): Central de distribuição onde os equipamentos concentradores ficam alojados com redundância de energia (Nobreaks/Geradores) e climatização.",
+            "Switches Metro Ethernet / Roteadores MPLS: Processam o tráfego com alta capacidade de comutação.",
+            "Amplificadores ópticos (EDFA); Repetidores ópticos; Transceptores ópticos (SFP, SFP+, QSFP); Multiplexadores/Demultiplexadores DWDM ativos."
+          ]
+        }
+      ]
+    },
+    {
+      id: "multiplexacao",
+      titulo: "Multiplexação Óptica (CWDM e DWDM)",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Multiplexação Óptica (CWDM e DWDM): Para evitar o lançamento contínuo de novos cabos de fibra nas ruas, utilizam-se técnicas de multiplexação que dividem o feixe de luz em múltiplos comprimentos de onda (cores):"
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "CWDM (Coarse WDM): Espaçamento maior entre canais. Suporta até 18 canais por par de fibra. Custo acessível.",
+            "DWDM (Dense WDM): Espaçamento muito denso. Permite transmitir mais de 80 canais em um único filamento de fibra, atingindo taxas superiores a Terabits por segundo."
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Comparação entre CWDM e DWDM",
+          colunas: ["Característica", "CWDM (Coarse Wavelength Division Multiplexing)", "DWDM (Dense Wavelength Division Multiplexing)"],
+          linhas: [
+            ["Significado", "Multiplexação por Divisão de Comprimento de Onda Grossa", "Multiplexação por Divisão de Comprimento de Onda Densa"],
+            ["Espaçamento entre canais", "Grande (canais mais espaçados)", "Muito pequeno (canais muito próximos)"],
+            ["Número de canais", "Até 18 canais por par de fibra", "Mais de 80 canais (podendo chegar a centenas, dependendo da tecnologia)"],
+            ["Capacidade de transmissão", "Média", "Muito alta (atinge taxas superiores a Tb/s)"],
+            ["Custo de implantação", "Baixo", "Alto"],
+            ["Complexidade", "Menor", "Maior"],
+            ["Equipamentos utilizados", "Mais simples e econômicos", "Mais sofisticados e de maior precisão"],
+            ["Alcance", "Curto a médio alcance", "Médio a longo alcance"],
+            ["Aplicações típicas", "Redes metropolitanas (MANs), provedores regionais, empresas e universidades", "Backbones de operadoras, redes de longa distância (WANs) e grandes data centers"],
+            ["Principal vantagem", "Baixo custo e facilidade de implantação", "Elevada capacidade de transmissão e melhor aproveitamento da fibra óptica"],
+            ["Principal desvantagem", "Menor capacidade de expansão", "Maior custo de implantação e manutenção"]
+          ]
+        }
+      ]
+    },
+    {
+      id: "wman",
+      titulo: "WMAN (Wireless Metropolitan Area Network)",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "A WMAN (Wireless Metropolitan Area Network) é uma Rede Metropolitana sem Fio, ou seja, uma rede que conecta diferentes redes locais (LANs) distribuídas em uma cidade ou região metropolitana utilizando tecnologias de comunicação sem fio, em vez de cabos. Enquanto uma MAN tradicional utiliza principalmente fibra óptica, a WMAN utiliza ondas de rádio para transmitir os dados."
+        },
+        {
+          tipo: "topico",
+          titulo: "Por que surgiu a WMAN?",
+          texto: "Nem sempre é possível instalar fibra óptica entre dois pontos devido a fatores como:",
+          lista: [
+            "alto custo de implantação;",
+            "obstáculos geográficos;",
+            "áreas rurais ou de difícil acesso;",
+            "necessidade de implantação rápida."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Nesses casos, a comunicação pode ser realizada por meio de enlaces sem fio."
+        },
+        {
+          tipo: "topico",
+          titulo: "Principais componentes de uma WMAN",
+          lista: [
+            "Estações Base (Base Stations): São os equipamentos responsáveis por transmitir e receber o sinal de rádio. Funcionam como \"torres de comunicação\", atendendo uma determinada área da cidade.",
+            "Antenas: Realizam a transmissão e recepção das ondas eletromagnéticas. Podem ser instaladas em: torres; prédios; postes; morros.",
+            "Equipamentos do usuário (CPE): O CPE (Customer Premises Equipment) é o equipamento instalado no cliente. Sua função é receber o sinal da estação base e conectá-lo à rede local da empresa ou residência.",
+            "Backbone: As estações base normalmente são conectadas ao backbone da operadora."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "WiMAX (IEEE 802.16)",
+          texto: "É a tecnologia mais conhecida para implementação de WMANs. Foi desenvolvida para oferecer acesso em banda larga sem fio em áreas metropolitanas.",
+          lista: [
+            "cobertura de vários quilômetros;",
+            "altas taxas de transmissão;",
+            "suporte a múltiplos usuários;",
+            "comunicação ponto-multiponto."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Vantagens da WMAN",
+          lista: [
+            "Implantação rápida;",
+            "Menor custo quando comparada à instalação de fibra óptica;",
+            "Flexibilidade para expansão;",
+            "Cobertura de grandes áreas;",
+            "Ideal para locais onde o cabeamento é inviável."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Desvantagens da WMAN",
+          lista: [
+            "Menor estabilidade quando comparada à fibra óptica;",
+            "Interferências causadas por obstáculos e condições climáticas;",
+            "Menor capacidade de transmissão em relação às redes ópticas;",
+            "Necessidade de visada direta em alguns tipos de enlace."
+          ]
+        }
+      ]
+    },
+    {
+      id: "sonet_sdh",
+      titulo: "SONET e SDH",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "As tecnologias SONET (Synchronous Optical Network) e SDH (Synchronous Digital Hierarchy) foram a espinha dorsal de redes metropolitanas e de longa distância durante as décadas de 1980 e 1990 aproximadamente. No entanto, foram gradualmente substituídas por Metro Ethernet, MPLS e DWDM."
+        },
+        {
+          tipo: "destaque",
+          texto: "A razão fundamental para essa substituição foi a mudança drástica no perfil do tráfego de comunicação: a transição de um mundo focado em voz (comutação de circuitos) para um mundo dominado por dados (comutação de pacotes IP)."
+        }
+      ]
+    }
+  ]
+    },
+    // aula 5
+    {
+      aula: "Aula 6 - Introdução a redes móveis e redes ad hoc",
+      ideia_central: "As redes sem fio se dividem em Redes Celulares Móveis, baseadas em infraestrutura hierárquica e evoluídas ao longo de gerações (1G a 5G), e Redes Ad-hoc Sem Fio, descentralizadas e compostas por diversas categorias (WPAN, WLAN, WMAN, WMN, WSN, MANET/VANET), cada uma exigindo estratégias específicas de gerenciamento de mobilidade, recursos, segurança e identidade.",
+      secoes: [
+        {
+          id: "objetivos",
+          titulo: "Objetivos de Aprendizagem",
+          blocos: [
+            {
+              tipo: "lista",
+              itens: [
+                "Compreender os conceitos fundamentais das redes sem fio, móveis e ad hoc.",
+                "Diferenciar redes com infraestrutura das redes ad hoc, reconhecendo suas características, vantagens e limitações.",
+                "Explicar a evolução das tecnologias de redes móveis e sua influência no desenvolvimento das comunicações sem fio."
+              ]
+            }
+          ]
+        },
+        {
+          id: "visao_geral_sem_fio",
+          titulo: "Redes Sem Fio: Visão Geral",
+          blocos: [
+            {
+              tipo: "lista",
+              itens: [
+                "Conectam dispositivos sem a necessidade de cabos físicos.",
+                "Utilizam ondas de rádio, infravermelho ou micro-ondas para comunicação.",
+                "Dividem-se em dois grandes grupos: Redes Celulares Móveis e Redes Ad-hoc Sem Fio."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Além das já estudadas",
+              lista: [
+                "WPAN: Bluetooth, NFC",
+                "WLAN: Wi-Fi",
+                "WMAN: WiMAX"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Redes Celulares Móveis",
+              lista: [
+                "Baseadas em uma infraestrutura hierárquica (estações rádio base, torres, antenas).",
+                "Permitem mobilidade contínua entre células (handover)."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Redes Ad-hoc Sem Fio",
+              lista: [
+                "Estrutura descentralizada",
+                "Os dispositivos comunicam-se diretamente entre si.",
+                "Cada nó atua como emissor, receptor e roteador.",
+                "Características: Autoconfiguração e autogestão; Alta mobilidade dos nós; Escalabilidade limitada e desafios de segurança."
+              ]
+            }
+          ]
+        },
+        {
+          id: "comunicacao_redes_sem_fio",
+          titulo: "Comunicação em Redes Sem Fios",
+          blocos: [
+            {
+              tipo: "lista",
+              itens: [
+                "Nas redes sem fio, os dados são transmitidos através do ar, permitindo a comunicação remota sem necessidade de cabos físicos.",
+                "Utilizam ondas eletromagnéticas (como ondas de rádio) para transportar informações.",
+                "Os bits de informação são convertidos em ondas eletromagnéticas dentro de uma faixa de radiofrequência (RF).",
+                "As ondas de rádio podem percorrer longas distâncias e atravessar obstáculos, como paredes e edifícios."
+              ]
+            }
+          ]
+        },
+        {
+          id: "evolucao_redes_moveis",
+          titulo: "A Evolução das Redes Móveis",
+          blocos: [
+            {
+              tipo: "lista",
+              itens: [
+                "Em 1926 surgiu o início do serviço de telefonia móvel.",
+                "Em 1947 surgiram as teorias sobre redes de telefonia celular, porém somente em 1973 realizada a primeira chamada de um telefone celular móvel para um telefone fixo, marcando o início da era dos celulares."
+              ]
+            },
+            {
+              tipo: "imagem",
+              id: "figura_martin_cooper_primeiro_celular",
+              src: "figura_martin_cooper_primeiro_celular.png",
+              pasta: "imagens_redes2/aula_05",
+              alt: "Martin Cooper (Motorola) com o primeiro celular funcional, dispositivo volumoso com antena externa e teclado numérico, ilustrando a primeira chamada móvel de 1973.",
+              num: 1
+            },
+            {
+              tipo: "imagem",
+              id: "diagrama_evolucao_redes_celulares_geracoes",
+              src: "diagrama_evolucao_redes_celulares_geracoes.png",
+              pasta: "imagens_redes2/aula_05",
+              alt: "Diagrama mostrando a Rede Celular Móvel se ramificando em Rede Celular Analógica (levando à geração 1G) e Rede Celular Digital (ramificando-se em 2G, 3G, 4G e 5G).",
+              num: 2
+            },
+            {
+              tipo: "topico",
+              titulo: "Redes analógicas (1G)",
+              lista: [
+                "Implantadas entre 1970 e 1980.",
+                "Transmissão somente sinais analógicos (voz) utilizando a técnica FDMA (Frequency Division Multiple Access)"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Segunda Geração (2G)",
+              lista: [
+                "Lançada em meados 1991, com comunicação digital.",
+                "Vantagens: Melhor qualidade de sinal; Implementação de medidas de segurança.",
+                "Possibilidade de criptografia."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Evolução do 2G ao 3G",
+              texto: "Etapas intermediárias:",
+              lista: [
+                "2G → 2.5G: aumento da taxa de dados (56 → 114 kbit/s).",
+                "2.5G → 2.75G (EDGE): melhoria da transmissão de dados.",
+                "2.75G → 3G (UMTS): rede totalmente digital e multimídia.",
+                "Aplicações: SMS e internet móvel."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Terceira Geração (3G)",
+              texto: "Final da década de 1990 a início dos anos 2000",
+              lista: [
+                "Demandas que motivaram o 3G: Compatibilidade com o sistema 2G.",
+                "Suporte a comunicações multimídia.",
+                "Maior eficiência e velocidade (até 2 Mbps).",
+                "Base para serviços de internet móvel global."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Quarta Geração (4G)",
+              lista: [
+                "Lançado em 2009",
+                "Baseada em IP (Internet Protocol).",
+                "Integra voz, dados e streaming multimídia.",
+                "Oferece conexão a qualquer hora e lugar."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Quinta Geração (5G)",
+              texto: "Lançado em 2019. Velocidade: até 10 Gbps (10 a 50 vezes mais que a 4G).",
+              lista: [
+                "Benefícios: Menor latência (tempo de resposta).",
+                "Baixo consumo de energia.",
+                "Maior número de dispositivos conectados (IoT).",
+                "Cenário atual: 5.5G e 6G (em desenvolvimento)"
+              ]
+            }
+          ]
+        },
+        {
+          id: "gerenciamento_redes_moveis",
+          titulo: "Gerenciamento de Redes Móveis",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "As redes móveis são um tipo especial de sistema sem fio."
+            },
+            {
+              tipo: "topico",
+              titulo: "Características principais",
+              lista: [
+                "Reutilização de frequência.",
+                "Mobilidade com roaming.",
+                "Transações de handoff/handover (transferência entre células).",
+                "Cobrem grandes áreas divididas em células.",
+                "As frequências de transmissão são reutilizadas entre células com mínima interferência."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Desafios das Redes Móveis",
+              lista: [
+                "Controle de acesso ao meio: muitos usuários compartilham o mesmo canal.",
+                "Largura de banda limitada: reduzida devido ao alto número de conexões.",
+                "Alta complexidade: gerenciamento de mobilidade em grandes áreas.",
+                "Limitações de energia: dispositivos móveis dependem de baterias.",
+                "Segurança: cobertura ampla facilita tentativas de ataques externos."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Principais Propriedades de Gerenciamento",
+              lista: [
+                "Gestão da Mobilidade: rastreia e atualiza a posição dos usuários.",
+                "Gerenciamento de Recursos: controla o uso eficiente de banda e potência.",
+                "Gerenciamento de Segurança: protege contra acessos e ataques indevidos.",
+                "Gerenciamento de Identidades: autentica e identifica usuários na rede."
+              ]
+            },
+            {
+              tipo: "imagem",
+              id: "diagrama_gerenciamento_redes_moveis",
+              src: "diagrama_gerenciamento_redes_moveis.png",
+              pasta: "imagens_redes2/aula_05",
+              alt: "Diagrama de Gerenciamento de redes móveis em quatro colunas: Gestão da Mobilidade (Paging, Roaming, Atualização da Localização); Gerenciamento de Recursos (Controle de congestionamento, Controle de energia, Taxa de alocação, Planejamento das células, Precificação dos serviços); Gerenciamento de Segurança (Propriedades de segurança, Tipos de ataques); Gerenciamento de Identidades (SIM, AuC).",
+              num: 3
+            },
+            {
+              tipo: "topico",
+              titulo: "Estrutura da Rede Celular",
+              lista: [
+                "Composta por várias estações-base (células individuais).",
+                "Cada estação-base (célula) cobre uma pequena área geográfica.",
+                "Cada área possui um identificador de localização.",
+                "A integração das células permite ampla cobertura regional.",
+                "Um conjunto de estações-base forma uma área local ou área de roteamento."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Procedimento de Atualização de Localização",
+              lista: [
+                "O dispositivo móvel detecta o código da área de cobertura.",
+                "Quando o código é diferente do anterior, o dispositivo: Realiza uma atualização de localização.",
+                "Envia uma requisição de atualização à rede.",
+                "Inclui o último código de localização armazenado.",
+                "Esse processo permite à rede saber onde o usuário está para manter o serviço ativo."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Gestão da Mobilidade",
+              texto: "Objetivo: manter o rastreamento e a conectividade dos usuários para garantir o acesso a serviços (voz, SMS, dados etc.).",
+              lista: [
+                "Componentes principais:",
+                "Paging: localização do dispositivo quando há uma chamada ou serviço a ser entregue.",
+                "Roaming: permite ao usuário utilizar a rede em diferentes áreas geográficas.",
+                "Atualização da localização: o dispositivo informa à rede quando muda de área.",
+                "Cada usuário possui uma TMSI (Temporary Mobile Subscriber Identity), uma identidade temporária atribuída sempre que o usuário muda de área."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Paging — como funciona",
+              texto: "O Paging é o processo de localização de um dispositivo móvel (como um smartphone) dentro da rede quando há uma tentativa de comunicação com ele — por exemplo, quando alguém liga para o seu número.",
+              lista: [
+                "Quando o celular está ocioso (sem tráfego de dados ou chamadas ativas), ele não mantém comunicação constante com a rede. Assim, quando uma chamada ou mensagem chega, a rede precisa descobrir em qual célula (ou conjunto de células) o dispositivo está registrado.",
+                "Para isso, ela envia uma mensagem de \"paging\" por várias torres dentro da área onde o aparelho foi visto pela última vez.",
+                "Assim que o telefone recebe essa mensagem, ele responde, e a conexão é estabelecida."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Roaming — como funciona",
+              texto: "O Roaming é o processo que permite ao usuário utilizar sua rede móvel fora de sua área de registro original, ou seja, em outras regiões geográficas ou até países, mantendo o mesmo número e serviços.",
+              lista: [
+                "Quando o usuário sai da área de cobertura da sua operadora \"doméstica\" (Home Network) e entra em outra área — pertencente a uma rede parceira (Visited Network) —, o celular registra-se automaticamente nessa nova rede.",
+                "Isso é possível porque as operadoras firmam acordos de roaming, permitindo o uso compartilhado de infraestrutura.",
+                "Obs: pode ser necessário a contratação de pacotes de serviços que variam de preços de acordo com os serviços e países."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Gerenciamento de Recursos",
+              texto: "Objetivo: garantir qualidade de serviço (QoS) e eficiência no uso dos recursos da rede.",
+              lista: [
+                "Principais funções:",
+                "Controle de congestionamento: evita sobrecarga da rede (descarte de chamadas, redução da taxa de transmissão, etc.).",
+                "Controle de energia: otimiza o consumo e reduz interferências.",
+                "Taxa de alocação: busca equilibrar energia e taxa de transmissão sem gerar \"starvation\".",
+                "Planejamento das células: inclui alocação de largura de banda, planejamento de estações-base, controle de energia e setorização.",
+                "Precificação dos serviços: regula a demanda e gera receita, considerando a limitação física dos recursos da rede."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Gerenciamento de Segurança",
+              texto: "Objetivo: proteger a infraestrutura e os dados transmitidos.",
+              lista: [
+                "Propriedades de segurança: Autenticação, integridade, confidencialidade e controle de acesso.",
+                "Detecção de vírus, malwares e localização do dispositivo.",
+                "Principais tipos de ataques: Negação de serviço (DoS), jamming (ataque cibernético que interfere ou bloqueia intencionalmente a comunicação em redes sem fio), acesso não autorizado, bisbilhotagem, falsificação de mensagens, replay, homem no meio e sequestro de sessão."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Gerenciamento de Identidade",
+              texto: "Objetivo: garante que somente usuários autorizados possam acessar a rede e que suas informações pessoais sejam protegidas durante a comunicação. Cada usuário de uma rede móvel possui uma identidade única armazenada no cartão SIM (Subscriber Identity Module).",
+              lista: [
+                "Funções do Gerenciamento de Identidade:",
+                "Autenticação: confirma que o usuário é realmente quem diz ser.",
+                "Autorização: define quais serviços o usuário pode acessar (voz, dados, roaming, etc.).",
+                "Privacidade: protege as informações pessoais e evita que terceiros rastreiem o usuário.",
+                "Rastreamento seguro: mantém a capacidade de localizar o dispositivo para entrega de chamadas e mensagens, sem expor dados sensíveis."
+              ]
+            }
+          ]
+        },
+        {
+          id: "evolucao_redes_ad_hoc",
+          titulo: "Evolução das Redes Sem Fio Ad Hoc",
+          blocos: [
+            {
+              tipo: "destaque",
+              texto: "Obs: uma tecnologia pode pertencer a mais de um tipo de rede."
+            },
+            {
+              tipo: "imagem",
+              id: "diagrama_evolucao_redes_sem_fio_ad_hoc",
+              src: "diagrama_evolucao_redes_sem_fio_ad_hoc.png",
+              pasta: "imagens_redes2/aula_05",
+              alt: "Diagrama ramificando a Rede Sem Fio Ad-hoc em Rede sem fio de área pessoal (WPAN), Rede sem fio de área local (WLAN), Rede sem fio de área metropolitana (WMAN), Rede sem fio de área mesh (WMN), Rede de sensores sem fio (WSN) e Redes móveis Ad-hoc (MANET). A WPAN se ramifica em Comunicação por infravermelho (IrDA), Bluetooth, Comunicação por Campo de Proximidade (NFC), Banda ultralarga (UWB), Wireless USB (WUSB), Z-Wave e ZigBee. A MANET se ramifica em Redes Veiculares Ad-hoc (VANET) e Redes VANET Inteligentes.",
+              num: 4
+            },
+            {
+              tipo: "topico",
+              titulo: "Redes de Área Pessoal (WPAN – Wireless Personal Area Network)",
+              texto: "Primeira evolução prática das redes ad hoc. Projetadas para curta distância (até 10 metros), conectando dispositivos pessoais.",
+              lista: [
+                "Exemplos de tecnologias:",
+                "Bluetooth – Comunicação entre dispositivos próximos, muito usada em áudio, periféricos e compartilhamento de dados.",
+                "IrDA (Infravermelho) – Comunicação óptica ponto a ponto, usada em controles remotos e dispositivos mais antigos.",
+                "NFC (Near Field Communication) – Comunicação por campo de proximidade, comum em pagamentos por aproximação e cartões inteligentes.",
+                "UWB (Ultra Wideband) – Comunicação de alta velocidade e precisão, usada em rastreamento de localização e transferência de dados.",
+                "Wireless USB (WUSB) – Versão sem fio do USB tradicional, projetada para conexões de alta taxa de transmissão.",
+                "ZigBee – Voltado à automação residencial e industrial, com baixo consumo de energia e alta confiabilidade em topologias mesh.",
+                "Z-Wave – Focado em IoT e automação doméstica, permitindo o controle remoto de dispositivos como lâmpadas, portas e sensores de segurança."
+              ]
+            },
+            {
+              tipo: "tabela",
+              titulo: "Comparação de tecnologias WPAN/WLAN",
+              colunas: ["Tecnologia", "Alcance", "Velocidade", "Consumo"],
+              linhas: [
+                ["Bluetooth", "10 m", "média", "baixo"],
+                ["ZigBee", "100 m", "baixa", "muito baixo"],
+                ["NFC", "centímetros", "baixa", "muito baixo"],
+                ["Wi-Fi", "dezenas de metros", "muito alta", "maior"]
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Redes de Área Local (WLAN – Wireless Local Area Network)",
+              lista: [
+                "Expansão da cobertura para ambientes maiores, como casas, escolas e empresas.",
+                "O padrão Wi-Fi é o principal exemplo.",
+                "Ainda que possa operar em modo ad hoc, muitas vezes utiliza pontos de acesso (modo infraestrutura)."
+              ]
+            },
+            {
+              tipo: "imagem",
+              id: "diagrama_wlan_modo_infraestrutura",
+              src: "diagrama_wlan_modo_infraestrutura.png",
+              pasta: "imagens_redes2/aula_05",
+              alt: "Diagrama mostrando laptop, computador desktop e tablet conectados sem fio a um roteador central (BSS), que se conecta a uma Rede Local Cabeada e depois à Internet.",
+              num: 5
+            },
+            {
+              tipo: "topico",
+              titulo: "Redes de Área Metropolitana (WMAN – Wireless Metropolitan Area Network)",
+              lista: [
+                "Abrangem áreas urbanas inteiras, conectando múltiplas WLANs.",
+                "Um exemplo clássico é o WiMAX, projetado para prover acesso de banda larga sem fio em larga escala (6 a 9km).",
+                "Embora tenha sido uma alternativa promissora para a conexão de banda larga, o WiMAX foi amplamente substituído pelo 4G LTE em aplicações comerciais, que se tornou o padrão para a tecnologia móvel na época."
+              ]
+            },
+            {
+              tipo: "imagem",
+              id: "diagrama_cobertura_wimax_wifi",
+              src: "diagrama_cobertura_wimax_wifi.png",
+              pasta: "imagens_redes2/aula_05",
+              alt: "Diagrama de uma torre WiMAX irradiando ondas de cobertura sobre área urbana, hotspots, áreas externas, residências e veículos, com legenda distinguindo cobertura WiMAX de Wi-Fi.",
+              num: 6
+            },
+            {
+              tipo: "topico",
+              titulo: "Redes Mesh (WMN – Wireless Mesh Network)",
+              lista: [
+                "Evoluíram das redes ad hoc com a introdução de nós roteadores fixos.",
+                "Cada nó colabora para retransmitir o sinal, aumentando a confiabilidade e cobertura da rede.",
+                "São amplamente usadas em cidades inteligentes e ambientes corporativos"
+              ]
+            },
+            {
+              tipo: "imagem",
+              id: "diagrama_rede_mesh_wmn",
+              src: "diagrama_rede_mesh_wmn.png",
+              pasta: "imagens_redes2/aula_05",
+              alt: "Diagrama de Roteadores Mesh interconectados formando uma malha, com um Roteador Mesh Gateway central conectado à Internet, e laptops e smartphones conectados aos roteadores mesh nas extremidades.",
+              num: 7
+            },
+            {
+              tipo: "topico",
+              titulo: "Redes de Sensores Sem Fio (WSN – Wireless Sensor Network)",
+              lista: [
+                "Criadas para monitoramento e coleta de dados (temperatura, pressão, umidade etc.).",
+                "Utilizam sensores interconectados que transmitem informações de forma autônoma.",
+                "Tecnologias como ZigBee e Z-Wave são exemplos."
+              ]
+            },
+            {
+              tipo: "imagem",
+              id: "ilustracao_casa_inteligente_wsn",
+              src: "ilustracao_casa_inteligente_wsn.png",
+              pasta: "imagens_redes2/aula_05",
+              alt: "Ilustração de uma casa conectada a ícones de sensores e dispositivos IoT ao redor dela — segurança, Wi-Fi, luminosidade, água, energia solar, controle de energia, temperatura, iluminação, TV e proteção.",
+              num: 8
+            },
+            {
+              tipo: "topico",
+              titulo: "Redes Móveis Ad Hoc (MANET – Mobile Ad Hoc Network)",
+              texto: "É uma rede de dispositivos sem fio que se comunicam diretamente uns com os outros sem a necessidade de uma infraestrutura fixa, como roteadores ou torres de celular. Cada dispositivo pode funcionar como roteador, encaminhando tráfego para outros nós na rede.",
+              lista: [
+                "Muito usadas em operações militares, resgate, eventos temporários e ambientes sem infraestrutura fixa."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Redes Veiculares Ad Hoc (VANET e VANET Inteligentes)",
+              lista: [
+                "São uma especialização das MANETs aplicadas a veículos.",
+                "Permitem comunicação entre carros e com a infraestrutura viária (semáforos, sensores de trânsito).",
+                "As VANET Inteligentes evoluem com o uso de IA e IoT, visando maior segurança e eficiência no tráfego"
+              ]
+            }
+          ]
+        },
+        {
+          id: "amazon_go",
+          titulo: "Exemplo — Supermercado Amazon Go",
+          blocos: [
+            {
+              tipo: "exemplo",
+              titulo: "supermercado amazon go",
+              texto: "As lojas Amazon Go utilizam uma infraestrutura de rede altamente integrada, baseada em Wi-FI corporativo, IoT e IA. Câmeras, balanças, sensores de movimento e prateleiras inteligentes se conectam via Wi-Fi tradicional e protocolos IoT (como Zigbee e Bluetooth Low Energy). A rede sem fio é gerenciada centralmente, com alta largura de banda e baixa latência para comunicação entre dispositivos e servidores locais. Parte do processamento dos dados é feita localmente, dentro da loja, para reduzir o tempo de resposta. Uso de servidores de borda analisam as imagens e sensores em tempo real (quem pegou o quê, quem saiu da loja, etc.).",
+              detalhe: "As informações processadas localmente são sincronizadas com a nuvem da Amazon Web Services (AWS), onde ocorre o aprendizado contínuo dos algoritmos de visão computacional e comportamento de compra."
+            }
+          ]
+        },
+        {
+          id: "gerenciamento_redes_ad_hoc",
+          titulo: "Gerenciamento de Redes Sem Fio Ad Hoc",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "As redes Ad Hoc são sistemas autônomos, dinâmicos e descentralizados, onde cada nó atua simultaneamente como cliente e roteador, transmitindo dados de forma colaborativa. Por isso, o gerenciamento dessas redes deve lidar de forma integrada com mobilidade, recursos, segurança e desempenho, mantendo a conectividade mesmo sem uma infraestrutura fixa."
+            },
+            {
+              tipo: "imagem",
+              id: "diagrama_gerenciamento_redes_ad_hoc",
+              src: "diagrama_gerenciamento_redes_ad_hoc.png",
+              pasta: "imagens_redes2/aula_05",
+              alt: "Diagrama de Gerenciamento de Redes Sem Fio Ad Hoc em oito blocos: Gerenciamento de Mobilidade (Roteamento, Localização); Gerenciamento de Recursos (Espectro, Energia); Gerenciamento de Segurança (Ataques, Alternativas); Autogerenciamento (Detecção, Recuperação); Gerenciamento da Escalabilidade (Hierarquia); Gerenciamento da Confiança (Sobrevivência); Gerenciamento Integrado (Roaming, Handoff); Gerenciamento de Serviços (QoS).",
+              num: 9
+            },
+            {
+              tipo: "topico",
+              titulo: "Gerenciamento de Mobilidade",
+              texto: "Objetivo: garantir que os nós móveis permaneçam conectados mesmo com mudanças de posição. A mobilidade é o núcleo das redes Ad Hoc, pois os nós mudam constantemente de posição. Para manter a comunicação ativa, a rede utiliza protocolos de roteamento dinâmico (como AODV e DSR), que reconstroem rotas sempre que a topologia muda. Esse gerenciamento se apoia em dois processos interligados:",
+              lista: [
+                "Atualização de localização: cada nó informa periodicamente sua posição à rede, permitindo que os outros saibam por onde enviar os dados.",
+                "Handoff/Handover: quando um nó sai da área de cobertura de outro, a rede realiza uma troca suave de rota para manter a conexão ativa.",
+                "Assim, o gerenciamento de mobilidade garante continuidade da comunicação e estabilidade da rede, mesmo com deslocamentos constantes dos dispositivos."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Gerenciamento de Recursos",
+              texto: "Objetivo: otimizar o uso dos recursos limitados, como energia e espectro de frequência. Nas redes Ad Hoc, os recursos são limitados — principalmente energia, banda e capacidade de processamento. O gerenciamento de recursos envolve:",
+              lista: [
+                "Economia de energia: como os dispositivos geralmente são alimentados por bateria, algoritmos de economia (como modo sleep ou balanceamento de carga) ajudam a prolongar a vida útil dos nós.",
+                "Gerenciamento de espectro: o uso eficiente das faixas de frequência evita interferências entre os nós e melhora o desempenho global.",
+                "Controle de tráfego: garante que os recursos sejam alocados conforme a prioridade dos dados (por exemplo, priorizando mensagens críticas).",
+                "Esses elementos trabalham em conjunto para equilibrar desempenho, eficiência energética e estabilidade da rede."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Gerenciamento de Segurança",
+              texto: "Objetivo: proteger a rede contra ataques e acessos não autorizados. Como não há uma estrutura central (como um servidor), a segurança é distribuída e cooperativa. Envolve três camadas principais que atuam de forma integrada:",
+              lista: [
+                "Autenticação: confirma se um nó é realmente quem diz ser.",
+                "Criptografia: protege os dados durante a transmissão.",
+                "Confiança entre nós: como cada nó encaminha pacotes de outros, a rede precisa avaliar o nível de confiança de cada participante (para evitar nós maliciosos).",
+                "Esse gerenciamento é essencial para evitar ataques como falsificação, espionagem, buracos negros e negação de serviço."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Autogerenciamento",
+              texto: "Objetivo: tornar a rede autônoma, com capacidade de se adaptar a falhas e mudanças. A rede deve ser capaz de se configurar, se adaptar e se recuperar sozinha, sem intervenção humana. Inclui três funções interligadas:",
+              lista: [
+                "Autoconfiguração: os nós se identificam e definem automaticamente endereços e rotas.",
+                "Autoadaptação: ajusta o funcionamento conforme mudanças no ambiente (interferência, queda de nó, nova conexão).",
+                "Autorreparo: detecta falhas e reconstrói rotas ou substitui nós inativos.",
+                "Isso garante que a rede continue operando de forma resiliente e inteligente, mesmo diante de falhas."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Gerenciamento da Escalabilidade",
+              texto: "Objetivo: manter a eficiência da rede mesmo com o aumento de nós conectados. À medida que o número de nós aumenta, a rede deve evitar sobrecarga de sinal e perda de desempenho. Para isso, aplica:",
+              lista: [
+                "Clusterização (agrupamento): divide a rede em pequenos grupos com líderes responsáveis pela coordenação.",
+                "Hierarquia de controle: reduz o tráfego global e facilita a tomada de decisão local.",
+                "Assim, mesmo com centenas de nós, a rede continua eficiente e organizada."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Gerenciamento da Confiança",
+              texto: "Objetivo: assegurar a confiabilidade e resiliência da rede diante de falhas ou ataques. A confiança é a base para o funcionamento colaborativo da rede. Cada nó deve decidir em quem confiar para retransmitir mensagens. São usados mecanismos de reputação, nos quais os nós observam o comportamento uns dos outros:",
+              lista: [
+                "Se um nó encaminha corretamente pacotes → ganha confiança.",
+                "Se atrapalha ou omite transmissões → perde reputação.",
+                "Isso fortalece a resiliência e a sobrevivência da rede, mesmo sob ataques."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Gerenciamento Integrado",
+              texto: "Objetivo: coordenar a comunicação entre diferentes tipos de redes e dispositivos. Responsável por garantir interoperabilidade entre diferentes redes e tecnologias (Wi-Fi, Bluetooth, 4G, 5G, etc.). Atua com os mecanismos de:",
+              lista: [
+                "Roaming: o usuário muda de uma área de cobertura para outra sem perder conexão.",
+                "Handoff: troca automática de ponto de acesso durante uma chamada ou transmissão de dados.",
+                "Também coordena políticas de segurança e controle de acesso entre diferentes redes."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Gerenciamento de Serviços",
+              texto: "Objetivo: garantir a Qualidade de Serviço (QoS) nas aplicações da rede. Controla latência, perda de pacotes e largura de banda, garantindo que serviços críticos tenham prioridade. Está diretamente ligado ao gerenciamento de recursos e à mobilidade, pois a variação de rotas pode impactar o desempenho. Implementa mecanismos de priorização e agendamento, ajustando a transmissão conforme o tipo de dado (voz, vídeo, texto)."
+            }
+          ]
+        }
+      ]
+    },
+    // aula 6
+    {
+      aula: "Introdução à Segurança de Redes",
+      ideia_central: "A aula apresenta os fundamentos da segurança de redes de computadores, cobrindo vulnerabilidades, ameaças e ataques, mecanismos de proteção como criptografia, autenticação, firewalls e VPNs, além da legislação brasileira sobre crimes cibernéticos.",
+      secoes: [
+        {
+          id: "objetivos",
+          titulo: "Objetivos de Aprendizagem",
+          blocos: [
+            {
+              tipo: "lista",
+              itens: [
+                "Compreender os princípios fundamentais da segurança de redes de computadores.",
+                "Identificar as principais ameaças, vulnerabilidades e ataques que podem comprometer uma rede.",
+                "Explicar os mecanismos básicos de proteção, como autenticação, criptografia, firewalls e controle de acesso.",
+                "Reconhecer a importância das políticas e boas práticas de segurança para garantir a confidencialidade, integridade e disponibilidade das informações."
+              ]
+            }
+          ]
+        },
+        {
+          id: "vulnerabilidades",
+          titulo: "Principais Vulnerabilidades em uma Rede",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "**\"Vulnerabilidade de Rede\"** se refere a uma fraqueza ou falha em uma rede de computadores que pode ser explorada por atacantes para comprometer a segurança dos sistemas conectados. Essas vulnerabilidades podem permitir acessos não autorizados, roubos de dados, interrupções de serviço ou execução de atividades maliciosas dentro da rede."
+            },
+            {
+              tipo: "imagem",
+              id: "representacao_visual_elo_fraco_corrente",
+              src: "representacao_visual_elo_fraco_corrente.png",
+              pasta: "imagens_redes2/aula_06",
+              alt: "Corrente de elos verdes com um elo trincado sendo examinado por uma lupa segurada por uma mão, simbolizando uma vulnerabilidade como um elo fraco em uma rede",
+              num: 1
+            },
+            {
+              tipo: "lista",
+              titulo: "Principais Vulnerabilidades em uma rede",
+              itens: [
+                "Falta de Criptografia: Riscos de transmissão de dados em texto aberto.",
+                "Configurações Padrão: Riscos de usar configurações e senhas padrão de fábrica.",
+                "Senhas Fracas: Importância de senhas fortes e políticas de autenticação.",
+                "Ausência de Firewalls e Controle de Acesso: Consequências de redes expostas.",
+                "Software Desatualizado: Vulnerabilidades em versões antigas de software."
+              ]
+            }
+          ]
+        },
+        {
+          id: "vulnerabilidade_ameaca_ataque",
+          titulo: "Vulnerabilidade x Ameaça x Ataque",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "Vulnerabilidade",
+              texto: "É uma fraqueza. Exemplo: software desatualizado."
+            },
+            {
+              tipo: "topico",
+              titulo: "Ameaça",
+              texto: "Algo ou alguém que pode explorar a fraqueza. Exemplo: um vírus conhecido que se aproveita da falta de atualizações."
+            },
+            {
+              tipo: "topico",
+              titulo: "Ataque",
+              texto: "Ato de exploração de uma vulnerabilidade, em que a ameaça se materializa. Exemplo: o vírus infecta o sistema explorando a falha do software desatualizado."
+            }
+          ]
+        },
+        {
+          id: "hackers",
+          titulo: "Hackers",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "O termo **\"hacker\"** refere-se a uma pessoa com profundo conhecimento técnico em informática, redes e sistemas de segurança, capaz de explorar, modificar e manipular sistemas e softwares de maneira criativa e inovadora."
+            },
+            {
+              tipo: "lista",
+              titulo: "Tipos de Hackers",
+              itens: [
+                "Hackers \"White Hat\" (Chapéu Branco): Utilizam suas habilidades para proteger sistemas e encontrar falhas de segurança com a permissão dos proprietários, sendo conhecidos como \"hackers éticos.\"",
+                "Hackers \"Black Hat\" (Chapéu Preto): Atuam de forma ilegal ou maliciosa, explorando vulnerabilidades para roubar dados, causar prejuízos ou ganhar acesso não autorizado a sistemas.",
+                "Hackers \"Grey Hat\" (Chapéu Cinza): Operam entre os limites legais e ilegais, muitas vezes explorando sistemas sem permissão, mas sem intenção maliciosa. Podem, por exemplo, identificar falhas e notificá-las aos proprietários.",
+                "Outros tipos: Hacktivistas (motivados por causas políticas), Script Kiddies (amadores sem conhecimento profundo), e Hackers de Estado (envolvidos em espionagem cibernética)."
+              ]
+            }
+          ]
+        },
+        {
+          id: "tipos_ataques",
+          titulo: "Principais Tipos de Ataques",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "Malware",
+              texto: "Um programa ou código criado para danificar, roubar dados ou causar instabilidade em um sistema. Inclui vírus, worms, cavalos de Troia, spyware e ransomware. O malware geralmente se espalha por e-mails, sites infectados ou downloads."
+            },
+            {
+              tipo: "topico",
+              titulo: "Ransomware",
+              texto: "Tipo específico de malware que criptografa os dados da vítima e exige um resgate financeiro para liberar o acesso. Esse tipo de ataque tem sido responsável por grandes prejuízos financeiros e operacionais para empresas."
+            },
+            {
+              tipo: "topico",
+              titulo: "Ataque de Engenharia Social",
+              texto: "Técnica onde o atacante manipula pessoas para obter informações sensíveis ou para realizar ações específicas. Isso pode ocorrer por meio de interações telefônicas, e-mails falsos, ou até mesmo interações presenciais, explorando a confiança das vítimas."
+            },
+            {
+              tipo: "topico",
+              titulo: "Phishing",
+              texto: "Uma técnica de engenharia social onde o atacante se passa por uma entidade confiável para enganar a vítima e obter informações confidenciais, como senhas e dados bancários."
+            },
+            {
+              tipo: "topico",
+              titulo: "Ataque de Negação de Serviço (Distributed Denial of Service - DDoS)",
+              texto: "O atacante sobrecarrega o servidor, sistema ou rede com um grande volume de tráfego, tornando-o indisponível para usuários legítimos."
+            },
+            {
+              tipo: "topico",
+              titulo: "Ataque de Força Bruta",
+              texto: "Consiste em tentar inúmeras combinações de senhas até encontrar a correta e obter acesso a um sistema. Esse ataque pode ser automatizado e é particularmente eficaz contra senhas fracas."
+            },
+            {
+              tipo: "topico",
+              titulo: "SQL Injection",
+              texto: "Ocorre quando um atacante insere código SQL malicioso em um campo de entrada para manipular um banco de dados e obter, alterar ou excluir dados confidenciais. Esse ataque é comum em sites que não possuem validação adequada dos dados de entrada."
+            },
+            {
+              tipo: "topico",
+              titulo: "Ataque Man-in-the-Middle",
+              texto: "O atacante intercepta e possivelmente altera a comunicação entre duas partes sem o conhecimento delas. O objetivo é roubar dados, como informações de login e dados bancários, durante a transmissão."
+            }
+          ]
+        },
+        {
+          id: "barreiras",
+          titulo: "Tipos de Barreiras e Medidas de Segurança",
+          blocos: [
+            {
+              tipo: "lista",
+              itens: [
+                "Segurança Física: Controle de acesso a locais físicos, segurança de hardware, biometria, câmeras de vigilância e alarmes.",
+                "Segurança Lógica: Criptografia, firewalls, antivírus, sistemas de detecção e prevenção de intrusões (IDS/IPS), autenticação multifator.",
+                "Controles de Acesso: Políticas de acesso, permissões e privilégios de usuário, gerenciamento de senhas.",
+                "Backups e Recuperação de Desastres: Importância de backups regulares e de planos de recuperação em caso de falha ou ataque.",
+                "Monitoramento e Auditoria: Ferramentas de monitoramento de rede, registros de log e auditorias de segurança periódicas.",
+                "Políticas e Treinamento de Segurança: Importância de uma política de segurança, conscientização e treinamento dos colaboradores."
+              ]
+            }
+          ]
+        },
+        {
+          id: "legislacao",
+          titulo: "Legislação Brasileira",
+          blocos: [
+            {
+              tipo: "lista",
+              itens: [
+                "Lei Carolina Dieckmann (Lei nº 12.737/2012): Introduziu no Código Penal o crime de invasão de dispositivo de informática.",
+                "LGPD (Lei Geral de Proteção de Dados Pessoais, Lei nº 13.709/2018): Regula como os dados pessoais podem ser coletados, armazenados e compartilhados, garantindo a privacidade dos cidadãos.",
+                "Lei nº 14.155/2021: Alterou o Código Penal e tornou mais graves crimes como invasão de dispositivo eletrônicos, furto e estelionato cometidos por meios eletrônicos.",
+                "Lei nº 14.811/2024 criminalizou o bullying e o cyberbullying, estabelecendo penalidades para a conduta, que antes poderia ser enquadrada em outros crimes como difamação e ameaça."
+              ]
+            }
+          ]
+        },
+        {
+          id: "wannacry",
+          titulo: "WannaCry",
+          blocos: [
+            {
+              tipo: "exemplo",
+              titulo: "WannaCry",
+              texto: "WannaCry foi um ransomware (software de sequestro de dados) que causou um ataque global em maio de 2017. Ele criptografava arquivos dos computadores infectados e exigia pagamento em Bitcoin para liberar o acesso. O vírus se espalhou automaticamente usando a vulnerabilidade EternalBlue, explorando uma falha no protocolo SMBv1 do Windows (compartilhamento de arquivos em rede). Essa falha havia sido descoberta pela NSA e vazou por um grupo chamado Shadow Brokers. O ataque afetou mais de 200 mil computadores em mais de 150 países, incluindo hospitais, empresas e órgãos públicos.",
+              detalhe: "Na tela de resgate, aparecia o texto: \"Oops! Your files have been encrypted! If you wanna cry, pay us in Bitcoin.\""
+            }
+          ]
+        },
+        {
+          id: "criptografia_intro",
+          titulo: "Introdução à Criptografia",
+          blocos: [
+            {
+              tipo: "subtitulo",
+              texto: "História da criptografia"
+            },
+            {
+              tipo: "texto",
+              texto: "A história da criptografia remonta à Antiguidade e evoluiu consideravelmente ao longo dos séculos."
+            },
+            {
+              tipo: "lista",
+              itens: [
+                "Código de César (c. 58 a.C.), onde as letras de uma mensagem eram deslocadas por um número fixo no alfabeto.",
+                "Em 1466, o criptógrafo Leon Battista Alberti criou o \"ciframento de Alberti\".",
+                "A máquina de Cifra de Vigenère, criada em 1586, ofereceu uma cifra polialfabética que era muito difícil de quebrar até o século XIX.",
+                "Primeira e Segunda Guerra Mundial, o uso de criptografia se intensificou, com sistemas como o código Enigma da Alemanha, que usava uma máquina de cifra complexa."
+              ]
+            },
+            {
+              tipo: "imagem",
+              id: "representacao_visual_cifra_cesar_tabela_substituicao",
+              src: "representacao_visual_cifra_cesar_tabela_substituicao.png",
+              pasta: "imagens_redes2/aula_06",
+              alt: "Esquema com deslocamento de letras do alfabeto ilustrando o código de César, e uma tabela quadrada completa de A a Z representando a substituição alfabética usada em cifras polialfabéticas como a de Vigenère",
+              num: 2
+            },
+            {
+              tipo: "subtitulo",
+              texto: "História da criptografia - Era Digital (Século XX até hoje)"
+            },
+            {
+              tipo: "topico",
+              titulo: "Criptografia Simétrica",
+              lista: [
+                "Algoritmo AES (Advanced Encryption Standard)",
+                "Algoritmo DES (Data Encryption Standard)",
+                "Triple DES (3DES)"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Criptografia Assimétrica",
+              lista: [
+                "Algoritmo RSA",
+                "Algoritmo ECC (Elliptic Curve Cryptography)",
+                "Algoritmo DSA (Digital Signature Algorithm)"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Funções Hash",
+              lista: [
+                "SHA-2 (Secure Hash Algorithm 2)",
+                "SHA-3"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Assinaturas Digitais",
+              texto: "Aplicação da criptografia, apresentada como uma das categorias que compõem a era digital da criptografia."
+            },
+            {
+              tipo: "subtitulo",
+              texto: "O que é a técnica de criptografia?"
+            },
+            {
+              tipo: "texto",
+              texto: "A técnica de criptografia é o conjunto de métodos e algoritmos usados para proteger informações, tornando-as ilegíveis para pessoas não autorizadas. O objetivo da criptografia é garantir a confidencialidade, integridade e, em alguns casos, a autenticidade das informações. Existem duas categorias principais de criptografia: **Criptografia simétrica** e **Criptografia assimétrica**."
+            },
+            {
+              tipo: "topico",
+              titulo: "Criptografia simétrica",
+              texto: "Chave única: Usa uma única chave para criptografar e descriptografar os dados. Tanto o remetente quanto o destinatário devem conhecer essa chave secreta. Exemplo: o AES (Advanced Encryption Standard)."
+            },
+            {
+              tipo: "topico",
+              titulo: "Criptografia assimétrica",
+              texto: "Chaves públicas e privadas: Usa um par de chaves — uma chave pública (para criptografar) e uma chave privada (para descriptografar). A chave pública pode ser compartilhada com qualquer pessoa, enquanto a chave privada deve ser mantida em segredo. Exemplo: o RSA (Rivest-Shamir-Adleman)."
+            },
+            {
+              tipo: "texto",
+              texto: "A criptografia também pode envolver técnicas como o hashing (geração de resumos fixos de dados) e o uso de assinaturas digitais para garantir que os dados não foram alterados."
+            },
+            {
+              tipo: "topico",
+              titulo: "Aplicações Práticas da Criptografia",
+              lista: [
+                "Segurança de redes: Uso de criptografia para proteger redes Wi-Fi (WPA2, WPA3).",
+                "Segurança em comunicações: Uso de SSL/TLS para proteger conexões web.",
+                "Proteção de arquivos: Criptografia de discos e dados (BitLocker, VeraCrypt)."
+              ]
+            }
+          ]
+        },
+        {
+          id: "criptografia_simetrica",
+          titulo: "Criptografia Simétrica",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "A criptografia é o processo de codificar informações para impedir o acesso não autorizado. Na criptografia simétrica, é usada a mesma chave para criptografar e descriptografar."
+            },
+            {
+              tipo: "topico",
+              titulo: "Como funciona",
+              lista: [
+                "O remetente usa uma chave secreta e um algoritmo para cifrar o texto (texto plano → texto cifrado).",
+                "O destinatário usa a mesma chave e o mesmo algoritmo para decifrar o texto (texto cifrado → texto plano).",
+                "A segurança depende da proteção da chave: se ela for descoberta, todo o sistema fica vulnerável."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Como o Destinatário Recebe a Chave",
+              lista: [
+                "Pode ser entregue fisicamente (canal seguro) ou via canal criptografado (ex.: VPN).",
+                "Em sistemas modernos, a chave simétrica é trocada usando criptografia assimétrica: O emissor cifra a chave com a chave pública do destinatário. O destinatário decifra com sua chave privada."
+              ]
+            },
+            {
+              tipo: "texto",
+              texto: "Dentro da criptografia simétrica, existem dois grandes tipos de funcionamento quanto à forma como os dados são processados: **Criptografia de Bloco** e **Criptografia de Fluxo**."
+            },
+            {
+              tipo: "subtitulo",
+              texto: "Criptografia Simétrica de Fluxo"
+            },
+            {
+              tipo: "texto",
+              texto: "A Criptografia de Fluxo (ou `Stream Cipher`, em inglês) é um tipo de criptografia simétrica em que os dados são cifrados bit a bit ou byte a byte, ao invés de blocos inteiros de dados como na criptografia de bloco."
+            },
+            {
+              tipo: "lista",
+              itens: [
+                "Ela gera uma sequência de chave pseudoaleatória (chamada keystream), que é combinada com os dados originais usando uma operação, geralmente o XOR.",
+                "Cada bit ou byte do dado é cifrado individualmente, o que permite que a criptografia seja rápida e eficiente, especialmente em transmissões contínuas de dados, como streaming ou comunicação em tempo real.",
+                "Exemplo: RC4, um dos algoritmos de fluxo mais usados historicamente (agora considerado inseguro)."
+              ]
+            },
+            {
+              tipo: "subtitulo",
+              texto: "Criptografia Simétrica com Divisão em Blocos"
+            },
+            {
+              tipo: "texto",
+              texto: "Na criptografia por divisão de blocos (como DES, 3DES e AES), os dados são divididos em partes fixas chamadas \"blocos\". Cada bloco é processado como uma unidade durante a criptografia."
+            },
+            {
+              tipo: "topico",
+              titulo: "DES (Data Encryption Standard)",
+              lista: [
+                "Utiliza blocos de 64 bits e uma chave de 56 bits (apesar de tecnicamente ter 64 bits, 8 são de paridade).",
+                "Aplica uma sequência de 16 rodadas de substituição e permutação.",
+                "Permutação significa reorganizar a ordem dos bits em um bloco de dados segundo uma tabela predefinida.",
+                "Hoje é considerado inseguro devido ao tamanho pequeno da chave (facilmente quebrável por força bruta).",
+                "⚠️ Obsoleto, mas importante historicamente."
+              ]
+            },
+            {
+              tipo: "texto",
+              texto: "O DES é baseado no algoritmo de Feistel, chamado de Rede de Feistel (Feistel Network) e funciona da seguinte forma:"
+            },
+            {
+              tipo: "imagem",
+              id: "diagrama_rede_feistel_des",
+              src: "diagrama_rede_feistel_des.png",
+              pasta: "imagens_redes2/aula_06",
+              alt: "Diagrama da Rede de Feistel do DES mostrando o bloco de 64 bits dividido em metades R e L de 32 bits, passando por rodadas sucessivas com aplicação de função e XOR, troca de metades, repetição por mais 13 rodadas, até produzir o texto cifrado C",
+              num: 3
+            },
+            {
+              tipo: "tabela",
+              titulo: "Etapas do algoritmo de Feistel (DES)",
+              colunas: ["Etapa", "Descrição"],
+              linhas: [
+                ["1ª etapa", "Divide o bloco de 64 bits em L0 e R0 (32 bits cada)"],
+                ["2ª etapa", "Aplica a função F sobre R com uma chave k, o resultado é combina com L através do XOR"],
+                ["3ª etapa", "Troca as metades (swap)"],
+                ["4ª etapa", "Repete 16 vezes com subchaves diferentes"],
+                ["5ª etapa", "Junta L e R novamente → texto cifrado"]
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Triple DES (3DES ou TDEA)",
+              lista: [
+                "Criado para reforçar a segurança do DES.",
+                "Aplica o algoritmo DES três vezes sobre cada bloco de dados, usando 3 chaves: Criptografa com a primeira chave; Descriptografa com a segunda chave; Criptografa com a terceira chave.",
+                "Mais seguro que o DES, mas mais lento, pois executa o processo três vezes."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Algoritmo AES (Advanced Encryption Standard)",
+              lista: [
+                "Substituto moderno do DES.",
+                "Usa blocos de 128 bits e chaves de 128, 192 ou 256 bits.",
+                "Funciona por meio de várias rodadas (10, 12 ou 14) com operações matemáticas e substituições complexas (baseadas em álgebra finita).",
+                "É rápido, seguro e amplamente usado (ex: Wi-Fi, VPNs, criptografia de discos)."
+              ]
+            }
+          ]
+        },
+        {
+          id: "criptografia_assimetrica",
+          titulo: "Criptografia Assimétrica",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "Algoritmo RSA (Rivest-Shamir-Adleman)",
+              lista: [
+                "Baseado na dificuldade de fatorar grandes números primos.",
+                "Um par de chaves é gerado a partir de dois números primos grandes.",
+                "Pode ser usado para criptografar mensagens e assinaturas digitais.",
+                "Funcionamento básico: O emissor criptografa com a chave pública do destinatário. O destinatário descriptografa com sua chave privada.",
+                "Muito usado em HTTPS, e-mails, VPNs etc."
+              ]
+            },
+            {
+              tipo: "subtitulo",
+              texto: "Algoritmo RSA — 1. Princípio básico"
+            },
+            {
+              tipo: "lista",
+              itens: [
+                "RSA se baseia na dificuldade de fatoração de números grandes em fatores primos.",
+                "Cada usuário possui: Chave pública (e, n) → usada para cifrar mensagens, pode ser compartilhada. Chave privada (d, n) → usada para decifrar mensagens, deve ser mantida em sigilo.",
+                "A segurança depende de escolher dois números primos grandes, que formam `n = p × q`."
+              ]
+            },
+            {
+              tipo: "subtitulo",
+              texto: "Algoritmo RSA — 2. Etapas do algoritmo"
+            },
+            {
+              tipo: "topico",
+              titulo: "1) Geração de chaves",
+              lista: [
+                "Escolha dois números primos grandes `p` e `q`.",
+                "Calcule `n = p × q` → usado na chave pública e privada.",
+                "Calcule a função totiente de Euler: `φ(n) = (p-1)(q-1)`.",
+                "Escolha um número `e` tal que `1 < e < φ(n)` e `e` seja coprimo de `φ(n)` → este será o expoente público.",
+                "Calcule `d` tal que `(d × e) mod φ(n) = 1` → este será o expoente privado.",
+                "Chave pública: `(e, n)`",
+                "Chave privada: `(d, n)`"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "2) Criptografia",
+              lista: [
+                "Mensagem `M` (representada como número) é cifrada assim: `C = M^e mod n`",
+                "`C` é o texto cifrado que pode ser enviado."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "3) Descriptografia",
+              lista: [
+                "Para recuperar a mensagem original `M`: `M = C^d mod n`",
+                "Apenas a chave privada `d` consegue fazer isso de forma eficiente."
+              ]
+            }
+          ]
+        },
+        {
+          id: "hash_e_assinaturas",
+          titulo: "Funções Hash e Assinaturas Digitais",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "Uma função hash é um algoritmo que transforma uma entrada (mensagem, arquivo, senha, etc.) em uma sequência fixa de bits, chamada de resumo (ou hash digest)."
+            },
+            {
+              tipo: "lista",
+              titulo: "Principais características",
+              itens: [
+                "A mesma entrada gera sempre a mesma saída.",
+                "Rápida de calcular.",
+                "Irreversível: não dá para obter a entrada original a partir do hash.",
+                "Pequenas mudanças na entrada causam grandes mudanças no hash.",
+                "Única: é extremamente difícil (quase impossível) encontrar duas entradas diferentes com o mesmo hash (isso se chama colisão). Uma colisão acontece quando duas entradas diferentes geram o mesmo hash."
+              ]
+            },
+            {
+              tipo: "texto",
+              texto: "Exemplo de algoritimos que geram hash: SHA-2 (Secure Hash Algorithm 2) e SHA-3"
+            },
+            {
+              tipo: "subtitulo",
+              texto: "Assinaturas Digitais - Criptografia Assimétrica"
+            },
+            {
+              tipo: "texto",
+              texto: "As assinaturas digitais são uma aplicação da criptografia assimétrica para garantir a autenticidade, integridade e não-repúdio de uma mensagem ou documento eletrônico."
+            },
+            {
+              tipo: "lista",
+              itens: [
+                "Autenticidade – você sabe quem assinou.",
+                "Integridade – o conteúdo não foi alterado.",
+                "Não repúdio – o autor não pode negar que assinou."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Como funciona",
+              lista: [
+                "O remetente aplica uma função hash à mensagem, criando um resumo de tamanho fixo (por exemplo, SHA-256).",
+                "Esse hash é único para aquela mensagem; qualquer alteração na mensagem muda o hash.",
+                "O remetente criptografa o hash usando sua chave privada. O resultado é a assinatura digital.",
+                "O remetente envia a mensagem original e a assinatura digital para o destinatário.",
+                "O destinatário aplica a mesma função hash à mensagem recebida, obtendo o hash local.",
+                "Em seguida, decifra a assinatura digital usando a chave pública do remetente, obtendo o hash enviado.",
+                "Se os dois hashes coincidirem → a mensagem é autêntica e íntegra.",
+                "Se não coincidirem → a mensagem foi alterada ou a assinatura é falsa."
+              ]
+            }
+          ]
+        },
+        {
+          id: "metodos_autenticacao",
+          titulo: "Métodos de Autenticação",
+          blocos: [
+            {
+              tipo: "lista",
+              itens: [
+                "Os métodos de autenticação permitem verifica a identidade de um usuário para conceder acesso a sistemas ou serviços.",
+                "Os mais comuns são: algo que o usuário sabe (senha, PIN), algo que ele possui (token, celular) e algo que ele é (biometria, como digital ou rosto).",
+                "Outros métodos incluem a autenticação multifatorial (MFA), que combina múltiplos fatores, e o Logon Único (SSO), que permite acessar vários aplicativos com um único login."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Senha (Password)",
+              texto: "Método mais tradicional, baseado em algo que o usuário sabe."
+            },
+            {
+              tipo: "lista",
+              itens: [
+                "Vantagens: Fácil de implementar e usar.",
+                "Desvantagens: Vulnerável a ataques de força bruta, phishing, vazamento de dados.",
+                "Boas práticas: Uso de senhas fortes (combinação de letras, números e símbolos). Troca periódica de senhas. Não reutilizar senhas em diferentes sistemas."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Token",
+              texto: "Baseado em algo que o usuário possui. Pode ser físico ou digital."
+            },
+            {
+              tipo: "lista",
+              itens: [
+                "Tipos: Hardware token: dispositivo que gera códigos temporários (ex: cartão ou chaveiro).",
+                "Tipos: Software token: aplicativo no celular que gera códigos temporários (ex: Google Authenticator, Authy).",
+                "Vantagens: Mais seguro que senha simples, difícil de replicar.",
+                "Desvantagens: Pode ser perdido, danificado ou roubado."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Biometria",
+              texto: "Baseado em algo que o usuário é."
+            },
+            {
+              tipo: "lista",
+              itens: [
+                "Exemplos: Impressão digital, Reconhecimento facial, Reconhecimento de íris, Voz",
+                "Vantagens: Difícil de falsificar, não precisa memorizar nada.",
+                "Desvantagens: Custo elevado, risco de violação de privacidade, dados biométricos não podem ser alterados se comprometidos"
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Autenticação Multifator (MFA – Multi-Factor Authentication)",
+              texto: "Combina dois ou mais fatores de autenticação para aumentar a segurança."
+            },
+            {
+              tipo: "lista",
+              itens: [
+                "Fatores típicos: Conhecimento: senha ou PIN; Posse: token, smartphone; Inerência: biometria.",
+                "Vantagens: Reduz drasticamente o risco de acesso não autorizado.",
+                "Desvantagens: Mais complexo, exige hardware ou software adicional."
+              ]
+            }
+          ]
+        },
+        {
+          id: "firewalls",
+          titulo: "Firewalls",
+          blocos: [
+            {
+              tipo: "subtitulo",
+              texto: "Principal ferramenta de defesa: Firewalls"
+            },
+            {
+              tipo: "texto",
+              texto: "Um firewall é uma ferramenta essencial de segurança que atua como uma barreira entre uma rede confiável (interna) e uma não confiável (externa, como a Internet). Ele controla o tráfego de entrada e saída com base em regras predefinidas, permitindo ou bloqueando pacotes de dados."
+            },
+            {
+              tipo: "lista",
+              itens: [
+                "O firewall analisa os cabeçalhos dos pacotes (IP, porta de origem/destino, protocolo);",
+                "Verifica se o pacote atende às regras configuradas pelo administrador;",
+                "Decide se o pacote será permitido, bloqueado ou redirecionado."
+              ]
+            },
+            {
+              tipo: "imagem",
+              id: "diagrama_fluxo_usuario_firewall_internet",
+              src: "diagrama_fluxo_usuario_firewall_internet.png",
+              pasta: "imagens_redes2/aula_06",
+              alt: "Usuário em um computador conectado a um bloco central identificado como FIREWALL, que se conecta a uma nuvem rotulada INTERNET, com setas duplas indicando tráfego de dados em ambos os sentidos",
+              num: 4
+            },
+            {
+              tipo: "lista",
+              titulo: "Principais funções de um firewall",
+              itens: [
+                "Filtragem de Pacotes: Inspeciona cada pacote de dados que tenta entrar ou sair da rede.",
+                "Controle de Acesso: Define quais serviços ou portas estão disponíveis.",
+                "Proteção contra Ameaças: Bloqueia tentativas de acesso não autorizado e ataques comuns, como varreduras de porta."
+              ]
+            },
+            {
+              tipo: "imagem",
+              id: "diagrama_classificacao_firewall_software_hardware",
+              src: "diagrama_classificacao_firewall_software_hardware.png",
+              pasta: "imagens_redes2/aula_06",
+              alt: "Diagrama hierárquico com o termo Firewall no topo, ramificando-se em duas caixas abaixo: Softwares e Hardware",
+              num: 5
+            },
+            {
+              tipo: "tabela",
+              titulo: "Firewalls de software",
+              colunas: ["Sistema Operacional", "Exemplo de Firewall", "Descrição breve"],
+              linhas: [
+                ["Windows", "Windows Defender Firewall", "Integrado ao Windows, controla conexões de entrada e saída com base em regras."],
+                ["Linux", "iptables / firewalld / UFW", "Firewalls baseados em filtragem de pacotes e inspeção de estado."],
+                ["macOS", "Application Firewall (PF)", "Protege o sistema bloqueando conexões não autorizadas de aplicativos."],
+                ["Multiplataforma", "pfSense", "Firewall de software baseado em FreeBSD, muito usado em redes corporativas."]
+              ]
+            },
+            {
+              tipo: "tabela",
+              titulo: "Firewalls de hardware",
+              colunas: ["Fabricante / Modelo", "Tipo / Uso", "Principais Recursos"],
+              linhas: [
+                ["Cisco ASA (Adaptive Security Appliance)", "Firewall corporativo", "Suporte a VPN, IDS/IPS, controle de acesso e NAT."],
+                ["Fortinet FortiGate", "Firewall de próxima geração (NGFW)", "Integra antivírus, filtragem de conteúdo, VPN e inspeção SSL."],
+                ["Sophos XG Firewall", "Firewall corporativo", "Proteção contra ameaças avançadas, filtragem web e controle de aplicações."],
+                ["Palo Alto Networks", "NGFW / Firewall de alto desempenho", "Detecção de malware, análise de tráfego e políticas baseadas em identidade."],
+                ["pfSense", "Appliance / Equipamento baseado em software livre", "Pode ser instalado em hardware dedicado, com suporte a VPN, NAT e IDS."],
+                ["WatchGuard Firebox", "Firewall corporativo", "Interface intuitiva, monitoramento de ameaças e proteção de perímetro."]
+              ]
+            },
+            {
+              tipo: "tabela",
+              titulo: "Firewall de Software x Firewall de Hardware",
+              colunas: ["Característica", "Firewall de Software", "Firewall de Hardware"],
+              linhas: [
+                ["Instalação", "Em cada computador/servidor", "Em um equipamento dedicado"],
+                ["Nível de proteção", "Protege o dispositivo individual", "Protege toda a rede"],
+                ["Custo", "Geralmente gratuito ou de baixo custo", "Maior custo (equipamento dedicado)"],
+                ["Manutenção", "Requer atualização em cada máquina", "Centralizada"],
+                ["Desempenho", "Pode afetar o desempenho do sistema", "Alto desempenho, pois tem hardware otimizado"]
+              ]
+            }
+          ]
+        },
+        {
+          id: "vpn",
+          titulo: "VPN (Virtual Private Network)",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "Uma VPN (Rede Privada Virtual) é uma tecnologia que cria uma conexão segura e criptografada entre dois pontos de uma rede pública (como a internet), permitindo a transmissão de dados como se os dispositivos estivessem em uma rede privada local (LAN). Em outras palavras, a VPN estabelece um \"túnel seguro\" entre o usuário e a rede de destino, protegendo as informações contra interceptações e acessos não autorizados."
+            },
+            {
+              tipo: "lista",
+              titulo: "As VPNs garantem três princípios fundamentais da Segurança da Informação",
+              itens: [
+                "Confidencialidade: Os dados transmitidos são criptografados, impedindo que terceiros leiam ou acessem o conteúdo das comunicações.",
+                "Integridade: As informações não podem ser alteradas ou corrompidas durante o envio; mecanismos de verificação asseguram que o conteúdo recebido é idêntico ao que foi enviado.",
+                "Autenticidade: O sistema confirma a identidade das partes envolvidas na comunicação (cliente e servidor), evitando falsificações e ataques de impersonação."
+              ]
+            },
+            {
+              tipo: "subtitulo",
+              texto: "Estrutura de Túneis e Encapsulamento de Pacotes"
+            },
+            {
+              tipo: "texto",
+              texto: "A VPN cria um túnel virtual onde os dados são encapsulados (ou \"envelopados\") dentro de outros pacotes IP antes de serem enviados pela internet. Funciona da seguinte maneira:"
+            },
+            {
+              tipo: "lista",
+              itens: [
+                "O dado original é preparado para envio (ex.: uma requisição a um servidor).",
+                "O protocolo VPN encapsula esse dado em um novo pacote com cabeçalhos adicionais.",
+                "O pacote é criptografado e enviado pela internet.",
+                "Ao chegar ao destino, o pacote é descriptografado e desencapsulado, restaurando os dados originais."
+              ]
+            },
+            {
+              tipo: "destaque",
+              texto: "Esse encapsulamento impede que terceiros vejam o conteúdo real das comunicações."
+            }
+          ]
+        },
+        {
+          id: "protocolos_seguros",
+          titulo: "Protocolos Seguros",
+          blocos: [
+            {
+              tipo: "texto",
+              texto: "Com o aumento dos ataques cibernéticos e da troca constante de informações pela internet, surgiram protocolos que garantem comunicação segura entre dispositivos e sistemas. Esses protocolos aplicam criptografia, autenticação e verificação de integridade para proteger os dados durante a transmissão. Os três mais utilizados são SSL/TLS, IPSec e SSH. Cada um atua em diferentes camadas do modelo OSI e é projetado para tipos específicos de comunicação."
+            },
+            {
+              tipo: "topico",
+              titulo: "SSL/TLS – Segurança em Comunicações Web (HTTPS)",
+              texto: "O SSL (Secure Sockets Layer) e seu sucessor, o TLS (Transport Layer Security), são protocolos que garantem segurança nas comunicações entre cliente e servidor, especialmente em sites acessados por navegador. Quando você acessa um site iniciado por `https://`, significa que há uma camada de criptografia TLS protegendo a conexão."
+            },
+            {
+              tipo: "lista",
+              titulo: "Como funciona (SSL/TLS)",
+              itens: [
+                "Atua na camada de transporte (Camada 4 do modelo OSI).",
+                "Cria um canal seguro entre o navegador e o servidor.",
+                "Utiliza certificados digitais (X.509) para autenticar a identidade do site.",
+                "Garante três princípios: Confidencialidade, Autenticidade, Integridade."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "IPSec – Criptografia e Autenticação no Nível IP",
+              texto: "O IPSec (Internet Protocol Security) é um conjunto de protocolos que protege a comunicação no nível da camada de rede (Camada 3). É amplamente usado em VPNs corporativas, pois protege diretamente os pacotes IP transmitidos entre dois hosts, roteadores ou gateways."
+            },
+            {
+              tipo: "lista",
+              titulo: "Como funciona (IPSec)",
+              itens: [
+                "Adiciona camadas de segurança aos pacotes IP, realizando: Autenticação (verifica origem do pacote); Criptografia (protege o conteúdo); Verificação de integridade (detecta alterações no caminho).",
+                "Pode operar em dois modos: Modo Transporte: protege apenas o conteúdo do pacote (usado entre hosts). Modo Túnel: encapsula o pacote inteiro (usado em VPNs site-to-site)."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "SSH – Acesso Remoto Seguro",
+              texto: "O SSH (Secure Shell) é um protocolo que permite acesso remoto criptografado a servidores e dispositivos de rede. Substitui métodos antigos como o Telnet, que transmitiam dados em texto simples."
+            },
+            {
+              tipo: "lista",
+              titulo: "Como funciona (SSH)",
+              itens: [
+                "Atua na camada de aplicação (Camada 7).",
+                "Cria uma sessão segura entre cliente e servidor usando chaves assimétricas.",
+                "Após a autenticação, toda a comunicação é criptografada.",
+                "Permite: Acesso remoto a terminais; Transferência segura de arquivos (SCP, SFTP); Execução remota de comandos."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    // aula 7
+
 
   ]};
