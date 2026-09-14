@@ -1,5 +1,5 @@
 /* ============================================================
-   NEXUS STUDY — quiz/template/quiz_starter_modal.js  v8.0
+   NEXUS STUDY — quiz/js/quiz_starter_modal.js  v8.0
 
    REGRA ÚNICA:
      Tem progresso salvo (≥ 1 resposta)? → entra direto no quiz.

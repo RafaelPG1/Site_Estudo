@@ -1,5 +1,5 @@
 /* ============================================================
-   NEXUS STUDY — quiz/quiz_ui.js  (v3 — QUIZ-ISOLATION)
+   NEXUS STUDY — quiz/js/quiz_ui.js  (v3 — QUIZ-ISOLATION)
    Utilitários de interface — sem estado do quiz
 
    ÍNDICE:
