@@ -159,6 +159,31 @@
   max-width: 0; opacity: 0; padding: 0; margin: 0; border-width: 0;
 }
 
+.reader__copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.7rem;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border-2);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-2);
+  font-size: 0.72rem;
+  font-weight: 600;
+  transition: color var(--dur-base), border-color var(--dur-base), background var(--dur-base);
+  white-space: nowrap;
+}
+.reader__copy-btn:hover { color: var(--text-1); border-color: var(--border-3); }
+.reader__copy-btn:active { transform: scale(0.97); transition-duration: var(--dur-fast); }
+.reader__copy-btn--done {
+  color: var(--sage);
+  border-color: rgba(127,203,160,0.35);
+  background: rgba(127,203,160,0.08);
+}
+@media (max-width: 600px) {
+  .reader__copy-btn span:not([id]) { display: none; } /* só o ícone no mobile */
+}
+
 /* Abre o índice em bottom-sheet — só existe como controle autônomo
    no mobile/tablet; no desktop o índice já está sempre visível. */
 .reader__toc-trigger {

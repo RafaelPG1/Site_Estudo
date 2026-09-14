@@ -110,13 +110,7 @@ window.__nexusConteudo = {
           "Achar que `set` pode conter listas — não pode."
         ]},
 
-        { tipo: "subtitulo", texto: "Exercícios de fixação — Capítulo 1" },
-        { tipo: "exemplo", titulo: "Exercício 1", texto: "O que é impresso?\n`lista = [10, 20, 30, 40]`\n`print(lista[1:3])`", detalhe: "Resposta: `[20, 30]`. O slice pega do índice 1 até o índice 2 (o índice 3 não entra)." },
-        { tipo: "exemplo", titulo: "Exercício 2", texto: "Qual o erro no código abaixo e como corrigir?\n`t = (1, 2, 3)`\n`t.append(4)`", detalhe: "Erro: tuplas são imutáveis, não possuem o método `append`. Não há como \"corrigir\" mantendo tupla — seria necessário usar uma lista se quiser adicionar elementos." },
-        { tipo: "exemplo", titulo: "Exercício 3", texto: "O que será impresso?\n`a = [1, 2, 3]`\n`b = a`\n`b.append(4)`\n`print(a)`", detalhe: "Resposta: `[1, 2, 3, 4]`. `b` é a mesma lista que `a` na memória (mesma referência), então alterar `b` também altera `a`." },
-        { tipo: "exemplo", titulo: "Exercício 4", texto: "Escreva um código que remova duplicatas da lista `[5, 3, 5, 2, 3, 1]` mantendo apenas valores únicos (a ordem não importa).", detalhe: "`lista = [5, 3, 5, 2, 3, 1]`\n`unicos = list(set(lista))`\n`print(unicos)   # ordem pode variar, ex: [1, 2, 3, 5]`\nUsamos `set()` porque conjuntos não permitem repetição." },
-        { tipo: "exemplo", titulo: "Exercício 5", texto: "O que é impresso?\n`dic = {\"x\": 1, \"y\": 2, \"z\": 3}`\n`for chave in dic:`\n`    print(chave, end=\" \")`", detalhe: "Resposta: `x y z`. Percorrer um dicionário diretamente com `for` percorre as chaves." }
-      ]
+           ]
     },
     {
       id: "funcoes-python",
@@ -163,13 +157,7 @@ window.__nexusConteudo = {
           "Colocar código depois de um `return` achando que ele vai executar.",
           "Confundir a ordem de argumentos nomeados vs posicionais."
         ]},
-
-        { tipo: "subtitulo", texto: "Exercícios de fixação — Capítulo 2" },
-        { tipo: "exemplo", titulo: "Exercício 1", texto: "O que é impresso?\n`def calcular(a, b):`\n`    print(a + b)`\n\n`resultado = calcular(2, 3)`\n`print(resultado)`", detalhe: "Saída:\n5\nNone\nA função `calcular` usa `print` mas não tem `return`, então o valor devolvido (guardado em `resultado`) é `None`." },
-        { tipo: "exemplo", titulo: "Exercício 2", texto: "O que é impresso?\n`contador = 0`\n\n`def incrementar():`\n`    contador = contador + 1`\n`    return contador`\n\n`print(incrementar())`", detalhe: "Isso gera erro: `UnboundLocalError`. Ao escrever `contador = contador + 1` dentro da função, Python entende que `contador` é uma variável local (porque está sendo atribuída ali dentro), mas tenta usar seu valor antes de ela existir localmente. Para funcionar, seria necessário usar `global contador` antes." },
-        { tipo: "exemplo", titulo: "Exercício 3", texto: "Escreva uma função `media(*notas)` que recebe uma quantidade variável de notas e retorna a média.", detalhe: "`def media(*notas):`\n`    return sum(notas) / len(notas)`\n\n`print(media(7, 8, 9))     # 8.0`\n`print(media(10, 5))       # 7.5`\nUsamos `*notas` para aceitar qualquer quantidade de argumentos, que chegam como uma tupla." },
-        { tipo: "exemplo", titulo: "Exercício 4", texto: "O que é impresso?\n`def teste(x, y=5):`\n`    return x * y`\n\n`print(teste(3))`\n`print(teste(3, 2))`", detalhe: "Saída:\n15\n6\nNo primeiro caso, `y` usa o valor padrão 5 (3*5=15). No segundo, `y` recebe 2 explicitamente (3*2=6)." }
-      ]
+]
     },
     {
       id: "recursao",
@@ -235,13 +223,7 @@ window.__nexusConteudo = {
           "Errar a ordem de execução: achar que o print ou cálculo acontece na \"descida\", quando na verdade pode acontecer na \"subida\" (depois do retorno da chamada recursiva)."
         ]},
 
-        { tipo: "subtitulo", texto: "Exercícios de interpretação — Capítulo 3" },
-        { tipo: "exemplo", titulo: "Exercício 1", texto: "Qual o valor de `fatorial(3)`? Mostre o passo a passo.", detalhe: "`fatorial(3) = 3 * fatorial(2)`\n`                        = 2 * fatorial(1)`\n`                                    = 1 * fatorial(0)`\n`                                                = 1`\n`                                    = 1 * 1 = 1`\n`                        = 2 * 1 = 2`\n`            = 3 * 2 = 6`\nResposta: 6" },
-        { tipo: "exemplo", titulo: "Exercício 2", texto: "O código abaixo tem um problema. Qual é e como corrigir?\n`def contar(n):`\n`    print(n)`\n`    contar(n - 1)`", detalhe: "Não existe caso base! A função vai chamar a si mesma para sempre (n vai para -1, -2, -3... infinitamente), até estourar a pilha com RecursionError.\nCorreção:\n`def contar(n):`\n`    if n <= 0:          # caso base`\n`        return`\n`    print(n)`\n`    contar(n - 1)`" },
-        { tipo: "exemplo", titulo: "Exercício 3", texto: "O que essa função imprime ao chamar `misterio(4)`?\n`def misterio(n):`\n`    if n == 0:`\n`        return`\n`    misterio(n - 1)`\n`    print(n)`", detalhe: "Saída:\n1\n2\n3\n4\nRepare que o print vem depois da chamada recursiva. Isso significa que nada é impresso enquanto a recursão está \"descendo\" (chamando a si mesma). Só quando chega no caso base (n=0) é que a \"volta\" começa, e cada nível imprime seu valor de n na subida — por isso a ordem é 1, 2, 3, 4 (do menor para o maior), mesmo tendo chamado primeiro com n=4." },
-        { tipo: "exemplo", titulo: "Exercício 4", texto: "Quantas vezes a função `fibonacci(4)` (do exemplo da seção 3.4) é chamada no total, incluindo a chamada inicial?", detalhe: "Desenhando a árvore de chamadas:\nfibonacci(4)\n├── fibonacci(3)\n│   ├── fibonacci(2)\n│   │   ├── fibonacci(1) -> caso base\n│   │   └── fibonacci(0) -> caso base\n│   └── fibonacci(1) -> caso base\n└── fibonacci(2)\n    ├── fibonacci(1) -> caso base\n    └── fibonacci(0) -> caso base\nContando todos os nós da árvore: 9 chamadas no total. Esse exercício mostra visualmente por que Fibonacci recursivo \"simples\" é ineficiente — muitos subproblemas são recalculados repetidamente (ex: fibonacci(2) é calculado duas vezes, fibonacci(1) três vezes)." },
-        { tipo: "exemplo", titulo: "Exercício 5", texto: "Escreva uma função recursiva `conta_elementos(lista)` que retorna quantos elementos existem em uma lista, sem usar `len()`.", detalhe: "`def conta_elementos(lista):`\n`    if lista == []:                       # caso base: lista vazia tem 0 elementos`\n`        return 0`\n`    return 1 + conta_elementos(lista[1:])  # 1 (o elemento atual) + resto da lista`\n\n`print(conta_elementos([10, 20, 30]))   # 3`" }
-      ]
+]
     },
     {
       id: "classes-objetos",
@@ -299,13 +281,7 @@ window.__nexusConteudo = {
           "Achar que dois objetos criados a partir da mesma classe compartilham os atributos de instância (eles não compartilham, cada um tem os seus)."
         ]},
 
-        { tipo: "subtitulo", texto: "Exercícios e questões — Capítulo 4" },
-        { tipo: "exemplo", titulo: "Exercício 1", texto: "O que é impresso?\n`class Retangulo:`\n`    def __init__(self, largura, altura):`\n`        self.largura = largura`\n`        self.altura = altura`\n\n`    def area(self):`\n`        return self.largura * self.altura`\n\n`r = Retangulo(4, 5)`\n`print(r.area())`", detalhe: "Resposta: 20. O construtor guarda largura=4 e altura=5, e area() retorna 4 * 5 = 20." },
-        { tipo: "exemplo", titulo: "Exercício 2", texto: "O que há de errado neste código?\n`class Animal:`\n`    def __init__(nome):`\n`        self.nome = nome`", detalhe: "Falta o parâmetro self como primeiro parâmetro do método. Deveria ser:\n`def __init__(self, nome):`\n`    self.nome = nome`\nSem isso, o valor passado seria atribuído ao \"self\" (interpretado incorretamente como \"nome\"), e ao tentar criar um objeto com um argumento, ocorreria erro de quantidade de argumentos." },
-        { tipo: "exemplo", titulo: "Exercício 3", texto: "O que é impresso?\n`class Contador:`\n`    total_objetos = 0`\n\n`    def __init__(self):`\n`        Contador.total_objetos += 1`\n\n`c1 = Contador()`\n`c2 = Contador()`\n`c3 = Contador()`\n`print(Contador.total_objetos)`", detalhe: "Resposta: 3. total_objetos é um atributo de classe, compartilhado entre todos os objetos. Cada vez que um novo Contador é criado, o __init__ roda e incrementa esse valor compartilhado. Como 3 objetos foram criados, o valor final é 3." },
-        { tipo: "exemplo", titulo: "Exercício 4", texto: "Crie uma classe `Livro` com atributos titulo e paginas, e um método resumo() que imprime \"O livro <titulo> tem <paginas> páginas.\"", detalhe: "`class Livro:`\n`    def __init__(self, titulo, paginas):`\n`        self.titulo = titulo`\n`        self.paginas = paginas`\n\n`    def resumo(self):`\n`        print(f\"O livro {self.titulo} tem {self.paginas} páginas.\")`\n\n`l = Livro(\"Dom Casmurro\", 256)`\n`l.resumo()   # O livro Dom Casmurro tem 256 páginas.`" },
-        { tipo: "exemplo", titulo: "Exercício 5", texto: "Qual a diferença entre `obj = MinhaClasse` e `obj = MinhaClasse()`?", detalhe: "`obj = MinhaClasse` apenas cria uma nova referência para a própria classe (não cria objeto nenhum — obj seria a classe em si). Já `obj = MinhaClasse()` chama o construtor e efetivamente cria um objeto (instância) da classe." }
-      ]
+]
     },
     {
       id: "complexidade",
@@ -371,17 +347,7 @@ window.__nexusConteudo = {
           "Achar que recursão é sempre O(n) — depende de quantas chamadas recursivas acontecem por nível.",
           "Esquecer de simplificar (ex: escrever O(2n + 3) em vez de simplificar para O(n))."
         ]},
-
-        { tipo: "subtitulo", texto: "Exercícios — identifique a complexidade" },
-        { tipo: "exemplo", titulo: "Exercício 1", texto: "`def f(lista):`\n`    return lista[len(lista) - 1]`", detalhe: "O(1). Acesso direto por índice não depende do tamanho da lista." },
-        { tipo: "exemplo", titulo: "Exercício 2", texto: "`def f(lista):`\n`    for item in lista:`\n`        print(item)`\n`    for item in lista:`\n`        print(item)`", detalhe: "O(n). Os dois laços são sequenciais (um depois do outro), então somamos: O(n) + O(n) = O(2n), que simplifica para O(n)." },
-        { tipo: "exemplo", titulo: "Exercício 3", texto: "`def f(lista):`\n`    for i in lista:`\n`        for j in lista:`\n`            if i == j:`\n`                print(i)`", detalhe: "O(n²). Dois laços aninhados, ambos dependendo do tamanho da lista." },
-        { tipo: "exemplo", titulo: "Exercício 4", texto: "`def f(n):`\n`    i = n`\n`    while i > 1:`\n`        i = i // 2`\n`        print(i)`", detalhe: "O(log n). A cada iteração, i é dividido pela metade, então o número de iterações necessárias cresce logaritmicamente." },
-        { tipo: "exemplo", titulo: "Exercício 5", texto: "`def f(lista1, lista2):`\n`    for item in lista1:`\n`        if item in lista2:`\n`            print(\"achou\")`", detalhe: "O(n²). Embora só exista um laço visível, a operação `item in lista2` já é O(n) por si só (procura elemento por elemento em uma lista). Como isso acontece dentro de um laço que roda n vezes, temos O(n) × O(n) = O(n²). Essa é uma pegadinha clássica!" },
-        { tipo: "exemplo", titulo: "Exercício 6", texto: "`def f(n):`\n`    contador = 0`\n`    for i in range(n):`\n`        for j in range(n):`\n`            for k in range(n):`\n`                contador += 1`\n`    return contador`", detalhe: "O(n³). Três laços aninhados, todos dependendo de n." },
-        { tipo: "exemplo", titulo: "Exercício 7", texto: "`def f(lista):`\n`    if len(lista) == 0:`\n`        return None`\n`    return lista[0]`", detalhe: "O(1). O if não contém laços, e ambos os caminhos são operações simples e diretas." },
-        { tipo: "exemplo", titulo: "Exercício 8 (recursão)", texto: "`def f(n):`\n`    if n <= 1:`\n`        return 1`\n`    return f(n - 1) + f(n - 1)`", detalhe: "O(2ⁿ). A cada chamada, são geradas duas novas chamadas recursivas (e não há reaproveitamento de cálculo), o que cria uma árvore de chamadas que dobra de tamanho a cada nível — crescimento exponencial." }
-      ]
+]
     },
     {
       id: "pilhas-filas",

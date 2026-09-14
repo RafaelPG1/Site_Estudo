@@ -110,6 +110,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   _bindModal();
   _bindTocChrome();
+  _bindCopyButton();
   _initProgressBar();
   _carregarConteudo();
 
@@ -467,6 +468,117 @@ function _bindTocChrome() {
   });
   document.getElementById('rm-toc-collapse-all')?.addEventListener('click', _collapseAllSections);
   document.getElementById('rm-toc-collapse-all-mobile')?.addEventListener('click', _collapseAllSections);
+}
+
+/* ══════════════════════════════════════════════
+   COPIAR AULA INTEIRA — extrai só o texto real do
+   conteúdo (#rm-body), nunca sidebar/header/índice/
+   botões. Pseudo-elementos (::before/::after) nunca
+   entram aqui porque não existem no DOM. Ícones
+   decorativos com texto real (chip de número da
+   seção, emoji da ideia central) são removidos
+   explicitamente antes de extrair o texto.
+══════════════════════════════════════════════ */
+function _cleanInlineText(el) {
+  const clone = el.cloneNode(true);
+  clone.querySelectorAll('svg, .rm-collapse__icon, .rm-ideia-icon').forEach(n => n.remove());
+  return clone.textContent.replace(/\s+/g, ' ').trim();
+}
+
+function _extractAulaText() {
+  const root = document.getElementById('rm-body');
+  if (!root) return '';
+
+  const SELECTOR = [
+    '.reader__hero-eyebrow', '.reader__hero-title', '.reader__hero-chip',
+    '.rm-ideia-central',
+    '.rm-collapse__trigger',
+    '.rm-subtitulo',
+    '.rm-topico__titulo', '.rm-topico__texto', '.rm-topico__fig-caption',
+    '.rm-lista-titulo', '.rm-lista li',
+    '.rm-exemplo__titulo', '.rm-exemplo__texto', '.rm-exemplo__detalhe',
+    '.rm-destaque',
+    '.rm-citacao__texto', '.rm-citacao__autor',
+    '.rm-fig__num', '.rm-fig__caption-text',
+    '.rm-codigo code',
+    '.rm-tabela',
+  ].join(', ');
+
+  const linhas = [];
+  root.querySelectorAll(SELECTOR).forEach(el => {
+    if (el.tagName === 'CODE') {
+      const codigo = el.textContent.replace(/\n+$/, '');
+      if (codigo.trim()) linhas.push(codigo);
+      return;
+    }
+    if (el.classList.contains('rm-tabela')) {
+      const rows = Array.from(el.querySelectorAll('tr'))
+        .map(tr => Array.from(tr.children).map(c => _cleanInlineText(c)).join(' | '));
+      if (rows.length) linhas.push(rows.join('\n'));
+      return;
+    }
+    if (el.classList.contains('rm-collapse__trigger')) {
+      const texto = _cleanInlineText(el);
+      if (texto) linhas.push(`## ${texto}`);
+      return;
+    }
+    if (el.classList.contains('reader__hero-title')) {
+      const texto = _cleanInlineText(el);
+      if (texto) linhas.push(`# ${texto}`);
+      return;
+    }
+    const texto = _cleanInlineText(el);
+    if (texto) linhas.push(texto);
+  });
+
+  return linhas.join('\n\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+
+async function _copiarParaClipboard(texto) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    try {
+      await navigator.clipboard.writeText(texto);
+      return true;
+    } catch (_) { /* segue pro fallback abaixo */ }
+  }
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = texto;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    ta.remove();
+    return ok;
+  } catch (_) {
+    return false;
+  }
+}
+
+function _bindCopyButton() {
+  const btn   = document.getElementById('rm-copy-btn');
+  const label = document.getElementById('rm-copy-btn-label');
+  if (!btn || !label) return;
+
+  let resetTimer = null;
+
+  btn.addEventListener('click', async () => {
+    playSound('click', 'resumos');
+    const texto = _extractAulaText();
+    if (!texto) return;
+
+    const ok = await _copiarParaClipboard(texto);
+    clearTimeout(resetTimer);
+
+    btn.classList.toggle('reader__copy-btn--done', ok);
+    label.textContent = ok ? '✓ Aula copiada' : 'Não foi possível copiar';
+
+    resetTimer = setTimeout(() => {
+      btn.classList.remove('reader__copy-btn--done');
+      label.textContent = 'Copiar aula';
+    }, 2200);
+  });
 }
 
 function _resolverContexto() {
