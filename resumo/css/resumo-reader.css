@@ -714,31 +714,33 @@
   margin-bottom: 0.4rem;
 }
 
-.rm-subtitulo {
-  display: flex;
-  align-items: baseline;
-  gap: 0.6rem;
-  font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-weight: 400;
-  color: var(--text-1);
-  margin: var(--space-1) 0 0.25rem;
-  max-width: var(--text-measure);
-}
-.rm-subtitulo::before {
-  content: '';
-  width: 14px; height: 1px;
-  background: var(--disc-tema);
-  opacity: 0.6;
-  flex-shrink: 0;
-}
+ .rm-subtitulo {
+   display: flex;
+   align-items: center;
+   gap: 0.7rem;
+   font-family: var(--font-display);
+   font-size: 1.25rem;
+   font-weight: 400;
+   color: var(--text-1);
+   margin: var(--space-1) 0 0.25rem;
+   max-width: var(--text-measure);
+ }
+ .rm-subtitulo::before {
+   content: '';
+   width: 7px;
+   height: 7px;
+   border-radius: 50%;
+   background: linear-gradient(90deg, var(--disc-tema), rgba(var(--disc-tema-rgb), 0.70) 85%);
+   box-shadow: 0 0 6px rgba(var(--disc-tema-rgb), 0.4);
+   flex-shrink: 0;
+ }
 
 /* Exemplo = nota de margem/caso aplicado. Tratada como um "aside"
    anexado ao texto — rótulo em coluna própria, não mais um box
    genérico tingido de âmbar. */
 .rm-exemplo {
   display: flex;
-  gap: var(--space-2);
+  flex-direction: column;
   padding: var(--space-2) var(--space-3);
   background: rgba(232,184,109,0.04);
   border: 1px dashed rgba(232,184,109,0.28);
@@ -746,16 +748,15 @@
   max-width: var(--text-measure);
 }
 .rm-exemplo__titulo {
-  flex-shrink: 0;
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
+  margin-top: 0.75rem;
+  padding-top: 0.6rem;
+  border-top: 1px dashed rgba(232,184,109,0.25);
   font-size: 0.66rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--amber);
-  padding-right: 0.15rem;
-  border-right: 1px solid rgba(232,184,109,0.25);
+  line-height: 1.5;
 }
 .rm-exemplo__texto {
   font-size: 0.96rem;
@@ -774,8 +775,7 @@
    decorativas + serifa itálica, como uma epígrafe de livro — cria
    uma pausa visual real na leitura em vez de mais um card tingido. */
 .rm-destaque {
-  position: relative;
-  padding: 0.25rem 0 0.25rem 2.5rem;
+  padding: 0.25rem 0;
   margin: var(--space-1) 0;
   font-family: var(--font-display);
   font-size: 1.3rem;
@@ -785,17 +785,17 @@
   font-style: italic;
   max-width: var(--text-measure);
 }
-.rm-destaque::before {
-  content: '"';
-  position: absolute;
-  left: -0.2rem;
-  top: -0.6rem;
+.rm-destaque::before,
+.rm-destaque::after {
   font-family: var(--font-display);
-  font-size: 3.2rem;
   font-style: normal;
-  color: rgba(var(--disc-tema-rgb), 0.4);
-  line-height: 1;
+  font-size: 2em;
+  line-height: 0;
+  color: rgba(var(--disc-tema-rgb), 0.55);
+  vertical-align: -0.28em;
 }
+.rm-destaque::before { content: '“'; margin-right: 0.15rem; }
+.rm-destaque::after  { content: '”'; margin-left: 0.1rem; }
 
 /* Citação = trecho literal transcrito de uma fonte (autor, obra,
    depoimento no material). Mesmo tratamento editorial do destaque
@@ -805,8 +805,7 @@
    é o .rm-citacao. A linha de atribuição (autor/fonte) é o que
    distingue semanticamente os dois blocos. */
 .rm-citacao {
-  position: relative;
-  padding: 0.25rem 0 0.25rem 2.5rem;
+  padding: 0.25rem 0;
   margin: var(--space-1) 0;
   font-family: var(--font-display);
   font-size: 1.15rem;
@@ -816,17 +815,17 @@
   font-style: italic;
   max-width: var(--text-measure);
 }
-.rm-citacao::before {
-  content: '"';
-  position: absolute;
-  left: -0.2rem;
-  top: -0.6rem;
+.rm-citacao__texto::before,
+.rm-citacao__texto::after {
   font-family: var(--font-display);
-  font-size: 3.2rem;
   font-style: normal;
-  color: rgba(255,255,255,0.14);
-  line-height: 1;
+  font-size: 2em;
+  line-height: 0;
+  color: rgba(255,255,255,0.32);
+  vertical-align: -0.28em;
 }
+.rm-citacao__texto::before { content: '“'; margin-right: 0.15rem; }
+.rm-citacao__texto::after  { content: '”'; margin-left: 0.1rem; }
 .rm-citacao__autor {
   display: block;
   margin-top: 0.5rem;
@@ -875,6 +874,15 @@
 .rm-tabela tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 
 .rm-fig { margin: 1rem 0; }
+.rm-fig__num {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+  color: var(--disc-tema);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
 .rm-fig__img {
   max-width: 100%;
   border-radius: var(--r-md);
@@ -882,19 +890,10 @@
   display: block;
 }
 .rm-fig__caption {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
   margin-top: 0.4rem;
   font-size: 0.68rem;
-  color: var(--text-3);
-}
-.rm-fig__num {
-  font-weight: 700;
-  color: var(--disc-tema);
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
+  color: var(--text-2);
+  line-height: 1.5;
 }
 
 .rm-codigo {

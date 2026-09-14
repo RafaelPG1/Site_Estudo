@@ -226,8 +226,6 @@ function _initReadingScrollSystem(scrollEl) {
   // quando uma nova navegação substitui uma anterior ainda ativa.
   let stopCurrentScroll = null;
 
-  const refLine = () => scrollEl.getBoundingClientRect().top + 24;
-
   function setActive(idx) {
     if (idx === activeIdx) return;
     activeIdx = idx;
@@ -252,20 +250,42 @@ function _initReadingScrollSystem(scrollEl) {
       ?.scrollIntoView({ block: 'nearest' });
   }
 
-  // Única fonte de verdade do scroll-spy: qual seção está sob a linha
-  // de referência agora. Usada tanto pelo listener de scroll normal
-  // quanto para resincronizar assim que uma navegação programática
-  // devolve o controle.
+  // Escolhe a seção com maior ÁREA VISÍVEL dentro do viewport do
+  // container de leitura (interseção do retângulo da seção com o
+  // retângulo do scroll), não a "primeira que cruzou uma linha" —
+  // é o que faz uma seção que domina a tela vencer uma que só
+  // aparece numa fatia no topo/fim do viewport.
   function recomputeActiveFromPosition() {
     const sections = getSections();
     if (!sections.length) return;
-    const line = refLine();
-    let idx = 0;
-    for (let i = 0; i < sections.length; i++) {
-      if (sections[i].getBoundingClientRect().top <= line) idx = i;
-      else break;
+
+    const viewTop    = scrollEl.getBoundingClientRect().top;
+    const viewBottom = scrollEl.getBoundingClientRect().bottom;
+
+    const visibilities = sections.map(sec => {
+      const r = sec.getBoundingClientRect();
+      const visibleTop    = Math.max(r.top, viewTop);
+      const visibleBottom = Math.min(r.bottom, viewBottom);
+      return Math.max(0, visibleBottom - visibleTop);
+    });
+
+    let bestIdx = 0;
+    let bestVisible = -1;
+    visibilities.forEach((v, i) => {
+      if (v > bestVisible) { bestVisible = v; bestIdx = i; }
+    });
+
+    // Histerese: só troca de seção ativa quando a candidata tem
+    // presença visual claramente maior (>=15%) que a seção ativa
+    // atual — evita a sidebar "piscando" entre duas seções durante
+    // a transição de rolagem, quando as áreas visíveis ficam
+    // próximas uma da outra.
+    if (activeIdx !== -1 && bestIdx !== activeIdx) {
+      const currentVisible = visibilities[activeIdx] ?? 0;
+      if (bestVisible < currentVisible * 1.15) return;
     }
-    setActive(idx);
+
+    setActive(bestIdx);
   }
 
   function update() {
@@ -1254,8 +1274,9 @@ function _renderBloco(b) {
       const num  = b.num ? `<span class="rm-fig__num">Figura ${b.num}</span>` : '';
       return `
         <figure class="rm-fig">
+          ${num}
           <img class="rm-fig__img" src="${_esc(base + b.src)}" alt="${_esc(b.alt ?? '')}" loading="lazy" />
-          <figcaption class="rm-fig__caption">${num}<span class="rm-fig__caption-text">${_esc(b.alt ?? '')}</span></figcaption>
+          <figcaption class="rm-fig__caption"><span class="rm-fig__caption-text">${_esc(b.alt ?? '')}</span></figcaption>
         </figure>`;
     }
     case 'lista': {
@@ -1270,9 +1291,9 @@ function _renderBloco(b) {
       return `<div class="rm-subtitulo">${_parseInline(b.texto ?? '')}</div>`;
     case 'exemplo':
       return `<div class="rm-exemplo">
-        <div class="rm-exemplo__titulo">${_esc(b.titulo ?? '')}</div>
         <p class="rm-exemplo__texto">${_parseInline(b.texto ?? '')}</p>
         ${b.detalhe ? `<span class="rm-exemplo__detalhe">${_parseInline(b.detalhe)}</span>` : ''}
+        <div class="rm-exemplo__titulo">${_esc(b.titulo ?? '')}</div>
       </div>`;
     case 'tabela': {
       const cols = b.colunas ?? [];
@@ -1291,7 +1312,7 @@ function _renderBloco(b) {
     case 'destaque':
       return `<div class="rm-destaque">${_parseInline(b.texto ?? '')}</div>`;
     case 'citacao':
-      return `<div class="rm-citacao">${_parseInline(b.texto ?? '')}${b.autor ? `<span class="rm-citacao__autor">${_parseInline(b.autor)}</span>` : ''}</div>`;
+      return `<div class="rm-citacao"><span class="rm-citacao__texto">${_parseInline(b.texto ?? '')}</span>${b.autor ? `<span class="rm-citacao__autor">${_parseInline(b.autor)}</span>` : ''}</div>`;
     default:
       return '';
   }
