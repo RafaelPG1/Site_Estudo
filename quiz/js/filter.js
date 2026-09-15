@@ -1,5 +1,5 @@
 /* ============================================================
-   NEXUS STUDY — quiz/js/filter.js  v2.0
+   NEXUS STUDY — quiz/js/filter.js  v2.2
 
    Sistema de filtro de aulas — única fonte de verdade.
 
@@ -24,7 +24,39 @@
    ORDEM DE CARREGAMENTO (garantida pelo template.html):
      filter.js → quiz_starter_modal.js → quiz_engine.js
      Nenhum script posterior precisa aguardar filter.js.
-   ============================================================ */
+
+   ────────────────────────────────────────────────────────────
+   v2.2 — CORREÇÃO DA CAUSA RAIZ: botão da nav completamente
+   inativo (clique não produzia nenhuma ação, nenhum erro).
+
+   CAUSA:
+     filter.js é carregado com `defer`. Quando um script defer
+     executa, o parsing do HTML já terminou e
+     document.readyState já é "interactive" (nunca "loading")
+     — então _boot() sempre rodava de forma SÍNCRONA e IMEDIATA,
+     sem esperar DOMContentLoaded.
+
+     #btn-filtro-aulas NÃO existe no HTML estático: é criado
+     dinamicamente por _injetarNavFloat(), dentro do listener de
+     DOMContentLoaded de template_init.js — que só roda DEPOIS
+     que todos os scripts defer (inclusive filter.js) terminam
+     de executar.
+
+     Resultado: no momento de _vincularBotaoNav(),
+     document.getElementById('btn-filtro-aulas') retornava null.
+     Por causa do `if (btn)`, nada era anexado — sem erro, sem
+     log — e o botão real (criado depois) nunca recebia listener.
+
+   CORREÇÃO:
+     Delegação de evento em `document`. O alvo é resolvido
+     somente no momento do clique, quando o botão certamente já
+     existe — independente da ordem de término entre os scripts
+     defer e o DOMContentLoaded de template_init.js.
+
+   v2.1 — Filtro incremental no painel + ação "Remover filtro"
+   guardada contra perda de progresso (ver FilterPanel abaixo).
+   FilterStore e nexus:filtroAlterado permanecem inalterados.
+   ════════════════════════════════════════════════════════════ */
 
 (function () {
   'use strict';
@@ -48,6 +80,32 @@
   }
 
   function _storage() { return window.NexusStorage || null; }
+
+  /* Detecta se já existem respostas para a tentativa atual.
+     Lê o mesmo progresso que o engine grava via
+     _Storage.saveProgress() (quiz_engine.js → selectOption()).
+     Não depende de nenhuma variável interna do engine — mesma
+     técnica usada em quiz_starter_modal.js::_temProgresso(). */
+  function _temRespostasAtuais() {
+    var S = _storage();
+    if (!S || typeof S.loadProgress !== 'function') return false;
+
+    var disc = window.__NEXUS_QUIZ_DISC__     || '';
+    var modo = window.__NEXUS_QUIZ_MODO__     || '';
+    var sem  = window.__NEXUS_QUIZ_SEMESTRE__ || '';
+    if (!disc || !modo || !sem) return false;
+
+    var discUid = _uid() + '_' + disc;
+    var salvo;
+    try {
+      salvo = S.loadProgress(discUid, modo, sem);
+    } catch (e) {
+      return false;
+    }
+
+    if (!salvo || !salvo.respostas) return false;
+    return Object.keys(salvo.respostas).length > 0;
+  }
 
   /* ══════════════════════════════════════════════════════════
      EXTRAÇÃO DE AULAS
@@ -83,6 +141,7 @@
      FILTERSTORE
      Estado, persistência e eventos.
      Não tem DOM. Não conhece o Engine.
+     (inalterado em relação à versão anterior)
   ══════════════════════════════════════════════════════════ */
 
   var FilterStore = (function () {
@@ -186,18 +245,39 @@
 
   var FilterPanel = (function () {
 
-    var _overlay  = null;
-    var _painel   = null;
-    var _listaEl  = null;
-    var _contEl   = null;
-    var _marcados = new Set();
-    var _allAulas = [];
-    var _built    = false;
+    var _overlay    = null;
+    var _painel     = null;
+    var _listaEl    = null;
+    var _contEl     = null;
+    var _avisoEl    = null;
+    var _btnRemover = null;
+    var _marcados   = new Set();
+    var _allAulas   = [];
+    var _built      = false;
+
+    var _MSG_BLOQUEIO_REMOCAO =
+      'Não é possível remover o filtro agora: você já respondeu questões ' +
+      'nesta tentativa. Finalize, revele as respostas ou reinicie o quiz ' +
+      'para poder remover o filtro sem perder o progresso.';
 
     function _el(tag, cls) {
       var e = document.createElement(tag);
       if (cls) e.className = cls;
       return e;
+    }
+
+    /* ── Aviso inline (bloqueios) ──────────────────────────── */
+
+    function _mostrarAviso(msg) {
+      if (!_avisoEl) return;
+      _avisoEl.innerHTML =
+        '<i class="fas fa-triangle-exclamation" aria-hidden="true"></i> ' + msg;
+      _avisoEl.style.display = 'flex';
+    }
+
+    function _esconderAviso() {
+      if (!_avisoEl) return;
+      _avisoEl.style.display = 'none';
     }
 
     /* ── Construção única do DOM ──────────────────────────── */
@@ -245,6 +325,7 @@
         _allAulas.forEach(function (a) { _marcados.add(a); });
         _renderLista();
         _atualizarContador();
+        _esconderAviso();
       });
 
       var btnNenhuma = _el('button', 'filtro-acao-btn');
@@ -254,6 +335,7 @@
         _marcados.clear();
         _renderLista();
         _atualizarContador();
+        _esconderAviso();
       });
 
       acoes.appendChild(btnTodas);
@@ -267,8 +349,35 @@
 
       /* Footer */
       var footer = _el('div', 'filtro-footer');
+      footer.style.cssText = 'display:flex;flex-direction:column;gap:0.55rem;width:100%;';
+
+      _avisoEl = _el('div', 'filtro-aviso');
+      _avisoEl.setAttribute('role', 'alert');
+      _avisoEl.style.cssText =
+        'display:none;align-items:flex-start;gap:0.4rem;' +
+        'width:100%;font-size:0.72rem;line-height:1.4;' +
+        'color:#fca5a5;background:rgba(248,113,113,0.08);' +
+        'border:1px solid rgba(248,113,113,0.22);border-radius:8px;' +
+        'padding:0.5rem 0.7rem;box-sizing:border-box;';
+      footer.appendChild(_avisoEl);
+
+      var footerRow = _el('div', 'filtro-footer-row');
+      footerRow.style.cssText =
+        'display:flex;align-items:center;gap:0.6rem;width:100%;flex-wrap:wrap;';
+
       _contEl = _el('span', 'filtro-contador');
-      footer.appendChild(_contEl);
+      footerRow.appendChild(_contEl);
+
+      var spacer = _el('span');
+      spacer.style.cssText = 'flex:1;';
+      footerRow.appendChild(spacer);
+
+      _btnRemover = _el('button', 'filtro-acao-btn');
+      _btnRemover.type = 'button';
+      _btnRemover.innerHTML =
+        '<i class="fas fa-xmark" aria-hidden="true"></i> Remover filtro';
+      _btnRemover.addEventListener('click', _removerFiltro);
+      footerRow.appendChild(_btnRemover);
 
       var btnAplicar = _el('button', 'filtro-aplicar');
       btnAplicar.type = 'button';
@@ -277,8 +386,9 @@
         ' stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
         '<polyline points="20 6 9 17 4 12"/></svg> Aplicar';
       btnAplicar.addEventListener('click', _aplicar);
+      footerRow.appendChild(btnAplicar);
 
-      footer.appendChild(btnAplicar);
+      footer.appendChild(footerRow);
       _painel.appendChild(footer);
       document.body.appendChild(_painel);
     }
@@ -309,6 +419,7 @@
           if (_marcados.has(aula)) { _marcados.delete(aula); item.classList.remove('filtro-marcado'); }
           else                     { _marcados.add(aula);    item.classList.add('filtro-marcado'); }
           _atualizarContador();
+          _esconderAviso();
         }
 
         item.appendChild(chkBox);
@@ -327,7 +438,82 @@
       _contEl.innerHTML = '<strong>' + _marcados.size + '</strong> de ' + _allAulas.length + ' aulas selecionadas';
     }
 
+    /* ── Estado do botão "Remover filtro" ─────────────────── */
+
+    function _atualizarBotaoRemover() {
+      if (!_btnRemover) return;
+
+      var ativo = FilterStore.hasFilter();
+      _btnRemover.style.display = ativo ? '' : 'none';
+      if (!ativo) return;
+
+      var bloqueado = _temRespostasAtuais();
+      _btnRemover.disabled      = bloqueado;
+      _btnRemover.title         = bloqueado
+        ? _MSG_BLOQUEIO_REMOCAO
+        : 'Remove o filtro e volta a mostrar todas as aulas';
+      _btnRemover.style.opacity = bloqueado ? '0.5'        : '';
+      _btnRemover.style.cursor  = bloqueado ? 'not-allowed' : '';
+    }
+
+    /* ── Helpers de comparação de seleção ─────────────────── */
+
+    function _representaTodas(marcadosSet) {
+      if (marcadosSet.size < _allAulas.length) return false;
+      for (var i = 0; i < _allAulas.length; i++) {
+        if (!marcadosSet.has(_allAulas[i])) return false;
+      }
+      return true;
+    }
+
+    /* true se aplicar agora não mudaria nada no FilterStore */
+    function _semMudanca() {
+      var atual      = FilterStore.getSelectedLessons(); /* Set | null */
+      var novasTodas = _representaTodas(_marcados);
+
+      if (atual === null) return novasTodas;
+      if (novasTodas)     return false;
+      if (atual.size !== _marcados.size) return false;
+
+      var igual = true;
+      atual.forEach(function (a) { if (!_marcados.has(a)) igual = false; });
+      return igual;
+    }
+
+    /* ── Ações ─────────────────────────────────────────────── */
+
+    function _removerFiltro() {
+      _esconderAviso();
+
+      if (!FilterStore.hasFilter()) return;
+
+      if (_temRespostasAtuais()) {
+        _mostrarAviso(_MSG_BLOQUEIO_REMOCAO);
+        _atualizarBotaoRemover();
+        return;
+      }
+
+      FilterStore.clear();
+      close();
+    }
+
     function _aplicar() {
+      _esconderAviso();
+
+      /* Nada mudou de fato — fecha sem disparar nexus:filtroAlterado,
+         evitando um reset desnecessário do progresso. */
+      if (_semMudanca()) { close(); return; }
+
+      var novasTodas      = _representaTodas(_marcados);
+      var removeriaFiltro = FilterStore.hasFilter() && novasTodas;
+
+      /* "Aplicar" com tudo marcado, partindo de um filtro ativo,
+         equivale a remover o filtro — mesma trava de progresso. */
+      if (removeriaFiltro && _temRespostasAtuais()) {
+        _mostrarAviso(_MSG_BLOQUEIO_REMOCAO);
+        return;
+      }
+
       FilterStore.set(new Set(_marcados), _allAulas);
       close();
     }
@@ -336,15 +522,20 @@
 
     function open() {
       _allAulas = _extrairAulas();
-      if (_allAulas.length === 0) return;
+      if (_allAulas.length === 0) {
+        console.warn('[Filtro] nenhuma aula encontrada em window.questoes — painel não aberto');
+        return;
+      }
 
       _build();
+      _esconderAviso();
 
       var stored = FilterStore.getSelectedLessons();
       _marcados  = stored ? new Set(stored) : new Set(_allAulas);
 
       _renderLista();
       _atualizarContador();
+      _atualizarBotaoRemover();
 
       requestAnimationFrame(function () {
         requestAnimationFrame(function () {
@@ -352,12 +543,15 @@
           _painel.classList.add('filtro-show');
         });
       });
+
+      console.log('[Filtro] painel criado/exibido —', _allAulas.length, 'aulas');
     }
 
     function close() {
       if (!_overlay || !_painel) return;
       _overlay.classList.remove('filtro-show');
       _painel.classList.remove('filtro-show');
+      _esconderAviso();
     }
 
     return { open: open, close: close };
@@ -372,11 +566,30 @@
 
   /* ══════════════════════════════════════════════════════════
      BOTÃO DA NAV
+
+     Ver bloco de comentário no topo do arquivo (v2.2) para a
+     causa raiz completa. Resumo: o botão é criado dinamicamente
+     DEPOIS que este script pode já ter executado seu boot — por
+     isso o registro do listener usa delegação em `document`,
+     que resolve o alvo apenas no momento do clique.
   ══════════════════════════════════════════════════════════ */
 
+  var _navListenerRegistrado = false;
+
   function _vincularBotaoNav() {
-    var btn = document.getElementById('btn-filtro-aulas');
-    if (btn) btn.addEventListener('click', FilterPanel.open);
+    if (_navListenerRegistrado) return;
+    _navListenerRegistrado = true;
+
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest ? e.target.closest('#btn-filtro-aulas') : null;
+      if (!btn) return;
+
+      console.log('[Filtro] clique recebido em #btn-filtro-aulas');
+      console.log('[Filtro] FilterPanel.open chamado');
+      FilterPanel.open();
+    });
+
+    console.log('[Filtro] listener de clique (delegado em document) registrado');
   }
 
   /* ══════════════════════════════════════════════════════════
