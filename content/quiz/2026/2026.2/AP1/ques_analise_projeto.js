@@ -284,7 +284,891 @@ questoes: [
     ],
     answer: 2,
     feedback: "A ==term==Implantação== envolve instalar o software em produção e migrar dados, enquanto a ==term==Manutenção==, que ocorre depois, trata de correções de bugs e melhorias com base no feedback dos usuários."
-  }
+  },
+  {
+    aula: "Aula 3 — Modelos Cascata e Incremental",
+    tipo: "Explicativa",
+    texto: "Antes de detalhar cada modelo específico, é útil entender três grandes famílias de abordagens de desenvolvimento. Os modelos tradicionais seguem uma linha reta, do início ao fim, com foco em planejamento e controle. Os modelos iterativos trabalham em ciclos repetidos, priorizando adaptabilidade e feedback. Já os modelos incrementais combinam um pouco de estrutura com entregas graduais de funcionalidades.",
+    question: "Segundo o texto, qual é o foco principal dos Modelos Tradicionais?",
+    options: [
+      "Adaptabilidade e feedback contínuo",
+      "Planejamento e controle",
+      "Entrega gradual de incrementos",
+      "Ciclos repetitivos de revisão"
+    ],
+    answer: 1,
+    feedback: "Os ==term==Modelos Tradicionais== têm como foco principal o planejamento e o controle, sendo exemplificados pelo Cascata e pelo Espiral, indicados para requisitos estáveis e ambientes controlados."
+  },
+  {
+    aula: "Aula 3 — Modelos Cascata e Incremental",
+    tipo: "Explicativa",
+    texto: "O Modelo Cascata, também conhecido como Modelo Linear Sequencial, organiza o desenvolvimento em etapas que seguem uma ordem fixa: primeiro se definem os requisitos, depois vem o projeto do sistema, em seguida a implementação e teste unitário, depois a integração e teste de sistema, e por fim a operação e manutenção. Cada etapa só avança para a próxima quando a anterior está concluída.",
+    question: "Qual é a sequência correta das etapas do Modelo Cascata, de acordo com o texto?",
+    options: [
+      "Projeto → Requisitos → Implementação → Manutenção → Testes",
+      "Definição de Requisitos → Projeto de Sistema e Software → Implementação e Teste Unitário → Integração e Teste de Sistema → Operação e Manutenção",
+      "Planejamento → Design → Implementação → Testes → Integração",
+      "Análise → Design → Implementação → Testes → Integração"
+    ],
+    answer: 1,
+    feedback: "O ==term==Modelo Cascata== segue uma sequência fixa e linear, começando pela definição de requisitos e terminando na operação e manutenção do sistema."
+  },
+  {
+    aula: "Aula 3 — Modelos Cascata e Incremental",
+    tipo: "Contextualizada",
+    texto: "Uma empresa está desenvolvendo um sistema embarcado para um eletrodoméstico. Os requisitos desse tipo de sistema costumam ser bem definidos desde o início e raramente mudam depois de estabelecidos. Além disso, o ambiente de desenvolvimento é controlado, e há prazos e orçamentos rígidos a serem cumpridos.",
+    question: "Considerando as características do cenário descrito, qual modelo tradicional seria mais indicado, segundo o texto?",
+    options: [
+      "Modelo Espiral, pela análise contínua de riscos",
+      "Modelo Cascata, por lidar bem com requisitos estáveis e ambientes controlados",
+      "Modelo Incremental, pela entrega gradual de funcionalidades",
+      "RUP, pela flexibilidade e ciclos de revisão"
+    ],
+    answer: 1,
+    feedback: "O ==key==Modelo Cascata== é indicado quando os requisitos são bem definidos e estáveis, o ambiente é controlado e existem prazos e orçamentos rígidos — exatamente o caso de sistemas embarcados."
+  },
+  {
+    aula: "Aula 3 — Modelos Cascata e Incremental",
+    tipo: "Contextualizada",
+    texto: "Um dos pontos fortes do Modelo Cascata é que, por seguir etapas bem definidas, ele naturalmente incentiva a produção de documentação detalhada em cada fase. Essa documentação pode ser usada depois para orientar futuras modificações, apoiar a manutenção do sistema, treinar novos membros da equipe e melhorar a comunicação entre todos os envolvidos no projeto.",
+    question: "De acordo com o texto, qual é a principal utilidade da documentação detalhada produzida no Modelo Cascata?",
+    options: [
+      "Substituir a necessidade de testes no sistema",
+      "Servir como referência para modificações futuras, manutenção, treinamento e comunicação",
+      "Eliminar a necessidade de levantamento de requisitos em projetos futuros",
+      "Garantir que o cliente não precise ser consultado durante o desenvolvimento"
+    ],
+    answer: 1,
+    feedback: "A documentação detalhada do Cascata serve como referência valiosa para modificações futuras, manutenção do sistema, treinamento de equipes e comunicação entre os envolvidos no projeto."
+  },
+  {
+    aula: "Aula 3 — Modelos Cascata e Incremental",
+    tipo: "Contextualizada",
+    texto: "Apesar de suas vantagens, o Modelo Cascata tem uma limitação importante: como as etapas seguem uma ordem rígida, fica difícil incorporar mudanças nos requisitos depois que o projeto já avançou. Se uma alteração significativa for necessária em uma fase avançada, isso pode gerar retrabalho, aumento de custos e atrasos no cronograma.",
+    question: "Qual é a principal desvantagem do Modelo Cascata destacada no texto?",
+    options: [
+      "A falta de documentação ao longo do processo",
+      "A dificuldade de incorporar mudanças nos requisitos, especialmente em fases avançadas",
+      "A impossibilidade de definir prazos e orçamentos",
+      "O excesso de envolvimento do cliente durante o desenvolvimento"
+    ],
+    answer: 1,
+    feedback: "A estrutura sequencial e rígida do Cascata dificulta mudanças tardias nos requisitos, podendo provocar retrabalho, aumento de custos e atrasos no cronograma."
+  },
+  {
+    aula: "Aula 3 — Modelos Cascata e Incremental",
+    tipo: "Explicativa",
+    texto: "Diferente do Cascata, o Modelo Incremental — também chamado de Modelo de Desenvolvimento Evolucionário — não entrega o sistema todo de uma vez. Em vez disso, ele divide o sistema em módulos funcionais menores, chamados incrementos. Cada incremento passa pelas fases de análise, design, implementação, testes e integração, sendo entregue de forma gradual.",
+    question: "Segundo o texto, como o Modelo Incremental organiza o desenvolvimento do sistema?",
+    options: [
+      "Entregando o sistema completo apenas ao final do projeto",
+      "Dividindo o sistema em módulos funcionais menores, entregues gradualmente",
+      "Seguindo uma única fase de planejamento sem repetições",
+      "Eliminando totalmente a necessidade de testes entre as entregas"
+    ],
+    answer: 1,
+    feedback: "O ==term==Modelo Incremental== divide o sistema em incrementos funcionais, cada um passando por análise, design, implementação, testes e integração, permitindo entrega gradual."
+  },
+  {
+    aula: "Aula 3 — Modelos Cascata e Incremental",
+    tipo: "Aplicação",
+    texto: "Um banco está desenvolvendo um novo sistema financeiro. Em vez de esperar meses para lançar tudo de uma vez, a equipe decide entregar primeiro a funcionalidade de abertura de contas, depois transferências bancárias, em seguida pagamentos, e por fim investimentos — cada uma dessas partes sendo testada e avaliada antes de seguir para a próxima.",
+    question: "O cenário descrito ilustra a aplicação de qual modelo de desenvolvimento?",
+    options: [
+      "Modelo Cascata",
+      "Modelo Incremental",
+      "Modelo Tradicional puro",
+      "Nenhum modelo específico, apenas boas práticas gerais"
+    ],
+    answer: 1,
+    feedback: "A entrega gradual de funcionalidades específicas, como abertura de contas e transferências, é um exemplo típico do ==term==Modelo Incremental== aplicado a sistemas bancários em constante evolução."
+  },
+  {
+    aula: "Aula 3 — Modelos Cascata e Incremental",
+    tipo: "Aplicação",
+    texto: "Uma equipe está desenvolvendo um sistema de prontuário eletrônico para um hospital. Como as necessidades das diferentes clínicas do hospital vão surgindo aos poucos e podem mudar conforme o uso real do sistema, a equipe prefere entregar módulos menores — como cadastro de pacientes, depois histórico médico, depois prescrições — recebendo feedback a cada entrega.",
+    question: "Por que o Modelo Incremental é mais adequado que o Modelo Cascata para esse cenário hospitalar, segundo os critérios apresentados no texto?",
+    options: [
+      "Porque o Cascata não permite nenhum tipo de documentação",
+      "Porque os requisitos estão em evolução e há necessidade de entrega gradual com feedback",
+      "Porque o Incremental elimina totalmente a fase de testes",
+      "Porque hospitais não podem utilizar modelos tradicionais em nenhuma hipótese"
+    ],
+    answer: 1,
+    feedback: "O Incremental é indicado quando os requisitos estão em evolução, há necessidade de entrega gradual e o ambiente é dinâmico — características comuns em sistemas de saúde como prontuários eletrônicos."
+  },
+  {
+    aula: "Aula 3 — Modelos Cascata e Incremental",
+    tipo: "Contextualizada",
+    texto: "Assim como toda abordagem, o Modelo Incremental também tem desafios. Como o sistema é dividido em vários incrementos, é preciso coordenar cuidadosamente o desenvolvimento e a integração de cada parte. Além disso, testes frequentes entre os incrementos são essenciais para garantir que tudo funcione bem em conjunto, o que pode aumentar o tempo e o esforço necessários.",
+    question: "Qual desafio do Modelo Incremental é destacado no texto?",
+    options: [
+      "A impossibilidade de entregar funcionalidades separadamente",
+      "A maior complexidade de gerenciamento, exigindo integração e testes frequentes entre os incrementos",
+      "A ausência total de comunicação com os stakeholders",
+      "A proibição de mudanças nos requisitos durante o projeto"
+    ],
+    answer: 1,
+    feedback: "O gerenciamento de vários incrementos exige coordenação cuidadosa, além de integração contínua e testes frequentes para garantir que o sistema funcione corretamente como um todo."
+  },
+  {
+    aula: "Aula 3 — Modelos Cascata e Incremental",
+    tipo: "Contextualizada",
+    texto: "Comparando os dois modelos: no Cascata, a estrutura é linear e sequencial, os requisitos precisam estar bem definidos desde o início, e o cliente tem menor envolvimento ao longo do processo. Já no Incremental, o sistema é dividido em partes menores, os requisitos podem evoluir durante o desenvolvimento, e o cliente participa mais ativamente, dando feedback a cada entrega.",
+    question: "Com base na comparação apresentada, qual é a principal diferença entre o envolvimento do cliente nos dois modelos?",
+    options: [
+      "No Cascata o cliente participa mais, e no Incremental menos",
+      "Em ambos os modelos o cliente tem o mesmo nível de envolvimento",
+      "No Cascata o envolvimento do cliente é menor ao longo do processo; no Incremental, é maior, com feedback contínuo",
+      "Nenhum dos dois modelos considera o envolvimento do cliente"
+    ],
+    answer: 2,
+    feedback: "No Cascata, as decisões são tomadas principalmente no início, reduzindo o envolvimento do cliente depois. No Incremental, o feedback contínuo a cada entrega aumenta a participação do cliente ao longo do projeto."
+  },
+    {
+    aula: "Aula 4 — Métodos Ágeis",
+    tipo: "Explicativa",
+    texto: "Em 2001, um grupo de desenvolvedores experientes se reuniu e criou um documento que mudaria a forma de desenvolver software: o Manifesto Ágil. Ele estabelece que indivíduos e interações valem mais que processos e ferramentas, que software funcionando importa mais que documentação extensa, que colaborar com o cliente é melhor que apenas negociar contratos, e que responder a mudanças é mais importante do que seguir um plano rígido.",
+    question: "Segundo o texto, o que o Manifesto Ágil valoriza mais do que 'seguir um plano'?",
+    options: [
+      "Negociação de contratos",
+      "Documentação abrangente",
+      "Responder a mudanças",
+      "Processos e ferramentas"
+    ],
+    answer: 2,
+    feedback: "Um dos quatro valores do ==key==Manifesto Ágil== é justamente valorizar a resposta rápida a mudanças mais do que a rígida obediência a um plano pré-estabelecido."
+  },
+
+  {
+    aula: "Aula 4 — Métodos Ágeis",
+    tipo: "Explicativa",
+    texto: "Diferente dos métodos tradicionais, que entregam o software completo apenas no final do projeto e limitam o feedback do cliente a fases específicas, os métodos ágeis funcionam de forma bem diferente: eles entregam software em pequenos incrementos frequentes e buscam feedback contínuo do cliente ao longo de todo o desenvolvimento.",
+    question: "Qual é a principal diferença entre métodos ágeis e tradicionais em relação à entrega de software, segundo o texto?",
+    options: [
+      "Ambos entregam o software apenas ao final do projeto",
+      "Métodos ágeis entregam em pequenos incrementos frequentes; tradicionais entregam ao final do projeto",
+      "Métodos tradicionais entregam mais rápido que os métodos ágeis",
+      "Não existe diferença relevante entre as duas abordagens"
+    ],
+    answer: 1,
+    feedback: "Enquanto os métodos tradicionais concentram a entrega no fim do projeto, os métodos ágeis priorizam entregas frequentes em pequenos incrementos, permitindo feedback contínuo do cliente."
+  },
+
+  {
+    aula: "Aula 4 — Métodos Ágeis",
+    tipo: "Explicativa",
+    texto: "O Scrum organiza o trabalho em ciclos curtos chamados sprints, que geralmente duram de 1 a 4 semanas. Para funcionar bem, o Scrum se apoia em três pilares fundamentais: transparência, que garante que todas as informações do projeto estejam visíveis para a equipe; inspeção, que consiste em revisar regularmente o progresso; e adaptação, que é a disposição de mudar a abordagem conforme o feedback recebido.",
+    question: "Quais são os três pilares do Scrum apresentados no texto?",
+    options: [
+      "Planejamento, execução e controle",
+      "Transparência, inspeção e adaptação",
+      "Comunicação, simplicidade e coragem",
+      "Requisitos, design e testes"
+    ],
+    answer: 1,
+    feedback: "O ==term==Scrum== se sustenta em três pilares: transparência (visibilidade das informações), inspeção (revisão regular do progresso) e adaptação (ajuste da abordagem conforme o feedback)."
+  },
+
+  {
+    aula: "Aula 4 — Métodos Ágeis",
+    tipo: "Contextualizada",
+    texto: "Em uma equipe Scrum, cada pessoa tem um papel específico. O Product Owner funciona como a 'voz' do cliente, definindo a visão do produto e priorizando o que deve ser feito primeiro. O Scrum Master atua como guardião do processo, removendo obstáculos que atrapalham a equipe. O Time de Desenvolvimento é quem efetivamente transforma as ideias em um produto funcional. E os Stakeholders são todas as partes interessadas no sucesso do projeto, como clientes e investidores.",
+    question: "De acordo com o texto, qual papel do Scrum é responsável por remover obstáculos e garantir que os princípios da metodologia sejam seguidos?",
+    options: [
+      "Product Owner",
+      "Scrum Master",
+      "Time de Desenvolvimento",
+      "Stakeholders"
+    ],
+    answer: 1,
+    feedback: "O ==term==Scrum Master== é o guardião do processo Scrum, responsável por remover obstáculos da equipe e garantir que a metodologia seja seguida corretamente."
+  },
+
+  {
+    aula: "Aula 4 — Métodos Ágeis",
+    tipo: "Contextualizada",
+    texto: "Para acompanhar visualmente o progresso de uma sprint, o Scrum utiliza uma ferramenta chamada Burndown Chart. Nela, o eixo vertical mostra os pontos de complexidade que ainda faltam ser feitos, e o eixo horizontal mostra o tempo, geralmente em dias da sprint. Uma linha tracejada representa o ritmo ideal de trabalho, enquanto uma linha real mostra o progresso de fato da equipe. Se a linha real ficar acima da ideal, é um sinal de que a equipe está atrasada.",
+    question: "O que o Burndown Chart permite que a equipe visualize, segundo o texto?",
+    options: [
+      "A quantidade de bugs encontrados no sistema",
+      "O progresso do trabalho restante ao longo do tempo, comparando o ritmo real com o ideal",
+      "A lista de funcionalidades priorizadas pelo Product Owner",
+      "O número de programadores disponíveis em cada sprint"
+    ],
+    answer: 1,
+    feedback: "O ==term==Burndown Chart== é uma ferramenta gráfica que mostra o trabalho restante ao longo do tempo, permitindo comparar o ritmo ideal com o ritmo real da equipe e identificar atrasos precocemente."
+  },
+
+  {
+    aula: "Aula 4 — Métodos Ágeis",
+    tipo: "Contextualizada",
+    texto: "Enquanto o Scrum organiza principalmente a gestão do processo, o Extreme Programming (XP), criado por Kent Beck durante o projeto C3 da Chrysler, foca nas práticas técnicas de engenharia de software. O XP se baseia em cinco valores: comunicação, simplicidade, feedback, coragem e respeito. A partir desses valores, surgem práticas como programação em pares, testes unitários e integração contínua.",
+    question: "Qual é a principal diferença de foco entre Scrum e XP, segundo o texto?",
+    options: [
+      "Scrum foca em práticas técnicas de código; XP foca na gestão de sprints",
+      "Scrum tem foco mais gerencial; XP tem foco mais técnico, voltado à engenharia de software",
+      "Ambos possuem exatamente o mesmo foco, sem diferenças relevantes",
+      "XP não possui valores ou práticas definidas, apenas o Scrum possui"
+    ],
+    answer: 1,
+    feedback: "O Scrum assume uma visão mais gerencial, estruturando papéis e sprints, enquanto o ==term==XP== mergulha na engenharia de software, priorizando práticas técnicas para garantir a qualidade do código."
+  },
+
+  {
+    aula: "Aula 4 — Métodos Ágeis",
+    tipo: "Aplicação",
+    texto: "Dois desenvolvedores de uma equipe decidem trabalhar juntos na mesma estação de trabalho para implementar uma nova funcionalidade. Enquanto um escreve o código, o outro revisa cada linha em tempo real, sugerindo melhorias e apontando possíveis erros. Depois de um tempo, eles trocam de papel, e quem estava revisando passa a escrever o código.",
+    question: "Essa prática, comum no Extreme Programming, em que dois programadores trabalham juntos revisando o código um do outro em tempo real, é chamada de:",
+    options: [
+      "Sprint Planning",
+      "Programação em Pares",
+      "Refatoração",
+      "Integração Contínua"
+    ],
+    answer: 1,
+    feedback: "A ==proc==Programação em Pares== envolve dois desenvolvedores trabalhando juntos: um escreve o código (driver) enquanto o outro revisa (observer/navigator), trocando papéis frequentemente."
+  },
+
+  {
+    aula: "Aula 4 — Métodos Ágeis",
+    tipo: "Aplicação",
+    texto: "Uma startup de tecnologia está desenvolvendo um aplicativo novo e precisa lançar versões rapidamente, recebendo feedback constante dos usuários para ajustar o produto. A equipe decide dividir o trabalho em ciclos curtos, com reuniões diárias rápidas para alinhar o progresso, e realiza uma reunião ao final de cada ciclo para mostrar o que foi feito e receber sugestões dos interessados no projeto.",
+    question: "As reuniões descritas no cenário — a conversa diária rápida e a apresentação do que foi feito ao final do ciclo — correspondem, respectivamente, a quais cerimônias do Scrum?",
+    options: [
+      "Sprint Planning e Sprint Retrospective",
+      "Scrum Daily e Sprint Review",
+      "Sprint Review e Scrum Daily",
+      "Sprint Retrospective e Sprint Planning"
+    ],
+    answer: 1,
+    feedback: "A ==term==Scrum Daily== é a conversa rápida diária sobre avanços e obstáculos, enquanto a ==term==Sprint Review== é o momento de mostrar o que foi realizado durante o sprint e receber feedback dos stakeholders."
+  },
+
+  {
+    aula: "Aula 4 — Métodos Ágeis",
+    tipo: "Aplicação",
+    texto: "Depois de finalizar uma sprint, a equipe de desenvolvimento se reúne sem a presença de stakeholders externos. Nessa reunião, eles conversam abertamente sobre o que funcionou bem durante o ciclo, o que não funcionou e quais mudanças podem ser feitas para melhorar o trabalho na próxima sprint.",
+    question: "Essa reunião, focada no aprendizado e na melhoria contínua do processo da equipe, é chamada no Scrum de:",
+    options: [
+      "Sprint Planning",
+      "Sprint Review",
+      "Scrum Daily",
+      "Sprint Retrospective"
+    ],
+    answer: 3,
+    feedback: "A ==term==Sprint Retrospective== é o momento em que a equipe reflete sobre o que deu certo, o que deu errado e como melhorar no próximo sprint, sendo guiada pelo Scrum Master."
+  },
+
+  {
+    aula: "Aula 4 — Métodos Ágeis",
+    tipo: "Contextualizada",
+    texto: "Vários setores diferentes adotam métodos ágeis, e não apenas empresas de tecnologia. O Spotify e a Netflix usam Scrum para acelerar entregas; o Banco Itaú aplica Scrum em projetos de aplicativos mobile; e até instituições públicas, como o Tribunal de Contas da União, utilizam Scrum para gerenciar sistemas internos com foco em qualidade e segurança.",
+    question: "O que o texto demonstra sobre a adoção de métodos ágeis, considerando os exemplos apresentados?",
+    options: [
+      "Que métodos ágeis só funcionam em startups de tecnologia",
+      "Que a adoção de métodos ágeis não se limita a um único tipo de empresa, abrangendo tecnologia, bancos e instituições públicas",
+      "Que instituições governamentais nunca utilizam métodos ágeis",
+      "Que apenas empresas internacionais conseguem aplicar métodos ágeis com sucesso"
+    ],
+    answer: 1,
+    feedback: "Os exemplos mostram que métodos ágeis, como o Scrum, são adotados por diferentes tipos de organizações — empresas de tecnologia, bancos tradicionais e até instituições governamentais — comprovando sua ampla aplicabilidade."
+  },
+    {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Explicativa",
+    texto: "Antes de começar a construir qualquer sistema, é preciso descobrir o que ele realmente precisa fazer. Esse processo de descobrir, ouvir e entender as necessidades de todos os interessados — usuários, clientes, gestores — é chamado de elicitação. É como conversar com as pessoas para captar seus 'sonhos' sobre o que o software deve resolver, usando técnicas como entrevistas, questionários e workshops.",
+    question: "De acordo com o texto, o que caracteriza a elicitação de requisitos?",
+    options: [
+      "A etapa de codificação do sistema",
+      "O processo de descobrir, ouvir e entender as necessidades dos stakeholders",
+      "A fase final de testes antes da implantação",
+      "A definição do cronograma financeiro do projeto"
+    ],
+    answer: 1,
+    feedback: "A ==def==elicitação== é a arte de descobrir e entender os requisitos de todas as partes interessadas, usando técnicas como entrevistas, questionários e workshops."
+  },
+
+  {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Explicativa",
+    texto: "Depois que as necessidades brutas são coletadas na elicitação, entra em cena a análise de requisitos. O material compara esse processo a lapidar uma pedra preciosa: é o momento de refinar, organizar, cruzar informações, identificar inconsistências e definir quais funcionalidades realmente são essenciais para o sistema.",
+    question: "Segundo a metáfora usada no texto, o que a análise de requisitos faz com as informações coletadas na elicitação?",
+    options: [
+      "Ignora as informações e recomeça o processo do zero",
+      "Refina e organiza as informações, como quem lapida uma pedra preciosa",
+      "Apenas armazena as informações sem processá-las",
+      "Substitui a necessidade de conversar com os stakeholders"
+    ],
+    answer: 1,
+    feedback: "A ==proc==análise de requisitos== refina, organiza, cruza dados e identifica inconsistências nas informações coletadas, revelando as funcionalidades realmente essenciais do sistema."
+  },
+
+  {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Explicativa",
+    texto: "Os requisitos de um sistema se dividem em duas grandes categorias. Os Requisitos Funcionais definem o que o software deve fazer — suas funcionalidades e como ele interage com o usuário. Já os Requisitos Não Funcionais descrevem as características que o software deve ter, como performance, segurança e usabilidade. O material compara os dois à melodia principal e à harmonia de uma música: ambos são necessários para formar o resultado completo.",
+    question: "Com base na comparação musical usada no texto, o que representam os Requisitos Não Funcionais?",
+    options: [
+      "A melodia principal da música",
+      "A harmonia que completa a música",
+      "O silêncio entre as notas musicais",
+      "O instrumento usado para compor a música"
+    ],
+    answer: 1,
+    feedback: "Os ==term==Requisitos Não Funcionais== são comparados à harmonia da música, complementando os Requisitos Funcionais (a melodia) ao definir qualidades como performance, segurança e usabilidade."
+  },
+
+  {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Contextualizada",
+    texto: "Para que a comunicação entre equipe técnica e clientes seja clara, uma das principais técnicas usadas nos requisitos funcionais são as User Stories. Elas descrevem, em um texto curto e objetivo, quem é o usuário, o que ele precisa fazer, como deve proceder e com qual objetivo — tudo em uma linguagem mais próxima do cliente do que da equipe técnica.",
+    question: "Qual é o principal objetivo das User Stories, segundo o texto?",
+    options: [
+      "Substituir totalmente a necessidade de testes no sistema",
+      "Garantir uma comunicação clara e objetiva entre equipe técnica e clientes sobre as funcionalidades",
+      "Definir exclusivamente o cronograma financeiro do projeto",
+      "Eliminar a necessidade de qualquer documentação do sistema"
+    ],
+    answer: 1,
+    feedback: "As ==term==User Stories== ajudam a comunicar de forma clara e objetiva as funcionalidades do sistema, descrevendo o usuário, a ação, o processo e o objetivo em linguagem próxima do cliente."
+  },
+
+  {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Contextualizada",
+    texto: "Nem todas as funcionalidades de um sistema têm a mesma urgência. Algumas são determinantes e precisam existir para que o software entre em produção; outras podem esperar, sendo implementadas em um futuro próximo. Essa priorização exige comunicação constante entre equipe técnica e clientes, e serve de base para montar o cronograma de desenvolvimento e o Documento de Requisitos do Sistema.",
+    question: "Por que a priorização de requisitos funcionais é importante, de acordo com o texto?",
+    options: [
+      "Porque elimina totalmente a necessidade de cronograma",
+      "Porque define quais funcionalidades são urgentes e quais podem esperar, servindo de base para o cronograma de desenvolvimento",
+      "Porque garante que o sistema nunca precisará de testes",
+      "Porque substitui a necessidade de comunicação entre equipe e cliente"
+    ],
+    answer: 1,
+    feedback: "A priorização separa funcionalidades urgentes das que podem esperar, sendo essencial para montar o cronograma de desenvolvimento e o Documento de Requisitos do Sistema."
+  },
+
+  {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Contextualizada",
+    texto: "O autor do material defende uma posição específica sobre como definir o escopo de um projeto de software: em vez de fixar todas as funcionalidades logo no início (Escopo Fixo), ele prefere um Escopo Variado, em que os requisitos são definidos de forma mais flexível e iterativa, associada aos métodos ágeis. O argumento é que, diferente de um parafuso ou uma roda de carro, o software é um produto peculiar, cujas necessidades muitas vezes só ficam claras durante o desenvolvimento e o uso real do sistema.",
+    question: "Qual filosofia de escopo o autor do material declara preferir, segundo o texto?",
+    options: [
+      "Escopo Fixo, pois os requisitos nunca devem mudar",
+      "Escopo Variado, com definição de requisitos mais flexível e iterativa",
+      "Nenhuma das duas, pois o autor não expressa preferência",
+      "Escopo Fixo, por ser mais compatível com métodos ágeis"
+    ],
+    answer: 1,
+    feedback: "O autor defende o ==term==Escopo Variado de Produto==, associado aos métodos ágeis, argumentando que o software é um produto peculiar cujas necessidades podem mudar durante o desenvolvimento."
+  },
+
+  {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Aplicação",
+    texto: "Uma equipe está desenvolvendo a User Story: 'Como recepcionista do hospital, eu quero cadastrar novos pacientes com informações básicas, para que possamos ter um registro completo dos pacientes.' Para garantir que essa funcionalidade seja considerada completa, a equipe define um conjunto de condições claras: o sistema deve validar campos obrigatórios como nome e contato, e deve gerar um número de identificação único ao salvar o cadastro.",
+    question: "Esse conjunto de condições que a funcionalidade deve cumprir para ser considerada completa e aceita pelo cliente é chamado de:",
+    options: [
+      "Requisito Não Funcional",
+      "Critérios de Aceitação",
+      "Documento de Requisitos do Sistema",
+      "Elicitação de Requisitos"
+    ],
+    answer: 1,
+    feedback: "Os ==term==Critérios de Aceitação== definem o comportamento esperado de uma User Story, servindo também como base para validação e testes, garantindo que a implementação está correta."
+  },
+
+  {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Aplicação",
+    texto: "Uma startup está criando um aplicativo de gerenciamento de eventos. Em vez de desenvolver todas as funcionalidades de uma vez, a equipe decide lançar primeiro apenas a criação de eventos e a gestão de convidados — o mínimo necessário para testar se os usuários realmente usariam o app — antes de investir em funcionalidades mais avançadas, como envio automático de convites por e-mail.",
+    question: "Essa versão mais simples e funcional do produto, criada para validar hipóteses de negócio com o menor investimento possível, é chamada de:",
+    options: [
+      "Documento de Requisitos do Sistema",
+      "Escopo Fixo de Produto",
+      "MVP (Minimum Viable Product)",
+      "Requisito Não Funcional"
+    ],
+    answer: 2,
+    feedback: "O ==term==MVP (Produto Mínimo Viável)== é a versão mais simples e funcional de um produto, desenvolvida para validar hipóteses de negócio e coletar feedback com o menor investimento possível."
+  },
+
+  {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Aplicação",
+    texto: "Um hospital está implantando um novo sistema de prontuário eletrônico e exige que ele fique disponível e funcional pelo menos 99,9% do tempo, além de responder às solicitações dos usuários em menos de 2 segundos durante operações normais. Nenhuma dessas exigências descreve uma funcionalidade específica do sistema, mas sim uma qualidade que ele deve ter.",
+    question: "As exigências de disponibilidade de 99,9% do tempo e resposta em menos de 2 segundos são exemplos de quais tipos de requisito, segundo o texto?",
+    options: [
+      "Requisitos Funcionais",
+      "User Stories",
+      "Requisitos Não Funcionais (Confiabilidade e Desempenho)",
+      "Critérios de Aceitação"
+    ],
+    answer: 2,
+    feedback: "Disponibilidade e tempo de resposta são exemplos de ==term==Requisitos Não Funcionais==, respectivamente relacionados à Confiabilidade (≥99,9% do tempo) e ao Desempenho (resposta em menos de 2 segundos)."
+  },
+
+  {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Contextualizada",
+    texto: "Um bom processo de elicitação e análise de requisitos traz diversos benefícios para o projeto: evita o desenvolvimento de funcionalidades desnecessárias, reduzindo retrabalho e custos; melhora a qualidade do software, já que ele passa a atender às necessidades reais dos usuários; e aumenta a satisfação do cliente, pois o produto final entrega valor real.",
+    question: "De acordo com o texto, qual é um dos benefícios de investir em um bom processo de elicitação e análise de requisitos?",
+    options: [
+      "Aumento do retrabalho e dos custos do projeto",
+      "Redução de retrabalho e custos, evitando funcionalidades desnecessárias",
+      "Eliminação total da necessidade de comunicação com o cliente",
+      "Impossibilidade de medir a qualidade do software"
+    ],
+    answer: 1,
+    feedback: "Um bom processo de elicitação e análise reduz retrabalho e custos, pois evita o desenvolvimento de funcionalidades desnecessárias ou que não atendem às expectativas reais dos usuários."
+  },  {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Explicativa",
+    texto: "Antes de começar a construir qualquer sistema, é preciso descobrir o que ele realmente precisa fazer. Esse processo de descobrir, ouvir e entender as necessidades de todos os interessados — usuários, clientes, gestores — é chamado de elicitação. É como conversar com as pessoas para captar seus 'sonhos' sobre o que o software deve resolver, usando técnicas como entrevistas, questionários e workshops.",
+    question: "De acordo com o texto, o que caracteriza a elicitação de requisitos?",
+    options: [
+      "A etapa de codificação do sistema",
+      "O processo de descobrir, ouvir e entender as necessidades dos stakeholders",
+      "A fase final de testes antes da implantação",
+      "A definição do cronograma financeiro do projeto"
+    ],
+    answer: 1,
+    feedback: "A ==def==elicitação== é a arte de descobrir e entender os requisitos de todas as partes interessadas, usando técnicas como entrevistas, questionários e workshops."
+  },
+
+  {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Explicativa",
+    texto: "Depois que as necessidades brutas são coletadas na elicitação, entra em cena a análise de requisitos. O material compara esse processo a lapidar uma pedra preciosa: é o momento de refinar, organizar, cruzar informações, identificar inconsistências e definir quais funcionalidades realmente são essenciais para o sistema.",
+    question: "Segundo a metáfora usada no texto, o que a análise de requisitos faz com as informações coletadas na elicitação?",
+    options: [
+      "Ignora as informações e recomeça o processo do zero",
+      "Refina e organiza as informações, como quem lapida uma pedra preciosa",
+      "Apenas armazena as informações sem processá-las",
+      "Substitui a necessidade de conversar com os stakeholders"
+    ],
+    answer: 1,
+    feedback: "A ==proc==análise de requisitos== refina, organiza, cruza dados e identifica inconsistências nas informações coletadas, revelando as funcionalidades realmente essenciais do sistema."
+  },
+
+  {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Explicativa",
+    texto: "Os requisitos de um sistema se dividem em duas grandes categorias. Os Requisitos Funcionais definem o que o software deve fazer — suas funcionalidades e como ele interage com o usuário. Já os Requisitos Não Funcionais descrevem as características que o software deve ter, como performance, segurança e usabilidade. O material compara os dois à melodia principal e à harmonia de uma música: ambos são necessários para formar o resultado completo.",
+    question: "Com base na comparação musical usada no texto, o que representam os Requisitos Não Funcionais?",
+    options: [
+      "A melodia principal da música",
+      "A harmonia que completa a música",
+      "O silêncio entre as notas musicais",
+      "O instrumento usado para compor a música"
+    ],
+    answer: 1,
+    feedback: "Os ==term==Requisitos Não Funcionais== são comparados à harmonia da música, complementando os Requisitos Funcionais (a melodia) ao definir qualidades como performance, segurança e usabilidade."
+  },
+
+  {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Contextualizada",
+    texto: "Para que a comunicação entre equipe técnica e clientes seja clara, uma das principais técnicas usadas nos requisitos funcionais são as User Stories. Elas descrevem, em um texto curto e objetivo, quem é o usuário, o que ele precisa fazer, como deve proceder e com qual objetivo — tudo em uma linguagem mais próxima do cliente do que da equipe técnica.",
+    question: "Qual é o principal objetivo das User Stories, segundo o texto?",
+    options: [
+      "Substituir totalmente a necessidade de testes no sistema",
+      "Garantir uma comunicação clara e objetiva entre equipe técnica e clientes sobre as funcionalidades",
+      "Definir exclusivamente o cronograma financeiro do projeto",
+      "Eliminar a necessidade de qualquer documentação do sistema"
+    ],
+    answer: 1,
+    feedback: "As ==term==User Stories== ajudam a comunicar de forma clara e objetiva as funcionalidades do sistema, descrevendo o usuário, a ação, o processo e o objetivo em linguagem próxima do cliente."
+  },
+
+  {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Contextualizada",
+    texto: "Nem todas as funcionalidades de um sistema têm a mesma urgência. Algumas são determinantes e precisam existir para que o software entre em produção; outras podem esperar, sendo implementadas em um futuro próximo. Essa priorização exige comunicação constante entre equipe técnica e clientes, e serve de base para montar o cronograma de desenvolvimento e o Documento de Requisitos do Sistema.",
+    question: "Por que a priorização de requisitos funcionais é importante, de acordo com o texto?",
+    options: [
+      "Porque elimina totalmente a necessidade de cronograma",
+      "Porque define quais funcionalidades são urgentes e quais podem esperar, servindo de base para o cronograma de desenvolvimento",
+      "Porque garante que o sistema nunca precisará de testes",
+      "Porque substitui a necessidade de comunicação entre equipe e cliente"
+    ],
+    answer: 1,
+    feedback: "A priorização separa funcionalidades urgentes das que podem esperar, sendo essencial para montar o cronograma de desenvolvimento e o Documento de Requisitos do Sistema."
+  },
+
+  {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Contextualizada",
+    texto: "O autor do material defende uma posição específica sobre como definir o escopo de um projeto de software: em vez de fixar todas as funcionalidades logo no início (Escopo Fixo), ele prefere um Escopo Variado, em que os requisitos são definidos de forma mais flexível e iterativa, associada aos métodos ágeis. O argumento é que, diferente de um parafuso ou uma roda de carro, o software é um produto peculiar, cujas necessidades muitas vezes só ficam claras durante o desenvolvimento e o uso real do sistema.",
+    question: "Qual filosofia de escopo o autor do material declara preferir, segundo o texto?",
+    options: [
+      "Escopo Fixo, pois os requisitos nunca devem mudar",
+      "Escopo Variado, com definição de requisitos mais flexível e iterativa",
+      "Nenhuma das duas, pois o autor não expressa preferência",
+      "Escopo Fixo, por ser mais compatível com métodos ágeis"
+    ],
+    answer: 1,
+    feedback: "O autor defende o ==term==Escopo Variado de Produto==, associado aos métodos ágeis, argumentando que o software é um produto peculiar cujas necessidades podem mudar durante o desenvolvimento."
+  },
+
+  {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Aplicação",
+    texto: "Uma equipe está desenvolvendo a User Story: 'Como recepcionista do hospital, eu quero cadastrar novos pacientes com informações básicas, para que possamos ter um registro completo dos pacientes.' Para garantir que essa funcionalidade seja considerada completa, a equipe define um conjunto de condições claras: o sistema deve validar campos obrigatórios como nome e contato, e deve gerar um número de identificação único ao salvar o cadastro.",
+    question: "Esse conjunto de condições que a funcionalidade deve cumprir para ser considerada completa e aceita pelo cliente é chamado de:",
+    options: [
+      "Requisito Não Funcional",
+      "Critérios de Aceitação",
+      "Documento de Requisitos do Sistema",
+      "Elicitação de Requisitos"
+    ],
+    answer: 1,
+    feedback: "Os ==term==Critérios de Aceitação== definem o comportamento esperado de uma User Story, servindo também como base para validação e testes, garantindo que a implementação está correta."
+  },
+
+  {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Aplicação",
+    texto: "Uma startup está criando um aplicativo de gerenciamento de eventos. Em vez de desenvolver todas as funcionalidades de uma vez, a equipe decide lançar primeiro apenas a criação de eventos e a gestão de convidados — o mínimo necessário para testar se os usuários realmente usariam o app — antes de investir em funcionalidades mais avançadas, como envio automático de convites por e-mail.",
+    question: "Essa versão mais simples e funcional do produto, criada para validar hipóteses de negócio com o menor investimento possível, é chamada de:",
+    options: [
+      "Documento de Requisitos do Sistema",
+      "Escopo Fixo de Produto",
+      "MVP (Minimum Viable Product)",
+      "Requisito Não Funcional"
+    ],
+    answer: 2,
+    feedback: "O ==term==MVP (Produto Mínimo Viável)== é a versão mais simples e funcional de um produto, desenvolvida para validar hipóteses de negócio e coletar feedback com o menor investimento possível."
+  },
+
+  {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Aplicação",
+    texto: "Um hospital está implantando um novo sistema de prontuário eletrônico e exige que ele fique disponível e funcional pelo menos 99,9% do tempo, além de responder às solicitações dos usuários em menos de 2 segundos durante operações normais. Nenhuma dessas exigências descreve uma funcionalidade específica do sistema, mas sim uma qualidade que ele deve ter.",
+    question: "As exigências de disponibilidade de 99,9% do tempo e resposta em menos de 2 segundos são exemplos de quais tipos de requisito, segundo o texto?",
+    options: [
+      "Requisitos Funcionais",
+      "User Stories",
+      "Requisitos Não Funcionais (Confiabilidade e Desempenho)",
+      "Critérios de Aceitação"
+    ],
+    answer: 2,
+    feedback: "Disponibilidade e tempo de resposta são exemplos de ==term==Requisitos Não Funcionais==, respectivamente relacionados à Confiabilidade (≥99,9% do tempo) e ao Desempenho (resposta em menos de 2 segundos)."
+  },
+
+  {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Contextualizada",
+    texto: "Um bom processo de elicitação e análise de requisitos traz diversos benefícios para o projeto: evita o desenvolvimento de funcionalidades desnecessárias, reduzindo retrabalho e custos; melhora a qualidade do software, já que ele passa a atender às necessidades reais dos usuários; e aumenta a satisfação do cliente, pois o produto final entrega valor real.",
+    question: "De acordo com o texto, qual é um dos benefícios de investir em um bom processo de elicitação e análise de requisitos?",
+    options: [
+      "Aumento do retrabalho e dos custos do projeto",
+      "Redução de retrabalho e custos, evitando funcionalidades desnecessárias",
+      "Eliminação total da necessidade de comunicação com o cliente",
+      "Impossibilidade de medir a qualidade do software"
+    ],
+    answer: 1,
+    feedback: "Um bom processo de elicitação e análise reduz retrabalho e custos, pois evita o desenvolvimento de funcionalidades desnecessárias ou que não atendem às expectativas reais dos usuários."
+  },
+    {
+    aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+    tipo: "Explicativa",
+    texto: "O Levantamento de Requisitos não é uma etapa que acontece só no início do projeto e depois é esquecida. Ele faz parte da Engenharia de Requisitos e precisa acompanhar todo o ciclo de vida do software, coletando e analisando continuamente as necessidades dos stakeholders para que o sistema continue atendendo às expectativas reais dos usuários.",
+    question: "De acordo com o texto, como o Levantamento de Requisitos deve ocorrer ao longo de um projeto?",
+    options: [
+      "Apenas uma única vez, no início do desenvolvimento",
+      "De forma contínua, acompanhando todo o ciclo de vida do software",
+      "Somente após a implantação do sistema",
+      "Exclusivamente durante a fase de testes"
+    ],
+    answer: 1,
+    feedback: "O ==def==Levantamento de Requisitos== é um processo contínuo, que deve acompanhar todo o ciclo de vida do software para manter os requisitos atualizados conforme o sistema evolui."
+  },
+
+  {
+    aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+    tipo: "Explicativa",
+    texto: "Nem toda entrevista é conduzida da mesma forma. Quando o analista segue um roteiro fixo de perguntas, aplicado da mesma maneira a todos os entrevistados, isso permite comparar as respostas entre diferentes stakeholders de forma mais objetiva — por exemplo, perguntar a cada gerente de projeto exatamente as mesmas perguntas sobre funcionalidades esperadas.",
+    question: "O tipo de entrevista descrito no texto, que segue um roteiro rígido e predefinido, é chamado de:",
+    options: [
+      "Entrevista não estruturada",
+      "Entrevista estruturada",
+      "Entrevista semiestruturada",
+      "Entrevista contextual"
+    ],
+    answer: 1,
+    feedback: "A ==type==Entrevista Estruturada== segue um roteiro rígido de perguntas predefinidas, sendo útil para obter informações comparáveis entre diferentes stakeholders."
+  },
+
+  {
+    aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+    tipo: "Explicativa",
+    texto: "Às vezes o analista quer ter alguma estrutura na conversa, mas também precisa de liberdade para explorar pontos interessantes que surgem no meio do caminho. Por isso, ele parte de perguntas predefinidas, mas, quando o entrevistado menciona algo relevante — como a importância de uma integração entre sistemas — o analista aprofunda esse tópico específico antes de voltar ao roteiro.",
+    question: "Esse tipo de entrevista, que combina roteiro fixo com liberdade para explorar novos tópicos, é chamado de:",
+    options: [
+      "Entrevista estruturada",
+      "Entrevista semiestruturada",
+      "Entrevista não estruturada",
+      "Reunião de brainstorming"
+    ],
+    answer: 1,
+    feedback: "A ==type==Entrevista Semiestruturada== combina perguntas predefinidas com a flexibilidade de explorar novos tópicos que surgem durante a conversa."
+  },
+
+  {
+    aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+    tipo: "Contextualizada",
+    texto: "Nem sempre o que os usuários dizem em uma entrevista reflete exatamente como eles realmente trabalham no dia a dia. Por isso, algumas equipes preferem observar diretamente os usuários em seu ambiente natural de trabalho, registrando como eles realmente utilizam o sistema, quais dificuldades enfrentam e quais soluções encontram na prática. Um analista, por exemplo, pode passar um dia inteiro em um hospital observando médicos e enfermeiros usando o sistema de prontuário eletrônico.",
+    question: "A técnica descrita no texto, baseada na observação direta dos usuários em seu ambiente real de trabalho, é chamada de:",
+    options: [
+      "Análise de documentos",
+      "Etnografia",
+      "Entrevista estruturada",
+      "Reunião de análise e revisão"
+    ],
+    answer: 1,
+    feedback: "A ==term==Etnografia== envolve a observação direta dos usuários em seu ambiente natural de trabalho, permitindo identificar oportunidades de melhoria com base em comportamentos reais."
+  },
+
+  {
+    aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+    tipo: "Contextualizada",
+    texto: "Um dos maiores desafios de observar pessoas trabalhando é que, sabendo que estão sendo observadas, elas podem mudar seu comportamento natural — trabalhando com mais cuidado ou seguindo processos que normalmente pulariam. Isso pode distorcer os dados coletados durante a observação, dificultando a identificação das reais dificuldades enfrentadas no dia a dia.",
+    question: "O fenômeno descrito no texto, em que os usuários alteram seu comportamento por saberem que estão sendo observados, é conhecido como:",
+    options: [
+      "Efeito observador",
+      "Entrevista contextual",
+      "Análise qualitativa",
+      "Reunião de brainstorming"
+    ],
+    answer: 0,
+    feedback: "O ==warn==efeito observador== ocorre quando os usuários alteram seu comportamento por saberem que estão sendo observados, afetando a validade dos dados coletados durante a etnografia."
+  },
+
+  {
+    aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+    tipo: "Contextualizada",
+    texto: "Além de conversar com as pessoas e observá-las trabalhando, também é possível descobrir requisitos revisando materiais que já existem, como manuais de usuário, relatórios de uso do sistema atual e registros de chamados de suporte. Por exemplo, ao analisar registros de suporte, uma equipe pode perceber que os usuários pedem repetidamente uma funcionalidade que ainda não existe no sistema.",
+    question: "A técnica descrita no texto, que envolve revisar manuais, relatórios e registros existentes para identificar requisitos, é chamada de:",
+    options: [
+      "Entrevista não estruturada",
+      "Etnografia",
+      "Análise de documentos",
+      "Reunião de brainstorming"
+    ],
+    answer: 2,
+    feedback: "A ==term==Análise de Documentos== revisa manuais, relatórios de uso e registros de incidentes/suporte para identificar requisitos implícitos e complementares que os usuários podem não mencionar explicitamente."
+  },
+
+  {
+    aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+    tipo: "Aplicação",
+    texto: "Uma equipe de desenvolvimento reúne vários stakeholders em uma sala e propõe que todos sugiram livremente ideias e funcionalidades para um novo sistema de gerenciamento de projetos, sem julgar nenhuma ideia de imediato, buscando criar um ambiente criativo e aberto para gerar o maior número possível de sugestões.",
+    question: "Esse tipo de reunião, focada em gerar ideias livremente sem julgamentos imediatos, é chamado de:",
+    options: [
+      "Reunião de análise e revisão",
+      "Reunião de brainstorming",
+      "Entrevista estruturada",
+      "Workshop"
+    ],
+    answer: 1,
+    feedback: "A ==type==Reunião de Brainstorming== é focada na geração colaborativa de ideias e soluções, incentivando os participantes a sugerirem livremente, sem julgamentos imediatos."
+  },
+
+  {
+    aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+    tipo: "Aplicação",
+    texto: "Depois de já ter coletado uma lista inicial de requisitos, uma equipe organiza uma reunião específica para revisar tudo o que já foi levantado, verificando se os requisitos estão claros, completos e realmente alinhados com os objetivos do projeto, identificando pontos que ainda precisam de mais detalhes.",
+    question: "Esse tipo de reunião, voltada a revisar e refinar requisitos já coletados, é chamado de:",
+    options: [
+      "Reunião de brainstorming",
+      "Reunião de análise e revisão",
+      "Entrevista semiestruturada",
+      "Etnografia"
+    ],
+    answer: 1,
+    feedback: "A ==type==Reunião de Análise e Revisão== é usada para analisar e revisar os requisitos já coletados, garantindo que estejam claros, completos e alinhados com os objetivos do projeto."
+  },
+
+  {
+    aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+    tipo: "Aplicação",
+    texto: "Uma equipe organiza uma sessão colaborativa mais estruturada do que uma simples reunião, combinando momentos de geração de ideias com momentos de análise mais aprofundada, incluindo atividades práticas para mapear os processos atuais de uma organização e identificar onde um novo sistema pode trazer melhorias.",
+    question: "Essa sessão colaborativa mais estruturada, que combina elementos de brainstorming e análise com atividades práticas, é chamada de:",
+    options: [
+      "Entrevista não estruturada",
+      "Workshop",
+      "Análise de documentos",
+      "Reunião de brainstorming"
+    ],
+    answer: 1,
+    feedback: "O ==type==Workshop== é uma sessão colaborativa mais estruturada, que combina elementos de brainstorming e de análise, geralmente com atividades práticas para explorar e definir requisitos."
+  },
+
+  {
+    aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+    tipo: "Contextualizada",
+    texto: "Não basta apenas saber conduzir entrevistas, reuniões ou observações — o profissional também precisa desenvolver habilidades técnicas e comportamentais para fazer isso bem. Habilidades técnicas, como conhecimento do domínio do problema e análise de dados, são adquiridas por treinamento e educação formal. Já habilidades comportamentais, como comunicação, empatia e negociação, são fundamentais para lidar bem com as pessoas envolvidas.",
+    question: "Segundo o texto, como são chamadas, respectivamente, as habilidades técnicas e as habilidades comportamentais necessárias ao profissional de requisitos?",
+    options: [
+      "Hard skills e soft skills",
+      "Soft skills e hard skills",
+      "Habilidades primárias e habilidades secundárias",
+      "Competências técnicas e competências de negócio"
+    ],
+    answer: 0,
+    feedback: "As ==term==hard skills== são habilidades técnicas adquiridas por treinamento e educação formal, enquanto as ==term==soft skills== são comportamentais, como comunicação, empatia e negociação."
+  },
+    {
+    aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+    tipo: "Explicativa",
+    texto: "Antes de escrever qualquer linha de código orientado a objetos, é preciso primeiro entender e planejar o sistema. Essa etapa de identificar e definir os objetos que vão compor o sistema — representando entidades do mundo real ou abstrato — é feita pela Análise Orientada a Objetos (AOO). Só depois dessa modelagem é que a Programação Orientada a Objetos (POO) entra em ação para transformar essas definições em código funcional.",
+    question: "Segundo o texto, qual é a relação entre AOO e POO?",
+    options: [
+      "AOO e POO são a mesma coisa, apenas com nomes diferentes",
+      "A AOO cuida da fase de análise e modelagem, enquanto a POO cuida da implementação em código",
+      "A POO acontece antes da AOO no desenvolvimento do sistema",
+      "A AOO substitui totalmente a necessidade de programação"
+    ],
+    answer: 1,
+    feedback: "A ==def==AOO== foca na identificação e definição dos objetos do sistema (fase de modelagem), enquanto a ==def==POO== trata da implementação dessas definições em código — são processos complementares."
+  },
+
+  {
+    aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+    tipo: "Explicativa",
+    texto: "Antes de existir o conceito de objeto como conhecemos hoje, linguagens como C já usavam as chamadas structs, que permitiam agrupar variáveis de diferentes tipos em uma única unidade — por exemplo, uma struct 'Carro' com campos para cor, marca e quilometragem. O problema é que essas structs só armazenavam dados, sem capacidade de definir operações (comportamentos) sobre eles.",
+    question: "Qual era a principal limitação das structs em relação aos objetos, de acordo com o texto?",
+    options: [
+      "As structs não permitiam agrupar variáveis de tipos diferentes",
+      "As structs armazenavam apenas dados, sem capacidade de definir comportamentos associados",
+      "As structs só podiam ser usadas em linguagens orientadas a objetos",
+      "As structs eram mais complexas de usar do que os objetos"
+    ],
+    answer: 1,
+    feedback: "As ==term==structs== agrupavam dados, mas careciam de comportamento — não permitiam definir operações sobre eles. Essa limitação motivou a evolução para o conceito de objeto, que une dados e comportamento."
+  },
+
+  {
+    aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+    tipo: "Explicativa",
+    texto: "Um dos pilares da Análise Orientada a Objetos é a ideia de esconder os detalhes internos de um objeto, expondo apenas o que é necessário para que outras partes do sistema interajam com ele. Essa prática protege a integridade dos dados e promove modularidade, evitando que o funcionamento interno de um objeto seja alterado de forma indevida por outras partes do código.",
+    question: "O conceito descrito no texto, que consiste em esconder os detalhes internos de um objeto e expor apenas o necessário, é chamado de:",
+    options: [
+      "Herança",
+      "Polimorfismo",
+      "Encapsulamento",
+      "Abstração"
+    ],
+    answer: 2,
+    feedback: "O ==def==Encapsulamento== esconde os detalhes internos de um objeto, expondo apenas o necessário para o funcionamento externo, promovendo modularidade e protegendo a integridade dos dados."
+  },
+
+  {
+    aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+    tipo: "Contextualizada",
+    texto: "Existem diferentes técnicas para modelar visualmente um sistema orientado a objetos. Uma delas, desenvolvida por James Rumbaugh em 1991, divide a modelagem em três aspectos: a estrutura estática dos objetos, o comportamento dinâmico do sistema e o fluxo de dados entre suas partes. Essa técnica é especialmente útil nas fases iniciais de design de um sistema.",
+    question: "A técnica de modelagem descrita no texto, criada por James Rumbaugh em 1991, é conhecida como:",
+    options: [
+      "UML (Unified Modeling Language)",
+      "BON (Business Object Notation)",
+      "OMT (Object Modeling Technique)",
+      "IDEF0"
+    ],
+    answer: 2,
+    feedback: "A ==term==OMT (Object Modeling Technique)==, desenvolvida por James Rumbaugh em 1991, divide a modelagem em estrutura estática, comportamento dinâmico e fluxo de dados, sendo útil em fases iniciais de design."
+  },
+
+  {
+    aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+    tipo: "Contextualizada",
+    texto: "Entre as diversas técnicas de modelagem orientada a objetos, a UML se destaca por ser um padrão amplamente utilizado, oferecendo diversos tipos de diagramas. Um deles, o Diagrama de Classes, apresenta as entidades do sistema junto com seus atributos e métodos, além de mostrar como as classes se relacionam entre si por meio de linhas que as conectam.",
+    question: "De acordo com o texto, o que o Diagrama de Classes da UML representa?",
+    options: [
+      "Apenas o fluxo de dados entre módulos do sistema",
+      "As classes do sistema, junto com seus atributos, métodos e relacionamentos entre elas",
+      "Exclusivamente a sequência de interações entre usuários e sistema",
+      "Somente os requisitos não funcionais do sistema"
+    ],
+    answer: 1,
+    feedback: "O ==term==Diagrama de Classes== é um tipo de diagrama UML que apresenta as classes de um sistema junto com seus atributos, métodos e os relacionamentos entre elas."
+  },
+
+  {
+    aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+    tipo: "Aplicação",
+    texto: "Em um sistema, existe uma classe Mamifero que define um comportamento comum chamado mover(), usado tanto por Cachorro quanto por Gato. No entanto, cada uma dessas subclasses implementa o método fazerSom() de forma diferente: o Cachorro emite 'Au Au' e o Gato emite 'Miau'. Ainda assim, o sistema consegue chamar fazerSom() da mesma forma para qualquer animal da lista, sem precisar saber previamente qual subclasse está sendo tratada.",
+    question: "A capacidade de diferentes subclasses (Cachorro e Gato) redefinirem o mesmo método (fazerSom) com comportamentos distintos, sendo tratadas de forma unificada pelo sistema, ilustra o conceito de:",
+    options: [
+      "Encapsulamento",
+      "Abstração",
+      "Polimorfismo",
+      "Interface"
+    ],
+    answer: 2,
+    feedback: "O ==term==Polimorfismo== permite que métodos sejam redefinidos (override) em subclasses, possibilitando que objetos de diferentes classes sejam tratados de forma unificada, com comportamentos específicos."
+  },
+
+  {
+    aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+    tipo: "Aplicação",
+    texto: "Em um sistema com uma classe Animal, é definido que todo animal deve possuir os métodos fazerSom() e mover(), sem especificar como cada um deles deve funcionar internamente. A classe Passaro, por exemplo, implementa diretamente esse contrato, definindo sua própria versão de fazerSom() ('Piu Piu') e mover() ('está voando'), sem precisar herdar de nenhuma outra classe intermediária.",
+    question: "O contrato que define quais métodos uma classe deve implementar, sem especificar como eles devem funcionar internamente, é chamado de:",
+    options: [
+      "Herança",
+      "Interface",
+      "Encapsulamento",
+      "Classe abstrata concreta"
+    ],
+    answer: 1,
+    feedback: "As ==term==Interfaces== definem contratos que classes podem implementar, garantindo que certos métodos sejam seguidos, sem especificar a implementação — promovendo flexibilidade e intercambialidade."
+  },
+
+  {
+    aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+    tipo: "Aplicação",
+    texto: "Uma equipe de desenvolvimento está criando um sistema web em JavaScript e decide usar um conjunto de estruturas já prontas, rodando sobre o Node.js, que oferece objetos básicos comuns a diferentes tipos de aplicações web, simplificando bastante a escrita do código do zero.",
+    question: "Esse tipo de estrutura reutilizável, mencionada no texto como exemplo de aplicação prática da POO em JavaScript, é chamada de:",
+    options: [
+      "Componentização",
+      "Framework (como o Express)",
+      "Herança múltipla",
+      "Diagrama de classes"
+    ],
+    answer: 1,
+    feedback: "O paradigma orientado a objetos permite criar ==term==frameworks==, como o Express (JavaScript/Node.js) ou o Flask (Python), que oferecem estruturas básicas reutilizáveis para simplificar o desenvolvimento."
+  },
+
+  {
+    aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+    tipo: "Contextualizada",
+    texto: "A ideia de dividir um sistema em unidades básicas que se comunicam por troca de mensagens, como se fossem peças de um Lego encaixáveis, também nasceu da orientação a objetos. Essa abordagem permite construir sistemas combinando componentes menores e independentes, em vez de criar tudo como um bloco único e monolítico.",
+    question: "Esse conceito, que trata o sistema como unidades básicas combináveis que se comunicam por troca de mensagens, é chamado no texto de:",
+    options: [
+      "Herança múltipla",
+      "Componentização",
+      "Polimorfismo dinâmico",
+      "Encapsulamento estrutural"
+    ],
+    answer: 1,
+    feedback: "A ==term==Componentização== concebe o sistema como unidades básicas (componentes) que se comunicam por troca de mensagens, como peças de um Lego — dando origem a tecnologias como os Web Components."
+  },
+
+  {
+    aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+    tipo: "Contextualizada",
+    texto: "Mesmo com toda a popularidade da orientação a objetos, ela não eliminou outras formas de programar. Paradigmas como a Programação Imperativa e a Programação Funcional continuam sendo usados e coexistindo com a POO em diferentes projetos e linguagens. A orientação a objetos apenas trouxe mais uma alternativa para facilitar a compreensão e a manutenção de sistemas.",
+    question: "De acordo com o texto, o que aconteceu com os outros paradigmas de programação após a popularização da POO?",
+    options: [
+      "Foram totalmente substituídos pela POO e deixaram de ser utilizados",
+      "Continuam coexistindo com a POO, que apenas agregou uma nova forma de construir sistemas",
+      "Passaram a ser considerados incompatíveis com qualquer linguagem moderna",
+      "Foram incorporados dentro da POO, deixando de existir como paradigmas separados"
+    ],
+    answer: 1,
+    feedback: "A criação e difusão da POO não eliminou outros paradigmas, como o Imperativo ou o Funcional — ela apenas agregou uma nova forma de construir sistemas, convivendo com as abordagens já existentes."
+  },
 ],
 
 
