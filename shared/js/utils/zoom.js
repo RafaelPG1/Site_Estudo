@@ -21,9 +21,11 @@ const ZOOM_POR_AREA = {
   inicial: 85,
   resumos: 84,
   quiz:    75,
+  quiz_questoes: 110,
   game:    80,
   perfil:  80,
   atlas: 80,
+  
 };
 
 const STORAGE_KEY = 'nexus_zoom_por_area';
@@ -79,6 +81,14 @@ function _aplicarZoom(valor) {
   document.documentElement.style.zoom = `${valor}%`;
 }
 
+/* ── Aplicação escopada (não em documentElement) ─────────────
+   Usada para zooms que devem afetar SOMENTE um elemento interno,
+   como o conteúdo das questões do Quiz — nunca a página inteira. */
+function _aplicarZoomEm(elemento, valor) {
+  if (!elemento) return;
+  elemento.style.zoom = `${valor}%`;
+}
+
 /* ── Auto-aplicação ao carregar (side-effect do import) ──────
    Igual ao comportamento original — o zoom é aplicado assim que o
    módulo é importado — mas agora usando o valor da área atual. */
@@ -97,4 +107,29 @@ export function setZoomAtual(valor) {
   const area = getAreaFromPath();
   _salvar(area, valor);
   _aplicarZoom(valor);
+}
+
+/* ── API pública — zoom do conteúdo das questões (Quiz) ──────
+   Área fixa 'quiz_questoes', independente de getAreaFromPath().
+   Lê/salva no mesmo storage por área, mas aplica apenas no
+   elemento recebido, nunca no <html>. */
+
+export function getZoomQuestoes() {
+  return _zoomDaArea('quiz_questoes');
+}
+
+export function setZoomQuestoes(valor, seletorOuElemento = '#quiz-container') {
+  _salvar('quiz_questoes', valor);
+  aplicarZoomQuestoes(seletorOuElemento, valor);
+}
+
+export function aplicarZoomQuestoes(seletorOuElemento = '#quiz-container', valor) {
+  const elemento = typeof seletorOuElemento === 'string'
+    ? document.querySelector(seletorOuElemento)
+    : seletorOuElemento;
+
+  if (!elemento) return;
+
+  const zoomFinal = valor ?? getZoomQuestoes();
+  _aplicarZoomEm(elemento, zoomFinal);
 }

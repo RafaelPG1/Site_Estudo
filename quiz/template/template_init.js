@@ -41,7 +41,7 @@ import { aplicarCoresDisciplina } from '../../shared/js/themes/theme.js';
 import { injetarLogo } from '../../shared/js/utils/logo.js';
 import { Sound, audio, installAudioRecovery, playSound } from '../../shared/js/audio/audio-api.js';
 import { carregarRespostasQuiz, salvarRespostasQuiz, limparRespostasQuiz, salvarPerformanceQuiz } from '../../src/firebase.js';
-
+import { aplicarZoomQuestoes, getZoomQuestoes, setZoomQuestoes } from '../../shared/js/utils/zoom.js';
 
 /* ══════════════════════════════════════════════════════════
    CONFIGURAÇÃO DE MODOS
@@ -317,19 +317,29 @@ function _loadScript(src, appendTo) {
 }
 
 
+var _contentPromise = null;
+
+function _carregarConteudo(params, info) {
+  if (_contentPromise) return _contentPromise;
+
+  var contentSrc = _resolverCaminhoConteudo(params.semestre, info.arquivo);
+
+  _contentPromise = _loadScript(contentSrc, document.head).catch(function () {
+    console.warn('[template_init] Conteúdo não encontrado:', contentSrc);
+    window.questoes = window.questoes || { ava: [], questoes: [], fixacao: [], enade: [] };
+  });
+
+  return _contentPromise;
+}
 
 function _carregarQuiz(params, info) {
-  var contentSrc      = _resolverCaminhoConteudo(params.semestre, info.arquivo);
   var uiSrc           = '../js/quiz_ui.js';
   var engineSrc       = '../js/quiz_engine.js';
   var intelligenceSrc = '../js/quiz_intelligence.js';
 
   /* filter.js carregado pelo template.html antes deste módulo. */
   Promise.all([
-    _loadScript(contentSrc, document.head).catch(function () {
-      console.warn('[template_init] Conteúdo não encontrado:', contentSrc);
-      window.questoes = window.questoes || { ava: [], questoes: [], fixacao: [], enade: [] };
-    }),
+    _carregarConteudo(params, info),
     _loadScript(uiSrc, document.head),
   ])
     .then(function () {
@@ -452,6 +462,14 @@ function _exponerGlobais() {
     salvarPerformanceQuiz,   /* PERFORMANCE ANALYTICS */
   };
   window.__nexusPlaySound = playSound;
+
+  /* Zoom escopado ao conteúdo das questões (#quiz-container).
+     Independente do zoom geral da área 'quiz'. */
+  window.NexusZoom = {
+    aplicarZoomQuestoes,
+    getZoomQuestoes,
+    setZoomQuestoes,
+  };
 }
 
 
@@ -542,4 +560,8 @@ document.addEventListener('DOMContentLoaded', function () {
 window.__nexusCarregarQuiz = function () {
   _aguardarFirebase(_params);
   _carregarQuiz(_params, _info);
+};
+
+window.__nexusPreCarregarConteudo = function () {
+  return _carregarConteudo(_params, _info);
 };

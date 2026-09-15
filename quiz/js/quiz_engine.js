@@ -779,6 +779,13 @@ if (!salvo || !salvo.respostas) return null;
       });
 
       _publicarSnapshot(questoes);
+
+      /* Zoom exclusivo do conteúdo das questões — escopado a
+         #quiz-container, nunca no documentElement. Reaplica a
+         cada renderização para conteúdo recriado dinamicamente. */
+      if (window.NexusZoom && typeof window.NexusZoom.aplicarZoomQuestoes === 'function') {
+        window.NexusZoom.aplicarZoomQuestoes(container);
+      }
     }
 
     function _aplicarEstadoOpcao(btn, qi, ai) {

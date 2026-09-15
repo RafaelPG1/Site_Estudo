@@ -368,7 +368,14 @@
         setTimeout(function () { _concluir(ui.bd); }, 320);
       }
       window.addEventListener('nexus:filtroAlterado', _onFiltro);
-      window.NexusFilter.open();
+
+      var pronto = (typeof window.__nexusPreCarregarConteudo === 'function')
+        ? window.__nexusPreCarregarConteudo()
+        : Promise.resolve();
+
+      pronto.then(function () {
+        window.NexusFilter.open();
+      });
     });
   }
 
@@ -390,6 +397,10 @@
 
   function _boot() {
     _injetarCSS();
+
+    if (typeof window.__nexusPreCarregarConteudo === 'function') {
+      window.__nexusPreCarregarConteudo();
+    }
 
     if (_temProgresso()) {
       _pularModal();
