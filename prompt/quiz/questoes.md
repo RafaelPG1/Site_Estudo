@@ -1,237 +1,162 @@
+# Prompt: Gerador de Questões Explicativa (Modo Aula)
 
-Você receberá um conteúdo como entrada (texto, resumo, aula ou PDF) de QUALQUER ÁREA do conhecimento.
+## Papel
+Você recebe um conteúdo (texto, resumo, aula ou PDF) de **qualquer área do conhecimento** e gera **10 questões explicativa**, no estilo "modo aula": primeiro ensina, depois pergunta.
 
-Sua tarefa é gerar 10 questões de FIXAÇÃO EXPLICATIVA (modo aula), seguindo rigorosamente os padrões abaixo.
-
----
-
-🎯 OBJETIVO
-
-Criar questões que ENSINEM antes de cobrar, ajudando o aluno a aprender durante a leitura.
+## Objetivo
+Criar questões que **ensinem antes de cobrar**, ajudando o aluno a aprender durante a própria leitura da questão.
 
 Cada questão deve:
+- explicar brevemente o conceito;
+- reforçar o conteúdo;
+- aplicar isso com uma pergunta clara.
 
-✔ Explicar brevemente o conceito  
-✔ Reforçar o conteúdo  
-✔ Aplicar com uma pergunta clara  
+**Proibido:**
+- estilo ENADE (pergunta seca, sem contexto, que exige memorização prévia);
+- pergunta que possa ser respondida sem ler o texto explicativo da própria questão.
 
-⚠️ IMPORTANTE:
-
-❌ NÃO usar estilo ENADE  
-❌ NÃO fazer perguntas secas  
-✔ Sempre ensinar antes de perguntar  
-
----
-
-📚 ESTRUTURA OBRIGATÓRIA
-
-Cada questão deve conter:
-
-1. texto (OBRIGATÓRIO — parte mais importante)
-
-- Deve ser um mini conteúdo explicativo
-- Estilo: aula / livro didático
-- Linguagem simples e natural
-- Tamanho ideal: 2 a 6 linhas
-- Deve ENSINAR algo antes da pergunta
-
-✔ O texto deve:
-
-- explicar um conceito
-- ou esclarecer uma ideia
-- ou apresentar uma situação simples
-
-❌ Evitar:
-
-- texto vazio
-- frase genérica sem conteúdo
-- copiar exatamente o conteúdo original
+**Regra central:** toda questão segue o fluxo **EXPLICA → PERGUNTA**. Se a pergunta puder ser respondida sem o texto, a questão está errada e deve ser refeita.
 
 ---
 
-2. question
+## Estrutura de Cada Questão
 
-- Pergunta clara e direta
-- Sempre baseada no texto
+| Campo | Obrigatório | Descrição |
+|---|---|---|
+| `aula` | Sim | Nome real da aula/conteúdo, como string. Mesmo valor em todas as 10 questões (é o mesmo conteúdo de origem). Nunca usar placeholder — preencher com o título real. |
+| `tipo` | Sim | Um dos três tipos definidos abaixo (ver seção Tipos). |
+| `texto` | Sim | Mini conteúdo explicativo, estilo aula/livro didático. 2 a 6 linhas. Deve ensinar algo, não repetir o material original com outras palavras. |
+| `question` | Sim | Pergunta clara e direta, baseada diretamente no `texto` acima. |
+| `code` | Não | Trecho de código, **somente se o conceito exigir código para fazer sentido** (ex: sintaxe de programação). Omitir o campo quando não for necessário — não deixar vazio ou genérico. |
+| `options` | Sim | 4 alternativas plausíveis, apenas 1 correta. |
+| `answer` | Sim | Índice (0 a 3) da alternativa correta em `options`. |
+| `feedback` | Sim | Explicação breve (1 a 3 linhas) reforçando o conceito principal — não apenas repetir que a resposta está certa. |
 
----
-
-3. options
-
-- 4 alternativas
-- Apenas 1 correta
-- Todas plausíveis
-
----
-
-4. feedback
-
-- Explicação breve (1 a 3 linhas)
-- Reforça o conceito principal
+### Regras do `texto`
+- Estilo natural, como um professor explicando — não copie frases do conteúdo original.
+- Evite: texto vazio, frase genérica sem conteúdo real, transcrição quase literal do material.
 
 ---
 
-🏷️ TIPOS DE QUESTÃO (OBRIGATÓRIO VARIAR)
+## Tipos de Questão (variar obrigatoriamente)
 
-Cada questão deve possuir o campo `tipo`.
+| `tipo` (valor exato) | Quando usar |
+|---|---|
+| `"Explicativa"` | Conceito explicado de forma direta antes da pergunta. Mais simples e objetiva. |
+| `"Contextualizada"` | Explicação mais densa, podendo envolver mais de um conceito relacionado. |
+| `"Aplicação"` | Pequeno cenário real/prático, focando no uso do conhecimento, não só na definição. |
 
-Use exatamente estes valores de string:
-
-"Explicativa"     → Conceito explicado antes da pergunta. Mais didática e direta.
-"Contextualizada" → Explicação mais densa. Pode envolver mais de um conceito.
-"Aplicação"       → Pequeno cenário real. Foco em uso prático do conhecimento.
-
-⚠️ REGRAS:
-
-✔ Misturar os três tipos  
-✔ Mínimo de 3 questões por tipo  
-✔ Não repetir padrão  
-
----
-
-🧩 ESTILO DAS QUESTÕES (MODO LUZIA)
-
-As questões devem seguir um fluxo natural de aprendizado:
-
-✔ Primeiro explica  
-✔ Depois pergunta  
-
-Cada questão deve parecer um pequeno trecho de aula.
-
-⚠️ IMPORTANTE:
-
-❌ NÃO usar rótulos visíveis no texto (tipo "Questão contextualizada")  
-✔ O tipo é apenas no campo `tipo`  
+**Regras de distribuição:**
+- Total: exatamente **10 questões**, nem mais nem menos.
+- Mínimo de 3 questões de cada tipo (a 10ª questão pode reforçar qualquer um dos três).
+- Misturar tamanhos de texto e níveis de explicação entre as questões.
+- Evitar repetir o mesmo padrão de frase/estrutura entre questões.
+- Nunca usar rótulos visíveis do tipo no `texto` ou `question` (ex: não escrever "Questão contextualizada:") — o tipo só aparece no campo `tipo`.
 
 ---
 
-📌 REGRA CENTRAL
-
-Toda questão deve seguir:
-
-EXPLICA → PERGUNTA
-
-⚠️ Se a pergunta puder ser respondida sem ler o texto, a questão está errada.
+## Nível de Dificuldade
+Fácil a médio, com foco em aprendizado — não em pegar o aluno de surpresa.
 
 ---
 
-⚖️ DISTRIBUIÇÃO
+## Sistema de Chips Semânticos (opcional)
 
-Total: 10 questões
+Formato: `==categoria==TERMO==`
 
-✔ Mínimo de 3 questões por tipo  
-✔ Misturar tamanhos de texto  
-✔ Misturar níveis de explicação  
-✔ Evitar repetição  
+| Categoria técnica | Equivalente conceitual | Quando usar |
+|---|---|---|
+| `==ddl==` | `==def==` | Definições e conceitos |
+| `==dml==` | `==proc==` | Processos e ações |
+| `==key==` | `==rule==` | Regras e princípios |
+| `==type==` | `==term==` | Tipos e classificações |
+| `==danger==` | `==warn==` | Erros e armadilhas |
+| `==mark==` | `==mark==` | Destaque geral |
 
-QUERO SOMENTE 10 QUESTÕES NADA A MAIS VIU
----
-
-🧠 NÍVEL
-
-- Fácil a médio  
-- Foco em aprendizado  
-
----
-
-⚠️ REGRAS IMPORTANTES
-
-✔ Linguagem natural (como professor explicando)  
-✔ Não copiar frases do conteúdo original  
-✔ Alternativas equilibradas  
-✔ Não exigir conhecimento externo  
+**Regras:**
+- Use **um único padrão** por questão: ou o conjunto técnico (`ddl`, `dml`, `key`, `type`, `danger`) ou o conceitual (`def`, `proc`, `rule`, `term`, `warn`) — nunca misture os dois na mesma questão.
+- Máximo de **2 chips no total** por questão, somando `texto` + `feedback`.
+- Nunca usar chips dentro de `options`.
+- Uso é opcional — não force um chip se não houver um termo que se beneficie do destaque.
 
 ---
 
-🧩 SISTEMA DE CHIPS SEMÂNTICOS
+## Formato de Saída (obrigatório)
 
-Formato:
-
-==categoria==TERMO==
-
-📊 Categorias disponíveis:
-
-| Categoria  | Equivalente | Quando usar               |
-|------------|-------------|---------------------------|
-| ==ddl==    | ==def==     | Definições e conceitos    |
-| ==dml==    | ==proc==    | Processos e ações         |
-| ==key==    | ==rule==    | Regras e princípios       |
-| ==type==   | ==term==    | Tipos e classificações    |
-| ==danger== | ==warn==    | Erros e armadilhas        |
-| ==mark==   | ==mark==    | Destaque geral            |
-
-⚠️ REGRAS CRÍTICAS:
-
-✔ Use apenas UM padrão por questão:
-  - Conteúdo técnico → ddl, dml, key, type, danger  
-  - Conteúdo conceitual → def, proc, rule, term, warn  
-
-🚫 Nunca misturar padrões na mesma questão  
-
-⚠️ LIMITE DE USO:
-
-- Opcional  
-- Máximo 2 chips no TOTAL por questão (texto + feedback somados)  
-- Não usar nas alternativas  
-
----
-
-📦 FORMATO DE SAÍDA (OBRIGATÓRIO)
-
-Gerar diretamente em JavaScript válido:
+Gere um array JavaScript válido, seguindo **exatamente** esta estrutura — repare que o campo `aula` é o primeiro campo de cada objeto, com o valor real preenchido:
 
 ```javascript
 [
+  // 1 - [assunto resumido]
   {
-    aula; "digite a aula viu, cada aula por favor"
+    aula: "Nome real da aula",
     tipo: "Explicativa",
-
     texto: "Explicação didática do conceito (modo aula).",
-
     question: "Pergunta baseada no texto.",
-
-    code: `// usar apenas se necessário`,
-
     options: [
       "Alternativa A",
       "Alternativa B",
       "Alternativa C",
       "Alternativa D"
     ],
-
     answer: 0,
+    feedback: "Explicação breve reforçando o conceito."
+  },
 
+  // 2 - [assunto resumido]
+  {
+    aula: "Nome real da aula",
+    tipo: "Aplicação",
+    texto: "Explicação didática do conceito (modo aula).",
+    question: "Pergunta baseada no texto.",
+    code: `// só incluir este campo se o conceito exigir código`,
+    options: [
+      "Alternativa A",
+      "Alternativa B",
+      "Alternativa C",
+      "Alternativa D"
+    ],
+    answer: 2,
     feedback: "Explicação breve reforçando o conceito."
   }
 ]
 ```
 
+### Regras de comentários
+- Antes de cada questão, um comentário no formato `// [número sequencial] - [assunto em 1 a 3 palavras]`.
+- Numeração sequencial (1, 2, 3... até 10), sem pular ou repetir números.
+- O assunto resumido deve refletir o tema central daquela questão específica.
 
-Adicione comentários na saída seguindo estas regras:
+### Restrições de estrutura
+- O campo `aula` é **obrigatório em todos os 10 objetos**, sempre como o primeiro campo, com o mesmo valor real em todos (nunca vazio, nunca placeholder tipo "digite a aula" ou "[nome da aula]").
+- Não alterar os nomes ou a ordem dos campos mostrados no exemplo.
+- Não transformar o formato (nada de JSON puro, objeto único, array de strings, etc.) — sempre array de objetos JavaScript, exatamente como no exemplo.
+- Campo `code` só aparece nas questões onde realmente for necessário — não incluir vazio ou como placeholder nas demais.
 
-* No topo do conteúdo, adicionar:
-  // aula: [nome da aula]
+---
 
-* Para cada item gerado (independente da estrutura), adicionar um comentário imediatamente antes contendo:
-  // [número] - [assunto resumido]
+## Restrição de Apresentação (obrigatório)
 
-Regras:
+A saída deve ser **somente texto digitado em bloco de código**, exatamente como no formato acima.
 
-* O número deve ser sequencial (1, 2, 3...)
-* O assunto resumido deve ter de 1 a 3 palavras
-* O assunto deve representar o tema principal do item
-* NÃO alterar a estrutura original solicitada
-* NÃO transformar o formato (JSON, array, objeto, etc.)
-* Apenas inserir os comentários acima de cada item
+**Proibido:**
+- Gerar como quiz interativo, componente visual, ou qualquer widget clicável.
+- Usar qualquer ferramenta de apresentação visual/interativa para o resultado.
+- Adicionar botão de copiar/clipboard ou qualquer elemento de interface além do bloco de código puro.
 
-Exemplo genérico:
+A resposta deve ser apenas o código JavaScript, pronto para ser copiado manualmente e colado onde o usuário for usar.
 
-// aula: exemplo
+---
 
-// 1 - conceito chave
-{ ... },
-
-// 2 - definição
-{ ... }
-
-QUERO SOMENTE DIGITADO, NADA DE CRIAR UM QUIZ INTERATIVO SOMENTE TEXTO DIGITADO. nada de clipboard
+## Checklist Final (verificar antes de responder)
+- [ ] Exatamente 10 questões, nem mais nem menos?
+- [ ] **Todo** objeto tem o campo `aula` preenchido com o nome real, como primeiro campo?
+- [ ] Mínimo de 3 questões de cada tipo (`Explicativa`, `Contextualizada`, `Aplicação`)?
+- [ ] Toda questão segue o fluxo explica → pergunta (a pergunta não pode ser respondida sem o texto)?
+- [ ] Nenhum `texto` é cópia quase literal do material original?
+- [ ] Nenhum rótulo de tipo aparece visível dentro de `texto` ou `question`?
+- [ ] `code` está presente apenas onde realmente necessário, sem ficar vazio/genérico nas demais?
+- [ ] Todas as questões têm exatamente 4 `options`, com `answer` correto e coerente?
+- [ ] Chips semânticos (se usados) seguem um único padrão por questão, com no máximo 2 no total, e nunca nas alternativas?
+- [ ] Cada questão tem seu comentário `// [número] - [assunto]` correto e sequencial?
+- [ ] A saída é só o bloco de código JavaScript — sem quiz interativo, sem widget, sem botão de clipboard?

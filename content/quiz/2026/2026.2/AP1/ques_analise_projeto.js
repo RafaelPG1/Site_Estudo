@@ -4,7 +4,288 @@
 window.questoes = {
 
   // Questões de Banco de dados 
-  questoes: [],
+questoes: [
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Explicativa",
+    texto: "No desenvolvimento de sistemas, dois momentos são complementares, mas não se confundem. A análise se preocupa em entender o problema: conversar com quem vai usar o sistema, levantar necessidades e descobrir o que precisa ser feito. Já a modelagem entra depois, para representar essa solução de forma visual e estruturada, geralmente usando diagramas.",
+    question: "Com base na diferença explicada acima, qual das alternativas resume corretamente o papel de cada etapa?",
+    options: [
+      "Análise define o que o sistema deve fazer; modelagem mostra como o sistema deve fazer",
+      "Análise e modelagem são a mesma etapa, apenas com nomes diferentes",
+      "Modelagem vem antes da análise, pois define os requisitos do sistema",
+      "Análise é feita apenas por programadores, e modelagem apenas por clientes"
+    ],
+    answer: 0,
+    feedback: "==def==Análise== = o quê; ==def==Modelagem== = como. Essa dupla é a base de toda a disciplina, por isso costuma aparecer bastante em prova."
+  },
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Explicativa",
+    texto: "Imagine que você quer criar vários carros em um sistema. Em vez de descrever cada carro do zero, você cria um molde que define quais características (cor, modelo, velocidade) e comportamentos (acelerar, frear) todo carro terá. Esse molde é a classe. Quando você usa esse molde para criar um carro específico, com valores próprios, você tem um objeto.",
+    question: "Seguindo a lógica do texto acima, o que representa um objeto em relação a uma classe?",
+    options: [
+      "Um objeto é uma cópia do código-fonte da classe",
+      "Um objeto é uma instância concreta criada a partir da definição de uma classe",
+      "Um objeto é a versão simplificada de uma classe, sem atributos",
+      "Um objeto define os métodos que a classe poderá usar no futuro"
+    ],
+    answer: 1,
+    feedback: "==term==Classe== é a definição/modelo; ==term==Objeto== é a instância concreta daquela definição, com valores próprios para os atributos."
+  },
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Explicativa",
+    texto: "Pense em um caixa eletrônico: você não tem acesso direto ao dinheiro guardado no cofre do banco, apenas a operações controladas, como sacar ou consultar saldo. Na orientação a objetos, esse mesmo princípio é aplicado para proteger os dados internos de um objeto, controlando como e quando eles podem ser acessados ou alterados por outras partes do sistema.",
+    question: "O princípio descrito no texto, que controla o acesso aos dados e métodos de um objeto, é chamado de:",
+    options: [
+      "Herança",
+      "Polimorfismo",
+      "Encapsulamento",
+      "Abstração"
+    ],
+    answer: 2,
+    feedback: "==def==Encapsulamento== é justamente isso: proteger e controlar o acesso aos detalhes internos de um objeto, evitando modificações indevidas."
+  },
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Contextualizada",
+    texto: "Antes de qualquer linha de código ser escrita, o desenvolvimento de software passa por um processo organizado em fases. Tudo começa conversando com o cliente para entender suas necessidades — essa é a fase de levantamento de requisitos. Depois vem o planejamento, que define objetivos e riscos, seguido do design, que estrutura a arquitetura do sistema. Só então ocorre o desenvolvimento (codificação), e por fim, teste e implantação garantem que tudo funcione como esperado.",
+    question: "De acordo com a sequência apresentada, qual é a fase responsável por identificar as necessidades do cliente e o propósito do software?",
+    options: [
+      "Design",
+      "Levantamento de requisitos",
+      "Teste",
+      "Implantação"
+    ],
+    answer: 1,
+    feedback: "O ==proc==levantamento de requisitos== é a etapa inicial, em que se conversa com o cliente para entender necessidades, propósito e funcionalidades desejadas do software."
+  },
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Contextualizada",
+    texto: "Existem diferentes formas de modelar um sistema, e duas delas são bastante parecidas à primeira vista, mas com focos distintos. A modelagem funcional divide o sistema em funções e processos menores, facilitando manutenção — é o caso de técnicas como o IDEF0. Já a modelagem baseada em processos vai um pouco além: ela se preocupa em definir, projetar e analisar o fluxo de trabalho como um todo, ajudando a identificar problemas e propor soluções.",
+    question: "Considerando as diferenças explicadas, qual é o principal foco da modelagem baseada em processos?",
+    options: [
+      "Representar apenas os dados armazenados no sistema",
+      "Definir, projetar e analisar o fluxo de trabalho de sistemas complexos",
+      "Substituir totalmente a necessidade de levantamento de requisitos",
+      "Descrever matematicamente o comportamento do sistema"
+    ],
+    answer: 1,
+    feedback: "A ==term==modelagem baseada em processos== enfatiza a modularização do fluxo de trabalho, ajudando a compreender, identificar problemas e criar soluções para processos complexos."
+  },
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Contextualizada",
+    texto: "Em sistemas críticos, como softwares hospitalares ou de controle aéreo, um pequeno erro pode ter consequências graves. Por isso, existe a modelagem formal, que usa lógica matemática para descrever com precisão como um sistema deve se comportar, aumentando a confiança de que ele realmente segue sua especificação. Um exemplo citado no material são as Redes de Petri, usadas para representar estados e atividades de um fluxo de forma visual e rigorosa.",
+    question: "Por que a modelagem formal é especialmente indicada para componentes críticos de um sistema?",
+    options: [
+      "Porque é mais rápida de aplicar do que outros tipos de modelagem",
+      "Porque usa lógica matemática, aumentando a precisão e a confiança na especificação",
+      "Porque dispensa a necessidade de diagramas e representações visuais",
+      "Porque é o único tipo de modelagem compatível com UML"
+    ],
+    answer: 1,
+    feedback: "A ==term==modelagem formal== usa lógica formal/matemática para descrever o comportamento do sistema, sendo indicada quando se exige maior precisão, como em componentes críticos."
+  },
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Aplicação",
+    texto: "Imagine que um sistema de gestão hospitalar tem uma classe genérica chamada Funcionário, com atributos como nome e salário, e um método chamado registrarPonto(). Agora, o sistema precisa criar uma classe Médico, que também tem nome, salário e registra ponto, mas possui características extras, como especialidade e horário de plantão.",
+    question: "Nesse cenário, qual conceito da orientação a objetos permite que a classe Médico reaproveite nome, salário e registrarPonto() da classe Funcionário, adicionando suas próprias características?",
+    options: [
+      "Encapsulamento",
+      "Herança",
+      "Abstração",
+      "Modularidade"
+    ],
+    answer: 1,
+    feedback: "A ==term==herança== permite que uma classe reaproveite características e comportamentos de outra, podendo ainda adicionar ou modificar o que foi herdado — exatamente o caso de Médico herdando de Funcionário."
+  },
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Aplicação",
+    texto: "Em um sistema de folha de pagamento, existem diferentes tipos de funcionário: horista, mensalista e comissionado. Todos possuem um método chamado calcularSalario(), mas cada um calcula o valor de forma diferente, dependendo do tipo de contrato. Ainda assim, o sistema consegue chamar calcularSalario() da mesma forma para qualquer funcionário, sem precisar saber o tipo específico antes.",
+    question: "Esse comportamento, em que operações com o mesmo nome se comportam de formas diferentes dependendo do objeto, é um exemplo de:",
+    options: [
+      "Herança",
+      "Encapsulamento",
+      "Polimorfismo",
+      "Modelagem estruturada"
+    ],
+    answer: 2,
+    feedback: "==term==Polimorfismo== permite que diferentes objetos respondam de forma distinta a uma mesma operação, tornando o sistema mais flexível e independente de tipos específicos."
+  },
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Aplicação",
+    texto: "Ao usar o aplicativo de um banco, você só enxerga botões como 'Transferir' ou 'Consultar saldo'. Você não precisa saber como o sistema calcula juros, valida contas ou se conecta ao banco de dados por trás — tudo isso fica escondido, e você interage apenas com o que é essencial para realizar sua tarefa.",
+    question: "Esse exemplo, em que apenas o essencial é exposto ao usuário e os detalhes internos ficam ocultos, ilustra qual conceito da orientação a objetos?",
+    options: [
+      "Herança",
+      "Abstração",
+      "Polimorfismo",
+      "Modelagem funcional"
+    ],
+    answer: 1,
+    feedback: "==term==Abstração== simplifica e generaliza um problema, escondendo detalhes desnecessários e mostrando apenas o que é relevante para quem utiliza o sistema."
+  },
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Contextualizada",
+    texto: "Ao modelar um sistema orientado a objetos, é comum representar visualmente classes, seus atributos, métodos e relacionamentos entre si. Para isso, existe um padrão amplamente adotado chamado UML (Unified Modeling Language), que ajuda equipes a se comunicarem melhor sobre a estrutura do sistema. Além de facilitar a comunicação, a orientação a objetos também traz vantagens como modularidade e reutilização de código, tornando o software mais fácil de manter e alterar.",
+    question: "Qual é o padrão citado no texto, amplamente utilizado para representar visualmente sistemas orientados a objetos?",
+    options: [
+      "IDEF0",
+      "Redes de Petri",
+      "UML (Unified Modeling Language)",
+      "Diagrama de Blocos de Fluxo Funcional"
+    ],
+    answer: 2,
+    feedback: "A ==term==UML== é o padrão destacado no material para modelagem de sistemas orientados a objetos, representando classes, objetos e seus relacionamentos de forma visual."
+  },
+  {
+    aula: "Aula 2 — Ciclo de Vida do Software",
+    tipo: "Explicativa",
+    texto: "Todo software passa por um caminho parecido com o de um produto: nasce de uma ideia, é planejado, construído, testado, colocado em uso e depois precisa de ajustes até ser descontinuado. Esse caminho completo, organizado em fases, é chamado de ciclo de vida do software, e ajuda a equipe a controlar prazos, custos e riscos do projeto.",
+    question: "Com base no texto, o que representa o ciclo de vida do software?",
+    options: [
+      "Apenas a fase de codificação do sistema",
+      "O conjunto de fases que o software percorre desde a concepção até a manutenção/descontinuação",
+      "Um tipo específico de teste realizado antes da implantação",
+      "A documentação final entregue ao cliente"
+    ],
+    answer: 1,
+    feedback: "O ==def==ciclo de vida== organiza o software desde sua concepção até a manutenção, passando por planejamento, análise, projeto, desenvolvimento, testes e implantação."
+  },
+  {
+    aula: "Aula 2 — Ciclo de Vida do Software",
+    tipo: "Explicativa",
+    texto: "Imagine um projeto em que cada etapa só pode começar depois que a anterior termina completamente, como uma fila de dominós caindo em sequência. Assim funciona o Modelo em Cascata, formalizado por Royce em 1970: primeiro se define os requisitos, depois o projeto, depois a implementação, e assim por diante, sem voltar facilmente para etapas já concluídas.",
+    question: "Qual característica principal define o Modelo em Cascata, segundo o texto?",
+    options: [
+      "As fases ocorrem em paralelo, ao mesmo tempo",
+      "Uma fase só começa quando a anterior termina, seguindo uma sequência linear",
+      "O sistema é entregue em pequenos módulos independentes",
+      "O foco está exclusivamente na análise de riscos"
+    ],
+    answer: 1,
+    feedback: "O ==term==Cascata== é um modelo linear e sequencial, adequado para projetos com requisitos bem definidos e estáveis, como sistemas de controle de tráfego aéreo."
+  },
+  {
+    aula: "Aula 2 — Ciclo de Vida do Software",
+    tipo: "Explicativa",
+    texto: "Em vez de entregar o sistema inteiro de uma só vez, algumas equipes preferem dividi-lo em módulos menores, desenvolver e entregar cada um separadamente. Um sistema de gestão empresarial, por exemplo, pode ter os módulos de contabilidade, recursos humanos e estoque entregues aos poucos, cada um passando por todas as fases do ciclo de vida antes de ser liberado.",
+    question: "O texto descreve o funcionamento de qual modelo de ciclo de vida?",
+    options: [
+      "Modelo em Cascata",
+      "Modelo Incremental",
+      "Modelo Espiral",
+      "RUP"
+    ],
+    answer: 1,
+    feedback: "No ==term==Modelo Incremental==, os requisitos são agrupados em módulos, desenvolvidos individualmente e entregues progressivamente, aumentando a funcionalidade do sistema aos poucos."
+  },
+  {
+    aula: "Aula 2 — Ciclo de Vida do Software",
+    tipo: "Contextualizada",
+    texto: "Algumas startups precisam colocar um produto no mercado rapidamente, sem esperar meses por um ciclo de desenvolvimento completo. Para esses casos, existe o RAD (Rapid Application Development), formalizado por James Martin em 1991, que aposta em ciclos muito curtos — geralmente entre 60 e 90 dias — combinando desenvolvimento iterativo e incremental para acelerar a entrega.",
+    question: "Qual é a principal característica que diferencia o RAD dos demais modelos apresentados no texto?",
+    options: [
+      "A ausência total de testes durante o desenvolvimento",
+      "Ciclos de desenvolvimento muito curtos, com foco em entrega rápida",
+      "A exigência de que todos os requisitos estejam definidos antes de começar",
+      "O uso exclusivo de lógica formal para validar o sistema"
+    ],
+    answer: 1,
+    feedback: "O ==key==RAD== enfatiza rapidez, com ciclos comprimidos (geralmente 60 a 90 dias), sendo indicado para projetos que precisam de entrega ágil, como protótipos para startups."
+  },
+  {
+    aula: "Aula 2 — Ciclo de Vida do Software",
+    tipo: "Contextualizada",
+    texto: "Às vezes, o cliente não sabe exatamente descrever o que quer até ver algo na tela. Para esses casos, é comum construir uma versão inicial e simplificada do software — um protótipo — que ajuda a captar, esclarecer e refinar os requisitos antes de investir no desenvolvimento completo. Essa prática pode ser usada como um modelo de ciclo de vida próprio ou como uma técnica dentro de outros modelos.",
+    question: "De acordo com o texto, qual é o principal objetivo da prototipagem?",
+    options: [
+      "Substituir totalmente a fase de testes do sistema",
+      "Captar, esclarecer e refinar os requisitos por meio de uma versão inicial do software",
+      "Garantir que o sistema final seja entregue em módulos separados",
+      "Analisar riscos técnicos antes de iniciar o planejamento"
+    ],
+    answer: 1,
+    feedback: "A ==term==Prototipagem== serve para criar uma versão inicial do software que ajuda a entender melhor os requisitos, podendo ser usada isoladamente ou combinada com outros modelos."
+  },
+  {
+    aula: "Aula 2 — Ciclo de Vida do Software",
+    tipo: "Contextualizada",
+    texto: "Em projetos de alto risco, como sistemas de defesa, é essencial reavaliar constantemente os perigos envolvidos antes de seguir em frente. O Modelo Espiral, proposto por Boehm em 1988, atende a essa necessidade: a cada volta da espiral, a equipe define objetivos, analisa riscos, desenvolve uma parte do sistema e planeja a próxima fase, repetindo esse ciclo continuamente.",
+    question: "O que torna o Modelo Espiral especialmente indicado para projetos de alto risco, segundo o texto?",
+    options: [
+      "Ele elimina totalmente a necessidade de testes",
+      "Ele dá grande importância à análise de riscos em cada ciclo repetido",
+      "Ele exige que todos os requisitos sejam definidos logo no início",
+      "Ele combina apenas técnicas de prototipagem, sem etapas de planejamento"
+    ],
+    answer: 1,
+    feedback: "O ==term==Espiral== combina elementos de Cascata e Prototipagem, mas se destaca por repetir ciclos de análise de riscos continuamente, o que é essencial em projetos críticos como sistemas de defesa."
+  },
+  {
+    aula: "Aula 2 — Ciclo de Vida do Software",
+    tipo: "Explicativa",
+    texto: "Grandes sistemas corporativos, com alta complexidade e necessidade de documentação detalhada, costumam usar um modelo desenvolvido pela Rational Software Corporation (depois adquirida pela IBM): o RUP (Rational Unified Process). Ele é iterativo, incremental, orientado a casos de uso e organizado em quatro grandes fases: Concepção, Elaboração, Construção e Transição.",
+    question: "Quais são as quatro fases que compõem o RUP, de acordo com o texto?",
+    options: [
+      "Planejamento, Análise, Projeto e Teste",
+      "Concepção, Elaboração, Construção e Transição",
+      "Requisitos, Design, Codificação e Manutenção",
+      "Análise de riscos, Prototipagem, Entrega e Feedback"
+    ],
+    answer: 1,
+    feedback: "O ==term==RUP== é dividido em quatro fases — Concepção, Elaboração, Construção e Transição — sendo indicado para grandes sistemas corporativos que exigem estrutura configurável e documentação detalhada."
+  },
+  {
+    aula: "Aula 2 — Ciclo de Vida do Software",
+    tipo: "Aplicação",
+    texto: "A equipe de um CRM acabou de adicionar uma nova funcionalidade de relatórios ao sistema. Antes de liberar essa atualização para os clientes, o time decide verificar se as funcionalidades antigas, como o gerenciamento de contatos e o rastreamento de vendas, continuam funcionando normalmente após a mudança.",
+    question: "Esse tipo de verificação, que confirma se uma nova alteração não quebrou funcionalidades que já funcionavam antes, é chamado de:",
+    options: [
+      "Teste de usabilidade",
+      "Teste de desempenho",
+      "Teste de regressão",
+      "Teste de segurança"
+    ],
+    answer: 2,
+    feedback: "O ==proc==teste de regressão== verifica se funcionalidades já existentes continuam funcionando corretamente depois que uma mudança ou nova funcionalidade foi adicionada ao sistema."
+  },
+  {
+    aula: "Aula 2 — Ciclo de Vida do Software",
+    tipo: "Aplicação",
+    texto: "Um site de comércio eletrônico está se preparando para a Black Friday, período em que milhares de usuários acessam a plataforma ao mesmo tempo para comprar produtos com desconto. Antes da data, a equipe técnica simula esse grande volume de acessos simultâneos para verificar se o site consegue manter um tempo de resposta aceitável sem travar.",
+    question: "Esse tipo de verificação, que avalia o comportamento do sistema sob diferentes condições de carga, é conhecido como:",
+    options: [
+      "Teste funcional",
+      "Teste de desempenho",
+      "Teste de comportamento",
+      "Teste de regressão"
+    ],
+    answer: 1,
+    feedback: "Os ==proc==testes de desempenho== avaliam aspectos como tempo de resposta, throughput e utilização de recursos, sendo essenciais para garantir que o sistema suporte picos de acesso, como na Black Friday."
+  },
+  {
+    aula: "Aula 2 — Ciclo de Vida do Software",
+    tipo: "Aplicação",
+    texto: "Uma cadeia de supermercados está prestes a colocar em funcionamento um novo sistema de gerenciamento de inventário. A equipe configura os servidores, instala o sistema nos pontos de venda e transfere os dados do sistema antigo para o novo. Depois que tudo está funcionando, ainda serão necessárias correções de bugs e a adição de novas funcionalidades com base no uso real dos funcionários.",
+    question: "As duas fases do ciclo de vida descritas no cenário, respectivamente, são:",
+    options: [
+      "Planejamento e Análise de requisitos",
+      "Design e Desenvolvimento",
+      "Implantação e Manutenção",
+      "Testes e Implantação"
+    ],
+    answer: 2,
+    feedback: "A ==term==Implantação== envolve instalar o software em produção e migrar dados, enquanto a ==term==Manutenção==, que ocorre depois, trata de correções de bugs e melhorias com base no feedback dos usuários."
+  }
+],
 
 
   enade: [],
