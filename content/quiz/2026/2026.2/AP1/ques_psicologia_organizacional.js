@@ -4089,7 +4089,7 @@ window.questoes = {
 },
   ],
 
-  ava: [
+ava: [
     // aula: Atividade 2 - Aulas 3, 4 e 5
 
 // 1 - determinação social
@@ -4268,7 +4268,187 @@ window.questoes = {
   feedback: "A sequência correta é F, V, V, F. A primeira é falsa, pois a Psicologia tornou-se ciência autônoma no século XIX (não XVIII), e não com a Psicanálise, mas geralmente associada ao laboratório de Wundt. A segunda é verdadeira: para Vygotsky, o ==ddl==psiquismo== se constitui nas interações sociais mediadas pela ==key==linguagem==. A terceira também é verdadeira, pois a Psicologia se diferencia da Filosofia justamente por adotar ==dml==métodos empíricos== de investigação. A quarta é falsa, já que a Psicologia (incluindo a Organizacional e do Trabalho) atua em múltiplos campos, não se restringindo à Clínica."
 },
 
+// aula: Atividade 3 - Aulas 6, 7 e 8
 
+// 11 - Teoria Geral dos Sistemas e Psicologia Organizacional
+{
+  aula: "Atividade 3 - Aulas 6, 7 e 8",
+  texto: "Analise as asserções a seguir e a relação proposta entre elas:\n\nI. A transição do paradigma estruturalista para o modelo sistêmico na Psicologia Organizacional representa uma mudança de ênfase da separação do fenômeno em partes isoladas para a funcionalidade e integração das relações entre essas partes.\n\nPORQUE\n\nII. Na perspectiva da Teoria Geral dos Sistemas, as organizações são sistemas abertos cuja sobrevivência e desenvolvimento dependem da capacidade de retroalimentação (feedback) e em constante interação com o ambiente externo.",
+  question: "Acerca dessas asserções, assinale a opção correta:",
+  code: ``,
+  options: [
+    "As asserções I e II são proposições verdadeiras, e a II é uma justificativa correta da I.",
+    "As asserções I e II são falsas.",
+    "As asserções I e II são proposições verdadeiras, mas a II não é uma justificativa correta da I.",
+    "A asserção I é uma proposição verdadeira, e a II é uma proposição falsa.",
+    "A asserção I é uma proposição falsa, e a II é uma proposição verdadeira."
+  ],
+  answer: 0,
+  feedback: "",
+  chips: []
+},
+
+// 12 - Comunicação Organizacional e Dinâmica de Equipes
+{
+  aula: "Atividade 3 - Aulas 6, 7 e 8",
+  texto: "Sobre a dinâmica das equipes e os processos de comunicação organizacional, analise as afirmações a seguir:\n\nI. A comunicação eficaz em equipes exige não apenas a troca de informações técnicas, mas a gestão de significados e afetos entre os membros.\n\nII. Equipes autogerenciadas dispensam a necessidade de liderança, uma vez que a autonomia anula a influência social no ambiente de trabalho.\n\nIII. O conflito nas equipes pode ser funcional quando focado na tarefa, pois estimula a criatividade e a avaliação de diferentes soluções.\n\nIV. A identidade social do membro com o grupo é um fator que aumenta o engajamento e a disposição para cooperar em objetivos complexos.",
+  question: "É correto apenas o que se afirma em:",
+  code: ``,
+  options: [
+    "III e IV.",
+    "I e II.",
+    "I, II, III e IV.",
+    "I, III e IV.",
+    "II, III e IV."
+  ],
+  answer: 3,
+  feedback: "",
+  chips: []
+},
+
+// 13 - Fatores Psicossociais Relacionados ao Trabalho (FPRT)
+{
+  aula: "Atividade 3 - Aulas 6, 7 e 8",
+  texto: "Sobre os Fatores Psicossociais Relacionados ao Trabalho (FPRT), analise as afirmações:\n\nI. Os FPRT emergem das interações cotidianas e da forma como o trabalho é concebido, possuindo potencial de proteção ou risco.\n\nII. Elementos como carga de trabalho e autonomia são fatores puramente subjetivos, sem relação direta com a gestão.\n\nIII. O acúmulo de episódios comuns, como reuniões mal conduzidas, molda a experiência subjetiva e pode levar ao adoecimento.\n\nIV. A Psicologia Organizacional utiliza a escuta e o diagnóstico institucional para mediar esses fatores.",
+  question: "É correto apenas o que se afirma em:",
+  code: ``,
+  options: [
+    "III e IV.",
+    "II e IV.",
+    "I e II.",
+    "I, II e III.",
+    "I, III e IV."
+  ],
+  answer: 4,
+  feedback: "",
+  chips: []
+},
+
+// 14 - Prática Ética e Estratégica na Psicologia Organizacional
+{
+  aula: "Atividade 3 - Aulas 6, 7 e 8",
+  texto: "A Psicologia Organizacional deve \"tornar visíveis dinâmicas invisibilizadas\".",
+  question: "Qual prática exemplifica essa atuação ética e estratégica?",
+  code: ``,
+  options: [
+    "Substituir o diálogo por treinamentos técnicos padronizados.",
+    "Implementar sistemas de controle que evitem a retroalimentação (feedback).",
+    "Realizar diagnósticos institucionais que revelem como a incoerência entre discurso e prática gera riscos psicossociais.",
+    "Focar em indicadores quantitativos para justificar desligamentos em massa.",
+    "Priorizar a estrutura física como único fator de coesão."
+  ],
+  answer: 2,
+  feedback: "",
+  chips: []
+},
+
+// 15 - Desenvolvimento Organizacional e Diagnóstico
+{
+  aula: "Atividade 3 - Aulas 6, 7 e 8",
+  texto: "Analise as asserções a seguir e a relação proposta entre elas:\n\nI. O Desenvolvimento Organizacional (DO) diferencia-se de mudanças casuais por ser um esforço planejado, que abrange a organização como um todo e é gerenciado pela cúpula administrativa para aumentar a eficácia institucional.\n\nPORQUE\n\nII. O DO fundamenta-se nas ciências do comportamento e na teoria dos sistemas, integrando os objetivos individuais aos objetivos da organização por meio de processos de intervenção que valorizam a participação e o aprendizado contínuo.",
+  question: "A respeito dessas asserções, assinale a opção correta:",
+  code: ``,
+  options: [
+    "A asserção I é uma proposição verdadeira, e a II é uma proposição falsa.",
+    "A asserção I é uma proposição falsa, e a II é uma proposição verdadeira.",
+    "As asserções I e II são proposições verdadeiras, mas a II não é uma justificativa correta da I.",
+    "As asserções I e II são proposições verdadeiras, e a II é uma justificativa correta da I.",
+    "As asserções I e II são proposições falsas."
+  ],
+  answer: 3,
+  feedback: "",
+  chips: []
+},
+
+// 16 - Ferramentas e Princípios do Diagnóstico Organizacional
+{
+  aula: "Atividade 3 - Aulas 6, 7 e 8",
+  texto: "No processo de Desenvolvimento Organizacional (DO), a fase de Diagnóstico é essencial para identificar a \"lacuna\" entre a realidade atual e a desejada. Sobre as ferramentas e princípios do diagnóstico organizacional, analise os itens a seguir:\n\nI. A Análise SWOT permite cruzar Fatores Internos (Forças e Fraquezas) com Fatores Externos (Oportunidades e Ameaças) para fundamentar o planejamento estratégico.\n\nII. O Diagnóstico em DO deve ser um processo unilateral realizado pelo consultor externo, evitando a contaminação dos dados pela subjetividade dos membros.\n\nIII. O Survey Feedback utiliza a coleta de dados via questionários e a devolução desses resultados para as equipes, estimulando a resolução coletiva de problemas.\n\nIV. Os valores humanísticos do DO pressupõem que o diagnóstico deve focar apenas na eficácia técnica, desconsiderando as dimensões afetivas.",
+  question: "É correto apenas o que se afirma em:",
+  code: ``,
+  options: [
+    "II, III e IV.",
+    "I e II.",
+    "I, III e IV.",
+    "I e III.",
+    "II e IV."
+  ],
+  answer: 3,
+  feedback: "",
+  chips: []
+},
+
+// 17 - O Papel do Psicólogo Organizacional no DO
+{
+  aula: "Atividade 3 - Aulas 6, 7 e 8",
+  texto: "Sobre o papel do Psicólogo Organizacional como agente de mudança no contexto do DO, analise as sentenças abaixo e assinale a sequência correta de (V) e (F):\n\n( ) O consultor em DO atua predominantemente no modelo de \"perito\", onde ele entrega a solução pronta sem envolver o cliente.\n\n( ) A gestão de processos foca em ajudar a organização a perceber, compreender e agir sobre os processos humanos e sociais.\n\n( ) O agente de mudança deve possuir uma postura ética e atuar como facilitador que mobiliza a \"potência de agir\" do coletivo.\n\n( ) Intervenções de DO são eventos isolados de curta duração que visam resolver crises pontuais, sem necessidade de acompanhamento.",
+  question: "A sequência correta é:",
+  code: ``,
+  options: [
+    "V - F - V - F",
+    "F - V - V - F",
+    "V - V - F - F",
+    "F - F - V - V",
+    "F - V - F - V"
+  ],
+  answer: 1,
+  feedback: "",
+  chips: []
+},
+
+// 18 - Cultura Organizacional, Símbolos e Engajamento
+{
+  aula: "Atividade 3 - Aulas 6, 7 e 8",
+  texto: "Uma empresa de tecnologia passa por uma fusão e os novos gestores observam que, apesar de manterem os mesmos benefícios financeiros, a equipe original apresenta sinais de desengajamento. Ao realizar um diagnóstico baseado no Módulo 6, o psicólogo nota que os \"ritos de passagem\" e a \"linguagem técnica\" da antiga empresa foram suprimidos.",
+  question: "Qual conceito explica melhor esta queda no engajamento?",
+  code: ``,
+  options: [
+    "O excesso de autonomia concedido aos trabalhadores, o que fragmenta a cultura e impede a formação de pressupostos básicos compartilhados.",
+    "A ausência de punições rigorosas para o baixo desempenho, visto que o engajamento coletivo é mantido pela disciplina hierárquica severa.",
+    "A priorização da eficácia técnica sobre a simbólica, visto que ritos e mitos são elementos secundários que não impactam a produtividade real.",
+    "A falha na estrutura física das instalações, já que a cultura organizacional é determinada exclusivamente pelo ambiente arquitetônico e artefatos visíveis.",
+    "A quebra do sistema simbólico e da identidade coletiva, pois o engajamento é um fenômeno emocional e social que depende da identificação do sujeito com a cultura."
+  ],
+  answer: 4,
+  feedback: "",
+  chips: []
+},
+
+// 19 - Cultura Organizacional e Gestão de Pessoas
+{
+  aula: "Atividade 3 - Aulas 6, 7 e 8",
+  texto: "Sobre a relação entre Cultura Organizacional e Gestão de Pessoas discutida no material, considere as seguintes afirmações:\n\nI. A cultura funciona como um \"software da mente\", padronizando comportamentos para garantir a previsibilidade operacional.\n\nII. O engajamento no trabalho é um estado psicológico estático que, uma vez alcançado, não sofre interferência das mudanças na liderança.\n\nIII. Diagnosticar a cultura exige desvendar elementos como ritos, mitos e tabus, que expressam os valores reais em oposição aos discursos oficiais.\n\nIV. O engajamento coletivo é promovido quando o foco da organização está no aprimoramento dos processos de trabalho e na valorização dos sujeitos.",
+  question: "É correto apenas o que se afirma em:",
+  code: ``,
+  options: [
+    "II, III e IV.",
+    "I, II, III e IV.",
+    "I e II.",
+    "III e IV.",
+    "I, III e IV."
+  ],
+  answer: 4,
+  feedback: "",
+  chips: []
+},
+
+// 20 - Promoção de Engajamento Sustentável no DO
+{
+  aula: "Atividade 3 - Aulas 6, 7 e 8",
+  texto: "",
+  question: "No contexto do Desenvolvimento Organizacional, como a Psicologia Organizacional deve atuar para promover engajamento sustentável?",
+  code: ``,
+  options: [
+    "Mediando a relação entre os objetivos institucionais e o bem-estar dos sujeitos, garantindo que a cultura promova o sentido e a valorização do trabalho.",
+    "Padronizando as interações informais para eliminar a produção de mitos e ritos que possam desviar o foco da produtividade técnica.",
+    "Focando exclusivamente em programas de recompensas financeiras individuais para aumentar a competitividade interna.",
+    "Ignorando o aspecto simbólico da cultura para concentrar esforços apenas na execução de tarefas e metas quantitativas.",
+    "Implementando sistemas de monitoramento constante para garantir que os pressupostos básicos da cúpula sejam seguidos sem questionamentos."
+  ],
+  answer: 0,
+  feedback: "",
+  chips: []
+},
   ],
 
 };
