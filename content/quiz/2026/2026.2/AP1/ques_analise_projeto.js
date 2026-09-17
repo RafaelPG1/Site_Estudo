@@ -146,7 +146,7 @@ questoes: [
     feedback: "A ==term==UML== é o padrão destacado no material para modelagem de sistemas orientados a objetos, representando classes, objetos e seus relacionamentos de forma visual."
   },
   {
-    aula: "Aula 2 — Ciclo de Vida do Software",
+    aula: "Aula 2 — Conceitos Iniciais",
     tipo: "Explicativa",
     texto: "Todo software passa por um caminho parecido com o de um produto: nasce de uma ideia, é planejado, construído, testado, colocado em uso e depois precisa de ajustes até ser descontinuado. Esse caminho completo, organizado em fases, é chamado de ciclo de vida do software, e ajuda a equipe a controlar prazos, custos e riscos do projeto.",
     question: "Com base no texto, o que representa o ciclo de vida do software?",
@@ -160,7 +160,7 @@ questoes: [
     feedback: "O ==def==ciclo de vida== organiza o software desde sua concepção até a manutenção, passando por planejamento, análise, projeto, desenvolvimento, testes e implantação."
   },
   {
-    aula: "Aula 2 — Ciclo de Vida do Software",
+    aula: "Aula 2 — Conceitos Iniciais",
     tipo: "Explicativa",
     texto: "Imagine um projeto em que cada etapa só pode começar depois que a anterior termina completamente, como uma fila de dominós caindo em sequência. Assim funciona o Modelo em Cascata, formalizado por Royce em 1970: primeiro se define os requisitos, depois o projeto, depois a implementação, e assim por diante, sem voltar facilmente para etapas já concluídas.",
     question: "Qual característica principal define o Modelo em Cascata, segundo o texto?",
@@ -174,7 +174,7 @@ questoes: [
     feedback: "O ==term==Cascata== é um modelo linear e sequencial, adequado para projetos com requisitos bem definidos e estáveis, como sistemas de controle de tráfego aéreo."
   },
   {
-    aula: "Aula 2 — Ciclo de Vida do Software",
+    aula: "Aula 2 — Conceitos Iniciais",
     tipo: "Explicativa",
     texto: "Em vez de entregar o sistema inteiro de uma só vez, algumas equipes preferem dividi-lo em módulos menores, desenvolver e entregar cada um separadamente. Um sistema de gestão empresarial, por exemplo, pode ter os módulos de contabilidade, recursos humanos e estoque entregues aos poucos, cada um passando por todas as fases do ciclo de vida antes de ser liberado.",
     question: "O texto descreve o funcionamento de qual modelo de ciclo de vida?",
@@ -188,7 +188,7 @@ questoes: [
     feedback: "No ==term==Modelo Incremental==, os requisitos são agrupados em módulos, desenvolvidos individualmente e entregues progressivamente, aumentando a funcionalidade do sistema aos poucos."
   },
   {
-    aula: "Aula 2 — Ciclo de Vida do Software",
+    aula: "Aula 2 — Conceitos Iniciais",
     tipo: "Contextualizada",
     texto: "Algumas startups precisam colocar um produto no mercado rapidamente, sem esperar meses por um ciclo de desenvolvimento completo. Para esses casos, existe o RAD (Rapid Application Development), formalizado por James Martin em 1991, que aposta em ciclos muito curtos — geralmente entre 60 e 90 dias — combinando desenvolvimento iterativo e incremental para acelerar a entrega.",
     question: "Qual é a principal característica que diferencia o RAD dos demais modelos apresentados no texto?",
@@ -202,7 +202,7 @@ questoes: [
     feedback: "O ==key==RAD== enfatiza rapidez, com ciclos comprimidos (geralmente 60 a 90 dias), sendo indicado para projetos que precisam de entrega ágil, como protótipos para startups."
   },
   {
-    aula: "Aula 2 — Ciclo de Vida do Software",
+    aula: "Aula 2 — Conceitos Iniciais",
     tipo: "Contextualizada",
     texto: "Às vezes, o cliente não sabe exatamente descrever o que quer até ver algo na tela. Para esses casos, é comum construir uma versão inicial e simplificada do software — um protótipo — que ajuda a captar, esclarecer e refinar os requisitos antes de investir no desenvolvimento completo. Essa prática pode ser usada como um modelo de ciclo de vida próprio ou como uma técnica dentro de outros modelos.",
     question: "De acordo com o texto, qual é o principal objetivo da prototipagem?",
@@ -216,7 +216,7 @@ questoes: [
     feedback: "A ==term==Prototipagem== serve para criar uma versão inicial do software que ajuda a entender melhor os requisitos, podendo ser usada isoladamente ou combinada com outros modelos."
   },
   {
-    aula: "Aula 2 — Ciclo de Vida do Software",
+    aula: "Aula 2 — Conceitos Iniciais",
     tipo: "Contextualizada",
     texto: "Em projetos de alto risco, como sistemas de defesa, é essencial reavaliar constantemente os perigos envolvidos antes de seguir em frente. O Modelo Espiral, proposto por Boehm em 1988, atende a essa necessidade: a cada volta da espiral, a equipe define objetivos, analisa riscos, desenvolve uma parte do sistema e planeja a próxima fase, repetindo esse ciclo continuamente.",
     question: "O que torna o Modelo Espiral especialmente indicado para projetos de alto risco, segundo o texto?",
@@ -230,7 +230,7 @@ questoes: [
     feedback: "O ==term==Espiral== combina elementos de Cascata e Prototipagem, mas se destaca por repetir ciclos de análise de riscos continuamente, o que é essencial em projetos críticos como sistemas de defesa."
   },
   {
-    aula: "Aula 2 — Ciclo de Vida do Software",
+    aula: "Aula 2 — Conceitos Iniciais",
     tipo: "Explicativa",
     texto: "Grandes sistemas corporativos, com alta complexidade e necessidade de documentação detalhada, costumam usar um modelo desenvolvido pela Rational Software Corporation (depois adquirida pela IBM): o RUP (Rational Unified Process). Ele é iterativo, incremental, orientado a casos de uso e organizado em quatro grandes fases: Concepção, Elaboração, Construção e Transição.",
     question: "Quais são as quatro fases que compõem o RUP, de acordo com o texto?",
@@ -244,7 +244,7 @@ questoes: [
     feedback: "O ==term==RUP== é dividido em quatro fases — Concepção, Elaboração, Construção e Transição — sendo indicado para grandes sistemas corporativos que exigem estrutura configurável e documentação detalhada."
   },
   {
-    aula: "Aula 2 — Ciclo de Vida do Software",
+    aula: "Aula 2 — Conceitos Iniciais",
     tipo: "Aplicação",
     texto: "A equipe de um CRM acabou de adicionar uma nova funcionalidade de relatórios ao sistema. Antes de liberar essa atualização para os clientes, o time decide verificar se as funcionalidades antigas, como o gerenciamento de contatos e o rastreamento de vendas, continuam funcionando normalmente após a mudança.",
     question: "Esse tipo de verificação, que confirma se uma nova alteração não quebrou funcionalidades que já funcionavam antes, é chamado de:",
@@ -258,7 +258,7 @@ questoes: [
     feedback: "O ==proc==teste de regressão== verifica se funcionalidades já existentes continuam funcionando corretamente depois que uma mudança ou nova funcionalidade foi adicionada ao sistema."
   },
   {
-    aula: "Aula 2 — Ciclo de Vida do Software",
+    aula: "Aula 2 — Conceitos Iniciais",
     tipo: "Aplicação",
     texto: "Um site de comércio eletrônico está se preparando para a Black Friday, período em que milhares de usuários acessam a plataforma ao mesmo tempo para comprar produtos com desconto. Antes da data, a equipe técnica simula esse grande volume de acessos simultâneos para verificar se o site consegue manter um tempo de resposta aceitável sem travar.",
     question: "Esse tipo de verificação, que avalia o comportamento do sistema sob diferentes condições de carga, é conhecido como:",
@@ -272,7 +272,7 @@ questoes: [
     feedback: "Os ==proc==testes de desempenho== avaliam aspectos como tempo de resposta, throughput e utilização de recursos, sendo essenciais para garantir que o sistema suporte picos de acesso, como na Black Friday."
   },
   {
-    aula: "Aula 2 — Ciclo de Vida do Software",
+    aula: "Aula 2 — Conceitos Iniciais",
     tipo: "Aplicação",
     texto: "Uma cadeia de supermercados está prestes a colocar em funcionamento um novo sistema de gerenciamento de inventário. A equipe configura os servidores, instala o sistema nos pontos de venda e transfere os dados do sistema antigo para o novo. Depois que tudo está funcionando, ainda serão necessárias correções de bugs e a adição de novas funcionalidades com base no uso real dos funcionários.",
     question: "As duas fases do ciclo de vida descritas no cenário, respectivamente, são:",
@@ -1172,10 +1172,2456 @@ questoes: [
 ],
 
 
-  enade: [],
+enade: [
+  // 1 - Análise de sistemas
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Asserção + Justificativa",
+    texto: "Uma rede varejista de médio porte enfrentava atrasos frequentes na reposição de produtos e dificuldades para rastrear a movimentação de itens entre suas lojas e o centro de distribuição. Para reformular o sistema de gestão de estoque, a equipe de desenvolvimento iniciou o projeto realizando entrevistas com gerentes de loja, conversas com o setor de logística e o levantamento de relatórios de vendas dos últimos dois anos.",
+    question: "Considerando as etapas do desenvolvimento de software descritas no material, avalie as asserções a seguir.",
+    assertions: [
+      "I. As atividades realizadas pela equipe nessa fase inicial do projeto — entrevistas, conversas com stakeholders e levantamento de relatórios — caracterizam uma etapa de ==def==análise==, e não de modelagem.",
+      "PORQUE II. A análise tem como propósito compreender o problema, o domínio e as necessidades dos usuários antes de qualquer estruturação visual ou representação do sistema."
+    ],
+    options: [
+      "I e II são verdadeiras, e II justifica I",
+      "I e II são verdadeiras, mas II não justifica I",
+      "I é verdadeira e II é falsa",
+      "I é falsa e II é verdadeira"
+    ],
+    answer: 0,
+    feedback: "As atividades descritas — entrevistar usuários, conversar com stakeholders e coletar informações — são típicas da **análise de sistemas**, etapa voltada a entender o problema antes de qualquer ==proc==representação estrutural==. Como a análise realmente precede e fundamenta a modelagem, II justifica corretamente I."
+  },
+
+  // 2 - Fases do desenvolvimento
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Múltiplas Afirmativas",
+    texto: "Uma clínica médica contratou uma empresa de software para desenvolver um sistema de agendamento de consultas. Antes de iniciar a programação, a equipe de projeto conversou extensivamente com a recepção e os médicos da clínica para entender as funcionalidades desejadas, elaborou um documento com os requisitos detalhados e os riscos do projeto, e só então definiu a arquitetura da aplicação e o layout das telas.",
+    question: "Com base no processo genérico de desenvolvimento de software apresentado no material, avalie as afirmativas a seguir.",
+    assertions: [
+      "I. As conversas com a recepção e os médicos para identificar necessidades e funcionalidades correspondem à etapa de levantamento de requisitos.",
+      "II. A definição da arquitetura da aplicação e do layout das telas, apenas após o levantamento de requisitos, corresponde à etapa de design.",
+      "III. A elaboração do documento com riscos e requisitos detalhados é uma atividade que só pode ocorrer depois da etapa de testes.",
+      "IV. Segundo o processo apresentado, a implantação do sistema deve necessariamente anteceder a etapa de testes."
+    ],
+    options: [
+      "I, II e III, apenas",
+      "I e II, apenas",
+      "II e IV, apenas",
+      "I, II, III e IV"
+    ],
+    answer: 1,
+    feedback: "O **levantamento de requisitos** ocorre para descobrir necessidades e funcionalidades (I), enquanto o **design** transforma requisitos em arquitetura e interface (II). O planejamento — não os testes — antecede a definição de riscos e requisitos (III é falsa), e a implantação sempre ocorre após a validação por testes, nunca antes (IV é falsa)."
+  },
+
+  // 3 - Classe e objeto
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Conceitual Contextualizada",
+    texto: "No desenvolvimento de um sistema de gestão hospitalar, a equipe modelou uma estrutura que define quais informações e ações todo paciente do sistema deve possuir, como nome, data de nascimento, histórico médico e a ação de agendar uma consulta. A partir dessa estrutura, o sistema passou a registrar, por exemplo, o paciente João Silva, 45 anos, com uma consulta agendada para o dia seguinte.",
+    question: "No contexto orientado a objetos descrito, o registro de 'João Silva, 45 anos, com consulta agendada' representa, em relação à estrutura definida anteriormente, um exemplo de:",
+    options: [
+      "Uma nova classe, criada para representar exclusivamente pacientes do sexo masculino",
+      "Um método, pois executa a ação de agendar uma consulta dentro do sistema",
+      "Um objeto, pois se trata de uma instância concreta da classe Paciente, com valores específicos para seus atributos",
+      "Uma interface, pois conecta o módulo de pacientes a outros módulos do sistema hospitalar"
+    ],
+    answer: 2,
+    feedback: "O registro de João Silva com valores específicos para nome, idade e consulta é um **objeto** — uma instância concreta da classe Paciente. A classe apenas define a estrutura geral; o objeto é a materialização real dessa estrutura no sistema."
+  },
+
+  // 4 - Abstração e encapsulamento
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Análise Aplicada",
+    texto: "Em um sistema bancário orientado a objetos, os desenvolvedores de outros módulos podem chamar o método sacar(valor) de um objeto Conta sem precisar saber como a verificação de saldo, o registro da transação e a atualização do extrato são implementados internamente. Além disso, o atributo saldo não pode ser alterado diretamente por nenhum outro objeto do sistema — qualquer modificação deve obrigatoriamente passar pelos métodos da própria classe Conta.",
+    question: "As duas características descritas no sistema bancário exemplificam, respectivamente, quais conceitos da orientação a objetos?",
+    options: [
+      "Herança e polimorfismo, pois o método sacar() é herdado de outra classe e pode assumir diferentes formas conforme o contexto",
+      "Modularidade e reutilização de código, já que o método pode ser usado por diferentes módulos sem restrição de acesso",
+      "Encapsulamento e abstração, já que restringir o acesso aos dados é abstração e esconder a implementação interna é encapsulamento",
+      "Abstração e encapsulamento, pois esconder os detalhes internos do método sacar() é abstração, e restringir o acesso direto ao atributo saldo é encapsulamento"
+    ],
+    answer: 3,
+    feedback: "Permitir o uso do método sem conhecer sua implementação interna é **abstração**; impedir o acesso direto ao atributo saldo, exigindo que a alteração passe pelos métodos da classe, é **encapsulamento**. A opção que inverte essas definições é uma armadilha conceitual comum."
+  },
+
+  // 5 - Herança e polimorfismo
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Múltiplas Afirmativas",
+    texto: "Uma empresa desenvolveu um sistema de folha de pagamento orientado a objetos. A classe Funcionario define atributos e comportamentos comuns a todos os empregados, incluindo o método calcularSalario(). As classes Gerente e Estagiario, que derivam de Funcionario, implementam esse mesmo método de formas diferentes: a primeira inclui bônus por metas, e a segunda aplica um valor fixo de bolsa-auxílio.",
+    question: "Avalie as afirmativas a seguir sobre esse sistema.",
+    assertions: [
+      "I. A classe Gerente pode herdar atributos e métodos da classe Funcionario, podendo adicionar ou modificar comportamentos herdados, como o próprio calcularSalario().",
+      "II. O fato de Gerente e Estagiario implementarem calcularSalario() de formas distintas, mantendo o mesmo nome de método, exemplifica ==rule==polimorfismo==.",
+      "III. A herança, nesse caso, impede que qualquer subclasse modifique o comportamento definido originalmente na superclasse.",
+      "IV. Para que o polimorfismo ocorra, é obrigatório que todas as classes envolvidas possuam exatamente os mesmos atributos internos."
+    ],
+    options: [
+      "I e II, apenas",
+      "I, II e III, apenas",
+      "II, III e IV, apenas",
+      "I, III e IV, apenas"
+    ],
+    answer: 0,
+    feedback: "A herança permite reaproveitar e **especializar** comportamentos (I), e nomes de método iguais com comportamentos diferentes conforme a classe caracterizam **polimorfismo** (II). A herança não impede alterações na subclasse (III é falsa) e o polimorfismo não exige atributos idênticos entre as classes (IV é falsa)."
+  },
+
+  // 6 - Modelagem formal
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Conceitual Contextualizada",
+    texto: "Uma equipe de engenharia de software está desenvolvendo o sistema de controle de um componente crítico de um sistema de tráfego aéreo, no qual qualquer falha de comportamento pode gerar consequências graves. Por isso, a equipe decidiu representar matematicamente os estados possíveis do sistema e as transições entre eles, de forma a aumentar a confiança de que a especificação será rigorosamente obedecida.",
+    question: "Qual tipo de modelagem, entre os apresentados, é mais adequado para essa finalidade?",
+    options: [
+      "Modelagem funcional, pois seu foco está na divisão do sistema em funções e processos menores",
+      "Modelagem formal, pois utiliza lógica matemática para descrever com precisão o comportamento do sistema, como nas Redes de Petri",
+      "Modelagem estruturada, pois representa processos, dados e fluxos de forma tradicional",
+      "Modelagem baseada em processos, pois enfatiza a análise dos fluxos de trabalho do sistema"
+    ],
+    answer: 1,
+    feedback: "A **modelagem formal** utiliza lógica matemática para descrever o comportamento de um sistema com precisão, sendo indicada para componentes críticos que exigem alta confiabilidade — como exemplificado pelas Redes de Petri no material."
+  },
+
+  // 7 - UML caso de uso
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Análise Aplicada",
+    texto: "A equipe responsável pelo sistema de uma biblioteca universitária precisa documentar, de forma visual, quais ações os leitores e os bibliotecários podem realizar ao interagir com o sistema — como emprestar um livro, devolver um exemplar, consultar o acervo e renovar um empréstimo — sem detalhar, nesse momento, a estrutura interna de classes do sistema.",
+    question: "Qual artefato UML apresentado no material seria mais adequado para representar essas interações?",
+    options: [
+      "Diagrama de classes, pois detalha atributos e métodos de cada entidade do sistema",
+      "Rede de Petri, pois representa estados e transições com precisão matemática",
+      "Diagrama de caso de uso, pois detalha as interações dos usuários com o sistema e suas funcionalidades",
+      "Diagrama de blocos de fluxo funcional, pois divide o sistema em funções menores e gerenciáveis"
+    ],
+    answer: 2,
+    feedback: "O **diagrama de caso de uso** é o artefato UML voltado a representar as interações entre usuários (atores) e o sistema, evidenciando funcionalidades como emprestar, devolver e consultar — sem entrar no detalhamento interno das classes."
+  },
+
+  // 8 - Vantagens da OO
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Análise Aplicada",
+    texto: "Uma empresa decidiu migrar um sistema legado, construído de forma monolítica e com pouca separação entre suas partes, para uma arquitetura orientada a objetos. Após a migração, os desenvolvedores passaram a dividir o sistema em módulos independentes, reaproveitar componentes já existentes em novas funcionalidades e implementar comportamentos diferentes para uma mesma operação, dependendo do tipo de objeto envolvido.",
+    question: "As mudanças descritas após a migração estão associadas, respectivamente, a quais conceitos apresentados no material como vantagens da orientação a objetos?",
+    options: [
+      "Encapsulamento, herança e abstração",
+      "Abstração, encapsulamento e herança",
+      "Herança, abstração e modularidade",
+      "Modularidade, reutilização de código e polimorfismo"
+    ],
+    answer: 3,
+    feedback: "Dividir o sistema em partes independentes é **modularidade**; aproveitar código já existente em novas funcionalidades é **reutilização de código**; e implementar comportamentos diferentes para uma mesma operação conforme o objeto envolvido é polimorfismo."
+  },
+
+  // 9 - UML orientada a objetos
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Múltiplas Afirmativas",
+    texto: "No projeto de um sistema de gestão hospitalar, a equipe optou por representar entidades como Paciente, Médico e Medicamento como objetos, cada um com seus próprios atributos e métodos, e utilizou diagramas UML para representar essas classes e os relacionamentos entre elas.",
+    question: "Avalie as afirmativas a seguir sobre a abordagem adotada pela equipe.",
+    assertions: [
+      "I. A UML é apresentada no material como um padrão amplamente utilizado para a ==term==modelagem orientada a objetos==.",
+      "II. Representar Paciente, Médico e Medicamento como objetos com atributos e métodos próprios é uma prática típica da modelagem orientada a objetos.",
+      "III. A modelagem orientada a objetos, segundo o material, tem como foco exclusivo os processos do sistema, sem considerar objetos ou suas interações.",
+      "IV. O uso de diagramas UML para representar classes e relacionamentos torna a modelagem estruturada, e não orientada a objetos."
+    ],
+    options: [
+      "I, III e IV, apenas",
+      "I e II, apenas",
+      "II, III e IV, apenas",
+      "I, II, III e IV"
+    ],
+    answer: 1,
+    feedback: "A **UML** é o padrão citado no material para representar sistemas orientados a objetos (I), e representar entidades como objetos com atributos e métodos é justamente o foco dessa abordagem (II). A modelagem orientada a objetos tem foco em objetos e interações, não apenas em processos (III é falsa), e o uso de UML para classes continua caracterizando modelagem orientada a objetos, não estruturada (IV é falsa)."
+  },
+
+  // 10 - Ordem do processo
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Conceitual Contextualizada",
+    texto: "Uma equipe de desenvolvimento está organizando as etapas de um novo sistema para uma clínica médica. Até o momento, a equipe já conversou extensivamente com a coordenação da clínica para entender as funcionalidades desejadas e já definiu, em um documento formal, os objetivos de negócio, os requisitos detalhados e os principais riscos do projeto.",
+    question: "De acordo com o processo genérico de desenvolvimento de software apresentado no material, qual é a próxima etapa a ser realizada pela equipe?",
+    options: [
+      "Teste, pois os requisitos já foram definidos e o sistema pode ser validado",
+      "Levantamento de requisitos, pois essa etapa deve ser repetida antes de qualquer outra atividade",
+      "Design, pois é a etapa seguinte ao planejamento, responsável por transformar requisitos em arquitetura e interface",
+      "Implantação, pois o projeto já está pronto para ser colocado em uso"
+    ],
+    answer: 2,
+    feedback: "As atividades descritas — entender funcionalidades e definir objetivos, requisitos e riscos — correspondem às etapas de **levantamento de requisitos** e **planejamento**. A etapa seguinte no processo genérico é o **design**, responsável por transformar tudo isso em arquitetura e interface concretas."
+  },
+// 11 - Modelo Cascata
+{
+  aula: "Aula 2 — Ciclo de Vida do Software",
+  tipo: "Asserção + Justificativa",
+  texto: "Uma equipe de TI está desenvolvendo o sistema de controle de tráfego aéreo de um novo aeroporto internacional. Os requisitos do sistema já foram amplamente definidos junto a órgãos reguladores e especialistas em aviação, sendo considerados estáveis e com baixa expectativa de mudanças ao longo do projeto.",
+  question: "Considerando as características dos modelos de ciclo de vida do software apresentados no material, avalie as asserções a seguir.",
+  assertions: [
+    "I. O ==def==Modelo em Cascata== é o mais indicado para esse projeto, já que sua estrutura de fases sucessivas exige que uma etapa só comece após a conclusão da anterior.",
+    "PORQUE II. Esse modelo é adequado a projetos com requisitos bem conhecidos e estáveis, com pouca expectativa de mudanças — características presentes no cenário descrito."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 0,
+  feedback: "O **Modelo em Cascata** é indicado para projetos com requisitos estáveis, como no exemplo de controle de tráfego aéreo citado pelo material. Sua estrutura ==proc==sequencial== exige que uma fase termine antes que a próxima comece, o que só funciona bem quando há baixa expectativa de mudanças — por isso II justifica corretamente I."
+},
+
+//12 - Comparação de modelos
+{
+  aula: "Aula 2 — Ciclo de Vida do Software",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Uma empresa de desenvolvimento está avaliando qual modelo de ciclo de vida adotar para três projetos distintos: um sistema de gestão empresarial dividido em módulos de contabilidade, RH e estoque; um protótipo de aplicativo para uma startup que precisa lançar rapidamente no mercado; e um sistema de defesa que exige análise contínua de riscos ao longo de todo o desenvolvimento.",
+  question: "Avalie as afirmativas a seguir sobre os modelos de ciclo de vida mais adequados a cada um desses cenários.",
+  assertions: [
+    "I. Para o sistema de gestão empresarial dividido em módulos, o Modelo Incremental é adequado, pois permite que cada módulo seja desenvolvido e entregue separadamente.",
+    "II. Para o protótipo da startup que precisa de lançamento rápido, o RAD é mais adequado, já que enfatiza ciclos curtos e entrega rápida.",
+    "III. Para o sistema de defesa que exige análise contínua de riscos, o Modelo Espiral é mais indicado, pois cada iteração envolve a análise de riscos como etapa central.",
+    "IV. Os três cenários exigem necessariamente o Modelo em Cascata, já que ele é o único capaz de organizar fases de desenvolvimento de forma clara."
+  ],
+  options: [
+    "I e II, apenas",
+    "I, II e III, apenas",
+    "II, III e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 1,
+  feedback: "Cada modelo atende a uma necessidade distinta: o **Incremental** entrega o sistema por módulos, o **RAD** prioriza rapidez e o **Espiral** enfatiza a análise contínua de riscos. A afirmativa IV é falsa, pois nenhum modelo é obrigatório para todos os contextos — a escolha depende das características de cada projeto."
+},
+
+// 13 - Prototipagem
+{
+  aula: "Aula 2 — Ciclo de Vida do Software",
+  tipo: "Conceitual Contextualizada",
+  texto: "Uma equipe de UX está desenvolvendo a interface de um novo aplicativo de delivery de comida. Antes de iniciar a implementação definitiva, a equipe construiu uma versão inicial navegável do aplicativo e a apresentou a usuários reais, coletando reações sobre a disposição dos botões, o fluxo de pedidos e a clareza das informações, ajustando os requisitos a partir desse retorno.",
+  question: "A prática adotada pela equipe de UX exemplifica qual abordagem de ciclo de vida apresentada no material?",
+  options: [
+    "Modelo em Cascata, pois a interface foi definida em uma única fase sequencial, sem retorno a etapas anteriores",
+    "Modelo Espiral, pois o principal objetivo da equipe foi realizar uma análise formal de riscos do projeto",
+    "Prototipagem, pois a construção de uma versão inicial teve como objetivo captar, esclarecer e refinar os requisitos junto aos usuários",
+    "RUP, pois a equipe organizou o trabalho em quatro fases distintas: concepção, elaboração, construção e transição"
+  ],
+  answer: 2,
+  feedback: "A construção de uma versão inicial do software para **captar, esclarecer e refinar requisitos** junto aos usuários é a definição de prototipagem apresentada no material, podendo funcionar como modelo independente ou como técnica dentro de outras abordagens."
+},
+
+// 14 - Teste de regressão
+{
+  aula: "Aula 2 — Ciclo de Vida do Software",
+  tipo: "Análise Aplicada",
+  texto: "Após a equipe de desenvolvimento de um CRM adicionar uma nova funcionalidade de exportação de relatórios em PDF, o time de qualidade foi acionado para verificar se funcionalidades já existentes, como o gerenciamento de contatos e o rastreamento de vendas, continuavam funcionando corretamente após essa alteração.",
+  question: "Qual tipo de teste, entre os apresentados no material, está sendo realizado pelo time de qualidade nessa situação?",
+  options: [
+    "Teste de regressão, pois verifica se uma alteração recente não comprometeu funcionalidades que já funcionavam corretamente",
+    "Teste de desempenho, pois avalia o comportamento do sistema sob diferentes condições de carga",
+    "Teste de usabilidade, pois avalia a facilidade de interação do usuário com a nova funcionalidade",
+    "Teste de segurança, pois identifica vulnerabilidades introduzidas pela nova funcionalidade de exportação"
+  ],
+  answer: 0,
+  feedback: "O **teste de regressão** verifica se uma mudança recente no sistema não quebrou funcionalidades que já funcionavam antes — exatamente o que ocorre ao checar se contatos e vendas continuam operando após a nova funcionalidade de exportação."
+},
+
+// 15 - Fases do ciclo de vida
+{
+  aula: "Aula 2 — Ciclo de Vida do Software",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Uma equipe está desenvolvendo um sistema de e-commerce. Nas primeiras semanas, definiu metas de negócio, recursos disponíveis e o cronograma do projeto. Em seguida, realizou entrevistas e workshops com stakeholders para identificar funcionalidades como carrinho de compras e histórico de pedidos. Por fim, antes de iniciar a codificação, elaborou diagramas de classes para produtos, usuários e pedidos, além de um diagrama de sequência para o fluxo de compra.",
+  question: "Avalie as afirmativas a seguir sobre as fases do ciclo de vida do software presentes nesse cenário.",
+  assertions: [
+    "I. A definição de metas de negócio, recursos e cronograma corresponde à fase de Planejamento.",
+    "II. As entrevistas e workshops para identificar funcionalidades como carrinho de compras correspondem à fase de Análise de Requisitos.",
+    "III. A elaboração dos diagramas de classes e de sequência, antes da codificação, corresponde à fase de Design.",
+    "IV. A fase de Testes deveria ter sido realizada antes da fase de Design, conforme a sequência apresentada no material."
+  ],
+  options: [
+    "I e III, apenas",
+    "II, III e IV, apenas",
+    "I, II e III, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 2,
+  feedback: "O cenário percorre exatamente a sequência **Planejamento → Análise de Requisitos → Design** apresentada no material. A afirmativa IV é falsa, pois os testes ocorrem depois da implementação, e não antes do design."
+},
+
+// 16 - Fases do RUP
+{
+  aula: "Aula 2 — Ciclo de Vida do Software",
+  tipo: "Asserção + Justificativa",
+  texto: "Uma equipe está estruturando o desenvolvimento de um grande sistema corporativo com alta complexidade e forte necessidade de documentação detalhada, optando por um modelo iterativo e orientado a casos de uso.",
+  question: "Avalie as asserções a seguir sobre o modelo adotado pela equipe.",
+  assertions: [
+    "I. O ==term==RUP== possui exatamente três fases — concepção, elaboração e construção —, consideradas suficientes para gerenciar projetos corporativos complexos.",
+    "PORQUE II. O RUP é um modelo iterativo, incremental e orientado a casos de uso, amplamente indicado para grandes sistemas corporativos que exigem documentação detalhada."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 3,
+  feedback: "O **RUP** é dividido em quatro fases — concepção, elaboração, construção e transição —, e não em três, o que torna I falsa. II, no entanto, descreve corretamente suas características como modelo iterativo, incremental e orientado a casos de uso."
+},
+
+// 17 - Metodologias ágeis
+{
+  aula: "Aula 2 — Ciclo de Vida do Software",
+  tipo: "Conceitual Contextualizada",
+  texto: "Uma startup está desenvolvendo um aplicativo móvel cujos requisitos de mercado mudam com frequência. A equipe precisa incorporar rapidamente o feedback dos usuários a cada nova versão lançada, priorizando entregas frequentes e colaboração constante com o cliente.",
+  question: "Considerando as características dos modelos de ciclo de vida apresentados no material, qual abordagem é mais adequada a esse cenário?",
+  options: [
+    "RUP, pois sua estrutura de quatro fases fixas garante maior previsibilidade em cenários de mudanças constantes",
+    "Metodologias Ágeis, pois priorizam ciclos curtos, entregas frequentes e forte capacidade de adaptação às mudanças",
+    "Modelo em Cascata, pois cada fase sequencial permite reavaliar os requisitos de mercado antes de avançar",
+    "Modelo Espiral, pois seu foco principal está na análise formal de riscos, e não na velocidade de adaptação"
+  ],
+  answer: 1,
+  feedback: "As **Metodologias Ágeis** trabalham com ciclos curtos e iterativos, priorizando entregas frequentes, colaboração contínua com o cliente e forte capacidade de adaptação — exatamente o que o cenário da startup exige."
+},
+
+// 18 - Teste de segurança
+{
+  aula: "Aula 2 — Ciclo de Vida do Software",
+  tipo: "Análise Aplicada",
+  texto: "Antes de lançar uma nova versão de um sistema bancário online, a equipe de qualidade realizou uma série de verificações para identificar possíveis vulnerabilidades, incluindo tentativas de ataques como SQL Injection e Cross-Site Scripting (XSS), buscando proteger os dados dos clientes contra acessos não autorizados.",
+  question: "Qual tipo de teste, entre os apresentados no material, corresponde à verificação realizada pela equipe?",
+  options: [
+    "Teste funcional, pois verifica se cada funcionalidade do sistema bancário atende aos requisitos definidos",
+    "Teste de comportamento, pois simula interações dos usuários em cenários reais de uso do sistema",
+    "Teste de regressão, pois verifica se alterações recentes comprometeram funcionalidades já existentes",
+    "Teste de segurança, pois identifica e corrige vulnerabilidades, como SQL Injection e XSS, protegendo o sistema contra acessos não autorizados"
+  ],
+  answer: 3,
+  feedback: "O **teste de segurança** tem como objetivo identificar e corrigir vulnerabilidades que possam expor o sistema a acessos não autorizados ou ataques maliciosos, como os exemplos de SQL Injection e XSS citados no material."
+},
+
+// 19 - Modelo Incremental
+{
+  aula: "Aula 2 — Ciclo de Vida do Software",
+  tipo: "Conceitual Contextualizada",
+  texto: "Uma empresa de tecnologia decidiu dividir o desenvolvimento de seu sistema de gestão empresarial em módulos — contabilidade, recursos humanos e estoque —, permitindo que cada módulo passe pelas fases do ciclo de vida individualmente e seja entregue de forma progressiva aos usuários, aumentando gradualmente a funcionalidade do sistema.",
+  question: "Essa estratégia de desenvolvimento, descrita no material, corresponde a qual modelo de ciclo de vida?",
+  options: [
+    "RAD, pois enfatiza ciclos extremamente curtos, entre 60 e 90 dias, com foco exclusivo em rapidez de entrega",
+    "Modelo Incremental, pois os requisitos são agrupados em módulos, desenvolvidos individualmente e entregues de maneira progressiva",
+    "Modelo Espiral, pois cada módulo corresponde a uma iteração voltada à análise contínua de riscos do projeto",
+    "Modelo em Cascata, pois cada módulo deve ser finalizado por completo antes que o módulo seguinte seja sequer iniciado"
+  ],
+  answer: 1,
+  feedback: "O **Modelo Incremental** agrupa requisitos em módulos, desenvolvidos individualmente e entregues de forma progressiva, aumentando gradualmente a funcionalidade do sistema — exatamente como descrito no cenário da gestão empresarial."
+},
+
+// 20 - Teste de usabilidade
+{
+  aula: "Aula 2 — Ciclo de Vida do Software",
+  tipo: "Análise Aplicada",
+  texto: "Uma equipe está validando um aplicativo móvel de gerenciamento de tarefas antes do lançamento. Durante os testes, usuários reais foram convidados a navegar pelas telas, criar novas tarefas e buscar informações, enquanto os avaliadores observavam se a interface era intuitiva, eficiente e fácil de utilizar, sem necessidade de instruções adicionais.",
+  question: "Qual tipo de teste, entre os apresentados no material, está sendo aplicado nessa situação?",
+  options: [
+    "Teste de desempenho, pois avalia o tempo de resposta do aplicativo sob diferentes condições de carga de usuários",
+    "Teste de regressão, pois verifica se uma alteração recente no aplicativo comprometeu funcionalidades já existentes",
+    "Teste de usabilidade, pois avalia a facilidade de interação dos usuários com o aplicativo, verificando se a interface é intuitiva e eficiente",
+    "Teste funcional, pois verifica exclusivamente se cada funcionalidade do aplicativo cumpre os requisitos especificados"
+  ],
+  answer: 2,
+  feedback: "O **teste de usabilidade** avalia a facilidade de interação do usuário com o software, verificando se a navegação é intuitiva e eficiente — exatamente o que os avaliadores observaram ao acompanhar os usuários reais no aplicativo de tarefas."
+},
+// 21 - Modelos tradicionais x iterativos
+{
+  aula: "Aula 3 — Modelos Cascata e Incremental",
+  tipo: "Asserção + Justificativa",
+  texto: "Uma consultoria de TI está avaliando dois projetos: o primeiro é a modernização de um sistema de contabilidade com requisitos regulatórios já consolidados e pouca margem para mudanças; o segundo é uma plataforma inovadora cujos requisitos ainda dependem de validação constante junto aos usuários finais e podem mudar ao longo do desenvolvimento.",
+  question: "Considerando o comparativo entre Modelos Tradicionais e Modelos Iterativos apresentado no material, avalie as asserções a seguir.",
+  assertions: [
+    "I. O primeiro projeto se encaixa melhor em um ==def==Modelo Tradicional==, enquanto o segundo se beneficiaria mais de um Modelo Iterativo.",
+    "PORQUE II. Modelos Tradicionais têm foco em planejamento e controle, sendo ideais para requisitos estáveis, enquanto Modelos Iterativos têm foco em adaptabilidade e feedback, sendo ideais para requisitos em evolução."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 0,
+  feedback: "O Quadro 1 do material mostra que **Modelos Tradicionais** têm foco em planejamento e controle, sendo ideais para requisitos estáveis (caso do sistema de contabilidade), enquanto **Modelos Iterativos** têm foco em adaptabilidade e feedback, sendo ideais para requisitos em evolução (caso da plataforma inovadora). Por isso, II justifica corretamente I."
+},
+
+// 22 - Etapas do Modelo Cascata
+{
+  aula: "Aula 3 — Modelos Cascata e Incremental",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Uma fabricante de dispositivos médicos está desenvolvendo o software embarcado de um novo equipamento hospitalar. A equipe optou pelo Modelo Cascata, seguindo rigorosamente a sequência de etapas apresentada no material, com documentação detalhada produzida em cada fase.",
+  question: "Avalie as afirmativas a seguir sobre o Modelo Cascata aplicado a esse projeto.",
+  assertions: [
+    "I. A sequência correta das etapas é Definição de Requisitos, Projeto de Sistema e Software, Implementação e Teste Unitário, Integração e Teste de Sistema, Operação e Manutenção.",
+    "II. Sistemas embarcados, como os presentes em dispositivos médicos, são citados no material como exemplos de aplicação adequada do Modelo Cascata.",
+    "III. A documentação detalhada produzida em cada etapa não traz nenhum benefício futuro, servindo apenas como formalidade burocrática do processo.",
+    "IV. Caso surjam mudanças significativas nos requisitos em uma fase avançada do projeto, o Modelo Cascata lida com essas mudanças de forma ágil, sem gerar retrabalho."
+  ],
+  options: [
+    "I e II, apenas",
+    "I, II e III, apenas",
+    "II, III e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 0,
+  feedback: "A sequência do Modelo Cascata segue exatamente a ordem apresentada na Figura 1 (I), e sistemas embarcados em dispositivos médicos são citados como exemplo adequado (II). A documentação detalhada serve como referência para manutenção, treinamento e futuras modificações — não é mera burocracia (III é falsa) — e mudanças tardias nos requisitos tendem a gerar retrabalho, custos e atrasos, e não agilidade (IV é falsa)."
+},
+
+// 23 - Modelo Incremental
+{
+  aula: "Aula 3 — Modelos Cascata e Incremental",
+  tipo: "Conceitual Contextualizada",
+  texto: "Um banco digital está desenvolvendo sua plataforma de serviços financeiros. A equipe decidiu entregar primeiro a funcionalidade de abertura de contas, depois transferências bancárias, em seguida pagamentos e, por fim, investimentos — cada uma passando por análise, design, implementação, testes e integração antes de ser disponibilizada aos clientes.",
+  question: "A estratégia adotada pelo banco digital exemplifica qual modelo apresentado no material?",
+  options: [
+    "Modelo Cascata, pois cada funcionalidade representa uma fase única que deve ser concluída antes de qualquer outra atividade do projeto",
+    "Modelo Incremental, pois o sistema é dividido em incrementos funcionais entregues gradualmente, cada um passando pelas próprias fases de desenvolvimento",
+    "Modelo Tradicional, pois a entrega de funcionalidades separadas indica um processo totalmente linear e sem retorno a etapas anteriores",
+    "Nenhum dos modelos citados, pois a entrega de funcionalidades separadas não é uma prática reconhecida no material"
+  ],
+  answer: 1,
+  feedback: "O cenário do banco digital é citado literalmente no material como exemplo de aplicação do **Modelo Incremental**, que divide o sistema em incrementos funcionais — como abertura de contas, transferências, pagamentos e investimentos —, cada um passando pelas etapas de análise, design, implementação, testes e integração antes de ser entregue."
+},
+
+// 24 - Vantagens e desvantagens do Cascata
+{
+  aula: "Aula 3 — Modelos Cascata e Incremental",
+  tipo: "Análise Aplicada",
+  texto: "Durante a fase final de testes de um sistema de gestão de dados desenvolvido com o Modelo Cascata, os stakeholders solicitaram uma mudança significativa em um dos requisitos centrais do sistema, algo que não havia sido previsto durante a fase de definição de requisitos.",
+  question: "Com base nas características do Modelo Cascata apresentadas no material, qual é a consequência mais provável dessa situação?",
+  options: [
+    "A mudança será incorporada facilmente, já que o Modelo Cascata foi desenhado justamente para acomodar alterações tardias sem custos adicionais",
+    "A mudança provavelmente causará retrabalho, aumento de custos e atrasos no cronograma, já que a estrutura sequencial dificulta alterações em fases avançadas",
+    "A mudança não terá nenhum impacto no projeto, pois o Modelo Cascata permite retornar livremente a qualquer etapa anterior sem custo",
+    "A mudança exigirá a substituição do Modelo Cascata pelo Modelo Iterativo antes que qualquer ajuste possa ser realizado"
+  ],
+  answer: 1,
+  feedback: "Uma das principais desvantagens do **Modelo Cascata** é a inflexibilidade diante de mudanças, especialmente em fases avançadas, o que tende a gerar retrabalho, custos adicionais e atrasos no cronograma — exatamente o risco descrito no cenário do sistema de gestão de dados."
+},
+
+// 25 - Cascata x Incremental
+{
+  aula: "Aula 3 — Modelos Cascata e Incremental",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Duas equipes de desenvolvimento estão comparando suas experiências: a Equipe A trabalhou em um projeto com estrutura linear e sequencial, com pouco envolvimento do cliente ao longo do processo; a Equipe B trabalhou em um projeto dividido em incrementos funcionais, com entregas graduais e forte participação dos stakeholders durante todo o desenvolvimento.",
+  question: "Com base no comparativo entre Modelo Cascata e Modelo Incremental apresentado no material, avalie as afirmativas a seguir.",
+  assertions: [
+    "I. A experiência da Equipe A é característica do Modelo Cascata, que tende a apresentar menor envolvimento do cliente ao longo do processo.",
+    "II. A experiência da Equipe B é característica do Modelo Incremental, que favorece maior envolvimento e feedback contínuo do cliente.",
+    "III. No Modelo Incremental, assim como no Cascata, os problemas do projeto só podem ser identificados após a conclusão total do sistema.",
+    "IV. O Modelo Cascata tende a apresentar um gerenciamento mais simples, com estrutura clara, enquanto o Modelo Incremental costuma ser mais complexo pela coordenação entre incrementos."
+  ],
+  options: [
+    "I e II, apenas",
+    "I, II e IV, apenas",
+    "II, III e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 1,
+  feedback: "O comparativo do material associa o **Cascata** a menor envolvimento do cliente (I) e o **Incremental** a maior envolvimento e feedback contínuo (II), além de um gerenciamento mais simples no Cascata e mais complexo no Incremental (IV). A afirmativa III é falsa, pois uma das vantagens do Incremental é justamente identificar problemas mais cedo, ao longo dos incrementos."
+},
+
+// 26 - Modelos iterativos (RUP)
+{
+  aula: "Aula 3 — Modelos Cascata e Incremental",
+  tipo: "Conceitual Contextualizada",
+  texto: "Uma equipe está desenvolvendo um sistema complexo cujo processo é dividido em ciclos repetitivos de planejamento, design, implementação e testes. A cada ciclo, o projeto é revisado e ajustado com base no feedback dos stakeholders, permitindo identificar problemas precocemente e promover melhoria contínua.",
+  question: "Segundo o material, essa abordagem descreve qual categoria de modelo de desenvolvimento?",
+  options: [
+    "Modelos Tradicionais, pois o foco está exclusivamente em planejamento e controle rígido das etapas",
+    "Modelos Iterativos, representados no material pelo Rational Unified Process (RUP), caracterizados por ciclos, feedback e melhoria contínua",
+    "Modelos Incrementais, pois a entrega ocorre exclusivamente por meio de módulos funcionais independentes e sem revisão cíclica",
+    "Modelo Cascata, pois a estrutura sequencial rígida favorece revisões constantes durante o desenvolvimento"
+  ],
+  answer: 1,
+  feedback: "Os **Modelos Iterativos**, exemplificados no material pelo RUP, utilizam ciclos repetitivos de planejamento, design, implementação e testes, permitindo revisar o projeto, identificar problemas precocemente e incorporar feedback continuamente."
+},
+
+// 27 - Aplicações do Modelo Cascata
+{
+  aula: "Aula 3 — Modelos Cascata e Incremental",
+  tipo: "Análise Aplicada",
+  texto: "Uma empresa de eletrodomésticos está desenvolvendo o firmware de uma nova linha de fogões inteligentes. Os requisitos técnicos já foram amplamente definidos com base em normas de segurança e especificações de hardware, com pouquíssima expectativa de alterações durante o desenvolvimento.",
+  question: "Considerando os exemplos de aplicação apresentados no material, qual modelo seria mais indicado para esse projeto?",
+  options: [
+    "Modelo Incremental, pois sistemas embarcados exigem entrega gradual de funcionalidades para adaptação constante às normas de segurança",
+    "Modelo Cascata, pois sistemas embarcados com requisitos bem definidos e estáveis são citados no material como aplicação adequada desse modelo",
+    "Modelo Iterativo, pois o firmware exige ciclos de revisão constante devido à complexidade do hardware envolvido",
+    "Nenhum dos modelos apresentados é adequado, pois sistemas embarcados não são mencionados no material"
+  ],
+  answer: 1,
+  feedback: "O material cita explicitamente **sistemas embarcados** — presentes em carros, eletrodomésticos e dispositivos médicos — como exemplo de aplicação do **Modelo Cascata**, justamente por geralmente possuírem requisitos bem definidos e estáveis, como no caso do firmware do fogão inteligente."
+},
+
+// 28 - Desvantagens do Incremental
+{
+  aula: "Aula 3 — Modelos Cascata e Incremental",
+  tipo: "Asserção + Justificativa",
+  texto: "Uma equipe que desenvolve um sistema hospitalar utilizando o Modelo Incremental está enfrentando dificuldades para coordenar a integração entre os diversos incrementos já entregues, além de precisar manter comunicação constante entre desenvolvedores, stakeholders e clientes.",
+  question: "Avalie as asserções a seguir sobre a situação enfrentada pela equipe.",
+  assertions: [
+    "I. As dificuldades relatadas são compatíveis com as desvantagens do ==rule==Modelo Incremental== apontadas no material, como maior complexidade de gerenciamento e necessidade de comunicação constante.",
+    "PORQUE II. O Modelo Incremental elimina totalmente a necessidade de testes e integração entre as partes do sistema, já que cada incremento funciona de forma completamente isolada."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 2,
+  feedback: "As dificuldades descritas correspondem, de fato, às desvantagens do **Modelo Incremental** citadas no material, como maior complexidade de gerenciamento e necessidade de comunicação constante (I é verdadeira). No entanto, o modelo exige justamente o contrário do afirmado em II: integração contínua e testes frequentes entre os incrementos são essenciais, tornando II falsa."
+},
+
+// 29 - Modelo de Desenvolvimento Evolucionário
+{
+  aula: "Aula 3 — Modelos Cascata e Incremental",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Uma startup de saúde está desenvolvendo um sistema de prontuário eletrônico. A equipe optou por dividir o desenvolvimento em módulos funcionais entregues gradualmente, permitindo que o hospital parceiro utilize e forneça feedback sobre cada parte do sistema antes da entrega completa.",
+  question: "Avalie as afirmativas a seguir sobre esse cenário, considerando os conceitos apresentados no material.",
+  assertions: [
+    "I. O Modelo Incremental também é chamado, no material, de Modelo de Desenvolvimento Evolucionário.",
+    "II. Sistemas de saúde, como prontuários eletrônicos, são citados no material como exemplos de aplicação do Modelo Incremental.",
+    "III. Nesse modelo, cada incremento entregue não pode receber feedback dos usuários antes da finalização completa do sistema.",
+    "IV. A divisão em incrementos permite identificar problemas mais cedo e reduzir riscos ao longo do desenvolvimento."
+  ],
+  options: [
+    "I e II, apenas",
+    "I, II e IV, apenas",
+    "II, III e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 1,
+  feedback: "O material chama o Modelo Incremental de **Modelo de Desenvolvimento Evolucionário** (I) e cita sistemas de saúde como exemplo de aplicação (II). A afirmativa III é falsa, pois um dos benefícios do modelo é justamente permitir feedback antecipado a cada incremento entregue, o que também contribui para a redução de riscos (IV)."
+},
+
+// 30 - Fatores de escolha do modelo
+{
+  aula: "Aula 3 — Modelos Cascata e Incremental",
+  tipo: "Conceitual Contextualizada",
+  texto: "Uma equipe de projeto está decidindo entre o Modelo Cascata e o Modelo Incremental para o desenvolvimento de um novo sistema de gestão de dados que precisa atender a regulamentações específicas do setor, mas cujas funcionalidades adicionais poderão ser ajustadas conforme o feedback dos usuários após o lançamento inicial.",
+  question: "Considerando os critérios de escolha entre os modelos apresentados no material, qual fator seria mais relevante para orientar essa decisão?",
+  options: [
+    "Apenas o tamanho da equipe de desenvolvimento disponível para o projeto, já que esse é o único critério citado no material",
+    "A estabilidade dos requisitos, o ambiente de desenvolvimento e as expectativas dos stakeholders quanto a mudanças e entregas graduais",
+    "Exclusivamente o custo total do projeto, sem relação com a estabilidade dos requisitos ou o ambiente de desenvolvimento",
+    "A linguagem de programação escolhida para o desenvolvimento, já que ela determina automaticamente qual modelo deve ser utilizado"
+  ],
+  answer: 1,
+  feedback: "O material indica que a escolha entre os modelos deve considerar principalmente a **estabilidade dos requisitos**, o **ambiente de desenvolvimento** e as **expectativas dos stakeholders** — fatores que, no cenário descrito, apontam para uma combinação de exigências regulatórias estáveis com necessidade de ajustes graduais, características centrais dessa decisão."
+},
+
+// 31 - Manifesto Ágil
+{
+  aula: "Aula 4 — Métodos Ágeis",
+  tipo: "Asserção + Justificativa",
+  texto: "Uma equipe de desenvolvimento está discutindo mudanças em seu processo de trabalho. Um dos desenvolvedores propõe reduzir a quantidade de documentação extensa produzida antes de cada entrega, priorizando a construção de versões funcionais do software que possam ser testadas e avaliadas pelo cliente com frequência.",
+  question: "Considerando os valores do Manifesto Ágil apresentados no material, avalie as asserções a seguir.",
+  assertions: [
+    "I. A proposta do desenvolvedor está alinhada ao valor ágil de ==def==\"Software em funcionamento mais que documentação abrangente\"==.",
+    "PORQUE II. O Manifesto Ágil estabelece que a documentação deve ser completamente eliminada de qualquer projeto de desenvolvimento de software, independentemente do contexto."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 2,
+  feedback: "A proposta do desenvolvedor está de fato alinhada ao valor de priorizar **software funcionando** em vez de documentação abrangente (I é verdadeira). No entanto, o Manifesto Ágil não prega a eliminação total da documentação, apenas prioriza a entrega de software funcional sobre documentação excessiva — tornando II falsa."
+},
+
+// 32 - Papéis do Scrum
+{
+  aula: "Aula 4 — Métodos Ágeis",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Em uma equipe Scrum de uma fintech, Marina é responsável por definir a visão do produto e priorizar os itens do backlog; Carlos atua removendo obstáculos da equipe e garantindo que os princípios do Scrum sejam seguidos; e o restante do time é formado por desenvolvedores e testadores que transformam as histórias de usuário em funcionalidades entregáveis.",
+  question: "Avalie as afirmativas a seguir sobre os papéis exercidos nessa equipe Scrum.",
+  assertions: [
+    "I. Marina exerce o papel de Product Owner, atuando como a 'voz' do cliente dentro do projeto.",
+    "II. Carlos exerce o papel de Scrum Master, atuando como guardião do processo Scrum.",
+    "III. Os desenvolvedores e testadores mencionados correspondem ao Time de Desenvolvimento, descrito como a força motriz do projeto.",
+    "IV. Os quatro papéis do Scrum descritos no material são Product Owner, Scrum Master, Time de Desenvolvimento e Cliente Final, sendo este último responsável por escrever o código do sistema."
+  ],
+  options: [
+    "I e II, apenas",
+    "I, II e III, apenas",
+    "II, III e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 1,
+  feedback: "Marina corresponde ao **Product Owner** (I), Carlos ao **Scrum Master** (II), e os desenvolvedores/testadores ao **Time de Desenvolvimento** (III). A afirmativa IV é falsa, pois o quarto papel do Scrum é o de **Stakeholders**, e não 'Cliente Final' responsável por escrever código — essa é uma função do Time de Desenvolvimento."
+},
+
+// 33 - Burndown Chart
+{
+  aula: "Aula 4 — Métodos Ágeis",
+  tipo: "Análise Aplicada",
+  texto: "Durante uma sprint de 10 dias, o Scrum Master de uma equipe percebeu que, a partir do quinto dia, a Linha de Trabalho Restante Real do Burndown Chart passou a se manter consistentemente acima da Linha de Trabalho Restante Ideal, indicando que a quantidade de pontos de complexidade restantes era maior do que o esperado para aquele momento da sprint.",
+  question: "Com base no funcionamento do Burndown Chart apresentado no material, o que essa situação indica sobre o andamento da sprint?",
+  options: [
+    "A equipe está adiantada em relação ao cronograma planejado e poderá incorporar novos itens ao Sprint Backlog sem qualquer risco",
+    "A equipe está em bom ritmo, pois a Linha Real acima da Linha Ideal é o comportamento esperado em qualquer sprint bem-sucedida",
+    "A equipe está atrasada em relação ao ritmo ideal de trabalho, podendo ser necessário melhorar o ritmo ou revisar o planejamento do tempo restante",
+    "O gráfico está incorreto, já que a Linha Real nunca pode ultrapassar a Linha Ideal em nenhum momento da sprint"
+  ],
+  answer: 2,
+  feedback: "Segundo o material, quando a **Linha de Trabalho Restante Real** se mantém acima da Linha Ideal, isso indica que a equipe está atrasada em relação ao ritmo esperado, sendo necessário melhorar o ritmo de trabalho ou revisar o planejamento do tempo do projeto."
+},
+
+// 34 - Scrum x XP
+{
+  aula: "Aula 4 — Métodos Ágeis",
+  tipo: "Conceitual Contextualizada",
+  texto: "Uma equipe de desenvolvimento de software está decidindo entre adotar práticas voltadas à engenharia técnica — como testes unitários, integração contínua e programação em pares — ou uma abordagem mais estruturada em papéis organizacionais e sprints de duração fixa, com cerimônias bem definidas para marcar o início, meio e fim de cada ciclo.",
+  question: "Considerando o comparativo entre Scrum e Extreme Programming (XP) apresentado no material, a segunda abordagem descrita — baseada em papéis organizacionais e sprints fixos — corresponde a qual metodologia?",
+  options: [
+    "Extreme Programming (XP), pois seu foco está na engenharia de software e na qualidade técnica do código produzido",
+    "Scrum, pois assume uma visão mais gerencial, estruturando o fluxo de trabalho em sprints e definindo papéis como Product Owner e Scrum Master",
+    "Kanban, pois se baseia exclusivamente na visualização do fluxo de trabalho sem definição de papéis organizacionais",
+    "Lean, pois seu foco central está na eliminação de desperdícios durante o processo de desenvolvimento"
+  ],
+  answer: 1,
+  feedback: "O **Scrum** assume uma visão gerencial, estruturando o trabalho em sprints de duração fixa e definindo papéis como Product Owner e Scrum Master, além de um conjunto de cerimônias que marcam o início, meio e fim de cada sprint — diferentemente do XP, mais voltado a práticas técnicas de engenharia."
+},
+
+// 35 - Testes unitários e refatoração
+{
+  aula: "Aula 4 — Métodos Ágeis",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Uma equipe que adota Extreme Programming (XP) escreve testes automatizados para cada nova funcionalidade antes de considerá-la concluída, reorganiza periodicamente trechos do código para torná-lo mais limpo e fácil de manter, e integra as alterações de todos os desenvolvedores à base principal do código várias vezes ao dia.",
+  question: "Avalie as afirmativas a seguir sobre as práticas adotadas por essa equipe.",
+  assertions: [
+    "I. A escrita de testes automatizados para garantir que cada funcionalidade funcione corretamente corresponde à prática de Testes Unitários.",
+    "II. A reorganização do código para torná-lo mais limpo e fácil de manter corresponde à prática de Refatoração.",
+    "III. A integração frequente das alterações de todos os desenvolvedores à base principal corresponde à prática de Integração Contínua.",
+    "IV. Essas três práticas são exclusivas do Scrum e não fazem parte do conjunto de práticas do XP apresentado no material."
+  ],
+  options: [
+    "I e II, apenas",
+    "I, II e III, apenas",
+    "II, III e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 1,
+  feedback: "As três práticas descritas — **Testes Unitários** (I), **Refatoração** (II) e **Integração Contínua** (III) — são exatamente práticas do XP apresentadas no material. A afirmativa IV é falsa, pois essas práticas pertencem ao conjunto de nove práticas do XP, e não ao Scrum."
+},
+
+// 36 - Comparação métodos ágeis x tradicionais
+{
+  aula: "Aula 4 — Métodos Ágeis",
+  tipo: "Análise Aplicada",
+  texto: "Uma empresa que utilizava um processo de desenvolvimento tradicional, com documentação extensa produzida no início do projeto e feedback do cliente restrito a fases específicas, decidiu migrar para uma abordagem em que o cliente participa continuamente do processo e o software é entregue em pequenos incrementos ao longo de todo o desenvolvimento.",
+  question: "Com base no Quadro Comparativo entre Métodos Tradicionais e Ágeis apresentado no material, essa mudança representa uma transição em qual dos seguintes aspectos?",
+  options: [
+    "Uma mudança apenas na linguagem de programação utilizada pela equipe, sem qualquer relação com o processo de desenvolvimento",
+    "Uma transição de feedback do cliente limitado a fases específicas para feedback contínuo e constante, e de entrega ao final do projeto para entregas frequentes em pequenos incrementos",
+    "Uma transição de um método ágil para um método tradicional, já que a entrega em incrementos é característica exclusiva de processos sequenciais",
+    "Nenhuma mudança relevante, pois o Quadro Comparativo não menciona diferenças quanto ao feedback do cliente ou à frequência de entrega"
+  ],
+  answer: 1,
+  feedback: "O Quadro Comparativo do material mostra que os métodos tradicionais têm feedback do cliente **limitado a fases específicas** e entrega **ao final do projeto**, enquanto os métodos ágeis oferecem feedback **contínuo** e entregas **frequentes em pequenos incrementos** — exatamente a transição descrita no cenário."
+},
+
+// 37 - Reuniões do Scrum
+{
+  aula: "Aula 4 — Métodos Ágeis",
+  tipo: "Conceitual Contextualizada",
+  texto: "Ao final de cada sprint, uma equipe se reúne para apresentar aos stakeholders as funcionalidades desenvolvidas naquele ciclo, recebendo validação do Product Owner e sugestões de melhorias ou novas ideias para os próximos sprints.",
+  question: "Segundo o material, essa reunião corresponde a qual cerimônia do Scrum?",
+  options: [
+    "Sprint Planning, pois é o momento em que a equipe define o escopo e as prioridades do próximo sprint",
+    "Scrum Daily, pois é o momento em que os membros compartilham avanços e obstáculos diários",
+    "Sprint Review, pois é a oportunidade de mostrar o que foi realizado no sprint e receber feedback dos stakeholders",
+    "Sprint Retrospective, pois é o momento de discutir o que deu certo e o que deu errado durante o sprint"
+  ],
+  answer: 2,
+  feedback: "A **Sprint Review** é a cerimônia em que a equipe apresenta o trabalho realizado durante o sprint aos stakeholders, recebendo validação do Product Owner e sugestões de melhorias — diferente da Retrospective, que foca na reflexão interna da equipe sobre o processo."
+},
+
+// 38 - Pilares do Scrum
+{
+  aula: "Aula 4 — Métodos Ágeis",
+  tipo: "Asserção + Justificativa",
+  texto: "Em uma equipe Scrum, todas as informações sobre o andamento do projeto são disponibilizadas abertamente a todos os membros e partes interessadas, a equipe revisa regularmente seu progresso para identificar melhorias, e está sempre disposta a ajustar sua abordagem conforme surgem novas informações ao longo do desenvolvimento.",
+  question: "Avalie as asserções a seguir sobre essa equipe.",
+  assertions: [
+    "I. As práticas descritas representam, respectivamente, os três ==rule==pilares do Scrum==: transparência, inspeção e adaptação.",
+    "PORQUE II. O Scrum é definido no material como uma metodologia de gerenciamento de projetos baseada em sprints, fundamentada nesses três pilares."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 0,
+  feedback: "As práticas descritas correspondem exatamente aos três pilares do **Scrum**: disponibilizar informações abertamente é **transparência**, revisar regularmente o progresso é **inspeção**, e ajustar a abordagem conforme novas informações é **adaptação**. Como o material define o Scrum justamente com base nesses três pilares, II justifica corretamente I."
+},
+
+// 39 - Princípios do Manifesto Ágil
+{
+  aula: "Aula 4 — Métodos Ágeis",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Uma equipe de desenvolvimento decidiu aceitar uma mudança significativa de requisitos solicitada pelo cliente mesmo em uma fase avançada do projeto, priorizar reuniões presenciais em vez de longas trocas de e-mails para resolver dúvidas técnicas, e permitir que a própria equipe, sem intervenção externa, decidisse a arquitetura do sistema.",
+  question: "Avalie as afirmativas a seguir sobre essas decisões, à luz dos princípios do Manifesto Ágil apresentados no material.",
+  assertions: [
+    "I. Aceitar mudanças de requisitos mesmo em fase avançada do desenvolvimento está alinhado a um dos doze princípios do Manifesto Ágil.",
+    "II. Priorizar a conversa face a face em vez de e-mails está alinhado ao princípio de que essa é a forma mais eficiente de transmitir informações.",
+    "III. Permitir que a equipe decida a arquitetura sem intervenção externa contraria o princípio de que as melhores arquiteturas emergem de equipes auto-organizadas.",
+    "IV. Esses três princípios pertencem aos quatro valores fundamentais do Manifesto Ágil, e não aos doze princípios detalhados no material."
+  ],
+  options: [
+    "I e II, apenas",
+    "I, II e III, apenas",
+    "I, II e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 0,
+  feedback: "Aceitar mudanças tardias de requisitos (I) e priorizar a comunicação face a face (II) correspondem a princípios explícitos do Manifesto Ágil. A afirmativa III é falsa, pois permitir que a equipe decida a arquitetura sem intervenção externa está de acordo com — e não contraria — o princípio das equipes auto-organizadas. A afirmativa IV também é falsa, pois esses três itens fazem parte dos doze princípios, e não dos quatro valores fundamentais."
+},
+
+// 40 - História dos métodos ágeis
+{
+  aula: "Aula 4 — Métodos Ágeis",
+  tipo: "Análise Aplicada",
+  texto: "Um pesquisador está estudando a origem histórica das metodologias ágeis para uma apresentação acadêmica. Ele identificou que duas metodologias específicas surgiram na década de 1990 como resposta à rigidez dos modelos tradicionais: uma delas foi liderada por Ken Schwaber e Jeff Sutherland, e a outra foi criada por Kent Beck e Ward Cunningham, sendo posteriormente aplicada no projeto C3 da Chrysler.",
+  question: "Com base no material, quais metodologias o pesquisador identificou, respectivamente?",
+  options: [
+    "Kanban e Lean, pois ambas surgiram na década de 1990 como ferramentas complementares aos métodos ágeis",
+    "Scrum e Extreme Programming (XP), já que o Scrum foi liderado por Schwaber e Sutherland, e o XP foi criado por Beck e Cunningham",
+    "Extreme Programming (XP) e Scrum, já que o XP foi liderado por Schwaber e Sutherland, e o Scrum foi criado por Beck e Cunningham",
+    "DevOps e Kanban, pois ambos são citados no material como metodologias criadas na mesma década pelos mesmos autores"
+  ],
+  answer: 1,
+  feedback: "O material indica que o **Scrum** foi liderado por Ken Schwaber e Jeff Sutherland, enquanto o **Extreme Programming (XP)** foi criado por Kent Beck e Ward Cunningham, sendo o XP posteriormente aplicado no projeto C3 da Chrysler, conforme descrito na seção sobre a origem do XP."
+},
+// 41 - Elicitação x Análise
+{
+  aula: "Aula 5 — Análise de Requisitos",
+  tipo: "Asserção + Justificativa",
+  texto: "A equipe responsável pelo desenvolvimento de um sistema de gerenciamento de projetos realizou entrevistas com gerentes para descobrir quais funcionalidades eles esperavam do software, como criar projetos, atribuir tarefas e gerar relatórios de status. Em seguida, essas informações foram organizadas em categorias, tiveram inconsistências identificadas e foram priorizadas conforme a urgência de cada funcionalidade.",
+  question: "Considerando as etapas do processo de requisitos apresentadas no material, avalie as asserções a seguir.",
+  assertions: [
+    "I. A primeira etapa descrita, de conversar com os gerentes para descobrir as funcionalidades esperadas, corresponde à ==def==elicitação== de requisitos.",
+    "PORQUE II. A elicitação é a etapa em que se refina, organiza e prioriza as informações já coletadas, sem envolver contato direto com os stakeholders."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 2,
+  feedback: "A etapa de entrevistar gerentes para descobrir necessidades corresponde de fato à **elicitação** (I é verdadeira). No entanto, é a **análise** — e não a elicitação — que refina, organiza e prioriza as informações já coletadas; a elicitação envolve justamente o contato direto com os stakeholders, tornando II falsa."
+},
+
+// 42 - Requisitos funcionais e não funcionais
+{
+  aula: "Aula 5 — Análise de Requisitos",
+  tipo: "Múltiplas Afirmativas",
+  texto: "No desenvolvimento de um sistema de prontuário eletrônico, foram levantados os seguintes itens: permitir o cadastro de novos pacientes com nome, idade e contatos; garantir que o sistema responda às solicitações em menos de 2 segundos durante operações normais; permitir que médicos registrem prescrições de medicamentos; e assegurar que o sistema esteja disponível 99,9% do tempo, excluindo manutenções programadas.",
+  question: "Avalie as afirmativas a seguir sobre a classificação desses itens.",
+  assertions: [
+    "I. O cadastro de pacientes e o registro de prescrições de medicamentos são exemplos de requisitos funcionais, pois definem o que o sistema deve fazer.",
+    "II. A meta de resposta em menos de 2 segundos é um requisito não funcional relacionado a desempenho.",
+    "III. A meta de disponibilidade de 99,9% do tempo é um requisito não funcional relacionado a confiabilidade.",
+    "IV. Requisitos não funcionais são sempre menos importantes que requisitos funcionais, já que não afetam diretamente a experiência do usuário."
+  ],
+  options: [
+    "I e II, apenas",
+    "I, II e III, apenas",
+    "II, III e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 1,
+  feedback: "Cadastro de pacientes e registro de prescrições são **requisitos funcionais** (I), enquanto a meta de resposta em menos de 2 segundos é um requisito não funcional de **desempenho** (II) e a disponibilidade de 99,9% é de **confiabilidade** (III). A afirmativa IV é falsa, pois o material apresenta as duas categorias como complementares e igualmente importantes — a 'melodia' e a 'harmonia' da mesma música."
+},
+
+// 43 - MVP
+{
+  aula: "Aula 5 — Análise de Requisitos",
+  tipo: "Conceitual Contextualizada",
+  texto: "Uma equipe está desenvolvendo um software de gerenciamento de eventos. Em vez de implementar todas as funcionalidades planejadas de uma só vez, a equipe decidiu lançar primeiro apenas a criação de eventos e a gestão de convidados, coletando feedback dos usuários antes de adicionar a criação de tarefas e o envio de convites por e-mail nas versões seguintes.",
+  question: "Essa estratégia de desenvolvimento, descrita no material, está associada a qual conceito?",
+  options: [
+    "Escopo Fixo de Produto, pois todas as funcionalidades planejadas foram definidas antecipadamente e não podem ser alteradas",
+    "MVP (Minimum Viable Product), pois representa a versão mais simples e funcional do produto, priorizando funcionalidades essenciais e validando hipóteses com o menor investimento possível",
+    "Requisito Não Funcional, pois a estratégia está relacionada à escalabilidade do sistema conforme o número de usuários cresce",
+    "Critério de Aceitação, pois define as condições que o software deve cumprir para ser aceito pelo cliente"
+  ],
+  answer: 1,
+  feedback: "A estratégia descrita — lançar uma versão inicial com as funcionalidades essenciais e evoluir com base no feedback dos usuários — é exatamente a definição de **MVP (Produto Mínimo Viável)** apresentada no material, exemplificada pelo caso do Event Planner."
+},
+
+// 44 - Critérios de aceitação
+{
+  aula: "Aula 5 — Análise de Requisitos",
+  tipo: "Análise Aplicada",
+  texto: "Para a User Story 'Como recepcionista do hospital, eu quero cadastrar novos pacientes com informações básicas, para que possamos ter um registro completo dos pacientes que chegam ao hospital', a equipe definiu que o sistema deve validar campos obrigatórios como nome e número de contato, e que, ao salvar o cadastro, deve confirmar a criação e gerar um número de identificação único para o paciente.",
+  question: "As condições definidas pela equipe para considerar essa funcionalidade completa correspondem a qual elemento apresentado no material?",
+  options: [
+    "Requisitos não funcionais, pois tratam exclusivamente de aspectos de qualidade do sistema, como segurança e desempenho",
+    "Critérios de aceitação, pois definem condições claras, mensuráveis e objetivas que a User Story deve cumprir para ser considerada completa e funcional",
+    "Elicitação de requisitos, pois representam o primeiro contato da equipe com as necessidades do cliente",
+    "Documento de Requisitos do Sistema, pois estabelece o escopo completo do projeto e o cronograma de entrega"
+  ],
+  answer: 1,
+  feedback: "As condições descritas são **critérios de aceitação**: um conjunto de condições claras, mensuráveis e objetivas que a User Story deve atender para ser considerada completa, servindo também de base para validação e testes do sistema."
+},
+
+// 45 - Escopo Fixo x Escopo Variado
+{
+  aula: "Aula 5 — Análise de Requisitos",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Durante o desenvolvimento de um sistema, o gerente de projeto defende que nenhuma funcionalidade definida no início deve ser alterada, adicionada ou removida ao longo do desenvolvimento, mesmo que novas necessidades surjam. Já a equipe técnica argumenta que o escopo deveria ser discutido e ajustado em diferentes momentos do projeto, à medida que o sistema evolui e o negócio muda.",
+  question: "Avalie as afirmativas a seguir sobre as posições defendidas pelo gerente e pela equipe técnica.",
+  assertions: [
+    "I. A posição do gerente de projeto corresponde à filosofia de ==rule==Escopo Fixo de Produto==, apresentada no material.",
+    "II. A posição da equipe técnica corresponde à filosofia de Escopo Variado de Produto, associada aos Métodos Ágeis.",
+    "III. O material apresenta o Escopo Fixo como a filosofia declaradamente preferida pelo autor do capítulo.",
+    "IV. Segundo o material, novas necessidades não podem surgir durante o desenvolvimento e o uso do sistema, já que a análise inicial deve esgotar todas as funcionalidades."
+  ],
+  options: [
+    "I e II, apenas",
+    "I, II e III, apenas",
+    "I, II e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 0,
+  feedback: "A posição do gerente reflete o **Escopo Fixo de Produto** (I), enquanto a da equipe técnica reflete o **Escopo Variado de Produto** (II). As afirmativas III e IV são falsas: o autor declara preferir o Escopo Variado, e o próprio material reconhece que novas necessidades podem surgir durante o desenvolvimento e o uso do sistema."
+},
+
+// 46 - Requisitos não funcionais - confiabilidade
+{
+  aula: "Aula 5 — Análise de Requisitos",
+  tipo: "Asserção + Justificativa",
+  texto: "Um hospital exige que o sistema de prontuário eletrônico esteja disponível e funcional pelo menos 99,9% do tempo, excluindo períodos de manutenção programada, garantindo que médicos e enfermeiros possam depender do sistema sem interrupções inesperadas durante o atendimento aos pacientes.",
+  question: "Avalie as asserções a seguir sobre essa exigência.",
+  assertions: [
+    "I. Essa exigência corresponde ao requisito não funcional de ==term==confiabilidade==, apresentado no material.",
+    "PORQUE II. A confiabilidade descreve a capacidade do sistema de estar disponível e funcional durante a maior parte do tempo, garantindo que os usuários possam depender dele sem interrupções inesperadas."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 0,
+  feedback: "A exigência de disponibilidade de 99,9% do tempo é exatamente a definição de **confiabilidade** apresentada no material, que trata da capacidade do sistema de permanecer disponível e funcional, sem interrupções inesperadas. Como essa é a própria definição do conceito, II justifica corretamente I."
+},
+
+// 47 - User Stories
+{
+  aula: "Aula 5 — Análise de Requisitos",
+  tipo: "Conceitual Contextualizada",
+  texto: "Ao documentar uma funcionalidade do sistema de prontuário eletrônico, a equipe escreveu o seguinte texto: 'Como recepcionista do hospital, eu quero atualizar, editar e excluir os dados cadastrais dos pacientes, para que possamos manter as informações dos pacientes sempre atualizadas e corretas.'",
+  question: "Esse tipo de descrição, utilizada para comunicar funcionalidades de forma clara entre a equipe técnica e os clientes, é chamada no material de:",
+  options: [
+    "Documento de Requisitos do Sistema, pois estabelece o escopo completo e o cronograma de entrega do projeto",
+    "Requisito Não Funcional, pois descreve uma característica de qualidade que o sistema deve possuir",
+    "User Story, pois descreve o usuário, a ação desejada e o objetivo dessa ação, em linguagem próxima do cliente",
+    "Ferramenta CASE, pois é um software especializado utilizado para gerenciamento e documentação de requisitos"
+  ],
+  answer: 2,
+  feedback: "O texto segue o formato de uma **User Story**, técnica que descreve o usuário, a ação que ele deseja realizar e o objetivo dessa ação, utilizando uma linguagem próxima do cliente para facilitar a comunicação entre a equipe técnica e os stakeholders."
+},
+
+// 48 - Identificação de requisito não funcional
+{
+  aula: "Aula 5 — Análise de Requisitos",
+  tipo: "Análise Aplicada",
+  texto: "Uma empresa de e-commerce exige que seu sistema possa ser acessado corretamente tanto por computadores desktop quanto por tablets e smartphones, com diferentes navegadores, garantindo que a experiência do usuário seja consistente e eficiente em todos os dispositivos.",
+  question: "Essa exigência corresponde a qual requisito não funcional apresentado no material?",
+  options: [
+    "Compatibilidade, pois exige que o sistema seja acessível a partir de diferentes dispositivos e navegadores, mantendo uma experiência consistente",
+    "Escalabilidade, pois assegura que o sistema possa crescer e se adaptar a um aumento no número de usuários e registros",
+    "Manutenibilidade, pois garante que o sistema seja fácil de manter e atualizar, com documentação clara do código",
+    "Usabilidade, pois exige que a interface seja intuitiva e fácil de usar, sem necessidade de treinamento extensivo"
+  ],
+  answer: 0,
+  feedback: "A exigência de funcionamento consistente em diferentes dispositivos e navegadores corresponde ao requisito não funcional de **compatibilidade**, apresentado no material como a capacidade do sistema de ser acessado a partir de desktops, tablets e smartphones."
+},
+
+// 49 - Técnicas e ferramentas de elicitação
+{
+  aula: "Aula 5 — Análise de Requisitos",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Para desenvolver um sistema de e-commerce, a equipe realizou workshops com clientes e vendedores para entender suas expectativas, aplicou questionários a um grupo maior de usuários e utilizou protótipos interativos para validar a disposição das telas de compra antes da implementação definitiva.",
+  question: "Avalie as afirmativas a seguir sobre as técnicas e ferramentas utilizadas pela equipe.",
+  assertions: [
+    "I. Os workshops realizados com clientes e vendedores são citados no material como uma técnica de elicitação de requisitos.",
+    "II. Os questionários aplicados a um grupo maior de stakeholders também são citados como técnica de elicitação de requisitos.",
+    "III. Os protótipos interativos utilizados para validar as telas de compra são citados no material como uma ferramenta de apoio à elicitação e análise de requisitos.",
+    "IV. Ferramentas CASE, entrevistas e diagramas de casos de uso não são mencionados no material como técnicas ou ferramentas relacionadas a requisitos."
+  ],
+  options: [
+    "I e II, apenas",
+    "I, II e III, apenas",
+    "II, III e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 1,
+  feedback: "Workshops (I) e questionários (II) são citados como técnicas de elicitação, e protótipos (III) como ferramenta de apoio à elicitação e análise. A afirmativa IV é falsa, pois o material cita explicitamente entrevistas, diagramas de casos de uso e ferramentas CASE como técnicas e ferramentas relacionadas ao processo de requisitos."
+},
+
+// 50 - Priorização de requisitos funcionais
+{
+  aula: "Aula 5 — Análise de Requisitos",
+  tipo: "Conceitual Contextualizada",
+  texto: "Durante o levantamento de requisitos de um sistema de gerenciamento de projetos, a equipe técnica e os clientes discutiram intensamente quais funcionalidades seriam indispensáveis para que o sistema pudesse entrar em produção, e quais poderiam ser implementadas em um momento posterior, resultando em um documento que estabelece o escopo, a descrição, as prioridades e o cronograma de entrega de cada funcionalidade.",
+  question: "Esse documento, resultado da comunicação entre equipe técnica e clientes para definir prioridades, é chamado no material de:",
+  options: [
+    "User Story, pois descreve a funcionalidade sob a perspectiva do usuário, em linguagem próxima ao cliente",
+    "Documento de Requisitos do Sistema, pois estabelece as funcionalidades, suas descrições, prioridades e o cronograma de entrega do projeto",
+    "Critério de Aceitação, pois define as condições que uma funcionalidade específica deve cumprir para ser considerada completa",
+    "Quadro de Requisitos Não Funcionais, pois organiza exclusivamente as características de qualidade exigidas pelo sistema"
+  ],
+  answer: 1,
+  feedback: "O documento descrito é o **Documento de Requisitos do Sistema**, que estabelece o escopo do projeto, a descrição de cada funcionalidade, as prioridades definidas junto aos clientes e o cronograma de entrega, servindo inclusive de base para contratos em equipes terceirizadas."
+},
+// 51 - Tipos de entrevistas
+{
+  aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+  tipo: "Asserção + Justificativa",
+  texto: "Uma analista de sistemas está entrevistando cinco gerentes de projeto diferentes sobre as funcionalidades que esperam de um novo sistema de gerenciamento de tarefas. Para garantir que as respostas pudessem ser comparadas entre si, ela utilizou exatamente a mesma lista fixa de perguntas com todos os entrevistados, sem se desviar do roteiro predefinido.",
+  question: "Considerando os tipos de entrevistas apresentados no material, avalie as asserções a seguir.",
+  assertions: [
+    "I. A técnica utilizada pela analista corresponde à ==def==entrevista estruturada==.",
+    "PORQUE II. Esse tipo de entrevista segue um roteiro rígido de perguntas predefinidas, sendo útil para obter informações específicas e comparáveis entre diferentes stakeholders."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 0,
+  feedback: "O uso de uma lista fixa de perguntas, sem desvio do roteiro, para obter respostas comparáveis entre diferentes gerentes é exatamente a definição de **entrevista estruturada** apresentada no material. Como essa é justamente a característica que define esse tipo de entrevista, II justifica corretamente I."
+},
+
+// 52 - Reuniões
+{
+  aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Uma equipe de desenvolvimento organizou três encontros distintos: no primeiro, os participantes sugeriram livremente ideias para um novo sistema, sem julgamentos imediatos; no segundo, a equipe discutiu e refinou requisitos já coletados anteriormente, buscando identificar inconsistências; no terceiro, foi realizada uma sessão estruturada com atividades práticas para mapear os processos da organização e definir novos requisitos.",
+  question: "Avalie as afirmativas a seguir sobre os três encontros descritos.",
+  assertions: [
+    "I. O primeiro encontro corresponde a uma Reunião de Brainstorming, focada na geração livre de ideias.",
+    "II. O segundo encontro corresponde a uma Reunião de Análise e Revisão, voltada a refinar requisitos já coletados.",
+    "III. O terceiro encontro corresponde a um Workshop, que combina elementos de brainstorming e de análise em atividades mais estruturadas.",
+    "IV. Os três encontros descritos são, na verdade, exemplos de Etnografia, pois envolvem observação direta dos participantes em seu ambiente de trabalho."
+  ],
+  options: [
+    "I e II, apenas",
+    "I, II e III, apenas",
+    "II, III e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 1,
+  feedback: "Os três encontros correspondem exatamente aos tipos de reuniões apresentados no material: **Brainstorming** (I), **Análise e Revisão** (II) e **Workshop** (III). A afirmativa IV é falsa, pois os três exemplos são reuniões em grupo, e não observação direta dos usuários em seu ambiente natural de trabalho, que é a definição de etnografia."
+},
+
+// 53 - Etnografia
+{
+  aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+  tipo: "Conceitual Contextualizada",
+  texto: "Um analista de sistemas passou um dia inteiro acompanhando médicos e enfermeiros em um hospital, observando como eles utilizavam o sistema de prontuário eletrônico no dia a dia, registrando as dificuldades enfrentadas e as soluções improvisadas que os profissionais adotavam para contornar limitações do sistema atual.",
+  question: "Essa prática, descrita no material, corresponde a qual técnica de levantamento de requisitos?",
+  options: [
+    "Análise de documentos, pois o analista revisou manuais e registros de suporte do hospital antes de tomar qualquer decisão",
+    "Entrevista estruturada, pois o analista utilizou uma lista fixa de perguntas para todos os profissionais observados",
+    "Etnografia, pois envolve a observação direta dos usuários em seu ambiente natural de trabalho, permitindo identificar comportamentos reais e oportunidades de melhoria",
+    "Reunião de brainstorming, pois o objetivo principal foi gerar ideias livremente junto aos profissionais do hospital"
+  ],
+  answer: 2,
+  feedback: "A observação direta dos usuários em seu ambiente natural de trabalho, como no caso do analista acompanhando médicos e enfermeiros no hospital, é a definição de **etnografia** apresentada no material, permitindo identificar dificuldades e comportamentos reais que talvez não fossem mencionados espontaneamente."
+},
+
+// 54 - Efeito observador
+{
+  aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+  tipo: "Análise Aplicada",
+  texto: "Durante uma pesquisa etnográfica em uma empresa, um analista percebeu que os funcionários passaram a seguir rigorosamente todos os procedimentos formais do sistema assim que perceberam que estavam sendo observados, algo que normalmente não faziam em seu dia a dia de trabalho.",
+  question: "Esse fenômeno, mencionado no material como um dos desafios da etnografia, é conhecido como:",
+  options: [
+    "Efeito observador, que ocorre quando os usuários alteram seu comportamento por saberem que estão sendo observados, afetando a validade dos dados coletados",
+    "Viés de confirmação, que ocorre quando o analista busca apenas informações que confirmem hipóteses previamente estabelecidas",
+    "Inconsistência de stakeholders, que ocorre quando diferentes usuários fornecem informações conflitantes entre si durante entrevistas",
+    "Efeito de saturação, que ocorre quando o volume de dados qualitativos coletados se torna grande demais para ser interpretado"
+  ],
+  answer: 0,
+  feedback: "O material descreve exatamente esse fenômeno como **efeito observador**: quando os usuários alteram seu comportamento por saberem que estão sendo observados, o que pode comprometer a validade dos dados coletados durante a etnografia."
+},
+
+// 55 - Análise de documentos
+{
+  aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Antes de iniciar o desenvolvimento de um novo sistema de suporte ao cliente, uma equipe revisou manuais de usuário do sistema atual, analisou relatórios sobre quais funcionalidades eram mais utilizadas pelos clientes, e examinou registros de chamados de suporte para identificar problemas recorrentes relatados pelos usuários.",
+  question: "Avalie as afirmativas a seguir sobre a técnica utilizada pela equipe.",
+  assertions: [
+    "I. A revisão de manuais, relatórios de uso e registros de suporte corresponde à técnica de Análise de Documentos.",
+    "II. Essa técnica é útil para identificar requisitos implícitos e complementares que os usuários podem não mencionar explicitamente em entrevistas.",
+    "III. Um dos desafios dessa técnica, segundo o material, é que os documentos podem estar incompletos ou desatualizados, levando a uma compreensão incorreta dos requisitos.",
+    "IV. A Análise de Documentos é capaz de capturar, sem exceção, todas as necessidades dos usuários, mesmo aquelas que nunca foram documentadas."
+  ],
+  options: [
+    "I e II, apenas",
+    "I, II e III, apenas",
+    "II, III e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 1,
+  feedback: "A revisão de manuais, relatórios e registros de suporte corresponde à **Análise de Documentos** (I), útil para identificar requisitos implícitos (II), mas sujeita ao desafio de documentos incompletos ou desatualizados (III). A afirmativa IV é falsa, pois o próprio material reconhece que essa técnica pode não capturar necessidades não documentadas."
+},
+
+// 56 - Hard skills e soft skills
+{
+  aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+  tipo: "Asserção + Justificativa",
+  texto: "Um analista de requisitos precisa, ao mesmo tempo, compreender tecnicamente o domínio do problema para formular perguntas relevantes durante uma entrevista, e demonstrar empatia com os stakeholders para estabelecer um ambiente de confiança durante a conversa.",
+  question: "Avalie as asserções a seguir sobre as competências exigidas desse analista.",
+  assertions: [
+    "I. A compreensão técnica do domínio do problema é um exemplo de ==proc==hard skill==, enquanto a empatia é um exemplo de soft skill.",
+    "PORQUE II. Hard skills são habilidades técnicas adquiridas por treinamento, experiência prática e educação formal, enquanto soft skills estão relacionadas a comportamento, personalidade e habilidades sociais."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 0,
+  feedback: "O conhecimento técnico do domínio do problema é classificado no material como **hard skill**, enquanto a empatia é uma **soft skill** (I é verdadeira). Como essa é justamente a distinção conceitual apresentada entre os dois tipos de habilidade — técnicas versus comportamentais —, II justifica corretamente I."
+},
+
+// 57 - Entrevista semiestruturada
+{
+  aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+  tipo: "Conceitual Contextualizada",
+  texto: "Durante uma entrevista, o analista partiu de uma pergunta predefinida sobre quais funcionalidades o entrevistado esperava do novo sistema. Ao perceber que o entrevistado mencionou espontaneamente a importância de integrar o novo sistema com outra plataforma já utilizada pela empresa, o analista aprofundou esse ponto com perguntas adicionais não planejadas originalmente.",
+  question: "Esse tipo de entrevista, que combina perguntas predefinidas com a flexibilidade de explorar novos tópicos, é chamado no material de:",
+  options: [
+    "Entrevista estruturada, pois segue rigorosamente um roteiro fixo de perguntas, sem qualquer desvio durante a conversa",
+    "Entrevista não estruturada, pois não existe nenhum planejamento prévio das perguntas realizadas pelo analista",
+    "Entrevista semiestruturada, pois combina perguntas predefinidas com a flexibilidade de explorar novos tópicos que surgem durante a conversa",
+    "Reunião de brainstorming, pois o objetivo principal foi gerar novas ideias livremente com o entrevistado"
+  ],
+  answer: 2,
+  feedback: "A combinação de perguntas predefinidas com a flexibilidade de aprofundar tópicos que surgem espontaneamente durante a conversa é a definição de **entrevista semiestruturada** apresentada no material, diferente da estruturada (roteiro rígido) e da não estruturada (sem roteiro algum)."
+},
+
+// 58 - Desafios das entrevistas
+{
+  aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+  tipo: "Análise Aplicada",
+  texto: "Ao entrevistar três stakeholders diferentes de um mesmo sistema, um analista percebeu que cada um deles descreveu de forma bastante diferente qual deveria ser a principal funcionalidade do software, com informações que pareciam se contradizer entre si.",
+  question: "Considerando os desafios das entrevistas apresentados no material, qual habilidade seria mais relevante para o analista lidar com essa situação?",
+  options: [
+    "Discrição, pois o analista deve evitar interferir na rotina dos stakeholders durante a coleta de informações",
+    "Negociação, pois é a habilidade voltada a reconciliar requisitos conflitantes entre diferentes stakeholders, buscando compromissos que satisfaçam a todos",
+    "Técnicas de observação, pois o analista deve registrar dados de forma sistemática durante a interação com os stakeholders",
+    "Planejamento de reuniões, pois o principal desafio está relacionado à definição de agendas e objetivos específicos para o encontro"
+  ],
+  answer: 1,
+  feedback: "Diante de informações conflitantes entre diferentes stakeholders, a habilidade mais relevante apontada no material é a **negociação**, voltada justamente a reconciliar requisitos conflitantes e buscar compromissos que satisfaçam a todos os envolvidos."
+},
+
+// 59 - Levantamento de requisitos como processo contínuo
+{
+  aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Após o lançamento inicial de um sistema de gestão hospitalar, a equipe de desenvolvimento continuou realizando entrevistas periódicas com médicos e enfermeiros, revisando relatórios de uso do sistema e observando o comportamento dos usuários, mesmo meses após a implantação, para identificar novas necessidades que surgiram com o uso real do sistema.",
+  question: "Avalie as afirmativas a seguir sobre essa prática, à luz do material.",
+  assertions: [
+    "I. Essa prática reflete a ideia de que o Levantamento de Requisitos é um processo contínuo, que deve acompanhar todo o ciclo de vida do software.",
+    "II. As entrevistas periódicas, a revisão de relatórios e a observação de comportamento correspondem, respectivamente, às técnicas de entrevistas, análise de documentos e etnografia.",
+    "III. Segundo o material, o Levantamento de Requisitos deve ocorrer apenas uma vez, antes do início do desenvolvimento, sendo desnecessário revisá-lo após a implantação do sistema.",
+    "IV. A continuidade desse processo ajuda a garantir que os requisitos permaneçam atualizados e que o sistema evolua de forma sustentável."
+  ],
+  options: [
+    "I e II, apenas",
+    "I, II e IV, apenas",
+    "II, III e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 1,
+  feedback: "O cenário reflete exatamente a ideia de que o Levantamento de Requisitos é um **processo contínuo** (I), combinando entrevistas, análise de documentos e etnografia (II), o que ajuda a manter os requisitos atualizados e o sistema evoluindo de forma sustentável (IV). A afirmativa III é falsa, pois contraria diretamente essa continuidade defendida pelo material."
+},
+
+// 60 - Workshops
+{
+  aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+  tipo: "Conceitual Contextualizada",
+  texto: "Uma organização promoveu uma sessão colaborativa estruturada, com atividades práticas e exercícios específicos, reunindo diferentes stakeholders com o objetivo de mapear os processos atuais da empresa e identificar, de forma conjunta, áreas de melhoria que poderiam ser resolvidas por meio de um novo sistema de software.",
+  question: "Essa sessão, descrita no material, corresponde a qual tipo de reunião de levantamento de requisitos?",
+  options: [
+    "Reunião de Brainstorming, pois seu único objetivo é a geração livre de ideias, sem qualquer estrutura ou atividade prática",
+    "Reunião de Análise e Revisão, pois seu foco está exclusivamente em revisar requisitos que já haviam sido coletados anteriormente",
+    "Workshop, pois é uma sessão colaborativa mais estruturada, que combina elementos de brainstorming e de análise, com atividades práticas para explorar e definir requisitos",
+    "Entrevista contextual, pois envolve perguntas realizadas aos stakeholders durante a execução de suas atividades cotidianas"
+  ],
+  answer: 2,
+  feedback: "A sessão descrita — colaborativa, estruturada, com atividades práticas para mapear processos e identificar melhorias — corresponde a um **Workshop**, que combina elementos de brainstorming e de análise em um formato mais estruturado, conforme apresentado no material."
+},
+// 61 - AOO x POO
+{
+  aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+  tipo: "Asserção + Justificativa",
+  texto: "Uma equipe de desenvolvimento está construindo um sistema de locadora de veículos. Antes de escrever qualquer linha de código, os analistas identificaram quais entidades do domínio deveriam ser representadas como objetos — como Veículo, Cliente e Contrato — e definiram suas características e comportamentos. Somente depois disso, os programadores começaram a implementar essas definições em Java.",
+  question: "Considerando a relação entre AOO e POO apresentada no material, avalie as asserções a seguir.",
+  assertions: [
+    "I. A etapa de identificar as entidades do domínio e definir suas características corresponde à ==type==Análise Orientada a Objetos (AOO)==, enquanto a implementação em Java corresponde à Programação Orientada a Objetos (POO).",
+    "PORQUE II. A AOO cuida da fase de análise e modelagem do sistema, definindo os objetos e suas interações, enquanto a POO cuida da implementação dessas definições em código."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 0,
+  feedback: "A identificação das entidades do domínio, como Veículo e Cliente, corresponde à **AOO**, enquanto a implementação em Java corresponde à **POO**. Como o material define exatamente essa divisão de papéis entre análise/modelagem e implementação, II justifica corretamente I."
+},
+
+// 62 - Pilares da AOO
+{
+  aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Em um sistema bancário orientado a objetos, o atributo saldo de uma conta só pode ser alterado por meio dos métodos da própria classe Conta; o programador que utiliza o método sacar() não precisa conhecer como a verificação de saldo é implementada internamente; e a classe ContaPoupanca deriva da classe Conta, reaproveitando seus atributos e métodos.",
+  question: "Avalie as afirmativas a seguir sobre os conceitos da AOO presentes nesse sistema.",
+  assertions: [
+    "I. A restrição de acesso direto ao atributo saldo, exigindo que a alteração passe pelos métodos da classe, é um exemplo de encapsulamento.",
+    "II. A possibilidade de usar o método sacar() sem conhecer sua implementação interna é um exemplo de abstração.",
+    "III. A derivação de ContaPoupanca a partir de Conta, reaproveitando atributos e métodos, é um exemplo de herança.",
+    "IV. Esses três conceitos — encapsulamento, abstração e herança — são, segundo o material, sinônimos entre si, representando a mesma ideia central da AOO."
+  ],
+  options: [
+    "I e II, apenas",
+    "I, II e III, apenas",
+    "II, III e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 1,
+  feedback: "As três situações descritas correspondem, respectivamente, a **encapsulamento** (I), **abstração** (II) e **herança** (III), todos apresentados no material como pilares distintos da AOO. A afirmativa IV é falsa, pois cada conceito possui uma definição própria e diferente dos demais."
+},
+
+// 63 - Técnicas de modelagem OO
+{
+  aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+  tipo: "Conceitual Contextualizada",
+  texto: "Uma equipe de engenharia de software precisa escolher uma técnica de modelagem orientada a objetos que enfatize a integração suave entre as fases de análise, design e implementação, utilizando uma notação gráfica simples para descrever classes e suas interações — sendo especialmente indicada quando se busca transitar de forma fluida entre o modelo conceitual e o código final.",
+  question: "Considerando as técnicas de modelagem apresentadas no material, qual delas melhor atende a essa necessidade?",
+  options: [
+    "OMT, pois divide a modelagem em estrutura estática, comportamento dinâmico e fluxo de dados, sendo mais voltada às fases iniciais de design",
+    "BON, pois foca na integração entre análise, design e implementação, utilizando notação gráfica simples eficaz na transição entre design e código",
+    "UML, pois é a única técnica capaz de representar tanto a estrutura estática quanto o comportamento dinâmico de um sistema",
+    "Nenhuma das técnicas apresentadas no material aborda a integração entre análise, design e implementação"
+  ],
+  answer: 1,
+  feedback: "A **BON (Business Object Notation)**, criada por Jean-Marc Nerson e Kim Waldén, é apresentada no material como a técnica focada justamente na integração entre análise, design e implementação, utilizando uma notação gráfica simples eficaz para a transição suave entre modelo e código."
+},
+
+// 64 - Herança e polimorfismo em código
+{
+  aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+  tipo: "Análise Aplicada",
+  texto: "Considere o trecho de código a seguir, baseado no exemplo de hierarquia de animais apresentado no material, no qual a classe Cachorro e a classe Gato herdam de uma classe base comum e implementam o método fazerSom() de formas diferentes.",
+  code: `public abstract class Mamifero implements Animal {
+    protected String nome;
+    public Mamifero(String nome) { this.nome = nome; }
+    public void mover() { System.out.println(nome + " está se movendo"); }
+    public abstract void fazerSom();
+}
+
+public class Cachorro extends Mamifero {
+    public Cachorro(String nome) { super(nome); }
+    @Override
+    public void fazerSom() { System.out.println(nome + " faz: Au Au"); }
+}
+
+public class Gato extends Mamifero {
+    public Gato(String nome) { super(nome); }
+    @Override
+    public void fazerSom() { System.out.println(nome + " faz: Miau"); }
+}`,
+  question: "Ao percorrer um array do tipo Animal contendo objetos Cachorro e Gato e chamar animal.fazerSom() para cada elemento, cada objeto executa uma versão diferente do método, apesar de todos serem tratados de forma unificada pelo mesmo tipo Animal. Esse comportamento é um exemplo de qual conceito?",
+  options: [
+    "Encapsulamento, pois os atributos de Cachorro e Gato estão protegidos contra acesso externo indevido",
+    "Abstração, pois o programador não precisa conhecer os detalhes internos da implementação de fazerSom()",
+    "Polimorfismo, pois métodos redefinidos (override) em subclasses diferentes permitem que o mesmo método tenha comportamentos distintos conforme a classe do objeto",
+    "Composição, pois Cachorro e Gato são formados pela combinação de múltiplos objetos menores dentro de uma mesma estrutura"
+  ],
+  answer: 2,
+  feedback: "O comportamento descrito é **polimorfismo**: o método fazerSom() é redefinido (override) em Cachorro e Gato, permitindo que o mesmo método, chamado a partir de um tipo comum (Animal), produza resultados diferentes conforme a classe real do objeto."
+},
+
+// 65 - Origem das structs
+{
+  aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+  tipo: "Asserção + Justificativa",
+  texto: "Um desenvolvedor está estudando a origem histórica do conceito de objeto na programação. Ele descobre que, em linguagens como C, era possível agrupar variáveis de diferentes tipos em uma única unidade chamada struct, como uma struct Carro contendo os campos marca, ano e quilometragem.",
+  question: "Avalie as asserções a seguir sobre essa origem histórica.",
+  assertions: [
+    "I. As ==ddl==structs== evoluíram para o conceito de objeto com a introdução do paradigma orientado a objetos.",
+    "PORQUE II. As structs, por si só, já possuíam a capacidade de definir métodos e comportamentos associados aos dados agrupados, sendo equivalentes aos objetos da POO."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 2,
+  feedback: "As structs de fato evoluíram para o conceito de objeto (I é verdadeira). No entanto, o material afirma explicitamente que as structs carecem de comportamento — armazenam apenas dados, sem capacidade de definir operações sobre eles —, o que torna II falsa, pois estruturas e objetos não são equivalentes nesse aspecto."
+},
+
+// 66 - Diagrama de classes UML
+{
+  aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Um analista está elaborando um Diagrama de Classes UML para representar o sistema de uma biblioteca. Ele inclui uma classe com atributos marcados com indicadores de visibilidade pública, protegida e privada, uma operação com argumento e tipo de retorno, e um relacionamento de composição ligando essa classe a outra classe dependente.",
+  question: "Avalie as afirmativas a seguir sobre esse diagrama, considerando o material apresentado.",
+  assertions: [
+    "I. O Diagrama de Classes é classificado, na hierarquia de diagramas UML apresentada no material, como um Diagrama de Estruturas.",
+    "II. Os indicadores de visibilidade pública, protegida e privada são utilizados para especificar o nível de acesso permitido a atributos e operações de uma classe.",
+    "III. Um losango preenchido em uma relação entre classes é utilizado, segundo o material, para representar o relacionamento de composição.",
+    "IV. O Diagrama de Classes é classificado no material como um Diagrama de Comportamentos, assim como o Diagrama de Sequência."
+  ],
+  options: [
+    "I, II e III, apenas",
+    "I e II, apenas",
+    "II, III e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 0,
+  feedback: "O material classifica o **Diagrama de Classes** como um Diagrama de Estruturas (I), utiliza indicadores de visibilidade para atributos e operações (II) e representa composição por meio de um losango preenchido (III). A afirmativa IV é falsa, pois o Diagrama de Sequência pertence à categoria de Diagramas de Comportamentos, diferente do Diagrama de Classes."
+},
+
+// 67 - Interfaces
+{
+  aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+  tipo: "Conceitual Contextualizada",
+  texto: "Em um sistema que modela diferentes tipos de animais, a classe Passaro implementa diretamente um contrato que define os métodos fazerSom() e mover(), sem herdar de nenhuma classe intermediária, garantindo apenas que esses métodos existam em sua implementação, sem especificar como devem ser executados internamente.",
+  question: "Esse contrato implementado diretamente por Passaro, que define métodos obrigatórios sem especificar sua implementação, corresponde a qual conceito apresentado no material?",
+  options: [
+    "Herança, pois Passaro deriva diretamente de uma superclasse que já implementa fazerSom() e mover()",
+    "Interface, pois define contratos que classes podem implementar, garantindo que certos métodos sejam seguidos, sem especificar a implementação em si",
+    "Encapsulamento, pois esconde os detalhes internos da classe Passaro de outras partes do sistema",
+    "Composição, pois Passaro é formado pela combinação de múltiplos objetos menores em sua estrutura interna"
+  ],
+  answer: 1,
+  feedback: "O conceito descrito é o de **Interface**: um contrato que define quais métodos uma classe deve implementar, sem especificar como isso deve ser feito, promovendo flexibilidade e intercambialidade entre diferentes implementações — exatamente o caso de Passaro implementando Animal diretamente."
+},
+
+// 68 - Aplicações práticas da POO
+{
+  aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+  tipo: "Análise Aplicada",
+  texto: "Uma equipe está desenvolvendo uma aplicação web em JavaScript utilizando um framework que já fornece objetos básicos comuns a diferentes tipos de aplicações web, funcionando como um arcabouço que simplifica a escrita do código, evitando que a equipe precise reescrever estruturas repetitivas do zero.",
+  question: "Considerando os exemplos de aplicações práticas da POO apresentados no material, qual framework é citado como exemplo dessa situação em JavaScript?",
+  options: [
+    "Flask, framework citado no material como equivalente ao Express, mas voltado para a linguagem Python",
+    "WinUI, API do SDK do Windows utilizada para acesso a componentes gráficos prontos",
+    "Express, framework para desenvolvimento de aplicações web em JavaScript, rodando sobre o ambiente Node.js",
+    "OMT, técnica de modelagem orientada a objetos desenvolvida por James Rumbaugh em 1991"
+  ],
+  answer: 2,
+  feedback: "O **Express** é citado no material como o framework para desenvolvimento de aplicações web em JavaScript, rodando sobre o Node.js, fornecendo objetos básicos que simplificam a escrita de código — diferente do Flask, que é seu equivalente em Python."
+},
+
+// 69 - Componentização
+{
+  aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+  tipo: "Asserção + Justificativa",
+  texto: "Uma equipe de desenvolvimento de software decidiu estruturar seu sistema como um conjunto de unidades independentes, cada uma responsável por uma funcionalidade específica, que se comunicam entre si por meio de troca de mensagens — de forma semelhante a peças de um brinquedo de montar que se encaixam e interagem.",
+  question: "Avalie as asserções a seguir sobre essa estratégia de desenvolvimento.",
+  assertions: [
+    "I. Essa estratégia é descrita no material como ==type==componentização==, um conceito trazido pela POO às arquiteturas de software.",
+    "PORQUE II. A POO permite conceber um sistema como unidades básicas combinadas para realizar uma funcionalidade, comunicando-se por troca de mensagens, conceito do qual derivam tecnologias como os Componentes Web."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 0,
+  feedback: "A estratégia descrita corresponde exatamente à **componentização**, conceito trazido pela POO às arquiteturas de software, do qual derivam tecnologias como os Componentes Web. Como essa é a própria definição do conceito apresentada no material, II justifica corretamente I."
+},
+
+// 70 - Comparação structs x objetos
+{
+  aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Um professor está explicando aos alunos a diferença entre uma struct em C e uma classe em Python. Ele mostra que a struct agrupa apenas os campos marca, ano e quilometragem de um carro, sem nenhuma função associada, enquanto a classe Carro em Python, além desses atributos, também define métodos como acelerar() e frear().",
+  question: "Avalie as afirmativas a seguir sobre essa comparação, considerando o material apresentado.",
+  assertions: [
+    "I. A struct em C armazena apenas dados, sem capacidade de definir operações sobre eles, conforme descrito no material.",
+    "II. A classe Carro em Python, ao definir métodos como acelerar() e frear(), demonstra a capacidade de encapsular tanto dados quanto comportamento em um mesmo objeto.",
+    "III. A necessidade de declarar objetos semelhantes sem reescrever código motivou, segundo o material, a criação da abstração chamada Classe.",
+    "IV. Segundo o material, structs e classes orientadas a objetos são conceitos idênticos, sem nenhuma diferença relevante entre eles."
+  ],
+  options: [
+    "I e II, apenas",
+    "I, II e III, apenas",
+    "II, III e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 1,
+  feedback: "O material afirma que **structs** armazenam apenas dados, sem comportamento (I), enquanto **classes** encapsulam dados e métodos (II), e que a necessidade de declarar objetos semelhantes sem reescrever código motivou a criação do conceito de **Classe** (III). A afirmativa IV é falsa, pois o material trata structs e objetos como conceitos distintos, sendo a struct um antecessor histórico do objeto, e não um sinônimo dele."
+},
+
+  ],
 
 
-  fixacao: [],
+  fixacao: [
+  // 1 - Fases do desenvolvimento
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Direta",
+    texto: "O desenvolvimento de software é organizado em fases distintas.",
+    question: "Qual das fases a seguir tem como foco conversar com o cliente para identificar suas necessidades e o propósito do software?",
+    options: [
+      "Levantamento de requisitos",
+      "Planejamento",
+      "Design",
+      "Implantação"
+    ],
+    answer: 0,
+    feedback: "O levantamento de requisitos é a etapa em que se conversa com o cliente para descobrir o que ele precisa e o que o sistema deverá oferecer."
+  },
+
+  // 2 - Análise x Modelagem
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Contexto",
+    texto: "Análise e modelagem são etapas complementares no desenvolvimento de sistemas, mas cada uma tem um foco diferente.",
+    question: "Qual afirmação descreve corretamente a diferença entre análise e modelagem?",
+    options: [
+      "A análise define o que o sistema deve fazer, enquanto a modelagem mostra como o sistema deve fazer",
+      "A análise mostra como o sistema deve fazer, enquanto a modelagem define o que ele deve fazer",
+      "Ambas têm exatamente a mesma função dentro do processo de desenvolvimento",
+      "A modelagem substitui totalmente a necessidade de análise de requisitos"
+    ],
+    answer: 0,
+    feedback: "A análise investiga o problema e define o que o sistema deve fazer; a modelagem representa, por meio de diagramas e símbolos, como o sistema deve funcionar."
+  },
+
+  // 3 - Exemplo de análise aplicada
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Aplicação",
+    texto: "Uma varejista percebe atrasos constantes na reposição de produtos e dificuldade em rastrear itens no estoque. A equipe de TI decide investigar o problema antes de propor qualquer solução técnica.",
+    question: "Nesse cenário, a atividade de investigar o problema, entender as necessidades da equipe e identificar as causas dos atrasos corresponde a qual etapa?",
+    options: [
+      "Análise do sistema",
+      "Modelagem formal",
+      "Codificação",
+      "Implantação"
+    ],
+    answer: 0,
+    feedback: "Investigar o problema, entender necessidades e identificar o que o sistema deve resolver são atividades típicas da análise do sistema, que precede a modelagem da solução."
+  },
+
+  // 4 - UML
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Direta",
+    texto: "A UML é amplamente citada como ferramenta de modelagem.",
+    question: "O que significa a sigla UML, mencionada no material como padrão para modelagem orientada a objetos?",
+    options: [
+      "Unified Modeling Language",
+      "Universal Management Layer",
+      "Unified Method Logic",
+      "User Modeling Language"
+    ],
+    answer: 0,
+    feedback: "UML significa Unified Modeling Language, um padrão amplamente utilizado para modelar sistemas orientados a objetos."
+  },
+
+  // 5 - Tipos de modelagem
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Contexto",
+    texto: "O material apresenta diferentes tipos de modelagem, cada um com um foco específico dentro do desenvolvimento de sistemas.",
+    question: "Qual tipo de modelagem utiliza lógica formal para descrever matematicamente o comportamento de um sistema, sendo indicada para componentes que exigem maior precisão?",
+    options: [
+      "Modelagem formal",
+      "Modelagem funcional",
+      "Modelagem estruturada",
+      "Modelagem baseada em processos"
+    ],
+    answer: 0,
+    feedback: "A modelagem formal usa lógica formal para descrever matematicamente o comportamento do sistema, sendo empregada em componentes críticos que exigem maior precisão, como nas Redes de Petri."
+  },
+
+  // 6 - Classe e objeto
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Aplicação",
+    texto: "Em um sistema hospitalar, um médico chamado Dr. Carlos é cadastrado no sistema com nome, especialidade e CRM preenchidos.",
+    question: "Nesse exemplo, o registro concreto de 'Dr. Carlos' com seus dados preenchidos representa qual conceito da orientação a objetos?",
+    options: [
+      "Um objeto, instância da classe Médico",
+      "Uma classe, que define o médico",
+      "Um método de encapsulamento",
+      "Um exemplo de herança múltipla"
+    ],
+    answer: 0,
+    feedback: "O objeto é a instância concreta de uma classe. 'Dr. Carlos' com seus dados específicos preenchidos é uma instância concreta da classe Médico."
+  },
+
+  // 7 - Encapsulamento
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Direta",
+    texto: "Um dos pilares da orientação a objetos trata do controle de acesso aos detalhes internos de um objeto.",
+    question: "Qual conceito da orientação a objetos protege dados e métodos contra acessos ou modificações indevidas por outros objetos?",
+    options: [
+      "Encapsulamento",
+      "Herança",
+      "Polimorfismo",
+      "Abstração"
+    ],
+    answer: 0,
+    feedback: "O encapsulamento tem como ideia central controlar o acesso aos detalhes internos do objeto, protegendo dados e métodos."
+  },
+
+  // 8 - Herança e polimorfismo
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Contexto",
+    texto: "Em um sistema orientado a objetos, uma classe Funcionario possui uma característica comum, mas as classes Gerente e Vendedor, que herdam dela, implementam o método calcularSalario() de formas diferentes.",
+    question: "O fato de o mesmo método ter comportamentos diferentes em Gerente e Vendedor exemplifica qual conceito?",
+    options: [
+      "Polimorfismo",
+      "Encapsulamento",
+      "Modularidade estrutural",
+      "Modelagem formal"
+    ],
+    answer: 0,
+    feedback: "O polimorfismo permite que diferentes operações compartilhem o mesmo nome, mas se comportem de formas distintas dependendo do contexto ou da classe."
+  },
+
+  // 9 - Abstração
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Aplicação",
+    texto: "Um desenvolvedor utiliza uma biblioteca para enviar e-mails apenas chamando um método enviarEmail(), sem precisar saber como o protocolo de envio funciona internamente.",
+    question: "Essa situação, em que o usuário utiliza uma funcionalidade sem conhecer sua implementação interna, ilustra principalmente qual conceito?",
+    options: [
+      "Abstração",
+      "Herança",
+      "Modelagem estruturada",
+      "Levantamento de requisitos"
+    ],
+    answer: 0,
+    feedback: "A abstração esconde detalhes desnecessários da implementação, permitindo usar uma funcionalidade sem precisar conhecer como ela funciona internamente."
+  },
+
+  // 10 - Vantagens da orientação a objetos
+  {
+    aula: "Aula 1 — Conceitos Iniciais",
+    tipo: "Direta",
+    texto: "A orientação a objetos traz benefícios práticos para o desenvolvimento de software.",
+    question: "Qual das opções abaixo NÃO é citada no material como uma vantagem da orientação a objetos?",
+    options: [
+      "Eliminação total da necessidade de testes",
+      "Modularidade",
+      "Reutilização de código",
+      "Facilidade de manutenção"
+    ],
+    answer: 0,
+    feedback: "O material cita modularidade, reutilização de código, flexibilidade e facilidade de manutenção como vantagens, mas não afirma que a orientação a objetos elimina a necessidade de testes."
+  },
+  // 11 - Definição de ciclo de vida
+  {
+    aula: "Aula 2 — Ciclo de Vida do Software",
+    tipo: "Direta",
+    texto: "O ciclo de vida do software organiza as fases pelas quais um sistema passa.",
+    question: "O que é o ciclo de vida do software, segundo o material?",
+    options: [
+      "Uma abordagem estruturada que organiza as fases do software desde sua concepção até a manutenção/descontinuação",
+      "Um conjunto de testes aplicados apenas na fase final do projeto",
+      "Um documento único que substitui o levantamento de requisitos",
+      "Um modelo exclusivo para sistemas de grande porte"
+    ],
+    answer: 0,
+    feedback: "O ciclo de vida do software é a estrutura que organiza as fases do sistema, da concepção até a manutenção ou descontinuação."
+  },
+
+  // 12 - Modelo Cascata
+  {
+    aula: "Aula 2 — Ciclo de Vida do Software",
+    tipo: "Contexto",
+    texto: "O Modelo em Cascata é considerado o mais antigo entre os apresentados, sendo formalizado por Royce em 1970.",
+    question: "Qual é a principal característica do Modelo em Cascata?",
+    options: [
+      "As fases são sequenciais, e uma fase só começa quando a anterior termina",
+      "As entregas ocorrem em módulos independentes ao longo do projeto",
+      "O foco está na análise contínua de riscos a cada ciclo",
+      "O desenvolvimento ocorre em ciclos muito curtos, entre 60 e 90 dias"
+    ],
+    answer: 0,
+    feedback: "O Cascata é um modelo linear e sequencial, em que uma fase começa somente após o término da anterior."
+  },
+
+  // 13 - Aplicação do Incremental
+  {
+    aula: "Aula 2 — Ciclo de Vida do Software",
+    tipo: "Aplicação",
+    texto: "Uma empresa decide desenvolver seu sistema de gestão dividindo-o em módulos de contabilidade, recursos humanos e estoque, entregando cada módulo separadamente conforme fica pronto.",
+    question: "Essa estratégia de desenvolvimento corresponde a qual modelo de ciclo de vida?",
+    options: [
+      "Incremental",
+      "Cascata",
+      "Espiral",
+      "RUP"
+    ],
+    answer: 0,
+    feedback: "O Modelo Incremental divide o sistema em módulos desenvolvidos e entregues progressivamente, aumentando a funcionalidade aos poucos."
+  },
+
+  // 14 - RAD
+  {
+    aula: "Aula 2 — Ciclo de Vida do Software",
+    tipo: "Direta",
+    texto: "O RAD é conhecido por sua rapidez no desenvolvimento.",
+    question: "Qual é a característica central do modelo RAD (Rapid Application Development)?",
+    options: [
+      "Desenvolvimento rápido, com ciclos curtos e abordagem iterativa e incremental",
+      "Ênfase exclusiva na documentação detalhada do sistema",
+      "Fases estritamente sequenciais sem possibilidade de retorno",
+      "Foco principal na análise formal de riscos do projeto"
+    ],
+    answer: 0,
+    feedback: "O RAD enfatiza desenvolvimento rápido, com ciclos curtos (geralmente entre 60 e 90 dias) e caráter iterativo e incremental."
+  },
+
+  // 15 - Prototipagem
+  {
+    aula: "Aula 2 — Ciclo de Vida do Software",
+    tipo: "Contexto",
+    texto: "Uma equipe de design cria uma versão inicial e simplificada de uma interface para que os usuários testem e deem feedback antes da versão final ser desenvolvida.",
+    question: "Essa prática descrita está associada a qual conceito do material?",
+    options: [
+      "Prototipagem",
+      "Modelo Espiral",
+      "Teste de regressão",
+      "RUP"
+    ],
+    answer: 0,
+    feedback: "A prototipagem consiste em construir um exemplar inicial do software para captar, esclarecer e refinar requisitos."
+  },
+
+  // 16 - Modelo Espiral
+  {
+    aula: "Aula 2 — Ciclo de Vida do Software",
+    tipo: "Aplicação",
+    texto: "Em um sistema de defesa, a equipe precisa avaliar continuamente possíveis riscos técnicos e operacionais a cada nova etapa do desenvolvimento.",
+    question: "Esse cenário é um exemplo característico de qual modelo de ciclo de vida?",
+    options: [
+      "Espiral",
+      "Cascata",
+      "RAD",
+      "Prototipagem"
+    ],
+    answer: 0,
+    feedback: "O Modelo Espiral combina elementos de Cascata e Prototipagem, dando grande importância à análise contínua de riscos em cada ciclo."
+  },
+
+  // 17 - RUP
+  {
+    aula: "Aula 2 — Ciclo de Vida do Software",
+    tipo: "Direta",
+    texto: "O RUP é um modelo dividido em quatro fases principais.",
+    question: "Quais são as quatro fases do RUP (Rational Unified Process)?",
+    options: [
+      "Concepção, Elaboração, Construção e Transição",
+      "Planejamento, Análise, Design e Testes",
+      "Requisitos, Prototipagem, Implementação e Manutenção",
+      "Iniciação, Execução, Monitoramento e Encerramento"
+    ],
+    answer: 0,
+    feedback: "O RUP é dividido em quatro fases: Concepção, Elaboração, Construção e Transição, sendo iterativo, incremental e orientado a casos de uso."
+  },
+
+  // 18 - Testes de regressão
+  {
+    aula: "Aula 2 — Ciclo de Vida do Software",
+    tipo: "Aplicação",
+    texto: "Após adicionar uma nova funcionalidade a um sistema de CRM, a equipe decide verificar se o gerenciamento de contatos e o rastreamento de vendas continuam funcionando normalmente.",
+    question: "Esse procedimento corresponde a qual tipo de teste?",
+    options: [
+      "Teste de regressão",
+      "Teste de usabilidade",
+      "Teste de desempenho",
+      "Teste de segurança"
+    ],
+    answer: 0,
+    feedback: "O teste de regressão verifica se uma nova alteração não quebrou funcionalidades que já funcionavam corretamente antes."
+  },
+
+  // 19 - Testes de segurança
+  {
+    aula: "Aula 2 — Ciclo de Vida do Software",
+    tipo: "Direta",
+    texto: "Alguns tipos de teste têm como foco proteger o sistema contra ataques maliciosos.",
+    question: "Qual tipo de teste tem como objetivo identificar vulnerabilidades como SQL Injection e Cross-Site Scripting (XSS)?",
+    options: [
+      "Teste de segurança",
+      "Teste funcional",
+      "Teste de comportamento",
+      "Teste de regressão"
+    ],
+    answer: 0,
+    feedback: "Os testes de segurança identificam e corrigem vulnerabilidades, protegendo o sistema contra acessos não autorizados e ataques, como SQL Injection e XSS."
+  },
+
+  // 20 - Metodologias Ágeis
+  {
+    aula: "Aula 2 — Ciclo de Vida do Software",
+    tipo: "Contexto",
+    texto: "Uma equipe de desenvolvimento de aplicativos móveis trabalha em ciclos curtos, com entregas frequentes e ajustes constantes conforme o feedback dos usuários.",
+    question: "Essa forma de trabalho está mais alinhada com qual abordagem de ciclo de vida?",
+    options: [
+      "Metodologias Ágeis",
+      "Modelo em Cascata",
+      "RUP",
+      "Modelo Espiral"
+    ],
+    answer: 0,
+    feedback: "As Metodologias Ágeis trabalham com ciclos curtos, incrementais e iterativos, priorizando colaboração contínua, entregas frequentes e resposta rápida a mudanças."
+  },
+    // 21 - Comparativo entre modelos
+  {
+    aula: "Aula 3 — Modelos Cascata e Incremental",
+    tipo: "Direta",
+    texto: "O material compara três categorias de modelos de desenvolvimento de software.",
+    question: "Qual é o foco principal dos Modelos Tradicionais, segundo o quadro comparativo apresentado?",
+    options: [
+      "Planejamento e controle",
+      "Adaptabilidade e feedback",
+      "Estruturação e entrega gradual",
+      "Análise contínua de riscos"
+    ],
+    answer: 0,
+    feedback: "O quadro comparativo indica que os Modelos Tradicionais têm como foco principal o planejamento e o controle do projeto."
+  },
+
+  // 22 - Modelos Iterativos
+  {
+    aula: "Aula 3 — Modelos Cascata e Incremental",
+    tipo: "Contexto",
+    texto: "Os Modelos Iterativos, representados pelo RUP, dividem o projeto em ciclos repetitivos de planejamento, design, implementação e testes.",
+    question: "Qual das opções abaixo é uma característica dos Modelos Iterativos?",
+    options: [
+      "Identificação precoce de problemas e melhoria contínua a cada ciclo",
+      "Estrutura totalmente linear, sem possibilidade de revisão",
+      "Ausência de envolvimento do cliente durante o desenvolvimento",
+      "Entrega única do sistema completo ao final do projeto"
+    ],
+    answer: 0,
+    feedback: "Os Modelos Iterativos permitem revisar e ajustar o projeto a cada ciclo, favorecendo identificação precoce de problemas e melhoria contínua."
+  },
+
+  // 23 - Aplicação do Cascata
+  {
+    aula: "Aula 3 — Modelos Cascata e Incremental",
+    tipo: "Aplicação",
+    texto: "Uma equipe está desenvolvendo o software embarcado de um equipamento médico, cujos requisitos regulatórios são fixos e não devem mudar ao longo do projeto.",
+    question: "Considerando as características apresentadas no material, qual modelo seria mais indicado para esse cenário?",
+    options: [
+      "Modelo Cascata",
+      "Modelo Incremental",
+      "Modelo Iterativo",
+      "Nenhum dos modelos seria adequado"
+    ],
+    answer: 0,
+    feedback: "O Modelo Cascata é indicado para projetos com requisitos bem definidos, estáveis e ambientes controlados, como é o caso de sistemas embarcados médicos."
+  },
+
+  // 24 - Etapas do Cascata
+  {
+    aula: "Aula 3 — Modelos Cascata e Incremental",
+    tipo: "Direta",
+    texto: "O Modelo Cascata segue uma sequência fixa de etapas.",
+    question: "Qual é a sequência correta das etapas do Modelo Cascata apresentada na Figura 1 do material?",
+    options: [
+      "Definição de Requisitos → Projeto de Sistema e Software → Implementação e Teste Unitário → Integração e Teste de Sistema → Operação e Manutenção",
+      "Planejamento → Testes → Implementação → Requisitos → Manutenção",
+      "Design → Requisitos → Implementação → Integração → Planejamento",
+      "Requisitos → Manutenção → Implementação → Testes → Projeto"
+    ],
+    answer: 0,
+    feedback: "A sequência apresentada é: Definição de Requisitos, Projeto de Sistema e Software, Implementação e Teste Unitário, Integração e Teste de Sistema, e Operação e Manutenção."
+  },
+
+  // 25 - Desvantagem do Cascata
+  {
+    aula: "Aula 3 — Modelos Cascata e Incremental",
+    tipo: "Contexto",
+    texto: "Durante o desenvolvimento de um sistema utilizando o Modelo Cascata, o cliente solicita uma mudança significativa nos requisitos já na fase de integração e teste do sistema.",
+    question: "Segundo o material, qual é a consequência mais provável dessa mudança tardia nesse modelo?",
+    options: [
+      "Retrabalho, aumento de custos e atrasos no cronograma",
+      "Nenhum impacto, já que o Cascata se adapta facilmente a mudanças",
+      "Redução automática do escopo do projeto",
+      "Entrega antecipada do sistema"
+    ],
+    answer: 0,
+    feedback: "A estrutura sequencial do Cascata dificulta mudanças em fases avançadas, podendo gerar retrabalho, custos adicionais e atrasos no cronograma."
+  },
+
+  // 26 - Modelo Incremental — funcionamento
+  {
+    aula: "Aula 3 — Modelos Cascata e Incremental",
+    tipo: "Direta",
+    texto: "O Modelo Incremental também é conhecido por outro nome no material.",
+    question: "Como o Modelo Incremental também é chamado, segundo o PDF?",
+    options: [
+      "Modelo de Desenvolvimento Evolucionário",
+      "Modelo Linear Sequencial",
+      "Modelo de Casos de Uso",
+      "Modelo de Prototipagem Rápida"
+    ],
+    answer: 0,
+    feedback: "O material indica que o Modelo Incremental também é chamado de Modelo de Desenvolvimento Evolucionário."
+  },
+
+  // 27 - Aplicação do Incremental
+  {
+    aula: "Aula 3 — Modelos Cascata e Incremental",
+    tipo: "Aplicação",
+    texto: "Um banco está desenvolvendo um novo sistema e decide lançar primeiro a funcionalidade de abertura de contas, depois transferências, e em seguida pagamentos e investimentos, ajustando o projeto conforme o feedback dos usuários.",
+    question: "Essa estratégia de desenvolvimento é característica de qual modelo?",
+    options: [
+      "Modelo Incremental",
+      "Modelo Cascata",
+      "Modelo Tradicional",
+      "Nenhum dos modelos citados"
+    ],
+    answer: 0,
+    feedback: "O Modelo Incremental entrega funcionalidades gradualmente, permitindo adaptação conforme o feedback dos usuários, como no exemplo de sistemas bancários citado no material."
+  },
+
+  // 28 - Vantagem do Incremental
+  {
+    aula: "Aula 3 — Modelos Cascata e Incremental",
+    tipo: "Direta",
+    texto: "O Modelo Incremental oferece algumas vantagens específicas em relação a projetos com requisitos instáveis.",
+    question: "Qual das opções abaixo é uma vantagem do Modelo Incremental citada no material?",
+    options: [
+      "Redução de riscos pela identificação precoce de problemas",
+      "Documentação mais simples do que em outros modelos",
+      "Eliminação total da necessidade de testes de integração",
+      "Ausência de necessidade de comunicação entre equipe e stakeholders"
+    ],
+    answer: 0,
+    feedback: "Como o projeto é dividido em incrementos menores, problemas podem ser identificados e resolvidos mais cedo, reduzindo riscos significativos."
+  },
+
+  // 29 - Desvantagem do Incremental
+  {
+    aula: "Aula 3 — Modelos Cascata e Incremental",
+    tipo: "Contexto",
+    texto: "Uma equipe que utiliza o Modelo Incremental precisa coordenar o desenvolvimento de vários incrementos ao mesmo tempo, garantindo que todos se integrem corretamente ao sistema final.",
+    question: "Essa necessidade de coordenação constante entre os incrementos representa qual desvantagem do modelo?",
+    options: [
+      "Maior complexidade de gerenciamento",
+      "Baixa adaptabilidade a mudanças",
+      "Menor envolvimento do cliente",
+      "Estrutura excessivamente rígida"
+    ],
+    answer: 0,
+    feedback: "A necessidade de coordenar o desenvolvimento e a integração de vários incrementos é apontada no material como uma fonte de maior complexidade de gerenciamento."
+  },
+
+  // 30 - Cascata x Incremental
+  {
+    aula: "Aula 3 — Modelos Cascata e Incremental",
+    tipo: "Contexto",
+    texto: "O material apresenta um comparativo direto entre o Modelo Cascata e o Modelo Incremental quanto ao envolvimento do cliente durante o desenvolvimento.",
+    question: "De acordo com o comparativo apresentado, como esses dois modelos se diferenciam quanto ao envolvimento do cliente?",
+    options: [
+      "No Cascata o envolvimento é menor ao longo do processo; no Incremental há maior envolvimento e feedback",
+      "No Cascata o envolvimento é maior; no Incremental o cliente não participa do processo",
+      "Ambos os modelos possuem exatamente o mesmo nível de envolvimento do cliente",
+      "No Incremental o cliente só participa na fase final do projeto"
+    ],
+    answer: 0,
+    feedback: "O comparativo indica que no Cascata o cliente tem menor envolvimento ao longo do processo, enquanto no Incremental há maior envolvimento e feedback contínuo."
+  },
+    // 31 - Manifesto Ágil
+  {
+    aula: "Aula 4 — Métodos Ágeis",
+    tipo: "Direta",
+    texto: "O Manifesto Ágil, criado em 2001, estabelece os valores centrais dos métodos ágeis.",
+    question: "Segundo o Manifesto Ágil, qual das opções abaixo representa corretamente um de seus quatro valores fundamentais?",
+    options: [
+      "Responder a mudanças mais que seguir um plano",
+      "Seguir processos rígidos mais que buscar colaboração",
+      "Documentação abrangente mais que software em funcionamento",
+      "Negociação de contratos mais que colaboração com o cliente"
+    ],
+    answer: 0,
+    feedback: "O Manifesto Ágil valoriza responder a mudanças mais do que seguir rigidamente um plano, reconhecendo que mudanças são inevitáveis no desenvolvimento."
+  },
+
+  // 32 - Origem histórica
+  {
+    aula: "Aula 4 — Métodos Ágeis",
+    tipo: "Direta",
+    texto: "Os métodos ágeis surgiram como resposta à rigidez dos modelos tradicionais.",
+    question: "Quem são apontados no material como os criadores do Scrum e do Extreme Programming (XP), respectivamente?",
+    options: [
+      "Ken Schwaber e Jeff Sutherland (Scrum); Kent Beck e Ward Cunningham (XP)",
+      "Kent Beck e Ward Cunningham (Scrum); Ken Schwaber e Jeff Sutherland (XP)",
+      "Royce (Scrum); Boehm (XP)",
+      "James Martin (Scrum); Ivar Jacobson (XP)"
+    ],
+    answer: 0,
+    feedback: "O Scrum foi liderado por Ken Schwaber e Jeff Sutherland, enquanto o XP foi criado por Kent Beck e Ward Cunningham."
+  },
+
+  // 33 - Comparação com métodos tradicionais
+  {
+    aula: "Aula 4 — Métodos Ágeis",
+    tipo: "Contexto",
+    texto: "O material compara métodos ágeis e métodos tradicionais quanto à forma de lidar com mudanças de requisitos e feedback do cliente.",
+    question: "De acordo com o Quadro 1 apresentado, como os métodos ágeis se diferenciam dos tradicionais quanto ao feedback do cliente?",
+    options: [
+      "Nos métodos ágeis o feedback é contínuo e constante; nos tradicionais é limitado a fases específicas",
+      "Nos métodos ágeis o feedback só ocorre ao final do projeto; nos tradicionais é constante",
+      "Ambas as abordagens tratam o feedback do cliente da mesma forma",
+      "Métodos tradicionais não permitem qualquer tipo de feedback do cliente"
+    ],
+    answer: 0,
+    feedback: "Nos métodos ágeis, o feedback do cliente é contínuo e constante, enquanto nos métodos tradicionais ele fica limitado a fases específicas do projeto."
+  },
+
+  // 34 - Aplicação de empresas
+  {
+    aula: "Aula 4 — Métodos Ágeis",
+    tipo: "Aplicação",
+    texto: "O material cita diversas empresas que adotam métodos ágeis, incluindo empresas de tecnologia, startups e instituições governamentais.",
+    question: "Segundo os exemplos apresentados, qual das empresas abaixo é citada como usuária do Scrum no desenvolvimento de aplicativos mobile e plataformas digitais?",
+    options: [
+      "Banco Itaú",
+      "Volkswagen",
+      "Philips",
+      "Rappi"
+    ],
+    answer: 0,
+    feedback: "O material cita o Banco Itaú como uma empresa tradicional que emprega o Scrum em projetos como aplicativos mobile e plataformas digitais."
+  },
+
+  // 35 - Pilares do Scrum
+  {
+    aula: "Aula 4 — Métodos Ágeis",
+    tipo: "Direta",
+    texto: "O Scrum é estruturado com base em três pilares fundamentais.",
+    question: "Quais são os três pilares do Scrum apresentados no material?",
+    options: [
+      "Transparência, Inspeção e Adaptação",
+      "Planejamento, Execução e Controle",
+      "Comunicação, Simplicidade e Feedback",
+      "Colaboração, Documentação e Entrega"
+    ],
+    answer: 0,
+    feedback: "O Scrum é baseado nos pilares de Transparência, Inspeção e Adaptação, que orientam a forma como a equipe trabalha ao longo dos sprints."
+  },
+
+  // 36 - Papéis do Scrum
+  {
+    aula: "Aula 4 — Métodos Ágeis",
+    tipo: "Aplicação",
+    texto: "Em uma equipe Scrum, um dos membros é responsável por remover obstáculos da equipe e garantir que os princípios do Scrum sejam seguidos corretamente, sem definir o que será desenvolvido.",
+    question: "Esse papel descrito corresponde a qual ator-chave do Scrum?",
+    options: [
+      "Scrum Master",
+      "Product Owner",
+      "Time de Desenvolvimento",
+      "Stakeholder"
+    ],
+    answer: 0,
+    feedback: "O Scrum Master é o guardião do processo, responsável por remover obstáculos e garantir que os princípios do Scrum sejam seguidos pela equipe."
+  },
+
+  // 37 - Burndown Chart
+  {
+    aula: "Aula 4 — Métodos Ágeis",
+    tipo: "Contexto",
+    texto: "Durante uma sprint, a equipe percebe que a Linha de Trabalho Restante Real está consistentemente acima da Linha de Trabalho Restante Ideal no Burndown Chart.",
+    question: "O que essa situação indica, segundo o funcionamento do Burndown Chart descrito no material?",
+    options: [
+      "A equipe está atrasada em relação ao ritmo esperado e pode precisar revisar o planejamento",
+      "A equipe está adiantada em relação ao cronograma da sprint",
+      "O gráfico está incorreto, pois a linha real nunca deve variar da ideal",
+      "A sprint já foi concluída com sucesso"
+    ],
+    answer: 0,
+    feedback: "Se a linha real se mantém acima da linha ideal, isso indica que a equipe está atrás do ritmo esperado, podendo ser necessário melhorar o ritmo ou revisar o planejamento."
+  },
+
+  // 38 - Valores do XP
+  {
+    aula: "Aula 4 — Métodos Ágeis",
+    tipo: "Direta",
+    texto: "O Extreme Programming (XP) se apoia em valores fundamentais que orientam suas práticas.",
+    question: "Qual das opções abaixo é um dos cinco valores fundamentais do XP apresentados no material?",
+    options: [
+      "Coragem",
+      "Transparência",
+      "Inspeção",
+      "Priorização de backlog"
+    ],
+    answer: 0,
+    feedback: "Coragem é um dos cinco valores fundamentais do XP, ao lado de comunicação, simplicidade, feedback e respeito."
+  },
+
+  // 39 - Prática do XP
+  {
+    aula: "Aula 4 — Métodos Ágeis",
+    tipo: "Aplicação",
+    texto: "Em uma equipe que utiliza XP, dois desenvolvedores trabalham juntos na mesma estação, um escrevendo o código enquanto o outro revisa cada linha em tempo real.",
+    question: "Essa prática descrita corresponde a qual técnica do Extreme Programming?",
+    options: [
+      "Programação em Pares",
+      "Integração Contínua",
+      "Refatoração",
+      "Planejamento em Tempo Real"
+    ],
+    answer: 0,
+    feedback: "A Programação em Pares consiste em dois programadores trabalhando juntos na mesma estação, promovendo colaboração e revisão de código em tempo real."
+  },
+
+  // 40 - Scrum x XP
+  {
+    aula: "Aula 4 — Métodos Ágeis",
+    tipo: "Contexto",
+    texto: "O material compara o Scrum e o Extreme Programming (XP) quanto ao foco principal de cada metodologia.",
+    question: "De acordo com o comparativo apresentado, qual é a principal diferença de foco entre XP e Scrum?",
+    options: [
+      "XP prioriza práticas técnicas de engenharia de software, enquanto o Scrum tem uma visão mais gerencial do processo",
+      "XP é focado exclusivamente em gerenciamento de equipes, enquanto o Scrum trata apenas de qualidade de código",
+      "Ambos os métodos possuem exatamente o mesmo foco e as mesmas práticas",
+      "O Scrum é voltado à engenharia de software, enquanto o XP organiza papéis como Product Owner e Scrum Master"
+    ],
+    answer: 0,
+    feedback: "O XP tem foco técnico, priorizando práticas de engenharia como testes unitários e programação em pares, enquanto o Scrum assume uma visão mais gerencial, estruturando sprints e papéis como Product Owner e Scrum Master."
+  },
+    // 41 - Elicitação de requisitos
+  {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Direta",
+    texto: "A elicitação é descrita como a arte de descobrir, ouvir e entender os requisitos das partes interessadas.",
+    question: "Qual das opções abaixo é uma técnica de elicitação de requisitos citada no material?",
+    options: [
+      "Entrevistas",
+      "Burndown Chart",
+      "Refatoração",
+      "Sprint Retrospective"
+    ],
+    answer: 0,
+    feedback: "Entrevistas, questionários e workshops são citados como técnicas usadas na elicitação de requisitos, para coletar informações diretamente dos stakeholders."
+  },
+
+  // 42 - Requisitos funcionais x não funcionais
+  {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Contexto",
+    texto: "O material usa uma metáfora musical para diferenciar as duas categorias de requisitos de um sistema.",
+    question: "Segundo essa metáfora, o que representam os Requisitos Funcionais e os Requisitos Não Funcionais, respectivamente?",
+    options: [
+      "A melodia principal e a harmonia da música",
+      "A harmonia e a melodia principal da música",
+      "O ritmo e a letra da música",
+      "Apenas a melodia, já que os não funcionais não têm metáfora associada"
+    ],
+    answer: 0,
+    feedback: "O material compara os Requisitos Funcionais à 'melodia principal da sinfonia do software' e os Não Funcionais à 'harmonia que completa a música'."
+  },
+
+  // 43 - Aplicação: cronograma e priorização
+  {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Aplicação",
+    texto: "Uma equipe está definindo quais funcionalidades de um sistema são urgentes e determinantes para o lançamento, e quais podem ser implementadas em uma fase futura.",
+    question: "Esse processo de definição de prioridades entre funcionalidades está diretamente relacionado a qual etapa descrita no material?",
+    options: [
+      "Priorização de Requisitos Funcionais",
+      "Elicitação de Requisitos Não Funcionais",
+      "Definição de Critérios de Aceitação apenas",
+      "Auditoria de Acessos"
+    ],
+    answer: 0,
+    feedback: "A priorização de requisitos funcionais envolve decidir quais funcionalidades são urgentes e determinantes e quais podem esperar, sendo essencial para o cronograma do projeto."
+  },
+
+  // 44 - Escopo fixo x variado
+  {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Direta",
+    texto: "O autor do material discute duas filosofias de definição de escopo de um projeto de software.",
+    question: "Qual filosofia de escopo o autor Wellington W. F. Sarmento declara preferir?",
+    options: [
+      "Escopo Variado de Produto",
+      "Escopo Fixo de Produto",
+      "Nenhuma das duas, defendendo um modelo híbrido obrigatório",
+      "O material não apresenta uma preferência do autor"
+    ],
+    answer: 0,
+    feedback: "O autor defende o Escopo Variado de Produto, associado aos métodos ágeis, por permitir maior flexibilidade diante de mudanças nos requisitos ao longo do desenvolvimento."
+  },
+
+  // 45 - Critérios de aceitação
+  {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Contexto",
+    texto: "Uma equipe está definindo as condições que uma User Story deve cumprir para ser considerada completa pelo cliente.",
+    question: "Qual das características abaixo NÃO é citada no material como uma característica dos critérios de aceitação?",
+    options: [
+      "Flexíveis, podendo ser interpretados de formas diferentes por cada envolvido",
+      "Claros e específicos, sem ambiguidades",
+      "Mensuráveis, possíveis de medir ou testar",
+      "Relevantes, diretamente relacionados à história de usuário"
+    ],
+    answer: 0,
+    feedback: "O material afirma que os critérios de aceitação devem ser objetivos, de forma que todos os envolvidos concordem sobre o que significa cumpri-los — e não flexíveis ou passíveis de interpretações diferentes."
+  },
+
+  // 46 - MVP
+  {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Aplicação",
+    texto: "Uma equipe decide lançar primeiro a funcionalidade de criação de eventos, depois a gestão de convidados, seguida pela criação de tarefas e, por fim, o envio de convites por e-mail, testando a aceitação do produto com o mínimo de esforço possível.",
+    question: "Essa estratégia de desenvolvimento incremental, priorizando funcionalidades essenciais, exemplifica qual conceito apresentado no material?",
+    options: [
+      "MVP (Minimum Viable Product)",
+      "Requisito Não Funcional de Escalabilidade",
+      "Escopo Fixo de Produto",
+      "Auditoria de Acessos"
+    ],
+    answer: 0,
+    feedback: "O MVP é a versão mais simples e funcional de um produto, desenvolvida com o mínimo de esforço para testar uma ideia e coletar feedback, como no exemplo do Event Planner."
+  },
+
+  // 47 - Requisitos não funcionais
+  {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Direta",
+    texto: "O material detalha diversas características de qualidade que um sistema deve possuir.",
+    question: "Qual requisito não funcional garante que o sistema esteja disponível e funcional pelo menos 99,9% do tempo, excluindo manutenções programadas?",
+    options: [
+      "Confiabilidade",
+      "Usabilidade",
+      "Compatibilidade",
+      "Manutenibilidade"
+    ],
+    answer: 0,
+    feedback: "A Confiabilidade refere-se à capacidade do sistema de estar disponível e funcional pelo menos 99,9% do tempo, excluindo períodos de manutenção programada."
+  },
+
+  // 48 - User Stories
+  {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Contexto",
+    texto: "Uma equipe está descrevendo uma funcionalidade do sistema utilizando o formato: 'Como recepcionista do hospital, eu quero cadastrar novos pacientes, para que possamos ter um registro completo dos que chegam ao hospital.'",
+    question: "Essa forma de descrever a funcionalidade corresponde a qual técnica apresentada no material?",
+    options: [
+      "User Story",
+      "Diagrama de Casos de Uso",
+      "Requisito Não Funcional",
+      "Ferramenta CASE"
+    ],
+    answer: 0,
+    feedback: "As User Stories descrevem funcionalidades a partir da perspectiva do usuário, em linguagem próxima ao cliente, geralmente no formato 'Como [usuário], eu quero [ação], para que [objetivo]'."
+  },
+
+  // 49 - Benefícios da análise de requisitos
+  {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Direta",
+    texto: "O material lista diversos benefícios de um bom processo de elicitação e análise de requisitos.",
+    question: "Qual das opções abaixo é apresentada como um benefício de investir em elicitação e análise de requisitos?",
+    options: [
+      "Redução de retrabalho e custos",
+      "Eliminação total da necessidade de testes",
+      "Garantia de que os requisitos nunca mudarão",
+      "Dispensa da comunicação entre equipe e stakeholders"
+    ],
+    answer: 0,
+    feedback: "Um bom processo de elicitação e análise evita o desenvolvimento de funcionalidades desnecessárias, reduzindo retrabalho e custos."
+  },
+
+  // 50 - Segurança como requisito não funcional
+  {
+    aula: "Aula 5 — Análise de Requisitos",
+    tipo: "Aplicação",
+    texto: "Em um sistema de prontuário eletrônico, apenas médicos e enfermeiros autenticados e autorizados podem visualizar ou modificar dados sensíveis dos pacientes, com diferentes níveis de permissão conforme o papel de cada usuário.",
+    question: "Essa característica do sistema está diretamente relacionada a qual requisito não funcional descrito no material?",
+    options: [
+      "Segurança",
+      "Usabilidade",
+      "Escalabilidade",
+      "Compatibilidade"
+    ],
+    answer: 0,
+    feedback: "A Segurança exige medidas robustas para proteger dados contra acesso não autorizado, incluindo controle de acesso baseado em papéis, como descrito no exemplo do prontuário eletrônico."
+  },
+    // 51 - Tipos de entrevista
+  {
+    aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+    tipo: "Direta",
+    texto: "As entrevistas podem seguir diferentes níveis de estruturação.",
+    question: "Qual tipo de entrevista segue um roteiro rígido de perguntas predefinidas, útil para obter informações comparáveis entre diferentes stakeholders?",
+    options: [
+      "Entrevista Estruturada",
+      "Entrevista Semiestruturada",
+      "Entrevista Não Estruturada",
+      "Entrevista Contextual"
+    ],
+    answer: 0,
+    feedback: "A Entrevista Estruturada segue um roteiro fixo de perguntas, permitindo comparar respostas entre diferentes stakeholders de forma padronizada."
+  },
+
+  // 52 - Aplicação: entrevista semiestruturada
+  {
+    aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+    tipo: "Aplicação",
+    texto: "Um analista pergunta a um gerente sobre as funcionalidades desejadas do sistema seguindo um roteiro predefinido, mas, ao ouvir uma resposta sobre integração entre sistemas, decide aprofundar o assunto com perguntas adicionais não planejadas.",
+    question: "Esse comportamento do analista caracteriza qual tipo de entrevista?",
+    options: [
+      "Entrevista Semiestruturada",
+      "Entrevista Estruturada",
+      "Entrevista Não Estruturada",
+      "Reunião de Brainstorming"
+    ],
+    answer: 0,
+    feedback: "A Entrevista Semiestruturada combina perguntas predefinidas com a flexibilidade de explorar novos tópicos que surgem durante a conversa."
+  },
+
+  // 53 - Desafios das entrevistas
+  {
+    aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+    tipo: "Contexto",
+    texto: "Durante o levantamento de requisitos por meio de entrevistas, diferentes stakeholders podem fornecer informações que não coincidem entre si.",
+    question: "Segundo o material, qual é um dos desafios das entrevistas relacionado a essa situação?",
+    options: [
+      "Surgimento de informações inconsistentes ou conflitantes entre diferentes stakeholders",
+      "Impossibilidade total de identificar as necessidades dos usuários",
+      "Ausência completa de qualquer tipo de comunicação entre analista e entrevistado",
+      "Obrigatoriedade de utilizar apenas entrevistas não estruturadas nesses casos"
+    ],
+    answer: 0,
+    feedback: "Um dos desafios das entrevistas é lidar com informações inconsistentes ou conflitantes entre stakeholders, exigindo que o analista reconcilie essas discrepâncias."
+  },
+
+  // 54 - Hard skills e soft skills
+  {
+    aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+    tipo: "Direta",
+    texto: "O material diferencia hard skills de soft skills necessárias ao profissional de requisitos.",
+    question: "Qual das opções abaixo é classificada como uma soft skill no material?",
+    options: [
+      "Empatia",
+      "Conhecimento Técnico",
+      "Documentação",
+      "Análise de Dados"
+    ],
+    answer: 0,
+    feedback: "Empatia é uma soft skill, relacionada a comportamento e habilidades sociais, enquanto conhecimento técnico, documentação e análise de dados são hard skills."
+  },
+
+  // 55 - Tipos de reunião
+  {
+    aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+    tipo: "Aplicação",
+    texto: "Uma equipe organiza uma sessão colaborativa e estruturada, com atividades práticas, para mapear os processos atuais de uma organização e identificar áreas de melhoria.",
+    question: "Esse tipo de reunião descrito corresponde a qual conceito apresentado no material?",
+    options: [
+      "Workshop",
+      "Reunião de Brainstorming",
+      "Entrevista Estruturada",
+      "Análise de Documentos"
+    ],
+    answer: 0,
+    feedback: "O Workshop é uma sessão colaborativa mais estruturada, combinando elementos de brainstorming e análise, geralmente com atividades práticas."
+  },
+
+  // 56 - Desafios das reuniões
+  {
+    aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+    tipo: "Direta",
+    texto: "As reuniões enfrentam desafios específicos para o levantamento de requisitos.",
+    question: "Qual dos itens abaixo é apontado como um desafio das reuniões no material?",
+    options: [
+      "Garantir a participação ativa e o engajamento de todos os stakeholders",
+      "Impossibilidade de discutir diferentes perspectivas",
+      "Ausência total de necessidade de planejamento",
+      "Incapacidade de gerar qualquer tipo de consenso"
+    ],
+    answer: 0,
+    feedback: "Garantir a participação ativa e o engajamento de todos os stakeholders é um dos principais desafios das reuniões, especialmente diante de conflitos de agenda ou interesses divergentes."
+  },
+
+  // 57 - Etnografia
+  {
+    aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+    tipo: "Contexto",
+    texto: "Um analista passa um dia inteiro em um hospital observando como médicos e enfermeiros utilizam o sistema de prontuário eletrônico, sem interferir diretamente no trabalho deles.",
+    question: "Essa prática descrita corresponde a qual técnica de levantamento de requisitos?",
+    options: [
+      "Etnografia",
+      "Entrevista Estruturada",
+      "Análise de Documentos",
+      "Reunião de Análise e Revisão"
+    ],
+    answer: 0,
+    feedback: "A Etnografia envolve a observação direta dos usuários em seu ambiente natural de trabalho, permitindo identificar necessidades com base em comportamentos reais."
+  },
+
+  // 58 - Efeito observador
+  {
+    aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+    tipo: "Direta",
+    texto: "A etnografia apresenta desafios específicos relacionados à observação dos usuários.",
+    question: "Qual desafio da etnografia ocorre quando os usuários mudam seu comportamento por saberem que estão sendo observados?",
+    options: [
+      "Efeito observador",
+      "Efeito de confiança",
+      "Efeito de documentação",
+      "Efeito de negociação"
+    ],
+    answer: 0,
+    feedback: "O efeito observador ocorre quando os usuários alteram seu comportamento por saberem que estão sendo observados, o que pode afetar a validade dos dados coletados."
+  },
+
+  // 59 - Análise de documentos
+  {
+    aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+    tipo: "Aplicação",
+    texto: "Ao revisar registros de suporte técnico de um sistema, uma equipe percebe que os usuários solicitam repetidamente uma funcionalidade que ainda não existe no sistema atual.",
+    question: "Esse processo de identificar necessidades a partir de registros existentes corresponde a qual técnica de levantamento de requisitos?",
+    options: [
+      "Análise de Documentos",
+      "Etnografia",
+      "Entrevista Não Estruturada",
+      "Reunião de Brainstorming"
+    ],
+    answer: 0,
+    feedback: "A Análise de Documentos envolve revisar documentos existentes, como registros de suporte, para identificar requisitos implícitos e necessidades não atendidas."
+  },
+
+  // 60 - Desafios da análise de documentos
+  {
+    aula: "Aula 6 — Técnicas de Levantamento de Requisitos",
+    tipo: "Direta",
+    texto: "A análise de documentos também apresenta limitações como técnica de levantamento de requisitos.",
+    question: "Qual das opções abaixo é apontada como um desafio da análise de documentos?",
+    options: [
+      "Documentos podem estar incompletos ou desatualizados",
+      "É impossível revisar mais de um documento por vez",
+      "Não permite identificar nenhum requisito funcional",
+      "Substitui totalmente a necessidade de entrevistas e reuniões"
+    ],
+    answer: 0,
+    feedback: "Um dos desafios da análise de documentos é que eles podem estar incompletos ou desatualizados, levando a uma compreensão incorreta dos requisitos."
+  },
+  
+  // 61 - Conceito de POO
+  {
+    aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+    tipo: "Direta",
+    texto: "A POO organiza o código de uma forma específica, diferente da programação procedural.",
+    question: "O que caracteriza principalmente o paradigma da Programação Orientada a Objetos?",
+    options: [
+      "A execução sequencial de instruções sem uso de funções",
+      "A organização do código em torno de objetos que encapsulam dados e comportamentos",
+      "O uso exclusivo de variáveis globais para armazenar estados",
+      "A separação total entre dados e qualquer tipo de lógica de negócio"
+    ],
+    answer: 1,
+    feedback: "A POO estrutura o sistema como um conjunto de objetos que encapsulam dados e comportamentos relacionados, promovendo reutilização e modularidade."
+  },
+
+  // 62 - Papel da AOO
+  {
+    aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+    tipo: "Direta",
+    texto: "Antes de qualquer linha de código ser escrita, existe uma etapa de planejamento do sistema.",
+    question: "Qual é o principal objetivo da Análise Orientada a Objetos (AOO)?",
+    options: [
+      "Otimizar o desempenho do processador durante a execução do sistema",
+      "Traduzir diretamente algoritmos matemáticos em código-fonte",
+      "Identificar e definir os objetos que compõem o sistema, criando um modelo próximo da realidade do problema",
+      "Substituir totalmente a etapa de testes de software"
+    ],
+    answer: 2,
+    feedback: "A AOO busca identificar os objetos que representam entidades do mundo real ou abstrato, criando um modelo intuitivo que facilita a compreensão e a implementação."
+  },
+
+  // 63 - Encapsulamento
+  {
+    aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+    tipo: "Contexto",
+    texto: "Em um sistema bancário, a classe ContaCorrente guarda o saldo do cliente em um atributo privado, acessível apenas por métodos específicos como depositar() e sacar().",
+    question: "Esse comportamento da classe ContaCorrente é um exemplo de qual conceito da AOO?",
+    options: [
+      "Encapsulamento",
+      "Herança",
+      "Polimorfismo",
+      "Modelagem funcional"
+    ],
+    answer: 0,
+    feedback: "O encapsulamento esconde os detalhes internos de um objeto, expondo apenas o necessário — nesse caso, o saldo só é alterado por métodos controlados."
+  },
+
+  // 64 - Herança
+  {
+    aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+    tipo: "Contexto",
+    texto: "Uma classe Funcionario possui atributos como nome e salário. A classe Gerente é criada a partir dela, reaproveitando esses atributos e adicionando o método aprovarOrcamento().",
+    question: "Esse tipo de relação entre Funcionario e Gerente representa qual mecanismo da POO?",
+    options: [
+      "Abstração",
+      "Encapsulamento",
+      "Composição obrigatória",
+      "Herança"
+    ],
+    answer: 3,
+    feedback: "A herança permite que uma classe derive de outra, reaproveitando atributos e métodos e formando hierarquias entre classes mais gerais e mais específicas."
+  },
+
+  // 65 - Polimorfismo
+  {
+    aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+    tipo: "Aplicação",
+    texto: "Um sistema de folha de pagamento percorre uma lista de objetos do tipo Funcionario (que inclui subclasses como Vendedor e Gerente) e chama o método calcularBonus() de cada um, obtendo resultados diferentes conforme o tipo do funcionário.",
+    question: "Esse comportamento, em que o mesmo método produz resultados distintos dependendo da subclasse, ilustra qual conceito?",
+    options: [
+      "Modelagem funcional da OMT",
+      "Polimorfismo",
+      "Componentização de software",
+      "Abstração de dados via struct"
+    ],
+    answer: 1,
+    feedback: "O polimorfismo permite que o mesmo método seja redefinido (override) em diferentes subclasses, produzindo comportamentos distintos ao ser chamado de forma unificada."
+  },
+
+  // 66 - OMT
+  {
+    aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+    tipo: "Direta",
+    texto: "A técnica OMT foi desenvolvida por James Rumbaugh em 1991.",
+    question: "Em quais três aspectos a OMT divide a modelagem de um sistema?",
+    options: [
+      "Estrutura estática, comportamento dinâmico e fluxo de dados",
+      "Segurança, desempenho e escalabilidade",
+      "Testes unitários, testes de integração e testes de aceitação",
+      "Interface gráfica, banco de dados e rede"
+    ],
+    answer: 0,
+    feedback: "A OMT organiza a modelagem em estrutura estática (modelagem de objetos), comportamento dinâmico (modelagem dinâmica) e fluxo de dados (modelagem funcional)."
+  },
+
+  // 67 - BON
+  {
+    aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+    tipo: "Contexto",
+    texto: "Uma equipe de desenvolvimento precisa de uma técnica de modelagem que facilite a transição direta entre o design do sistema e sua implementação em código.",
+    question: "Qual técnica de modelagem, criada por Jean-Marc Nerson e Kim Waldén, é indicada para esse cenário?",
+    options: [
+      "UML",
+      "BON",
+      "OMT",
+      "MVC"
+    ],
+    answer: 1,
+    feedback: "A BON foca na integração entre análise, design e implementação, usando notação gráfica simples e sendo eficaz em projetos que exigem transição suave entre design e código."
+  },
+
+  // 68 - Diagrama de Classes (UML)
+  {
+    aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+    tipo: "Aplicação",
+    texto: "Ao documentar um sistema de vendas, um analista precisa mostrar visualmente as classes do sistema, seus atributos, métodos e o relacionamento entre elas, incluindo indicadores de visibilidade como público e privado.",
+    question: "Qual diagrama da UML é o mais adequado para essa finalidade?",
+    options: [
+      "Diagrama de Casos de Uso",
+      "Diagrama de Implantação",
+      "Diagrama de Máquina de Estados",
+      "Diagrama de Classes"
+    ],
+    answer: 3,
+    feedback: "O Diagrama de Classes apresenta as entidades junto com atributos, métodos e os relacionamentos entre classes, incluindo símbolos de visibilidade como + (público) e - (privado)."
+  },
+
+  // 69 - Código: herança e interface em Java
+  {
+    aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+    tipo: "Código",
+    texto: "Considere a hierarquia de classes abaixo, em que Mamifero implementa a interface Animal e Cachorro herda de Mamifero.",
+    question: "Ao executar o trecho abaixo, o que será impresso ao chamar os métodos de 'cachorro'?",
+    code: `public abstract class Mamifero implements Animal {
+    protected String nome;
+    public Mamifero(String nome) { this.nome = nome; }
+    public void mover() {
+        System.out.println(nome + " está se movendo");
+    }
+    public abstract void fazerSom();
+}
+
+public class Cachorro extends Mamifero {
+    public Cachorro(String nome) { super(nome); }
+    @Override
+    public void fazerSom() {
+        System.out.println(nome + " faz: Au Au");
+    }
+}
+
+Animal cachorro = new Cachorro("Rex");
+cachorro.fazerSom();
+cachorro.mover();`,
+    options: [
+      "Erro de compilação, pois Cachorro não pode ser referenciado como Animal",
+      "\"Rex está se movendo\" seguido de \"Rex faz: Au Au\"",
+      "\"Rex faz: Au Au\" seguido de \"Rex está se movendo\"",
+      "Apenas \"Rex faz: Au Au\", pois mover() não é chamado por herança"
+    ],
+    answer: 2,
+    feedback: "fazerSom() é sobrescrito em Cachorro e imprime 'Rex faz: Au Au'; mover() é herdado de Mamifero e imprime 'Rex está se movendo', nessa ordem de chamada."
+  },
+
+  // 70 - Frameworks e componentização
+  {
+    aula: "Aula 7 — Análise e Programação Orientada a Objetos",
+    tipo: "Aplicação",
+    texto: "Uma desenvolvedora Python quer criar uma aplicação web sem precisar implementar do zero funcionalidades básicas comuns a esse tipo de sistema, aproveitando uma estrutura reutilizável já existente.",
+    question: "Qual das opções a seguir é um exemplo de framework citado no material que atenderia a essa necessidade?",
+    options: [
+      "WinUI",
+      "Express",
+      "Flask",
+      "Web Components"
+    ],
+    answer: 2,
+    feedback: "Flask é citado como framework para desenvolvimento de aplicações web em Python, similar ao Express, que cumpre esse papel em JavaScript/Node.js."
+  }
+
+],
 
 ava: [
   // aula: Aula 1 e 2

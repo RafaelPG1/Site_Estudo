@@ -89,7 +89,7 @@ Gere um array JavaScript válido, seguindo **exatamente** esta estrutura — rep
 [
   // 1 - [assunto resumido]
   {
-    aula: "Nome real da aula",
+    aula: "Aula x — nome do titulo",
     tipo: "Explicativa",
     texto: "Explicação didática do conceito (modo aula).",
     question: "Pergunta baseada no texto.",
@@ -105,7 +105,7 @@ Gere um array JavaScript válido, seguindo **exatamente** esta estrutura — rep
 
   // 2 - [assunto resumido]
   {
-    aula: "Nome real da aula",
+    aula: "Aula x — nome do titulo",
     tipo: "Aplicação",
     texto: "Explicação didática do conceito (modo aula).",
     question: "Pergunta baseada no texto.",

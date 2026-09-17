@@ -118,10 +118,9 @@ Formato: `==categoria==TERMO==`
 Gere um array JavaScript válido, seguindo **exatamente** esta estrutura — repare que o campo `aula` é o primeiro campo de cada objeto, com o valor real preenchido:
 
 ```javascript
-[
   // 1 - [assunto resumido]
   {
-    aula: "Nome real da aula",
+    aula: "Aula x — nome do titulo",
     tipo: "Asserção + Justificativa",
     texto: "Contexto aplicado, limpo, sem marcações.",
     question: "Enunciado, podendo usar ==mark==termo== quando fizer sentido.",
@@ -141,7 +140,7 @@ Gere um array JavaScript válido, seguindo **exatamente** esta estrutura — rep
 
   // 2 - [assunto resumido]
   {
-    aula: "Nome real da aula",
+    aula: "Aula x — nome do titulo",
     tipo: "Análise Aplicada",
     texto: "Contexto aplicado, limpo, sem marcações.",
     question: "Enunciado da situação-problema.",
@@ -155,7 +154,7 @@ Gere um array JavaScript válido, seguindo **exatamente** esta estrutura — rep
     answer: 2,
     feedback: "Explicação com **conceito central** em negrito."
   }
-]
+
 ```
 
 ### Campos por questão

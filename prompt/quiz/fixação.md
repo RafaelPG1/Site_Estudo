@@ -65,10 +65,10 @@ Fácil a médio, misturando:
 Gere um array JavaScript válido, seguindo **exatamente** esta estrutura — repare que o campo `aula` é o primeiro campo de cada objeto, com o valor real preenchido:
 
 ```javascript
-[
+
   // 1 - [assunto resumido]
   {
-    aula: "Nome real da aula",
+    aula: "Aula x — nome do titulo",
     tipo: "Direta",
     texto: "Contexto curto ou mínimo (sempre presente).",
     question: "Pergunta objetiva.",
@@ -84,7 +84,7 @@ Gere um array JavaScript válido, seguindo **exatamente** esta estrutura — rep
 
   // 2 - [assunto resumido]
   {
-    aula: "Nome real da aula",
+    aula: "Aula x — nome do titulo",
     tipo: "Código",
     texto: "Contexto explicando o cenário do código.",
     question: "Pergunta sobre comportamento, erro ou saída do código.",
@@ -98,7 +98,6 @@ Gere um array JavaScript válido, seguindo **exatamente** esta estrutura — rep
     answer: 2,
     feedback: "Explicação breve da resposta correta."
   }
-]
 ```
 
 ### Campos por questão
