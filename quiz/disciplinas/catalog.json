@@ -20,7 +20,7 @@
     "estruturas_dados":          { "ava": false, "questoes": false, "enade": false, "fixacao": false },
     "legislacao":                { "ava": true, "questoes": true, "enade": true, "fixacao": true },
     "psicologia_organizacional": { "ava": true, "questoes": true, "enade":true, "fixacao": true },
-    "redes2":                    { "ava": false, "questoes": false, "enade": false, "fixacao": false }
+    "redes2":                    { "ava": false, "questoes": true, "enade": true, "fixacao": true }
   },
 
   "2026.2-AP2": {
