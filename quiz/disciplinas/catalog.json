@@ -18,7 +18,7 @@
   "2026.2-AP1": {
     "analise_projeto":           { "ava": true, "questoes": true, "enade": true, "fixacao": true },
     "estruturas_dados":          { "ava": false, "questoes": false, "enade": false, "fixacao": false },
-    "legislacao":                { "ava": false, "questoes": false, "enade": false, "fixacao": false },
+    "legislacao":                { "ava": true, "questoes": true, "enade": true, "fixacao": true },
     "psicologia_organizacional": { "ava": true, "questoes": true, "enade":true, "fixacao": true },
     "redes2":                    { "ava": false, "questoes": false, "enade": false, "fixacao": false }
   },

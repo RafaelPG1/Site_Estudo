@@ -150,7 +150,7 @@ Gere exatamente 10 objetos JavaScript válidos, seguindo exatamente a estrutura 
 
 ### Regra crítica sobre a saída
 
-* Cada questão deve ser um objeto individual, iniciado por `{` e encerrado por `}`.
+* Cada questão deve ser um objeto individual, iniciado por `{` e encerrado por `},`.
 * **Nunca envolva as 10 questões em um array externo `[]`.**
 * Não use colchetes externos para agrupar os objetos.
 * Não coloque vírgulas entre os objetos.
@@ -234,7 +234,7 @@ Campos opcionais (`assertions`, `questionContinuation`, `code`) só devem aparec
 ## Restrições de Estrutura
 
 * Gerar exatamente 10 objetos individuais, nem mais nem menos.
-* Cada objeto deve começar com `{` e terminar com `}`.
+* Cada objeto deve começar com `{` e terminar com `}`,.
 * **É proibido utilizar um array externo `[]` para agrupar as questões.**
 * Não colocar vírgulas entre os objetos.
 * Não alterar os nomes nem a ordem dos campos.
@@ -264,7 +264,7 @@ A saída deve ser **somente o bloco de código JavaScript**, digitado, sem nenhu
 
 ## Validação Final (obrigatória antes de responder)
 
-* [ ] Existem exatamente 10 objetos individuais, cada um delimitado por `{ }`?
+* [ ] Existem exatamente 10 objetos individuais, cada um delimitado por `{ },`?
 * [ ] **A saída não possui nenhum array externo `[]` envolvendo as questões?**
 * [ ] Não existem colchetes externos agrupando os 10 objetos?
 * [ ] Todo objeto tem o campo `aula` preenchido com o nome real, como primeiro campo?
