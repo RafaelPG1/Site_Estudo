@@ -1,5 +1,5 @@
 /* ============================================================
-   NEXUS STUDY — quiz/js/quiz_starter_modal.js  v8.0
+   NEXUS STUDY — quiz/js/quiz_starter_modal.js  v8.1
 
    REGRA ÚNICA:
      Tem progresso salvo (≥ 1 resposta)? → entra direto no quiz.
@@ -48,6 +48,33 @@
      qualquer interação do usuário ocorre. O modal chama apenas:
        NexusFilter.open()
      Sem polling. Sem espera. Sem dependência circular.
+
+   CONTEXTO VISUAL (Disciplina / Modo) — v8.1:
+     O modal agora exibe, entre o título e o subtítulo, dois
+     chips discretos com a disciplina e o modo do quiz atual.
+
+     - O MODO usa o mesmo texto já adotado pelo breadcrumb de
+       template_init.js (AVA / Questões / ENADE / Fixação),
+       replicado aqui como um mapa mínimo (_MODO_LABELS) — não
+       há acesso direto a MODOS_CONFIG porque ele não é exportado
+       por template_init.js. Modos desconhecidos caem num
+       fallback que apenas capitaliza a primeira letra.
+
+     - A DISCIPLINA é resolvida via import() dinâmico de
+       ../../src/global.js, reaproveitando getDisciplinasDeSemestre()
+       — a MESMA fonte de dados que template_init.js já usa para
+       resolver o nome oficial da disciplina. Nenhuma lista nova
+       é criada. Como o módulo já foi carregado/avaliado antes
+       (por template_init.js), esse import é praticamente
+       instantâneo (cache de módulo do navegador).
+
+     - Resolução é assíncrona: o chip de disciplina nasce com o
+       id cru (ex.: "estruturas_dados") e é substituído pelo nome
+       oficial assim que a promise resolve — sem bloquear a
+       abertura do modal.
+
+     - Nenhum outro dado (semestre, AP, progresso, contagem de
+       questões/aulas) é exibido — apenas disciplina e modo.
 
    DEPENDÊNCIAS:
      window.__NEXUS_QUIZ_DISC__      — definido por template_init.js
@@ -136,6 +163,115 @@
   }
 
   /* ══════════════════════════════════════════════════════════
+     CONTEXTO — DISCIPLINA / MODO (v8.1)
+  ══════════════════════════════════════════════════════════ */
+
+  /* Mesmo texto já usado no breadcrumb de MODOS_CONFIG em
+     template_init.js. Pequeno mapa local porque MODOS_CONFIG
+     não é exportado por aquele módulo — evita import só por isso. */
+  var _MODO_LABELS = {
+    ava:      'AVA',
+    questoes: 'Questões',
+    enade:    'ENADE',
+    fixacao:  'Fixação',
+  };
+
+  function _resolverModoLabel(modo) {
+    if (!modo) return '';
+    if (_MODO_LABELS[modo]) return _MODO_LABELS[modo];
+    try {
+      return modo.charAt(0).toUpperCase() + modo.slice(1);
+    } catch (e) {
+      return modo;
+    }
+  }
+
+  /* Resolve nome + emoji oficiais da disciplina reaproveitando a MESMA
+     fonte de dados que template_init.js (info.emoji → #disc-emoji) e
+     quiz.js (disc.emoji nos cards) já usam: getDisciplinasDeSemestre()
+     em src/global.js, via import() dinâmico — sem duplicar lista
+     nenhuma nem inventar novo mapa de ícones. Cacheado numa promise
+     para não reimportar à toa. */
+  var _infoDisciplinaPromise = null;
+
+  function _resolverInfoDisciplina(disc, semestre) {
+    if (_infoDisciplinaPromise) return _infoDisciplinaPromise;
+
+    _infoDisciplinaPromise = import('../../src/global.js')
+      .then(function (mod) {
+        if (!semestre || typeof mod.getDisciplinasDeSemestre !== 'function') return null;
+        var lista = mod.getDisciplinasDeSemestre(semestre);
+        var info  = lista && lista.find(function (d) { return d.id === disc; });
+        return info ? { nome: info.nome, emoji: info.emoji } : null;
+      })
+      .catch(function () { return null; });
+
+    return _infoDisciplinaPromise;
+  }
+
+  /* Monta o bloco de chips (Disciplina / Modo). Retorna null se
+     não houver disc nem modo definidos (nunca deve acontecer em
+     uso normal, mas evita quebrar o modal). */
+  function _construirContexto() {
+    var disc = window.__NEXUS_QUIZ_DISC__     || '';
+    var modo = window.__NEXUS_QUIZ_MODO__     || '';
+    var sem  = window.__NEXUS_QUIZ_SEMESTRE__ || '';
+
+    if (!disc && !modo) return null;
+
+    var wrap = _el('div', { id: 'nsm-context' });
+
+    /* Cores: reaproveita as CSS custom properties já aplicadas por
+       template_init.js (_aplicarTema → aplicarCoresDisciplina), que
+       define --accent/--accent-rgb (cor primária da disciplina atual)
+       e os tokens --cor-tema-2/--cor-tema-2-rgb (cor secundária) já
+       existentes em template.css. Nenhuma cor nova é criada aqui —
+       o chip de disciplina usa a primária, o de modo usa a secundária,
+       ambas já resolvidas automaticamente para a disciplina em questão. */
+
+    if (disc) {
+      var chipDisc = _el('div', { class: 'nsm-ctx-chip nsm-ctx-chip--disc' });
+      var iconDisc = _el('div', { class: 'nsm-ctx-icon' });
+      iconDisc.innerHTML = '<i class="fas fa-graduation-cap" aria-hidden="true"></i>';
+      var bodyDisc  = _el('div', { class: 'nsm-ctx-body' });
+      var labelDisc = _el('span', { class: 'nsm-ctx-label' }, 'Disciplina');
+      var valorDisc = _el('span', { class: 'nsm-ctx-value' }, disc);
+
+      bodyDisc.appendChild(labelDisc);
+      bodyDisc.appendChild(valorDisc);
+      chipDisc.appendChild(iconDisc);
+      chipDisc.appendChild(bodyDisc);
+      wrap.appendChild(chipDisc);
+
+      _resolverInfoDisciplina(disc, sem).then(function (info) {
+        if (!info) return;
+        if (info.nome)  valorDisc.textContent = info.nome;
+        if (info.emoji) {
+          iconDisc.textContent = info.emoji;
+          iconDisc.classList.add('nsm-ctx-icon--emoji');
+        }
+      });
+    }
+
+    if (modo) {
+      var chipModo = _el('div', { class: 'nsm-ctx-chip nsm-ctx-chip--modo' });
+      var iconModo = _el('div', { class: 'nsm-ctx-icon' });
+      iconModo.innerHTML = '<i class="fas fa-bullseye" aria-hidden="true"></i>';
+      var bodyModo  = _el('div', { class: 'nsm-ctx-body' });
+      var labelModo = _el('span', { class: 'nsm-ctx-label' }, 'Modo');
+      var valorModo = _el('span', { class: 'nsm-ctx-value' }, _resolverModoLabel(modo));
+
+      bodyModo.appendChild(labelModo);
+      bodyModo.appendChild(valorModo);
+      chipModo.appendChild(iconModo);
+      chipModo.appendChild(bodyModo);
+      wrap.appendChild(chipModo);
+    }
+
+    return wrap;
+  }
+
+  /* ══════════════════════════════════════════════════════════
      CSS
   ══════════════════════════════════════════════════════════ */
 
@@ -197,6 +333,62 @@
       '}',
       '#nsm-subtitulo{font-size:.82rem;color:var(--text-2,#a8a49c);line-height:1.55;margin:0;}',
 
+      /* ── Chips de contexto (Disciplina / Modo) ─────────────
+         Ficam entre o título e o subtítulo. Cada chip usa a cor
+         já resolvida para a disciplina atual (--accent / --accent-rgb,
+         aplicadas por template_init.js) e a cor secundária do tema
+         (--cor-tema-2 / --cor-tema-2-rgb, já definidas em template.css) —
+         nenhuma cor nova é criada, e o resultado muda automaticamente
+         por disciplina. */
+      '#nsm-context{',
+        'display:grid;grid-template-columns:1fr 1fr;gap:.65rem;',
+        'margin:0 0 1.1rem;',
+      '}',
+      '.nsm-ctx-chip{',
+        'display:flex;align-items:center;gap:.65rem;',
+        'padding:.75rem .8rem;text-align:left;',
+        'border-radius:13px;border:1px solid rgba(255,255,255,.08);',
+        'background:rgba(255,255,255,.025);',
+        'box-shadow:0 4px 16px rgba(0,0,0,.22);',
+      '}',
+      '.nsm-ctx-chip--disc{',
+        'border-color:rgba(var(--accent-rgb,122,168,232),.35);',
+        'border-left:3px solid var(--accent,#7aa8e8);',
+        'background:linear-gradient(160deg,rgba(var(--accent-rgb,122,168,232),.16) 0%,rgba(255,255,255,.02) 100%);',
+      '}',
+      '.nsm-ctx-chip--modo{',
+        'border-color:rgba(var(--cor-tema-2-rgb,61,217,194),.35);',
+        'border-left:3px solid var(--cor-tema-2,#3dd9c2);',
+        'background:linear-gradient(160deg,rgba(var(--cor-tema-2-rgb,61,217,194),.16) 0%,rgba(255,255,255,.02) 100%);',
+      '}',
+      '.nsm-ctx-icon{',
+        'flex-shrink:0;width:36px;height:36px;border-radius:10px;',
+        'display:flex;align-items:center;justify-content:center;font-size:.92rem;',
+      '}',
+      '.nsm-ctx-chip--disc .nsm-ctx-icon{',
+        'background:rgba(var(--accent-rgb,122,168,232),.2);color:var(--accent,#7aa8e8);',
+      '}',
+      '.nsm-ctx-chip--disc .nsm-ctx-icon--emoji{',
+        'font-size:1.15rem;line-height:1;',
+      '}',
+      '.nsm-ctx-chip--modo .nsm-ctx-icon{',
+        'background:rgba(var(--cor-tema-2-rgb,61,217,194),.2);color:var(--cor-tema-2,#3dd9c2);',
+      '}',
+      '.nsm-ctx-body{min-width:0;flex:1;}',
+      '.nsm-ctx-label{',
+        'display:block;font-size:.58rem;font-weight:700;',
+        'letter-spacing:.13em;text-transform:uppercase;',
+        'color:var(--text-2,#8b8878);margin-bottom:.22rem;',
+      '}',
+      '.nsm-ctx-value{',
+        'display:block;font-size:.92rem;font-weight:700;',
+        'color:var(--text-1,#f7f5f0);line-height:1.25;letter-spacing:-.01em;',
+        'white-space:normal;word-break:break-word;',
+      '}',
+      '@media (max-width:420px){',
+        '#nsm-context{grid-template-columns:1fr;}',
+      '}',
+
       '.nsm-tela{transition:opacity .2s ease,transform .2s ease;}',
       '.nsm-tela--entrando{opacity:0;transform:translateY(6px);pointer-events:none;}',
       '.nsm-tela--visivel{opacity:1;transform:translateY(0);}',
@@ -239,7 +431,7 @@
       '.nsm-option:hover .nsm-option__arrow{color:var(--accent,#7aa8e8);transform:translateX(3px);}',
 
       '#nsm-tela1-footer{padding:.5rem 1.6rem 1.4rem;text-align:center;}',
-      '#nsm-tela1-footer p{font-size:.7rem;color:var(--text-3,#6e6a62);line-height:1.5;margin:0;}',
+      '#nsm-tela1-footer p{font-size:.7rem;color:var(--text-2,#6e6a62);line-height:1.5;margin:0;}',
       '#nsm-tela1-footer i{color:rgba(var(--accent-rgb,122,168,232),.5);}',
       '#nsm-tela1-footer strong{color:var(--text-2,#a8a49c);font-weight:600;}',
 
@@ -294,6 +486,12 @@
 
     head.appendChild(eyebrow);
     head.appendChild(titulo);
+
+    /* Chips de contexto: Disciplina / Modo — entre o título e o
+       subtítulo, exatamente como no layout de referência. */
+    var contexto = _construirContexto();
+    if (contexto) head.appendChild(contexto);
+
     head.appendChild(subtitulo);
     card.appendChild(head);
 
