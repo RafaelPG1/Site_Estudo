@@ -3808,7 +3808,7 @@ secoes: [
   ]
   },
   
-  // aula 07
+  // aula 7
   {
   aula: "Análise e Programação Orientada a Objetos",
   ideia_central: "A Análise Orientada a Objetos (AOO) cuida da fase de modelagem de um sistema em torno de objetos, enquanto a Programação Orientada a Objetos (POO) trata da implementação dessas definições em código, juntas formando uma abordagem modular, reutilizável e de fácil manutenção.",
@@ -4117,4 +4117,2342 @@ secoes: [
     }
   ]
   },
-  ]};
+
+  // aula 8
+  {
+  aula: "Rational Unified Process (RUP)",
+  ideia_central: "O RUP é uma metodologia de desenvolvimento de software iterativa e incremental, estruturada em quatro fases (Iniciação, Elaboração, Construção e Transição), nove disciplinas e seis boas práticas, que orienta a produção de artefatos específicos ao longo do ciclo de vida do projeto.",
+  secoes: [
+    {
+      id: "visao_geral",
+      titulo: "Visão Geral",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O material aborda o **Rational Unified Process (RUP)**, uma metodologia de desenvolvimento de software criada para organizar e estruturar projetos de forma sistemática e repetível. O conteúdo está organizado em quatro grandes blocos que se conectam: primeiro, uma apresentação do RUP (origem, características principais, documentos/diagramas e softwares de suporte); em seguida, as **quatro fases** do processo (Iniciação, Elaboração, Construção e Transição), cada uma com seus artefatos próprios; depois, as **disciplinas** que estruturam as atividades ao longo dessas fases; e, por fim, as **boas práticas** (princípios) que orientam a aplicação do RUP. O documento também apresenta um modelo prático de Documento de Visão, usado como exemplo de artefato real gerado na fase de Iniciação."
+        }
+      ]
+    },
+    {
+      id: "origem_contexto",
+      titulo: "Origem e Contexto do RUP",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O RUP foi criado pela **Rational Software Corporation** na década de 1990, como resposta às demandas crescentes por processos de desenvolvimento de software mais estruturados e eficazes, em um contexto de sistemas cada vez mais complexos, prazos apertados e necessidade de qualidade previsível. Atualmente, o RUP pertence à **IBM**. Ele surgiu combinando as melhores práticas de Engenharia de Software com uma abordagem **iterativa e incremental**, voltada a mitigar riscos e garantir desenvolvimento consistente e controlado."
+        }
+      ]
+    },
+    {
+      id: "caracteristicas",
+      titulo: "Características Principais do RUP",
+      blocos: [
+        {
+          tipo: "lista",
+          itens: [
+            "**Iterativo e Incremental**: o desenvolvimento é dividido em ciclos, e cada iteração gera um incremento do produto. Isso permite identificar e resolver problemas mais cedo no ciclo de vida do projeto, ajustando o processo conforme necessário.",
+            "**Dirigido por Casos de Uso**: os casos de uso capturam e descrevem os requisitos funcionais do sistema, guiando o desenvolvimento e servindo de base para a criação de modelos UML que ajudam a visualizar comportamento e estrutura do sistema.",
+            "**Foco em Arquitetura**: a arquitetura é tratada como a 'espinha dorsal' do desenvolvimento, recebendo atenção especial para suportar as necessidades atuais e futuras do sistema."
+          ]
+        }
+      ]
+    },
+    {
+      id: "documentos_diagramas",
+      titulo: "Documentos e Diagramas no RUP",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Os documentos e diagramas são cruciais em cada fase do RUP, pois fornecem base sólida para comunicação e alinhamento entre equipes de desenvolvimento e stakeholders. Cada fase gera artefatos específicos."
+        },
+        {
+          tipo: "topico",
+          titulo: "Iniciação",
+          texto: "Foco na definição clara de objetivos e escopo. Artefato principal: **Documento de Visão** (descreve metas, funcionalidades esperadas e restrições). Também é elaborado um **Plano de Projeto** (cronograma, recursos, marcos)."
+        },
+        {
+          tipo: "topico",
+          titulo: "Elaboração",
+          texto: "Foco no refinamento dos requisitos e na definição da arquitetura. Artefatos: **Modelo de Casos de Uso** (captura interações usuário-sistema) e **Documento de Arquitetura** (especifica a estrutura técnica do sistema)."
+        },
+        {
+          tipo: "topico",
+          titulo: "Construção",
+          texto: "Foco na implementação real. Artefato central: **Código Fonte**, acompanhado de **Testes Unitários** que verificam a correção e funcionalidade dos componentes antes da integração."
+        },
+        {
+          tipo: "topico",
+          titulo: "Transição",
+          texto: "Foco na entrega ao ambiente de produção. Artefatos: **Plano de Implantação** (passos de instalação/configuração, migração de dados, treinamento) e **Guia do Usuário** (instruções para operação eficiente do sistema)."
+        },
+        {
+          tipo: "destaque",
+          texto: "Relação entre RUP e UML: o RUP depende da **Unified Modeling Language (UML)** para fornecer uma linguagem comum entre os membros da equipe, facilitando comunicação, documentação e validação do sistema em todas as fases. Os diagramas UML são usados principalmente na **Fase de Elaboração**, representando Casos de Uso, Atores do Sistema, Classes e suas Relações, e a Comunicação entre entidades do sistema, entre outras informações necessárias à concepção arquitetural."
+        }
+      ]
+    },
+    {
+      id: "softwares_suporte",
+      titulo: "Softwares que Suportam o RUP",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Diversas ferramentas dão suporte à implementação do RUP, oferecendo apoio para modelagem, design e documentação."
+        },
+        {
+          tipo: "tabela",
+          titulo: "Softwares de suporte ao RUP",
+          colunas: ["Software", "Descrição"],
+          linhas: [
+            ["IBM Rational Rose", "Um dos primeiros softwares a suportar o RUP; oferece ferramentas para modelagem UML e gerenciamento de projetos, alinhando-se aos princípios do RUP."],
+            ["Enterprise Architect", "Amplamente utilizado para modelagem e design; oferece suporte abrangente para UML e facilita a implementação do RUP em projetos complexos."],
+            ["Visual Paradigm", "Suporta UML e RUP; permite modelagem, design e documentação de sistemas, com interface intuitiva e ampla gama de funcionalidades."],
+            ["Modelio", "Ferramenta de modelagem open-source com suporte para UML e BPMN; permite implementar os princípios do RUP desde a modelagem de casos de uso até a documentação e design do sistema."]
+          ]
+        },
+        {
+          tipo: "imagem",
+          id: "figura_1_ferramenta_modelagem_modelio",
+          src: "figura_1_ferramenta_modelagem_modelio.png",
+          pasta: "imagens_analise_projeto/aula_08",
+          alt: "Interface do software Modelio em uso, com árvore de navegação de elementos do modelo à esquerda, área central de diagrama contendo componentes conectados (como 'Site Réservation Voyage', 'Client', 'Réserver Voyage', 'Paiement' e 'ERP Comptable') relacionados por setas indicando fluxo/interação, e painel de propriedades à direita, ilustrando como a ferramenta suporta a modelagem visual de arquitetura de sistema.",
+          num: 1
+        }
+      ]
+    },
+    {
+      id: "fases_rup",
+      titulo: "Fases do Rational Unified Process",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "As fases do RUP garantem que o desenvolvimento ocorra de forma organizada, controlada e com qualidade, cada uma gerando artefatos específicos."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "a) Iniciação"
+        },
+        {
+          tipo: "texto",
+          texto: "Foco na definição clara do escopo e dos objetivos do projeto e no alinhamento das expectativas dos stakeholders. O **Documento de Visão** funciona como uma 'bússola' para a equipe, delineando metas, funcionalidades esperadas e restrições."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Sistema de gerenciamento de bibliotecas",
+          texto: "O Documento de Visão pode descrever que o sistema deve permitir empréstimo/devolução de livros e fornecer relatórios de circulação."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "b) Elaboração"
+        },
+        {
+          tipo: "texto",
+          texto: "Foco na identificação dos requisitos principais e definição da arquitetura do sistema. Artefato central: **Documento de Arquitetura**, que detalha a estrutura técnica e como o sistema será implementado."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Aplicativo de comércio eletrônico",
+          texto: "O documento pode especificar a divisão entre frontend, backend e banco de dados, descrevendo a interação entre essas partes para suportar carrinho de compras, pagamentos e inventário."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "c) Construção"
+        },
+        {
+          tipo: "texto",
+          texto: "O sistema é desenvolvido com base na arquitetura definida. Artefato central: **Código Fonte**, representando a implementação prática dos requisitos. Também é produzida a **Documentação Técnica**, que detalha a implementação e orienta manutenção/expansões futuras."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Sistema de gestão de RH",
+          texto: "O código incluiria módulos de cadastro de funcionários, cálculo de folhas de pagamento e geração de relatórios, enquanto a documentação técnica explicaria a lógica de cada módulo."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "d) Transição"
+        },
+        {
+          tipo: "texto",
+          texto: "Foco na entrega do sistema e no treinamento dos usuários. Artefatos: **Guia do Usuário** (instruções claras sobre operação do sistema) e **Documentação de Implantação** (passos para instalar o sistema em produção, incluindo configuração de servidores, migração de dados e ajustes necessários)."
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Sistema de controle de estoque",
+          texto: "O Guia do Usuário traria tutoriais sobre registro de entradas/saídas de produtos, enquanto a Documentação de Implantação detalharia a configuração do banco de dados e a conexão com scanners de código de barras."
+        },
+        {
+          tipo: "destaque",
+          texto: "Esses artefatos garantem que todos os envolvidos no desenvolvimento e implantação tenham entendimento claro e compartilhado das metas, arquitetura e funcionalidades do software."
+        },
+        {
+          tipo: "tabela",
+          titulo: "Quadro-resumo das fases e artefatos (síntese dos Quadros 1 e 3 do material)",
+          colunas: ["Fase do RUP", "Descrição da Etapa", "Principais Artefatos Gerados"],
+          linhas: [
+            ["Iniciação", "Definição dos objetivos e escopo do sistema; alinhamento das expectativas dos stakeholders", "Documento de Visão"],
+            ["Elaboração", "Identificação das principais interações entre usuários e sistema; definição da estrutura técnica", "Documento de Especificação do Modelo de Casos de Uso; Documento de Arquitetura"],
+            ["Construção", "Implementação das funcionalidades básicas do sistema; documentação técnica", "Repositório do Código Fonte; Documentação do código; Guia de Estilo de Usabilidade do Software; Documentação de Especificação de Dados"],
+            ["Transição", "Implantação do sistema em produção; instrução aos usuários; configuração do sistema", "Guia do Usuário; Plano de Implantação"]
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "Observação do material: a documentação do código pode ser gerada automaticamente a partir de comentários no código-fonte, por meio de ferramentas como Doxygen, JSDoc, Javadoc e Pydoc, além de ferramentas específicas como Swagger (voltada à documentação de APIs)."
+        }
+      ]
+    },
+    {
+      id: "disciplinas",
+      titulo: "Disciplinas e Atividades do RUP",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "No RUP, **disciplinas** são conjuntos de atividades relacionadas que orientam o desenvolvimento de software nas diferentes fases do processo, fornecendo estrutura e foco para cada etapa. Elas ajudam a organizar o trabalho da equipe, facilitar a colaboração/comunicação e assegurar que cada fase produza os artefatos necessários ao progresso contínuo."
+        },
+        {
+          tipo: "lista",
+          titulo: "Tipos de disciplinas",
+          itens: [
+            "**Modelagem de Negócios**: entendimento do contexto de negócios em que o sistema será implementado, alinhando o desenvolvimento aos objetivos e processos da organização.",
+            "**Requisitos**: coleta, análise e gestão dos requisitos funcionais e não-funcionais, que guiarão design e implementação.",
+            "**Análise e Design**: criação da arquitetura do sistema e elaboração do design detalhado, definindo como o sistema será estruturado para atender aos requisitos.",
+            "**Implementação**: desenvolvimento real do software — o código é escrito e integrado conforme o design previamente estabelecido.",
+            "**Testes**: validação da qualidade do sistema, incluindo testes unitários, de integração e de aceitação.",
+            "**Implantação**: colocação do sistema em produção, garantindo configuração e funcionamento corretos no ambiente real.",
+            "**Gerenciamento de Configuração e Mudança**: controle de versões e gestão de mudanças ao longo do ciclo de vida do software, assegurando documentação das alterações e gerenciamento eficiente das versões.",
+            "**Gerenciamento de Projeto**: planejamento, acompanhamento e monitoramento do projeto — cronogramas, alocação de recursos e mitigação de riscos.",
+            "**Ambiente**: fornecimento de ferramentas e processos de suporte necessários ao desenvolvimento, incluindo configuração do ambiente, ferramentas de integração contínua e suporte à equipe."
+          ]
+        },
+        {
+          tipo: "imagem",
+          id: "figura_2_disciplinas_fases_rup_hump",
+          src: "figura_2_disciplinas_fases_rup_hump.png",
+          pasta: "imagens_analise_projeto/aula_08",
+          alt: "Gráfico bidimensional (RUP Hump) que representa o cruzamento entre as nove disciplinas do RUP (eixo vertical: Modelagem de Negócios, Requisitos, Análise e Design, Implementação, Teste, Implantação, Gerenciamento de Configuração e Mudança, Gerenciamento de Projeto, Ambiente) e as quatro fases (eixo horizontal: Iniciação, Elaboração, Construção, Transição), subdivididas em iterações (Inicial, Elaboração nº1/nº2, Construção nº1/nº2/nºN, Transição nº1/nº2). Cada disciplina é representada por uma curva ('corcunda'/hump) cuja altura, em cada ponto do tempo, indica a intensidade do esforço dedicado àquela disciplina naquela fase/iteração — por exemplo, Modelagem de Negócios e Requisitos têm maior intensidade no início (Iniciação/Elaboração), enquanto Implementação e Testes se intensificam na Construção.",
+          num: 2
+        },
+        {
+          tipo: "texto",
+          texto: "Exemplos de uso das disciplinas ao longo das fases: na fase de Iniciação, a disciplina de Requisitos é fundamental para a criação do Documento de Visão, enquanto a Modelagem de Negócios pode ser usada para mapear processos críticos que o sistema deve suportar. Na Construção, a Implementação se torna central, com o código sendo desenvolvido conforme o design criado na Elaboração. A disciplina de Testes é aplicada continuamente ao longo de todo o processo, especialmente antes da transição para a fase de Implantação."
+        }
+      ]
+    },
+    {
+      id: "boas_praticas",
+      titulo: "Boas Práticas em Rational Unified Process",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O RUP pode ser abordado sob três perspectivas: **Dinâmica** (aborda as fases do processo de software), **Estática** (aborda as disciplinas do RUP) e **Prática** (refere-se aos seis princípios e melhores práticas adotados pelo RUP)."
+        },
+        {
+          tipo: "lista",
+          titulo: "Os seis princípios/boas práticas do RUP",
+          itens: [
+            "**Desenvolvimento iterativo** — o software deve ser desenvolvido em ciclos curtos, permitindo entregas incrementais e identificação rápida de bugs e problemas de compreensão sobre as funcionalidades, além de ajustes com base em feedback constante do cliente e do público-alvo.",
+            "**Gerenciamento de requisitos** — os requisitos devem ser capturados, analisados e gerenciados ao longo de todo o ciclo de vida do projeto, garantindo que as necessidades dos stakeholders sejam compreendidas e controladas, o que diminui o risco de falhas.",
+            "**Arquitetura baseada em componentes** — o sistema deve ser construído a partir de componentes reutilizáveis, facilitando modularidade, manutenção e evolução do sistema.",
+            "**Modelagem utilizando a UML como ferramenta** — a linguagem de modelagem unificada deve ser usada para visualizar, especificar, construir e documentar os artefatos do software, promovendo clareza e compreensão entre os membros da equipe, e permitindo que o cliente compreenda o que está sendo desenvolvido.",
+            "**Melhoria contínua de processos e produtos de software** — processos e produtos devem ser constantemente avaliados e aprimorados, buscando otimização do desenvolvimento por meio de feedbacks e lições aprendidas.",
+            "**Configuração e gerenciamento de mudança** — as modificações no projeto devem ser rastreáveis, controladas e implementadas de maneira ordenada, minimizando impactos negativos e mantendo a integridade do projeto."
+          ]
+        }
+      ]
+    },
+    {
+      id: "documento_visao_modelo",
+      titulo: "Documento de Visão — Modelo Estrutural Apresentado no Material",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O material apresenta um modelo de **Documento de Visão**, elaborado a partir de uma experiência real de prestação de serviço a uma empresa que buscava automatizar o processo de liberação, monitoramento e controle de verba para viagens de negócio de seu corpo técnico. O modelo foi adaptado para se adequar ao escopo do RUP e contém as seguintes seções."
+        },
+        {
+          tipo: "topico",
+          titulo: "1. Introdução",
+          lista: [
+            "Propósito: descreve a visão geral do sistema, seus objetivos, escopo, funcionalidades principais e benefícios esperados, servindo como base de referência para os stakeholders.",
+            "Escopo: descreve de forma geral o que o sistema irá cobrir e suas principais funcionalidades.",
+            "Definições, Acrônimos e Abreviações: lista de termos técnicos usados.",
+            "Referências: documentos ou sites de referência."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "2. Posição",
+          lista: [
+            "Oportunidade de Negócio: descreve a oportunidade que o sistema visa explorar (exemplo dado: dificuldades no gerenciamento manual de inventário, gerando perdas e ineficiências).",
+            "Descrição do Problema: define o problema central (exemplo: falta de visibilidade em tempo real dos níveis de estoque, causando erros de pedido e atrasos).",
+            "Descrição da Solução: como o sistema resolverá o problema (exemplo: interface web para monitoramento em tempo real, notificações automáticas e relatórios de inventário).",
+            "Contexto do Produto: define o contexto de uso (exemplo: integração com sistemas de ERP e CRM existentes)."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "3. Descrição Geral",
+          lista: [
+            "Perspectiva do Produto: tipo de aplicação (web, desktop, mobile), usuários-alvo e principais funcionalidades, indicando se substituirá um sistema existente ou será uma solução nova.",
+            "Principais Capacidades: lista das capacidades centrais do sistema (exemplos: monitoramento em tempo real de estoque, geração automática de relatórios, notificações automáticas de reposição).",
+            "Suposições e Dependências: suposições feitas durante o desenvolvimento e dependências que podem afetar o projeto (exemplo: dependência de integração com ERP existente)."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "4. Recursos e Restrições",
+          lista: [
+            "Requisitos de Interface do Usuário: características esperadas da interface (exemplo: interface intuitiva, acessível, com suporte a múltiplos idiomas e compatibilidade com navegadores modernos).",
+            "Requisitos de Sistema: requisitos técnicos (exemplo: capacidade de processar até 10.000 transações por minuto, disponibilidade de 99,9%).",
+            "Restrições: limitações de orçamento e prazo (exemplo: orçamento de $100.000 e entrega em seis meses)."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "5. Funcionalidades",
+          texto: "Para cada funcionalidade, descreve-se: Descrição (o que a funcionalidade faz), Prioridade (ex.: Alta), Entrada e Saída (dados de entrada e resultado esperado) e Requisitos Funcionais específicos (ex.: exibição de níveis de estoque em tempo real com latência máxima de 2 segundos)."
+        },
+        {
+          tipo: "topico",
+          titulo: "6. Requisitos Não Funcionais",
+          texto: "Exemplos apresentados: desempenho (suporte a até 1.000 usuários simultâneos sem degradação), segurança (autenticação de dois fatores para usuários administrativos) e usabilidade (tempo de resposta inferior a 2 segundos para operações críticas)."
+        },
+        {
+          tipo: "topico",
+          titulo: "7. Riscos e Contingências",
+          texto: "Identificação de riscos associados ao projeto e estratégias de mitigação (exemplo: risco de falta de integração adequada com o ERP existente; contingência: testes de integração extensivos antes do lançamento)."
+        },
+        {
+          tipo: "topico",
+          titulo: "8. Aprovações",
+          texto: "Lista das partes interessadas que devem aprovar o documento antes do avanço do projeto (exemplo: Gerente de Projeto, Patrocinador do Projeto)."
+        },
+        {
+          tipo: "destaque",
+          texto: "O material observa que exemplos reais de modelos de Documento de Visão usados por equipes de desenvolvimento podem ser encontrados em fontes institucionais como DATASUS, Ministério da Fazenda e PRODEST (Instituto de Tecnologia da Informação e Comunicação do Espírito Santo), disponibilizados em diferentes formatos de arquivo (DOCX, DOC, PDF)."
+        }
+      ]
+    },
+    {
+      id: "consideracoes_finais",
+      titulo: "Considerações Finais",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O módulo teve como objetivo apresentar o RUP como metodologia estruturada que facilita o desenvolvimento de software de forma organizada e eficiente, cobrindo suas quatro fases (Iniciação, Elaboração, Construção e Transição), os artefatos e documentos essenciais de cada fase, as disciplinas que orientam as atividades do projeto e as boas práticas para mitigar riscos e atender às expectativas dos stakeholders. O material menciona que o RUP prepara terreno para o estudo posterior da **UML (Unified Modeling Language)**, já que esta desempenha papel importante como linguagem visual padronizada que facilita comunicação e documentação em todas as fases do desenvolvimento."
+        }
+      ]
+    },
+    {
+      id: "resumo_revisao",
+      titulo: "Resumo Final para Revisão Rápida",
+      blocos: [
+        {
+          tipo: "lista",
+          itens: [
+            "O **RUP** foi criado pela Rational Software Corporation nos anos 1990 e atualmente pertence à **IBM**.",
+            "Suas três características principais são: **iterativo e incremental**, **dirigido por casos de uso** e **focado em arquitetura**.",
+            "As **quatro fases** do RUP, em ordem, são: **Iniciação → Elaboração → Construção → Transição**.",
+            "Principal artefato de cada fase: Iniciação = **Documento de Visão**; Elaboração = **Documento de Arquitetura** (e Modelo de Casos de Uso); Construção = **Código Fonte** (e Documentação Técnica); Transição = **Guia do Usuário** e **Plano/Documentação de Implantação**.",
+            "A **UML** é usada principalmente na fase de **Elaboração**, fornecendo linguagem visual comum à equipe.",
+            "Existem **9 disciplinas** no RUP: Modelagem de Negócios, Requisitos, Análise e Design, Implementação, Testes, Implantação, Gerenciamento de Configuração e Mudança, Gerenciamento de Projeto e Ambiente.",
+            "O gráfico **'RUP Hump'** mostra a intensidade do esforço de cada disciplina ao longo das fases/iterações do projeto.",
+            "As **seis boas práticas/princípios do RUP** são: desenvolvimento iterativo, gerenciamento de requisitos, arquitetura baseada em componentes, modelagem com UML, melhoria contínua de processos e produtos, e configuração/gerenciamento de mudança.",
+            "O RUP pode ser visto sob três perspectivas: **dinâmica** (fases), **estática** (disciplinas) e **prática** (princípios/boas práticas).",
+            "Ferramentas que suportam o RUP incluem IBM Rational Rose, Enterprise Architect, Visual Paradigm (proprietárias) e Modelio (open-source)."
+          ]
+        }
+      ]
+    }
+  ]
+  },
+  ],
+
+   resumao: [
+    {
+  aula: "AULA RESUMÃO",
+  ideia_central: "Consolidação dos fundamentos de Análise e Projeto de Sistemas: do processo de desenvolvimento de software e a distinção entre análise e modelagem, passando pelos modelos de ciclo de vida (Cascata, Incremental, RAD, Espiral, RUP, Ágil), pela Orientação a Objetos (conceitos, AOO/POO, técnicas de modelagem OMT/BON/UML), pela Engenharia de Requisitos (elicitação, RF/RNF, User Stories, técnicas de levantamento) e pelo Rational Unified Process (fases, disciplinas e boas práticas).",
+  secoes: [
+    {
+      id: "visao_geral",
+      titulo: "Visão Geral — Mapa das Aulas",
+      blocos: [
+        {
+          tipo: "lista",
+          titulo: "Conteúdo coberto por aula",
+          itens: [
+            "Aula 1 — Conceitos Iniciais: processo de desenvolvimento, Análise x Modelagem, tipos de modelagem, conceitos fundamentais de OO.",
+            "Aula 2 — Ciclo de Vida do Software: fases gerais, modelos de ciclo de vida (Cascata, Incremental, RAD, Prototipagem, Espiral, RUP, Ágil) e tipos de teste.",
+            "Aula 3 — Modelos Cascata e Incremental: comparação Tradicionais x Iterativos x Incrementais; aprofundamento de Cascata e Incremental (vantagens, desvantagens, quando usar).",
+            "Aula 4 — Métodos Ágeis: Manifesto Ágil (valores/princípios), Scrum (papéis, artefatos, cerimônias) e Extreme Programming (valores e práticas).",
+            "Aula 5 — Análise de Requisitos: elicitação x análise, Requisitos Funcionais x Não Funcionais, User Stories, critérios de aceitação, MVP, escopo fixo x variado.",
+            "Aula 6 — Técnicas de Levantamento de Requisitos: Entrevistas, Reuniões, Etnografia e Análise de Documentos, com desafios e hard/soft skills de cada uma.",
+            "Aula 7 — Análise e Programação Orientada a Objetos: AOO x POO, pilares da OO, técnicas de modelagem (OMT, BON, UML), herança/polimorfismo/interfaces com exemplos de código.",
+            "Aula 8 — Rational Unified Process (RUP): origem, características, fases, artefatos, disciplinas e boas práticas."
+          ]
+        }
+      ]
+    },
+    {
+      id: "conceitos_essenciais",
+      titulo: "Conceitos Essenciais",
+      blocos: [
+        {
+          tipo: "tabela",
+          titulo: "Principais conceitos e definições",
+          colunas: ["Conceito", "Definição"],
+          linhas: [
+            ["Análise", "Define O QUÊ o sistema deve fazer (requisitos, necessidades, objetivos)."],
+            ["Modelagem", "Mostra COMO o sistema deve fazer (representação visual/estruturada, diagramas)."],
+            ["Classe", "Estrutura/modelo que define atributos e métodos comuns de um conjunto de objetos."],
+            ["Objeto", "Instância concreta de uma classe; possui estado (atributos) e comportamento (métodos)."],
+            ["Encapsulamento", "Protege/controla o acesso aos dados e métodos internos de um objeto."],
+            ["Abstração", "Simplifica um problema, mostrando o essencial e escondendo detalhes desnecessários."],
+            ["Herança", "Permite que uma classe (subclasse) herde atributos e métodos de outra (superclasse)."],
+            ["Polimorfismo", "Métodos com o mesmo nome/interface se comportam de forma diferente conforme o contexto/classe (override)."],
+            ["Interface", "Contrato que define métodos que uma classe deve implementar, sem especificar a implementação."],
+            ["UML", "Unified Modeling Language; linguagem visual padronizada para especificar, visualizar, construir e documentar sistemas OO."],
+            ["Ciclo de vida do software", "Conjunto de fases pelas quais o software passa, da concepção até a manutenção/descontinuação."],
+            ["Stakeholders", "Grupos, organizações ou indivíduos com interesse direto ou indireto nas atividades e resultados de um projeto/sistema."],
+            ["Elicitação de Requisitos", "Descobrir, ouvir e entender os requisitos de todos os stakeholders (entrevistas, questionários, workshops, observação)."],
+            ["Análise de Requisitos", "Refinar, organizar, cruzar dados, identificar inconsistências e priorizar os requisitos coletados."],
+            ["Requisito Funcional (RF)", "Define o que o software deve fazer — suas funcionalidades e interação com o usuário."],
+            ["Requisito Não Funcional (RNF)", "Descreve qualidades do software: desempenho, segurança, confiabilidade, usabilidade, escalabilidade, manutenibilidade, compatibilidade."],
+            ["User Story", "Descrição curta e objetiva de uma funcionalidade sob a perspectiva do usuário: \"Como [usuário], eu quero [ação], para que [objetivo]\"."],
+            ["Critérios de Aceitação", "Condições que uma User Story deve cumprir para ser considerada completa; devem ser claros, mensuráveis, relevantes e objetivos."],
+            ["MVP (Minimum Viable Product)", "Versão mais simples e funcional de um produto, construída para validar hipóteses de negócio com o menor investimento possível."],
+            ["Sprint", "Ciclo curto de desenvolvimento no Scrum (1 a 4 semanas, mais comum: 2 semanas) com objetivos específicos."],
+            ["AOO (Análise Orientada a Objetos)", "Fase de identificação e definição dos objetos que compõem um sistema (modelagem)."],
+            ["POO (Programação Orientada a Objetos)", "Paradigma que organiza o código em objetos (dados + comportamento); implementação da AOO."],
+            ["RUP", "Rational Unified Process: processo iterativo, incremental, dirigido por casos de uso e focado em arquitetura."]
+          ]
+        }
+      ]
+    },
+    {
+      id: "comandos_sintaxe",
+      titulo: "Sintaxe — Exemplo de Classe em POO",
+      blocos: [
+        {
+          tipo: "exemplo",
+          titulo: "Definição de classe com atributos e métodos (Python)",
+          texto: "Estrutura básica: construtor define atributos; métodos alteram/leem o estado do objeto.",
+          detalhe: "class Pessoa:\n    def __init__(self, nome, idade):\n        self.nome = nome\n        self.idade = idade\n    def get_nome(self):\n        return self.nome\n    def aniversario(self):\n        self.idade += 1"
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Herança e Polimorfismo (padrão Animal → Mamifero → Cachorro/Gato)",
+          texto: "Uma interface/classe base Animal define fazerSom(); subclasses sobrescrevem (override) o método com comportamentos diferentes — isso é polimorfismo.",
+          detalhe: "class Animal:\n    def fazer_som(self):\n        raise NotImplementedError\n\nclass Cachorro(Animal):\n    def fazer_som(self):\n        print(\"Au Au\")\n\nclass Gato(Animal):\n    def fazer_som(self):\n        print(\"Miau\")\n\nfor animal in [Cachorro(), Gato()]:\n    animal.fazer_som()  # tratamento uniforme = polimorfismo"
+        }
+      ]
+    },
+    {
+      id: "comparacoes",
+      titulo: "Comparações Importantes",
+      blocos: [
+        {
+          tipo: "tabela",
+          titulo: "Análise x Modelagem",
+          colunas: ["Análise", "Modelagem"],
+          linhas: [
+            ["Define O QUE o sistema deve fazer", "Mostra COMO o sistema deve fazer"],
+            ["Entende requisitos e necessidades", "Representa os requisitos visualmente"],
+            ["Investiga o problema", "Estrutura uma representação do sistema (diagramas, símbolos)"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Classe x Objeto | Encapsulamento x Abstração | Herança x Polimorfismo",
+          colunas: ["Par de conceitos", "Distinção"],
+          linhas: [
+            ["Classe x Objeto", "Classe = definição/estrutura; Objeto = instância concreta dessa definição"],
+            ["Encapsulamento x Abstração", "Encapsulamento = protege/controla acesso a dados e métodos; Abstração = simplifica, escondendo detalhes desnecessários"],
+            ["Herança x Polimorfismo", "Herança = uma classe recebe características/comportamentos de outra; Polimorfismo = mesmo nome/interface, comportamentos diferentes conforme o contexto"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Modelos de Ciclo de Vida — palavra-chave e características",
+          colunas: ["Modelo", "Palavra-chave", "Característica principal"],
+          linhas: [
+            ["Cascata", "Sequencial", "Linear, rígido; uma fase só começa quando a anterior termina; requisitos estáveis"],
+            ["Incremental", "Partes/módulos", "Sistema dividido em incrementos funcionais entregues progressivamente"],
+            ["RAD", "Rapidez", "Ciclos muito curtos (60–90 dias), iterativo e incremental, foco em entrega rápida"],
+            ["Prototipagem", "Protótipo/requisitos", "Cria exemplar inicial para captar/refinar requisitos"],
+            ["Espiral", "Riscos", "Ciclos + forte ênfase em análise de riscos"],
+            ["RUP", "Iterativo + casos de uso", "4 fases, iterativo, incremental, orientado a casos de uso"],
+            ["Metodologias Ágeis", "Adaptação + feedback", "Ciclos curtos, entregas frequentes, colaboração contínua"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Modelos Tradicionais x Iterativos x Incrementais",
+          colunas: ["Característica", "Tradicionais", "Iterativos", "Incrementais"],
+          linhas: [
+            ["Abordagem", "Linear e sequencial", "Cíclica e incremental", "Estruturação + entrega gradual"],
+            ["Foco principal", "Planejamento e controle", "Adaptabilidade e feedback", "Estruturação e entrega gradual"],
+            ["Exemplo", "Cascata, Espiral", "RUP", "IID (Incremental and Iterative Development)"],
+            ["Ideal para", "Requisitos estáveis, ambiente controlado", "Requisitos em evolução, incerteza", "Requisitos em evolução, entrega gradual necessária"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Cascata x Incremental",
+          colunas: ["Aspecto", "Cascata", "Incremental"],
+          linhas: [
+            ["Estrutura", "Linear e sequencial", "Dividida em incrementos"],
+            ["Mudanças", "Difíceis de acomodar", "Maior facilidade de adaptação"],
+            ["Cliente", "Menor envolvimento", "Maior envolvimento e feedback"],
+            ["Gerenciamento", "Estrutura clara, fácil", "Mais complexo (coordenação de incrementos)"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Métodos Ágeis x Métodos Tradicionais",
+          colunas: ["Aspecto", "Tradicionais (Waterfall, V-Model, RUP)", "Ágeis"],
+          linhas: [
+            ["Abordagem", "Sequencial/linear", "Iterativa e incremental"],
+            ["Flexibilidade", "Baixa", "Alta"],
+            ["Feedback do cliente", "Limitado a fases específicas", "Contínuo"],
+            ["Entrega de software", "Ao final do projeto", "Frequente, em pequenos incrementos"],
+            ["Mudança de requisitos", "Dificilmente acomodada", "Facilmente acomodada"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Scrum x Extreme Programming (XP)",
+          colunas: ["Critério", "Scrum", "XP"],
+          linhas: [
+            ["Foco", "Gerencial — papéis, sprints, organização", "Técnico — engenharia de software e qualidade de código"],
+            ["Planejamento", "Backlog priorizado, pouca flexibilidade durante o ciclo", "Planejamento adaptativo, ajustado por feedback contínuo"],
+            ["Ciclos", "Sprints fixos (1–4 semanas)", "Ciclos curtos com entregas frequentes"],
+            ["Métricas", "Velocidade de entrega, burndown chart", "Velocidade de desenvolvimento, testes unitários, cobertura de código"],
+            ["Reuniões", "Cerimônias fixas (planning, review, retrospective)", "Reuniões frequentes e informais (stand-up)"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Tipos de Teste de Software",
+          colunas: ["Tipo de Teste", "O que verifica"],
+          linhas: [
+            ["Funcional", "Se cada funcionalidade funciona conforme os requisitos"],
+            ["Desempenho", "Comportamento sob carga: tempo de resposta, throughput, gargalos"],
+            ["Segurança", "Vulnerabilidades (ex.: SQL Injection, XSS)"],
+            ["Comportamento", "Reação do sistema em cenários reais de uso"],
+            ["Regressão", "Se uma mudança nova quebrou algo que já funcionava"],
+            ["Usabilidade", "Facilidade e intuitividade de uso da interface"]
+          ]
+        }
+      ]
+    },
+    {
+      id: "processos_etapas",
+      titulo: "Processos e Sequências Obrigatórias",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "Processo genérico de desenvolvimento de software",
+          lista: [
+            "1. Levantamento de Requisitos",
+            "2. Planejamento",
+            "3. Design",
+            "4. Desenvolvimento",
+            "5. Teste",
+            "6. Implantação",
+            "(Manutenção ocorre após a implantação)"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Etapas do Modelo Cascata",
+          lista: [
+            "1. Definição de Requisitos",
+            "2. Projeto de Sistema e Software",
+            "3. Implementação e Teste Unitário",
+            "4. Integração e Teste de Sistema",
+            "5. Operação e Manutenção"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Fases do RUP",
+          lista: [
+            "1. Iniciação — Documento de Visão, Plano de Projeto",
+            "2. Elaboração — Modelo de Casos de Uso, Documento de Arquitetura (UML usada principalmente aqui)",
+            "3. Construção — Código Fonte, Testes Unitários, Documentação Técnica",
+            "4. Transição — Plano de Implantação, Guia do Usuário"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Construção do Burndown Chart (Scrum)",
+          lista: [
+            "1. Traça-se a Linha de Trabalho Restante Ideal (do total de pontos até 0, ao longo das iterações/dias).",
+            "2. Em cada iteração/dia, soma-se os pontos de complexidade restantes.",
+            "3. Interliga-se esses pontos para formar a Linha de Trabalho Restante Real.",
+            "4. Linha real abaixo da ideal = bom ritmo; acima = equipe precisa ajustar ritmo ou cronograma."
+          ]
+        }
+      ]
+    },
+    {
+      id: "imagens_importantes",
+      titulo: "Imagens Importantes",
+      blocos: [
+        {
+          tipo: "imagem",
+          src: "modelo_cascata.png",
+          pasta: "imagens_analise_projeto/aula_02",
+          alt: "O diagrama representa as fases do modelo em sequência, começando pela definição de requisitos e avançando para projeto, implementação, testes, integração e operação/manutenção. As setas mostram a progressão entre as etapas. (Página 7)",
+          num: 1
+        },
+        {
+          tipo: "destaque",
+          texto: "Lembrar: o Modelo Cascata é estritamente sequencial — a seta só avança quando a fase anterior é concluída."
+        },
+        {
+          tipo: "imagem",
+          src: "modelo_incremental.png",
+          pasta: "imagens_analise_projeto/aula_02",
+          alt: "O diagrama mostra diferentes incrementos sendo desenvolvidos ao longo do cronograma. Cada incremento passa por etapas de comunicação, planejamento, modelagem, construção e entrega, aumentando progressivamente a funcionalidade do software. (Página 8)",
+          num: 2
+        },
+        {
+          tipo: "destaque",
+          texto: "Lembrar: no Modelo Incremental cada incremento percorre todas as fases do ciclo (comunicação → construção → entrega) e adiciona funcionalidade progressivamente."
+        },
+        {
+          tipo: "imagem",
+          src: "modelo_espiral.png",
+          pasta: "imagens_analise_projeto/aula_02",
+          alt: "A representação mostra o desenvolvimento organizado em ciclos sucessivos. Cada volta da espiral envolve planejamento, análise de riscos, modelagem, construção e entrega/feedback, reforçando o caráter iterativo e orientado a riscos do modelo. (Página 9)",
+          num: 4
+        },
+        {
+          tipo: "destaque",
+          texto: "Lembrar: cada volta da espiral repete o mesmo conjunto de atividades (objetivos → riscos → desenvolvimento → planejamento), sempre dando peso especial à análise de riscos."
+        },
+        {
+          tipo: "imagem",
+          src: "diagrama_atores_chave_scrum.png",
+          pasta: "imagens_analise_projeto\\aula_04",
+          alt: "Diagrama dos Atores Chave do Scrum: figura central (equipe/quadro de trabalho) conectada a quatro caixas — Product Owner, Scrum Master, Time de Desenvolvimento e Stakeholders (página 12).",
+          num: 2
+        },
+        {
+          tipo: "destaque",
+          texto: "Lembrar os 4 papéis do Scrum e suas funções: PO (voz do cliente/backlog), Scrum Master (guardião do processo), Time de Desenvolvimento (constrói o produto), Stakeholders (interessados)."
+        },
+        {
+          tipo: "imagem",
+          src: "figura_2_burndown_chart.png",
+          pasta: "imagens_analise_projeto\\aula_04",
+          alt: "Figura 2 - Exemplo de um Burndown Chart: Story Points Remaining (0 a 35) por Days in the Sprint (1 a 10), com Linha de Trabalho Restante Ideal e Linha de Trabalho Restante Real (página 14).",
+          num: 4
+        },
+        {
+          tipo: "destaque",
+          texto: "Lembrar: eixo X = dias/iterações da sprint; eixo Y = pontos de complexidade restantes; comparar linha real x linha ideal indica se a equipe está no ritmo."
+        },
+        {
+          tipo: "imagem",
+          src: "figura_3_diagramas_que_compoem_a_uml.png",
+          pasta: "imagens_analise_projeto/aula_07",
+          alt: "Árvore hierárquica com o nó raiz \"Diagrama\", dividido em dois ramos: \"Diagrama de Estruturas\" (contendo Diagrama de Classes, Componentes, Objetos, Perfil, Estruturas Compostas, Implantação e Pacotes) e \"Diagrama de Comportamentos\" (contendo Diagrama de Atividades, Casos de Uso, Máquina de Estados, e Diagrama de Interação, que por sua vez se subdivide em Sequência, Comunicação, Visão Geral de Interação e Tempo).",
+          num: 3
+        },
+        {
+          tipo: "destaque",
+          texto: "Lembrar: a UML se divide em Diagramas de Estruturas (ex.: Classes) e Diagramas de Comportamentos (ex.: Casos de Uso, Sequência) — saber classificar cada diagrama UML nesses dois grupos."
+        },
+        {
+          tipo: "imagem",
+          src: "figura_4_diagramas_que_compoem_a_uml_pg09.png",
+          pasta: "imagens_analise_projeto/aula_07",
+          alt: "Exemplifica a notação de um Diagrama de Classes: a caixa \"Nome da Classe\" lista atributos com indicadores de visibilidade (+ público, # protegido, - privado) e uma operação com argumento e tipo de retorno. Um losango preenchido (rotulado \"Composição\") liga essa classe à \"Classe Dependente\", que possui um método próprio; uma caixa separada \"Anotação\" representa uma nota explicativa solta no diagrama.",
+          num: 4
+        },
+        {
+          tipo: "destaque",
+          texto: "Lembrar a notação de visibilidade no Diagrama de Classes: + público, # protegido, − privado; losango preenchido = composição."
+        },
+        {
+          tipo: "imagem",
+          src: "figura_2_disciplinas_fases_rup_hump.png",
+          pasta: "imagens_analise_projeto/aula_08",
+          alt: "Gráfico bidimensional (RUP Hump) que representa o cruzamento entre as nove disciplinas do RUP (eixo vertical: Modelagem de Negócios, Requisitos, Análise e Design, Implementação, Teste, Implantação, Gerenciamento de Configuração e Mudança, Gerenciamento de Projeto, Ambiente) e as quatro fases (eixo horizontal: Iniciação, Elaboração, Construção, Transição), subdivididas em iterações. Cada disciplina é representada por uma curva ('hump') cuja altura indica a intensidade do esforço naquela fase/iteração.",
+          num: 2
+        },
+        {
+          tipo: "destaque",
+          texto: "Lembrar: o RUP Hump mostra que Requisitos/Modelagem de Negócios têm mais esforço no início (Iniciação/Elaboração), enquanto Implementação e Testes se intensificam na Construção."
+        }
+      ]
+    },
+    {
+      id: "decore_para_prova",
+      titulo: "Decore Para a Prova",
+      blocos: [
+        {
+          tipo: "tabela",
+          titulo: "Síntese final de macetes",
+          colunas: ["Tema", "Macete"],
+          linhas: [
+            ["Análise x Modelagem", "Análise = O QUÊ. Modelagem = COMO."],
+            ["Classe x Objeto", "Classe = modelo. Objeto = instância."],
+            ["Encapsulamento x Abstração", "Encapsulamento = proteger. Abstração = esconder detalhes."],
+            ["Herança x Polimorfismo", "Herança = herdar. Polimorfismo = várias formas/comportamentos."],
+            ["Cascata", "Sequência rígida; requisitos estáveis; sem retorno fácil às fases anteriores."],
+            ["Incremental", "Entrega por módulos/partes; cada incremento passa por todas as fases."],
+            ["RAD", "Desenvolvimento muito rápido, ciclos de 60–90 dias."],
+            ["Espiral", "Ciclos + análise de riscos."],
+            ["RUP", "Iterativo + incremental + casos de uso + 4 fases (Iniciação, Elaboração, Construção, Transição)."],
+            ["Ágil", "Ciclos curtos + entregas frequentes + feedback + adaptação."],
+            ["Teste de Regressão", "Mudou algo novo → verifica se o que já funcionava continua funcionando."],
+            ["Manifesto Ágil", "4 valores: indivíduos/interações > processos; software funcionando > documentação; colaboração com cliente > contrato; responder a mudanças > seguir plano."],
+            ["Scrum", "3 pilares: Transparência, Inspeção, Adaptação. 4 papéis: PO, Scrum Master, Time de Dev, Stakeholders."],
+            ["XP", "5 valores: Comunicação, Simplicidade, Feedback, Coragem, Respeito. Prática central: Programação em Pares."],
+            ["Requisitos Funcionais x Não Funcionais", "RF = o que o sistema faz (\"melodia\"). RNF = qualidades do sistema (\"harmonia\": desempenho, segurança, confiabilidade, usabilidade, escalabilidade, manutenibilidade, compatibilidade)."],
+            ["User Story", "Formato: \"Como [usuário], eu quero [ação], para que [objetivo]\"."],
+            ["MVP", "Versão mínima funcional para validar hipóteses com o menor investimento."],
+            ["Confiabilidade (RNF)", "Meta típica: sistema disponível ≥ 99,9% do tempo."],
+            ["Técnicas de Elicitação", "Entrevistas (estruturada/semiestruturada/não estruturada), Reuniões (brainstorming/análise-revisão/workshop), Etnografia (observação direta + entrevista contextual), Análise de Documentos."],
+            ["AOO x POO", "AOO = fase de análise/modelagem (define os objetos). POO = fase de implementação (código)."],
+            ["Técnicas de Modelagem OO", "OMT (Rumbaugh, 1991) → estrutura estática + dinâmica + funcional. BON (Nerson & Waldén, 1993) → integração análise/design/implementação. UML → linguagem visual padronizada."],
+            ["RUP — 6 boas práticas", "Desenvolvimento iterativo; Gerenciamento de requisitos; Arquitetura baseada em componentes; Modelagem com UML; Melhoria contínua; Configuração e gerenciamento de mudança."],
+            ["RUP — 9 disciplinas", "Modelagem de Negócios, Requisitos, Análise e Design, Implementação, Testes, Implantação, Gerenciamento de Configuração e Mudança, Gerenciamento de Projeto, Ambiente."]
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "Atenção geral de prova: em modelos de ciclo de vida, sempre associe cada modelo à sua palavra-chave central (Cascata=sequencial, Incremental=partes, RAD=rapidez, Espiral=riscos, RUP=casos de uso, Ágil=adaptação) — essa associação resolve a maioria das questões comparativas."
+        }
+      ]
+    }
+  ]
+    }
+   ],
+
+  simplificado: [
+    // Aula 1
+    {
+      aula: "Aula 1 — Conceitos Iniciais",
+      ideia_central: "Análise e modelagem são etapas complementares: a análise define **o que** o sistema deve fazer e a modelagem mostra **como** ele deve fazer.",
+      secoes: [
+        {
+          id: "desenvolvimento_analise_modelagem",
+          titulo: "Desenvolvimento de Software, Análise e Modelagem",
+          blocos: [
+
+            // 1 - fases do desenvolvimento
+            {
+              tipo: "topico",
+              titulo: "Processo de desenvolvimento de software",
+              lista: [
+                "**Levantamento de requisitos** → descobrir necessidades e funcionalidades desejadas pelo cliente",
+                "**Planejamento** → define objetivos, requisitos detalhados, especificações e riscos",
+                "**Design** → cria arquitetura, interface e banco de dados",
+                "**Desenvolvimento** → codificação e construção do software",
+                "**Teste** → verifica se atende aos requisitos",
+                "**Implantação** → disponibilização do software após validação",
+                "Cada fase define atividades, funções, responsabilidades e artefatos (`documentos`, modelos, códigos)"
+              ]
+            },
+
+            // 2 - analise x modelagem
+            {
+              tipo: "topico",
+              titulo: "Análise × Modelagem",
+              lista: [
+                "**Análise** → define o que o sistema deve fazer; investiga o problema; ligada à análise de requisitos",
+                "**Modelagem** → mostra como o sistema deve fazer; representa requisitos com diagramas, símbolos e modelos"
+              ]
+            },
+
+            // 3 - analise do sistema
+            {
+              tipo: "topico",
+              titulo: "Análise do sistema",
+              lista: [
+                "Busca descobrir: o que o sistema deve fazer, como deve se comportar, necessidades dos usuários e objetivos",
+                "Inclui comunicação com usuários, clientes e stakeholders",
+                "Inclui coleta e validação de informações",
+                "Inclui compreensão do problema e do domínio",
+                "Inclui documentação dos resultados"
+              ]
+            },
+
+            // 4 - modelagem do sistema
+            {
+              tipo: "topico",
+              titulo: "Modelagem do sistema",
+              lista: [
+                "Representa e organiza requisitos de forma visual, estruturada e abstrata",
+                "Facilita compreensão, comunicação, projeto, implementação, teste e manutenção",
+                "**`UML`** (Unified Modeling Language) → padrão para modelagem de sistemas orientados a objetos",
+                "**Diagrama de caso de uso** → detalha interações dos usuários com o sistema"
+              ]
+            }
+          ]
+        },
+        {
+          id: "tipos_de_modelagem",
+          titulo: "Tipos de Modelagem",
+          blocos: [
+
+            // 5 - tipos de modelagem
+            {
+              tipo: "topico",
+              titulo: "Tipos de modelagem de sistemas",
+              lista: [
+                "**Modelagem Estruturada** → representa processos, dados e fluxos",
+                "**Modelagem Funcional** → foco nas funções/processos; usa modularização; técnicas: Diagrama de Blocos de Fluxo Funcional e `IDEF0`",
+                "**Modelagem baseada em processos** → define, projeta e analisa fluxos de processos; usa modularização",
+                "**Modelagem Formal** → usa lógica formal para descrever matematicamente o comportamento; indicada para componentes críticos e maior precisão; exemplo: **Redes de Petri**",
+                "**Modelagem Orientada a Objetos** → foco em objetos e suas interações; organiza dados e processos em módulos integrados"
+              ]
+            },
+
+            // 6 - imagem redes de petri
+            {
+              tipo: "imagem",
+              id: "modelagem_formal_redes_de_petri",
+              src: "modelagem_formal_redes_de_petri.png",
+              pasta: "imagens_analise_projeto/aula_01",
+              num: "1",
+              alt: "A figura apresenta uma modelagem formal feita com Redes de Petri, representando visualmente estados/atividades e seus relacionamentos em um fluxo. Ela exemplifica como uma representação formal pode ser utilizada para analisar o comportamento de uma atividade com maior precisão. (Página 9)"
+            },
+
+            // 7 - imagem diagrama uml
+            {
+              tipo: "imagem",
+              id: "diagrama_uml_modelagem_orientada_objetos",
+              src: "diagrama_uml_modelagem_orientada_objetos.png",
+              pasta: "imagens_analise_projeto/aula_01",
+              num: "2",
+              alt: "O diagrama UML representa classes/interfaces e seus relacionamentos, exemplificando como a modelagem orientada a objetos organiza objetos, comportamentos e relações entre diferentes elementos do sistema. (Página 10)"
+            }
+          ]
+        },
+        {
+          id: "orientacao_a_objetos",
+          titulo: "Orientação a Objetos",
+          blocos: [
+
+            // 8 - conceitos fundamentais oo
+            {
+              tipo: "topico",
+              titulo: "Conceitos fundamentais de OO",
+              lista: [
+                "**Classe** → estrutura que define características e comportamentos comuns; modelo/estrutura",
+                "**Objeto** → instância concreta de uma classe",
+                "**Atributo** → característica do objeto",
+                "**Método** → comportamento do objeto",
+                "**Encapsulamento** → protege/controla acesso aos dados e métodos internos",
+                "**Herança** → permite herdar (e alterar) características e comportamentos de outra classe",
+                "**Polimorfismo** → mesma interface/nome com comportamentos diferentes conforme o contexto",
+                "**Abstração** → simplifica um problema, mostrando o essencial e escondendo detalhes desnecessários"
+              ]
+            },
+
+            // 9 - vantagens da oo
+            {
+              tipo: "topico",
+              titulo: "Vantagens da orientação a objetos",
+              lista: [
+                "**Modularidade** → divisão do programa em partes independentes e reutilizáveis",
+                "**Reutilização de código** → aproveitamento de código existente",
+                "**Polimorfismo** → objeto assume diferentes formas conforme o contexto",
+                "Resultado geral: software flexível, fácil de alterar, manter e reutilizar"
+              ]
+            },
+
+            // 10 - linguagens e boas praticas
+            {
+              tipo: "lista",
+              itens: [
+                "Linguagens `OO`: **Java**, **C#**, **Python**, **Ruby**",
+                "Boas práticas relacionadas: **Design Patterns**, **Clean Code**, **SOLID**"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    // Aula 2
+    {
+      aula: "Aula 2 — Ciclo de Vida do Software",
+      ideia_central: "O ciclo de vida do software organiza as fases desde a concepção até a manutenção/descontinuação, existindo diversos modelos (Cascata, Incremental, RAD, Prototipagem, Espiral, RUP, Ágil) e fases gerais (Planejamento, Requisitos, Design, Implementação, Testes, Implantação, Manutenção), além de diferentes tipos de testes.",
+      secoes: [
+        {
+          id: "modelos_ciclo_vida",
+          titulo: "Modelos de Ciclo de Vida",
+          blocos: [
+
+            // 1 - conceito de ciclo de vida
+            {
+              tipo: "topico",
+              titulo: "Ciclo de Vida do Software",
+              lista: [
+                "**Ciclo de vida** → estrutura que organiza o software desde a concepção até a manutenção/descontinuação",
+                "Envolve planejamento, análise, projeto, desenvolvimento, testes, implantação e manutenção",
+                "Importância → organizar, controlar prazos/custos, reduzir riscos, melhorar qualidade e facilitar manutenção"
+              ]
+            },
+
+            // 2 - evolução histórica
+            {
+              tipo: "lista",
+              itens: [
+                "**Cascata** → década de 1970",
+                "**Espiral** → década de 1980",
+                "**Incremental** e **RAD** → década de 1990",
+                "**Metodologias Ágeis** → século XXI"
+              ]
+            },
+
+            // 3 - modelo cascata
+            {
+              tipo: "topico",
+              titulo: "Cascata",
+              lista: [
+                "Formalizado por **Royce (1970)**",
+                "Modelo **linear e sequencial** → uma fase só começa quando a anterior termina",
+                "Sequência: Requisitos → Projeto → Implementação/Teste unitário → Integração/Teste de sistema → Operação/Manutenção",
+                "Indicado para requisitos bem conhecidos e estáveis",
+                "Exemplo: sistemas de controle de tráfego aéreo",
+                "Ponto forte: organização e previsibilidade | Ponto fraco: difícil incorporar mudanças posteriores"
+              ]
+            },
+
+            // 4 - imagem modelo cascata
+            {
+              tipo: "imagem",
+              id: "fig1_modelo_cascata",
+              src: "modelo_cascata.png",
+              pasta: "imagens_analise_projeto/aula_02",
+              num: "1",
+              alt: "O diagrama representa as fases do modelo em sequência, começando pela definição de requisitos e avançando para projeto, implementação, testes, integração e operação/manutenção. As setas mostram a progressão entre as etapas. (Página 7)"
+            },
+
+            // 5 - modelo incremental
+            {
+              tipo: "topico",
+              titulo: "Incremental",
+              lista: [
+                "Melhoria em relação ao Cascata",
+                "Requisitos agrupados em módulos, desenvolvidos e entregues progressivamente",
+                "Cada módulo passa pelas fases do ciclo → **entrega parcial**",
+                "Exemplo: sistema de gestão empresarial dividido em contabilidade, RH e estoque"
+              ]
+            },
+
+            // 6 - imagem modelo incremental
+            {
+              tipo: "imagem",
+              id: "fig2_modelo_incremental",
+              src: "modelo_incremental.png",
+              pasta: "imagens_analise_projeto/aula_02",
+              num: "2",
+              alt: "O diagrama mostra diferentes incrementos sendo desenvolvidos ao longo do cronograma. Cada incremento passa por etapas de comunicação, planejamento, modelagem, construção e entrega, aumentando progressivamente a funcionalidade do software. (Página 8)"
+            },
+
+            // 7 - RAD
+            {
+              tipo: "topico",
+              titulo: "RAD (Rapid Application Development)",
+              lista: [
+                "Formalizado por **James Martin (1991)**",
+                "Foco em rapidez, ciclos curtos, desenvolvimento incremental e iterativo",
+                "Ciclos frequentemente entre 60 e 90 dias",
+                "Indicado para entrega rápida",
+                "Exemplo: protótipos de software para startups"
+              ]
+            },
+
+            // 8 - imagem modelo RAD
+            {
+              tipo: "imagem",
+              id: "fig3_modelo_rad",
+              src: "modelo_ciclo_vida_rad.png",
+              pasta: "imagens_analise_projeto/aula_02",
+              num: "3",
+              alt: "O diagrama apresenta o ciclo do RAD, com análise e projeto rápido, ciclos de prototipagem, demonstração/refinamento, testes e implantação. Ele representa visualmente a característica iterativa e rápida do modelo. (Página 9)"
+            },
+
+            // 9 - prototipagem
+            {
+              tipo: "topico",
+              titulo: "Prototipagem",
+              lista: [
+                "Construção de um exemplar inicial do software (protótipo)",
+                "Objetivo → captar, esclarecer e refinar requisitos",
+                "Pode ser modelo independente ou técnica dentro de outros modelos",
+                "Exemplo: desenvolvimento de interfaces de usuário"
+              ]
+            },
+
+            // 10 - espiral
+            {
+              tipo: "topico",
+              titulo: "Espiral",
+              lista: [
+                "Proposto por **Boehm (1988)**",
+                "Abordagem cíclica que combina Cascata e Prototipagem",
+                "Cada iteração → objetivos, análise de riscos, desenvolvimento, planejamento da próxima fase",
+                "Grande importância à **análise de riscos**",
+                "Exemplo: sistemas de defesa"
+              ]
+            },
+
+            // 11 - imagem modelo espiral
+            {
+              tipo: "imagem",
+              id: "fig4_modelo_espiral",
+              src: "modelo_espiral.png",
+              pasta: "imagens_analise_projeto/aula_02",
+              num: "4",
+              alt: "A representação mostra o desenvolvimento organizado em ciclos sucessivos. Cada volta da espiral envolve planejamento, análise de riscos, modelagem, construção e entrega/feedback, reforçando o caráter iterativo e orientado a riscos do modelo. (Página 9)"
+            },
+
+            // 12 - RUP
+            {
+              tipo: "topico",
+              titulo: "RUP (Rational Unified Process)",
+              lista: [
+                "Modelo iterativo, incremental e orientado a casos de uso",
+                "Quatro fases: **Concepção, Elaboração, Construção, Transição**",
+                "Desenvolvido pela Rational Software Corporation, adquirido pela `IBM`",
+                "Exemplo: grandes sistemas corporativos"
+              ]
+            },
+
+            // 13 - metodologias ágeis
+            {
+              tipo: "topico",
+              titulo: "Metodologias Ágeis",
+              lista: [
+                "Ciclos curtos, incrementais e iterativos",
+                "Foco em colaboração com o cliente, entregas frequentes, feedback e adaptação a mudanças",
+                "Exemplo: aplicativos móveis"
+              ]
+            },
+
+            // 14 - imagem modelo scrum
+            {
+              tipo: "imagem",
+              id: "fig5_modelo_scrum",
+              src: "modelo_scrum.png",
+              pasta: "imagens_analise_projeto/aula_02",
+              num: "5",
+              alt: "O diagrama representa um ciclo do Scrum envolvendo visão, backlog, planejamento da sprint, sprint, revisão, retrospectiva e geração de incremento do produto. Ele demonstra o caráter incremental e iterativo da abordagem. (Página 10)"
+            },
+
+            // 15 - comparação e escolha dos modelos
+            {
+              tipo: "topico",
+              titulo: "Comparação e Escolha do Modelo",
+              lista: [
+                "**Cascata** → sequencial | **Incremental** → partes/módulos | **RAD** → rapidez",
+                "**Prototipagem** → protótipo/requisitos | **Espiral** → riscos",
+                "**RUP** → iterativo + casos de uso | **Ágil** → adaptação + feedback",
+                "Modelo **Evolutivo** (citado só na tabela) → requisitos adquiridos/refinados durante a evolução",
+                "Não há modelo único ideal → escolha depende do contexto, requisitos, complexidade e necessidade de mudanças"
+              ]
+            },
+
+            // 16 - imagem comparação dos modelos
+            {
+              tipo: "imagem",
+              id: "fig6_comparacao_modelos_ciclo_vida",
+              src: "comparacao_modelos_ciclo_vida.png",
+              pasta: "imagens_analise_projeto/aula_02",
+              num: "6",
+              alt: "Tabela que compara os modelos de ciclo de vida apresentados, suas características e exemplos práticos. (Página 11)"
+            }
+          ]
+        },
+
+        {
+          id: "fases_desenvolvimento",
+          titulo: "Fases do Desenvolvimento",
+          blocos: [
+
+            // 1 - sequência das fases
+            {
+              tipo: "topico",
+              titulo: "Sequência das Fases",
+              lista: [
+                "**Planejamento → Análise de Requisitos → Design → Implementação → Testes → Implantação → Manutenção**",
+                "Versão simplificada: Levantamento de Requisitos → Análise → Projeto → Desenvolvimento → Teste → Validação → Implantação"
+              ]
+            },
+
+            // 2 - imagem fases do desenvolvimento
+            {
+              tipo: "imagem",
+              id: "fig7_fases_desenvolvimento_software",
+              src: "fases_desenvolvimento_software.png",
+              pasta: "imagens_analise_projeto/aula_02",
+              num: "7",
+              alt: "A figura apresenta visualmente a sequência das principais fases do desenvolvimento: levantamento de requisitos, análise, projeto, desenvolvimento, teste, validação e implantação. (Página 12)"
+            },
+
+            // 3 - planejamento
+            {
+              tipo: "topico",
+              titulo: "Planejamento",
+              lista: [
+                "Define objetivos, recursos, custos e cronograma",
+                "Exemplo: em tráfego aéreo, define metas de segurança/eficiência, equipe e custo"
+              ]
+            },
+
+            // 4 - análise de requisitos
+            {
+              tipo: "topico",
+              titulo: "Análise de Requisitos",
+              lista: [
+                "Coleta, análise e documentação das necessidades",
+                "Técnicas: **entrevistas, questionários, workshops**",
+                "Engajamento do usuário garante requisitos reais",
+                "Exemplo: app de tarefas → criação, prioridades, integração com calendário"
+              ]
+            },
+
+            // 5 - design/projeto
+            {
+              tipo: "topico",
+              titulo: "Design (Projeto)",
+              lista: [
+                "Transforma requisitos em arquitetura detalhada",
+                "Usa diagramas `UML` (classes, sequência, estados), estrutura de dados e algoritmos",
+                "Exemplo: e-commerce → diagrama de classes (produtos/usuários/pedidos) e sequência (fluxo de compra)"
+              ]
+            },
+
+            // 6 - implementação
+            {
+              tipo: "topico",
+              titulo: "Implementação (Desenvolvimento)",
+              lista: [
+                "Codificação do software conforme o design",
+                "Envolve escrita de código, testes unitários e integração dos componentes",
+                "Exemplo: app bancário → login, transferência, extratos"
+              ]
+            },
+
+            // 7 - implantação
+            {
+              tipo: "topico",
+              titulo: "Implantação",
+              lista: [
+                "Instala o software em ambiente de produção",
+                "Envolve preparação do ambiente (servidores, redes, banco de dados) e migração de dados",
+                "Exemplo: sistema de inventário em cadeia de supermercados"
+              ]
+            },
+
+            // 8 - manutenção
+            {
+              tipo: "topico",
+              titulo: "Manutenção",
+              lista: [
+                "Ocorre após a implantação",
+                "Correção de bugs, melhorias, adaptação a novas necessidades/tecnologias",
+                "Exemplo: sistema escolar → correção de bugs, novos relatórios, integração de pagamento"
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "tipos_testes",
+          titulo: "Tipos de Testes",
+          blocos: [
+
+            // 1 - tipos de testes
+            {
+              tipo: "topico",
+              titulo: "Testes de Software",
+              lista: [
+                "Verificam e validam o software antes da implantação",
+                "**Funcional** → cada funcionalidade funciona conforme requisitos (ex: empréstimo/devolução em biblioteca)",
+                "**Desempenho** → comportamento sob carga: tempo de resposta, throughput (ex: e-commerce na Black Friday)",
+                "**Segurança** → identifica vulnerabilidades (ex: `SQL Injection`, `XSS`)",
+                "**Comportamento** → reação em cenários reais de uso (ex: app de tarefas com entradas inválidas)",
+                "**Regressão** → verifica se mudança nova quebrou funcionalidade antiga (ex: CRM após nova função)",
+                "**Usabilidade** → facilidade de interação com a interface (ex: navegação em app móvel)"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    // Aula 3
+    {
+      aula: "Aula 3 — Modelos Cascata e Incremental",
+      ideia_central: "O módulo compara Modelos Tradicionais, Iterativos e Incrementais, aprofundando o Modelo Cascata (linear/sequencial, requisitos estáveis) e o Modelo Incremental (entrega gradual por incrementos, requisitos em evolução).",
+      secoes: [
+        {
+          id: "comparacao_tres_modelos",
+          titulo: "Tradicionais x Iterativos x Incrementais",
+          blocos: [
+
+            // 1 - comparativo geral
+            {
+              tipo: "topico",
+              titulo: "Quadro Comparativo",
+              lista: [
+                "**Tradicionais** → linear/sequencial; foco em planejamento e controle; ex: Cascata e Espiral",
+                "**Iterativos** → cíclico; foco em adaptabilidade e feedback; ex: `RUP`",
+                "**Incrementais** → estruturação + entrega gradual; ex: `IID` (Incremental and Iterative Development)",
+                "Tradicionais: vantagem = estrutura clara/documentação | desvantagem = inflexibilidade/alto risco inicial",
+                "Iterativos: vantagem = flexibilidade/feedback contínuo | desvantagem = complexidade de gerenciamento",
+                "Incrementais: vantagem = entrega gradual de valor | desvantagem = integração eficiente entre etapas"
+              ]
+            },
+
+            // 2 - stakeholders
+            {
+              tipo: "topico",
+              titulo: "Stakeholders",
+              lista: [
+                "**Stakeholders** → grupos, organizações ou indivíduos com interesse direto/indireto nas atividades e resultados de uma organização"
+              ]
+            },
+
+            // 3 - modelos tradicionais
+            {
+              tipo: "topico",
+              titulo: "Modelos Tradicionais",
+              lista: [
+                "Abordagem linear e sequencial → cada fase só começa após o término da anterior",
+                "Vantagens: estrutura clara, planejamento fácil, documentação abrangente",
+                "Desvantagem principal: dificuldade de lidar com mudanças em fases avançadas → retrabalho, custos, riscos",
+                "Ideais quando: requisitos estáveis, ambiente controlado, baixo risco de mudanças, prazos/orçamentos rígidos"
+              ]
+            },
+
+            // 4 - modelos iterativos
+            {
+              tipo: "topico",
+              titulo: "Modelos Iterativos (RUP)",
+              lista: [
+                "Abordagem cíclica: ciclos repetitivos de Planejamento → Design → Implementação → Testes",
+                "Características: flexibilidade, adaptação a mudanças, identificação precoce de problemas, feedback dos stakeholders",
+                "Desvantagem: gerenciamento mais complexo; exige visão inicial clara dos requisitos e comunicação constante",
+                "Ideais quando: requisitos em evolução, alta incerteza, necessidade de feedback contínuo, ambiente dinâmico",
+                "Ideia-chave: **Iterativo = ciclos + adaptação + feedback + melhoria contínua**"
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "modelo_cascata",
+          titulo: "Modelo Cascata",
+          blocos: [
+
+            // 1 - conceito e etapas
+            {
+              tipo: "topico",
+              titulo: "Conceito e Etapas",
+              lista: [
+                "Também chamado de **Modelo Linear Sequencial**",
+                "Estrutura sequencial rígida; indicado para requisitos bem definidos/estáveis",
+                "Etapas: Definição de Requisitos → Projeto de Sistema e Software → Implementação e Teste Unitário → Integração e Teste de Sistema → Operação e Manutenção"
+              ]
+            },
+
+            // 2 - imagem modelo cascata
+            {
+              tipo: "imagem",
+              id: "fig1_modelo_em_cascata",
+              src: "figura_1_modelo_em_cascata.png",
+              pasta: "imagens_analise_projeto/aula_03",
+              num: "1",
+              alt: "A figura apresenta as etapas do Modelo Cascata organizadas sequencialmente. Ela mostra o fluxo partindo da Definição de Requisitos, passando por Projeto de Sistema e Software, Implementação e Teste Unitário, Integração e Teste de Sistema e chegando a Operação e Manutenção. O diagrama também representa retornos das etapas posteriores para etapas anteriores."
+            },
+
+            // 3 - vantagens
+            {
+              tipo: "topico",
+              titulo: "Vantagens",
+              lista: [
+                "Estrutura clara → facilita planejamento, organização, controle de prazos/recursos",
+                "Documentação detalhada → referência para manutenção, treinamento e comunicação",
+                "Facilidade de controle e previsibilidade → reduz retrabalho e custos",
+                "Ideal para ambientes controlados, baixo risco e requisitos estáveis"
+              ]
+            },
+
+            // 4 - desvantagens
+            {
+              tipo: "topico",
+              titulo: "Desvantagens",
+              lista: [
+                "Inflexibilidade diante de mudanças → retrabalho, custos, atrasos",
+                "Baixa adaptabilidade a novas tecnologias",
+                "Risco de falhas em estágios avançados quando há mudanças tardias",
+                "Menor envolvimento do cliente durante o desenvolvimento"
+              ]
+            },
+
+            // 5 - quando usar
+            {
+              tipo: "topico",
+              titulo: "Quando Utilizar",
+              lista: [
+                "Requisitos bem definidos e estáveis",
+                "Ambiente de desenvolvimento controlado",
+                "Foco em cumprir prazos e orçamentos rígidos",
+                "Projetos grandes/complexos que exigem controle rígido"
+              ]
+            },
+
+            // 6 - exemplos de aplicação
+            {
+              tipo: "topico",
+              titulo: "Exemplos de Aplicação",
+              lista: [
+                "Sistemas embarcados (carros, eletrodomésticos, dispositivos médicos)",
+                "Sistemas de Informação Legados",
+                "Aplicações de Governança e Conformidade (contabilidade, gestão de dados)"
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "modelo_incremental",
+          titulo: "Modelo Incremental",
+          blocos: [
+
+            // 1 - conceito e funcionamento
+            {
+              tipo: "topico",
+              titulo: "Conceito e Funcionamento",
+              lista: [
+                "Também chamado de **Modelo de Desenvolvimento Evolucionário**",
+                "Sistema dividido em incrementos funcionais menores",
+                "Cada incremento passa por: Análise → Design → Implementação → Testes → Integração",
+                "Entrega gradual permite feedback antecipado e adaptação contínua"
+              ]
+            },
+
+            // 2 - imagem modelo incremental
+            {
+              tipo: "imagem",
+              id: "fig2_modelo_incremental",
+              src: "figura_2_modelo_incremental.png",
+              pasta: "imagens_analise_projeto/aula_03",
+              num: "2",
+              alt: "A figura representa o desenvolvimento do sistema por diferentes incrementos. O eixo vertical representa o incremento de funcionalidades e o eixo horizontal representa o tempo decorrido do projeto. Cada incremento percorre etapas de especificação, projeto do software, implementação/teste de unidade, integração/teste de sistema e operação/feedback. A figura mostra a entrega progressiva dos Incrementos 1, 2 e N."
+            },
+
+            // 3 - vantagens
+            {
+              tipo: "topico",
+              titulo: "Vantagens",
+              lista: [
+                "Flexibilidade para mudanças de requisitos mesmo em etapas avançadas",
+                "Entrega rápida de partes funcionais → feedback precoce dos usuários",
+                "Redução de riscos → problemas identificados mais cedo",
+                "Maior envolvimento do cliente",
+                "Melhor gerenciamento de prazos e orçamentos"
+              ]
+            },
+
+            // 4 - desvantagens
+            {
+              tipo: "topico",
+              titulo: "Desvantagens",
+              lista: [
+                "Maior complexidade de gerenciamento (coordenar vários incrementos)",
+                "Necessidade de integração contínua e testes frequentes",
+                "Depende de planejamento detalhado de funcionalidades/prazos/recursos",
+                "Exige comunicação constante entre equipe, stakeholders e clientes"
+              ]
+            },
+
+            // 5 - quando usar
+            {
+              tipo: "topico",
+              titulo: "Quando Utilizar",
+              lista: [
+                "Requisitos em evolução",
+                "Necessidade de entrega gradual de partes funcionais",
+                "Projetos com riscos/incertezas que exigem adaptabilidade",
+                "Ambiente de desenvolvimento dinâmico"
+              ]
+            },
+
+            // 6 - exemplos de aplicação
+            {
+              tipo: "topico",
+              titulo: "Exemplos de Aplicação",
+              lista: [
+                "Software bancário (contas, transferências, pagamentos, investimentos entregues gradualmente)",
+                "Sistemas de Saúde (prontuários eletrônicos, gestão hospitalar)"
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "cascata_x_incremental",
+          titulo: "Cascata × Incremental — Comparação Final",
+          blocos: [
+
+            // 1 - comparativo direto
+            {
+              tipo: "topico",
+              titulo: "Comparativo",
+              lista: [
+                "**Estrutura** → Cascata: linear/sequencial | Incremental: dividida em incrementos",
+                "**Requisitos** → Cascata: estáveis | Incremental: em evolução",
+                "**Mudanças** → Cascata: difíceis de acomodar | Incremental: maior facilidade",
+                "**Cliente** → Cascata: menor envolvimento | Incremental: maior envolvimento/feedback",
+                "**Foco principal** → Cascata: planejamento e controle | Incremental: flexibilidade e entrega gradual"
+              ]
+            },
+
+            // 2 - regra de ouro
+            {
+              tipo: "topico",
+              titulo: "Regra de Ouro para Prova",
+              lista: [
+                "**Cascata** → requisitos estáveis → planejar e seguir sequência",
+                "**Iterativo** → precisa revisar/adaptar/feedback contínuo → ciclos",
+                "**Incremental** → entregar funcionalidades aos poucos e adaptar → divide em incrementos"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    // Aula 4
+    {
+    aula: "Aula 4 — Métodos Ágeis",
+    ideia_central: "Os métodos ágeis são abordagens iterativas e incrementais fundamentadas no Manifesto Ágil (2001), com o Scrum (viés gerencial, baseado em sprints, papéis e cerimônias) e o Extreme Programming/XP (viés técnico, baseado em práticas de engenharia de software) como suas duas aplicações mais relevantes.",
+    secoes: [
+      {
+        id: "fundamentos_ageis",
+        titulo: "Fundamentos dos Métodos Ágeis",
+        blocos: [
+
+          // 1 - conceito de métodos ágeis
+          {
+            tipo: "topico",
+            titulo: "O que são Métodos Ágeis",
+            lista: [
+              "Abordagens **iterativas e incrementais** que priorizam colaboração, flexibilidade e entrega contínua de valor",
+              "Diferem dos métodos tradicionais (lineares/rígidos) por permitirem adaptações rápidas às mudanças",
+              "Princípios centrais: entrega contínua em sprints curtas, colaboração com cliente, adaptação à mudança, trabalho em equipe"
+            ]
+          },
+
+          // 2 - manifesto ágil
+          {
+            tipo: "topico",
+            titulo: "Manifesto Ágil (2001)",
+            lista: [
+              "Criado em 2001; define **4 valores** e **12 princípios** que orientam os métodos ágeis",
+              "Valor 1 → indivíduos e interações mais que processos e ferramentas",
+              "Valor 2 → software em funcionamento mais que documentação abrangente",
+              "Valor 3 → colaboração com o cliente mais que negociação de contratos",
+              "Valor 4 → responder a mudanças mais que seguir um plano"
+            ]
+          },
+
+          // 3 - princípios do manifesto
+          {
+            tipo: "lista",
+            itens: [
+              "Entrega contínua e adiantada de software de valor",
+              "Aceitar mudanças de requisitos mesmo tardiamente",
+              "Entregar software funcional frequentemente, com iterações curtas",
+              "Trabalho diário conjunto entre desenvolvedores e stakeholders",
+              "Equipes motivadas com ambiente e suporte adequados",
+              "Conversa face a face como método mais eficiente de comunicação",
+              "Software funcional como medida primária de progresso",
+              "Desenvolvimento sustentável com ritmo constante",
+              "Excelência técnica e bom design aumentam a agilidade",
+              "Simplicidade → maximizar trabalho não realizado",
+              "Melhores arquiteturas emergem de equipes auto-organizadas",
+              "Reflexão regular para ajustar comportamento e ser mais eficaz"
+            ]
+          },
+
+          // 4 - imagem equipe colaborativa
+          {
+            tipo: "imagem",
+            id: "fig1_equipe_colaborativa",
+            src: "ilustracao_equipe_colaborativa.png",
+            pasta: "imagens_analise_projeto/aula_04",
+            num: "1",
+            alt: "Ilustração de equipe trabalhando de forma colaborativa, associada ao trecho sobre comparação entre métodos ágeis e tradicionais (página 07)."
+          },
+
+          // 5 - história dos métodos ágeis
+          {
+            tipo: "topico",
+            titulo: "História dos Métodos Ágeis",
+            lista: [
+              "Surgiram nos anos 1990 como resposta à rigidez de modelos como `Waterfall`",
+              "**Scrum** → criado por Ken Schwaber e Jeff Sutherland",
+              "**XP** → criado por Kent Beck e Ward Cunningham",
+              "Frameworks complementares: `Kanban` (visualização do fluxo), `Lean` (elimina desperdícios), `DevOps` (integra dev + operações)"
+            ]
+          },
+
+          // 6 - comparação ágil x tradicional
+          {
+            tipo: "topico",
+            titulo: "Ágil × Tradicional",
+            lista: [
+              "Tradicionais (`Waterfall`, `V-Model`, `RUP`) → sequenciais, baixa flexibilidade, feedback limitado, documentação extensa",
+              "Ágeis → iterativos/incrementais, alta flexibilidade, feedback contínuo, documentação suficiente",
+              "Tradicionais → entrega ao final do projeto | Ágeis → entrega frequente em pequenos incrementos",
+              "Tradicionais → mudança de requisitos dificilmente acomodada | Ágeis → facilmente acomodada"
+            ]
+          },
+
+          // 7 - exemplos de adoção
+          {
+            tipo: "lista",
+            itens: [
+              "Tecnologia: `Spotify`, `Netflix`, `ThoughtWorks` (Scrum/Kanban)",
+              "Tradicionais: Itaú, Volkswagen, Philips (Scrum/Kanban)",
+              "Startups: Nubank, QuintoAndar, Rappi",
+              "Governo (BR): Ministério da Economia, TCU, Prefeitura de SP",
+              "UFC → Ambiente Solar (2010–2016) com Scrum + `BDD` + testes unitários + programação em par"
+            ]
+          }
+        ]
+      },
+
+      {
+        id: "scrum",
+        titulo: "Scrum",
+        blocos: [
+
+          // 1 - definição e pilares
+          {
+            tipo: "topico",
+            titulo: "Definição e Pilares",
+            lista: [
+              "Metodologia de gerenciamento baseada em ciclos curtos chamados **sprints** (1 a 4 semanas)",
+              "3 pilares → **Transparência**, **Inspeção**, **Adaptação**"
+            ]
+          },
+
+          // 2 - papéis do scrum
+          {
+            tipo: "topico",
+            titulo: "Papéis (Atores-chave)",
+            lista: [
+              "**Product Owner (PO)** → \"voz\" do cliente; define visão e prioriza backlog",
+              "**Scrum Master (SM)** → guardião do processo; remove obstáculos",
+              "**Time de Desenvolvimento** → transforma ideias em produto funcional",
+              "**Stakeholders** → partes interessadas (clientes, gerentes, investidores)"
+            ]
+          },
+
+          // 3 - imagem atores-chave
+          {
+            tipo: "imagem",
+            id: "fig2_atores_chave_scrum",
+            src: "diagrama_atores_chave_scrum.png",
+            pasta: "imagens_analise_projeto/aula_04",
+            num: "2",
+            alt: "Diagrama dos Atores Chave do Scrum: figura central (equipe/quadro de trabalho) conectada a quatro caixas — Product Owner, Scrum Master, Time de Desenvolvimento e Stakeholders (página 12)."
+          },
+
+          // 4 - artefatos: sprint backlog
+          {
+            tipo: "topico",
+            titulo: "Sprint Backlog",
+            lista: [
+              "Fluxo de desenvolvimento organizado em colunas: **To-Do**, **Doing**, **Done**",
+              "Comumente feito em quadro físico com post-its"
+            ]
+          },
+
+          // 5 - imagem sprint backlog
+          {
+            tipo: "imagem",
+            id: "fig1_sprint_backlog_quadro_branco",
+            src: "figura_1_sprint_backlog_quadro_branco.png",
+            pasta: "imagens_analise_projeto/aula_04",
+            num: "3",
+            alt: "Figura 1 – Exemplo de um Sprint Backlog utilizando um quadro branco e post-its (página 13)."
+          },
+
+          // 6 - artefatos: burndown chart
+          {
+            tipo: "topico",
+            titulo: "Burndown Chart",
+            lista: [
+              "Gráfico que visualiza o progresso do trabalho restante ao longo do tempo",
+              "Eixo X → iterações/sprints ou dias da sprint | Eixo Y → esforço em pontos de complexidade",
+              "Compara **Linha de Trabalho Restante Ideal** com **Linha de Trabalho Restante Real**",
+              "Linha real abaixo da ideal → bom ritmo; acima → equipe precisa ajustar"
+            ]
+          },
+
+          // 7 - imagem burndown chart
+          {
+            tipo: "imagem",
+            id: "fig2_burndown_chart",
+            src: "figura_2_burndown_chart.png",
+            pasta: "imagens_analise_projeto/aula_04",
+            num: "4",
+            alt: "Figura 2 - Exemplo de um Burndown Chart: Story Points Remaining (0 a 35) por Days in the Sprint (1 a 10), com Linha de Trabalho Restante Ideal e Linha de Trabalho Restante Real (página 14)."
+          },
+
+          // 8 - ferramentas de apoio
+          {
+            tipo: "lista",
+            itens: [
+              "Softwares de apoio: `Pivotal Tracker`, `Trello`, `Jira`",
+              "Quadros físicos e reuniões presenciais são incentivados mesmo com uso de software"
+            ]
+          },
+
+          // 9 - cerimônias do scrum
+          {
+            tipo: "topico",
+            titulo: "Cerimônias (Reuniões)",
+            lista: [
+              "**Scrum Daily** → compartilhar avanços, obstáculos e planos do dia",
+              "**Sprint Planning** → definir escopo e prioridades do sprint",
+              "**Sprint Review** → mostrar o realizado e receber feedback dos stakeholders",
+              "**Sprint Retrospective** → refletir sobre o que funcionou e o que melhorar"
+            ]
+          }
+        ]
+      },
+
+      {
+        id: "xp",
+        titulo: "Extreme Programming (XP)",
+        blocos: [
+
+          // 1 - definição e origem
+          {
+            tipo: "topico",
+            titulo: "Definição e Origem",
+            lista: [
+              "Surgiu em meados dos anos 1990, idealizado por **Kent Beck** durante o projeto C3 (Chrysler)",
+              "Foco técnico/engenharia de software, em contraste com o viés gerencial do Scrum"
+            ]
+          },
+
+          // 2 - valores do xp
+          {
+            tipo: "topico",
+            titulo: "5 Valores Fundamentais",
+            lista: [
+              "**Comunicação** → base do trabalho colaborativo",
+              "**Simplicidade** → soluções descomplicadas",
+              "**Feedback** → informações constantes para aprimorar o processo",
+              "**Coragem** → experimentar e enfrentar desafios",
+              "**Respeito** → valorizar habilidades e opiniões da equipe"
+            ]
+          },
+
+          // 3 - práticas do xp
+          {
+            tipo: "lista",
+            itens: [
+              "Ciclos de desenvolvimento curtos com entregas frequentes",
+              "**Programação em Pares** → dois programadores na mesma estação",
+              "**Testes Unitários** → garantem qualidade e previnem falhas",
+              "**Refatoração** → reorganiza código para ficar mais limpo/eficiente",
+              "**Integração Contínua** → detecção precoce de problemas",
+              "Metáfora da sala de reuniões → espaço aberto de colaboração",
+              "**Histórias de Usuário** → funcionalidades descritas na perspectiva do usuário",
+              "Planejamento em tempo real → adaptação contínua às prioridades",
+              "Liberação frequente de software funcional"
+            ]
+          },
+
+          // 4 - comparativo scrum x xp
+          {
+            tipo: "topico",
+            titulo: "Scrum × XP",
+            lista: [
+              "**XP** → foco técnico/engenharia, planejamento adaptativo, ciclos curtos, métricas técnicas (velocidade, cobertura de testes)",
+              "**Scrum** → foco gerencial, backlog priorizado por sprint fixo, métricas de entrega/burndown",
+              "XP → reuniões informais e frequentes | Scrum → cerimônias formais definidas",
+              "Muitas equipes combinam os dois métodos (ex: UFC usou Scrum + práticas do XP)"
+            ]
+          }
+        ]
+      },
+
+      {
+        id: "outros_metodos_ageis",
+        titulo: "Outros Métodos e Práticas Ágeis",
+        blocos: [
+
+          // 1 - práticas complementares
+          {
+            tipo: "lista",
+            itens: [
+              "**Pair Programming** → driver (escreve) + observer/navigator (revisa), com troca de papéis; prática central do XP",
+              "**Kanban** → visualização do fluxo de trabalho e limitação do trabalho em progresso",
+              "**Lean** → elimina desperdícios e otimiza processos",
+              "**DevOps** → integra desenvolvimento e operações para entregas mais rápidas e confiáveis"
+            ]
+          }
+        ]
+      }
+    ]
+    },
+    // Aula 5
+    {
+      aula: "Aula 5 — Análise de Requisitos",
+      ideia_central: "A Análise de Requisitos envolve elicitar (descobrir), analisar (organizar/priorizar) e classificar as necessidades dos stakeholders em Requisitos Funcionais (o que o sistema faz) e Requisitos Não Funcionais (as qualidades que o sistema deve ter).",
+      secoes: [
+        {
+          id: "elicitacao_analise",
+          titulo: "Elicitação e Análise de Requisitos",
+          blocos: [
+
+            // 1 - conceito de requisitos
+            {
+              tipo: "topico",
+              titulo: "O que são Requisitos",
+              lista: [
+                "**Requisitos** → expectativas e necessidades dos *stakeholders* (usuários, clientes, desenvolvedores, gestores, sistema)",
+                "Stakeholders incluem não só gerentes/administradores, mas principalmente os usuários reais do dia a dia"
+              ]
+            },
+
+            // 2 - elicitação e análise
+            {
+              tipo: "topico",
+              titulo: "Elicitação vs Análise",
+              lista: [
+                "**Elicitação** → descobrir, ouvir e entender os requisitos (entrevistas, questionários, workshops, observação)",
+                "**Análise** → refinar, organizar, cruzar dados, identificar inconsistências e priorizar as necessidades"
+              ]
+            },
+
+            // 3 - categorias de requisitos
+            {
+              tipo: "topico",
+              titulo: "Categorias de Requisitos",
+              lista: [
+                "**Requisitos Funcionais** → o que o software deve fazer (metáfora: \"melodia principal\")",
+                "**Requisitos Não Funcionais** → características de qualidade: performance, segurança, usabilidade, confiabilidade, escalabilidade (metáfora: \"harmonia\")"
+              ]
+            },
+
+            // 4 - imagem comparação requisitos
+            {
+              tipo: "imagem",
+              id: "representacao_visual_comparacao_requisitos_funcionais_nao_funcionais",
+              src: "representacao_visual_comparacao_requisitos_funcionais_nao_funcionais.png",
+              pasta: "imagens_analise_projeto/aula_05",
+              num: "1",
+              alt: "Dois quadros lado a lado, cada um com um ícone (pessoa / engrenagem com \"</>\"), contrastando visualmente requisitos funcionais e não funcionais como categorias complementares"
+            },
+
+            // 5 - benefícios de bons requisitos
+            {
+              tipo: "lista",
+              itens: [
+                "Redução de retrabalho e custos",
+                "Melhoria da qualidade do software (menos bugs/falhas)",
+                "Aumento da satisfação do cliente",
+                "Melhoria da comunicação e colaboração da equipe",
+                "Maior agilidade no desenvolvimento"
+              ]
+            },
+
+            // 6 - técnicas e ferramentas
+            {
+              tipo: "topico",
+              titulo: "Técnicas e Ferramentas",
+              lista: [
+                "**Entrevistas** → coleta detalhada individual/grupo",
+                "**Questionários** → coleta estruturada de grupo maior",
+                "**Workshops** → sessões colaborativas para refinar requisitos",
+                "**Diagrama de Casos de Uso** → representação visual das interações usuário-sistema",
+                "**Protótipos** → modelos interativos para validar requisitos",
+                "**Ferramentas CASE** → softwares para gerenciamento/documentação de requisitos"
+              ]
+            },
+
+            // 7 - MVP
+            {
+              tipo: "topico",
+              titulo: "MVP (Minimum Viable Product)",
+              lista: [
+                "Versão mais simples e funcional para testar uma ideia no mercado com menor investimento",
+                "Objetivo → validar hipóteses de negócio e coletar feedback",
+                "Construção incremental, priorizando funcionalidades essenciais primeiro",
+                "No Scrum → cada sprint entrega uma camada de funcionalidade, com ajuste via feedback (Sprint Review)"
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "requisitos_funcionais",
+          titulo: "Requisitos Funcionais",
+          blocos: [
+
+            // 8 - conceito de requisitos funcionais
+            {
+              tipo: "topico",
+              titulo: "Conceito",
+              lista: [
+                "Tratam das funcionalidades que o sistema deve possuir para resolver o problema do cliente",
+                "Vital que equipe técnica e stakeholders tenham clareza sobre eles"
+              ]
+            },
+
+            // 9 - user stories
+            {
+              tipo: "topico",
+              titulo: "User Stories",
+              lista: [
+                "Formato: \"Como [usuário], eu quero [ação], para que [objetivo]\"",
+                "Linguagem próxima do cliente, texto curto/claro/objetivo",
+                "Identificam usuários, perfis de permissão, ação e objetivo",
+                "Detalham campos de informação em telas (ex: e-mail e senha na autenticação)"
+              ]
+            },
+
+            // 10 - critérios de aceitação
+            {
+              tipo: "topico",
+              titulo: "Critérios de Aceitação",
+              lista: [
+                "Condições que o software deve cumprir para ser aceito",
+                "Servem como base para validação e testes",
+                "Devem ser: **claros**, **mensuráveis**, **relevantes**, **objetivos**"
+              ]
+            },
+
+            // 11 - priorização
+            {
+              tipo: "topico",
+              titulo: "Priorização de Requisitos",
+              lista: [
+                "Funcionalidades determinantes/urgentes → necessárias para entrar em produção",
+                "Funcionalidades para futuro próximo → podem esperar",
+                "Base para o cronograma e para o Documento de Requisitos do Sistema (escopo, descrição, prioridades, cronograma)"
+              ]
+            },
+
+            // 12 - escopo fixo x variado
+            {
+              tipo: "topico",
+              titulo: "Escopo Fixo × Escopo Variado",
+              lista: [
+                "**Escopo Variado** → requisitos flexíveis e iterativos, associado a Métodos Ágeis (filosofia defendida pelo autor)",
+                "**Escopo Fixo** → requisitos não podem ser modificados durante o desenvolvimento",
+                "Software é \"produto peculiar\" → novas necessidades surgem constantemente, diferente de produtos industriais simples"
+              ]
+            }
+          ]
+        },
+
+        {
+          id: "requisitos_nao_funcionais",
+          titulo: "Requisitos Não Funcionais",
+          blocos: [
+
+            // 13 - características
+            {
+              tipo: "topico",
+              titulo: "Características de Qualidade",
+              lista: [
+                "**Desempenho** → resposta rápida, lida com múltiplas operações simultâneas",
+                "**Segurança** → controle de acesso baseado em papéis, proteção contra acesso não autorizado",
+                "**Confiabilidade** → disponibilidade mínima de **99,9% do tempo** (excluindo manutenção programada)",
+                "**Usabilidade** → interface intuitiva, sem necessidade de treinamento extensivo",
+                "**Escalabilidade** → suporta aumento de usuários/registros sem perda de desempenho",
+                "**Manutenibilidade** → fácil de manter/atualizar, com documentação clara",
+                "**Compatibilidade** → funciona em diferentes dispositivos e navegadores"
+              ]
+            },
+
+            // 14 - metas quantitativas
+            {
+              tipo: "lista",
+              itens: [
+                "Confiabilidade/Disponibilidade → mínimo de 99,9% do tempo",
+                "Desempenho (exemplo Prontuário Eletrônico) → resposta em menos de 2 segundos em operações normais"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    // Aula 6
+    {
+      aula: "Técnicas de Levantamento de Requisitos",
+      ideia_central: "O Levantamento de Requisitos é a etapa contínua da Engenharia de Requisitos que coleta as necessidades dos stakeholders através de quatro técnicas principais: Entrevistas, Reuniões, Etnografia e Análise de Documentos.",
+      secoes: [
+        {
+          id: "visao_geral",
+          titulo: "Visão Geral",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "Conceito",
+              lista: [
+                "**Engenharia de Requisitos** → disciplina que define, documenta e gerencia requisitos do software, do início até a manutenção.",
+                "**Levantamento de Requisitos** → etapa que coleta e analisa necessidades e expectativas dos stakeholders.",
+                "É um processo **contínuo**, presente ao longo de todo o ciclo de vida do software."
+              ]
+            },
+            {
+              tipo: "lista",
+              itens: [
+                "**Entrevistas** → conversas individuais com cada stakeholder.",
+                "**Reuniões** → discussões em grupo para alinhar expectativas.",
+                "**Etnografia** → observação direta dos usuários no ambiente de trabalho.",
+                "**Análise de documentos** → revisão de documentos já existentes."
+              ]
+            }
+          ]
+        },
+        {
+          id: "tecnicas",
+          titulo: "Técnicas de Levantamento",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "Entrevistas",
+              lista: [
+                "**Estruturada** → roteiro rígido de perguntas predefinidas; respostas específicas e comparáveis.",
+                "**Semiestruturada** → perguntas predefinidas + flexibilidade para explorar novos tópicos.",
+                "**Não estruturada** → conversa aberta, sem roteiro; compreensão ampla e profunda.",
+                "Desafio: estabelecer **ambiente de confiança**.",
+                "Desafio: stakeholders podem não ter clareza ou dificuldade de **articular tecnicamente** suas necessidades.",
+                "Desafio: **informações conflitantes** entre stakeholders."
+              ]
+            },
+            {
+              tipo: "imagem",
+              id: "representacao_visual_entrevista_nao_estruturada",
+              src: "representacao_visual_entrevista_nao_estruturada.png",
+              pasta: "imagens_analise_projeto/aula_06",
+              num: 1,
+              alt: "Uma analista, sentada com papéis em mãos, entrevista um stakeholder e pergunta, em um balão de fala, sobre os desafios que ele enfrenta atualmente com o sistema existente. A cena ilustra concretamente como uma entrevista não estruturada pode começar com uma pergunta ampla e aberta, deixando o restante da conversa fluir conforme os tópicos trazidos pelo próprio entrevistado."
+            },
+            {
+              tipo: "topico",
+              titulo: "Reuniões",
+              lista: [
+                "**Brainstorming** → geração livre e colaborativa de ideias, sem julgamentos imediatos.",
+                "**Análise e Revisão** → revisa requisitos já coletados, buscando clareza e completude.",
+                "**Workshop** → sessão mais estruturada, combina brainstorming e análise.",
+                "Desafio: garantir **participação ativa** de todos os stakeholders.",
+                "Desafio: manter **foco e produtividade**."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Etnografia",
+              lista: [
+                "Baseada em **observação direta** dos usuários em seu ambiente natural de trabalho.",
+                "**Observação Direta** → registra como o usuário usa o sistema, dificuldades e soluções.",
+                "**Entrevistas Contextuais** → perguntas feitas enquanto a atividade ocorre.",
+                "Desafio: exige **tempo e recursos**.",
+                "Desafio: **efeito observador** — usuário muda comportamento ao saber que é observado.",
+                "Desafio: dificuldade de **interpretar dados qualitativos**."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Análise de Documentos",
+              lista: [
+                "**Manuais e Documentação Técnica** → detalham funcionalidades e limitações existentes.",
+                "**Relatórios de Uso** → mostram funcionalidades mais usadas e problemas frequentes.",
+                "**Registros de Incidentes e Suporte** → revelam problemas recorrentes e necessidades não atendidas.",
+                "Desafio: grande **volume de informação** a interpretar.",
+                "Desafio: documentos podem estar **incompletos ou desatualizados**.",
+                "Desafio: pode **não capturar todas as necessidades** dos usuários."
+              ]
+            }
+          ]
+        },
+        {
+          id: "habilidades",
+          titulo: "Habilidades (Hard e Soft Skills)",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "Definições",
+              lista: [
+                "**Hard skills** → habilidades técnicas, adquiridas por treinamento, prática e educação formal.",
+                "**Soft skills** → habilidades comportamentais e sociais, relacionadas à personalidade."
+              ]
+            },
+            {
+              tipo: "lista",
+              itens: [
+                "Hard skills comuns → conhecimento técnico, documentação, análise de dados/qualitativa, planejamento, facilitação de grupos, técnicas de observação.",
+                "Soft skills comuns → comunicação, empatia, negociação, pensamento crítico, gerenciamento do tempo, discrição.",
+                "⚠️ No material original, os títulos dos Quadros 1, 2 e 5 estão trocados em relação ao conteúdo real (ex.: um quadro rotulado \"soft skills\" lista hard skills)."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    // Aula 7
+    {
+      aula: "Análise e Programação Orientada a Objetos",
+      ideia_central: "A Análise Orientada a Objetos (AOO) cuida da modelagem de um sistema em torno de objetos, enquanto a Programação Orientada a Objetos (POO) trata da implementação dessas definições em código.",
+      secoes: [
+        {
+          id: "conceitos_gerais",
+          titulo: "POO, AOO e Conceitos Básicos",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "Definições",
+              lista: [
+                "**POO** → paradigma que organiza o código em torno de **objetos**, que encapsulam dados e comportamentos.",
+                "Contrasta com a **programação procedural**, focada em funções e procedimentos isolados.",
+                "**AOO** → abordagem que foca na **identificação e definição dos objetos** que compõem o sistema.",
+                "**AOO** = fase de análise/modelagem; **POO** = fase de implementação. São complementares."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Pilares da AOO",
+              lista: [
+                "**Objetos** → instância de uma classe; possuem atributos (dados) e métodos (comportamentos).",
+                "**Classes** → modelos/generalizações que definem estrutura e comportamento dos objetos.",
+                "**Encapsulamento** → esconder detalhes internos, expondo só o necessário; protege integridade dos dados.",
+                "**Abstração** → simplificar a complexidade, focando nos aspectos essenciais.",
+                "**Herança** → permite que uma classe derive de outra, herdando atributos e métodos.",
+                "**Polimorfismo** → métodos podem ser redefinidos (`override`) em subclasses, permitindo comportamentos diferentes."
+              ]
+            }
+          ]
+        },
+        {
+          id: "modelagem_moo",
+          titulo: "Modelagem Orientada a Objetos (MOO)",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "OMT (Object Modeling Technique)",
+              lista: [
+                "Desenvolvida por **James Rumbaugh em 1991**.",
+                "Divide a modelagem em: **estrutura estática** (modelagem de objetos), **comportamento dinâmico** (modelagem dinâmica) e **fluxo de dados** (modelagem funcional)."
+              ]
+            },
+            {
+              tipo: "imagem",
+              id: "figura_1_diagrama_de_objeto_em_omt",
+              src: "figura_1_diagrama_de_objeto_em_omt.png",
+              pasta: "imagens_analise_projeto/aula_07",
+              num: 1,
+              alt: "Modela a estrutura de uma lista (classe List, com métodos add, insert, get, getSize) com duas implementações específicas — LinkedList e ArrayList — ligadas a List por generalização/herança (seta triangular). LinkedList associa-se à classe Entry (que referencia a si mesma via next), enquanto ArrayList se relaciona com Object por agregação (losango). A legenda no canto superior esquerdo explica a notação: triângulo para generalização/herança, \"$\" para operação/atributo de classe, itálico para classe/operação abstrata, e diferentes traços/símbolos para multiplicidade de associação (um, opcional, muitos) e agregação."
+            },
+            {
+              tipo: "topico",
+              titulo: "BON (Business Object Notation)",
+              lista: [
+                "Criada por **Jean-Marc Nerson e Kim Waldén**, consolidada a partir de **1993**.",
+                "Foca na **integração entre análise, design e implementação**, com notação gráfica simples."
+              ]
+            },
+            {
+              tipo: "imagem",
+              id: "figura_2_diagrama_de_classes_em_bon",
+              src: "figura_2_diagrama_de_classes_em_bon.png",
+              pasta: "imagens_analise_projeto/aula_07",
+              num: 2,
+              alt: "Mostra a estrutura e o comportamento de um sistema de controle de elevador com três classes: ELEVATOR (atributos como posição, requisições pendentes, estados booleanos de movimento/porta, e métodos como open_doors, close_doors, process_requests, além de um bloco de invariantes lógicas), MOTOR (posição da cabine, métodos move_up, move_down, stop, signal_stopped) e REQUESTS (arrays booleanos de solicitações e métodos para calcular a próxima parada). Uma seta bidirecional liga ELEVATOR a MOTOR, e outra liga ELEVATOR a REQUESTS, indicando comunicação entre as entidades."
+            },
+            {
+              tipo: "topico",
+              titulo: "UML (Unified Modeling Language)",
+              lista: [
+                "Linguagem de **modelagem visual padronizada**, usada para especificar, visualizar, construir e documentar sistemas.",
+                "Fornece diagramas como **classes, casos de uso, sequência e atividades**.",
+                "**Diagrama de Classes** → apresenta entidades (classes) com atributos e métodos, e relacionamentos entre elas."
+              ]
+            },
+            {
+              tipo: "imagem",
+              id: "figura_3_diagramas_que_compoem_a_uml",
+              src: "figura_3_diagramas_que_compoem_a_uml.png",
+              pasta: "imagens_analise_projeto/aula_07",
+              num: 3,
+              alt: "Árvore hierárquica com o nó raiz \"Diagrama\", dividido em dois ramos: \"Diagrama de Estruturas\" (contendo Diagrama de Classes, Componentes, Objetos, Perfil, Estruturas Compostas, Implantação e Pacotes) e \"Diagrama de Comportamentos\" (contendo Diagrama de Atividades, Casos de Uso, Máquina de Estados, e Diagrama de Interação, que por sua vez se subdivide em Sequência, Comunicação, Visão Geral de Interação e Tempo)."
+            },
+            {
+              tipo: "imagem",
+              id: "figura_4_diagramas_que_compoem_a_uml_pg09",
+              src: "figura_4_diagramas_que_compoem_a_uml_pg09.png",
+              pasta: "imagens_analise_projeto/aula_07",
+              num: 4,
+              alt: "Exemplifica a notação de um Diagrama de Classes: a caixa \"Nome da Classe\" lista atributos com indicadores de visibilidade (+ público, # protegido, - privado) e uma operação com argumento e tipo de retorno. Um losango preenchido (rotulado \"Composição\") liga essa classe à \"Classe Dependente\", que possui um método próprio; uma caixa separada \"Anotação\" representa uma nota explicativa solta no diagrama."
+            }
+          ]
+        },
+        {
+          id: "aplicacoes_praticas",
+          titulo: "Aplicações Práticas da POO",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "Frameworks e Componentização",
+              lista: [
+                "`Express` → framework para aplicações web em **JavaScript** sobre **Node.js**.",
+                "`Flask` → framework equivalente para **Python**.",
+                "**Componentização** → sistema visto como unidades (componentes) combinadas, comunicando-se por troca de mensagens.",
+                "**Web Components** derivam desse conceito de componentização."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "GUI, Jogos e Convivência com Outros Paradigmas",
+              lista: [
+                "**GUI** (interfaces gráficas) se beneficia de componentes prontos; no Windows, acessados via **WinUI** (API do SDK).",
+                "**Jogos e computação gráfica** → elementos geométricos (linha, polígono) representados como objetos.",
+                "A POO **não eliminou** outros paradigmas (Imperativo, Funcional) — apenas agregou uma nova forma de construir sistemas."
+              ]
+            }
+          ]
+        },
+        {
+          id: "objetos_structs_classes",
+          titulo: "Origem dos Objetos, Classes, Atributos e Métodos",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "Origem histórica",
+              lista: [
+                "**Objeto** → entidade de software que encapsula dados e procedimentos, com **estado** (atributos) e **comportamentos** (métodos).",
+                "Evoluiu das ***structs*** de linguagens como `C`, `C++` e `Rust`, que agrupam dados mas **carecem de comportamento**.",
+                "A necessidade de definir objetos semelhantes sem reescrever código motivou a criação da abstração **Classe**."
+              ]
+            },
+            {
+              tipo: "topico",
+              titulo: "Classes, Atributos e Métodos",
+              lista: [
+                "**Classes** → \"blueprints\"/modelos que definem estrutura e comportamento dos objetos.",
+                "**Atributos** → variáveis que armazenam o **estado** de um objeto.",
+                "**Métodos** → forma de acessar os atributos de um objeto de maneira controlada."
+              ]
+            }
+          ]
+        },
+        {
+          id: "heranca_polimorfismo_interfaces",
+          titulo: "Herança, Polimorfismo e Interfaces",
+          blocos: [
+            {
+              tipo: "topico",
+              titulo: "Conceitos",
+              lista: [
+                "**Herança** → subclasse deriva de superclasse, herdando atributos e métodos.",
+                "**Polimorfismo** → objetos de diferentes classes tratados de forma unificada via redefinição (`override`) de métodos.",
+                "**Interfaces** → definem contratos que classes implementam, sem especificar a implementação; promovem flexibilidade e intercambialidade."
+              ]
+            }
+          ]
+        },
+        {
+          id: "exemplos_codigo",
+          titulo: "Exemplos de Código",
+          blocos: [
+            {
+              tipo: "lista",
+              itens: [
+                "**Código 1** (`C`) → `struct Carro` agrupando dados sem comportamento, ilustrando origem histórica dos objetos.",
+                "**Código 2** (`Python`) → classe `Carro` com atributos, valor padrão e métodos `acelerar`/`frear`/`exibir_informacoes`.",
+                "**Códigos 3–5** (`Java`, `JavaScript`, `Python`) → classe `Pessoa` com atributos encapsulados `nome`/`idade`, construtor, métodos de acesso e `aniversario()`.",
+                "**Códigos 6–8** (`Java`, `JavaScript`, `Python`) → hierarquia `Animal → Mamifero → Cachorro/Gato`, mais `Passaro` implementando `Animal` diretamente, demonstrando herança, polimorfismo e interfaces.",
+                "Na versão em `Python` (Código 8), a implementação é simplificada: sem `Mamifero` intermediária, sem `Passaro` e sem método `mover()`."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    // Aula 8
+    {
+  aula: "Rational Unified Process (RUP)",
+  ideia_central: "O RUP é uma metodologia de desenvolvimento de software iterativa e incremental, estruturada em quatro fases (Iniciação, Elaboração, Construção e Transição), nove disciplinas e seis boas práticas.",
+  secoes: [
+    {
+      id: "visao_geral_origem",
+      titulo: "Visão Geral e Origem",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "Contexto",
+          lista: [
+            "**RUP** → metodologia criada pela **Rational Software Corporation** nos anos 1990; atualmente pertence à **IBM**.",
+            "Combina boas práticas de Engenharia de Software com abordagem **iterativa e incremental**, mitigando riscos.",
+            "Depende da **UML** como linguagem comum entre a equipe; diagramas UML usados principalmente na **Elaboração**."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Características Principais",
+          lista: [
+            "**Iterativo e Incremental** → desenvolvimento dividido em ciclos, cada um gerando um incremento do produto.",
+            "**Dirigido por Casos de Uso** → casos de uso capturam requisitos funcionais e guiam modelos UML.",
+            "**Foco em Arquitetura** → arquitetura tratada como \"espinha dorsal\" do desenvolvimento."
+          ]
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "Softwares de suporte: `IBM Rational Rose`, `Enterprise Architect`, `Visual Paradigm` (proprietários) e `Modelio` (open-source)."
+          ]
+        },
+        {
+          tipo: "imagem",
+          id: "figura_1_ferramenta_modelagem_modelio",
+          src: "figura_1_ferramenta_modelagem_modelio.png",
+          pasta: "imagens_analise_projeto/aula_08",
+          num: 1,
+          alt: "Interface do software Modelio em uso, com árvore de navegação de elementos do modelo à esquerda, área central de diagrama contendo componentes conectados (como 'Site Réservation Voyage', 'Client', 'Réserver Voyage', 'Paiement' e 'ERP Comptable') relacionados por setas indicando fluxo/interação, e painel de propriedades à direita, ilustrando como a ferramenta suporta a modelagem visual de arquitetura de sistema."
+        }
+      ]
+    },
+    {
+      id: "fases_rup",
+      titulo: "Fases do RUP",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "Iniciação",
+          lista: [
+            "Foco em definir escopo, objetivos e alinhar expectativas dos stakeholders.",
+            "Artefato principal: **Documento de Visão**; também gerado o **Plano de Projeto**."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Elaboração",
+          lista: [
+            "Foco no refinamento dos requisitos e definição da arquitetura.",
+            "Artefatos: **Modelo de Casos de Uso** e **Documento de Arquitetura**."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Construção",
+          lista: [
+            "Foco na implementação com base na arquitetura definida.",
+            "Artefatos: **Código Fonte**, **Testes Unitários** e **Documentação Técnica**."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Transição",
+          lista: [
+            "Foco na entrega ao ambiente de produção e treinamento dos usuários.",
+            "Artefatos: **Plano de Implantação** e **Guia do Usuário**."
+          ]
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "Documentação de código pode ser gerada automaticamente com ferramentas como `Doxygen`, `JSDoc`, `Javadoc`, `Pydoc` e `Swagger` (para APIs)."
+          ]
+        }
+      ]
+    },
+    {
+      id: "disciplinas",
+      titulo: "Disciplinas do RUP",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "As 9 disciplinas",
+          lista: [
+            "**Modelagem de Negócios** → entendimento do contexto de negócios do sistema.",
+            "**Requisitos** → coleta, análise e gestão dos requisitos funcionais e não funcionais.",
+            "**Análise e Design** → criação da arquitetura e design detalhado do sistema.",
+            "**Implementação** → escrita e integração do código conforme o design.",
+            "**Testes** → validação da qualidade (unitários, integração, aceitação).",
+            "**Implantação** → colocação do sistema em produção.",
+            "**Gerenciamento de Configuração e Mudança** → controle de versões e mudanças.",
+            "**Gerenciamento de Projeto** → cronogramas, recursos e mitigação de riscos.",
+            "**Ambiente** → ferramentas e processos de suporte ao desenvolvimento."
+          ]
+        },
+        {
+          tipo: "imagem",
+          id: "figura_2_disciplinas_fases_rup_hump",
+          src: "figura_2_disciplinas_fases_rup_hump.png",
+          pasta: "imagens_analise_projeto/aula_08",
+          num: 2,
+          alt: "Gráfico bidimensional (RUP Hump) que representa o cruzamento entre as nove disciplinas do RUP (eixo vertical: Modelagem de Negócios, Requisitos, Análise e Design, Implementação, Teste, Implantação, Gerenciamento de Configuração e Mudança, Gerenciamento de Projeto, Ambiente) e as quatro fases (eixo horizontal: Iniciação, Elaboração, Construção, Transição), subdivididas em iterações (Inicial, Elaboração nº1/nº2, Construção nº1/nº2/nºN, Transição nº1/nº2). Cada disciplina é representada por uma curva ('corcunda'/hump) cuja altura, em cada ponto do tempo, indica a intensidade do esforço dedicado àquela disciplina naquela fase/iteração — por exemplo, Modelagem de Negócios e Requisitos têm maior intensidade no início (Iniciação/Elaboração), enquanto Implementação e Testes se intensificam na Construção."
+        }
+      ]
+    },
+    {
+      id: "boas_praticas",
+      titulo: "Boas Práticas do RUP",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "Três perspectivas do RUP",
+          lista: [
+            "**Dinâmica** → aborda as fases do processo.",
+            "**Estática** → aborda as disciplinas do RUP.",
+            "**Prática** → refere-se aos seis princípios e boas práticas."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Os 6 princípios",
+          lista: [
+            "**Desenvolvimento iterativo** → ciclos curtos com entregas incrementais e ajustes por feedback.",
+            "**Gerenciamento de requisitos** → captura, análise e gestão dos requisitos ao longo do ciclo de vida.",
+            "**Arquitetura baseada em componentes** → sistema construído com componentes reutilizáveis.",
+            "**Modelagem com UML** → usada para visualizar, especificar, construir e documentar artefatos.",
+            "**Melhoria contínua** de processos e produtos de software.",
+            "**Configuração e gerenciamento de mudança** → modificações rastreáveis e controladas."
+          ]
+        }
+      ]
+    },
+    {
+      id: "documento_visao",
+      titulo: "Estrutura do Documento de Visão",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "Seções do modelo apresentado",
+          lista: [
+            "**1. Introdução** → propósito, escopo, definições/acrônimos e referências.",
+            "**2. Posição** → oportunidade de negócio, descrição do problema, da solução e contexto do produto.",
+            "**3. Descrição Geral** → perspectiva do produto, principais capacidades, suposições e dependências.",
+            "**4. Recursos e Restrições** → requisitos de interface, requisitos de sistema e restrições de orçamento/prazo.",
+            "**5. Funcionalidades** → descrição, prioridade, entrada/saída e requisitos funcionais de cada funcionalidade.",
+            "**6. Requisitos Não Funcionais** → exemplos: desempenho, segurança, usabilidade.",
+            "**7. Riscos e Contingências** → riscos identificados e estratégias de mitigação.",
+            "**8. Aprovações** → partes interessadas que devem aprovar o documento."
+          ]
+        }
+      ]
+    }
+  ]
+    },
+
+  ]
+};

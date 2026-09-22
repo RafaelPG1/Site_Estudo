@@ -3703,9 +3703,1617 @@ window.__nexusConteudo = {
     }
     ]
     }
+],
+
+  resumao: [
+    {
+  aula: "AULA RESUMÃO",
+  ideia_central: "Consolidação dos fundamentos de Direito do Trabalho: origem histórica e princípios do Direito do Trabalho, relação de trabalho x relação de emprego, contrato de trabalho (duração, alteração, suspensão/interrupção, jornada, intervalos, férias), remuneração e salário (princípios de proteção, parcelas e adicionais), FGTS e aviso prévio, modalidades de cessação do contrato de trabalho e verbas rescisórias, e Direito Coletivo do Trabalho (organização sindical, negociação coletiva, greve e lockout).",
+  secoes: [
+    {
+      id: "visao_geral",
+      titulo: "Visão Geral — Mapa das Aulas",
+      blocos: [
+        {
+          tipo: "lista",
+          titulo: "Conteúdo coberto por aula",
+          itens: [
+            "Aula 1 — Origem e evolução do Direito do Trabalho no Brasil: linha histórica, princípios fundamentais (Proteção, Primazia da Realidade, Irrenunciabilidade, Inalterabilidade Contratual, Continuidade), relação de trabalho x relação de emprego, requisitos do vínculo empregatício, CTPS e empregador.",
+            "Aula 2 — Contrato de Trabalho: conceito, requisitos, duração (indeterminado, experiência, prazo determinado), alteração contratual, suspensão x interrupção, jornada, sobreaviso x prontidão, jornada 12x36, tempo parcial, banco de horas, intervalos e férias.",
+            "Aula 3 — Remuneração e Salário: princípios de proteção ao salário, salário x remuneração, parcelas salariais x não salariais, adicionais (hora extra, insalubridade, periculosidade, noturno), meios de pagamento (dinheiro e salário-utilidade).",
+            "Aula 4 — FGTS e Aviso Prévio: conceito, alíquotas, recolhimento, movimentação, multa de 40%, FGTS durante afastamentos; conceito, cabimento, proporcionalidade e modalidades do aviso prévio.",
+            "Aula 5 — Cessação do Contrato de Trabalho: modalidades de extinção (sem justa causa, com justa causa, pedido de demissão, rescisão indireta, culpa recíproca, força maior, fato do príncipe, dispensa coletiva/PDV, acordo entre as partes) e verbas rescisórias de cada uma.",
+            "Aula 6 — Assistência na Rescisão e Direito Coletivo do Trabalho: forma de pagamento e descontos das verbas rescisórias, prazos; princípios do direito coletivo, organização sindical (sindicatos, federações, confederações, centrais sindicais), convenção x acordo coletivo, greve e lockout."
+          ]
+        }
+      ]
+    },
+    {
+      id: "conceitos_essenciais",
+      titulo: "Conceitos Essenciais",
+      blocos: [
+        {
+          tipo: "tabela",
+          titulo: "Principais conceitos e definições",
+          colunas: ["Conceito", "Definição"],
+          linhas: [
+            ["Relação de Trabalho", "Conceito amplo; qualquer esforço humano ajustado em uma obrigação, com ou sem recebimento de valores (ex.: trabalho voluntário)."],
+            ["Relação de Emprego", "Forma específica de relação de trabalho; exige a presença cumulativa dos requisitos: pessoa física, onerosidade, subordinação, pessoalidade e não eventualidade (Art. 3º da CLT)."],
+            ["Empregado", "Pessoa física que presta serviços de natureza não eventual a empregador, sob dependência deste e mediante salário."],
+            ["Empregador", "Pode ser pessoa física ou jurídica; contrata, assalaria, gere, administra a atividade econômica e suporta os riscos da atividade."],
+            ["CTPS", "Carteira de Trabalho e Previdência Social; instrumento de comprovação do vínculo empregatício (salário, dados do empregador, data de admissão)."],
+            ["Contrato de Trabalho", "Instrumento que estabelece o vínculo empregatício; pode ser expresso ou tácito, verbal ou escrito (exceção: teletrabalho, que exige forma escrita)."],
+            ["Suspensão do Contrato", "Rompimento temporário do serviço: não há trabalho, não há salário, e o período não é contado como tempo de serviço previdenciário (ex.: greve)."],
+            ["Interrupção do Contrato", "Rompimento temporário do serviço: não há trabalho, mas o salário continua sendo pago e o tempo é computado como serviço (ex.: férias)."],
+            ["Jornada de Trabalho", "Tempo em que o empregado permanece à disposição do empregador, trabalhando ou aguardando ordens."],
+            ["Salário", "Contraprestação devida e paga diretamente pelo empregador em razão do contrato de trabalho."],
+            ["Remuneração", "Soma das parcelas obtidas pelo empregado direta (empregador) ou indiretamente (terceiros); Salário + Gorjeta = Remuneração."],
+            ["FGTS", "Fundo de Garantia por Tempo de Serviço; depósitos mensais do empregador em conta vinculada à Caixa Econômica Federal, para amparo financeiro do trabalhador."],
+            ["Aviso Prévio", "Comunicação antecipada do fim do contrato de trabalho por uma das partes à outra, proporcional ao tempo de serviço, com mínimo de 30 dias."],
+            ["Justa Causa", "Forma de extinção do contrato de trabalho motivada por falta grave cometida pelo empregado (Art. 482 da CLT)."],
+            ["Falta Grave", "Conduta irregular do empregado (ou empregador, na rescisão indireta) que motiva a justa causa; não é sinônimo de justa causa."],
+            ["Rescisão Indireta", "\"Justa causa do empregador\": extinção motivada pelo empregado em razão de faltas graves do empregador (Art. 483 da CLT)."],
+            ["Culpa Recíproca", "Empregado e empregador concorrem no mesmo grau de responsabilidade pelo fim do contrato; verbas rescisórias pagas pela metade."],
+            ["Distrato (Acordo entre as Partes)", "Extinção do contrato de trabalho por vontade bilateral (Art. 484-A da CLT)."],
+            ["Direito Coletivo do Trabalho", "Ramo do Direito do Trabalho relacionado à atuação sindical e às normas que regem as relações entre sindicatos, empregados e empregadores."],
+            ["Sindicato", "Base da organização sindical; pode ser profissional (empregados) ou econômico (empregadores); filiação facultativa, mas decisões têm eficácia geral sobre toda a categoria."],
+            ["Greve", "Suspensão coletiva, temporária e pacífica, total ou parcial, da prestação de serviços; suspende o contrato de trabalho."],
+            ["Lockout", "Fechamento do estabelecimento pelo empregador para inibir movimento grevista; conduta proibida pelo ordenamento jurídico."]
+          ]
+        }
+      ]
+    },
+    {
+      id: "comparacoes",
+      titulo: "Comparações Importantes",
+      blocos: [
+        {
+          tipo: "tabela",
+          titulo: "Relação de Trabalho x Relação de Emprego",
+          colunas: ["Relação de Trabalho", "Relação de Emprego"],
+          linhas: [
+            ["Conceito mais amplo", "Forma específica de relação de trabalho"],
+            ["Pode existir com ou sem recebimento de valores", "Há contraprestação mediante salário (onerosidade)"],
+            ["Pode incluir trabalho voluntário", "Exige requisitos cumulativos específicos"],
+            ["Não necessariamente gera vínculo empregatício", "Caracteriza vínculo empregatício quando presentes todos os requisitos"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Os cinco requisitos da relação de emprego",
+          colunas: ["Requisito", "Significado"],
+          linhas: [
+            ["Pessoa Física", "O empregado é uma pessoa física (nunca pessoa jurídica)"],
+            ["Onerosidade", "Existe salário como contraprestação"],
+            ["Subordinação", "Recebe e cumpre ordens de superior hierárquico"],
+            ["Pessoalidade", "O próprio empregado deve prestar o serviço; não pode se fazer substituir livremente"],
+            ["Não eventualidade / Habitualidade", "O serviço possui caráter contínuo, repetitivo e rotineiro"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Princípio da Proteção — três subdivisões",
+          colunas: ["Situação", "Subprincípio"],
+          linhas: [
+            ["Existem várias normas aplicáveis", "Norma mais favorável"],
+            ["Existe dúvida na interpretação", "In dubio pro operário"],
+            ["Existem várias condições contratuais/regulamentares", "Condição mais benéfica"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Cinco princípios do Direito do Trabalho",
+          colunas: ["Princípio", "Ideia central"],
+          linhas: [
+            ["Proteção", "Busca equilíbrio na relação empregatícia (norma mais favorável, in dubio pro operário, condição mais benéfica)"],
+            ["Primazia da Realidade", "Realidade dos fatos prevalece sobre a formalidade dos documentos (Art. 9º da CLT)"],
+            ["Irrenunciabilidade de Direitos", "Empregado não pode renunciar a direitos constitucionalmente protegidos (ex.: férias, salário)"],
+            ["Inalterabilidade Contratual", "Proíbe alterações contratuais que prejudiquem o empregado (Arts. 444, 468 e 9º da CLT)"],
+            ["Continuidade da Relação de Emprego", "Presunção de que o contrato é por tempo indeterminado; exceção é o contrato por tempo determinado"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Suspensão x Interrupção do Contrato de Trabalho",
+          colunas: ["Característica", "Suspensão", "Interrupção"],
+          linhas: [
+            ["Prestação do trabalho", "Não ocorre", "Não ocorre"],
+            ["Salário", "Não é pago", "Continua sendo pago"],
+            ["Tempo de serviço previdenciário", "Não é contado", "É computado"],
+            ["Exemplo", "Greve", "Férias"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Sobreaviso x Prontidão",
+          colunas: ["Instituto", "Onde o empregado aguarda?", "Adicional", "Escala máxima"],
+          linhas: [
+            ["Sobreaviso", "Fora da empresa (em casa ou local predeterminado)", "1/3 da hora normal", "24 horas"],
+            ["Prontidão", "Na sede da empresa", "2/3 da hora normal", "12 horas"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Tipos de contrato quanto à duração",
+          colunas: ["Tipo", "Característica"],
+          linhas: [
+            ["Prazo indeterminado", "Regra da maioria dos contratos"],
+            ["Contrato de experiência", "Máximo de 90 dias (pode ser prorrogado uma vez, sem ultrapassar o total de 90 dias)"],
+            ["Prazo determinado", "Máximo de 2 anos"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Intervalo Intrajornada x Interjornada x DSR",
+          colunas: ["Tipo", "Regra"],
+          linhas: [
+            ["Intrajornada — até 4h", "Não há intervalo"],
+            ["Intrajornada — mais de 4h até 6h", "15 minutos"],
+            ["Intrajornada — mais de 6h", "Mínimo 1h e máximo 2h (salvo acordo em contrário)"],
+            ["Interjornada", "Mínimo de 11 horas consecutivas entre duas jornadas"],
+            ["DSR (Descanso Semanal Remunerado)", "24 horas consecutivas após o 6º dia de trabalho, preferencialmente aos domingos"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Irredutibilidade x Inalterabilidade x Integralidade x Intangibilidade Salarial",
+          colunas: ["Princípio", "Proteção"],
+          linhas: [
+            ["Irredutibilidade salarial", "Proíbe reduzir o salário pactuado (exceção: convenção/acordo coletivo, força maior ou dificuldades econômicas)"],
+            ["Inalterabilidade salarial", "Proíbe alterações prejudiciais ao salário (mudança in pejus)"],
+            ["Integralidade salarial", "Protege contra descontos indevidos ou arbitrários (Art. 462 da CLT)"],
+            ["Intangibilidade salarial", "Relacionada à natureza alimentar do salário; proteção mesmo em falência/concordata (exceções: pensão alimentícia e imposto de renda)"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Salário x Gorjeta x Remuneração",
+          colunas: ["Conceito", "Origem"],
+          linhas: [
+            ["Salário", "Pago diretamente pelo empregador"],
+            ["Gorjeta", "Dada espontaneamente pelo cliente ou cobrada pela empresa para distribuição"],
+            ["Remuneração", "Salário + Gorjeta"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Percentuais de adicionais",
+          colunas: ["Adicional", "Percentual/Regra"],
+          linhas: [
+            ["Hora extra", "Mínimo +50% sobre a hora normal; limite de até 2 horas extras diárias"],
+            ["Insalubridade — grau mínimo", "10%"],
+            ["Insalubridade — grau médio", "20%"],
+            ["Insalubridade — grau máximo/alto", "40%"],
+            ["Periculosidade", "Relacionada a risco acentuado (inflamáveis, explosivos, energia elétrica, segurança pessoal/patrimonial)"],
+            ["Noturno — urbano", "20% (22h às 5h); hora noturna = 52min30s"],
+            ["Noturno — rural agricultura", "25% (21h às 5h)"],
+            ["Noturno — rural pecuária", "25% (20h às 4h)"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Parcela Salarial x Parcela Não Salarial",
+          colunas: ["Tipo", "Característica", "Exemplos"],
+          linhas: [
+            ["Salarial", "Natureza de contraprestação pelo trabalho", "Adicionais, gratificações, prêmios, comissões"],
+            ["Não Salarial", "Caráter indenizatório/ressarcitório", "Ajuda de custo, diárias para viagem, PLR"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Modalidades de extinção do contrato de trabalho e verbas rescisórias",
+          colunas: ["Modalidade", "Iniciativa/Causa", "Verbas rescisórias"],
+          linhas: [
+            ["Sem justa causa", "Empregador, sem falta do empregado", "Saldo de salário, aviso prévio, 13º proporcional, férias vencidas +1/3 (se houver), férias proporcionais +1/3, multa de 40% do FGTS"],
+            ["Com justa causa", "Empregador, por falta grave do empregado (Art. 482 CLT)", "Apenas saldo de salário e férias vencidas +1/3 (se houver); não há aviso prévio, 13º proporcional, férias proporcionais nem multa do FGTS"],
+            ["Pedido de demissão", "Empregado", "Saldo de salário, 13º proporcional, férias vencidas +1/3 (se houver), férias proporcionais +1/3"],
+            ["Rescisão indireta", "Empregado, por falta grave do empregador (Art. 483 CLT)", "Mesmas verbas da dispensa sem justa causa: saldo de salário, aviso prévio, 13º proporcional, férias vencidas +1/3, férias proporcionais +1/3, multa de 40% do FGTS"],
+            ["Culpa recíproca", "Ambas as partes cometem falta grave", "Todas as verbas devidas, porém pela metade"],
+            ["Força maior", "Acontecimento inevitável, alheio à vontade do empregador", "Indenização reduzida à metade (se não estável)"],
+            ["Fato do príncipe", "Ato de autoridade pública que impede a continuação da atividade", "Verbas como na dispensa sem justa causa; aviso prévio e multa de 40% ficam a cargo do Estado"],
+            ["Dispensa coletiva / PDV", "Empregador, dispensa em massa", "Dispensas equiparadas às individuais; PDV pode gerar quitação plena se previsto em norma coletiva"],
+            ["Acordo entre as partes (distrato)", "Bilateral (empregado + empregador)", "Aviso prévio (se indenizado) e multa do FGTS pela metade (20%); demais verbas na integralidade; saque de até 80% do FGTS; sem direito a seguro-desemprego"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Convenção Coletiva x Acordo Coletivo de Trabalho",
+          colunas: ["Instrumento", "Composição das partes"],
+          linhas: [
+            ["Convenção Coletiva de Trabalho", "Sindicato dos empregadores (categoria econômica) x Sindicato dos trabalhadores (categoria profissional)"],
+            ["Acordo Coletivo de Trabalho", "Uma ou mais empresas x Sindicato dos trabalhadores (categoria profissional)"]
+          ]
+        }
+      ]
+    },
+    {
+      id: "processos_etapas",
+      titulo: "Processos e Sequências Obrigatórias",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "Linha do tempo — evolução histórica do Direito do Trabalho no Brasil",
+          lista: [
+            "1888 — Lei Áurea (fim da escravidão)",
+            "1891 — Liberdade de associação e trabalho livre assalariado",
+            "1916 — Código Civil trata prestação de serviço como locação de mão de obra",
+            "1934 — Salário mínimo, jornada de 8h, férias remuneradas",
+            "1937 — Proibição da greve e sindicato único",
+            "1939 — Criação da Justiça do Trabalho",
+            "1943 — Outorga da CLT",
+            "1967 — Restrição de direitos trabalhistas (regime militar/AI-5)",
+            "1988 — Constituição Cidadã: direitos sociais (Art. 6º) e dignidade do trabalhador"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Organização sindical — do menor ao maior grau",
+          lista: [
+            "1. Sindicatos — base da organização (mínimo mais básico); categorias econômica, profissional ou profissional diferenciada",
+            "2. Federações — mínimo de 5 sindicatos, organizadas por Estado",
+            "3. Confederações — mínimo de 3 federações, sede em Brasília",
+            "4. Centrais Sindicais — representação geral nacional, apenas de empregados"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Período aquisitivo e concessivo de férias",
+          lista: [
+            "1. Período aquisitivo — 12 primeiros meses trabalhados; o empregado adquire o direito às férias",
+            "2. Período concessivo — 12 meses seguintes; período em que o empregado deve usufruir as férias",
+            "3. Aviso de férias — antecedência mínima de 30 dias",
+            "4. Remuneração das férias — pagamento integral + 1/3 constitucional"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Contagem do aviso prévio proporcional (regra geral)",
+          lista: [
+            "Base: mínimo de 30 dias",
+            "Acréscimo de 3 dias por ano trabalhado",
+            "Limite máximo: 90 dias (correspondente a 20 anos de serviço)"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Prazos relacionados ao FGTS e à CTPS",
+          lista: [
+            "Depósito do FGTS: até o dia 7 de cada mês, referente à remuneração do mês anterior",
+            "Anotação da CTPS pelo empregador: até 5 dias úteis",
+            "Acesso do trabalhador às informações da CTPS: até 48 horas após a anotação"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Prazos da rescisão do contrato de trabalho",
+          lista: [
+            "Pagamento das verbas rescisórias e entrega de documentos: até 10 dias contados do término do contrato (Art. 477, §6º, CLT)",
+            "Descontos nas verbas rescisórias: limitados ao equivalente a um mês de remuneração (entendimento mais recente admite até 35%)"
+          ]
+        }
+      ]
+    },
+    {
+      id: "imagens_importantes",
+      titulo: "Imagens Importantes",
+      blocos: [
+        {
+          tipo: "imagem",
+          src: "figura_1_linha_do_tempo_direito_do_trabalho_brasil.png",
+          pasta: "imagens_legislacao/aula_01",
+          alt: "A representação organiza cronologicamente os principais acontecimentos apresentados no material, começando em 1888 com a Lei Áurea e passando por 1891, 1916, 1934, 1937, 1939, 1943, 1967 e 1988. A figura associa cada ano ao respectivo acontecimento histórico trabalhista.",
+          num: 1
+        },
+        {
+          tipo: "destaque",
+          texto: "Lembrar a sequência histórica visualizada na linha do tempo, especialmente 1939 (Justiça do Trabalho), 1943 (CLT) e 1988 (Constituição Cidadã), que costumam ser cobrados em conjunto."
+        },
+        {
+          tipo: "imagem",
+          src: "figura_2_principios_ciencia_juridica.png",
+          pasta: "imagens_legislacao/aula_01",
+          alt: "O diagrama apresenta os princípios como elementos ligados ao núcleo \"Princípios\". O Princípio da Proteção aparece associado a três subdivisões: Norma mais favorável, In dubio pro operário e Condição mais benéfica. Os demais princípios apresentados são Primazia da realidade, Irrenunciabilidade de direitos, Inalterabilidade contratual e Continuidade da relação de emprego.",
+          num: 2
+        },
+        {
+          tipo: "destaque",
+          texto: "Lembrar que o Princípio da Proteção é o único que se subdivide em três (norma mais favorável, in dubio pro operário, condição mais benéfica); os outros quatro princípios são autônomos."
+        },
+        {
+          tipo: "imagem",
+          src: "figura_1_movimentacao_do_fgts.png",
+          pasta: "imagens_legislacao/aula_04",
+          alt: "Figura 1 – Movimentação do FGTS: diagrama em hexágonos com a ideia central \"Movimentação do FGTS\" e, ao redor, as hipóteses legais que autorizam a movimentação da conta vinculada.",
+          num: 1
+        },
+        {
+          tipo: "destaque",
+          texto: "Lembrar que o FGTS só pode ser movimentado nas hipóteses legais específicas (aposentadoria, demissão sem justa causa, doenças graves, extinção da empresa, entre outras) — nunca livremente."
+        }
+      ]
+    },
+    {
+      id: "decore_para_prova",
+      titulo: "Decore Para a Prova",
+      blocos: [
+        {
+          tipo: "tabela",
+          titulo: "Síntese final de macetes e números",
+          colunas: ["Tema", "Macete/Número"],
+          linhas: [
+            ["Datas-chave", "1888 = Lei Áurea | 1939 = Justiça do Trabalho | 1943 = CLT | 1988 = Constituição Cidadã"],
+            ["Princípio da Proteção", "Norma mais favorável + In dubio pro operário + Condição mais benéfica"],
+            ["Primazia da Realidade", "Verdade dos fatos > formalidade dos documentos"],
+            ["Relação de Emprego", "Pessoa física + Onerosidade + Subordinação + Pessoalidade + Não eventualidade"],
+            ["CTPS", "5 dias úteis (empregador anota) | 48 horas (trabalhador acessa)"],
+            ["Suspensão x Interrupção", "SUSPENSÃO = salário suspenso | INTERRUPÇÃO = salário continua"],
+            ["Menor no trabalho", "Regra: menor de 16 anos não trabalha | Exceção: aprendiz a partir de 14 anos"],
+            ["Duração do contrato", "Experiência = máx. 90 dias | Prazo determinado = máx. 2 anos"],
+            ["Sobreaviso x Prontidão", "Sobreaviso = fora da empresa = 1/3 | Prontidão = na empresa = 2/3"],
+            ["Jornada 12x36", "12 horas de trabalho + 36 horas de descanso"],
+            ["Intervalos", "INTRA = dentro da jornada | INTER = entre jornadas"],
+            ["Férias", "Máximo 30 dias; até 3 períodos (um ≥14 dias, demais ≥5 dias); aviso com 30 dias; pagamento + 1/3"],
+            ["Salário x Remuneração", "Salário = empregador | Gorjeta = cliente | Remuneração = salário + gorjeta"],
+            ["Hora extra", "Mínimo +50%; limite de até 2 horas extras diárias"],
+            ["Insalubridade", "10% (mínimo), 20% (médio), 40% (máximo)"],
+            ["Adicional noturno", "Urbano 20% (22h–5h) | Rural 25% | Hora noturna = 52min30s"],
+            ["Salário-utilidade", "Mínimo de 30% deve ser pago em dinheiro"],
+            ["FGTS", "8% da remuneração (2% para aprendizes); depósito até dia 7; multa de 40% na dispensa sem justa causa"],
+            ["FGTS e afastamento", "Regra: não há FGTS na suspensão | Exceções: serviço militar obrigatório e acidente de trabalho"],
+            ["Aviso prévio", "Mínimo 30 dias + 3 dias por ano trabalhado, até o limite de 90 dias"],
+            ["Aviso prévio trabalhado", "Redução de 2h/dia OU falta de 7 dias corridos, sem prejuízo do salário"],
+            ["Justa causa", "Não há aviso prévio; e as verbas se limitam a saldo de salário e férias vencidas +1/3 (se houver)"],
+            ["Rescisão indireta", "Mesmas verbas da dispensa sem justa causa (\"justa causa do empregador\")"],
+            ["Culpa recíproca", "Todas as verbas rescisórias, mas pela metade"],
+            ["Fato do príncipe", "Aviso prévio e multa de 40% do FGTS ficam a cargo do Estado"],
+            ["Acordo entre as partes (distrato)", "Aviso prévio e multa do FGTS pela metade (20%); saque de até 80% do FGTS; sem seguro-desemprego"],
+            ["Prazo de pagamento das verbas rescisórias", "Até 10 dias contados do término do contrato"],
+            ["Desconto nas verbas rescisórias", "Limitado a um mês de remuneração (entendimento recente: até 35%)"],
+            ["Convenção x Acordo Coletivo", "Convenção = sindicato x sindicato | Acordo = empresa(s) x sindicato dos trabalhadores"],
+            ["Organização sindical", "Sindicato → Federação (mín. 5 sindicatos) → Confederação (mín. 3 federações) → Central Sindical"],
+            ["Greve", "Suspensão coletiva, temporária e pacífica; suspende o contrato de trabalho; aviso prévio de 48h (72h para atividades essenciais)"],
+            ["Lockout", "Fechamento da empresa pelo empregador para inibir greve — proibido pelo ordenamento jurídico"]
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "Atenção geral de prova: não confundir princípios do Direito do Trabalho (fundamentos gerais) com requisitos da relação de emprego (elementos cumulativos do vínculo) — são conjuntos de conceitos diferentes, frequentemente cobrados em conjunto para testar essa distinção."
+        }
+      ]
+    }
+  ]
+}
+  ],
+
+  simplificado: [
+
+    // aula 1
+    {
+      aula: "Origem e evolução do direito do trabalho no Brasil e a relação de trabalho e emprego",
+      ideia_central: "O Direito do Trabalho evoluiu historicamente no Brasil até consolidar princípios protetivos e requisitos que distinguem a relação de emprego da relação de trabalho.",
+      secoes: [
+        {
+          id: "formacao_historica",
+          titulo: "Formação histórica do Direito do Trabalho no Brasil",
+          blocos: [
+
+    // 1 - linha do tempo
+    {
+      tipo: "topico",
+      titulo: "Linha do tempo",
+      lista: [
+        "**1888** → Lei Áurea (fim da escravidão, surge necessidade de regular o trabalho)",
+        "**1891** → liberdade de associação e trabalho livre assalariado; influência dos imigrantes no sindicalismo",
+        "**1916** → `Código Civil` trata prestação de serviço como locação de mão de obra",
+        "**1934** → salário mínimo, jornada máxima de 8h, férias remuneradas",
+        "**1937** → proibição da greve e sindicato único",
+        "**1939** → criação da Justiça do Trabalho",
+        "**1943** → outorga da `CLT`",
+        "**1967** → restrição de direitos trabalhistas (regime militar, AI-5)",
+        "**1988** → Constituição Cidadã, direitos sociais e dignidade do trabalhador"
+      ]
+    },
+
+    // 2 - linha do tempo (imagem)
+    {
+      tipo: "imagem",
+      id: "figura_1_linha_do_tempo_direito_do_trabalho_brasil",
+      src: "figura_1_linha_do_tempo_direito_do_trabalho_brasil.png",
+      pasta: "imagens_legislacao/aula_01",
+      num: "1",
+      alt: "A representação organiza cronologicamente os principais acontecimentos apresentados no material, começando em 1888 com a Lei Áurea e passando por 1891, 1916, 1934, 1937, 1939, 1943, 1967 e 1988. A figura associa cada ano ao respectivo acontecimento histórico trabalhista."
+    }
+
+          ]
+        },
+        {
+          id: "principios",
+          titulo: "Princípios do Direito do Trabalho",
+          blocos: [
+
+    // 3 - princípio da proteção
+    {
+      tipo: "topico",
+      titulo: "Princípio da Proteção",
+      lista: [
+        "**Norma mais favorável** → entre várias normas, aplica-se a mais favorável ao empregado",
+        "**In dubio pro operário** → havendo dúvida na interpretação, decide-se a favor do empregado",
+        "**Condição mais benéfica** → entre condições do contrato/regulamento, prevalece a mais benéfica (Art. 468 `CLT`)"
+      ]
+    },
+
+    // 4 - primazia da realidade
+    {
+      tipo: "topico",
+      titulo: "Princípio da Primazia da Realidade",
+      lista: [
+        "**Primazia da realidade** → a realidade dos fatos prevalece sobre a formalidade dos documentos (Art. 9º `CLT`)",
+        "Provas testemunhais têm relevância para comprovar o que realmente ocorreu",
+        "A ausência de anotação na `CTPS` não impede, por si só, a comprovação do vínculo empregatício"
+      ]
+    },
+
+    // 5 - irrenunciabilidade
+    {
+      tipo: "topico",
+      titulo: "Princípio da Irrenunciabilidade de Direitos",
+      lista: [
+        "**Irrenunciabilidade** → o empregado não pode abrir mão de direitos constitucionalmente previstos",
+        "Exemplos: direito às férias e ao recebimento de salário"
+      ]
+    },
+
+    // 6 - inalterabilidade contratual
+    {
+      tipo: "topico",
+      titulo: "Princípio da Inalterabilidade Contratual",
+      lista: [
+        "**Inalterabilidade contratual** → proibidas alterações que prejudiquem o empregado; permitidas as que o beneficiem",
+        "Art. 444 `CLT` → limites: normas de proteção ao trabalho, contratos coletivos e decisões de autoridades competentes",
+        "Art. 468 `CLT` → alteração lícita exige mútuo consentimento e ausência de prejuízo ao empregado",
+        "Art. 9º `CLT` → são nulos atos que desvirtuem, impeçam ou fraudem a aplicação da `CLT`"
+      ]
+    },
+
+    // 7 - continuidade da relação de emprego
+    {
+      tipo: "topico",
+      titulo: "Princípio da Continuidade da Relação de Emprego",
+      lista: [
+        "**Continuidade** → presunção de que a relação de emprego é pactuada para ser ininterrupta",
+        "Regra: contrato por tempo indeterminado | Exceção: contrato por tempo determinado"
+      ]
+    },
+
+    // 8 - princípios (imagem)
+    {
+      tipo: "imagem",
+      id: "figura_2_principios_ciencia_juridica",
+      src: "figura_2_principios_ciencia_juridica.png",
+      pasta: "imagens_legislacao/aula_01",
+      num: "2",
+      alt: "O diagrama apresenta os princípios como elementos ligados ao núcleo \"Princípios\". O Princípio da Proteção aparece associado a três subdivisões: Norma mais favorável, In dubio pro operário e Condição mais benéfica. Os demais princípios apresentados são Primazia da realidade, Irrenunciabilidade de direitos, Inalterabilidade contratual e Continuidade da relação de emprego."
+    }
+
+          ]
+        },
+        {
+          id: "relacao_emprego_x_trabalho",
+          titulo: "Relação de Emprego × Relação de Trabalho",
+          blocos: [
+
+    // 9 - relação de trabalho
+    {
+      tipo: "topico",
+      titulo: "Relação de trabalho",
+      lista: [
+        "**Relação de trabalho** → conceito mais amplo, abrange qualquer esforço humano ajustado em obrigação",
+        "Pode existir com ou sem recebimento de valores (ex.: trabalho voluntário)"
+      ]
+    },
+
+    // 10 - relação de emprego
+    {
+      tipo: "topico",
+      titulo: "Relação de emprego",
+      lista: [
+        "**Relação de emprego** → forma específica de relação de trabalho, definida no Art. 3º `CLT`",
+        "Art. 3º `CLT` → pessoa física que presta serviço não eventual a empregador, sob dependência deste e mediante salário",
+        "Requisitos são **cumulativos** para caracterizar o vínculo empregatício"
+      ]
+    },
+
+    // 11 - requisitos do vínculo
+    {
+      tipo: "topico",
+      titulo: "Requisitos da relação de emprego",
+      lista: [
+        "**Pessoa física** → empregado nunca é pessoa jurídica",
+        "**Onerosidade** → contraprestação mediante salário",
+        "**Subordinação** → recebe e cumpre ordens de superior hierárquico",
+        "**Pessoalidade** → serviço prestado pela própria pessoa contratada, sem substituição",
+        "**Habitualidade/Não eventualidade** → caráter contínuo, repetitivo e rotineiro do serviço"
+      ]
+    },
+
+    // 12 - ctps
+    {
+      tipo: "topico",
+      titulo: "CTPS (Carteira de Trabalho e Previdência Social)",
+      lista: [
+        "Contém salário, dados do empregador e data de admissão",
+        "Empregador tem **5 dias úteis** para anotar (Art. 29, §8º `CLT`)",
+        "Trabalhador tem acesso às informações em até **48 horas** após a anotação",
+        "Anotação comprova o vínculo, mas sua ausência não impede a comprovação (Primazia da Realidade)",
+        "Empregador não pode inserir faltas desabonadoras na `CTPS`"
+      ]
+    },
+
+    // 13 - empregador
+    {
+      tipo: "topico",
+      titulo: "Empregador",
+      lista: [
+        "**Empregador** → pode ser pessoa física ou jurídica",
+        "Suporta os riscos da atividade, contrata, assalaria, gere e administra a atividade econômica"
+      ]
+    }
+
+          ]
+        }
+      ]
+    },
+    // aula 2
+    {
+      aula: "Contrato de trabalho",
+      ideia_central: "O contrato de trabalho concretiza o vínculo empregatício, envolvendo requisitos, duração, alterações, suspensão/interrupção, jornada, intervalos e férias.",
+      secoes: [
+        {
+          id: "definicao_requisitos",
+          titulo: "Definição e requisitos do contrato de trabalho",
+          blocos: [
+
+    // 1 - conceito do contrato
+    {
+      tipo: "topico",
+      titulo: "Conceito",
+      lista: [
+        "**Contrato de trabalho** → instrumento que estabelece o vínculo empregatício entre empregado e empregador",
+        "Pode ser **expresso ou tácito**; **verbal ou escrito**",
+        "Empregado presta serviço não eventual e subordinado; empregador paga, dirige e assume os riscos da atividade",
+        "**Alteridade** → riscos e resultado do trabalho pertencem ao empregador",
+        "**Subordinação jurídica** → poder do empregador de dirigir a prestação dos serviços",
+        "No `teletrabalho` (home office), o contrato precisa ser **escrito**"
+      ]
+    },
+
+    // 2 - requisitos do art. 3 clt
+    {
+      tipo: "topico",
+      titulo: "Requisitos do Art. 3º da CLT",
+      lista: [
+        "**Pessoa física**, **Onerosidade**, **Subordinação**, **Pessoalidade**, **Não eventualidade**"
+      ]
+    },
+
+    // 3 - elementos essenciais
+    {
+      tipo: "topico",
+      titulo: "Elementos essenciais",
+      lista: [
+        "**Agente capaz** → capacidade plena aos 18 anos; regra: menor de 16 anos não pode trabalhar; exceção: aprendiz a partir de 14 anos (Art. 403 `CLT`)",
+        "**Objeto lícito**",
+        "**Forma prescrita ou não proibida em lei**"
+      ]
+    }
+
+          ]
+        },
+        {
+          id: "duracao_alteracao",
+          titulo: "Duração e alteração do contrato",
+          blocos: [
+
+    // 4 - tipos de contrato (imagem)
+    {
+      tipo: "imagem",
+      id: "figura_1_tipos_de_contratos",
+      src: "figura_1_tipos_de_contratos.png",
+      pasta: "imagens_legislacao/aula_02",
+      num: "1",
+      alt: "A figura apresenta três tipos de contrato: contrato por prazo indeterminado, contrato de experiência e contrato por prazo determinado, destacando as características temporais de cada um."
+    },
+
+    // 5 - duração do contrato
+    {
+      tipo: "topico",
+      titulo: "Duração do contrato (Arts. 443-445, 451-452 CLT)",
+      lista: [
+        "**Prazo indeterminado** → regra da maioria dos contratos",
+        "**Experiência** → máximo 90 dias, prorrogável uma vez, sem ultrapassar o total de 90 dias",
+        "**Prazo determinado** → máximo de 2 anos"
+      ]
+    },
+
+    // 6 - alteração contratual
+    {
+      tipo: "topico",
+      titulo: "Alteração do contrato",
+      lista: [
+        "Requisitos: **ausência de prejuízo** ao empregado + **concordância** do empregado",
+        "**Rebaixamento** → mudança para função de menor importância",
+        "**Readaptação** → por orientação do `INSS`, após afastamento; proibida redução salarial",
+        "**Aproveitamento** → mudança por extinção da função anterior; lícita, preserva o vínculo",
+        "Alteração salarial pode ocorrer por norma coletiva, regime de tempo parcial ou pedido do empregado"
+      ]
+    }
+
+          ]
+        },
+        {
+          id: "suspensao_interrupcao",
+          titulo: "Suspensão e interrupção do contrato",
+          blocos: [
+
+    // 7 - suspensão x interrupção
+    {
+      tipo: "topico",
+      titulo: "Suspensão × Interrupção (Arts. 471-476-A CLT)",
+      lista: [
+        "**Suspensão** → não trabalha, não recebe salário, tempo não conta para fins previdenciários (ex.: greve)",
+        "**Interrupção** → não trabalha, mas salário continua sendo pago e o tempo é computado (ex.: férias)"
+      ]
+    }
+
+          ]
+        },
+        {
+          id: "jornada_horario",
+          titulo: "Jornada e horário de trabalho",
+          blocos: [
+
+    // 8 - jornada normal
+    {
+      tipo: "topico",
+      titulo: "Jornada normal",
+      lista: [
+        "**Jornada de trabalho** → tempo em que o empregado está à disposição do empregador, trabalhando ou aguardando ordens",
+        "Jornada normal no Brasil: **8 horas diárias / 44 horas semanais**",
+        "Existem categorias com jornadas específicas (ex.: advogados, bancários, marítimos)"
+      ]
+    },
+
+    // 9 - sobreaviso e prontidão
+    {
+      tipo: "topico",
+      titulo: "Sobreaviso e prontidão",
+      lista: [
+        "**Sobreaviso** → aguarda fora da empresa (casa ou local predeterminado); adicional de **1/3**; escala máx. 24h (Art. 244 CLT)",
+        "**Prontidão** → aguarda nas dependências da empresa; adicional de **2/3**; escala máx. 12h",
+        "Na prontidão, após 6h sem facilidade de alimentação, intervalo de 1h por refeição, não computado como serviço"
+      ]
+    },
+
+    // 10 - jornada 12x36
+    {
+      tipo: "topico",
+      titulo: "Jornada 12×36",
+      lista: [
+        "**12×36** → 12 horas de trabalho + 36 horas de descanso",
+        "Jornada excepcional, prevista em lei ou ajustada por acordo/convenção coletiva",
+        "`Súmula 444 TST` → remuneração em dobro de feriados trabalhados; sem adicional para 11ª e 12ª horas"
+      ]
+    },
+
+    // 11 - regime de tempo parcial
+    {
+      tipo: "topico",
+      titulo: "Regime de tempo parcial (Art. 58-A CLT)",
+      lista: [
+        "Modalidade 1: até 30h semanais, sem horas extras",
+        "Modalidade 2: até 26h semanais, com até 6h extras semanais",
+        "Salário proporcional à jornada em relação ao tempo integral",
+        "Horas suplementares: acréscimo de 50%; compensáveis até a semana seguinte ou pagas no mês subsequente",
+        "Férias regidas pelo Art. 130 `CLT`; pode converter 1/3 das férias em abono pecuniário"
+      ]
+    },
+
+    // 12 - banco de horas
+    {
+      tipo: "topico",
+      titulo: "Banco de horas",
+      lista: [
+        "Compensa excesso de horas de um dia com diminuição em outro",
+        "Prazo máximo de compensação: **1 ano** (acordo individual escrito, coletivo ou convenção)",
+        "Limite de acréscimo diário: até 2 horas extras (Art. 59 CLT)",
+        "Limite máximo diário no banco de horas: **10 horas**"
+      ]
+    }
+
+          ]
+        },
+        {
+          id: "intervalos",
+          titulo: "Intervalos",
+          blocos: [
+
+    // 13 - intervalo intrajornada
+    {
+      tipo: "topico",
+      titulo: "Intervalo intrajornada (Art. 71 CLT)",
+      lista: [
+        "Até 4h → sem intervalo",
+        "Mais de 4h até 6h → 15 minutos",
+        "Mais de 6h → mínimo 1h e máximo 2h (salvo acordo/contrato coletivo em contrário)"
+      ]
+    },
+
+    // 14 - intervalo interjornada
+    {
+      tipo: "topico",
+      titulo: "Intervalo interjornada (Art. 66 CLT)",
+      lista: [
+        "Mínimo de **11 horas consecutivas** de descanso entre duas jornadas"
+      ]
+    },
+
+    // 15 - dsr
+    {
+      tipo: "topico",
+      titulo: "Descanso Semanal Remunerado (DSR)",
+      lista: [
+        "Folga de **24 horas consecutivas** após o 6º dia de trabalho, preferencialmente aos domingos",
+        "Requisitos: pontualidade e frequência do empregado",
+        "Fundamento: Art. 7º, XV, `CF/88` e Art. 67 `CLT`",
+        "Trabalho aos domingos pode exigir escala de revezamento mensal fiscalizada, exceto elencos teatrais"
+      ]
+    }
+
+          ]
+        },
+        {
+          id: "ferias",
+          titulo: "Férias",
+          blocos: [
+
+    // 16 - regras gerais das férias
+    {
+      tipo: "topico",
+      titulo: "Regras gerais (Arts. 129-138 CLT)",
+      lista: [
+        "Concedidas após 12 meses de trabalho; máximo de **30 dias**",
+        "Podem ser divididas em até 3 períodos: um com no mínimo 14 dias, os demais com no mínimo 5 dias"
+      ]
+    },
+
+    // 17 - período aquisitivo e concessivo
+    {
+      tipo: "topico",
+      titulo: "Período aquisitivo e concessivo",
+      lista: [
+        "**Aquisitivo** → 12 primeiros meses, quando se adquire o direito às férias",
+        "**Concessivo** → 12 meses seguintes, prazo para usufruir das férias"
+      ]
+    },
+
+    // 18 - observações sobre férias (imagem)
+    {
+      tipo: "imagem",
+      id: "quadro_1_observacoes_periodo_ferias",
+      src: "quadro_1_observacoes_periodo_ferias.png",
+      pasta: "imagens_legislacao/aula_02",
+      num: "1",
+      alt: "O quadro reúne informações sobre aviso de férias, remuneração das férias e perda do direito de férias, funcionando como uma síntese das principais regras apresentadas nessa seção."
+    },
+
+    // 19 - aviso e remuneração
+    {
+      tipo: "topico",
+      titulo: "Aviso e remuneração das férias",
+      lista: [
+        "Aviso com antecedência mínima de **30 dias** (Art. 135 CLT)",
+        "Escolha do período considera a conveniência do empregador",
+        "Remuneração: integral **+ 1/3** constitucional",
+        "Férias concedidas em atraso → pagamento em dobro, incluindo o 1/3"
+      ]
+    },
+
+    // 20 - perda do direito às férias
+    {
+      tipo: "topico",
+      titulo: "Perda do direito às férias (Art. 133 CLT)",
+      lista: [
+        "Pedido de demissão sem readmissão em até 60 dias",
+        "Licença remunerada por mais de 30 dias",
+        "Auxílio-doença/acidente por mais de 6 meses, mesmo descontínuos",
+        "Paralisação da empresa por mais de 30 dias com recebimento de salário"
+      ]
+    }
+
+          ]
+        }
+      ]
+    },
+    // aula 3
+    {
+      aula: "Remuneração e Salário",
+      ideia_central: "O salário é protegido por princípios específicos, distingue-se da remuneração (que inclui gorjetas), divide-se em parcelas salariais e não salariais com adicionais próprios, e possui formas de pagamento regulamentadas.",
+      secoes: [
+        {
+          id: "principios_protecao_salario",
+          titulo: "Princípios de proteção ao salário",
+          blocos: [
+
+    // 1 - irredutibilidade salarial
+    {
+      tipo: "topico",
+      titulo: "Irredutibilidade salarial",
+      lista: [
+        "**Irredutibilidade** → proibição de reduzir o salário pactuado",
+        "Fundamento: Art. 7º, VI, `CF/88` → redução admitida por convenção ou acordo coletivo",
+        "Exceção: força maior ou dificuldades econômicas da empresa; caráter temporário, respeita o salário mínimo (Arts. 501-504 CLT)",
+        "Renúncia sem observância dessas condições pode gerar nulidade (Art. 611-A, §3º, CLT)"
+      ]
+    },
+
+    // 2 - inalterabilidade salarial
+    {
+      tipo: "topico",
+      titulo: "Inalterabilidade salarial",
+      lista: [
+        "**Inalterabilidade** → impede alteração salarial prejudicial (in pejus)",
+        "Somente alterações vantajosas ao empregado são admitidas",
+        "Cabe ao empregador provar que a alteração é vantajosa, quando exigido"
+      ]
+    },
+
+    // 3 - integralidade salarial
+    {
+      tipo: "topico",
+      titulo: "Integralidade salarial",
+      lista: [
+        "**Integralidade** → proteção contra descontos indevidos ou arbitrários",
+        "Art. 462 `CLT` → descontos só por adiantamentos, dispositivos de lei ou contrato coletivo",
+        "Desconto por dano causado pelo empregado: se acordado ou se houver dolo",
+        "Vedado obrigar uso de armazéns/serviços da própria empresa ou limitar a liberdade de dispor do salário"
+      ]
+    },
+
+    // 4 - intangibilidade salarial
+    {
+      tipo: "topico",
+      titulo: "Intangibilidade salarial",
+      lista: [
+        "**Intangibilidade** → relacionada à natureza alimentar do salário (Art. 449 CLT)",
+        "Direitos protegidos mesmo em falência, concordata ou dissolução da empresa",
+        "Na falência, salários e certas indenizações são créditos privilegiados",
+        "Exceções: pensão alimentícia e imposto de renda"
+      ]
+    }
+
+          ]
+        },
+        {
+          id: "salario_remuneracao",
+          titulo: "Salário e remuneração",
+          blocos: [
+
+    // 5 - salário x remuneração (imagem)
+    {
+      tipo: "imagem",
+      id: "figura_1_salario_x_remuneracao",
+      src: "figura_1_salario_x_remuneracao.png",
+      pasta: "imagens_legislacao/aula_03",
+      num: "1",
+      alt: "A figura compara salário e remuneração à luz do art. 457 da CLT. Apresenta o salário como a contraprestação devida e paga diretamente pelo empregador em razão do contrato de trabalho e a gorjeta como importância dada espontaneamente pelo cliente ou cobrada pela empresa para distribuição aos empregados. A representação conclui pela relação salário + gorjeta = remuneração."
+    },
+
+    // 6 - conceitos salário, gorjeta e remuneração
+    {
+      tipo: "topico",
+      titulo: "Conceitos (Art. 457 CLT)",
+      lista: [
+        "**Salário** → contraprestação devida e paga diretamente pelo empregador em razão do contrato",
+        "**Gorjeta** → dada espontaneamente pelo cliente ou cobrada pela empresa para distribuição aos empregados; integra a remuneração",
+        "**Remuneração** → soma de valores recebidos diretamente do empregador e indiretamente de terceiros",
+        "Fórmula: **Salário + gorjeta = Remuneração**"
+      ]
+    }
+
+          ]
+        },
+        {
+          id: "parcelas_salariais_nao_salariais",
+          titulo: "Parcelas salariais e não salariais",
+          blocos: [
+
+    // 7 - natureza das parcelas
+    {
+      tipo: "topico",
+      titulo: "Natureza das parcelas",
+      lista: [
+        "**Natureza salarial** → contraprestação pelo trabalho, paga pelo empregador (adicionais, gratificações, prêmios, parcelas sobre o salário stricto sensu)",
+        "**Natureza não salarial** → caráter indenizatório, reembolsa ou compensa despesas do empregado"
+      ]
+    },
+
+    // 8 - parcelas que integram o salário
+    {
+      tipo: "topico",
+      titulo: "Parcelas salariais (Art. 457 CLT)",
+      lista: [
+        "Integram o salário: importância fixa estipulada, gratificações legais, comissões pagas pelo empregador",
+        "Não integram a remuneração mesmo se habituais: ajuda de custo, auxílio-alimentação não pago em dinheiro, diárias para viagem, prêmios, abonos"
+      ]
+    },
+
+    // 9 - adicionais - visão geral
+    {
+      tipo: "lista",
+      itens: [
+        "**Adicionais** → parcelas salariais suplementares por situações específicas e gravosas do trabalho",
+        "Tipos: hora extra, insalubridade, periculosidade, noturno, transferência, tempo de serviço"
+      ]
+    },
+
+    // 10 - adicional de hora extra
+    {
+      tipo: "topico",
+      titulo: "Adicional de hora extra",
+      lista: [
+        "Devido quando o empregado trabalha além da jornada normal",
+        "Limite máximo: 2 horas extras, via acordo individual, convenção ou acordo coletivo",
+        "Acréscimo mínimo de **50%** sobre a hora normal",
+        "Horas extras habituais integram o salário para cálculo de outras verbas"
+      ]
+    },
+
+    // 11 - adicional de insalubridade
+    {
+      tipo: "topico",
+      titulo: "Adicional de insalubridade (Art. 189 CLT)",
+      lista: [
+        "Atividades que expõem a agentes nocivos acima dos limites de tolerância",
+        "Requisitos: perícia por médico/engenheiro + relação oficial do `MTE`",
+        "Grau mínimo: **10%** | Grau médio: **20%** | Grau máximo/alto: **40%**"
+      ]
+    },
+
+    // 12 - adicional de periculosidade
+    {
+      tipo: "topico",
+      titulo: "Adicional de periculosidade (Art. 193 CLT)",
+      lista: [
+        "Relacionada a risco acentuado: inflamáveis, explosivos, energia elétrica, risco de violência física em segurança pessoal/patrimonial",
+        "Exige perícia, salvo exceções já previstas em lei",
+        "Art. 193 tem rol taxativo, mas súmulas do `TST` trazem outras hipóteses"
+      ]
+    },
+
+    // 13 - adicional noturno
+    {
+      tipo: "topico",
+      titulo: "Adicional noturno (Art. 73 CLT)",
+      lista: [
+        "**Urbano**: 22h às 5h → 20%",
+        "**Rural (agricultura)**: 21h às 5h → 25%",
+        "**Rural (pecuária)**: 20h às 4h → 25%",
+        "Hora noturna reduzida: 1 hora = **52min30s**"
+      ]
+    }
+
+          ]
+        },
+        {
+          id: "parcelas_nao_salariais",
+          titulo: "Parcelas não salariais",
+          blocos: [
+
+    // 14 - parcelas não salariais (imagem)
+    {
+      tipo: "imagem",
+      id: "quadro_1_parcelas_nao_salariais",
+      src: "quadro_1_parcelas_nao_salariais.png",
+      pasta: "imagens_legislacao/aula_03",
+      num: "1",
+      alt: "O quadro organiza as três parcelas apresentadas pelo material e resume sua característica principal: a ajuda de custo, as diárias para viagem e a participação nos lucros e resultados."
+    },
+
+    // 15 - ajuda de custo
+    {
+      tipo: "topico",
+      titulo: "Ajuda de custo",
+      lista: [
+        "Parcela única para situações atípicas necessárias à efetivação do contrato",
+        "Compensa mudança do empregado por alteração do local de trabalho",
+        "Regulamentação: Art. 457, §2º e Art. 470 `CLT`"
+      ]
+    },
+
+    // 16 - diárias e plr
+    {
+      tipo: "topico",
+      titulo: "Diárias e PLR",
+      lista: [
+        "**Diárias para viagem** → ressarcimento de gastos com viagens a trabalho, natureza meramente ressarcitória",
+        "**PLR** → Participação nos Lucros e Resultados (`Lei 10.101/2000`), normalmente por norma coletiva"
+      ]
+    }
+
+          ]
+        },
+        {
+          id: "meios_pagamento",
+          titulo: "Meios de pagamento do salário",
+          blocos: [
+
+    // 17 - meios de pagamento
+    {
+      tipo: "topico",
+      titulo: "Meios de pagamento (Art. 458 CLT)",
+      lista: [
+        "**Salário in natura/utilidade** → alimentação, habitação, vestuário e outras prestações habituais",
+        "**Pagamento em dinheiro**",
+        "Vedado pagamento com bebidas alcoólicas ou drogas nocivas"
+      ]
+    },
+
+    // 18 - salário-utilidade
+    {
+      tipo: "topico",
+      titulo: "Salário-utilidade",
+      lista: [
+        "Pagamento parcial em bens econômicos, mediante acordo entre empregado e empregador",
+        "Deve ser pago **pelo** trabalho, não **para** o trabalho",
+        "Mínimo de **30%** do salário deve ser pago em dinheiro",
+        "Não são consideradas salário (Art. 458, §2º CLT): vestuário, educação, transporte, assistência médica/odontológica, seguro de vida/acidentes, previdência privada, vale-cultura"
+      ]
+    },
+
+    // 19 - pagamento em dinheiro
+    {
+      tipo: "topico",
+      titulo: "Pagamento em dinheiro",
+      lista: [
+        "Deve ser feito em moeda nacional, salvo trabalho realizado no exterior (Art. 82 CLT)",
+        "Pagamento fora dessa regra é considerado como não feito",
+        "Mínimo de 30% do salário pago em dinheiro"
+      ]
+    }
+
+          ]
+        }
+      ]
+    },
+    // aula 4
+    {
+  aula: "Fundo de garantia por tempo de serviço",
+  ideia_central: "O FGTS é um fundo de depósitos mensais do empregador em conta vinculada à Caixa Econômica, e o aviso prévio é a comunicação antecipada e proporcional ao tempo de serviço sobre o fim do contrato.",
+  secoes: [
+    {
+      id: "fgts_conceito",
+      titulo: "FGTS — conceito e alíquotas",
+      blocos: [
+
+// 1 - conceito fgts
+{
+  tipo: "topico",
+  titulo: "Conceito e origem",
+  lista: [
+    "`FGTS` → Fundo de Garantia por Tempo de Serviço",
+    "Depósitos mensais sobre a remuneração em conta vinculada à `Caixa Econômica Federal`",
+    "Finalidade: amparo financeiro ao trabalhador, especialmente no desemprego",
+    "Instituído pela `Lei 5.108/66`; tornado obrigatório pela `CF/88`, que retirou a antiga estabilidade após 10 anos",
+    "Fundamento constitucional: Art. 7º, III, `CF/88`"
+  ]
+},
+
+// 2 - quem possui fgts
+{
+  tipo: "topico",
+  titulo: "Quem possui FGTS",
+  lista: [
+    "Obrigatório para empregados urbanos, rurais e domésticos (`LC 150/2015`)",
+    "Servidor público estatutário (`Lei 8.112/1990`) → não obrigatório, pois já possui estabilidade",
+    "Empregado público → obrigatório mesmo com estabilidade (`Súmula 390, I, TST`)",
+    "Função protetiva: inibe demissão sem falta, pois gera multa de 40% sobre os depósitos"
+  ]
+},
+
+// 3 - alíquotas e prazo
+{
+  tipo: "topico",
+  titulo: "Alíquotas, prazo e base de cálculo",
+  lista: [
+    "Regra geral: **8%** da remuneração (Art. 15, `Lei 8.036/1990`)",
+    "Aprendiz: **2%** da remuneração",
+    "Depósito até o **dia 7** de cada mês, referente à remuneração do mês anterior",
+    "**FGTS rescisório** → relacionado à rescisão; segue o prazo de pagamento das verbas rescisórias",
+    "Base de cálculo: qualquer parcela de natureza remuneratória, independente de habitualidade"
+  ]
+}
+
+      ]
+    },
+    {
+      id: "fgts_movimentacao_multa",
+      titulo: "Movimentação, multa e afastamentos",
+      blocos: [
+
+// 4 - movimentação do fgts
+{
+  tipo: "topico",
+  titulo: "Movimentação (Art. 20, Lei 8.036/1990)",
+  lista: [
+    "Aposentadoria pelo `INSS`",
+    "Idade superior a 70 anos",
+    "Despedida sem justa causa",
+    "Trabalhador portador de HIV ou câncer",
+    "Extinção da empresa",
+    "Despedida indireta",
+    "Desastre natural, mediante autorização do governo",
+    "Conta inativa por mais de 3 anos",
+    "Trabalhador avulso sem trabalho por mais de 30 dias",
+    "Término do contrato a prazo",
+    "Aquisição de moradia",
+    "O FGTS não pode ser pago diretamente ao empregado; só via conta vinculada"
+  ]
+},
+
+// 5 - movimentação fgts (imagem)
+{
+  tipo: "imagem",
+  id: "figura_1_movimentacao_do_fgts",
+  src: "figura_1_movimentacao_do_fgts.png",
+  pasta: "imagens_legislacao/aula_04",
+  num: "1",
+  alt: "Figura 1 – Movimentação do FGTS: diagrama em hexágonos com a ideia central \"Movimentação do FGTS\" e, ao redor, as hipóteses legais que autorizam a movimentação da conta vinculada."
+},
+
+// 6 - multa de 40%
+{
+  tipo: "topico",
+  titulo: "Multa de 40%",
+  lista: [
+    "Demissão sem justa causa pelo empregador → multa de **40%** sobre o montante da conta vinculada",
+    "A multa é depositada na conta vinculada, não paga diretamente ao empregado"
+  ]
+},
+
+// 7 - fgts durante afastamentos
+{
+  tipo: "topico",
+  titulo: "FGTS durante afastamentos",
+  lista: [
+    "Regra: suspensão do contrato → sem salário → sem FGTS",
+    "Exceções com depósito obrigatório: serviço militar obrigatório e acidente de trabalho"
+  ]
+}
+
+      ]
+    },
+    {
+      id: "aviso_previo_conceito_cabimento",
+      titulo: "Aviso prévio — conceito e cabimento",
+      blocos: [
+
+// 8 - conceito e características
+{
+  tipo: "topico",
+  titulo: "Conceito e características",
+  lista: [
+    "**Aviso prévio** → comunicação do fim do contrato por uma parte à outra, com antecedência legal",
+    "Ausência de comunicação adequada gera **indenização substitutiva**",
+    "Finalidade: evitar surpresa com a ruptura do contrato",
+    "Três características: comunicação + fixação de prazo + pagamento (trabalhado ou indenizado)"
+  ]
+},
+
+// 9 - cabimento do aviso prévio
+{
+  tipo: "topico",
+  titulo: "Cabimento (Art. 7º, XXI, CF/88; Art. 487, II, CLT)",
+  lista: [
+    "Aplica-se principalmente a contratos por **prazo indeterminado**",
+    "Mínimo de 30 dias para quem recebe por quinzena/mês ou tem mais de 12 meses de serviço",
+    "Cabe em: rescisão sem justa causa, rescisão por comum acordo (distrato, Art. 484-A, I, CLT), rescisão indireta, rescisão antecipada de contrato a termo com cláusula assecuratória (Art. 481 CLT)",
+    "Culpa recíproca → aviso devido pela metade",
+    "Não há aviso prévio na rescisão por justa causa"
+  ]
+}
+
+      ]
+    },
+    {
+      id: "aviso_previo_proporcional_modalidades",
+      titulo: "Aviso prévio proporcional e modalidades",
+      blocos: [
+
+// 10 - proporcionalidade
+{
+  tipo: "topico",
+  titulo: "Aviso prévio proporcional (Lei 12.506/11)",
+  lista: [
+    "Mínimo de **30 dias** de aviso prévio, proporcional ao tempo de serviço",
+    "Acréscimo de **3 dias por ano trabalhado**",
+    "Limite máximo de **90 dias**, correspondente a 20 anos de serviço"
+  ]
+},
+
+// 11 - aviso concedido pelo empregador
+{
+  tipo: "topico",
+  titulo: "Aviso concedido pelo empregador",
+  lista: [
+    "**Trabalhado** → empregado continua trabalhando; redução de 2h/dia sem prejuízo do salário (Art. 488 CLT) ou falta de 7 dias corridos sem prejuízo do salário",
+    "Pode haver renúncia ao restante do aviso se comprovado novo emprego",
+    "**Indenizado** → afastamento imediato; empregador paga o valor correspondente ao período"
+  ]
+},
+
+// 12 - aviso concedido pelo empregado
+{
+  tipo: "topico",
+  titulo: "Aviso concedido pelo empregado",
+  lista: [
+    "No pedido de demissão, o aviso prévio é **dever do empregado**",
+    "Não cumprimento → desconto nas verbas rescisórias (Art. 487, §2º, CLT)",
+    "Não há redução de jornada quando o aviso é dado pelo empregado"
+  ]
+}
+
+      ]
+    }
+  ]
+    },
+    // aula 5
+    {
+      aula: "Cessação (ou extinção) do contrato de trabalho",
+      ideia_central: "O contrato de trabalho pode se extinguir por diversas modalidades — sem justa causa, com justa causa, pedido de demissão, rescisão indireta, culpa recíproca, força maior, fato do príncipe, dispensa coletiva/PDV e acordo entre as partes — cada uma com hipóteses e verbas rescisórias próprias.",
+      secoes: [
+        {
+          id: "sem_com_justa_causa",
+          titulo: "Extinção sem justa causa e com justa causa",
+          blocos: [
+
+    // 1 - sem justa causa
+    {
+      tipo: "topico",
+      titulo: "Sem justa causa",
+      lista: [
+        "Empregador extingue o contrato sem que o empregado tenha cometido falta que justifique",
+        "Verbas: saldo de salário, aviso prévio, 13º proporcional, férias vencidas + 1/3 (se houver), férias proporcionais + 1/3, multa de **40%** sobre o FGTS"
+      ]
+    },
+
+    // 2 - princípios da justa causa
+    {
+      tipo: "topico",
+      titulo: "Princípios da justa causa",
+      lista: [
+        "**Imediatividade** → a falta grave deve ser punida imediatamente",
+        "**Isonomia de tratamento** → mesma punição a todos os envolvidos na mesma falta",
+        "**Taxatividade** → a conduta só é falta grave se estiver prevista em lei",
+        "**Bis in idem** → proibição de duas punições pela mesma falta"
+      ]
+    },
+
+    // 3 - hipóteses justa causa
+    {
+      tipo: "topico",
+      titulo: "Justa causa do empregado (Art. 482 CLT)",
+      lista: [
+        "**Ato de improbidade** → viola o patrimônio do empregador",
+        "**Incontinência de conduta/mau procedimento** → atos contra dignidade sexual ou boa convivência",
+        "**Negociação habitual** → concorrência ou prejuízo ao serviço sem permissão",
+        "**Condenação criminal** com trânsito em julgado, sem suspensão da pena",
+        "**Desídia** → descumprimento inadequado e recorrente das funções",
+        "**Embriaguez habitual ou em serviço** → embriaguez habitual é doença (INSS, vínculo mantido); em serviço configura justa causa",
+        "**Violação de segredo da empresa**",
+        "**Indisciplina** (regras gerais) ou **insubordinação** (ordem específica)",
+        "**Abandono de emprego**",
+        "**Ato lesivo à honra/ofensa física** → contra colega, só no expediente/empresa; contra empregador, em qualquer local/horário",
+        "**Jogos de azar** habituais, com dinheiro e ilegais (requisitos cumulativos)",
+        "**Perda de habilitação** por conduta dolosa",
+        "**Atos atentatórios à segurança nacional** (parágrafo único)"
+      ]
+    }
+
+          ]
+        },
+        {
+          id: "pedido_demissao_rescisao_indireta",
+          titulo: "Pedido de demissão e rescisão indireta",
+          blocos: [
+
+    // 4 - pedido de demissão
+    {
+      tipo: "topico",
+      titulo: "Pedido de demissão",
+      lista: [
+        "Empregado extingue o contrato por vontade própria; empregador não pode se opor",
+        "Verbas: saldo de salário, 13º proporcional, férias vencidas + 1/3 (se houver), férias proporcionais + 1/3"
+      ]
+    },
+
+    // 5 - rescisão indireta
+    {
+      tipo: "topico",
+      titulo: "Rescisão indireta (Art. 483 CLT)",
+      lista: [
+        "Iniciativa do empregado, motivada por falta grave do empregador",
+        "Hipóteses: serviços superiores às forças/ilícitos, rigor excessivo, perigo manifesto, descumprimento das obrigações contratuais, ato lesivo à honra do empregado/família, ofensa física, redução do trabalho por peça/tarefa que afete o salário",
+        "Aplica-se os mesmos princípios da justa causa (imediatividade, isonomia, taxatividade, bis in idem)",
+        "Verbas: saldo de salário, aviso prévio, 13º proporcional, férias vencidas + 1/3, férias proporcionais + 1/3, multa de 40% sobre o FGTS"
+      ]
+    }
+
+          ]
+        },
+        {
+          id: "culpa_reciproca_forca_maior",
+          titulo: "Culpa recíproca, força maior e fato do príncipe",
+          blocos: [
+
+    // 6 - culpa recíproca
+    {
+      tipo: "topico",
+      titulo: "Culpa recíproca (Art. 484 CLT)",
+      lista: [
+        "Empregado e empregador concorrem no mesmo grau de responsabilidade pelo fim do contrato",
+        "Empregado recebe todas as verbas rescisórias, mas **pela metade**"
+      ]
+    },
+
+    // 7 - força maior
+    {
+      tipo: "topico",
+      titulo: "Força maior (Arts. 501-502 CLT)",
+      lista: [
+        "Acontecimento inevitável, alheio à vontade do empregador, para o qual ele não concorreu",
+        "Imprevidência do empregador exclui a força maior",
+        "Extinção da empresa por força maior: estável → indenização integral; sem estabilidade → metade da indenização de rescisão sem justa causa; contrato por prazo determinado → indenização do Art. 479, reduzida à metade"
+      ]
+    },
+
+    // 8 - fato do príncipe
+    {
+      tipo: "topico",
+      titulo: "Fato do príncipe (Art. 486 CLT)",
+      lista: [
+        "Fechamento da empresa motivado por ato de autoridade pública (municipal, estadual ou federal), ex.: desapropriação",
+        "Verbas equivalem à extinção sem justa causa, mas aviso prévio e multa de 40% do FGTS ficam a cargo do governo responsável; demais verbas, do empregador"
+      ]
+    }
+
+          ]
+        },
+        {
+          id: "dispensa_coletiva_acordo",
+          titulo: "Dispensa coletiva/PDV e acordo entre as partes",
+          blocos: [
+
+    // 9 - dispensa coletiva e pdv
+    {
+      tipo: "topico",
+      titulo: "Dispensa coletiva ou PDV (Arts. 477-A e 477-B CLT)",
+      lista: [
+        "`PDV` (Plano de Demissão Voluntária) → trazido pela reforma trabalhista de 2017",
+        "Dispensas individuais, plúrimas ou coletivas se equiparam; não exigem autorização sindical ou convenção/acordo coletivo",
+        "PDV previsto em convenção/acordo coletivo gera quitação plena e irrevogável dos direitos, salvo disposição em contrário"
+      ]
+    },
+
+    // 10 - acordo entre as partes
+    {
+      tipo: "topico",
+      titulo: "Acordo entre as partes / Distrato (Art. 484-A CLT)",
+      lista: [
+        "Extinção por vontade bilateral de empregado e empregador",
+        "Pela metade: aviso prévio indenizado e indenização/multa sobre o saldo do FGTS (20%, não 40%)",
+        "Na integralidade: demais verbas (saldo de salário, férias, 13º proporcional)",
+        "Permite movimentação da conta do FGTS até **80%** do valor dos depósitos",
+        "Não dá direito ao seguro-desemprego"
+      ]
+    }
+
+          ]
+        }
+      ]
+    },
+    // aula 6
+    {
+  aula: "Assistência na Rescisão do Contrato e Direito Coletivo do Trabalho",
+  ideia_central: "A rescisão do contrato envolve regras de pagamento, descontos e prazos das verbas rescisórias, enquanto o Direito Coletivo do Trabalho organiza sindicatos, negociações coletivas e o exercício da greve e do lockout.",
+  secoes: [
+    {
+      id: "assistencia_rescisao",
+      titulo: "Assistência na rescisão do contrato",
+      blocos: [
+
+// 1 - assistência sindical
+{
+  tipo: "topico",
+  titulo: "Assistência sindical na rescisão",
+  lista: [
+    "Garantia de homologação sindical prevista no §1º do Art. 477 `CLT`, revogada pela reforma trabalhista",
+    "Única hipótese remanescente: pedido de demissão de empregado estável exige assistência do sindicato ou autoridade competente (Art. 500 CLT)"
+  ]
+},
+
+// 2 - forma de pagamento e descontos
+{
+  tipo: "topico",
+  titulo: "Forma de pagamento e descontos (Art. 477, §4º e §5º, CLT)",
+  lista: [
+    "Pagamento em dinheiro, depósito bancário ou cheque visado, conforme acordo entre as partes",
+    "Empregado analfabeto → pagamento obrigatório em dinheiro ou depósito bancário (sem cheque)",
+    "Compensação/desconto não pode exceder o equivalente a **um mês de remuneração**",
+    "Excedendo esse limite, trata-se de dívida civil, sem desconto nas verbas rescisórias",
+    "Entendimento mais recente admite descontos de até **35%** das parcelas rescisórias (empréstimos, financiamentos, cartão de crédito, arrendamento mercantil), quando previsto em contrato"
+  ]
+},
+
+// 3 - prazo de pagamento
+{
+  tipo: "topico",
+  titulo: "Prazo para pagamento das verbas rescisórias (Art. 477, §6º, CLT)",
+  lista: [
+    "Documentos comprobatórios da extinção e pagamento das verbas: até **10 dias** contados do término do contrato",
+    "Multa prevista em caso de descumprimento (Art. 477, §8º)"
+  ]
+}
+
+      ]
+    },
+    {
+      id: "direito_coletivo_principios",
+      titulo: "Direito coletivo do trabalho: definição e princípios",
+      blocos: [
+
+// 4 - conceito
+{
+  tipo: "topico",
+  titulo: "Conceito",
+  lista: [
+    "**Direito coletivo do trabalho** → também chamado de direito sindical",
+    "Regula a atuação das entidades representativas de patrões e empregados, buscando evitar conflitos grupais e traçar diretrizes normativas"
+  ]
+},
+
+// 5 - princípios do direito coletivo
+{
+  tipo: "topico",
+  titulo: "Princípios (Art. 8º CF/88)",
+  lista: [
+    "**Liberdade sindical** → relativa no Brasil, pois o país não ratificou a `Convenção 87 da OIT`",
+    "**Interveniência sindical** → acordos entre empregado e empregador dependem de autenticação sindical",
+    "**Autonomia coletiva** → não há hierarquia entre sindicato de empregados e de empregadores",
+    "**Força normativa** → as partes podem estipular regras com natureza de norma geral"
+  ]
+},
+
+// 6 - art 8 cf destaques
+{
+  tipo: "topico",
+  titulo: "Destaques do Art. 8º CF/88",
+  lista: [
+    "Vedada mais de uma organização sindical representativa da mesma categoria na mesma base territorial",
+    "Obrigatória a participação dos sindicatos nas negociações coletivas",
+    "Ninguém é obrigado a se filiar ou permanecer filiado a sindicato",
+    "Vedada a dispensa de empregado sindicalizado a partir do registro de candidatura a cargo de direção sindical, até 1 ano após o fim do mandato, salvo falta grave"
+  ]
+}
+
+      ]
+    },
+    {
+      id: "organizacao_sindical",
+      titulo: "Organização sindical",
+      blocos: [
+
+// 7 - estrutura do sistema sindical
+{
+  tipo: "topico",
+  titulo: "Estrutura do sistema sindical nacional",
+  lista: [
+    "Base: **sindicatos** (Art. 511 CLT) → categoria econômica (empregadores) ou profissional (empregados)",
+    "Categoria profissional diferenciada → estatuto profissional especial exclusivo (ex.: técnicos de segurança do trabalho)",
+    "Decisões do sindicato valem para toda a categoria, filiados ou não",
+    "Intermediário: **federações** (Art. 534 CLT) → mínimo de 5 sindicatos representando a maioria absoluta de um grupo",
+    "**Confederações** (Art. 535 CLT) → mínimo de 3 federações, sede em Brasília",
+    "**Centrais sindicais** (`Lei 11.648/2008`) → representação geral nacional dos trabalhadores; existem apenas centrais de empregados"
+  ]
+}
+
+      ]
+    },
+    {
+      id: "negociacoes_instrumentos",
+      titulo: "Negociações coletivas e instrumentos normativos",
+      blocos: [
+
+// 8 - negociação coletiva
+{
+  tipo: "topico",
+  titulo: "Negociação coletiva",
+  lista: [
+    "Recurso de autocomposição, sem terceiros na resolução do conflito",
+    "**Instrumento normativo** → negócio jurídico por tempo determinado, fruto da negociação, que estipula novas condições de trabalho"
+  ]
+},
+
+// 9 - convenção x acordo coletivo
+{
+  tipo: "topico",
+  titulo: "Convenção × Acordo Coletivo (Art. 611 CLT)",
+  lista: [
+    "**Convenção Coletiva de Trabalho** → sindicato dos empregadores × sindicato dos trabalhadores",
+    "**Acordo Coletivo de Trabalho** → empresa(s) × sindicato dos trabalhadores",
+    "Participação do sindicato profissional é obrigatória em ambos (Art. 8º, VI, CF/88)",
+    "Federações/Confederações podem celebrar convenções para categorias sem sindicato (Art. 611, §2º, CLT)"
+  ]
+}
+
+      ]
+    },
+    {
+      id: "greve_lockout",
+      titulo: "Greve e lockout",
+      blocos: [
+
+// 10 - conceito e características da greve
+{
+  tipo: "topico",
+  titulo: "Greve (Art. 2º, Lei 7.783/1989)",
+  lista: [
+    "**Greve** → suspensão coletiva, temporária e pacífica, total ou parcial, da prestação de serviços",
+    "**Coletividade** → não exige adesão de toda a categoria, basta o agrupamento de pessoas",
+    "**Sustação temporária** → abandono definitivo configura abandono de emprego (justa causa)",
+    "**Meios pacíficos** → veda qualquer violência",
+    "Durante a greve, o contrato de trabalho fica **suspenso**"
+  ]
+},
+
+// 11 - comunicação e limites da greve
+{
+  tipo: "topico",
+  titulo: "Comunicação e limites (Lei 7.783/1989)",
+  lista: [
+    "Comunicação prévia mínima de **48h** ao empregador",
+    "Atividades essenciais (Art. 10) → comunicação prévia de **72h**, incluindo os usuários do serviço",
+    "Obrigação de manter serviços indispensáveis às necessidades inadiáveis da sociedade (Art. 11, parágrafo único)",
+    "Poder Judiciário garante a prestação dos serviços indispensáveis em caso de descumprimento (Art. 12)"
+  ]
+},
+
+// 12 - abuso do direito de greve
+{
+  tipo: "topico",
+  titulo: "Abuso do direito de greve (Art. 14, Lei 7.783/1989)",
+  lista: [
+    "Configura-se pela inobservância das normas legais ou manutenção da paralisação após acordo/convenção/decisão da Justiça do Trabalho",
+    "Não é abuso a paralisação para exigir cumprimento de cláusula ou motivada por fato novo que altere substancialmente a relação de trabalho"
+  ]
+},
+
+// 13 - lockout
+{
+  tipo: "topico",
+  titulo: "Lockout",
+  lista: [
+    "**Lockout** → fechamento do estabelecimento pelo empregador para inibir a greve",
+    "Conduta **proibida** pelo ordenamento jurídico"
+  ]
+}
+
+      ]
+    }
+  ]
+    },
+  ]
 
 
 
 
-
-]};
+};
