@@ -176,6 +176,41 @@
     fixacao:  'Fixação',
   };
 
+  /* Ícones SVG dos modos — mesma fonte visual de _ICONES_MODO em
+     disciplinas_init.js. Cópia local para não importar aquele módulo
+     inteiro (ele tem side effects ao carregar). */
+  var _ICONES_MODO = {
+    ava:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+      'stroke-linecap="round" stroke-linejoin="round">' +
+        '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>' +
+        '<path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>' +
+      '</svg>',
+    questoes:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+      'stroke-linecap="round" stroke-linejoin="round">' +
+        '<circle cx="12" cy="12" r="10"/>' +
+        '<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>' +
+        '<line x1="12" y1="17" x2="12.01" y2="17"/>' +
+      '</svg>',
+    enade:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+      'stroke-linecap="round" stroke-linejoin="round">' +
+        '<line x1="3" y1="22" x2="21" y2="22"/>' +
+        '<line x1="6" y1="18" x2="6" y2="11"/>' +
+        '<line x1="10" y1="18" x2="10" y2="11"/>' +
+        '<line x1="14" y1="18" x2="14" y2="11"/>' +
+        '<line x1="18" y1="18" x2="18" y2="11"/>' +
+        '<polygon points="12 2 20 7 4 7"/>' +
+      '</svg>',
+    fixacao:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+      'stroke-linecap="round" stroke-linejoin="round">' +
+        '<path d="M12 17v5"/>' +
+        '<path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/>' +
+      '</svg>',
+  };
+
   function _resolverModoLabel(modo) {
     if (!modo) return '';
     if (_MODO_LABELS[modo]) return _MODO_LABELS[modo];
@@ -202,7 +237,13 @@
         if (!semestre || typeof mod.getDisciplinasDeSemestre !== 'function') return null;
         var lista = mod.getDisciplinasDeSemestre(semestre);
         var info  = lista && lista.find(function (d) { return d.id === disc; });
-        return info ? { nome: info.nome, emoji: info.emoji } : null;
+        if (!info) return null;
+
+        var icone = (typeof mod.resolveIcone === 'function')
+          ? mod.resolveIcone(info.icone)
+          : null;
+
+        return { nome: info.nome, icone: icone };
       })
       .catch(function () { return null; });
 
@@ -232,7 +273,8 @@
     if (disc) {
       var chipDisc = _el('div', { class: 'nsm-ctx-chip nsm-ctx-chip--disc' });
       var iconDisc = _el('div', { class: 'nsm-ctx-icon' });
-      iconDisc.innerHTML = '<i class="fas fa-graduation-cap" aria-hidden="true"></i>';
+      // placeholder até o resolveIcone() chegar
+      iconDisc.innerHTML = '';
       var bodyDisc  = _el('div', { class: 'nsm-ctx-body' });
       var labelDisc = _el('span', { class: 'nsm-ctx-label' }, 'Disciplina');
       var valorDisc = _el('span', { class: 'nsm-ctx-value' }, disc);
@@ -246,17 +288,14 @@
       _resolverInfoDisciplina(disc, sem).then(function (info) {
         if (!info) return;
         if (info.nome)  valorDisc.textContent = info.nome;
-        if (info.emoji) {
-          iconDisc.textContent = info.emoji;
-          iconDisc.classList.add('nsm-ctx-icon--emoji');
-        }
+        if (info.icone) iconDisc.innerHTML = info.icone;
       });
     }
 
     if (modo) {
       var chipModo = _el('div', { class: 'nsm-ctx-chip nsm-ctx-chip--modo' });
       var iconModo = _el('div', { class: 'nsm-ctx-icon' });
-      iconModo.innerHTML = '<i class="fas fa-bullseye" aria-hidden="true"></i>';
+      iconModo.innerHTML = _ICONES_MODO[modo] || '';
       var bodyModo  = _el('div', { class: 'nsm-ctx-body' });
       var labelModo = _el('span', { class: 'nsm-ctx-label' }, 'Modo');
       var valorModo = _el('span', { class: 'nsm-ctx-value' }, _resolverModoLabel(modo));
@@ -365,11 +404,9 @@
         'flex-shrink:0;width:36px;height:36px;border-radius:10px;',
         'display:flex;align-items:center;justify-content:center;font-size:.92rem;',
       '}',
+      '.nsm-ctx-icon svg{width:18px;height:18px;display:block;}',
       '.nsm-ctx-chip--disc .nsm-ctx-icon{',
         'background:rgba(var(--accent-rgb,122,168,232),.2);color:var(--accent,#7aa8e8);',
-      '}',
-      '.nsm-ctx-chip--disc .nsm-ctx-icon--emoji{',
-        'font-size:1.15rem;line-height:1;',
       '}',
       '.nsm-ctx-chip--modo .nsm-ctx-icon{',
         'background:rgba(var(--cor-tema-2-rgb,61,217,194),.2);color:var(--cor-tema-2,#3dd9c2);',
@@ -417,8 +454,10 @@
         'font-size:1.65rem;line-height:1;flex-shrink:0;',
         'width:44px;height:44px;display:flex;align-items:center;justify-content:center;',
         'background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;',
+        'color:var(--accent,#7aa8e8);',
         'transition:background .2s,border-color .2s,transform .18s;',
       '}',
+      '.nsm-option__icon svg{width:20px;height:20px;display:block;color:currentColor;}',
       '.nsm-option:hover .nsm-option__icon{',
         'background:rgba(var(--accent-rgb,122,168,232),.1);',
         'border-color:rgba(var(--accent-rgb,122,168,232),.25);',
@@ -501,7 +540,13 @@
 
     var btnContinuar = _el('button', { type: 'button', class: 'nsm-option' });
     btnContinuar.innerHTML =
-      '<div class="nsm-option__icon">📚</div>' +
+      '<div class="nsm-option__icon">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+        'stroke-linecap="round" stroke-linejoin="round">' +
+          '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>' +
+          '<path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>' +
+        '</svg>' +
+      '</div>' +
       '<div class="nsm-option__body">' +
         '<span class="nsm-option__label">Todas as aulas</span>' +
         '<span class="nsm-option__desc">Iniciar com todas as aulas disponíveis.</span>' +
@@ -509,7 +554,12 @@
 
     var btnFiltrar = _el('button', { type: 'button', class: 'nsm-option' });
     btnFiltrar.innerHTML =
-      '<div class="nsm-option__icon">🎯</div>' +
+      '<div class="nsm-option__icon">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+        'stroke-linecap="round" stroke-linejoin="round">' +
+          '<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>' +
+        '</svg>' +
+      '</div>' +
       '<div class="nsm-option__body">' +
         '<span class="nsm-option__label">Filtrar aulas</span>' +
         '<span class="nsm-option__desc">Selecionar apenas algumas aulas antes de iniciar.</span>' +
