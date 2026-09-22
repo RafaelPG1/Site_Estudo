@@ -3529,4 +3529,1571 @@ window.__nexusConteudo = {
       ]
     },
     
-]};
+],
+
+resumao: [
+  {
+  aula: "AULA RESUMÃO",
+  ideia_central: "A Psicologia Organizacional integra o estudo científico do ser humano (Psicologia como ciência e profissão), a compreensão do trabalho como atividade estruturante, dialética e socialmente determinada, e a aplicação desses saberes na gestão de organizações vistas como sistemas psicossociais — por meio de cultura, desenvolvimento organizacional, equipes, liderança e subsistemas de gestão de pessoas.",
+  secoes: [
+    {
+      id: "visao_geral",
+      titulo: "Visão geral do conteúdo",
+      blocos: [
+        {
+          tipo: "lista",
+          titulo: "Mapa das aulas",
+          itens: [
+            "Aula 1 — Psicologia como ciência e profissão: ciência × senso comum, Filosofia × Psicologia, abordagens teóricas, campos de atuação, determinações sociais da ação.",
+            "Aula 2 — Psicologia do Trabalho e Psicologia Organizacional: trabalho como categoria psicológica, história (Taylor, Mayo, Hawthorne), cinco dimensões da Psicologia Organizacional, RH.",
+            "Aula 3 — Atividade, consciência e organização do trabalho: trabalho × emprego, atividade dialética, consciência, MHD, duas zonas de desenvolvimento da atividade.",
+            "Aula 4 — Organização como sistema psicossocial: Teoria Geral dos Sistemas, sistema organizacional (entrada/saída/feedback), fatores psicossociais relacionados ao trabalho (FPRT).",
+            "Aula 5 — Origens e modelos do Desenvolvimento Organizacional: Kurt Lewin, modelo de três fases, modelo Burke-Litwin, diagnóstico e planejamento organizacional.",
+            "Aula 6 — Cultura organizacional: definição, autores clássicos, desenvolvimento/sustentabilidade, diagnóstico da cultura, engajamento.",
+            "Aula 7 — Equipes e liderança: equipes formais/informais, liderança transformacional × transacional, estilos de liderança (autocrático, democrático, laissez-faire).",
+            "Aula 8 — Subsistemas de gestão de pessoas: evolução histórica do RH, cinco subsistemas de Chiavenato (agregar, aplicar, recompensar, desenvolver, manter)."
+          ]
+        }
+      ]
+    },
+    {
+      id: "conceitos_essenciais",
+      titulo: "Conceitos essenciais",
+      blocos: [
+        {
+          tipo: "tabela",
+          titulo: "Definições-chave",
+          colunas: ["Conceito", "Definição"],
+          linhas: [
+            ["Psicologia", "Ciência e profissão; investiga processos afetivos, representativos e comportamentais, considerando contextos sociais, culturais e históricos."],
+            ["Senso comum", "Conhecimentos, crenças e discursos que circulam espontaneamente numa cultura; orienta práticas cotidianas, mas não é sinônimo de conhecimento inútil."],
+            ["Ciência", "Investigação sistemática baseada em observação controlada e verificação empírica; caracteriza-se por objetividade + sistematicidade + verificabilidade."],
+            ["Psicologia do Trabalho", "Campo amplo que estuda o trabalho e suas relações com o sujeito em diversos contextos sociais (formal, informal, políticas públicas etc.)."],
+            ["Psicologia Organizacional", "Aplicação da Psicologia do Trabalho especificamente dentro de empresas e instituições formais; busca equilibrar produtividade e qualidade de vida."],
+            ["Trabalho (perspectiva psicológica)", "Atividade humana intencional que transforma a realidade e, ao mesmo tempo, transforma o próprio sujeito; não se limita ao emprego remunerado."],
+            ["Emprego", "Tipo específico de trabalho regulado por legislação e por um modelo de contratação; todo emprego é trabalho, mas nem todo trabalho é emprego."],
+            ["Atividade dialética", "Relação de transformações mútuas, simultâneas e complexas entre ações intencionais do sujeito, meio social e efeitos psicológicos."],
+            ["MHD (Materialismo Histórico e Dialético)", "Perspectiva que estuda a atividade humana como historicamente constituída e constituinte de transformações; método de Karl Marx."],
+            ["Sistema aberto", "Sistema que interage com o meio trocando energia, informação e matéria, possibilitando adaptação e crescimento (Teoria Geral dos Sistemas, Bertalanffy)."],
+            ["Entropia", "Desorganização e colapso funcional de um sistema quando ele deixa de interagir com o meio."],
+            ["Fatores Psicossociais Relacionados ao Trabalho (FPRT)", "Condições de causalidade e interação no contexto de trabalho com potencial de impactar a efetividade do trabalho e a saúde física e mental dos trabalhadores."],
+            ["Desenvolvimento Organizacional (DO)", "Processo planejado, contínuo e participativo de mudança para a sustentabilidade das organizações, melhorando eficácia institucional e qualidade do trabalho."],
+            ["Cultura organizacional", "Conjunto de valores, crenças, normas, símbolos, afetos e práticas compartilhadas, construído historicamente e em constante transformação."],
+            ["Engajamento", "Envolvimento coletivo e ativo com os objetivos organizacionais, decorrente da qualidade das relações entre trabalhadores, lideranças e processos institucionais (diferente de satisfação e motivação, que são individuais)."],
+            ["Liderança", "Processo de influenciar e orientar indivíduos ou grupos na direção de objetivos compartilhados; só é efetiva quando legitimada pelo grupo."],
+            ["Equipe de trabalho", "Grupo organizado com finalidade específica, que possui objetivos comuns, lógica interna de funcionamento e funções distribuídas."]
+          ]
+        }
+      ]
+    },
+    {
+      id: "comparacoes",
+      titulo: "Comparações importantes",
+      blocos: [
+        {
+          tipo: "tabela",
+          titulo: "Senso comum × Ciência",
+          colunas: ["Senso comum", "Ciência"],
+          linhas: [
+            ["Surge da experiência cotidiana", "Baseia-se em investigação sistemática"],
+            ["Circula culturalmente e é transmitido socialmente", "Busca sistematização e utiliza métodos (observação, experimentos, entrevistas)"],
+            ["Orienta práticas cotidianas", "Busca evidências verificáveis"],
+            ["Pode gerar questionamentos", "Investiga e sistematiza esses questionamentos"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Filosofia × Psicologia",
+          colunas: ["Filosofia", "Psicologia"],
+          linhas: [
+            ["Argumentação lógica, especulação, reflexão sobre conceitos abstratos e universais", "Métodos empíricos para investigar processos psicológicos básicos e superiores"],
+            ["Origem comum na reflexão sobre alma, consciência e razão (Aristóteles, Descartes, Kant)", "Surge como ciência autônoma com Wilhelm Wundt, 1879, primeiro laboratório experimental"],
+            ["Não são opostas — são complementares para interpretar a complexidade humana", "Idem"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Principais abordagens teóricas da Psicologia",
+          colunas: ["Abordagem", "Foco principal"],
+          linhas: [
+            ["Experimental", "Mensuração objetiva, testes e experimentos controlados"],
+            ["Psicanálise (Freud)", "Inconsciente, conflitos internos, experiências infantis, desejos recalcados"],
+            ["Humanista", "Experiência subjetiva, liberdade, autorrealização"],
+            ["Comportamental (Skinner)", "Comportamento observável e aprendizagem"],
+            ["Histórico-Cultural (Vygotsky)", "Psiquismo como produto das relações sociais e históricas, mediadas por instrumentos e linguagem"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Psicologia do Trabalho × Psicologia Organizacional",
+          colunas: ["Psicologia do Trabalho", "Psicologia Organizacional"],
+          linhas: [
+            ["Campo mais amplo", "Aplicação específica dentro de empresas e instituições formais"],
+            ["Abrange trabalho informal, desemprego, políticas públicas, saúde pública, violência", "Processos interacionais e organizativos; equilíbrio entre produtividade e qualidade de vida"],
+            ["Temas: produtividade, saúde mental, burnout, assédio, motivação etc.", "Cinco dimensões: Cultura, Processos de trabalho, Indivíduo, Relações de trabalho, Sociedade"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Recursos Humanos × Departamento Pessoal",
+          colunas: ["Recursos Humanos (RH)", "Departamento Pessoal (DP)"],
+          linhas: [
+            ["Gestão estratégica de pessoas", "Foco técnico-operacional"],
+            ["Recrutamento, seleção, integração", "Documentação, folha de pagamento, encargos trabalhistas"],
+            ["Avaliação de desempenho, desenvolvimento, qualidade de vida", "Admissões, demissões, questões administrativas/documentais"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Liderança Transformacional × Transacional",
+          colunas: ["Transformacional", "Transacional"],
+          linhas: [
+            ["Inspira, gera engajamento com propósito, promove mudanças culturais", "Baseada em recompensas; foco em desempenho, metas e cumprimento de regras"],
+            ["Interesse central pelas pessoas; influência mútua entre líder e liderados", "Gerenciamento ativo (evita erros) ou passivo (ausência de monitoramento)"],
+            ["Motivação pelo exemplo e pela visão", "Recompensa proporcional ao esforço individual"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Estilos clássicos de liderança",
+          colunas: ["Estilo", "Características"],
+          linhas: [
+            ["Autocrático", "Decisões centralizadas no líder; útil em crises, mas pode inibir participação"],
+            ["Democrático", "Decisões compartilhadas; favorece engajamento e construção coletiva"],
+            ["Laissez-faire", "Direção flexível; útil com equipes altamente autônomas"]
+          ]
+        },
+        {
+          tipo: "tabela",
+          titulo: "Modelo de Lewin × Modelo de Burke-Litwin",
+          colunas: ["Modelo de Lewin", "Modelo de Burke-Litwin (1992)"],
+          linhas: [
+            ["Três fases sequenciais: descongelamento, mudança, recongelamento", "12 dimensões interconectadas, mais sistêmico"],
+            ["Foco no processo geral da mudança", "Fatores transformacionais (liderança, cultura, missão/estratégia), transacionais (estrutura, sistemas, práticas de gestão) e individuais (tarefas/habilidades, motivação, necessidades e valores)"],
+            ["Clássico e simples de aplicar", "Útil para diagnosticar impacto da mudança em múltiplos níveis hierárquicos"]
+          ]
+        }
+      ]
+    },
+    {
+      id: "processos_etapas",
+      titulo: "Processos e etapas",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "Modelo de Kurt Lewin (mudança organizacional)",
+          lista: [
+            "1. Descongelamento (unfreezing) — identificação do problema e ruptura com padrões existentes",
+            "2. Mudança (change) — implantação de novas práticas, comportamentos e estruturas",
+            "3. Recongelamento (refreezing) — estabilização das mudanças por institucionalização e reforço"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Diagnóstico e Planejamento Organizacional (ciclo complementar)",
+          texto: "Diagnóstico e planejamento são dimensões complementares e permanentes, não uma sequência única.",
+          lista: [
+            "Diagnóstico: mapeamento de processos, análise de cultura e clima, entrevistas, observações, mobilizações coletivas — compreende a realidade presente",
+            "Planejamento: organiza ações futuras com base no diagnóstico, articulando metas de curto/médio/longo prazo a valores humanos — projeta cenários futuros"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Evolução histórica da Psicologia nas organizações",
+          lista: [
+            "1. Início séc. XX — Psicologia aplicada a contextos militares e industriais (testes de seleção)",
+            "2. Psicologia da Indústria — influenciada por Frederick Taylor: racionalização, divisão de tarefas, padronização dos tempos",
+            "3. Teoria das Relações Humanas — Elton Mayo: pertencimento, satisfação, relações interpessoais",
+            "4. Experimento de Hawthorne (1924–1932) — estudou iluminação/produtividade e revelou a importância das relações humanas",
+            "5. Psicologia Organizacional — processos interacionais e organizativos, produtividade + qualidade de vida"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Cinco subsistemas de gestão de pessoas (Chiavenato, 2014)",
+          lista: [
+            "Agregar Pessoas — recrutamento e seleção, planejamento de RH, atração de talentos",
+            "Aplicar Pessoas — descrição de cargos, avaliação de desempenho, movimentação interna",
+            "Recompensar Pessoas — remuneração e benefícios, incentivos, reconhecimento",
+            "Desenvolver Pessoas — treinamento, planos de carreira, coaching/mentoria",
+            "Manter Pessoas — clima e cultura, saúde e segurança, relações trabalhistas"
+          ]
+        }
+      ]
+    },
+    {
+      id: "imagens_importantes",
+      titulo: "Imagens importantes",
+      blocos: [
+        {
+          tipo: "imagem",
+          id: "figura_1_representacao_dialetica",
+          src: "figura_1_representacao_dialetica.png",
+          pasta: "imagens_psicologia_organizacional/aula_03",
+          alt: "Figura 1 - Representação Dialética: relação circular entre Sujeito e Meio social, com Atividade e consciência no centro, Ações intencionais na parte superior e Efeitos psicológicos na parte inferior",
+          num: 2
+        },
+        {
+          tipo: "destaque",
+          texto: "Memorizar o fluxo circular: Sujeito → ações intencionais → meio social → efeitos psicológicos → sujeito, representando a transformação mútua e contínua (atividade dialética)."
+        },
+        {
+          tipo: "imagem",
+          id: "representacao_visual_cinco_dimensoes_psicologia_organizacional",
+          src: "representacao_visual_cinco_dimensoes_psicologia_organizacional.png",
+          pasta: "imagens_psicologia_organizacional/aula_02",
+          alt: "As cinco grandes dimensões de análise e intervenção da Psicologia Organizacional: Cultura, Sociedade, Processos de trabalho, Relações de trabalho e Indivíduo que trabalha",
+          num: 3
+        },
+        {
+          tipo: "destaque",
+          texto: "As cinco dimensões da Psicologia Organizacional giram em torno de uma estrutura central: Cultura, Processos de trabalho, Indivíduo que trabalha, Relações de trabalho e Sociedade — cada uma com formas próprias de análise e intervenção."
+        },
+        {
+          tipo: "imagem",
+          id: "figura_3_influencias_atividades_trabalho",
+          src: "figura_3_influencias_atividades_trabalho.png",
+          pasta: "imagens_psicologia_organizacional/aula_04",
+          alt: "Figura 3 – As influências sobre as atividades das pessoas no trabalho: diagrama circular de fluxo em que Ambiente Externo (sociedade, mercado, cultura) alimenta Entradas/Input (recursos, informações, pessoas), que abastecem o Sistema Organizacional (subsistemas, processos internos, relações psicossociais, cultura e clima), gerando Saídas/Output (produtos, serviços, conhecimento) e Retroalimentação/Feedback, fechando o ciclo de volta às entradas e ao ambiente externo.",
+          num: 3
+        },
+        {
+          tipo: "destaque",
+          texto: "O sistema organizacional funciona em ciclo contínuo: Ambiente Externo → Entradas → Sistema Organizacional → Saídas → Feedback → volta às entradas; o ambiente externo nunca é neutro."
+        },
+        {
+          tipo: "imagem",
+          id: "representacao_visual_modelo_burke_litwin",
+          src: "representacao_visual_modelo_burke_litwin.png",
+          pasta: "imagens_psicologia_organizacional/aula_05",
+          alt: "As 12 dimensões do modelo de Burke-Litwin organizadas em hierarquia vertical conectada por linhas: no topo, o 'Ambiente Externo'; abaixo, os fatores transformacionais (Missão e Estratégia, Liderança, Cultura Organizacional); em seguida, os fatores transacionais (Estrutura, Práticas de Gestão, Sistemas); depois o 'Clima da Unidade de Trabalho'; na base, os fatores individuais (Tarefas e Habilidade Individuais, Motivação, Necessidades e Valores Individuais), convergindo para o 'Desempenho Individual e Organizacional'.",
+          num: 2
+        },
+        {
+          tipo: "destaque",
+          texto: "No modelo Burke-Litwin, as 12 dimensões formam hierarquia (Ambiente Externo → fatores transformacionais → transacionais → Clima → fatores individuais → Desempenho), com conexões cruzadas indicando influência mútua, não apenas cascata linear."
+        }
+      ]
+    },
+    {
+      id: "decore_para_prova",
+      titulo: "Decore para a prova",
+      blocos: [
+        {
+          tipo: "tabela",
+          titulo: "Datas, nomes e marcos para memorizar",
+          colunas: ["Item", "Ponto-chave"],
+          linhas: [
+            ["Wilhelm Wundt", "1879 — primeiro laboratório experimental — marco da Psicologia como ciência autônoma"],
+            ["Frederick Taylor", "Administração Científica — racionalização, divisão de tarefas, padronização dos tempos (Psicologia da Indústria)"],
+            ["Elton Mayo", "Teoria das Relações Humanas — pertencimento, satisfação, relações interpessoais"],
+            ["Experimento de Hawthorne", "1924–1932 — analisou iluminação/produtividade e revelou a importância das relações humanas"],
+            ["Kurt Lewin", "Precursor do DO; criou \"dinâmica de grupo\" e \"teoria de campo\"; mudança planejada em 3 fases"],
+            ["Modelo Burke-Litwin", "1992 — 12 dimensões sistêmicas (transformacionais, transacionais, individuais)"],
+            ["Ana Maria Bock", "Termo \"Psicologias\" (no plural) — representa a pluralidade teórica do campo"],
+            ["Vygotski", "Psicologia Histórico-Cultural — gênese social da consciência via materialismo histórico e dialético"],
+            ["Ludwig von Bertalanffy", "Teoria Geral dos Sistemas (década de 1950) — sistemas abertos, entropia"],
+            ["Idalberto Chiavenato", "Sistematizou os cinco subsistemas de gestão de pessoas"]
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "Senso comum não é inútil; ele pode gerar questionamentos investigados cientificamente. Filosofia e Psicologia não são opostas, mas complementares."
+        },
+        {
+          tipo: "destaque",
+          texto: "A Psicologia não possui uma única abordagem dominante nem uma abordagem superior; a escolha depende da formação do profissional, do contexto e da natureza do problema."
+        },
+        {
+          tipo: "destaque",
+          texto: "Determinações sociais influenciam, mas não determinam completamente a constituição psicológica: o sujeito pode se diferenciar do ambiente em que cresceu."
+        },
+        {
+          tipo: "destaque",
+          texto: "Trabalho ≠ emprego: trabalho é toda atividade humana com objetivos conscientes (inclui trabalho informal, voluntário, estudos, cuidados); emprego é regulado por contrato e legislação."
+        },
+        {
+          tipo: "destaque",
+          texto: "Hawthorne não se resume à iluminação — o resultado central foi evidenciar a importância das relações humanas no trabalho."
+        },
+        {
+          tipo: "destaque",
+          texto: "RH não é Departamento Pessoal: RH faz gestão estratégica de pessoas; DP cuida de documentação e obrigações trabalhistas."
+        },
+        {
+          tipo: "destaque",
+          texto: "Engajamento é fenômeno relacional/coletivo, diferente de satisfação (subjetiva/individual) e de motivação (impulso pessoal)."
+        },
+        {
+          tipo: "destaque",
+          texto: "A liderança não se concentra apenas na figura do \"chefe\": só é efetiva quando legitimada pelo grupo, e pode ser exercida por qualquer integrante da equipe."
+        },
+        {
+          tipo: "destaque",
+          texto: "Sistema aberto troca energia, informação e matéria com o meio; a falta dessa interação gera entropia (desorganização e colapso funcional)."
+        },
+        {
+          tipo: "destaque",
+          texto: "Fatores Psicossociais Relacionados ao Trabalho (FPRT) — carga de trabalho, gestão, coesão, intensidade, reconhecimento, qualidade dos resultados, autonomia — podem ser riscos ou proteções, conforme geridos."
+        }
+      ]
+    }
+  ]
+}
+],
+
+simplificado: [
+  // aula: 1
+  {
+    aula: "Psicologia: Ciência e Profissão",
+    ideia_central: "A Psicologia é simultaneamente ciência e profissão, marcada pela pluralidade teórica e pela compreensão de que a constituição psicológica humana é influenciada pelas determinações sociais, culturais e históricas, sem ser completamente determinada por elas.",
+    secoes: [
+      {
+        id: "ciencia_senso_comum_filosofia",
+        titulo: "Ciência, Senso Comum e Filosofia",
+        blocos: [
+          // 1 - senso comum
+          {
+            tipo: "topico",
+            titulo: "Senso comum",
+            lista: [
+              "**Senso comum** → conhecimento cotidiano, cultural e transmitido socialmente",
+              "Orienta práticas do cotidiano e cria sentidos compartilhados",
+              "Não é inútil, mas difere do conhecimento científico",
+              "Pode gerar questionamentos posteriormente investigados pela ciência"
+            ]
+          },
+
+          // 2 - ciência
+          {
+            tipo: "topico",
+            titulo: "Ciência",
+            lista: [
+              "**Ciência** → investigação sistemática + observação controlada + verificação empírica",
+              "Métodos: observações, experimentos, entrevistas, análises qualitativas e quantitativas",
+              "Diferenciais frente ao senso comum: objetividade + sistematicidade + verificabilidade",
+              "Função da ciência: aprofundar, corrigir, sistematizar e expandir o senso comum"
+            ]
+          },
+
+          // 3 - filosofia psicologia
+          {
+            tipo: "topico",
+            titulo: "Filosofia e Psicologia",
+            lista: [
+              "Origem comum na reflexão sobre o ser humano: alma, consciência, razão",
+              "Pensadores clássicos: Aristóteles, Descartes, Kant",
+              "**Wilhelm Wundt** → 1879 → primeiro laboratório experimental → marco da Psicologia como ciência autônoma",
+              "**Filosofia** → argumentação lógica e especulação sobre conceitos abstratos",
+              "**Psicologia** → métodos empíricos; processos básicos e superiores (memória, atenção dirigida, significação, organização da conduta)",
+              "Filosofia e Psicologia não são opostas, são complementares"
+            ]
+          }
+        ]
+      },
+      {
+        id: "teorias_praticas_psicologia",
+        titulo: "Teorias e Práticas em Psicologia",
+        blocos: [
+          // 4 - pluralidade teórica
+          {
+            tipo: "topico",
+            titulo: "Pluralidade teórica",
+            lista: [
+              "Psicologia não possui um paradigma único dominante",
+              "Termo \"**Psicologias**\" (Ana Maria Bock) → representa a diversidade teórica do campo",
+              "Abordagens não se excluem; estudam problemas comuns com instrumentos conceituais diferentes",
+              "Nenhuma abordagem é apresentada como superior às demais"
+            ]
+          },
+
+          // 5 - abordagens teóricas
+          {
+            tipo: "topico",
+            titulo: "Principais abordagens",
+            lista: [
+              "**Psicologia Experimental** → mensuração objetiva, testes, experimentos controlados",
+              "**Psicanálise** (Freud) → inconsciente, conflitos internos, experiências infantis, desejos recalcados",
+              "**Psicologia Humanista** → experiência subjetiva, liberdade, autorrealização",
+              "**Psicologia Comportamental** (Skinner) → comportamento observável, aprendizagem",
+              "**Psicologia Histórico-Cultural** (Vygotsky) → psiquismo como produto de relações sociais/históricas, mediado por instrumentos e linguagem"
+            ]
+          },
+
+          // 6 - imagem abordagens
+          {
+            tipo: "imagem",
+            id: "fig_1_abordagens_psicologicas",
+            src: "representacao_visual_abordagens_psicologicas.png",
+            pasta: "imagens_psicologia_organizacional/aula_01",
+            num: "1",
+            alt: "Representação visual das principais abordagens da Psicologia: Psicologia Experimental, Psicanálise, Psicologia Humanista, Psicologia Comportamental e Psicologia Histórico-Cultural"
+          },
+
+          // 7 - práticas psicologia
+          {
+            tipo: "topico",
+            titulo: "Práticas em Psicologia",
+            lista: [
+              "Práticas derivam das teorias e das necessidades da realidade social",
+              "Psicologia não se limita ao consultório clínico",
+              "Escolha da abordagem depende da formação, do contexto e do problema enfrentado"
+            ]
+          },
+
+          // 8 - campos atuação
+          {
+            tipo: "topico",
+            titulo: "Campos de atuação",
+            lista: [
+              "**Clínica** → sofrimento, conflitos de escolha, avaliações psicológicas",
+              "**Escolar** → aprendizagem, relações interpessoais, mediação escola-família",
+              "**Hospitalar** → adoecimento, luto, enfrentamento de diagnósticos",
+              "**Social** → relação indivíduo-sociedade: preconceito, violência, identidade, exclusão",
+              "**Jurídica** → avaliação de testemunhas, casos de guarda de crianças",
+              "**do Trabalho** → efeitos psicológicos da atividade em contextos laborais",
+              "**do Esporte** → preparação emocional de atletas e equipes"
+            ]
+          },
+
+          // 9 - imagem áreas atuação
+          {
+            tipo: "imagem",
+            id: "fig_2_areas_atuacao_psicologia",
+            src: "representacao_visual_areas_atuacao_psicologia.png",
+            pasta: "imagens_psicologia_organizacional/aula_01",
+            num: "2",
+            alt: "Representação visual das áreas de atuação da Psicologia: Clínica, Escolar, Hospitalar, Social, Jurídica, do Trabalho e do Esporte"
+          }
+        ]
+      },
+      {
+        id: "determinacoes_sociais_organizacional",
+        titulo: "Determinações Sociais e Psicologia Organizacional",
+        blocos: [
+          // 10 - determinações sociais
+          {
+            tipo: "topico",
+            titulo: "Determinações sociais da ação",
+            lista: [
+              "Fatos objetivos das interações humanas funcionam como determinantes da constituição psicológica",
+              "Experiências sociais → afetos + memórias + objetivos → influenciam a configuração subjetiva",
+              "Influência social ≠ determinação absoluta (ex.: violência e religiosidade não determinam completamente a personalidade)",
+              "Toda ação mediada pela linguagem é ação social: artes, leituras, filmes, redes sociais, elementos culturais e tecnológicos",
+              "Isolamento social não elimina determinações sociais; contato com cultura/tecnologia mantém a influência"
+            ]
+          },
+
+          // 11 - imagem determinações sociais
+          {
+            tipo: "imagem",
+            id: "fig_3_determinacoes_sociais_acao",
+            src: "representacao_visual_determinacoes_sociais_acao.png",
+            pasta: "imagens_psicologia_organizacional/aula_01",
+            num: "3",
+            alt: "Ilustração relacionada às determinações sociais da ação, associada ao texto sobre como acontecimentos e experiências sociais participam da constituição psicológica do sujeito"
+          },
+
+          // 12 - psicologia organizacional
+          {
+            tipo: "topico",
+            titulo: "Foco da Psicologia Organizacional",
+            lista: [
+              "Foco do curso: trabalho como condição fundamental da vida humana",
+              "Estuda as determinações sociais do trabalho dentro das organizações",
+              "Aspectos centrais: organização da conduta, sociabilidade, motivação, visão sistêmica, objetividade"
+            ]
+          },
+
+          // 13 - imagem trabalho
+          {
+            tipo: "imagem",
+            id: "fig_4_psicologia_organizacional_trabalho",
+            src: "representacao_visual_psicologia_organizacional_trabalho.png",
+            pasta: "imagens_psicologia_organizacional/aula_01",
+            num: "4",
+            alt: "Ilustração relacionada à Psicologia Organizacional e ao contexto de trabalho, associada ao trecho que direciona a discussão para as determinações sociais do trabalho"
+          }
+        ]
+      }
+    ]
+  },
+
+  // aula 2
+  {
+    aula: "Psicologia do Trabalho nas Organizações",
+    ideia_central: "O trabalho é uma atividade estruturante da condição humana que atende necessidades físicas, culturais e subjetivas, e a Psicologia se aplica a esse campo por meio da Psicologia do Trabalho (mais ampla) e da Psicologia Organizacional (aplicada a empresas e instituições formais), atuando em cinco dimensões — Cultura, Processos de trabalho, Indivíduo, Relações de trabalho e Sociedade — muitas vezes em articulação com o setor de Recursos Humanos.",
+    secoes: [
+      {
+        id: "trabalho_psicologia_trabalho",
+        titulo: "O Trabalho e a Psicologia do Trabalho",
+        blocos: [
+          {
+            tipo: "topico",
+            titulo: "Trabalho como categoria psicológica",
+            lista: [
+              "**Trabalho** → não é apenas sobrevivência, é atividade estruturante da condição humana",
+              "Por meio do trabalho: resolve-se problemas, adapta-se a contextos, transforma-se a realidade, desenvolvem-se funções psicológicas",
+              "Categoria central para o desenvolvimento pessoal, histórico e cultural da psique"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Necessidades atendidas pelo trabalho",
+            lista: [
+              "**Físicas** → sobrevivência, sustento",
+              "**Culturais e subjetivas** → reconhecimento, pertencimento, sentido, realização pessoal"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Psicologia do Trabalho",
+            lista: [
+              "**Psicologia do Trabalho** → estuda processos organizativos relacionados às exigências das tarefas e seus efeitos sobre saúde mental",
+              "Temas: produtividade, aprendizagem, saúde mental, poder de agir, coesão, motivação, ansiedade, depressão, `burnout`, assédio",
+              "Campo mais amplo → abrange também trabalho informal, políticas públicas, desemprego, saúde pública, violência",
+              "**Psicologia Organizacional** → aplicação específica dentro de empresas e instituições formais de trabalho"
+            ]
+          },
+          {
+            tipo: "imagem",
+            id: "fig_1_psicologia_trabalho_organizacional",
+            src: "representacao_visual_psicologia_trabalho_organizacional.png",
+            pasta: "imagens_psicologia_organizacional/aula_02",
+            num: "1",
+            alt: "Relação entre Psicologia do Trabalho e Psicologia Organizacional e os temas associados: produtividade, aprendizagem, saúde mental, cuidados, poder de agir, coesão, motivação, experiência, aceleração, ansiedade, depressão, burnout e assédio"
+          },
+          {
+            tipo: "topico",
+            titulo: "Potência de agir",
+            lista: [
+              "**Potência de agir** → engajamento no trabalho pode reorganizar subjetividade, expandir capacidades e construir sentidos",
+              "Depende de condições que respeitem singularidade e criatividade"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Trabalho como realidade organizada e não neutra",
+            lista: [
+              "Trabalho moldado por valores, normas, metas, contratos e regras institucionais",
+              "Trabalhador não tem autonomia total, precisa adaptar-se a objetivos externos",
+              "Atividade de trabalho não é neutra: pode ampliar ou restringir efetividade dos objetivos"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Parâmetros para organização do trabalho",
+            lista: [
+              "**Compromissos e coesão social** → vínculos, colaboração",
+              "**Objetivos compartilhados** → pertencimento, engajamento",
+              "**Condições adequadas** → carga horária, segurança, reconhecimento, desenvolvimento",
+              "**Autonomia e margem de manobra** → criatividade, regulação subjetiva",
+              "**Qualidade do trabalho** → não só eficiência técnica, também qualidade de vida, saúde e sentido"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Conflitos entre objetivos pessoais e institucionais",
+            lista: [
+              "Descompasso entre potenciais individuais e exigências organizacionais gera atrito",
+              "Conflitos → desentendimentos, baixo engajamento, sofrimento psicológico, desgaste da potência de agir"
+            ]
+          },
+          {
+            tipo: "imagem",
+            id: "fig_2_conflito_objetivos_trabalho",
+            src: "representacao_visual_conflito_objetivos_trabalho.png",
+            pasta: "imagens_psicologia_organizacional/aula_02",
+            num: "2",
+            alt: "Conflito entre objetivos institucionais e objetivos pessoais e seus efeitos psicológicos sobre o trabalhador"
+          }
+        ]
+      },
+      {
+        id: "historia_psicologia_organizacional",
+        titulo: "Evolução Histórica e Cinco Dimensões da Psicologia Organizacional",
+        blocos: [
+          {
+            tipo: "topico",
+            titulo: "Psicologia da Indústria",
+            lista: [
+              "Início do século XX → aplicações em contextos militar e industrial",
+              "Desenvolvimento de testes psicológicos para seleção de soldados",
+              "Técnicas de disciplinamento para aumentar produtividade industrial",
+              "**Frederick Taylor** → Administração Científica → racionalização, divisão de tarefas, padronização dos tempos"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Teoria das Relações Humanas",
+            lista: [
+              "**Elton Mayo** → segunda metade do século XX → destaque para fatores sociais e psicológicos",
+              "Fatores: pertencimento, satisfação, relações interpessoais",
+              "**Experimento de Hawthorne** (1924–1932) → analisou iluminação/produtividade, revelou importância das relações humanas"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Psicologia Organizacional",
+            lista: [
+              "**Psicologia Organizacional** → estudo e intervenção nos processos interacionais e organizativos do trabalho",
+              "Busca equilibrar produtividade ↔ qualidade de vida no trabalho"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Cinco dimensões da Psicologia Organizacional",
+            lista: [
+              "**Cultura** → valores, crenças, normas, significados compartilhados; intervenção: mapeamento cultural",
+              "**Processos de trabalho** → tarefas, fluxos, instrumentos, rotinas; intervenção: redesenho de tarefas, reorganização de equipes",
+              "**Indivíduo que trabalha** → subjetividade, desejos, competências, sofrimento; intervenção: promoção de saúde mental, aconselhamento",
+              "**Relações de trabalho** → interações entre níveis hierárquicos; intervenção: liderança, mediação de conflitos",
+              "**Sociedade** → políticas públicas, legislação, desigualdades; intervenção: responsabilidade social, inclusão, diversidade"
+            ]
+          },
+          {
+            tipo: "imagem",
+            id: "fig_3_cinco_dimensoes_psicologia_organizacional",
+            src: "representacao_visual_cinco_dimensoes_psicologia_organizacional.png",
+            pasta: "imagens_psicologia_organizacional/aula_02",
+            num: "3",
+            alt: "As cinco grandes dimensões de análise e intervenção da Psicologia Organizacional: Cultura, Sociedade, Processos de trabalho, Relações de trabalho e Indivíduo que trabalha"
+          }
+        ]
+      },
+      {
+        id: "recursos_humanos",
+        titulo: "Recursos Humanos e Relação entre os Conceitos",
+        blocos: [
+          {
+            tipo: "topico",
+            titulo: "Setor de Recursos Humanos",
+            lista: [
+              "**RH** → entrada das aplicações da Psicologia Organizacional nas empresas",
+              "Estratégias: recrutamento, seleção, integração, avaliação de desempenho, desenvolvimento de pessoas, qualidade de vida no trabalho",
+              "Novas nomenclaturas: Talentos Humanos, People Experience, Gestão de Talentos"
+            ]
+          },
+          {
+            tipo: "lista",
+            itens: [
+              "RH → gestão estratégica de pessoas (recrutamento, seleção, integração, avaliação, desenvolvimento, qualidade de vida)",
+              "Departamento Pessoal (DP) → foco técnico-operacional (folha de pagamento, encargos, admissões, demissões, documentação)",
+              "RH ≠ Departamento Pessoal"
+            ]
+          },
+          {
+            tipo: "imagem",
+            id: "fig_4_setor_recursos_humanos",
+            src: "representacao_visual_setor_recursos_humanos.png",
+            pasta: "imagens_psicologia_organizacional/aula_02",
+            num: "4",
+            alt: "Apresentação do setor de Recursos Humanos e recurso multimídia associado ao filme Um Senhor Estagiário"
+          },
+          {
+            tipo: "topico",
+            titulo: "Relação entre os três termos",
+            lista: [
+              "**Psicologia do Trabalho** → campo mais amplo, abrange contextos sociais diversos",
+              "**Psicologia Organizacional** → aplicação dentro de empresas e instituições formais",
+              "**Recursos Humanos** → setor por onde a Psicologia Organizacional chega ao cotidiano empresarial"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  // aula 3
+  {
+    aula: "Atividade, consciência e organização do trabalho",
+    ideia_central: "O trabalho é uma atividade humana intencional, social, dialética e transformadora, na qual o sujeito transforma o meio e, ao mesmo tempo, é transformado por ele, produzindo efeitos sobre a consciência e os processos psicológicos que precisam ser considerados na organização do trabalho.",
+    secoes: [
+      {
+        id: "trabalho_atividade_dialetica",
+        titulo: "Trabalho como Atividade Humana e Dialética",
+        blocos: [
+          {
+            tipo: "topico",
+            titulo: "Trabalho × Emprego",
+            lista: [
+              "**Trabalho** → atividade humana com objetivos conscientes, não precisa de contrato ou remuneração",
+              "Exemplos: acordos informais, trabalho autônomo, estudos, voluntariado, arte, cuidados familiares",
+              "**Emprego** → tipo específico de trabalho regulado por legislação e contratação",
+              "Todo emprego é trabalho, mas nem todo trabalho é emprego"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Trabalho na perspectiva da Psicologia",
+            lista: [
+              "Trabalho → transforma natureza, ambiente, relações, organizações e o próprio sujeito",
+              "Conceito de **atividade** usado para estudar como o trabalho constitui consciência e processos psicológicos",
+              "Sujeito transforma o meio e é transformado por ele (relação dialética)"
+            ]
+          },
+          {
+            tipo: "imagem",
+            id: "fig_pintura_intention_paul_klee",
+            src: "pintura_intention_paul_klee.png",
+            pasta: "imagens_psicologia_organizacional/aula_03",
+            num: "1",
+            alt: "Pintura 'Itention' de Paul Klee, utilizada para representar o processo dialético de transformação mútua produzido pela atividade humana"
+          },
+          {
+            tipo: "topico",
+            titulo: "Atividade dialética",
+            lista: [
+              "Trabalho central na sobrevivência, adaptação, transformação do meio e organização das sociedades",
+              "**Atividade dialética** → transformações mútuas, simultâneas e complexas",
+              "Fluxo: ações intencionais do sujeito → meio social → efeitos sobre funções psicológicas → sujeito",
+              "Funções psicológicas envolvidas: memória, atenção, linguagem, motivação, significação, interpretação"
+            ]
+          },
+          {
+            tipo: "imagem",
+            id: "figura_1_representacao_dialetica",
+            src: "figura_1_representacao_dialetica.png",
+            pasta: "imagens_psicologia_organizacional/aula_03",
+            num: "2",
+            alt: "Figura 1 - Representação Dialética: relação circular entre Sujeito e Meio social, com Atividade e consciência no centro, Ações intencionais na parte superior e Efeitos psicológicos na parte inferior"
+          },
+          {
+            tipo: "topico",
+            titulo: "Quatro características da constituição da consciência",
+            lista: [
+              "**Caráter histórico** → consciência se desenvolve ao longo do tempo, acumulando experiências",
+              "**Interdeterminação funcional** → processos psicológicos e realidade influenciam-se mutuamente",
+              "**Processo dual e conflituoso** → ação intencional encontra resistências no meio, exigindo novas ações",
+              "**Transformações geram novas formas de agir** → realinhamento de instrumentos e relações"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Atividade, consciência e adaptação",
+            lista: [
+              "Continuidade da atividade → força motriz da consciência individual e coletiva",
+              "Dualidade sujeito ↔ meio movimenta processos de adaptação",
+              "Sujeito transforma o meio e também precisa adaptar-se a ele"
+            ]
+          }
+        ]
+      },
+      {
+        id: "vygotski_mhd_motivos",
+        titulo: "Vygotski, Materialismo Histórico-Dialético e Motivos da Ação",
+        blocos: [
+          {
+            tipo: "imagem",
+            id: "figura_2_lev_vygotski",
+            src: "figura_2_lev_vygotski.png",
+            pasta: "imagens_psicologia_organizacional/aula_03",
+            num: "3",
+            alt: "Retrato de Lev Vygotski dentro de uma moldura"
+          },
+          {
+            tipo: "topico",
+            titulo: "Psicologia Histórico-Cultural",
+            lista: [
+              "**Lev Vygotski** → construiu a Psicologia Histórico-Cultural",
+              "Objeto: gênese social da consciência",
+              "Método: materialismo histórico e dialético"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Motivos da ação",
+            lista: [
+              "**Motivos da ação** → objetivos relacionados à satisfação de necessidades físicas e sociais",
+              "**Atividade objetal** → medeia experiências do sujeito com atributos físicos (alimentos, líquidos, instrumentos) e sociais (relações, comunicação, afetos)",
+              "Motivação organizacional → exige considerar necessidades físicas (sobrevivência, alimentação) e sociais (reconhecimento, segurança, status)"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Materialismo Histórico e Dialético (MHD)",
+            lista: [
+              "**MHD** → estudo da atividade humana historicamente constituída e constituinte de transformações",
+              "Gera efeitos psicológicos (funções cognitivas) e efeitos subjetivos (personalidade, afetividade)",
+              "Baseado em Karl Marx: realidade social analisada por contradições materiais; história dinâmica e conflituosa; compreensão pela totalidade concreta"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Contradições e trabalho alienante",
+            lista: [
+              "Contradições não são necessariamente negativas; expressam relações sociais de produção muitas vezes invisibilizadas",
+              "**Trabalho alienante** → trabalhador tratado apenas como meio para objetivos da empresa, perde sentido da atividade",
+              "Trabalho também pode ser espaço de sentido, potência, solidariedade e transformação social"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Relações dialéticas na organização do trabalho",
+            lista: [
+              "Condições × resultados",
+              "Execução × recompensas",
+              "Comando × autonomia",
+              "Produtividade × saúde",
+              "Controle × criatividade"
+            ]
+          }
+        ]
+      },
+      {
+        id: "duas_zonas_desenvolvimento_tecnologia",
+        titulo: "Duas Zonas de Desenvolvimento e Tecnologia",
+        blocos: [
+          {
+            tipo: "topico",
+            titulo: "Duas zonas de desenvolvimento da atividade",
+            lista: [
+              "**Instrumentos de trabalho** → ferramentas cada vez mais complexas (transporte, comunicação, computadores, eletrodomésticos)",
+              "**Relações sociais** → complexidade crescente: divisão do trabalho, planejamento, cooperação, cultura, difusão de saberes"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Tecnologia e saúde mental",
+            lista: [
+              "Desenvolvimento tecnológico pode gerar consequências físicas, psicológicas, sociais e ambientais",
+              "Uso intensivo de smartphones → pode reduzir relações próximas e comunicações espontâneas",
+              "Redes sociais → podem gerar sofrimento psicológico, disseminar desinformação e estimular discórdia",
+              "Tecnologia não é negativa por si só; o que importa é como é utilizada (autonomia, tempo, objetivos)"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Duas zonas aplicadas ao trabalho",
+            lista: [
+              "Relacionadas à inovação organizacional",
+              "**Instrumentos** → agilidade, tecnologia, aprimoramento de procedimentos",
+              "**Relações sociais** → códigos e relacionamentos favorecem precisão, qualidade e diálogo entre equipes"
+            ]
+          },
+          {
+            tipo: "imagem",
+            id: "quadro_1_zonas_desenvolvimento_atividade_trabalho",
+            src: "quadro_1_zonas_desenvolvimento_atividade_trabalho.png",
+            pasta: "imagens_psicologia_organizacional/aula_03",
+            num: "4",
+            alt: "Quadro com duas colunas: Instrumentos de trabalho e Linguagem compartilhada"
+          },
+          {
+            tipo: "topico",
+            titulo: "Instrumentos de trabalho (detalhamento)",
+            lista: [
+              "Tarefas → tecnologia, métodos, fluxos",
+              "Aprendizado → ferramenta como extensão da cognição",
+              "Padrões de comportamento → rotinas, automatismos, procedimentos"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Linguagem compartilhada (detalhamento)",
+            lista: [
+              "Alinhamento de processos → cultura organizacional, cooperação, critérios",
+              "Relações de poder → regras, metas, liderança, feedback",
+              "Significados compartilhados → experiências, sucessos, erros, engajamento"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Organização do trabalho e processos psicológicos",
+            lista: [
+              "Ações dos gestores não são psicologicamente neutras",
+              "Não há divisão precisa entre sujeito ↔ meio; estado psicológico do trabalhador influencia quantidade e qualidade do trabalho",
+              "Planejamento deve considerar: aspecto dialético, instrumentos, relações sociais e melhoria de procedimentos"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Considerações finais",
+            lista: [
+              "Aplicar Psicologia no trabalho não deve se limitar a técnicas de motivação",
+              "**Desenvolvimento objetivo/instrumental** → instrumentos e capacidades para o trabalho",
+              "**Desenvolvimento social/comunicativo** → relações, diálogo e dimensão social",
+              "Deve ocorrer por meio de processos inclusivos de diálogo e aplicação na realidade organizacional"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  // aula 4
+  {
+    aula: "A Organização como Sistema Psicossocial",
+    ideia_central: "A organização de trabalho deve ser compreendida como um sistema psicossocial aberto, no qual estrutura formal, relações humanas e ambiente externo estão interligados, e onde os fatores psicossociais relacionados ao trabalho emergem dessas interações cotidianas, podendo representar tanto riscos quanto proteções para a efetividade do trabalho e para a saúde física e mental dos trabalhadores.",
+    secoes: [
+      {
+        id: "evolucao_termo_teoria_sistemas",
+        titulo: "Evolução do Termo Organização e Teoria dos Sistemas",
+        blocos: [
+          {
+            tipo: "topico",
+            titulo: "Evolução histórica do termo \"organizações de trabalho\"",
+            lista: [
+              "Até 1920/1950 → organização = local físico (edifícios, galpões, maquinário industrial), estrutura rígida e fixa",
+              "A partir de 1960 → **reestruturação produtiva** → mais tecnologia, gestão de pessoas, trabalho em equipes",
+              "Organização passa a significar processos compartilhados por um coletivo em busca de objetivos comuns",
+              "**Ricardo Antunes** → reestruturação produtiva: transição do modelo fordista para pós-fordista/toyotista, trazendo flexibilização mas também precarização e intensificação do trabalho"
+            ]
+          },
+          {
+            tipo: "imagem",
+            id: "figura_1_organizacao_trabalho_relacoes_humanas",
+            src: "figura_1_organizacao_trabalho_relacoes_humanas.png",
+            pasta: "imagens_psicologia_organizacional/aula_04",
+            num: "1",
+            alt: "Figura 1 – Organização de trabalho e relações humanas: duas ilustrações conectando prédio/engrenagens/globo a pessoas ao redor por setas circulares, e ícones de diálogo, ideia e casa, representando a passagem de uma visão estrutural para uma visão relacional da organização."
+          },
+          {
+            tipo: "topico",
+            titulo: "Riscos das relações de trabalho",
+            lista: [
+              "Relações de trabalho podem constituir riscos para a capacidade de agir das pessoas",
+              "Desgastes recorrentes (tempo, intensidade, cobranças, desvalorização) afetam a qualidade das relações e do trabalho"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Teoria Geral dos Sistemas",
+            lista: [
+              "**Ludwig von Bertalanffy** (1950) → alternativa às abordagens mecanicistas e reducionistas",
+              "Fenômenos compreendidos como totalidades organizadas em interação com o ambiente",
+              "**Sistema aberto** → troca energia, informação e matéria com o meio → adaptação, transformação, crescimento",
+              "**Entropia** → desorganização e colapso funcional quando o sistema deixa de interagir",
+              "Modelo sistêmico → ênfase nas relações entre as partes, não apenas na separação estrutural"
+            ]
+          },
+          {
+            tipo: "imagem",
+            id: "figura_2_teoria_dos_sistemas",
+            src: "figura_2_teoria_dos_sistemas.png",
+            pasta: "imagens_psicologia_organizacional/aula_04",
+            num: "2",
+            alt: "Figura 2 - A Teoria dos Sistemas: rede de dezenas de ícones representando pessoas conectadas entre si por múltiplas linhas, formando uma malha sem hierarquia central única, ilustrando um sistema composto por elementos interligados por relações múltiplas e simultâneas."
+          }
+        ]
+      },
+      {
+        id: "sistema_organizacional",
+        titulo: "O Sistema Organizacional",
+        blocos: [
+          {
+            tipo: "topico",
+            titulo: "Funcionamento sistêmico da organização",
+            lista: [
+              "Posicionamento sistêmico exige perceber **relações de trabalho** (comunicação, escuta, afetividade, aprendizagem) e **equipamentos de trabalho** (máquinas, computadores, insumos)",
+              "Departamentos, equipes, processos e lideranças interagem e respondem a pressões externas e internas",
+              "Eficiência do todo depende da qualidade das interações e do alinhamento com objetivos institucionais"
+            ]
+          },
+          {
+            tipo: "imagem",
+            id: "figura_3_influencias_atividades_trabalho",
+            src: "figura_3_influencias_atividades_trabalho.png",
+            pasta: "imagens_psicologia_organizacional/aula_04",
+            num: "3",
+            alt: "Figura 3 – As influências sobre as atividades das pessoas no trabalho: diagrama circular de fluxo em que Ambiente Externo (sociedade, mercado, cultura) alimenta Entradas/Input (recursos, informações, pessoas), que abastecem o Sistema Organizacional (subsistemas, processos internos, relações psicossociais, cultura e clima), gerando Saídas/Output (produtos, serviços, conhecimento) e Retroalimentação/Feedback, fechando o ciclo de volta às entradas e ao ambiente externo."
+          },
+          {
+            tipo: "topico",
+            titulo: "Elementos do sistema organizacional",
+            lista: [
+              "**Entrada** → informações, recursos humanos, matéria-prima recebidos do ambiente",
+              "**A organização** → processos, decisões, interações, aprendizagens e conflitos (estruturas formais + relações humanas)",
+              "**Saídas** → bens, serviços, impacto social, imagem institucional",
+              "**Feedback** → mecanismo de correção e adaptação, a organização aprende com seus resultados",
+              "**Ambiente externo** → influencia e é influenciado pelo sistema, nunca é neutro"
+            ]
+          },
+          {
+            tipo: "texto",
+            texto: "Coesão organizacional → ordem estabelecida entre partes distintas (pessoas, processos, departamentos) e o funcionamento integrado do todo em direção a objetivos compartilhados."
+          }
+        ]
+      },
+      {
+        id: "fatores_psicossociais",
+        titulo: "Fatores Psicossociais Relacionados ao Trabalho (FPRT)",
+        blocos: [
+          {
+            tipo: "topico",
+            titulo: "Definição e origem",
+            lista: [
+              "**FPRT** → condições de causalidade e interação no contexto de trabalho com potencial de impactar efetividade do trabalho e saúde física/mental",
+              "Fatores emergem das interações cotidianas e da forma como o trabalho é organizado",
+              "Repercutem dialeticamente no desenvolvimento das consciências individuais e coletivas"
+            ]
+          },
+          {
+            tipo: "imagem",
+            id: "representacao_visual_interacoes_fatores_psicossociais",
+            src: "representacao_visual_interacoes_fatores_psicossociais.png",
+            pasta: "imagens_psicologia_organizacional/aula_04",
+            num: "4",
+            alt: "Representação visual sem número/título formal: seta ligando a caixa \"Interações cotidianas no trabalho\" à caixa \"Fatores Psicossociais\", indicando que os fatores psicossociais surgem das interações do dia a dia; abaixo, ilustração de um globo terrestre cercado por diferentes trabalhadores (entregador, motociclista, atendente, pessoa ao telefone), representando a diversidade de contextos de trabalho."
+          },
+          {
+            tipo: "topico",
+            titulo: "Riscos e proteções",
+            lista: [
+              "Fatores psicossociais podem representar riscos ou proteções",
+              "Bem geridos → desenvolvimento, engajamento e saúde",
+              "Negligenciados → estresse, sofrimento psíquico, conflitos e transtornos"
+            ]
+          },
+          {
+            tipo: "lista",
+            titulo: "Principais fatores psicossociais destacados",
+            itens: [
+              "Carga de trabalho",
+              "Gestão",
+              "Coesão",
+              "Intensidade",
+              "Reconhecimento",
+              "Qualidade dos resultados",
+              "Autonomia"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Manifestações cotidianas",
+            lista: [
+              "Situações de risco → reunião mal-conduzida, crítica sem feedback",
+              "Situações de proteção → objetivo alcançado, colaboração, valorização",
+              "Episódios acumulam-se e moldam a experiência subjetiva dos trabalhadores"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Papel da Psicologia Organizacional",
+            lista: [
+              "Identificação e mediação dos fatores psicossociais",
+              "Práticas: escuta, mobilização de equipes, diagnósticos institucionais, avaliação psicossocial, planos de ação, proposição de mudanças"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Considerações finais",
+            lista: [
+              "Sistema psicossocial → organizações compostas por processos formais e, principalmente, relações humanas carregadas de significados, afetos e valores",
+              "Funcionamento organizacional depende da qualidade das interações entre membros (líderes, equipes, setores, públicos externos)",
+              "Percepção de cultura, justiça, coerência discurso-prática e identificação com valores institucionais são dimensões psicossociais relevantes",
+              "Ambiente hostil ou ambíguo → desmotivação, conflitos, adoecimento psíquico, perda de desempenho"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  // aula 5
+  {
+    aula: "Origens e Modelos do Desenvolvimento Organizacional",
+    ideia_central: "O Desenvolvimento Organizacional (DO) é um processo planejado, contínuo e participativo de transformação institucional, fundamentado em modelos teóricos (Lewin e Burke-Litwin) e operacionalizado por meio do diagnóstico e planejamento organizacional, com a Psicologia Organizacional atuando como campo mediador estratégico dessas mudanças.",
+    secoes: [
+      {
+        id: "origens_definicao_principios_do",
+        titulo: "Origens, Definição e Princípios do DO",
+        blocos: [
+          {
+            tipo: "topico",
+            titulo: "Origens do DO",
+            lista: [
+              "Surge nos **EUA**, década de 1950, influenciado pela Psicologia Social e teorias humanistas e sociotécnicas",
+              "**Kurt Lewin** → precursor do DO, introduziu a **mudança planejada** como processo coletivo, participativo e orientado à aprendizagem",
+              "Recebe influência da Teoria das Relações Humanas (emoções, vínculos sociais, motivação)",
+              "Lewin → \"pai da psicologia social moderna\", criou \"**dinâmica de grupo**\" e \"**teoria de campo**\" (inspirada na física de Einstein)"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Definição de DO",
+            lista: [
+              "**DO** → processo planejado de mudanças para a sustentabilidade das organizações",
+              "Visa melhorar eficácia institucional e qualidade do trabalho por meio da transformação de sistemas, estruturas, processos e relações humanas",
+              "Justificado pela qualidade do trabalho dentro de um sistema organizacional integrado"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Sete princípios fundamentais do DO",
+            lista: [
+              "**Participação** → envolve membros nas decisões e etapas da mudança",
+              "**Objetividade** → baseada em dados, evidências e análises críticas",
+              "**Comunicação** → fluxo claro, transparente e respeitoso",
+              "**Aprendizagem** → construção coletiva de saberes e competências",
+              "**Abertura ao novo** → flexibilidade diante de mudanças e inovação",
+              "**Cultura de segurança psicológica** → confiança, escuta, expressão livre de julgamentos",
+              "**Respeito aos valores humanos** → trabalho como atividade subjetiva, relacional e ética"
+            ]
+          }
+        ]
+      },
+      {
+        id: "modelos_do",
+        titulo: "Modelos de Desenvolvimento Organizacional",
+        blocos: [
+          {
+            tipo: "topico",
+            titulo: "Modelo de Kurt Lewin",
+            lista: [
+              "**Descongelamento** (`unfreezing`) → identificação do problema e ruptura com padrões existentes",
+              "**Mudança** (`change`) → implantação de novas práticas, comportamentos e estruturas",
+              "**Recongelamento** (`refreezing`) → estabilização por institucionalização e reforço das novas condutas"
+            ]
+          },
+          {
+            tipo: "imagem",
+            id: "representacao_visual_fluxo_descongelamento_mudanca_recongelamento",
+            src: "representacao_visual_fluxo_descongelamento_mudanca_recongelamento.png",
+            pasta: "imagens_psicologia_organizacional/aula_05",
+            num: "1",
+            alt: "Fluxo sequencial em três etapas conectadas por setas: 1-Descongelamento (pesquisas internas e diálogo com as equipes), 2-Mudança (implantação de rotinas flexíveis, tecnologia e reorganização de metas) e 3-Recongelamento (revisão de contratos, formação de lideranças e monitoramento do clima organizacional), aplicado a um exemplo de trabalho híbrido. A disposição em sequência reforça o caráter processual e cumulativo das três fases."
+          },
+          {
+            tipo: "topico",
+            titulo: "Modelo de Burke-Litwin (1992)",
+            lista: [
+              "Modelo sistêmico com **12 dimensões interconectadas**",
+              "**Fatores transformacionais** (longo prazo) → liderança, cultura organizacional, missão e estratégia",
+              "**Fatores transacionais** (operacionais) → estrutura, sistemas, práticas de gestão",
+              "**Fatores individuais/pessoais** (curto prazo) → tarefas e habilidades, motivação, necessidades e valores individuais",
+              "Útil para diagnosticar grau e impacto da mudança em múltiplos níveis hierárquicos e setoriais"
+            ]
+          },
+          {
+            tipo: "imagem",
+            id: "representacao_visual_modelo_burke_litwin",
+            src: "representacao_visual_modelo_burke_litwin.png",
+            pasta: "imagens_psicologia_organizacional/aula_05",
+            num: "2",
+            alt: "As 12 dimensões do modelo de Burke-Litwin organizadas em hierarquia vertical conectada por linhas: no topo, o 'Ambiente Externo'; abaixo, os fatores transformacionais (Missão e Estratégia, Liderança, Cultura Organizacional); em seguida, os fatores transacionais (Estrutura, Práticas de Gestão, Sistemas); depois o 'Clima da Unidade de Trabalho'; na base, os fatores individuais (Tarefas e Habilidade Individuais, Motivação, Necessidades e Valores Individuais), convergindo para o 'Desempenho Individual e Organizacional'. As conexões cruzadas entre os blocos indicam que os fatores se influenciam mutuamente, e não apenas em cascata linear."
+          }
+        ]
+      },
+      {
+        id: "processos_trabalho_psicologia_organizacional",
+        titulo: "Diagnóstico, Planejamento e Psicologia Organizacional no DO",
+        blocos: [
+          {
+            tipo: "topico",
+            titulo: "Diagnóstico organizacional",
+            lista: [
+              "Mapeamento de processos, análise de cultura e clima, entrevistas, instrumentos, observações, reuniões e mobilizações coletivas",
+              "Busca compreender a realidade presente da organização"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Planejamento organizacional",
+            lista: [
+              "Organiza ações futuras com base em metas de curto, médio e longo prazo",
+              "Articula objetivos organizacionais com valores humanos",
+              "Diagnóstico e planejamento são dimensões complementares e permanentes (ciclo contínuo)"
+            ]
+          },
+          {
+            tipo: "imagem",
+            id: "representacao_visual_diagnostico_planejamento",
+            src: "representacao_visual_diagnostico_planejamento.png",
+            pasta: "imagens_psicologia_organizacional/aula_05",
+            num: "3",
+            alt: "Fluxo horizontal com três elementos conectados por setas: 'Diagnóstico' à esquerda, um ícone central representando a 'Empresa' e 'Planejamento' à direita, com setas apontando da empresa em ambas as direções. A disposição espacial reforça a ideia de complementaridade cíclica entre as duas etapas, e não uma sequência unidirecional."
+          },
+          {
+            tipo: "topico",
+            titulo: "Ferramentas de planejamento estratégico (citadas, não aprofundadas)",
+            lista: [
+              "**KANBAN** → sistema de gestão da Toyota, década de 1940",
+              "**Matriz S.W.O.T.** → desenvolvida por Albert Humphrey, década de 1960"
+            ]
+          },
+          {
+            tipo: "imagem",
+            id: "representacao_visual_quadro_kanban",
+            src: "representacao_visual_quadro_kanban.png",
+            pasta: "imagens_psicologia_organizacional/aula_05",
+            num: "4",
+            alt: "Quadro Kanban dividido em cinco colunas ('Stories', 'To do', 'In progress', 'Testing', 'Done'), com cartões coloridos (post-its) distribuídos entre as colunas e mãos manipulando os cartões, representando a lógica de organizar o fluxo de trabalho por estágios de progresso."
+          },
+          {
+            tipo: "imagem",
+            id: "representacao_visual_matriz_swot",
+            src: "representacao_visual_matriz_swot.png",
+            pasta: "imagens_psicologia_organizacional/aula_05",
+            num: "5",
+            alt: "Matriz dividida em quatro quadrantes rotulados 'Weaknesses', 'Opportunities', 'Strengths' e 'Threats', dispostos ao redor do círculo central 'SWOT', ilustrando como a ferramenta cruza fatores internos e externos, positivos e negativos, da organização."
+          },
+          {
+            tipo: "topico",
+            titulo: "Psicologia Organizacional e DO",
+            lista: [
+              "Oferece métodos e princípios para compreender a atividade prática em mediações instrumentais e relacionais",
+              "DO deve considerar aspectos subjetivos (singularidades das pessoas) e psicossociais (situações compartilhadas)",
+              "Gestores atuam como facilitadores do saber-fazer cotidiano via escuta ética, análise crítica e articulação entre pessoas, processos e propósitos",
+              "**Gestão de pessoas** → função que medeia as aplicações estratégicas do DO na instituição"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  // aula 6
+  {
+    aula: "Cultura Organizacional",
+    ideia_central: "A cultura organizacional é uma realidade simbólica e dinâmica, construída historicamente nas relações e práticas de trabalho, cujo desenvolvimento sustentável, diagnóstico qualitativo e conexão com o engajamento coletivo são centrais para ambientes de trabalho mais saudáveis, cooperativos e eficazes.",
+    secoes: [
+      {
+        id: "conceito_cultura_organizacional",
+        titulo: "Conceito de Cultura Organizacional",
+        blocos: [
+          {
+            tipo: "topico",
+            titulo: "Abordagens teóricas",
+            lista: [
+              "**Allaire e Firsirotu (1984)** → dois blocos: cultura como sistema sociocultural x cultura como sistema de ideias",
+              "**Hofstede (1991)** → cultura influenciada por níveis mais abrangentes (nacional, regional, social); determina identidade do grupo como a personalidade determina a do indivíduo",
+              "**Fleury (1996)** → componentes culturais agem como comunicação/consenso, mas também ocultam relações de dominação"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Definição adotada no curso",
+            lista: [
+              "**Cultura organizacional** → valores, crenças, normas, símbolos, afetos e práticas compartilhadas que orientam pensar, agir e relacionar-se",
+              "\"Maneira como as coisas acontecem na realidade\" → sempre sendo criada, reforçada ou transformada",
+              "Síntese: realidade simbólica, construída historicamente, influenciada por relações sociais e materialidade do trabalho; não é estática"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Três autores clássicos",
+            lista: [
+              "**Edgar Schein (2004)** → pressupostos básicos aprendidos ao resolver problemas de adaptação externa e integração interna",
+              "**Gareth Morgan (2002)** → cultura como processo simbólico de construção de sentido coletivo",
+              "**Mary Douglas (1996)** → classificações culturais estruturam práticas organizacionais e juízos sobre comportamento"
+            ]
+          }
+        ]
+      },
+      {
+        id: "desenvolvimento_diagnostico_cultura",
+        titulo: "Desenvolvimento e Diagnóstico da Cultura",
+        blocos: [
+          {
+            tipo: "topico",
+            titulo: "Desenvolvimento e sustentabilidade da cultura",
+            lista: [
+              "Desenvolver cultura ≠ reforçar slogans/campanhas; é trabalho contínuo de aprimoramento da qualidade dos processos",
+              "Foco em **como se trabalha**, não apenas **quanto se entrega**",
+              "Sustentabilidade → dimensões ambiental, econômica e procedimental",
+              "**Orientação para a Sustentabilidade Organizacional (OSO)** → interdependência entre sustentabilidade ambiental, social e econômica"
+            ]
+          },
+          {
+            tipo: "lista",
+            titulo: "Práticas de gestão que integram desenvolvimento, cultura e sustentabilidade",
+            itens: [
+              "Aproximar-se dos pontos de vista dos trabalhadores",
+              "Reconhecer necessidade de padronização mas admitir variações e adaptações criativas",
+              "Compreender problemas como fenômenos históricos enraizados nas rotinas",
+              "Dialogar sobre acontecimentos que impactam o cotidiano",
+              "Alinhar objetivos estratégicos com a realidade vivida, promovendo escuta coletiva"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Diagnóstico da cultura organizacional",
+            lista: [
+              "Fenômeno qualitativo e simbólico, manifesto em práticas, relações e falas cotidianas",
+              "Instrumentos quantitativos (pesquisa de clima, endomarketing, mapeamento de riscos psicossociais) captam apenas parte da complexidade"
+            ]
+          },
+          {
+            tipo: "lista",
+            titulo: "Métodos qualitativos de diagnóstico",
+            itens: [
+              "Diálogos nos locais de trabalho",
+              "Entrevistas individuais e em grupo",
+              "Observação direta e etnográfica",
+              "Análise de documentos institucionais",
+              "Mapeamento de redes informais"
+            ]
+          }
+        ]
+      },
+      {
+        id: "cultura_engajamento",
+        titulo: "Cultura e Engajamento Organizacional",
+        blocos: [
+          {
+            tipo: "topico",
+            titulo: "Engajamento × satisfação × motivação",
+            lista: [
+              "**Engajamento** → envolvimento coletivo e ativo com objetivos organizacionais, favorecido por identificação, pertencimento e reconhecimento mútuo",
+              "**Satisfação** → aspectos subjetivos do prazer no trabalho",
+              "**Motivação** → impulso pessoal para agir",
+              "Engajamento → fenômeno relacional e situado, emerge da qualidade das relações entre trabalhadores, lideranças e processos"
+            ]
+          },
+          {
+            tipo: "lista",
+            titulo: "Práticas que favorecem o engajamento",
+            itens: [
+              "Liderança participativa e sensível às necessidades do grupo",
+              "Impulsionamento de propósito",
+              "Comunicação franca e sem julgamentos",
+              "Reconhecimento de esforços, inclusive os invisibilizados",
+              "Valorização dos resultados já conquistados"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Caso Patagonia",
+            lista: [
+              "**Patagonia** → cultura organizacional voltada à sustentabilidade radical e ativismo ambiental",
+              "2022 → fundador Yvon Chouinard doou a empresa a um fundo de preservação ambiental",
+              "100% dos lucros revertidos para combate à crise climática, com base nos valores centrais da cultura organizacional",
+              "Exemplo de como cultura pode ser diferencial competitivo e motor de transformação social"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  // aula 7
+  {
+    aula: "Equipes e Liderança",
+    ideia_central: "O módulo mostra como as equipes de trabalho se estruturam a partir de objetivos, papéis e comunicação compartilhados, e como diferentes lógicas e estilos de liderança — legitimados pelo grupo, não apenas pela figura do chefe — funcionam como força motriz do desenvolvimento organizacional.",
+    secoes: [
+      {
+        id: "trabalho_em_equipes",
+        titulo: "O Trabalho em Equipes",
+        blocos: [
+          {
+            tipo: "topico",
+            titulo: "Definição e elementos de uma equipe",
+            lista: [
+              "**Equipes de trabalho** → grupos organizados com finalidade específica, atuando de forma articulada em busca de objetivos comuns (Peduzzi, Silva e Souza, 2020)",
+              "Elementos: coletivo de pessoas, lógica interna de funcionamento, objetivos comuns, funções distribuídas"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Tipos de grupos nas organizações",
+            lista: [
+              "**Grupos formais** → setores com estrutura e liderança claramente definidas",
+              "**Grupos informais** → surgem por afinidade, convivência ou interesses compartilhados",
+              "Grupos informais funcionam como \"termômetro\" da cultura organizacional"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Cooperação e conflito",
+            lista: [
+              "Ambos são elementos permanentes e desejáveis em um ambiente de trabalho vivo",
+              "Cooperação → necessária para alcançar metas conjuntas",
+              "Conflito bem gerido → promove aprendizagem, inovação e realinhamento de condutas",
+              "Equipe madura → capacidade de lidar com conflitos sem comprometer o bem coletivo"
+            ]
+          },
+          {
+            tipo: "imagem",
+            id: "ilustracao_sistema_organizacional",
+            src: "sistema_organizacional.png",
+            pasta: "imagens_psicologia_organizacional/aula_07",
+            num: "1",
+            alt: "Ilustração de uma equipe reunida em torno de uma mesa de trabalho, trocando ideias por meio de ícones de fala, gráfico e itens de escritório, com a legenda 'Sistema Organizacional.'"
+          },
+          {
+            tipo: "topico",
+            titulo: "Liderança como função coletiva",
+            lista: [
+              "Liderança não se concentra apenas na figura do \"chefe\" ou superiores hierárquicos",
+              "Desenvolvimento do sistema organizacional nasce da capacidade de comunicar percepções sobre a realidade",
+              "Liderar → protagonismo de proteger a qualidade do trabalho realizado, algo que pode ser aplicado por todos"
+            ]
+          }
+        ]
+      },
+      {
+        id: "lideranca_conceitos_estilos",
+        titulo: "Conceitos e Estilos de Liderança",
+        blocos: [
+          {
+            tipo: "topico",
+            titulo: "Evolução dos estudos sobre liderança",
+            lista: [
+              "Inicialmente → traços e características dos líderes, comportamentos e estilos",
+              "Depois → abordagens contingenciais/situacionais",
+              "A partir de 1980 → novas abordagens de liderança (Bergamini, 1994)",
+              "**Liderança** → processo de influenciar e orientar indivíduos ou grupos na direção de objetivos compartilhados"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Perspectivas de autores sobre liderança",
+            lista: [
+              "**Bass (1990)** → liderança transforma valores, motivações e expectativas",
+              "**Yukl (2013)** → processos de influência recíproca entre líder e liderados, com foco em direção, alinhamento e compromisso",
+              "**Chiavenato (2014)** → capacidade de influenciar pessoas para cooperarem voluntariamente na realização de metas",
+              "Liderança só é efetiva quando legitimada pelo grupo"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Liderança transformacional × transacional",
+            lista: [
+              "**Transformacional** → inspira liderados, gera engajamento com propósito, promove mudanças culturais; motiva pelo exemplo e pela visão",
+              "**Transacional** → baseada em recompensas, foco em desempenho, metas e cumprimento de regras; correção do trabalho ativa ou passiva",
+              "Líderes criam mecanismos para desenvolvimento cultural e reforço de valores e condutas"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Estilos clássicos de liderança",
+            lista: [
+              "**Autocrático** → decisões centralizadas no líder; útil em crises, mas pode inibir participação",
+              "**Democrático** → decisões compartilhadas, estímulo à participação; favorece engajamento",
+              "**Laissez-faire** → objetivos variam pela efetividade criativa da equipe; útil com equipes altamente autônomas",
+              "Estilo mais eficaz depende do contexto socioeconômico da empresa"
+            ]
+          }
+        ]
+      },
+      {
+        id: "lideranca_desenvolvimento_organizacional",
+        titulo: "Liderança e Desenvolvimento Organizacional",
+        blocos: [
+          {
+            tipo: "topico",
+            titulo: "Liderança como força motriz do DO",
+            lista: [
+              "Liderança é uma das principais forças motrizes do desenvolvimento organizacional",
+              "Não é responsabilidade apenas do gestor/chefe; características devem ser incorporadas por todos os integrantes",
+              "Liderança → argumento mediador entre objetivos institucionais e experiências reais dos trabalhadores"
+            ]
+          },
+          {
+            tipo: "lista",
+            titulo: "Capacidades da liderança no desenvolvimento organizacional",
+            itens: [
+              "Ampliar experiências de aprendizagem e reflexão sobre o trabalho",
+              "Apoiar autonomia e criatividade dos membros da equipe",
+              "Reconhecer esforços invisíveis e valorizar experiências práticas",
+              "Estimular cooperação intersetorial e cultura de confiança",
+              "Resolver conflitos sem gerar rupturas nas relações"
+            ]
+          },
+          {
+            tipo: "topico",
+            titulo: "Comunicação e estratégia",
+            lista: [
+              "Grande habilidade nos processos psicossociais de liderança → comunicação assertiva de fatos e estratégias",
+              "Estratégias como elemento organizador das ações coletivas, alinhando desenvolvimento sistêmico com causas e efeitos desejados"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  // aula 8
+{
+  aula: "Os subsistemas de gestão de pessoas",
+  ideia_central: "As aplicações práticas da Psicologia Organizacional na gestão de pessoas se organizam em cinco subsistemas integrados (agregar, aplicar, recompensar, desenvolver e manter pessoas), alinhados à cultura e aos objetivos estratégicos da organização.",
+  secoes: [
+    {
+      id: "origens_historicas",
+      titulo: "Origens históricas",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "Marcos históricos da gestão de pessoas",
+          lista: [
+            "**Administração Científica** (Taylor, Fayol, Ford – início séc. XX) → foco em controle, eficiência e processos; pessoas como recurso para produtividade",
+            "**Escola das Relações Humanas** (Mayo, Hawthorne, 1930-40) → fatores sociais, motivacionais e de liderança afetam o desempenho",
+            "**Teorias Comportamentais e Sistêmicas** (1950-70) → organização como sistema; gestão de pessoas articula subsistemas (recrutamento, seleção, treinamento, avaliação, recompensas)",
+            "**RH Estratégico** (anos 1980-90) → RH como parceiro estratégico, alinhado ao planejamento organizacional",
+            "**Ulrich (2012)** → papéis do RH: parceiro estratégico, agente de mudança, defensor dos funcionários, especialista administrativo",
+            "As teorias não são excludentes entre si; coexistem na prática das organizações"
+          ]
+        }
+      ]
+    },
+
+// 2 - modelo de subsistemas
+    {
+      id: "modelo_subsistemas",
+      titulo: "Modelo de subsistemas",
+      blocos: [
+        {
+          tipo: "topico",
+          titulo: "Os cinco subsistemas (Chiavenato, 2014)",
+          lista: [
+            "**Agregar Pessoas** → recrutamento e seleção; planejamento de RH; atração de talentos",
+            "**Aplicar Pessoas** → descrição de cargos; avaliação de desempenho; movimentação interna",
+            "**Recompensar Pessoas** → remuneração e benefícios; planos de incentivo; reconhecimento",
+            "**Desenvolver Pessoas** → treinamento e capacitação; planos de carreira; coaching e mentoria",
+            "**Manter Pessoas** → clima e cultura organizacional; saúde e segurança no trabalho; relações trabalhistas"
+          ]
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "Subsistemas devem estar coerentes entre si e alinhados aos objetivos estratégicos (inovação, qualidade, crescimento, saúde e segurança)",
+            "RH atua como \"arquiteto da coerência\", articulando estrategicamente os subsistemas",
+            "**Modelo de Ulrich (2012)** → quatro papéis: parceiro estratégico, especialista administrativo, defensor dos empregados, agente de mudança; incorpora talento, liderança e cultura",
+            "**People Analytics e RH Digital** (2010-20) → integração de dados de recrutamento, desempenho, clima e saúde em modelos preditivos",
+            "**Employee Experience** → subsistemas redesenhados com foco em bem-estar, inclusão, flexibilidade e aprendizagem"
+          ]
+        }
+      ]
+    },
+
+// 3 - psicologia organizacional e gestão de pessoas
+    {
+      id: "psicologia_organizacional_gestao_pessoas",
+      titulo: "Psicologia organizacional e gestão de pessoas",
+      blocos: [
+        {
+          tipo: "lista",
+          itens: [
+            "Subsistemas não são técnicas isoladas, mas conjunto integrado de estratégias entre trabalhadores e objetivos organizacionais",
+            "**Motivação, sofrimento, vínculos, criatividade e conflitos** são elementos centrais da vida organizacional",
+            "Gestão de pessoas sob perspectiva psicológica articula integração, subjetividade e ética"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Agrupamento dos subsistemas no módulo",
+          lista: [
+            "**Aula 8** → agregar pessoas / desenvolver pessoas: recrutamento e seleção, integração, treinamentos, carreira",
+            "**Aula 9** → aplicar pessoas / recompensar pessoas: descrição e análise de cargos, remuneração, benefícios, incentivos, avaliação de desempenho",
+            "**Aula 10** → manter pessoas: qualidade de vida, relações trabalhistas, saúde e segurança"
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Exemplo: Moneyball (2011, dir. Bennett Miller)",
+          lista: [
+            "**Agregar Pessoas** → uso de estatísticas para recrutar jogadores subvalorizados",
+            "**Aplicar Pessoas** → realocação de funções e cargos explorando pontos fortes de cada jogador",
+            "**Desenvolver Pessoas** → jogadores aprenderam novas posições e estilos de jogo",
+            "**Recompensar Pessoas** → valorização via confiança e oportunidade de jogar, não só financeira",
+            "**Manter Pessoas** → manutenção da coesão e confiança em equipe desacreditada",
+            "Nenhum subsistema isolado teria mudado a realidade; sucesso veio da integração das práticas a um objetivo claro"
+          ]
+        }
+      ]
+    }
+  ]
+}
+]
+
+
+
+
+
+
+};

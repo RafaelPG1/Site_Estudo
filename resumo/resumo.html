@@ -95,6 +95,35 @@
            mock/hardcoded aqui — ver resumo.js. -->
       <nav class="disc-list" id="disc-list" aria-label="Disciplinas disponíveis"></nav>
 
+      <!-- Tipo de conteúdo — Resumo / Resumão / Síntese.
+           Lista estática (são sempre as mesmas 3 opções). O clique
+           reaproveita _setModo() (resumo.js), a MESMA função já usada
+           pelo toggle no topo da página — nenhuma lógica nova de
+           troca de conteúdo foi criada aqui, só um novo gatilho. -->
+      <div class="sidebar__header">
+        <span class="sidebar__title">Tipo de Conteúdo</span>
+      </div>
+      <nav class="disc-list disc-list--modo" id="modo-list" aria-label="Tipo de conteúdo">
+        <button class="disc-item mode-btn--active" data-modo="completo" type="button">
+          <span class="disc-item__info">
+            <span class="disc-item__nome">Resumo</span>
+            <span class="disc-item__desc">Conteúdo completo e detalhado da aula.</span>
+          </span>
+        </button>
+        <button class="disc-item" data-modo="resumao" type="button">
+          <span class="disc-item__info">
+            <span class="disc-item__nome">Resumão</span>
+            <span class="disc-item__desc">Várias aulas em uma revisão geral.</span>
+          </span>
+        </button>
+        <button class="disc-item" data-modo="sintese" type="button">
+          <span class="disc-item__info">
+            <span class="disc-item__nome">Síntese</span>
+            <span class="disc-item__desc">Uma aula em tópicos rápidos.</span>
+          </span>
+        </button>
+      </nav>
+
       <div class="sidebar__footer">
         <span>Nexus Study · <span id="sidebar-year"></span></span>
       </div>

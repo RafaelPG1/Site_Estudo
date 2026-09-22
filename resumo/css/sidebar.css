@@ -210,10 +210,35 @@
   box-shadow: var(--rs-focus-ring);
   outline: none;
 }
-.disc-item:active {
-  transform: scale(0.97);
-  transition-duration: var(--rs-dur-fast);
+/* ── Seção "Tipo de Conteúdo" — reaproveita .disc-item, só adiciona
+   a linha de descrição e corrige o flex (não deve "esticar" como o
+   disc-list de disciplinas, que tem flex:1 para ocupar o espaço
+   sobrando). O estado ativo usa "mode-btn--active" porque é essa a
+   classe que _setModo() (resumo.js) já alterna — não criamos uma
+   classe nova, só damos aparência a ela aqui. ────────────────── */
+.disc-list--modo {
+  flex: 0 0 auto;
+  overflow: visible;
 }
+.disc-item__desc {
+  font-size: 0.68rem;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--rs-text-2);
+  white-space: normal;
+}
+.disc-item.mode-btn--active {
+  background: rgba(var(--disc-tema-rgb, 127,203,160), 0.12);
+  border-color: rgba(var(--disc-tema-rgb, 127,203,160), 0.22);
+  border-left-color: var(--disc-tema, #7fcba0);
+}
+.disc-item.mode-btn--active .disc-item__nome {
+  color: var(--disc-tema, #7fcba0);
+}
+/* Oculta Resumão/Síntese quando a disciplina não tem esse conteúdo
+   (mesmo critério que já esconde os botões equivalentes no toggle
+   do topo — ver _temSimplificado()/_temResumao() em resumo.js). */
+.disc-item--hidden { display: none; }
 
 .sidebar__footer {
   padding: 16px;
